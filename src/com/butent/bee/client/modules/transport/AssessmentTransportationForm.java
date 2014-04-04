@@ -3,7 +3,6 @@ package com.butent.bee.client.modules.transport;
 import com.google.common.base.Objects;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
-import com.google.gwt.user.client.ui.HasEnabled;
 import com.google.gwt.user.client.ui.Widget;
 
 import static com.butent.bee.shared.modules.transport.TransportConstants.*;
@@ -18,12 +17,11 @@ import com.butent.bee.client.grid.HtmlTable;
 import com.butent.bee.client.layout.Flow;
 import com.butent.bee.client.modules.classifiers.ClassifierUtils;
 import com.butent.bee.client.output.PrintFormInterceptor;
-import com.butent.bee.client.style.StyleUtils;
-import com.butent.bee.client.ui.AbstractFormInterceptor;
-import com.butent.bee.client.ui.FormFactory.FormInterceptor;
 import com.butent.bee.client.ui.FormFactory.WidgetDescriptionCallback;
 import com.butent.bee.client.ui.IdentifiableWidget;
 import com.butent.bee.client.view.form.FormView;
+import com.butent.bee.client.view.form.interceptor.AbstractFormInterceptor;
+import com.butent.bee.client.view.form.interceptor.FormInterceptor;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.Pair;
 import com.butent.bee.shared.data.BeeRow;
@@ -43,20 +41,9 @@ import java.util.Map;
 public class AssessmentTransportationForm extends PrintFormInterceptor {
 
   private static final String WIDGET_NAME_FIRST_PARAGRAPH = "firstParagraph";
-  private static final String WIDGET_NAME_CUSOTMER_FAX = "customerFax";
-  private static final String WIDGET_NAME_TRANSPORTATION_PRICE = "transportationPrice";
-
-  private static final String REPLACEMENT_FAX = "{fax}";
-  private static final String REPLACEMENT_PRICE_IN_EUR = "{price_in_eur}";
-
   private static final List<String> PARAGRAPH_TEXT = Lists.newArrayList("atstovaujama",
       "toliau vadinamas \"Užsakovu\" ir", "atstovaujama", "________________________________",
       ", toliau vadinamas \"Vežėju\" sudarė šią krovinio vežimo sutartį");
-
-  private static final String TEXT_PRICE_IN_EUR = "({price_in_eur} pagal kursą EUR)";
-
-  private static final double FIXED_EUR_CURRENCY_RATE = 3.4528;
-  private static final String EUR_CURRENCY_LABEL = "eur";
 
   private Widget totals;
   private Widget cargo;
@@ -64,24 +51,19 @@ public class AssessmentTransportationForm extends PrintFormInterceptor {
   private Widget forwarderDetails;
   private Widget customerDetails;
 
-  private String customerFax = "";
-  private String priceInEur = "";
-
   @Override
   public void afterCreateWidget(String name, IdentifiableWidget widget,
       WidgetDescriptionCallback callback) {
 
     if (BeeUtils.same(name, "Totals")) {
       totals = widget.asWidget();
+
     } else if (BeeUtils.same(name, COL_CARGO)) {
       cargo = widget.asWidget();
-    } else if (widget instanceof HasEnabled && BeeUtils.same(name, "TransportationCurrency")) {
-      ((HasEnabled) widget).setEnabled(false);
-      StyleUtils.setStyleName(widget.getElement(), "bee-disabled", true);
     }
     super.afterCreateWidget(name, widget, callback);
   }
-  
+
   @Override
   public void beforeRefresh(FormView form, IsRow row) {
     if (!BeeUtils.anyNotNull(totals, cargo)) {
@@ -190,8 +172,6 @@ public class AssessmentTransportationForm extends PrintFormInterceptor {
           }
         });
 
-    calculateTransportationPriceInEur(form, row);
-
     forwarderDetails = new Flow();
     customerDetails = new Flow();
     firstParagraph = new Flow();
@@ -211,7 +191,6 @@ public class AssessmentTransportationForm extends PrintFormInterceptor {
   @Override
   public FormInterceptor getPrintFormInterceptor() {
     return new AbstractFormInterceptor() {
-      private String replacementTempalte = "";
       @Override
       public void afterCreateWidget(String name, IdentifiableWidget widget,
           WidgetDescriptionCallback callback) {
@@ -231,28 +210,8 @@ public class AssessmentTransportationForm extends PrintFormInterceptor {
         if (BeeUtils.same(name, WIDGET_NAME_FIRST_PARAGRAPH)) {
           widget.getElement().setInnerText(firstParagraph.getElement().getInnerText());
         }
-
-        if (BeeUtils.same(name, WIDGET_NAME_CUSOTMER_FAX)) {
-          widget.getElement().setInnerText(
-              BeeUtils.replace(widget.getElement().getInnerText(), REPLACEMENT_FAX,
-                  getCustomerFax()));
-        }
         super.afterCreateWidget(name, widget, callback);
       }
-
-      @Override
-      public void afterRefresh(FormView form, IsRow row) {
-        Widget widget = form.getWidgetByName(WIDGET_NAME_TRANSPORTATION_PRICE);
-        if (widget != null) {
-          if (BeeUtils.isEmpty(replacementTempalte)) {
-            replacementTempalte = widget.getElement().getInnerHTML();
-          }
-          widget.getElement().setInnerHTML(
-              BeeUtils.replace(replacementTempalte, REPLACEMENT_PRICE_IN_EUR,
-                  getPriceInEur()));
-        }
-      }
-
 
       @Override
       public FormInterceptor getInstance() {
@@ -266,42 +225,7 @@ public class AssessmentTransportationForm extends PrintFormInterceptor {
     return new AssessmentTransportationForm();
   }
 
-  private String getCustomerFax() {
-    return customerFax;
-  }
-
-  private void setCustomerFax(String customerFax) {
-    this.customerFax = customerFax;
-  }
-
-  private String getPriceInEur() {
-    return priceInEur;
-  }
-
-  private void setPriceInEur(String priceInEur) {
-    this.priceInEur = priceInEur;
-  }
-
-  private void calculateTransportationPriceInEur(FormView form, IsRow row) {
-    String selectedCurrency = row.getString(form.getDataIndex("TransportationCurrencyName"));
-
-    if (BeeUtils.same(selectedCurrency, EUR_CURRENCY_LABEL)) {
-      setPriceInEur(BeeConst.STRING_EMPTY);
-    } else {
-      double price = BeeUtils.unbox(row.getDouble(form.getDataIndex("TransportationPrice")));
-      if (!BeeUtils.isPositive(price)) {
-        setPriceInEur(BeeConst.STRING_EMPTY);
-        return;
-      }
-
-      double exchange = price * FIXED_EUR_CURRENCY_RATE;
-
-      setPriceInEur(BeeUtils.replace(TEXT_PRICE_IN_EUR, REPLACEMENT_PRICE_IN_EUR,
-          BeeUtils.toString(exchange, 2)));
-    }
-  }
-
-  private void renderFirstParagraph(final FormView form, final IsRow row,
+  private static void renderFirstParagraph(final FormView form, final IsRow row,
       final Widget widget) {
     final UserInfo info = BeeKeeper.getUser();
     final DataInfo viewInfo = Data.getDataInfo(ClassifierConstants.VIEW_COMPANIES);
@@ -309,7 +233,7 @@ public class AssessmentTransportationForm extends PrintFormInterceptor {
         BeeUtils.joinWords(info.getFirstName(), info.getLastName());
     long forwarderId = BeeUtils.unbox(row.getLong(form.getDataIndex(COL_FORWARDER)));
     Filter filter = Filter.idIn(Lists.newArrayList(info.getCompany(), forwarderId));
-    
+
     Queries.getRowSet(ClassifierConstants.VIEW_COMPANIES, viewInfo.getColumnNames(false),
         filter, new RowSetCallback() {
 
@@ -317,7 +241,7 @@ public class AssessmentTransportationForm extends PrintFormInterceptor {
           public void onSuccess(BeeRowSet result) {
             String customerCompanySignature = "";
             String forwarderCompanySignature = "";
-            
+
             for (IsRow resutlRow : result) {
               long id = resutlRow.getId();
 
@@ -325,30 +249,27 @@ public class AssessmentTransportationForm extends PrintFormInterceptor {
                   ClassifierConstants.COL_COMPANY_NAME))
                   + BeeConst.STRING_COMMA, resutlRow.getString(viewInfo.getColumnIndex(
                   ClassifierConstants.ALS_COMPANY_TYPE_NAME)));
-              String fax = resutlRow.getString(viewInfo.getColumnIndex(
-                  ClassifierConstants.COL_FAX));
 
               if (id == BeeUtils.unbox(info.getCompany())) {
                 customerCompanySignature = signature;
-                setCustomerFax(fax);
               } else if (id == BeeUtils.unbox(row.getLong(form.getDataIndex(COL_FORWARDER)))) {
                 forwarderCompanySignature = signature;
               }
 
             }
-            
+
             String pText = BeeUtils.joinWords(customerCompanySignature + BeeConst.STRING_COMMA,
                 BeeUtils.join(BeeConst.STRING_SPACE, PARAGRAPH_TEXT.subList(0, 1)),
                 customerPersonSignature + BeeConst.STRING_COMMA,
-                    BeeUtils.join(BeeConst.STRING_SPACE, PARAGRAPH_TEXT.subList(1, 2)),
+                BeeUtils.join(BeeConst.STRING_SPACE, PARAGRAPH_TEXT.subList(1, 2)),
                 forwarderCompanySignature + BeeConst.STRING_COMMA,
-                    BeeUtils.join(BeeConst.STRING_SPACE, PARAGRAPH_TEXT.subList(2, PARAGRAPH_TEXT
-                        .size()))
-              );
+                BeeUtils.join(BeeConst.STRING_SPACE, PARAGRAPH_TEXT.subList(2, PARAGRAPH_TEXT
+                    .size()))
+                );
 
             widget.getElement().setInnerText(pText);
           }
-    });
-    
+        });
+
   }
 }

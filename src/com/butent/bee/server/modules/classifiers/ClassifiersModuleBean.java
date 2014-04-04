@@ -5,6 +5,7 @@ import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
 import com.google.common.eventbus.Subscribe;
 
+import static com.butent.bee.shared.modules.administration.AdministrationConstants.*;
 import static com.butent.bee.shared.modules.classifiers.ClassifierConstants.*;
 
 import com.butent.bee.server.data.DataEditorBean;
@@ -12,6 +13,7 @@ import com.butent.bee.server.data.DataEvent.ViewDeleteEvent;
 import com.butent.bee.server.data.DataEvent.ViewInsertEvent;
 import com.butent.bee.server.data.DataEvent.ViewModifyEvent;
 import com.butent.bee.server.data.DataEvent.ViewUpdateEvent;
+import com.butent.bee.server.data.BeeTable;
 import com.butent.bee.server.data.DataEventHandler;
 import com.butent.bee.server.data.QueryServiceBean;
 import com.butent.bee.server.data.SystemBean;
@@ -23,18 +25,21 @@ import com.butent.bee.server.modules.BeeModule;
 import com.butent.bee.server.news.NewsBean;
 import com.butent.bee.server.news.NewsHelper;
 import com.butent.bee.server.news.UsageQueryProvider;
+import com.butent.bee.server.sql.HasConditions;
 import com.butent.bee.server.sql.IsCondition;
 import com.butent.bee.server.sql.SqlInsert;
 import com.butent.bee.server.sql.SqlSelect;
 import com.butent.bee.server.sql.SqlUtils;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.Pair;
+import com.butent.bee.shared.Service;
 import com.butent.bee.shared.communication.ResponseObject;
 import com.butent.bee.shared.data.BeeColumn;
 import com.butent.bee.shared.data.BeeRow;
 import com.butent.bee.shared.data.BeeRowSet;
 import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.SearchResult;
+import com.butent.bee.shared.data.SimpleRowSet;
 import com.butent.bee.shared.data.SimpleRowSet.SimpleRow;
 import com.butent.bee.shared.data.filter.Filter;
 import com.butent.bee.shared.i18n.LocalizableConstants;
@@ -54,6 +59,7 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Set;
 
 import javax.ejb.EJB;
 import javax.ejb.LocalBean;
@@ -114,6 +120,9 @@ public class ClassifiersModuleBean implements BeeModule {
 
     } else if (BeeUtils.same(svc, SVC_CREATE_COMPANY)) {
       response = createCompany(reqInfo);
+
+    } else if (BeeUtils.same(svc, SVC_GET_COMPANY_TYPE_REPORT)) {
+      response = getCompanyTypeReport(reqInfo);
 
     } else {
       String msg = BeeUtils.joinWords("Commons service not recognized:", svc);
@@ -365,5 +374,106 @@ public class ClassifiersModuleBean implements BeeModule {
       info.put(col, Pair.of(translations.get(col), row.getValue(col)));
     }
     return ResponseObject.response(info);
+  }
+  
+  private ResponseObject getCompanyTypeReport(RequestInfo reqInfo) {
+    Long startDate = BeeUtils.toLongOrNull(reqInfo.getParameter(Service.VAR_FROM));
+    Long endDate = BeeUtils.toLongOrNull(reqInfo.getParameter(Service.VAR_TO));
+
+    Set<Long> filterTypes = DataUtils.parseIdSet(reqInfo.getParameter(COL_RELATION_TYPE));
+    
+    BeeTable table = sys.getTable(TBL_COMPANIES);
+    if (!table.isAuditable()) {
+      return ResponseObject.warning(TBL_COMPANIES, "is not auditable");
+    }
+    
+    String auditSource = sys.getAuditSource(table.getName());
+    
+    SqlSelect auditQuery = new SqlSelect();
+    auditQuery.addFields(auditSource, AUDIT_FLD_ID);
+    auditQuery.addMin(auditSource, AUDIT_FLD_TIME);
+    auditQuery.addFrom(auditSource);
+    auditQuery.addGroup(auditSource, AUDIT_FLD_ID);
+    
+    if (startDate != null || endDate != null) {
+      HasConditions auditWhere = SqlUtils.and();
+      if (startDate != null) {
+        auditWhere.add(SqlUtils.moreEqual(auditSource, AUDIT_FLD_TIME, startDate));
+      }
+      if (endDate != null) {
+        auditWhere.add(SqlUtils.less(auditSource, AUDIT_FLD_TIME, endDate));
+      }
+      
+      auditQuery.setWhere(auditWhere);
+    }
+    
+    String auditAlias = SqlUtils.uniqueName();
+    
+    String idName = table.getIdName();
+    
+    SqlSelect companyQuery = new SqlSelect();
+    companyQuery.addFields(TBL_COMPANIES, idName);
+    companyQuery.addFields(auditAlias, AUDIT_FLD_TIME);
+    companyQuery.addEmptyNumeric(BeeConst.YEAR, 4, 0);
+    companyQuery.addEmptyNumeric(BeeConst.MONTH, 2, 0);
+
+    companyQuery.addFrom(TBL_COMPANIES);
+    companyQuery.addFromInner(auditQuery, auditAlias,
+        SqlUtils.join(auditAlias, AUDIT_FLD_ID, TBL_COMPANIES, idName));
+    
+    if (!filterTypes.isEmpty()) {
+      companyQuery.addFromInner(TBL_COMPANY_RELATION_TYPE_STORE,
+          sys.joinTables(TBL_COMPANIES, TBL_COMPANY_RELATION_TYPE_STORE, COL_COMPANY));
+      companyQuery.setWhere(SqlUtils.inList(TBL_COMPANY_RELATION_TYPE_STORE,
+          COL_RELATION_TYPE, filterTypes));
+    }
+    
+    String tmp = qs.sqlCreateTemp(companyQuery);
+    
+    long count = qs.setYearMonth(tmp, AUDIT_FLD_TIME, BeeConst.YEAR, BeeConst.MONTH);
+    if (count <= 0) {
+      qs.sqlDropTemp(tmp);
+      return ResponseObject.emptyResponse();
+    }
+    
+    String countName = "Cnt" + SqlUtils.uniqueName();
+    
+    SqlSelect query = new SqlSelect();
+    query.addFields(tmp, BeeConst.YEAR, BeeConst.MONTH);
+    query.addFields(TBL_COMPANY_RELATION_TYPE_STORE, COL_RELATION_TYPE);
+    query.addFields(TBL_COMPANY_RELATION_TYPES, COL_RELATION_TYPE_NAME);
+    query.addCount(countName);
+    
+    query.addFrom(tmp);
+    query.addFromLeft(TBL_COMPANY_RELATION_TYPE_STORE,
+        SqlUtils.join(TBL_COMPANY_RELATION_TYPE_STORE, COL_COMPANY, tmp, idName));
+    query.addFromLeft(TBL_COMPANY_RELATION_TYPES,
+        sys.joinTables(TBL_COMPANY_RELATION_TYPES, TBL_COMPANY_RELATION_TYPE_STORE,
+            COL_RELATION_TYPE));
+
+    query.addGroup(tmp, BeeConst.YEAR, BeeConst.MONTH);
+    query.addGroup(TBL_COMPANY_RELATION_TYPE_STORE, COL_RELATION_TYPE);
+    query.addGroup(TBL_COMPANY_RELATION_TYPES, COL_RELATION_TYPE_NAME);
+    
+    query.setWhere(SqlUtils.notNull(TBL_COMPANY_RELATION_TYPE_STORE, COL_RELATION_TYPE));
+    
+    SimpleRowSet result = qs.getData(query);
+    
+    if (filterTypes.isEmpty()) {
+      query.setWhere(SqlUtils.isNull(TBL_COMPANY_RELATION_TYPE_STORE, COL_RELATION_TYPE));
+      
+      SimpleRowSet other = qs.getData(query);
+      if (!DataUtils.isEmpty(other)) {
+        result.append(other);
+      }
+    }
+    
+    qs.sqlDropTemp(tmp);
+
+    if (DataUtils.isEmpty(result)) {
+      return ResponseObject.emptyResponse();
+    } else {
+      return ResponseObject.response(result);
+    }
   }
 }

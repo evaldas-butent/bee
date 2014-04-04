@@ -888,8 +888,6 @@ public final class TransportConstants {
 
   public static final String DEFAULT_CARGO_DESCRIPTION = "*";
 
-  public static final String AR_YEAR = "Year";
-  public static final String AR_MONTH = "Month";
   public static final String AR_DEPARTMENT = "Department";
   public static final String AR_MANAGER = "Manager";
 

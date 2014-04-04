@@ -1082,10 +1082,10 @@ public class TransportModuleBean implements BeeModule {
     SqlSelect query = new SqlSelect();
     query.addFields(TBL_ASSESSMENTS, COL_ASSESSMENT_STATUS, COL_ASSESSMENT);
 
-    if (groupBy.contains(AR_MONTH)) {
+    if (groupBy.contains(BeeConst.MONTH)) {
       query.addFields(TBL_ORDERS, COL_ORDER_DATE);
-      query.addEmptyNumeric(AR_YEAR, 4, 0);
-      query.addEmptyNumeric(AR_MONTH, 2, 0);
+      query.addEmptyNumeric(BeeConst.YEAR, 4, 0);
+      query.addEmptyNumeric(BeeConst.MONTH, 2, 0);
     }
 
     if (groupBy.contains(AR_DEPARTMENT)) {
@@ -1123,39 +1123,11 @@ public class TransportModuleBean implements BeeModule {
 
     String tmp = qs.sqlCreateTemp(query);
 
-    if (groupBy.contains(AR_MONTH)) {
-      SqlSelect rangeQuery = new SqlSelect()
-          .addMin(tmp, COL_ORDER_DATE, SqlUtils.uniqueName())
-          .addMax(tmp, COL_ORDER_DATE, SqlUtils.uniqueName())
-          .addFrom(tmp);
-
-      SimpleRowSet rangeData = qs.getData(rangeQuery);
-      if (DataUtils.isEmpty(rangeData)) {
+    if (groupBy.contains(BeeConst.MONTH)) {
+      long count = qs.setYearMonth(tmp, COL_ORDER_DATE, BeeConst.YEAR, BeeConst.MONTH);
+      if (count <= 0) {
         qs.sqlDropTemp(tmp);
         return ResponseObject.emptyResponse();
-      }
-
-      DateTime minDate = rangeData.getDateTime(0, 0);
-      DateTime maxDate = rangeData.getDateTime(0, 1);
-
-      if (minDate == null || maxDate == null) {
-        qs.sqlDropTemp(tmp);
-        return ResponseObject.emptyResponse();
-      }
-
-      DateTime lower = DateTime.copyOf(minDate);
-      while (TimeUtils.isLeq(lower, maxDate)) {
-        DateTime upper = TimeUtils.startOfNextMonth(lower).getDateTime();
-
-        SqlUpdate update = new SqlUpdate(tmp)
-            .addConstant(AR_YEAR, lower.getYear())
-            .addConstant(AR_MONTH, lower.getMonth())
-            .setWhere(SqlUtils.and(SqlUtils.moreEqual(tmp, COL_ORDER_DATE, lower.getTime()),
-                SqlUtils.less(tmp, COL_ORDER_DATE, upper.getTime())));
-
-        qs.updateData(update);
-
-        lower = DateTime.copyOf(upper);
       }
     }
 
@@ -1164,10 +1136,10 @@ public class TransportModuleBean implements BeeModule {
 
     for (String by : groupBy) {
       switch (by) {
-        case AR_MONTH:
-          query.addFields(tmp, AR_YEAR, AR_MONTH);
-          query.addGroup(tmp, AR_YEAR, AR_MONTH);
-          query.addOrder(tmp, AR_YEAR, AR_MONTH);
+        case BeeConst.MONTH:
+          query.addFields(tmp, BeeConst.YEAR, BeeConst.MONTH);
+          query.addGroup(tmp, BeeConst.YEAR, BeeConst.MONTH);
+          query.addOrder(tmp, BeeConst.YEAR, BeeConst.MONTH);
           break;
 
         case AR_DEPARTMENT:

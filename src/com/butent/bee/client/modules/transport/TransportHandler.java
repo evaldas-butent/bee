@@ -1,9 +1,7 @@
 package com.butent.bee.client.modules.transport;
 
 import com.google.common.base.Objects;
-import com.google.common.collect.HashMultimap;
 import com.google.common.collect.Lists;
-import com.google.common.collect.Multimap;
 import com.google.common.collect.Sets;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
@@ -518,32 +516,23 @@ public final class TransportHandler {
         Global.showError(Localized.getMessages().dataNotAvailable(gridName));
         return;
     }
-    Queries.getRowSet(TBL_DEPARTMENT_EMPLOYEES,
-        Lists.newArrayList(COL_DEPARTMENT, COL_COMPANY_PERSON, COL_DEPARTMENT_HEAD), null,
-        new RowSetCallback() {
+    final Long userPerson = BeeKeeper.getUser().getUserData().getCompanyPerson();
+
+    Queries.getRowSet(TBL_DEPARTMENT_EMPLOYEES, Lists.newArrayList(COL_DEPARTMENT),
+        Filter.and(Filter.equals(COL_COMPANY_PERSON, userPerson),
+            Filter.notNull(COL_DEPARTMENT_HEAD)), new RowSetCallback() {
           @Override
           public void onSuccess(BeeRowSet result) {
-            List<Long> departments = Lists.newArrayList();
-            Multimap<Long, Long> employees = HashMultimap.create();
+            Set<Long> departments = Sets.newHashSet();
             Long user = BeeKeeper.getUser().getUserId();
-            Long userPerson = BeeKeeper.getUser().getUserData().getCompanyPerson();
 
             for (BeeRow row : result) {
-              Long department = row.getLong(0);
-              Long employer = row.getLong(1);
-
-              if (row.getLong(2) != null && Objects.equal(employer, userPerson)) {
-                departments.add(department);
-              }
-              employees.put(department, employer);
-            }
-            Set<Long> persons = Sets.newHashSet(userPerson);
-
-            for (Long department : departments) {
-              persons.addAll(employees.get(department));
+              departments.add(row.getLong(0));
             }
             GridFactory.openGrid(gridName, interceptor, GridOptions
-                .forFilter(Filter.or(Lists.newArrayList(Filter.any(COL_COMPANY_PERSON, persons),
+                .forFilter(Filter.or(Lists.newArrayList(
+                    Filter.equals(COL_COMPANY_PERSON, userPerson),
+                    Filter.any(COL_DEPARTMENT, departments),
                     Filter.equals(COL_USER, user), Filter.equals(COL_GROUP, user)))));
           }
         });

@@ -16,6 +16,7 @@ import com.google.gwt.event.logical.shared.SelectionEvent;
 import com.google.gwt.event.logical.shared.SelectionHandler;
 import com.google.gwt.event.logical.shared.ValueChangeEvent;
 import com.google.gwt.event.logical.shared.ValueChangeHandler;
+import com.google.gwt.event.shared.HasHandlers;
 import com.google.gwt.user.client.ui.HasWidgets;
 import com.google.gwt.user.client.ui.Widget;
 
@@ -57,7 +58,6 @@ import com.butent.bee.client.presenter.GridPresenter;
 import com.butent.bee.client.presenter.Presenter;
 import com.butent.bee.client.render.AbstractCellRenderer;
 import com.butent.bee.client.style.StyleUtils;
-import com.butent.bee.client.ui.FormFactory.FormInterceptor;
 import com.butent.bee.client.ui.FormFactory.WidgetDescriptionCallback;
 import com.butent.bee.client.ui.IdentifiableWidget;
 import com.butent.bee.client.view.HeaderView;
@@ -65,6 +65,7 @@ import com.butent.bee.client.view.add.ReadyForInsertEvent;
 import com.butent.bee.client.view.edit.EditStopEvent;
 import com.butent.bee.client.view.edit.EditableColumn;
 import com.butent.bee.client.view.form.FormView;
+import com.butent.bee.client.view.form.interceptor.FormInterceptor;
 import com.butent.bee.client.view.grid.GridView;
 import com.butent.bee.client.view.grid.interceptor.AbstractGridInterceptor;
 import com.butent.bee.client.widget.Button;
@@ -72,6 +73,7 @@ import com.butent.bee.client.widget.FaLabel;
 import com.butent.bee.client.widget.InlineLabel;
 import com.butent.bee.client.widget.InputArea;
 import com.butent.bee.client.widget.InputBoolean;
+import com.butent.bee.shared.Holder;
 import com.butent.bee.shared.Pair;
 import com.butent.bee.shared.communication.ResponseObject;
 import com.butent.bee.shared.css.values.WhiteSpace;
@@ -92,7 +94,6 @@ import com.butent.bee.shared.data.view.RowInfo;
 import com.butent.bee.shared.font.FontAwesome;
 import com.butent.bee.shared.i18n.LocalizableConstants;
 import com.butent.bee.shared.i18n.Localized;
-import com.butent.bee.shared.logging.LogUtils;
 import com.butent.bee.shared.modules.transport.TransportConstants.AssessmentStatus;
 import com.butent.bee.shared.modules.transport.TransportConstants.OrderStatus;
 import com.butent.bee.shared.time.DateTime;
@@ -127,6 +128,7 @@ public class AssessmentForm extends PrintFormInterceptor implements EditStopEven
     @Override
     public boolean beforeAddRow(final GridPresenter presenter, boolean copy) {
       HtmlTable container = new HtmlTable();
+      final Holder<Long> department = Holder.absent();
 
       Relation relation = Relation.create(VIEW_ASSESSMENT_EXECUTORS,
           Lists.newArrayList(COL_LAST_NAME, COL_FIRST_NAME, COL_DEPARTMENT_NAME));
@@ -138,6 +140,15 @@ public class AssessmentForm extends PrintFormInterceptor implements EditStopEven
 
       final UnboundSelector user = UnboundSelector.create(relation,
           Lists.newArrayList(COL_FIRST_NAME, COL_LAST_NAME));
+      user.addSelectorHandler(new SelectorEvent.Handler() {
+        @Override
+        public void onDataSelector(SelectorEvent event) {
+          if (event.isChanged()) {
+            department.set(Data.getLong(event.getRelatedViewName(), event.getRelatedRow(),
+                COL_DEPARTMENT));
+          }
+        }
+      });
       container.setText(0, 0, loc.manager(), StyleUtils.NAME_REQUIRED);
       container.setWidget(0, 1, user);
 
@@ -173,6 +184,7 @@ public class AssessmentForm extends PrintFormInterceptor implements EditStopEven
           }
           newRow.setValue(form.getDataIndex(COL_ASSESSMENT), form.getActiveRowId());
           newRow.setValue(form.getDataIndex(COL_ORDER_MANAGER), user.getNormalizedValue());
+          newRow.setValue(form.getDataIndex(COL_DEPARTMENT), department.get());
           newRow.setValue(form.getDataIndex(COL_ASSESSMENT_NOTES), notes.getValue());
 
           Queries.insertRow(DataUtils.createRowSetForInsert(form.getViewName(),
@@ -739,7 +751,6 @@ public class AssessmentForm extends PrintFormInterceptor implements EditStopEven
     if (childAssessments != null && !primary) {
       childAssessments.setEnabled(false);
     }
-    LogUtils.getRootLogger().warning(departments);
     if (manager != null && manager.isEnabled() && !departments.containsValue(userPerson)) {
       manager.setEnabled(false);
     }
@@ -837,7 +848,11 @@ public class AssessmentForm extends PrintFormInterceptor implements EditStopEven
     if (event.isOpened()) {
       manager.setAdditionalFilter(Filter.any(COL_DEPARTMENT, employees.get(userPerson)));
     } else if (event.isChanged()) {
-
+      for (String field : new String[] {COL_DEPARTMENT, COL_DEPARTMENT_NAME}) {
+        form.getActiveRow().setValue(form.getDataIndex(field),
+            Data.getString(event.getRelatedViewName(), event.getRelatedRow(), field));
+      }
+      form.refreshBySource(COL_DEPARTMENT_NAME);
     }
   }
 
@@ -885,6 +900,24 @@ public class AssessmentForm extends PrintFormInterceptor implements EditStopEven
   }
 
   @Override
+  public void onReadyForInsert(HasHandlers listener, ReadyForInsertEvent event) {
+    for (int i = 0; i < event.getColumns().size(); i++) {
+      if (BeeUtils.same(event.getColumns().get(i).getId(), COL_DEPARTMENT)) {
+        return;
+      }
+    }
+    if (!employees.containsKey(userPerson)) {
+      form.notifySevere(loc.department(), loc.valueRequired());
+      event.consume();
+      return;
+    }
+    event.getColumns().add(DataUtils.getColumn(COL_DEPARTMENT, form.getDataColumns()));
+    event.getValues().add(BeeUtils.toString(employees.get(userPerson).iterator().next()));
+
+    super.onReadyForInsert(listener, event);
+  }
+
+  @Override
   public void onValueChange(ValueChangeEvent<String> event) {
     if (childExpenses != null && expensesRegistered != null) {
       childExpenses.setEnabled(isExecutor() && !expensesRegistered.isChecked()
@@ -894,17 +927,8 @@ public class AssessmentForm extends PrintFormInterceptor implements EditStopEven
   }
 
   private boolean isExecutor() {
-    Long person = form.getLongValue(COL_COMPANY_PERSON);
-
-    if (Objects.equal(person, userPerson)) {
-      return true;
-    }
-    for (Long department : employees.get(person)) {
-      if (Objects.equal(departments.get(department), userPerson)) {
-        return true;
-      }
-    }
-    return false;
+    return Objects.equal(form.getLongValue(COL_COMPANY_PERSON), userPerson)
+        || Objects.equal(departments.get(form.getLongValue(COL_DEPARTMENT)), userPerson);
   }
 
   private boolean isPrimary() {
