@@ -690,6 +690,44 @@ public class TransportModuleBean implements BeeModule {
       }
 
     });
+    
+    news.registerUsageQueryProvider(Feed.CARGO_SALES, new ExtendedUsageQueryProvider() {
+
+      @Override
+      protected List<IsCondition> getConditions(long userId) {
+        return NewsHelper.buildConditions(SqlUtils.isNull(TBL_CARGO_INCOMES, COL_SALE));
+      }
+
+      @Override
+      protected List<Pair<String, IsCondition>> getJoins() {
+        List<Pair<String, IsCondition>> joins = Lists.newArrayList();
+        joins.addAll(NewsHelper.buildJoin(TBL_CARGO_INCOMES, news.joinUsage(TBL_CARGO_INCOMES)));
+        return joins;
+      }
+      
+    });
+
+    news.registerUsageQueryProvider(Feed.CARGO_CREDIT_SALES, new ExtendedUsageQueryProvider() {
+
+      @Override
+      protected List<IsCondition> getConditions(long userId) {
+        return NewsHelper.buildConditions(SqlUtils.and(
+            SqlUtils.isNull(TBL_CARGO_INCOMES, COL_PURCHASE),
+            SqlUtils.isNull(TBL_SALES, COL_SALE_PROFORMA),
+            SqlUtils.notNull(TBL_CARGO_INCOMES, COL_SALE)));
+      }
+
+      @Override
+      protected List<Pair<String, IsCondition>> getJoins() {
+        List<Pair<String, IsCondition>> joins = Lists.newArrayList();
+        joins.addAll(NewsHelper.buildJoin(TBL_CARGO_INCOMES, news.joinUsage(TBL_CARGO_INCOMES)));
+        joins.addAll(NewsHelper.buildJoin(TBL_SALES, sys.joinTables(TBL_SALES,
+            TBL_CARGO_INCOMES, COL_SALE)));
+
+        return joins;
+      }
+
+    });
 
     news.registerUsageQueryProvider(Feed.ASSESSMENT_TRANSPORTATIONS,
         new UsageQueryProvider() {

@@ -343,7 +343,7 @@ public enum Feed implements HasLocalizedCaption {
 
     @Override
     public String getCaption(LocalizableConstants constants) {
-      return constants.feedTrOrderCargoIncomes();
+      return constants.feedTrOrderCargoSales();
     }
 
   },
@@ -355,6 +355,17 @@ public enum Feed implements HasLocalizedCaption {
     @Override
     public String getCaption(LocalizableConstants constants) {
       return constants.feedTrOrderCargoInvoices();
+    }
+  },
+
+  CARGO_CREDIT_SALES(ModuleAndSub.of(Module.TRANSPORT), TransportConstants.TBL_CARGO_INCOMES,
+      TransportConstants.VIEW_CARGO_CREDIT_SALES, Lists.newArrayList(
+          TransportConstants.ALS_ORDER_DATE, TransportConstants.COL_ORDER_NO,
+          TransportConstants.ALS_PAYER_NAME)) {
+
+    @Override
+    public String getCaption(LocalizableConstants constants) {
+      return constants.feedTrOrderCargoCreditSales();
     }
 
   },

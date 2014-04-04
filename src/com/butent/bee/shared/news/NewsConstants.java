@@ -113,6 +113,8 @@ public final class NewsConstants {
     observedColumns.put(TransportConstants.TBL_ASSESSMENTS, TransportConstants.COL_ASSESSMENT_LOG);
     observedColumns.put(TransportConstants.TBL_CARGO_INCOMES, TransportConstants.COL_ORDER);
     observedColumns.put(TransportConstants.TBL_CARGO_INCOMES, TransportConstants.COL_SERVICE);
+    observedColumns.put(TransportConstants.TBL_CARGO_INCOMES, TradeConstants.COL_SALE);
+    observedColumns.put(TransportConstants.TBL_CARGO_INCOMES, TradeConstants.COL_PURCHASE);
     observedColumns.put(TransportConstants.TBL_CARGO_INCOMES, TransportConstants.COL_AMOUNT);
     observedColumns.put(TransportConstants.TBL_CARGO_INCOMES, TransportConstants.COL_NOTE);
     observedColumns.put(TradeConstants.TBL_SALES, TransportConstants.COL_NUMBER);

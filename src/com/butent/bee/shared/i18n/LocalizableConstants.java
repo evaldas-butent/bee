@@ -289,9 +289,11 @@ public interface LocalizableConstants extends Constants, LocalizableCalendarCons
 
   String feedTrDrivers();
 
-  String feedTrOrderCargoIncomes();
+  String feedTrOrderCargoCreditSales();
 
   String feedTrOrderCargoInvoices();
+
+  String feedTrOrderCargoSales();
 
   String feedTrOrdersAll();
 
