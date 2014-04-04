@@ -123,6 +123,7 @@ public final class NewsConstants {
     observedColumns.put(TransportConstants.TBL_CARGO_EXPENSES, TransportConstants.COL_NUMBER);
     observedColumns.put(TradeConstants.TBL_SALES, TransportConstants.COL_NUMBER);
     observedColumns.put(TradeConstants.TBL_SALES, TransportConstants.COL_EXPORTED);
+    observedColumns.put(TradeConstants.TBL_SALES, TradeConstants.COL_SALE_PROFORMA);
   }
 
   private static void initUsageTables() {
