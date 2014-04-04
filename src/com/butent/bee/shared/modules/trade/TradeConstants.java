@@ -6,6 +6,7 @@ public final class TradeConstants {
   public static final String SVC_CREDIT_INFO = "CreditInfo";
 
   public static final String TBL_PURCHASES = "Purchases";
+  public static final String TBL_PURCHASE_USAGE = "PurchaseUsage";
   public static final String TBL_PURCHASE_ITEMS = "PurchaseItems";
   public static final String TBL_SALES = "Sales";
   public static final String TBL_SALE_ITEMS = "SaleItems";

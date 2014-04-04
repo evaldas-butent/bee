@@ -792,6 +792,53 @@ public class TransportModuleBean implements BeeModule {
 
     });
 
+    news.registerUsageQueryProvider(Feed.CARGO_CREDIT_INVOICES, new UsageQueryProvider() {
+
+      @Override
+      public SqlSelect getQueryForAccess(Feed feed, String relationColumn, long userId,
+          DateTime startDate) {
+        SqlSelect select = new SqlSelect()
+            .setDistinctMode(true)
+            .addFields(feed.getUsageTable(), COL_PURCHASE)
+            .addMax(feed.getUsageTable(), NewsConstants.COL_USAGE_ACCESS)
+            .addFrom(feed.getUsageTable())
+                .addFromInner(TBL_PURCHASES,
+                    sys.joinTables(TBL_PURCHASES, feed.getUsageTable(), COL_PURCHASE))
+            .addFromInner(TBL_CARGO_INCOMES,
+                sys.joinTables(TBL_PURCHASES, TBL_CARGO_INCOMES, COL_PURCHASE))
+            .setWhere(SqlUtils.and(
+                SqlUtils.equals(feed.getUsageTable(), NewsConstants.COL_UF_USER, userId),
+                SqlUtils.notNull(feed.getUsageTable(), NewsConstants.COL_USAGE_ACCESS))
+            )
+            .addGroup(feed.getUsageTable(), COL_PURCHASE);
+
+        return select;
+      }
+
+      @Override
+      public SqlSelect getQueryForUpdates(Feed feed, String relationColumn, long userId,
+          DateTime startDate) {
+        SqlSelect select = new SqlSelect()
+            .setDistinctMode(true)
+            .addFields(feed.getUsageTable(), COL_PURCHASE)
+            .addMax(feed.getUsageTable(), NewsConstants.COL_USAGE_UPDATE)
+            .addFrom(feed.getUsageTable())
+            .addFromInner(TBL_PURCHASES,
+                sys.joinTables(TBL_PURCHASES, feed.getUsageTable(), COL_PURCHASE))
+            .addFromInner(TBL_CARGO_INCOMES,
+                sys.joinTables(TBL_PURCHASES, TBL_CARGO_INCOMES, COL_PURCHASE))
+            .setWhere(SqlUtils.and(
+                SqlUtils.notEqual(feed.getUsageTable(), NewsConstants.COL_UF_USER, userId),
+                SqlUtils.more(feed.getUsageTable(), NewsConstants.COL_USAGE_UPDATE,
+                    NewsHelper.getStartTime(startDate)))
+            )
+            .addGroup(feed.getUsageTable(), COL_PURCHASE);
+
+        return select;
+      }
+
+    });
+
     news.registerUsageQueryProvider(Feed.ASSESSMENT_TRANSPORTATIONS,
         new UsageQueryProvider() {
 

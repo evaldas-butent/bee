@@ -124,6 +124,9 @@ public final class NewsConstants {
     observedColumns.put(TradeConstants.TBL_SALES, TransportConstants.COL_NUMBER);
     observedColumns.put(TradeConstants.TBL_SALES, TransportConstants.COL_EXPORTED);
     observedColumns.put(TradeConstants.TBL_SALES, TradeConstants.COL_SALE_PROFORMA);
+    observedColumns.put(TradeConstants.TBL_PURCHASES, TransportConstants.COL_DATE);
+    observedColumns.put(TradeConstants.TBL_PURCHASES, TransportConstants.COL_NUMBER);
+    observedColumns.put(TradeConstants.TBL_PURCHASES, TransportConstants.COL_EXPORTED);
   }
 
   private static void initUsageTables() {
@@ -160,6 +163,7 @@ public final class NewsConstants {
         TransportConstants.TBL_CARGO_EXPENSES_USAGE);
 
     usageTables.put(TradeConstants.TBL_SALES, TransportConstants.TBL_SALES_USAGE);
+    usageTables.put(TradeConstants.TBL_PURCHASES, TradeConstants.TBL_PURCHASE_USAGE);
 
     usageTables.put(DiscussionsConstants.TBL_DISCUSSIONS,
         DiscussionsConstants.TBL_DISCUSSIONS_USAGE);

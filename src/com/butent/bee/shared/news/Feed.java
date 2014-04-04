@@ -392,6 +392,17 @@ public enum Feed implements HasLocalizedCaption {
     }
   },
 
+  CARGO_CREDIT_INVOICES(ModuleAndSub.of(Module.TRANSPORT), TradeConstants.TBL_PURCHASES,
+      TransportConstants.VIEW_CARGO_PURCHASE_INVOICES, Lists.newArrayList(
+          TransportConstants.COL_DATE, TransportConstants.COL_NUMBER,
+          TradeConstants.ALS_SUPPLIER_NAME)) {
+    @Override
+    public String getCaption(LocalizableConstants constants) {
+
+      return constants.feedTrCargoCreditInvoices();
+    }
+  },
+
   DISCUSSIONS(ModuleAndSub.of(Module.DISCUSSIONS), DiscussionsConstants.TBL_DISCUSSIONS,
       DiscussionsConstants.VIEW_DISCUSSIONS, Lists.newArrayList(DiscussionsConstants.COL_SUBJECT)) {
     @Override
