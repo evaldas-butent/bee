@@ -14,7 +14,6 @@ import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.communication.ParameterList;
 import com.butent.bee.client.communication.ResponseCallback;
 import com.butent.bee.client.composite.MultiSelector;
-import com.butent.bee.client.dialog.Popup;
 import com.butent.bee.client.dom.DomUtils;
 import com.butent.bee.client.event.EventUtils;
 import com.butent.bee.client.grid.HtmlTable;
@@ -550,8 +549,7 @@ public class AssessmentReportsForm extends ReportInterceptor {
           int dataIndex = DomUtils.getDataIndexInt(rowElement);
 
           if (!BeeConst.isUndef(dataIndex)) {
-            boolean modal = Popup.getActivePopup() != null
-                || EventUtils.hasModifierKey(event.getNativeEvent());
+            boolean modal = drillModal(event.getNativeEvent());
             showDetails(data.getRow(dataIndex), cellElement, modal);
           }
         }

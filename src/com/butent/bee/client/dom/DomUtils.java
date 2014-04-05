@@ -532,6 +532,11 @@ public final class DomUtils {
     return (elem == null) ? null : elem.getAttribute(ATTRIBUTE_DATA_COLUMN);
   }
 
+  public static int getDataColumnInt(Element elem) {
+    String value = getDataColumn(elem); 
+    return BeeUtils.isEmpty(value) ? BeeConst.UNDEF : BeeUtils.toInt(value);
+  }
+
   public static int getDataIndexInt(Element elem) {
     String value = (elem == null) ? null : elem.getAttribute(ATTRIBUTE_DATA_INDEX);
     return BeeUtils.isEmpty(value) ? BeeConst.UNDEF : BeeUtils.toInt(value);

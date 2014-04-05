@@ -49,6 +49,7 @@ public final class ClassifierConstants {
   public static final String VIEW_WAREHOUSES = "Warehouses";
 
   public static final String GRID_PERSONS = "Persons";
+  public static final String GRID_COMPANIES = "Companies";
 
   public static final String COL_COMPANY = "Company";
   public static final String COL_COMPANY_NAME = "Name";
@@ -127,6 +128,8 @@ public final class ClassifierConstants {
 
   public static final String ALS_EMAIL_ID = "EmailId";
 
+  public static final String FILTER_COMPANY_CREATION_AND_TYPE = "company_creation_and_type";
+  
   private ClassifierConstants() {
   }
 }

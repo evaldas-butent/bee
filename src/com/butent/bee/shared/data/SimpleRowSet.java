@@ -104,6 +104,36 @@ public class SimpleRowSet implements Iterable<SimpleRow>, BeeSerializable {
     public String getValue(String colName) {
       return getRowSet().getValue(rowIndex, colName);
     }
+
+    public void setValue(int colIndex, String value) {
+      getRowSet().setValue(rowIndex, colIndex, value);
+    }
+
+    public void setValue(String colName, String value) {
+      getRowSet().setValue(rowIndex, colName, value);
+    }
+  }
+
+  private class RowSetIterator implements Iterator<SimpleRow> {
+    private int index = -1;
+
+    @Override
+    public boolean hasNext() {
+      return index < (getNumberOfRows() - 1);
+    }
+
+    @Override
+    public SimpleRow next() {
+      if (index >= getNumberOfRows()) {
+        Assert.untouchable();
+      }
+      return getRow(++index);
+    }
+
+    @Override
+    public void remove() {
+      throw new UnsupportedOperationException();
+    }
   }
 
   /**
@@ -131,28 +161,6 @@ public class SimpleRowSet implements Iterable<SimpleRow>, BeeSerializable {
     return rs;
   }
 
-  private class RowSetIterator implements Iterator<SimpleRow> {
-    private int index = -1;
-
-    @Override
-    public boolean hasNext() {
-      return index < (getNumberOfRows() - 1);
-    }
-
-    @Override
-    public SimpleRow next() {
-      if (index >= getNumberOfRows()) {
-        Assert.untouchable();
-      }
-      return getRow(++index);
-    }
-
-    @Override
-    public void remove() {
-      throw new UnsupportedOperationException();
-    }
-  }
-
   private String[] columnNames = new String[0];
   private Map<String, Integer> columns = Maps.newHashMap();
   private List<String[]> rows = Lists.newArrayList();
@@ -170,6 +178,12 @@ public class SimpleRowSet implements Iterable<SimpleRow>, BeeSerializable {
   }
 
   private SimpleRowSet() {
+  }
+  
+  public SimpleRow addEmptyRow() {
+    String[] values = new String[getNumberOfColumns()];
+    addRow(values);
+    return new SimpleRow(getNumberOfRows() - 1);
   }
 
   public void addRow(String[] row) {
@@ -447,7 +461,7 @@ public class SimpleRowSet implements Iterable<SimpleRow>, BeeSerializable {
   public String getValueByKey(String keyName, String keyValue, String colName) {
     return getValue(getKeyIndex(keyName, keyValue), getColumnIndex(colName));
   }
-
+  
   public String[] getValues(int index) {
     if (BeeUtils.isIndex(rows, index)) {
       return rows.get(index);
@@ -493,6 +507,17 @@ public class SimpleRowSet implements Iterable<SimpleRow>, BeeSerializable {
       }
     }
     return Codec.beeSerialize(arr);
+  }
+
+  public void setValue(int rowIndex, int colIndex, String value) {
+    Assert.isIndex(rows, rowIndex);
+    String[] values = rows.get(rowIndex);
+    Assert.isIndex(colIndex, values.length);
+    values[colIndex] = value;
+  }
+
+  public void setValue(int rowIndex, String colName, String value) {
+    setValue(rowIndex, getColumnIndex(colName), value);
   }
 
   private int getKeyIndex(String keyName, String keyValue) {

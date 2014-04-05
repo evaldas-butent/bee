@@ -81,6 +81,8 @@ public final class BeeConst {
   public static final String STRING_SLASH = "/";
   public static final String STRING_QUESTION = "?";
   public static final String STRING_EXCLAMATION = "!";
+  public static final String STRING_NUMBER_SIGN = "#";
+  public static final String STRING_SUM = "\u2211";
 
   public static final String STRING_FALSE = Boolean.toString(false);
   public static final String STRING_TRUE = Boolean.toString(true);

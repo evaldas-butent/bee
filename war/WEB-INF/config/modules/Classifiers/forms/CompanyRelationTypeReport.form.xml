@@ -20,6 +20,6 @@
     </HorizontalPanel>
     
     <br/>
-    <FlowPanel name="DataContainer" />
+    <FlowPanel name="DataContainer" style="margin-left: 1em;" />
   </FlowPanel>
 </f:Form>

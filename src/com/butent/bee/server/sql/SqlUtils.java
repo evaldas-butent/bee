@@ -325,6 +325,10 @@ public final class SqlUtils {
     return new ComparisonCondition(Operator.IN, field(src, fld), query);
   }
 
+  public static IsCondition in(String src, String fld, String dst, String dFld) {
+    return in(src, fld, dst, dFld, null);
+  }
+  
   public static IsCondition in(String src, String fld, String dst, String dFld,
       IsCondition clause) {
     SqlSelect query = new SqlSelect()

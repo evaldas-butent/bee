@@ -8,6 +8,7 @@ import com.google.common.eventbus.Subscribe;
 import static com.butent.bee.shared.modules.administration.AdministrationConstants.*;
 import static com.butent.bee.shared.modules.classifiers.ClassifierConstants.*;
 
+import com.butent.bee.server.data.BeeView;
 import com.butent.bee.server.data.DataEditorBean;
 import com.butent.bee.server.data.DataEvent.ViewDeleteEvent;
 import com.butent.bee.server.data.DataEvent.ViewInsertEvent;
@@ -27,6 +28,7 @@ import com.butent.bee.server.news.NewsHelper;
 import com.butent.bee.server.news.UsageQueryProvider;
 import com.butent.bee.server.sql.HasConditions;
 import com.butent.bee.server.sql.IsCondition;
+import com.butent.bee.server.sql.IsExpression;
 import com.butent.bee.server.sql.SqlInsert;
 import com.butent.bee.server.sql.SqlSelect;
 import com.butent.bee.server.sql.SqlUtils;
@@ -41,6 +43,7 @@ import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.SearchResult;
 import com.butent.bee.shared.data.SimpleRowSet;
 import com.butent.bee.shared.data.SimpleRowSet.SimpleRow;
+import com.butent.bee.shared.data.SqlConstants.SqlFunction;
 import com.butent.bee.shared.data.filter.Filter;
 import com.butent.bee.shared.i18n.LocalizableConstants;
 import com.butent.bee.shared.i18n.Localized;
@@ -111,7 +114,6 @@ public class ClassifiersModuleBean implements BeeModule {
 
   @Override
   public ResponseObject doService(String svc, RequestInfo reqInfo) {
-
     ResponseObject response = null;
 
     if (BeeUtils.same(svc, SVC_COMPANY_INFO)) {
@@ -214,6 +216,68 @@ public class ClassifiersModuleBean implements BeeModule {
             userId));
       }
     });
+
+    BeeView.registerConditionProvider(FILTER_COMPANY_CREATION_AND_TYPE,
+        new BeeView.ConditionProvider() {
+          @Override
+          public IsCondition getCondition(BeeView view, List<String> args) {
+            Long start = BeeUtils.toLongOrNull(BeeUtils.getQuietly(args, 0));
+            Long end = BeeUtils.toLongOrNull(BeeUtils.getQuietly(args, 1));
+
+            String type = BeeUtils.getQuietly(args, 2);
+
+            String idName = view.getSourceIdName();
+
+            HasConditions conditions = SqlUtils.and();
+
+            if (start != null || end != null) {
+              String auditSource = sys.getAuditSource(view.getSourceName());
+
+              IsExpression created = SqlUtils.aggregate(SqlFunction.MIN,
+                  SqlUtils.field(auditSource, AUDIT_FLD_TIME));
+
+              SqlSelect auditQuery = new SqlSelect()
+                  .addFields(auditSource, AUDIT_FLD_ID)
+                  .addExpr(created, AUDIT_FLD_TIME)
+                  .addFrom(auditSource)
+                  .addGroup(auditSource, AUDIT_FLD_ID);
+
+              HasConditions having = SqlUtils.and();
+              if (start != null) {
+                having.add(SqlUtils.moreEqual(created, start));
+              }
+              if (end != null) {
+                having.add(SqlUtils.less(created, end));
+              }
+              auditQuery.setHaving(having);
+
+              String auditAlias = "audit" + SqlUtils.uniqueName();
+
+              SqlSelect subQuery = new SqlSelect()
+                  .addFields(auditAlias, AUDIT_FLD_ID)
+                  .addFrom(auditQuery, auditAlias);
+
+              conditions.add(SqlUtils.in(TBL_COMPANIES, idName, subQuery));
+            }
+
+            if (!BeeUtils.isEmpty(type)) {
+              if (type.equals(BeeConst.STRING_ZERO)) {
+                conditions.add(SqlUtils.not(SqlUtils.in(TBL_COMPANIES, idName,
+                    TBL_COMPANY_RELATION_TYPE_STORE, COL_COMPANY)));
+
+              } else {
+                Set<Long> types = DataUtils.parseIdSet(type);
+                if (!types.isEmpty()) {
+                  conditions.add(SqlUtils.in(TBL_COMPANIES, idName,
+                      TBL_COMPANY_RELATION_TYPE_STORE, COL_COMPANY,
+                      SqlUtils.inList(TBL_COMPANY_RELATION_TYPE_STORE, COL_RELATION_TYPE, types)));
+                }
+              }
+            }
+
+            return conditions;
+          }
+        });
   }
 
   private ResponseObject createCompany(RequestInfo reqInfo) {
@@ -375,99 +439,120 @@ public class ClassifiersModuleBean implements BeeModule {
     }
     return ResponseObject.response(info);
   }
-  
+
   private ResponseObject getCompanyTypeReport(RequestInfo reqInfo) {
     Long startDate = BeeUtils.toLongOrNull(reqInfo.getParameter(Service.VAR_FROM));
     Long endDate = BeeUtils.toLongOrNull(reqInfo.getParameter(Service.VAR_TO));
 
     Set<Long> filterTypes = DataUtils.parseIdSet(reqInfo.getParameter(COL_RELATION_TYPE));
-    
+
     BeeTable table = sys.getTable(TBL_COMPANIES);
     if (!table.isAuditable()) {
       return ResponseObject.warning(TBL_COMPANIES, "is not auditable");
     }
-    
-    String auditSource = sys.getAuditSource(table.getName());
-    
-    SqlSelect auditQuery = new SqlSelect();
-    auditQuery.addFields(auditSource, AUDIT_FLD_ID);
-    auditQuery.addMin(auditSource, AUDIT_FLD_TIME);
-    auditQuery.addFrom(auditSource);
-    auditQuery.addGroup(auditSource, AUDIT_FLD_ID);
-    
-    if (startDate != null || endDate != null) {
-      HasConditions auditWhere = SqlUtils.and();
-      if (startDate != null) {
-        auditWhere.add(SqlUtils.moreEqual(auditSource, AUDIT_FLD_TIME, startDate));
-      }
-      if (endDate != null) {
-        auditWhere.add(SqlUtils.less(auditSource, AUDIT_FLD_TIME, endDate));
-      }
-      
-      auditQuery.setWhere(auditWhere);
-    }
-    
-    String auditAlias = SqlUtils.uniqueName();
-    
-    String idName = table.getIdName();
-    
-    SqlSelect companyQuery = new SqlSelect();
-    companyQuery.addFields(TBL_COMPANIES, idName);
-    companyQuery.addFields(auditAlias, AUDIT_FLD_TIME);
-    companyQuery.addEmptyNumeric(BeeConst.YEAR, 4, 0);
-    companyQuery.addEmptyNumeric(BeeConst.MONTH, 2, 0);
 
-    companyQuery.addFrom(TBL_COMPANIES);
-    companyQuery.addFromInner(auditQuery, auditAlias,
-        SqlUtils.join(auditAlias, AUDIT_FLD_ID, TBL_COMPANIES, idName));
-    
+    String auditSource = sys.getAuditSource(table.getName());
+
+    String idName = table.getIdName();
+
+    IsExpression minTime = SqlUtils.aggregate(SqlFunction.MIN,
+        SqlUtils.field(auditSource, AUDIT_FLD_TIME));
+
+    SqlSelect companyQuery = new SqlSelect()
+        .addFields(TBL_COMPANIES, idName)
+        .addExpr(minTime, AUDIT_FLD_TIME)
+        .addEmptyNumeric(BeeConst.YEAR, 4, 0)
+        .addEmptyNumeric(BeeConst.MONTH, 2, 0)
+        .addFrom(TBL_COMPANIES)
+        .addFromInner(auditSource,
+            SqlUtils.join(auditSource, AUDIT_FLD_ID, TBL_COMPANIES, idName));
+
     if (!filterTypes.isEmpty()) {
       companyQuery.addFromInner(TBL_COMPANY_RELATION_TYPE_STORE,
           sys.joinTables(TBL_COMPANIES, TBL_COMPANY_RELATION_TYPE_STORE, COL_COMPANY));
       companyQuery.setWhere(SqlUtils.inList(TBL_COMPANY_RELATION_TYPE_STORE,
           COL_RELATION_TYPE, filterTypes));
     }
-    
+
+    companyQuery.addGroup(TBL_COMPANIES, idName);
+
+    if (startDate != null || endDate != null) {
+      HasConditions having = SqlUtils.and();
+
+      if (startDate != null) {
+        having.add(SqlUtils.moreEqual(minTime, startDate));
+      }
+      if (endDate != null) {
+        having.add(SqlUtils.less(minTime, endDate));
+      }
+
+      companyQuery.setHaving(having);
+    }
+
     String tmp = qs.sqlCreateTemp(companyQuery);
-    
+
     long count = qs.setYearMonth(tmp, AUDIT_FLD_TIME, BeeConst.YEAR, BeeConst.MONTH);
     if (count <= 0) {
       qs.sqlDropTemp(tmp);
       return ResponseObject.emptyResponse();
     }
-    
-    String countName = "Cnt" + SqlUtils.uniqueName();
-    
-    SqlSelect query = new SqlSelect();
-    query.addFields(tmp, BeeConst.YEAR, BeeConst.MONTH);
-    query.addFields(TBL_COMPANY_RELATION_TYPE_STORE, COL_RELATION_TYPE);
-    query.addFields(TBL_COMPANY_RELATION_TYPES, COL_RELATION_TYPE_NAME);
-    query.addCount(countName);
-    
-    query.addFrom(tmp);
-    query.addFromLeft(TBL_COMPANY_RELATION_TYPE_STORE,
-        SqlUtils.join(TBL_COMPANY_RELATION_TYPE_STORE, COL_COMPANY, tmp, idName));
-    query.addFromLeft(TBL_COMPANY_RELATION_TYPES,
-        sys.joinTables(TBL_COMPANY_RELATION_TYPES, TBL_COMPANY_RELATION_TYPE_STORE,
-            COL_RELATION_TYPE));
 
-    query.addGroup(tmp, BeeConst.YEAR, BeeConst.MONTH);
-    query.addGroup(TBL_COMPANY_RELATION_TYPE_STORE, COL_RELATION_TYPE);
-    query.addGroup(TBL_COMPANY_RELATION_TYPES, COL_RELATION_TYPE_NAME);
-    
-    query.setWhere(SqlUtils.notNull(TBL_COMPANY_RELATION_TYPE_STORE, COL_RELATION_TYPE));
-    
+    String countName = "Cnt" + SqlUtils.uniqueName();
+
+    SqlSelect query = new SqlSelect()
+        .addFields(tmp, BeeConst.YEAR, BeeConst.MONTH)
+        .addFields(TBL_COMPANY_RELATION_TYPE_STORE, COL_RELATION_TYPE)
+        .addFields(TBL_COMPANY_RELATION_TYPES, COL_RELATION_TYPE_NAME)
+        .addCount(countName)
+        .addFrom(tmp)
+        .addFromLeft(TBL_COMPANY_RELATION_TYPE_STORE,
+            SqlUtils.join(TBL_COMPANY_RELATION_TYPE_STORE, COL_COMPANY, tmp, idName))
+        .addFromLeft(TBL_COMPANY_RELATION_TYPES,
+            sys.joinTables(TBL_COMPANY_RELATION_TYPES, TBL_COMPANY_RELATION_TYPE_STORE,
+                COL_RELATION_TYPE))
+        .addGroup(tmp, BeeConst.YEAR, BeeConst.MONTH)
+        .addGroup(TBL_COMPANY_RELATION_TYPE_STORE, COL_RELATION_TYPE)
+        .addGroup(TBL_COMPANY_RELATION_TYPES, COL_RELATION_TYPE_NAME);
+
+    if (filterTypes.isEmpty()) {
+      query.setWhere(SqlUtils.notNull(TBL_COMPANY_RELATION_TYPE_STORE, COL_RELATION_TYPE));
+    } else {
+      query.setWhere(SqlUtils.inList(TBL_COMPANY_RELATION_TYPE_STORE, COL_RELATION_TYPE,
+          filterTypes));
+    }
+
     SimpleRowSet result = qs.getData(query);
-    
+
     if (filterTypes.isEmpty()) {
       query.setWhere(SqlUtils.isNull(TBL_COMPANY_RELATION_TYPE_STORE, COL_RELATION_TYPE));
-      
+
       SimpleRowSet other = qs.getData(query);
       if (!DataUtils.isEmpty(other)) {
         result.append(other);
       }
+
+      SqlSelect totalQuery = new SqlSelect()
+          .addFields(tmp, BeeConst.YEAR, BeeConst.MONTH)
+          .addCount(countName)
+          .addFrom(tmp)
+          .addGroup(tmp, BeeConst.YEAR, BeeConst.MONTH);
+
+      SimpleRowSet totals = qs.getData(totalQuery);
+
+      if (!DataUtils.isEmpty(totals)) {
+        for (SimpleRow totalRow : totals) {
+          SimpleRow row = result.addEmptyRow();
+
+          row.setValue(BeeConst.YEAR, totalRow.getValue(BeeConst.YEAR));
+          row.setValue(BeeConst.MONTH, totalRow.getValue(BeeConst.MONTH));
+
+          row.setValue(COL_RELATION_TYPE, BeeConst.STRING_NUMBER_SIGN);
+
+          row.setValue(countName, totalRow.getValue(countName));
+        }
+      }
     }
-    
+
     qs.sqlDropTemp(tmp);
 
     if (DataUtils.isEmpty(result)) {
