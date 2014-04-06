@@ -45,11 +45,18 @@ import com.butent.bee.shared.data.SimpleRowSet;
 import com.butent.bee.shared.data.SimpleRowSet.SimpleRow;
 import com.butent.bee.shared.data.SqlConstants.SqlFunction;
 import com.butent.bee.shared.data.filter.Filter;
+import com.butent.bee.shared.data.filter.Operator;
 import com.butent.bee.shared.i18n.LocalizableConstants;
 import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogUtils;
 import com.butent.bee.shared.modules.BeeParameter;
+import com.butent.bee.shared.modules.calendar.CalendarConstants;
+import com.butent.bee.shared.modules.documents.DocumentConstants;
+import com.butent.bee.shared.modules.service.ServiceConstants;
+import com.butent.bee.shared.modules.tasks.TaskConstants;
+import com.butent.bee.shared.modules.trade.TradeConstants;
+import com.butent.bee.shared.modules.transport.TransportConstants;
 import com.butent.bee.shared.news.Feed;
 import com.butent.bee.shared.news.NewsConstants;
 import com.butent.bee.shared.rights.Module;
@@ -278,6 +285,324 @@ public class ClassifiersModuleBean implements BeeModule {
             return conditions;
           }
         });
+
+    BeeView.registerConditionProvider(FILTER_COMPANY_USAGE, new BeeView.ConditionProvider() {
+      @Override
+      public IsCondition getCondition(BeeView view, List<String> args) {
+        if (view == null || BeeUtils.size(args) < 2) {
+          return null;
+        }
+
+        HasConditions conditions = SqlUtils.and();
+
+        String idName = view.getSourceIdName();
+
+        String relation = null;
+        Operator operator = null;
+        Integer count = null;
+
+        Long start = null;
+        Long end = null;
+
+        for (int i = 0; i < args.size() - 1; i += 2) {
+          String key = args.get(i);
+          String value = args.get(i + 1);
+
+          if (BeeUtils.isEmpty(key) || BeeUtils.isEmpty(value)) {
+            continue;
+          }
+
+          switch (key) {
+            case Service.VAR_VIEW_NAME:
+              relation = value;
+              break;
+            case Service.VAR_OPERATOR:
+              operator = Operator.getOperator(value);
+              break;
+            case Service.VAR_VALUE:
+              count = BeeUtils.toIntOrNull(value);
+              break;
+
+            case Service.VAR_FROM:
+              start = BeeUtils.toLongOrNull(value);
+              break;
+            case Service.VAR_TO:
+              end = BeeUtils.toLongOrNull(value);
+              break;
+
+            case COL_COMPANY_TYPE:
+            case COL_COMPANY_GROUP:
+            case COL_COMPANY_PRIORITY:
+            case COL_COMPANY_RELATION_TYPE_STATE:
+            case COL_COMPANY_FINANCIAL_STATE:
+            case COL_COMPANY_SIZE:
+            case COL_COMPANY_INFORMATION_SOURCE:
+              conditions.add(SqlUtils.inList(TBL_COMPANIES, key, DataUtils.parseIdSet(value)));
+              break;
+
+            case COL_RELATION_TYPE:
+              conditions.add(SqlUtils.in(TBL_COMPANIES, idName,
+                  TBL_COMPANY_RELATION_TYPE_STORE, COL_COMPANY,
+                  SqlUtils.inList(TBL_COMPANY_RELATION_TYPE_STORE, key,
+                      DataUtils.parseIdSet(value))));
+              break;
+
+            case COL_ACTIVITY:
+              conditions.add(SqlUtils.in(TBL_COMPANIES, idName,
+                  TBL_COMPANY_ACTIVITY_STORE, COL_COMPANY,
+                  SqlUtils.inList(TBL_COMPANY_ACTIVITY_STORE, key, DataUtils.parseIdSet(value))));
+              break;
+
+            case COL_COUNTRY:
+            case COL_CITY:
+              conditions.add(SqlUtils.inList(view.getColumnSource(key), key,
+                  DataUtils.parseIdSet(value)));
+              break;
+          }
+        }
+
+        if (sys.isView(relation) && operator != null) {
+          BeeView relView = sys.getView(relation);
+
+          String source = relView.getSourceName();
+          String sourceField = null;
+          String dtField = null;
+
+          String relationsField = null;
+
+          switch (relation) {
+            case TradeConstants.VIEW_SALES:
+              sourceField = TradeConstants.COL_TRADE_CUSTOMER;
+              dtField = TradeConstants.COL_TRADE_DATE;
+              break;
+
+            case TradeConstants.VIEW_PURCHASES:
+              sourceField = TradeConstants.COL_TRADE_SUPPLIER;
+              dtField = TradeConstants.COL_TRADE_DATE;
+              break;
+
+            case DocumentConstants.VIEW_DOCUMENTS:
+              dtField = DocumentConstants.COL_DOCUMENT_DATE;
+              relationsField = DocumentConstants.COL_DOCUMENT;
+              break;
+
+            case TaskConstants.VIEW_TASKS:
+              sourceField = COL_COMPANY;
+              dtField = TaskConstants.COL_FINISH_TIME;
+              relationsField = TaskConstants.COL_TASK;
+              break;
+
+            case TaskConstants.VIEW_RECURRING_TASKS:
+              sourceField = COL_COMPANY;
+              dtField = TaskConstants.COL_RT_SCHEDULE_FROM;
+              relationsField = TaskConstants.COL_RECURRING_TASK;
+              break;
+
+            case CalendarConstants.VIEW_APPOINTMENTS:
+              sourceField = COL_COMPANY;
+              dtField = CalendarConstants.COL_START_DATE_TIME;
+              break;
+
+            case ServiceConstants.VIEW_OBJECTS:
+              sourceField = ServiceConstants.COL_OBJECT_CUSTOMER;
+              dtField = relView.getSourceVersionName();
+              break;
+
+            case TransportConstants.VIEW_ORDERS:
+              sourceField = TransportConstants.COL_CUSTOMER;
+              dtField = TransportConstants.COL_ORDER_DATE;
+              break;
+
+            case TransportConstants.VIEW_VEHICLES:
+              sourceField = TransportConstants.COL_OWNER;
+              dtField = relView.getSourceVersionName();
+              break;
+
+            case VIEW_COMPANY_CONTACTS:
+            case VIEW_COMPANY_DEPARTMENTS:
+            case VIEW_COMPANY_PERSONS:
+            case VIEW_COMPANY_USERS:
+            case VIEW_COMPANY_RELATION_TYPE_STORE:
+            case VIEW_COMPANY_ACTIVITY_STORE:
+              sourceField = COL_COMPANY;
+              dtField = relView.getSourceVersionName();
+              break;
+          }
+
+          if (BeeUtils.allEmpty(sourceField, relationsField)) {
+            logger.severe("filter", FILTER_COMPANY_USAGE, "relation", relation, "not supported");
+          
+          } else if (!BeeUtils.isPositive(count) && operator == Operator.LT) {
+            conditions.add(SqlUtils.sqlFalse());
+
+          } else if (BeeUtils.isPositive(count) || operator != Operator.GE) {
+            if (!BeeUtils.isPositive(count)) {
+              count = 0;
+            }
+
+            HasConditions dtWhere;
+            if (!BeeUtils.isEmpty(dtField) && (start != null || end != null)) {
+              dtWhere = SqlUtils.and();
+              if (start != null) {
+                dtWhere.add(SqlUtils.moreEqual(source, dtField, start));
+              }
+              if (end != null) {
+                dtWhere.add(SqlUtils.less(source, dtField, end));
+              }
+            } else {
+              dtWhere = null;
+            }
+
+            HasConditions sourceWhere = BeeUtils.isEmpty(sourceField)
+                ? null : SqlUtils.and(SqlUtils.notNull(source, sourceField), dtWhere);
+            HasConditions relationsWhere = BeeUtils.isEmpty(relationsField)
+                ? null : SqlUtils.and(SqlUtils.notNull(TBL_RELATIONS, COL_COMPANY), dtWhere);
+
+            HasConditions relConditions = SqlUtils.or();
+
+            SqlSelect subQuery;
+
+            if (operator == Operator.LT && count > 0
+                || operator == Operator.LE
+                || operator == Operator.EQ && count == 0) {
+
+              if (BeeUtils.isEmpty(relationsField)) {
+                relConditions.add(SqlUtils.not(SqlUtils.in(TBL_COMPANIES, idName,
+                    source, sourceField, sourceWhere)));
+
+              } else if (BeeUtils.isEmpty(sourceField)) {
+                subQuery = new SqlSelect().setDistinctMode(true)
+                    .addFields(TBL_RELATIONS, COL_COMPANY)
+                    .addFrom(TBL_RELATIONS)
+                    .addFromInner(source, sys.joinTables(source, TBL_RELATIONS, relationsField))
+                    .setWhere(relationsWhere);
+
+                relConditions.add(SqlUtils.not(SqlUtils.in(TBL_COMPANIES, idName, subQuery)));
+
+              } else {
+                subQuery = new SqlSelect()
+                    .addField(source, sourceField, COL_COMPANY)
+                    .addFrom(source)
+                    .setWhere(sourceWhere);
+
+                subQuery.addUnion(new SqlSelect()
+                    .addFields(TBL_RELATIONS, COL_COMPANY)
+                    .addFrom(TBL_RELATIONS)
+                    .addFromInner(source, sys.joinTables(source, TBL_RELATIONS, relationsField))
+                    .setWhere(relationsWhere));
+
+                relConditions.add(SqlUtils.not(SqlUtils.in(TBL_COMPANIES, idName, subQuery)));
+              }
+            }
+
+            if (operator == Operator.GE && count == 1
+                || operator == Operator.GT && count == 0) {
+
+              if (BeeUtils.isEmpty(relationsField)) {
+                relConditions.add(SqlUtils.in(TBL_COMPANIES, idName,
+                    source, sourceField, sourceWhere));
+
+              } else if (BeeUtils.isEmpty(sourceField)) {
+                subQuery = new SqlSelect().setDistinctMode(true)
+                    .addFields(TBL_RELATIONS, COL_COMPANY)
+                    .addFrom(TBL_RELATIONS)
+                    .addFromInner(source, sys.joinTables(source, TBL_RELATIONS, relationsField))
+                    .setWhere(relationsWhere);
+
+                relConditions.add(SqlUtils.in(TBL_COMPANIES, idName, subQuery));
+
+              } else {
+                subQuery = new SqlSelect()
+                    .addField(source, sourceField, COL_COMPANY)
+                    .addFrom(source)
+                    .setWhere(sourceWhere);
+
+                subQuery.addUnion(new SqlSelect()
+                    .addFields(TBL_RELATIONS, COL_COMPANY)
+                    .addFrom(TBL_RELATIONS)
+                    .addFromInner(source, sys.joinTables(source, TBL_RELATIONS, relationsField))
+                    .setWhere(relationsWhere));
+
+                relConditions.add(SqlUtils.in(TBL_COMPANIES, idName, subQuery));
+              }
+            }
+
+            if (operator == Operator.LT && count > 1
+                || operator == Operator.LE && count > 0
+                || operator == Operator.EQ && count > 0
+                || operator == Operator.GE && count > 1
+                || operator == Operator.GT && count > 0) {
+
+              String subAlias = "Sub" + SqlUtils.uniqueName();
+              String cntName = "Cnt" + SqlUtils.uniqueName();
+
+              String subField;
+
+              subQuery = new SqlSelect();
+
+              if (BeeUtils.isEmpty(relationsField)) {
+                subField = sourceField;
+
+                subQuery
+                    .addFields(source, sourceField)
+                    .addCount(cntName)
+                    .addFrom(source)
+                    .setWhere(sourceWhere)
+                    .addGroup(source, sourceField);
+
+              } else if (BeeUtils.isEmpty(sourceField)) {
+                subField = COL_COMPANY;
+
+                subQuery
+                    .addFields(TBL_RELATIONS, COL_COMPANY)
+                    .addCount(cntName)
+                    .addFrom(TBL_RELATIONS)
+                    .addFromInner(source, sys.joinTables(source, TBL_RELATIONS, relationsField))
+                    .setWhere(relationsWhere)
+                    .addGroup(TBL_RELATIONS, COL_COMPANY);
+
+              } else {
+                subField = COL_COMPANY;
+
+                SqlSelect unionQuery = new SqlSelect()
+                    .addField(source, sourceField, COL_COMPANY)
+                    .addFrom(source)
+                    .setWhere(sourceWhere);
+
+                unionQuery.setUnionAllMode(true).addUnion(new SqlSelect()
+                    .addFields(TBL_RELATIONS, COL_COMPANY)
+                    .addFrom(TBL_RELATIONS)
+                    .addFromInner(source, sys.joinTables(source, TBL_RELATIONS, relationsField))
+                    .setWhere(relationsWhere));
+
+                String unionAlias = "Un" + SqlUtils.uniqueName();
+
+                subQuery
+                    .addFields(unionAlias, COL_COMPANY)
+                    .addCount(cntName)
+                    .addFrom(unionQuery, unionAlias)
+                    .addGroup(unionAlias, COL_COMPANY);
+              }
+
+              IsExpression xpr = SqlUtils.aggregate(SqlFunction.COUNT, null);
+              subQuery.setHaving(SqlUtils.compare(xpr, operator, SqlUtils.constant(count)));
+
+              SqlSelect inQuery = new SqlSelect()
+                  .addFields(subAlias, subField)
+                  .addFrom(subQuery, subAlias);
+
+              relConditions.add(SqlUtils.in(TBL_COMPANIES, idName, inQuery));
+            }
+
+            if (!relConditions.isEmpty()) {
+              conditions.add(relConditions);
+            }
+          }
+        }
+
+        return conditions;
+      }
+    });
   }
 
   private ResponseObject createCompany(RequestInfo reqInfo) {

@@ -13,6 +13,9 @@ public final class DocumentConstants {
   public static final String TBL_CRITERIA_GROUPS = "CriteriaGroups";
   public static final String TBL_CRITERIA = "Criteria";
 
+  public static final String VIEW_DOCUMENTS = "Documents";
+  public static final String VIEW_DATA_CRITERIA = "DataCriteria";
+  
   public static final String COL_DOCUMENT = "Document";
   public static final String COL_DOCUMENT_NAME = "Name";
   public static final String COL_DOCUMENT_DATE = "DocumentDate";
@@ -43,8 +46,6 @@ public final class DocumentConstants {
   public static final String COL_FILE_DATE = "FileDate";
   public static final String COL_FILE_VERSION = "FileVersion";
   public static final String COL_FILE_CAPTION = "Caption";
-
-  public static final String VIEW_DATA_CRITERIA = "DataCriteria";
 
   public static final String FORM_DOCUMENT = "Document";
 

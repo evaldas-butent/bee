@@ -6,7 +6,6 @@ public final class ClassifierConstants {
   public static final String SVC_COMPANY_INFO = "GetCompanyInfo";
 
   public static final String SVC_GET_COMPANY_TYPE_REPORT = "get_company_type_report";
-  public static final String SVC_GET_COMPANY_USAGE_REPORT = "get_company_usage_report";
   
   public static final String TBL_ITEMS = "Items";
   public static final String TBL_UNITS = "Units";
@@ -24,6 +23,8 @@ public final class ClassifierConstants {
   public static final String TBL_COMPANY_RELATION_TYPES = "CompanyRelationTypes";
   public static final String TBL_COMPANY_RELATION_TYPE_STORE = "CompRelTypeStore";
 
+  public static final String TBL_COMPANY_ACTIVITY_STORE = "CompActStore";
+  
   public static final String TBL_PERSONS = "Persons";
   public static final String TBL_POSITIONS = "Positions";
 
@@ -48,6 +49,22 @@ public final class ClassifierConstants {
   public static final String VIEW_BRANCHES = "Branches";
   public static final String VIEW_WAREHOUSES = "Warehouses";
 
+  public static final String VIEW_COMPANY_TYPES = "CompanyTypes";
+  public static final String VIEW_COMPANY_GROUPS = "CompanyGroups";
+  public static final String VIEW_COMPANY_PRIORITIES = "CompanyPriorities";
+  public static final String VIEW_COMPANY_RELATION_TYPES = "CompanyRelationTypes";
+  public static final String VIEW_COMPANY_RELATION_TYPE_STORE = "CompRelTypeStore";
+  public static final String VIEW_RELATION_TYPE_STATES = "RelationTypeStates";
+  public static final String VIEW_FINANCIAL_STATES = "FinancialStates";
+  public static final String VIEW_COMPANY_SIZES = "CompanySizes";
+  public static final String VIEW_INFORMATION_SOURCES = "InformationSources";
+  public static final String VIEW_COMPANY_ACTIVITIES = "CompanyActivities";
+  public static final String VIEW_COMPANY_ACTIVITY_STORE = "CompActStore";
+
+  public static final String VIEW_COMPANY_CONTACTS = "CompanyContacts";
+  public static final String VIEW_COMPANY_DEPARTMENTS = "CompanyDepartments";
+  public static final String VIEW_COMPANY_USERS = "CompanyUsers";
+  
   public static final String GRID_PERSONS = "Persons";
   public static final String GRID_COMPANIES = "Companies";
 
@@ -57,10 +74,16 @@ public final class ClassifierConstants {
   public static final String COL_COMPANY_VAT_CODE = "VATCode";
   public static final String COL_COMPANY_PERSON = "CompanyPerson";
   public static final String COL_COMPANY_TYPE = "CompanyType";
+  public static final String COL_COMPANY_GROUP = "CompanyGroup";
+  public static final String COL_COMPANY_PRIORITY = "CompanyPriority";
   public static final String COL_COMPANY_EXCHANGE_CODE = "ExchangeCode";
   public static final String COL_COMPANY_CREDIT_LIMIT = "CreditLimit";
   public static final String COL_COMPANY_LIMIT_CURRENCY = "LimitCurrency";
   public static final String COL_COMPANY_CREDIT_DAYS = "CreditDays";
+  public static final String COL_COMPANY_RELATION_TYPE_STATE = "CompanyRelationTypeState";
+  public static final String COL_COMPANY_FINANCIAL_STATE = "FinancialState";
+  public static final String COL_COMPANY_SIZE = "CompanySize";
+  public static final String COL_COMPANY_INFORMATION_SOURCE = "InformationSource";
 
   public static final String COL_PERSON = "Person";
   public static final String COL_FIRST_NAME = "FirstName";
@@ -116,9 +139,11 @@ public final class ClassifierConstants {
   public static final String COL_RELATION_TYPE = "RelationType";
   public static final String COL_RELATION_TYPE_NAME = "Name";
 
+  public static final String COL_ACTIVITY = "Activity";
+
   public static final String ALS_COMPANY_NAME = "CompanyName";
   public static final String ALS_COMPANY_CODE = "CompanyCode";
-  public static final String ALS_COMPANY_TYPE = "ComapnyType";
+  public static final String ALS_COMPANY_TYPE = "CompanyType";
   public static final String ALS_COMPANY_TYPE_NAME = "TypeName";
 
   public static final String ALS_CITY_NAME = "CityName";
@@ -129,6 +154,7 @@ public final class ClassifierConstants {
   public static final String ALS_EMAIL_ID = "EmailId";
 
   public static final String FILTER_COMPANY_CREATION_AND_TYPE = "company_creation_and_type";
+  public static final String FILTER_COMPANY_USAGE = "company_usage";
   
   private ClassifierConstants() {
   }

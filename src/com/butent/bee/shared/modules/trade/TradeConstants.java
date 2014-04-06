@@ -11,6 +11,9 @@ public final class TradeConstants {
   public static final String TBL_SALES = "Sales";
   public static final String TBL_SALE_ITEMS = "SaleItems";
 
+  public static final String VIEW_PURCHASES = "Purchases";
+  public static final String VIEW_SALES = "Sales";
+  
   public static final String COL_PURCHASE = "Purchase";
   public static final String COL_PURCHASE_WAREHOUSE_TO = "WarehouseTo";
 

@@ -601,6 +601,8 @@ public interface LocalizableConstants extends Constants, LocalizableCalendarCons
 
   String sorry();
 
+  String specifyCondition();
+
   String startRow();
 
   String status();
