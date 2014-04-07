@@ -1,7 +1,6 @@
 package com.butent.bee.client.modules.transport;
 
 import com.google.common.collect.Lists;
-import com.google.common.collect.Sets;
 import com.google.gwt.dom.client.TableCellElement;
 import com.google.gwt.dom.client.TableRowElement;
 import com.google.gwt.event.dom.client.ClickEvent;
@@ -49,22 +48,22 @@ import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.NameUtils;
 
 import java.util.List;
-import java.util.Set;
 
-public class AssessmentReportsForm extends ReportInterceptor {
+public class AssessmentTurnoverReport extends ReportInterceptor {
 
-  private static BeeLogger logger = LogUtils.getLogger(AssessmentReportsForm.class);
+  private static BeeLogger logger = LogUtils.getLogger(AssessmentTurnoverReport.class);
 
   private static final String NAME_START_DATE = "StartDate";
   private static final String NAME_END_DATE = "EndDate";
 
   private static final String NAME_DEPARTMENTS = "Departments";
   private static final String NAME_MANAGERS = "Managers";
+  private static final String NAME_CUSTOMERS = "Customers";
 
   private static final List<String> NAME_GROUP_BY =
-      Lists.newArrayList("Group0", "Group1", "Group2");
+      Lists.newArrayList("Group0", "Group1", "Group2", "Group3");
 
-  private static final String STYLE_PREFIX = StyleUtils.CLASS_NAME_PREFIX + "tr-ar-";
+  private static final String STYLE_PREFIX = StyleUtils.CLASS_NAME_PREFIX + "tr-atr-";
 
   private static final String STYLE_TABLE = STYLE_PREFIX + "table";
   private static final String STYLE_HEADER = STYLE_PREFIX + "header";
@@ -90,12 +89,12 @@ public class AssessmentReportsForm extends ReportInterceptor {
 
   private static final String DRILL_DOWN_GRID_NAME = "AssessmentReportDrillDown";
 
-  AssessmentReportsForm() {
+  AssessmentTurnoverReport() {
   }
 
   @Override
   public FormInterceptor getInstance() {
-    return new AssessmentReportsForm();
+    return new AssessmentTurnoverReport();
   }
 
   @Override
@@ -117,18 +116,16 @@ public class AssessmentReportsForm extends ReportInterceptor {
       ((InputDateTime) widget).setDateTime(dateTime);
     }
 
-    widget = form.getWidgetByName(NAME_DEPARTMENTS);
-    String idList = BeeKeeper.getStorage().get(storageKey(NAME_DEPARTMENTS, user));
-    if (widget instanceof MultiSelector && !BeeUtils.isEmpty(idList)) {
-      ((MultiSelector) widget).render(idList);
-    }
+    List<String> selectorNames = Lists.newArrayList(NAME_DEPARTMENTS, NAME_MANAGERS,
+        NAME_CUSTOMERS);
 
-    widget = form.getWidgetByName(NAME_MANAGERS);
-    idList = BeeKeeper.getStorage().get(storageKey(NAME_MANAGERS, user));
-    if (widget instanceof MultiSelector && !BeeUtils.isEmpty(idList)) {
-      ((MultiSelector) widget).render(idList);
+    for (String selectorName : selectorNames) {
+      widget = form.getWidgetByName(selectorName);
+      String idList = BeeKeeper.getStorage().get(storageKey(selectorName, user));
+      if (widget instanceof MultiSelector && !BeeUtils.isEmpty(idList)) {
+        ((MultiSelector) widget).render(idList);
+      }
     }
-
     for (String groupName : NAME_GROUP_BY) {
       widget = form.getWidgetByName(groupName);
       Integer index = BeeKeeper.getStorage().getInteger(storageKey(groupName, user));
@@ -152,6 +149,8 @@ public class AssessmentReportsForm extends ReportInterceptor {
         getEditorValue(NAME_DEPARTMENTS));
     BeeKeeper.getStorage().set(storageKey(NAME_MANAGERS, user),
         getEditorValue(NAME_MANAGERS));
+    BeeKeeper.getStorage().set(storageKey(NAME_CUSTOMERS, user),
+        getEditorValue(NAME_CUSTOMERS));
 
     for (String groupName : NAME_GROUP_BY) {
       Widget widget = form.getWidgetByName(groupName);
@@ -173,6 +172,7 @@ public class AssessmentReportsForm extends ReportInterceptor {
 
     clearEditor(NAME_DEPARTMENTS);
     clearEditor(NAME_MANAGERS);
+    clearEditor(NAME_CUSTOMERS);
   }
 
   @Override
@@ -184,7 +184,7 @@ public class AssessmentReportsForm extends ReportInterceptor {
       return;
     }
 
-    ParameterList params = TransportHandler.createArgs(SVC_GET_ASSESSMENT_REPORT);
+    ParameterList params = TransportHandler.createArgs(SVC_GET_ASSESSMENT_TURNOVER_REPORT);
 
     if (start != null) {
       params.addDataItem(Service.VAR_FROM, start.getTime());
@@ -200,6 +200,10 @@ public class AssessmentReportsForm extends ReportInterceptor {
     String managers = getEditorValue(NAME_MANAGERS);
     if (!BeeUtils.isEmpty(managers)) {
       params.addDataItem(AR_MANAGER, managers);
+    }
+    String customers = getEditorValue(NAME_CUSTOMERS);
+    if (!BeeUtils.isEmpty(customers)) {
+      params.addDataItem(AR_CUSTOMER, customers);
     }
 
     List<String> groupBy = Lists.newArrayList();
@@ -219,6 +223,9 @@ public class AssessmentReportsForm extends ReportInterceptor {
             break;
           case 3:
             group = AR_MANAGER;
+            break;
+          case 4:
+            group = AR_CUSTOMER;
             break;
           default:
             group = null;
@@ -252,7 +259,7 @@ public class AssessmentReportsForm extends ReportInterceptor {
 
   @Override
   protected String getStorageKeyPrefix() {
-    return "AssessmentReports_";
+    return "AssessmentTurnoverReport_";
   }
 
   private void renderData(final SimpleRowSet data) {
@@ -559,10 +566,8 @@ public class AssessmentReportsForm extends ReportInterceptor {
     container.add(table);
   }
 
-  private void showDetails(SimpleRow dataRow, TableCellElement cellElement, final boolean modal) {
-    Set<Long> departments = Sets.newHashSet();
-
-    final CompoundFilter filter = Filter.and();
+  private void showDetails(SimpleRow dataRow, TableCellElement cellElement, boolean modal) {
+    CompoundFilter filter = Filter.and();
     List<String> captions = Lists.newArrayList();
 
     String[] colNames = dataRow.getColumnNames();
@@ -570,7 +575,7 @@ public class AssessmentReportsForm extends ReportInterceptor {
     DateTime start = getDateTime(NAME_START_DATE);
     DateTime end = getDateTime(NAME_END_DATE);
 
-    if (ArrayUtils.contains(colNames, BeeConst.YEAR) 
+    if (ArrayUtils.contains(colNames, BeeConst.YEAR)
         && ArrayUtils.contains(colNames, BeeConst.MONTH)) {
 
       Integer year = BeeUtils.unbox(dataRow.getInt(BeeConst.YEAR));
@@ -612,23 +617,27 @@ public class AssessmentReportsForm extends ReportInterceptor {
       }
 
     } else {
-      if (ArrayUtils.contains(colNames, AdministrationConstants.COL_DEPARTMENT)) {
-        departments.add(dataRow.getLong(AdministrationConstants.COL_DEPARTMENT));
-        captions.add(dataRow.getValue(AdministrationConstants.COL_DEPARTMENT_NAME));
-
-      } else {
-        String input = getEditorValue(NAME_DEPARTMENTS);
-        if (!BeeUtils.isEmpty(input)) {
-          departments.addAll(DataUtils.parseIdSet(input));
-          captions.add(getFilterLabel(NAME_DEPARTMENTS));
-        }
-      }
-
       String managers = getEditorValue(NAME_MANAGERS);
       if (!BeeUtils.isEmpty(managers)) {
         filter.add(Filter.any(ClassifierConstants.COL_COMPANY_PERSON,
             DataUtils.parseIdSet(managers)));
         captions.add(getFilterLabel(NAME_MANAGERS));
+      }
+    }
+
+    if (ArrayUtils.contains(colNames, AdministrationConstants.COL_DEPARTMENT)) {
+      Long department = dataRow.getLong(AdministrationConstants.COL_DEPARTMENT);
+      if (DataUtils.isId(department)) {
+        filter.add(Filter.equals(AdministrationConstants.COL_DEPARTMENT, department));
+        captions.add(dataRow.getValue(AdministrationConstants.COL_DEPARTMENT_NAME));
+      }
+
+    } else {
+      String departments = getEditorValue(NAME_DEPARTMENTS);
+      if (!BeeUtils.isEmpty(departments)) {
+        filter.add(Filter.any(AdministrationConstants.COL_DEPARTMENT,
+            DataUtils.parseIdSet(departments)));
+        captions.add(getFilterLabel(NAME_DEPARTMENTS));
       }
     }
 
@@ -657,32 +666,9 @@ public class AssessmentReportsForm extends ReportInterceptor {
       filter.add(Filter.isEqual(COL_ASSESSMENT_STATUS, new IntegerValue(status.ordinal())));
     }
 
-    final String caption = BeeUtils.notEmpty(BeeUtils.joinItems(captions),
+    String caption = BeeUtils.notEmpty(BeeUtils.joinItems(captions),
         Localized.getConstants().trAssessmentRequests());
 
-    if (departments.isEmpty()) {
-      drillDown(DRILL_DOWN_GRID_NAME, caption, filter, modal);
-
-    } else {
-      ParameterList params = TransportHandler.createArgs(SVC_GET_MANAGERS_BY_DEPARTMENT);
-
-      String value = DataUtils.buildIdList(departments);
-      if (BeeUtils.isEmpty(value)) {
-        value = BeeConst.STRING_ZERO;
-      }
-      params.addDataItem(AdministrationConstants.COL_DEPARTMENT, value);
-
-      BeeKeeper.getRpc().makeRequest(params, new ResponseCallback() {
-        @Override
-        public void onResponse(ResponseObject response) {
-          if (response.hasResponse()) {
-            filter.add(Filter.any(ClassifierConstants.COL_COMPANY_PERSON,
-                DataUtils.parseIdSet(response.getResponseAsString())));
-          }
-
-          drillDown(DRILL_DOWN_GRID_NAME, caption, filter, modal);
-        }
-      });
-    }
+    drillDown(DRILL_DOWN_GRID_NAME, caption, filter, modal);
   }
 }

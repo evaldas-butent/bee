@@ -339,8 +339,8 @@ public final class TransportConstants {
   public static final String SVC_GET_CARGO_USAGE = "GetCargoUsage";
   public static final String SVC_GET_CARGO_TOTAL = "GetCargoTotal";
   public static final String SVC_GET_ASSESSMENT_TOTALS = "GetAssessmentTotals";
-  public static final String SVC_GET_ASSESSMENT_REPORT = "GetAssessmentReport";
-  public static final String SVC_GET_MANAGERS_BY_DEPARTMENT = "GetManagersByDepartment";
+  public static final String SVC_GET_ASSESSMENT_QUANTITY_REPORT = "GetAssessmentQuantityReport";
+  public static final String SVC_GET_ASSESSMENT_TURNOVER_REPORT = "GetAssessmentTurnoverReport";
   public static final String SVC_CREATE_INVOICE_ITEMS = "CreateInvoiceItems";
   public static final String SVC_GET_IMPORT_MAPPINGS = "GetImportMappings";
   public static final String SVC_DO_IMPORT = "DoImport";
@@ -798,7 +798,8 @@ public final class TransportConstants {
   public static final String FORM_ASSESSMENT = "Assessment";
   public static final String FORM_ASSESSMENT_FORWARDER = "AssessmentForwarder";
   public static final String FORM_ASSESSMENT_TRANSPORTATION = "AssessmentTransportation";
-  public static final String FORM_ASSESSMENT_REPORTS = "AssessmentReports";
+  public static final String FORM_ASSESSMENT_QUANTITY_REPORT = "AssessmentQuantityReport";
+  public static final String FORM_ASSESSMENT_TURNOVER_REPORT = "AssessmentTurnoverReport";
 
   public static final String FORM_NEW_CARGO_INVOICE = "NewCargoInvoice";
   public static final String FORM_NEW_CARGO_PURCHASE_INVOICE = "NewCargoPurchaseInvoice";
@@ -893,6 +894,7 @@ public final class TransportConstants {
 
   public static final String AR_DEPARTMENT = "Department";
   public static final String AR_MANAGER = "Manager";
+  public static final String AR_CUSTOMER = "Customer";
 
   public static final String AR_RECEIVED = "Received";
   public static final String AR_ANSWERED = "Answered";

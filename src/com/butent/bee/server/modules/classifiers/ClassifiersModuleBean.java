@@ -533,37 +533,24 @@ public class ClassifiersModuleBean implements BeeModule {
                 || operator == Operator.GE && count > 1
                 || operator == Operator.GT && count > 0) {
 
-              String subAlias = "Sub" + SqlUtils.uniqueName();
-              String cntName = "Cnt" + SqlUtils.uniqueName();
-
-              String subField;
-
               subQuery = new SqlSelect();
 
               if (BeeUtils.isEmpty(relationsField)) {
-                subField = sourceField;
-
                 subQuery
                     .addFields(source, sourceField)
-                    .addCount(cntName)
                     .addFrom(source)
                     .setWhere(sourceWhere)
                     .addGroup(source, sourceField);
 
               } else if (BeeUtils.isEmpty(sourceField)) {
-                subField = COL_COMPANY;
-
                 subQuery
                     .addFields(TBL_RELATIONS, COL_COMPANY)
-                    .addCount(cntName)
                     .addFrom(TBL_RELATIONS)
                     .addFromInner(source, sys.joinTables(source, TBL_RELATIONS, relationsField))
                     .setWhere(relationsWhere)
                     .addGroup(TBL_RELATIONS, COL_COMPANY);
 
               } else {
-                subField = COL_COMPANY;
-
                 SqlSelect unionQuery = new SqlSelect()
                     .addField(source, sourceField, COL_COMPANY)
                     .addFrom(source)
@@ -579,7 +566,6 @@ public class ClassifiersModuleBean implements BeeModule {
 
                 subQuery
                     .addFields(unionAlias, COL_COMPANY)
-                    .addCount(cntName)
                     .addFrom(unionQuery, unionAlias)
                     .addGroup(unionAlias, COL_COMPANY);
               }
@@ -587,11 +573,7 @@ public class ClassifiersModuleBean implements BeeModule {
               IsExpression xpr = SqlUtils.aggregate(SqlFunction.COUNT, null);
               subQuery.setHaving(SqlUtils.compare(xpr, operator, SqlUtils.constant(count)));
 
-              SqlSelect inQuery = new SqlSelect()
-                  .addFields(subAlias, subField)
-                  .addFrom(subQuery, subAlias);
-
-              relConditions.add(SqlUtils.in(TBL_COMPANIES, idName, inQuery));
+              relConditions.add(SqlUtils.in(TBL_COMPANIES, idName, subQuery));
             }
 
             if (!relConditions.isEmpty()) {

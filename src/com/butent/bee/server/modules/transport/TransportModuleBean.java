@@ -221,10 +221,10 @@ public class TransportModuleBean implements BeeModule {
       response = getAssessmentTotals(BeeUtils.toLongOrNull(reqInfo.getParameter(COL_ASSESSMENT)),
           BeeUtils.toBoolean(reqInfo.getParameter("isPrimary")));
 
-    } else if (BeeUtils.same(svc, SVC_GET_ASSESSMENT_REPORT)) {
-      response = getAssessmentReport(reqInfo);
-    } else if (BeeUtils.same(svc, SVC_GET_MANAGERS_BY_DEPARTMENT)) {
-      response = getManagersByDepartment(reqInfo);
+    } else if (BeeUtils.same(svc, SVC_GET_ASSESSMENT_QUANTITY_REPORT)) {
+      response = getAssessmentQuantityReport(reqInfo);
+    } else if (BeeUtils.same(svc, SVC_GET_ASSESSMENT_TURNOVER_REPORT)) {
+//      response = getAssessmentTurnoverReport(reqInfo);
 
     } else if (BeeUtils.same(svc, SVC_CREATE_INVOICE_ITEMS)) {
       Long saleId = BeeUtils.toLongOrNull(reqInfo.getParameter(COL_SALE));
@@ -1188,7 +1188,7 @@ public class TransportModuleBean implements BeeModule {
         .setWhere(wh)));
   }
 
-  private ResponseObject getAssessmentReport(RequestInfo reqInfo) {
+  private ResponseObject getAssessmentQuantityReport(RequestInfo reqInfo) {
     Long startDate = BeeUtils.toLongOrNull(reqInfo.getParameter(Service.VAR_FROM));
     Long endDate = BeeUtils.toLongOrNull(reqInfo.getParameter(Service.VAR_TO));
 
@@ -1196,8 +1196,6 @@ public class TransportModuleBean implements BeeModule {
     Set<Long> managers = DataUtils.parseIdSet(reqInfo.getParameter(AR_MANAGER));
 
     List<String> groupBy = NameUtils.toList(reqInfo.getParameter(Service.VAR_GROUP_BY));
-
-    String departmetQueryAlias = SqlUtils.uniqueName();
 
     HasConditions where = SqlUtils.and(SqlUtils.notNull(TBL_ASSESSMENTS, COL_ASSESSMENT_STATUS));
 
@@ -1209,7 +1207,7 @@ public class TransportModuleBean implements BeeModule {
     }
 
     if (!departments.isEmpty()) {
-      where.add(SqlUtils.inList(departmetQueryAlias, COL_DEPARTMENT, departments));
+      where.add(SqlUtils.inList(TBL_ASSESSMENTS, COL_DEPARTMENT, departments));
     }
     if (!managers.isEmpty()) {
       where.add(SqlUtils.inList(TBL_USERS, COL_COMPANY_PERSON, managers));
@@ -1225,33 +1223,20 @@ public class TransportModuleBean implements BeeModule {
     }
 
     if (groupBy.contains(AR_DEPARTMENT)) {
-      query.addFields(departmetQueryAlias, COL_DEPARTMENT);
+      query.addFields(TBL_ASSESSMENTS, COL_DEPARTMENT);
     }
     if (groupBy.contains(AR_MANAGER)) {
       query.addFields(TBL_USERS, COL_COMPANY_PERSON);
     }
 
     query.addFrom(TBL_ASSESSMENTS);
-    if (!departments.isEmpty() || !managers.isEmpty() || !groupBy.isEmpty()) {
+    if (!managers.isEmpty() || groupBy.contains(AR_MANAGER) || groupBy.contains(BeeConst.MONTH)) {
       query.addFromInner(TBL_ORDER_CARGO,
           sys.joinTables(TBL_ORDER_CARGO, TBL_ASSESSMENTS, COL_CARGO));
       query.addFromInner(TBL_ORDERS, sys.joinTables(TBL_ORDERS, TBL_ORDER_CARGO, COL_ORDER));
 
-      if (!departments.isEmpty() || !managers.isEmpty()
-          || groupBy.contains(AR_DEPARTMENT) || groupBy.contains(AR_MANAGER)) {
+      if (!managers.isEmpty() || groupBy.contains(AR_MANAGER)) {
         query.addFromLeft(TBL_USERS, sys.joinTables(TBL_USERS, TBL_ORDERS, COL_ORDER_MANAGER));
-
-        if (!departments.isEmpty() || groupBy.contains(AR_DEPARTMENT)) {
-          SqlSelect departmentQuery = new SqlSelect()
-              .addFields(TBL_DEPARTMENT_EMPLOYEES, COL_COMPANY_PERSON)
-              .addMin(TBL_DEPARTMENT_EMPLOYEES, COL_DEPARTMENT)
-              .addFrom(TBL_DEPARTMENT_EMPLOYEES)
-              .addGroup(TBL_DEPARTMENT_EMPLOYEES, COL_COMPANY_PERSON);
-
-          query.addFromLeft(departmentQuery, departmetQueryAlias,
-              SqlUtils.join(departmetQueryAlias, COL_COMPANY_PERSON,
-                  TBL_USERS, COL_COMPANY_PERSON));
-        }
       }
     }
 
@@ -1379,6 +1364,9 @@ public class TransportModuleBean implements BeeModule {
     return ResponseObject.response(qs.getData(query));
   }
 
+//  private ResponseObject getAssessmentTurnoverReport(RequestInfo reqInfo) {
+//  }
+  
   /**
    * Return SqlSelect query, calculating cargo costs from CargoServices table.
    * 
@@ -2016,46 +2004,6 @@ public class TransportModuleBean implements BeeModule {
         .addOrder(TBL_IMPORT_MAPPINGS, COL_IMPORT_VALUE), sys.getView(TBL_IMPORT_MAPPINGS));
 
     return ResponseObject.response(rs);
-  }
-
-  private ResponseObject getManagersByDepartment(RequestInfo reqInfo) {
-    String input = reqInfo.getParameter(COL_DEPARTMENT);
-    if (BeeUtils.isEmpty(input)) {
-      return ResponseObject.parameterNotFound(reqInfo.getService(), COL_DEPARTMENT);
-    }
-
-    Set<Long> departments = DataUtils.parseIdSet(input);
-
-    SqlSelect departmentQuery = new SqlSelect()
-        .addFields(TBL_DEPARTMENT_EMPLOYEES, COL_COMPANY_PERSON)
-        .addMin(TBL_DEPARTMENT_EMPLOYEES, COL_DEPARTMENT)
-        .addFrom(TBL_DEPARTMENT_EMPLOYEES)
-        .addGroup(TBL_DEPARTMENT_EMPLOYEES, COL_COMPANY_PERSON);
-
-    String departmetQueryAlias = SqlUtils.uniqueName();
-
-    IsCondition where;
-    if (departments.isEmpty()) {
-      where = SqlUtils.isNull(departmetQueryAlias, COL_DEPARTMENT);
-    } else {
-      where = SqlUtils.inList(departmetQueryAlias, COL_DEPARTMENT, departments);
-    }
-
-    SqlSelect query = new SqlSelect().setDistinctMode(true)
-        .addFields(TBL_USERS, COL_COMPANY_PERSON)
-        .addFrom(TBL_ORDERS)
-        .addFromInner(TBL_USERS, sys.joinTables(TBL_USERS, TBL_ORDERS, COL_ORDER_MANAGER))
-        .addFromLeft(departmentQuery, departmetQueryAlias,
-            SqlUtils.join(departmetQueryAlias, COL_COMPANY_PERSON, TBL_USERS, COL_COMPANY_PERSON))
-        .setWhere(where);
-
-    SimpleRowSet data = qs.getData(query);
-
-    if (DataUtils.isEmpty(data)) {
-      return ResponseObject.emptyResponse();
-    } else {
-      return ResponseObject.response(DataUtils.buildIdList(data.getLongColumn(0)));
-    }
   }
 
   private BeeRowSet getSettings() {

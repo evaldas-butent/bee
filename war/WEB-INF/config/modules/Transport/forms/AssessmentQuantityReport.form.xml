@@ -2,7 +2,7 @@
 <f:Form xmlns="http://www.butent.com/widget"
   xmlns:f="http://www.butent.com/form"
   
-  name="AssessmentReports" caption="=trAssessmentReports"
+  name="AssessmentQuantityReport" caption="=trAssessmentQuantityReport"
   enabledActions="filter"
   >
   <FlowPanel>
@@ -43,7 +43,7 @@
             <item>=department</item>
             <item>=manager</item>
           </ListBox>
-          <ListBox name="Group1" style="margin-left: 5px; margin-right: 5px;">
+          <ListBox name="Group1" style="margin-left: 1em; margin-right: 1em;">
             <item>-</item>
             <item>=yearMonth</item>
             <item>=department</item>

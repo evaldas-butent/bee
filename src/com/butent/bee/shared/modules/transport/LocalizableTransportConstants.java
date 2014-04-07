@@ -144,6 +144,8 @@ public interface LocalizableTransportConstants {
   
   String trAssessmentReportApprovedToAnswered();
   
+  String trAssessmentReportGrowth();
+
   String trAssessmentReportLost();
   
   String trAssessmentReportPercent();

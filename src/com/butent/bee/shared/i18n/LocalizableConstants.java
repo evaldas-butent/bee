@@ -401,6 +401,8 @@ public interface LocalizableConstants extends Constants, LocalizableCalendarCons
 
   String manager();
 
+  String margin();
+
   String maxValue();
 
   String message();

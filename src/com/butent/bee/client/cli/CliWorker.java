@@ -360,6 +360,9 @@ public final class CliWorker {
     } else if ("files".equals(z) || z.startsWith("repo")) {
       getFiles();
 
+    } else if (z.startsWith("filt")) {
+      showExtData("Filters", Global.getFilters().getExtendedInfo());
+
     } else if (z.startsWith("flag")) {
       showFlags(arr);
 

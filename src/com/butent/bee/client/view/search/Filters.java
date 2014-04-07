@@ -27,6 +27,8 @@ import com.butent.bee.client.widget.Image;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.BiConsumer;
+import com.butent.bee.shared.HasExtendedInfo;
+import com.butent.bee.shared.HasInfo;
 import com.butent.bee.shared.data.BeeColumn;
 import com.butent.bee.shared.data.BeeRow;
 import com.butent.bee.shared.data.BeeRowSet;
@@ -40,12 +42,16 @@ import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogUtils;
 import com.butent.bee.shared.ui.Action;
 import com.butent.bee.shared.utils.BeeUtils;
+import com.butent.bee.shared.utils.ExtendedProperty;
+import com.butent.bee.shared.utils.Property;
+import com.butent.bee.shared.utils.PropertyUtils;
 
 import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 
-public class Filters {
+public class Filters implements HasExtendedInfo {
 
   private static final class Initial extends CustomDiv {
 
@@ -72,7 +78,7 @@ public class Filters {
     }
   }
 
-  private static final class Item {
+  private static final class Item implements HasInfo {
 
     private long id;
 
@@ -93,6 +99,17 @@ public class Filters {
       return (obj instanceof Item) ? getId() == ((Item) obj).getId() : false;
     }
 
+    @Override
+    public List<Property> getInfo() {
+      List<Property> info = PropertyUtils.createProperties("Id", getId(),
+          "Ordinal", getOrdinal(), "Predefined", isPredefined());
+      
+      if (filterDescription != null) {
+        info.addAll(filterDescription.getInfo());
+      }
+      return info;
+    }
+    
     @Override
     public int hashCode() {
       return Longs.hashCode(getId());
@@ -179,20 +196,85 @@ public class Filters {
   private static final String STYLE_EDIT = STYLE_PREFIX + "edit";
   private static final String STYLE_DELETE = STYLE_PREFIX + "delete";
 
-  private final Multimap<String, Item> itemsByKey = ArrayListMultimap.create();
+  private static Item getItem(Collection<Item> items, long id) {
+    for (Item item : items) {
+      if (item.getId() == id) {
+        return item;
+      }
+    }
+    return null;
+  }
 
+  private static void insert(String key, FilterDescription filterDescription, int ordinal,
+      boolean predefined, RowCallback callback) {
+
+    List<BeeColumn> columns =
+        Data.getColumns(VIEW_FILTERS,
+            Lists.newArrayList(COL_FILTER_USER, COL_FILTER_KEY,
+                COL_NAME, COL_LABEL, COL_VALUE, COL_FILTER_ORDINAL));
+
+    List<String> values = Queries.asList(BeeKeeper.getUser().getUserId(), key,
+        filterDescription.getName(), filterDescription.getLabel(),
+        filterDescription.serializeComponents(), ordinal);
+
+    if (filterDescription.isInitial()) {
+      columns.add(Data.getColumn(VIEW_FILTERS, COL_INITIAL));
+      values.add(BooleanValue.pack(filterDescription.isInitial()));
+    }
+
+    if (filterDescription.isEditable()) {
+      columns.add(Data.getColumn(VIEW_FILTERS, COL_EDITABLE));
+      values.add(BooleanValue.pack(filterDescription.isEditable()));
+    }
+    if (filterDescription.isRemovable()) {
+      columns.add(Data.getColumn(VIEW_FILTERS, COL_REMOVABLE));
+      values.add(BooleanValue.pack(filterDescription.isRemovable()));
+    }
+
+    if (predefined) {
+      columns.add(Data.getColumn(VIEW_FILTERS, COL_PREDEFINED));
+      values.add(BooleanValue.pack(predefined));
+    }
+
+    Queries.insert(VIEW_FILTERS, columns, values, null, callback);
+  }
+
+  private static void synchronizeInitialFilters(List<Item> items, Item checkedItem,
+      HtmlTable table) {
+    Set<String> checkedKeys = Sets.newHashSet();
+    for (FilterComponent component : checkedItem.getComponents()) {
+      checkedKeys.add(component.getName());
+    }
+
+    for (Item item : items) {
+      if (item.id != checkedItem.id && item.isInitial() && item.containsAnyComponent(checkedKeys)) {
+        item.setInitial(null);
+        Queries.update(VIEW_FILTERS, item.id, COL_INITIAL, new BooleanValue(null));
+
+        for (Widget widget : table) {
+          if (widget instanceof Initial && ((Initial) widget).id == item.id) {
+            ((Initial) widget).toggle();
+            break;
+          }
+        }
+      }
+    }
+  }
+
+  private final Multimap<String, Item> itemsByKey = ArrayListMultimap.create();
   private int maxLabelLength = BeeConst.UNDEF;
 
   private int keyColumnIndex = BeeConst.UNDEF;
-
   private int nameColumnIndex;
-  private int labelColumnIndex;
 
+  private int labelColumnIndex;
   private int initialColumnIndex;
   private int ordinalColumnIndex;
 
   private int editableColumnIndex;
+
   private int removableColumnIndex;
+
   private int predefinedColumnIndex;
 
   private int valueColumnIndex;
@@ -397,6 +479,7 @@ public class Filters {
   public void ensurePredefinedFilters(final String key, List<FilterDescription> filters) {
     if (!BeeUtils.isEmpty(key) && !BeeUtils.isEmpty(filters) && !itemsByKey.containsKey(key)) {
       List<FilterDescription> predefinedFilters = Lists.newArrayList(filters);
+      ensureIndexes();
 
       for (int i = 0; i < predefinedFilters.size(); i++) {
         FilterDescription filterDescription = predefinedFilters.get(i).copy();
@@ -418,6 +501,36 @@ public class Filters {
     }
   }
 
+  @Override
+  public List<ExtendedProperty> getExtendedInfo() {
+    List<ExtendedProperty> info = Lists.newArrayList();
+    info.add(new ExtendedProperty("keys", BeeUtils.bracket(itemsByKey.keySet().size())));
+    if (itemsByKey.isEmpty()) {
+      return info;
+    }
+    
+    List<String> keys = Lists.newArrayList(itemsByKey.keySet());
+    if (keys.size() > 1) {
+      Collections.sort(keys);
+    }
+    
+    for (int i = 0; i < keys.size(); i++) {
+      String key = keys.get(i);
+      String prefix = BeeUtils.joinWords(BeeUtils.progress(i + 1, keys.size()), key);
+
+      Collection<Item> items = itemsByKey.get(key);
+      info.add(new ExtendedProperty(prefix, "items", BeeUtils.bracket(items.size())));
+      
+      int j = 0;
+      for (Item item : items) {
+        String root = BeeUtils.joinWords(prefix, BeeUtils.progress(++j, items.size()));
+        PropertyUtils.appendChildrenToExtended(info, root, item.getInfo());
+      }
+    }
+    
+    return info;
+  }
+
   public List<FilterComponent> getInitialValues(String key) {
     List<FilterComponent> initialValues = Lists.newArrayList();
 
@@ -431,7 +544,7 @@ public class Filters {
 
     return initialValues;
   }
-
+  
   public void load(String serialized) {
     Assert.notEmpty(serialized);
 
@@ -464,9 +577,11 @@ public class Filters {
   }
 
   private Item createItem(BeeRow row) {
-    if (row == null || BeeConst.isUndef(keyColumnIndex)) {
+    if (row == null) {
       return null;
     }
+    
+    ensureIndexes();
 
     String name = BeeUtils.trim(row.getString(nameColumnIndex));
     String label = BeeUtils.trim(row.getString(labelColumnIndex));
@@ -486,13 +601,22 @@ public class Filters {
         BeeUtils.unbox(ordinal), predefined);
   }
 
-  private static Item getItem(Collection<Item> items, long id) {
-    for (Item item : items) {
-      if (item.getId() == id) {
-        return item;
-      }
+  private void ensureIndexes() {
+    if (BeeConst.isUndef(keyColumnIndex)) {
+      keyColumnIndex = Data.getColumnIndex(VIEW_FILTERS, COL_FILTER_KEY);
+
+      nameColumnIndex = Data.getColumnIndex(VIEW_FILTERS, COL_NAME);
+      labelColumnIndex = Data.getColumnIndex(VIEW_FILTERS, COL_LABEL);
+
+      initialColumnIndex = Data.getColumnIndex(VIEW_FILTERS, COL_INITIAL);
+      ordinalColumnIndex = Data.getColumnIndex(VIEW_FILTERS, COL_FILTER_ORDINAL);
+
+      editableColumnIndex = Data.getColumnIndex(VIEW_FILTERS, COL_EDITABLE);
+      removableColumnIndex = Data.getColumnIndex(VIEW_FILTERS, COL_REMOVABLE);
+      predefinedColumnIndex = Data.getColumnIndex(VIEW_FILTERS, COL_PREDEFINED);
+
+      valueColumnIndex = Data.getColumnIndex(VIEW_FILTERS, COL_VALUE);
     }
-    return null;
   }
 
   private List<Item> getItems(String key) {
@@ -512,63 +636,7 @@ public class Filters {
     return maxLabelLength;
   }
 
-  private static void insert(String key, FilterDescription filterDescription, int ordinal,
-      boolean predefined, RowCallback callback) {
-
-    List<BeeColumn> columns =
-        Data.getColumns(VIEW_FILTERS,
-            Lists.newArrayList(COL_FILTER_USER, COL_FILTER_KEY,
-                COL_NAME, COL_LABEL, COL_VALUE, COL_FILTER_ORDINAL));
-
-    List<String> values = Queries.asList(BeeKeeper.getUser().getUserId(), key,
-        filterDescription.getName(), filterDescription.getLabel(),
-        filterDescription.serializeComponents(), ordinal);
-
-    if (filterDescription.isInitial()) {
-      columns.add(Data.getColumn(VIEW_FILTERS, COL_INITIAL));
-      values.add(BooleanValue.pack(filterDescription.isInitial()));
-    }
-
-    if (filterDescription.isEditable()) {
-      columns.add(Data.getColumn(VIEW_FILTERS, COL_EDITABLE));
-      values.add(BooleanValue.pack(filterDescription.isEditable()));
-    }
-    if (filterDescription.isRemovable()) {
-      columns.add(Data.getColumn(VIEW_FILTERS, COL_REMOVABLE));
-      values.add(BooleanValue.pack(filterDescription.isRemovable()));
-    }
-
-    if (predefined) {
-      columns.add(Data.getColumn(VIEW_FILTERS, COL_PREDEFINED));
-      values.add(BooleanValue.pack(predefined));
-    }
-
-    Queries.insert(VIEW_FILTERS, columns, values, null, callback);
-  }
-
   private String normalizeLabel(String label) {
     return BeeUtils.left(BeeUtils.trim(label), getMaxLabelLength());
-  }
-
-  private static void synchronizeInitialFilters(List<Item> items, Item checkedItem,
-      HtmlTable table) {
-    Set<String> checkedKeys = Sets.newHashSet();
-    for (FilterComponent component : checkedItem.getComponents()) {
-      checkedKeys.add(component.getName());
-    }
-
-    for (Item item : items) {
-      if (item.id != checkedItem.id && item.isInitial() && item.containsAnyComponent(checkedKeys)) {
-        item.setInitial(null);
-        Queries.update(VIEW_FILTERS, item.id, COL_INITIAL, new BooleanValue(null));
-
-        for (Widget widget : table) {
-          if (widget instanceof Initial && ((Initial) widget).id == item.id) {
-            ((Initial) widget).toggle();
-            break;
-          }
-        }
-      }
-    }
   }
 }
