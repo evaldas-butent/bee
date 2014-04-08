@@ -903,6 +903,11 @@ public final class TransportConstants {
 
   public static final String AR_SECONDARY = "Secondary";
 
+  public static final String AR_INCOME = "Income";
+  public static final String AR_EXPENSE = "Expense";
+  public static final String AR_SECONDARY_INCOME = "SecondaryIncome";
+  public static final String AR_SECONDARY_EXPENSE = "SecondaryExpense";
+  
   public static final String STYLE_SHEET = "transport";
 
   public static String defaultLoadingColumnAlias(String colName) {

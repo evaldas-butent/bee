@@ -13,6 +13,7 @@ import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.communication.ParameterList;
 import com.butent.bee.client.communication.ResponseCallback;
 import com.butent.bee.client.composite.MultiSelector;
+import com.butent.bee.client.composite.UnboundSelector;
 import com.butent.bee.client.dom.DomUtils;
 import com.butent.bee.client.event.EventUtils;
 import com.butent.bee.client.grid.HtmlTable;
@@ -39,7 +40,6 @@ import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogUtils;
 import com.butent.bee.shared.modules.administration.AdministrationConstants;
 import com.butent.bee.shared.modules.classifiers.ClassifierConstants;
-import com.butent.bee.shared.modules.transport.TransportConstants.AssessmentStatus;
 import com.butent.bee.shared.time.DateTime;
 import com.butent.bee.shared.time.TimeUtils;
 import com.butent.bee.shared.time.YearMonth;
@@ -55,6 +55,8 @@ public class AssessmentTurnoverReport extends ReportInterceptor {
 
   private static final String NAME_START_DATE = "StartDate";
   private static final String NAME_END_DATE = "EndDate";
+
+  private static final String NAME_CURRENCY = "Currency";
 
   private static final String NAME_DEPARTMENTS = "Departments";
   private static final String NAME_MANAGERS = "Managers";
@@ -74,20 +76,35 @@ public class AssessmentTurnoverReport extends ReportInterceptor {
   private static final String STYLE_MONTH = STYLE_PREFIX + "month";
   private static final String STYLE_DEPARTMENT = STYLE_PREFIX + "department";
   private static final String STYLE_MANAGER = STYLE_PREFIX + "manager";
+  private static final String STYLE_CUSTOMER = STYLE_PREFIX + "customer";
 
   private static final String STYLE_QUANTITY = STYLE_PREFIX + "quantity";
-  private static final String STYLE_PERCENT = STYLE_PREFIX + "percent";
+  private static final String STYLE_INCOME = STYLE_PREFIX + "income";
+  private static final String STYLE_EXPENSE = STYLE_PREFIX + "expense";
+  private static final String STYLE_PROFIT = STYLE_PREFIX + "profit";
+  private static final String STYLE_MARGIN = STYLE_PREFIX + "margin";
 
-  private static final String STYLE_RECEIVED = STYLE_PREFIX + "received";
-  private static final String STYLE_ANSWERED = STYLE_PREFIX + "answered";
-  private static final String STYLE_LOST = STYLE_PREFIX + "lost";
-  private static final String STYLE_APPROVED = STYLE_PREFIX + "approved";
+  private static final String STYLE_AMOUNT = STYLE_PREFIX + "amount";
+  // private static final String STYLE_GROWTH = STYLE_PREFIX + "growth";
+
   private static final String STYLE_SECONDARY = STYLE_PREFIX + "secondary";
 
   private static final String STYLE_DETAILS = STYLE_PREFIX + "details";
   private static final String STYLE_SUMMARY = STYLE_PREFIX + "summary";
 
   private static final String DRILL_DOWN_GRID_NAME = "AssessmentReportDrillDown";
+
+  private static double margin(Double profit, Double income) {
+    if (BeeUtils.isDouble(profit) && BeeUtils.isDouble(income) && !BeeUtils.isZero(income)) {
+      return profit * 100d / income;
+    } else {
+      return BeeConst.DOUBLE_ZERO;
+    }
+  }
+
+  private static double profit(Double income, Double expense) {
+    return BeeUtils.unbox(income) - BeeUtils.unbox(expense);
+  }
 
   AssessmentTurnoverReport() {
   }
@@ -114,6 +131,12 @@ public class AssessmentTurnoverReport extends ReportInterceptor {
     dateTime = BeeKeeper.getStorage().getDateTime(storageKey(NAME_END_DATE, user));
     if (widget instanceof InputDateTime && dateTime != null) {
       ((InputDateTime) widget).setDateTime(dateTime);
+    }
+
+    widget = form.getWidgetByName(NAME_CURRENCY);
+    Long currency = BeeKeeper.getStorage().getLong(storageKey(NAME_CURRENCY, user));
+    if (widget instanceof UnboundSelector && DataUtils.isId(currency)) {
+      ((UnboundSelector) widget).setValue(currency, false);
     }
 
     List<String> selectorNames = Lists.newArrayList(NAME_DEPARTMENTS, NAME_MANAGERS,
@@ -144,6 +167,8 @@ public class AssessmentTurnoverReport extends ReportInterceptor {
 
     BeeKeeper.getStorage().set(storageKey(NAME_START_DATE, user), getDateTime(NAME_START_DATE));
     BeeKeeper.getStorage().set(storageKey(NAME_END_DATE, user), getDateTime(NAME_END_DATE));
+
+    BeeKeeper.getStorage().set(storageKey(NAME_CURRENCY, user), getEditorValue(NAME_CURRENCY));
 
     BeeKeeper.getStorage().set(storageKey(NAME_DEPARTMENTS, user),
         getEditorValue(NAME_DEPARTMENTS));
@@ -191,6 +216,11 @@ public class AssessmentTurnoverReport extends ReportInterceptor {
     }
     if (end != null) {
       params.addDataItem(Service.VAR_TO, end.getTime());
+    }
+
+    Long currency = BeeUtils.toLongOrNull(getEditorValue(NAME_CURRENCY));
+    if (DataUtils.isId(currency)) {
+      params.addDataItem(AdministrationConstants.COL_CURRENCY, currency);
     }
 
     String departments = getEditorValue(NAME_DEPARTMENTS);
@@ -283,11 +313,19 @@ public class AssessmentTurnoverReport extends ReportInterceptor {
     int colMonth = BeeConst.UNDEF;
     int colDepartment = BeeConst.UNDEF;
     int colManager = BeeConst.UNDEF;
-    int colReceived = BeeConst.UNDEF;
-    int colAnswered = BeeConst.UNDEF;
-    int colLost = BeeConst.UNDEF;
-    int colApproved = BeeConst.UNDEF;
+    int colCustomer = BeeConst.UNDEF;
+
+    int colQuantity = BeeConst.UNDEF;
+    int colIncome1 = BeeConst.UNDEF;
+    int colExpense1 = BeeConst.UNDEF;
+    int colProfit1 = BeeConst.UNDEF;
+    int colMargin1 = BeeConst.UNDEF;
+
     int colSecondary = BeeConst.UNDEF;
+    int colIncome2 = BeeConst.UNDEF;
+    int colExpense2 = BeeConst.UNDEF;
+    int colProfit2 = BeeConst.UNDEF;
+    int colMargin2 = BeeConst.UNDEF;
 
     for (int j = 0; j < data.getNumberOfColumns(); j++) {
       String colName = data.getColumnName(j);
@@ -340,85 +378,82 @@ public class AssessmentTurnoverReport extends ReportInterceptor {
         case ClassifierConstants.COL_LAST_NAME:
           break;
 
-        case AR_RECEIVED:
-          colReceived = col;
+        case COL_CUSTOMER:
+          colCustomer = col;
 
-          table.setText(row, c1, Localized.getConstants().trAssessmentReportReceived(),
-              STYLE_HEADER);
+          table.setText(row, c1, Localized.getConstants().customer(), STYLE_HEADER);
           table.getCellFormatter().setRowSpan(row, c1, 2);
 
           c1++;
           col++;
           break;
 
-        case AR_ANSWERED:
-          colAnswered = col;
-
-          table.setText(row, c1, Localized.getConstants().trAssessmentReportAnswered(),
-              STYLE_HEADER_1);
-          table.getCellFormatter().setColSpan(row, c1, 2);
-
-          table.setText(row + 1, c2, Localized.getConstants().trAssessmentReportQuantity(),
-              STYLE_HEADER_2);
-          table.setText(row + 1, c2 + 1, Localized.getConstants().trAssessmentReportPercent(),
-              STYLE_HEADER_2);
-
-          c1++;
-          c2 += 2;
-          col += 2;
+        case ClassifierConstants.ALS_COMPANY_NAME:
           break;
 
-        case AR_LOST:
-          colLost = col;
-
-          table.setText(row, c1, Localized.getConstants().trAssessmentReportLost(),
-              STYLE_HEADER_1);
-          table.getCellFormatter().setColSpan(row, c1, 2);
-
-          table.setText(row + 1, c2, Localized.getConstants().trAssessmentReportQuantity(),
-              STYLE_HEADER_2);
-          table.setText(row + 1, c2 + 1, Localized.getConstants().trAssessmentReportPercent(),
-              STYLE_HEADER_2);
-
-          c1++;
-          c2 += 2;
-          col += 2;
-          break;
-
-        case AR_APPROVED:
-          colApproved = col;
-
-          table.setText(row, c1, Localized.getConstants().trAssessmentReportApproved(),
-              STYLE_HEADER_1);
-          table.getCellFormatter().setColSpan(row, c1, 3);
-
-          table.setText(row + 1, c2, Localized.getConstants().trAssessmentReportQuantity(),
-              STYLE_HEADER_2);
-          table.setText(row + 1, c2 + 1,
-              Localized.getConstants().trAssessmentReportApprovedToReceived(), STYLE_HEADER_2);
-          table.setText(row + 1, c2 + 2,
-              Localized.getConstants().trAssessmentReportApprovedToAnswered(), STYLE_HEADER_2);
-
-          c1++;
-          c2 += 3;
-          col += 3;
-          break;
-
+        case AR_RECEIVED:
         case AR_SECONDARY:
-          colSecondary = col;
+          String partLabel;
+          if (colName.equals(AR_RECEIVED)) {
+            colQuantity = col;
+            partLabel = Localized.getConstants().trAssessmentReportAllOrders();
+          } else {
+            colSecondary = col;
+            partLabel = Localized.getConstants().trAssessmentReportSecondary();
+          }
 
-          table.setText(row, c1, Localized.getConstants().trAssessmentReportSecondary(),
-              STYLE_HEADER_1);
-          table.getCellFormatter().setColSpan(row, c1, 2);
+          table.setText(row, c1, partLabel, STYLE_HEADER_1);
+          table.getCellFormatter().setColSpan(row, c1, 9);
 
-          table.setText(row + 1, c2, Localized.getConstants().trAssessmentReportQuantity(),
-              STYLE_HEADER_2);
-          table.setText(row + 1, c2 + 1, Localized.getConstants().trAssessmentReportPercent(),
+          table.setText(row + 1, c2, Localized.getConstants().quantity(), STYLE_HEADER_2);
+          table.setText(row + 1, c2 + 1, Localized.getConstants().trAssessmentReportGrowth(),
               STYLE_HEADER_2);
 
           c1++;
           c2 += 2;
-          col += 3;
+          col += 2;
+          break;
+
+        case AR_INCOME:
+        case AR_SECONDARY_INCOME:
+          if (colName.equals(AR_INCOME)) {
+            colIncome1 = col;
+          } else {
+            colIncome2 = col;
+          }
+
+          table.setText(row + 1, c2, Localized.getConstants().income(), STYLE_HEADER_2);
+          table.setText(row + 1, c2 + 1, Localized.getConstants().trAssessmentReportGrowth(),
+              STYLE_HEADER_2);
+
+          c2 += 2;
+          col += 2;
+          break;
+
+        case AR_EXPENSE:
+        case AR_SECONDARY_EXPENSE:
+          if (colName.equals(AR_EXPENSE)) {
+            colExpense1 = col;
+            colProfit1 = col + 2;
+            colMargin1 = col + 4;
+          } else {
+            colExpense2 = col;
+            colProfit2 = col + 2;
+            colMargin2 = col + 4;
+          }
+
+          table.setText(row + 1, c2, Localized.getConstants().trExpenses(), STYLE_HEADER_2);
+          table.setText(row + 1, c2 + 1, Localized.getConstants().trAssessmentReportGrowth(),
+              STYLE_HEADER_2);
+
+          table.setText(row + 1, c2 + 2, Localized.getConstants().profit(), STYLE_HEADER_2);
+          table.setText(row + 1, c2 + 3, Localized.getConstants().trAssessmentReportGrowth(),
+              STYLE_HEADER_2);
+
+          table.setText(row + 1, c2 + 4, Localized.getConstants().margin(), STYLE_HEADER_2);
+
+          c2 += 5;
+          col += 5;
           break;
 
         default:
@@ -426,20 +461,30 @@ public class AssessmentTurnoverReport extends ReportInterceptor {
       }
     }
 
-    int totReceived = 0;
-    int totAnswered = 0;
-    int totLost = 0;
-    int totApproved = 0;
+    int totQuantity = 0;
+    double totIncome1 = BeeConst.DOUBLE_ZERO;
+    double totExpense1 = BeeConst.DOUBLE_ZERO;
+
     int totSecondary = 0;
+    double totIncome2 = BeeConst.DOUBLE_ZERO;
+    double totExpense2 = BeeConst.DOUBLE_ZERO;
 
     row = 2;
 
     for (int i = 0; i < data.getNumberOfRows(); i++) {
-      int received = BeeUtils.unbox(data.getInt(i, AR_RECEIVED));
-      int answered = BeeUtils.unbox(data.getInt(i, AR_ANSWERED));
-      int lost = BeeUtils.unbox(data.getInt(i, AR_LOST));
-      int approved = BeeUtils.unbox(data.getInt(i, AR_APPROVED));
+      int quantity = BeeUtils.unbox(data.getInt(i, AR_RECEIVED));
+      Double income1 = data.getDouble(i, AR_INCOME);
+      Double expense1 = data.getDouble(i, AR_EXPENSE);
+
+      double profit1 = profit(income1, expense1);
+      double margin1 = margin(profit1, income1);
+
       int secondary = BeeUtils.unbox(data.getInt(i, AR_SECONDARY));
+      Double income2 = data.getDouble(i, AR_SECONDARY_INCOME);
+      Double expense2 = data.getDouble(i, AR_SECONDARY_EXPENSE);
+
+      double profit2 = profit(income2, expense2);
+      double margin2 = margin(profit2, income2);
 
       for (int j = 0; j < data.getNumberOfColumns(); j++) {
         String colName = data.getColumnName(j);
@@ -463,48 +508,60 @@ public class AssessmentTurnoverReport extends ReportInterceptor {
                 data.getValue(i, ClassifierConstants.COL_LAST_NAME)), STYLE_MANAGER);
             break;
 
+          case ClassifierConstants.ALS_COMPANY_NAME:
+            table.setText(row, colCustomer, data.getValue(i, colName), STYLE_CUSTOMER);
+            break;
+
           case AR_RECEIVED:
-            table.setText(row, colReceived, renderQuantity(received),
-                STYLE_RECEIVED, STYLE_QUANTITY);
+            table.setText(row, colQuantity, renderQuantity(quantity), STYLE_QUANTITY);
             break;
 
-          case AR_ANSWERED:
-            table.setText(row, colAnswered, renderQuantity(answered),
-                STYLE_ANSWERED, STYLE_QUANTITY);
-            table.setText(row, colAnswered + 1, renderPercent(answered, received),
-                STYLE_ANSWERED, STYLE_PERCENT);
+          case AR_INCOME:
+            table.setText(row, colIncome1, renderAmount(income1), STYLE_INCOME, STYLE_AMOUNT);
             break;
 
-          case AR_LOST:
-            table.setText(row, colLost, renderQuantity(lost), STYLE_LOST, STYLE_QUANTITY);
-            table.setText(row, colLost + 1, renderPercent(lost, received),
-                STYLE_LOST, STYLE_PERCENT);
-            break;
+          case AR_EXPENSE:
+            table.setText(row, colExpense1, renderAmount(expense1), STYLE_EXPENSE, STYLE_AMOUNT);
 
-          case AR_APPROVED:
-            table.setText(row, colApproved, renderQuantity(approved),
-                STYLE_APPROVED, STYLE_QUANTITY);
-
-            table.setText(row, colApproved + 1, renderPercent(approved, received),
-                STYLE_APPROVED, STYLE_PERCENT);
-            table.setText(row, colApproved + 2, renderPercent(approved, answered + approved),
-                STYLE_APPROVED, STYLE_PERCENT);
+            table.setText(row, colProfit1, renderAmount(profit1), STYLE_PROFIT, STYLE_AMOUNT);
+            table.setText(row, colMargin1, renderPercent(margin1), STYLE_MARGIN, STYLE_AMOUNT);
             break;
 
           case AR_SECONDARY:
             table.setText(row, colSecondary, renderQuantity(secondary),
                 STYLE_SECONDARY, STYLE_QUANTITY);
-            table.setText(row, colSecondary + 1, renderPercent(secondary, received),
-                STYLE_SECONDARY, STYLE_PERCENT);
+            break;
+
+          case AR_SECONDARY_INCOME:
+            table.setText(row, colIncome2, renderAmount(income2), STYLE_INCOME, STYLE_AMOUNT);
+            break;
+
+          case AR_SECONDARY_EXPENSE:
+            table.setText(row, colExpense2, renderAmount(expense2), STYLE_EXPENSE, STYLE_AMOUNT);
+
+            table.setText(row, colProfit2, renderAmount(profit2), STYLE_PROFIT, STYLE_AMOUNT);
+            table.setText(row, colMargin2, renderPercent(margin2), STYLE_MARGIN, STYLE_AMOUNT);
             break;
         }
       }
 
-      totReceived += received;
-      totAnswered += answered;
-      totLost += lost;
-      totApproved += approved;
+      totQuantity += quantity;
+
+      if (BeeUtils.isDouble(income1)) {
+        totIncome1 += income1;
+      }
+      if (BeeUtils.isDouble(expense1)) {
+        totExpense1 += expense1;
+      }
+
       totSecondary += secondary;
+
+      if (BeeUtils.isDouble(income2)) {
+        totIncome2 += income2;
+      }
+      if (BeeUtils.isDouble(expense2)) {
+        totExpense2 += expense2;
+      }
 
       table.getRowFormatter().addStyleName(row, STYLE_DETAILS);
       DomUtils.setDataIndex(table.getRow(row), i);
@@ -513,30 +570,28 @@ public class AssessmentTurnoverReport extends ReportInterceptor {
     }
 
     if (data.getNumberOfRows() > 1) {
-      table.setText(row, colReceived, renderQuantity(totReceived),
-          STYLE_RECEIVED, STYLE_QUANTITY);
+      table.setText(row, colQuantity, renderQuantity(totQuantity), STYLE_QUANTITY);
 
-      table.setText(row, colAnswered, renderQuantity(totAnswered),
-          STYLE_ANSWERED, STYLE_QUANTITY);
-      table.setText(row, colAnswered + 1, renderPercent(totAnswered, totReceived),
-          STYLE_ANSWERED, STYLE_PERCENT);
+      table.setText(row, colIncome1, renderAmount(totIncome1), STYLE_INCOME, STYLE_AMOUNT);
+      table.setText(row, colExpense1, renderAmount(totExpense1), STYLE_EXPENSE, STYLE_AMOUNT);
 
-      table.setText(row, colLost, renderQuantity(totLost), STYLE_LOST, STYLE_QUANTITY);
-      table.setText(row, colLost + 1, renderPercent(totLost, totReceived),
-          STYLE_LOST, STYLE_PERCENT);
+      double profit = profit(totIncome1, totExpense1);
+      double margin = margin(profit, totIncome1);
 
-      table.setText(row, colApproved, renderQuantity(totApproved),
-          STYLE_APPROVED, STYLE_QUANTITY);
-
-      table.setText(row, colApproved + 1, renderPercent(totApproved, totReceived),
-          STYLE_APPROVED, STYLE_PERCENT);
-      table.setText(row, colApproved + 2, renderPercent(totApproved, totAnswered + totApproved),
-          STYLE_APPROVED, STYLE_PERCENT);
+      table.setText(row, colProfit1, renderAmount(profit), STYLE_PROFIT, STYLE_AMOUNT);
+      table.setText(row, colMargin1, renderPercent(margin), STYLE_MARGIN, STYLE_AMOUNT);
 
       table.setText(row, colSecondary, renderQuantity(totSecondary),
           STYLE_SECONDARY, STYLE_QUANTITY);
-      table.setText(row, colSecondary + 1, renderPercent(totSecondary, totReceived),
-          STYLE_SECONDARY, STYLE_PERCENT);
+
+      table.setText(row, colIncome2, renderAmount(totIncome2), STYLE_INCOME, STYLE_AMOUNT);
+      table.setText(row, colExpense2, renderAmount(totExpense2), STYLE_EXPENSE, STYLE_AMOUNT);
+
+      profit = profit(totIncome2, totExpense2);
+      margin = margin(profit, totIncome2);
+
+      table.setText(row, colProfit2, renderAmount(profit), STYLE_PROFIT, STYLE_AMOUNT);
+      table.setText(row, colMargin2, renderPercent(margin), STYLE_MARGIN, STYLE_AMOUNT);
 
       table.getRowFormatter().addStyleName(row, STYLE_SUMMARY);
     }
@@ -550,7 +605,6 @@ public class AssessmentTurnoverReport extends ReportInterceptor {
 
         if (cellElement != null
             && !BeeUtils.isEmpty(cellElement.getInnerText())
-            && (cellElement.hasClassName(STYLE_QUANTITY) || cellElement.hasClassName(STYLE_PERCENT))
             && rowElement != null && rowElement.hasClassName(STYLE_DETAILS)) {
 
           int dataIndex = DomUtils.getDataIndexInt(rowElement);
@@ -568,6 +622,8 @@ public class AssessmentTurnoverReport extends ReportInterceptor {
 
   private void showDetails(SimpleRow dataRow, TableCellElement cellElement, boolean modal) {
     CompoundFilter filter = Filter.and();
+    filter.add(Filter.isEqual(ALS_ORDER_STATUS, new IntegerValue(OrderStatus.COMPLETED.ordinal())));
+
     List<String> captions = Lists.newArrayList();
 
     String[] colNames = dataRow.getColumnNames();
@@ -641,29 +697,24 @@ public class AssessmentTurnoverReport extends ReportInterceptor {
       }
     }
 
-    AssessmentStatus status = null;
+    if (ArrayUtils.contains(colNames, COL_CUSTOMER)) {
+      Long customer = dataRow.getLong(COL_CUSTOMER);
+      if (DataUtils.isId(customer)) {
+        filter.add(Filter.equals(COL_CUSTOMER, customer));
+        captions.add(dataRow.getValue(ClassifierConstants.ALS_COMPANY_NAME));
+      }
 
-    if (cellElement.hasClassName(STYLE_ANSWERED)) {
-      status = AssessmentStatus.ANSWERED;
-      captions.add(Localized.getConstants().trAssessmentReportAnswered());
-
-    } else if (cellElement.hasClassName(STYLE_LOST)) {
-      status = AssessmentStatus.LOST;
-      captions.add(Localized.getConstants().trAssessmentReportLost());
-
-    } else if (cellElement.hasClassName(STYLE_APPROVED)) {
-      status = AssessmentStatus.APPROVED;
-      captions.add(Localized.getConstants().trAssessmentReportApproved());
-
-    } else if (cellElement.hasClassName(STYLE_SECONDARY)) {
-      filter.add(Filter.notNull(COL_ASSESSMENT));
-      captions.add(Localized.getConstants().trAssessmentReportSecondary());
+    } else {
+      String customers = getEditorValue(NAME_CUSTOMERS);
+      if (!BeeUtils.isEmpty(customers)) {
+        filter.add(Filter.any(COL_CUSTOMER, DataUtils.parseIdSet(customers)));
+        captions.add(getFilterLabel(NAME_CUSTOMERS));
+      }
     }
 
-    if (status == null) {
-      filter.add(Filter.notNull(COL_ASSESSMENT_STATUS));
-    } else {
-      filter.add(Filter.isEqual(COL_ASSESSMENT_STATUS, new IntegerValue(status.ordinal())));
+    if (cellElement.hasClassName(STYLE_SECONDARY)) {
+      filter.add(Filter.notNull(COL_ASSESSMENT));
+      captions.add(Localized.getConstants().trAssessmentReportSecondary());
     }
 
     String caption = BeeUtils.notEmpty(BeeUtils.joinItems(captions),

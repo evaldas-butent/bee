@@ -135,6 +135,8 @@ public interface LocalizableTransportConstants {
   String trAssessmentRejection();
 
   String trAssessmentRejectionReason();
+  
+  String trAssessmentReportAllOrders();
 
   String trAssessmentReportAnswered();
   
@@ -209,6 +211,8 @@ public interface LocalizableTransportConstants {
   String trDriverStartingDate();
 
   String trEmptyKilometers();
+  
+  String trExpenses();
 
   String trImport();
 

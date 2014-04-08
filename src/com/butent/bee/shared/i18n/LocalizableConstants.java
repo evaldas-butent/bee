@@ -181,6 +181,8 @@ public interface LocalizableConstants extends Constants, LocalizableCalendarCons
 
   String currency();
 
+  String customer();
+
   String dangerous();
 
   String date();

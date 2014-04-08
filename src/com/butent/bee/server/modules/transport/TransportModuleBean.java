@@ -106,6 +106,26 @@ public class TransportModuleBean implements BeeModule {
 
   private static BeeLogger logger = LogUtils.getLogger(TransportModuleBean.class);
 
+  private static IsExpression getAssessmentTurnoverExpression(SqlSelect query, String source,
+      String defDateSource, String defDateAlias, Long currency) {
+
+    if (DataUtils.isId(currency)) {
+      return ExchangeUtils.exchangeFieldTo(query,
+          TradeModuleBean.getTotalExpression(source, SqlUtils.field(source, COL_AMOUNT)),
+          SqlUtils.field(source, COL_CURRENCY),
+          SqlUtils.nvl(SqlUtils.field(source, COL_DATE),
+              SqlUtils.field(defDateSource, defDateAlias)),
+          SqlUtils.constant(currency));
+
+    } else {
+      return ExchangeUtils.exchangeField(query,
+          TradeModuleBean.getTotalExpression(source, SqlUtils.field(source, COL_AMOUNT)),
+          SqlUtils.field(source, COL_CURRENCY),
+          SqlUtils.nvl(SqlUtils.field(source, COL_DATE),
+              SqlUtils.field(defDateSource, defDateAlias)));
+    }
+  }
+
   private static IsCondition tripCondition(IsCondition where) {
     return SqlUtils.and(SqlUtils.isNull(TBL_TRIPS, COL_EXPEDITION), where);
   }
@@ -124,6 +144,7 @@ public class TransportModuleBean implements BeeModule {
   TransportImports imp;
   @EJB
   TradeModuleBean trd;
+
   @EJB
   NewsBean news;
 
@@ -225,7 +246,7 @@ public class TransportModuleBean implements BeeModule {
     } else if (BeeUtils.same(svc, SVC_GET_ASSESSMENT_QUANTITY_REPORT)) {
       response = getAssessmentQuantityReport(reqInfo);
     } else if (BeeUtils.same(svc, SVC_GET_ASSESSMENT_TURNOVER_REPORT)) {
-      // response = getAssessmentTurnoverReport(reqInfo);
+      response = getAssessmentTurnoverReport(reqInfo);
 
     } else if (BeeUtils.same(svc, SVC_CREATE_INVOICE_ITEMS)) {
       Long saleId = BeeUtils.toLongOrNull(reqInfo.getParameter(COL_SALE));
@@ -733,53 +754,53 @@ public class TransportModuleBean implements BeeModule {
 
     news.registerUsageQueryProvider(Feed.CARGO_INVOICES, new ExtendedUsageQueryProvider() {
       @Override
-      protected List<Pair<String, IsCondition>> getJoins() {
-        return NewsHelper.buildJoins(TBL_SALES, news.joinUsage(TBL_SALES),
-            TBL_CARGO_INCOMES, sys.joinTables(TBL_SALES, TBL_CARGO_INCOMES, COL_SALE));
+      protected List<IsCondition> getConditions(long userId) {
+        return NewsHelper.buildConditions(SqlUtils.isNull(TBL_SALES, COL_SALE_PROFORMA));
       }
 
       @Override
-      protected List<IsCondition> getConditions(long userId) {
-        return NewsHelper.buildConditions(SqlUtils.isNull(TBL_SALES, COL_SALE_PROFORMA));
+      protected List<Pair<String, IsCondition>> getJoins() {
+        return NewsHelper.buildJoins(TBL_SALES, news.joinUsage(TBL_SALES),
+            TBL_CARGO_INCOMES, sys.joinTables(TBL_SALES, TBL_CARGO_INCOMES, COL_SALE));
       }
     });
 
     news.registerUsageQueryProvider(Feed.CARGO_PROFORMA_INVOICES, new ExtendedUsageQueryProvider() {
       @Override
-      protected List<Pair<String, IsCondition>> getJoins() {
-        return NewsHelper.buildJoins(TBL_SALES, news.joinUsage(TBL_SALES),
-            TBL_CARGO_INCOMES, sys.joinTables(TBL_SALES, TBL_CARGO_INCOMES, COL_SALE));
+      protected List<IsCondition> getConditions(long userId) {
+        return NewsHelper.buildConditions(SqlUtils.notNull(TBL_SALES, COL_SALE_PROFORMA));
       }
 
       @Override
-      protected List<IsCondition> getConditions(long userId) {
-        return NewsHelper.buildConditions(SqlUtils.notNull(TBL_SALES, COL_SALE_PROFORMA));
+      protected List<Pair<String, IsCondition>> getJoins() {
+        return NewsHelper.buildJoins(TBL_SALES, news.joinUsage(TBL_SALES),
+            TBL_CARGO_INCOMES, sys.joinTables(TBL_SALES, TBL_CARGO_INCOMES, COL_SALE));
       }
     });
 
     news.registerUsageQueryProvider(Feed.CARGO_CREDIT_INVOICES, new ExtendedUsageQueryProvider() {
       @Override
-      protected List<Pair<String, IsCondition>> getJoins() {
-        return NewsHelper.buildJoins(TBL_PURCHASES, news.joinUsage(TBL_PURCHASES),
-            TBL_CARGO_INCOMES, sys.joinTables(TBL_PURCHASES, TBL_CARGO_INCOMES, COL_PURCHASE));
+      protected List<IsCondition> getConditions(long userId) {
+        return null;
       }
 
       @Override
-      protected List<IsCondition> getConditions(long userId) {
-        return null;
+      protected List<Pair<String, IsCondition>> getJoins() {
+        return NewsHelper.buildJoins(TBL_PURCHASES, news.joinUsage(TBL_PURCHASES),
+            TBL_CARGO_INCOMES, sys.joinTables(TBL_PURCHASES, TBL_CARGO_INCOMES, COL_PURCHASE));
       }
     });
 
     news.registerUsageQueryProvider(Feed.CARGO_PURCHASE_INVOICES, new ExtendedUsageQueryProvider() {
       @Override
-      protected List<Pair<String, IsCondition>> getJoins() {
-        return NewsHelper.buildJoins(TBL_PURCHASES, news.joinUsage(TBL_PURCHASES),
-            TBL_CARGO_EXPENSES, sys.joinTables(TBL_PURCHASES, TBL_CARGO_EXPENSES, COL_PURCHASE));
+      protected List<IsCondition> getConditions(long userId) {
+        return null;
       }
 
       @Override
-      protected List<IsCondition> getConditions(long userId) {
-        return null;
+      protected List<Pair<String, IsCondition>> getJoins() {
+        return NewsHelper.buildJoins(TBL_PURCHASES, news.joinUsage(TBL_PURCHASES),
+            TBL_CARGO_EXPENSES, sys.joinTables(TBL_PURCHASES, TBL_CARGO_EXPENSES, COL_PURCHASE));
       }
     });
 
@@ -1308,8 +1329,205 @@ public class TransportModuleBean implements BeeModule {
     return ResponseObject.response(qs.getData(query));
   }
 
-  // private ResponseObject getAssessmentTurnoverReport(RequestInfo reqInfo) {
-  // }
+  private ResponseObject getAssessmentTurnoverReport(RequestInfo reqInfo) {
+    Long startDate = reqInfo.getParameterLong(Service.VAR_FROM);
+    Long endDate = reqInfo.getParameterLong(Service.VAR_TO);
+
+    Long currency = reqInfo.getParameterLong(COL_CURRENCY);
+
+    Set<Long> departments = DataUtils.parseIdSet(reqInfo.getParameter(AR_DEPARTMENT));
+    Set<Long> managers = DataUtils.parseIdSet(reqInfo.getParameter(AR_MANAGER));
+    Set<Long> customers = DataUtils.parseIdSet(reqInfo.getParameter(AR_CUSTOMER));
+
+    List<String> groupBy = NameUtils.toList(reqInfo.getParameter(Service.VAR_GROUP_BY));
+
+    HasConditions where = SqlUtils.and(
+        SqlUtils.equals(TBL_ORDERS, COL_STATUS, OrderStatus.COMPLETED.ordinal()),
+        SqlUtils.in(TBL_ASSESSMENTS, COL_CARGO, TBL_CARGO_INCOMES, COL_CARGO,
+            SqlUtils.notNull(TBL_CARGO_INCOMES, COL_SALE)),
+        SqlUtils.not(SqlUtils.in(TBL_ASSESSMENTS, COL_CARGO, TBL_CARGO_INCOMES, COL_CARGO,
+            SqlUtils.isNull(TBL_CARGO_INCOMES, COL_SALE))));
+
+    if (startDate != null || endDate != null) {
+      if (startDate != null) {
+        where.add(SqlUtils.moreEqual(TBL_CARGO_PLACES, COL_PLACE_DATE, startDate));
+      }
+      if (endDate != null) {
+        where.add(SqlUtils.less(TBL_CARGO_PLACES, COL_PLACE_DATE, endDate));
+      }
+    } else {
+      where.add(SqlUtils.notNull(TBL_CARGO_PLACES, COL_PLACE_DATE));
+    }
+
+    if (!departments.isEmpty()) {
+      where.add(SqlUtils.inList(TBL_ASSESSMENTS, COL_DEPARTMENT, departments));
+    }
+    if (!managers.isEmpty()) {
+      where.add(SqlUtils.inList(TBL_USERS, COL_COMPANY_PERSON, managers));
+    }
+    if (!customers.isEmpty()) {
+      where.add(SqlUtils.inList(TBL_ORDERS, COL_CUSTOMER, customers));
+    }
+
+    SqlSelect query = new SqlSelect();
+    query.addFields(TBL_ASSESSMENTS, COL_ASSESSMENT, COL_CARGO);
+
+    String orderDateAlias = "OrdDt" + SqlUtils.uniqueName();
+    query.addField(TBL_ORDERS, COL_ORDER_DATE, orderDateAlias);
+
+    if (groupBy.contains(BeeConst.MONTH)) {
+      query.addFields(TBL_CARGO_PLACES, COL_PLACE_DATE);
+      query.addEmptyNumeric(BeeConst.YEAR, 4, 0);
+      query.addEmptyNumeric(BeeConst.MONTH, 2, 0);
+    }
+
+    if (groupBy.contains(AR_DEPARTMENT)) {
+      query.addFields(TBL_ASSESSMENTS, COL_DEPARTMENT);
+    }
+    if (groupBy.contains(AR_MANAGER)) {
+      query.addFields(TBL_USERS, COL_COMPANY_PERSON);
+    }
+    if (groupBy.contains(AR_CUSTOMER)) {
+      query.addFields(TBL_ORDERS, COL_CUSTOMER);
+    }
+
+    query.addFrom(TBL_ASSESSMENTS);
+    query.addFromInner(TBL_ORDER_CARGO,
+        sys.joinTables(TBL_ORDER_CARGO, TBL_ASSESSMENTS, COL_CARGO));
+    query.addFromInner(TBL_CARGO_PLACES,
+        sys.joinTables(TBL_CARGO_PLACES, TBL_ORDER_CARGO, COL_UNLOADING_PLACE));
+    query.addFromInner(TBL_ORDERS, sys.joinTables(TBL_ORDERS, TBL_ORDER_CARGO, COL_ORDER));
+
+    if (!managers.isEmpty() || groupBy.contains(AR_MANAGER)) {
+      query.addFromLeft(TBL_USERS, sys.joinTables(TBL_USERS, TBL_ORDERS, COL_ORDER_MANAGER));
+    }
+
+    query.setWhere(where);
+
+    String tmp = qs.sqlCreateTemp(query);
+
+    long count;
+    if (groupBy.contains(BeeConst.MONTH)) {
+      count = qs.setYearMonth(tmp, COL_ORDER_DATE, BeeConst.YEAR, BeeConst.MONTH);
+    } else {
+      count = qs.sqlCount(tmp, null);
+    }
+
+    if (count <= 0) {
+      qs.sqlDropTemp(tmp);
+      return ResponseObject.emptyResponse();
+    }
+
+    query = new SqlSelect();
+    query.addFrom(tmp);
+
+    for (String by : groupBy) {
+      switch (by) {
+        case BeeConst.MONTH:
+          query.addFields(tmp, BeeConst.YEAR, BeeConst.MONTH);
+          query.addGroup(tmp, BeeConst.YEAR, BeeConst.MONTH);
+          query.addOrder(tmp, BeeConst.YEAR, BeeConst.MONTH);
+          break;
+
+        case AR_DEPARTMENT:
+          query.addFields(tmp, COL_DEPARTMENT);
+          query.addFields(TBL_DEPARTMENTS, COL_DEPARTMENT_NAME);
+
+          query.addFromLeft(TBL_DEPARTMENTS,
+              SqlUtils.join(TBL_DEPARTMENTS, sys.getIdName(TBL_DEPARTMENTS), tmp, COL_DEPARTMENT));
+
+          query.addGroup(tmp, COL_DEPARTMENT);
+          query.addGroup(TBL_DEPARTMENTS, COL_DEPARTMENT_NAME);
+          query.addOrder(TBL_DEPARTMENTS, COL_DEPARTMENT_NAME);
+          break;
+
+        case AR_MANAGER:
+          query.addFields(tmp, COL_COMPANY_PERSON);
+          query.addFields(TBL_PERSONS, COL_FIRST_NAME, COL_LAST_NAME);
+
+          query.addFromLeft(TBL_COMPANY_PERSONS,
+              SqlUtils.join(TBL_COMPANY_PERSONS, sys.getIdName(TBL_COMPANY_PERSONS),
+                  tmp, COL_COMPANY_PERSON));
+          query.addFromLeft(TBL_PERSONS,
+              sys.joinTables(TBL_PERSONS, TBL_COMPANY_PERSONS, COL_PERSON));
+
+          query.addGroup(tmp, COL_COMPANY_PERSON);
+          query.addGroup(TBL_PERSONS, COL_FIRST_NAME, COL_LAST_NAME);
+
+          query.addOrder(TBL_PERSONS, COL_LAST_NAME, COL_FIRST_NAME);
+          query.addOrder(tmp, COL_COMPANY_PERSON);
+          break;
+
+        case AR_CUSTOMER:
+          query.addFields(tmp, COL_CUSTOMER);
+          query.addField(TBL_COMPANIES, COL_COMPANY_NAME, ALS_COMPANY_NAME);
+
+          query.addFromLeft(TBL_COMPANIES,
+              SqlUtils.join(TBL_COMPANIES, sys.getIdName(TBL_COMPANIES), tmp, COL_CUSTOMER));
+
+          query.addGroup(tmp, COL_CUSTOMER);
+          query.addGroup(TBL_COMPANIES, COL_COMPANY_NAME);
+          query.addOrder(TBL_COMPANIES, COL_COMPANY_NAME);
+          break;
+      }
+    }
+
+    query.addCount(AR_RECEIVED);
+
+    if (!DataUtils.isId(currency)) {
+      currency = prm.getRelation(PRM_CURRENCY);
+    }
+
+    SqlSelect subIncome = new SqlSelect()
+        .addFields(tmp, COL_CARGO)
+        .addFrom(tmp)
+        .addFromInner(TBL_CARGO_INCOMES,
+            SqlUtils.join(TBL_CARGO_INCOMES, COL_CARGO, tmp, COL_CARGO))
+        .addGroup(tmp, COL_CARGO);
+
+    IsExpression incomeXpr = getAssessmentTurnoverExpression(subIncome, TBL_CARGO_INCOMES,
+        tmp, orderDateAlias, currency);
+    subIncome.addSum(incomeXpr, AR_INCOME);
+
+    SqlSelect subExpense = new SqlSelect()
+        .addFields(tmp, COL_CARGO)
+        .addFrom(tmp)
+        .addFromInner(TBL_CARGO_EXPENSES,
+            SqlUtils.join(TBL_CARGO_EXPENSES, COL_CARGO, tmp, COL_CARGO))
+        .addGroup(tmp, COL_CARGO);
+
+    IsExpression expenseXpr = getAssessmentTurnoverExpression(subExpense, TBL_CARGO_EXPENSES,
+        tmp, orderDateAlias, currency);
+    subExpense.addSum(expenseXpr, AR_EXPENSE);
+
+    String incomeAlias = "Inc" + SqlUtils.uniqueName();
+    String expenseAlias = "Exp" + SqlUtils.uniqueName();
+
+    query.addFromLeft(subIncome, incomeAlias,
+        SqlUtils.join(incomeAlias, COL_CARGO, tmp, COL_CARGO));
+    query.addFromLeft(subExpense, expenseAlias,
+        SqlUtils.join(expenseAlias, COL_CARGO, tmp, COL_CARGO));
+
+    query.addSum(incomeAlias, AR_INCOME);
+    query.addSum(expenseAlias, AR_EXPENSE);
+
+    IsCondition condition = SqlUtils.isNull(tmp, COL_ASSESSMENT);
+    query.addSum(SqlUtils.sqlIf(condition, 0, 1), AR_SECONDARY);
+
+    query.addSum(SqlUtils.sqlIf(condition, 0, SqlUtils.field(incomeAlias, AR_INCOME)),
+        AR_SECONDARY_INCOME);
+    query.addSum(SqlUtils.sqlIf(condition, 0, SqlUtils.field(expenseAlias, AR_EXPENSE)),
+        AR_SECONDARY_EXPENSE);
+
+    SimpleRowSet result = qs.getData(query);
+    qs.sqlDropTemp(tmp);
+
+    if (DataUtils.isEmpty(result)) {
+      return ResponseObject.emptyResponse();
+    } else {
+      return ResponseObject.response(result);
+    }
+  }
 
   /**
    * Return SqlSelect query, calculating cargo costs from CargoServices table.

@@ -189,15 +189,15 @@ public class MultiSelector extends DataSelector implements HandlesRendering, Han
   private String oldValue;
 
   private final Consumer<InputText> inputResizer;
-  
+
   private final int emptyContainerSize;
-  
+
   public MultiSelector(Relation relation, boolean embedded, String rowProperty) {
     super(relation, embedded);
     this.rowProperty = rowProperty;
 
     this.inputResizer = UiHelper.getTextBoxResizer(MIN_INPUT_WIDTH);
-    
+
     this.emptyContainerSize = getContainer().getWidgetCount();
 
     SelectorEvent.fire(this, State.INITIALIZED);
@@ -324,7 +324,7 @@ public class MultiSelector extends DataSelector implements HandlesRendering, Han
   }
 
   @Override
-  public void setSelection(BeeRow row) {
+  public void setSelection(BeeRow row, boolean fire) {
     hideSelector();
     reset();
     clearInput();
@@ -332,7 +332,7 @@ public class MultiSelector extends DataSelector implements HandlesRendering, Han
     if (row != null) {
       String label = renderer.render(row);
       cache.put(row.getId(), label);
-      
+
       addChoice(new ChoiceWidget(row.getId(), label));
       updateValue();
 
@@ -340,10 +340,13 @@ public class MultiSelector extends DataSelector implements HandlesRendering, Han
       setFocus(true);
 
       setRelatedRow(row);
-      SelectorEvent.fire(this, State.INSERTED);
+
+      if (fire) {
+        SelectorEvent.fire(this, State.INSERTED);
+      }
     }
   }
-  
+
   @Override
   public void startEdit(String oldV, char charCode, EditorAction onEntry, Element sourceElement) {
     SelectorEvent.fireExclusions(this, getOracle().getExclusions());
@@ -394,7 +397,7 @@ public class MultiSelector extends DataSelector implements HandlesRendering, Han
       FaLabel plusWidget = new FaLabel(FontAwesome.PLUS_SQUARE_O, STYLE_PLUS);
       plusWidget.setTitle(BeeUtils.buildLines(Localized.getConstants().actionCreate(),
           BeeUtils.bracket(getLabel())));
-      
+
       plusWidget.addMouseDownHandler(new MouseDownHandler() {
         @Override
         public void onMouseDown(MouseDownEvent event) {

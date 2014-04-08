@@ -117,7 +117,7 @@ public class DataSelector extends Composite implements Editor, HasVisibleLines, 
     public HandlerRegistration addMouseWheelHandler(MouseWheelHandler handler) {
       return addDomHandler(handler, MouseWheelEvent.getType());
     }
-    
+
     @Override
     public void onBrowserEvent(Event event) {
       boolean showing = getSelector().isShowing();
@@ -141,7 +141,7 @@ public class DataSelector extends Composite implements Editor, HasVisibleLines, 
         case Event.ONKEYDOWN:
           if (isEmbedded() && event.getKeyCode() == KeyCodes.KEY_DELETE && isNullable()
               && !BeeUtils.isEmpty(getDisplayValue())) {
-            setSelection(null);
+            setSelection(null, true);
             consumed = true;
 
           } else if (isEmbedded() && !isActive()) {
@@ -165,14 +165,14 @@ public class DataSelector extends Composite implements Editor, HasVisibleLines, 
               start(charCode);
               consumed = true;
             }
-          
+
           } else if (event.getCharCode() == CREATE_NEW && isNewRowEnabled()) {
             if (showing) {
               getSelector().hide();
             }
             consumed = true;
             RowFactory.createRelatedRow(DataSelector.this, getDisplayValue());
-            
+
           } else {
             consumed = inputEvents.isConsumed();
           }
@@ -835,7 +835,7 @@ public class DataSelector extends Composite implements Editor, HasVisibleLines, 
   public HandlerRegistration addBlurHandler(BlurHandler handler) {
     return getInput().addDomHandler(handler, BlurEvent.getType());
   }
-  
+
   @Override
   public HandlerRegistration addEditChangeHandler(EditChangeHandler handler) {
     return addKeyDownHandler(handler);
@@ -962,7 +962,7 @@ public class DataSelector extends Composite implements Editor, HasVisibleLines, 
   public boolean handlesKey(int keyCode) {
     return isActive();
   }
-  
+
   @Override
   public boolean handlesTabulation() {
     return handlesTabulation;
@@ -992,7 +992,7 @@ public class DataSelector extends Composite implements Editor, HasVisibleLines, 
   public boolean isEmbedded() {
     return embedded;
   }
- 
+
   @Override
   public boolean isEnabled() {
     return getInput().isEnabled();
@@ -1083,7 +1083,7 @@ public class DataSelector extends Composite implements Editor, HasVisibleLines, 
     this.options = options;
   }
 
-  public void setSelection(BeeRow row) {
+  public void setSelection(BeeRow row, boolean fire) {
     setRelatedRow(row);
     setEditorValue(row == null ? null : BeeUtils.toString(row.getId()));
 
@@ -1098,8 +1098,10 @@ public class DataSelector extends Composite implements Editor, HasVisibleLines, 
     hideSelector();
     reset();
 
-    fireEvent(new EditStopEvent(State.CHANGED, KeyCodes.KEY_TAB, false));
-    SelectorEvent.fire(this, State.CHANGED);
+    if (fire) {
+      fireEvent(new EditStopEvent(State.CHANGED, KeyCodes.KEY_TAB, false));
+      SelectorEvent.fire(this, State.CHANGED);
+    }
   }
 
   @Override
@@ -1135,7 +1137,7 @@ public class DataSelector extends Composite implements Editor, HasVisibleLines, 
     setLastRequest(null);
     setOffset(0);
     setHasMore(false);
-    
+
     boolean createNew = false;
 
     if (charCode != BeeConst.CHAR_SPACE && Codec.isValidUnicodeChar(charCode)) {
@@ -1164,7 +1166,7 @@ public class DataSelector extends Composite implements Editor, HasVisibleLines, 
 
     inputEvents.consume();
     setActive(true);
-    
+
     if (createNew) {
       RowFactory.createRelatedRow(this, null);
     }
@@ -1332,7 +1334,7 @@ public class DataSelector extends Composite implements Editor, HasVisibleLines, 
     Scheduler.ScheduledCommand menuCommand = new Scheduler.ScheduledCommand() {
       @Override
       public void execute() {
-        setSelection(row);
+        setSelection(row, true);
       }
     };
 

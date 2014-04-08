@@ -17,6 +17,10 @@
           <InputDateTime name="StartDate" style="width: 120px;" />
           <Label text="=dateTo" style="padding-left: 10px; padding-right: 10px;" />
           <InputDateTime name="EndDate" style="width: 120px;" />
+      
+          <Label text="=currency" style="padding-left: 3em; padding-right: 10px;" />
+          <UnboundSelector name="Currency" viewName="Currencies" renderColumns="Name"
+            newRowEnabled="false" editPopup="true" style="width: 80px;" />
         </HorizontalPanel>
       </row>
 
