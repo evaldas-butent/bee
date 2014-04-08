@@ -10,8 +10,6 @@
       <row>
         <Label for="Login" />
         <InputText source="Login" style="width: 150px;" />
-        <cell><text/></cell>
-        <Button text="=changePassword" name="ChangePassword" />
       </row>
 
       <row>

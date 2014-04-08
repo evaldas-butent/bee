@@ -1,6 +1,5 @@
 package com.butent.bee.client.modules.administration;
 
-import com.google.common.base.Objects;
 import com.google.gwt.event.dom.client.KeyCodes;
 import com.google.gwt.event.dom.client.KeyDownEvent;
 import com.google.gwt.event.dom.client.KeyDownHandler;
@@ -18,13 +17,14 @@ import com.butent.bee.client.view.form.FormView;
 import com.butent.bee.client.widget.InputPassword;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.Consumer;
-import com.butent.bee.shared.data.IsRow;
 import com.butent.bee.shared.data.value.TextValue;
 import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.modules.administration.AdministrationConstants;
 import com.butent.bee.shared.ui.UiConstants;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.Codec;
+
+import java.util.Objects;
 
 public final class PasswordService {
 
@@ -55,18 +55,14 @@ public final class PasswordService {
   static void changePassword(final FormView userForm) {
     Assert.notNull(userForm);
 
-    IsRow row = userForm.getActiveRow();
-    Assert.notNull(row);
-
-    int index = userForm.getDataIndex(AdministrationConstants.COL_PASSWORD);
-    Assert.nonNegative(index);
-
-    openDialog(row.getString(index), new Consumer<String>() {
-      @Override
-      public void accept(String input) {
-        userForm.updateCell(AdministrationConstants.COL_PASSWORD, input);
-      }
-    });
+    openDialog(Objects.equals(BeeKeeper.getUser().getUserId(), userForm.getActiveRowId())
+        ? userForm.getStringValue(AdministrationConstants.COL_PASSWORD) : null,
+        new Consumer<String>() {
+          @Override
+          public void accept(String input) {
+            userForm.updateCell(AdministrationConstants.COL_PASSWORD, input);
+          }
+        });
   }
 
   private static boolean isEnter(KeyDownEvent event) {
@@ -140,7 +136,7 @@ public final class PasswordService {
             inpOld.setFocus(true);
             return Localized.getConstants().oldPasswordIsRequired();
 
-          } else if (!Objects.equal(Codec.encodePassword(old), oldPass)) {
+          } else if (!Objects.equals(Codec.encodePassword(old), oldPass)) {
             inpOld.setFocus(true);
             return Localized.getConstants().oldPasswordIsInvalid();
           }

@@ -36,8 +36,13 @@ public enum RegulatedWidget implements HasLocalizedCaption {
     public String getCaption(LocalizableConstants constants) {
       return constants.actionAudit();
     }
+  },
+  PASSWORD {
+    @Override
+    public String getCaption(LocalizableConstants constants) {
+      return constants.changePassword();
+    }
   };
-
   private final ModuleAndSub moduleAndSub;
 
   private RegulatedWidget() {
