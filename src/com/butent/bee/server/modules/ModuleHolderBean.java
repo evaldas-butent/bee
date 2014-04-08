@@ -5,7 +5,6 @@ import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 
 import com.butent.bee.server.Config;
-import com.butent.bee.server.data.BeeTable;
 import com.butent.bee.server.data.SystemBean;
 import com.butent.bee.server.http.RequestInfo;
 import com.butent.bee.shared.Assert;
@@ -98,22 +97,17 @@ public class ModuleHolderBean {
     TABLE_ACTIVATION_MODE mode = EnumUtils.getEnumByName(TABLE_ACTIVATION_MODE.class,
         Config.getProperty("TableActivationMode"));
 
-    for (String mod : getModules()) {
-      prm.refreshModuleParameters(mod);
-
-      if (mode != TABLE_ACTIVATION_MODE.DELAYED) {
-        for (String tblName : sys.getTableNames()) {
-          BeeTable table = sys.getTable(tblName);
-
-          if (BeeUtils.same(table.getModule(), mod)) {
-            if (mode == TABLE_ACTIVATION_MODE.FORCED) {
-              sys.rebuildTable(tblName);
-            } else {
-              sys.activateTable(tblName);
-            }
-          }
+    if (mode != TABLE_ACTIVATION_MODE.DELAYED) {
+      for (String tblName : sys.getTableNames()) {
+        if (mode == TABLE_ACTIVATION_MODE.FORCED) {
+          sys.rebuildTable(tblName);
+        } else {
+          sys.activateTable(tblName);
         }
       }
+    }
+    for (String mod : getModules()) {
+      prm.refreshModuleParameters(mod);
       getModule(mod).init();
     }
   }

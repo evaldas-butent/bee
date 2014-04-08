@@ -204,7 +204,7 @@ public interface LocalizableConstants extends Constants, LocalizableCalendarCons
   String deleteRowQuestion();
 
   String deleteSelectedRow();
-  
+
   String department();
 
   String description();
@@ -290,6 +290,8 @@ public interface LocalizableConstants extends Constants, LocalizableCalendarCons
   String feedTrCargoCreditInvoices();
 
   String feedTrCargoProformaInvoices();
+
+  String feedTrCargoPurchaseInvoices();
 
   String feedTrDrivers();
 

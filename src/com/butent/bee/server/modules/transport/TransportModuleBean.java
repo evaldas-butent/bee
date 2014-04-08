@@ -60,6 +60,7 @@ import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogUtils;
 import com.butent.bee.shared.modules.BeeParameter;
+import com.butent.bee.shared.modules.transport.TransportConstants.AssessmentStatus;
 import com.butent.bee.shared.modules.transport.TransportConstants.OrderStatus;
 import com.butent.bee.shared.modules.transport.TransportConstants.VehicleType;
 import com.butent.bee.shared.news.Feed;
@@ -224,7 +225,7 @@ public class TransportModuleBean implements BeeModule {
     } else if (BeeUtils.same(svc, SVC_GET_ASSESSMENT_QUANTITY_REPORT)) {
       response = getAssessmentQuantityReport(reqInfo);
     } else if (BeeUtils.same(svc, SVC_GET_ASSESSMENT_TURNOVER_REPORT)) {
-//      response = getAssessmentTurnoverReport(reqInfo);
+      // response = getAssessmentTurnoverReport(reqInfo);
 
     } else if (BeeUtils.same(svc, SVC_CREATE_INVOICE_ITEMS)) {
       Long saleId = BeeUtils.toLongOrNull(reqInfo.getParameter(COL_SALE));
@@ -600,7 +601,7 @@ public class TransportModuleBean implements BeeModule {
         return NewsHelper.buildJoin(TBL_SHIPMENT_REQUESTS, news.joinUsage(TBL_SHIPMENT_REQUESTS));
       }
     });
-    
+
     news.registerUsageQueryProvider(Feed.ASSESSMENT_REQUESTS_ALL, new ExtendedUsageQueryProvider() {
 
       @Override
@@ -617,10 +618,10 @@ public class TransportModuleBean implements BeeModule {
             sys.joinTables(TBL_ORDER_CARGO, TBL_ASSESSMENTS, COL_CARGO)));
         joins.addAll(NewsHelper.buildJoin(TBL_ORDERS,
             sys.joinTables(TBL_ORDERS, TBL_ORDER_CARGO, COL_ORDER)));
-        
+
         return joins;
       }
-      
+
     });
 
     news.registerUsageQueryProvider(Feed.ASSESSMENT_REQUESTS_MY, new ExtendedUsageQueryProvider() {
@@ -690,9 +691,8 @@ public class TransportModuleBean implements BeeModule {
       }
 
     });
-    
-    news.registerUsageQueryProvider(Feed.CARGO_SALES, new ExtendedUsageQueryProvider() {
 
+    news.registerUsageQueryProvider(Feed.CARGO_SALES, new ExtendedUsageQueryProvider() {
       @Override
       protected List<IsCondition> getConditions(long userId) {
         return NewsHelper.buildConditions(SqlUtils.isNull(TBL_CARGO_INCOMES, COL_SALE));
@@ -700,37 +700,26 @@ public class TransportModuleBean implements BeeModule {
 
       @Override
       protected List<Pair<String, IsCondition>> getJoins() {
-        List<Pair<String, IsCondition>> joins = Lists.newArrayList();
-        joins.addAll(NewsHelper.buildJoin(TBL_CARGO_INCOMES, news.joinUsage(TBL_CARGO_INCOMES)));
-        return joins;
+        return NewsHelper.buildJoin(TBL_CARGO_INCOMES, news.joinUsage(TBL_CARGO_INCOMES));
       }
-      
     });
 
     news.registerUsageQueryProvider(Feed.CARGO_CREDIT_SALES, new ExtendedUsageQueryProvider() {
-
       @Override
       protected List<IsCondition> getConditions(long userId) {
-        return NewsHelper.buildConditions(SqlUtils.and(
-            SqlUtils.isNull(TBL_CARGO_INCOMES, COL_PURCHASE),
+        return NewsHelper.buildConditions(SqlUtils.isNull(TBL_CARGO_INCOMES, COL_PURCHASE),
             SqlUtils.isNull(TBL_SALES, COL_SALE_PROFORMA),
-            SqlUtils.notNull(TBL_CARGO_INCOMES, COL_SALE)));
+            SqlUtils.notNull(TBL_CARGO_INCOMES, COL_SALE));
       }
 
       @Override
       protected List<Pair<String, IsCondition>> getJoins() {
-        List<Pair<String, IsCondition>> joins = Lists.newArrayList();
-        joins.addAll(NewsHelper.buildJoin(TBL_CARGO_INCOMES, news.joinUsage(TBL_CARGO_INCOMES)));
-        joins.addAll(NewsHelper.buildJoin(TBL_SALES, sys.joinTables(TBL_SALES,
-            TBL_CARGO_INCOMES, COL_SALE)));
-
-        return joins;
+        return NewsHelper.buildJoins(TBL_CARGO_INCOMES, news.joinUsage(TBL_CARGO_INCOMES),
+            TBL_SALES, sys.joinTables(TBL_SALES, TBL_CARGO_INCOMES, COL_SALE));
       }
-
     });
 
     news.registerUsageQueryProvider(Feed.CARGO_PURCHASES, new ExtendedUsageQueryProvider() {
-
       @Override
       protected List<IsCondition> getConditions(long userId) {
         return NewsHelper.buildConditions(SqlUtils.isNull(TBL_CARGO_EXPENSES, COL_PURCHASE));
@@ -738,105 +727,60 @@ public class TransportModuleBean implements BeeModule {
 
       @Override
       protected List<Pair<String, IsCondition>> getJoins() {
-        List<Pair<String, IsCondition>> joins = Lists.newArrayList();
-        joins.addAll(NewsHelper.buildJoin(TBL_CARGO_EXPENSES, news.joinUsage(TBL_CARGO_EXPENSES)));
-        return joins;
+        return NewsHelper.buildJoin(TBL_CARGO_EXPENSES, news.joinUsage(TBL_CARGO_EXPENSES));
       }
-
     });
 
-    news.registerUsageQueryProvider(Feed.CARGO_PROFORMA_INVOICES, new UsageQueryProvider() {
-
+    news.registerUsageQueryProvider(Feed.CARGO_INVOICES, new ExtendedUsageQueryProvider() {
       @Override
-      public SqlSelect getQueryForAccess(Feed feed, String relationColumn, long userId,
-          DateTime startDate) {
-        SqlSelect select = new SqlSelect()
-            .setDistinctMode(true)
-            .addFields(feed.getUsageTable(), COL_SALE)
-            .addMax(feed.getUsageTable(), NewsConstants.COL_USAGE_ACCESS)
-            .addFrom(feed.getUsageTable())
-            .addFromInner(TBL_SALES, sys.joinTables(TBL_SALES, feed.getUsageTable(), COL_SALE))
-                .addFromInner(TBL_CARGO_INCOMES,
-                    sys.joinTables(TBL_SALES, TBL_CARGO_INCOMES, COL_SALE))
-            .setWhere(SqlUtils.and(
-                SqlUtils.notNull(TBL_SALES, COL_SALE_PROFORMA),
-                SqlUtils.equals(feed.getUsageTable(), NewsConstants.COL_UF_USER, userId),
-                SqlUtils.notNull(feed.getUsageTable(), NewsConstants.COL_USAGE_ACCESS))
-            )
-            .addGroup(feed.getUsageTable(), COL_SALE);
-
-        return select;
+      protected List<Pair<String, IsCondition>> getJoins() {
+        return NewsHelper.buildJoins(TBL_SALES, news.joinUsage(TBL_SALES),
+            TBL_CARGO_INCOMES, sys.joinTables(TBL_SALES, TBL_CARGO_INCOMES, COL_SALE));
       }
 
       @Override
-      public SqlSelect getQueryForUpdates(Feed feed, String relationColumn, long userId,
-          DateTime startDate) {
-        SqlSelect select = new SqlSelect()
-            .setDistinctMode(true)
-            .addFields(feed.getUsageTable(), COL_SALE)
-            .addMax(feed.getUsageTable(), NewsConstants.COL_USAGE_UPDATE)
-            .addFrom(feed.getUsageTable())
-            .addFromInner(TBL_SALES, sys.joinTables(TBL_SALES, feed.getUsageTable(), COL_SALE))
-            .addFromInner(TBL_CARGO_INCOMES, sys.joinTables(TBL_SALES, TBL_CARGO_INCOMES,
-                COL_SALE))
-            .setWhere(SqlUtils.and(
-                SqlUtils.notNull(TBL_SALES, COL_SALE_PROFORMA),
-                SqlUtils.notEqual(feed.getUsageTable(), NewsConstants.COL_UF_USER, userId),
-                SqlUtils.more(feed.getUsageTable(), NewsConstants.COL_USAGE_UPDATE,
-                    NewsHelper.getStartTime(startDate)))
-            )
-            .addGroup(feed.getUsageTable(), COL_SALE);
-
-        return select;
+      protected List<IsCondition> getConditions(long userId) {
+        return NewsHelper.buildConditions(SqlUtils.isNull(TBL_SALES, COL_SALE_PROFORMA));
       }
-
     });
 
-    news.registerUsageQueryProvider(Feed.CARGO_CREDIT_INVOICES, new UsageQueryProvider() {
-
+    news.registerUsageQueryProvider(Feed.CARGO_PROFORMA_INVOICES, new ExtendedUsageQueryProvider() {
       @Override
-      public SqlSelect getQueryForAccess(Feed feed, String relationColumn, long userId,
-          DateTime startDate) {
-        SqlSelect select = new SqlSelect()
-            .setDistinctMode(true)
-            .addFields(feed.getUsageTable(), COL_PURCHASE)
-            .addMax(feed.getUsageTable(), NewsConstants.COL_USAGE_ACCESS)
-            .addFrom(feed.getUsageTable())
-                .addFromInner(TBL_PURCHASES,
-                    sys.joinTables(TBL_PURCHASES, feed.getUsageTable(), COL_PURCHASE))
-            .addFromInner(TBL_CARGO_INCOMES,
-                sys.joinTables(TBL_PURCHASES, TBL_CARGO_INCOMES, COL_PURCHASE))
-            .setWhere(SqlUtils.and(
-                SqlUtils.equals(feed.getUsageTable(), NewsConstants.COL_UF_USER, userId),
-                SqlUtils.notNull(feed.getUsageTable(), NewsConstants.COL_USAGE_ACCESS))
-            )
-            .addGroup(feed.getUsageTable(), COL_PURCHASE);
-
-        return select;
+      protected List<Pair<String, IsCondition>> getJoins() {
+        return NewsHelper.buildJoins(TBL_SALES, news.joinUsage(TBL_SALES),
+            TBL_CARGO_INCOMES, sys.joinTables(TBL_SALES, TBL_CARGO_INCOMES, COL_SALE));
       }
 
       @Override
-      public SqlSelect getQueryForUpdates(Feed feed, String relationColumn, long userId,
-          DateTime startDate) {
-        SqlSelect select = new SqlSelect()
-            .setDistinctMode(true)
-            .addFields(feed.getUsageTable(), COL_PURCHASE)
-            .addMax(feed.getUsageTable(), NewsConstants.COL_USAGE_UPDATE)
-            .addFrom(feed.getUsageTable())
-            .addFromInner(TBL_PURCHASES,
-                sys.joinTables(TBL_PURCHASES, feed.getUsageTable(), COL_PURCHASE))
-            .addFromInner(TBL_CARGO_INCOMES,
-                sys.joinTables(TBL_PURCHASES, TBL_CARGO_INCOMES, COL_PURCHASE))
-            .setWhere(SqlUtils.and(
-                SqlUtils.notEqual(feed.getUsageTable(), NewsConstants.COL_UF_USER, userId),
-                SqlUtils.more(feed.getUsageTable(), NewsConstants.COL_USAGE_UPDATE,
-                    NewsHelper.getStartTime(startDate)))
-            )
-            .addGroup(feed.getUsageTable(), COL_PURCHASE);
+      protected List<IsCondition> getConditions(long userId) {
+        return NewsHelper.buildConditions(SqlUtils.notNull(TBL_SALES, COL_SALE_PROFORMA));
+      }
+    });
 
-        return select;
+    news.registerUsageQueryProvider(Feed.CARGO_CREDIT_INVOICES, new ExtendedUsageQueryProvider() {
+      @Override
+      protected List<Pair<String, IsCondition>> getJoins() {
+        return NewsHelper.buildJoins(TBL_PURCHASES, news.joinUsage(TBL_PURCHASES),
+            TBL_CARGO_INCOMES, sys.joinTables(TBL_PURCHASES, TBL_CARGO_INCOMES, COL_PURCHASE));
       }
 
+      @Override
+      protected List<IsCondition> getConditions(long userId) {
+        return null;
+      }
+    });
+
+    news.registerUsageQueryProvider(Feed.CARGO_PURCHASE_INVOICES, new ExtendedUsageQueryProvider() {
+      @Override
+      protected List<Pair<String, IsCondition>> getJoins() {
+        return NewsHelper.buildJoins(TBL_PURCHASES, news.joinUsage(TBL_PURCHASES),
+            TBL_CARGO_EXPENSES, sys.joinTables(TBL_PURCHASES, TBL_CARGO_EXPENSES, COL_PURCHASE));
+      }
+
+      @Override
+      protected List<IsCondition> getConditions(long userId) {
+        return null;
+      }
     });
 
     news.registerUsageQueryProvider(Feed.ASSESSMENT_TRANSPORTATIONS,
@@ -846,8 +790,8 @@ public class TransportModuleBean implements BeeModule {
           public SqlSelect getQueryForAccess(Feed feed, String relationColumn, long userId,
               DateTime startDate) {
             SqlSelect select = new SqlSelect()
-              .addFields(TBL_TRIP_USAGE, COL_TRIP)
-              .addMax(TBL_TRIP_USAGE, NewsConstants.COL_USAGE_ACCESS)
+                .addFields(TBL_TRIP_USAGE, COL_TRIP)
+                .addMax(TBL_TRIP_USAGE, NewsConstants.COL_USAGE_ACCESS)
                 .addFrom(TBL_TRIP_USAGE)
                 .addFromInner(TBL_TRIPS, SqlUtils.join(TBL_TRIPS, sys.getIdName(TBL_TRIPS),
                     TBL_TRIP_USAGE, COL_TRIP))
@@ -891,10 +835,10 @@ public class TransportModuleBean implements BeeModule {
                     SqlUtils.join(TBL_ASSESSMENTS, COL_CARGO, TBL_CARGO_TRIPS, COL_CARGO))
                 .setWhere(SqlUtils.and(
                     SqlUtils.isNull(TBL_ASSESSMENT_FORWARDERS, COL_TRIP),
-                            SqlUtils.notNull(TBL_ASSESSMENTS, COL_CARGO),
-                            SqlUtils.notEqual(TBL_TRIP_USAGE, NewsConstants.COL_UF_USER, userId),
-                            SqlUtils.more(TBL_TRIP_USAGE, NewsConstants.COL_USAGE_UPDATE,
-                                NewsHelper.getStartTime(startDate))))
+                    SqlUtils.notNull(TBL_ASSESSMENTS, COL_CARGO),
+                    SqlUtils.notEqual(TBL_TRIP_USAGE, NewsConstants.COL_UF_USER, userId),
+                    SqlUtils.more(TBL_TRIP_USAGE, NewsConstants.COL_USAGE_UPDATE,
+                        NewsHelper.getStartTime(startDate))))
                 .addGroup(TBL_TRIP_USAGE, COL_TRIP);
             return select;
           }
@@ -1364,9 +1308,9 @@ public class TransportModuleBean implements BeeModule {
     return ResponseObject.response(qs.getData(query));
   }
 
-//  private ResponseObject getAssessmentTurnoverReport(RequestInfo reqInfo) {
-//  }
-  
+  // private ResponseObject getAssessmentTurnoverReport(RequestInfo reqInfo) {
+  // }
+
   /**
    * Return SqlSelect query, calculating cargo costs from CargoServices table.
    * 
