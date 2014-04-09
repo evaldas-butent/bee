@@ -79,6 +79,11 @@
   </g:columns>
 
   <g:rowStyle>
+    <ui:inline>="color:blue"</ui:inline>
+    <ui:expression>row.OrderStatus == 1
+      &amp;&amp; new Date(row.UnloadingDate).setHours(0,0,0,0) == new Date().setHours(0,0,0,0)</ui:expression>
+  </g:rowStyle>
+  <g:rowStyle>
     <ui:inline>="color:brown"</ui:inline>
     <ui:expression>row.OrderStatus == 3 &amp;&amp; !row.IncomesCommited</ui:expression>
   </g:rowStyle>
@@ -90,29 +95,24 @@
     <ui:inline>="color:green"</ui:inline>
     <ui:expression>row.OrderStatus == 3</ui:expression>
   </g:rowStyle>
-  <g:rowStyle>
-    <ui:inline>="color:blue"</ui:inline>
-    <ui:expression>row.OrderStatus == 1 &amp;&amp; new Date(row.UnloadingDate).toDateString() == new Date().toDateString()</ui:expression>
-  </g:rowStyle>
 
   <g:predefinedFilter name="active" label="Vykdomi" initial="true">
     <g:column name="OrderStatus" value="1" />
+  </g:predefinedFilter>
+
+  <g:predefinedFilter name="delayed" label="Vėluojančios S/F">
+    <g:column name="OrderStatus" value="1,3" />
+    <g:column name="IncomesCommited" emptyValues="true" />
+    <g:column name="UnloadingDate" value=",d" />
+  </g:predefinedFilter>
+
+  <g:predefinedFilter name="brown" label="Nesuvestos pajamos">
+    <g:column name="OrderStatus" value="3" />
+    <g:column name="IncomesCommited" emptyValues="true" />
   </g:predefinedFilter>  
 
-  <g:predefinedFilter name="brown" label="Rudi">
+  <g:predefinedFilter name="gold" label="Nesuvestos išlaidos">
     <g:column name="OrderStatus" value="3" />
-    <g:column name="Incomes" emptyValues="true" />
-  </g:predefinedFilter>  
-
-  <g:predefinedFilter name="gold" label="Geltoni">
-    <g:column name="OrderStatus" value="3" />
-    <g:column name="Incomes" emptyValues="false" />
-    <g:column name="Expenses" emptyValues="true" />
-  </g:predefinedFilter>  
-
-  <g:predefinedFilter name="green" label="Žali">
-    <g:column name="OrderStatus" value="3" />
-    <g:column name="Incomes" emptyValues="false" />
-    <g:column name="Expenses" emptyValues="false" />
+    <g:column name="ExpensesCommited" emptyValues="true" />
   </g:predefinedFilter>  
 </g:Grid>
