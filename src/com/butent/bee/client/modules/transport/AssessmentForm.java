@@ -33,6 +33,7 @@ import com.butent.bee.client.communication.ResponseCallback;
 import com.butent.bee.client.composite.DataSelector;
 import com.butent.bee.client.composite.UnboundSelector;
 import com.butent.bee.client.data.Data;
+import com.butent.bee.client.data.IdCallback;
 import com.butent.bee.client.data.Queries;
 import com.butent.bee.client.data.Queries.IntCallback;
 import com.butent.bee.client.data.Queries.RowSetCallback;
@@ -169,32 +170,37 @@ public class AssessmentForm extends PrintFormInterceptor implements EditStopEven
 
         @Override
         public void onSuccess() {
-          BeeRow newRow = DataUtils.cloneRow(form.getActiveRow());
-
-          for (String col : new String[] {COL_DATE, COL_CARGO, COL_ASSESSMENT_STATUS,
-              COL_ASSESSMENT_EXPENSES, COL_ASSESSMENT_LOG}) {
-            newRow.clearCell(form.getDataIndex(col));
-          }
-          if (isRequest()) {
-            newRow.setValue(form.getDataIndex(COL_ASSESSMENT_STATUS),
-                AssessmentStatus.NEW.ordinal());
-            newRow.setValue(form.getDataIndex(ALS_ORDER_STATUS), OrderStatus.REQUEST.ordinal());
-          } else {
-            newRow.setValue(form.getDataIndex(ALS_ORDER_STATUS), OrderStatus.ACTIVE.ordinal());
-          }
-          newRow.setValue(form.getDataIndex(COL_ASSESSMENT), form.getActiveRowId());
-          newRow.setValue(form.getDataIndex(COL_ORDER_MANAGER), user.getNormalizedValue());
-          newRow.setValue(form.getDataIndex(COL_DEPARTMENT), department.get());
-          newRow.setValue(form.getDataIndex(COL_ASSESSMENT_NOTES), notes.getValue());
-
-          Queries.insertRow(DataUtils.createRowSetForInsert(form.getViewName(),
-              form.getDataColumns(), newRow), new Callback<RowInfo>() {
+          presenter.getGridView().ensureRelId(new IdCallback() {
             @Override
-            public void onSuccess(RowInfo result) {
-              Queries.getRow(presenter.getViewName(), result.getId(), new RowCallback() {
+            public void onSuccess(Long assessment) {
+              BeeRow newRow = DataUtils.cloneRow(form.getActiveRow());
+
+              for (String col : new String[] {COL_DATE, COL_CARGO, COL_ASSESSMENT_STATUS,
+                  COL_ASSESSMENT_EXPENSES, COL_ASSESSMENT_LOG}) {
+                newRow.clearCell(form.getDataIndex(col));
+              }
+              if (isRequest()) {
+                newRow.setValue(form.getDataIndex(COL_ASSESSMENT_STATUS),
+                    AssessmentStatus.NEW.ordinal());
+                newRow.setValue(form.getDataIndex(ALS_ORDER_STATUS), OrderStatus.REQUEST.ordinal());
+              } else {
+                newRow.setValue(form.getDataIndex(ALS_ORDER_STATUS), OrderStatus.ACTIVE.ordinal());
+              }
+              newRow.setValue(form.getDataIndex(COL_ASSESSMENT), assessment);
+              newRow.setValue(form.getDataIndex(COL_ORDER_MANAGER), user.getNormalizedValue());
+              newRow.setValue(form.getDataIndex(COL_DEPARTMENT), department.get());
+              newRow.setValue(form.getDataIndex(COL_ASSESSMENT_NOTES), notes.getValue());
+
+              Queries.insertRow(DataUtils.createRowSetForInsert(form.getViewName(),
+                  form.getDataColumns(), newRow), new Callback<RowInfo>() {
                 @Override
-                public void onSuccess(BeeRow res) {
-                  presenter.getGridView().getGrid().insertRow(res, true);
+                public void onSuccess(RowInfo result) {
+                  Queries.getRow(presenter.getViewName(), result.getId(), new RowCallback() {
+                    @Override
+                    public void onSuccess(BeeRow res) {
+                      presenter.getGridView().getGrid().insertRow(res, true);
+                    }
+                  });
                 }
               });
             }

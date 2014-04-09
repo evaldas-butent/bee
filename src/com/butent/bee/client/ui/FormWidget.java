@@ -38,17 +38,17 @@ import com.butent.bee.client.grid.HtmlTable;
 import com.butent.bee.client.i18n.Format;
 import com.butent.bee.client.images.Images;
 import com.butent.bee.client.layout.Absolute;
-import com.butent.bee.client.layout.Details;
-import com.butent.bee.client.layout.FieldSet;
-import com.butent.bee.client.layout.LayoutPanel;
 import com.butent.bee.client.layout.CellVector;
 import com.butent.bee.client.layout.Complex;
+import com.butent.bee.client.layout.Details;
 import com.butent.bee.client.layout.Direction;
+import com.butent.bee.client.layout.FieldSet;
 import com.butent.bee.client.layout.Flow;
 import com.butent.bee.client.layout.HeaderContentFooter;
 import com.butent.bee.client.layout.Horizontal;
 import com.butent.bee.client.layout.HtmlPanel;
 import com.butent.bee.client.layout.IsHtmlTable;
+import com.butent.bee.client.layout.LayoutPanel;
 import com.butent.bee.client.layout.ResizePanel;
 import com.butent.bee.client.layout.Scroll;
 import com.butent.bee.client.layout.Simple;
@@ -72,14 +72,8 @@ import com.butent.bee.client.view.TreeContainer;
 import com.butent.bee.client.view.TreeView;
 import com.butent.bee.client.view.edit.Editor;
 import com.butent.bee.client.widget.BeeAudio;
-import com.butent.bee.client.widget.Button;
-import com.butent.bee.client.widget.FaLabel;
-import com.butent.bee.client.widget.Frame;
-import com.butent.bee.client.widget.Image;
-import com.butent.bee.client.widget.InternalLink;
-import com.butent.bee.client.widget.Label;
-import com.butent.bee.client.widget.ListBox;
 import com.butent.bee.client.widget.BeeVideo;
+import com.butent.bee.client.widget.Button;
 import com.butent.bee.client.widget.Canvas;
 import com.butent.bee.client.widget.CustomDiv;
 import com.butent.bee.client.widget.CustomWidget;
@@ -87,9 +81,12 @@ import com.butent.bee.client.widget.DateLabel;
 import com.butent.bee.client.widget.DateTimeLabel;
 import com.butent.bee.client.widget.DecimalLabel;
 import com.butent.bee.client.widget.DoubleLabel;
+import com.butent.bee.client.widget.FaLabel;
 import com.butent.bee.client.widget.Flag;
+import com.butent.bee.client.widget.Frame;
 import com.butent.bee.client.widget.Heading;
 import com.butent.bee.client.widget.HtmlList;
+import com.butent.bee.client.widget.Image;
 import com.butent.bee.client.widget.InlineLabel;
 import com.butent.bee.client.widget.InputArea;
 import com.butent.bee.client.widget.InputBoolean;
@@ -105,8 +102,11 @@ import com.butent.bee.client.widget.InputText;
 import com.butent.bee.client.widget.InputTime;
 import com.butent.bee.client.widget.InputTimeOfDay;
 import com.butent.bee.client.widget.IntegerLabel;
+import com.butent.bee.client.widget.InternalLink;
+import com.butent.bee.client.widget.Label;
 import com.butent.bee.client.widget.Legend;
 import com.butent.bee.client.widget.Link;
+import com.butent.bee.client.widget.ListBox;
 import com.butent.bee.client.widget.LongLabel;
 import com.butent.bee.client.widget.Meter;
 import com.butent.bee.client.widget.Progress;
@@ -117,9 +117,9 @@ import com.butent.bee.client.widget.TextLabel;
 import com.butent.bee.client.widget.Toggle;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
-import com.butent.bee.shared.HasItems;
 import com.butent.bee.shared.HasBounds;
 import com.butent.bee.shared.HasIntStep;
+import com.butent.bee.shared.HasItems;
 import com.butent.bee.shared.HasOptions;
 import com.butent.bee.shared.Holder;
 import com.butent.bee.shared.Launchable;
@@ -471,7 +471,7 @@ public enum FormWidget {
     if (BeeUtils.isEmpty(label.getElement().getInnerHTML())) {
       label.getElement().setInnerHTML(Localized.getLabel(column));
     }
-    
+
     if (column.isEditable()) {
       if (!column.isNullable() && !label.getElement().hasClassName(StyleUtils.NAME_REQUIRED)) {
         label.getElement().addClassName(StyleUtils.NAME_REQUIRED);
@@ -751,7 +751,7 @@ public enum FormWidget {
         StyleUtils.updateStyle(widget.asWidget().getElement().getStyle(), value);
 
       } else if (BeeUtils.same(name, ATTR_TITLE)) {
-        widget.asWidget().setTitle(value);
+        widget.asWidget().setTitle(Localized.maybeTranslate(value));
 
       } else if (BeeUtils.same(name, HasOptions.ATTR_OPTIONS)) {
         if (widget instanceof HasOptions) {
@@ -872,7 +872,7 @@ public enum FormWidget {
       if (BeeUtils.isBoolean(z)) {
         table.getCellFormatter().setWordWrap(row, col, BeeUtils.toBoolean(z));
       }
-      
+
       z = element.getAttribute(UiConstants.ATTR_CLASS);
       if (!BeeUtils.isEmpty(z)) {
         StyleUtils.updateClasses(table.getCellFormatter().ensureElement(row, col), z);
@@ -959,7 +959,7 @@ public enum FormWidget {
     this.tagName = tagName;
     this.types = types;
   }
-  
+
   public IdentifiableWidget create(String formName, Element element, String viewName,
       List<BeeColumn> columns, WidgetDescriptionCallback widgetDescriptionCallback,
       WidgetInterceptor widgetCallback) {
@@ -1688,7 +1688,7 @@ public enum FormWidget {
         }
         widgetDescription.setEnumKey(enumKey);
       }
-      
+
       setAttributes(widget, attributes);
       widgetDescription.setAttributes(attributes);
 
