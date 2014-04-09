@@ -28,12 +28,12 @@ public class ParameterList extends ArrayList<RpcParameter> {
 
   private static final BeeLogger logger = LogUtils.getLogger(ParameterList.class);
 
+  private final String service;
+
   private boolean ready;
   private List<RpcParameter> dataItems;
   private List<RpcParameter> headerItems;
   private List<RpcParameter> queryItems;
-
-  private String service;
 
   public ParameterList(String svc) {
     super();
@@ -267,10 +267,6 @@ public class ParameterList extends ArrayList<RpcParameter> {
       }
     }
     return ok;
-  }
-
-  public void setService(String service) {
-    this.service = service;
   }
 
   private void addItem(RpcParameter item) {

@@ -601,23 +601,17 @@ public class HtmlTable extends Panel implements IdentifiableWidget, IsHtmlTable,
     }
   }
 
-  public void setText(int row, int column, String text, String cellStyleName) {
+  public void setText(int row, int column, String text, String... cellStyles) {
     setText(row, column, text);
-    getCellFormatter().addStyleName(row, column, cellStyleName);
+    if (cellStyles != null) {
+      for (String cellStyle : cellStyles) {
+        getCellFormatter().addStyleName(row, column, cellStyle);
+      }
+    }
   }
 
-  public void setText(int row, int column, String text, String cs1, String cs2) {
-    setText(row, column, text);
-    getCellFormatter().addStyleName(row, column, cs1);
-    getCellFormatter().addStyleName(row, column, cs2);
-  }
-
-  public void setValue(int row, int column, int value, String cellStyleName) {
-    setText(row, column, Integer.toString(value), cellStyleName);
-  }
-
-  public void setValue(int row, int column, int value, String cs1, String cs2) {
-    setText(row, column, Integer.toString(value), cs1, cs2);
+  public void setValue(int row, int column, int value, String... cellStyles) {
+    setText(row, column, Integer.toString(value), cellStyles);
   }
 
   public void setWidget(int row, int column, Widget widget) {
