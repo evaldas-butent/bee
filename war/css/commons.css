@@ -69,11 +69,13 @@
 }
 
 .bee-co-ctr-value,
-.bee-co-ctr-row-total,
-.bee-co-ctr-col-total {
+.bee-co-ctr-col-total,
+.bee-co-ctr-total {
   text-align: right;
 }
-.bee-co-ctr-details .bee-co-ctr-value:not(:empty):hover {
+.bee-co-ctr-value:hover,
+.bee-co-ctr-col-total:hover {
+  color: #00e;
   text-decoration: underline;
   cursor: pointer;
 }

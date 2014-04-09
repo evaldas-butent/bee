@@ -6,6 +6,8 @@ import com.google.gwt.event.dom.client.BlurHandler;
 import com.google.gwt.event.dom.client.FocusEvent;
 import com.google.gwt.event.dom.client.FocusHandler;
 
+import com.butent.bee.client.data.Queries;
+import com.butent.bee.client.data.RowCallback;
 import com.butent.bee.client.render.AbstractCellRenderer;
 import com.butent.bee.client.render.HandlesRendering;
 import com.butent.bee.client.render.RendererFactory;
@@ -15,6 +17,7 @@ import com.butent.bee.client.view.edit.EditStopEvent;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.Launchable;
 import com.butent.bee.shared.data.BeeRow;
+import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.IsRow;
 import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.ui.Relation;
@@ -106,11 +109,27 @@ public final class UnboundSelector extends DataSelector implements HandlesRender
   }
 
   @Override
-  public void setSelection(BeeRow row) {
-    super.setSelection(row);
+  public void setSelection(BeeRow row, boolean fire) {
+    super.setSelection(row, fire);
     render(row);
   }
-
+  
+  public void setValue(Long id, final boolean fire) {
+    if (DataUtils.isId(id)) {
+      Queries.getRow(getOracle().getViewName(), id, new RowCallback() {
+        @Override
+        public void onSuccess(BeeRow result) {
+          setSelection(result, fire);
+          updateDisplay(getRenderedValue());
+        }
+      });
+      
+    } else {
+      setSelection(null, fire);
+      updateDisplay(getRenderedValue());
+    }
+  }
+  
   @Override
   public List<String> validate(boolean checkForNull) {
     return validate(getNormalizedValue(), checkForNull);

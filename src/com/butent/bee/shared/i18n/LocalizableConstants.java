@@ -181,6 +181,8 @@ public interface LocalizableConstants extends Constants, LocalizableCalendarCons
 
   String currency();
 
+  String customer();
+
   String dangerous();
 
   String date();
@@ -204,7 +206,7 @@ public interface LocalizableConstants extends Constants, LocalizableCalendarCons
   String deleteRowQuestion();
 
   String deleteSelectedRow();
-  
+
   String department();
 
   String description();
@@ -287,11 +289,19 @@ public interface LocalizableConstants extends Constants, LocalizableCalendarCons
 
   String feedTrCargo();
 
+  String feedTrCargoCreditInvoices();
+
+  String feedTrCargoProformaInvoices();
+
+  String feedTrCargoPurchaseInvoices();
+
   String feedTrDrivers();
 
-  String feedTrOrderCargoIncomes();
+  String feedTrOrderCargoCreditSales();
 
   String feedTrOrderCargoInvoices();
+
+  String feedTrOrderCargoSales();
 
   String feedTrOrdersAll();
 
@@ -308,6 +318,8 @@ public interface LocalizableConstants extends Constants, LocalizableCalendarCons
   String feedTrRequestsUnregisteredMy();
 
   String feedTrTrips();
+
+  String feedTrTripCosts();
 
   String feedTrVehicles();
 
@@ -392,6 +404,8 @@ public interface LocalizableConstants extends Constants, LocalizableCalendarCons
   String mainEmail();
 
   String manager();
+
+  String margin();
 
   String maxValue();
 
@@ -592,6 +606,8 @@ public interface LocalizableConstants extends Constants, LocalizableCalendarCons
   String signOut();
 
   String sorry();
+
+  String specifyCondition();
 
   String startRow();
 

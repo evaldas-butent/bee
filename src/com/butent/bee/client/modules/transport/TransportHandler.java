@@ -473,7 +473,10 @@ public final class TransportHandler {
     FormFactory.registerFormInterceptor(FORM_ASSESSMENT_FORWARDER, new AssessmentForwarderForm());
     FormFactory.registerFormInterceptor(FORM_ASSESSMENT_TRANSPORTATION,
         new AssessmentTransportationForm());
-    FormFactory.registerFormInterceptor(FORM_ASSESSMENT_REPORTS, new AssessmentReportsForm());
+    FormFactory.registerFormInterceptor(FORM_ASSESSMENT_QUANTITY_REPORT,
+        new AssessmentQuantityReport());
+    FormFactory.registerFormInterceptor(FORM_ASSESSMENT_TURNOVER_REPORT,
+        new AssessmentTurnoverReport());
 
     FormFactory.registerFormInterceptor(FORM_CARGO_INVOICE, new CargoInvoiceForm());
     FormFactory.registerFormInterceptor(FORM_CARGO_PURCHASE_INVOICE,

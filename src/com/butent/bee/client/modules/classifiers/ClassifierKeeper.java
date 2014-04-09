@@ -56,6 +56,7 @@ public final class ClassifierKeeper {
     FormFactory.registerFormInterceptor(FORM_COMPANY, new CompanyForm());
 
     FormFactory.registerFormInterceptor("CompanyRelationTypeReport", new CompanyTypeReport());
+    FormFactory.registerFormInterceptor("CompanyUsageReport", new CompanyUsageReport());
 
     SelectorEvent.register(new ClassifierSelector());
 

@@ -5,8 +5,10 @@
   idName="CompActStoreID"
   >
   <Fields>
-    <Relation name="Company" notNull="true" relation="Companies" cascade="DELETE" label="=company" />
-    <Relation name="Activity" notNull="true" relation="CompanyActivities" cascade="DELETE" label="=comapnyActivity" />
+    <Relation name="Company" notNull="true" relation="Companies" cascade="DELETE"
+      label="=company" />
+    <Relation name="Activity" notNull="true" relation="CompanyActivities" cascade="DELETE"
+      label="=companyActivity" />
   </Fields>
 
   <Constraints>

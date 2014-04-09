@@ -2,7 +2,7 @@
 <f:Form xmlns="http://www.butent.com/widget"
   xmlns:f="http://www.butent.com/form"
   
-  name="AssessmentReports" caption="=trAssessmentReports"
+  name="AssessmentTurnoverReport" caption="=trAssessmentTurnoverReport"
   enabledActions="filter"
   >
   <FlowPanel>
@@ -17,13 +17,17 @@
           <InputDateTime name="StartDate" style="width: 120px;" />
           <Label text="=dateTo" style="padding-left: 10px; padding-right: 10px;" />
           <InputDateTime name="EndDate" style="width: 120px;" />
+      
+          <Label text="=currency" style="padding-left: 3em; padding-right: 10px;" />
+          <UnboundSelector name="Currency" viewName="Currencies" renderColumns="Name"
+            newRowEnabled="false" editPopup="true" style="width: 80px;" />
         </HorizontalPanel>
       </row>
 
       <row>
         <Label text="=departments" />
         <MultiSelector name="Departments" viewName="Departments" renderColumns="DepartmentName"
-          newRowEnabled="false" style="width: 400px;" />
+          newRowEnabled="false" style="width: 500px;" />
       </row>
     
       <row>
@@ -31,7 +35,14 @@
         <MultiSelector name="Managers" viewName="CompanyPersons"
           renderColumns="FirstName LastName"
           choiceColumns="FirstName LastName CompanyName PositionName" newRowEnabled="false"
-          style="width: 400px;" />
+          style="width: 500px;" />
+      </row>
+
+      <row>
+        <Label text="=clients" />
+        <MultiSelector name="Customers" viewName="Companies" renderColumns="Name"
+          choiceColumns="FirstName LastName CompanyName PositionName" newRowEnabled="false"
+          style="width: 500px;" />
       </row>
 
       <row>
@@ -42,18 +53,28 @@
             <item>=yearMonth</item>
             <item>=department</item>
             <item>=manager</item>
+            <item>=client</item>
           </ListBox>
-          <ListBox name="Group1" style="margin-left: 5px; margin-right: 5px;">
+          <ListBox name="Group1" style="margin-left: 1em;">
             <item>-</item>
             <item>=yearMonth</item>
             <item>=department</item>
             <item>=manager</item>
+            <item>=client</item>
           </ListBox>
-          <ListBox name="Group2">
+          <ListBox name="Group2" style="margin-left: 1em;">
             <item>-</item>
             <item>=yearMonth</item>
             <item>=department</item>
             <item>=manager</item>
+            <item>=client</item>
+          </ListBox>
+          <ListBox name="Group3" style="margin-left: 1em;">
+            <item>-</item>
+            <item>=yearMonth</item>
+            <item>=department</item>
+            <item>=manager</item>
+            <item>=client</item>
           </ListBox>
         </FlowPanel>
       </row>

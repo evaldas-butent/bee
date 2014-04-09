@@ -237,6 +237,10 @@ public class RequestInfo implements HasExtendedInfo, HasOptions {
     return value;
   }
 
+  public Long getParameterLong(String name) {
+    return BeeUtils.toLongOrNull(getParameter(name));
+  }
+  
   public Map<String, String> getParams() {
     return params;
   }

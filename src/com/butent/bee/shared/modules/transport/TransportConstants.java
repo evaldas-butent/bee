@@ -339,8 +339,8 @@ public final class TransportConstants {
   public static final String SVC_GET_CARGO_USAGE = "GetCargoUsage";
   public static final String SVC_GET_CARGO_TOTAL = "GetCargoTotal";
   public static final String SVC_GET_ASSESSMENT_TOTALS = "GetAssessmentTotals";
-  public static final String SVC_GET_ASSESSMENT_REPORT = "GetAssessmentReport";
-  public static final String SVC_GET_MANAGERS_BY_DEPARTMENT = "GetManagersByDepartment";
+  public static final String SVC_GET_ASSESSMENT_QUANTITY_REPORT = "GetAssessmentQuantityReport";
+  public static final String SVC_GET_ASSESSMENT_TURNOVER_REPORT = "GetAssessmentTurnoverReport";
   public static final String SVC_CREATE_INVOICE_ITEMS = "CreateInvoiceItems";
   public static final String SVC_GET_IMPORT_MAPPINGS = "GetImportMappings";
   public static final String SVC_DO_IMPORT = "DoImport";
@@ -391,6 +391,7 @@ public final class TransportConstants {
   public static final String TBL_CARGO_INCOMES = "CargoIncomes";
   public static final String TBL_CARGO_INCOMES_USAGE = "CargoIncomesUsage";
   public static final String TBL_CARGO_EXPENSES = "CargoExpenses";
+  public static final String TBL_CARGO_EXPENSES_USAGE = "CargoExpensesUsage";
   public static final String TBL_CARGO_HANDLING = "CargoHandling";
   public static final String TBL_SERVICES = "Services";
 
@@ -485,6 +486,7 @@ public final class TransportConstants {
   public static final String COL_CARGO = "Cargo";
   public static final String COL_CARGO_DESCRIPTION = "Description";
   public static final String COL_CARGO_ID = "CargoID";
+  public static final String COL_CARGO_INCOME = "CargoIncome";
   public static final String COL_CARGO_PERCENT = "CargoPercent";
   public static final String COL_CARGO_MESSAGE = "Message";
   public static final String COL_CARGO_TRIP = "CargoTrip";
@@ -543,6 +545,7 @@ public final class TransportConstants {
   public static final String COL_PAYER_NAME = "PayerName";
 
   public static final String COL_SERVICE = "Service";
+  public static final String COL_SERVICE_NAME = "ServiceName";
   public static final String COL_TRANSPORTATION = "Transportation";
   public static final String COL_DATE = "Date";
   public static final String COL_AMOUNT = "Amount";
@@ -795,7 +798,8 @@ public final class TransportConstants {
   public static final String FORM_ASSESSMENT = "Assessment";
   public static final String FORM_ASSESSMENT_FORWARDER = "AssessmentForwarder";
   public static final String FORM_ASSESSMENT_TRANSPORTATION = "AssessmentTransportation";
-  public static final String FORM_ASSESSMENT_REPORTS = "AssessmentReports";
+  public static final String FORM_ASSESSMENT_QUANTITY_REPORT = "AssessmentQuantityReport";
+  public static final String FORM_ASSESSMENT_TURNOVER_REPORT = "AssessmentTurnoverReport";
 
   public static final String FORM_NEW_CARGO_INVOICE = "NewCargoInvoice";
   public static final String FORM_NEW_CARGO_PURCHASE_INVOICE = "NewCargoPurchaseInvoice";
@@ -890,6 +894,7 @@ public final class TransportConstants {
 
   public static final String AR_DEPARTMENT = "Department";
   public static final String AR_MANAGER = "Manager";
+  public static final String AR_CUSTOMER = "Customer";
 
   public static final String AR_RECEIVED = "Received";
   public static final String AR_ANSWERED = "Answered";
@@ -898,6 +903,11 @@ public final class TransportConstants {
 
   public static final String AR_SECONDARY = "Secondary";
 
+  public static final String AR_INCOME = "Income";
+  public static final String AR_EXPENSE = "Expense";
+  public static final String AR_SECONDARY_INCOME = "SecondaryIncome";
+  public static final String AR_SECONDARY_EXPENSE = "SecondaryExpense";
+  
   public static final String STYLE_SHEET = "transport";
 
   public static String defaultLoadingColumnAlias(String colName) {

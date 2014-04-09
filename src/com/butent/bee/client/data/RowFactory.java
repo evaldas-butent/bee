@@ -135,7 +135,7 @@ public final class RowFactory {
           @Override
           public void onSuccess(BeeRow result) {
             selector.setAdding(false);
-            selector.setSelection(result);
+            selector.setSelection(result, true);
           }
         });
   }

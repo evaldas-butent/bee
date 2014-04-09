@@ -8,30 +8,28 @@
   <FlowPanel class="flexBox-vertical">
     <Table style="border-spacing: 10px;">
       <row>
-        <Label text="=userLogin" class="bee-required" />
+        <Label for="Login" />
         <InputText source="Login" style="width: 150px;" />
-        <cell><text/></cell>
-        <Button text="=changePassword" name="ChangePassword" />
       </row>
 
       <row>
-        <Label text="=personFullName" class="bee-required" />
+        <Label text="=personFullName" for="CompanyPerson" />
         <DataSelector source="CompanyPerson" editSource="Person" style="width: 150px;"
           renderColumns="FirstName Lastname" choiceColumns="FirstName Lastname CompanyName" />
-        <Label text="=company" horizontalAlignment="right" />
+        <Label text="=company" horizontalAlignment="right" for="CompanyName" />
         <TextLabel source="CompanyName" style="width: 150px;" />
       </row>
 
       <row>
-        <Label text="=dateOfBirth" />
+        <Label for="DateOfBirth" />
         <DateLabel source="DateOfBirth" />
-        <Label text="=personPosition" horizontalAlignment="right" />
+        <Label text="=personPosition" horizontalAlignment="right" for="PositionName" />
         <TextLabel source="PositionName" />
       </row>
     </Table>
 
     <br/>
-    <Table style="border-spacing: 10px;">
+    <Table style="border-spacing: 10px;" data="UserRoles">
       <row>
         <Label text="=roles" class="bee-required" />
         <ChildSelector childTable="UserRoles" viewName="Roles"

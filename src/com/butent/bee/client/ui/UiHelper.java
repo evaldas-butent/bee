@@ -411,6 +411,19 @@ public final class UiHelper {
     }
   }
 
+  public static void maybeResizeForm(Widget widget) {
+    final FormView form = getForm(widget);
+
+    if (form != null) {
+      Scheduler.get().scheduleDeferred(new Scheduler.ScheduledCommand() {
+        @Override
+        public void execute() {
+          form.onResize();
+        }
+      });
+    }
+  }
+
   public static void maybeSetTitle(Widget widget, String title) {
     if (widget != null && !BeeUtils.isEmpty(title)) {
       widget.setTitle(title);

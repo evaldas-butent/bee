@@ -522,45 +522,45 @@
   height: 99%;
 }
 
-.bee-tr-ar-table {
+.bee-tr-aqr-table {
   border-collapse: collapse;
 }
 
-.bee-tr-ar-header,
-.bee-tr-ar-header-1,
-.bee-tr-ar-header-2 {
+.bee-tr-aqr-header,
+.bee-tr-aqr-header-1,
+.bee-tr-aqr-header-2 {
   font-weight: bold;
   text-align: center;
   padding: 2px 3px;
   border: 1px solid #ccc;
 }
 
-.bee-tr-ar-details:nth-child(odd) {
+.bee-tr-aqr-details:nth-child(odd) {
   background-color: #fbfbfb;
 }
-.bee-tr-ar-details:nth-child(even) {
+.bee-tr-aqr-details:nth-child(even) {
   background-color: #f5f5f5;
 }
-.bee-tr-ar-details:hover {
+.bee-tr-aqr-details:hover {
   background-color: #e1e1e1;
 }
 
-.bee-tr-ar-details td {
+.bee-tr-aqr-details td {
   padding: 2px 5px;
   border: 1px solid #ccc;
 }
 
-.bee-tr-ar-quantity,
-.bee-tr-ar-percent {
+.bee-tr-aqr-quantity,
+.bee-tr-aqr-percent {
   text-align: right;
 }
-.bee-tr-ar-details .bee-tr-ar-quantity:not(:empty):hover,
-.bee-tr-ar-details .bee-tr-ar-percent:not(:empty):hover {
+.bee-tr-aqr-details .bee-tr-aqr-quantity:not(:empty):hover,
+.bee-tr-aqr-details .bee-tr-aqr-percent:not(:empty):hover {
   text-decoration: underline;
   cursor: pointer;
 }
 
-.bee-tr-ar-summary td {
+.bee-tr-aqr-summary td {
   font-weight: bold;
   font-size: medium;
   padding: 2px 5px;

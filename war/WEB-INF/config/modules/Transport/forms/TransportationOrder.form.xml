@@ -4,33 +4,27 @@
   xmlns:xi="http://www.w3.org/2001/XInclude"
   
   name="TransportationOrder" viewName="TransportationOrders" caption="=trOrder"
-  width="900" height="600"
+  width="900" height="900"
   >
   <FlowPanel class="flexBox-vertical">
     <FlowPanel class="flexBox-horizontal">
-      <Table style="border-spacing: 10px;">
+      <Table style="border-spacing: 5px;">
         <row>
           <Label text="=date" horizontalAlignment="right" class="bee-required bee-hasDefaults" />
           <InputDateTime source="Date" />
+		  <Label text="=orderNumber" horizontalAlignment="right" class="bee-required bee-hasDefaults" />
+          <InputText source="OrderNo" />
           <Label text="=status" horizontalAlignment="right" class="bee-required bee-hasDefaults" />
           <ListBox source="Status" />
-          <Label text="=notes" />
-        </row>
-        <row>
-          <Label text="=orderNumber" horizontalAlignment="right" class="bee-required bee-hasDefaults" />
-          <InputText source="OrderNo" />
-          <cell colSpan="2">
-            <text />
-          </cell>
-          <cell rowSpan="3">
-            <InputArea source="Notes" visibleLines="5" style="width:150px;" />
-          </cell>
         </row>
         <row>
           <Label text="=customer" horizontalAlignment="right" class="bee-required" />
           <DataSelector name="Customer" source="Customer" />
           <Label text="=payer" horizontalAlignment="right" />
           <DataSelector source="Payer" />
+		  	<cell colSpan="2">
+              <Label text="=notes" />
+			</cell>  
         </row>
         <row>
           <Label text="=personContact" horizontalAlignment="right" />
@@ -38,6 +32,9 @@
             choiceColumns="FirstName LastName CompanyName" options="Customer" />
           <Label text="=manager" horizontalAlignment="right" class="bee-required bee-hasDefaults" />
           <DataSelector source="Manager" editSource="ManagerPerson" newRowEnabled="false" />
+		  <cell colSpan="2">
+            <InputArea source="Notes" visibleLines="1" style="width:150px;" />
+          </cell>
         </row>
       </Table>
     </FlowPanel>

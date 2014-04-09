@@ -15,6 +15,8 @@
       format="DATE_SHORT" />
     
     <DataColumn name="CustomerName" />
+
+    <RelColumn name="Department" />
     <RelColumn name="Manager" />
 
     <CalcColumn type="string" name="From" source="LoadingCountryCode" cellType="html" width="20"

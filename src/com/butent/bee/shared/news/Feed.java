@@ -343,20 +343,70 @@ public enum Feed implements HasLocalizedCaption {
 
     @Override
     public String getCaption(LocalizableConstants constants) {
-      return constants.feedTrOrderCargoIncomes();
+      return constants.feedTrOrderCargoSales();
     }
 
+  },
+
+  CARGO_CREDIT_SALES(ModuleAndSub.of(Module.TRANSPORT), TransportConstants.TBL_CARGO_INCOMES,
+      TransportConstants.VIEW_CARGO_CREDIT_SALES, Lists.newArrayList(
+          TransportConstants.ALS_ORDER_DATE, TransportConstants.COL_ORDER_NO,
+          TransportConstants.ALS_PAYER_NAME)) {
+
+    @Override
+    public String getCaption(LocalizableConstants constants) {
+      return constants.feedTrOrderCargoCreditSales();
+    }
+
+  },
+
+  CARGO_PURCHASES(ModuleAndSub.of(Module.TRANSPORT), TransportConstants.TBL_CARGO_EXPENSES,
+      TransportConstants.VIEW_CARGO_PURCHASES, Lists.newArrayList(
+          TransportConstants.ALS_ORDER_DATE, TransportConstants.COL_ORDER_NO,
+          TransportConstants.COL_SERVICE_NAME)) {
+    @Override
+    public String getCaption(LocalizableConstants constants) {
+
+      return constants.feedTrTripCosts();
+    }
   },
 
   CARGO_INVOICES(ModuleAndSub.of(Module.TRANSPORT), TradeConstants.TBL_SALES,
       TransportConstants.VIEW_CARGO_INVOICES, Lists.newArrayList(TransportConstants.COL_DATE,
           TransportConstants.COL_NUMBER, TransportConstants.ALS_PAYER_NAME)) {
-
     @Override
     public String getCaption(LocalizableConstants constants) {
       return constants.feedTrOrderCargoInvoices();
     }
+  },
 
+  CARGO_PROFORMA_INVOICES(ModuleAndSub.of(Module.TRANSPORT), TradeConstants.TBL_SALES,
+      TransportConstants.VIEW_CARGO_INVOICES, Lists.newArrayList(TransportConstants.COL_DATE,
+          TransportConstants.COL_NUMBER, TransportConstants.ALS_PAYER_NAME)) {
+    @Override
+    public String getCaption(LocalizableConstants constants) {
+      return constants.feedTrCargoProformaInvoices();
+    }
+  },
+
+  CARGO_CREDIT_INVOICES(ModuleAndSub.of(Module.TRANSPORT), TradeConstants.TBL_PURCHASES,
+      TransportConstants.VIEW_CARGO_PURCHASE_INVOICES, Lists.newArrayList(
+          TransportConstants.COL_DATE, TransportConstants.COL_NUMBER,
+          TradeConstants.ALS_SUPPLIER_NAME)) {
+    @Override
+    public String getCaption(LocalizableConstants constants) {
+      return constants.feedTrCargoCreditInvoices();
+    }
+  },
+
+  CARGO_PURCHASE_INVOICES(ModuleAndSub.of(Module.TRANSPORT), TradeConstants.TBL_PURCHASES,
+      TransportConstants.VIEW_CARGO_PURCHASE_INVOICES, Lists.newArrayList(
+          TransportConstants.COL_DATE, TransportConstants.COL_NUMBER,
+          TradeConstants.ALS_SUPPLIER_NAME)) {
+    @Override
+    public String getCaption(LocalizableConstants constants) {
+      return constants.feedTrCargoPurchaseInvoices();
+    }
   },
 
   DISCUSSIONS(ModuleAndSub.of(Module.DISCUSSIONS), DiscussionsConstants.TBL_DISCUSSIONS,

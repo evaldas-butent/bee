@@ -3,6 +3,8 @@ package com.butent.bee.client.modules.classifiers;
 import com.google.common.collect.HashBasedTable;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Table;
+import com.google.gwt.dom.client.TableCellElement;
+import com.google.gwt.dom.client.TableRowElement;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.user.client.ui.Widget;
@@ -13,6 +15,8 @@ import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.communication.ParameterList;
 import com.butent.bee.client.communication.ResponseCallback;
 import com.butent.bee.client.composite.MultiSelector;
+import com.butent.bee.client.dom.DomUtils;
+import com.butent.bee.client.event.EventUtils;
 import com.butent.bee.client.grid.HtmlTable;
 import com.butent.bee.client.i18n.Collator;
 import com.butent.bee.client.i18n.Format;
@@ -28,10 +32,11 @@ import com.butent.bee.shared.communication.ResponseObject;
 import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.SimpleRowSet;
 import com.butent.bee.shared.data.SimpleRowSet.SimpleRow;
+import com.butent.bee.shared.data.filter.Filter;
 import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.time.DateTime;
+import com.butent.bee.shared.time.TimeUtils;
 import com.butent.bee.shared.time.YearMonth;
-import com.butent.bee.shared.utils.ArrayUtils;
 import com.butent.bee.shared.utils.BeeUtils;
 
 import java.util.Collections;
@@ -39,35 +44,63 @@ import java.util.List;
 import java.util.Objects;
 
 public class CompanyTypeReport extends ReportInterceptor {
-  
-  private static final class Type implements Comparable<Type> {
-    private final Long id;
-    private final String name;
 
-    private Type(Long id, String name) {
-      this.id = id;
-      this.name = name;
+  private static final class Column implements Comparable<Column> {
+
+    private final Long typeId;
+    private final String typeName;
+
+    private final boolean total;
+
+    private Column(Long typeId, String typeName, boolean total) {
+      this.typeId = typeId;
+      this.typeName = typeName;
+      this.total = total;
     }
 
     @Override
-    public int compareTo(Type o) {
-      if (this == o || Objects.equals(id, o.id)) {
+    public int compareTo(Column o) {
+      if (this.equals(o)) {
         return BeeConst.COMPARE_EQUAL;
-      } else if (id == null) {
+
+      } else if (total != o.total) {
+        return total ? BeeConst.COMPARE_MORE : BeeConst.COMPARE_LESS;
+
+      } else if (typeId == null) {
         return BeeConst.COMPARE_MORE;
+
       } else {
-        return Collator.DEFAULT.compare(name, o.name);
+        return Collator.DEFAULT.compare(typeName, o.typeName);
+      }
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+      if (this == obj) {
+        return true;
+
+      } else if (obj instanceof Column) {
+        Column c = (Column) obj;
+        return Objects.equals(typeId, c.typeId) && total == c.total;
+
+      } else {
+        return false;
       }
     }
 
     @Override
     public int hashCode() {
-      return id == null ? 0 : id.hashCode();
+      return (typeId == null ? 0 : typeId.hashCode()) + Boolean.valueOf(total).hashCode();
     }
 
-    @Override
-    public boolean equals(Object obj) {
-      return obj instanceof Type && Objects.equals(id, ((Type) obj).id);
+    private String getLabel() {
+      if (total) {
+        return BeeConst.STRING_NUMBER_SIGN;
+      } else if (typeId == null) {
+        return BeeConst.STRING_MINUS;
+      } else {
+        return typeName;
+      }
     }
   }
 
@@ -85,11 +118,86 @@ public class CompanyTypeReport extends ReportInterceptor {
   private static final String STYLE_MONTH = STYLE_PREFIX + "month";
 
   private static final String STYLE_VALUE = STYLE_PREFIX + "value";
+  private static final String STYLE_EMPTY = STYLE_PREFIX + "empty";
+
   private static final String STYLE_ROW_TOTAL = STYLE_PREFIX + "row-total";
   private static final String STYLE_COL_TOTAL = STYLE_PREFIX + "col-total";
+  private static final String STYLE_TOTAL = STYLE_PREFIX + "total";
 
   private static final String STYLE_DETAILS = STYLE_PREFIX + "details";
   private static final String STYLE_SUMMARY = STYLE_PREFIX + "summary";
+
+  private static final int YEAR_COL = 0;
+  private static final int MONTH_COL = 1;
+  private static final int VALUE_START_COL = 2;
+
+  private static final String DATA_KEY_YEAR = "year";
+  private static final String DATA_KEY_MONTH = "month";
+  
+  private static void showDetails(YearMonth ym, Column column, DateTime start, DateTime end,
+      String types, String typesLabel, boolean modal) {
+    
+    List<String> labels = Lists.newArrayList(Localized.getConstants().clients());
+    List<String> filterArgs = Lists.newArrayList();
+    
+    DateTime lower = (ym == null) ? start : BeeUtils.max(ym.getDate().getDateTime(), start);
+    DateTime upper = (ym == null) ? end : BeeUtils.min(ym.nextMonth().getDate().getDateTime(), end);
+    
+    if (lower != null || upper != null) {
+      labels.add(TimeUtils.renderPeriod(lower, upper));
+    }
+    
+    filterArgs.add((lower == null) ? null : lower.serialize());
+    filterArgs.add((upper == null) ? null : upper.serialize());
+    
+    if (column.total) {
+      if (!BeeUtils.isEmpty(typesLabel)) {
+        labels.add(typesLabel);
+      }
+      filterArgs.add(types);
+
+    } else {
+      labels.add(column.getLabel());
+      filterArgs.add((column.typeId == null) ? BeeConst.STRING_ZERO : column.typeId.toString());
+    }
+    
+    drillDown(GRID_COMPANIES, BeeUtils.join(BeeConst.STRING_SPACE, labels),
+        Filter.custom(FILTER_COMPANY_CREATION_AND_TYPE, filterArgs), modal);
+  }
+
+  private static Table<YearMonth, Column, Integer> transformData(SimpleRowSet data) {
+    Table<YearMonth, Column, Integer> table = HashBasedTable.create();
+
+    int valueIndex = data.getNumberOfColumns() - 1;
+
+    for (SimpleRow row : data) {
+      YearMonth ym = new YearMonth(row.getInt(BeeConst.YEAR), row.getInt(BeeConst.MONTH));
+
+      String type = row.getValue(COL_RELATION_TYPE);
+      Long id;
+      boolean total;
+
+      if (BeeUtils.isDigit(type)) {
+        id = BeeUtils.toLong(type);
+        total = false;
+      } else if (BeeUtils.isEmpty(type)) {
+        id = null;
+        total = false;
+      } else {
+        id = null;
+        total = true;
+      }
+
+      Column column = new Column(id, row.getValue(COL_RELATION_TYPE_NAME), total);
+
+      Integer value = row.getInt(valueIndex);
+      if (BeeUtils.isPositive(value)) {
+        table.put(ym, column, value);
+      }
+    }
+
+    return table;
+  }
 
   CompanyTypeReport() {
   }
@@ -148,8 +256,8 @@ public class CompanyTypeReport extends ReportInterceptor {
 
   @Override
   protected void doReport() {
-    DateTime start = getDateTime(NAME_START_DATE);
-    DateTime end = getDateTime(NAME_END_DATE);
+    final DateTime start = getDateTime(NAME_START_DATE);
+    final DateTime end = getDateTime(NAME_END_DATE);
 
     if (!checkRange(start, end)) {
       return;
@@ -164,11 +272,16 @@ public class CompanyTypeReport extends ReportInterceptor {
       params.addDataItem(Service.VAR_TO, end.getTime());
     }
 
-    String types = getEditorValue(NAME_TYPES);
-    if (!BeeUtils.isEmpty(types)) {
-      params.addDataItem(COL_RELATION_TYPE, types);
-    }
+    final String types = getEditorValue(NAME_TYPES);
+    final String typesLabel;
 
+    if (BeeUtils.isEmpty(types)) {
+      typesLabel = null;
+    } else {
+      params.addDataItem(COL_RELATION_TYPE, types);
+      typesLabel = getFilterLabel(NAME_TYPES);
+    }
+    
     BeeKeeper.getRpc().makeRequest(params, new ResponseCallback() {
       @Override
       public void onResponse(ResponseObject response) {
@@ -178,7 +291,7 @@ public class CompanyTypeReport extends ReportInterceptor {
 
         if (response.hasResponse(SimpleRowSet.class)) {
           SimpleRowSet data = SimpleRowSet.restore(response.getResponseAsString());
-          renderData(transformData(data));
+          renderData(transformData(data), start, end, types, typesLabel);
         } else {
           getFormView().notifyWarning(Localized.getConstants().nothingFound());
         }
@@ -190,8 +303,10 @@ public class CompanyTypeReport extends ReportInterceptor {
   protected String getStorageKeyPrefix() {
     return "CompanyTypeReport_";
   }
+  
+  private void renderData(Table<YearMonth, Column, Integer> data, 
+      final DateTime start, final DateTime end, final String types, final String typesLabel) {
 
-  private void renderData(Table<YearMonth, Type, Integer> data) {
     HasIndexedWidgets container = getDataContainer();
     if (container == null) {
       return;
@@ -200,108 +315,118 @@ public class CompanyTypeReport extends ReportInterceptor {
     if (!container.isEmpty()) {
       container.clear();
     }
-    
+
     List<YearMonth> yms = Lists.newArrayList(data.rowKeySet());
     if (yms.size() > 1) {
       Collections.sort(yms);
     }
-    
-    List<Type> types = Lists.newArrayList(data.columnKeySet());
-    if (types.size() > 1) {
-      Collections.sort(types);
+
+    final List<Column> columns = Lists.newArrayList(data.columnKeySet());
+    if (columns.size() > 1) {
+      Collections.sort(columns);
     }
-    
-    int[] colTotals = new int[types.size()];
+
+    int[] colTotals = new int[columns.size()];
 
     final HtmlTable table = new HtmlTable(STYLE_TABLE);
 
     int row = 0;
-    
-    int yearCol = 0;
-    int monthCol = 1;
-    
-    int valueStartCol = 2;
 
-    table.setText(row, yearCol, Localized.getConstants().year(), STYLE_HEADER);
-    table.setText(row, monthCol, Localized.getConstants().month(), STYLE_HEADER);
+    table.setText(row, YEAR_COL, Localized.getConstants().year(), STYLE_HEADER);
+    table.setText(row, MONTH_COL, Localized.getConstants().month(), STYLE_HEADER);
 
-    for (int j = 0; j < types.size(); j++) {
-      table.setText(row, valueStartCol + j, types.get(j).name, STYLE_HEADER);
-    }
-    
-    if (types.size() > 1) {
-      table.setText(row, valueStartCol + types.size(), Localized.getConstants().total(),
-          STYLE_HEADER);
+    for (int j = 0; j < columns.size(); j++) {
+      Column column = columns.get(j);
+      int col = VALUE_START_COL + j;
+
+      table.setText(row, col, column.getLabel(), STYLE_HEADER);
+      if (column.total) {
+        table.getCellFormatter().addStyleName(row, col, STYLE_ROW_TOTAL);
+      }
     }
 
     row++;
 
     for (YearMonth ym : yms) {
-      table.setValue(row, yearCol, ym.getYear(), STYLE_YEAR);
-      table.setText(row, monthCol, Format.renderMonthFullStandalone(ym.getMonth()), STYLE_MONTH);
-      
-      int rowTotal = 0;
+      table.setValue(row, YEAR_COL, ym.getYear(), STYLE_YEAR);
+      table.setText(row, MONTH_COL, Format.renderMonthFullStandalone(ym.getMonth()), STYLE_MONTH);
 
-      for (int j = 0; j < types.size(); j++) {
-        Type type = types.get(j);
+      for (int j = 0; j < columns.size(); j++) {
+        Column column = columns.get(j);
+        int col = VALUE_START_COL + j;
 
-        if (data.contains(ym, type)) {
-          Integer value = data.get(ym, type);
-          table.setText(row, valueStartCol + j, renderQuantity(value), STYLE_VALUE);
+        if (data.contains(ym, column)) {
+          Integer value = data.get(ym, column);
+
+          table.setText(row, col, renderQuantity(value), STYLE_VALUE);
+          if (column.total) {
+            table.getCellFormatter().addStyleName(row, col, STYLE_ROW_TOTAL);
+          }
           
+          DomUtils.setDataColumn(table.getCellFormatter().getElement(row, col), j);
+
           colTotals[j] += value;
-          rowTotal += value;
 
         } else {
-          table.setText(row, valueStartCol + j, BeeConst.STRING_EMPTY, STYLE_VALUE);
+          table.setText(row, col, BeeConst.STRING_EMPTY, STYLE_EMPTY);
         }
       }
 
-      if (types.size() > 1) {
-        table.setText(row, valueStartCol + types.size(), renderQuantity(rowTotal), STYLE_ROW_TOTAL);
-      }
-      
       table.getRowFormatter().addStyleName(row, STYLE_DETAILS);
+      
+      DomUtils.setDataProperty(table.getRow(row), DATA_KEY_YEAR, ym.getYear());
+      DomUtils.setDataProperty(table.getRow(row), DATA_KEY_MONTH, ym.getMonth());
+      
       row++;
     }
 
     if (yms.size() > 1) {
-      for (int j = 0; j < types.size(); j++) {
-        table.setText(row, valueStartCol + j, renderQuantity(colTotals[j]), STYLE_COL_TOTAL);
+      for (int j = 0; j < columns.size(); j++) {
+        Column column = columns.get(j);
+        int col = VALUE_START_COL + j;
+
+        table.setText(row, col, renderQuantity(colTotals[j]),
+            column.total ? STYLE_TOTAL : STYLE_COL_TOTAL);
+
+        if (!column.total) {
+          DomUtils.setDataColumn(table.getCellFormatter().getElement(row, col), j);
+        }
       }
 
-      if (types.size() > 1) {
-        table.setText(row, valueStartCol + types.size(), renderQuantity(ArrayUtils.sum(colTotals)),
-            STYLE_ROW_TOTAL, STYLE_COL_TOTAL);
-      }
-      
       table.getRowFormatter().addStyleName(row, STYLE_SUMMARY);
     }
 
     table.addClickHandler(new ClickHandler() {
       @Override
       public void onClick(ClickEvent event) {
+        TableCellElement cell =
+            DomUtils.getParentCell(EventUtils.getEventTargetElement(event), true);
+
+        if (cell != null && !BeeUtils.isEmpty(cell.getInnerText())
+            && (cell.hasClassName(STYLE_VALUE) || cell.hasClassName(STYLE_COL_TOTAL))) {
+
+          int index = DomUtils.getDataColumnInt(cell);
+          YearMonth ym = null;
+
+          if (cell.hasClassName(STYLE_VALUE)) {
+            TableRowElement rowElement = DomUtils.getParentRow(cell, false);
+
+            Integer year = DomUtils.getDataPropertyInt(rowElement, DATA_KEY_YEAR);
+            Integer month = DomUtils.getDataPropertyInt(rowElement, DATA_KEY_MONTH);
+
+            if (BeeUtils.isPositive(year) && BeeUtils.isPositive(month)) {
+              ym = new YearMonth(year, month);
+            }
+          }
+          
+          if (BeeUtils.isIndex(columns, index)) {
+            boolean modal = drillModal(event.getNativeEvent());
+            showDetails(ym, columns.get(index), start, end, types, typesLabel, modal);
+          }
+        }
       }
     });
 
     container.add(table);
-  }
-
-  private static Table<YearMonth, Type, Integer> transformData(SimpleRowSet data) {
-    Table<YearMonth, Type, Integer> table = HashBasedTable.create();
-    
-    int valueIndex = data.getNumberOfColumns() - 1;
-    
-    for (SimpleRow row : data) {
-      YearMonth ym = new YearMonth(row.getInt(BeeConst.YEAR), row.getInt(BeeConst.MONTH));
-      Type type = new Type(row.getLong(COL_RELATION_TYPE), row.getValue(COL_RELATION_TYPE_NAME));
-      Integer value = row.getInt(valueIndex);
-      
-      if (BeeUtils.isPositive(value)) {
-        table.put(ym, type, value);
-      }
-    }
-    
-    return table;
   }
 }

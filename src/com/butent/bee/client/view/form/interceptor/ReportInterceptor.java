@@ -2,11 +2,14 @@ package com.butent.bee.client.view.form.interceptor;
 
 import com.google.common.collect.Lists;
 import com.google.gwt.dom.client.Element;
+import com.google.gwt.dom.client.NativeEvent;
 import com.google.gwt.i18n.client.NumberFormat;
 import com.google.gwt.user.client.ui.Widget;
 
 import com.butent.bee.client.composite.MultiSelector;
 import com.butent.bee.client.dialog.ModalGrid;
+import com.butent.bee.client.dialog.Popup;
+import com.butent.bee.client.event.EventUtils;
 import com.butent.bee.client.grid.GridFactory;
 import com.butent.bee.client.grid.GridFactory.GridOptions;
 import com.butent.bee.client.i18n.Format;
@@ -40,23 +43,44 @@ public abstract class ReportInterceptor extends AbstractFormInterceptor implemen
 
   private static final NumberFormat percentFormat = Format.getNumberFormat("0.0");
   private static final NumberFormat quantityFormat = Format.getNumberFormat("#,###");
+  private static final NumberFormat amountFormat = Format.getNumberFormat("#,##0.00");
   
   protected static void drillDown(String gridName, String caption, Filter filter, boolean modal) {
     GridOptions gridOptions = GridOptions.forCaptionAndFilter(caption, filter);
 
     PresenterCallback presenterCallback;
     if (modal) {
-      presenterCallback = ModalGrid.opener(80, CssUnit.PCT, 50, CssUnit.PCT);
+      presenterCallback = ModalGrid.opener(80, CssUnit.PCT, 60, CssUnit.PCT);
     } else {
       presenterCallback = PresenterCallback.SHOW_IN_NEW_TAB;
     }
 
     GridFactory.openGrid(gridName, null, gridOptions, presenterCallback);
   }
+  
+  protected static boolean drillModal(NativeEvent event) {
+    return Popup.getActivePopup() != null || !EventUtils.hasModifierKey(event);
+  }
 
+  protected static String renderAmount(Double x) {
+    if (BeeUtils.isDouble(x) && !BeeUtils.isZero(x)) {
+      return amountFormat.format(x);
+    } else {
+      return BeeConst.STRING_EMPTY;
+    }
+  }
+  
   protected static String renderPercent(int x, int y) {
     if (x > 0 && y > 0) {
       return percentFormat.format(x * 100d / y);
+    } else {
+      return BeeConst.STRING_EMPTY;
+    }
+  }
+
+  protected static String renderPercent(Double p) {
+    if (BeeUtils.isDouble(p) && !BeeUtils.isZero(p)) {
+      return percentFormat.format(p);
     } else {
       return BeeConst.STRING_EMPTY;
     }

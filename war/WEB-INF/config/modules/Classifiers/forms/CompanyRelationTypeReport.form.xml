@@ -3,7 +3,7 @@
   xmlns:f="http://www.butent.com/form"
   
   name="CompanyRelationTypeReport" caption="=contactReportCompanyByType"
-  enabledActions="refresh filter"
+  enabledActions="filter"
   >
   <FlowPanel>
     <br/>
@@ -20,6 +20,6 @@
     </HorizontalPanel>
     
     <br/>
-    <FlowPanel name="DataContainer" />
+    <FlowPanel name="DataContainer" style="margin-left: 1em;" />
   </FlowPanel>
 </f:Form>

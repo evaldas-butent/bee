@@ -190,6 +190,7 @@ public final class Service {
   public static final String VAR_FROM = RPC_VAR_PREFIX + "from";
   public static final String VAR_TO = RPC_VAR_PREFIX + "to";
   public static final String VAR_GROUP_BY = RPC_VAR_PREFIX + "group_by";
+  public static final String VAR_OPERATOR = RPC_VAR_PREFIX + "operator";
 
   public static final String XML_TAG_DATA = RPC_VAR_PREFIX + "data";
 
