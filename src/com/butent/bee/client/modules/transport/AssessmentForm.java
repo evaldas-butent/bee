@@ -420,21 +420,6 @@ public class AssessmentForm extends PrintFormInterceptor implements EditStopEven
                 if (BeeUtils.isPositive(result)) {
                   Global.showError(Localized.getMessages().trAssessmentInvalidStatusError(result,
                       request ? status.getCaption() : orderStatus.getCaption()));
-
-                } else if (Objects.equal(orderStatus, OrderStatus.COMPLETED)) {
-                  Queries.getRowCount(TBL_CARGO_INCOMES,
-                      Filter.and(Filter.equals(COL_CARGO, form.getLongValue(COL_CARGO)),
-                          Filter.isNull(COL_SALE)),
-                      new IntCallback() {
-                        @Override
-                        public void onSuccess(Integer res) {
-                          if (BeeUtils.isPositive(res)) {
-                            form.notifySevere("Yra neišrašytų sąskaitų", BeeUtils.toString(res));
-                          } else {
-                            process();
-                          }
-                        }
-                      });
                 } else {
                   process();
                 }
@@ -446,22 +431,36 @@ public class AssessmentForm extends PrintFormInterceptor implements EditStopEven
     }
 
     public void process() {
-      if (Objects.equal(orderStatus, OrderStatus.CANCELED)
-          || Objects.equal(status, AssessmentStatus.LOST)) {
-        Global.inputString(confirmationQuestion,
-            loc.trAssessmentRejectionReason(), new StringCallback() {
+      if (Objects.equal(orderStatus, OrderStatus.COMPLETED)) {
+        Queries.getRowCount(TBL_CARGO_INCOMES,
+            Filter.and(Filter.equals(COL_CARGO, form.getLongValue(COL_CARGO)),
+                Filter.isNull(COL_SALE)),
+            new IntCallback() {
               @Override
-              public void onSuccess(String value) {
-                update(value);
+              public void onSuccess(Integer res) {
+                if (BeeUtils.isPositive(res)) {
+                  form.notifySevere("Yra neišrašytų sąskaitų", BeeUtils.toString(res));
+                } else {
+                  if (Objects.equal(orderStatus, OrderStatus.CANCELED)
+                      || Objects.equal(status, AssessmentStatus.LOST)) {
+                    Global.inputString(confirmationQuestion,
+                        loc.trAssessmentRejectionReason(), new StringCallback() {
+                          @Override
+                          public void onSuccess(String value) {
+                            update(value);
+                          }
+                        });
+                  } else {
+                    Global.confirm(confirmationQuestion, new ConfirmationCallback() {
+                      @Override
+                      public void onConfirm() {
+                        update(null);
+                      }
+                    });
+                  }
+                }
               }
             });
-      } else {
-        Global.confirm(confirmationQuestion, new ConfirmationCallback() {
-          @Override
-          public void onConfirm() {
-            update(null);
-          }
-        });
       }
     }
 
@@ -892,6 +891,7 @@ public class AssessmentForm extends PrintFormInterceptor implements EditStopEven
   public void onDataSelector(SelectorEvent event) {
     if (event.isOpened()) {
       manager.setAdditionalFilter(Filter.any(COL_DEPARTMENT, employees.get(userPerson)));
+
     } else if (event.isChanged()) {
       for (String field : new String[] {COL_DEPARTMENT, COL_DEPARTMENT_NAME}) {
         form.getActiveRow().setValue(form.getDataIndex(field),

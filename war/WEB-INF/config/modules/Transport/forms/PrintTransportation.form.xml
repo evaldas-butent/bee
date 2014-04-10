@@ -74,7 +74,7 @@
     
     <TextLabel name="transportationPrice"  source="TransportationPrice" >
       <renderToken source="TransportationPrice" />
-      <renderToken source="TransportationCurrencyName" suffix=" {price_in_eur}"/>
+      <renderToken source="TransportationCurrencyName" />
       <renderToken source="TransportationVATType" prefix=" + "/>
       <renderToken source="PaymentDays" prefix=" per " suffix=" d. po sąskaitos faktūros ir 2 CMR originalų gavimo." />
     </TextLabel>
