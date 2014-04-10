@@ -429,6 +429,7 @@ public final class TransportConstants {
   public static final String VIEW_CARGO_INVOICES = "CargoInvoices";
   public static final String VIEW_CARGO_CREDIT_INVOICES = "CargoCreditInvoices";
   public static final String VIEW_CARGO_PURCHASE_INVOICES = "CargoPurchaseInvoices";
+  public static final String VIEW_CARGO_INCOMES = "CargoIncomes";
 
   public static final String VIEW_TRIPS = TBL_TRIPS;
   public static final String VIEW_EXPEDITION_TRIPS = "ExpeditionTrips";

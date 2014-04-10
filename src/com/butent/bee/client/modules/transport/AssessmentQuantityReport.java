@@ -579,12 +579,8 @@ public class AssessmentQuantityReport extends ReportInterceptor {
 
         YearMonth ym = new YearMonth(year, month);
 
-        if (start == null) {
-          start = ym.getDate().getDateTime();
-        }
-        if (end == null) {
-          end = TimeUtils.startOfNextMonth(ym).getDateTime();
-        }
+        start = BeeUtils.max(start, ym.getDate().getDateTime());
+        end = BeeUtils.min(end, TimeUtils.startOfNextMonth(ym).getDateTime());
       }
     }
 

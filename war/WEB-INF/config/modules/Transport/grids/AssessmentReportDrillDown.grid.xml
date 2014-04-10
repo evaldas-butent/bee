@@ -11,7 +11,10 @@
     <DataColumn name="Date" width="110" visible="true" />
     <DataColumn name="Number" width="70" />
     <DataColumn name="Status" width="70" />
+
     <DataColumn name="LoadingDate" caption="=trCargoLoadingDateShort" width="70"
+      format="DATE_SHORT" />
+    <DataColumn name="UnloadingDate" caption="=trUnloadingDateShort" width="70"
       format="DATE_SHORT" />
     
     <DataColumn name="CustomerName" />

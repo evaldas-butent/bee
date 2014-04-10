@@ -566,11 +566,25 @@
 }
 .bee-tr-aqr-details .bee-tr-aqr-quantity:not(:empty):hover,
 .bee-tr-aqr-details .bee-tr-aqr-percent:not(:empty):hover {
+  color: #00e;
   text-decoration: underline;
   cursor: pointer;
 }
-.bee-tr-atr-details:hover {
+.bee-tr-atr-details {
   cursor: pointer;
+}
+
+.bee-tr-atr-amount {
+  white-space: nowrap;
+}
+.bee-tr-atr-negative {
+  color: red;
+}
+.bee-tr-atr-growth.bee-tr-atr-positive {
+  color: darkgreen;
+}
+.bee-tr-atr-growth {
+  font-style: italic;
 }
 
 .bee-tr-aqr-summary td,
@@ -578,5 +592,4 @@
   font-weight: bold;
   font-size: medium;
   padding: 2px 5px;
-  color: darkgreen;
 }

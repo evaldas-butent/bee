@@ -41,6 +41,7 @@ import com.butent.bee.shared.data.value.IntegerValue;
 import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogUtils;
+import com.butent.bee.shared.modules.trade.TradeConstants;
 import com.butent.bee.shared.modules.transport.TransportConstants.OrderStatus;
 import com.butent.bee.shared.time.DateTime;
 import com.butent.bee.shared.time.TimeUtils;
@@ -194,7 +195,7 @@ public class AssessmentTurnoverReport extends ReportInterceptor {
       }
 
       if (prevOk && !result.containsKey(i)) {
-        for (SimpleRow row : data) {
+        for (SimpleRow row : prev) {
           if (matches(row, year, month, department, manager, customer)) {
             result.put(i, new RowValue(row));
             break;
@@ -208,31 +209,24 @@ public class AssessmentTurnoverReport extends ReportInterceptor {
 
   private static double growth(double prev, double value) {
     if (BeeUtils.isPositive(prev)) {
-      if (BeeUtils.isPositive(value)) {
-        return (value - prev) * 100d / prev;
-      } else if (BeeUtils.isNegative(value)) {
-        return -100d;
-      } else {
-        return -100d;
-      }
+      return (value - prev) * 100d / prev;
 
     } else if (BeeUtils.isNegative(prev)) {
-      if (BeeUtils.isPositive(value)) {
-        return 100d;
-      } else if (BeeUtils.isNegative(value)) {
-        return (value - prev) * 100d / prev;
-      } else {
-        return BeeConst.DOUBLE_ZERO;
-      }
+      return (prev - value) * 100d / prev;
 
     } else if (BeeUtils.isPositive(value)) {
       return 100d;
+
     } else if (BeeUtils.isNegative(value)) {
       return -100d;
 
     } else {
       return BeeConst.DOUBLE_ZERO;
     }
+  }
+
+  private static boolean hasSecondaryGrowth(RowValue prev, int secondary) {
+    return prev != null && prev.secondary > 0 && secondary > 0;
   }
 
   private static double margin(Double profit, Double income) {
@@ -764,6 +758,8 @@ public class AssessmentTurnoverReport extends ReportInterceptor {
       RowValue rv = new RowValue(data.getRow(i));
       RowValue pv = hasGrowth ? prevValues.get(i) : null;
 
+      boolean hasSecondaryGrowth = hasSecondaryGrowth(pv, rv.secondary);
+
       for (int j = 0; j < data.getNumberOfColumns(); j++) {
         String colName = data.getColumnName(j);
 
@@ -841,6 +837,12 @@ public class AssessmentTurnoverReport extends ReportInterceptor {
           case AR_SECONDARY:
             table.setText(row, colSecondary, renderQuantity(rv.secondary),
                 STYLE_QUANTITY, STYLE_VALUE, STYLE_SECONDARY, style(rv.secondary));
+
+            if (hasGrowth) {
+              growth = hasSecondaryGrowth ? growth(pv.secondary, rv.secondary) : null;
+              table.setText(row, colSecondary + 1, renderPercent(growth),
+                  STYLE_QUANTITY, STYLE_GROWTH, STYLE_SECONDARY, style(growth));
+            }
             break;
 
           case AR_SECONDARY_INCOME:
@@ -848,7 +850,7 @@ public class AssessmentTurnoverReport extends ReportInterceptor {
                 STYLE_INCOME, STYLE_AMOUNT, STYLE_SECONDARY, style(rv.income2));
 
             if (hasGrowth) {
-              growth = (pv == null) ? null : growth(pv.income2, rv.income2);
+              growth = hasSecondaryGrowth ? growth(pv.income2, rv.income2) : null;
               table.setText(row, colIncome2 + 1, renderPercent(growth),
                   STYLE_INCOME, STYLE_GROWTH, STYLE_SECONDARY, style(growth));
             }
@@ -859,7 +861,7 @@ public class AssessmentTurnoverReport extends ReportInterceptor {
                 STYLE_EXPENSE, STYLE_AMOUNT, STYLE_SECONDARY, style(rv.expense2));
 
             if (hasGrowth) {
-              growth = (pv == null) ? null : growth(pv.expense2, rv.expense2);
+              growth = hasSecondaryGrowth ? growth(pv.expense2, rv.expense2) : null;
               table.setText(row, colExpense2 + 1, renderPercent(growth),
                   STYLE_EXPENSE, STYLE_GROWTH, STYLE_SECONDARY, style(growth));
             }
@@ -869,7 +871,7 @@ public class AssessmentTurnoverReport extends ReportInterceptor {
                 STYLE_PROFIT, STYLE_AMOUNT, STYLE_SECONDARY, style(value));
 
             if (hasGrowth) {
-              growth = (pv == null) ? null : growth(pv.getProfit2(), value);
+              growth = hasSecondaryGrowth ? growth(pv.getProfit2(), value) : null;
               table.setText(row, colProfit2 + 1, renderPercent(growth),
                   STYLE_PROFIT, STYLE_GROWTH, STYLE_SECONDARY, style(growth));
             }
@@ -934,10 +936,12 @@ public class AssessmentTurnoverReport extends ReportInterceptor {
       table.setText(row, colMargin1, renderPercent(margin),
           STYLE_MARGIN, STYLE_PERCENT, STYLE_MAIN, style(margin));
 
+      boolean hasSecondaryGrowth = hasSecondaryGrowth(prevTotal, totSecondary);
+
       table.setText(row, colSecondary, renderQuantity(totSecondary),
           STYLE_QUANTITY, STYLE_VALUE, STYLE_SECONDARY, style(totSecondary));
       if (hasGrowth) {
-        growth = (prevTotal == null) ? null : growth(prevTotal.secondary, totSecondary);
+        growth = hasSecondaryGrowth ? growth(prevTotal.secondary, totSecondary) : null;
         table.setText(row, colSecondary + 1, renderPercent(growth),
             STYLE_QUANTITY, STYLE_GROWTH, STYLE_SECONDARY, style(growth));
       }
@@ -945,7 +949,7 @@ public class AssessmentTurnoverReport extends ReportInterceptor {
       table.setText(row, colIncome2, renderAmount(totIncome2),
           STYLE_INCOME, STYLE_AMOUNT, STYLE_SECONDARY, style(totIncome2));
       if (hasGrowth) {
-        growth = (prevTotal == null) ? null : growth(prevTotal.income2, totIncome2);
+        growth = hasSecondaryGrowth ? growth(prevTotal.income2, totIncome2) : null;
         table.setText(row, colIncome2 + 1, renderPercent(growth),
             STYLE_INCOME, STYLE_GROWTH, STYLE_SECONDARY, style(growth));
       }
@@ -953,7 +957,7 @@ public class AssessmentTurnoverReport extends ReportInterceptor {
       table.setText(row, colExpense2, renderAmount(totExpense2),
           STYLE_EXPENSE, STYLE_AMOUNT, STYLE_SECONDARY, style(totExpense2));
       if (hasGrowth) {
-        growth = (prevTotal == null) ? null : growth(prevTotal.expense2, totExpense2);
+        growth = hasSecondaryGrowth ? growth(prevTotal.expense2, totExpense2) : null;
         table.setText(row, colExpense2 + 1, renderPercent(growth),
             STYLE_EXPENSE, STYLE_GROWTH, STYLE_SECONDARY, style(growth));
       }
@@ -964,7 +968,7 @@ public class AssessmentTurnoverReport extends ReportInterceptor {
       table.setText(row, colProfit2, renderAmount(profit),
           STYLE_PROFIT, STYLE_AMOUNT, STYLE_SECONDARY, style(profit));
       if (hasGrowth) {
-        growth = (prevTotal == null) ? null : growth(prevTotal.getProfit2(), profit);
+        growth = hasSecondaryGrowth ? growth(prevTotal.getProfit2(), profit) : null;
         table.setText(row, colProfit2 + 1, renderPercent(growth),
             STYLE_PROFIT, STYLE_GROWTH, STYLE_SECONDARY, style(growth));
       }
@@ -998,7 +1002,12 @@ public class AssessmentTurnoverReport extends ReportInterceptor {
 
   private void showDetails(SimpleRow dataRow, TableCellElement cellElement, boolean modal) {
     CompoundFilter filter = Filter.and();
+
     filter.add(Filter.isEqual(ALS_ORDER_STATUS, new IntegerValue(OrderStatus.COMPLETED.ordinal())));
+    filter.add(Filter.in(COL_CARGO, VIEW_CARGO_INCOMES, COL_CARGO,
+        Filter.notNull(TradeConstants.COL_SALE)));
+    filter.add(Filter.isNot(Filter.in(COL_CARGO, VIEW_CARGO_INCOMES, COL_CARGO,
+        Filter.isNull(TradeConstants.COL_SALE))));
 
     List<String> captions = Lists.newArrayList();
 
@@ -1010,8 +1019,8 @@ public class AssessmentTurnoverReport extends ReportInterceptor {
     if (ArrayUtils.contains(colNames, BeeConst.YEAR)
         && ArrayUtils.contains(colNames, BeeConst.MONTH)) {
 
-      Integer year = BeeUtils.unbox(dataRow.getInt(BeeConst.YEAR));
-      Integer month = BeeUtils.unbox(dataRow.getInt(BeeConst.MONTH));
+      Integer year = dataRow.getInt(BeeConst.YEAR);
+      Integer month = dataRow.getInt(BeeConst.MONTH);
 
       if (TimeUtils.isYear(year) && TimeUtils.isMonth(month)) {
         if (start == null && end == null) {
@@ -1020,20 +1029,16 @@ public class AssessmentTurnoverReport extends ReportInterceptor {
 
         YearMonth ym = new YearMonth(year, month);
 
-        if (start == null) {
-          start = ym.getDate().getDateTime();
-        }
-        if (end == null) {
-          end = TimeUtils.startOfNextMonth(ym).getDateTime();
-        }
+        start = BeeUtils.max(start, ym.getDate().getDateTime());
+        end = BeeUtils.min(end, TimeUtils.startOfNextMonth(ym).getDateTime());
       }
     }
 
     if (start != null) {
-      filter.add(Filter.isMoreEqual(COL_ORDER_DATE, new DateTimeValue(start)));
+      filter.add(Filter.isMoreEqual(ALS_UNLOADING_DATE, new DateTimeValue(start)));
     }
     if (end != null) {
-      filter.add(Filter.isLess(COL_ORDER_DATE, new DateTimeValue(end)));
+      filter.add(Filter.isLess(ALS_UNLOADING_DATE, new DateTimeValue(end)));
     }
 
     if (captions.isEmpty() && (start != null || end != null)) {
@@ -1051,8 +1056,7 @@ public class AssessmentTurnoverReport extends ReportInterceptor {
     } else {
       String managers = getEditorValue(NAME_MANAGERS);
       if (!BeeUtils.isEmpty(managers)) {
-        filter.add(Filter.any(COL_COMPANY_PERSON,
-            DataUtils.parseIdSet(managers)));
+        filter.add(Filter.any(COL_COMPANY_PERSON, DataUtils.parseIdSet(managers)));
         captions.add(getFilterLabel(NAME_MANAGERS));
       }
     }
@@ -1087,7 +1091,7 @@ public class AssessmentTurnoverReport extends ReportInterceptor {
       }
     }
 
-    if (cellElement.hasClassName(STYLE_SECONDARY) 
+    if (cellElement.hasClassName(STYLE_SECONDARY)
         && BeeUtils.isPositive(dataRow.getInt(AR_SECONDARY))) {
       filter.add(Filter.notNull(COL_ASSESSMENT));
       captions.add(Localized.getConstants().trAssessmentReportSecondary());
