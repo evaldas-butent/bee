@@ -34,6 +34,7 @@ import com.butent.bee.client.grid.HtmlTable;
 import com.butent.bee.client.images.Images;
 import com.butent.bee.client.modules.administration.AdministrationKeeper;
 import com.butent.bee.client.output.Printer;
+import com.butent.bee.client.output.ReportSettings;
 import com.butent.bee.client.screen.Favorites;
 import com.butent.bee.client.style.StyleUtils;
 import com.butent.bee.client.ui.IdentifiableWidget;
@@ -99,6 +100,8 @@ public final class Global {
   private static final Rooms rooms = new Rooms();
 
   private static final NewsAggregator newsAggregator = new NewsAggregator();
+
+  private static final ReportSettings reportSettings = new ReportSettings();
 
   private static boolean debug;
 
@@ -229,6 +232,10 @@ public final class Global {
         }
       }
     });
+  }
+
+  public static ReportSettings getReportSettings() {
+    return reportSettings;
   }
 
   public static Rooms getRooms() {
@@ -540,6 +547,42 @@ public final class Global {
     return msgBoxen.nativeConfirm(lines);
   }
 
+  public static HtmlTable renderTable(String caption, IsTable<?, ?> data) {
+    int c = data.getNumberOfColumns();
+    Assert.isPositive(c);
+    
+    HtmlTable table = new HtmlTable();
+    table.setCaption(caption);
+    
+    int r = 0;
+    for (int i = 0; i < c; i++) {
+      String label = BeeUtils.notEmpty(data.getColumnLabel(i), data.getColumnId(i));
+      table.setHtml(r, i, label);
+      
+      TableCellElement cell = table.getCellFormatter().getElement(r, i);
+      StyleUtils.setTextAlign(cell, TextAlign.CENTER);
+      StyleUtils.setProperty(cell, CssProperties.FONT_WEIGHT, FontWeight.BOLD);
+      
+//      if (ValueType.isNumeric(data.getColumnType(i))) {
+//      }
+      
+      r++;
+    }
+    
+    for (IsRow row : data) {
+      for (int i = 0; i < c; i++) {
+        String value = row.getString(i);
+        if (value != null) {
+          table.setHtml(r, i, value);
+        }
+      }
+      
+      r++;
+    }
+    
+    return table;
+  }
+
   public static void sayHuh(String... huhs) {
     String caption;
     List<String> messages;
@@ -601,7 +644,7 @@ public final class Global {
       String closeHtml) {
     msgBoxen.showError(caption, messages, dialogStyle, closeHtml);
   }
-
+  
   public static void showGrid(String caption, IsTable<?, ?> table) {
     if (table == null || table.getNumberOfColumns() <= 0 || table.getNumberOfRows() <= 0) {
       logger.warning(caption, "table is empty");
@@ -613,42 +656,6 @@ public final class Global {
     if (widget != null) {
       BeeKeeper.getScreen().showWidget(widget, true);
     }
-  }
-  
-  public static HtmlTable renderTable(String caption, IsTable<?, ?> data) {
-    int c = data.getNumberOfColumns();
-    Assert.isPositive(c);
-    
-    HtmlTable table = new HtmlTable();
-    table.setCaption(caption);
-    
-    int r = 0;
-    for (int i = 0; i < c; i++) {
-      String label = BeeUtils.notEmpty(data.getColumnLabel(i), data.getColumnId(i));
-      table.setHtml(r, i, label);
-      
-      TableCellElement cell = table.getCellFormatter().getElement(r, i);
-      StyleUtils.setTextAlign(cell, TextAlign.CENTER);
-      StyleUtils.setProperty(cell, CssProperties.FONT_WEIGHT, FontWeight.BOLD);
-      
-//      if (ValueType.isNumeric(data.getColumnType(i))) {
-//      }
-      
-      r++;
-    }
-    
-    for (IsRow row : data) {
-      for (int i = 0; i < c; i++) {
-        String value = row.getString(i);
-        if (value != null) {
-          table.setHtml(r, i, value);
-        }
-      }
-      
-      r++;
-    }
-    
-    return table;
   }
 
   public static void showInfo(List<String> messages) {

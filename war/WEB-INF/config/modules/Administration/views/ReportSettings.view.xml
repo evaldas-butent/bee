@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<View xmlns="http://www.butent.com/view"
+
+  name="ReportSettings" source="ReportSettings" caption="=reports"
+  >
+  <Columns>
+    <SimpleColumn name="User" />
+    <SimpleColumn name="Report" />
+
+    <SimpleColumn name="Caption" />
+    <SimpleColumn name="Parameters" />
+  </Columns>
+</View>

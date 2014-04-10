@@ -320,7 +320,7 @@ public class UiServiceBean {
   }
 
   public BeeRowSet getFavorites() {
-    return qs.getViewData(TBL_FAVORITES, usr.getCurrentUserFilter(COL_FAVORITE_USER));
+    return qs.getViewData(VIEW_FAVORITES, usr.getCurrentUserFilter(COL_FAVORITE_USER));
   }
 
   public BeeRowSet getFilters() {
@@ -339,6 +339,10 @@ public class UiServiceBean {
         DataUtils.emptyToNull(qs.getViewData(ColumnDescription.VIEW_COLUMN_SETTINGS, userFilter));
 
     return Pair.of(gridSettings, columnSettings);
+  }
+
+  public BeeRowSet getReportSettings() {
+    return qs.getViewData(VIEW_REPORT_SETTINGS, usr.getCurrentUserFilter(COL_RS_USER));
   }
 
   private void buildDbList(String rootTable, Set<String> tables, boolean initial) {

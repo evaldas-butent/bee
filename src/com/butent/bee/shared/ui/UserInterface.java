@@ -206,6 +206,7 @@ public enum UserInterface implements HasCaption {
     GRIDS(false),
     MENU(false),
     NEWS(false),
+    REPORTS(false),
     USERS(true);
 
     private final boolean required;

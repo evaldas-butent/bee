@@ -269,7 +269,7 @@ public class Favorites implements HandlesDeleteEvents {
 
     addDisplayRow(group.getDisplay(key), group, key, item);
 
-    Queries.insert(TBL_FAVORITES,
+    Queries.insert(VIEW_FAVORITES,
         DataUtils.getColumns(columns, groupIndex, keyIndex, itemIndex, orderIndex, htmlIndex),
         Lists.newArrayList(BeeUtils.toString(group.ordinal()), key, BeeUtils.toString(id),
             BeeUtils.toString(order), BeeUtils.trim(html)));
@@ -459,7 +459,7 @@ public class Favorites implements HandlesDeleteEvents {
     Filter filter = Filter.and(Filter.isEqual(COL_GROUP, IntegerValue.of(group)),
         Filter.isEqual(COL_KEY, new TextValue(key)), Filter.equals(COL_ITEM, id));
 
-    Queries.delete(TBL_FAVORITES, filter, null);
+    Queries.delete(VIEW_FAVORITES, filter, null);
     return group.remove(key, item);
   }
 
@@ -479,7 +479,7 @@ public class Favorites implements HandlesDeleteEvents {
         Filter.isEqual(COL_KEY, new TextValue(key)),
         Filter.equals(COL_ITEM, id));
 
-    Queries.update(TBL_FAVORITES, filter, COL_HTML, new TextValue(html), null);
+    Queries.update(VIEW_FAVORITES, filter, COL_HTML, new TextValue(html), null);
     return true;
   }
 }
