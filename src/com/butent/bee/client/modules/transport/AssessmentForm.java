@@ -848,6 +848,7 @@ public class AssessmentForm extends PrintFormInterceptor implements EditStopEven
   public void onDataSelector(SelectorEvent event) {
     if (event.isOpened()) {
       manager.setAdditionalFilter(Filter.any(COL_DEPARTMENT, employees.get(userPerson)));
+
     } else if (event.isChanged()) {
       for (String field : new String[] {COL_DEPARTMENT, COL_DEPARTMENT_NAME}) {
         form.getActiveRow().setValue(form.getDataIndex(field),
