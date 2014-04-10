@@ -153,6 +153,7 @@
             <x:number>0</x:number>
           </x:nvl>
         </AggregateColumn>
+        <AggregateColumn name="Cargo" alias="ExpensesCount" aggregate="COUNT_DISTINCT" />
       </ExternalJoin>
     </SimpleJoin>
     
