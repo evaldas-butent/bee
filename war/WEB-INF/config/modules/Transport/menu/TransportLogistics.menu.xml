@@ -8,8 +8,8 @@ module="Transport.Logistics"
   <Item name="AssessmentOrders" label="=trAssessmentOrders" service="assessments_grid" parameters="AssessmentOrders" />
   <Item name="AssessmentTransportations" label="=trAssessmentTransportations" service="grid" parameters="AssessmentTransportations" separator="true" />
 
-  <Item name="AssessmentQuantityReport" label="=trAssessmentQuantityReport" service="form" 
-    parameters="AssessmentQuantityReport" separator="true" />
-  <Item name="AssessmentTurnoverReport" label="=trAssessmentTurnoverReport" service="form" 
-    parameters="AssessmentTurnoverReport" />
+  <Item name="AssessmentQuantityReport" label="=trAssessmentQuantityReport" service="report" 
+    parameters="AssessmentQuantity" separator="true" data="Assessments" />
+  <Item name="AssessmentTurnoverReport" label="=trAssessmentTurnoverReport" service="report" 
+    parameters="AssessmentTurnover" data="Assessments" />
 </Entry>

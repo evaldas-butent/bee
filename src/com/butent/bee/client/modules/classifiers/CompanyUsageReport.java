@@ -11,6 +11,8 @@ import com.butent.bee.client.data.Data;
 import com.butent.bee.client.data.Queries;
 import com.butent.bee.client.grid.GridFactory;
 import com.butent.bee.client.grid.GridFactory.GridOptions;
+import com.butent.bee.client.output.Report;
+import com.butent.bee.client.output.ReportParameters;
 import com.butent.bee.client.presenter.Presenter;
 import com.butent.bee.client.presenter.PresenterCallback;
 import com.butent.bee.client.style.StyleUtils;
@@ -24,7 +26,6 @@ import com.butent.bee.client.widget.InputDateTime;
 import com.butent.bee.client.widget.ListBox;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.Service;
-import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.filter.Filter;
 import com.butent.bee.shared.data.view.DataInfo;
 import com.butent.bee.shared.i18n.Localized;
@@ -138,7 +139,7 @@ public class CompanyUsageReport extends ReportInterceptor {
     return BeeKeeper.getUser().isModuleVisible(ms) && BeeKeeper.getUser().isDataVisible(viewName);
   }
 
-  CompanyUsageReport() {
+  public CompanyUsageReport() {
     if (RELATIONS.isEmpty()) {
       initRelations();
     }
@@ -174,20 +175,20 @@ public class CompanyUsageReport extends ReportInterceptor {
 
   @Override
   public void onLoad(FormView form) {
-    Long user = BeeKeeper.getUser().getUserId();
-    if (!DataUtils.isId(user)) {
+    ReportParameters parameters = readParameters();
+    if (parameters == null) {
       return;
     }
 
     Widget widget = form.getWidgetByName(NAME_RELATION);
-    Integer index = BeeKeeper.getStorage().getInteger(storageKey(NAME_RELATION, user));
+    Integer index = parameters.getInteger(NAME_RELATION);
     if (widget instanceof ListBox && BeeUtils.isPositive(index)
         && BeeUtils.isIndex(RELATIONS, index - 1)) {
       ((ListBox) widget).setSelectedIndex(index);
     }
 
     widget = form.getWidgetByName(NAME_OPERATOR);
-    String op = BeeKeeper.getStorage().get(storageKey(NAME_OPERATOR, user));
+    String op = parameters.get(NAME_OPERATOR);
     if (widget instanceof ListBox && !BeeUtils.isEmpty(op)) {
       index = ((ListBox) widget).getIndex(op);
       if (!BeeConst.isUndef(index)) {
@@ -196,26 +197,26 @@ public class CompanyUsageReport extends ReportInterceptor {
     }
 
     widget = form.getWidgetByName(NAME_COUNT);
-    String cnt = BeeKeeper.getStorage().get(storageKey(NAME_COUNT, user));
+    String cnt = parameters.get(NAME_COUNT);
     if (widget instanceof HasStringValue && BeeUtils.isPositiveInt(cnt)) {
       ((HasStringValue) widget).setValue(cnt);
     }
 
     widget = form.getWidgetByName(NAME_START_DATE);
-    DateTime dateTime = BeeKeeper.getStorage().getDateTime(storageKey(NAME_START_DATE, user));
+    DateTime dateTime = parameters.getDateTime(NAME_START_DATE);
     if (widget instanceof InputDateTime && dateTime != null) {
       ((InputDateTime) widget).setDateTime(dateTime);
     }
 
     widget = form.getWidgetByName(NAME_END_DATE);
-    dateTime = BeeKeeper.getStorage().getDateTime(storageKey(NAME_END_DATE, user));
+    dateTime = parameters.getDateTime(NAME_END_DATE);
     if (widget instanceof InputDateTime && dateTime != null) {
       ((InputDateTime) widget).setDateTime(dateTime);
     }
 
     for (String name : SELECTOR_NAMES) {
       widget = form.getWidgetByName(name);
-      String idList = BeeKeeper.getStorage().get(storageKey(name, user));
+      String idList = parameters.get(name);
       if (widget instanceof MultiSelector && !BeeUtils.isEmpty(idList)) {
         ((MultiSelector) widget).render(idList);
       }
@@ -224,23 +225,11 @@ public class CompanyUsageReport extends ReportInterceptor {
 
   @Override
   public void onUnload(FormView form) {
-    Long user = BeeKeeper.getUser().getUserId();
-    if (!DataUtils.isId(user)) {
-      return;
-    }
-
-    BeeKeeper.getStorage().set(storageKey(NAME_RELATION, user), getEditorValue(NAME_RELATION));
-    BeeKeeper.getStorage().set(storageKey(NAME_OPERATOR, user), getEditorValue(NAME_OPERATOR));
-    BeeKeeper.getStorage().set(storageKey(NAME_COUNT, user), getEditorValue(NAME_COUNT));
-
-    BeeKeeper.getStorage().set(storageKey(NAME_START_DATE, user), getDateTime(NAME_START_DATE));
-    BeeKeeper.getStorage().set(storageKey(NAME_END_DATE, user), getDateTime(NAME_END_DATE));
-
-    for (String name : SELECTOR_NAMES) {
-      BeeKeeper.getStorage().set(storageKey(name, user), getEditorValue(name));
-    }
+    storeEditorValues(NAME_RELATION, NAME_OPERATOR, NAME_COUNT);
+    storeDateTimeValues(NAME_START_DATE, NAME_END_DATE);
+    storeEditorValues(SELECTOR_NAMES);
   }
-
+  
   @Override
   protected void clearFilter() {
     clearEditor(NAME_START_DATE);
@@ -250,6 +239,7 @@ public class CompanyUsageReport extends ReportInterceptor {
       clearEditor(name);
     }
   }
+  
 
   @Override
   protected void doReport() {
@@ -318,10 +308,21 @@ public class CompanyUsageReport extends ReportInterceptor {
   }
 
   @Override
-  protected String getStorageKeyPrefix() {
-    return "CompanyUsageReport_";
+  protected Report getReport() {
+    return Report.COMPANY_USAGE;
   }
 
+  @Override
+  protected ReportParameters getReportParameters() {
+    ReportParameters parameters = new ReportParameters();
+
+    addEditorValues(parameters, NAME_RELATION, NAME_OPERATOR, NAME_COUNT);
+    addDateTimeValues(parameters, NAME_START_DATE, NAME_START_DATE);
+    addEditorValues(parameters, SELECTOR_NAMES);
+
+    return parameters;
+  }
+  
   private void openGrid(Filter filter) {
     HasIndexedWidgets container = getDataContainer();
     if (!container.isEmpty()) {

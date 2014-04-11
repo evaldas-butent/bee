@@ -10,6 +10,7 @@ import com.butent.bee.shared.utils.Property;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -21,7 +22,7 @@ import java.util.Map;
 
 public class Storage {
   
-  private final Map<String, String> items = new HashMap<String, String>();
+  private final Map<String, String> items = new LinkedHashMap<>();
   private final boolean localStorage;
 
   public Storage() {
@@ -47,7 +48,7 @@ public class Storage {
   }
 
   public List<Property> getAll() {
-    List<Property> lst = new ArrayList<Property>();
+    List<Property> lst = new ArrayList<>();
     int len = length();
     String z;
 
@@ -58,7 +59,7 @@ public class Storage {
 
     return lst;
   }
-
+  
   public JustDate getDate(String key) {
     return TimeUtils.toDateOrNull(get(key));
   }
@@ -73,6 +74,21 @@ public class Storage {
 
   public Long getLong(String key) {
     return BeeUtils.toLongOrNull(get(key));
+  }
+
+  public Map<String, String> getSubMap(String prefix) {
+    Assert.notEmpty(prefix);
+    Map<String, String> result = new HashMap<>();
+
+    int len = length();
+    for (int i = 0; i < len; i++) {
+      String key = key(i);
+      if (BeeUtils.isPrefix(key, prefix)) {
+        result.put(BeeUtils.removePrefix(key, prefix), get(key));
+      }
+    }
+    
+    return result;
   }
 
   public boolean hasItem(String key) {

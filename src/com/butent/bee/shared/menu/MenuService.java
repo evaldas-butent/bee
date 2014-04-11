@@ -28,6 +28,8 @@ public enum MenuService {
   @XmlEnumValue("parameters")
   PARAMETERS(RightsState.VIEW, Sets.newHashSet(AdministrationConstants.VIEW_PARAMETERS,
       AdministrationConstants.VIEW_USER_PARAMETERS)),
+  @XmlEnumValue("report")
+  REPORT(RightsState.VIEW),
 
   @XmlEnumValue("items")
   ITEMS(RightsState.VIEW, ClassifierConstants.VIEW_ITEMS),

@@ -5,6 +5,7 @@ import com.google.gwt.core.client.Scheduler;
 import com.butent.bee.client.data.RowFactory;
 import com.butent.bee.client.grid.GridFactory;
 import com.butent.bee.client.modules.administration.ParametersGrid;
+import com.butent.bee.client.output.Report;
 import com.butent.bee.client.ui.FormFactory;
 import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogUtils;
@@ -40,7 +41,11 @@ public class MenuCommand implements Scheduler.ScheduledCommand {
       case PARAMETERS:
         GridFactory.openGrid("Parameters", new ParametersGrid(parameters));
         break;
-      
+
+      case REPORT:
+        Report.open(parameters);
+        break;
+        
       default:
         if (service.getHandler() == null) {
           logger.warning("menu handler not available for", service);

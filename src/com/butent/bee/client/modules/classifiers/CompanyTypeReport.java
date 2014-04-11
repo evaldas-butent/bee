@@ -20,6 +20,8 @@ import com.butent.bee.client.event.EventUtils;
 import com.butent.bee.client.grid.HtmlTable;
 import com.butent.bee.client.i18n.Collator;
 import com.butent.bee.client.i18n.Format;
+import com.butent.bee.client.output.Report;
+import com.butent.bee.client.output.ReportParameters;
 import com.butent.bee.client.style.StyleUtils;
 import com.butent.bee.client.ui.HasIndexedWidgets;
 import com.butent.bee.client.view.form.FormView;
@@ -29,7 +31,6 @@ import com.butent.bee.client.widget.InputDateTime;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.Service;
 import com.butent.bee.shared.communication.ResponseObject;
-import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.SimpleRowSet;
 import com.butent.bee.shared.data.SimpleRowSet.SimpleRow;
 import com.butent.bee.shared.data.filter.Filter;
@@ -199,7 +200,7 @@ public class CompanyTypeReport extends ReportInterceptor {
     return table;
   }
 
-  CompanyTypeReport() {
+  public CompanyTypeReport() {
   }
 
   @Override
@@ -209,25 +210,25 @@ public class CompanyTypeReport extends ReportInterceptor {
 
   @Override
   public void onLoad(FormView form) {
-    Long user = BeeKeeper.getUser().getUserId();
-    if (!DataUtils.isId(user)) {
+    ReportParameters parameters = readParameters();
+    if (parameters == null) {
       return;
     }
 
     Widget widget = form.getWidgetByName(NAME_START_DATE);
-    DateTime dateTime = BeeKeeper.getStorage().getDateTime(storageKey(NAME_START_DATE, user));
+    DateTime dateTime = parameters.getDateTime(NAME_START_DATE);
     if (widget instanceof InputDateTime && dateTime != null) {
       ((InputDateTime) widget).setDateTime(dateTime);
     }
 
     widget = form.getWidgetByName(NAME_END_DATE);
-    dateTime = BeeKeeper.getStorage().getDateTime(storageKey(NAME_END_DATE, user));
+    dateTime = parameters.getDateTime(NAME_END_DATE);
     if (widget instanceof InputDateTime && dateTime != null) {
       ((InputDateTime) widget).setDateTime(dateTime);
     }
 
     widget = form.getWidgetByName(NAME_TYPES);
-    String idList = BeeKeeper.getStorage().get(storageKey(NAME_TYPES, user));
+    String idList = parameters.get(NAME_TYPES);
     if (widget instanceof MultiSelector && !BeeUtils.isEmpty(idList)) {
       ((MultiSelector) widget).render(idList);
     }
@@ -235,15 +236,8 @@ public class CompanyTypeReport extends ReportInterceptor {
 
   @Override
   public void onUnload(FormView form) {
-    Long user = BeeKeeper.getUser().getUserId();
-    if (!DataUtils.isId(user)) {
-      return;
-    }
-
-    BeeKeeper.getStorage().set(storageKey(NAME_START_DATE, user), getDateTime(NAME_START_DATE));
-    BeeKeeper.getStorage().set(storageKey(NAME_END_DATE, user), getDateTime(NAME_END_DATE));
-
-    BeeKeeper.getStorage().set(storageKey(NAME_TYPES, user), getEditorValue(NAME_TYPES));
+    storeDateTimeValues(NAME_START_DATE, NAME_END_DATE);
+    storeEditorValues(NAME_TYPES);
   }
 
   @Override
@@ -300,8 +294,18 @@ public class CompanyTypeReport extends ReportInterceptor {
   }
 
   @Override
-  protected String getStorageKeyPrefix() {
-    return "CompanyTypeReport_";
+  protected Report getReport() {
+    return Report.COMPANY_TYPES;
+  }
+
+  @Override
+  protected ReportParameters getReportParameters() {
+    ReportParameters parameters = new ReportParameters();
+
+    addDateTimeValues(parameters, NAME_START_DATE, NAME_START_DATE);
+    addEditorValues(parameters, NAME_TYPES);
+
+    return parameters;
   }
   
   private void renderData(Table<YearMonth, Column, Integer> data, 
