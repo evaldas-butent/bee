@@ -248,6 +248,10 @@ public class ScreenImpl implements Screen {
   @Override
   public void onLoad() {
     Global.getSearch().focus();
+    
+    if (!Global.getReportSettings().isEmpty() && !containsDomainEntry(Domain.REPORTS, null)) {
+      addDomainEntry(Domain.REPORTS, Global.getReportSettings().getPanel(), null, null);
+    }
 
     if (Global.getNewsAggregator().hasNews()) {
       activateDomainEntry(Domain.NEWS, null);
@@ -606,7 +610,7 @@ public class ScreenImpl implements Screen {
 
     Flow panel = new Flow();
     panel.add(getCentralScrutinizer());
-    panel.add(createCopyright("bee-"));
+    panel.add(createCopyright(StyleUtils.CLASS_NAME_PREFIX));
 
     int width = BeeUtils.resize(Window.getClientWidth(), 1000, 2000, 240, 320);
     return Pair.of(panel, width);

@@ -57,7 +57,7 @@ public class AccountEditor extends AbstractFormInterceptor implements SelectorEv
                     getFormView().getActiveRow().setValue(getFormView().getDataIndex(name),
                         BeeUtils.isEmpty(value) ? null : Codec.encodeBase64(value));
                   }
-                }, null, BeeConst.UNDEF, BeeConst.DOUBLE_UNDEF, null, BeeConst.UNDEF,
+                }, null, BeeConst.UNDEF, null, BeeConst.DOUBLE_UNDEF, null, BeeConst.UNDEF,
                 Localized.getConstants().ok(), Localized.getConstants().cancel(),
                 new WidgetInitializer() {
                   @Override

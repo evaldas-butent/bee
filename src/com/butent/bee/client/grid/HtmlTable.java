@@ -415,6 +415,11 @@ public class HtmlTable extends Panel implements IdentifiableWidget, IsHtmlTable,
 
     return index;
   }
+  
+  public Element getEventRowElement(GwtEvent<?> event, boolean incl) {
+    Integer row = getEventRow(event, incl);
+    return (row == null) ? null : getRow(row);
+  }
 
   @Override
   public String getId() {

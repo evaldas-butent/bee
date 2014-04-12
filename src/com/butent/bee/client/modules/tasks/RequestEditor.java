@@ -162,7 +162,7 @@ public class RequestEditor extends AbstractFormInterceptor {
         Queries.update(form.getViewName(), activeRow.getId(), activeRow.getId(),
             columns, oldValues, newValues, form.getChildrenForUpdate(), new SaveCallback(form));
       }
-    }, null, BeeConst.UNDEF, 300, CssUnit.PX);
+    }, null, BeeConst.UNDEF, null, 300, CssUnit.PX);
   }
 
   private void toTaskAndFinish() {

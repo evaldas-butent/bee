@@ -3001,7 +3001,7 @@ public final class CliWorker {
               return value.indexOf('x') < 0;
             }
           }
-        }, defaultValue, maxLength, width, widthUnit, timeout, confirmHtml, cancelHtml,
+        }, defaultValue, maxLength, null, width, widthUnit, timeout, confirmHtml, cancelHtml,
         new WidgetInitializer() {
           @Override
           public Widget initialize(Widget widget, String name) {

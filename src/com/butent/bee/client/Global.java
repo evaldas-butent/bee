@@ -174,6 +174,18 @@ public final class Global {
         StyleUtils.className(FontSize.LARGE), StyleUtils.className(FontSize.MEDIUM), target);
   }
 
+  public static void confirmRemove(String caption, String item, ConfirmationCallback callback) {
+    confirmRemove(caption, item, callback, null);
+  }
+
+  public static void confirmRemove(String caption, String item, ConfirmationCallback callback,
+      Element target) {
+    List<String> messages = Lists.newArrayList(Localized.getMessages().removeQuestion(item));
+    msgBoxen.confirm(caption, Icon.WARNING, messages, Localized.getConstants().actionRemove(),
+        Localized.getConstants().cancel(), callback, null,
+        StyleUtils.className(FontSize.MEDIUM), StyleUtils.className(FontSize.MEDIUM), target);
+  }
+
   public static void debug(String s) {
     logger.debug(s);
   }
@@ -489,20 +501,26 @@ public final class Global {
 
   public static void inputString(String caption, String prompt, StringCallback callback,
       String defaultValue, int maxLength) {
-    inputString(caption, prompt, callback, defaultValue, maxLength, BeeConst.DOUBLE_UNDEF, null);
+    inputString(caption, prompt, callback, defaultValue, maxLength, null);
   }
 
   public static void inputString(String caption, String prompt, StringCallback callback,
-      String defaultValue, int maxLength, double width, CssUnit widthUnit) {
-    inputString(caption, prompt, callback, defaultValue, maxLength, width, widthUnit,
+      String defaultValue, int maxLength, Element target) {
+    inputString(caption, prompt, callback, defaultValue, maxLength, target,
+        BeeConst.DOUBLE_UNDEF, null);
+  }
+
+  public static void inputString(String caption, String prompt, StringCallback callback,
+      String defaultValue, int maxLength, Element target, double width, CssUnit widthUnit) {
+    inputString(caption, prompt, callback, defaultValue, maxLength, target, width, widthUnit,
         BeeConst.UNDEF, Localized.getConstants().ok(), Localized.getConstants().cancel(), null);
   }
 
   public static void inputString(String caption, String prompt, StringCallback callback,
-      String defaultValue, int maxLength, double width, CssUnit widthUnit, int timeout,
-      String confirmHtml, String cancelHtml, WidgetInitializer initializer) {
-    inpBoxen.inputString(caption, prompt, callback, defaultValue, maxLength, width, widthUnit,
-        timeout, confirmHtml, cancelHtml, initializer);
+      String defaultValue, int maxLength, Element target, double width, CssUnit widthUnit,
+      int timeout, String confirmHtml, String cancelHtml, WidgetInitializer initializer) {
+    inpBoxen.inputString(caption, prompt, callback, defaultValue, maxLength, target,
+        width, widthUnit, timeout, confirmHtml, cancelHtml, initializer);
   }
 
   public static void inputString(String caption, StringCallback callback) {

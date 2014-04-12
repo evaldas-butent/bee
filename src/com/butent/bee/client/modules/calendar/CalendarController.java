@@ -19,7 +19,6 @@ import com.butent.bee.client.data.Queries;
 import com.butent.bee.client.data.RowCallback;
 import com.butent.bee.client.datepicker.DatePicker;
 import com.butent.bee.client.dialog.ConfirmationCallback;
-import com.butent.bee.client.dialog.Icon;
 import com.butent.bee.client.dialog.StringCallback;
 import com.butent.bee.client.dom.DomUtils;
 import com.butent.bee.client.event.Binder;
@@ -504,28 +503,24 @@ class CalendarController extends Flow implements HandlesStateChange, HasCaption,
       return;
     }
 
-    String message =
-        BeeUtils.joinWords(Localized.getConstants().actionRemove(), getCaption(row), "?");
+    Global.confirmRemove(getCaption(), getCaption(row), new ConfirmationCallback() {
+      @Override
+      public void onConfirm() {
+        int index = ucaIds.indexOf(rowId);
 
-    Global.confirmDelete(getCaption(), Icon.WARNING, Lists.newArrayList(message),
-        new ConfirmationCallback() {
-          @Override
-          public void onConfirm() {
-            int index = ucaIds.indexOf(rowId);
+        if (index >= 0) {
+          Queries.deleteRow(VIEW_USER_CAL_ATTENDEES, rowId, row.getVersion());
 
-            if (index >= 0) {
-              Queries.deleteRow(VIEW_USER_CAL_ATTENDEES, rowId, row.getVersion());
+          ucAttendees.removeRowById(rowId);
+          ucaIds.remove(index);
+          table.removeRow(index);
 
-              ucAttendees.removeRowById(rowId);
-              ucaIds.remove(index);
-              table.removeRow(index);
+          setExclusions();
 
-              setExclusions();
-
-              postUpdate();
-            }
-          }
-        });
+          postUpdate();
+        }
+      }
+    });
   }
 
   private Long getActiveRowId() {

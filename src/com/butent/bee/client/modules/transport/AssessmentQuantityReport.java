@@ -136,6 +136,8 @@ public class AssessmentQuantityReport extends ReportInterceptor {
         ((ListBox) widget).setSelectedIndex(index);
       }
     }
+
+    super.onLoad(form);
   }
 
   @Override
@@ -237,6 +239,24 @@ public class AssessmentQuantityReport extends ReportInterceptor {
   }
 
   @Override
+  protected String getBookmarkLabel() {
+    List<String> labels = Lists.newArrayList(getCaption(),
+        Format.renderPeriod(getDateTime(NAME_START_DATE), getDateTime(NAME_END_DATE)),
+        getFilterLabel(NAME_DEPARTMENTS), getFilterLabel(NAME_MANAGERS));
+
+    for (String groupName : NAME_GROUP_BY) {
+      if (BeeUtils.isPositive(getSelectedIndex(groupName))) {
+        String value = getEditorValue(groupName);
+        if (!labels.contains(value)) {
+          labels.add(value);
+        }
+      }
+    }
+
+    return BeeUtils.joinWords(labels);
+  }
+
+  @Override
   protected Report getReport() {
     return Report.ASSESSMENT_QUANTITY;
   }
@@ -245,7 +265,7 @@ public class AssessmentQuantityReport extends ReportInterceptor {
   protected ReportParameters getReportParameters() {
     ReportParameters parameters = new ReportParameters();
 
-    addDateTimeValues(parameters, NAME_START_DATE, NAME_START_DATE);
+    addDateTimeValues(parameters, NAME_START_DATE, NAME_END_DATE);
     addEditorValues(parameters, NAME_DEPARTMENTS, NAME_MANAGERS);
 
     for (String groupName : NAME_GROUP_BY) {
@@ -254,8 +274,16 @@ public class AssessmentQuantityReport extends ReportInterceptor {
         parameters.add(groupName, index);
       }
     }
-    
+
     return parameters;
+  }
+
+  @Override
+  protected boolean validateParameters(ReportParameters parameters) {
+    DateTime start = parameters.getDateTime(NAME_START_DATE);
+    DateTime end = parameters.getDateTime(NAME_END_DATE);
+
+    return checkRange(start, end);
   }
 
   private void renderData(final SimpleRowSet data) {

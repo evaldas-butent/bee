@@ -9,6 +9,7 @@ import com.google.gwt.user.client.ui.Widget;
 import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.Global;
 import com.butent.bee.client.composite.MultiSelector;
+import com.butent.bee.client.composite.UnboundSelector;
 import com.butent.bee.client.dialog.ModalGrid;
 import com.butent.bee.client.dialog.Popup;
 import com.butent.bee.client.event.EventUtils;
@@ -23,6 +24,7 @@ import com.butent.bee.client.presenter.Presenter;
 import com.butent.bee.client.presenter.PresenterCallback;
 import com.butent.bee.client.ui.HasIndexedWidgets;
 import com.butent.bee.client.view.edit.Editor;
+import com.butent.bee.client.view.form.FormView;
 import com.butent.bee.client.widget.InputDateTime;
 import com.butent.bee.client.widget.ListBox;
 import com.butent.bee.shared.BeeConst;
@@ -153,6 +155,13 @@ public abstract class ReportInterceptor extends AbstractFormInterceptor implemen
   }
 
   @Override
+  public void onLoad(FormView form) {
+    if (getInitialParameters() != null) {
+      doReport();
+    }
+  }
+  
+  @Override
   public boolean onPrint(Element source, Element target) {
     return true;
   }
@@ -205,6 +214,8 @@ public abstract class ReportInterceptor extends AbstractFormInterceptor implemen
 
   protected abstract void doReport();
 
+  protected abstract String getBookmarkLabel();
+  
   protected HasIndexedWidgets getDataContainer() {
     Widget widget = getFormView().getWidgetByName(NAME_DATA_CONTAINER);
     if (widget instanceof HasIndexedWidgets) {
@@ -252,6 +263,9 @@ public abstract class ReportInterceptor extends AbstractFormInterceptor implemen
 
         return BeeUtils.joinItems(labels);
       }
+      
+    } else if (widget instanceof UnboundSelector) {
+      return ((UnboundSelector) widget).getRenderedValue();
 
     } else {
       widgetNotFound(name);
@@ -328,8 +342,15 @@ public abstract class ReportInterceptor extends AbstractFormInterceptor implemen
     }
   }
 
+  protected abstract boolean validateParameters(ReportParameters parameters);
+
   private void bookmark() {
-    Global.getReportSettings().bookmark(getReport(), getCaption(), getReportParameters());
+    ReportParameters parameters = getReportParameters();
+
+    if (parameters != null && validateParameters(parameters)) {
+      String caption = BeeUtils.notEmpty(getBookmarkLabel(), getCaption());
+      Global.getReportSettings().bookmark(getReport(), caption, getReportParameters());
+    }
   }
 
   private ReportParameters getInitialParameters() {

@@ -11,6 +11,7 @@ import com.butent.bee.client.data.Data;
 import com.butent.bee.client.data.Queries;
 import com.butent.bee.client.grid.GridFactory;
 import com.butent.bee.client.grid.GridFactory.GridOptions;
+import com.butent.bee.client.i18n.Format;
 import com.butent.bee.client.output.Report;
 import com.butent.bee.client.output.ReportParameters;
 import com.butent.bee.client.presenter.Presenter;
@@ -221,6 +222,8 @@ public class CompanyUsageReport extends ReportInterceptor {
         ((MultiSelector) widget).render(idList);
       }
     }
+    
+    super.onLoad(form);
   }
 
   @Override
@@ -239,7 +242,6 @@ public class CompanyUsageReport extends ReportInterceptor {
       clearEditor(name);
     }
   }
-  
 
   @Override
   protected void doReport() {
@@ -308,6 +310,36 @@ public class CompanyUsageReport extends ReportInterceptor {
   }
 
   @Override
+  protected String getBookmarkLabel() {
+    List<String> labels = Lists.newArrayList(getCaption());
+    
+    String relationIndex = getEditorValue(NAME_RELATION);
+    
+    if (BeeUtils.isPositiveInt(relationIndex)) {
+      String label = Data.getViewCaption(RELATIONS.get(BeeUtils.toInt(relationIndex) - 1));
+      labels.add(BeeUtils.joinWords(label, getEditorValue(NAME_OPERATOR),
+          getEditorValue(NAME_COUNT)));
+      
+      labels.add(Format.renderPeriod(getDateTime(NAME_START_DATE), getDateTime(NAME_END_DATE)));
+    }
+
+    List<String> selectorLabels = Lists.newArrayList();
+
+    for (String name : SELECTOR_NAMES) {
+      String label = getFilterLabel(name);
+      if (!BeeUtils.isEmpty(label)) {
+        selectorLabels.add(label);
+      }
+    }
+    
+    if (!selectorLabels.isEmpty()) {
+      labels.add(BeeUtils.joinItems(selectorLabels));
+    }
+
+    return BeeUtils.joinWords(labels);
+  }
+  
+  @Override
   protected Report getReport() {
     return Report.COMPANY_USAGE;
   }
@@ -317,10 +349,35 @@ public class CompanyUsageReport extends ReportInterceptor {
     ReportParameters parameters = new ReportParameters();
 
     addEditorValues(parameters, NAME_RELATION, NAME_OPERATOR, NAME_COUNT);
-    addDateTimeValues(parameters, NAME_START_DATE, NAME_START_DATE);
+    addDateTimeValues(parameters, NAME_START_DATE, NAME_END_DATE);
     addEditorValues(parameters, SELECTOR_NAMES);
 
     return parameters;
+  }
+  
+  @Override
+  protected boolean validateParameters(ReportParameters parameters) {
+    DateTime start = parameters.getDateTime(NAME_START_DATE);
+    DateTime end = parameters.getDateTime(NAME_END_DATE);
+
+    if (!checkRange(start, end)) {
+      return false;
+    }
+    
+    for (String name : SELECTOR_NAMES) {
+      if (parameters.containsKey(name)) {
+        return true;
+      }
+    }
+    
+    Integer relationIndex = parameters.getInteger(NAME_RELATION);
+    
+    if (BeeUtils.isPositive(relationIndex) && parameters.containsKey(NAME_OPERATOR)) {
+      return true;
+    } else {
+      getFormView().notifyWarning(Localized.getConstants().specifyCondition());
+      return false;
+    }
   }
   
   private void openGrid(Filter filter) {

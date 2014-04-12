@@ -178,7 +178,7 @@ class CentralScrutinizer extends Stack implements CloseHandler<IdentifiableWidge
     Assert.notNull(widget);
 
     if (find(domain, key) >= 0) {
-      logger.warning("attemp to add existing appliance failed:", domain, key);
+      logger.warning("attempt to add existing appliance failed:", domain, key);
       return;
     }
 

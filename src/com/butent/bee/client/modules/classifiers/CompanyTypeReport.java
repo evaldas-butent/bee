@@ -232,6 +232,8 @@ public class CompanyTypeReport extends ReportInterceptor {
     if (widget instanceof MultiSelector && !BeeUtils.isEmpty(idList)) {
       ((MultiSelector) widget).render(idList);
     }
+    
+    super.onLoad(form);
   }
 
   @Override
@@ -294,6 +296,13 @@ public class CompanyTypeReport extends ReportInterceptor {
   }
 
   @Override
+  protected String getBookmarkLabel() {
+    return BeeUtils.joinWords(getCaption(),
+        Format.renderPeriod(getDateTime(NAME_START_DATE), getDateTime(NAME_END_DATE)),
+        getFilterLabel(NAME_TYPES));
+  }
+
+  @Override
   protected Report getReport() {
     return Report.COMPANY_TYPES;
   }
@@ -302,10 +311,18 @@ public class CompanyTypeReport extends ReportInterceptor {
   protected ReportParameters getReportParameters() {
     ReportParameters parameters = new ReportParameters();
 
-    addDateTimeValues(parameters, NAME_START_DATE, NAME_START_DATE);
+    addDateTimeValues(parameters, NAME_START_DATE, NAME_END_DATE);
     addEditorValues(parameters, NAME_TYPES);
 
     return parameters;
+  }
+  
+  @Override
+  protected boolean validateParameters(ReportParameters parameters) {
+    DateTime start = parameters.getDateTime(NAME_START_DATE);
+    DateTime end = parameters.getDateTime(NAME_END_DATE);
+
+    return checkRange(start, end);
   }
   
   private void renderData(Table<YearMonth, Column, Integer> data, 

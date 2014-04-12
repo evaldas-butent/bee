@@ -1195,7 +1195,9 @@ public class TransportModuleBean implements BeeModule {
     }
 
     query.addFrom(TBL_ASSESSMENTS);
-    if (!managers.isEmpty() || groupBy.contains(AR_MANAGER) || groupBy.contains(BeeConst.MONTH)) {
+    if (!managers.isEmpty() || groupBy.contains(AR_MANAGER) || groupBy.contains(BeeConst.MONTH)
+        || startDate != null || endDate != null) {
+
       query.addFromInner(TBL_ORDER_CARGO,
           sys.joinTables(TBL_ORDER_CARGO, TBL_ASSESSMENTS, COL_CARGO));
       query.addFromInner(TBL_ORDERS, sys.joinTables(TBL_ORDERS, TBL_ORDER_CARGO, COL_ORDER));
@@ -1209,12 +1211,16 @@ public class TransportModuleBean implements BeeModule {
 
     String tmp = qs.sqlCreateTemp(query);
 
+    long count;
     if (groupBy.contains(BeeConst.MONTH)) {
-      long count = qs.setYearMonth(tmp, COL_ORDER_DATE, BeeConst.YEAR, BeeConst.MONTH);
-      if (count <= 0) {
-        qs.sqlDropTemp(tmp);
-        return ResponseObject.emptyResponse();
-      }
+      count = qs.setYearMonth(tmp, COL_ORDER_DATE, BeeConst.YEAR, BeeConst.MONTH);
+    } else {
+      count = qs.sqlCount(tmp, null);
+    }
+
+    if (count <= 0) {
+      qs.sqlDropTemp(tmp);
+      return ResponseObject.emptyResponse();
     }
 
     query = new SqlSelect();
@@ -1408,7 +1414,7 @@ public class TransportModuleBean implements BeeModule {
 
     long count;
     if (groupBy.contains(BeeConst.MONTH)) {
-      count = qs.setYearMonth(tmp, COL_ORDER_DATE, BeeConst.YEAR, BeeConst.MONTH);
+      count = qs.setYearMonth(tmp, COL_PLACE_DATE, BeeConst.YEAR, BeeConst.MONTH);
     } else {
       count = qs.sqlCount(tmp, null);
     }

@@ -1506,6 +1506,10 @@ public final class BeeUtils {
     return sb.toString();
   }
 
+  public static String joinWords(Collection<?> col) {
+    return join(BeeConst.STRING_SPACE, col);
+  }
+
   public static String joinWords(Object first, Object second, Object... rest) {
     return join(BeeConst.STRING_SPACE, first, second, rest);
   }
