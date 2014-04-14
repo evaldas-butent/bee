@@ -15,6 +15,7 @@
     <DataColumn name="Date" width="110" readOnly="true" />
     <RelColumn name="Manager" readOnly="true" editSource="CompanyPerson" newRowEnabled="false" />
     <DataColumn name="Notes" readOnly="true" />
+    <DataColumn name="CurrencyName" readOnly="true" />
     <PropColumn name="Income" type="decimal" caption="=income" format="0.00" />
     <PropColumn name="Expense" type="decimal" caption="=trExpenses" format="0.00" />
     <CalcColumn name="Status" caption="=status" type="string" cellType="html">

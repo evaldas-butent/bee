@@ -241,6 +241,7 @@ public class TransportModuleBean implements BeeModule {
 
     } else if (BeeUtils.same(svc, SVC_GET_ASSESSMENT_TOTALS)) {
       response = getAssessmentTotals(BeeUtils.toLongOrNull(reqInfo.getParameter(COL_ASSESSMENT)),
+          BeeUtils.toLongOrNull(reqInfo.getParameter(COL_CURRENCY)),
           BeeUtils.toBoolean(reqInfo.getParameter("isPrimary")));
 
     } else if (BeeUtils.same(svc, SVC_GET_ASSESSMENT_QUANTITY_REPORT)) {
@@ -337,18 +338,11 @@ public class TransportModuleBean implements BeeModule {
       public void calcAssessmentAmounts(ViewQueryEvent event) {
         if (BeeUtils.same(event.getTargetName(), VIEW_CHILD_ASSESSMENTS) && event.isAfter()
             && event.getRowset().getNumberOfRows() > 0) {
-          String primaryAssessment = SqlUtils.uniqueName();
-          String primaryCargo = SqlUtils.uniqueName();
 
           for (String tbl : new String[] {TBL_CARGO_INCOMES, TBL_CARGO_EXPENSES}) {
             SqlSelect query = new SqlSelect()
                 .addField(TBL_ASSESSMENTS, sys.getIdName(TBL_ASSESSMENTS), COL_ASSESSMENT)
                 .addFrom(TBL_ASSESSMENTS)
-                .addFromInner(TBL_ASSESSMENTS, primaryAssessment,
-                    sys.joinTables(TBL_ASSESSMENTS, primaryAssessment, TBL_ASSESSMENTS,
-                        COL_ASSESSMENT))
-                .addFromInner(TBL_ORDER_CARGO, primaryCargo,
-                    sys.joinTables(TBL_ORDER_CARGO, primaryCargo, primaryAssessment, COL_CARGO))
                 .addFromInner(TBL_ORDER_CARGO,
                     sys.joinTables(TBL_ORDER_CARGO, TBL_ASSESSMENTS, COL_CARGO))
                 .addFromInner(TBL_ORDERS, sys.joinTables(TBL_ORDERS, TBL_ORDER_CARGO, COL_ORDER))
@@ -360,7 +354,7 @@ public class TransportModuleBean implements BeeModule {
                 TradeModuleBean.getTotalExpression(tbl, SqlUtils.field(tbl, COL_AMOUNT)),
                 SqlUtils.field(tbl, COL_CURRENCY),
                 SqlUtils.nvl(SqlUtils.field(tbl, COL_DATE), SqlUtils.field(TBL_ORDERS, COL_DATE)),
-                SqlUtils.field(primaryCargo, COL_CURRENCY));
+                SqlUtils.field(TBL_ORDER_CARGO, COL_CURRENCY));
 
             SimpleRowSet rs = qs.getData(query.addSum(xpr, VAR_TOTAL));
 
@@ -1285,7 +1279,7 @@ public class TransportModuleBean implements BeeModule {
     }
   }
 
-  private ResponseObject getAssessmentTotals(Long assessmentId, boolean isPrimary) {
+  private ResponseObject getAssessmentTotals(Long assessmentId, Long currency, boolean isPrimary) {
     Assert.state(DataUtils.isId(assessmentId));
 
     SqlSelect query = null;
@@ -1302,26 +1296,16 @@ public class TransportModuleBean implements BeeModule {
             .addFromInner(TBL_ORDER_CARGO, sys.joinTables(TBL_ORDER_CARGO, tbl, COL_CARGO))
             .addFromInner(TBL_ORDERS, sys.joinTables(TBL_ORDERS, TBL_ORDER_CARGO, COL_ORDER));
 
-        String alsCargo;
-
         if (i > 0) {
-          alsCargo = SqlUtils.uniqueName();
-          String primaryAssessment = SqlUtils.uniqueName();
-
-          ss.addFromInner(TBL_ASSESSMENTS, primaryAssessment,
-              sys.joinTables(TBL_ASSESSMENTS, primaryAssessment, TBL_ASSESSMENTS, COL_ASSESSMENT))
-              .addFromInner(TBL_ORDER_CARGO, alsCargo,
-                  sys.joinTables(TBL_ORDER_CARGO, alsCargo, primaryAssessment, COL_CARGO))
-              .setWhere(SqlUtils.equals(TBL_ASSESSMENTS, COL_ASSESSMENT, assessmentId));
+          ss.setWhere(SqlUtils.equals(TBL_ASSESSMENTS, COL_ASSESSMENT, assessmentId));
         } else {
-          alsCargo = TBL_ORDER_CARGO;
           ss.setWhere(sys.idEquals(TBL_ASSESSMENTS, assessmentId));
         }
         IsExpression xpr = ExchangeUtils.exchangeFieldTo(ss,
             TradeModuleBean.getTotalExpression(tbl, SqlUtils.field(tbl, COL_AMOUNT)),
             SqlUtils.field(tbl, COL_CURRENCY),
             SqlUtils.nvl(SqlUtils.field(tbl, COL_DATE), SqlUtils.field(TBL_ORDERS, COL_DATE)),
-            SqlUtils.field(alsCargo, COL_CURRENCY));
+            SqlUtils.constant(currency));
 
         ss.addSum(xpr, COL_AMOUNT);
 

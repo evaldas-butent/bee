@@ -28,6 +28,12 @@
         </SimpleJoin>
       </SimpleJoin>
     </SimpleJoin>
+    
+    <SimpleJoin name="Cargo" joinType="LEFT">
+      <SimpleJoin name="Currency" joinType="LEFT">
+        <SimpleColumn name="Name" alias="CurrencyName" />
+      </SimpleJoin>
+    </SimpleJoin>
   </Columns>
   <Order>
     <OrderBy column="Date" />

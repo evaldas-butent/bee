@@ -63,7 +63,6 @@ import com.butent.bee.client.ui.FormFactory.WidgetDescriptionCallback;
 import com.butent.bee.client.ui.IdentifiableWidget;
 import com.butent.bee.client.view.HeaderView;
 import com.butent.bee.client.view.add.ReadyForInsertEvent;
-import com.butent.bee.client.view.edit.EditStopEvent;
 import com.butent.bee.client.view.edit.EditableColumn;
 import com.butent.bee.client.view.form.FormView;
 import com.butent.bee.client.view.form.interceptor.FormInterceptor;
@@ -87,7 +86,6 @@ import com.butent.bee.shared.data.IsColumn;
 import com.butent.bee.shared.data.IsRow;
 import com.butent.bee.shared.data.SimpleRowSet;
 import com.butent.bee.shared.data.event.DataChangeEvent;
-import com.butent.bee.shared.data.event.RowUpdateEvent;
 import com.butent.bee.shared.data.filter.Filter;
 import com.butent.bee.shared.data.value.IntegerValue;
 import com.butent.bee.shared.data.value.LongValue;
@@ -111,8 +109,8 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 
-public class AssessmentForm extends PrintFormInterceptor implements EditStopEvent.Handler,
-    SelectorEvent.Handler, ValueChangeHandler<String> {
+public class AssessmentForm extends PrintFormInterceptor implements SelectorEvent.Handler,
+    ValueChangeHandler<String> {
 
   private class ChildAssessmentsGrid extends AbstractGridInterceptor implements ClickHandler {
     @Override
@@ -514,6 +512,7 @@ public class AssessmentForm extends PrintFormInterceptor implements EditStopEven
     }
     ParameterList args = TransportHandler.createArgs(SVC_GET_ASSESSMENT_TOTALS);
     args.addDataItem(COL_ASSESSMENT, row.getId());
+    args.addDataItem(COL_CURRENCY, DataUtils.getLong(formView.getDataColumns(), row, COL_CURRENCY));
 
     if (!DataUtils.isId(row.getLong(formView.getDataIndex(COL_ASSESSMENT)))) {
       args.addDataItem("isPrimary", 1);
@@ -626,7 +625,7 @@ public class AssessmentForm extends PrintFormInterceptor implements EditStopEven
       }
     } else if (widget instanceof DataSelector) {
       if (BeeUtils.same(name, COL_CURRENCY)) {
-        ((DataSelector) widget).addEditStopHandler(this);
+        ((DataSelector) widget).addSelectorHandler(this);
 
       } else if (BeeUtils.same(name, COL_ORDER_MANAGER)) {
         manager = (DataSelector) widget;
@@ -846,35 +845,20 @@ public class AssessmentForm extends PrintFormInterceptor implements EditStopEven
 
   @Override
   public void onDataSelector(SelectorEvent event) {
-    if (event.isOpened()) {
-      manager.setAdditionalFilter(Filter.any(COL_DEPARTMENT, employees.get(userPerson)));
-
-    } else if (event.isChanged()) {
-      for (String field : new String[] {COL_DEPARTMENT, COL_DEPARTMENT_NAME}) {
-        form.getActiveRow().setValue(form.getDataIndex(field),
-            Data.getString(event.getRelatedViewName(), event.getRelatedRow(), field));
+    if (BeeUtils.same(event.getRelatedViewName(), TBL_CURRENCIES)) {
+      if (event.isChanged() && !isNewRow()) {
+        refreshTotals();
       }
-      form.refreshBySource(COL_DEPARTMENT_NAME);
-    }
-  }
+    } else if (Objects.equal(event.getSelector(), manager)) {
+      if (event.isOpened()) {
+        manager.setAdditionalFilter(Filter.any(COL_DEPARTMENT, employees.get(userPerson)));
 
-  @Override
-  public void onEditStop(EditStopEvent event) {
-    if (event.isChanged() && !isNewRow()) {
-      final String viewName = form.getViewName();
-      String oldCurrency = form.getStringValue(COL_CURRENCY);
-      String newCurrency = ((DataSelector) event.getSource()).getNormalizedValue();
-
-      if (!BeeUtils.same(oldCurrency, newCurrency)) {
-        Queries.update(viewName, form.getActiveRowId(), form.getActiveRow().getVersion(),
-            Data.getColumns(viewName, Lists.newArrayList(COL_CURRENCY)),
-            Lists.newArrayList(oldCurrency), Lists.newArrayList(newCurrency), null,
-            new RowCallback() {
-              @Override
-              public void onSuccess(BeeRow row) {
-                RowUpdateEvent.fire(BeeKeeper.getBus(), viewName, row);
-              }
-            });
+      } else if (event.isChanged()) {
+        for (String field : new String[] {COL_DEPARTMENT, COL_DEPARTMENT_NAME}) {
+          form.getActiveRow().setValue(form.getDataIndex(field),
+              Data.getString(event.getRelatedViewName(), event.getRelatedRow(), field));
+        }
+        form.refreshBySource(COL_DEPARTMENT_NAME);
       }
     }
   }
