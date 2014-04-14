@@ -15,7 +15,9 @@ import com.butent.bee.client.dialog.Popup;
 import com.butent.bee.client.event.EventUtils;
 import com.butent.bee.client.grid.GridFactory;
 import com.butent.bee.client.grid.GridFactory.GridOptions;
+import com.butent.bee.client.grid.HtmlTable;
 import com.butent.bee.client.i18n.Format;
+import com.butent.bee.client.output.Exporter;
 import com.butent.bee.client.output.Printable;
 import com.butent.bee.client.output.Printer;
 import com.butent.bee.client.output.Report;
@@ -134,12 +136,16 @@ public abstract class ReportInterceptor extends AbstractFormInterceptor implemen
       case BOOKMARK:
         bookmark();
         return false;
+        
+      case EXPORT:
+        export();
+        return false;
 
       default:
         return super.beforeAction(action, presenter);
     }
   }
-
+  
   @Override
   public String getCaption() {
     return getFormView().getCaption();
@@ -160,12 +166,12 @@ public abstract class ReportInterceptor extends AbstractFormInterceptor implemen
       doReport();
     }
   }
-  
+
   @Override
   public boolean onPrint(Element source, Element target) {
     return true;
   }
-
+  
   public void setInitialParameters(ReportParameters initialParameters) {
     this.initialParameters = initialParameters;
   }
@@ -215,7 +221,7 @@ public abstract class ReportInterceptor extends AbstractFormInterceptor implemen
   protected abstract void doReport();
 
   protected abstract String getBookmarkLabel();
-  
+
   protected HasIndexedWidgets getDataContainer() {
     Widget widget = getFormView().getWidgetByName(NAME_DATA_CONTAINER);
     if (widget instanceof HasIndexedWidgets) {
@@ -225,7 +231,7 @@ public abstract class ReportInterceptor extends AbstractFormInterceptor implemen
       return null;
     }
   }
-
+  
   protected DateTime getDateTime(String name) {
     Widget widget = getFormView().getWidgetByName(name);
     if (widget instanceof InputDateTime) {
@@ -350,6 +356,19 @@ public abstract class ReportInterceptor extends AbstractFormInterceptor implemen
     if (parameters != null && validateParameters(parameters)) {
       String caption = BeeUtils.notEmpty(getBookmarkLabel(), getCaption());
       Global.getReportSettings().bookmark(getReport(), caption, getReportParameters());
+    }
+  }
+
+  private void export() {
+    HasIndexedWidgets container = getDataContainer();
+    
+    if (container != null) {
+      for (Widget widget : container) {
+        if (widget instanceof HtmlTable) {
+          Exporter.toExcel((HtmlTable) widget);
+          break;
+        }
+      }
     }
   }
 

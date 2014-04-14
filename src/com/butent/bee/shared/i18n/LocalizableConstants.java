@@ -45,6 +45,8 @@ public interface LocalizableConstants extends Constants, LocalizableCalendarCons
 
   String actionEdit();
 
+  String actionExport();
+
   String actionFilter();
 
   String actionNew();
