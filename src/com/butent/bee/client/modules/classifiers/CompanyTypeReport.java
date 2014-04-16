@@ -31,9 +31,14 @@ import com.butent.bee.client.widget.InputDateTime;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.Service;
 import com.butent.bee.shared.communication.ResponseObject;
+import com.butent.bee.shared.css.values.TextAlign;
 import com.butent.bee.shared.data.SimpleRowSet;
 import com.butent.bee.shared.data.SimpleRowSet.SimpleRow;
 import com.butent.bee.shared.data.filter.Filter;
+import com.butent.bee.shared.export.XCell;
+import com.butent.bee.shared.export.XRow;
+import com.butent.bee.shared.export.XSheet;
+import com.butent.bee.shared.export.XStyle;
 import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.time.DateTime;
 import com.butent.bee.shared.time.TimeUtils;
@@ -199,6 +204,8 @@ public class CompanyTypeReport extends ReportInterceptor {
 
     return table;
   }
+  
+  private final XSheet sheet = new XSheet();
 
   public CompanyTypeReport() {
   }
@@ -332,6 +339,8 @@ public class CompanyTypeReport extends ReportInterceptor {
     if (container == null) {
       return;
     }
+    
+    sheet.clear();
 
     if (!container.isEmpty()) {
       container.clear();
@@ -353,24 +362,45 @@ public class CompanyTypeReport extends ReportInterceptor {
 
     int row = 0;
 
+    XRow xr = new XRow(row);
+    XStyle xs = XStyle.bold();
+    xs.setTextAlign(TextAlign.CENTER);
+    xr.setStyle(xs);
+
     table.setText(row, YEAR_COL, Localized.getConstants().year(), STYLE_HEADER);
     table.setText(row, MONTH_COL, Localized.getConstants().month(), STYLE_HEADER);
+
+    xr.add(new XCell(YEAR_COL, Localized.getConstants().year()));
+    xr.add(new XCell(MONTH_COL, Localized.getConstants().month()));
 
     for (int j = 0; j < columns.size(); j++) {
       Column column = columns.get(j);
       int col = VALUE_START_COL + j;
 
       table.setText(row, col, column.getLabel(), STYLE_HEADER);
+      xr.add(new XCell(col, column.getLabel()));
+
       if (column.total) {
         table.getCellFormatter().addStyleName(row, col, STYLE_ROW_TOTAL);
       }
     }
-
+    
+    sheet.add(xr);
     row++;
+    
+    XStyle csValue = XStyle.right();
+    XStyle csRowTot = XStyle.boldAndRight();
 
     for (YearMonth ym : yms) {
+      xr = new XRow(row);
+      
+      String m = Format.renderMonthFullStandalone(ym.getMonth());
+
       table.setValue(row, YEAR_COL, ym.getYear(), STYLE_YEAR);
-      table.setText(row, MONTH_COL, Format.renderMonthFullStandalone(ym.getMonth()), STYLE_MONTH);
+      table.setText(row, MONTH_COL, m, STYLE_MONTH);
+      
+      xr.add(new XCell(YEAR_COL, ym.getYear()));
+      xr.add(new XCell(MONTH_COL, m));
 
       for (int j = 0; j < columns.size(); j++) {
         Column column = columns.get(j);
@@ -383,6 +413,10 @@ public class CompanyTypeReport extends ReportInterceptor {
           if (column.total) {
             table.getCellFormatter().addStyleName(row, col, STYLE_ROW_TOTAL);
           }
+          
+          XCell xc = new XCell(col, value);
+          xc.setStyle(column.total ? csRowTot : csValue);
+          xr.add(xc);
           
           DomUtils.setDataColumn(table.getCellFormatter().getElement(row, col), j);
 
@@ -398,16 +432,20 @@ public class CompanyTypeReport extends ReportInterceptor {
       DomUtils.setDataProperty(table.getRow(row), DATA_KEY_YEAR, ym.getYear());
       DomUtils.setDataProperty(table.getRow(row), DATA_KEY_MONTH, ym.getMonth());
       
+      sheet.add(xr);
       row++;
     }
 
     if (yms.size() > 1) {
+      xr = new XRow(row, XStyle.boldAndRight());
+
       for (int j = 0; j < columns.size(); j++) {
         Column column = columns.get(j);
         int col = VALUE_START_COL + j;
 
         table.setText(row, col, renderQuantity(colTotals[j]),
             column.total ? STYLE_TOTAL : STYLE_COL_TOTAL);
+        xr.add(new XCell(col, colTotals[j]));
 
         if (!column.total) {
           DomUtils.setDataColumn(table.getCellFormatter().getElement(row, col), j);
@@ -415,6 +453,7 @@ public class CompanyTypeReport extends ReportInterceptor {
       }
 
       table.getRowFormatter().addStyleName(row, STYLE_SUMMARY);
+      sheet.add(xr);
     }
 
     table.addClickHandler(new ClickHandler() {

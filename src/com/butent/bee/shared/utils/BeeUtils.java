@@ -1620,6 +1620,10 @@ public final class BeeUtils {
     return prefix + padLeft(suffix, l, '0');
   }
 
+  public static boolean nonZero(Double x) {
+    return isDouble(x) && !isZero(x);
+  }
+
   public static double normalize(double x, double min, double max) {
     double z;
 

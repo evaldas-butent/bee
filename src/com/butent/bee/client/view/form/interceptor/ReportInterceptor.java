@@ -15,9 +15,7 @@ import com.butent.bee.client.dialog.Popup;
 import com.butent.bee.client.event.EventUtils;
 import com.butent.bee.client.grid.GridFactory;
 import com.butent.bee.client.grid.GridFactory.GridOptions;
-import com.butent.bee.client.grid.HtmlTable;
 import com.butent.bee.client.i18n.Format;
-import com.butent.bee.client.output.Exporter;
 import com.butent.bee.client.output.Printable;
 import com.butent.bee.client.output.Printer;
 import com.butent.bee.client.output.Report;
@@ -47,13 +45,17 @@ import java.util.Map;
 
 public abstract class ReportInterceptor extends AbstractFormInterceptor implements Printable {
 
+  protected static final String PERCENT_PATTERN = "0.0";
+  protected static final String QUANTITY_PATTERN = "#,###";
+  protected static final String AMOUNT_PATTERN = "#,##0.00";
+
   private static BeeLogger logger = LogUtils.getLogger(ReportInterceptor.class);
 
   private static final String NAME_DATA_CONTAINER = "DataContainer";
 
-  private static final NumberFormat percentFormat = Format.getNumberFormat("0.0");
-  private static final NumberFormat quantityFormat = Format.getNumberFormat("#,###");
-  private static final NumberFormat amountFormat = Format.getNumberFormat("#,##0.00");
+  private static final NumberFormat percentFormat = Format.getNumberFormat(PERCENT_PATTERN);
+  private static final NumberFormat quantityFormat = Format.getNumberFormat(QUANTITY_PATTERN);
+  private static final NumberFormat amountFormat = Format.getNumberFormat(AMOUNT_PATTERN);
 
   private static final String STORAGE_KEY_SEPARATOR = "-";
 
@@ -74,8 +76,16 @@ public abstract class ReportInterceptor extends AbstractFormInterceptor implemen
     return Popup.getActivePopup() != null || !EventUtils.hasModifierKey(event);
   }
 
+  protected static Double percent(int x, int y) {
+    if (x > 0 && y > 0) {
+      return x * 100d / y;
+    } else {
+      return null;
+    }
+  }
+  
   protected static String renderAmount(Double x) {
-    if (BeeUtils.isDouble(x) && !BeeUtils.isZero(x)) {
+    if (BeeUtils.nonZero(x)) {
       return amountFormat.format(x);
     } else {
       return BeeConst.STRING_EMPTY;
@@ -83,7 +93,7 @@ public abstract class ReportInterceptor extends AbstractFormInterceptor implemen
   }
 
   protected static String renderPercent(Double p) {
-    if (BeeUtils.isDouble(p) && !BeeUtils.isZero(p)) {
+    if (BeeUtils.nonZero(p)) {
       return percentFormat.format(p);
     } else {
       return BeeConst.STRING_EMPTY;
@@ -220,8 +230,11 @@ public abstract class ReportInterceptor extends AbstractFormInterceptor implemen
 
   protected abstract void doReport();
 
-  protected abstract String getBookmarkLabel();
+  protected void export() {
+  }
 
+  protected abstract String getBookmarkLabel();
+  
   protected HasIndexedWidgets getDataContainer() {
     Widget widget = getFormView().getWidgetByName(NAME_DATA_CONTAINER);
     if (widget instanceof HasIndexedWidgets) {
@@ -231,7 +244,7 @@ public abstract class ReportInterceptor extends AbstractFormInterceptor implemen
       return null;
     }
   }
-  
+
   protected DateTime getDateTime(String name) {
     Widget widget = getFormView().getWidgetByName(name);
     if (widget instanceof InputDateTime) {
@@ -356,19 +369,6 @@ public abstract class ReportInterceptor extends AbstractFormInterceptor implemen
     if (parameters != null && validateParameters(parameters)) {
       String caption = BeeUtils.notEmpty(getBookmarkLabel(), getCaption());
       Global.getReportSettings().bookmark(getReport(), caption, getReportParameters());
-    }
-  }
-
-  private void export() {
-    HasIndexedWidgets container = getDataContainer();
-    
-    if (container != null) {
-      for (Widget widget : container) {
-        if (widget instanceof HtmlTable) {
-          Exporter.toExcel((HtmlTable) widget);
-          break;
-        }
-      }
     }
   }
 
