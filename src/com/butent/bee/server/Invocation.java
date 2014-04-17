@@ -134,7 +134,7 @@ public class Invocation {
   }
 
   public ResponseObject systemInfo() {
-    List<ExtendedProperty> lst = new ArrayList<ExtendedProperty>();
+    List<ExtendedProperty> lst = new ArrayList<>();
 
     lst.addAll(SystemInfo.getSysInfo());
     PropertyUtils.appendChildrenToExtended(lst, "Runtime", SystemInfo.getRuntimeInfo());
@@ -164,7 +164,7 @@ public class Invocation {
   }
 
   public ResponseObject vmInfo() {
-    List<ExtendedProperty> lst = new ArrayList<ExtendedProperty>();
+    List<ExtendedProperty> lst = new ArrayList<>();
 
     PropertyUtils.appendChildrenToExtended(lst, "Class Loading", MxUtils.getClassLoadingInfo());
     PropertyUtils.appendChildrenToExtended(lst, "Compilation", MxUtils.getCompilationInfo());

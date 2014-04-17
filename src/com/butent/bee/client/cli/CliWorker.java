@@ -983,7 +983,7 @@ public final class CliWorker {
       return;
     }
 
-    List<Property> lst = new ArrayList<Property>();
+    List<Property> lst = new ArrayList<>();
     for (Map.Entry<String, String> entry : keyMap.entrySet()) {
       lst.add(new Property(entry.getKey(), entry.getValue()));
     }
@@ -1282,7 +1282,7 @@ public final class CliWorker {
     }
 
     BeeKeeper.getRpc().makePostRequest(Service.DB_JDBC,
-        XmlUtils.createString(Service.XML_TAG_DATA, params), ResponseHandler.callback(args));
+        XmlUtils.createString(Service.VAR_DATA, params), ResponseHandler.callback(args));
   }
 
   private static void doLike(String[] arr) {
@@ -1533,7 +1533,7 @@ public final class CliWorker {
 
     } else {
       BeeKeeper.getRpc().makePostRequest(Service.GET_CLASS_INFO,
-          XmlUtils.createString(Service.XML_TAG_DATA,
+          XmlUtils.createString(Service.VAR_DATA,
               Service.VAR_CLASS_NAME, cls, Service.VAR_PACKAGE_LIST, pck),
           ResponseHandler.callback(args));
     }
@@ -2131,7 +2131,7 @@ public final class CliWorker {
       doc = true;
     }
 
-    List<ExtendedProperty> info = new ArrayList<ExtendedProperty>();
+    List<ExtendedProperty> info = new ArrayList<>();
 
     if (bro) {
       PropertyUtils.appendChildrenToExtended(info, "Browser", BrowsingContext.getBrowserInfo());

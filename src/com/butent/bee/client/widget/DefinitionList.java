@@ -18,7 +18,7 @@ import java.util.List;
 public class DefinitionList extends Widget implements IdentifiableWidget {
 
   private static final int INSERT_AT_END = -1;
-  private List<Element> items = new ArrayList<Element>();
+  private List<Element> items = new ArrayList<>();
 
   public DefinitionList() {
     setElement(Document.get().createDLElement());

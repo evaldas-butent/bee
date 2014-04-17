@@ -8,6 +8,13 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class XWorkbook implements BeeSerializable {
+  
+  public static XWorkbook restore(String s) {
+    Assert.notEmpty(s);
+    XWorkbook workbook = new XWorkbook();
+    workbook.deserialize(s);
+    return workbook;
+  }
 
   private String name;
 

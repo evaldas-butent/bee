@@ -126,7 +126,7 @@ public abstract class HasFrom<T> extends SqlQuery<T> {
 
   private void addFrom(IsFrom from) {
     if (BeeUtils.isEmpty(fromList)) {
-      fromList = new ArrayList<IsFrom>();
+      fromList = new ArrayList<>();
     }
     fromList.add(from);
   }

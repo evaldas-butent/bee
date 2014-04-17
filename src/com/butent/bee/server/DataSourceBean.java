@@ -32,7 +32,7 @@ public class DataSourceBean {
   private static final String PROPERTY_DSN = "DataSourceName";
   private static BeeLogger logger = LogUtils.getLogger(DataSourceBean.class);
 
-  private final List<BeeDataSource> bds = new ArrayList<BeeDataSource>();
+  private final List<BeeDataSource> bds = new ArrayList<>();
   private int defaultDataSourceIndex = -1;
 
   @PreDestroy

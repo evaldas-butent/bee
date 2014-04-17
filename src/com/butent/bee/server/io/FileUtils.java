@@ -259,7 +259,7 @@ public final class FileUtils {
   }
 
   public static List<ExtendedProperty> getCharsets() {
-    List<ExtendedProperty> lst = new ArrayList<ExtendedProperty>();
+    List<ExtendedProperty> lst = new ArrayList<>();
     PropertyUtils.addExtended(lst, "Default Charset", Charset.defaultCharset());
 
     SortedMap<String, Charset> charsets = Charset.availableCharsets();
@@ -295,7 +295,7 @@ public final class FileUtils {
   public static List<Property> getFileInfo(File fl) {
     Assert.notNull(fl);
 
-    List<Property> lst = new ArrayList<Property>();
+    List<Property> lst = new ArrayList<>();
     if (!fl.exists()) {
       PropertyUtils.addProperty(lst, "Exists", false);
       return lst;
@@ -353,7 +353,7 @@ public final class FileUtils {
   }
 
   public static List<Property> getRootsInfo() {
-    List<Property> lst = new ArrayList<Property>();
+    List<Property> lst = new ArrayList<>();
 
     File[] roots = File.listRoots();
     int n = ArrayUtils.length(roots);

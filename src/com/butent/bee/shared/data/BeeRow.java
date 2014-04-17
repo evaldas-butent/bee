@@ -95,7 +95,7 @@ public class BeeRow extends StringRow implements BeeSerializable {
             String[] shArr = Codec.beeDeserializeCollection(value);
 
             if (!ArrayUtils.isEmpty(shArr)) {
-              Map<Integer, String> shMap = new HashMap<Integer, String>(shArr.length / 2);
+              Map<Integer, String> shMap = new HashMap<>(shArr.length / 2);
 
               for (int j = 0; j < shArr.length; j += 2) {
                 shMap.put(BeeUtils.toInt(shArr[j]), shArr[j + 1]);

@@ -32,7 +32,7 @@ public class LeftTabPanel extends Composite implements IdentifiableWidget {
     simple.add(provider.getWidget());
   }
 
-  private final Map<String, WidgetProvider> cogs = new HashMap<String, WidgetProvider>();
+  private final Map<String, WidgetProvider> cogs = new HashMap<>();
   private final Horizontal main = new Horizontal();
   private final ListBox left = new ListBox();
   private final Simple right = new Simple();

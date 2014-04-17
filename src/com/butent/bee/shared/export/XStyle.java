@@ -165,6 +165,11 @@ public class XStyle implements BeeSerializable {
   public VerticalAlign getVerticalAlign() {
     return verticalAlign;
   }
+  
+  public boolean hasFont() {
+    return !BeeUtils.isEmpty(getFontName()) || getFontHeight() > 0
+        || getFontWeight() != null || getFontStyle() != null;
+  }
 
   public XStyle merge(XStyle other) {
     XStyle result = copy();

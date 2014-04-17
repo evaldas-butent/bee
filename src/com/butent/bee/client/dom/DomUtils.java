@@ -317,7 +317,7 @@ public final class DomUtils {
 
   public static List<String> getAncestry(Widget w) {
     Assert.notNull(w);
-    List<String> lst = new ArrayList<String>();
+    List<String> lst = new ArrayList<>();
 
     Widget p = w.getParent();
     if (p == null) {
@@ -502,7 +502,7 @@ public final class DomUtils {
 
   public static List<Property> getChildrenInfo(Widget w) {
     Assert.notNull(w);
-    List<Property> lst = new ArrayList<Property>();
+    List<Property> lst = new ArrayList<>();
 
     if (w instanceof HasWidgets) {
       for (Widget child : (HasWidgets) w) {
@@ -573,7 +573,7 @@ public final class DomUtils {
 
   public static List<Property> getElementInfo(Element el) {
     Assert.notNull(el);
-    List<Property> lst = new ArrayList<Property>();
+    List<Property> lst = new ArrayList<>();
 
     PropertyUtils.addProperties(lst,
         "Absolute Bottom", el.getAbsoluteBottom(),
@@ -709,7 +709,7 @@ public final class DomUtils {
 
   public static List<ExtendedProperty> getInfo(Object obj, String prefix, int depth) {
     Assert.notNull(obj);
-    List<ExtendedProperty> lst = new ArrayList<ExtendedProperty>();
+    List<ExtendedProperty> lst = new ArrayList<>();
 
     if (obj instanceof Element) {
       PropertyUtils.appendChildrenToExtended(lst, BeeUtils.joinWords(prefix, "Element"),
@@ -797,7 +797,7 @@ public final class DomUtils {
 
   public static List<Property> getNodeInfo(Node nd) {
     Assert.notNull(nd);
-    List<Property> lst = new ArrayList<Property>();
+    List<Property> lst = new ArrayList<>();
 
     PropertyUtils.addProperties(lst,
         "Child Count", nd.getChildCount(),
@@ -1030,7 +1030,7 @@ public final class DomUtils {
       return null;
     }
 
-    List<Widget> sib = new ArrayList<Widget>();
+    List<Widget> sib = new ArrayList<>();
     for (Widget c : (HasWidgets) p) {
       sib.add(c);
     }
@@ -1082,7 +1082,7 @@ public final class DomUtils {
 
   public static List<ExtendedProperty> getUIObjectExtendedInfo(UIObject obj, String prefix) {
     Assert.notNull(obj);
-    List<ExtendedProperty> lst = new ArrayList<ExtendedProperty>();
+    List<ExtendedProperty> lst = new ArrayList<>();
 
     PropertyUtils.appendChildrenToExtended(lst, BeeUtils.joinWords(prefix, "UI Object"),
         getUIObjectInfo(obj));
@@ -1107,7 +1107,7 @@ public final class DomUtils {
 
   public static List<Property> getUIObjectInfo(UIObject obj) {
     Assert.notNull(obj);
-    List<Property> lst = new ArrayList<Property>();
+    List<Property> lst = new ArrayList<>();
 
     PropertyUtils.addProperties(lst,
         "Absolute Left", obj.getAbsoluteLeft(),
@@ -1190,7 +1190,7 @@ public final class DomUtils {
 
   public static List<ExtendedProperty> getWidgetExtendedInfo(Widget w, String prefix) {
     Assert.notNull(w);
-    List<ExtendedProperty> lst = new ArrayList<ExtendedProperty>();
+    List<ExtendedProperty> lst = new ArrayList<>();
 
     PropertyUtils.appendChildrenToExtended(lst, BeeUtils.joinWords(prefix, "Widget"),
         getWidgetInfo(w));
@@ -1201,7 +1201,7 @@ public final class DomUtils {
 
   public static List<Property> getWidgetInfo(Widget w) {
     Assert.notNull(w);
-    List<Property> lst = new ArrayList<Property>();
+    List<Property> lst = new ArrayList<>();
 
     PropertyUtils.addProperties(lst,
         "Class", transformClass(w),

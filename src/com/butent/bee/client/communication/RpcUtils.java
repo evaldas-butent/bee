@@ -4,7 +4,9 @@ import com.google.gwt.http.client.Header;
 import com.google.gwt.http.client.RequestBuilder;
 import com.google.gwt.http.client.Response;
 
+import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.shared.Assert;
+import com.butent.bee.shared.Service;
 import com.butent.bee.shared.communication.ResponseMessage;
 import com.butent.bee.shared.communication.ResponseObject;
 import com.butent.bee.shared.logging.BeeLogger;
@@ -20,6 +22,9 @@ import com.butent.bee.shared.utils.PropertyUtils;
 import java.util.ArrayList;
 import java.util.Collection;
 
+import elemental.client.Browser;
+import elemental.xml.XMLHttpRequest;
+
 /**
  * Contains utility functions for working with remote procedure calls.
  */
@@ -27,7 +32,19 @@ import java.util.Collection;
 public final class RpcUtils {
 
   private static final BeeLogger logger = LogUtils.getLogger(RpcUtils.class);
+
+  public static void addSessionId(XMLHttpRequest xhr) {
+    Assert.notNull(xhr);
+    String sid = BeeKeeper.getUser().getSessionId();
+    if (!BeeUtils.isEmpty(sid)) {
+      xhr.setRequestHeader(Service.RPC_VAR_SID, sid);
+    }
+  }
   
+  public static XMLHttpRequest createXhr() {
+    return Browser.getWindow().newXMLHttpRequest();
+  }
+
   public static void dispatchMessages(ResponseObject responseObject) {
     if (responseObject != null && responseObject.hasMessages()) {
       dispatchMessages(responseObject.getMessages());
@@ -71,7 +88,7 @@ public final class RpcUtils {
 
   public static Collection<Property> requestInfo(RequestBuilder rb) {
     Assert.notNull(rb);
-    Collection<Property> prp = new ArrayList<Property>();
+    Collection<Property> prp = new ArrayList<>();
 
     PropertyUtils.addProperties(prp, "Url", rb.getUrl(),
         "Http Method", rb.getHTTPMethod(),
@@ -85,7 +102,7 @@ public final class RpcUtils {
   public static Collection<ExtendedProperty> responseInfo(Response resp) {
     Assert.notNull(resp);
 
-    Collection<ExtendedProperty> prp = new ArrayList<ExtendedProperty>();
+    Collection<ExtendedProperty> prp = new ArrayList<>();
 
     PropertyUtils.addExtended(prp, "Status",
         NameUtils.addName("Code", resp.getStatusCode()), resp.getStatusText());

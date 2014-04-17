@@ -231,6 +231,7 @@ public abstract class ReportInterceptor extends AbstractFormInterceptor implemen
   protected abstract void doReport();
 
   protected void export() {
+    logger.warning("export not implemented");
   }
 
   protected abstract String getBookmarkLabel();

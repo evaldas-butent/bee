@@ -94,11 +94,11 @@ public class SliderBar extends Focus implements RequiresResize, Editor,
   private final Image knobImage;
 
   private int numLabels;
-  private final List<Element> labelElements = new ArrayList<Element>();
+  private final List<Element> labelElements = new ArrayList<>();
   private LabelFormatter labelFormatter;
 
   private int numTicks;
-  private final List<Element> tickElements = new ArrayList<Element>();
+  private final List<Element> tickElements = new ArrayList<>();
 
   private final Element lineElement;
   private int lineLeftOffset;

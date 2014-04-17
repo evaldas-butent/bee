@@ -16,7 +16,7 @@ import java.util.List;
 
 public abstract class RowList<R extends IsRow, C extends IsColumn> extends AbstractTable<R, C> {
 
-  private final List<R> rows = new ArrayList<R>();
+  private final List<R> rows = new ArrayList<>();
 
   public RowList() {
     super();

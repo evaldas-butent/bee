@@ -35,7 +35,7 @@ public class BeeDataSource {
   private Connection conn;
 
   private int status = STATUS_UNKNOWN;
-  private List<SQLException> errors = new ArrayList<SQLException>();
+  private List<SQLException> errors = new ArrayList<>();
 
   public BeeDataSource(String dsn, DataSource ds) {
     this.dsn = dsn;
@@ -90,7 +90,7 @@ public class BeeDataSource {
       return null;
     }
 
-    List<ExtendedProperty> lst = new ArrayList<ExtendedProperty>();
+    List<ExtendedProperty> lst = new ArrayList<>();
 
     PropertyUtils.addProperties(lst, false,
         "DB Name", dbMd.getDatabaseProductName(),

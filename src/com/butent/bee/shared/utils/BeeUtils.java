@@ -2866,7 +2866,7 @@ public final class BeeUtils {
    * Null-safe collection union.
    */
   public static <T> Set<T> union(Collection<? extends T> col1, Collection<? extends T> col2) {
-    Set<T> result = new HashSet<T>();
+    Set<T> result = new HashSet<>();
 
     if (col1 != null) {
       result.addAll(col1);
@@ -2879,7 +2879,7 @@ public final class BeeUtils {
 
   public static <T> Set<T> union(Collection<? extends T> col1, Collection<? extends T> col2,
       Collection<? extends T> col3) {
-    Set<T> result = new HashSet<T>();
+    Set<T> result = new HashSet<>();
 
     if (col1 != null) {
       result.addAll(col1);

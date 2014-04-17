@@ -8,6 +8,7 @@ import com.google.gwt.canvas.dom.client.ImageData;
 import com.google.gwt.core.client.GWT;
 
 import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Implements lens visual component for zooming in.
@@ -33,7 +34,7 @@ public class Lens {
     this.pos = initPos;
     this.vel = vel;
 
-    ArrayList<int[]> calcLensArray = new ArrayList<int[]>(0);
+    List<int[]> calcLensArray = new ArrayList<>();
     int a;
     int b;
     double s = Math.sqrt(radius * radius - mag * mag);

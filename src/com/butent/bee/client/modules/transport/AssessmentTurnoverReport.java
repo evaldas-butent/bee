@@ -21,6 +21,7 @@ import com.butent.bee.client.dom.DomUtils;
 import com.butent.bee.client.event.EventUtils;
 import com.butent.bee.client.grid.HtmlTable;
 import com.butent.bee.client.i18n.Format;
+import com.butent.bee.client.output.Exporter;
 import com.butent.bee.client.output.Report;
 import com.butent.bee.client.output.ReportParameters;
 import com.butent.bee.client.style.StyleUtils;
@@ -488,6 +489,13 @@ public class AssessmentTurnoverReport extends ReportInterceptor {
     });
   }
 
+  @Override
+  protected void export() {
+    if (!sheet.isEmpty()) {
+      Exporter.export(sheet, getCaption());
+    }
+  }
+  
   @Override
   protected String getBookmarkLabel() {
     List<String> labels = Lists.newArrayList(getCaption(),

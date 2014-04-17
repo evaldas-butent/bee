@@ -23,11 +23,11 @@ import java.util.List;
 @SuppressWarnings("static-method")
 public class TestPropertyUtils {
 
-  private List<Property> propList = new ArrayList<Property>();
-  private List<ExtendedProperty> propExtList = new ArrayList<ExtendedProperty>();
-  private Collection<ExtendedProperty> propExtColl = new ArrayList<ExtendedProperty>();
-  private Collection<ExtendedProperty> propExtColl2 = new ArrayList<ExtendedProperty>();
-  private Collection<Property> propList1 = new ArrayList<Property>();
+  private List<Property> propList = new ArrayList<>();
+  private List<ExtendedProperty> propExtList = new ArrayList<>();
+  private Collection<ExtendedProperty> propExtColl = new ArrayList<>();
+  private Collection<ExtendedProperty> propExtColl2 = new ArrayList<>();
+  private Collection<Property> propList1 = new ArrayList<>();
 
   @Before
   public void setUp() throws Exception {
@@ -164,7 +164,7 @@ public class TestPropertyUtils {
   @Test
   public final void testAppendChildrenToExtended() {
 
-    Collection<ExtendedProperty> expect = new ArrayList<ExtendedProperty>();
+    Collection<ExtendedProperty> expect = new ArrayList<>();
 
     ExtendedProperty ex1 = new ExtendedProperty("NAME1", "SUB1", "VALUE1");
     ex1.setDate(new DateTime(1298362388227L));
@@ -208,10 +208,10 @@ public class TestPropertyUtils {
   @Test
   public final void testAppendChildrenToProperties() {
 
-    Collection<Property> propList11 = new ArrayList<Property>();
-    Collection<Property> propList12 = new ArrayList<Property>();
-    Collection<Property> propList13 = new ArrayList<Property>();
-    Collection<Property> propList14 = new ArrayList<Property>();
+    Collection<Property> propList11 = new ArrayList<>();
+    Collection<Property> propList12 = new ArrayList<>();
+    Collection<Property> propList13 = new ArrayList<>();
+    Collection<Property> propList14 = new ArrayList<>();
     propList11.add(new Property("NAME1", "VALUE1"));
     propList11.add(new Property("NAME2", "VALUE2"));
     propList11.add(new Property("NAME3", "VALUE3"));
@@ -263,9 +263,9 @@ public class TestPropertyUtils {
   @Test
   public final void testAppendExtended() {
 
-    Collection<ExtendedProperty> propList11 = new ArrayList<ExtendedProperty>();
-    Collection<ExtendedProperty> propList12 = new ArrayList<ExtendedProperty>();
-    Collection<ExtendedProperty> propList13 = new ArrayList<ExtendedProperty>();
+    Collection<ExtendedProperty> propList11 = new ArrayList<>();
+    Collection<ExtendedProperty> propList12 = new ArrayList<>();
+    Collection<ExtendedProperty> propList13 = new ArrayList<>();
 
     propList11.add(new ExtendedProperty("NAME1", "VALUE1"));
     propList11.add(new ExtendedProperty("NAME2", "VALUE2"));
@@ -294,9 +294,9 @@ public class TestPropertyUtils {
 
   @Test
   public final void testAppendWithPrefix() {
-    Collection<ExtendedProperty> propList11 = new ArrayList<ExtendedProperty>();
-    Collection<ExtendedProperty> propList12 = new ArrayList<ExtendedProperty>();
-    Collection<ExtendedProperty> propList13 = new ArrayList<ExtendedProperty>();
+    Collection<ExtendedProperty> propList11 = new ArrayList<>();
+    Collection<ExtendedProperty> propList12 = new ArrayList<>();
+    Collection<ExtendedProperty> propList13 = new ArrayList<>();
 
     propList11.add(new ExtendedProperty("NAME1", "VALUE1"));
     propList11.add(new ExtendedProperty("NAME2", "VALUE2"));
@@ -340,8 +340,8 @@ public class TestPropertyUtils {
   @Test
   public final void testCreatePropertiesObjectArray() {
 
-    Collection<ExtendedProperty> propList11 = new ArrayList<ExtendedProperty>();
-    Collection<ExtendedProperty> propList12 = new ArrayList<ExtendedProperty>();
+    Collection<ExtendedProperty> propList11 = new ArrayList<>();
+    Collection<ExtendedProperty> propList12 = new ArrayList<>();
 
     propList11.add(new ExtendedProperty("NAME1", "VALUE1"));
     propList12.add(new ExtendedProperty("NAME1", "VALUE1"));
@@ -366,8 +366,8 @@ public class TestPropertyUtils {
 
     String[] mas = {"VALUE1", "VALUE2", "VALUE3"};
 
-    Collection<ExtendedProperty> propList11 = new ArrayList<ExtendedProperty>();
-    Collection<ExtendedProperty> propList12 = new ArrayList<ExtendedProperty>();
+    Collection<ExtendedProperty> propList11 = new ArrayList<>();
+    Collection<ExtendedProperty> propList12 = new ArrayList<>();
 
     propList11.add(new ExtendedProperty("AA: 1/3", "VALUE1"));
     propList11.add(new ExtendedProperty("AA: 2/3", "VALUE2"));

@@ -28,7 +28,7 @@ public class BeeStatement {
 
   public static List<Property> getInfo(Statement stmt) {
     Assert.notNull(stmt);
-    List<Property> lst = new ArrayList<Property>();
+    List<Property> lst = new ArrayList<>();
 
     int z;
 
@@ -72,7 +72,7 @@ public class BeeStatement {
 
   private final Set<State> states = EnumSet.noneOf(State.class);
 
-  private List<SQLException> errors = new ArrayList<SQLException>();
+  private List<SQLException> errors = new ArrayList<>();
   private int fetchDirection;
   private int fetchSize;
   private int maxFieldSize;

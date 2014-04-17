@@ -187,7 +187,7 @@ public abstract class AbstractRow implements IsRow {
 
     if (!BeeUtils.equalsTrimRight(value, oldValue)) {
       if (shadow == null) {
-        shadow = new HashMap<Integer, String>();
+        shadow = new HashMap<>();
       }
       if (!shadow.containsKey(col)) {
         shadow.put(col, oldValue);
