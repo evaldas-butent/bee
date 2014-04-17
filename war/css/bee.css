@@ -490,6 +490,14 @@
   cursor: pointer;
 }
 
+.bee-Header-commandPanel .bee-fa-label:active {
+  color: black;
+}
+
+.bee-Header-commandPanel .bee-fa-label:hover {
+  color: black;
+}
+
 .bee-Header-control {
   margin-right: 10px;
 }

@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<g:Grid xmlns="http://www.butent.com/column" 
+        xmlns:g="http://www.butent.com/grid"
+        xmlns:ui="http://www.butent.com/ui"
+
+  name="CompanyBankAccounts" viewName="CompanyBankAccounts" caption="=bankAccounts"
+  flexGrow="1" flexShrink="1"
+  >
+  <g:columns>
+    <CalcColumn name="Default" type="boolean" width="30" maxWidth="30" autoFit="true" 
+    filterOptions="empty" caption="=defaultBankAccountShort">
+      <render>
+        <ui:function>
+            var isDefault = row.DefaultBankAccount;
+            if (isDefault != null) {
+              return true;
+            }
+            
+            return false;
+        </ui:function>
+      </render>
+    </CalcColumn>
+    <RelColumn name="Bank" renderColumns="BankName BankCode" />
+    <DataColumn name="BankAccount" />
+    <DataColumn name="IBANCode" />
+    <DataColumn name="Notes" />
+  </g:columns>
+  <g:rowStyle>
+    <ui:inline>="font-weight: bolder"</ui:inline>
+    <ui:expression>row.DefaultBankAccount != null</ui:expression>
+  </g:rowStyle>
+</g:Grid>
