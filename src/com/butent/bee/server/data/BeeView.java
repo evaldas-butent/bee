@@ -425,7 +425,7 @@ public class BeeView implements BeeObject, HasExtendedInfo {
 
   private Order order;
 
-  BeeView(String module, XmlView xmlView, Map<String, BeeTable> tables) {
+  BeeView(String module, XmlView xmlView, Map<String, BeeTable> tables, Long userId) {
     Assert.notNull(xmlView);
     this.module = BeeUtils.notEmpty(xmlView.module, module);
     this.name = xmlView.name;
@@ -468,7 +468,7 @@ public class BeeView implements BeeObject, HasExtendedInfo {
     if (BeeUtils.isEmpty(xmlView.filter)) {
       this.filter = null;
     } else {
-      this.filter = parseFilter(xmlView.filter);
+      this.filter = parseFilter(xmlView.filter, userId);
     }
 
     if (!BeeUtils.isEmpty(xmlView.orders)) {
@@ -862,14 +862,14 @@ public class BeeView implements BeeObject, HasExtendedInfo {
     return readOnly;
   }
 
-  public Filter parseFilter(String flt) {
+  public Filter parseFilter(String flt, Long userId) {
     Assert.notEmpty(flt);
     List<IsColumn> cols = Lists.newArrayListWithCapacity(columns.size());
 
     for (String col : columns.keySet()) {
       cols.add(new BeeColumn(getColumnType(col).toValueType(), col));
     }
-    Filter f = FilterParser.parse(flt, cols, getSourceIdName(), getSourceVersionName(), null);
+    Filter f = FilterParser.parse(flt, cols, getSourceIdName(), getSourceVersionName(), userId);
 
     if (f == null) {
       logger.warning("Error in filter expression:", flt);

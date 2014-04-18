@@ -328,7 +328,7 @@ public class SystemBean {
     }
     return views;
   }
-  
+
   public Collection<BeeView> getViews() {
     return viewCache.values();
   }
@@ -1063,7 +1063,7 @@ public class SystemBean {
     xmlView.source = tblName;
     xmlView.columns = columns;
 
-    return new BeeView(getTable(tblName).getModule(), xmlView, tableCache);
+    return new BeeView(getTable(tblName).getModule(), xmlView, tableCache, usr.getCurrentUserId());
   }
 
   private Collection<BeeTable> getTables() {
@@ -1362,7 +1362,7 @@ public class SystemBean {
         if (!isTable(src)) {
           logger.warning("Unrecognized view source:", xmlView.name, src);
         } else {
-          view = new BeeView(moduleName, xmlView, tableCache);
+          view = new BeeView(moduleName, xmlView, tableCache, usr.getCurrentUserId());
 
           if (view.isEmpty()) {
             logger.warning("View has no columns defined:", view.getName());

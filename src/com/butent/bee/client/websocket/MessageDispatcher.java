@@ -353,18 +353,18 @@ class MessageDispatcher {
 
       case MODIFICATION:
         ModificationMessage modificationMessage = (ModificationMessage) message;
-        
+
         if (modificationMessage.isValid()) {
           ModificationEvent<?> event = modificationMessage.getEvent();
           event.setLocality(Locality.ENTANGLED);
-        
+
           BeeKeeper.getBus().fireEvent(modificationMessage.getEvent());
 
         } else {
           WsUtils.onEmptyMessage(message);
         }
         break;
-        
+
       case NOTIFICATION:
         NotificationMessage notificationMessage = (NotificationMessage) message;
 
@@ -398,22 +398,23 @@ class MessageDispatcher {
         if (BeeUtils.isEmpty(progressId)) {
           WsUtils.onEmptyMessage(message);
 
-        } else if (pm.isActivated()) {
-          boolean started = Endpoint.startPropgress(progressId);
-          if (started) {
-            logger.debug("progress", progressId, "started");
+        } else if (!Endpoint.handleProgress(pm)) {
+          if (pm.isActivated()) {
+            boolean started = Endpoint.startPropgress(progressId);
+            if (started) {
+              logger.debug("progress", progressId, "started");
+            } else {
+              logger.warning("cannot start progress", progressId);
+            }
+          } else if (pm.isUpdate()) {
+            BeeKeeper.getScreen().updateProgress(progressId, pm.getValue());
+
+          } else if (pm.isCanceled() || pm.isClosed()) {
+            Endpoint.removeProgress(progressId);
+
           } else {
-            logger.warning("cannot start progress", progressId);
+            WsUtils.onInvalidState(message);
           }
-
-        } else if (pm.isUpdate()) {
-          BeeKeeper.getScreen().updateProgress(progressId, pm.getValue());
-
-        } else if (pm.isCanceled() || pm.isClosed()) {
-          BeeKeeper.getScreen().removeProgress(progressId);
-
-        } else {
-          WsUtils.onInvalidState(message);
         }
         break;
 
@@ -479,7 +480,7 @@ class MessageDispatcher {
               break;
             }
           }
-          
+
           BeeKeeper.onRightsChange();
         }
         break;

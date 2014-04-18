@@ -8,14 +8,18 @@ import com.google.gwt.user.client.ui.Widget;
 
 import static com.butent.bee.shared.modules.mail.MailConstants.*;
 
+import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.Global;
 import com.butent.bee.client.composite.DataSelector;
+import com.butent.bee.client.data.Queries;
+import com.butent.bee.client.data.RowUpdateCallback;
 import com.butent.bee.client.dialog.DialogConstants;
 import com.butent.bee.client.dialog.StringCallback;
 import com.butent.bee.client.event.logical.SelectorEvent;
 import com.butent.bee.client.ui.FormFactory.WidgetDescriptionCallback;
 import com.butent.bee.client.ui.IdentifiableWidget;
 import com.butent.bee.client.ui.WidgetInitializer;
+import com.butent.bee.client.view.form.FormView;
 import com.butent.bee.client.view.form.interceptor.AbstractFormInterceptor;
 import com.butent.bee.client.view.form.interceptor.FormInterceptor;
 import com.butent.bee.shared.BeeConst;
@@ -32,7 +36,6 @@ import java.util.Map;
 import java.util.Set;
 
 public class AccountEditor extends AbstractFormInterceptor implements SelectorEvent.Handler {
-
   @Override
   public void afterCreateWidget(final String name, IdentifiableWidget widget,
       WidgetDescriptionCallback callback) {
@@ -97,6 +100,12 @@ public class AccountEditor extends AbstractFormInterceptor implements SelectorEv
   }
 
   @Override
+  public void afterInsertRow(IsRow result, boolean forced) {
+    Queries.getRow(getViewName(), result.getId(), new RowUpdateCallback(getViewName()));
+    super.afterInsertRow(result, forced);
+  }
+
+  @Override
   public FormInterceptor getInstance() {
     return new AccountEditor();
   }
@@ -104,15 +113,19 @@ public class AccountEditor extends AbstractFormInterceptor implements SelectorEv
   @Override
   public void onDataSelector(SelectorEvent event) {
     if (event.isOpened()) {
-      IsRow activeRow = getFormView().getActiveRow();
       Set<Long> exclusions = Sets.newHashSet();
 
       for (SystemFolder folder : SystemFolder.values()) {
-        exclusions.add(activeRow.getLong(getFormView().getDataIndex(folder + COL_FOLDER)));
+        exclusions.add(getLongValue(folder + COL_FOLDER));
       }
       event.consume();
+      event.getSelector().setAdditionalFilter(Filter.equals(COL_ACCOUNT, getActiveRowId()));
       event.getSelector().getOracle().setExclusions(exclusions);
-      event.getSelector().setAdditionalFilter(Filter.equals(COL_ACCOUNT, activeRow.getId()));
     }
+  }
+
+  @Override
+  public void onStartNewRow(FormView form, IsRow oldRow, IsRow newRow) {
+    newRow.setValue(form.getDataIndex(COL_USER), BeeKeeper.getUser().getUserId());
   }
 }

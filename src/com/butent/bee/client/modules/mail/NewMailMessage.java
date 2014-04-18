@@ -121,11 +121,10 @@ public final class NewMailMessage extends AbstractFormInterceptor
         Long defaultAccount = null;
 
         for (SimpleRow row : rs) {
-          if (defaultAccount == null || BeeUtils.isTrue(row.getBoolean(COL_ACCOUNT_DEFAULT))) {
+          if (defaultAccount == null || BeeUtils.unbox(row.getBoolean(COL_ACCOUNT_DEFAULT))) {
             defaultAccount = row.getLong(COL_ADDRESS);
           }
-          availableAccounts.add(new AccountInfo(row.getLong(COL_ACCOUNT), row.getLong(COL_ADDRESS),
-              row.getValue(COL_ACCOUNT_DESCRIPTION)));
+          availableAccounts.add(new AccountInfo(row));
         }
         if (BeeUtils.isEmpty(availableAccounts)) {
           BeeKeeper.getScreen().notifyWarning("No accounts found");

@@ -1649,10 +1649,10 @@ public final class CliWorker {
     int len = ArrayUtils.length(arr);
     for (int i = 1; i < len; i++) {
       String s = arr[i];
-      
+
       if (s.length() > 2 && s.charAt(1) == BeeConst.CHAR_EQ) {
         String value = s.substring(2);
-        
+
         switch (s.toLowerCase().charAt(0)) {
           case 'c':
             params.addQueryItem(Service.VAR_CATALOG, value);
@@ -1667,7 +1667,7 @@ public final class CliWorker {
             params.addQueryItem(Service.VAR_TYPE, value);
             break;
         }
-      
+
       } else if (s.equals(BeeConst.STRING_MINUS) || s.equals(BeeConst.STRING_QUESTION)) {
         params.addQueryItem(Service.VAR_CHECK, 1);
 
@@ -1919,8 +1919,7 @@ public final class CliWorker {
         close.addClickHandler(new ClickHandler() {
           @Override
           public void onClick(ClickEvent event) {
-            BeeKeeper.getScreen().removeProgress(progressId);
-            Endpoint.cancelPropgress(progressId);
+            Endpoint.cancelProgress(progressId);
           }
         });
       }
@@ -1935,7 +1934,7 @@ public final class CliWorker {
         Assert.notNull(response);
 
         if (progressId != null) {
-          BeeKeeper.getScreen().removeProgress(progressId);
+          Endpoint.removeProgress(progressId);
           Endpoint.send(ProgressMessage.close(progressId));
         }
 
@@ -2044,8 +2043,8 @@ public final class CliWorker {
   private static native void sampleCanvas(Element el) /*-{
     var ctx = el.getContext("2d");
 
-    for ( var i = 0; i < 6; i++) {
-      for ( var j = 0; j < 6; j++) {
+    for (var i = 0; i < 6; i++) {
+      for (var j = 0; j < 6; j++) {
         ctx.fillStyle = 'rgb(' + Math.floor(255 - 42.5 * i) + ', ' + Math.floor(255 - 42.5 * j) + ', 0)';
         ctx.fillRect(j * 25, i * 25, 25, 25);
       }
@@ -2760,7 +2759,7 @@ public final class CliWorker {
             break;
           }
         }
-        
+
         if (!ok) {
           continue;
         }

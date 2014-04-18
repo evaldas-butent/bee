@@ -1,7 +1,6 @@
 package com.butent.bee.client.modules.mail;
 
 import com.google.common.base.Objects;
-import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Sets;
 import com.google.gwt.core.client.Scheduler.ScheduledCommand;
 
@@ -12,31 +11,21 @@ import com.butent.bee.client.Global;
 import com.butent.bee.client.communication.ParameterList;
 import com.butent.bee.client.communication.ResponseCallback;
 import com.butent.bee.client.dialog.StringCallback;
-import com.butent.bee.client.grid.GridFactory;
 import com.butent.bee.client.modules.mail.MailPanel.AccountInfo;
 import com.butent.bee.client.screen.Domain;
 import com.butent.bee.client.ui.FormFactory;
-import com.butent.bee.client.view.grid.GridView;
-import com.butent.bee.client.view.grid.interceptor.AbstractGridInterceptor;
 import com.butent.bee.shared.communication.ResponseObject;
-import com.butent.bee.shared.data.DataUtils;
-import com.butent.bee.shared.data.IsRow;
-import com.butent.bee.shared.data.filter.Filter;
 import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.menu.MenuHandler;
 import com.butent.bee.shared.menu.MenuService;
 import com.butent.bee.shared.modules.administration.AdministrationConstants;
-import com.butent.bee.shared.modules.mail.MailConstants.SystemFolder;
 import com.butent.bee.shared.rights.Module;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.Codec;
 
-import java.util.Map;
 import java.util.Set;
 
 public final class MailKeeper {
-
-  public static final Long CHECK_ALL_FOLDERS = -42L;
 
   private static MailController controller;
   private static MailPanel activePanel;
@@ -57,21 +46,6 @@ public final class MailKeeper {
       }
     });
 
-    GridFactory.registerGridInterceptor(TBL_ACCOUNTS, new AbstractGridInterceptor() {
-      @Override
-      public Map<String, Filter> getInitialParentFilters() {
-        return ImmutableMap.of("UserFilter",
-            Filter.equals(COL_USER, BeeKeeper.getUser().getUserId()));
-      }
-
-      @Override
-      public boolean onStartNewRow(GridView gridView, IsRow oldRow, IsRow newRow) {
-        newRow.setValue(DataUtils.getColumnIndex(COL_USER, gridView.getDataColumns()),
-            BeeKeeper.getUser().getUserId());
-        return true;
-      }
-    });
-
     FormFactory.registerFormInterceptor(FORM_ACCOUNT, new AccountEditor());
     FormFactory.registerFormInterceptor(FORM_NEW_ACCOUNT, new AccountEditor());
   }
@@ -88,22 +62,12 @@ public final class MailKeeper {
   }
 
   static void activateMailPanel() {
-    if (activePanel != null) {
-      BeeKeeper.getScreen()
-          .activateWidget(activePanel.getFormView().getViewPresenter().getMainView());
-    }
+    BeeKeeper.getScreen()
+        .activateWidget(activePanel.getFormView().getViewPresenter().getMainView());
   }
 
-  static void clickFolder(long folderId) {
-    if (activePanel != null) {
-      activePanel.refresh(folderId);
-    }
-  }
-
-  static void clickSystemFolder(SystemFolder sysFolder) {
-    if (activePanel != null) {
-      clickFolder(activePanel.getCurrentAccount().getSystemFolderId(sysFolder));
-    }
+  static void clickFolder(Long folderId) {
+    activePanel.refresh(folderId);
   }
 
   static void copyMessage(final Long folderFrom, final Long folderTo, String[] places,
@@ -127,7 +91,7 @@ public final class MailKeeper {
                   (String) response.getResponse()) : Localized.getMessages()
                   .mailCopiedMessagesToFolder((String) response.getResponse()),
               BeeUtils.bracket(panel.getCurrentAccount().getFolder(folderTo).getName()));
-          panel.refresh(null);
+          panel.refreshMessages();
         }
       }
     });
@@ -143,12 +107,12 @@ public final class MailKeeper {
     final MailPanel panel = activePanel;
     final AccountInfo account = panel.getCurrentAccount();
     final Long parentId = panel.getCurrentFolderId();
+    final boolean isParent = !account.isSystemFolder(parentId);
     String caption = null;
 
-    if (account.getSystemFolder(parentId) == null) {
-      caption =
-          Localized.getConstants().mailInFolder() + " "
-              + BeeUtils.bracket(account.getFolder(parentId).getName());
+    if (isParent) {
+      caption = Localized.getConstants().mailInFolder() + " "
+          + BeeUtils.bracket(account.getFolder(parentId).getName());
     }
     Global.inputString(title, caption, new StringCallback() {
       @Override
@@ -157,7 +121,7 @@ public final class MailKeeper {
         params.addDataItem(COL_ACCOUNT, account.getId());
         params.addDataItem(COL_FOLDER_NAME, value);
 
-        if (account.getSystemFolder(parentId) == null) {
+        if (isParent) {
           params.addDataItem(COL_FOLDER, parentId);
         }
         BeeKeeper.getRpc().makePostRequest(params, new ResponseCallback() {
@@ -166,7 +130,7 @@ public final class MailKeeper {
             response.notify(panel.getFormView());
 
             if (!response.hasErrors()) {
-              panel.initFolders(true, null);
+              panel.initFolders(null);
             }
           }
         });
@@ -186,34 +150,19 @@ public final class MailKeeper {
         response.notify(panel.getFormView());
 
         if (!response.hasErrors()) {
-          panel.initFolders(true, null);
+          panel.initFolders(null);
         }
       }
     });
   }
 
-  static Long getCurrentSystemFolderId(SystemFolder sysFolder) {
-    return activePanel.getCurrentAccount().getSystemFolderId(sysFolder);
-  }
-
   static void rebuildController() {
-    if (controller != null && activePanel != null) {
-      controller.rebuild(activePanel.getCurrentAccount());
-      refreshController();
-    }
+    controller.rebuild(activePanel.getCurrentAccount());
+    refreshController();
   }
 
   static void refreshController() {
-    if (controller != null && activePanel != null) {
-      Long folderId = activePanel.getCurrentFolderId();
-      SystemFolder sysFolder = activePanel.getCurrentAccount().getSystemFolder(folderId);
-
-      if (sysFolder != null) {
-        controller.refresh(sysFolder);
-      } else {
-        controller.refresh(folderId);
-      }
-    }
+    controller.refresh(activePanel.getCurrentFolderId());
   }
 
   static void removeFolder(final AccountInfo account, final Long folderId) {
@@ -228,11 +177,11 @@ public final class MailKeeper {
         response.notify(panel.getFormView());
 
         if (!response.hasErrors()) {
-          panel.initFolders(true, new ScheduledCommand() {
+          panel.initFolders(new ScheduledCommand() {
             @Override
             public void execute() {
               if (Objects.equal(folderId, panel.getCurrentFolderId())) {
-                panel.refresh(account.getSystemFolderId(SystemFolder.Inbox));
+                panel.refresh(account.getInboxFolder());
               }
             }
           });
@@ -278,11 +227,20 @@ public final class MailKeeper {
         response.notify(panel.getFormView());
 
         if (!response.hasErrors()) {
-          if (Objects.equal(folderId, panel.getCurrentFolderId())) {
-            panel.refresh(folderId);
-          } else {
-            panel.initFolders(true, null);
-          }
+          panel.initFolders(null);
+        }
+      }
+    });
+  }
+
+  static void requeryFolders() {
+    final MailPanel panel = activePanel;
+
+    panel.initFolders(new ScheduledCommand() {
+      @Override
+      public void execute() {
+        if (panel.getCurrentAccount().getFolder(panel.getCurrentFolderId()) == null) {
+          panel.refresh(panel.getCurrentAccount().getInboxFolder());
         }
       }
     });

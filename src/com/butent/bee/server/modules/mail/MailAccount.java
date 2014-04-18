@@ -3,6 +3,7 @@ package com.butent.bee.server.modules.mail;
 import com.google.common.base.Objects;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
+import com.google.common.collect.Multimap;
 
 import static com.butent.bee.shared.modules.mail.MailConstants.*;
 
@@ -62,7 +63,7 @@ public class MailAccount {
 
   private final Map<SystemFolder, Long> sysFolders = Maps.newHashMap();
 
-  private MailFolder rootFolder;
+  private final MailFolder rootFolder = new MailFolder();
 
   MailAccount(SimpleRow data) {
     if (data == null) {
@@ -227,8 +228,6 @@ public class MailAccount {
 
   boolean addMessageToRemoteFolder(MimeMessage message, MailFolder localFolder)
       throws MessagingException {
-    Assert.state(Objects.equal(localFolder.getAccountId(), getAccountId()),
-        BeeUtils.joinWords("Folder", localFolder.getName(), "Doesn't belong to this account"));
 
     if (!isStoredRemotedly(localFolder)) {
       return false;
@@ -361,6 +360,10 @@ public class MailAccount {
     return ok;
   }
 
+  MailFolder findFolder(Long folderId) {
+    return getRootFolder().findFolder(folderId);
+  }
+
   Folder getRemoteFolder(Store remoteStore, MailFolder localFolder) throws MessagingException {
     Assert.noNulls(remoteStore, localFolder);
 
@@ -376,9 +379,32 @@ public class MailAccount {
     Folder remote = remoteParent.getFolder(name);
 
     if (!remote.exists()) {
-      throw new MessagingException("Remote folder does not exist: " + name);
+      MailFolder inbox = getInboxFolder();
+
+      if (localFolder == inbox
+          || (localFolder != getDraftsFolder() && localFolder != getSentFolder()
+          && localFolder != getTrashFolder()) || !createRemoteFolder(inbox, name, true)) {
+
+        throw new MessagingException("Remote folder does not exist: " + name);
+      }
     }
     return remote;
+  }
+
+  MailFolder getDraftsFolder() {
+    return findFolder(getSysFolderId(SystemFolder.Drafts));
+  }
+
+  MailFolder getInboxFolder() {
+    return findFolder(getSysFolderId(SystemFolder.Inbox));
+  }
+
+  MailFolder getSentFolder() {
+    return findFolder(getSysFolderId(SystemFolder.Sent));
+  }
+
+  MailFolder getTrashFolder() {
+    return findFolder(getSysFolderId(SystemFolder.Trash));
   }
 
   MailFolder getRootFolder() {
@@ -526,12 +552,8 @@ public class MailAccount {
     return true;
   }
 
-  void setRootFolder(MailFolder folder) {
-    this.rootFolder = folder;
-  }
-
-  void setSysFolderId(SystemFolder sysFolder, Long id) {
-    sysFolders.put(sysFolder, id);
+  void setFolders(Multimap<Long, SimpleRow> folders) {
+    fillTree(getRootFolder(), folders);
   }
 
   private static boolean checkNewFolderName(Folder newFolder, String name, boolean acceptExisting)
@@ -548,6 +570,16 @@ public class MailAccount {
       throw new MessagingException("Folder with new name already exists: " + name);
     }
     return true;
+  }
+
+  private void fillTree(MailFolder parent, Multimap<Long, SimpleRow> folders) {
+    for (SimpleRow row : folders.get(parent.getId())) {
+      MailFolder folder = new MailFolder(parent, row.getLong(COL_FOLDER),
+          row.getValue(COL_FOLDER_NAME), row.getLong(COL_FOLDER_UID));
+
+      fillTree(folder, folders);
+      parent.addSubFolder(folder);
+    }
   }
 
   private static List<Message> getMessageReferences(Folder remoteSource, long[] uids)
