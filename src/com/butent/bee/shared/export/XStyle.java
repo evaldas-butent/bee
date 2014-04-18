@@ -11,6 +11,7 @@ import com.butent.bee.shared.utils.Codec;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 public class XStyle implements BeeSerializable {
 
@@ -22,6 +23,12 @@ public class XStyle implements BeeSerializable {
   public static XStyle bold() {
     XStyle style = new XStyle();
     style.setFontWeight(FontWeight.BOLD);
+    return style;
+  }
+
+  public static XStyle boldAndCenter() {
+    XStyle style = bold();
+    style.setTextAlign(TextAlign.CENTER);
     return style;
   }
 
@@ -130,6 +137,29 @@ public class XStyle implements BeeSerializable {
     }
   }
 
+  @Override
+  public boolean equals(Object obj) {
+    if (this == obj) {
+      return true;
+    } else if (obj == null) {
+      return false;
+    } else if (getClass() != obj.getClass()) {
+      return false;
+    }
+
+    XStyle other = (XStyle) obj;
+    
+    return Objects.equals(backgroundColor, other.backgroundColor)
+        && Objects.equals(color, other.color)
+        && fontHeight == other.fontHeight
+        && Objects.equals(fontName, other.fontName)
+        && fontStyle == other.fontStyle
+        && fontWeight == other.fontWeight
+        && Objects.equals(format, other.format)
+        && textAlign == other.textAlign
+        && verticalAlign == other.verticalAlign;
+  }
+
   public String getBackgroundColor() {
     return backgroundColor;
   }
@@ -165,10 +195,26 @@ public class XStyle implements BeeSerializable {
   public VerticalAlign getVerticalAlign() {
     return verticalAlign;
   }
-  
+
   public boolean hasFont() {
     return !BeeUtils.isEmpty(getFontName()) || getFontHeight() > 0
         || getFontWeight() != null || getFontStyle() != null;
+  }
+
+  @Override
+  public int hashCode() {
+    final int prime = 31;
+    int result = 1;
+    result = prime * result + ((backgroundColor == null) ? 0 : backgroundColor.hashCode());
+    result = prime * result + ((color == null) ? 0 : color.hashCode());
+    result = prime * result + fontHeight;
+    result = prime * result + ((fontName == null) ? 0 : fontName.hashCode());
+    result = prime * result + ((fontStyle == null) ? 0 : fontStyle.hashCode());
+    result = prime * result + ((fontWeight == null) ? 0 : fontWeight.hashCode());
+    result = prime * result + ((format == null) ? 0 : format.hashCode());
+    result = prime * result + ((textAlign == null) ? 0 : textAlign.hashCode());
+    result = prime * result + ((verticalAlign == null) ? 0 : verticalAlign.hashCode());
+    return result;
   }
 
   public XStyle merge(XStyle other) {

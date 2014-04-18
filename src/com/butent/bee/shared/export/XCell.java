@@ -31,41 +31,41 @@ public class XCell implements BeeSerializable {
   private Value value;
   private String formula;
 
-  private XStyle style;
+  private Integer styleRef;
 
   private int colSpan;
   private int rowSpan;
-
-  private XCell() {
-    super();
-  }
-
-  public XCell(int index, String v) {
-    this(index, new TextValue(v));
-  }
 
   public XCell(int index, Double v) {
     this(index, new NumberValue(v));
   }
 
-  public XCell(int index, Double v, XStyle style) {
-    this(index, new NumberValue(v), style);
+  public XCell(int index, Double v, Integer styleRef) {
+    this(index, new NumberValue(v), styleRef);
   }
 
   public XCell(int index, Integer v) {
     this(index, new IntegerValue(v));
   }
 
-  public XCell(int index, Integer v, XStyle style) {
-    this(index, new IntegerValue(v), style);
+  public XCell(int index, Integer v, Integer styleRef) {
+    this(index, new IntegerValue(v), styleRef);
   }
 
   public XCell(int index, Long v) {
     this(index, new LongValue(v));
   }
 
-  public XCell(int index, Long v, XStyle style) {
-    this(index, new LongValue(v), style);
+  public XCell(int index, Long v, Integer styleRef) {
+    this(index, new LongValue(v), styleRef);
+  }
+
+  public XCell(int index, String v) {
+    this(index, new TextValue(v));
+  }
+
+  public XCell(int index, String v, Integer styleRef) {
+    this(index, new TextValue(v), styleRef);
   }
 
   public XCell(int index, Value value) {
@@ -73,9 +73,13 @@ public class XCell implements BeeSerializable {
     this.value = value;
   }
 
-  public XCell(int index, Value value, XStyle style) {
+  public XCell(int index, Value value, Integer styleRef) {
     this(index, value);
-    this.style = style;
+    this.styleRef = styleRef;
+  }
+
+  private XCell() {
+    super();
   }
 
   @Override
@@ -104,7 +108,7 @@ public class XCell implements BeeSerializable {
           setRowSpan(BeeUtils.toInt(v));
           break;
         case STYLE:
-          setStyle(XStyle.restore(v));
+          setStyleRef(BeeUtils.toIntOrNull(v));
           break;
         case VALUE:
           setValue(Value.restore(v));
@@ -129,8 +133,8 @@ public class XCell implements BeeSerializable {
     return rowSpan;
   }
 
-  public XStyle getStyle() {
-    return style;
+  public Integer getStyleRef() {
+    return styleRef;
   }
 
   public Value getValue() {
@@ -156,7 +160,7 @@ public class XCell implements BeeSerializable {
           values.add(BeeUtils.toString(getRowSpan()));
           break;
         case STYLE:
-          values.add((getStyle() == null) ? null : getStyle().serialize());
+          values.add((getStyleRef() == null) ? null : BeeUtils.toString(getStyleRef()));
           break;
         case VALUE:
           values.add((getValue() == null) ? null : getValue().serialize());
@@ -179,8 +183,8 @@ public class XCell implements BeeSerializable {
     this.rowSpan = rowSpan;
   }
 
-  public void setStyle(XStyle style) {
-    this.style = style;
+  public void setStyleRef(Integer styleRef) {
+    this.styleRef = styleRef;
   }
 
   public void setValue(Value value) {

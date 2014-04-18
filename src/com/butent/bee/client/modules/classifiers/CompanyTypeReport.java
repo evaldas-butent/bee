@@ -33,6 +33,7 @@ import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.Service;
 import com.butent.bee.shared.communication.ResponseObject;
 import com.butent.bee.shared.css.values.TextAlign;
+import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.SimpleRowSet;
 import com.butent.bee.shared.data.SimpleRowSet.SimpleRow;
 import com.butent.bee.shared.data.filter.Filter;
@@ -296,6 +297,24 @@ public class CompanyTypeReport extends ReportInterceptor {
         if (response.hasResponse(SimpleRowSet.class)) {
           SimpleRowSet data = SimpleRowSet.restore(response.getResponseAsString());
           renderData(transformData(data), start, end, types, typesLabel);
+          
+          List<String> headers = Lists.newArrayList(getCaption());
+          if (start != null || end != null) {
+            headers.add(Format.renderPeriod(start, end));
+          }
+          if (!BeeUtils.isEmpty(typesLabel)) {
+            String label;
+            if (DataUtils.parseIdSet(types).size() > 1) {
+              label = Localized.getConstants().types();
+            } else {
+              label = Localized.getConstants().type();
+            }
+            
+            headers.add(BeeUtils.joinWords(label, typesLabel));
+          }
+          
+          sheet.addHeaders(headers);
+          
         } else {
           getFormView().notifyWarning(Localized.getConstants().nothingFound());
         }
@@ -306,7 +325,7 @@ public class CompanyTypeReport extends ReportInterceptor {
   @Override
   protected void export() {
     if (!sheet.isEmpty()) {
-      Exporter.export(sheet, getCaption());
+      Exporter.confirmExport(sheet, getCaption());
     }
   }
   
@@ -371,22 +390,23 @@ public class CompanyTypeReport extends ReportInterceptor {
     int row = 0;
 
     XRow xr = new XRow(row);
+
     XStyle xs = XStyle.bold();
     xs.setTextAlign(TextAlign.CENTER);
-    xr.setStyle(xs);
+    int styleRef = sheet.addStyle(xs);
 
     table.setText(row, YEAR_COL, Localized.getConstants().year(), STYLE_HEADER);
     table.setText(row, MONTH_COL, Localized.getConstants().month(), STYLE_HEADER);
 
-    xr.add(new XCell(YEAR_COL, Localized.getConstants().year()));
-    xr.add(new XCell(MONTH_COL, Localized.getConstants().month()));
+    xr.add(new XCell(YEAR_COL, Localized.getConstants().year(), styleRef));
+    xr.add(new XCell(MONTH_COL, Localized.getConstants().month(), styleRef));
 
     for (int j = 0; j < columns.size(); j++) {
       Column column = columns.get(j);
       int col = VALUE_START_COL + j;
 
       table.setText(row, col, column.getLabel(), STYLE_HEADER);
-      xr.add(new XCell(col, column.getLabel()));
+      xr.add(new XCell(col, column.getLabel(), styleRef));
 
       if (column.total) {
         table.getCellFormatter().addStyleName(row, col, STYLE_ROW_TOTAL);
@@ -396,8 +416,8 @@ public class CompanyTypeReport extends ReportInterceptor {
     sheet.add(xr);
     row++;
     
-    XStyle csValue = XStyle.right();
-    XStyle csRowTot = XStyle.boldAndRight();
+    int csValue = sheet.addStyle(XStyle.right());
+    int csRowTot = sheet.addStyle(XStyle.boldAndRight());
 
     for (YearMonth ym : yms) {
       xr = new XRow(row);
@@ -423,7 +443,7 @@ public class CompanyTypeReport extends ReportInterceptor {
           }
           
           XCell xc = new XCell(col, value);
-          xc.setStyle(column.total ? csRowTot : csValue);
+          xc.setStyleRef(column.total ? csRowTot : csValue);
           xr.add(xc);
           
           DomUtils.setDataColumn(table.getCellFormatter().getElement(row, col), j);
@@ -445,7 +465,8 @@ public class CompanyTypeReport extends ReportInterceptor {
     }
 
     if (yms.size() > 1) {
-      xr = new XRow(row, XStyle.boldAndRight());
+      xr = new XRow(row);
+      styleRef = sheet.addStyle(XStyle.boldAndRight());
 
       for (int j = 0; j < columns.size(); j++) {
         Column column = columns.get(j);
@@ -453,7 +474,7 @@ public class CompanyTypeReport extends ReportInterceptor {
 
         table.setText(row, col, renderQuantity(colTotals[j]),
             column.total ? STYLE_TOTAL : STYLE_COL_TOTAL);
-        xr.add(new XCell(col, colTotals[j]));
+        xr.add(new XCell(col, colTotals[j], styleRef));
 
         if (!column.total) {
           DomUtils.setDataColumn(table.getCellFormatter().getElement(row, col), j);

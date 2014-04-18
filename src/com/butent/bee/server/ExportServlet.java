@@ -18,6 +18,7 @@ import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogUtils;
 import com.butent.bee.shared.time.TimeUtils;
 import com.butent.bee.shared.utils.BeeUtils;
+import com.butent.bee.shared.utils.Codec;
 import com.butent.bee.shared.utils.NameUtils;
 
 import org.apache.poi.ss.usermodel.Cell;
@@ -26,13 +27,12 @@ import org.apache.poi.ss.usermodel.Font;
 import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.ss.usermodel.Sheet;
 import org.apache.poi.ss.usermodel.Workbook;
+import org.apache.poi.ss.util.CellRangeAddress;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 
 import java.io.IOException;
 import java.io.OutputStream;
-import java.io.UnsupportedEncodingException;
 
-import javax.mail.internet.MimeUtility;
 import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -160,7 +160,10 @@ public class ExportServlet extends LoginServlet {
           row.setHeightInPoints(inputRow.getHeight());
         }
 
-        XStyle rowStyle = inputRow.getStyle();
+        XStyle rowStyle = getStyle(inputSheet, inputRow.getStyleRef());
+        if (rowStyle != null) {
+          row.setRowStyle(convertStyle(wb, rowStyle));
+        }
         
         for (XCell inputCell : inputRow.getCells()) {
           Cell cell = row.createCell(inputCell.getIndex());
@@ -197,20 +200,31 @@ public class ExportServlet extends LoginServlet {
             cell.setCellFormula(inputCell.getFormula());
           }
 
-          XStyle cellStyle = inputCell.getStyle();
-          
-          if (rowStyle != null && cellStyle != null) {
-            cell.setCellStyle(convertStyle(wb, cellStyle.merge(rowStyle)));
-          } else if (rowStyle != null) {
-            cell.setCellStyle(convertStyle(wb, rowStyle));
-          } else if (cellStyle != null) {
+          XStyle cellStyle = getStyle(inputSheet, inputCell.getStyleRef());
+          if (cellStyle != null) {
             cell.setCellStyle(convertStyle(wb, cellStyle));
+          }
+          
+          if (inputCell.getColSpan() > 1) {
+            sheet.addMergedRegion(new CellRangeAddress(row.getRowNum(), row.getRowNum(),
+                cell.getColumnIndex(), cell.getColumnIndex() + inputCell.getColSpan() - 1));
           }
         }
       }
     }
 
     return wb;
+  }
+  
+  private static XStyle getStyle(XSheet sheet, Integer index) {
+    if (index == null || index < 0) {
+      return null;
+    } else if (index < sheet.getStyles().size()) {
+      return sheet.getStyle(index);
+    } else {
+      logger.warning("invalid style index", index);
+      return null;
+    }
   }
 
   @Override
@@ -241,18 +255,13 @@ public class ExportServlet extends LoginServlet {
 
       Workbook workbook = createWorkbook(input);
 
-      String name = FileNameUtils.defaultExtension(fileName, EXT_WORKBOOK);
-      try {
-        name = MimeUtility.encodeText(name);
-      } catch (UnsupportedEncodingException ex) {
-        logger.warning(ex);
-      }
-
       resp.reset();
       resp.setContentType(MediaType.MICROSOFT_EXCEL.toString());
-      resp.setHeader(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + name + "\"");
 
-      logger.info(">", svc, fileName, TimeUtils.elapsedSeconds(start));
+      String name = Codec.rfc5987(FileNameUtils.defaultExtension(fileName, EXT_WORKBOOK));
+      resp.setHeader(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename*=" + name);
+
+      logger.info(">", svc, fileName, name, TimeUtils.elapsedSeconds(start));
 
       try {
         OutputStream output = resp.getOutputStream();

@@ -235,6 +235,8 @@ public interface LocalizableConstants extends Constants, LocalizableCalendarCons
 
   String exchangeCode();
 
+  String exportToMsExcel();
+  
   String externalId();
 
   String fax();
@@ -638,6 +640,8 @@ public interface LocalizableConstants extends Constants, LocalizableCalendarCons
   String totalOf();
 
   String type();
+
+  String types();
 
   String unit();
 

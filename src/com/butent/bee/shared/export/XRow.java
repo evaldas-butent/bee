@@ -1,6 +1,7 @@
 package com.butent.bee.shared.export;
 
 import com.butent.bee.shared.Assert;
+import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.BeeSerializable;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.Codec;
@@ -23,7 +24,7 @@ public class XRow implements BeeSerializable {
 
   private int index;
 
-  private XStyle style;
+  private Integer styleRef;
 
   private int height;
 
@@ -31,11 +32,6 @@ public class XRow implements BeeSerializable {
 
   public XRow(int index) {
     this.index = index;
-  }
-
-  public XRow(int index, XStyle style) {
-    this(index);
-    this.style = style;
   }
 
   private XRow() {
@@ -61,6 +57,10 @@ public class XRow implements BeeSerializable {
 
       switch (members[i]) {
         case CELLS:
+          if (!cells.isEmpty()) {
+            cells.clear();
+          }
+          
           String[] carr = Codec.beeDeserializeCollection(value);
           if (carr != null) {
             for (String cv : carr) {
@@ -68,6 +68,7 @@ public class XRow implements BeeSerializable {
             }
           }
           break;
+
         case HEIGHT:
           setHeight(BeeUtils.toInt(value));
           break;
@@ -75,7 +76,7 @@ public class XRow implements BeeSerializable {
           setIndex(BeeUtils.toInt(value));
           break;
         case STYLE:
-          setStyle(XStyle.restore(value));
+          setStyleRef(BeeUtils.toIntOrNull(value));
           break;
       }
     }
@@ -92,15 +93,23 @@ public class XRow implements BeeSerializable {
   public int getIndex() {
     return index;
   }
-
-  public XStyle getStyle() {
-    return style;
+  
+  public int getMaxColumn() {
+    int result = BeeConst.UNDEF;
+    for (XCell cell : cells) {
+      result = Math.max(result, cell.getIndex());
+    }
+    return result;
   }
 
+  public Integer getStyleRef() {
+    return styleRef;
+  }
+  
   public boolean isEmpty() {
     return cells.isEmpty();
   }
-  
+
   @Override
   public String serialize() {
     List<String> values = new ArrayList<>();
@@ -117,7 +126,7 @@ public class XRow implements BeeSerializable {
           values.add(BeeUtils.toString(getIndex()));
           break;
         case STYLE:
-          values.add((getStyle() == null) ? null : getStyle().serialize());
+          values.add((getStyleRef() == null) ? null : BeeUtils.toString(getStyleRef()));
           break;
       }
     }
@@ -128,12 +137,16 @@ public class XRow implements BeeSerializable {
   public void setHeight(int height) {
     this.height = height;
   }
-
+  
   public void setIndex(int index) {
     this.index = index;
   }
 
-  public void setStyle(XStyle style) {
-    this.style = style;
+  public void setStyleRef(Integer styleRef) {
+    this.styleRef = styleRef;
+  }
+  
+  public void shift(int by) {
+    setIndex(getIndex() + by);
   }
 }

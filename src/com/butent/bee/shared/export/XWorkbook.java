@@ -18,7 +18,7 @@ public class XWorkbook implements BeeSerializable {
 
   private String name;
 
-  private List<XSheet> sheets = new ArrayList<>();
+  private final List<XSheet> sheets = new ArrayList<>();
 
   public XWorkbook() {
     super();
@@ -40,6 +40,10 @@ public class XWorkbook implements BeeSerializable {
     Assert.lengthEquals(arr, 2);
 
     setName(arr[0]);
+    
+    if (!sheets.isEmpty()) {
+      sheets.clear();
+    }
 
     String[] sarr = Codec.beeDeserializeCollection(arr[1]);
     if (sarr != null) {
@@ -58,12 +62,7 @@ public class XWorkbook implements BeeSerializable {
   }
 
   public boolean isEmpty() {
-    for (XSheet sheet : sheets) {
-      if (!sheet.isEmpty()) {
-        return false;
-      }
-    }
-    return true;
+    return sheets.isEmpty();
   }
   
   @Override
@@ -78,9 +77,5 @@ public class XWorkbook implements BeeSerializable {
 
   public void setName(String name) {
     this.name = name;
-  }
-
-  public void setSheets(List<XSheet> sheets) {
-    this.sheets = sheets;
   }
 }
