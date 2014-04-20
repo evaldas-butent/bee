@@ -2,8 +2,7 @@ package com.butent.bee.shared.export;
 
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeSerializable;
-import com.butent.bee.shared.css.values.FontStyle;
-import com.butent.bee.shared.css.values.FontWeight;
+import com.butent.bee.shared.css.values.BorderStyle;
 import com.butent.bee.shared.css.values.TextAlign;
 import com.butent.bee.shared.css.values.VerticalAlign;
 import com.butent.bee.shared.utils.BeeUtils;
@@ -16,25 +15,14 @@ import java.util.Objects;
 public class XStyle implements BeeSerializable {
 
   private enum Serial {
-    COLOR, BACKGROUND_COLOR, FONT_NAME, FONT_HEIGHT, FONT_WEIGHT, FONT_STYLE,
-    FORMAT, TEXT_ALIGN, VERTICAL_ALIGN
+    COLOR, FONT, FORMAT, TEXT_ALIGN, VERTICAL_ALIGN,
+    BORDER_LEFT, BORDER_LEFT_COLOR, BORDER_RIGHT, BORDER_RIGHT_COLOR,
+    BORDER_TOP, BORDER_TOP_COLOR, BORDER_BOTTOM, BORDER_BOTTOM_COLOR
   }
 
-  public static XStyle bold() {
+  public static XStyle center() {
     XStyle style = new XStyle();
-    style.setFontWeight(FontWeight.BOLD);
-    return style;
-  }
-
-  public static XStyle boldAndCenter() {
-    XStyle style = bold();
     style.setTextAlign(TextAlign.CENTER);
-    return style;
-  }
-
-  public static XStyle boldAndRight() {
-    XStyle style = bold();
-    style.setTextAlign(TextAlign.RIGHT);
     return style;
   }
 
@@ -55,39 +43,31 @@ public class XStyle implements BeeSerializable {
   }
 
   private String color;
-  private String backgroundColor;
-
-  private String fontName;
-  private int fontHeight;
-  private FontWeight fontWeight;
-  private FontStyle fontStyle;
+  private Integer fontRef;
 
   private String format;
 
   private TextAlign textAlign;
   private VerticalAlign verticalAlign;
 
+  private BorderStyle borderLeft;
+  private String borderLeftColor;
+
+  private BorderStyle borderRight;
+  private String borderRightColor;
+
+  private BorderStyle borderTop;
+  private String borderTopColor;
+
+  private BorderStyle borderBottom;
+  private String borderBottomColor;
+
   public XStyle() {
     super();
   }
 
   public XStyle copy() {
-    XStyle result = new XStyle();
-
-    result.setColor(getColor());
-    result.setBackgroundColor(getBackgroundColor());
-
-    result.setFontName(getFontName());
-    result.setFontHeight(getFontHeight());
-    result.setFontWeight(getFontWeight());
-    result.setFontStyle(getFontStyle());
-
-    result.setFormat(getFormat());
-
-    result.setTextAlign(getTextAlign());
-    result.setVerticalAlign(getVerticalAlign());
-
-    return result;
+    return restore(serialize());
   }
 
   @Override
@@ -103,24 +83,11 @@ public class XStyle implements BeeSerializable {
       }
 
       switch (members[i]) {
-        case BACKGROUND_COLOR:
-          setBackgroundColor(value);
-          break;
         case COLOR:
           setColor(value);
           break;
-
-        case FONT_HEIGHT:
-          setFontHeight(BeeUtils.toInt(value));
-          break;
-        case FONT_NAME:
-          setFontName(value);
-          break;
-        case FONT_STYLE:
-          setFontStyle(Codec.unpack(FontStyle.class, value));
-          break;
-        case FONT_WEIGHT:
-          setFontWeight(Codec.unpack(FontWeight.class, value));
+        case FONT:
+          setFontRef(BeeUtils.toIntOrNull(value));
           break;
 
         case FORMAT:
@@ -132,6 +99,34 @@ public class XStyle implements BeeSerializable {
           break;
         case VERTICAL_ALIGN:
           setVerticalAlign(Codec.unpack(VerticalAlign.class, value));
+          break;
+
+        case BORDER_BOTTOM:
+          setBorderBottom(Codec.unpack(BorderStyle.class, value));
+          break;
+        case BORDER_BOTTOM_COLOR:
+          setBorderBottomColor(value);
+          break;
+
+        case BORDER_LEFT:
+          setBorderLeft(Codec.unpack(BorderStyle.class, value));
+          break;
+        case BORDER_LEFT_COLOR:
+          setBorderLeftColor(value);
+          break;
+
+        case BORDER_RIGHT:
+          setBorderRight(Codec.unpack(BorderStyle.class, value));
+          break;
+        case BORDER_RIGHT_COLOR:
+          setBorderRightColor(value);
+          break;
+
+        case BORDER_TOP:
+          setBorderTop(Codec.unpack(BorderStyle.class, value));
+          break;
+        case BORDER_TOP_COLOR:
+          setBorderTopColor(value);
           break;
       }
     }
@@ -148,40 +143,56 @@ public class XStyle implements BeeSerializable {
     }
 
     XStyle other = (XStyle) obj;
-    
-    return Objects.equals(backgroundColor, other.backgroundColor)
-        && Objects.equals(color, other.color)
-        && fontHeight == other.fontHeight
-        && Objects.equals(fontName, other.fontName)
-        && fontStyle == other.fontStyle
-        && fontWeight == other.fontWeight
+
+    return Objects.equals(color, other.color)
+        && Objects.equals(fontRef, other.fontRef)
         && Objects.equals(format, other.format)
         && textAlign == other.textAlign
-        && verticalAlign == other.verticalAlign;
+        && verticalAlign == other.verticalAlign
+        && borderLeft == other.borderLeft
+        && Objects.equals(borderLeftColor, other.borderLeftColor)
+        && borderRight == other.borderRight
+        && Objects.equals(borderRightColor, other.borderRightColor)
+        && borderTop == other.borderTop
+        && Objects.equals(borderTopColor, other.borderTopColor)
+        && borderBottom == other.borderBottom
+        && Objects.equals(borderBottomColor, other.borderBottomColor);
   }
 
-  public String getBackgroundColor() {
-    return backgroundColor;
+  public BorderStyle getBorderBottom() {
+    return borderBottom;
+  }
+
+  public String getBorderBottomColor() {
+    return borderBottomColor;
+  }
+
+  public BorderStyle getBorderLeft() {
+    return borderLeft;
+  }
+
+  public String getBorderLeftColor() {
+    return borderLeftColor;
+  }
+
+  public BorderStyle getBorderRight() {
+    return borderRight;
+  }
+
+  public String getBorderRightColor() {
+    return borderRightColor;
+  }
+
+  public BorderStyle getBorderTop() {
+    return borderTop;
+  }
+
+  public String getBorderTopColor() {
+    return borderTopColor;
   }
 
   public String getColor() {
     return color;
-  }
-
-  public int getFontHeight() {
-    return fontHeight;
-  }
-
-  public String getFontName() {
-    return fontName;
-  }
-
-  public FontStyle getFontStyle() {
-    return fontStyle;
-  }
-
-  public FontWeight getFontWeight() {
-    return fontWeight;
   }
 
   public String getFormat() {
@@ -196,25 +207,11 @@ public class XStyle implements BeeSerializable {
     return verticalAlign;
   }
 
-  public boolean hasFont() {
-    return !BeeUtils.isEmpty(getFontName()) || getFontHeight() > 0
-        || getFontWeight() != null || getFontStyle() != null;
-  }
-
   @Override
   public int hashCode() {
-    final int prime = 31;
-    int result = 1;
-    result = prime * result + ((backgroundColor == null) ? 0 : backgroundColor.hashCode());
-    result = prime * result + ((color == null) ? 0 : color.hashCode());
-    result = prime * result + fontHeight;
-    result = prime * result + ((fontName == null) ? 0 : fontName.hashCode());
-    result = prime * result + ((fontStyle == null) ? 0 : fontStyle.hashCode());
-    result = prime * result + ((fontWeight == null) ? 0 : fontWeight.hashCode());
-    result = prime * result + ((format == null) ? 0 : format.hashCode());
-    result = prime * result + ((textAlign == null) ? 0 : textAlign.hashCode());
-    result = prime * result + ((verticalAlign == null) ? 0 : verticalAlign.hashCode());
-    return result;
+    return Objects.hash(color, fontRef, format, textAlign, verticalAlign,
+        borderLeft, borderLeftColor, borderRight, borderRightColor,
+        borderTop, borderTopColor, borderBottom, borderBottomColor);
   }
 
   public XStyle merge(XStyle other) {
@@ -226,21 +223,8 @@ public class XStyle implements BeeSerializable {
     if (BeeUtils.isEmpty(getColor()) && !BeeUtils.isEmpty(other.getColor())) {
       result.setColor(other.getColor());
     }
-    if (BeeUtils.isEmpty(getBackgroundColor()) && !BeeUtils.isEmpty(other.getBackgroundColor())) {
-      result.setBackgroundColor(other.getBackgroundColor());
-    }
-
-    if (BeeUtils.isEmpty(getFontName()) && !BeeUtils.isEmpty(other.getFontName())) {
-      result.setFontName(other.getFontName());
-    }
-    if (!BeeUtils.isPositive(getFontHeight()) && BeeUtils.isPositive(other.getFontHeight())) {
-      result.setFontHeight(other.getFontHeight());
-    }
-    if (getFontWeight() == null && other.getFontWeight() != null) {
-      result.setFontWeight(other.getFontWeight());
-    }
-    if (getFontStyle() == null && other.getFontStyle() != null) {
-      result.setFontStyle(other.getFontStyle());
+    if (getFontRef() == null && other.getFontRef() != null) {
+      result.setFontRef(other.getFontRef());
     }
 
     if (BeeUtils.isEmpty(getFormat()) && !BeeUtils.isEmpty(other.getFormat())) {
@@ -254,6 +238,35 @@ public class XStyle implements BeeSerializable {
       result.setVerticalAlign(other.getVerticalAlign());
     }
 
+    if (getBorderLeft() == null && other.getBorderLeft() != null) {
+      result.setBorderLeft(other.getBorderLeft());
+    }
+    if (BeeUtils.isEmpty(getBorderLeftColor()) && !BeeUtils.isEmpty(other.getBorderLeftColor())) {
+      result.setBorderLeftColor(other.getBorderLeftColor());
+    }
+
+    if (getBorderRight() == null && other.getBorderRight() != null) {
+      result.setBorderRight(other.getBorderRight());
+    }
+    if (BeeUtils.isEmpty(getBorderRightColor()) && !BeeUtils.isEmpty(other.getBorderRightColor())) {
+      result.setBorderRightColor(other.getBorderRightColor());
+    }
+
+    if (getBorderTop() == null && other.getBorderTop() != null) {
+      result.setBorderTop(other.getBorderTop());
+    }
+    if (BeeUtils.isEmpty(getBorderTopColor()) && !BeeUtils.isEmpty(other.getBorderTopColor())) {
+      result.setBorderTopColor(other.getBorderTopColor());
+    }
+
+    if (getBorderBottom() == null && other.getBorderBottom() != null) {
+      result.setBorderBottom(other.getBorderBottom());
+    }
+    if (BeeUtils.isEmpty(getBorderBottomColor())
+        && !BeeUtils.isEmpty(other.getBorderBottomColor())) {
+      result.setBorderBottomColor(other.getBorderBottomColor());
+    }
+
     return result;
   }
 
@@ -263,24 +276,11 @@ public class XStyle implements BeeSerializable {
 
     for (Serial member : Serial.values()) {
       switch (member) {
-        case BACKGROUND_COLOR:
-          values.add(getBackgroundColor());
-          break;
         case COLOR:
           values.add(getColor());
           break;
-
-        case FONT_HEIGHT:
-          values.add(BeeUtils.toString(getFontHeight()));
-          break;
-        case FONT_NAME:
-          values.add(getFontName());
-          break;
-        case FONT_STYLE:
-          values.add(Codec.pack(getFontStyle()));
-          break;
-        case FONT_WEIGHT:
-          values.add(Codec.pack(getFontWeight()));
+        case FONT:
+          values.add((getFontRef() == null) ? null : BeeUtils.toString(getFontRef()));
           break;
 
         case FORMAT:
@@ -293,34 +293,74 @@ public class XStyle implements BeeSerializable {
         case VERTICAL_ALIGN:
           values.add(Codec.pack(getVerticalAlign()));
           break;
+
+        case BORDER_BOTTOM:
+          values.add(Codec.pack(getBorderBottom()));
+          break;
+        case BORDER_BOTTOM_COLOR:
+          values.add(getBorderBottomColor());
+          break;
+
+        case BORDER_LEFT:
+          values.add(Codec.pack(getBorderLeft()));
+          break;
+        case BORDER_LEFT_COLOR:
+          values.add(getBorderLeftColor());
+          break;
+
+        case BORDER_RIGHT:
+          values.add(Codec.pack(getBorderRight()));
+          break;
+        case BORDER_RIGHT_COLOR:
+          values.add(getBorderRightColor());
+          break;
+
+        case BORDER_TOP:
+          values.add(Codec.pack(getBorderTop()));
+          break;
+        case BORDER_TOP_COLOR:
+          values.add(getBorderTopColor());
+          break;
       }
     }
 
     return Codec.beeSerialize(values);
   }
 
-  public void setBackgroundColor(String backgroundColor) {
-    this.backgroundColor = backgroundColor;
+  public void setBorderBottom(BorderStyle borderBottom) {
+    this.borderBottom = borderBottom;
+  }
+
+  public void setBorderBottomColor(String borderBottomColor) {
+    this.borderBottomColor = borderBottomColor;
+  }
+
+  public void setBorderLeft(BorderStyle borderLeft) {
+    this.borderLeft = borderLeft;
+  }
+
+  public void setBorderLeftColor(String borderLeftColor) {
+    this.borderLeftColor = borderLeftColor;
+  }
+
+  public void setBorderRight(BorderStyle borderRight) {
+    this.borderRight = borderRight;
+  }
+
+  public void setBorderRightColor(String borderRightColor) {
+    this.borderRightColor = borderRightColor;
+  }
+
+  public void setBorderTop(BorderStyle borderTop) {
+    this.borderTop = borderTop;
+  }
+
+  public void setBorderTopColor(String borderTopColor) {
+    this.borderTopColor = borderTopColor;
   }
 
   public void setColor(String color) {
     this.color = color;
-  }
-
-  public void setFontHeight(int fontHeight) {
-    this.fontHeight = fontHeight;
-  }
-
-  public void setFontName(String fontName) {
-    this.fontName = fontName;
-  }
-
-  public void setFontStyle(FontStyle fontStyle) {
-    this.fontStyle = fontStyle;
-  }
-
-  public void setFontWeight(FontWeight fontWeight) {
-    this.fontWeight = fontWeight;
   }
 
   public void setFormat(String format) {
@@ -333,5 +373,13 @@ public class XStyle implements BeeSerializable {
 
   public void setVerticalAlign(VerticalAlign verticalAlign) {
     this.verticalAlign = verticalAlign;
+  }
+
+  public Integer getFontRef() {
+    return fontRef;
+  }
+
+  public void setFontRef(Integer fontRef) {
+    this.fontRef = fontRef;
   }
 }

@@ -34,8 +34,11 @@ import com.butent.bee.client.widget.ListBox;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.Service;
 import com.butent.bee.shared.communication.ResponseObject;
+import com.butent.bee.shared.css.Colors;
+import com.butent.bee.shared.css.values.BorderStyle;
 import com.butent.bee.shared.css.values.FontStyle;
-import com.butent.bee.shared.css.values.TextAlign;
+import com.butent.bee.shared.css.values.FontWeight;
+import com.butent.bee.shared.css.values.VerticalAlign;
 import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.SimpleRowSet;
 import com.butent.bee.shared.data.SimpleRowSet.SimpleRow;
@@ -44,6 +47,7 @@ import com.butent.bee.shared.data.filter.Filter;
 import com.butent.bee.shared.data.value.DateTimeValue;
 import com.butent.bee.shared.data.value.IntegerValue;
 import com.butent.bee.shared.export.XCell;
+import com.butent.bee.shared.export.XFont;
 import com.butent.bee.shared.export.XRow;
 import com.butent.bee.shared.export.XSheet;
 import com.butent.bee.shared.export.XStyle;
@@ -161,6 +165,19 @@ public class AssessmentTurnoverReport extends ReportInterceptor {
   private static final String STYLE_ZERO = STYLE_PREFIX + "zero";
 
   private static final String DRILL_DOWN_GRID_NAME = "AssessmentReportDrillDown";
+
+  private static final String COLOR_GROWTH_PLUS = Colors.GREEN;
+  private static final String COLOR_MINUS = Colors.RED;
+
+  private static final double SUMMARY_FONT_FACTOR = 1.2;
+
+  private static XCell createCell(int index, Double value, Integer stylePlus, Integer styleMinus) {
+    if (BeeUtils.nonZero(value)) {
+      return new XCell(index, value, BeeUtils.isPositive(value) ? stylePlus : styleMinus);
+    } else {
+      return new XCell(index, (Double) null, stylePlus);
+    }
+  }
 
   private static Map<Integer, RowValue> getPreviuosValues(SimpleRowSet data, SimpleRowSet prev) {
     Map<Integer, RowValue> result = Maps.newHashMap();
@@ -390,12 +407,17 @@ public class AssessmentTurnoverReport extends ReportInterceptor {
     }
 
     ParameterList params = TransportHandler.createArgs(SVC_GET_ASSESSMENT_TURNOVER_REPORT);
+    final List<String> headers = Lists.newArrayList(BeeUtils.joinWords(getCaption(),
+        getFilterLabel(NAME_CURRENCY)));
 
     if (start != null) {
       params.addDataItem(Service.VAR_FROM, start.getTime());
     }
     if (end != null) {
       params.addDataItem(Service.VAR_TO, end.getTime());
+    }
+    if (start != null || end != null) {
+      headers.add(Format.renderPeriod(start, end));
     }
 
     Long currency = BeeUtils.toLongOrNull(getEditorValue(NAME_CURRENCY));
@@ -406,12 +428,21 @@ public class AssessmentTurnoverReport extends ReportInterceptor {
       }
     }
 
+    String label;
+
     String departments = getEditorValue(NAME_DEPARTMENTS);
     if (!BeeUtils.isEmpty(departments)) {
       params.addDataItem(AR_DEPARTMENT, departments);
       if (prevParams != null) {
         prevParams.addDataItem(AR_DEPARTMENT, departments);
       }
+
+      if (DataUtils.parseIdSet(departments).size() > 1) {
+        label = Localized.getConstants().departments();
+      } else {
+        label = Localized.getConstants().department();
+      }
+      headers.add(BeeUtils.joinWords(label, getFilterLabel(NAME_DEPARTMENTS)));
     }
 
     String managers = getEditorValue(NAME_MANAGERS);
@@ -420,6 +451,13 @@ public class AssessmentTurnoverReport extends ReportInterceptor {
       if (prevParams != null) {
         prevParams.addDataItem(AR_MANAGER, managers);
       }
+
+      if (DataUtils.parseIdSet(managers).size() > 1) {
+        label = Localized.getConstants().managers();
+      } else {
+        label = Localized.getConstants().manager();
+      }
+      headers.add(BeeUtils.joinWords(label, getFilterLabel(NAME_MANAGERS)));
     }
 
     String customers = getEditorValue(NAME_CUSTOMERS);
@@ -428,6 +466,13 @@ public class AssessmentTurnoverReport extends ReportInterceptor {
       if (prevParams != null) {
         prevParams.addDataItem(AR_CUSTOMER, customers);
       }
+
+      if (DataUtils.parseIdSet(customers).size() > 1) {
+        label = Localized.getConstants().clients();
+      } else {
+        label = Localized.getConstants().client();
+      }
+      headers.add(BeeUtils.joinWords(label, getFilterLabel(NAME_CUSTOMERS)));
     }
 
     if (!groupBy.isEmpty()) {
@@ -449,6 +494,9 @@ public class AssessmentTurnoverReport extends ReportInterceptor {
 
           if (prevParams == null) {
             renderData(data, getPreviuosValues(data, null), null);
+
+            sheet.addHeaders(headers);
+            sheet.autoSizeAll();
 
           } else {
             BeeKeeper.getRpc().makeRequest(prevParams, new ResponseCallback() {
@@ -478,6 +526,9 @@ public class AssessmentTurnoverReport extends ReportInterceptor {
                 }
 
                 renderData(data, getPreviuosValues(data, prev), totals);
+
+                sheet.addHeaders(headers);
+                sheet.autoSizeAll();
               }
             });
           }
@@ -495,7 +546,7 @@ public class AssessmentTurnoverReport extends ReportInterceptor {
       Exporter.confirmExport(sheet, getCaption());
     }
   }
-  
+
   @Override
   protected String getBookmarkLabel() {
     List<String> labels = Lists.newArrayList(getCaption(),
@@ -545,6 +596,65 @@ public class AssessmentTurnoverReport extends ReportInterceptor {
     DateTime end = parameters.getDateTime(NAME_END_DATE);
 
     return checkRange(start, end);
+  }
+
+  private Integer createDetailsStyle(boolean italic, String color, String pattern) {
+    return createStyle(false, italic, color, null, pattern, false);
+  }
+
+  private Integer createDetailsStyle(String pattern) {
+    return createDetailsStyle(null, pattern);
+  }
+
+  private Integer createDetailsStyle(String color, String pattern) {
+    return createDetailsStyle(false, color, pattern);
+  }
+
+  private Integer createStyle(boolean bold, boolean italic, String color,
+      Double fontFactor, String pattern, boolean borderTop) {
+
+    XStyle style = XStyle.right();
+
+    if (bold || italic || !BeeUtils.isEmpty(color) || BeeUtils.isPositive(fontFactor)) {
+      XFont font = new XFont();
+
+      if (bold) {
+        font.setWeight(FontWeight.BOLD);
+      }
+      if (italic) {
+        font.setStyle(FontStyle.ITALIC);
+      }
+
+      if (!BeeUtils.isEmpty(color)) {
+        font.setColor(color);
+      }
+      if (BeeUtils.isPositive(fontFactor)) {
+        font.setFactor(fontFactor);
+      }
+
+      style.setFontRef(sheet.registeFont(font));
+    }
+
+    if (!BeeUtils.isEmpty(pattern)) {
+      style.setFormat(pattern);
+    }
+    if (borderTop) {
+      style.setBorderTop(BorderStyle.SOLID);
+    }
+
+    return sheet.registerStyle(style);
+  }
+
+  private Integer createSummaryStyle(boolean italic, String color, String pattern) {
+    return createStyle(true, italic, color, SUMMARY_FONT_FACTOR, pattern, true);
+  }
+
+  private Integer createSummaryStyle(String pattern) {
+    return createSummaryStyle(null, pattern);
+  }
+
+  private Integer createSummaryStyle(String color, String pattern) {
+    return createSummaryStyle(false, color, pattern);
   }
 
   private List<String> getGroupBy() {
@@ -628,9 +738,14 @@ public class AssessmentTurnoverReport extends ReportInterceptor {
     XRow xr1 = new XRow(row);
     XRow xr2 = new XRow(row + 1);
 
-    XStyle xs = XStyle.bold();
-    xs.setTextAlign(TextAlign.CENTER);
-    int styleRef = sheet.addStyle(xs);
+    Integer boldRef = sheet.registeFont(XFont.bold());
+
+    XStyle xs = XStyle.center();
+    xs.setVerticalAlign(VerticalAlign.MIDDLE);
+    xs.setColor(Colors.LIGHTGRAY);
+    xs.setFontRef(boldRef);
+
+    int styleRef = sheet.registerStyle(xs);
 
     XCell xc;
     String text;
@@ -867,22 +982,16 @@ public class AssessmentTurnoverReport extends ReportInterceptor {
     row = 2;
     XRow xr;
 
-    xs = XStyle.right();
-    xs.setFormat(QUANTITY_PATTERN);
-    int csQty = sheet.addStyle(xs);
+    int csQty = createDetailsStyle(QUANTITY_PATTERN);
 
-    xs = XStyle.right();
-    xs.setFormat(AMOUNT_PATTERN);
-    int csAmt = sheet.addStyle(xs);
+    int csAmtPlus = createDetailsStyle(AMOUNT_PATTERN);
+    int csAmtMinus = createDetailsStyle(COLOR_MINUS, AMOUNT_PATTERN);
 
-    xs = XStyle.right();
-    xs.setFormat(PERCENT_PATTERN);
-    xs.setFontStyle(FontStyle.ITALIC);
-    int csGrt = sheet.addStyle(xs);
+    int csGrtPlus = createDetailsStyle(true, COLOR_GROWTH_PLUS, PERCENT_PATTERN);
+    int csGrtMinus = createDetailsStyle(true, COLOR_MINUS, PERCENT_PATTERN);
 
-    xs = XStyle.right();
-    xs.setFormat(PERCENT_PATTERN);
-    int csPct = sheet.addStyle(xs);
+    int csPctPlus = createDetailsStyle(PERCENT_PATTERN);
+    int csPctMinus = createDetailsStyle(COLOR_MINUS, PERCENT_PATTERN);
 
     for (int i = 0; i < data.getNumberOfRows(); i++) {
       xr = new XRow(row);
@@ -939,7 +1048,7 @@ public class AssessmentTurnoverReport extends ReportInterceptor {
               table.setText(row, colQuantity + 1, renderPercent(growth),
                   STYLE_QUANTITY, STYLE_GROWTH, STYLE_MAIN, style(growth));
               if (BeeUtils.nonZero(growth)) {
-                xr.add(new XCell(colQuantity + 1, growth, csGrt));
+                xr.add(createCell(colQuantity + 1, growth, csGrtPlus, csGrtMinus));
               }
             }
             break;
@@ -948,7 +1057,7 @@ public class AssessmentTurnoverReport extends ReportInterceptor {
             table.setText(row, colIncome1, renderAmount(rv.income1),
                 STYLE_INCOME, STYLE_AMOUNT, STYLE_MAIN, style(rv.income1));
             if (BeeUtils.nonZero(rv.income1)) {
-              xr.add(new XCell(colIncome1, rv.income1, csAmt));
+              xr.add(createCell(colIncome1, rv.income1, csAmtPlus, csAmtMinus));
             }
 
             if (hasGrowth) {
@@ -956,7 +1065,7 @@ public class AssessmentTurnoverReport extends ReportInterceptor {
               table.setText(row, colIncome1 + 1, renderPercent(growth),
                   STYLE_INCOME, STYLE_GROWTH, STYLE_MAIN, style(growth));
               if (BeeUtils.nonZero(growth)) {
-                xr.add(new XCell(colIncome1 + 1, growth, csGrt));
+                xr.add(createCell(colIncome1 + 1, growth, csGrtPlus, csGrtMinus));
               }
             }
             break;
@@ -965,7 +1074,7 @@ public class AssessmentTurnoverReport extends ReportInterceptor {
             table.setText(row, colExpense1, renderAmount(rv.expense1),
                 STYLE_EXPENSE, STYLE_AMOUNT, STYLE_MAIN, style(rv.expense1));
             if (BeeUtils.nonZero(rv.expense1)) {
-              xr.add(new XCell(colExpense1, rv.expense1, csAmt));
+              xr.add(createCell(colExpense1, rv.expense1, csAmtPlus, csAmtMinus));
             }
 
             if (hasGrowth) {
@@ -973,7 +1082,7 @@ public class AssessmentTurnoverReport extends ReportInterceptor {
               table.setText(row, colExpense1 + 1, renderPercent(growth),
                   STYLE_EXPENSE, STYLE_GROWTH, STYLE_MAIN, style(growth));
               if (BeeUtils.nonZero(growth)) {
-                xr.add(new XCell(colExpense1 + 1, growth, csGrt));
+                xr.add(createCell(colExpense1 + 1, growth, csGrtPlus, csGrtMinus));
               }
             }
 
@@ -981,7 +1090,7 @@ public class AssessmentTurnoverReport extends ReportInterceptor {
             table.setText(row, colProfit1, renderAmount(value),
                 STYLE_PROFIT, STYLE_AMOUNT, STYLE_MAIN, style(value));
             if (BeeUtils.nonZero(value)) {
-              xr.add(new XCell(colProfit1, value, csAmt));
+              xr.add(createCell(colProfit1, value, csAmtPlus, csAmtMinus));
             }
 
             if (hasGrowth) {
@@ -989,7 +1098,7 @@ public class AssessmentTurnoverReport extends ReportInterceptor {
               table.setText(row, colProfit1 + 1, renderPercent(growth),
                   STYLE_PROFIT, STYLE_GROWTH, STYLE_MAIN, style(growth));
               if (BeeUtils.nonZero(growth)) {
-                xr.add(new XCell(colProfit1 + 1, growth, csGrt));
+                xr.add(createCell(colProfit1 + 1, growth, csGrtPlus, csGrtMinus));
               }
             }
 
@@ -997,7 +1106,7 @@ public class AssessmentTurnoverReport extends ReportInterceptor {
             table.setText(row, colMargin1, renderPercent(value),
                 STYLE_MARGIN, STYLE_PERCENT, STYLE_MAIN, style(value));
             if (BeeUtils.nonZero(value)) {
-              xr.add(new XCell(colMargin1, value, csPct));
+              xr.add(createCell(colMargin1, value, csPctPlus, csPctMinus));
             }
             break;
 
@@ -1013,7 +1122,7 @@ public class AssessmentTurnoverReport extends ReportInterceptor {
               table.setText(row, colSecondary + 1, renderPercent(growth),
                   STYLE_QUANTITY, STYLE_GROWTH, STYLE_SECONDARY, style(growth));
               if (BeeUtils.nonZero(growth)) {
-                xr.add(new XCell(colSecondary + 1, growth, csGrt));
+                xr.add(createCell(colSecondary + 1, growth, csGrtPlus, csGrtMinus));
               }
             }
             break;
@@ -1022,7 +1131,7 @@ public class AssessmentTurnoverReport extends ReportInterceptor {
             table.setText(row, colIncome2, renderAmount(rv.income2),
                 STYLE_INCOME, STYLE_AMOUNT, STYLE_SECONDARY, style(rv.income2));
             if (BeeUtils.nonZero(rv.income2)) {
-              xr.add(new XCell(colIncome2, rv.income2, csAmt));
+              xr.add(createCell(colIncome2, rv.income2, csAmtPlus, csAmtMinus));
             }
 
             if (hasGrowth) {
@@ -1030,7 +1139,7 @@ public class AssessmentTurnoverReport extends ReportInterceptor {
               table.setText(row, colIncome2 + 1, renderPercent(growth),
                   STYLE_INCOME, STYLE_GROWTH, STYLE_SECONDARY, style(growth));
               if (BeeUtils.nonZero(growth)) {
-                xr.add(new XCell(colIncome2 + 1, growth, csGrt));
+                xr.add(createCell(colIncome2 + 1, growth, csGrtPlus, csGrtMinus));
               }
             }
             break;
@@ -1039,7 +1148,7 @@ public class AssessmentTurnoverReport extends ReportInterceptor {
             table.setText(row, colExpense2, renderAmount(rv.expense2),
                 STYLE_EXPENSE, STYLE_AMOUNT, STYLE_SECONDARY, style(rv.expense2));
             if (BeeUtils.nonZero(rv.expense2)) {
-              xr.add(new XCell(colExpense2, rv.expense2, csAmt));
+              xr.add(createCell(colExpense2, rv.expense2, csAmtPlus, csAmtMinus));
             }
 
             if (hasGrowth) {
@@ -1047,7 +1156,7 @@ public class AssessmentTurnoverReport extends ReportInterceptor {
               table.setText(row, colExpense2 + 1, renderPercent(growth),
                   STYLE_EXPENSE, STYLE_GROWTH, STYLE_SECONDARY, style(growth));
               if (BeeUtils.nonZero(growth)) {
-                xr.add(new XCell(colExpense2 + 1, growth, csGrt));
+                xr.add(createCell(colExpense2 + 1, growth, csGrtPlus, csGrtMinus));
               }
             }
 
@@ -1055,7 +1164,7 @@ public class AssessmentTurnoverReport extends ReportInterceptor {
             table.setText(row, colProfit2, renderAmount(value),
                 STYLE_PROFIT, STYLE_AMOUNT, STYLE_SECONDARY, style(value));
             if (BeeUtils.nonZero(value)) {
-              xr.add(new XCell(colProfit2, value, csAmt));
+              xr.add(createCell(colProfit2, value, csAmtPlus, csAmtMinus));
             }
 
             if (hasGrowth) {
@@ -1063,7 +1172,7 @@ public class AssessmentTurnoverReport extends ReportInterceptor {
               table.setText(row, colProfit2 + 1, renderPercent(growth),
                   STYLE_PROFIT, STYLE_GROWTH, STYLE_SECONDARY, style(growth));
               if (BeeUtils.nonZero(growth)) {
-                xr.add(new XCell(colProfit2 + 1, growth, csGrt));
+                xr.add(createCell(colProfit2 + 1, growth, csGrtPlus, csGrtMinus));
               }
             }
 
@@ -1071,7 +1180,7 @@ public class AssessmentTurnoverReport extends ReportInterceptor {
             table.setText(row, colMargin2, renderPercent(value),
                 STYLE_MARGIN, STYLE_PERCENT, STYLE_SECONDARY, style(value));
             if (BeeUtils.nonZero(value)) {
-              xr.add(new XCell(colMargin2, value, csPct));
+              xr.add(createCell(colMargin2, value, csPctPlus, csPctMinus));
             }
             break;
         }
@@ -1095,61 +1204,48 @@ public class AssessmentTurnoverReport extends ReportInterceptor {
     if (data.getNumberOfRows() > 1) {
       xr = new XRow(row);
 
-      xs = XStyle.bold().merge(sheet.getStyle(csQty));
-      int csTotQty = sheet.addStyle(xs);
+      int csTotQty = createSummaryStyle(QUANTITY_PATTERN);
 
-      xs = XStyle.bold().merge(sheet.getStyle(csAmt));
-      int csTotAmt = sheet.addStyle(xs);
+      int csTotAmtPlus = createSummaryStyle(AMOUNT_PATTERN);
+      int csTotAmtMinus = createSummaryStyle(COLOR_MINUS, AMOUNT_PATTERN);
 
-      xs = XStyle.bold().merge(sheet.getStyle(csGrt));
-      int csTotGrt = sheet.addStyle(xs);
+      int csTotGrtPlus = createSummaryStyle(true, COLOR_GROWTH_PLUS, PERCENT_PATTERN);
+      int csTotGrtMinus = createSummaryStyle(true, COLOR_MINUS, PERCENT_PATTERN);
 
-      xs = XStyle.bold().merge(sheet.getStyle(csPct));
-      int csTotPct = sheet.addStyle(xs);
-      
+      int csTotPctPlus = createSummaryStyle(PERCENT_PATTERN);
+      int csTotPctMinus = createSummaryStyle(COLOR_MINUS, PERCENT_PATTERN);
+
       table.setText(row, colQuantity, renderQuantity(totQuantity),
           STYLE_QUANTITY, STYLE_VALUE, STYLE_MAIN, style(totQuantity));
-      if (totQuantity > 0) {
-        xr.add(new XCell(colQuantity, totQuantity, csTotQty));
-      }
+      xr.add(new XCell(colQuantity, totQuantity, csTotQty));
 
       if (hasGrowth) {
         growth = (prevTotal == null) ? null : growth(prevTotal.quantity, totQuantity);
         table.setText(row, colQuantity + 1, renderPercent(growth),
             STYLE_QUANTITY, STYLE_GROWTH, STYLE_MAIN, style(growth));
-        if (BeeUtils.nonZero(growth)) {
-          xr.add(new XCell(colQuantity + 1, growth, csTotGrt));
-        }
+        xr.add(createCell(colQuantity + 1, growth, csTotGrtPlus, csTotGrtMinus));
       }
 
       table.setText(row, colIncome1, renderAmount(totIncome1),
           STYLE_INCOME, STYLE_AMOUNT, STYLE_MAIN, style(totIncome1));
-      if (BeeUtils.nonZero(totIncome1)) {
-        xr.add(new XCell(colIncome1, totIncome1, csTotAmt));
-      }
+      xr.add(createCell(colIncome1, totIncome1, csTotAmtPlus, csTotAmtMinus));
 
       if (hasGrowth) {
         growth = (prevTotal == null) ? null : growth(prevTotal.income1, totIncome1);
         table.setText(row, colIncome1 + 1, renderPercent(growth),
             STYLE_INCOME, STYLE_GROWTH, STYLE_MAIN, style(growth));
-        if (BeeUtils.nonZero(growth)) {
-          xr.add(new XCell(colIncome1 + 1, growth, csTotGrt));
-        }
+        xr.add(createCell(colIncome1 + 1, growth, csTotGrtPlus, csTotGrtMinus));
       }
 
       table.setText(row, colExpense1, renderAmount(totExpense1),
           STYLE_EXPENSE, STYLE_AMOUNT, STYLE_MAIN, style(totExpense1));
-      if (BeeUtils.nonZero(totExpense1)) {
-        xr.add(new XCell(colExpense1, totExpense1, csTotAmt));
-      }
+      xr.add(createCell(colExpense1, totExpense1, csTotAmtPlus, csTotAmtMinus));
 
       if (hasGrowth) {
         growth = (prevTotal == null) ? null : growth(prevTotal.expense1, totExpense1);
         table.setText(row, colExpense1 + 1, renderPercent(growth),
             STYLE_EXPENSE, STYLE_GROWTH, STYLE_MAIN, style(growth));
-        if (BeeUtils.nonZero(growth)) {
-          xr.add(new XCell(colExpense1 + 1, growth, csTotGrt));
-        }
+        xr.add(createCell(colExpense1 + 1, growth, csTotGrtPlus, csTotGrtMinus));
       }
 
       double profit = profit(totIncome1, totExpense1);
@@ -1157,70 +1253,52 @@ public class AssessmentTurnoverReport extends ReportInterceptor {
 
       table.setText(row, colProfit1, renderAmount(profit),
           STYLE_PROFIT, STYLE_AMOUNT, STYLE_MAIN, style(profit));
-      if (BeeUtils.nonZero(profit)) {
-        xr.add(new XCell(colProfit1, profit, csTotAmt));
-      }
+      xr.add(createCell(colProfit1, profit, csTotAmtPlus, csTotAmtMinus));
 
       if (hasGrowth) {
         growth = (prevTotal == null) ? null : growth(prevTotal.getProfit1(), profit);
         table.setText(row, colProfit1 + 1, renderPercent(growth),
             STYLE_PROFIT, STYLE_GROWTH, STYLE_MAIN, style(growth));
-        if (BeeUtils.nonZero(growth)) {
-          xr.add(new XCell(colProfit1 + 1, growth, csTotGrt));
-        }
+        xr.add(createCell(colProfit1 + 1, growth, csTotGrtPlus, csTotGrtMinus));
       }
 
       table.setText(row, colMargin1, renderPercent(margin),
           STYLE_MARGIN, STYLE_PERCENT, STYLE_MAIN, style(margin));
-      if (BeeUtils.nonZero(margin)) {
-        xr.add(new XCell(colMargin1, margin, csTotPct));
-      }
+      xr.add(createCell(colMargin1, margin, csTotPctPlus, csTotPctMinus));
 
       boolean hasSecondaryGrowth = hasSecondaryGrowth(prevTotal, totSecondary);
 
       table.setText(row, colSecondary, renderQuantity(totSecondary),
           STYLE_QUANTITY, STYLE_VALUE, STYLE_SECONDARY, style(totSecondary));
-      if (totSecondary > 0) {
-        xr.add(new XCell(colSecondary, totSecondary, csTotQty));
-      }
+      xr.add(new XCell(colSecondary, totSecondary, csTotQty));
 
       if (hasGrowth) {
         growth = hasSecondaryGrowth ? growth(prevTotal.secondary, totSecondary) : null;
         table.setText(row, colSecondary + 1, renderPercent(growth),
             STYLE_QUANTITY, STYLE_GROWTH, STYLE_SECONDARY, style(growth));
-        if (BeeUtils.nonZero(growth)) {
-          xr.add(new XCell(colSecondary + 1, growth, csTotGrt));
-        }
+        xr.add(createCell(colSecondary + 1, growth, csTotGrtPlus, csTotGrtMinus));
       }
 
       table.setText(row, colIncome2, renderAmount(totIncome2),
           STYLE_INCOME, STYLE_AMOUNT, STYLE_SECONDARY, style(totIncome2));
-      if (BeeUtils.nonZero(totIncome2)) {
-        xr.add(new XCell(colIncome2, totIncome2, csTotAmt));
-      }
+      xr.add(createCell(colIncome2, totIncome2, csTotAmtPlus, csTotAmtMinus));
 
       if (hasGrowth) {
         growth = hasSecondaryGrowth ? growth(prevTotal.income2, totIncome2) : null;
         table.setText(row, colIncome2 + 1, renderPercent(growth),
             STYLE_INCOME, STYLE_GROWTH, STYLE_SECONDARY, style(growth));
-        if (BeeUtils.nonZero(growth)) {
-          xr.add(new XCell(colIncome2 + 1, growth, csTotGrt));
-        }
+        xr.add(createCell(colIncome2 + 1, growth, csTotGrtPlus, csTotGrtMinus));
       }
 
       table.setText(row, colExpense2, renderAmount(totExpense2),
           STYLE_EXPENSE, STYLE_AMOUNT, STYLE_SECONDARY, style(totExpense2));
-      if (BeeUtils.nonZero(totExpense2)) {
-        xr.add(new XCell(colExpense2, totExpense2, csTotAmt));
-      }
+      xr.add(createCell(colExpense2, totExpense2, csTotAmtPlus, csTotAmtMinus));
 
       if (hasGrowth) {
         growth = hasSecondaryGrowth ? growth(prevTotal.expense2, totExpense2) : null;
         table.setText(row, colExpense2 + 1, renderPercent(growth),
             STYLE_EXPENSE, STYLE_GROWTH, STYLE_SECONDARY, style(growth));
-        if (BeeUtils.nonZero(growth)) {
-          xr.add(new XCell(colExpense2 + 1, growth, csTotGrt));
-        }
+        xr.add(createCell(colExpense2 + 1, growth, csTotGrtPlus, csTotGrtMinus));
       }
 
       profit = profit(totIncome2, totExpense2);
@@ -1228,24 +1306,18 @@ public class AssessmentTurnoverReport extends ReportInterceptor {
 
       table.setText(row, colProfit2, renderAmount(profit),
           STYLE_PROFIT, STYLE_AMOUNT, STYLE_SECONDARY, style(profit));
-      if (BeeUtils.nonZero(profit)) {
-        xr.add(new XCell(colProfit2, profit, csTotAmt));
-      }
+      xr.add(createCell(colProfit2, profit, csTotAmtPlus, csTotAmtMinus));
 
       if (hasGrowth) {
         growth = hasSecondaryGrowth ? growth(prevTotal.getProfit2(), profit) : null;
         table.setText(row, colProfit2 + 1, renderPercent(growth),
             STYLE_PROFIT, STYLE_GROWTH, STYLE_SECONDARY, style(growth));
-        if (BeeUtils.nonZero(growth)) {
-          xr.add(new XCell(colProfit2 + 1, growth, csTotGrt));
-        }
+        xr.add(createCell(colProfit2 + 1, growth, csTotGrtPlus, csTotGrtMinus));
       }
 
       table.setText(row, colMargin2, renderPercent(margin),
           STYLE_MARGIN, STYLE_PERCENT, STYLE_SECONDARY, style(margin));
-      if (BeeUtils.nonZero(margin)) {
-        xr.add(new XCell(colMargin2, margin, csTotPct));
-      }
+      xr.add(createCell(colMargin2, margin, csTotPctPlus, csTotPctMinus));
 
       table.getRowFormatter().addStyleName(row, STYLE_SUMMARY);
       sheet.add(xr);

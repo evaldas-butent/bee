@@ -12,7 +12,7 @@ import java.util.List;
 public class XRow implements BeeSerializable {
 
   private enum Serial {
-    INDEX, STYLE, HEIGHT, CELLS
+    INDEX, STYLE, HEIGHT_FACTOR, CELLS
   }
 
   public static XRow restore(String s) {
@@ -26,7 +26,7 @@ public class XRow implements BeeSerializable {
 
   private Integer styleRef;
 
-  private int height;
+  private Double heightFactor;
 
   private final List<XCell> cells = new ArrayList<>();
 
@@ -69,8 +69,8 @@ public class XRow implements BeeSerializable {
           }
           break;
 
-        case HEIGHT:
-          setHeight(BeeUtils.toInt(value));
+        case HEIGHT_FACTOR:
+          setHeightFactor(BeeUtils.toDoubleOrNull(value));
           break;
         case INDEX:
           setIndex(BeeUtils.toInt(value));
@@ -86,14 +86,14 @@ public class XRow implements BeeSerializable {
     return cells;
   }
 
-  public int getHeight() {
-    return height;
+  public Double getHeightFactor() {
+    return heightFactor;
   }
-
+  
   public int getIndex() {
     return index;
   }
-  
+
   public int getMaxColumn() {
     int result = BeeConst.UNDEF;
     for (XCell cell : cells) {
@@ -101,11 +101,11 @@ public class XRow implements BeeSerializable {
     }
     return result;
   }
-
+  
   public Integer getStyleRef() {
     return styleRef;
   }
-  
+
   public boolean isEmpty() {
     return cells.isEmpty();
   }
@@ -119,8 +119,9 @@ public class XRow implements BeeSerializable {
         case CELLS:
           values.add(cells.isEmpty() ? null : Codec.beeSerialize(cells));
           break;
-        case HEIGHT:
-          values.add(BeeUtils.toString(getHeight()));
+        case HEIGHT_FACTOR:
+          values.add(BeeUtils.isDouble(getHeightFactor()) 
+              ? BeeUtils.toString(getHeightFactor()) : null);
           break;
         case INDEX:
           values.add(BeeUtils.toString(getIndex()));
@@ -134,8 +135,8 @@ public class XRow implements BeeSerializable {
     return Codec.beeSerialize(values);
   }
 
-  public void setHeight(int height) {
-    this.height = height;
+  public void setHeightFactor(Double heightFactor) {
+    this.heightFactor = heightFactor;
   }
   
   public void setIndex(int index) {
@@ -145,7 +146,7 @@ public class XRow implements BeeSerializable {
   public void setStyleRef(Integer styleRef) {
     this.styleRef = styleRef;
   }
-  
+
   public void shift(int by) {
     setIndex(getIndex() + by);
   }

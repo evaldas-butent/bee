@@ -78,7 +78,6 @@ public final class Exporter {
         public void run() {
           form.removeFromParent();
           frame.removeFromParent();
-          logger.debug("export", fileName, "cleared");
         }
       };
 

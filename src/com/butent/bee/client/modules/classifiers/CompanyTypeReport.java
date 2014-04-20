@@ -32,12 +32,15 @@ import com.butent.bee.client.widget.InputDateTime;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.Service;
 import com.butent.bee.shared.communication.ResponseObject;
-import com.butent.bee.shared.css.values.TextAlign;
+import com.butent.bee.shared.css.Colors;
+import com.butent.bee.shared.css.values.BorderStyle;
+import com.butent.bee.shared.css.values.VerticalAlign;
 import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.SimpleRowSet;
 import com.butent.bee.shared.data.SimpleRowSet.SimpleRow;
 import com.butent.bee.shared.data.filter.Filter;
 import com.butent.bee.shared.export.XCell;
+import com.butent.bee.shared.export.XFont;
 import com.butent.bee.shared.export.XRow;
 import com.butent.bee.shared.export.XSheet;
 import com.butent.bee.shared.export.XStyle;
@@ -314,6 +317,7 @@ public class CompanyTypeReport extends ReportInterceptor {
           }
           
           sheet.addHeaders(headers);
+          sheet.autoSizeAll();
           
         } else {
           getFormView().notifyWarning(Localized.getConstants().nothingFound());
@@ -390,10 +394,16 @@ public class CompanyTypeReport extends ReportInterceptor {
     int row = 0;
 
     XRow xr = new XRow(row);
+    xr.setHeightFactor(1.2);
+    
+    Integer boldRef = sheet.registeFont(XFont.bold());
 
-    XStyle xs = XStyle.bold();
-    xs.setTextAlign(TextAlign.CENTER);
-    int styleRef = sheet.addStyle(xs);
+    XStyle xs = XStyle.center();
+    xs.setVerticalAlign(VerticalAlign.MIDDLE);
+    xs.setColor(Colors.LIGHTGRAY);
+    xs.setFontRef(boldRef);
+
+    int styleRef = sheet.registerStyle(xs);
 
     table.setText(row, YEAR_COL, Localized.getConstants().year(), STYLE_HEADER);
     table.setText(row, MONTH_COL, Localized.getConstants().month(), STYLE_HEADER);
@@ -416,8 +426,11 @@ public class CompanyTypeReport extends ReportInterceptor {
     sheet.add(xr);
     row++;
     
-    int csValue = sheet.addStyle(XStyle.right());
-    int csRowTot = sheet.addStyle(XStyle.boldAndRight());
+    int csValue = sheet.registerStyle(XStyle.right());
+
+    xs = XStyle.right();
+    xs.setFontRef(boldRef);
+    int csRowTot = sheet.registerStyle(xs);
 
     for (YearMonth ym : yms) {
       xr = new XRow(row);
@@ -466,7 +479,14 @@ public class CompanyTypeReport extends ReportInterceptor {
 
     if (yms.size() > 1) {
       xr = new XRow(row);
-      styleRef = sheet.addStyle(XStyle.boldAndRight());
+
+      xs = XStyle.right();
+      XFont xf = XFont.bold();
+      xf.setFactor(1.2);
+      xs.setFontRef(sheet.registeFont(xf));
+      xs.setBorderTop(BorderStyle.SOLID);
+
+      styleRef = sheet.registerStyle(xs);
 
       for (int j = 0; j < columns.size(); j++) {
         Column column = columns.get(j);

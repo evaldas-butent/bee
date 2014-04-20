@@ -211,6 +211,8 @@ public interface LocalizableConstants extends Constants, LocalizableCalendarCons
 
   String department();
 
+  String departments();
+
   String description();
 
   String deselectAll();
@@ -408,6 +410,8 @@ public interface LocalizableConstants extends Constants, LocalizableCalendarCons
   String mainEmail();
 
   String manager();
+
+  String managers();
 
   String margin();
 
