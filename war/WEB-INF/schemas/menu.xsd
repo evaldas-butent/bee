@@ -34,6 +34,7 @@
       <xs:enumeration value="grid" />
       <xs:enumeration value="new" />
       <xs:enumeration value="parameters" />
+      <xs:enumeration value="report" />
       <xs:enumeration value="items" />
       <xs:enumeration value="update_exchange_rates" />
       <xs:enumeration value="calendar_reports" />

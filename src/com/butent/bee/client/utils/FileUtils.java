@@ -10,6 +10,7 @@ import com.google.gwt.http.client.Response;
 
 import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.Callback;
+import com.butent.bee.client.communication.RpcUtils;
 import com.butent.bee.client.composite.Thermometer;
 import com.butent.bee.client.data.Data;
 import com.butent.bee.client.data.Queries;
@@ -42,7 +43,6 @@ import elemental.events.ProgressEvent;
 import elemental.html.File;
 import elemental.html.FileList;
 import elemental.html.FileReader;
-import elemental.html.Window;
 import elemental.js.dom.JsClipboard;
 import elemental.xml.XMLHttpRequest;
 
@@ -108,10 +108,10 @@ public final class FileUtils {
 
     Map<String, String> parameters = createParameters(Service.DELETE_PHOTO, photoFileName);
 
-    final XMLHttpRequest xhr = createXhr();
+    final XMLHttpRequest xhr = RpcUtils.createXhr();
     xhr.open(RequestBuilder.POST.toString(), getUploadUrl(parameters), true);
 
-    addSessionId(xhr);
+    RpcUtils.addSessionId(xhr);
 
     xhr.setOnload(new EventListener() {
       @Override
@@ -273,10 +273,10 @@ public final class FileUtils {
 
     final String progressId = maybeCreateProgress(originalFileName, fileSize);
 
-    final XMLHttpRequest xhr = createXhr();
+    final XMLHttpRequest xhr = RpcUtils.createXhr();
     xhr.open(RequestBuilder.POST.toString(), getUploadUrl(parameters), true);
 
-    addSessionId(xhr);
+    RpcUtils.addSessionId(xhr);
 
     final long start = System.currentTimeMillis();
 
@@ -355,13 +355,6 @@ public final class FileUtils {
     }
   }
 
-  private static void addSessionId(XMLHttpRequest xhr) {
-    String sid = BeeKeeper.getUser().getSessionId();
-    if (!BeeUtils.isEmpty(sid)) {
-      xhr.setRequestHeader(Service.RPC_VAR_SID, sid);
-    }
-  }
-
   private static Map<String, String> createParameters(String service, String fileName) {
     Map<String, String> parameters = Maps.newHashMap();
 
@@ -369,14 +362,6 @@ public final class FileUtils {
     parameters.put(Service.VAR_FILE_NAME, fileName);
 
     return parameters;
-  }
-
-  private static XMLHttpRequest createXhr() {
-    return createXhr(Browser.getWindow());
-  }
-
-  private static XMLHttpRequest createXhr(Window window) {
-    return window.newXMLHttpRequest();
   }
 
   private static String getUploadUrl(Map<String, String> parameters) {
@@ -409,10 +394,10 @@ public final class FileUtils {
 
     final String progressId = maybeCreateProgress(fileName, fileSize);
 
-    final XMLHttpRequest xhr = createXhr();
+    final XMLHttpRequest xhr = RpcUtils.createXhr();
     xhr.open(RequestBuilder.POST.toString(), getUploadUrl(parameters), true);
 
-    addSessionId(xhr);
+    RpcUtils.addSessionId(xhr);
 
     xhr.setOnload(new EventListener() {
       @Override

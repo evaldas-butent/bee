@@ -33,6 +33,21 @@ public class Color implements BeeSerializable {
     return names;
   }
 
+  public static byte[] getRgb(String value) {
+    String normalized = normalize(value);
+
+    if (BeeUtils.hasLength(normalized, 7) && BeeUtils.isHexString(normalized.substring(1))) {
+      byte[] arr = new byte[3];
+      for (int i = 0; i < arr.length; i++) {
+        arr[i] = (byte) Integer.parseInt(normalized.substring(i * 2 + 1, i * 2 + 3), 16);
+      }
+      return arr;
+
+    } else {
+      return null;
+    }
+  }
+
   public static String normalize(String value) {
     if (BeeUtils.isEmpty(value)) {
       return null;
@@ -95,13 +110,13 @@ public class Color implements BeeSerializable {
     if (BeeUtils.isEmpty(s)) {
       return null;
     }
-    
+
     Color color = new Color();
     color.deserialize(s);
 
     return color;
   }
-  
+
   public static boolean validate(String value) {
     return !BeeUtils.isEmpty(normalize(value));
   }
@@ -313,9 +328,9 @@ public class Color implements BeeSerializable {
     String hex = Integer.toHexString(value);
     return (hex.length() == 1) ? BeeConst.STRING_ZERO + hex : hex;
   }
-  
+
   private long id;
-  
+
   private String background;
   private String foreground;
 
@@ -334,7 +349,7 @@ public class Color implements BeeSerializable {
   public void deserialize(String s) {
     String[] arr = Codec.beeDeserializeCollection(s);
     Assert.lengthEquals(arr, 3);
-    
+
     setId(BeeUtils.toLong(arr[0]));
     setBackground(arr[1]);
     setForeground(arr[2]);

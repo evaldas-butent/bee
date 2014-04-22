@@ -1506,6 +1506,10 @@ public final class BeeUtils {
     return sb.toString();
   }
 
+  public static String joinWords(Collection<?> col) {
+    return join(BeeConst.STRING_SPACE, col);
+  }
+
   public static String joinWords(Object first, Object second, Object... rest) {
     return join(BeeConst.STRING_SPACE, first, second, rest);
   }
@@ -1614,6 +1618,10 @@ public final class BeeUtils {
     suffix = transform(Long.parseLong(suffix) + 1);
 
     return prefix + padLeft(suffix, l, '0');
+  }
+
+  public static boolean nonZero(Double x) {
+    return isDouble(x) && !isZero(x);
   }
 
   public static double normalize(double x, double min, double max) {
@@ -2858,7 +2866,7 @@ public final class BeeUtils {
    * Null-safe collection union.
    */
   public static <T> Set<T> union(Collection<? extends T> col1, Collection<? extends T> col2) {
-    Set<T> result = new HashSet<T>();
+    Set<T> result = new HashSet<>();
 
     if (col1 != null) {
       result.addAll(col1);
@@ -2871,7 +2879,7 @@ public final class BeeUtils {
 
   public static <T> Set<T> union(Collection<? extends T> col1, Collection<? extends T> col2,
       Collection<? extends T> col3) {
-    Set<T> result = new HashSet<T>();
+    Set<T> result = new HashSet<>();
 
     if (col1 != null) {
       result.addAll(col1);

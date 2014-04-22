@@ -192,6 +192,13 @@ public class DispatcherBean {
             }
             break;
 
+          case REPORTS:
+            BeeRowSet reportSettings = uiService.getReportSettings();
+            if (!DataUtils.isEmpty(reportSettings)) {
+              data.put(component.key(), reportSettings);
+            }
+            break;
+            
           case USERS:
             data.put(component.key(), userService.getAllUserData());
             break;

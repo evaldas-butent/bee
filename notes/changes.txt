@@ -35,3 +35,4 @@
 2014.01.21 guava-16
 2014.01.25 gwt-2.6.0 https://google-web-toolkit.googlecode.com/files/gwt-2.6.0.zip
 2014.02.08 guava-16.0.1
+2014.04.13 poi-3.10-final

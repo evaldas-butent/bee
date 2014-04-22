@@ -490,6 +490,14 @@
   cursor: pointer;
 }
 
+.bee-Header-commandPanel .bee-fa-label:active {
+  color: black;
+}
+
+.bee-Header-commandPanel .bee-fa-label:hover {
+  color: black;
+}
+
 .bee-Header-control {
   margin-right: 10px;
 }
@@ -1200,21 +1208,36 @@
 
 .bee-FavoritesDisplay {
   border-collapse: collapse;
+  width: 100%;
+}
+.bee-FavoritesDisplay td {
+  border-bottom: 1px solid #ddd;
 }
 .bee-FavoritesDisplay tr td:first-child {
   padding-left: 20px;
-  background: whitesmoke;
 }
 .bee-FavoritesEditColumn, .bee-FavoritesDeleteColumn {
   width: 20px;
-  background: whitesmoke;
 }
 
 .bee-FavoritesDisplay tr:hover {
   background-color: #f2f2f2;
 }
-.bee-FavoritesEdit, .bee-FavoritesDelete {
+.bee-FavoritesEdit,
+.bee-FavoritesDelete {
+  font-size: 18px;
+  padding: 3px;
+  cursor: pointer;
+  color: #555;
   visibility: hidden;
+}
+.bee-FavoritesEdit:hover {
+  color: white;
+  background-color: #80c4f9;
+}
+.bee-FavoritesDelete:hover {
+  color: white;
+  background-color: red;
 }
 .bee-FavoritesDisplay tr:hover .bee-FavoritesEdit,
 .bee-FavoritesDisplay tr:hover .bee-FavoritesDelete {
@@ -1593,25 +1616,21 @@
 }
 
 .bee-CentralScrutinizer {
+  width: calc(100% - 12px);
   height: calc(100% - 24px);
+  background-color: white;
 }
 
-.bee-CentralScrutinizer > .bee-StackHeader {
-  width: calc(100% - 15px);
-  border: 1px solid WhiteSmoke;
-  border-left: 5px solid white;
+.bee-CentralScrutinizer > .bee-StackHeader:hover {
+  background-color: #e4e4e4;
 }
 .bee-CentralScrutinizer > .bee-StackHeader-selected {
-  border-left: 3px solid #1990db;
-  background-color: #3995cd;
   color: white;
   text-shadow: 1px -1px 2px rgba(22,84,122,0.75);
   background-image: linear-gradient(#3995cd 0%,#3995cd 17%,#3792ca 31%,#318bc1 55%,#2278ac 100%);
 }
 
 .bee-CentralScrutinizer > .bee-StackContent {
-  background-color: white;
-  width: calc(100% - 11px);
   border: 1px solid WhiteSmoke;
 }
 
@@ -3019,4 +3038,51 @@
 .bee-Rights-module-selected,
 .bee-Rights-mso-selected {
   background-color: #bfb;
+}
+
+.bee-report-settings-item {
+  display: flex;
+  display: -webkit-flex;
+  display: -ms-flexbox;
+  align-items: center;
+  -webkit-align-items: center;
+  -ms-flex-align: center;
+  border-bottom: 1px solid #ddd;
+}
+.bee-report-settings-item:hover {
+  background-color: #f2f2f2;
+}
+.bee-report-settings-item:hover .bee-report-settings-edit,
+.bee-report-settings-item:hover .bee-report-settings-delete {
+  visibility: visible;
+}
+
+.bee-report-settings-label {
+  flex: 1;
+  -webkit-flex: 1;
+  -ms-flex: 1;
+  color: #555;
+  margin: 5px 1em;
+  cursor: pointer;
+}
+.bee-report-settings-label:hover {
+  text-decoration: underline;
+  color: #00e;
+}
+
+.bee-report-settings-edit,
+.bee-report-settings-delete {
+  font-size: 18px;
+  padding: 3px;
+  cursor: pointer;
+  color: #555;
+  visibility: hidden;
+}
+.bee-report-settings-edit:hover {
+  color: white;
+  background-color: #80c4f9;
+}
+.bee-report-settings-delete:hover {
+  color: white;
+  background-color: red;
 }

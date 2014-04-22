@@ -83,7 +83,7 @@
     <SimpleJoin joinType="LEFT" name="FinancialState">
       <SimpleColumn alias="FinancialStateName" name="Name" />
     </SimpleJoin>
-    <SimpleColumn name="BankAccount" />
+    <SimpleColumn name="DefaultBankAccount" />
     <SimpleColumn name="DaysAsBuyer" />
     <SimpleColumn name="DaysAsSupplier" />
     

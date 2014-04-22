@@ -130,6 +130,9 @@ public final class Images {
     @Source("error.png")
     ImageResource error();
 
+    @Source("excel.gif")
+    ImageResource excel();
+
     @Source("feed.png")
     ImageResource feed();
 
@@ -222,9 +225,6 @@ public final class Images {
 
     @Source("searchOptions.gif")
     ImageResource searchOptions();
-
-    @Source("settings.png")
-    ImageResource settings();
 
     @Source("silver/plus_gray_17x18.png")
     ImageResource silverAdd();
@@ -420,6 +420,8 @@ public final class Images {
 
     map.put(key("error"), resources.error());
 
+    map.put(key("excel"), resources.excel());
+
     map.put(key("feed"), resources.feed());
 
     map.put(key("filterDelete"), resources.filterDelete());
@@ -475,8 +477,6 @@ public final class Images {
     map.put(key("save"), resources.save());
 
     map.put(key("search"), resources.search());
-
-    map.put(key("settings"), resources.settings());
 
     map.put(key("slider"), resources.slider());
     map.put(key("sliderDisabled"), resources.sliderDisabled());

@@ -17,7 +17,7 @@ public class HasSourceClass implements HasSource {
 
   @Override
   public Collection<String> getSources() {
-    a = new ArrayList<String>();
+    a = new ArrayList<>();
     a.add("sql");
     a.add("test");
     return null;

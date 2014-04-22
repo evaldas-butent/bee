@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Table xmlns="http://www.butent.com/table"
+
+  name="ReportSettings"
+  idName="ReportSettingID"
+  >
+  <Fields>
+    <Relation name="User" notNull="true" relation="Users" cascade="DELETE" label="=user" />
+    <String name="Report" precision="100" notNull="true" label="=report" />
+
+    <String name="Caption" precision="200" label="=caption" />
+    
+    <Text name="Parameters" label="=parameters" />
+  </Fields>
+</Table>

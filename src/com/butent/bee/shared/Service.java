@@ -14,7 +14,8 @@ public final class Service {
   public static final String RPC_SERVICE_PREFIX = "rpc_";
   public static final String UI_SERVICE_PREFIX = "ui_";
   public static final String COMPOSITE_SERVICE_PREFIX = "comp_";
-  public static final String UPLOAD_SERVICE_PREFIX = "upd_";
+  public static final String UPLOAD_SERVICE_PREFIX = "upl_";
+  public static final String EXPORT_SERVICE_PREFIX = "exp_";
 
   public static final String DB_SERVICE_PREFIX = RPC_SERVICE_PREFIX + "db_";
   public static final String DB_JDBC = DB_SERVICE_PREFIX + "jdbc";
@@ -98,6 +99,8 @@ public final class Service {
   public static final String UPLOAD_TEMP_FILE = UPLOAD_SERVICE_PREFIX + "temp_file";
   public static final String UPLOAD_PHOTO = UPLOAD_SERVICE_PREFIX + "photo";
   public static final String DELETE_PHOTO = UPLOAD_SERVICE_PREFIX + "delete_photo";
+
+  public static final String EXPORT_WORKBOOK = EXPORT_SERVICE_PREFIX + "workbook";
 
   public static final String RPC_VAR_PREFIX = "bee_";
   public static final String RPC_VAR_SYS_PREFIX = RPC_VAR_PREFIX + "sys_";
@@ -192,7 +195,7 @@ public final class Service {
   public static final String VAR_GROUP_BY = RPC_VAR_PREFIX + "group_by";
   public static final String VAR_OPERATOR = RPC_VAR_PREFIX + "operator";
 
-  public static final String XML_TAG_DATA = RPC_VAR_PREFIX + "data";
+  public static final String VAR_DATA = RPC_VAR_PREFIX + "data";
 
   public static final String VIEW_COLUMN_SEPARATOR = " ";
 

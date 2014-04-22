@@ -17,6 +17,9 @@ import com.butent.bee.client.dom.DomUtils;
 import com.butent.bee.client.event.EventUtils;
 import com.butent.bee.client.grid.HtmlTable;
 import com.butent.bee.client.i18n.Format;
+import com.butent.bee.client.output.Exporter;
+import com.butent.bee.client.output.Report;
+import com.butent.bee.client.output.ReportParameters;
 import com.butent.bee.client.style.StyleUtils;
 import com.butent.bee.client.ui.HasIndexedWidgets;
 import com.butent.bee.client.view.form.FormView;
@@ -27,6 +30,9 @@ import com.butent.bee.client.widget.ListBox;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.Service;
 import com.butent.bee.shared.communication.ResponseObject;
+import com.butent.bee.shared.css.Colors;
+import com.butent.bee.shared.css.values.BorderStyle;
+import com.butent.bee.shared.css.values.VerticalAlign;
 import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.SimpleRowSet;
 import com.butent.bee.shared.data.SimpleRowSet.SimpleRow;
@@ -34,6 +40,11 @@ import com.butent.bee.shared.data.filter.CompoundFilter;
 import com.butent.bee.shared.data.filter.Filter;
 import com.butent.bee.shared.data.value.DateTimeValue;
 import com.butent.bee.shared.data.value.IntegerValue;
+import com.butent.bee.shared.export.XCell;
+import com.butent.bee.shared.export.XFont;
+import com.butent.bee.shared.export.XRow;
+import com.butent.bee.shared.export.XSheet;
+import com.butent.bee.shared.export.XStyle;
 import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogUtils;
@@ -88,7 +99,9 @@ public class AssessmentQuantityReport extends ReportInterceptor {
 
   private static final String DRILL_DOWN_GRID_NAME = "AssessmentReportDrillDown";
 
-  AssessmentQuantityReport() {
+  private final XSheet sheet = new XSheet();
+  
+  public AssessmentQuantityReport() {
   }
 
   @Override
@@ -98,69 +111,58 @@ public class AssessmentQuantityReport extends ReportInterceptor {
 
   @Override
   public void onLoad(FormView form) {
-    Long user = BeeKeeper.getUser().getUserId();
-    if (!DataUtils.isId(user)) {
+    ReportParameters parameters = readParameters();
+    if (parameters == null) {
       return;
     }
 
     Widget widget = form.getWidgetByName(NAME_START_DATE);
-    DateTime dateTime = BeeKeeper.getStorage().getDateTime(storageKey(NAME_START_DATE, user));
+    DateTime dateTime = parameters.getDateTime(NAME_START_DATE);
     if (widget instanceof InputDateTime && dateTime != null) {
       ((InputDateTime) widget).setDateTime(dateTime);
     }
 
     widget = form.getWidgetByName(NAME_END_DATE);
-    dateTime = BeeKeeper.getStorage().getDateTime(storageKey(NAME_END_DATE, user));
+    dateTime = parameters.getDateTime(NAME_END_DATE);
     if (widget instanceof InputDateTime && dateTime != null) {
       ((InputDateTime) widget).setDateTime(dateTime);
     }
 
     widget = form.getWidgetByName(NAME_DEPARTMENTS);
-    String idList = BeeKeeper.getStorage().get(storageKey(NAME_DEPARTMENTS, user));
+    String idList = parameters.get(NAME_DEPARTMENTS);
     if (widget instanceof MultiSelector && !BeeUtils.isEmpty(idList)) {
       ((MultiSelector) widget).render(idList);
     }
 
     widget = form.getWidgetByName(NAME_MANAGERS);
-    idList = BeeKeeper.getStorage().get(storageKey(NAME_MANAGERS, user));
+    idList = parameters.get(NAME_MANAGERS);
     if (widget instanceof MultiSelector && !BeeUtils.isEmpty(idList)) {
       ((MultiSelector) widget).render(idList);
     }
 
     for (String groupName : NAME_GROUP_BY) {
       widget = form.getWidgetByName(groupName);
-      Integer index = BeeKeeper.getStorage().getInteger(storageKey(groupName, user));
+      Integer index = parameters.getInteger(groupName);
       if (widget instanceof ListBox && BeeUtils.isPositive(index)) {
         ((ListBox) widget).setSelectedIndex(index);
       }
     }
+
+    super.onLoad(form);
   }
 
   @Override
   public void onUnload(FormView form) {
-    Long user = BeeKeeper.getUser().getUserId();
-    if (!DataUtils.isId(user)) {
-      return;
-    }
-
-    BeeKeeper.getStorage().set(storageKey(NAME_START_DATE, user), getDateTime(NAME_START_DATE));
-    BeeKeeper.getStorage().set(storageKey(NAME_END_DATE, user), getDateTime(NAME_END_DATE));
-
-    BeeKeeper.getStorage().set(storageKey(NAME_DEPARTMENTS, user),
-        getEditorValue(NAME_DEPARTMENTS));
-    BeeKeeper.getStorage().set(storageKey(NAME_MANAGERS, user),
-        getEditorValue(NAME_MANAGERS));
+    storeDateTimeValues(NAME_START_DATE, NAME_END_DATE);
+    storeEditorValues(NAME_DEPARTMENTS, NAME_MANAGERS);
 
     for (String groupName : NAME_GROUP_BY) {
-      Widget widget = form.getWidgetByName(groupName);
-      if (widget instanceof ListBox) {
-        Integer index = ((ListBox) widget).getSelectedIndex();
-        if (!BeeUtils.isPositive(index)) {
-          index = null;
-        }
-
-        BeeKeeper.getStorage().set(storageKey(groupName, user), index);
+      Integer index = getSelectedIndex(groupName);
+      if (!BeeUtils.isPositive(index)) {
+        index = null;
       }
+
+      storeValue(groupName, index);
     }
   }
 
@@ -183,29 +185,49 @@ public class AssessmentQuantityReport extends ReportInterceptor {
     }
 
     ParameterList params = TransportHandler.createArgs(SVC_GET_ASSESSMENT_QUANTITY_REPORT);
-
+    final List<String> headers = Lists.newArrayList(getCaption());
+    
     if (start != null) {
       params.addDataItem(Service.VAR_FROM, start.getTime());
     }
     if (end != null) {
       params.addDataItem(Service.VAR_TO, end.getTime());
     }
+    if (start != null || end != null) {
+      headers.add(Format.renderPeriod(start, end));
+    }
+
+    String label;
 
     String departments = getEditorValue(NAME_DEPARTMENTS);
     if (!BeeUtils.isEmpty(departments)) {
       params.addDataItem(AR_DEPARTMENT, departments);
+
+      if (DataUtils.parseIdSet(departments).size() > 1) {
+        label = Localized.getConstants().departments();
+      } else {
+        label = Localized.getConstants().department();
+      }
+      headers.add(BeeUtils.joinWords(label, getFilterLabel(NAME_DEPARTMENTS)));
     }
+
     String managers = getEditorValue(NAME_MANAGERS);
     if (!BeeUtils.isEmpty(managers)) {
       params.addDataItem(AR_MANAGER, managers);
+
+      if (DataUtils.parseIdSet(managers).size() > 1) {
+        label = Localized.getConstants().managers();
+      } else {
+        label = Localized.getConstants().manager();
+      }
+      headers.add(BeeUtils.joinWords(label, getFilterLabel(NAME_MANAGERS)));
     }
 
     List<String> groupBy = Lists.newArrayList();
     for (String groupName : NAME_GROUP_BY) {
-      Widget widget = getFormView().getWidgetByName(groupName);
+      Integer index = getSelectedIndex(groupName);
 
-      if (widget instanceof ListBox) {
-        int index = ((ListBox) widget).getSelectedIndex();
+      if (BeeUtils.isPositive(index)) {
         String group;
 
         switch (index) {
@@ -241,6 +263,10 @@ public class AssessmentQuantityReport extends ReportInterceptor {
 
         if (response.hasResponse(SimpleRowSet.class)) {
           renderData(SimpleRowSet.restore(response.getResponseAsString()));
+        
+          sheet.addHeaders(headers);
+          sheet.autoSizeAll();
+
         } else {
           getFormView().notifyWarning(Localized.getConstants().nothingFound());
         }
@@ -249,8 +275,58 @@ public class AssessmentQuantityReport extends ReportInterceptor {
   }
 
   @Override
-  protected String getStorageKeyPrefix() {
-    return "AssessmentQuantityReport_";
+  protected void export() {
+    if (!sheet.isEmpty()) {
+      Exporter.confirmExport(sheet, getCaption());
+    }
+  }
+  
+  @Override
+  protected String getBookmarkLabel() {
+    List<String> labels = Lists.newArrayList(getCaption(),
+        Format.renderPeriod(getDateTime(NAME_START_DATE), getDateTime(NAME_END_DATE)),
+        getFilterLabel(NAME_DEPARTMENTS), getFilterLabel(NAME_MANAGERS));
+
+    for (String groupName : NAME_GROUP_BY) {
+      if (BeeUtils.isPositive(getSelectedIndex(groupName))) {
+        String value = getEditorValue(groupName);
+        if (!labels.contains(value)) {
+          labels.add(value);
+        }
+      }
+    }
+
+    return BeeUtils.joinWords(labels);
+  }
+
+  @Override
+  protected Report getReport() {
+    return Report.ASSESSMENT_QUANTITY;
+  }
+
+  @Override
+  protected ReportParameters getReportParameters() {
+    ReportParameters parameters = new ReportParameters();
+
+    addDateTimeValues(parameters, NAME_START_DATE, NAME_END_DATE);
+    addEditorValues(parameters, NAME_DEPARTMENTS, NAME_MANAGERS);
+
+    for (String groupName : NAME_GROUP_BY) {
+      Integer index = getSelectedIndex(groupName);
+      if (BeeUtils.isPositive(index)) {
+        parameters.add(groupName, index);
+      }
+    }
+
+    return parameters;
+  }
+
+  @Override
+  protected boolean validateParameters(ReportParameters parameters) {
+    DateTime start = parameters.getDateTime(NAME_START_DATE);
+    DateTime end = parameters.getDateTime(NAME_END_DATE);
+
+    return checkRange(start, end);
   }
 
   private void renderData(final SimpleRowSet data) {
@@ -259,6 +335,8 @@ public class AssessmentQuantityReport extends ReportInterceptor {
       return;
     }
 
+    sheet.clear();
+    
     if (!container.isEmpty()) {
       container.clear();
     }
@@ -280,15 +358,35 @@ public class AssessmentQuantityReport extends ReportInterceptor {
     int colApproved = BeeConst.UNDEF;
     int colSecondary = BeeConst.UNDEF;
 
+    XRow xr1 = new XRow(row);
+    XRow xr2 = new XRow(row + 1);
+
+    Integer boldRef = sheet.registeFont(XFont.bold());
+    
+    XStyle xs = XStyle.center();
+    xs.setVerticalAlign(VerticalAlign.MIDDLE);
+    xs.setColor(Colors.LIGHTGRAY);
+    xs.setFontRef(boldRef);
+    
+    int styleRef = sheet.registerStyle(xs);
+    
+    XCell xc;
+    String text;
+    
     for (int j = 0; j < data.getNumberOfColumns(); j++) {
       String colName = data.getColumnName(j);
 
       switch (colName) {
         case BeeConst.YEAR:
           colYear = col;
-
-          table.setText(row, c1, Localized.getConstants().year(), STYLE_HEADER);
+          
+          text = Localized.getConstants().year();
+          table.setText(row, c1, text, STYLE_HEADER);
           table.getCellFormatter().setRowSpan(row, c1, 2);
+          
+          xc = new XCell(col, text, styleRef);
+          xc.setRowSpan(2);
+          xr1.add(xc);
 
           c1++;
           col++;
@@ -297,8 +395,13 @@ public class AssessmentQuantityReport extends ReportInterceptor {
         case BeeConst.MONTH:
           colMonth = col;
 
-          table.setText(row, c1, Localized.getConstants().month(), STYLE_HEADER);
+          text = Localized.getConstants().month();
+          table.setText(row, c1, text, STYLE_HEADER);
           table.getCellFormatter().setRowSpan(row, c1, 2);
+
+          xc = new XCell(col, text, styleRef);
+          xc.setRowSpan(2);
+          xr1.add(xc);
 
           c1++;
           col++;
@@ -307,8 +410,13 @@ public class AssessmentQuantityReport extends ReportInterceptor {
         case AdministrationConstants.COL_DEPARTMENT:
           colDepartment = col;
 
-          table.setText(row, c1, Localized.getConstants().department(), STYLE_HEADER);
+          text = Localized.getConstants().department();
+          table.setText(row, c1, text, STYLE_HEADER);
           table.getCellFormatter().setRowSpan(row, c1, 2);
+
+          xc = new XCell(col, text, styleRef);
+          xc.setRowSpan(2);
+          xr1.add(xc);
 
           c1++;
           col++;
@@ -319,9 +427,14 @@ public class AssessmentQuantityReport extends ReportInterceptor {
 
         case ClassifierConstants.COL_COMPANY_PERSON:
           colManager = col;
-
-          table.setText(row, c1, Localized.getConstants().manager(), STYLE_HEADER);
+          
+          text = Localized.getConstants().manager();
+          table.setText(row, c1, text, STYLE_HEADER);
           table.getCellFormatter().setRowSpan(row, c1, 2);
+
+          xc = new XCell(col, text, styleRef);
+          xc.setRowSpan(2);
+          xr1.add(xc);
 
           c1++;
           col++;
@@ -334,10 +447,14 @@ public class AssessmentQuantityReport extends ReportInterceptor {
         case AR_RECEIVED:
           colReceived = col;
 
-          table.setText(row, c1, Localized.getConstants().trAssessmentReportReceived(),
-              STYLE_HEADER);
+          text = Localized.getConstants().trAssessmentReportReceived();
+          table.setText(row, c1, text, STYLE_HEADER);
           table.getCellFormatter().setRowSpan(row, c1, 2);
 
+          xc = new XCell(col, text, styleRef);
+          xc.setRowSpan(2);
+          xr1.add(xc);
+          
           c1++;
           col++;
           break;
@@ -345,14 +462,21 @@ public class AssessmentQuantityReport extends ReportInterceptor {
         case AR_ANSWERED:
           colAnswered = col;
 
-          table.setText(row, c1, Localized.getConstants().trAssessmentReportAnswered(),
-              STYLE_HEADER_1);
+          text = Localized.getConstants().trAssessmentReportAnswered();
+          table.setText(row, c1, text, STYLE_HEADER_1);
           table.getCellFormatter().setColSpan(row, c1, 2);
 
-          table.setText(row + 1, c2, Localized.getConstants().trAssessmentReportQuantity(),
-              STYLE_HEADER_2);
-          table.setText(row + 1, c2 + 1, Localized.getConstants().trAssessmentReportPercent(),
-              STYLE_HEADER_2);
+          xc = new XCell(col, text, styleRef);
+          xc.setColSpan(2);
+          xr1.add(xc);
+
+          text = Localized.getConstants().trAssessmentReportQuantity();
+          table.setText(row + 1, c2, text, STYLE_HEADER_2);
+          xr2.add(new XCell(col, text, styleRef));
+
+          text = Localized.getConstants().trAssessmentReportPercent();
+          table.setText(row + 1, c2 + 1, text, STYLE_HEADER_2);
+          xr2.add(new XCell(col + 1, text, styleRef));
 
           c1++;
           c2 += 2;
@@ -362,15 +486,22 @@ public class AssessmentQuantityReport extends ReportInterceptor {
         case AR_LOST:
           colLost = col;
 
-          table.setText(row, c1, Localized.getConstants().trAssessmentReportLost(),
-              STYLE_HEADER_1);
+          text = Localized.getConstants().trAssessmentReportLost();
+          table.setText(row, c1, text, STYLE_HEADER_1);
           table.getCellFormatter().setColSpan(row, c1, 2);
 
-          table.setText(row + 1, c2, Localized.getConstants().trAssessmentReportQuantity(),
-              STYLE_HEADER_2);
-          table.setText(row + 1, c2 + 1, Localized.getConstants().trAssessmentReportPercent(),
-              STYLE_HEADER_2);
+          xc = new XCell(col, text, styleRef);
+          xc.setColSpan(2);
+          xr1.add(xc);
+          
+          text = Localized.getConstants().trAssessmentReportQuantity();
+          table.setText(row + 1, c2, text, STYLE_HEADER_2);
+          xr2.add(new XCell(col, text, styleRef));
 
+          text = Localized.getConstants().trAssessmentReportPercent();
+          table.setText(row + 1, c2 + 1, text, STYLE_HEADER_2);
+          xr2.add(new XCell(col + 1, text, styleRef));
+          
           c1++;
           c2 += 2;
           col += 2;
@@ -379,17 +510,26 @@ public class AssessmentQuantityReport extends ReportInterceptor {
         case AR_APPROVED:
           colApproved = col;
 
-          table.setText(row, c1, Localized.getConstants().trAssessmentReportApproved(),
-              STYLE_HEADER_1);
+          text = Localized.getConstants().trAssessmentReportApproved();
+          table.setText(row, c1, text, STYLE_HEADER_1);
           table.getCellFormatter().setColSpan(row, c1, 3);
 
-          table.setText(row + 1, c2, Localized.getConstants().trAssessmentReportQuantity(),
-              STYLE_HEADER_2);
-          table.setText(row + 1, c2 + 1,
-              Localized.getConstants().trAssessmentReportApprovedToReceived(), STYLE_HEADER_2);
-          table.setText(row + 1, c2 + 2,
-              Localized.getConstants().trAssessmentReportApprovedToAnswered(), STYLE_HEADER_2);
+          xc = new XCell(col, text, styleRef);
+          xc.setColSpan(3);
+          xr1.add(xc);
 
+          text = Localized.getConstants().trAssessmentReportQuantity();
+          table.setText(row + 1, c2, text, STYLE_HEADER_2);
+          xr2.add(new XCell(col, text, styleRef));
+
+          text = Localized.getConstants().trAssessmentReportApprovedToReceived();
+          table.setText(row + 1, c2 + 1, text, STYLE_HEADER_2);
+          xr2.add(new XCell(col + 1, text, styleRef));
+
+          text = Localized.getConstants().trAssessmentReportApprovedToAnswered();
+          table.setText(row + 1, c2 + 2, text, STYLE_HEADER_2);
+          xr2.add(new XCell(col + 2, text, styleRef));
+          
           c1++;
           c2 += 3;
           col += 3;
@@ -398,24 +538,34 @@ public class AssessmentQuantityReport extends ReportInterceptor {
         case AR_SECONDARY:
           colSecondary = col;
 
-          table.setText(row, c1, Localized.getConstants().trAssessmentReportSecondary(),
-              STYLE_HEADER_1);
+          text = Localized.getConstants().trAssessmentReportSecondary();
+          table.setText(row, c1, text, STYLE_HEADER_1);
           table.getCellFormatter().setColSpan(row, c1, 2);
 
-          table.setText(row + 1, c2, Localized.getConstants().trAssessmentReportQuantity(),
-              STYLE_HEADER_2);
-          table.setText(row + 1, c2 + 1, Localized.getConstants().trAssessmentReportPercent(),
-              STYLE_HEADER_2);
+          xc = new XCell(col, text, styleRef);
+          xc.setColSpan(2);
+          xr1.add(xc);
+          
+          text = Localized.getConstants().trAssessmentReportQuantity();
+          table.setText(row + 1, c2, text, STYLE_HEADER_2);
+          xr2.add(new XCell(col, text, styleRef));
 
+          text = Localized.getConstants().trAssessmentReportPercent();
+          table.setText(row + 1, c2 + 1, text, STYLE_HEADER_2);
+          xr2.add(new XCell(col + 1, text, styleRef));
+          
           c1++;
           c2 += 2;
-          col += 3;
+          col += 2;
           break;
 
         default:
           logger.warning("column not recognized", colName);
       }
     }
+    
+    sheet.add(xr1);
+    sheet.add(xr2);
 
     int totReceived = 0;
     int totAnswered = 0;
@@ -424,8 +574,21 @@ public class AssessmentQuantityReport extends ReportInterceptor {
     int totSecondary = 0;
 
     row = 2;
+    XRow xr;
+    
+    xs = XStyle.right();
+    xs.setFormat(QUANTITY_PATTERN);
+    int csQty = sheet.registerStyle(xs);
+
+    xs = XStyle.right();
+    xs.setFormat(PERCENT_PATTERN);
+    int csPct = sheet.registerStyle(xs);
+    
+    Double p;
 
     for (int i = 0; i < data.getNumberOfRows(); i++) {
+      xr = new XRow(row);
+
       int received = BeeUtils.unbox(data.getInt(i, AR_RECEIVED));
       int answered = BeeUtils.unbox(data.getInt(i, AR_ANSWERED));
       int lost = BeeUtils.unbox(data.getInt(i, AR_LOST));
@@ -437,56 +600,97 @@ public class AssessmentQuantityReport extends ReportInterceptor {
 
         switch (colName) {
           case BeeConst.YEAR:
-            table.setText(row, colYear, data.getValue(i, colName), STYLE_YEAR);
+            text = data.getValue(i, colName);
+            table.setText(row, colYear, text, STYLE_YEAR);
+            xr.add(new XCell(colYear, text));
             break;
 
           case BeeConst.MONTH:
-            table.setText(row, colMonth,
-                Format.renderMonthFullStandalone(data.getInt(i, colName)), STYLE_MONTH);
+            text = Format.renderMonthFullStandalone(data.getInt(i, colName));
+            table.setText(row, colMonth, text, STYLE_MONTH);
+            xr.add(new XCell(colMonth, text));
             break;
 
           case AdministrationConstants.COL_DEPARTMENT_NAME:
-            table.setText(row, colDepartment, data.getValue(i, colName), STYLE_DEPARTMENT);
+            text = data.getValue(i, colName);
+            table.setText(row, colDepartment, text, STYLE_DEPARTMENT);
+            xr.add(new XCell(colDepartment, text));
             break;
 
           case ClassifierConstants.COL_FIRST_NAME:
-            table.setText(row, colManager, BeeUtils.joinWords(data.getValue(i, colName),
-                data.getValue(i, ClassifierConstants.COL_LAST_NAME)), STYLE_MANAGER);
+            text = BeeUtils.joinWords(data.getValue(i, colName),
+                data.getValue(i, ClassifierConstants.COL_LAST_NAME));
+            table.setText(row, colManager, text, STYLE_MANAGER);
+            xr.add(new XCell(colManager, text));
             break;
 
           case AR_RECEIVED:
             table.setText(row, colReceived, renderQuantity(received),
                 STYLE_RECEIVED, STYLE_QUANTITY);
+            if (received > 0) {
+              xr.add(new XCell(colReceived, received, csQty));
+            }
             break;
 
           case AR_ANSWERED:
             table.setText(row, colAnswered, renderQuantity(answered),
                 STYLE_ANSWERED, STYLE_QUANTITY);
-            table.setText(row, colAnswered + 1, renderPercent(answered, received),
-                STYLE_ANSWERED, STYLE_PERCENT);
+            if (answered > 0) {
+              xr.add(new XCell(colAnswered, answered, csQty));
+            }
+            
+            p = percent(answered, received);
+            table.setText(row, colAnswered + 1, renderPercent(p), STYLE_ANSWERED, STYLE_PERCENT);
+            if (p != null) {
+              xr.add(new XCell(colAnswered + 1, p, csPct));
+            }
             break;
 
           case AR_LOST:
             table.setText(row, colLost, renderQuantity(lost), STYLE_LOST, STYLE_QUANTITY);
-            table.setText(row, colLost + 1, renderPercent(lost, received),
-                STYLE_LOST, STYLE_PERCENT);
+            if (lost > 0) {
+              xr.add(new XCell(colLost, lost, csQty));
+            }
+            
+            p = percent(lost, received);
+            table.setText(row, colLost + 1, renderPercent(p), STYLE_LOST, STYLE_PERCENT);
+            if (p != null) {
+              xr.add(new XCell(colLost + 1, p, csPct));
+            }
             break;
 
           case AR_APPROVED:
             table.setText(row, colApproved, renderQuantity(approved),
                 STYLE_APPROVED, STYLE_QUANTITY);
-
-            table.setText(row, colApproved + 1, renderPercent(approved, received),
-                STYLE_APPROVED, STYLE_PERCENT);
-            table.setText(row, colApproved + 2, renderPercent(approved, answered + approved),
-                STYLE_APPROVED, STYLE_PERCENT);
+            if (approved > 0) {
+              xr.add(new XCell(colApproved, approved, csQty));
+            }
+            
+            p = percent(approved, received);
+            table.setText(row, colApproved + 1, renderPercent(p), STYLE_APPROVED, STYLE_PERCENT);
+            if (p != null) {
+              xr.add(new XCell(colApproved + 1, p, csPct));
+            }
+            
+            p = percent(approved, answered + approved);
+            table.setText(row, colApproved + 2, renderPercent(p), STYLE_APPROVED, STYLE_PERCENT);
+            if (p != null) {
+              xr.add(new XCell(colApproved + 2, p, csPct));
+            }
             break;
 
           case AR_SECONDARY:
             table.setText(row, colSecondary, renderQuantity(secondary),
                 STYLE_SECONDARY, STYLE_QUANTITY);
-            table.setText(row, colSecondary + 1, renderPercent(secondary, received),
-                STYLE_SECONDARY, STYLE_PERCENT);
+            if (approved > 0) {
+              xr.add(new XCell(colSecondary, secondary, csQty));
+            }
+
+            p = percent(secondary, received);
+            table.setText(row, colSecondary + 1, renderPercent(p), STYLE_SECONDARY, STYLE_PERCENT);
+            if (p != null) {
+              xr.add(new XCell(colSecondary + 1, p, csPct));
+            }
             break;
         }
       }
@@ -500,36 +704,68 @@ public class AssessmentQuantityReport extends ReportInterceptor {
       table.getRowFormatter().addStyleName(row, STYLE_DETAILS);
       DomUtils.setDataIndex(table.getRow(row), i);
 
+      sheet.add(xr);
       row++;
     }
 
     if (data.getNumberOfRows() > 1) {
+      xr = new XRow(row);
+      
+      XFont xf = XFont.bold();
+      xf.setFactor(1.2);
+      int fontRef = sheet.registeFont(xf);
+
+      xs = sheet.getStyle(csQty).copy();
+      xs.setFontRef(fontRef);
+      xs.setBorderTop(BorderStyle.SOLID);
+      int csTotQty = sheet.registerStyle(xs);
+
+      xs = sheet.getStyle(csPct).copy();
+      xs.setFontRef(fontRef);
+      xs.setBorderTop(BorderStyle.SOLID);
+      int csTotPct = sheet.registerStyle(xs);
+
       table.setText(row, colReceived, renderQuantity(totReceived),
           STYLE_RECEIVED, STYLE_QUANTITY);
+      xr.add(new XCell(colReceived, totReceived, csTotQty));
 
       table.setText(row, colAnswered, renderQuantity(totAnswered),
           STYLE_ANSWERED, STYLE_QUANTITY);
-      table.setText(row, colAnswered + 1, renderPercent(totAnswered, totReceived),
-          STYLE_ANSWERED, STYLE_PERCENT);
+      xr.add(new XCell(colAnswered, totAnswered, csTotQty));
+
+      p = percent(totAnswered, totReceived);
+      table.setText(row, colAnswered + 1, renderPercent(p), STYLE_ANSWERED, STYLE_PERCENT);
+      xr.add(new XCell(colAnswered + 1, p, csTotPct));
 
       table.setText(row, colLost, renderQuantity(totLost), STYLE_LOST, STYLE_QUANTITY);
-      table.setText(row, colLost + 1, renderPercent(totLost, totReceived),
-          STYLE_LOST, STYLE_PERCENT);
+      xr.add(new XCell(colLost, totLost, csTotQty));
+
+      p = percent(totLost, totReceived);
+      table.setText(row, colLost + 1, renderPercent(p), STYLE_LOST, STYLE_PERCENT);
+      xr.add(new XCell(colLost + 1, p, csTotPct));
 
       table.setText(row, colApproved, renderQuantity(totApproved),
           STYLE_APPROVED, STYLE_QUANTITY);
+      xr.add(new XCell(colApproved, totApproved, csTotQty));
 
-      table.setText(row, colApproved + 1, renderPercent(totApproved, totReceived),
-          STYLE_APPROVED, STYLE_PERCENT);
-      table.setText(row, colApproved + 2, renderPercent(totApproved, totAnswered + totApproved),
-          STYLE_APPROVED, STYLE_PERCENT);
+      p = percent(totApproved, totReceived);
+      table.setText(row, colApproved + 1, renderPercent(p), STYLE_APPROVED, STYLE_PERCENT);
+      xr.add(new XCell(colApproved + 1, p, csTotPct));
+
+      p = percent(totApproved, totAnswered + totApproved);
+      table.setText(row, colApproved + 2, renderPercent(p), STYLE_APPROVED, STYLE_PERCENT);
+      xr.add(new XCell(colApproved + 2, p, csTotPct));
 
       table.setText(row, colSecondary, renderQuantity(totSecondary),
           STYLE_SECONDARY, STYLE_QUANTITY);
-      table.setText(row, colSecondary + 1, renderPercent(totSecondary, totReceived),
-          STYLE_SECONDARY, STYLE_PERCENT);
+      xr.add(new XCell(colSecondary, totSecondary, csTotQty));
+
+      p = percent(totSecondary, totReceived);
+      table.setText(row, colSecondary + 1, renderPercent(p), STYLE_SECONDARY, STYLE_PERCENT);
+      xr.add(new XCell(colSecondary + 1, p, csTotPct));
 
       table.getRowFormatter().addStyleName(row, STYLE_SUMMARY);
+      sheet.add(xr);
     }
 
     table.addClickHandler(new ClickHandler() {

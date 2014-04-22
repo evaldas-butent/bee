@@ -716,7 +716,7 @@ public class GridLoaderBean {
     if (view != null) {
       String filter = src.getAttribute(UiConstants.ATTR_FILTER);
       if (!BeeUtils.isEmpty(filter)) {
-        dst.setFilter(view.parseFilter(filter.trim()));
+        dst.setFilter(view.parseFilter(filter.trim(), usr.getCurrentUserId()));
       }
 
       String currentUserFilter = src.getAttribute(UiConstants.ATTR_CURRENT_USER_FILTER);

@@ -12,6 +12,7 @@ import static com.butent.bee.shared.modules.mail.MailConstants.*;
 import com.butent.bee.server.data.QueryServiceBean;
 import com.butent.bee.server.data.SystemBean;
 import com.butent.bee.server.modules.administration.FileStorageBean;
+import com.butent.bee.server.sql.IsCondition;
 import com.butent.bee.server.sql.SqlDelete;
 import com.butent.bee.server.sql.SqlInsert;
 import com.butent.bee.server.sql.SqlSelect;
@@ -39,8 +40,10 @@ import java.util.List;
 import java.util.Map.Entry;
 import java.util.Set;
 
+import javax.annotation.Resource;
 import javax.ejb.EJB;
 import javax.ejb.LocalBean;
+import javax.ejb.SessionContext;
 import javax.ejb.Stateless;
 import javax.ejb.TransactionAttribute;
 import javax.ejb.TransactionAttributeType;
@@ -70,6 +73,8 @@ public class MailStorageBean {
   SystemBean sys;
   @EJB
   FileStorageBean fs;
+  @Resource
+  SessionContext ctx;
 
   public void connectFolder(MailFolder folder) {
     validateFolder(folder, null);
@@ -83,7 +88,7 @@ public class MailStorageBean {
         return subFolder;
       }
     }
-    MailFolder folder = createFolder(parent.getAccountId(), parent, name, null);
+    MailFolder folder = createFolder(account.getAccountId(), parent, name, null);
 
     if (!account.isStoredRemotedly(parent)) {
       disconnectFolder(folder);
@@ -114,72 +119,35 @@ public class MailStorageBean {
         .setWhere(sys.idEquals(TBL_FOLDERS, folder.getId())));
   }
 
-  public MailFolder findFolder(MailAccount account, Long folderId) throws MessagingException {
-    return getRootFolder(account).findFolder(folderId);
-  }
-
   public MailAccount getAccount(Long accountId) {
     Assert.state(DataUtils.isId(accountId));
-    return getAccount(accountId, null);
+    return getAccount(sys.idEquals(TBL_ACCOUNTS, accountId));
   }
 
   public MailAccount getAccountByAddressId(Long addressId) {
     Assert.state(DataUtils.isId(addressId));
-    return getAccount(null, addressId);
+    return getAccount(SqlUtils.equals(TBL_ACCOUNTS, MailConstants.COL_ADDRESS, addressId));
   }
 
-  public MailFolder getDraftsFolder(MailAccount account) throws MessagingException {
-    return getSysFolder(account, account.getSysFolderId(SystemFolder.Drafts), SystemFolder.Drafts);
-  }
+  public void initAccount(Long accountId) {
+    MailAccount account = getAccount(accountId);
 
-  public MailFolder getInboxFolder(MailAccount account) throws MessagingException {
-    return getSysFolder(account, account.getSysFolderId(SystemFolder.Inbox), SystemFolder.Inbox);
-  }
+    MailFolder inbox = createFolder(account, account.getRootFolder(),
+        SystemFolder.Inbox.getFolderName());
 
-  public MailFolder getRootFolder(MailAccount account) throws MessagingException {
-    Assert.notNull(account);
-
-    if (account.getRootFolder() == null) {
-      account.setRootFolder(getRootFolder(account.getAccountId()));
+    if (!inbox.isConnected()) {
+      connectFolder(inbox);
     }
-    return account.getRootFolder();
-  }
+    for (SystemFolder sysFolder : SystemFolder.values()) {
+      MailFolder folder = inbox;
 
-  public MailFolder getRootFolder(Long accountId) throws MessagingException {
-    Assert.state(DataUtils.isId(accountId));
-
-    SimpleRowSet data = qs.getData(new SqlSelect()
-        .addFields(TBL_FOLDERS, COL_FOLDER_PARENT, COL_FOLDER_NAME, COL_FOLDER_UID)
-        .addField(TBL_FOLDERS, sys.getIdName(TBL_FOLDERS), COL_FOLDER)
-        .addFrom(TBL_FOLDERS)
-        .setWhere(SqlUtils.equals(TBL_FOLDERS, COL_ACCOUNT, accountId))
-        .addOrder(TBL_FOLDERS, COL_FOLDER_PARENT, COL_FOLDER_NAME));
-
-    Multimap<Long, SimpleRow> folders = LinkedListMultimap.create();
-
-    for (SimpleRow row : data) {
-      folders.put(row.getLong(COL_FOLDER_PARENT), row);
-    }
-    MailFolder root = new MailFolder(accountId, null, null, null, null);
-    createTree(root, folders);
-
-    if (BeeUtils.isEmpty(root.getSubFolders())) {
-      MailAccount account = getAccount(accountId);
-      account.setRootFolder(root);
-
-      for (SystemFolder sysFolder : SystemFolder.values()) {
-        createSysFolder(account, sysFolder);
+      if (sysFolder != SystemFolder.Inbox) {
+        folder = createFolder(account, inbox, sysFolder.getFolderName());
       }
+      qs.updateData(new SqlUpdate(TBL_ACCOUNTS)
+          .addConstant(sysFolder.name() + COL_FOLDER, folder.getId())
+          .setWhere(sys.idEquals(TBL_ACCOUNTS, accountId)));
     }
-    return root;
-  }
-
-  public MailFolder getSentFolder(MailAccount account) throws MessagingException {
-    return getSysFolder(account, account.getSysFolderId(SystemFolder.Sent), SystemFolder.Sent);
-  }
-
-  public MailFolder getTrashFolder(MailAccount account) throws MessagingException {
-    return getSysFolder(account, account.getSysFolderId(SystemFolder.Trash), SystemFolder.Trash);
   }
 
   public void renameFolder(MailFolder folder, String name) {
@@ -342,7 +310,7 @@ public class MailStorageBean {
             syncedMsgs.add(id);
           } else {
             try {
-              storeMail(message, localFolder.getId(), uid);
+              ctx.getBusinessObject(this.getClass()).storeMail(message, localFolder.getId(), uid);
             } catch (MessagingException e) {
               logger.error(e);
             }
@@ -397,7 +365,7 @@ public class MailStorageBean {
         .addConstant(COL_FOLDER_NAME, name)
         .addConstant(COL_FOLDER_UID, folderUID));
 
-    MailFolder folder = new MailFolder(accountId, parent, id, name, folderUID);
+    MailFolder folder = new MailFolder(parent, id, name, folderUID);
 
     if (parent != null) {
       parent.addSubFolder(folder);
@@ -405,67 +373,30 @@ public class MailStorageBean {
     return folder;
   }
 
-  private MailFolder createSysFolder(MailAccount account, SystemFolder sysFolder)
-      throws MessagingException {
-    MailFolder root = getRootFolder(account);
-    String folderName = sysFolder.getFolderName();
-    boolean ok = account.createRemoteFolder(root, folderName, true);
-
-    if (!ok && sysFolder != SystemFolder.Inbox) {
-      root = getInboxFolder(account);
-      ok = account.createRemoteFolder(root, folderName, true);
-    }
-    if (!ok) {
-      throw new MessagingException("Error creating system folder: " + folderName);
-    }
-    MailFolder folder = createFolder(account, root, folderName);
-
-    if (sysFolder == SystemFolder.Inbox && !folder.isConnected()) {
-      connectFolder(folder);
-    }
-    qs.updateData(new SqlUpdate(TBL_ACCOUNTS)
-        .addConstant(sysFolder.name() + COL_FOLDER, folder.getId())
-        .setWhere(sys.idEquals(TBL_ACCOUNTS, root.getAccountId())));
-
-    account.setSysFolderId(sysFolder, folder.getId());
-
-    return folder;
-  }
-
-  private void createTree(MailFolder parent, Multimap<Long, SimpleRow> folders) {
-    for (SimpleRow row : folders.get(parent.getId())) {
-      MailFolder folder = new MailFolder(parent.getAccountId(), parent, row.getLong(COL_FOLDER),
-          row.getValue(COL_FOLDER_NAME), row.getLong(COL_FOLDER_UID));
-
-      createTree(folder, folders);
-      parent.addSubFolder(folder);
-    }
-  }
-
-  private MailAccount getAccount(Long accountId, Long addressId) {
-    return new MailAccount(qs.getRow(new SqlSelect()
+  private MailAccount getAccount(IsCondition condition) {
+    MailAccount account = new MailAccount(qs.getRow(new SqlSelect()
         .addAllFields(TBL_ACCOUNTS)
         .addField(TBL_ACCOUNTS, sys.getIdName(TBL_ACCOUNTS), COL_ACCOUNT)
         .addFields(TBL_EMAILS, COL_EMAIL_ADDRESS)
         .addFrom(TBL_ACCOUNTS)
         .addFromInner(TBL_EMAILS,
             sys.joinTables(TBL_EMAILS, TBL_ACCOUNTS, MailConstants.COL_ADDRESS))
-        .setWhere(DataUtils.isId(addressId)
-            ? SqlUtils.equals(TBL_ACCOUNTS, MailConstants.COL_ADDRESS, addressId)
-            : sys.idEquals(TBL_ACCOUNTS, accountId))));
-  }
+        .setWhere(condition)));
 
-  private MailFolder getSysFolder(MailAccount account, Long folderId, SystemFolder sysFolder)
-      throws MessagingException {
-    MailFolder folder = null;
+    SimpleRowSet data = qs.getData(new SqlSelect()
+        .addFields(TBL_FOLDERS, COL_FOLDER_PARENT, COL_FOLDER_NAME, COL_FOLDER_UID)
+        .addField(TBL_FOLDERS, sys.getIdName(TBL_FOLDERS), COL_FOLDER)
+        .addFrom(TBL_FOLDERS)
+        .setWhere(SqlUtils.equals(TBL_FOLDERS, COL_ACCOUNT, account.getAccountId()))
+        .addOrder(TBL_FOLDERS, COL_FOLDER_PARENT, COL_FOLDER_NAME));
 
-    if (DataUtils.isId(folderId)) {
-      folder = findFolder(account, folderId);
+    Multimap<Long, SimpleRow> folders = LinkedListMultimap.create();
+
+    for (SimpleRow row : data) {
+      folders.put(row.getLong(COL_FOLDER_PARENT), row);
     }
-    if (folder == null) {
-      folder = createSysFolder(account, sysFolder);
-    }
-    return folder;
+    account.setFolders(folders);
+    return account;
   }
 
   private void storePart(Long messageId, Part part, Pair<String, String> alternative)

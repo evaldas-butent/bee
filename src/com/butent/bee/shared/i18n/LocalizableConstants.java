@@ -45,6 +45,8 @@ public interface LocalizableConstants extends Constants, LocalizableCalendarCons
 
   String actionEdit();
 
+  String actionExport();
+
   String actionFilter();
 
   String actionNew();
@@ -209,6 +211,8 @@ public interface LocalizableConstants extends Constants, LocalizableCalendarCons
 
   String department();
 
+  String departments();
+
   String description();
 
   String deselectAll();
@@ -233,6 +237,8 @@ public interface LocalizableConstants extends Constants, LocalizableCalendarCons
 
   String exchangeCode();
 
+  String exportToMsExcel();
+  
   String externalId();
 
   String fax();
@@ -404,6 +410,8 @@ public interface LocalizableConstants extends Constants, LocalizableCalendarCons
   String mainEmail();
 
   String manager();
+
+  String managers();
 
   String margin();
 
@@ -599,6 +607,8 @@ public interface LocalizableConstants extends Constants, LocalizableCalendarCons
 
   String service();
 
+  String setAsPrimary();
+
   String services();
 
   String settings();
@@ -634,6 +644,8 @@ public interface LocalizableConstants extends Constants, LocalizableCalendarCons
   String totalOf();
 
   String type();
+
+  String types();
 
   String unit();
 

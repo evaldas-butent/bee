@@ -58,49 +58,47 @@
     <TabbedPages class="flexible" style="margin-top: 15px;">
       <page>
         <text>=financialInfo</text>
-        <Table>
-          <row>
-            <Label text="=creditLimit" for="CreditLimit" style="&lbl1;"/>
-            <FlowPanel>
-              <InputInteger source="CreditLimit" style="text-align: right" />
-              <DataSelector source="LimitCurrency" editEnabled="false" placeholder="=currencyShort"
-                style="width:40px; margin-left:5px; display:inline-block;" for="CreditLimit" />
-            </FlowPanel>
-            <cell rowSpan="5" verticalAlignment="top">
-              <FlowPanel name="CreditInfo" />
-            </cell>
-          </row>
-
-          <row for="CreditTolerance">
-            <Label text="=creditTolerance" style="&lbl1;"/>
-            <InputInteger source="CreditTolerance" style="width: 60px;" />
-          </row>
-
-          <row for="CreditDays">
-            <Label text="=creditDays" style="&lbl1;"/>
-            <InputDecimal source="CreditDays" style="width: 60px;" />
-          </row>
-
-          <row for="FinancialState">
-            <Label text="=financialState" style="&lbl1;"/>
-            <DataSelector source="FinancialState" />
-          </row>
-
-          <row>
-            <Label text="=bankAccount" style="&lbl1;"/>
-            <InputText source="BankAccount" />
-          </row>
-
-          <row for="DaysAsBuyer">
-            <Label text="=daysAsBuyer" style="&lbl1;"/>
-            <InputDecimal source="DaysAsBuyer" style="width: 60px;" />
-          </row>
-
-          <row for="DaysAsSupplier">
-            <Label text="=daysAsSupplier" style="&lbl1;"/>
-            <InputDecimal source="DaysAsSupplier" style="width: 60px;" />
-          </row>
-        </Table>
+        <FlowPanel class="flexBox-horizontal">
+          <Table style="margin-right: 8px;" >
+            <row>
+              <Label text="=creditLimit" for="CreditLimit" style="&lbl1;"/>
+              <FlowPanel>
+                <InputInteger source="CreditLimit" style="text-align: right" />
+                <DataSelector source="LimitCurrency" editEnabled="false" placeholder="=currencyShort"
+                  style="width:40px; margin-left:5px; display:inline-block;" for="CreditLimit" />
+              </FlowPanel>
+              <cell rowSpan="5" verticalAlignment="top">
+                <FlowPanel name="CreditInfo" />
+              </cell>
+            </row>
+  
+            <row for="CreditTolerance">
+              <Label text="=creditTolerance" style="&lbl1;"/>
+              <InputInteger source="CreditTolerance" style="width: 60px;" />
+            </row>
+  
+            <row for="CreditDays">
+              <Label text="=creditDays" style="&lbl1;"/>
+              <InputDecimal source="CreditDays" style="width: 60px;" />
+            </row>
+  
+            <row for="FinancialState">
+              <Label text="=financialState" style="&lbl1;"/>
+              <DataSelector source="FinancialState" />
+            </row>
+  
+            <row for="DaysAsBuyer">
+              <Label text="=daysAsBuyer" style="&lbl1;"/>
+              <InputDecimal source="DaysAsBuyer" style="width: 60px;" />
+            </row>
+  
+            <row for="DaysAsSupplier">
+              <Label text="=daysAsSupplier" style="&lbl1;"/>
+              <InputDecimal source="DaysAsSupplier" style="width: 60px;" />
+            </row>
+          </Table>   
+          <ChildGrid name="CompanyBankAccounts" class="flexible" relColumn="Company" style="min-heght: 150px;"/>
+        </FlowPanel>
       </page>
 
       <page>

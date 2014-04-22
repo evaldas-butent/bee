@@ -31,7 +31,7 @@ public class BeeResultSet {
 
   public static List<Property> getInfo(ResultSet rs) {
     Assert.notNull(rs);
-    List<Property> lst = new ArrayList<Property>();
+    List<Property> lst = new ArrayList<>();
 
     int z;
     try {
@@ -81,7 +81,7 @@ public class BeeResultSet {
   private boolean poolable;
   private final Set<State> states = EnumSet.noneOf(State.class);
 
-  private List<Exception> errors = new ArrayList<Exception>();
+  private List<Exception> errors = new ArrayList<>();
 
   public BeeResultSet() {
     super();
@@ -170,7 +170,7 @@ public class BeeResultSet {
   }
 
   public List<ExtendedProperty> getRsInfo() {
-    List<ExtendedProperty> lst = new ArrayList<ExtendedProperty>();
+    List<ExtendedProperty> lst = new ArrayList<>();
 
     PropertyUtils.addProperties(lst, false,
         "type", BeeUtils.joinWords(getType(), JdbcUtils.rsTypeAsString(getType())),

@@ -13,10 +13,11 @@ import com.butent.bee.client.Global;
 import com.butent.bee.client.data.Data;
 import com.butent.bee.client.data.Queries;
 import com.butent.bee.client.data.RowEditor;
+import com.butent.bee.client.dialog.ConfirmationCallback;
 import com.butent.bee.client.dialog.StringCallback;
 import com.butent.bee.client.event.logical.BookmarkEvent;
 import com.butent.bee.client.grid.HtmlTable;
-import com.butent.bee.client.widget.Image;
+import com.butent.bee.client.widget.FaLabel;
 import com.butent.bee.client.widget.InternalLink;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
@@ -36,6 +37,7 @@ import com.butent.bee.shared.data.value.IntegerValue;
 import com.butent.bee.shared.data.value.TextValue;
 import com.butent.bee.shared.data.view.DataInfo;
 import com.butent.bee.shared.data.view.RowInfo;
+import com.butent.bee.shared.font.FontAwesome;
 import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogUtils;
@@ -269,7 +271,7 @@ public class Favorites implements HandlesDeleteEvents {
 
     addDisplayRow(group.getDisplay(key), group, key, item);
 
-    Queries.insert(TBL_FAVORITES,
+    Queries.insert(VIEW_FAVORITES,
         DataUtils.getColumns(columns, groupIndex, keyIndex, itemIndex, orderIndex, htmlIndex),
         Lists.newArrayList(BeeUtils.toString(group.ordinal()), key, BeeUtils.toString(id),
             BeeUtils.toString(order), BeeUtils.trim(html)));
@@ -338,15 +340,14 @@ public class Favorites implements HandlesDeleteEvents {
     removeItem(Group.ROW, event.getViewName(), event.getRowId());
   }
 
-  private static void addDisplayRow(HtmlTable display, final Group group, final String key,
+  private static void addDisplayRow(final HtmlTable display, final Group group, final String key,
       final Item item) {
     int row = display.getRowCount();
 
     Widget widget = group.createItemWidget(key, item);
     display.setWidget(row, ITEM_COLUMN, widget);
 
-    Image edit = new Image(Global.getImages().silverEdit());
-    edit.addStyleName(EDIT_STYLE);
+    FaLabel edit = new FaLabel(FontAwesome.EDIT, EDIT_STYLE);
     edit.setTitle(Localized.getConstants().actionRename());
 
     edit.addClickHandler(new ClickHandler() {
@@ -357,20 +358,24 @@ public class Favorites implements HandlesDeleteEvents {
           public void onSuccess(String value) {
             updateItem(group, key, item.getId(), value);
           }
-        }, item.getHtml());
+        }, item.getHtml(), BeeConst.UNDEF, display.getEventRowElement(event, false));
       }
     });
 
     display.setWidget(row, EDIT_COLUMN, edit);
 
-    Image delete = new Image(Global.getImages().silverMinus());
-    delete.addStyleName(DELETE_STYLE);
+    FaLabel delete = new FaLabel(FontAwesome.TRASH_O, DELETE_STYLE);
     delete.setTitle(Localized.getConstants().actionRemove());
 
     delete.addClickHandler(new ClickHandler() {
       @Override
       public void onClick(ClickEvent event) {
-        removeItem(group, key, item.getId());
+        Global.confirmRemove(group.getCaption(key), item.getHtml(), new ConfirmationCallback() {
+          @Override
+          public void onConfirm() {
+            removeItem(group, key, item.getId());
+          }
+        }, display.getEventRowElement(event, false));
       }
     });
 
@@ -459,7 +464,7 @@ public class Favorites implements HandlesDeleteEvents {
     Filter filter = Filter.and(Filter.isEqual(COL_GROUP, IntegerValue.of(group)),
         Filter.isEqual(COL_KEY, new TextValue(key)), Filter.equals(COL_ITEM, id));
 
-    Queries.delete(TBL_FAVORITES, filter, null);
+    Queries.delete(VIEW_FAVORITES, filter, null);
     return group.remove(key, item);
   }
 
@@ -479,7 +484,7 @@ public class Favorites implements HandlesDeleteEvents {
         Filter.isEqual(COL_KEY, new TextValue(key)),
         Filter.equals(COL_ITEM, id));
 
-    Queries.update(TBL_FAVORITES, filter, COL_HTML, new TextValue(html), null);
+    Queries.update(VIEW_FAVORITES, filter, COL_HTML, new TextValue(html), null);
     return true;
   }
 }

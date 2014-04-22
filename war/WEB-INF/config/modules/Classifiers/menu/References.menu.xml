@@ -19,6 +19,8 @@ name="References" label="=classifiers" order="10" module="Classifiers"
   <Item name="Cities" label="=cities" service="grid" parameters="Cities" separator="true" />
   <Item name="Countries" label="=countries" service="grid" parameters="Countries" />
   
+  <Item name="Banks" label="=banks" service="grid" parameters="Banks" separator="true" />
+
   <Item name="Colors" label="=colors" service="grid" parameters="Colors" separator="true" />
   <Item name="Themes" label="=colorThemes" service="grid" parameters="Themes" />
 </Entry>

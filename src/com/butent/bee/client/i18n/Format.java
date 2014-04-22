@@ -478,6 +478,29 @@ public final class Format {
     return (date == null) ? null : renderMonthFullStandalone(date.getMonth());
   }
 
+  public static String renderPeriod(DateTime start, DateTime end) {
+    if (start == null || end == null || start.hasTimePart() || end.hasTimePart()) {
+      return TimeUtils.renderPeriod(start, end);
+      
+    } else if (TimeUtils.dayDiff(start, end) == 1) {
+      return DateTimeFormat.getFormat(PredefinedFormat.DATE_LONG).format(start);
+    
+    } else if (start.getDom() == 1 && end.getDom() == 1 && TimeUtils.monthDiff(start, end) == 1) {
+      return BeeUtils.joinWords(start.getYear(), renderMonthFullStandalone(start.getMonth()));
+
+    } else if (start.getMonth() % 3 == 1 && start.getDom() == 1 && end.getDom() == 1 
+        && TimeUtils.monthDiff(start, end) == 3) {
+      return DateTimeFormat.getFormat(PredefinedFormat.YEAR_QUARTER).format(start);
+
+    } else if (start.getMonth() == 1 && start.getDom() == 1 
+        && end.getYear() == start.getYear() + 1 && end.getMonth() == 1 && end.getDom() == 1) {
+      return BeeUtils.toString(start.getYear());
+
+    } else {
+      return TimeUtils.renderPeriod(start, end);
+    }
+  }
+  
   public static void setFormat(Object target, ValueType type, String pattern) {
     Assert.notNull(target);
     Assert.notEmpty(pattern);

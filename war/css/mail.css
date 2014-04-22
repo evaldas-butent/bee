@@ -183,7 +183,7 @@
   visibility: visible;
 }
 
-.bee-mail-SysFolder-selected, .bee-mail-Folder-selected {
+.bee-mail-SysFolder-selected, .bee-mail-FolderRow-selected .bee-mail-Folder {
   font-weight: bold;
   color: #FD6268;
 }

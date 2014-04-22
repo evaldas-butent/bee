@@ -46,7 +46,7 @@ public final class ClassUtils {
   public static <T> List<ExtendedProperty> getClassInfo(Class<T> cls) {
     Assert.notNull(cls);
 
-    List<ExtendedProperty> lst = new ArrayList<ExtendedProperty>();
+    List<ExtendedProperty> lst = new ArrayList<>();
 
     PropertyUtils.addProperties(lst, false,
         "Package", transformPackage(cls.getPackage()),

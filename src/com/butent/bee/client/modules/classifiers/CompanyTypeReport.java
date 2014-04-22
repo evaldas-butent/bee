@@ -20,6 +20,9 @@ import com.butent.bee.client.event.EventUtils;
 import com.butent.bee.client.grid.HtmlTable;
 import com.butent.bee.client.i18n.Collator;
 import com.butent.bee.client.i18n.Format;
+import com.butent.bee.client.output.Exporter;
+import com.butent.bee.client.output.Report;
+import com.butent.bee.client.output.ReportParameters;
 import com.butent.bee.client.style.StyleUtils;
 import com.butent.bee.client.ui.HasIndexedWidgets;
 import com.butent.bee.client.view.form.FormView;
@@ -29,10 +32,18 @@ import com.butent.bee.client.widget.InputDateTime;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.Service;
 import com.butent.bee.shared.communication.ResponseObject;
+import com.butent.bee.shared.css.Colors;
+import com.butent.bee.shared.css.values.BorderStyle;
+import com.butent.bee.shared.css.values.VerticalAlign;
 import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.SimpleRowSet;
 import com.butent.bee.shared.data.SimpleRowSet.SimpleRow;
 import com.butent.bee.shared.data.filter.Filter;
+import com.butent.bee.shared.export.XCell;
+import com.butent.bee.shared.export.XFont;
+import com.butent.bee.shared.export.XRow;
+import com.butent.bee.shared.export.XSheet;
+import com.butent.bee.shared.export.XStyle;
 import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.time.DateTime;
 import com.butent.bee.shared.time.TimeUtils;
@@ -198,8 +209,10 @@ public class CompanyTypeReport extends ReportInterceptor {
 
     return table;
   }
+  
+  private final XSheet sheet = new XSheet();
 
-  CompanyTypeReport() {
+  public CompanyTypeReport() {
   }
 
   @Override
@@ -209,41 +222,36 @@ public class CompanyTypeReport extends ReportInterceptor {
 
   @Override
   public void onLoad(FormView form) {
-    Long user = BeeKeeper.getUser().getUserId();
-    if (!DataUtils.isId(user)) {
+    ReportParameters parameters = readParameters();
+    if (parameters == null) {
       return;
     }
 
     Widget widget = form.getWidgetByName(NAME_START_DATE);
-    DateTime dateTime = BeeKeeper.getStorage().getDateTime(storageKey(NAME_START_DATE, user));
+    DateTime dateTime = parameters.getDateTime(NAME_START_DATE);
     if (widget instanceof InputDateTime && dateTime != null) {
       ((InputDateTime) widget).setDateTime(dateTime);
     }
 
     widget = form.getWidgetByName(NAME_END_DATE);
-    dateTime = BeeKeeper.getStorage().getDateTime(storageKey(NAME_END_DATE, user));
+    dateTime = parameters.getDateTime(NAME_END_DATE);
     if (widget instanceof InputDateTime && dateTime != null) {
       ((InputDateTime) widget).setDateTime(dateTime);
     }
 
     widget = form.getWidgetByName(NAME_TYPES);
-    String idList = BeeKeeper.getStorage().get(storageKey(NAME_TYPES, user));
+    String idList = parameters.get(NAME_TYPES);
     if (widget instanceof MultiSelector && !BeeUtils.isEmpty(idList)) {
       ((MultiSelector) widget).render(idList);
     }
+    
+    super.onLoad(form);
   }
 
   @Override
   public void onUnload(FormView form) {
-    Long user = BeeKeeper.getUser().getUserId();
-    if (!DataUtils.isId(user)) {
-      return;
-    }
-
-    BeeKeeper.getStorage().set(storageKey(NAME_START_DATE, user), getDateTime(NAME_START_DATE));
-    BeeKeeper.getStorage().set(storageKey(NAME_END_DATE, user), getDateTime(NAME_END_DATE));
-
-    BeeKeeper.getStorage().set(storageKey(NAME_TYPES, user), getEditorValue(NAME_TYPES));
+    storeDateTimeValues(NAME_START_DATE, NAME_END_DATE);
+    storeEditorValues(NAME_TYPES);
   }
 
   @Override
@@ -292,6 +300,25 @@ public class CompanyTypeReport extends ReportInterceptor {
         if (response.hasResponse(SimpleRowSet.class)) {
           SimpleRowSet data = SimpleRowSet.restore(response.getResponseAsString());
           renderData(transformData(data), start, end, types, typesLabel);
+          
+          List<String> headers = Lists.newArrayList(getCaption());
+          if (start != null || end != null) {
+            headers.add(Format.renderPeriod(start, end));
+          }
+          if (!BeeUtils.isEmpty(typesLabel)) {
+            String label;
+            if (DataUtils.parseIdSet(types).size() > 1) {
+              label = Localized.getConstants().types();
+            } else {
+              label = Localized.getConstants().type();
+            }
+            
+            headers.add(BeeUtils.joinWords(label, typesLabel));
+          }
+          
+          sheet.addHeaders(headers);
+          sheet.autoSizeAll();
+          
         } else {
           getFormView().notifyWarning(Localized.getConstants().nothingFound());
         }
@@ -300,8 +327,40 @@ public class CompanyTypeReport extends ReportInterceptor {
   }
 
   @Override
-  protected String getStorageKeyPrefix() {
-    return "CompanyTypeReport_";
+  protected void export() {
+    if (!sheet.isEmpty()) {
+      Exporter.confirmExport(sheet, getCaption());
+    }
+  }
+  
+  @Override
+  protected String getBookmarkLabel() {
+    return BeeUtils.joinWords(getCaption(),
+        Format.renderPeriod(getDateTime(NAME_START_DATE), getDateTime(NAME_END_DATE)),
+        getFilterLabel(NAME_TYPES));
+  }
+
+  @Override
+  protected Report getReport() {
+    return Report.COMPANY_TYPES;
+  }
+
+  @Override
+  protected ReportParameters getReportParameters() {
+    ReportParameters parameters = new ReportParameters();
+
+    addDateTimeValues(parameters, NAME_START_DATE, NAME_END_DATE);
+    addEditorValues(parameters, NAME_TYPES);
+
+    return parameters;
+  }
+  
+  @Override
+  protected boolean validateParameters(ReportParameters parameters) {
+    DateTime start = parameters.getDateTime(NAME_START_DATE);
+    DateTime end = parameters.getDateTime(NAME_END_DATE);
+
+    return checkRange(start, end);
   }
   
   private void renderData(Table<YearMonth, Column, Integer> data, 
@@ -311,6 +370,8 @@ public class CompanyTypeReport extends ReportInterceptor {
     if (container == null) {
       return;
     }
+    
+    sheet.clear();
 
     if (!container.isEmpty()) {
       container.clear();
@@ -332,24 +393,55 @@ public class CompanyTypeReport extends ReportInterceptor {
 
     int row = 0;
 
+    XRow xr = new XRow(row);
+    xr.setHeightFactor(1.2);
+    
+    Integer boldRef = sheet.registeFont(XFont.bold());
+
+    XStyle xs = XStyle.center();
+    xs.setVerticalAlign(VerticalAlign.MIDDLE);
+    xs.setColor(Colors.LIGHTGRAY);
+    xs.setFontRef(boldRef);
+
+    int styleRef = sheet.registerStyle(xs);
+
     table.setText(row, YEAR_COL, Localized.getConstants().year(), STYLE_HEADER);
     table.setText(row, MONTH_COL, Localized.getConstants().month(), STYLE_HEADER);
+
+    xr.add(new XCell(YEAR_COL, Localized.getConstants().year(), styleRef));
+    xr.add(new XCell(MONTH_COL, Localized.getConstants().month(), styleRef));
 
     for (int j = 0; j < columns.size(); j++) {
       Column column = columns.get(j);
       int col = VALUE_START_COL + j;
 
       table.setText(row, col, column.getLabel(), STYLE_HEADER);
+      xr.add(new XCell(col, column.getLabel(), styleRef));
+
       if (column.total) {
         table.getCellFormatter().addStyleName(row, col, STYLE_ROW_TOTAL);
       }
     }
-
+    
+    sheet.add(xr);
     row++;
+    
+    int csValue = sheet.registerStyle(XStyle.right());
+
+    xs = XStyle.right();
+    xs.setFontRef(boldRef);
+    int csRowTot = sheet.registerStyle(xs);
 
     for (YearMonth ym : yms) {
+      xr = new XRow(row);
+      
+      String m = Format.renderMonthFullStandalone(ym.getMonth());
+
       table.setValue(row, YEAR_COL, ym.getYear(), STYLE_YEAR);
-      table.setText(row, MONTH_COL, Format.renderMonthFullStandalone(ym.getMonth()), STYLE_MONTH);
+      table.setText(row, MONTH_COL, m, STYLE_MONTH);
+      
+      xr.add(new XCell(YEAR_COL, ym.getYear()));
+      xr.add(new XCell(MONTH_COL, m));
 
       for (int j = 0; j < columns.size(); j++) {
         Column column = columns.get(j);
@@ -362,6 +454,10 @@ public class CompanyTypeReport extends ReportInterceptor {
           if (column.total) {
             table.getCellFormatter().addStyleName(row, col, STYLE_ROW_TOTAL);
           }
+          
+          XCell xc = new XCell(col, value);
+          xc.setStyleRef(column.total ? csRowTot : csValue);
+          xr.add(xc);
           
           DomUtils.setDataColumn(table.getCellFormatter().getElement(row, col), j);
 
@@ -377,16 +473,28 @@ public class CompanyTypeReport extends ReportInterceptor {
       DomUtils.setDataProperty(table.getRow(row), DATA_KEY_YEAR, ym.getYear());
       DomUtils.setDataProperty(table.getRow(row), DATA_KEY_MONTH, ym.getMonth());
       
+      sheet.add(xr);
       row++;
     }
 
     if (yms.size() > 1) {
+      xr = new XRow(row);
+
+      xs = XStyle.right();
+      XFont xf = XFont.bold();
+      xf.setFactor(1.2);
+      xs.setFontRef(sheet.registeFont(xf));
+      xs.setBorderTop(BorderStyle.SOLID);
+
+      styleRef = sheet.registerStyle(xs);
+
       for (int j = 0; j < columns.size(); j++) {
         Column column = columns.get(j);
         int col = VALUE_START_COL + j;
 
         table.setText(row, col, renderQuantity(colTotals[j]),
             column.total ? STYLE_TOTAL : STYLE_COL_TOTAL);
+        xr.add(new XCell(col, colTotals[j], styleRef));
 
         if (!column.total) {
           DomUtils.setDataColumn(table.getCellFormatter().getElement(row, col), j);
@@ -394,6 +502,7 @@ public class CompanyTypeReport extends ReportInterceptor {
       }
 
       table.getRowFormatter().addStyleName(row, STYLE_SUMMARY);
+      sheet.add(xr);
     }
 
     table.addClickHandler(new ClickHandler() {

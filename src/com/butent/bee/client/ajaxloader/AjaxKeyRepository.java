@@ -11,7 +11,7 @@ import java.util.Map;
 
 public final class AjaxKeyRepository {
 
-  private static Map<String, String> keys = new HashMap<String, String>();
+  private static Map<String, String> keys = new HashMap<>();
 
   static {
     keys.put("localhost:8080",

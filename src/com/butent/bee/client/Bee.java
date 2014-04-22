@@ -182,6 +182,10 @@ public class Bee implements EntryPoint {
           case NEWS:
             Global.getNewsAggregator().loadSubscriptions(serialized);
             break;
+            
+          case REPORTS:
+            Global.getReportSettings().load(serialized);
+            break;
 
           case USERS:
             Global.getUsers().loadUserData(serialized);

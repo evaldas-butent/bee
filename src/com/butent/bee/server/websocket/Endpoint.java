@@ -18,13 +18,13 @@ import com.butent.bee.shared.websocket.messages.InfoMessage;
 import com.butent.bee.shared.websocket.messages.LogMessage;
 import com.butent.bee.shared.websocket.messages.Message;
 import com.butent.bee.shared.websocket.messages.ModificationMessage;
+import com.butent.bee.shared.websocket.messages.OnlineMessage;
 import com.butent.bee.shared.websocket.messages.ProgressMessage;
 import com.butent.bee.shared.websocket.messages.RoomStateMessage;
 import com.butent.bee.shared.websocket.messages.RoomUserMessage;
 import com.butent.bee.shared.websocket.messages.RoomsMessage;
 import com.butent.bee.shared.websocket.messages.SessionMessage;
 import com.butent.bee.shared.websocket.messages.ShowMessage;
-import com.butent.bee.shared.websocket.messages.OnlineMessage;
 import com.butent.bee.shared.websocket.messages.ShowMessage.Subject;
 import com.butent.bee.shared.websocket.messages.UsersMessage;
 
@@ -63,6 +63,23 @@ public class Endpoint {
 
   private static Queue<Session> openSessions = new ConcurrentLinkedQueue<>();
   private static Map<String, String> progressToSession = new ConcurrentHashMap<>();
+
+  public static boolean closeProgress(String progressId) {
+    boolean ok = false;
+    String sessionId = progressToSession.remove(progressId);
+
+    if (BeeUtils.isEmpty(sessionId)) {
+      logger.info("ws session not found for progress:", progressId);
+    } else {
+      Session session = findOpenSession(sessionId, true);
+
+      if (session != null) {
+        send(session, ProgressMessage.close(progressId));
+        ok = true;
+      }
+    }
+    return ok;
+  }
 
   public static void sendToAll(Message message) {
     for (Session session : openSessions) {

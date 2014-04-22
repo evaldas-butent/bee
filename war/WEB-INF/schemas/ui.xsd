@@ -219,6 +219,7 @@
       <xs:enumeration value="editAdd" />
       <xs:enumeration value="editDelete" />
       <xs:enumeration value="error" />
+      <xs:enumeration value="excel" />
       <xs:enumeration value="feed" />
       <xs:enumeration value="filterDelete" />
       <xs:enumeration value="first" />
@@ -248,7 +249,6 @@
       <xs:enumeration value="rewind" />
       <xs:enumeration value="save" />
       <xs:enumeration value="search" />
-      <xs:enumeration value="settings" />
       <xs:enumeration value="undo" />
       <xs:enumeration value="user" />
       <xs:enumeration value="warning" />
@@ -337,6 +337,7 @@
       <xs:enumeration value="copy" />
       <xs:enumeration value="delete" />
       <xs:enumeration value="edit" />
+      <xs:enumeration value="export" />
       <xs:enumeration value="filter" />
       <xs:enumeration value="print" />
       <xs:enumeration value="refresh" />

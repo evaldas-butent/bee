@@ -186,7 +186,7 @@ public class ParameterList extends ArrayList<RpcParameter> {
       nodes[i * 2] = item.getName();
       nodes[i * 2 + 1] = item.getValue();
     }
-    return XmlUtils.createString(Service.XML_TAG_DATA, nodes);
+    return XmlUtils.createString(Service.VAR_DATA, nodes);
   }
 
   public void getHeadersExcept(RequestBuilder bld, String... ignore) {
@@ -286,9 +286,9 @@ public class ParameterList extends ArrayList<RpcParameter> {
       return;
     }
 
-    dataItems = new ArrayList<RpcParameter>();
-    headerItems = new ArrayList<RpcParameter>();
-    queryItems = new ArrayList<RpcParameter>();
+    dataItems = new ArrayList<>();
+    headerItems = new ArrayList<>();
+    queryItems = new ArrayList<>();
     ready = true;
 
     if (isEmpty()) {

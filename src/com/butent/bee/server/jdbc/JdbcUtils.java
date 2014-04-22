@@ -384,7 +384,7 @@ public final class JdbcUtils {
       return null;
     }
 
-    List<Property> lst = new ArrayList<Property>();
+    List<Property> lst = new ArrayList<>();
     int r = 0;
 
     try {
@@ -763,7 +763,7 @@ public final class JdbcUtils {
 
   public static List<String> unchain(SQLException x) {
     Assert.notNull(x);
-    List<String> lst = new ArrayList<String>();
+    List<String> lst = new ArrayList<>();
 
     SQLException ex = x;
     while (ex != null) {
@@ -775,7 +775,7 @@ public final class JdbcUtils {
 
   public static List<String> unchain(SQLWarning w) {
     Assert.notNull(w);
-    List<String> lst = new ArrayList<String>();
+    List<String> lst = new ArrayList<>();
 
     SQLWarning ex = w;
     while (ex != null) {

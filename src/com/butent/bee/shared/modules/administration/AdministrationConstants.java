@@ -223,7 +223,6 @@ public final class AdministrationConstants {
   public static final String TBL_REMINDER_TYPES = "ReminderTypes";
 
   public static final String TBL_RELATIONS = "Relations";
-  public static final String TBL_FAVORITES = "Favorites";
 
   public static final String TBL_IP_FILTERS = "IpFilters";
 
@@ -260,6 +259,9 @@ public final class AdministrationConstants {
   public static final String VIEW_USER_PARAMETERS = "UserParameters";
 
   public static final String VIEW_FILTERS = "Filters";
+
+  public static final String VIEW_FAVORITES = "Favorites";
+  public static final String VIEW_REPORT_SETTINGS = "ReportSettings";
 
   public static final String GRID_HISTORY = "History";
   public static final String GRID_USER_GROUP_MEMBERS = "UserGroupMembers";
@@ -351,6 +353,11 @@ public final class AdministrationConstants {
   public static final String COL_DEPARTMENT = "Department";
   public static final String COL_DEPARTMENT_NAME = "DepartmentName";
   public static final String COL_DEPARTMENT_HEAD = "DepartmentHead";
+
+  public static final String COL_RS_REPORT = "Report";
+  public static final String COL_RS_USER = "User";
+  public static final String COL_RS_CAPTION = "Caption";
+  public static final String COL_RS_PARAMETERS = "Parameters";
 
   public static final String ALS_FILE_NAME = "FileName";
   public static final String ALS_FILE_SIZE = "FileSize";

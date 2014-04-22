@@ -185,6 +185,10 @@ public class HeaderImpl extends Flow implements HeaderView {
       add(createImage(Global.getImages().silverSave(), Action.SAVE, hiddenActions));
     }
 
+    if (hasAction(Action.EXPORT, false, enabledActions, disabledActions)) {
+      add(createImage(Global.getImages().excel(), Action.EXPORT, hiddenActions));
+    }
+
     if (hasAction(Action.CONFIGURE, false, enabledActions, disabledActions)) {
       add(createImage(Global.getImages().silverConfigure(), Action.CONFIGURE, hiddenActions));
     }

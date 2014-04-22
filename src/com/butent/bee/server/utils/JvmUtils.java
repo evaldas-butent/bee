@@ -37,7 +37,7 @@ public final class JvmUtils {
       "javax.servlet.http", "javax.servlet", "javax.ejb", "java", "javax"};
 
   static {
-    PRIMITIVES = new HashMap<String, Class<?>>(9);
+    PRIMITIVES = new HashMap<>(9);
 
     PRIMITIVES.put("boolean", boolean.class);
     PRIMITIVES.put("char", char.class);
@@ -73,7 +73,7 @@ public final class JvmUtils {
     Assert.notEmpty(name);
     String nm = name.trim();
 
-    Set<Class<?>> found = new HashSet<Class<?>>();
+    Set<Class<?>> found = new HashSet<>();
     Class<?> exact = null;
 
     if (PRIMITIVES.containsKey(nm)) {
@@ -153,7 +153,7 @@ public final class JvmUtils {
   }
 
   public static List<Property> getLoadedClasses() {
-    List<Property> lst = new ArrayList<Property>();
+    List<Property> lst = new ArrayList<>();
 
     Set<ClassLoader> loaders = getClassLoaders();
     if (BeeUtils.isEmpty(loaders)) {
@@ -227,7 +227,7 @@ public final class JvmUtils {
   }
 
   private static Set<Class<?>> getAllLoadedClasses() {
-    Set<Class<?>> lst = new HashSet<Class<?>>();
+    Set<Class<?>> lst = new HashSet<>();
 
     Set<ClassLoader> loaders = getClassLoaders();
     if (BeeUtils.isEmpty(loaders)) {
@@ -280,7 +280,7 @@ public final class JvmUtils {
   }
 
   private static Set<ClassLoader> getClassLoaders() {
-    Set<ClassLoader> lst = new HashSet<ClassLoader>();
+    Set<ClassLoader> lst = new HashSet<>();
 
     addClassLoaders(lst, int.class.getClassLoader());
     addClassLoaders(lst, ClassLoader.getSystemClassLoader());

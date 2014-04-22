@@ -6,7 +6,7 @@
   xmlns:f="http://www.butent.com/form"
   
   name="CompanyUsageReport" caption="=contactReportCompanyUsage"
-  enabledActions="filter"
+  enabledActions="filter bookmark"
   >
   <FlowPanel class="flexBox-vertical">
     <br/>

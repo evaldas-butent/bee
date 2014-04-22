@@ -74,7 +74,7 @@ public class SqlCreate extends SqlQuery<SqlCreate> implements HasTarget {
 
   private String target;
   private final boolean temporary;
-  private final List<SqlField> fieldList = new ArrayList<SqlField>();
+  private final List<SqlField> fieldList = new ArrayList<>();
 
   private SqlSelect dataSource;
 

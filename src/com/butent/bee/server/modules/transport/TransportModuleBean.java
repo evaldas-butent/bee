@@ -241,6 +241,7 @@ public class TransportModuleBean implements BeeModule {
 
     } else if (BeeUtils.same(svc, SVC_GET_ASSESSMENT_TOTALS)) {
       response = getAssessmentTotals(BeeUtils.toLongOrNull(reqInfo.getParameter(COL_ASSESSMENT)),
+          BeeUtils.toLongOrNull(reqInfo.getParameter(COL_CURRENCY)),
           BeeUtils.toBoolean(reqInfo.getParameter("isPrimary")));
 
     } else if (BeeUtils.same(svc, SVC_GET_ASSESSMENT_QUANTITY_REPORT)) {
@@ -338,17 +339,6 @@ public class TransportModuleBean implements BeeModule {
         if (BeeUtils.inListSame(event.getTargetName(), TBL_ASSESSMENTS, VIEW_CHILD_ASSESSMENTS)
             && event.isAfter() && event.getRowset().getNumberOfRows() > 0) {
 
-          String primaryAssessment;
-          String primaryCargo;
-
-          if (BeeUtils.same(event.getTargetName(), TBL_ASSESSMENTS)) {
-            primaryAssessment = null;
-            primaryCargo = TBL_ORDER_CARGO;
-          } else {
-            primaryAssessment = SqlUtils.uniqueName();
-            primaryCargo = SqlUtils.uniqueName();
-          }
-
           for (String tbl : new String[] {TBL_CARGO_INCOMES, TBL_CARGO_EXPENSES}) {
             SqlSelect query = new SqlSelect()
                 .addField(TBL_ASSESSMENTS, sys.getIdName(TBL_ASSESSMENTS), COL_ASSESSMENT)
@@ -360,18 +350,11 @@ public class TransportModuleBean implements BeeModule {
                 .setWhere(sys.idInList(TBL_ASSESSMENTS, event.getRowset().getRowIds()))
                 .addGroup(TBL_ASSESSMENTS, sys.getIdName(TBL_ASSESSMENTS));
 
-            if (!BeeUtils.isEmpty(primaryAssessment)) {
-              query.addFromInner(TBL_ASSESSMENTS, primaryAssessment,
-                  sys.joinTables(TBL_ASSESSMENTS, primaryAssessment, TBL_ASSESSMENTS,
-                      COL_ASSESSMENT))
-                  .addFromInner(TBL_ORDER_CARGO, primaryCargo,
-                      sys.joinTables(TBL_ORDER_CARGO, primaryCargo, primaryAssessment, COL_CARGO));
-            }
             IsExpression xpr = ExchangeUtils.exchangeFieldTo(query,
                 TradeModuleBean.getTotalExpression(tbl, SqlUtils.field(tbl, COL_AMOUNT)),
                 SqlUtils.field(tbl, COL_CURRENCY),
                 SqlUtils.nvl(SqlUtils.field(tbl, COL_DATE), SqlUtils.field(TBL_ORDERS, COL_DATE)),
-                SqlUtils.field(primaryCargo, COL_CURRENCY));
+                SqlUtils.field(TBL_ORDER_CARGO, COL_CURRENCY));
 
             SimpleRowSet rs = qs.getData(query.addSum(xpr, VAR_TOTAL));
 
@@ -1206,7 +1189,9 @@ public class TransportModuleBean implements BeeModule {
     }
 
     query.addFrom(TBL_ASSESSMENTS);
-    if (!managers.isEmpty() || groupBy.contains(AR_MANAGER) || groupBy.contains(BeeConst.MONTH)) {
+    if (!managers.isEmpty() || groupBy.contains(AR_MANAGER) || groupBy.contains(BeeConst.MONTH)
+        || startDate != null || endDate != null) {
+
       query.addFromInner(TBL_ORDER_CARGO,
           sys.joinTables(TBL_ORDER_CARGO, TBL_ASSESSMENTS, COL_CARGO));
       query.addFromInner(TBL_ORDERS, sys.joinTables(TBL_ORDERS, TBL_ORDER_CARGO, COL_ORDER));
@@ -1220,12 +1205,16 @@ public class TransportModuleBean implements BeeModule {
 
     String tmp = qs.sqlCreateTemp(query);
 
+    long count;
     if (groupBy.contains(BeeConst.MONTH)) {
-      long count = qs.setYearMonth(tmp, COL_ORDER_DATE, BeeConst.YEAR, BeeConst.MONTH);
-      if (count <= 0) {
-        qs.sqlDropTemp(tmp);
-        return ResponseObject.emptyResponse();
-      }
+      count = qs.setYearMonth(tmp, COL_ORDER_DATE, BeeConst.YEAR, BeeConst.MONTH);
+    } else {
+      count = qs.sqlCount(tmp, null);
+    }
+
+    if (count <= 0) {
+      qs.sqlDropTemp(tmp);
+      return ResponseObject.emptyResponse();
     }
 
     query = new SqlSelect();
@@ -1290,7 +1279,7 @@ public class TransportModuleBean implements BeeModule {
     }
   }
 
-  private ResponseObject getAssessmentTotals(Long assessmentId, boolean isPrimary) {
+  private ResponseObject getAssessmentTotals(Long assessmentId, Long currency, boolean isPrimary) {
     Assert.state(DataUtils.isId(assessmentId));
 
     SqlSelect query = null;
@@ -1307,26 +1296,16 @@ public class TransportModuleBean implements BeeModule {
             .addFromInner(TBL_ORDER_CARGO, sys.joinTables(TBL_ORDER_CARGO, tbl, COL_CARGO))
             .addFromInner(TBL_ORDERS, sys.joinTables(TBL_ORDERS, TBL_ORDER_CARGO, COL_ORDER));
 
-        String alsCargo;
-
         if (i > 0) {
-          alsCargo = SqlUtils.uniqueName();
-          String primaryAssessment = SqlUtils.uniqueName();
-
-          ss.addFromInner(TBL_ASSESSMENTS, primaryAssessment,
-              sys.joinTables(TBL_ASSESSMENTS, primaryAssessment, TBL_ASSESSMENTS, COL_ASSESSMENT))
-              .addFromInner(TBL_ORDER_CARGO, alsCargo,
-                  sys.joinTables(TBL_ORDER_CARGO, alsCargo, primaryAssessment, COL_CARGO))
-              .setWhere(SqlUtils.equals(TBL_ASSESSMENTS, COL_ASSESSMENT, assessmentId));
+          ss.setWhere(SqlUtils.equals(TBL_ASSESSMENTS, COL_ASSESSMENT, assessmentId));
         } else {
-          alsCargo = TBL_ORDER_CARGO;
           ss.setWhere(sys.idEquals(TBL_ASSESSMENTS, assessmentId));
         }
         IsExpression xpr = ExchangeUtils.exchangeFieldTo(ss,
             TradeModuleBean.getTotalExpression(tbl, SqlUtils.field(tbl, COL_AMOUNT)),
             SqlUtils.field(tbl, COL_CURRENCY),
             SqlUtils.nvl(SqlUtils.field(tbl, COL_DATE), SqlUtils.field(TBL_ORDERS, COL_DATE)),
-            SqlUtils.field(alsCargo, COL_CURRENCY));
+            SqlUtils.constant(currency));
 
         ss.addSum(xpr, COL_AMOUNT);
 
@@ -1419,7 +1398,7 @@ public class TransportModuleBean implements BeeModule {
 
     long count;
     if (groupBy.contains(BeeConst.MONTH)) {
-      count = qs.setYearMonth(tmp, COL_ORDER_DATE, BeeConst.YEAR, BeeConst.MONTH);
+      count = qs.setYearMonth(tmp, COL_PLACE_DATE, BeeConst.YEAR, BeeConst.MONTH);
     } else {
       count = qs.sqlCount(tmp, null);
     }

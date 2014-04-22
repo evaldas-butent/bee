@@ -48,6 +48,10 @@ public final class HttpUtils {
 
   private static BeeLogger logger = LogUtils.getLogger(HttpUtils.class);
 
+  public static void badRequest(HttpServletResponse resp, String... messages) {
+    sendError(resp, HttpServletResponse.SC_BAD_REQUEST, ArrayUtils.joinWords(messages));
+  }
+
   public static String counterInfo(String name, Object obj) {
     if (obj instanceof Counter) {
       return NameUtils.addName(name, ((Counter) obj).toString());
@@ -61,7 +65,7 @@ public final class HttpUtils {
       return null;
     }
 
-    Collection<ExtendedProperty> info = new ArrayList<ExtendedProperty>();
+    Collection<ExtendedProperty> info = new ArrayList<>();
     String root = "Async Context";
 
     PropertyUtils.addProperties(info, true, root, "Timeout", ac.getTimeout(),
@@ -80,7 +84,7 @@ public final class HttpUtils {
       return null;
     }
 
-    Collection<ExtendedProperty> info = new ArrayList<ExtendedProperty>();
+    Collection<ExtendedProperty> info = new ArrayList<>();
     String root = "Attribute";
     String nm;
 
@@ -102,7 +106,7 @@ public final class HttpUtils {
       return null;
     }
 
-    Collection<ExtendedProperty> info = new ArrayList<ExtendedProperty>();
+    Collection<ExtendedProperty> info = new ArrayList<>();
     PropertyUtils.addExtended(info, "Cookies", "cnt", arr.length);
 
     String nm;
@@ -132,7 +136,7 @@ public final class HttpUtils {
       return null;
     }
 
-    Collection<ExtendedProperty> info = new ArrayList<ExtendedProperty>();
+    Collection<ExtendedProperty> info = new ArrayList<>();
     String root = "Header";
     String nm;
     String v;
@@ -154,7 +158,7 @@ public final class HttpUtils {
   }
 
   public static Map<String, String> getHeaders(HttpServletRequest req, boolean decode) {
-    Map<String, String> headers = new HashMap<String, String>();
+    Map<String, String> headers = new HashMap<>();
     if (req == null) {
       return headers;
     }
@@ -202,7 +206,7 @@ public final class HttpUtils {
     }
 
     Locale loc;
-    List<Locale> lst = new ArrayList<Locale>();
+    List<Locale> lst = new ArrayList<>();
 
     Enumeration<Locale> z = req.getLocales();
     if (z == null) {
@@ -220,7 +224,7 @@ public final class HttpUtils {
       return null;
     }
 
-    Collection<ExtendedProperty> info = new ArrayList<ExtendedProperty>();
+    Collection<ExtendedProperty> info = new ArrayList<>();
     String root;
 
     for (int i = 0; i < lst.size(); i++) {
@@ -254,7 +258,7 @@ public final class HttpUtils {
       return null;
     }
 
-    Collection<ExtendedProperty> info = new ArrayList<ExtendedProperty>();
+    Collection<ExtendedProperty> info = new ArrayList<>();
     String root = "Parameter";
     String nm;
     String v;
@@ -272,7 +276,7 @@ public final class HttpUtils {
   }
 
   public static Map<String, String> getParameters(HttpServletRequest req, boolean decode) {
-    Map<String, String> params = new HashMap<String, String>();
+    Map<String, String> params = new HashMap<>();
     if (req == null) {
       return params;
     }
@@ -287,7 +291,7 @@ public final class HttpUtils {
         return params;
       }
 
-      lst = new HashMap<String, String[]>();
+      lst = new HashMap<>();
 
       while (z.hasMoreElements()) {
         nm = z.nextElement();
@@ -326,7 +330,7 @@ public final class HttpUtils {
       return null;
     }
 
-    Collection<ExtendedProperty> info = new ArrayList<ExtendedProperty>();
+    Collection<ExtendedProperty> info = new ArrayList<>();
     String root = "Servlet Context";
     String nm;
     String v;
@@ -407,7 +411,7 @@ public final class HttpUtils {
       return null;
     }
 
-    Collection<ExtendedProperty> info = new ArrayList<ExtendedProperty>();
+    Collection<ExtendedProperty> info = new ArrayList<>();
     String root = "Session";
     String nm;
 
@@ -492,7 +496,7 @@ public final class HttpUtils {
 
     return sb.toString();
   }
-
+  
   public static String readPart(HttpServletRequest req, String name) {
     Assert.notNull(req);
     Assert.notEmpty(name);

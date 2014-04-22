@@ -34,6 +34,7 @@ import com.butent.bee.client.grid.HtmlTable;
 import com.butent.bee.client.images.Images;
 import com.butent.bee.client.modules.administration.AdministrationKeeper;
 import com.butent.bee.client.output.Printer;
+import com.butent.bee.client.output.ReportSettings;
 import com.butent.bee.client.screen.Favorites;
 import com.butent.bee.client.style.StyleUtils;
 import com.butent.bee.client.ui.IdentifiableWidget;
@@ -99,6 +100,8 @@ public final class Global {
   private static final Rooms rooms = new Rooms();
 
   private static final NewsAggregator newsAggregator = new NewsAggregator();
+
+  private static final ReportSettings reportSettings = new ReportSettings();
 
   private static boolean debug;
 
@@ -171,6 +174,18 @@ public final class Global {
         StyleUtils.className(FontSize.LARGE), StyleUtils.className(FontSize.MEDIUM), target);
   }
 
+  public static void confirmRemove(String caption, String item, ConfirmationCallback callback) {
+    confirmRemove(caption, item, callback, null);
+  }
+
+  public static void confirmRemove(String caption, String item, ConfirmationCallback callback,
+      Element target) {
+    List<String> messages = Lists.newArrayList(Localized.getMessages().removeQuestion(item));
+    msgBoxen.confirm(caption, Icon.WARNING, messages, Localized.getConstants().actionRemove(),
+        Localized.getConstants().cancel(), callback, null,
+        StyleUtils.className(FontSize.MEDIUM), StyleUtils.className(FontSize.MEDIUM), target);
+  }
+
   public static void debug(String s) {
     logger.debug(s);
   }
@@ -229,6 +244,10 @@ public final class Global {
         }
       }
     });
+  }
+
+  public static ReportSettings getReportSettings() {
+    return reportSettings;
   }
 
   public static Rooms getRooms() {
@@ -482,20 +501,26 @@ public final class Global {
 
   public static void inputString(String caption, String prompt, StringCallback callback,
       String defaultValue, int maxLength) {
-    inputString(caption, prompt, callback, defaultValue, maxLength, BeeConst.DOUBLE_UNDEF, null);
+    inputString(caption, prompt, callback, defaultValue, maxLength, null);
   }
 
   public static void inputString(String caption, String prompt, StringCallback callback,
-      String defaultValue, int maxLength, double width, CssUnit widthUnit) {
-    inputString(caption, prompt, callback, defaultValue, maxLength, width, widthUnit,
+      String defaultValue, int maxLength, Element target) {
+    inputString(caption, prompt, callback, defaultValue, maxLength, target,
+        BeeConst.DOUBLE_UNDEF, null);
+  }
+
+  public static void inputString(String caption, String prompt, StringCallback callback,
+      String defaultValue, int maxLength, Element target, double width, CssUnit widthUnit) {
+    inputString(caption, prompt, callback, defaultValue, maxLength, target, width, widthUnit,
         BeeConst.UNDEF, Localized.getConstants().ok(), Localized.getConstants().cancel(), null);
   }
 
   public static void inputString(String caption, String prompt, StringCallback callback,
-      String defaultValue, int maxLength, double width, CssUnit widthUnit, int timeout,
-      String confirmHtml, String cancelHtml, WidgetInitializer initializer) {
-    inpBoxen.inputString(caption, prompt, callback, defaultValue, maxLength, width, widthUnit,
-        timeout, confirmHtml, cancelHtml, initializer);
+      String defaultValue, int maxLength, Element target, double width, CssUnit widthUnit,
+      int timeout, String confirmHtml, String cancelHtml, WidgetInitializer initializer) {
+    inpBoxen.inputString(caption, prompt, callback, defaultValue, maxLength, target,
+        width, widthUnit, timeout, confirmHtml, cancelHtml, initializer);
   }
 
   public static void inputString(String caption, StringCallback callback) {
@@ -538,6 +563,42 @@ public final class Global {
 
   public static boolean nativeConfirm(String... lines) {
     return msgBoxen.nativeConfirm(lines);
+  }
+
+  public static HtmlTable renderTable(String caption, IsTable<?, ?> data) {
+    int c = data.getNumberOfColumns();
+    Assert.isPositive(c);
+    
+    HtmlTable table = new HtmlTable();
+    table.setCaption(caption);
+    
+    int r = 0;
+    for (int i = 0; i < c; i++) {
+      String label = BeeUtils.notEmpty(data.getColumnLabel(i), data.getColumnId(i));
+      table.setHtml(r, i, label);
+      
+      TableCellElement cell = table.getCellFormatter().getElement(r, i);
+      StyleUtils.setTextAlign(cell, TextAlign.CENTER);
+      StyleUtils.setProperty(cell, CssProperties.FONT_WEIGHT, FontWeight.BOLD);
+      
+//      if (ValueType.isNumeric(data.getColumnType(i))) {
+//      }
+      
+      r++;
+    }
+    
+    for (IsRow row : data) {
+      for (int i = 0; i < c; i++) {
+        String value = row.getString(i);
+        if (value != null) {
+          table.setHtml(r, i, value);
+        }
+      }
+      
+      r++;
+    }
+    
+    return table;
   }
 
   public static void sayHuh(String... huhs) {
@@ -601,7 +662,7 @@ public final class Global {
       String closeHtml) {
     msgBoxen.showError(caption, messages, dialogStyle, closeHtml);
   }
-
+  
   public static void showGrid(String caption, IsTable<?, ?> table) {
     if (table == null || table.getNumberOfColumns() <= 0 || table.getNumberOfRows() <= 0) {
       logger.warning(caption, "table is empty");
@@ -613,42 +674,6 @@ public final class Global {
     if (widget != null) {
       BeeKeeper.getScreen().showWidget(widget, true);
     }
-  }
-  
-  public static HtmlTable renderTable(String caption, IsTable<?, ?> data) {
-    int c = data.getNumberOfColumns();
-    Assert.isPositive(c);
-    
-    HtmlTable table = new HtmlTable();
-    table.setCaption(caption);
-    
-    int r = 0;
-    for (int i = 0; i < c; i++) {
-      String label = BeeUtils.notEmpty(data.getColumnLabel(i), data.getColumnId(i));
-      table.setHtml(r, i, label);
-      
-      TableCellElement cell = table.getCellFormatter().getElement(r, i);
-      StyleUtils.setTextAlign(cell, TextAlign.CENTER);
-      StyleUtils.setProperty(cell, CssProperties.FONT_WEIGHT, FontWeight.BOLD);
-      
-//      if (ValueType.isNumeric(data.getColumnType(i))) {
-//      }
-      
-      r++;
-    }
-    
-    for (IsRow row : data) {
-      for (int i = 0; i < c; i++) {
-        String value = row.getString(i);
-        if (value != null) {
-          table.setHtml(r, i, value);
-        }
-      }
-      
-      r++;
-    }
-    
-    return table;
   }
 
   public static void showInfo(List<String> messages) {
