@@ -277,7 +277,7 @@ public class AssessmentQuantityReport extends ReportInterceptor {
   @Override
   protected void export() {
     if (!sheet.isEmpty()) {
-      Exporter.confirmExport(sheet, getCaption());
+      Exporter.maybeExport(sheet, getCaption());
     }
   }
   

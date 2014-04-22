@@ -99,7 +99,7 @@ public class ActionCell extends AbstractCell<String> implements HasOptions, HasV
     EventState state = super.onBrowserEvent(context, parent, value, event);
 
     if (state.proceed() && EventUtils.isClick(event)) {
-      BeeKeeper.getBus().fireEvent(new RowActionEvent(getViewName(), context.getRowValue(),
+      BeeKeeper.getBus().fireEvent(new RowActionEvent(getViewName(), context.getRow(),
           Service.CELL_ACTION, getOptions()));
       state = EventState.CONSUMED;
     }

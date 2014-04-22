@@ -242,7 +242,7 @@ public class AssessmentForm extends PrintFormInterceptor implements SelectorEven
     public void onClick(ClickEvent event) {
       if (event.getSource() instanceof AbstractCell<?>) {
         CellContext context = ((AbstractCell<?>) event.getSource()).getEventContext();
-        final IsRow row = context.getRowValue();
+        final IsRow row = context.getRow();
 
         switch (context.getGrid().getColumnId(context.getColumnIndex())) {
           case COL_ASSESSMENT:

@@ -6,6 +6,7 @@ import com.google.gwt.dom.client.ImageElement;
 import com.butent.bee.client.images.Flags;
 import com.butent.bee.shared.data.CellSource;
 import com.butent.bee.shared.data.IsRow;
+import com.butent.bee.shared.export.XCell;
 import com.butent.bee.shared.utils.BeeUtils;
 
 public class FlagRenderer extends AbstractCellRenderer {
@@ -14,6 +15,17 @@ public class FlagRenderer extends AbstractCellRenderer {
 
   public FlagRenderer(CellSource cellSource) {
     super(cellSource);
+  }
+
+  @Override
+  public XCell export(IsRow row, int cellIndex, Integer styleRef) {
+    String key = getString(row);
+
+    if (BeeUtils.isEmpty(key)) {
+      return null;
+    } else {
+      return new XCell(cellIndex, key, styleRef);
+    }
   }
 
   @Override

@@ -9,6 +9,7 @@ import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.Global;
 import com.butent.bee.client.data.AsyncProvider;
 import com.butent.bee.client.data.CachedProvider;
+import com.butent.bee.client.data.Data;
 import com.butent.bee.client.data.HasActiveRow;
 import com.butent.bee.client.data.HasDataProvider;
 import com.butent.bee.client.data.LocalProvider;
@@ -19,8 +20,10 @@ import com.butent.bee.client.dialog.ChoiceCallback;
 import com.butent.bee.client.dialog.ConfirmationCallback;
 import com.butent.bee.client.dialog.Icon;
 import com.butent.bee.client.dialog.ModalGrid;
+import com.butent.bee.client.dialog.StringCallback;
 import com.butent.bee.client.grid.GridFactory;
 import com.butent.bee.client.modules.administration.HistoryHandler;
+import com.butent.bee.client.output.Exporter;
 import com.butent.bee.client.output.Printer;
 import com.butent.bee.client.style.StyleUtils;
 import com.butent.bee.client.ui.IdentifiableWidget;
@@ -299,6 +302,10 @@ public class GridPresenter extends AbstractPresenter implements ReadyForInsertEv
   public Provider getDataProvider() {
     return dataProvider;
   }
+  
+  public String getFilterLabel() {
+    return (filterManager == null) ? null : filterManager.getFilterLabel(true);
+  }
 
   @Override
   public GridView getGridView() {
@@ -401,6 +408,12 @@ public class GridPresenter extends AbstractPresenter implements ReadyForInsertEv
           }
         }
         break;
+        
+      case EXPORT:
+        if (getGridView().getGrid().getRowCount() > 0) {
+          export();
+        }
+        break;
 
       case FILTER:
         if (filterManager != null) {
@@ -433,7 +446,7 @@ public class GridPresenter extends AbstractPresenter implements ReadyForInsertEv
       getGridInterceptor().afterAction(action, this);
     }
   }
-
+  
   public boolean hasFilter() {
     return getDataProvider().hasFilter();
   }
@@ -679,6 +692,30 @@ public class GridPresenter extends AbstractPresenter implements ReadyForInsertEv
       provider.setOrder(order);
     }
     return provider;
+  }
+
+  private void export() {
+    final String caption;
+
+    if (!BeeUtils.isEmpty(getCaption())) {
+      caption = getCaption();
+    } else if (!BeeUtils.isEmpty(getViewName())) {
+      caption = Data.getViewCaption(getViewName());
+    } else {
+      caption = null;
+    }
+    
+    Exporter.confirm(caption, new StringCallback() {
+      @Override
+      public void onSuccess(String value) {
+        Exporter.export(GridPresenter.this, caption, value);
+      }
+
+      @Override
+      public boolean validate(String value) {
+        return Exporter.validateFileName(value);
+      }
+    });
   }
 
   private GridInterceptor.DeleteMode getDeleteMode(IsRow row, Collection<RowInfo> selected) {

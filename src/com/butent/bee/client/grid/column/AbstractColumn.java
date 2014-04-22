@@ -7,14 +7,20 @@ import com.google.gwt.user.client.Event;
 
 import com.butent.bee.client.grid.CellContext;
 import com.butent.bee.client.grid.cell.AbstractCell;
+import com.butent.bee.client.render.AbstractCellRenderer;
+import com.butent.bee.client.render.HasCellRenderer;
 import com.butent.bee.client.style.HasTextAlign;
 import com.butent.bee.client.style.HasWhiteSpace;
+import com.butent.bee.client.ui.UiHelper;
 import com.butent.bee.shared.EventState;
 import com.butent.bee.shared.HasOptions;
 import com.butent.bee.shared.css.values.TextAlign;
 import com.butent.bee.shared.css.values.WhiteSpace;
 import com.butent.bee.shared.data.IsRow;
 import com.butent.bee.shared.data.value.HasValueType;
+import com.butent.bee.shared.export.XCell;
+import com.butent.bee.shared.export.XSheet;
+import com.butent.bee.shared.export.XStyle;
 import com.butent.bee.shared.ui.ColumnDescription.ColType;
 import com.butent.bee.shared.utils.BeeUtils;
 
@@ -50,6 +56,36 @@ public abstract class AbstractColumn<C> implements HasValueType, HasOptions, Has
   public void addClass(String className) {
     if (!BeeUtils.isEmpty(className)) {
       this.classes.add(className);
+    }
+  }
+
+  public XCell export(CellContext context, Integer styleRef) {
+    if (context == null) {
+      return null;
+    }
+
+    AbstractCellRenderer renderer = getOptionalRenderer();
+
+    if (renderer != null) {
+      return renderer.export(context.getRow(), context.getColumnIndex(), styleRef);
+
+    } else {
+      SafeHtmlBuilder sb = new SafeHtmlBuilder();
+      render(context, context.getRow(), sb);
+
+      String html = sb.toSafeHtml().asString();
+
+      if (BeeUtils.isEmpty(html)) {
+        return null;
+
+      } else {
+        XCell xc = new XCell(context.getColumnIndex(), html);
+        if (styleRef != null) {
+          xc.setStyleRef(styleRef);
+        }
+
+        return xc;
+      }
     }
   }
 
@@ -90,6 +126,24 @@ public abstract class AbstractColumn<C> implements HasValueType, HasOptions, Has
   @Override
   public WhiteSpace getWhiteSpace() {
     return whiteSpace;
+  }
+
+  public Integer initExport(XSheet sheet) {
+    AbstractCellRenderer renderer = getOptionalRenderer();
+
+    if (renderer != null) {
+      return renderer.initExport(sheet);
+
+    } else if (getValueType() != null && sheet != null) {
+      TextAlign textAlign = UiHelper.getDefaultHorizontalAlignment(getValueType());
+
+      if (textAlign != null) {
+        XStyle style = new XStyle();
+        style.setTextAlign(textAlign);
+        return sheet.registerStyle(style);
+      }
+    }
+    return null;
   }
 
   public boolean instantKarma(IsRow row) {
@@ -137,5 +191,13 @@ public abstract class AbstractColumn<C> implements HasValueType, HasOptions, Has
   @Override
   public void setWhiteSpace(WhiteSpace whiteSpace) {
     this.whiteSpace = whiteSpace;
+  }
+
+  private AbstractCellRenderer getOptionalRenderer() {
+    if (this instanceof HasCellRenderer) {
+      return ((HasCellRenderer) this).getRenderer();
+    } else {
+      return null;
+    }
   }
 }

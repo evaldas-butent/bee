@@ -6,15 +6,17 @@
   >
   <g:columns>
     <DataColumn name="Name" minWidth="200" visible="true" />
+
     <RelColumn name="Country" minWidth="100" renderColumns="CountryName" visible="true">
       <selectorColumn source="Name" />
       <selectorColumn source="Code">
         <ui:renderer type="flag" />
       </selectorColumn>
     </RelColumn>
+
     <CalcColumn type="string" name="Flag" source="CountryCode" cellType="html" width="30"
       caption="-" label="=countryFlag" sortable="false" horizontalAlignment="center"
-      filterOptions="-">
+      filterOptions="-" exportable="false">
       <renderer type="flag" />
     </CalcColumn>
   </g:columns>

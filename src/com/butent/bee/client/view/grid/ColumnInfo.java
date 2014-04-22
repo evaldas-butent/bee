@@ -21,12 +21,13 @@ import com.butent.bee.shared.ui.ColumnDescription.ColType;
 import com.butent.bee.shared.ui.Flexibility;
 import com.butent.bee.shared.ui.Flexible;
 import com.butent.bee.shared.ui.GridDescription;
+import com.butent.bee.shared.ui.HasCaption;
 import com.butent.bee.shared.ui.Orientation;
 import com.butent.bee.shared.utils.BeeUtils;
 
 import java.util.List;
 
-public class ColumnInfo implements HasValueType, Flexible {
+public class ColumnInfo implements HasValueType, Flexible, HasCaption {
 
   private static final int DEFAULT_MIN_WIDTH = 40;
   private static final int DEFAULT_MAX_WIDTH = 400;
@@ -69,6 +70,7 @@ public class ColumnInfo implements HasValueType, Flexible {
   private boolean cellResizable = true;
 
   private boolean hidable = true;
+  private boolean exportable = true;
 
   public ColumnInfo(String columnId, String label, CellSource source, AbstractColumn<?> column,
       ColumnHeader header) {
@@ -110,6 +112,20 @@ public class ColumnInfo implements HasValueType, Flexible {
   }
 
   @Override
+  public String getCaption() {
+    return (header == null) ? null : header.getCaption();
+  }
+
+  
+  public AbstractColumn<?> getColumn() {
+    return column;
+  }
+
+  public ConditionalStyle getDynStyles() {
+    return dynStyles;
+  }
+
+  @Override
   public Flexibility getFlexibility() {
     return flexibility;
   }
@@ -136,6 +152,10 @@ public class ColumnInfo implements HasValueType, Flexible {
   @Override
   public int hashCode() {
     return columnId.hashCode();
+  }
+  
+  public boolean isExportable() {
+    return exportable;
   }
 
   @Override
@@ -200,20 +220,12 @@ public class ColumnInfo implements HasValueType, Flexible {
     return sd.getClassName();
   }
 
-  AbstractColumn<?> getColumn() {
-    return column;
-  }
-
   String getColumnId() {
     return columnId;
   }
 
   String getDynGroup() {
     return dynGroup;
-  }
-
-  ConditionalStyle getDynStyles() {
-    return dynStyles;
   }
 
   AbstractFilterSupplier getFilterSupplier() {
@@ -321,6 +333,10 @@ public class ColumnInfo implements HasValueType, Flexible {
     } else {
       setCellResizable(cr);
     }
+    
+    if (BeeUtils.isFalse(columnDescription.getExportable())) {
+      setExportable(false);
+    }
   }
 
   boolean is(String id) {
@@ -379,6 +395,10 @@ public class ColumnInfo implements HasValueType, Flexible {
 
   void setDynStyles(ConditionalStyle dynStyles) {
     this.dynStyles = dynStyles;
+  }
+
+  void setExportable(boolean exportable) {
+    this.exportable = exportable;
   }
 
   void setFooterFont(String fontDeclaration) {

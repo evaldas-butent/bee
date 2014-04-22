@@ -64,11 +64,13 @@ class ItemsGrid extends AbstractGridInterceptor implements SelectionHandler<IsRo
   public boolean onLoad(GridDescription gridDescription) {
     gridDescription.setCaption(null);
 
-    Filter filter = Filter.isNull(ClassifierConstants.COL_ITEM_IS_SERVICE);
-
+    Filter filter;
     if (showServices()) {
-      filter = Filter.isNot(filter);
+      filter = Filter.notNull(ClassifierConstants.COL_ITEM_IS_SERVICE);
+    } else {
+      filter = Filter.isNull(ClassifierConstants.COL_ITEM_IS_SERVICE);
     }
+
     gridDescription.setFilter(filter);
     return true;
   }

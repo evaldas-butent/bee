@@ -153,6 +153,8 @@ public class GridLoaderBean {
 
   private static final String ATTR_DYNAMIC = "dynamic";
 
+  private static final String ATTR_EXPORTABLE = "exportable";
+  
   private static GridComponentDescription getComponent(Element parent, String tagName) {
     Assert.notNull(parent);
     Assert.notEmpty(tagName);
@@ -356,6 +358,8 @@ public class GridLoaderBean {
 
         } else if (BeeUtils.same(key, UiConstants.ATTR_VISIBLE)) {
           dst.setVisible(BeeUtils.toBooleanOrNull(value));
+        } else if (BeeUtils.same(key, ATTR_EXPORTABLE)) {
+          dst.setExportable(BeeUtils.toBooleanOrNull(value));
 
         } else if (BeeUtils.same(key, UiConstants.ATTR_FORMAT)) {
           dst.setFormat(value.trim());

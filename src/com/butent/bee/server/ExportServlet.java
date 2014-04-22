@@ -131,18 +131,16 @@ public class ExportServlet extends LoginServlet {
     }
 
     if (!BeeUtils.isEmpty(input.getColor())) {
-      byte[] rgb = Color.getRgb(input.getColor());
+      XSSFColor color = createColor(input.getColor());
 
-      if (rgb == null) {
-        logger.warning("cannot parse color", input.getColor());
-      } else {
-        font.setColor(new XSSFColor(rgb));
+      if (color != null) {
+        font.setColor(color);
       }
     }
     
     return font;
   }
-
+  
   private static CellStyle convertStyle(XSSFWorkbook wb, XStyle input, Map<Integer, Font> fonts) {
     if (input == null) {
       return null;
@@ -151,12 +149,10 @@ public class ExportServlet extends LoginServlet {
     XSSFCellStyle cellStyle = wb.createCellStyle();
     
     if (!BeeUtils.isEmpty(input.getColor())) {
-      byte[] rgb = Color.getRgb(input.getColor());
-      
-      if (rgb == null) {
-        logger.warning("cannot parse color", input.getColor());
-      } else {
-        cellStyle.setFillForegroundColor(new XSSFColor(rgb));
+      XSSFColor color = createColor(input.getColor());
+
+      if (color != null) {
+        cellStyle.setFillForegroundColor(color);
         cellStyle.setFillPattern(CellStyle.SOLID_FOREGROUND);
       }
     }
@@ -234,6 +230,20 @@ public class ExportServlet extends LoginServlet {
     }
 
     return cellStyle;
+  }
+
+  private static XSSFColor createColor(String input) {
+    byte[] rgb = Color.getRgb(input);
+
+    if (rgb == null) {
+      logger.warning("cannot parse color", input);
+      return null;
+
+    } else {
+      XSSFColor color = new XSSFColor();
+      color.setRgb(rgb);
+      return color;
+    }
   }
 
   private static Workbook createWorkbook(XWorkbook inputBook) {

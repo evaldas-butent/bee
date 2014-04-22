@@ -82,7 +82,7 @@ public class HistoryHandler extends AbstractGridInterceptor implements ClickHand
   public void onClick(ClickEvent event) {
     if (event.getSource() instanceof AbstractCell<?>) {
       CellContext context = ((AbstractCell<?>) event.getSource()).getEventContext();
-      IsRow row = context.getRowValue();
+      IsRow row = context.getRow();
       String relation = row.getString(provider.getColumnIndex(COL_RELATION));
 
       if (!BeeUtils.isEmpty(relation)) {

@@ -104,6 +104,10 @@ public abstract class Provider implements SortEvent.Handler, HandlesAllDataEvent
     return columns;
   }
 
+  public Filter getFilter() {
+    return getQueryFilter(getUserFilter());
+  }
+
   public String getIdColumnName() {
     return idColumnName;
   }
@@ -115,7 +119,7 @@ public abstract class Provider implements SortEvent.Handler, HandlesAllDataEvent
   public Order getOrder() {
     return order;
   }
-
+  
   public Filter getQueryFilter(Filter filter) {
     List<Filter> lst = Lists.newArrayList();
 
@@ -134,10 +138,6 @@ public abstract class Provider implements SortEvent.Handler, HandlesAllDataEvent
       lst.add(filter);
     }
     return Filter.and(lst);
-  }
-  
-  public boolean hasFilter() {
-    return getImmutableFilter() != null || !getParentFilters().isEmpty() || getUserFilter() != null;
   }
 
   public Filter getUserFilter() {
@@ -158,6 +158,10 @@ public abstract class Provider implements SortEvent.Handler, HandlesAllDataEvent
     if (actionHandler != null) {
       actionHandler.handleAction(action);
     }
+  }
+
+  public boolean hasFilter() {
+    return getImmutableFilter() != null || !getParentFilters().isEmpty() || getUserFilter() != null;
   }
 
   @Override
@@ -220,10 +224,6 @@ public abstract class Provider implements SortEvent.Handler, HandlesAllDataEvent
 
   protected HasDataTable getDisplay() {
     return display;
-  }
-
-  protected Filter getFilter() {
-    return getQueryFilter(getUserFilter());
   }
 
   protected int getPageSize() {

@@ -71,7 +71,7 @@ public class ColumnDescription implements BeeSerializable, HasInfo, HasOptions, 
 
   private enum Serial {
     COL_TYPE, ID, CAPTION, LABEL, READ_ONLY, WIDTH, SOURCE, PROPERTY, RELATION,
-    MIN_WIDTH, MAX_WIDTH, SORTABLE, VISIBLE, FORMAT, HOR_ALIGN, WHITE_SPACE,
+    MIN_WIDTH, MAX_WIDTH, SORTABLE, VISIBLE, EXPORTABLE, FORMAT, HOR_ALIGN, WHITE_SPACE,
     VALIDATION, EDITABLE, CARRY, EDITOR, MIN_VALUE, MAX_VALUE, REQUIRED, ENUM_KEY,
     RENDERER_DESCR, RENDER, RENDER_TOKENS, VALUE_TYPE, PRECISION, SCALE, RENDER_COLUMNS,
     SEARCH_BY, FILTER_SUPPLIER, FILTER_OPTIONS, SORT_BY,
@@ -110,6 +110,7 @@ public class ColumnDescription implements BeeSerializable, HasInfo, HasOptions, 
   private Boolean sortable;
 
   private Boolean visible;
+  private Boolean exportable;
 
   private String format;
   private String horAlign;
@@ -283,6 +284,9 @@ public class ColumnDescription implements BeeSerializable, HasInfo, HasOptions, 
         case VISIBLE:
           setVisible(BeeUtils.toBooleanOrNull(value));
           break;
+        case EXPORTABLE:
+          setExportable(BeeUtils.toBooleanOrNull(value));
+          break;
         case BODY_STYLE:
           setBodyStyle(StyleDeclaration.restore(value));
           break;
@@ -407,6 +411,10 @@ public class ColumnDescription implements BeeSerializable, HasInfo, HasOptions, 
     return enumKey;
   }
 
+  public Boolean getExportable() {
+    return exportable;
+  }
+
   public String getFilterOptions() {
     return filterOptions;
   }
@@ -459,6 +467,7 @@ public class ColumnDescription implements BeeSerializable, HasInfo, HasOptions, 
         "Auto Fit", getAutoFit(),
         "Sortable", getSortable(),
         "Visible", getVisible(),
+        "Exportable", getExportable(),
         "Format", getFormat(),
         "Horizontal Alignment", getHorAlign(),
         "White Space", getWhiteSpace(),
@@ -818,6 +827,9 @@ public class ColumnDescription implements BeeSerializable, HasInfo, HasOptions, 
         case VISIBLE:
           arr[i++] = getVisible();
           break;
+        case EXPORTABLE:
+          arr[i++] = getExportable();
+          break;
         case BODY_STYLE:
           arr[i++] = getBodyStyle();
           break;
@@ -923,6 +935,10 @@ public class ColumnDescription implements BeeSerializable, HasInfo, HasOptions, 
 
   public void setEnumKey(String enumKey) {
     this.enumKey = enumKey;
+  }
+
+  public void setExportable(Boolean exportable) {
+    this.exportable = exportable;
   }
 
   public void setFilterOptions(String filterOptions) {
@@ -1055,7 +1071,7 @@ public class ColumnDescription implements BeeSerializable, HasInfo, HasOptions, 
   public void setValidation(Calculation validation) {
     this.validation = validation;
   }
-
+  
   public void setValueType(ValueType valueType) {
     this.valueType = valueType;
   }
@@ -1063,7 +1079,7 @@ public class ColumnDescription implements BeeSerializable, HasInfo, HasOptions, 
   public void setVisible(Boolean visible) {
     this.visible = visible;
   }
-  
+
   public void setWhiteSpace(String whiteSpace) {
     this.whiteSpace = whiteSpace;
   }

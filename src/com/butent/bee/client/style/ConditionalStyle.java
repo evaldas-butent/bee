@@ -11,6 +11,7 @@ import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.data.IsColumn;
 import com.butent.bee.shared.data.IsRow;
 import com.butent.bee.shared.data.value.ValueType;
+import com.butent.bee.shared.export.XSheet;
 import com.butent.bee.shared.ui.ConditionalStyleDeclaration;
 import com.butent.bee.shared.utils.BeeUtils;
 
@@ -152,6 +153,10 @@ public final class ConditionalStyle {
 
   private ConditionalStyle(StyleProvider provider) {
     this.provider = provider;
+  }
+  
+  public Integer getExportStyleRef(IsRow row, XSheet sheet) {
+    return (provider == null) ? null : provider.getExportStyleRef(row, sheet);
   }
   
   public StyleDescriptor getStyleDescriptor(IsRow rowValue, int rowIndex, int colIndex) {
