@@ -24,7 +24,7 @@
     <String name="ForwarderVehicle" precision="50" label="=trCarrierVehicle" />
     <String name="ForwarderDriver" precision="50" label="=trCarrierDriver" />
     <Text name="Notes" label="=notes" />
-    <Numeric name="TransportationPrice" precision="15" scale="5" label="=trTransportationPrice" />
+    <Numeric name="TransportationPrice" precision="15" scale="2" label="=trTransportationPrice" />
     <Relation name="TransportationCurrency" relation="Currencies" label="=currencyShort" defExpr="MAIN_CURRENCY" />
     <Numeric name="PaymentDays" precision="4" label="=unitDays" />
     <String name="TransportationVATType" precision="100" label="=vat" />

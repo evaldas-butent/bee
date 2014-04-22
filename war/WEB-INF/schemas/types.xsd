@@ -229,6 +229,7 @@
       <xs:enumeration value="AssessmentForwarders" />
       <xs:enumeration value="Assessments" />
       <xs:enumeration value="AssessmentTransportations" />
+      <xs:enumeration value="AssessmentTransportationReport" />
       <xs:enumeration value="AttendeeProps" />
       <xs:enumeration value="Attendees" />
       <xs:enumeration value="AttendeeTypes" />

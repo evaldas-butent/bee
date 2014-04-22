@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<g:Grid xmlns="http://www.butent.com/column" xmlns:g="http://www.butent.com/grid"
+  xmlns:ui="http://www.butent.com/ui"
+
+  name="AssessmentTransportationReport" viewName="AssessmentTransportationReport"
+  caption="Vežėjų ataskaita" flexGrow="1" readOnly="true"
+  >
+  <g:columns>
+    <RelColumn name="Assessment" label="=trAssessment" editEnabled="true"
+      editViewName="Assessments" editSource="Assessment" module="Transport.Logistics" />
+
+    <DataColumn name="LoadingDate" format="DATE_SHORT" />
+    <DataColumn name="UnloadingDate" format="DATE_SHORT" />
+
+    <CalcColumn type="string" name="From" source="LoadingCountryCode" cellType="html" width="20"
+      horizontalAlignment="center" searchBy="LoadingCountryName LoadingCountryCode">
+      <renderer type="flag" />
+    </CalcColumn>
+
+    <CalcColumn type="string" name="To" source="UnloadingCountryCode" cellType="html" width="20"
+      horizontalAlignment="center" searchBy="UnloadingCountryName UnloadingCountryCode">
+      <renderer type="flag" />
+    </CalcColumn>
+
+    <DataColumn name="OrderNotes" minWidth="100" whiteSpace="nowrap" />
+    <DataColumn name="Description" minWidth="100" whiteSpace="nowrap" />    
+
+    <DataColumn name="Weight" />
+    <DataColumn name="WeightUnitName" />
+    <DataColumn name="Volume" />
+    <DataColumn name="VolumetUnitName" />
+    <DataColumn name="Quantity" />
+    <DataColumn name="QuantityUnitName" />
+
+    <DataColumn name="CustomerName" />
+    <DataColumn name="Partial" caption="=partialShort" width="15" sortable="false" />
+
+    <DataColumn name="LoadingPostIndex" />
+    <DataColumn name="UnloadingPostIndex" />
+    <DataColumn name="LoadedKilometers" />
+
+    <RelColumn name="Purchase" caption="=trdPurchaseId"
+      editEnabled="true" editForm="CargoPurchaseInvoice" editViewName="CargoPurchaseInvoices">
+      <renderToken source="InvoicePrefix" />
+      <renderToken source="InvoiceNo" />
+    </RelColumn>
+
+    <DataColumn name="Amount" />
+    <DataColumn name="CurrencyName" />
+
+    <DataColumn name="ForwarderName" />
+    <DataColumn name="TransportationPrice" />
+    <DataColumn name="TransportationCurrencyName" />
+  </g:columns>
+</g:Grid>

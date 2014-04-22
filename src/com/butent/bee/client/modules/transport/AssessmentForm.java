@@ -421,16 +421,16 @@ public class AssessmentForm extends PrintFormInterceptor implements EditStopEven
                   Global.showError(Localized.getMessages().trAssessmentInvalidStatusError(result,
                       request ? status.getCaption() : orderStatus.getCaption()));
                 } else {
-                  process();
+                  checkInvoices();
                 }
               }
             });
       } else {
-        process();
+        checkInvoices();
       }
     }
 
-    public void process() {
+    private void checkInvoices() {
       if (Objects.equal(orderStatus, OrderStatus.COMPLETED)) {
         Queries.getRowCount(TBL_CARGO_INCOMES,
             Filter.and(Filter.equals(COL_CARGO, form.getLongValue(COL_CARGO)),
@@ -441,26 +441,32 @@ public class AssessmentForm extends PrintFormInterceptor implements EditStopEven
                 if (BeeUtils.isPositive(res)) {
                   form.notifySevere("Yra neišrašytų sąskaitų", BeeUtils.toString(res));
                 } else {
-                  if (Objects.equal(orderStatus, OrderStatus.CANCELED)
-                      || Objects.equal(status, AssessmentStatus.LOST)) {
-                    Global.inputString(confirmationQuestion,
-                        loc.trAssessmentRejectionReason(), new StringCallback() {
-                          @Override
-                          public void onSuccess(String value) {
-                            update(value);
-                          }
-                        });
-                  } else {
-                    Global.confirm(confirmationQuestion, new ConfirmationCallback() {
-                      @Override
-                      public void onConfirm() {
-                        update(null);
-                      }
-                    });
-                  }
+                  confirm();
                 }
               }
             });
+      } else {
+        confirm();
+      }
+    }
+
+    private void confirm() {
+      if (Objects.equal(orderStatus, OrderStatus.CANCELED)
+          || Objects.equal(status, AssessmentStatus.LOST)) {
+        Global.inputString(confirmationQuestion,
+            loc.trAssessmentRejectionReason(), new StringCallback() {
+              @Override
+              public void onSuccess(String value) {
+                update(value);
+              }
+            });
+      } else {
+        Global.confirm(confirmationQuestion, new ConfirmationCallback() {
+          @Override
+          public void onConfirm() {
+            update(null);
+          }
+        });
       }
     }
 

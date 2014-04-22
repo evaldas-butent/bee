@@ -12,4 +12,7 @@ module="Transport.Logistics"
     parameters="AssessmentQuantityReport" separator="true" />
   <Item name="AssessmentTurnoverReport" label="=trAssessmentTurnoverReport" service="form" 
     parameters="AssessmentTurnoverReport" />
+
+  <Item name="AssessmentTransportationReport" label="Vežėjų ataskaita" service="grid"
+    parameters="AssessmentTransportationReport" separator="true" />
 </Entry>
