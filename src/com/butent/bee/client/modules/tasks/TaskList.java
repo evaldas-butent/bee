@@ -53,6 +53,7 @@ import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.Consumer;
 import com.butent.bee.shared.communication.ResponseObject;
+import com.butent.bee.shared.css.Colors;
 import com.butent.bee.shared.data.BeeRow;
 import com.butent.bee.shared.data.BeeRowSet;
 import com.butent.bee.shared.data.CellSource;
@@ -70,6 +71,9 @@ import com.butent.bee.shared.data.value.LongValue;
 import com.butent.bee.shared.data.value.ValueType;
 import com.butent.bee.shared.data.view.DataInfo;
 import com.butent.bee.shared.data.view.RowInfo;
+import com.butent.bee.shared.export.XCell;
+import com.butent.bee.shared.export.XSheet;
+import com.butent.bee.shared.export.XStyle;
 import com.butent.bee.shared.font.FontAwesome;
 import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.modules.tasks.TaskConstants.TaskStatus;
@@ -372,7 +376,6 @@ final class TaskList {
               DataUtils.render(info, newRow, info.getColumn(COL_APPROVED), info
                   .getColumnIndex(COL_APPROVED))));
 
-
           ParameterList params = TasksKeeper.createArgs(SVC_CONFIRM_TASKS);
           params.addDataItem(VAR_TASK_DATA, Codec.beeSerialize(Lists.newArrayList(row.getId())));
           params.addDataItem(VAR_TASK_APPROVED_TIME, approved.serialize());
@@ -417,7 +420,7 @@ final class TaskList {
                 @Override
                 public void onConfirm() {
                   DateTime approved = new DateTime();
-                 
+
                   ParameterList params = TasksKeeper.createArgs(SVC_CONFIRM_TASKS);
                   params.addDataItem(VAR_TASK_DATA, Codec.beeSerialize(result.getRowIds()));
                   params.addDataItem(VAR_TASK_APPROVED_TIME, approved.serialize());
@@ -839,6 +842,31 @@ final class TaskList {
 
   private static final class ModeRenderer extends AbstractCellRenderer {
 
+    private enum Mode {
+      NEW, UPD
+    }
+
+    private static Mode getMode(IsRow row) {
+      if (row == null) {
+        return null;
+      }
+      if (row.getProperty(PROP_USER) == null) {
+        return null;
+      }
+
+      Long access = BeeUtils.toLongOrNull(row.getProperty(PROP_LAST_ACCESS));
+      if (access == null) {
+        return Mode.NEW;
+      }
+
+      Long publish = BeeUtils.toLongOrNull(row.getProperty(PROP_LAST_PUBLISH));
+      if (publish != null && access < publish) {
+        return Mode.UPD;
+      } else {
+        return null;
+      }
+    }
+
     private static String renderMode(String styleName) {
       return "<div class=\"" + styleName + "\"></div>";
     }
@@ -848,25 +876,43 @@ final class TaskList {
     }
 
     @Override
-    public String render(IsRow row) {
-      if (row == null) {
+    public XCell export(IsRow row, int cellIndex, Integer styleRef, XSheet sheet) {
+      Mode mode = getMode(row);
+      if (mode == null) {
         return null;
       }
 
-      if (row.getProperty(PROP_USER) == null) {
+      XStyle style = new XStyle();
+
+      switch (mode) {
+        case NEW:
+          style.setColor(Colors.LIGHTGREEN);
+          break;
+        case UPD:
+          style.setColor(Colors.YELLOW);
+          break;
+      }
+
+      return XCell.forStyle(cellIndex, sheet.registerStyle(style));
+    }
+
+    @Override
+    public String render(IsRow row) {
+      Mode mode = getMode(row);
+
+      if (mode == null) {
         return BeeConst.STRING_EMPTY;
       }
 
-      Long access = BeeUtils.toLongOrNull(row.getProperty(PROP_LAST_ACCESS));
-      if (access == null) {
-        return renderMode(TaskList.STYLE_MODE_NEW);
+      switch (mode) {
+        case NEW:
+          return renderMode(TaskList.STYLE_MODE_NEW);
+        case UPD:
+          return renderMode(TaskList.STYLE_MODE_UPD);
       }
 
-      Long publish = BeeUtils.toLongOrNull(row.getProperty(PROP_LAST_PUBLISH));
-      if (publish != null && access < publish) {
-        return renderMode(TaskList.STYLE_MODE_UPD);
-      }
-      return BeeConst.STRING_EMPTY;
+      Assert.untouchable();
+      return null;
     }
   }
 

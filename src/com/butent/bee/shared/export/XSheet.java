@@ -3,6 +3,7 @@ package com.butent.bee.shared.export;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.BeeSerializable;
+import com.butent.bee.shared.utils.ArrayUtils;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.Codec;
 
@@ -10,6 +11,10 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class XSheet implements BeeSerializable {
+
+  private enum Serial {
+    NAME, ROWS, FONTS, STYLES, PICTURES, AUTO_SIZE
+  }
 
   private static final double H1_FONT_FACTOR = 1.4;
   private static final double HX_FONT_FACTOR = 1.2;
@@ -27,6 +32,8 @@ public class XSheet implements BeeSerializable {
 
   private final List<XFont> fonts = new ArrayList<>();
   private final List<XStyle> styles = new ArrayList<>();
+
+  private final List<XPicture> pictures = new ArrayList<>();
 
   private final List<Integer> autoSize = new ArrayList<>();
 
@@ -134,53 +141,71 @@ public class XSheet implements BeeSerializable {
   @Override
   public void deserialize(String s) {
     String[] arr = Codec.beeDeserializeCollection(s);
-    Assert.lengthEquals(arr, 5);
-
-    int i = 0;
-    setName(arr[i++]);
+    Serial[] members = Serial.values();
+    Assert.lengthEquals(arr, members.length);
 
     if (!rows.isEmpty()) {
       rows.clear();
     }
-
-    String[] rarr = Codec.beeDeserializeCollection(arr[i++]);
-    if (rarr != null) {
-      for (String rv : rarr) {
-        add(XRow.restore(rv));
-      }
-    }
-
     if (!fonts.isEmpty()) {
       fonts.clear();
     }
-
-    String[] farr = Codec.beeDeserializeCollection(arr[i++]);
-    if (farr != null) {
-      for (String fv : farr) {
-        fonts.add(XFont.restore(fv));
-      }
-    }
-
     if (!styles.isEmpty()) {
       styles.clear();
     }
-
-    String[] sarr = Codec.beeDeserializeCollection(arr[i++]);
-    if (sarr != null) {
-      for (String sv : sarr) {
-        styles.add(XStyle.restore(sv));
-      }
+    if (!pictures.isEmpty()) {
+      pictures.clear();
     }
-
     if (!autoSize.isEmpty()) {
       autoSize.clear();
     }
 
-    String[] carr = Codec.beeDeserializeCollection(arr[i++]);
-    if (carr != null) {
-      for (String cv : carr) {
-        if (BeeUtils.isDigit(cv)) {
-          autoSize.add(BeeUtils.toInt(cv));
+    for (int i = 0; i < members.length; i++) {
+      String value = arr[i];
+      if (BeeUtils.isEmpty(value)) {
+        continue;
+      }
+      
+      if (members[i] == Serial.NAME) {
+        setName(value);
+        continue;
+      }
+      
+      String[] items = Codec.beeDeserializeCollection(value);
+      if (ArrayUtils.isEmpty(items)) {
+        continue;
+      }
+      
+      for (String item : items) {
+        if (BeeUtils.isEmpty(item)) {
+          continue;
+        }
+
+        switch (members[i]) {
+          case AUTO_SIZE:
+            if (BeeUtils.isDigit(item)) {
+              autoSize.add(BeeUtils.toInt(item));
+            }
+            break;
+
+          case FONTS:
+            fonts.add(XFont.restore(item));
+            break;
+          
+          case PICTURES:
+            pictures.add(XPicture.restore(item));
+            break;
+          
+          case ROWS:
+            add(XRow.restore(item));
+            break;
+          
+          case STYLES:
+            styles.add(XStyle.restore(item));
+            break;
+
+          case NAME:
+            break;
         }
       }
     }
@@ -208,6 +233,10 @@ public class XSheet implements BeeSerializable {
 
   public String getName() {
     return name;
+  }
+
+  public List<XPicture> getPictures() {
+    return pictures;
   }
 
   public List<XRow> getRows() {
@@ -238,9 +267,21 @@ public class XSheet implements BeeSerializable {
     }
   }
 
+  public int registerPicture(XPicture picture) {
+    Assert.notNull(picture);
+
+    int index = pictures.indexOf(picture);
+    if (index >= 0) {
+      return index;
+    } else {
+      pictures.add(picture);
+      return pictures.size() - 1;
+    }
+  }
+
   public int registerStyle(XStyle style) {
     Assert.notNull(style);
-
+    
     int index = styles.indexOf(style);
     if (index >= 0) {
       return index;
@@ -254,13 +295,28 @@ public class XSheet implements BeeSerializable {
   public String serialize() {
     List<String> values = new ArrayList<>();
 
-    values.add(getName());
-    values.add(rows.isEmpty() ? null : Codec.beeSerialize(rows));
-
-    values.add(fonts.isEmpty() ? null : Codec.beeSerialize(fonts));
-    values.add(styles.isEmpty() ? null : Codec.beeSerialize(styles));
-
-    values.add(autoSize.isEmpty() ? null : Codec.beeSerialize(autoSize));
+    for (Serial member : Serial.values()) {
+      switch (member) {
+        case AUTO_SIZE:
+          values.add(autoSize.isEmpty() ? null : Codec.beeSerialize(autoSize));
+          break;
+        case FONTS:
+          values.add(fonts.isEmpty() ? null : Codec.beeSerialize(fonts));
+          break;
+        case NAME:
+          values.add(getName());
+          break;
+        case PICTURES:
+          values.add(pictures.isEmpty() ? null : Codec.beeSerialize(pictures));
+          break;
+        case ROWS:
+          values.add(rows.isEmpty() ? null : Codec.beeSerialize(rows));
+          break;
+        case STYLES:
+          values.add(styles.isEmpty() ? null : Codec.beeSerialize(styles));
+          break;
+      }
+    }
 
     return Codec.beeSerialize(values);
   }

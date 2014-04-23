@@ -5,13 +5,16 @@ import com.google.common.net.MediaType;
 
 import com.butent.bee.server.http.HttpUtils;
 import com.butent.bee.server.http.RequestInfo;
+import com.butent.bee.server.io.FileUtils;
 import com.butent.bee.shared.Assert;
+import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.Service;
 import com.butent.bee.shared.css.values.BorderStyle;
 import com.butent.bee.shared.data.value.Value;
 import com.butent.bee.shared.data.value.ValueType;
 import com.butent.bee.shared.export.XCell;
 import com.butent.bee.shared.export.XFont;
+import com.butent.bee.shared.export.XPicture;
 import com.butent.bee.shared.export.XRow;
 import com.butent.bee.shared.export.XSheet;
 import com.butent.bee.shared.export.XStyle;
@@ -27,7 +30,11 @@ import com.butent.bee.shared.utils.NameUtils;
 
 import org.apache.poi.ss.usermodel.Cell;
 import org.apache.poi.ss.usermodel.CellStyle;
+import org.apache.poi.ss.usermodel.ClientAnchor;
+import org.apache.poi.ss.usermodel.CreationHelper;
+import org.apache.poi.ss.usermodel.Drawing;
 import org.apache.poi.ss.usermodel.Font;
+import org.apache.poi.ss.usermodel.Picture;
 import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.ss.usermodel.Sheet;
 import org.apache.poi.ss.usermodel.Workbook;
@@ -37,9 +44,11 @@ import org.apache.poi.xssf.usermodel.XSSFColor;
 import org.apache.poi.xssf.usermodel.XSSFFont;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 
+import java.io.File;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import javax.servlet.annotation.WebServlet;
@@ -137,17 +146,17 @@ public class ExportServlet extends LoginServlet {
         font.setColor(color);
       }
     }
-    
+
     return font;
   }
-  
+
   private static CellStyle convertStyle(XSSFWorkbook wb, XStyle input, Map<Integer, Font> fonts) {
     if (input == null) {
       return null;
     }
 
     XSSFCellStyle cellStyle = wb.createCellStyle();
-    
+
     if (!BeeUtils.isEmpty(input.getColor())) {
       XSSFColor color = createColor(input.getColor());
 
@@ -249,6 +258,8 @@ public class ExportServlet extends LoginServlet {
   private static Workbook createWorkbook(XWorkbook inputBook) {
     XSSFWorkbook wb = new XSSFWorkbook();
 
+    CreationHelper creationHelper = null;
+
     for (XSheet inputSheet : inputBook.getSheets()) {
       Sheet sheet;
       if (BeeUtils.isEmpty(inputSheet.getName())) {
@@ -277,6 +288,12 @@ public class ExportServlet extends LoginServlet {
         }
       }
 
+      Map<Integer, Integer> pictures = addPictures(inputSheet.getPictures(), wb);
+      Drawing drawing = null;
+
+      CellStyle wrapStyle = wb.createCellStyle();
+      wrapStyle.setWrapText(true);
+
       for (XRow inputRow : inputSheet.getRows()) {
         Row row = sheet.createRow(inputRow.getIndex());
 
@@ -300,6 +317,8 @@ public class ExportServlet extends LoginServlet {
           Cell cell = row.createCell(inputCell.getIndex());
 
           Value value = inputCell.getValue();
+          boolean wrap = false;
+
           if (value != null && !value.isNull()) {
             ValueType type = value.getType();
 
@@ -307,22 +326,28 @@ public class ExportServlet extends LoginServlet {
               case BOOLEAN:
                 cell.setCellValue(value.getBoolean());
                 break;
+
               case DATE:
                 cell.setCellValue(value.getDate().getJava());
                 break;
+
               case DATE_TIME:
                 cell.setCellValue(value.getDateTime().getJava());
                 break;
+
               case DECIMAL:
               case INTEGER:
               case LONG:
               case NUMBER:
                 cell.setCellValue(value.getDouble());
                 break;
+
               case TEXT:
               case TIME_OF_DAY:
                 cell.setCellValue(value.getString());
+                wrap = BeeUtils.contains(value.getString(), BeeConst.CHAR_EOL);
                 break;
+
               default:
                 logger.warning("cell type", type, "not supported");
             }
@@ -338,7 +363,40 @@ public class ExportServlet extends LoginServlet {
               logger.warning("row", inputRow.getIndex(), "cell", inputCell.getIndex(),
                   "invalid style index", inputCell.getStyleRef());
             } else {
+              if (wrap && !cellStyle.getWrapText()) {
+                cellStyle.setWrapText(true);
+              }
               cell.setCellStyle(cellStyle);
+            }
+
+          } else if (wrap) {
+            cell.setCellStyle(wrapStyle);
+          }
+
+          if (inputCell.getPictureRef() != null) {
+            Integer pictureIndex = pictures.get(inputCell.getPictureRef());
+
+            if (pictureIndex == null) {
+              logger.warning("row", inputRow.getIndex(), "cell", inputCell.getIndex(),
+                  "invalid picture index", inputCell.getPictureRef());
+
+            } else {
+              if (creationHelper == null) {
+                creationHelper = wb.getCreationHelper();
+              }
+              if (drawing == null) {
+                drawing = sheet.createDrawingPatriarch();
+              }
+
+              ClientAnchor anchor = creationHelper.createClientAnchor();
+              anchor.setRow1(inputRow.getIndex());
+              anchor.setCol1(inputCell.getIndex());
+              anchor.setRow2(inputRow.getIndex());
+              anchor.setCol2(inputCell.getIndex());
+              anchor.setAnchorType(ClientAnchor.MOVE_AND_RESIZE);
+
+              Picture picture = drawing.createPicture(anchor, pictureIndex);
+              picture.resize();
             }
           }
 
@@ -352,7 +410,7 @@ public class ExportServlet extends LoginServlet {
           }
         }
       }
-      
+
       if (!inputSheet.getAutoSize().isEmpty()) {
         for (int column : inputSheet.getAutoSize()) {
           sheet.autoSizeColumn(column, true);
@@ -361,6 +419,50 @@ public class ExportServlet extends LoginServlet {
     }
 
     return wb;
+  }
+
+  private static int getPictureFormat(XPicture input) {
+    switch (input.getType()) {
+      case DIB:
+        return Workbook.PICTURE_TYPE_DIB;
+      case EMF:
+        return Workbook.PICTURE_TYPE_EMF;
+      case JPEG:
+        return Workbook.PICTURE_TYPE_JPEG;
+      case PICT:
+        return Workbook.PICTURE_TYPE_PICT;
+      case PNG:
+        return Workbook.PICTURE_TYPE_PNG;
+      case WMF:
+        return Workbook.PICTURE_TYPE_WMF;
+    }
+
+    Assert.untouchable();
+    return BeeConst.UNDEF;
+  }
+
+  private static Map<Integer, Integer> addPictures(List<XPicture> inputPictures, Workbook wb) {
+    Map<Integer, Integer> result = new HashMap<>();
+    if (BeeUtils.isEmpty(inputPictures)) {
+      return result;
+    }
+
+    for (int i = 0; i < inputPictures.size(); i++) {
+      XPicture inputPicture = inputPictures.get(i);
+
+      byte[] bytes;
+      if (inputPicture.isDataUri()) {
+        bytes = Codec.fromBase64(inputPicture.getSrc());
+      } else {
+        bytes = FileUtils.getBytes(new File(Config.WAR_DIR, inputPicture.getSrc()));
+      }
+
+      if (bytes != null) {
+        int pictureIndex = wb.addPicture(bytes, getPictureFormat(inputPicture));
+        result.put(i, pictureIndex);
+      }
+    }
+    return result;
   }
 
   @Override

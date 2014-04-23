@@ -16,7 +16,25 @@ import java.util.List;
 public class XCell implements BeeSerializable {
 
   private enum Serial {
-    INDEX, VALUE, FORMULA, STYLE, COL_SPAN, ROW_SPAN
+    INDEX, VALUE, FORMULA, STYLE, PICTURE, COL_SPAN, ROW_SPAN
+  }
+  
+  public static XCell forPicture(int index, int pictureRef) {
+    XCell cell = new XCell();
+    
+    cell.setIndex(index);
+    cell.setPictureRef(pictureRef);
+
+    return cell;
+  }
+
+  public static XCell forStyle(int index, int styleRef) {
+    XCell cell = new XCell();
+    
+    cell.setIndex(index);
+    cell.setStyleRef(styleRef);
+    
+    return cell;
   }
 
   public static XCell restore(String s) {
@@ -32,6 +50,7 @@ public class XCell implements BeeSerializable {
   private String formula;
 
   private Integer styleRef;
+  private Integer pictureRef;
 
   private int colSpan;
   private int rowSpan;
@@ -104,6 +123,9 @@ public class XCell implements BeeSerializable {
         case INDEX:
           setIndex(BeeUtils.toInt(v));
           break;
+        case PICTURE:
+          setPictureRef(BeeUtils.toIntOrNull(v));
+          break;
         case ROW_SPAN:
           setRowSpan(BeeUtils.toInt(v));
           break;
@@ -111,7 +133,7 @@ public class XCell implements BeeSerializable {
           setStyleRef(BeeUtils.toIntOrNull(v));
           break;
         case VALUE:
-          setValue(Value.restore(v));
+          setValue(Value.restore(Codec.decodeBase64(v)));
           break;
       }
     }
@@ -127,6 +149,10 @@ public class XCell implements BeeSerializable {
 
   public int getIndex() {
     return index;
+  }
+
+  public Integer getPictureRef() {
+    return pictureRef;
   }
 
   public int getRowSpan() {
@@ -156,6 +182,9 @@ public class XCell implements BeeSerializable {
         case INDEX:
           values.add(BeeUtils.toString(getIndex()));
           break;
+        case PICTURE:
+          values.add((getPictureRef() == null) ? null : BeeUtils.toString(getPictureRef()));
+          break;
         case ROW_SPAN:
           values.add(BeeUtils.toString(getRowSpan()));
           break;
@@ -163,7 +192,7 @@ public class XCell implements BeeSerializable {
           values.add((getStyleRef() == null) ? null : BeeUtils.toString(getStyleRef()));
           break;
         case VALUE:
-          values.add((getValue() == null) ? null : getValue().serialize());
+          values.add((getValue() == null) ? null : Codec.encodeBase64(getValue().serialize()));
           break;
       }
     }
@@ -177,6 +206,10 @@ public class XCell implements BeeSerializable {
 
   public void setFormula(String formula) {
     this.formula = formula;
+  }
+
+  public void setPictureRef(Integer pictureRef) {
+    this.pictureRef = pictureRef;
   }
 
   public void setRowSpan(int rowSpan) {

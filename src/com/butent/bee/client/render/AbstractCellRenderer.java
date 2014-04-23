@@ -22,7 +22,10 @@ public abstract class AbstractCellRenderer extends AbstractRenderer<IsRow> imple
     this.cellSource = cellSource;
   }
   
-  public XCell export(IsRow row, int cellIndex, Integer styleRef) {
+  /**
+   * @param sheet used by subclasses 
+   */
+  public XCell export(IsRow row, int cellIndex, Integer styleRef, XSheet sheet) {
     String text = render(row);
     
     if (BeeUtils.isEmpty(text)) {

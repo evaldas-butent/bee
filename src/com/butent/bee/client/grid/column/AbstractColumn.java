@@ -59,7 +59,7 @@ public abstract class AbstractColumn<C> implements HasValueType, HasOptions, Has
     }
   }
 
-  public XCell export(CellContext context, Integer styleRef) {
+  public XCell export(CellContext context, Integer styleRef, XSheet sheet) {
     if (context == null) {
       return null;
     }
@@ -67,7 +67,7 @@ public abstract class AbstractColumn<C> implements HasValueType, HasOptions, Has
     AbstractCellRenderer renderer = getOptionalRenderer();
 
     if (renderer != null) {
-      return renderer.export(context.getRow(), context.getColumnIndex(), styleRef);
+      return renderer.export(context.getRow(), context.getColumnIndex(), styleRef, sheet);
 
     } else {
       SafeHtmlBuilder sb = new SafeHtmlBuilder();

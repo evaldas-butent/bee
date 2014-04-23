@@ -1189,6 +1189,10 @@ public class CellGrid extends Widget implements IdentifiableWidget, HasDataTable
     }
   }
 
+  public int getBodyCellHeight() {
+    return getBodyComponent().getCellHeight();
+  }
+
   public int getBodyWidth() {
     int width = 0;
     int incr = getBodyCellWidthIncrement();
@@ -2662,10 +2666,6 @@ public class CellGrid extends Widget implements IdentifiableWidget, HasDataTable
 
   private Element getBodyCellElement(int row, int col) {
     return Selectors.getElement(getElement(), getBodyCellSelector(row, col));
-  }
-
-  private int getBodyCellHeight() {
-    return getBodyComponent().getCellHeight();
   }
 
   private int getBodyCellHeightIncrement() {
