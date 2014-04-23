@@ -27,7 +27,6 @@ import com.butent.bee.client.dialog.DialogConstants;
 import com.butent.bee.client.dialog.InputBoxes;
 import com.butent.bee.client.dialog.InputCallback;
 import com.butent.bee.client.dialog.Popup;
-import com.butent.bee.client.modules.mail.MailPanel.AccountInfo;
 import com.butent.bee.client.ui.FormDescription;
 import com.butent.bee.client.ui.FormFactory;
 import com.butent.bee.client.ui.FormFactory.FormViewCallback;
@@ -48,6 +47,7 @@ import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.SimpleRowSet;
 import com.butent.bee.shared.data.SimpleRowSet.SimpleRow;
 import com.butent.bee.shared.i18n.Localized;
+import com.butent.bee.shared.modules.mail.AccountInfo;
 import com.butent.bee.shared.modules.mail.MailConstants.AddressType;
 import com.butent.bee.shared.utils.BeeUtils;
 
@@ -223,7 +223,7 @@ public final class NewMailMessage extends AbstractFormInterceptor
         for (AccountInfo accountInfo : accounts) {
           accountsWidget.addItem(accountInfo.getDescription());
 
-          if (Objects.equal(account, accountInfo.getAddress())) {
+          if (Objects.equal(account, accountInfo.getAddressId())) {
             accountsWidget.setSelectedIndex(accountsWidget.getItemCount() - 1);
           }
         }
@@ -231,7 +231,7 @@ public final class NewMailMessage extends AbstractFormInterceptor
         accountsWidget.addChangeHandler(new ChangeHandler() {
           @Override
           public void onChange(ChangeEvent event) {
-            account = accounts.get(accountsWidget.getSelectedIndex()).getAddress();
+            account = accounts.get(accountsWidget.getSelectedIndex()).getAddressId();
           }
         });
       }

@@ -28,6 +28,7 @@ import com.butent.bee.shared.logging.LogUtils;
 import com.butent.bee.shared.modules.administration.AdministrationConstants;
 import com.butent.bee.shared.modules.mail.MailConstants;
 import com.butent.bee.shared.modules.mail.MailConstants.AddressType;
+import com.butent.bee.shared.modules.mail.MailConstants.MessageFlag;
 import com.butent.bee.shared.modules.mail.MailConstants.SystemFolder;
 import com.butent.bee.shared.modules.mail.MailFolder;
 import com.butent.bee.shared.utils.BeeUtils;
@@ -121,12 +122,51 @@ public class MailStorageBean {
 
   public MailAccount getAccount(Long accountId) {
     Assert.state(DataUtils.isId(accountId));
-    return getAccount(sys.idEquals(TBL_ACCOUNTS, accountId));
+    return getAccount(sys.idEquals(TBL_ACCOUNTS, accountId), false);
   }
 
   public MailAccount getAccountByAddressId(Long addressId) {
     Assert.state(DataUtils.isId(addressId));
-    return getAccount(SqlUtils.equals(TBL_ACCOUNTS, MailConstants.COL_ADDRESS, addressId));
+    return getAccount(SqlUtils.equals(TBL_ACCOUNTS, MailConstants.COL_ADDRESS, addressId), false);
+  }
+
+  public MailAccount getAccount(IsCondition condition, boolean checkUnread) {
+    MailAccount account = new MailAccount(qs.getRow(new SqlSelect()
+        .addAllFields(TBL_ACCOUNTS)
+        .addField(TBL_ACCOUNTS, sys.getIdName(TBL_ACCOUNTS), COL_ACCOUNT)
+        .addFields(TBL_EMAILS, COL_EMAIL_ADDRESS)
+        .addFrom(TBL_ACCOUNTS)
+        .addFromInner(TBL_EMAILS,
+            sys.joinTables(TBL_EMAILS, TBL_ACCOUNTS, MailConstants.COL_ADDRESS))
+        .setWhere(condition)));
+
+    SqlSelect query = new SqlSelect()
+        .addFields(TBL_FOLDERS, COL_FOLDER_PARENT, COL_FOLDER_NAME, COL_FOLDER_UID)
+        .addField(TBL_FOLDERS, sys.getIdName(TBL_FOLDERS), COL_FOLDER)
+        .addFrom(TBL_FOLDERS)
+        .setWhere(SqlUtils.equals(TBL_FOLDERS, COL_ACCOUNT, account.getAccountId()))
+        .addOrder(TBL_FOLDERS, COL_FOLDER_PARENT, COL_FOLDER_NAME);
+
+    if (checkUnread) {
+      query.addCount(TBL_PLACES, COL_MESSAGE)
+          .addFromLeft(TBL_PLACES,
+              SqlUtils.and(sys.joinTables(TBL_FOLDERS, TBL_PLACES, COL_FOLDER),
+                  SqlUtils.or(SqlUtils.isNull(TBL_PLACES, COL_FLAGS),
+                      SqlUtils.equals(SqlUtils.bitAnd(TBL_PLACES, COL_FLAGS,
+                          MessageFlag.SEEN.getMask()), 0))))
+          .addGroup(TBL_FOLDERS,
+              COL_FOLDER_PARENT, COL_FOLDER_NAME, COL_FOLDER_UID, sys.getIdName(TBL_FOLDERS));
+    } else {
+      query.addEmptyInt(COL_MESSAGE);
+    }
+    Multimap<Long, SimpleRow> folders = LinkedListMultimap.create();
+
+    for (SimpleRow row : qs.getData(query)) {
+      folders.put(row.getLong(COL_FOLDER_PARENT), row);
+    }
+    account.setFolders(folders);
+
+    return account;
   }
 
   public void initAccount(Long accountId) {
@@ -371,32 +411,6 @@ public class MailStorageBean {
       parent.addSubFolder(folder);
     }
     return folder;
-  }
-
-  private MailAccount getAccount(IsCondition condition) {
-    MailAccount account = new MailAccount(qs.getRow(new SqlSelect()
-        .addAllFields(TBL_ACCOUNTS)
-        .addField(TBL_ACCOUNTS, sys.getIdName(TBL_ACCOUNTS), COL_ACCOUNT)
-        .addFields(TBL_EMAILS, COL_EMAIL_ADDRESS)
-        .addFrom(TBL_ACCOUNTS)
-        .addFromInner(TBL_EMAILS,
-            sys.joinTables(TBL_EMAILS, TBL_ACCOUNTS, MailConstants.COL_ADDRESS))
-        .setWhere(condition)));
-
-    SimpleRowSet data = qs.getData(new SqlSelect()
-        .addFields(TBL_FOLDERS, COL_FOLDER_PARENT, COL_FOLDER_NAME, COL_FOLDER_UID)
-        .addField(TBL_FOLDERS, sys.getIdName(TBL_FOLDERS), COL_FOLDER)
-        .addFrom(TBL_FOLDERS)
-        .setWhere(SqlUtils.equals(TBL_FOLDERS, COL_ACCOUNT, account.getAccountId()))
-        .addOrder(TBL_FOLDERS, COL_FOLDER_PARENT, COL_FOLDER_NAME));
-
-    Multimap<Long, SimpleRow> folders = LinkedListMultimap.create();
-
-    for (SimpleRow row : data) {
-      folders.put(row.getLong(COL_FOLDER_PARENT), row);
-    }
-    account.setFolders(folders);
-    return account;
   }
 
   private void storePart(Long messageId, Part part, Pair<String, String> alternative)

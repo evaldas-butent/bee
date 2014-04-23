@@ -23,13 +23,14 @@ public class MailFolder implements BeeSerializable {
   }
 
   private enum Serial {
-    ID, NAME, UID, CHILDS
+    ID, NAME, UID, UNREAD, CHILDS
   }
 
   private MailFolder parent;
   private Long id;
   private String name;
   private Long uidValidity;
+  private int unread;
 
   private final Map<String, MailFolder> childs = Maps.newLinkedHashMap();
 
@@ -79,6 +80,9 @@ public class MailFolder implements BeeSerializable {
         case UID:
           uidValidity = BeeUtils.toLongOrNull(value);
           break;
+        case UNREAD:
+          unread = BeeUtils.toInt(value);
+          break;
       }
     }
   }
@@ -121,6 +125,10 @@ public class MailFolder implements BeeSerializable {
     return uidValidity;
   }
 
+  public int getUnread() {
+    return unread;
+  }
+
   public boolean isConnected() {
     return !Objects.equals(uidValidity, DISCONNECTED_MODE);
   }
@@ -149,6 +157,9 @@ public class MailFolder implements BeeSerializable {
         case UID:
           arr[i++] = uidValidity;
           break;
+        case UNREAD:
+          arr[i++] = unread;
+          break;
       }
     }
     return Codec.beeSerialize(arr);
@@ -156,5 +167,9 @@ public class MailFolder implements BeeSerializable {
 
   public void setUidValidity(Long uidValidity) {
     this.uidValidity = uidValidity;
+  }
+
+  public void setUnread(int unread) {
+    this.unread = unread;
   }
 }
