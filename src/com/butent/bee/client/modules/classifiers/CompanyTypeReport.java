@@ -396,7 +396,7 @@ public class CompanyTypeReport extends ReportInterceptor {
     XRow xr = new XRow(row);
     xr.setHeightFactor(1.2);
     
-    Integer boldRef = sheet.registeFont(XFont.bold());
+    Integer boldRef = sheet.registerFont(XFont.bold());
 
     XStyle xs = XStyle.center();
     xs.setVerticalAlign(VerticalAlign.MIDDLE);
@@ -483,7 +483,7 @@ public class CompanyTypeReport extends ReportInterceptor {
       xs = XStyle.right();
       XFont xf = XFont.bold();
       xf.setFactor(1.2);
-      xs.setFontRef(sheet.registeFont(xf));
+      xs.setFontRef(sheet.registerFont(xf));
       xs.setBorderTop(BorderStyle.SOLID);
 
       styleRef = sheet.registerStyle(xs);

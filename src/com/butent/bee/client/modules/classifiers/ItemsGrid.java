@@ -1,5 +1,6 @@
 package com.butent.bee.client.modules.classifiers;
 
+import com.google.common.collect.Lists;
 import com.google.gwt.event.logical.shared.SelectionEvent;
 import com.google.gwt.event.logical.shared.SelectionHandler;
 
@@ -9,12 +10,15 @@ import com.butent.bee.client.ui.IdentifiableWidget;
 import com.butent.bee.client.view.TreeView;
 import com.butent.bee.client.view.grid.interceptor.AbstractGridInterceptor;
 import com.butent.bee.shared.BeeConst;
+import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.IsRow;
 import com.butent.bee.shared.data.filter.Filter;
 import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.modules.classifiers.ClassifierConstants;
 import com.butent.bee.shared.ui.GridDescription;
 import com.butent.bee.shared.utils.BeeUtils;
+
+import java.util.List;
 
 class ItemsGrid extends AbstractGridInterceptor implements SelectionHandler<IsRow> {
 
@@ -41,6 +45,21 @@ class ItemsGrid extends AbstractGridInterceptor implements SelectionHandler<IsRo
       return Localized.getConstants().services();
     } else {
       return Localized.getConstants().goods();
+    }
+  }
+
+  @Override
+  public List<String> getParentLabels() {
+    if (getSelectedCategory() == null) {
+      return super.getParentLabels();
+
+    } else {
+      List<String> colNames = Lists.newArrayList(ClassifierConstants.ALS_CATEGORY_PARENT_NAME,
+          ClassifierConstants.COL_CATEGORY_NAME);
+      String categoryLabel = DataUtils.join(Data.getDataInfo(ClassifierConstants.VIEW_CATEGY_TREE),
+          getSelectedCategory(), colNames, BeeConst.STRING_SPACE);
+
+      return Lists.newArrayList(categoryLabel);
     }
   }
 

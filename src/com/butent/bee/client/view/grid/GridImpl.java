@@ -1217,6 +1217,11 @@ public class GridImpl extends Absolute implements GridView, EditEndEvent.Handler
   }
 
   @Override
+  public boolean isChild() {
+    return !BeeUtils.isEmpty(getRelColumn());
+  }
+
+  @Override
   public boolean isEnabled() {
     return getGrid().isEnabled();
   }
@@ -2076,10 +2081,6 @@ public class GridImpl extends Absolute implements GridView, EditEndEvent.Handler
         }
       }
     }
-  }
-
-  private boolean isChild() {
-    return !BeeUtils.isEmpty(getRelColumn());
   }
 
   private boolean isNewRowFormGenerated() {

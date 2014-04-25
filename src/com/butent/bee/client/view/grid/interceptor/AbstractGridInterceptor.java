@@ -260,6 +260,11 @@ public class AbstractGridInterceptor implements GridInterceptor {
   }
 
   @Override
+  public List<String> getParentLabels() {
+    return null;
+  }
+
+  @Override
   public List<FilterDescription> getPredefinedFilters(List<FilterDescription> defaultFilters) {
     return defaultFilters;
   }

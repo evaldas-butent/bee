@@ -106,6 +106,15 @@ public class XRow implements BeeSerializable {
     return styleRef;
   }
 
+  public boolean hasPicture(int column) {
+    for (XCell cell : cells) {
+      if (cell.getIndex() == column) {
+        return cell.getPictureRef() != null;
+      }
+    }
+    return false;
+  }
+  
   public boolean isEmpty() {
     return cells.isEmpty();
   }

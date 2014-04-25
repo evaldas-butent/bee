@@ -100,7 +100,7 @@ public final class ColorStyleProvider implements StyleProvider {
     if (!BeeUtils.isEmpty(fgValue)) {
       XFont font = new XFont();
       font.setColor(fgValue);
-      style.setFontRef(sheet.registeFont(font));
+      style.setFontRef(sheet.registerFont(font));
     }
     
     return sheet.registerStyle(style);

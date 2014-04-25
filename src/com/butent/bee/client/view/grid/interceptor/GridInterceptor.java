@@ -126,6 +126,8 @@ public interface GridInterceptor extends WidgetInterceptor, ParentRowEvent.Handl
   BeeRowSet getInitialRowSet(GridDescription gridDescription);
 
   GridInterceptor getInstance();
+  
+  List<String> getParentLabels();
 
   List<FilterDescription> getPredefinedFilters(List<FilterDescription> defaultFilters);
   

@@ -7,19 +7,10 @@
   flexGrow="1" flexShrink="1"
   >
   <g:columns>
-    <CalcColumn name="Default" type="boolean" width="30" maxWidth="30" autoFit="true" 
-    filterOptions="empty" caption="=defaultBankAccountShort">
-      <render>
-        <ui:function>
-            var isDefault = row.DefaultBankAccount;
-            if (isDefault != null) {
-              return true;
-            }
-            
-            return false;
-        </ui:function>
-      </render>
-    </CalcColumn>
+    <DataColumn name="DefaultBankAccount" caption="=defaultBankAccountShort"
+      horizontalAlignment="center" flexGrow="0">
+      <render><ui:expression>row.DefaultBankAccount ? '\u2713' : ''</ui:expression></render>
+    </DataColumn>
     <RelColumn name="Bank" renderColumns="BankName BankCode" />
     <DataColumn name="BankAccount" />
     <DataColumn name="IBANCode" />

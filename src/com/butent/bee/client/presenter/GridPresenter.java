@@ -1,6 +1,5 @@
 package com.butent.bee.client.presenter;
 
-import com.google.common.base.Objects;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 import com.google.gwt.dom.client.Element;
@@ -56,6 +55,7 @@ import com.butent.bee.shared.data.BeeColumn;
 import com.butent.bee.shared.data.BeeRow;
 import com.butent.bee.shared.data.BeeRowSet;
 import com.butent.bee.shared.data.CellSource;
+import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.HasViewName;
 import com.butent.bee.shared.data.IsRow;
 import com.butent.bee.shared.data.ProviderType;
@@ -67,6 +67,7 @@ import com.butent.bee.shared.data.event.RowInsertEvent;
 import com.butent.bee.shared.data.event.RowUpdateEvent;
 import com.butent.bee.shared.data.filter.Filter;
 import com.butent.bee.shared.data.filter.FilterComponent;
+import com.butent.bee.shared.data.view.DataInfo;
 import com.butent.bee.shared.data.view.Order;
 import com.butent.bee.shared.data.view.RowInfo;
 import com.butent.bee.shared.i18n.Localized;
@@ -82,6 +83,7 @@ import com.butent.bee.shared.utils.NameUtils;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 
 public class GridPresenter extends AbstractPresenter implements ReadyForInsertEvent.Handler,
@@ -100,13 +102,17 @@ public class GridPresenter extends AbstractPresenter implements ReadyForInsertEv
     @Override
     public void onConfirm() {
       int count = (rows == null) ? 0 : rows.size();
-      GridInterceptor gcb = getGridInterceptor();
+      GridInterceptor interceptor = getGridInterceptor();
 
-      if (gcb != null) {
-        if ((count == 0
-            ? gcb.beforeDeleteRow(GridPresenter.this, activeRow)
-            : gcb.beforeDeleteRows(GridPresenter.this, activeRow, rows))
-          == GridInterceptor.DeleteMode.CANCEL) {
+      if (interceptor != null) {
+        GridInterceptor.DeleteMode deleteMode;
+        if (count == 0) {
+          deleteMode = interceptor.beforeDeleteRow(GridPresenter.this, activeRow);
+        } else {
+          deleteMode = interceptor.beforeDeleteRows(GridPresenter.this, activeRow, rows);
+        }
+
+        if (deleteMode == GridInterceptor.DeleteMode.CANCEL) {
           return;
         }
       }
@@ -188,6 +194,8 @@ public class GridPresenter extends AbstractPresenter implements ReadyForInsertEv
   private final Provider dataProvider;
 
   private final GridFilterManager filterManager;
+
+  private List<String> parentLabels;
 
   public GridPresenter(GridDescription gridDescription, GridView gridView, int rowCount,
       BeeRowSet rowSet, ProviderType providerType, CachingPolicy cachingPolicy,
@@ -302,7 +310,7 @@ public class GridPresenter extends AbstractPresenter implements ReadyForInsertEv
   public Provider getDataProvider() {
     return dataProvider;
   }
-  
+
   public String getFilterLabel() {
     return (filterManager == null) ? null : filterManager.getFilterLabel(true);
   }
@@ -320,6 +328,37 @@ public class GridPresenter extends AbstractPresenter implements ReadyForInsertEv
   @Override
   public View getMainView() {
     return gridContainer;
+  }
+
+  public List<String> getParentLabels() {
+    if (getGridInterceptor() != null) {
+      List<String> labels = getGridInterceptor().getParentLabels();
+      if (labels != null) {
+        return labels;
+      }
+    }
+
+    if (parentLabels != null) {
+      return parentLabels;
+    }
+    
+    if (getGridView().isChild()) {
+      FormView form = UiHelper.getForm(getWidget().asWidget());
+      
+      if (form != null && !BeeUtils.isEmpty(form.getViewName()) && form.getActiveRow() != null) {
+        DataInfo dataInfo = Data.getDataInfo(form.getViewName());
+        
+        if (dataInfo != null) {
+          String label = DataUtils.getRowCaption(dataInfo, form.getActiveRow());
+          
+          if (!BeeUtils.isEmpty(label)) {
+            return Lists.newArrayList(label);
+          }
+        }
+      }
+    }
+    
+    return BeeConst.EMPTY_IMMUTABLE_STRING_LIST;
   }
 
   @Override
@@ -408,7 +447,7 @@ public class GridPresenter extends AbstractPresenter implements ReadyForInsertEv
           }
         }
         break;
-        
+
       case EXPORT:
         if (getGridView().getGrid().getRowCount() > 0) {
           export();
@@ -446,7 +485,7 @@ public class GridPresenter extends AbstractPresenter implements ReadyForInsertEv
       getGridInterceptor().afterAction(action, this);
     }
   }
-  
+
   public boolean hasFilter() {
     return getDataProvider().hasFilter();
   }
@@ -573,9 +612,13 @@ public class GridPresenter extends AbstractPresenter implements ReadyForInsertEv
     }
   }
 
+  public void setParentLabels(List<String> parentLabels) {
+    this.parentLabels = parentLabels;
+  }
+
   @Override
   public void tryFilter(final Filter filter, final Consumer<Boolean> callback, boolean notify) {
-    if (Objects.equal(getDataProvider().getUserFilter(), filter)) {
+    if (Objects.equals(getDataProvider().getUserFilter(), filter)) {
       if (callback != null) {
         callback.accept(true);
       }
@@ -704,7 +747,7 @@ public class GridPresenter extends AbstractPresenter implements ReadyForInsertEv
     } else {
       caption = null;
     }
-    
+
     Exporter.confirm(caption, new StringCallback() {
       @Override
       public void onSuccess(String value) {

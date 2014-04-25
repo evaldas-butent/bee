@@ -361,7 +361,7 @@ public class AssessmentQuantityReport extends ReportInterceptor {
     XRow xr1 = new XRow(row);
     XRow xr2 = new XRow(row + 1);
 
-    Integer boldRef = sheet.registeFont(XFont.bold());
+    Integer boldRef = sheet.registerFont(XFont.bold());
     
     XStyle xs = XStyle.center();
     xs.setVerticalAlign(VerticalAlign.MIDDLE);
@@ -713,7 +713,7 @@ public class AssessmentQuantityReport extends ReportInterceptor {
       
       XFont xf = XFont.bold();
       xf.setFactor(1.2);
-      int fontRef = sheet.registeFont(xf);
+      int fontRef = sheet.registerFont(xf);
 
       xs = sheet.getStyle(csQty).copy();
       xs.setFontRef(fontRef);

@@ -56,8 +56,14 @@ public final class Exporter {
 
   private static final int SUBMIT_TIMEOUT = 60_000;
 
+  private static final int DEFAULT_STEP_SIZE = 100;
+
+  private static final double GRID_PARENT_LABEL_HEIGHT_FACTOR = 1.1;
   private static final double GRID_CAPTION_HEIGHT_FACTOR = 1.5;
+  private static final double GRID_FILTER_LABEL_HEIGHT_FACTOR = 1.0;
   private static final double GRID_HEADER_HEIGHT_FACTOR = 1.2;
+
+  private static final int MAX_NUMBER_OF_ROWS_FOR_AUTOSIZE = 1_000;
 
   public static void confirm(String fileName, StringCallback callback) {
     Assert.notNull(callback);
@@ -102,6 +108,12 @@ public final class Exporter {
     }
 
     final XSheet sheet = new XSheet();
+    
+    Double rowHeightFactor = getRowHeightFactor(grid);
+    if (rowHeightFactor != null) {
+      sheet.setRowHeightFactor(rowHeightFactor);
+    }
+    
     int rowIndex = 0;
 
     XRow row;
@@ -110,20 +122,49 @@ public final class Exporter {
     XStyle style;
 
     Integer styleRef;
+    
+    List<String> parentLabels = presenter.getParentLabels();
+    if (!BeeUtils.isEmpty(parentLabels)) {
+      font = new XFont();
+      font.setFactor(GRID_PARENT_LABEL_HEIGHT_FACTOR);
+
+      style = new XStyle();
+      style.setFontRef(sheet.registerFont(font));
+      styleRef = sheet.registerStyle(style);
+      
+      for (String label : parentLabels) {
+        cell = new XCell(0, label, styleRef);
+        if (columnCount > 1) {
+          cell.setColSpan(columnCount);
+        }
+
+        row = new XRow(rowIndex++);
+        row.setHeightFactor(GRID_PARENT_LABEL_HEIGHT_FACTOR);
+        
+        row.add(cell);
+        sheet.add(row);
+      }
+    }
 
     if (!BeeUtils.isEmpty(caption)) {
+      if (rowHeightFactor != null) {
+        row = new XRow(rowIndex);
+        row.setHeightFactor(BeeConst.DOUBLE_ONE);
+        sheet.add(row);
+      }
+      rowIndex++;
+
       font = XFont.bold();
       font.setFactor(GRID_CAPTION_HEIGHT_FACTOR);
 
       style = XStyle.center();
-      style.setFontRef(sheet.registeFont(font));
+      style.setFontRef(sheet.registerFont(font));
 
       cell = new XCell(0, caption, sheet.registerStyle(style));
       if (columnCount > 1) {
         cell.setColSpan(columnCount);
       }
 
-      rowIndex++;
       row = new XRow(rowIndex++);
       row.setHeightFactor(GRID_CAPTION_HEIGHT_FACTOR);
       
@@ -146,11 +187,18 @@ public final class Exporter {
       }
 
       row = new XRow(rowIndex++);
+      row.setHeightFactor(GRID_FILTER_LABEL_HEIGHT_FACTOR);
+
       row.add(cell);
       sheet.add(row);
     }
 
     if (rowIndex > 0) {
+      if (rowHeightFactor != null) {
+        row = new XRow(rowIndex);
+        row.setHeightFactor(BeeConst.DOUBLE_ONE);
+        sheet.add(row);
+      }
       rowIndex++;
     }
 
@@ -161,7 +209,7 @@ public final class Exporter {
       style = XStyle.center();
       style.setVerticalAlign(VerticalAlign.MIDDLE);
       style.setColor(Colors.LIGHTGRAY);
-      style.setFontRef(sheet.registeFont(XFont.bold()));
+      style.setFontRef(sheet.registerFont(XFont.bold()));
 
       styleRef = sheet.registerStyle(style);
 
@@ -185,21 +233,19 @@ public final class Exporter {
     int dataSize = grid.getDataSize();
     String viewName = presenter.getViewName();
 
-    final Double heightFactor = getRowHeightFactor(grid);
-
     if (dataSize >= rowCount || BeeUtils.isEmpty(viewName)) {
       for (int i = 0; i < dataSize; i++) {
         IsRow dataRow = BeeUtils.getQuietly(grid.getRowData(), i);
         if (dataRow != null) {
-          exportRow(context, dataRow, columns, rowIndex++, heightFactor, sheet, bodyStyles);
+          exportRow(context, dataRow, columns, rowIndex++, sheet, bodyStyles);
         }
       }
-
-      sheet.autoSizeAll();
+      
+      autosizeNoPictures(sheet, columns.size());
       export(sheet, fileName);
 
     } else {
-      int stepSize = Math.min(rowCount, 100);
+      int stepSize = Math.min(rowCount, DEFAULT_STEP_SIZE);
       int numberOfSteps = rowCount / stepSize;
       if (rowCount % stepSize > 0) {
         numberOfSteps++;
@@ -224,14 +270,14 @@ public final class Exporter {
                 if (BeeUtils.isDigit(respOffset)) {
                   int index = BeeUtils.toInt(respOffset) + firstRowIndex;
                   for (IsRow dataRow : result) {
-                    exportRow(context, dataRow, columns, index++, heightFactor, sheet, bodyStyles);
+                    exportRow(context, dataRow, columns, index++, sheet, bodyStyles);
                   }
                 }
 
                 chunks.set(remaining - 1);
                 if (remaining <= 1) {
-                  if (rowCount < 1000) {
-                    sheet.autoSizeAll();
+                  if (rowCount <= MAX_NUMBER_OF_ROWS_FOR_AUTOSIZE) {
+                    autosizeNoPictures(sheet, columns.size());
                   }
                   export(sheet, fileName);
                 }
@@ -252,15 +298,6 @@ public final class Exporter {
     }
   }
   
-  private static Double getRowHeightFactor(CellGrid grid) {
-    int height = grid.getBodyCellHeight();
-    if (height >= 30) {
-      return height / 20d;
-    } else {
-      return null;
-    }
-  }
-
   public static void export(XWorkbook wb, String fileName) {
     if (wb == null || wb.isEmpty()) {
       logger.severe(NameUtils.getClassName(Exporter.class), "workbook is empty");
@@ -327,6 +364,14 @@ public final class Exporter {
     return !BeeUtils.isEmpty(sanitizeFileName(input));
   }
 
+  private static void autosizeNoPictures(XSheet sheet, int columnCount) {
+    for (int i = 0; i < columnCount; i++) {
+      if (!sheet.hasPictures(i)) {
+        sheet.autoSizeColumn(i);
+      }
+    }
+  }
+
   private static InputElement createFormParameter(String name, String value) {
     InputElement inputElement = Document.get().createHiddenInputElement();
 
@@ -337,14 +382,11 @@ public final class Exporter {
   }
 
   private static void exportRow(CellContext context, IsRow dataRow, List<ColumnInfo> columns,
-      int rowIndex, Double heightFactor, XSheet sheet, Map<Integer, Integer> styles) {
+      int rowIndex, XSheet sheet, Map<Integer, Integer> styles) {
 
     context.setRow(dataRow);
 
     XRow row = new XRow(rowIndex);
-    if (BeeUtils.isPositive(heightFactor)) {
-      row.setHeightFactor(heightFactor);
-    }
 
     int columnCount = columns.size();
     for (int j = 0; j < columnCount; j++) {
@@ -369,6 +411,15 @@ public final class Exporter {
     sheet.add(row);
   }
 
+  private static Double getRowHeightFactor(CellGrid grid) {
+    int height = grid.getBodyCellHeight();
+    if (height >= 30) {
+      return height / 20d;
+    } else {
+      return null;
+    }
+  }
+  
   private static String sanitizeFileName(String input) {
     return FileNameUtils.sanitize(input, BeeConst.STRING_POINT);
   }

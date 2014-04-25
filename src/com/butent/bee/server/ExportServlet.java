@@ -268,6 +268,12 @@ public class ExportServlet extends LoginServlet {
         sheet = wb.createSheet(inputSheet.getName());
       }
 
+      float defaultRowHeightInPoints = sheet.getDefaultRowHeightInPoints();
+      if (BeeUtils.isPositive(inputSheet.getRowHeightFactor())) {
+        sheet.setDefaultRowHeightInPoints(defaultRowHeightInPoints
+            * inputSheet.getRowHeightFactor().floatValue());
+      }
+
       Map<Integer, Font> fonts = new HashMap<>();
       if (!inputSheet.getFonts().isEmpty()) {
         for (int i = 0; i < inputSheet.getFonts().size(); i++) {
@@ -296,10 +302,13 @@ public class ExportServlet extends LoginServlet {
 
       for (XRow inputRow : inputSheet.getRows()) {
         Row row = sheet.createRow(inputRow.getIndex());
-
-        if (BeeUtils.isPositive(inputRow.getHeightFactor())) {
-          row.setHeightInPoints(sheet.getDefaultRowHeightInPoints()
-              * inputRow.getHeightFactor().floatValue());
+        
+        Double heightFactor = inputRow.getHeightFactor();
+        if (!BeeUtils.isPositive(heightFactor)) {
+          heightFactor = inputSheet.getRowHeightFactor();
+        }
+        if (BeeUtils.isPositive(heightFactor)) {
+          row.setHeightInPoints(defaultRowHeightInPoints * heightFactor.floatValue());
         }
 
         if (inputRow.getStyleRef() != null) {
@@ -393,10 +402,18 @@ public class ExportServlet extends LoginServlet {
               anchor.setCol1(inputCell.getIndex());
               anchor.setRow2(inputRow.getIndex());
               anchor.setCol2(inputCell.getIndex());
-              anchor.setAnchorType(ClientAnchor.MOVE_AND_RESIZE);
+              anchor.setAnchorType(ClientAnchor.MOVE_DONT_RESIZE);
 
               Picture picture = drawing.createPicture(anchor, pictureIndex);
               picture.resize();
+
+              ClientAnchor preferred = picture.getPreferredSize();
+              int scale = Math.max(preferred.getRow2() - preferred.getRow1(),
+                  preferred.getCol2() - preferred.getCol1());
+
+              if (scale > 0) {
+                picture.resize(1d / (scale + 0.5));
+              }
             }
           }
 
