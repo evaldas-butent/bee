@@ -16,7 +16,7 @@
 
     <CalcColumn type="string" name="Flag" source="CountryCode" cellType="html" width="30"
       caption="-" label="=countryFlag" sortable="false" horizontalAlignment="center"
-      filterOptions="-">
+      filterOptions="-" exportWidthFactor="0.5">
       <renderer type="flag" />
     </CalcColumn>
   </g:columns>

@@ -93,8 +93,6 @@ public interface GridInterceptor extends WidgetInterceptor, ParentRowEvent.Handl
 
   boolean ensureRelId(IdCallback callback);
 
-  String getColumnCaption(String columnName);
-  
   /**
    * Enables conditional styles for columns.
    */

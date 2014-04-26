@@ -44,6 +44,7 @@
     <xs:attribute name="filterOptions" type="xs:normalizedString" />
     <xs:attribute name="options" type="xs:normalizedString" />
     <xs:attribute name="exportable" type="xs:boolean" />
+    <xs:attribute name="exportWidthFactor" type="type:positiveDecimal" />
     <xs:attribute ref="xml:base" />
   </xs:complexType>
   

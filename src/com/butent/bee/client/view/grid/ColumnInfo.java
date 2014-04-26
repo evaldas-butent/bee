@@ -21,13 +21,12 @@ import com.butent.bee.shared.ui.ColumnDescription.ColType;
 import com.butent.bee.shared.ui.Flexibility;
 import com.butent.bee.shared.ui.Flexible;
 import com.butent.bee.shared.ui.GridDescription;
-import com.butent.bee.shared.ui.HasCaption;
 import com.butent.bee.shared.ui.Orientation;
 import com.butent.bee.shared.utils.BeeUtils;
 
 import java.util.List;
 
-public class ColumnInfo implements HasValueType, Flexible, HasCaption {
+public class ColumnInfo implements HasValueType, Flexible {
 
   private static final int DEFAULT_MIN_WIDTH = 40;
   private static final int DEFAULT_MAX_WIDTH = 400;
@@ -70,7 +69,9 @@ public class ColumnInfo implements HasValueType, Flexible, HasCaption {
   private boolean cellResizable = true;
 
   private boolean hidable = true;
+
   private boolean exportable = true;
+  private Double exportWidthFactor;
 
   public ColumnInfo(String columnId, String label, CellSource source, AbstractColumn<?> column,
       ColumnHeader header) {
@@ -111,12 +112,6 @@ public class ColumnInfo implements HasValueType, Flexible, HasCaption {
     return (obj instanceof ColumnInfo) && columnId.equals(((ColumnInfo) obj).columnId);
   }
 
-  @Override
-  public String getCaption() {
-    return (header == null) ? null : header.getCaption();
-  }
-
-  
   public AbstractColumn<?> getColumn() {
     return column;
   }
@@ -125,9 +120,17 @@ public class ColumnInfo implements HasValueType, Flexible, HasCaption {
     return dynStyles;
   }
 
+  public Double getExportWidthFactor() {
+    return exportWidthFactor;
+  }
+
   @Override
   public Flexibility getFlexibility() {
     return flexibility;
+  }
+
+  public ColumnHeader getHeader() {
+    return header;
   }
 
   @Override
@@ -153,7 +156,7 @@ public class ColumnInfo implements HasValueType, Flexible, HasCaption {
   public int hashCode() {
     return columnId.hashCode();
   }
-  
+
   public boolean isExportable() {
     return exportable;
   }
@@ -234,10 +237,6 @@ public class ColumnInfo implements HasValueType, Flexible, HasCaption {
 
   ColumnFooter getFooter() {
     return footer;
-  }
-
-  ColumnHeader getHeader() {
-    return header;
   }
 
   Font getHeaderFont() {
@@ -333,9 +332,12 @@ public class ColumnInfo implements HasValueType, Flexible, HasCaption {
     } else {
       setCellResizable(cr);
     }
-    
+
     if (BeeUtils.isFalse(columnDescription.getExportable())) {
       setExportable(false);
+    }
+    if (BeeUtils.isPositive(columnDescription.getExportWidthFactor())) {
+      setExportWidthFactor(columnDescription.getExportWidthFactor());
     }
   }
 
@@ -399,6 +401,10 @@ public class ColumnInfo implements HasValueType, Flexible, HasCaption {
 
   void setExportable(boolean exportable) {
     this.exportable = exportable;
+  }
+
+  void setExportWidthFactor(Double exportWidthFactor) {
+    this.exportWidthFactor = exportWidthFactor;
   }
 
   void setFooterFont(String fontDeclaration) {

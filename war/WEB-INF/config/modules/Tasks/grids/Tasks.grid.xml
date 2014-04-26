@@ -7,10 +7,10 @@
   >
   <g:columns>
     <CalcColumn name="Mode" type="string" cellType="html" horizontalAlignment="center" width="20"
-      caption="-" label="=taskColumnMode" />
+      caption="-" label="=taskColumnMode" exportWidthFactor="0.3" />
 
     <PropColumn name="Star" type="integer" cellType="html" horizontalAlignment="center" width="20"
-      label="=taskColumnStar">
+      label="=taskColumnStar" exportWidthFactor="0.4">
       <renderer type="star" />
     </PropColumn>
 

@@ -154,6 +154,7 @@ public class GridLoaderBean {
   private static final String ATTR_DYNAMIC = "dynamic";
 
   private static final String ATTR_EXPORTABLE = "exportable";
+  private static final String ATTR_EXPORT_WIDTH_FACTOR = "exportWidthFactor";
   
   private static GridComponentDescription getComponent(Element parent, String tagName) {
     Assert.notNull(parent);
@@ -358,8 +359,6 @@ public class GridLoaderBean {
 
         } else if (BeeUtils.same(key, UiConstants.ATTR_VISIBLE)) {
           dst.setVisible(BeeUtils.toBooleanOrNull(value));
-        } else if (BeeUtils.same(key, ATTR_EXPORTABLE)) {
-          dst.setExportable(BeeUtils.toBooleanOrNull(value));
 
         } else if (BeeUtils.same(key, UiConstants.ATTR_FORMAT)) {
           dst.setFormat(value.trim());
@@ -420,6 +419,11 @@ public class GridLoaderBean {
         } else if (BeeUtils.same(key, ATTR_DYNAMIC)) {
           dst.setDynamic(BeeUtils.toBooleanOrNull(value));
 
+        } else if (BeeUtils.same(key, ATTR_EXPORTABLE)) {
+          dst.setExportable(BeeUtils.toBooleanOrNull(value));
+        } else if (BeeUtils.same(key, ATTR_EXPORT_WIDTH_FACTOR)) {
+          dst.setExportWidthFactor(BeeUtils.toDoubleOrNull(value));
+          
         } else if (Flexibility.isAttributeRelevant(key)) {
           hasFlexibility = true;
         }

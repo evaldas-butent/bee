@@ -273,6 +273,20 @@ public class ExportServlet extends LoginServlet {
         sheet.setDefaultRowHeightInPoints(defaultRowHeightInPoints
             * inputSheet.getRowHeightFactor().floatValue());
       }
+      
+      if (!inputSheet.getColumnWidthFactors().isEmpty()) {
+        for (Map.Entry<Integer, Double> entry : inputSheet.getColumnWidthFactors().entrySet()) {
+          Integer columnIndex = entry.getKey();
+          Double widthFactor = entry.getValue();
+          
+          if (BeeUtils.isNonNegative(columnIndex) && BeeUtils.isPositive(widthFactor)) {
+            int width = BeeUtils.round(sheet.getColumnWidth(columnIndex) * widthFactor);
+            if (width > 0) {
+              sheet.setColumnWidth(columnIndex, width);
+            }
+          }
+        }
+      }
 
       Map<Integer, Font> fonts = new HashMap<>();
       if (!inputSheet.getFonts().isEmpty()) {

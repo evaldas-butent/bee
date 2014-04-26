@@ -2,6 +2,7 @@ package com.butent.bee.client.modules.discussions;
 
 import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.data.Queries;
+import com.butent.bee.client.grid.ColumnHeader;
 import com.butent.bee.client.images.Images;
 import com.butent.bee.client.images.star.Stars;
 import com.butent.bee.client.modules.discussions.DiscussionsList.ListType;
@@ -15,7 +16,9 @@ import com.butent.bee.client.view.search.AbstractFilterSupplier;
 import com.butent.bee.client.widget.FaLabel;
 
 import static com.butent.bee.shared.modules.discussions.DiscussionsConstants.*;
+import static com.butent.bee.shared.modules.tasks.TaskConstants.PROP_STAR;
 
+import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.Consumer;
 import com.butent.bee.shared.data.CellSource;
 import com.butent.bee.shared.data.IsRow;
@@ -47,28 +50,11 @@ class DiscussionsGridHandler extends AbstractGridInterceptor {
   }
 
   @Override
-  public String getColumnCaption(String columnName) {
-    if (PROP_STAR.equals(columnName)) {
-      return Stars.getDefaultHeader();
-    } else if (PROP_FILES_COUNT.equals(columnName)) {
-      return Images.asString(Images.get(AttachmentRenderer.IMAGE_ATTACHMENT));
-    } else if (PROP_RELATIONS_COUNT.equals(columnName)) {
-      return Images.asString(Images.get("link"));
-    } else if (PROP_ANNOUNCMENT.equals(columnName)) {
-      FaLabel fl = new FaLabel(FontAwesome.BULLHORN);
-      StyleUtils.setFontSize(fl, 16);
-      return fl.toString();
-    } else {
-      return super.getColumnCaption(columnName);
-    }
-  }
-
-  @Override
   public DeleteMode getDeleteMode(GridPresenter presenter, IsRow activeRow,
       Collection<RowInfo> selectedRows, DeleteMode defMode) {
     return DeleteMode.SINGLE;
   }
-
+  
   @Override
   public AbstractFilterSupplier getFilterSupplier(String columnName,
       ColumnDescription columnDescription) {
@@ -76,6 +62,28 @@ class DiscussionsGridHandler extends AbstractGridInterceptor {
       return new DiscussStarFilterSupplier(columnDescription.getFilterOptions());
     } else {
       return super.getFilterSupplier(columnName, columnDescription);
+    }
+  }
+
+  @Override
+  public ColumnHeader getHeader(String columnName, String caption) {
+    if (PROP_STAR.equals(columnName)) {
+      return new ColumnHeader(columnName, Stars.getDefaultHeader(), BeeConst.STRING_ASTERISK);
+
+    } else if (PROP_FILES_COUNT.equals(columnName)) {
+      return new ColumnHeader(columnName, 
+          Images.asString(Images.get(AttachmentRenderer.IMAGE_ATTACHMENT)), null);
+    
+    } else if (PROP_RELATIONS_COUNT.equals(columnName)) {
+      return new ColumnHeader(columnName, Images.asString(Images.get("link")), null);
+    
+    } else if (PROP_ANNOUNCMENT.equals(columnName)) {
+      FaLabel fl = new FaLabel(FontAwesome.BULLHORN);
+      StyleUtils.setFontSize(fl, 16);
+      return new ColumnHeader(columnName, fl.toString(), null);
+      
+    } else {
+      return super.getHeader(columnName, caption);
     }
   }
 

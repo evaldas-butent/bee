@@ -7,12 +7,14 @@ import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.Codec;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 public class XSheet implements BeeSerializable {
 
   private enum Serial {
-    NAME, ROW_HEIGHT_FACTOR, ROWS, FONTS, STYLES, PICTURES, AUTO_SIZE
+    NAME, ROW_HEIGHT_FACTOR, ROWS, FONTS, STYLES, PICTURES, AUTO_SIZE, COLUMN_WIDTH_FACTORS
   }
 
   private static final double H1_FONT_FACTOR = 1.4;
@@ -37,6 +39,7 @@ public class XSheet implements BeeSerializable {
   private final List<XPicture> pictures = new ArrayList<>();
 
   private final List<Integer> autoSize = new ArrayList<>();
+  private final Map<Integer, Double> columnWidthFactors = new HashMap<>();
 
   public XSheet() {
     super();
@@ -160,6 +163,9 @@ public class XSheet implements BeeSerializable {
     if (!autoSize.isEmpty()) {
       autoSize.clear();
     }
+    if (!columnWidthFactors.isEmpty()) {
+      columnWidthFactors.clear();
+    }
 
     for (int i = 0; i < members.length; i++) {
       String value = arr[i];
@@ -168,6 +174,17 @@ public class XSheet implements BeeSerializable {
       }
 
       switch (members[i]) {
+        case COLUMN_WIDTH_FACTORS:
+          Map<String, String> map = Codec.deserializeMap(value);
+          
+          for (Map.Entry<String, String> entry : map.entrySet()) {
+            if (BeeUtils.isDigit(entry.getKey()) && BeeUtils.isPositiveDouble(entry.getValue())) {
+              columnWidthFactors.put(BeeUtils.toInt(entry.getKey()),
+                  BeeUtils.toDouble(entry.getValue()));
+            }
+          }
+          break;
+
         case NAME:
           setName(value);
           break;
@@ -207,6 +224,7 @@ public class XSheet implements BeeSerializable {
                 styles.add(XStyle.restore(item));
                 break;
 
+              case COLUMN_WIDTH_FACTORS:
               case NAME:
               case ROW_HEIGHT_FACTOR:
                 break;
@@ -218,6 +236,10 @@ public class XSheet implements BeeSerializable {
 
   public List<Integer> getAutoSize() {
     return autoSize;
+  }
+
+  public Map<Integer, Double> getColumnWidthFactors() {
+    return columnWidthFactors;
   }
 
   public XFont getFont(int index) {
@@ -322,6 +344,9 @@ public class XSheet implements BeeSerializable {
         case AUTO_SIZE:
           values.add(autoSize.isEmpty() ? null : Codec.beeSerialize(autoSize));
           break;
+        case COLUMN_WIDTH_FACTORS:
+          values.add(columnWidthFactors.isEmpty() ? null : Codec.beeSerialize(columnWidthFactors));
+          break;
         case FONTS:
           values.add(fonts.isEmpty() ? null : Codec.beeSerialize(fonts));
           break;
@@ -345,6 +370,14 @@ public class XSheet implements BeeSerializable {
     }
 
     return Codec.beeSerialize(values);
+  }
+
+  public void setColumnWidthFactor(int columnIndex, Double widthFactor) {
+    if (BeeUtils.isPositive(widthFactor)) {
+      columnWidthFactors.put(columnIndex, widthFactor);
+    } else {
+      columnWidthFactors.remove(columnIndex);
+    }
   }
 
   public void setName(String name) {

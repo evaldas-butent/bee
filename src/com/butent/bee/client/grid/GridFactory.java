@@ -504,7 +504,7 @@ public final class GridFactory {
       String label = table.getColumnLabel(i);
 
       ColumnInfo columnInfo = new ColumnInfo(id, label, source, column,
-          new ColumnHeader(id, label));
+          new ColumnHeader(id, label, label));
       grid.addColumn(columnInfo);
     }
 

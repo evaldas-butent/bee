@@ -12,6 +12,7 @@ import com.butent.bee.client.Global;
 import com.butent.bee.client.data.Queries;
 import com.butent.bee.client.dialog.StringCallback;
 import com.butent.bee.client.grid.CellContext;
+import com.butent.bee.client.grid.ColumnHeader;
 import com.butent.bee.client.presenter.GridPresenter;
 import com.butent.bee.client.screen.BodyPanel;
 import com.butent.bee.client.view.grid.CellGrid;
@@ -112,6 +113,13 @@ public final class Exporter {
     Double rowHeightFactor = getRowHeightFactor(grid);
     if (rowHeightFactor != null) {
       sheet.setRowHeightFactor(rowHeightFactor);
+    }
+
+    for (int i = 0; i < columnCount; i++) {
+      Double widthFactor = columns.get(i).getExportWidthFactor();
+      if (BeeUtils.isPositive(widthFactor)) {
+        sheet.setColumnWidthFactor(i, widthFactor);
+      }
     }
     
     int rowIndex = 0;
@@ -214,7 +222,10 @@ public final class Exporter {
       styleRef = sheet.registerStyle(style);
 
       for (int i = 0; i < columnCount; i++) {
-        row.add(new XCell(i, columns.get(i).getCaption(), styleRef));
+        ColumnHeader header = columns.get(i).getHeader();
+        if (header != null) {
+          row.add(new XCell(i, header.getExportLabel(), styleRef));
+        }
       }
       sheet.add(row);
     }
@@ -366,7 +377,7 @@ public final class Exporter {
 
   private static void autosizeNoPictures(XSheet sheet, int columnCount) {
     for (int i = 0; i < columnCount; i++) {
-      if (!sheet.hasPictures(i)) {
+      if (!sheet.getColumnWidthFactors().containsKey(i) && !sheet.hasPictures(i)) {
         sheet.autoSizeColumn(i);
       }
     }

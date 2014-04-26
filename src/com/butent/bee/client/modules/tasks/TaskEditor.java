@@ -912,7 +912,7 @@ class TaskEditor extends AbstractFormInterceptor {
     params.addDataItem(VAR_TASK_ID, taskId);
     params.addDataItem(VAR_TASK_PROPERTIES, BeeUtils.join(BeeConst.STRING_COMMA,
         PROP_OBSERVERS, PROP_FILES, PROP_EVENTS));
-    params.addDataItem(VAR_TASK_RELATIONS, BeeConst.STRING_ALL);
+    params.addDataItem(VAR_TASK_RELATIONS, BeeConst.STRING_ASTERISK);
 
     Callback<ResponseObject> callback = new Callback<ResponseObject>() {
       @Override

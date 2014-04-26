@@ -881,9 +881,9 @@ public final class CliWorker {
     boolean all;
     Set<Long> userIds = Sets.newHashSet();
 
-    if (args.startsWith(BeeConst.STRING_ALL)) {
+    if (args.startsWith(BeeConst.STRING_ASTERISK)) {
       all = true;
-      cmnd = BeeUtils.removePrefix(args.substring(1).trim(), BeeConst.STRING_ALL);
+      cmnd = BeeUtils.removePrefix(args.substring(1).trim(), BeeConst.STRING_ASTERISK);
 
     } else if (args.startsWith(BeeConst.STRING_LEFT_PARENTHESIS)
         || args.startsWith(BeeConst.STRING_LEFT_BRACKET)) {
@@ -896,7 +896,7 @@ public final class CliWorker {
       }
 
       String userList = args.substring(1, endIndex).trim();
-      if (BeeUtils.isEmpty(userList) || BeeUtils.containsOnly(userList, BeeConst.CHAR_ALL)) {
+      if (BeeUtils.isEmpty(userList) || BeeUtils.containsOnly(userList, BeeConst.CHAR_ASTERISK)) {
         all = true;
       } else {
         all = false;
@@ -4260,7 +4260,7 @@ public final class CliWorker {
       }
     }
 
-    if (BeeUtils.isEmpty(text) || BeeUtils.same(text, BeeConst.STRING_ALL)) {
+    if (BeeUtils.isEmpty(text) || BeeUtils.same(text, BeeConst.STRING_ASTERISK)) {
       logger.info("Translate", codeFrom, codeTo);
       List<Element> elements = Lists.newArrayList();
 

@@ -602,22 +602,23 @@ public class GridImpl extends Absolute implements GridView, EditEndEvent.Handler
 
     ColumnHeader header = null;
     if (gridDescription.hasColumnHeaders()) {
-      String headerCaption = null;
-      if (gridInterceptor != null) {
-        headerCaption = gridInterceptor.getColumnCaption(columnId);
-      }
-      if (headerCaption == null && !BeeConst.STRING_MINUS.equals(caption)) {
+      String headerCaption;
+      if (BeeConst.STRING_MINUS.equals(caption)) {
+        headerCaption = null;
+      } else {
         headerCaption = BeeUtils.notEmpty(caption, columnId);
       }
 
       if (gridInterceptor != null) {
         header = gridInterceptor.getHeader(columnId, headerCaption);
       }
+
       if (header == null) {
         if (colType == ColType.SELECTION) {
-          header = new ColumnHeader(columnId, new SelectionHeader());
+          header = new ColumnHeader(columnId, new SelectionHeader(),
+              String.valueOf(BeeConst.CHECK_MARK));
         } else {
-          header = new ColumnHeader(columnId, headerCaption);
+          header = new ColumnHeader(columnId, headerCaption, headerCaption);
         }
       }
     }

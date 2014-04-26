@@ -178,11 +178,6 @@ public class AbstractGridInterceptor implements GridInterceptor {
   }
 
   @Override
-  public String getColumnCaption(String columnName) {
-    return null;
-  }
-
-  @Override
   public StyleProvider getColumnStyleProvider(String columnName) {
     return null;
   }

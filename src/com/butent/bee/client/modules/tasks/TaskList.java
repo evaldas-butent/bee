@@ -220,15 +220,6 @@ final class TaskList {
     }
 
     @Override
-    public String getColumnCaption(String columnName) {
-      if (PROP_STAR.equals(columnName)) {
-        return Stars.getDefaultHeader();
-      } else {
-        return super.getColumnCaption(columnName);
-      }
-    }
-
-    @Override
     public DeleteMode getDeleteMode(GridPresenter presenter, IsRow activeRow,
         Collection<RowInfo> selectedRows, DeleteMode defMode) {
       Provider provider = presenter.getDataProvider();
@@ -266,6 +257,15 @@ final class TaskList {
 
       } else {
         return super.getFilterSupplier(columnName, columnDescription);
+      }
+    }
+
+    @Override
+    public ColumnHeader getHeader(String columnName, String headerCaption) {
+      if (PROP_STAR.equals(columnName)) {
+        return new ColumnHeader(columnName, Stars.getDefaultHeader(), BeeConst.STRING_ASTERISK);
+      } else {
+        return super.getHeader(columnName, headerCaption);
       }
     }
 

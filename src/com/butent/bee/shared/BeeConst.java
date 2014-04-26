@@ -71,7 +71,7 @@ public final class BeeConst {
   public static final String STRING_EOL = "\n";
   public static final String STRING_MINUS = "-";
   public static final String STRING_PLUS = "+";
-  public static final String STRING_ALL = "*";
+  public static final String STRING_ASTERISK = "*";
   public static final String STRING_APOS = "'";
   public static final String STRING_QUOT = "\"";
   public static final String STRING_UNDER = "_";
@@ -119,7 +119,7 @@ public final class BeeConst {
   public static final char CHAR_NBSP = '\u00a0';
   public static final char CHAR_COLON = ':';
   public static final char CHAR_SEMICOLON = ';';
-  public static final char CHAR_ALL = '*';
+  public static final char CHAR_ASTERISK = '*';
   public static final char CHAR_SLASH = '/';
   public static final char CHAR_BACKSLASH = '\\';
   public static final char CHAR_TIMES = '\u00d7';
