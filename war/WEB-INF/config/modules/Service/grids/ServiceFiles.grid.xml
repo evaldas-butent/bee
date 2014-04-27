@@ -6,7 +6,7 @@
   >
   <g:columns>
     <DataColumn name="File" caption="=actionOpen" readOnly="true" cellType="html"
-      sortable="false" minWidth="150" visible="true" />
+      sortable="false" minWidth="150" visible="true" exportable="false" />
 
     <DataColumn name="Caption" required="true" updateMode="row" minWidth="150" />
 

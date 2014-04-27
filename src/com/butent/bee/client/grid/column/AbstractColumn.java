@@ -99,6 +99,14 @@ public abstract class AbstractColumn<C> implements HasValueType, HasOptions, Has
 
   public abstract ColType getColType();
 
+  public AbstractCellRenderer getOptionalRenderer() {
+    if (this instanceof HasCellRenderer) {
+      return ((HasCellRenderer) this).getRenderer();
+    } else {
+      return null;
+    }
+  }
+
   @Override
   public String getOptions() {
     return options;
@@ -112,9 +120,9 @@ public abstract class AbstractColumn<C> implements HasValueType, HasOptions, Has
     return sortBy;
   }
 
-  public abstract String getStyleSuffix();
-
   public abstract String getString(CellContext context, IsRow row);
+
+  public abstract String getStyleSuffix();
 
   @Override
   public TextAlign getTextAlign() {
@@ -134,8 +142,11 @@ public abstract class AbstractColumn<C> implements HasValueType, HasOptions, Has
     if (renderer != null) {
       return renderer.initExport(sheet);
 
-    } else if (getValueType() != null && sheet != null) {
-      TextAlign textAlign = UiHelper.getDefaultHorizontalAlignment(getValueType());
+    } else if ((getTextAlign() != null || getValueType() != null) && sheet != null) {
+      TextAlign textAlign = getTextAlign();
+      if (textAlign == null) {
+        textAlign = UiHelper.getDefaultHorizontalAlignment(getValueType());
+      }
 
       if (textAlign != null) {
         XStyle style = new XStyle();
@@ -191,13 +202,5 @@ public abstract class AbstractColumn<C> implements HasValueType, HasOptions, Has
   @Override
   public void setWhiteSpace(WhiteSpace whiteSpace) {
     this.whiteSpace = whiteSpace;
-  }
-
-  private AbstractCellRenderer getOptionalRenderer() {
-    if (this instanceof HasCellRenderer) {
-      return ((HasCellRenderer) this).getRenderer();
-    } else {
-      return null;
-    }
   }
 }

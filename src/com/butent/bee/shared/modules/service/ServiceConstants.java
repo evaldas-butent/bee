@@ -36,10 +36,8 @@ public final class ServiceConstants {
 
   public static final String COL_MAINTENANCE_DATE = "Date";
   public static final String COL_MAINTENANCE_ITEM = "Item";
-  public static final String COL_MAINTENANCE_QUANTITY = "Quantity";
-  public static final String COL_MAINTENANCE_PRICE = "Price";
-  public static final String COL_MAINTENANCE_CURRENCY = "Currency";
   public static final String COL_MAINTENANCE_INVOICE = "Invoice";
+  public static final String COL_MAINTENANCE_NOTES = "Notes";
 
   public static final String ALS_CATEGORY_NAME = "CategoryName";
   public static final String ALS_ITEM_NAME = "ItemName";

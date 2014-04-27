@@ -83,6 +83,7 @@ public final class BeeConst {
   public static final String STRING_EXCLAMATION = "!";
   public static final String STRING_NUMBER_SIGN = "#";
   public static final String STRING_SUM = "\u2211";
+  public static final String STRING_CHECK_MARK = "\u2713";
 
   public static final String STRING_FALSE = Boolean.toString(false);
   public static final String STRING_TRUE = Boolean.toString(true);
@@ -126,11 +127,6 @@ public final class BeeConst {
   public static final char CHAR_QUESTION = '?';
   public static final char CHAR_AT = '@';
   public static final char CHAR_PLUS_MINUS = '\u00b1';
-
-  public static final char CHECK_MARK = '\u2713';
-  public static final char HEAVY_CHECK_MARK = '\u2714';
-  public static final char BALLOT = '\u2717';
-  public static final char HEAVY_BALLOT = '\u2718';
 
   public static final char DRILL_DOWN = '\u25ba';
   public static final char DROP_DOWN = '\u25bc';

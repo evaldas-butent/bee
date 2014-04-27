@@ -12,7 +12,11 @@
     <Relation name="Item" notNull="true" relation="Items" label="=trProductService" />
     <Numeric name="Quantity" precision="12" scale="3" notNull="true" label="=quantity" />
     <Numeric name="Price" precision="12" scale="2" label="=price" />
-    <Relation name="Currency" relation="Currencies" label="=currency" />
+    <Relation name="Currency" relation="Currencies" label="=currency" defExpr="MAIN_CURRENCY" />
+
+    <Boolean name="VatPlus" label="=vatPlus" />
+    <Numeric name="Vat" precision="12" scale="2" label="=vat" />
+    <Boolean name="VatPercent" label="=vatPercent" />
 
     <Relation name="Supplier" relation="Companies" label="=supplier" />
     <Relation name="Master" relation="CompanyPersons" label="=svcMaster" />

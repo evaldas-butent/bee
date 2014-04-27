@@ -1252,6 +1252,9 @@
   padding-left: 1em;
   padding-right: 1em;
 }
+.bee-NewRow-inputCell > .bee-SimpleCheckBox {
+  margin: 0;
+}
 
 .bee-Image {
   cursor: pointer;

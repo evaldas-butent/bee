@@ -122,6 +122,7 @@ import com.butent.bee.shared.ui.ColumnDescription;
 import com.butent.bee.shared.ui.ColumnDescription.ColType;
 import com.butent.bee.shared.ui.FilterSupplierType;
 import com.butent.bee.shared.ui.GridDescription;
+import com.butent.bee.shared.ui.HandlesFormat;
 import com.butent.bee.shared.ui.Relation;
 import com.butent.bee.shared.ui.RenderableToken;
 import com.butent.bee.shared.ui.UiConstants;
@@ -586,7 +587,11 @@ public class GridImpl extends Absolute implements GridView, EditEndEvent.Handler
     }
 
     if (!BeeUtils.isEmpty(cd.getFormat())) {
-      Format.setFormat(column, column.getValueType(), cd.getFormat());
+      if (column instanceof HandlesFormat) {
+        ((HandlesFormat) column).setFormat(cd.getFormat());
+      } else {
+        Format.setFormat(column, column.getValueType(), cd.getFormat());
+      }
     }
 
     if (!BeeUtils.isEmpty(cd.getHorAlign())) {
@@ -615,8 +620,7 @@ public class GridImpl extends Absolute implements GridView, EditEndEvent.Handler
 
       if (header == null) {
         if (colType == ColType.SELECTION) {
-          header = new ColumnHeader(columnId, new SelectionHeader(),
-              String.valueOf(BeeConst.CHECK_MARK));
+          header = new ColumnHeader(columnId, new SelectionHeader(), BeeConst.STRING_CHECK_MARK);
         } else {
           header = new ColumnHeader(columnId, headerCaption, headerCaption);
         }

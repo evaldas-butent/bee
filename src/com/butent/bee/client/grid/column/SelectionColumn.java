@@ -32,7 +32,7 @@ public class SelectionColumn extends AbstractColumn<Boolean> {
   @Override
   public XCell export(CellContext context, Integer styleRef, XSheet sheet) {
     if (context != null && BeeUtils.isTrue(getValue(context.getRow()))) {
-      return new XCell(context.getColumnIndex(), String.valueOf(BeeConst.CHECK_MARK), styleRef);
+      return new XCell(context.getColumnIndex(), BeeConst.STRING_CHECK_MARK, styleRef);
     } else {
       return null;
     }

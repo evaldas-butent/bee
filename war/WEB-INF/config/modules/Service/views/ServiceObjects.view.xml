@@ -4,6 +4,7 @@
   name="ServiceObjects" source="ServiceObjects"
   caption="=svcObjects" newRowCaption="=svcNewObject"
   editForm="ServiceObject" newRowForm="ServiceObject"
+  rowCaption="CategoryName Address CustomerName"
   >
   <Columns>
     <SimpleColumn name="Category" />

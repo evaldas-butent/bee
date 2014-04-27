@@ -3,61 +3,78 @@ package com.butent.bee.client.grid.cell;
 import com.google.gwt.safehtml.shared.SafeHtmlBuilder;
 
 import com.butent.bee.client.grid.CellContext;
-import com.butent.bee.client.i18n.Format;
+import com.butent.bee.shared.BeeConst;
+import com.butent.bee.shared.ui.HandlesFormat;
+import com.butent.bee.shared.utils.ArrayUtils;
+import com.butent.bee.shared.utils.BeeUtils;
 
 /**
  * Enables using a cell for representing boolean data.
  */
 
-public class BooleanCell extends AbstractCell<Boolean> {
+public class BooleanCell extends AbstractCell<Boolean> implements HandlesFormat {
 
-  private Character trueChar;
-  private Character falseChar;
-  private Character nullChar;
+  private String trueText;
+  private String falseText;
+  private String nullText;
 
   public BooleanCell() {
-    this(Format.getDefaultTrueChar(), Format.getDefaultFalseChar(), Format.getDefaultNullChar());
+    this(BeeConst.STRING_CHECK_MARK, null, null);
   }
 
-  public BooleanCell(Character trueChar, Character falseChar) {
-    this(trueChar, falseChar, Format.getDefaultNullChar());
+  public BooleanCell(String trueText, String falseText, String nullText) {
+    this.trueText = trueText;
+    this.falseText = falseText;
+    this.nullText = nullText;
   }
 
-  public BooleanCell(Character trueChar, Character falseChar, Character nullChar) {
-    this.trueChar = trueChar;
-    this.falseChar = falseChar;
-    this.nullChar = nullChar;
+  public String getFalseText() {
+    return falseText;
   }
 
-  public Character getFalseChar() {
-    return falseChar;
+  public String getNullText() {
+    return nullText;
   }
 
-  public Character getNullChar() {
-    return nullChar;
-  }
-
-  public Character getTrueChar() {
-    return trueChar;
+  public String getTrueText() {
+    return trueText;
   }
 
   @Override
   public void render(CellContext context, Boolean value, SafeHtmlBuilder sb) {
-    Character ch = (value == null) ? nullChar : (value ? trueChar : falseChar);
-    if (ch != null) {
-      sb.append(ch);
+    String text = (value == null) ? nullText : (value ? trueText : falseText);
+    if (text != null) {
+      sb.appendEscaped(text);
     }
   }
 
-  public void setFalseChar(Character falseChar) {
-    this.falseChar = falseChar;
+  public void setFalseText(String falseText) {
+    this.falseText = falseText;
   }
 
-  public void setNullChar(Character nullChar) {
-    this.nullChar = nullChar;
+  @Override
+  public void setFormat(String format) {
+    if (!BeeUtils.isEmpty(format)) {
+      String[] arr = BeeUtils.split(format, BeeConst.CHAR_SPACE);
+      int length = ArrayUtils.length(arr);
+      
+      if (length > 0) {
+        setTrueText(arr[0]);
+      }
+      if (length > 1) {
+        setFalseText(arr[1]);
+      }
+      if (length > 2) {
+        setNullText(arr[2]);
+      }
+    }
   }
 
-  public void setTrueChar(Character trueChar) {
-    this.trueChar = trueChar;
+  public void setNullText(String nullText) {
+    this.nullText = nullText;
+  }
+
+  public void setTrueText(String trueText) {
+    this.trueText = trueText;
   }
 }

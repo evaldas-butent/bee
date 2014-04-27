@@ -22,6 +22,10 @@
       <SimpleColumn name="Name" alias="CurrencyName" />
     </SimpleJoin>
     
+    <SimpleColumn name="VatPlus" />
+    <SimpleColumn name="Vat" />
+    <SimpleColumn name="VatPercent" />
+    
     <SimpleColumn name="Supplier" />
     <SimpleJoin joinType="LEFT" name="Supplier">
       <SimpleColumn name="Name" alias="SupplierName" />
