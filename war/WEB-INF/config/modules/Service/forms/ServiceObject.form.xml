@@ -19,15 +19,27 @@
         <text>=svcMaintenance</text>
         <ChildGrid name="Maintenance" relColumn="ServiceObject" />
       </page>
+      <page>
+        <text>=svcInvoices</text>
+        <GridPanel name="ServiceInvoices" />
+      </page>
 
       <page>
         <text>=documents</text>
         <ChildGrid name="RelatedDocuments" relColumn="ServiceObject" />
       </page>
-
       <page>
         <text>=files</text>
         <ChildGrid name="ServiceFiles" relColumn="ServiceObject" />
+      </page>
+
+      <page>
+        <text>=crmTasks</text>
+        <ChildGrid name="RelatedTasks" relColumn="ServiceObject" />
+      </page>
+      <page>
+        <text>=crmRecurringTasks</text>
+        <ChildGrid name="RelatedRecurringTasks" relColumn="ServiceObject" />
       </page>
     </TabbedPages>
   </FlowPanel>

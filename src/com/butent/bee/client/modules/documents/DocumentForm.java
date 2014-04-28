@@ -134,7 +134,7 @@ public class DocumentForm extends DocumentDataForm implements SelectorEvent.Hand
             final UnboundSelector selector = UnboundSelector.create(relation);
 
             HtmlTable table = new HtmlTable();
-            table.setText(0, 0, Localized.getConstants().templateName());
+            table.setText(0, 0, Localized.getConstants().documentTemplateName());
             table.setWidget(0, 1, selector);
 
             Global.inputWidget(Localized.getConstants().selectDocumentTemplate(), table,
@@ -407,7 +407,7 @@ public class DocumentForm extends DocumentDataForm implements SelectorEvent.Hand
   private void createTemplate() {
     LocalizableConstants loc = Localized.getConstants();
 
-    Global.inputString(loc.newDocumentTemplate(), loc.templateName(),
+    Global.inputString(loc.newDocumentTemplate(), loc.documentTemplateName(),
         new StringCallback() {
           @Override
           public void onSuccess(final String value) {

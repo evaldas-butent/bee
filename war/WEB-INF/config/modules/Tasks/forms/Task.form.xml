@@ -141,8 +141,15 @@
           renderColumns="Subject" newRowEnabled="false" style="&inp2x;" disablable="true" />
       </FlowPanel>
 
+      <FlowPanel style="&section;" data="Relations" for="ServiceObject" module="Service">
+        <Label text="=svcObjects" style="&top1;" />
+        <MultiSelector viewName="ServiceObjects" property="ServiceObjects"
+          renderColumns="Address" choiceColumns="Address CustomerName"
+          newRowEnabled="false" style="&inp2x;" disablable="true" />
+      </FlowPanel>
+
       <FlowPanel style="&section;" data="Relations" for="Relation">
-        <Label text="=tasks" style="&top1;" />
+        <Label text="=crmTasks" style="&top1;" />
         <MultiSelector viewName="Tasks" property="Tasks" 
           renderColumns="Summary ExecutorFirstName ExecutorLastName"
           choiceColumns="Summary ExecutorFirstName ExecutorLastName StartTime FinishTime"

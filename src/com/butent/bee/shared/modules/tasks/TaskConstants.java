@@ -337,6 +337,7 @@ public final class TaskConstants {
   public static final String PROP_DOCUMENTS = "Documents";
   public static final String PROP_APPOINTMENTS = "Appointments";
   public static final String PROP_DISCUSSIONS = "Discussions";
+  public static final String PROP_SERVICE_OBJECTS = "ServiceObjects";
   public static final String PROP_TASKS = "Tasks";
 
   public static final String PROP_FILES = "Files";

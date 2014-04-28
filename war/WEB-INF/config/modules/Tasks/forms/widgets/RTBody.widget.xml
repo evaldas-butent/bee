@@ -44,7 +44,7 @@
   <br/>
   <Table style="border-spacing: 5px;">
     <row>
-      <Label text="=taskTheme" class="bee-required" style="&lbl1;"/>
+      <Label text="=crmTaskSubject" class="bee-required" style="&lbl1;"/>
       <InputText source="Summary" style="&inp2x;" autocomplete="true"/>
     </row>
 
@@ -93,7 +93,7 @@
     </row>
 
     <row>
-      <Label text="=taskReminder" style="&lbl2;"/>
+      <Label text="=crmTaskReminder" style="&lbl2;"/>
       <DataSelector source="Reminder" renderColumns="ReminderName" newRowEnabled="false" 
         style="width: 100px;" />
       <Label text="=crmRTRemindBefore" style="&lbl1;"/>

@@ -53,7 +53,7 @@ public class DocumentTemplatesGrid extends AbstractGridInterceptor implements
       final IsRow row = grid.getActiveRow();
 
       if (row != null) {
-        Global.inputString(loc.newDocumentTemplate(), loc.templateName(),
+        Global.inputString(loc.newDocumentTemplate(), loc.documentTemplateName(),
             new StringCallback() {
               @Override
               public void onSuccess(final String value) {

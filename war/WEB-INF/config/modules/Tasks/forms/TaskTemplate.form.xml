@@ -31,7 +31,7 @@
         <DataSelector source="Company" />
       </row>
       <row>
-        <Label text="=taskReminder" horizontalAlignment="right"
+        <Label text="=crmTaskReminder" horizontalAlignment="right"
           style="&lbl1;" />
         <DataSelector source="Reminder" />
         <Label text="=description" horizontalAlignment="right"

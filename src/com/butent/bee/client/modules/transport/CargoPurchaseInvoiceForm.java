@@ -74,7 +74,7 @@ public class CargoPurchaseInvoiceForm extends PrintFormInterceptor {
         public void execute() {
           final FormView form = getFormView();
 
-          Queries.getRow(form.getViewName(), form.getActiveRow().getId(), new RowCallback() {
+          Queries.getRow(form.getViewName(), form.getActiveRowId(), new RowCallback() {
             @Override
             public void onSuccess(BeeRow result) {
               RowUpdateEvent.fire(BeeKeeper.getBus(), form.getViewName(), result);

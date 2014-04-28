@@ -625,7 +625,7 @@ final class TaskList {
       NEW {
         @Override
         String getLabel() {
-          return Localized.getConstants().taskFilterNew();
+          return Localized.getConstants().crmTaskFilterNew();
         }
 
         @Override
@@ -637,7 +637,7 @@ final class TaskList {
       UPDATED {
         @Override
         String getLabel() {
-          return Localized.getConstants().taskFilterUpdated();
+          return Localized.getConstants().crmTaskFilterUpdated();
         }
 
         @Override
@@ -649,7 +649,7 @@ final class TaskList {
       NEW_OR_UPDATED {
         @Override
         String getLabel() {
-          return Localized.getConstants().taskFilterNewOrUpdated();
+          return Localized.getConstants().crmTaskFilterNewOrUpdated();
         }
 
         @Override
@@ -742,7 +742,7 @@ final class TaskList {
 
       int row = 0;
 
-      Button bNew = new Button(Localized.getConstants().taskFilterNew());
+      Button bNew = new Button(Localized.getConstants().crmTaskFilterNew());
       bNew.addStyleName(getStylePrefix() + "new");
 
       bNew.addClickHandler(new ClickHandler() {
@@ -761,7 +761,7 @@ final class TaskList {
 
       row++;
 
-      Button bUpd = new Button(Localized.getConstants().taskFilterUpdated());
+      Button bUpd = new Button(Localized.getConstants().crmTaskFilterUpdated());
       bUpd.addStyleName(getStylePrefix() + "upd");
 
       bUpd.addClickHandler(new ClickHandler() {
@@ -780,7 +780,7 @@ final class TaskList {
 
       row++;
 
-      Button both = new Button(Localized.getConstants().taskFilterNewOrUpdated());
+      Button both = new Button(Localized.getConstants().crmTaskFilterNewOrUpdated());
       both.addStyleName(getStylePrefix() + "both");
 
       both.addClickHandler(new ClickHandler() {
@@ -802,7 +802,7 @@ final class TaskList {
 
       row++;
 
-      Button all = new Button(Localized.getConstants().taskFilterAll());
+      Button all = new Button(Localized.getConstants().crmTaskFilterAll());
       all.addStyleName(getStylePrefix() + "all");
 
       all.addClickHandler(new ClickHandler() {
@@ -928,7 +928,7 @@ final class TaskList {
 
         @Override
         String getLabel() {
-          return Localized.getConstants().taskLabelLate();
+          return Localized.getConstants().crmTaskLabelLate();
         }
 
         @Override
@@ -947,7 +947,7 @@ final class TaskList {
 
         @Override
         String getLabel() {
-          return Localized.getConstants().taskLabelScheduled();
+          return Localized.getConstants().crmTaskLabelScheduled();
         }
 
         @Override
@@ -1018,7 +1018,7 @@ final class TaskList {
       Flow container = new Flow();
       container.addStyleName(getStylePrefix() + "container");
 
-      Button late = new Button(Localized.getConstants().taskFilterLate());
+      Button late = new Button(Localized.getConstants().crmTaskFilterLate());
       late.addStyleName(getStylePrefix() + "late");
 
       late.addClickHandler(new ClickHandler() {
@@ -1032,7 +1032,7 @@ final class TaskList {
 
       container.add(late);
 
-      Button scheduled = new Button(Localized.getConstants().taskFilterScheduled());
+      Button scheduled = new Button(Localized.getConstants().crmTaskFilterScheduled());
       scheduled.addStyleName(getStylePrefix() + "scheduled");
 
       scheduled.addClickHandler(new ClickHandler() {
@@ -1046,7 +1046,7 @@ final class TaskList {
 
       container.add(scheduled);
 
-      Button all = new Button(Localized.getConstants().taskFilterAll());
+      Button all = new Button(Localized.getConstants().crmTaskFilterAll());
       all.addStyleName(getStylePrefix() + "all");
 
       all.addClickHandler(new ClickHandler() {
@@ -1104,7 +1104,7 @@ final class TaskList {
 
     @Override
     public String getLabel() {
-      return isStarred() ? Localized.getConstants().taskFilterStarred() : null;
+      return isStarred() ? Localized.getConstants().crmTaskFilterStarred() : null;
     }
 
     @Override
@@ -1136,7 +1136,7 @@ final class TaskList {
       Flow container = new Flow();
       container.addStyleName(getStylePrefix() + "container");
 
-      Button star = new Button(Localized.getConstants().taskFilterStarred());
+      Button star = new Button(Localized.getConstants().crmTaskFilterStarred());
       star.addStyleName(getStylePrefix() + "starred");
 
       star.addClickHandler(new ClickHandler() {
@@ -1150,7 +1150,7 @@ final class TaskList {
 
       container.add(star);
 
-      Button all = new Button(Localized.getConstants().taskFilterAll());
+      Button all = new Button(Localized.getConstants().crmTaskFilterAll());
       all.addStyleName(getStylePrefix() + "all");
 
       all.addClickHandler(new ClickHandler() {

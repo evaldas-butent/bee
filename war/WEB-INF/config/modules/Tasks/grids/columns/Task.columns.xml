@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<g:columns xmlns="http://www.butent.com/column" xmlns:g="http://www.butent.com/grid">
+
+  <CalcColumn name="Mode" type="string" cellType="html" horizontalAlignment="center" width="20"
+    caption="-" label="=crmTaskColumnMode" exportWidthFactor="0.3" />
+
+  <PropColumn name="Star" type="integer" cellType="html" horizontalAlignment="center" width="20"
+    label="=crmTaskColumnStar" exportWidthFactor="0.4">
+    <renderer type="star" />
+  </PropColumn>
+
+  <IdColumn name="Id" caption="=captionId" />
+  <DataColumn name="RecurringTask" readOnly="true" visible="false" />
+
+  <DataColumn name="Priority" />
+  <DataColumn name="Summary" visible="true" />
+  <DataColumn name="Description" visible="false" />
+
+  <RelColumn name="Company" />
+  <RelColumn name="Contact" visible="false" />
+
+  <DataColumn name="Status" visible="true" />
+  <CalcColumn name="Slack" type="string" cellType="html" width="60"
+    caption="=crmTaskDelayPlannedShort" />
+
+  <RelColumn name="Owner" renderColumns="OwnerFirstName OwnerLastName"
+    sortBy="OwnerLastName OwnerFirstName" minWidth="100" />
+  <RelColumn name="Executor" renderColumns="ExecutorFirstName ExecutorLastName"
+    sortBy="ExecutorLastName ExecutorFirstName" minWidth="100" />
+
+  <DataColumn name="StartTime" visible="true" readOnly="true" width="120" />
+  <DataColumn name="FinishTime" width="120" />
+
+  <DataColumn name="ExpectedDuration" visible="false" />
+
+  <DataColumn name="Created" visible="false" />
+  <DataColumn name="Completed" visible="false" />
+  <DataColumn name="Approved" visible="false" />
+    
+  <RelColumn name="Reminder" visible="false" />
+  <DataColumn name="ReminderTime" visible="false" />
+  <DataColumn name="ReminderSent" visible="false" />
+</g:columns>

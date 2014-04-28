@@ -30,7 +30,7 @@
       <col index="2" cellStyle="&col3;" />
 
       <row>
-        <Label text="=taskTemplate" data="TaskTemplates" />
+        <Label text="=crmTaskTemplate" data="TaskTemplates" />
         <DataSelector viewName="TaskTemplates" choiceColumns="Name" property="Template"
           newRowEnabled="false" style="&inp2;" data="TaskTemplates" />
         <Label for="Priority" text="=priority" />
@@ -59,7 +59,7 @@
       </row>
 
       <row>
-        <Label for="Reminder" text="=taskReminder" />
+        <Label for="Reminder" text="=crmTaskReminder" />
         <DataSelector source="Reminder" renderColumns="ReminderName" newRowEnabled="false"
           style="&inp2;" />
         <Label for="Contact" text="=personContact" />
@@ -85,7 +85,7 @@
       <col index="0" cellStyle="&col1;" />
       
       <row>
-        <Label text="=taskTheme" class="bee-required" />
+        <Label text="=crmTaskSubject" class="bee-required" />
         <InputText source="Summary" style="&inp2x;" autocomplete="true" visible="true" />
       </row>
 
@@ -173,8 +173,15 @@
           renderColumns="Subject" newRowEnabled="false" editPopup="true" style="&inp2x;" />
       </row>
 
+      <row data="Relations" for="ServiceObject" module="Service">
+        <Label text="=svcObjects" />
+        <MultiSelector viewName="ServiceObjects" property="ServiceObjects"
+          renderColumns="Address" choiceColumns="Address CustomerName"
+          newRowEnabled="false" editPopup="true" style="&inp2x;" />
+      </row>
+
       <row data="Relations" for="Relation">
-        <Label text="=tasks" />
+        <Label text="=crmTasks" />
         <MultiSelector viewName="Tasks" property="Tasks" 
           renderColumns="Summary ExecutorFirstName ExecutorLastName"
           choiceColumns="Summary ExecutorFirstName ExecutorLastName StartTime FinishTime"

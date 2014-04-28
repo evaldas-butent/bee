@@ -51,7 +51,7 @@
 
         <FlowPanel class="flexBox-horizontal" style="&row;"
             data="Relations" for="Task" module="Tasks">
-          <Label text="=tasks" style="&chlabel;" />
+          <Label text="=crmTasks" style="&chlabel;" />
           <ChildSelector class="flexible" viewName="Tasks" childTable="Relations" 
             targetRelColumn="Document" sourceRelColumn="Task" renderColumns="Summary"
             choiceColumns="Summary ExecutorFirstName ExecutorLastName StartTime FinishTime" />

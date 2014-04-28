@@ -94,9 +94,9 @@ public interface LocalizableTaskConstants {
 
   String crmTaskCompleteDate();
 
-  String crmTaskConfirmation();
-
   String crmTaskConfirm();
+
+  String crmTaskConfirmation();
 
   String crmTaskConfirmCanManager();
 
@@ -104,13 +104,15 @@ public interface LocalizableTaskConstants {
 
   String crmTaskCopyQuestion();
 
-  String crmTaskDescription();
-
   String crmTaskDeleteCanManager();
 
   String crmTaskDeleteQuestion();
 
+  String crmTaskDescription();
+
   String crmTaskEventApproved();
+
+  String crmTaskEventCreated();
 
   String crmTaskEventEdited();
 
@@ -120,27 +122,49 @@ public interface LocalizableTaskConstants {
 
   String crmTaskEventRenewed();
 
+  String crmTaskEventVisited();
+
   String crmTaskExecutor();
 
   String crmTaskExecutors();
 
   String crmTaskExpectedDuration();
 
-  String crmTaskEventCreated();
+  String crmTaskFilterAll();
 
-  String crmTaskEventVisited();
+  String crmTaskFilterLate();
+
+  String crmTaskFilterNew();
+
+  String crmTaskFilterNewOrUpdated();
+
+  String crmTaskFilterNotVisitedOrActive();
+
+  String crmTaskFilterNotVisitedOrActiveOrCompleted();
+
+  String crmTaskFilterScheduled();
+
+  String crmTaskFilterStarred();
+
+  String crmTaskFilterUpdated();
+
+  String crmTaskFinishDate();
 
   String crmTaskFinishing();
 
-  String crmTaskFinishDate();
+  String crmTaskForwardedForExecution();
 
   String crmTaskForwardForExecution();
 
   String crmTaskForwarding();
 
-  String crmTaskForwardedForExecution();
-
   String crmTaskForwardingForExecution();
+
+  String crmTaskLabelLate();
+
+  String crmTaskLabelScheduled();
+
+  String crmTaskLabelStarred();
 
   String crmTaskManager();
 
@@ -156,9 +180,13 @@ public interface LocalizableTaskConstants {
 
   String crmTaskPriorityMedium();
 
+  String crmTaskReminder();
+
   String crmTaskReturnExecution();
 
   String crmTaskReturningForExecution();
+
+  String crmTasks();
 
   String crmTasksAll();
 
@@ -190,6 +218,8 @@ public interface LocalizableTaskConstants {
 
   String crmTaskSuspension();
 
+  String crmTaskTemplate();
+
   String crmTaskTermChange();
 
   String crmTermNotChanged();
@@ -211,36 +241,4 @@ public interface LocalizableTaskConstants {
   String requestFinishToTask();
 
   String specifyResult();
-
-  String taskFilterAll();
-
-  String taskFilterLate();
-
-  String taskFilterNew();
-
-  String taskFilterNewOrUpdated();
-
-  String taskFilterNotVisitedOrActive();
-
-  String taskFilterNotVisitedOrActiveOrCompleted();
-
-  String taskFilterScheduled();
-
-  String taskFilterStarred();
-
-  String taskFilterUpdated();
-
-  String taskLabelLate();
-
-  String taskLabelScheduled();
-
-  String taskLabelStarred();
-
-  String taskReminder();
-
-  String tasks();
-
-  String taskTemplate();
-
-  String taskTheme();
 }
