@@ -11,6 +11,7 @@ import com.google.common.eventbus.Subscribe;
 import static com.butent.bee.shared.modules.classifiers.ClassifierConstants.*;
 import static com.butent.bee.shared.modules.discussions.DiscussionsConstants.*;
 
+import com.butent.bee.server.Invocation;
 import com.butent.bee.server.data.DataEditorBean;
 import com.butent.bee.server.data.DataEvent.ViewQueryEvent;
 import com.butent.bee.server.data.DataEventHandler;
@@ -173,7 +174,11 @@ public class DiscussionsModuleBean implements BeeModule {
       @Subscribe
       public void initTimers(ParameterEvent event) {
         if (BeeUtils.same(event.getParameter(), PRM_DISCUSS_INACTIVE_TIME_IN_DAYS)) {
-          initTimer();
+          DiscussionsModuleBean bean = Invocation.locateRemoteBean(DiscussionsModuleBean.class);
+
+          if (bean != null) {
+            bean.initTimer();
+          }
         }
       }
     });
@@ -328,6 +333,33 @@ public class DiscussionsModuleBean implements BeeModule {
     news.registerUsageQueryProvider(Feed.ANNOUNCEMENTS, new AnnouncementsUsageQueryProvider());
   }
 
+  public void initTimer() {
+    Timer discussTimer = null;
+
+    for (Timer timer : timerService.getTimers()) {
+      if (Objects.equal(timer.getInfo(), PRM_DISCUSS_INACTIVE_TIME_IN_DAYS)) {
+        discussTimer = timer;
+        break;
+      }
+    }
+    if (discussTimer != null) {
+      discussTimer.cancel();
+    }
+    Integer days = prm.getInteger(PRM_DISCUSS_INACTIVE_TIME_IN_DAYS);
+
+    if (BeeUtils.isPositive(days)) {
+      discussTimer = timerService.createIntervalTimer(DEFAUT_DISCCUSS_TIMER_TIMEOUT,
+          DEFAUT_DISCCUSS_TIMER_TIMEOUT, new TimerConfig(PRM_DISCUSS_INACTIVE_TIME_IN_DAYS, false));
+
+      logger.info("Created DISCUSSION refresh timer starting at", discussTimer.getNextTimeout());
+    } else {
+      if (discussTimer != null) {
+        logger.info("Removed DISCUSSION timer");
+      }
+    }
+
+  }
+
   private void addDiscussionProperties(BeeRow row, List<BeeColumn> columns,
       Collection<Long> discussionUsers, Collection<Long> discussionMarks, Long commentId) {
     long discussionId = row.getId();
@@ -399,7 +431,8 @@ public class DiscussionsModuleBean implements BeeModule {
       String relation = DiscussionsUtils.translateDiscussionPropertyToRelation(entry.getKey());
 
       if (BeeUtils.allNotEmpty(relation, entry.getValue())) {
-        children.add(RowChildren.create(AdministrationConstants.TBL_RELATIONS, COL_DISCUSSION, null,
+        children.add(RowChildren.create(AdministrationConstants.TBL_RELATIONS, COL_DISCUSSION,
+            null,
             relation, entry.getValue()));
       }
     }
@@ -788,7 +821,7 @@ public class DiscussionsModuleBean implements BeeModule {
             COL_LAST_NAME)
         .addField(TBL_PERSONS, COL_PHOTO,
             COL_PHOTO)
-        .addCount(TBL_DISCUSSIONS_FILES, AdministrationConstants.COL_FILE, 
+        .addCount(TBL_DISCUSSIONS_FILES, AdministrationConstants.COL_FILE,
             AdministrationConstants.COL_FILE)
         .addExpr(
             SqlUtils.sqlIf(
@@ -1208,33 +1241,6 @@ public class DiscussionsModuleBean implements BeeModule {
     }
 
     return res;
-  }
-
-  private void initTimer() {
-    Timer discussTimer = null;
-
-    for (Timer timer : timerService.getTimers()) {
-      if (Objects.equal(timer.getInfo(), PRM_DISCUSS_INACTIVE_TIME_IN_DAYS)) {
-        discussTimer = timer;
-        break;
-      }
-    }
-    if (discussTimer != null) {
-      discussTimer.cancel();
-    }
-    Integer days = prm.getInteger(PRM_DISCUSS_INACTIVE_TIME_IN_DAYS);
-
-    if (BeeUtils.isPositive(days)) {
-      discussTimer = timerService.createIntervalTimer(DEFAUT_DISCCUSS_TIMER_TIMEOUT,
-          DEFAUT_DISCCUSS_TIMER_TIMEOUT, new TimerConfig(PRM_DISCUSS_INACTIVE_TIME_IN_DAYS, false));
-
-      logger.info("Created DISCUSSION refresh timer starting at", discussTimer.getNextTimeout());
-    } else {
-      if (discussTimer != null) {
-        logger.info("Removed DISCUSSION timer");
-      }
-    }
-
   }
 
   private ResponseObject registerDiscussionVisit(long discussionId, long userId, long mills) {

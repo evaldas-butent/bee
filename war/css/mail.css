@@ -152,11 +152,6 @@
   margin-right: 3px;
 }
 
-.bee-mail-Folder-leaf:before {
-  content: "-";
-  margin-right: 3px;
-}
-
 .bee-mail-FolderCaption {
   color: silver;
   font-weight: bold;

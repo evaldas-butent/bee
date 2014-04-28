@@ -215,6 +215,10 @@ public class MailAccount {
     return transportProtocol;
   }
 
+  public Long getUserId() {
+    return accountInfo.getUserId();
+  }
+
   public boolean isStoredRemotedly(MailFolder folder) {
     Assert.notNull(folder);
     return (getStoreProtocol() == Protocol.IMAP) && folder.isConnected();

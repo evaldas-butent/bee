@@ -13,6 +13,7 @@ import static com.butent.bee.shared.modules.classifiers.ClassifierConstants.*;
 import static com.butent.bee.shared.modules.trade.TradeConstants.*;
 import static com.butent.bee.shared.modules.transport.TransportConstants.*;
 
+import com.butent.bee.server.Invocation;
 import com.butent.bee.server.data.BeeView;
 import com.butent.bee.server.data.DataEditorBean;
 import com.butent.bee.server.data.DataEvent.ViewDeleteEvent;
@@ -328,7 +329,11 @@ public class TransportModuleBean implements BeeModule {
       @Subscribe
       public void initTimers(ParameterEvent event) {
         if (BeeUtils.same(event.getParameter(), PRM_ERP_REFRESH_INTERVAL)) {
-          initTimer();
+          TransportModuleBean bean = Invocation.locateRemoteBean(TransportModuleBean.class);
+
+          if (bean != null) {
+            bean.initTimer();
+          }
         }
       }
     });
@@ -858,6 +863,33 @@ public class TransportModuleBean implements BeeModule {
             return select;
           }
         });
+  }
+
+  public void initTimer() {
+    Timer erpTimer = null;
+
+    for (Timer timer : timerService.getTimers()) {
+      if (Objects.equal(timer.getInfo(), PRM_ERP_REFRESH_INTERVAL)) {
+        erpTimer = timer;
+        break;
+      }
+    }
+    if (erpTimer != null) {
+      erpTimer.cancel();
+    }
+    Integer minutes = prm.getInteger(PRM_ERP_REFRESH_INTERVAL);
+
+    if (BeeUtils.isPositive(minutes)) {
+      erpTimer = timerService.createIntervalTimer(minutes * TimeUtils.MILLIS_PER_MINUTE,
+          minutes * TimeUtils.MILLIS_PER_MINUTE, new TimerConfig(PRM_ERP_REFRESH_INTERVAL, false));
+
+      logger.info("Created ERP refresh timer every", minutes, "minutes starting at",
+          erpTimer.getNextTimeout());
+    } else {
+      if (erpTimer != null) {
+        logger.info("Removed ERP timer");
+      }
+    }
   }
 
   private ResponseObject createCreditInvoiceItems(Long purchaseId, Long currency, Set<Long> idList,
@@ -2739,33 +2771,6 @@ public class TransportModuleBean implements BeeModule {
                   TimeUtils.parseDateTime(payment.getValue("data")))
               .setWhere(sys.idEquals(TBL_SALES, payment.getLong("id"))));
         }
-      }
-    }
-  }
-
-  private void initTimer() {
-    Timer erpTimer = null;
-
-    for (Timer timer : timerService.getTimers()) {
-      if (Objects.equal(timer.getInfo(), PRM_ERP_REFRESH_INTERVAL)) {
-        erpTimer = timer;
-        break;
-      }
-    }
-    if (erpTimer != null) {
-      erpTimer.cancel();
-    }
-    Integer minutes = prm.getInteger(PRM_ERP_REFRESH_INTERVAL);
-
-    if (BeeUtils.isPositive(minutes)) {
-      erpTimer = timerService.createIntervalTimer(minutes * TimeUtils.MILLIS_PER_MINUTE,
-          minutes * TimeUtils.MILLIS_PER_MINUTE, new TimerConfig(PRM_ERP_REFRESH_INTERVAL, false));
-
-      logger.info("Created ERP refresh timer every", minutes, "minutes starting at",
-          erpTimer.getNextTimeout());
-    } else {
-      if (erpTimer != null) {
-        logger.info("Removed ERP timer");
       }
     }
   }

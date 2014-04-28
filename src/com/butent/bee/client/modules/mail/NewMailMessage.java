@@ -142,7 +142,7 @@ public final class NewMailMessage extends AbstractFormInterceptor
     final NewMailMessage newMessage = new NewMailMessage(defaultAccount, availableAccounts,
         to, cc, bcc, subject, content, attach, draftId);
 
-    FormFactory.createFormView(FORM_NEW_MAIL, null, null, false, newMessage,
+    FormFactory.createFormView(FORM_NEW_MAIL_MESSAGE, null, null, false, newMessage,
         new FormViewCallback() {
           @Override
           public void onSuccess(FormDescription formDescription, FormView formView) {

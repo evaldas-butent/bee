@@ -13,6 +13,7 @@ import com.butent.bee.server.utils.XmlUtils;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.communication.ResponseObject;
+import com.butent.bee.shared.logging.LogUtils;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.Codec;
 import com.butent.bee.shared.utils.ExtendedProperty;
@@ -28,6 +29,8 @@ import java.util.Locale;
 import java.util.Map;
 
 import javax.ejb.Stateless;
+import javax.naming.InitialContext;
+import javax.naming.NamingException;
 
 /**
  * Manages services with <code>invoke</code> tag (reflection invocation).
@@ -35,6 +38,24 @@ import javax.ejb.Stateless;
 
 @Stateless
 public class Invocation {
+
+  @SuppressWarnings("unchecked")
+  public static <T> T locateRemoteBean(Class<T> beanClass) {
+    String beanName = beanClass.getSimpleName();
+    T bean = null;
+
+    try {
+      bean = (T) InitialContext.doLookup("java:module/" + beanName);
+
+    } catch (NamingException ex) {
+      LogUtils.getRootLogger().severe("Remote bean not found:", BeeUtils.bracket(beanName));
+
+    } catch (ClassCastException ex) {
+      LogUtils.getRootLogger().severe("Remote bean cannot be cast to ",
+          BeeUtils.bracket(beanClass.getName()));
+    }
+    return bean;
+  }
 
   public ResponseObject configInfo() {
     return ResponseObject.collection(Config.getInfo(), ExtendedProperty.class);
@@ -118,7 +139,7 @@ public class Invocation {
     }
 
     byte[] arr = Codec.toBytes(data);
-    
+
     Map<String, String> result = new HashMap<>();
 
     result.put("input", data);

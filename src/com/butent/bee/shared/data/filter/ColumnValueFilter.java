@@ -54,7 +54,7 @@ public class ColumnValueFilter extends ComparisonFilter {
   }
 
   @Override
-  protected Object restoreValue(String s) {
+  protected Value restoreValue(String s) {
     return Value.restore(s);
   }
 }

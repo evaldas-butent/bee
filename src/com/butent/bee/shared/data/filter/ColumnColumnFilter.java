@@ -40,7 +40,7 @@ public class ColumnColumnFilter extends ComparisonFilter {
   }
 
   @Override
-  protected Object restoreValue(String s) {
+  protected String restoreValue(String s) {
     return s;
   }
 }

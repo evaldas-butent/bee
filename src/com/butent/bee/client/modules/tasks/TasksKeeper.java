@@ -8,6 +8,7 @@ import static com.butent.bee.shared.modules.tasks.TaskConstants.*;
 
 import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.Global;
+import com.butent.bee.client.NewsAggregator.HeadlineAccessor;
 import com.butent.bee.client.communication.ParameterList;
 import com.butent.bee.client.communication.ResponseCallback;
 import com.butent.bee.client.data.Data;
@@ -19,7 +20,6 @@ import com.butent.bee.client.ui.FormFactory;
 import com.butent.bee.client.view.grid.interceptor.FileGridInterceptor;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
-import com.butent.bee.shared.Consumer;
 import com.butent.bee.shared.communication.ResponseObject;
 import com.butent.bee.shared.data.BeeRow;
 import com.butent.bee.shared.data.DataUtils;
@@ -228,11 +228,16 @@ public final class TasksKeeper {
     Global.getNewsAggregator().registerFilterHandler(Feed.TASKS_ALL,
         TaskList.getFeedFilterHandler(Feed.TASKS_ALL));
 
-    Global.getNewsAggregator().registerAccessHandler(VIEW_TASKS, new Consumer<Long>() {
+    Global.getNewsAggregator().registerAccessHandler(VIEW_TASKS, new HeadlineAccessor() {
       @Override
-      public void accept(Long input) {
+      public boolean read(Long id) {
+        return false;
+      }
+
+      @Override
+      public void access(Long id) {
         ParameterList params = createArgs(SVC_ACCESS_TASK);
-        params.addQueryItem(VAR_TASK_ID, input);
+        params.addQueryItem(VAR_TASK_ID, id);
 
         BeeKeeper.getRpc().makeRequest(params);
       }

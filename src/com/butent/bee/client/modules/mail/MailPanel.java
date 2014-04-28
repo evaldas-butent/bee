@@ -19,6 +19,7 @@ import com.google.gwt.event.dom.client.DragEndHandler;
 import com.google.gwt.event.dom.client.DragStartEvent;
 import com.google.gwt.event.dom.client.DragStartHandler;
 import com.google.gwt.user.client.ui.Widget;
+import com.google.web.bindery.event.shared.HandlerRegistration;
 
 import static com.butent.bee.shared.modules.mail.MailConstants.*;
 
@@ -72,7 +73,6 @@ import com.butent.bee.shared.Consumer;
 import com.butent.bee.shared.Service;
 import com.butent.bee.shared.State;
 import com.butent.bee.shared.communication.ResponseObject;
-import com.butent.bee.shared.data.BeeColumn;
 import com.butent.bee.shared.data.BeeRow;
 import com.butent.bee.shared.data.BeeRowSet;
 import com.butent.bee.shared.data.CellSource;
@@ -81,6 +81,7 @@ import com.butent.bee.shared.data.IsColumn;
 import com.butent.bee.shared.data.IsRow;
 import com.butent.bee.shared.data.SimpleRowSet;
 import com.butent.bee.shared.data.SimpleRowSet.SimpleRow;
+import com.butent.bee.shared.data.event.DataChangeEvent;
 import com.butent.bee.shared.data.filter.Filter;
 import com.butent.bee.shared.data.view.DataInfo;
 import com.butent.bee.shared.data.view.RowInfo;
@@ -108,17 +109,13 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 
-public class MailPanel extends AbstractFormInterceptor {
+public class MailPanel extends AbstractFormInterceptor implements DataChangeEvent.Handler {
 
   private class ContentHandler implements ActiveRowChangeEvent.Handler {
-    private final int messageId;
     private final int sender;
-    private final int flags;
 
-    public ContentHandler(List<BeeColumn> dataColumns) {
-      messageId = DataUtils.getColumnIndex(COL_MESSAGE, dataColumns);
-      sender = DataUtils.getColumnIndex(COL_SENDER, dataColumns);
-      flags = DataUtils.getColumnIndex(COL_FLAGS, dataColumns);
+    public ContentHandler(int sender) {
+      this.sender = sender;
     }
 
     @Override
@@ -127,13 +124,8 @@ public class MailPanel extends AbstractFormInterceptor {
       showMessage(currentMessage != null);
 
       if (currentMessage != null) {
-        message.requery(currentMessage.getLong(messageId),
+        message.requery(currentMessage.getId(),
             Objects.equals(currentMessage.getLong(sender), getCurrentAccount().getAddressId()));
-
-        if (!MessageFlag.SEEN.isSet(currentMessage.getInteger(flags))) {
-          flagMessage(getCurrentAccount().getAccountId(), currentMessage, flags, MessageFlag.SEEN,
-              null);
-        }
       }
     }
 
@@ -298,8 +290,8 @@ public class MailPanel extends AbstractFormInterceptor {
 
     @Override
     public void afterCreatePresenter(GridPresenter presenter) {
-      presenter.getGridView().getGrid()
-          .addActiveRowChangeHandler(new ContentHandler(presenter.getDataColumns()));
+      GridView grid = presenter.getGridView();
+      grid.getGrid().addActiveRowChangeHandler(new ContentHandler(grid.getDataIndex(COL_SENDER)));
 
       initFolders(new ScheduledCommand() {
         @Override
@@ -339,14 +331,13 @@ public class MailPanel extends AbstractFormInterceptor {
         event.getSourceElement()
             .setInnerHTML(StarRenderer.render(!MessageFlag.FLAGGED.isSet(row.getInteger(flagIdx))));
 
-        flagMessage(getCurrentAccount().getAccountId(), row, flagIdx, MessageFlag.FLAGGED,
-            new ScheduledCommand() {
-              @Override
-              public void execute() {
-                event.getSourceElement().setInnerHTML(StarRenderer
-                    .render(MessageFlag.FLAGGED.isSet(row.getInteger(flagIdx))));
-              }
-            });
+        flagMessage(row, flagIdx, MessageFlag.FLAGGED, new ScheduledCommand() {
+          @Override
+          public void execute() {
+            event.getSourceElement().setInnerHTML(StarRenderer
+                .render(MessageFlag.FLAGGED.isSet(row.getInteger(flagIdx))));
+          }
+        });
       }
     }
   }
@@ -386,6 +377,8 @@ public class MailPanel extends AbstractFormInterceptor {
   private Widget messageWidget;
   private Widget emptySelectionWidget;
 
+  private final Collection<HandlerRegistration> registry = Lists.newArrayList();
+
   public MailPanel() {
     ParameterList params = MailKeeper.createArgs(SVC_GET_ACCOUNTS);
     params.addDataItem(COL_USER, BeeKeeper.getUser().getUserId());
@@ -406,7 +399,7 @@ public class MailPanel extends AbstractFormInterceptor {
         }
         if (!BeeUtils.isEmpty(accounts)) {
           message.setAccountInfo(getCurrentAccount().getAddressId(), accounts);
-          FormFactory.openForm("Mail", MailPanel.this);
+          FormFactory.openForm(FORM_MAIL, MailPanel.this);
         } else {
           BeeKeeper.getScreen().notifyWarning("No accounts found");
           MailKeeper.removeMailPanel(MailPanel.this);
@@ -458,6 +451,19 @@ public class MailPanel extends AbstractFormInterceptor {
   }
 
   @Override
+  public void onDataChange(DataChangeEvent event) {
+    if (event.hasView(TBL_PLACES)) {
+      initFolders();
+    }
+  }
+
+  @Override
+  public void onLoad(FormView form) {
+    BeeKeeper.getBus().registerDataChangeHandler(this, false);
+    super.onLoad(form);
+  }
+
+  @Override
   public void onShow(Presenter presenter) {
     HeaderView header = presenter.getHeader();
     header.clearCommandPanel();
@@ -493,6 +499,12 @@ public class MailPanel extends AbstractFormInterceptor {
     for (String progressId : progresses.keySet()) {
       Endpoint.cancelProgress(progressId);
     }
+    for (HandlerRegistration entry : registry) {
+      if (entry != null) {
+        entry.removeHandler();
+      }
+    }
+    super.onUnload(form);
   }
 
   void checkFolder(final Long folderId) {
@@ -550,25 +562,14 @@ public class MailPanel extends AbstractFormInterceptor {
             progresses.put(progressId, folderId);
             params.addDataItem(Service.VAR_PROGRESS, input);
 
-            final ScheduledCommand refresh = new ScheduledCommand() {
-              @Override
-              public void execute() {
-                if (Objects.equals(getCurrentFolderId(), folderId)) {
-                  refreshMessages();
-                }
-              }
-            };
             Endpoint.registerProgressHandler(progressId,
                 new Function<ProgressMessage, Boolean>() {
                   @Override
                   public Boolean apply(ProgressMessage pm) {
                     if (pm.isClosed()) {
-                      if (Objects.equals(getCurrentAccount(), account)) {
-                        if (account.isInboxFolder(folderId)) {
-                          initFolders(refresh);
-                        } else {
-                          refresh.execute();
-                        }
+                      if (Objects.equals(getCurrentAccount(), account)
+                          && account.isInboxFolder(folderId)) {
+                        initFolders();
                       }
                       progresses.remove(progressId);
                     }
@@ -730,11 +731,10 @@ public class MailPanel extends AbstractFormInterceptor {
     });
   }
 
-  private void flagMessage(long accountId, final IsRow row, final int flagIdx, MessageFlag flag,
+  private void flagMessage(final IsRow row, final int flagIdx, MessageFlag flag,
       final ScheduledCommand command) {
 
     ParameterList params = MailKeeper.createArgs(SVC_FLAG_MESSAGE);
-    params.addDataItem(COL_ACCOUNT, accountId);
     params.addDataItem(COL_PLACE, row.getId());
     params.addDataItem(COL_FLAGS, flag.name());
     params.addDataItem("on", Codec.pack(!flag.isSet(row.getInteger(flagIdx))));

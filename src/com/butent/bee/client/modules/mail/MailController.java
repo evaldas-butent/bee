@@ -237,7 +237,7 @@ public class MailController extends Flow implements HasDomain, HandlesStateChang
         });
         row.add(edit);
 
-        final FaLabel delete = new FaLabel(FontAwesome.MINUS, "bee-mail-FolderAction");
+        final FaLabel delete = new FaLabel(FontAwesome.TRASH_O, "bee-mail-FolderAction");
         delete.setTitle(Localized.getMessages()
             .mailDeleteFolderQuestion(BeeUtils.bracket(cap)));
 

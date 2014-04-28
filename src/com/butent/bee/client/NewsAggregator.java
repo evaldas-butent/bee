@@ -54,6 +54,12 @@ import java.util.Set;
 
 public class NewsAggregator implements HandlesAllDataEvents {
 
+  public interface HeadlineAccessor {
+    void access(Long id);
+
+    boolean read(Long id);
+  }
+
   private final class HeadlinePanel extends Flow {
 
     private static final String STYLE_HEADLINE_PREFIX = STYLE_PREFIX + "headline-";
@@ -445,9 +451,12 @@ public class NewsAggregator implements HandlesAllDataEvents {
   private static final String STYLE_PREFIX = "bee-News-";
   private static final String STYLE_APATHY = STYLE_PREFIX + "apathy";
 
-  private static void readHeadline(HeadlinePanel headlinePanel) {
+  private void readHeadline(HeadlinePanel headlinePanel) {
     Feed feed = headlinePanel.getFeed();
-    if (feed != null) {
+
+    if (feed != null && (!registeredAccessHandlers.containsKey(feed.getHeadlineView())
+        || !registeredAccessHandlers.get(feed.getHeadlineView()).read(headlinePanel.getDataId()))) {
+
       RowEditor.openRow(feed.getHeadlineView(), headlinePanel.getDataId(), false, null);
     }
   }
@@ -458,9 +467,9 @@ public class NewsAggregator implements HandlesAllDataEvents {
 
   private Badge sizeBadge;
 
-  private EnumMap<Feed, Consumer<GridOptions>> registeredFilterHandlers =
+  private final EnumMap<Feed, Consumer<GridOptions>> registeredFilterHandlers =
       Maps.newEnumMap(Feed.class);
-  private Map<String, Consumer<Long>> registeredAccessHandlers = Maps.newHashMap();
+  private final Map<String, HeadlineAccessor> registeredAccessHandlers = Maps.newHashMap();
 
   NewsAggregator() {
   }
@@ -519,7 +528,7 @@ public class NewsAggregator implements HandlesAllDataEvents {
 
   public void onAccess(String viewName, long rowId) {
     if (registeredAccessHandlers.containsKey(viewName)) {
-      registeredAccessHandlers.get(viewName).accept(rowId);
+      registeredAccessHandlers.get(viewName).access(rowId);
     }
 
     String table = Data.getViewTable(viewName);
@@ -610,7 +619,7 @@ public class NewsAggregator implements HandlesAllDataEvents {
     });
   }
 
-  public void registerAccessHandler(String viewName, Consumer<Long> handler) {
+  public void registerAccessHandler(String viewName, HeadlineAccessor handler) {
     Assert.notEmpty(viewName);
     Assert.notNull(handler);
 

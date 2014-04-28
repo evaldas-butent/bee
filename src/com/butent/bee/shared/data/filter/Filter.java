@@ -116,7 +116,7 @@ public abstract class Filter implements BeeSerializable, RowFilter {
 
     return or(filters);
   }
-  
+
   public static Filter compareId(long value) {
     return compareId(Operator.EQ, value);
   }
@@ -197,7 +197,7 @@ public abstract class Filter implements BeeSerializable, RowFilter {
     Assert.notEmpty(value);
     return new ColumnValueFilter(column, Operator.CONTAINS, new TextValue(value));
   }
-  
+
   public static Filter custom(String key) {
     Assert.notEmpty(key);
     return new CustomFilter(key);
@@ -224,28 +224,20 @@ public abstract class Filter implements BeeSerializable, RowFilter {
 
   public static Filter idIn(Collection<Long> values) {
     Assert.notNull(values);
+
     if (values.isEmpty()) {
       return null;
     }
-  
-    CompoundFilter filter = or();
-    for (Long value : values) {
-      filter.add(compareId(value));
-    }
-    return filter;
+    return new IdFilter(values);
   }
-  
+
   public static Filter idNotIn(Collection<Long> values) {
-    Assert.notNull(values);
-    if (values.isEmpty()) {
-      return null;
+    Filter flt = idIn(values);
+
+    if (flt != null) {
+      flt = isNot(flt);
     }
-  
-    CompoundFilter filter = and();
-    for (Long value : values) {
-      filter.add(compareId(Operator.NE, value));
-    }
-    return filter;
+    return flt;
   }
 
   public static Filter in(String column, String inView, String inColumn) {
@@ -256,7 +248,7 @@ public abstract class Filter implements BeeSerializable, RowFilter {
     Assert.notEmpty(column);
     Assert.notEmpty(inView);
     Assert.notEmpty(inColumn);
-  
+
     return new ColumnInFilter(column, inView, inColumn, inFilter);
   }
 

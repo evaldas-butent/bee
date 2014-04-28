@@ -12,6 +12,7 @@ import java.util.Objects;
 public class AccountInfo {
   private final long accountId;
   private final long addressId;
+  private final long userId;
   private final String description;
   private final Map<SystemFolder, Long> sysFolders = new HashMap<>();
   private MailFolder rootFolder = new MailFolder();
@@ -19,6 +20,7 @@ public class AccountInfo {
   public AccountInfo(SimpleRow row) {
     this.accountId = row.getLong(COL_ACCOUNT);
     this.addressId = row.getLong(COL_ADDRESS);
+    this.userId = row.getLong(COL_USER);
     this.description = row.getValue(COL_ACCOUNT_DESCRIPTION);
 
     for (SystemFolder sysFolder : SystemFolder.values()) {
@@ -52,6 +54,10 @@ public class AccountInfo {
 
   public Long getSystemFolder(SystemFolder sysFolder) {
     return sysFolders.get(sysFolder);
+  }
+
+  public long getUserId() {
+    return userId;
   }
 
   public boolean isDraftsFolder(Long folderId) {
