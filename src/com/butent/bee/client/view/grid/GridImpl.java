@@ -1574,6 +1574,10 @@ public class GridImpl extends Absolute implements GridView, EditEndEvent.Handler
 
   @Override
   protected void onUnload() {
+    if (getGridInterceptor() != null) {
+      getGridInterceptor().onUnload(this);
+    }
+
     EventUtils.clearRegistry(registry);
 
     if (getNewRowPopup() != null) {

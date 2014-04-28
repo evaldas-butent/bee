@@ -280,6 +280,12 @@ final class TaskList {
     }
 
     @Override
+    public boolean initDescription(GridDescription gridDescription) {
+      gridDescription.setFilter(type.getFilter(new LongValue(userId)));
+      return true;
+    }
+
+    @Override
     public void onClick(ClickEvent event) {
       final GridView gridView = getGridPresenter().getGridView();
       CompoundFilter filter = CompoundFilter.or();
@@ -322,12 +328,6 @@ final class TaskList {
           }
         });
       }
-    }
-
-    @Override
-    public boolean onLoad(GridDescription gridDescription) {
-      gridDescription.setFilter(type.getFilter(new LongValue(userId)));
-      return true;
     }
 
     private void confirmTask(final GridView gridView, final IsRow row) {

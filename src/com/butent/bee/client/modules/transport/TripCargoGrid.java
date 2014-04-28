@@ -461,14 +461,6 @@ class TripCargoGrid extends AbstractGridInterceptor implements ClickHandler {
   }
 
   @Override
-  public void onAttach(GridView gridView) {
-    if (BeeUtils.same(tripForm.getFormName(), FORM_TRIP)) {
-      HeaderView hdr = gridView.getViewPresenter().getHeader();
-      hdr.addCommandItem(new Button(Localized.getConstants().message(), this));
-    }
-  }
-
-  @Override
   public void onClick(ClickEvent arg) {
     Set<Long> cargos = Sets.newHashSet();
     final Set<Long> selected = Sets.newHashSet();
@@ -532,5 +524,13 @@ class TripCargoGrid extends AbstractGridInterceptor implements ClickHandler {
       event.consume();
     }
     super.onEditStart(event);
+  }
+
+  @Override
+  public void onLoad(GridView gridView) {
+    if (BeeUtils.same(tripForm.getFormName(), FORM_TRIP)) {
+      HeaderView hdr = gridView.getViewPresenter().getHeader();
+      hdr.addCommandItem(new Button(Localized.getConstants().message(), this));
+    }
   }
 }

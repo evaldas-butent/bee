@@ -105,7 +105,7 @@ public class ChildGrid extends Simple implements HasEnabled, Launchable, HasFost
     GridFactory.getGridDescription(gridName, new Callback<GridDescription>() {
       @Override
       public void onSuccess(GridDescription result) {
-        if (getGridInterceptor() != null && !getGridInterceptor().onLoad(result)) {
+        if (getGridInterceptor() != null && !getGridInterceptor().initDescription(result)) {
           return;
         }
         

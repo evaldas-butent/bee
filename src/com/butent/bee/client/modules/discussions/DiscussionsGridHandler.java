@@ -88,6 +88,12 @@ class DiscussionsGridHandler extends AbstractGridInterceptor {
   }
 
   @Override
+  public boolean initDescription(GridDescription gridDescription) {
+    gridDescription.setFilter(type.getFilter(new LongValue(userId)));
+    return true;
+  }
+
+  @Override
   public void onEditStart(final EditStartEvent event) {
     IsRow row = event.getRowValue();
     
@@ -107,12 +113,6 @@ class DiscussionsGridHandler extends AbstractGridInterceptor {
         });
       }
     }
-  }
-
-  @Override
-  public boolean onLoad(GridDescription gridDescription) {
-    gridDescription.setFilter(type.getFilter(new LongValue(userId)));
-    return true;
   }
 
   private void updateStar(final EditStartEvent event, final CellSource source,

@@ -139,6 +139,11 @@ public class AbstractGridInterceptor implements GridInterceptor {
   }
 
   @Override
+  public boolean beforeCreateExtWidget(Element root) {
+    return true;
+  }
+
+  @Override
   public boolean beforeCreateWidget(String name, Element description) {
     return true;
   }
@@ -291,12 +296,13 @@ public class AbstractGridInterceptor implements GridInterceptor {
   }
 
   @Override
-  public boolean isRowEditable(IsRow row) {
-    return row != null && row.isEditable();
+  public boolean initDescription(GridDescription gridDescription) {
+    return true;
   }
 
   @Override
-  public void onAttach(GridView gridView) {
+  public boolean isRowEditable(IsRow row) {
+    return row != null && row.isEditable();
   }
 
   @Override
@@ -309,13 +315,7 @@ public class AbstractGridInterceptor implements GridInterceptor {
   }
 
   @Override
-  public boolean onLoad(GridDescription gridDescription) {
-    return true;
-  }
-
-  @Override
-  public boolean onLoadExtWidget(Element root) {
-    return true;
+  public void onLoad(GridView gridView) {
   }
 
   @Override
@@ -346,6 +346,10 @@ public class AbstractGridInterceptor implements GridInterceptor {
   @Override
   public boolean onStartNewRow(GridView gridView, IsRow oldRow, IsRow newRow) {
     return true;
+  }
+
+  @Override
+  public void onUnload(GridView gridView) {
   }
 
   @Override

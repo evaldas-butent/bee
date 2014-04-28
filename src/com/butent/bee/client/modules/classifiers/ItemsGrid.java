@@ -23,6 +23,16 @@ import java.util.List;
 class ItemsGrid extends AbstractGridInterceptor implements SelectionHandler<IsRow> {
 
   private static final String FILTER_KEY = "f1";
+  private static Filter getFilter(Long category) {
+    if (category == null) {
+      return null;
+    } else {
+      return Filter.in(Data.getIdColumn(ClassifierConstants.VIEW_ITEMS),
+          ClassifierConstants.VIEW_ITEM_CATEGORIES, ClassifierConstants.COL_ITEM,
+          Filter.equals(ClassifierConstants.COL_CATEGORY, category));
+    }
+  }
+
   private final boolean services;
 
   private IsRow selectedCategory;
@@ -80,7 +90,7 @@ class ItemsGrid extends AbstractGridInterceptor implements SelectionHandler<IsRo
   }
 
   @Override
-  public boolean onLoad(GridDescription gridDescription) {
+  public boolean initDescription(GridDescription gridDescription) {
     gridDescription.setCaption(null);
 
     Filter filter;
@@ -114,16 +124,6 @@ class ItemsGrid extends AbstractGridInterceptor implements SelectionHandler<IsRo
 
   IsRow getSelectedCategory() {
     return selectedCategory;
-  }
-
-  private static Filter getFilter(Long category) {
-    if (category == null) {
-      return null;
-    } else {
-      return Filter.in(Data.getIdColumn(ClassifierConstants.VIEW_ITEMS),
-          ClassifierConstants.VIEW_ITEM_CATEGORIES, ClassifierConstants.COL_ITEM,
-          Filter.equals(ClassifierConstants.COL_CATEGORY, category));
-    }
   }
 
   private void setSelectedCategory(IsRow selectedCategory) {

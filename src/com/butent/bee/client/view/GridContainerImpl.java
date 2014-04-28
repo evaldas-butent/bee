@@ -565,7 +565,7 @@ public class GridContainerImpl extends Split implements GridContainerView, HasNa
       @Override
       public void execute() {
         if (getGridView().getGridInterceptor() != null) {
-          getGridView().getGridInterceptor().onAttach(getGridView());
+          getGridView().getGridInterceptor().onLoad(getGridView());
         }
 
         CellGrid grid = getGridView().getGrid();

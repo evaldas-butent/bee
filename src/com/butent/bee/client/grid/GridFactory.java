@@ -235,7 +235,7 @@ public final class GridFactory {
       @Override
       public void onSuccess(GridDescription result) {
         Assert.notNull(result);
-        if (gridInterceptor != null && !gridInterceptor.onLoad(result)) {
+        if (gridInterceptor != null && !gridInterceptor.initDescription(result)) {
           return;
         }
 

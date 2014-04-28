@@ -1,11 +1,13 @@
 package com.butent.bee.client.modules.service;
 
 import com.google.common.collect.Lists;
+import com.google.common.collect.Sets;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.event.shared.HasHandlers;
 import com.google.gwt.i18n.client.NumberFormat;
 import com.google.gwt.user.client.ui.Widget;
+import com.google.web.bindery.event.shared.HandlerRegistration;
 
 import static com.butent.bee.shared.modules.service.ServiceConstants.*;
 
@@ -18,6 +20,7 @@ import com.butent.bee.client.data.RowCallback;
 import com.butent.bee.client.data.RowEditor;
 import com.butent.bee.client.data.RowFactory;
 import com.butent.bee.client.dialog.DialogBox;
+import com.butent.bee.client.event.EventUtils;
 import com.butent.bee.client.grid.HtmlTable;
 import com.butent.bee.client.i18n.Format;
 import com.butent.bee.client.layout.Flow;
@@ -29,6 +32,7 @@ import com.butent.bee.client.view.add.ReadyForInsertEvent;
 import com.butent.bee.client.view.form.interceptor.AbstractFormInterceptor;
 import com.butent.bee.client.view.form.interceptor.FormInterceptor;
 import com.butent.bee.client.view.grid.ColumnInfo;
+import com.butent.bee.client.view.grid.GridView;
 import com.butent.bee.client.view.grid.interceptor.AbstractGridInterceptor;
 import com.butent.bee.client.view.grid.interceptor.GridInterceptor;
 import com.butent.bee.client.widget.Button;
@@ -41,6 +45,9 @@ import com.butent.bee.shared.data.IsRow;
 import com.butent.bee.shared.data.RelationUtils;
 import com.butent.bee.shared.data.UserData;
 import com.butent.bee.shared.data.event.DataChangeEvent;
+import com.butent.bee.shared.data.event.HandlesDeleteEvents;
+import com.butent.bee.shared.data.event.MultiDeleteEvent;
+import com.butent.bee.shared.data.event.RowDeleteEvent;
 import com.butent.bee.shared.data.view.DataInfo;
 import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.modules.administration.AdministrationConstants;
@@ -51,9 +58,13 @@ import com.butent.bee.shared.time.TimeUtils;
 import com.butent.bee.shared.ui.HasCheckedness;
 import com.butent.bee.shared.utils.BeeUtils;
 
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 
-public class MaintenanceGrid extends AbstractGridInterceptor {
+public class MaintenanceGrid extends AbstractGridInterceptor implements HandlesDeleteEvents {
+
+  private final List<HandlerRegistration> registry = new ArrayList<>();
 
   private Long mainItem;
 
@@ -76,6 +87,32 @@ public class MaintenanceGrid extends AbstractGridInterceptor {
   @Override
   public GridInterceptor getInstance() {
     return new MaintenanceGrid();
+  }
+
+  @Override
+  public void onLoad(GridView gridView) {
+    EventUtils.clearRegistry(registry);
+    registry.addAll(BeeKeeper.getBus().registerDeleteHandler(this, false));
+  }
+
+  @Override
+  public void onMultiDelete(MultiDeleteEvent event) {
+    if (event != null && isRelevantInvoice(event.getViewName(), event.getRowIds())) {
+      getGridPresenter().refresh(false);
+    }
+  }
+
+  @Override
+  public void onRowDelete(RowDeleteEvent event) {
+    if (event != null
+        && isRelevantInvoice(event.getViewName(), Sets.newHashSet(event.getRowId()))) {
+      getGridPresenter().refresh(false);
+    }
+  }
+
+  @Override
+  public void onUnload(GridView gridView) {
+    EventUtils.clearRegistry(registry);
   }
 
   private void buildInvoice(final List<IsRow> items) {
@@ -216,6 +253,27 @@ public class MaintenanceGrid extends AbstractGridInterceptor {
     return null;
   }
 
+  private boolean isRelevantInvoice(String viewName, Collection<Long> ids) {
+    if (!BeeUtils.same(viewName, VIEW_INVOICES) || BeeUtils.isEmpty(ids)) {
+      return false;
+    }
+
+    List<IsRow> data = getGridView().getGrid().getRowData();
+    if (BeeUtils.isEmpty(data)) {
+      return false;
+    }
+
+    int index = getDataIndex(COL_MAINTENANCE_INVOICE);
+
+    for (IsRow row : data) {
+      Long invId = row.getLong(index);
+      if (DataUtils.isId(invId) && ids.contains(invId)) {
+        return true;
+      }
+    }
+    return false;
+  }
+
   private void selectInvoiceItems() {
     final List<IsRow> rows = getInvoiceCandidates();
     if (rows.isEmpty()) {
@@ -294,7 +352,7 @@ public class MaintenanceGrid extends AbstractGridInterceptor {
     panel.add(wrapper);
 
     Flow commands = new Flow(stylePrefix + "commands");
-    
+
     final DialogBox dialog = DialogBox.create(Localized.getConstants().trdNewInvoice(),
         stylePrefix + "dialog");
 
