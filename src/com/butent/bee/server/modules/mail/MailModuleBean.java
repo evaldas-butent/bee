@@ -28,16 +28,12 @@ import com.butent.bee.server.sql.SqlUtils;
 import com.butent.bee.server.websocket.Endpoint;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
-import com.butent.bee.shared.Locality;
 import com.butent.bee.shared.Service;
 import com.butent.bee.shared.communication.ResponseObject;
 import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.SearchResult;
 import com.butent.bee.shared.data.SimpleRowSet;
 import com.butent.bee.shared.data.SimpleRowSet.SimpleRow;
-import com.butent.bee.shared.data.event.DataChangeEvent;
-import com.butent.bee.shared.data.event.FiresModificationEvents;
-import com.butent.bee.shared.data.event.ModificationEvent;
 import com.butent.bee.shared.exceptions.BeeRuntimeException;
 import com.butent.bee.shared.io.StoredFile;
 import com.butent.bee.shared.logging.BeeLogger;
@@ -58,7 +54,7 @@ import com.butent.bee.shared.utils.ArrayUtils;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.Codec;
 import com.butent.bee.shared.utils.EnumUtils;
-import com.butent.bee.shared.websocket.messages.ModificationMessage;
+import com.butent.bee.shared.websocket.messages.MailMessage;
 
 import java.io.BufferedInputStream;
 import java.io.ByteArrayInputStream;
@@ -101,15 +97,6 @@ import javax.mail.internet.MimeMultipart;
 public class MailModuleBean implements BeeModule {
 
   private static final BeeLogger logger = LogUtils.getLogger(MailModuleBean.class);
-
-  private static void fireChanges(final Long userId, final String table) {
-    DataChangeEvent.fireRefresh(new FiresModificationEvents() {
-      @Override
-      public void fireModificationEvent(ModificationEvent<?> event, Locality locality) {
-        Endpoint.sendToUser(userId, new ModificationMessage(event));
-      }
-    }, table);
-  }
 
   @EJB
   MailProxy proxy;
@@ -154,7 +141,7 @@ public class MailModuleBean implements BeeModule {
       Endpoint.closeProgress(progressId);
     }
     if (c > 0) {
-      fireChanges(account.getUserId(), TBL_PLACES);
+      Endpoint.sendToUser(account.getUserId(), new MailMessage(true));
     }
   }
 
@@ -1015,8 +1002,9 @@ public class MailModuleBean implements BeeModule {
         .addConstant(COL_FLAGS, value)
         .setWhere(sys.idEquals(TBL_PLACES, placeId)));
 
-    fireChanges(account.getUserId(), TBL_PLACES);
-
+    if (flag == MessageFlag.SEEN) {
+      Endpoint.sendToUser(account.getUserId(), new MailMessage(false));
+    }
     return value;
   }
 

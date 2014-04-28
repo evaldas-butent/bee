@@ -87,6 +87,25 @@ public final class MailKeeper {
     });
   }
 
+  public static void refreshActivePanel(boolean refreshMessages) {
+    final MailPanel panel = activePanel;
+
+    if (panel != null) {
+      if (refreshMessages) {
+        panel.initFolders(new ScheduledCommand() {
+          @Override
+          public void execute() {
+            if (panel == activePanel) {
+              panel.refreshMessages();
+            }
+          }
+        });
+      } else {
+        panel.initFolders();
+      }
+    }
+  }
+
   static void activateController(MailPanel mailPanel) {
     if (controller == null) {
       controller = new MailController();
@@ -122,13 +141,17 @@ public final class MailKeeper {
       public void onResponse(ResponseObject response) {
         response.notify(panel.getFormView());
 
-        if (!response.hasErrors() && Objects.equal(folderFrom, panel.getCurrentFolderId())) {
+        if (!response.hasErrors()) {
           panel.getFormView().notifyInfo(
               move ? Localized.getMessages().mailMovedMessagesToFolder(
                   (String) response.getResponse()) : Localized.getMessages()
                   .mailCopiedMessagesToFolder((String) response.getResponse()),
               BeeUtils.bracket(panel.getCurrentAccount().findFolder(folderTo).getName()));
-          panel.refreshMessages();
+
+          if (Objects.equal(folderFrom, panel.getCurrentFolderId())) {
+            panel.refreshMessages();
+          }
+          panel.checkFolder(folderTo);
         }
       }
     });

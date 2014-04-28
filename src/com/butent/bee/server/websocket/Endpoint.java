@@ -326,6 +326,7 @@ public class Endpoint {
         break;
 
       case INFO:
+      case MAIL:
       case ONLINE:
       case ROOMS:
       case SESSION:

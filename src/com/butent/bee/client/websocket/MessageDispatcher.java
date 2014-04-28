@@ -23,6 +23,7 @@ import com.butent.bee.client.images.Images;
 import com.butent.bee.client.layout.Flow;
 import com.butent.bee.client.layout.Simple;
 import com.butent.bee.client.maps.MapUtils;
+import com.butent.bee.client.modules.mail.MailKeeper;
 import com.butent.bee.client.render.PhotoRenderer;
 import com.butent.bee.client.widget.FaLabel;
 import com.butent.bee.client.widget.Image;
@@ -40,6 +41,7 @@ import com.butent.bee.shared.data.event.ModificationEvent;
 import com.butent.bee.shared.font.FontAwesome;
 import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogUtils;
+import com.butent.bee.shared.news.Feed;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.EnumUtils;
 import com.butent.bee.shared.utils.Property;
@@ -51,6 +53,7 @@ import com.butent.bee.shared.websocket.messages.EchoMessage;
 import com.butent.bee.shared.websocket.messages.InfoMessage;
 import com.butent.bee.shared.websocket.messages.LocationMessage;
 import com.butent.bee.shared.websocket.messages.LogMessage;
+import com.butent.bee.shared.websocket.messages.MailMessage;
 import com.butent.bee.shared.websocket.messages.Message;
 import com.butent.bee.shared.websocket.messages.ModificationMessage;
 import com.butent.bee.shared.websocket.messages.NotificationMessage;
@@ -346,6 +349,20 @@ class MessageDispatcher {
 
         if (logMessage.getLevel() != null && !BeeUtils.isEmpty(logMessage.getText())) {
           logger.log(logMessage.getLevel(), logMessage.getText());
+        } else {
+          WsUtils.onEmptyMessage(message);
+        }
+        break;
+
+      case MAIL:
+        MailMessage mailMessage = (MailMessage) message;
+
+        if (mailMessage.isValid()) {
+          if (Global.getNewsAggregator().hasSubscription(Feed.MAIL)) {
+            Global.getNewsAggregator().refresh();
+          }
+          MailKeeper.refreshActivePanel(mailMessage.isNewMail());
+
         } else {
           WsUtils.onEmptyMessage(message);
         }

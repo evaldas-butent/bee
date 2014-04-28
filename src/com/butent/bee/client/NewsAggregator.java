@@ -495,6 +495,11 @@ public class NewsAggregator implements HandlesAllDataEvents {
     return false;
   }
 
+  public boolean hasSubscription(Feed feed) {
+    Assert.notNull(feed);
+    return findSubscription(feed) != null;
+  }
+
   public void loadSubscriptions(String serialized) {
     String[] arr = Codec.beeDeserializeCollection(serialized);
 
