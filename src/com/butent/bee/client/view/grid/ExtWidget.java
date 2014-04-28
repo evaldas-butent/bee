@@ -42,7 +42,7 @@ public final class ExtWidget {
       logger.severe("ext widget: document element not found", xml);
       return null;
     }
-    if (gridInterceptor != null && !gridInterceptor.onLoadExtWidget(root)) {
+    if (gridInterceptor != null && !gridInterceptor.beforeCreateExtWidget(root)) {
       return null;
     }
 

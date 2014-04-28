@@ -3,6 +3,7 @@ package com.butent.bee.server.modules.service;
 import com.google.common.eventbus.Subscribe;
 
 import static com.butent.bee.shared.modules.service.ServiceConstants.*;
+import static com.butent.bee.shared.modules.trade.TradeConstants.*;
 
 import com.butent.bee.server.data.BeeView;
 import com.butent.bee.server.data.DataEvent.ViewQueryEvent;
@@ -11,8 +12,11 @@ import com.butent.bee.server.data.QueryServiceBean;
 import com.butent.bee.server.data.SystemBean;
 import com.butent.bee.server.http.RequestInfo;
 import com.butent.bee.server.modules.BeeModule;
+import com.butent.bee.server.modules.administration.ExchangeUtils;
 import com.butent.bee.server.modules.administration.ExtensionIcons;
+import com.butent.bee.server.modules.trade.TradeModuleBean;
 import com.butent.bee.server.sql.IsCondition;
+import com.butent.bee.server.sql.IsExpression;
 import com.butent.bee.server.sql.SqlInsert;
 import com.butent.bee.server.sql.SqlSelect;
 import com.butent.bee.server.sql.SqlUpdate;
@@ -30,7 +34,6 @@ import com.butent.bee.shared.logging.LogUtils;
 import com.butent.bee.shared.modules.BeeParameter;
 import com.butent.bee.shared.modules.administration.AdministrationConstants;
 import com.butent.bee.shared.modules.classifiers.ClassifierConstants;
-import com.butent.bee.shared.modules.trade.TradeConstants;
 import com.butent.bee.shared.rights.Module;
 import com.butent.bee.shared.utils.BeeUtils;
 
@@ -153,10 +156,48 @@ public class ServiceModuleBean implements BeeModule {
     IsCondition where = sys.idInList(TBL_MAINTENANCE, ids);
 
     SqlSelect query = new SqlSelect()
-        .addFields(TBL_MAINTENANCE, COL_MAINTENANCE_ITEM, COL_MAINTENANCE_QUANTITY,
-            COL_MAINTENANCE_PRICE)
+        .addFields(TBL_MAINTENANCE, COL_TRADE_VAT_PLUS, COL_TRADE_VAT, COL_TRADE_VAT_PERC)
         .addFrom(TBL_MAINTENANCE)
         .setWhere(where);
+
+    IsExpression vatExch = ExchangeUtils.exchangeFieldTo(query,
+        TBL_MAINTENANCE, COL_TRADE_VAT, AdministrationConstants.COL_CURRENCY,
+        COL_MAINTENANCE_DATE, currency);
+
+    String vatAlias = "Vat_" + SqlUtils.uniqueName();
+
+    String priceAlias;
+    String amountAlias;
+
+    if (DataUtils.isId(mainItem) && ids.size() > 1) {
+      IsExpression amountExch = ExchangeUtils.exchangeFieldTo(query,
+          TradeModuleBean.getTotalExpression(TBL_MAINTENANCE),
+          SqlUtils.field(TBL_MAINTENANCE, AdministrationConstants.COL_CURRENCY),
+          SqlUtils.field(TBL_MAINTENANCE, COL_MAINTENANCE_DATE),
+          SqlUtils.constant(currency));
+
+      priceAlias = null;
+      amountAlias = "Amount_" + SqlUtils.uniqueName();
+
+      query.addSum(TBL_MAINTENANCE, COL_TRADE_ITEM_QUANTITY)
+          .addSum(amountExch, amountAlias)
+          .addSum(vatExch, vatAlias)
+          .addGroup(TBL_MAINTENANCE, COL_TRADE_VAT_PLUS, COL_TRADE_VAT, COL_TRADE_VAT_PERC);
+
+    } else {
+      IsExpression priceExch = ExchangeUtils.exchangeFieldTo(query,
+          TBL_MAINTENANCE, COL_TRADE_ITEM_PRICE, AdministrationConstants.COL_CURRENCY,
+          COL_MAINTENANCE_DATE, currency);
+
+      priceAlias = "Price_" + SqlUtils.uniqueName();
+      amountAlias = null;
+
+      query.addFields(TBL_MAINTENANCE, COL_MAINTENANCE_ITEM, COL_TRADE_ITEM_QUANTITY,
+          COL_MAINTENANCE_NOTES)
+          .addExpr(priceExch, priceAlias)
+          .addExpr(vatExch, vatAlias)
+          .addOrder(TBL_MAINTENANCE, sys.getIdName(TBL_MAINTENANCE));
+    }
 
     SimpleRowSet data = qs.getData(query);
     if (DataUtils.isEmpty(data)) {
@@ -165,57 +206,74 @@ public class ServiceModuleBean implements BeeModule {
 
     ResponseObject response = new ResponseObject();
 
-    if (DataUtils.isId(mainItem)) {
-      double quantity = BeeConst.DOUBLE_ZERO;
-      double total = BeeConst.DOUBLE_ZERO;
+    for (SimpleRow row : data) {
+      Long item = DataUtils.isId(mainItem) ? mainItem : row.getLong(COL_MAINTENANCE_ITEM);
 
-      for (SimpleRow row : data) {
-        Double q = row.getDouble(COL_MAINTENANCE_QUANTITY);
-        Double p = row.getDouble(COL_MAINTENANCE_PRICE);
+      SqlInsert insert = new SqlInsert(TBL_SALE_ITEMS)
+          .addConstant(COL_SALE, invId)
+          .addConstant(ClassifierConstants.COL_ITEM, item);
 
-        if (BeeUtils.isPositive(q) && BeeUtils.isPositive(p)) {
-          quantity += q;
-          total += q * p;
+      Boolean vatPerc = row.getBoolean(COL_TRADE_VAT_PERC);
+      Double vat;
+
+      if (BeeUtils.isTrue(vatPerc)) {
+        insert.addConstant(COL_TRADE_VAT_PERC, vatPerc);
+        vat = row.getDouble(COL_TRADE_VAT);
+      } else {
+        vat = row.getDouble(vatAlias);
+      }
+
+      if (BeeUtils.nonZero(vat)) {
+        insert.addConstant(COL_TRADE_VAT, vat);
+      }
+
+      Boolean vatPlus = row.getBoolean(COL_TRADE_VAT_PLUS);
+      if (BeeUtils.isTrue(vatPlus)) {
+        insert.addConstant(COL_TRADE_VAT_PLUS, vatPlus);
+      }
+
+      Double quantity = row.getDouble(COL_TRADE_ITEM_QUANTITY);
+      Double price;
+
+      if (BeeUtils.isEmpty(amountAlias)) {
+        price = row.getDouble(priceAlias);
+
+      } else {
+        Double amount = row.getDouble(amountAlias);
+        if (BeeUtils.isTrue(vatPlus) && BeeUtils.nonZero(vat)) {
+          if (BeeUtils.isTrue(vatPerc)) {
+            if (BeeUtils.nonZero(amount)) {
+              amount = amount * 100d / (100d + vat);
+            }
+          } else {
+            amount = BeeUtils.unbox(amount) - vat;
+          }
+        }
+
+        if (BeeUtils.isPositive(amount) && BeeUtils.isPositive(quantity)) {
+          price = amount / quantity;
         } else {
-          quantity += BeeUtils.unbox(q);
+          quantity = BeeConst.DOUBLE_ONE;
+          price = amount;
         }
       }
 
-      double price;
-      if (BeeUtils.isPositive(quantity) && BeeUtils.isPositive(total)) {
-        price = total;
-        quantity = 1;
-      } else {
-        price = BeeConst.DOUBLE_ZERO;
+      insert.addConstant(COL_TRADE_ITEM_QUANTITY, BeeUtils.unbox(quantity));
+      if (price != null) {
+        insert.addConstant(COL_TRADE_ITEM_PRICE, price);
       }
 
-      SqlInsert insert = new SqlInsert(TradeConstants.TBL_SALE_ITEMS)
-          .addConstant(TradeConstants.COL_SALE, invId)
-          .addConstant(ClassifierConstants.COL_ITEM, mainItem)
-          .addConstant(TradeConstants.COL_TRADE_ITEM_QUANTITY, quantity)
-          .addConstant(TradeConstants.COL_TRADE_ITEM_PRICE, price);
+      if (data.hasColumn(COL_MAINTENANCE_NOTES)) {
+        String notes = row.getValue(COL_MAINTENANCE_NOTES);
+        if (!BeeUtils.isEmpty(notes)) {
+          insert.addConstant(COL_TRADE_ITEM_NOTE, notes);
+        }
+      }
 
       ResponseObject insResponse = qs.insertDataWithResponse(insert);
       if (insResponse.hasErrors()) {
         response.addMessagesFrom(insResponse);
-      }
-
-    } else {
-      for (SimpleRow row : data) {
-        Double q = row.getDouble(COL_MAINTENANCE_QUANTITY);
-        Double p = row.getDouble(COL_MAINTENANCE_PRICE);
-
-        SqlInsert insert = new SqlInsert(TradeConstants.TBL_SALE_ITEMS)
-            .addConstant(TradeConstants.COL_SALE, invId)
-            .addConstant(ClassifierConstants.COL_ITEM, row.getLong(COL_MAINTENANCE_ITEM))
-            .addConstant(TradeConstants.COL_TRADE_ITEM_QUANTITY, BeeUtils.unbox(q))
-            .addConstant(TradeConstants.COL_TRADE_ITEM_PRICE, BeeUtils.unbox(p));
-
-        ResponseObject insResponse = qs.insertDataWithResponse(insert);
-        if (insResponse.hasErrors()) {
-          response.addMessagesFrom(insResponse);
-          break;
-        }
+        break;
       }
     }
 
@@ -223,7 +281,7 @@ public class ServiceModuleBean implements BeeModule {
       SqlUpdate update = new SqlUpdate(TBL_MAINTENANCE)
           .addConstant(COL_MAINTENANCE_INVOICE, invId)
           .setWhere(where);
-      
+
       ResponseObject updResponse = qs.updateDataWithResponse(update);
       if (updResponse.hasErrors()) {
         response.addMessagesFrom(updResponse);

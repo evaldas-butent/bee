@@ -76,7 +76,8 @@ public class ColumnDescription implements BeeSerializable, HasInfo, HasOptions, 
     RENDERER_DESCR, RENDER, RENDER_TOKENS, VALUE_TYPE, PRECISION, SCALE, RENDER_COLUMNS,
     SEARCH_BY, FILTER_SUPPLIER, FILTER_OPTIONS, SORT_BY,
     HEADER_STYLE, BODY_STYLE, FOOTER_STYLE, DYN_STYLES, CELL_TYPE, CELL_RESIZABLE, UPDATE_MODE,
-    AUTO_FIT, FLEXIBILITY, OPTIONS, ELEMENT_TYPE, FOOTER_DESCRIPTION, DYNAMIC
+    AUTO_FIT, FLEXIBILITY, OPTIONS, ELEMENT_TYPE, FOOTER_DESCRIPTION, DYNAMIC,
+    EXPORTABLE, EXPORT_WIDTH_FACTOR
   }
 
   public static final String VIEW_COLUMN_SETTINGS = "GridColumnSettings";
@@ -161,6 +162,9 @@ public class ColumnDescription implements BeeSerializable, HasInfo, HasOptions, 
   private String options;
 
   private Boolean dynamic;
+
+  private Boolean exportable;
+  private Double exportWidthFactor;
 
   private boolean relationInitialized;
 
@@ -351,6 +355,12 @@ public class ColumnDescription implements BeeSerializable, HasInfo, HasOptions, 
         case DYNAMIC:
           setDynamic(BeeUtils.toBooleanOrNull(value));
           break;
+        case EXPORTABLE:
+          setExportable(BeeUtils.toBooleanOrNull(value));
+          break;
+        case EXPORT_WIDTH_FACTOR:
+          setExportWidthFactor(BeeUtils.toDoubleOrNull(value));
+          break;
       }
     }
   }
@@ -405,6 +415,14 @@ public class ColumnDescription implements BeeSerializable, HasInfo, HasOptions, 
 
   public String getEnumKey() {
     return enumKey;
+  }
+
+  public Boolean getExportable() {
+    return exportable;
+  }
+
+  public Double getExportWidthFactor() {
+    return exportWidthFactor;
   }
 
   public String getFilterOptions() {
@@ -479,7 +497,9 @@ public class ColumnDescription implements BeeSerializable, HasInfo, HasOptions, 
         "Enum Key", getEnumKey(),
         "Element Type", getElementType(),
         "Options", getOptions(),
-        "Dynamic", getDynamic());
+        "Dynamic", getDynamic(),
+        "Exportable", getExportable(),
+        "Export Width Factor", getExportWidthFactor());
 
     if (getFlexibility() != null) {
       info.addAll(getFlexibility().getInfo());
@@ -872,6 +892,12 @@ public class ColumnDescription implements BeeSerializable, HasInfo, HasOptions, 
         case DYNAMIC:
           arr[i++] = getDynamic();
           break;
+        case EXPORTABLE:
+          arr[i++] = getExportable();
+          break;
+        case EXPORT_WIDTH_FACTOR:
+          arr[i++] = getExportWidthFactor();
+          break;
       }
     }
     return Codec.beeSerialize(arr);
@@ -923,6 +949,14 @@ public class ColumnDescription implements BeeSerializable, HasInfo, HasOptions, 
 
   public void setEnumKey(String enumKey) {
     this.enumKey = enumKey;
+  }
+
+  public void setExportable(Boolean exportable) {
+    this.exportable = exportable;
+  }
+
+  public void setExportWidthFactor(Double exportWidthFactor) {
+    this.exportWidthFactor = exportWidthFactor;
   }
 
   public void setFilterOptions(String filterOptions) {
@@ -1063,7 +1097,7 @@ public class ColumnDescription implements BeeSerializable, HasInfo, HasOptions, 
   public void setVisible(Boolean visible) {
     this.visible = visible;
   }
-  
+
   public void setWhiteSpace(String whiteSpace) {
     this.whiteSpace = whiteSpace;
   }

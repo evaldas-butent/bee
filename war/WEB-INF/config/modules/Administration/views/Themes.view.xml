@@ -3,7 +3,7 @@
 
   name="Themes" source="Themes" module="Classifiers"
   caption="=colorThemes" newRowCaption="=newTheme"
-  editForm="Theme" newRowForm="Theme"
+  editForm="Theme" newRowForm="Theme" rowCaption="Name"
   >
   <Columns>
     <SimpleColumn name="Name" />

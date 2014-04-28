@@ -390,6 +390,7 @@
       <xs:enumeration value="photo" />
       <xs:enumeration value="mail" />
       <xs:enumeration value="url" />
+      <xs:enumeration value="total" />
     </xs:restriction>
   </xs:simpleType>
   

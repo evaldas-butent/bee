@@ -37,7 +37,6 @@ import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.Pair;
 import com.butent.bee.shared.Service;
 import com.butent.bee.shared.data.BeeColumn;
-import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.Defaults.DefaultExpression;
 import com.butent.bee.shared.data.SimpleRowSet;
 import com.butent.bee.shared.data.SimpleRowSet.SimpleRow;
@@ -64,8 +63,6 @@ import com.butent.bee.shared.io.FileNameUtils;
 import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogUtils;
 import com.butent.bee.shared.modules.administration.AdministrationConstants.RightsState;
-import com.butent.bee.shared.time.DateTime;
-import com.butent.bee.shared.time.TimeUtils;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.Codec;
 import com.butent.bee.shared.utils.EnumUtils;
@@ -73,7 +70,6 @@ import com.butent.bee.shared.utils.ExtendedProperty;
 import com.butent.bee.shared.utils.NameUtils;
 import com.butent.bee.shared.utils.Property;
 import com.butent.bee.shared.utils.PropertyUtils;
-import com.butent.bee.shared.utils.Wildcards;
 
 import java.io.File;
 import java.util.Collection;
@@ -89,7 +85,6 @@ import javax.ejb.LockType;
 import javax.ejb.Singleton;
 import javax.ejb.TransactionAttribute;
 import javax.ejb.TransactionAttributeType;
-import javax.servlet.http.HttpServletRequest;
 
 /**
  * Ensures core data management functionality containing: data structures for tables and views,
@@ -128,23 +123,6 @@ public class SystemBean {
     }
   }
 
-  private static final class IpFilter {
-    private final String host;
-    private final DateTime blockAfter;
-    private final DateTime blockBefore;
-
-    private IpFilter(String host, DateTime blockAfter, DateTime blockBefore) {
-      this.host = host;
-      this.blockAfter = blockAfter;
-      this.blockBefore = blockBefore;
-    }
-
-    private boolean isBlocked(String addr, DateTime dt) {
-      return Wildcards.isLike(addr, host)
-          && TimeUtils.isBetweenExclusiveNotRequired(dt, blockAfter, blockBefore);
-    }
-  }
-
   private static void unregister(String objectName, Map<String, ? extends BeeObject> cache) {
     if (!BeeUtils.isEmpty(objectName)) {
       cache.remove(BeeUtils.normalize(objectName));
@@ -172,8 +150,6 @@ public class SystemBean {
   private final Map<String, BeeView> viewCache = Maps.newHashMap();
 
   private final EventBus dataEventBus = new EventBus();
-
-  private final List<IpFilter> ipFilters = Lists.newArrayList();
 
   @TransactionAttribute(TransactionAttributeType.REQUIRES_NEW)
   @Lock(LockType.WRITE)
@@ -401,33 +377,6 @@ public class SystemBean {
     return SqlUtils.inList(tblName, getIdName(tblName), ids);
   }
 
-  public void initIpFilters() {
-    List<IpFilter> filters = Lists.newArrayList();
-
-    SimpleRowSet data =
-        qs.getData(new SqlSelect()
-            .addFields(TBL_IP_FILTERS, COL_IP_FILTER_HOST,
-                COL_IP_FILTER_BLOCK_AFTER,
-                COL_IP_FILTER_BLOCK_BEFORE)
-            .addFrom(TBL_IP_FILTERS));
-
-    if (!DataUtils.isEmpty(data)) {
-      for (SimpleRow row : data) {
-        filters.add(new IpFilter(row.getValue(COL_IP_FILTER_HOST),
-            row.getDateTime(COL_IP_FILTER_BLOCK_AFTER),
-            row.getDateTime(COL_IP_FILTER_BLOCK_BEFORE)));
-      }
-    }
-
-    if (!ipFilters.isEmpty()) {
-      ipFilters.clear();
-    }
-    if (!filters.isEmpty()) {
-      ipFilters.addAll(filters);
-      logger.info("Loaded", filters.size(), "ip filters");
-    }
-  }
-
   @Lock(LockType.WRITE)
   public void initTables() {
     initTables(BeeUtils.notEmpty(SqlBuilderFactory.getDsn(), dsb.getDefaultDsn()));
@@ -548,25 +497,6 @@ public class SystemBean {
   @Lock(LockType.WRITE)
   public void registerDataEventHandler(DataEventHandler eventHandler) {
     dataEventBus.register(eventHandler);
-  }
-
-  public boolean validateHost(HttpServletRequest request) {
-    if (ipFilters.isEmpty()) {
-      return true;
-    }
-
-    Assert.notNull(request);
-    String addr = request.getRemoteAddr();
-    DateTime now = TimeUtils.nowMinutes();
-
-    for (IpFilter ipFilter : ipFilters) {
-      if (ipFilter.isBlocked(addr, now)) {
-        logger.warning("remote address", addr, "blocked", BeeUtils.bracket(ipFilter.host));
-        return false;
-      }
-    }
-
-    return true;
   }
 
   private void createAuditTables(BeeTable table) {

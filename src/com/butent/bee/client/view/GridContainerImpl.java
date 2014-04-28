@@ -176,6 +176,10 @@ public class GridContainerImpl extends Split implements GridContainerView, HasNa
         enabledActions.add(Action.COPY);
       }
 
+      if (!disabledActions.contains(Action.EXPORT)) {
+        enabledActions.add(Action.EXPORT);
+      }
+
       if (UiOption.hasSettings(uiOptions) && !disabledActions.contains(Action.CONFIGURE)) {
         enabledActions.add(Action.CONFIGURE);
       }
@@ -561,7 +565,7 @@ public class GridContainerImpl extends Split implements GridContainerView, HasNa
       @Override
       public void execute() {
         if (getGridView().getGridInterceptor() != null) {
-          getGridView().getGridInterceptor().onAttach(getGridView());
+          getGridView().getGridInterceptor().onLoad(getGridView());
         }
 
         CellGrid grid = getGridView().getGrid();

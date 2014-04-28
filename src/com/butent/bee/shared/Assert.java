@@ -2,7 +2,6 @@ package com.butent.bee.shared;
 
 import com.butent.bee.shared.exceptions.ArgumentCountException;
 import com.butent.bee.shared.exceptions.BeeRuntimeException;
-import com.butent.bee.shared.exceptions.KeyNotFoundException;
 import com.butent.bee.shared.utils.BeeUtils;
 
 import java.util.Collection;
@@ -51,7 +50,7 @@ public final class Assert {
     notNull(map);
     notNull(key);
     if (!map.containsKey(key)) {
-      throw new KeyNotFoundException(key);
+      throw new BeeRuntimeException(ASSERTION_FAILED + "key (" + key + ") not found");
     }
     return key;
   }

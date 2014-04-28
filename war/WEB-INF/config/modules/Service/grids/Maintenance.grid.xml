@@ -13,8 +13,29 @@
     <DataColumn name="Price" format="#.00" visible="true" />
     <RelColumn name="Currency" caption="=currencyShort" />
 
-    <CalcColumn name="Total" type="decimal" label="=total" format="#.00">
-      <render><ui:expression>row.Quantity * row.Price</ui:expression></render>
+    <DataColumn name="VatPlus" width="20" sortable="false" caption="+" format="+">
+      <carry>
+        <ui:expression>cell.value</ui:expression>
+      </carry>
+    </DataColumn>
+    
+    <DataColumn name="Vat">
+      <carry>
+        <ui:expression>cell.value</ui:expression>
+      </carry>
+    </DataColumn>
+    
+    <DataColumn name="VatPercent" width="20" sortable="false" caption="%" format="%">
+      <carry>
+        <ui:expression>cell.value</ui:expression>
+      </carry>
+    </DataColumn>
+
+    <CalcColumn name="Total" label="=total" type="decimal" scale="2">
+      <style>
+        <bodyStyle><ui:font>bold</ui:font></bodyStyle>
+      </style>
+      <renderer type="total" />
     </CalcColumn>
 
     <RelColumn name="Supplier" visible="false" />

@@ -17,6 +17,7 @@ import static com.butent.bee.shared.modules.administration.AdministrationConstan
 import static com.butent.bee.shared.modules.classifiers.ClassifierConstants.*;
 import static com.butent.bee.shared.modules.ec.EcConstants.*;
 
+import com.butent.bee.server.Invocation;
 import com.butent.bee.server.data.BeeTable.BeeForeignKey;
 import com.butent.bee.server.data.DataEditorBean;
 import com.butent.bee.server.data.DataEvent.ViewQueryEvent;
@@ -412,7 +413,11 @@ public class EcModuleBean implements BeeModule {
       @Subscribe
       public void initTimers(ParameterEvent event) {
         if (BeeUtils.inListSame(event.getParameter(), PRM_BUTENT_INTERVAL, PRM_MOTONET_INTERVAL)) {
-          tcd.initTimers();
+          TecDocBean bean = Invocation.locateRemoteBean(TecDocBean.class);
+
+          if (bean != null) {
+            bean.initTimers();
+          }
         }
       }
     });

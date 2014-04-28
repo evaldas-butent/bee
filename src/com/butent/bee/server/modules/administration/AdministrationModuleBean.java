@@ -180,7 +180,7 @@ public class AdministrationModuleBean implements BeeModule {
       @Subscribe
       public void refreshIpFilterCache(TableModifyEvent event) {
         if (BeeUtils.same(event.getTargetName(), TBL_IP_FILTERS) && event.isAfter()) {
-          sys.initIpFilters();
+          usr.initIpFilters();
         }
       }
 

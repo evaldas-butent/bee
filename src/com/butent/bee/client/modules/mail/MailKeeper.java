@@ -8,17 +8,24 @@ import static com.butent.bee.shared.modules.mail.MailConstants.*;
 
 import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.Global;
+import com.butent.bee.client.NewsAggregator.HeadlineAccessor;
 import com.butent.bee.client.communication.ParameterList;
 import com.butent.bee.client.communication.ResponseCallback;
 import com.butent.bee.client.dialog.StringCallback;
-import com.butent.bee.client.modules.mail.MailPanel.AccountInfo;
+import com.butent.bee.client.grid.GridFactory;
+import com.butent.bee.client.grid.GridFactory.GridOptions;
+import com.butent.bee.client.presenter.Presenter;
 import com.butent.bee.client.screen.Domain;
 import com.butent.bee.client.ui.FormFactory;
+import com.butent.bee.shared.Consumer;
 import com.butent.bee.shared.communication.ResponseObject;
 import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.menu.MenuHandler;
 import com.butent.bee.shared.menu.MenuService;
 import com.butent.bee.shared.modules.administration.AdministrationConstants;
+import com.butent.bee.shared.modules.mail.AccountInfo;
+import com.butent.bee.shared.modules.mail.MailConstants.MessageFlag;
+import com.butent.bee.shared.news.Feed;
 import com.butent.bee.shared.rights.Module;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.Codec;
@@ -48,6 +55,55 @@ public final class MailKeeper {
 
     FormFactory.registerFormInterceptor(FORM_ACCOUNT, new AccountEditor());
     FormFactory.registerFormInterceptor(FORM_NEW_ACCOUNT, new AccountEditor());
+
+    Global.getNewsAggregator().registerFilterHandler(Feed.MAIL,
+        new Consumer<GridFactory.GridOptions>() {
+          @Override
+          public void accept(GridOptions input) {
+          }
+        });
+
+    Global.getNewsAggregator().registerAccessHandler(TBL_PLACES, new HeadlineAccessor() {
+      @Override
+      public boolean read(final Long id) {
+        FormFactory.openForm(FORM_MAIL_MESSAGE, new MailMessage() {
+          @Override
+          public void onShow(Presenter presenter) {
+            requery(id, false);
+          }
+        });
+        return true;
+      }
+
+      @Override
+      public void access(Long id) {
+        ParameterList params = MailKeeper.createArgs(SVC_FLAG_MESSAGE);
+        params.addDataItem(COL_PLACE, id);
+        params.addDataItem(COL_FLAGS, MessageFlag.SEEN.name());
+        params.addDataItem("on", Codec.pack(true));
+
+        BeeKeeper.getRpc().makePostRequest(params, (ResponseCallback) null);
+      }
+    });
+  }
+
+  public static void refreshActivePanel(boolean refreshMessages) {
+    final MailPanel panel = activePanel;
+
+    if (panel != null) {
+      if (refreshMessages) {
+        panel.initFolders(new ScheduledCommand() {
+          @Override
+          public void execute() {
+            if (panel == activePanel) {
+              panel.refreshMessages();
+            }
+          }
+        });
+      } else {
+        panel.initFolders();
+      }
+    }
   }
 
   static void activateController(MailPanel mailPanel) {
@@ -74,7 +130,7 @@ public final class MailKeeper {
       final boolean move) {
     final MailPanel panel = activePanel;
     ParameterList params = createArgs(SVC_COPY_MESSAGES);
-    params.addDataItem(COL_ACCOUNT, panel.getCurrentAccount().getId());
+    params.addDataItem(COL_ACCOUNT, panel.getCurrentAccount().getAccountId());
     params.addDataItem(COL_FOLDER_PARENT, folderFrom);
     params.addDataItem(COL_FOLDER, folderTo);
     params.addDataItem(COL_PLACE, Codec.beeSerialize(places));
@@ -85,13 +141,17 @@ public final class MailKeeper {
       public void onResponse(ResponseObject response) {
         response.notify(panel.getFormView());
 
-        if (!response.hasErrors() && Objects.equal(folderFrom, panel.getCurrentFolderId())) {
+        if (!response.hasErrors()) {
           panel.getFormView().notifyInfo(
               move ? Localized.getMessages().mailMovedMessagesToFolder(
                   (String) response.getResponse()) : Localized.getMessages()
                   .mailCopiedMessagesToFolder((String) response.getResponse()),
-              BeeUtils.bracket(panel.getCurrentAccount().getFolder(folderTo).getName()));
-          panel.refreshMessages();
+              BeeUtils.bracket(panel.getCurrentAccount().findFolder(folderTo).getName()));
+
+          if (Objects.equal(folderFrom, panel.getCurrentFolderId())) {
+            panel.refreshMessages();
+          }
+          panel.checkFolder(folderTo);
         }
       }
     });
@@ -112,13 +172,13 @@ public final class MailKeeper {
 
     if (isParent) {
       caption = Localized.getConstants().mailInFolder() + " "
-          + BeeUtils.bracket(account.getFolder(parentId).getName());
+          + BeeUtils.bracket(account.findFolder(parentId).getName());
     }
     Global.inputString(title, caption, new StringCallback() {
       @Override
       public void onSuccess(String value) {
         ParameterList params = createArgs(SVC_CREATE_FOLDER);
-        params.addDataItem(COL_ACCOUNT, account.getId());
+        params.addDataItem(COL_ACCOUNT, account.getAccountId());
         params.addDataItem(COL_FOLDER_NAME, value);
 
         if (isParent) {
@@ -130,7 +190,7 @@ public final class MailKeeper {
             response.notify(panel.getFormView());
 
             if (!response.hasErrors()) {
-              panel.initFolders(null);
+              panel.initFolders();
             }
           }
         });
@@ -141,7 +201,7 @@ public final class MailKeeper {
   static void disconnectFolder(final AccountInfo account, final Long folderId) {
     final MailPanel panel = activePanel;
     ParameterList params = createArgs(SVC_DISCONNECT_FOLDER);
-    params.addDataItem(COL_ACCOUNT, account.getId());
+    params.addDataItem(COL_ACCOUNT, account.getAccountId());
     params.addDataItem(COL_FOLDER, folderId);
 
     BeeKeeper.getRpc().makePostRequest(params, new ResponseCallback() {
@@ -150,7 +210,7 @@ public final class MailKeeper {
         response.notify(panel.getFormView());
 
         if (!response.hasErrors()) {
-          panel.initFolders(null);
+          panel.initFolders();
         }
       }
     });
@@ -168,7 +228,7 @@ public final class MailKeeper {
   static void removeFolder(final AccountInfo account, final Long folderId) {
     final MailPanel panel = activePanel;
     ParameterList params = createArgs(SVC_DROP_FOLDER);
-    params.addDataItem(COL_ACCOUNT, account.getId());
+    params.addDataItem(COL_ACCOUNT, account.getAccountId());
     params.addDataItem(COL_FOLDER, folderId);
 
     BeeKeeper.getRpc().makePostRequest(params, new ResponseCallback() {
@@ -181,7 +241,7 @@ public final class MailKeeper {
             @Override
             public void execute() {
               if (Objects.equal(folderId, panel.getCurrentFolderId())) {
-                panel.refresh(account.getInboxFolder());
+                panel.refresh(account.getInboxId());
               }
             }
           });
@@ -217,7 +277,7 @@ public final class MailKeeper {
   static void renameFolder(AccountInfo account, final Long folderId, String name) {
     final MailPanel panel = activePanel;
     ParameterList params = createArgs(SVC_RENAME_FOLDER);
-    params.addDataItem(COL_ACCOUNT, account.getId());
+    params.addDataItem(COL_ACCOUNT, account.getAccountId());
     params.addDataItem(COL_FOLDER, folderId);
     params.addDataItem(COL_FOLDER_NAME, name);
 
@@ -227,20 +287,12 @@ public final class MailKeeper {
         response.notify(panel.getFormView());
 
         if (!response.hasErrors()) {
-          panel.initFolders(null);
-        }
-      }
-    });
-  }
-
-  static void requeryFolders() {
-    final MailPanel panel = activePanel;
-
-    panel.initFolders(new ScheduledCommand() {
-      @Override
-      public void execute() {
-        if (panel.getCurrentAccount().getFolder(panel.getCurrentFolderId()) == null) {
-          panel.refresh(panel.getCurrentAccount().getInboxFolder());
+          panel.initFolders(new ScheduledCommand() {
+            @Override
+            public void execute() {
+              panel.checkFolder(folderId);
+            }
+          });
         }
       }
     });

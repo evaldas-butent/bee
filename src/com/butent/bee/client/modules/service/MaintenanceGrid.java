@@ -1,11 +1,13 @@
 package com.butent.bee.client.modules.service;
 
 import com.google.common.collect.Lists;
+import com.google.common.collect.Sets;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.event.shared.HasHandlers;
 import com.google.gwt.i18n.client.NumberFormat;
 import com.google.gwt.user.client.ui.Widget;
+import com.google.web.bindery.event.shared.HandlerRegistration;
 
 import static com.butent.bee.shared.modules.service.ServiceConstants.*;
 
@@ -17,16 +19,20 @@ import com.butent.bee.client.data.Queries;
 import com.butent.bee.client.data.RowCallback;
 import com.butent.bee.client.data.RowEditor;
 import com.butent.bee.client.data.RowFactory;
-import com.butent.bee.client.dialog.Popup;
-import com.butent.bee.client.dialog.Popup.OutsideClick;
+import com.butent.bee.client.dialog.DialogBox;
+import com.butent.bee.client.event.EventUtils;
 import com.butent.bee.client.grid.HtmlTable;
 import com.butent.bee.client.i18n.Format;
 import com.butent.bee.client.layout.Flow;
 import com.butent.bee.client.layout.Simple;
+import com.butent.bee.client.modules.trade.TotalRenderer;
 import com.butent.bee.client.presenter.GridPresenter;
+import com.butent.bee.client.render.AbstractCellRenderer;
 import com.butent.bee.client.view.add.ReadyForInsertEvent;
 import com.butent.bee.client.view.form.interceptor.AbstractFormInterceptor;
 import com.butent.bee.client.view.form.interceptor.FormInterceptor;
+import com.butent.bee.client.view.grid.ColumnInfo;
+import com.butent.bee.client.view.grid.GridView;
 import com.butent.bee.client.view.grid.interceptor.AbstractGridInterceptor;
 import com.butent.bee.client.view.grid.interceptor.GridInterceptor;
 import com.butent.bee.client.widget.Button;
@@ -39,6 +45,9 @@ import com.butent.bee.shared.data.IsRow;
 import com.butent.bee.shared.data.RelationUtils;
 import com.butent.bee.shared.data.UserData;
 import com.butent.bee.shared.data.event.DataChangeEvent;
+import com.butent.bee.shared.data.event.HandlesDeleteEvents;
+import com.butent.bee.shared.data.event.MultiDeleteEvent;
+import com.butent.bee.shared.data.event.RowDeleteEvent;
 import com.butent.bee.shared.data.view.DataInfo;
 import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.modules.administration.AdministrationConstants;
@@ -49,12 +58,16 @@ import com.butent.bee.shared.time.TimeUtils;
 import com.butent.bee.shared.ui.HasCheckedness;
 import com.butent.bee.shared.utils.BeeUtils;
 
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 
-public class MaintenanceGrid extends AbstractGridInterceptor {
+public class MaintenanceGrid extends AbstractGridInterceptor implements HandlesDeleteEvents {
+
+  private final List<HandlerRegistration> registry = new ArrayList<>();
 
   private Long mainItem;
-  
+
   MaintenanceGrid() {
   }
 
@@ -74,6 +87,32 @@ public class MaintenanceGrid extends AbstractGridInterceptor {
   @Override
   public GridInterceptor getInstance() {
     return new MaintenanceGrid();
+  }
+
+  @Override
+  public void onLoad(GridView gridView) {
+    EventUtils.clearRegistry(registry);
+    registry.addAll(BeeKeeper.getBus().registerDeleteHandler(this, false));
+  }
+
+  @Override
+  public void onMultiDelete(MultiDeleteEvent event) {
+    if (event != null && isRelevantInvoice(event.getViewName(), event.getRowIds())) {
+      getGridPresenter().refresh(false);
+    }
+  }
+
+  @Override
+  public void onRowDelete(RowDeleteEvent event) {
+    if (event != null
+        && isRelevantInvoice(event.getViewName(), Sets.newHashSet(event.getRowId()))) {
+      getGridPresenter().refresh(false);
+    }
+  }
+
+  @Override
+  public void onUnload(GridView gridView) {
+    EventUtils.clearRegistry(registry);
   }
 
   private void buildInvoice(final List<IsRow> items) {
@@ -141,37 +180,37 @@ public class MaintenanceGrid extends AbstractGridInterceptor {
               @Override
               public void onSuccess(BeeRow result) {
                 ParameterList params = ServiceKeeper.createArgs(SVC_CREATE_INVOICE_ITEMS);
-                
+
                 params.addQueryItem(COL_MAINTENANCE_INVOICE, result.getId());
-                
+
                 Long currency = Data.getLong(VIEW_INVOICES, result,
                     AdministrationConstants.COL_CURRENCY);
                 if (DataUtils.isId(currency)) {
                   params.addQueryItem(AdministrationConstants.COL_CURRENCY, currency);
                 }
-                
+
                 if (DataUtils.isId(getMainItem())) {
                   params.addQueryItem(PROP_MAIN_ITEM, getMainItem());
                 }
-                
+
                 List<Long> ids = Lists.newArrayList();
                 for (IsRow item : items) {
                   ids.add(item.getId());
                 }
-                
+
                 params.addDataItem(VIEW_MAINTENANCE, DataUtils.buildIdList(ids));
-                
+
                 final long invId = result.getId();
-                
+
                 BeeKeeper.getRpc().makeRequest(params, new ResponseCallback() {
                   @Override
                   public void onResponse(ResponseObject response) {
                     response.notify(getGridView());
-                    
+
                     if (!response.hasErrors()) {
                       getGridPresenter().refresh(true);
                       DataChangeEvent.fireRefresh(BeeKeeper.getBus(), VIEW_INVOICES);
-                      
+
                       RowEditor.openRow(VIEW_INVOICES, invId, false, null);
                     }
                   }
@@ -203,6 +242,38 @@ public class MaintenanceGrid extends AbstractGridInterceptor {
     return mainItem;
   }
 
+  private TotalRenderer getTotalRenderer() {
+    List<ColumnInfo> columnInfos = getGridView().getGrid().getColumns();
+    for (ColumnInfo columnInfo : columnInfos) {
+      AbstractCellRenderer renderer = columnInfo.getColumn().getOptionalRenderer();
+      if (renderer instanceof TotalRenderer) {
+        return (TotalRenderer) renderer;
+      }
+    }
+    return null;
+  }
+
+  private boolean isRelevantInvoice(String viewName, Collection<Long> ids) {
+    if (!BeeUtils.same(viewName, VIEW_INVOICES) || BeeUtils.isEmpty(ids)) {
+      return false;
+    }
+
+    List<IsRow> data = getGridView().getGrid().getRowData();
+    if (BeeUtils.isEmpty(data)) {
+      return false;
+    }
+
+    int index = getDataIndex(COL_MAINTENANCE_INVOICE);
+
+    for (IsRow row : data) {
+      Long invId = row.getLong(index);
+      if (DataUtils.isId(invId) && ids.contains(invId)) {
+        return true;
+      }
+    }
+    return false;
+  }
+
   private void selectInvoiceItems() {
     final List<IsRow> rows = getInvoiceCandidates();
     if (rows.isEmpty()) {
@@ -217,12 +288,14 @@ public class MaintenanceGrid extends AbstractGridInterceptor {
 
     int dateIndex = getDataIndex(COL_MAINTENANCE_DATE);
     int itemNameIndex = getDataIndex(ALS_ITEM_NAME);
-    int quantityIndex = getDataIndex(COL_MAINTENANCE_QUANTITY);
-    int priceIndex = getDataIndex(COL_MAINTENANCE_PRICE);
+    int quantityIndex = getDataIndex(TradeConstants.COL_TRADE_ITEM_QUANTITY);
+    int priceIndex = getDataIndex(TradeConstants.COL_TRADE_ITEM_PRICE);
     int currencyNameIndex = getDataIndex(AdministrationConstants.ALS_CURRENCY_NAME);
 
-    NumberFormat priceFormat = Format.getNumberFormat("0.00");
-    NumberFormat amountFormat = Format.getNumberFormat("0.00");
+    TotalRenderer totalRenderer = getTotalRenderer();
+
+    NumberFormat priceFormat = Format.getDefaultCurrencyFormat();
+    NumberFormat amountFormat = Format.getDefaultCurrencyFormat();
 
     for (IsRow row : rows) {
       DateTime date = row.getDateTime(dateIndex);
@@ -262,7 +335,10 @@ public class MaintenanceGrid extends AbstractGridInterceptor {
 
       Label amountLabel = new Label();
       if (quantity != null && price != null) {
-        amountLabel.setText(amountFormat.format(quantity * price));
+        Double amount = (totalRenderer == null) ? quantity * price : totalRenderer.getTotal(row);
+        if (amount != null) {
+          amountLabel.setText(amountFormat.format(amount));
+        }
       }
       table.setWidgetAndStyle(r, c++, amountLabel, stylePrefix + "amount");
 
@@ -277,7 +353,8 @@ public class MaintenanceGrid extends AbstractGridInterceptor {
 
     Flow commands = new Flow(stylePrefix + "commands");
 
-    final Popup popup = new Popup(OutsideClick.CLOSE, stylePrefix + "popup");
+    final DialogBox dialog = DialogBox.create(Localized.getConstants().trdNewInvoice(),
+        stylePrefix + "dialog");
 
     Button build = new Button(Localized.getConstants().createInvoice());
     build.addStyleName(stylePrefix + "build");
@@ -296,7 +373,7 @@ public class MaintenanceGrid extends AbstractGridInterceptor {
         if (selectedRows.isEmpty()) {
           BeeKeeper.getScreen().notifyWarning(Localized.getConstants().selectAtLeastOneRow());
         } else {
-          popup.close();
+          dialog.close();
           buildInvoice(selectedRows);
         }
       }
@@ -307,7 +384,7 @@ public class MaintenanceGrid extends AbstractGridInterceptor {
     cancel.addClickHandler(new ClickHandler() {
       @Override
       public void onClick(ClickEvent event) {
-        popup.close();
+        dialog.close();
       }
     });
 
@@ -316,11 +393,11 @@ public class MaintenanceGrid extends AbstractGridInterceptor {
 
     panel.add(commands);
 
-    popup.setHideOnEscape(true);
-    popup.setAnimationEnabled(true);
+    dialog.setHideOnEscape(true);
+    dialog.setAnimationEnabled(true);
 
-    popup.setWidget(panel);
-    popup.center();
+    dialog.setWidget(panel);
+    dialog.center();
   }
 
   private void setMainItem(Long mainItem) {

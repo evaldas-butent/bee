@@ -113,7 +113,9 @@ public final class MailConstants {
   public static final String FORM_ACCOUNT = "Account";
   public static final String FORM_NEW_ACCOUNT = "NewAccount";
 
-  public static final String FORM_NEW_MAIL = "NewMailMessage";
+  public static final String FORM_MAIL = "Mail";
+  public static final String FORM_MAIL_MESSAGE = "MailMessage";
+  public static final String FORM_NEW_MAIL_MESSAGE = "NewMailMessage";
 
   public static final String DATA_TYPE_MESSAGE = "Message";
 

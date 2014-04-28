@@ -26,15 +26,16 @@ import com.butent.bee.client.event.DndHelper;
 import com.butent.bee.client.event.EventUtils;
 import com.butent.bee.client.layout.Flow;
 import com.butent.bee.client.layout.Horizontal;
-import com.butent.bee.client.modules.mail.MailPanel.AccountInfo;
 import com.butent.bee.client.screen.Domain;
 import com.butent.bee.client.screen.HandlesStateChange;
 import com.butent.bee.client.screen.HasDomain;
-import com.butent.bee.client.widget.Image;
+import com.butent.bee.client.widget.FaLabel;
 import com.butent.bee.client.widget.Label;
 import com.butent.bee.shared.State;
+import com.butent.bee.shared.font.FontAwesome;
 import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.logging.LogUtils;
+import com.butent.bee.shared.modules.mail.AccountInfo;
 import com.butent.bee.shared.modules.mail.MailConstants;
 import com.butent.bee.shared.modules.mail.MailConstants.SystemFolder;
 import com.butent.bee.shared.modules.mail.MailFolder;
@@ -65,26 +66,13 @@ public class MailController extends Flow implements HasDomain, HandlesStateChang
 
     Horizontal caption = new Horizontal();
     caption.setStyleName("bee-mail-FolderRow");
+    panel.add(caption);
 
     Label label = new Label(Localized.getConstants().mailFolders());
     label.setStyleName("bee-mail-FolderCaption");
     caption.add(label);
 
-    final Image refresh = new Image(Global.getImages().refresh());
-    refresh.addStyleName("bee-mail-FolderAction");
-    refresh.setTitle(Localized.getConstants().mailSynchronizeFolders());
-
-    refresh.addClickHandler(new ClickHandler() {
-      @Override
-      public void onClick(ClickEvent event) {
-        MailKeeper.requeryFolders();
-      }
-    });
-    caption.add(refresh);
-    panel.add(caption);
-
-    final Image create = new Image(Global.getImages().silverPlus());
-    create.addStyleName("bee-mail-FolderAction");
+    final FaLabel create = new FaLabel(FontAwesome.PLUS, "bee-mail-FolderAction");
     create.setTitle(Localized.getConstants().mailCreateNewFolder());
 
     create.addClickHandler(new ClickHandler() {
@@ -94,7 +82,6 @@ public class MailController extends Flow implements HasDomain, HandlesStateChang
       }
     });
     caption.add(create);
-    panel.add(caption);
 
     foldersPanel = new FlowPanel();
     foldersPanel.setStyleName("bee-mail-Folders");
@@ -120,27 +107,30 @@ public class MailController extends Flow implements HasDomain, HandlesStateChang
     sysFoldersPanel.clear();
     foldersPanel.clear();
 
-    if (account.getRootFolder() == null) {
+    if (BeeUtils.isEmpty(account.getRootFolder().getSubFolders())) {
       return;
     }
     for (final SystemFolder sysFolder : SystemFolder.values()) {
-      Label label = null;
+      String cap = null;
 
       switch (sysFolder) {
         case Drafts:
-          label = new Label(Localized.getConstants().mailFolderDrafts());
+          cap = Localized.getConstants().mailFolderDrafts();
           break;
         case Inbox:
-          label = new Label(Localized.getConstants().mailFolderInbox());
+          cap = Localized.getConstants().mailFolderInbox();
           break;
         case Sent:
-          label = new Label(Localized.getConstants().mailFolderSent());
+          cap = Localized.getConstants().mailFolderSent();
           break;
         case Trash:
-          label = new Label(Localized.getConstants().mailFolderTrash());
+          cap = Localized.getConstants().mailFolderTrash();
           break;
       }
       final Long folderId = account.getSystemFolder(sysFolder);
+      MailFolder folder = account.findFolder(folderId);
+      Label label = new Label();
+      label.setStyleName("bee-mail-SysFolder");
 
       label.addClickHandler(new ClickHandler() {
         @Override
@@ -148,7 +138,11 @@ public class MailController extends Flow implements HasDomain, HandlesStateChang
           MailKeeper.clickFolder(folderId);
         }
       });
-      label.setStyleName("bee-mail-SysFolder");
+      if (folder.getUnread() > 0) {
+        cap += " (" + BeeUtils.toString(folder.getUnread()) + ")";
+        label.addStyleDependentName("unread");
+      }
+      label.setHtml(cap);
       setDndTarget(label, folderId);
       DomUtils.setDataProperty(label.getElement(), MailConstants.COL_FOLDER, folderId);
       sysFoldersPanel.add(label);
@@ -178,7 +172,8 @@ public class MailController extends Flow implements HasDomain, HandlesStateChang
         row.setStyleName("bee-mail-FolderRow");
         row.setDefaultCellStyles("padding: 0px;");
 
-        final Label label = new Label(subFolder.getName());
+        final String cap = subFolder.getName();
+        Label label = new Label();
         label.setStyleName("bee-mail-Folder");
         label.getElement().getStyle().setMarginLeft(margin, Unit.PX);
         label.addClickHandler(new ClickHandler() {
@@ -187,6 +182,12 @@ public class MailController extends Flow implements HasDomain, HandlesStateChang
             MailKeeper.clickFolder(folderId);
           }
         });
+        if (subFolder.getUnread() > 0) {
+          label.setHtml(cap + " (" + BeeUtils.toString(subFolder.getUnread()) + ")");
+          label.addStyleDependentName("unread");
+        } else {
+          label.setHtml(cap);
+        }
         if (BeeUtils.isEmpty(subFolder.getSubFolders())) {
           label.addStyleDependentName("leaf");
         } else {
@@ -196,10 +197,9 @@ public class MailController extends Flow implements HasDomain, HandlesStateChang
         row.add(label);
 
         if (subFolder.isConnected()) {
-          final Image disconnect = new Image(Global.getImages().disconnect());
-          disconnect.addStyleName("bee-mail-FolderAction");
+          final FaLabel disconnect = new FaLabel(FontAwesome.CHAIN_BROKEN, "bee-mail-FolderAction");
           disconnect.setTitle(Localized.getMessages()
-              .mailCancelFolderSynchronizationQuestion(BeeUtils.bracket(label.getHtml())));
+              .mailCancelFolderSynchronizationQuestion(BeeUtils.bracket(cap)));
 
           disconnect.addClickHandler(new ClickHandler() {
             @Override
@@ -219,9 +219,8 @@ public class MailController extends Flow implements HasDomain, HandlesStateChang
         } else {
           label.addStyleDependentName("disconnected");
         }
-        final Image edit = new Image(Global.getImages().silverEdit());
-        edit.addStyleName("bee-mail-FolderAction");
-        edit.setTitle(Localized.getMessages().mailRenameFolder(BeeUtils.bracket(label.getHtml())));
+        final FaLabel edit = new FaLabel(FontAwesome.EDIT, "bee-mail-FolderAction");
+        edit.setTitle(Localized.getMessages().mailRenameFolder(BeeUtils.bracket(cap)));
 
         edit.addClickHandler(new ClickHandler() {
           @Override
@@ -229,19 +228,18 @@ public class MailController extends Flow implements HasDomain, HandlesStateChang
             Global.inputString(edit.getTitle(), null, new StringCallback() {
               @Override
               public void onSuccess(String value) {
-                if (!label.getHtml().equals(value)) {
+                if (!cap.equals(value)) {
                   MailKeeper.renameFolder(account, folderId, value);
                 }
               }
-            }, label.getHtml());
+            }, cap);
           }
         });
         row.add(edit);
 
-        final Image delete = new Image(Global.getImages().silverMinus());
-        delete.addStyleName("bee-mail-FolderAction");
+        final FaLabel delete = new FaLabel(FontAwesome.TRASH_O, "bee-mail-FolderAction");
         delete.setTitle(Localized.getMessages()
-            .mailDeleteFolderQuestion(BeeUtils.bracket(label.getHtml())));
+            .mailDeleteFolderQuestion(BeeUtils.bracket(cap)));
 
         delete.addClickHandler(new ClickHandler() {
           @Override

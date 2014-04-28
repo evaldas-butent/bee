@@ -20,7 +20,6 @@ import com.butent.bee.client.view.edit.EditChangeHandler;
 import com.butent.bee.client.view.edit.EditStopEvent;
 import com.butent.bee.client.view.edit.EditStopEvent.Handler;
 import com.butent.bee.client.view.edit.Editor;
-import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.State;
 import com.butent.bee.shared.data.value.BooleanValue;
 import com.butent.bee.shared.ui.EditorAction;
@@ -39,6 +38,9 @@ public class Toggle extends CustomWidget implements Editor, HasValueChangeHandle
   private static final String STYLE_SUFFIX_CHECKED = "checked";
   private static final String STYLE_SUFFIX_UNCHECKED = "unchecked";
 
+  private static final String BALLOT = "\u2717";
+  private static final String HEAVY_CHECK_MARK = "\u2714";
+
   private final String upFace;
   private final String downFace;
 
@@ -54,7 +56,7 @@ public class Toggle extends CustomWidget implements Editor, HasValueChangeHandle
   private boolean handlesTabulation;
 
   public Toggle() {
-    this(BeeUtils.toString(BeeConst.BALLOT), BeeUtils.toString(BeeConst.HEAVY_CHECK_MARK));
+    this(BALLOT, HEAVY_CHECK_MARK);
   }
 
   public Toggle(String upFace, String downFace) {

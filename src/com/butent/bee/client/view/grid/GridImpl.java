@@ -122,6 +122,7 @@ import com.butent.bee.shared.ui.ColumnDescription;
 import com.butent.bee.shared.ui.ColumnDescription.ColType;
 import com.butent.bee.shared.ui.FilterSupplierType;
 import com.butent.bee.shared.ui.GridDescription;
+import com.butent.bee.shared.ui.HandlesFormat;
 import com.butent.bee.shared.ui.Relation;
 import com.butent.bee.shared.ui.RenderableToken;
 import com.butent.bee.shared.ui.UiConstants;
@@ -586,7 +587,11 @@ public class GridImpl extends Absolute implements GridView, EditEndEvent.Handler
     }
 
     if (!BeeUtils.isEmpty(cd.getFormat())) {
-      Format.setFormat(column, column.getValueType(), cd.getFormat());
+      if (column instanceof HandlesFormat) {
+        ((HandlesFormat) column).setFormat(cd.getFormat());
+      } else {
+        Format.setFormat(column, column.getValueType(), cd.getFormat());
+      }
     }
 
     if (!BeeUtils.isEmpty(cd.getHorAlign())) {
@@ -602,22 +607,22 @@ public class GridImpl extends Absolute implements GridView, EditEndEvent.Handler
 
     ColumnHeader header = null;
     if (gridDescription.hasColumnHeaders()) {
-      String headerCaption = null;
-      if (gridInterceptor != null) {
-        headerCaption = gridInterceptor.getColumnCaption(columnId);
-      }
-      if (headerCaption == null && !BeeConst.STRING_MINUS.equals(caption)) {
+      String headerCaption;
+      if (BeeConst.STRING_MINUS.equals(caption)) {
+        headerCaption = null;
+      } else {
         headerCaption = BeeUtils.notEmpty(caption, columnId);
       }
 
       if (gridInterceptor != null) {
         header = gridInterceptor.getHeader(columnId, headerCaption);
       }
+
       if (header == null) {
         if (colType == ColType.SELECTION) {
-          header = new ColumnHeader(columnId, new SelectionHeader());
+          header = new ColumnHeader(columnId, new SelectionHeader(), BeeConst.STRING_CHECK_MARK);
         } else {
-          header = new ColumnHeader(columnId, headerCaption);
+          header = new ColumnHeader(columnId, headerCaption, headerCaption);
         }
       }
     }
@@ -1217,6 +1222,11 @@ public class GridImpl extends Absolute implements GridView, EditEndEvent.Handler
   }
 
   @Override
+  public boolean isChild() {
+    return !BeeUtils.isEmpty(getRelColumn());
+  }
+
+  @Override
   public boolean isEnabled() {
     return getGrid().isEnabled();
   }
@@ -1564,6 +1574,10 @@ public class GridImpl extends Absolute implements GridView, EditEndEvent.Handler
 
   @Override
   protected void onUnload() {
+    if (getGridInterceptor() != null) {
+      getGridInterceptor().onUnload(this);
+    }
+
     EventUtils.clearRegistry(registry);
 
     if (getNewRowPopup() != null) {
@@ -2076,10 +2090,6 @@ public class GridImpl extends Absolute implements GridView, EditEndEvent.Handler
         }
       }
     }
-  }
-
-  private boolean isChild() {
-    return !BeeUtils.isEmpty(getRelColumn());
   }
 
   private boolean isNewRowFormGenerated() {

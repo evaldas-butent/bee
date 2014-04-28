@@ -9,7 +9,6 @@ public final class ClassifierConstants {
   
   public static final String TBL_ITEMS = "Items";
   public static final String TBL_UNITS = "Units";
-  public static final String TBL_CATEGORIES = "CategoryTree";
   public static final String TBL_ITEM_CATEGORIES = "ItemCategories";
 
   public static final String TBL_CONTACTS = "Contacts";
@@ -42,6 +41,7 @@ public final class ClassifierConstants {
   public static final String VIEW_PERSONS = "Persons";
 
   public static final String VIEW_ITEMS = "Items";
+  public static final String VIEW_CATEGY_TREE = "CategoryTree";
   public static final String VIEW_ITEM_CATEGORIES = "ItemCategories";
 
   public static final String VIEW_COUNTRIES = "Countries";
@@ -95,6 +95,8 @@ public final class ClassifierConstants {
   public static final String COL_EMAIL_LABEL = "Label";
 
   public static final String COL_CATEGORY = "Category";
+  public static final String COL_CATEGORY_NAME = "Name";
+
   public static final String COL_ITEM = "Item";
   public static final String COL_ITEM_NAME = "Name";
   public static final String COL_ITEM_ARTICLE = "Article";
@@ -156,6 +158,8 @@ public final class ClassifierConstants {
 
   public static final String ALS_EMAIL_ID = "EmailId";
 
+  public static final String ALS_CATEGORY_PARENT_NAME = "ParentName";
+  
   public static final String FILTER_COMPANY_CREATION_AND_TYPE = "company_creation_and_type";
   public static final String FILTER_COMPANY_USAGE = "company_usage";
   

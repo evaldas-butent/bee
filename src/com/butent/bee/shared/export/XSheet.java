@@ -7,9 +7,15 @@ import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.Codec;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 public class XSheet implements BeeSerializable {
+
+  private enum Serial {
+    NAME, ROW_HEIGHT_FACTOR, ROWS, FONTS, STYLES, PICTURES, AUTO_SIZE, COLUMN_WIDTH_FACTORS
+  }
 
   private static final double H1_FONT_FACTOR = 1.4;
   private static final double HX_FONT_FACTOR = 1.2;
@@ -23,12 +29,17 @@ public class XSheet implements BeeSerializable {
 
   private String name;
 
+  private Double rowHeightFactor;
+
   private final List<XRow> rows = new ArrayList<>();
 
   private final List<XFont> fonts = new ArrayList<>();
   private final List<XStyle> styles = new ArrayList<>();
 
+  private final List<XPicture> pictures = new ArrayList<>();
+
   private final List<Integer> autoSize = new ArrayList<>();
+  private final Map<Integer, Double> columnWidthFactors = new HashMap<>();
 
   public XSheet() {
     super();
@@ -53,7 +64,7 @@ public class XSheet implements BeeSerializable {
 
     XFont f1 = XFont.bold();
     f1.setFactor(H1_FONT_FACTOR);
-    s1.setFontRef(registeFont(f1));
+    s1.setFontRef(registerFont(f1));
 
     XStyle sx;
     if (headers.size() > 1) {
@@ -61,7 +72,7 @@ public class XSheet implements BeeSerializable {
 
       XFont fx = XFont.bold();
       fx.setFactor(HX_FONT_FACTOR);
-      sx.setFontRef(registeFont(fx));
+      sx.setFontRef(registerFont(fx));
 
     } else {
       sx = null;
@@ -134,60 +145,101 @@ public class XSheet implements BeeSerializable {
   @Override
   public void deserialize(String s) {
     String[] arr = Codec.beeDeserializeCollection(s);
-    Assert.lengthEquals(arr, 5);
-
-    int i = 0;
-    setName(arr[i++]);
+    Serial[] members = Serial.values();
+    Assert.lengthEquals(arr, members.length);
 
     if (!rows.isEmpty()) {
       rows.clear();
     }
-
-    String[] rarr = Codec.beeDeserializeCollection(arr[i++]);
-    if (rarr != null) {
-      for (String rv : rarr) {
-        add(XRow.restore(rv));
-      }
-    }
-
     if (!fonts.isEmpty()) {
       fonts.clear();
     }
-
-    String[] farr = Codec.beeDeserializeCollection(arr[i++]);
-    if (farr != null) {
-      for (String fv : farr) {
-        fonts.add(XFont.restore(fv));
-      }
-    }
-
     if (!styles.isEmpty()) {
       styles.clear();
     }
-
-    String[] sarr = Codec.beeDeserializeCollection(arr[i++]);
-    if (sarr != null) {
-      for (String sv : sarr) {
-        styles.add(XStyle.restore(sv));
-      }
+    if (!pictures.isEmpty()) {
+      pictures.clear();
     }
-
     if (!autoSize.isEmpty()) {
       autoSize.clear();
     }
+    if (!columnWidthFactors.isEmpty()) {
+      columnWidthFactors.clear();
+    }
 
-    String[] carr = Codec.beeDeserializeCollection(arr[i++]);
-    if (carr != null) {
-      for (String cv : carr) {
-        if (BeeUtils.isDigit(cv)) {
-          autoSize.add(BeeUtils.toInt(cv));
-        }
+    for (int i = 0; i < members.length; i++) {
+      String value = arr[i];
+      if (BeeUtils.isEmpty(value)) {
+        continue;
+      }
+
+      switch (members[i]) {
+        case COLUMN_WIDTH_FACTORS:
+          Map<String, String> map = Codec.deserializeMap(value);
+          
+          for (Map.Entry<String, String> entry : map.entrySet()) {
+            if (BeeUtils.isDigit(entry.getKey()) && BeeUtils.isPositiveDouble(entry.getValue())) {
+              columnWidthFactors.put(BeeUtils.toInt(entry.getKey()),
+                  BeeUtils.toDouble(entry.getValue()));
+            }
+          }
+          break;
+
+        case NAME:
+          setName(value);
+          break;
+
+        case ROW_HEIGHT_FACTOR:
+          setRowHeightFactor(BeeUtils.toDoubleOrNull(value));
+          break;
+
+        default:
+          String[] items = Codec.beeDeserializeCollection(value);
+
+          for (String item : items) {
+            if (BeeUtils.isEmpty(item)) {
+              continue;
+            }
+
+            switch (members[i]) {
+              case AUTO_SIZE:
+                if (BeeUtils.isDigit(item)) {
+                  autoSize.add(BeeUtils.toInt(item));
+                }
+                break;
+
+              case FONTS:
+                fonts.add(XFont.restore(item));
+                break;
+
+              case PICTURES:
+                pictures.add(XPicture.restore(item));
+                break;
+
+              case ROWS:
+                add(XRow.restore(item));
+                break;
+
+              case STYLES:
+                styles.add(XStyle.restore(item));
+                break;
+
+              case COLUMN_WIDTH_FACTORS:
+              case NAME:
+              case ROW_HEIGHT_FACTOR:
+                break;
+            }
+          }
       }
     }
   }
 
   public List<Integer> getAutoSize() {
     return autoSize;
+  }
+
+  public Map<Integer, Double> getColumnWidthFactors() {
+    return columnWidthFactors;
   }
 
   public XFont getFont(int index) {
@@ -210,6 +262,14 @@ public class XSheet implements BeeSerializable {
     return name;
   }
 
+  public List<XPicture> getPictures() {
+    return pictures;
+  }
+
+  public Double getRowHeightFactor() {
+    return rowHeightFactor;
+  }
+
   public List<XRow> getRows() {
     return rows;
   }
@@ -222,11 +282,24 @@ public class XSheet implements BeeSerializable {
     return styles;
   }
 
+  public boolean hasPictures(int column) {
+    if (pictures.isEmpty()) {
+      return false;
+    }
+
+    for (XRow row : rows) {
+      if (row.hasPicture(column)) {
+        return true;
+      }
+    }
+    return false;
+  }
+
   public boolean isEmpty() {
     return rows.isEmpty() && fonts.isEmpty() && styles.isEmpty() && autoSize.isEmpty();
   }
 
-  public int registeFont(XFont font) {
+  public int registerFont(XFont font) {
     Assert.notNull(font);
 
     int index = fonts.indexOf(font);
@@ -235,6 +308,18 @@ public class XSheet implements BeeSerializable {
     } else {
       fonts.add(font);
       return fonts.size() - 1;
+    }
+  }
+
+  public int registerPicture(XPicture picture) {
+    Assert.notNull(picture);
+
+    int index = pictures.indexOf(picture);
+    if (index >= 0) {
+      return index;
+    } else {
+      pictures.add(picture);
+      return pictures.size() - 1;
     }
   }
 
@@ -254,18 +339,52 @@ public class XSheet implements BeeSerializable {
   public String serialize() {
     List<String> values = new ArrayList<>();
 
-    values.add(getName());
-    values.add(rows.isEmpty() ? null : Codec.beeSerialize(rows));
-
-    values.add(fonts.isEmpty() ? null : Codec.beeSerialize(fonts));
-    values.add(styles.isEmpty() ? null : Codec.beeSerialize(styles));
-
-    values.add(autoSize.isEmpty() ? null : Codec.beeSerialize(autoSize));
+    for (Serial member : Serial.values()) {
+      switch (member) {
+        case AUTO_SIZE:
+          values.add(autoSize.isEmpty() ? null : Codec.beeSerialize(autoSize));
+          break;
+        case COLUMN_WIDTH_FACTORS:
+          values.add(columnWidthFactors.isEmpty() ? null : Codec.beeSerialize(columnWidthFactors));
+          break;
+        case FONTS:
+          values.add(fonts.isEmpty() ? null : Codec.beeSerialize(fonts));
+          break;
+        case NAME:
+          values.add(getName());
+          break;
+        case PICTURES:
+          values.add(pictures.isEmpty() ? null : Codec.beeSerialize(pictures));
+          break;
+        case ROW_HEIGHT_FACTOR:
+          values.add((getRowHeightFactor() == null) 
+              ? null : BeeUtils.toString(getRowHeightFactor()));
+          break;
+        case ROWS:
+          values.add(rows.isEmpty() ? null : Codec.beeSerialize(rows));
+          break;
+        case STYLES:
+          values.add(styles.isEmpty() ? null : Codec.beeSerialize(styles));
+          break;
+      }
+    }
 
     return Codec.beeSerialize(values);
   }
 
+  public void setColumnWidthFactor(int columnIndex, Double widthFactor) {
+    if (BeeUtils.isPositive(widthFactor)) {
+      columnWidthFactors.put(columnIndex, widthFactor);
+    } else {
+      columnWidthFactors.remove(columnIndex);
+    }
+  }
+
   public void setName(String name) {
     this.name = name;
+  }
+
+  public void setRowHeightFactor(Double rowHeightFactor) {
+    this.rowHeightFactor = rowHeightFactor;
   }
 }

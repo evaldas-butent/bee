@@ -411,6 +411,10 @@ public final class Queries {
           public void onResponse(ResponseObject response) {
             if (checkResponse(Service.QUERY, viewName, response, BeeRowSet.class, callback)) {
               BeeRowSet rs = BeeRowSet.restore((String) response.getResponse());
+              if (offset >= 0 && limit > 0) {
+                rs.setTableProperty(Service.VAR_VIEW_OFFSET, BeeUtils.toString(offset));
+              }
+
               callback.onSuccess(rs);
 
               if (cachingPolicy != null && cachingPolicy.doWrite()

@@ -5,9 +5,13 @@ import com.google.gwt.dom.client.Element;
 import com.butent.bee.client.grid.CellContext;
 import com.butent.bee.client.grid.cell.SelectionCell;
 import com.butent.bee.client.view.grid.CellGrid;
+import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.css.values.TextAlign;
 import com.butent.bee.shared.data.IsRow;
 import com.butent.bee.shared.data.value.ValueType;
+import com.butent.bee.shared.export.XCell;
+import com.butent.bee.shared.export.XSheet;
+import com.butent.bee.shared.export.XStyle;
 import com.butent.bee.shared.ui.ColumnDescription.ColType;
 import com.butent.bee.shared.utils.BeeUtils;
 
@@ -23,6 +27,15 @@ public class SelectionColumn extends AbstractColumn<Boolean> {
     super(cell);
     this.grid = grid;
     setTextAlign(TextAlign.CENTER);
+  }
+
+  @Override
+  public XCell export(CellContext context, Integer styleRef, XSheet sheet) {
+    if (context != null && BeeUtils.isTrue(getValue(context.getRow()))) {
+      return new XCell(context.getColumnIndex(), BeeConst.STRING_CHECK_MARK, styleRef);
+    } else {
+      return null;
+    }
   }
 
   @Override
@@ -55,6 +68,15 @@ public class SelectionColumn extends AbstractColumn<Boolean> {
     return ValueType.BOOLEAN;
   }
   
+  @Override
+  public Integer initExport(XSheet sheet) {
+    if (sheet == null) {
+      return null;
+    } else {
+      return sheet.registerStyle(XStyle.center());
+    }
+  }
+
   public void update(Element cellElement, boolean value) {
     ((SelectionCell) getCell()).update(cellElement, value);
   }

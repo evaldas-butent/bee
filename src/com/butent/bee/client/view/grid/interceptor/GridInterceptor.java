@@ -82,6 +82,8 @@ public interface GridInterceptor extends WidgetInterceptor, ParentRowEvent.Handl
   void beforeCreateColumns(List<? extends IsColumn> dataColumns,
       List<ColumnDescription> columnDescriptions);
 
+  boolean beforeCreateExtWidget(Element root);
+
   DeleteMode beforeDeleteRow(GridPresenter presenter, IsRow row);
 
   DeleteMode beforeDeleteRows(GridPresenter presenter, IsRow activeRow,
@@ -93,8 +95,6 @@ public interface GridInterceptor extends WidgetInterceptor, ParentRowEvent.Handl
 
   boolean ensureRelId(IdCallback callback);
 
-  String getColumnCaption(String columnName);
-  
   /**
    * Enables conditional styles for columns.
    */
@@ -127,8 +127,10 @@ public interface GridInterceptor extends WidgetInterceptor, ParentRowEvent.Handl
 
   GridInterceptor getInstance();
 
+  List<String> getParentLabels();
+
   List<FilterDescription> getPredefinedFilters(List<FilterDescription> defaultFilters);
-  
+
   String getRowCaption(IsRow row, boolean edit);
 
   /**
@@ -136,18 +138,16 @@ public interface GridInterceptor extends WidgetInterceptor, ParentRowEvent.Handl
    */
   StyleProvider getRowStyleProvider();
 
-  boolean isRowEditable(IsRow row);
+  boolean initDescription(GridDescription gridDescription);
 
-  void onAttach(GridView gridView);
+  boolean isRowEditable(IsRow row);
 
   boolean onClose(GridPresenter presenter);
 
-  boolean onLoad(GridDescription gridDescription);
-
-  boolean onLoadExtWidget(Element root);
+  void onLoad(GridView gridView);
 
   void onReadyForInsert(GridView gridView, ReadyForInsertEvent event);
-  
+
   void onReadyForUpdate(GridView gridView, ReadyForUpdateEvent event);
 
   boolean onRowInsert(RowInsertEvent event);
@@ -155,6 +155,8 @@ public interface GridInterceptor extends WidgetInterceptor, ParentRowEvent.Handl
   void onSaveChanges(GridView gridView, SaveChangesEvent event);
 
   boolean onStartNewRow(GridView gridView, IsRow oldRow, IsRow newRow);
+
+  void onUnload(GridView gridView);
 
   void setGridPresenter(GridPresenter gridPresenter);
 }

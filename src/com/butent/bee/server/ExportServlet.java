@@ -5,13 +5,16 @@ import com.google.common.net.MediaType;
 
 import com.butent.bee.server.http.HttpUtils;
 import com.butent.bee.server.http.RequestInfo;
+import com.butent.bee.server.io.FileUtils;
 import com.butent.bee.shared.Assert;
+import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.Service;
 import com.butent.bee.shared.css.values.BorderStyle;
 import com.butent.bee.shared.data.value.Value;
 import com.butent.bee.shared.data.value.ValueType;
 import com.butent.bee.shared.export.XCell;
 import com.butent.bee.shared.export.XFont;
+import com.butent.bee.shared.export.XPicture;
 import com.butent.bee.shared.export.XRow;
 import com.butent.bee.shared.export.XSheet;
 import com.butent.bee.shared.export.XStyle;
@@ -27,7 +30,11 @@ import com.butent.bee.shared.utils.NameUtils;
 
 import org.apache.poi.ss.usermodel.Cell;
 import org.apache.poi.ss.usermodel.CellStyle;
+import org.apache.poi.ss.usermodel.ClientAnchor;
+import org.apache.poi.ss.usermodel.CreationHelper;
+import org.apache.poi.ss.usermodel.Drawing;
 import org.apache.poi.ss.usermodel.Font;
+import org.apache.poi.ss.usermodel.Picture;
 import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.ss.usermodel.Sheet;
 import org.apache.poi.ss.usermodel.Workbook;
@@ -37,9 +44,11 @@ import org.apache.poi.xssf.usermodel.XSSFColor;
 import org.apache.poi.xssf.usermodel.XSSFFont;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 
+import java.io.File;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import javax.servlet.annotation.WebServlet;
@@ -131,15 +140,13 @@ public class ExportServlet extends LoginServlet {
     }
 
     if (!BeeUtils.isEmpty(input.getColor())) {
-      byte[] rgb = Color.getRgb(input.getColor());
+      XSSFColor color = createColor(input.getColor());
 
-      if (rgb == null) {
-        logger.warning("cannot parse color", input.getColor());
-      } else {
-        font.setColor(new XSSFColor(rgb));
+      if (color != null) {
+        font.setColor(color);
       }
     }
-    
+
     return font;
   }
 
@@ -149,14 +156,12 @@ public class ExportServlet extends LoginServlet {
     }
 
     XSSFCellStyle cellStyle = wb.createCellStyle();
-    
+
     if (!BeeUtils.isEmpty(input.getColor())) {
-      byte[] rgb = Color.getRgb(input.getColor());
-      
-      if (rgb == null) {
-        logger.warning("cannot parse color", input.getColor());
-      } else {
-        cellStyle.setFillForegroundColor(new XSSFColor(rgb));
+      XSSFColor color = createColor(input.getColor());
+
+      if (color != null) {
+        cellStyle.setFillForegroundColor(color);
         cellStyle.setFillPattern(CellStyle.SOLID_FOREGROUND);
       }
     }
@@ -236,8 +241,24 @@ public class ExportServlet extends LoginServlet {
     return cellStyle;
   }
 
+  private static XSSFColor createColor(String input) {
+    byte[] rgb = Color.getRgb(input);
+
+    if (rgb == null) {
+      logger.warning("cannot parse color", input);
+      return null;
+
+    } else {
+      XSSFColor color = new XSSFColor();
+      color.setRgb(rgb);
+      return color;
+    }
+  }
+
   private static Workbook createWorkbook(XWorkbook inputBook) {
     XSSFWorkbook wb = new XSSFWorkbook();
+
+    CreationHelper creationHelper = null;
 
     for (XSheet inputSheet : inputBook.getSheets()) {
       Sheet sheet;
@@ -245,6 +266,26 @@ public class ExportServlet extends LoginServlet {
         sheet = wb.createSheet();
       } else {
         sheet = wb.createSheet(inputSheet.getName());
+      }
+
+      float defaultRowHeightInPoints = sheet.getDefaultRowHeightInPoints();
+      if (BeeUtils.isPositive(inputSheet.getRowHeightFactor())) {
+        sheet.setDefaultRowHeightInPoints(defaultRowHeightInPoints
+            * inputSheet.getRowHeightFactor().floatValue());
+      }
+      
+      if (!inputSheet.getColumnWidthFactors().isEmpty()) {
+        for (Map.Entry<Integer, Double> entry : inputSheet.getColumnWidthFactors().entrySet()) {
+          Integer columnIndex = entry.getKey();
+          Double widthFactor = entry.getValue();
+          
+          if (BeeUtils.isNonNegative(columnIndex) && BeeUtils.isPositive(widthFactor)) {
+            int width = BeeUtils.round(sheet.getColumnWidth(columnIndex) * widthFactor);
+            if (width > 0) {
+              sheet.setColumnWidth(columnIndex, width);
+            }
+          }
+        }
       }
 
       Map<Integer, Font> fonts = new HashMap<>();
@@ -267,12 +308,21 @@ public class ExportServlet extends LoginServlet {
         }
       }
 
+      Map<Integer, Integer> pictures = addPictures(inputSheet.getPictures(), wb);
+      Drawing drawing = null;
+
+      CellStyle wrapStyle = wb.createCellStyle();
+      wrapStyle.setWrapText(true);
+
       for (XRow inputRow : inputSheet.getRows()) {
         Row row = sheet.createRow(inputRow.getIndex());
-
-        if (BeeUtils.isPositive(inputRow.getHeightFactor())) {
-          row.setHeightInPoints(sheet.getDefaultRowHeightInPoints()
-              * inputRow.getHeightFactor().floatValue());
+        
+        Double heightFactor = inputRow.getHeightFactor();
+        if (!BeeUtils.isPositive(heightFactor)) {
+          heightFactor = inputSheet.getRowHeightFactor();
+        }
+        if (BeeUtils.isPositive(heightFactor)) {
+          row.setHeightInPoints(defaultRowHeightInPoints * heightFactor.floatValue());
         }
 
         if (inputRow.getStyleRef() != null) {
@@ -290,6 +340,8 @@ public class ExportServlet extends LoginServlet {
           Cell cell = row.createCell(inputCell.getIndex());
 
           Value value = inputCell.getValue();
+          boolean wrap = false;
+
           if (value != null && !value.isNull()) {
             ValueType type = value.getType();
 
@@ -297,22 +349,28 @@ public class ExportServlet extends LoginServlet {
               case BOOLEAN:
                 cell.setCellValue(value.getBoolean());
                 break;
+
               case DATE:
                 cell.setCellValue(value.getDate().getJava());
                 break;
+
               case DATE_TIME:
                 cell.setCellValue(value.getDateTime().getJava());
                 break;
+
               case DECIMAL:
               case INTEGER:
               case LONG:
               case NUMBER:
                 cell.setCellValue(value.getDouble());
                 break;
+
               case TEXT:
               case TIME_OF_DAY:
                 cell.setCellValue(value.getString());
+                wrap = BeeUtils.contains(value.getString(), BeeConst.CHAR_EOL);
                 break;
+
               default:
                 logger.warning("cell type", type, "not supported");
             }
@@ -328,7 +386,48 @@ public class ExportServlet extends LoginServlet {
               logger.warning("row", inputRow.getIndex(), "cell", inputCell.getIndex(),
                   "invalid style index", inputCell.getStyleRef());
             } else {
+              if (wrap && !cellStyle.getWrapText()) {
+                cellStyle.setWrapText(true);
+              }
               cell.setCellStyle(cellStyle);
+            }
+
+          } else if (wrap) {
+            cell.setCellStyle(wrapStyle);
+          }
+
+          if (inputCell.getPictureRef() != null) {
+            Integer pictureIndex = pictures.get(inputCell.getPictureRef());
+
+            if (pictureIndex == null) {
+              logger.warning("row", inputRow.getIndex(), "cell", inputCell.getIndex(),
+                  "invalid picture index", inputCell.getPictureRef());
+
+            } else {
+              if (creationHelper == null) {
+                creationHelper = wb.getCreationHelper();
+              }
+              if (drawing == null) {
+                drawing = sheet.createDrawingPatriarch();
+              }
+
+              ClientAnchor anchor = creationHelper.createClientAnchor();
+              anchor.setRow1(inputRow.getIndex());
+              anchor.setCol1(inputCell.getIndex());
+              anchor.setRow2(inputRow.getIndex());
+              anchor.setCol2(inputCell.getIndex());
+              anchor.setAnchorType(ClientAnchor.MOVE_DONT_RESIZE);
+
+              Picture picture = drawing.createPicture(anchor, pictureIndex);
+              picture.resize();
+
+              ClientAnchor preferred = picture.getPreferredSize();
+              int scale = Math.max(preferred.getRow2() - preferred.getRow1(),
+                  preferred.getCol2() - preferred.getCol1());
+
+              if (scale > 0) {
+                picture.resize(1d / (scale + 0.5));
+              }
             }
           }
 
@@ -342,7 +441,7 @@ public class ExportServlet extends LoginServlet {
           }
         }
       }
-      
+
       if (!inputSheet.getAutoSize().isEmpty()) {
         for (int column : inputSheet.getAutoSize()) {
           sheet.autoSizeColumn(column, true);
@@ -351,6 +450,50 @@ public class ExportServlet extends LoginServlet {
     }
 
     return wb;
+  }
+
+  private static int getPictureFormat(XPicture input) {
+    switch (input.getType()) {
+      case DIB:
+        return Workbook.PICTURE_TYPE_DIB;
+      case EMF:
+        return Workbook.PICTURE_TYPE_EMF;
+      case JPEG:
+        return Workbook.PICTURE_TYPE_JPEG;
+      case PICT:
+        return Workbook.PICTURE_TYPE_PICT;
+      case PNG:
+        return Workbook.PICTURE_TYPE_PNG;
+      case WMF:
+        return Workbook.PICTURE_TYPE_WMF;
+    }
+
+    Assert.untouchable();
+    return BeeConst.UNDEF;
+  }
+
+  private static Map<Integer, Integer> addPictures(List<XPicture> inputPictures, Workbook wb) {
+    Map<Integer, Integer> result = new HashMap<>();
+    if (BeeUtils.isEmpty(inputPictures)) {
+      return result;
+    }
+
+    for (int i = 0; i < inputPictures.size(); i++) {
+      XPicture inputPicture = inputPictures.get(i);
+
+      byte[] bytes;
+      if (inputPicture.isDataUri()) {
+        bytes = Codec.fromBase64(inputPicture.getSrc());
+      } else {
+        bytes = FileUtils.getBytes(new File(Config.WAR_DIR, inputPicture.getSrc()));
+      }
+
+      if (bytes != null) {
+        int pictureIndex = wb.addPicture(bytes, getPictureFormat(inputPicture));
+        result.put(i, pictureIndex);
+      }
+    }
+    return result;
   }
 
   @Override

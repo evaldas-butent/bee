@@ -235,7 +235,7 @@ public final class GridFactory {
       @Override
       public void onSuccess(GridDescription result) {
         Assert.notNull(result);
-        if (gridInterceptor != null && !gridInterceptor.onLoad(result)) {
+        if (gridInterceptor != null && !gridInterceptor.initDescription(result)) {
           return;
         }
 
@@ -504,7 +504,7 @@ public final class GridFactory {
       String label = table.getColumnLabel(i);
 
       ColumnInfo columnInfo = new ColumnInfo(id, label, source, column,
-          new ColumnHeader(id, label));
+          new ColumnHeader(id, label, label));
       grid.addColumn(columnInfo);
     }
 

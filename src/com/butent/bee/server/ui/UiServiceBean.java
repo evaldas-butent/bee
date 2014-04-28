@@ -673,7 +673,7 @@ public class UiServiceBean {
           info.add(new ExtendedProperty(name, String.valueOf(fieldCount), viewNames));
         }
 
-      } else if (BeeUtils.same(tableName, BeeConst.STRING_ALL)) {
+      } else if (BeeUtils.same(tableName, BeeConst.STRING_ASTERISK)) {
         for (String name : names) {
           PropertyUtils.appendWithPrefix(info, name, sys.getTableInfo(name));
         }

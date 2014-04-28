@@ -543,7 +543,7 @@ public class AssessmentTurnoverReport extends ReportInterceptor {
   @Override
   protected void export() {
     if (!sheet.isEmpty()) {
-      Exporter.confirmExport(sheet, getCaption());
+      Exporter.maybeExport(sheet, getCaption());
     }
   }
 
@@ -632,7 +632,7 @@ public class AssessmentTurnoverReport extends ReportInterceptor {
         font.setFactor(fontFactor);
       }
 
-      style.setFontRef(sheet.registeFont(font));
+      style.setFontRef(sheet.registerFont(font));
     }
 
     if (!BeeUtils.isEmpty(pattern)) {
@@ -738,7 +738,7 @@ public class AssessmentTurnoverReport extends ReportInterceptor {
     XRow xr1 = new XRow(row);
     XRow xr2 = new XRow(row + 1);
 
-    Integer boldRef = sheet.registeFont(XFont.bold());
+    Integer boldRef = sheet.registerFont(XFont.bold());
 
     XStyle xs = XStyle.center();
     xs.setVerticalAlign(VerticalAlign.MIDDLE);

@@ -12,6 +12,7 @@ import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.Codec;
 
 import java.util.Collection;
+import java.util.HashSet;
 import java.util.Set;
 
 /**
@@ -34,7 +35,7 @@ public class MultiDeleteEvent extends ModificationEvent<MultiDeleteEvent.Handler
     Assert.notNull(em);
     Assert.notEmpty(viewName);
     Assert.notEmpty(rows);
-    
+
     em.fireModificationEvent(new MultiDeleteEvent(viewName, rows), Locality.ENTANGLED);
   }
 
@@ -42,7 +43,7 @@ public class MultiDeleteEvent extends ModificationEvent<MultiDeleteEvent.Handler
     Assert.notNull(handler);
     handler.onMultiDelete(new MultiDeleteEvent(viewName, rows));
   }
-  
+
   public static HandlerRegistration register(EventBus eventBus, Handler handler) {
     Assert.notNull(eventBus);
     Assert.notNull(handler);
@@ -56,7 +57,7 @@ public class MultiDeleteEvent extends ModificationEvent<MultiDeleteEvent.Handler
     this.viewName = viewName;
     this.rows = Sets.newHashSet(rows);
   }
-  
+
   MultiDeleteEvent() {
   }
 
@@ -64,10 +65,10 @@ public class MultiDeleteEvent extends ModificationEvent<MultiDeleteEvent.Handler
   public void deserialize(String s) {
     String[] arr = Codec.beeDeserializeCollection(s);
     Assert.lengthEquals(arr, 2);
-    
+
     this.viewName = arr[0];
     this.rows = Sets.newHashSet();
-    
+
     String[] rowInfos = Codec.beeDeserializeCollection(arr[1]);
     if (!ArrayUtils.isEmpty(rowInfos)) {
       for (String ri : rowInfos) {
@@ -80,10 +81,22 @@ public class MultiDeleteEvent extends ModificationEvent<MultiDeleteEvent.Handler
   public Type<Handler> getAssociatedType() {
     return TYPE;
   }
-  
+
   @Override
   public Kind getKind() {
     return Kind.DELETE_MULTI;
+  }
+
+  public Set<Long> getRowIds() {
+    Set<Long> ids = new HashSet<>();
+
+    if (rows != null) {
+      for (RowInfo rowInfo : rows) {
+        ids.add(rowInfo.getId());
+      }
+    }
+
+    return ids;
   }
 
   public Set<RowInfo> getRows() {

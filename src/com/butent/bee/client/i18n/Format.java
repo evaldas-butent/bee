@@ -41,11 +41,7 @@ public final class Format {
 
     @Override
     public String decimalSeparator() {
-      if (defaultDecimalSeparator == null) {
-        return DEFAULT_NUMBER_CONSTANTS.decimalSeparator();
-      } else {
-        return defaultDecimalSeparator;
-      }
+      return DEFAULT_DECIMAL_SEPARATOR;
     }
 
     @Override
@@ -65,11 +61,7 @@ public final class Format {
 
     @Override
     public String groupingSeparator() {
-      if (defaultGroupingSeparator == null) {
-        return DEFAULT_NUMBER_CONSTANTS.groupingSeparator();
-      } else {
-        return defaultGroupingSeparator;
-      }
+      return DEFAULT_GROUPING_SEPARATOR;
     }
 
     @Override
@@ -148,22 +140,23 @@ public final class Format {
     }
   }
 
+  public static final String DEFAULT_CURRENCY_PATTERN = "#,##0.00;(#)";
+  private static final String DEFAULT_DECIMAL_PATTERN_INTEGER = "#,##0";
+
   private static final NumberConstants DEFAULT_NUMBER_CONSTANTS =
       LocaleInfo.getCurrentLocale().getNumberConstants();
 
   private static final NumberConstants NUMBER_CONSTANTS = new Format.NumberConstantsImpl();
 
-  private static String defaultDecimalSeparator = BeeConst.STRING_POINT;
-  private static String defaultGroupingSeparator = BeeConst.STRING_SPACE;
+  private static final String DEFAULT_DECIMAL_SEPARATOR = BeeConst.STRING_POINT;
+  private static final String DEFAULT_GROUPING_SEPARATOR = BeeConst.STRING_SPACE;
 
   private static NumberFormat defaultDoubleFormat = getNumberFormat("#.#######");
   private static NumberFormat defaultIntegerFormat = getNumberFormat("#");
   private static NumberFormat defaultLongFormat = getNumberFormat("#,###");
-  private static NumberFormat defaultCurrencyFormat = getNumberFormat("#,##0.00;(#)");
+  private static NumberFormat defaultCurrencyFormat = getNumberFormat(DEFAULT_CURRENCY_PATTERN);
 
   private static NumberFormat defaultPercentFormat = getNumberFormat("0.0%");
-
-  private static String defaultDecimalPatternInteger = "#,##0";
 
   private static DateTimeFormat defaultDateFormat =
       DateTimeFormat.getFormat(PredefinedFormat.DATE_SHORT);
@@ -171,10 +164,6 @@ public final class Format {
       DateTimeFormat.getFormat(PredefinedFormat.DATE_TIME_SHORT);
   private static DateTimeFormat defaultTimeFormat =
       DateTimeFormat.getFormat(PredefinedFormat.TIME_SHORT);
-
-  private static Character defaultTrueChar = BeeConst.CHECK_MARK;
-  private static Character defaultFalseChar;
-  private static Character defaultNullChar;
 
   public static DateTimeFormat getDateTimeFormat(String pattern) {
     Assert.notEmpty(pattern);
@@ -194,11 +183,16 @@ public final class Format {
   }
 
   public static NumberFormat getDecimalFormat(int scale) {
+    return getNumberFormat(getDecimalPattern(scale));
+  }
+
+  public static String getDecimalPattern(int scale) {
     if (scale <= 0) {
-      return getNumberFormat(defaultDecimalPatternInteger);
+      return DEFAULT_DECIMAL_PATTERN_INTEGER;
+    } else {
+      return DEFAULT_DECIMAL_PATTERN_INTEGER + BeeConst.STRING_POINT
+          + BeeUtils.replicate(BeeConst.CHAR_ZERO, scale);
     }
-    return getNumberFormat(defaultDecimalPatternInteger + BeeConst.STRING_POINT
-        + BeeUtils.replicate(BeeConst.CHAR_ZERO, scale));
   }
 
   public static NumberFormat getDefaultCurrencyFormat() {
@@ -213,24 +207,8 @@ public final class Format {
     return defaultDateTimeFormat;
   }
 
-  public static String getDefaultDecimalPatternInteger() {
-    return defaultDecimalPatternInteger;
-  }
-
-  public static String getDefaultDecimalSeparator() {
-    return defaultDecimalSeparator;
-  }
-
   public static NumberFormat getDefaultDoubleFormat() {
     return defaultDoubleFormat;
-  }
-
-  public static Character getDefaultFalseChar() {
-    return defaultFalseChar;
-  }
-
-  public static String getDefaultGroupingSeparator() {
-    return defaultGroupingSeparator;
   }
 
   public static NumberFormat getDefaultIntegerFormat() {
@@ -239,10 +217,6 @@ public final class Format {
 
   public static NumberFormat getDefaultLongFormat() {
     return defaultLongFormat;
-  }
-
-  public static Character getDefaultNullChar() {
-    return defaultNullChar;
   }
 
   public static NumberFormat getDefaultNumberFormat(ValueType type, int scale) {
@@ -274,10 +248,6 @@ public final class Format {
 
   public static DateTimeFormat getDefaultTimeFormat() {
     return defaultTimeFormat;
-  }
-
-  public static Character getDefaultTrueChar() {
-    return defaultTrueChar;
   }
 
   public static NumberFormat getNumberFormat(String pattern) {
@@ -343,12 +313,7 @@ public final class Format {
   }
 
   public static String render(Boolean value) {
-    Character ch = (value == null) ? defaultNullChar : (value ? defaultTrueChar : defaultFalseChar);
-    if (ch == null) {
-      return BeeConst.STRING_EMPTY;
-    } else {
-      return BeeUtils.toString(ch);
-    }
+    return BeeUtils.isTrue(value) ? BeeConst.STRING_CHECK_MARK : BeeConst.STRING_EMPTY;
   }
 
   public static String render(Number value, ValueType type, NumberFormat format, int scale) {
@@ -438,7 +403,7 @@ public final class Format {
     }
     return result;
   }
-  
+
   public static String renderDateFull(HasDateValue date) {
     if (date == null) {
       return null;
@@ -481,18 +446,18 @@ public final class Format {
   public static String renderPeriod(DateTime start, DateTime end) {
     if (start == null || end == null || start.hasTimePart() || end.hasTimePart()) {
       return TimeUtils.renderPeriod(start, end);
-      
+
     } else if (TimeUtils.dayDiff(start, end) == 1) {
       return DateTimeFormat.getFormat(PredefinedFormat.DATE_LONG).format(start);
-    
+
     } else if (start.getDom() == 1 && end.getDom() == 1 && TimeUtils.monthDiff(start, end) == 1) {
       return BeeUtils.joinWords(start.getYear(), renderMonthFullStandalone(start.getMonth()));
 
-    } else if (start.getMonth() % 3 == 1 && start.getDom() == 1 && end.getDom() == 1 
+    } else if (start.getMonth() % 3 == 1 && start.getDom() == 1 && end.getDom() == 1
         && TimeUtils.monthDiff(start, end) == 3) {
       return DateTimeFormat.getFormat(PredefinedFormat.YEAR_QUARTER).format(start);
 
-    } else if (start.getMonth() == 1 && start.getDom() == 1 
+    } else if (start.getMonth() == 1 && start.getDom() == 1
         && end.getYear() == start.getYear() + 1 && end.getMonth() == 1 && end.getDom() == 1) {
       return BeeUtils.toString(start.getYear());
 
@@ -500,7 +465,7 @@ public final class Format {
       return TimeUtils.renderPeriod(start, end);
     }
   }
-  
+
   public static void setFormat(Object target, ValueType type, String pattern) {
     Assert.notNull(target);
     Assert.notEmpty(pattern);

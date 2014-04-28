@@ -1,5 +1,6 @@
 package com.butent.bee.client.modules.classifiers;
 
+import com.google.common.collect.Lists;
 import com.google.gwt.event.logical.shared.SelectionEvent;
 import com.google.gwt.event.logical.shared.SelectionHandler;
 
@@ -9,6 +10,7 @@ import com.butent.bee.client.ui.IdentifiableWidget;
 import com.butent.bee.client.view.TreeView;
 import com.butent.bee.client.view.grid.interceptor.AbstractGridInterceptor;
 import com.butent.bee.shared.BeeConst;
+import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.IsRow;
 import com.butent.bee.shared.data.filter.Filter;
 import com.butent.bee.shared.i18n.Localized;
@@ -16,9 +18,21 @@ import com.butent.bee.shared.modules.classifiers.ClassifierConstants;
 import com.butent.bee.shared.ui.GridDescription;
 import com.butent.bee.shared.utils.BeeUtils;
 
+import java.util.List;
+
 class ItemsGrid extends AbstractGridInterceptor implements SelectionHandler<IsRow> {
 
   private static final String FILTER_KEY = "f1";
+  private static Filter getFilter(Long category) {
+    if (category == null) {
+      return null;
+    } else {
+      return Filter.in(Data.getIdColumn(ClassifierConstants.VIEW_ITEMS),
+          ClassifierConstants.VIEW_ITEM_CATEGORIES, ClassifierConstants.COL_ITEM,
+          Filter.equals(ClassifierConstants.COL_CATEGORY, category));
+    }
+  }
+
   private final boolean services;
 
   private IsRow selectedCategory;
@@ -45,6 +59,21 @@ class ItemsGrid extends AbstractGridInterceptor implements SelectionHandler<IsRo
   }
 
   @Override
+  public List<String> getParentLabels() {
+    if (getSelectedCategory() == null) {
+      return super.getParentLabels();
+
+    } else {
+      List<String> colNames = Lists.newArrayList(ClassifierConstants.ALS_CATEGORY_PARENT_NAME,
+          ClassifierConstants.COL_CATEGORY_NAME);
+      String categoryLabel = DataUtils.join(Data.getDataInfo(ClassifierConstants.VIEW_CATEGY_TREE),
+          getSelectedCategory(), colNames, BeeConst.STRING_SPACE);
+
+      return Lists.newArrayList(categoryLabel);
+    }
+  }
+
+  @Override
   public String getRowCaption(IsRow row, boolean edit) {
     if (edit) {
       return showServices() ? Localized.getConstants().service() : Localized.getConstants().item();
@@ -61,14 +90,16 @@ class ItemsGrid extends AbstractGridInterceptor implements SelectionHandler<IsRo
   }
 
   @Override
-  public boolean onLoad(GridDescription gridDescription) {
+  public boolean initDescription(GridDescription gridDescription) {
     gridDescription.setCaption(null);
 
-    Filter filter = Filter.isNull(ClassifierConstants.COL_ITEM_IS_SERVICE);
-
+    Filter filter;
     if (showServices()) {
-      filter = Filter.isNot(filter);
+      filter = Filter.notNull(ClassifierConstants.COL_ITEM_IS_SERVICE);
+    } else {
+      filter = Filter.isNull(ClassifierConstants.COL_ITEM_IS_SERVICE);
     }
+
     gridDescription.setFilter(filter);
     return true;
   }
@@ -93,16 +124,6 @@ class ItemsGrid extends AbstractGridInterceptor implements SelectionHandler<IsRo
 
   IsRow getSelectedCategory() {
     return selectedCategory;
-  }
-
-  private static Filter getFilter(Long category) {
-    if (category == null) {
-      return null;
-    } else {
-      return Filter.in(Data.getIdColumn(ClassifierConstants.VIEW_ITEMS),
-          ClassifierConstants.VIEW_ITEM_CATEGORIES, ClassifierConstants.COL_ITEM,
-          Filter.equals(ClassifierConstants.COL_CATEGORY, category));
-    }
   }
 
   private void setSelectedCategory(IsRow selectedCategory) {

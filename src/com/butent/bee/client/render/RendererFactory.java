@@ -5,6 +5,7 @@ import com.google.common.collect.Lists;
 import com.google.common.collect.Table;
 
 import com.butent.bee.client.data.Data;
+import com.butent.bee.client.modules.trade.TotalRenderer;
 import com.butent.bee.client.utils.Evaluator;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
@@ -247,6 +248,10 @@ public final class RendererFactory {
 
       case URL:
         renderer = new UrlRenderer(source);
+        break;
+        
+      case TOTAL:
+        renderer = new TotalRenderer(dataColumns);
         break;
 
       case TOKEN:

@@ -233,8 +233,7 @@ public class TasksModuleBean implements BeeModule {
           return;
         }
         if (BeeUtils.same(event.getTargetName(), VIEW_RT_FILES)) {
-          ExtensionIcons.setIcons(event.getRowset(), ALS_FILE_NAME,
-              PROP_ICON);
+          ExtensionIcons.setIcons(event.getRowset(), ALS_FILE_NAME, PROP_ICON);
 
         } else if (BeeUtils.same(event.getTargetName(), VIEW_TASKS)) {
           BeeRowSet rowSet = event.getRowset();

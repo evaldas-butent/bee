@@ -25,7 +25,6 @@ import com.butent.bee.client.composite.TabBar;
 import com.butent.bee.client.dialog.Popup;
 import com.butent.bee.client.dialog.Popup.OutsideClick;
 import com.butent.bee.client.grid.HtmlTable;
-import com.butent.bee.client.modules.mail.MailPanel.AccountInfo;
 import com.butent.bee.client.ui.FormFactory.WidgetDescriptionCallback;
 import com.butent.bee.client.ui.IdentifiableWidget;
 import com.butent.bee.client.utils.FileUtils;
@@ -44,6 +43,7 @@ import com.butent.bee.shared.data.SimpleRowSet.SimpleRow;
 import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.modules.administration.AdministrationConstants;
 import com.butent.bee.shared.modules.classifiers.ClassifierConstants;
+import com.butent.bee.shared.modules.mail.AccountInfo;
 import com.butent.bee.shared.modules.mail.MailConstants.AddressType;
 import com.butent.bee.shared.ui.Orientation;
 import com.butent.bee.shared.utils.BeeUtils;
@@ -267,16 +267,16 @@ public class MailMessage extends AbstractFormInterceptor {
     this.accounts = availableAccounts;
   }
 
-  void requery(Long messageId, boolean showBcc) {
+  void requery(Long placeId, boolean showBcc) {
     reset();
 
-    if (!DataUtils.isId(messageId)) {
+    if (!DataUtils.isId(placeId)) {
       return;
     }
     setLoading(true);
 
     ParameterList params = MailKeeper.createArgs(SVC_GET_MESSAGE);
-    params.addDataItem(COL_MESSAGE, messageId);
+    params.addDataItem(COL_PLACE, placeId);
     params.addDataItem("showBcc", Codec.pack(showBcc));
 
     BeeKeeper.getRpc().makePostRequest(params, new ResponseCallback() {
@@ -407,10 +407,10 @@ public class MailMessage extends AbstractFormInterceptor {
                 "border-left:1px solid #039; margin:0; padding:10px; color:#039;");
             bq.setInnerHTML(getContent());
             content = BeeUtils.join("<br>", "<br>",
-                    getDate()
-                        + ", "
-                        + SafeHtmlUtils.htmlEscape(getSender() + " "
-                            + Localized.getConstants().mailTextWrote().toLowerCase() + ":"),
+                getDate()
+                    + ", "
+                    + SafeHtmlUtils.htmlEscape(getSender() + " "
+                        + Localized.getConstants().mailTextWrote().toLowerCase() + ":"),
                 bq.getString());
 
             if (!BeeUtils.isPrefix(subject, Localized.getConstants().mailReplayPrefix())) {
@@ -429,7 +429,7 @@ public class MailMessage extends AbstractFormInterceptor {
                         + SafeHtmlUtils.htmlEscape(getSubject()),
                     Localized.getConstants().mailTo() + ": "
                         + SafeHtmlUtils.htmlEscape(getRecipients()),
-                "<br>" + getContent());
+                    "<br>" + getContent());
 
             attach = getAttachments();
 
@@ -438,7 +438,11 @@ public class MailMessage extends AbstractFormInterceptor {
             }
             break;
         }
-        NewMailMessage.create(account, accounts, to, cc, bcc, subject, content, attach, null);
+        if (DataUtils.isId(account)) {
+          NewMailMessage.create(account, accounts, to, cc, bcc, subject, content, attach, null);
+        } else {
+          NewMailMessage.create(to, cc, bcc, subject, content, attach);
+        }
       }
     });
   }

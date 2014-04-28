@@ -11,6 +11,7 @@ import java.util.StringTokenizer;
 /**
  * Is an abstract class, extends {@code Filter) class, determines implementation of comparison
  * filters.
+
  */
 public abstract class ComparisonFilter extends Filter {
 
@@ -116,13 +117,13 @@ public abstract class ComparisonFilter extends Filter {
     for (Serial member : members) {
       switch (member) {
         case COLUMN:
-          arr[i++] = column;
+          arr[i++] = getColumn();
           break;
         case OPERATOR:
-          arr[i++] = operator;
+          arr[i++] = getOperator();
           break;
         case VALUE:
-          arr[i++] = value;
+          arr[i++] = getValue();
           break;
       }
     }
