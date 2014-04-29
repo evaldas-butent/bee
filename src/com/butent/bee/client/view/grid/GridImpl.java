@@ -2456,7 +2456,7 @@ public class GridImpl extends Absolute implements GridView, EditEndEvent.Handler
       BeeColumn dataColumn = getDataColumns().get(i);
       if (!BeeUtils.isEmpty(getRelColumn()) && BeeUtils.same(getRelColumn(), dataColumn.getId())) {
         if (!DataUtils.isId(getRelId())) {
-          callback.onFailure(getViewName(), "invalid rel id");
+          callback.onFailure(BeeUtils.joinWords(getViewName(), getRelColumn(), "invalid rel id"));
           return;
         }
 

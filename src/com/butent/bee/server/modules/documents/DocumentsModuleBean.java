@@ -62,10 +62,10 @@ public class DocumentsModuleBean implements BeeModule {
     List<SearchResult> result = Lists.newArrayList();
 
     if (usr.isModuleVisible(Module.DOCUMENTS.getName())) {
-      List<SearchResult> docsSr = qs.getSearchResults(TBL_DOCUMENTS,
+      List<SearchResult> docsSr = qs.getSearchResults(VIEW_DOCUMENTS,
           Filter.anyContains(Sets.newHashSet(COL_NUMBER, COL_REGISTRATION_NUMBER,
-              COL_DOCUMENT_NAME, COL_DOCUMENT_CATEGORY_NAME, COL_DOCUMENT_TYPE_NAME,
-              COL_DOCUMENT_PLACE_NAME, COL_DOCUMENT_STATUS_NAME), query));
+              COL_DOCUMENT_NAME, ALS_CATEGORY_NAME, ALS_TYPE_NAME,
+              ALS_PLACE_NAME, ALS_STATUS_NAME), query));
       result.addAll(docsSr);
     }
     return result;
@@ -109,11 +109,11 @@ public class DocumentsModuleBean implements BeeModule {
         if (event.isBefore()) {
           return;
         }
-        if (BeeUtils.same(event.getTargetName(), TBL_DOCUMENT_FILES)) {
+        if (BeeUtils.same(event.getTargetName(), VIEW_DOCUMENT_FILES)) {
           ExtensionIcons.setIcons(event.getRowset(), AdministrationConstants.ALS_FILE_NAME,
               AdministrationConstants.PROP_ICON);
 
-        } else if (BeeUtils.same(event.getTargetName(), TBL_DOCUMENT_TEMPLATES)) {
+        } else if (BeeUtils.same(event.getTargetName(), VIEW_DOCUMENT_TEMPLATES)) {
           Map<Long, IsRow> indexedRows = Maps.newHashMap();
           BeeRowSet rowSet = event.getRowset();
           int idx = rowSet.getColumnIndex(COL_DOCUMENT_DATA);

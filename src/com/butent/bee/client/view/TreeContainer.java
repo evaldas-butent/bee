@@ -9,6 +9,7 @@ import com.google.gwt.event.shared.HandlerRegistration;
 
 import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.Global;
+import com.butent.bee.client.data.Data;
 import com.butent.bee.client.dom.DomUtils;
 import com.butent.bee.client.event.logical.CatchEvent;
 import com.butent.bee.client.event.logical.CatchEvent.CatchHandler;
@@ -21,10 +22,15 @@ import com.butent.bee.client.tree.TreeItem;
 import com.butent.bee.client.utils.Command;
 import com.butent.bee.client.widget.Image;
 import com.butent.bee.shared.Assert;
+import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.data.IsRow;
 import com.butent.bee.shared.ui.Action;
+import com.butent.bee.shared.utils.BeeUtils;
 
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
+import java.util.List;
 import java.util.Map;
 
 public class TreeContainer extends Flow implements TreeView, SelectionHandler<TreeItem>,
@@ -183,6 +189,43 @@ public class TreeContainer extends Flow implements TreeView, SelectionHandler<Tr
   }
 
   @Override
+  public List<IsRow> getPath(Long id) {
+    Assert.notNull(id);
+
+    List<IsRow> path = new ArrayList<>();
+
+    TreeItem item = items.get(id);
+
+    while (item != null && item.getUserObject() instanceof IsRow) {
+      path.add((IsRow) item.getUserObject());
+      item = item.getParentItem();
+    }
+
+    if (path.size() > 1) {
+      Collections.reverse(path);
+    }
+    return path;
+  }
+
+  @Override
+  public List<String> getPathLabels(Long id, String colName) {
+    Assert.notNull(id);
+    Assert.notEmpty(colName);
+
+    List<String> labels = new ArrayList<>();
+
+    List<IsRow> path = getPath(id);
+    int index = Data.getColumnIndex(getViewName(), colName);
+
+    if (!BeeUtils.isEmpty(path) && !BeeConst.isUndef(index)) {
+      for (IsRow row : path) {
+        labels.add(row.getString(index));
+      }
+    }
+    return labels;
+  }
+
+  @Override
   public IsRow getSelectedItem() {
     TreeItem selected = getTree().getSelectedItem();
     if (selected == null || !(selected.getUserObject() instanceof IsRow)) {
@@ -312,5 +355,10 @@ public class TreeContainer extends Flow implements TreeView, SelectionHandler<Tr
       removeFromCache(item.getChild(i));
     }
     items.remove(((IsRow) item.getUserObject()).getId());
+  }
+
+  @Override
+  public String getViewName() {
+    return (getTreePresenter() == null) ? null : getTreePresenter().getViewName();
   }
 }

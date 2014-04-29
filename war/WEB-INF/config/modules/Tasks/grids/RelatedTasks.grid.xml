@@ -3,7 +3,7 @@
   xmlns:xi="http://www.w3.org/2001/XInclude"
   
   name="RelatedTasks" viewName="RelatedTasks"
-  enabledActions="copy" order="Status, FinishTime, TaskID desc" maxColumnWidth="160"
+  enabledActions="copy" maxColumnWidth="160"
   >
 
   <xi:include href="columns/Task.columns.xml" />

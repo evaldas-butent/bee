@@ -8,7 +8,7 @@ import com.google.gwt.event.logical.shared.SelectionHandler;
 import com.google.gwt.event.shared.HasHandlers;
 
 import static com.butent.bee.shared.modules.documents.DocumentConstants.*;
-import static com.butent.bee.shared.modules.trade.TradeConstants.*;
+import static com.butent.bee.shared.modules.trade.TradeConstants.VAR_TOTAL;
 
 import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.Callback;
@@ -25,7 +25,6 @@ import com.butent.bee.client.grid.GridFactory;
 import com.butent.bee.client.modules.trade.TradeUtils;
 import com.butent.bee.client.presenter.GridFormPresenter;
 import com.butent.bee.client.presenter.GridPresenter;
-import com.butent.bee.client.presenter.TreePresenter;
 import com.butent.bee.client.render.AbstractCellRenderer;
 import com.butent.bee.client.render.FileLinkRenderer;
 import com.butent.bee.client.ui.FormFactory;
@@ -76,6 +75,18 @@ public final class DocumentHandler {
 
     private static final BeeLogger logger = LogUtils.getLogger(DocumentBuilder.class);
 
+    private static void copyValues(FormView form, IsRow oldRow, IsRow newRow,
+        List<String> colNames) {
+      for (String colName : colNames) {
+        int index = form.getDataIndex(colName);
+        if (index >= 0) {
+          newRow.setValue(index, oldRow.getString(index));
+        } else {
+          logger.warning("copyValues: column", colName, "not found");
+        }
+      }
+    }
+
     private FileCollector collector;
 
     private DocumentBuilder() {
@@ -110,7 +121,7 @@ public final class DocumentHandler {
         return;
       }
 
-      Queries.insert(TBL_DOCUMENTS, event.getColumns(), event.getValues(),
+      Queries.insert(VIEW_DOCUMENTS, event.getColumns(), event.getValues(),
           event.getChildren(), new RowCallback() {
             @Override
             public void onFailure(String... reason) {
@@ -133,9 +144,9 @@ public final class DocumentHandler {
 
       if (oldRow != null) {
         copyValues(form, oldRow, newRow,
-            Lists.newArrayList(COL_DOCUMENT_CATEGORY, COL_DOCUMENT_CATEGORY_NAME,
-                COL_DOCUMENT_TYPE, COL_DOCUMENT_TYPE_NAME,
-                COL_DOCUMENT_PLACE, COL_DOCUMENT_PLACE_NAME));
+            Lists.newArrayList(COL_DOCUMENT_CATEGORY, ALS_CATEGORY_NAME,
+                COL_DOCUMENT_TYPE, ALS_TYPE_NAME,
+                COL_DOCUMENT_PLACE, ALS_PLACE_NAME));
 
       } else if (form.getViewPresenter() instanceof GridFormPresenter) {
         GridInterceptor gcb = ((GridFormPresenter) form.getViewPresenter()).getGridInterceptor();
@@ -145,21 +156,9 @@ public final class DocumentHandler {
 
           if (category != null) {
             newRow.setValue(form.getDataIndex(COL_DOCUMENT_CATEGORY), category.getId());
-            newRow.setValue(form.getDataIndex(COL_DOCUMENT_CATEGORY_NAME),
+            newRow.setValue(form.getDataIndex(ALS_CATEGORY_NAME),
                 ((DocumentGridHandler) gcb).getCategoryValue(category, COL_DOCUMENT_NAME));
           }
-        }
-      }
-    }
-
-    private static void copyValues(FormView form, IsRow oldRow, IsRow newRow,
-        List<String> colNames) {
-      for (String colName : colNames) {
-        int index = form.getDataIndex(colName);
-        if (index >= 0) {
-          newRow.setValue(index, oldRow.getString(index));
-        } else {
-          logger.warning("copyValues: column", colName, "not found");
         }
       }
     }
@@ -173,8 +172,17 @@ public final class DocumentHandler {
       SelectionHandler<IsRow> {
 
     private static final String FILTER_KEY = "f1";
+
+    private static Filter getFilter(Long category) {
+      if (category == null) {
+        return null;
+      } else {
+        return Filter.equals(COL_DOCUMENT_CATEGORY, category);
+      }
+    }
+
+    private TreeView treeView;
     private IsRow selectedCategory;
-    private TreePresenter categoryTree;
 
     private DocumentGridHandler() {
     }
@@ -182,15 +190,25 @@ public final class DocumentHandler {
     @Override
     public void afterCreateWidget(String name, IdentifiableWidget widget,
         WidgetDescriptionCallback callback) {
-      if (widget instanceof TreeView && BeeUtils.same(name, "Tree")) {
-        ((TreeView) widget).addSelectionHandler(this);
-        categoryTree = ((TreeView) widget).getTreePresenter();
+
+      if (widget instanceof TreeView) {
+        setTreeView((TreeView) widget);
+        getTreeView().addSelectionHandler(this);
       }
     }
 
     @Override
     public DocumentGridHandler getInstance() {
       return new DocumentGridHandler();
+    }
+
+    @Override
+    public List<String> getParentLabels() {
+      if (getSelectedCategory() == null || getTreeView() == null) {
+        return super.getParentLabels();
+      } else {
+        return getTreeView().getPathLabels(getSelectedCategory().getId(), COL_CATEGORY_NAME);
+      }
     }
 
     @Override
@@ -205,30 +223,74 @@ public final class DocumentHandler {
     }
 
     private String getCategoryValue(IsRow category, String colName) {
-      if (BeeUtils.allNotNull(category, categoryTree)) {
-        return category.getString(DataUtils.getColumnIndex(colName, categoryTree.getDataColumns()));
+      if (BeeUtils.allNotNull(category, getTreeView())) {
+        return category.getString(Data.getColumnIndex(getTreeView().getViewName(), colName));
       }
       return null;
-    }
-
-    private static Filter getFilter(Long category) {
-      if (category == null) {
-        return null;
-      } else {
-        return Filter.equals(COL_DOCUMENT_CATEGORY, category);
-      }
     }
 
     private IsRow getSelectedCategory() {
       return selectedCategory;
     }
 
+    private TreeView getTreeView() {
+      return treeView;
+    }
+
     private void setSelectedCategory(IsRow selectedCategory) {
       this.selectedCategory = selectedCategory;
+    }
+
+    private void setTreeView(TreeView treeView) {
+      this.treeView = treeView;
     }
   }
 
   private static final class FileGridHandler extends AbstractGridInterceptor {
+
+    private static List<NewFileInfo> sanitize(GridView gridView, Collection<NewFileInfo> input) {
+      List<NewFileInfo> result = Lists.newArrayList();
+      if (BeeUtils.isEmpty(input)) {
+        return result;
+      }
+
+      List<? extends IsRow> data = gridView.getRowData();
+      if (BeeUtils.isEmpty(data)) {
+        result.addAll(input);
+        return result;
+      }
+
+      int nameIndex = gridView.getDataIndex(AdministrationConstants.ALS_FILE_NAME);
+      int sizeIndex = gridView.getDataIndex(AdministrationConstants.ALS_FILE_SIZE);
+      int dateIndex = gridView.getDataIndex(COL_FILE_DATE);
+
+      Set<NewFileInfo> oldFiles = Sets.newHashSet();
+      for (IsRow row : data) {
+        oldFiles.add(new NewFileInfo(row.getString(nameIndex),
+            BeeUtils.unbox(row.getLong(sizeIndex)), row.getDateTime(dateIndex)));
+      }
+
+      List<String> messages = Lists.newArrayList();
+
+      for (NewFileInfo nfi : input) {
+        if (oldFiles.contains(nfi)) {
+          messages.add(BeeUtils.join(BeeConst.DEFAULT_LIST_SEPARATOR, nfi.getName(),
+              FileUtils.sizeToText(nfi.getSize()),
+              TimeUtils.renderCompact(nfi.getLastModified())));
+        } else {
+          result.add(nfi);
+        }
+      }
+
+      if (!messages.isEmpty()) {
+        result.clear();
+
+        messages.add(0, Localized.getConstants().documentFileExists());
+        gridView.notifyWarning(ArrayUtils.toArray(messages));
+      }
+
+      return result;
+    }
 
     private FileCollector collector;
 
@@ -300,50 +362,6 @@ public final class DocumentHandler {
         }
       }
     }
-
-    private static List<NewFileInfo> sanitize(GridView gridView, Collection<NewFileInfo> input) {
-      List<NewFileInfo> result = Lists.newArrayList();
-      if (BeeUtils.isEmpty(input)) {
-        return result;
-      }
-
-      List<? extends IsRow> data = gridView.getRowData();
-      if (BeeUtils.isEmpty(data)) {
-        result.addAll(input);
-        return result;
-      }
-
-      int nameIndex = gridView.getDataIndex(AdministrationConstants.ALS_FILE_NAME);
-      int sizeIndex = gridView.getDataIndex(AdministrationConstants.ALS_FILE_SIZE);
-      int dateIndex = gridView.getDataIndex(COL_FILE_DATE);
-
-      Set<NewFileInfo> oldFiles = Sets.newHashSet();
-      for (IsRow row : data) {
-        oldFiles.add(new NewFileInfo(row.getString(nameIndex),
-            BeeUtils.unbox(row.getLong(sizeIndex)), row.getDateTime(dateIndex)));
-      }
-
-      List<String> messages = Lists.newArrayList();
-
-      for (NewFileInfo nfi : input) {
-        if (oldFiles.contains(nfi)) {
-          messages.add(BeeUtils.join(BeeConst.DEFAULT_LIST_SEPARATOR, nfi.getName(),
-              FileUtils.sizeToText(nfi.getSize()),
-              TimeUtils.renderCompact(nfi.getLastModified())));
-        } else {
-          result.add(nfi);
-        }
-      }
-
-      if (!messages.isEmpty()) {
-        result.clear();
-
-        messages.add(0, Localized.getConstants().documentFileExists());
-        gridView.notifyWarning(ArrayUtils.toArray(messages));
-      }
-
-      return result;
-    }
   }
 
   private static final class RelatedDocumentsHandler extends AbstractGridInterceptor {
@@ -361,7 +379,7 @@ public final class DocumentHandler {
 
     @Override
     public boolean beforeAddRow(final GridPresenter presenter, boolean copy) {
-      RowFactory.createRow(TBL_DOCUMENTS, new RowCallback() {
+      RowFactory.createRow(VIEW_DOCUMENTS, new RowCallback() {
         @Override
         public void onSuccess(BeeRow result) {
           final long docId = result.getId();
@@ -399,7 +417,7 @@ public final class DocumentHandler {
         Long docId = event.getRowValue().getLong(documentIndex);
 
         if (DataUtils.isId(docId)) {
-          RowEditor.openRow(TBL_DOCUMENTS, docId, true, new RowCallback() {
+          RowEditor.openRow(VIEW_DOCUMENTS, docId, true, new RowCallback() {
             @Override
             public void onSuccess(BeeRow result) {
               getGridPresenter().handleAction(Action.REFRESH);
@@ -411,10 +429,10 @@ public final class DocumentHandler {
   }
 
   public static void register() {
-    GridFactory.registerGridInterceptor(TBL_DOCUMENT_TEMPLATES, new DocumentTemplatesGrid());
+    GridFactory.registerGridInterceptor(VIEW_DOCUMENT_TEMPLATES, new DocumentTemplatesGrid());
 
-    GridFactory.registerGridInterceptor(TBL_DOCUMENTS, new DocumentGridHandler());
-    GridFactory.registerGridInterceptor(TBL_DOCUMENT_FILES, new FileGridHandler());
+    GridFactory.registerGridInterceptor(VIEW_DOCUMENTS, new DocumentGridHandler());
+    GridFactory.registerGridInterceptor(VIEW_DOCUMENT_FILES, new FileGridHandler());
 
     GridFactory.registerGridInterceptor("RelatedDocuments", new RelatedDocumentsHandler());
 
@@ -424,7 +442,7 @@ public final class DocumentHandler {
 
     FormFactory.registerFormInterceptor("NewDocument", new DocumentBuilder());
 
-    TradeUtils.registerTotalRenderer(TBL_DOCUMENT_ITEMS, VAR_TOTAL);
+    TradeUtils.registerTotalRenderer(VIEW_DOCUMENT_ITEMS, VAR_TOTAL);
   }
 
   static void copyDocumentData(Long dataId, final IdCallback callback) {
@@ -458,7 +476,7 @@ public final class DocumentHandler {
   private static void sendFiles(final Long docId, Collection<NewFileInfo> files,
       final ScheduledCommand onComplete) {
 
-    final String viewName = TBL_DOCUMENT_FILES;
+    final String viewName = VIEW_DOCUMENT_FILES;
     final List<BeeColumn> columns = Data.getColumns(viewName);
 
     final Holder<Integer> latch = Holder.of(files.size());
