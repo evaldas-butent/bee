@@ -1,8 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <g:columns xmlns="http://www.butent.com/column" xmlns:g="http://www.butent.com/grid">
 
-  <IdColumn name="Id" caption="=captionId" />
-
   <DataColumn name="Priority" />
   <DataColumn name="Summary" visible="true" />
   <DataColumn name="Description" visible="false" />

@@ -5,6 +5,9 @@
   name="RecurringTasks" viewName="RecurringTasks" caption="=crmRecurringTasks"
   currentUserFilter="Owner" editShowId="true" enabledActions="copy"
   >
+  <g:columns>
+    <IdColumn name="Id" caption="=captionId" />
+  </g:columns>
 
   <xi:include href="columns/RecurringTask.columns.xml" />
 </g:Grid>

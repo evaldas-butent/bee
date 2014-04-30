@@ -2142,7 +2142,7 @@ public class GridImpl extends Absolute implements GridView, EditEndEvent.Handler
     } else {
       editSource = es;
       if (BeeUtils.isEmpty(editViewName)) {
-        editViewName = getDataInfo().getRelationView(editSource);
+        editViewName = getDataInfo().getRelation(editSource);
       }
     }
     if (BeeUtils.isEmpty(editViewName)) {

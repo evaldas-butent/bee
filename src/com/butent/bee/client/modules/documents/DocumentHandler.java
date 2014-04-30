@@ -387,8 +387,8 @@ public final class DocumentHandler {
           presenter.getGridView().ensureRelId(new IdCallback() {
             @Override
             public void onSuccess(Long relId) {
-              Queries.insert(AdministrationConstants.TBL_RELATIONS,
-                  Data.getColumns(AdministrationConstants.TBL_RELATIONS,
+              Queries.insert(AdministrationConstants.VIEW_RELATIONS,
+                  Data.getColumns(AdministrationConstants.VIEW_RELATIONS,
                       Lists.newArrayList(COL_DOCUMENT, presenter.getGridView().getRelColumn())),
                   Queries.asList(docId, relId), null, new RowCallback() {
                     @Override

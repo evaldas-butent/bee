@@ -25,9 +25,9 @@ import com.butent.bee.shared.ui.Action;
 
 import java.util.List;
 
-class RecurringTaskGrid extends AbstractGridInterceptor {
+class RecurringTasksGrid extends AbstractGridInterceptor {
 
-  RecurringTaskGrid() {
+  RecurringTasksGrid() {
   }
 
   @Override
@@ -83,7 +83,7 @@ class RecurringTaskGrid extends AbstractGridInterceptor {
   
   @Override
   public GridInterceptor getInstance() {
-    return new RecurringTaskGrid();
+    return new RecurringTasksGrid();
   }
 
   @Override

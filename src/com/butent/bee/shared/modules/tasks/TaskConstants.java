@@ -360,6 +360,9 @@ public final class TaskConstants {
   public static final String GRID_RECURRING_TASKS = "RecurringTasks";
   public static final String GRID_RT_FILES = "RTFiles";
 
+  public static final String GRID_RELATED_TASKS = "RelatedTasks";
+  public static final String GRID_RELATED_RECURRING_TASKS = "RelatedRecurringTasks";
+
   public static final String GRID_REQUESTS = "Requests";
 
   public static final String FORM_NEW_TASK = "NewTask";
