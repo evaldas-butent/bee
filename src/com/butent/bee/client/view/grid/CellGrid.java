@@ -1891,6 +1891,24 @@ public class CellGrid extends Widget implements IdentifiableWidget, HasDataTable
     }
   }
 
+  @Override
+  public void preserveActiveRow(List<? extends IsRow> rows) {
+    Assert.notNull(rows);
+    int oldRow = getActiveRowIndex();
+  
+    if (oldRow >= 0 && oldRow < getDataSize()) {
+      int newRow = 0;
+      long id = getRowData().get(oldRow).getId();
+      for (int i = 0; i < rows.size(); i++) {
+        if (rows.get(i).getId() == id) {
+          newRow = i;
+          break;
+        }
+      }
+      this.activeRowIndex = newRow;
+    }
+  }
+
   public void refocus() {
     Element cellElement = getActiveCellElement();
     if (cellElement != null) {
@@ -2262,24 +2280,6 @@ public class CellGrid extends Widget implements IdentifiableWidget, HasDataTable
 
     onSelectRow(rowIndex, !wasSelected);
     fireSelectionCountChange();
-  }
-
-  @Override
-  public void updateActiveRow(List<? extends IsRow> rows) {
-    Assert.notNull(rows);
-    int oldRow = getActiveRowIndex();
-
-    if (oldRow >= 0 && oldRow < getDataSize()) {
-      int newRow = 0;
-      long id = getRowData().get(oldRow).getId();
-      for (int i = 0; i < rows.size(); i++) {
-        if (rows.get(i).getId() == id) {
-          newRow = i;
-          break;
-        }
-      }
-      this.activeRowIndex = newRow;
-    }
   }
 
   public void updateOrder(int col, NativeEvent event) {

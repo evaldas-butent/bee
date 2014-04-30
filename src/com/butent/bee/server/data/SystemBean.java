@@ -572,8 +572,13 @@ public class SystemBean {
 
   private void createIndexes(Collection<BeeIndex> indexes) {
     for (BeeIndex index : indexes) {
-      makeStructureChanges(SqlUtils.createIndex(index.getTable(), index.getName(),
-          index.getFields(), index.isUnique()));
+      if (!BeeUtils.isEmpty(index.getExpression())) {
+        makeStructureChanges(SqlUtils.createIndex(index.getTable(), index.getName(),
+            index.getExpression(), index.isUnique()));
+      } else {
+        makeStructureChanges(SqlUtils.createIndex(index.getTable(), index.getName(),
+            index.getFields(), index.isUnique()));
+      }
     }
   }
 
@@ -1158,19 +1163,33 @@ public class SystemBean {
         table = new BeeTable(moduleName, xmlTable, auditOff);
         String tbl = table.getName();
 
-        for (int i = 0; i < 2; i++) {
-          boolean extMode = i > 0;
-          Collection<XmlField> fields = extMode ? xmlTable.extFields : xmlTable.fields;
-
-          if (!BeeUtils.isEmpty(fields)) {
-            for (XmlField field : fields) {
-              table.addField(field, extMode);
-            }
+        if (!BeeUtils.isEmpty(xmlTable.fields)) {
+          for (XmlField field : xmlTable.fields) {
+            table.addField(field, false);
           }
         }
         if (!BeeUtils.isEmpty(xmlTable.indexes)) {
           for (XmlIndex index : xmlTable.indexes) {
-            if (!BeeUtils.isEmpty(index.fields)) {
+            String expression;
+
+            switch (SqlBuilderFactory.getBuilder().getEngine()) {
+              case POSTGRESQL:
+                expression = index.postgreSql;
+                break;
+              case MSSQL:
+                expression = index.msSql;
+                break;
+              case ORACLE:
+                expression = index.oracle;
+                break;
+              default:
+                expression = null;
+                break;
+            }
+            if (!BeeUtils.isEmpty(expression)) {
+              table.addIndex(tableName, expression, index.unique);
+
+            } else if (!BeeUtils.isEmpty(index.fields)) {
               for (String fld : index.fields) {
                 Assert.state(table.hasField(fld),
                     BeeUtils.joinWords("Unrecognized index field:", tbl, fld));
@@ -1182,24 +1201,21 @@ public class SystemBean {
         if (!BeeUtils.isEmpty(xmlTable.constraints)) {
           for (XmlConstraint constraint : xmlTable.constraints) {
             if (constraint instanceof XmlCheck) {
-              String expression = null;
+              String expression;
 
               switch (SqlBuilderFactory.getBuilder().getEngine()) {
                 case POSTGRESQL:
-                  expression = ((XmlCheck) constraint).postgreSql;
+                  expression = constraint.postgreSql;
                   break;
                 case MSSQL:
-                  expression = ((XmlCheck) constraint).msSql;
+                  expression = constraint.msSql;
                   break;
                 case ORACLE:
-                  expression = ((XmlCheck) constraint).oracle;
+                  expression = constraint.oracle;
                   break;
-                case GENERIC:
-                  expression = ((XmlCheck) constraint).generic;
+                default:
+                  expression = null;
                   break;
-              }
-              if (BeeUtils.isEmpty(expression)) {
-                expression = ((XmlCheck) constraint).generic;
               }
               if (!BeeUtils.isEmpty(expression)) {
                 table.addCheck(tableName, expression);
@@ -1236,7 +1252,7 @@ public class SystemBean {
         }
         if (!BeeUtils.isEmpty(xmlTable.triggers)) {
           for (XmlTrigger trigger : xmlTable.triggers) {
-            String body = null;
+            String body;
             List<SqlTriggerEvent> events = Lists.newArrayList();
 
             for (String event : trigger.events) {
@@ -1252,7 +1268,8 @@ public class SystemBean {
               case ORACLE:
                 body = trigger.oracle;
                 break;
-              case GENERIC:
+              default:
+                body = null;
                 break;
             }
             if (!BeeUtils.isEmpty(body)) {

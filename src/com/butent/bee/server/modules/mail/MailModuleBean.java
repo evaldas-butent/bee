@@ -131,7 +131,7 @@ public class MailModuleBean implements BeeModule {
           syncFolders(account, account.getRemoteFolder(store, account.getRootFolder()),
               account.getRootFolder());
         }
-      } catch (MessagingException e) {
+      } catch (Exception e) {
         logger.error(e);
       } finally {
         account.disconnectFromStore(store);
@@ -632,23 +632,19 @@ public class MailModuleBean implements BeeModule {
         boolean isInbox = account.isInbox(localFolder);
 
         for (Message message : newMessages) {
-          try {
-            boolean ok = mail.storeMail(message, localFolder.getId(),
-                uidMode ? ((UIDFolder) remoteFolder).getUID(message) : null);
+          boolean ok = mail.storeMail(message, localFolder.getId(),
+              uidMode ? ((UIDFolder) remoteFolder).getUID(message) : null);
 
-            if (ok) {
-              if (isInbox) {
-                // TODO applyRules(message);
-                logger.warning("Message rules not implemented yet");
-              }
-              c++;
+          if (ok) {
+            if (isInbox) {
+              // TODO applyRules(message);
+              logger.debug("Message rules not implemented yet");
             }
-            if (!BeeUtils.isEmpty(progressId)
-                && !Endpoint.updateProgress(progressId, c / (double) newMessages.length)) {
-              break;
-            }
-          } catch (MessagingException e) {
-            logger.error(e);
+            c++;
+          }
+          if (!BeeUtils.isEmpty(progressId)
+              && !Endpoint.updateProgress(progressId, c / (double) newMessages.length)) {
+            break;
           }
         }
       } finally {

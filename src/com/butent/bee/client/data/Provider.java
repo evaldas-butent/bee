@@ -203,7 +203,7 @@ public abstract class Provider implements SortEvent.Handler, HandlesAllDataEvent
     }
   }
 
-  public abstract void refresh(boolean updateActiveRow);
+  public abstract void refresh(boolean preserveActiveRow);
 
   public void setOrder(Order order) {
     this.order = order;
@@ -243,7 +243,7 @@ public abstract class Provider implements SortEvent.Handler, HandlesAllDataEvent
     return getPageSize() > 0;
   }
 
-  protected abstract void onRequest(boolean updateActiveRow);
+  protected abstract void onRequest(boolean preserveActiveRow);
 
   protected void rejectFilter(Filter filter, boolean notify) {
     if (filter != null && notify && notificationListener != null) {

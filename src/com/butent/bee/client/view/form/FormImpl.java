@@ -1272,6 +1272,10 @@ public class FormImpl extends Absolute implements FormView, PreviewHandler, Tabu
   }
 
   @Override
+  public void preserveActiveRow(List<? extends IsRow> values) {
+  }
+
+  @Override
   public boolean printFooter() {
     return printFooter;
   }
@@ -1536,10 +1540,6 @@ public class FormImpl extends Absolute implements FormView, PreviewHandler, Tabu
 
     setActiveRow(newRow);
     refreshData(true, true);
-  }
-
-  @Override
-  public void updateActiveRow(List<? extends IsRow> values) {
   }
 
   @Override

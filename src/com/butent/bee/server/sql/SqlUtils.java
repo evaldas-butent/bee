@@ -114,6 +114,13 @@ public final class SqlUtils {
     return new SqlCommand(SqlKeyword.CREATE_INDEX, params);
   }
 
+  public static IsQuery createIndex(String table, String name, String expression,
+      boolean isUnique) {
+
+    return new SqlCommand(SqlKeyword.CREATE_INDEX, ImmutableMap.of("table", name(table),
+        "name", name(name), "expression", expression, "isUnique", isUnique));
+  }
+
   public static IsQuery createPrimaryKey(String table, String name, List<String> fields) {
     return new SqlCommand(SqlKeyword.ADD_CONSTRAINT,
         getConstraintMap(SqlKeyword.PRIMARY_KEY, table, name, fields));
@@ -328,7 +335,7 @@ public final class SqlUtils {
   public static IsCondition in(String src, String fld, String dst, String dFld) {
     return in(src, fld, dst, dFld, null);
   }
-  
+
   public static IsCondition in(String src, String fld, String dst, String dFld,
       IsCondition clause) {
     SqlSelect query = new SqlSelect()

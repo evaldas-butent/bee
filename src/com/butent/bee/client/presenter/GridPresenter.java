@@ -597,7 +597,7 @@ public class GridPresenter extends AbstractPresenter implements ReadyForInsertEv
     super.onViewUnload();
   }
 
-  public void refresh(boolean updateActiveRow) {
+  public void refresh(boolean preserveActiveRow) {
     if (getGridInterceptor() != null) {
       getGridInterceptor().beforeRefresh(this);
     }
@@ -608,7 +608,7 @@ public class GridPresenter extends AbstractPresenter implements ReadyForInsertEv
       }
 
     } else {
-      getDataProvider().refresh(updateActiveRow);
+      getDataProvider().refresh(preserveActiveRow);
     }
   }
 
