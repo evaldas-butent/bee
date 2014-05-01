@@ -3,10 +3,12 @@
   xmlns:xi="http://www.w3.org/2001/XInclude"
   
   name="RecurringTasks" viewName="RecurringTasks" caption="=crmRecurringTasks"
-  currentUserFilter="Owner" editShowId="true" enabledActions="copy"
+  currentUserFilter="Owner" enabledActions="copy"
   >
   <g:columns>
     <IdColumn name="Id" caption="=captionId" />
+    <RelColumn name="Owner" renderColumns="OwnerFirstName OwnerLastName"
+      sortBy="OwnerLastName OwnerFirstName" visible="false" />
   </g:columns>
 
   <xi:include href="columns/RecurringTask.columns.xml" />

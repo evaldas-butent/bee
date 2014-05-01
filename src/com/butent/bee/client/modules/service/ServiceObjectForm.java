@@ -12,9 +12,11 @@ import com.google.gwt.user.client.ui.FlowPanel;
 import com.google.gwt.user.client.ui.HasWidgets;
 import com.google.gwt.user.client.ui.SimplePanel;
 import com.google.gwt.user.client.ui.Widget;
+import com.google.web.bindery.event.shared.HandlerRegistration;
 
 import static com.butent.bee.shared.modules.service.ServiceConstants.*;
 
+import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.Global;
 import com.butent.bee.client.composite.Autocomplete;
 import com.butent.bee.client.data.Data;
@@ -23,7 +25,10 @@ import com.butent.bee.client.data.Queries.IntCallback;
 import com.butent.bee.client.data.Queries.RowSetCallback;
 import com.butent.bee.client.data.RowCallback;
 import com.butent.bee.client.data.RowUpdateCallback;
+import com.butent.bee.client.dom.DomUtils;
+import com.butent.bee.client.event.EventUtils;
 import com.butent.bee.client.event.logical.AutocompleteEvent;
+import com.butent.bee.client.event.logical.RowActionEvent;
 import com.butent.bee.client.grid.ChildGrid;
 import com.butent.bee.client.style.StyleUtils;
 import com.butent.bee.client.ui.FormFactory.WidgetDescriptionCallback;
@@ -44,22 +49,27 @@ import com.butent.bee.shared.data.BeeRow;
 import com.butent.bee.shared.data.BeeRowSet;
 import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.IsRow;
+import com.butent.bee.shared.data.RelationUtils;
 import com.butent.bee.shared.data.filter.CompoundFilter;
 import com.butent.bee.shared.data.filter.Filter;
 import com.butent.bee.shared.data.value.TextValue;
 import com.butent.bee.shared.data.value.Value;
 import com.butent.bee.shared.i18n.LocalizableConstants;
 import com.butent.bee.shared.i18n.Localized;
+import com.butent.bee.shared.modules.classifiers.ClassifierConstants;
+import com.butent.bee.shared.modules.tasks.TaskConstants;
 import com.butent.bee.shared.ui.Relation;
 import com.butent.bee.shared.utils.BeeUtils;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Objects;
 
-public class ServiceObjectForm extends AbstractFormInterceptor implements ClickHandler {
+public class ServiceObjectForm extends AbstractFormInterceptor implements ClickHandler,
+    RowActionEvent.Handler {
 
   private final class AutocompleteFilter implements AutocompleteEvent.Handler {
 
@@ -131,6 +141,8 @@ public class ServiceObjectForm extends AbstractFormInterceptor implements ClickH
 
   private ChildGrid groupsGrid;
   private ChildGrid criteriaGrid;
+
+  private final List<HandlerRegistration> registry = new ArrayList<>();
 
   ServiceObjectForm() {
     super();
@@ -223,6 +235,33 @@ public class ServiceObjectForm extends AbstractFormInterceptor implements ClickH
   }
 
   @Override
+  public void onLoad(FormView form) {
+    EventUtils.clearRegistry(registry);
+    registry.add(BeeKeeper.getBus().registerRowActionHandler(this, false));
+  }
+
+  @Override
+  public void onRowAction(RowActionEvent event) {
+    if (event != null && event.isCreateRow() && event.hasRow()
+        && event.hasAnyView(TaskConstants.VIEW_TASKS, TaskConstants.VIEW_RECURRING_TASKS)
+        && DomUtils.isOrHasChild(getFormView().asWidget(), event.getOptions())
+        && getActiveRow() != null) {
+      
+      String address = getStringValue(COL_OBJECT_ADDRESS);
+      if (!BeeUtils.isEmpty(address)) {
+        Data.setValue(event.getViewName(), event.getRow(), TaskConstants.COL_SUMMARY, address);
+      }
+      
+      Long customer = getLongValue(COL_OBJECT_CUSTOMER);
+      if (DataUtils.isId(customer)) {
+        RelationUtils.copyWithDescendants(
+            Data.getDataInfo(getViewName()), COL_OBJECT_CUSTOMER, getActiveRow(),
+            Data.getDataInfo(event.getViewName()), ClassifierConstants.COL_COMPANY, event.getRow());
+      }
+    }
+  }
+
+  @Override
   public void onSaveChanges(HasHandlers listener, SaveChangesEvent event) {
     if (BeeUtils.isEmpty(event.getColumns())) {
       save(getActiveRow());
@@ -238,6 +277,11 @@ public class ServiceObjectForm extends AbstractFormInterceptor implements ClickH
   @Override
   public void onStartNewRow(FormView form, IsRow oldRow, IsRow newRow) {
     requery(newRow);
+  }
+
+  @Override
+  public void onUnload(FormView form) {
+    EventUtils.clearRegistry(registry);
   }
 
   private Autocomplete createAutocomplete(String viewName, String column, String value) {

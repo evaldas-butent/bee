@@ -1808,13 +1808,18 @@ public class FormImpl extends Absolute implements FormView, PreviewHandler, Tabu
     }
 
     boolean ok = rowValue.isEditable();
+
+    if (ok && getFormInterceptor() != null) {
+      ok = getFormInterceptor().isRowEditable(rowValue);
+    }
+
     if (ok && getRowEditable() != null) {
       getRowEditable().update(rowValue);
       ok = BeeUtils.toBoolean(getRowEditable().evaluate());
     }
 
     if (!ok && warn) {
-      notifyWarning("Row is read only");
+      notifyWarning(Localized.getConstants().rowIsReadOnly());
     }
     return ok;
   }

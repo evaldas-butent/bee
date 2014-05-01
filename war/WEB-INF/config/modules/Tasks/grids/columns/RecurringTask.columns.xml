@@ -9,9 +9,6 @@
   <RelColumn name="Contact" renderColumns="ContactFirstName ContactLastName"
     sortBy="ContactLastName ContactFirstName" visible="false" />
 
-  <RelColumn name="Owner" renderColumns="OwnerFirstName OwnerLastName"
-    sortBy="OwnerLastName OwnerFirstName" visible="false" />
-
   <DataColumn name="ScheduleFrom" />
   <DataColumn name="ScheduleUntil" />
 

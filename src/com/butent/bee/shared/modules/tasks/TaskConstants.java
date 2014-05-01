@@ -218,6 +218,8 @@ public final class TaskConstants {
   public static final String VIEW_RT_FILES = "RTFiles";
 
   public static final String VIEW_REQUEST_FILES = "RequestFiles";
+
+  public static final String VIEW_RELATED_TASKS = "RelatedTasks";
   
   public static final String COL_START_TIME = "StartTime";
   public static final String COL_FINISH_TIME = "FinishTime";

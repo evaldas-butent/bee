@@ -232,17 +232,33 @@ public class TasksModuleBean implements BeeModule {
         if (event.isBefore()) {
           return;
         }
-        if (BeeUtils.same(event.getTargetName(), VIEW_RT_FILES)) {
+
+        if (event.isTarget(VIEW_RT_FILES)) {
           ExtensionIcons.setIcons(event.getRowset(), ALS_FILE_NAME, PROP_ICON);
 
-        } else if (BeeUtils.same(event.getTargetName(), VIEW_TASKS)) {
+        } else if (event.isTarget(VIEW_TASKS) || event.isTarget(VIEW_RELATED_TASKS)) {
           BeeRowSet rowSet = event.getRowset();
 
           if (!rowSet.isEmpty()) {
             Set<Long> taskIds = Sets.newHashSet();
+            Long id;
+
             if (rowSet.getNumberOfRows() < 100) {
               for (BeeRow row : rowSet.getRows()) {
-                taskIds.add(row.getId());
+                switch (event.getTargetName()) {
+                  case VIEW_TASKS:
+                    id = row.getId();
+                    break;
+                  case VIEW_RELATED_TASKS:
+                    id = row.getLong(rowSet.getColumnIndex(COL_TASK));
+                    break;
+                  default:
+                    id = null;
+                }
+
+                if (DataUtils.isId(id)) {
+                  taskIds.add(id);
+                }
               }
             }
 
@@ -265,18 +281,18 @@ public class TasksModuleBean implements BeeModule {
 
             for (SimpleRow tuRow : tuData) {
               long taskId = tuRow.getLong(taskIndex);
-              BeeRow row = rowSet.getRowById(taskId);
-              if (row == null) {
-                continue;
-              }
+              BeeRow row = event.isTarget(VIEW_RELATED_TASKS)
+                  ? rowSet.findRow(Filter.equals(COL_TASK, taskId)) : rowSet.getRowById(taskId);
 
-              row.setProperty(PROP_USER, BeeConst.STRING_PLUS);
+              if (row != null) {
+                row.setProperty(PROP_USER, BeeConst.STRING_PLUS);
 
-              if (tuRow.getValue(accessIndex) != null) {
-                row.setProperty(PROP_LAST_ACCESS, tuRow.getValue(accessIndex));
-              }
-              if (tuRow.getValue(starIndex) != null) {
-                row.setProperty(PROP_STAR, tuRow.getValue(starIndex));
+                if (tuRow.getValue(accessIndex) != null) {
+                  row.setProperty(PROP_LAST_ACCESS, tuRow.getValue(accessIndex));
+                }
+                if (tuRow.getValue(starIndex) != null) {
+                  row.setProperty(PROP_STAR, tuRow.getValue(starIndex));
+                }
               }
             }
 
@@ -294,17 +310,21 @@ public class TasksModuleBean implements BeeModule {
             int publishIndex = teData.getColumnIndex(COL_PUBLISH_TIME);
 
             for (SimpleRow teRow : teData) {
-              long taskId = teRow.getLong(taskIndex);
-              BeeRow row = rowSet.getRowById(taskId);
-
               if (teRow.getValue(publishIndex) != null) {
-                row.setProperty(PROP_LAST_PUBLISH, teRow.getValue(publishIndex));
+                long taskId = teRow.getLong(taskIndex);
+                BeeRow row = event.isTarget(VIEW_RELATED_TASKS)
+                    ? rowSet.findRow(Filter.equals(COL_TASK, taskId)) : rowSet.getRowById(taskId);
+
+                if (row != null) {
+                  row.setProperty(PROP_LAST_PUBLISH, teRow.getValue(publishIndex));
+                }
               }
             }
           }
         }
       }
     });
+
     TaskUsageQueryProvider usageQueryProvider = new TaskUsageQueryProvider();
 
     news.registerUsageQueryProvider(Feed.TASKS_ALL, usageQueryProvider);

@@ -1701,11 +1701,11 @@
   outline: #555 solid 1px;
 }
 
-.bee-Form-disabled .bee-disabled,
-.bee-Form-disabled .bee-disabled input {
+.bee-Form .bee-disabled,
+.bee-Form .bee-disabled input {
   background-color: whitesmoke;
 }
-.bee-Form-disabled .bee-CheckBox.bee-disabled {
+.bee-Form .bee-CheckBox.bee-disabled {
   background-color: inherit;
 }
 

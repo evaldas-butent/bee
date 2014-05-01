@@ -23,6 +23,7 @@ public final class ServiceConstants {
 
   public static final String COL_OBJECT_CATEGORY = "Category";
   public static final String COL_OBJECT_CUSTOMER = "Customer";
+  public static final String COL_OBJECT_ADDRESS = "Address";
   
   public static final String COL_CRITERIA_GROUP = "Group";
   public static final String COL_CRITERIA_GROUP_NAME = "Name";

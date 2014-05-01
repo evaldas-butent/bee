@@ -107,6 +107,17 @@ public final class RowActionEvent extends Event<RowActionEvent.Handler> implemen
     return viewName;
   }
 
+  public boolean hasAnyView(String... views) {
+    if (views != null) {
+      for (String view : views) {
+        if (hasView(view)) {
+          return true;
+        }
+      }
+    }
+    return false;
+  }
+  
   public boolean hasRow() {
     return row != null;
   }

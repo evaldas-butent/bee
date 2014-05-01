@@ -25,7 +25,6 @@ import com.google.gwt.dom.client.Style.Position;
 import com.google.gwt.dom.client.TableCellElement;
 import com.google.gwt.dom.client.TableElement;
 import com.google.gwt.dom.client.TableRowElement;
-import com.google.gwt.user.client.DOM;
 import com.google.gwt.user.client.ui.Focusable;
 import com.google.gwt.user.client.ui.HasEnabled;
 import com.google.gwt.user.client.ui.HasOneWidget;
@@ -489,7 +488,7 @@ public final class DomUtils {
     }
 
     if (root.isAttached()) {
-      return getChildByElement(root, DOM.getElementById(id));
+      return getChildByElement(root, Document.get().getElementById(id));
     } else {
       return getLogicalChild(root, id);
     }
@@ -566,7 +565,7 @@ public final class DomUtils {
 
   public static Element getElement(String id) {
     Assert.notEmpty(id);
-    Element el = DOM.getElementById(id);
+    Element el = Document.get().getElementById(id);
     Assert.notNull(el, "id " + id + " element not found");
     return el;
   }
@@ -610,7 +609,7 @@ public final class DomUtils {
     if (BeeUtils.isEmpty(id)) {
       return null;
     } else {
-      return DOM.getElementById(id);
+      return Document.get().getElementById(id);
     }
   }
 
@@ -1345,6 +1344,19 @@ public final class DomUtils {
     return (el != null) && el.getTagName().equalsIgnoreCase(Tags.LABEL);
   }
 
+  public static boolean isOrHasChild(UIObject obj, String id) {
+    if (obj == null || BeeUtils.isEmpty(id)) {
+      return false; 
+
+    } else if (idEquals(obj, id)) {
+      return true;
+    
+    } else {
+      Element child = Document.get().getElementById(id);
+      return (child != null) && obj.getElement().isOrHasChild(child);
+    }
+  }
+  
   public static boolean isOrHasAncestor(Element el, String id) {
     if (el == null || BeeUtils.isEmpty(id)) {
       return false;
@@ -1879,7 +1891,7 @@ public final class DomUtils {
   }
 
   private static void calculateCheckBoxSize() {
-    Element elem = DOM.createInputCheck();
+    Element elem = Document.get().createCheckInputElement();
 
     BodyPanel.conceal(elem);
 
@@ -1893,7 +1905,7 @@ public final class DomUtils {
   }
 
   private static void calculateScrollBarSize() {
-    Element elem = DOM.createDiv();
+    Element elem = Document.get().createDivElement();
 
     elem.getStyle().setPosition(Position.ABSOLUTE);
 
@@ -1919,7 +1931,7 @@ public final class DomUtils {
   }
 
   private static void calculateTextBoxSize() {
-    Element elem = DOM.createInputText();
+    Element elem = Document.get().createTextInputElement();
 
     BodyPanel.conceal(elem);
 

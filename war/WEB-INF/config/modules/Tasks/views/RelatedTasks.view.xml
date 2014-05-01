@@ -22,22 +22,22 @@
     <SimpleColumn name="ServiceObject" />
   
     <SimpleJoin name="Task" joinType="INNER">
-      <SimpleColumn name="Summary" />
-      <SimpleColumn name="Description" />
-      <SimpleColumn name="Priority" />
+      <SimpleColumn name="Summary" editable="true" />
+      <SimpleColumn name="Description" editable="true" />
+      <SimpleColumn name="Priority" editable="true" />
 
-      <SimpleColumn name="Created" />
-      <SimpleColumn name="StartTime" />
-      <SimpleColumn name="FinishTime" />
-      <SimpleColumn name="Completed" />
-      <SimpleColumn name="Approved" />
-      <SimpleColumn name="ExpectedDuration" />
+      <SimpleColumn name="Created" editable="true" />
+      <SimpleColumn name="StartTime" editable="true" />
+      <SimpleColumn name="FinishTime" editable="true" />
+      <SimpleColumn name="Completed" editable="true" />
+      <SimpleColumn name="Approved" editable="true" />
+      <SimpleColumn name="ExpectedDuration" editable="true" />
 
-      <SimpleColumn name="Status" />
+      <SimpleColumn name="Status" editable="true" />
 
-      <SimpleColumn name="RecurringTask" />
+      <SimpleColumn name="RecurringTask" editable="true" />
 
-      <SimpleColumn name="Owner" />
+      <SimpleColumn name="Owner" editable="true" />
       <SimpleJoin name="Owner" joinType="LEFT">
         <SimpleColumn name="CompanyPerson" alias="OwnerPerson" />
         <SimpleJoin name="CompanyPerson" joinType="LEFT">
@@ -48,7 +48,7 @@
         </SimpleJoin>
       </SimpleJoin>
 
-      <SimpleColumn name="Executor" />
+      <SimpleColumn name="Executor" editable="true" />
       <SimpleJoin name="Executor" joinType="LEFT">
         <SimpleColumn name="CompanyPerson" alias="ExecutorPerson" />
         <SimpleJoin name="CompanyPerson" joinType="LEFT">
@@ -59,12 +59,12 @@
         </SimpleJoin>
       </SimpleJoin>
 
-      <SimpleColumn name="Company" />
+      <SimpleColumn name="Company" editable="true" />
       <SimpleJoin name="Company" joinType="LEFT">
         <SimpleColumn alias="CompanyName" name="Name" />
       </SimpleJoin>
 
-      <SimpleColumn name="Contact" />
+      <SimpleColumn name="Contact" editable="true" />
       <SimpleJoin name="Contact" joinType="LEFT">
         <SimpleColumn alias="ContactPerson" name="Person" />
         <SimpleJoin name="Person" joinType="LEFT">
@@ -76,13 +76,13 @@
         </SimpleJoin>
       </SimpleJoin>
 
-      <SimpleColumn name="Reminder" />
+      <SimpleColumn name="Reminder" editable="true" />
       <SimpleJoin name="Reminder" joinType="LEFT">
         <SimpleColumn alias="ReminderName" name="Name" />
       </SimpleJoin>
 
-      <SimpleColumn name="ReminderTime" />
-      <SimpleColumn name="ReminderSent" />
+      <SimpleColumn name="ReminderTime" editable="true" />
+      <SimpleColumn name="ReminderSent" editable="true" />
     </SimpleJoin>
   </Columns>
   

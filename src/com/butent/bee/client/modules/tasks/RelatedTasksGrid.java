@@ -19,27 +19,25 @@ import com.butent.bee.client.dialog.Icon;
 import com.butent.bee.client.event.logical.RowActionEvent;
 import com.butent.bee.client.presenter.GridPresenter;
 import com.butent.bee.client.view.edit.EditStartEvent;
-import com.butent.bee.client.view.grid.interceptor.AbstractGridInterceptor;
 import com.butent.bee.client.view.grid.interceptor.GridInterceptor;
+import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.communication.ResponseObject;
 import com.butent.bee.shared.data.BeeRow;
 import com.butent.bee.shared.data.DataUtils;
-import com.butent.bee.shared.data.IsRow;
-import com.butent.bee.shared.data.event.RowDeleteEvent;
 import com.butent.bee.shared.data.event.RowInsertEvent;
 import com.butent.bee.shared.data.view.DataInfo;
-import com.butent.bee.shared.data.view.RowInfo;
 import com.butent.bee.shared.i18n.Localized;
+import com.butent.bee.shared.modules.tasks.TaskType;
 import com.butent.bee.shared.modules.tasks.TaskUtils;
 import com.butent.bee.shared.ui.Action;
 import com.butent.bee.shared.utils.BeeUtils;
 
-import java.util.Collection;
 import java.util.List;
 
-class RelatedRecurringTasksGrid extends AbstractGridInterceptor {
+class RelatedTasksGrid extends TasksGrid {
 
-  RelatedRecurringTasksGrid() {
+  RelatedTasksGrid() {
+    super(TaskType.RELATED, TaskType.RELATED.getCaption());
   }
 
   @Override
@@ -55,7 +53,7 @@ class RelatedRecurringTasksGrid extends AbstractGridInterceptor {
               if (presenter.getActiveRow() == null) {
                 return;
               }
-              Long rtId = getRecurringTaskId(presenter.getActiveRow());
+              Long rtId = presenter.getActiveRow().getLong(getDataIndex(COL_TASK));
 
               ParameterList params = TasksKeeper.createArgs(SVC_RT_COPY);
               params.addQueryItem(VAR_RT_ID, rtId);
@@ -66,9 +64,9 @@ class RelatedRecurringTasksGrid extends AbstractGridInterceptor {
                   if (Queries.checkRowResponse(SVC_RT_COPY, VIEW_RECURRING_TASKS, response)) {
                     BeeRow row = BeeRow.restore(response.getResponseAsString());
                     RowInsertEvent.fire(BeeKeeper.getBus(), VIEW_RECURRING_TASKS, row, null);
-
+                    
                     presenter.handleAction(Action.REFRESH);
-                    openRecurringTask(row.getId());
+                    openTask(row.getId());
                   }
                 }
               });
@@ -79,14 +77,14 @@ class RelatedRecurringTasksGrid extends AbstractGridInterceptor {
       presenter.getGridView().ensureRelId(new IdCallback() {
         @Override
         public void onSuccess(Long relId) {
-          DataInfo dataInfo = Data.getDataInfo(VIEW_RECURRING_TASKS);
+          DataInfo dataInfo = Data.getDataInfo(VIEW_TASKS);
 
           BeeRow row = RowFactory.createEmptyRow(dataInfo, true);
-          RowActionEvent.fireCreateRow(VIEW_RECURRING_TASKS, row, presenter.getWidget().getId());
+          RowActionEvent.fireCreateRow(VIEW_TASKS, row, presenter.getWidget().getId());
 
           String relColumn = presenter.getGridView().getRelColumn();
           String property = TaskUtils.translateRelationToTaskProperty(relColumn);
-
+          
           if (!BeeUtils.isEmpty(property) && BeeUtils.isEmpty(row.getProperty(property))) {
             row.setProperty(property, relId.toString());
           }
@@ -105,59 +103,23 @@ class RelatedRecurringTasksGrid extends AbstractGridInterceptor {
   }
 
   @Override
-  public DeleteMode beforeDeleteRow(final GridPresenter presenter, final IsRow row) {
-    final Long rtId = getRecurringTaskId(row);
-
-    if (DataUtils.isId(rtId)) {
-      Queries.deleteRow(VIEW_RECURRING_TASKS, rtId, new Queries.IntCallback() {
-        @Override
-        public void onSuccess(Integer result) {
-          RowDeleteEvent.fire(BeeKeeper.getBus(), VIEW_RECURRING_TASKS, rtId);
-          presenter.handleAction(Action.REFRESH);
-        }
-      });
-    }
-
-    return DeleteMode.CANCEL;
-  }
-
-  @Override
-  public DeleteMode getDeleteMode(GridPresenter presenter, IsRow activeRow,
-      Collection<RowInfo> selectedRows, DeleteMode defMode) {
-    return (defMode == DeleteMode.MULTI) ? DeleteMode.SINGLE : defMode;
-  }
-
-  @Override
-  public List<String> getDeleteRowMessage(IsRow row) {
-    String m1 = BeeUtils.joinWords(Localized.getConstants().crmRecurringTask(),
-        getRecurringTaskId(row));
-    String m2 = Localized.getConstants().crmTaskDeleteQuestion();
-
-    return Lists.newArrayList(m1, m2);
-  }
-
-  @Override
   public GridInterceptor getInstance() {
-    return new RelatedRecurringTasksGrid();
-  }
-
-  @Override
-  public boolean isRowEditable(IsRow row) {
-    return row != null && BeeKeeper.getUser().is(row.getLong(getDataIndex(COL_OWNER)));
+    return new RelatedTasksGrid();
   }
 
   @Override
   public void onEditStart(EditStartEvent event) {
     event.consume();
 
-    if (event.getRowValue() != null) {
-      openRecurringTask(getRecurringTaskId(event.getRowValue()));
+    int index = getDataIndex(COL_TASK);
+    if (!BeeConst.isUndef(index) && event.getRowValue() != null) {
+      openTask(event.getRowValue().getLong(index));
     }
   }
-
-  private void openRecurringTask(Long rtId) {
-    if (DataUtils.isId(rtId)) {
-      RowEditor.openRow(VIEW_RECURRING_TASKS, rtId, true, new RowCallback() {
+  
+  private void openTask(Long id) {
+    if (DataUtils.isId(id)) {
+      RowEditor.openRow(VIEW_TASKS, id, true, new RowCallback() {
         @Override
         public void onSuccess(BeeRow result) {
           getGridPresenter().handleAction(Action.REFRESH);
@@ -165,8 +127,5 @@ class RelatedRecurringTasksGrid extends AbstractGridInterceptor {
       });
     }
   }
-
-  private Long getRecurringTaskId(IsRow row) {
-    return (row == null) ? null : row.getLong(getDataIndex(COL_RECURRING_TASK));
-  }
+  
 }

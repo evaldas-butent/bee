@@ -9,11 +9,9 @@
  
   <g:columns>
     <DataColumn name="RecurringTask" label="=captionId" />
+    <RelColumn name="Owner" renderColumns="OwnerFirstName OwnerLastName"
+      sortBy="OwnerLastName OwnerFirstName" />
   </g:columns>
  
   <xi:include href="columns/RecurringTask.columns.xml" />
-  
-  <g:editMessage>
-    <ui:expression>'[' + row.RecurringTask + ']'</ui:expression>
-  </g:editMessage>
 </g:Grid>

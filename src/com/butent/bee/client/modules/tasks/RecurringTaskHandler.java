@@ -386,6 +386,11 @@ class RecurringTaskHandler extends AbstractFormInterceptor implements CellValida
   }
 
   @Override
+  public boolean isRowEditable(IsRow row) {
+    return row != null && BeeKeeper.getUser().is(row.getLong(getDataIndex(COL_OWNER)));
+  }
+  
+  @Override
   public Boolean validateCell(CellValidateEvent event) {
     if (event.isCellValidation() && event.isPreValidation()) {
       String source = event.getColumnId();
