@@ -7,6 +7,13 @@
   order="Status, FinishTime, TaskID desc" maxColumnWidth="160"
   >
 
+  <xi:include href="columns/TaskMode.column.xml" />
+  <xi:include href="columns/TaskStar.column.xml" />
+
+  <g:columns>
+    <IdColumn name="Id" caption="=captionId" />
+  </g:columns>
+
   <xi:include href="columns/Task.columns.xml" />
   
   <g:predefinedFilter name="new" label="=crmTaskFilterNew">

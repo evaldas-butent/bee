@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<g:columns xmlns="http://www.butent.com/column" xmlns:g="http://www.butent.com/grid">
+  <PropColumn name="Star" type="integer" cellType="html" horizontalAlignment="center" width="20"
+    label="=crmTaskColumnStar" exportWidthFactor="0.4">
+    <renderer type="star" />
+  </PropColumn>
+</g:columns>

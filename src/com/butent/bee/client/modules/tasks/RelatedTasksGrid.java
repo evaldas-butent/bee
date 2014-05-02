@@ -1,105 +1,81 @@
 package com.butent.bee.client.modules.tasks;
 
-import com.google.common.collect.Lists;
-
 import static com.butent.bee.shared.modules.tasks.TaskConstants.*;
 
 import com.butent.bee.client.BeeKeeper;
-import com.butent.bee.client.Global;
-import com.butent.bee.client.communication.ParameterList;
-import com.butent.bee.client.communication.ResponseCallback;
 import com.butent.bee.client.data.Data;
 import com.butent.bee.client.data.IdCallback;
 import com.butent.bee.client.data.Queries;
 import com.butent.bee.client.data.RowCallback;
 import com.butent.bee.client.data.RowEditor;
 import com.butent.bee.client.data.RowFactory;
-import com.butent.bee.client.dialog.ConfirmationCallback;
-import com.butent.bee.client.dialog.Icon;
 import com.butent.bee.client.event.logical.RowActionEvent;
 import com.butent.bee.client.presenter.GridPresenter;
 import com.butent.bee.client.view.edit.EditStartEvent;
 import com.butent.bee.client.view.grid.interceptor.GridInterceptor;
 import com.butent.bee.shared.BeeConst;
-import com.butent.bee.shared.communication.ResponseObject;
 import com.butent.bee.shared.data.BeeRow;
 import com.butent.bee.shared.data.DataUtils;
-import com.butent.bee.shared.data.event.RowInsertEvent;
+import com.butent.bee.shared.data.IsRow;
+import com.butent.bee.shared.data.event.DataChangeEvent;
+import com.butent.bee.shared.data.event.RowDeleteEvent;
 import com.butent.bee.shared.data.view.DataInfo;
-import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.modules.tasks.TaskType;
 import com.butent.bee.shared.modules.tasks.TaskUtils;
 import com.butent.bee.shared.ui.Action;
+import com.butent.bee.shared.ui.GridDescription;
 import com.butent.bee.shared.utils.BeeUtils;
-
-import java.util.List;
 
 class RelatedTasksGrid extends TasksGrid {
 
   RelatedTasksGrid() {
-    super(TaskType.RELATED, TaskType.RELATED.getCaption());
+    super(TaskType.RELATED, null);
   }
 
   @Override
   public boolean beforeAddRow(final GridPresenter presenter, boolean copy) {
-    if (copy) {
-      String caption = presenter.getActiveRow().getString(getDataIndex(COL_SUMMARY));
-      List<String> messages = Lists.newArrayList(Localized.getConstants().crmRTCopyQuestion());
+    presenter.getGridView().ensureRelId(new IdCallback() {
+      @Override
+      public void onSuccess(Long relId) {
+        DataInfo dataInfo = Data.getDataInfo(VIEW_TASKS);
 
-      Global.confirm(caption, Icon.QUESTION, messages, Localized.getConstants().actionCopy(),
-          Localized.getConstants().actionCancel(), new ConfirmationCallback() {
-            @Override
-            public void onConfirm() {
-              if (presenter.getActiveRow() == null) {
-                return;
-              }
-              Long rtId = presenter.getActiveRow().getLong(getDataIndex(COL_TASK));
+        BeeRow row = RowFactory.createEmptyRow(dataInfo, true);
+        RowActionEvent.fireCreateRow(VIEW_TASKS, row, presenter.getWidget().getId());
 
-              ParameterList params = TasksKeeper.createArgs(SVC_RT_COPY);
-              params.addQueryItem(VAR_RT_ID, rtId);
+        String relColumn = presenter.getGridView().getRelColumn();
+        String property = TaskUtils.translateRelationToTaskProperty(relColumn);
 
-              BeeKeeper.getRpc().makeRequest(params, new ResponseCallback() {
-                @Override
-                public void onResponse(ResponseObject response) {
-                  if (Queries.checkRowResponse(SVC_RT_COPY, VIEW_RECURRING_TASKS, response)) {
-                    BeeRow row = BeeRow.restore(response.getResponseAsString());
-                    RowInsertEvent.fire(BeeKeeper.getBus(), VIEW_RECURRING_TASKS, row, null);
-                    
-                    presenter.handleAction(Action.REFRESH);
-                    openTask(row.getId());
-                  }
-                }
-              });
-            }
-          });
+        if (!BeeUtils.isEmpty(property) && BeeUtils.isEmpty(row.getProperty(property))) {
+          row.setProperty(property, relId.toString());
+        }
 
-    } else {
-      presenter.getGridView().ensureRelId(new IdCallback() {
-        @Override
-        public void onSuccess(Long relId) {
-          DataInfo dataInfo = Data.getDataInfo(VIEW_TASKS);
-
-          BeeRow row = RowFactory.createEmptyRow(dataInfo, true);
-          RowActionEvent.fireCreateRow(VIEW_TASKS, row, presenter.getWidget().getId());
-
-          String relColumn = presenter.getGridView().getRelColumn();
-          String property = TaskUtils.translateRelationToTaskProperty(relColumn);
-          
-          if (!BeeUtils.isEmpty(property) && BeeUtils.isEmpty(row.getProperty(property))) {
-            row.setProperty(property, relId.toString());
+        RowFactory.createRow(dataInfo, row, new RowCallback() {
+          @Override
+          public void onSuccess(BeeRow result) {
+            presenter.handleAction(Action.REFRESH);
           }
+        });
+      }
+    });
 
-          RowFactory.createRow(dataInfo, row, new RowCallback() {
-            @Override
-            public void onSuccess(BeeRow result) {
-              presenter.handleAction(Action.REFRESH);
-            }
-          });
+    return false;
+  }
+
+  @Override
+  public DeleteMode beforeDeleteRow(final GridPresenter presenter, final IsRow row) {
+    final Long taskId = getTaskId(row);
+
+    if (DataUtils.isId(taskId)) {
+      Queries.deleteRow(VIEW_TASKS, taskId, new Queries.IntCallback() {
+        @Override
+        public void onSuccess(Integer result) {
+          RowDeleteEvent.fire(BeeKeeper.getBus(), VIEW_TASKS, taskId);
+          presenter.handleAction(Action.REFRESH);
         }
       });
     }
 
-    return false;
+    return DeleteMode.CANCEL;
   }
 
   @Override
@@ -108,15 +84,41 @@ class RelatedTasksGrid extends TasksGrid {
   }
 
   @Override
-  public void onEditStart(EditStartEvent event) {
-    event.consume();
+  public boolean initDescription(GridDescription gridDescription) {
+    return true;
+  }
 
-    int index = getDataIndex(COL_TASK);
-    if (!BeeConst.isUndef(index) && event.getRowValue() != null) {
-      openTask(event.getRowValue().getLong(index));
+  @Override
+  public void onEditStart(EditStartEvent event) {
+    if (PROP_STAR.equals(event.getColumnId())) {
+      super.onEditStart(event);
+    } else {
+      event.consume();
+
+      int index = getDataIndex(COL_TASK);
+      if (!BeeConst.isUndef(index) && event.getRowValue() != null) {
+        openTask(event.getRowValue().getLong(index));
+      }
     }
   }
-  
+
+  @Override
+  protected void afterCopyAsRecurringTask() {
+    DataChangeEvent.fireRefresh(BeeKeeper.getBus(), VIEW_RELATED_RECURRING_TASKS);
+  }
+
+  @Override
+  protected void afterCopyTask() {
+    if (getGridPresenter() != null) {
+      getGridPresenter().handleAction(Action.REFRESH);
+    }
+  }
+
+  @Override
+  protected Long getTaskId(IsRow row) {
+    return (row == null) ? null : row.getLong(getDataIndex(COL_TASK));
+  }
+
   private void openTask(Long id) {
     if (DataUtils.isId(id)) {
       RowEditor.openRow(VIEW_TASKS, id, true, new RowCallback() {
@@ -127,5 +129,4 @@ class RelatedTasksGrid extends TasksGrid {
       });
     }
   }
-  
 }

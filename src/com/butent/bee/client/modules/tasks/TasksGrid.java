@@ -15,6 +15,7 @@ import com.butent.bee.client.communication.ResponseCallback;
 import com.butent.bee.client.data.Data;
 import com.butent.bee.client.data.Provider;
 import com.butent.bee.client.data.Queries;
+import com.butent.bee.client.data.RowCallback;
 import com.butent.bee.client.data.Queries.RowSetCallback;
 import com.butent.bee.client.data.RowFactory;
 import com.butent.bee.client.dialog.ChoiceCallback;
@@ -146,7 +147,7 @@ class TasksGrid extends AbstractGridInterceptor implements ClickHandler {
             }
 
             ParameterList params = TasksKeeper.createArgs(SVC_GET_TASK_DATA);
-            params.addQueryItem(VAR_TASK_ID, presenter.getActiveRow().getId());
+            params.addQueryItem(VAR_TASK_ID, getTaskId(presenter.getActiveRow()));
             params.addQueryItem(VAR_TASK_PROPERTIES, PROP_OBSERVERS);
             params.addQueryItem(VAR_TASK_RELATIONS, 1);
 
@@ -212,7 +213,7 @@ class TasksGrid extends AbstractGridInterceptor implements ClickHandler {
       return GridInterceptor.DeleteMode.SINGLE;
     } else {
       presenter.getGridView().notifyWarning(
-          BeeUtils.joinWords(Localized.getConstants().crmTask(), activeRow.getId()),
+          BeeUtils.joinWords(Localized.getConstants().crmTask(), getTaskId(activeRow)),
           Localized.getConstants().crmTaskDeleteCanManager());
       return GridInterceptor.DeleteMode.CANCEL;
     }
@@ -220,7 +221,7 @@ class TasksGrid extends AbstractGridInterceptor implements ClickHandler {
 
   @Override
   public List<String> getDeleteRowMessage(IsRow row) {
-    String m1 = BeeUtils.joinWords(Localized.getConstants().crmTask(), row.getId());
+    String m1 = BeeUtils.joinWords(Localized.getConstants().crmTask(), getTaskId(row));
     String m2 = Localized.getConstants().crmTaskDeleteQuestion();
 
     return Lists.newArrayList(m1, m2);
@@ -278,7 +279,6 @@ class TasksGrid extends AbstractGridInterceptor implements ClickHandler {
     }
 
     if (filter.isEmpty()) {
-
       IsRow selectedRow = gridView.getActiveRow();
       if (selectedRow == null) {
         gridView.notifyWarning(Localized.getConstants().selectAtLeastOneRow());
@@ -286,6 +286,7 @@ class TasksGrid extends AbstractGridInterceptor implements ClickHandler {
       } else {
         confirmTask(gridView, selectedRow);
       }
+
     } else {
       confirmTasks(gridView, filter);
     }
@@ -311,6 +312,16 @@ class TasksGrid extends AbstractGridInterceptor implements ClickHandler {
         }
       });
     }
+  }
+
+  protected void afterCopyAsRecurringTask() {
+  }
+
+  protected void afterCopyTask() {
+  }
+
+  protected Long getTaskId(IsRow row) {
+    return (row == null) ? null : row.getId();
   }
 
   private void confirmTask(final GridView gridView, final IsRow row) {
@@ -381,9 +392,7 @@ class TasksGrid extends AbstractGridInterceptor implements ClickHandler {
   }
 
   private void confirmTasks(final GridView gridView, final CompoundFilter filter) {
-
     Queries.getRowSet(gridView.getViewName(), null, filter, new RowSetCallback() {
-
       @Override
       public void onSuccess(final BeeRowSet result) {
         final DataInfo info = Data.getDataInfo(gridView.getViewName());
@@ -399,7 +408,6 @@ class TasksGrid extends AbstractGridInterceptor implements ClickHandler {
 
         Global.confirm(Localized.getConstants().crmTasksConfirmQuestion(),
             new ConfirmationCallback() {
-
               @Override
               public void onConfirm() {
                 DateTime approved = new DateTime();
@@ -411,10 +419,8 @@ class TasksGrid extends AbstractGridInterceptor implements ClickHandler {
                 sendRequest(params, gridView);
               }
             });
-
       }
     });
-
   }
 
   private void copyAsRecurringTask(BeeRow oldRow) {
@@ -431,14 +437,14 @@ class TasksGrid extends AbstractGridInterceptor implements ClickHandler {
 
     Set<String> colNames = Sets.newHashSet(COL_PRIORITY, COL_SUMMARY, COL_DESCRIPTION);
     for (String colName : colNames) {
-      String value = oldRow.getString(getDataIndex(colName));
+      String value = oldRow.getString(sourceInfo.getColumnIndex(colName));
       if (!BeeUtils.isEmpty(value)) {
         newRow.setValue(targetInfo.getColumnIndex(colName), value);
       }
     }
 
-    DateTime startTime = oldRow.getDateTime(getDataIndex(COL_START_TIME));
-    DateTime finishTime = oldRow.getDateTime(getDataIndex(COL_FINISH_TIME));
+    DateTime startTime = oldRow.getDateTime(sourceInfo.getColumnIndex(COL_START_TIME));
+    DateTime finishTime = oldRow.getDateTime(sourceInfo.getColumnIndex(COL_FINISH_TIME));
 
     if (startTime != null) {
       int minutes = TimeUtils.minutesSinceDayStarted(startTime);
@@ -448,7 +454,7 @@ class TasksGrid extends AbstractGridInterceptor implements ClickHandler {
       }
     }
 
-    String duration = oldRow.getString(getDataIndex(COL_EXPECTED_DURATION));
+    String duration = oldRow.getString(sourceInfo.getColumnIndex(COL_EXPECTED_DURATION));
     if (!BeeUtils.isEmpty(duration)) {
       newRow.clearCell(targetInfo.getColumnIndex(COL_RT_DURATION_DAYS));
       newRow.setValue(targetInfo.getColumnIndex(COL_RT_DURATION_TIME), duration);
@@ -479,7 +485,7 @@ class TasksGrid extends AbstractGridInterceptor implements ClickHandler {
     }
 
     Long owner = BeeKeeper.getUser().getUserId();
-    Long executor = oldRow.getLong(getDataIndex(COL_EXECUTOR));
+    Long executor = oldRow.getLong(sourceInfo.getColumnIndex(COL_EXECUTOR));
 
     if (executor != null) {
       newRow.setProperty(PROP_EXECUTORS, executor.toString());
@@ -508,7 +514,12 @@ class TasksGrid extends AbstractGridInterceptor implements ClickHandler {
       }
     }
 
-    RowFactory.createRow(targetInfo, newRow);
+    RowFactory.createRow(targetInfo, newRow, new RowCallback() {
+      @Override
+      public void onSuccess(BeeRow result) {
+        afterCopyAsRecurringTask();
+      }
+    });
   }
 
   private void copyTask(BeeRow oldRow) {
@@ -522,7 +533,7 @@ class TasksGrid extends AbstractGridInterceptor implements ClickHandler {
     Set<String> colNames = Sets.newHashSet(COL_PRIORITY, COL_SUMMARY, COL_DESCRIPTION,
         COL_EXPECTED_DURATION);
     for (String colName : colNames) {
-      int index = getDataIndex(colName);
+      int index = dataInfo.getColumnIndex(colName);
       String value = oldRow.getString(index);
 
       if (!BeeUtils.isEmpty(value)) {
@@ -537,7 +548,7 @@ class TasksGrid extends AbstractGridInterceptor implements ClickHandler {
     }
 
     Long owner = BeeKeeper.getUser().getUserId();
-    Long executor = oldRow.getLong(getDataIndex(COL_EXECUTOR));
+    Long executor = oldRow.getLong(dataInfo.getColumnIndex(COL_EXECUTOR));
 
     if (executor != null) {
       newRow.setProperty(PROP_EXECUTORS, executor.toString());
@@ -566,12 +577,16 @@ class TasksGrid extends AbstractGridInterceptor implements ClickHandler {
       }
     }
 
-    RowFactory.createRow(dataInfo, newRow);
+    RowFactory.createRow(dataInfo, newRow, new RowCallback() {
+      @Override
+      public void onSuccess(BeeRow result) {
+        afterCopyTask();
+      }
+    });
   }
 
   private void sendRequest(final ParameterList params, final GridView gridView) {
     BeeKeeper.getRpc().makePostRequest(params, new ResponseCallback() {
-
       @Override
       public void onResponse(ResponseObject response) {
         if (response.hasMessages()) {
@@ -582,22 +597,25 @@ class TasksGrid extends AbstractGridInterceptor implements ClickHandler {
         gridView.notifyInfo(Localized.getConstants().crmTaskStatusApproved());
         getGridPresenter().refresh(true);
       }
-
     });
   }
 
   private void updateStar(final EditStartEvent event, final CellSource source,
       final Integer value) {
-    final long rowId = event.getRowValue().getId();
 
-    Filter filter = Filter.and(Filter.equals(COL_TASK, rowId),
+    final Long taskId = getTaskId(event.getRowValue());
+    if (!DataUtils.isId(taskId)) {
+      return;
+    }
+
+    Filter filter = Filter.and(Filter.equals(COL_TASK, taskId),
         Filter.equals(AdministrationConstants.COL_USER, userId));
 
     Queries.update(VIEW_TASK_USERS, filter, COL_STAR, new IntegerValue(value),
         new Queries.IntCallback() {
           @Override
           public void onSuccess(Integer result) {
-            CellUpdateEvent.fire(BeeKeeper.getBus(), VIEW_TASKS, rowId,
+            CellUpdateEvent.fire(BeeKeeper.getBus(), getViewName(), event.getRowValue().getId(),
                 event.getRowValue().getVersion(), source,
                 (value == null) ? null : BeeUtils.toString(value));
           }

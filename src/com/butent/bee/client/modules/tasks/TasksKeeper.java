@@ -190,7 +190,7 @@ public final class TasksKeeper {
         new FileGridInterceptor(COL_RTF_RECURRING_TASK, AdministrationConstants.COL_FILE,
             AdministrationConstants.COL_FILE_CAPTION, AdministrationConstants.ALS_FILE_NAME));
 
-    GridFactory.registerGridInterceptor(GRID_TASKS, new RelatedTasksGrid());
+    GridFactory.registerGridInterceptor(GRID_RELATED_TASKS, new RelatedTasksGrid());
     GridFactory.registerGridInterceptor(GRID_RELATED_RECURRING_TASKS,
         new RelatedRecurringTasksGrid());
 

@@ -30,6 +30,8 @@ import com.butent.bee.client.event.EventUtils;
 import com.butent.bee.client.event.logical.AutocompleteEvent;
 import com.butent.bee.client.event.logical.RowActionEvent;
 import com.butent.bee.client.grid.ChildGrid;
+import com.butent.bee.client.grid.GridPanel;
+import com.butent.bee.client.presenter.GridPresenter;
 import com.butent.bee.client.style.StyleUtils;
 import com.butent.bee.client.ui.FormFactory.WidgetDescriptionCallback;
 import com.butent.bee.client.ui.IdentifiableWidget;
@@ -58,6 +60,7 @@ import com.butent.bee.shared.i18n.LocalizableConstants;
 import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.modules.classifiers.ClassifierConstants;
 import com.butent.bee.shared.modules.tasks.TaskConstants;
+import com.butent.bee.shared.ui.Action;
 import com.butent.bee.shared.ui.Relation;
 import com.butent.bee.shared.utils.BeeUtils;
 
@@ -176,6 +179,21 @@ public class ServiceObjectForm extends AbstractFormInterceptor implements ClickH
   public void afterInsertRow(IsRow result, boolean forced) {
     if (!forced) {
       save(result);
+    }
+  }
+
+  @Override
+  public void afterRefresh(FormView form, IsRow row) {
+    Widget widget = form.getWidgetByName(VIEW_INVOICES);
+    if (widget instanceof GridPanel 
+        && ((GridPanel) widget).getPresenter() instanceof GridPresenter) {
+      Filter filter = (row != null && DataUtils.isId(row.getId()))
+          ? Filter.in(Data.getIdColumn(VIEW_INVOICES), VIEW_MAINTENANCE, COL_MAINTENANCE_INVOICE,
+              Filter.equals(COL_SERVICE_OBJECT, row.getId())) : Filter.isFalse();
+          
+      GridPresenter gridPresenter = (GridPresenter) ((GridPanel) widget).getPresenter();
+      gridPresenter.getDataProvider().setParentFilter("fk", filter);
+      gridPresenter.handleAction(Action.REFRESH);
     }
   }
 

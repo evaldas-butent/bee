@@ -6,5 +6,12 @@
   enabledActions="copy" maxColumnWidth="160"
   >
 
+  <xi:include href="columns/TaskMode.column.xml" />
+  <xi:include href="columns/TaskStar.column.xml" />
+
+  <g:columns>
+    <DataColumn name="Task" label="=captionId" />
+  </g:columns>
+
   <xi:include href="columns/Task.columns.xml" />
 </g:Grid>
