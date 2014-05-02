@@ -6,7 +6,7 @@
   xmlns:f="http://www.butent.com/form"
   
   name="ServiceInvoice" viewName="ServiceInvoices"
-  caption="=trdInvoice"
+  caption="=trdInvoice" showRowId="true"
   width="800" height="600"
   >
   <f:properties reports="PrintServiceInvoice, PrintServiceProforma" />
