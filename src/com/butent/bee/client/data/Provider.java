@@ -209,12 +209,12 @@ public abstract class Provider implements SortEvent.Handler, HandlesAllDataEvent
     this.order = order;
   }
 
-  public void setParentFilter(String key, Filter filter) {
+  public boolean setParentFilter(String key, Filter filter) {
     Assert.notEmpty(key);
     if (filter == null) {
-      getParentFilters().remove(key);
+      return getParentFilters().remove(key) != null;
     } else {
-      getParentFilters().put(key, filter);
+      return !filter.equals(getParentFilters().put(key, filter));
     }
   }
 

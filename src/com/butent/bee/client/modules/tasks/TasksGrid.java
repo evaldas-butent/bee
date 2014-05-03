@@ -23,6 +23,8 @@ import com.butent.bee.client.dialog.ConfirmationCallback;
 import com.butent.bee.client.dialog.Icon;
 import com.butent.bee.client.grid.ColumnFooter;
 import com.butent.bee.client.grid.ColumnHeader;
+import com.butent.bee.client.grid.GridFactory;
+import com.butent.bee.client.grid.GridFactory.GridOptions;
 import com.butent.bee.client.grid.column.AbstractColumn;
 import com.butent.bee.client.images.star.Stars;
 import com.butent.bee.client.presenter.GridPresenter;
@@ -64,6 +66,7 @@ import com.butent.bee.shared.modules.classifiers.ClassifierConstants;
 import com.butent.bee.shared.modules.tasks.TaskConstants.TaskStatus;
 import com.butent.bee.shared.modules.tasks.TaskType;
 import com.butent.bee.shared.modules.tasks.TaskUtils;
+import com.butent.bee.shared.news.Feed;
 import com.butent.bee.shared.time.DateTime;
 import com.butent.bee.shared.time.TimeUtils;
 import com.butent.bee.shared.ui.Action;
@@ -85,12 +88,37 @@ class TasksGrid extends AbstractGridInterceptor implements ClickHandler {
 
   private static final int DEFAULT_STAR_COUNT = 3;
 
+  static Consumer<GridOptions> getFeedFilterHandler(Feed feed) {
+    final TaskType type = TaskType.getByFeed(feed);
+    Assert.notNull(type);
+
+    Consumer<GridOptions> consumer = new Consumer<GridFactory.GridOptions>() {
+      @Override
+      public void accept(GridOptions input) {
+        String cap = BeeUtils.notEmpty(input.getCaption(), type.getCaption());
+        GridFactory.openGrid(GRID_TASKS, new TasksGrid(type, cap), input);
+      }
+    };
+
+    return consumer;
+  }
+
+  static void open(String args) {
+    TaskType type = TaskType.getByPrefix(args);
+
+    if (type == null) {
+      Global.showError(Lists.newArrayList(GRID_TASKS, "Type not recognized:", args));
+    } else {
+      GridFactory.openGrid(GRID_TASKS, new TasksGrid(type, type.getCaption()));
+    }
+  }
+  
   private final TaskType type;
   private final String caption;
 
   private final Long userId;
 
-  TasksGrid(TaskType type, String caption) {
+  protected TasksGrid(TaskType type, String caption) {
     this.type = type;
     this.caption = caption;
 

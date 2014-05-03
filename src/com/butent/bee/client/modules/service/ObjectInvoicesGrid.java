@@ -2,10 +2,7 @@ package com.butent.bee.client.modules.service;
 
 import com.google.common.collect.ImmutableMap;
 
-import static com.butent.bee.shared.modules.service.ServiceConstants.COL_MAINTENANCE_INVOICE;
-import static com.butent.bee.shared.modules.service.ServiceConstants.COL_SERVICE_OBJECT;
-import static com.butent.bee.shared.modules.service.ServiceConstants.VIEW_INVOICES;
-import static com.butent.bee.shared.modules.service.ServiceConstants.VIEW_MAINTENANCE;
+import static com.butent.bee.shared.modules.service.ServiceConstants.*;
 
 import com.butent.bee.client.data.Data;
 import com.butent.bee.client.event.logical.ParentRowEvent;
@@ -21,9 +18,9 @@ import java.util.Map;
 public class ObjectInvoicesGrid extends AbstractGridInterceptor {
 
   private static final String FILTER_KEY = "f1";
-  
+
   private final String idColumnName;
-  
+
   private Long pendingId;
 
   ObjectInvoicesGrid() {
@@ -32,19 +29,25 @@ public class ObjectInvoicesGrid extends AbstractGridInterceptor {
 
   @Override
   public void afterCreatePresenter(GridPresenter presenter) {
-    if (DataUtils.isId(getPendingId())) {
-      presenter.getDataProvider().setParentFilter(FILTER_KEY, getFilter(getPendingId()));
-      presenter.handleAction(Action.REFRESH);
-      
-      setPendingId(null);
+    maybeRefresh(presenter, getPendingId());
+    setPendingId(null);
+  }
+
+  @Override
+  public boolean beforeAction(Action action, GridPresenter presenter) {
+    if (action == Action.ADD) {
+      InvoiceBuilder.start(getGridView());
+      return false;
+    } else {
+      return super.beforeAction(action, presenter);
     }
   }
-  
+
   @Override
   public Map<String, Filter> getInitialParentFilters() {
-    return ImmutableMap.of(FILTER_KEY, Filter.isFalse());
+    return ImmutableMap.of(FILTER_KEY, getFilter(getPendingId()));
   }
-  
+
   @Override
   public GridInterceptor getInstance() {
     return new ObjectInvoicesGrid();
@@ -55,8 +58,7 @@ public class ObjectInvoicesGrid extends AbstractGridInterceptor {
     if (getGridPresenter() == null) {
       setPendingId(event.getRowId());
     } else {
-      getGridPresenter().getDataProvider().setParentFilter(FILTER_KEY, getFilter(event.getRowId()));
-      getGridPresenter().handleAction(Action.REFRESH);
+      maybeRefresh(getGridPresenter(), event.getRowId());
     }
   }
 
@@ -75,6 +77,17 @@ public class ObjectInvoicesGrid extends AbstractGridInterceptor {
 
   private Long getPendingId() {
     return pendingId;
+  }
+
+  private void maybeRefresh(GridPresenter presenter, Long parentId) {
+    if (presenter != null) {
+      Filter filter = getFilter(parentId);
+      boolean changed = presenter.getDataProvider().setParentFilter(FILTER_KEY, filter);
+
+      if (changed) {
+        presenter.handleAction(Action.REFRESH);
+      }
+    }
   }
 
   private void setPendingId(Long pendingId) {

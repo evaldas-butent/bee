@@ -197,7 +197,7 @@ public final class TasksKeeper {
     MenuService.TASK_LIST.setHandler(new MenuHandler() {
       @Override
       public void onSelection(String parameters) {
-        TaskList.open(parameters);
+        TasksGrid.open(parameters);
       }
     });
 
@@ -224,13 +224,13 @@ public final class TasksKeeper {
     BeeKeeper.getBus().registerRowTransformHandler(new RowTransformHandler(), false);
 
     Global.getNewsAggregator().registerFilterHandler(Feed.TASKS_ASSIGNED,
-        TaskList.getFeedFilterHandler(Feed.TASKS_ASSIGNED));
+        TasksGrid.getFeedFilterHandler(Feed.TASKS_ASSIGNED));
     Global.getNewsAggregator().registerFilterHandler(Feed.TASKS_DELEGATED,
-        TaskList.getFeedFilterHandler(Feed.TASKS_DELEGATED));
+        TasksGrid.getFeedFilterHandler(Feed.TASKS_DELEGATED));
     Global.getNewsAggregator().registerFilterHandler(Feed.TASKS_OBSERVED,
-        TaskList.getFeedFilterHandler(Feed.TASKS_OBSERVED));
+        TasksGrid.getFeedFilterHandler(Feed.TASKS_OBSERVED));
     Global.getNewsAggregator().registerFilterHandler(Feed.TASKS_ALL,
-        TaskList.getFeedFilterHandler(Feed.TASKS_ALL));
+        TasksGrid.getFeedFilterHandler(Feed.TASKS_ALL));
 
     Global.getNewsAggregator().registerAccessHandler(VIEW_TASKS, new HeadlineAccessor() {
       @Override

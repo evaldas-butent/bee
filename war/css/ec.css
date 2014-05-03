@@ -919,12 +919,6 @@
   -ms-flex-wrap: wrap;
   height: 85%;
 }
-@supports not (flex-wrap: wrap) {
-  .bee-ec-ItemDetails-oeNumbers-list {
-    display: block;
-    height: auto;
-  }
-}
 
 .bee-ec-ItemDetails-suppliers-table td {
   padding: 5px 1em;

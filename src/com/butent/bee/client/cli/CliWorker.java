@@ -96,6 +96,7 @@ import com.butent.bee.client.layout.LayoutPanel;
 import com.butent.bee.client.layout.Simple;
 import com.butent.bee.client.layout.Split;
 import com.butent.bee.client.logging.ClientLogManager;
+import com.butent.bee.client.logging.LogFormatter;
 import com.butent.bee.client.maps.ApiLoader;
 import com.butent.bee.client.maps.LatLng;
 import com.butent.bee.client.maps.MapContainer;
@@ -1366,10 +1367,19 @@ public final class CliWorker {
 
       } else if (BeeUtils.startsSame(z, "level")) {
         ClientLogManager.setPanelVisible(true);
-        for (LogLevel lvl : LogLevel.values()) {
-          logger.log(lvl, lvl.name().toLowerCase());
+
+        LogLevel level = (arr.length > 2) ? LogLevel.parse(arr[2]) : null;
+        if (level == null) {
+          for (LogLevel lvl : LogLevel.values()) {
+            logger.log(lvl, lvl.name().toLowerCase());
+          }
+          logger.addSeparator();
+
+        } else {
+          logger.setLevel(level);
+          logger.log(level, "level", level);
+          logger.log(level, LogFormatter.LOG_SEPARATOR_TAG);
         }
-        logger.addSeparator();
 
       } else {
         ClientLogManager.setPanelVisible(true);

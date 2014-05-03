@@ -608,7 +608,7 @@ public class FormImpl extends Absolute implements FormView, PreviewHandler, Tabu
 
   @Override
   public long getActiveRowId() {
-    return (getActiveRow() == null) ? BeeConst.UNDEF : getActiveRow().getId();
+    return (getActiveRow() == null) ? BeeConst.LONG_UNDEF : getActiveRow().getId();
   }
 
   @Override
