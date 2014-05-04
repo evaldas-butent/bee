@@ -77,7 +77,7 @@ public class MaintenanceGrid extends AbstractGridInterceptor implements HandlesD
   }
 
   private boolean isRelevantInvoice(String viewName, Collection<Long> ids) {
-    if (!BeeUtils.same(viewName, ServiceConstants.VIEW_INVOICES) || BeeUtils.isEmpty(ids)) {
+    if (!BeeUtils.same(viewName, ServiceConstants.VIEW_SERVICE_INVOICES) || BeeUtils.isEmpty(ids)) {
       return false;
     }
 

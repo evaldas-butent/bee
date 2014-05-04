@@ -1,4 +1,4 @@
-package com.butent.bee.client.modules.transport.charts;
+package com.butent.bee.client.timeboard;
 
 import com.google.common.collect.BoundType;
 import com.google.common.collect.Lists;
@@ -13,8 +13,6 @@ import com.google.gwt.event.logical.shared.ValueChangeHandler;
 import com.google.gwt.user.client.ui.HasWidgets;
 import com.google.gwt.user.client.ui.Widget;
 
-import com.butent.bee.client.BeeKeeper;
-import com.butent.bee.client.Callback;
 import com.butent.bee.client.datepicker.DatePicker;
 import com.butent.bee.client.dialog.Popup;
 import com.butent.bee.client.dialog.Popup.OutsideClick;
@@ -26,11 +24,8 @@ import com.butent.bee.client.event.EventUtils;
 import com.butent.bee.client.i18n.Format;
 import com.butent.bee.client.layout.Flow;
 import com.butent.bee.client.style.StyleUtils;
-import com.butent.bee.client.ui.IdentifiableWidget;
-import com.butent.bee.client.ui.WidgetFactory;
-import com.butent.bee.client.ui.WidgetSupplier;
-import com.butent.bee.client.widget.Label;
 import com.butent.bee.client.widget.CustomDiv;
+import com.butent.bee.client.widget.Label;
 import com.butent.bee.client.widget.Mover;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
@@ -40,8 +35,6 @@ import com.butent.bee.shared.data.BeeRowSet;
 import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogUtils;
-import com.butent.bee.shared.menu.MenuHandler;
-import com.butent.bee.shared.menu.MenuService;
 import com.butent.bee.shared.time.DateRange;
 import com.butent.bee.shared.time.HasDateRange;
 import com.butent.bee.shared.time.JustDate;
@@ -53,157 +46,65 @@ import com.butent.bee.shared.utils.Codec;
 import java.util.Collection;
 import java.util.List;
 
-public final class ChartHelper {
+public final class TimeBoardHelper {
 
-  static final int DEFAULT_MOVER_WIDTH = 3;
-  static final int DEFAULT_MOVER_HEIGHT = 3;
+  public static final int DEFAULT_MOVER_WIDTH = 3;
+  public static final int DEFAULT_MOVER_HEIGHT = 3;
 
-  static final int DAY_SEPARATOR_WIDTH = 1;
-  static final int ROW_SEPARATOR_HEIGHT = 1;
+  public static final int DAY_SEPARATOR_WIDTH = 1;
+  public static final int ROW_SEPARATOR_HEIGHT = 1;
 
   static final int MAX_RESIZABLE_COLUMN_WIDTH = 300;
 
-  private static final BeeLogger logger = LogUtils.getLogger(ChartHelper.class);
+  private static final BeeLogger logger = LogUtils.getLogger(TimeBoardHelper.class);
 
-  private static final String STYLE_PREFIX = "bee-tr-chart-";
+  private static final String STYLE_MOHTH_SEPARATOR = TimeBoard.STYLE_PREFIX + "month-separator";
+  private static final String STYLE_DAY_SEPARATOR = TimeBoard.STYLE_PREFIX + "day-separator";
+  private static final String STYLE_RIGHT_SEPARATOR = TimeBoard.STYLE_PREFIX + "right-separator";
 
-  private static final String STYLE_MOHTH_SEPARATOR = STYLE_PREFIX + "monthSeparator";
-  private static final String STYLE_DAY_SEPARATOR = STYLE_PREFIX + "daySeparator";
-  private static final String STYLE_RIGHT_SEPARATOR = STYLE_PREFIX + "rightSeparator";
+  private static final String STYLE_DAY_LABEL = TimeBoard.STYLE_PREFIX + "day-label";
 
-  private static final String STYLE_DAY_LABEL = STYLE_PREFIX + "dayLabel";
-
-  private static final String STYLE_DAY_NARROW = STYLE_PREFIX + "dayNarrow";
+  private static final String STYLE_DAY_NARROW = TimeBoard.STYLE_PREFIX + "day-narrow";
   private static final String STYLE_DAY_NARROW_TENS = STYLE_DAY_NARROW + "-tens";
   private static final String STYLE_DAY_NARROW_ONES = STYLE_DAY_NARROW + "-ones";
 
-  private static final String STYLE_DAY_PICTURE = STYLE_PREFIX + "dayPicture";
+  private static final String STYLE_DAY_PICTURE = TimeBoard.STYLE_PREFIX + "day-picture";
   private static final String STYLE_DAY_PICTURE_TENS = STYLE_DAY_PICTURE + "-tens";
   private static final String STYLE_DAY_PICTURE_ONES = STYLE_DAY_PICTURE + "-ones";
 
-  private static final String STYLE_PAST = STYLE_PREFIX + "past";
-  private static final String STYLE_TODAY = STYLE_PREFIX + "today";
-  private static final String STYLE_WEEKDAY = STYLE_PREFIX + "weekday";
-  private static final String STYLE_WEEKEND = STYLE_PREFIX + "weekend";
+  private static final String STYLE_PAST = TimeBoard.STYLE_PREFIX + "past";
+  private static final String STYLE_TODAY = TimeBoard.STYLE_PREFIX + "today";
+  private static final String STYLE_WEEKDAY = TimeBoard.STYLE_PREFIX + "weekday";
+  private static final String STYLE_WEEKEND = TimeBoard.STYLE_PREFIX + "weekend";
 
-  private static final String STYLE_V_R_PREFIX = STYLE_PREFIX + "visibleRange-";
+  private static final String STYLE_V_R_PREFIX = TimeBoard.STYLE_PREFIX + "visible-range-";
   private static final String STYLE_VISIBLE_RANGE_PANEL = STYLE_V_R_PREFIX + "panel";
   private static final String STYLE_VISIBLE_RANGE_START = STYLE_V_R_PREFIX + "start";
   private static final String STYLE_VISIBLE_RANGE_END = STYLE_V_R_PREFIX + "end";
 
-  private static final String STYLE_M_R_PREFIX = STYLE_PREFIX + "maxRange-";
+  private static final String STYLE_M_R_PREFIX = TimeBoard.STYLE_PREFIX + "max-range-";
   private static final String STYLE_MAX_RANGE_PANEL = STYLE_M_R_PREFIX + "panel";
   private static final String STYLE_MAX_RANGE_START = STYLE_M_R_PREFIX + "start";
   private static final String STYLE_MAX_RANGE_END = STYLE_M_R_PREFIX + "end";
 
-  private static final String STYLE_DAY_BACKGROUND = STYLE_PREFIX + "dayBackground";
+  private static final String STYLE_DAY_BACKGROUND = TimeBoard.STYLE_PREFIX + "day-background";
 
-  private static final String STYLE_CONTENT_ROW_SEPARATOR = STYLE_PREFIX + "row-sep";
+  private static final String STYLE_CONTENT_ROW_SEPARATOR = TimeBoard.STYLE_PREFIX + "row-sep";
 
-  private static final String STYLE_HORIZONTAL_MOVER = STYLE_PREFIX + "horizontalMover";
-  private static final String STYLE_VERTICAL_MOVER = STYLE_PREFIX + "verticalMover";
+  private static final String STYLE_HORIZONTAL_MOVER = TimeBoard.STYLE_PREFIX + "horizontal-mover";
+  private static final String STYLE_VERTICAL_MOVER = TimeBoard.STYLE_PREFIX + "vertical-mover";
 
   private static final int MIN_DAY_WIDTH_FOR_SEPARATOR = 10;
 
   private static final String VALUE_SEPARATOR = BeeConst.STRING_COLON + BeeConst.STRING_SPACE;
 
-  public static void register() {
-    final Callback<IdentifiableWidget> showInNewTab = new Callback<IdentifiableWidget>() {
-      @Override
-      public void onSuccess(IdentifiableWidget result) {
-        BeeKeeper.getScreen().showWidget(result, true);
-      }
-    };
-
-    MenuService.FREIGHT_EXCHANGE.setHandler(new MenuHandler() {
-      @Override
-      public void onSelection(String parameters) {
-        FreightExchange.open(showInNewTab);
-      }
-    });
-
-    WidgetFactory.registerSupplier(FreightExchange.SUPPLIER_KEY, new WidgetSupplier() {
-      @Override
-      public void create(Callback<IdentifiableWidget> callback) {
-        FreightExchange.open(callback);
-      }
-    });
-
-    MenuService.SHIPPING_SCHEDULE.setHandler(new MenuHandler() {
-      @Override
-      public void onSelection(String parameters) {
-        ShippingSchedule.open(showInNewTab);
-      }
-    });
-
-    WidgetFactory.registerSupplier(ShippingSchedule.SUPPLIER_KEY, new WidgetSupplier() {
-      @Override
-      public void create(Callback<IdentifiableWidget> callback) {
-        ShippingSchedule.open(callback);
-      }
-    });
-
-    MenuService.DRIVER_TIME_BOARD.setHandler(new MenuHandler() {
-      @Override
-      public void onSelection(String parameters) {
-        DriverTimeBoard.open(showInNewTab);
-      }
-    });
-
-    WidgetFactory.registerSupplier(DriverTimeBoard.SUPPLIER_KEY, new WidgetSupplier() {
-      @Override
-      public void create(Callback<IdentifiableWidget> callback) {
-        DriverTimeBoard.open(callback);
-      }
-    });
-
-    MenuService.TRUCK_TIME_BOARD.setHandler(new MenuHandler() {
-      @Override
-      public void onSelection(String parameters) {
-        TruckTimeBoard.open(showInNewTab);
-      }
-    });
-
-    WidgetFactory.registerSupplier(TruckTimeBoard.SUPPLIER_KEY, new WidgetSupplier() {
-      @Override
-      public void create(Callback<IdentifiableWidget> callback) {
-        TruckTimeBoard.open(callback);
-      }
-    });
-
-    MenuService.TRAILER_TIME_BOARD.setHandler(new MenuHandler() {
-      @Override
-      public void onSelection(String parameters) {
-        TrailerTimeBoard.open(showInNewTab);
-      }
-    });
-
-    WidgetFactory.registerSupplier(TrailerTimeBoard.SUPPLIER_KEY, new WidgetSupplier() {
-      @Override
-      public void create(Callback<IdentifiableWidget> callback) {
-        TrailerTimeBoard.open(callback);
-      }
-    });
-  }
-
-  static void addColumnSeparator(HasWidgets panel, String styleName, int left, int height) {
-    CustomDiv separator = new CustomDiv(styleName);
-
-    if (left >= 0) {
-      StyleUtils.setLeft(separator, left);
-    }
-    if (height > 0) {
-      StyleUtils.setHeight(separator, height);
-    }
-
-    panel.add(separator);
-  }
-
-  static void addRowSeparator(HasWidgets panel, int top, int left, int width) {
+  public static void addRowSeparator(HasWidgets panel, int top, int left, int width) {
     addRowSeparator(panel, STYLE_CONTENT_ROW_SEPARATOR, top, left, width);
   }
 
-  static void addRowSeparator(HasWidgets panel, String styleName, int top, int left, int width) {
+  public static void addRowSeparator(HasWidgets panel, String styleName, int top, int left,
+      int width) {
+
     CustomDiv separator = new CustomDiv(styleName);
 
     if (top >= 0) {
@@ -219,7 +120,7 @@ public final class ChartHelper {
     panel.add(separator);
   }
 
-  static void apply(Widget widget, Rectangle rectangle, Edges margins) {
+  public static void apply(Widget widget, Rectangle rectangle, Edges margins) {
     Style style = widget.getElement().getStyle();
 
     if (rectangle.getLeftValue() != null) {
@@ -271,6 +172,265 @@ public final class ChartHelper {
     }
   }
 
+  public static String buildTitle(Object... labelsAndValues) {
+    return buildMessage(BeeConst.STRING_EOL, labelsAndValues);
+  }
+
+  public static Mover createHorizontalMover() {
+    return new Mover(STYLE_HORIZONTAL_MOVER, Orientation.HORIZONTAL);
+  }
+
+  public static List<HasDateRange> getActiveItems(Collection<? extends HasDateRange> items,
+      Range<JustDate> activeRange) {
+
+    List<HasDateRange> result = Lists.newArrayList();
+    if (items == null || activeRange == null) {
+      return result;
+    }
+
+    for (HasDateRange item : items) {
+      if (hasRangeAndIsActive(item, activeRange)) {
+        result.add(item);
+      }
+    }
+    return result;
+  }
+
+  public static Range<JustDate> getActivity(JustDate start, JustDate end) {
+    if (start == null && end == null) {
+      return null;
+    } else if (end == null) {
+      return Range.atLeast(start);
+    } else if (start == null) {
+      return Range.atMost(end);
+    } else {
+      return Range.closed(start, BeeUtils.max(start, end));
+    }
+  }
+
+  public static boolean getBoolean(BeeRowSet settings, String colName) {
+    if (DataUtils.isEmpty(settings)) {
+      return false;
+    }
+
+    int index = settings.getColumnIndex(colName);
+    if (BeeConst.isUndef(index)) {
+      logger.severe(settings.getViewName(), colName, "column not found");
+      return false;
+    }
+
+    return BeeUtils.unbox(settings.getBoolean(0, index));
+  }
+
+  public static List<HasDateRange> getInactivity(HasDateRange item, Range<JustDate> activeRange) {
+    List<HasDateRange> result = Lists.newArrayList();
+    if (activeRange == null || item == null || item.getRange() == null) {
+      return result;
+    }
+
+    if (activeRange.hasLowerBound() && item.getRange().hasLowerBound()
+        && BeeUtils.isLess(activeRange.lowerEndpoint(), item.getRange().lowerEndpoint())) {
+      result.add(DateRange.closed(activeRange.lowerEndpoint(),
+          BeeUtils.min(activeRange.upperEndpoint(),
+              TimeUtils.previousDay(item.getRange().lowerEndpoint()))));
+    }
+
+    if (activeRange.hasUpperBound() && item.getRange().hasUpperBound()
+        && BeeUtils.isMore(activeRange.upperEndpoint(), item.getRange().upperEndpoint())) {
+      result.add(DateRange.closed(BeeUtils.max(activeRange.lowerEndpoint(),
+          TimeUtils.nextDay(item.getRange().upperEndpoint())), activeRange.upperEndpoint()));
+    }
+
+    return result;
+  }
+
+  public static Long getLong(BeeRowSet settings, String colName) {
+    if (DataUtils.isEmpty(settings)) {
+      return null;
+    }
+
+    int index = settings.getColumnIndex(colName);
+    if (BeeConst.isUndef(index)) {
+      logger.severe(settings.getViewName(), colName, "column not found");
+      return null;
+    } else {
+      return settings.getLong(0, index);
+    }
+  }
+
+  public static Double getOpacity(BeeRowSet settings, String colName) {
+    if (DataUtils.isEmpty(settings)) {
+      return null;
+    }
+
+    int index = settings.getColumnIndex(colName);
+    if (BeeConst.isUndef(index)) {
+      logger.severe(settings.getViewName(), colName, "column not found");
+      return null;
+    }
+
+    Integer value = settings.getInteger(0, index);
+    return (BeeUtils.isPositive(value) && value < 100) ? value / 100.0 : null;
+  }
+
+  public static int getPixels(BeeRowSet settings, String colName, int def, int min, int max) {
+    return BeeUtils.clamp(getPixels(settings, colName, def), min, max);
+  }
+
+  public static String getRangeLabel(Range<JustDate> range) {
+    if (range == null) {
+      return BeeConst.STRING_EMPTY;
+    } else {
+      return getRangeLabel(BeeUtils.getLowerEndpoint(range), BeeUtils.getUpperEndpoint(range));
+    }
+  }
+
+  public static Rectangle getRectangle(int left, int width, int firstRow, int lastRow,
+      int rowHeight) {
+
+    Rectangle rectangle = new Rectangle();
+
+    if (left >= 0) {
+      rectangle.setLeft(left);
+    }
+    if (width > 0) {
+      rectangle.setWidth(width);
+    }
+
+    if (firstRow >= 0 && lastRow >= firstRow && rowHeight > 0) {
+      rectangle.setTop(firstRow * rowHeight);
+      rectangle.setHeight((lastRow - firstRow + 1) * rowHeight);
+    }
+
+    return rectangle;
+  }
+
+  public static int getSize(Range<JustDate> range) {
+    if (range == null || !range.hasLowerBound() || !range.hasUpperBound()) {
+      return BeeConst.UNDEF;
+    }
+
+    int start = range.lowerEndpoint().getDays();
+    if (range.lowerBoundType() == BoundType.OPEN) {
+      start--;
+    }
+
+    int end = range.upperEndpoint().getDays();
+    if (range.lowerBoundType() == BoundType.CLOSED) {
+      end++;
+    }
+
+    return end - start;
+  }
+
+  public static Range<JustDate> getSpan(Collection<? extends HasDateRange> items) {
+    return getSpan(items, null, null);
+  }
+
+  public static String getString(BeeRowSet settings, String colName) {
+    if (DataUtils.isEmpty(settings)) {
+      return null;
+    }
+
+    int index = settings.getColumnIndex(colName);
+    if (BeeConst.isUndef(index)) {
+      logger.severe(settings.getViewName(), colName, "column not found");
+      return null;
+    }
+
+    return settings.getString(0, index);
+  }
+  
+  public static boolean hasRangeAndIsActive(HasDateRange item, Range<JustDate> activeRange) {
+    if (item == null || item.getRange() == null) {
+      return false;
+    } else if (activeRange == null) {
+      return true;
+    } else {
+      return activeRange.isConnected(item.getRange());
+    }
+  }
+
+  public static boolean isActive(HasDateRange item, Range<JustDate> activeRange) {
+    if (item == null) {
+      return false;
+    } else if (activeRange == null || item.getRange() == null) {
+      return true;
+    } else {
+      return activeRange.isConnected(item.getRange());
+    }
+  }
+  
+  public static boolean isNormalized(Range<JustDate> range) {
+    return range != null && !range.isEmpty() && range.hasLowerBound() && range.hasUpperBound()
+        && range.lowerBoundType() == BoundType.CLOSED && range.upperBoundType() == BoundType.CLOSED;
+  }
+
+  public static String join(String label, Object value) {
+    return isEmpty(value) ? BeeConst.STRING_EMPTY : BeeUtils.join(VALUE_SEPARATOR, label, value);
+  }
+
+  public static Range<JustDate> normalizedIntersection(Range<JustDate> r1, Range<JustDate> r2) {
+    if (r1 == null || r2 == null) {
+      return null;
+
+    } else if (r1.isConnected(r2)) {
+      Range<JustDate> section = r1.intersection(r2);
+      return isNormalized(section) ? section : normalizedCopyOf(section);
+
+    } else {
+      return null;
+    }
+  }
+
+  public static Size splitRectangle(int width, int height, int count) {
+    if (width <= 0 || height <= 0 || count <= 0 || count > width * height) {
+      return null;
+    }
+    if (count == 1) {
+      return new Size(width, height);
+    }
+    if (count * 2 > width * height) {
+      return new Size(1, 1);
+    }
+
+    int x = 0;
+    int y = 0;
+
+    for (int rows = 1; rows <= Math.min(count, height); rows++) {
+      int cols = count / rows;
+      if (count % rows > 0) {
+        cols++;
+      }
+
+      if (cols > 0 && cols <= width) {
+        int w = width / cols;
+        int h = height / rows;
+
+        if (Math.min(w, h) > Math.min(x, y)
+            || Math.min(w, h) == Math.min(x, y) && Math.max(w, h) > Math.max(x, y)) {
+          x = w;
+          y = h;
+        }
+      }
+    }
+
+    return new Size(x, y);
+  }
+
+  static void addColumnSeparator(HasWidgets panel, String styleName, int left, int height) {
+    CustomDiv separator = new CustomDiv(styleName);
+
+    if (left >= 0) {
+      StyleUtils.setLeft(separator, left);
+    }
+    if (height > 0) {
+      StyleUtils.setHeight(separator, height);
+    }
+
+    panel.add(separator);
+  }
+
   static String buildMessage(String separator, Object... labelsAndValues) {
     Assert.notNull(labelsAndValues);
     int c = labelsAndValues.length;
@@ -293,63 +453,13 @@ public final class ChartHelper {
     return sb.toString();
   }
 
-  static String buildTitle(Object... labelsAndValues) {
-    return buildMessage(BeeConst.STRING_EOL, labelsAndValues);
-  }
-
   static JustDate clamp(JustDate date, Range<JustDate> range) {
     return TimeUtils.clamp(date, BeeUtils.getLowerEndpoint(range),
         BeeUtils.getUpperEndpoint(range));
   }
 
-  static Mover createHorizontalMover() {
-    return new Mover(STYLE_HORIZONTAL_MOVER, Orientation.HORIZONTAL);
-  }
-
   static Mover createVerticalMover() {
     return new Mover(STYLE_VERTICAL_MOVER, Orientation.VERTICAL);
-  }
-
-  static List<HasDateRange> getActiveItems(Collection<? extends HasDateRange> items,
-      Range<JustDate> activeRange) {
-
-    List<HasDateRange> result = Lists.newArrayList();
-    if (items == null || activeRange == null) {
-      return result;
-    }
-
-    for (HasDateRange item : items) {
-      if (hasRangeAndIsActive(item, activeRange)) {
-        result.add(item);
-      }
-    }
-    return result;
-  }
-
-  static Range<JustDate> getActivity(JustDate start, JustDate end) {
-    if (start == null && end == null) {
-      return null;
-    } else if (end == null) {
-      return Range.atLeast(start);
-    } else if (start == null) {
-      return Range.atMost(end);
-    } else {
-      return Range.closed(start, BeeUtils.max(start, end));
-    }
-  }
-
-  static boolean getBoolean(BeeRowSet settings, String colName) {
-    if (DataUtils.isEmpty(settings)) {
-      return false;
-    }
-
-    int index = settings.getColumnIndex(colName);
-    if (BeeConst.isUndef(index)) {
-      logger.severe(settings.getViewName(), colName, "column not found");
-      return false;
-    }
-
-    return BeeUtils.unbox(settings.getBoolean(0, index));
   }
 
   static int getColorIndex(Long id, int count) {
@@ -395,42 +505,6 @@ public final class ChartHelper {
     return Range.closed(start, end);
   }
 
-  static List<HasDateRange> getInactivity(HasDateRange item, Range<JustDate> activeRange) {
-    List<HasDateRange> result = Lists.newArrayList();
-    if (activeRange == null || item == null || item.getRange() == null) {
-      return result;
-    }
-
-    if (activeRange.hasLowerBound() && item.getRange().hasLowerBound()
-        && BeeUtils.isLess(activeRange.lowerEndpoint(), item.getRange().lowerEndpoint())) {
-      result.add(DateRange.closed(activeRange.lowerEndpoint(),
-          BeeUtils.min(activeRange.upperEndpoint(),
-              TimeUtils.previousDay(item.getRange().lowerEndpoint()))));
-    }
-
-    if (activeRange.hasUpperBound() && item.getRange().hasUpperBound()
-        && BeeUtils.isMore(activeRange.upperEndpoint(), item.getRange().upperEndpoint())) {
-      result.add(DateRange.closed(BeeUtils.max(activeRange.lowerEndpoint(),
-          TimeUtils.nextDay(item.getRange().upperEndpoint())), activeRange.upperEndpoint()));
-    }
-
-    return result;
-  }
-
-  static Long getLong(BeeRowSet settings, String colName) {
-    if (DataUtils.isEmpty(settings)) {
-      return null;
-    }
-
-    int index = settings.getColumnIndex(colName);
-    if (BeeConst.isUndef(index)) {
-      logger.severe(settings.getViewName(), colName, "column not found");
-      return null;
-    } else {
-      return settings.getLong(0, index);
-    }
-  }
-  
   static JustDate getLowerBound(JustDate min, int size, JustDate max) {
     if (max == null || size <= 0) {
       return min;
@@ -439,21 +513,6 @@ public final class ChartHelper {
     } else {
       return TimeUtils.max(TimeUtils.nextDay(max, 1 - size), min);
     }
-  }
-
-  static Double getOpacity(BeeRowSet settings, String colName) {
-    if (DataUtils.isEmpty(settings)) {
-      return null;
-    }
-
-    int index = settings.getColumnIndex(colName);
-    if (BeeConst.isUndef(index)) {
-      logger.severe(settings.getViewName(), colName, "column not found");
-      return null;
-    }
-
-    Integer value = settings.getInteger(0, index);
-    return (BeeUtils.isPositive(value) && value < 100) ? value / 100.0 : null;
   }
 
   static int getPixels(BeeRowSet settings, String colName, int def) {
@@ -470,11 +529,7 @@ public final class ChartHelper {
     Integer value = settings.getInteger(0, index);
     return BeeUtils.isPositive(value) ? value : def;
   }
-
-  static int getPixels(BeeRowSet settings, String colName, int def, int min, int max) {
-    return BeeUtils.clamp(getPixels(settings, colName, def), min, max);
-  }
-
+  
   static int getPosition(JustDate start, JustDate date, double daySize) {
     return BeeUtils.round(TimeUtils.dayDiff(start, date) * daySize);
   }
@@ -489,54 +544,6 @@ public final class ChartHelper {
     } else {
       return BeeUtils.joinWords(start, end);
     }
-  }
-
-  static String getRangeLabel(Range<JustDate> range) {
-    if (range == null) {
-      return BeeConst.STRING_EMPTY;
-    } else {
-      return getRangeLabel(BeeUtils.getLowerEndpoint(range), BeeUtils.getUpperEndpoint(range));
-    }
-  }
-
-  static Rectangle getRectangle(int left, int width, int firstRow, int lastRow, int rowHeight) {
-    Rectangle rectangle = new Rectangle();
-
-    if (left >= 0) {
-      rectangle.setLeft(left);
-    }
-    if (width > 0) {
-      rectangle.setWidth(width);
-    }
-
-    if (firstRow >= 0 && lastRow >= firstRow && rowHeight > 0) {
-      rectangle.setTop(firstRow * rowHeight);
-      rectangle.setHeight((lastRow - firstRow + 1) * rowHeight);
-    }
-
-    return rectangle;
-  }
-
-  static int getSize(Range<JustDate> range) {
-    if (range == null || !range.hasLowerBound() || !range.hasUpperBound()) {
-      return BeeConst.UNDEF;
-    }
-
-    int start = range.lowerEndpoint().getDays();
-    if (range.lowerBoundType() == BoundType.OPEN) {
-      start--;
-    }
-
-    int end = range.upperEndpoint().getDays();
-    if (range.lowerBoundType() == BoundType.CLOSED) {
-      end++;
-    }
-
-    return end - start;
-  }
-
-  static Range<JustDate> getSpan(Collection<? extends HasDateRange> items) {
-    return getSpan(items, null, null);
   }
 
   static Range<JustDate> getSpan(Collection<? extends HasDateRange> items,
@@ -574,35 +581,6 @@ public final class ChartHelper {
     }
   }
 
-  static boolean hasRangeAndIsActive(HasDateRange item, Range<JustDate> activeRange) {
-    if (item == null || item.getRange() == null) {
-      return false;
-    } else if (activeRange == null) {
-      return true;
-    } else {
-      return activeRange.isConnected(item.getRange());
-    }
-  }
-
-  static boolean isActive(HasDateRange item, Range<JustDate> activeRange) {
-    if (item == null) {
-      return false;
-    } else if (activeRange == null || item.getRange() == null) {
-      return true;
-    } else {
-      return activeRange.isConnected(item.getRange());
-    }
-  }
-  
-  static boolean isNormalized(Range<JustDate> range) {
-    return range != null && !range.isEmpty() && range.hasLowerBound() && range.hasUpperBound()
-        && range.lowerBoundType() == BoundType.CLOSED && range.upperBoundType() == BoundType.CLOSED;
-  }
-
-  static String join(String label, Object value) {
-    return isEmpty(value) ? BeeConst.STRING_EMPTY : BeeUtils.join(VALUE_SEPARATOR, label, value);
-  }
-
   static Range<JustDate> normalizedCopyOf(Range<JustDate> range) {
     if (range == null || range.isEmpty() || !range.hasLowerBound() || !range.hasUpperBound()) {
       return null;
@@ -628,25 +606,12 @@ public final class ChartHelper {
       return null;
     }
   }
-
-  static Range<JustDate> normalizedIntersection(Range<JustDate> r1, Range<JustDate> r2) {
-    if (r1 == null || r2 == null) {
-      return null;
-
-    } else if (r1.isConnected(r2)) {
-      Range<JustDate> section = r1.intersection(r2);
-      return isNormalized(section) ? section : normalizedCopyOf(section);
-
-    } else {
-      return null;
-    }
-  }
-
+  
   static Range<JustDate> normalizedIntersection(Range<JustDate> r1, Range<JustDate> r2,
       Range<JustDate> r3) {
     return normalizedIntersection(r1, normalizedIntersection(r2, r3));
   }
-  
+
   static void renderDayColumns(HasWidgets panel, Range<JustDate> range, int startLeft,
       int dayWidth, int height) {
 
@@ -798,41 +763,6 @@ public final class ChartHelper {
     }
 
     container.add(panel);
-  }
-
-  static Size splitRectangle(int width, int height, int count) {
-    if (width <= 0 || height <= 0 || count <= 0 || count > width * height) {
-      return null;
-    }
-    if (count == 1) {
-      return new Size(width, height);
-    }
-    if (count * 2 > width * height) {
-      return new Size(1, 1);
-    }
-
-    int x = 0;
-    int y = 0;
-
-    for (int rows = 1; rows <= Math.min(count, height); rows++) {
-      int cols = count / rows;
-      if (count % rows > 0) {
-        cols++;
-      }
-
-      if (cols > 0 && cols <= width) {
-        int w = width / cols;
-        int h = height / rows;
-
-        if (Math.min(w, h) > Math.min(x, y)
-            || Math.min(w, h) == Math.min(x, y) && Math.max(w, h) > Math.max(x, y)) {
-          x = w;
-          y = h;
-        }
-      }
-    }
-
-    return new Size(x, y);
   }
 
   private static void addDayStyle(Widget widget, JustDate date) {
@@ -1177,6 +1107,6 @@ public final class ChartHelper {
     }
   }
  
-  private ChartHelper() {
+  private TimeBoardHelper() {
   }
 }

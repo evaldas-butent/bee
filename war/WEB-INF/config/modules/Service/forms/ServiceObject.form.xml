@@ -24,7 +24,7 @@
         <GridPanel name="ObjectInvoices" parent="{form}" child="true" />
       </page>
 
-      <page>
+      <page module="Documents">
         <text>=documents</text>
         <ChildGrid name="RelatedDocuments" relColumn="ServiceObject" />
       </page>
@@ -33,11 +33,11 @@
         <ChildGrid name="ServiceFiles" relColumn="ServiceObject" />
       </page>
 
-      <page>
+      <page module="Tasks">
         <text>=crmTasks</text>
         <ChildGrid name="RelatedTasks" relColumn="ServiceObject" />
       </page>
-      <page>
+      <page module="Tasks">
         <text>=crmRecurringTasks</text>
         <ChildGrid name="RelatedRecurringTasks" relColumn="ServiceObject" />
       </page>

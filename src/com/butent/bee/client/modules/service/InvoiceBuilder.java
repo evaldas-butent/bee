@@ -82,7 +82,7 @@ final class InvoiceBuilder {
     }
   }
   
-  private static final String BUILDER_STYLE_PREFIX = STYLE_PREFIX + "invoice-builder-";
+  private static final String STYLE_PREFIX = ServiceKeeper.STYLE_PREFIX + "invoice-builder-";
   
   static void start(IdentifiableWidget sourceWidget) {
     if (sourceWidget == null) {
@@ -90,7 +90,7 @@ final class InvoiceBuilder {
     }
     
     final FormView form = UiHelper.getForm(sourceWidget.asWidget());
-    if (form == null || !form.isEnabled() || !VIEW_OBJECTS.equals(form.getViewName())) {
+    if (form == null || !form.isEnabled() || !VIEW_SERVICE_OBJECTS.equals(form.getViewName())) {
       return;
     }
     
@@ -115,19 +115,19 @@ final class InvoiceBuilder {
   }
 
   private static void buildHeader(long objId, final BeeRowSet items) {
-    Queries.getRow(VIEW_OBJECTS, objId, new RowCallback() {
+    Queries.getRow(VIEW_SERVICE_OBJECTS, objId, new RowCallback() {
       @Override
       public void onSuccess(BeeRow objRow) {
-        DataInfo invInfo = Data.getDataInfo(VIEW_INVOICES);
+        DataInfo invInfo = Data.getDataInfo(VIEW_SERVICE_INVOICES);
         BeeRow invRow = RowFactory.createEmptyRow(invInfo, true);
 
         invRow.setValue(invInfo.getColumnIndex(TradeConstants.COL_TRADE_KIND), 1);
 
-        Long customer = Data.getLong(VIEW_OBJECTS, objRow, COL_OBJECT_CUSTOMER);
+        Long customer = Data.getLong(VIEW_SERVICE_OBJECTS, objRow, COL_SERVICE_OBJECT_CUSTOMER);
         if (DataUtils.isId(customer)) {
           invRow.setValue(invInfo.getColumnIndex(TradeConstants.COL_TRADE_CUSTOMER), customer);
           invRow.setValue(invInfo.getColumnIndex(TradeConstants.ALS_CUSTOMER_NAME),
-              Data.getString(VIEW_OBJECTS, objRow, ALS_CUSTOMER_NAME));
+              Data.getString(VIEW_SERVICE_OBJECTS, objRow, ALS_SERVICE_CUSTOMER_NAME));
         }
 
         UserData userData = BeeKeeper.getUser().getUserData();
@@ -142,7 +142,7 @@ final class InvoiceBuilder {
               userData.getCompanyName());
         }
 
-        Integer days = Data.getInteger(VIEW_OBJECTS, objRow,
+        Integer days = Data.getInteger(VIEW_SERVICE_OBJECTS, objRow,
             ClassifierConstants.COL_COMPANY_CREDIT_DAYS);
         if (BeeUtils.isPositive(days)) {
           invRow.setValue(invInfo.getColumnIndex(TradeConstants.COL_TRADE_TERM),
@@ -170,7 +170,7 @@ final class InvoiceBuilder {
 
                 params.addQueryItem(COL_MAINTENANCE_INVOICE, result.getId());
 
-                Long currency = Data.getLong(VIEW_INVOICES, result,
+                Long currency = Data.getLong(VIEW_SERVICE_INVOICES, result,
                     AdministrationConstants.COL_CURRENCY);
                 if (DataUtils.isId(currency)) {
                   params.addQueryItem(AdministrationConstants.COL_CURRENCY, currency);
@@ -196,9 +196,9 @@ final class InvoiceBuilder {
 
                     if (!response.hasErrors()) {
                       DataChangeEvent.fireRefresh(BeeKeeper.getBus(), VIEW_MAINTENANCE);
-                      DataChangeEvent.fireRefresh(BeeKeeper.getBus(), VIEW_INVOICES);
+                      DataChangeEvent.fireRefresh(BeeKeeper.getBus(), VIEW_SERVICE_INVOICES);
 
-                      RowEditor.openRow(VIEW_INVOICES, invId, true, null);
+                      RowEditor.openRow(VIEW_SERVICE_INVOICES, invId, true, null);
                     }
                   }
                 });
@@ -209,11 +209,11 @@ final class InvoiceBuilder {
   }
 
   private static void selectItems(final long objId, final BeeRowSet data) {
-    final HtmlTable table = new HtmlTable(BUILDER_STYLE_PREFIX + "table");
+    final HtmlTable table = new HtmlTable(STYLE_PREFIX + "table");
     int r = 0;
 
     int dateIndex = data.getColumnIndex(COL_MAINTENANCE_DATE);
-    int itemNameIndex = data.getColumnIndex(ALS_ITEM_NAME);
+    int itemNameIndex = data.getColumnIndex(ALS_MAINTENANCE_ITEM_NAME);
     int quantityIndex = data.getColumnIndex(TradeConstants.COL_TRADE_ITEM_QUANTITY);
     int priceIndex = data.getColumnIndex(TradeConstants.COL_TRADE_ITEM_PRICE);
     int currencyNameIndex = data.getColumnIndex(AdministrationConstants.ALS_CURRENCY_NAME);
@@ -233,31 +233,31 @@ final class InvoiceBuilder {
       int c = 0;
 
       SimpleCheckBox checkBox = new SimpleCheckBox(true);
-      table.setWidgetAndStyle(r, c++, checkBox, BUILDER_STYLE_PREFIX + "check");
+      table.setWidgetAndStyle(r, c++, checkBox, STYLE_PREFIX + "check");
 
       Label dateLabel = new Label();
       if (date != null) {
         dateLabel.setText(date.toCompactString());
       }
-      table.setWidgetAndStyle(r, c++, dateLabel, BUILDER_STYLE_PREFIX + "date");
+      table.setWidgetAndStyle(r, c++, dateLabel, STYLE_PREFIX + "date");
 
       Label itemLabel = new Label(itemName);
-      table.setWidgetAndStyle(r, c++, itemLabel, BUILDER_STYLE_PREFIX + "item");
+      table.setWidgetAndStyle(r, c++, itemLabel, STYLE_PREFIX + "item");
 
       Label quantityLabel = new Label();
       if (quantity != null) {
         quantityLabel.setText(BeeUtils.toString(quantity));
       }
-      table.setWidgetAndStyle(r, c++, quantityLabel, BUILDER_STYLE_PREFIX + "quantity");
+      table.setWidgetAndStyle(r, c++, quantityLabel, STYLE_PREFIX + "quantity");
 
       Label priceLabel = new Label();
       if (price != null) {
         priceLabel.setText(priceFormat.format(price));
       }
-      table.setWidgetAndStyle(r, c++, priceLabel, BUILDER_STYLE_PREFIX + "price");
+      table.setWidgetAndStyle(r, c++, priceLabel, STYLE_PREFIX + "price");
 
       Label currencyLabel = new Label(currencyName);
-      table.setWidgetAndStyle(r, c++, currencyLabel, BUILDER_STYLE_PREFIX + "currency");
+      table.setWidgetAndStyle(r, c++, currencyLabel, STYLE_PREFIX + "currency");
 
       Label amountLabel = new Label();
       if (quantity != null && price != null) {
@@ -266,24 +266,24 @@ final class InvoiceBuilder {
           amountLabel.setText(amountFormat.format(amount));
         }
       }
-      table.setWidgetAndStyle(r, c++, amountLabel, BUILDER_STYLE_PREFIX + "amount");
+      table.setWidgetAndStyle(r, c++, amountLabel, STYLE_PREFIX + "amount");
 
       r++;
     }
 
     Simple wrapper = new Simple(table);
-    wrapper.addStyleName(BUILDER_STYLE_PREFIX + "wrapper");
+    wrapper.addStyleName(STYLE_PREFIX + "wrapper");
 
-    Flow panel = new Flow(BUILDER_STYLE_PREFIX + "panel");
+    Flow panel = new Flow(STYLE_PREFIX + "panel");
     panel.add(wrapper);
 
-    Flow commands = new Flow(BUILDER_STYLE_PREFIX + "commands");
+    Flow commands = new Flow(STYLE_PREFIX + "commands");
 
     final DialogBox dialog = DialogBox.create(Localized.getConstants().trdNewInvoice(),
-        BUILDER_STYLE_PREFIX + "dialog");
+        STYLE_PREFIX + "dialog");
 
     Button build = new Button(Localized.getConstants().createInvoice());
-    build.addStyleName(BUILDER_STYLE_PREFIX + "build");
+    build.addStyleName(STYLE_PREFIX + "build");
     build.addClickHandler(new ClickHandler() {
       @Override
       public void onClick(ClickEvent event) {
@@ -310,7 +310,7 @@ final class InvoiceBuilder {
     });
 
     Button cancel = new Button(Localized.getConstants().cancel());
-    cancel.addStyleName(BUILDER_STYLE_PREFIX + "cancel");
+    cancel.addStyleName(STYLE_PREFIX + "cancel");
     cancel.addClickHandler(new ClickHandler() {
       @Override
       public void onClick(ClickEvent event) {

@@ -2,6 +2,7 @@ package com.butent.bee.server.modules.service;
 
 import com.google.common.eventbus.Subscribe;
 
+import static com.butent.bee.shared.modules.administration.AdministrationConstants.*;
 import static com.butent.bee.shared.modules.service.ServiceConstants.*;
 import static com.butent.bee.shared.modules.trade.TradeConstants.*;
 
@@ -10,6 +11,7 @@ import com.butent.bee.server.data.DataEvent.ViewQueryEvent;
 import com.butent.bee.server.data.DataEventHandler;
 import com.butent.bee.server.data.QueryServiceBean;
 import com.butent.bee.server.data.SystemBean;
+import com.butent.bee.server.data.UserServiceBean;
 import com.butent.bee.server.http.RequestInfo;
 import com.butent.bee.server.modules.BeeModule;
 import com.butent.bee.server.modules.administration.ExchangeUtils;
@@ -29,11 +31,13 @@ import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.SearchResult;
 import com.butent.bee.shared.data.SimpleRowSet;
 import com.butent.bee.shared.data.SimpleRowSet.SimpleRow;
+import com.butent.bee.shared.data.filter.Filter;
 import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogUtils;
 import com.butent.bee.shared.modules.BeeParameter;
 import com.butent.bee.shared.modules.administration.AdministrationConstants;
 import com.butent.bee.shared.modules.classifiers.ClassifierConstants;
+import com.butent.bee.shared.modules.tasks.TaskConstants;
 import com.butent.bee.shared.rights.Module;
 import com.butent.bee.shared.utils.BeeUtils;
 
@@ -53,6 +57,8 @@ public class ServiceModuleBean implements BeeModule {
   SystemBean sys;
   @EJB
   QueryServiceBean qs;
+  @EJB
+  UserServiceBean usr;
 
   @Override
   public List<SearchResult> doSearch(String query) {
@@ -65,6 +71,9 @@ public class ServiceModuleBean implements BeeModule {
 
     if (BeeUtils.same(svc, SVC_CREATE_INVOICE_ITEMS)) {
       response = createInvoiceItems(reqInfo);
+
+    } else if (BeeUtils.same(svc, SVC_GET_CALENDAR_DATA)) {
+      response = getCalendarData(reqInfo);
 
     } else {
       String msg = BeeUtils.joinWords("service not recognized:", svc);
@@ -99,21 +108,21 @@ public class ServiceModuleBean implements BeeModule {
           return;
         }
 
-        if (BeeUtils.same(event.getTargetName(), VIEW_OBJECT_FILES)) {
+        if (BeeUtils.same(event.getTargetName(), VIEW_SERVICE_FILES)) {
           ExtensionIcons.setIcons(event.getRowset(), AdministrationConstants.ALS_FILE_NAME,
               AdministrationConstants.PROP_ICON);
 
-        } else if (BeeUtils.same(event.getTargetName(), VIEW_OBJECTS)
+        } else if (BeeUtils.same(event.getTargetName(), VIEW_SERVICE_OBJECTS)
             && !DataUtils.isEmpty(event.getRowset())) {
 
           BeeRowSet rowSet = event.getRowset();
           List<Long> rowIds = rowSet.getRowIds();
 
-          BeeView view = sys.getView(VIEW_OBJECT_CRITERIA);
+          BeeView view = sys.getView(VIEW_SERVICE_OBJECT_CRITERIA);
           SqlSelect query = view.getQuery();
 
           query.setWhere(SqlUtils.and(query.getWhere(),
-              SqlUtils.isNull(view.getSourceAlias(), COL_CRITERIA_GROUP_NAME),
+              SqlUtils.isNull(view.getSourceAlias(), COL_SERVICE_CRITERIA_GROUP_NAME),
               SqlUtils.inList(view.getSourceAlias(), COL_SERVICE_OBJECT, rowIds)));
 
           SimpleRowSet criteria = qs.getData(query);
@@ -123,8 +132,9 @@ public class ServiceModuleBean implements BeeModule {
               BeeRow r = rowSet.getRowById(row.getLong(COL_SERVICE_OBJECT));
 
               if (r != null) {
-                r.setProperty(COL_CRITERION_NAME + row.getValue(COL_CRITERION_NAME),
-                    row.getValue(COL_CRITERION_VALUE));
+                r.setProperty(COL_SERVICE_CRITERION_NAME
+                    + row.getValue(COL_SERVICE_CRITERION_NAME),
+                    row.getValue(COL_SERVICE_CRITERION_VALUE));
               }
             }
           }
@@ -289,5 +299,104 @@ public class ServiceModuleBean implements BeeModule {
     }
 
     return response;
+  }
+
+  private ResponseObject getCalendarData(RequestInfo reqInfo) {
+    BeeRowSet settings = getSettings();
+    if (DataUtils.isEmpty(settings)) {
+      return ResponseObject.error(reqInfo.getService(), "user settings not available");
+    }
+
+    String idName = sys.getIdName(TBL_SERVICE_OBJECTS);
+
+    SqlSelect objectQuery = new SqlSelect()
+        .addFields(TBL_SERVICE_OBJECTS, idName, COL_SERVICE_OBJECT_CATEGORY,
+            COL_SERVICE_OBJECT_CUSTOMER, COL_SERVICE_OBJECT_ADDRESS)
+        .addField(TBL_SERVICE_TREE, COL_SERVICE_CATEGORY_NAME, ALS_SERVICE_CATEGORY_NAME)
+        .addField(ClassifierConstants.TBL_COMPANIES,
+            ClassifierConstants.COL_COMPANY_NAME, ALS_SERVICE_CUSTOMER_NAME)
+        .addFrom(TBL_SERVICE_OBJECTS)
+        .addFromLeft(TBL_SERVICE_TREE, sys.joinTables(TBL_SERVICE_TREE,
+            TBL_SERVICE_OBJECTS, COL_SERVICE_OBJECT_CATEGORY))
+        .addFromLeft(ClassifierConstants.TBL_COMPANIES,
+            sys.joinTables(ClassifierConstants.TBL_COMPANIES,
+                TBL_SERVICE_OBJECTS, COL_SERVICE_OBJECT_CUSTOMER))
+        .setWhere(SqlUtils.in(TBL_SERVICE_OBJECTS, idName,
+            TBL_RELATIONS, COL_SERVICE_OBJECT,
+            SqlUtils.or(SqlUtils.notNull(TBL_RELATIONS, TaskConstants.COL_TASK),
+                SqlUtils.notNull(TBL_RELATIONS, TaskConstants.COL_RECURRING_TASK))))
+        .addOrder(ClassifierConstants.TBL_COMPANIES, ClassifierConstants.COL_COMPANY_NAME)
+        .addOrder(TBL_SERVICE_OBJECTS, COL_SERVICE_OBJECT_ADDRESS, idName);
+
+    SimpleRowSet objectData = qs.getData(objectQuery);
+    if (DataUtils.isEmpty(objectData)) {
+      return ResponseObject.response(settings);
+    }
+
+    settings.setTableProperty(TBL_SERVICE_OBJECTS, objectData.serialize());
+
+    idName = sys.getIdName(TaskConstants.TBL_TASKS);
+
+    SqlSelect taskQuery = new SqlSelect()
+        .addAllFields(TaskConstants.TBL_TASKS)
+        .addFrom(TaskConstants.TBL_TASKS)
+        .setWhere(SqlUtils.in(TaskConstants.TBL_TASKS, idName,
+            TBL_RELATIONS, TaskConstants.COL_TASK,
+            SqlUtils.notNull(TBL_RELATIONS, COL_SERVICE_OBJECT)))
+        .addOrder(TaskConstants.TBL_TASKS, TaskConstants.COL_FINISH_TIME, idName);
+
+    SimpleRowSet taskData = qs.getData(taskQuery);
+    if (!DataUtils.isEmpty(taskData)) {
+      settings.setTableProperty(TaskConstants.TBL_TASKS, taskData.serialize());
+    }
+
+    idName = sys.getIdName(TaskConstants.TBL_RECURRING_TASKS);
+
+    SqlSelect rtQuery = new SqlSelect()
+        .addAllFields(TaskConstants.TBL_RECURRING_TASKS)
+        .addFrom(TaskConstants.TBL_RECURRING_TASKS)
+        .setWhere(SqlUtils.in(TaskConstants.TBL_RECURRING_TASKS, idName,
+            TBL_RELATIONS, TaskConstants.COL_RECURRING_TASK,
+            SqlUtils.notNull(TBL_RELATIONS, COL_SERVICE_OBJECT)))
+        .addOrder(TaskConstants.TBL_RECURRING_TASKS, TaskConstants.COL_RT_SCHEDULE_FROM, idName);
+
+    SimpleRowSet rtData = qs.getData(rtQuery);
+    if (!DataUtils.isEmpty(rtData)) {
+      settings.setTableProperty(TaskConstants.TBL_RECURRING_TASKS, rtData.serialize());
+    }
+
+    SqlSelect relationQuery = new SqlSelect()
+        .addFields(TBL_RELATIONS, COL_SERVICE_OBJECT, TaskConstants.COL_TASK,
+            TaskConstants.COL_RECURRING_TASK)
+        .addFrom(TBL_RELATIONS)
+        .setWhere(SqlUtils.and(SqlUtils.notNull(TBL_RELATIONS, COL_SERVICE_OBJECT),
+            SqlUtils.or(SqlUtils.notNull(TBL_RELATIONS, TaskConstants.COL_TASK),
+                SqlUtils.notNull(TBL_RELATIONS, TaskConstants.COL_RECURRING_TASK))));
+
+    SimpleRowSet relationData = qs.getData(relationQuery);
+    if (!DataUtils.isEmpty(relationData)) {
+      settings.setTableProperty(TBL_RELATIONS, relationData.serialize());
+    }
+    
+    return ResponseObject.response(settings);
+  }
+
+  private BeeRowSet getSettings() {
+    long userId = usr.getCurrentUserId();
+    Filter filter = Filter.equals(COL_USER, userId);
+
+    BeeRowSet rowSet = qs.getViewData(VIEW_SERVICE_SETTINGS, filter);
+    if (!DataUtils.isEmpty(rowSet)) {
+      return rowSet;
+    }
+
+    SqlInsert sqlInsert = new SqlInsert(TBL_SERVICE_SETTINGS).addConstant(COL_USER, userId);
+
+    ResponseObject response = qs.insertDataWithResponse(sqlInsert);
+    if (response.hasErrors()) {
+      return null;
+    } else {
+      return qs.getViewData(VIEW_SERVICE_SETTINGS, filter);
+    }
   }
 }

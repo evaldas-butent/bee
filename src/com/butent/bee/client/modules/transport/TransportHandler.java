@@ -29,7 +29,7 @@ import com.butent.bee.client.grid.GridFactory;
 import com.butent.bee.client.grid.GridFactory.GridOptions;
 import com.butent.bee.client.grid.column.AbstractColumn;
 import com.butent.bee.client.modules.trade.TradeUtils;
-import com.butent.bee.client.modules.transport.charts.ChartHelper;
+import com.butent.bee.client.modules.transport.charts.ChartBase;
 import com.butent.bee.client.presenter.GridPresenter;
 import com.butent.bee.client.presenter.TreePresenter;
 import com.butent.bee.client.render.ProvidesGridColumnRenderer;
@@ -487,7 +487,7 @@ public final class TransportHandler {
 
     BeeKeeper.getBus().registerRowActionHandler(new TransportActionHandler(), false);
 
-    ChartHelper.register();
+    ChartBase.registerBoards();
     CargoIncomesObserver.register();
   }
 

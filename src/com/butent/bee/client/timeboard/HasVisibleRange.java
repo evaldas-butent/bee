@@ -1,10 +1,10 @@
-package com.butent.bee.client.modules.transport.charts;
+package com.butent.bee.client.timeboard;
 
 import com.google.common.collect.Range;
 
 import com.butent.bee.shared.time.JustDate;
 
-interface HasVisibleRange {
+public interface HasVisibleRange {
   
   Range<JustDate> getMaxRange();
   

@@ -403,8 +403,8 @@ public class ClassifiersModuleBean implements BeeModule {
               dtField = CalendarConstants.COL_START_DATE_TIME;
               break;
 
-            case ServiceConstants.VIEW_OBJECTS:
-              sourceField = ServiceConstants.COL_OBJECT_CUSTOMER;
+            case ServiceConstants.VIEW_SERVICE_OBJECTS:
+              sourceField = ServiceConstants.COL_SERVICE_OBJECT_CUSTOMER;
               dtField = relView.getSourceVersionName();
               break;
 

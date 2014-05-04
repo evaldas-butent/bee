@@ -24,7 +24,7 @@ public class ObjectInvoicesGrid extends AbstractGridInterceptor {
   private Long pendingId;
 
   ObjectInvoicesGrid() {
-    this.idColumnName = Data.getIdColumn(VIEW_INVOICES);
+    this.idColumnName = Data.getIdColumn(VIEW_SERVICE_INVOICES);
   }
 
   @Override
