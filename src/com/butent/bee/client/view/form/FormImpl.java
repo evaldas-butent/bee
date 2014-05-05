@@ -608,7 +608,7 @@ public class FormImpl extends Absolute implements FormView, PreviewHandler, Tabu
 
   @Override
   public long getActiveRowId() {
-    return (getActiveRow() == null) ? BeeConst.UNDEF : getActiveRow().getId();
+    return (getActiveRow() == null) ? BeeConst.LONG_UNDEF : getActiveRow().getId();
   }
 
   @Override
@@ -1220,7 +1220,7 @@ public class FormImpl extends Absolute implements FormView, PreviewHandler, Tabu
 
     if (DataUtils.sameId(getActiveRow(), newRow)) {
       setActiveRow(newRow);
-      refreshData(true, false);
+      refreshData(false, false);
     }
   }
 
@@ -1279,6 +1279,10 @@ public class FormImpl extends Absolute implements FormView, PreviewHandler, Tabu
     }
 
     fireEvent(event);
+  }
+
+  @Override
+  public void preserveActiveRow(List<? extends IsRow> values) {
   }
 
   @Override
@@ -1549,10 +1553,6 @@ public class FormImpl extends Absolute implements FormView, PreviewHandler, Tabu
   }
 
   @Override
-  public void updateActiveRow(List<? extends IsRow> values) {
-  }
-
-  @Override
   public void updateCell(String columnId, String newValue) {
     Assert.notEmpty(columnId);
 
@@ -1818,13 +1818,18 @@ public class FormImpl extends Absolute implements FormView, PreviewHandler, Tabu
     }
 
     boolean ok = rowValue.isEditable();
+
+    if (ok && getFormInterceptor() != null) {
+      ok = getFormInterceptor().isRowEditable(rowValue);
+    }
+
     if (ok && getRowEditable() != null) {
       getRowEditable().update(rowValue);
       ok = BeeUtils.toBoolean(getRowEditable().evaluate());
     }
 
     if (!ok && warn) {
-      notifyWarning("Row is read only");
+      notifyWarning(Localized.getConstants().rowIsReadOnly());
     }
     return ok;
   }

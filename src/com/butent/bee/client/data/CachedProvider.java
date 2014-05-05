@@ -213,8 +213,8 @@ public class CachedProvider extends Provider {
   }
 
   @Override
-  public void refresh(boolean updateActiveRow) {
-    refresh(updateActiveRow, null);
+  public void refresh(boolean preserveActiveRow) {
+    refresh(preserveActiveRow, null);
   }
 
   @Override
@@ -247,11 +247,11 @@ public class CachedProvider extends Provider {
   }
 
   @Override
-  protected void onRequest(boolean updateActiveRow) {
-    updateDisplay(updateActiveRow);
+  protected void onRequest(boolean preserveActiveRow) {
+    updateDisplay(preserveActiveRow);
   }
 
-  protected void updateDisplay(boolean updateActiveRow) {
+  protected void updateDisplay(boolean preserveActiveRow) {
     int start = getPageStart();
     int length = getPageSize();
     int rowCount = getRowCount();
@@ -265,8 +265,8 @@ public class CachedProvider extends Provider {
       rowValues = getRowList().subList(start, Math.min(start + length, rowCount));
     }
 
-    if (updateActiveRow) {
-      getDisplay().updateActiveRow(rowValues);
+    if (preserveActiveRow) {
+      getDisplay().preserveActiveRow(rowValues);
     }
     getDisplay().setRowData(rowValues, true);
   }
@@ -334,7 +334,7 @@ public class CachedProvider extends Provider {
     return complete;
   }
 
-  private void refresh(final boolean updateActiveRow, final ScheduledCommand callback) {
+  private void refresh(final boolean preserveActiveRow, final ScheduledCommand callback) {
     final int oldPageSize = getPageSize();
     final int oldTableSize = getTable().getNumberOfRows();
 
@@ -357,7 +357,7 @@ public class CachedProvider extends Provider {
         }
         getDisplay().setRowCount(newRc, true);
 
-        updateDisplay(updateActiveRow);
+        updateDisplay(preserveActiveRow);
 
         if (callback != null) {
           callback.execute();

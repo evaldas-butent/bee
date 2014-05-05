@@ -282,15 +282,31 @@ public class BeeTable implements BeeObject, HasExtFields, HasStates, HasTranslat
   public final class BeeIndex {
     private final String tblName;
     private final String name;
-    private final List<String> indexFields;
     private final boolean unique;
+
+    private final List<String> indexFields;
+    private final String expression;
 
     private BeeIndex(String tblName, List<String> fields, boolean unique) {
       this.tblName = tblName;
+      this.unique = unique;
+      this.indexFields = fields;
+      this.expression = null;
       this.name = (unique ? UNIQUE_INDEX_PREFIX : INDEX_KEY_PREFIX)
           + Codec.crc32(tblName + BeeUtils.join("", fields));
-      this.indexFields = fields;
+    }
+
+    private BeeIndex(String tblName, String expression, boolean unique) {
+      this.tblName = tblName;
       this.unique = unique;
+      this.indexFields = null;
+      this.expression = expression;
+      this.name = (unique ? UNIQUE_INDEX_PREFIX : INDEX_KEY_PREFIX)
+          + Codec.crc32(tblName + expression);
+    }
+
+    public String getExpression() {
+      return expression;
     }
 
     public List<String> getFields() {
@@ -1082,12 +1098,17 @@ public class BeeTable implements BeeObject, HasExtFields, HasStates, HasTranslat
       BeeIndex ik = entry.getValue();
 
       PropertyUtils.addChildren(info, index, "Table", ik.getTable(), "Name", ik.getName(),
-          "Unique", ik.isUnique());
+          "Unique", ik.isUnique(), "Expression", ik.getExpression());
+
       List<String> keyFields = ik.getFields();
-      int cnt = keyFields.size();
-      for (int k = 0; k < cnt; k++) {
-        info.add(new ExtendedProperty(index, BeeUtils.joinWords("Index Field",
-            BeeUtils.progress(k + 1, cnt)), keyFields.get(k)));
+
+      if (!BeeUtils.isEmpty(keyFields)) {
+        int cnt = keyFields.size();
+
+        for (int k = 0; k < cnt; k++) {
+          info.add(new ExtendedProperty(index, BeeUtils.joinWords("Index Field",
+              BeeUtils.progress(k + 1, cnt)), keyFields.get(k)));
+        }
       }
     }
 
@@ -1324,6 +1345,11 @@ public class BeeTable implements BeeObject, HasExtFields, HasStates, HasTranslat
 
   void addIndex(String tblName, List<String> flds, boolean unique) {
     BeeIndex index = new BeeIndex(tblName, flds, unique);
+    indexes.put(BeeUtils.normalize(index.getName()), index);
+  }
+
+  void addIndex(String tblName, String expression, boolean unique) {
+    BeeIndex index = new BeeIndex(tblName, expression, unique);
     indexes.put(BeeUtils.normalize(index.getName()), index);
   }
 

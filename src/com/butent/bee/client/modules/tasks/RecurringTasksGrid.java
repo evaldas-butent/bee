@@ -19,15 +19,17 @@ import com.butent.bee.client.view.grid.interceptor.AbstractGridInterceptor;
 import com.butent.bee.client.view.grid.interceptor.GridInterceptor;
 import com.butent.bee.shared.communication.ResponseObject;
 import com.butent.bee.shared.data.BeeRow;
+import com.butent.bee.shared.data.IsRow;
 import com.butent.bee.shared.data.event.RowInsertEvent;
 import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.ui.Action;
+import com.butent.bee.shared.utils.BeeUtils;
 
 import java.util.List;
 
-class RecurringTaskGrid extends AbstractGridInterceptor {
+class RecurringTasksGrid extends AbstractGridInterceptor {
 
-  RecurringTaskGrid() {
+  RecurringTasksGrid() {
   }
 
   @Override
@@ -82,8 +84,16 @@ class RecurringTaskGrid extends AbstractGridInterceptor {
   }
   
   @Override
+  public List<String> getDeleteRowMessage(IsRow row) {
+    String m1 = BeeUtils.joinWords(Localized.getConstants().crmRecurringTask(), row.getId());
+    String m2 = Localized.getConstants().crmTaskDeleteQuestion();
+
+    return Lists.newArrayList(m1, m2);
+  }
+  
+  @Override
   public GridInterceptor getInstance() {
-    return new RecurringTaskGrid();
+    return new RecurringTasksGrid();
   }
 
   @Override

@@ -115,12 +115,10 @@
         </FlowPanel>
 
         <FlowPanel>
-          <Label text="=tasks" style="&relTasksLbl;" />
+          <Label text="=crmTasks" style="&relTasksLbl;" />
           <MultiSelector viewName="Tasks" property="Tasks"
-            renderColumns="Summary 
-        ExecutorFirstName ExecutorLastName"
-            choiceColumns="Summary ExecutorFirstName 
-        ExecutorLastName StartTime FinishTime"
+            renderColumns="Summary ExecutorFirstName ExecutorLastName"
+            choiceColumns="Summary ExecutorFirstName ExecutorLastName StartTime FinishTime"
             newRowEnabled="false" style="&relTasksInp;" />
         </FlowPanel>
 

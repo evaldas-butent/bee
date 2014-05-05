@@ -279,7 +279,7 @@ public class GridDescription implements BeeSerializable, HasExtendedInfo, HasVie
           setEditSave(BeeUtils.toBooleanOrNull(value));
           break;
         case EDIT_MESSAGE:
-          setRowMessage(Calculation.restore(value));
+          setEditMessage(Calculation.restore(value));
           break;
         case EDIT_SHOW_ID:
           setEditShowId(BeeUtils.toBooleanOrNull(value));

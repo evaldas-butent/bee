@@ -422,9 +422,6 @@ public class UiServiceBean {
         if (!BeeUtils.isEmpty(xmlTable.fields)) {
           fields.addAll(xmlTable.fields);
         }
-        if (!BeeUtils.isEmpty(xmlTable.extFields)) {
-          fields.addAll(xmlTable.extFields);
-        }
         for (XmlField xmlField : fields) {
           if (xmlField instanceof XmlRelation) {
             XmlRelation xmlRelation = (XmlRelation) xmlField;

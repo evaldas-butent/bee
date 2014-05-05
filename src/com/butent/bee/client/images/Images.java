@@ -127,7 +127,7 @@ public final class Images {
     @Source("error.png")
     ImageResource error();
 
-    @Source("excel.gif")
+    @Source("silver/excel_17x18.png")
     ImageResource excel();
 
     @Source("feed.png")

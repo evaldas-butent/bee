@@ -20,6 +20,7 @@ import com.butent.bee.client.data.RowFactory;
 import com.butent.bee.client.dialog.InputBoxes;
 import com.butent.bee.client.dialog.InputCallback;
 import com.butent.bee.client.dom.DomUtils;
+import com.butent.bee.client.event.logical.RowActionEvent;
 import com.butent.bee.client.event.logical.SelectorEvent;
 import com.butent.bee.client.grid.GridFactory;
 import com.butent.bee.client.screen.Domain;
@@ -41,7 +42,6 @@ import com.butent.bee.shared.data.BeeColumn;
 import com.butent.bee.shared.data.BeeRow;
 import com.butent.bee.shared.data.BeeRowSet;
 import com.butent.bee.shared.data.DataUtils;
-import com.butent.bee.shared.data.event.RowActionEvent;
 import com.butent.bee.shared.data.event.RowTransformEvent;
 import com.butent.bee.shared.data.filter.Filter;
 import com.butent.bee.shared.data.view.DataInfo;
@@ -76,30 +76,32 @@ public final class CalendarKeeper {
   private static class RowActionHandler implements RowActionEvent.Handler {
     @Override
     public void onRowAction(final RowActionEvent event) {
-      if (event.hasView(VIEW_CALENDARS)) {
-        event.consume();
-        Long calId = event.getRowId();
+      if (event.isCellClick() || event.isEditRow() || event.isOpenFavorite()) {
+        if (event.hasView(VIEW_CALENDARS)) {
+          event.consume();
+          Long calId = event.getRowId();
 
-        if (DataUtils.isId(calId)) {
-          String calName;
-          if (event.hasRow()) {
-            calName = Data.getString(VIEW_CALENDARS, event.getRow(), COL_CALENDAR_NAME);
-          } else {
-            calName = event.getOptions();
+          if (DataUtils.isId(calId)) {
+            String calName;
+            if (event.hasRow()) {
+              calName = Data.getString(VIEW_CALENDARS, event.getRow(), COL_CALENDAR_NAME);
+            } else {
+              calName = event.getOptions();
+            }
+
+            openCalendar(calId, calName, true);
           }
 
-          openCalendar(calId, calName, true);
-        }
-
-      } else if (event.hasView(VIEW_APPOINTMENTS)) {
-        event.consume();
-        if (event.hasRow()) {
-          ensureData(new Command() {
-            @Override
-            public void execute() {
-              openAppointment(new Appointment((BeeRow) event.getRow()), null);
-            }
-          });
+        } else if (event.hasView(VIEW_APPOINTMENTS)) {
+          event.consume();
+          if (event.hasRow()) {
+            ensureData(new Command() {
+              @Override
+              public void execute() {
+                openAppointment(new Appointment((BeeRow) event.getRow()), null);
+              }
+            });
+          }
         }
       }
     }

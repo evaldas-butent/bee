@@ -153,6 +153,10 @@ public final class Queries {
     deleteRow(viewName, rowId, version, null);
   }
 
+  public static void deleteRow(String viewName, long rowId, IntCallback callback) {
+    deleteRow(viewName, rowId, BeeConst.LONG_UNDEF, callback);
+  }
+
   public static void deleteRow(String viewName, long rowId, long version, IntCallback callback) {
     deleteRows(viewName, Lists.newArrayList(new RowInfo(rowId, version, true)), callback);
   }

@@ -765,7 +765,7 @@ public class DataSelector extends Composite implements Editor, HasVisibleLines, 
         if (BeeUtils.isEmpty(es)) {
           ev = relation.getViewName();
         } else if (editDataInfo != null) {
-          ev = editDataInfo.getRelationView(es);
+          ev = editDataInfo.getRelation(es);
         }
       }
 

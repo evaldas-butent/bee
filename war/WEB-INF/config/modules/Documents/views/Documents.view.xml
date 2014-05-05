@@ -4,6 +4,7 @@
   name="Documents" source="Documents"
   caption="=documents" newRowCaption="=documentNew"
   editForm="Document" newRowForm="NewDocument"
+  rowCaption="Name Number"
   >
   <Columns>
     <SimpleColumn name="Name" />

@@ -16,11 +16,11 @@ public interface LocalizableDocumentsConstants {
 
   String documents();
 
+  String documentTemplateName();
+
   String mainCriteria();
 
   String newDocumentTemplate();
 
   String selectDocumentTemplate();
-
-  String templateName();
 }

@@ -610,7 +610,7 @@ public class MailPanel extends AbstractFormInterceptor {
       presenter.getGridView().getGrid().reset();
       presenter.getDataProvider().setParentFilter(MESSAGES_FILTER,
           Filter.equals(COL_FOLDER, getCurrentFolderId()));
-      presenter.refresh(false);
+      presenter.refresh(true);
     }
   }
 

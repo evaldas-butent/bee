@@ -386,6 +386,11 @@ class RecurringTaskHandler extends AbstractFormInterceptor implements CellValida
   }
 
   @Override
+  public boolean isRowEditable(IsRow row) {
+    return row != null && BeeKeeper.getUser().is(row.getLong(getDataIndex(COL_OWNER)));
+  }
+  
+  @Override
   public Boolean validateCell(CellValidateEvent event) {
     if (event.isCellValidation() && event.isPreValidation()) {
       String source = event.getColumnId();
@@ -451,7 +456,7 @@ class RecurringTaskHandler extends AbstractFormInterceptor implements CellValida
 
     panel.add(table);
 
-    String caption = BeeUtils.joinWords(Localized.getConstants().tasks(),
+    String caption = BeeUtils.joinWords(Localized.getConstants().crmTasks(),
         new JustDate(dayNumber).toString());
 
     DialogBox dialog = DialogBox.create(caption, STYLE_OFFSPRING_DIALOG);

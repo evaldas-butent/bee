@@ -219,14 +219,11 @@
   </xs:simpleType>
 
   <xs:complexType name="checkType">
-    <xs:choice>
-      <xs:sequence>
-        <xs:element name="Generic" type="xs:string" />
-        <xs:element name="PostgreSql" type="xs:string" minOccurs="0" />
-        <xs:element name="MsSql" type="xs:string" minOccurs="0" />
-        <xs:element name="Oracle" type="xs:string" minOccurs="0" />
-      </xs:sequence>
-    </xs:choice>
+    <xs:sequence minOccurs="0">
+      <xs:element name="PostgreSql" type="xs:string" />
+      <xs:element name="MsSql" type="xs:string" />
+      <xs:element name="Oracle" type="xs:string" />
+    </xs:sequence>
   </xs:complexType>
 
   <xs:complexType name="uniqueType">
@@ -241,23 +238,26 @@
   </xs:complexType>
 
   <xs:complexType name="indexType">
-    <xs:attribute name="fields" type="fieldListType" use="required" />
-    <xs:attribute name="unique" type="xs:boolean" />
+    <xs:complexContent>
+      <xs:extension base="checkType">
+        <xs:attribute name="fields" type="fieldListType" />
+        <xs:attribute name="unique" type="xs:boolean" />
+      </xs:extension>
+    </xs:complexContent>
   </xs:complexType>
 
   <xs:complexType name="triggerType">
-    <xs:sequence>
-      <xs:element name="PostgreSql" type="xs:string" />
-      <xs:element name="MsSql" type="xs:string" />
-      <xs:element name="Oracle" type="xs:string" />
-    </xs:sequence>
-    <xs:attribute name="timing" type="triggerTimingType" use="required" />
-    <xs:attribute name="events" use="required">
-      <xs:simpleType>
-        <xs:list itemType="triggerEventType"/>
-      </xs:simpleType>
-    </xs:attribute>
-    <xs:attribute name="scope" type="triggerScopeType" use="required" />
+    <xs:complexContent>
+      <xs:extension base="checkType">
+        <xs:attribute name="timing" type="triggerTimingType" use="required" />
+        <xs:attribute name="events" use="required">
+          <xs:simpleType>
+            <xs:list itemType="triggerEventType"/>
+          </xs:simpleType>
+        </xs:attribute>
+        <xs:attribute name="scope" type="triggerScopeType" use="required" />
+      </xs:extension>
+    </xs:complexContent>
   </xs:complexType>
 
   <xs:simpleType name="triggerTimingType">

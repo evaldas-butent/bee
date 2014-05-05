@@ -12,9 +12,11 @@ import com.google.gwt.user.client.ui.FlowPanel;
 import com.google.gwt.user.client.ui.HasWidgets;
 import com.google.gwt.user.client.ui.SimplePanel;
 import com.google.gwt.user.client.ui.Widget;
+import com.google.web.bindery.event.shared.HandlerRegistration;
 
 import static com.butent.bee.shared.modules.service.ServiceConstants.*;
 
+import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.Global;
 import com.butent.bee.client.composite.Autocomplete;
 import com.butent.bee.client.data.Data;
@@ -23,7 +25,10 @@ import com.butent.bee.client.data.Queries.IntCallback;
 import com.butent.bee.client.data.Queries.RowSetCallback;
 import com.butent.bee.client.data.RowCallback;
 import com.butent.bee.client.data.RowUpdateCallback;
+import com.butent.bee.client.dom.DomUtils;
+import com.butent.bee.client.event.EventUtils;
 import com.butent.bee.client.event.logical.AutocompleteEvent;
+import com.butent.bee.client.event.logical.RowActionEvent;
 import com.butent.bee.client.grid.ChildGrid;
 import com.butent.bee.client.style.StyleUtils;
 import com.butent.bee.client.ui.FormFactory.WidgetDescriptionCallback;
@@ -44,22 +49,27 @@ import com.butent.bee.shared.data.BeeRow;
 import com.butent.bee.shared.data.BeeRowSet;
 import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.IsRow;
+import com.butent.bee.shared.data.RelationUtils;
 import com.butent.bee.shared.data.filter.CompoundFilter;
 import com.butent.bee.shared.data.filter.Filter;
 import com.butent.bee.shared.data.value.TextValue;
 import com.butent.bee.shared.data.value.Value;
 import com.butent.bee.shared.i18n.LocalizableConstants;
 import com.butent.bee.shared.i18n.Localized;
+import com.butent.bee.shared.modules.classifiers.ClassifierConstants;
+import com.butent.bee.shared.modules.tasks.TaskConstants;
 import com.butent.bee.shared.ui.Relation;
 import com.butent.bee.shared.utils.BeeUtils;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Objects;
 
-public class ServiceObjectForm extends AbstractFormInterceptor implements ClickHandler {
+public class ServiceObjectForm extends AbstractFormInterceptor implements ClickHandler,
+    RowActionEvent.Handler {
 
   private final class AutocompleteFilter implements AutocompleteEvent.Handler {
 
@@ -76,11 +86,11 @@ public class ServiceObjectForm extends AbstractFormInterceptor implements ClickH
       if (event.getState() == State.OPEN) {
         CompoundFilter flt = Filter.and();
 
-        for (String name : new String[] {COL_OBJECT_CATEGORY, COL_SERVICE_OBJECT}) {
+        for (String name : new String[] {COL_SERVICE_OBJECT_CATEGORY, COL_SERVICE_OBJECT}) {
           Long id = getLongValue(name);
 
           if (DataUtils.isId(id)) {
-            if (BeeUtils.same(name, COL_OBJECT_CATEGORY)) {
+            if (BeeUtils.same(name, COL_SERVICE_OBJECT_CATEGORY)) {
               flt.add(Filter.isEqual(name, Value.getValue(id)));
             } else {
               flt.add(Filter.isNotEqual(name, Value.getValue(id)));
@@ -89,23 +99,23 @@ public class ServiceObjectForm extends AbstractFormInterceptor implements ClickH
         }
 
         if (BeeUtils.isEmpty(source)) {
-          flt.add(Filter.isNull(COL_CRITERIA_GROUP_NAME));
+          flt.add(Filter.isNull(COL_SERVICE_CRITERIA_GROUP_NAME));
 
           if (!BeeUtils.isEmpty(criterion)) {
-            flt.add(Filter.isEqual(COL_CRITERION_NAME, Value.getValue(criterion)));
+            flt.add(Filter.isEqual(COL_SERVICE_CRITERION_NAME, Value.getValue(criterion)));
           }
 
-        } else if (!BeeUtils.same(source, COL_CRITERIA_GROUP_NAME)) {
+        } else if (!BeeUtils.same(source, COL_SERVICE_CRITERIA_GROUP_NAME)) {
           if (groupsGrid != null) {
-            flt.add(Filter.isEqual(COL_CRITERIA_GROUP_NAME,
+            flt.add(Filter.isEqual(COL_SERVICE_CRITERIA_GROUP_NAME,
                 groupsGrid.getPresenter().getActiveRow().getValue(groupsGrid.getPresenter()
-                    .getGridView().getDataIndex(COL_CRITERIA_GROUP_NAME))));
+                    .getGridView().getDataIndex(COL_SERVICE_CRITERIA_GROUP_NAME))));
           }
 
-          if (BeeUtils.same(source, COL_CRITERION_VALUE) && criteriaGrid != null) {
-            flt.add(Filter.isEqual(COL_CRITERION_NAME,
+          if (BeeUtils.same(source, COL_SERVICE_CRITERION_VALUE) && criteriaGrid != null) {
+            flt.add(Filter.isEqual(COL_SERVICE_CRITERION_NAME,
                 criteriaGrid.getPresenter().getActiveRow().getValue(criteriaGrid.getPresenter()
-                    .getGridView().getDataIndex(COL_CRITERION_NAME))));
+                    .getGridView().getDataIndex(COL_SERVICE_CRITERION_NAME))));
           }
         }
 
@@ -132,6 +142,8 @@ public class ServiceObjectForm extends AbstractFormInterceptor implements ClickH
   private ChildGrid groupsGrid;
   private ChildGrid criteriaGrid;
 
+  private final List<HandlerRegistration> registry = new ArrayList<>();
+
   ServiceObjectForm() {
     super();
   }
@@ -149,11 +161,11 @@ public class ServiceObjectForm extends AbstractFormInterceptor implements ClickH
     } else if (widget instanceof ChildGrid) {
       ChildGrid grid = (ChildGrid) widget;
 
-      if (BeeUtils.same(name, VIEW_CRITERIA_GROUPS)) {
+      if (BeeUtils.same(name, VIEW_SERVICE_CRITERIA_GROUPS)) {
         groupsGrid = grid;
         grid.setGridInterceptor(childInterceptor);
 
-      } else if (BeeUtils.same(name, VIEW_CRITERIA)) {
+      } else if (BeeUtils.same(name, VIEW_SERVICE_CRITERIA)) {
         criteriaGrid = grid;
         grid.setGridInterceptor(childInterceptor);
       }
@@ -192,7 +204,8 @@ public class ServiceObjectForm extends AbstractFormInterceptor implements ClickH
               Editor input = oldCriteria.get(crit);
 
               if (input == null) {
-                input = createAutocomplete(VIEW_DISTINCT_VALUES, COL_CRITERION_VALUE, crit);
+                input = createAutocomplete(VIEW_SERVICE_DISTINCT_VALUES,
+                    COL_SERVICE_CRITERION_VALUE, crit);
               }
               criteria.put(crit, input);
             }
@@ -202,7 +215,8 @@ public class ServiceObjectForm extends AbstractFormInterceptor implements ClickH
         new Function<String, Editor>() {
           @Override
           public Editor apply(String value) {
-            Editor editor = createAutocomplete(VIEW_DISTINCT_CRITERIA, COL_CRITERION_NAME, null);
+            Editor editor = createAutocomplete(VIEW_SERVICE_DISTINCT_CRITERIA,
+                COL_SERVICE_CRITERION_NAME, null);
             editor.setValue(value);
             return editor;
           }
@@ -223,6 +237,33 @@ public class ServiceObjectForm extends AbstractFormInterceptor implements ClickH
   }
 
   @Override
+  public void onLoad(FormView form) {
+    EventUtils.clearRegistry(registry);
+    registry.add(BeeKeeper.getBus().registerRowActionHandler(this, false));
+  }
+
+  @Override
+  public void onRowAction(RowActionEvent event) {
+    if (event != null && event.isCreateRow() && event.hasRow()
+        && event.hasAnyView(TaskConstants.VIEW_TASKS, TaskConstants.VIEW_RECURRING_TASKS)
+        && DomUtils.isOrHasChild(getFormView().asWidget(), event.getOptions())
+        && getActiveRow() != null) {
+      
+      String address = getStringValue(COL_SERVICE_OBJECT_ADDRESS);
+      if (!BeeUtils.isEmpty(address)) {
+        Data.setValue(event.getViewName(), event.getRow(), TaskConstants.COL_SUMMARY, address);
+      }
+      
+      Long customer = getLongValue(COL_SERVICE_OBJECT_CUSTOMER);
+      if (DataUtils.isId(customer)) {
+        RelationUtils.copyWithDescendants(
+            Data.getDataInfo(getViewName()), COL_SERVICE_OBJECT_CUSTOMER, getActiveRow(),
+            Data.getDataInfo(event.getViewName()), ClassifierConstants.COL_COMPANY, event.getRow());
+      }
+    }
+  }
+
+  @Override
   public void onSaveChanges(HasHandlers listener, SaveChangesEvent event) {
     if (BeeUtils.isEmpty(event.getColumns())) {
       save(getActiveRow());
@@ -238,6 +279,11 @@ public class ServiceObjectForm extends AbstractFormInterceptor implements ClickH
   @Override
   public void onStartNewRow(FormView form, IsRow oldRow, IsRow newRow) {
     requery(newRow);
+  }
+
+  @Override
+  public void onUnload(FormView form) {
+    EventUtils.clearRegistry(registry);
   }
 
   private Autocomplete createAutocomplete(String viewName, String column, String value) {
@@ -303,9 +349,9 @@ public class ServiceObjectForm extends AbstractFormInterceptor implements ClickH
       return;
     }
 
-    Queries.getRowSet(VIEW_OBJECT_CRITERIA, null,
+    Queries.getRowSet(VIEW_SERVICE_OBJECT_CRITERIA, null,
         Filter.and(Filter.equals(COL_SERVICE_OBJECT, objId),
-            Filter.isNull(COL_CRITERIA_GROUP_NAME)),
+            Filter.isNull(COL_SERVICE_CRITERIA_GROUP_NAME)),
         new RowSetCallback() {
           @Override
           public void onSuccess(BeeRowSet result) {
@@ -313,19 +359,21 @@ public class ServiceObjectForm extends AbstractFormInterceptor implements ClickH
               groupId = result.getRow(0).getId();
 
               for (BeeRow crit : result.getRows()) {
-                String name = Data.getString(VIEW_OBJECT_CRITERIA, crit, COL_CRITERION_NAME);
+                String name = Data.getString(VIEW_SERVICE_OBJECT_CRITERIA, crit,
+                    COL_SERVICE_CRITERION_NAME);
 
                 if (!BeeUtils.isEmpty(name)) {
-                  String value = Data.getString(VIEW_OBJECT_CRITERIA, crit, COL_CRITERION_VALUE);
+                  String value = Data.getString(VIEW_SERVICE_OBJECT_CRITERIA, crit,
+                      COL_SERVICE_CRITERION_VALUE);
 
-                  Autocomplete box = createAutocomplete(VIEW_DISTINCT_VALUES,
-                      COL_CRITERION_VALUE, name);
+                  Autocomplete box = createAutocomplete(VIEW_SERVICE_DISTINCT_VALUES,
+                      COL_SERVICE_CRITERION_VALUE, name);
 
                   box.setValue(value);
 
                   criteriaHistory.put(name, value);
                   criteria.put(name, box);
-                  ids.put(name, Data.getLong(VIEW_OBJECT_CRITERIA, crit, "ID"));
+                  ids.put(name, Data.getLong(VIEW_SERVICE_OBJECT_CRITERIA, crit, "ID"));
                 }
               }
               render();
@@ -386,8 +434,9 @@ public class ServiceObjectForm extends AbstractFormInterceptor implements ClickH
         @Override
         public void accept(Long id) {
           for (Entry<String, String> entry : newValues.entrySet()) {
-            Queries.insert(VIEW_CRITERIA, Data.getColumns(VIEW_CRITERIA,
-                Lists.newArrayList(COL_CRITERIA_GROUP, COL_CRITERION_NAME, COL_CRITERION_VALUE)),
+            Queries.insert(VIEW_SERVICE_CRITERIA, Data.getColumns(VIEW_SERVICE_CRITERIA,
+                Lists.newArrayList(COL_SERVICE_CRITERIA_GROUP, COL_SERVICE_CRITERION_NAME,
+                    COL_SERVICE_CRITERION_VALUE)),
                 Lists.newArrayList(BeeUtils.toString(id), entry.getKey(), entry.getValue()), null,
                 new RowCallback() {
                   @Override
@@ -400,8 +449,8 @@ public class ServiceObjectForm extends AbstractFormInterceptor implements ClickH
       };
 
       if (!DataUtils.isId(groupId)) {
-        Queries.insert(VIEW_CRITERIA_GROUPS,
-            Data.getColumns(VIEW_CRITERIA_GROUPS, Lists.newArrayList(COL_SERVICE_OBJECT)),
+        Queries.insert(VIEW_SERVICE_CRITERIA_GROUPS,
+            Data.getColumns(VIEW_SERVICE_CRITERIA_GROUPS, Lists.newArrayList(COL_SERVICE_OBJECT)),
             Lists.newArrayList(BeeUtils.toString(row.getId())), null, new RowCallback() {
               @Override
               public void onSuccess(BeeRow result) {
@@ -415,8 +464,8 @@ public class ServiceObjectForm extends AbstractFormInterceptor implements ClickH
 
     if (!BeeUtils.isEmpty(changedValues)) {
       for (Entry<Long, String> entry : changedValues.entrySet()) {
-        Queries.update(VIEW_CRITERIA, Filter.compareId(entry.getKey()),
-            COL_CRITERION_VALUE, new TextValue(entry.getValue()), new IntCallback() {
+        Queries.update(VIEW_SERVICE_CRITERIA, Filter.compareId(entry.getKey()),
+            COL_SERVICE_CRITERION_VALUE, new TextValue(entry.getValue()), new IntCallback() {
               @Override
               public void onSuccess(Integer result) {
                 scheduler.execute();
@@ -426,7 +475,7 @@ public class ServiceObjectForm extends AbstractFormInterceptor implements ClickH
     }
 
     if (!flt.isEmpty()) {
-      Queries.delete(VIEW_CRITERIA, flt, new IntCallback() {
+      Queries.delete(VIEW_SERVICE_CRITERIA, flt, new IntCallback() {
         @Override
         public void onSuccess(Integer result) {
           scheduler.execute();

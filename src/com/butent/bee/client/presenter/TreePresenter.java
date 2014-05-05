@@ -31,6 +31,7 @@ import com.butent.bee.shared.data.BeeColumn;
 import com.butent.bee.shared.data.BeeRow;
 import com.butent.bee.shared.data.BeeRowSet;
 import com.butent.bee.shared.data.DataUtils;
+import com.butent.bee.shared.data.HasViewName;
 import com.butent.bee.shared.data.IsRow;
 import com.butent.bee.shared.data.event.RowDeleteEvent;
 import com.butent.bee.shared.data.event.RowInsertEvent;
@@ -49,7 +50,8 @@ import com.butent.bee.shared.utils.NameUtils;
 import java.util.List;
 import java.util.Map;
 
-public class TreePresenter extends AbstractPresenter implements CatchEvent.CatchHandler<IsRow> {
+public class TreePresenter extends AbstractPresenter implements CatchEvent.CatchHandler<IsRow>,
+    HasViewName {
 
   private class CommitCallback extends RowCallback {
     private final boolean createMode;
@@ -145,6 +147,7 @@ public class TreePresenter extends AbstractPresenter implements CatchEvent.Catch
     return getView();
   }
 
+  @Override
   public String getViewName() {
     return viewName;
   }

@@ -1,4 +1,4 @@
-package com.butent.bee.client.modules.transport.charts;
+package com.butent.bee.client.timeboard;
 
 import com.google.common.base.Objects;
 import com.google.common.collect.Lists;
@@ -13,13 +13,9 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Set;
 
-class ChartRowLayout {
+public class TimeBoardRowLayout {
 
-  interface Blender {
-    boolean willItBlend(HasDateRange x, HasDateRange y);
-  }
-  
-  static final class GroupLayout {
+  public static final class GroupLayout {
     private final Long groupId;
     
     private final int firstRow;
@@ -34,24 +30,24 @@ class ChartRowLayout {
       this.hasOverlap = hasOverlap;
     }
 
-    Long getGroupId() {
-      return groupId;
-    }
-
-    int getFirstRow() {
+    public int getFirstRow() {
       return firstRow;
     }
 
-    int getLastRow() {
+    public Long getGroupId() {
+      return groupId;
+    }
+
+    public int getLastRow() {
       return lastRow;
     }
 
-    boolean hasOverlap() {
+    public boolean hasOverlap() {
       return hasOverlap;
     }
   }
 
-  static final class RowData {
+  public static final class RowData {
     private final Long groupId;
     private final List<HasDateRange> rowItems = Lists.newArrayList();
 
@@ -60,12 +56,12 @@ class ChartRowLayout {
       add(item);
     }
 
-    Long getGroupId() {
-      return groupId;
+    public List<HasDateRange> getRowItems() {
+      return rowItems;
     }
 
-    List<HasDateRange> getRowItems() {
-      return rowItems;
+    Long getGroupId() {
+      return groupId;
     }
 
     boolean hasGroup(Long id) {
@@ -79,26 +75,9 @@ class ChartRowLayout {
     }
   }
 
-  private static class FreightBlender implements Blender {
-    FreightBlender() {
-      super();
-    }
-
-    @Override
-    public boolean willItBlend(HasDateRange x, HasDateRange y) {
-      if (x instanceof Freight && y instanceof Freight) {
-        return Objects.equal(((Freight) x).getTripId(), ((Freight) y).getTripId());
-      } else {
-        return false;
-      }
-    }
-  }
-
-  static final FreightBlender FREIGHT_BLENDER = new FreightBlender();
-
-  static int countRows(List<ChartRowLayout> layout, int minSize) {
+  public static int countRows(List<TimeBoardRowLayout> layout, int minSize) {
     int result = 0;
-    for (ChartRowLayout crl : layout) {
+    for (TimeBoardRowLayout crl : layout) {
       result += crl.getSize(minSize);
     }
     return result;
@@ -161,11 +140,11 @@ class ChartRowLayout {
 
   private final Set<Range<JustDate>> overlap = Sets.newHashSet();
 
-  ChartRowLayout(int dataIndex) {
+  public TimeBoardRowLayout(int dataIndex) {
     this.dataIndex = dataIndex;
   }
 
-  void addInactivity(Collection<? extends HasDateRange> items, Range<JustDate> activeRange) {
+  public void addInactivity(Collection<? extends HasDateRange> items, Range<JustDate> activeRange) {
     if (!items.isEmpty()) {
       inactivity.addAll(items);
 
@@ -182,7 +161,9 @@ class ChartRowLayout {
     }
   }
 
-  void addItem(Long itemGroupId, HasDateRange item, Range<JustDate> activeRange, Blender blender) {
+  public void addItem(Long itemGroupId, HasDateRange item, Range<JustDate> activeRange,
+      Blender blender) {
+
     boolean added = false;
 
     for (RowData rowData : rows) {
@@ -216,12 +197,12 @@ class ChartRowLayout {
     }
   }
 
-  void addItems(Long itemGroupId, Collection<? extends HasDateRange> items,
+  public void addItems(Long itemGroupId, Collection<? extends HasDateRange> items,
       Range<JustDate> activeRange) {
     addItems(itemGroupId, items, activeRange, null);
   }
 
-  void addItems(Long itemGroupId, Collection<? extends HasDateRange> items,
+  public void addItems(Long itemGroupId, Collection<? extends HasDateRange> items,
       Range<JustDate> activeRange, Blender blender) {
 
     for (HasDateRange item : items) {
@@ -229,11 +210,11 @@ class ChartRowLayout {
     }
   }
 
-  int getDataIndex() {
+  public int getDataIndex() {
     return dataIndex;
   }
   
-  List<GroupLayout> getGroups() {
+  public List<GroupLayout> getGroups() {
     List<GroupLayout> result = Lists.newArrayList();
     if (rows.isEmpty()) {
       return result;
@@ -269,27 +250,27 @@ class ChartRowLayout {
     return result;
   }
 
-  Set<HasDateRange> getInactivity() {
+  public Set<HasDateRange> getInactivity() {
     return inactivity;
   }
 
-  Set<Range<JustDate>> getOverlap(Range<JustDate> activeRange) {
+  public Set<Range<JustDate>> getOverlap(Range<JustDate> activeRange) {
     return clash(overlap, activeRange);
   }
 
-  List<RowData> getRows() {
+  public List<RowData> getRows() {
     return rows;
   }
 
-  int getSize(int minSize) {
+  public int getSize(int minSize) {
     return Math.max(rows.size(), minSize);
   }
 
-  boolean hasOverlap() {
+  public boolean hasOverlap() {
     return !overlap.isEmpty();
   }
   
-  boolean isEmpty() {
+  public boolean isEmpty() {
     return rows.isEmpty();
   }
   

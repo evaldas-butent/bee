@@ -247,6 +247,8 @@ public final class AdministrationConstants {
   public static final String VIEW_CURRENCIES = "Currencies";
   public static final String VIEW_CURRENCY_RATES = "CurrencyRates";
 
+  public static final String VIEW_RELATIONS = "Relations";
+
   public static final String VIEW_IP_FILTERS = "IpFilters";
 
   public static final String VIEW_AUTOCOMPLETE = "Autocomplete";

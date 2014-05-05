@@ -185,15 +185,19 @@ public final class TasksKeeper {
 
     GridFactory.registerGridInterceptor(GRID_TODO_LIST, new TodoListInterceptor());
 
-    GridFactory.registerGridInterceptor(GRID_RECURRING_TASKS, new RecurringTaskGrid());
+    GridFactory.registerGridInterceptor(GRID_RECURRING_TASKS, new RecurringTasksGrid());
     GridFactory.registerGridInterceptor(GRID_RT_FILES,
         new FileGridInterceptor(COL_RTF_RECURRING_TASK, AdministrationConstants.COL_FILE,
             AdministrationConstants.COL_FILE_CAPTION, AdministrationConstants.ALS_FILE_NAME));
 
+    GridFactory.registerGridInterceptor(GRID_RELATED_TASKS, new RelatedTasksGrid());
+    GridFactory.registerGridInterceptor(GRID_RELATED_RECURRING_TASKS,
+        new RelatedRecurringTasksGrid());
+
     MenuService.TASK_LIST.setHandler(new MenuHandler() {
       @Override
       public void onSelection(String parameters) {
-        TaskList.open(parameters);
+        TasksGrid.open(parameters);
       }
     });
 
@@ -220,13 +224,13 @@ public final class TasksKeeper {
     BeeKeeper.getBus().registerRowTransformHandler(new RowTransformHandler(), false);
 
     Global.getNewsAggregator().registerFilterHandler(Feed.TASKS_ASSIGNED,
-        TaskList.getFeedFilterHandler(Feed.TASKS_ASSIGNED));
+        TasksGrid.getFeedFilterHandler(Feed.TASKS_ASSIGNED));
     Global.getNewsAggregator().registerFilterHandler(Feed.TASKS_DELEGATED,
-        TaskList.getFeedFilterHandler(Feed.TASKS_DELEGATED));
+        TasksGrid.getFeedFilterHandler(Feed.TASKS_DELEGATED));
     Global.getNewsAggregator().registerFilterHandler(Feed.TASKS_OBSERVED,
-        TaskList.getFeedFilterHandler(Feed.TASKS_OBSERVED));
+        TasksGrid.getFeedFilterHandler(Feed.TASKS_OBSERVED));
     Global.getNewsAggregator().registerFilterHandler(Feed.TASKS_ALL,
-        TaskList.getFeedFilterHandler(Feed.TASKS_ALL));
+        TasksGrid.getFeedFilterHandler(Feed.TASKS_ALL));
 
     Global.getNewsAggregator().registerAccessHandler(VIEW_TASKS, new HeadlineAccessor() {
       @Override

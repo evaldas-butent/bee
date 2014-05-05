@@ -218,6 +218,9 @@ public final class TaskConstants {
   public static final String VIEW_RT_FILES = "RTFiles";
 
   public static final String VIEW_REQUEST_FILES = "RequestFiles";
+
+  public static final String VIEW_RELATED_TASKS = "RelatedTasks";
+  public static final String VIEW_RELATED_RECURRING_TASKS = "RelatedRecurringTasks";
   
   public static final String COL_START_TIME = "StartTime";
   public static final String COL_FINISH_TIME = "FinishTime";
@@ -337,6 +340,7 @@ public final class TaskConstants {
   public static final String PROP_DOCUMENTS = "Documents";
   public static final String PROP_APPOINTMENTS = "Appointments";
   public static final String PROP_DISCUSSIONS = "Discussions";
+  public static final String PROP_SERVICE_OBJECTS = "ServiceObjects";
   public static final String PROP_TASKS = "Tasks";
 
   public static final String PROP_FILES = "Files";
@@ -358,6 +362,9 @@ public final class TaskConstants {
 
   public static final String GRID_RECURRING_TASKS = "RecurringTasks";
   public static final String GRID_RT_FILES = "RTFiles";
+
+  public static final String GRID_RELATED_TASKS = "RelatedTasks";
+  public static final String GRID_RELATED_RECURRING_TASKS = "RelatedRecurringTasks";
 
   public static final String GRID_REQUESTS = "Requests";
 

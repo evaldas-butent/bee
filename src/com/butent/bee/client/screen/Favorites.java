@@ -16,12 +16,12 @@ import com.butent.bee.client.data.RowEditor;
 import com.butent.bee.client.dialog.ConfirmationCallback;
 import com.butent.bee.client.dialog.StringCallback;
 import com.butent.bee.client.event.logical.BookmarkEvent;
+import com.butent.bee.client.event.logical.RowActionEvent;
 import com.butent.bee.client.grid.HtmlTable;
 import com.butent.bee.client.widget.FaLabel;
 import com.butent.bee.client.widget.InternalLink;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
-import com.butent.bee.shared.Service;
 import com.butent.bee.shared.data.BeeColumn;
 import com.butent.bee.shared.data.BeeRow;
 import com.butent.bee.shared.data.BeeRowSet;
@@ -29,7 +29,6 @@ import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.IsRow;
 import com.butent.bee.shared.data.event.HandlesDeleteEvents;
 import com.butent.bee.shared.data.event.MultiDeleteEvent;
-import com.butent.bee.shared.data.event.RowActionEvent;
 import com.butent.bee.shared.data.event.RowDeleteEvent;
 import com.butent.bee.shared.data.filter.CompoundFilter;
 import com.butent.bee.shared.data.filter.Filter;
@@ -66,10 +65,7 @@ public class Favorites implements HandlesDeleteEvents {
 
       @Override
       void open(String key, long id, String html) {
-        RowActionEvent event = new RowActionEvent(key, id, Service.OPEN_FAVORITE, html);
-        BeeKeeper.getBus().fireEvent(event);
-
-        if (event.isConsumed()) {
+        if (!RowActionEvent.fireOpenFavorite(key, id, html)) {
           return;
         }
 

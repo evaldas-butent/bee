@@ -597,7 +597,8 @@ public abstract class SqlBuilder {
             "CREATE", isEmpty(params.get("isUnique")) ? "" : "UNIQUE",
             "INDEX", params.get("name"),
             "ON", params.get("table"),
-            BeeUtils.parenthesize(params.get("fields")));
+            BeeUtils.parenthesize(BeeUtils.notEmpty((String) params.get("expression"),
+                (String) params.get("fields"))));
 
       case ADD_CONSTRAINT:
         return BeeUtils.joinWords(

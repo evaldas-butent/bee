@@ -61,16 +61,16 @@ public class DocumentTemplateForm extends DocumentDataForm {
                 new IdCallback() {
                   @Override
                   public void onSuccess(Long dataId) {
-                    Queries.insert(TBL_DOCUMENTS,
-                        Data.getColumns(TBL_DOCUMENTS, Lists.newArrayList(COL_DOCUMENT_CATEGORY,
+                    Queries.insert(VIEW_DOCUMENTS,
+                        Data.getColumns(VIEW_DOCUMENTS, Lists.newArrayList(COL_DOCUMENT_CATEGORY,
                             COL_DOCUMENT_NAME, COL_DOCUMENT_DATA)),
                         Lists.newArrayList(getStringValue(COL_DOCUMENT_CATEGORY), value,
                             DataUtils.isId(dataId) ? BeeUtils.toString(dataId) : null),
-                        null, new RowInsertCallback(TBL_DOCUMENTS, null) {
+                        null, new RowInsertCallback(VIEW_DOCUMENTS, null) {
                           @Override
                           public void onSuccess(BeeRow result) {
                             super.onSuccess(result);
-                            RowEditor.openRow(TBL_DOCUMENTS, result, true);
+                            RowEditor.openRow(VIEW_DOCUMENTS, result, true);
                           }
                         });
                   }

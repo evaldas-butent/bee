@@ -5,6 +5,7 @@ import com.google.common.collect.LinkedListMultimap;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Multimap;
 import com.google.common.collect.Sets;
+import com.google.common.io.CharStreams;
 
 import static com.butent.bee.shared.modules.classifiers.ClassifierConstants.*;
 import static com.butent.bee.shared.modules.mail.MailConstants.*;
@@ -19,6 +20,7 @@ import com.butent.bee.server.sql.SqlSelect;
 import com.butent.bee.server.sql.SqlUpdate;
 import com.butent.bee.server.sql.SqlUtils;
 import com.butent.bee.shared.Assert;
+import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.Pair;
 import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.SimpleRowSet;
@@ -37,6 +39,7 @@ import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.util.List;
 import java.util.Map.Entry;
 import java.util.Set;
@@ -151,9 +154,8 @@ public class MailStorageBean {
       query.addCount(TBL_PLACES, COL_MESSAGE)
           .addFromLeft(TBL_PLACES,
               SqlUtils.and(sys.joinTables(TBL_FOLDERS, TBL_PLACES, COL_FOLDER),
-                  SqlUtils.or(SqlUtils.isNull(TBL_PLACES, COL_FLAGS),
-                      SqlUtils.equals(SqlUtils.bitAnd(TBL_PLACES, COL_FLAGS,
-                          MessageFlag.SEEN.getMask()), 0))))
+                  SqlUtils.equals(SqlUtils.bitAnd(SqlUtils.nvl(
+                      SqlUtils.field(TBL_PLACES, COL_FLAGS), 0), MessageFlag.SEEN.getMask()), 0)))
           .addGroup(TBL_FOLDERS,
               COL_FOLDER_PARENT, COL_FOLDER_NAME, COL_FOLDER_UID, sys.getIdName(TBL_FOLDERS));
     } else {
@@ -307,6 +309,7 @@ public class MailStorageBean {
     return !DataUtils.isId(placeId);
   }
 
+  @TransactionAttribute(TransactionAttributeType.REQUIRES_NEW)
   public long syncFolder(MailFolder localFolder, Folder remoteFolder, boolean sync)
       throws MessagingException {
     Assert.noNulls(localFolder, remoteFolder);
@@ -350,7 +353,7 @@ public class MailStorageBean {
             syncedMsgs.add(id);
           } else {
             try {
-              ctx.getBusinessObject(this.getClass()).storeMail(message, localFolder.getId(), uid);
+              storeMail(message, localFolder.getId(), uid);
             } catch (MessagingException e) {
               logger.error(e);
             }
@@ -481,9 +484,19 @@ public class MailStorageBean {
           alternative.setB((String) part.getContent());
         }
       } else {
+        Object enigma = part.getContent();
+        String content;
         String htmlContent = null;
-        String content = (String) part.getContent();
 
+        if (enigma instanceof String) {
+          content = (String) part.getContent();
+
+        } else if (enigma instanceof InputStream) {
+          content = CharStreams.toString(new InputStreamReader((InputStream) enigma,
+              BeeConst.CHARSET_UTF8));
+        } else {
+          content = enigma.toString();
+        }
         if (part.isMimeType("text/html")) {
           htmlContent = content;
           content = HtmlUtils.stripHtml(content);

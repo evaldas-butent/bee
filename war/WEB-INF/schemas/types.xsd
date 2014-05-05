@@ -356,6 +356,8 @@
       <xs:enumeration value="RecurringTasks" />
       <xs:enumeration value="RejectionReasons" />
       <xs:enumeration value="RelatedDocuments" />
+      <xs:enumeration value="RelatedRecurringTasks" />
+      <xs:enumeration value="RelatedTasks" />
       <xs:enumeration value="Relations" />
       <xs:enumeration value="RelationTypeStates" />
       <xs:enumeration value="ReminderTypes" />
@@ -382,6 +384,7 @@
       <xs:enumeration value="ServiceObjectCriteria" />
       <xs:enumeration value="ServiceObjects" />
       <xs:enumeration value="Services" />
+      <xs:enumeration value="ServiceSettings" />
       <xs:enumeration value="ServiceTree" />
       <xs:enumeration value="ServiceTypes" />
       <xs:enumeration value="ShipmentRequests" />

@@ -98,7 +98,7 @@ public enum Feed implements HasLocalizedCaption {
   },
 
   DOCUMENTS(ModuleAndSub.of(Module.DOCUMENTS), DocumentConstants.TBL_DOCUMENTS,
-      DocumentConstants.TBL_DOCUMENTS, DocumentConstants.COL_DOCUMENT_NAME) {
+      DocumentConstants.VIEW_DOCUMENTS, DocumentConstants.COL_DOCUMENT_NAME) {
     @Override
     public String getCaption(LocalizableConstants constants) {
       return constants.feedDocuments();

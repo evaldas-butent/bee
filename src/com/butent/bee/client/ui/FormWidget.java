@@ -412,6 +412,8 @@ public enum FormWidget {
   private static final String ATTR_UP_FACE = "upFace";
   private static final String ATTR_DOWN_FACE = "downFace";
 
+  private static final String ATTR_CHILD = "child";
+
   private static final String TAG_CSS = "css";
   private static final String TAG_HANDLER = "handler";
 
@@ -1218,7 +1220,8 @@ public enum FormWidget {
       case GRID_PANEL:
         String gName = BeeUtils.notEmpty(attributes.get(UiConstants.ATTR_GRID_NAME), name);
         if (!BeeUtils.isEmpty(gName)) {
-          widget = new GridPanel(gName, GridFactory.getGridOptions(attributes));
+          widget = new GridPanel(gName, GridFactory.getGridOptions(attributes),
+              BeeConst.isTrue(attributes.get(ATTR_CHILD)));
         }
         break;
 

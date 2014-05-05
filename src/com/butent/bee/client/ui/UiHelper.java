@@ -218,6 +218,11 @@ public final class UiHelper {
     return null;
   }
 
+  public static Long getFormRowId(Widget widget) {
+    FormView form = getForm(widget);
+    return (form == null) ? null : form.getActiveRowId();
+  }
+  
   public static GridView getGrid(Widget widget) {
     DataView dataView = getDataView(widget);
 
