@@ -28,8 +28,8 @@
       <row>
         <Label style="&lbl1;" for="Code" class="bee-required" />
         <InputText source="Code" style="&inp1;" required="true" />
-        <Label style="&lbl1;" for="VATCode" class="bee-required" />
-        <InputText source="VATCode" style="&inp1;" upperCase="true" required="true" />
+        <Label style="&lbl1;" for="VATCode" />
+        <InputText source="VATCode" style="&inp1;" upperCase="true" />
         <Label text="=code" style="&lbl1;" module="Transport" for="ExchangeCode" />
         <InputText source="ExchangeCode" style="&inp1;" module="Transport" />
       </row>
