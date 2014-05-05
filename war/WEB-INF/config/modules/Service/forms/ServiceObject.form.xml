@@ -41,6 +41,11 @@
         <text>=crmRecurringTasks</text>
         <ChildGrid name="RelatedRecurringTasks" relColumn="ServiceObject" />
       </page>
+
+      <page>
+        <text>=svcDates</text>
+        <ChildGrid name="ServiceDates" relColumn="ServiceObject" />
+      </page>
     </TabbedPages>
   </FlowPanel>
 </f:Form>  

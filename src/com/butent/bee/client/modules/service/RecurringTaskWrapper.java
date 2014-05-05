@@ -34,7 +34,7 @@ public class RecurringTaskWrapper implements HasDateRange {
     JustDate start = row.getDate(TaskConstants.COL_RT_SCHEDULE_FROM);
     JustDate end = row.getDate(TaskConstants.COL_RT_SCHEDULE_UNTIL);
     
-    this.range = Range.closed(start, BeeUtils.nvl(end, start));
+    this.range = Range.closed(start, BeeUtils.max(end, start));
   }
 
   @Override

@@ -201,7 +201,7 @@ public abstract class ChartBase extends TimeBoard {
         super.handleAction(action);
     }
   }
-
+  
   protected void addRelevantDataViews(String... viewNames) {
     if (viewNames != null) {
       for (String viewName : viewNames) {
@@ -283,8 +283,8 @@ public abstract class ChartBase extends TimeBoard {
         });
   }
 
-
   protected abstract boolean filter(FilterType filterType);
+
 
   protected Collection<CargoHandling> getCargoHandling(Long cargoId) {
     return cargoHandling.get(cargoId);
@@ -305,6 +305,11 @@ public abstract class ChartBase extends TimeBoard {
   }
 
   protected abstract String getDataService();
+
+  @Override
+  protected Set<Action> getEnabledActions() {
+    return EnumSet.of(Action.FILTER, Action.REFRESH, Action.ADD, Action.CONFIGURE);
+  }
 
   protected List<ChartData> getFilterData() {
     return filterData;

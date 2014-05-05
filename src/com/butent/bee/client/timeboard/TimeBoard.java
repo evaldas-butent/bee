@@ -758,9 +758,7 @@ public abstract class TimeBoard extends Flow implements Presenter, View, Printab
     return dayColumnWidth;
   }
 
-  protected Set<Action> getEnabledActions() {
-    return EnumSet.of(Action.FILTER, Action.REFRESH, Action.ADD, Action.CONFIGURE);
-  }
+  protected abstract Set<Action> getEnabledActions();
 
   protected Widget getEndSliderLabel() {
     return endSliderLabel;

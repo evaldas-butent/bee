@@ -16,6 +16,8 @@ import com.butent.bee.client.data.Queries;
 import com.butent.bee.client.data.RowCallback;
 import com.butent.bee.client.event.logical.SelectorEvent;
 import com.butent.bee.client.grid.GridFactory;
+import com.butent.bee.client.style.ColorStyleProvider;
+import com.butent.bee.client.style.ConditionalStyle;
 import com.butent.bee.client.ui.FormFactory;
 import com.butent.bee.client.view.grid.interceptor.FileGridInterceptor;
 import com.butent.bee.shared.Assert;
@@ -246,6 +248,12 @@ public final class TasksKeeper {
         BeeKeeper.getRpc().makeRequest(params);
       }
     });
+    
+    ColorStyleProvider styleProvider = ColorStyleProvider.createDefault(VIEW_TASK_TYPES);
+    ConditionalStyle.registerGridColumnStyleProvider(GRID_TASK_TYPES,
+        AdministrationConstants.COL_BACKGROUND, styleProvider);
+    ConditionalStyle.registerGridColumnStyleProvider(GRID_TASK_TYPES,
+        AdministrationConstants.COL_FOREGROUND, styleProvider);
   }
 
   public static void scheduleTasks(final DateRange range) {

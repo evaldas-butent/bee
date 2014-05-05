@@ -309,6 +309,12 @@ public class ServiceModuleBean implements BeeModule {
 
     String idName = sys.getIdName(TBL_SERVICE_OBJECTS);
 
+    IsCondition where = SqlUtils.or(
+        SqlUtils.in(TBL_SERVICE_OBJECTS, idName, TBL_RELATIONS, COL_SERVICE_OBJECT,
+            SqlUtils.or(SqlUtils.notNull(TBL_RELATIONS, TaskConstants.COL_TASK),
+                SqlUtils.notNull(TBL_RELATIONS, TaskConstants.COL_RECURRING_TASK))),
+        SqlUtils.in(TBL_SERVICE_OBJECTS, idName, TBL_SERVICE_DATES, COL_SERVICE_OBJECT));
+
     SqlSelect objectQuery = new SqlSelect()
         .addFields(TBL_SERVICE_OBJECTS, idName, COL_SERVICE_OBJECT_CATEGORY,
             COL_SERVICE_OBJECT_CUSTOMER, COL_SERVICE_OBJECT_ADDRESS)
@@ -321,10 +327,7 @@ public class ServiceModuleBean implements BeeModule {
         .addFromLeft(ClassifierConstants.TBL_COMPANIES,
             sys.joinTables(ClassifierConstants.TBL_COMPANIES,
                 TBL_SERVICE_OBJECTS, COL_SERVICE_OBJECT_CUSTOMER))
-        .setWhere(SqlUtils.in(TBL_SERVICE_OBJECTS, idName,
-            TBL_RELATIONS, COL_SERVICE_OBJECT,
-            SqlUtils.or(SqlUtils.notNull(TBL_RELATIONS, TaskConstants.COL_TASK),
-                SqlUtils.notNull(TBL_RELATIONS, TaskConstants.COL_RECURRING_TASK))))
+        .setWhere(where)
         .addOrder(ClassifierConstants.TBL_COMPANIES, ClassifierConstants.COL_COMPANY_NAME)
         .addOrder(TBL_SERVICE_OBJECTS, COL_SERVICE_OBJECT_ADDRESS, idName);
 
@@ -339,7 +342,13 @@ public class ServiceModuleBean implements BeeModule {
 
     SqlSelect taskQuery = new SqlSelect()
         .addAllFields(TaskConstants.TBL_TASKS)
+        .addFields(TaskConstants.TBL_TASK_USERS, TaskConstants.COL_STAR)
         .addFrom(TaskConstants.TBL_TASKS)
+        .addFromLeft(TaskConstants.TBL_TASK_USERS,
+            SqlUtils.and(
+                SqlUtils.join(TaskConstants.TBL_TASKS, idName,
+                    TaskConstants.TBL_TASK_USERS, TaskConstants.COL_TASK),
+                SqlUtils.equals(TaskConstants.TBL_TASK_USERS, COL_USER, usr.getCurrentUserId())))
         .setWhere(SqlUtils.in(TaskConstants.TBL_TASKS, idName,
             TBL_RELATIONS, TaskConstants.COL_TASK,
             SqlUtils.notNull(TBL_RELATIONS, COL_SERVICE_OBJECT)))
@@ -377,7 +386,17 @@ public class ServiceModuleBean implements BeeModule {
     if (!DataUtils.isEmpty(relationData)) {
       settings.setTableProperty(TBL_RELATIONS, relationData.serialize());
     }
-    
+
+    SqlSelect datesQuery = new SqlSelect()
+        .addAllFields(TBL_SERVICE_DATES)
+        .addFrom(TBL_SERVICE_DATES)
+        .addOrder(TBL_SERVICE_DATES, COL_SERVICE_OBJECT, COL_SERVICE_DATE_FROM);
+
+    SimpleRowSet datesData = qs.getData(datesQuery);
+    if (!DataUtils.isEmpty(datesData)) {
+      settings.setTableProperty(TBL_SERVICE_DATES, datesData.serialize());
+    }
+
     return ResponseObject.response(settings);
   }
 

@@ -5,18 +5,22 @@
   <col index="0" cellStyle="text-align: right; padding-left: 1em; padding-right: 1em;" />
 
   <row>
-    <Label text="=category" class="bee-required" for="Category" />
+    <Label for="Category" />
     <DataSelector source="Category" renderColumns="CategoryName" choiceColumns="ParentName Name"
       style="width: 200px;" />
   </row>
 
   <row>
-    <Label text="=address" class="bee-required" for="Address" />
+    <Label for="Address" />
     <InputText source="Address" style="width: 400px;" />
   </row>
 
   <row>
-    <Label text="=customer" for="Customer" />
+    <Label for="Customer" />
     <DataSelector source="Customer" renderColumns="CustomerName" style="width: 200px;" />
+  </row>
+  <row>
+    <Label for="Contractor" />
+    <DataSelector source="Contractor" style="width: 200px;" />
   </row>
 </Table>

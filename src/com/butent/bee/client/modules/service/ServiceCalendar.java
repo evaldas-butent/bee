@@ -67,16 +67,15 @@ import java.util.Set;
 final class ServiceCalendar extends TimeBoard {
 
   static final String SUPPLIER_KEY = "service_calendar";
+  
+//  private static final String COL_COMPANY_KIND = "CalendarCompanyKind";
 
-//  private static final String COL_ACTIVE_VIEW = "CalendarActiveView";
-
-  private static final String COL_PIXELS_PER_CUSTOMER = "CalendarPixelsPerCustomer";
+  private static final String COL_PIXELS_PER_COMPANY = "CalendarPixelsPerCompany";
   private static final String COL_PIXELS_PER_INFO = "CalendarPixelsPerInfo";
 
   private static final String COL_SEPARATE_OBJECTS = "CalendarSeparateObjects";
 
   private static final String COL_PIXELS_PER_DAY = "CalendarPixelsPerDay";
-//  private static final String COL_PIXELS_PER_WEEK = "CalendarPixelsPerWeek";
   private static final String COL_PIXELS_PER_ROW = "CalendarPixelsPerRow";
 
   private static final String COL_HEADER_HEIGHT = "CalendarHeaderHeight";
@@ -116,7 +115,7 @@ final class ServiceCalendar extends TimeBoard {
   private static final String DEFAULT_RT_COLOR = Colors.YELLOW;
 
   private static final Set<String> relevantDataViews = Sets.newHashSet(VIEW_SERVICE_OBJECTS,
-      TaskConstants.VIEW_TASKS, TaskConstants.VIEW_RECURRING_TASKS);
+      VIEW_SERVICE_DATES, TaskConstants.VIEW_TASKS, TaskConstants.VIEW_RECURRING_TASKS);
 
   static void open(final Callback<IdentifiableWidget> callback) {
     BeeKeeper.getRpc().makeRequest(ServiceKeeper.createArgs(SVC_GET_CALENDAR_DATA),
@@ -234,14 +233,13 @@ final class ServiceCalendar extends TimeBoard {
   @Override
   protected void prepareChart(Size canvasSize) {
     setSeparateObjects(TimeBoardHelper.getBoolean(getSettings(), COL_SEPARATE_OBJECTS));
-    setSeparateObjects(false); // off
 
     int defWidth = Math.max(150, canvasSize.getWidth() / 10);
 
     int minWidth = TimeBoardHelper.DEFAULT_MOVER_WIDTH + 1;
     int maxWidth = canvasSize.getWidth() / 3;
 
-    setCustomerWidth(TimeBoardHelper.getPixels(getSettings(), COL_PIXELS_PER_CUSTOMER,
+    setCustomerWidth(TimeBoardHelper.getPixels(getSettings(), COL_PIXELS_PER_COMPANY,
         defWidth, minWidth, maxWidth));
 
     if (separateObjects()) {
@@ -681,12 +679,12 @@ final class ServiceCalendar extends TimeBoard {
 
       if (event.isFinished()) {
         if (separateObjects()) {
-          if (updateSettings(COL_PIXELS_PER_CUSTOMER, customerPx, COL_PIXELS_PER_INFO, infoPx)) {
+          if (updateSettings(COL_PIXELS_PER_COMPANY, customerPx, COL_PIXELS_PER_INFO, infoPx)) {
             setCustomerWidth(customerPx);
             setInfoWidth(infoPx);
           }
 
-        } else if (updateSetting(COL_PIXELS_PER_CUSTOMER, customerPx)) {
+        } else if (updateSetting(COL_PIXELS_PER_COMPANY, customerPx)) {
           setCustomerWidth(customerPx);
           render(false);
         }

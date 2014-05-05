@@ -3,6 +3,7 @@ package com.butent.bee.client.modules.service;
 import com.google.common.collect.Range;
 
 import com.butent.bee.client.data.Data;
+import com.butent.bee.client.timeboard.TimeBoardHelper;
 import com.butent.bee.shared.data.SimpleRowSet.SimpleRow;
 import com.butent.bee.shared.modules.tasks.TaskConstants;
 import com.butent.bee.shared.modules.tasks.TaskConstants.TaskPriority;
@@ -38,7 +39,7 @@ class TaskWrapper implements HasDateRange {
     DateTime start = row.getDateTime(TaskConstants.COL_START_TIME);
     DateTime end = row.getDateTime(TaskConstants.COL_FINISH_TIME);
     
-    this.range = Range.closed(start.getDate(), end.getDate());
+    this.range = TimeBoardHelper.getRange(start, end);
   }
 
   @Override

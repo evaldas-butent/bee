@@ -151,7 +151,7 @@ class TaskSelectorHandler implements SelectorEvent.Handler {
       String colName = templateColumns.get(i).getId();
       String value = templateRow.getString(i);
 
-      if (BeeUtils.same(colName, COL_NAME)) {
+      if (BeeUtils.same(colName, COL_TASK_TEMPLATE_NAME)) {
         selector.setDisplayValue(BeeUtils.trim(value));
       } else if (!BeeUtils.isEmpty(value)) {
         int index = Data.getColumnIndex(VIEW_TASKS, colName);

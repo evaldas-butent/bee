@@ -18,23 +18,25 @@
 <FlowPanel xmlns="http://www.butent.com/widget">
   <Table style="border-spacing: 5px;">
     <row>
-      <Label text="=crmRTScheduleFrom" class="bee-required" style="&lbl1;"/>
-      <InputDate source="ScheduleFrom" style="width: 100px;" />
-	  <Label text="=priority" style="&lbl1; width: 135px;"/>
+      <Label for="Type" style="&lbl1;" />
+      <DataSelector source="Type" renderColumns="TypeName" newRowEnabled="false" />
+	  <Label for="Priority" style="&lbl1; width: 135px;"/>
       <Radio source="Priority" />
     </row>
 
     <row>
-	 <Label text="=crmRTScheduleUntil" style="&lbl1;"/>
+      <Label for="ScheduleFrom" style="&lbl1;"/>
+      <InputDate source="ScheduleFrom" style="width: 100px;" />
+      <Label for="ScheduleUntil" style="&lbl1;" />
       <InputDate source="ScheduleUntil" style="width: 100px;" />
-      <Label text="=crmRTScheduleDays" style="&lbl1; width: 135px;"/>
+      <Label for="ScheduleDays" style="&lbl1; width: 135px;" />
       <InputSpinner source="ScheduleDays" minValue="-1" maxValue="999" style="width: 60px;" />
     </row>
 
     <row>
-      <Label text="=company" style="&lbl1;"/>
+      <Label for="Company" style="&lbl1;"/>
       <DataSelector source="Company" editPopup="true" newRowEnabled="false" />
-      <Label text="=personContact" style="&lbl1; width: 135px;"/>
+      <Label for="Contact" style="&lbl1; width: 135px;" />
       <DataSelector source="Contact" editPopup="true" newRowEnabled="false"
         renderColumns="ContactFirstName ContactLastName"
         choiceColumns="FirstName LastName CompanyName" options="Company" />
@@ -44,7 +46,7 @@
   <br/>
   <Table style="border-spacing: 5px;">
     <row>
-      <Label text="=crmTaskSubject" class="bee-required" style="&lbl1;"/>
+      <Label for="Summary" style="&lbl1;"/>
       <InputText source="Summary" style="&inp2x;" autocomplete="true"/>
     </row>
 
@@ -84,21 +86,21 @@
   <br/>
   <Table style="border-spacing:5px;" >
     <row>
-      <Label text="=crmRTStartAt" style="&lbl2;"/>
+      <Label for="StartAt" style="&lbl2;"/>
       <InputTimeOfDay source="StartAt" step="&timeStep;" style="&tod;" />
-      <Label text="=crmRTDurationDays" style="&lbl1;"/>
+      <Label for="DurationDays" style="&lbl1;"/>
       <InputSpinner source="DurationDays" minValue="0" maxValue="31" style="&spinner;" />
-      <Label text="=crmRTDurationTime" style="&lbl1;"/>
+      <Label for="DurationTime" style="&lbl1;"/>
       <InputTimeOfDay source="DurationTime" step="&timeStep;" style="&tod;" />
     </row>
 
     <row>
-      <Label text="=crmTaskReminder" style="&lbl2;"/>
+      <Label for="Reminder" style="&lbl2;"/>
       <DataSelector source="Reminder" renderColumns="ReminderName" newRowEnabled="false" 
         style="width: 100px;" />
-      <Label text="=crmRTRemindBefore" style="&lbl1;"/>
+      <Label for="RemindBefore" style="&lbl1;"/>
       <InputSpinner source="RemindBefore" minValue="0" maxValue="31" style="&spinner;" />
-      <Label text="=crmRTRemindAt" style="&lbl1;"/>
+      <Label for="RemindAt" style="&lbl1;"/>
       <InputTimeOfDay source="RemindAt" step="&timeStep;" style="&tod;" />
     </row>
   </Table>

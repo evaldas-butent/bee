@@ -33,17 +33,23 @@
         <Label text="=crmTaskTemplate" data="TaskTemplates" />
         <DataSelector viewName="TaskTemplates" choiceColumns="Name" property="Template"
           newRowEnabled="false" style="&inp2;" data="TaskTemplates" />
-        <Label for="Priority" text="=priority" />
+      </row>
+
+      <row>
+        <Label for="Type" />
+        <DataSelector source="Type" renderColumns="TypeName" newRowEnabled="false" style="&inp2;"
+          disablable="true" />
+        <Label for="Priority" />
         <Radio source="Priority" />
       </row>
 
       <row>
-        <Label text="=startingDate" class="bee-required" />
+        <Label for="StartTime" />
         <FlowPanel>
           <InputDate name="Start_Date" style="&dateStyle;" required="true" />
           <InputTimeOfDay name="Start_Time" step="&timeStep;" style="&timeStyle;" />
         </FlowPanel>
-        <Label for="ExpectedDuration" text="=crmTaskExpectedDuration" />
+        <Label for="ExpectedDuration" />
         <InputTime source="ExpectedDuration" step="&timeStep;" style="width: 50px;" />
       </row>
 
@@ -53,23 +59,23 @@
           <InputDate name="End_Date" style="&dateStyle;" />
           <InputTimeOfDay name="End_Time" step="&timeStep;" style="&timeStyle;" />
         </FlowPanel>
-        <Label for="Company" text="=company" />
+        <Label for="Company" />
         <DataSelector source="Company" editPopup="true" newRowEnabled="false"
           style="width: 200px;" />
       </row>
 
       <row>
-        <Label for="Reminder" text="=crmTaskReminder" />
+        <Label for="Reminder" />
         <DataSelector source="Reminder" renderColumns="ReminderName" newRowEnabled="false"
           style="&inp2;" />
-        <Label for="Contact" text="=personContact" />
+        <Label for="Contact" />
         <DataSelector source="Contact" editPopup="true" newRowEnabled="false" style="width: 200px;"
           renderColumns="ContactFirstName ContactLastName"
           choiceColumns="FirstName LastName CompanyName" options="Company" />
       </row>
 
       <row>
-        <Label for="ReminderTime" text="=crmReminderDate" />
+        <Label for="ReminderTime" />
         <FlowPanel for="ReminderTime">
           <InputDate name="Reminder_Date" style="&dateStyle;" />
           <InputTimeOfDay name="Reminder_Time" step="&timeStep;" style="&timeStyle;" />
@@ -85,12 +91,12 @@
       <col index="0" cellStyle="&col1;" />
       
       <row>
-        <Label text="=crmTaskSubject" class="bee-required" />
+        <Label for="Summary" />
         <InputText source="Summary" style="&inp2x;" autocomplete="true" visible="true" />
       </row>
 
       <row for="Description">
-        <Label text="=description" />
+        <Label for="Description" />
         <InputArea source="Description" style="&inp2x; height: 60px;" />
       </row>
     </Table>

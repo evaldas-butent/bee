@@ -507,7 +507,7 @@ class TasksGrid extends AbstractGridInterceptor implements ClickHandler {
     }
 
     colNames = Sets.newHashSet(ClassifierConstants.COL_COMPANY, ClassifierConstants.COL_CONTACT,
-        COL_REMINDER);
+        COL_REMINDER, COL_TASK_TYPE);
     for (String colName : colNames) {
       RelationUtils.copyWithDescendants(sourceInfo, colName, oldRow, targetInfo, colName, newRow);
     }
@@ -570,7 +570,7 @@ class TasksGrid extends AbstractGridInterceptor implements ClickHandler {
     }
 
     colNames = Sets.newHashSet(ClassifierConstants.COL_COMPANY, ClassifierConstants.COL_CONTACT,
-        COL_REMINDER);
+        COL_REMINDER, COL_TASK_TYPE);
     for (String colName : colNames) {
       RelationUtils.copyWithDescendants(dataInfo, colName, oldRow, dataInfo, colName, newRow);
     }
