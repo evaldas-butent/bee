@@ -576,7 +576,6 @@ public class UserServiceBean {
         }
       }
     }
-    initUsers();
   }
 
   @Lock(LockType.WRITE)

@@ -188,6 +188,8 @@ public final class AdministrationConstants {
   public static final String VAR_DATE_LOW = Service.RPC_VAR_PREFIX + "date_low";
   public static final String VAR_DATE_HIGH = Service.RPC_VAR_PREFIX + "date_high";
 
+  public static final String VAR_BASE_ROLE = Service.RPC_VAR_PREFIX + "base_role";
+
   public static final String SVC_GET_CURRENT_EXCHANGE_RATE = "get_current_exchange_rate";
   public static final String SVC_GET_EXCHANGE_RATE = "get_exchange_rate";
   public static final String SVC_GET_LIST_OF_CURRENCIES = "get_list_of_currencies";
@@ -198,6 +200,7 @@ public final class AdministrationConstants {
 
   public static final String SVC_BLOCK_HOST = "block_host";
   public static final String SVC_CREATE_USER = "create_user";
+  public static final String SVC_COPY_RIGHTS = "copy_rights";
 
   public static final String AUDIT_SUFFIX = "AUDIT";
   public static final String AUDIT_USER = "bee.user";
@@ -377,6 +380,7 @@ public final class AdministrationConstants {
 
   public static final String FORM_USER = "User";
   public static final String FORM_DEPARTMENT = "Department";
+  public static final String FORM_NEW_ROLE = "NewRole";
 
   public static final String PRM_SQL_MESSAGES = "SQLMessages";
 
