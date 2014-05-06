@@ -117,6 +117,8 @@ public final class MailConstants {
   public static final String FORM_MAIL_MESSAGE = "MailMessage";
   public static final String FORM_NEW_MAIL_MESSAGE = "NewMailMessage";
 
+  public static final String FILTER_SEARCH = "SearchFilter";
+
   public static final String DATA_TYPE_MESSAGE = "Message";
 
   public static final String PRM_DEFAULT_ACCOUNT = "DefaultAccount";

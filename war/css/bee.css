@@ -482,12 +482,15 @@
   margin-right: 4px;
 }
 
+.bee-fa-label {
+  cursor: pointer;
+}
+
 .bee-Header-commandPanel .bee-fa-label {
   margin-left: 4px;
   margin-right: 4px;
   font-size: 18px;
   color: #888;
-  cursor: pointer;
 }
 
 .bee-Header-commandPanel .bee-fa-label:active {
@@ -504,7 +507,6 @@
 .bee-Header-control.bee-fa-label {
   font-size: 18px;
   color: #888;
-  cursor: pointer;
 }
 .bee-Header-control.bee-fa-label:hover {
   color: black;

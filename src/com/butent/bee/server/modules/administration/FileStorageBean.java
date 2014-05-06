@@ -180,7 +180,6 @@ public class FileStorageBean {
     this.repositoryDir = repositoryDir;
   }
 
-  @Lock(LockType.WRITE)
   public Long storeFile(InputStream is, String fileName, String mimeType) throws IOException {
     String name = BeeUtils.notEmpty(fileName, "unknown");
     boolean storeAsFile = repositoryDir != null;

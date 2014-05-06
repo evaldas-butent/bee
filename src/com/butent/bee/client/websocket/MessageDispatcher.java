@@ -1,6 +1,5 @@
 package com.butent.bee.client.websocket;
 
-import com.google.common.base.Objects;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.event.dom.client.KeyCodes;
@@ -41,6 +40,7 @@ import com.butent.bee.shared.data.event.ModificationEvent;
 import com.butent.bee.shared.font.FontAwesome;
 import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogUtils;
+import com.butent.bee.shared.modules.mail.MailConstants.MessageFlag;
 import com.butent.bee.shared.news.Feed;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.EnumUtils;
@@ -68,6 +68,7 @@ import com.butent.bee.shared.websocket.messages.ShowMessage.Subject;
 import com.butent.bee.shared.websocket.messages.UsersMessage;
 
 import java.util.List;
+import java.util.Objects;
 
 class MessageDispatcher {
 
@@ -358,13 +359,17 @@ class MessageDispatcher {
         MailMessage mailMessage = (MailMessage) message;
 
         if (mailMessage.isValid()) {
-          if (Global.getNewsAggregator().hasSubscription(Feed.MAIL)) {
+          boolean refreshFolders = mailMessage.messagesUpdated() || mailMessage.foldersUpdated()
+              || Objects.equals(mailMessage.getFlag(), MessageFlag.SEEN);
+
+          if (Global.getNewsAggregator().hasSubscription(Feed.MAIL) && refreshFolders) {
             Global.getNewsAggregator().refresh();
           }
-          MailKeeper.refreshActivePanel(mailMessage.isNewMail());
+          MailKeeper.refreshActivePanel(refreshFolders, mailMessage.getFolderId());
 
         } else {
-          WsUtils.onEmptyMessage(message);
+          logger.severe(mailMessage.getError());
+          BeeKeeper.getScreen().notifySevere(mailMessage.getError());
         }
         break;
 
@@ -491,7 +496,7 @@ class MessageDispatcher {
           Global.getUsers().updateUserData(users);
 
           for (UserData userData : users) {
-            if (Objects.equal(BeeKeeper.getUser().getUserId(), userData.getUserId())) {
+            if (Objects.equals(BeeKeeper.getUser().getUserId(), userData.getUserId())) {
               BeeKeeper.getUser().setUserData(userData);
               BeeKeeper.getScreen().updateUserData(userData);
               break;

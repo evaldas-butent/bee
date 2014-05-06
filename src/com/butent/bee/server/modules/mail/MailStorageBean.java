@@ -310,74 +310,64 @@ public class MailStorageBean {
   }
 
   @TransactionAttribute(TransactionAttributeType.REQUIRES_NEW)
-  public long syncFolder(MailFolder localFolder, Folder remoteFolder, boolean sync)
-      throws MessagingException {
+  public long syncFolder(MailFolder localFolder, Folder remoteFolder) throws MessagingException {
     Assert.noNulls(localFolder, remoteFolder);
 
-    long lastUid;
+    SimpleRowSet data = qs.getData(new SqlSelect()
+        .addFields(TBL_PLACES, COL_FLAGS, COL_MESSAGE_UID)
+        .addField(TBL_PLACES, sys.getIdName(TBL_PLACES), COL_UNIQUE_ID)
+        .addFrom(TBL_PLACES)
+        .setWhere(SqlUtils.equals(TBL_PLACES, COL_FOLDER, localFolder.getId()))
+        .addOrderDesc(TBL_PLACES, COL_MESSAGE_UID)
+        .setLimit(100));
 
-    if (sync) {
-      SimpleRowSet data = qs.getData(new SqlSelect()
-          .addFields(TBL_PLACES, COL_FLAGS, COL_MESSAGE_UID)
-          .addField(TBL_PLACES, sys.getIdName(TBL_PLACES), COL_UNIQUE_ID)
-          .addFrom(TBL_PLACES)
-          .setWhere(SqlUtils.equals(TBL_PLACES, COL_FOLDER, localFolder.getId()))
-          .addOrderDesc(TBL_PLACES, COL_MESSAGE_UID)
-          .setLimit(100));
+    long lastUid = BeeUtils.unbox(data.getLong(0, COL_MESSAGE_UID));
 
-      lastUid = BeeUtils.unbox(data.getLong(0, COL_MESSAGE_UID));
+    if (data.getNumberOfRows() > 0) {
+      Set<Long> syncedMsgs = Sets.newHashSet();
 
-      if (data.getNumberOfRows() > 0) {
-        Set<Long> syncedMsgs = Sets.newHashSet();
+      Message[] msgs = ((UIDFolder) remoteFolder).getMessagesByUID(BeeUtils
+          .unbox(data.getLong(data.getNumberOfRows() - 1, COL_MESSAGE_UID)), lastUid);
 
-        Message[] msgs = ((UIDFolder) remoteFolder).getMessagesByUID(BeeUtils
-            .unbox(data.getLong(data.getNumberOfRows() - 1, COL_MESSAGE_UID)), lastUid);
+      FetchProfile fp = new FetchProfile();
+      fp.add(FetchProfile.Item.FLAGS);
+      remoteFolder.fetch(msgs, fp);
 
-        FetchProfile fp = new FetchProfile();
-        fp.add(FetchProfile.Item.FLAGS);
-        remoteFolder.fetch(msgs, fp);
+      for (Message message : msgs) {
+        long uid = ((UIDFolder) remoteFolder).getUID(message);
+        SimpleRow row = data.getRowByKey(COL_MESSAGE_UID, BeeUtils.toString(uid));
 
-        for (Message message : msgs) {
-          long uid = ((UIDFolder) remoteFolder).getUID(message);
-          SimpleRow row = data.getRowByKey(COL_MESSAGE_UID, BeeUtils.toString(uid));
+        if (row != null) {
+          Integer flags = MailEnvelope.getFlagMask(message);
+          Long id = row.getLong(COL_UNIQUE_ID);
 
-          if (row != null) {
-            Integer flags = MailEnvelope.getFlagMask(message);
-            Long id = row.getLong(COL_UNIQUE_ID);
-
-            if (BeeUtils.unbox(row.getInt(COL_FLAGS)) != BeeUtils.unbox(flags)) {
-              qs.updateData(new SqlUpdate(TBL_PLACES)
-                  .addConstant(COL_FLAGS, flags)
-                  .setWhere(sys.idEquals(TBL_PLACES, id)));
-            }
-            syncedMsgs.add(id);
-          } else {
-            try {
-              storeMail(message, localFolder.getId(), uid);
-            } catch (MessagingException e) {
-              logger.error(e);
-            }
+          if (BeeUtils.unbox(row.getInt(COL_FLAGS)) != BeeUtils.unbox(flags)) {
+            qs.updateData(new SqlUpdate(TBL_PLACES)
+                .addConstant(COL_FLAGS, flags)
+                .setWhere(sys.idEquals(TBL_PLACES, id)));
           }
-        }
-        List<Long> deletedMsgs = Lists.newArrayList();
-
-        for (int i = 0; i < data.getNumberOfRows(); i++) {
-          Long id = data.getLong(i, COL_UNIQUE_ID);
-
-          if (!syncedMsgs.contains(id)) {
-            deletedMsgs.add(id);
+          syncedMsgs.add(id);
+        } else {
+          try {
+            storeMail(message, localFolder.getId(), uid);
+          } catch (MessagingException e) {
+            logger.error(e);
           }
-        }
-        if (!deletedMsgs.isEmpty()) {
-          qs.updateData(new SqlDelete(TBL_PLACES)
-              .setWhere(SqlUtils.inList(TBL_PLACES, sys.getIdName(TBL_PLACES), deletedMsgs)));
         }
       }
-    } else {
-      lastUid = BeeUtils.unbox(qs.getLong(new SqlSelect()
-          .addMax(TBL_PLACES, COL_MESSAGE_UID)
-          .addFrom(TBL_PLACES)
-          .setWhere(SqlUtils.equals(TBL_PLACES, COL_FOLDER, localFolder.getId()))));
+      List<Long> deletedMsgs = Lists.newArrayList();
+
+      for (int i = 0; i < data.getNumberOfRows(); i++) {
+        Long id = data.getLong(i, COL_UNIQUE_ID);
+
+        if (!syncedMsgs.contains(id)) {
+          deletedMsgs.add(id);
+        }
+      }
+      if (!deletedMsgs.isEmpty()) {
+        qs.updateData(new SqlDelete(TBL_PLACES)
+            .setWhere(SqlUtils.inList(TBL_PLACES, sys.getIdName(TBL_PLACES), deletedMsgs)));
+      }
     }
     return lastUid;
   }
