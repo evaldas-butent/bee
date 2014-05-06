@@ -25,7 +25,15 @@
     <SimpleJoin name="RecurringTask" joinType="INNER">
       <SimpleColumn name="Summary" editable="true" />
       <SimpleColumn name="Description" editable="true" />
+
       <SimpleColumn name="Priority" editable="true" />
+
+      <SimpleColumn name="Type" />
+      <SimpleJoin name="Type" joinType="LEFT">
+        <SimpleColumn name="Name" alias="TypeName" />
+        <SimpleColumn name="Background" alias="TypeBackground" />
+        <SimpleColumn name="Foreground" alias="TypeForeground" />
+      </SimpleJoin>
 
       <SimpleColumn name="Owner" editable="true" />
       <SimpleJoin name="Owner" joinType="LEFT">

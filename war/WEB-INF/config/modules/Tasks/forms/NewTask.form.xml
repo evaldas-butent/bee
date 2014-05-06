@@ -21,7 +21,7 @@
   xmlns:f="http://www.butent.com/form"
   xmlns:xi="http://www.w3.org/2001/XInclude"
   
-  name="NewTask" viewName="Tasks" caption="=crmNewTask" width="700" height="625">
+  name="NewTask" viewName="Tasks" caption="=crmNewTask" width="700" height="640">
 
   <FlowPanel style="padding: 10px 2px 2px 10px;">
   
@@ -102,8 +102,8 @@
     </Table>
 
     &separator;
-    <FlowPanel style="margin-top: 4px;" class="flexBox-horizontal-top" data="TaskFiles">
-      <Label text="=files" style="width: 128px;" />
+    <FlowPanel class="flexBox-horizontal-top" data="TaskFiles">
+      <Label text="=files" style="&col1; margin-top: 4px;" />
       <FileCollector name="Files" editableColumns="name">
         <face resource="attachment" />
       </FileCollector>

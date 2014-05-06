@@ -24,7 +24,15 @@
     <SimpleJoin name="Task" joinType="INNER">
       <SimpleColumn name="Summary" editable="true" />
       <SimpleColumn name="Description" editable="true" />
+
       <SimpleColumn name="Priority" editable="true" />
+
+      <SimpleColumn name="Type" />
+      <SimpleJoin name="Type" joinType="LEFT">
+        <SimpleColumn name="Name" alias="TypeName" />
+        <SimpleColumn name="Background" alias="TypeBackground" />
+        <SimpleColumn name="Foreground" alias="TypeForeground" />
+      </SimpleJoin>
 
       <SimpleColumn name="Created" editable="true" />
       <SimpleColumn name="StartTime" editable="true" />

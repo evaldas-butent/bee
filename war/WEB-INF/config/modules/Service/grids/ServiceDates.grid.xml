@@ -17,6 +17,6 @@
       <editor type="color" />
     </DataColumn>
     
-    <DataColumn name="Note" minWidth="100" autoFit="true" />
+    <DataColumn name="Note" minWidth="100" flexGrow="1" />
   </g:columns>
 </g:Grid>

@@ -46,7 +46,9 @@ import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.Codec;
 import com.butent.bee.shared.utils.EnumUtils;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 public final class TasksKeeper {
 
@@ -248,12 +250,27 @@ public final class TasksKeeper {
         BeeKeeper.getRpc().makeRequest(params);
       }
     });
-    
+
     ColorStyleProvider styleProvider = ColorStyleProvider.createDefault(VIEW_TASK_TYPES);
     ConditionalStyle.registerGridColumnStyleProvider(GRID_TASK_TYPES,
         AdministrationConstants.COL_BACKGROUND, styleProvider);
     ConditionalStyle.registerGridColumnStyleProvider(GRID_TASK_TYPES,
         AdministrationConstants.COL_FOREGROUND, styleProvider);
+
+    Map<String, String> containsTaskType = new HashMap<>();
+
+    containsTaskType.put(VIEW_TASKS, GRID_TASKS);
+    containsTaskType.put(VIEW_RELATED_TASKS, GRID_RELATED_TASKS);
+    containsTaskType.put(VIEW_RECURRING_TASKS, GRID_RECURRING_TASKS);
+    containsTaskType.put(VIEW_RELATED_RECURRING_TASKS, GRID_RELATED_RECURRING_TASKS);
+    containsTaskType.put(VIEW_TASK_TEMPLATES, GRID_TASK_TEMPLATES);
+
+    for (Map.Entry<String, String> entry : containsTaskType.entrySet()) {
+      styleProvider = ColorStyleProvider.create(entry.getKey(),
+          ALS_TASK_TYPE_BACKGROUND, ALS_TASK_TYPE_FOREGROUND);
+      ConditionalStyle.registerGridColumnStyleProvider(entry.getValue(), COL_TASK_TYPE,
+          styleProvider);
+    }
   }
 
   public static void scheduleTasks(final DateRange range) {

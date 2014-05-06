@@ -112,7 +112,7 @@ class TasksGrid extends AbstractGridInterceptor implements ClickHandler {
       GridFactory.openGrid(GRID_TASKS, new TasksGrid(type, type.getCaption()));
     }
   }
-  
+
   private final TaskType type;
   private final String caption;
 
@@ -390,13 +390,14 @@ class TasksGrid extends AbstractGridInterceptor implements ClickHandler {
         newRow.setValue(info.getColumnIndex(COL_APPROVED), approved);
 
         notes.add(TaskUtils.getUpdateNote(Localized.getLabel(info.getColumn(COL_STATUS)),
-            DataUtils.render(info, row, info.getColumn(COL_STATUS), info
-                .getColumnIndex(COL_STATUS)), DataUtils.render(
-                info, newRow, info.getColumn(COL_STATUS), info.getColumnIndex(COL_STATUS))));
+            DataUtils.render(info, row, info.getColumn(COL_STATUS),
+                info.getColumnIndex(COL_STATUS)),
+            DataUtils.render(info, newRow, info.getColumn(COL_STATUS),
+                info.getColumnIndex(COL_STATUS))));
 
         notes.add(TaskUtils.getInsertNote(Localized.getLabel(info.getColumn(COL_APPROVED)),
-            DataUtils.render(info, newRow, info.getColumn(COL_APPROVED), info
-                .getColumnIndex(COL_APPROVED))));
+            DataUtils.render(info, newRow, info.getColumn(COL_APPROVED),
+                info.getColumnIndex(COL_APPROVED))));
 
         ParameterList params = TasksKeeper.createArgs(SVC_CONFIRM_TASKS);
         params.addDataItem(VAR_TASK_DATA, Codec.beeSerialize(Lists.newArrayList(row.getId())));

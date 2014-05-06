@@ -382,6 +382,7 @@ public final class TaskConstants {
   public static final String GRID_REQUESTS = "Requests";
 
   public static final String GRID_TASK_TYPES = "TaskTypes";
+  public static final String GRID_TASK_TEMPLATES = "TaskTemplates";
   
   public static final String FORM_NEW_TASK = "NewTask";
   public static final String FORM_TASK = "Task";
