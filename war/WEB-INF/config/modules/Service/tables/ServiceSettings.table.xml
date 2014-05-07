@@ -35,6 +35,6 @@
     <String name="CalendarTaskColor5" precision="100" label="=crmTaskStatusApproved" />
     <String name="CalendarTaskColor6" precision="100" label="=crmTaskStatusCanceled" />
     
-    <Text name="CalendarTaskTypes" />
+    <Text name="CalendarTaskTypes" label="=crmTaskTypes" />
   </Fields>
 </Table>

@@ -17,6 +17,7 @@ import com.butent.bee.server.modules.BeeModule;
 import com.butent.bee.server.modules.administration.ExchangeUtils;
 import com.butent.bee.server.modules.administration.ExtensionIcons;
 import com.butent.bee.server.modules.trade.TradeModuleBean;
+import com.butent.bee.server.sql.HasConditions;
 import com.butent.bee.server.sql.IsCondition;
 import com.butent.bee.server.sql.IsExpression;
 import com.butent.bee.server.sql.SqlInsert;
@@ -309,26 +310,34 @@ public class ServiceModuleBean implements BeeModule {
 
     String idName = sys.getIdName(TBL_SERVICE_OBJECTS);
 
-    IsCondition where = SqlUtils.or(
+    HasConditions where = SqlUtils.or(
         SqlUtils.in(TBL_SERVICE_OBJECTS, idName, TBL_RELATIONS, COL_SERVICE_OBJECT,
             SqlUtils.or(SqlUtils.notNull(TBL_RELATIONS, TaskConstants.COL_TASK),
                 SqlUtils.notNull(TBL_RELATIONS, TaskConstants.COL_RECURRING_TASK))),
         SqlUtils.in(TBL_SERVICE_OBJECTS, idName, TBL_SERVICE_DATES, COL_SERVICE_OBJECT));
 
+    String aliasCustomers = "Cust_" + SqlUtils.uniqueName();
+    String aliasContractors = "Contr_" + SqlUtils.uniqueName();
+
+    String companyIdName = sys.getIdName(ClassifierConstants.TBL_COMPANIES);
+
     SqlSelect objectQuery = new SqlSelect()
         .addFields(TBL_SERVICE_OBJECTS, idName, COL_SERVICE_OBJECT_CATEGORY,
-            COL_SERVICE_OBJECT_CUSTOMER, COL_SERVICE_OBJECT_ADDRESS)
+            COL_SERVICE_OBJECT_CUSTOMER, COL_SERVICE_OBJECT_CONTRACTOR, COL_SERVICE_OBJECT_ADDRESS)
         .addField(TBL_SERVICE_TREE, COL_SERVICE_CATEGORY_NAME, ALS_SERVICE_CATEGORY_NAME)
-        .addField(ClassifierConstants.TBL_COMPANIES,
-            ClassifierConstants.COL_COMPANY_NAME, ALS_SERVICE_CUSTOMER_NAME)
+        .addField(aliasCustomers, ClassifierConstants.COL_COMPANY_NAME, ALS_SERVICE_CUSTOMER_NAME)
+        .addField(aliasContractors, ClassifierConstants.COL_COMPANY_NAME,
+            ALS_SERVICE_CONTRACTOR_NAME)
         .addFrom(TBL_SERVICE_OBJECTS)
         .addFromLeft(TBL_SERVICE_TREE, sys.joinTables(TBL_SERVICE_TREE,
             TBL_SERVICE_OBJECTS, COL_SERVICE_OBJECT_CATEGORY))
-        .addFromLeft(ClassifierConstants.TBL_COMPANIES,
-            sys.joinTables(ClassifierConstants.TBL_COMPANIES,
+        .addFromLeft(ClassifierConstants.TBL_COMPANIES, aliasCustomers,
+            SqlUtils.join(aliasCustomers, companyIdName,
                 TBL_SERVICE_OBJECTS, COL_SERVICE_OBJECT_CUSTOMER))
+        .addFromLeft(ClassifierConstants.TBL_COMPANIES, aliasContractors,
+            SqlUtils.join(aliasContractors, companyIdName,
+                TBL_SERVICE_OBJECTS, COL_SERVICE_OBJECT_CONTRACTOR))
         .setWhere(where)
-        .addOrder(ClassifierConstants.TBL_COMPANIES, ClassifierConstants.COL_COMPANY_NAME)
         .addOrder(TBL_SERVICE_OBJECTS, COL_SERVICE_OBJECT_ADDRESS, idName);
 
     SimpleRowSet objectData = qs.getData(objectQuery);
@@ -338,20 +347,37 @@ public class ServiceModuleBean implements BeeModule {
 
     settings.setTableProperty(TBL_SERVICE_OBJECTS, objectData.serialize());
 
+    Set<Long> taskTypes = DataUtils.parseIdSet(settings.getString(0,
+        COL_SERVICE_CALENDAR_TASK_TYPES));
+
     idName = sys.getIdName(TaskConstants.TBL_TASKS);
+
+    where = SqlUtils.and(SqlUtils.in(TaskConstants.TBL_TASKS, idName,
+        TBL_RELATIONS, TaskConstants.COL_TASK,
+        SqlUtils.notNull(TBL_RELATIONS, COL_SERVICE_OBJECT)));
+    if (!taskTypes.isEmpty()) {
+      where.add(SqlUtils.inList(TaskConstants.TBL_TASKS, TaskConstants.COL_TASK_TYPE, taskTypes));
+    }
 
     SqlSelect taskQuery = new SqlSelect()
         .addAllFields(TaskConstants.TBL_TASKS)
+        .addField(TaskConstants.TBL_TASK_TYPES, TaskConstants.COL_TASK_TYPE_NAME,
+            TaskConstants.ALS_TASK_TYPE_NAME)
+        .addField(TaskConstants.TBL_TASK_TYPES, AdministrationConstants.COL_BACKGROUND,
+            TaskConstants.ALS_TASK_TYPE_BACKGROUND)
+        .addField(TaskConstants.TBL_TASK_TYPES, AdministrationConstants.COL_FOREGROUND,
+            TaskConstants.ALS_TASK_TYPE_FOREGROUND)
         .addFields(TaskConstants.TBL_TASK_USERS, TaskConstants.COL_STAR)
         .addFrom(TaskConstants.TBL_TASKS)
+        .addFromLeft(TaskConstants.TBL_TASK_TYPES,
+            sys.joinTables(TaskConstants.TBL_TASK_TYPES, TaskConstants.TBL_TASKS,
+                TaskConstants.COL_TASK_TYPE))
         .addFromLeft(TaskConstants.TBL_TASK_USERS,
             SqlUtils.and(
                 SqlUtils.join(TaskConstants.TBL_TASKS, idName,
                     TaskConstants.TBL_TASK_USERS, TaskConstants.COL_TASK),
                 SqlUtils.equals(TaskConstants.TBL_TASK_USERS, COL_USER, usr.getCurrentUserId())))
-        .setWhere(SqlUtils.in(TaskConstants.TBL_TASKS, idName,
-            TBL_RELATIONS, TaskConstants.COL_TASK,
-            SqlUtils.notNull(TBL_RELATIONS, COL_SERVICE_OBJECT)))
+        .setWhere(where)
         .addOrder(TaskConstants.TBL_TASKS, TaskConstants.COL_FINISH_TIME, idName);
 
     SimpleRowSet taskData = qs.getData(taskQuery);
@@ -361,12 +387,27 @@ public class ServiceModuleBean implements BeeModule {
 
     idName = sys.getIdName(TaskConstants.TBL_RECURRING_TASKS);
 
+    where = SqlUtils.and(SqlUtils.in(TaskConstants.TBL_RECURRING_TASKS, idName,
+        TBL_RELATIONS, TaskConstants.COL_RECURRING_TASK,
+        SqlUtils.notNull(TBL_RELATIONS, COL_SERVICE_OBJECT)));
+    if (!taskTypes.isEmpty()) {
+      where.add(SqlUtils.inList(TaskConstants.TBL_RECURRING_TASKS, TaskConstants.COL_TASK_TYPE,
+          taskTypes));
+    }
+    
     SqlSelect rtQuery = new SqlSelect()
         .addAllFields(TaskConstants.TBL_RECURRING_TASKS)
+        .addField(TaskConstants.TBL_TASK_TYPES, TaskConstants.COL_TASK_TYPE_NAME,
+            TaskConstants.ALS_TASK_TYPE_NAME)
+        .addField(TaskConstants.TBL_TASK_TYPES, AdministrationConstants.COL_BACKGROUND,
+            TaskConstants.ALS_TASK_TYPE_BACKGROUND)
+        .addField(TaskConstants.TBL_TASK_TYPES, AdministrationConstants.COL_FOREGROUND,
+            TaskConstants.ALS_TASK_TYPE_FOREGROUND)
         .addFrom(TaskConstants.TBL_RECURRING_TASKS)
-        .setWhere(SqlUtils.in(TaskConstants.TBL_RECURRING_TASKS, idName,
-            TBL_RELATIONS, TaskConstants.COL_RECURRING_TASK,
-            SqlUtils.notNull(TBL_RELATIONS, COL_SERVICE_OBJECT)))
+        .addFromLeft(TaskConstants.TBL_TASK_TYPES,
+            sys.joinTables(TaskConstants.TBL_TASK_TYPES, TaskConstants.TBL_RECURRING_TASKS,
+                TaskConstants.COL_TASK_TYPE))
+        .setWhere(where)
         .addOrder(TaskConstants.TBL_RECURRING_TASKS, TaskConstants.COL_RT_SCHEDULE_FROM, idName);
 
     SimpleRowSet rtData = qs.getData(rtQuery);

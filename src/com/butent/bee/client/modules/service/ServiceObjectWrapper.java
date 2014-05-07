@@ -1,33 +1,51 @@
 package com.butent.bee.client.modules.service;
 
+import static com.butent.bee.shared.modules.service.ServiceConstants.*;
+
 import com.butent.bee.client.data.Data;
+import com.butent.bee.client.timeboard.TimeBoardHelper;
 import com.butent.bee.shared.data.SimpleRowSet.SimpleRow;
-import com.butent.bee.shared.modules.service.ServiceConstants;
 
 class ServiceObjectWrapper {
-  
-  private static final String idColumn = Data.getIdColumn(ServiceConstants.VIEW_SERVICE_OBJECTS);
-  
+
+  private static final String idColumn = Data.getIdColumn(VIEW_SERVICE_OBJECTS);
+
+  private static final String categoryLabel = Data.getColumnLabel(VIEW_SERVICE_OBJECTS,
+      COL_SERVICE_OBJECT_CATEGORY);
+  private static final String addressLabel = Data.getColumnLabel(VIEW_SERVICE_OBJECTS,
+      COL_SERVICE_OBJECT_ADDRESS);
+  private static final String customerLabel = Data.getColumnLabel(VIEW_SERVICE_OBJECTS,
+      COL_SERVICE_OBJECT_CUSTOMER);
+  private static final String contractorLabel = Data.getColumnLabel(VIEW_SERVICE_OBJECTS,
+      COL_SERVICE_OBJECT_CONTRACTOR);
+
   private final Long id;
-  
-  private final String categoryName;
+
   private final String address;
+
+  private final String title;
 
   ServiceObjectWrapper(SimpleRow row) {
     this.id = row.getLong(idColumn);
-    this.categoryName = row.getValue(ServiceConstants.ALS_SERVICE_CATEGORY_NAME);
-    this.address = row.getValue(ServiceConstants.COL_SERVICE_OBJECT_ADDRESS);
+
+    this.address = row.getValue(COL_SERVICE_OBJECT_ADDRESS);
+
+    this.title = TimeBoardHelper.buildTitle(
+        categoryLabel, row.getValue(ALS_SERVICE_CATEGORY_NAME),
+        addressLabel, row.getValue(COL_SERVICE_OBJECT_ADDRESS),
+        customerLabel, row.getValue(ALS_SERVICE_CUSTOMER_NAME),
+        contractorLabel, row.getValue(ALS_SERVICE_CONTRACTOR_NAME));
   }
 
   Long getId() {
     return id;
   }
 
-  String getCategoryName() {
-    return categoryName;
-  }
-
   String getAddress() {
     return address;
+  }
+
+  String getTitle() {
+    return title;
   }
 }

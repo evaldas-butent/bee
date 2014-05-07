@@ -245,6 +245,20 @@ public final class TimeBoardHelper {
     return result;
   }
 
+  public static Integer getInteger(BeeRowSet settings, String colName) {
+    if (DataUtils.isEmpty(settings)) {
+      return null;
+    }
+
+    int index = settings.getColumnIndex(colName);
+    if (BeeConst.isUndef(index)) {
+      logger.severe(settings.getViewName(), colName, "column not found");
+      return null;
+    } else {
+      return settings.getInteger(0, index);
+    }
+  }
+  
   public static Long getLong(BeeRowSet settings, String colName) {
     if (DataUtils.isEmpty(settings)) {
       return null;

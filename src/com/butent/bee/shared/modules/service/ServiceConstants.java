@@ -21,6 +21,8 @@ public final class ServiceConstants {
       }
     };
     
+    public static final ServiceCompanyKind DETAULT = CUSTOMER; 
+    
     @Override
     public String getCaption() {
       return getCaption(Localized.getConstants());
