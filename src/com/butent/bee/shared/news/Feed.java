@@ -279,8 +279,9 @@ public enum Feed implements HasLocalizedCaption {
 
   ASSESSMENT_REQUESTS_ALL(ModuleAndSub.of(Module.TRANSPORT, SubModule.LOGISTICS),
       TransportConstants.TBL_ASSESSMENTS, TransportConstants.VIEW_ASSESSMENTS,
-      Lists.newArrayList(DataUtils.ID_TAG, TransportConstants.ALS_ORDER_NOTES,
-          TransportConstants.ALS_CUSTOMER_NAME)) {
+      Lists.newArrayList(TransportConstants.COL_ASSESSMENT, DataUtils.ID_TAG,
+          TransportConstants.COL_STATUS,
+          TransportConstants.ALS_ORDER_NOTES, TransportConstants.ALS_CUSTOMER_NAME)) {
 
     @Override
     public String getCaption(LocalizableConstants constants) {
@@ -291,8 +292,9 @@ public enum Feed implements HasLocalizedCaption {
 
   ASSESSMENT_REQUESTS_MY(ModuleAndSub.of(Module.TRANSPORT, SubModule.LOGISTICS),
       TransportConstants.TBL_ASSESSMENTS, TransportConstants.VIEW_ASSESSMENTS,
-      Lists.newArrayList(DataUtils.ID_TAG, TransportConstants.ALS_ORDER_NOTES,
-          TransportConstants.ALS_CUSTOMER_NAME)) {
+      Lists.newArrayList(TransportConstants.COL_ASSESSMENT, DataUtils.ID_TAG,
+          TransportConstants.COL_STATUS,
+          TransportConstants.ALS_ORDER_NOTES, TransportConstants.ALS_CUSTOMER_NAME)) {
 
     @Override
     public String getCaption(LocalizableConstants constants) {

@@ -52,6 +52,7 @@ import com.butent.bee.shared.communication.ResponseObject;
 import com.butent.bee.shared.data.BeeRow;
 import com.butent.bee.shared.data.BeeRowSet;
 import com.butent.bee.shared.data.DataUtils;
+import com.butent.bee.shared.data.IsRow;
 import com.butent.bee.shared.data.SearchResult;
 import com.butent.bee.shared.data.SimpleRowSet;
 import com.butent.bee.shared.data.SimpleRowSet.SimpleRow;
@@ -61,10 +62,13 @@ import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogUtils;
 import com.butent.bee.shared.modules.BeeParameter;
+import com.butent.bee.shared.modules.transport.TransportConstants;
 import com.butent.bee.shared.modules.transport.TransportConstants.AssessmentStatus;
 import com.butent.bee.shared.modules.transport.TransportConstants.OrderStatus;
 import com.butent.bee.shared.modules.transport.TransportConstants.VehicleType;
 import com.butent.bee.shared.news.Feed;
+import com.butent.bee.shared.news.Headline;
+import com.butent.bee.shared.news.HeadlineProducer;
 import com.butent.bee.shared.news.NewsConstants;
 import com.butent.bee.shared.rights.Module;
 import com.butent.bee.shared.time.DateTime;
@@ -74,6 +78,7 @@ import com.butent.bee.shared.ui.Color;
 import com.butent.bee.shared.utils.ArrayUtils;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.Codec;
+import com.butent.bee.shared.utils.EnumUtils;
 import com.butent.bee.shared.utils.NameUtils;
 import com.butent.webservice.ButentWS;
 import com.butent.webservice.WSDocument;
@@ -570,6 +575,41 @@ public class TransportModuleBean implements BeeModule {
       }
     });
 
+    HeadlineProducer assessmentsHeadlineProducer = new HeadlineProducer() {
+
+      @Override
+      public Headline produce(Feed feed, long userId, BeeRowSet rowSet, IsRow row, boolean isNew) {
+        String caption = "";
+        String pid = DataUtils.getString(rowSet, row, COL_ASSESSMENT);
+
+        if (!BeeUtils.isEmpty(pid)) {
+          caption = BeeUtils.joinWords(caption, usr.getLocalizableConstants().captionPid()
+              + BeeConst.STRING_COLON, pid);
+        }
+
+        String id = BeeUtils.toString(row.getId());
+
+        caption = BeeUtils.joinWords(caption, usr.getLocalizableConstants().captionId()
+            + BeeConst.STRING_COLON, id);
+
+        AssessmentStatus status =
+            EnumUtils.getEnumByIndex(AssessmentStatus.class,
+                DataUtils.getInteger(rowSet, row, COL_STATUS));
+
+        if (status != null) {
+          caption = BeeUtils.joinWords(caption, status.getCaption(
+              usr.getLocalizableConstants(userId)));
+        }
+
+        String notes = DataUtils.getString(rowSet, row, ALS_ORDER_NOTES);
+        String customer = DataUtils.getString(rowSet, row, TransportConstants.ALS_CUSTOMER_NAME);
+
+        caption = BeeUtils.joinWords(caption, notes, customer);
+
+        return Headline.create(row.getId(), caption, isNew);
+      }
+    };
+
     news.registerUsageQueryProvider(Feed.ORDER_CARGO, new ExtendedUsageQueryProvider() {
       @Override
       protected List<IsCondition> getConditions(long userId) {
@@ -622,51 +662,16 @@ public class TransportModuleBean implements BeeModule {
       }
     });
 
-    news.registerUsageQueryProvider(Feed.ASSESSMENT_REQUESTS_ALL, new ExtendedUsageQueryProvider() {
+    news.registerHeadlineProducer(Feed.ASSESSMENT_REQUESTS_ALL, assessmentsHeadlineProducer);
 
-      @Override
-      protected List<IsCondition> getConditions(long userId) {
-        return NewsHelper.buildConditions(
-            SqlUtils.equals(TBL_ORDERS, COL_STATUS, OrderStatus.REQUEST.ordinal()));
-      }
+    news.registerUsageQueryProvider(Feed.ASSESSMENT_REQUESTS_ALL,
+        new AssesmentRequestsUsageQueryProvider(false));
 
-      @Override
-      protected List<Pair<String, IsCondition>> getJoins() {
-        List<Pair<String, IsCondition>> joins = Lists.newArrayList();
-        joins.addAll(NewsHelper.buildJoin(TBL_ASSESSMENTS, news.joinUsage(TBL_ASSESSMENTS)));
-        joins.addAll(NewsHelper.buildJoin(TBL_ORDER_CARGO,
-            sys.joinTables(TBL_ORDER_CARGO, TBL_ASSESSMENTS, COL_CARGO)));
-        joins.addAll(NewsHelper.buildJoin(TBL_ORDERS,
-            sys.joinTables(TBL_ORDERS, TBL_ORDER_CARGO, COL_ORDER)));
-
-        return joins;
-      }
-
-    });
-
-    news.registerUsageQueryProvider(Feed.ASSESSMENT_REQUESTS_MY, new ExtendedUsageQueryProvider() {
-
-      @Override
-      protected List<IsCondition> getConditions(long userId) {
-        return NewsHelper.buildConditions(SqlUtils.and(SqlUtils.equals(TBL_ORDERS,
-            COL_ORDER_MANAGER,
-            userId), SqlUtils.equals(TBL_ORDERS, COL_STATUS, OrderStatus.REQUEST.ordinal())));
-      }
-
-      @Override
-      protected List<Pair<String, IsCondition>> getJoins() {
-        List<Pair<String, IsCondition>> joins = Lists.newArrayList();
-        joins.addAll(NewsHelper.buildJoin(TBL_ASSESSMENTS, news.joinUsage(TBL_ASSESSMENTS)));
-        joins.addAll(NewsHelper.buildJoin(TBL_ORDER_CARGO,
-            sys.joinTables(TBL_ORDER_CARGO, TBL_ASSESSMENTS, COL_CARGO)));
-        joins.addAll(NewsHelper.buildJoin(TBL_ORDERS,
-            sys.joinTables(TBL_ORDERS, TBL_ORDER_CARGO, COL_ORDER)));
-
-        return joins;
-      }
-
-    });
-
+    news.registerHeadlineProducer(Feed.ASSESSMENT_REQUESTS_MY, assessmentsHeadlineProducer);
+    
+    news.registerUsageQueryProvider(Feed.ASSESSMENT_REQUESTS_MY,
+        new AssesmentRequestsUsageQueryProvider(true));
+    
     news.registerUsageQueryProvider(Feed.ASSESSMENT_ORDERS_ALL, new ExtendedUsageQueryProvider() {
 
       @Override
