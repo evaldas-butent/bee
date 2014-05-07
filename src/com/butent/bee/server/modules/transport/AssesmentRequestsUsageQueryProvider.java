@@ -7,7 +7,6 @@ import com.butent.bee.server.news.NewsHelper;
 import com.butent.bee.server.news.UsageQueryProvider;
 import com.butent.bee.server.sql.SqlSelect;
 import com.butent.bee.server.sql.SqlUtils;
-import com.butent.bee.shared.logging.LogUtils;
 import com.butent.bee.shared.modules.transport.TransportConstants.OrderStatus;
 import com.butent.bee.shared.news.Feed;
 import com.butent.bee.shared.news.NewsConstants;
@@ -16,6 +15,7 @@ import com.butent.bee.shared.time.DateTime;
 public class AssesmentRequestsUsageQueryProvider implements UsageQueryProvider {
 
   private boolean userMode;
+  private boolean orderMode;
 
   @Override
   public SqlSelect getQueryForAccess(Feed feed, String relationColumn, long userId,
@@ -36,13 +36,20 @@ public class AssesmentRequestsUsageQueryProvider implements UsageQueryProvider {
         .setWhere(SqlUtils.and(
             SqlUtils.equals(NewsConstants.getUsageTable(TBL_ASSESSMENTS), COL_USER, userId),
             SqlUtils.notNull(NewsConstants.getUsageTable(TBL_ASSESSMENTS),
-                NewsConstants.COL_USAGE_ACCESS),
-            SqlUtils.equals(TBL_ORDERS, COL_STATUS, OrderStatus.REQUEST.ordinal())
+                NewsConstants.COL_USAGE_ACCESS)
             ));
 
     if (userMode) {
       select.setWhere(SqlUtils.and(select.getWhere(),
           SqlUtils.equals(TBL_ORDERS, COL_ORDER_MANAGER, userId)));
+    }
+
+    if (orderMode) {
+      select.setWhere(SqlUtils.and(select.getWhere(),
+          SqlUtils.notEqual(TBL_ORDERS, COL_STATUS, OrderStatus.REQUEST.ordinal())));
+    } else {
+      select.setWhere(SqlUtils.and(select.getWhere(),
+          SqlUtils.equals(TBL_ORDERS, COL_STATUS, OrderStatus.REQUEST.ordinal())));
     }
 
     return select;
@@ -67,8 +74,7 @@ public class AssesmentRequestsUsageQueryProvider implements UsageQueryProvider {
             SqlUtils.notEqual(NewsConstants.getUsageTable(TBL_ASSESSMENTS), COL_USER, userId),
             SqlUtils.more(NewsConstants.getUsageTable(TBL_ASSESSMENTS),
                 NewsConstants.COL_USAGE_UPDATE, NewsHelper.getStartTime(startDate)),
-            SqlUtils.notNull(TBL_ASSESSMENTS, COL_ASSESSMENT),
-            SqlUtils.equals(TBL_ORDERS, COL_STATUS, OrderStatus.REQUEST.ordinal())
+            SqlUtils.notNull(TBL_ASSESSMENTS, COL_ASSESSMENT)
             ));
 
     if (userMode) {
@@ -76,6 +82,14 @@ public class AssesmentRequestsUsageQueryProvider implements UsageQueryProvider {
           SqlUtils.equals(TBL_ORDERS, COL_ORDER_MANAGER, userId)));
     }
     
+    if (orderMode) {
+      selectFromChild.setWhere(SqlUtils.and(selectFromChild.getWhere(),
+          SqlUtils.notEqual(TBL_ORDERS, COL_STATUS, OrderStatus.REQUEST.ordinal())));
+    } else {
+      selectFromChild.setWhere(SqlUtils.and(selectFromChild.getWhere(),
+          SqlUtils.equals(TBL_ORDERS, COL_STATUS, OrderStatus.REQUEST.ordinal())));
+    }
+
     SqlSelect selectGeneral = new SqlSelect()
         .addFields(NewsConstants.getUsageTable(TBL_ASSESSMENTS), COL_ASSESSMENT)
     .addMax(NewsConstants.getUsageTable(TBL_ASSESSMENTS), NewsConstants.COL_USAGE_UPDATE)
@@ -91,13 +105,20 @@ public class AssesmentRequestsUsageQueryProvider implements UsageQueryProvider {
     .setWhere(SqlUtils.and(
         SqlUtils.notEqual(NewsConstants.getUsageTable(TBL_ASSESSMENTS), COL_USER, userId),
         SqlUtils.more(NewsConstants.getUsageTable(TBL_ASSESSMENTS),
-            NewsConstants.COL_USAGE_UPDATE, NewsHelper.getStartTime(startDate)),
-        SqlUtils.equals(TBL_ORDERS, COL_STATUS, OrderStatus.REQUEST.ordinal())
+                NewsConstants.COL_USAGE_UPDATE, NewsHelper.getStartTime(startDate))
         ));
 
     if (userMode) {
       selectGeneral.setWhere(SqlUtils.and(selectGeneral.getWhere(),
           SqlUtils.equals(TBL_ORDERS, COL_ORDER_MANAGER, userId)));
+    }
+
+    if (orderMode) {
+      selectGeneral.setWhere(SqlUtils.and(selectGeneral.getWhere(),
+          SqlUtils.notEqual(TBL_ORDERS, COL_STATUS, OrderStatus.REQUEST.ordinal())));
+    } else {
+      selectGeneral.setWhere(SqlUtils.and(selectGeneral.getWhere(),
+          SqlUtils.equals(TBL_ORDERS, COL_STATUS, OrderStatus.REQUEST.ordinal())));
     }
 
     selectGeneral.setUnionAllMode(true).addUnion(selectFromChild);
@@ -110,12 +131,16 @@ public class AssesmentRequestsUsageQueryProvider implements UsageQueryProvider {
         .addFrom(selectGeneral, aliasName)
         .addGroup(aliasName, COL_ASSESSMENT);
 
-    LogUtils.getRootLogger().error(null, select.getQuery());
     return select;
   }
 
-  public AssesmentRequestsUsageQueryProvider(boolean userMode) {
+  public AssesmentRequestsUsageQueryProvider(boolean userMode, boolean orderMode) {
     this.userMode = userMode;
+    this.orderMode = orderMode;
+  }
+
+  public AssesmentRequestsUsageQueryProvider(boolean userMode) {
+    this(userMode, false);
   }
 
 }

@@ -672,50 +672,15 @@ public class TransportModuleBean implements BeeModule {
     news.registerUsageQueryProvider(Feed.ASSESSMENT_REQUESTS_MY,
         new AssesmentRequestsUsageQueryProvider(true));
     
-    news.registerUsageQueryProvider(Feed.ASSESSMENT_ORDERS_ALL, new ExtendedUsageQueryProvider() {
+    news.registerHeadlineProducer(Feed.ASSESSMENT_ORDERS_ALL, assessmentsHeadlineProducer);
+    
+    news.registerUsageQueryProvider(Feed.ASSESSMENT_ORDERS_ALL,
+        new AssesmentRequestsUsageQueryProvider(false, true));
 
-      @Override
-      protected List<IsCondition> getConditions(long userId) {
-        return NewsHelper.buildConditions(
-            SqlUtils.notEqual(TBL_ORDERS, COL_STATUS, OrderStatus.REQUEST.ordinal()));
-      }
+    news.registerHeadlineProducer(Feed.ASSESSMENT_ORDERS_MY, assessmentsHeadlineProducer);
 
-      @Override
-      protected List<Pair<String, IsCondition>> getJoins() {
-        List<Pair<String, IsCondition>> joins = Lists.newArrayList();
-        joins.addAll(NewsHelper.buildJoin(TBL_ASSESSMENTS, news.joinUsage(TBL_ASSESSMENTS)));
-        joins.addAll(NewsHelper.buildJoin(TBL_ORDER_CARGO,
-            sys.joinTables(TBL_ORDER_CARGO, TBL_ASSESSMENTS, COL_CARGO)));
-        joins.addAll(NewsHelper.buildJoin(TBL_ORDERS,
-            sys.joinTables(TBL_ORDERS, TBL_ORDER_CARGO, COL_ORDER)));
-
-        return joins;
-      }
-
-    });
-
-    news.registerUsageQueryProvider(Feed.ASSESSMENT_ORDERS_MY, new ExtendedUsageQueryProvider() {
-
-      @Override
-      protected List<IsCondition> getConditions(long userId) {
-        return NewsHelper.buildConditions(SqlUtils.and(SqlUtils.equals(TBL_ORDERS,
-            COL_ORDER_MANAGER,
-            userId), SqlUtils.notEqual(TBL_ORDERS, COL_STATUS, OrderStatus.REQUEST.ordinal())));
-      }
-
-      @Override
-      protected List<Pair<String, IsCondition>> getJoins() {
-        List<Pair<String, IsCondition>> joins = Lists.newArrayList();
-        joins.addAll(NewsHelper.buildJoin(TBL_ASSESSMENTS, news.joinUsage(TBL_ASSESSMENTS)));
-        joins.addAll(NewsHelper.buildJoin(TBL_ORDER_CARGO,
-            sys.joinTables(TBL_ORDER_CARGO, TBL_ASSESSMENTS, COL_CARGO)));
-        joins.addAll(NewsHelper.buildJoin(TBL_ORDERS,
-            sys.joinTables(TBL_ORDERS, TBL_ORDER_CARGO, COL_ORDER)));
-
-        return joins;
-      }
-
-    });
+    news.registerUsageQueryProvider(Feed.ASSESSMENT_ORDERS_MY,
+        new AssesmentRequestsUsageQueryProvider(true, true));
 
     news.registerUsageQueryProvider(Feed.CARGO_SALES, new ExtendedUsageQueryProvider() {
       @Override
