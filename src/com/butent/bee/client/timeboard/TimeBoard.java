@@ -874,6 +874,10 @@ public abstract class TimeBoard extends Flow implements Presenter, View, Printab
   }
 
   protected abstract String getStripOpacityColumnName();
+  
+  protected boolean hasContent() {
+    return !BeeUtils.isEmpty(getContentId()) && getRowCount() > 0;
+  }
 
   protected void initContent(ComplexPanel panel, int rc) {
     setRowCount(rc);
@@ -1405,16 +1409,24 @@ public abstract class TimeBoard extends Flow implements Presenter, View, Printab
     this.visibleRange = visibleRange;
   }
 
+  protected void styleItemEnd(Widget widget) {
+    widget.addStyleName(STYLE_ITEM_END);
+  }
+
   protected void styleItemHasHandling(Widget widget) {
     widget.addStyleName(STYLE_ITEM_HAS_HANDLING);
   }
 
+  protected void styleItemStart(Widget widget) {
+    widget.addStyleName(STYLE_ITEM_START);
+  }
+
   protected void styleItemWidget(HasDateRange item, Widget widget) {
     if (getVisibleRange().contains(item.getRange().lowerEndpoint())) {
-      widget.addStyleName(STYLE_ITEM_START);
+      styleItemStart(widget);
     }
     if (getVisibleRange().contains(item.getRange().upperEndpoint())) {
-      widget.addStyleName(STYLE_ITEM_END);
+      styleItemEnd(widget);
     }
   }
 

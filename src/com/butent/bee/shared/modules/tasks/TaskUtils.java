@@ -1,8 +1,10 @@
 package com.butent.bee.shared.modules.tasks;
 
+import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.BiMap;
 import com.google.common.collect.HashBiMap;
 import com.google.common.collect.Lists;
+import com.google.common.collect.Multimap;
 
 import static com.butent.bee.shared.modules.classifiers.ClassifierConstants.*;
 import static com.butent.bee.shared.modules.tasks.TaskConstants.*;
@@ -21,7 +23,6 @@ import com.butent.bee.shared.modules.discussions.DiscussionsConstants;
 import com.butent.bee.shared.modules.documents.DocumentConstants;
 import com.butent.bee.shared.modules.service.ServiceConstants;
 import com.butent.bee.shared.modules.tasks.TaskConstants.TaskStatus;
-import com.butent.bee.shared.time.DateRange;
 import com.butent.bee.shared.time.DateTime;
 import com.butent.bee.shared.time.JustDate;
 import com.butent.bee.shared.time.ScheduleDateMode;
@@ -107,22 +108,42 @@ public final class TaskUtils {
       ScheduleDateMode mode =
           EnumUtils.getEnumByIndex(ScheduleDateMode.class, row.getInteger(modeIndex));
 
-      if (from != null && mode != null) {
-        DateRange range;
-        if (until == null || from.equals(until)) {
-          range = DateRange.day(from);
-        } else if (TimeUtils.isLess(from, until)) {
-          range = DateRange.closed(from, until);
-        } else {
-          range = null;
-        }
-
-        if (range != null) {
-          result.add(new ScheduleDateRange(range, mode));
-        }
+      ScheduleDateRange sdr = ScheduleDateRange.maybeCreate(from, until, mode);
+      if (sdr != null) {
+        result.add(sdr);
       }
     }
 
+    return result;
+  }
+
+  public static Multimap<Long, ScheduleDateRange> getScheduleDateRangesByTask(BeeRowSet rowSet) {
+    Multimap<Long, ScheduleDateRange> result = ArrayListMultimap.create();
+    if (DataUtils.isEmpty(rowSet)) {
+      return result;
+    }
+    
+    int rtIndex = rowSet.getColumnIndex(COL_RECURRING_TASK);
+
+    int fromIndex = rowSet.getColumnIndex(COL_RTD_FROM);
+    int untilIndex = rowSet.getColumnIndex(COL_RTD_UNTIL);
+    int modeIndex = rowSet.getColumnIndex(COL_RTD_MODE);
+    
+    for (BeeRow row : rowSet.getRows()) {
+      Long rt = row.getLong(rtIndex);
+
+      JustDate from = row.getDate(fromIndex);
+      JustDate until = row.getDate(untilIndex);
+      
+      ScheduleDateMode mode =
+          EnumUtils.getEnumByIndex(ScheduleDateMode.class, row.getInteger(modeIndex));
+      
+      ScheduleDateRange sdr = ScheduleDateRange.maybeCreate(from, until, mode);
+      if (DataUtils.isId(rt) && sdr != null) {
+        result.put(rt, sdr);
+      }
+    }
+    
     return result;
   }
 

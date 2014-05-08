@@ -2,7 +2,7 @@
 <!DOCTYPE Form [
   <!ENTITY tbl "border-collapse: collapse; margin-top: 2ex; margin-left: 1em;">
   <!ENTITY cell "padding: 3px 1em;">
-  <!ENTITY lbl "text-align: right;">
+  <!ENTITY lbl "text-align: right; max-width: 180px;">
   <!ENTITY spin "width: 50px;">
   <!ENTITY color "width: 120px;">
   <!ENTITY slider_inp "width: 100px;">
@@ -65,7 +65,7 @@
           style="&slider_inp;" />
       </row>
       <row>
-        <Label text="CalendarStripOpacity" style="&lbl;" />
+        <Label for="CalendarStripOpacity" style="&lbl;" />
         <InputRange source="CalendarStripOpacity" minValue="0" maxValue="100" step="5"
           style="&slider_inp;" />
       </row>

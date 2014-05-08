@@ -51,6 +51,13 @@ import java.util.Map;
 
 public final class Exporter {
 
+  public abstract static class FileNameCallback extends StringCallback {
+    @Override
+    public boolean validate(String value) {
+      return validateFileName(value);
+    }
+  }
+
   private static final BeeLogger logger = LogUtils.getLogger(Exporter.class);
 
   private static final String EXPORT_URL = "export";
@@ -59,14 +66,51 @@ public final class Exporter {
 
   private static final int DEFAULT_STEP_SIZE = 100;
 
-  private static final double GRID_PARENT_LABEL_HEIGHT_FACTOR = 1.1;
-  private static final double GRID_CAPTION_HEIGHT_FACTOR = 1.5;
-  private static final double GRID_FILTER_LABEL_HEIGHT_FACTOR = 1.0;
-  private static final double GRID_HEADER_HEIGHT_FACTOR = 1.2;
+  private static final double PARENT_LABEL_HEIGHT_FACTOR = 1.1;
+  private static final double CAPTION_HEIGHT_FACTOR = 1.5;
+  private static final double FILTER_LABEL_HEIGHT_FACTOR = 1.0;
+  private static final double HEADER_HEIGHT_FACTOR = 1.2;
 
   private static final int MAX_NUMBER_OF_ROWS_FOR_AUTOSIZE = 1_000;
 
-  public static void confirm(String fileName, StringCallback callback) {
+  public static void addCaption(XSheet sheet, String caption, int rowIndex, int columnCount) {
+    Assert.notNull(sheet);
+    Assert.notEmpty(caption);
+
+    XFont font = XFont.bold();
+    font.setFactor(CAPTION_HEIGHT_FACTOR);
+
+    XStyle style = XStyle.center();
+    style.setFontRef(sheet.registerFont(font));
+
+    XCell cell = new XCell(0, caption, sheet.registerStyle(style));
+    if (columnCount > 1) {
+      cell.setColSpan(columnCount);
+    }
+
+    XRow row = new XRow(rowIndex);
+    row.setHeightFactor(CAPTION_HEIGHT_FACTOR);
+
+    row.add(cell);
+    sheet.add(row);
+  }
+
+  public static void addFilterLabel(XSheet sheet, String label, int rowIndex, int columnCount) {
+    XStyle style = XStyle.center();
+
+    XCell cell = new XCell(0, label, sheet.registerStyle(style));
+    if (columnCount > 1) {
+      cell.setColSpan(columnCount);
+    }
+
+    XRow row = new XRow(rowIndex);
+    row.setHeightFactor(FILTER_LABEL_HEIGHT_FACTOR);
+
+    row.add(cell);
+    sheet.add(row);
+  }
+
+  public static void confirm(String fileName, FileNameCallback callback) {
     Assert.notNull(callback);
 
     int width = BeeUtils.resize(BeeUtils.trim(fileName).length(), 20, 100, 300, 600);
@@ -77,6 +121,12 @@ public final class Exporter {
         Action.EXPORT.getCaption(), Action.CANCEL.getCaption(), null);
   }
 
+  public static XRow createHeaderRow(int rowIndex) {
+    XRow row = new XRow(rowIndex);
+    row.setHeightFactor(HEADER_HEIGHT_FACTOR);
+    return row;
+  }
+  
   public static void export(GridPresenter presenter, String caption, final String fileName) {
     Assert.notNull(presenter);
     Assert.isTrue(validateFileName(fileName));
@@ -109,7 +159,7 @@ public final class Exporter {
     }
 
     final XSheet sheet = new XSheet();
-    
+
     Double rowHeightFactor = getRowHeightFactor(grid);
     if (rowHeightFactor != null) {
       sheet.setRowHeightFactor(rowHeightFactor);
@@ -121,7 +171,7 @@ public final class Exporter {
         sheet.setColumnWidthFactor(i, widthFactor);
       }
     }
-    
+
     int rowIndex = 0;
 
     XRow row;
@@ -130,16 +180,16 @@ public final class Exporter {
     XStyle style;
 
     Integer styleRef;
-    
+
     List<String> parentLabels = presenter.getParentLabels();
     if (!BeeUtils.isEmpty(parentLabels)) {
       font = new XFont();
-      font.setFactor(GRID_PARENT_LABEL_HEIGHT_FACTOR);
+      font.setFactor(PARENT_LABEL_HEIGHT_FACTOR);
 
       style = new XStyle();
       style.setFontRef(sheet.registerFont(font));
       styleRef = sheet.registerStyle(style);
-      
+
       for (String label : parentLabels) {
         cell = new XCell(0, label, styleRef);
         if (columnCount > 1) {
@@ -147,8 +197,8 @@ public final class Exporter {
         }
 
         row = new XRow(rowIndex++);
-        row.setHeightFactor(GRID_PARENT_LABEL_HEIGHT_FACTOR);
-        
+        row.setHeightFactor(PARENT_LABEL_HEIGHT_FACTOR);
+
         row.add(cell);
         sheet.add(row);
       }
@@ -161,23 +211,8 @@ public final class Exporter {
         sheet.add(row);
       }
       rowIndex++;
-
-      font = XFont.bold();
-      font.setFactor(GRID_CAPTION_HEIGHT_FACTOR);
-
-      style = XStyle.center();
-      style.setFontRef(sheet.registerFont(font));
-
-      cell = new XCell(0, caption, sheet.registerStyle(style));
-      if (columnCount > 1) {
-        cell.setColSpan(columnCount);
-      }
-
-      row = new XRow(rowIndex++);
-      row.setHeightFactor(GRID_CAPTION_HEIGHT_FACTOR);
       
-      row.add(cell);
-      sheet.add(row);
+      addCaption(sheet, caption, rowIndex++, columnCount);
     }
 
     Filter filter = presenter.getDataProvider().getUserFilter();
@@ -186,19 +221,8 @@ public final class Exporter {
       if (BeeUtils.isEmpty(label)) {
         label = filter.toString();
       }
-
-      style = XStyle.center();
-
-      cell = new XCell(0, label, sheet.registerStyle(style));
-      if (columnCount > 1) {
-        cell.setColSpan(columnCount);
-      }
-
-      row = new XRow(rowIndex++);
-      row.setHeightFactor(GRID_FILTER_LABEL_HEIGHT_FACTOR);
-
-      row.add(cell);
-      sheet.add(row);
+      
+      addFilterLabel(sheet, label, rowIndex++, columnCount);
     }
 
     if (rowIndex > 0) {
@@ -211,8 +235,7 @@ public final class Exporter {
     }
 
     if (grid.hasHeaders()) {
-      row = new XRow(rowIndex++);
-      row.setHeightFactor(GRID_HEADER_HEIGHT_FACTOR);
+      row = createHeaderRow(rowIndex++);
 
       style = XStyle.center();
       style.setVerticalAlign(VerticalAlign.MIDDLE);
@@ -251,7 +274,7 @@ public final class Exporter {
           exportRow(context, dataRow, columns, rowIndex++, sheet, bodyStyles);
         }
       }
-      
+
       autosizeNoPictures(sheet, columns.size());
       export(sheet, fileName);
 
@@ -308,7 +331,7 @@ public final class Exporter {
       export(wb, fileName);
     }
   }
-  
+
   public static void export(XWorkbook wb, String fileName) {
     if (wb == null || wb.isEmpty()) {
       logger.severe(NameUtils.getClassName(Exporter.class), "workbook is empty");
@@ -356,15 +379,10 @@ public final class Exporter {
   }
 
   public static void maybeExport(final XSheet sheet, String fileName) {
-    StringCallback callback = new StringCallback() {
+    FileNameCallback callback = new FileNameCallback() {
       @Override
       public void onSuccess(String value) {
         export(sheet, BeeUtils.trim(value));
-      }
-
-      @Override
-      public boolean validate(String value) {
-        return validateFileName(value);
       }
     };
 
@@ -391,7 +409,6 @@ public final class Exporter {
 
     return inputElement;
   }
-
   private static void exportRow(CellContext context, IsRow dataRow, List<ColumnInfo> columns,
       int rowIndex, XSheet sheet, Map<Integer, Integer> styles) {
 
@@ -430,7 +447,7 @@ public final class Exporter {
       return null;
     }
   }
-  
+
   private static String sanitizeFileName(String input) {
     return FileNameUtils.sanitize(input, BeeConst.STRING_POINT);
   }

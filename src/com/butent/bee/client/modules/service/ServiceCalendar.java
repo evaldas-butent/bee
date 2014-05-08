@@ -13,6 +13,7 @@ import com.google.gwt.user.client.ui.HasWidgets;
 import com.google.gwt.user.client.ui.Widget;
 
 import static com.butent.bee.shared.modules.service.ServiceConstants.*;
+import static com.butent.bee.shared.modules.tasks.TaskConstants.*;
 
 import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.Callback;
@@ -25,34 +26,47 @@ import com.butent.bee.client.dom.DomUtils;
 import com.butent.bee.client.dom.Edges;
 import com.butent.bee.client.dom.Rectangle;
 import com.butent.bee.client.event.logical.MoveEvent;
+import com.butent.bee.client.i18n.Format;
 import com.butent.bee.client.images.star.Stars;
 import com.butent.bee.client.layout.Flow;
+import com.butent.bee.client.output.Exporter;
 import com.butent.bee.client.style.StyleUtils;
 import com.butent.bee.client.timeboard.TimeBoard;
 import com.butent.bee.client.timeboard.TimeBoardHelper;
 import com.butent.bee.client.timeboard.TimeBoardRowLayout;
+import com.butent.bee.client.timeboard.TimeBoardRowLayout.RowData;
 import com.butent.bee.client.ui.IdentifiableWidget;
 import com.butent.bee.client.widget.CustomDiv;
 import com.butent.bee.client.widget.Mover;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
+import com.butent.bee.shared.Consumer;
 import com.butent.bee.shared.Size;
 import com.butent.bee.shared.communication.ResponseObject;
 import com.butent.bee.shared.css.Colors;
+import com.butent.bee.shared.css.values.VerticalAlign;
 import com.butent.bee.shared.data.BeeRow;
 import com.butent.bee.shared.data.BeeRowSet;
 import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.SimpleRowSet;
 import com.butent.bee.shared.data.SimpleRowSet.SimpleRow;
 import com.butent.bee.shared.data.event.DataEvent;
+import com.butent.bee.shared.export.XCell;
+import com.butent.bee.shared.export.XFont;
+import com.butent.bee.shared.export.XRow;
+import com.butent.bee.shared.export.XSheet;
+import com.butent.bee.shared.export.XStyle;
 import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.modules.administration.AdministrationConstants;
 import com.butent.bee.shared.modules.classifiers.ClassifierConstants;
-import com.butent.bee.shared.modules.tasks.TaskConstants;
+import com.butent.bee.shared.modules.service.ServiceConstants.ServiceCompanyKind;
 import com.butent.bee.shared.modules.tasks.TaskConstants.TaskPriority;
 import com.butent.bee.shared.modules.tasks.TaskConstants.TaskStatus;
+import com.butent.bee.shared.modules.tasks.TaskUtils;
 import com.butent.bee.shared.time.HasDateRange;
 import com.butent.bee.shared.time.JustDate;
+import com.butent.bee.shared.time.ScheduleDateRange;
+import com.butent.bee.shared.time.TimeUtils;
 import com.butent.bee.shared.ui.Action;
 import com.butent.bee.shared.ui.Color;
 import com.butent.bee.shared.utils.BeeUtils;
@@ -126,8 +140,7 @@ final class ServiceCalendar extends TimeBoard {
   private static final String DEFAULT_DATE_COLOR = Colors.RED;
 
   private static final Set<String> relevantDataViews = Sets.newHashSet(VIEW_SERVICE_OBJECTS,
-      VIEW_SERVICE_DATES, TaskConstants.VIEW_TASKS, TaskConstants.VIEW_RECURRING_TASKS,
-      TaskConstants.VIEW_TASK_TYPES);
+      VIEW_SERVICE_DATES, VIEW_TASKS, VIEW_RECURRING_TASKS, VIEW_RT_DATES, VIEW_TASK_TYPES);
 
   static void open(final Callback<IdentifiableWidget> callback) {
     BeeKeeper.getRpc().makeRequest(ServiceKeeper.createArgs(SVC_GET_CALENDAR_DATA),
@@ -140,10 +153,68 @@ final class ServiceCalendar extends TimeBoard {
         });
   }
 
-  private static void setDateColor(ServiceDateWrapper date, Widget widget) {
-    String color = BeeUtils.notEmpty(date.getColor(), DEFAULT_DATE_COLOR);
-    StyleUtils.setBackgroundColor(widget, color);
+  private static void exportMonthLabels(Range<JustDate> range, XRow row, int colIndex,
+      int styleRef) {
+
+    JustDate start = JustDate.copyOf(range.lowerEndpoint());
+
+    while (BeeUtils.isLeq(start, range.upperEndpoint())) {
+      JustDate end = BeeUtils.min(TimeUtils.endOfMonth(start), range.upperEndpoint());
+      int span = TimeUtils.dayDiff(start, end) + 1;
+
+      int month = start.getMonth();
+
+      String text;
+      if (span < 3 && TimeBoardHelper.getSize(range) > 30) {
+        text = BeeUtils.toString(month);
+      } else if (month == 1 && TimeUtils.isMore(start, range.lowerEndpoint())) {
+        text = BeeUtils.joinWords(start.getYear(),
+            Format.renderMonthFullStandalone(start.getMonth()));
+      } else {
+        text = Format.renderMonthFullStandalone(start.getMonth());
+      }
+
+      int index = colIndex + TimeUtils.dayDiff(range.lowerEndpoint(), start);
+
+      XCell cell = new XCell(index, text, styleRef);
+      if (span > 1) {
+        cell.setColSpan(span);
+      }
+
+      row.add(cell);
+      start = TimeUtils.startOfNextMonth(start);
+    }
   }
+
+  private static String exportPeriod(Range<JustDate> range) {
+    if (range == null) {
+      return BeeConst.STRING_EMPTY;
+    } else if (Objects.equals(range.lowerEndpoint(), range.upperEndpoint())) {
+      return TimeUtils.render(range.lowerEndpoint());
+    } else {
+      return BeeUtils.join(TimeUtils.PERIOD_SEPARATOR,
+          range.lowerEndpoint(), range.upperEndpoint());
+    }
+  }
+
+  private static ServiceCompanyKind getCompanyKind(BeeRowSet rowSet) {
+    ServiceCompanyKind companyKind = EnumUtils.getEnumByIndex(ServiceCompanyKind.class,
+        TimeBoardHelper.getInteger(rowSet, COL_COMPANY_KIND));
+
+    return (companyKind == null) ? ServiceCompanyKind.DETAULT : companyKind;
+  }
+
+  private static String getDateColor(ServiceDateWrapper date) {
+    return BeeUtils.notEmpty(date.getColor(), DEFAULT_DATE_COLOR);
+  }
+
+  private static void setDateColor(ServiceDateWrapper date, Widget widget) {
+    String color = getDateColor(date);
+    if (!BeeUtils.isEmpty(color)) {
+      StyleUtils.setBackgroundColor(widget, color);
+    }
+  }
+
   private final List<ServiceCompanyWrapper> companies = new ArrayList<>();
 
   private final Multimap<Long, ServiceObjectWrapper> objects = ArrayListMultimap.create();
@@ -155,11 +226,12 @@ final class ServiceCalendar extends TimeBoard {
   private int companyWidth = BeeConst.UNDEF;
 
   private int infoWidth = BeeConst.UNDEF;
-
   private boolean separateObjects;
+
   private final Set<String> companyPanels = new HashSet<>();
 
   private final Set<String> infoPanels = new HashSet<>();
+
   private final List<Integer> companyIndexesByRow = new ArrayList<>();
 
   private final Map<Integer, Long> objectsByRow = new HashMap<>();
@@ -391,8 +463,9 @@ final class ServiceCalendar extends TimeBoard {
       }
 
       for (int i = 0; i < layout.getRows().size(); i++) {
-        for (HasDateRange item : layout.getRows().get(i).getRowItems()) {
+        RowData rowData = layout.getRows().get(i);
 
+        for (HasDateRange item : rowData.getRowItems()) {
           if (item instanceof TaskWrapper) {
             itemWidget = createTaskWidget((TaskWrapper) item);
           } else if (item instanceof RecurringTaskWrapper) {
@@ -407,9 +480,15 @@ final class ServiceCalendar extends TimeBoard {
             Rectangle rectangle = getRectangle(item.getRange(), rowIndex + i);
             TimeBoardHelper.apply(itemWidget, rectangle, margins);
 
-            styleItemWidget(item, itemWidget);
             if (opacity != null) {
               StyleUtils.setOpacity(itemWidget, opacity);
+            }
+
+            if (touchesLeft(item.getRange().lowerEndpoint(), rowData)) {
+              styleItemStart(itemWidget);
+            }
+            if (touchesRight(item.getRange().upperEndpoint(), rowData)) {
+              styleItemEnd(itemWidget);
             }
 
             panel.add(itemWidget);
@@ -465,13 +544,7 @@ final class ServiceCalendar extends TimeBoard {
     BeeRowSet rowSet = BeeRowSet.restore((String) response.getResponse());
     setSettings(rowSet);
 
-    TimeBoardHelper.getInteger(rowSet, COL_COMPANY_KIND);
-
-    ServiceCompanyKind companyKind = EnumUtils.getEnumByIndex(ServiceCompanyKind.class,
-        TimeBoardHelper.getInteger(rowSet, COL_COMPANY_KIND));
-    if (companyKind == null) {
-      companyKind = ServiceCompanyKind.DETAULT;
-    }
+    ServiceCompanyKind companyKind = getCompanyKind(rowSet);
 
     initData(companyKind, rowSet.getTableProperties());
     updateMaxRange();
@@ -582,7 +655,7 @@ final class ServiceCalendar extends TimeBoard {
     setRecurringTaskColor(recurringTask, panel);
 
     panel.setTitle(recurringTask.getTitle());
-    bindOpener(panel, TaskConstants.VIEW_RECURRING_TASKS, recurringTask.getId());
+    bindOpener(panel, VIEW_RECURRING_TASKS, recurringTask.getId());
 
     return panel;
   }
@@ -601,7 +674,7 @@ final class ServiceCalendar extends TimeBoard {
     }
 
     setTaskColor(task, panel);
-    
+
     if (task.getStar() != null) {
       ImageResource imageResource = Stars.get(task.getStar());
 
@@ -612,9 +685,101 @@ final class ServiceCalendar extends TimeBoard {
     }
 
     panel.setTitle(task.getTitle());
-    bindOpener(panel, TaskConstants.VIEW_TASKS, task.getId());
+    bindOpener(panel, VIEW_TASKS, task.getId());
 
     return panel;
+  }
+
+  private void doExport(String fileName, List<String> filterLabels) {
+    List<TimeBoardRowLayout> boardLayout = doLayout();
+    if (boardLayout.isEmpty()) {
+      BeeKeeper.getScreen().notifyWarning(Localized.getConstants().noData());
+      return;
+    }
+
+    ServiceCompanyKind companyKind = getCompanyKind(getSettings());
+
+    Range<JustDate> range = getVisibleRange();
+    int dayColumns = TimeBoardHelper.getSize(range);
+    Assert.isPositive(dayColumns);
+
+    int groupColumns = separateObjects() ? 2 : 1;
+    int cc = groupColumns + dayColumns;
+
+    XSheet sheet = new XSheet();
+    int rowIndex = 1;
+
+    Exporter.addCaption(sheet, getCaption(), rowIndex++, cc);
+
+    if (!BeeUtils.isEmpty(filterLabels)) {
+      for (String label : filterLabels) {
+        Exporter.addFilterLabel(sheet, label, rowIndex++, cc);
+      }
+    }
+
+    rowIndex++;
+
+    XStyle headerStyle = XStyle.center();
+    headerStyle.setVerticalAlign(VerticalAlign.MIDDLE);
+    headerStyle.setColor(Colors.LIGHTGRAY);
+    headerStyle.setFontRef(sheet.registerFont(XFont.bold()));
+
+    int headerStyleRef = sheet.registerStyle(headerStyle);
+
+    int colIndex = 0;
+
+    XRow row = Exporter.createHeaderRow(rowIndex++);
+    if (groupColumns == 1) {
+      row.add(new XCell(colIndex++, exportPeriod(range), headerStyleRef));
+    } else {
+      row.add(new XCell(colIndex++, TimeUtils.render(range.lowerEndpoint()), headerStyleRef));
+      row.add(new XCell(colIndex++, TimeUtils.render(range.upperEndpoint()), headerStyleRef));
+    }
+
+    exportMonthLabels(range, row, colIndex, headerStyleRef);
+    sheet.add(row);
+
+    row = Exporter.createHeaderRow(rowIndex++);
+    colIndex = 0;
+
+    row.add(new XCell(colIndex++, companyKind.getCaption(), headerStyleRef));
+    if (separateObjects()) {
+      row.add(new XCell(colIndex++, Localized.getConstants().address(), headerStyleRef));
+    }
+
+    XStyle dayStyle = XStyle.center();
+    dayStyle.setColor(Colors.LIGHTGRAY);
+    
+    if (dayColumns > 100) {
+      double factor = 1 / BeeUtils.rescale(dayColumns, 100, 400, 1, 1.25);
+      XFont dayFont = new XFont();
+      dayFont.setFactor(factor);
+      dayStyle.setFontRef(sheet.registerFont(dayFont));
+    }
+
+    int dayStyleRef = sheet.registerStyle(dayStyle);
+    
+    for (int i = 0; i < dayColumns; i++) {
+      int dom = TimeUtils.nextDay(range.lowerEndpoint(), i).getDom();
+      row.add(new XCell(colIndex++, BeeUtils.toString(dom), dayStyleRef));
+    }
+
+    sheet.add(row);
+    
+    exportContent(boardLayout, range, sheet, rowIndex);
+
+    for (int i = 0; i < groupColumns; i++) {
+      sheet.autoSizeColumn(i);
+    }
+
+    if (dayColumns > 15) {
+      double factor = 1 / BeeUtils.rescale(dayColumns, 15, 200, 1, 4);
+      for (int i = groupColumns; i < cc; i++) {
+        sheet.setColumnWidthFactor(i, factor);
+      }
+    }
+
+    Exporter.export(sheet, fileName);
   }
 
   private List<TimeBoardRowLayout> doLayout() {
@@ -659,6 +824,103 @@ final class ServiceCalendar extends TimeBoard {
   }
 
   private void export() {
+    if (!hasContent()) {
+      BeeKeeper.getScreen().notifyWarning(Localized.getConstants().noData());
+      return;
+    }
+
+    Exporter.confirm(getCaption(), new Exporter.FileNameCallback() {
+      @Override
+      public void onSuccess(final String value) {
+        getFilterLabels(new Consumer<List<String>>() {
+          @Override
+          public void accept(List<String> input) {
+            doExport(value, input);
+          }
+        });
+      }
+    });
+  }
+
+  private void exportContent(List<TimeBoardRowLayout> boardLayout, Range<JustDate> range,
+      XSheet sheet, int sheetRowIndex) {
+
+    int rowIndex = sheetRowIndex;
+    int chartStartCol = separateObjects() ? 2 : 1;
+
+    for (TimeBoardRowLayout layout : boardLayout) {
+      XRow row = new XRow(rowIndex);
+
+      int companyIndex = layout.getDataIndex();
+
+      int size = layout.getSize(1);
+
+      ServiceCompanyWrapper company = companies.get(companyIndex);
+
+      XCell cell = new XCell(0, company.getName());
+      if (size > 1) {
+        cell.setStyleRef(sheet.registerStyle(XStyle.middle()));
+        cell.setRowSpan(size);
+      }
+      row.add(cell);
+      
+      sheet.add(row);
+
+      if (separateObjects()) {
+        for (TimeBoardRowLayout.GroupLayout group : layout.getGroups()) {
+          ServiceObjectWrapper object = findObject(group.getGroupId());
+
+          if (object != null) {
+            cell = new XCell(1, object.getAddress());
+            if (group.getSize() > 1) {
+              cell.setStyleRef(sheet.registerStyle(XStyle.middle()));
+              cell.setRowSpan(group.getSize());
+            }
+
+            sheet.ensureRow(rowIndex + group.getFirstRow()).add(cell);
+          }
+        }
+      }
+
+      for (int i = 0; i < layout.getRows().size(); i++) {
+        RowData rowData = layout.getRows().get(i);
+
+        for (HasDateRange item : rowData.getRowItems()) {
+          String color;
+
+          if (item instanceof TaskWrapper) {
+            color = getTaskColor((TaskWrapper) item);
+          } else if (item instanceof RecurringTaskWrapper) {
+            color = getRecurringTaskColor((RecurringTaskWrapper) item);
+          } else if (item instanceof ServiceDateWrapper) {
+            color = getDateColor((ServiceDateWrapper) item);
+          } else {
+            color = null;
+          }
+          
+          if (!BeeUtils.isEmpty(color)) {
+            JustDate startDate = TimeUtils.clamp(item.getRange().lowerEndpoint(),
+                range.lowerEndpoint(), range.upperEndpoint());
+            JustDate endDate = TimeUtils.clamp(item.getRange().upperEndpoint(),
+                range.lowerEndpoint(), range.upperEndpoint());
+            
+            int colIndex = chartStartCol + TimeUtils.dayDiff(range.lowerEndpoint(), startDate);
+            int colSpan = TimeUtils.dayDiff(startDate, endDate) + 1;
+            
+            int itemStyleRef = sheet.registerStyle(XStyle.background(color));
+            
+            cell = XCell.forStyle(colIndex, itemStyleRef);
+            if (colSpan > 1) {
+              cell.setColSpan(colSpan);
+            }
+            
+            sheet.ensureRow(rowIndex + i).add(cell);
+          }
+        }
+      }
+
+      rowIndex += size;
+    }
   }
 
   private ServiceObjectWrapper findObject(Long id) {
@@ -676,6 +938,43 @@ final class ServiceCalendar extends TimeBoard {
     return companyWidth;
   }
 
+  private void getFilterLabels(final Consumer<List<String>> consumer) {
+    String tts = TimeBoardHelper.getString(getSettings(), COL_SERVICE_CALENDAR_TASK_TYPES);
+    final List<Long> taskTypes = DataUtils.parseIdList(tts);
+
+    if (taskTypes.isEmpty()) {
+      consumer.accept(BeeConst.EMPTY_IMMUTABLE_STRING_LIST);
+      return;
+    }
+
+    Queries.getRowSet(VIEW_TASK_TYPES, Lists.newArrayList(COL_TASK_TYPE_NAME),
+        new Queries.RowSetCallback() {
+          @Override
+          public void onSuccess(BeeRowSet result) {
+            List<String> typeLabels = new ArrayList<>();
+            int index = result.getColumnIndex(COL_TASK_TYPE_NAME);
+
+            for (Long tt : taskTypes) {
+              BeeRow row = result.getRowById(tt);
+
+              if (row != null) {
+                String label = row.getString(index);
+                if (!BeeUtils.isEmpty(label) && !typeLabels.contains(label)) {
+                  typeLabels.add(label);
+                }
+              }
+            }
+
+            List<String> labels = new ArrayList<>();
+            if (!typeLabels.isEmpty()) {
+              labels.add(BeeUtils.joinItems(typeLabels));
+            }
+
+            consumer.accept(labels);
+          }
+        });
+  }
+
   private int getInfoWidth() {
     return infoWidth;
   }
@@ -687,6 +986,42 @@ final class ServiceCalendar extends TimeBoard {
       result.addAll(objects.get(companyId));
     }
     return result;
+  }
+
+  private String getRecurringTaskColor(RecurringTaskWrapper recurringTask) {
+    return BeeUtils.notEmpty(recurringTask.getTypeColor(),
+        TimeBoardHelper.getString(getSettings(), COL_RT_COLOR), DEFAULT_RT_COLOR);
+  }
+
+  private String getTaskColor(TaskWrapper task) {
+    String typeColor = task.getTypeColor();
+
+    String statusColor;
+    if (task.getStatus() != null) {
+      String colName = COL_TASK_COLOR + BeeUtils.toString(task.getStatus().ordinal());
+      statusColor = TimeBoardHelper.getString(getSettings(), colName);
+    } else {
+      statusColor = null;
+    }
+
+    String color;
+
+    if (BeeUtils.allEmpty(typeColor, statusColor)) {
+      color = TimeBoardHelper.getString(getSettings(), COL_TASK_COLOR);
+      if (BeeUtils.isEmpty(color)) {
+        color = DEFAULT_TASK_COLOR;
+      }
+
+    } else if (BeeUtils.isEmpty(typeColor)) {
+      color = statusColor;
+    } else if (BeeUtils.isEmpty(statusColor)) {
+      color = typeColor;
+
+    } else {
+      color = Color.blend(typeColor, statusColor);
+    }
+
+    return color;
   }
 
   private void initData(ServiceCompanyKind companyKind, Map<String, String> properties) {
@@ -707,13 +1042,13 @@ final class ServiceCalendar extends TimeBoard {
       return;
     }
 
+    SimpleRowSet objectDatesData = SimpleRowSet.getIfPresent(properties, TBL_SERVICE_DATES);
+
     SimpleRowSet relationData = SimpleRowSet.getIfPresent(properties,
         AdministrationConstants.TBL_RELATIONS);
 
-    SimpleRowSet taskData = SimpleRowSet.getIfPresent(properties, TaskConstants.TBL_TASKS);
-    SimpleRowSet rtData = SimpleRowSet.getIfPresent(properties, TaskConstants.TBL_RECURRING_TASKS);
-
-    SimpleRowSet datesData = SimpleRowSet.getIfPresent(properties, TBL_SERVICE_DATES);
+    SimpleRowSet taskData = SimpleRowSet.getIfPresent(properties, TBL_TASKS);
+    SimpleRowSet rtData = SimpleRowSet.getIfPresent(properties, TBL_RECURRING_TASKS);
 
     String cId = (companyKind == ServiceCompanyKind.CONTRACTOR)
         ? COL_SERVICE_OBJECT_CONTRACTOR : COL_SERVICE_OBJECT_CUSTOMER;
@@ -733,6 +1068,17 @@ final class ServiceCalendar extends TimeBoard {
       Collections.sort(companies);
     }
 
+    if (!DataUtils.isEmpty(objectDatesData)) {
+      for (SimpleRow row : objectDatesData) {
+        Long objId = row.getLong(COL_SERVICE_OBJECT);
+
+        if (DataUtils.isId(objId)) {
+          ServiceDateWrapper wrapper = new ServiceDateWrapper(row);
+          dates.put(objId, wrapper);
+        }
+      }
+    }
+
     if (!DataUtils.isEmpty(taskData) && !DataUtils.isEmpty(relationData)) {
       for (SimpleRow taskRow : taskData) {
         TaskWrapper wrapper = new TaskWrapper(taskRow);
@@ -740,7 +1086,7 @@ final class ServiceCalendar extends TimeBoard {
 
         if (DataUtils.isId(taskId)) {
           for (SimpleRow relationRow : relationData) {
-            if (taskId.equals(relationRow.getLong(TaskConstants.COL_TASK))) {
+            if (taskId.equals(relationRow.getLong(COL_TASK))) {
               Long objId = relationRow.getLong(COL_SERVICE_OBJECT);
               if (DataUtils.isId(objId)) {
                 tasks.put(objId, wrapper);
@@ -752,17 +1098,24 @@ final class ServiceCalendar extends TimeBoard {
     }
 
     if (!DataUtils.isEmpty(rtData) && !DataUtils.isEmpty(relationData)) {
+      BeeRowSet rtDates = BeeRowSet.getIfPresent(properties, VIEW_RT_DATES);
+      Multimap<Long, ScheduleDateRange> sdRanges = TaskUtils.getScheduleDateRangesByTask(rtDates);
+
       for (SimpleRow rtRow : rtData) {
         Long rtId = rtRow.getLong(RecurringTaskWrapper.ID_COLUMN);
 
         if (DataUtils.isId(rtId)) {
-          for (SimpleRow relationRow : relationData) {
-            if (rtId.equals(relationRow.getLong(TaskConstants.COL_RECURRING_TASK))) {
-              Long objId = relationRow.getLong(COL_SERVICE_OBJECT);
+          Collection<ScheduleDateRange> sdrs =
+              sdRanges.containsKey(rtId) ? sdRanges.get(rtId) : null;
 
-              if (DataUtils.isId(objId)) {
-                List<RecurringTaskWrapper> rts = RecurringTaskWrapper.spawn(rtRow);
-                if (!rts.isEmpty()) {
+          List<RecurringTaskWrapper> rts = RecurringTaskWrapper.spawn(rtRow, sdrs);
+
+          if (!rts.isEmpty()) {
+            for (SimpleRow relationRow : relationData) {
+              if (rtId.equals(relationRow.getLong(COL_RECURRING_TASK))) {
+                Long objId = relationRow.getLong(COL_SERVICE_OBJECT);
+
+                if (DataUtils.isId(objId)) {
                   recurringTasks.putAll(objId, rts);
                 }
               }
@@ -771,19 +1124,8 @@ final class ServiceCalendar extends TimeBoard {
         }
       }
     }
-
-    if (!DataUtils.isEmpty(datesData)) {
-      for (SimpleRow dateRow : datesData) {
-        Long objId = dateRow.getLong(COL_SERVICE_OBJECT);
-
-        if (DataUtils.isId(objId)) {
-          ServiceDateWrapper wrapper = new ServiceDateWrapper(dateRow);
-          dates.put(objId, wrapper);
-        }
-      }
-    }
   }
-  
+
   private void onCompanyResize(MoveEvent event) {
     int delta = event.getDeltaX();
 
@@ -895,9 +1237,10 @@ final class ServiceCalendar extends TimeBoard {
   }
 
   private void setRecurringTaskColor(RecurringTaskWrapper recurringTask, Widget widget) {
-    String color = BeeUtils.notEmpty(recurringTask.getTypeColor(),
-        TimeBoardHelper.getString(getSettings(), COL_RT_COLOR), DEFAULT_RT_COLOR);
-    StyleUtils.setBackgroundColor(widget, color);
+    String color = getRecurringTaskColor(recurringTask);
+    if (!BeeUtils.isEmpty(color)) {
+      StyleUtils.setBackgroundColor(widget, color);
+    }
   }
 
   private void setSeparateObjects(boolean separateObjects) {
@@ -905,33 +1248,35 @@ final class ServiceCalendar extends TimeBoard {
   }
 
   private void setTaskColor(TaskWrapper task, Widget widget) {
-    String typeColor = task.getTypeColor();
-
-    String statusColor;
-    if (task.getStatus() != null) {
-      String colName = COL_TASK_COLOR + BeeUtils.toString(task.getStatus().ordinal());
-      statusColor = TimeBoardHelper.getString(getSettings(), colName);
-    } else {
-      statusColor = null;
+    String color = getTaskColor(task);
+    if (!BeeUtils.isEmpty(color)) {
+      StyleUtils.setBackgroundColor(widget, color);
     }
-    
-    String color;
-    
-    if (BeeUtils.allEmpty(typeColor, statusColor)) {
-      color = TimeBoardHelper.getString(getSettings(), COL_TASK_COLOR);
-      if (BeeUtils.isEmpty(color)) {
-        color = DEFAULT_TASK_COLOR;
+  }
+
+  private boolean touchesLeft(JustDate date, RowData rowData) {
+    if (date != null && getVisibleRange().contains(date)) {
+      if (date.equals(getVisibleRange().lowerEndpoint())) {
+        return true;
+      } else {
+        return rowData.contains(TimeUtils.previousDay(date));
       }
 
-    } else if (BeeUtils.isEmpty(typeColor)) {
-      color = statusColor;
-    } else if (BeeUtils.isEmpty(statusColor)) {
-      color = typeColor;
+    } else {
+      return false;
+    }
+  }
+
+  private boolean touchesRight(JustDate date, RowData rowData) {
+    if (date != null && getVisibleRange().contains(date)) {
+      if (date.equals(getVisibleRange().upperEndpoint())) {
+        return true;
+      } else {
+        return rowData.contains(TimeUtils.nextDay(date));
+      }
 
     } else {
-      color = Color.blend(typeColor, statusColor);
+      return false;
     }
-
-    StyleUtils.setBackgroundColor(widget, color);
   }
 }

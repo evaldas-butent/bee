@@ -41,6 +41,10 @@ public class TimeBoardRowLayout {
     public int getLastRow() {
       return lastRow;
     }
+    
+    public int getSize() {
+      return getLastRow() - getFirstRow() + 1;
+    }
 
     public boolean hasOverlap() {
       return hasOverlap;
@@ -54,6 +58,17 @@ public class TimeBoardRowLayout {
     private RowData(Long groupId, HasDateRange item) {
       this.groupId = groupId;
       add(item);
+    }
+    
+    public boolean contains(JustDate date) {
+      if (date != null) {
+        for (HasDateRange item : rowItems) {
+          if (item.getRange().contains(date)) {
+            return true;
+          }
+        }
+      }
+      return false;
     }
 
     public List<HasDateRange> getRowItems() {
