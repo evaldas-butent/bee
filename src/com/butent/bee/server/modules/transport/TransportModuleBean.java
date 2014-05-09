@@ -636,6 +636,19 @@ public class TransportModuleBean implements BeeModule {
           }
         });
 
+    news.registerUsageQueryProvider(Feed.TRIPS, new ExtendedUsageQueryProvider() {
+
+      @Override
+      protected List<Pair<String, IsCondition>> getJoins() {
+        return NewsHelper.buildJoin(TBL_TRIPS, news.joinUsage(TBL_TRIPS));
+      }
+
+      @Override
+      protected List<IsCondition> getConditions(long userId) {
+        return NewsHelper.buildConditions(SqlUtils.isNull(TBL_TRIPS, COL_EXPEDITION));
+      }
+    });
+
     news.registerUsageQueryProvider(Feed.CARGO_REQUESTS_MY, new ExtendedUsageQueryProvider() {
       @Override
       protected List<IsCondition> getConditions(long userId) {
