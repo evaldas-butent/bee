@@ -44,10 +44,10 @@ public class Vertical extends CellVector  {
 
   @Override
   public boolean remove(Widget w) {
-    Element td = DOM.getParent(w.getElement());
     boolean removed = super.remove(w);
     if (removed) {
-      getBody().removeChild(DOM.getParent(td));
+      Element td = w.getElement().getParentElement();
+      getBody().removeChild(td.getParentElement());
     }
     return removed;
   }
