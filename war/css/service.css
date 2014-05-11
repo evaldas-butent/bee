@@ -59,3 +59,7 @@
   height: 1px;
   background-color: #ddd;
 }
+
+.bee-svc-calendar-task-starred {
+  background-repeat: space;
+}

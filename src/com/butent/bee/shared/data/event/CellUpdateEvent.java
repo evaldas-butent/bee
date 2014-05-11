@@ -147,6 +147,10 @@ public class CellUpdateEvent extends ModificationEvent<CellUpdateEvent.Handler>
     return source.hasColumn();
   }
 
+  public boolean hasSource(String name) {
+    return BeeUtils.same(name, getSourceName());
+  }
+
   @Override
   public boolean hasView(String view) {
     return BeeUtils.same(view, getViewName());

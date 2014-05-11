@@ -247,6 +247,11 @@ public final class RowEditor {
         disabledActions.addAll(actions);
       }
     }
+    
+    if (!formView.isRowEditable(oldRow, false)) {
+      enabledActions.remove(Action.SAVE);
+      disabledActions.add(Action.SAVE);
+    }
 
     final RowPresenter presenter = new RowPresenter(formView, dataInfo, oldRow.getId(),
         DataUtils.getRowCaption(dataInfo, oldRow), enabledActions, disabledActions);

@@ -559,6 +559,11 @@ class TaskEditor extends AbstractFormInterceptor {
   }
 
   @Override
+  public boolean isRowEditable(IsRow row) {
+    return row != null && BeeKeeper.getUser().is(row.getLong(getDataIndex(COL_OWNER)));
+  }
+  
+  @Override
   public void onSaveChanges(HasHandlers listener, SaveChangesEvent event) {
     final IsRow oldRow = event.getOldRow();
     IsRow newRow = event.getNewRow();

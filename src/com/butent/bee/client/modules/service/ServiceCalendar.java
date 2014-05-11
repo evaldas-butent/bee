@@ -50,9 +50,11 @@ import com.butent.bee.shared.data.BeeRowSet;
 import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.SimpleRowSet;
 import com.butent.bee.shared.data.SimpleRowSet.SimpleRow;
+import com.butent.bee.shared.data.event.CellUpdateEvent;
 import com.butent.bee.shared.data.event.DataEvent;
 import com.butent.bee.shared.export.XCell;
 import com.butent.bee.shared.export.XFont;
+import com.butent.bee.shared.export.XPicture;
 import com.butent.bee.shared.export.XRow;
 import com.butent.bee.shared.export.XSheet;
 import com.butent.bee.shared.export.XStyle;
@@ -166,8 +168,8 @@ final class ServiceCalendar extends TimeBoard {
 
       String text;
       if (span < 3 && TimeBoardHelper.getSize(range) > 30) {
-        text = BeeUtils.toString(month);
-      } else if (month == 1 && TimeUtils.isMore(start, range.lowerEndpoint())) {
+        text = BeeConst.STRING_EMPTY;
+      } else if (month == 1 && span > 5 && TimeUtils.isMore(start, range.lowerEndpoint())) {
         text = BeeUtils.joinWords(start.getYear(),
             Format.renderMonthFullStandalone(start.getMonth()));
       } else {
@@ -269,6 +271,16 @@ final class ServiceCalendar extends TimeBoard {
 
       default:
         super.handleAction(action);
+    }
+  }
+
+  @Override
+  public void onCellUpdate(CellUpdateEvent event) {
+    if (event != null && !event.isSpookyActionAtADistance()
+        && event.hasView(VIEW_RELATED_TASKS) && event.hasSource(PROP_STAR)) {
+      refresh();
+    } else {
+      super.onCellUpdate(event);
     }
   }
 
@@ -749,7 +761,7 @@ final class ServiceCalendar extends TimeBoard {
 
     XStyle dayStyle = XStyle.center();
     dayStyle.setColor(Colors.LIGHTGRAY);
-    
+
     if (dayColumns > 100) {
       double factor = 1 / BeeUtils.rescale(dayColumns, 100, 400, 1, 1.25);
       XFont dayFont = new XFont();
@@ -758,14 +770,14 @@ final class ServiceCalendar extends TimeBoard {
     }
 
     int dayStyleRef = sheet.registerStyle(dayStyle);
-    
+
     for (int i = 0; i < dayColumns; i++) {
       int dom = TimeUtils.nextDay(range.lowerEndpoint(), i).getDom();
       row.add(new XCell(colIndex++, BeeUtils.toString(dom), dayStyleRef));
     }
 
     sheet.add(row);
-    
+
     exportContent(boardLayout, range, sheet, rowIndex);
 
     for (int i = 0; i < groupColumns; i++) {
@@ -863,7 +875,7 @@ final class ServiceCalendar extends TimeBoard {
         cell.setRowSpan(size);
       }
       row.add(cell);
-      
+
       sheet.add(row);
 
       if (separateObjects()) {
@@ -887,33 +899,50 @@ final class ServiceCalendar extends TimeBoard {
 
         for (HasDateRange item : rowData.getRowItems()) {
           String color;
+          Integer pictureRef = null;
 
           if (item instanceof TaskWrapper) {
-            color = getTaskColor((TaskWrapper) item);
+            TaskWrapper task = (TaskWrapper) item;
+            color = getTaskColor(task);
+
+            if (task.getStar() != null) {
+              pictureRef = Stars.export(task.getStar(), sheet);
+            }
+
           } else if (item instanceof RecurringTaskWrapper) {
             color = getRecurringTaskColor((RecurringTaskWrapper) item);
+
           } else if (item instanceof ServiceDateWrapper) {
             color = getDateColor((ServiceDateWrapper) item);
+
           } else {
             color = null;
           }
-          
-          if (!BeeUtils.isEmpty(color)) {
+
+          if (!BeeUtils.isEmpty(color) || pictureRef != null) {
             JustDate startDate = TimeUtils.clamp(item.getRange().lowerEndpoint(),
                 range.lowerEndpoint(), range.upperEndpoint());
             JustDate endDate = TimeUtils.clamp(item.getRange().upperEndpoint(),
                 range.lowerEndpoint(), range.upperEndpoint());
-            
+
             int colIndex = chartStartCol + TimeUtils.dayDiff(range.lowerEndpoint(), startDate);
             int colSpan = TimeUtils.dayDiff(startDate, endDate) + 1;
-            
-            int itemStyleRef = sheet.registerStyle(XStyle.background(color));
-            
-            cell = XCell.forStyle(colIndex, itemStyleRef);
+
+            cell = new XCell(colIndex);
             if (colSpan > 1) {
               cell.setColSpan(colSpan);
             }
-            
+
+            if (!BeeUtils.isEmpty(color)) {
+              cell.setStyleRef(sheet.registerStyle(XStyle.background(color)));
+            }
+            if (pictureRef != null) {
+              cell.setPictureRef(pictureRef);
+              if (colSpan > 1) {
+                cell.setPictureLayout(XPicture.Layout.REPAEAT);
+              }
+            }
+
             sheet.ensureRow(rowIndex + i).add(cell);
           }
         }
