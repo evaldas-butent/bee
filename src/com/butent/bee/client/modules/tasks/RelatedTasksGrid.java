@@ -96,9 +96,7 @@ class RelatedTasksGrid extends TasksGrid {
 
   @Override
   public void onEditStart(EditStartEvent event) {
-    if (PROP_STAR.equals(event.getColumnId())) {
-      super.onEditStart(event);
-    } else {
+    if (!maybeEditStar(event)) { 
       event.consume();
 
       int index = getDataIndex(COL_TASK);

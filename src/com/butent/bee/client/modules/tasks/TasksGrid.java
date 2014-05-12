@@ -322,26 +322,9 @@ class TasksGrid extends AbstractGridInterceptor implements ClickHandler {
 
   @Override
   public void onEditStart(final EditStartEvent event) {
-    if (PROP_STAR.equals(event.getColumnId())) {
-      IsRow row = event.getRowValue();
-      if (row == null) {
-        return;
-      }
-
-      if (row.getProperty(PROP_USER) == null) {
-        return;
-      }
-
-      final CellSource source = CellSource.forProperty(PROP_STAR, ValueType.INTEGER);
-      EditorAssistant.editStarCell(DEFAULT_STAR_COUNT, event, source, new Consumer<Integer>() {
-        @Override
-        public void accept(Integer parameter) {
-          updateStar(event, source, parameter);
-        }
-      });
-    }
+    maybeEditStar(event);
   }
-
+  
   protected void afterCopyAsRecurringTask() {
   }
 
@@ -350,6 +333,24 @@ class TasksGrid extends AbstractGridInterceptor implements ClickHandler {
 
   protected Long getTaskId(IsRow row) {
     return (row == null) ? null : row.getId();
+  }
+
+  protected boolean maybeEditStar(final EditStartEvent event) {
+    if (event != null && PROP_STAR.equals(event.getColumnId())
+        && event.getRowValue() != null && event.getRowValue().getProperty(PROP_USER) != null) {
+
+      final CellSource source = CellSource.forProperty(PROP_STAR, ValueType.INTEGER);
+      EditorAssistant.editStarCell(DEFAULT_STAR_COUNT, event, source, new Consumer<Integer>() {
+        @Override
+        public void accept(Integer parameter) {
+          updateStar(event, source, parameter);
+        }
+      });
+      
+      return true;
+    } else {
+      return false;
+    }
   }
 
   private void confirmTask(final GridView gridView, final IsRow row) {

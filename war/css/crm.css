@@ -388,3 +388,7 @@
   background-color: red;
   color: white;
 }
+
+.bee-crm-task-alien {
+  background-image: url(../images/checkered_background.png) !important;
+}
