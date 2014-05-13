@@ -4,7 +4,6 @@ import com.google.common.base.Function;
 import com.google.common.collect.BiMap;
 import com.google.common.collect.HashBiMap;
 import com.google.common.collect.Lists;
-import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
 import com.google.gwt.core.client.Scheduler.ScheduledCommand;
 import com.google.gwt.dom.client.Element;
@@ -40,7 +39,6 @@ import com.butent.bee.client.grid.GridPanel;
 import com.butent.bee.client.images.star.Stars;
 import com.butent.bee.client.layout.Flow;
 import com.butent.bee.client.layout.Horizontal;
-import com.butent.bee.client.modules.tasks.RequestBuilder;
 import com.butent.bee.client.presenter.GridPresenter;
 import com.butent.bee.client.presenter.Presenter;
 import com.butent.bee.client.render.AbstractCellRenderer;
@@ -86,13 +84,14 @@ import com.butent.bee.shared.data.view.RowInfo;
 import com.butent.bee.shared.i18n.LocalizableMessages;
 import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.logging.LogUtils;
-import com.butent.bee.shared.modules.administration.AdministrationConstants;
 import com.butent.bee.shared.modules.classifiers.ClassifierConstants;
 import com.butent.bee.shared.modules.mail.AccountInfo;
 import com.butent.bee.shared.modules.mail.MailConstants.MessageFlag;
 import com.butent.bee.shared.modules.mail.MailConstants.SystemFolder;
 import com.butent.bee.shared.modules.mail.MailFolder;
-import com.butent.bee.shared.modules.tasks.TaskConstants;
+import com.butent.bee.shared.modules.transport.TransportConstants;
+import com.butent.bee.shared.modules.transport.TransportConstants.AssessmentStatus;
+import com.butent.bee.shared.modules.transport.TransportConstants.OrderStatus;
 import com.butent.bee.shared.time.DateTime;
 import com.butent.bee.shared.time.TimeUtils;
 import com.butent.bee.shared.ui.Action;
@@ -667,7 +666,7 @@ public class MailPanel extends AbstractFormInterceptor {
         }
         Map<String, String> packet = Codec.deserializeMap(response.getResponseAsString());
 
-        DataInfo dataInfo = Data.getDataInfo(TaskConstants.TBL_REQUESTS);
+        DataInfo dataInfo = Data.getDataInfo(TransportConstants.VIEW_ASSESSMENTS);
         BeeRow row = RowFactory.createEmptyRow(dataInfo, true);
 
         row.setValue(dataInfo.getColumnIndex("Customer"),
@@ -680,19 +679,14 @@ public class MailPanel extends AbstractFormInterceptor {
             packet.get(ClassifierConstants.COL_FIRST_NAME));
         row.setValue(dataInfo.getColumnIndex("PersonLastName"),
             packet.get(ClassifierConstants.COL_LAST_NAME));
-        row.setValue(dataInfo.getColumnIndex(COL_CONTENT), packet.get(COL_CONTENT));
+        row.setValue(dataInfo.getColumnIndex("OrderNotes"), packet.get(COL_CONTENT));
 
-        Map<Long, NewFileInfo> files = Maps.newHashMap();
-        SimpleRowSet rs = SimpleRowSet.restore(packet.get(TBL_ATTACHMENTS));
+        row.setValue(dataInfo.getColumnIndex(TransportConstants.COL_ASSESSMENT_STATUS),
+            AssessmentStatus.NEW.ordinal());
+        row.setValue(dataInfo.getColumnIndex(TransportConstants.ALS_ORDER_STATUS),
+            OrderStatus.REQUEST.ordinal());
 
-        for (SimpleRow attach : rs) {
-          files.put(attach.getLong(AdministrationConstants.COL_FILE),
-              new NewFileInfo(BeeUtils.notEmpty(attach.getValue(COL_ATTACHMENT_NAME),
-                  attach.getValue(AdministrationConstants.COL_FILE_NAME)),
-                  attach.getLong(AdministrationConstants.COL_FILE_SIZE), null));
-        }
-        RowFactory.createRow(dataInfo.getNewRowForm(), null, dataInfo, row, null,
-            new RequestBuilder(files), null);
+        RowFactory.createRow(dataInfo.getNewRowForm(), null, dataInfo, row, null, null, null);
       }
     });
   }
