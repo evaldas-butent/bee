@@ -3,12 +3,10 @@ package com.butent.bee.client.modules.documents;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 import com.google.gwt.core.client.Scheduler.ScheduledCommand;
-import com.google.gwt.event.logical.shared.SelectionEvent;
-import com.google.gwt.event.logical.shared.SelectionHandler;
 import com.google.gwt.event.shared.HasHandlers;
 
 import static com.butent.bee.shared.modules.documents.DocumentConstants.*;
-import static com.butent.bee.shared.modules.trade.TradeConstants.VAR_TOTAL;
+import static com.butent.bee.shared.modules.trade.TradeConstants.*;
 
 import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.Callback;
@@ -33,7 +31,6 @@ import com.butent.bee.client.ui.IdentifiableWidget;
 import com.butent.bee.client.ui.UiHelper;
 import com.butent.bee.client.utils.FileUtils;
 import com.butent.bee.client.utils.NewFileInfo;
-import com.butent.bee.client.view.TreeView;
 import com.butent.bee.client.view.add.ReadyForInsertEvent;
 import com.butent.bee.client.view.edit.EditStartEvent;
 import com.butent.bee.client.view.form.FormView;
@@ -53,7 +50,6 @@ import com.butent.bee.shared.data.CellSource;
 import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.IsColumn;
 import com.butent.bee.shared.data.IsRow;
-import com.butent.bee.shared.data.filter.Filter;
 import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogUtils;
@@ -69,7 +65,7 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Set;
 
-public final class DocumentHandler {
+public final class DocumentsHandler {
 
   private static final class DocumentBuilder extends AbstractFormInterceptor {
 
@@ -151,13 +147,13 @@ public final class DocumentHandler {
       } else if (form.getViewPresenter() instanceof GridFormPresenter) {
         GridInterceptor gcb = ((GridFormPresenter) form.getViewPresenter()).getGridInterceptor();
 
-        if (gcb instanceof DocumentGridHandler) {
-          IsRow category = ((DocumentGridHandler) gcb).getSelectedCategory();
+        if (gcb instanceof DocumentsGrid) {
+          IsRow category = ((DocumentsGrid) gcb).getSelectedCategory();
 
           if (category != null) {
             newRow.setValue(form.getDataIndex(COL_DOCUMENT_CATEGORY), category.getId());
             newRow.setValue(form.getDataIndex(ALS_CATEGORY_NAME),
-                ((DocumentGridHandler) gcb).getCategoryValue(category, COL_DOCUMENT_NAME));
+                ((DocumentsGrid) gcb).getCategoryValue(category, COL_DOCUMENT_NAME));
           }
         }
       }
@@ -165,84 +161,6 @@ public final class DocumentHandler {
 
     private FileCollector getCollector() {
       return collector;
-    }
-  }
-
-  private static final class DocumentGridHandler extends AbstractGridInterceptor implements
-      SelectionHandler<IsRow> {
-
-    private static final String FILTER_KEY = "f1";
-
-    private static Filter getFilter(Long category) {
-      if (category == null) {
-        return null;
-      } else {
-        return Filter.equals(COL_DOCUMENT_CATEGORY, category);
-      }
-    }
-
-    private TreeView treeView;
-    private IsRow selectedCategory;
-
-    private DocumentGridHandler() {
-    }
-
-    @Override
-    public void afterCreateWidget(String name, IdentifiableWidget widget,
-        WidgetDescriptionCallback callback) {
-
-      if (widget instanceof TreeView) {
-        setTreeView((TreeView) widget);
-        getTreeView().addSelectionHandler(this);
-      }
-    }
-
-    @Override
-    public DocumentGridHandler getInstance() {
-      return new DocumentGridHandler();
-    }
-
-    @Override
-    public List<String> getParentLabels() {
-      if (getSelectedCategory() == null || getTreeView() == null) {
-        return super.getParentLabels();
-      } else {
-        return getTreeView().getPathLabels(getSelectedCategory().getId(), COL_CATEGORY_NAME);
-      }
-    }
-
-    @Override
-    public void onSelection(SelectionEvent<IsRow> event) {
-      if (event != null && getGridPresenter() != null) {
-        setSelectedCategory(event.getSelectedItem());
-        Long category = (getSelectedCategory() == null) ? null : getSelectedCategory().getId();
-
-        getGridPresenter().getDataProvider().setParentFilter(FILTER_KEY, getFilter(category));
-        getGridPresenter().refresh(true);
-      }
-    }
-
-    private String getCategoryValue(IsRow category, String colName) {
-      if (BeeUtils.allNotNull(category, getTreeView())) {
-        return category.getString(Data.getColumnIndex(getTreeView().getViewName(), colName));
-      }
-      return null;
-    }
-
-    private IsRow getSelectedCategory() {
-      return selectedCategory;
-    }
-
-    private TreeView getTreeView() {
-      return treeView;
-    }
-
-    private void setSelectedCategory(IsRow selectedCategory) {
-      this.selectedCategory = selectedCategory;
-    }
-
-    private void setTreeView(TreeView treeView) {
-      this.treeView = treeView;
     }
   }
 
@@ -431,10 +349,12 @@ public final class DocumentHandler {
   public static void register() {
     GridFactory.registerGridInterceptor(VIEW_DOCUMENT_TEMPLATES, new DocumentTemplatesGrid());
 
-    GridFactory.registerGridInterceptor(VIEW_DOCUMENTS, new DocumentGridHandler());
+    GridFactory.registerGridInterceptor(VIEW_DOCUMENTS, new DocumentsGrid());
     GridFactory.registerGridInterceptor(VIEW_DOCUMENT_FILES, new FileGridHandler());
 
     GridFactory.registerGridInterceptor("RelatedDocuments", new RelatedDocumentsHandler());
+
+    FormFactory.registerFormInterceptor(TBL_DOCUMENT_TREE, new DocumentTreeForm());
 
     FormFactory.registerFormInterceptor("DocumentTemplate", new DocumentTemplateForm());
     FormFactory.registerFormInterceptor("Document", new DocumentForm());
@@ -512,6 +432,6 @@ public final class DocumentHandler {
     }
   }
 
-  private DocumentHandler() {
+  private DocumentsHandler() {
   }
 }

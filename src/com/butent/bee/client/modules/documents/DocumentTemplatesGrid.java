@@ -59,7 +59,7 @@ public class DocumentTemplatesGrid extends AbstractGridInterceptor implements
             new StringCallback() {
               @Override
               public void onSuccess(final String value) {
-                DocumentHandler.copyDocumentData(row.getLong(grid.getDataIndex(COL_DOCUMENT_DATA)),
+                DocumentsHandler.copyDocumentData(row.getLong(grid.getDataIndex(COL_DOCUMENT_DATA)),
                     new IdCallback() {
                       @Override
                       public void onSuccess(Long dataId) {

@@ -171,7 +171,7 @@ public class DocumentForm extends DocumentDataForm implements SelectorEvent.Hand
                           COL_DOCUMENT_DATA);
                     }
                     if (DataUtils.isId(data)) {
-                      DocumentHandler.copyDocumentData(data, new IdCallback() {
+                      DocumentsHandler.copyDocumentData(data, new IdCallback() {
                         @Override
                         public void onSuccess(Long result) {
                           executor.accept(result);
@@ -411,7 +411,7 @@ public class DocumentForm extends DocumentDataForm implements SelectorEvent.Hand
         new StringCallback() {
           @Override
           public void onSuccess(final String value) {
-            DocumentHandler.copyDocumentData(getLongValue(COL_DOCUMENT_DATA),
+            DocumentsHandler.copyDocumentData(getLongValue(COL_DOCUMENT_DATA),
                 new IdCallback() {
                   @Override
                   public void onSuccess(Long dataId) {

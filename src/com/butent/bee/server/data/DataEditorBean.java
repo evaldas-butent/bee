@@ -4,7 +4,6 @@ import com.google.common.base.Objects;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
-import com.google.common.primitives.Longs;
 
 import com.butent.bee.server.data.BeeTable.BeeField;
 import com.butent.bee.server.data.BeeTable.BeeForeignKey;
@@ -632,21 +631,16 @@ public class DataEditorBean {
     return response;
   }
 
-  public void setState(String tblName, RightsState state, long id, long... bits) {
+  public void setState(String tblName, RightsState state, long id, long role, boolean on) {
     BeeTable table = sys.getTable(tblName);
 
-    Map<Long, Boolean> bitMap = Maps.newHashMap();
-
-    for (long bit : usr.getRoles()) {
-      bitMap.put(bit, bits == null || Longs.contains(bits, bit));
-    }
-    if (table.activateState(state, bitMap.keySet())) {
+    if (table.activateState(state, role)) {
       sys.rebuildTable(table.getName());
     }
-    SqlUpdate su = table.updateState(id, state, bitMap);
+    SqlUpdate su = table.updateState(id, state, role, on);
 
     if (su != null && qs.updateData(su) == 0) {
-      qs.updateData(table.insertState(id, state, bitMap));
+      qs.updateData(table.insertState(id, state, role, on));
     }
   }
 

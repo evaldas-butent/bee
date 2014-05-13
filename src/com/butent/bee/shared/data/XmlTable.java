@@ -217,10 +217,6 @@ public class XmlTable {
   @XmlAttribute
   public boolean audit;
   @XmlAttribute
-  public boolean recordsVisible;
-  @XmlAttribute
-  public boolean recordsEditable;
-  @XmlAttribute
   public int x;
   @XmlAttribute
   public int y;

@@ -137,6 +137,7 @@ public class MailModuleBean implements BeeModule {
               account.getRootFolder());
         }
       } catch (Exception e) {
+        ctx.setRollbackOnly();
         logger.error(e, "LOGIN:", account.getStoreLogin());
         error = BeeUtils.joinWords(account.getStoreLogin(), e.getMessage());
       } finally {
@@ -416,7 +417,7 @@ public class MailModuleBean implements BeeModule {
             .addFields(TBL_PLACES, COL_MESSAGE)
             .addFrom(TBL_PLACES)
             .addFromInner(TBL_MESSAGES, sys.joinTables(TBL_MESSAGES, TBL_PLACES, COL_MESSAGE))
-            .addFromInner(TBL_PARTS, sys.joinTables(TBL_MESSAGES, TBL_PARTS, COL_MESSAGE))
+            .addFromLeft(TBL_PARTS, sys.joinTables(TBL_MESSAGES, TBL_PARTS, COL_MESSAGE))
             .setWhere(SqlUtils.and(SqlUtils.equals(TBL_PLACES, COL_FOLDER,
                 BeeUtils.toLong(keys.get(COL_FOLDER))),
                 SqlUtils.or(SqlUtils.contains(TBL_EMAILS, COL_EMAIL_ADDRESS, search),
@@ -425,12 +426,12 @@ public class MailModuleBean implements BeeModule {
                     SqlUtils.contains(TBL_PARTS, COL_CONTENT, search))));
 
         if (BeeUtils.toBoolean(keys.get(SystemFolder.Sent.name()))) {
-          query.addFromInner(TBL_RECIPIENTS,
+          query.addFromLeft(TBL_RECIPIENTS,
               sys.joinTables(TBL_MESSAGES, TBL_RECIPIENTS, COL_MESSAGE))
-              .addFromInner(TBL_EMAILS,
+              .addFromLeft(TBL_EMAILS,
                   sys.joinTables(TBL_EMAILS, TBL_RECIPIENTS, MailConstants.COL_ADDRESS));
         } else {
-          query.addFromInner(TBL_EMAILS, sys.joinTables(TBL_EMAILS, TBL_MESSAGES, COL_SENDER));
+          query.addFromLeft(TBL_EMAILS, sys.joinTables(TBL_EMAILS, TBL_MESSAGES, COL_SENDER));
         }
         return SqlUtils.in(TBL_PLACES, COL_MESSAGE, query);
       }
@@ -774,7 +775,7 @@ public class MailModuleBean implements BeeModule {
             SqlUtils.constant(placeId), null), drafts)
         .addFrom(TBL_PLACES)
         .addFromInner(TBL_MESSAGES, sys.joinTables(TBL_MESSAGES, TBL_PLACES, COL_MESSAGE))
-        .addFromInner(TBL_EMAILS, sys.joinTables(TBL_EMAILS, TBL_MESSAGES, COL_SENDER))
+        .addFromLeft(TBL_EMAILS, sys.joinTables(TBL_EMAILS, TBL_MESSAGES, COL_SENDER))
         .addFromInner(TBL_FOLDERS, sys.joinTables(TBL_FOLDERS, TBL_PLACES, COL_FOLDER))
         .addFromInner(TBL_ACCOUNTS, sys.joinTables(TBL_ACCOUNTS, TBL_FOLDERS, COL_ACCOUNT))
         .setWhere(sys.idEquals(TBL_PLACES, placeId)));
@@ -839,49 +840,38 @@ public class MailModuleBean implements BeeModule {
 
     SimpleRow data = qs.getRow(new SqlSelect()
         .addFields(TBL_COMPANY_PERSONS, COL_COMPANY)
-        .addField(TBL_COMPANY_PERSONS,
-            sys.getIdName(TBL_COMPANY_PERSONS), COL_PERSON)
-        .addFields(TBL_PERSONS, COL_FIRST_NAME,
-            COL_LAST_NAME)
+        .addField(TBL_COMPANY_PERSONS, sys.getIdName(TBL_COMPANY_PERSONS), COL_PERSON)
+        .addFields(TBL_PERSONS, COL_FIRST_NAME, COL_LAST_NAME)
         .addFields(TBL_COMPANIES, COL_COMPANY_NAME)
         .addFrom(TBL_MESSAGES)
-        .addFromInner(TBL_CONTACTS, SqlUtils.join(TBL_MESSAGES, COL_SENDER,
-            TBL_CONTACTS, COL_EMAIL))
+        .addFromInner(TBL_CONTACTS,
+            SqlUtils.join(TBL_MESSAGES, COL_SENDER, TBL_CONTACTS, COL_EMAIL))
         .addFromInner(TBL_COMPANY_PERSONS,
-            sys.joinTables(TBL_CONTACTS, TBL_COMPANY_PERSONS,
-                COL_CONTACT))
-        .addFromInner(TBL_PERSONS,
-            sys.joinTables(TBL_PERSONS, TBL_COMPANY_PERSONS,
-                COL_PERSON))
+            sys.joinTables(TBL_CONTACTS, TBL_COMPANY_PERSONS, COL_CONTACT))
+        .addFromInner(TBL_PERSONS, sys.joinTables(TBL_PERSONS, TBL_COMPANY_PERSONS, COL_PERSON))
         .addFromInner(TBL_COMPANIES,
-            sys.joinTables(TBL_COMPANIES, TBL_COMPANY_PERSONS,
-                COL_COMPANY))
+            sys.joinTables(TBL_COMPANIES, TBL_COMPANY_PERSONS, COL_COMPANY))
         .setWhere(sys.idEquals(TBL_MESSAGES, messageId)));
 
     if (data != null) {
       packet.put(COL_COMPANY, data.getLong(COL_COMPANY));
-      packet.put(COL_COMPANY + COL_COMPANY_NAME,
-          data.getValue(COL_COMPANY_NAME));
+      packet.put(COL_COMPANY + COL_COMPANY_NAME, data.getValue(COL_COMPANY_NAME));
       packet.put(COL_PERSON, data.getLong(COL_PERSON));
       packet.put(COL_FIRST_NAME, data.getValue(COL_FIRST_NAME));
       packet.put(COL_LAST_NAME, data.getValue(COL_LAST_NAME));
     } else {
       data = qs.getRow(new SqlSelect()
-          .addField(TBL_COMPANIES, sys.getIdName(TBL_COMPANIES),
-              COL_COMPANY)
+          .addField(TBL_COMPANIES, sys.getIdName(TBL_COMPANIES), COL_COMPANY)
           .addFields(TBL_COMPANIES, COL_COMPANY_NAME)
           .addFrom(TBL_MESSAGES)
-          .addFromInner(TBL_CONTACTS, SqlUtils.join(TBL_MESSAGES, COL_SENDER,
-              TBL_CONTACTS, COL_EMAIL))
-          .addFromInner(TBL_COMPANIES,
-              sys.joinTables(TBL_CONTACTS, TBL_COMPANIES,
-                  COL_CONTACT))
+          .addFromInner(TBL_CONTACTS,
+              SqlUtils.join(TBL_MESSAGES, COL_SENDER, TBL_CONTACTS, COL_EMAIL))
+          .addFromInner(TBL_COMPANIES, sys.joinTables(TBL_CONTACTS, TBL_COMPANIES, COL_CONTACT))
           .setWhere(sys.idEquals(TBL_MESSAGES, messageId)));
 
       if (data != null) {
         packet.put(COL_COMPANY, data.getValue(COL_COMPANY));
-        packet.put(COL_COMPANY + COL_COMPANY_NAME,
-            data.getValue(COL_COMPANY_NAME));
+        packet.put(COL_COMPANY + COL_COMPANY_NAME, data.getValue(COL_COMPANY_NAME));
       }
     }
     SimpleRowSet rs = qs.getData(new SqlSelect()

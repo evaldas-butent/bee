@@ -252,16 +252,14 @@ public class MailStorageBean {
       placeId = data.getLong(COL_UNIQUE_ID);
     }
     if (!DataUtils.isId(messageId)) {
-      Address sender = envelope.getSender();
-
-      if (sender == null) {
-        logger.warning("Message does not have sender address");
-        return false;
-      }
-      Long senderId = storeAddress(sender);
       Long fileId;
       InputStream is = null;
+      Long senderId = null;
+      Address sender = envelope.getSender();
 
+      if (sender != null) {
+        senderId = storeAddress(sender);
+      }
       try {
         ByteArrayOutputStream bos = new ByteArrayOutputStream();
         message.writeTo(bos);
@@ -276,7 +274,7 @@ public class MailStorageBean {
       messageId = qs.insertData(new SqlInsert(TBL_MESSAGES)
           .addConstant(COL_UNIQUE_ID, envelope.getUniqueId())
           .addConstant(COL_DATE, envelope.getDate())
-          .addConstant(COL_SENDER, senderId)
+          .addNotNull(COL_SENDER, senderId)
           .addConstant(COL_SUBJECT, envelope.getSubject())
           .addConstant(COL_RAW_CONTENT, fileId));
 

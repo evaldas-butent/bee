@@ -117,15 +117,15 @@
       </FlowPanel>
     </page>
 
-    <page>
+    <page module="Documents.Templates">
       <text>=content</text>
       <xi:include href="widgets/Content.widget.xml" />
     </page>
-    <page>
+    <page module="Documents.Templates">
       <text>=criteria</text>
       <xi:include href="widgets/Criteria.widget.xml" />
     </page>
-    <page>
+    <page module="Documents.Templates">
       <text>=documentItems</text>
       <ChildGrid name="DocumentItems" relColumn="Document" />
     </page>

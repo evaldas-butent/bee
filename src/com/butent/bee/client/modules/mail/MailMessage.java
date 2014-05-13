@@ -408,8 +408,9 @@ public class MailMessage extends AbstractFormInterceptor {
         switch (mode) {
           case REPLY:
           case REPLY_ALL:
-            to = Sets.newHashSet(sender);
-
+            if (DataUtils.isId(sender)) {
+              to = Sets.newHashSet(sender);
+            }
             if (mode == NewMailMode.REPLY_ALL) {
               cc = getTo();
               cc.addAll(getCc());
