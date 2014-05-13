@@ -5,6 +5,7 @@ import com.google.common.base.Function;
 import com.google.common.base.Objects;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
+import com.google.common.collect.Range;
 import com.google.common.collect.Sets;
 import com.google.gwt.dom.client.Element;
 import com.google.gwt.dom.client.Style.Cursor;
@@ -55,14 +56,18 @@ import com.butent.bee.shared.css.CssUnit;
 import com.butent.bee.shared.css.values.FontSize;
 import com.butent.bee.shared.css.values.FontWeight;
 import com.butent.bee.shared.css.values.TextAlign;
+import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.Defaults;
 import com.butent.bee.shared.data.IsRow;
 import com.butent.bee.shared.data.IsTable;
 import com.butent.bee.shared.data.cache.CacheManager;
+import com.butent.bee.shared.data.value.ValueType;
 import com.butent.bee.shared.font.FontAwesome;
 import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogUtils;
+import com.butent.bee.shared.time.DateTime;
+import com.butent.bee.shared.time.TimeUtils;
 import com.butent.bee.shared.ui.Action;
 import com.butent.bee.shared.utils.BeeUtils;
 
@@ -568,36 +573,49 @@ public final class Global {
   public static HtmlTable renderTable(String caption, IsTable<?, ?> data) {
     int c = data.getNumberOfColumns();
     Assert.isPositive(c);
-    
+
     HtmlTable table = new HtmlTable();
     table.setCaption(caption);
-    
+
     int r = 0;
     for (int i = 0; i < c; i++) {
       String label = BeeUtils.notEmpty(data.getColumnLabel(i), data.getColumnId(i));
       table.setHtml(r, i, label);
-      
+
       TableCellElement cell = table.getCellFormatter().getElement(r, i);
       StyleUtils.setTextAlign(cell, TextAlign.CENTER);
       StyleUtils.setProperty(cell, CssProperties.FONT_WEIGHT, FontWeight.BOLD);
-      
-//      if (ValueType.isNumeric(data.getColumnType(i))) {
-//      }
-      
-      r++;
     }
     
+    Range<Long> maybeTime = Range.closed(
+        TimeUtils.startOfYear(TimeUtils.today(), -10).getTime(),
+        TimeUtils.startOfYear(TimeUtils.today(), 100).getTime());
+
     for (IsRow row : data) {
+      r++;
+
       for (int i = 0; i < c; i++) {
-        String value = row.getString(i);
-        if (value != null) {
+        if (!row.isNull(i)) {
+          ValueType type = data.getColumnType(i);
+          String value = DataUtils.render(data.getColumn(i), row, i);
+          
+          if (type == ValueType.LONG) {
+            Long x = row.getLong(i);
+            if (x != null && maybeTime.contains(x)) {
+              type = ValueType.DATE_TIME;
+              value = new DateTime(x).toCompactString();
+            }
+          }
+
           table.setHtml(r, i, value);
+
+          if (ValueType.isNumeric(type)) {
+            table.getCellFormatter().setHorizontalAlignment(r, i, TextAlign.RIGHT);
+          }
         }
       }
-      
-      r++;
     }
-    
+
     return table;
   }
 
@@ -662,19 +680,6 @@ public final class Global {
       String closeHtml) {
     msgBoxen.showError(caption, messages, dialogStyle, closeHtml);
   }
-  
-  public static void showGrid(String caption, IsTable<?, ?> table) {
-    if (table == null || table.getNumberOfColumns() <= 0 || table.getNumberOfRows() <= 0) {
-      logger.warning(caption, "table is empty");
-      return;
-    }
-
-    IdentifiableWidget widget = GridFactory.simpleGrid(caption, table,
-        BeeKeeper.getScreen().getActivePanelWidth());
-    if (widget != null) {
-      BeeKeeper.getScreen().showWidget(widget, true);
-    }
-  }
 
   public static void showInfo(List<String> messages) {
     showInfo(null, messages, null, null);
@@ -722,6 +727,26 @@ public final class Global {
     showModalWidget(null, widget, target);
   }
 
+  public static void showTable(String caption, IsTable<?, ?> table) {
+    if (table == null || table.getNumberOfColumns() <= 0 || table.getNumberOfRows() <= 0) {
+      logger.warning(caption, "table is empty");
+      return;
+    }
+    
+    IdentifiableWidget widget;
+
+    if (BeeKeeper.getStorage().hasItem("info-grid")) {
+      widget = GridFactory.simpleGrid(caption, table, BeeKeeper.getScreen().getActivePanelWidth());
+    } else {
+      widget = renderTable(caption, table);
+      widget.addStyleName(StyleUtils.CLASS_NAME_PREFIX + "info-table");
+    }
+
+    if (widget != null) {
+      BeeKeeper.getScreen().showWidget(widget, true);
+    }
+  }
+  
   static void init() {
     initCache();
     initImages();
@@ -738,12 +763,11 @@ public final class Global {
     $wnd.Bee_updateActor = $entry(@com.butent.bee.client.decorator.TuningHelper::updateActor(Lcom/google/gwt/core/client/JavaScriptObject;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;));
     $wnd.Bee_maybeTranslate = $entry(@com.butent.bee.shared.i18n.Localized::maybeTranslate(Ljava/lang/String;));
   }-*/;
+  // CHECKSTYLE:ON
 
   private static void initCache() {
     BeeKeeper.getBus().registerDataHandler(getCache(), true);
   }
-
-  // CHECKSTYLE:ON
 
   private static void initFavorites() {
     BeeKeeper.getBus().registerRowDeleteHandler(getFavorites(), false);

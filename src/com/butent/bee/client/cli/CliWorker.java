@@ -501,7 +501,7 @@ public final class CliWorker {
       showPropData(v, Settings.getInfo());
 
     } else if (z.startsWith("sheets")) {
-      Global.showGrid(v, new PropertiesData(Global.getStyleSheets()));
+      Global.showTable(v, new PropertiesData(Global.getStyleSheets()));
 
     } else if ("size".equals(z) && arr.length >= 2) {
       showSize(arr);
@@ -1444,7 +1444,7 @@ public final class CliWorker {
               if (rs.isEmpty()) {
                 logger.debug("sql: RowSet is empty");
               } else {
-                Global.showGrid(BeeUtils.clip(sql, 100), rs);
+                Global.showTable(BeeUtils.clip(sql, 100), rs);
               }
             }
           }
@@ -1731,7 +1731,7 @@ public final class CliWorker {
                           if (rs.isEmpty()) {
                             logger.debug("sql: RowSet is empty");
                           } else {
-                            Global.showGrid(null, rs);
+                            Global.showTable(null, rs);
                           }
                         }
                       }
@@ -2060,7 +2060,6 @@ public final class CliWorker {
       }
     }
   }-*/;
-
   // CHECKSTYLE:ON
 
   private static void scheduleTasks(String[] arr, boolean errorPopup) {
@@ -2656,7 +2655,7 @@ public final class CliWorker {
   }
 
   private static void showExtData(String caption, List<ExtendedProperty> data) {
-    Global.showGrid(caption, new ExtendedPropertiesData(data, true));
+    Global.showTable(caption, new ExtendedPropertiesData(data, true));
   }
 
   private static void showFlags(String[] arr) {
@@ -3134,7 +3133,7 @@ public final class CliWorker {
 
   @SuppressWarnings("rawtypes")
   private static void showMatrix(String caption, String[][] data, String... columnLabels) {
-    Global.showGrid(caption, new StringMatrix(data, columnLabels));
+    Global.showTable(caption, new StringMatrix(data, columnLabels));
   }
 
   private static void showMeter(String[] arr, boolean errorPopup) {
@@ -3381,7 +3380,7 @@ public final class CliWorker {
   }
 
   private static void showPropData(String caption, List<Property> data, String... columnLabels) {
-    Global.showGrid(caption, new PropertiesData(data, columnLabels));
+    Global.showTable(caption, new PropertiesData(data, columnLabels));
   }
 
   private static void showProperties(String v, String[] arr, boolean errorPopup) {
@@ -3500,7 +3499,7 @@ public final class CliWorker {
       }
 
     } else {
-      Global.showGrid("rpc", new StringMatrix<TableColumn>(
+      Global.showTable("rpc", new StringMatrix<TableColumn>(
           BeeKeeper.getRpc().getRpcList().getDefaultInfo(), RpcList.DEFAULT_INFO_COLUMNS));
     }
   }
@@ -3850,7 +3849,7 @@ public final class CliWorker {
     if (showModal(table.getNumberOfRows())) {
       Global.showModalGrid(caption, table);
     } else {
-      Global.showGrid(caption, table);
+      Global.showTable(caption, table);
     }
   }
 

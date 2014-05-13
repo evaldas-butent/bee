@@ -907,21 +907,28 @@ public final class DataUtils {
     return render(column, row, index);
   }
 
-  public static String render(BeeColumn column, IsRow row, int index) {
+  public static String render(IsColumn column, IsRow row, int index) {
     if (row == null) {
       return null;
+
     } else if (index == ID_INDEX) {
       return BeeUtils.toString(row.getId());
+    
     } else if (index == VERSION_INDEX) {
       return new DateTime(row.getVersion()).toString();
+    
     } else if (row.isNull(index)) {
       return null;
+    
     } else if (column == null || ValueType.isString(column.getType())) {
       return row.getString(index);
+    
     } else if (ValueType.DATE_TIME.equals(column.getType())) {
       return row.getDateTime(index).toCompactString();
+    
     } else if (!BeeUtils.isEmpty(column.getEnumKey())) {
       return EnumUtils.getCaption(column.getEnumKey(), row.getInteger(index));
+    
     } else {
       return row.getValue(index, column.getType()).toString();
     }
