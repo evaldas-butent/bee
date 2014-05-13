@@ -38,6 +38,7 @@ import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogUtils;
 import com.butent.bee.shared.modules.administration.AdministrationConstants.RightsObjectType;
 import com.butent.bee.shared.modules.administration.AdministrationConstants.RightsState;
+import com.butent.bee.shared.rights.Module;
 import com.butent.bee.shared.rights.ModuleAndSub;
 import com.butent.bee.shared.time.DateTime;
 import com.butent.bee.shared.time.TimeUtils;
@@ -487,6 +488,10 @@ public class UserServiceBean {
     return userCache.get(userId);
   }
 
+  public long[] getUserRoles() {
+    return getUserRoles(getCurrentUserId());
+  }
+
   public long[] getUserRoles(Long userId) {
     UserInfo userInfo = getUserInfo(userId);
 
@@ -576,7 +581,6 @@ public class UserServiceBean {
         }
       }
     }
-    initUsers();
   }
 
   @Lock(LockType.WRITE)
@@ -648,6 +652,10 @@ public class UserServiceBean {
       infoCache.put(login, user);
       userData.setRights(getUserRights(userId));
     }
+  }
+
+  public boolean isAdministrator() {
+    return isModuleVisible(ModuleAndSub.of(Module.ADMINISTRATION));
   }
 
   public Boolean isBlocked(String user) {

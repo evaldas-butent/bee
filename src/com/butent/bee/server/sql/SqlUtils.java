@@ -40,13 +40,22 @@ public final class SqlUtils {
     return CompoundCondition.and(conditions);
   }
 
-  public static <T> IsExpression bitAnd(IsExpression expr, T value) {
+  public static IsExpression bitAnd(IsExpression expr, Object value) {
     return new FunctionExpression(SqlFunction.BITAND,
         ImmutableMap.of("expression", expr, "value", value));
   }
 
-  public static <T> IsExpression bitAnd(String source, String field, T value) {
+  public static IsExpression bitAnd(String source, String field, Object value) {
     return bitAnd(field(source, field), value);
+  }
+
+  public static IsExpression bitOr(IsExpression expr, Object value) {
+    return new FunctionExpression(SqlFunction.BITOR,
+        ImmutableMap.of("expression", expr, "value", value));
+  }
+
+  public static IsExpression bitOr(String source, String field, Object value) {
+    return bitOr(field(source, field), value);
   }
 
   public static IsExpression cast(IsExpression expr, SqlDataType type, int precision, int scale) {

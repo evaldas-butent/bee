@@ -116,6 +116,122 @@ public class QueryServiceBean {
 
   private static BeeLogger logger = LogUtils.getLogger(QueryServiceBean.class);
 
+  private static BeeRowSet rsToBeeRowSet(ResultSet rs, BeeView view) throws SQLException {
+    List<BeeColumn> rsCols = JdbcUtils.getColumns(rs);
+
+    int idIndex = BeeConst.UNDEF;
+    int versionIndex = BeeConst.UNDEF;
+    int editableIndex = BeeConst.UNDEF;
+
+    BeeRowSet result;
+    List<Integer> indexes = Lists.newArrayListWithCapacity(rsCols.size());
+
+    if (view == null) {
+      result = new BeeRowSet(rsCols);
+      for (int i = 0; i < rsCols.size(); i++) {
+        indexes.add(i + 1);
+      }
+
+    } else {
+      result = new BeeRowSet();
+
+      for (int i = 0; i < rsCols.size(); i++) {
+        BeeColumn column = rsCols.get(i);
+        String colName = column.getId();
+        int colIndex = i + 1;
+
+        if (view.hasColumn(colName)) {
+          view.initColumn(colName, column);
+          result.addColumn(column);
+          indexes.add(colIndex);
+
+        } else if (BeeUtils.same(colName, view.getSourceIdName())) {
+          idIndex = colIndex;
+
+        } else if (BeeUtils.same(colName, view.getSourceVersionName())) {
+          versionIndex = colIndex;
+
+        } else if (BeeUtils.same(colName, EDITABLE_STATE_COLUMN)) {
+          editableIndex = colIndex;
+        }
+      }
+    }
+
+    long rowId = 0;
+    boolean editable = RightsState.EDIT.isChecked();
+
+    int cc = result.getNumberOfColumns();
+
+    while (rs.next()) {
+      String[] values = new String[cc];
+
+      for (int i = 0; i < cc; i++) {
+        BeeColumn column = result.getColumn(i);
+        int colIndex = indexes.get(i);
+
+        switch (column.getType()) {
+          case BOOLEAN:
+            values[i] = BooleanValue.pack(rs.getBoolean(colIndex));
+            if (rs.wasNull()) {
+              values[i] = null;
+            }
+            break;
+
+          case DATE:
+            Long time = BeeUtils.toLongOrNull(rs.getString(colIndex));
+            values[i] = (time == null) ? null : BeeUtils.toString(time / TimeUtils.MILLIS_PER_DAY);
+            break;
+
+          case NUMBER:
+          case DECIMAL:
+            Double d = rs.getDouble(colIndex);
+            if (rs.wasNull() || !BeeUtils.isDouble(d)) {
+              values[i] = null;
+            } else if (column.getScale() >= 0) {
+              values[i] = BeeUtils.toString(d, column.getScale());
+            } else {
+              values[i] = BeeUtils.toString(d, NumberValue.MAX_SCALE);
+            }
+            break;
+
+          case BLOB:
+            byte[] bytes = rs.getBytes(i + 1);
+            values[i] = bytes != null ? Codec.toBase64(bytes) : null;
+            break;
+
+          default:
+            values[i] = rs.getString(colIndex);
+        }
+      }
+
+      if (idIndex > 0) {
+        rowId = rs.getLong(idIndex);
+      } else {
+        rowId++;
+      }
+
+      BeeRow row;
+      if (versionIndex > 0) {
+        row = new BeeRow(rowId, rs.getLong(versionIndex), values);
+      } else {
+        row = new BeeRow(rowId, values);
+      }
+
+      if (editableIndex > 0) {
+        editable = BeeUtils.toBoolean(rs.getString(editableIndex));
+      }
+      row.setEditable(editable);
+
+      result.addRow(row);
+    }
+
+    if (idIndex > 0) {
+      result.setViewName(view.getName());
+    }
+    logger.debug("cols:", cc, "rows:", result.getNumberOfRows());
+    return result;
+  }
+
   private static SimpleRowSet rsToSimpleRowSet(ResultSet rs) throws SQLException {
     List<BeeColumn> rsCols = JdbcUtils.getColumns(rs);
     int cc = rsCols.size();
@@ -630,17 +746,23 @@ public class QueryServiceBean {
     String tableName = view.getSourceName();
     String tableAlias = view.getSourceAlias();
 
-    sys.filterVisibleState(query, tableName, tableAlias);
+    if (!usr.isAdministrator()) {
+      sys.filterVisibleState(query, tableName, tableAlias);
 
-    BeeTable table = sys.getTable(tableName);
-    String stateAlias = table.joinState(query, tableAlias, RightsState.EDIT);
+      BeeTable table = sys.getTable(tableName);
+      String stateAlias = table.joinState(query, tableAlias, RightsState.EDIT);
 
-    if (!BeeUtils.isEmpty(stateAlias)) {
-      query.addExpr(SqlUtils.sqlIf(table.checkState(stateAlias, RightsState.EDIT,
-          table.areRecordsEditable(), usr.getUserRoles(usr.getCurrentUserId())), 1, 0),
-          EDITABLE_STATE_COLUMN);
+      if (!BeeUtils.isEmpty(stateAlias)) {
+        IsExpression xpr = SqlUtils.sqlIf(table.checkState(stateAlias, RightsState.EDIT,
+            usr.getUserRoles()), 1, null);
+
+        if (!BeeUtils.isEmpty(query.getGroupBy())) {
+          query.addMax(xpr, EDITABLE_STATE_COLUMN);
+        } else {
+          query.addExpr(xpr, EDITABLE_STATE_COLUMN);
+        }
+      }
     }
-
     activateTables(query);
 
     final ViewQueryEvent event = new ViewQueryEvent(view.getName(), query);
@@ -973,123 +1095,6 @@ public class QueryServiceBean {
       JdbcUtils.closeStatement(stmt);
       JdbcUtils.closeConnection(con);
     }
-    return result;
-  }
-
-  private BeeRowSet rsToBeeRowSet(ResultSet rs, BeeView view) throws SQLException {
-    List<BeeColumn> rsCols = JdbcUtils.getColumns(rs);
-
-    int idIndex = BeeConst.UNDEF;
-    int versionIndex = BeeConst.UNDEF;
-    int editableIndex = BeeConst.UNDEF;
-
-    BeeRowSet result;
-    List<Integer> indexes = Lists.newArrayListWithCapacity(rsCols.size());
-
-    if (view == null) {
-      result = new BeeRowSet(rsCols);
-      for (int i = 0; i < rsCols.size(); i++) {
-        indexes.add(i + 1);
-      }
-
-    } else {
-      result = new BeeRowSet();
-
-      for (int i = 0; i < rsCols.size(); i++) {
-        BeeColumn column = rsCols.get(i);
-        String colName = column.getId();
-        int colIndex = i + 1;
-
-        if (view.hasColumn(colName)) {
-          view.initColumn(colName, column);
-          result.addColumn(column);
-          indexes.add(colIndex);
-
-        } else if (BeeUtils.same(colName, view.getSourceIdName())) {
-          idIndex = colIndex;
-
-        } else if (BeeUtils.same(colName, view.getSourceVersionName())) {
-          versionIndex = colIndex;
-
-        } else if (BeeUtils.same(colName, EDITABLE_STATE_COLUMN)) {
-          editableIndex = colIndex;
-        }
-      }
-    }
-
-    long rowId = 0;
-    boolean editable = (view != null)
-        ? sys.getTable(view.getSourceName()).areRecordsEditable() : true;
-
-    int cc = result.getNumberOfColumns();
-
-    while (rs.next()) {
-      String[] values = new String[cc];
-
-      for (int i = 0; i < cc; i++) {
-        BeeColumn column = result.getColumn(i);
-        int colIndex = indexes.get(i);
-
-        switch (column.getType()) {
-          case BOOLEAN:
-            values[i] = BooleanValue.pack(rs.getBoolean(colIndex));
-            if (rs.wasNull()) {
-              values[i] = null;
-            }
-            break;
-
-          case DATE:
-            Long time = BeeUtils.toLongOrNull(rs.getString(colIndex));
-            values[i] = (time == null) ? null : BeeUtils.toString(time / TimeUtils.MILLIS_PER_DAY);
-            break;
-
-          case NUMBER:
-          case DECIMAL:
-            Double d = rs.getDouble(colIndex);
-            if (rs.wasNull() || !BeeUtils.isDouble(d)) {
-              values[i] = null;
-            } else if (column.getScale() >= 0) {
-              values[i] = BeeUtils.toString(d, column.getScale());
-            } else {
-              values[i] = BeeUtils.toString(d, NumberValue.MAX_SCALE);
-            }
-            break;
-
-          case BLOB:
-            byte[] bytes = rs.getBytes(i + 1);
-            values[i] = bytes != null ? Codec.toBase64(bytes) : null;
-            break;
-
-          default:
-            values[i] = rs.getString(colIndex);
-        }
-      }
-
-      if (idIndex > 0) {
-        rowId = rs.getLong(idIndex);
-      } else {
-        rowId++;
-      }
-
-      BeeRow row;
-      if (versionIndex > 0) {
-        row = new BeeRow(rowId, rs.getLong(versionIndex), values);
-      } else {
-        row = new BeeRow(rowId, values);
-      }
-
-      if (editableIndex > 0) {
-        editable = BeeUtils.toBoolean(rs.getString(editableIndex));
-      }
-      row.setEditable(editable);
-
-      result.addRow(row);
-    }
-
-    if (idIndex > 0) {
-      result.setViewName(view.getName());
-    }
-    logger.debug("cols:", cc, "rows:", result.getNumberOfRows());
     return result;
   }
 }

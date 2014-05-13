@@ -1044,24 +1044,6 @@ public class UiServiceBean {
       } else {
         response.addError(err);
       }
-    } else if (BeeUtils.startsSame(cmd, "setState")) {
-      String[] arr = cmd.split(" ", 5);
-      RightsState state = EnumUtils.getEnumByName(RightsState.class, arr[1]);
-      String tbl = arr[2];
-      long id = BeeUtils.toLong(arr[3]);
-      long[] bits = null;
-
-      if (arr.length > 4) {
-        String[] rArr = arr[4].split(" ");
-        bits = new long[rArr.length];
-
-        for (int i = 0; i < rArr.length; i++) {
-          bits[i] = BeeUtils.toLong(rArr[i]);
-        }
-      }
-      deb.setState(tbl, state, id, bits);
-      response.addInfo("Toggle OK");
-
     } else if (BeeUtils.startsSame(cmd, "schema")) {
       String schema = cmd.substring("schema".length()).trim();
 

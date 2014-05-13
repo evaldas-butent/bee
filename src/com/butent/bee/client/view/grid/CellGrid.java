@@ -1049,7 +1049,7 @@ public class CellGrid extends Widget implements IdentifiableWidget, HasDataTable
       autoFitColumn(col);
     }
   }
-  
+
   public boolean containsRow(long rowId) {
     for (IsRow row : getRowData()) {
       if (row.getId() == rowId) {
@@ -1895,7 +1895,7 @@ public class CellGrid extends Widget implements IdentifiableWidget, HasDataTable
   public void preserveActiveRow(List<? extends IsRow> rows) {
     Assert.notNull(rows);
     int oldRow = getActiveRowIndex();
-  
+
     if (oldRow >= 0 && oldRow < getDataSize()) {
       int newRow = 0;
       long id = getRowData().get(oldRow).getId();
@@ -1979,6 +1979,11 @@ public class CellGrid extends Widget implements IdentifiableWidget, HasDataTable
       getSelectedRows().clear();
       fireSelectionCountChange();
     }
+    onActivateCell(false);
+    onActivateRow(false);
+
+    activeRowIndex = BeeConst.UNDEF;
+    activeColumnIndex = BeeConst.UNDEF;
   }
 
   public int resizeColumn(int col, int newWidth) {

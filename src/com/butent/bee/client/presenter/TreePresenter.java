@@ -30,6 +30,7 @@ import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.data.BeeColumn;
 import com.butent.bee.shared.data.BeeRow;
 import com.butent.bee.shared.data.BeeRowSet;
+import com.butent.bee.shared.data.CustomProperties;
 import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.HasViewName;
 import com.butent.bee.shared.data.IsRow;
@@ -87,6 +88,7 @@ public class TreePresenter extends AbstractPresenter implements CatchEvent.Catch
   private Long relationId;
   private final Calculation calculation;
   private List<BeeColumn> dataColumns;
+  private CustomProperties properties;
   private Evaluator evaluator;
   private final Element editor;
   private FormView formView;
@@ -145,6 +147,19 @@ public class TreePresenter extends AbstractPresenter implements CatchEvent.Catch
   @Override
   public View getMainView() {
     return getView();
+  }
+
+  public CustomProperties getProperties() {
+    return properties;
+  }
+
+  public String getProperty(String key) {
+    Assert.notEmpty(key);
+
+    if (properties == null) {
+      return null;
+    }
+    return properties.get(key);
   }
 
   @Override
@@ -377,6 +392,7 @@ public class TreePresenter extends AbstractPresenter implements CatchEvent.Catch
           dataColumns = result.getColumns();
           evaluator = Evaluator.create(calculation, null, getDataColumns());
         }
+        properties = result.getTableProperties();
         getView().removeItems();
 
         if (result.isEmpty()) {

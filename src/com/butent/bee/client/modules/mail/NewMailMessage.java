@@ -3,7 +3,6 @@ package com.butent.bee.client.modules.mail;
 import com.google.common.base.Objects;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
-import com.google.gwt.core.client.Scheduler.ScheduledCommand;
 import com.google.gwt.event.dom.client.ChangeEvent;
 import com.google.gwt.event.dom.client.ChangeHandler;
 import com.google.gwt.event.dom.client.ClickEvent;
@@ -42,6 +41,7 @@ import com.butent.bee.client.view.form.interceptor.AbstractFormInterceptor;
 import com.butent.bee.client.view.form.interceptor.FormInterceptor;
 import com.butent.bee.client.widget.ListBox;
 import com.butent.bee.shared.Assert;
+import com.butent.bee.shared.Consumer;
 import com.butent.bee.shared.communication.ResponseObject;
 import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.SimpleRowSet;
@@ -102,7 +102,8 @@ public final class NewMailMessage extends AbstractFormInterceptor
   }
 
   public static void create(final Set<Long> to, final Set<Long> cc, final Set<Long> bcc,
-      final String subject, final String content, final Map<Long, NewFileInfo> attach) {
+      final String subject, final String content, final Map<Long, NewFileInfo> attach,
+      final Long draftId) {
 
     ParameterList params = MailKeeper.createArgs(SVC_GET_ACCOUNTS);
     params.addDataItem(COL_USER, BeeKeeper.getUser().getUserId());
@@ -130,7 +131,7 @@ public final class NewMailMessage extends AbstractFormInterceptor
           BeeKeeper.getScreen().notifyWarning("No accounts found");
           return;
         }
-        create(defaultAccount, availableAccounts, to, cc, bcc, subject, content, attach, null);
+        create(defaultAccount, availableAccounts, to, cc, bcc, subject, content, attach, draftId);
       }
     });
   }
@@ -171,7 +172,7 @@ public final class NewMailMessage extends AbstractFormInterceptor
   private Editor contentWidget;
   private final Map<String, Long> attachments = Maps.newLinkedHashMap();
 
-  private ScheduledCommand scheduled;
+  private Consumer<Boolean> scheduled;
 
   private NewMailMessage(Long defaultAccount, List<AccountInfo> availableAccounts,
       Set<Long> to, Set<Long> cc, Set<Long> bcc, String subject, String content,
@@ -309,7 +310,7 @@ public final class NewMailMessage extends AbstractFormInterceptor
     }
   }
 
-  public void setScheduled(ScheduledCommand scheduled) {
+  public void setScheduled(Consumer<Boolean> scheduled) {
     this.scheduled = scheduled;
   }
 
@@ -335,7 +336,7 @@ public final class NewMailMessage extends AbstractFormInterceptor
     return false;
   }
 
-  private void save(boolean saveMode) {
+  private void save(final boolean saveMode) {
     if (saveMode && !hasChanges()) {
       return;
     }
@@ -367,7 +368,7 @@ public final class NewMailMessage extends AbstractFormInterceptor
         response.notify(BeeKeeper.getScreen());
 
         if (scheduled != null) {
-          scheduled.execute();
+          scheduled.accept(saveMode);
         }
       }
     });

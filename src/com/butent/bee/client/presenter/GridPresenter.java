@@ -19,7 +19,6 @@ import com.butent.bee.client.dialog.ChoiceCallback;
 import com.butent.bee.client.dialog.ConfirmationCallback;
 import com.butent.bee.client.dialog.Icon;
 import com.butent.bee.client.dialog.ModalGrid;
-import com.butent.bee.client.dialog.StringCallback;
 import com.butent.bee.client.grid.GridFactory;
 import com.butent.bee.client.modules.administration.HistoryHandler;
 import com.butent.bee.client.output.Exporter;
@@ -748,15 +747,10 @@ public class GridPresenter extends AbstractPresenter implements ReadyForInsertEv
       caption = null;
     }
 
-    Exporter.confirm(caption, new StringCallback() {
+    Exporter.confirm(caption, new Exporter.FileNameCallback() {
       @Override
       public void onSuccess(String value) {
         Exporter.export(GridPresenter.this, caption, value);
-      }
-
-      @Override
-      public boolean validate(String value) {
-        return Exporter.validateFileName(value);
       }
     });
   }

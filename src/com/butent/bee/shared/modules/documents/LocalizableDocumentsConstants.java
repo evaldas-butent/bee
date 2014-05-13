@@ -18,6 +18,8 @@ public interface LocalizableDocumentsConstants {
 
   String documentTemplateName();
 
+  String documentTree();
+
   String mainCriteria();
 
   String newDocumentTemplate();

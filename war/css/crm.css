@@ -247,12 +247,6 @@
   outline-offset: -1px;
 }
 
-.bee-crm-rt-cron-label {
-  min-width: 120px;
-}
-.bee-crm-rt-cron-input {
-  width: 400px;
-}
 .bee-crm-rt-cron-error {
   padding-left: 3px;
   color: transparent;
@@ -393,4 +387,8 @@
 .bee-crm-rt-offspring-delete:hover {
   background-color: red;
   color: white;
+}
+
+.bee-crm-task-alien {
+  background-image: url(../images/checkered_background.png) !important;
 }

@@ -146,6 +146,8 @@ public final class ClassifierConstants {
 
   public static final String COL_ACTIVITY = "Activity";
 
+  public static final String COL_COMPANY_TYPE_NAME = "Name";
+
   public static final String ALS_COMPANY_NAME = "CompanyName";
   public static final String ALS_COMPANY_CODE = "CompanyCode";
   public static final String ALS_COMPANY_TYPE = "CompanyType";

@@ -27,6 +27,8 @@ name="Tasks" label="=crmTasks" order="30" module="Tasks"
   <Item name="TaskTemplates" label="=crmTaskTemplates" service="grid" parameters="TaskTemplates"
     separator="true" />
 
+  <Item name="TaskTypes" label="=crmTaskTypes" service="grid"
+    parameters="TaskTypes" separator="true" />
   <Item name="DurationTypes" label="=crmTaskDurationTypes" service="grid" 
-    parameters="DurationTypes" separator="true" />
+    parameters="DurationTypes" />
 </Entry>

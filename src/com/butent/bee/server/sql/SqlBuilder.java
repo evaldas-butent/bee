@@ -450,6 +450,9 @@ public abstract class SqlBuilder {
       case BITAND:
         return "(" + params.get("expression") + " & " + params.get("value") + ")";
 
+      case BITOR:
+        return "(" + params.get("expression") + " | " + params.get("value") + ")";
+
       case IF:
         return BeeUtils.joinWords(
             "CASE WHEN", params.get("condition"),

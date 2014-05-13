@@ -128,6 +128,7 @@ import com.butent.bee.shared.css.CssUnit;
 import com.butent.bee.shared.css.values.TextAlign;
 import com.butent.bee.shared.css.values.VerticalAlign;
 import com.butent.bee.shared.data.BeeColumn;
+import com.butent.bee.shared.data.CellSource;
 import com.butent.bee.shared.data.CustomProperties;
 import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.value.ValueType;
@@ -1447,7 +1448,19 @@ public enum FormWidget {
       case MULTI_SELECTOR:
         relation = createRelation(null, attributes, children, Relation.RenderMode.SOURCE);
         if (relation != null) {
-          widget = new MultiSelector(relation, true, attributes.get(UiConstants.ATTR_PROPERTY));
+          String property = attributes.get(UiConstants.ATTR_PROPERTY);
+
+          CellSource cellSource = null;
+          if (!BeeUtils.isEmpty(property)) {
+            cellSource = CellSource.forProperty(property, ValueType.TEXT);
+          } else if (column != null) {
+            int columnIndex = DataUtils.getColumnIndex(column.getId(), columns);
+            if (!BeeConst.isUndef(columnIndex)) {
+            cellSource = CellSource.forColumn(column, columnIndex);
+            }
+          }
+
+          widget = new MultiSelector(relation, true, cellSource);
         }
         break;
 

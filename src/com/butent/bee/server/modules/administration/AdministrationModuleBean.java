@@ -131,6 +131,10 @@ public class AdministrationModuleBean implements BeeModule {
     } else if (BeeUtils.same(svc, SVC_BLOCK_HOST)) {
       response = blockHost(reqInfo);
 
+    } else if (BeeUtils.same(svc, SVC_COPY_RIGHTS)) {
+      response = copyRights(BeeUtils.toLongOrNull(reqInfo.getParameter(COL_ROLE)),
+          BeeUtils.toLongOrNull(reqInfo.getParameter(VAR_BASE_ROLE)));
+
     } else if (BeeUtils.same(svc, SVC_NUMBER_TO_WORDS)) {
       response = getNumberInWords(BeeUtils.toLongOrNull(reqInfo.getParameter(VAR_AMOUNT)),
           reqInfo.getParameter(VAR_LOCALE));
@@ -390,6 +394,24 @@ public class AdministrationModuleBean implements BeeModule {
     }
 
     return qs.insertDataWithResponse(insUser);
+  }
+
+  private ResponseObject copyRights(Long role, Long baseRole) {
+    Assert.state(DataUtils.isId(role));
+    Assert.state(DataUtils.isId(baseRole));
+
+    for (SimpleRow row : qs.getData(new SqlSelect()
+        .addFields(TBL_RIGHTS, COL_OBJECT, COL_STATE)
+        .addFrom(TBL_RIGHTS)
+        .setWhere(SqlUtils.equals(TBL_RIGHTS, COL_ROLE, baseRole)))) {
+
+      qs.insertData(new SqlInsert(TBL_RIGHTS)
+          .addConstant(COL_ROLE, role)
+          .addConstant(COL_OBJECT, row.getLong(COL_OBJECT))
+          .addConstant(COL_STATE, row.getInt(COL_STATE)));
+    }
+    usr.initRights();
+    return ResponseObject.emptyResponse();
   }
 
   private ResponseObject getCurrentExchangeRate(RequestInfo reqInfo) {

@@ -757,7 +757,7 @@ public class AssessmentForm extends PrintFormInterceptor implements SelectorEven
           if (addr != null) {
             recipient = Sets.newHashSet(addr);
           }
-          NewMailMessage.create(recipient, null, null, null, div.getString(), null);
+          NewMailMessage.create(recipient, null, null, null, div.getString(), null, null);
         }
       }));
       if (request) {

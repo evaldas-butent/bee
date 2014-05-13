@@ -28,6 +28,12 @@ import com.butent.bee.shared.utils.BeeUtils;
 
 class RelatedTasksGrid extends TasksGrid {
 
+  private static void openTask(Long id) {
+    if (DataUtils.isId(id)) {
+      RowEditor.openRow(VIEW_TASKS, id, true, null);
+    }
+  }
+
   RelatedTasksGrid() {
     super(TaskType.RELATED, null);
   }
@@ -90,9 +96,7 @@ class RelatedTasksGrid extends TasksGrid {
 
   @Override
   public void onEditStart(EditStartEvent event) {
-    if (PROP_STAR.equals(event.getColumnId())) {
-      super.onEditStart(event);
-    } else {
+    if (!maybeEditStar(event)) { 
       event.consume();
 
       int index = getDataIndex(COL_TASK);
@@ -117,16 +121,5 @@ class RelatedTasksGrid extends TasksGrid {
   @Override
   protected Long getTaskId(IsRow row) {
     return (row == null) ? null : row.getLong(getDataIndex(COL_TASK));
-  }
-
-  private void openTask(Long id) {
-    if (DataUtils.isId(id)) {
-      RowEditor.openRow(VIEW_TASKS, id, true, new RowCallback() {
-        @Override
-        public void onSuccess(BeeRow result) {
-          getGridPresenter().handleAction(Action.REFRESH);
-        }
-      });
-    }
   }
 }

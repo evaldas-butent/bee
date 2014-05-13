@@ -147,7 +147,7 @@ public class TasksModuleBean implements BeeModule {
       result.addAll(taskDurationsSr);
 
       List<SearchResult> taskTemplatesSr = qs.getSearchResults(VIEW_TASK_TEMPLATES,
-          Filter.anyContains(Sets.newHashSet(COL_NAME, COL_SUMMARY, COL_DESCRIPTION,
+          Filter.anyContains(Sets.newHashSet(COL_TASK_TEMPLATE_NAME, COL_SUMMARY, COL_DESCRIPTION,
               ALS_COMPANY_NAME, ALS_CONTACT_FIRST_NAME, ALS_CONTACT_LAST_NAME),
               query));
       result.addAll(taskTemplatesSr);
@@ -1014,18 +1014,14 @@ public class TasksModuleBean implements BeeModule {
 
     SqlSelect companiesListQuery =
         new SqlSelect()
-            .addFields(TBL_COMPANIES,
-                sys.getIdName(TBL_COMPANIES))
-            .addFields(TBL_COMPANIES, COL_NAME)
-            .addField(TBL_COMPANY_TYPES, COL_NAME,
-                ALS_COMPANY_TYPE)
+            .addFields(TBL_COMPANIES, sys.getIdName(TBL_COMPANIES))
+            .addFields(TBL_COMPANIES, COL_COMPANY_NAME)
+            .addField(TBL_COMPANY_TYPES, COL_COMPANY_TYPE_NAME, ALS_COMPANY_TYPE)
             .addFrom(TBL_COMPANIES)
-            .addFromLeft(
-                TBL_COMPANY_TYPES,
-                sys.joinTables(TBL_COMPANY_TYPES,
-                    TBL_COMPANIES, COL_COMPANY_TYPE))
+            .addFromLeft(TBL_COMPANY_TYPES,
+                sys.joinTables(TBL_COMPANY_TYPES, TBL_COMPANIES, COL_COMPANY_TYPE))
             .setWhere(SqlUtils.sqlTrue())
-            .addOrder(TBL_COMPANIES, COL_NAME);
+            .addOrder(TBL_COMPANIES, COL_COMPANY_NAME);
 
     if (reqInfo.hasParameter(VAR_TASK_COMPANY)) {
       companiesListQuery.setWhere(SqlUtils.and(companiesListQuery.getWhere(), SqlUtils.inList(
@@ -1038,7 +1034,7 @@ public class TasksModuleBean implements BeeModule {
     }
 
     SimpleRowSet companiesListSet = qs.getData(companiesListQuery);
-    SimpleRowSet result = new SimpleRowSet(new String[] {COL_NAME, COL_DURATION});
+    SimpleRowSet result = new SimpleRowSet(new String[] {COL_COMPANY_NAME, COL_DURATION});
     long totalTimeMls = 0;
 
     result.addRow(new String[] {constants.client(), constants.crmSpentTime()});
@@ -1048,7 +1044,7 @@ public class TasksModuleBean implements BeeModule {
 
     for (int i = 0; i < companiesListSet.getNumberOfRows(); i++) {
       String compFullName =
-          companiesListSet.getValue(i, COL_NAME)
+          companiesListSet.getValue(i, COL_COMPANY_NAME)
               + (!BeeUtils.isEmpty(companiesListSet.getValue(i, ALS_COMPANY_TYPE))
                   ? ", " + companiesListSet.getValue(i, ALS_COMPANY_TYPE) : "");
       String dTime = "0:00";
@@ -1409,9 +1405,9 @@ public class TasksModuleBean implements BeeModule {
     LocalizableConstants constants = usr.getLocalizableConstants();
     SqlSelect durationTypes = new SqlSelect()
         .addFrom(TBL_DURATION_TYPES)
-        .addFields(TBL_DURATION_TYPES, COL_NAME)
+        .addFields(TBL_DURATION_TYPES, COL_DURATION_TYPE_NAME)
         .setWhere(SqlUtils.sqlTrue())
-        .addOrder(TBL_DURATION_TYPES, COL_NAME);
+        .addOrder(TBL_DURATION_TYPES, COL_DURATION_TYPE_NAME);
 
     boolean hideTimeZeros = false;
 
@@ -1426,7 +1422,7 @@ public class TasksModuleBean implements BeeModule {
     }
 
     SimpleRowSet dTypesList = qs.getData(durationTypes);
-    SimpleRowSet result = new SimpleRowSet(new String[] {COL_NAME, COL_DURATION});
+    SimpleRowSet result = new SimpleRowSet(new String[] {COL_DURATION_TYPE_NAME, COL_DURATION});
 
     result.addRow(new String[] {constants.crmDurationType(), constants.crmSpentTime()});
     Assert.notNull(dTypesList);
@@ -1434,7 +1430,7 @@ public class TasksModuleBean implements BeeModule {
     long totalTimeMls = 0;
 
     for (int i = 0; i < dTypesList.getNumberOfRows(); i++) {
-      String dType = dTypesList.getValue(i, dTypesList.getColumnIndex(COL_NAME));
+      String dType = dTypesList.getValue(i, dTypesList.getColumnIndex(COL_DURATION_TYPE_NAME));
       String dTime = "0:00";
 
       SqlSelect dTypeTime = new SqlSelect()
@@ -1449,9 +1445,9 @@ public class TasksModuleBean implements BeeModule {
               sys.joinTables(TBL_COMPANIES, TBL_TASKS, COL_COMPANY))
           .addFromLeft(TBL_USERS,
               sys.joinTables(TBL_USERS, TBL_TASK_EVENTS, COL_PUBLISHER))
-          .addFields(TBL_DURATION_TYPES, COL_NAME)
+          .addFields(TBL_DURATION_TYPES, COL_DURATION_TYPE_NAME)
           .addFields(TBL_EVENT_DURATIONS, COL_DURATION)
-          .setWhere(SqlUtils.equals(TBL_DURATION_TYPES, COL_NAME, dType));
+          .setWhere(SqlUtils.equals(TBL_DURATION_TYPES, COL_DURATION_TYPE_NAME, dType));
 
       if (reqInfo.hasParameter(VAR_TASK_DURATION_DATE_FROM)) {
         if (!BeeUtils.isEmpty(reqInfo.getParameter(VAR_TASK_DURATION_DATE_FROM))) {
@@ -1572,7 +1568,7 @@ public class TasksModuleBean implements BeeModule {
     }
 
     SimpleRowSet usersListSet = qs.getData(userListQuery);
-    SimpleRowSet result = new SimpleRowSet(new String[] {COL_NAME, COL_DURATION});
+    SimpleRowSet result = new SimpleRowSet(new String[] {COL_USER, COL_DURATION});
     long totalTimeMls = 0;
 
     result.addRow(new String[] {
@@ -2168,6 +2164,12 @@ public class TasksModuleBean implements BeeModule {
       values.add(description.trim());
     }
 
+    Long type = DataUtils.getLong(rtColumns, rtRow, COL_TASK_TYPE);
+    if (DataUtils.isId(type)) {
+      columns.add(DataUtils.getColumn(COL_TASK_TYPE, taskColumns));
+      values.add(type.toString());
+    }
+    
     columns.add(DataUtils.getColumn(COL_PRIORITY, taskColumns));
     values.add(DataUtils.getString(rtColumns, rtRow, COL_PRIORITY));
 

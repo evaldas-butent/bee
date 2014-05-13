@@ -2228,6 +2228,10 @@ public class GridImpl extends Absolute implements GridView, EditEndEvent.Handler
       if (editable) {
         editable = isRowEditable(rowValue, BeeKeeper.getScreen());
       }
+      if (editable && getEditForm() != null) {
+        editable = getEditForm().isRowEditable(rowValue, false);
+      }
+
     } else {
       if (!editable || event.isReadOnly()) {
         return;
@@ -2439,6 +2443,7 @@ public class GridImpl extends Absolute implements GridView, EditEndEvent.Handler
           presenter.showAction(Action.SAVE);
         }
         form.setEnabled(true);
+
       } else if (!BeeUtils.isEmpty(caption)) {
         presenter.setCaption(caption);
       }

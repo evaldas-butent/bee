@@ -6,15 +6,14 @@
   <Columns>
     <SimpleColumn name="User" />
 
-    <SimpleColumn name="CalendarActiveView" />
+    <SimpleColumn name="CalendarCompanyKind" />
 
-    <SimpleColumn name="CalendarPixelsPerCustomer" />
+    <SimpleColumn name="CalendarPixelsPerCompany" />
     <SimpleColumn name="CalendarPixelsPerInfo" />
 
     <SimpleColumn name="CalendarSeparateObjects" />
 
     <SimpleColumn name="CalendarPixelsPerDay" />
-    <SimpleColumn name="CalendarPixelsPerWeek" />
     <SimpleColumn name="CalendarPixelsPerRow" />
 
     <SimpleColumn name="CalendarHeaderHeight" />
@@ -23,6 +22,7 @@
     <SimpleColumn name="CalendarItemOpacity" />
     <SimpleColumn name="CalendarStripOpacity" />
 
+    <SimpleColumn name="CalendarDatesColor" />
     <SimpleColumn name="CalendarTaskColor" />
     <SimpleColumn name="CalendarRTColor" />
 
@@ -33,5 +33,7 @@
     <SimpleColumn name="CalendarTaskColor4" />
     <SimpleColumn name="CalendarTaskColor5" />
     <SimpleColumn name="CalendarTaskColor6" />
+
+    <SimpleColumn name="CalendarTaskTypes" />
   </Columns>
 </View>

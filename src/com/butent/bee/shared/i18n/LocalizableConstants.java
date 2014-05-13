@@ -113,6 +113,8 @@ public interface LocalizableConstants extends Constants, LocalizableCalendarCons
 
   String captionId();
 
+  String captionPid();
+
   String changedValues();
 
   String changePassword();

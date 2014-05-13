@@ -36,6 +36,7 @@ import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogUtils;
 import com.butent.bee.shared.time.DateRange;
+import com.butent.bee.shared.time.DateTime;
 import com.butent.bee.shared.time.HasDateRange;
 import com.butent.bee.shared.time.JustDate;
 import com.butent.bee.shared.time.TimeUtils;
@@ -244,6 +245,20 @@ public final class TimeBoardHelper {
     return result;
   }
 
+  public static Integer getInteger(BeeRowSet settings, String colName) {
+    if (DataUtils.isEmpty(settings)) {
+      return null;
+    }
+
+    int index = settings.getColumnIndex(colName);
+    if (BeeConst.isUndef(index)) {
+      logger.severe(settings.getViewName(), colName, "column not found");
+      return null;
+    } else {
+      return settings.getInteger(0, index);
+    }
+  }
+  
   public static Long getLong(BeeRowSet settings, String colName) {
     if (DataUtils.isEmpty(settings)) {
       return null;
@@ -275,6 +290,33 @@ public final class TimeBoardHelper {
 
   public static int getPixels(BeeRowSet settings, String colName, int def, int min, int max) {
     return BeeUtils.clamp(getPixels(settings, colName, def), min, max);
+  }
+  
+  public static Range<JustDate> getRange(DateTime start, DateTime end) {
+    if (start == null) {
+      if (end == null) {
+        return null;
+      } else {
+        JustDate date = end.getDate();
+        return Range.closed(date, date);
+      }
+
+    } else if (end == null) {
+      JustDate date = start.getDate();
+      return Range.closed(date, date);
+    
+    } else {
+      JustDate lower = start.getDate();
+      
+      JustDate upper;
+      if (end.hasTimePart()) {
+        upper = end.getDate();
+      } else {
+        upper = TimeUtils.previousDay(end);
+      }
+      
+      return Range.closed(lower, BeeUtils.max(lower, upper));
+    }
   }
 
   public static String getRangeLabel(Range<JustDate> range) {

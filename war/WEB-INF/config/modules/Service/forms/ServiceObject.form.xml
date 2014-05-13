@@ -1,4 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE Form>
 <f:Form xmlns="http://www.butent.com/widget"
   xmlns:f="http://www.butent.com/form"
   xmlns:xi="http://www.w3.org/2001/XInclude"
@@ -40,6 +41,11 @@
       <page module="Tasks">
         <text>=crmRecurringTasks</text>
         <ChildGrid name="RelatedRecurringTasks" relColumn="ServiceObject" />
+      </page>
+
+      <page>
+        <text>=svcDates</text>
+        <ChildGrid name="ServiceDates" relColumn="ServiceObject" />
       </page>
     </TabbedPages>
   </FlowPanel>

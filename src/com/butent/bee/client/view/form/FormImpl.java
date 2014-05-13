@@ -922,11 +922,31 @@ public class FormImpl extends Absolute implements FormView, PreviewHandler, Tabu
   }
 
   @Override
-  public boolean isRowEditable(boolean warn) {
-    if (getActiveRow() == null || isReadOnly() || !isEnabled()) {
+  public boolean isRowEditable(IsRow rowValue, boolean warn) {
+    if (rowValue == null) {
       return false;
     }
-    return isRowEditable(getActiveRow(), warn);
+
+    boolean ok = rowValue.isEditable();
+
+    if (ok && getFormInterceptor() != null) {
+      ok = getFormInterceptor().isRowEditable(rowValue);
+    }
+
+    if (ok && getRowEditable() != null) {
+      getRowEditable().update(rowValue);
+      ok = BeeUtils.toBoolean(getRowEditable().evaluate());
+    }
+
+    if (!ok && warn) {
+      notifyWarning(Localized.getConstants().rowIsReadOnly());
+    }
+    return ok;
+  }
+
+  @Override
+  public boolean isRowEnabled(IsRow rowValue) {
+    return !isReadOnly() && isEnabled() && isRowEditable(rowValue, false);
   }
 
   @Override
@@ -1673,7 +1693,7 @@ public class FormImpl extends Absolute implements FormView, PreviewHandler, Tabu
     if (!BeeUtils.isIndex(getTabOrder(), index)) {
       return;
     }
-    if (hasData() && !isRowEditable(false)) {
+    if (hasData() && !isRowEnabled(getActiveRow())) {
       return;
     }
 
@@ -1812,32 +1832,6 @@ public class FormImpl extends Absolute implements FormView, PreviewHandler, Tabu
     return readOnly;
   }
 
-  private boolean isRowEditable(IsRow rowValue, boolean warn) {
-    if (rowValue == null) {
-      return false;
-    }
-
-    boolean ok = rowValue.isEditable();
-
-    if (ok && getFormInterceptor() != null) {
-      ok = getFormInterceptor().isRowEditable(rowValue);
-    }
-
-    if (ok && getRowEditable() != null) {
-      getRowEditable().update(rowValue);
-      ok = BeeUtils.toBoolean(getRowEditable().evaluate());
-    }
-
-    if (!ok && warn) {
-      notifyWarning(Localized.getConstants().rowIsReadOnly());
-    }
-    return ok;
-  }
-
-  private boolean isRowEnabled(IsRow rowValue) {
-    return !isReadOnly() && isEnabled() && isRowEditable(rowValue, false);
-  }
-
   private boolean isWidgetDisablable(String widgetId) {
     return getDisablableWidgets().contains(widgetId);
   }
@@ -1942,7 +1936,7 @@ public class FormImpl extends Absolute implements FormView, PreviewHandler, Tabu
   private Set<String> refreshEditableWidgets() {
     Set<String> refreshed = Sets.newHashSet();
 
-    boolean rowEnabled = isRowEditable(false);
+    boolean rowEnabled = isRowEnabled(getActiveRow());
     boolean isNew = DataUtils.isNewRow(getActiveRow());
 
     for (EditableWidget editableWidget : getEditableWidgets()) {

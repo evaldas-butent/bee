@@ -112,7 +112,7 @@ class TasksGrid extends AbstractGridInterceptor implements ClickHandler {
       GridFactory.openGrid(GRID_TASKS, new TasksGrid(type, type.getCaption()));
     }
   }
-  
+
   private final TaskType type;
   private final String caption;
 
@@ -322,26 +322,9 @@ class TasksGrid extends AbstractGridInterceptor implements ClickHandler {
 
   @Override
   public void onEditStart(final EditStartEvent event) {
-    if (PROP_STAR.equals(event.getColumnId())) {
-      IsRow row = event.getRowValue();
-      if (row == null) {
-        return;
-      }
-
-      if (row.getProperty(PROP_USER) == null) {
-        return;
-      }
-
-      final CellSource source = CellSource.forProperty(PROP_STAR, ValueType.INTEGER);
-      EditorAssistant.editStarCell(DEFAULT_STAR_COUNT, event, source, new Consumer<Integer>() {
-        @Override
-        public void accept(Integer parameter) {
-          updateStar(event, source, parameter);
-        }
-      });
-    }
+    maybeEditStar(event);
   }
-
+  
   protected void afterCopyAsRecurringTask() {
   }
 
@@ -350,6 +333,24 @@ class TasksGrid extends AbstractGridInterceptor implements ClickHandler {
 
   protected Long getTaskId(IsRow row) {
     return (row == null) ? null : row.getId();
+  }
+
+  protected boolean maybeEditStar(final EditStartEvent event) {
+    if (event != null && PROP_STAR.equals(event.getColumnId())
+        && event.getRowValue() != null && event.getRowValue().getProperty(PROP_USER) != null) {
+
+      final CellSource source = CellSource.forProperty(PROP_STAR, ValueType.INTEGER);
+      EditorAssistant.editStarCell(DEFAULT_STAR_COUNT, event, source, new Consumer<Integer>() {
+        @Override
+        public void accept(Integer parameter) {
+          updateStar(event, source, parameter);
+        }
+      });
+      
+      return true;
+    } else {
+      return false;
+    }
   }
 
   private void confirmTask(final GridView gridView, final IsRow row) {
@@ -390,13 +391,14 @@ class TasksGrid extends AbstractGridInterceptor implements ClickHandler {
         newRow.setValue(info.getColumnIndex(COL_APPROVED), approved);
 
         notes.add(TaskUtils.getUpdateNote(Localized.getLabel(info.getColumn(COL_STATUS)),
-            DataUtils.render(info, row, info.getColumn(COL_STATUS), info
-                .getColumnIndex(COL_STATUS)), DataUtils.render(
-                info, newRow, info.getColumn(COL_STATUS), info.getColumnIndex(COL_STATUS))));
+            DataUtils.render(info, row, info.getColumn(COL_STATUS),
+                info.getColumnIndex(COL_STATUS)),
+            DataUtils.render(info, newRow, info.getColumn(COL_STATUS),
+                info.getColumnIndex(COL_STATUS))));
 
         notes.add(TaskUtils.getInsertNote(Localized.getLabel(info.getColumn(COL_APPROVED)),
-            DataUtils.render(info, newRow, info.getColumn(COL_APPROVED), info
-                .getColumnIndex(COL_APPROVED))));
+            DataUtils.render(info, newRow, info.getColumn(COL_APPROVED),
+                info.getColumnIndex(COL_APPROVED))));
 
         ParameterList params = TasksKeeper.createArgs(SVC_CONFIRM_TASKS);
         params.addDataItem(VAR_TASK_DATA, Codec.beeSerialize(Lists.newArrayList(row.getId())));
@@ -507,7 +509,7 @@ class TasksGrid extends AbstractGridInterceptor implements ClickHandler {
     }
 
     colNames = Sets.newHashSet(ClassifierConstants.COL_COMPANY, ClassifierConstants.COL_CONTACT,
-        COL_REMINDER);
+        COL_REMINDER, COL_TASK_TYPE);
     for (String colName : colNames) {
       RelationUtils.copyWithDescendants(sourceInfo, colName, oldRow, targetInfo, colName, newRow);
     }
@@ -570,7 +572,7 @@ class TasksGrid extends AbstractGridInterceptor implements ClickHandler {
     }
 
     colNames = Sets.newHashSet(ClassifierConstants.COL_COMPANY, ClassifierConstants.COL_CONTACT,
-        COL_REMINDER);
+        COL_REMINDER, COL_TASK_TYPE);
     for (String colName : colNames) {
       RelationUtils.copyWithDescendants(dataInfo, colName, oldRow, dataInfo, colName, newRow);
     }
