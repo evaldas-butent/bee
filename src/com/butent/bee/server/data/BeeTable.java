@@ -743,6 +743,33 @@ public class BeeTable implements BeeObject, HasExtFields, HasStates, HasTranslat
     }
 
     @Override
+    public SqlUpdate updateStateDefaults(long id, RightsState state, boolean on, long... bits) {
+      Assert.state(hasState(state));
+      String tblName = getStateTable(state);
+
+      SqlUpdate su = new SqlUpdate(tblName)
+          .addConstant(stateVersionName, System.currentTimeMillis())
+          .setWhere(SqlUtils.equals(tblName, stateIdName, id));
+
+      Map<String, Integer> bitMasks = getMasks(state, bits);
+
+      for (String bitFld : bitMasks.keySet()) {
+        Integer mask = bitMasks.get(bitFld);
+
+        if (mask != null) {
+          IsExpression fld = SqlUtils.nvl(SqlUtils.field(tblName, bitFld), 0);
+
+          if (state.isChecked() == on) {
+            su.addExpression(bitFld, SqlUtils.bitAnd(fld, mask));
+          } else {
+            su.addExpression(bitFld, SqlUtils.bitOr(fld, ~mask));
+          }
+        }
+      }
+      return su;
+    }
+
+    @Override
     public SqlSelect verifyState(SqlSelect query, String tblAlias, RightsState state,
         long... bits) {
       Assert.state(hasState(state));
@@ -1178,7 +1205,7 @@ public class BeeTable implements BeeObject, HasExtFields, HasStates, HasTranslat
   }
 
   public EnumSet<RightsState> getStates() {
-    return EnumSet.of(RightsState.VIEW, RightsState.EDIT);
+    return EnumSet.of(RightsState.VIEW, RightsState.EDIT, RightsState.DELETE);
   }
 
   @Override
@@ -1282,6 +1309,11 @@ public class BeeTable implements BeeObject, HasExtFields, HasStates, HasTranslat
   @Override
   public SqlUpdate updateState(long id, RightsState state, long bit, boolean on) {
     return stateSource.updateState(id, state, bit, on);
+  }
+
+  @Override
+  public SqlUpdate updateStateDefaults(long id, RightsState state, boolean on, long... bits) {
+    return stateSource.updateStateDefaults(id, state, on, bits);
   }
 
   @Override

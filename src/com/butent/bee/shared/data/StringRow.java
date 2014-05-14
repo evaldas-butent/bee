@@ -32,7 +32,7 @@ public class StringRow extends AbstractRow {
 
   public StringRow(long id, String[] arr) {
     super(id);
-    
+
     if (arr != null) {
       for (String value : arr) {
         this.values.add(value);
@@ -57,6 +57,7 @@ public class StringRow extends AbstractRow {
     StringRow result = new StringRow(getId(), values);
     result.setVersion(getVersion());
     result.setEditable(isEditable());
+    result.setRemovable(isRemovable());
     copyProperties(result);
     return result;
   }

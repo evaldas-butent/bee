@@ -439,6 +439,9 @@ public class DocumentDataForm extends AbstractFormInterceptor
 
   @Override
   public void onClick(ClickEvent event) {
+    if (!getActiveRow().isEditable()) {
+      return;
+    }
     LocalizableConstants loc = Localized.getConstants();
 
     Global.inputCollection(loc.mainCriteria(), loc.name(), true,
@@ -476,7 +479,7 @@ public class DocumentDataForm extends AbstractFormInterceptor
     if (save(null)) {
       warnings.add(loc.mainCriteria());
     }
-    if (tinyEditor.isDirty()) {
+    if (tinyEditor.isDirty() && newRow.isEditable()) {
       warnings.add(loc.content());
     }
     if (!BeeUtils.isEmpty(warnings)) {
@@ -688,7 +691,7 @@ public class DocumentDataForm extends AbstractFormInterceptor
     }
   }
 
-  private void requery(IsRow row) {
+  private void requery(final IsRow row) {
     tinyEditor.setContent(row.getString(getDataIndex(COL_DOCUMENT_CONTENT)));
     criteriaHistory.clear();
     criteria.clear();
@@ -718,6 +721,8 @@ public class DocumentDataForm extends AbstractFormInterceptor
                   Autocomplete box = createAutocomplete("DistinctCriterionValues",
                       COL_CRITERION_VALUE, name);
 
+                  box.setEnabled(row.isEditable());
+                  box.setStyleName("bee-disabled", !row.isEditable());
                   box.setValue(value);
 
                   criteriaHistory.put(name, value);

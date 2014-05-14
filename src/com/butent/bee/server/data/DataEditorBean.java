@@ -634,13 +634,36 @@ public class DataEditorBean {
   public void setState(String tblName, RightsState state, long id, long role, boolean on) {
     BeeTable table = sys.getTable(tblName);
 
+    boolean isDefault = role == 0;
+    boolean defaultOn = on;
+
     if (table.activateState(state, role)) {
       sys.rebuildTable(table.getName());
-    }
-    SqlUpdate su = table.updateState(id, state, role, on);
 
-    if (su != null && qs.updateData(su) == 0) {
+      if (!isDefault) {
+        SqlSelect query = new SqlSelect()
+            .addFrom(tblName)
+            .setWhere(sys.idEquals(tblName, id));
+
+        defaultOn = BeeUtils.unbox(qs.getBoolean(query
+            .addExpr(SqlUtils.sqlIf(table.checkState(table.joinState(query, tblName, state),
+                state, 0), true, false), SqlUtils.uniqueName())));
+
+        isDefault = defaultOn != state.isChecked();
+      }
+    }
+    if (qs.updateData(table.updateState(id, state, role, on)) == 0) {
       qs.updateData(table.insertState(id, state, role, on));
+    }
+    if (isDefault) {
+      int c = usr.getRoles().size() + 1;
+      long[] roles = new long[c];
+      roles[--c] = 0;
+
+      for (Long r : usr.getRoles()) {
+        roles[--c] = r;
+      }
+      qs.updateData(table.updateStateDefaults(id, state, defaultOn, roles));
     }
   }
 

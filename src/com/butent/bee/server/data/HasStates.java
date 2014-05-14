@@ -32,5 +32,7 @@ public interface HasStates {
 
   SqlUpdate updateState(long id, RightsState state, long bit, boolean on);
 
+  SqlUpdate updateStateDefaults(long id, RightsState state, boolean on, long... bits);
+
   SqlSelect verifyState(SqlSelect query, String tblAlias, RightsState state, long... bits);
 }

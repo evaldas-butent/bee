@@ -33,6 +33,7 @@ import com.butent.bee.shared.data.SearchResult;
 import com.butent.bee.shared.data.SimpleRowSet;
 import com.butent.bee.shared.data.SimpleRowSet.SimpleRow;
 import com.butent.bee.shared.data.filter.Filter;
+import com.butent.bee.shared.data.value.Value;
 import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogUtils;
 import com.butent.bee.shared.modules.BeeParameter;
@@ -43,6 +44,7 @@ import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.Codec;
 import com.butent.bee.shared.utils.EnumUtils;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -190,7 +192,7 @@ public class DocumentsModuleBean implements BeeModule {
             if (!BeeUtils.isEmpty(states.get(state))) {
               for (Long role : roles.values()) {
                 IsExpression xpr = SqlUtils.sqlIf(table.checkState(states.get(state), state, role),
-                    1, null);
+                    true, false);
 
                 if (!BeeUtils.isEmpty(query.getGroupBy())) {
                   query.addMax(xpr, state.name() + role);
@@ -229,23 +231,44 @@ public class DocumentsModuleBean implements BeeModule {
       }
 
       @Subscribe
-      public void filterVisibleDocuments(ViewQueryEvent event) {
-        if (event.isBefore() && BeeUtils.same(event.getTargetName(), VIEW_RELATED_DOCUMENTS)
+      public void applyDocumentRights(ViewQueryEvent event) {
+        if (BeeUtils.inListSame(event.getTargetName(), TBL_DOCUMENTS, VIEW_RELATED_DOCUMENTS)
             && !usr.isAdministrator()) {
 
-          SqlSelect query = event.getQuery();
-          String tableName = TBL_DOCUMENT_TREE;
-          String tableAlias = null;
+          if (event.isBefore()) {
+            SqlSelect query = event.getQuery();
+            String tableAlias = null;
 
-          for (IsFrom from : query.getFrom()) {
-            if (from.getSource() instanceof String
-                && BeeUtils.same((String) from.getSource(), tableName)) {
-              tableAlias = BeeUtils.notEmpty(from.getAlias(), tableName);
-              break;
+            for (IsFrom from : query.getFrom()) {
+              if (from.getSource() instanceof String
+                  && BeeUtils.same((String) from.getSource(), TBL_DOCUMENT_TREE)) {
+                tableAlias = BeeUtils.notEmpty(from.getAlias(), TBL_DOCUMENT_TREE);
+                break;
+              }
             }
-          }
-          if (!BeeUtils.isEmpty(tableAlias)) {
-            sys.filterVisibleState(query, tableName, tableAlias);
+            if (!BeeUtils.isEmpty(tableAlias)) {
+              sys.filterVisibleState(query, TBL_DOCUMENT_TREE, tableAlias);
+            }
+          } else {
+            BeeRowSet rs = event.getRowset();
+            int categoryIdx = rs.getColumnIndex(COL_DOCUMENT_CATEGORY);
+            List<Long> categories = new ArrayList<>();
+
+            if (BeeUtils.isNonNegative(categoryIdx)) {
+              for (Value category : rs.getDistinctValues(categoryIdx)) {
+                categories.add(category.getLong());
+              }
+            }
+            if (!BeeUtils.isEmpty(categories)) {
+              BeeRowSet catRs = qs.getViewData(TBL_DOCUMENT_TREE, Filter.idIn(categories), null,
+                  Lists.newArrayList(COL_CATEGORY_NAME));
+
+              for (BeeRow row : rs) {
+                IsRow catRow = catRs.getRowById(row.getLong(categoryIdx));
+                row.setEditable(catRow.isEditable());
+                row.setRemovable(catRow.isRemovable());
+              }
+            }
           }
         }
       }
