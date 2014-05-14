@@ -420,8 +420,12 @@ public class GridImpl extends Absolute implements GridView, EditEndEvent.Handler
       } else {
         index = dataIndex;
       }
+
       if (!BeeConst.isUndef(index)) {
         label = Localized.getLabel(dataColumns.get(index));
+      } else if (colType == ColType.ID 
+          || !BeeUtils.isEmpty(source) && BeeUtils.same(source, gridDescription.getIdName())) {
+        label = Localized.getConstants().captionId();
       }
     }
 

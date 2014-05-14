@@ -24,7 +24,7 @@
   </g:west>
   
   <g:columns>
-    <IdColumn name="Id" caption="=captionId" />
+    <IdColumn name="Id" />
     <DataColumn name="CategoryName" visible="false" />
     <DataColumn name="Address" visible="true" />
 

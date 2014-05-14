@@ -74,6 +74,7 @@ public final class ServiceConstants {
   public static final String COL_MAINTENANCE_DATE = "Date";
   public static final String COL_MAINTENANCE_ITEM = "Item";
   public static final String COL_MAINTENANCE_INVOICE = "Invoice";
+  public static final String COL_MAINTENANCE_DEFECT = "Defect";
   public static final String COL_MAINTENANCE_NOTES = "Notes";
 
   public static final String COL_SERVICE_DATE_FROM = "DateFrom";

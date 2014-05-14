@@ -11,7 +11,7 @@
   <xi:include href="columns/TaskStar.column.xml" />
 
   <g:columns>
-    <IdColumn name="Id" caption="=captionId" />
+    <IdColumn name="Id" />
   </g:columns>
 
   <xi:include href="columns/Task.columns.xml" />
