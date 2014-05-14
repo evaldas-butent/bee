@@ -3,7 +3,6 @@ package com.butent.bee.client.modules.service;
 import com.google.common.collect.Lists;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
-import com.google.gwt.event.shared.HasHandlers;
 import com.google.gwt.i18n.client.NumberFormat;
 import com.google.gwt.user.client.ui.Widget;
 
@@ -25,10 +24,7 @@ import com.butent.bee.client.layout.Simple;
 import com.butent.bee.client.modules.trade.TotalRenderer;
 import com.butent.bee.client.ui.IdentifiableWidget;
 import com.butent.bee.client.ui.UiHelper;
-import com.butent.bee.client.view.add.ReadyForInsertEvent;
 import com.butent.bee.client.view.form.FormView;
-import com.butent.bee.client.view.form.interceptor.AbstractFormInterceptor;
-import com.butent.bee.client.view.form.interceptor.FormInterceptor;
 import com.butent.bee.client.widget.Button;
 import com.butent.bee.client.widget.Label;
 import com.butent.bee.client.widget.SimpleCheckBox;
@@ -44,64 +40,35 @@ import com.butent.bee.shared.data.filter.Filter;
 import com.butent.bee.shared.data.view.DataInfo;
 import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.modules.administration.AdministrationConstants;
-import com.butent.bee.shared.modules.classifiers.ClassifierConstants;
 import com.butent.bee.shared.modules.trade.TradeConstants;
 import com.butent.bee.shared.time.DateTime;
-import com.butent.bee.shared.time.TimeUtils;
 import com.butent.bee.shared.ui.HasCheckedness;
 import com.butent.bee.shared.utils.BeeUtils;
 
 import java.util.List;
 
-final class InvoiceBuilder {
+final class DefectBuilder {
 
-  private static final class InvoiceInterceptor extends AbstractFormInterceptor {
+  private static final String STYLE_PREFIX = ServiceKeeper.STYLE_PREFIX + "defect-builder-";
 
-    private Long mainItem;
-   
-    private InvoiceInterceptor() {
-      super();
-    }
-
-    @Override
-    public FormInterceptor getInstance() {
-      return this;
-    }
-
-    @Override
-    public void onReadyForInsert(HasHandlers listener, ReadyForInsertEvent event) {
-      setMainItem(BeeUtils.toLongOrNull(getActiveRow().getProperty(PROP_MAIN_ITEM)));
-    }
-
-    private Long getMainItem() {
-      return mainItem;
-    }
-
-    private void setMainItem(Long mainItem) {
-      this.mainItem = mainItem;
-    }
-  }
-  
-  private static final String STYLE_PREFIX = ServiceKeeper.STYLE_PREFIX + "invoice-builder-";
-  
   static void start(IdentifiableWidget sourceWidget) {
     if (sourceWidget == null) {
       return;
     }
-    
+
     final FormView form = UiHelper.getForm(sourceWidget.asWidget());
     if (form == null || !form.isEnabled() || !VIEW_SERVICE_OBJECTS.equals(form.getViewName())) {
       return;
     }
-    
+
     final long objId = form.getActiveRowId();
     if (!DataUtils.isId(objId)) {
       return;
     }
-    
+
     Filter filter = Filter.and(Filter.equals(COL_SERVICE_OBJECT, objId),
-        Filter.isNull(COL_MAINTENANCE_INVOICE));
-    
+        Filter.isNull(COL_MAINTENANCE_DEFECT));
+
     Queries.getRowSet(VIEW_MAINTENANCE, null, filter, new Queries.RowSetCallback() {
       @Override
       public void onSuccess(BeeRowSet result) {
@@ -118,92 +85,75 @@ final class InvoiceBuilder {
     Queries.getRow(VIEW_SERVICE_OBJECTS, objId, new RowCallback() {
       @Override
       public void onSuccess(BeeRow objRow) {
-        DataInfo invInfo = Data.getDataInfo(VIEW_SERVICE_INVOICES);
-        BeeRow invRow = RowFactory.createEmptyRow(invInfo, true);
-
-        invRow.setValue(invInfo.getColumnIndex(TradeConstants.COL_TRADE_KIND), 1);
+        DataInfo dfInfo = Data.getDataInfo(VIEW_SERVICE_DEFECTS);
+        BeeRow dfRow = RowFactory.createEmptyRow(dfInfo, true);
+        
+        dfRow.setValue(dfInfo.getColumnIndex(COL_SERVICE_OBJECT), objRow.getId());
 
         Long customer = Data.getLong(VIEW_SERVICE_OBJECTS, objRow, COL_SERVICE_CUSTOMER);
         if (DataUtils.isId(customer)) {
-          invRow.setValue(invInfo.getColumnIndex(TradeConstants.COL_TRADE_CUSTOMER), customer);
-          invRow.setValue(invInfo.getColumnIndex(TradeConstants.ALS_CUSTOMER_NAME),
+          dfRow.setValue(dfInfo.getColumnIndex(COL_SERVICE_CUSTOMER), customer);
+          dfRow.setValue(dfInfo.getColumnIndex(ALS_SERVICE_CUSTOMER_NAME),
               Data.getString(VIEW_SERVICE_OBJECTS, objRow, ALS_SERVICE_CUSTOMER_NAME));
         }
 
         UserData userData = BeeKeeper.getUser().getUserData();
         if (userData != null) {
-          invRow.setValue(invInfo.getColumnIndex(TradeConstants.COL_TRADE_MANAGER),
-              userData.getUserId());
-          RelationUtils.setUserFields(invInfo, invRow, TradeConstants.COL_TRADE_MANAGER, userData);
+          dfRow.setValue(dfInfo.getColumnIndex(COL_DEFECT_MANAGER), userData.getUserId());
+          RelationUtils.setUserFields(dfInfo, dfRow, COL_DEFECT_MANAGER, userData);
 
-          invRow.setValue(invInfo.getColumnIndex(TradeConstants.COL_TRADE_SUPPLIER),
-              userData.getCompany());
-          invRow.setValue(invInfo.getColumnIndex(TradeConstants.ALS_SUPPLIER_NAME),
+          dfRow.setValue(dfInfo.getColumnIndex(COL_DEFECT_SUPPLIER), userData.getCompany());
+          dfRow.setValue(dfInfo.getColumnIndex(ALS_DEFECT_SUPPLIER_NAME),
               userData.getCompanyName());
-        }
-
-        Integer days = Data.getInteger(VIEW_SERVICE_OBJECTS, objRow,
-            ClassifierConstants.COL_COMPANY_CREDIT_DAYS);
-        if (BeeUtils.isPositive(days)) {
-          invRow.setValue(invInfo.getColumnIndex(TradeConstants.COL_TRADE_TERM),
-              TimeUtils.nextDay(TimeUtils.today(), days));
         }
 
         for (BeeRow row : items) {
           Long currency = row.getLong(items.getColumnIndex(AdministrationConstants.COL_CURRENCY));
 
           if (DataUtils.isId(currency)) {
-            invRow.setValue(invInfo.getColumnIndex(AdministrationConstants.COL_CURRENCY), currency);
-            invRow.setValue(invInfo.getColumnIndex(AdministrationConstants.ALS_CURRENCY_NAME),
+            dfRow.setValue(dfInfo.getColumnIndex(AdministrationConstants.COL_CURRENCY), currency);
+            dfRow.setValue(dfInfo.getColumnIndex(AdministrationConstants.ALS_CURRENCY_NAME),
                 row.getString(items.getColumnIndex(AdministrationConstants.ALS_CURRENCY_NAME)));
             break;
           }
         }
 
-        final InvoiceInterceptor interceptor = new InvoiceInterceptor();
+        RowFactory.createRow("NewServiceDefect", null, dfInfo, dfRow, new RowCallback() {
+          @Override
+          public void onSuccess(BeeRow result) {
+            ParameterList params = ServiceKeeper.createArgs(SVC_CREATE_DEFECT_ITEMS);
 
-        RowFactory.createRow("NewServiceInvoice", null, invInfo, invRow, null, interceptor,
-            new RowCallback() {
+            final long dfId = result.getId();
+            params.addQueryItem(COL_DEFECT, dfId);
+
+            Long currency = Data.getLong(VIEW_SERVICE_DEFECTS, result,
+                AdministrationConstants.COL_CURRENCY);
+            if (DataUtils.isId(currency)) {
+              params.addQueryItem(AdministrationConstants.COL_CURRENCY, currency);
+            }
+
+            List<Long> ids = Lists.newArrayList();
+            for (IsRow item : items) {
+              ids.add(item.getId());
+            }
+
+            params.addDataItem(VIEW_MAINTENANCE, DataUtils.buildIdList(ids));
+
+            BeeKeeper.getRpc().makeRequest(params, new ResponseCallback() {
               @Override
-              public void onSuccess(BeeRow result) {
-                ParameterList params = ServiceKeeper.createArgs(SVC_CREATE_INVOICE_ITEMS);
+              public void onResponse(ResponseObject response) {
+                response.notify(BeeKeeper.getScreen());
 
-                params.addQueryItem(COL_MAINTENANCE_INVOICE, result.getId());
+                if (!response.hasErrors()) {
+                  DataChangeEvent.fireRefresh(BeeKeeper.getBus(), VIEW_MAINTENANCE);
+                  DataChangeEvent.fireRefresh(BeeKeeper.getBus(), VIEW_SERVICE_OBJECTS);
 
-                Long currency = Data.getLong(VIEW_SERVICE_INVOICES, result,
-                    AdministrationConstants.COL_CURRENCY);
-                if (DataUtils.isId(currency)) {
-                  params.addQueryItem(AdministrationConstants.COL_CURRENCY, currency);
+                  RowEditor.openRow(VIEW_SERVICE_DEFECTS, dfId, true, null);
                 }
-
-                if (DataUtils.isId(interceptor.getMainItem())) {
-                  params.addQueryItem(PROP_MAIN_ITEM, interceptor.getMainItem());
-                }
-
-                List<Long> ids = Lists.newArrayList();
-                for (IsRow item : items) {
-                  ids.add(item.getId());
-                }
-
-                params.addDataItem(VIEW_MAINTENANCE, DataUtils.buildIdList(ids));
-
-                final long invId = result.getId();
-
-                BeeKeeper.getRpc().makeRequest(params, new ResponseCallback() {
-                  @Override
-                  public void onResponse(ResponseObject response) {
-                    response.notify(BeeKeeper.getScreen());
-
-                    if (!response.hasErrors()) {
-                      DataChangeEvent.fireRefresh(BeeKeeper.getBus(), VIEW_MAINTENANCE);
-                      DataChangeEvent.fireRefresh(BeeKeeper.getBus(), VIEW_SERVICE_INVOICES);
-
-                      RowEditor.openRow(VIEW_SERVICE_INVOICES, invId, true, null);
-                    }
-                  }
-                });
               }
             });
+          }
+        });
       }
     });
   }
@@ -279,10 +229,10 @@ final class InvoiceBuilder {
 
     Flow commands = new Flow(STYLE_PREFIX + "commands");
 
-    final DialogBox dialog = DialogBox.create(Localized.getConstants().trdNewInvoice(),
+    final DialogBox dialog = DialogBox.create(Localized.getConstants().svcNewDefect(),
         STYLE_PREFIX + "dialog");
 
-    Button build = new Button(Localized.getConstants().createInvoice());
+    Button build = new Button(Localized.getConstants().actionCreate());
     build.addStyleName(STYLE_PREFIX + "build");
     build.addClickHandler(new ClickHandler() {
       @Override
@@ -302,9 +252,8 @@ final class InvoiceBuilder {
         } else {
           dialog.close();
 
-          BeeRowSet invoiceItems = new BeeRowSet(data.getViewName(), data.getColumns(),
-              selectedRows);
-          buildHeader(objId, invoiceItems);
+          BeeRowSet dfItems = new BeeRowSet(data.getViewName(), data.getColumns(), selectedRows);
+          buildHeader(objId, dfItems);
         }
       }
     });
@@ -329,7 +278,7 @@ final class InvoiceBuilder {
     dialog.setWidget(panel);
     dialog.center();
   }
- 
-  private InvoiceBuilder() {
+
+  private DefectBuilder() {
   }
 }

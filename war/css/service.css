@@ -1,23 +1,30 @@
-.bee-svc-invoice-builder-wrapper {
+.bee-svc-invoice-builder-wrapper,
+.bee-svc-defect-builder-wrapper {
   margin: 1ex 1em;
   max-height: 400px;
   overflow: auto;
 }
-.bee-svc-invoice-builder-table {
+.bee-svc-invoice-builder-table,
+.bee-svc-defect-builder-table {
   border-collapse: collapse;
 }
-.bee-svc-invoice-builder-table td {
+.bee-svc-invoice-builder-table td,
+.bee-svc-defect-builder-table td {
   padding: 3px 1em;
   border: 1px solid #ccc;
 }
 
 .bee-svc-invoice-builder-quantity,
 .bee-svc-invoice-builder-price,
-.bee-svc-invoice-builder-amount {
+.bee-svc-invoice-builder-amount,
+.bee-svc-defect-builder-quantity,
+.bee-svc-defect-builder-price,
+.bee-svc-defect-builder-amount {
   text-align: right;
 }
 
-.bee-svc-invoice-builder-commands {
+.bee-svc-invoice-builder-commands,
+.bee-svc-defect-builder-commands {
   margin: 1ex 1em;
   text-align: right;
 }

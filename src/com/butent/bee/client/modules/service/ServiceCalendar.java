@@ -1080,7 +1080,7 @@ final class ServiceCalendar extends TimeBoard {
     SimpleRowSet rtData = SimpleRowSet.getIfPresent(properties, TBL_RECURRING_TASKS);
 
     String cId = (companyKind == ServiceCompanyKind.CONTRACTOR)
-        ? COL_SERVICE_OBJECT_CONTRACTOR : COL_SERVICE_OBJECT_CUSTOMER;
+        ? COL_SERVICE_CONTRACTOR : COL_SERVICE_CUSTOMER;
     String cName = (companyKind == ServiceCompanyKind.CONTRACTOR)
         ? ALS_SERVICE_CONTRACTOR_NAME : ALS_SERVICE_CUSTOMER_NAME;
 

@@ -43,6 +43,7 @@
       choiceColumns="FirstName LastName CompanyName" />
 
     <RelColumn name="Invoice" readOnly="true" editEnabled="true" editViewName="ServiceInvoices" />
+    <RelColumn name="Defect" readOnly="true" editEnabled="true" editViewName="ServiceDefects" />
 
     <DataColumn name="Description" />
     <DataColumn name="Notes" visible="false" />

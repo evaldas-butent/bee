@@ -404,7 +404,7 @@ public class ClassifiersModuleBean implements BeeModule {
               break;
 
             case ServiceConstants.VIEW_SERVICE_OBJECTS:
-              sourceField = ServiceConstants.COL_SERVICE_OBJECT_CUSTOMER;
+              sourceField = ServiceConstants.COL_SERVICE_CUSTOMER;
               dtField = relView.getSourceVersionName();
               break;
 

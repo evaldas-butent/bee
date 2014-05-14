@@ -54,7 +54,7 @@ public class ServiceObjectsGrid extends AbstractGridInterceptor implements
       Filter flt;
 
       if (category != null) {
-        flt = Filter.equals(ServiceConstants.COL_SERVICE_OBJECT_CATEGORY, category);
+        flt = Filter.equals(ServiceConstants.COL_SERVICE_CATEGORY, category);
       } else {
         flt = Filter.isFalse();
       }
@@ -66,7 +66,7 @@ public class ServiceObjectsGrid extends AbstractGridInterceptor implements
 
   @Override
   public boolean onStartNewRow(GridView gridView, IsRow oldRow, IsRow newRow) {
-    int categoryIdx = gridView.getDataIndex(ServiceConstants.COL_SERVICE_OBJECT_CATEGORY);
+    int categoryIdx = gridView.getDataIndex(ServiceConstants.COL_SERVICE_CATEGORY);
     int nameIdx = gridView.getDataIndex(ServiceConstants.ALS_SERVICE_CATEGORY_NAME);
 
     if (oldRow != null) {

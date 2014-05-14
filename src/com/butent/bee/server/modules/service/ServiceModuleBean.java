@@ -71,6 +71,8 @@ public class ServiceModuleBean implements BeeModule {
 
     if (BeeUtils.same(svc, SVC_CREATE_INVOICE_ITEMS)) {
       response = createInvoiceItems(reqInfo);
+    } else if (BeeUtils.same(svc, SVC_CREATE_DEFECT_ITEMS)) {
+      response = createDefectItems(reqInfo);
 
     } else if (BeeUtils.same(svc, SVC_GET_CALENDAR_DATA)) {
       response = getCalendarData(reqInfo);
@@ -140,6 +142,111 @@ public class ServiceModuleBean implements BeeModule {
         }
       }
     });
+  }
+
+  private ResponseObject createDefectItems(RequestInfo reqInfo) {
+    Long dfId = BeeUtils.toLongOrNull(reqInfo.getParameter(COL_DEFECT));
+    if (!DataUtils.isId(dfId)) {
+      return ResponseObject.parameterNotFound(reqInfo.getService(), COL_DEFECT);
+    }
+
+    Long currency = BeeUtils.toLongOrNull(reqInfo.getParameter(COL_CURRENCY));
+    if (!DataUtils.isId(currency)) {
+      return ResponseObject.parameterNotFound(reqInfo.getService(), COL_CURRENCY);
+    }
+
+    Set<Long> ids = DataUtils.parseIdSet(reqInfo.getParameter(VIEW_MAINTENANCE));
+    if (ids.isEmpty()) {
+      return ResponseObject.parameterNotFound(reqInfo.getService(), VIEW_MAINTENANCE);
+    }
+
+    IsCondition where = sys.idInList(TBL_MAINTENANCE, ids);
+
+    SqlSelect query = new SqlSelect()
+        .addFields(TBL_MAINTENANCE, COL_MAINTENANCE_ITEM, COL_TRADE_ITEM_QUANTITY,
+            COL_TRADE_VAT_PLUS, COL_TRADE_VAT, COL_TRADE_VAT_PERC, COL_MAINTENANCE_NOTES)
+        .addFrom(TBL_MAINTENANCE)
+        .setWhere(where);
+
+    IsExpression priceExch = ExchangeUtils.exchangeFieldTo(query,
+        TBL_MAINTENANCE, COL_TRADE_ITEM_PRICE, COL_CURRENCY, COL_MAINTENANCE_DATE, currency);
+    String priceAlias = "Price_" + SqlUtils.uniqueName();
+
+    IsExpression vatExch = ExchangeUtils.exchangeFieldTo(query,
+        TBL_MAINTENANCE, COL_TRADE_VAT, COL_CURRENCY, COL_MAINTENANCE_DATE, currency);
+    String vatAlias = "Vat_" + SqlUtils.uniqueName();
+
+    query.addExpr(priceExch, priceAlias)
+        .addExpr(vatExch, vatAlias)
+        .addOrder(TBL_MAINTENANCE, sys.getIdName(TBL_MAINTENANCE));
+
+    SimpleRowSet data = qs.getData(query);
+    if (DataUtils.isEmpty(data)) {
+      return ResponseObject.error(TBL_MAINTENANCE, ids, "not found");
+    }
+
+    ResponseObject response = new ResponseObject();
+
+    for (SimpleRow row : data) {
+      Long item = row.getLong(COL_MAINTENANCE_ITEM);
+
+      SqlInsert insert = new SqlInsert(TBL_SERVICE_DEFECT_ITEMS)
+          .addConstant(COL_DEFECT, dfId)
+          .addConstant(COL_DEFECT_ITEM, item);
+
+      Boolean vatPerc = row.getBoolean(COL_TRADE_VAT_PERC);
+      Double vat;
+
+      if (BeeUtils.isTrue(vatPerc)) {
+        insert.addConstant(COL_TRADE_VAT_PERC, vatPerc);
+        vat = row.getDouble(COL_TRADE_VAT);
+      } else {
+        vat = row.getDouble(vatAlias);
+      }
+
+      if (BeeUtils.nonZero(vat)) {
+        insert.addConstant(COL_TRADE_VAT, vat);
+      }
+
+      Boolean vatPlus = row.getBoolean(COL_TRADE_VAT_PLUS);
+      if (BeeUtils.isTrue(vatPlus)) {
+        insert.addConstant(COL_TRADE_VAT_PLUS, vatPlus);
+      }
+
+      Double quantity = row.getDouble(COL_TRADE_ITEM_QUANTITY);
+      Double price = row.getDouble(priceAlias);
+
+      insert.addConstant(COL_TRADE_ITEM_QUANTITY, BeeUtils.unbox(quantity));
+      if (price != null) {
+        insert.addConstant(COL_TRADE_ITEM_PRICE, price);
+      }
+
+      if (data.hasColumn(COL_MAINTENANCE_NOTES)) {
+        String notes = row.getValue(COL_MAINTENANCE_NOTES);
+        if (!BeeUtils.isEmpty(notes)) {
+          insert.addConstant(COL_DEFECT_NOTE, notes);
+        }
+      }
+
+      ResponseObject insResponse = qs.insertDataWithResponse(insert);
+      if (insResponse.hasErrors()) {
+        response.addMessagesFrom(insResponse);
+        break;
+      }
+    }
+
+    if (!response.hasErrors()) {
+      SqlUpdate update = new SqlUpdate(TBL_MAINTENANCE)
+          .addConstant(COL_MAINTENANCE_DEFECT, dfId)
+          .setWhere(where);
+
+      ResponseObject updResponse = qs.updateDataWithResponse(update);
+      if (updResponse.hasErrors()) {
+        response.addMessagesFrom(updResponse);
+      }
+    }
+
+    return response;
   }
 
   private ResponseObject createInvoiceItems(RequestInfo reqInfo) {
@@ -367,22 +474,22 @@ public class ServiceModuleBean implements BeeModule {
     String companyIdName = sys.getIdName(TBL_COMPANIES);
 
     SqlSelect query = new SqlSelect()
-        .addFields(TBL_SERVICE_OBJECTS, idName, COL_SERVICE_OBJECT_CATEGORY,
-            COL_SERVICE_OBJECT_CUSTOMER, COL_SERVICE_OBJECT_CONTRACTOR, COL_SERVICE_OBJECT_ADDRESS)
+        .addFields(TBL_SERVICE_OBJECTS, idName, COL_SERVICE_CATEGORY,
+            COL_SERVICE_CUSTOMER, COL_SERVICE_CONTRACTOR, COL_SERVICE_ADDRESS)
         .addField(TBL_SERVICE_TREE, COL_SERVICE_CATEGORY_NAME, ALS_SERVICE_CATEGORY_NAME)
         .addField(aliasCustomers, COL_COMPANY_NAME, ALS_SERVICE_CUSTOMER_NAME)
         .addField(aliasContractors, COL_COMPANY_NAME, ALS_SERVICE_CONTRACTOR_NAME)
         .addFrom(TBL_SERVICE_OBJECTS)
         .addFromLeft(TBL_SERVICE_TREE, sys.joinTables(TBL_SERVICE_TREE,
-            TBL_SERVICE_OBJECTS, COL_SERVICE_OBJECT_CATEGORY))
+            TBL_SERVICE_OBJECTS, COL_SERVICE_CATEGORY))
         .addFromLeft(TBL_COMPANIES, aliasCustomers,
             SqlUtils.join(aliasCustomers, companyIdName,
-                TBL_SERVICE_OBJECTS, COL_SERVICE_OBJECT_CUSTOMER))
+                TBL_SERVICE_OBJECTS, COL_SERVICE_CUSTOMER))
         .addFromLeft(TBL_COMPANIES, aliasContractors,
             SqlUtils.join(aliasContractors, companyIdName,
-                TBL_SERVICE_OBJECTS, COL_SERVICE_OBJECT_CONTRACTOR))
+                TBL_SERVICE_OBJECTS, COL_SERVICE_CONTRACTOR))
         .setWhere(where)
-        .addOrder(TBL_SERVICE_OBJECTS, COL_SERVICE_OBJECT_ADDRESS, idName);
+        .addOrder(TBL_SERVICE_OBJECTS, COL_SERVICE_ADDRESS, idName);
 
     return qs.getData(query);
   }
@@ -396,7 +503,7 @@ public class ServiceModuleBean implements BeeModule {
         .addFrom(TBL_TASKS)
         .setWhere(SqlUtils.notNull(TBL_TASKS, COL_RECURRING_TASK))
         .addGroup(TBL_TASKS, COL_RECURRING_TASK);
-    
+
     String spawnAlias = "Spawn_" + SqlUtils.uniqueName();
 
     HasConditions where = SqlUtils.and(SqlUtils.in(TBL_RECURRING_TASKS, idName,

@@ -86,11 +86,11 @@ public class ServiceObjectForm extends AbstractFormInterceptor implements ClickH
       if (event.getState() == State.OPEN) {
         CompoundFilter flt = Filter.and();
 
-        for (String name : new String[] {COL_SERVICE_OBJECT_CATEGORY, COL_SERVICE_OBJECT}) {
+        for (String name : new String[] {COL_SERVICE_CATEGORY, COL_SERVICE_OBJECT}) {
           Long id = getLongValue(name);
 
           if (DataUtils.isId(id)) {
-            if (BeeUtils.same(name, COL_SERVICE_OBJECT_CATEGORY)) {
+            if (BeeUtils.same(name, COL_SERVICE_CATEGORY)) {
               flt.add(Filter.isEqual(name, Value.getValue(id)));
             } else {
               flt.add(Filter.isNotEqual(name, Value.getValue(id)));
@@ -249,15 +249,15 @@ public class ServiceObjectForm extends AbstractFormInterceptor implements ClickH
         && DomUtils.isOrHasChild(getFormView().asWidget(), event.getOptions())
         && getActiveRow() != null) {
       
-      String address = getStringValue(COL_SERVICE_OBJECT_ADDRESS);
+      String address = getStringValue(COL_SERVICE_ADDRESS);
       if (!BeeUtils.isEmpty(address)) {
         Data.setValue(event.getViewName(), event.getRow(), TaskConstants.COL_SUMMARY, address);
       }
       
-      Long customer = getLongValue(COL_SERVICE_OBJECT_CUSTOMER);
+      Long customer = getLongValue(COL_SERVICE_CUSTOMER);
       if (DataUtils.isId(customer)) {
         RelationUtils.copyWithDescendants(
-            Data.getDataInfo(getViewName()), COL_SERVICE_OBJECT_CUSTOMER, getActiveRow(),
+            Data.getDataInfo(getViewName()), COL_SERVICE_CUSTOMER, getActiveRow(),
             Data.getDataInfo(event.getViewName()), ClassifierConstants.COL_COMPANY, event.getRow());
       }
     }

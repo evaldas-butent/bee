@@ -34,15 +34,25 @@ public class MaintenanceGrid extends AbstractGridInterceptor implements HandlesD
 
   @Override
   public void afterCreatePresenter(GridPresenter presenter) {
-    Button button = new Button(Localized.getConstants().createInvoice());
-    button.addClickHandler(new ClickHandler() {
+    Button invoiceButton = new Button(Localized.getConstants().createInvoice());
+    invoiceButton.addClickHandler(new ClickHandler() {
       @Override
       public void onClick(ClickEvent event) {
         InvoiceBuilder.start(getGridView());
       }
     });
 
-    presenter.getHeader().addCommandItem(button);
+    presenter.getHeader().addCommandItem(invoiceButton);
+
+    Button defectButton = new Button(Localized.getConstants().svcDefect());
+    defectButton.addClickHandler(new ClickHandler() {
+      @Override
+      public void onClick(ClickEvent event) {
+        DefectBuilder.start(getGridView());
+      }
+    });
+    
+    presenter.getHeader().addCommandItem(defectButton);
   }
 
   @Override

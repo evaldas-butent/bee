@@ -5,6 +5,10 @@ public interface LocalizableServiceConstants {
   String svcCalendar();
 
   String svcContractor();
+
+  String svcDefect();
   
   String svcModule();
+
+  String svcNewDefect();
 }
