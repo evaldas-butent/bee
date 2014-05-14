@@ -56,15 +56,6 @@ public class BeeRow extends StringRow implements BeeSerializable {
   }
 
   @Override
-  public BeeRow copy() {
-    BeeRow result = new BeeRow(getId(), getVersion(), getValues());
-    result.setEditable(isEditable());
-    result.setRemovable(isRemovable());
-    copyProperties(result);
-    return result;
-  }
-
-  @Override
   public void deserialize(String s) {
     String[] arr = Codec.beeDeserializeCollection(s);
     Serial[] members = Serial.values();

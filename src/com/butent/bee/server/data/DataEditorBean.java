@@ -266,7 +266,7 @@ public class DataEditorBean {
 
       if (!response.hasErrors()) {
         if (RowInfo.class.equals(returnType)) {
-          response.setResponse(new RowInfo(id, tblInfo.version, false));
+          response.setResponse(new RowInfo(id, tblInfo.version, false, false));
         } else {
           BeeRowSet newRs = qs.getViewData(view.getName(), Filter.compareId(id));
 

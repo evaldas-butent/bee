@@ -158,7 +158,7 @@ public final class Queries {
   }
 
   public static void deleteRow(String viewName, long rowId, long version, IntCallback callback) {
-    deleteRows(viewName, Lists.newArrayList(new RowInfo(rowId, version, true)), callback);
+    deleteRows(viewName, Lists.newArrayList(new RowInfo(rowId, version, true, true)), callback);
   }
 
   public static void deleteRows(String viewName, Collection<RowInfo> rows) {

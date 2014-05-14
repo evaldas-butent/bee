@@ -131,6 +131,7 @@ import com.butent.bee.shared.utils.NameUtils;
 import com.butent.bee.shared.utils.Wildcards;
 import com.butent.bee.shared.utils.Wildcards.Pattern;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.EnumSet;
 import java.util.List;
@@ -1179,13 +1180,27 @@ public class GridImpl extends Absolute implements GridView, EditEndEvent.Handler
 
   @Override
   public Collection<RowInfo> getSelectedRows(SelectedRows mode) {
-    if (getGrid().getSelectedRows().isEmpty() || !SelectedRows.EDITABLE.equals(mode)) {
+    if (getGrid().getSelectedRows().isEmpty() || mode == null || mode == SelectedRows.ALL) {
       return getGrid().getSelectedRows().values();
     }
 
-    Collection<RowInfo> result = Lists.newArrayList();
+    Collection<RowInfo> result = new ArrayList<>();
+    boolean ok = false;
+
     for (RowInfo rowInfo : getGrid().getSelectedRows().values()) {
-      if (rowInfo.isEditable()) {
+      switch (mode) {
+        case EDITABLE:
+          ok = rowInfo.isEditable();
+          break;
+        case REMOVABLE:
+          ok = rowInfo.isEditable() && rowInfo.isRemovable();
+          break;
+        case ALL:
+          ok = true;
+          break;
+      }
+
+      if (ok) {
         result.add(rowInfo);
       }
     }

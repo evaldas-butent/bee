@@ -582,6 +582,8 @@ public interface LocalizableConstants extends Constants, LocalizableCalendarCons
   String roomUpdateTime();
 
   String roomUsers();
+  
+  String rowIsNotRemovable();
 
   String rowIsReadOnly();
 

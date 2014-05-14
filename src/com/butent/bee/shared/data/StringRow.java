@@ -53,16 +53,6 @@ public class StringRow extends AbstractRow {
   }
 
   @Override
-  public StringRow copy() {
-    StringRow result = new StringRow(getId(), values);
-    result.setVersion(getVersion());
-    result.setEditable(isEditable());
-    result.setRemovable(isRemovable());
-    copyProperties(result);
-    return result;
-  }
-
-  @Override
   public Boolean getBoolean(int col) {
     return BeeUtils.toBooleanOrNull(getString(col));
   }

@@ -21,8 +21,6 @@ public interface IsRow extends HasCustomProperties {
 
   void clearCell(int index);
 
-  IsRow copy();
-
   Boolean getBoolean(int index);
 
   IsCell getCell(int index);
