@@ -5,12 +5,15 @@ import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
+import com.google.gwt.user.client.ui.HasEnabled;
+import com.google.gwt.user.client.ui.Widget;
 
 import static com.butent.bee.shared.modules.documents.DocumentConstants.*;
 import static com.butent.bee.shared.modules.trade.TradeConstants.*;
 
 import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.Global;
+import com.butent.bee.client.UserInfo;
 import com.butent.bee.client.composite.Autocomplete;
 import com.butent.bee.client.composite.ChildSelector;
 import com.butent.bee.client.composite.DataSelector;
@@ -197,14 +200,23 @@ public class DocumentForm extends DocumentDataForm implements SelectorEvent.Hand
   }
 
   @Override
-  public void beforeRefresh(FormView form, IsRow row) {
+  public void afterRefresh(FormView form, IsRow row) {
+    UserInfo user = BeeKeeper.getUser();
+    boolean newRow = DataUtils.isNewRow(row);
+
+    if (!user.isAdministrator()) {
+      Widget category = form.getWidgetBySource(COL_DOCUMENT_CATEGORY);
+
+      if (category instanceof HasEnabled) {
+        ((HasEnabled) category).setEnabled(newRow);
+      }
+    }
     if (getHeaderView() == null) {
       return;
     }
     getHeaderView().clearCommandPanel();
 
-    if (!DataUtils.isNewRow(row) && BeeKeeper.getUser()
-        .isModuleVisible(ModuleAndSub.of(Module.DOCUMENTS, SubModule.TEMPLATES))) {
+    if (!newRow && user.isModuleVisible(ModuleAndSub.of(Module.DOCUMENTS, SubModule.TEMPLATES))) {
       getHeaderView().addCommandItem(newTemplateButton);
     }
   }

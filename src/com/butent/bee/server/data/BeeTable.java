@@ -581,34 +581,36 @@ public class BeeTable implements BeeObject, HasExtFields, HasStates, HasTranslat
     public IsCondition checkState(String stateAlias, RightsState state, long... bits) {
       Assert.state(hasState(state));
 
-      HasConditions wh = SqlUtils.or();
-      Map<String, Integer> bitMasks = getMasks(state, bits);
-      boolean checkedDefaults = false;
+      Entry<String, Integer> defEntry = getMasks(state, 0).entrySet().iterator().next();
+      String fld = defEntry.getKey();
+      Integer mask = defEntry.getValue();
+      IsCondition defaultCondition;
 
-      for (Entry<String, Integer> entry : bitMasks.entrySet()) {
-        String fld = entry.getKey();
-        Integer mask = entry.getValue();
-
-        if (mask == null) {
-          if (checkedDefaults) {
-            continue;
-          }
-          Entry<String, Integer> defEntry = getMasks(state, 0).entrySet().iterator().next();
-          fld = defEntry.getKey();
-          mask = defEntry.getValue();
-
-          if (mask == null) {
-            wh.add(state.isChecked() ? SqlUtils.sqlTrue() : SqlUtils.sqlFalse());
-            continue;
-          }
-          checkedDefaults = true;
-        }
+      if (mask == null) {
+        defaultCondition = state.isChecked() ? SqlUtils.sqlTrue() : SqlUtils.sqlFalse();
+      } else {
         if (state.isChecked()) {
-          wh.add(SqlUtils.isNull(stateAlias, fld),
+          defaultCondition = SqlUtils.or(SqlUtils.isNull(stateAlias, fld),
               SqlUtils.notEqual(SqlUtils.bitAnd(stateAlias, fld, mask), mask));
         } else {
-          wh.add(SqlUtils.and(SqlUtils.notNull(stateAlias, fld),
-              SqlUtils.notEqual(SqlUtils.bitAnd(stateAlias, fld, mask), 0)));
+          defaultCondition = SqlUtils.and(SqlUtils.notNull(stateAlias, fld),
+              SqlUtils.notEqual(SqlUtils.bitAnd(stateAlias, fld, mask), 0));
+        }
+      }
+      HasConditions wh = SqlUtils.or();
+      Map<String, Integer> bitMasks = getMasks(state, bits);
+
+      for (Entry<String, Integer> entry : bitMasks.entrySet()) {
+        fld = entry.getKey();
+        mask = entry.getValue();
+
+        if (mask == null) {
+          wh.add(defaultCondition);
+        } else {
+          wh.add(SqlUtils.and(SqlUtils.isNull(stateAlias, fld), defaultCondition),
+              SqlUtils.and(SqlUtils.notNull(stateAlias, fld),
+                  SqlUtils.notEqual(SqlUtils.bitAnd(stateAlias, fld, mask),
+                      state.isChecked() ? mask : 0)));
         }
       }
       if (wh.isEmpty()) {

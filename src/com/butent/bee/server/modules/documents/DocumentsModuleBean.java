@@ -40,6 +40,7 @@ import com.butent.bee.shared.modules.BeeParameter;
 import com.butent.bee.shared.modules.administration.AdministrationConstants;
 import com.butent.bee.shared.modules.administration.AdministrationConstants.RightsState;
 import com.butent.bee.shared.rights.Module;
+import com.butent.bee.shared.rights.RegulatedWidget;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.Codec;
 import com.butent.bee.shared.utils.EnumUtils;
@@ -168,24 +169,22 @@ public class DocumentsModuleBean implements BeeModule {
       @Subscribe
       public void setRightsProperties(ViewQueryEvent event) {
         if (event.isAfter() && BeeUtils.same(event.getTargetName(), TBL_DOCUMENT_TREE)
-            && usr.isAdministrator()) {
+            && usr.isWidgetVisible(RegulatedWidget.DOCUMENT_TREE)) {
 
           String tableName = event.getTargetName();
           String idName = sys.getIdName(tableName);
 
-          SqlSelect query = event.getQuery().resetFields()
-              .addFields(TBL_DOCUMENT_TREE, idName);
+          SqlSelect query = event.getQuery().resetFields().addFields(tableName, idName);
 
           BeeTable table = sys.getTable(tableName);
           Map<RightsState, String> states = new LinkedHashMap<>();
-          Map<String, Long> roles = new TreeMap<>();
           boolean stateExists = false;
+          Map<String, Long> roles = new TreeMap<>();
+          roles.put("", 0L);
 
           for (Long role : usr.getRoles()) {
             roles.put(usr.getRoleName(role), role);
           }
-          roles.put("", 0L);
-
           for (RightsState state : table.getStates()) {
             states.put(state, table.joinState(query, tableName, state));
 

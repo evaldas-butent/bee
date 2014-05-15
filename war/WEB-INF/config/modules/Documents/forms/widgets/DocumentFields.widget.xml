@@ -24,7 +24,7 @@
 
   <row>
     <Label text="=documentCategory" class="bee-required" horizontalAlignment="right"/>
-    <DataSelector source="Category" />
+    <DataSelector source="Category" caching="local" />
     <Label text="=documentType" horizontalAlignment="right" />
     <DataSelector source="Type" />
   </row>

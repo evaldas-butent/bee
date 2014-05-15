@@ -486,7 +486,6 @@ public class SystemBean {
     }
   }
 
-  @TransactionAttribute(TransactionAttributeType.REQUIRES_NEW)
   @Lock(LockType.WRITE)
   public void rebuildTable(String tblName) {
     rebuildTable(getTable(tblName));
