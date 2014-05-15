@@ -12,13 +12,15 @@ import com.butent.bee.client.presenter.PresenterCallback;
 import com.butent.bee.client.style.StyleUtils;
 import com.butent.bee.client.ui.HasFosterParent;
 import com.butent.bee.client.ui.UiOption;
+import com.butent.bee.client.view.HasGridView;
+import com.butent.bee.client.view.grid.GridView;
 import com.butent.bee.client.view.grid.interceptor.GridInterceptor;
 import com.butent.bee.shared.utils.BeeUtils;
 
 import java.util.EnumSet;
 
 public class GridPanel extends Simple implements HasEnabled, HasFosterParent,
-    ParentRowEvent.Handler {
+    ParentRowEvent.Handler, HasGridView {
 
   private final String gridName;
   private GridFactory.GridOptions gridOptions;
@@ -44,6 +46,15 @@ public class GridPanel extends Simple implements HasEnabled, HasFosterParent,
 
   public GridFactory.GridOptions getGridOptions() {
     return gridOptions;
+  }
+
+  @Override
+  public GridView getGridView() {
+    if (getPresenter() instanceof HasGridView) {
+      return ((HasGridView) getPresenter()).getGridView();
+    } else {
+      return null;
+    }
   }
 
   @Override

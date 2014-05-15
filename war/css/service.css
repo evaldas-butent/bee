@@ -70,3 +70,7 @@
 .bee-svc-calendar-task-starred {
   background-repeat: space;
 }
+
+.bee-svc-build-command[disabled] {
+  visibility: hidden;
+}

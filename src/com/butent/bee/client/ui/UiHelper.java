@@ -222,7 +222,7 @@ public final class UiHelper {
     FormView form = getForm(widget);
     return (form == null) ? null : form.getActiveRowId();
   }
-  
+
   public static GridView getGrid(Widget widget) {
     DataView dataView = getDataView(widget);
 
@@ -346,7 +346,21 @@ public final class UiHelper {
     }
     return null;
   }
-  
+
+  public static GridView getSiblingGrid(Widget widget, String gridName) {
+    FormView form = getForm(widget);
+    if (form == null) {
+      return null;
+    }
+
+    Widget gridWidget = form.getWidgetByName(gridName);
+    if (gridWidget instanceof HasGridView) {
+      return ((HasGridView) gridWidget).getGridView();
+    } else {
+      return null;
+    }
+  }
+
   public static Consumer<InputText> getTextBoxResizer(final int reserve) {
     return new Consumer<InputText>() {
       @Override
