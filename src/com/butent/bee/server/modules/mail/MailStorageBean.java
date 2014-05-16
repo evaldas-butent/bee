@@ -40,7 +40,10 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.util.ArrayList;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 
@@ -70,6 +73,21 @@ import javax.mail.internet.ParseException;
 public class MailStorageBean {
 
   private static final BeeLogger logger = LogUtils.getLogger(MailStorageBean.class);
+
+  private static String getStringContent(Object enigma) throws IOException {
+    String content;
+
+    if (enigma instanceof String) {
+      content = (String) enigma;
+
+    } else if (enigma instanceof InputStream) {
+      content = CharStreams.toString(new InputStreamReader((InputStream) enigma,
+          BeeConst.CHARSET_UTF8));
+    } else {
+      content = enigma.toString();
+    }
+    return content;
+  }
 
   @EJB
   QueryServiceBean qs;
@@ -292,7 +310,7 @@ public class MailStorageBean {
       }
       try {
         is.reset();
-        storePart(messageId, new MimeMessage(null, is), null);
+        storePart(messageId, new MimeMessage(null, is), null, null);
       } catch (IOException e) {
         throw new MessagingException(e.toString());
       }
@@ -404,32 +422,65 @@ public class MailStorageBean {
     return folder;
   }
 
-  private void storePart(Long messageId, Part part, Pair<String, String> alternative)
-      throws MessagingException, IOException {
+  private void storePart(Long messageId, Part part, List<Pair<String, String>> contents,
+      Map<String, Long> attachments) throws MessagingException, IOException {
 
-    if (part.isMimeType("multipart/*")) {
+    if (part.isMimeType("multipart/alternative")) {
+      String text = null;
+      String html = null;
       Multipart multiPart = (Multipart) part.getContent();
-      boolean hasAlternative = alternative == null && part.isMimeType("multipart/alternative");
-      Pair<String, String> alt;
 
-      if (hasAlternative) {
-        alt = Pair.of(null, null);
+      for (int i = 0; i < multiPart.getCount(); i++) {
+        Part bodyPart = multiPart.getBodyPart(i);
+
+        if (bodyPart.isMimeType("text/plain")) {
+          text = getStringContent(bodyPart.getContent());
+
+        } else if (bodyPart.isMimeType("text/html")) {
+          html = getStringContent(bodyPart.getContent());
+
+        } else {
+          storePart(messageId, bodyPart, contents, attachments);
+        }
+      }
+      if (contents != null) {
+        contents.add(Pair.of(text, html));
       } else {
-        alt = alternative;
+        savePart(messageId, text, html);
+      }
+    } else if (part.isMimeType("multipart/*")) {
+      Multipart multiPart = (Multipart) part.getContent();
+      List<Pair<String, String>> cont = null;
+      Map<String, Long> attach = null;
+
+      boolean isRelated = part.isMimeType("multipart/related");
+
+      if (isRelated) {
+        cont = new ArrayList<>();
+        attach = new LinkedHashMap<>();
+      } else {
+        cont = contents;
+        attach = attachments;
       }
       for (int i = 0; i < multiPart.getCount(); i++) {
-        storePart(messageId, multiPart.getBodyPart(i), alt);
+        storePart(messageId, multiPart.getBodyPart(i), cont, attach);
       }
-      if (hasAlternative) {
-        qs.insertData(new SqlInsert(TBL_PARTS)
-            .addConstant(COL_MESSAGE, messageId)
-            .addConstant(COL_CONTENT_TYPE, alt.getB() != null ? "text/html" : "text/plain")
-            .addConstant(COL_CONTENT,
-                HtmlUtils.stripHtml(alt.getA() != null ? alt.getA() : alt.getB()))
-            .addConstant(COL_HTML_CONTENT, alt.getB()));
+      if (isRelated) {
+        for (Pair<String, String> pair : cont) {
+          if (!BeeUtils.isEmpty(pair.getB())) {
+            for (String id : attach.keySet()) {
+              pair.setB(pair.getB().replace("cid:" + id, "file/" + attach.get(id)));
+            }
+          }
+          if (contents != null) {
+            contents.add(pair);
+          } else {
+            savePart(messageId, pair.getA(), pair.getB());
+          }
+        }
       }
     } else if (part.isMimeType("message/rfc822")) {
-      storePart(messageId, (Message) part.getContent(), alternative);
+      storePart(messageId, (Message) part.getContent(), contents, attachments);
     } else {
       String contentType = null;
 
@@ -454,47 +505,46 @@ public class MailStorageBean {
       }
       if (!part.isMimeType("text/*")
           || BeeUtils.same(disposition, Part.ATTACHMENT)
-          || !BeeUtils.isEmpty(fileName)
-          || (alternative != null
-              && !part.isMimeType("text/plain") && !part.isMimeType("text/html"))) {
+          || !BeeUtils.isEmpty(fileName)) {
 
         Long fileId = fs.storeFile(part.getInputStream(), fileName, contentType);
 
+        if (attachments != null) {
+          String[] ids = part.getHeader("Content-ID");
+
+          if (ids != null) {
+            for (String id : ids) {
+              attachments.put(BeeUtils.removeSuffix(BeeUtils.removePrefix(id, '<'), '>'), fileId);
+            }
+          }
+        }
         qs.insertData(new SqlInsert(TBL_ATTACHMENTS)
             .addConstant(COL_MESSAGE, messageId)
             .addConstant(AdministrationConstants.COL_FILE, fileId)
             .addConstant(COL_ATTACHMENT_NAME, fileName));
-
-      } else if (alternative != null) {
-        if (part.isMimeType("text/plain") && alternative.getA() == null) {
-          alternative.setA((String) part.getContent());
-        } else if (part.isMimeType("text/html") && alternative.getB() == null) {
-          alternative.setB((String) part.getContent());
-        }
       } else {
-        Object enigma = part.getContent();
-        String content;
-        String htmlContent = null;
+        String text = getStringContent(part.getContent());
+        String html = null;
 
-        if (enigma instanceof String) {
-          content = (String) part.getContent();
-
-        } else if (enigma instanceof InputStream) {
-          content = CharStreams.toString(new InputStreamReader((InputStream) enigma,
-              BeeConst.CHARSET_UTF8));
-        } else {
-          content = enigma.toString();
-        }
         if (part.isMimeType("text/html")) {
-          htmlContent = content;
-          content = HtmlUtils.stripHtml(content);
+          html = text;
+          text = HtmlUtils.stripHtml(html);
         }
-        qs.insertData(new SqlInsert(TBL_PARTS)
-            .addConstant(COL_MESSAGE, messageId)
-            .addConstant(COL_CONTENT_TYPE, contentType)
-            .addConstant(COL_CONTENT, content)
-            .addConstant(COL_HTML_CONTENT, htmlContent));
+        if (contents != null) {
+          contents.add(Pair.of(text, html));
+        } else {
+          savePart(messageId, text, html);
+        }
       }
+    }
+  }
+
+  private void savePart(Long messageId, String text, String html) {
+    if (BeeUtils.anyNotEmpty(text, html)) {
+      qs.insertData(new SqlInsert(TBL_PARTS)
+          .addConstant(COL_MESSAGE, messageId)
+          .addConstant(COL_CONTENT, BeeUtils.isEmpty(text) ? HtmlUtils.stripHtml(html) : text)
+          .addConstant(COL_HTML_CONTENT, html));
     }
   }
 }

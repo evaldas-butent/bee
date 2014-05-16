@@ -10,6 +10,7 @@
     <SimpleColumn name="Name" />
     <SimpleJoin joinType="LEFT" name="Parent">
       <SimpleColumn alias="ParentOrder" name="Order" />
+      <SimpleColumn alias="ParentName" name="Name" />
     </SimpleJoin>
     <ExternalJoin source="Documents" joinType="LEFT" name="Category">
       <AggregateColumn alias="DocumentCount" aggregate="COUNT" name="Category" />
