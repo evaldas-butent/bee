@@ -8,6 +8,9 @@ import com.butent.bee.server.utils.BeeDataSource;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.Service;
 import com.butent.bee.shared.communication.ResponseObject;
+import com.butent.bee.shared.data.BeeRow;
+import com.butent.bee.shared.data.BeeRowSet;
+import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogUtils;
 import com.butent.bee.shared.utils.BeeUtils;
@@ -27,10 +30,13 @@ import javax.ejb.Stateless;
 
 @Stateless
 public class MetaDataBean {
+
   private static BeeLogger logger = LogUtils.getLogger(MetaDataBean.class);
 
   @EJB
   ResultSetBean rsb;
+  @EJB
+  SystemBean sys;
 
   public ResponseObject doService(String svc, BeeDataSource ds, RequestInfo reqInfo) {
     Assert.notEmpty(svc);
@@ -82,7 +88,7 @@ public class MetaDataBean {
         response.addInfo(ds.getDsn(), "no info available");
       }
     } else {
-      response.setResponse(prp);
+      response.setCollection(prp, ExtendedProperty.class);
     }
 
     return response;
@@ -125,11 +131,19 @@ public class MetaDataBean {
   }
 
   private ResponseObject getTables(BeeDataSource ds, RequestInfo reqInfo) {
+    String catalog = reqInfo.getParameter(Service.VAR_CATALOG);
+    String schema = reqInfo.getParameter(Service.VAR_SCHEMA);
+    
+    String table = reqInfo.getParameter(Service.VAR_TABLE);
+    String type = reqInfo.getParameter(Service.VAR_TYPE);
+    
+    boolean check = reqInfo.hasParameter(Service.VAR_CHECK);
+    
     ResponseObject response;
     
     try {
       DatabaseMetaData md = ds.getDbMd();
-      ResultSet rs = md.getTables(null, null, reqInfo.getParameter(0), null);
+      ResultSet rs = md.getTables(null, null, null, null);
 
       response = rsb.read(rs);
       rs.close();
@@ -143,7 +157,63 @@ public class MetaDataBean {
       response = ResponseObject.error(ex);
     }
     
+    if (!response.hasErrors() && response.hasResponse(BeeRowSet.class)
+        && !DataUtils.isEmpty((BeeRowSet) response.getResponse())) {
+      
+      if (BeeUtils.anyNotEmpty(catalog, schema, table, type) || check) {
+        BeeRowSet tables = filterTables((BeeRowSet) response.getResponse(),
+            catalog, schema, table, type, check);
+        
+        if (DataUtils.isEmpty(tables)) {
+          response = ResponseObject.warning("no tables found"); 
+        } else {
+          response = ResponseObject.response(tables);
+        }
+      }
+    }
+    
     return response;
+  }
+  
+  private BeeRowSet filterTables(BeeRowSet input, String catalog, String schema, String name,
+      String type, boolean checkDescription) {
+    
+    int catIndex = 0;
+    int schIndex = 1;
+    int nameIndex = 2;
+    int typeIndex = 3;
+    
+    boolean catCheck = !BeeUtils.isEmpty(catalog);
+    boolean schCheck = !BeeUtils.isEmpty(schema);
+    boolean nameCheck = !BeeUtils.isEmpty(name);
+    boolean typeCheck = !BeeUtils.isEmpty(type);
+    
+    List<String> tableNames = checkDescription ? sys.getTableNames() : null;
+
+    BeeRowSet result = new BeeRowSet(input.getColumns());
+    
+    for (BeeRow row : input) {
+      if (catCheck && !BeeUtils.same(row.getString(catIndex), catalog)) {
+        continue;
+      }
+      if (schCheck && !BeeUtils.same(row.getString(schIndex), schema)) {
+        continue;
+      }
+      if (nameCheck && !BeeUtils.containsSame(row.getString(nameIndex), name)) {
+        continue;
+      }
+      if (typeCheck && !BeeUtils.same(row.getString(typeIndex), type)) {
+        continue;
+      }
+      
+      if (checkDescription && tableNames.contains(row.getString(nameIndex))) {
+        continue;
+      }
+
+      result.addRow(DataUtils.cloneRow(row));
+    }
+
+    return result;
   }
 
   private static ResponseObject ping(BeeDataSource ds) {

@@ -11,8 +11,8 @@ import com.butent.bee.shared.BeeSerializable;
 import com.butent.bee.shared.HasInfo;
 import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogUtils;
-import com.butent.bee.shared.modules.commons.CommonsConstants.RightsObjectType;
-import com.butent.bee.shared.modules.commons.CommonsConstants.RightsState;
+import com.butent.bee.shared.modules.administration.AdministrationConstants.RightsObjectType;
+import com.butent.bee.shared.modules.administration.AdministrationConstants.RightsState;
 import com.butent.bee.shared.rights.Module;
 import com.butent.bee.shared.rights.ModuleAndSub;
 import com.butent.bee.shared.rights.RegulatedWidget;
@@ -103,7 +103,8 @@ public class UserData implements BeeSerializable, HasInfo {
   }
 
   public boolean canEditColumn(String viewName, String column) {
-    return hasFieldRight(RightsUtils.buildName(viewName, column), RightsState.EDIT);
+    return BeeUtils.anyEmpty(viewName, column)
+        || hasFieldRight(RightsUtils.buildName(viewName, column), RightsState.EDIT);
   }
 
   public boolean canEditData(String object) {
@@ -271,8 +272,13 @@ public class UserData implements BeeSerializable, HasInfo {
     return BeeUtils.notEmpty(BeeUtils.joinWords(getFirstName(), getLastName()), getLogin());
   }
 
+  public boolean hasDataRight(String object, RightsState state) {
+    return hasRight(RightsObjectType.DATA, object, state);
+  }
+
   public boolean isColumnVisible(String viewName, String column) {
-    return hasFieldRight(RightsUtils.buildName(viewName, column), RightsState.VIEW);
+    return BeeUtils.anyEmpty(viewName, column)
+        || hasFieldRight(RightsUtils.buildName(viewName, column), RightsState.VIEW);
   }
 
   public boolean isDataVisible(String object) {
@@ -399,10 +405,6 @@ public class UserData implements BeeSerializable, HasInfo {
 
   public void setRights(Table<RightsState, RightsObjectType, Set<String>> rights) {
     this.rights = rights;
-  }
-
-  private boolean hasDataRight(String object, RightsState state) {
-    return hasRight(RightsObjectType.DATA, object, state);
   }
 
   private boolean hasFieldRight(String object, RightsState state) {

@@ -11,31 +11,30 @@
   xmlns:f="http://www.butent.com/form"
   xmlns:xi="http://www.w3.org/2001/XInclude"
   
-  name="Assessment" viewName="Assessments" caption="=transportAssessmentRequest"
-  showRowId="true"
+  name="Assessment" viewName="Assessments" showRowId="true"
   >
   <f:properties reports="PrintOrderLT, PrintOrderEN, PrintOrderRU" />
 
   <FlowPanel style="padding: 10px 2px 2px 10px;" class="flexBox-vertical bee-tr-assessment-form">
     <FlowPanel style="height:65%; overflow:auto;">
       <FlowPanel style="&section;">
-        <Label text="=status" style="&labelLeft;" />
-        <TextLabel source="Status" style="&input; font-weight:bold;" />
-        <Label text="=customer" class="bee-required" style="&labelRight; width:120px;" />
+        <Label for="Status" style="&labelLeft;" />
+        <FlowPanel name="Status" style="&input; font-weight:bold;" />
+        <Label for="Customer" style="&labelRight; width:120px;" />
         <DataSelector source="Customer" style="&input; width:200px;" />
       </FlowPanel>
       <FlowPanel style="&section;">
-        <Label text="=orderDate" class="bee-required" style="&labelLeft;" />
-        <InputDateTime source="OrderDate" style="&input;" />
-        <Label text="=personContact" style="&labelRight; width:120px;" />
+        <Label for="Date" style="&labelLeft;" />
+        <InputDateTime source="Date" style="&input;" />
+        <Label for="CustomerPerson" style="&labelRight; width:120px;" />
         <DataSelector source="CustomerPerson" style="&input; width:200px;" 
           choiceColumns="FirstName LastName CompanyName" options="Customer" />
       </FlowPanel>
     
       <FlowPanel style="&section;">
-        <Label text="=refNumber" style="&labelLeft;" />
+        <Label text="=refNumber" for="Number" style="&labelLeft;" />
         <InputText source="Number" style="&input;" />
-        <Label text="=shipper" style="&labelRight; width:120px;" />
+        <Label text="=shipper" for="Shipper" style="&labelRight; width:120px;" />
         <InputText source="Shipper" style="&input; width:200px;" />
       </FlowPanel>
     
@@ -44,28 +43,25 @@
 
       &separator;
       <FlowPanel style="&section;">
-        <Label text="=manager" class="bee-required" style="&labelLeft;" />
-        <DataSelector source="Manager" style="&input; width:200px;" editSource="ManagerPerson"
-          newRowEnabled="false" />
+        <Label for="Manager" class="bee-required" style="&labelLeft;" />
+        <DataSelector name="Manager" source="Manager" style="&input; width:200px;" caching="local"
+          viewName="AssessmentExecutors" choiceColumns="LastName FirstName DepartmentName"
+          editSource="CompanyPerson" newRowEnabled="false" required="true" />
+        <Label for="DepartmentName" style="&inline; margin:0 10px 0 10px; padding-top:1px;" />
+        <TextLabel source="DepartmentName" style="&inline; padding-top:1px; font-weight:bold;" />
       </FlowPanel>
       <FlowPanel style="&section;">
-        <Label text="=trComment" style="&labelLeft; vertical-align:top;" />
+        <Label text="=trComment" for="Notes" style="&labelLeft; vertical-align:top;" />
         <InputArea source="Notes" style="width:400px;" />
       </FlowPanel>
-      <FlowPanel style="&section;">
-        <Label text="=transportationNumber1" style="&labelLeft;" />
-        <InputText source="LoadingTerminal" style="&inline; width:130px;" />
-        <Label text="=transportationNumber2" style="&labelRight; width:100px;" />
-        <InputText source="UnloadingTerminal" style="&inline; width:130px;" />
-      </FlowPanel>
 
+      &separator;
       <FlowPanel style="&section;">
-        &separator;
-        <Label text="=currency" class="bee-required" style="&labelLeft;" />
+        <Label for="Currency" class="bee-required" style="&labelLeft;" />
         <DataSelector name="Currency" source="Currency" required="true"
           style="&inline; width:40px; margin-right:20px;" editEnabled="false" />
                   
-        <FlowPanel name="AmountsPanel" style="&inline; &section;">
+        <FlowPanel style="&inline; &section;">
           <InlineLabel text="=customerPrice" style="padding-top:1px; margin-right:10px;" />
           <InlineLabel name="IncomeTotal" style="font-weight:bold; margin-right:20px;" />
           <InlineLabel text="=transportCost" style="padding-top:1px; margin-right:10px;" />
@@ -74,31 +70,50 @@
           <InlineLabel name="Profit" style="font-weight:bold;" />
         </FlowPanel>
       </FlowPanel>
+
+      &separator;
+      <FlowPanel style="&section;">
+        <Label text="=crmTaskObservers" style="&labelLeft;" />
+        <ChildSelector childTable="AssessmentObservers" viewName="AssessmentExecutors"
+          targetRelColumn="Assessment" sourceRelColumn="User"
+          choiceColumns="FirstName LastName DepartmentName" renderColumns="FirstName LastName"
+          editEnabled="false" newRowEnabled="false" caching="local"
+          style="&inline; width:400px;" label="=crmTaskObservers" />
+      </FlowPanel>
+      <FlowPanel style="&section;">
+        <Label text="=crmTaskObserverGroups" style="&labelLeft;" />
+        <ChildSelector childTable="AssessmentOGroups" viewName="UserGroupSettings"
+          targetRelColumn="Assessment" sourceRelColumn="Group" renderColumns="Name"
+          editPopup="true" newRowEnabled="false" style="&inline; width:400px;"
+          label="=crmTaskObserverGroups" filter="Owner {u} or Visibility" />
+      </FlowPanel>
+      &separator;
     </FlowPanel>
 
-    &separator;
     <TabbedPages class="flexible" style="&section; min-height:100px;">
-      <page>
-        <text>=assessments</text>
-        <ChildGrid name="CargoAssessors" relColumn="Cargo" source="Cargo" disablable="false" />
-      </page>
-      <page>
+      <page data="AssessmentForwarders">
         <text>=carriers</text>
-        <ChildGrid name="AssessmentForwarders" relColumn="Cargo" source="Cargo" disablable="false" />
+        <ChildGrid name="AssessmentForwarders" relColumn="Assessment" />
       </page>
-      <page>
+      <page data="CargoIncomes">
         <FlowPanel>
           <Label text="=income" style="&inline;" />
           <FlowPanel name="Income" style="&inline;" />
         </FlowPanel>
-        <ChildGrid name="CargoIncomes" relColumn="Cargo" source="Cargo" disablable="false" />
+        <ChildGrid name="CargoIncomes" relColumn="Cargo" source="Cargo" />
       </page>
-      <page>
+      <page data="CargoExpenses">
         <FlowPanel>
+          <CheckBox name="ExpensesRegistered" source="ExpensesRegistered"
+            title="=trExpensesRegistered" style="&inline; margin:0 5px 0 0; position:relative; top:4px;" />
           <Label text="=trExpenses" style="&inline;" />
           <FlowPanel name="Expense" style="&inline;" />
         </FlowPanel>
-        <ChildGrid name="CargoExpenses" relColumn="Cargo" source="Cargo" disablable="false" />
+        <ChildGrid name="CargoExpenses" relColumn="Cargo" source="Cargo" />
+      </page>
+      <page data="ChildAssessments">
+        <text>=assessments</text>
+        <ChildGrid name="ChildAssessments" relColumn="Assessment" />
       </page>
     </TabbedPages>
   </FlowPanel>

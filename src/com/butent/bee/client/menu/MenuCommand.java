@@ -1,75 +1,57 @@
 package com.butent.bee.client.menu;
 
-import com.google.common.collect.Lists;
+import com.google.gwt.core.client.Scheduler;
 
-import com.butent.bee.client.BeeKeeper;
-import com.butent.bee.client.Global;
-import com.butent.bee.client.MenuManager.MenuCallback;
 import com.butent.bee.client.data.RowFactory;
 import com.butent.bee.client.grid.GridFactory;
-import com.butent.bee.client.modules.commons.ParametersGrid;
+import com.butent.bee.client.modules.administration.ParametersGrid;
+import com.butent.bee.client.output.Report;
 import com.butent.bee.client.ui.FormFactory;
-import com.butent.bee.client.utils.Command;
-import com.butent.bee.shared.utils.BeeUtils;
+import com.butent.bee.shared.logging.BeeLogger;
+import com.butent.bee.shared.logging.LogUtils;
+import com.butent.bee.shared.menu.MenuService;
 
-/**
- * Extends {@code BeeCommand} class for command execution with it's service name and parameters.
- */
+public class MenuCommand implements Scheduler.ScheduledCommand {
 
-public class MenuCommand extends Command {
+  private static final BeeLogger logger = LogUtils.getLogger(MenuCommand.class);
+  
+  private final MenuService service;
+  private final String parameters;
 
-  private static final String SERVICE_FORM = "form";
-  private static final String SERVICE_GRID = "grid";
-  private static final String SERVICE_NEW = "new";
-  private static final String SERVICE_PARAMETERS = "parameters";
-
-  public MenuCommand() {
-    super();
-  }
-
-  public MenuCommand(String service) {
-    super(service);
-  }
-
-  public MenuCommand(String service, String parameters) {
-    super(service, parameters);
+  public MenuCommand(MenuService service, String parameters) {
+    this.service = service;
+    this.parameters = parameters;
   }
 
   @Override
   public void execute() {
-    String svc = getService();
-    String args = getParameters();
+    switch (service) {
+      case FORM:
+        FormFactory.openForm(parameters);
+        break;
 
-    if (!BeeUtils.isEmpty(args)) {
-      if (BeeUtils.same(svc, SERVICE_FORM)) {
-        FormFactory.openForm(args);
-        return;
-      }
+      case GRID:
+        GridFactory.openGrid(parameters);
+        break;
+      
+      case NEW:
+        RowFactory.createRow(parameters);
+        break;
+      
+      case PARAMETERS:
+        GridFactory.openGrid("Parameters", new ParametersGrid(parameters));
+        break;
 
-      if (BeeUtils.same(svc, SERVICE_GRID)) {
-        GridFactory.openGrid(args);
-        return;
-      }
-
-      if (BeeUtils.same(svc, SERVICE_NEW)) {
-        RowFactory.createRow(args);
-        return;
-      }
-
-      if (BeeUtils.same(svc, SERVICE_PARAMETERS)) {
-        GridFactory.openGrid("Parameters", new ParametersGrid(args));
-        return;
-      }
+      case REPORT:
+        Report.open(parameters);
+        break;
+        
+      default:
+        if (service.getHandler() == null) {
+          logger.warning("menu handler not available for", service);
+        } else {
+          service.getHandler().onSelection(parameters);
+        }
     }
-
-    if (!BeeUtils.isEmpty(svc)) {
-      MenuCallback callback = BeeKeeper.getMenu().getMenuCallback(svc);
-      if (callback != null) {
-        callback.onSelection(args);
-        return;
-      }
-    }
-
-    Global.showError(Lists.newArrayList("Menu service not recognized", svc, args));
   }
 }

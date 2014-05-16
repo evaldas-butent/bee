@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Table xmlns="http://www.butent.com/table"
+
+  name="DepartmentEmployees"
+  idName="DepartmentEmployeeID"
+  >
+  <Fields>
+    <Relation name="Department" notNull="true" relation="Departments" cascade="DELETE" label="=department" />
+    <Relation name="CompanyPerson" notNull="true" relation="CompanyPersons" cascade="DELETE" label="=companyPerson" />
+  </Fields>
+
+  <Constraints>
+    <Unique fields="Department CompanyPerson" />
+  </Constraints>
+</Table>

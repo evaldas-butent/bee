@@ -100,8 +100,8 @@ public class HeaderImpl extends Flow implements HeaderView {
   }
 
   private Presenter viewPresenter;
-  private final Label captionWidget = new Label();
 
+  private final Label captionWidget = new Label();
   private final Label messageWidget = new Label();
 
   private boolean enabled = true;
@@ -185,6 +185,10 @@ public class HeaderImpl extends Flow implements HeaderView {
       add(createImage(Global.getImages().silverSave(), Action.SAVE, hiddenActions));
     }
 
+    if (hasAction(Action.EXPORT, false, enabledActions, disabledActions)) {
+      add(createImage(Global.getImages().excel(), Action.EXPORT, hiddenActions));
+    }
+
     if (hasAction(Action.CONFIGURE, false, enabledActions, disabledActions)) {
       add(createImage(Global.getImages().silverConfigure(), Action.CONFIGURE, hiddenActions));
     }
@@ -256,6 +260,18 @@ public class HeaderImpl extends Flow implements HeaderView {
       return child.isVisible() && ((HasEnabled) child).isEnabled();
     } else {
       return false;
+    }
+  }
+  
+  @Override
+  public boolean isActionOrCommand(Element target) {
+    if (target == null) {
+      return false;
+    } else if (commandPanel.getElement().isOrHasChild(target)) {
+      return true;
+    } else {
+      return !BeeUtils.isEmpty(target.getId()) 
+          && getActionControls().values().contains(target.getId());
     }
   }
 

@@ -37,6 +37,7 @@ import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.css.CssUnit;
 import com.butent.bee.shared.css.values.TextAlign;
 import com.butent.bee.shared.css.values.VerticalAlign;
+import com.butent.bee.shared.ui.HasCaption;
 import com.butent.bee.shared.utils.BeeUtils;
 
 import java.util.ArrayList;
@@ -45,7 +46,7 @@ import java.util.List;
 import java.util.Map;
 
 public class HtmlTable extends Panel implements IdentifiableWidget, IsHtmlTable,
-    HasMouseMoveHandlers, HasMouseOutHandlers, HasMouseOverHandlers {
+    HasMouseMoveHandlers, HasMouseOutHandlers, HasMouseOverHandlers, HasCaption {
 
   public class CellFormatter {
 
@@ -54,7 +55,9 @@ public class HtmlTable extends Panel implements IdentifiableWidget, IsHtmlTable,
     }
 
     public void addStyleName(int row, int column, String styleName) {
-      ensureElement(row, column).addClassName(styleName);
+      if (!BeeUtils.isEmpty(styleName)) {
+        ensureElement(row, column).addClassName(styleName);
+      }
     }
 
     public Element ensureElement(int row, int column) {
@@ -84,7 +87,9 @@ public class HtmlTable extends Panel implements IdentifiableWidget, IsHtmlTable,
     }
 
     public void removeStyleName(int row, int column, String styleName) {
-      getElement(row, column).removeClassName(styleName);
+      if (!BeeUtils.isEmpty(styleName)) {
+        getElement(row, column).removeClassName(styleName);
+      }
     }
 
     public void setAlignment(int row, int column, TextAlign hAlign, VerticalAlign vAlign) {
@@ -158,7 +163,9 @@ public class HtmlTable extends Panel implements IdentifiableWidget, IsHtmlTable,
     }
 
     public void addStyleName(int column, String styleName) {
-      ensureColumn(column).addClassName(styleName);
+      if (!BeeUtils.isEmpty(styleName)) {
+        ensureColumn(column).addClassName(styleName);
+      }
     }
 
     public Element getElement(int column) {
@@ -170,7 +177,9 @@ public class HtmlTable extends Panel implements IdentifiableWidget, IsHtmlTable,
     }
 
     public void removeStyleName(int column, String styleName) {
-      ensureColumn(column).removeClassName(styleName);
+      if (!BeeUtils.isEmpty(styleName)) {
+        ensureColumn(column).removeClassName(styleName);
+      }
     }
 
     public void setStyleName(int column, String styleName) {
@@ -213,7 +222,14 @@ public class HtmlTable extends Panel implements IdentifiableWidget, IsHtmlTable,
     }
 
     public void addStyleName(int row, String styleName) {
-      ensureElement(row).addClassName(styleName);
+      if (!BeeUtils.isEmpty(styleName)) {
+        ensureElement(row).addClassName(styleName);
+      }
+    }
+
+    public Element ensureElement(int row) {
+      prepareRow(row);
+      return getElement(row);
     }
 
     public Element getElement(int row) {
@@ -230,7 +246,9 @@ public class HtmlTable extends Panel implements IdentifiableWidget, IsHtmlTable,
     }
 
     public void removeStyleName(int row, String styleName) {
-      getElement(row).removeClassName(styleName);
+      if (!BeeUtils.isEmpty(styleName)) {
+        getElement(row).removeClassName(styleName);
+      }
     }
 
     public void setStyleName(int row, String styleName) {
@@ -251,11 +269,6 @@ public class HtmlTable extends Panel implements IdentifiableWidget, IsHtmlTable,
 
     public void setVisible(int row, boolean visible) {
       UIObject.setVisible(getElement(row), visible);
-    }
-
-    protected Element ensureElement(int row) {
-      prepareRow(row);
-      return getElement(row);
     }
 
     private native Element getTr(Element elem, int row) /*-{
@@ -281,6 +294,8 @@ public class HtmlTable extends Panel implements IdentifiableWidget, IsHtmlTable,
 
   private final Map<Integer, String> columnCellClases = Maps.newHashMap();
   private final Map<Integer, String> columnCellStyles = Maps.newHashMap();
+
+  private String caption;
 
   public HtmlTable() {
     this.tableElem = Document.get().createTableElement();
@@ -347,6 +362,11 @@ public class HtmlTable extends Panel implements IdentifiableWidget, IsHtmlTable,
     }
   }
 
+  @Override
+  public String getCaption() {
+    return caption;
+  }
+
   public int getCellCount(int row) {
     checkRowBounds(row);
     return getDOMCellCount(bodyElem, row);
@@ -394,6 +414,11 @@ public class HtmlTable extends Panel implements IdentifiableWidget, IsHtmlTable,
     }
 
     return index;
+  }
+  
+  public Element getEventRowElement(GwtEvent<?> event, boolean incl) {
+    Integer row = getEventRow(event, incl);
+    return (row == null) ? null : getRow(row);
   }
 
   @Override
@@ -523,6 +548,10 @@ public class HtmlTable extends Panel implements IdentifiableWidget, IsHtmlTable,
     StyleUtils.setBorderSpacing(tableElem, spacing);
   }
 
+  public void setCaption(String caption) {
+    this.caption = caption;
+  }
+
   public void setColumnCellClasses(int column, String classes) {
     Assert.nonNegative(column);
     if (BeeUtils.isEmpty(classes)) {
@@ -577,9 +606,17 @@ public class HtmlTable extends Panel implements IdentifiableWidget, IsHtmlTable,
     }
   }
 
-  public void setText(int row, int column, String text, String cellStyleName) {
+  public void setText(int row, int column, String text, String... cellStyles) {
     setText(row, column, text);
-    getCellFormatter().addStyleName(row, column, cellStyleName);
+    if (cellStyles != null) {
+      for (String cellStyle : cellStyles) {
+        getCellFormatter().addStyleName(row, column, cellStyle);
+      }
+    }
+  }
+
+  public void setValue(int row, int column, int value, String... cellStyles) {
+    setText(row, column, Integer.toString(value), cellStyles);
   }
 
   public void setWidget(int row, int column, Widget widget) {

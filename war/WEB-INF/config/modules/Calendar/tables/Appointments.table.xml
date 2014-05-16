@@ -20,14 +20,14 @@
       label="=calAppointmentStatus" />
 
     <DateTime name="Created" defExpr="CURRENT_TIME" label="=registered" />
-    <Relation name="Creator" relation="Users" defExpr="CURRENT_USER" label="creator" />
+    <Relation name="Creator" relation="Users" defExpr="CURRENT_USER" label="=creator" />
 
     <DateTime name="StartDateTime" notNull="true" label="=calAppointmentStart" />
     <DateTime name="EndDateTime" notNull="true" label="=calAppointmentEnd" />
 
     <Enum name="Visibility" key="CalendarVisibility" label="=calVisibility" />
 
-    <Relation name="Company" relation="Companies" label="=client" />
+    <Relation name="Company" relation="Companies" label="=company" />
     <Relation name="Vehicle" relation="Vehicles" label="=calCar" />
   </Fields>
 </Table>

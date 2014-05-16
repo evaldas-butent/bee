@@ -219,6 +219,7 @@
       <xs:enumeration value="editAdd" />
       <xs:enumeration value="editDelete" />
       <xs:enumeration value="error" />
+      <xs:enumeration value="excel" />
       <xs:enumeration value="feed" />
       <xs:enumeration value="filterDelete" />
       <xs:enumeration value="first" />
@@ -248,7 +249,6 @@
       <xs:enumeration value="rewind" />
       <xs:enumeration value="save" />
       <xs:enumeration value="search" />
-      <xs:enumeration value="settings" />
       <xs:enumeration value="undo" />
       <xs:enumeration value="user" />
       <xs:enumeration value="warning" />
@@ -337,9 +337,11 @@
       <xs:enumeration value="copy" />
       <xs:enumeration value="delete" />
       <xs:enumeration value="edit" />
+      <xs:enumeration value="export" />
       <xs:enumeration value="filter" />
       <xs:enumeration value="print" />
       <xs:enumeration value="refresh" />
+      <xs:enumeration value="remove_filter" />
       <xs:enumeration value="save" />
     </xs:restriction>
   </xs:simpleType>
@@ -388,6 +390,7 @@
       <xs:enumeration value="photo" />
       <xs:enumeration value="mail" />
       <xs:enumeration value="url" />
+      <xs:enumeration value="total" />
     </xs:restriction>
   </xs:simpleType>
   
@@ -451,7 +454,7 @@
     <xs:attribute name="editEnabled" type="xs:boolean" />
     <xs:attribute name="editKey" type="xs:int" />
     <xs:attribute name="editSource" type="type:nameType" />
-    <xs:attribute name="editViewName" type="type:nameType" />
+    <xs:attribute name="editViewName" type="type:dataView" />
   </xs:attributeGroup>
   
   <xs:simpleType name="refreshType">

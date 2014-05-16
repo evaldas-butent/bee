@@ -6,17 +6,19 @@ import com.google.common.collect.Sets;
 
 import com.butent.bee.server.data.BeeView;
 import com.butent.bee.server.data.SystemBean;
+import com.butent.bee.server.data.UserServiceBean;
 import com.butent.bee.server.utils.XmlUtils;
 import com.butent.bee.shared.Assert;
+import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.HasBounds;
 import com.butent.bee.shared.HasItems;
 import com.butent.bee.shared.HasOptions;
+import com.butent.bee.shared.data.ProviderType;
 import com.butent.bee.shared.data.filter.FilterComponent;
 import com.butent.bee.shared.data.filter.FilterDescription;
 import com.butent.bee.shared.data.value.ValueType;
 import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogUtils;
-import com.butent.bee.shared.rights.Module;
 import com.butent.bee.shared.ui.Action;
 import com.butent.bee.shared.ui.Calculation;
 import com.butent.bee.shared.ui.CellType;
@@ -42,7 +44,6 @@ import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.EnumUtils;
 import com.butent.bee.shared.utils.NameUtils;
 
-import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
 import java.util.List;
@@ -99,7 +100,7 @@ public class GridLoaderBean {
 
   private static final String ATTR_CACHE_DATA = "cacheData";
 
-  private static final String ATTR_ASYNC_THRESHOLD = "asyncThreshold";
+  private static final String ATTR_DATA_PROVIDER = "dataProvider";
   private static final String ATTR_INITIAL_ROW_SET_SIZE = "initialRowSetSize";
 
   private static final String ATTR_ENABLED_ACTIONS = "enabledActions";
@@ -152,152 +153,9 @@ public class GridLoaderBean {
 
   private static final String ATTR_DYNAMIC = "dynamic";
 
-  @EJB
-  SystemBean sys;
-
-  public GridDescription getDefaultGrid(BeeView view) {
-    Assert.notNull(view);
-    String name = view.getName();
-
-    GridDescription gridDescription = new GridDescription(name, name, view.getSourceIdName(),
-        view.getSourceVersionName());
-    gridDescription.setDefaults();
-    if (view.isReadOnly()) {
-      gridDescription.setReadOnly(true);
-    }
-
-    gridDescription.addColumn(new ColumnDescription(ColType.ID, view.getSourceIdName()));
-
-    ColumnDescription columnDescription;
-    for (String colName : view.getColumnNames()) {
-      int level = view.getColumnLevel(colName);
-      boolean readOnly = view.isColReadOnly(colName);
-
-      ColType colType = (level <= 0 || readOnly) ? ColType.DATA : ColType.RELATED;
-      columnDescription = new ColumnDescription(colType, colName);
-      columnDescription.setSource(colName);
-
-      if (readOnly) {
-        columnDescription.setReadOnly(true);
-      } else if (ColType.RELATED.equals(colType)) {
-        columnDescription.setRelation(Relation.create());
-      }
-
-      gridDescription.addColumn(columnDescription);
-    }
-
-    gridDescription.addColumn(new ColumnDescription(ColType.VERSION, view.getSourceVersionName()));
-
-    for (ColumnDescription cd : gridDescription.getColumns()) {
-      cd.setSortable(true);
-    }
-    return gridDescription;
-  }
-
-  public GridDescription loadGrid(String resource, String schema) {
-    Document doc = XmlUtils.getXmlResource(resource, schema);
-    if (doc == null) {
-      return null;
-    }
-
-    Element gridElement = doc.getDocumentElement();
-    if (gridElement == null) {
-      return null;
-    }
-    if (!BeeUtils.same(XmlUtils.getLocalName(gridElement), TAG_GRID)) {
-      logger.warning("unrecognized grid element tag name", gridElement.getTagName());
-      return null;
-    }
-
-    String gridName = gridElement.getAttribute(UiConstants.ATTR_NAME);
-    String viewName = gridElement.getAttribute(UiConstants.ATTR_VIEW_NAME);
-
-    if (BeeUtils.isEmpty(gridName)) {
-      logger.warning("Grid attribute", UiConstants.ATTR_NAME, "not found");
-      return null;
-    }
-
-    BeeView view;
-    GridDescription grid;
-
-    if (BeeUtils.isEmpty(viewName)) {
-      view = null;
-      grid = new GridDescription(gridName);
-    } else {
-      if (!sys.isView(viewName)) {
-        logger.warning("Grid", gridName, "unrecognized view name:", viewName);
-        return null;
-      }
-
-      view = sys.getView(viewName);
-      grid = new GridDescription(gridName, viewName, view.getSourceIdName(),
-          view.getSourceVersionName());
-    }
-    xmlToGrid(gridElement, grid, view);
-
-    List<Element> columnGroups = XmlUtils.getElementsByLocalName(gridElement, TAG_COLUMNS);
-    if (columnGroups.isEmpty()) {
-      logger.warning("Grid", gridName, "tag", TAG_COLUMNS, "not found");
-      return null;
-    }
-
-    List<Element> columns = Lists.newArrayList();
-    for (int i = 0; i < columnGroups.size(); i++) {
-      columns.addAll(XmlUtils.getChildrenElements(columnGroups.get(i)));
-    }
-    if (columns.isEmpty()) {
-      logger.warning("Grid", gridName, "has no columns");
-      return null;
-    }
-
-    for (int i = 0; i < columns.size(); i++) {
-      Element columnElement = columns.get(i);
-
-      String colTag = XmlUtils.getLocalName(columnElement);
-      ColType colType = ColType.getColType(colTag);
-      String colName = columnElement.getAttribute(UiConstants.ATTR_NAME);
-
-      if (colType == null) {
-        logger.warning("Grid", gridName, "column", i, colName,
-            "type", colTag, "not recognized");
-        continue;
-      }
-      if (BeeUtils.isEmpty(colName)) {
-        logger.warning("Grid", gridName, "column", i, colTag, "name not specified");
-        continue;
-      }
-      if (grid.hasColumn(colName)) {
-        logger.warning("Grid", gridName, "column", i, colTag, "duplicate column name:", colName);
-        continue;
-      }
-
-      ColumnDescription column = new ColumnDescription(colType, colName);
-      xmlToColumn(columnElement, column);
-
-      if (ColType.RELATED.equals(colType)) {
-        column.setRelation(getRelation(columnElement));
-
-      } else if (ColType.AUTO.equals(colType)) {
-        Relation relation = Relation.create(columnElement.getAttribute(UiConstants.ATTR_VIEW_NAME),
-            Lists.newArrayList(columnElement.getAttribute("viewColumn")));
-
-        relation.setAttributes(XmlUtils.getAttributes(columnElement));
-
-        column.setRelation(relation);
-      }
-
-      if (initColumn(view, column)) {
-        grid.addColumn(column);
-      }
-    }
-
-    if (grid.isEmpty()) {
-      logger.warning("Grid", gridName, "has no columns");
-      return null;
-    }
-    return grid;
-  }
-
+  private static final String ATTR_EXPORTABLE = "exportable";
+  private static final String ATTR_EXPORT_WIDTH_FACTOR = "exportWidthFactor";
+  
   private static GridComponentDescription getComponent(Element parent, String tagName) {
     Assert.notNull(parent);
     Assert.notEmpty(tagName);
@@ -392,18 +250,6 @@ public class GridLoaderBean {
         rowRender, rowRenderTokens);
   }
 
-  private static RendererDescription getRenderer(Element parent, String tagName,
-      EditorDescription editor) {
-    Assert.notNull(parent);
-
-    Element element = XmlUtils.getFirstChildElement(parent, tagName);
-    if (element == null) {
-      return null;
-    } else {
-      return getRenderer(element, editor);
-    }
-  }
-
   private static RendererDescription getRenderer(Element element, EditorDescription editor) {
     if (element == null) {
       return null;
@@ -444,6 +290,18 @@ public class GridLoaderBean {
     return renderer;
   }
 
+  private static RendererDescription getRenderer(Element parent, String tagName,
+      EditorDescription editor) {
+    Assert.notNull(parent);
+
+    Element element = XmlUtils.getFirstChildElement(parent, tagName);
+    if (element == null) {
+      return null;
+    } else {
+      return getRenderer(element, editor);
+    }
+  }
+
   private static List<RenderableToken> getRenderTokens(Element parent, String tagName) {
     if (parent == null) {
       return null;
@@ -461,66 +319,6 @@ public class GridLoaderBean {
       }
     }
     return result;
-  }
-
-  private static boolean initColumn(BeeView view, ColumnDescription columnDescription) {
-    Assert.notNull(columnDescription);
-
-    ColType colType = columnDescription.getColType();
-    String source = columnDescription.getSource();
-
-    if (!colType.isReadOnly() && BeeUtils.isEmpty(source)) {
-      source = columnDescription.getId();
-      columnDescription.setSource(source);
-    }
-
-    if (view == null) {
-      return true;
-    }
-
-    boolean ok = false;
-    String viewName = view.getName();
-
-    switch (colType) {
-      case ID:
-        columnDescription.setSource(view.getSourceIdName());
-        ok = true;
-        break;
-
-      case VERSION:
-        columnDescription.setSource(view.getSourceVersionName());
-        ok = true;
-        break;
-
-      case DATA:
-      case RELATED:
-      case AUTO:
-        if (view.hasColumn(source)) {
-          if (view.isColReadOnly(source)
-              || colType.equals(ColType.DATA) && view.getColumnLevel(source) > 0) {
-            columnDescription.setReadOnly(true);
-          }
-          ok = true;
-        } else {
-          logger.warning(viewName, "unrecognized view column:", source);
-        }
-        break;
-
-      case CALCULATED:
-      case SELECTION:
-      case PROPERTY:
-        ok = true;
-        break;
-
-      case ACTION:
-        if (BeeUtils.isEmpty(source) && view.hasColumn(columnDescription.getId())) {
-          columnDescription.setSource(columnDescription.getId());
-        }
-        ok = true;
-        break;
-    }
-
-    return ok;
   }
 
   private static void xmlToColumn(Element src, ColumnDescription dst) {
@@ -561,8 +359,6 @@ public class GridLoaderBean {
 
         } else if (BeeUtils.same(key, UiConstants.ATTR_VISIBLE)) {
           dst.setVisible(BeeUtils.toBooleanOrNull(value));
-        } else if (BeeUtils.same(key, UiConstants.ATTR_MODULE)) {
-          dst.setModule(EnumUtils.getEnumByName(Module.class, value));
 
         } else if (BeeUtils.same(key, UiConstants.ATTR_FORMAT)) {
           dst.setFormat(value.trim());
@@ -623,6 +419,11 @@ public class GridLoaderBean {
         } else if (BeeUtils.same(key, ATTR_DYNAMIC)) {
           dst.setDynamic(BeeUtils.toBooleanOrNull(value));
 
+        } else if (BeeUtils.same(key, ATTR_EXPORTABLE)) {
+          dst.setExportable(BeeUtils.toBooleanOrNull(value));
+        } else if (BeeUtils.same(key, ATTR_EXPORT_WIDTH_FACTOR)) {
+          dst.setExportWidthFactor(BeeUtils.toDoubleOrNull(value));
+          
         } else if (Flexibility.isAttributeRelevant(key)) {
           hasFlexibility = true;
         }
@@ -701,7 +502,212 @@ public class GridLoaderBean {
     }
   }
 
-  private static void xmlToGrid(Element src, GridDescription dst, BeeView view) {
+  @EJB
+  SystemBean sys;
+
+  @EJB
+  UiHolderBean ui;
+  @EJB
+  UserServiceBean usr;
+
+  public GridDescription getGridDescription(Element gridElement) {
+    if (gridElement == null) {
+      logger.severe("grid element is null");
+      return null;
+    }
+    if (!BeeUtils.same(XmlUtils.getLocalName(gridElement), TAG_GRID)) {
+      logger.warning("unrecognized grid element tag name", gridElement.getTagName());
+      return null;
+    }
+
+    String gridName = gridElement.getAttribute(UiConstants.ATTR_NAME);
+    String viewName = gridElement.getAttribute(UiConstants.ATTR_VIEW_NAME);
+
+    if (BeeUtils.isEmpty(gridName)) {
+      logger.severe("grid attribute", UiConstants.ATTR_NAME, "not found");
+      return null;
+    }
+
+    BeeView view;
+    GridDescription grid;
+
+    if (BeeUtils.isEmpty(viewName)) {
+      view = null;
+      grid = new GridDescription(gridName);
+    } else {
+      if (!sys.isView(viewName)) {
+        logger.warning("grid", gridName, "unrecognized view name:", viewName);
+        return null;
+      }
+
+      view = sys.getView(viewName);
+      grid = new GridDescription(gridName, viewName, view.getSourceIdName(),
+          view.getSourceVersionName());
+    }
+
+    xmlToGrid(gridElement, grid, view);
+
+    List<Element> columnGroups = XmlUtils.getElementsByLocalName(gridElement, TAG_COLUMNS);
+    if (columnGroups.isEmpty()) {
+      logger.warning("grid", gridName, "tag", TAG_COLUMNS, "not found");
+      return null;
+    }
+
+    List<Element> columns = Lists.newArrayList();
+    for (int i = 0; i < columnGroups.size(); i++) {
+      columns.addAll(XmlUtils.getChildrenElements(columnGroups.get(i)));
+    }
+    if (columns.isEmpty()) {
+      logger.warning("grid", gridName, "has no columns");
+      return null;
+    }
+
+    for (int i = 0; i < columns.size(); i++) {
+      Element columnElement = columns.get(i);
+
+      String colTag = XmlUtils.getLocalName(columnElement);
+      ColType colType = ColType.getColType(colTag);
+      String colName = columnElement.getAttribute(UiConstants.ATTR_NAME);
+
+      if (colType == null) {
+        logger.warning("grid", gridName, "column", i, colName,
+            "type", colTag, "not recognized");
+
+      } else if (BeeUtils.isEmpty(colName)) {
+        logger.warning("grid", gridName, "column", i, colTag, "name not specified");
+
+      } else if (grid.hasColumn(colName)) {
+        logger.warning("grid", gridName, "column", i, colTag, "duplicate column name:", colName);
+
+      } else if (isColumnVisible(viewName, colType, colName, columnElement)) {
+        ColumnDescription column = new ColumnDescription(colType, colName);
+        xmlToColumn(columnElement, column);
+
+        if (ColType.RELATED.equals(colType)) {
+          column.setRelation(getRelation(columnElement));
+
+        } else if (ColType.AUTO.equals(colType)) {
+          Relation relation =
+              Relation.create(columnElement.getAttribute(UiConstants.ATTR_VIEW_NAME),
+                  Lists.newArrayList(columnElement.getAttribute("viewColumn")));
+
+          relation.setAttributes(XmlUtils.getAttributes(columnElement));
+
+          column.setRelation(relation);
+        }
+
+        if (initColumn(view, column)) {
+          grid.addColumn(column);
+        }
+      }
+    }
+
+    if (grid.isEmpty()) {
+      logger.warning("grid", gridName, "has no columns");
+      return null;
+    }
+    return grid;
+  }
+
+  private boolean initColumn(BeeView view, ColumnDescription columnDescription) {
+    Assert.notNull(columnDescription);
+
+    ColType colType = columnDescription.getColType();
+    String source = columnDescription.getSource();
+
+    if (!colType.isReadOnly() && BeeUtils.isEmpty(source)) {
+      source = columnDescription.getId();
+      columnDescription.setSource(source);
+    }
+
+    if (view == null) {
+      return true;
+    }
+
+    boolean ok = false;
+    String viewName = view.getName();
+
+    switch (colType) {
+      case ID:
+        columnDescription.setSource(view.getSourceIdName());
+        ok = true;
+        break;
+
+      case VERSION:
+        columnDescription.setSource(view.getSourceVersionName());
+        ok = true;
+        break;
+
+      case DATA:
+      case RELATED:
+      case AUTO:
+        if (view.hasColumn(source)) {
+          if (view.isColReadOnly(source)
+              || colType.equals(ColType.DATA) && view.getColumnLevel(source) > 0
+              || !usr.canEditColumn(viewName, source)) {
+            columnDescription.setReadOnly(true);
+          }
+          ok = true;
+        } else {
+          logger.warning(viewName, "unrecognized view column:", source);
+        }
+        break;
+
+      case CALCULATED:
+      case SELECTION:
+      case PROPERTY:
+        ok = true;
+        break;
+
+      case ACTION:
+        if (BeeUtils.isEmpty(source) && view.hasColumn(columnDescription.getId())) {
+          columnDescription.setSource(columnDescription.getId());
+        }
+        ok = true;
+        break;
+    }
+
+    return ok;
+  }
+
+  private boolean isColumnVisible(String viewName, ColType colType, String colName,
+      Element element) {
+
+    if (element.hasAttribute(UiConstants.ATTR_VISIBLE)
+        && BeeConst.isTrue(element.getAttribute(UiConstants.ATTR_VISIBLE))) {
+      return true;
+    }
+
+    if (element.hasAttribute(UiConstants.ATTR_MODULE)
+        && !usr.isModuleVisible(element.getAttribute(UiConstants.ATTR_MODULE))) {
+      return false;
+    }
+
+    if (!BeeUtils.isEmpty(viewName)) {
+      String source = element.getAttribute(UiConstants.ATTR_SOURCE);
+
+      if (BeeUtils.isEmpty(source)) {
+        switch (colType) {
+          case ACTION:
+          case AUTO:
+          case CALCULATED:
+          case DATA:
+          case RELATED:
+            source = colName;
+            break;
+          default:
+        }
+      }
+
+      if (!BeeUtils.isEmpty(source) && !usr.isColumnVisible(viewName, source)) {
+        return false;
+      }
+    }
+
+    return true;
+  }
+
+  private void xmlToGrid(Element src, GridDescription dst, BeeView view) {
     Assert.notNull(src);
     Assert.notNull(dst);
 
@@ -718,7 +724,7 @@ public class GridLoaderBean {
     if (view != null) {
       String filter = src.getAttribute(UiConstants.ATTR_FILTER);
       if (!BeeUtils.isEmpty(filter)) {
-        dst.setFilter(view.parseFilter(filter.trim()));
+        dst.setFilter(view.parseFilter(filter.trim(), usr.getCurrentUserId()));
       }
 
       String currentUserFilter = src.getAttribute(UiConstants.ATTR_CURRENT_USER_FILTER);
@@ -783,9 +789,9 @@ public class GridLoaderBean {
       dst.setCacheDescription(cacheDescription);
     }
 
-    Integer asyncThreshold = XmlUtils.getAttributeInteger(src, ATTR_ASYNC_THRESHOLD);
-    if (asyncThreshold != null) {
-      dst.setAsyncThreshold(asyncThreshold);
+    String dataProvider = src.getAttribute(ATTR_DATA_PROVIDER);
+    if (!BeeUtils.isEmpty(dataProvider)) {
+      dst.setDataProvider(EnumUtils.getEnumByName(ProviderType.class, dataProvider));
     }
     Integer initialRowSetSize = XmlUtils.getAttributeInteger(src, ATTR_INITIAL_ROW_SET_SIZE);
     if (initialRowSetSize != null) {
@@ -912,10 +918,17 @@ public class GridLoaderBean {
     List<Element> widgetElements = XmlUtils.getChildrenElements(src, WIDGET_TAGS);
     if (!widgetElements.isEmpty()) {
       List<String> widgets = Lists.newArrayList();
+
       for (Element widgetElement : widgetElements) {
-        widgets.add(XmlUtils.toString(widgetElement, false));
+        ui.checkWidgetChildrenVisibility(widgetElement);
+        if (XmlUtils.hasChildElements(widgetElement)) {
+          widgets.add(XmlUtils.toString(widgetElement, false));
+        }
       }
-      dst.setWidgets(widgets);
+
+      if (!widgets.isEmpty()) {
+        dst.setWidgets(widgets);
+      }
     }
 
     GridComponentDescription header = getComponent(src, TAG_HEADER);

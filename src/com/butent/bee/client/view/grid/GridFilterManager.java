@@ -102,8 +102,32 @@ public class GridFilterManager {
     return Filter.and(filters);
   }
 
+  private static Collection<FilterComponent> asComponents(Map<String, FilterValue> values) {
+    List<FilterComponent> components = Lists.newArrayList();
+
+    if (!BeeUtils.isEmpty(values)) {
+      for (Entry<String, FilterValue> entry : values.entrySet()) {
+        components.add(new FilterComponent(entry.getKey(), entry.getValue()));
+      }
+    }
+
+    return components;
+  }
+  private static Map<String, FilterValue> asValues(Collection<FilterComponent> components) {
+    Map<String, FilterValue> values = Maps.newHashMap();
+
+    if (!BeeUtils.isEmpty(components)) {
+      for (FilterComponent component : components) {
+        values.put(component.getName(), component.getFilterValue());
+      }
+    }
+    
+    return values;
+  }
   private final String gridKey;
+
   private final CellGrid grid;
+
   private final FilterConsumer filterConsumer;
 
   private final Map<String, FilterValue> valuesByColumn = Maps.newHashMap();
@@ -130,6 +154,34 @@ public class GridFilterManager {
     }
   }
 
+  public String getFilterLabel(boolean refresh) {
+    if (refresh) {
+      retainValues();
+    }
+    if (valuesByColumn.isEmpty()) {
+      return null;
+    }
+
+    List<String> labels = Lists.newArrayList();
+
+    List<ColumnInfo> columns = grid.getPredefinedColumns();
+    for (ColumnInfo columnInfo : columns) {
+      if (columnInfo.getFilterSupplier() != null
+          && valuesByColumn.containsKey(columnInfo.getColumnId())) {
+        String label = columnInfo.getFilterSupplier().getComponentLabel(columnInfo.getLabel());
+        if (!BeeUtils.isEmpty(label)) {
+          labels.add(label);
+        }
+      }
+    }
+
+    if (labels.isEmpty()) {
+      return null;
+    } else {
+      return BeeUtils.join(BeeConst.DEFAULT_LIST_SEPARATOR, labels);
+    }
+  }
+
   public void handleFilter(Filter queryFilter, Element target) {
     externalFilter = queryFilter;
     retainValues();
@@ -151,30 +203,6 @@ public class GridFilterManager {
     } else {
       updateFilterValues(asValues(components), true);
     }
-  }
-
-  private static Collection<FilterComponent> asComponents(Map<String, FilterValue> values) {
-    List<FilterComponent> components = Lists.newArrayList();
-
-    if (!BeeUtils.isEmpty(values)) {
-      for (Entry<String, FilterValue> entry : values.entrySet()) {
-        components.add(new FilterComponent(entry.getKey(), entry.getValue()));
-      }
-    }
-
-    return components;
-  }
-
-  private static Map<String, FilterValue> asValues(Collection<FilterComponent> components) {
-    Map<String, FilterValue> values = Maps.newHashMap();
-
-    if (!BeeUtils.isEmpty(components)) {
-      for (FilterComponent component : components) {
-        values.put(component.getName(), component.getFilterValue());
-      }
-    }
-    
-    return values;
   }
 
   private void buildContentPanel() {
@@ -247,7 +275,7 @@ public class GridFilterManager {
     ClickHandler clickHandler = new ClickHandler() {
       @Override
       public void onClick(ClickEvent event) {
-        String label = getFilterLabel();
+        String label = getFilterLabel(false);
 
         if (BeeUtils.isEmpty(label)) {
           logger.severe("filter has no label:", valuesByColumn);
@@ -376,27 +404,6 @@ public class GridFilterManager {
       }
     }
     return Filter.and(filters);
-  }
-
-  private String getFilterLabel() {
-    List<String> labels = Lists.newArrayList();
-
-    List<ColumnInfo> columns = grid.getPredefinedColumns();
-    for (ColumnInfo columnInfo : columns) {
-      if (columnInfo.getFilterSupplier() != null
-          && valuesByColumn.containsKey(columnInfo.getColumnId())) {
-        String label = columnInfo.getFilterSupplier().getComponentLabel(columnInfo.getLabel());
-        if (!BeeUtils.isEmpty(label)) {
-          labels.add(label);
-        }
-      }
-    }
-
-    if (labels.isEmpty()) {
-      return null;
-    } else {
-      return BeeUtils.join(BeeConst.DEFAULT_LIST_SEPARATOR, labels);
-    }
   }
 
   private Map<String, FilterValue> getFilterValues() {

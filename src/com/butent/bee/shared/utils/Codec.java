@@ -13,6 +13,7 @@ import com.butent.bee.shared.data.value.BooleanValue;
 import java.io.UnsupportedEncodingException;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Enumeration;
 import java.util.List;
@@ -22,6 +23,7 @@ import java.util.Map;
  * Contains methods for encypting/decrypting data using various algorithms.
  */
 public final class Codec {
+
   private static final String SERIALIZATION_COLLECTION = "c";
   private static final char[] HEX_CHARS = new char[] {
       '0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'a', 'b', 'c', 'd', 'e', 'f'};
@@ -115,6 +117,16 @@ public final class Codec {
       0xb40bbe37, 0xc30c8ea1, 0x5a05df1b, 0x2d02ef8d};
 
   private static final int ADLER32_BASE = 65521;
+
+  private static final byte[] RFC5987_ALLOWED = {
+      '!', '#', '$', '&', '+', '-', '.',
+      '0', '1', '2', '3', '4', '5', '6', '7', '8', '9',
+      'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M',
+      'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z',
+      '^', '_', '`',
+      'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm',
+      'n', 'o', 'p', 'q', 'r', 's', 't', 'u', 'v', 'w', 'x', 'y', 'z',
+      '|', '~'};
 
   static {
     MessageDigest md;
@@ -654,6 +666,33 @@ public final class Codec {
     return (value == null) ? null : BeeUtils.toString(value.ordinal());
   }
 
+  public static String rfc5987(String input) {
+    Assert.notEmpty(input);
+    byte[] bytes = null;
+
+    try {
+      bytes = input.getBytes(BeeConst.CHARSET_UTF8);
+    } catch (UnsupportedEncodingException e) {
+      Assert.unsupported(e.getMessage());
+    }
+
+    StringBuilder sb = new StringBuilder();
+    sb.append(BeeConst.CHARSET_UTF8);
+    sb.append("''");
+
+    for (byte b : bytes) {
+      if (Arrays.binarySearch(RFC5987_ALLOWED, b) >= 0) {
+        sb.append((char) b);
+      } else {
+        sb.append('%');
+        sb.append(HEX_CHARS[(b >> 4) & 0xf]);
+        sb.append(HEX_CHARS[b & 0xf]);
+      }
+    }
+
+    return sb.toString();
+  }
+
   /**
    * Serializes the input length {@code len}.
    * 
@@ -806,8 +845,8 @@ public final class Codec {
     int j = 0;
 
     for (int i = 0; i < bytes.length; i++) {
-      arr[j++] = HEX_CHARS[(bytes[i] & 0xF0) >> 4];
-      arr[j++] = HEX_CHARS[bytes[i] & 0x0F];
+      arr[j++] = HEX_CHARS[(bytes[i] & 0xf0) >> 4];
+      arr[j++] = HEX_CHARS[bytes[i] & 0x0f];
     }
     return new String(arr);
   }

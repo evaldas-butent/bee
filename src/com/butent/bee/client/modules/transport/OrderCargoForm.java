@@ -5,10 +5,8 @@ import com.google.gwt.event.logical.shared.ValueChangeEvent;
 import com.google.gwt.event.logical.shared.ValueChangeHandler;
 import com.google.gwt.user.client.ui.Widget;
 
-import static com.butent.bee.server.modules.commons.ExchangeUtils.COL_CURRENCY;
-import static com.butent.bee.shared.modules.trade.TradeConstants.COL_TRADE_VAT;
-import static com.butent.bee.shared.modules.trade.TradeConstants.COL_TRADE_VAT_PERC;
-import static com.butent.bee.shared.modules.trade.TradeConstants.COL_TRADE_VAT_PLUS;
+import static com.butent.bee.shared.modules.administration.AdministrationConstants.*;
+import static com.butent.bee.shared.modules.trade.TradeConstants.*;
 import static com.butent.bee.shared.modules.transport.TransportConstants.*;
 
 import com.butent.bee.client.BeeKeeper;
@@ -18,16 +16,15 @@ import com.butent.bee.client.composite.DataSelector;
 import com.butent.bee.client.data.Data;
 import com.butent.bee.client.grid.ChildGrid;
 import com.butent.bee.client.modules.transport.TransportHandler.Profit;
-import com.butent.bee.client.ui.AbstractFormInterceptor;
-import com.butent.bee.client.ui.FormFactory.FormInterceptor;
 import com.butent.bee.client.ui.FormFactory.WidgetDescriptionCallback;
 import com.butent.bee.client.ui.IdentifiableWidget;
 import com.butent.bee.client.view.HeaderView;
 import com.butent.bee.client.view.edit.EditStopEvent;
 import com.butent.bee.client.view.form.FormView;
+import com.butent.bee.client.view.form.interceptor.AbstractFormInterceptor;
+import com.butent.bee.client.view.form.interceptor.FormInterceptor;
 import com.butent.bee.client.view.grid.interceptor.AbstractGridInterceptor;
 import com.butent.bee.client.widget.InputBoolean;
-import com.butent.bee.server.modules.commons.ExchangeUtils;
 import com.butent.bee.shared.communication.ResponseObject;
 import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.IsColumn;
@@ -41,7 +38,7 @@ class OrderCargoForm extends AbstractFormInterceptor {
   public void afterCreateWidget(String name, IdentifiableWidget widget,
       WidgetDescriptionCallback callback) {
 
-    if (BeeUtils.same(name, ExchangeUtils.COL_CURRENCY) && widget instanceof DataSelector) {
+    if (BeeUtils.same(name, COL_CURRENCY) && widget instanceof DataSelector) {
       final DataSelector selector = (DataSelector) widget;
 
       selector.addEditStopHandler(new EditStopEvent.Handler() {
@@ -58,24 +55,24 @@ class OrderCargoForm extends AbstractFormInterceptor {
       ((ChildGrid) widget).setGridInterceptor(new AbstractGridInterceptor() {
         @Override
         public void afterDeleteRow(long rowId) {
-          refresh(Data.getLong(viewName, getActiveRow(), ExchangeUtils.COL_CURRENCY));
+          refresh(Data.getLong(viewName, getActiveRow(), COL_CURRENCY));
         }
 
         @Override
         public void afterInsertRow(IsRow result) {
-          refresh(Data.getLong(viewName, getActiveRow(), ExchangeUtils.COL_CURRENCY));
+          refresh(Data.getLong(viewName, getActiveRow(), COL_CURRENCY));
         }
 
         @Override
         public void afterUpdateCell(IsColumn column, IsRow result, boolean rowMode) {
           if (BeeUtils.inListSame(column.getId(), COL_DATE, COL_AMOUNT, COL_CURRENCY,
               COL_TRADE_VAT_PLUS, COL_TRADE_VAT, COL_TRADE_VAT_PERC)) {
-            refresh(Data.getLong(viewName, getActiveRow(), ExchangeUtils.COL_CURRENCY));
+            refresh(Data.getLong(viewName, getActiveRow(), COL_CURRENCY));
           }
         }
       });
     } else if (widget instanceof InputBoolean
-        && (BeeUtils.same(name, "Partial") || (BeeUtils.same(name, "Outsized")))) {
+        && (BeeUtils.inListSame(name, "Partial", "Outsized"))) {
       ((InputBoolean) widget).addValueChangeHandler(new ValueChangeHandler<String>() {
         @Override
         public void onValueChange(ValueChangeEvent<String> event) {
@@ -87,7 +84,7 @@ class OrderCargoForm extends AbstractFormInterceptor {
 
   @Override
   public void afterRefresh(FormView form, IsRow row) {
-    refresh(row.getLong(form.getDataIndex(ExchangeUtils.COL_CURRENCY)));
+    refresh(row.getLong(form.getDataIndex(COL_CURRENCY)));
     refreshMetrics(BeeUtils.unbox(row.getBoolean(form.getDataIndex("Partial")))
         || BeeUtils.unbox(row.getBoolean(form.getDataIndex("Outsized"))));
   }
@@ -117,10 +114,10 @@ class OrderCargoForm extends AbstractFormInterceptor {
 
   private static int getCheckCount(FormView form) {
     int checkBoxObserved = 0;
-    
+
     InputBoolean ib1 = (InputBoolean) form.getWidgetByName("Partial");
     InputBoolean ib2 = (InputBoolean) form.getWidgetByName("Outsized");
-    
+
     if (ib1 != null) {
       if (BeeUtils.unbox(BeeUtils.toBooleanOrNull(ib1.getValue()))) {
         checkBoxObserved = checkBoxObserved + 1;
@@ -150,7 +147,7 @@ class OrderCargoForm extends AbstractFormInterceptor {
       args.addDataItem(COL_CARGO, getActiveRow().getId());
 
       if (DataUtils.isId(currency)) {
-        args.addDataItem(ExchangeUtils.COL_CURRENCY, currency);
+        args.addDataItem(COL_CURRENCY, currency);
       }
       BeeKeeper.getRpc().makePostRequest(args, new ResponseCallback() {
         @Override

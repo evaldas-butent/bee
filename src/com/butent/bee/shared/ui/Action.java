@@ -24,6 +24,7 @@ public enum Action implements BeeSerializable, HasCaption {
   COPY(Localized.getConstants().actionCopy(), "copy"),
   DELETE(Localized.getConstants().actionDelete(), "delete"),
   EDIT(Localized.getConstants().actionEdit(), "edit"),
+  EXPORT(Localized.getConstants().actionExport(), "export"),
   FILTER(Localized.getConstants().actionFilter(), "filter"),
   PRINT(Localized.getConstants().actionPrint(), "print"),
   REFRESH(Localized.getConstants().actionRefresh(), "refresh"),

@@ -5,7 +5,7 @@ import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 
 import com.butent.bee.server.Config;
-import com.butent.bee.server.data.BeeTable;
+import com.butent.bee.server.Invocation;
 import com.butent.bee.server.data.SystemBean;
 import com.butent.bee.server.http.RequestInfo;
 import com.butent.bee.shared.Assert;
@@ -15,7 +15,7 @@ import com.butent.bee.shared.data.SearchResult;
 import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogUtils;
 import com.butent.bee.shared.modules.BeeParameter;
-import com.butent.bee.shared.modules.commons.CommonsConstants;
+import com.butent.bee.shared.modules.administration.AdministrationConstants;
 import com.butent.bee.shared.rights.Module;
 import com.butent.bee.shared.utils.ArrayUtils;
 import com.butent.bee.shared.utils.BeeUtils;
@@ -30,8 +30,6 @@ import javax.ejb.EJB;
 import javax.ejb.Lock;
 import javax.ejb.LockType;
 import javax.ejb.Singleton;
-import javax.naming.InitialContext;
-import javax.naming.NamingException;
 
 @Singleton
 @Lock(LockType.READ)
@@ -54,7 +52,7 @@ public class ModuleHolderBean {
     Assert.notNull(reqInfo);
 
     return getModule(reqInfo.getService())
-        .doService(reqInfo.getParameter(CommonsConstants.METHOD), reqInfo);
+        .doService(reqInfo.getParameter(AdministrationConstants.METHOD), reqInfo);
   }
 
   public List<SearchResult> doSearch(String query) {
@@ -98,22 +96,17 @@ public class ModuleHolderBean {
     TABLE_ACTIVATION_MODE mode = EnumUtils.getEnumByName(TABLE_ACTIVATION_MODE.class,
         Config.getProperty("TableActivationMode"));
 
-    for (String mod : getModules()) {
-      prm.refreshModuleParameters(mod);
-
-      if (mode != TABLE_ACTIVATION_MODE.DELAYED) {
-        for (String tblName : sys.getTableNames()) {
-          BeeTable table = sys.getTable(tblName);
-
-          if (BeeUtils.same(table.getModule(), mod)) {
-            if (mode == TABLE_ACTIVATION_MODE.FORCED) {
-              sys.rebuildTable(tblName);
-            } else {
-              sys.activateTable(tblName);
-            }
-          }
+    if (mode != TABLE_ACTIVATION_MODE.DELAYED) {
+      for (String tblName : sys.getTableNames()) {
+        if (mode == TABLE_ACTIVATION_MODE.FORCED) {
+          sys.rebuildTable(tblName);
+        } else {
+          sys.activateTable(tblName);
         }
       }
+    }
+    for (String mod : getModules()) {
+      prm.refreshModuleParameters(mod);
       getModule(mod).init();
     }
   }
@@ -123,11 +116,12 @@ public class ModuleHolderBean {
     return modules.get(moduleName);
   }
 
+  @SuppressWarnings("unchecked")
   @PostConstruct
   private void init() {
     Module.setEnabledModules(Config.getProperty(Service.PROPERTY_MODULES));
 
-    List<String> mods = Lists.newArrayList(CommonsConstants.COMMONS_MODULE);
+    List<String> mods = Lists.newArrayList();
 
     for (Module modul : Module.values()) {
       if (BeeUtils.isEmpty(modul.getName())) {
@@ -137,22 +131,23 @@ public class ModuleHolderBean {
       }
     }
     for (String moduleName : mods) {
-      try {
-        BeeModule module = (BeeModule) InitialContext.doLookup("java:module/"
-            + moduleName + "ModuleBean");
+      if (hasModule(moduleName)) {
+        logger.severe("Dublicate module name:", BeeUtils.bracket(moduleName));
+      } else {
+        try {
+          Class<BeeModule> clazz = (Class<BeeModule>) Class.forName(BeeUtils.join(".",
+              this.getClass().getPackage().getName(), moduleName.toLowerCase(),
+              moduleName + "ModuleBean"));
 
-        if (hasModule(moduleName)) {
-          logger.severe("Dublicate module name:", BeeUtils.bracket(moduleName));
+          BeeModule module = Invocation.locateRemoteBean(clazz);
 
-        } else {
-          modules.put(moduleName, module);
-          logger.info("Registered module:", BeeUtils.bracket(moduleName));
+          if (module != null) {
+            modules.put(moduleName, module);
+            logger.info("Registered module:", BeeUtils.bracket(moduleName));
+          }
+        } catch (ClassNotFoundException | ClassCastException e) {
+          logger.error(e);
         }
-      } catch (NamingException ex) {
-        logger.severe("Module not found:", BeeUtils.bracket(moduleName));
-
-      } catch (ClassCastException ex) {
-        logger.severe("Not a module:", BeeUtils.bracket(moduleName));
       }
     }
     if (modules.isEmpty()) {

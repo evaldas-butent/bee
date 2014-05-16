@@ -8,12 +8,12 @@
   <Fields>
     <Relation name="Cargo" notNull="true" relation="OrderCargo" cascade="DELETE" label="=cargo" />
     <Relation name="Trip" notNull="true" relation="Trips" cascade="DELETE" label="=trip"/>
-    <Relation name="Assessor" relation="CargoAssessors" cascade="DELETE"  label="=trAssessor"/>
+    
     <Relation name="LoadingPlace" unique="true" relation="CargoPlaces" editable="true" label="=cargoLoadingPlace" />
     <Relation name="UnloadingPlace" unique="true" relation="CargoPlaces" editable="true" label="=cargoUnloadingPlace" />
+    
     <Numeric name="TripPercent" precision="3" scale="0" />
     <Numeric name="CargoPercent" precision="3" scale="0" />
-    <Relation name="CargoExpense" relation="CargoExpenses" cascade="DELETE" editable="true" />
     <Numeric name="Ordinal" precision="2" scale="0" label="=ordinal" />
     <Text name="Message" label="=message" />
   </Fields>

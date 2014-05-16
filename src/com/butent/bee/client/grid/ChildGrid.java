@@ -8,7 +8,6 @@ import com.google.web.bindery.event.shared.HandlerRegistration;
 import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.Callback;
 import com.butent.bee.client.data.Data;
-import com.butent.bee.client.data.Provider;
 import com.butent.bee.client.data.Queries;
 import com.butent.bee.client.event.logical.ParentRowEvent;
 import com.butent.bee.client.layout.Simple;
@@ -16,6 +15,7 @@ import com.butent.bee.client.presenter.GridPresenter;
 import com.butent.bee.client.style.StyleUtils;
 import com.butent.bee.client.ui.HasFosterParent;
 import com.butent.bee.client.ui.UiOption;
+import com.butent.bee.client.view.HasGridView;
 import com.butent.bee.client.view.grid.GridSettings;
 import com.butent.bee.client.view.grid.GridView;
 import com.butent.bee.client.view.grid.interceptor.GridInterceptor;
@@ -24,6 +24,7 @@ import com.butent.bee.shared.Launchable;
 import com.butent.bee.shared.data.BeeRowSet;
 import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.IsRow;
+import com.butent.bee.shared.data.ProviderType;
 import com.butent.bee.shared.data.cache.CachingPolicy;
 import com.butent.bee.shared.data.filter.Filter;
 import com.butent.bee.shared.data.view.DataInfo;
@@ -40,7 +41,7 @@ import java.util.Map;
  */
 
 public class ChildGrid extends Simple implements HasEnabled, Launchable, HasFosterParent,
-    ParentRowEvent.Handler {
+    ParentRowEvent.Handler, HasGridView {
   
   private static final Collection<UiOption> uiOptions = EnumSet.of(UiOption.CHILD);
 
@@ -79,6 +80,11 @@ public class ChildGrid extends Simple implements HasEnabled, Launchable, HasFost
   }
 
   @Override
+  public GridView getGridView() {
+    return getPresenter() == null ? null : getPresenter().getGridView();
+  }
+
+  @Override
   public String getIdPrefix() {
     return "child-grid";
   }
@@ -105,7 +111,7 @@ public class ChildGrid extends Simple implements HasEnabled, Launchable, HasFost
     GridFactory.getGridDescription(gridName, new Callback<GridDescription>() {
       @Override
       public void onSuccess(GridDescription result) {
-        if (getGridInterceptor() != null && !getGridInterceptor().onLoad(result)) {
+        if (getGridInterceptor() != null && !getGridInterceptor().initDescription(result)) {
           return;
         }
         
@@ -135,6 +141,8 @@ public class ChildGrid extends Simple implements HasEnabled, Launchable, HasFost
   public void setEnabled(boolean enabled) {
     if (getPresenter() != null) {
       getPresenter().getMainView().setEnabled(enabled);
+    } else {
+      setPendingEnabled(enabled);
     }
   }
 
@@ -174,7 +182,7 @@ public class ChildGrid extends Simple implements HasEnabled, Launchable, HasFost
       Filter immutableFilter, Map<String, Filter> initialFilters, Order order) {
 
     GridPresenter gp = new GridPresenter(getGridDescription(), gridView,
-        rowSet.getNumberOfRows(), rowSet, Provider.Type.ASYNC, getCachingPolicy(),
+        rowSet.getNumberOfRows(), rowSet, ProviderType.ASYNC, getCachingPolicy(),
         uiOptions, getGridInterceptor(), immutableFilter, initialFilters, null, null,
         order, getGridOptions());
 
@@ -183,6 +191,10 @@ public class ChildGrid extends Simple implements HasEnabled, Launchable, HasFost
 
     setWidget(gp.getWidget());
     setPresenter(gp);
+    
+    if (getGridInterceptor() != null) {
+      getGridInterceptor().afterCreatePresenter(gp);
+    }
 
     if (Objects.equal(row, getPendingRow())) {
       updateFilter(row);
@@ -196,7 +208,8 @@ public class ChildGrid extends Simple implements HasEnabled, Launchable, HasFost
   }
 
   private CachingPolicy getCachingPolicy() {
-    return getGridDescription().getCachingPolicy(false);
+    return BeeUtils.isTrue(getGridDescription().getCacheData()) 
+        ? CachingPolicy.FULL : CachingPolicy.NONE;
   }
 
   private Filter getFilter(IsRow row) {
@@ -348,11 +361,11 @@ public class ChildGrid extends Simple implements HasEnabled, Launchable, HasFost
   private void setPendingRow(IsRow pendingRow) {
     this.pendingRow = pendingRow;
   }
-
+  
   private void setPresenter(GridPresenter presenter) {
     this.presenter = presenter;
   }
-  
+
   private void unregister() {
     if (getParentRowReg() != null) {
       getParentRowReg().removeHandler();

@@ -7,8 +7,10 @@
   idChunk="100"
   >
   <Fields>
-    <Relation name="Article" relation="TcdArticles" notNull="true" cascade="DELETE" />
-    <Relation name="Category" relation="TcdCategories" notNull="true" cascade="DELETE" label="=ecItemCategory" />
+    <Relation name="Article" relation="TcdArticles" notNull="true" cascade="DELETE" 
+      label="=ecItem" />
+    <Relation name="Category" relation="TcdCategories" notNull="true" cascade="DELETE" 
+      label="=ecItemCategory" />
   </Fields>
   <Constraints>
     <Unique fields="Article Category" />

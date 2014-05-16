@@ -1,7 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<View xmlns="http://www.butent.com/view" name="EcClients" source="EcClients" caption="=ecClients"
+<View xmlns="http://www.butent.com/view"
+
+  name="EcClients" source="EcClients" module="Ec.Administration"
+  caption="=ecClients" newRowCaption="=ecClientNew" rowCaption="FirstName LastName"
   newRowForm="EcClient" editForm="EcClient"
-  newRowCaption="=ecClientNew" rowCaption="FirstName LastName">
+  >
 
   <Columns>
     <SimpleColumn name="User" />

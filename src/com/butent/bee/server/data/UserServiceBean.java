@@ -11,7 +11,8 @@ import com.google.common.collect.Sets;
 import com.google.common.collect.Table;
 import com.google.common.primitives.Longs;
 
-import static com.butent.bee.shared.modules.commons.CommonsConstants.*;
+import static com.butent.bee.shared.modules.administration.AdministrationConstants.*;
+import static com.butent.bee.shared.modules.classifiers.ClassifierConstants.*;
 
 import com.butent.bee.server.i18n.I18nUtils;
 import com.butent.bee.server.i18n.Localizations;
@@ -35,14 +36,17 @@ import com.butent.bee.shared.i18n.LocalizableMessages;
 import com.butent.bee.shared.i18n.SupportedLocale;
 import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogUtils;
-import com.butent.bee.shared.modules.commons.CommonsConstants.RightsObjectType;
-import com.butent.bee.shared.modules.commons.CommonsConstants.RightsState;
+import com.butent.bee.shared.modules.administration.AdministrationConstants.RightsObjectType;
+import com.butent.bee.shared.modules.administration.AdministrationConstants.RightsState;
+import com.butent.bee.shared.rights.Module;
 import com.butent.bee.shared.rights.ModuleAndSub;
+import com.butent.bee.shared.rights.RegulatedWidget;
 import com.butent.bee.shared.time.DateTime;
 import com.butent.bee.shared.time.TimeUtils;
 import com.butent.bee.shared.ui.UserInterface;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.EnumUtils;
+import com.butent.bee.shared.utils.Wildcards;
 
 import java.io.IOException;
 import java.io.StringReader;
@@ -62,6 +66,7 @@ import javax.ejb.EJBContext;
 import javax.ejb.Lock;
 import javax.ejb.LockType;
 import javax.ejb.Singleton;
+import javax.servlet.http.HttpServletRequest;
 
 /**
  * Responsible for users system, their login status, localization, user and roles cache etc.
@@ -71,7 +76,7 @@ import javax.ejb.Singleton;
 @Lock(LockType.READ)
 public class UserServiceBean {
 
-  private final class UserInfo {
+  private static final class UserInfo {
 
     private final UserData userData;
     private final String password;
@@ -205,6 +210,23 @@ public class UserServiceBean {
     }
   }
 
+  private static final class IpFilter {
+    private final String host;
+    private final DateTime blockAfter;
+    private final DateTime blockBefore;
+
+    private IpFilter(String host, DateTime blockAfter, DateTime blockBefore) {
+      this.host = host;
+      this.blockAfter = blockAfter;
+      this.blockBefore = blockBefore;
+    }
+
+    private boolean isBlocked(String addr, DateTime dt) {
+      return Wildcards.isLike(addr, host)
+          && TimeUtils.isBetweenExclusiveNotRequired(dt, blockAfter, blockBefore);
+    }
+  }
+
   private static BeeLogger logger = LogUtils.getLogger(UserServiceBean.class);
 
   private static String key(String value) {
@@ -221,6 +243,8 @@ public class UserServiceBean {
   private final Map<Long, String> roleCache = Maps.newHashMap();
   private final BiMap<Long, String> userCache = HashBiMap.create();
   private Map<String, UserInfo> infoCache = Maps.newHashMap();
+
+  private final List<IpFilter> ipFilters = Lists.newArrayList();
 
   private final Table<RightsObjectType, String, Multimap<RightsState, Long>> rightsCache =
       HashBasedTable.create();
@@ -245,6 +269,11 @@ public class UserServiceBean {
     }
     UserInfo info = getUserInfo(getUserId(name));
     return info != null && Objects.equals(password, info.getPassword());
+  }
+
+  public boolean canEditColumn(String viewName, String column) {
+    UserInfo info = getCurrentUserInfo();
+    return (info == null) ? false : info.getUserData().canEditColumn(viewName, column);
   }
 
   public List<UserData> getAllUserData() {
@@ -460,6 +489,10 @@ public class UserServiceBean {
     return userCache.get(userId);
   }
 
+  public long[] getUserRoles() {
+    return getUserRoles(getCurrentUserId());
+  }
+
   public long[] getUserRoles(Long userId) {
     UserInfo userInfo = getUserInfo(userId);
 
@@ -480,6 +513,36 @@ public class UserServiceBean {
       return userInfo.getUserData().getUserSign();
     }
     return null;
+  }
+
+  public boolean hasDataRight(String object, RightsState state) {
+    UserInfo info = getCurrentUserInfo();
+    return (info == null) ? false : info.getUserData().hasDataRight(object, state);
+  }
+
+  @Lock(LockType.WRITE)
+  public void initIpFilters() {
+    List<IpFilter> filters = Lists.newArrayList();
+
+    SimpleRowSet data = qs.getData(new SqlSelect()
+        .addFields(TBL_IP_FILTERS, COL_IP_FILTER_HOST,
+            COL_IP_FILTER_BLOCK_AFTER,
+            COL_IP_FILTER_BLOCK_BEFORE)
+        .addFrom(TBL_IP_FILTERS));
+
+    if (!DataUtils.isEmpty(data)) {
+      for (SimpleRow row : data) {
+        filters.add(new IpFilter(row.getValue(COL_IP_FILTER_HOST),
+            row.getDateTime(COL_IP_FILTER_BLOCK_AFTER),
+            row.getDateTime(COL_IP_FILTER_BLOCK_BEFORE)));
+      }
+    }
+    ipFilters.clear();
+
+    if (!filters.isEmpty()) {
+      ipFilters.addAll(filters);
+      logger.info("Loaded", filters.size(), "ip filters");
+    }
   }
 
   @Lock(LockType.WRITE)
@@ -519,7 +582,6 @@ public class UserServiceBean {
         }
       }
     }
-    initUsers();
   }
 
   @Lock(LockType.WRITE)
@@ -593,18 +655,28 @@ public class UserServiceBean {
     }
   }
 
+  public boolean isAdministrator() {
+    return isModuleVisible(ModuleAndSub.of(Module.ADMINISTRATION));
+  }
+
   public Boolean isBlocked(String user) {
     UserInfo userInfo = getUserInfo(getUserId(user));
     return (userInfo == null) ? null : userInfo.isBlocked(System.currentTimeMillis());
   }
 
+  public boolean isColumnVisible(String viewName, String column) {
+    UserInfo info = getCurrentUserInfo();
+    return (info == null) ? false : info.getUserData().isColumnVisible(viewName, column);
+  }
+
+  public boolean isDataVisible(String object) {
+    UserInfo info = getCurrentUserInfo();
+    return (info == null) ? false : info.getUserData().isDataVisible(object);
+  }
+
   public boolean isMenuVisible(String object) {
     UserInfo info = getCurrentUserInfo();
-
-    if (info != null) {
-      return info.getUserData().isMenuVisible(object);
-    }
-    return false;
+    return (info == null) ? false : info.getUserData().isMenuVisible(object);
   }
 
   public boolean isModuleVisible(ModuleAndSub moduleAndSub) {
@@ -627,6 +699,11 @@ public class UserServiceBean {
 
   public boolean isUserTable(String tblName) {
     return BeeUtils.inList(tblName, TBL_USERS, TBL_COMPANY_PERSONS, TBL_PERSONS);
+  }
+
+  public boolean isWidgetVisible(RegulatedWidget widget) {
+    UserInfo info = getCurrentUserInfo();
+    return (info == null) ? false : info.getUserData().isWidgetVisible(widget);
   }
 
   @Lock(LockType.WRITE)
@@ -774,6 +851,23 @@ public class UserServiceBean {
         .setWhere(sys.idEquals(TBL_USERS, userId)));
 
     logger.info("user", user, "updated locale:", locale.getLanguage());
+    return true;
+  }
+
+  public boolean validateHost(HttpServletRequest request) {
+    if (ipFilters.isEmpty()) {
+      return true;
+    }
+    Assert.notNull(request);
+    String addr = request.getRemoteAddr();
+    DateTime now = TimeUtils.nowMinutes();
+
+    for (IpFilter ipFilter : ipFilters) {
+      if (ipFilter.isBlocked(addr, now)) {
+        logger.warning("remote address", addr, "blocked", BeeUtils.bracket(ipFilter.host));
+        return false;
+      }
+    }
     return true;
   }
 

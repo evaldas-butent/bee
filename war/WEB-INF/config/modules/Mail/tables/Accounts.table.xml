@@ -5,7 +5,7 @@
   idName="AccountID"
   >
   <Fields>
-    <Relation name="User" relation="Users" notNull="true" cascade="DELETE" label="=user"/>
+    <Relation name="User" relation="Users" cascade="DELETE" label="=user" />
     <String name="Description" precision="50" notNull="true" label="=mailName" />
     <Boolean name="Main" label="=mailDefault" />
     <Relation name="Address" relation="Emails" notNull="true" unique="true" label="=mailAddress" />
@@ -25,9 +25,9 @@
     <Boolean name="TransportSSL" label="=mailSMTPServerSSL" />
     <Text name="TransportProperties" label="=mailSMTPServerProperties" />
 
-    <Relation name="InboxFolder" relation="Folders" cascade="SET_NULL" label="=mailFolderInbox" />
-    <Relation name="SentFolder" relation="Folders" cascade="SET_NULL" label="=mailFolderSent"/>
-    <Relation name="DraftsFolder" relation="Folders" cascade="SET_NULL" label="=mailFolderDrafts" />
-    <Relation name="TrashFolder" relation="Folders" cascade="SET_NULL" label="=mailFolderTrash" />
+    <Relation name="InboxFolder" relation="Folders" label="=mailFolderInbox" />
+    <Relation name="SentFolder" relation="Folders" label="=mailFolderSent"/>
+    <Relation name="DraftsFolder" relation="Folders" label="=mailFolderDrafts" />
+    <Relation name="TrashFolder" relation="Folders" label="=mailFolderTrash" />
   </Fields>
 </Table>

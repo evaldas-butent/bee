@@ -32,6 +32,12 @@ public class CargoInvoicesGrid extends AbstractGridInterceptor implements ClickH
   private final Button action = new Button(Localized.getConstants().trSendToERP(), this);
 
   @Override
+  public void afterCreatePresenter(GridPresenter presenter) {
+    presenter.getHeader().clearCommandPanel();
+    presenter.getHeader().addCommandItem(action);
+  }
+
+  @Override
   public GridInterceptor getInstance() {
     return new CargoInvoicesGrid();
   }
@@ -70,11 +76,5 @@ public class CargoInvoicesGrid extends AbstractGridInterceptor implements ClickH
         });
       }
     });
-  }
-
-  @Override
-  public void onShow(GridPresenter presenter) {
-    presenter.getHeader().clearCommandPanel();
-    presenter.getHeader().addCommandItem(action);
   }
 }

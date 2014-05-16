@@ -269,7 +269,6 @@ public final class CalendarConstants {
   public static final String DEFAULT_NEW_APPOINTMENT_FORM = "SimpleAppointment";
   public static final String DEFAULT_EDIT_APPOINTMENT_FORM = "SimpleAppointment";
 
-  public static final String COL_USER = "User";
   public static final String COL_CALENDAR = "Calendar";
   public static final String COL_USER_CALENDAR = "UserCalendar";
 
@@ -292,8 +291,6 @@ public final class CalendarConstants {
   public static final String COL_MULTIDAY_LAYOUT = "MultidayLayout";
   public static final String COL_MULTIDAY_TASK_LAYOUT = "MultidayTaskLayout";
 
-  public static final String COL_COMPANY = "Company";
-  public static final String ALS_COMPANY_NAME = "CompanyName";
   public static final String ALS_COMPANY_PHONE = "CompanyPhone";
   public static final String ALS_COMPANY_EMAIL = "CompanyEmail";
 
@@ -354,8 +351,6 @@ public final class CalendarConstants {
   public static final String ALS_OWNER_FIRST_NAME = "OwnerFirstName";
   public static final String ALS_OWNER_LAST_NAME = "OwnerLastName";
 
-  public static final String COL_COMPANY_PERSON = "CompanyPerson";
-
   public static final String COL_SIMPLE_HEADER = "SimpleHeader";
   public static final String COL_SIMPLE_BODY = "SimpleBody";
   public static final String COL_MULTI_HEADER = "MultiHeader";
@@ -364,8 +359,6 @@ public final class CalendarConstants {
   public static final String COL_APPOINTMENT_COMPACT = "AppointmentCompact";
   public static final String COL_APPOINTMENT_TITLE = "AppointmentTitle";
 
-  public static final String COL_BACKGROUND = "Background";
-  public static final String COL_FOREGROUND = "Foreground";
   public static final String COL_STYLE = "Style";
 
   public static final String COL_SIMPLE = "Simple";

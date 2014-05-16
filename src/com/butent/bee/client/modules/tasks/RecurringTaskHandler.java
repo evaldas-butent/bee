@@ -11,10 +11,11 @@ import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.event.dom.client.HasClickHandlers;
 import com.google.gwt.i18n.client.LocaleInfo;
+import com.google.gwt.user.client.ui.HasEnabled;
 import com.google.gwt.user.client.ui.Widget;
 import com.google.web.bindery.event.shared.HandlerRegistration;
 
-import static com.butent.bee.shared.modules.tasks.TasksConstants.*;
+import static com.butent.bee.shared.modules.tasks.TaskConstants.*;
 
 import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.Global;
@@ -34,8 +35,6 @@ import com.butent.bee.client.grid.HtmlTable;
 import com.butent.bee.client.i18n.Format;
 import com.butent.bee.client.layout.Flow;
 import com.butent.bee.client.style.StyleUtils;
-import com.butent.bee.client.ui.AbstractFormInterceptor;
-import com.butent.bee.client.ui.FormFactory.FormInterceptor;
 import com.butent.bee.client.ui.FormFactory.WidgetDescriptionCallback;
 import com.butent.bee.client.ui.IdentifiableWidget;
 import com.butent.bee.client.ui.UiHelper;
@@ -43,6 +42,8 @@ import com.butent.bee.client.validation.CellValidateEvent;
 import com.butent.bee.client.view.HeaderView;
 import com.butent.bee.client.view.edit.EditableWidget;
 import com.butent.bee.client.view.form.FormView;
+import com.butent.bee.client.view.form.interceptor.AbstractFormInterceptor;
+import com.butent.bee.client.view.form.interceptor.FormInterceptor;
 import com.butent.bee.client.widget.CustomDiv;
 import com.butent.bee.client.widget.FaLabel;
 import com.butent.bee.client.widget.Label;
@@ -66,9 +67,10 @@ import com.butent.bee.shared.html.builder.elements.Span;
 import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogUtils;
-import com.butent.bee.shared.modules.commons.CommonsConstants;
-import com.butent.bee.shared.modules.tasks.TasksUtils;
-import com.butent.bee.shared.modules.tasks.TasksConstants.TaskStatus;
+import com.butent.bee.shared.modules.administration.AdministrationConstants;
+import com.butent.bee.shared.modules.classifiers.ClassifierConstants;
+import com.butent.bee.shared.modules.tasks.TaskUtils;
+import com.butent.bee.shared.modules.tasks.TaskConstants.TaskStatus;
 import com.butent.bee.shared.time.CronExpression;
 import com.butent.bee.shared.time.CronExpression.Field;
 import com.butent.bee.shared.time.DateRange;
@@ -350,15 +352,22 @@ class RecurringTaskHandler extends AbstractFormInterceptor implements CellValida
           setExecutors(null);
 
           if (DataUtils.hasId(activeRow)) {
-            int updateSize = Queries.update(getViewName(), getFormView().getDataColumns(),
-                getFormView().getOldRow(), activeRow, getFormView().getChildrenForUpdate(),
-                new RowCallback() {
-                  @Override
-                  public void onSuccess(BeeRow result) {
-                    RowUpdateEvent.fire(BeeKeeper.getBus(), getViewName(), result);
-                    showSchedule(result.getId());
-                  }
-                });
+            int updateSize;
+
+            if (getFormView().isRowEnabled(activeRow)) {
+              updateSize = Queries.update(getViewName(), getFormView().getDataColumns(),
+                  getFormView().getOldRow(), activeRow, getFormView().getChildrenForUpdate(),
+                  new RowCallback() {
+                    @Override
+                    public void onSuccess(BeeRow result) {
+                      RowUpdateEvent.fire(BeeKeeper.getBus(), getViewName(), result);
+                      showSchedule(result.getId());
+                    }
+                  });
+
+            } else {
+              updateSize = 0;
+            }
 
             if (updateSize == 0) {
               showSchedule(activeRow.getId());
@@ -373,15 +382,23 @@ class RecurringTaskHandler extends AbstractFormInterceptor implements CellValida
 
       header.addCommandItem(schedule);
     }
+    
 
     for (Cron cron : Cron.values()) {
       refreshValues(cron, row.getString(form.getDataIndex(cron.source)));
     }
+    
+    enableToggles(form.isRowEnabled(row));
   }
 
   @Override
   public FormInterceptor getInstance() {
     return new RecurringTaskHandler();
+  }
+
+  @Override
+  public boolean isRowEditable(IsRow row) {
+    return row != null && BeeKeeper.getUser().is(row.getLong(getDataIndex(COL_OWNER)));
   }
 
   @Override
@@ -450,7 +467,7 @@ class RecurringTaskHandler extends AbstractFormInterceptor implements CellValida
 
     panel.add(table);
 
-    String caption = BeeUtils.joinWords(Localized.getConstants().tasks(),
+    String caption = BeeUtils.joinWords(Localized.getConstants().crmTasks(),
         new JustDate(dayNumber).toString());
 
     DialogBox dialog = DialogBox.create(caption, STYLE_OFFSPRING_DIALOG);
@@ -516,6 +533,16 @@ class RecurringTaskHandler extends AbstractFormInterceptor implements CellValida
     });
 
     dialog.showRelativeTo(target);
+  }
+
+  private void enableToggles(boolean enabled) {
+    for (Flow container : toggleContainers.values()) {
+      for (Widget widget : container) {
+        if (widget instanceof HasEnabled) {
+          ((HasEnabled) widget).setEnabled(enabled);
+        }
+      }
+    }
   }
 
   private BeeRowSet getExecutors() {
@@ -661,8 +688,8 @@ class RecurringTaskHandler extends AbstractFormInterceptor implements CellValida
     List<String> messages = Lists.newArrayList();
 
     List<Integer> indexes = Lists.newArrayList(
-        getExecutors().getColumnIndex(CommonsConstants.COL_FIRST_NAME),
-        getExecutors().getColumnIndex(CommonsConstants.COL_LAST_NAME));
+        getExecutors().getColumnIndex(ClassifierConstants.COL_FIRST_NAME),
+        getExecutors().getColumnIndex(ClassifierConstants.COL_LAST_NAME));
 
     int size = DataUtils.isId(executor) ? 1 : getExecutors().getNumberOfRows();
     int maxCount = (size > 15) ? 10 : (size + 1);
@@ -778,7 +805,7 @@ class RecurringTaskHandler extends AbstractFormInterceptor implements CellValida
     setValues(cron, values);
   }
 
-  private Widget renderMonth(YearMonth ym, List<DayOfMonth> days, boolean fertile) {
+  private Widget renderMonth(YearMonth ym, List<DayOfMonth> days, final boolean fertile) {
     Flow panel = new Flow(STYLE_MONTH_PANEL);
 
     Label monthLabel = new Label(BeeUtils.joinWords(ym.getYear(),
@@ -824,7 +851,7 @@ class RecurringTaskHandler extends AbstractFormInterceptor implements CellValida
                 if (offspring.containsKey(number)) {
                   editOffspring(target, number);
 
-                } else if (!DataUtils.isEmpty(getExecutors())) {
+                } else if (fertile && !DataUtils.isEmpty(getExecutors())) {
                   maybeSpawn(target, number, null, new Runnable() {
                     @Override
                     public void run() {
@@ -872,6 +899,7 @@ class RecurringTaskHandler extends AbstractFormInterceptor implements CellValida
     List<BeeColumn> taskColumns = Data.getColumns(VIEW_TASKS);
 
     if (!BeeUtils.isEmpty(taskData) && !BeeUtils.isEmpty(taskColumns)) {
+      int ownerIndex = DataUtils.getColumnIndex(COL_OWNER, taskColumns);
       int executorIndex = DataUtils.getColumnIndex(COL_EXECUTOR, taskColumns);
       int firstNameIndex = DataUtils.getColumnIndex(ALS_EXECUTOR_FIRST_NAME, taskColumns);
       int lastNameIndex = DataUtils.getColumnIndex(ALS_EXECUTOR_LAST_NAME, taskColumns);
@@ -908,19 +936,21 @@ class RecurringTaskHandler extends AbstractFormInterceptor implements CellValida
 
         table.setWidgetAndStyle(r, COL_OFFSPRING_OPEN, open, STYLE_OFFSPRING_OPEN);
 
-        FaLabel delete = new FaLabel(FontAwesome.TRASH_O);
-        delete.setTitle(Localized.getConstants().actionDelete());
+        if (BeeKeeper.getUser().is(taskRow.getLong(ownerIndex))) {
+          FaLabel delete = new FaLabel(FontAwesome.TRASH_O);
+          delete.setTitle(Localized.getConstants().actionDelete());
 
-        delete.addClickHandler(new ClickHandler() {
-          @Override
-          public void onClick(ClickEvent event) {
-            if (event.getSource() instanceof FaLabel) {
-              handleOffspring(Action.DELETE, dayNumber, (Widget) event.getSource());
+          delete.addClickHandler(new ClickHandler() {
+            @Override
+            public void onClick(ClickEvent event) {
+              if (event.getSource() instanceof FaLabel) {
+                handleOffspring(Action.DELETE, dayNumber, (Widget) event.getSource());
+              }
             }
-          }
-        });
+          });
 
-        table.setWidgetAndStyle(r, COL_OFFSPRING_DELETE, delete, STYLE_OFFSPRING_DELETE);
+          table.setWidgetAndStyle(r, COL_OFFSPRING_DELETE, delete, STYLE_OFFSPRING_DELETE);
+        }
 
         DomUtils.setDataIndex(table.getRow(r), taskRow.getId());
         table.getRowFormatter().addStyleName(r, STYLE_OFFSPRING_ACTUAL);
@@ -929,17 +959,17 @@ class RecurringTaskHandler extends AbstractFormInterceptor implements CellValida
       }
     }
 
-    if (!DataUtils.isEmpty(getExecutors())) {
+    if (!DataUtils.isEmpty(getExecutors()) && getFormView().isRowEnabled(getActiveRow())) {
       for (BeeRow userRow : getExecutors().getRows()) {
         if (taskExecutors.contains(userRow.getId())) {
           continue;
         }
 
         table.setText(r, COL_OFFSPRING_FIRST_NAME,
-            DataUtils.getString(getExecutors(), userRow, CommonsConstants.COL_FIRST_NAME),
+            DataUtils.getString(getExecutors(), userRow, ClassifierConstants.COL_FIRST_NAME),
             STYLE_OFFSPRING_FIRST_NAME);
         table.setText(r, COL_OFFSPRING_LAST_NAME,
-            DataUtils.getString(getExecutors(), userRow, CommonsConstants.COL_LAST_NAME),
+            DataUtils.getString(getExecutors(), userRow, ClassifierConstants.COL_LAST_NAME),
             STYLE_OFFSPRING_LAST_NAME);
 
         FaLabel create = new FaLabel(FontAwesome.PLUS_SQUARE_O);
@@ -972,10 +1002,9 @@ class RecurringTaskHandler extends AbstractFormInterceptor implements CellValida
     Widget widget = toggleContainers.get(cron).getWidget(index);
     if (widget instanceof Toggle) {
       ((Toggle) widget).setChecked(selected);
-
     }
   }
-
+  
   private void setValues(Cron cron, Set<Integer> values) {
     if (toggleContainers.containsKey(cron)) {
       for (int i = 0; i < toggleContainers.get(cron).getWidgetCount(); i++) {
@@ -1012,8 +1041,8 @@ class RecurringTaskHandler extends AbstractFormInterceptor implements CellValida
         if (response.hasResponse()) {
           Map<String, String> data = Codec.deserializeMap(response.getResponseAsString());
 
-          if (data.containsKey(CommonsConstants.VIEW_USERS)) {
-            setExecutors(BeeRowSet.restore(data.get(CommonsConstants.VIEW_USERS)));
+          if (data.containsKey(AdministrationConstants.VIEW_USERS)) {
+            setExecutors(BeeRowSet.restore(data.get(AdministrationConstants.VIEW_USERS)));
           }
 
           if (data.containsKey(VIEW_TASKS)) {
@@ -1026,12 +1055,13 @@ class RecurringTaskHandler extends AbstractFormInterceptor implements CellValida
           if (data.containsKey(VIEW_RT_DATES)) {
             BeeRowSet rtDates = BeeRowSet.restore(data.get(VIEW_RT_DATES));
             if (!DataUtils.isEmpty(rtDates)) {
-              scheduleDateRanges.addAll(TasksUtils.getScheduleDateRanges(rtDates));
+              scheduleDateRanges.addAll(TaskUtils.getScheduleDateRanges(rtDates));
             }
           }
         }
 
-        timeCube(scheduleDateRanges, getExecutors() != null);
+        boolean fertile = getExecutors() != null && getFormView().isRowEnabled(getActiveRow());
+        timeCube(scheduleDateRanges, fertile);
       }
     });
   }

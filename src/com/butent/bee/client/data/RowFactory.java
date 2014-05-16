@@ -18,12 +18,12 @@ import com.butent.bee.client.presenter.NewRowPresenter;
 import com.butent.bee.client.style.StyleUtils;
 import com.butent.bee.client.ui.FormDescription;
 import com.butent.bee.client.ui.FormFactory;
-import com.butent.bee.client.ui.FormFactory.FormInterceptor;
 import com.butent.bee.client.ui.FormWidget;
 import com.butent.bee.client.ui.HasDimensions;
 import com.butent.bee.client.ui.UiHelper;
 import com.butent.bee.client.view.form.CloseCallback;
 import com.butent.bee.client.view.form.FormView;
+import com.butent.bee.client.view.form.interceptor.FormInterceptor;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.data.BeeColumn;
@@ -63,7 +63,7 @@ public final class RowFactory {
   private static final String DEFAULT_CAPTION = Localized.getConstants().actionNew();
 
   private static final BeeLogger logger = LogUtils.getLogger(RowFactory.class);
-  
+
   public static BeeRow createEmptyRow(DataInfo dataInfo, boolean defaults) {
     BeeRow row = DataUtils.createEmptyRow(dataInfo.getColumnCount());
     if (defaults) {
@@ -72,36 +72,18 @@ public final class RowFactory {
     return row;
   }
 
-  public static void createRelatedRow(final DataSelector selector) {
+  public static void createRelatedRow(final DataSelector selector, String defValue) {
     Assert.notNull(selector);
 
     DataInfo dataInfo = selector.getOracle().getDataInfo();
 
     String formName = selector.getNewRowForm();
-    String caption = selector.getNewRowCaption();
-
-    BeeRow row = createEmptyRow(dataInfo, true);
-
-    SelectorEvent event = SelectorEvent.fireNewRow(selector, row);
-    String value = selector.getDisplayValue();
-
-    if (!event.isConsumed() && !BeeUtils.isEmpty(value)) {
-      for (String colName : selector.getChoiceColumns()) {
-        BeeColumn column = dataInfo.getColumn(colName);
-
-        if (column != null && column.isEditable() && ValueType.isString(column.getType())) {
-          String v = (column.getPrecision() > 0) 
-              ? BeeUtils.left(value.trim(), column.getPrecision()) : value.trim();
-          Data.setValue(dataInfo.getViewName(), row, column.getId(), v);
-          break;
-        }
-      }
-    }
 
     if (BeeUtils.isEmpty(formName)) {
       List<BeeColumn> columns = getColumns(dataInfo, selector.getNewRowColumns(),
           selector.getChoiceColumns());
       if (columns.isEmpty()) {
+        logger.warning(dataInfo.getViewName(), "columns not available for create row");
         return;
       }
 
@@ -114,21 +96,48 @@ public final class RowFactory {
       }
     }
 
+    BeeRow row = createEmptyRow(dataInfo, true);
+
+    SelectorEvent event = SelectorEvent.fireNewRow(selector, row, formName, defValue);
+
+    if (!event.isConsumed()) {
+      if (!BeeUtils.isEmpty(event.getDefValue())) {
+        for (String colName : selector.getChoiceColumns()) {
+          BeeColumn column = dataInfo.getColumn(colName);
+
+          if (column != null && column.isEditable() && ValueType.isString(column.getType())) {
+            Data.squeezeValue(dataInfo.getViewName(), row, column.getId(),
+                event.getDefValue().trim());
+            break;
+          }
+        }
+      }
+
+      createRelatedRow(formName, row, selector);
+    }
+  }
+
+  public static void createRelatedRow(String formName, BeeRow row, final DataSelector selector) {
+    Assert.notEmpty(formName);
+    Assert.notNull(row);
+    Assert.notNull(selector);
+    
     selector.setAdding(true);
 
-    createRow(formName, caption, dataInfo, row, selector, null, new RowCallback() {
-      @Override
-      public void onCancel() {
-        selector.setAdding(false);
-        selector.setFocus(true);
-      }
+    createRow(formName, selector.getNewRowCaption(), selector.getOracle().getDataInfo(), row,
+        selector, null, new RowCallback() {
+          @Override
+          public void onCancel() {
+            selector.setAdding(false);
+            selector.setFocus(true);
+          }
 
-      @Override
-      public void onSuccess(BeeRow result) {
-        selector.setAdding(false);
-        selector.setSelection(result);
-      }
-    });
+          @Override
+          public void onSuccess(BeeRow result) {
+            selector.setAdding(false);
+            selector.setSelection(result, true);
+          }
+        });
   }
 
   public static void createRow(String viewName) {
@@ -138,7 +147,7 @@ public final class RowFactory {
   public static void createRow(String viewName, RowCallback rowCallback) {
     createRow(viewName, null, rowCallback);
   }
-  
+
   public static void createRow(String viewName, String caption, RowCallback rowCallback) {
     Assert.notEmpty(viewName);
 
@@ -334,11 +343,11 @@ public final class RowFactory {
     String cap = BeeUtils.notEmpty(caption, formView.getCaption(), DEFAULT_CAPTION);
 
     final NewRowPresenter presenter = new NewRowPresenter(formView, dataInfo, cap);
-    final ModalForm dialog = new ModalForm(presenter.getWidget().asWidget(), formView, false);
+    final ModalForm dialog = new ModalForm(presenter, formView, false);
 
-    final CloseCallback close = new CloseCallback() {
+    final RowCallback closer = new RowCallback() {
       @Override
-      public void onClose() {
+      public void onCancel() {
         dialog.close();
         if (callback != null) {
           callback.onCancel();
@@ -346,27 +355,14 @@ public final class RowFactory {
       }
 
       @Override
-      public void onSave() {
-        presenter.save(new RowCallback() {
-          @Override
-          public void onCancel() {
-            dialog.close();
-            if (callback != null) {
-              callback.onCancel();
-            }
-          }
-
-          @Override
-          public void onSuccess(BeeRow result) {
-            dialog.close();
-            if (callback != null) {
-              callback.onSuccess(result);
-            }
-          }
-        });
+      public void onSuccess(BeeRow result) {
+        dialog.close();
+        if (callback != null) {
+          callback.onSuccess(result);
+        }
       }
     };
-
+    
     presenter.setActionDelegate(new HandlesActions() {
       @Override
       public void handleAction(Action action) {
@@ -374,24 +370,34 @@ public final class RowFactory {
         if (interceptor != null && !interceptor.beforeAction(action, presenter)) {
           return;
         }
-        
+
         switch (action) {
           case CANCEL:
-            close.onClose();
+            closer.onCancel();
             break;
-            
+
           case CLOSE:
-            formView.onClose(close);
+            formView.onClose(new CloseCallback() {
+              @Override
+              public void onClose() {
+                closer.onCancel();
+              }
+
+              @Override
+              public void onSave() {
+                handleAction(Action.SAVE);
+              }
+            });
             break;
-            
+
           case SAVE:
-            close.onSave();
+            presenter.save(closer);
             break;
 
           default:
             logger.warning(NameUtils.getName(this), action, "not implemented");
         }
-        
+
         if (interceptor != null) {
           interceptor.afterAction(action, presenter);
         }
@@ -415,7 +421,7 @@ public final class RowFactory {
         }
       }
     });
-    
+
     dialog.addOpenHandler(new OpenEvent.Handler() {
       @Override
       public void onOpen(OpenEvent event) {

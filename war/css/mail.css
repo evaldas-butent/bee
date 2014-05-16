@@ -5,6 +5,10 @@
 
 .bee-mail-WaitingForContent {
   margin-top: 10px;
+  font-size: 20px;
+  text-align: center;
+  animation: rotate 1s linear infinite;
+  -webkit-animation: rotate 1s linear infinite;
 }
 
 .bee-mail-EmptySelection {
@@ -45,17 +49,18 @@
   resize: none;
 }
 
-.bee-mail-AttachmentImage {
+.bee-mail-AttachmentImage, .bee-mail-AttachmentCount {
+  color: gray;
   position: absolute;
   top: 20px;
+}
+
+.bee-mail-AttachmentImage {
   right: 0;
 }
 
 .bee-mail-AttachmentCount {
-  position: absolute;
-  top: 20px;
   right: 15px;
-  color: gray;
 }
 
 .bee-mail-HeaderDate {
@@ -152,13 +157,8 @@
   margin-right: 3px;
 }
 
-.bee-mail-Folder-leaf:before {
-  content: "-";
-  margin-right: 3px;
-}
-
 .bee-mail-FolderCaption {
-  color: #444;
+  color: silver;
   font-weight: bold;
 }
 
@@ -183,9 +183,13 @@
   visibility: visible;
 }
 
-.bee-mail-SysFolder-selected, .bee-mail-Folder-selected {
+.bee-mail-SysFolder-selected, .bee-mail-FolderRow-selected .bee-mail-Folder {
   font-weight: bold;
   color: #FD6268;
+}
+
+.bee-mail-SysFolder-unread, .bee-mail-Folder-unread {
+  font-weight: bold;
 }
 
 .bee-mail-Folder-disconnected {

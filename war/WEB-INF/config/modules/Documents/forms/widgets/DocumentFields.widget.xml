@@ -1,43 +1,43 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<Table xmlns="http://www.butent.com/widget" style="border-spacing: 3px;">
+<Table xmlns="http://www.butent.com/widget" style="border-spacing: 4px;">
 
   <row>
-    <Label text="=documentName" class="bee-required" />
+    <Label text="=documentName" class="bee-required" horizontalAlignment="right"/>
     <cell colSpan="3">
       <InputText source="Name" style="width: 100%;" autocomplete="true" />
     </cell>
   </row>
 
   <row>
-    <Label text="=documentDate" />
+    <Label text="=documentDate" horizontalAlignment="right"/>
     <InputDateTime source="DocumentDate" />
     <Label text="=documentExpires" horizontalAlignment="right" />
     <InputDateTime source="Expires" />
   </row>
 
   <row>
-    <Label text="=documentNumber" />
+    <Label text="=documentNumber" horizontalAlignment="right"/>
     <InputText source="Number" />
     <Label text="=documentRegistrationNumberShort" horizontalAlignment="right" />
     <InputText source="RegistrationNumber" />
   </row>
 
   <row>
-    <Label text="=documentCategory" class="bee-required" />
-    <DataSelector source="Category" />
+    <Label text="=documentCategory" class="bee-required" horizontalAlignment="right"/>
+    <DataSelector source="Category" caching="local" choiceColumns="ParentName Name" />
     <Label text="=documentType" horizontalAlignment="right" />
     <DataSelector source="Type" />
   </row>
 
   <row>
-    <Label text="=documentPlace"  />
+    <Label text="=documentPlace"  horizontalAlignment="right"/>
     <DataSelector source="Place" />
     <Label text="=documentStatus" horizontalAlignment="right" />
     <DataSelector source="Status" />
   </row>
 
   <row>
-    <Label text="=documentReceived" />
+    <Label text="=documentReceived" horizontalAlignment="right"/>
     <InputDateTime source="Received" />
     <Label text="=documentSent" horizontalAlignment="right" />
     <InputDateTime source="Sent" />
@@ -52,7 +52,7 @@
 
   <row>
     <cell verticalAlignment="top">
-      <Label text="=documentDescription" />
+      <Label text="=documentDescription" horizontalAlignment="right"/>
     </cell>
     <cell colSpan="3">
       <InputArea source="Description" style="width: 100%; height: 60px;" />

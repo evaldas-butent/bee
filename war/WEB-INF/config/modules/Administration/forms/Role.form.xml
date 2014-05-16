@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<f:Form xmlns="http://www.butent.com/widget"
+  xmlns:f="http://www.butent.com/form"
+  
+  name="Role" viewName="Roles" caption="=role"
+  width="600" height="400"
+  >
+  <FlowPanel class="flexBox-vertical">
+    <HorizontalPanel style="border-spacing: 10px;">
+      <Label text="=name" class="bee-required" />
+      <InputText source="Name" />
+    </HorizontalPanel>
+
+    <br/>
+    
+    <TabbedPages class="flexible">
+      <page data="RoleUsers">
+        <text>=roleUsers</text>
+        <ChildGrid name="RoleUsers" relColumn="Role" />
+      </page>
+      <page data="Rights">
+        <text>=roleRights</text>
+        <ChildGrid gridName="RoleRights" relColumn="Role" />
+      </page>
+    </TabbedPages>
+  </FlowPanel>
+</f:Form>  

@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <View xmlns="http://www.butent.com/view"
 
-  name="TaskFiles"
-  source="TaskFiles"
+  name="TaskFiles" source="TaskFiles"
+  caption="=crmTaskFiles"
   >
   <Columns>
     <SimpleColumn name="Task" />

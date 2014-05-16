@@ -63,6 +63,10 @@
         </SimpleJoin>
       </SimpleJoin>
     </SimpleJoin>
+    
+    <ExternalJoin name="Sale" source="CargoIncomes" joinType="LEFT">
+      <AggregateColumn name="Sale" aggregate="MAX" />
+    </ExternalJoin>
   </Columns>
   <Order>
     <OrderBy column="Date" descending="true" />

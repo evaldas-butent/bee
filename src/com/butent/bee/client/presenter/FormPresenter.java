@@ -22,7 +22,6 @@ import com.butent.bee.client.dialog.Icon;
 import com.butent.bee.client.dialog.StringCallback;
 import com.butent.bee.client.output.Printer;
 import com.butent.bee.client.ui.FormDescription;
-import com.butent.bee.client.ui.FormFactory.FormInterceptor;
 import com.butent.bee.client.ui.IdentifiableWidget;
 import com.butent.bee.client.view.FormContainerImpl;
 import com.butent.bee.client.view.FormContainerView;
@@ -33,6 +32,7 @@ import com.butent.bee.client.view.ViewHelper;
 import com.butent.bee.client.view.add.ReadyForInsertEvent;
 import com.butent.bee.client.view.edit.ReadyForUpdateEvent;
 import com.butent.bee.client.view.form.FormView;
+import com.butent.bee.client.view.form.interceptor.FormInterceptor;
 import com.butent.bee.client.view.search.FilterHandler;
 import com.butent.bee.client.view.search.SearchView;
 import com.butent.bee.shared.Assert;
@@ -43,6 +43,7 @@ import com.butent.bee.shared.data.BeeRowSet;
 import com.butent.bee.shared.data.CellSource;
 import com.butent.bee.shared.data.HasViewName;
 import com.butent.bee.shared.data.IsRow;
+import com.butent.bee.shared.data.ProviderType;
 import com.butent.bee.shared.data.cache.CachingPolicy;
 import com.butent.bee.shared.data.event.CellUpdateEvent;
 import com.butent.bee.shared.data.event.RowDeleteEvent;
@@ -98,7 +99,7 @@ public class FormPresenter extends AbstractPresenter implements ReadyForInsertEv
   private Filter lastFilter;
 
   public FormPresenter(FormDescription formDescription, String viewName, int rowCount,
-      BeeRowSet rowSet, Provider.Type providerType, CachingPolicy cachingPolicy,
+      BeeRowSet rowSet, ProviderType providerType, CachingPolicy cachingPolicy,
       FormInterceptor interceptor) {
 
     List<BeeColumn> columns = (rowSet == null) ? null : rowSet.getColumns();
@@ -112,7 +113,7 @@ public class FormPresenter extends AbstractPresenter implements ReadyForInsertEv
 
   @Override
   public IsRow getActiveRow() {
-    return formContainer.getContent().getActiveRow();
+    return getFormView().getActiveRow();
   }
 
   @Override
@@ -140,7 +141,7 @@ public class FormPresenter extends AbstractPresenter implements ReadyForInsertEv
   }
 
   public NotificationListener getNotificationListener() {
-    return formContainer.getContent();
+    return getFormView();
   }
 
   @Override
@@ -186,14 +187,14 @@ public class FormPresenter extends AbstractPresenter implements ReadyForInsertEv
         Global.inputString("Options", new StringCallback() {
           @Override
           public void onSuccess(String value) {
-            formContainer.getContent().applyOptions(value);
+            getFormView().applyOptions(value);
           }
         });
         break;
 
       case DELETE:
-        if (hasData() && formContainer.getContent().isRowEditable(true)) {
-          IsRow row = formContainer.getContent().getActiveRow();
+        IsRow row = getFormView().getActiveRow();
+        if (hasData() && getFormView().isRowEnabled(row)) {
           deleteRow(row.getId(), row.getVersion());
         }
         break;
@@ -206,12 +207,12 @@ public class FormPresenter extends AbstractPresenter implements ReadyForInsertEv
 
       case ADD:
         if (hasData()) {
-          formContainer.getContent().startNewRow(false);
+          getFormView().startNewRow(false);
         }
         break;
 
       case PRINT:
-        FormView form = formContainer.getContent();
+        FormView form = getFormView();
         if (form.printHeader() || form.printFooter()) {
           Printer.print(formContainer);
         } else {
@@ -343,7 +344,7 @@ public class FormPresenter extends AbstractPresenter implements ReadyForInsertEv
   }
 
   private Provider createProvider(FormContainerView view, String viewName,
-      List<BeeColumn> columns, BeeRowSet rowSet, Provider.Type providerType,
+      List<BeeColumn> columns, BeeRowSet rowSet, ProviderType providerType,
       CachingPolicy cachingPolicy) {
     if (BeeUtils.isEmpty(viewName) || providerType == null) {
       return null;
@@ -388,7 +389,11 @@ public class FormPresenter extends AbstractPresenter implements ReadyForInsertEv
   }
 
   private FormInterceptor getFormInterceptor() {
-    return formContainer.getContent().getFormInterceptor();
+    return getFormView().getFormInterceptor();
+  }
+
+  private FormView getFormView() {
+    return formContainer.getContent();
   }
 
   private boolean hasData() {

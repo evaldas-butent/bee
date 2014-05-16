@@ -5,19 +5,19 @@ import com.google.common.collect.Maps;
 
 import static com.butent.bee.shared.modules.calendar.CalendarConstants.*;
 import static com.butent.bee.shared.modules.calendar.CalendarHelper.*;
+import static com.butent.bee.shared.modules.classifiers.ClassifierConstants.*;
 
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.BeeSerializable;
-import com.butent.bee.shared.data.UserData;
 import com.butent.bee.shared.data.SimpleRowSet.SimpleRow;
+import com.butent.bee.shared.data.UserData;
 import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.modules.calendar.CalendarConstants.ItemType;
-import com.butent.bee.shared.modules.commons.CommonsConstants;
-import com.butent.bee.shared.modules.tasks.TasksConstants;
 import com.butent.bee.shared.modules.tasks.TaskType;
-import com.butent.bee.shared.modules.tasks.TasksConstants.TaskPriority;
-import com.butent.bee.shared.modules.tasks.TasksConstants.TaskStatus;
+import com.butent.bee.shared.modules.tasks.TaskConstants;
+import com.butent.bee.shared.modules.tasks.TaskConstants.TaskPriority;
+import com.butent.bee.shared.modules.tasks.TaskConstants.TaskStatus;
 import com.butent.bee.shared.time.DateTime;
 import com.butent.bee.shared.time.TimeUtils;
 import com.butent.bee.shared.utils.BeeUtils;
@@ -53,27 +53,27 @@ public class CalendarTask extends CalendarItem implements BeeSerializable {
   static {
     SIMPLE_HEADER_TEMPLATE = wrap(COL_SUMMARY);
     SIMPLE_BODY_TEMPLATE = BeeUtils.buildLines(wrap(COL_STATUS), wrap(ALS_COMPANY_NAME),
-        wrap(TasksConstants.COL_OWNER), wrap(TasksConstants.COL_EXECUTOR),
-        wrap(TasksConstants.PROP_OBSERVERS));
+        wrap(TaskConstants.COL_OWNER), wrap(TaskConstants.COL_EXECUTOR),
+        wrap(TaskConstants.PROP_OBSERVERS));
 
     PARTIAL_HEADER_TEMPLATE = wrap(COL_SUMMARY);
     PARTIAL_BODY_TEMPLATE = BeeUtils.buildLines(wrap(KEY_PERIOD), wrap(COL_STATUS),
-        wrap(ALS_COMPANY_NAME), wrap(TasksConstants.COL_OWNER), wrap(TasksConstants.COL_EXECUTOR),
-        wrap(TasksConstants.PROP_OBSERVERS));
+        wrap(ALS_COMPANY_NAME), wrap(TaskConstants.COL_OWNER), wrap(TaskConstants.COL_EXECUTOR),
+        wrap(TaskConstants.PROP_OBSERVERS));
 
     MULTI_HEADER_TEMPLATE = BeeUtils.joinWords(wrap(KEY_PERIOD), wrap(COL_SUMMARY));
     MULTI_BODY_TEMPLATE = BeeUtils.joinWords(wrap(COL_STATUS), wrap(ALS_COMPANY_NAME),
-        wrap(TasksConstants.COL_OWNER), wrap(TasksConstants.COL_EXECUTOR),
-        wrap(TasksConstants.PROP_OBSERVERS));
+        wrap(TaskConstants.COL_OWNER), wrap(TaskConstants.COL_EXECUTOR),
+        wrap(TaskConstants.PROP_OBSERVERS));
 
-    COMPACT_TEMPLATE = BeeUtils.joinWords(wrap(COL_SUMMARY), wrap(TasksConstants.COL_EXECUTOR));
+    COMPACT_TEMPLATE = BeeUtils.joinWords(wrap(COL_SUMMARY), wrap(TaskConstants.COL_EXECUTOR));
 
     TITLE_TEMPLATE = BeeUtils.buildLines(wrap(KEY_PERIOD), wrap(COL_SUMMARY), wrap(COL_STATUS),
-        wrap(ALS_COMPANY_NAME), wrap(TasksConstants.COL_OWNER), wrap(TasksConstants.COL_EXECUTOR),
-        wrap(TasksConstants.PROP_OBSERVERS), wrap(COL_DESCRIPTION));
+        wrap(ALS_COMPANY_NAME), wrap(TaskConstants.COL_OWNER), wrap(TaskConstants.COL_EXECUTOR),
+        wrap(TaskConstants.PROP_OBSERVERS), wrap(COL_DESCRIPTION));
 
     STRING_TEMPLATE = BeeUtils.buildLines(wrap(KEY_PERIOD), wrap(COL_SUMMARY), wrap(COL_STATUS),
-        wrap(ALS_COMPANY_NAME), wrap(TasksConstants.COL_OWNER), wrap(TasksConstants.COL_EXECUTOR));
+        wrap(ALS_COMPANY_NAME), wrap(TaskConstants.COL_OWNER), wrap(TaskConstants.COL_EXECUTOR));
   }
 
   public static CalendarTask restore(String s) {
@@ -118,21 +118,21 @@ public class CalendarTask extends CalendarItem implements BeeSerializable {
     this.type = type;
     this.id = id;
 
-    this.start = row.getDateTime(TasksConstants.COL_START_TIME);
-    this.end = row.getDateTime(TasksConstants.COL_FINISH_TIME);
+    this.start = row.getDateTime(TaskConstants.COL_START_TIME);
+    this.end = row.getDateTime(TaskConstants.COL_FINISH_TIME);
 
-    this.summary = row.getValue(TasksConstants.COL_SUMMARY);
-    this.description = row.getValue(TasksConstants.COL_DESCRIPTION);
+    this.summary = row.getValue(TaskConstants.COL_SUMMARY);
+    this.description = row.getValue(TaskConstants.COL_DESCRIPTION);
 
-    this.companyName = row.getValue(CommonsConstants.ALS_COMPANY_NAME);
+    this.companyName = row.getValue(ALS_COMPANY_NAME);
 
     this.priority = EnumUtils.getEnumByIndex(TaskPriority.class,
-        row.getInt(TasksConstants.COL_PRIORITY));
+        row.getInt(TaskConstants.COL_PRIORITY));
     this.status = EnumUtils.getEnumByIndex(TaskStatus.class,
-        row.getInt(TasksConstants.COL_STATUS));
+        row.getInt(TaskConstants.COL_STATUS));
 
-    this.owner = row.getLong(TasksConstants.COL_OWNER);
-    this.executor = row.getLong(TasksConstants.COL_EXECUTOR);
+    this.owner = row.getLong(TaskConstants.COL_OWNER);
+    this.executor = row.getLong(TaskConstants.COL_EXECUTOR);
   }
 
   private CalendarTask() {
@@ -330,7 +330,7 @@ public class CalendarTask extends CalendarItem implements BeeSerializable {
 
     Map<String, String> result = Maps.newHashMap();
 
-    result.put(wrap(TasksConstants.COL_TASK_ID), build(Localized.getConstants().captionId(),
+    result.put(wrap(TaskConstants.COL_TASK_ID), build(Localized.getConstants().captionId(),
         BeeUtils.toString(getId()), addLabels));
 
     result.put(wrap(COL_START_DATE_TIME), build(Localized.getConstants().crmStartDate(),
@@ -346,24 +346,24 @@ public class CalendarTask extends CalendarItem implements BeeSerializable {
     result.put(wrap(ALS_COMPANY_NAME), build(Localized.getConstants().company(), getCompanyName(),
         addLabels));
 
-    result.put(wrap(TasksConstants.COL_PRIORITY), build(Localized.getConstants().crmTaskPriority(),
+    result.put(wrap(TaskConstants.COL_PRIORITY), build(Localized.getConstants().crmTaskPriority(),
         (getPriority() == null) ? BeeConst.STRING_EMPTY : getPriority().getCaption(), addLabels));
     result.put(wrap(COL_STATUS), build(Localized.getConstants().crmTaskStatus(),
         (getStatus() == null) ? BeeConst.STRING_EMPTY : getStatus().getCaption(), addLabels));
 
-    result.put(wrap(TasksConstants.COL_OWNER), build(Localized.getConstants().crmTaskManager(),
+    result.put(wrap(TaskConstants.COL_OWNER), build(Localized.getConstants().crmTaskManager(),
         formatUser(getOwner(), users), addLabels));
-    result.put(wrap(TasksConstants.COL_EXECUTOR), build(Localized.getConstants().crmTaskExecutor(),
+    result.put(wrap(TaskConstants.COL_EXECUTOR), build(Localized.getConstants().crmTaskExecutor(),
         formatUser(getExecutor(), users), addLabels));
 
     if (BeeUtils.isEmpty(getObservers())) {
-      result.put(wrap(TasksConstants.PROP_OBSERVERS), BeeConst.STRING_EMPTY);
+      result.put(wrap(TaskConstants.PROP_OBSERVERS), BeeConst.STRING_EMPTY);
     } else {
       List<String> names = Lists.newArrayList();
       for (Long observer : getObservers()) {
         names.add(formatUser(observer, users));
       }
-      result.put(wrap(TasksConstants.PROP_OBSERVERS),
+      result.put(wrap(TaskConstants.PROP_OBSERVERS),
           build(Localized.getConstants().crmTaskObservers(), joinChildren(names), addLabels));
     }
 

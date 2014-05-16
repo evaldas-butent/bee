@@ -1,17 +1,16 @@
 package com.butent.bee.shared.modules.mail;
 
-import com.google.common.base.Objects;
 import com.google.common.collect.Maps;
 
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeSerializable;
-import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.utils.ArrayUtils;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.Codec;
 
 import java.util.Collection;
 import java.util.Map;
+import java.util.Objects;
 
 public class MailFolder implements BeeSerializable {
 
@@ -20,33 +19,30 @@ public class MailFolder implements BeeSerializable {
   public static MailFolder restore(String s) {
     MailFolder folder = new MailFolder();
     folder.deserialize(s);
-    Assert.state(DataUtils.isId(folder.getAccountId()));
     return folder;
   }
 
   private enum Serial {
-    ACCOUNT, ID, NAME, UID, CHILDS
+    ID, NAME, UID, UNREAD, CHILDS
   }
 
-  private long accountId;
   private MailFolder parent;
   private Long id;
   private String name;
   private Long uidValidity;
+  private int unread;
 
   private final Map<String, MailFolder> childs = Maps.newLinkedHashMap();
 
-  public MailFolder(long accountId, MailFolder parent, Long id, String name, Long uidValidity) {
-    Assert.state(DataUtils.isId(accountId));
+  public MailFolder() {
+    this(null, null, null, null);
+  }
 
-    this.accountId = accountId;
+  public MailFolder(MailFolder parent, Long id, String name, Long uidValidity) {
     this.parent = parent;
     this.id = id;
     this.name = name;
     this.uidValidity = uidValidity;
-  }
-
-  private MailFolder() {
   }
 
   public void addSubFolder(MailFolder subFolder) {
@@ -64,9 +60,6 @@ public class MailFolder implements BeeSerializable {
       String value = arr[i];
 
       switch (member) {
-        case ACCOUNT:
-          accountId = BeeUtils.toLong(value);
-          break;
         case CHILDS:
           String[] data = Codec.beeDeserializeCollection(value);
 
@@ -87,6 +80,9 @@ public class MailFolder implements BeeSerializable {
         case UID:
           uidValidity = BeeUtils.toLongOrNull(value);
           break;
+        case UNREAD:
+          unread = BeeUtils.toInt(value);
+          break;
       }
     }
   }
@@ -96,7 +92,7 @@ public class MailFolder implements BeeSerializable {
   }
 
   public MailFolder findFolder(Long folderId) {
-    if (Objects.equal(getId(), folderId)) {
+    if (Objects.equals(getId(), folderId)) {
       return this;
     }
     for (MailFolder sub : getSubFolders()) {
@@ -107,10 +103,6 @@ public class MailFolder implements BeeSerializable {
       }
     }
     return null;
-  }
-
-  public long getAccountId() {
-    return accountId;
   }
 
   public Long getId() {
@@ -133,8 +125,12 @@ public class MailFolder implements BeeSerializable {
     return uidValidity;
   }
 
+  public int getUnread() {
+    return unread;
+  }
+
   public boolean isConnected() {
-    return !Objects.equal(uidValidity, DISCONNECTED_MODE);
+    return !Objects.equals(uidValidity, DISCONNECTED_MODE);
   }
 
   public MailFolder removeSubFolder(String subFolderName) {
@@ -149,9 +145,6 @@ public class MailFolder implements BeeSerializable {
 
     for (Serial member : members) {
       switch (member) {
-        case ACCOUNT:
-          arr[i++] = accountId;
-          break;
         case CHILDS:
           arr[i++] = childs;
           break;
@@ -164,6 +157,9 @@ public class MailFolder implements BeeSerializable {
         case UID:
           arr[i++] = uidValidity;
           break;
+        case UNREAD:
+          arr[i++] = unread;
+          break;
       }
     }
     return Codec.beeSerialize(arr);
@@ -171,5 +167,9 @@ public class MailFolder implements BeeSerializable {
 
   public void setUidValidity(Long uidValidity) {
     this.uidValidity = uidValidity;
+  }
+
+  public void setUnread(int unread) {
+    this.unread = unread;
   }
 }

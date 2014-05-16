@@ -18,7 +18,7 @@ import java.util.Set;
 
 public final class VisualizationUtils {
 
-  private static Set<String> loadedPackages = new HashSet<String>();
+  private static final Set<String> loadedPackages = new HashSet<>();
 
   public static void clearLoadedPackages() {
     loadedPackages.clear();
@@ -36,7 +36,7 @@ public final class VisualizationUtils {
     Assert.notEmpty(version);
     Assert.notNull(onLoad);
 
-    List<String> lst = new ArrayList<String>();
+    List<String> lst = new ArrayList<>();
     if (packages != null) {
       for (int i = 0; i < packages.length; i++) {
         if (!loadedPackages.contains(packages[i])) {

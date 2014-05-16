@@ -1,10 +1,9 @@
 package com.butent.bee.shared.rights;
 
-import com.google.common.collect.ComparisonChain;
 import com.google.common.collect.Lists;
-import com.google.common.collect.Ordering;
 
 import com.butent.bee.shared.Assert;
+import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.utils.BeeUtils;
 
 import java.util.List;
@@ -62,10 +61,18 @@ public final class ModuleAndSub implements Comparable<ModuleAndSub> {
 
   @Override
   public int compareTo(ModuleAndSub other) {
-    return ComparisonChain.start()
-        .compare(module, other.module)
-        .compare(subModule, other.subModule, Ordering.natural().nullsFirst())
-        .result();
+    int result = BeeUtils.compareNullsFirst(module, other.module);
+
+    if (result == BeeConst.COMPARE_EQUAL) {
+      if (subModule == null || other.subModule == null || subModule == other.subModule) {
+        result = BeeUtils.compareNullsFirst(subModule, other.subModule);
+      } else {
+        result = Integer.compare(module.getSubModules().indexOf(subModule),
+            module.getSubModules().indexOf(other.subModule));
+      }
+    }
+
+    return result;
   }
 
   @Override
@@ -88,7 +95,7 @@ public final class ModuleAndSub implements Comparable<ModuleAndSub> {
       return RightsUtils.JOINER.join(module.getName(), subModule.getName());
     }
   }
-  
+
   public SubModule getSubModule() {
     return subModule;
   }
@@ -105,7 +112,7 @@ public final class ModuleAndSub implements Comparable<ModuleAndSub> {
   public boolean hasSubModule() {
     return subModule != null;
   }
-  
+
   public boolean isEnabled() {
     return Module.ENABLED_MODULES.contains(this);
   }

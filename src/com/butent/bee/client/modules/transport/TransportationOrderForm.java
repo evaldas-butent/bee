@@ -16,12 +16,12 @@ import com.butent.bee.client.communication.ResponseCallback;
 import com.butent.bee.client.data.Data;
 import com.butent.bee.client.dialog.ConfirmationCallback;
 import com.butent.bee.client.modules.transport.TransportHandler.Profit;
-import com.butent.bee.client.ui.AbstractFormInterceptor;
-import com.butent.bee.client.ui.FormFactory.FormInterceptor;
 import com.butent.bee.client.view.HeaderView;
 import com.butent.bee.client.view.add.ReadyForInsertEvent;
 import com.butent.bee.client.view.edit.SaveChangesEvent;
 import com.butent.bee.client.view.form.FormView;
+import com.butent.bee.client.view.form.interceptor.AbstractFormInterceptor;
+import com.butent.bee.client.view.form.interceptor.FormInterceptor;
 import com.butent.bee.client.widget.Image;
 import com.butent.bee.shared.communication.ResponseObject;
 import com.butent.bee.shared.data.BeeColumn;
@@ -29,7 +29,8 @@ import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.IsRow;
 import com.butent.bee.shared.data.filter.Filter;
 import com.butent.bee.shared.i18n.Localized;
-import com.butent.bee.shared.modules.commons.CommonsConstants;
+import com.butent.bee.shared.modules.administration.AdministrationConstants;
+import com.butent.bee.shared.modules.classifiers.ClassifierConstants;
 import com.butent.bee.shared.modules.trade.TradeConstants;
 import com.butent.bee.shared.utils.ArrayUtils;
 import com.butent.bee.shared.utils.BeeUtils;
@@ -150,7 +151,7 @@ class TransportationOrderForm extends AbstractFormInterceptor implements ClickHa
 
   private void checkCreditInfo(final HasHandlers listener, final GwtEvent<?> event, Long customer) {
     ParameterList args = TransportHandler.createArgs(SVC_GET_CREDIT_INFO);
-    args.addDataItem(CommonsConstants.COL_COMPANY, customer);
+    args.addDataItem(ClassifierConstants.COL_COMPANY, customer);
 
     BeeKeeper.getRpc().makePostRequest(args, new ResponseCallback() {
       @Override
@@ -162,17 +163,17 @@ class TransportationOrderForm extends AbstractFormInterceptor implements ClickHa
         }
         Map<String, String> result = Codec.deserializeMap(response.getResponseAsString());
 
-        double limit = BeeUtils.toDouble(result.get(CommonsConstants.COL_COMPANY_CREDIT_LIMIT));
+        double limit = BeeUtils.toDouble(result.get(ClassifierConstants.COL_COMPANY_CREDIT_LIMIT));
         double debt = BeeUtils.toDouble(result.get(TradeConstants.VAR_DEBT));
         double overdue = BeeUtils.toDouble(result.get(TradeConstants.VAR_OVERDUE));
         double income = BeeUtils.toDouble(result.get(VAR_INCOME));
 
         if (overdue > 0 || (debt + income) > limit) {
-          String cap = result.get(CommonsConstants.COL_COMPANY_NAME);
+          String cap = result.get(ClassifierConstants.COL_COMPANY_NAME);
           List<String> msgs = Lists.newArrayList();
 
           msgs.add(BeeUtils.join(": ", Localized.getConstants().creditLimit(),
-              BeeUtils.joinWords(limit, result.get(CommonsConstants.COL_CURRENCY))));
+              BeeUtils.joinWords(limit, result.get(AdministrationConstants.COL_CURRENCY))));
           msgs.add(BeeUtils.join(": ", Localized.getConstants().trdDebt(), debt));
 
           if (overdue > 0) {

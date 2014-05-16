@@ -14,7 +14,8 @@ import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.user.client.ui.Widget;
 
-import static com.butent.bee.shared.modules.commons.CommonsConstants.*;
+import static com.butent.bee.shared.modules.administration.AdministrationConstants.*;
+import static com.butent.bee.shared.modules.classifiers.ClassifierConstants.*;
 
 import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.Global;
@@ -46,7 +47,7 @@ import com.butent.bee.shared.data.filter.Filter;
 import com.butent.bee.shared.font.FontAwesome;
 import com.butent.bee.shared.html.Attributes;
 import com.butent.bee.shared.i18n.Localized;
-import com.butent.bee.shared.modules.commons.CommonsConstants.RightsState;
+import com.butent.bee.shared.modules.administration.AdministrationConstants.RightsState;
 import com.butent.bee.shared.ui.Orientation;
 import com.butent.bee.shared.ui.Relation;
 import com.butent.bee.shared.utils.BeeUtils;
@@ -217,7 +218,7 @@ abstract class MultiRoleForm extends RightsForm {
   protected int getValueStartCol() {
     return 2;
   }
-  
+
   @Override
   protected void initData(final Consumer<Boolean> callback) {
     Queries.getRowSet(VIEW_ROLES, Lists.newArrayList(COL_ROLE_NAME), new Queries.RowSetCallback() {

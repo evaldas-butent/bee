@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<View xmlns="http://www.butent.com/view"
+
+  name="Purchases" source="Purchases" caption="=trdPurchases"
+  >
+  <Columns>
+    <SimpleColumn name="Date" />
+    <SimpleColumn name="Number" />
+    <SimpleColumn name="InvoicePrefix" />
+    <SimpleColumn name="InvoiceNo" />
+    <SimpleColumn name="Term" />
+
+    <SimpleColumn name="Notes" />
+    <SimpleColumn name="Exported" />
+
+    <SimpleColumn name="Amount" />
+    <SimpleColumn name="Currency" />
+
+    <SimpleColumn name="WarehouseFrom" />
+    <SimpleColumn name="WarehouseTo" />
+
+    <SimpleColumn name="Supplier" />    
+    <SimpleColumn name="Customer" />
+
+    <SimpleColumn name="Manager" />
+  </Columns>
+</View>

@@ -1,7 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <View xmlns="http://www.butent.com/view"
 
-  name="TcdArticleCriteria" source="TcdArticleCriteria" newRowCaption="=ecCriteriaNew"
+  name="TcdArticleCriteria" source="TcdArticleCriteria"
+  caption="=tcdArticleCriteria" newRowCaption="=ecCriterionNew"
   >
   <Columns>
     <SimpleColumn name="Article" />

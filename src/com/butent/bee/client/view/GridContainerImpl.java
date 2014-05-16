@@ -41,6 +41,7 @@ import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.IsRow;
 import com.butent.bee.shared.data.filter.Filter;
+import com.butent.bee.shared.rights.RegulatedWidget;
 import com.butent.bee.shared.ui.Action;
 import com.butent.bee.shared.ui.GridDescription;
 import com.butent.bee.shared.ui.NavigationOrigin;
@@ -169,16 +170,21 @@ public class GridContainerImpl extends Split implements GridContainerView, HasNa
         disabledActions.add(Action.ADD);
       }
 
-      if (!readOnly && !BeeUtils.isEmpty(gridDescription.getEnableCopy()) 
+      if (!readOnly && !BeeUtils.isEmpty(gridDescription.getEnableCopy())
           && !disabledActions.contains(Action.COPY)
           && BeeKeeper.getUser().canCreateData(gridDescription.getViewName())) {
         enabledActions.add(Action.COPY);
       }
 
+      if (!disabledActions.contains(Action.EXPORT)) {
+        enabledActions.add(Action.EXPORT);
+      }
+
       if (UiOption.hasSettings(uiOptions) && !disabledActions.contains(Action.CONFIGURE)) {
         enabledActions.add(Action.CONFIGURE);
       }
-      if (UiOption.hasSettings(uiOptions) && !disabledActions.contains(Action.AUDIT)) {
+      if (BeeKeeper.getUser().isWidgetVisible(RegulatedWidget.AUDIT)
+          && UiOption.hasSettings(uiOptions) && !disabledActions.contains(Action.AUDIT)) {
         enabledActions.add(Action.AUDIT);
       }
 
@@ -559,7 +565,7 @@ public class GridContainerImpl extends Split implements GridContainerView, HasNa
       @Override
       public void execute() {
         if (getGridView().getGridInterceptor() != null) {
-          getGridView().getGridInterceptor().onAttach(getGridView());
+          getGridView().getGridInterceptor().onLoad(getGridView());
         }
 
         CellGrid grid = getGridView().getGrid();

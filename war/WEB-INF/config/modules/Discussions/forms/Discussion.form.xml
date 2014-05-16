@@ -55,7 +55,7 @@
   
 ]>
 <f:Form xmlns="http://www.butent.com/widget" xmlns:f="http://www.butent.com/form"
-  xmlns:ui="http://www.butent.com/ui" name="Discussion" viewName="Discussion"
+  xmlns:ui="http://www.butent.com/ui" name="Discussion" viewName="Discussions"
   caption="=discussion">
 
   <FlowPanel class="flexBox-vertical">
@@ -115,12 +115,10 @@
         </FlowPanel>
 
         <FlowPanel>
-          <Label text="=tasks" style="&relTasksLbl;" />
+          <Label text="=crmTasks" style="&relTasksLbl;" />
           <MultiSelector viewName="Tasks" property="Tasks"
-            renderColumns="Summary 
-        ExecutorFirstName ExecutorLastName"
-            choiceColumns="Summary ExecutorFirstName 
-        ExecutorLastName StartTime FinishTime"
+            renderColumns="Summary ExecutorFirstName ExecutorLastName"
+            choiceColumns="Summary ExecutorFirstName ExecutorLastName StartTime FinishTime"
             newRowEnabled="false" style="&relTasksInp;" />
         </FlowPanel>
 

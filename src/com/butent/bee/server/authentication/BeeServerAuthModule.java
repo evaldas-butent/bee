@@ -1,7 +1,6 @@
 package com.butent.bee.server.authentication;
 
 import com.butent.bee.server.LoginServlet;
-import com.butent.bee.server.data.SystemBean;
 import com.butent.bee.server.data.UserServiceBean;
 import com.butent.bee.server.http.HttpConst;
 import com.butent.bee.server.http.HttpUtils;
@@ -14,8 +13,6 @@ import java.io.IOException;
 import java.security.Principal;
 import java.util.Map;
 
-import javax.naming.InitialContext;
-import javax.naming.NamingException;
 import javax.security.auth.Subject;
 import javax.security.auth.callback.Callback;
 import javax.security.auth.callback.CallbackHandler;
@@ -40,6 +37,7 @@ public class BeeServerAuthModule implements ServerAuthModule {
   private static boolean isProtectedResource(MessageInfo messageInfo) {
     return Boolean.parseBoolean((String) messageInfo.getMap().get(IS_MANDATORY));
   }
+
   private static LoginServlet locateServlet(HttpServletRequest request) {
     String servletPath = request.getServletPath();
     String servletPath2 = servletPath + "/*";
@@ -69,34 +67,16 @@ public class BeeServerAuthModule implements ServerAuthModule {
     return root;
   }
 
-  private static boolean validateHost(MessageInfo messageInfo, HttpServletRequest request) {
-    boolean ok;
-
-    try {
-      SystemBean sys = (SystemBean) InitialContext.doLookup("java:global" + BeeUtils.join("/",
-          request.getServletContext().getContextPath(), SystemBean.class.getSimpleName()));
-      ok = sys.validateHost(request);
-    } catch (NamingException | ClassCastException ex) {
-      logger.error(ex);
-      ok = true;
-    }
-    
-    if (!ok) {
-      HttpServletResponse response = (HttpServletResponse) messageInfo.getResponseMessage();
-      try {
-        response.sendError(HttpServletResponse.SC_FORBIDDEN);
-      } catch (IOException e) {
-        logger.error(e);
-      }
-    }
-
-    return ok;
-  }
-
   private CallbackHandler callbackHandler;
 
   private final Class<?>[] supportedMessageTypes = new Class[] {HttpServletRequest.class,
       HttpServletResponse.class};
+
+  private final UserServiceBean usr;
+
+  BeeServerAuthModule(UserServiceBean usr) {
+    this.usr = usr;
+  }
 
   @Override
   public void cleanSubject(MessageInfo messageInfo, Subject subject) throws AuthException {
@@ -120,7 +100,7 @@ public class BeeServerAuthModule implements ServerAuthModule {
       throws AuthException {
     return AuthStatus.SEND_SUCCESS;
   }
-  
+
   @SuppressWarnings("unchecked")
   @Override
   public AuthStatus validateRequest(MessageInfo messageInfo, Subject clientSubject,
@@ -128,12 +108,10 @@ public class BeeServerAuthModule implements ServerAuthModule {
 
     HttpServletRequest request = (HttpServletRequest) messageInfo.getRequestMessage();
 
-    if (!isProtectedResource(messageInfo)) {
-      if (validateHost(messageInfo, request)) {
-        return AuthStatus.SUCCESS;
-      } else {
-        return AuthStatus.FAILURE;
-      }
+    if (!validateHost(messageInfo, request)) {
+      return AuthStatus.FAILURE;
+    } else if (!isProtectedResource(messageInfo)) {
+      return AuthStatus.SUCCESS;
     }
 
     Principal userPrincipal = request.getUserPrincipal();
@@ -145,23 +123,13 @@ public class BeeServerAuthModule implements ServerAuthModule {
       return handleCallbacks(new Callback[] {callerPrincipalCallback});
     }
 
-    if (!validateHost(messageInfo, request)) {
-      return AuthStatus.FAILURE;
-    }
-    
     String userName = BeeUtils.trim(request.getParameter(HttpConst.PARAM_USER));
     String password = BeeUtils.trim(request.getParameter(HttpConst.PARAM_PASSWORD));
     boolean ok = false;
 
     if (!BeeUtils.anyEmpty(userName, password)) {
-      UserServiceBean usr;
-
-      try {
-        usr = (UserServiceBean) InitialContext.doLookup("java:global" + BeeUtils.join("/",
-            request.getServletContext().getContextPath(), UserServiceBean.class.getSimpleName()));
+      if (usr != null) {
         ok = usr.authenticateUser(userName, Codec.encodePassword(password));
-      } catch (NamingException | ClassCastException ex) {
-        logger.error(ex);
       }
     }
     if (!ok) {
@@ -197,5 +165,23 @@ public class BeeServerAuthModule implements ServerAuthModule {
       throw (AuthException) new AuthException().initCause(e);
     }
     return AuthStatus.SUCCESS;
+  }
+
+  private boolean validateHost(MessageInfo messageInfo, HttpServletRequest request) {
+    boolean ok = true;
+  
+    if (usr != null) {
+      ok = usr.validateHost(request);
+    }
+    if (!ok) {
+      HttpServletResponse response = (HttpServletResponse) messageInfo.getResponseMessage();
+      try {
+        response.sendError(HttpServletResponse.SC_FORBIDDEN);
+      } catch (IOException e) {
+        logger.error(e);
+      }
+    }
+  
+    return ok;
   }
 }

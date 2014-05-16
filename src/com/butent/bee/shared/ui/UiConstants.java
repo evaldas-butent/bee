@@ -53,10 +53,20 @@ public final class UiConstants {
   
   public static final String ATTR_VISIBLE = "visible";
   public static final String ATTR_MODULE = "module";
+  public static final String ATTR_DATA = "data";
+  public static final String ATTR_FOR = "for";
+  
+  public static final String ATTR_GRID_NAME = "gridName";
   
   public static final String TAG_ROW = "row";
   public static final String TAG_COL = "col";
   public static final String TAG_CELL = "cell";
+
+  public static final String TAG_CHILD_GRID = "ChildGrid";
+  public static final String TAG_GRID_PANEL = "GridPanel";
+
+  public static final String TAG_DATA_TREE = "DataTree";
+  public static final String TAG_MULTI_SELECTOR = "MultiSelector";
 
   public static final int MAX_PASSWORD_LENGTH = 30;
 

@@ -12,7 +12,6 @@ import com.butent.bee.client.communication.ParameterList;
 import com.butent.bee.client.communication.ResponseCallback;
 import com.butent.bee.client.composite.MultiSelector;
 import com.butent.bee.client.data.Data;
-import com.butent.bee.client.data.Provider;
 import com.butent.bee.client.dialog.DialogBox;
 import com.butent.bee.client.dialog.DialogConstants;
 import com.butent.bee.client.grid.GridFactory;
@@ -37,6 +36,7 @@ import com.butent.bee.shared.css.values.TextAlign;
 import com.butent.bee.shared.data.BeeRow;
 import com.butent.bee.shared.data.BeeRowSet;
 import com.butent.bee.shared.data.DataUtils;
+import com.butent.bee.shared.data.ProviderType;
 import com.butent.bee.shared.data.cache.CachingPolicy;
 import com.butent.bee.shared.data.value.ValueType;
 import com.butent.bee.shared.i18n.Localized;
@@ -155,7 +155,7 @@ class ReportManager {
     gridView.initData(rowSet.getNumberOfRows(), rowSet);
     
     GridPresenter presenter = new GridPresenter(gridDescription, gridView,
-        rowSet.getNumberOfRows(), rowSet, Provider.Type.LOCAL, CachingPolicy.NONE, uiOptions);
+        rowSet.getNumberOfRows(), rowSet, ProviderType.LOCAL, CachingPolicy.NONE, uiOptions);
 
     BeeKeeper.getScreen().updateActivePanel(presenter.getWidget());
   }

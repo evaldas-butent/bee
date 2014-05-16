@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<View xmlns="http://www.butent.com/view"
+
+  name="CompanyBankAccounts" source="CompanyBankAccounts" module="Classifiers"
+  caption="=companyRelationTypes"
+  >
+  <Columns>
+    <SimpleColumn name="Company" />
+    
+    <SimpleColumn name="Bank" />
+    <SimpleJoin joinType="LEFT" name="Bank">
+      <SimpleColumn name="Name" alias="BankName" />
+      <SimpleColumn name="BankCode" />
+    </SimpleJoin>
+      
+    <ExternalJoin source="Companies" joinType="LEFT" name="DefaultBankAccount">
+      <AggregateColumn aggregate="MAX" name="DefaultBankAccount" />
+    </ExternalJoin>
+    
+    <SimpleColumn name="BankAccount"/>
+    <SimpleColumn name="IBANcode" />
+    <SimpleColumn name="Notes" />
+ </Columns>
+ 
+   
+</View>
+ 

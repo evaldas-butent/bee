@@ -15,7 +15,6 @@
       </SimpleJoin>
     </SimpleJoin>
     
-    <SimpleColumn name="Assessor" />
     <SimpleColumn name="Date" />
 
     <SimpleColumn name="Service" />
@@ -37,5 +36,6 @@
     </SimpleJoin>
     <SimpleColumn name="Number" />
     <SimpleColumn name="Note" />
+    <SimpleColumn name="Purchase" />
   </Columns>
 </View>

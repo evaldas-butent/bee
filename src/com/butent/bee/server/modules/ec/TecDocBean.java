@@ -5,7 +5,8 @@ import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 
-import static com.butent.bee.shared.modules.commons.CommonsConstants.*;
+import static com.butent.bee.shared.modules.administration.AdministrationConstants.*;
+import static com.butent.bee.shared.modules.classifiers.ClassifierConstants.*;
 import static com.butent.bee.shared.modules.ec.EcConstants.*;
 
 import com.butent.bee.server.data.IdGeneratorBean;
@@ -33,7 +34,6 @@ import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogLevel;
 import com.butent.bee.shared.logging.LogUtils;
 import com.butent.bee.shared.modules.BeeParameter;
-import com.butent.bee.shared.modules.commons.CommonsConstants;
 import com.butent.bee.shared.modules.ec.EcConstants.EcSupplier;
 import com.butent.bee.shared.rights.Module;
 import com.butent.bee.shared.time.TimeUtils;
@@ -347,8 +347,8 @@ public class TecDocBean {
             .addFromInner("tof_des_texts", SqlUtils.join("tof_country_designations",
                 "cds_tex_id", "tof_des_texts", "tex_id"))
             .setWhere(SqlUtils.and(SqlUtils.equals("tof_country_designations", "cds_lng_id", 34),
-                SqlUtils.equals(SqlUtils.substring("tof_country_designations", "cds_ctm", 3, 1),
-                    "1"))) // Austria
+                SqlUtils.equals(SqlUtils.substring("tof_country_designations", "cds_ctm", 41, 1),
+                    "1"))) // Šveicarija
             .addGroup("tof_country_designations", "cds_id")));
 
     init.add(SqlUtils.createIndex("_country_designations", SqlUtils.uniqueName(),
@@ -1297,22 +1297,22 @@ public class TecDocBean {
     String log = supplier + " " + TBL_TCD_REMAINDERS + ":";
 
     String idName = sys.getIdName(TBL_TCD_REMAINDERS);
-    String supplierWarehouse = CommonsConstants.COL_WAREHOUSE_SUPPLIER_CODE;
+    String supplierWarehouse = COL_WAREHOUSE_SUPPLIER_CODE;
 
     String rem = qs.sqlCreateTemp(new SqlSelect()
         .addFields(TBL_TCD_ARTICLE_SUPPLIERS, COL_TCD_SUPPLIER_ID)
         .addFields(TBL_TCD_REMAINDERS, idName)
-        .addFields(CommonsConstants.TBL_WAREHOUSES, supplierWarehouse)
+        .addFields(TBL_WAREHOUSES, supplierWarehouse)
         .addFrom(TBL_TCD_REMAINDERS)
         .addFromInner(TBL_TCD_ARTICLE_SUPPLIERS,
             SqlUtils.and(SqlUtils.equals(TBL_TCD_ARTICLE_SUPPLIERS, COL_TCD_SUPPLIER,
                 supplier.ordinal()),
                 sys.joinTables(TBL_TCD_ARTICLE_SUPPLIERS, TBL_TCD_REMAINDERS,
                     COL_TCD_ARTICLE_SUPPLIER)))
-        .addFromInner(CommonsConstants.TBL_WAREHOUSES,
-            SqlUtils.and(sys.joinTables(CommonsConstants.TBL_WAREHOUSES,
-                TBL_TCD_REMAINDERS, CommonsConstants.COL_WAREHOUSE),
-                SqlUtils.notNull(CommonsConstants.TBL_WAREHOUSES, supplierWarehouse))));
+        .addFromInner(TBL_WAREHOUSES,
+            SqlUtils.and(sys.joinTables(TBL_WAREHOUSES,
+                TBL_TCD_REMAINDERS, COL_WAREHOUSE),
+                SqlUtils.notNull(TBL_WAREHOUSES, supplierWarehouse))));
 
     qs.updateData(new SqlUpdate(TBL_TCD_REMAINDERS)
         .addConstant(COL_TCD_REMAINDER, null)
@@ -1321,10 +1321,10 @@ public class TecDocBean {
     String tmp = qs.sqlCreateTemp(new SqlSelect()
         .addFields(TBL_TCD_ARTICLE_SUPPLIERS, COL_TCD_SUPPLIER_ID)
         .addFields(TBL_TCD_REMAINDERS, COL_TCD_REMAINDER, idName)
-        .addFields(CommonsConstants.TBL_WAREHOUSES, supplierWarehouse)
+        .addFields(TBL_WAREHOUSES, supplierWarehouse)
         .addFrom(TBL_TCD_ARTICLE_SUPPLIERS)
         .addFrom(TBL_TCD_REMAINDERS)
-        .addFrom(CommonsConstants.TBL_WAREHOUSES)
+        .addFrom(TBL_WAREHOUSES)
         .setWhere(SqlUtils.sqlFalse()));
 
     boolean isDebugEnabled = messyLogger.isDebugEnabled();
@@ -1381,12 +1381,12 @@ public class TecDocBean {
     for (String warehouse : qs.getColumn(new SqlSelect().setDistinctMode(true)
         .addFields(tmp, supplierWarehouse)
         .addFrom(tmp)
-        .setWhere(SqlUtils.not(SqlUtils.in(tmp, supplierWarehouse, CommonsConstants.TBL_WAREHOUSES,
-            supplierWarehouse, SqlUtils.notNull(CommonsConstants.TBL_WAREHOUSES,
+        .setWhere(SqlUtils.not(SqlUtils.in(tmp, supplierWarehouse, TBL_WAREHOUSES,
+            supplierWarehouse, SqlUtils.notNull(TBL_WAREHOUSES,
                 supplierWarehouse)))))) {
 
-      qs.insertData(new SqlInsert(CommonsConstants.TBL_WAREHOUSES)
-          .addConstant(CommonsConstants.COL_WAREHOUSE_CODE, warehouse)
+      qs.insertData(new SqlInsert(TBL_WAREHOUSES)
+          .addConstant(COL_WAREHOUSE_CODE, warehouse)
           .addConstant(supplierWarehouse, warehouse));
     }
 
@@ -1395,15 +1395,15 @@ public class TecDocBean {
     insertData(TBL_TCD_REMAINDERS, new SqlSelect().setLimit(500000)
         .addField(TBL_TCD_ARTICLE_SUPPLIERS, sys.getIdName(TBL_TCD_ARTICLE_SUPPLIERS),
             COL_TCD_ARTICLE_SUPPLIER)
-        .addField(CommonsConstants.TBL_WAREHOUSES, sys.getIdName(CommonsConstants.TBL_WAREHOUSES),
-            CommonsConstants.COL_WAREHOUSE)
+        .addField(TBL_WAREHOUSES, sys.getIdName(TBL_WAREHOUSES),
+            COL_WAREHOUSE)
         .addFields(tmp, COL_TCD_REMAINDER)
         .addFrom(tmp)
         .addFromInner(TBL_TCD_ARTICLE_SUPPLIERS, SqlUtils.and(
             SqlUtils.equals(TBL_TCD_ARTICLE_SUPPLIERS, COL_TCD_SUPPLIER, supplier.ordinal()),
             SqlUtils.joinUsing(tmp, TBL_TCD_ARTICLE_SUPPLIERS, COL_TCD_SUPPLIER_ID)))
-        .addFromInner(CommonsConstants.TBL_WAREHOUSES,
-            SqlUtils.joinUsing(tmp, CommonsConstants.TBL_WAREHOUSES, supplierWarehouse))
+        .addFromInner(TBL_WAREHOUSES,
+            SqlUtils.joinUsing(tmp, TBL_WAREHOUSES, supplierWarehouse))
         .addOrder(TBL_TCD_ARTICLE_SUPPLIERS, sys.getIdName(TBL_TCD_ARTICLE_SUPPLIERS))
         .addOrder(tmp, supplierWarehouse));
 

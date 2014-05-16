@@ -23,7 +23,9 @@
       <Table>
         <row>
           <Label html="Užsakymo Nr.:" style="text-align:right; &bold;" />
-          <TextLabel source="OrderNo" />
+          <TextLabel>
+            <render><ui:expression>rowId</ui:expression></render>
+          </TextLabel>
         </row>
         <row>
           <Label html="Ref numeris:" style="text-align:right; &bold;" />
@@ -31,7 +33,7 @@
         </row>
         <row>
           <Label html="Data:" style="text-align:right; &bold;" />
-          <DateTimeLabel source="OrderDate" format="DATE_SHORT" />
+          <DateTimeLabel source="Date" format="DATE_SHORT" />
         </row>
       </Table>
       <Image  url="images/logo.png" />
@@ -42,11 +44,11 @@
 
       <HorizontalPanel class="&form;-table">
         <cell style="vertical-align:top;">
-          <FlowPanel name="CustomerInfo" />
+          <FlowPanel name="Customer" />
         </cell>
         
         <FlowPanel>
-          <FlowPanel name="ForwarderInfo" class="&form;-forwarder" />
+          <FlowPanel name="Forwarder" class="&form;-forwarder" />
           <br />
           <Label html="Ekspeditoriaus atstovas" style="&bold;" />
           <TextLabel source="Position">
@@ -125,17 +127,8 @@
     <HorizontalPanel class="&form;-table" style="&section;">
       <Label html="Papildoma informacija:" style="&bold;" />
       <TextLabel source="CargoNotes" style="white-space:pre-wrap;" />
-
-      <FlowPanel>
-        <FlowPanel>
-          <Label html="Transporto priemonės nr.:" style="&inline; width:160px; text-align:right;" />
-          <TextLabel source="LoadingTerminal" style="&inline; margin-left:5px;" />
-        </FlowPanel>
-        <FlowPanel>
-          <Label html="Transporto priemonės nr.2:" style="&inline; width:160px; text-align:right;" />
-          <TextLabel source="UnloadingTerminal" style="&inline; margin-left:5px;" />
-        </FlowPanel>
-      </FlowPanel>
+      <Label html="Transporto priemonių nr.:" style="&bold;" />
+      <Label name="ForwarderVehicle" />
     </HorizontalPanel>
 
     <HorizontalPanel class="&form;-table" style="&section;">

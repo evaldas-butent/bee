@@ -4,10 +4,13 @@ import com.google.common.collect.Lists;
 
 import com.butent.bee.shared.data.BeeColumn;
 import com.butent.bee.shared.data.IsColumn;
+import com.butent.bee.shared.data.value.DateTimeValue;
+import com.butent.bee.shared.data.value.DateValue;
 import com.butent.bee.shared.data.value.LongValue;
 import com.butent.bee.shared.data.value.ValueType;
 import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogUtils;
+import com.butent.bee.shared.time.TimeUtils;
 import com.butent.bee.shared.utils.BeeUtils;
 
 import java.util.List;
@@ -15,7 +18,7 @@ import java.util.List;
 public final class FilterParser {
 
   private static BeeLogger logger = LogUtils.getLogger(FilterParser.class);
-  
+
   public static Filter parse(String input, List<? extends IsColumn> columns,
       String idColumnName, String versionColumnName, Long userId) {
     Filter flt = null;
@@ -43,7 +46,7 @@ public final class FilterParser {
           }
           ((CompoundFilter) flt).add(ff);
         }
-      
+
       } else {
         String s = parts.get(0);
         String ptrn = "^\\s*" + CompoundType.NOT.toTextString() + "\\s*\\(\\s*(.*)\\s*\\)\\s*$";
@@ -53,7 +56,7 @@ public final class FilterParser {
           if (flt != null) {
             flt = Filter.isNot(flt);
           }
-          
+
         } else if (CustomFilter.is(s)) {
           flt = CustomFilter.tryParse(s);
 
@@ -84,7 +87,7 @@ public final class FilterParser {
         }
       }
     }
-    
+
     if (BeeUtils.hasLength(idColumnName, len + 1) && BeeUtils.startsWith(expr, idColumnName)) {
       column = new BeeColumn(ValueType.LONG, idColumnName);
       len = idColumnName.length();
@@ -108,7 +111,7 @@ public final class FilterParser {
       }
       x = x.replaceFirst(ptrn, "$1");
     }
-    
+
     List<String> parts = Lists.newArrayList();
     int cnt = s.split(pattern).length;
     boolean ok = false;
@@ -132,13 +135,13 @@ public final class FilterParser {
         break;
       }
     }
-    
+
     if (!ok) {
       parts.add(s);
     }
     return parts;
   }
-  
+
   private static IsColumn isColumn(String expr, List<? extends IsColumn> columns) {
     if (!BeeUtils.isEmpty(expr) && !BeeUtils.isEmpty(columns)) {
       for (IsColumn col : columns) {
@@ -149,7 +152,7 @@ public final class FilterParser {
     }
     return null;
   }
-  
+
   private static Filter parseExpression(String expr, List<? extends IsColumn> columns,
       String idColumnName, String versionColumnName, Long userId) {
     Filter flt = null;
@@ -180,7 +183,7 @@ public final class FilterParser {
             operator = Operator.EQ;
           }
         }
-    
+
         IsColumn column2 = isColumn(value, columns);
 
         if (BeeUtils.same(colName, idColumnName)) {
@@ -201,8 +204,18 @@ public final class FilterParser {
 
           if (BeeUtils.isEmpty(value)) {
             flt = Filter.isNull(colName);
+
           } else if ("{u}".equals(value) && column.getType() == ValueType.LONG && userId != null) {
             flt = Filter.compareWithValue(column.getId(), operator, new LongValue(userId));
+
+          } else if ("{d}".equals(value) && ValueType.isDateOrDateTime(column.getType())) {
+            flt = Filter.compareWithValue(column.getId(), operator,
+                new DateValue(TimeUtils.today()));
+
+          } else if ("{t}".equals(value) && ValueType.isDateOrDateTime(column.getType())) {
+            flt = Filter.compareWithValue(column.getId(), operator,
+                new DateTimeValue(TimeUtils.nowMinutes()));
+
           } else {
             flt = Filter.compareWithValue(column, operator, value);
           }
@@ -237,7 +250,7 @@ public final class FilterParser {
     }
     return !wh.matches(".*[\\(\\)].*");
   }
-  
+
   private FilterParser() {
   }
 }

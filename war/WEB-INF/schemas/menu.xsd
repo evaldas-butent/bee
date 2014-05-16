@@ -28,10 +28,38 @@
     </xs:complexContent>
   </xs:complexType>
 
+  <xs:simpleType name="serviceType">
+    <xs:restriction base="xs:string">
+      <xs:enumeration value="form" />
+      <xs:enumeration value="grid" />
+      <xs:enumeration value="new" />
+      <xs:enumeration value="parameters" />
+      <xs:enumeration value="report" />
+      <xs:enumeration value="items" />
+      <xs:enumeration value="update_exchange_rates" />
+      <xs:enumeration value="calendar_reports" />
+      <xs:enumeration value="task_list" />
+      <xs:enumeration value="task_reports" />
+      <xs:enumeration value="discuss_list" />
+      <xs:enumeration value="open_mail" />
+      <xs:enumeration value="restart_proxy" />
+      <xs:enumeration value="ensure_categories_and_open_grid" />
+      <xs:enumeration value="edit_terms_of_delivery" />
+      <xs:enumeration value="edit_ec_contacts" />
+      <xs:enumeration value="freight_exchange" />
+      <xs:enumeration value="shipping_schedule" />
+      <xs:enumeration value="driver_time_board" />
+      <xs:enumeration value="truck_time_board" />
+      <xs:enumeration value="trailer_time_board" />
+      <xs:enumeration value="assessments_grid" />
+      <xs:enumeration value="service_calendar" />
+    </xs:restriction>
+  </xs:simpleType>
+
   <xs:complexType name="itemType">
     <xs:complexContent>
       <xs:extension base="menuType">
-        <xs:attribute name="service" type="xs:string" />
+        <xs:attribute name="service" type="serviceType" />
         <xs:attribute name="parameters" type="xs:string" />
       </xs:extension>
     </xs:complexContent>
@@ -44,5 +72,6 @@
     <xs:attribute name="order" type="xs:int" />
     <xs:attribute name="parent" type="xs:string" />
     <xs:attribute name="module" type="type:module" />
+    <xs:attribute name="data" type="type:dataView" />
   </xs:complexType>
 </xs:schema>

@@ -71,7 +71,6 @@ public final class MailConstants {
 
   public static final String COL_MESSAGE = "Message";
   public static final String COL_RAW_CONTENT = "RawContent";
-  public static final String COL_FILE = "File";
   public static final String COL_ATTACHMENT_NAME = "FileName";
   public static final String COL_ADDRESS = "Address";
   public static final String COL_ADDRESS_TYPE = "Type";
@@ -82,7 +81,6 @@ public final class MailConstants {
   public static final String COL_SUBJECT = "Subject";
   public static final String COL_CONTENT = "Content";
   public static final String COL_HTML_CONTENT = "HtmlContent";
-  public static final String COL_CONTENT_TYPE = "ContentType";
 
   public static final String COL_ACCOUNT_DESCRIPTION = "Description";
   public static final String COL_ACCOUNT_DEFAULT = "Main";
@@ -114,7 +112,11 @@ public final class MailConstants {
   public static final String FORM_ACCOUNT = "Account";
   public static final String FORM_NEW_ACCOUNT = "NewAccount";
 
-  public static final String FORM_NEW_MAIL = "NewMailMessage";
+  public static final String FORM_MAIL = "Mail";
+  public static final String FORM_MAIL_MESSAGE = "MailMessage";
+  public static final String FORM_NEW_MAIL_MESSAGE = "NewMailMessage";
+
+  public static final String FILTER_SEARCH = "SearchFilter";
 
   public static final String DATA_TYPE_MESSAGE = "Message";
 

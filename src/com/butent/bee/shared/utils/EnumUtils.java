@@ -14,11 +14,12 @@ import com.butent.bee.shared.i18n.LocalizableConstants;
 import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogUtils;
+import com.butent.bee.shared.modules.administration.AdministrationConstants;
 import com.butent.bee.shared.modules.calendar.CalendarConstants;
-import com.butent.bee.shared.modules.commons.CommonsConstants;
 import com.butent.bee.shared.modules.discussions.DiscussionsConstants;
 import com.butent.bee.shared.modules.ec.EcConstants;
-import com.butent.bee.shared.modules.tasks.TasksConstants;
+import com.butent.bee.shared.modules.service.ServiceConstants;
+import com.butent.bee.shared.modules.tasks.TaskConstants;
 import com.butent.bee.shared.modules.transport.TransportConstants;
 import com.butent.bee.shared.ui.HasCaption;
 import com.butent.bee.shared.ui.HasLocalizedCaption;
@@ -50,11 +51,12 @@ public final class EnumUtils {
   
   static {
     CalendarConstants.register();
-    CommonsConstants.register();
-    TasksConstants.register();
+    AdministrationConstants.register();
+    TaskConstants.register();
     DiscussionsConstants.register();
     EcConstants.register();
     TransportConstants.register();
+    ServiceConstants.register();
   }
   
   public static String buildIndexList(Collection<? extends Enum<?>> values) {

@@ -3,12 +3,13 @@ package com.butent.bee.shared.ui;
 import com.google.common.collect.Lists;
 
 import com.butent.bee.shared.html.builder.elements.Meta;
+import com.butent.bee.shared.modules.administration.AdministrationConstants;
 import com.butent.bee.shared.modules.calendar.CalendarConstants;
-import com.butent.bee.shared.modules.commons.CommonsConstants;
 import com.butent.bee.shared.modules.discussions.DiscussionsConstants;
 import com.butent.bee.shared.modules.ec.EcConstants;
 import com.butent.bee.shared.modules.mail.MailConstants;
-import com.butent.bee.shared.modules.tasks.TasksConstants;
+import com.butent.bee.shared.modules.service.ServiceConstants;
+import com.butent.bee.shared.modules.tasks.TaskConstants;
 import com.butent.bee.shared.modules.trade.TradeConstants;
 import com.butent.bee.shared.modules.transport.TransportConstants;
 import com.butent.bee.shared.utils.BeeUtils;
@@ -43,9 +44,9 @@ public enum UserInterface implements HasCaption {
     @Override
     public List<String> getStyleSheets() {
       return Lists.newArrayList(MAIN_STYLE_SHEET, CalendarConstants.STYLE_SHEET,
-          CommonsConstants.STYLE_SHEET, TasksConstants.STYLE_SHEET, EcConstants.STYLE_SHEET,
+          AdministrationConstants.STYLE_SHEET, TaskConstants.STYLE_SHEET, EcConstants.STYLE_SHEET,
           MailConstants.STYLE_SHEET, TradeConstants.STYLE_SHEET, TransportConstants.STYLE_SHEET,
-          DiscussionsConstants.STYLE_SHEET);
+          DiscussionsConstants.STYLE_SHEET, ServiceConstants.STYLE_SHEET);
     }
 
     @Override
@@ -81,8 +82,9 @@ public enum UserInterface implements HasCaption {
     @Override
     public List<String> getStyleSheets() {
       return Lists.newArrayList(MAIN_STYLE_SHEET, CalendarConstants.STYLE_SHEET,
-          CommonsConstants.STYLE_SHEET, TasksConstants.STYLE_SHEET, EcConstants.STYLE_SHEET,
-          MailConstants.STYLE_SHEET, TradeConstants.STYLE_SHEET, TransportConstants.STYLE_SHEET);
+          AdministrationConstants.STYLE_SHEET, TaskConstants.STYLE_SHEET, EcConstants.STYLE_SHEET,
+          MailConstants.STYLE_SHEET, TradeConstants.STYLE_SHEET, TransportConstants.STYLE_SHEET,
+          ServiceConstants.STYLE_SHEET);
     }
 
     @Override
@@ -118,8 +120,9 @@ public enum UserInterface implements HasCaption {
     @Override
     public List<String> getStyleSheets() {
       return Lists.newArrayList(MAIN_STYLE_SHEET, CalendarConstants.STYLE_SHEET,
-          CommonsConstants.STYLE_SHEET, TasksConstants.STYLE_SHEET, EcConstants.STYLE_SHEET,
-          MailConstants.STYLE_SHEET, TradeConstants.STYLE_SHEET, TransportConstants.STYLE_SHEET);
+          AdministrationConstants.STYLE_SHEET, TaskConstants.STYLE_SHEET, EcConstants.STYLE_SHEET,
+          MailConstants.STYLE_SHEET, TradeConstants.STYLE_SHEET, TransportConstants.STYLE_SHEET,
+          ServiceConstants.STYLE_SHEET);
     }
 
     @Override
@@ -203,6 +206,7 @@ public enum UserInterface implements HasCaption {
     GRIDS(false),
     MENU(false),
     NEWS(false),
+    REPORTS(false),
     USERS(true);
 
     private final boolean required;

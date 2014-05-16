@@ -5,6 +5,7 @@ import com.google.common.collect.Range;
 import static com.butent.bee.shared.modules.transport.TransportConstants.*;
 
 import com.butent.bee.client.data.Data;
+import com.butent.bee.client.timeboard.TimeBoardHelper;
 import com.butent.bee.shared.data.SimpleRowSet.SimpleRow;
 import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.time.HasDateRange;
@@ -18,12 +19,16 @@ class CargoHandling implements HasDateRange, HasShipmentInfo {
   private final JustDate loadingDate;
   private final Long loadingCountry;
   private final String loadingPlace;
-  private final String loadingTerminal;
+  private final String loadingPostIndex;
+  private final Long loadingCity;
+  private final String loadingNumber;
 
   private final JustDate unloadingDate;
   private final Long unloadingCountry;
   private final String unloadingPlace;
-  private final String unloadingTerminal;
+  private final String unloadingPostIndex;
+  private final Long unloadingCity;
+  private final String unloadingNumber;
 
   private final String notes;
 
@@ -33,16 +38,20 @@ class CargoHandling implements HasDateRange, HasShipmentInfo {
     this.loadingDate = Places.getLoadingDate(row, loadingColumnAlias(COL_PLACE_DATE));
     this.loadingCountry = row.getLong(loadingColumnAlias(COL_PLACE_COUNTRY));
     this.loadingPlace = row.getValue(loadingColumnAlias(COL_PLACE_ADDRESS));
-    this.loadingTerminal = row.getValue(loadingColumnAlias(COL_PLACE_TERMINAL));
+    this.loadingPostIndex = row.getValue(loadingColumnAlias(COL_PLACE_POST_INDEX));
+    this.loadingCity = row.getLong(loadingColumnAlias(COL_PLACE_CITY));
+    this.loadingNumber = row.getValue(loadingColumnAlias(COL_PLACE_NUMBER));
 
     this.unloadingDate = Places.getUnloadingDate(row, unloadingColumnAlias(COL_PLACE_DATE));
     this.unloadingCountry = row.getLong(unloadingColumnAlias(COL_PLACE_COUNTRY));
     this.unloadingPlace = row.getValue(unloadingColumnAlias(COL_PLACE_ADDRESS));
-    this.unloadingTerminal = row.getValue(unloadingColumnAlias(COL_PLACE_TERMINAL));
+    this.unloadingPostIndex = row.getValue(unloadingColumnAlias(COL_PLACE_POST_INDEX));
+    this.unloadingCity = row.getLong(unloadingColumnAlias(COL_PLACE_CITY));
+    this.unloadingNumber = row.getValue(unloadingColumnAlias(COL_PLACE_NUMBER));
 
     this.notes = row.getValue(COL_CARGO_HANDLING_NOTES);
 
-    this.range = ChartHelper.getActivity(this.loadingDate, this.unloadingDate);
+    this.range = TimeBoardHelper.getActivity(this.loadingDate, this.unloadingDate);
   }
 
   @Override
@@ -61,8 +70,18 @@ class CargoHandling implements HasDateRange, HasShipmentInfo {
   }
 
   @Override
-  public String getLoadingTerminal() {
-    return loadingTerminal;
+  public String getLoadingPostIndex() {
+    return loadingPostIndex;
+  }
+
+  @Override
+  public Long getLoadingCity() {
+    return loadingCity;
+  }
+
+  @Override
+  public String getLoadingNumber() {
+    return loadingNumber;
   }
 
   @Override
@@ -86,12 +105,22 @@ class CargoHandling implements HasDateRange, HasShipmentInfo {
   }
 
   @Override
-  public String getUnloadingTerminal() {
-    return unloadingTerminal;
+  public String getUnloadingPostIndex() {
+    return unloadingPostIndex;
+  }
+
+  @Override
+  public Long getUnloadingCity() {
+    return unloadingCity;
+  }
+
+  @Override
+  public String getUnloadingNumber() {
+    return unloadingNumber;
   }
 
   String getTitle(String loadInfo, String unloadInfo) {
-    return ChartHelper.buildTitle(Localized.getConstants().intermediateLoading(), loadInfo,
+    return TimeBoardHelper.buildTitle(Localized.getConstants().intermediateLoading(), loadInfo,
         Localized.getConstants().intermediateUnloading(), unloadInfo,
         notesLabel, notes);
   }

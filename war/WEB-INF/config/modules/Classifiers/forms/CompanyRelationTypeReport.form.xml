@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<f:Form xmlns="http://www.butent.com/widget"
+  xmlns:f="http://www.butent.com/form"
+  
+  name="CompanyRelationTypeReport" caption="=contactReportCompanyByType"
+  enabledActions="filter bookmark export"
+  >
+  <FlowPanel>
+    <br/>
+    <HorizontalPanel style="border-collapse: collapse;" cellStyle="padding-left: 1em;">
+      <Label text="=dateFrom" />
+      <InputDateTime name="StartDate" style="width: 120px;" />
+
+      <Label text="=dateTo" />
+      <InputDateTime name="EndDate" style="width: 120px;" />
+
+      <Label text="=types" />
+      <MultiSelector name="Types" viewName="CompanyRelationTypes" renderColumns="Name"
+        newRowEnabled="false" style="width: 200px;" />
+    </HorizontalPanel>
+    
+    <br/>
+    <FlowPanel name="DataContainer" style="margin-left: 1em;" />
+  </FlowPanel>
+</f:Form>

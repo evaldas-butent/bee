@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<g:Grid xmlns="http://www.butent.com/column" xmlns:g="http://www.butent.com/grid"
+  xmlns:ui="http://www.butent.com/ui"
+
+  name="AssessmentReportDrillDown" viewName="Assessments" caption="=trAssessmentRequests"
+  flexGrow="1" order="AssessmentID desc" disabledActions="add delete filter remove_filter"
+  >
+  <g:columns>
+    <IdColumn name="ID" width="40" />
+    <DataColumn name="Assessment" width="40" />
+    <DataColumn name="Date" width="110" visible="true" />
+    <DataColumn name="Number" width="70" />
+    <DataColumn name="Status" width="70" />
+
+    <DataColumn name="LoadingDate" caption="=trCargoLoadingDateShort" width="70"
+      format="DATE_SHORT" />
+    <DataColumn name="UnloadingDate" caption="=trUnloadingDateShort" width="70"
+      format="DATE_SHORT" />
+    
+    <DataColumn name="CustomerName" />
+
+    <RelColumn name="Department" />
+    <RelColumn name="Manager" />
+
+    <CalcColumn type="string" name="From" source="LoadingCountryCode" cellType="html" width="20"
+      horizontalAlignment="center" searchBy="LoadingCountryName LoadingCountryCode">
+      <renderer type="flag" />
+    </CalcColumn>
+
+    <CalcColumn type="string" name="To" source="UnloadingCountryCode" cellType="html" width="20"
+      horizontalAlignment="center" searchBy="UnloadingCountryName UnloadingCountryCode">
+      <renderer type="flag" />
+    </CalcColumn>
+
+    <DataColumn name="OrderNotes" minWidth="100" whiteSpace="nowrap" />
+    <DataColumn name="Description" minWidth="100" whiteSpace="nowrap" />
+
+    <DataColumn name="Partial" caption="=partialShort" width="15" sortable="false"
+      visible="false" />
+    <DataColumn name="Outsized" caption="=outsizedShort" width="15" sortable="false"
+      visible="false" />
+    <DataColumn name="Dangerous" caption="=dangerousShort" width="15" sortable="false"
+      visible="false" />
+
+    <CalcColumn type="string" name="Vehicle" label="=trCarrierVehicle" searchBy="ForwarderVehicle">
+      <render>
+        <ui:function>
+          if (!row.MinVehicle) {
+            return row.MaxVehicle;
+          
+          } else if(!row.MaxVehicle || row.MinVehicle == row.MaxVehicle) {
+            return row.MinVehicle;
+          
+          } else {
+            return row.MinVehicle + ", " + row.MaxVehicle + (row.CntVehicle > 2 ? ", ...": "");
+          }
+        </ui:function>
+      </render>
+    </CalcColumn>
+  </g:columns>
+</g:Grid>

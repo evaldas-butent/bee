@@ -2,20 +2,29 @@
 <Entry xmlns="http://www.butent.com/menu"
 
 name="EcClassifiers" label="=ecClassifiers" order="20" parent="Ec" separator="true"
+module="Ec.Classifiers"
 >
 
-  <Item name="DeliveryMethods" label="=ecDeliveryMethods" service="grid" parameters="DeliveryMethods" />
-  <Item name="RejectionReasons" label="=ecRejectionReasons" service="grid" parameters="RejectionReasons" />
+  <Item name="DeliveryMethods" label="=ecDeliveryMethods" service="grid"
+    parameters="DeliveryMethods" />
+  <Item name="RejectionReasons" label="=ecRejectionReasons" service="grid"
+    parameters="RejectionReasons" />
 
-  <Item name="TcdCriteria" label="=tcdCriteria" service="grid" parameters="TcdCriteria" separator="true" />
-  <Item name="EcCategories" label="=ecItemCategories" service="form" parameters="TcdCategories" />
-  <Item name="EcGroups" label="=ecGroups" service="ensure_categories_and_open_grid" parameters="EcGroups" />
+  <Item name="TcdCriteria" label="=tcdCriteria" service="grid" parameters="TcdCriteria"
+    separator="true" />
+  <Item name="EcCategories" label="=ecItemCategories" service="form" parameters="TcdCategories"
+    data="TcdCategories" />
+  <Item name="EcGroups" label="=ecGroups" service="ensure_categories_and_open_grid" 
+    parameters="EcGroups" />
 
-  <Item name="TcdManufacturers" label="=tcdManufacturers" service="grid" parameters="TcdManufacturers" separator="true" />
+  <Item name="TcdManufacturers" label="=tcdManufacturers" service="grid" 
+    parameters="TcdManufacturers" separator="true" />
   <Item name="TcdModels" label="=tcdModels" service="grid" parameters="TcdModels" />
   <Item name="TcdTypes" label="=tcdTypes" service="grid" parameters="TcdTypes" />
 
-  <Item name="TcdBrands" label="=tcdBrands" service="grid" parameters="TcdBrands" separator="true" />
-  <Item name="TcdBrandsMapping" label="=tcdBrandsMapping" service="grid" parameters="TcdBrandsMapping" />
+  <Item name="TcdBrands" label="=tcdBrands" service="grid" parameters="TcdBrands" 
+    separator="true" />
+  <Item name="TcdBrandsMapping" label="=tcdBrandsMapping" service="grid" 
+   parameters="TcdBrandsMapping" />
 
 </Entry>

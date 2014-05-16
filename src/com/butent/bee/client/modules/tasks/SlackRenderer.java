@@ -3,13 +3,19 @@ package com.butent.bee.client.modules.tasks;
 import com.butent.bee.client.render.AbstractCellRenderer;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
+import com.butent.bee.shared.css.Colors;
+import com.butent.bee.shared.css.values.TextAlign;
 import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.IsColumn;
 import com.butent.bee.shared.data.IsRow;
+import com.butent.bee.shared.export.XCell;
+import com.butent.bee.shared.export.XFont;
+import com.butent.bee.shared.export.XSheet;
+import com.butent.bee.shared.export.XStyle;
 import com.butent.bee.shared.html.builder.elements.Div;
-import com.butent.bee.shared.modules.tasks.TasksConstants;
-import com.butent.bee.shared.modules.tasks.TasksUtils;
-import com.butent.bee.shared.modules.tasks.TasksConstants.TaskStatus;
+import com.butent.bee.shared.modules.tasks.TaskConstants;
+import com.butent.bee.shared.modules.tasks.TaskUtils;
+import com.butent.bee.shared.modules.tasks.TaskConstants.TaskStatus;
 import com.butent.bee.shared.time.DateTime;
 import com.butent.bee.shared.time.TimeUtils;
 import com.butent.bee.shared.utils.BeeUtils;
@@ -27,7 +33,7 @@ class SlackRenderer extends AbstractCellRenderer {
     }
   }
   
-  private static final String STYLE_PREFIX = TasksConstants.CRM_STYLE_PREFIX + "Slack-"; 
+  private static final String STYLE_PREFIX = TaskConstants.CRM_STYLE_PREFIX + "Slack-"; 
 
   private static final String STYLE_BAR = STYLE_PREFIX + "bar"; 
   private static final String STYLE_LABEl = STYLE_PREFIX + "label"; 
@@ -52,7 +58,7 @@ class SlackRenderer extends AbstractCellRenderer {
     if (finish != null && TimeUtils.isLess(finish, now)) {
       return Kind.LATE;
 
-    } else if (TasksUtils.isScheduled(start)) {
+    } else if (TaskUtils.isScheduled(start)) {
       return Kind.SCHEDULED;
     
     } else if (start != null && TimeUtils.isMore(finish, start) && TimeUtils.isMeq(now, start)
@@ -108,9 +114,67 @@ class SlackRenderer extends AbstractCellRenderer {
   SlackRenderer(List<? extends IsColumn> columns) {
     super(null);
 
-    this.statusIndex = DataUtils.getColumnIndex(TasksConstants.COL_STATUS, columns);
-    this.startIndex = DataUtils.getColumnIndex(TasksConstants.COL_START_TIME, columns);
-    this.finishIndex = DataUtils.getColumnIndex(TasksConstants.COL_FINISH_TIME, columns);
+    this.statusIndex = DataUtils.getColumnIndex(TaskConstants.COL_STATUS, columns);
+    this.startIndex = DataUtils.getColumnIndex(TaskConstants.COL_START_TIME, columns);
+    this.finishIndex = DataUtils.getColumnIndex(TaskConstants.COL_FINISH_TIME, columns);
+  }
+
+  @Override
+  public XCell export(IsRow row, int cellIndex, Integer styleRef, XSheet sheet) {
+    if (row == null || sheet == null) {
+      return null;
+    }
+
+    TaskStatus status = EnumUtils.getEnumByIndex(TaskStatus.class, row.getInteger(statusIndex));
+
+    DateTime start = row.getDateTime(startIndex);
+    DateTime finish = row.getDateTime(finishIndex);
+    
+    Kind kind = getKind(status, start, finish);
+    if (kind == null) {
+      return null;
+    }
+
+    long minutes = getMinutes(kind, start, finish);
+    String text = (minutes == 0L) ? BeeConst.STRING_EMPTY : getLabel(minutes);
+    
+    XStyle style = new XStyle();
+    XFont font;
+    
+    switch (kind) {
+      case LATE:
+        style.setColor(Colors.RED);
+
+        font = XFont.bold();
+        font.setColor(Colors.WHITE);
+        style.setFontRef(sheet.registerFont(font));
+        break;
+
+      case OPENING:
+        style.setColor(Colors.GREEN);
+        style.setTextAlign(TextAlign.CENTER);
+        
+        font = XFont.bold();
+        font.setColor(Colors.WHITE);
+        style.setFontRef(sheet.registerFont(font));
+        break;
+
+      case ENDGAME:
+        style.setColor(Colors.ORANGE);
+        style.setTextAlign(TextAlign.CENTER);
+
+        font = XFont.bold();
+        font.setColor(Colors.WHITE);
+        style.setFontRef(sheet.registerFont(font));
+        break;
+
+      case SCHEDULED:
+        style.setColor(Colors.YELLOW);
+        style.setTextAlign(TextAlign.RIGHT);
+        break;
+    }
+    
+    return new XCell(cellIndex, text, sheet.registerStyle(style)); 
   }
 
   @Override
@@ -130,7 +194,7 @@ class SlackRenderer extends AbstractCellRenderer {
     }
 
     long minutes = getMinutes(kind, start, finish);
-    if (minutes == 0) {
+    if (minutes == 0L) {
       return BeeConst.STRING_EMPTY;
     }
 

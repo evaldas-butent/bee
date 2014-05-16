@@ -6,7 +6,7 @@ import com.google.common.collect.Maps;
 import com.butent.bee.server.http.RequestInfo;
 import com.butent.bee.server.io.FileUtils;
 import com.butent.bee.server.io.Filter;
-import com.butent.bee.server.modules.commons.FileStorageBean;
+import com.butent.bee.server.modules.administration.FileStorageBean;
 import com.butent.bee.server.utils.ClassUtils;
 import com.butent.bee.server.utils.JvmUtils;
 import com.butent.bee.server.utils.XmlUtils;
@@ -29,6 +29,7 @@ import com.butent.bee.shared.utils.ArrayUtils;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.Codec;
 import com.butent.bee.shared.utils.ExtendedProperty;
+import com.butent.bee.shared.utils.NameUtils;
 import com.butent.bee.shared.utils.Property;
 import com.butent.bee.shared.utils.PropertyUtils;
 
@@ -92,13 +93,7 @@ public class SystemServiceBean {
       return ResponseObject.parameterNotFound(reqInfo.getService(), Service.VAR_CLASS_NAME);
     }
 
-    Set<Class<?>> classes;
-    if (BeeUtils.isEmpty(pck)) {
-      classes = JvmUtils.findClassWithDefaultPackages(cnm);
-    } else {
-      classes = JvmUtils.findClass(cnm, pck.split(","));
-    }
-
+    Set<Class<?>> classes = JvmUtils.findClass(cnm, NameUtils.toList(pck));
     if (BeeUtils.isEmpty(classes)) {
       return ResponseObject.warning("Class not found", cnm, pck);
     }
@@ -124,7 +119,7 @@ public class SystemServiceBean {
       result.addAll(ClassUtils.getClassInfo(cls));
     }
     
-    return ResponseObject.response(result);
+    return ResponseObject.collection(result, ExtendedProperty.class);
   }
 
   private static ResponseObject getDigest(RequestInfo reqInfo) {

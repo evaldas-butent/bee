@@ -1,7 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <View xmlns="http://www.butent.com/view"
 
-  name="EcGroupCriteria" source="EcGroupCriteria" newRowCaption="=ecCriteriaNew"
+  name="EcGroupCriteria" source="EcGroupCriteria" module="Ec.Classifiers"
+  caption="=ecGroupCriteria" newRowCaption="=ecCriterionNew"
   >
   <Columns>
     <SimpleColumn name="Ordinal" />

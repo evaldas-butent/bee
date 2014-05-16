@@ -21,6 +21,7 @@ import com.butent.bee.client.data.RowEditor;
 import com.butent.bee.client.dialog.ChoiceCallback;
 import com.butent.bee.client.presenter.GridPresenter;
 import com.butent.bee.client.view.grid.GridView.SelectedRows;
+import com.butent.bee.client.view.grid.interceptor.AbstractGridInterceptor;
 import com.butent.bee.client.view.grid.interceptor.GridInterceptor;
 import com.butent.bee.client.widget.Button;
 import com.butent.bee.shared.Holder;
@@ -38,9 +39,15 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-public class AssessmentOrdersGrid extends AssessmentsGrid implements ClickHandler {
+public class AssessmentOrdersGrid extends AbstractGridInterceptor implements ClickHandler {
 
   private final Button action = new Button(Localized.getConstants().trCreateTransportation(), this);
+
+  @Override
+  public void afterCreatePresenter(GridPresenter presenter) {
+    presenter.getHeader().addCommandItem(action);
+    super.afterCreatePresenter(presenter);
+  }
 
   @Override
   public GridInterceptor getInstance() {
@@ -59,10 +66,10 @@ public class AssessmentOrdersGrid extends AssessmentsGrid implements ClickHandle
       presenter.getGridView().notifyWarning(Localized.getConstants().selectAtLeastOneRow());
       return;
     }
-    Queries.getRowSet(VIEW_ASSESSMENT_FORWARDERS,
+    Queries.getRowSet(TBL_ASSESSMENT_FORWARDERS,
         Lists.newArrayList(COL_CARGO, COL_FORWARDER, COL_EXPEDITION, COL_FORWARDER + "Name",
             COL_FORWARDER + COL_VEHICLE),
-        Filter.any(COL_ASSESSOR, ids), new RowSetCallback() {
+        Filter.any(COL_ASSESSMENT, ids), new RowSetCallback() {
           @Override
           public void onSuccess(final BeeRowSet result) {
             int cargoCol = result.getColumnIndex(COL_CARGO);
@@ -116,7 +123,7 @@ public class AssessmentOrdersGrid extends AssessmentsGrid implements ClickHandle
                                         holder.set(holder.get() + 1);
 
                                         if (Objects.equal(holder.get(), cargoIds.size())) {
-                                          DataChangeEvent.fire(BeeKeeper.getBus(), 
+                                          DataChangeEvent.fire(BeeKeeper.getBus(),
                                               presenter.getViewName(),
                                               DataChangeEvent.CANCEL_RESET_REFRESH);
 
@@ -134,11 +141,5 @@ public class AssessmentOrdersGrid extends AssessmentsGrid implements ClickHandle
             }
           }
         });
-  }
-
-  @Override
-  public void onShow(GridPresenter presenter) {
-    presenter.getHeader().addCommandItem(action);
-    super.onShow(presenter);
   }
 }

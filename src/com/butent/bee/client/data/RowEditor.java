@@ -11,6 +11,7 @@ import com.butent.bee.client.dialog.ModalForm;
 import com.butent.bee.client.dialog.Popup;
 import com.butent.bee.client.event.Previewer.PreviewConsumer;
 import com.butent.bee.client.event.logical.OpenEvent;
+import com.butent.bee.client.event.logical.RowActionEvent;
 import com.butent.bee.client.output.Printer;
 import com.butent.bee.client.presenter.Presenter;
 import com.butent.bee.client.presenter.PresenterCallback;
@@ -18,7 +19,6 @@ import com.butent.bee.client.presenter.RowPresenter;
 import com.butent.bee.client.ui.AutocompleteProvider;
 import com.butent.bee.client.ui.FormDescription;
 import com.butent.bee.client.ui.FormFactory;
-import com.butent.bee.client.ui.FormFactory.FormInterceptor;
 import com.butent.bee.client.ui.IdentifiableWidget;
 import com.butent.bee.client.ui.UiHelper;
 import com.butent.bee.client.ui.WidgetFactory;
@@ -26,13 +26,12 @@ import com.butent.bee.client.ui.WidgetSupplier;
 import com.butent.bee.client.view.edit.SaveChangesEvent;
 import com.butent.bee.client.view.form.CloseCallback;
 import com.butent.bee.client.view.form.FormView;
+import com.butent.bee.client.view.form.interceptor.FormInterceptor;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
-import com.butent.bee.shared.Service;
 import com.butent.bee.shared.data.BeeRow;
 import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.IsRow;
-import com.butent.bee.shared.data.event.RowActionEvent;
 import com.butent.bee.shared.data.view.DataInfo;
 import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogUtils;
@@ -103,9 +102,7 @@ public final class RowEditor {
     Assert.notNull(dataInfo);
     Assert.notNull(row);
 
-    RowActionEvent event = new RowActionEvent(dataInfo.getViewName(), row, Service.EDIT_ROW);
-    BeeKeeper.getBus().fireEvent(event);
-    if (event.isConsumed()) {
+    if (!RowActionEvent.fireEditRow(dataInfo.getViewName(), row)) {
       return;
     }
 
@@ -250,15 +247,19 @@ public final class RowEditor {
         disabledActions.addAll(actions);
       }
     }
+    
+    if (!formView.isRowEditable(oldRow, false)) {
+      enabledActions.remove(Action.SAVE);
+      disabledActions.add(Action.SAVE);
+    }
 
     final RowPresenter presenter = new RowPresenter(formView, dataInfo, oldRow.getId(),
         DataUtils.getRowCaption(dataInfo, oldRow), enabledActions, disabledActions);
-    final ModalForm dialog =
-        modal ? new ModalForm(presenter.getWidget().asWidget(), formView, false) : null;
+    final ModalForm dialog = modal ? new ModalForm(presenter, formView, false) : null;
 
-    final CloseCallback close = new CloseCallback() {
+    final RowCallback closer = new RowCallback() {
       @Override
-      public void onClose() {
+      public void onCancel() {
         closeForm();
         if (callback != null) {
           callback.onCancel();
@@ -266,23 +267,10 @@ public final class RowEditor {
       }
 
       @Override
-      public void onSave() {
-        if (validate(formView)) {
-          update(dataInfo, formView.getOldRow(), formView.getActiveRow(), formView,
-              new RowCallback() {
-                @Override
-                public void onCancel() {
-                  onClose();
-                }
-
-                @Override
-                public void onSuccess(BeeRow result) {
-                  closeForm();
-                  if (callback != null) {
-                    callback.onSuccess(result);
-                  }
-                }
-              });
+      public void onSuccess(BeeRow result) {
+        closeForm();
+        if (callback != null) {
+          callback.onSuccess(result);
         }
       }
 
@@ -305,15 +293,27 @@ public final class RowEditor {
 
         switch (action) {
           case CANCEL:
-            close.onClose();
+            closer.onCancel();
             break;
 
           case CLOSE:
-            formView.onClose(close);
+            formView.onClose(new CloseCallback() {
+              @Override
+              public void onClose() {
+                closer.onCancel();
+              }
+
+              @Override
+              public void onSave() {
+                handleAction(Action.SAVE);
+              }
+            });
             break;
 
           case SAVE:
-            close.onSave();
+            if (validate(formView)) {
+              update(dataInfo, formView.getOldRow(), formView.getActiveRow(), formView, closer);
+            }
             break;
 
           case PRINT:
@@ -390,7 +390,7 @@ public final class RowEditor {
 
     SaveChangesEvent event = SaveChangesEvent.create(oldRow, newRow, dataInfo.getColumns(),
         formView.getChildrenForUpdate(), callback);
-    
+
     if (!event.isEmpty()) {
       AutocompleteProvider.retainValues(formView);
     }

@@ -5,14 +5,15 @@
   idName="DiscountID"
   >
   <Fields>
-    <Relation name="Client" notNull="true" relation="EcClients" cascade="DELETE" />
+    <Relation name="Client" notNull="true" relation="EcClients" cascade="DELETE" 
+      label="=ecClient" />
     
     <DateTime name="DateFrom" label="=ecDiscountDateFrom" />
     <DateTime name="DateTo" label="=ecDiscountDateTo" />
     
     <Relation name="Category" relation="TcdCategories" label="=ecItemCategory" />
     <Relation name="Brand" relation="TcdBrands" label="=ecItemBrand" />
-    <Relation name="Article" relation="TcdArticles" />
+    <Relation name="Article" relation="TcdArticles" label="=ecItem" />
 
     <Numeric name="Percent" precision="7" scale="3" label="=ecDiscountPercent" />
     <Numeric name="Price" precision="10" scale="2" label="=ecDiscountPrice" />

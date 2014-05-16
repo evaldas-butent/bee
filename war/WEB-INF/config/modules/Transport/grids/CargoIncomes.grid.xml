@@ -19,7 +19,7 @@
     <DataColumn name="VatPercent" width="20" sortable="false" horizontalAlignment="center" caption="%">
       <render><ui:expression>row.VatPercent ? '%' : ''</ui:expression></render>
     </DataColumn>
-    <CalcColumn name="Total" type="decimal" caption="=total" format="0.00">
+    <CalcColumn name="Total" type="decimal" caption="=totalOf" format="0.00">
       <style>
         <bodyStyle><ui:font>bold</ui:font></bodyStyle>
       </style>
@@ -29,9 +29,9 @@
     <DataColumn name="Number" caption="=number" />
     <DataColumn name="Note" caption="=note" />
 
-    <RelColumn name="Sale" caption="=trInvoiceIdShort" readOnly="true" renderColumns="Sale"
+    <RelColumn name="Sale" caption="=trdInvoiceId" readOnly="true" renderColumns="Sale"
       editEnabled="true" editForm="CargoInvoice" editViewName="CargoInvoices" />
     <RelColumn name="Purchase" caption="=trCreditIdShort" readOnly="true" renderColumns="Purchase"
-      editEnabled="true" editForm="CargoCreditInvoice" editViewName="CargoCreditInvoices" />
+      editEnabled="true" editForm="CargoPurchaseInvoice" editViewName="CargoPurchaseInvoices" />
   </g:columns>
 </g:Grid>

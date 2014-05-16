@@ -67,7 +67,6 @@ public final class DataUtils {
   private static final Splitter ID_SPLITTER =
       Splitter.on(ID_LIST_SEPARATOR).omitEmptyStrings().trimResults();
 
-  private static int defaultAsyncThreshold = 100;
   private static int maxInitialRowSetSize = 50;
 
   public static long assertId(Long id) {
@@ -121,11 +120,14 @@ public final class DataUtils {
   public static BeeRow cloneRow(IsRow original) {
     Assert.notNull(original);
     String[] arr = new String[original.getNumberOfCells()];
+
     for (int i = 0; i < arr.length; i++) {
       arr[i] = original.getString(i);
     }
-
     BeeRow result = new BeeRow(original.getId(), original.getVersion(), arr);
+    result.setEditable(original.isEditable());
+    result.setRemovable(original.isRemovable());
+
     if (!BeeUtils.isEmpty(original.getProperties())) {
       result.setProperties(original.getProperties().copy());
     }
@@ -380,10 +382,6 @@ public final class DataUtils {
 
   public static DateTime getDateTime(List<? extends IsColumn> columns, IsRow row, String columnId) {
     return row.getDateTime(getColumnIndex(columnId, columns));
-  }
-
-  public static int getDefaultAsyncThreshold() {
-    return defaultAsyncThreshold;
   }
 
   public static List<Long> getDistinct(BeeRowSet rowSet, String columnId) {
@@ -856,7 +854,6 @@ public final class DataUtils {
     }
   }
 
-
   public static List<Long> parseIdList(String input) {
     List<Long> result = Lists.newArrayList();
     if (BeeUtils.isEmpty(input)) {
@@ -912,21 +909,28 @@ public final class DataUtils {
     return render(column, row, index);
   }
 
-  public static String render(BeeColumn column, IsRow row, int index) {
+  public static String render(IsColumn column, IsRow row, int index) {
     if (row == null) {
       return null;
+
     } else if (index == ID_INDEX) {
       return BeeUtils.toString(row.getId());
+
     } else if (index == VERSION_INDEX) {
       return new DateTime(row.getVersion()).toString();
+
     } else if (row.isNull(index)) {
       return null;
+
     } else if (column == null || ValueType.isString(column.getType())) {
       return row.getString(index);
+
     } else if (ValueType.DATE_TIME.equals(column.getType())) {
       return row.getDateTime(index).toCompactString();
+
     } else if (!BeeUtils.isEmpty(column.getEnumKey())) {
       return EnumUtils.getCaption(column.getEnumKey(), row.getInteger(index));
+
     } else {
       return row.getValue(index, column.getType()).toString();
     }

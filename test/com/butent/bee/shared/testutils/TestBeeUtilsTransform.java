@@ -105,8 +105,8 @@ public class TestBeeUtilsTransform extends TestCase implements ILogger {
 
   @Test
   public void testCompare() {
-    List<Object> testc1 = new ArrayList<Object>();
-    List<Object> testc2 = new ArrayList<Object>();
+    List<Object> testc1 = new ArrayList<>();
+    List<Object> testc2 = new ArrayList<>();
     testc1.add("Text");
     testc1.add(5);
 
@@ -183,20 +183,20 @@ public class TestBeeUtilsTransform extends TestCase implements ILogger {
 
   @Test
   public void testFilterContext() {
-    List<String> testc1 = new ArrayList<String>();
-    List<String> testc2 = new ArrayList<String>();
+    List<String> testc1 = new ArrayList<>();
+    List<String> testc2 = new ArrayList<>();
     testc1.add("A");
     testc1.add("simple text");
     testc1.add("TEXT2");
 
-    List<String> rez1 = new ArrayList<String>();
+    List<String> rez1 = new ArrayList<>();
     rez1.add("simple text");
     rez1.add("TEXT2");
 
-    List<String> rez2 = new ArrayList<String>();
+    List<String> rez2 = new ArrayList<>();
     rez2.add("TEXT2");
 
-    List<String> rez3 = new ArrayList<String>();
+    List<String> rez3 = new ArrayList<>();
 
     assertEquals(rez1, BeeUtils.filterContext(testc1, "text"));
     assertEquals(rez2, BeeUtils.filterContext(testc1, "text2"));
@@ -264,9 +264,9 @@ public class TestBeeUtilsTransform extends TestCase implements ILogger {
 
   @Test
   public void testGetQuietly() {
-    List<CharSequence> testc1 = new ArrayList<CharSequence>();
-    List<CharSequence> testc2 = new ArrayList<CharSequence>();
-    List<CharSequence> rez1 = new ArrayList<CharSequence>();
+    List<CharSequence> testc1 = new ArrayList<>();
+    List<CharSequence> testc2 = new ArrayList<>();
+    List<CharSequence> rez1 = new ArrayList<>();
     testc1.add("A");
     testc1.add("simple text");
     testc1.add("TEXT2");

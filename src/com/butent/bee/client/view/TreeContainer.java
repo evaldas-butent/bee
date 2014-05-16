@@ -7,7 +7,9 @@ import com.google.gwt.event.logical.shared.SelectionEvent;
 import com.google.gwt.event.logical.shared.SelectionHandler;
 import com.google.gwt.event.shared.HandlerRegistration;
 
+import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.Global;
+import com.butent.bee.client.data.Data;
 import com.butent.bee.client.dom.DomUtils;
 import com.butent.bee.client.event.logical.CatchEvent;
 import com.butent.bee.client.event.logical.CatchEvent.CatchHandler;
@@ -20,10 +22,15 @@ import com.butent.bee.client.tree.TreeItem;
 import com.butent.bee.client.utils.Command;
 import com.butent.bee.client.widget.Image;
 import com.butent.bee.shared.Assert;
+import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.data.IsRow;
 import com.butent.bee.shared.ui.Action;
+import com.butent.bee.shared.utils.BeeUtils;
 
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
+import java.util.List;
 import java.util.Map;
 
 public class TreeContainer extends Flow implements TreeView, SelectionHandler<TreeItem>,
@@ -55,7 +62,7 @@ public class TreeContainer extends Flow implements TreeView, SelectionHandler<Tr
   private final String caption;
   private final boolean hasActions;
 
-  public TreeContainer(String caption, boolean hideActions) {
+  public TreeContainer(String caption, boolean hideActions, String viewName) {
     super();
     addStyleName(STYLE_NAME);
 
@@ -66,20 +73,30 @@ public class TreeContainer extends Flow implements TreeView, SelectionHandler<Tr
       Flow hdr = new Flow();
       hdr.addStyleName(STYLE_NAME + "-actions");
 
-      Image img = new Image(Global.getImages().silverAdd(), new ActionListener(Action.ADD));
-      img.addStyleName(STYLE_NAME + "-add");
-      img.setTitle(Action.ADD.getCaption());
-      hdr.add(img);
+      boolean editable = BeeKeeper.getUser().canEditData(viewName);
 
-      img = new Image(Global.getImages().silverDelete(), new ActionListener(Action.DELETE));
-      img.addStyleName(STYLE_NAME + "-delete");
-      img.setTitle(Action.DELETE.getCaption());
-      hdr.add(img);
+      Image img;
 
-      img = new Image(Global.getImages().silverEdit(), new ActionListener(Action.EDIT));
-      img.addStyleName(STYLE_NAME + "-edit");
-      img.setTitle(Action.EDIT.getCaption());
-      hdr.add(img);
+      if (editable && BeeKeeper.getUser().canCreateData(viewName)) {
+        img = new Image(Global.getImages().silverAdd(), new ActionListener(Action.ADD));
+        img.addStyleName(STYLE_NAME + "-add");
+        img.setTitle(Action.ADD.getCaption());
+        hdr.add(img);
+      }
+
+      if (editable && BeeKeeper.getUser().canDeleteData(viewName)) {
+        img = new Image(Global.getImages().silverDelete(), new ActionListener(Action.DELETE));
+        img.addStyleName(STYLE_NAME + "-delete");
+        img.setTitle(Action.DELETE.getCaption());
+        hdr.add(img);
+      }
+
+      if (editable) {
+        img = new Image(Global.getImages().silverEdit(), new ActionListener(Action.EDIT));
+        img.addStyleName(STYLE_NAME + "-edit");
+        img.setTitle(Action.EDIT.getCaption());
+        hdr.add(img);
+      }
 
       img = new Image(Global.getImages().silverReload(), new ActionListener(Action.REFRESH));
       img.addStyleName(STYLE_NAME + "-refresh");
@@ -169,6 +186,43 @@ public class TreeContainer extends Flow implements TreeView, SelectionHandler<Tr
       return (IsRow) treeItem.getParentItem().getUserObject();
     }
     return null;
+  }
+
+  @Override
+  public List<IsRow> getPath(Long id) {
+    Assert.notNull(id);
+
+    List<IsRow> path = new ArrayList<>();
+
+    TreeItem item = items.get(id);
+
+    while (item != null && item.getUserObject() instanceof IsRow) {
+      path.add((IsRow) item.getUserObject());
+      item = item.getParentItem();
+    }
+
+    if (path.size() > 1) {
+      Collections.reverse(path);
+    }
+    return path;
+  }
+
+  @Override
+  public List<String> getPathLabels(Long id, String colName) {
+    Assert.notNull(id);
+    Assert.notEmpty(colName);
+
+    List<String> labels = new ArrayList<>();
+
+    List<IsRow> path = getPath(id);
+    int index = Data.getColumnIndex(getViewName(), colName);
+
+    if (!BeeUtils.isEmpty(path) && !BeeConst.isUndef(index)) {
+      for (IsRow row : path) {
+        labels.add(row.getString(index));
+      }
+    }
+    return labels;
   }
 
   @Override
@@ -301,5 +355,10 @@ public class TreeContainer extends Flow implements TreeView, SelectionHandler<Tr
       removeFromCache(item.getChild(i));
     }
     items.remove(((IsRow) item.getUserObject()).getId());
+  }
+
+  @Override
+  public String getViewName() {
+    return (getTreePresenter() == null) ? null : getTreePresenter().getViewName();
   }
 }

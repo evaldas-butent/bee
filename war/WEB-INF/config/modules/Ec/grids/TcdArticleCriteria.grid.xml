@@ -5,7 +5,7 @@
   flexGrow="1" flexShrink="1"
   >
   <g:columns>
-    <RelColumn name="Criteria" caption="=ecCriteriaName" />
+    <RelColumn name="Criteria" />
     <DataColumn name="Value" />
   </g:columns>
 </g:Grid>

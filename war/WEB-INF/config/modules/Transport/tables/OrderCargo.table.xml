@@ -36,6 +36,7 @@
     <Relation name="UnloadingPlace" unique="true" relation="CargoPlaces" editable="true" label="=unloading" />
     <Relation name="ShippingTerm"  relation="ShippingTerms" label="=cargoTermsOfService" />
     <Text name="Notes" label="=notes" />
-    <Relation name="Currency" relation="Currencies" label="=currency" />
+    <Text name="Directions" label="=trDirections" />
+    <Relation name="Currency" relation="Currencies" label="=currency" defExpr="MAIN_CURRENCY" />
   </Fields>
 </Table>

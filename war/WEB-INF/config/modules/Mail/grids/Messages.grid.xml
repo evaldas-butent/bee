@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <g:Grid xmlns="http://www.butent.com/column" xmlns:g="http://www.butent.com/grid"
 
-  name="Messages" viewName="Messages" headerMode="none" readOnly="true"
-  asyncThreshold="0" rowChangeSensitivityMillis="500"
+  name="Messages" viewName="Places" headerMode="none" readOnly="true"
+  rowChangeSensitivityMillis="500"
   >
   <g:body height="35" borderWidth="0 0 1 0" />
 

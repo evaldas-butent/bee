@@ -9,6 +9,8 @@ import com.butent.bee.client.data.Data;
 import com.butent.bee.client.data.Queries;
 import com.butent.bee.client.data.RowCallback;
 import com.butent.bee.client.data.RowInsertCallback;
+import com.butent.bee.client.timeboard.HasColorSource;
+import com.butent.bee.client.timeboard.TimeBoardHelper;
 import com.butent.bee.shared.data.BeeColumn;
 import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.SimpleRowSet.SimpleRow;
@@ -25,8 +27,10 @@ import java.util.List;
 
 class OrderCargo extends Filterable implements HasDateRange, HasColorSource, HasShipmentInfo {
 
+  @SuppressWarnings("unused")
   private static final String cargoLabel =
       Data.getColumnLabel(VIEW_ORDER_CARGO, COL_CARGO_DESCRIPTION);
+
   private static final String customerLabel = Data.getColumnLabel(VIEW_ORDERS, COL_CUSTOMER);
   private static final String notesLabel = Data.getColumnLabel(VIEW_ORDER_CARGO, COL_CARGO_NOTES);
 
@@ -44,19 +48,23 @@ class OrderCargo extends Filterable implements HasDateRange, HasColorSource, Has
             BeeUtils.nvl(Places.getLoadingDate(row, loadingColumnAlias(COL_PLACE_DATE)), minLoad),
             row.getLong(loadingColumnAlias(COL_PLACE_COUNTRY)),
             row.getValue(loadingColumnAlias(COL_PLACE_ADDRESS)),
-            row.getValue(loadingColumnAlias(COL_PLACE_TERMINAL)),
+            row.getValue(loadingColumnAlias(COL_PLACE_POST_INDEX)),
+            row.getLong(loadingColumnAlias(COL_PLACE_CITY)),
+            row.getValue(loadingColumnAlias(COL_PLACE_NUMBER)),
             BeeUtils.nvl(Places.getUnloadingDate(row, unloadingColumnAlias(COL_PLACE_DATE)),
                 maxUnload),
             row.getLong(unloadingColumnAlias(COL_PLACE_COUNTRY)),
             row.getValue(unloadingColumnAlias(COL_PLACE_ADDRESS)),
-            row.getValue(unloadingColumnAlias(COL_PLACE_TERMINAL)));
+            row.getValue(unloadingColumnAlias(COL_PLACE_POST_INDEX)),
+            row.getLong(unloadingColumnAlias(COL_PLACE_CITY)),
+            row.getValue(unloadingColumnAlias(COL_PLACE_NUMBER)));
 
-    if (!ChartHelper.isNormalized(orderCargo.getRange()) && orderCargo.getOrderDate() != null) {
+    if (!TimeBoardHelper.isNormalized(orderCargo.getRange()) && orderCargo.getOrderDate() != null) {
       JustDate start = BeeUtils.nvl(orderCargo.getLoadingDate(),
           orderCargo.getUnloadingDate(), orderCargo.getOrderDate().getDate());
       JustDate end = BeeUtils.nvl(orderCargo.getUnloadingDate(), start);
 
-      orderCargo.setRange(ChartHelper.getActivity(start, end));
+      orderCargo.setRange(TimeBoardHelper.getActivity(start, end));
     }
 
     return orderCargo;
@@ -78,13 +86,17 @@ class OrderCargo extends Filterable implements HasDateRange, HasColorSource, Has
   private final JustDate loadingDate;
   private final Long loadingCountry;
   private final String loadingPlace;
+  private final String loadingPostIndex;
+  private final Long loadingCity;
 
-  private final String loadingTerminal;
+  private final String loadingNumber;
   private final JustDate unloadingDate;
   private final Long unloadingCountry;
   private final String unloadingPlace;
+  private final String unloadingPostIndex;
+  private final Long unloadingCity;
 
-  private final String unloadingTerminal;
+  private final String unloadingNumber;
 
   private final String orderName;
 
@@ -92,9 +104,10 @@ class OrderCargo extends Filterable implements HasDateRange, HasColorSource, Has
 
   protected OrderCargo(Long orderId, OrderStatus orderStatus, DateTime orderDate, String orderNo,
       Long customerId, String customerName, Long cargoId, String cargoDescription, String notes,
-      JustDate loadingDate, Long loadingCountry, String loadingPlace, String loadingTerminal,
+      JustDate loadingDate, Long loadingCountry, String loadingPlace, String loadingPostIndex,
+      Long loadingCity, String loadingNumber,
       JustDate unloadingDate, Long unloadingCountry, String unloadingPlace,
-      String unloadingTerminal) {
+      String unloadingPostIndex, Long unloadingCity, String unloadingNumber) {
     super();
 
     this.orderId = orderId;
@@ -113,16 +126,20 @@ class OrderCargo extends Filterable implements HasDateRange, HasColorSource, Has
     this.loadingDate = loadingDate;
     this.loadingCountry = loadingCountry;
     this.loadingPlace = loadingPlace;
-    this.loadingTerminal = loadingTerminal;
+    this.loadingPostIndex = loadingPostIndex;
+    this.loadingCity = loadingCity;
+    this.loadingNumber = loadingNumber;
 
     this.unloadingDate = unloadingDate;
     this.unloadingCountry = unloadingCountry;
     this.unloadingPlace = unloadingPlace;
-    this.unloadingTerminal = unloadingTerminal;
+    this.unloadingPostIndex = unloadingPostIndex;
+    this.unloadingCity = unloadingCity;
+    this.unloadingNumber = unloadingNumber;
 
     this.orderName = BeeUtils.joinWords(TimeUtils.renderCompact(this.orderDate), this.orderNo);
 
-    this.range = ChartHelper.getActivity(loadingDate, unloadingDate);
+    this.range = TimeBoardHelper.getActivity(loadingDate, unloadingDate);
   }
 
   @Override
@@ -141,13 +158,23 @@ class OrderCargo extends Filterable implements HasDateRange, HasColorSource, Has
   }
 
   @Override
-  public String getLoadingPlace() {
-    return loadingPlace;
+  public String getLoadingNumber() {
+    return loadingNumber;
   }
 
   @Override
-  public String getLoadingTerminal() {
-    return loadingTerminal;
+  public String getLoadingPostIndex() {
+    return loadingPostIndex;
+  }
+
+  @Override
+  public Long getLoadingCity() {
+    return loadingCity;
+  }
+
+  @Override
+  public String getLoadingPlace() {
+    return loadingPlace;
   }
 
   @Override
@@ -166,13 +193,23 @@ class OrderCargo extends Filterable implements HasDateRange, HasColorSource, Has
   }
 
   @Override
-  public String getUnloadingPlace() {
-    return unloadingPlace;
+  public String getUnloadingNumber() {
+    return unloadingNumber;
   }
 
   @Override
-  public String getUnloadingTerminal() {
-    return unloadingTerminal;
+  public String getUnloadingPostIndex() {
+    return unloadingPostIndex;
+  }
+
+  @Override
+  public Long getUnloadingCity() {
+    return unloadingCity;
+  }
+
+  @Override
+  public String getUnloadingPlace() {
+    return unloadingPlace;
   }
 
   void adjustRange(Range<JustDate> defaultRange) {
@@ -186,7 +223,7 @@ class OrderCargo extends Filterable implements HasDateRange, HasColorSource, Has
     JustDate lower = BeeUtils.nvl(loadingDate, BeeUtils.getLowerEndpoint(defaultRange));
     JustDate upper = BeeUtils.nvl(unloadingDate, BeeUtils.getUpperEndpoint(defaultRange));
 
-    setRange(ChartHelper.getActivity(lower, upper));
+    setRange(TimeBoardHelper.getActivity(lower, upper));
   }
 
   void assignToTrip(Long tripId, boolean fire) {
@@ -249,15 +286,15 @@ class OrderCargo extends Filterable implements HasDateRange, HasColorSource, Has
   }
 
   String getOrderTitle() {
-    return ChartHelper.buildTitle(orderDateLabel, TimeUtils.renderCompact(getOrderDate()),
+    return TimeBoardHelper.buildTitle(orderDateLabel, TimeUtils.renderCompact(getOrderDate()),
         orderStatusLabel, (getOrderStatus() == null) ? null : getOrderStatus().getCaption());
   }
 
   String getTitle() {
-    return ChartHelper.buildTitle(cargoLabel, cargoDescription,
+    return TimeBoardHelper.buildTitle(/* cargoLabel, cargoDescription, */
         Localized.getConstants().cargoLoading(), Places.getLoadingInfo(this),
         Localized.getConstants().cargoUnloading(), Places.getUnloadingInfo(this),
-        Localized.getConstants().trOrder(), orderName,
+        Localized.getConstants().trOrder(), orderNo,
         customerLabel, customerName, notesLabel, notes);
   }
 

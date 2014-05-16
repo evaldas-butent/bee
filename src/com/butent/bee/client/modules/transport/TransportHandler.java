@@ -2,11 +2,14 @@ package com.butent.bee.client.modules.transport;
 
 import com.google.common.base.Objects;
 import com.google.common.collect.Lists;
+import com.google.common.collect.Sets;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.event.logical.shared.SelectionEvent;
 import com.google.gwt.event.logical.shared.SelectionHandler;
 
+import static com.butent.bee.shared.modules.administration.AdministrationConstants.*;
+import static com.butent.bee.shared.modules.classifiers.ClassifierConstants.*;
 import static com.butent.bee.shared.modules.trade.TradeConstants.*;
 import static com.butent.bee.shared.modules.transport.TransportConstants.*;
 
@@ -16,15 +19,17 @@ import com.butent.bee.client.communication.ParameterList;
 import com.butent.bee.client.communication.ResponseCallback;
 import com.butent.bee.client.data.Data;
 import com.butent.bee.client.data.Queries;
+import com.butent.bee.client.data.Queries.RowSetCallback;
 import com.butent.bee.client.data.RowUpdateCallback;
 import com.butent.bee.client.event.logical.ParentRowEvent;
 import com.butent.bee.client.event.logical.SelectorEvent;
 import com.butent.bee.client.grid.ColumnFooter;
 import com.butent.bee.client.grid.ColumnHeader;
 import com.butent.bee.client.grid.GridFactory;
+import com.butent.bee.client.grid.GridFactory.GridOptions;
 import com.butent.bee.client.grid.column.AbstractColumn;
 import com.butent.bee.client.modules.trade.TradeUtils;
-import com.butent.bee.client.modules.transport.charts.ChartHelper;
+import com.butent.bee.client.modules.transport.charts.ChartBase;
 import com.butent.bee.client.presenter.GridPresenter;
 import com.butent.bee.client.presenter.TreePresenter;
 import com.butent.bee.client.render.ProvidesGridColumnRenderer;
@@ -46,6 +51,8 @@ import com.butent.bee.client.widget.Image;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.communication.ResponseObject;
 import com.butent.bee.shared.data.BeeColumn;
+import com.butent.bee.shared.data.BeeRow;
+import com.butent.bee.shared.data.BeeRowSet;
 import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.IsColumn;
 import com.butent.bee.shared.data.IsRow;
@@ -55,7 +62,11 @@ import com.butent.bee.shared.data.value.Value;
 import com.butent.bee.shared.data.value.ValueType;
 import com.butent.bee.shared.data.view.RowInfo;
 import com.butent.bee.shared.i18n.Localized;
-import com.butent.bee.shared.modules.commons.CommonsConstants;
+import com.butent.bee.shared.menu.MenuHandler;
+import com.butent.bee.shared.menu.MenuService;
+import com.butent.bee.shared.modules.administration.AdministrationConstants;
+import com.butent.bee.shared.modules.transport.TransportConstants.AssessmentStatus;
+import com.butent.bee.shared.modules.transport.TransportConstants.OrderStatus;
 import com.butent.bee.shared.rights.Module;
 import com.butent.bee.shared.ui.GridDescription;
 import com.butent.bee.shared.utils.BeeUtils;
@@ -63,6 +74,7 @@ import com.butent.bee.shared.utils.Codec;
 
 import java.util.Collection;
 import java.util.List;
+import java.util.Set;
 
 public final class TransportHandler {
 
@@ -383,11 +395,18 @@ public final class TransportHandler {
 
   public static ParameterList createArgs(String name) {
     ParameterList args = BeeKeeper.getRpc().createParameters(Module.TRANSPORT.getName());
-    args.addQueryItem(CommonsConstants.METHOD, name);
+    args.addQueryItem(AdministrationConstants.METHOD, name);
     return args;
   }
 
   public static void register() {
+    MenuService.ASSESSMENTS_GRID.setHandler(new MenuHandler() {
+      @Override
+      public void onSelection(String parameters) {
+        openAssessment(parameters);
+      }
+    });
+
     SelectorEvent.register(new TransportSelectorHandler());
 
     GridFactory.registerGridInterceptor(VIEW_VEHICLES, new VehiclesGridHandler());
@@ -425,24 +444,23 @@ public final class TransportHandler {
     TradeUtils.registerTotalRenderer(TBL_TRIP_FUEL_COSTS, VAR_TOTAL);
     TradeUtils.registerTotalRenderer(TBL_CARGO_INCOMES, VAR_TOTAL);
     TradeUtils.registerTotalRenderer(TBL_CARGO_EXPENSES, VAR_TOTAL);
-    TradeUtils.registerTotalRenderer(VIEW_CARGO_INVOICE_INCOMES, VAR_TOTAL);
-    TradeUtils.registerTotalRenderer(VIEW_CARGO_CREDIT_INCOMES, VAR_TOTAL);
-    TradeUtils.registerTotalRenderer("CargoExpenseList", VAR_TOTAL);
+    TradeUtils.registerTotalRenderer(VIEW_CARGO_SALES, VAR_TOTAL);
+    TradeUtils.registerTotalRenderer(VIEW_CARGO_CREDIT_SALES, VAR_TOTAL);
+    TradeUtils.registerTotalRenderer(VIEW_CARGO_PURCHASES, VAR_TOTAL);
     TradeUtils.registerTotalRenderer("UnassignedTripCosts", VAR_TOTAL);
     TradeUtils.registerTotalRenderer("UnassignedFuelCosts", VAR_TOTAL);
 
-    GridFactory.registerGridInterceptor("AssessmentRequests", new AssessmentsGrid());
-    GridFactory.registerGridInterceptor("AssessmentOrders", new AssessmentOrdersGrid());
-
-    GridFactory.registerGridInterceptor(VIEW_CARGO_INVOICE_INCOMES, new CargoInvoiceIncomesGrid());
-    GridFactory.registerGridInterceptor(VIEW_CARGO_CREDIT_INCOMES, new CargoCreditIncomesGrid());
+    GridFactory.registerGridInterceptor(VIEW_CARGO_SALES, new CargoSalesGrid());
+    GridFactory.registerGridInterceptor(VIEW_CARGO_CREDIT_SALES, new CargoCreditSalesGrid());
+    GridFactory.registerGridInterceptor(VIEW_CARGO_PURCHASES, new CargoPurchasesGrid());
     GridFactory.registerGridInterceptor(VIEW_CARGO_INVOICES, new CargoInvoicesGrid());
     GridFactory.registerGridInterceptor(VIEW_CARGO_CREDIT_INVOICES, new CargoInvoicesGrid());
+    GridFactory.registerGridInterceptor(VIEW_CARGO_PURCHASE_INVOICES, new CargoInvoicesGrid());
 
     GridFactory.registerGridInterceptor(VIEW_CARGO_REQUESTS, new CargoRequestsGrid());
     GridFactory.registerGridInterceptor(VIEW_CARGO_REQUEST_FILES,
-        new FileGridInterceptor(COL_CRF_REQUEST, COL_CRF_FILE, COL_CRF_CAPTION,
-            CommonsConstants.ALS_FILE_NAME));
+        new FileGridInterceptor(COL_CRF_REQUEST, AdministrationConstants.COL_FILE,
+            AdministrationConstants.COL_FILE_CAPTION, AdministrationConstants.ALS_FILE_NAME));
 
     GridFactory.registerGridInterceptor(TBL_IMPORT_OPTIONS, new ImportOptionsGrid());
 
@@ -452,11 +470,13 @@ public final class TransportHandler {
     FormFactory.registerFormInterceptor(FORM_CARGO, new OrderCargoForm());
 
     FormFactory.registerFormInterceptor(FORM_ASSESSMENT, new AssessmentForm());
+    FormFactory.registerFormInterceptor(FORM_ASSESSMENT_FORWARDER, new AssessmentForwarderForm());
     FormFactory.registerFormInterceptor(FORM_ASSESSMENT_TRANSPORTATION,
         new AssessmentTransportationForm());
 
     FormFactory.registerFormInterceptor(FORM_CARGO_INVOICE, new CargoInvoiceForm());
-    FormFactory.registerFormInterceptor(FORM_CARGO_CREDIT_INVOICE, new CargoCreditInvoiceForm());
+    FormFactory.registerFormInterceptor(FORM_CARGO_PURCHASE_INVOICE,
+        new CargoPurchaseInvoiceForm());
 
     FormFactory.registerFormInterceptor(FORM_REGISTRATION, new TransportRegistrationForm());
     FormFactory.registerFormInterceptor(FORM_SHIPMENT_REQUEST, new ShipmentRequestForm());
@@ -467,8 +487,54 @@ public final class TransportHandler {
 
     BeeKeeper.getBus().registerRowActionHandler(new TransportActionHandler(), false);
 
-    ChartHelper.register();
+    ChartBase.registerBoards();
     CargoIncomesObserver.register();
+  }
+
+  private static void openAssessment(final String gridName) {
+    final GridInterceptor interceptor;
+
+    switch (gridName) {
+      case GRID_ASSESSMENT_REQUESTS:
+        interceptor = new AbstractGridInterceptor() {
+          @Override
+          public boolean onStartNewRow(GridView gridView, IsRow oldRow, IsRow newRow) {
+            newRow.setValue(gridView.getDataIndex(COL_ASSESSMENT_STATUS),
+                AssessmentStatus.NEW.ordinal());
+            newRow.setValue(gridView.getDataIndex(ALS_ORDER_STATUS), OrderStatus.REQUEST.ordinal());
+            return true;
+          }
+        };
+        break;
+
+      case GRID_ASSESSMENT_ORDERS:
+        interceptor = new AssessmentOrdersGrid();
+        break;
+
+      default:
+        Global.showError(Localized.getMessages().dataNotAvailable(gridName));
+        return;
+    }
+    final Long userPerson = BeeKeeper.getUser().getUserData().getCompanyPerson();
+
+    Queries.getRowSet(TBL_DEPARTMENT_EMPLOYEES, Lists.newArrayList(COL_DEPARTMENT),
+        Filter.and(Filter.equals(COL_COMPANY_PERSON, userPerson),
+            Filter.notNull(COL_DEPARTMENT_HEAD)), new RowSetCallback() {
+          @Override
+          public void onSuccess(BeeRowSet result) {
+            Set<Long> departments = Sets.newHashSet();
+            Long user = BeeKeeper.getUser().getUserId();
+
+            for (BeeRow row : result) {
+              departments.add(row.getLong(0));
+            }
+            GridFactory.openGrid(gridName, interceptor, GridOptions
+                .forFilter(Filter.or(Lists.newArrayList(
+                    Filter.equals(COL_COMPANY_PERSON, userPerson),
+                    Filter.any(COL_DEPARTMENT, departments),
+                    Filter.equals(COL_USER, user), Filter.equals(COL_GROUP, user)))));
+          }
+        });
   }
 
   private TransportHandler() {

@@ -11,13 +11,13 @@ import com.butent.bee.client.communication.ParameterList;
 import com.butent.bee.client.communication.ResponseCallback;
 import com.butent.bee.client.composite.MultiSelector;
 import com.butent.bee.client.grid.HtmlTable;
-import com.butent.bee.client.ui.AbstractFormInterceptor;
-import com.butent.bee.client.ui.FormFactory.FormInterceptor;
 import com.butent.bee.client.ui.FormFactory.WidgetDescriptionCallback;
 import com.butent.bee.client.ui.IdentifiableWidget;
 import com.butent.bee.client.ui.UiHelper;
 import com.butent.bee.client.view.HeaderView;
 import com.butent.bee.client.view.form.FormView;
+import com.butent.bee.client.view.form.interceptor.AbstractFormInterceptor;
+import com.butent.bee.client.view.form.interceptor.FormInterceptor;
 import com.butent.bee.client.widget.Button;
 import com.butent.bee.client.widget.InputDate;
 import com.butent.bee.shared.Assert;
@@ -25,7 +25,7 @@ import com.butent.bee.shared.communication.ResponseObject;
 import com.butent.bee.shared.data.SimpleRowSet;
 import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.logging.LogUtils;
-import com.butent.bee.shared.modules.tasks.TasksConstants;
+import com.butent.bee.shared.modules.tasks.TaskConstants;
 import com.butent.bee.shared.time.DateTime;
 import com.butent.bee.shared.utils.BeeUtils;
 
@@ -44,7 +44,7 @@ public class TasksReportsInterceptor extends AbstractFormInterceptor {
   private static final String WIDGET_USER_NAME = "User";
   private static final String WIDGET_COMPANY_NAME = "Company";
   private static final String WIDGET_DURATION_TYPE_NAME = "DurationType";
-  
+
   private static final int FIRST_DAY_OF_MONTH = 1;
   private static final int MIDNIGHT_HOUR = 0;
   private static final int START_MINUTE_OF_HOUR = 0;
@@ -107,23 +107,21 @@ public class TasksReportsInterceptor extends AbstractFormInterceptor {
 
       switch (reportType) {
         case TYPE_HOURS:
-          params = TasksKeeper.createArgs(TasksConstants.SVC_TASKS_REPORTS_TYPE_HOURS);
+          params = TasksKeeper.createArgs(TaskConstants.SVC_TASKS_REPORTS_TYPE_HOURS);
           break;
         case COMPANY_TIMES:
-          params =
-              TasksKeeper.createArgs(TasksConstants.SVC_TASKS_REPORTS_COMPANY_TIMES);
+          params = TasksKeeper.createArgs(TaskConstants.SVC_TASKS_REPORTS_COMPANY_TIMES);
           break;
         case USERS_HOURS:
-          params =
-              TasksKeeper.createArgs(TasksConstants.SVC_TASKS_REPORTS_USERS_HOURS);
+          params = TasksKeeper.createArgs(TaskConstants.SVC_TASKS_REPORTS_USERS_HOURS);
           break;
         default:
-          params = TasksKeeper.createArgs(TasksConstants.SVC_TASKS_REPORTS_TYPE_HOURS);
+          params = TasksKeeper.createArgs(TaskConstants.SVC_TASKS_REPORTS_TYPE_HOURS);
           break;
       }
 
       /* Hiding zero times */
-      params.addQueryItem(TasksConstants.VAR_TASK_DURATION_HIDE_ZEROS, Boolean.TRUE.toString());
+      params.addQueryItem(TaskConstants.VAR_TASK_DURATION_HIDE_ZEROS, Boolean.TRUE.toString());
 
       InputDate fromDate = (InputDate) form.getWidgetByName(WIDGET_DATE_FROM_NAME);
 
@@ -132,8 +130,7 @@ public class TasksReportsInterceptor extends AbstractFormInterceptor {
           DateTime time = fromDate.getDate().getDateTime();
           time.setHour(MIDNIGHT_HOUR);
           time.setMinute(START_MINUTE_OF_HOUR);
-          params.addQueryItem(TasksConstants.VAR_TASK_DURATION_DATE_FROM,
-              time.getTime());
+          params.addQueryItem(TaskConstants.VAR_TASK_DURATION_DATE_FROM, time.getTime());
         }
       }
 
@@ -144,7 +141,7 @@ public class TasksReportsInterceptor extends AbstractFormInterceptor {
           DateTime time = tillDate.getDate().getDateTime();
           time.setHour(LAST_HOUR_OF_DAY);
           time.setMinute(LAST_MINUTE_OF_HOUR);
-          params.addQueryItem(TasksConstants.VAR_TASK_DURATION_DATE_TO, time.getTime());
+          params.addQueryItem(TaskConstants.VAR_TASK_DURATION_DATE_TO, time.getTime());
         }
       }
 
@@ -152,7 +149,7 @@ public class TasksReportsInterceptor extends AbstractFormInterceptor {
 
       if (userId != null) {
         if (!BeeUtils.isEmpty(userId.getValue())) {
-          params.addQueryItem(TasksConstants.VAR_TASK_PUBLISHER, userId.getValue().trim());
+          params.addQueryItem(TaskConstants.VAR_TASK_PUBLISHER, userId.getValue().trim());
         }
       }
 
@@ -160,7 +157,7 @@ public class TasksReportsInterceptor extends AbstractFormInterceptor {
 
       if (companyId != null) {
         if (!BeeUtils.isEmpty(companyId.getValue())) {
-          params.addQueryItem(TasksConstants.VAR_TASK_COMPANY, companyId.getValue().trim());
+          params.addQueryItem(TaskConstants.VAR_TASK_COMPANY, companyId.getValue().trim());
         }
       }
 
@@ -168,7 +165,7 @@ public class TasksReportsInterceptor extends AbstractFormInterceptor {
 
       if (durationTId != null) {
         if (!BeeUtils.isEmpty(durationTId.getValue())) {
-          params.addQueryItem(TasksConstants.VAR_TASK_DURATION_TYPE, durationTId.getValue().trim());
+          params.addQueryItem(TaskConstants.VAR_TASK_DURATION_TYPE, durationTId.getValue().trim());
         }
       }
 

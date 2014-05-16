@@ -7,7 +7,8 @@
   idChunk="100"
   >
   <Fields>
-    <Relation name="ArticleSupplier" relation="TcdArticleSuppliers" notNull="true" cascade="DELETE" />
+    <Relation name="ArticleSupplier" relation="TcdArticleSuppliers" notNull="true" cascade="DELETE"
+      label="=ecItemSupplier" />
     <Relation name="Warehouse" relation="Warehouses" notNull="true" label="=warehouse" />
     <Numeric name="Remainder" precision="12" scale="3" label="=ecRemainder" />
   </Fields>

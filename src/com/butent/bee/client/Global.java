@@ -5,17 +5,19 @@ import com.google.common.base.Function;
 import com.google.common.base.Objects;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
+import com.google.common.collect.Range;
 import com.google.common.collect.Sets;
 import com.google.gwt.dom.client.Element;
 import com.google.gwt.dom.client.Style.Cursor;
 import com.google.gwt.dom.client.StyleInjector;
+import com.google.gwt.dom.client.TableCellElement;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.user.client.ui.FlowPanel;
 import com.google.gwt.user.client.ui.IsWidget;
 import com.google.gwt.user.client.ui.Widget;
 
-import static com.butent.bee.shared.modules.commons.CommonsConstants.*;
+import static com.butent.bee.shared.modules.administration.AdministrationConstants.*;
 
 import com.butent.bee.client.communication.ParameterList;
 import com.butent.bee.client.communication.ResponseCallback;
@@ -31,14 +33,15 @@ import com.butent.bee.client.dialog.StringCallback;
 import com.butent.bee.client.grid.GridFactory;
 import com.butent.bee.client.grid.HtmlTable;
 import com.butent.bee.client.images.Images;
-import com.butent.bee.client.modules.commons.CommonsKeeper;
+import com.butent.bee.client.modules.administration.AdministrationKeeper;
 import com.butent.bee.client.output.Printer;
+import com.butent.bee.client.output.ReportSettings;
 import com.butent.bee.client.screen.Favorites;
 import com.butent.bee.client.style.StyleUtils;
+import com.butent.bee.client.ui.IdentifiableWidget;
 import com.butent.bee.client.ui.UiHelper;
 import com.butent.bee.client.ui.WidgetInitializer;
 import com.butent.bee.client.view.edit.Editor;
-import com.butent.bee.client.view.grid.CellGrid;
 import com.butent.bee.client.view.search.Filters;
 import com.butent.bee.client.widget.FaLabel;
 import com.butent.bee.client.widget.InputText;
@@ -48,16 +51,23 @@ import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.BiConsumer;
 import com.butent.bee.shared.Consumer;
 import com.butent.bee.shared.communication.ResponseObject;
+import com.butent.bee.shared.css.CssProperties;
 import com.butent.bee.shared.css.CssUnit;
 import com.butent.bee.shared.css.values.FontSize;
+import com.butent.bee.shared.css.values.FontWeight;
 import com.butent.bee.shared.css.values.TextAlign;
+import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.Defaults;
+import com.butent.bee.shared.data.IsRow;
 import com.butent.bee.shared.data.IsTable;
 import com.butent.bee.shared.data.cache.CacheManager;
+import com.butent.bee.shared.data.value.ValueType;
 import com.butent.bee.shared.font.FontAwesome;
 import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogUtils;
+import com.butent.bee.shared.time.DateTime;
+import com.butent.bee.shared.time.TimeUtils;
 import com.butent.bee.shared.ui.Action;
 import com.butent.bee.shared.utils.BeeUtils;
 
@@ -95,6 +105,8 @@ public final class Global {
   private static final Rooms rooms = new Rooms();
 
   private static final NewsAggregator newsAggregator = new NewsAggregator();
+
+  private static final ReportSettings reportSettings = new ReportSettings();
 
   private static boolean debug;
 
@@ -167,6 +179,18 @@ public final class Global {
         StyleUtils.className(FontSize.LARGE), StyleUtils.className(FontSize.MEDIUM), target);
   }
 
+  public static void confirmRemove(String caption, String item, ConfirmationCallback callback) {
+    confirmRemove(caption, item, callback, null);
+  }
+
+  public static void confirmRemove(String caption, String item, ConfirmationCallback callback,
+      Element target) {
+    List<String> messages = Lists.newArrayList(Localized.getMessages().removeQuestion(item));
+    msgBoxen.confirm(caption, Icon.WARNING, messages, Localized.getConstants().actionRemove(),
+        Localized.getConstants().cancel(), callback, null,
+        StyleUtils.className(FontSize.MEDIUM), StyleUtils.className(FontSize.MEDIUM), target);
+  }
+
   public static void debug(String s) {
     logger.debug(s);
   }
@@ -212,7 +236,7 @@ public final class Global {
     Assert.notEmpty(prm);
     Assert.notNull(prmConsumer);
 
-    ParameterList args = CommonsKeeper.createArgs(SVC_GET_PARAMETER);
+    ParameterList args = AdministrationKeeper.createArgs(SVC_GET_PARAMETER);
     args.addDataItem(VAR_PARAMETER, prm);
 
     BeeKeeper.getRpc().makePostRequest(args, new ResponseCallback() {
@@ -225,6 +249,10 @@ public final class Global {
         }
       }
     });
+  }
+
+  public static ReportSettings getReportSettings() {
+    return reportSettings;
   }
 
   public static Rooms getRooms() {
@@ -478,20 +506,26 @@ public final class Global {
 
   public static void inputString(String caption, String prompt, StringCallback callback,
       String defaultValue, int maxLength) {
-    inputString(caption, prompt, callback, defaultValue, maxLength, BeeConst.DOUBLE_UNDEF, null);
+    inputString(caption, prompt, callback, defaultValue, maxLength, null);
   }
 
   public static void inputString(String caption, String prompt, StringCallback callback,
-      String defaultValue, int maxLength, double width, CssUnit widthUnit) {
-    inputString(caption, prompt, callback, defaultValue, maxLength, width, widthUnit,
+      String defaultValue, int maxLength, Element target) {
+    inputString(caption, prompt, callback, defaultValue, maxLength, target,
+        BeeConst.DOUBLE_UNDEF, null);
+  }
+
+  public static void inputString(String caption, String prompt, StringCallback callback,
+      String defaultValue, int maxLength, Element target, double width, CssUnit widthUnit) {
+    inputString(caption, prompt, callback, defaultValue, maxLength, target, width, widthUnit,
         BeeConst.UNDEF, Localized.getConstants().ok(), Localized.getConstants().cancel(), null);
   }
 
   public static void inputString(String caption, String prompt, StringCallback callback,
-      String defaultValue, int maxLength, double width, CssUnit widthUnit, int timeout,
-      String confirmHtml, String cancelHtml, WidgetInitializer initializer) {
-    inpBoxen.inputString(caption, prompt, callback, defaultValue, maxLength, width, widthUnit,
-        timeout, confirmHtml, cancelHtml, initializer);
+      String defaultValue, int maxLength, Element target, double width, CssUnit widthUnit,
+      int timeout, String confirmHtml, String cancelHtml, WidgetInitializer initializer) {
+    inpBoxen.inputString(caption, prompt, callback, defaultValue, maxLength, target,
+        width, widthUnit, timeout, confirmHtml, cancelHtml, initializer);
   }
 
   public static void inputString(String caption, StringCallback callback) {
@@ -536,6 +570,55 @@ public final class Global {
     return msgBoxen.nativeConfirm(lines);
   }
 
+  public static HtmlTable renderTable(String caption, IsTable<?, ?> data) {
+    int c = data.getNumberOfColumns();
+    Assert.isPositive(c);
+
+    HtmlTable table = new HtmlTable();
+    table.setCaption(caption);
+
+    int r = 0;
+    for (int i = 0; i < c; i++) {
+      String label = BeeUtils.notEmpty(data.getColumnLabel(i), data.getColumnId(i));
+      table.setHtml(r, i, label);
+
+      TableCellElement cell = table.getCellFormatter().getElement(r, i);
+      StyleUtils.setTextAlign(cell, TextAlign.CENTER);
+      StyleUtils.setProperty(cell, CssProperties.FONT_WEIGHT, FontWeight.BOLD);
+    }
+    
+    Range<Long> maybeTime = Range.closed(
+        TimeUtils.startOfYear(TimeUtils.today(), -10).getTime(),
+        TimeUtils.startOfYear(TimeUtils.today(), 100).getTime());
+
+    for (IsRow row : data) {
+      r++;
+
+      for (int i = 0; i < c; i++) {
+        if (!row.isNull(i)) {
+          ValueType type = data.getColumnType(i);
+          String value = DataUtils.render(data.getColumn(i), row, i);
+          
+          if (type == ValueType.LONG) {
+            Long x = row.getLong(i);
+            if (x != null && maybeTime.contains(x)) {
+              type = ValueType.DATE_TIME;
+              value = new DateTime(x).toCompactString();
+            }
+          }
+
+          table.setHtml(r, i, value);
+
+          if (ValueType.isNumeric(type)) {
+            table.getCellFormatter().setHorizontalAlignment(r, i, TextAlign.RIGHT);
+          }
+        }
+      }
+    }
+
+    return table;
+  }
+
   public static void sayHuh(String... huhs) {
     String caption;
     List<String> messages;
@@ -558,7 +641,7 @@ public final class Global {
   public static void setParameter(String prm, String value) {
     Assert.notEmpty(prm);
 
-    ParameterList args = CommonsKeeper.createArgs(SVC_SET_PARAMETER);
+    ParameterList args = AdministrationKeeper.createArgs(SVC_SET_PARAMETER);
     args.addDataItem(VAR_PARAMETER, prm);
 
     if (!BeeUtils.isEmpty(value)) {
@@ -596,15 +679,6 @@ public final class Global {
   public static void showError(String caption, List<String> messages, String dialogStyle,
       String closeHtml) {
     msgBoxen.showError(caption, messages, dialogStyle, closeHtml);
-  }
-
-  public static void showGrid(String caption, IsTable<?, ?> table) {
-    Assert.notNull(table, "showGrid: table is null");
-    CellGrid grid = GridFactory.simpleGrid(caption, table,
-        BeeKeeper.getScreen().getActivePanelWidth());
-    if (grid != null) {
-      BeeKeeper.getScreen().showWidget(grid, true);
-    }
   }
 
   public static void showInfo(List<String> messages) {
@@ -653,6 +727,26 @@ public final class Global {
     showModalWidget(null, widget, target);
   }
 
+  public static void showTable(String caption, IsTable<?, ?> table) {
+    if (table == null || table.getNumberOfColumns() <= 0 || table.getNumberOfRows() <= 0) {
+      logger.warning(caption, "table is empty");
+      return;
+    }
+    
+    IdentifiableWidget widget;
+
+    if (BeeKeeper.getStorage().hasItem("info-grid")) {
+      widget = GridFactory.simpleGrid(caption, table, BeeKeeper.getScreen().getActivePanelWidth());
+    } else {
+      widget = renderTable(caption, table);
+      widget.addStyleName(StyleUtils.CLASS_NAME_PREFIX + "info-table");
+    }
+
+    if (widget != null) {
+      BeeKeeper.getScreen().showWidget(widget, true);
+    }
+  }
+  
   static void init() {
     initCache();
     initImages();
@@ -669,12 +763,11 @@ public final class Global {
     $wnd.Bee_updateActor = $entry(@com.butent.bee.client.decorator.TuningHelper::updateActor(Lcom/google/gwt/core/client/JavaScriptObject;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;));
     $wnd.Bee_maybeTranslate = $entry(@com.butent.bee.shared.i18n.Localized::maybeTranslate(Ljava/lang/String;));
   }-*/;
+  // CHECKSTYLE:ON
 
   private static void initCache() {
     BeeKeeper.getBus().registerDataHandler(getCache(), true);
   }
-
-  // CHECKSTYLE:ON
 
   private static void initFavorites() {
     BeeKeeper.getBus().registerRowDeleteHandler(getFavorites(), false);

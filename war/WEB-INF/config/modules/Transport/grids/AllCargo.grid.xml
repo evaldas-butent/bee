@@ -14,12 +14,18 @@
     <RelColumn name="Manager" caption="=manager" />
 
     <RelColumn name="Cargo" viewName="OrderCargo" renderColumns="Description" caption="=cargo"
-      maxWidth="200" editEnabled="true" filterSupplier="value" />
+      label="=cargo" maxWidth="200" editEnabled="true" filterSupplier="value" />
 
     <CalcColumn name="Loading" type="string" cellType="html" caption="=loading" 
-      searchBy="LoadingCountryName" />
+      searchBy="LoadingNumber LoadingContact LoadingAddress 
+      LoadingPostIndex LoadingCityName LoadingCountryName LoadingCountryCode" 
+      filterSupplier="value" />
+    <DataColumn name="LoadingDate" caption="=trCargoLoadingDateShort" label="=trCargoLoadingDateShort" />
     <CalcColumn name="Unloading" type="string" cellType="html" caption="=unloading"
-      searchBy="UnloadingCountryName" />
+      searchBy="UnloadingNumber UnloadingContact UnloadingAddress 
+      UnloadingPostIndex UnloadingCityName UnloadingCountryName UnloadingCountryCode" 
+      filterSupplier="value" />
+    <DataColumn name="UnloadingDate" caption="=trUnloadingDateShort" label="=trUnloadingDateShort"/>
 
     <DataColumn name="Partial" caption="=partialShort" width="15" sortable="false" />
     <DataColumn name="Outsized" caption="=dangerousShort" width="15" sortable="false" />

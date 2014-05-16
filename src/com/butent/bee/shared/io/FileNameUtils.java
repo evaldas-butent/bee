@@ -27,6 +27,8 @@ public final class FileNameUtils {
   public static final char WINDOWS_SEPARATOR = '\\';
   private static final char SYSTEM_SEPARATOR = File.separatorChar;
 
+  private static final String ILLEGAL_NAME_CHARS = "\"<>|:*?\\/";
+
   public static String addExtension(String name, String ext) {
     Assert.notEmpty(name);
     Assert.isTrue(isValidExtension(ext));
@@ -108,7 +110,7 @@ public final class FileNameUtils {
   public static String getFullPath(String filename) {
     return doGetFullPath(filename, true);
   }
-  
+
   public static String getFullPathNoEndSeparator(String filename) {
     return doGetFullPath(filename, false);
   }
@@ -298,6 +300,38 @@ public final class FileNameUtils {
     } else {
       return filename.substring(0, index);
     }
+  }
+
+  public static String sanitize(String input, String illegalChars) {
+    return sanitize(input, illegalChars, BeeConst.CHAR_SPACE);
+  }
+
+  public static String sanitize(String input, String illegalChars, char replacement) {
+    if (BeeUtils.isEmpty(input)) {
+      return BeeConst.STRING_EMPTY;
+    }
+
+    StringBuilder sb = new StringBuilder();
+    char last = replacement;
+
+    for (int i = 0; i < input.length(); i++) {
+      char c = input.charAt(i);
+
+      if (c < BeeConst.CHAR_SPACE || BeeUtils.contains(ILLEGAL_NAME_CHARS, c) 
+          || BeeUtils.contains(illegalChars, c)) {
+
+        if (last != replacement) {
+          sb.append(replacement);
+          last = replacement;
+        }
+
+      } else {
+        sb.append(c);
+        last = c;
+      }
+    }
+
+    return sb.toString().trim();
   }
 
   public static String separatorsToSystem(String path) {

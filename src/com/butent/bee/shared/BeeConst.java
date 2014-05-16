@@ -71,7 +71,7 @@ public final class BeeConst {
   public static final String STRING_EOL = "\n";
   public static final String STRING_MINUS = "-";
   public static final String STRING_PLUS = "+";
-  public static final String STRING_ALL = "*";
+  public static final String STRING_ASTERISK = "*";
   public static final String STRING_APOS = "'";
   public static final String STRING_QUOT = "\"";
   public static final String STRING_UNDER = "_";
@@ -81,6 +81,9 @@ public final class BeeConst {
   public static final String STRING_SLASH = "/";
   public static final String STRING_QUESTION = "?";
   public static final String STRING_EXCLAMATION = "!";
+  public static final String STRING_NUMBER_SIGN = "#";
+  public static final String STRING_SUM = "\u2211";
+  public static final String STRING_CHECK_MARK = "\u2713";
 
   public static final String STRING_FALSE = Boolean.toString(false);
   public static final String STRING_TRUE = Boolean.toString(true);
@@ -117,18 +120,13 @@ public final class BeeConst {
   public static final char CHAR_NBSP = '\u00a0';
   public static final char CHAR_COLON = ':';
   public static final char CHAR_SEMICOLON = ';';
-  public static final char CHAR_ALL = '*';
+  public static final char CHAR_ASTERISK = '*';
   public static final char CHAR_SLASH = '/';
   public static final char CHAR_BACKSLASH = '\\';
   public static final char CHAR_TIMES = '\u00d7';
   public static final char CHAR_QUESTION = '?';
   public static final char CHAR_AT = '@';
   public static final char CHAR_PLUS_MINUS = '\u00b1';
-
-  public static final char CHECK_MARK = '\u2713';
-  public static final char HEAVY_CHECK_MARK = '\u2714';
-  public static final char BALLOT = '\u2717';
-  public static final char HEAVY_BALLOT = '\u2718';
 
   public static final char DRILL_DOWN = '\u25ba';
   public static final char DROP_DOWN = '\u25bc';
@@ -157,11 +155,16 @@ public final class BeeConst {
 
   public static final int MAX_SCALE = 20;
 
+  public static final long LONG_UNDEF = -1L;
+  
   public static final double DOUBLE_UNDEF = -1.0d;
   public static final double DOUBLE_ZERO = 0.0d;
   public static final double DOUBLE_ONE = 1.0d;
   public static final float FLOAT_ZERO = 0.0f;
 
+  public static final String YEAR = "Year";
+  public static final String MONTH = "Month";
+  
   public static final Set<String> EMPTY_IMMUTABLE_STRING_SET = Collections.emptySet();
   public static final List<String> EMPTY_IMMUTABLE_STRING_LIST = Collections.emptyList();
   
@@ -266,7 +269,7 @@ public final class BeeConst {
   }
 
   public static boolean isUndef(long x) {
-    return x == UNDEF;
+    return x == LONG_UNDEF;
   }
   
   /**

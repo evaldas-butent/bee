@@ -4,11 +4,11 @@ import com.google.common.base.Objects;
 import com.google.common.collect.Lists;
 import com.google.gwt.core.client.Scheduler.ScheduledCommand;
 
-import static com.butent.bee.shared.modules.tasks.TasksConstants.*;
+import static com.butent.bee.shared.modules.tasks.TaskConstants.*;
 
 import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.Global;
-import com.butent.bee.client.MenuManager;
+import com.butent.bee.client.NewsAggregator.HeadlineAccessor;
 import com.butent.bee.client.communication.ParameterList;
 import com.butent.bee.client.communication.ResponseCallback;
 import com.butent.bee.client.data.Data;
@@ -16,12 +16,12 @@ import com.butent.bee.client.data.Queries;
 import com.butent.bee.client.data.RowCallback;
 import com.butent.bee.client.event.logical.SelectorEvent;
 import com.butent.bee.client.grid.GridFactory;
-import com.butent.bee.client.modules.documents.DocumentHandler;
+import com.butent.bee.client.style.ColorStyleProvider;
+import com.butent.bee.client.style.ConditionalStyle;
 import com.butent.bee.client.ui.FormFactory;
 import com.butent.bee.client.view.grid.interceptor.FileGridInterceptor;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
-import com.butent.bee.shared.Consumer;
 import com.butent.bee.shared.communication.ResponseObject;
 import com.butent.bee.shared.data.BeeRow;
 import com.butent.bee.shared.data.DataUtils;
@@ -30,10 +30,13 @@ import com.butent.bee.shared.data.event.RowTransformEvent;
 import com.butent.bee.shared.data.event.RowUpdateEvent;
 import com.butent.bee.shared.data.view.DataInfo;
 import com.butent.bee.shared.i18n.Localized;
-import com.butent.bee.shared.modules.commons.CommonsConstants;
-import com.butent.bee.shared.modules.tasks.TasksUtils;
-import com.butent.bee.shared.modules.tasks.TasksConstants.TaskEvent;
-import com.butent.bee.shared.modules.tasks.TasksConstants.TaskStatus;
+import com.butent.bee.shared.menu.MenuHandler;
+import com.butent.bee.shared.menu.MenuService;
+import com.butent.bee.shared.modules.administration.AdministrationConstants;
+import com.butent.bee.shared.modules.classifiers.ClassifierConstants;
+import com.butent.bee.shared.modules.tasks.TaskConstants.TaskEvent;
+import com.butent.bee.shared.modules.tasks.TaskConstants.TaskStatus;
+import com.butent.bee.shared.modules.tasks.TaskUtils;
 import com.butent.bee.shared.news.Feed;
 import com.butent.bee.shared.rights.Module;
 import com.butent.bee.shared.time.DateRange;
@@ -43,7 +46,9 @@ import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.Codec;
 import com.butent.bee.shared.utils.EnumUtils;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 public final class TasksKeeper {
 
@@ -54,7 +59,7 @@ public final class TasksKeeper {
   private static class RowTransformHandler implements RowTransformEvent.Handler {
 
     private final List<String> taskColumns = Lists.newArrayList(COL_SUMMARY,
-        CommonsConstants.ALS_COMPANY_NAME, ALS_EXECUTOR_FIRST_NAME, ALS_EXECUTOR_LAST_NAME,
+        ClassifierConstants.ALS_COMPANY_NAME, ALS_EXECUTOR_FIRST_NAME, ALS_EXECUTOR_LAST_NAME,
         COL_FINISH_TIME, COL_STATUS);
 
     private DataInfo taskViewInfo;
@@ -133,13 +138,13 @@ public final class TasksKeeper {
 
             if (startId != null && newStart != null && !Objects.equal(newStart, oldStart)) {
               params.addQueryItem(COL_START_TIME, newStart.getTime());
-              notes.add(TasksUtils.getUpdateNote(Localized.getConstants().crmStartDate(),
+              notes.add(TaskUtils.getUpdateNote(Localized.getConstants().crmStartDate(),
                   TimeUtils.renderCompact(oldStart), TimeUtils.renderCompact(newStart)));
             }
 
             if (!Objects.equal(newEnd, oldEnd)) {
               params.addQueryItem(COL_FINISH_TIME, newEnd.getTime());
-              notes.add(TasksUtils.getUpdateNote(Localized.getConstants().crmFinishDate(),
+              notes.add(TaskUtils.getUpdateNote(Localized.getConstants().crmFinishDate(),
                   TimeUtils.renderCompact(oldEnd), TimeUtils.renderCompact(newEnd)));
             }
 
@@ -184,19 +189,23 @@ public final class TasksKeeper {
 
     GridFactory.registerGridInterceptor(GRID_TODO_LIST, new TodoListInterceptor());
 
-    GridFactory.registerGridInterceptor(GRID_RECURRING_TASKS, new RecurringTaskGrid());
+    GridFactory.registerGridInterceptor(GRID_RECURRING_TASKS, new RecurringTasksGrid());
     GridFactory.registerGridInterceptor(GRID_RT_FILES,
-        new FileGridInterceptor(COL_RTF_RECURRING_TASK, COL_RTF_FILE, COL_RTF_CAPTION,
-            CommonsConstants.ALS_FILE_NAME));
+        new FileGridInterceptor(COL_RTF_RECURRING_TASK, AdministrationConstants.COL_FILE,
+            AdministrationConstants.COL_FILE_CAPTION, AdministrationConstants.ALS_FILE_NAME));
 
-    BeeKeeper.getMenu().registerMenuCallback("task_list", new MenuManager.MenuCallback() {
+    GridFactory.registerGridInterceptor(GRID_RELATED_TASKS, new RelatedTasksGrid());
+    GridFactory.registerGridInterceptor(GRID_RELATED_RECURRING_TASKS,
+        new RelatedRecurringTasksGrid());
+
+    MenuService.TASK_LIST.setHandler(new MenuHandler() {
       @Override
       public void onSelection(String parameters) {
-        TaskList.open(parameters);
+        TasksGrid.open(parameters);
       }
     });
 
-    BeeKeeper.getMenu().registerMenuCallback("task_reports", new MenuManager.MenuCallback() {
+    MenuService.TASK_REPORTS.setHandler(new MenuHandler() {
       @Override
       public void onSelection(String parameters) {
         if (BeeUtils.startsSame(parameters, COMPANY_TIMES_REPORT)) {
@@ -216,28 +225,52 @@ public final class TasksKeeper {
 
     SelectorEvent.register(new TaskSelectorHandler());
 
-    DocumentHandler.register();
-
     BeeKeeper.getBus().registerRowTransformHandler(new RowTransformHandler(), false);
 
     Global.getNewsAggregator().registerFilterHandler(Feed.TASKS_ASSIGNED,
-        TaskList.getFeedFilterHandler(Feed.TASKS_ASSIGNED));
+        TasksGrid.getFeedFilterHandler(Feed.TASKS_ASSIGNED));
     Global.getNewsAggregator().registerFilterHandler(Feed.TASKS_DELEGATED,
-        TaskList.getFeedFilterHandler(Feed.TASKS_DELEGATED));
+        TasksGrid.getFeedFilterHandler(Feed.TASKS_DELEGATED));
     Global.getNewsAggregator().registerFilterHandler(Feed.TASKS_OBSERVED,
-        TaskList.getFeedFilterHandler(Feed.TASKS_OBSERVED));
+        TasksGrid.getFeedFilterHandler(Feed.TASKS_OBSERVED));
     Global.getNewsAggregator().registerFilterHandler(Feed.TASKS_ALL,
-        TaskList.getFeedFilterHandler(Feed.TASKS_ALL));
+        TasksGrid.getFeedFilterHandler(Feed.TASKS_ALL));
 
-    Global.getNewsAggregator().registerAccessHandler(VIEW_TASKS, new Consumer<Long>() {
+    Global.getNewsAggregator().registerAccessHandler(VIEW_TASKS, new HeadlineAccessor() {
       @Override
-      public void accept(Long input) {
+      public boolean read(Long id) {
+        return false;
+      }
+
+      @Override
+      public void access(Long id) {
         ParameterList params = createArgs(SVC_ACCESS_TASK);
-        params.addQueryItem(VAR_TASK_ID, input);
+        params.addQueryItem(VAR_TASK_ID, id);
 
         BeeKeeper.getRpc().makeRequest(params);
       }
     });
+
+    ColorStyleProvider styleProvider = ColorStyleProvider.createDefault(VIEW_TASK_TYPES);
+    ConditionalStyle.registerGridColumnStyleProvider(GRID_TASK_TYPES,
+        AdministrationConstants.COL_BACKGROUND, styleProvider);
+    ConditionalStyle.registerGridColumnStyleProvider(GRID_TASK_TYPES,
+        AdministrationConstants.COL_FOREGROUND, styleProvider);
+
+    Map<String, String> containsTaskType = new HashMap<>();
+
+    containsTaskType.put(VIEW_TASKS, GRID_TASKS);
+    containsTaskType.put(VIEW_RELATED_TASKS, GRID_RELATED_TASKS);
+    containsTaskType.put(VIEW_RECURRING_TASKS, GRID_RECURRING_TASKS);
+    containsTaskType.put(VIEW_RELATED_RECURRING_TASKS, GRID_RELATED_RECURRING_TASKS);
+    containsTaskType.put(VIEW_TASK_TEMPLATES, GRID_TASK_TEMPLATES);
+
+    for (Map.Entry<String, String> entry : containsTaskType.entrySet()) {
+      styleProvider = ColorStyleProvider.create(entry.getKey(),
+          ALS_TASK_TYPE_BACKGROUND, ALS_TASK_TYPE_FOREGROUND);
+      ConditionalStyle.registerGridColumnStyleProvider(entry.getValue(), COL_TASK_TYPE,
+          styleProvider);
+    }
   }
 
   public static void scheduleTasks(final DateRange range) {
@@ -266,7 +299,7 @@ public final class TasksKeeper {
 
   static ParameterList createArgs(String method) {
     ParameterList args = BeeKeeper.getRpc().createParameters(Module.TASKS.getName());
-    args.addQueryItem(CommonsConstants.METHOD, method);
+    args.addQueryItem(AdministrationConstants.METHOD, method);
     return args;
   }
 

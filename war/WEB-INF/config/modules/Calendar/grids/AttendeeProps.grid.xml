@@ -5,7 +5,8 @@
   headerMode="grid"
   >
   <g:columns>
-    <DataColumn name="GroupName" caption="=calAttendeeGroup" width="100" visible="true" />
-    <RelColumn name="PropertyName" caption="=calAttendeePropertyName" width="180" newRowEnabled="false" visible="true" />
+    <DataColumn name="GroupName" label="=calParameterGroup" width="100" visible="true" />
+    <RelColumn name="PropertyName" label="=calParameter" width="180" newRowEnabled="false"
+      visible="true" />
   </g:columns>
 </g:Grid>

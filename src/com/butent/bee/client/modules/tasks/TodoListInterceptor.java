@@ -12,7 +12,7 @@ import com.butent.bee.shared.data.BeeRow;
 import com.butent.bee.shared.data.IsColumn;
 import com.butent.bee.shared.data.event.RowInsertEvent;
 import com.butent.bee.shared.data.event.RowUpdateEvent;
-import com.butent.bee.shared.modules.tasks.TasksConstants;
+import com.butent.bee.shared.modules.tasks.TaskConstants;
 import com.butent.bee.shared.utils.BeeUtils;
 
 import java.util.List;
@@ -57,6 +57,6 @@ class TodoListInterceptor extends AbstractGridInterceptor {
   }
   
   private boolean isRelevant(BeeRow row) {
-    return BeeKeeper.getUser().is(row.getLong(getDataIndex(TasksConstants.COL_EXECUTOR)));
+    return BeeKeeper.getUser().is(row.getLong(getDataIndex(TaskConstants.COL_EXECUTOR)));
   }
 }

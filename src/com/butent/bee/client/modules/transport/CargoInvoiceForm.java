@@ -10,9 +10,9 @@ import com.butent.bee.client.data.Data;
 import com.butent.bee.client.data.Queries;
 import com.butent.bee.client.data.Queries.IntCallback;
 import com.butent.bee.client.dialog.ConfirmationCallback;
-import com.butent.bee.client.ui.FormFactory.FormInterceptor;
 import com.butent.bee.client.view.HeaderView;
 import com.butent.bee.client.view.form.FormView;
+import com.butent.bee.client.view.form.interceptor.FormInterceptor;
 import com.butent.bee.client.widget.Button;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.data.IsRow;
@@ -22,21 +22,20 @@ import com.butent.bee.shared.data.value.BooleanValue;
 import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.utils.BeeUtils;
 
-public class CargoInvoiceForm extends CargoCreditInvoiceForm implements ClickHandler {
+public class CargoInvoiceForm extends CargoPurchaseInvoiceForm implements ClickHandler {
 
-  private final Button confirmAction = new Button(Localized.getConstants().trInvoice(), this);
+  private final Button confirmAction = new Button(Localized.getConstants().trdInvoice(), this);
 
   @Override
   public void beforeRefresh(FormView form, IsRow row) {
     int idx = form.getDataIndex(COL_SALE_PROFORMA);
     boolean proforma = idx != BeeConst.UNDEF && BeeUtils.unbox(row.getBoolean(idx));
 
-    form.getViewPresenter().getHeader().setCaption(proforma
-        ? Localized.getConstants().trProformaInvoice()
-        : Localized.getConstants().trInvoice());
-
     HeaderView header = form.getViewPresenter().getHeader();
     header.clearCommandPanel();
+
+    header.setCaption(proforma ? Localized.getConstants().trProformaInvoice()
+        : Localized.getConstants().trdInvoice());
 
     if (proforma && form.isEnabled()) {
       header.addCommandItem(confirmAction);

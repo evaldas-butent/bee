@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Table xmlns="http://www.butent.com/table"
+
+  name="ServiceCriteria"
+  idName="CriterionID"
+  >
+  <Fields>
+    <Relation name="Group" relation="ServiceCritGroups" notNull="true" label="=criteriaGroup"
+      cascade="DELETE" />
+    <String name="Criterion" precision="50" notNull="true" label="=criterionName" />
+    <String name="Value" precision="200" label="=criterionValue" />
+    <Numeric name="Ordinal" precision="2" label="=ordinal" />
+  </Fields>
+  <Constraints>
+    <Unique fields="Group Criterion" />
+  </Constraints>
+</Table>

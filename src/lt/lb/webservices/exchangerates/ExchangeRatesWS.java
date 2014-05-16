@@ -9,7 +9,7 @@ import com.butent.bee.shared.data.SimpleRowSet;
 import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogLevel;
 import com.butent.bee.shared.logging.LogUtils;
-import com.butent.bee.shared.modules.commons.CommonsConstants;
+import com.butent.bee.shared.modules.administration.AdministrationConstants;
 import com.butent.bee.shared.time.JustDate;
 import com.butent.bee.shared.utils.BeeUtils;
 
@@ -82,7 +82,7 @@ public class ExchangeRatesWS
    * @param currency short notation of currency, e. g. "usd", "ltl", "gbp", "lvl", etc.
    * @return SimpleRowSet result packed in ResponseObject:
    *         <table border="1">
-   *         <th>ExchangeRate defined in {@link CommonsConstants#COL_EXCHANGE_RATE}</th>
+   *         <th>ExchangeRate defined in {@link AdministrationConstants#COL_EXCHANGE_RATE}</th>
    *         <tr>
    *         <td>Exchange rate in {@link String} value</td>
    *         </tr>
@@ -100,7 +100,7 @@ public class ExchangeRatesWS
     String result =
         ((ExchangeRatesSoapPort) response.getResponse()).getCurrentExchangeRate(currency);
 
-    SimpleRowSet data = new SimpleRowSet(new String[] {CommonsConstants.COL_CURRENCY_RATE});
+    SimpleRowSet data = new SimpleRowSet(new String[] {AdministrationConstants.COL_CURRENCY_RATE});
     data.addRow(new String[] {result});
 
     logger.info("GetCurrentExchangeRate rows: ", data.getNumberOfRows());
@@ -115,7 +115,7 @@ public class ExchangeRatesWS
    * @param currency short notation of currency, e. g. "usd", "ltl", "gbp", "lvl", etc.
    * @return SimpleRowSet result packed in ResponseObject:
    *         <table border="1">
-   *         <th>ExchangeRate defined in {@link CommonsConstants#COL_EXCHANGE_RATE}</th>
+   *         <th>ExchangeRate defined in {@link AdministrationConstants#COL_EXCHANGE_RATE}</th>
    *         <tr>
    *         <td>Exchange rate in {@link String} value</td>
    *         </tr>
@@ -132,7 +132,7 @@ public class ExchangeRatesWS
    * @param currency short notation of currency, e. g. "usd", "ltl", "gbp", "lvl", etc.
    * @param date specified date
    * @return <table border="1">
-   *         <th>ExchangeRate defined in {@link CommonsConstants#COL_EXCHANGE_RATE}</th>
+   *         <th>ExchangeRate defined in {@link AdministrationConstants#COL_EXCHANGE_RATE}</th>
    *         <tr>
    *         <td>Exchange rate in {@link String} value</td>
    *         </tr>
@@ -151,7 +151,7 @@ public class ExchangeRatesWS
    * @param date specified date
    * @return SimplerowSet packed in ResponseObject. SimpleRowSet logical structure:
    *         <table border="1">
-   *         <th>ExchangeRate defined in {@link CommonsConstants#COL_EXCHANGE_RATE}</th>
+   *         <th>ExchangeRate defined in {@link AdministrationConstants#COL_EXCHANGE_RATE}</th>
    *         <tr>
    *         <td>Exchange rate in {@link String} value</td>
    *         </tr>
@@ -169,7 +169,7 @@ public class ExchangeRatesWS
     String result =
         ((ExchangeRatesSoapPort) response.getResponse()).getExchangeRate(currency, date.toString());
 
-    SimpleRowSet data = new SimpleRowSet(new String[] {CommonsConstants.COL_CURRENCY_RATE});
+    SimpleRowSet data = new SimpleRowSet(new String[] {AdministrationConstants.COL_CURRENCY_RATE});
     data.addRow(new String[] {result});
 
     logger.info("GetExchangeRate rows: ", data.getNumberOfRows());
@@ -186,11 +186,11 @@ public class ExchangeRatesWS
    * @param dateHigh Interval end date
    * @return SimplerowSet packed in ResponseObject. SimpleRowSet logical structure:
    *         <table border="1">
-   *         <th>Exchange rate date defined in {@link CommonsConstants#COL_EXCHANGE_RATE_DATE}</th>
-   *         <th>Name of Currency defined in {@link CommonsConstants#COL_CURRENCY_NAME}</th>
-   *         <th>Quantity defined in {@link CommonsConstants#COL_CURRENCY_NAME}</th>
-   *         <th>Exchange rate defined in {@link CommonsConstants#COL_EXCHANGE_RATE_DATE}</th>
-   *         <th>Unit defined in {@link CommonsConstants#COL_CURRENCY_UNIT}</th>
+   *         <th>Exchange rate date defined in {@link AdministrationConstants#COL_EXCHANGE_RATE_DATE}</th>
+   *         <th>Name of Currency defined in {@link AdministrationConstants#COL_CURRENCY_NAME}</th>
+   *         <th>Quantity defined in {@link AdministrationConstants#COL_CURRENCY_NAME}</th>
+   *         <th>Exchange rate defined in {@link AdministrationConstants#COL_EXCHANGE_RATE_DATE}</th>
+   *         <th>Unit defined in {@link AdministrationConstants#COL_CURRENCY_UNIT}</th>
    *         <tr>
    *         <td>Date in {@link String} value</td>
    *         <td>Currency value {@link String} value</td>
@@ -215,11 +215,11 @@ public class ExchangeRatesWS
    * @param dateHigh Interval end date
    * @return SimplerowSet packed in ResponseObject. SimpleRowSet logical structure:
    *         <table border="1">
-   *         <th>Exchange rate date defined in {@link CommonsConstants#COL_EXCHANGE_RATE_DATE}</th>
-   *         <th>Name of Currency defined in {@link CommonsConstants#COL_CURRENCY_NAME}</th>
-   *         <th>Quantity defined in {@link CommonsConstants#COL_CURRENCY_NAME}</th>
-   *         <th>Exchange rate defined in {@link CommonsConstants#COL_EXCHANGE_RATE_DATE}</th>
-   *         <th>Unit defined in {@link CommonsConstants#COL_CURRENCY_UNIT}</th>
+   *         <th>Exchange rate date defined in {@link AdministrationConstants#COL_EXCHANGE_RATE_DATE}</th>
+   *         <th>Name of Currency defined in {@link AdministrationConstants#COL_CURRENCY_NAME}</th>
+   *         <th>Quantity defined in {@link AdministrationConstants#COL_CURRENCY_NAME}</th>
+   *         <th>Exchange rate defined in {@link AdministrationConstants#COL_EXCHANGE_RATE_DATE}</th>
+   *         <th>Unit defined in {@link AdministrationConstants#COL_CURRENCY_UNIT}</th>
    *         <tr>
    *         <td>Date in {@link String} value</td>
    *         <td>Currency value {@link String} value</td>
@@ -247,9 +247,9 @@ public class ExchangeRatesWS
         ((ExchangeRatesSoapPort) response.getResponse()).getExchangeRatesByCurrency(currency,
             dateLow.toString(), dateHigh.toString());
 
-    SimpleRowSet data = new SimpleRowSet(new String[] {CommonsConstants.COL_CURRENCY_RATE_DATE,
-        CommonsConstants.COL_CURRENCY_NAME, CommonsConstants.COL_CURRENCY_RATE_QUANTITY,
-        CommonsConstants.COL_CURRENCY_RATE, COL_CURRENCY_UNIT});
+    SimpleRowSet data = new SimpleRowSet(new String[] {AdministrationConstants.COL_CURRENCY_RATE_DATE,
+        AdministrationConstants.COL_CURRENCY_NAME, AdministrationConstants.COL_CURRENCY_RATE_QUANTITY,
+        AdministrationConstants.COL_CURRENCY_RATE, COL_CURRENCY_UNIT});
 
     for (Object xmlRoot : result) {
 
@@ -266,16 +266,16 @@ public class ExchangeRatesWS
             for (int j = 0; j < itemRow.getLength(); j++) {
 
               if (BeeUtils.same(TAG_DATE, itemRow.item(j).getLocalName())) {
-                dataValues[data.getColumnIndex(CommonsConstants.COL_CURRENCY_RATE_DATE)] =
+                dataValues[data.getColumnIndex(AdministrationConstants.COL_CURRENCY_RATE_DATE)] =
                     itemRow.item(j).getTextContent().trim();
               } else if (BeeUtils.same(TAG_CURRENCY, itemRow.item(j).getLocalName())) {
-                dataValues[data.getColumnIndex(CommonsConstants.COL_CURRENCY_NAME)] =
+                dataValues[data.getColumnIndex(AdministrationConstants.COL_CURRENCY_NAME)] =
                     itemRow.item(j).getTextContent().trim();
               } else if (BeeUtils.same(TAG_QUANTITY, itemRow.item(j).getLocalName())) {
-                dataValues[data.getColumnIndex(CommonsConstants.COL_CURRENCY_RATE_QUANTITY)] =
+                dataValues[data.getColumnIndex(AdministrationConstants.COL_CURRENCY_RATE_QUANTITY)] =
                     itemRow.item(j).getTextContent().trim();
               } else if (BeeUtils.same(TAG_RATE, itemRow.item(j).getLocalName())) {
-                dataValues[data.getColumnIndex(CommonsConstants.COL_CURRENCY_RATE)] =
+                dataValues[data.getColumnIndex(AdministrationConstants.COL_CURRENCY_RATE)] =
                     itemRow.item(j).getTextContent().trim();
               } else if (BeeUtils.same(TAG_UNIT, itemRow.item(j).getLocalName())) {
                 dataValues[data.getColumnIndex(COL_CURRENCY_UNIT)] =
@@ -305,11 +305,11 @@ public class ExchangeRatesWS
    * @param dateHigh Interval end date
    * @return SimplerowSet packed in ResponseObject. SimpleRowSet logical structure:
    *         <table border="1">
-   *         <th>Exchange rate date defined in {@link CommonsConstants#COL_EXCHANGE_RATE_DATE}</th>
-   *         <th>Name of Currency defined in {@link CommonsConstants#COL_CURRENCY_NAME}</th>
-   *         <th>Quantity defined in {@link CommonsConstants#COL_CURRENCY_NAME}</th>
-   *         <th>Exchange rate defined in {@link CommonsConstants#COL_EXCHANGE_RATE_DATE}</th>
-   *         <th>Unit defined in {@link CommonsConstants#COL_CURRENCY_UNIT}</th>
+   *         <th>Exchange rate date defined in {@link AdministrationConstants#COL_EXCHANGE_RATE_DATE}</th>
+   *         <th>Name of Currency defined in {@link AdministrationConstants#COL_CURRENCY_NAME}</th>
+   *         <th>Quantity defined in {@link AdministrationConstants#COL_CURRENCY_NAME}</th>
+   *         <th>Exchange rate defined in {@link AdministrationConstants#COL_EXCHANGE_RATE_DATE}</th>
+   *         <th>Unit defined in {@link AdministrationConstants#COL_CURRENCY_UNIT}</th>
    *         <tr>
    *         <td>Date in {@link String} value</td>
    *         <td>Currency value {@link String} value</td>
@@ -342,9 +342,9 @@ public class ExchangeRatesWS
         ((ExchangeRatesSoapPort) response.getResponse()).getExchangeRatesByCurrencyXmlString(
             currency, dateLow.toString(), dateHigh.toString());
 
-    SimpleRowSet data = new SimpleRowSet(new String[] {CommonsConstants.COL_CURRENCY_RATE_DATE,
-        CommonsConstants.COL_CURRENCY_NAME, CommonsConstants.COL_CURRENCY_RATE_QUANTITY,
-        CommonsConstants.COL_CURRENCY_RATE, COL_CURRENCY_UNIT});
+    SimpleRowSet data = new SimpleRowSet(new String[] {AdministrationConstants.COL_CURRENCY_RATE_DATE,
+        AdministrationConstants.COL_CURRENCY_NAME, AdministrationConstants.COL_CURRENCY_RATE_QUANTITY,
+        AdministrationConstants.COL_CURRENCY_RATE, COL_CURRENCY_UNIT});
 
     Node node = null;
     logger.info("ExchangeRatesByCurrency result:", result);
@@ -368,16 +368,16 @@ public class ExchangeRatesWS
         for (int j = 0; j < itemRow.getLength(); j++) {
 
           if (BeeUtils.same(TAG_DATE, itemRow.item(j).getLocalName())) {
-            dataValues[data.getColumnIndex(CommonsConstants.COL_CURRENCY_RATE_DATE)] =
+            dataValues[data.getColumnIndex(AdministrationConstants.COL_CURRENCY_RATE_DATE)] =
                 itemRow.item(j).getTextContent().trim();
           } else if (BeeUtils.same(TAG_CURRENCY, itemRow.item(j).getLocalName())) {
-            dataValues[data.getColumnIndex(CommonsConstants.COL_CURRENCY_NAME)] =
+            dataValues[data.getColumnIndex(AdministrationConstants.COL_CURRENCY_NAME)] =
                 itemRow.item(j).getTextContent().trim();
           } else if (BeeUtils.same(TAG_QUANTITY, itemRow.item(j).getLocalName())) {
-            dataValues[data.getColumnIndex(CommonsConstants.COL_CURRENCY_RATE_QUANTITY)] =
+            dataValues[data.getColumnIndex(AdministrationConstants.COL_CURRENCY_RATE_QUANTITY)] =
                 itemRow.item(j).getTextContent().trim();
           } else if (BeeUtils.same(TAG_RATE, itemRow.item(j).getLocalName())) {
-            dataValues[data.getColumnIndex(CommonsConstants.COL_CURRENCY_RATE)] =
+            dataValues[data.getColumnIndex(AdministrationConstants.COL_CURRENCY_RATE)] =
                 itemRow.item(j).getTextContent().trim();
           } else if (BeeUtils.same(TAG_UNIT, itemRow.item(j).getLocalName())) {
             dataValues[data.getColumnIndex(COL_CURRENCY_UNIT)] =
@@ -400,9 +400,9 @@ public class ExchangeRatesWS
    * 
    * @return SimplerowSet packed in ResponseObject. SimpleRowSet logical structure:
    *         <table border="1">
-   *         <th>Name defined in {@link CommonsConstants#COL_CURRENCY_NAME}</th>
-   *         <th>Description defined in {@link CommonsConstants#COL_CURRENCY_DESCRIPTION}</th>
-   *         <th>DescriptionEn defined in {@link CommonsConstants#COL_CURRENCY_EN_DESCRIPTION}</th>
+   *         <th>Name defined in {@link AdministrationConstants#COL_CURRENCY_NAME}</th>
+   *         <th>Description defined in {@link AdministrationConstants#COL_CURRENCY_DESCRIPTION}</th>
+   *         <th>DescriptionEn defined in {@link AdministrationConstants#COL_CURRENCY_EN_DESCRIPTION}</th>
    *         <tr>
    *         <td>Short currency name in {@link String} value</td>
    *         <td>Currency description in Lithuanian of {@link String} value</td>
@@ -420,9 +420,9 @@ public class ExchangeRatesWS
    * @param address address of webservice
    * @return SimplerowSet packed in ResponseObject. SimpleRowSet logical structure:
    *         <table border="1">
-   *         <th>Name defined in {@link CommonsConstants#COL_CURRENCY_NAME}</th>
-   *         <th>Description defined in {@link CommonsConstants#COL_CURRENCY_DESCRIPTION}</th>
-   *         <th>DescriptionEn defined in {@link CommonsConstants#COL_CURRENCY_EN_DESCRIPTION}</th>
+   *         <th>Name defined in {@link AdministrationConstants#COL_CURRENCY_NAME}</th>
+   *         <th>Description defined in {@link AdministrationConstants#COL_CURRENCY_DESCRIPTION}</th>
+   *         <th>DescriptionEn defined in {@link AdministrationConstants#COL_CURRENCY_EN_DESCRIPTION}</th>
    *         <tr>
    *         <td>Short currency name in {@link String} value</td>
    *         <td>Currency description in Lithuanian of {@link String} value</td>
@@ -442,7 +442,7 @@ public class ExchangeRatesWS
     List<Object> result =
         ((ExchangeRatesSoapPort) response.getResponse()).getListOfCurrencies();
     SimpleRowSet data =
-        new SimpleRowSet(new String[] {CommonsConstants.COL_CURRENCY_NAME,
+        new SimpleRowSet(new String[] {AdministrationConstants.COL_CURRENCY_NAME,
             COL_CURRENCY_DESCRIPTION, COL_CURRENCY_EN_DESCRIPTION});
 
     for (Object xmlRoot : result) {
@@ -460,7 +460,7 @@ public class ExchangeRatesWS
 
             if (BeeUtils.same(itemNodes.item(j).getLocalName(), TAG_CURRENCY)) {
               logger.info("item nodes, currency value", itemNodes.item(j).getTextContent());
-              dataRow[data.getColumnIndex(CommonsConstants.COL_CURRENCY_NAME)] =
+              dataRow[data.getColumnIndex(AdministrationConstants.COL_CURRENCY_NAME)] =
                   itemNodes.item(j).getTextContent().trim();
             }
           }

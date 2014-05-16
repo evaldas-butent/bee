@@ -36,10 +36,6 @@ import java.util.Map;
 public abstract class Provider implements SortEvent.Handler, HandlesAllDataEvents, HasViewName,
     DataRequestEvent.Handler, FilterConsumer, HandlesActions {
 
-  public enum Type {
-    ASYNC, CACHED, LOCAL
-  }
-
   private final HasDataTable display;
   private final HandlesActions actionHandler;
   private final NotificationListener notificationListener;
@@ -108,6 +104,10 @@ public abstract class Provider implements SortEvent.Handler, HandlesAllDataEvent
     return columns;
   }
 
+  public Filter getFilter() {
+    return getQueryFilter(getUserFilter());
+  }
+
   public String getIdColumnName() {
     return idColumnName;
   }
@@ -119,7 +119,7 @@ public abstract class Provider implements SortEvent.Handler, HandlesAllDataEvent
   public Order getOrder() {
     return order;
   }
-
+  
   public Filter getQueryFilter(Filter filter) {
     List<Filter> lst = Lists.newArrayList();
 
@@ -138,10 +138,6 @@ public abstract class Provider implements SortEvent.Handler, HandlesAllDataEvent
       lst.add(filter);
     }
     return Filter.and(lst);
-  }
-  
-  public boolean hasFilter() {
-    return getImmutableFilter() != null || !getParentFilters().isEmpty() || getUserFilter() != null;
   }
 
   public Filter getUserFilter() {
@@ -162,6 +158,10 @@ public abstract class Provider implements SortEvent.Handler, HandlesAllDataEvent
     if (actionHandler != null) {
       actionHandler.handleAction(action);
     }
+  }
+
+  public boolean hasFilter() {
+    return getImmutableFilter() != null || !getParentFilters().isEmpty() || getUserFilter() != null;
   }
 
   @Override
@@ -203,18 +203,18 @@ public abstract class Provider implements SortEvent.Handler, HandlesAllDataEvent
     }
   }
 
-  public abstract void refresh(boolean updateActiveRow);
+  public abstract void refresh(boolean preserveActiveRow);
 
   public void setOrder(Order order) {
     this.order = order;
   }
 
-  public void setParentFilter(String key, Filter filter) {
+  public boolean setParentFilter(String key, Filter filter) {
     Assert.notEmpty(key);
     if (filter == null) {
-      getParentFilters().remove(key);
+      return getParentFilters().remove(key) != null;
     } else {
-      getParentFilters().put(key, filter);
+      return !filter.equals(getParentFilters().put(key, filter));
     }
   }
 
@@ -224,10 +224,6 @@ public abstract class Provider implements SortEvent.Handler, HandlesAllDataEvent
 
   protected HasDataTable getDisplay() {
     return display;
-  }
-
-  protected Filter getFilter() {
-    return getQueryFilter(getUserFilter());
   }
 
   protected int getPageSize() {
@@ -247,7 +243,7 @@ public abstract class Provider implements SortEvent.Handler, HandlesAllDataEvent
     return getPageSize() > 0;
   }
 
-  protected abstract void onRequest(boolean updateActiveRow);
+  protected abstract void onRequest(boolean preserveActiveRow);
 
   protected void rejectFilter(Filter filter, boolean notify) {
     if (filter != null && notify && notificationListener != null) {

@@ -89,7 +89,7 @@ public class RequestInfo implements HasExtendedInfo, HasOptions {
     }
 
     if (isXml()) {
-      this.vars = XmlUtils.getElements(content, Service.XML_TAG_DATA);
+      this.vars = XmlUtils.getElements(content, Service.VAR_DATA);
     } else {
       this.vars = null;
     }
@@ -117,7 +117,7 @@ public class RequestInfo implements HasExtendedInfo, HasOptions {
       return null;
     }
 
-    List<ExtendedProperty> reqInfo = new ArrayList<ExtendedProperty>();
+    List<ExtendedProperty> reqInfo = new ArrayList<>();
 
     if (request.isAsyncStarted()) {
       PropertyUtils.appendExtended(reqInfo, 
@@ -237,6 +237,10 @@ public class RequestInfo implements HasExtendedInfo, HasOptions {
     return value;
   }
 
+  public Long getParameterLong(String name) {
+    return BeeUtils.toLongOrNull(getParameter(name));
+  }
+  
   public Map<String, String> getParams() {
     return params;
   }

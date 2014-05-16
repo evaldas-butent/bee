@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<View xmlns="http://www.butent.com/view"
+
+  name="ItemCategories" source="ItemCategories" caption="=itemCategories"
+  >
+  <Columns>
+    <SimpleColumn name="Item" />
+    <SimpleColumn name="Category" />
+  </Columns>
+</View>
+ 

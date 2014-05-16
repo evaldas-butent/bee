@@ -5,12 +5,12 @@ import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
 import com.google.gwt.user.client.ui.Widget;
 
+import static com.butent.bee.shared.modules.administration.AdministrationConstants.*;
 import static com.butent.bee.shared.modules.calendar.CalendarConstants.*;
 
 import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.Callback;
 import com.butent.bee.client.Global;
-import com.butent.bee.client.MenuManager;
 import com.butent.bee.client.communication.ParameterList;
 import com.butent.bee.client.communication.ResponseCallback;
 import com.butent.bee.client.data.Data;
@@ -20,6 +20,7 @@ import com.butent.bee.client.data.RowFactory;
 import com.butent.bee.client.dialog.InputBoxes;
 import com.butent.bee.client.dialog.InputCallback;
 import com.butent.bee.client.dom.DomUtils;
+import com.butent.bee.client.event.logical.RowActionEvent;
 import com.butent.bee.client.event.logical.SelectorEvent;
 import com.butent.bee.client.grid.GridFactory;
 import com.butent.bee.client.screen.Domain;
@@ -41,18 +42,20 @@ import com.butent.bee.shared.data.BeeColumn;
 import com.butent.bee.shared.data.BeeRow;
 import com.butent.bee.shared.data.BeeRowSet;
 import com.butent.bee.shared.data.DataUtils;
-import com.butent.bee.shared.data.event.RowActionEvent;
 import com.butent.bee.shared.data.event.RowTransformEvent;
 import com.butent.bee.shared.data.filter.Filter;
 import com.butent.bee.shared.data.view.DataInfo;
 import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogUtils;
+import com.butent.bee.shared.menu.MenuHandler;
+import com.butent.bee.shared.menu.MenuService;
+import com.butent.bee.shared.modules.calendar.CalendarConstants.ItemType;
 import com.butent.bee.shared.modules.calendar.CalendarConstants.Report;
 import com.butent.bee.shared.modules.calendar.CalendarConstants.Transparency;
 import com.butent.bee.shared.modules.calendar.CalendarItem;
 import com.butent.bee.shared.modules.calendar.CalendarSettings;
-import com.butent.bee.shared.modules.commons.CommonsConstants;
+import com.butent.bee.shared.modules.classifiers.ClassifierConstants;
 import com.butent.bee.shared.rights.Module;
 import com.butent.bee.shared.time.DateTime;
 import com.butent.bee.shared.time.JustDate;
@@ -73,30 +76,32 @@ public final class CalendarKeeper {
   private static class RowActionHandler implements RowActionEvent.Handler {
     @Override
     public void onRowAction(final RowActionEvent event) {
-      if (event.hasView(VIEW_CALENDARS)) {
-        event.consume();
-        Long calId = event.getRowId();
+      if (event.isCellClick() || event.isEditRow() || event.isOpenFavorite()) {
+        if (event.hasView(VIEW_CALENDARS)) {
+          event.consume();
+          Long calId = event.getRowId();
 
-        if (DataUtils.isId(calId)) {
-          String calName;
-          if (event.hasRow()) {
-            calName = Data.getString(VIEW_CALENDARS, event.getRow(), COL_CALENDAR_NAME);
-          } else {
-            calName = event.getOptions();
+          if (DataUtils.isId(calId)) {
+            String calName;
+            if (event.hasRow()) {
+              calName = Data.getString(VIEW_CALENDARS, event.getRow(), COL_CALENDAR_NAME);
+            } else {
+              calName = event.getOptions();
+            }
+
+            openCalendar(calId, calName, true);
           }
 
-          openCalendar(calId, calName, true);
-        }
-
-      } else if (event.hasView(VIEW_APPOINTMENTS)) {
-        event.consume();
-        if (event.hasRow()) {
-          ensureData(new Command() {
-            @Override
-            public void execute() {
-              openAppointment(new Appointment((BeeRow) event.getRow()), null);
-            }
-          });
+        } else if (event.hasView(VIEW_APPOINTMENTS)) {
+          event.consume();
+          if (event.hasRow()) {
+            ensureData(new Command() {
+              @Override
+              public void execute() {
+                openAppointment(new Appointment((BeeRow) event.getRow()), null);
+              }
+            });
+          }
         }
       }
     }
@@ -121,8 +126,8 @@ public final class CalendarKeeper {
 
   private static final List<String> CACHED_VIEWS =
       Lists.newArrayList(VIEW_CONFIGURATION, VIEW_APPOINTMENT_TYPES, VIEW_ATTENDEES,
-          VIEW_EXTENDED_PROPERTIES, CommonsConstants.VIEW_REMINDER_TYPES,
-          CommonsConstants.VIEW_THEMES, CommonsConstants.VIEW_THEME_COLORS, VIEW_ATTENDEE_PROPS,
+          VIEW_EXTENDED_PROPERTIES, VIEW_REMINDER_TYPES,
+          VIEW_THEMES, VIEW_THEME_COLORS, VIEW_ATTENDEE_PROPS,
           VIEW_APPOINTMENT_STYLES, VIEW_CALENDARS, VIEW_CAL_APPOINTMENT_TYPES,
           VIEW_CALENDAR_EXECUTORS, VIEW_CAL_EXECUTOR_GROUPS);
 
@@ -187,8 +192,8 @@ public final class CalendarKeeper {
   }
 
   public static String getReminderTypeName(long id) {
-    return CACHE.getString(CommonsConstants.VIEW_REMINDER_TYPES, id,
-        CommonsConstants.COL_REMINDER_NAME);
+    return CACHE.getString(VIEW_REMINDER_TYPES, id,
+        COL_REMINDER_NAME);
   }
 
   public static boolean isDataLoaded() {
@@ -219,21 +224,21 @@ public final class CalendarKeeper {
         Lists.newArrayList(COL_PROPERTY_NAME, ALS_PROPERTY_GROUP_NAME)));
 
     ConditionalStyle.registerGridColumnStyleProvider(GRID_APPOINTMENTS,
-        CommonsConstants.ALS_COLOR_NAME, ColorStyleProvider.createDefault(VIEW_APPOINTMENTS));
+        ALS_COLOR_NAME, ColorStyleProvider.createDefault(VIEW_APPOINTMENTS));
     ConditionalStyle.registerGridColumnStyleProvider(GRID_ATTENDEES,
-        CommonsConstants.ALS_COLOR_NAME, ColorStyleProvider.createDefault(VIEW_ATTENDEES));
+        ALS_COLOR_NAME, ColorStyleProvider.createDefault(VIEW_ATTENDEES));
 
     ColorStyleProvider styleProvider = ColorStyleProvider.createDefault(VIEW_CALENDAR_EXECUTORS);
     ConditionalStyle.registerGridColumnStyleProvider(GRID_CALENDAR_EXECUTORS,
-        CommonsConstants.COL_BACKGROUND, styleProvider);
+        COL_BACKGROUND, styleProvider);
     ConditionalStyle.registerGridColumnStyleProvider(GRID_CALENDAR_EXECUTORS,
-        CommonsConstants.COL_FOREGROUND, styleProvider);
+        COL_FOREGROUND, styleProvider);
 
     styleProvider = ColorStyleProvider.createDefault(VIEW_CAL_EXECUTOR_GROUPS);
     ConditionalStyle.registerGridColumnStyleProvider(GRID_CAL_EXECUTOR_GROUPS,
-        CommonsConstants.COL_BACKGROUND, styleProvider);
+        COL_BACKGROUND, styleProvider);
     ConditionalStyle.registerGridColumnStyleProvider(GRID_CAL_EXECUTOR_GROUPS,
-        CommonsConstants.COL_FOREGROUND, styleProvider);
+        COL_FOREGROUND, styleProvider);
 
     BeeKeeper.getBus().registerDataHandler(CACHE, true);
     BeeKeeper.getBus().registerRowActionHandler(new RowActionHandler(), false);
@@ -244,7 +249,7 @@ public final class CalendarKeeper {
     RowEditor.registerHasDelegate(VIEW_CALENDARS);
     RowEditor.registerHasDelegate(VIEW_APPOINTMENTS);
 
-    BeeKeeper.getMenu().registerMenuCallback("calendar_reports", new MenuManager.MenuCallback() {
+    MenuService.CALENDAR_REPORTS.setHandler(new MenuHandler() {
       @Override
       public void onSelection(String parameters) {
         REPORT_MANAGER.onSelectReport(EnumUtils.getEnumByIndex(Report.class, parameters));
@@ -317,7 +322,7 @@ public final class CalendarKeeper {
               builder.setRequiredFields(formDescription.getOptions());
               builder.initPeriod(start);
 
-              boolean companyAndVehicle = builder.isRequired(COL_COMPANY)
+              boolean companyAndVehicle = builder.isRequired(ClassifierConstants.COL_COMPANY)
                   && builder.isRequired(COL_VEHICLE);
               SELECTOR_HANDLER.setCompanyHandlerEnabled(companyAndVehicle);
               SELECTOR_HANDLER.setVehicleHandlerEnabled(companyAndVehicle);
@@ -332,7 +337,7 @@ public final class CalendarKeeper {
 
   static ParameterList createRequestParameters(String service) {
     ParameterList params = BeeKeeper.getRpc().createParameters(Module.CALENDAR.getName());
-    params.addQueryItem(CommonsConstants.METHOD, service);
+    params.addQueryItem(METHOD, service);
     return params;
   }
 
@@ -424,15 +429,15 @@ public final class CalendarKeeper {
   }
 
   static BeeRowSet getReminderTypes() {
-    return CACHE.getRowSet(CommonsConstants.VIEW_REMINDER_TYPES);
+    return CACHE.getRowSet(VIEW_REMINDER_TYPES);
   }
 
   static BeeRowSet getThemeColors() {
-    return CACHE.getRowSet(CommonsConstants.VIEW_THEME_COLORS);
+    return CACHE.getRowSet(VIEW_THEME_COLORS);
   }
 
   static BeeRowSet getThemes() {
-    return CACHE.getRowSet(CommonsConstants.VIEW_THEMES);
+    return CACHE.getRowSet(VIEW_THEMES);
   }
 
   static boolean isAttendeeOpaque(long id) {
@@ -519,7 +524,7 @@ public final class CalendarKeeper {
 
               builder.setRequiredFields(formDescription.getOptions());
 
-              boolean companyAndVehicle = builder.isRequired(COL_COMPANY)
+              boolean companyAndVehicle = builder.isRequired(ClassifierConstants.COL_COMPANY)
                   && builder.isRequired(COL_VEHICLE);
               SELECTOR_HANDLER.setCompanyHandlerEnabled(companyAndVehicle);
               SELECTOR_HANDLER.setVehicleHandlerEnabled(companyAndVehicle);

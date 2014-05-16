@@ -17,8 +17,37 @@ public enum SubModule implements HasLocalizedCaption {
     public String getCaption(LocalizableConstants constants) {
       return constants.contacts();
     }
+  },
+  SELFSERVICE {
+    @Override
+    public String getCaption(LocalizableConstants constants) {
+      return constants.trSelfService();
+    }
+
+    @Override
+    public String getName() {
+      return "SelfService";
+    }
+  },
+  LOGISTICS {
+    @Override
+    public String getCaption(LocalizableConstants constants) {
+      return constants.trLogistics();
+    }
+  },
+  TEMPLATES {
+    @Override
+    public String getCaption(LocalizableConstants constants) {
+      return constants.template();
+    }
+  },
+  CLASSIFIERS {
+    @Override
+    public String getCaption(LocalizableConstants constants) {
+      return constants.classifiers();
+    }
   };
-  
+
   public static SubModule parse(String input) {
     for (SubModule subModule : values()) {
       if (BeeUtils.same(subModule.getName(), input)) {

@@ -25,7 +25,7 @@ import java.util.List;
 public class EcCostChangesHandler extends AbstractGridInterceptor {
 
   @Override
-  public void onShow(final GridPresenter presenter) {
+  public void afterCreatePresenter(final GridPresenter presenter) {
     presenter.getHeader().clearCommandPanel();
     presenter.getHeader().addCommandItem(new Button(Localized.getConstants().ecUpdateCosts(),
         new ClickHandler() {

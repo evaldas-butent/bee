@@ -10,7 +10,6 @@ import com.butent.bee.client.Callback;
 import com.butent.bee.client.Global;
 import com.butent.bee.client.communication.ResponseCallback;
 import com.butent.bee.client.data.Data;
-import com.butent.bee.client.data.Provider;
 import com.butent.bee.client.data.Queries;
 import com.butent.bee.client.dom.DomUtils;
 import com.butent.bee.client.grid.cell.AbstractCell;
@@ -55,6 +54,7 @@ import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.ExtendedPropertiesData;
 import com.butent.bee.shared.data.IsTable;
 import com.butent.bee.shared.data.PropertiesData;
+import com.butent.bee.shared.data.ProviderType;
 import com.butent.bee.shared.data.cache.CachingPolicy;
 import com.butent.bee.shared.data.filter.Filter;
 import com.butent.bee.shared.data.filter.FilterComponent;
@@ -235,7 +235,7 @@ public final class GridFactory {
       @Override
       public void onSuccess(GridDescription result) {
         Assert.notNull(result);
-        if (gridInterceptor != null && !gridInterceptor.onLoad(result)) {
+        if (gridInterceptor != null && !gridInterceptor.initDescription(result)) {
           return;
         }
 
@@ -458,7 +458,7 @@ public final class GridFactory {
       if (isGridDescriptionCached(name)) {
         GridDescription gridDescription = descriptionCache.get(gridDescriptionKey(name));
         if (gridDescription != null) {
-          Global.showGrid(BeeUtils.joinWords("Grid", name),
+          Global.showTable(BeeUtils.joinWords("Grid", name),
               new ExtendedPropertiesData(gridDescription.getExtendedInfo(), true));
           return;
         } else {
@@ -477,7 +477,7 @@ public final class GridFactory {
       info.add(new Property(entry.getKey(), cc));
     }
 
-    Global.showGrid("Grids", new PropertiesData(info, "Grid Name", "Column Count"));
+    Global.showTable("Grids", new PropertiesData(info, "Grid Name", "Column Count"));
   }
 
   public static CellGrid simpleGrid(String caption, IsTable<?, ?> table, int containerWidth) {
@@ -504,7 +504,7 @@ public final class GridFactory {
       String label = table.getColumnLabel(i);
 
       ColumnInfo columnInfo = new ColumnInfo(id, label, source, column,
-          new ColumnHeader(id, label));
+          new ColumnHeader(id, label, label));
       grid.addColumn(columnInfo);
     }
 
@@ -556,34 +556,16 @@ public final class GridFactory {
       return;
     }
 
-    final Provider.Type providerType;
+    final ProviderType providerType;
     final CachingPolicy cachingPolicy;
 
-    final int approximateRowCount;
-
     if (BeeUtils.isEmpty(viewName)) {
-      approximateRowCount = brs.getNumberOfRows();
-
-      providerType = Provider.Type.LOCAL;
+      providerType = ProviderType.LOCAL;
       cachingPolicy = CachingPolicy.NONE;
-
     } else {
-      approximateRowCount = Data.getApproximateRowCount(viewName);
-
-      int threshold;
-      if (gridDescription.getAsyncThreshold() != null) {
-        threshold = gridDescription.getAsyncThreshold();
-      } else {
-        threshold = DataUtils.getDefaultAsyncThreshold();
-      }
-
-      if (threshold <= 0 || approximateRowCount > threshold) {
-        providerType = Provider.Type.ASYNC;
-        cachingPolicy = gridDescription.getCachingPolicy(true);
-      } else {
-        providerType = Provider.Type.CACHED;
-        cachingPolicy = CachingPolicy.NONE;
-      }
+      providerType = BeeUtils.nvl(gridDescription.getDataProvider(), ProviderType.DEFAULT);
+      cachingPolicy = BeeUtils.isFalse(gridDescription.getCacheData()) 
+          ? CachingPolicy.NONE : CachingPolicy.FULL;
     }
 
     if (brs != null) {
@@ -600,13 +582,10 @@ public final class GridFactory {
     }
 
     int limit;
-    if (Provider.Type.CACHED.equals(providerType)) {
+    if (providerType == ProviderType.CACHED) {
       limit = BeeConst.UNDEF;
     } else if (gridDescription.getInitialRowSetSize() != null) {
       limit = gridDescription.getInitialRowSetSize();
-    } else if (approximateRowCount >= 0
-        && approximateRowCount <= DataUtils.getMaxInitialRowSetSize()) {
-      limit = BeeConst.UNDEF;
     } else {
       limit = DataUtils.getMaxInitialRowSetSize();
     }
@@ -653,7 +632,7 @@ public final class GridFactory {
   }
 
   private static void createPresenter(GridDescription gridDescription, GridView gridView,
-      int rowCount, BeeRowSet rowSet, Provider.Type providerType, CachingPolicy cachingPolicy,
+      int rowCount, BeeRowSet rowSet, ProviderType providerType, CachingPolicy cachingPolicy,
       Collection<UiOption> uiOptions, GridInterceptor gridInterceptor,
       Filter immutableFilter, Map<String, Filter> parentFilters,
       List<FilterComponent> userFilterValues, Filter userFilter,
@@ -664,7 +643,7 @@ public final class GridFactory {
         parentFilters, userFilterValues, userFilter, order, gridOptions);
 
     if (gridInterceptor != null) {
-      gridInterceptor.onShow(presenter);
+      gridInterceptor.afterCreatePresenter(presenter);
     }
 
     presenterCallback.onCreate(presenter);

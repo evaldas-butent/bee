@@ -1,6 +1,5 @@
 package com.butent.bee.client.websocket;
 
-import com.google.common.base.Objects;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.event.dom.client.KeyCodes;
@@ -23,6 +22,7 @@ import com.butent.bee.client.images.Images;
 import com.butent.bee.client.layout.Flow;
 import com.butent.bee.client.layout.Simple;
 import com.butent.bee.client.maps.MapUtils;
+import com.butent.bee.client.modules.mail.MailKeeper;
 import com.butent.bee.client.render.PhotoRenderer;
 import com.butent.bee.client.widget.FaLabel;
 import com.butent.bee.client.widget.Image;
@@ -40,6 +40,8 @@ import com.butent.bee.shared.data.event.ModificationEvent;
 import com.butent.bee.shared.font.FontAwesome;
 import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogUtils;
+import com.butent.bee.shared.modules.mail.MailConstants.MessageFlag;
+import com.butent.bee.shared.news.Feed;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.EnumUtils;
 import com.butent.bee.shared.utils.Property;
@@ -51,6 +53,7 @@ import com.butent.bee.shared.websocket.messages.EchoMessage;
 import com.butent.bee.shared.websocket.messages.InfoMessage;
 import com.butent.bee.shared.websocket.messages.LocationMessage;
 import com.butent.bee.shared.websocket.messages.LogMessage;
+import com.butent.bee.shared.websocket.messages.MailMessage;
 import com.butent.bee.shared.websocket.messages.Message;
 import com.butent.bee.shared.websocket.messages.ModificationMessage;
 import com.butent.bee.shared.websocket.messages.NotificationMessage;
@@ -65,6 +68,7 @@ import com.butent.bee.shared.websocket.messages.ShowMessage.Subject;
 import com.butent.bee.shared.websocket.messages.UsersMessage;
 
 import java.util.List;
+import java.util.Objects;
 
 class MessageDispatcher {
 
@@ -300,7 +304,7 @@ class MessageDispatcher {
         if (BeeUtils.isEmpty(info)) {
           WsUtils.onEmptyMessage(message);
         } else {
-          Global.showGrid(caption, new PropertiesData(info));
+          Global.showTable(caption, new PropertiesData(info));
         }
         break;
 
@@ -351,20 +355,38 @@ class MessageDispatcher {
         }
         break;
 
+      case MAIL:
+        MailMessage mailMessage = (MailMessage) message;
+
+        if (mailMessage.isValid()) {
+          boolean refreshFolders = mailMessage.messagesUpdated() || mailMessage.foldersUpdated()
+              || Objects.equals(mailMessage.getFlag(), MessageFlag.SEEN);
+
+          if (Global.getNewsAggregator().hasSubscription(Feed.MAIL) && refreshFolders) {
+            Global.getNewsAggregator().refresh();
+          }
+          MailKeeper.refreshActivePanel(refreshFolders, mailMessage.getFolderId());
+
+        } else {
+          logger.severe(mailMessage.getError());
+          BeeKeeper.getScreen().notifySevere(mailMessage.getError());
+        }
+        break;
+
       case MODIFICATION:
         ModificationMessage modificationMessage = (ModificationMessage) message;
-        
+
         if (modificationMessage.isValid()) {
           ModificationEvent<?> event = modificationMessage.getEvent();
           event.setLocality(Locality.ENTANGLED);
-        
+
           BeeKeeper.getBus().fireEvent(modificationMessage.getEvent());
 
         } else {
           WsUtils.onEmptyMessage(message);
         }
         break;
-        
+
       case NOTIFICATION:
         NotificationMessage notificationMessage = (NotificationMessage) message;
 
@@ -398,22 +420,23 @@ class MessageDispatcher {
         if (BeeUtils.isEmpty(progressId)) {
           WsUtils.onEmptyMessage(message);
 
-        } else if (pm.isActivated()) {
-          boolean started = Endpoint.startPropgress(progressId);
-          if (started) {
-            logger.debug("progress", progressId, "started");
+        } else if (!Endpoint.handleProgress(pm)) {
+          if (pm.isActivated()) {
+            boolean started = Endpoint.startPropgress(progressId);
+            if (started) {
+              logger.debug("progress", progressId, "started");
+            } else {
+              logger.warning("cannot start progress", progressId);
+            }
+          } else if (pm.isUpdate()) {
+            BeeKeeper.getScreen().updateProgress(progressId, pm.getValue());
+
+          } else if (pm.isCanceled() || pm.isClosed()) {
+            Endpoint.removeProgress(progressId);
+
           } else {
-            logger.warning("cannot start progress", progressId);
+            WsUtils.onInvalidState(message);
           }
-
-        } else if (pm.isUpdate()) {
-          BeeKeeper.getScreen().updateProgress(progressId, pm.getValue());
-
-        } else if (pm.isCanceled() || pm.isClosed()) {
-          BeeKeeper.getScreen().removeProgress(progressId);
-
-        } else {
-          WsUtils.onInvalidState(message);
         }
         break;
 
@@ -457,7 +480,7 @@ class MessageDispatcher {
       case SHOW:
         Subject subject = ((ShowMessage) message).getSubject();
         if (subject == Subject.SESSION) {
-          Global.showGrid(subject.getCaption(), new PropertiesData(Endpoint.getInfo()));
+          Global.showTable(subject.getCaption(), new PropertiesData(Endpoint.getInfo()));
         } else {
           WsUtils.onInvalidState(message);
         }
@@ -473,16 +496,14 @@ class MessageDispatcher {
           Global.getUsers().updateUserData(users);
 
           for (UserData userData : users) {
-            if (Objects.equal(BeeKeeper.getUser().getUserId(), userData.getUserId())) {
+            if (Objects.equals(BeeKeeper.getUser().getUserId(), userData.getUserId())) {
               BeeKeeper.getUser().setUserData(userData);
               BeeKeeper.getScreen().updateUserData(userData);
               break;
             }
           }
-          
-          if (BeeKeeper.getScreen().getUserInterface().hasMenu()) {
-            BeeKeeper.getMenu().loadMenu();
-          }
+
+          BeeKeeper.onRightsChange();
         }
         break;
     }

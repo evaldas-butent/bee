@@ -6,19 +6,22 @@ import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.user.client.ui.Widget;
 
+import static com.butent.bee.shared.modules.administration.AdministrationConstants.*;
+
 import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.Global;
 import com.butent.bee.client.data.Data;
 import com.butent.bee.client.data.Queries;
 import com.butent.bee.client.data.RowEditor;
+import com.butent.bee.client.dialog.ConfirmationCallback;
 import com.butent.bee.client.dialog.StringCallback;
 import com.butent.bee.client.event.logical.BookmarkEvent;
+import com.butent.bee.client.event.logical.RowActionEvent;
 import com.butent.bee.client.grid.HtmlTable;
-import com.butent.bee.client.widget.Image;
+import com.butent.bee.client.widget.FaLabel;
 import com.butent.bee.client.widget.InternalLink;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
-import com.butent.bee.shared.Service;
 import com.butent.bee.shared.data.BeeColumn;
 import com.butent.bee.shared.data.BeeRow;
 import com.butent.bee.shared.data.BeeRowSet;
@@ -26,7 +29,6 @@ import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.IsRow;
 import com.butent.bee.shared.data.event.HandlesDeleteEvents;
 import com.butent.bee.shared.data.event.MultiDeleteEvent;
-import com.butent.bee.shared.data.event.RowActionEvent;
 import com.butent.bee.shared.data.event.RowDeleteEvent;
 import com.butent.bee.shared.data.filter.CompoundFilter;
 import com.butent.bee.shared.data.filter.Filter;
@@ -34,10 +36,10 @@ import com.butent.bee.shared.data.value.IntegerValue;
 import com.butent.bee.shared.data.value.TextValue;
 import com.butent.bee.shared.data.view.DataInfo;
 import com.butent.bee.shared.data.view.RowInfo;
+import com.butent.bee.shared.font.FontAwesome;
 import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogUtils;
-import com.butent.bee.shared.modules.commons.CommonsConstants;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.EnumUtils;
 
@@ -63,10 +65,7 @@ public class Favorites implements HandlesDeleteEvents {
 
       @Override
       void open(String key, long id, String html) {
-        RowActionEvent event = new RowActionEvent(key, id, Service.OPEN_FAVORITE, html);
-        BeeKeeper.getBus().fireEvent(event);
-
-        if (event.isConsumed()) {
+        if (!RowActionEvent.fireOpenFavorite(key, id, html)) {
           return;
         }
 
@@ -142,7 +141,7 @@ public class Favorites implements HandlesDeleteEvents {
     private HtmlTable getDisplay(String key) {
       return displays.get(key);
     }
-    
+
     private int getSize() {
       int size = 0;
       for (List<Item> values : items.values()) {
@@ -192,7 +191,7 @@ public class Favorites implements HandlesDeleteEvents {
     private final long id;
 
     private String html;
-    private int order;
+    private final int order;
 
     private Item(long id, String html) {
       this(id, html, 0);
@@ -268,7 +267,7 @@ public class Favorites implements HandlesDeleteEvents {
 
     addDisplayRow(group.getDisplay(key), group, key, item);
 
-    Queries.insert(CommonsConstants.TBL_FAVORITES,
+    Queries.insert(VIEW_FAVORITES,
         DataUtils.getColumns(columns, groupIndex, keyIndex, itemIndex, orderIndex, htmlIndex),
         Lists.newArrayList(BeeUtils.toString(group.ordinal()), key, BeeUtils.toString(id),
             BeeUtils.toString(order), BeeUtils.trim(html)));
@@ -316,12 +315,12 @@ public class Favorites implements HandlesDeleteEvents {
     htmlIndex = DataUtils.getColumnIndex(COL_HTML, columns);
 
     loadItems(rowSet);
-    
+
     int size = 0;
     for (Group group : Group.values()) {
       size += group.getSize();
     }
-    
+
     logger.info("favorites", size);
   }
 
@@ -337,15 +336,14 @@ public class Favorites implements HandlesDeleteEvents {
     removeItem(Group.ROW, event.getViewName(), event.getRowId());
   }
 
-  private static void addDisplayRow(HtmlTable display, final Group group, final String key,
+  private static void addDisplayRow(final HtmlTable display, final Group group, final String key,
       final Item item) {
     int row = display.getRowCount();
 
     Widget widget = group.createItemWidget(key, item);
     display.setWidget(row, ITEM_COLUMN, widget);
 
-    Image edit = new Image(Global.getImages().silverEdit());
-    edit.addStyleName(EDIT_STYLE);
+    FaLabel edit = new FaLabel(FontAwesome.EDIT, EDIT_STYLE);
     edit.setTitle(Localized.getConstants().actionRename());
 
     edit.addClickHandler(new ClickHandler() {
@@ -356,20 +354,24 @@ public class Favorites implements HandlesDeleteEvents {
           public void onSuccess(String value) {
             updateItem(group, key, item.getId(), value);
           }
-        }, item.getHtml());
+        }, item.getHtml(), BeeConst.UNDEF, display.getEventRowElement(event, false));
       }
     });
 
     display.setWidget(row, EDIT_COLUMN, edit);
 
-    Image delete = new Image(Global.getImages().silverMinus());
-    delete.addStyleName(DELETE_STYLE);
+    FaLabel delete = new FaLabel(FontAwesome.TRASH_O, DELETE_STYLE);
     delete.setTitle(Localized.getConstants().actionRemove());
 
     delete.addClickHandler(new ClickHandler() {
       @Override
       public void onClick(ClickEvent event) {
-        removeItem(group, key, item.getId());
+        Global.confirmRemove(group.getCaption(key), item.getHtml(), new ConfirmationCallback() {
+          @Override
+          public void onConfirm() {
+            removeItem(group, key, item.getId());
+          }
+        }, display.getEventRowElement(event, false));
       }
     });
 
@@ -458,7 +460,7 @@ public class Favorites implements HandlesDeleteEvents {
     Filter filter = Filter.and(Filter.isEqual(COL_GROUP, IntegerValue.of(group)),
         Filter.isEqual(COL_KEY, new TextValue(key)), Filter.equals(COL_ITEM, id));
 
-    Queries.delete(CommonsConstants.TBL_FAVORITES, filter, null);
+    Queries.delete(VIEW_FAVORITES, filter, null);
     return group.remove(key, item);
   }
 
@@ -473,12 +475,12 @@ public class Favorites implements HandlesDeleteEvents {
     display.getWidget(group.indexOf(key, item), ITEM_COLUMN).getElement().setInnerHTML(html.trim());
 
     CompoundFilter filter = Filter.and();
-    filter.add(BeeKeeper.getUser().getFilter(CommonsConstants.COL_FAVORITE_USER),
+    filter.add(BeeKeeper.getUser().getFilter(COL_FAVORITE_USER),
         Filter.isEqual(COL_GROUP, IntegerValue.of(group)),
         Filter.isEqual(COL_KEY, new TextValue(key)),
         Filter.equals(COL_ITEM, id));
 
-    Queries.update(CommonsConstants.TBL_FAVORITES, filter, COL_HTML, new TextValue(html), null);
+    Queries.update(VIEW_FAVORITES, filter, COL_HTML, new TextValue(html), null);
     return true;
   }
 }

@@ -5,12 +5,12 @@ import com.google.common.collect.Lists;
 
 import com.butent.bee.client.data.Data;
 import com.butent.bee.client.i18n.Collator;
-import com.butent.bee.client.ui.FormFactory.FormInterceptor;
+import com.butent.bee.client.view.form.interceptor.FormInterceptor;
 import com.butent.bee.shared.Consumer;
 import com.butent.bee.shared.data.view.DataInfo;
 import com.butent.bee.shared.i18n.Localized;
-import com.butent.bee.shared.modules.commons.CommonsConstants.RightsObjectType;
-import com.butent.bee.shared.modules.commons.CommonsConstants.RightsState;
+import com.butent.bee.shared.modules.administration.AdministrationConstants.RightsObjectType;
+import com.butent.bee.shared.modules.administration.AdministrationConstants.RightsState;
 import com.butent.bee.shared.rights.ModuleAndSub;
 import com.butent.bee.shared.utils.BeeUtils;
 
@@ -69,8 +69,9 @@ final class DataRightsHandler extends MultiStateForm {
     for (DataInfo view : views) {
       ModuleAndSub ms = ModuleAndSub.parse(view.getModule());
    
-//      if (ms == null) {
-//        warning("view", view.getViewName(), "module", view.getModule(), "not recognized");
+      if (ms == null) {
+        warning("view", view.getViewName(), "module", view.getModule(), "not recognized");
+      }
 
       if (ms != null && ms.isEnabled()) {
         String viewName = view.getViewName();

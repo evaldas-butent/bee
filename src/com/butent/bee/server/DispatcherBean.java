@@ -2,13 +2,18 @@ package com.butent.bee.server;
 
 import com.google.common.collect.Maps;
 
+import static com.butent.bee.shared.modules.administration.AdministrationConstants.*;
+
 import com.butent.bee.server.data.DataServiceBean;
+import com.butent.bee.server.data.QueryServiceBean;
 import com.butent.bee.server.data.SystemBean;
 import com.butent.bee.server.data.UserServiceBean;
 import com.butent.bee.server.http.RequestInfo;
 import com.butent.bee.server.i18n.Localizations;
 import com.butent.bee.server.modules.ModuleHolderBean;
+import com.butent.bee.server.modules.ParamHolderBean;
 import com.butent.bee.server.news.NewsBean;
+import com.butent.bee.server.sql.SqlSelect;
 import com.butent.bee.server.ui.UiHolderBean;
 import com.butent.bee.server.ui.UiServiceBean;
 import com.butent.bee.server.utils.Reflection;
@@ -21,6 +26,7 @@ import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogUtils;
 import com.butent.bee.shared.rights.Module;
+import com.butent.bee.shared.time.TimeUtils;
 import com.butent.bee.shared.ui.UserInterface;
 import com.butent.bee.shared.ui.UserInterface.Component;
 import com.butent.bee.shared.utils.BeeUtils;
@@ -56,9 +62,13 @@ public class DispatcherBean {
   @EJB
   UserServiceBean userService;
   @EJB
-  SystemBean system;
+  SystemBean sys;
   @EJB
   NewsBean news;
+  @EJB
+  ParamHolderBean prm;
+  @EJB
+  QueryServiceBean qs;
 
   public ResponseObject doLogin(RequestInfo reqInfo) {
     ResponseObject response = new ResponseObject();
@@ -71,6 +81,16 @@ public class DispatcherBean {
     }
     data.put(Service.VAR_USER, userData.getResponse());
     data.put(Service.PROPERTY_MODULES, Module.getEnabledModulesAsString());
+
+    Long currency = prm.getRelation(PRM_CURRENCY);
+
+    if (DataUtils.isId(currency)) {
+      data.put(COL_CURRENCY, currency);
+      data.put(ALS_CURRENCY_NAME, qs.getValue(new SqlSelect()
+          .addFields(TBL_CURRENCIES, COL_CURRENCY_NAME)
+          .addFrom(TBL_CURRENCIES)
+          .setWhere(sys.idEquals(TBL_CURRENCIES, currency))));
+    }
 
     UserInterface userInterface = null;
 
@@ -99,6 +119,8 @@ public class DispatcherBean {
 
     if (!BeeUtils.isEmpty(components)) {
       for (Component component : components) {
+        long millis = System.currentTimeMillis();
+
         switch (component) {
           case AUTOCOMPLETE:
             ResponseObject acData = uiService.getAutocomplete();
@@ -111,7 +133,7 @@ public class DispatcherBean {
             break;
 
           case DATA_INFO:
-            data.put(component.key(), system.getDataInfo());
+            data.put(component.key(), sys.getDataInfo());
             break;
 
           case DICTIONARY:
@@ -170,10 +192,19 @@ public class DispatcherBean {
             }
             break;
 
+          case REPORTS:
+            BeeRowSet reportSettings = uiService.getReportSettings();
+            if (!DataUtils.isEmpty(reportSettings)) {
+              data.put(component.key(), reportSettings);
+            }
+            break;
+            
           case USERS:
             data.put(component.key(), userService.getAllUserData());
             break;
         }
+
+        logger.debug(reqInfo.getService(), component, TimeUtils.elapsedMillis(millis));
       }
     }
 

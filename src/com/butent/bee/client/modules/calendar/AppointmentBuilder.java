@@ -51,15 +51,15 @@ import com.butent.bee.client.layout.Flow;
 import com.butent.bee.client.modules.calendar.event.AppointmentEvent;
 import com.butent.bee.client.presenter.Presenter;
 import com.butent.bee.client.style.StyleUtils;
-import com.butent.bee.client.ui.AbstractFormInterceptor;
 import com.butent.bee.client.ui.AutocompleteProvider;
-import com.butent.bee.client.ui.FormFactory.FormInterceptor;
 import com.butent.bee.client.ui.FormFactory.WidgetDescriptionCallback;
 import com.butent.bee.client.ui.IdentifiableWidget;
 import com.butent.bee.client.ui.UiHelper;
 import com.butent.bee.client.view.edit.Editor;
 import com.butent.bee.client.view.form.CloseCallback;
 import com.butent.bee.client.view.form.FormView;
+import com.butent.bee.client.view.form.interceptor.AbstractFormInterceptor;
+import com.butent.bee.client.view.form.interceptor.FormInterceptor;
 import com.butent.bee.client.widget.InputDate;
 import com.butent.bee.client.widget.InputTime;
 import com.butent.bee.client.widget.Label;
@@ -82,7 +82,8 @@ import com.butent.bee.shared.data.filter.Filter;
 import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogUtils;
-import com.butent.bee.shared.modules.commons.CommonsConstants;
+import com.butent.bee.shared.modules.administration.AdministrationConstants;
+import com.butent.bee.shared.modules.classifiers.ClassifierConstants;
 import com.butent.bee.shared.time.DateTime;
 import com.butent.bee.shared.time.HasDateValue;
 import com.butent.bee.shared.time.JustDate;
@@ -194,7 +195,7 @@ class AppointmentBuilder extends AbstractFormInterceptor implements SelectorEven
         changes.add(Localized.getConstants().calReminder());
       }
 
-      Long oldColor = Data.getLong(VIEW_APPOINTMENTS, oldRow, CommonsConstants.COL_COLOR);
+      Long oldColor = Data.getLong(VIEW_APPOINTMENTS, oldRow, AdministrationConstants.COL_COLOR);
       Long newColor = BeeUtils.getQuietly(colors, colorWidget.getSelectedTab());
       if (oldColor != null && newColor != null && !oldColor.equals(newColor)) {
         changes.add(Localized.getConstants().color());
@@ -960,24 +961,24 @@ class AppointmentBuilder extends AbstractFormInterceptor implements SelectorEven
     Long defAppType = CalendarKeeper.getDefaultAppointmentType();
     if (defAppType != null) {
       theme = CalendarKeeper.CACHE.getLong(VIEW_APPOINTMENT_TYPES, defAppType,
-          CommonsConstants.COL_THEME);
+          AdministrationConstants.COL_THEME);
     }
 
     String viewName = themeColors.getViewName();
     if (!DataUtils.isId(theme)) {
-      theme = Data.getLong(viewName, themeColors.getRow(0), CommonsConstants.COL_THEME);
+      theme = Data.getLong(viewName, themeColors.getRow(0), AdministrationConstants.COL_THEME);
     }
 
     for (BeeRow row : themeColors.getRows()) {
       if (DataUtils.isId(theme) && !theme.equals(Data.getLong(viewName, row,
-          CommonsConstants.COL_THEME))) {
+          AdministrationConstants.COL_THEME))) {
         continue;
       }
 
-      Long color = Data.getLong(viewName, row, CommonsConstants.COL_COLOR);
+      Long color = Data.getLong(viewName, row, AdministrationConstants.COL_COLOR);
 
-      String bc = Data.getString(viewName, row, CommonsConstants.COL_BACKGROUND);
-      String fc = Data.getString(viewName, row, CommonsConstants.COL_FOREGROUND);
+      String bc = Data.getString(viewName, row, AdministrationConstants.COL_BACKGROUND);
+      String fc = Data.getString(viewName, row, AdministrationConstants.COL_FOREGROUND);
 
       Label item = new Label();
       item.getElement().getStyle().setBackgroundColor(bc);
@@ -991,8 +992,8 @@ class AppointmentBuilder extends AbstractFormInterceptor implements SelectorEven
 
     if (colorWidget.getItemCount() > 0) {
       if (isNew && DataUtils.isId(theme)) {
-        Long defColor = CalendarKeeper.CACHE.getLong(CommonsConstants.VIEW_THEMES, theme,
-            CommonsConstants.COL_DEFAULT_COLOR);
+        Long defColor = CalendarKeeper.CACHE.getLong(AdministrationConstants.VIEW_THEMES, theme,
+            AdministrationConstants.COL_DEFAULT_COLOR);
         if (defColor != null && colors.contains(defColor)) {
           colorWidget.selectTab(colors.indexOf(defColor));
         }
@@ -1032,7 +1033,7 @@ class AppointmentBuilder extends AbstractFormInterceptor implements SelectorEven
       String viewName = rowSet.getViewName();
       for (long id : reminderTypes) {
         BeeRow row = rowSet.getRowById(id);
-        String item = Data.getString(viewName, row, CommonsConstants.COL_REMINDER_NAME);
+        String item = Data.getString(viewName, row, AdministrationConstants.COL_REMINDER_NAME);
         listBox.addItem(BeeUtils.trimRight(item));
       }
 
@@ -1288,11 +1289,11 @@ class AppointmentBuilder extends AbstractFormInterceptor implements SelectorEven
 
     if (!colors.isEmpty()) {
       int index = colorWidget.getSelectedTab();
-      if (!BeeUtils.isIndex(colors, index) && isEmpty(row, CommonsConstants.COL_COLOR)) {
+      if (!BeeUtils.isIndex(colors, index) && isEmpty(row, AdministrationConstants.COL_COLOR)) {
         index = 0;
       }
       if (BeeUtils.isIndex(colors, index)) {
-        Data.setValue(viewName, row, CommonsConstants.COL_COLOR, colors.get(index));
+        Data.setValue(viewName, row, AdministrationConstants.COL_COLOR, colors.get(index));
       }
     }
 
@@ -1556,7 +1557,8 @@ class AppointmentBuilder extends AbstractFormInterceptor implements SelectorEven
       return false;
     }
 
-    if (isRequired(COL_COMPANY) && isEmpty(row, COL_COMPANY)) {
+    if (isRequired(ClassifierConstants.COL_COMPANY)
+        && isEmpty(row, ClassifierConstants.COL_COMPANY)) {
       getFormView().notifySevere(Localized.getConstants().calEnterClient());
       return false;
     }

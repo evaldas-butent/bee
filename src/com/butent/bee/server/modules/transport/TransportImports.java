@@ -4,7 +4,8 @@ import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.common.primitives.Ints;
 
-import static com.butent.bee.shared.modules.commons.CommonsConstants.*;
+import static com.butent.bee.shared.modules.administration.AdministrationConstants.*;
+import static com.butent.bee.shared.modules.classifiers.ClassifierConstants.*;
 import static com.butent.bee.shared.modules.trade.TradeConstants.*;
 import static com.butent.bee.shared.modules.transport.TransportConstants.*;
 
@@ -13,7 +14,7 @@ import com.butent.bee.server.data.BeeTable.BeeRelation;
 import com.butent.bee.server.data.QueryServiceBean;
 import com.butent.bee.server.data.SystemBean;
 import com.butent.bee.server.http.RequestInfo;
-import com.butent.bee.server.modules.commons.FileStorageBean;
+import com.butent.bee.server.modules.administration.FileStorageBean;
 import com.butent.bee.server.sql.HasConditions;
 import com.butent.bee.server.sql.IsExpression;
 import com.butent.bee.server.sql.SqlCreate;
@@ -29,7 +30,6 @@ import com.butent.bee.shared.data.SimpleRowSet;
 import com.butent.bee.shared.data.SimpleRowSet.SimpleRow;
 import com.butent.bee.shared.data.SqlConstants.SqlDataType;
 import com.butent.bee.shared.i18n.Localized;
-import com.butent.bee.shared.modules.commons.CommonsConstants;
 import com.butent.bee.shared.modules.transport.TransportConstants.ImportType;
 import com.butent.bee.shared.modules.transport.TransportConstants.ImportType.ImportProperty;
 import com.butent.bee.shared.time.DateTime;
@@ -159,8 +159,8 @@ public class TransportImports {
 
         case TRACKING:
           response = importTracking(BeeUtils.toLong(reqInfo.getParameter(COL_IMPORT_OPTION)),
-              BeeUtils.toIntOrNull(reqInfo.getParameter(CommonsConstants.VAR_DATE_LOW)),
-              BeeUtils.toIntOrNull(reqInfo.getParameter(CommonsConstants.VAR_DATE_HIGH)),
+              BeeUtils.toIntOrNull(reqInfo.getParameter(VAR_DATE_LOW)),
+              BeeUtils.toIntOrNull(reqInfo.getParameter(VAR_DATE_HIGH)),
               BeeUtils.toBoolean(reqInfo.getParameter("test")));
           break;
       }

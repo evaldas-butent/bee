@@ -2,7 +2,7 @@ package com.butent.bee.client.modules.tasks;
 
 import com.google.common.collect.Sets;
 
-import static com.butent.bee.shared.modules.tasks.TasksConstants.*;
+import static com.butent.bee.shared.modules.tasks.TaskConstants.*;
 
 import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.composite.DataSelector;
@@ -12,8 +12,10 @@ import com.butent.bee.client.event.logical.SelectorEvent;
 import com.butent.bee.client.ui.UiHelper;
 import com.butent.bee.client.view.form.FormView;
 import com.butent.bee.shared.data.BeeColumn;
+import com.butent.bee.shared.data.CellSource;
 import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.IsRow;
+import com.butent.bee.shared.modules.classifiers.ClassifierConstants;
 import com.butent.bee.shared.utils.BeeUtils;
 
 import java.util.List;
@@ -45,7 +47,8 @@ class TaskSelectorHandler implements SelectorEvent.Handler {
       handleTemplate(event, form, taskRow);
 
     } else if (event.getSelector() instanceof MultiSelector && event.isExclusions()) {
-      String rowProperty = ((MultiSelector) event.getSelector()).getRowProperty();
+      CellSource cellSource = ((MultiSelector) event.getSelector()).getCellSource();
+      String rowProperty = (cellSource == null) ? null : cellSource.getName();
 
       if (BeeUtils.same(rowProperty, PROP_EXECUTORS)) {
         handleExecutors(event, taskRow);
@@ -61,7 +64,7 @@ class TaskSelectorHandler implements SelectorEvent.Handler {
   }
 
   private static void handleCompanies(SelectorEvent event, IsRow taskRow) {
-    Long company = Data.getLong(VIEW_TASKS, taskRow, COL_COMPANY);
+    Long company = Data.getLong(VIEW_TASKS, taskRow, ClassifierConstants.COL_COMPANY);
     if (company == null) {
       return;
     }
@@ -74,7 +77,7 @@ class TaskSelectorHandler implements SelectorEvent.Handler {
     event.consume();
     event.getSelector().getOracle().setExclusions(exclusions);
   }
-  
+
   private static void handleExecutors(SelectorEvent event, IsRow taskRow) {
     Set<Long> exclusions = DataUtils.parseIdSet(taskRow.getProperty(PROP_OBSERVERS));
     if (!BeeUtils.isEmpty(event.getExclusions())) {
@@ -150,7 +153,7 @@ class TaskSelectorHandler implements SelectorEvent.Handler {
       String colName = templateColumns.get(i).getId();
       String value = templateRow.getString(i);
 
-      if (BeeUtils.same(colName, COL_NAME)) {
+      if (BeeUtils.same(colName, COL_TASK_TEMPLATE_NAME)) {
         selector.setDisplayValue(BeeUtils.trim(value));
       } else if (!BeeUtils.isEmpty(value)) {
         int index = Data.getColumnIndex(VIEW_TASKS, colName);

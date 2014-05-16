@@ -77,7 +77,7 @@ public class FileGridInterceptor extends AbstractGridInterceptor {
   }
 
   @Override
-  public void onAttach(final GridView gridView) {
+  public void onLoad(final GridView gridView) {
     if (collector == null) {
       collector = FileCollector.headless(new Consumer<Collection<NewFileInfo>>() {
         @Override

@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<g:Grid xmlns="http://www.butent.com/column" xmlns:g="http://www.butent.com/grid"
+  xmlns:ui="http://www.butent.com/ui"
+
+  name="CargoCreditSales" viewName="CargoCreditSales"
+  flexGrow="1"
+  readOnly="true" caption="=trCreditSales"
+  >
+  <g:columns>
+    <SelectionColumn name="Select" width="20" />
+    <DataColumn name="OrderDate" />
+    <RelColumn name="OrderNo" editEnabled="true" editSource="Order" />
+
+    <RelColumn name="Sale" editEnabled="true" renderColumns="Sale"
+      editForm="CargoInvoice" editViewName="CargoInvoices" />
+    <DataColumn name="InvoiceDate" />
+    <DataColumn name="InvoiceNo" searchBy="InvoicePrefix InvoiceNo">
+      <render>
+        <ui:function>
+          if (!row.InvoicePrefix) {
+            return row.InvoiceNo;
+          } else if(!row.InvoiceNo) {
+            return row.InvoicePrefix;
+          } else {
+            return row.InvoicePrefix + " " + row.InvoiceNo;
+          }
+        </ui:function>
+      </render>
+    </DataColumn>
+    <DataColumn name="CustomerName" />
+    <DataColumn name="PayerName" />
+
+    <CalcColumn type="string" name="From" source="LoadingCountryCode" cellType="html" width="20"
+      horizontalAlignment="center" searchBy="LoadingCountryName LoadingCountryCode">
+      <renderer type="flag" />
+    </CalcColumn>
+    <CalcColumn type="string" name="To" source="UnloadingCountryCode" cellType="html" width="20"
+      horizontalAlignment="center" searchBy="UnloadingCountryName UnloadingCountryCode">
+      <renderer type="flag" />
+    </CalcColumn>
+
+    <DataColumn name="ServiceName" />
+    <DataColumn name="Amount" format="0.00" />
+    <DataColumn name="CurrencyName" flexGrow="0" />
+    <DataColumn name="Vat" horizontalAlignment="right">
+      <render>
+        <ui:expression>row.Vat ? ((row.VatPlus ? '+' : '') + row.Vat + (row.VatPercent ? '%' : '')) : ''</ui:expression>
+      </render>
+    </DataColumn>
+    <CalcColumn name="Total" type="decimal" caption="=total" format="0.00">
+      <style>
+        <bodyStyle><ui:font>bold</ui:font></bodyStyle>
+      </style>
+    </CalcColumn>
+
+    <DataColumn name="Note" />
+  </g:columns>
+</g:Grid>

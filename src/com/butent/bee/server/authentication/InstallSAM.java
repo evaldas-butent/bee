@@ -1,9 +1,11 @@
 package com.butent.bee.server.authentication;
 
+import com.butent.bee.server.data.UserServiceBean;
 import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogUtils;
 import com.butent.bee.shared.utils.BeeUtils;
 
+import javax.ejb.EJB;
 import javax.security.auth.message.config.AuthConfigFactory;
 import javax.servlet.ServletContextEvent;
 import javax.servlet.ServletContextListener;
@@ -11,6 +13,9 @@ import javax.servlet.annotation.WebListener;
 
 @WebListener
 public class InstallSAM implements ServletContextListener {
+
+  @EJB
+  UserServiceBean usr;
 
   private static final BeeLogger logger = LogUtils.getLogger(InstallSAM.class);
   private static final String LAYER = "HttpServlet";
@@ -33,7 +38,7 @@ public class InstallSAM implements ServletContextListener {
         sce.getServletContext().getContextPath());
 
     identifier = factory.registerConfigProvider(
-        new BeeAuthConfigProvider(new BeeServerAuthModule()), LAYER, appContext, "BEE SAM");
+        new BeeAuthConfigProvider(new BeeServerAuthModule(usr)), LAYER, appContext, "BEE SAM");
 
     logger.info("Registered SAM:", identifier);
   }

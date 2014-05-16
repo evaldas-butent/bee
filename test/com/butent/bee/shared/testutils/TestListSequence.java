@@ -20,7 +20,7 @@ public class TestListSequence {
 
   @Before
   public void setUp() throws Exception {
-    ArrayList<String> ar = new ArrayList<String>();
+    ArrayList<String> ar = new ArrayList<>();
     ar.add("this");
     ar.add("the");
     ar.add("junit");
@@ -59,7 +59,7 @@ public class TestListSequence {
 
   @Test
   public final void testGetList() {
-    ArrayList<String> ex1 = new ArrayList<String>();
+    ArrayList<String> ex1 = new ArrayList<>();
 
     ex1.add("this");
     ex1.add("the");
@@ -133,7 +133,7 @@ public class TestListSequence {
 
   @Test
   public final void testSetValuesListOfT() {
-    ArrayList<String> exp1 = new ArrayList<String>();
+    ArrayList<String> exp1 = new ArrayList<>();
     String[] pr = {};
     exp1.add("one");
     exp1.add("two");

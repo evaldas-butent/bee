@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<View xmlns="http://www.butent.com/view"
+
+  name="Currencies" source="Currencies" caption="=currencies" module="Classifiers"
+  newRowCaption="=newCurrency" editForm="Currency" rowCaption="Name"
+  >
+  <Columns>
+    <SimpleColumn name="Name" />
+    <SimpleColumn name="Caption" />
+    <SimpleColumn name="MinorName" />
+    <SimpleColumn name="MinorCaption" />
+    <SimpleColumn name="UpdateTag" />
+  </Columns>
+  <Order>
+    <OrderBy column="Name" />
+  </Order>
+</View>
+ 

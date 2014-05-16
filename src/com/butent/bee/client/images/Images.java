@@ -36,13 +36,13 @@ public final class Images {
 
     @Source("alarm.png")
     ImageResource alarm();
-    
+
     @Source("arrow_down.png")
     ImageResource arrowDown();
 
     @Source("arrow_down_double.png")
     ImageResource arrowDownDouble();
-    
+
     @Source("arrow_in.png")
     ImageResource arrowIn();
 
@@ -51,7 +51,7 @@ public final class Images {
 
     @Source("arrow_left_double.png")
     ImageResource arrowLeftDouble();
-    
+
     @Source("arrow_out.png")
     ImageResource arrowOut();
 
@@ -60,13 +60,13 @@ public final class Images {
 
     @Source("arrow_right_double.png")
     ImageResource arrowRightDouble();
-    
+
     @Source("arrow_up.png")
     ImageResource arrowUp();
 
     @Source("arrow_up_double.png")
     ImageResource arrowUpDouble();
-    
+
     @Source("ascending.gif")
     ImageResource ascending();
 
@@ -93,7 +93,7 @@ public final class Images {
 
     @Source("closeSmall.png")
     ImageResource closeSmall();
-    
+
     @Source("closeSmallRed.png")
     ImageResource closeSmallRed();
 
@@ -115,9 +115,6 @@ public final class Images {
     @Source("disclosureOpen.png")
     ImageResource disclosureOpen();
 
-    @Source("disconnect.png")
-    ImageResource disconnect();
-
     @Source("edit.png")
     ImageResource edit();
 
@@ -129,6 +126,9 @@ public final class Images {
 
     @Source("error.png")
     ImageResource error();
+
+    @Source("silver/excel_17x18.png")
+    ImageResource excel();
 
     @Source("feed.png")
     ImageResource feed();
@@ -223,12 +223,9 @@ public final class Images {
     @Source("searchOptions.gif")
     ImageResource searchOptions();
 
-    @Source("settings.png")
-    ImageResource settings();
-
     @Source("silver/plus_gray_17x18.png")
     ImageResource silverAdd();
-    
+
     @Source("silver/bar_chart_24x24.png")
     ImageResource silverBarChart();
 
@@ -264,7 +261,7 @@ public final class Images {
 
     @Source("silver/filter_remove_25x14.png")
     ImageResource silverFilterRemove();
-    
+
     @Source("silver/invoice_17x18.png")
     ImageResource silverInvoice();
 
@@ -273,10 +270,10 @@ public final class Images {
 
     @Source("silver/minus_button_17x18.png")
     ImageResource silverMinus();
-    
+
     @Source("silver/plus_button_17x18.png")
     ImageResource silverPlus();
-    
+
     @Source("silver/print_17x18.png")
     ImageResource silverPrint();
 
@@ -300,7 +297,7 @@ public final class Images {
 
     @Source("silver/tringle_up_11x9.png")
     ImageResource silverTringleUp();
-    
+
     @Source("silver/truck_17x18.png")
     ImageResource silverTruck();
 
@@ -321,7 +318,7 @@ public final class Images {
 
     @Source("warning.png")
     ImageResource warning();
-    
+
     @Source("yellow.gif")
     ImageResource yellow();
 
@@ -330,7 +327,7 @@ public final class Images {
   }
 
   public static final long MAX_SIZE_FOR_DATA_URL = 1258292L; /* ~1.2 MB */
-  
+
   private static final Map<String, ImageResource> map = Maps.newHashMap();
 
   private static final ImageElement imageElement = Document.get().createImageElement();
@@ -411,14 +408,14 @@ public final class Images {
     map.put(key("disclosureClosed"), resources.disclosureClosed());
     map.put(key("disclosureOpen"), resources.disclosureOpen());
 
-    map.put(key("disconnect"), resources.disconnect());
-
     map.put(key("edit"), resources.edit());
 
     map.put(key("editAdd"), resources.editAdd());
     map.put(key("editDelete"), resources.editDelete());
 
     map.put(key("error"), resources.error());
+
+    map.put(key("excel"), resources.excel());
 
     map.put(key("feed"), resources.feed());
 
@@ -476,8 +473,6 @@ public final class Images {
 
     map.put(key("search"), resources.search());
 
-    map.put(key("settings"), resources.settings());
-
     map.put(key("slider"), resources.slider());
     map.put(key("sliderDisabled"), resources.sliderDisabled());
     map.put(key("sliderSliding"), resources.sliderSliding());
@@ -518,7 +513,7 @@ public final class Images {
     map.put(key("silverTringleUp"), resources.silverTringleUp());
     map.put(key("silverTruck"), resources.silverTruck());
   }
-  
+
   public static List<NewFileInfo> sanitizeInput(Collection<NewFileInfo> input,
       NotificationListener notificationListener) {
 

@@ -66,8 +66,9 @@ public class InputBoxes {
   private static final String STYLE_INPUT_CLOSE = "bee-InputClose";
 
   public void inputString(String caption, String prompt, final StringCallback callback,
-      String defaultValue, int maxLength, double width, CssUnit widthUnit, final int timeout,
-      String confirmHtml, String cancelHtml, WidgetInitializer initializer) {
+      String defaultValue, int maxLength, Element target, double width, CssUnit widthUnit,
+      final int timeout, String confirmHtml, String cancelHtml, WidgetInitializer initializer) {
+
     Assert.notNull(callback);
 
     final Holder<State> state = Holder.of(State.OPEN);
@@ -91,7 +92,9 @@ public class InputBoxes {
     box.addStyleName(STYLE_INPUT_STRING);
 
     if (!BeeUtils.isEmpty(defaultValue)) {
-      box.setValue(defaultValue.trim());
+      String value = (maxLength > 0) 
+          ? BeeUtils.left(defaultValue.trim(), maxLength) : defaultValue.trim();
+      box.setValue(value);
     }
     if (maxLength > 0) {
       box.setMaxLength(maxLength);
@@ -173,7 +176,7 @@ public class InputBoxes {
     UiHelper.setWidget(dialog, panel, initializer, DialogConstants.WIDGET_PANEL);
 
     dialog.setAnimationEnabled(true);
-    dialog.center();
+    dialog.showRelativeTo(target);
 
     UiHelper.focus(input.get());
 

@@ -4,6 +4,9 @@ import com.google.gwt.dom.client.Element;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.event.dom.client.HasClickHandlers;
+import com.google.gwt.event.dom.client.HasMouseDownHandlers;
+import com.google.gwt.event.dom.client.MouseDownEvent;
+import com.google.gwt.event.dom.client.MouseDownHandler;
 import com.google.gwt.event.shared.HandlerRegistration;
 import com.google.gwt.user.client.ui.Widget;
 
@@ -11,7 +14,8 @@ import com.butent.bee.client.dom.DomUtils;
 import com.butent.bee.client.ui.IdentifiableWidget;
 import com.butent.bee.shared.utils.BeeUtils;
 
-public class CustomWidget extends Widget implements IdentifiableWidget, HasClickHandlers {
+public class CustomWidget extends Widget implements IdentifiableWidget, HasClickHandlers,
+    HasMouseDownHandlers {
 
   public CustomWidget(Element element) {
     super();
@@ -30,12 +34,17 @@ public class CustomWidget extends Widget implements IdentifiableWidget, HasClick
   public HandlerRegistration addClickHandler(ClickHandler handler) {
     return addDomHandler(handler, ClickEvent.getType());
   }
-  
+
+  @Override
+  public HandlerRegistration addMouseDownHandler(MouseDownHandler handler) {
+    return addDomHandler(handler, MouseDownEvent.getType());
+  }
+
   @Override
   public String getId() {
     return DomUtils.getId(this);
   }
-  
+
   @Override
   public String getIdPrefix() {
     return "custom";

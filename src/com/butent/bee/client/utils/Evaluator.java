@@ -8,8 +8,11 @@ import com.google.gwt.core.client.JsDate;
 
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
+import com.butent.bee.shared.data.HasRowValue;
 import com.butent.bee.shared.data.IsColumn;
 import com.butent.bee.shared.data.IsRow;
+import com.butent.bee.shared.data.value.TextValue;
+import com.butent.bee.shared.data.value.Value;
 import com.butent.bee.shared.data.value.ValueType;
 import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogUtils;
@@ -25,7 +28,7 @@ import java.util.Set;
  * Implements management of an old and new values for cells in user interface.
  */
 
-public final class Evaluator extends Calculation {
+public final class Evaluator extends Calculation implements HasRowValue {
 
   /**
    * Manages default values for such parameters as rowId, rowVersion or CellValue.
@@ -39,7 +42,7 @@ public final class Evaluator extends Calculation {
     private double rowId;
     private JsDate rowVersion;
     private double rowIndex;
-    
+
     private final String colName;
     private double colIndex;
 
@@ -164,22 +167,22 @@ public final class Evaluator extends Calculation {
       setRowVersion(JsDate.create(row.getVersion()));
 
       EvalHelper.toJso(dataColumns, row, rowValues);
-      
+
       if (!lastRowPropertyNames.isEmpty()) {
         for (String name : lastRowPropertyNames) {
           JsUtils.setPropertyToNull(rowValues, name);
         }
         lastRowPropertyNames.clear();
       }
-      
+
       if (!BeeUtils.isEmpty(row.getProperties())) {
         for (Map.Entry<String, String> entry : row.getProperties().entrySet()) {
           String name = entry.getKey();
           String value = entry.getValue();
-          
+
           if (NameUtils.isIdentifier(name) && !BeeUtils.isEmpty(value)) {
             JsUtils.setProperty(rowValues, name, value);
-            lastRowPropertyNames.add(value);
+            lastRowPropertyNames.add(name);
           }
         }
       }
@@ -255,7 +258,7 @@ public final class Evaluator extends Calculation {
   }
 
   private static final BeeLogger logger = LogUtils.getLogger(Evaluator.class);
-  
+
   public static Evaluator create(Calculation calc, String colName,
       List<? extends IsColumn> dataColumns) {
     if (calc == null) {
@@ -276,8 +279,8 @@ public final class Evaluator extends Calculation {
     }
     return evaluator;
   }
-  
-//CHECKSTYLE:OFF  
+
+  // CHECKSTYLE:OFF
   public static native JavaScriptObject createExprInterpreter(String xpr) /*-{
     return new Function("row", "rowId", "rowVersion", "rowIndex", "colName", "colIndex", "cell", "return " + xpr + ";");
   }-*/;
@@ -285,8 +288,8 @@ public final class Evaluator extends Calculation {
   public static native JavaScriptObject createFuncInterpreter(String fnc) /*-{
     return new Function("row", "rowId", "rowVersion", "rowIndex", "colName", "colIndex", "cell", fnc);
   }-*/;
-//CHECKSTYLE:ON
-  
+  // CHECKSTYLE:ON
+
   private Parameters parameters;
 
   private final JavaScriptObject interpeter;
@@ -301,6 +304,12 @@ public final class Evaluator extends Calculation {
     } else {
       this.interpeter = null;
     }
+  }
+
+  @Override
+  public boolean dependsOnSource(String source) {
+    return BeeUtils.containsSame(getExpression(), source)
+        || BeeUtils.containsSame(getFunction(), source);
   }
 
   public String evaluate() {
@@ -324,7 +333,17 @@ public final class Evaluator extends Calculation {
     }
     return s;
   }
-  
+
+  @Override
+  public Value getRowValue(IsRow row) {
+    if (row == null) {
+      return null;
+    } else {
+      update(row);
+      return TextValue.of(evaluate());
+    }
+  }
+
   public boolean hasInterpreter() {
     return getInterpeter() != null;
   }
@@ -382,7 +401,7 @@ public final class Evaluator extends Calculation {
     update(rowValue);
     getParameters().setCellValue(type, value);
   }
-  
+
   private native String doEval(JavaScriptObject fnc, JavaScriptObject row, double rowId,
       JsDate rowVersion, double rowIndex, String colName, double colIndex,
       JavaScriptObject cell) /*-{

@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<g:Grid xmlns="http://www.butent.com/column" 
+        xmlns:g="http://www.butent.com/grid"
+        xmlns:ui="http://www.butent.com/ui"
+
+  name="CompanyBankAccounts" viewName="CompanyBankAccounts" caption="=bankAccounts"
+  flexGrow="1" flexShrink="1"
+  >
+  <g:columns>
+    <DataColumn name="DefaultBankAccount" caption="=defaultBankAccountShort"
+      horizontalAlignment="center" flexGrow="0">
+      <render><ui:expression>row.DefaultBankAccount ? '\u2713' : ''</ui:expression></render>
+    </DataColumn>
+    <RelColumn name="Bank" renderColumns="BankName BankCode" />
+    <DataColumn name="BankAccount" />
+    <DataColumn name="IBANCode" />
+    <DataColumn name="Notes" />
+  </g:columns>
+  <g:rowStyle>
+    <ui:inline>="font-weight: bolder"</ui:inline>
+    <ui:expression>row.DefaultBankAccount != null</ui:expression>
+  </g:rowStyle>
+</g:Grid>

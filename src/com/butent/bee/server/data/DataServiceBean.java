@@ -38,6 +38,7 @@ import javax.ejb.Stateless;
 
 @Stateless
 public class DataServiceBean {
+
   private static BeeLogger logger = LogUtils.getLogger(DataServiceBean.class);
 
   @EJB

@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<View xmlns="http://www.butent.com/view"
+
+  name="CompanyDepartments" source="CompanyDepartments" module="Classifiers.Contacts"
+  caption="=companyDepartments"
+  >
+  <Columns>
+    <SimpleColumn name="Company" />
+    <SimpleJoin name="Company" joinType="LEFT">
+      <SimpleColumn alias="CompanyName" name="Name" />
+    </SimpleJoin>
+    
+    <SimpleColumn name="Name" />
+  </Columns>
+  <Order>
+    <OrderBy column="CompanyName" />
+    <OrderBy column="Name" />
+  </Order>
+</View>

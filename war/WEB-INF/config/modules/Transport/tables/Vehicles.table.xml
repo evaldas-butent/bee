@@ -23,11 +23,10 @@
     <Double name="Netto" label="=vehicleNetto" />
     <Double name="Brutto" label="=vehicleBrutto" />
     <Text name="Notes" label="=notes" />
-  </Fields>
-  <Extensions>
+
     <Numeric name="Body" precision="1" />
     <Numeric name="Chassis" precision="1" label="=vehicleChassis" />
     <Numeric name="Gearbox" precision="1" label="=vehicleGearbox" />
     <Boolean name="Conditioner" label="=vehicleAirConditioner" />
-  </Extensions>
+  </Fields>
 </Table>

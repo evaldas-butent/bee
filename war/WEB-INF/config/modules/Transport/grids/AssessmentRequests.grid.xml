@@ -1,45 +1,60 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <g:Grid xmlns="http://www.butent.com/column" xmlns:g="http://www.butent.com/grid"
-  xmlns:w="http://www.butent.com/widget"
+  xmlns:ui="http://www.butent.com/ui"
 
   name="AssessmentRequests" viewName="Assessments" caption="=trAssessmentRequests"
-  flexGrow="1" order="AssessorID desc"
+  flexGrow="1" order="AssessmentID desc" disabledActions="delete"
+  enableCopy="- Assessment Cargo *Status *Date Number Manager ExpensesRegistered, Log"
+  filter="Status"
   >
-  <g:north size="40">
-    <w:HorizontalPanel>
-      <w:CheckBox name="New" text="=filterNew" checked="true" />
-      <w:CheckBox name="Answered" text="=filterAnswered" checked="true" />
-      <w:CheckBox name="Lost" text="=filterLost" />
-    </w:HorizontalPanel>
-  </g:north>
   <g:columns>
     <IdColumn name="ID" width="40" />
-    <DataColumn name="Assessor" caption="=captionPid" width="40" />
-    <DataColumn name="Date" caption="=creationDate" width="110" />
+    <DataColumn name="Assessment" width="40" />
+    <DataColumn name="Date" width="110" />
+    <RelColumn name="Manager" />
+    <DataColumn name="Number" width="70" />
     <DataColumn name="Status" width="70" />
-    <DataColumn name="OrderNo" caption="=orderNumber" width="70" />
-    <DataColumn name="LoadingDate" caption="=trCargoLoadingDateShort" width="70" format="DATE_SHORT" />
+
+    <DataColumn name="LoadingDate" caption="=trLoadingDate" width="70" format="DATE_SHORT" />
+    <DataColumn name="UnloadingDate" caption="=trUnloadingDate" width="70" format="DATE_SHORT" />
     
-    <DataColumn name="CustomerName" caption="=customer" minWidth="100" whiteSpace="nowrap" />
+    <DataColumn name="CustomerName" />
 
     <CalcColumn type="string" name="From" source="LoadingCountryCode" cellType="html" width="20"
-      caption="=from" horizontalAlignment="center">
+      horizontalAlignment="center" searchBy="LoadingCountryName LoadingCountryCode">
       <renderer type="flag" />
     </CalcColumn>
 
     <CalcColumn type="string" name="To" source="UnloadingCountryCode" cellType="html" width="20"
-      caption="=to" horizontalAlignment="center">
+      horizontalAlignment="center" searchBy="UnloadingCountryName UnloadingCountryCode">
       <renderer type="flag" />
     </CalcColumn>
 
-    <DataColumn name="Route" caption="=route" minWidth="100" whiteSpace="nowrap" />
-    <DataColumn name="Description" caption="=cargo" minWidth="100" whiteSpace="nowrap" />
+    <DataColumn name="OrderNotes" minWidth="100" whiteSpace="nowrap" />
+    <DataColumn name="Description" minWidth="100" whiteSpace="nowrap" />
 
     <DataColumn name="Partial" caption="=partialShort" width="15" sortable="false" />
     <DataColumn name="Outsized" caption="=outsizedShort" width="15" sortable="false" />
     <DataColumn name="Dangerous" caption="=dangerousShort" width="15" sortable="false" />
 
-    <DataColumn name="Number" caption="=refNumber" width="70" />
-    <DataColumn name="Cmr" caption="CMR" width="70" />
+    <CalcColumn type="string" name="Vehicle" label="=trCarrierVehicle" searchBy="ForwarderVehicle">
+      <render>
+        <ui:function>
+          if (!row.MinVehicle) {
+            return row.MaxVehicle;
+          
+          } else if(!row.MaxVehicle || row.MinVehicle == row.MaxVehicle) {
+            return row.MinVehicle;
+          
+          } else {
+            return row.MinVehicle + ", " + row.MaxVehicle + (row.CntVehicle > 2 ? ", ...": "");
+          }
+        </ui:function>
+      </render>
+    </CalcColumn>
   </g:columns>
+
+  <g:predefinedFilter name="new_answered" label="Nauji ir atsakyti" initial="true">
+    <g:column name="Status" value="0,1" />
+  </g:predefinedFilter>  
 </g:Grid>

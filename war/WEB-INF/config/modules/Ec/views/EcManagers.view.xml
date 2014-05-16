@@ -1,7 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <View xmlns="http://www.butent.com/view"
 
-  name="EcManagers" source="EcManagers" caption="=ecManagers" newRowCaption="=ecManagerNew"
+  name="EcManagers" source="EcManagers" module="Ec.Administration"
+  caption="=ecManagers" newRowCaption="=ecManagerNew"
   >
   <Columns>
     <SimpleColumn name="User" />

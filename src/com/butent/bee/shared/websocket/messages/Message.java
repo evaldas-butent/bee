@@ -10,7 +10,7 @@ import com.butent.bee.shared.utils.Codec;
 import java.util.List;
 
 public abstract class Message {
-  
+
   public enum Type {
     ADMIN {
       @Override
@@ -46,6 +46,12 @@ public abstract class Message {
       @Override
       Message createMessage() {
         return new LogMessage();
+      }
+    },
+    MAIL {
+      @Override
+      Message createMessage() {
+        return new MailMessage();
       }
     },
     MODIFICATION {
@@ -108,39 +114,39 @@ public abstract class Message {
         return new UsersMessage();
       }
     };
-    
+
     abstract Message createMessage();
   }
-  
+
   private static BeeLogger logger = LogUtils.getLogger(Message.class);
-  
+
   public static Message decode(String s) {
     String[] arr = Codec.beeDeserializeCollection(s);
     if (arr == null || arr.length != 2) {
       logger.severe("cannot decode message", s);
       return null;
     }
-    
+
     Type messageType = Codec.unpack(Type.class, arr[0]);
     if (messageType == null) {
       logger.severe("cannot decode message type", arr[0]);
       return null;
     }
-    
+
     Message message = messageType.createMessage();
     message.deserialize(arr[1]);
-    
+
     return message;
   }
-  
+
   private final Type type;
 
   protected Message(Type type) {
     this.type = type;
   }
-  
+
   public abstract String brief();
-  
+
   public String encode() {
     List<String> data = Lists.newArrayList(Codec.pack(getType()), serialize());
     return Codec.beeSerialize(data);
@@ -149,9 +155,9 @@ public abstract class Message {
   public Type getType() {
     return type;
   }
-  
+
   public abstract boolean isValid();
-  
+
   public boolean isLoggable() {
     return true;
   }
@@ -162,7 +168,7 @@ public abstract class Message {
   protected abstract void deserialize(String s);
 
   protected abstract String serialize();
-  
+
   protected String string(Double d) {
     return (d == null) ? null : BeeUtils.toString(d, 6);
   }

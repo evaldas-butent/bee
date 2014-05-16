@@ -4,8 +4,6 @@ import com.google.common.collect.HashMultimap;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Multimap;
-import com.google.gwt.core.client.Scheduler;
-import com.google.gwt.event.shared.HasHandlers;
 import com.google.gwt.xml.client.Document;
 import com.google.gwt.xml.client.Element;
 import com.google.gwt.xml.client.XMLParser;
@@ -13,49 +11,35 @@ import com.google.gwt.xml.client.XMLParser;
 import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.Callback;
 import com.butent.bee.client.communication.ResponseCallback;
-import com.butent.bee.client.data.Data;
-import com.butent.bee.client.data.HasActiveRow;
-import com.butent.bee.client.data.Provider;
 import com.butent.bee.client.data.Queries;
 import com.butent.bee.client.presenter.FormPresenter;
 import com.butent.bee.client.presenter.Presenter;
 import com.butent.bee.client.presenter.PresenterCallback;
-import com.butent.bee.client.render.AbstractCellRenderer;
-import com.butent.bee.client.screen.HandlesStateChange;
-import com.butent.bee.client.screen.HasDomain;
 import com.butent.bee.client.utils.XmlUtils;
-import com.butent.bee.client.view.HasGridView;
-import com.butent.bee.client.view.HeaderView;
-import com.butent.bee.client.view.add.ReadyForInsertEvent;
-import com.butent.bee.client.view.edit.EditableWidget;
-import com.butent.bee.client.view.edit.SaveChangesEvent;
 import com.butent.bee.client.view.form.FormImpl;
 import com.butent.bee.client.view.form.FormView;
+import com.butent.bee.client.view.form.interceptor.FormInterceptor;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.HasItems;
 import com.butent.bee.shared.Pair;
 import com.butent.bee.shared.Service;
-import com.butent.bee.shared.State;
 import com.butent.bee.shared.communication.ResponseObject;
 import com.butent.bee.shared.data.BeeColumn;
 import com.butent.bee.shared.data.BeeRowSet;
 import com.butent.bee.shared.data.DataUtils;
-import com.butent.bee.shared.data.HasViewName;
-import com.butent.bee.shared.data.IsRow;
+import com.butent.bee.shared.data.ProviderType;
 import com.butent.bee.shared.data.cache.CachingPolicy;
-import com.butent.bee.shared.data.view.DataInfo;
 import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogUtils;
-import com.butent.bee.shared.time.DateTime;
-import com.butent.bee.shared.time.JustDate;
-import com.butent.bee.shared.ui.Action;
 import com.butent.bee.shared.ui.EditorDescription;
 import com.butent.bee.shared.ui.EditorType;
 import com.butent.bee.shared.ui.UiConstants;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.Property;
+import com.butent.bee.shared.utils.PropertyUtils;
 
+import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 
@@ -64,82 +48,6 @@ import java.util.Map;
  */
 
 public final class FormFactory {
-
-  public interface FormInterceptor extends WidgetInterceptor, HasGridView, HandlesStateChange,
-      HasDomain, HasActiveRow, HasViewName {
-
-    void afterAction(Action action, Presenter presenter);
-
-    void afterCreate(FormView form);
-
-    void afterCreateEditableWidget(EditableWidget editableWidget, IdentifiableWidget widget);
-
-    void afterInsertRow(IsRow result, boolean forced);
-
-    void afterRefresh(FormView form, IsRow row);
-    
-    void afterStateChange(State state, boolean modal);
-
-    void afterUpdateRow(IsRow result);
-
-    boolean beforeAction(Action action, Presenter presenter);
-
-    void beforeRefresh(FormView form, IsRow row);
-
-    void beforeStateChange(State state, boolean modal);
-    
-    boolean focusSource(String source);
-    
-    long getActiveRowId();
-
-    int getDataIndex(String source);
-
-    DateTime getDateTimeValue(String source);
-
-    FormView getFormView();
-
-    HeaderView getHeaderView();
-
-    FormInterceptor getInstance();
-
-    Integer getIntegerValue(String source);
-
-    JustDate getDateValue(String source);
-
-    Long getLongValue(String source);
-
-    AbstractCellRenderer getRenderer(WidgetDescription widgetDescription);
-
-    BeeRowSet getRowSet();
-
-    String getStringValue(String source);
-
-    boolean hasFooter(int rowCount);
-
-    void notifyRequired(String message);
-
-    void onClose(List<String> messages, IsRow oldRow, IsRow newRow);
-
-    void onLoad(FormView form);
-
-    void onReadyForInsert(HasHandlers listener, ReadyForInsertEvent event);
-
-    void onSaveChanges(HasHandlers listener, SaveChangesEvent event);
-
-    void onSetActiveRow(IsRow row);
-
-    void onShow(Presenter presenter);
-
-    void onStart(FormView form);
-
-    boolean onStartEdit(FormView form, IsRow row, Scheduler.ScheduledCommand focusCommand);
-
-    void onStartNewRow(FormView form, IsRow oldRow, IsRow newRow);
-
-    void onUnload(FormView form);
-
-    void setFormView(FormView form);
-  }
 
   public abstract static class FormViewCallback {
     public void onFailure(String... reason) {
@@ -432,16 +340,12 @@ public final class FormFactory {
       BeeRowSet rowSet = formInterceptor.getRowSet();
       if (rowSet != null) {
         showForm(formDescription, viewName, rowSet.getNumberOfRows(), rowSet,
-            Provider.Type.LOCAL, CachingPolicy.NONE, formInterceptor, presenterCallback);
+            ProviderType.LOCAL, CachingPolicy.NONE, formInterceptor, presenterCallback);
         return;
       }
     }
 
-    DataInfo dataInfo = Data.getDataInfo(viewName);
-    if (dataInfo != null) {
-      getInitialRowSet(viewName, dataInfo.getRowCount(), formDescription, formInterceptor,
-          presenterCallback);
-    }
+    getInitialRowSet(viewName, formDescription, formInterceptor, presenterCallback);
   }
 
   public static void openForm(String formName) {
@@ -515,37 +419,22 @@ public final class FormFactory {
     return formName.trim().toLowerCase();
   }
 
-  private static void getInitialRowSet(final String viewName, final int rowCount,
+  private static void getInitialRowSet(final String viewName,
       final FormDescription formDescription, final FormInterceptor interceptor,
       final PresenterCallback presenterCallback) {
 
-    int limit = formDescription.getAsyncThreshold();
+    final CachingPolicy cachingPolicy = CachingPolicy.NONE;
 
-    final Provider.Type providerType;
-    final CachingPolicy cachingPolicy;
+    Collection<Property> options = PropertyUtils.createProperties(Service.VAR_VIEW_SIZE, true);
 
-    if (rowCount >= limit) {
-      providerType = Provider.Type.ASYNC;
-      cachingPolicy = CachingPolicy.FULL;
-
-      if (rowCount <= DataUtils.getMaxInitialRowSetSize()) {
-        limit = BeeConst.UNDEF;
-      } else {
-        limit = DataUtils.getMaxInitialRowSetSize();
-      }
-
-    } else {
-      providerType = Provider.Type.CACHED;
-      cachingPolicy = CachingPolicy.NONE;
-      limit = BeeConst.UNDEF;
-    }
-
-    Queries.getRowSet(viewName, null, null, null, 0, limit, cachingPolicy,
-        new Queries.RowSetCallback() {
+    Queries.getRowSet(viewName, null, null, null, 0, DataUtils.getMaxInitialRowSetSize(),
+        cachingPolicy, options, new Queries.RowSetCallback() {
           @Override
-          public void onSuccess(final BeeRowSet rowSet) {
-            int rc = Math.max(rowCount, rowSet.getNumberOfRows());
-            showForm(formDescription, viewName, rc, rowSet, providerType, cachingPolicy,
+          public void onSuccess(BeeRowSet rowSet) {
+            int rc = Math.max(rowSet.getNumberOfRows(),
+                BeeUtils.toInt(rowSet.getTableProperty(Service.VAR_VIEW_SIZE)));
+
+            showForm(formDescription, viewName, rc, rowSet, ProviderType.DEFAULT, cachingPolicy,
                 interceptor, presenterCallback);
           }
         });
@@ -553,12 +442,12 @@ public final class FormFactory {
 
   private static void showForm(FormDescription formDescription, FormInterceptor interceptor,
       PresenterCallback presenterCallback) {
-    showForm(formDescription, null, BeeConst.UNDEF, null, Provider.Type.CACHED,
+    showForm(formDescription, null, BeeConst.UNDEF, null, ProviderType.CACHED,
         CachingPolicy.NONE, interceptor, presenterCallback);
   }
 
   private static void showForm(FormDescription formDescription, String viewName, int rowCount,
-      BeeRowSet rowSet, Provider.Type providerType, CachingPolicy cachingPolicy,
+      BeeRowSet rowSet, ProviderType providerType, CachingPolicy cachingPolicy,
       FormInterceptor interceptor, PresenterCallback presenterCallback) {
 
     FormPresenter presenter = new FormPresenter(formDescription, viewName, rowCount, rowSet,

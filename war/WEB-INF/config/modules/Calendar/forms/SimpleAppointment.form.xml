@@ -18,7 +18,7 @@
     <InputText source="Location" caption="=location" style="width: 320px;"
       d:size="60" d:unit="px" d:rootStyle="&absolute; left: 360px; top: 0;" autocomplete="true" />
 
-    <Label text="=calAppointmentAttendees" style="&absolute; left: 0; top: 40px;" />
+    <Label text="=calAttendees" style="&absolute; left: 0; top: 40px;" />
 
     <Image name="Overlap" resource="yellow" style="&absolute; left: 14px; top: 100px;" />
 
@@ -65,7 +65,7 @@
     <Label text="=responsiblePersons" style="&absolute; left: 360px; top: 280px; width: 76px;" />
 
     <MultiSelector name="Owners" property="AppointmentOwners" viewName="Users"
-      renderColumns="FirstName LastName"
+      newRowEnabled="false" renderColumns="FirstName LastName"
       choiceColumns="FirstName LastName CompanyName PositionName"
       style="&absolute; left: 440px; top: 280px; width: 300px;" />
 

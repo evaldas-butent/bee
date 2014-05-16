@@ -301,7 +301,7 @@ public class InputDate extends InputText implements HasDateTimeFormat, HasIntSte
   }
 
   protected boolean handleChar(int charCode) {
-    if (charCode == BeeConst.CHAR_ALL) {
+    if (charCode == BeeConst.CHAR_ASTERISK) {
       pickDate();
       return true;
     }

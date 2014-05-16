@@ -120,7 +120,7 @@ public final class XmlUtils {
 
   private static SchemaFactory schemaFactory;
 
-  private static Map<Short, String> nodeTypes = new HashMap<Short, String>();
+  private static Map<Short, String> nodeTypes = new HashMap<>();
 
   static {
     nodeTypes.put(Node.ELEMENT_NODE, "Element");
@@ -169,6 +169,25 @@ public final class XmlUtils {
     schemaFactory = sf;
   }
 
+  public static Document createDoc(String rootName, String... nodes) {
+    Document doc = createDocument();
+    Element root = doc.createElement(rootName);
+
+    String tag;
+    String txt;
+
+    for (int i = 0; i < nodes.length - 1; i += 2) {
+      tag = nodes[i];
+      txt = nodes[i + 1];
+
+      if (!BeeUtils.anyEmpty(tag, txt)) {
+        appendElementWithText(doc, root, tag.trim(), txt.trim());
+      }
+    }
+    doc.appendChild(root);
+    return doc;
+  }
+
   public static Document createDocument() {
     return domBuilder.newDocument();
   }
@@ -195,6 +214,10 @@ public final class XmlUtils {
   public static Document fromString(String xml) {
     Document doc = createDocument(new StringReader(xml));
     return doc;
+  }
+
+  public static List<Element> getAllDescendantElements(Element parent) {
+    return getElementsByLocalName(parent, ALL_TAGS);
   }
 
   public static Boolean getAttributeBoolean(Element element, String name) {
@@ -322,7 +345,7 @@ public final class XmlUtils {
 
   public static List<Property> getCDATAInfo(CDATASection cdata) {
     Assert.notNull(cdata);
-    List<Property> lst = new ArrayList<Property>();
+    List<Property> lst = new ArrayList<>();
 
     PropertyUtils.addProperties(lst, "Length", cdata.getLength(), "Data", cdata.getData(),
         "Is Element Content Whitespace", cdata.isElementContentWhitespace());
@@ -368,7 +391,7 @@ public final class XmlUtils {
 
   public static List<Property> getCommentInfo(Comment comm) {
     Assert.notNull(comm);
-    List<Property> lst = new ArrayList<Property>();
+    List<Property> lst = new ArrayList<>();
 
     PropertyUtils.addProperties(lst, "Length", comm.getLength(),
         "Data", comm.getData(), "To String", comm.toString());
@@ -400,7 +423,7 @@ public final class XmlUtils {
 
   public static List<Property> getDocumentFragmentInfo(DocumentFragment df) {
     Assert.notNull(df);
-    List<Property> lst = new ArrayList<Property>();
+    List<Property> lst = new ArrayList<>();
 
     PropertyUtils.addProperty(lst, "To String", df.toString());
     return lst;
@@ -408,7 +431,7 @@ public final class XmlUtils {
 
   public static List<Property> getDocumentInfo(Document doc) {
     Assert.notNull(doc);
-    List<Property> lst = new ArrayList<Property>();
+    List<Property> lst = new ArrayList<>();
 
     PropertyUtils.addProperties(lst, "Document URI", doc.getDocumentURI(),
         "Implementation", transformDOMImplementation(doc.getImplementation()),
@@ -436,7 +459,7 @@ public final class XmlUtils {
 
   public static List<Property> getDocumentTypeInfo(DocumentType dtp) {
     Assert.notNull(dtp);
-    List<Property> lst = new ArrayList<Property>();
+    List<Property> lst = new ArrayList<>();
 
     PropertyUtils.addProperties(lst, "Name", dtp.getName(),
         "Internal Subset", dtp.getInternalSubset(),
@@ -451,7 +474,7 @@ public final class XmlUtils {
   }
 
   public static List<Property> getDomBuilderInfo() {
-    List<Property> lst = new ArrayList<Property>();
+    List<Property> lst = new ArrayList<>();
 
     if (domBuilder == null) {
       PropertyUtils.addProperty(lst, "Error creating builder", DocumentBuilder.class.getName());
@@ -467,7 +490,7 @@ public final class XmlUtils {
 
   public static List<Property> getElementInfo(Element el) {
     Assert.notNull(el);
-    List<Property> lst = new ArrayList<Property>();
+    List<Property> lst = new ArrayList<>();
 
     PropertyUtils.addProperties(lst, "Tag Name", el.getTagName(),
         "Schema Type Info", transformTypeInfo(el.getSchemaTypeInfo()),
@@ -477,7 +500,7 @@ public final class XmlUtils {
 
   public static Map<String, String> getElements(NodeList nodes, String ignore) {
     Assert.notNull(nodes);
-    Map<String, String> ret = new HashMap<String, String>();
+    Map<String, String> ret = new HashMap<>();
 
     Element el;
     String tg;
@@ -504,7 +527,7 @@ public final class XmlUtils {
 
   public static Map<String, String> getElements(String xml, String ignore) {
     Assert.notEmpty(xml);
-    Map<String, String> ret = new HashMap<String, String>();
+    Map<String, String> ret = new HashMap<>();
 
     Document doc = fromString(xml);
     if (doc == null) {
@@ -549,7 +572,7 @@ public final class XmlUtils {
 
   public static List<Property> getEntityInfo(Entity ent) {
     Assert.notNull(ent);
-    List<Property> lst = new ArrayList<Property>();
+    List<Property> lst = new ArrayList<>();
 
     PropertyUtils.addProperties(lst, "Input Encoding", ent.getInputEncoding(),
         "Notation Name", ent.getNotationName(), "Public Id", ent.getPublicId(),
@@ -560,7 +583,7 @@ public final class XmlUtils {
 
   public static List<Property> getEntityReferenceInfo(EntityReference er) {
     Assert.notNull(er);
-    List<Property> lst = new ArrayList<Property>();
+    List<Property> lst = new ArrayList<>();
 
     PropertyUtils.addProperty(lst, "To String", er.toString());
     return lst;
@@ -606,7 +629,7 @@ public final class XmlUtils {
 
   public static List<Property> getNodeInfo(Node nd) {
     Assert.notNull(nd);
-    List<Property> lst = new ArrayList<Property>();
+    List<Property> lst = new ArrayList<>();
 
     PropertyUtils.addProperties(lst, "Node Type", nd.getNodeType(),
         "Node Name", nd.getNodeName(),
@@ -642,7 +665,7 @@ public final class XmlUtils {
 
   public static List<Property> getNotationInfo(Notation nt) {
     Assert.notNull(nt);
-    List<Property> lst = new ArrayList<Property>();
+    List<Property> lst = new ArrayList<>();
 
     PropertyUtils.addProperties(lst, "Public Id", nt.getPublicId(),
         "System Id", nt.getSystemId(), "To String", nt.toString());
@@ -650,7 +673,7 @@ public final class XmlUtils {
   }
 
   public static List<Property> getOutputKeysInfo() {
-    List<Property> lst = new ArrayList<Property>();
+    List<Property> lst = new ArrayList<>();
 
     PropertyUtils.addProperties(lst,
         "CDATA SECTION ELEMENTS", OutputKeys.CDATA_SECTION_ELEMENTS,
@@ -666,9 +689,18 @@ public final class XmlUtils {
     return lst;
   }
 
+  public static Element getParentElement(Element child) {
+    if (child == null) {
+      return null;
+    } else {
+      Node parent = child.getParentNode();
+      return isElement(parent) ? (Element) parent : null;
+    }
+  }
+
   public static List<Property> getProcessingInstructionInfo(ProcessingInstruction pin) {
     Assert.notNull(pin);
-    List<Property> lst = new ArrayList<Property>();
+    List<Property> lst = new ArrayList<>();
 
     PropertyUtils.addProperties(lst, "Data", pin.getData(), "Target", pin.getTarget(),
         "To String", pin.toString());
@@ -677,7 +709,7 @@ public final class XmlUtils {
 
   public static List<ExtendedProperty> getRootInfo(Document doc) {
     Assert.notNull(doc);
-    List<ExtendedProperty> lst = new ArrayList<ExtendedProperty>();
+    List<ExtendedProperty> lst = new ArrayList<>();
 
     String root = getNodeName(Node.DOCUMENT_NODE);
 
@@ -776,7 +808,7 @@ public final class XmlUtils {
 
   public static List<Property> getTextInfo(Text txt) {
     Assert.notNull(txt);
-    List<Property> lst = new ArrayList<Property>();
+    List<Property> lst = new ArrayList<>();
 
     PropertyUtils.addProperties(lst, "Length", txt.getLength(),
         "Data", txt.getData(), "Whole Text", txt.getWholeText(),
@@ -795,7 +827,7 @@ public final class XmlUtils {
   public static List<ExtendedProperty> getTreeInfo(Node nd, String root) {
     Assert.notNull(nd);
     Assert.notEmpty(root);
-    List<ExtendedProperty> lst = new ArrayList<ExtendedProperty>();
+    List<ExtendedProperty> lst = new ArrayList<>();
 
     List<Property> tpInf = null;
     short tp = nd.getNodeType();
@@ -891,7 +923,7 @@ public final class XmlUtils {
   }
 
   public static List<Property> getXsltFactoryInfo() {
-    List<Property> lst = new ArrayList<Property>();
+    List<Property> lst = new ArrayList<>();
 
     if (xsltFactory == null) {
       PropertyUtils.addProperty(lst, "Error instantiating factory",
@@ -902,6 +934,23 @@ public final class XmlUtils {
           "URI Resolver", NameUtils.transformClass(xsltFactory.getURIResolver()));
     }
     return lst;
+  }
+
+  public static boolean hasChildElements(Element parent) {
+    if (parent == null) {
+      return false;
+    }
+
+    NodeList nodes = parent.getChildNodes();
+
+    if (!isEmpty(nodes)) {
+      for (int i = 0; i < nodes.getLength(); i++) {
+        if (isElement(nodes.item(i))) {
+          return true;
+        }
+      }
+    }
+    return false;
   }
 
   public static boolean isEmpty(NodeList nodes) {
@@ -928,6 +977,15 @@ public final class XmlUtils {
       throw new BeeRuntimeException(e.getException() == null ? e : e.getException());
     }
     return result.toString();
+  }
+
+  public static boolean removeFromParent(Node node) {
+    if (node == null || node.getParentNode() == null) {
+      return false;
+    } else {
+      node.getParentNode().removeChild(node);
+      return true;
+    }
   }
 
   public static String tag(String tagName, Object value) {
@@ -1102,25 +1160,6 @@ public final class XmlUtils {
     }
   }
 
-  public static Document createDoc(String rootName, String... nodes) {
-    Document doc = createDocument();
-    Element root = doc.createElement(rootName);
-
-    String tag;
-    String txt;
-
-    for (int i = 0; i < nodes.length - 1; i += 2) {
-      tag = nodes[i];
-      txt = nodes[i + 1];
-
-      if (!BeeUtils.anyEmpty(tag, txt)) {
-        appendElementWithText(doc, root, tag.trim(), txt.trim());
-      }
-    }
-    doc.appendChild(root);
-    return doc;
-  }
-
   private static synchronized Document createDocument(File fl) {
     Document ret = null;
     if (!checkBuilder()) {
@@ -1167,7 +1206,7 @@ public final class XmlUtils {
   }
 
   private static List<Property> getDOMConfigurationInfo(DOMConfiguration cfg) {
-    List<Property> lst = new ArrayList<Property>();
+    List<Property> lst = new ArrayList<>();
     if (cfg == null) {
       return lst;
     }
@@ -1187,7 +1226,7 @@ public final class XmlUtils {
   }
 
   private static List<Property> getNamedNodeMapInfo(NamedNodeMap nodes, String msg) {
-    List<Property> lst = new ArrayList<Property>();
+    List<Property> lst = new ArrayList<>();
     if (nodes == null) {
       return lst;
     }
@@ -1219,14 +1258,6 @@ public final class XmlUtils {
     return nd != null && nd.getNodeType() == Node.ELEMENT_NODE;
   }
 
-  private static String transformDOMImplementation(DOMImplementation imp) {
-    if (imp == null) {
-      return BeeConst.STRING_EMPTY;
-    } else {
-      return imp.toString();
-    }
-  }
-
   private static String transformDocument(Document doc) {
     try {
       Transformer transformer = TransformerFactory.newInstance().newTransformer();
@@ -1240,6 +1271,14 @@ public final class XmlUtils {
     } catch (TransformerException ex) {
       LogUtils.getRootLogger().error(ex);
       return null;
+    }
+  }
+
+  private static String transformDOMImplementation(DOMImplementation imp) {
+    if (imp == null) {
+      return BeeConst.STRING_EMPTY;
+    } else {
+      return imp.toString();
     }
   }
 

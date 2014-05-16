@@ -5,8 +5,9 @@ import com.butent.bee.client.grid.cell.BooleanCell;
 import com.butent.bee.shared.css.values.TextAlign;
 import com.butent.bee.shared.data.CellSource;
 import com.butent.bee.shared.data.IsRow;
+import com.butent.bee.shared.ui.HandlesFormat;
 
-public class BooleanColumn extends DataColumn<Boolean> {
+public class BooleanColumn extends DataColumn<Boolean> implements HandlesFormat {
 
   public BooleanColumn(CellSource cellSource) {
     this(new BooleanCell(), cellSource);
@@ -28,5 +29,12 @@ public class BooleanColumn extends DataColumn<Boolean> {
       return null;
     }
     return getCellSource().getBoolean(row);
+  }
+
+  @Override
+  public void setFormat(String format) {
+    if (getCell() instanceof HandlesFormat) {
+      ((HandlesFormat) getCell()).setFormat(format);
+    }
   }
 }

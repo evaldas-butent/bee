@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Table xmlns="http://www.butent.com/table"
+
+  name="CompActStore"
+  idName="CompActStoreID"
+  >
+  <Fields>
+    <Relation name="Company" notNull="true" relation="Companies" cascade="DELETE"
+      label="=company" />
+    <Relation name="Activity" notNull="true" relation="CompanyActivities" cascade="DELETE"
+      label="=companyActivity" />
+  </Fields>
+
+  <Constraints>
+    <Unique fields="Company Activity" />
+  </Constraints>
+</Table>

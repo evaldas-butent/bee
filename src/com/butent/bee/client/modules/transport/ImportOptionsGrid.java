@@ -5,7 +5,7 @@ import com.google.gwt.event.dom.client.ChangeHandler;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
 
-import static com.butent.bee.shared.modules.commons.CommonsConstants.*;
+import static com.butent.bee.shared.modules.administration.AdministrationConstants.*;
 import static com.butent.bee.shared.modules.transport.TransportConstants.*;
 
 import com.butent.bee.client.BeeKeeper;
@@ -58,7 +58,7 @@ public class ImportOptionsGrid extends AbstractGridInterceptor implements ClickH
   }
 
   @Override
-  public void onShow(GridPresenter presenter) {
+  public void afterCreatePresenter(GridPresenter presenter) {
     setImporting(false);
   }
 

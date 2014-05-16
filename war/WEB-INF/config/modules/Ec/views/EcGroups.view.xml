@@ -1,8 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <View xmlns="http://www.butent.com/view"
 
-  name="EcGroups" source="EcGroups"
-  editForm="EcGroup" newRowForm="EcGroup" newRowCaption="=ecGroupNew"
+  name="EcGroups" source="EcGroups" module="Ec.Classifiers"
+  editForm="EcGroup" newRowForm="EcGroup"
+  caption="=ecGroups" newRowCaption="=ecGroupNew"
   >
   <Columns>
     <SimpleColumn name="Ordinal" />

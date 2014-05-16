@@ -1,7 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <View xmlns="http://www.butent.com/view"
 
-  name="EcBanners" source="EcBanners"
+  name="EcBanners" source="EcBanners" module="Ec.Administration"
+  caption="=ecBanners"
   >
   <Columns>
     <SimpleColumn name="Sort" />

@@ -1,5 +1,6 @@
 package com.butent.bee.shared.rights;
 
+import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 
 import com.butent.bee.shared.BeeConst;
@@ -9,48 +10,48 @@ import com.butent.bee.shared.ui.HasLocalizedCaption;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.NameUtils;
 
-import java.util.EnumSet;
+import java.util.List;
 import java.util.Set;
 
 public enum Module implements HasLocalizedCaption {
 
-  CLASSIFIERS(EnumSet.of(SubModule.CONTACTS)) {
+  CLASSIFIERS(SubModule.CONTACTS) {
     @Override
     public String getCaption(LocalizableConstants constants) {
       return constants.classifiers();
     }
   },
-  CALENDAR(EnumSet.noneOf(SubModule.class)) {
+  CALENDAR {
     @Override
     public String getCaption(LocalizableConstants constants) {
       return constants.calendar();
     }
   },
-  DOCUMENTS(EnumSet.noneOf(SubModule.class)) {
+  DOCUMENTS(SubModule.TEMPLATES) {
     @Override
     public String getCaption(LocalizableConstants constants) {
       return constants.documents();
     }
   },
-  TASKS(EnumSet.noneOf(SubModule.class)) {
+  TASKS {
     @Override
     public String getCaption(LocalizableConstants constants) {
-      return constants.tasks();
+      return constants.crmTasks();
     }
   },
-  DISCUSSIONS(EnumSet.noneOf(SubModule.class)) {
+  DISCUSSIONS {
     @Override
     public String getCaption(LocalizableConstants constants) {
       return constants.discussions();
     }
   },
-  MAIL(EnumSet.of(SubModule.ADMINISTRATION)) {
+  MAIL(SubModule.ADMINISTRATION) {
     @Override
     public String getCaption(LocalizableConstants constants) {
       return constants.mail();
     }
   },
-  ECOMMERCE(EnumSet.of(SubModule.ADMINISTRATION)) {
+  ECOMMERCE(SubModule.ADMINISTRATION, SubModule.CLASSIFIERS) {
     @Override
     public String getCaption(LocalizableConstants constants) {
       return constants.ecModule();
@@ -61,19 +62,25 @@ public enum Module implements HasLocalizedCaption {
       return "Ec";
     }
   },
-  TRADE(EnumSet.noneOf(SubModule.class)) {
+  TRADE {
     @Override
     public String getCaption(LocalizableConstants constants) {
       return constants.trade();
     }
   },
-  TRANSPORT(EnumSet.of(SubModule.ADMINISTRATION)) {
+  TRANSPORT(SubModule.SELFSERVICE, SubModule.LOGISTICS, SubModule.ADMINISTRATION) {
     @Override
     public String getCaption(LocalizableConstants constants) {
       return constants.transport();
     }
   },
-  ADMINISTRATION(EnumSet.noneOf(SubModule.class)) {
+  SERVICE {
+    @Override
+    public String getCaption(LocalizableConstants constants) {
+      return constants.svcModule();
+    }
+  },
+  ADMINISTRATION {
     @Override
     public String getCaption(LocalizableConstants constants) {
       return constants.administration();
@@ -81,7 +88,7 @@ public enum Module implements HasLocalizedCaption {
   };
 
   static final Set<ModuleAndSub> ENABLED_MODULES = Sets.newHashSet();
-  
+
   public static String getEnabledModulesAsString() {
     return BeeUtils.joinItems(ENABLED_MODULES);
   }
@@ -135,10 +142,16 @@ public enum Module implements HasLocalizedCaption {
     }
   }
 
-  private final EnumSet<SubModule> subModules;
+  private final List<SubModule> subModules = Lists.newArrayList();
 
-  private Module(EnumSet<SubModule> subModules) {
-    this.subModules = subModules;
+  private Module(SubModule... subModules) {
+    if (subModules != null) {
+      for (SubModule subModule : subModules) {
+        if (!this.subModules.contains(subModule)) {
+          this.subModules.add(subModule);
+        }
+      }
+    }
   }
 
   @Override
@@ -150,10 +163,10 @@ public enum Module implements HasLocalizedCaption {
     return BeeUtils.proper(name());
   }
 
-  public EnumSet<SubModule> getSubModules() {
+  public List<SubModule> getSubModules() {
     return subModules;
   }
-  
+
   public boolean isEnabled() {
     return ENABLED_MODULES.contains(ModuleAndSub.of(this));
   }

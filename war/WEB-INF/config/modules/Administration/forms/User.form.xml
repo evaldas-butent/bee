@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<f:Form xmlns="http://www.butent.com/widget"
+  xmlns:f="http://www.butent.com/form"
+  
+  name="User" viewName="Users" caption="=user"
+  width="600" height="440"
+  >
+  <FlowPanel class="flexBox-vertical">
+    <Table style="border-spacing: 10px;">
+      <row>
+        <Label for="Login" />
+        <InputText source="Login" style="width: 150px;" />
+      </row>
+
+      <row>
+        <Label text="=personFullName" for="CompanyPerson" />
+        <DataSelector source="CompanyPerson" editSource="Person" style="width: 150px;"
+          renderColumns="FirstName Lastname" choiceColumns="FirstName Lastname CompanyName" />
+        <Label text="=company" horizontalAlignment="right" for="CompanyName" />
+        <TextLabel source="CompanyName" style="width: 150px;" />
+      </row>
+
+      <row>
+        <Label for="DateOfBirth" />
+        <DateLabel source="DateOfBirth" />
+        <Label text="=personPosition" horizontalAlignment="right" for="PositionName" />
+        <TextLabel source="PositionName" />
+      </row>
+    </Table>
+
+    <br/>
+    <Table style="border-spacing: 10px;" data="UserRoles">
+      <row>
+        <Label text="=roles" class="bee-required" />
+        <ChildSelector childTable="UserRoles" viewName="Roles"
+          targetRelColumn="User" sourceRelColumn="Role"
+          style="width: 400px;" required="true" />
+      </row>
+    </Table>
+    
+    <br/>
+    <CheckBox source="MailAssignedTasks" text="=crmMailAssignedTasks" style="margin-left: 10px;" />
+      
+    <br/>
+    <ChildGrid class="flexible" name="UserFeeds" relColumn="User" />
+      
+  </FlowPanel>
+</f:Form>  

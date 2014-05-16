@@ -4,10 +4,10 @@ import com.google.gwt.i18n.client.Messages;
 
 import com.butent.bee.shared.modules.ec.LocalizableEcMessages;
 import com.butent.bee.shared.modules.mail.LocalizableMailMessages;
-import com.butent.bee.shared.modules.tasks.LocalizableTasksMessages;
+import com.butent.bee.shared.modules.tasks.LocalizableTaskMessages;
 import com.butent.bee.shared.modules.transport.LocalizableTransportMessages;
 
-public interface LocalizableMessages extends Messages, LocalizableTasksMessages,
+public interface LocalizableMessages extends Messages, LocalizableTaskMessages,
     LocalizableEcMessages, LocalizableMailMessages, LocalizableTransportMessages {
 
   String allValuesEmpty(String label, String count);
@@ -35,6 +35,8 @@ public interface LocalizableMessages extends Messages, LocalizableTasksMessages,
   String not(String value);
 
   String recordIsInUse(String place);
+  
+  String removeQuestion(String item);
 
   String rowsRetrieved(int cnt);
 

@@ -15,7 +15,15 @@
   <xs:element name="html" type="xs:string" />
   <xs:element name="text" type="xs:string" />
 
+  <xs:attributeGroup name="visibility">
+    <xs:attribute name="visible" type="xs:boolean" />
+    <xs:attribute name="module" type="type:module" />
+    <xs:attribute name="data" type="type:dataView" />
+    <xs:attribute name="for" type="type:nameType" />
+  </xs:attributeGroup>
+
   <xs:complexType name="widgetBase">
+    <xs:attributeGroup ref="visibility" />
     <xs:attributeGroup ref="ui:appearance" />
     <xs:attribute name="name" type="xs:normalizedString" />
     <xs:attribute name="parent" type="xs:normalizedString" />
@@ -23,8 +31,6 @@
     <xs:attribute name="html" type="xs:string" />
     <xs:attribute name="text" type="xs:string" />
     <xs:attribute name="options" type="xs:normalizedString" />
-    <xs:attribute name="visible" type="xs:boolean" default="true" />
-    <xs:attribute name="module" type="type:module" />
     <xs:attribute name="disablable" type="xs:boolean" default="true" />
     <xs:attribute name="decorator" type="d:registeredDecorator" />
     <xs:attribute ref="xml:base" />
@@ -157,6 +163,7 @@
     <xs:complexContent>
       <xs:extension base="wdhtType">
         <xs:group ref="widgetOrDecorator" />
+        <xs:attributeGroup ref="visibility" />
       </xs:extension>
     </xs:complexContent>
   </xs:complexType>
@@ -166,6 +173,7 @@
     <xs:attributeGroup ref="ui:alignment" />
     <xs:attributeGroup ref="ui:dimension" />
     <xs:attributeGroup ref="ui:appearance" />
+    <xs:attributeGroup ref="visibility" />
   </xs:complexType>
 
   <xs:complexType name="cellVector">
@@ -502,11 +510,13 @@
                 </xs:choice>
                 <xs:attribute name="verticalAlignment" type="ui:verticalAlignmentType" />
                 <xs:attributeGroup ref="ui:appearance" />
+                <xs:attributeGroup ref="visibility" />
               </xs:complexType>
             </xs:element>
 
             <xs:group ref="wdht" />
           </xs:choice>
+
           <xs:attributeGroup ref="ui:cellAppearance" />
         </xs:extension>
       </xs:complexContent>
@@ -535,7 +545,15 @@
     </xs:complexType>
   </xs:element>
 
-  <xs:element name="GridPanel" type="gridType" substitutionGroup="widget" />
+  <xs:element name="GridPanel" substitutionGroup="widget">
+    <xs:complexType>
+      <xs:complexContent>
+        <xs:extension base="gridType">
+          <xs:attribute name="child" type="xs:boolean" />
+        </xs:extension>
+      </xs:complexContent>
+    </xs:complexType>
+  </xs:element>
 
   <xs:complexType name="hasOneChild">
     <xs:complexContent>
@@ -702,7 +720,7 @@
     <xs:complexType>
       <xs:complexContent>
         <xs:extension base="selectorType">
-          <xs:attribute name="viewName" type="type:nameType" />
+          <xs:attribute name="viewName" type="type:dataView" />
         </xs:extension>
       </xs:complexContent>
     </xs:complexType>
@@ -712,7 +730,7 @@
     <xs:complexType>
       <xs:complexContent>
         <xs:extension base="selectorType">
-          <xs:attribute name="viewName" type="type:nameType" use="required" />
+          <xs:attribute name="viewName" type="type:dataView" use="required" />
         </xs:extension>
       </xs:complexContent>
     </xs:complexType>
@@ -722,10 +740,10 @@
     <xs:complexType>
       <xs:complexContent>
         <xs:extension base="selectorType">
-          <xs:attribute name="viewName" type="type:nameType" use="required" />
+          <xs:attribute name="viewName" type="type:dataView" use="required" />
           <xs:attribute name="childTable" type="type:nameType" use="required" />
-          <xs:attribute name="targetRelColumn" type="type:nameType" />
-          <xs:attribute name="sourceRelColumn" type="type:nameType" />
+          <xs:attribute name="targetRelColumn" type="type:nameType" use="required" />
+          <xs:attribute name="sourceRelColumn" type="type:nameType" use="required" />
         </xs:extension>
       </xs:complexContent>
     </xs:complexType>
@@ -735,7 +753,7 @@
     <xs:complexType>
       <xs:complexContent>
         <xs:extension base="selectorType">
-          <xs:attribute name="viewName" type="type:nameType" use="required" />
+          <xs:attribute name="viewName" type="type:dataView" use="required" />
         </xs:extension>
       </xs:complexContent>
     </xs:complexType>
@@ -769,16 +787,6 @@
 
   <xs:element name="DataTree" type="dataTree" substitutionGroup="widget" />
 
-  <xs:element name="ChildTree" substitutionGroup="widget">
-    <xs:complexType>
-      <xs:complexContent>
-        <xs:extension base="dataTree">
-          <xs:attribute name="relationColumn" type="type:nameType" use="required" />
-        </xs:extension>
-      </xs:complexContent>
-    </xs:complexType>
-  </xs:element>
-
   <xs:complexType name="dataTree">
     <xs:complexContent>
       <xs:extension base="focusableWidget">
@@ -787,7 +795,7 @@
           <xs:element name="form" type="hasOneChild" minOccurs="0" maxOccurs="1" />
         </xs:sequence>
         <xs:attribute name="caption" type="xs:string" use="required" />
-        <xs:attribute name="source" type="type:tableNameType" use="required" />
+        <xs:attribute name="viewName" type="type:dataView" use="required" />
         <xs:attribute name="parentColumn" type="type:fieldNameType" use="required" />
         <xs:attribute name="orderColumn" type="type:fieldNameType" />
         <xs:attribute name="hideActions" type="xs:boolean" />

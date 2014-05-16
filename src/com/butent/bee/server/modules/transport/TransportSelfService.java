@@ -4,6 +4,8 @@ import com.google.common.collect.Lists;
 import com.google.common.net.HttpHeaders;
 
 import static com.butent.bee.shared.html.builder.Factory.*;
+import static com.butent.bee.shared.modules.administration.AdministrationConstants.*;
+import static com.butent.bee.shared.modules.classifiers.ClassifierConstants.*;
 import static com.butent.bee.shared.modules.transport.TransportConstants.*;
 
 import com.butent.bee.server.LoginServlet;
@@ -35,9 +37,9 @@ import com.butent.bee.shared.html.builder.elements.Div;
 import com.butent.bee.shared.html.builder.elements.Fieldset;
 import com.butent.bee.shared.html.builder.elements.Form;
 import com.butent.bee.shared.html.builder.elements.Input;
+import com.butent.bee.shared.html.builder.elements.Input.Type;
 import com.butent.bee.shared.html.builder.elements.Select;
 import com.butent.bee.shared.html.builder.elements.Span;
-import com.butent.bee.shared.html.builder.elements.Input.Type;
 import com.butent.bee.shared.html.builder.elements.Tbody;
 import com.butent.bee.shared.html.builder.elements.Textarea;
 import com.butent.bee.shared.i18n.LocalizableConstants;
@@ -45,7 +47,8 @@ import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.io.Paths;
 import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogUtils;
-import com.butent.bee.shared.modules.commons.CommonsConstants;
+import com.butent.bee.shared.modules.transport.TransportConstants.CargoRequestStatus;
+import com.butent.bee.shared.modules.transport.TransportConstants.TranspRegStatus;
 import com.butent.bee.shared.time.TimeUtils;
 import com.butent.bee.shared.ui.UiConstants;
 import com.butent.bee.shared.ui.UserInterface;
@@ -545,15 +548,15 @@ public class TransportSelfService extends LoginServlet {
         qField(constants.trRequestCargoPalettes(), COL_CARGO_PALETTES, false),
         qField(constants.trRequestCargoValue(), COL_CARGO_VALUE, false),
         qSelector(constants.trRequestCargoCurrency(), COL_CARGO_VALUE_CURRENCY,
-            CommonsConstants.VIEW_CURRENCIES, CommonsConstants.COL_CURRENCY_NAME, false, true));
+            VIEW_CURRENCIES, COL_CURRENCY_NAME, false, true));
 
     fieldPanel.append(qGroup(constants.trRequestCargoInfo(), cargoFields));
 
     Tbody additionalFields = tbody().append(
         qSelector(constants.trRequestResponsibleManager(), COL_QUERY_MANAGER,
-            CommonsConstants.VIEW_USERS, null,
-            Order.ascending(CommonsConstants.COL_LAST_NAME, CommonsConstants.COL_FIRST_NAME),
-            Lists.newArrayList(CommonsConstants.COL_FIRST_NAME, CommonsConstants.COL_LAST_NAME),
+            VIEW_USERS, null,
+            Order.ascending(COL_LAST_NAME, COL_FIRST_NAME),
+            Lists.newArrayList(COL_FIRST_NAME, COL_LAST_NAME),
             false, true),
         qArea(constants.trRequestNotes(), COL_QUERY_NOTES));
 
@@ -569,10 +572,10 @@ public class TransportSelfService extends LoginServlet {
                 button().typeSubmit().addClass(Q_STYLE_PREFIX + "submit")
                     .text(constants.trRequestActionSubmit()))));
 
-    Datalist cities = proxy.getDataList(CommonsConstants.TBL_CITIES,
-        CommonsConstants.COL_CITY_NAME);
+    Datalist cities = proxy.getDataList(TBL_CITIES, COL_CITY_NAME);
+
     if (cities != null) {
-      String listId = CommonsConstants.COL_CITY + ID_SUFFIX_LIST;
+      String listId = COL_CITY + ID_SUFFIX_LIST;
       cities.id(listId);
       doc.getBody().append(cities);
 
@@ -629,8 +632,8 @@ public class TransportSelfService extends LoginServlet {
                 button().typeSubmit().addClass(REG_STYLE_PREFIX + "submit")
                     .text(constants.trRegistrationActionSubmit()))));
 
-    Datalist cities = proxy.getDataList(CommonsConstants.TBL_CITIES,
-        CommonsConstants.COL_CITY_NAME);
+    Datalist cities = proxy.getDataList(TBL_CITIES, COL_CITY_NAME);
+
     if (cities != null) {
       String listId = COL_REGISTRATION_CITY + ID_SUFFIX_LIST;
       cities.id(listId);
@@ -642,8 +645,8 @@ public class TransportSelfService extends LoginServlet {
       }
     }
 
-    Datalist countries = proxy.getDataList(CommonsConstants.TBL_COUNTRIES,
-        CommonsConstants.COL_COUNTRY_NAME);
+    Datalist countries = proxy.getDataList(TBL_COUNTRIES, COL_COUNTRY_NAME);
+
     if (countries != null) {
       String listId = COL_REGISTRATION_COUNTRY + ID_SUFFIX_LIST;
       countries.id(listId);

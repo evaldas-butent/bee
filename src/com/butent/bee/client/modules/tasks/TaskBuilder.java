@@ -5,7 +5,7 @@ import com.google.common.collect.Sets;
 import com.google.gwt.event.shared.HasHandlers;
 import com.google.gwt.user.client.ui.Widget;
 
-import static com.butent.bee.shared.modules.tasks.TasksConstants.*;
+import static com.butent.bee.shared.modules.tasks.TaskConstants.*;
 
 import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.Callback;
@@ -14,14 +14,14 @@ import com.butent.bee.client.communication.ResponseCallback;
 import com.butent.bee.client.composite.FileCollector;
 import com.butent.bee.client.data.Data;
 import com.butent.bee.client.data.Queries;
-import com.butent.bee.client.ui.AbstractFormInterceptor;
 import com.butent.bee.client.ui.IdentifiableWidget;
-import com.butent.bee.client.ui.FormFactory.FormInterceptor;
 import com.butent.bee.client.ui.FormFactory.WidgetDescriptionCallback;
 import com.butent.bee.client.utils.FileUtils;
 import com.butent.bee.client.utils.NewFileInfo;
 import com.butent.bee.client.view.add.ReadyForInsertEvent;
 import com.butent.bee.client.view.edit.Editor;
+import com.butent.bee.client.view.form.interceptor.AbstractFormInterceptor;
+import com.butent.bee.client.view.form.interceptor.FormInterceptor;
 import com.butent.bee.client.widget.InputDate;
 import com.butent.bee.client.widget.InputTime;
 import com.butent.bee.shared.Assert;
@@ -35,7 +35,8 @@ import com.butent.bee.shared.data.IsRow;
 import com.butent.bee.shared.data.event.DataChangeEvent;
 import com.butent.bee.shared.data.value.BooleanValue;
 import com.butent.bee.shared.i18n.Localized;
-import com.butent.bee.shared.modules.tasks.TasksConstants.TaskEvent;
+import com.butent.bee.shared.modules.administration.AdministrationConstants;
+import com.butent.bee.shared.modules.tasks.TaskConstants.TaskEvent;
 import com.butent.bee.shared.time.DateTime;
 import com.butent.bee.shared.time.HasDateValue;
 import com.butent.bee.shared.time.JustDate;
@@ -175,8 +176,8 @@ class TaskBuilder extends AbstractFormInterceptor {
         } else if (!response.hasResponse()) {
           event.getCallback().onFailure("No tasks created");
           
-        } else if (response.hasResponse(String.class)) {
-          List<Long> tasks = DataUtils.parseIdList(response.getResponseAsString());
+        } else if (response.hasResponse(BeeRowSet.class)) {
+          BeeRowSet tasks = BeeRowSet.restore(response.getResponseAsString());
           if (tasks.isEmpty()) {
             event.getCallback().onFailure("No tasks created");
             return;
@@ -189,12 +190,14 @@ class TaskBuilder extends AbstractFormInterceptor {
           clearValue(NAME_REMINDER_DATE);
           clearValue(NAME_REMINDER_TIME);
 
-          createFiles(tasks);
+          createFiles(tasks.getRowIds());
 
           event.getCallback().onSuccess(null);
           
-          String message = Localized.getMessages().crmCreatedNewTasks(tasks.size());
+          String message = Localized.getMessages().crmCreatedNewTasks(tasks.getNumberOfRows());
           BeeKeeper.getScreen().notifyInfo(message);
+          
+          event.getCallback().onSuccess(tasks.getRow(0));
           
           DataChangeEvent.fireRefresh(BeeKeeper.getBus(), VIEW_TASKS);
 
@@ -219,7 +222,7 @@ class TaskBuilder extends AbstractFormInterceptor {
       List<NewFileInfo> files = Lists.newArrayList(((FileCollector) widget).getFiles());
 
       final List<BeeColumn> columns = Data.getColumns(VIEW_TASK_FILES,
-          Lists.newArrayList(COL_TASK, COL_FILE, COL_CAPTION));
+          Lists.newArrayList(COL_TASK, AdministrationConstants.COL_FILE, COL_CAPTION));
 
       for (final NewFileInfo fileInfo : files) {
         FileUtils.uploadFile(fileInfo, new Callback<Long>() {

@@ -6,7 +6,7 @@ import com.butent.bee.shared.ui.HasLocalizedCaption;
 import com.butent.bee.shared.utils.BeeUtils;
 
 public enum RegulatedWidget implements HasLocalizedCaption {
-  
+
   NEWS {
     @Override
     public String getCaption(LocalizableConstants constants) {
@@ -30,10 +30,21 @@ public enum RegulatedWidget implements HasLocalizedCaption {
     public String getCaption(LocalizableConstants constants) {
       return "Admin";
     }
+  },
+  AUDIT {
+    @Override
+    public String getCaption(LocalizableConstants constants) {
+      return constants.actionAudit();
+    }
+  },
+  DOCUMENT_TREE {
+    @Override
+    public String getCaption(LocalizableConstants constants) {
+      return constants.documentTree();
+    }
   };
-
   private final ModuleAndSub moduleAndSub;
-  
+
   private RegulatedWidget() {
     this(null);
   }
@@ -50,7 +61,7 @@ public enum RegulatedWidget implements HasLocalizedCaption {
   public ModuleAndSub getModuleAndSub() {
     return moduleAndSub;
   }
-  
+
   public String getName() {
     return BeeUtils.proper(name());
   }

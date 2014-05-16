@@ -14,10 +14,11 @@ import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.IsRow;
 import com.butent.bee.shared.data.SimpleRowSet;
 import com.butent.bee.shared.i18n.Localized;
+import com.butent.bee.shared.modules.administration.AdministrationConstants;
 import com.butent.bee.shared.modules.calendar.CalendarConstants;
-import com.butent.bee.shared.modules.commons.CommonsConstants;
-import com.butent.bee.shared.modules.documents.DocumentsConstants;
-import com.butent.bee.shared.modules.tasks.TasksConstants;
+import com.butent.bee.shared.modules.classifiers.ClassifierConstants;
+import com.butent.bee.shared.modules.documents.DocumentConstants;
+import com.butent.bee.shared.modules.tasks.TaskConstants;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.Codec;
 
@@ -130,8 +131,8 @@ public final class DiscussionsUtils {
       if (BeeUtils.unbox(commentId) == BeeUtils.unbox(BeeUtils.toLongOrNull(row[marksStats
           .getColumnIndex(COL_COMMENT)]))) {
         String text = BeeUtils.joinWords(
-            row[marksStats.getColumnIndex(CommonsConstants.COL_FIRST_NAME)],
-            row[marksStats.getColumnIndex(CommonsConstants.COL_LAST_NAME)]);
+            row[marksStats.getColumnIndex(ClassifierConstants.COL_FIRST_NAME)],
+            row[marksStats.getColumnIndex(ClassifierConstants.COL_LAST_NAME)]);
         text += BeeConst.STRING_COMMA + BeeConst.STRING_SPACE
             + Localized.maybeTranslate(row[marksStats.getColumnIndex(COL_MARK_NAME)]);
 
@@ -192,7 +193,7 @@ public final class DiscussionsUtils {
               || (markId == BeeUtils.unbox(BeeUtils.toLongOrNull(row[marksStats
                   .getColumnIndex(COL_MARK)]))
                   && (userId == BeeUtils.unbox(BeeUtils.toLongOrNull(row[marksStats
-                      .getColumnIndex(CommonsConstants.COL_USER)])))
+                      .getColumnIndex(AdministrationConstants.COL_USER)])))
                   && (BeeUtils.unbox(commentId)
                 == BeeUtils.unbox(BeeUtils
                   .toLongOrNull(row[marksStats.getColumnIndex(COL_COMMENT)]))));
@@ -213,7 +214,7 @@ public final class DiscussionsUtils {
           result
               || ((BeeUtils.unbox(userId)
                 == BeeUtils.unbox(BeeUtils.toLongOrNull(row[marksStats
-                  .getColumnIndex(CommonsConstants.COL_USER)])))
+                  .getColumnIndex(AdministrationConstants.COL_USER)])))
               && (BeeUtils.unbox(commentId) == BeeUtils.unbox(BeeUtils.toLongOrNull(row[marksStats
                   .getColumnIndex(COL_COMMENT)]))));
     }
@@ -240,11 +241,11 @@ public final class DiscussionsUtils {
 
   private static BiMap<String, String> ensureDiscussionPropertyToRelation() {
     if (discussionPropertyToRelation.isEmpty()) {
-      discussionPropertyToRelation.put(PROP_COMPANIES, CommonsConstants.COL_COMPANY);
-      discussionPropertyToRelation.put(PROP_PERSONS, CommonsConstants.COL_PERSON);
+      discussionPropertyToRelation.put(PROP_COMPANIES, ClassifierConstants.COL_COMPANY);
+      discussionPropertyToRelation.put(PROP_PERSONS, ClassifierConstants.COL_PERSON);
       discussionPropertyToRelation.put(PROP_APPOINTMENTS, CalendarConstants.COL_APPOINTMENT);
-      discussionPropertyToRelation.put(PROP_TASKS, TasksConstants.COL_TASK);
-      discussionPropertyToRelation.put(PROP_DOCUMENTS, DocumentsConstants.COL_DOCUMENT);
+      discussionPropertyToRelation.put(PROP_TASKS, TaskConstants.COL_TASK);
+      discussionPropertyToRelation.put(PROP_DOCUMENTS, DocumentConstants.COL_DOCUMENT);
     }
 
     return discussionPropertyToRelation;

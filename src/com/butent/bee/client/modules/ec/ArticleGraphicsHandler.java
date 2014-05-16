@@ -85,12 +85,12 @@ class ArticleGraphicsHandler extends AbstractGridInterceptor {
   }
 
   @Override
-  public boolean onLoad(GridDescription gridDescription) {
+  public boolean initDescription(GridDescription gridDescription) {
     if (!Features.supportsFileApi() && gridDescription != null) {
       gridDescription.getDisabledActions().add(Action.ADD);
     }
 
-    return super.onLoad(gridDescription);
+    return super.initDescription(gridDescription);
   }
 
   private FileCollector ensureCollector() {

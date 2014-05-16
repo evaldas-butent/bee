@@ -8,8 +8,10 @@ import com.google.common.collect.Multimap;
 import com.google.common.collect.Sets;
 import com.google.common.eventbus.Subscribe;
 
+import static com.butent.bee.shared.modules.classifiers.ClassifierConstants.*;
 import static com.butent.bee.shared.modules.discussions.DiscussionsConstants.*;
 
+import com.butent.bee.server.Invocation;
 import com.butent.bee.server.data.DataEditorBean;
 import com.butent.bee.server.data.DataEvent.ViewQueryEvent;
 import com.butent.bee.server.data.DataEventHandler;
@@ -21,7 +23,7 @@ import com.butent.bee.server.modules.BeeModule;
 import com.butent.bee.server.modules.ParamHolderBean;
 import com.butent.bee.server.modules.ParameterEvent;
 import com.butent.bee.server.modules.ParameterEventHandler;
-import com.butent.bee.server.modules.commons.ExtensionIcons;
+import com.butent.bee.server.modules.administration.ExtensionIcons;
 import com.butent.bee.server.news.NewsBean;
 import com.butent.bee.server.sql.IsCondition;
 import com.butent.bee.server.sql.SqlInsert;
@@ -45,7 +47,7 @@ import com.butent.bee.shared.io.StoredFile;
 import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogUtils;
 import com.butent.bee.shared.modules.BeeParameter;
-import com.butent.bee.shared.modules.commons.CommonsConstants;
+import com.butent.bee.shared.modules.administration.AdministrationConstants;
 import com.butent.bee.shared.modules.discussions.DiscussionsConstants.DiscussionEvent;
 import com.butent.bee.shared.modules.discussions.DiscussionsConstants.DiscussionStatus;
 import com.butent.bee.shared.modules.discussions.DiscussionsUtils;
@@ -172,7 +174,11 @@ public class DiscussionsModuleBean implements BeeModule {
       @Subscribe
       public void initTimers(ParameterEvent event) {
         if (BeeUtils.same(event.getParameter(), PRM_DISCUSS_INACTIVE_TIME_IN_DAYS)) {
-          initTimer();
+          DiscussionsModuleBean bean = Invocation.locateRemoteBean(DiscussionsModuleBean.class);
+
+          if (bean != null) {
+            bean.initTimer();
+          }
         }
       }
     });
@@ -202,7 +208,7 @@ public class DiscussionsModuleBean implements BeeModule {
                 .addFrom(TBL_DISCUSSIONS_USERS);
 
             IsCondition usersWhere =
-                SqlUtils.equals(TBL_DISCUSSIONS_USERS, CommonsConstants.COL_USER, usr
+                SqlUtils.equals(TBL_DISCUSSIONS_USERS, AdministrationConstants.COL_USER, usr
                     .getCurrentUserId());
 
             discussUsers.setWhere(usersWhere);
@@ -327,6 +333,33 @@ public class DiscussionsModuleBean implements BeeModule {
     // news.registerUsageQueryProvider(Feed.ANNOUNCEMENTS, new AnnouncementsUsageQueryProvider());
   }
 
+  public void initTimer() {
+    Timer discussTimer = null;
+
+    for (Timer timer : timerService.getTimers()) {
+      if (Objects.equal(timer.getInfo(), PRM_DISCUSS_INACTIVE_TIME_IN_DAYS)) {
+        discussTimer = timer;
+        break;
+      }
+    }
+    if (discussTimer != null) {
+      discussTimer.cancel();
+    }
+    Integer days = prm.getInteger(PRM_DISCUSS_INACTIVE_TIME_IN_DAYS);
+
+    if (BeeUtils.isPositive(days)) {
+      discussTimer = timerService.createIntervalTimer(DEFAUT_DISCCUSS_TIMER_TIMEOUT,
+          DEFAUT_DISCCUSS_TIMER_TIMEOUT, new TimerConfig(PRM_DISCUSS_INACTIVE_TIME_IN_DAYS, false));
+
+      logger.info("Created DISCUSSION refresh timer starting at", discussTimer.getNextTimeout());
+    } else {
+      if (discussTimer != null) {
+        logger.info("Removed DISCUSSION timer");
+      }
+    }
+
+  }
+
   private void addDiscussionProperties(BeeRow row, List<BeeColumn> columns,
       Collection<Long> discussionUsers, Collection<Long> discussionMarks, Long commentId) {
     long discussionId = row.getId();
@@ -398,7 +431,8 @@ public class DiscussionsModuleBean implements BeeModule {
       String relation = DiscussionsUtils.translateDiscussionPropertyToRelation(entry.getKey());
 
       if (BeeUtils.allNotEmpty(relation, entry.getValue())) {
-        children.add(RowChildren.create(CommonsConstants.TBL_RELATIONS, COL_DISCUSSION, null,
+        children.add(RowChildren.create(AdministrationConstants.TBL_RELATIONS, COL_DISCUSSION,
+            null,
             relation, entry.getValue()));
       }
     }
@@ -415,7 +449,7 @@ public class DiscussionsModuleBean implements BeeModule {
 
     SqlUpdate update = new SqlUpdate(TBL_DISCUSSIONS_USERS).addConstant(COL_MEMBER, isMember)
         .setWhere(
-            SqlUtils.and(SqlUtils.equals(TBL_DISCUSSIONS_USERS, CommonsConstants.COL_USER,
+            SqlUtils.and(SqlUtils.equals(TBL_DISCUSSIONS_USERS, AdministrationConstants.COL_USER,
                 userId), SqlUtils.equals(TBL_DISCUSSIONS_USERS, COL_DISCUSSION, discussionId)));
 
     if (time != null) {
@@ -428,7 +462,7 @@ public class DiscussionsModuleBean implements BeeModule {
 
       SqlInsert insert = new SqlInsert(TBL_DISCUSSIONS_USERS)
           .addConstant(COL_DISCUSSION, discussionId)
-          .addConstant(CommonsConstants.COL_USER, userId)
+          .addConstant(AdministrationConstants.COL_USER, userId)
           .addConstant(COL_MEMBER, isMember);
 
       if (time != null) {
@@ -743,7 +777,7 @@ public class DiscussionsModuleBean implements BeeModule {
         new SqlInsert(TBL_DISCUSSIONS_COMMENTS_MARKS).addConstant(COL_DISCUSSION, discussionId)
             .addConstant(COL_COMMENT, commentId)
             .addConstant(COL_MARK, markId)
-            .addConstant(CommonsConstants.COL_USER, userId);
+            .addConstant(AdministrationConstants.COL_USER, userId);
 
     return qs.insertDataWithResponse(insert);
   }
@@ -781,13 +815,14 @@ public class DiscussionsModuleBean implements BeeModule {
         .addField(TBL_DISCUSSIONS, COL_SUBJECT, COL_SUBJECT)
         .addField(TBL_DISCUSSIONS, COL_IMPORTANT, COL_IMPORTANT)
         .addField(TBL_DISCUSSIONS, COL_DESCRIPTION, COL_DESCRIPTION)
-        .addField(CommonsConstants.TBL_PERSONS, CommonsConstants.COL_FIRST_NAME,
-            CommonsConstants.COL_FIRST_NAME)
-        .addField(CommonsConstants.TBL_PERSONS, CommonsConstants.COL_LAST_NAME,
-            CommonsConstants.COL_LAST_NAME)
-        .addField(CommonsConstants.TBL_PERSONS, CommonsConstants.COL_PHOTO,
-            CommonsConstants.COL_PHOTO)
-        .addCount(TBL_DISCUSSIONS_FILES, COL_FILE, COL_FILE)
+        .addField(TBL_PERSONS, COL_FIRST_NAME,
+            COL_FIRST_NAME)
+        .addField(TBL_PERSONS, COL_LAST_NAME,
+            COL_LAST_NAME)
+        .addField(TBL_PERSONS, COL_PHOTO,
+            COL_PHOTO)
+        .addCount(TBL_DISCUSSIONS_FILES, AdministrationConstants.COL_FILE,
+            AdministrationConstants.COL_FILE)
         .addExpr(
             SqlUtils.sqlIf(
                 SqlUtils.isNull(TBL_DISCUSSIONS_USAGE, NewsConstants.COL_USAGE_ACCESS)
@@ -796,20 +831,20 @@ public class DiscussionsModuleBean implements BeeModule {
         .addFrom(TBL_DISCUSSIONS)
         .addFromInner(TBL_ADS_TOPICS, sys.joinTables(TBL_ADS_TOPICS, TBL_DISCUSSIONS, COL_TOPIC))
         .addFromLeft(TBL_DISCUSSIONS_USAGE, SqlUtils.and(SqlUtils.equals(TBL_DISCUSSIONS_USAGE,
-                        COL_DISCUSSION, SqlUtils.field(TBL_DISCUSSIONS, sys
-                            .getIdName(TBL_DISCUSSIONS))),
-                    SqlUtils.equals(TBL_DISCUSSIONS_USAGE, CommonsConstants.COL_USER, usr
-                        .getCurrentUserId())))
-        .addFromLeft(CommonsConstants.TBL_USERS,
-            sys.joinTables(CommonsConstants.TBL_USERS, TBL_DISCUSSIONS, COL_OWNER))
+            COL_DISCUSSION, SqlUtils.field(TBL_DISCUSSIONS, sys
+                .getIdName(TBL_DISCUSSIONS))),
+            SqlUtils.equals(TBL_DISCUSSIONS_USAGE, AdministrationConstants.COL_USER, usr
+                .getCurrentUserId())))
+        .addFromLeft(AdministrationConstants.TBL_USERS,
+            sys.joinTables(AdministrationConstants.TBL_USERS, TBL_DISCUSSIONS, COL_OWNER))
         .addFromLeft(
-            CommonsConstants.TBL_COMPANY_PERSONS,
-            sys.joinTables(CommonsConstants.TBL_COMPANY_PERSONS, CommonsConstants.TBL_USERS,
-                CommonsConstants.COL_COMPANY_PERSON))
+            TBL_COMPANY_PERSONS,
+            sys.joinTables(TBL_COMPANY_PERSONS, AdministrationConstants.TBL_USERS,
+                COL_COMPANY_PERSON))
         .addFromLeft(
-            CommonsConstants.TBL_PERSONS,
-            sys.joinTables(CommonsConstants.TBL_PERSONS, CommonsConstants.TBL_COMPANY_PERSONS,
-                CommonsConstants.COL_PERSON))
+            TBL_PERSONS,
+            sys.joinTables(TBL_PERSONS, TBL_COMPANY_PERSONS,
+                COL_PERSON))
         .addFromLeft(TBL_DISCUSSIONS_FILES,
             sys.joinTables(TBL_DISCUSSIONS, TBL_DISCUSSIONS_FILES, COL_DISCUSSION))
         .addFromLeft(TBL_DISCUSSIONS_USERS,
@@ -839,7 +874,7 @@ public class DiscussionsModuleBean implements BeeModule {
                     )
                 ),
             SqlUtils.or(SqlUtils.or(SqlUtils.and(SqlUtils.equals(TBL_DISCUSSIONS_USERS,
-                CommonsConstants.COL_USER,
+                AdministrationConstants.COL_USER,
                 usr.getCurrentUserId()), SqlUtils.notNull(TBL_DISCUSSIONS_USERS, COL_MEMBER)),
                 SqlUtils.equals(TBL_DISCUSSIONS, COL_OWNER, usr.getCurrentUserId())
                 ),
@@ -851,8 +886,8 @@ public class DiscussionsModuleBean implements BeeModule {
         .addGroup(TBL_DISCUSSIONS, sys.getIdName(TBL_DISCUSSIONS))
         .addGroup(TBL_ADS_TOPICS, COL_NAME, COL_ORDINAL)
         .addGroup(TBL_DISCUSSIONS_USAGE, NewsConstants.COL_USAGE_ACCESS)
-        .addGroup(CommonsConstants.TBL_PERSONS, CommonsConstants.COL_FIRST_NAME,
-            CommonsConstants.COL_LAST_NAME, CommonsConstants.COL_PHOTO);
+        .addGroup(TBL_PERSONS, COL_FIRST_NAME,
+            COL_LAST_NAME, COL_PHOTO);
     // logger.info(select.getQuery());
     SimpleRowSet rs = qs.getData(select);
 
@@ -860,7 +895,7 @@ public class DiscussionsModuleBean implements BeeModule {
       BeeRowSet topicRows =
           qs.getViewData(VIEW_ADS_TOPICS, Filter.and(Filter.compareId(birthTopic), Filter
               .isNot(Filter.isNull(COL_VISIBLE))));
-      
+
       if (!topicRows.isEmpty()) {
         BeeRow tRow = topicRows.getRow(topicRows.getNumberOfRows() - 1);
         Integer ordinal =
@@ -872,7 +907,7 @@ public class DiscussionsModuleBean implements BeeModule {
         topicData[rs.getColumnIndex(COL_ORDINAL)] =
             tRow.getString(topicRows.getColumnIndex(COL_ORDINAL));
         topicData[rs.getColumnIndex(ALS_BIRTHDAY)] = BeeUtils.toString(true);
-        
+
         int placeId = rs.getNumberOfColumns() - 1;
         for (int i = 0; i < rs.getNumberOfRows(); i++) {
           Integer ord = BeeUtils.toIntOrNull(rs.getValue(i, rs.getColumnIndex(COL_ORDINAL)));
@@ -916,37 +951,37 @@ public class DiscussionsModuleBean implements BeeModule {
     }
 
     SqlSelect select = new SqlSelect()
-        .addField(CommonsConstants.TBL_PERSONS, CommonsConstants.COL_FIRST_NAME,
-            CommonsConstants.COL_FIRST_NAME)
-        .addField(CommonsConstants.TBL_PERSONS, CommonsConstants.COL_LAST_NAME,
-            CommonsConstants.COL_LAST_NAME)
-        .addField(CommonsConstants.TBL_PERSONS, CommonsConstants.COL_DATE_OF_BIRTH,
-            CommonsConstants.COL_DATE_OF_BIRTH)
-        .addFrom(CommonsConstants.TBL_PERSONS)
+        .addField(TBL_PERSONS, COL_FIRST_NAME,
+            COL_FIRST_NAME)
+        .addField(TBL_PERSONS, COL_LAST_NAME,
+            COL_LAST_NAME)
+        .addField(TBL_PERSONS, COL_DATE_OF_BIRTH,
+            COL_DATE_OF_BIRTH)
+        .addFrom(TBL_PERSONS)
         .setWhere(SqlUtils.and(
-            SqlUtils.inList(CommonsConstants.TBL_PERSONS, sys
-                .getIdName(CommonsConstants.TBL_PERSONS), activeUsers),
-            SqlUtils.notNull(CommonsConstants.TBL_PERSONS, CommonsConstants.COL_DATE_OF_BIRTH)))
-        .addOrder(CommonsConstants.TBL_PERSONS, CommonsConstants.COL_DATE_OF_BIRTH);
+            SqlUtils.inList(TBL_PERSONS, sys
+                .getIdName(TBL_PERSONS), activeUsers),
+            SqlUtils.notNull(TBL_PERSONS, COL_DATE_OF_BIRTH)))
+        .addOrder(TBL_PERSONS, COL_DATE_OF_BIRTH);
 
     SimpleRowSet up = qs.getData(select);
     SimpleRowSet birthdays =
-        new SimpleRowSet(new String[] {COL_NAME, CommonsConstants.COL_DATE_OF_BIRTH});
+        new SimpleRowSet(new String[] {COL_NAME, COL_DATE_OF_BIRTH});
 
     for (String[] upRow : up.getRows()) {
-      if (!BeeUtils.isLong(upRow[up.getColumnIndex(CommonsConstants.COL_DATE_OF_BIRTH)])) {
+      if (!BeeUtils.isLong(upRow[up.getColumnIndex(COL_DATE_OF_BIRTH)])) {
         continue;
       }
 
       JustDate date =
           new JustDate(BeeUtils
-              .toLong(upRow[up.getColumnIndex(CommonsConstants.COL_DATE_OF_BIRTH)]));
+              .toLong(upRow[up.getColumnIndex(COL_DATE_OF_BIRTH)]));
 
       if (availableDays.contains(Integer.valueOf(date.getDoy()))) {
         birthdays.addRow(new String[] {
-            BeeUtils.joinWords(upRow[up.getColumnIndex(CommonsConstants.COL_FIRST_NAME)],
-                upRow[up.getColumnIndex(CommonsConstants.COL_LAST_NAME)]),
-            upRow[up.getColumnIndex(CommonsConstants.COL_DATE_OF_BIRTH)]
+            BeeUtils.joinWords(upRow[up.getColumnIndex(COL_FIRST_NAME)],
+                upRow[up.getColumnIndex(COL_LAST_NAME)]),
+            upRow[up.getColumnIndex(COL_DATE_OF_BIRTH)]
         });
       }
 
@@ -985,10 +1020,10 @@ public class DiscussionsModuleBean implements BeeModule {
 
     for (BeeRow row : rowSet.getRows()) {
       StoredFile sf =
-          new StoredFile(DataUtils.getLong(rowSet, row, COL_FILE), DataUtils.getString(rowSet, row,
-              COL_FILE_NAME), DataUtils.getLong(rowSet, row,
-              COL_FILE_SIZE), DataUtils.getString(rowSet, row,
-              COL_FILE_TYPE));
+          new StoredFile(DataUtils.getLong(rowSet, row, AdministrationConstants.COL_FILE),
+              DataUtils.getString(rowSet, row, COL_FILE_NAME),
+              DataUtils.getLong(rowSet, row, COL_FILE_SIZE),
+              DataUtils.getString(rowSet, row, COL_FILE_TYPE));
 
       Long commentId = DataUtils.getLong(rowSet, row, COL_COMMENT);
 
@@ -1066,25 +1101,25 @@ public class DiscussionsModuleBean implements BeeModule {
         new SqlSelect()
             .addField(TBL_DISCUSSIONS_COMMENTS, COL_DISCUSSION, COL_DISCUSSION)
             .addField(TBL_DISCUSSIONS_COMMENTS, COL_PUBLISH_TIME, COL_PUBLISH_TIME)
-            .addField(CommonsConstants.TBL_PERSONS, CommonsConstants.COL_FIRST_NAME,
-                CommonsConstants.COL_FIRST_NAME)
-            .addField(CommonsConstants.TBL_PERSONS, CommonsConstants.COL_LAST_NAME,
-                CommonsConstants.COL_LAST_NAME)
+            .addField(TBL_PERSONS, COL_FIRST_NAME,
+                COL_FIRST_NAME)
+            .addField(TBL_PERSONS, COL_LAST_NAME,
+                COL_LAST_NAME)
             .addFrom(TBL_DISCUSSIONS)
             .addFromLeft(TBL_DISCUSSIONS_COMMENTS,
                 sys.joinTables(TBL_DISCUSSIONS, TBL_DISCUSSIONS_COMMENTS, COL_DISCUSSION))
             .addFromLeft(
-                CommonsConstants.TBL_USERS,
-                sys.joinTables(CommonsConstants.TBL_USERS, TBL_DISCUSSIONS_COMMENTS,
+                AdministrationConstants.TBL_USERS,
+                sys.joinTables(AdministrationConstants.TBL_USERS, TBL_DISCUSSIONS_COMMENTS,
                     COL_PUBLISHER))
             .addFromLeft(
-                CommonsConstants.TBL_COMPANY_PERSONS,
-                sys.joinTables(CommonsConstants.TBL_COMPANY_PERSONS, CommonsConstants.TBL_USERS,
-                    CommonsConstants.COL_COMPANY_PERSON))
+                TBL_COMPANY_PERSONS,
+                sys.joinTables(TBL_COMPANY_PERSONS, AdministrationConstants.TBL_USERS,
+                    COL_COMPANY_PERSON))
             .addFromLeft(
-                CommonsConstants.TBL_PERSONS,
-                sys.joinTables(CommonsConstants.TBL_PERSONS, CommonsConstants.TBL_COMPANY_PERSONS,
-                    CommonsConstants.COL_PERSON))
+                TBL_PERSONS,
+                sys.joinTables(TBL_PERSONS, TBL_COMPANY_PERSONS,
+                    COL_PERSON))
             .setWhere(
                 SqlUtils
                     .and(SqlUtils.notNull(TBL_DISCUSSIONS_COMMENTS, sys
@@ -1105,8 +1140,8 @@ public class DiscussionsModuleBean implements BeeModule {
           BeeUtils.joinWords(TimeUtils.renderDateTime(BeeUtils.unbox(BeeUtils.toLong(row[rs
               .getColumnIndex(COL_PUBLISH_TIME)])))
               + ",", row[rs
-              .getColumnIndex(CommonsConstants.COL_FIRST_NAME)], row[rs
-              .getColumnIndex(CommonsConstants.COL_LAST_NAME)]));
+              .getColumnIndex(COL_FIRST_NAME)], row[rs
+              .getColumnIndex(COL_LAST_NAME)]));
     }
 
     return ls;
@@ -1137,23 +1172,23 @@ public class DiscussionsModuleBean implements BeeModule {
         .addField(TBL_DISCUSSIONS_COMMENTS_MARKS, COL_DISCUSSION, COL_DISCUSSION)
         .addField(TBL_DISCUSSIONS_COMMENTS_MARKS, COL_COMMENT, COL_COMMENT)
         .addField(TBL_DISCUSSIONS_COMMENTS_MARKS, COL_MARK, COL_MARK)
-        .addField(TBL_DISCUSSIONS_COMMENTS_MARKS, CommonsConstants.COL_USER,
-            CommonsConstants.COL_USER)
-        .addField(CommonsConstants.TBL_PERSONS, CommonsConstants.COL_FIRST_NAME,
-            CommonsConstants.COL_FIRST_NAME)
-        .addField(CommonsConstants.TBL_PERSONS, CommonsConstants.COL_LAST_NAME,
-            CommonsConstants.COL_LAST_NAME)
+        .addField(TBL_DISCUSSIONS_COMMENTS_MARKS, AdministrationConstants.COL_USER,
+            AdministrationConstants.COL_USER)
+        .addField(TBL_PERSONS, COL_FIRST_NAME,
+            COL_FIRST_NAME)
+        .addField(TBL_PERSONS, COL_LAST_NAME,
+            COL_LAST_NAME)
         .addFrom(TBL_DISCUSSIONS_COMMENTS_MARKS)
-        .addFromLeft(CommonsConstants.TBL_USERS,
-            sys.joinTables(CommonsConstants.TBL_USERS, TBL_DISCUSSIONS_COMMENTS_MARKS,
-                CommonsConstants.COL_USER))
+        .addFromLeft(AdministrationConstants.TBL_USERS,
+            sys.joinTables(AdministrationConstants.TBL_USERS, TBL_DISCUSSIONS_COMMENTS_MARKS,
+                AdministrationConstants.COL_USER))
         .addField(TBL_COMMENTS_MARK_TYPES, COL_MARK_NAME, COL_MARK_NAME)
-        .addFromLeft(CommonsConstants.TBL_COMPANY_PERSONS,
-            sys.joinTables(CommonsConstants.TBL_COMPANY_PERSONS, CommonsConstants.TBL_USERS,
-                CommonsConstants.COL_COMPANY_PERSON))
-        .addFromLeft(CommonsConstants.TBL_PERSONS,
-            sys.joinTables(CommonsConstants.TBL_PERSONS, CommonsConstants.TBL_COMPANY_PERSONS,
-                CommonsConstants.COL_PERSON))
+        .addFromLeft(TBL_COMPANY_PERSONS,
+            sys.joinTables(TBL_COMPANY_PERSONS, AdministrationConstants.TBL_USERS,
+                COL_COMPANY_PERSON))
+        .addFromLeft(TBL_PERSONS,
+            sys.joinTables(TBL_PERSONS, TBL_COMPANY_PERSONS,
+                COL_PERSON))
         .addFromLeft(TBL_COMMENTS_MARK_TYPES,
             sys.joinTables(TBL_COMMENTS_MARK_TYPES, TBL_DISCUSSIONS_COMMENTS_MARKS, COL_MARK));
 
@@ -1179,7 +1214,7 @@ public class DiscussionsModuleBean implements BeeModule {
     }
 
     SqlSelect query = new SqlSelect()
-        .addFields(TBL_DISCUSSIONS_USERS, CommonsConstants.COL_USER)
+        .addFields(TBL_DISCUSSIONS_USERS, AdministrationConstants.COL_USER)
         .addFrom(TBL_DISCUSSIONS_USERS)
         .setWhere(
             SqlUtils.and(SqlUtils.equals(TBL_DISCUSSIONS_USERS, COL_DISCUSSION, discussionId),
@@ -1193,7 +1228,7 @@ public class DiscussionsModuleBean implements BeeModule {
 
     for (String relation : DiscussionsUtils.getRelations()) {
       Long[] ids =
-          qs.getRelatedValues(CommonsConstants.TBL_RELATIONS, COL_DISCUSSION, discussionId,
+          qs.getRelatedValues(AdministrationConstants.TBL_RELATIONS, COL_DISCUSSION, discussionId,
               relation);
 
       if (ids != null) {
@@ -1208,38 +1243,11 @@ public class DiscussionsModuleBean implements BeeModule {
     return res;
   }
 
-  private void initTimer() {
-    Timer discussTimer = null;
-
-    for (Timer timer : timerService.getTimers()) {
-      if (Objects.equal(timer.getInfo(), PRM_DISCUSS_INACTIVE_TIME_IN_DAYS)) {
-        discussTimer = timer;
-        break;
-      }
-    }
-    if (discussTimer != null) {
-      discussTimer.cancel();
-    }
-    Integer days = prm.getInteger(PRM_DISCUSS_INACTIVE_TIME_IN_DAYS);
-
-    if (BeeUtils.isPositive(days)) {
-      discussTimer = timerService.createIntervalTimer(DEFAUT_DISCCUSS_TIMER_TIMEOUT,
-          DEFAUT_DISCCUSS_TIMER_TIMEOUT, new TimerConfig(PRM_DISCUSS_INACTIVE_TIME_IN_DAYS, false));
-
-      logger.info("Created DISCUSSION refresh timer starting at", discussTimer.getNextTimeout());
-    } else {
-      if (discussTimer != null) {
-        logger.info("Removed DISCUSSION timer");
-      }
-    }
-
-  }
-
   private ResponseObject registerDiscussionVisit(long discussionId, long userId, long mills) {
     IsCondition where =
         SqlUtils.and(
             SqlUtils.equals(TBL_DISCUSSIONS_USERS, COL_DISCUSSION, discussionId,
-                CommonsConstants.COL_USER, userId), SqlUtils.equals(TBL_DISCUSSIONS_USERS,
+                AdministrationConstants.COL_USER, userId), SqlUtils.equals(TBL_DISCUSSIONS_USERS,
                 COL_MEMBER, new Integer(1)));
 
     return qs.updateDataWithResponse(new SqlUpdate(TBL_DISCUSSIONS_USERS).addConstant(
@@ -1256,7 +1264,7 @@ public class DiscussionsModuleBean implements BeeModule {
       String relation = DiscussionsUtils.translateDiscussionPropertyToRelation(property);
 
       if (!BeeUtils.isEmpty(relation)) {
-        children.add(RowChildren.create(CommonsConstants.TBL_RELATIONS, COL_DISCUSSION,
+        children.add(RowChildren.create(AdministrationConstants.TBL_RELATIONS, COL_DISCUSSION,
             discussionId, relation, row.getProperty(property)));
       }
     }
@@ -1285,7 +1293,7 @@ public class DiscussionsModuleBean implements BeeModule {
     for (Long user : delete) {
       IsCondition condition =
           SqlUtils.equals(TBL_DISCUSSIONS_USERS, COL_DISCUSSION, discussionId,
-              CommonsConstants.COL_USER, user);
+              AdministrationConstants.COL_USER, user);
       qs.updateData(new SqlUpdate(TBL_DISCUSSIONS_USERS).addConstant(COL_MEMBER, false).setWhere(
           condition));
     }

@@ -41,7 +41,7 @@ public final class SystemInfo {
 
   public static List<Property> getPackageInfo(Package p, boolean withName) {
     Assert.notNull(p);
-    List<Property> lst = new ArrayList<Property>();
+    List<Property> lst = new ArrayList<>();
 
     if (withName) {
       PropertyUtils.addProperty(lst, "Name", p.getName());
@@ -72,7 +72,7 @@ public final class SystemInfo {
   }
 
   public static List<ExtendedProperty> getPackagesInfo() {
-    List<ExtendedProperty> lst = new ArrayList<ExtendedProperty>();
+    List<ExtendedProperty> lst = new ArrayList<>();
 
     Package[] pArr = Package.getPackages();
     if (pArr != null) {
@@ -96,7 +96,7 @@ public final class SystemInfo {
 
   public static List<Property> getRuntimeInfo() {
     Runtime rt = Runtime.getRuntime();
-    List<Property> lst = new ArrayList<Property>();
+    List<Property> lst = new ArrayList<>();
 
     PropertyUtils.addProperties(lst, "Available Processors", rt.availableProcessors(),
         "Free Memory", rt.freeMemory(),
@@ -107,7 +107,7 @@ public final class SystemInfo {
   }
 
   public static List<ExtendedProperty> getSysInfo() {
-    List<ExtendedProperty> lst = new ArrayList<ExtendedProperty>();
+    List<ExtendedProperty> lst = new ArrayList<>();
 
     PropertyUtils.addExtended(lst, "Current Time Millis", System.currentTimeMillis());
     PropertyUtils.addExtended(lst, "Nano Time", System.nanoTime());
@@ -146,7 +146,7 @@ public final class SystemInfo {
   public static List<ExtendedProperty> getThreadGroupInfo(ThreadGroup tg,
       boolean recurse, boolean stack) {
     Assert.notNull(tg);
-    List<ExtendedProperty> lst = new ArrayList<ExtendedProperty>();
+    List<ExtendedProperty> lst = new ArrayList<>();
 
     PropertyUtils.addChildren(lst, "Thread Group",
         "Name", tg.getName(), "Parent", transformThreadGroup(tg.getParent()),
@@ -191,7 +191,7 @@ public final class SystemInfo {
 
   public static List<Property> getThreadInfo(Thread t) {
     Assert.notNull(t);
-    List<Property> lst = new ArrayList<Property>();
+    List<Property> lst = new ArrayList<>();
 
     PropertyUtils.addProperties(lst, "Id", t.getId(), "Name", t.getName(),
         "State", t.getState(), "Thread Group", transformThreadGroup(t.getThreadGroup()),
@@ -202,7 +202,7 @@ public final class SystemInfo {
 
   public static List<Property> getThreadStackInfo(Thread t) {
     Assert.notNull(t);
-    List<Property> lst = new ArrayList<Property>();
+    List<Property> lst = new ArrayList<>();
 
     StackTraceElement[] arr = t.getStackTrace();
 
@@ -215,7 +215,7 @@ public final class SystemInfo {
   }
 
   public static List<Property> getThreadStaticInfo() {
-    List<Property> lst = new ArrayList<Property>();
+    List<Property> lst = new ArrayList<>();
 
     PropertyUtils.addProperties(lst, "MAX_PRIORITY", Thread.MAX_PRIORITY,
         "MIN_PRIORITY", Thread.MIN_PRIORITY,

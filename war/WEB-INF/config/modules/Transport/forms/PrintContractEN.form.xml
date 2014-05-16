@@ -16,73 +16,38 @@
     <css id="&form;">
       .&form;-table {border-collapse:collapse; width:100%;}
       .&form;-table td {border:1px solid black; padding:2px;}
+      .&form;-forwarder .bee-co-companyInfo-name .bee-co-companyInfo-item:before {content: "Carrier: "; font-weight:normal;}
+      .&form;-customer .bee-co-companyInfo-name .bee-co-companyInfo-item:before {content: "Customer: "; font-weight:normal;}
     </css>
     <Image url="images/logo.png" style="display:block; margin:auto;" />
-    <TextLabel source="Number" style="text-align:center; &bold;">
-      <renderToken source="Assessor" prefix="Freight transportation contract No. " />
-      <renderToken source="TripNo" prefix="-" />
+    <TextLabel style="text-align:center; &bold;">
+      <render><ui:expression>'Freight transportation contract No. ' + rowId + (row.Number ? '-' + row.Number : '')</ui:expression></render>
     </TextLabel>
     <DateLabel source="Date" style="text-align:center;" />
 
     <Table class="&form;-table" style="&section;">
       <row>
-      <cell style="vertical-align:top;">
-        <FlowPanel>
-          <TextLabel source="ForwarderName" style="&bold;">
-            <renderToken source="ForwarderName" prefix="Carrier: " />
-          </TextLabel>
-          <TextLabel source="ForwarderCode">
-            <renderToken source="ForwarderCode" prefix="Company code: " />
-          </TextLabel>
-          <TextLabel source="ForwarderVATCode">
-            <renderToken source="ForwarderVATCode" prefix="VAT code: " />
-          </TextLabel>
-          <TextLabel source="ForwarderAddress">
-            <renderToken source="ForwarderAddress" prefix="Address: " />
-            <renderToken source="ForwarderCity" prefix=", " />
-            <renderToken source="ForwarderCountry" prefix=", " />
-            <renderToken source="ForwarderPostIndex" prefix=", " />
-          </TextLabel>
-          <TextLabel source="ForwarderPhone">
-            <renderToken source="ForwarderPhone" prefix="Phone: " suffix=" " />
-            <renderToken source="ForwarderMobile" prefix="Mobile: " suffix=" " />
-            <renderToken source="ForwarderFax" prefix="Fax: " suffix=" " />
-          </TextLabel>
-          <TextLabel source="ForwarderEmail">
-            <renderToken source="ForwarderEmail" prefix="E-mail: " />
-          </TextLabel>
-        </FlowPanel>
-      </cell>
+        <cell style="vertical-align:top;">
+          <FlowPanel name="Forwarder" class="&form;-forwarder">
+            <properties locale="en" />
+          </FlowPanel>
+        </cell>
         
-      <FlowPanel>
-        <TextLabel source="CompanyName" style="&bold;">
-          <renderToken source="CompanyName" />
-        </TextLabel>
-        <TextLabel source="CompanyCode">
-          <renderToken source="CompanyCode" prefix="Code: " />
-        </TextLabel>
-        <TextLabel source="CompanyVATCode">
-          <renderToken source="CompanyVATCode" prefix="VAT code: " />
-        </TextLabel>
-        <TextLabel source="CompanyAddress">
-          <renderToken source="CompanyAddress" prefix="Address: " />
-          <renderToken source="CompanyCity" prefix=", " />
-          <renderToken source="CompanyCountry" prefix=", " />
-          <renderToken source="CompanyPostIndex" prefix=", " />
-        </TextLabel>
-        <TextLabel source="CompanyPhone">
-          <renderToken source="CompanyPhone" prefix="Phone: " suffix=" " />
-          <renderToken source="CompanyMobile" prefix="Mobile: " suffix=" " />
-          <renderToken source="CompanyFax" prefix="Fax: " suffix=" " />
-        </TextLabel>
-        <TextLabel source="CompanyEmail">
-          <renderToken source="CompanyEmail" prefix="E-mail: " />
-        </TextLabel>
-      </FlowPanel>
+        <FlowPanel name="Customer" class="&form;-customer">
+          <properties locale="en" />
+        </FlowPanel>
       </row>
       <row>
         <Label html="Load" />
-        <TextLabel source="Description" style="white-space:pre-wrap;" />
+        <TextLabel  style="white-space:pre-wrap;" >
+          <renderToken source="Description" suffix="&lt;br&gt;"/>
+          <renderToken source="Quantity" prefix="Quantity: " suffix=" " addPrefixWhenEmpty="false" addSuffixWhenEmpty="false" />
+          <renderToken source="QuantityUnit" suffix="&lt;br&gt;" addSuffixWhenEmpty="false" />
+          <renderToken source="Weight" prefix="Weight: " suffix=" " addPrefixWhenEmpty="false" addSuffixWhenEmpty="false" />
+          <renderToken source="WeightUnit" suffix="&lt;br&gt;" addSuffixWhenEmpty="true" />
+          <renderToken source="Volume" prefix="Volume: " suffix=" " addPrefixWhenEmpty="false" addSuffixWhenEmpty="false" />
+          <renderToken source="VolumeUnit" suffix=" " />
+        </TextLabel>
       </row>
       <row>
         <Label html="Loading place" />
@@ -125,7 +90,8 @@
       <row>
         <cell colSpan="2">
           <HtmlPanel style="&section;">
-            <span style="white-space:pre-wrap;">1.Carriage is performed under conditions of CMR Convention. During performance of this Carriage Contract the Carrier must have a valid carrier’s CMR insurance policy, licenses and permits, necessary for the legal performance of above carriage.
+            <span style="white-space:pre-wrap;">
+1. Carriage is performed under conditions of CMR Convention. During performance of this Carriage Contract the Carrier must have a valid carrier’s CMR insurance policy, licenses and permits, necessary for the legal performance of above carriage.
 2. The Customer undertakes to organize loading and customs clearance (if needed) within 24 hours (CIS countries 48 hours) from the moment of vehicle arrival at the loading place, including cargo fixing and sealing works. 
 3. The Customer undertakes to perform unloading and customs formalities (if needed) within 24 hours (CIS countries 48 hours) from the moment of vehicle arrival at customs destination place or delivery place. 
 4. If the terms set out in clauses 2-3 ate exceeded, the Customer shall pay to the Carrier downtimes 100 eur for each working day. 
@@ -135,7 +101,9 @@
 8. The Carrier undertakes to arrive at loading/unloading place on the indicated time. The date and time must be indicated in CMR consignment. The Carrier must supervise loading/unloading. Cargo must conform to the data written in CMR consignment. The Carrier is liable for damaged cargo, improper placement of cargo in a vehicle. 
 9. The Carrier is liable for cargo from the moment of its acceptance till transfer, as well as delay of cargo delivery under conditions of CMR Convention. The Carrier shall not be liable for quantity of cargo, if it is delivered without damaged seals, for internal state and quantity of units of cargo, if cargo packing is not damaged.
 10. The Customers may cancel order 12 hours before loading. Otherwise, the Customer shall pay a fine to the Carrier for non-submission of cargo for loading 20 % from the carriage price, unless otherwise agreed.
-11. The Carrier does not have the right to perform any payments on behalf of the Customer without receipt of fax, confirming such authority.</span>
+11. The Carrier does not have the right to perform any payments on behalf of the Customer without receipt of fax, confirming such authority.
+12. The order can not be modified manually. Any adjustment of the contract must be approved by both parties stamps, otherwise corrections have no effect whatsoever. 
+            </span>
           </HtmlPanel>
         </cell>
       </row>

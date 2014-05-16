@@ -3,6 +3,7 @@ package com.butent.bee.client;
 import com.butent.bee.shared.HasInfo;
 import com.butent.bee.shared.data.UserData;
 import com.butent.bee.shared.data.filter.Filter;
+import com.butent.bee.shared.rights.Module;
 import com.butent.bee.shared.rights.ModuleAndSub;
 import com.butent.bee.shared.rights.RegulatedWidget;
 import com.butent.bee.shared.utils.BeeUtils;
@@ -107,6 +108,10 @@ public class UserInfo implements HasInfo {
 
   public boolean is(Long id) {
     return id != null && id.equals(getUserId());
+  }
+
+  public boolean isAdministrator() {
+    return isModuleVisible(ModuleAndSub.of(Module.ADMINISTRATION));
   }
 
   public boolean isColumnVisible(String viewName, String column) {

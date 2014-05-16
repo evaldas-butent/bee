@@ -12,8 +12,6 @@ public interface LocalizableCalendarConstants {
   
   String calAddParameters();
 
-  String calAppointmentAttendees();
-
   String calAppointmentEnd();
 
   String calAppointments();

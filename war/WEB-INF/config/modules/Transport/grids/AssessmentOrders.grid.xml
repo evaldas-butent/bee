@@ -1,46 +1,99 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <g:Grid xmlns="http://www.butent.com/column" xmlns:g="http://www.butent.com/grid"
-  xmlns:w="http://www.butent.com/widget"
+        xmlns:ui="http://www.butent.com/ui"
 
   name="AssessmentOrders" viewName="Assessments" caption="=trAssessmentOrders"
-  flexGrow="1" disabledActions="add" order="AssessorID desc"
+  flexGrow="1" order="AssessmentID desc" disabledActions="add delete"
+  filter="OrderStatus!=0"
   >
-  <g:north size="40">
-    <w:HorizontalPanel>
-      <w:CheckBox name="Active" text="=trOrderStatusActive" checked="true" />
-      <w:CheckBox name="Completed" text="=trOrderStatusCompleted" />
-      <w:CheckBox name="Canceled" text="=trOrderStatusCanceled" checked="true" />
-    </w:HorizontalPanel>
-  </g:north>
   <g:columns>
     <SelectionColumn name="Select" width="20" />
     <IdColumn name="ID" width="40" />
-    <DataColumn name="Assessor" caption="=captionPId" width="40" />
-    <DataColumn name="Date" caption="=creationDate" width="110" readOnly="true" />
-    <DataColumn name="Status" width="70" />
-    <DataColumn name="OrderNo" caption="=orderNumber" width="70" />
-    <DataColumn name="LoadingDate" caption="=trCargoLoadingDateShort" width="70" format="DATE_SHORT" />
+    <DataColumn name="Assessment" width="40" />
+    <DataColumn name="Date" width="110" readOnly="true" />
+    <RelColumn name="Manager" />
+    <DataColumn name="OrderStatus" width="70" />
+    <DataColumn name="Number" width="70" />
+
+    <DataColumn name="LoadingDate" caption="=trLoadingDate" width="70" format="DATE_SHORT" />
+    <DataColumn name="UnloadingDate" caption="=trUnloadingDate" width="70" format="DATE_SHORT" />
     
-    <DataColumn name="CustomerName" caption="=customer" minWidth="100" whiteSpace="nowrap" />
+    <DataColumn name="CustomerName" />
 
     <CalcColumn type="string" name="From" source="LoadingCountryCode" cellType="html" width="20"
-      caption="=from" horizontalAlignment="center">
+      horizontalAlignment="center" searchBy="LoadingCountryName LoadingCountryCode">
       <renderer type="flag" />
     </CalcColumn>
 
     <CalcColumn type="string" name="To" source="UnloadingCountryCode" cellType="html" width="20"
-      caption="=to" horizontalAlignment="center">
+      horizontalAlignment="center" searchBy="UnloadingCountryName UnloadingCountryCode">
       <renderer type="flag" />
     </CalcColumn>
 
-    <DataColumn name="Route" caption="=route" minWidth="100" whiteSpace="nowrap" />
-    <DataColumn name="Description" caption="=cargo" minWidth="100" whiteSpace="nowrap" />
+    <DataColumn name="OrderNotes"  />
+    <DataColumn name="Description" />
 
     <DataColumn name="Partial" caption="=partialShort" width="15" sortable="false" />
     <DataColumn name="Outsized" caption="=outsizedShort" width="15" sortable="false" />
     <DataColumn name="Dangerous" caption="=dangerousShort" width="15" sortable="false" />
+    <DataColumn name="ExpensesRegistered" caption="&#xf0f6;" width="15" sortable="false">
+      <style><headerStyle><ui:font>FontAwesome</ui:font></headerStyle></style>
+    </DataColumn>
 
-    <DataColumn name="Number" caption="=refNumber" width="70" />
-    <DataColumn name="Cmr" caption="CMR" width="70" />
+    <CalcColumn name="IncomesCommited" type="boolean" sortable="false" visible="false"
+      label="=trdInvoiceId" searchBy="Incomes" filterOptions="empty">
+      <render><ui:expression>row.IncomesCommited ? true : false</ui:expression></render>
+    </CalcColumn>
+    <CalcColumn name="ExpensesCommited" type="boolean" sortable="false" visible="false"
+      label="=trdPurchaseId" searchBy="Expenses" filterOptions="empty">
+      <render><ui:expression>row.ExpensesCommited ? true : false</ui:expression></render>
+    </CalcColumn>
+    
+    <CalcColumn type="string" name="Vehicle" label="=trCarrierVehicle" searchBy="ForwarderVehicle">
+      <render>
+        <ui:function>
+          if (!row.MinVehicle) {
+            return row.MaxVehicle;
+          
+          } else if(!row.MaxVehicle || row.MinVehicle == row.MaxVehicle) {
+            return row.MinVehicle;
+          
+          } else {
+            return row.MinVehicle + ", " + row.MaxVehicle + (row.CntVehicle > 2 ? ", ...": "");
+          }
+        </ui:function>
+      </render>
+    </CalcColumn>
+
+    <DataColumn name="Log" visible="false" />
   </g:columns>
+
+  <g:rowStyle>
+    <ui:inline>="color:red"</ui:inline>
+    <ui:expression>row.OrderStatus == 1 &amp;&amp; !row.IncomesCommited
+      &amp;&amp; new Date(row.UnloadingDate).setHours(0,0,0,0) &lt; new Date().setHours(0,0,0,0)</ui:expression>
+  </g:rowStyle>
+  <g:rowStyle>
+    <ui:inline>="color:blue"</ui:inline>
+    <ui:expression>row.OrderStatus == 1
+      &amp;&amp; new Date(row.UnloadingDate).setHours(0,0,0,0) == new Date().setHours(0,0,0,0)</ui:expression>
+  </g:rowStyle>
+  <g:rowStyle>
+    <ui:inline>="color:gold"</ui:inline>
+    <ui:expression>row.OrderStatus == 3 &amp;&amp; row.ExpensesCount &amp;&amp; !row.ExpensesCommited</ui:expression>
+  </g:rowStyle>
+  <g:rowStyle>
+    <ui:inline>="color:green"</ui:inline>
+    <ui:expression>row.OrderStatus == 3</ui:expression>
+  </g:rowStyle>
+
+  <g:predefinedFilter name="active" label="Vykdomi" initial="true">
+    <g:column name="OrderStatus" value="1" />
+  </g:predefinedFilter>
+
+  <g:predefinedFilter name="delayed" label="Vėluojančios S/F">
+    <g:column name="OrderStatus" value="1" />
+    <g:column name="IncomesCommited" emptyValues="true" />
+    <g:column name="UnloadingDate" value=",d" />
+  </g:predefinedFilter>
 </g:Grid>

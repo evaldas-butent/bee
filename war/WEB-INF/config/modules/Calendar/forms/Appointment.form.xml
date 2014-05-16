@@ -13,44 +13,44 @@
       <col index="2" cellStyle="text-align: right;" />
 
       <row>
-        <Label text="=summary" />
-        <InputText source="Summary" />
-        <Label text="=location" />
+        <Label for="Summary" class="bee-required" visible="true" />
+        <InputText source="Summary" visible="true" />
+        <Label for="Location" />
         <InputText source="Location" />
       </row>
 
       <row>
-        <Label text="=company" />
+        <Label for="Company" />
         <DataSelector source="Company" renderColumns="CompanyName" />
-        <Label text="=type" class="bee-required" />
-        <DataSelector source="AppointmentType" renderColumns="TypeName" />
+        <Label text="=type" for="Type" visible="true" />
+        <DataSelector source="AppointmentType" renderColumns="TypeName" visible="true"/>
       </row>
  
       <row>
-        <Label text="=calAppointmentStart" class="bee-required" />
-        <InputDateTime source="StartDateTime" />
-        <Label text="=calAppointmentStatus" class="bee-required" />
-        <ListBox source="Status" />
+        <Label for="StartDateTime" visible="true" />
+        <InputDateTime source="StartDateTime" visible="true" />
+        <Label for="Status" visible="true" />
+        <ListBox source="Status" visible="true" />
       </row>
 
       <row>
-        <Label text="=calAppointmentEnd" class="bee-required" />
-        <InputDateTime source="EndDateTime" />
+        <Label for="EndDateTime" visible="true" />
+        <InputDateTime source="EndDateTime" visible="true" />
         <cell><text/></cell>
         <Radio source="Visibility" vertical="false" />
       </row>
 
       <row>
-        <Label text="=color" />
+        <Label for="Color" />
         <DataSelector source="Color" renderColumns="ColorName" />
-        <Label text="=style" />
+        <Label for="Style" />
         <DataSelector source="Style" renderColumns="StyleName" />
       </row>
 
       <row>
-        <Label text="=registered" />
+        <Label for="Created" />
         <InputDateTime source="Created" />
-        <Label text="=creator" />
+        <Label for="Creator" />
         <DataSelector source="Creator" editSource="CreatorCompanyPerson"
           renderColumns="CreatorFirstName CreatorLastName" />
       </row>
@@ -58,7 +58,7 @@
     
     <TabbedPages class="flexible">
       <page>
-        <text>=calAppointmentAttendees</text>
+        <text>=calAttendees</text>
         <ChildGrid name="AppointmentAttendees" relColumn="Appointment" />
       </page>
 
@@ -67,7 +67,7 @@
         <ChildGrid name="AppointmentOwners" relColumn="Appointment" />
       </page>
 
-      <page>
+      <page for="Description">
         <text>=description</text>
         <SimplePanel>
           <InputArea source="Description" class="occupy-1" />
@@ -84,7 +84,7 @@
         <ChildGrid name="AppointmentReminders" relColumn="Appointment" />
       </page>
 
-      <page>
+      <page for="Vehicle">
         <text>=transport</text>
         <Table style="border-collapse: collapse; margin-top: 2ex;"
           cellStyle="padding: 3px; border: 1px solid #ccc;" >

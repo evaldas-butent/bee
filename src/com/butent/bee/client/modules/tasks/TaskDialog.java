@@ -5,7 +5,7 @@ import com.google.common.collect.Maps;
 import com.google.gwt.core.client.Scheduler.ScheduledCommand;
 import com.google.gwt.user.client.ui.Widget;
 
-import static com.butent.bee.shared.modules.tasks.TasksConstants.*;
+import static com.butent.bee.shared.modules.tasks.TaskConstants.*;
 
 import com.butent.bee.client.Global;
 import com.butent.bee.client.composite.DataSelector;
@@ -131,8 +131,7 @@ class TaskDialog extends DialogBox {
 
     result.put(COL_DURATION, addTime(Localized.getConstants().crmSpentTime()));
     result.put(COL_DURATION_TYPE, addSelector(Localized.getConstants().crmDurationType(),
-        VIEW_DURATION_TYPES,
-        Lists.newArrayList(COL_NAME), false, null));
+        VIEW_DURATION_TYPES, Lists.newArrayList(COL_DURATION_TYPE_NAME), false, null));
     result.put(COL_DURATION_DATE, addDateTime(Localized.getConstants().crmTaskFinishDate(),
         false, TimeUtils.nowMinutes()));
 

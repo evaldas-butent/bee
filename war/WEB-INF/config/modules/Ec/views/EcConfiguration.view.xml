@@ -1,7 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <View xmlns="http://www.butent.com/view"
 
-  name="EcConfiguration" source="EcConfiguration"
+  name="EcConfiguration" source="EcConfiguration" module="Ec.Administration"
+  caption="=settings"
   >
   <Columns>
     <SimpleColumn name="MarginDefaultPercent" />

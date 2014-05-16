@@ -22,8 +22,6 @@ import com.butent.bee.client.data.Queries;
 import com.butent.bee.client.event.logical.SelectorEvent;
 import com.butent.bee.client.event.logical.SelectorEvent.Handler;
 import com.butent.bee.client.style.StyleUtils;
-import com.butent.bee.client.ui.AbstractFormInterceptor;
-import com.butent.bee.client.ui.FormFactory.FormInterceptor;
 import com.butent.bee.client.ui.FormFactory.WidgetDescriptionCallback;
 import com.butent.bee.client.ui.IdentifiableWidget;
 import com.butent.bee.client.utils.FileUtils;
@@ -31,6 +29,8 @@ import com.butent.bee.client.utils.NewFileInfo;
 import com.butent.bee.client.view.add.ReadyForInsertEvent;
 import com.butent.bee.client.view.edit.Editor;
 import com.butent.bee.client.view.form.FormView;
+import com.butent.bee.client.view.form.interceptor.AbstractFormInterceptor;
+import com.butent.bee.client.view.form.interceptor.FormInterceptor;
 import com.butent.bee.client.widget.InputBoolean;
 import com.butent.bee.client.widget.InputDateTime;
 import com.butent.bee.client.widget.Label;
@@ -44,6 +44,7 @@ import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.IsRow;
 import com.butent.bee.shared.data.event.DataChangeEvent;
 import com.butent.bee.shared.i18n.Localized;
+import com.butent.bee.shared.modules.administration.AdministrationConstants;
 import com.butent.bee.shared.modules.discussions.DiscussionsConstants.DiscussionEvent;
 import com.butent.bee.shared.modules.discussions.DiscussionsUtils;
 import com.butent.bee.shared.time.TimeUtils;
@@ -306,8 +307,8 @@ class CreateDiscussionInterceptor extends AbstractFormInterceptor {
       List<NewFileInfo> files = Lists.newArrayList(((FileCollector) widget).getFiles());
 
       final List<BeeColumn> columns =
-          Data.getColumns(VIEW_DISCUSSIONS_FILES, Lists.newArrayList(COL_DISCUSSION, COL_FILE,
-              COL_CAPTION));
+          Data.getColumns(VIEW_DISCUSSIONS_FILES, Lists.newArrayList(COL_DISCUSSION,
+              AdministrationConstants.COL_FILE, COL_CAPTION));
 
       for (final NewFileInfo fileInfo : files) {
         FileUtils.uploadFile(fileInfo, new Callback<Long>() {

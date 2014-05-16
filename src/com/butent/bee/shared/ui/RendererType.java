@@ -17,7 +17,8 @@ public enum RendererType {
   PHOTO("photo", true),
   MAIL("mail", false),
   URL("url", true),
-  IMAGE("image", true);
+  IMAGE("image", true),
+  TOTAL("total", false);
 
   public static RendererType getByTypeCode(String code) {
     if (code == null || code.isEmpty()) {

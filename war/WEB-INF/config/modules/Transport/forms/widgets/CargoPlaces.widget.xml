@@ -1,28 +1,31 @@
 <?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE Form [
+  <!ENTITY lbl1 "width: 115px; text-align: right; padding-right: 9px;">
+]>
 <HorizontalPanel xmlns="http://www.butent.com/widget"
     xmlns:ui="http://www.butent.com/ui"
   >
-  <Table>
+  <Table style="border-spacing: 5px;">
     <row>
       <cell colSpan="2">
         <Label text="=loading" horizontalAlignment="center" style="font-weight: bold;" />
       </cell>
     </row>
     <row>
-      <Label text="=date" horizontalAlignment="right" />
+      <Label text="=date" horizontalAlignment="right" style="&lbl1;"/>
       <InputDateTime source="LoadingDate" style="width: 110px;" />
     </row>
     <row>
-      <Label text="=company" horizontalAlignment="right" />
+      <Label text="=company" horizontalAlignment="right" style="&lbl1;"/>
       <InputText source="LoadingCompany" autocompleteKey="cargo-place-company" />
     </row>
     <row>
-      <Label text="=address" horizontalAlignment="right" />
+      <Label text="=address" horizontalAlignment="right" style="&lbl1;"/>
       <InputText source="LoadingAddress" autocompleteKey="cargo-place-address" />
     </row>
     <row>
-      <Label text="=city" horizontalAlignment="right" />
-      <DataSelector source="LoadingCity" style="width: 135px;" options="LoadingCountry">
+      <Label text="=city" horizontalAlignment="right" style="&lbl1;"/>
+      <DataSelector source="LoadingCity" style="width: 155px;" options="LoadingCountry">
         <selectorColumn source="Name" />
         <selectorColumn source="CountryName" />
         <selectorColumn source="CountryCode">
@@ -31,12 +34,12 @@
       </DataSelector>
     </row>
     <row>
-      <Label text="=postIndex" horizontalAlignment="right" />
+      <Label text="=postIndex" horizontalAlignment="right" style="&lbl1;"/>
       <InputText source="LoadingPostIndex" style="width: 90px;" 
         autocompleteKey="cargo-place-postal-code" />
     </row>
     <row>
-      <Label text="=country" horizontalAlignment="right" />
+      <Label text="=country" horizontalAlignment="right" style="&lbl1;"/>
       <FlowPanel>
         <DataSelector source="LoadingCountry" style="width: 135px;" >
           <renderToken source="LoadingCountryName" />
@@ -51,37 +54,37 @@
       </FlowPanel>
     </row>
     <row>
-      <Label text="=personContact" horizontalAlignment="right" />
+      <Label text="=personContact" horizontalAlignment="right" style="&lbl1;"/>
       <InputText source="LoadingContact" autocompleteKey="cargo-place-contact" />
     </row>
     <row>
-      <Label text="=ref" horizontalAlignment="right" />
-      <InputArea source="LoadingTerminal" style="wdith: 155px;" />
+      <Label text="=ref" horizontalAlignment="right" style="&lbl1;"/>
+      <InputText source="LoadingNumber" />
     </row>
   </Table>
 
-  <Table>
+  <Table style="border-spacing: 5px;">
     <row>
       <cell colSpan="2">
         <Label text="=unloading" horizontalAlignment="center" style="font-weight: bold;" />
       </cell>
     </row>
     <row>
-      <Label text="=date" horizontalAlignment="right" />
+      <Label text="=date" horizontalAlignment="right" style="&lbl1;"/>
       <InputDateTime source="UnloadingDate" style="width: 110px;" />
     </row>
     <row>
-      <Label text="=company" horizontalAlignment="right" />
+      <Label text="=company" horizontalAlignment="right" style="&lbl1;"/>
       <InputText source="UnloadingCompany" autocompleteKey="cargo-place-company" />
     </row>
    
     <row>
-      <Label text="=address" horizontalAlignment="right" />
+      <Label text="=address" horizontalAlignment="right" style="&lbl1;"/>
       <InputText source="UnloadingAddress" autocompleteKey="cargo-place-address" />
     </row>
     <row>
-      <Label text="=city" horizontalAlignment="right" />
-      <DataSelector source="UnloadingCity" style="width: 135px;" options="UnloadingCountry">
+      <Label text="=city" horizontalAlignment="right" style="&lbl1;"/>
+      <DataSelector source="UnloadingCity" style="width: 155px;" options="UnloadingCountry">
         <selectorColumn source="Name" />
         <selectorColumn source="CountryName" />
         <selectorColumn source="CountryCode">
@@ -90,12 +93,12 @@
       </DataSelector>
     </row>
     <row>
-      <Label text="=postIndex" horizontalAlignment="right" />
+      <Label text="=postIndex" horizontalAlignment="right" style="&lbl1;"/>
       <InputText source="UnloadingPostIndex" style="width: 90px;"
         autocompleteKey="cargo-place-postal-code" />
     </row>
     <row>
-      <Label text="=country" horizontalAlignment="right" />
+      <Label text="=country" horizontalAlignment="right" style="&lbl1;"/>
       <FlowPanel>
         <DataSelector source="UnloadingCountry" style="width: 135px;" >
           <renderToken source="UnloadingCountryName" />
@@ -110,12 +113,12 @@
       </FlowPanel>
     </row>
     <row>
-      <Label text="=personContact" horizontalAlignment="right" />
+      <Label text="=personContact" horizontalAlignment="right" style="&lbl1;"/>
       <InputText source="UnloadingContact" autocompleteKey="cargo-place-contact" />
     </row>
     <row>
-      <Label text="=ref" horizontalAlignment="right" decorator="caption-top" />
-      <InputArea source="UnloadingTerminal" style="wdith: 155px;" />
+      <Label text="=ref" horizontalAlignment="right" style="&lbl1;"/>
+      <InputText source="UnloadingNumber" />
     </row>
   </Table>
 </HorizontalPanel>

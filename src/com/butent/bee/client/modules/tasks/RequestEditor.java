@@ -6,7 +6,7 @@ import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.user.client.ui.Widget;
 
-import static com.butent.bee.shared.modules.tasks.TasksConstants.*;
+import static com.butent.bee.shared.modules.tasks.TaskConstants.*;
 
 import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.Global;
@@ -16,10 +16,10 @@ import com.butent.bee.client.composite.FileGroup;
 import com.butent.bee.client.data.Queries;
 import com.butent.bee.client.data.RowUpdateCallback;
 import com.butent.bee.client.dialog.StringCallback;
-import com.butent.bee.client.ui.AbstractFormInterceptor;
-import com.butent.bee.client.ui.FormFactory.FormInterceptor;
 import com.butent.bee.client.view.HeaderView;
 import com.butent.bee.client.view.form.FormView;
+import com.butent.bee.client.view.form.interceptor.AbstractFormInterceptor;
+import com.butent.bee.client.view.form.interceptor.FormInterceptor;
 import com.butent.bee.client.widget.Button;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.communication.ResponseObject;
@@ -30,7 +30,7 @@ import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.IsRow;
 import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.io.StoredFile;
-import com.butent.bee.shared.modules.tasks.TasksConstants;
+import com.butent.bee.shared.modules.tasks.TaskConstants;
 import com.butent.bee.shared.time.DateTime;
 import com.butent.bee.shared.utils.BeeUtils;
 
@@ -65,9 +65,9 @@ public class RequestEditor extends AbstractFormInterceptor {
 
     if (edited) {
       boolean finished =
-          activeRow.getDateTime(form.getDataIndex(TasksConstants.COL_REQUEST_FINISHED)) != null;
+          activeRow.getDateTime(form.getDataIndex(TaskConstants.COL_REQUEST_FINISHED)) != null;
       boolean registred = (!finished)
-          && (activeRow.getDateTime(form.getDataIndex(TasksConstants.COL_REQUEST_DATE)) != null);
+          && (activeRow.getDateTime(form.getDataIndex(TaskConstants.COL_REQUEST_DATE)) != null);
 
       if (registred) {
         Button btnFinish = new Button(Localized.getConstants().requestFinish());
@@ -148,21 +148,21 @@ public class RequestEditor extends AbstractFormInterceptor {
       @Override
       public void onSuccess(String value) {
         List<BeeColumn> columns = Lists.newArrayList(DataUtils
-            .getColumn(TasksConstants.COL_REQUEST_FINISHED, form.getDataColumns()));
+            .getColumn(TaskConstants.COL_REQUEST_FINISHED, form.getDataColumns()));
 
         List<String> oldValues = Lists.newArrayList(activeRow
-            .getString(form.getDataIndex(TasksConstants.COL_REQUEST_FINISHED)));
+            .getString(form.getDataIndex(TaskConstants.COL_REQUEST_FINISHED)));
 
         List<String> newValues = Lists.newArrayList(BeeUtils.toString(new DateTime().getTime()));
 
-        columns.add(DataUtils.getColumn(TasksConstants.COL_REQUEST_RESULT, form.getDataColumns()));
-        oldValues.add(activeRow.getString(form.getDataIndex(TasksConstants.COL_REQUEST_RESULT)));
+        columns.add(DataUtils.getColumn(TaskConstants.COL_REQUEST_RESULT, form.getDataColumns()));
+        oldValues.add(activeRow.getString(form.getDataIndex(TaskConstants.COL_REQUEST_RESULT)));
         newValues.add(value);
 
         Queries.update(form.getViewName(), activeRow.getId(), activeRow.getId(),
             columns, oldValues, newValues, form.getChildrenForUpdate(), new SaveCallback(form));
       }
-    }, null, BeeConst.UNDEF, 300, CssUnit.PX);
+    }, null, BeeConst.UNDEF, null, 300, CssUnit.PX);
   }
 
   private void toTaskAndFinish() {

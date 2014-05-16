@@ -70,6 +70,9 @@ public class ColumnInfo implements HasValueType, Flexible {
 
   private boolean hidable = true;
 
+  private boolean exportable = true;
+  private Double exportWidthFactor;
+
   public ColumnInfo(String columnId, String label, CellSource source, AbstractColumn<?> column,
       ColumnHeader header) {
     this(columnId, label, source, column, header, null, null, null);
@@ -109,9 +112,29 @@ public class ColumnInfo implements HasValueType, Flexible {
     return (obj instanceof ColumnInfo) && columnId.equals(((ColumnInfo) obj).columnId);
   }
 
+  public AbstractColumn<?> getColumn() {
+    return column;
+  }
+
+  public ConditionalStyle getDynStyles() {
+    return dynStyles;
+  }
+
+  public Double getExportWidthFactor() {
+    return exportWidthFactor;
+  }
+
   @Override
   public Flexibility getFlexibility() {
     return flexibility;
+  }
+
+  public ColumnFooter getFooter() {
+    return footer;
+  }
+
+  public ColumnHeader getHeader() {
+    return header;
   }
 
   @Override
@@ -136,6 +159,10 @@ public class ColumnInfo implements HasValueType, Flexible {
   @Override
   public int hashCode() {
     return columnId.hashCode();
+  }
+
+  public boolean isExportable() {
+    return exportable;
   }
 
   @Override
@@ -200,10 +227,6 @@ public class ColumnInfo implements HasValueType, Flexible {
     return sd.getClassName();
   }
 
-  AbstractColumn<?> getColumn() {
-    return column;
-  }
-
   String getColumnId() {
     return columnId;
   }
@@ -212,20 +235,8 @@ public class ColumnInfo implements HasValueType, Flexible {
     return dynGroup;
   }
 
-  ConditionalStyle getDynStyles() {
-    return dynStyles;
-  }
-
   AbstractFilterSupplier getFilterSupplier() {
     return filterSupplier;
-  }
-
-  ColumnFooter getFooter() {
-    return footer;
-  }
-
-  ColumnHeader getHeader() {
-    return header;
   }
 
   Font getHeaderFont() {
@@ -278,11 +289,6 @@ public class ColumnInfo implements HasValueType, Flexible {
   void initProperties(ColumnDescription columnDescription, GridDescription gridDescription) {
     Assert.notNull(columnDescription);
 
-    if (columnDescription.getColType().isReadOnly()
-        || BeeUtils.isTrue(columnDescription.getReadOnly())) {
-      setColReadOnly(true);
-    }
-
     if (columnDescription.getWidth() != null) {
       setInitialWidth(columnDescription.getWidth());
     }
@@ -325,6 +331,13 @@ public class ColumnInfo implements HasValueType, Flexible {
       setCellResizable(ValueType.TEXT.equals(getValueType()));
     } else {
       setCellResizable(cr);
+    }
+
+    if (BeeUtils.isFalse(columnDescription.getExportable())) {
+      setExportable(false);
+    }
+    if (BeeUtils.isPositive(columnDescription.getExportWidthFactor())) {
+      setExportWidthFactor(columnDescription.getExportWidthFactor());
     }
   }
 
@@ -378,8 +391,20 @@ public class ColumnInfo implements HasValueType, Flexible {
     this.bodyWidth = bodyWidth;
   }
 
+  void setColReadOnly(boolean colReadOnly) {
+    this.colReadOnly = colReadOnly;
+  }
+
   void setDynStyles(ConditionalStyle dynStyles) {
     this.dynStyles = dynStyles;
+  }
+
+  void setExportable(boolean exportable) {
+    this.exportable = exportable;
+  }
+
+  void setExportWidthFactor(Double exportWidthFactor) {
+    this.exportWidthFactor = exportWidthFactor;
   }
 
   void setFooterFont(String fontDeclaration) {
@@ -497,10 +522,6 @@ public class ColumnInfo implements HasValueType, Flexible {
 
   private void setCellResizable(boolean cellResizable) {
     this.cellResizable = cellResizable;
-  }
-
-  private void setColReadOnly(boolean colReadOnly) {
-    this.colReadOnly = colReadOnly;
   }
 
   private void setFlexWidth(int flexWidth) {

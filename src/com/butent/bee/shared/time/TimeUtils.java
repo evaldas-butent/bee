@@ -375,6 +375,25 @@ public final class TimeUtils {
     return z + millis;
   }
 
+  public static JustDate goMonth(JustDate ref, int increment) {
+    Assert.notNull(ref);
+    if (increment == 0) {
+      return ref;
+    } else {
+      YearMonth ym = YearMonth.get(ref).shiftMonth(increment);
+      return new JustDate(ym.getYear(), ym.getMonth(), ref.getDom());
+    }
+  }
+
+  public static DateTime goMonth(DateTime ref, int increment) {
+    Assert.notNull(ref);
+    if (increment == 0) {
+      return ref;
+    } else {
+      return combine(goMonth(ref.getDate(), increment), ref);
+    }
+  }
+  
   public static boolean isBetween(HasDateValue dt, HasDateValue min, HasDateValue max,
       RangeOptions options) {
     Assert.notNull(options);
@@ -446,8 +465,8 @@ public final class TimeUtils {
     return compare(d1, d2) >= 0;
   }
 
-  public static boolean isMonth(int month) {
-    return month >= 1 && month <= 12;
+  public static boolean isMonth(Integer month) {
+    return month != null && month >= 1 && month <= 12;
   }
 
   public static boolean isMore(HasYearMonth d1, HasYearMonth d2) {
@@ -462,8 +481,8 @@ public final class TimeUtils {
     return (dt == null) ? false : dt.getDow() >= 6;
   }
 
-  public static boolean isYear(int year) {
-    return year >= 1900 && year < 2100;
+  public static boolean isYear(Integer year) {
+    return year != null && year >= 1900 && year < 2100;
   }
 
   public static <T extends HasDateValue> T max(T d1, T d2) {

@@ -1,6 +1,7 @@
 package com.butent.bee.server.modules.tasks;
 
-import static com.butent.bee.shared.modules.tasks.TasksConstants.*;
+import static com.butent.bee.shared.modules.administration.AdministrationConstants.*;
+import static com.butent.bee.shared.modules.tasks.TaskConstants.*;
 
 import com.butent.bee.server.news.NewsHelper;
 import com.butent.bee.server.news.UsageQueryProvider;
@@ -28,7 +29,7 @@ final class TaskUsageQueryProvider implements UsageQueryProvider {
     query.addFromInner(TBL_TASK_USERS, SqlUtils.join(TBL_TASK_USERS, COL_TASK,
         TBL_TASK_EVENTS, COL_TASK));
   }
-  
+
   TaskUsageQueryProvider() {
     super();
   }
@@ -58,14 +59,14 @@ final class TaskUsageQueryProvider implements UsageQueryProvider {
             SqlUtils.equals(TBL_TASKS, COL_OWNER, userId),
             SqlUtils.notEqual(TBL_TASKS, COL_EXECUTOR, userId)));
         break;
-        
+
       case TASKS_OBSERVED:
         joinTasksToUsers(query);
         query.setWhere(SqlUtils.and(where,
             SqlUtils.notEqual(TBL_TASKS, COL_OWNER, userId),
             SqlUtils.notEqual(TBL_TASKS, COL_EXECUTOR, userId)));
         break;
-        
+
       default:
         query.setWhere(where);
     }
@@ -98,7 +99,7 @@ final class TaskUsageQueryProvider implements UsageQueryProvider {
             SqlUtils.equals(TBL_TASKS, COL_OWNER, userId),
             SqlUtils.notEqual(TBL_TASKS, COL_EXECUTOR, userId)));
         break;
-        
+
       case TASKS_OBSERVED:
         joinTasksToEvents(query);
         joinUsersToEvents(query);
@@ -107,7 +108,7 @@ final class TaskUsageQueryProvider implements UsageQueryProvider {
             SqlUtils.notEqual(TBL_TASKS, COL_EXECUTOR, userId),
             SqlUtils.equals(TBL_TASK_USERS, COL_USER, userId)));
         break;
-        
+
       default:
         joinUsersToEvents(query);
         query.setWhere(SqlUtils.and(where, SqlUtils.equals(TBL_TASK_USERS, COL_USER, userId)));

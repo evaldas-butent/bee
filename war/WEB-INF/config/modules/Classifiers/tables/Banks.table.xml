@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<Table xmlns="http://www.butent.com/table"
+  
+  name="Banks"
+  idName="BankID"
+  x="752" y="484"
+  >
+  <Fields>
+    <String name="Name" precision="100" notNull="true" unique="true" label="=name" />
+    <String name="BankCode" precision="30" unique="true" label="=code" />
+    <String name="SWIFTCode" precision="30" label="=swift" />
+    
+    <Relation name="Contact" unique="true" relation="Contacts" editable="true" />
+    <Text name="Notes" label="=notes" />
+  </Fields>
+</Table>

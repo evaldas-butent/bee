@@ -7,14 +7,15 @@ import com.butent.bee.shared.modules.discussions.LocalizableDiscussionsConstants
 import com.butent.bee.shared.modules.documents.LocalizableDocumentsConstants;
 import com.butent.bee.shared.modules.ec.LocalizableEcConstants;
 import com.butent.bee.shared.modules.mail.LocalizableMailConstants;
-import com.butent.bee.shared.modules.tasks.LocalizableTasksConstants;
+import com.butent.bee.shared.modules.service.LocalizableServiceConstants;
+import com.butent.bee.shared.modules.tasks.LocalizableTaskConstants;
 import com.butent.bee.shared.modules.trade.LocalizableTradeConstants;
 import com.butent.bee.shared.modules.transport.LocalizableTransportConstants;
 
 public interface LocalizableConstants extends Constants, LocalizableCalendarConstants,
     LocalizableMailConstants, LocalizableTransportConstants, LocalizableTradeConstants,
-    LocalizableTasksConstants, LocalizableEcConstants, LocalizableDiscussionsConstants,
-    LocalizableDocumentsConstants {
+    LocalizableTaskConstants, LocalizableEcConstants, LocalizableDiscussionsConstants,
+    LocalizableDocumentsConstants, LocalizableServiceConstants {
 
   String actionAdd();
 
@@ -43,6 +44,8 @@ public interface LocalizableConstants extends Constants, LocalizableCalendarCons
   String actionDeleteFilter();
 
   String actionEdit();
+
+  String actionExport();
 
   String actionFilter();
 
@@ -109,6 +112,8 @@ public interface LocalizableConstants extends Constants, LocalizableCalendarCons
   String cancel();
 
   String captionId();
+
+  String captionPid();
 
   String changedValues();
 
@@ -180,6 +185,8 @@ public interface LocalizableConstants extends Constants, LocalizableCalendarCons
 
   String currency();
 
+  String customer();
+
   String dangerous();
 
   String date();
@@ -203,6 +210,10 @@ public interface LocalizableConstants extends Constants, LocalizableCalendarCons
   String deleteRowQuestion();
 
   String deleteSelectedRow();
+
+  String department();
+
+  String departments();
 
   String description();
 
@@ -228,6 +239,8 @@ public interface LocalizableConstants extends Constants, LocalizableCalendarCons
 
   String exchangeCode();
 
+  String exportToMsExcel();
+  
   String externalId();
 
   String fax();
@@ -272,9 +285,31 @@ public interface LocalizableConstants extends Constants, LocalizableCalendarCons
 
   String feedTasksObserved();
 
+  String feedTrAssessmentAllOrders();
+
+  String feedTrAssessmentAllRequests();
+
+  String feedTrAssessmentMyOrders();
+
+  String feedTrAssessmentMyRequests();
+
+  String feedTrAssessmentTransportations();
+
   String feedTrCargo();
 
+  String feedTrCargoCreditInvoices();
+
+  String feedTrCargoProformaInvoices();
+
+  String feedTrCargoPurchaseInvoices();
+
   String feedTrDrivers();
+
+  String feedTrOrderCargoCreditSales();
+
+  String feedTrOrderCargoInvoices();
+
+  String feedTrOrderCargoSales();
 
   String feedTrOrdersAll();
 
@@ -291,6 +326,8 @@ public interface LocalizableConstants extends Constants, LocalizableCalendarCons
   String feedTrRequestsUnregisteredMy();
 
   String feedTrTrips();
+
+  String feedTrTripCosts();
 
   String feedTrVehicles();
 
@@ -374,6 +411,12 @@ public interface LocalizableConstants extends Constants, LocalizableCalendarCons
 
   String mainEmail();
 
+  String manager();
+
+  String managers();
+
+  String margin();
+
   String maxValue();
 
   String message();
@@ -384,7 +427,11 @@ public interface LocalizableConstants extends Constants, LocalizableCalendarCons
 
   String mobile();
 
+  String month();
+
   String name();
+
+  String newDepartmentEmployees();
 
   String newEmailAccount();
 
@@ -401,6 +448,8 @@ public interface LocalizableConstants extends Constants, LocalizableCalendarCons
   String newService();
 
   String newTab();
+
+  String newThemeColors();
 
   String newUser();
 
@@ -533,6 +582,8 @@ public interface LocalizableConstants extends Constants, LocalizableCalendarCons
   String roomUpdateTime();
 
   String roomUsers();
+  
+  String rowIsNotRemovable();
 
   String rowIsReadOnly();
 
@@ -551,12 +602,16 @@ public interface LocalizableConstants extends Constants, LocalizableCalendarCons
   String selectAll();
 
   String selectAtLeastOneRow();
-  
+
+  String selectionColumnLabel();
+
   String selectRole();
 
   String send();
 
   String service();
+
+  String setAsPrimary();
 
   String services();
 
@@ -565,6 +620,8 @@ public interface LocalizableConstants extends Constants, LocalizableCalendarCons
   String signOut();
 
   String sorry();
+
+  String specifyCondition();
 
   String startRow();
 
@@ -591,6 +648,8 @@ public interface LocalizableConstants extends Constants, LocalizableCalendarCons
   String totalOf();
 
   String type();
+
+  String types();
 
   String unit();
 
@@ -651,6 +710,8 @@ public interface LocalizableConstants extends Constants, LocalizableCalendarCons
   String workdayTransitionNearest();
 
   String workdayTransitionNone();
+
+  String year();
 
   String yes();
 }

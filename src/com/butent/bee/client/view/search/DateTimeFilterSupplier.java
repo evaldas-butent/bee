@@ -43,7 +43,7 @@ public class DateTimeFilterSupplier extends AbstractFilterSupplier {
   private static final String STYLE_LABEL = STYLE_PREFIX + "label";
   private static final String STYLE_DATE = STYLE_PREFIX + "date";
   private static final String STYLE_TIME = STYLE_PREFIX + "time";
-  
+
   private static final String STYLE_NOT_NULL = STYLE_PREFIX + "notNull";
   private static final String STYLE_NULL = STYLE_PREFIX + "null";
 
@@ -99,15 +99,28 @@ public class DateTimeFilterSupplier extends AbstractFilterSupplier {
     int i = 0;
     for (String s : Splitter.on(BeeConst.CHAR_COMMA).trimResults().split(value)) {
       if (i == 0) {
-        start = TimeUtils.toDateTimeOrNull(s);
+        start = parseValue(s);
       } else if (i == 1) {
-        end = TimeUtils.toDateTimeOrNull(s);
+        end = parseValue(s);
       }
 
       i++;
     }
 
     return buildRange(start, end);
+  }
+
+  private static DateTime parseValue(String value) {
+    DateTime dateTime;
+
+    if (BeeUtils.same(value, "t")) {
+      dateTime = TimeUtils.nowMinutes();
+    } else if (BeeUtils.same(value, "d")) {
+      dateTime = new DateTime(TimeUtils.today());
+    } else {
+      dateTime = TimeUtils.toDateTimeOrNull(value);
+    }
+    return dateTime;
   }
 
   private Range<DateTime> range;
@@ -168,7 +181,7 @@ public class DateTimeFilterSupplier extends AbstractFilterSupplier {
 
     } else if (getEmptiness() != null) {
       return getEmptinessLabel(getEmptiness());
-    
+
     } else {
       return null;
     }
@@ -178,7 +191,7 @@ public class DateTimeFilterSupplier extends AbstractFilterSupplier {
   public void onRequest(Element target, Scheduler.ScheduledCommand onChange) {
     Widget widget = createWidget();
     openDialog(target, widget, onChange);
-    
+
     UiHelper.focus(widget);
   }
 
@@ -261,7 +274,7 @@ public class DateTimeFilterSupplier extends AbstractFilterSupplier {
 
     Range<DateTime> newRange = buildRange(start, end);
     boolean changed = !Objects.equal(getRange(), newRange) || getEmptiness() != null;
-    
+
     if (changed) {
       setValue(newRange, null);
     }
@@ -272,12 +285,12 @@ public class DateTimeFilterSupplier extends AbstractFilterSupplier {
   protected List<SupplierAction> getActions() {
     return Lists.newArrayList(SupplierAction.COMMIT, SupplierAction.CLEAR, SupplierAction.CANCEL);
   }
-  
+
   @Override
   protected String getDisplayStyle() {
     return STYLE_PREFIX + "display";
   }
-  
+
   protected boolean isDateTime() {
     return true;
   }
@@ -302,7 +315,7 @@ public class DateTimeFilterSupplier extends AbstractFilterSupplier {
     display.setWidgetAndStyle(START_ROW, DATE_COL, dateFrom, STYLE_DATE);
 
     SimpleEditorHandler.observe(null, dateFrom);
-    
+
     if (isDateTime()) {
       InputTime timeFrom = createInputTime();
       display.setWidgetAndStyle(START_ROW, TIME_COL, timeFrom, STYLE_TIME);
@@ -317,11 +330,11 @@ public class DateTimeFilterSupplier extends AbstractFilterSupplier {
     display.setWidgetAndStyle(END_ROW, DATE_COL, dateTo, STYLE_DATE);
 
     SimpleEditorHandler.observe(null, dateTo);
-    
+
     if (isDateTime()) {
       InputTime timeTo = createInputTime();
       display.setWidgetAndStyle(END_ROW, TIME_COL, timeTo, STYLE_TIME);
-      
+
       SimpleEditorHandler.observe(null, timeTo);
     }
 
@@ -342,7 +355,7 @@ public class DateTimeFilterSupplier extends AbstractFilterSupplier {
         }
       }
     }
-    
+
     if (hasEmptiness() || isColumnNullable()) {
       Button notEmpty = new Button(NOT_NULL_VALUE_LABEL, new ClickHandler() {
         @Override
@@ -364,7 +377,7 @@ public class DateTimeFilterSupplier extends AbstractFilterSupplier {
     panel.add(display);
 
     panel.add(getCommandWidgets(false));
-    
+
     return panel;
   }
 

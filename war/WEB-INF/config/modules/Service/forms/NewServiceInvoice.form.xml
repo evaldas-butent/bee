@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE Form [
+  <!ENTITY lbl "text-align: right; padding-left: 1em; padding-right: 1em;">
+]>
+<f:Form xmlns="http://www.butent.com/widget"
+  xmlns:f="http://www.butent.com/form"
+  
+  name="NewServiceInvoice" viewName="ServiceInvoices" caption="=trdNewInvoice"
+  width="740" height="250"
+  >
+  <Table style="border-collapse: collapse;" cellStyle="padding-top: 1ex; padding-bottom: 1ex;">
+    <row>
+      <Label text="=trdDate" class="bee-required" style="&lbl;" />
+      <InputDateTime source="Date" visible="true" />
+
+      <Label text="=trdInvoicePrefix" style="&lbl;" for="InvoicePrefix" />
+      <HorizontalPanel style="border-collapse: collapse;">
+        <InputText source="InvoicePrefix" upperCase="true" style="width: 50px;" />
+        <Label text="=trdInvoiceNo" style="&lbl;" for="InvoiceNo" />
+        <InputText source="InvoiceNo" />
+      </HorizontalPanel>
+    </row>
+
+    <row>
+      <Label text="=trdTerm" style="&lbl;" for="Term" />
+      <InputDate source="Term" style="width: 80px;" />
+
+      <Label text="=currency" class="bee-required" style="&lbl;" for="Currency" />
+      <DataSelector source="Currency" style="width: 50px;" editEnabled="false"
+        newRowEnabled="false" visible="true" />
+    </row>
+
+    <row>
+      <Label text="=trdSupplier" style="&lbl;" for="Supplier" />
+      <DataSelector source="Supplier" />
+      <Label text="=trdCustomer" class="bee-required" style="&lbl;" />
+      <DataSelector source="Customer" required="true" visible="true" />
+    </row>
+
+    <row>
+      <Label text="=trdManager" style="&lbl;" for="Manager" />
+      <DataSelector source="Manager" editEnabled="false" newRowEnabled="false" />
+      <Label text="=trdPayer" style="&lbl;" for="Payer" />
+      <DataSelector source="Payer" />
+    </row>
+
+    <row>
+      <cell colSpan="3">
+        <Label name="MainItemCaption" text="=transportMainItemCaption" style="&lbl;" />
+      </cell>
+      <UnboundSelector property="MainItem" viewName="Items" renderColumns="Name" />
+    </row>
+  </Table>
+</f:Form>

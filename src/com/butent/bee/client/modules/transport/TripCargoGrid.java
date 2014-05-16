@@ -13,7 +13,7 @@ import com.google.gwt.regexp.shared.RegExp;
 import com.google.gwt.regexp.shared.SplitResult;
 import com.google.gwt.user.client.ui.SimplePanel;
 
-import static com.butent.bee.shared.modules.commons.CommonsConstants.*;
+import static com.butent.bee.shared.modules.classifiers.ClassifierConstants.*;
 import static com.butent.bee.shared.modules.transport.TransportConstants.*;
 
 import com.butent.bee.client.BeeKeeper;
@@ -211,7 +211,7 @@ class TripCargoGrid extends AbstractGridInterceptor implements ClickHandler {
       for (String fld : new String[] {COL_DESCRIPTION, "Loading", "Unloading",
           "Weight", "Volume", "Quantity", "Partial", "Outsized", "Dangerous", "Number",
           "ShippingTermName", "Cmr", "LDM", "Length", "Width", "Height", "Palettes",
-          "ExchangeOfPalettes"}) {
+          "ExchangeOfPalettes", COL_CARGO_DIRECTIONS}) {
 
         String lbl;
         String xpr;
@@ -233,7 +233,7 @@ class TripCargoGrid extends AbstractGridInterceptor implements ClickHandler {
           case "Unloading":
             xpr = lbl + ": {" + fld + "Date} {" + fld + "Contact} {" + fld + "Company} {"
                 + fld + "Address} {" + fld + "PostIndex} {" + fld + "CityName} {"
-                + fld + "CountryName} {" + fld + "Terminal} ";
+                + fld + "CountryName} {" + fld + "Number} ";
             break;
 
           default:
@@ -461,14 +461,6 @@ class TripCargoGrid extends AbstractGridInterceptor implements ClickHandler {
   }
 
   @Override
-  public void onAttach(GridView gridView) {
-    if (BeeUtils.same(tripForm.getFormName(), FORM_TRIP)) {
-      HeaderView hdr = gridView.getViewPresenter().getHeader();
-      hdr.addCommandItem(new Button(Localized.getConstants().message(), this));
-    }
-  }
-
-  @Override
   public void onClick(ClickEvent arg) {
     Set<Long> cargos = Sets.newHashSet();
     final Set<Long> selected = Sets.newHashSet();
@@ -532,5 +524,13 @@ class TripCargoGrid extends AbstractGridInterceptor implements ClickHandler {
       event.consume();
     }
     super.onEditStart(event);
+  }
+
+  @Override
+  public void onLoad(GridView gridView) {
+    if (BeeUtils.same(tripForm.getFormName(), FORM_TRIP)) {
+      HeaderView hdr = gridView.getViewPresenter().getHeader();
+      hdr.addCommandItem(new Button(Localized.getConstants().message(), this));
+    }
   }
 }

@@ -6,10 +6,14 @@ public final class TradeConstants {
   public static final String SVC_CREDIT_INFO = "CreditInfo";
 
   public static final String TBL_PURCHASES = "Purchases";
+  public static final String TBL_PURCHASE_USAGE = "PurchaseUsage";
   public static final String TBL_PURCHASE_ITEMS = "PurchaseItems";
   public static final String TBL_SALES = "Sales";
   public static final String TBL_SALE_ITEMS = "SaleItems";
 
+  public static final String VIEW_PURCHASES = "Purchases";
+  public static final String VIEW_SALES = "Sales";
+  
   public static final String COL_PURCHASE = "Purchase";
   public static final String COL_PURCHASE_WAREHOUSE_TO = "WarehouseTo";
 
@@ -31,6 +35,8 @@ public final class TradeConstants {
   public static final String COL_TRADE_MANAGER = "Manager";
   public static final String COL_TRADE_TERM = "Term";
   public static final String COL_TRADE_NOTES = "Notes";
+  public static final String COL_TRADE_EXPORTED = "Exported";
+  public static final String COL_TRADE_KIND = "Kind";
 
   public static final String COL_TRADE_VAT_PLUS = "VatPlus";
   public static final String COL_TRADE_VAT = "Vat";
@@ -40,6 +46,9 @@ public final class TradeConstants {
   public static final String COL_TRADE_ITEM_PRICE = "Price";
   public static final String COL_TRADE_ITEM_NOTE = "Note";
 
+  public static final String ALS_CUSTOMER_NAME = "CustomerName";
+  public static final String ALS_SUPPLIER_NAME = "SupplierName";
+  
   public static final String VAR_TOTAL = "Total";
   public static final String VAR_DEBT = "Debt";
   public static final String VAR_OVERDUE = "Overdue";

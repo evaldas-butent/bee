@@ -23,7 +23,7 @@ import com.butent.bee.client.grid.GridFactory.GridOptions;
 import com.butent.bee.client.layout.Direction;
 import com.butent.bee.client.layout.Simple;
 import com.butent.bee.client.logging.ClientLogManager;
-import com.butent.bee.client.modules.commons.PasswordService;
+import com.butent.bee.client.modules.administration.PasswordService;
 import com.butent.bee.client.presenter.Presenter;
 import com.butent.bee.client.presenter.PresenterCallback;
 import com.butent.bee.client.screen.ScreenImpl;
@@ -37,7 +37,7 @@ import com.butent.bee.shared.data.filter.Filter;
 import com.butent.bee.shared.data.value.LongValue;
 import com.butent.bee.shared.data.value.Value;
 import com.butent.bee.shared.i18n.Localized;
-import com.butent.bee.shared.modules.documents.DocumentsConstants;
+import com.butent.bee.shared.modules.documents.DocumentConstants;
 import com.butent.bee.shared.modules.trade.TradeConstants;
 import com.butent.bee.shared.ui.UserInterface;
 
@@ -85,7 +85,7 @@ public class SelfServiceScreen extends ScreenImpl {
 
     Data.setVisibleViews(Sets.newHashSet(VIEW_CARGO_REQUESTS, VIEW_CARGO_REQUEST_FILES,
         VIEW_CARGO_REQUEST_TEMPLATES, VIEW_ORDERS, VIEW_CARGO_INVOICES,
-        VIEW_CARGO_CREDIT_INVOICES));
+        VIEW_CARGO_PURCHASE_INVOICES));
     Data.setEditableViews(Sets.newHashSet(VIEW_CARGO_REQUESTS, VIEW_CARGO_REQUEST_FILES,
         VIEW_CARGO_REQUEST_TEMPLATES));
 
@@ -99,9 +99,9 @@ public class SelfServiceScreen extends ScreenImpl {
     GridFactory.hideColumn(VIEW_CARGO_REQUEST_TEMPLATES, COL_CARGO_REQUEST_TEMPLATE_USER);
 
     GridFactory.hideColumn(VIEW_CARGO_INVOICES, "Select");
-    GridFactory.hideColumn(VIEW_CARGO_CREDIT_INVOICES, "Select");
+    GridFactory.hideColumn(VIEW_CARGO_PURCHASE_INVOICES, "Select");
 
-    FormFactory.hideWidget(DocumentsConstants.FORM_DOCUMENT, "DocumentRelations");
+    FormFactory.hideWidget(DocumentConstants.FORM_DOCUMENT, "DocumentRelations");
 
     addCommandItem(new Button(Localized.getConstants().trSelfServiceCommandNewRequest(),
         new ClickHandler() {
@@ -144,7 +144,7 @@ public class SelfServiceScreen extends ScreenImpl {
             openGrid(VIEW_CARGO_INVOICES, saleFilter);
 
             Filter purchaseFilter = Filter.isEqual(TradeConstants.COL_TRADE_SUPPLIER, company);
-            openGrid(VIEW_CARGO_CREDIT_INVOICES, purchaseFilter);
+            openGrid(VIEW_CARGO_PURCHASE_INVOICES, purchaseFilter);
           }
         }));
   }

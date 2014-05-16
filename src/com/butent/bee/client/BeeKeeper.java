@@ -2,6 +2,9 @@ package com.butent.bee.client;
 
 import com.google.gwt.core.client.GWT;
 
+import com.butent.bee.client.grid.GridFactory;
+import com.butent.bee.client.ui.FormFactory;
+
 public final class BeeKeeper {
 
   private static Screen screen;
@@ -34,6 +37,15 @@ public final class BeeKeeper {
 
   public static UserInfo getUser() {
     return user;
+  }
+  
+  public static void onRightsChange() {
+    if (getScreen().getUserInterface().hasMenu()) {
+      getMenu().loadMenu();
+    }
+    
+    GridFactory.clearDescriptionCache();
+    FormFactory.clearDescriptionCache();
   }
 
   static void init() {
