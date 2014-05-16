@@ -38,6 +38,7 @@ import com.butent.bee.client.view.edit.SaveChangesEvent;
 import com.butent.bee.client.view.form.FormView;
 import com.butent.bee.client.view.form.interceptor.AbstractFormInterceptor;
 import com.butent.bee.client.view.form.interceptor.FormInterceptor;
+import com.butent.bee.client.view.grid.GridView;
 import com.butent.bee.client.view.grid.interceptor.AbstractGridInterceptor;
 import com.butent.bee.client.view.grid.interceptor.GridInterceptor;
 import com.butent.bee.client.widget.Label;
@@ -45,6 +46,7 @@ import com.butent.bee.shared.Consumer;
 import com.butent.bee.shared.Holder;
 import com.butent.bee.shared.State;
 import com.butent.bee.shared.css.values.TextAlign;
+import com.butent.bee.shared.data.BeeColumn;
 import com.butent.bee.shared.data.BeeRow;
 import com.butent.bee.shared.data.BeeRowSet;
 import com.butent.bee.shared.data.DataUtils;
@@ -248,12 +250,12 @@ public class ServiceObjectForm extends AbstractFormInterceptor implements ClickH
         && event.hasAnyView(TaskConstants.VIEW_TASKS, TaskConstants.VIEW_RECURRING_TASKS)
         && DomUtils.isOrHasChild(getFormView().asWidget(), event.getOptions())
         && getActiveRow() != null) {
-      
+
       String address = getStringValue(COL_SERVICE_ADDRESS);
       if (!BeeUtils.isEmpty(address)) {
         Data.setValue(event.getViewName(), event.getRow(), TaskConstants.COL_SUMMARY, address);
       }
-      
+
       Long customer = getLongValue(COL_SERVICE_CUSTOMER);
       if (DataUtils.isId(customer)) {
         RelationUtils.copyWithDescendants(
@@ -385,6 +387,7 @@ public class ServiceObjectForm extends AbstractFormInterceptor implements ClickH
   private boolean save(final IsRow row) {
     final Map<String, String> newValues = Maps.newLinkedHashMap();
     Map<Long, String> changedValues = Maps.newHashMap();
+
     CompoundFilter flt = Filter.or();
     final Holder<Integer> holder = Holder.of(0);
 
@@ -402,6 +405,7 @@ public class ServiceObjectForm extends AbstractFormInterceptor implements ClickH
         holder.set(holder.get() + 1);
       }
     }
+
     for (String crit : ids.keySet()) {
       if (!criteria.containsKey(crit)) {
         flt.add(Filter.compareId(ids.get(crit)));
@@ -410,9 +414,11 @@ public class ServiceObjectForm extends AbstractFormInterceptor implements ClickH
     if (!flt.isEmpty()) {
       holder.set(holder.get() + 1);
     }
+
     if (row == null) {
       return BeeUtils.isPositive(holder.get());
     }
+
     final ScheduledCommand scheduler = new ScheduledCommand() {
       @Override
       public void execute() {
@@ -423,27 +429,35 @@ public class ServiceObjectForm extends AbstractFormInterceptor implements ClickH
             @Override
             public void onSuccess(BeeRow result) {
               super.onSuccess(result);
-              getGridView().getGrid().refresh();
+
+              GridView gridView = getGridView();
+              if (gridView != null) {
+                gridView.getGrid().refresh();
+              }
             }
           });
         }
       }
     };
+
     if (!BeeUtils.isEmpty(newValues)) {
       final Consumer<Long> consumer = new Consumer<Long>() {
         @Override
         public void accept(Long id) {
+          List<BeeColumn> columns = Data.getColumns(VIEW_SERVICE_CRITERIA,
+              Lists.newArrayList(COL_SERVICE_CRITERIA_GROUP,
+                  COL_SERVICE_CRITERION_NAME, COL_SERVICE_CRITERION_VALUE));
+
           for (Entry<String, String> entry : newValues.entrySet()) {
-            Queries.insert(VIEW_SERVICE_CRITERIA, Data.getColumns(VIEW_SERVICE_CRITERIA,
-                Lists.newArrayList(COL_SERVICE_CRITERIA_GROUP, COL_SERVICE_CRITERION_NAME,
-                    COL_SERVICE_CRITERION_VALUE)),
-                Lists.newArrayList(BeeUtils.toString(id), entry.getKey(), entry.getValue()), null,
-                new RowCallback() {
-                  @Override
-                  public void onSuccess(BeeRow result) {
-                    scheduler.execute();
-                  }
-                });
+            List<String> values = Lists.newArrayList(BeeUtils.toString(id),
+                entry.getKey(), entry.getValue());
+
+            Queries.insert(VIEW_SERVICE_CRITERIA, columns, values, null, new RowCallback() {
+              @Override
+              public void onSuccess(BeeRow result) {
+                scheduler.execute();
+              }
+            });
           }
         }
       };

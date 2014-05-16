@@ -5,6 +5,7 @@ import static com.butent.bee.shared.modules.service.ServiceConstants.*;
 import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.Callback;
 import com.butent.bee.client.communication.ParameterList;
+import com.butent.bee.client.event.logical.SelectorEvent;
 import com.butent.bee.client.grid.GridFactory;
 import com.butent.bee.client.style.StyleUtils;
 import com.butent.bee.client.timeboard.TimeBoard;
@@ -42,7 +43,9 @@ public final class ServiceKeeper {
 
     FormFactory.registerFormInterceptor("ServiceObject", new ServiceObjectForm());
     FormFactory.registerFormInterceptor("ServiceInvoice", new ServiceInvoiceForm());
-    
+
+    SelectorEvent.register(new SelectorHandler());    
+
     TimeBoard.ensureStyleSheet();
 
     MenuService.SERVICE_CALENDAR.setHandler(new MenuHandler() {
@@ -63,7 +66,6 @@ public final class ServiceKeeper {
         ServiceCalendar.open(callback);
       }
     });
-
   }
 
   private ServiceKeeper() {
