@@ -1,5 +1,6 @@
 package com.butent.bee.client.output;
 
+import com.google.common.base.Strings;
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.dom.client.Document;
 import com.google.gwt.dom.client.FormElement;
@@ -12,6 +13,7 @@ import com.butent.bee.client.Global;
 import com.butent.bee.client.data.Queries;
 import com.butent.bee.client.dialog.StringCallback;
 import com.butent.bee.client.grid.CellContext;
+import com.butent.bee.client.grid.ColumnFooter;
 import com.butent.bee.client.grid.ColumnHeader;
 import com.butent.bee.client.presenter.GridPresenter;
 import com.butent.bee.client.screen.BodyPanel;
@@ -23,6 +25,7 @@ import com.butent.bee.shared.Holder;
 import com.butent.bee.shared.Service;
 import com.butent.bee.shared.css.Colors;
 import com.butent.bee.shared.css.CssUnit;
+import com.butent.bee.shared.css.values.TextAlign;
 import com.butent.bee.shared.css.values.VerticalAlign;
 import com.butent.bee.shared.data.BeeRowSet;
 import com.butent.bee.shared.data.IsRow;
@@ -70,6 +73,7 @@ public final class Exporter {
   private static final double CAPTION_HEIGHT_FACTOR = 1.5;
   private static final double FILTER_LABEL_HEIGHT_FACTOR = 1.0;
   private static final double HEADER_HEIGHT_FACTOR = 1.2;
+  private static final double FOOTER_HEIGHT_FACTOR = 1.1;
 
   private static final int MAX_NUMBER_OF_ROWS_FOR_AUTOSIZE = 1_000;
 
@@ -119,6 +123,12 @@ public final class Exporter {
         Localized.getConstants().fileName(), callback, fileName, 200, null,
         width, CssUnit.PX, BeeConst.UNDEF,
         Action.EXPORT.getCaption(), Action.CANCEL.getCaption(), null);
+  }
+
+  public static XRow createFooterRow(int rowIndex) {
+    XRow row = new XRow(rowIndex);
+    row.setHeightFactor(FOOTER_HEIGHT_FACTOR);
+    return row;
   }
 
   public static XRow createHeaderRow(int rowIndex) {
@@ -275,6 +285,44 @@ public final class Exporter {
         }
       }
 
+      if (grid.hasFooters()) {
+        row = createFooterRow(rowIndex++);
+
+        style = XStyle.background(Colors.LIGHTGRAY);
+        style.setFontRef(sheet.registerFont(XFont.bold()));
+
+        styleRef = sheet.registerStyle(style);
+
+        String footerValue;
+        TextAlign footerTextAlign;
+        Integer footerStyleRef;
+
+        for (int i = 0; i < columnCount; i++) {
+          ColumnFooter footer = columns.get(i).getFooter();
+        
+          if (footer == null) {
+            footerValue = null;
+            footerTextAlign = null;
+          } else {
+            footerValue = footer.reduce(grid.getRowData());
+            footerTextAlign = BeeUtils.isEmpty(footerValue) ? null : footer.getTextAlign();
+          }
+          
+          if (footerTextAlign == null) {
+            footerStyleRef = styleRef;
+          } else {
+            XStyle footerStyle = style.copy();
+            footerStyle.setTextAlign(footerTextAlign);
+            
+            footerStyleRef = sheet.registerStyle(footerStyle);
+          }
+
+          row.add(new XCell(i, Strings.nullToEmpty(footerValue), footerStyleRef));
+        }
+
+        sheet.add(row);
+      }
+      
       autosizeNoPictures(sheet, columns.size());
       export(sheet, fileName);
 

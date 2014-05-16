@@ -129,6 +129,10 @@ public class ColumnInfo implements HasValueType, Flexible {
     return flexibility;
   }
 
+  public ColumnFooter getFooter() {
+    return footer;
+  }
+
   public ColumnHeader getHeader() {
     return header;
   }
@@ -233,10 +237,6 @@ public class ColumnInfo implements HasValueType, Flexible {
 
   AbstractFilterSupplier getFilterSupplier() {
     return filterSupplier;
-  }
-
-  ColumnFooter getFooter() {
-    return footer;
   }
 
   Font getHeaderFont() {

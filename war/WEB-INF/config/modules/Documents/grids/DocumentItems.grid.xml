@@ -27,7 +27,7 @@
       </style>
       <footer aggregate="sum" />
     </CalcColumn>
-    <DataColumn name="Data" caption="&#xf044;" width="20" sortable="false" readOnly="true">
+    <DataColumn name="Data" caption="&#xf044;" width="20" sortable="false" readOnly="true" exportable="false">
       <style>
         <headerStyle><ui:font>FontAwesome</ui:font></headerStyle>
         <bodyStyle><ui:font>FontAwesome 20</ui:font></bodyStyle>

@@ -7,10 +7,14 @@
   flexGrow="1"
   >
   <g:columns>
-    <RelColumn name="Item" renderColumns="ItemName" />
+    <RelColumn name="Item" renderColumns="ItemName">
+      <footer text="=totalOf" horizontalAlignment="right" />
+    </RelColumn>  
     <DataColumn name="Article" />
 
-    <DataColumn name="Quantity" />
+    <DataColumn name="Quantity">
+      <footer aggregate="sum" />
+    </DataColumn>
     <DataColumn name="UnitName" flexGrow="0" />
     <DataColumn name="Price" />
 
@@ -28,6 +32,8 @@
       <style>
         <bodyStyle><ui:font>bold</ui:font></bodyStyle>
       </style>
+      <renderer type="total" />
+      <footer aggregate="sum" />
     </CalcColumn>
 
     <DataColumn name="Note" visible="false" />
