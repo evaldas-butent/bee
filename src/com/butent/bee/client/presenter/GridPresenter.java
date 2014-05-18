@@ -182,7 +182,7 @@ public class GridPresenter extends AbstractPresenter implements ReadyForInsertEv
       int rowCount, Filter userFilter, GridInterceptor gridInterceptor,
       Collection<UiOption> uiOptions, GridFactory.GridOptions gridOptions) {
 
-    GridContainerView view = new GridContainerImpl();
+    GridContainerView view = new GridContainerImpl(gridDescription.getName());
     view.create(gridDescription, gridView, rowCount, userFilter, gridInterceptor, uiOptions,
         gridOptions);
 

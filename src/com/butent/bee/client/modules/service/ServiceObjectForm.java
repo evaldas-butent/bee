@@ -2,7 +2,6 @@ package com.butent.bee.client.modules.service;
 
 import com.google.common.base.Function;
 import com.google.common.collect.Lists;
-import com.google.common.collect.Maps;
 import com.google.gwt.core.client.Scheduler.ScheduledCommand;
 import com.google.gwt.dom.client.Style.Unit;
 import com.google.gwt.event.dom.client.ClickEvent;
@@ -65,6 +64,8 @@ import com.butent.bee.shared.utils.BeeUtils;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -135,11 +136,13 @@ public class ServiceObjectForm extends AbstractFormInterceptor implements ClickH
     }
   };
 
-  private HasWidgets panel;
-  private Long groupId;
-  private final Map<String, String> criteriaHistory = Maps.newLinkedHashMap();
-  private final Map<String, Editor> criteria = Maps.newLinkedHashMap();
-  private final Map<String, Long> ids = Maps.newHashMap();
+  private HasWidgets criteriaPanel;
+
+  private final Map<String, String> criteriaHistory = new LinkedHashMap<>();
+  private final Map<String, Editor> criteriaEditors = new LinkedHashMap<>();
+
+  private Long criteriaGroupId;
+  private final Map<String, Long> criteriaIds = new HashMap<>();
 
   private ChildGrid groupsGrid;
   private ChildGrid criteriaGrid;
@@ -158,7 +161,7 @@ public class ServiceObjectForm extends AbstractFormInterceptor implements ClickH
       widget.asWidget().addDomHandler(this, ClickEvent.getType());
 
     } else if (widget instanceof HasWidgets && BeeUtils.same(name, "MainCriteriaContainer")) {
-      panel = (HasWidgets) widget;
+      criteriaPanel = (HasWidgets) widget;
 
     } else if (widget instanceof ChildGrid) {
       ChildGrid grid = (ChildGrid) widget;
@@ -195,12 +198,12 @@ public class ServiceObjectForm extends AbstractFormInterceptor implements ClickH
   public void onClick(ClickEvent event) {
     LocalizableConstants loc = Localized.getConstants();
 
-    Global.inputCollection(loc.mainCriteria(), loc.name(), true, criteria.keySet(),
+    Global.inputCollection(loc.mainCriteria(), loc.name(), true, criteriaEditors.keySet(),
         new Consumer<Collection<String>>() {
           @Override
           public void accept(Collection<String> collection) {
-            Map<String, Editor> oldCriteria = Maps.newHashMap(criteria);
-            criteria.clear();
+            Map<String, Editor> oldCriteria = new HashMap<>(criteriaEditors);
+            criteriaEditors.clear();
 
             for (String crit : collection) {
               Editor input = oldCriteria.get(crit);
@@ -209,7 +212,7 @@ public class ServiceObjectForm extends AbstractFormInterceptor implements ClickH
                 input = createAutocomplete(VIEW_SERVICE_DISTINCT_VALUES,
                     COL_SERVICE_CRITERION_VALUE, crit);
               }
-              criteria.put(crit, input);
+              criteriaEditors.put(crit, input);
             }
             render();
           }
@@ -227,14 +230,16 @@ public class ServiceObjectForm extends AbstractFormInterceptor implements ClickH
 
   @Override
   public void onClose(List<String> messages, IsRow oldRow, IsRow newRow) {
-    LocalizableConstants loc = Localized.getConstants();
-    List<String> warnings = Lists.newArrayList();
-
     if (save(null)) {
-      warnings.add(loc.mainCriteria());
-    }
-    if (!BeeUtils.isEmpty(warnings)) {
-      messages.add(BeeUtils.joinWords(loc.changedValues(), warnings));
+      if (messages.size() == 1) {
+        String msg = BeeUtils.joinItems(messages.get(0), Localized.getConstants().mainCriteria());
+        messages.clear();
+        messages.add(msg);
+
+      } else {
+        messages.add(BeeUtils.joinWords(Localized.getConstants().changedValues(),
+            Localized.getConstants().mainCriteria()));
+      }
     }
   }
 
@@ -267,7 +272,7 @@ public class ServiceObjectForm extends AbstractFormInterceptor implements ClickH
 
   @Override
   public void onSaveChanges(HasHandlers listener, SaveChangesEvent event) {
-    if (BeeUtils.isEmpty(event.getColumns())) {
+    if (event.isEmpty()) {
       save(getActiveRow());
     }
   }
@@ -297,30 +302,29 @@ public class ServiceObjectForm extends AbstractFormInterceptor implements ClickH
   }
 
   private void render() {
-    if (panel == null) {
-      getHeaderView().clearCommandPanel();
+    if (criteriaPanel == null) {
       return;
     }
-    panel.clear();
+    criteriaPanel.clear();
 
-    if (criteria.size() > 0) {
+    if (criteriaEditors.size() > 0) {
       int h = 0;
       FlowPanel labelContainer = new FlowPanel();
       labelContainer.getElement().getStyle().setMarginRight(5, Unit.PX);
-      panel.add(labelContainer);
+      criteriaPanel.add(labelContainer);
 
       FlowPanel inputContainer = new FlowPanel();
       inputContainer.addStyleName(StyleUtils.NAME_FLEXIBLE);
-      panel.add(inputContainer);
+      criteriaPanel.add(inputContainer);
 
-      for (Entry<String, Editor> entry : criteria.entrySet()) {
+      for (Entry<String, Editor> entry : criteriaEditors.entrySet()) {
         Label label = new Label(entry.getKey());
         StyleUtils.setTextAlign(label.getElement(), TextAlign.RIGHT);
         SimplePanel labelDiv = new SimplePanel(label);
         labelContainer.add(labelDiv);
 
         Widget editor = entry.getValue().asWidget();
-        editor.setWidth("100%");
+        StyleUtils.fullWidth(editor);
         SimplePanel editorDiv = new SimplePanel(editor);
         inputContainer.add(editorDiv);
 
@@ -333,6 +337,7 @@ public class ServiceObjectForm extends AbstractFormInterceptor implements ClickH
           }
           h += 5;
         }
+
         StyleUtils.setHeight(labelDiv, h);
         StyleUtils.setHeight(editorDiv, h);
       }
@@ -341,9 +346,10 @@ public class ServiceObjectForm extends AbstractFormInterceptor implements ClickH
 
   private void requery(IsRow row) {
     criteriaHistory.clear();
-    criteria.clear();
-    ids.clear();
-    groupId = null;
+    criteriaEditors.clear();
+    criteriaIds.clear();
+    criteriaGroupId = null;
+
     render();
 
     Long objId = row.getId();
@@ -351,50 +357,50 @@ public class ServiceObjectForm extends AbstractFormInterceptor implements ClickH
       return;
     }
 
-    Queries.getRowSet(VIEW_SERVICE_OBJECT_CRITERIA, null,
-        Filter.and(Filter.equals(COL_SERVICE_OBJECT, objId),
-            Filter.isNull(COL_SERVICE_CRITERIA_GROUP_NAME)),
-        new RowSetCallback() {
-          @Override
-          public void onSuccess(BeeRowSet result) {
-            if (result.getNumberOfRows() > 0) {
-              groupId = result.getRow(0).getId();
+    Filter filter = Filter.and(Filter.equals(COL_SERVICE_OBJECT, objId),
+        Filter.isNull(COL_SERVICE_CRITERIA_GROUP_NAME));
 
-              for (BeeRow crit : result.getRows()) {
-                String name = Data.getString(VIEW_SERVICE_OBJECT_CRITERIA, crit,
-                    COL_SERVICE_CRITERION_NAME);
+    Queries.getRowSet(VIEW_SERVICE_OBJECT_CRITERIA, null, filter, new RowSetCallback() {
+      @Override
+      public void onSuccess(BeeRowSet result) {
+        if (result.getNumberOfRows() > 0) {
+          criteriaGroupId = result.getRow(0).getId();
 
-                if (!BeeUtils.isEmpty(name)) {
-                  String value = Data.getString(VIEW_SERVICE_OBJECT_CRITERIA, crit,
-                      COL_SERVICE_CRITERION_VALUE);
+          for (BeeRow crit : result) {
+            String name = DataUtils.getString(result, crit, COL_SERVICE_CRITERION_NAME);
 
-                  Autocomplete box = createAutocomplete(VIEW_SERVICE_DISTINCT_VALUES,
-                      COL_SERVICE_CRITERION_VALUE, name);
+            if (!BeeUtils.isEmpty(name)) {
+              String value = DataUtils.getString(result, crit, COL_SERVICE_CRITERION_VALUE);
 
-                  box.setValue(value);
+              Autocomplete box = createAutocomplete(VIEW_SERVICE_DISTINCT_VALUES,
+                  COL_SERVICE_CRITERION_VALUE, name);
 
-                  criteriaHistory.put(name, value);
-                  criteria.put(name, box);
-                  ids.put(name, Data.getLong(VIEW_SERVICE_OBJECT_CRITERIA, crit, "ID"));
-                }
-              }
-              render();
+              box.setValue(value);
+
+              criteriaHistory.put(name, value);
+              criteriaEditors.put(name, box);
+
+              criteriaIds.put(name, DataUtils.getLong(result, crit, "ID"));
             }
           }
-        });
+
+          render();
+        }
+      }
+    });
   }
 
   private boolean save(final IsRow row) {
-    final Map<String, String> newValues = Maps.newLinkedHashMap();
-    Map<Long, String> changedValues = Maps.newHashMap();
+    final Map<String, String> newValues = new LinkedHashMap<>();
+    Map<Long, String> changedValues = new HashMap<>();
 
     CompoundFilter flt = Filter.or();
     final Holder<Integer> holder = Holder.of(0);
 
-    for (String crit : criteria.keySet()) {
-      String value = criteria.get(crit).getValue();
+    for (String crit : criteriaEditors.keySet()) {
+      String value = criteriaEditors.get(crit).getValue();
       value = BeeUtils.isEmpty(value) ? null : value;
-      Long id = ids.get(crit);
+      Long id = criteriaIds.get(crit);
 
       if (!criteriaHistory.containsKey(crit) || !Objects.equals(value, criteriaHistory.get(crit))) {
         if (DataUtils.isId(id)) {
@@ -406,9 +412,9 @@ public class ServiceObjectForm extends AbstractFormInterceptor implements ClickH
       }
     }
 
-    for (String crit : ids.keySet()) {
-      if (!criteria.containsKey(crit)) {
-        flt.add(Filter.compareId(ids.get(crit)));
+    for (String crit : criteriaIds.keySet()) {
+      if (!criteriaEditors.containsKey(crit)) {
+        flt.add(Filter.compareId(criteriaIds.get(crit)));
       }
     }
     if (!flt.isEmpty()) {
@@ -462,7 +468,7 @@ public class ServiceObjectForm extends AbstractFormInterceptor implements ClickH
         }
       };
 
-      if (!DataUtils.isId(groupId)) {
+      if (!DataUtils.isId(criteriaGroupId)) {
         Queries.insert(VIEW_SERVICE_CRITERIA_GROUPS,
             Data.getColumns(VIEW_SERVICE_CRITERIA_GROUPS, Lists.newArrayList(COL_SERVICE_OBJECT)),
             Lists.newArrayList(BeeUtils.toString(row.getId())), null, new RowCallback() {
@@ -472,7 +478,7 @@ public class ServiceObjectForm extends AbstractFormInterceptor implements ClickH
               }
             });
       } else {
-        consumer.accept(groupId);
+        consumer.accept(criteriaGroupId);
       }
     }
 

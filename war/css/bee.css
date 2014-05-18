@@ -3112,3 +3112,10 @@
 .bee-info-table tr:hover {
   background-color: #e1e1e1;
 }
+
+@media print {
+  .bee-Header-commandPanel,
+  .bee-Header-control {
+    display: none;
+  }
+} 

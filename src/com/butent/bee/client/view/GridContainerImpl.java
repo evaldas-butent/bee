@@ -60,7 +60,7 @@ public class GridContainerImpl extends Split implements GridContainerView, HasNa
     HasSearch, ActiveRowChangeEvent.Handler, AddStartEvent.Handler, AddEndEvent.Handler,
     EditFormEvent.Handler, HasEditState {
 
-  private static final String STYLE_NAME = "bee-GridContainer";
+  private static final String STYLE_NAME = StyleUtils.CLASS_NAME_PREFIX + "GridContainer";
 
   private Presenter viewPresenter;
 
@@ -88,9 +88,13 @@ public class GridContainerImpl extends Split implements GridContainerView, HasNa
 
   private boolean resizeSuspended;
 
-  public GridContainerImpl() {
+  public GridContainerImpl(String gridName) {
     super(-1);
+
     addStyleName(STYLE_NAME);
+    if (!BeeUtils.isEmpty(gridName)) {
+      addStyleName(StyleUtils.CLASS_NAME_PREFIX + "grid-" + gridName.trim());
+    }
   }
 
   @Override

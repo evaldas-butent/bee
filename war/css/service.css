@@ -74,3 +74,7 @@
 .bee-svc-build-command[disabled] {
   visibility: hidden;
 }
+.bee-svc-build-invoice-disabled .bee-grid-ObjectInvoices .bee-Action-add,
+.bee-svc-build-defect-disabled .bee-grid-ObjectDefects .bee-Action-add {
+  visibility: hidden;
+}

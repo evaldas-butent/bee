@@ -1,13 +1,12 @@
 package com.butent.bee.shared.ui;
 
-import com.google.common.collect.Sets;
-
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeSerializable;
 import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.NameUtils;
 
+import java.util.HashSet;
 import java.util.Set;
 
 /**
@@ -31,10 +30,10 @@ public enum Action implements BeeSerializable, HasCaption {
   REMOVE_FILTER(Localized.getConstants().actionRemoveFilter(), "removeFilter"),
   SAVE(Localized.getConstants().actionSave(), "save");
 
-  public static final Set<Action> NO_ACTIONS = Sets.newHashSet();
+  public static final Set<Action> NO_ACTIONS = new HashSet<>();
 
   public static Set<Action> parse(String s) {
-    Set<Action> result = Sets.newHashSet();
+    Set<Action> result = new HashSet<>();
     if (!BeeUtils.isEmpty(s)) {
       for (String item : NameUtils.NAME_SPLITTER.split(s)) {
         Action action = restore(item);
