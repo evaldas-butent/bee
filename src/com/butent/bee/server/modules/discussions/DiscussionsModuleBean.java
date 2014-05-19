@@ -64,6 +64,7 @@ import com.butent.bee.shared.utils.NameUtils;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -966,7 +967,7 @@ public class DiscussionsModuleBean implements BeeModule {
 
     SimpleRowSet up = qs.getData(select);
     SimpleRowSet birthdays =
-        new SimpleRowSet(new String[] {COL_NAME, COL_DATE_OF_BIRTH});
+        new SimpleRowSet(new String[] {COL_NAME, COL_DATE_OF_BIRTH, COL_ORDINAL});
 
     for (String[] upRow : up.getRows()) {
       if (!BeeUtils.isLong(upRow[up.getColumnIndex(COL_DATE_OF_BIRTH)])) {
@@ -978,17 +979,19 @@ public class DiscussionsModuleBean implements BeeModule {
               .toLong(upRow[up.getColumnIndex(COL_DATE_OF_BIRTH)]));
 
       if (availableDays.contains(Integer.valueOf(date.getDoy()))) {
-        birthdays.addRow(new String[] {
+        String [] birthdaysRow = new String[] {
             BeeUtils.joinWords(upRow[up.getColumnIndex(COL_FIRST_NAME)],
                 upRow[up.getColumnIndex(COL_LAST_NAME)]),
-            upRow[up.getColumnIndex(COL_DATE_OF_BIRTH)]
-        });
+            upRow[up.getColumnIndex(COL_DATE_OF_BIRTH)],
+            BeeUtils.toString(date.getDoy())
+        };
+        birthdays.addRow(birthdaysRow);
       }
 
     }
 
     if (!birthdays.isEmpty()) {
-      return ResponseObject.response(birthdays);
+      return ResponseObject.response(sortBirhdaysList(birthdays));
     }
 
     return ResponseObject.emptyResponse();
@@ -1253,6 +1256,26 @@ public class DiscussionsModuleBean implements BeeModule {
     return qs.updateDataWithResponse(new SqlUpdate(TBL_DISCUSSIONS_USERS).addConstant(
         COL_LAST_ACCESS, mills)
         .setWhere(where));
+  }
+
+  private static SimpleRowSet sortBirhdaysList(SimpleRowSet birthdays) {
+    List<Integer> ordinals = Lists.newArrayList(birthdays.getIntColumn(COL_ORDINAL));
+    Collections.sort(ordinals);
+    SimpleRowSet sorted = new SimpleRowSet(birthdays.getColumnNames());
+    
+    for (Integer ordinal : ordinals) {
+      for (String[] row : birthdays.getRows()) {
+        Integer doy = BeeUtils.toIntOrNull(row[birthdays.getColumnIndex(COL_ORDINAL)]);
+
+        if (doy.compareTo(ordinal) == 0) {
+          sorted.addRow(row);
+          birthdays.getRows().remove(row);
+          break;
+        }
+      }
+    }
+
+    return sorted;
   }
 
   private ResponseObject updateDiscussionRelations(long discussionId, Set<String> updatedRelations,
