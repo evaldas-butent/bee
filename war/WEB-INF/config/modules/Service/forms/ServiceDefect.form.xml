@@ -7,6 +7,8 @@
   name="ServiceDefect" viewName="ServiceDefects" caption="=svcDefect" showRowId="true"
   width="650" height="400"
   >
+  <f:properties reports="PrintServiceDefect" />
+  
   <FlowPanel class="flexBox-vertical">
     <xi:include href="widgets/DefectBody.widget.xml" />
 

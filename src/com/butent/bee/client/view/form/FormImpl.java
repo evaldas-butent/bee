@@ -312,9 +312,11 @@ public class FormImpl extends Absolute implements FormView, PreviewHandler, Tabu
 
   private static final BeeLogger logger = LogUtils.getLogger(FormImpl.class);
 
-  private static final String STYLE_FORM = "bee-Form";
-  private static final String STYLE_FORM_DISABLED = "bee-Form-disabled";
-  private static final String STYLE_WIDGET_DISABLED = "bee-disabled";
+  private static final String STYLE_FORM = StyleUtils.CLASS_NAME_PREFIX + "Form";
+  private static final String STYLE_FORM_DISABLED = StyleUtils.CLASS_NAME_PREFIX + "Form-"
+      + StyleUtils.NAME_DISABLED;
+  private static final String STYLE_WIDGET_DISABLED = StyleUtils.CLASS_NAME_PREFIX 
+      + StyleUtils.NAME_DISABLED;
 
   private static final String NEW_ROW_CAPTION = "Create New";
 
@@ -379,12 +381,12 @@ public class FormImpl extends Absolute implements FormView, PreviewHandler, Tabu
   private final Map<String, String> properties = Maps.newHashMap();
 
   public FormImpl(String formName) {
-    this(formName, Position.RELATIVE);
-  }
-
-  public FormImpl(String formName, Position position) {
-    super(position, Overflow.AUTO);
+    super(Position.RELATIVE, Overflow.AUTO);
     this.formName = formName;
+    
+    if (!BeeUtils.isEmpty(formName)) {
+      addStyleName(StyleUtils.CLASS_NAME_PREFIX + "form-" + formName.trim());
+    }
   }
 
   @Override

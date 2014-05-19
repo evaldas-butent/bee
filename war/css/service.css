@@ -78,3 +78,7 @@
 .bee-svc-build-defect-disabled .bee-grid-ObjectDefects .bee-Action-add {
   visibility: hidden;
 }
+
+.bee-form-PrintServiceDefect .bee-co-companyInfo-name .bee-co-companyInfo-item {
+  font-weight: normal;
+}
