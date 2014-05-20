@@ -82,3 +82,39 @@
 .bee-form-PrintServiceDefect .bee-co-companyInfo-name .bee-co-companyInfo-item {
   font-weight: normal;
 }
+
+.bee-svc-print-defect-items-table {
+  border-collapse: collapse;
+}
+.bee-svc-print-defect-items-header,
+.bee-svc-print-defect-items-body,
+.bee-svc-print-defect-items-footer {
+  border: 1px solid #aaa;
+  padding-left: 8px;
+  padding-right: 8px;
+}  
+.bee-svc-print-defect-items-header {
+  text-align: center;
+  padding-top: 8px;
+  padding-bottom: 8px;
+}
+.bee-svc-print-defect-items-body {
+  padding-top: 5px;
+  padding-bottom: 5px;
+}
+.bee-svc-print-defect-items-body.bee-svc-print-defect-item-ordinal,
+.bee-svc-print-defect-items-body.bee-svc-print-defect-item-unit {
+  text-align: center;
+}
+.bee-svc-print-defect-items-body.bee-svc-print-defect-item-quantity,
+.bee-svc-print-defect-items-body.bee-svc-print-defect-item-price {
+  text-align: right;
+}
+.bee-svc-print-defect-items-footer {
+  font-weight: bold;
+  padding-top: 5px;
+  padding-bottom: 5px;
+}
+.bee-svc-print-defect-items-total-value {
+  text-align: right;
+}

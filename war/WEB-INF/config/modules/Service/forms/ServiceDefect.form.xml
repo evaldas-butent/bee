@@ -5,7 +5,7 @@
   xmlns:xi="http://www.w3.org/2001/XInclude"
   
   name="ServiceDefect" viewName="ServiceDefects" caption="=svcDefect" showRowId="true"
-  width="650" height="400"
+  width="650" height="70" heightUnit="%"
   >
   <f:properties reports="PrintServiceDefect" />
   

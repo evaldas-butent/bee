@@ -843,11 +843,12 @@ public class FormImpl extends Absolute implements FormView, PreviewHandler, Tabu
     Assert.notEmpty(name);
     String id = creationCallback.getWidgetIdByName(name);
 
-    if (BeeUtils.isEmpty(id)) {
-      return null;
-    } else {
-      return getWidgetById(id);
+    Widget widget = getWidgetById(id);
+    if (widget == null) {
+      logger.warning("widget not found:", name);
     }
+    
+    return widget;
   }
 
   @Override

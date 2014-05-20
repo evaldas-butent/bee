@@ -13,7 +13,8 @@
   <FlowPanel style="padding: 2ex 3em; background-color: white;">
     <FlowPanel class="flexBox-horizontal-top">
       <Image url="images/logo.png" />
-      <Label html="Rangovas" style="&lbl; &bold;" class="flexible" horizontalAlignment="right" />
+      <Label text="=svcDefectSupplier" style="&lbl; &bold;" class="flexible"
+        horizontalAlignment="right" />
       <div name="Supplier" />
     </FlowPanel>
     
@@ -29,84 +30,12 @@
 
     <br/>
     <HorizontalPanel style="margin: 0 auto;">
-      <Label html="REMONTO DEFEKTINIS AKTAS Nr." style="&bold;" />
+      <Label text="=svcDefectPrintNumberLabel" style="&bold;" />
       <TextLabel source="Number" />
     </HorizontalPanel>
-
-    <Table name="InvoiceDetails" style="width: 100%;">
-      <properties rateCurrency="EUR" />
-      <row>
-        <Label text="=itemName">
-          <properties name="Name" />
-        </Label>
-        <Label text="=article">
-          <properties name="Article" />
-        </Label>
-        <Label text="=quantity">
-          <properties name="Quantity" />
-        </Label>
-        <Label text="=unit">
-          <properties name="Unit" />
-        </Label>
-        <Label text="=price">
-          <properties name="Price" />
-        </Label>
-        <Label text="=trdAmountWoVat">
-          <properties name="Amount" />
-        </Label>
-        <Label text="=trdVat" horizontalAlignment="right">
-          <properties name="Vat" />
-        </Label>
-        <FlowPanel>
-          <properties name="RateAmount" />
-          <InlineLabel text="=trdAmount" />
-          <InlineLabel html="EUR" style="padding-left: 3px;" />
-        </FlowPanel>
-      </row>
-
-      <row>
-        <cell colSpan="5">
-          <FlowPanel style="text-align: right;">
-            <Label text="Bendra suma:" />
-            <Label text="PVM suma:" />
-            <Label text="VISO:" />
-          </FlowPanel>
-        </cell>
-        <FlowPanel>
-          <Label>
-            <properties name="AmountTotal" />
-          </Label>
-          <Label>
-            <properties name="VatTotal" />
-          </Label>
-          <Label>
-            <properties name="Total" />
-          </Label>
-        </FlowPanel>
-        <FlowPanel>
-          <Label>
-            <properties name="Currency" />
-          </Label>
-          <Label>
-            <properties name="Currency" />
-          </Label>
-          <Label>
-            <properties name="Currency" />
-          </Label>
-        </FlowPanel>
-        <FlowPanel>
-          <Label>
-            <properties name="RateAmountTotal" />
-          </Label>
-          <Label>
-            <properties name="RateVatTotal" />
-          </Label>
-          <Label>
-            <properties name="RateTotal" />
-          </Label>
-        </FlowPanel>
-      </row>
-    </Table>
+    
+    <br/>
+    <Table name="ServiceDefectItems" class="bee-svc-print-defect-items-table" />
     
     <br/>
     <TextLabel source="Notes" style="white-space: pre-wrap;" />

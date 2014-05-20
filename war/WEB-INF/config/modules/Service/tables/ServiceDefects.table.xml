@@ -12,7 +12,7 @@
     <String name="Number" precision="30" notNull="true" unique="true" label="=number"
       defExpr="NEXT_NUMBER" />
 
-    <Relation name="Supplier" relation="Companies" label="=supplier" />
+    <Relation name="Supplier" relation="Companies" label="=svcDefectSupplier" />
     <Relation name="Customer" relation="Companies" label="=customer" />
 
     <Relation name="Currency" relation="Currencies" notNull="true" defExpr="MAIN_CURRENCY"

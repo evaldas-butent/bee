@@ -59,6 +59,7 @@ public final class ServiceConstants {
   public static final String VIEW_MAINTENANCE = "Maintenance";
   public static final String VIEW_SERVICE_INVOICES = "ServiceInvoices";
   public static final String VIEW_SERVICE_DEFECTS = "ServiceDefects";
+  public static final String VIEW_SERVICE_DEFECT_ITEMS = "ServiceDefectItems";
 
   public static final String VIEW_SERVICE_SETTINGS = "ServiceSettings";
   
@@ -104,6 +105,8 @@ public final class ServiceConstants {
   public static final String ALS_MAINTENANCE_ITEM_NAME = "ItemName";
 
   public static final String ALS_DEFECT_SUPPLIER_NAME = "SupplierName";
+  public static final String ALS_DEFECT_ITEM_NAME = "ItemName";
+  public static final String ALS_DEFECT_UNIT_NAME = "UnitName";
 
   public static final String GRID_OBJECT_INVOICES = "ObjectInvoices";
   public static final String GRID_OBJECT_DEFECTS = "ObjectDefects";
