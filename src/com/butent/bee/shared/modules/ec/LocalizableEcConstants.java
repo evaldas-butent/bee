@@ -96,6 +96,8 @@ public interface LocalizableEcConstants {
 
   String ecInvoiceTerm();
 
+  String ecItemAnalog();
+
   String ecItemAnalogs();
 
   String ecItemBrand();
@@ -127,6 +129,8 @@ public interface LocalizableEcConstants {
   String ecItemLength();
 
   String ecItemName();
+
+  String ecItemNew();
 
   String ecItemNote();
 
@@ -163,7 +167,7 @@ public interface LocalizableEcConstants {
   String ecListPrice();
 
   String ecMailAccountNotFound();
-  
+
   String ecMailClientAddressNotFound();
 
   String ecMailFailed();
@@ -191,15 +195,15 @@ public interface LocalizableEcConstants {
   String ecOrder();
 
   String ecOrderAmount();
-  
+
   String ecOrderCommandFinish();
-  
+
   String ecOrderCommandMail();
-  
+
   String ecOrderCommandReject();
-  
+
   String ecOrderCommandSendToERP();
-  
+
   String ecOrderCommandUnsuppliedItems();
 
   String ecOrderCopyByMail();
@@ -253,7 +257,7 @@ public interface LocalizableEcConstants {
   String ecRegister();
 
   String ecRegistrationCommandCreate();
-  
+
   String ecRegistrationFormCaption();
 
   String ecRegistrationNew();

@@ -3,6 +3,7 @@ package com.butent.bee.server.modules.ec;
 import com.google.common.base.Objects;
 import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.HashMultimap;
+import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ListMultimap;
 import com.google.common.collect.Lists;
@@ -78,6 +79,7 @@ import com.butent.bee.shared.html.builder.elements.Td;
 import com.butent.bee.shared.html.builder.elements.Tr;
 import com.butent.bee.shared.i18n.LocalizableConstants;
 import com.butent.bee.shared.i18n.LocalizableMessages;
+import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.i18n.SupportedLocale;
 import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogUtils;
@@ -122,6 +124,7 @@ import java.text.Collator;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -142,10 +145,6 @@ public class EcModuleBean implements BeeModule {
   private static IsCondition oeNumberCondition =
       SqlUtils.notNull(TBL_TCD_ARTICLE_CODES, COL_TCD_OE_CODE);
 
-  public static String normalizeCode(String code) {
-    return code.replaceAll("[^A-Za-z0-9]", "").toUpperCase();
-  }
-
   private static IsCondition getCodeCondition(String code, Operator defOperator) {
     if (BeeUtils.isEmpty(code)) {
       return null;
@@ -163,7 +162,7 @@ public class EcModuleBean implements BeeModule {
 
     } else {
       operator = BeeUtils.nvl(defOperator, Operator.CONTAINS);
-      value = normalizeCode(code);
+      value = EcUtils.normalizeCode(code);
 
       if (operator == Operator.STARTS) {
         value += Operator.CHAR_ANY;
@@ -375,6 +374,9 @@ public class EcModuleBean implements BeeModule {
 
     } else if (BeeUtils.same(svc, SVC_CREATE_CLIENT)) {
       response = createClient(reqInfo);
+
+    } else if (BeeUtils.same(svc, SVC_CREATE_ITEM)) {
+      response = createItem(reqInfo);
 
     } else {
       String msg = BeeUtils.joinWords("e-commerce service not recognized:", svc);
@@ -776,6 +778,100 @@ public class EcModuleBean implements BeeModule {
     }
 
     return response;
+  }
+
+  private ResponseObject createItem(RequestInfo reqInfo) {
+    Long art = reqInfo.getParameterLong(COL_TCD_ARTICLE);
+
+    if (!DataUtils.isId(art)) {
+      return ResponseObject.parameterNotFound(SVC_CREATE_ITEM, COL_TCD_ARTICLE);
+    }
+    SqlSelect query = new SqlSelect();
+
+    String[] cols = new String[] {COL_TCD_ARTICLE_NAME, COL_TCD_ARTICLE_DESCRIPTION,
+        COL_TCD_ARTICLE_UNIT, COL_TCD_ARTICLE_WEIGHT, COL_TCD_ARTICLE_VISIBLE};
+
+    SimpleRow analog = qs.getRow(query.addFields(TBL_TCD_ARTICLES, cols)
+        .addFrom(TBL_TCD_ARTICLES)
+        .setWhere(sys.idEquals(TBL_TCD_ARTICLES, art)));
+
+    if (analog == null) {
+      return ResponseObject.error(Localized.getMessages()
+          .dataNotAvailable(COL_TCD_ARTICLE + "=" + art));
+    }
+    String artNr = reqInfo.getParameter(COL_TCD_ARTICLE_NR);
+    String brand = reqInfo.getParameter(COL_TCD_BRAND);
+
+    SqlInsert insert = new SqlInsert(TBL_TCD_ARTICLES)
+        .addConstant(COL_TCD_ARTICLE_NR, artNr)
+        .addConstant(COL_TCD_BRAND, brand);
+
+    for (String col : cols) {
+      insert.addConstant(col, BeeUtils.notEmpty(reqInfo.getParameter(col), analog.getValue(col)));
+    }
+    long newArt = qs.insertData(insert);
+
+    qs.insertData(new SqlInsert(TBL_TCD_ARTICLE_SUPPLIERS)
+        .addConstant(COL_TCD_ARTICLE, newArt)
+        .addConstant(COL_TCD_SUPPLIER, reqInfo.getParameter(COL_TCD_SUPPLIER))
+        .addConstant(COL_TCD_SUPPLIER_ID, reqInfo.getParameter(COL_TCD_SUPPLIER_ID)));
+
+    Map<String, String[]> sources = ImmutableMap.of(
+        TBL_TCD_ARTICLE_CRITERIA, new String[] {COL_TCD_CRITERIA, COL_TCD_CRITERIA_VALUE},
+        TBL_TCD_ARTICLE_CATEGORIES, new String[] {COL_TCD_CATEGORY},
+        TBL_TCD_TYPE_ARTICLES, new String[] {COL_TCD_TYPE},
+        TBL_TCD_ARTICLE_GRAPHICS, new String[] {COL_TCD_GRAPHICS, COL_TCD_SORT});
+
+    for (String source : sources.keySet()) {
+      SimpleRowSet rs = qs.getData(new SqlSelect()
+          .addConstant(newArt, COL_TCD_ARTICLE)
+          .addFields(source, sources.get(source))
+          .addFrom(source)
+          .setWhere(SqlUtils.equals(source, COL_TCD_ARTICLE, art)));
+
+      if (!rs.isEmpty()) {
+        for (SimpleRow row : rs) {
+          qs.insertData(new SqlInsert(source)
+              .addFields(rs.getColumnNames())
+              .addValues((Object[]) row.getValues()));
+        }
+      }
+    }
+    Set<Long> analogs = new HashSet<>();
+    analogs.add(newArt);
+
+    SimpleRowSet rs = qs.getData(new SqlSelect()
+        .addField(TBL_TCD_ARTICLES, sys.getIdName(TBL_TCD_ARTICLES), COL_TCD_ARTICLE)
+        .addFields(TBL_TCD_ARTICLE_CODES,
+            COL_TCD_SEARCH_NR, COL_TCD_CODE_NR, COL_TCD_BRAND, COL_TCD_OE_CODE)
+        .addFrom(TBL_TCD_ARTICLE_CODES)
+        .addFromLeft(TBL_TCD_ARTICLES, SqlUtils.and(SqlUtils.join(TBL_TCD_ARTICLE_CODES,
+            COL_TCD_CODE_NR, TBL_TCD_ARTICLES, COL_TCD_ARTICLE_NR),
+            SqlUtils.joinUsing(TBL_TCD_ARTICLE_CODES, TBL_TCD_ARTICLES, COL_TCD_BRAND)))
+        .setWhere(SqlUtils.equals(TBL_TCD_ARTICLE_CODES, COL_TCD_ARTICLE, art)));
+
+    if (!rs.isEmpty()) {
+      for (SimpleRow row : rs) {
+        Long an = row.getLong(COL_TCD_ARTICLE);
+
+        if (DataUtils.isId(an)) {
+          analogs.add(an);
+        }
+        row.setValue(COL_TCD_ARTICLE, BeeUtils.toString(newArt));
+
+        qs.insertData(new SqlInsert(TBL_TCD_ARTICLE_CODES)
+            .addFields(rs.getColumnNames())
+            .addValues((Object[]) row.getValues()));
+      }
+    }
+    for (Long id : analogs) {
+      qs.insertData(new SqlInsert(TBL_TCD_ARTICLE_CODES)
+          .addConstant(COL_TCD_ARTICLE, id)
+          .addConstant(COL_TCD_SEARCH_NR, EcUtils.normalizeCode(artNr))
+          .addConstant(COL_TCD_CODE_NR, artNr)
+          .addConstant(COL_TCD_BRAND, brand));
+    }
+    return ResponseObject.response(newArt);
   }
 
   private String createTempArticleIds(SqlSelect query) {
@@ -2739,7 +2835,7 @@ public class EcModuleBean implements BeeModule {
 
     IsCondition codeCondition = getCodeCondition(code, defOperator);
     if (codeCondition == null) {
-      return ResponseObject.error(normalizeCode(code),
+      return ResponseObject.error(EcUtils.normalizeCode(code),
           usr.getLocalizableMesssages().minSearchQueryLength(MIN_SEARCH_QUERY_LENGTH));
     }
 

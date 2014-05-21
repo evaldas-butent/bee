@@ -159,7 +159,7 @@ public class HeaderImpl extends Flow implements HeaderView {
     if (hasAction(Action.REMOVE_FILTER, false, enabledActions, disabledActions)) {
       add(createImage(Global.getImages().closeSmallRed(), Action.REMOVE_FILTER, hiddenActions));
     }
-    
+
     boolean canAdd = hasData && !readOnly && BeeKeeper.getUser().canCreateData(viewName);
     if (hasAction(Action.ADD, canAdd, enabledActions, disabledActions)) {
       add(createImage(Global.getImages().silverAdd(), Action.ADD, hiddenActions));
@@ -194,7 +194,7 @@ public class HeaderImpl extends Flow implements HeaderView {
     }
 
     if (hasAction(Action.AUDIT, false, enabledActions, disabledActions)) {
-      add(createImage(Global.getImages().silverChatIcon(), Action.AUDIT, hiddenActions));
+      add(createFa(FontAwesome.HISTORY, Action.AUDIT, hiddenActions));
     }
 
     if (hasAction(Action.PRINT, true, enabledActions, disabledActions)) {
@@ -262,7 +262,7 @@ public class HeaderImpl extends Flow implements HeaderView {
       return false;
     }
   }
-  
+
   @Override
   public boolean isActionOrCommand(Element target) {
     if (target == null) {
@@ -270,7 +270,7 @@ public class HeaderImpl extends Flow implements HeaderView {
     } else if (commandPanel.getElement().isOrHasChild(target)) {
       return true;
     } else {
-      return !BeeUtils.isEmpty(target.getId()) 
+      return !BeeUtils.isEmpty(target.getId())
           && getActionControls().values().contains(target.getId());
     }
   }
@@ -334,7 +334,7 @@ public class HeaderImpl extends Flow implements HeaderView {
   public void setMessageTitle(String title) {
     messageWidget.setTitle(title);
   }
-  
+
   @Override
   public void setViewPresenter(Presenter viewPresenter) {
     this.viewPresenter = viewPresenter;
@@ -350,7 +350,7 @@ public class HeaderImpl extends Flow implements HeaderView {
       }
       return;
     }
-    
+
     Element controlElement = DomUtils.getElement(widgetId);
     if (visible) {
       controlElement.removeClassName(STYLE_CONTROL_HIDDEN);

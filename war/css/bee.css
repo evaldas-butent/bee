@@ -486,6 +486,14 @@
   cursor: pointer;
 }
 
+.bee-CellGrid .bee-fa-label {
+  font-family: FontAwesome;
+}
+
+.bee-CellGridBody.bee-fa-label {
+  font-size: 20px;
+}
+
 .bee-Header-commandPanel .bee-fa-label {
   margin-left: 4px;
   margin-right: 4px;

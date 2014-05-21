@@ -512,8 +512,12 @@ public class AssessmentForm extends PrintFormInterceptor implements SelectorEven
     }
     ParameterList args = TransportHandler.createArgs(SVC_GET_ASSESSMENT_TOTALS);
     args.addDataItem(COL_ASSESSMENT, row.getId());
-    args.addDataItem(COL_CURRENCY, DataUtils.getLong(formView.getDataColumns(), row, COL_CURRENCY));
 
+    Long curr = DataUtils.getLong(formView.getDataColumns(), row, COL_CURRENCY);
+
+    if (DataUtils.isId(curr)) {
+      args.addDataItem(COL_CURRENCY, curr);
+    }
     if (!DataUtils.isId(row.getLong(formView.getDataIndex(COL_ASSESSMENT)))) {
       args.addDataItem("isPrimary", 1);
     }
