@@ -445,6 +445,8 @@
     <xs:attribute name="selectorClass" type="xs:normalizedString" />
     <xs:attribute name="itemType" type="menuItemType" />
     <xs:attribute name="visibleLines" type="xs:positiveInteger" />
+    <xs:attribute name="minQueryLength" type="xs:positiveInteger" />
+    <xs:attribute name="instant" type="xs:boolean" />
     <xs:attribute name="newRowForm" type="type:nameType" />
     <xs:attribute name="newRowColumns" type="type:nameList" />
     <xs:attribute name="newRowCaption" type="xs:string" />
