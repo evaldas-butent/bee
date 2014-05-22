@@ -26,10 +26,13 @@ import com.butent.bee.client.grid.ColumnHeader;
 import com.butent.bee.client.grid.cell.AbstractCell;
 import com.butent.bee.client.grid.column.AbstractColumn;
 import com.butent.bee.client.layout.Flow;
+import com.butent.bee.client.presenter.GridPresenter;
 import com.butent.bee.client.style.StyleUtils;
 import com.butent.bee.client.view.edit.EditableColumn;
 import com.butent.bee.client.view.grid.interceptor.AbstractGridInterceptor;
 import com.butent.bee.client.view.grid.interceptor.GridInterceptor;
+import com.butent.bee.client.widget.Button;
+import com.butent.bee.client.widget.Image;
 import com.butent.bee.client.widget.InputText;
 import com.butent.bee.shared.communication.ResponseObject;
 import com.butent.bee.shared.css.CssUnit;
@@ -48,15 +51,40 @@ import com.butent.bee.shared.utils.BeeUtils;
 import java.util.List;
 
 public class EcOrphansGrid extends AbstractGridInterceptor implements ClickHandler {
+
+  Button button = new Button("Analogų aprišimas", this);
+  Image loading = new Image(Global.getImages().loading());
+
   @Override
   public boolean afterCreateColumn(String columnName, List<? extends IsColumn> dataColumns,
       AbstractColumn<?> column, ColumnHeader header, ColumnFooter footer,
       EditableColumn editableColumn) {
 
     if (BeeUtils.same(columnName, "Chain")) {
-      column.getCell().addClickHandler(this);
+      column.getCell().addClickHandler(new ClickHandler() {
+        @Override
+        public void onClick(ClickEvent event) {
+          if (event.getSource() instanceof AbstractCell<?>) {
+            createNewItem(((AbstractCell<?>) event.getSource()).getEventContext().getRow());
+          }
+        }
+      });
     }
     return super.afterCreateColumn(columnName, dataColumns, column, header, footer, editableColumn);
+  }
+
+  @Override
+  public void afterCreatePresenter(GridPresenter presenter) {
+    presenter.getHeader().clearCommandPanel();
+
+    presenter.getHeader().addCommandItem(button);
+    presenter.getHeader().addCommandItem(loading);
+    setLoading(false);
+  }
+
+  private void setLoading(boolean isLoading) {
+    button.setVisible(!isLoading);
+    loading.setVisible(isLoading);
   }
 
   @Override
@@ -65,70 +93,115 @@ public class EcOrphansGrid extends AbstractGridInterceptor implements ClickHandl
   }
 
   @Override
-  public void onClick(ClickEvent event) {
-    if (event.getSource() instanceof AbstractCell<?>) {
-      final IsRow orphan = ((AbstractCell<?>) event.getSource()).getEventContext().getRow();
+  public void onClick(ClickEvent arg0) {
+    setLoading(true);
 
-      Relation relation = Relation.create(TBL_TCD_ARTICLES,
-          Lists.newArrayList(COL_TCD_ARTICLE_NR, COL_TCD_ARTICLE_NAME, COL_TCD_BRAND_NAME));
-      relation.disableNewRow();
-      relation.setCaching(Caching.NONE);
+    BeeKeeper.getRpc().makeGetRequest(EcKeeper.createArgs(SVC_ADOPT_ORPHANS),
+        new ResponseCallback() {
+          @Override
+          public void onResponse(ResponseObject response) {
+            response.notify(getGridView());
 
-      Flow panel = new Flow();
-
-      final TabBar tabs = new TabBar(Orientation.HORIZONTAL);
-      tabs.addItem(Localized.getConstants().ecItemName());
-      tabs.addItem(Localized.getConstants().ecItemAnalog());
-      StyleUtils.setWidth(tabs, 100, CssUnit.PCT);
-      tabs.getElement().getStyle().setMarginBottom(5, Unit.PX);
-      panel.add(tabs);
-
-      final InputText name = new InputText();
-      name.setValue(Data.getString(getViewName(), orphan, COL_TCD_ARTICLE_NAME));
-      StyleUtils.setWidth(name, 300);
-      panel.add(name);
-
-      final UnboundSelector selector = UnboundSelector.create(relation);
-      StyleUtils.setWidth(selector, 300);
-      panel.add(selector);
-
-      tabs.addSelectionHandler(new SelectionHandler<Integer>() {
-        @Override
-        public void onSelection(SelectionEvent<Integer> ev) {
-          int idx = ev.getSelectedItem();
-          StyleUtils.setVisible(name, idx == 0);
-          StyleUtils.setVisible(selector, idx == 1);
-        }
-      });
-      tabs.selectTab(0, true);
-
-      Global.inputWidget(Localized.getConstants().ecItemNew(), panel, new InputCallback() {
-        @Override
-        public String getErrorMessage() {
-          int idx = tabs.getSelectedTab();
-          BeeRow analog = selector.getRelatedRow();
-
-          if (idx == 0 && BeeUtils.isEmpty(name.getValue()) || idx == 1 && analog == null) {
-            return Localized.getConstants().valueRequired();
+            if (!response.hasErrors()) {
+              getGridPresenter().refresh(true);
+            }
+            setLoading(false);
           }
-          return super.getErrorMessage();
-        }
-
-        @Override
-        public void onSuccess() {
-          int idx = tabs.getSelectedTab();
-
-          if (idx == 0) {
-            createNewItem(orphan, name.getValue());
-          } else {
-            createNewItemBasedOnAnalog(orphan, selector.getRelatedRow().getId());
-          }
-        }
-      });
-    }
+        });
   }
 
-  private void createNewItem(final IsRow orphan, String name) {
+  private void createNewItem(final IsRow orphan) {
+    Flow panel = new Flow();
+
+    final TabBar tabs = new TabBar(Orientation.HORIZONTAL);
+    tabs.addItem(Localized.getConstants().ecItemName());
+    tabs.addItem(Localized.getConstants().ecItemAnalog());
+    StyleUtils.setWidth(tabs, 100, CssUnit.PCT);
+    tabs.getElement().getStyle().setMarginBottom(5, Unit.PX);
+    panel.add(tabs);
+
+    final InputText name = new InputText();
+    name.setValue(Data.getString(getViewName(), orphan, COL_TCD_ARTICLE_NAME));
+    StyleUtils.setWidth(name, 300);
+    panel.add(name);
+
+    Relation relation = Relation.create(TBL_TCD_ARTICLES,
+        Lists.newArrayList(COL_TCD_ARTICLE_NR, COL_TCD_ARTICLE_NAME, COL_TCD_BRAND_NAME));
+    relation.disableNewRow();
+    relation.setInstant(false);
+    relation.setCaching(Caching.NONE);
+
+    final UnboundSelector selector = UnboundSelector.create(relation);
+    StyleUtils.setWidth(selector, 300);
+    panel.add(selector);
+
+    tabs.addSelectionHandler(new SelectionHandler<Integer>() {
+      @Override
+      public void onSelection(SelectionEvent<Integer> ev) {
+        int idx = ev.getSelectedItem();
+        StyleUtils.setVisible(name, idx == 0);
+        StyleUtils.setVisible(selector, idx == 1);
+      }
+    });
+    tabs.selectTab(0, true);
+
+    Global.inputWidget(Localized.getConstants().ecItemNew(), panel, new InputCallback() {
+      @Override
+      public String getErrorMessage() {
+        int idx = tabs.getSelectedTab();
+        BeeRow analog = selector.getRelatedRow();
+
+        if (idx == 0 && BeeUtils.isEmpty(name.getValue()) || idx == 1 && analog == null) {
+          return Localized.getConstants().valueRequired();
+        }
+        return super.getErrorMessage();
+      }
+
+      @Override
+      public void onSuccess() {
+        int idx = tabs.getSelectedTab();
+
+        if (idx == 0) {
+          createNewItemWithName(orphan, name.getValue());
+        } else {
+          createNewItemBasedOnAnalog(orphan, selector.getRelatedRow().getId());
+        }
+      }
+    });
+  }
+
+  private void createNewItemBasedOnAnalog(final IsRow orphan, Long article) {
+    ParameterList args = EcKeeper.createArgs(SVC_CREATE_ITEM);
+    args.addDataItem(COL_TCD_ARTICLE, article);
+
+    for (String col : new String[] {COL_TCD_ARTICLE_NR, COL_TCD_BRAND,
+        COL_TCD_ARTICLE_DESCRIPTION, COL_TCD_SUPPLIER, COL_TCD_SUPPLIER_ID}) {
+
+      String value = Data.getString(getViewName(), orphan, col);
+
+      if (!BeeUtils.isEmpty(value)) {
+        args.addDataItem(col, value);
+      }
+    }
+    BeeKeeper.getRpc().makePostRequest(args, new ResponseCallback() {
+      @Override
+      public void onResponse(ResponseObject response) {
+        response.notify(getGridView());
+
+        if (!response.hasErrors()) {
+          Queries.deleteRow(getViewName(), orphan.getId(), new IntCallback() {
+            @Override
+            public void onSuccess(Integer result) {
+              RowDeleteEvent.fire(BeeKeeper.getBus(), getViewName(), orphan.getId());
+            }
+          });
+          RowEditor.openRow(TBL_TCD_ARTICLES, response.getResponseAsLong(), false, null);
+        }
+      }
+    });
+  }
+
+  private void createNewItemWithName(final IsRow orphan, String name) {
     final String orphans = getViewName();
 
     List<BeeColumn> columns = Data.getColumns(orphans, Lists.newArrayList(COL_TCD_ARTICLE_NR,
@@ -180,37 +253,6 @@ public class EcOrphansGrid extends AbstractGridInterceptor implements ClickHandl
             RowDeleteEvent.fire(BeeKeeper.getBus(), orphans, orphan.getId());
           }
         });
-      }
-    });
-  }
-
-  private void createNewItemBasedOnAnalog(final IsRow orphan, Long article) {
-    ParameterList args = EcKeeper.createArgs(SVC_CREATE_ITEM);
-    args.addDataItem(COL_TCD_ARTICLE, article);
-
-    for (String col : new String[] {COL_TCD_ARTICLE_NR, COL_TCD_BRAND,
-        COL_TCD_ARTICLE_DESCRIPTION, COL_TCD_SUPPLIER, COL_TCD_SUPPLIER_ID}) {
-
-      String value = Data.getString(getViewName(), orphan, col);
-
-      if (!BeeUtils.isEmpty(value)) {
-        args.addDataItem(col, value);
-      }
-    }
-    BeeKeeper.getRpc().makePostRequest(args, new ResponseCallback() {
-      @Override
-      public void onResponse(ResponseObject response) {
-        response.notify(getGridView());
-
-        if (!response.hasErrors()) {
-          Queries.deleteRow(getViewName(), orphan.getId(), new IntCallback() {
-            @Override
-            public void onSuccess(Integer result) {
-              RowDeleteEvent.fire(BeeKeeper.getBus(), getViewName(), orphan.getId());
-            }
-          });
-          RowEditor.openRow(TBL_TCD_ARTICLES, response.getResponseAsLong(), false, null);
-        }
       }
     });
   }

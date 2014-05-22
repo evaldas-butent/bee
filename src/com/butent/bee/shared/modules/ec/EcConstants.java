@@ -237,6 +237,7 @@ public final class EcConstants {
 
   public static final String SVC_CREATE_CLIENT = "createClient";
   public static final String SVC_CREATE_ITEM = "createItem";
+  public static final String SVC_ADOPT_ORPHANS = "adoptOrphans";
 
   public static final String VAR_PREFIX = Service.RPC_VAR_PREFIX + "ec_";
 

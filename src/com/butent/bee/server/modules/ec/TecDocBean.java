@@ -225,7 +225,7 @@ public class TecDocBean {
         + " AND prekes.gamintojas IS NOT NULL AND prekes.gamintojas != ''";
 
     ResponseObject response = ButentWS.getSQLData(remoteAddress, remoteLogin, remotePassword,
-        "SELECT preke AS pr, savikaina AS sv, pard_kaina as kn, gam_art AS ga, gamintojas AS gam,"
+        "SELECT preke AS pr, savikaina AS sv, pard_kaina AS kn, gam_art AS ga, gamintojas AS gam,"
             + " pavad AS pav, aprasymas AS apr"
             + " FROM prekes"
             + " WHERE " + itemsFilter,
@@ -238,7 +238,7 @@ public class TecDocBean {
     SimpleRowSet rows = (SimpleRowSet) response.getResponse();
 
     if (rows.getNumberOfRows() > 0) {
-      List<RemoteItem> data = Lists.newArrayListWithExpectedSize(rows.getNumberOfRows());
+      List<RemoteItem> data = Lists.newArrayListWithCapacity(rows.getNumberOfRows());
 
       for (SimpleRow row : rows) {
         data.add(new RemoteItem(row.getValue("pr"), row.getValue("gam"), row.getValue("ga"),
@@ -261,7 +261,7 @@ public class TecDocBean {
     rows = (SimpleRowSet) response.getResponse();
 
     if (rows.getNumberOfRows() > 0) {
-      List<RemoteRemainder> data = Lists.newArrayListWithExpectedSize(rows.getNumberOfRows());
+      List<RemoteRemainder> data = Lists.newArrayListWithCapacity(rows.getNumberOfRows());
 
       for (SimpleRow row : rows) {
         data.add(new RemoteRemainder(row.getValue("pr"), row.getValue("sn"), row.getDouble("lk")));
@@ -285,8 +285,8 @@ public class TecDocBean {
     }
     if (info != null && info.getString().size() > 1) {
       int size = info.getString().size();
-      List<RemoteItem> items = Lists.newArrayListWithExpectedSize(size);
-      List<RemoteRemainder> remainders = Lists.newArrayListWithExpectedSize(size);
+      List<RemoteItem> items = Lists.newArrayListWithCapacity(size);
+      List<RemoteRemainder> remainders = Lists.newArrayListWithCapacity(size);
 
       logger.info(supplier, "Received", size, "records. Updating data...");
 
@@ -1152,6 +1152,7 @@ public class TecDocBean {
 
     String tmp = qs.sqlCreateTemp(new SqlSelect()
         .addField(TBL_TCD_ARTICLES, COL_TCD_ARTICLE_NR, COL_TCD_SEARCH_NR)
+        .addFields(TBL_TCD_ARTICLES, COL_TCD_ARTICLE_NR)
         .addFields(TBL_TCD_ARTICLE_SUPPLIERS,
             COL_TCD_SUPPLIER_ID, COL_TCD_COST, COL_TCD_PRICE, idName)
         .addFields(TBL_TCD_ARTICLES,
@@ -1178,21 +1179,21 @@ public class TecDocBean {
           remoteItems.getLong(COL_TCD_BRAND));
     }
     SqlInsert insert = new SqlInsert(tmp)
-        .addFields(COL_TCD_SEARCH_NR, COL_TCD_BRAND_NAME, COL_TCD_BRAND, COL_TCD_COST,
-            COL_TCD_PRICE, COL_TCD_SUPPLIER_ID, COL_TCD_ARTICLE_NAME, COL_TCD_ARTICLE_DESCRIPTION);
+        .addFields(COL_TCD_SEARCH_NR, COL_TCD_ARTICLE_NR, COL_TCD_BRAND_NAME, COL_TCD_BRAND,
+            COL_TCD_COST, COL_TCD_PRICE, COL_TCD_SUPPLIER_ID, COL_TCD_ARTICLE_NAME,
+            COL_TCD_ARTICLE_DESCRIPTION);
     int tot = 0;
 
     for (RemoteItem info : data) {
-      if (!brands.containsKey(info.brand)) {
-        brands.put(info.brand, qs.insertData(new SqlInsert(TBL_TCD_BRANDS)
-            .addConstant(COL_TCD_BRAND_NAME, info.brand)));
-      }
-      String code = EcUtils.normalizeCode(info.articleNr);
+      String searchNr = EcUtils.normalizeCode(info.articleNr);
 
-      if (!BeeUtils.isEmpty(code)) {
-        insert.addValues(code, info.brand,
-            brands.get(info.brand), info.cost, info.price, info.supplierId,
-            BeeUtils.left(info.name, 50), info.descr);
+      if (!BeeUtils.isEmpty(searchNr)) {
+        if (!brands.containsKey(info.brand)) {
+          brands.put(info.brand, qs.insertData(new SqlInsert(TBL_TCD_BRANDS)
+              .addConstant(COL_TCD_BRAND_NAME, info.brand)));
+        }
+        insert.addValues(searchNr, info.articleNr, info.brand, brands.get(info.brand), info.cost,
+            info.price, info.supplierId, BeeUtils.left(info.name, 50), info.descr);
       }
       if (++tot % 1e4 == 0) {
         qs.insertData(insert);
@@ -1256,9 +1257,8 @@ public class TecDocBean {
                 COL_TCD_SUPPLIER_ID, null)))));
 
     insertData(TBL_TCD_ORPHANS, new SqlSelect()
-        .addField(tmp, COL_TCD_SEARCH_NR, COL_TCD_ARTICLE_NR)
-        .addFields(tmp,
-            COL_TCD_BRAND, COL_TCD_SUPPLIER_ID, COL_TCD_ARTICLE_NAME, COL_TCD_ARTICLE_DESCRIPTION)
+        .addFields(tmp, COL_TCD_ARTICLE_NR, COL_TCD_BRAND, COL_TCD_SUPPLIER_ID,
+            COL_TCD_ARTICLE_NAME, COL_TCD_ARTICLE_DESCRIPTION)
         .addConstant(supplier.ordinal(), COL_TCD_SUPPLIER)
         .addFrom(tmp)
         .addFromLeft(TBL_TCD_ORPHANS,

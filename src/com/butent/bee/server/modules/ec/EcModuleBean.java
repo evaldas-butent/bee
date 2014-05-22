@@ -124,6 +124,7 @@ import java.text.Collator;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -377,6 +378,9 @@ public class EcModuleBean implements BeeModule {
 
     } else if (BeeUtils.same(svc, SVC_CREATE_ITEM)) {
       response = createItem(reqInfo);
+
+    } else if (BeeUtils.same(svc, SVC_ADOPT_ORPHANS)) {
+      response = adoptOrphans();
 
     } else {
       String msg = BeeUtils.joinWords("e-commerce service not recognized:", svc);
@@ -667,6 +671,118 @@ public class EcModuleBean implements BeeModule {
     }
 
     return ResponseObject.response(itemsAdded).setSize(itemsAdded);
+  }
+
+  private ResponseObject adoptOrphans() {
+    EcSupplier supplier = EcSupplier.EOLTAS;
+    String orphanId = sys.getIdName(TBL_TCD_ORPHANS);
+
+    SimpleRowSet orphans = qs.getData(new SqlSelect()
+        .addFields(TBL_TCD_ORPHANS, orphanId, COL_TCD_SUPPLIER_ID, COL_TCD_BRAND,
+            COL_TCD_ARTICLE_NR, COL_TCD_ARTICLE_NAME, COL_TCD_ARTICLE_DESCRIPTION)
+        .addFrom(TBL_TCD_ORPHANS)
+        .setWhere(SqlUtils.equals(TBL_TCD_ORPHANS, COL_TCD_SUPPLIER, supplier.ordinal())));
+
+    if (orphans.isEmpty()) {
+      return ResponseObject.info(Localized.getConstants().nothingFound());
+    }
+    String remoteAddress = prm.getText(PRM_ERP_ADDRESS);
+    String remoteLogin = prm.getText(PRM_ERP_LOGIN);
+    String remotePassword = prm.getText(PRM_ERP_PASSWORD);
+
+    String itemsFilter = "prekes.gam_art IS NOT NULL AND prekes.gam_art != ''"
+        + " AND prekes.gamintojas IS NOT NULL AND prekes.gamintojas != ''"
+        + " AND grupes.pos_mode = 'E'";
+
+    ResponseObject response = ButentWS.getSQLData(remoteAddress, remoteLogin, remotePassword,
+        "SELECT preke AS pr, prekes.grupe AS gr, savikaina AS sv, pard_kaina AS kn"
+            + " FROM prekes"
+            + " INNER JOIN grupes"
+            + " ON prekes.grupe = grupes.grupe"
+            + " WHERE " + itemsFilter,
+        new String[] {"pr", "gr", "sv", "kn"});
+
+    if (response.hasErrors()) {
+      logger.severe(supplier, response.getErrors());
+      return response;
+    }
+    Map<String, Long> categories = new HashMap<>();
+    SimpleRowSet rows = (SimpleRowSet) response.getResponse();
+    int cnt = 0;
+    int categCnt = 0;
+
+    for (SimpleRow orphan : orphans) {
+      String supplierId = orphan.getValue(COL_TCD_SUPPLIER_ID);
+      String categoryName = rows.getValueByKey("pr", supplierId, "gr");
+
+      if (!BeeUtils.isEmpty(categoryName)) {
+        if (!categories.containsKey(categoryName)) {
+          Long[] category = qs.getLongColumn(new SqlSelect()
+              .addField(TBL_TCD_CATEGORIES, sys.getIdName(TBL_TCD_CATEGORIES), COL_TCD_CATEGORY)
+              .addFrom(TBL_TCD_CATEGORIES)
+              .setWhere(SqlUtils.equals(TBL_TCD_CATEGORIES, COL_TCD_CATEGORY_NAME, categoryName))
+              .addOrder(TBL_TCD_CATEGORIES, COL_TCD_CATEGORY_PARENT));
+
+          if (category.length > 0) {
+            categories.put(categoryName, category[0]);
+          } else {
+            categories.put(categoryName, qs.insertData(new SqlInsert(TBL_TCD_CATEGORIES)
+                .addConstant(COL_TCD_CATEGORY_NAME, categoryName)));
+            categCnt++;
+          }
+        }
+        cnt++;
+        String artNr = orphan.getValue(COL_TCD_ARTICLE_NR);
+        String brand = orphan.getValue(COL_TCD_BRAND);
+
+        long newArt = qs.insertData(new SqlInsert(TBL_TCD_ARTICLES)
+            .addConstant(COL_TCD_ARTICLE_NR, artNr)
+            .addConstant(COL_TCD_BRAND, brand)
+            .addConstant(COL_TCD_ARTICLE_NAME, orphan.getValue(COL_TCD_ARTICLE_NAME))
+            .addConstant(COL_TCD_ARTICLE_DESCRIPTION, orphan.getValue(COL_TCD_ARTICLE_DESCRIPTION))
+            .addConstant(COL_TCD_ARTICLE_VISIBLE, true));
+
+        qs.insertData(new SqlInsert(TBL_TCD_ARTICLE_SUPPLIERS)
+            .addConstant(COL_TCD_ARTICLE, newArt)
+            .addConstant(COL_TCD_SUPPLIER, supplier.ordinal())
+            .addConstant(COL_TCD_SUPPLIER_ID, supplierId)
+            .addConstant(COL_TCD_COST, rows.getValueByKey("pr", supplierId, "sv"))
+            .addConstant(COL_TCD_PRICE, rows.getValueByKey("pr", supplierId, "kn")));
+
+        qs.insertData(new SqlInsert(TBL_TCD_ARTICLE_CATEGORIES)
+            .addConstant(COL_TCD_ARTICLE, newArt)
+            .addConstant(COL_TCD_CATEGORY, categories.get(categoryName)));
+
+        qs.insertData(new SqlInsert(TBL_TCD_ARTICLE_CODES)
+            .addConstant(COL_TCD_ARTICLE, newArt)
+            .addConstant(COL_TCD_SEARCH_NR, EcUtils.normalizeCode(artNr))
+            .addConstant(COL_TCD_CODE_NR, artNr)
+            .addConstant(COL_TCD_BRAND, brand));
+
+        qs.updateData(new SqlDelete(TBL_TCD_ORPHANS)
+            .setWhere(sys.idEquals(TBL_TCD_ORPHANS, orphan.getLong(orphanId))));
+      }
+    }
+    response = ResponseObject.emptyResponse();
+
+    if (categCnt > 0) {
+      String msg = BeeUtils.join(": ", Localized.maybeTranslate(sys.getView(TBL_TCD_CATEGORIES)
+          .getCaption()), Localized.getMessages().createdRows(categCnt));
+
+      logger.info(msg);
+      response.addInfo(msg);
+    }
+    if (cnt > 0) {
+      String msg = BeeUtils.join(": ", Localized.maybeTranslate(sys.getView(TBL_TCD_ARTICLES)
+          .getCaption()), Localized.getMessages().createdRows(cnt));
+
+      logger.info(msg);
+      response.addInfo(msg);
+    }
+    if (!response.hasNotifications()) {
+      response.addInfo(Localized.getConstants().nothingFound());
+    }
+    return response;
   }
 
   private ResponseObject clearConfiguration(RequestInfo reqInfo) {
