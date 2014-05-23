@@ -635,6 +635,8 @@ public interface LocalizableConstants extends Constants, LocalizableCalendarCons
 
   String supplier();
 
+  String systemAllUsers();
+
   String tabControl();
 
   String template();

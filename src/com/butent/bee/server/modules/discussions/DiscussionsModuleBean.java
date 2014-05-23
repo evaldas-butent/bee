@@ -8,6 +8,8 @@ import com.google.common.collect.Multimap;
 import com.google.common.collect.Sets;
 import com.google.common.eventbus.Subscribe;
 
+import static com.butent.bee.shared.html.builder.Factory.*;
+import static com.butent.bee.shared.modules.administration.AdministrationConstants.*;
 import static com.butent.bee.shared.modules.classifiers.ClassifierConstants.*;
 import static com.butent.bee.shared.modules.discussions.DiscussionsConstants.*;
 
@@ -24,7 +26,9 @@ import com.butent.bee.server.modules.ParamHolderBean;
 import com.butent.bee.server.modules.ParameterEvent;
 import com.butent.bee.server.modules.ParameterEventHandler;
 import com.butent.bee.server.modules.administration.ExtensionIcons;
+import com.butent.bee.server.modules.mail.MailModuleBean;
 import com.butent.bee.server.news.NewsBean;
+import com.butent.bee.server.sql.HasConditions;
 import com.butent.bee.server.sql.IsCondition;
 import com.butent.bee.server.sql.SqlInsert;
 import com.butent.bee.server.sql.SqlSelect;
@@ -32,6 +36,10 @@ import com.butent.bee.server.sql.SqlUpdate;
 import com.butent.bee.server.sql.SqlUtils;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.communication.ResponseObject;
+import com.butent.bee.shared.css.Colors;
+import com.butent.bee.shared.css.CssUnit;
+import com.butent.bee.shared.css.values.FontWeight;
+import com.butent.bee.shared.css.values.VerticalAlign;
 import com.butent.bee.shared.data.BeeColumn;
 import com.butent.bee.shared.data.BeeRow;
 import com.butent.bee.shared.data.BeeRowSet;
@@ -43,14 +51,23 @@ import com.butent.bee.shared.data.SimpleRowSet.SimpleRow;
 import com.butent.bee.shared.data.SqlConstants.SqlDataType;
 import com.butent.bee.shared.data.UserData;
 import com.butent.bee.shared.data.filter.Filter;
+import com.butent.bee.shared.html.Tags;
+import com.butent.bee.shared.html.builder.Document;
+import com.butent.bee.shared.html.builder.Element;
+import com.butent.bee.shared.html.builder.elements.Div;
+import com.butent.bee.shared.html.builder.elements.H2;
+import com.butent.bee.shared.html.builder.elements.Tbody;
+import com.butent.bee.shared.i18n.LocalizableConstants;
 import com.butent.bee.shared.io.StoredFile;
 import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogUtils;
 import com.butent.bee.shared.modules.BeeParameter;
 import com.butent.bee.shared.modules.administration.AdministrationConstants;
+import com.butent.bee.shared.modules.discussions.DiscussionsConstants;
 import com.butent.bee.shared.modules.discussions.DiscussionsConstants.DiscussionEvent;
 import com.butent.bee.shared.modules.discussions.DiscussionsConstants.DiscussionStatus;
 import com.butent.bee.shared.modules.discussions.DiscussionsUtils;
+import com.butent.bee.shared.modules.mail.MailConstants;
 import com.butent.bee.shared.news.Feed;
 import com.butent.bee.shared.news.NewsConstants;
 import com.butent.bee.shared.rights.Module;
@@ -87,6 +104,18 @@ public class DiscussionsModuleBean implements BeeModule {
   private static final int MAX_NUMBERS_OF_ROWS = 100;
   private static final String IMG_LINK = "link";
 
+  private static final String LOG_CREATE_DISCUSSION_LABEL =
+      "Create discussion: ";
+
+  private static final String LOG_CREATE_ANNOUNCEMENT_LABEL =
+      "Create annoucement: ";
+
+  private static final String LOG_MAIL_NEW_DISCUSSION_LABEL =
+      "Mail new discussion";
+
+  private static final String LOG_MAIL_NEW_ANNOUNCEMENT_LABEL =
+      "Mail new announcment";
+
   private static BeeLogger logger = LogUtils.getLogger(DiscussionsModuleBean.class);
 
   @EJB
@@ -101,6 +130,8 @@ public class DiscussionsModuleBean implements BeeModule {
   ParamHolderBean prm;
   @EJB
   NewsBean news;
+  @EJB
+  MailModuleBean mail;
 
   @Resource
   EJBContext ctx;
@@ -634,6 +665,7 @@ public class DiscussionsModuleBean implements BeeModule {
 
         discussionId = ((BeeRow) response.getResponse()).getId();
 
+
         if (!response.hasErrors()) {
           response = createDiscussionUser(discussionId, currentUser, now, true);
         }
@@ -648,6 +680,32 @@ public class DiscussionsModuleBean implements BeeModule {
             }
           }
         }
+
+        boolean notifyEmail = BeeConst.isTrue(discussRow.getProperty(PROP_MAIL));
+        boolean announcement = false;
+        String announcementTopic = "";
+
+        if (!(discussData.getColumnIndex(COL_TOPIC) < 0)) {
+          announcement =
+              DataUtils.isId(discussRow.getLong(discussData.getColumnIndex(COL_TOPIC)));
+        }
+
+        if (announcement) {
+          BeeRowSet topics =
+              qs.getViewData(VIEW_ADS_TOPICS, Filter.compareId(discussRow.getLong(discussData
+              .getColumnIndex(COL_TOPIC))));
+
+          announcementTopic = topics.getRow(0).getString(topics.getColumnIndex(COL_NAME));
+        }
+
+        boolean sendAll =
+            BeeUtils
+                .unbox(discussRow.getBoolean(discussData.getColumnIndex(COL_ACCESSIBILITY)));
+
+        ResponseObject mailResponse =
+            sendNewDiscussionMail(discussionId, announcement, announcementTopic, notifyEmail,
+                sendAll);
+        response.addMessagesFrom(mailResponse);
 
         if (!response.hasErrors()) {
           response = createDiscussionRelations(discussionId, properties);
@@ -1246,6 +1304,107 @@ public class DiscussionsModuleBean implements BeeModule {
     return res;
   }
 
+  private Long getSenderEmailId(String logLabel) {
+    Long account = prm.getRelation(MailConstants.PRM_DEFAULT_ACCOUNT);
+    if (!DataUtils.isId(account)) {
+      logger.info(logLabel, "sender account not specified",
+          BeeUtils.bracket(MailConstants.PRM_DEFAULT_ACCOUNT));
+      return null;
+    }
+
+    Long emailId = qs.getLong(new SqlSelect()
+        .addFields(MailConstants.TBL_ACCOUNTS, MailConstants.COL_ADDRESS)
+        .addFrom(MailConstants.TBL_ACCOUNTS)
+        .setWhere(sys.idEquals(MailConstants.TBL_ACCOUNTS, account)));
+
+    if (!DataUtils.isId(emailId)) {
+      logger.severe(logLabel, "email id not available for account", account);
+      return null;
+    } else {
+      return emailId;
+    }
+  }
+
+  private Document renderDiscussionDocument(long discussionId, boolean typeAnnoucement,
+      String anouncmentTopic, SimpleRow discussMailRow, LocalizableConstants constants,
+      boolean isPublic) {
+    
+    String discussSubject = BeeUtils.joinWords(
+        typeAnnoucement ? constants.announcement()
+            : constants.discussion(), discussMailRow.getValue(COL_SUBJECT));
+
+    Document doc = new Document();
+    doc.getHead().append(meta().encodingDeclarationUtf8(), title().text(discussSubject));
+    
+    Div panel = div();
+    doc.getBody().append(panel);
+     
+    boolean important = BeeUtils.unbox(discussMailRow.getBoolean(COL_IMPORTANT));
+    String subjectColor = important ? Colors.RED : Colors.BLACK;
+    
+    H2 subjectElement = h2().text(discussSubject);
+    subjectElement.setColor(subjectColor);    
+    panel.append(subjectElement);
+    
+    Tbody tableFields = tbody().append(
+        tr().append(td().text(constants.date()),
+            td().text(TimeUtils.renderCompact(discussMailRow.getDate(COL_CREATED)))));
+
+    if (typeAnnoucement) {
+      tableFields.append(
+          tr().append(td().text(constants.adTopic()),
+              td().text(anouncmentTopic))
+          );
+    }
+
+    Div discussDescriptionContent = div().text(discussMailRow.getValue(COL_DESCRIPTION));
+    // discussDescriptionContent.setMaxHeight(4, CssUnit.EM);
+    // discussDescriptionContent.setOverflow(Overflow.HIDDEN);
+
+    tableFields.append(
+        tr().append(td().text(constants.discussOwner()),
+            td().text(usr.getUserSign(discussMailRow.getLong(COL_OWNER)))),
+        tr().append(td().text(constants.discussDescription()),
+            td().append(discussDescriptionContent))
+        );
+    
+    if (isPublic && !typeAnnoucement) {
+      tableFields.append(
+          tr().append(td().text(constants.discussMembers()),
+              td().text(constants.systemAllUsers()))
+          );
+    } else if (!isPublic) {
+
+      List<Long> discussMemberIds = getDiscussionMembers(discussionId);
+
+      String memberList = "";
+      
+      for (Long userId : discussMemberIds) {
+
+        memberList = BeeUtils.joinNoDuplicates(BeeConst.STRING_COMMA + BeeConst.STRING_SPACE,
+            memberList, usr.getUserSign(userId));
+      }
+
+      tableFields.append(
+          tr().append(td().text(constants.discussMembers()),
+              td().text(memberList))
+          );
+    }
+
+    List<Element> cells = tableFields.queryTag(Tags.TD);
+    for (Element cell : cells) {
+      if (cell.index() == 0) {
+        cell.setPaddingRight(1, CssUnit.EM);
+        cell.setFontWeight(FontWeight.BOLDER);
+        cell.setVerticalAlign(VerticalAlign.TEXT_TOP);
+      }
+    }
+    
+    panel.append(table().append(tableFields));
+
+    return doc;
+  }
+
   private ResponseObject registerDiscussionVisit(long discussionId, long userId, long mills) {
     IsCondition where =
         SqlUtils.and(
@@ -1276,6 +1435,106 @@ public class DiscussionsModuleBean implements BeeModule {
     }
 
     return sorted;
+  }
+
+  private ResponseObject sendNewDiscussionMail(long discussionId, boolean typeAnnoucement,
+      String annoucementTopic, boolean notifyEmailPreference, boolean sendAll) {
+
+    Long senderEmailId = getSenderEmailId(typeAnnoucement ? LOG_CREATE_ANNOUNCEMENT_LABEL
+        : LOG_CREATE_DISCUSSION_LABEL);
+    
+    ResponseObject response = ResponseObject.emptyResponse();
+    String label = typeAnnoucement ? LOG_MAIL_NEW_ANNOUNCEMENT_LABEL
+        : LOG_MAIL_NEW_DISCUSSION_LABEL;
+
+    if (senderEmailId == null) {
+      return response;
+    }
+
+    HasConditions where =
+        SqlUtils.and(SqlUtils.equals(TBL_DISCUSSIONS, COL_DISCUSSION_ID, discussionId));
+
+    if (!notifyEmailPreference && typeAnnoucement) {
+      where.add(SqlUtils.notNull(TBL_USERS, COL_MAIL_NEW_ANNOUNCEMENTS));
+    } else if (!notifyEmailPreference) {
+      where.add(SqlUtils.notNull(TBL_USERS, COL_MAIL_NEW_DISCUSSIONS));
+    }
+
+    if (sendAll) {
+      where.add(SqlUtils.notEqual(TBL_DISCUSSIONS, COL_OWNER,
+          SqlUtils.field(TBL_USERS, sys.getIdName(TBL_USERS))));
+    } else {
+      where.add(SqlUtils.notEqual(TBL_DISCUSSIONS, COL_OWNER,
+          SqlUtils.field(TBL_DISCUSSIONS_USERS, DiscussionsConstants.COL_USER)));
+    }
+    
+    SqlSelect discussMailList =
+        new SqlSelect()
+            .addFields(TBL_DISCUSSIONS, COL_SUBJECT, COL_DESCRIPTION, COL_OWNER,
+            COL_CREATED, COL_TOPIC, COL_IMPORTANT)
+            .addField(TBL_USERS, sys.getIdName(TBL_USERS), DiscussionsConstants.COL_USER)
+            .addFrom(TBL_DISCUSSIONS)
+            .setDistinctMode(true)
+            .setWhere(where);
+
+    if (sendAll) {
+      /* Using Cartesian product for sending all mails */
+      discussMailList.addFrom(TBL_USERS);
+    } else {
+      discussMailList.addFromInner(TBL_DISCUSSIONS_USERS,
+          sys.joinTables(TBL_DISCUSSIONS, TBL_DISCUSSIONS_USERS, COL_DISCUSSION))
+          .addFromInner(TBL_USERS,
+              sys.joinTables(TBL_USERS, TBL_DISCUSSIONS_USERS, DiscussionsConstants.COL_USER));
+    }
+
+    logger.debug(typeAnnoucement ? LOG_CREATE_ANNOUNCEMENT_LABEL : LOG_CREATE_DISCUSSION_LABEL,
+        "query:",
+        discussMailList.getQuery());
+
+    SimpleRowSet discussMailListRowSet = qs.getData(discussMailList);
+
+    if (DataUtils.isEmpty(discussMailListRowSet)) {
+      return response;
+    }
+
+    for (SimpleRow discussMailRow : discussMailListRowSet) {
+      Long member = discussMailRow.getLong(DiscussionsConstants.COL_USER);
+
+      Long memberEmailId = usr.getEmailId(member, false);
+
+      if (!DataUtils.isId(memberEmailId)) {
+        logger.warning(label, discussionId, "member", member, "email not available");
+        return response;
+      }
+
+      LocalizableConstants constants = usr.getLocalizableConstants(member);
+
+      if (constants == null) {
+        logger.warning(label, discussionId, "member", member, "localization not available");
+        continue;
+      }
+
+      Document discussMailDocument =
+          renderDiscussionDocument(discussionId, typeAnnoucement, annoucementTopic, discussMailRow,
+              constants, sendAll);
+      
+      String htmlDiscussMailContent = discussMailDocument.buildLines();
+      
+      logger.info(label, discussionId, "mail to", member, memberEmailId);
+      
+      String subject = typeAnnoucement ? constants.discussMailNewAnnouncementSubject()
+          : constants.discussMailNewDiscussionSubject();
+      
+      ResponseObject mailResponse = mail.sendMail(senderEmailId, memberEmailId, subject,
+          htmlDiscussMailContent);
+      
+      if (mailResponse.hasErrors()) {
+        response.addWarning("Send mail failed");
+      }
+
+    }
+
+    return response;
   }
 
   private ResponseObject updateDiscussionRelations(long discussionId, Set<String> updatedRelations,

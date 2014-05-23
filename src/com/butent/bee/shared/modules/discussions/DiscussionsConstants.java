@@ -121,10 +121,11 @@ public final class DiscussionsConstants {
   public static final String COL_IMPORTANT = "Important";
   public static final String COL_MARK_NAME = "Name";
   public static final String COL_MARK_RESOURCE = "ImageResourceName";
-  public static final String COL_FILE_NAME = "FileName";
-  public static final String COL_FILE_SIZE = "FileSize";
-  public static final String COL_FILE_TYPE = "FileType";
   public static final String COL_LAST_ACCESS = "LastAccess";
+
+  public static final String COL_MAIL_NEW_ANNOUNCEMENTS = "MailNewAnnouncements";
+  public static final String COL_MAIL_NEW_DISCUSSIONS = "MailNewDiscussions";
+
   public static final String COL_MARK = "Mark";
   public static final String COL_MEMBER = "Member";
   public static final String COL_NAME = "Name";
@@ -164,6 +165,7 @@ public final class DiscussionsConstants {
   public static final String PROP_USER = "User";
   public static final String PROP_ATTACHMENT = "Attachment";
   public static final String PROP_MARKS = "Marks";
+  public static final String PROP_MAIL = "Mail";
 
   public static final String PROP_COMPANIES = "Companies";
   public static final String PROP_PERSONS = "Persons";
