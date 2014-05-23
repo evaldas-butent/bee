@@ -1,15 +1,16 @@
 package com.butent.bee.client.modules.ec.view;
 
-import com.google.common.base.Objects;
-import com.google.common.collect.Lists;
 import com.google.common.collect.Range;
-import com.google.common.collect.Sets;
 import com.google.gwt.core.client.Scheduler;
 import com.google.gwt.dom.client.TableRowElement;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
+import com.google.gwt.event.logical.shared.BeforeSelectionEvent;
+import com.google.gwt.event.logical.shared.BeforeSelectionHandler;
+import com.google.gwt.event.logical.shared.HasBeforeSelectionHandlers;
 import com.google.gwt.event.logical.shared.SelectionEvent;
 import com.google.gwt.event.logical.shared.SelectionHandler;
+import com.google.gwt.event.shared.HandlerRegistration;
 import com.google.gwt.user.client.Event;
 import com.google.gwt.user.client.ui.HasEnabled;
 
@@ -34,19 +35,24 @@ import com.butent.bee.client.ui.UiHelper;
 import com.butent.bee.client.widget.CustomDiv;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.Consumer;
+import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.modules.ec.EcCarModel;
 import com.butent.bee.shared.modules.ec.EcCarType;
 import com.butent.bee.shared.modules.ec.EcConstants;
-import com.butent.bee.shared.modules.ec.EcUtils;
 import com.butent.bee.shared.modules.ec.EcItem;
+import com.butent.bee.shared.modules.ec.EcUtils;
 import com.butent.bee.shared.utils.BeeUtils;
 
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Objects;
 import java.util.Set;
 
-class SearchByCar extends EcView {
+public class SearchByCar extends EcView implements HasBeforeSelectionHandlers<EcCarType> {
 
   private static final class CarAttributeWidget extends CustomDiv implements HasEnabled {
 
@@ -102,8 +108,39 @@ class SearchByCar extends EcView {
   private static final String STYLE_TYPE_PANEL = STYLE_TYPE + "panel";
   private static final String STYLE_HAS_TYPES = STYLE_TYPE_PANEL + "-notEmpty";
 
+  private static final String STYLE_TYPE_EXCLUDED = STYLE_TYPE + "excluded";
+
   private static final Edges selectorMargins = new Edges(0, 0, 2, 0);
   
+  private static void openAttributeSelector(String styleSuffix, final IndexSelector selector,
+      final CarAttributeWidget attributeWidget) {
+
+    Popup popup = new Popup(OutsideClick.CLOSE, STYLE_DIALOG + styleSuffix);
+    popup.setWidget(selector);
+
+    popup.addOpenHandler(new OpenEvent.Handler() {
+      @Override
+      public void onOpen(OpenEvent event) {
+        attributeWidget.setActive(true);
+        selector.focus();
+      }
+    });
+
+    popup.addCloseHandler(new CloseEvent.Handler() {
+      @Override
+      public void onClose(CloseEvent event) {
+        attributeWidget.setActive(false);
+      }
+    });
+
+    popup.setHideOnEscape(true);
+    popup.showRelativeTo(attributeWidget.getElement(), selectorMargins);
+  }
+  private static String renderModel(EcCarModel model) {
+    return BeeUtils.join(BeeConst.DEFAULT_LIST_SEPARATOR, model.getModelName(),
+        EcUtils.formatProduced(model.getProducedFrom(), model.getProducedTo()));
+  }
+
   private final CarAttributeWidget manufacturerWidget;
   private final IndexSelector manufacturerSelector;
 
@@ -119,20 +156,32 @@ class SearchByCar extends EcView {
   private final Flow typePanel;
   private final ItemPanel itemPanel;
 
-  private final List<String> manufacturers = Lists.newArrayList();
+  private final List<String> manufacturers = new ArrayList<>();
   private String manufacturer;
 
-  private final List<EcCarModel> models = Lists.newArrayList();
+  private final List<EcCarModel> models = new ArrayList<>();
   private Integer modelIndex;
 
-  private final List<EcCarType> types = Lists.newArrayList();
+  private final List<EcCarType> types = new ArrayList<>();
   private Long typeId;
 
-  private final List<String> years = Lists.newArrayList();
+  private final List<String> years = new ArrayList<>();
   private Integer year;
-
-  private final List<String> engines = Lists.newArrayList();
+  
+  private final List<String> engines = new ArrayList<>();
+  
   private String engine;
+
+  private final Set<Long> excludedTypes = new HashSet<>();
+
+  public SearchByCar(Collection<Long> exclusions) {
+    this();
+    createUi();
+    
+    if (!BeeUtils.isEmpty(exclusions)) {
+      this.excludedTypes.addAll(exclusions);
+    }
+  }
 
   SearchByCar() {
     super();
@@ -152,6 +201,15 @@ class SearchByCar extends EcView {
 
     this.typePanel = new Flow(STYLE_TYPE_PANEL);
     this.itemPanel = new ItemPanel();
+  }
+
+  @Override
+  public HandlerRegistration addBeforeSelectionHandler(BeforeSelectionHandler<EcCarType> handler) {
+    return addHandler(handler, BeforeSelectionEvent.getType());
+  }
+
+  public Set<Long> getExcludedTypes() {
+    return excludedTypes;
   }
 
   @Override
@@ -334,13 +392,19 @@ class SearchByCar extends EcView {
     TableRowElement element = DomUtils.getParentRow(EventUtils.getEventTargetElement(event), true);
     long id = DomUtils.getDataIndexLong(element);
 
-    if (id > 0 && !Objects.equal(getTypeId(), id)) {
+    if (DataUtils.isId(id) && !excludedTypes.contains(id) && !Objects.equals(getTypeId(), id)) {
+      EcCarType type = findType(id);
+      
+      BeforeSelectionEvent<EcCarType> bse = BeforeSelectionEvent.fire(this, type);
+      if (bse != null && bse.isCanceled()) {
+        return;
+      }
+
       setTypeId(id);
 
       resetItems();
       renderTypes();
 
-      EcCarType type = findType(id);
       String label = (type == null) ? BeeUtils.toString(id) : type.getInfo();
 
       ParameterList params = EcKeeper.createArgs(SVC_GET_ITEMS_BY_CAR_TYPE);
@@ -353,31 +417,6 @@ class SearchByCar extends EcView {
         }
       });
     }
-  }
-
-  private static void openAttributeSelector(String styleSuffix, final IndexSelector selector,
-      final CarAttributeWidget attributeWidget) {
-
-    Popup popup = new Popup(OutsideClick.CLOSE, STYLE_DIALOG + styleSuffix);
-    popup.setWidget(selector);
-
-    popup.addOpenHandler(new OpenEvent.Handler() {
-      @Override
-      public void onOpen(OpenEvent event) {
-        attributeWidget.setActive(true);
-        selector.focus();
-      }
-    });
-
-    popup.addCloseHandler(new CloseEvent.Handler() {
-      @Override
-      public void onClose(CloseEvent event) {
-        attributeWidget.setActive(false);
-      }
-    });
-
-    popup.setHideOnEscape(true);
-    popup.showRelativeTo(attributeWidget.getElement(), selectorMargins);
   }
 
   private void openEngines() {
@@ -472,7 +511,7 @@ class SearchByCar extends EcView {
     }
     years.clear();
 
-    Set<Integer> produced = Sets.newHashSet();
+    Set<Integer> produced = new HashSet<>();
     for (EcCarType type : types) {
       Range<Integer> range = EcUtils.yearsProduced(type.getProducedFrom(), type.getProducedTo());
       if (range != null) {
@@ -534,13 +573,8 @@ class SearchByCar extends EcView {
     engineWidget.setEnabled(engineEnabled);
   }
 
-  private static String renderModel(EcCarModel model) {
-    return BeeUtils.join(BeeConst.DEFAULT_LIST_SEPARATOR, model.getModelName(),
-        EcUtils.formatProduced(model.getProducedFrom(), model.getProducedTo()));
-  }
-
   private List<String> renderModels() {
-    List<String> items = Lists.newArrayList();
+    List<String> items = new ArrayList<>();
     for (EcCarModel model : models) {
       items.add(renderModel(model));
     }
@@ -605,7 +639,12 @@ class SearchByCar extends EcView {
 
       DomUtils.setDataIndex(table.getRowFormatter().getElement(row), type.getTypeId());
 
-      table.getRowFormatter().addStyleName(row, rowStyle);
+      if (excludedTypes.contains(type.getTypeId())) {
+        table.getRowFormatter().addStyleName(row, STYLE_TYPE_EXCLUDED);
+      } else {
+        table.getRowFormatter().addStyleName(row, rowStyle);
+      }
+
       row++;
     }
 

@@ -1235,7 +1235,7 @@ public final class DomUtils {
     doc.getBody().appendChild(script);
   }
 
-  public static void injectExternalStyle(String css) {
+  public static void injectStyleSheet(String css) {
     Assert.notEmpty(css);
     HeadElement head = getHead();
     Assert.notNull(head, "<head> element not found");

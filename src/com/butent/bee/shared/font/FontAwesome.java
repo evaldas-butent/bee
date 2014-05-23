@@ -417,7 +417,6 @@ public enum FontAwesome {
   TURKISH_LIRA('\uf195'),
   TRY('\uf195'),
   PLUS_SQUARE_O('\uf196'),
-
   SPACE_SHUTTLE('\uf197'),
   SLACK('\uf198'),
   ENVELOPE_SQUARE('\uf199'),

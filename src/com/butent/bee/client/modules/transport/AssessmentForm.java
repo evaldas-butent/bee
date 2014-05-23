@@ -68,6 +68,7 @@ import com.butent.bee.client.view.form.FormView;
 import com.butent.bee.client.view.form.interceptor.FormInterceptor;
 import com.butent.bee.client.view.grid.GridView;
 import com.butent.bee.client.view.grid.interceptor.AbstractGridInterceptor;
+import com.butent.bee.client.view.grid.interceptor.GridInterceptor;
 import com.butent.bee.client.widget.Button;
 import com.butent.bee.client.widget.FaLabel;
 import com.butent.bee.client.widget.InlineLabel;
@@ -209,6 +210,11 @@ public class AssessmentForm extends PrintFormInterceptor implements SelectorEven
     }
 
     @Override
+    public GridInterceptor getInstance() {
+      return new ChildAssessmentsGrid();
+    }
+    
+    @Override
     public AbstractCellRenderer getRenderer(String columnName,
         List<? extends IsColumn> dataColumns, ColumnDescription columnDescription,
         CellSource cellSource) {
@@ -301,6 +307,11 @@ public class AssessmentForm extends PrintFormInterceptor implements SelectorEven
     }
 
     @Override
+    public GridInterceptor getInstance() {
+      return new ForwardersGrid();
+    }
+
+    @Override
     public void onReadyForInsert(GridView gridView, ReadyForInsertEvent event) {
       super.onReadyForInsert(gridView, event);
 
@@ -350,6 +361,11 @@ public class AssessmentForm extends PrintFormInterceptor implements SelectorEven
       if (BeeUtils.same(getViewName(), TBL_CARGO_EXPENSES)) {
         DataChangeEvent.fireRefresh(BeeKeeper.getBus(), TBL_ASSESSMENT_FORWARDERS);
       }
+    }
+
+    @Override
+    public GridInterceptor getInstance() {
+      return new ServicesGrid();
     }
   }
 

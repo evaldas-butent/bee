@@ -362,6 +362,11 @@ public class DocumentDataForm extends AbstractFormInterceptor
       ensureDataId(null, callback);
       return true;
     }
+    
+    @Override
+    public GridInterceptor getInstance() {
+      return null;
+    }
   };
 
   @Override

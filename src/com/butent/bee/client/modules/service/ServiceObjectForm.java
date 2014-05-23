@@ -134,6 +134,11 @@ public class ServiceObjectForm extends AbstractFormInterceptor implements ClickH
         ((Autocomplete) editor).addAutocompleteHandler(new AutocompleteFilter(source, null));
       }
     }
+
+    @Override
+    public GridInterceptor getInstance() {
+      return null;
+    }
   };
 
   private HasWidgets criteriaPanel;

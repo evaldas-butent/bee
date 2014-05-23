@@ -14,6 +14,7 @@ import com.butent.bee.client.validation.CellValidateEvent;
 import com.butent.bee.client.validation.CellValidation;
 import com.butent.bee.client.view.edit.EditableColumn;
 import com.butent.bee.client.view.grid.interceptor.AbstractGridInterceptor;
+import com.butent.bee.client.view.grid.interceptor.GridInterceptor;
 import com.butent.bee.shared.data.BeeColumn;
 import com.butent.bee.shared.data.IsColumn;
 import com.butent.bee.shared.data.IsRow;
@@ -65,5 +66,10 @@ class ArticleCodesGridInterceptor extends AbstractGridInterceptor {
     }
 
     return true;
+  }
+  
+  @Override
+  public GridInterceptor getInstance() {
+    return new ArticleCodesGridInterceptor();
   }
 }

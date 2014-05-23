@@ -41,6 +41,7 @@ import com.butent.bee.client.view.form.FormView;
 import com.butent.bee.client.view.form.interceptor.FormInterceptor;
 import com.butent.bee.client.view.grid.GridView;
 import com.butent.bee.client.view.grid.interceptor.AbstractGridInterceptor;
+import com.butent.bee.client.view.grid.interceptor.GridInterceptor;
 import com.butent.bee.client.widget.Button;
 import com.butent.bee.shared.BiConsumer;
 import com.butent.bee.shared.Consumer;
@@ -116,6 +117,11 @@ public class DocumentForm extends DocumentDataForm implements SelectorEvent.Hand
           }
         }
 
+        @Override
+        public GridInterceptor getInstance() {
+          return null;
+        }
+        
         @Override
         public void onEditStart(final EditStartEvent event) {
           if (!BeeUtils.same(event.getColumnId(), COL_DOCUMENT_DATA)) {

@@ -5,17 +5,18 @@ import com.google.gwt.dom.client.NodeList;
 import com.google.gwt.user.client.ui.Widget;
 
 import com.butent.bee.client.dom.Selectors;
+import com.butent.bee.client.style.StyleUtils;
 
 public final class EcStyles {
   
   private static final String SEPARATOR = "-";
-  private static final String PREFIX = "bee-ec-";
+  private static final String PREFIX = StyleUtils.CLASS_NAME_PREFIX + "ec-";
 
-  private static final String LIST_PRICE = "bee-ec-ListPrice";
-  private static final String PRICE = "bee-ec-Price";
-  private static final String STOCK = "bee-ec-Stock";
+  private static final String LIST_PRICE = PREFIX + "ListPrice";
+  private static final String PRICE = PREFIX + "Price";
+  private static final String STOCK = PREFIX + "Stock";
 
-  private static final String HIDDEN = "bee-ec-Hidden";
+  private static final String HIDDEN = PREFIX + "Hidden";
   
   public static void add(Widget widget, String style) {
     widget.addStyleName(name(style));

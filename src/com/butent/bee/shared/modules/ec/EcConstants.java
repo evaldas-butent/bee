@@ -540,6 +540,7 @@ public final class EcConstants {
   public static final String GRID_ARTICLE_CATEGORIES = "TcdArticleCategories";
   public static final String GRID_ARTICLE_CODES = "TcdArticleCodes";
   public static final String GRID_ARTICLE_GRAPHICS = "TcdArticleGraphics";
+  public static final String GRID_ARTICLE_CARS = "TcdTypeArticles";
   public static final String GRID_GROUP_CATEGORIES = "EcGroupCategories";
 
   public static final String FORM_CATEGORIES = "TcdCategories";

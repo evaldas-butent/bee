@@ -212,13 +212,7 @@
 }
 
 .bee-crm-rt-actionSchedule {
-  font-size: 17px;
-  padding-right: 3px;
-  color: #888;
-  cursor: pointer;
-}
-.bee-crm-rt-actionSchedule:hover {
-  color: black;
+  font-size: 18px !important;
 }
 
 .bee-crm-rt-cron-values {

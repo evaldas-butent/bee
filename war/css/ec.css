@@ -607,6 +607,7 @@
   border-bottom: 1px solid #ccc; 
 }
 .bee-ec-searchByCar-type-selectableRow > td,
+.bee-ec-searchByCar-type-excluded > td,
 .bee-ec-searchByCar-type-selectedRow > td {
   padding: 3px 1em;
 }
@@ -614,6 +615,9 @@
   background-color: #dfd;
   text-decoration: underline;
   cursor: pointer;
+}
+.bee-ec-searchByCar-type-excluded {
+  color: #ccc;
 }
 .bee-ec-searchByCar-type-selectedRow {
   color: #00d;
