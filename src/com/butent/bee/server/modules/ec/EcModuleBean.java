@@ -1,17 +1,14 @@
 package com.butent.bee.server.modules.ec;
 
-import com.google.common.base.Objects;
 import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ListMultimap;
 import com.google.common.collect.Lists;
-import com.google.common.collect.Maps;
 import com.google.common.collect.Multimap;
 import com.google.common.collect.Sets;
 import com.google.common.eventbus.Subscribe;
-import com.google.common.primitives.Longs;
 
 import static com.butent.bee.shared.html.builder.Factory.*;
 import static com.butent.bee.shared.modules.administration.AdministrationConstants.*;
@@ -121,6 +118,7 @@ import com.butent.webservice.WSDocument;
 import com.butent.webservice.WSDocument.WSDocumentItem;
 
 import java.text.Collator;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
@@ -128,6 +126,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 
 import javax.ejb.EJB;
@@ -184,8 +183,8 @@ public class EcModuleBean implements BeeModule {
       return null;
     }
 
-    Map<Long, Double> marginByRoot = Maps.newHashMap();
-    Set<Long> traversed = Sets.newHashSet();
+    Map<Long, Double> marginByRoot = new HashMap<>();
+    Set<Long> traversed = new HashSet<>();
 
     for (Long category : categories) {
       Double margin = null;
@@ -382,6 +381,9 @@ public class EcModuleBean implements BeeModule {
     } else if (BeeUtils.same(svc, SVC_ADOPT_ORPHANS)) {
       response = adoptOrphans();
 
+    } else if (BeeUtils.same(svc, SVC_ADD_ARTICLE_CAR_TYPES)) {
+      response = addArticleCarTypes(reqInfo);
+
     } else {
       String msg = BeeUtils.joinWords("e-commerce service not recognized:", svc);
       logger.warning(msg);
@@ -444,8 +446,8 @@ public class EcModuleBean implements BeeModule {
               return;
             }
 
-            Map<Long, Long> parents = Maps.newHashMap();
-            Map<Long, String> names = Maps.newHashMap();
+            Map<Long, Long> parents = new HashMap<>();
+            Map<Long, String> names = new HashMap<>();
 
             for (BeeRow row : rowSet.getRows()) {
               Long parent = row.getLong(parentIndex);
@@ -501,7 +503,7 @@ public class EcModuleBean implements BeeModule {
                 }
 
                 if (result == BeeConst.COMPARE_EQUAL) {
-                  result = Longs.compare(row1.getId(), row2.getId());
+                  result = Long.compare(row1.getId(), row2.getId());
                 }
 
                 return result;
@@ -516,7 +518,7 @@ public class EcModuleBean implements BeeModule {
         if (event.isAfter() && !DataUtils.isEmpty(event.getRowset())
             && BeeUtils.inListSame(event.getTargetName(), VIEW_ARTICLES, VIEW_ORDER_ITEMS)) {
 
-          Set<Long> articleIds = Sets.newHashSet();
+          Set<Long> articleIds = new HashSet<>();
 
           BeeRowSet rowSet = event.getRowset();
 
@@ -615,6 +617,30 @@ public class EcModuleBean implements BeeModule {
     });
 
     MenuService.ENSURE_CATEGORIES_AND_OPEN_GRID.setDataNameProvider(ui.getGridDataNameProvider());
+  }
+
+  private ResponseObject addArticleCarTypes(RequestInfo reqInfo) {
+    Long article = BeeUtils.toLongOrNull(reqInfo.getParameter(COL_TCD_ARTICLE));
+    if (!DataUtils.isId(article)) {
+      return ResponseObject.parameterNotFound(reqInfo.getService(), COL_TCD_ARTICLE);
+    }
+
+    List<Long> types = DataUtils.parseIdList(reqInfo.getParameter(COL_TCD_TYPE));
+    if (BeeUtils.isEmpty(types)) {
+      return ResponseObject.parameterNotFound(reqInfo.getService(), COL_TCD_TYPE);
+    }
+
+    for (Long type : types) {
+      ResponseObject response = qs.insertDataWithResponse(new SqlInsert(TBL_TCD_TYPE_ARTICLES)
+          .addConstant(COL_TCD_TYPE, type)
+          .addConstant(COL_TCD_ARTICLE, article));
+      
+      if (response.hasErrors()) {
+        return response;
+      }
+    }
+    
+    return ResponseObject.response(types.size());
   }
 
   private ResponseObject addToUnsuppliedItems(Long orderId) {
@@ -802,7 +828,7 @@ public class EcModuleBean implements BeeModule {
   }
 
   private Map<Long, Integer> countAnalogs(String tempArticleIds) {
-    Map<Long, Integer> result = Maps.newHashMap();
+    Map<Long, Integer> result = new HashMap<>();
 
     String countName = "cnt" + SqlUtils.uniqueName();
 
@@ -1031,7 +1057,7 @@ public class EcModuleBean implements BeeModule {
   }
 
   private Map<Long, String> getArticleCategories(String tempArticleIds) {
-    Map<Long, String> result = Maps.newHashMap();
+    Map<Long, String> result = new HashMap<>();
 
     SqlSelect query = new SqlSelect()
         .addFields(TBL_TCD_ARTICLE_CATEGORIES, COL_TCD_ARTICLE, COL_TCD_CATEGORY)
@@ -1045,7 +1071,7 @@ public class EcModuleBean implements BeeModule {
       Map<Long, Long> parents = getCategoryParents();
 
       long lastArt = 0;
-      Set<Long> categories = Sets.newHashSet();
+      Set<Long> categories = new HashSet<>();
 
       for (SimpleRow row : data) {
         long art = row.getLong(COL_TCD_ARTICLE);
@@ -1212,7 +1238,7 @@ public class EcModuleBean implements BeeModule {
   }
 
   private List<String> getBranchWarehouses(Long branch) {
-    List<String> result = Lists.newArrayList();
+    List<String> result = new ArrayList<>();
 
     if (branch != null) {
       String[] arr = qs.getColumn(new SqlSelect()
@@ -1272,7 +1298,7 @@ public class EcModuleBean implements BeeModule {
       return didNotMatch(manufacturer);
     }
 
-    List<EcCarModel> carModels = Lists.newArrayList();
+    List<EcCarModel> carModels = new ArrayList<>();
     for (SimpleRow row : rowSet) {
       carModels.add(new EcCarModel(row));
     }
@@ -1308,7 +1334,7 @@ public class EcModuleBean implements BeeModule {
       return didNotMatch(BeeUtils.toString(modelId));
     }
 
-    List<EcCarType> carTypes = Lists.newArrayList();
+    List<EcCarType> carTypes = new ArrayList<>();
     for (SimpleRow row : rowSet) {
       carTypes.add(new EcCarType(row));
     }
@@ -1349,7 +1375,7 @@ public class EcModuleBean implements BeeModule {
   }
 
   private Map<Long, Long> getCategoryParents() {
-    Map<Long, Long> result = Maps.newHashMap();
+    Map<Long, Long> result = new HashMap<>();
 
     String colCategoryId = sys.getIdName(TBL_TCD_CATEGORIES);
 
@@ -1369,7 +1395,7 @@ public class EcModuleBean implements BeeModule {
   }
 
   private EcClientDiscounts getClientDiscounts() {
-    List<SimpleRowSet> discounts = Lists.newArrayList();
+    List<SimpleRowSet> discounts = new ArrayList<>();
 
     String colClientId = sys.getIdName(TBL_CLIENTS);
     SimpleRow currentClientInfo = getCurrentClientInfo(colClientId, COL_CLIENT_DISCOUNT_PERCENT,
@@ -1396,7 +1422,7 @@ public class EcModuleBean implements BeeModule {
       discounts.add(discountData);
     }
 
-    if (DataUtils.isId(parent) && !Objects.equal(client, parent)) {
+    if (DataUtils.isId(parent) && !Objects.equals(client, parent)) {
       Set<Long> traversed = Sets.newHashSet(client);
 
       SqlSelect clientQuery = new SqlSelect();
@@ -1436,7 +1462,7 @@ public class EcModuleBean implements BeeModule {
       return ResponseObject.error(msg);
     }
 
-    Map<String, String> result = Maps.newHashMap();
+    Map<String, String> result = new HashMap<>();
 
     BeeRow row = rowSet.getRow(0);
     for (int i = 0; i < rowSet.getNumberOfColumns(); i++) {
@@ -1449,7 +1475,7 @@ public class EcModuleBean implements BeeModule {
   }
 
   private ResponseObject getClientStockLabels() {
-    List<String> result = Lists.newArrayList();
+    List<String> result = new ArrayList<>();
 
     String colClientId = sys.getIdName(TBL_CLIENTS);
     SimpleRow clientInfo = getCurrentClientInfo(colClientId, COL_CLIENT_PRIMARY_BRANCH,
@@ -1486,8 +1512,8 @@ public class EcModuleBean implements BeeModule {
   }
 
   private Pair<Set<String>, Set<String>> getClientWarehouses() {
-    Set<String> primary = Sets.newHashSet();
-    Set<String> secondary = Sets.newHashSet();
+    Set<String> primary = new HashSet<>();
+    Set<String> secondary = new HashSet<>();
 
     Pair<Set<String>, Set<String>> result = Pair.of(primary, secondary);
 
@@ -1526,7 +1552,7 @@ public class EcModuleBean implements BeeModule {
   }
 
   private List<String> getClientWarehouses(Long client, String table) {
-    List<String> result = Lists.newArrayList();
+    List<String> result = new ArrayList<>();
 
     if (client != null) {
       String[] arr = qs.getColumn(new SqlSelect()
@@ -1553,7 +1579,7 @@ public class EcModuleBean implements BeeModule {
       return ResponseObject.error("cannot read", VIEW_CONFIGURATION);
     }
 
-    Map<String, String> result = Maps.newHashMap();
+    Map<String, String> result = new HashMap<>();
     if (rowSet.isEmpty()) {
       for (BeeColumn column : rowSet.getColumns()) {
         result.put(column.getId(), null);
@@ -1597,7 +1623,7 @@ public class EcModuleBean implements BeeModule {
           usr.getLocalizableConstants().ecDeliveryMethods()));
     }
 
-    List<DeliveryMethod> deliveryMethods = Lists.newArrayList();
+    List<DeliveryMethod> deliveryMethods = new ArrayList<>();
     for (SimpleRow row : rowSet) {
       deliveryMethods.add(new DeliveryMethod(row.getLong(COL_DELIVERY_METHOD_ID),
           row.getValue(COL_DELIVERY_METHOD_NAME), row.getValue(COL_DELIVERY_METHOD_NOTES)));
@@ -1833,7 +1859,7 @@ public class EcModuleBean implements BeeModule {
   }
 
   private Set<Long> getGroupCategories(Long groupId) {
-    Set<Long> categories = Sets.newHashSet();
+    Set<Long> categories = new HashSet<>();
 
     Long[] arr = qs.getLongColumn(new SqlSelect()
         .addFields(TBL_GROUP_CATEGORIES, COL_GROUP_CATEGORY)
@@ -2052,7 +2078,7 @@ public class EcModuleBean implements BeeModule {
       return ResponseObject.warning(usr.getLocalizableMesssages().dataNotAvailable(TBL_TCD_BRANDS));
     }
 
-    List<EcBrand> brands = Lists.newArrayList();
+    List<EcBrand> brands = new ArrayList<>();
     for (SimpleRow row : data) {
       brands.add(new EcBrand(row.getLong(colBrandId), row.getValue(COL_TCD_BRAND_NAME)));
     }
@@ -2076,7 +2102,7 @@ public class EcModuleBean implements BeeModule {
       return ResponseObject.emptyResponse();
     }
 
-    List<EcGroup> groups = Lists.newArrayList();
+    List<EcGroup> groups = new ArrayList<>();
 
     for (SimpleRow groupRow : groupData) {
       Long id = groupRow.getLong(colGroupId);
@@ -2175,7 +2201,8 @@ public class EcModuleBean implements BeeModule {
   }
 
   private List<EcItem> getItems(SqlSelect query, String code) {
-    List<EcItem> items = Lists.newArrayList();
+    List<EcItem> items = new ArrayList<>();
+    Map<Long, Double> featuredDiscountPercents = new HashMap<>();
 
     String tempArticleIds = createTempArticleIds(query);
     String unitName = "UnitName";
@@ -2183,7 +2210,8 @@ public class EcModuleBean implements BeeModule {
     SqlSelect articleQuery = new SqlSelect()
         .addFields(tempArticleIds, COL_TCD_ARTICLE)
         .addFields(TBL_TCD_ARTICLES, COL_TCD_ARTICLE_NAME, COL_TCD_ARTICLE_NR, COL_TCD_BRAND,
-            COL_TCD_ARTICLE_DESCRIPTION, COL_TCD_ARTICLE_NOVELTY, COL_TCD_ARTICLE_FEATURED)
+            COL_TCD_ARTICLE_DESCRIPTION, COL_TCD_ARTICLE_NOVELTY, COL_TCD_ARTICLE_FEATURED,
+            COL_TCD_ARTICLE_FEATURED_PRICE, COL_TCD_ARTICLE_FEATURED_PERCENT)
         .addField(TBL_UNITS, COL_UNIT_NAME, unitName)
         .addFrom(tempArticleIds)
         .addFromInner(TBL_TCD_ARTICLES,
@@ -2213,6 +2241,16 @@ public class EcModuleBean implements BeeModule {
         until = row.getLong(COL_TCD_ARTICLE_FEATURED);
         if (until != null && until > time) {
           item.setFeatured(true);
+          
+          Double featuredPrice = row.getDouble(COL_TCD_ARTICLE_FEATURED_PRICE);
+          if (BeeUtils.isPositive(featuredPrice)) {
+            item.setFeaturedPrice(featuredPrice);
+          } else {
+            Double featuredPercent = row.getDouble(COL_TCD_ARTICLE_FEATURED_PERCENT);
+            if (BeeUtils.isPositive(featuredPercent)) {
+              featuredDiscountPercents.put(item.getArticleId(), featuredPercent);
+            }
+          }
         }
 
         item.setUnit(row.getValue(unitName));
@@ -2265,7 +2303,16 @@ public class EcModuleBean implements BeeModule {
       }
 
       setListPrice(items);
-      setPrice(items);
+      setClientPrice(items);
+      
+      if (!featuredDiscountPercents.isEmpty()) {
+        for (EcItem item : items) {
+          Double percent = featuredDiscountPercents.get(item.getArticleId());
+          if (percent != null && item.getClientPrice() > 0) {
+            item.setFeaturedPrice(BeeUtils.minusPercent(item.getRealClientPrice(), percent));
+          }
+        }
+      }
 
       if (items.size() > 1) {
         Collections.sort(items, new EcItemComparator(usr.getLocale(), code));
@@ -2352,7 +2399,7 @@ public class EcModuleBean implements BeeModule {
   private ResponseObject getPromo(RequestInfo reqInfo) {
     long time = System.currentTimeMillis();
 
-    List<RowInfo> cachedBanners = Lists.newArrayList();
+    List<RowInfo> cachedBanners = new ArrayList<>();
 
     String param = reqInfo.getParameter(VAR_BANNERS);
     if (!BeeUtils.isEmpty(param)) {
@@ -2439,13 +2486,13 @@ public class EcModuleBean implements BeeModule {
       return ResponseObject.emptyResponse();
     }
 
-    List<CartItem> result = Lists.newArrayList();
+    List<CartItem> result = new ArrayList<>();
 
     for (SimpleRow row : data) {
       Long article = row.getLong(COL_SHOPPING_CART_ARTICLE);
 
       for (EcItem ecItem : ecItems) {
-        if (Objects.equal(article, ecItem.getArticleId())) {
+        if (Objects.equals(article, ecItem.getArticleId())) {
           CartItem cartItem = new CartItem(ecItem, row.getInt(COL_SHOPPING_CART_QUANTITY));
           cartItem.setNote(row.getValue(COL_SHOPPING_CART_TYPE));
           result.add(cartItem);
@@ -2475,7 +2522,7 @@ public class EcModuleBean implements BeeModule {
 
       for (EcOrder order : ecFinInfo.getOrders()) {
         if (EcOrderStatus.in(order.getStatus(), EcOrderStatus.NEW, EcOrderStatus.ACTIVE)
-            && Objects.equal(order.getOrderId(), orderId)) {
+            && Objects.equals(order.getOrderId(), orderId)) {
           orderTotal += order.getAmount();
         }
       }
@@ -2547,7 +2594,7 @@ public class EcModuleBean implements BeeModule {
 
     ResponseObject response = ResponseObject.emptyResponse();
 
-    Set<Long> recipients = Sets.newHashSet();
+    Set<Long> recipients = new HashSet<>();
 
     Long clientEmailId = null;
     if (!isClient
@@ -3130,6 +3177,34 @@ public class EcModuleBean implements BeeModule {
     return response;
   }
 
+  private void setClientPrice(List<EcItem> items) {
+    long start = System.currentTimeMillis();
+    EcClientDiscounts clientDiscounts = getClientDiscounts();
+
+    long watch = System.currentTimeMillis();
+
+    if (clientDiscounts == null || clientDiscounts.isEmpty()) {
+      for (EcItem item : items) {
+        item.setClientPrice(item.getListPrice());
+      }
+
+    } else {
+      Map<Long, Long> categoryParents;
+      if (clientDiscounts.hasCategories()) {
+        categoryParents = getCategoryParents();
+      } else {
+        categoryParents = new HashMap<>();
+      }
+
+      for (EcItem item : items) {
+        clientDiscounts.applyTo(item, categoryParents);
+      }
+    }
+
+    long end = System.currentTimeMillis();
+    logger.debug("price", watch - start, "+", end - watch, "=", end - start);
+  }
+
   private void setListPrice(List<EcItem> items) {
     long start = System.currentTimeMillis();
 
@@ -3139,9 +3214,9 @@ public class EcModuleBean implements BeeModule {
 
     Double defMargin = qs.getDouble(defQuery);
 
-    Map<Long, Long> catParents = Maps.newHashMap();
-    Map<Long, Long> catRoots = Maps.newHashMap();
-    Map<Long, Double> catMargins = Maps.newHashMap();
+    Map<Long, Long> catParents = new HashMap<>();
+    Map<Long, Long> catRoots = new HashMap<>();
+    Map<Long, Double> catMargins = new HashMap<>();
 
     String colCategoryId = sys.getIdName(TBL_TCD_CATEGORIES);
 
@@ -3203,34 +3278,6 @@ public class EcModuleBean implements BeeModule {
     }
 
     logger.debug("list price", items.size(), catMargins.size(), TimeUtils.elapsedMillis(start));
-  }
-
-  private void setPrice(List<EcItem> items) {
-    long start = System.currentTimeMillis();
-    EcClientDiscounts clientDiscounts = getClientDiscounts();
-
-    long watch = System.currentTimeMillis();
-
-    if (clientDiscounts == null || clientDiscounts.isEmpty()) {
-      for (EcItem item : items) {
-        item.setPrice(item.getListPrice());
-      }
-
-    } else {
-      Map<Long, Long> categoryParents;
-      if (clientDiscounts.hasCategories()) {
-        categoryParents = getCategoryParents();
-      } else {
-        categoryParents = Maps.newHashMap();
-      }
-
-      for (EcItem item : items) {
-        clientDiscounts.applyTo(item, categoryParents);
-      }
-    }
-
-    long end = System.currentTimeMillis();
-    logger.debug("price", watch - start, "+", end - watch, "=", end - start);
   }
 
   private ResponseObject submitOrder(RequestInfo reqInfo) {

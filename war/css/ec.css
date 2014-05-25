@@ -384,13 +384,13 @@
   padding-left: 5px;
 }
 
-.bee-ec-ItemList-listPrice-label {
+.bee-ec-ItemList-list-price-label {
   max-width: 80px;
 }
 .bee-ec-ItemList-price-label {
   max-width: 70px;
 }
-.bee-ec-ItemList-listPrice-cell,
+.bee-ec-ItemList-list-price-cell,
 .bee-ec-ItemList-price-cell {
   text-align: right;
 }
@@ -453,12 +453,23 @@
   font-weight: bold;
 }
 
-.bee-ec-ItemList-price-value {
+.bee-ec-ItemList-client-price-panel {
+  text-decoration: line-through;
+}
+.bee-ec-ItemList-featured-price-panel {
+  color: red;
+  margin-top: 3px;
+}
+
+.bee-ec-ItemList-price-value,
+.bee-ec-ItemList-featured-price-value {
   font-size: medium;
   font-weight: bold;
 }
-.bee-ec-ItemList-listPrice-currency,
-.bee-ec-ItemList-price-currency {
+.bee-ec-ItemList-list-price-currency,
+.bee-ec-ItemList-price-currency,
+.bee-ec-ItemList-client-price-currency,
+.bee-ec-ItemList-featured-price-currency {
   padding-left: 5px;
 }
 
@@ -606,12 +617,12 @@
   font-weight: bold;
   border-bottom: 1px solid #ccc; 
 }
-.bee-ec-searchByCar-type-selectableRow > td,
+.bee-ec-searchByCar-type-selectable > td,
 .bee-ec-searchByCar-type-excluded > td,
-.bee-ec-searchByCar-type-selectedRow > td {
+.bee-ec-searchByCar-type-selected > td {
   padding: 3px 1em;
 }
-.bee-ec-searchByCar-type-selectableRow:hover {
+.bee-ec-searchByCar-type-selectable:hover {
   background-color: #dfd;
   text-decoration: underline;
   cursor: pointer;
@@ -619,7 +630,7 @@
 .bee-ec-searchByCar-type-excluded {
   color: #ccc;
 }
-.bee-ec-searchByCar-type-selectedRow {
+.bee-ec-searchByCar-type-selected {
   color: #00d;
 }
 
@@ -897,11 +908,26 @@
 .bee-ec-ItemDetails-addToCart-cart {
   margin-left: 3em;
 }
-.bee-ec-ItemDetails-addToCart-listPrice,
-.bee-ec-ItemDetails-addToCart-price {
-  margin-top: 2ex;
-  margin-right: 1em;
+.bee-ec-ItemDetails-addToCart-price-table {
+  border-collapse: collapse;
+  margin-top: 1ex;
+}
+.bee-ec-ItemDetails-addToCart-price-table td {
+  padding: 3px 5px;
   text-align: right;
+}
+.bee-ec-ItemDetails-addToCart-price-value,
+.bee-ec-ItemDetails-addToCart-featured-price-value {
+  font-size: medium;
+  font-weight: bold;
+}
+.bee-ec-ItemDetails-addToCart-client-price-value,
+.bee-ec-ItemDetails-addToCart-client-price-currency {
+  text-decoration: line-through;
+}
+.bee-ec-ItemDetails-addToCart-featured-price-value,
+.bee-ec-ItemDetails-addToCart-featured-price-currency {
+  color: red;
 }
 
 .bee-ec-ItemDetails-remainders-table td {
@@ -931,8 +957,7 @@
 .bee-ec-ItemPicture-container {
   position: relative;
 }
-.bee-ec-ItemPicture-notEmpty {
-  position: relative;
+.bee-ec-ItemPicture-has-picture {
   cursor: pointer;
 }
 .bee-ec-ItemPicture-wrapper {
@@ -959,6 +984,19 @@
 }
 .bee-ec-ItemPicture-slides .bee-Dialog-content {
   margin: 0;
+}
+
+.bee-ec-ItemPicture-featured,
+.bee-ec-ItemPicture-novelty {
+  position: absolute;
+  left: 2px;
+  top: 6px;
+  background-image: url(../images/ec/red_background.png);
+  color: white;
+  font-family: Verdana;
+  padding: 3px 5px; 
+  transform: rotate(350deg);
+  -webkit-transform: rotate(350deg);
 }
 
 .bee-ec-finInfo-fin-table {

@@ -327,4 +327,6 @@ public interface LocalizableEcConstants {
   String ecUnsuppliedItemsRemove();
 
   String ecUpdateCosts();
+  
+  String tcdTypes();
 }

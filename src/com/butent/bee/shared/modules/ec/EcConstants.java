@@ -239,6 +239,8 @@ public final class EcConstants {
   public static final String SVC_CREATE_ITEM = "createItem";
   public static final String SVC_ADOPT_ORPHANS = "adoptOrphans";
 
+  public static final String SVC_ADD_ARTICLE_CAR_TYPES = "addArticleCarTypes";
+
   public static final String VAR_PREFIX = Service.RPC_VAR_PREFIX + "ec_";
 
   public static final String VAR_QUERY = VAR_PREFIX + "query";
@@ -472,6 +474,8 @@ public final class EcConstants {
   public static final String COL_TCD_ARTICLE_VISIBLE = "Visible";
   public static final String COL_TCD_ARTICLE_NOVELTY = "Novelty";
   public static final String COL_TCD_ARTICLE_FEATURED = "Featured";
+  public static final String COL_TCD_ARTICLE_FEATURED_PRICE = "FeaturedPrice";
+  public static final String COL_TCD_ARTICLE_FEATURED_PERCENT = "FeaturedPercent";
 
   public static final String COL_TCD_SUPPLIER = "Supplier";
   public static final String COL_TCD_SUPPLIER_ID = "SupplierID";

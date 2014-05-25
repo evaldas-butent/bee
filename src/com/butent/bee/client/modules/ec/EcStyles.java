@@ -12,7 +12,7 @@ public final class EcStyles {
   private static final String SEPARATOR = "-";
   private static final String PREFIX = StyleUtils.CLASS_NAME_PREFIX + "ec-";
 
-  private static final String LIST_PRICE = PREFIX + "ListPrice";
+  private static final String LIST_PRICE = PREFIX + "List-Price";
   private static final String PRICE = PREFIX + "Price";
   private static final String STOCK = PREFIX + "Stock";
 
@@ -42,22 +42,22 @@ public final class EcStyles {
     return PREFIX + style;
   }
   
-  public static void markListPrice(Widget widget) {
-    widget.addStyleName(LIST_PRICE);
+  public static void markListPrice(Element element) {
+    element.addClassName(LIST_PRICE);
     if (!EcKeeper.isListPriceVisible()) {
-      widget.addStyleName(HIDDEN);
+      element.addClassName(HIDDEN);
     }
   }
 
-  public static void markPrice(Widget widget) {
-    widget.addStyleName(PRICE);
+  public static void markPrice(Element element) {
+    element.addClassName(PRICE);
     if (!EcKeeper.isPriceVisible()) {
-      widget.addStyleName(HIDDEN);
+      element.addClassName(HIDDEN);
     }
   }
 
-  public static void markStock(Widget widget) {
-    widget.addStyleName(STOCK);
+  public static void markStock(Element element) {
+    element.addClassName(STOCK);
   }
 
   public static String name(String primary, String secondary) {

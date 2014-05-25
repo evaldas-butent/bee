@@ -2,6 +2,7 @@ package com.butent.bee.client.modules.ec.view;
 
 import com.google.common.collect.Range;
 import com.google.gwt.core.client.Scheduler;
+import com.google.gwt.dom.client.Element;
 import com.google.gwt.dom.client.TableRowElement;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
@@ -21,6 +22,7 @@ import com.butent.bee.client.dialog.Popup;
 import com.butent.bee.client.dialog.Popup.OutsideClick;
 import com.butent.bee.client.dom.DomUtils;
 import com.butent.bee.client.dom.Edges;
+import com.butent.bee.client.dom.Selectors;
 import com.butent.bee.client.event.Binder;
 import com.butent.bee.client.event.EventUtils;
 import com.butent.bee.client.event.logical.CloseEvent;
@@ -108,10 +110,12 @@ public class SearchByCar extends EcView implements HasBeforeSelectionHandlers<Ec
   private static final String STYLE_TYPE_PANEL = STYLE_TYPE + "panel";
   private static final String STYLE_HAS_TYPES = STYLE_TYPE_PANEL + "-notEmpty";
 
+  private static final String STYLE_TYPE_SELECTABLE = STYLE_TYPE + "selectable";
+  private static final String STYLE_TYPE_SELECTED = STYLE_TYPE + "selected";
   private static final String STYLE_TYPE_EXCLUDED = STYLE_TYPE + "excluded";
 
   private static final Edges selectorMargins = new Edges(0, 0, 2, 0);
-  
+
   private static void openAttributeSelector(String styleSuffix, final IndexSelector selector,
       final CarAttributeWidget attributeWidget) {
 
@@ -136,6 +140,7 @@ public class SearchByCar extends EcView implements HasBeforeSelectionHandlers<Ec
     popup.setHideOnEscape(true);
     popup.showRelativeTo(attributeWidget.getElement(), selectorMargins);
   }
+
   private static String renderModel(EcCarModel model) {
     return BeeUtils.join(BeeConst.DEFAULT_LIST_SEPARATOR, model.getModelName(),
         EcUtils.formatProduced(model.getProducedFrom(), model.getProducedTo()));
@@ -167,9 +172,9 @@ public class SearchByCar extends EcView implements HasBeforeSelectionHandlers<Ec
 
   private final List<String> years = new ArrayList<>();
   private Integer year;
-  
+
   private final List<String> engines = new ArrayList<>();
-  
+
   private String engine;
 
   private final Set<Long> excludedTypes = new HashSet<>();
@@ -177,7 +182,7 @@ public class SearchByCar extends EcView implements HasBeforeSelectionHandlers<Ec
   public SearchByCar(Collection<Long> exclusions) {
     this();
     createUi();
-    
+
     if (!BeeUtils.isEmpty(exclusions)) {
       this.excludedTypes.addAll(exclusions);
     }
@@ -207,9 +212,19 @@ public class SearchByCar extends EcView implements HasBeforeSelectionHandlers<Ec
   public HandlerRegistration addBeforeSelectionHandler(BeforeSelectionHandler<EcCarType> handler) {
     return addHandler(handler, BeforeSelectionEvent.getType());
   }
-
-  public Set<Long> getExcludedTypes() {
-    return excludedTypes;
+  
+  public void includeType(Long type) {
+    if (DataUtils.isId(type) && excludedTypes.contains(type)) {
+      excludedTypes.remove(type);
+      
+      if (!typePanel.isEmpty()) {
+        Element typeRow = Selectors.getElementByDataIndex(typePanel, type);
+        if (typeRow != null) {
+          typeRow.removeClassName(STYLE_TYPE_EXCLUDED);
+          typeRow.addClassName(STYLE_TYPE_SELECTABLE);
+        }
+      }
+    }
   }
 
   @Override
@@ -394,9 +409,14 @@ public class SearchByCar extends EcView implements HasBeforeSelectionHandlers<Ec
 
     if (DataUtils.isId(id) && !excludedTypes.contains(id) && !Objects.equals(getTypeId(), id)) {
       EcCarType type = findType(id);
-      
+
       BeforeSelectionEvent<EcCarType> bse = BeforeSelectionEvent.fire(this, type);
       if (bse != null && bse.isCanceled()) {
+        excludedTypes.add(id);
+        
+        element.removeClassName(STYLE_TYPE_SELECTABLE);
+        element.addClassName(STYLE_TYPE_EXCLUDED);
+
         return;
       }
 
@@ -604,8 +624,6 @@ public class SearchByCar extends EcView implements HasBeforeSelectionHandlers<Ec
     table.getRowFormatter().addStyleName(row, STYLE_TYPE + "headerRow");
     row++;
 
-    String rowStyle = STYLE_TYPE + ((getTypeId() == null) ? "selectableRow" : "selectedRow");
-
     for (EcCarType type : types) {
       if (getTypeId() != null) {
         if (!getTypeId().equals(type.getTypeId())) {
@@ -639,11 +657,16 @@ public class SearchByCar extends EcView implements HasBeforeSelectionHandlers<Ec
 
       DomUtils.setDataIndex(table.getRowFormatter().getElement(row), type.getTypeId());
 
+      String rowStyle;
       if (excludedTypes.contains(type.getTypeId())) {
-        table.getRowFormatter().addStyleName(row, STYLE_TYPE_EXCLUDED);
+        rowStyle = STYLE_TYPE_EXCLUDED;
+      } else if (getTypeId() == null) {
+        rowStyle = STYLE_TYPE_SELECTABLE;
       } else {
-        table.getRowFormatter().addStyleName(row, rowStyle);
+        rowStyle = STYLE_TYPE_SELECTED;
       }
+      
+      table.getRowFormatter().addStyleName(row, rowStyle);
 
       row++;
     }
