@@ -1289,4 +1289,6 @@
 .bee-ec-cartAccumulator-minus:hover {
   color: red;
 }
-
+.bee-ec-cartAccumulator-count {
+  font-weight: bolder;
+}

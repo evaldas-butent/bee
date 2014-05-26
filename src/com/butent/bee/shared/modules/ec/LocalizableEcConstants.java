@@ -79,7 +79,7 @@ public interface LocalizableEcConstants {
   String ecGlobalSearchPlaceholder();
 
   String ecGroups();
-
+  
   String ecInvoiceAmount();
 
   String ecInvoiceDate();

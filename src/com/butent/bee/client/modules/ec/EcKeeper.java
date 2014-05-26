@@ -172,7 +172,7 @@ public final class EcKeeper {
       response.notify(BeeKeeper.getScreen());
     }
   }
-
+  
   public static void doGlobalSearch(String query, final IdentifiableWidget inputWidget) {
     if (!checkSearchQuery(query)) {
       return;
@@ -299,6 +299,10 @@ public final class EcKeeper {
 
   public static String getPrimaryStockLabel() {
     return data.getPrimaryStockLabel();
+  }
+
+  public static int getQuantityInCart(long articleId) {
+    return cartList.getQuantity(articleId);
   }
 
   public static List<EcItem> getResponseItems(ResponseObject response) {

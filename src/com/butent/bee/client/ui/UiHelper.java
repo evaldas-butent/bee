@@ -46,6 +46,7 @@ import com.butent.bee.shared.ui.Color;
 import com.butent.bee.shared.ui.HasMaxLength;
 import com.butent.bee.shared.utils.BeeUtils;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
@@ -112,6 +113,29 @@ public final class UiHelper {
     }
   }
 
+  @SuppressWarnings("unchecked")
+  public static <T extends Widget> Collection<T> getChildren(Widget parent, Class<T> clazz) {
+    Collection<T> result = new ArrayList<>();
+    if (parent == null || clazz == null) {
+      return result;
+    }
+
+    if (parent.getClass().equals(clazz)) {
+      result.add((T) parent);
+    }
+
+    if (parent instanceof HasOneWidget) {
+      result.addAll(getChildren(((HasOneWidget) parent).getWidget(), clazz));
+
+    } else if (parent instanceof HasWidgets) {
+      for (Widget child : (HasWidgets) parent) {
+        result.addAll(getChildren(child, clazz));
+      }
+    }
+
+    return result;
+  }
+  
   public static Collection<Widget> getChildrenByStyleName(Widget parent,
       Collection<String> styleNames) {
 
