@@ -260,7 +260,7 @@ class CreateDiscussionInterceptor extends AbstractFormInterceptor {
       newRow.setProperty(PROP_MAIL, BooleanValue.S_TRUE);
     }
 
-    BeeRowSet rowSet =
+    final BeeRowSet rowSet =
         DataUtils.createRowSetForInsert(VIEW_DISCUSSIONS, getFormView().getDataColumns(), newRow,
             null, true);
     ParameterList args = DiscussionsKeeper.createDiscussionRpcParameters(DiscussionEvent.CREATE);
@@ -292,6 +292,18 @@ class CreateDiscussionInterceptor extends AbstractFormInterceptor {
 
           DataChangeEvent.fireRefresh(BeeKeeper.getBus(), VIEW_DISCUSSIONS);
 
+          for (long discussionId : discussions) {
+          ParameterList mailArgs =
+                DiscussionsKeeper.createDiscussionRpcParameters(DiscussionEvent.CREATE_MAIL);
+            mailArgs.addDataItem(VAR_DISCUSSION_DATA, Codec.beeSerialize(rowSet));
+            mailArgs.addDataItem(VAR_DISCUSSION_ID, discussionId);
+            BeeKeeper.getRpc().makePostRequest(mailArgs, new ResponseCallback() {
+              @Override
+              public void onResponse(ResponseObject emptyResp) {
+
+              }
+            });
+          }
         } else {
           event.getCallback().onFailure("Unknown response");
         }

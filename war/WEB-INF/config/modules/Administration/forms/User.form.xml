@@ -45,7 +45,7 @@
         <ChildGrid class="flexible" name="UserFeeds" relColumn="User" />
       </page>
       <page module="Mail">
-        <text>=crmMailNotify</text>
+        <text>=mailNotify</text>
         <FlowPanel class="flexBox-vertical">
           <br />
           <CheckBox source="MailAssignedTasks" text="=crmMailAssignedTasks" style="margin-left: 10px;" />

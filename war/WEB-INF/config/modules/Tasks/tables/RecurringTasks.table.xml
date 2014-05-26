@@ -38,6 +38,6 @@
     <Numeric name="RemindBefore" precision="2" label="=crmRTRemindBefore" />
     <String name="RemindAt" precision="10" label="=crmRTRemindAt" />
     
-    <Boolean name="CopyByMail" label="=crmMailNotify" />
+    <Boolean name="CopyByMail" label="=mailNotify" />
   </Fields>
 </Table>

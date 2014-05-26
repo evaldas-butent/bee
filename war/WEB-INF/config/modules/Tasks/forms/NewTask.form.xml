@@ -81,7 +81,7 @@
           <InputTimeOfDay name="Reminder_Time" step="&timeStep;" style="&timeStyle;" />
         </FlowPanel>
         <cell colSpan="2" horizontalAlignment="left" style="padding-left: 2em;" module="Mail">
-          <CheckBox name="Mail" text="=crmMailNotify" />
+          <CheckBox name="Mail" text="=mailNotify" />
         </cell>
       </row>
     </Table>

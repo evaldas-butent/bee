@@ -116,6 +116,6 @@
     </row>
   </Table>
   
-  <CheckBox source="CopyByMail" text="=crmMailNotify" />
+  <CheckBox source="CopyByMail" text="=mailNotify" />
   
 </FlowPanel>

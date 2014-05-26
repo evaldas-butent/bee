@@ -10,6 +10,7 @@ public final class DiscussionsConstants {
 
   public enum DiscussionEvent implements HasCaption {
     CREATE(Localized.getConstants().discussEventCreated(), null, null),
+    CREATE_MAIL(Localized.getConstants().mailNotify(), null, null),
     VISIT(Localized.getConstants().discussEventVisited(), null, null),
     ACTIVATE(Localized.getConstants().discussEventActivated(), Localized.getConstants()
         .discussActionActivate(), "silverDiscussActivate"),

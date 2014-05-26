@@ -67,7 +67,6 @@ import com.butent.bee.shared.modules.discussions.DiscussionsConstants;
 import com.butent.bee.shared.modules.discussions.DiscussionsConstants.DiscussionEvent;
 import com.butent.bee.shared.modules.discussions.DiscussionsConstants.DiscussionStatus;
 import com.butent.bee.shared.modules.discussions.DiscussionsUtils;
-import com.butent.bee.shared.modules.mail.MailConstants;
 import com.butent.bee.shared.news.Feed;
 import com.butent.bee.shared.news.NewsConstants;
 import com.butent.bee.shared.rights.Module;
@@ -681,6 +680,36 @@ public class DiscussionsModuleBean implements BeeModule {
           }
         }
 
+        if (!response.hasErrors()) {
+          response = createDiscussionRelations(discussionId, properties);
+        }
+
+        if (!response.hasErrors()) {
+          discussions.add(discussionId);
+        }
+
+        if (response.hasErrors()) {
+          break;
+        }
+
+        if (!response.hasErrors()) {
+          if (discussions.isEmpty()) {
+            response = ResponseObject.error(usr.getLocalizableConstants().discussNotCreated());
+          } else {
+            response = ResponseObject.response(DataUtils.buildIdList(discussions));
+          }
+        }
+        break;
+
+      case CREATE_MAIL:
+        String discussIdData = reqInfo.getParameter(VAR_DISCUSSION_ID);
+
+        if (DataUtils.isId(BeeUtils.toLongOrNull(discussIdData))) {
+          discussionId = BeeUtils.toLong(discussIdData);
+        } else {
+          return ResponseObject.error("Incorrect discussion id:", discussIdData);
+        }
+
         boolean notifyEmail = BeeConst.isTrue(discussRow.getProperty(PROP_MAIL));
         boolean announcement = false;
         String announcementTopic = "";
@@ -705,29 +734,8 @@ public class DiscussionsModuleBean implements BeeModule {
         ResponseObject mailResponse =
             sendNewDiscussionMail(discussionId, announcement, announcementTopic, notifyEmail,
                 sendAll);
-        response.addMessagesFrom(mailResponse);
-
-        if (!response.hasErrors()) {
-          response = createDiscussionRelations(discussionId, properties);
-        }
-
-        if (!response.hasErrors()) {
-          discussions.add(discussionId);
-        }
-
-        if (response.hasErrors()) {
-          break;
-        }
-
-        if (!response.hasErrors()) {
-          if (discussions.isEmpty()) {
-            response = ResponseObject.error(usr.getLocalizableConstants().discussNotCreated());
-          } else {
-            response = ResponseObject.response(DataUtils.buildIdList(discussions));
-          }
-        }
+        response = ResponseObject.emptyResponse().addMessagesFrom(mailResponse);
         break;
-
       case DEACTIVATE:
         break;
       case VISIT:
@@ -1304,34 +1312,14 @@ public class DiscussionsModuleBean implements BeeModule {
     return res;
   }
 
-  private Long getSenderEmailId(String logLabel) {
-    Long account = prm.getRelation(MailConstants.PRM_DEFAULT_ACCOUNT);
-    if (!DataUtils.isId(account)) {
-      logger.info(logLabel, "sender account not specified",
-          BeeUtils.bracket(MailConstants.PRM_DEFAULT_ACCOUNT));
-      return null;
-    }
-
-    Long emailId = qs.getLong(new SqlSelect()
-        .addFields(MailConstants.TBL_ACCOUNTS, MailConstants.COL_ADDRESS)
-        .addFrom(MailConstants.TBL_ACCOUNTS)
-        .setWhere(sys.idEquals(MailConstants.TBL_ACCOUNTS, account)));
-
-    if (!DataUtils.isId(emailId)) {
-      logger.severe(logLabel, "email id not available for account", account);
-      return null;
-    } else {
-      return emailId;
-    }
-  }
-
   private Document renderDiscussionDocument(long discussionId, boolean typeAnnoucement,
       String anouncmentTopic, SimpleRow discussMailRow, LocalizableConstants constants,
       boolean isPublic) {
     
     String discussSubject = BeeUtils.joinWords(
-        typeAnnoucement ? constants.announcement()
-            : constants.discussion(), discussMailRow.getValue(COL_SUBJECT));
+            (typeAnnoucement ? constants.announcement()
+                : constants.discussion()) + BeeConst.STRING_COLON, discussMailRow
+                .getValue(COL_SUBJECT));
 
     Document doc = new Document();
     doc.getHead().append(meta().encodingDeclarationUtf8(), title().text(discussSubject));
@@ -1440,7 +1428,7 @@ public class DiscussionsModuleBean implements BeeModule {
   private ResponseObject sendNewDiscussionMail(long discussionId, boolean typeAnnoucement,
       String annoucementTopic, boolean notifyEmailPreference, boolean sendAll) {
 
-    Long senderEmailId = getSenderEmailId(typeAnnoucement ? LOG_CREATE_ANNOUNCEMENT_LABEL
+    Long senderEmailId = mail.getSenderEmailId(typeAnnoucement ? LOG_CREATE_ANNOUNCEMENT_LABEL
         : LOG_CREATE_DISCUSSION_LABEL);
     
     ResponseObject response = ResponseObject.emptyResponse();
