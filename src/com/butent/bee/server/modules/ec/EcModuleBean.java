@@ -66,6 +66,7 @@ import com.butent.bee.shared.data.filter.Operator;
 import com.butent.bee.shared.data.value.DateTimeValue;
 import com.butent.bee.shared.data.view.Order;
 import com.butent.bee.shared.data.view.RowInfo;
+import com.butent.bee.shared.exceptions.BeeException;
 import com.butent.bee.shared.html.Tags;
 import com.butent.bee.shared.html.builder.Document;
 import com.butent.bee.shared.html.builder.Element;
@@ -712,28 +713,28 @@ public class EcModuleBean implements BeeModule {
     if (orphans.isEmpty()) {
       return ResponseObject.info(Localized.getConstants().nothingFound());
     }
+    String remoteNamespace = prm.getText(PRM_ERP_NAMESPACE);
     String remoteAddress = prm.getText(PRM_ERP_ADDRESS);
     String remoteLogin = prm.getText(PRM_ERP_LOGIN);
     String remotePassword = prm.getText(PRM_ERP_PASSWORD);
 
-    String itemsFilter = "prekes.gam_art IS NOT NULL AND prekes.gam_art != ''"
-        + " AND prekes.gamintojas IS NOT NULL AND prekes.gamintojas != ''"
-        + " AND grupes.pos_mode = 'E'";
+    SimpleRowSet rows;
 
-    ResponseObject response = ButentWS.getSQLData(remoteAddress, remoteLogin, remotePassword,
-        "SELECT preke AS pr, prekes.grupe AS gr, savikaina AS sv, pard_kaina AS kn"
-            + " FROM prekes"
-            + " INNER JOIN grupes"
-            + " ON prekes.grupe = grupes.grupe"
-            + " WHERE " + itemsFilter,
-        new String[] {"pr", "gr", "sv", "kn"});
-
-    if (response.hasErrors()) {
-      logger.severe(supplier, response.getErrors());
-      return response;
+    try {
+      rows = ButentWS.connect(remoteNamespace, remoteAddress, remoteLogin, remotePassword)
+          .getSQLData("SELECT preke AS pr, prekes.grupe AS gr, savikaina AS sv, pard_kaina AS kn"
+              + " FROM prekes"
+              + " INNER JOIN grupes"
+              + " ON prekes.grupe = grupes.grupe"
+              + " WHERE prekes.gam_art IS NOT NULL AND prekes.gam_art != ''"
+              + " AND prekes.gamintojas IS NOT NULL AND prekes.gamintojas != ''"
+              + " AND grupes.pos_mode = 'E'",
+              new String[] {"pr", "gr", "sv", "kn"});
+    } catch (BeeException e) {
+      logger.error(e);
+      return ResponseObject.error(e);
     }
     Map<String, Long> categories = new HashMap<>();
-    SimpleRowSet rows = (SimpleRowSet) response.getResponse();
     int cnt = 0;
     int categCnt = 0;
 
@@ -789,7 +790,7 @@ public class EcModuleBean implements BeeModule {
             .setWhere(sys.idEquals(TBL_TCD_ORPHANS, orphan.getLong(orphanId))));
       }
     }
-    response = ResponseObject.emptyResponse();
+    ResponseObject response = ResponseObject.emptyResponse();
 
     if (categCnt > 0) {
       String msg = BeeUtils.join(": ", Localized.maybeTranslate(sys.getView(TBL_TCD_CATEGORIES)
@@ -1646,7 +1647,7 @@ public class EcModuleBean implements BeeModule {
     if (!DataUtils.isId(client)) {
       return ResponseObject.response(finInfo);
     }
-
+    String remoteNamespace = prm.getText(PRM_ERP_NAMESPACE);
     String remoteAddress = prm.getText(PRM_ERP_ADDRESS);
     String remoteLogin = prm.getText(PRM_ERP_LOGIN);
     String remotePassword = prm.getText(PRM_ERP_PASSWORD);
@@ -1666,63 +1667,58 @@ public class EcModuleBean implements BeeModule {
       String wh =
           "LOWER(klientas) = '" + companyInfo.getValue(COL_COMPANY_NAME).toLowerCase() + "'";
 
-      ResponseObject response = ButentWS.getSQLData(remoteAddress, remoteLogin, remotePassword,
-          "SELECT klientas, max_skola, dienos"
-              + " FROM klientai"
-              + " WHERE " + wh + " OR kodas = '"
-              + companyInfo.getValue(COL_COMPANY_CODE)
-              + "' ORDER BY " + wh + " DESC",
-          new String[] {"klientas", "max_skola", "dienos"});
+      try {
+        SimpleRow row = ButentWS.connect(remoteNamespace, remoteAddress, remoteLogin,
+            remotePassword)
+            .getSQLData("SELECT klientas, max_skola, dienos"
+                + " FROM klientai"
+                + " WHERE " + wh + " OR kodas = '" + companyInfo.getValue(COL_COMPANY_CODE) + "'"
+                + " ORDER BY " + wh + " DESC",
+                new String[] {"klientas", "max_skola", "dienos"}).getRow(0);
 
-      if (response.hasErrors()) {
-        logger.severe((Object[]) response.getErrors());
-      } else {
-        SimpleRow row = ((SimpleRowSet) response.getResponse()).getRow(0);
         if (row != null) {
           finInfo.setCreditLimit(row.getDouble("max_skola"));
           finInfo.setDaysForPayment(row.getInt("dienos"));
           company = row.getValue("klientas");
         }
+      } catch (BeeException e) {
+        logger.error(e);
       }
-
       if (!BeeUtils.isEmpty(company)) {
-        response = ButentWS.getSQLData(remoteAddress, remoteLogin, remotePassword,
-            "SELECT SUM(kiekis * kaina) AS suma"
-                + " FROM likuciai"
-                + " INNER JOIN sand ON likuciai.sandelis = sand.sandelis"
-                + "   AND sand.konsign IS NOT NULL"
-                + " WHERE likuciai.kiekis > 0 AND likuciai.gavejas = '" + company + "'",
-            new String[] {"suma"});
+        try {
+          SimpleRow row = ButentWS.connect(remoteNamespace, remoteAddress, remoteLogin,
+              remotePassword)
+              .getSQLData("SELECT SUM(kiekis * kaina) AS suma"
+                  + " FROM likuciai"
+                  + " INNER JOIN sand ON likuciai.sandelis = sand.sandelis"
+                  + "   AND sand.konsign IS NOT NULL"
+                  + " WHERE likuciai.kiekis > 0 AND likuciai.gavejas = '" + company + "'",
+                  new String[] {"suma"}).getRow(0);
 
-        if (response.hasErrors()) {
-          logger.severe((Object[]) response.getErrors());
-        } else {
-          SimpleRow row = ((SimpleRowSet) response.getResponse()).getRow(0);
           if (row != null) {
             finInfo.setTotalTaken(row.getDouble("suma"));
           }
+        } catch (BeeException e) {
+          logger.error(e);
         }
-
-        response = ButentWS.getSQLData(remoteAddress, remoteLogin, remotePassword,
-            "SELECT data, dokumentas, dok_serija, kitas_dok, viso, skola_w, terminas"
-                + " FROM apyvarta"
-                + " INNER JOIN operac ON apyvarta.operacija = operac.operacija"
-                + "   AND operac.oper_apm IS NOT NULL AND operac.oper_pirk IS NOT NULL"
-                + " INNER JOIN klientai ON apyvarta.gavejas = klientai.klientas"
-                + " WHERE apyvarta.pajamos = 0 AND apyvarta.ivestas IS NOT NULL"
-                + "   AND apyvarta.skola_w > 0"
-                + "   AND (klientai.klientas = '" + company + "'"
-                + "     OR klientai.moketojas = '" + company + "')"
-                + " ORDER BY data",
-            new String[] {"data", "dokumentas", "dok_serija", "kitas_dok", "viso", "skola_w",
-                "terminas"});
-
-        if (response.hasErrors()) {
-          logger.severe((Object[]) response.getErrors());
-        } else {
+        try {
           double totalDebt = 0;
           double timedOutDebt = 0;
-          SimpleRowSet data = (SimpleRowSet) response.getResponse();
+
+          SimpleRowSet data = ButentWS.connect(remoteNamespace, remoteAddress, remoteLogin,
+              remotePassword)
+              .getSQLData("SELECT data, dokumentas, dok_serija, kitas_dok, viso, skola_w, terminas"
+                  + " FROM apyvarta"
+                  + " INNER JOIN operac ON apyvarta.operacija = operac.operacija"
+                  + "   AND operac.oper_apm IS NOT NULL AND operac.oper_pirk IS NOT NULL"
+                  + " INNER JOIN klientai ON apyvarta.gavejas = klientai.klientas"
+                  + " WHERE apyvarta.pajamos = 0 AND apyvarta.ivestas IS NOT NULL"
+                  + "   AND apyvarta.skola_w > 0"
+                  + "   AND (klientai.klientas = '" + company + "'"
+                  + "     OR klientai.moketojas = '" + company + "')"
+                  + " ORDER BY data",
+                  new String[] {"data", "dokumentas", "dok_serija", "kitas_dok", "viso", "skola_w",
+                      "terminas"});
 
           for (SimpleRow row : data) {
             DateTime date = TimeUtils.parseDateTime(row.getValue("data"));
@@ -1746,13 +1742,14 @@ public class EcModuleBean implements BeeModule {
             invoice.setTerm(term);
             finInfo.getInvoices().add(invoice);
           }
-
           finInfo.setDebt(totalDebt);
           finInfo.setMaxedOut(timedOutDebt);
+
+        } catch (BeeException e) {
+          logger.error(e);
         }
       }
     }
-
     BeeRowSet orderData = qs.getViewData(VIEW_ORDERS,
         Filter.equals(COL_ORDER_CLIENT, client),
         new Order(COL_ORDER_DATE, false));
@@ -3048,17 +3045,14 @@ public class EcModuleBean implements BeeModule {
     if (items.isEmpty()) {
       return ResponseObject.error(usr.getLocalizableConstants().ecNothingToOrder());
     }
-
+    String remoteNamespace = prm.getText(PRM_ERP_NAMESPACE);
     String remoteAddress = prm.getText(PRM_ERP_ADDRESS);
     String remoteLogin = prm.getText(PRM_ERP_LOGIN);
     String remotePassword = prm.getText(PRM_ERP_PASSWORD);
 
-    ResponseObject response;
+    ResponseObject response = ResponseObject.emptyResponse();
 
-    if (BeeUtils.same(remoteAddress, BeeConst.STRING_MINUS)) {
-      response = ResponseObject.emptyResponse();
-
-    } else {
+    if (!BeeUtils.same(remoteAddress, BeeConst.STRING_MINUS)) {
       SimpleRow order = qs.getRow(new SqlSelect()
           .addFields(TBL_ORDERS, COL_ORDER_NUMBER)
           .addFields(TBL_WAREHOUSES, COL_WAREHOUSE_SUPPLIER_CODE)
@@ -3083,17 +3077,23 @@ public class EcModuleBean implements BeeModule {
           .addFromLeft(TBL_COUNTRIES, sys.joinTables(TBL_COUNTRIES, TBL_CONTACTS, COL_COUNTRY))
           .setWhere(SqlUtils.equals(TBL_ORDERS, sys.getIdName(TBL_ORDERS), orderId)));
 
-      response = ButentWS.importClient(remoteAddress, remoteLogin, remotePassword,
-          order.getValue(COL_COMPANY), order.getValue(COL_COMPANY_CODE),
-          order.getValue(COL_COMPANY_VAT_CODE), order.getValue(COL_ADDRESS),
-          order.getValue(COL_POST_INDEX), order.getValue(COL_CITY), order.getValue(COL_COUNTRY));
+      String company = null;
 
+      try {
+        company = ButentWS.connect(remoteNamespace, remoteAddress, remoteLogin, remotePassword)
+            .importClient(order.getValue(COL_COMPANY), order.getValue(COL_COMPANY_CODE),
+                order.getValue(COL_COMPANY_VAT_CODE), order.getValue(COL_ADDRESS),
+                order.getValue(COL_POST_INDEX), order.getValue(COL_CITY),
+                order.getValue(COL_COUNTRY));
+      } catch (BeeException e) {
+        response = response.addError(e);
+      }
       if (!response.hasErrors()) {
         String warehouse = BeeUtils.notEmpty(order.getValue(COL_WAREHOUSE_SUPPLIER_CODE),
             prm.getText("ERPWarehouse"));
 
         WSDocument doc = new WSDocument(BeeUtils.toString(orderId), TimeUtils.nowSeconds(),
-            prm.getText("ERPOperation"), response.getResponseAsString(), warehouse);
+            prm.getText("ERPOperation"), company, warehouse);
 
         SimpleRowSet data = qs.getData(query);
 
@@ -3106,34 +3106,29 @@ public class EcModuleBean implements BeeModule {
               break;
             }
           }
-
           if (BeeUtils.isEmpty(id)) {
             String brandName = qs.getValue(new SqlSelect()
                 .addFields(TBL_TCD_BRANDS, COL_TCD_BRAND_NAME)
                 .addFrom(TBL_TCD_BRANDS)
                 .setWhere(sys.idEquals(TBL_TCD_BRANDS, item.getBrand())));
-
-            ResponseObject resp = ButentWS.importItem(remoteAddress, remoteLogin, remotePassword,
-                item.getName(), brandName, item.getCode());
-
-            if (resp.hasErrors()) {
-              response.addErrorsFrom(resp);
+            try {
+              id = ButentWS.connect(remoteNamespace, remoteAddress, remoteLogin, remotePassword)
+                  .importItem(item.getName(), brandName, item.getCode());
+            } catch (BeeException e) {
+              response.addError(e);
               break;
-            } else {
-              id = resp.getResponseAsString();
+            }
+            if (!BeeUtils.isEmpty(id)) {
+              double cost = BeeConst.DOUBLE_ZERO;
 
-              if (!BeeUtils.isEmpty(id)) {
-                double cost = BeeConst.DOUBLE_ZERO;
-                for (ArticleSupplier supplier : item.getSuppliers()) {
-                  cost = Math.max(cost, supplier.getRealCost());
-                }
-
-                qs.insertData(new SqlInsert(TBL_TCD_ARTICLE_SUPPLIERS)
-                    .addConstant(COL_TCD_ARTICLE, item.getArticleId())
-                    .addConstant(COL_TCD_COST, cost)
-                    .addConstant(COL_TCD_SUPPLIER, EcSupplier.EOLTAS.ordinal())
-                    .addConstant(COL_TCD_SUPPLIER_ID, id));
+              for (ArticleSupplier supplier : item.getSuppliers()) {
+                cost = Math.max(cost, supplier.getRealCost());
               }
+              qs.insertData(new SqlInsert(TBL_TCD_ARTICLE_SUPPLIERS)
+                  .addConstant(COL_TCD_ARTICLE, item.getArticleId())
+                  .addConstant(COL_TCD_COST, cost)
+                  .addConstant(COL_TCD_SUPPLIER, EcSupplier.EOLTAS.ordinal())
+                  .addConstant(COL_TCD_SUPPLIER_ID, id));
             }
           }
           if (!BeeUtils.isEmpty(id)) {
@@ -3147,20 +3142,22 @@ public class EcModuleBean implements BeeModule {
           }
         }
         if (!response.hasErrors()) {
-          response = ButentWS.importDoc(remoteAddress, remoteLogin, remotePassword, doc);
+          try {
+            ButentWS.connect(remoteNamespace, remoteAddress, remoteLogin, remotePassword)
+                .importDoc(doc);
+          } catch (BeeException e) {
+            response.addError(e);
+          }
         }
       }
     }
-
     if (response.hasErrors()) {
       response.log(logger);
-
     } else {
       if (finResp.hasNotifications()) {
         response.addInfo(usr.getLocalizableConstants().ecExceededCreditLimitSend());
         response.addMessagesFrom(finResp);
       }
-
       qs.updateData(new SqlUpdate(TBL_ORDERS)
           .addConstant(COL_ORDER_STATUS, EcOrderStatus.ACTIVE.ordinal())
           .setWhere(SqlUtils.equals(TBL_ORDERS, sys.getIdName(TBL_ORDERS), orderId)));
@@ -3173,7 +3170,6 @@ public class EcModuleBean implements BeeModule {
         response.addMessagesFrom(mailResponse);
       }
     }
-
     return response;
   }
 

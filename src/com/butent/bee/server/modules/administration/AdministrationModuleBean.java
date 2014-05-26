@@ -157,6 +157,7 @@ public class AdministrationModuleBean implements BeeModule {
         BeeParameter.createRelation(module, PRM_CURRENCY, false, TBL_CURRENCIES,
             COL_CURRENCY_NAME),
         BeeParameter.createNumber(module, PRM_VAT_PERCENT, false, 21),
+        BeeParameter.createText(module, PRM_ERP_NAMESPACE, false, null),
         BeeParameter.createText(module, PRM_ERP_ADDRESS, false, null),
         BeeParameter.createText(module, PRM_ERP_LOGIN, false, null),
         BeeParameter.createText(module, PRM_ERP_PASSWORD, false, null),

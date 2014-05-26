@@ -25,11 +25,11 @@ import com.butent.bee.server.sql.SqlSelect;
 import com.butent.bee.server.sql.SqlUpdate;
 import com.butent.bee.server.sql.SqlUtils;
 import com.butent.bee.shared.BeeConst.SqlEngine;
-import com.butent.bee.shared.communication.ResponseObject;
 import com.butent.bee.shared.data.BeeRow;
 import com.butent.bee.shared.data.BeeRowSet;
 import com.butent.bee.shared.data.SimpleRowSet;
 import com.butent.bee.shared.data.SimpleRowSet.SimpleRow;
+import com.butent.bee.shared.exceptions.BeeException;
 import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogLevel;
 import com.butent.bee.shared.logging.LogUtils;
@@ -217,56 +217,52 @@ public class TecDocBean {
   @Asynchronous
   public void suckButent() {
     EcSupplier supplier = EcSupplier.EOLTAS;
+    String remoteNamespace = prm.getText(PRM_ERP_NAMESPACE);
     String remoteAddress = prm.getText(PRM_ERP_ADDRESS);
     String remoteLogin = prm.getText(PRM_ERP_LOGIN);
     String remotePassword = prm.getText(PRM_ERP_PASSWORD);
 
-    String itemsFilter = "prekes.gam_art IS NOT NULL AND prekes.gam_art != ''"
-        + " AND prekes.gamintojas IS NOT NULL AND prekes.gamintojas != ''";
+    try {
+      String itemsFilter = "prekes.gam_art IS NOT NULL AND prekes.gam_art != ''"
+          + " AND prekes.gamintojas IS NOT NULL AND prekes.gamintojas != ''";
 
-    ResponseObject response = ButentWS.getSQLData(remoteAddress, remoteLogin, remotePassword,
-        "SELECT preke AS pr, savikaina AS sv, pard_kaina AS kn, gam_art AS ga, gamintojas AS gam,"
-            + " pavad AS pav, aprasymas AS apr"
-            + " FROM prekes"
-            + " WHERE " + itemsFilter,
-        new String[] {"pr", "sv", "kn", "ga", "gam", "pav", "apr"});
+      SimpleRowSet rows = ButentWS.connect(remoteNamespace, remoteAddress, remoteLogin,
+          remotePassword)
+          .getSQLData("SELECT preke AS pr, savikaina AS sv, pard_kaina AS kn, gam_art AS ga,"
+              + " gamintojas AS gam, pavad AS pav, aprasymas AS apr"
+              + " FROM prekes"
+              + " WHERE " + itemsFilter,
+              new String[] {"pr", "sv", "kn", "ga", "gam", "pav", "apr"});
 
-    if (response.hasErrors()) {
-      logger.severe(supplier, response.getErrors());
-      return;
-    }
-    SimpleRowSet rows = (SimpleRowSet) response.getResponse();
+      if (rows.getNumberOfRows() > 0) {
+        List<RemoteItem> data = Lists.newArrayListWithCapacity(rows.getNumberOfRows());
 
-    if (rows.getNumberOfRows() > 0) {
-      List<RemoteItem> data = Lists.newArrayListWithCapacity(rows.getNumberOfRows());
-
-      for (SimpleRow row : rows) {
-        data.add(new RemoteItem(row.getValue("pr"), row.getValue("gam"), row.getValue("ga"),
-            row.getDouble("sv"), row.getDouble("kn"), row.getValue("pav"), row.getValue("apr")));
+        for (SimpleRow row : rows) {
+          data.add(new RemoteItem(row.getValue("pr"), row.getValue("gam"), row.getValue("ga"),
+              row.getDouble("sv"), row.getDouble("kn"), row.getValue("pav"), row.getValue("apr")));
+        }
+        importItems(supplier, data);
       }
-      importItems(supplier, data);
-    }
-    response = ButentWS.getSQLData(remoteAddress, remoteLogin, remotePassword,
-        "SELECT likuciai.sandelis AS sn, likuciai.preke AS pr, sum(likuciai.kiekis) AS lk"
-            + " FROM likuciai INNER JOIN sand"
-            + " ON likuciai.sandelis = sand.sandelis AND sand.sand_mode LIKE '%e%'"
-            + " INNER JOIN prekes ON likuciai.preke = prekes.preke AND " + itemsFilter
-            + " GROUP by likuciai.sandelis, likuciai.preke HAVING lk > 0",
-        new String[] {"sn", "pr", "lk"});
+      rows = ButentWS.connect(remoteNamespace, remoteAddress, remoteLogin, remotePassword)
+          .getSQLData("SELECT likuciai.sandelis AS sn, likuciai.preke AS pr,"
+              + " sum(likuciai.kiekis) AS lk"
+              + " FROM likuciai INNER JOIN sand"
+              + " ON likuciai.sandelis = sand.sandelis AND sand.sand_mode LIKE '%e%'"
+              + " INNER JOIN prekes ON likuciai.preke = prekes.preke AND " + itemsFilter
+              + " GROUP by likuciai.sandelis, likuciai.preke HAVING lk > 0",
+              new String[] {"sn", "pr", "lk"});
 
-    if (response.hasErrors()) {
-      logger.severe(supplier, response.getErrors());
-      return;
-    }
-    rows = (SimpleRowSet) response.getResponse();
+      if (rows.getNumberOfRows() > 0) {
+        List<RemoteRemainder> data = Lists.newArrayListWithCapacity(rows.getNumberOfRows());
 
-    if (rows.getNumberOfRows() > 0) {
-      List<RemoteRemainder> data = Lists.newArrayListWithCapacity(rows.getNumberOfRows());
-
-      for (SimpleRow row : rows) {
-        data.add(new RemoteRemainder(row.getValue("pr"), row.getValue("sn"), row.getDouble("lk")));
+        for (SimpleRow row : rows) {
+          data.add(new RemoteRemainder(row.getValue("pr"), row.getValue("sn"),
+              row.getDouble("lk")));
+        }
+        importRemainders(supplier, data);
       }
-      importRemainders(supplier, data);
+    } catch (BeeException e) {
+      logger.error(e);
     }
   }
 
