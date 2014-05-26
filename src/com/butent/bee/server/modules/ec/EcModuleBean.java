@@ -284,8 +284,12 @@ public class EcModuleBean implements BeeModule {
       response = getCarTypes(BeeUtils.toLongOrNull(query));
 
     } else if (BeeUtils.same(svc, SVC_GET_ITEMS_BY_CAR_TYPE)) {
-      response = getItemsByCarType(reqInfo);
+      query = reqInfo.getParameter(VAR_TYPE);
+      response = getItemsByCarType(BeeUtils.toLongOrNull(query));
       log = true;
+
+    } else if (BeeUtils.same(svc, SVC_GET_CAR_TYPE_HISTORY)) {
+      response = getCarTypeHistory();
 
     } else if (BeeUtils.same(svc, SVC_GET_ITEM_BRANDS)) {
       response = getItemBrands();
@@ -635,12 +639,12 @@ public class EcModuleBean implements BeeModule {
       ResponseObject response = qs.insertDataWithResponse(new SqlInsert(TBL_TCD_TYPE_ARTICLES)
           .addConstant(COL_TCD_TYPE, type)
           .addConstant(COL_TCD_ARTICLE, article));
-      
+
       if (response.hasErrors()) {
         return response;
       }
     }
-    
+
     return ResponseObject.response(types.size());
   }
 
@@ -1305,6 +1309,80 @@ public class EcModuleBean implements BeeModule {
     }
 
     return ResponseObject.response(carModels).setSize(carModels.size());
+  }
+
+  private ResponseObject getCarTypeHistory() {
+    Long user = usr.getCurrentUserId();
+    if (!DataUtils.isId(user)) {
+      return ResponseObject.emptyResponse();
+    }
+
+    Integer maxSize = qs.getInt(new SqlSelect().addFrom(TBL_CLIENTS)
+        .addFields(TBL_CLIENTS, COL_CLIENT_CAR_TYPE_HISTORY_SIZE)
+        .setWhere(SqlUtils.equals(TBL_CLIENTS, COL_CLIENT_USER, user)));
+    if (BeeUtils.isNegative(maxSize)) {
+      return ResponseObject.response(maxSize);
+    }
+
+    if (!BeeUtils.isPositive(maxSize)) {
+      maxSize = DEFAULT_CAR_TYPE_HISTORY_SIZE;
+    }
+
+    IsCondition where = SqlUtils.and(SqlUtils.equals(TBL_HISTORY, COL_HISTORY_USER, user),
+        SqlUtils.equals(TBL_HISTORY, COL_HISTORY_SERVICE, SVC_GET_ITEMS_BY_CAR_TYPE),
+        SqlUtils.notNull(TBL_HISTORY, COL_HISTORY_QUERY),
+        SqlUtils.more(TBL_HISTORY, COL_HISTORY_COUNT, 0));
+
+    SqlSelect historyQuery = new SqlSelect()
+        .addFields(TBL_HISTORY, COL_HISTORY_QUERY)
+        .addMax(TBL_HISTORY, COL_HISTORY_DATE)
+        .setWhere(where)
+        .addGroup(TBL_HISTORY, COL_HISTORY_QUERY)
+        .addOrderDesc(TBL_HISTORY, COL_HISTORY_DATE)
+        .setLimit(maxSize);
+
+    SimpleRowSet historyData = qs.getData(historyQuery);
+    if (DataUtils.isEmpty(historyData)) {
+      return ResponseObject.emptyResponse();
+    }
+
+    List<EcCarType> carTypes = new ArrayList<>();
+
+    String idName = sys.getIdName(TBL_TCD_TYPES);
+
+    SqlSelect carTypeQuery = new SqlSelect()
+        .addFields(TBL_TCD_TYPES, COL_TCD_MODEL)
+        .addFields(TBL_TCD_MODELS, COL_TCD_MODEL_NAME)
+        .addFields(TBL_TCD_MANUFACTURERS, COL_TCD_MANUFACTURER_NAME)
+        .addField(TBL_TCD_TYPES, idName, COL_TCD_TYPE)
+        .addFields(TBL_TCD_TYPES, COL_TCD_TYPE_NAME,
+            COL_TCD_PRODUCED_FROM, COL_TCD_PRODUCED_TO, COL_TCD_CCM,
+            COL_TCD_KW_FROM, COL_TCD_KW_TO, COL_TCD_CYLINDERS, COL_TCD_MAX_WEIGHT,
+            COL_TCD_ENGINE, COL_TCD_FUEL, COL_TCD_BODY, COL_TCD_AXLE)
+        .addFrom(TBL_TCD_TYPES)
+        .addFrom(TBL_TCD_MODELS)
+        .addFromInner(TBL_TCD_MODELS, sys.joinTables(TBL_TCD_MODELS, TBL_TCD_TYPES, COL_TCD_MODEL))
+        .addFromInner(TBL_TCD_MANUFACTURERS,
+            sys.joinTables(TBL_TCD_MANUFACTURERS, TBL_TCD_MODELS, COL_TCD_MANUFACTURER));
+
+    for (SimpleRow historyRow : historyData) {
+      Long typeId = historyRow.getLong(COL_HISTORY_QUERY);
+
+      if (DataUtils.isId(typeId)) {
+        carTypeQuery.setWhere(SqlUtils.equals(TBL_TCD_TYPES, idName, typeId));
+        SimpleRow carTypeRow = qs.getRow(carTypeQuery);
+
+        if (carTypeRow != null) {
+          carTypes.add(new EcCarType(carTypeRow));
+        }
+      }
+    }
+
+    if (carTypes.isEmpty()) {
+      return ResponseObject.emptyResponse();
+    } else {
+      return ResponseObject.response(carTypes).setSize(carTypes.size());
+    }
   }
 
   private ResponseObject getCarTypes(Long modelId) {
@@ -2238,7 +2316,7 @@ public class EcModuleBean implements BeeModule {
         until = row.getLong(COL_TCD_ARTICLE_FEATURED);
         if (until != null && until > time) {
           item.setFeatured(true);
-          
+
           Double featuredPrice = row.getDouble(COL_TCD_ARTICLE_FEATURED_PRICE);
           if (BeeUtils.isPositive(featuredPrice)) {
             item.setFeaturedPrice(featuredPrice);
@@ -2301,7 +2379,7 @@ public class EcModuleBean implements BeeModule {
 
       setListPrice(items);
       setClientPrice(items);
-      
+
       if (!featuredDiscountPercents.isEmpty()) {
         for (EcItem item : items) {
           Double percent = featuredDiscountPercents.get(item.getArticleId());
@@ -2341,8 +2419,7 @@ public class EcModuleBean implements BeeModule {
     }
   }
 
-  private ResponseObject getItemsByCarType(RequestInfo reqInfo) {
-    Long typeId = BeeUtils.toLongOrNull(reqInfo.getParameter(VAR_TYPE));
+  private ResponseObject getItemsByCarType(Long typeId) {
     if (!DataUtils.isId(typeId)) {
       return ResponseObject.parameterNotFound(SVC_GET_ITEMS_BY_CAR_TYPE, VAR_TYPE);
     }

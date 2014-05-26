@@ -195,6 +195,7 @@ public final class EcConstants {
   public static final String SVC_GET_CAR_TYPES = "getCarTypes";
 
   public static final String SVC_GET_ITEMS_BY_CAR_TYPE = "getItemsByCarType";
+  public static final String SVC_GET_CAR_TYPE_HISTORY = "getCarTypeHistory";
 
   public static final String SVC_GET_ITEM_BRANDS = "getItemBrands";
   public static final String SVC_GET_ITEMS_BY_BRAND = "getItemsByBrand";
@@ -350,6 +351,7 @@ public final class EcConstants {
   public static final String COL_CLIENT_TOGGLE_LIST_PRICE = "ToggleListPrice";
   public static final String COL_CLIENT_TOGGLE_PRICE = "TogglePrice";
   public static final String COL_CLIENT_TOGGLE_STOCK_LIMIT = "ToggleStockLimit";
+  public static final String COL_CLIENT_CAR_TYPE_HISTORY_SIZE = "CarTypeHistorySize";
   public static final String COL_CLIENT_NOTES = "Notes";
 
   public static final String COL_CONFIG_ID = "ConfigurationID";
@@ -561,6 +563,7 @@ public final class EcConstants {
   public static final String DATA_ATTRIBUTE_STOCK = "stock";
 
   public static final int MIN_SEARCH_QUERY_LENGTH = 3;
+  public static final int DEFAULT_CAR_TYPE_HISTORY_SIZE = 15;
 
   public static final String PICTURE_PREFIX = "data:image/";
 

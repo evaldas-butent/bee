@@ -16,6 +16,8 @@ public interface LocalizableEcConstants {
 
   String ecCarProduced();
 
+  String ecCarTypeHistory();
+
   String ecCarYear();
 
   String ecCategoryMerge();
