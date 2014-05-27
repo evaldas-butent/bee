@@ -50,11 +50,11 @@
           <InputTimeOfDay name="Start_Time" step="&timeStep;" style="&timeStyle;" />
         </FlowPanel>
         <Label for="ExpectedDuration" />
-        <InputTime source="ExpectedDuration" step="&timeStep;" style="width: 50px;" />
+        <InputTime name="ExpectedDuration" source="ExpectedDuration" step="&timeStep;" style="width: 50px;" />
       </row>
 
       <row>
-        <Label text="=endingDate" />
+        <Label name="EndDateLabel" text="=endingDate" class="bee-required" />
         <FlowPanel>
           <InputDate name="End_Date" style="&dateStyle;" />
           <InputTimeOfDay name="End_Time" step="&timeStep;" style="&timeStyle;" />

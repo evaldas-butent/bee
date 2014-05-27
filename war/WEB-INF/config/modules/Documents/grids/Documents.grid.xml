@@ -3,7 +3,7 @@
   xmlns:ui="http://www.butent.com/ui"
   xmlns:w="http://www.butent.com/widget"
   
-  name="Documents" viewName="Documents" caption="=documents"
+  name="Documents" viewName="Documents" caption="=documentTree"
   newRowForm="NewDocument" editForm="Document" parent="Tree" favorite="Name"
   flexGrow="1" order="DocumentID desc"
   >
