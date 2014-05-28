@@ -1650,6 +1650,18 @@ public final class DomUtils {
     scrollToBottom(obj.getElement());
   }
 
+  public static void scrollToTop(Element elem) {
+    Assert.notNull(elem);
+    if (elem.getScrollTop() > 0) {
+      elem.setScrollTop(0);
+    }
+  }
+  
+  public static void scrollToTop(UIObject obj) {
+    Assert.notNull(obj);
+    scrollToTop(obj.getElement());
+  }
+
   public static void setAttribute(UIObject obj, String name, int value) {
     setAttribute(obj, name, Integer.toString(value));
   }

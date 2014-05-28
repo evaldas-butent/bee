@@ -405,7 +405,14 @@ public class EcModuleBean implements BeeModule {
 
   @Override
   public Collection<BeeParameter> getDefaultParameters() {
-    return tcd.getDefaultParameters();
+    String module = getModule().getName();
+
+    List<BeeParameter> parameters = Lists.newArrayList(
+        BeeParameter.createBoolean(module, PRM_PROMO_FEATURED, false, true),
+        BeeParameter.createBoolean(module, PRM_PROMO_NOVELTY, false, true));
+    parameters.addAll(tcd.getDefaultParameters());
+
+    return parameters;
   }
 
   @Override
@@ -1328,17 +1335,20 @@ public class EcModuleBean implements BeeModule {
       maxSize = DEFAULT_CAR_TYPE_HISTORY_SIZE;
     }
 
-    IsCondition where = SqlUtils.and(SqlUtils.equals(TBL_HISTORY, COL_HISTORY_USER, user),
+    IsCondition historyWhere = SqlUtils.and(SqlUtils.equals(TBL_HISTORY, COL_HISTORY_USER, user),
         SqlUtils.equals(TBL_HISTORY, COL_HISTORY_SERVICE, SVC_GET_ITEMS_BY_CAR_TYPE),
         SqlUtils.notNull(TBL_HISTORY, COL_HISTORY_QUERY),
         SqlUtils.more(TBL_HISTORY, COL_HISTORY_COUNT, 0));
 
+    String dateAlias = "Date_" + SqlUtils.uniqueName();
+
     SqlSelect historyQuery = new SqlSelect()
         .addFields(TBL_HISTORY, COL_HISTORY_QUERY)
-        .addMax(TBL_HISTORY, COL_HISTORY_DATE)
-        .setWhere(where)
+        .addFrom(TBL_HISTORY)
+        .addMax(TBL_HISTORY, COL_HISTORY_DATE, dateAlias)
+        .setWhere(historyWhere)
         .addGroup(TBL_HISTORY, COL_HISTORY_QUERY)
-        .addOrderDesc(TBL_HISTORY, COL_HISTORY_DATE)
+        .addOrderDesc(null, dateAlias)
         .setLimit(maxSize);
 
     SimpleRowSet historyData = qs.getData(historyQuery);
@@ -1360,16 +1370,26 @@ public class EcModuleBean implements BeeModule {
             COL_TCD_KW_FROM, COL_TCD_KW_TO, COL_TCD_CYLINDERS, COL_TCD_MAX_WEIGHT,
             COL_TCD_ENGINE, COL_TCD_FUEL, COL_TCD_BODY, COL_TCD_AXLE)
         .addFrom(TBL_TCD_TYPES)
-        .addFrom(TBL_TCD_MODELS)
-        .addFromInner(TBL_TCD_MODELS, sys.joinTables(TBL_TCD_MODELS, TBL_TCD_TYPES, COL_TCD_MODEL))
+        .addFromInner(TBL_TCD_MODELS,
+            sys.joinTables(TBL_TCD_MODELS, TBL_TCD_TYPES, COL_TCD_MODEL))
         .addFromInner(TBL_TCD_MANUFACTURERS,
             sys.joinTables(TBL_TCD_MANUFACTURERS, TBL_TCD_MODELS, COL_TCD_MANUFACTURER));
+
+    IsCondition visibilityCondition =
+        SqlUtils.and(
+            SqlUtils.notNull(TBL_TCD_TYPES, COL_TCD_TYPE_VISIBLE),
+            SqlUtils.notNull(TBL_TCD_MODELS, COL_TCD_MODEL_VISIBLE),
+            SqlUtils.notNull(TBL_TCD_MANUFACTURERS, COL_TCD_MF_VISIBLE));
 
     for (SimpleRow historyRow : historyData) {
       Long typeId = historyRow.getLong(COL_HISTORY_QUERY);
 
       if (DataUtils.isId(typeId)) {
-        carTypeQuery.setWhere(SqlUtils.equals(TBL_TCD_TYPES, idName, typeId));
+        carTypeQuery.setWhere(
+            SqlUtils.and(
+                SqlUtils.equals(TBL_TCD_TYPES, idName, typeId),
+                visibilityCondition));
+
         SimpleRow carTypeRow = qs.getRow(carTypeQuery);
 
         if (carTypeRow != null) {
@@ -2471,8 +2491,6 @@ public class EcModuleBean implements BeeModule {
   }
 
   private ResponseObject getPromo(RequestInfo reqInfo) {
-    long time = System.currentTimeMillis();
-
     List<RowInfo> cachedBanners = new ArrayList<>();
 
     String param = reqInfo.getParameter(VAR_BANNERS);
@@ -2487,13 +2505,32 @@ public class EcModuleBean implements BeeModule {
 
     BeeRowSet banners = getBanners(cachedBanners);
 
-    SqlSelect articleIdQuery = new SqlSelect()
-        .addField(TBL_TCD_ARTICLES, sys.getIdName(TBL_TCD_ARTICLES), COL_TCD_ARTICLE)
-        .addFrom(TBL_TCD_ARTICLES)
-        .setWhere(SqlUtils.or(SqlUtils.more(TBL_TCD_ARTICLES, COL_TCD_ARTICLE_NOVELTY, time),
-            SqlUtils.more(TBL_TCD_ARTICLES, COL_TCD_ARTICLE_FEATURED, time)));
+    boolean featured = prm.getBoolean(PRM_PROMO_FEATURED);
+    boolean novelty = prm.getBoolean(PRM_PROMO_NOVELTY);
 
-    List<EcItem> items = getItems(articleIdQuery, null);
+    List<EcItem> items;
+
+    if (featured || novelty) {
+      long time = System.currentTimeMillis();
+      
+      HasConditions where = SqlUtils.or();
+      if (featured) {
+        where.add(SqlUtils.more(TBL_TCD_ARTICLES, COL_TCD_ARTICLE_FEATURED, time));
+      }
+      if (novelty) {
+        where.add(SqlUtils.more(TBL_TCD_ARTICLES, COL_TCD_ARTICLE_NOVELTY, time));
+      }
+
+      SqlSelect articleIdQuery = new SqlSelect()
+          .addField(TBL_TCD_ARTICLES, sys.getIdName(TBL_TCD_ARTICLES), COL_TCD_ARTICLE)
+          .addFrom(TBL_TCD_ARTICLES)
+          .setWhere(where);
+
+      items = getItems(articleIdQuery, null);
+
+    } else {
+      items = null;
+    }
 
     String a = (banners == null) ? null : Codec.beeSerialize(banners);
     String b = BeeUtils.isEmpty(items) ? null : Codec.beeSerialize(items);

@@ -102,7 +102,7 @@ class ArticleCarsGridInterceptor extends AbstractGridInterceptor implements
     widget.addStyleName(STYLE_VIEW);
 
     setSelectionPanel(new Flow(STYLE_SELECTION_PANEL));
-    widget.add(getSelectionPanel());
+    widget.getMainPanel().add(getSelectionPanel());
 
     widget.addBeforeSelectionHandler(this);
 
@@ -218,7 +218,7 @@ class ArticleCarsGridInterceptor extends AbstractGridInterceptor implements
           table.removeRow(index);
         }
         
-        Widget view = selectionPanel.getParent();
+        Widget view = getSearchByCar();
         if (view instanceof SearchByCar) {
           ((SearchByCar) view).includeType(typeId);
         }
@@ -226,6 +226,15 @@ class ArticleCarsGridInterceptor extends AbstractGridInterceptor implements
     });
 
     table.setWidget(row, col++, remove);
+  }
+  
+  private SearchByCar getSearchByCar() {
+    for (Widget parent = selectionPanel.getParent(); parent != null; parent = parent.getParent()) {
+      if (parent instanceof SearchByCar) {
+        return (SearchByCar) parent;
+      }
+    }
+    return null;
   }
 
   private HtmlTable ensureSelectionTable() {

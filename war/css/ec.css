@@ -341,7 +341,7 @@
   border-collapse: collapse;
   table-layout: fixed;
 }
-.bee-ec-ItemList-headerRow td {
+.bee-ec-ItemList-header td {
   text-align: center;
   padding: 5px 10px;
 }
@@ -349,16 +349,16 @@
   font-weight: bold;
 }
 
-.bee-ec-ItemList-itemRow:nth-child(odd),
-.bee-ec-shoppingCart-itemRow:nth-child(odd),
+.bee-ec-ItemList-item:nth-child(odd),
+.bee-ec-shoppingCart-item:nth-child(odd),
 .bee-ec-finInfo-order-data:nth-child(odd),
 .bee-ec-finInfo-order-item-data:nth-child(odd),
 .bee-ec-finInfo-invoice-data:nth-child(odd),
 .bee-ec-finInfo-unsupplied-data:nth-child(odd) {
   background-color: #f5f5f5;
 }
-.bee-ec-ItemList-itemRow:nth-child(even),
-.bee-ec-shoppingCart-itemRow:nth-child(even),
+.bee-ec-ItemList-item:nth-child(even),
+.bee-ec-shoppingCart-item:nth-child(even),
 .bee-ec-finInfo-order-data:nth-child(even),
 .bee-ec-finInfo-order-item-data:nth-child(even),
 .bee-ec-finInfo-invoice-data:nth-child(even),
@@ -366,10 +366,10 @@
   background-color: #ebebeb;
 }
 
-.bee-ec-ItemList-itemRow:hover {
+.bee-ec-ItemList-item:hover {
   background-color: #dfd;
 }
-.bee-ec-ItemList-itemRow > td {
+.bee-ec-ItemList-item > td {
   padding: 5px 10px;
   border: 1px solid #ddd;
 }
@@ -551,7 +551,59 @@
   overflow: auto;
 }
 
-.bee-ec-searchByCar-carPanel {
+.bee-ec-searchByCar {
+  display: flex;
+  display: -webkit-flex;
+  display: -ms-flexbox;
+  flex-direction: row;
+  -webkit-flex-direction: row;
+  -ms-flex-direction: row;
+  align-items: flex-start;
+  -webkit-align-items: flex-start;
+  -ms-flex-align: start;
+}
+
+.bee-ec-searchByCar-history-panel:not(:empty) {
+  max-width: 20vw;
+  max-height: calc(100% - 2ex);
+  margin-top: 1ex;
+  margin-left: 5px;
+  background-color: white;
+  border: 1px solid #ccc;
+  overflow: auto;
+}
+.bee-ec-searchByCar-history-caption {
+  text-align: center;
+  font-weight: bold;
+  margin-top: 2px;
+  margin-bottom: 5px;
+}
+.bee-ec-searchByCar-history-entry {
+  margin: 0 2px 5px 4px;
+  cursor: pointer;
+}
+.bee-ec-searchByCar-history-entry:hover {
+  background-color: #dfd;
+  text-decoration: underline;
+}
+.bee-ec-searchByCar-history-details,
+.bee-ec-searchByCar-history-engine {
+  margin-left: 1em;
+}
+.bee-ec-searchByCar-history-active {
+  color: red;
+}
+
+.bee-ec-searchByCar-main-panel {
+  flex: 1;
+  -webkit-flex: 1;
+  -ms-flex: 1;
+  overflow: auto;
+  position: relative;
+  height: 100%;
+}
+
+.bee-ec-searchByCar-car-panel {
   margin-top: 2ex;
   margin-left: 2em;
 }
@@ -611,7 +663,7 @@
   border-collapse: collapse;
   margin: 1ex 1em;
 }
-.bee-ec-searchByCar-type-headerRow td {
+.bee-ec-searchByCar-type-header td {
   text-align: center;
   padding: 3px;
   font-weight: bold;
@@ -666,7 +718,7 @@
 .bee-ec-shoppingCart-items-table {
   border-collapse: collapse;
 }
-.bee-ec-shoppingCart-items-headerRow td {
+.bee-ec-shoppingCart-items-header td {
   text-align: center;
   padding: 3px 10px;
   font-weight: bold;
@@ -675,11 +727,11 @@
   margin-top: 2ex;
   margin-left: 1em;
 }
-.bee-ec-shoppingCart-itemRow > td {
+.bee-ec-shoppingCart-item > td {
   padding: 3px 10px;
   border: 1px solid #ddd;
 }
-.bee-ec-shoppingCart-itemRow:hover {
+.bee-ec-shoppingCart-item:hover {
   background-color: #dfd;
 }
 

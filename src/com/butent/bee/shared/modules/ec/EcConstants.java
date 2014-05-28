@@ -541,6 +541,8 @@ public final class EcConstants {
 
   public static final String PRM_BUTENT_INTERVAL = "ButentIntervalInMinutes";
   public static final String PRM_MOTONET_INTERVAL = "MotoprofilIntervalInMinutes";
+  public static final String PRM_PROMO_FEATURED = "PromoFeatured";
+  public static final String PRM_PROMO_NOVELTY = "PromoNovelty";
 
   public static final String GRID_DISCOUNTS = "EcDiscounts";
   public static final String GRID_ARTICLE_CATEGORIES = "TcdArticleCategories";
@@ -563,7 +565,7 @@ public final class EcConstants {
   public static final String DATA_ATTRIBUTE_STOCK = "stock";
 
   public static final int MIN_SEARCH_QUERY_LENGTH = 3;
-  public static final int DEFAULT_CAR_TYPE_HISTORY_SIZE = 15;
+  public static final int DEFAULT_CAR_TYPE_HISTORY_SIZE = 10;
 
   public static final String PICTURE_PREFIX = "data:image/";
 

@@ -45,8 +45,8 @@ public class ItemList extends Flow implements KeyDownHandler {
   private static final String STYLE_PRIMARY = "ItemList";
   private static final String STYLE_WAREHOUSE = "warehouse";
 
-  private static final String STYLE_HEADER_ROW = EcStyles.name(STYLE_PRIMARY, "headerRow");
-  private static final String STYLE_ITEM_ROW = EcStyles.name(STYLE_PRIMARY, "itemRow");
+  private static final String STYLE_HEADER_ROW = EcStyles.name(STYLE_PRIMARY, "header");
+  private static final String STYLE_ITEM_ROW = EcStyles.name(STYLE_PRIMARY, "item");
 
   private static final String STYLE_PICTURE = EcStyles.name(STYLE_PRIMARY, "picture");
   private static final String STYLE_INFO = EcStyles.name(STYLE_PRIMARY, "info");

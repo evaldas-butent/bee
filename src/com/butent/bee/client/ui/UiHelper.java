@@ -1,6 +1,7 @@
 package com.butent.bee.client.ui;
 
 import com.google.common.collect.Lists;
+import com.google.common.collect.Sets;
 import com.google.gwt.core.client.Scheduler;
 import com.google.gwt.dom.client.Element;
 import com.google.gwt.dom.client.NativeEvent;
@@ -178,7 +179,7 @@ public final class UiHelper {
     }
     return null;
   }
-
+  
   public static TextAlign getDefaultHorizontalAlignment(ValueType type) {
     if (type == null) {
       return null;
@@ -543,6 +544,20 @@ public final class UiHelper {
 
     widget.setText(newText);
     widget.setCursorPos(pos + 1);
+  }
+
+  public static int removeChildStyleName(Widget parent, String styleName) {
+    if (parent == null || BeeUtils.isEmpty(styleName)) {
+      return 0;
+    }
+    
+    Collection<Widget> children = getChildrenByStyleName(parent, Sets.newHashSet(styleName));
+    
+    for (Widget child : children) {
+      child.removeStyleName(styleName);
+    }
+
+    return children.size();
   }
 
   public static void selectDeferred(final TextBox widget) {
