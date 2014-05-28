@@ -1,6 +1,7 @@
 #!/bin/bash
 # UNIX DEPLPOY
 ## orka server configuration
+clear
 WAR_FOLDER=/media/bnovo/Bee/war
 WAR_FILE=/tmp/Bee.war
 ZIP_FILE=/tmp/Bee

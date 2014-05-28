@@ -114,7 +114,7 @@
       <col index="0" cellStyle="&col1;" />
 
       <row>
-        <Label text="=crmTaskExecutors" />
+        <Label name="ExecutorsLabel" class="bee-required" text="=crmTaskExecutors" />
         <MultiSelector viewName="Users" property="Executors" renderColumns="FirstName LastName"
           editPopup="true" newRowEnabled="false" editSource="CompanyPerson" style="&inp2x;"
           label="=crmTaskExecutors" />
@@ -122,7 +122,7 @@
 
       <row data="UserGroupSettings">
         <Label text="=crmTaskExecutorGroups" />
-        <MultiSelector viewName="UserGroupSettings" property="ExecutorGroups" renderColumns="Name"
+        <MultiSelector name="UserGroupSettings" viewName="UserGroupSettings" property="ExecutorGroups" renderColumns="Name"
           editPopup="true" newRowEnabled="false" style="&inp2y;" label="=crmTaskExecutorGroups"
           filter="Owner {u} or Visibility 1" />
       </row>
