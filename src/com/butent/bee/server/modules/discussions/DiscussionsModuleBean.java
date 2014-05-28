@@ -1488,11 +1488,16 @@ public class DiscussionsModuleBean implements BeeModule {
     for (SimpleRow discussMailRow : discussMailListRowSet) {
       Long member = discussMailRow.getLong(DiscussionsConstants.COL_USER);
 
+      if (usr.isBlocked(usr.getUserName(member))) {
+        logger.warning(label, discussionId, "member", member, "is blocked");
+        continue;
+      }
+
       Long memberEmailId = usr.getEmailId(member, false);
 
       if (!DataUtils.isId(memberEmailId)) {
         logger.warning(label, discussionId, "member", member, "email not available");
-        return response;
+        continue;
       }
 
       LocalizableConstants constants = usr.getLocalizableConstants(member);
