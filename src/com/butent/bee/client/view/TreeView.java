@@ -18,6 +18,8 @@ public interface TreeView extends View, HasSelectionHandlers<IsRow>,
 
   Collection<IsRow> getChildItems(IsRow item, boolean recurse);
 
+  List<String> getFavorite();
+
   IsRow getParentItem(IsRow item);
   
   List<IsRow> getPath(Long id);

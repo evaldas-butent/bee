@@ -1655,8 +1655,9 @@ public enum FormWidget {
 
       case DATA_TREE:
         String treeViewName = attributes.get(UiConstants.ATTR_VIEW_NAME);
+        String treeFavoriteName = attributes.get(UiConstants.ATTR_FAVORITE);
         widget = new TreeContainer(attributes.get(UiConstants.ATTR_CAPTION),
-            BeeUtils.toBoolean(attributes.get("hideActions")), treeViewName);
+            BeeUtils.toBoolean(attributes.get("hideActions")), treeViewName, treeFavoriteName);
 
         ((TreeView) widget).setViewPresenter(new TreePresenter((TreeView) widget,
             treeViewName, attributes.get("parentColumn"),

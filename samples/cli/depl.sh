@@ -17,9 +17,11 @@ echo start deploy `date`
 
 
 if [ -z "${DEPCOUNTLEFT}" ]; then
-export DEPCOUNTLEFT="#####"
+export DEPCOUNTLEFT="####"
 echo restart server due deploy count `date`
-/opt/glassfish4/glassfish/bin/asadmin restart-domain domain1
+/opt/glassfish4/glassfish/bin/asadmin stop-domain domain1
+/opt/glassfish4/glassfish/bin/asadmin start-domain domain1
 fi
 export DEPCOUNTLEFT=${DEPCOUNTLEFT%?}
 echo end deploy `date` $DEPCOUNTLEFT
+free

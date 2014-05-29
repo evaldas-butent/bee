@@ -275,6 +275,11 @@ public class Favorites implements HandlesDeleteEvents {
 
   public void bookmark(final String viewName, final IsRow row, List<BeeColumn> sourceColumns,
       List<String> expressions) {
+    bookmark(viewName, row, sourceColumns, expressions, BeeConst.STRING_SPACE);
+  }
+
+  public void bookmark(final String viewName, final IsRow row, List<BeeColumn> sourceColumns,
+      List<String> expressions, String exprSep) {
     if (BeeUtils.isEmpty(viewName) || row == null || BeeUtils.isEmpty(sourceColumns)
         || BeeUtils.isEmpty(expressions)) {
       return;
@@ -289,7 +294,7 @@ public class Favorites implements HandlesDeleteEvents {
     }
 
     List<String> values = DataUtils.translate(expressions, sourceColumns, row);
-    String html = BeeUtils.join(BeeConst.STRING_SPACE, values);
+    String html = BeeUtils.join(exprSep, values);
 
     Global.inputString(Localized.getConstants().bookmarkName(), null, new StringCallback() {
       @Override
