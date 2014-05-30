@@ -223,7 +223,8 @@ public class DataSelector extends Composite implements Editor, HasVisibleLines, 
 
     @Override
     public void onMouseWheel(MouseWheelEvent event) {
-      if (!isEnabled() || !isActive() || !getSelector().isShowing()) {
+      if (!isEnabled() || !isActive() || !getSelector().isShowing() 
+          || !getOracle().isCachingEnabled()) {
         return;
       }
 

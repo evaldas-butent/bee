@@ -244,10 +244,99 @@ public class Favorites implements HandlesDeleteEvents {
 
   private static final List<BeeColumn> columns = Lists.newArrayList();
 
+  private static void addDisplayRow(final HtmlTable display, final Group group, final String key,
+      final Item item) {
+    int row = display.getRowCount();
+
+    Widget widget = group.createItemWidget(key, item);
+    display.setWidget(row, ITEM_COLUMN, widget);
+
+    FaLabel edit = new FaLabel(FontAwesome.EDIT, EDIT_STYLE);
+    edit.setTitle(Localized.getConstants().actionRename());
+
+    edit.addClickHandler(new ClickHandler() {
+      @Override
+      public void onClick(ClickEvent event) {
+        Global.inputString(Localized.getConstants().actionRename(), null, new StringCallback() {
+          @Override
+          public void onSuccess(String value) {
+            updateItem(group, key, item.getId(), value);
+          }
+        }, item.getHtml(), BeeConst.UNDEF, display.getEventRowElement(event, false));
+      }
+    });
+
+    display.setWidget(row, EDIT_COLUMN, edit);
+
+    FaLabel delete = new FaLabel(FontAwesome.TRASH_O, DELETE_STYLE);
+    delete.setTitle(Localized.getConstants().actionRemove());
+
+    delete.addClickHandler(new ClickHandler() {
+      @Override
+      public void onClick(ClickEvent event) {
+        Global.confirmRemove(group.getCaption(key), item.getHtml(), new ConfirmationCallback() {
+          @Override
+          public void onConfirm() {
+            removeItem(group, key, item.getId());
+          }
+        }, display.getEventRowElement(event, false));
+      }
+    });
+
+    display.setWidget(row, DELETE_COLUMN, delete);
+  }
+  private static HtmlTable createDisplay() {
+    HtmlTable display = new HtmlTable();
+    display.addStyleName(DISPLAY_STYLE);
+
+    display.getColumnFormatter().addStyleName(ITEM_COLUMN, ITEM_COLUMN_STYLE);
+    display.getColumnFormatter().addStyleName(EDIT_COLUMN, EDIT_COLUMN_STYLE);
+    display.getColumnFormatter().addStyleName(DELETE_COLUMN, DELETE_COLUMN_STYLE);
+
+    return display;
+  }
+  private static boolean removeItem(Group group, String key, long id) {
+    Item item = group.find(key, id);
+    if (item == null) {
+      return false;
+    }
+
+    HtmlTable display = group.getDisplay(key);
+    display.removeRow(group.indexOf(key, item));
+
+    Filter filter = Filter.and(Filter.isEqual(COL_GROUP, IntegerValue.of(group)),
+        Filter.isEqual(COL_KEY, new TextValue(key)), Filter.equals(COL_ITEM, id));
+
+    Queries.delete(VIEW_FAVORITES, filter, null);
+    return group.remove(key, item);
+  }
+  private static boolean updateItem(Group group, String key, long id, String html) {
+    Item item = group.find(key, id);
+    if (item == null || BeeUtils.equalsTrim(item.getHtml(), html)) {
+      return false;
+    }
+    item.setHtml(html);
+
+    HtmlTable display = group.getDisplay(key);
+    display.getWidget(group.indexOf(key, item), ITEM_COLUMN).getElement().setInnerHTML(html.trim());
+
+    CompoundFilter filter = Filter.and();
+    filter.add(BeeKeeper.getUser().getFilter(COL_FAVORITE_USER),
+        Filter.isEqual(COL_GROUP, IntegerValue.of(group)),
+        Filter.isEqual(COL_KEY, new TextValue(key)),
+        Filter.equals(COL_ITEM, id));
+
+    Queries.update(VIEW_FAVORITES, filter, COL_HTML, new TextValue(html), null);
+    return true;
+  }
   private int groupIndex = BeeConst.UNDEF;
+
   private int keyIndex = BeeConst.UNDEF;
+
   private int itemIndex = BeeConst.UNDEF;
+
   private int orderIndex = BeeConst.UNDEF;
+  
   private int htmlIndex = BeeConst.UNDEF;
 
   public Favorites() {
@@ -307,6 +396,11 @@ public class Favorites implements HandlesDeleteEvents {
     }, html);
   }
 
+  public boolean isBookmarked(String viewName, IsRow row) {
+    return !BeeUtils.isEmpty(viewName) && DataUtils.hasId(row)
+        && Group.ROW.find(viewName, row.getId()) != null;
+  }
+
   public void load(String serialized) {
     Assert.notEmpty(serialized);
 
@@ -339,59 +433,6 @@ public class Favorites implements HandlesDeleteEvents {
   @Override
   public void onRowDelete(RowDeleteEvent event) {
     removeItem(Group.ROW, event.getViewName(), event.getRowId());
-  }
-
-  private static void addDisplayRow(final HtmlTable display, final Group group, final String key,
-      final Item item) {
-    int row = display.getRowCount();
-
-    Widget widget = group.createItemWidget(key, item);
-    display.setWidget(row, ITEM_COLUMN, widget);
-
-    FaLabel edit = new FaLabel(FontAwesome.EDIT, EDIT_STYLE);
-    edit.setTitle(Localized.getConstants().actionRename());
-
-    edit.addClickHandler(new ClickHandler() {
-      @Override
-      public void onClick(ClickEvent event) {
-        Global.inputString(Localized.getConstants().actionRename(), null, new StringCallback() {
-          @Override
-          public void onSuccess(String value) {
-            updateItem(group, key, item.getId(), value);
-          }
-        }, item.getHtml(), BeeConst.UNDEF, display.getEventRowElement(event, false));
-      }
-    });
-
-    display.setWidget(row, EDIT_COLUMN, edit);
-
-    FaLabel delete = new FaLabel(FontAwesome.TRASH_O, DELETE_STYLE);
-    delete.setTitle(Localized.getConstants().actionRemove());
-
-    delete.addClickHandler(new ClickHandler() {
-      @Override
-      public void onClick(ClickEvent event) {
-        Global.confirmRemove(group.getCaption(key), item.getHtml(), new ConfirmationCallback() {
-          @Override
-          public void onConfirm() {
-            removeItem(group, key, item.getId());
-          }
-        }, display.getEventRowElement(event, false));
-      }
-    });
-
-    display.setWidget(row, DELETE_COLUMN, delete);
-  }
-
-  private static HtmlTable createDisplay() {
-    HtmlTable display = new HtmlTable();
-    display.addStyleName(DISPLAY_STYLE);
-
-    display.getColumnFormatter().addStyleName(ITEM_COLUMN, ITEM_COLUMN_STYLE);
-    display.getColumnFormatter().addStyleName(EDIT_COLUMN, EDIT_COLUMN_STYLE);
-    display.getColumnFormatter().addStyleName(DELETE_COLUMN, DELETE_COLUMN_STYLE);
-
-    return display;
   }
 
   private Item createItem(BeeRow row) {
@@ -451,41 +492,5 @@ public class Favorites implements HandlesDeleteEvents {
         group.registerDomainEntry(key);
       }
     }
-  }
-
-  private static boolean removeItem(Group group, String key, long id) {
-    Item item = group.find(key, id);
-    if (item == null) {
-      return false;
-    }
-
-    HtmlTable display = group.getDisplay(key);
-    display.removeRow(group.indexOf(key, item));
-
-    Filter filter = Filter.and(Filter.isEqual(COL_GROUP, IntegerValue.of(group)),
-        Filter.isEqual(COL_KEY, new TextValue(key)), Filter.equals(COL_ITEM, id));
-
-    Queries.delete(VIEW_FAVORITES, filter, null);
-    return group.remove(key, item);
-  }
-
-  private static boolean updateItem(Group group, String key, long id, String html) {
-    Item item = group.find(key, id);
-    if (item == null || BeeUtils.equalsTrim(item.getHtml(), html)) {
-      return false;
-    }
-    item.setHtml(html);
-
-    HtmlTable display = group.getDisplay(key);
-    display.getWidget(group.indexOf(key, item), ITEM_COLUMN).getElement().setInnerHTML(html.trim());
-
-    CompoundFilter filter = Filter.and();
-    filter.add(BeeKeeper.getUser().getFilter(COL_FAVORITE_USER),
-        Filter.isEqual(COL_GROUP, IntegerValue.of(group)),
-        Filter.isEqual(COL_KEY, new TextValue(key)),
-        Filter.equals(COL_ITEM, id));
-
-    Queries.update(VIEW_FAVORITES, filter, COL_HTML, new TextValue(html), null);
-    return true;
   }
 }

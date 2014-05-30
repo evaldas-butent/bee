@@ -16,6 +16,7 @@ import com.butent.bee.client.event.Binder;
 import com.butent.bee.client.layout.Flow;
 import com.butent.bee.client.layout.Horizontal;
 import com.butent.bee.client.presenter.Presenter;
+import com.butent.bee.client.style.StyleUtils;
 import com.butent.bee.client.ui.IdentifiableWidget;
 import com.butent.bee.client.ui.UiOption;
 import com.butent.bee.client.widget.FaLabel;
@@ -75,17 +76,19 @@ public class HeaderImpl extends Flow implements HeaderView {
 
   private static final int HEIGHT = 30;
 
-  private static final String STYLE_CONTAINER = "bee-Header-container";
+  private static final String STYLE_PREFIX = StyleUtils.CLASS_NAME_PREFIX + "Header-";
 
-  private static final String STYLE_CAPTION = "bee-Header-caption";
-  private static final String STYLE_MESSAGE = "bee-Header-message";
+  private static final String STYLE_CONTAINER = STYLE_PREFIX + "container";
 
-  private static final String STYLE_COMMAND_PANEL = "bee-Header-commandPanel";
+  private static final String STYLE_CAPTION = STYLE_PREFIX + "caption";
+  private static final String STYLE_MESSAGE = STYLE_PREFIX + "message";
 
-  private static final String STYLE_CONTROL = "bee-Header-control";
+  private static final String STYLE_COMMAND_PANEL = STYLE_PREFIX + "commandPanel";
+
+  private static final String STYLE_CONTROL = STYLE_PREFIX + "control";
   private static final String STYLE_CONTROL_HIDDEN = STYLE_CONTROL + "-hidden";
 
-  private static final String STYLE_DISABLED = "bee-Header-disabled";
+  private static final String STYLE_DISABLED = STYLE_PREFIX + "disabled";
 
   private static final int ACTION_SENSITIVITY_MILLIS =
       BeeUtils.positive(Settings.getActionSensitivityMillis(), 300);
@@ -112,6 +115,13 @@ public class HeaderImpl extends Flow implements HeaderView {
 
   public HeaderImpl() {
     super();
+  }
+
+  public HeaderImpl(Widget widget) {
+    this();
+    if (widget != null) {
+      add(widget);
+    }
   }
 
   @Override
@@ -197,10 +207,14 @@ public class HeaderImpl extends Flow implements HeaderView {
       add(createFa(FontAwesome.HISTORY, Action.AUDIT, hiddenActions));
     }
 
-    if (hasAction(Action.PRINT, true, enabledActions, disabledActions)) {
+    if (hasAction(Action.PRINT, false, enabledActions, disabledActions)) {
       add(createImage(Global.getImages().silverPrint(), Action.PRINT, hiddenActions));
     }
 
+    if (hasAction(Action.MENU, false, enabledActions, disabledActions)) {
+      add(createFa(FontAwesome.NAVICON, Action.MENU, hiddenActions));
+    }
+    
     if (hasAction(Action.CLOSE, UiOption.isWindow(options), enabledActions, disabledActions)) {
       add(createImage(Global.getImages().silverClose(), Action.CLOSE, hiddenActions));
     }

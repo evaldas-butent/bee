@@ -90,6 +90,8 @@ public final class Service {
   public static final String SET_STATE_RIGHTS = DATA_SERVICE_PREFIX + "set_state_rights";
   public static final String SET_ROLE_RIGHTS = DATA_SERVICE_PREFIX + "set_role_rights";
 
+  public static final String SET_ROW_RIGHTS = DATA_SERVICE_PREFIX + "set_row_rights";
+
   public static final String UPLOAD_FILE = UPLOAD_SERVICE_PREFIX + "file";
   public static final String UPLOAD_TEMP_FILE = UPLOAD_SERVICE_PREFIX + "temp_file";
   public static final String UPLOAD_PHOTO = UPLOAD_SERVICE_PREFIX + "photo";

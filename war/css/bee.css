@@ -449,6 +449,18 @@
   overflow-y: hidden;
 }
 
+.bee-Header-container .bee-auto-fit {
+  font-size: 16px;
+  color: #999;
+  padding-left: 3px;
+  align-self: flex-end;
+  -webkit-align-self: flex-end;
+  -ms-flex-item-align: end;
+}
+.bee-Header-container .bee-auto-fit:hover {
+  color: black;
+}
+
 .bee-Header-caption {
   font-size: 14px;
   font-weight: bold;
@@ -1697,6 +1709,14 @@
 }
 .bee-GridContainer-scrollable > .bee-GridView > .bee-CellGrid {
   overflow-y: hidden;
+}
+
+.bee-GridContainer-no-data .bee-auto-fit {
+  visibility: hidden;
+}
+.bee-GridContainer-no-data .bee-Header-control.bee-Action-delete,
+.bee-GridContainer-no-data .bee-Header-control.bee-Action-menu {
+  display: none;
 }
 
 .bee-StarPicker {
@@ -3120,8 +3140,32 @@
 }
 
 @media print {
+  .bee-auto-fit,
   .bee-Header-commandPanel,
   .bee-Header-control {
     display: none;
   }
 } 
+
+.bee-GridMenu-popup {
+  background-color: white;
+  border: 1px solid rgba(0, 0, 0, 0.2);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+.bee-GridMenu-table {
+  border-collapse: collapse;
+}
+.bee-GridMenu-table tr:hover {
+  background-color: #f2f2f2;
+  cursor: pointer;
+}
+.bee-GridMenu-table td {
+  padding: 4px 10px;
+}
+.bee-GridMenu-popup .bee-fa-label {
+  font-size: 18px;
+  color: #888;
+}
+.bee-GridMenu-table tr:hover .bee-fa-label {
+  color: black;
+}

@@ -1674,7 +1674,7 @@ public class GridImpl extends Absolute implements GridView, EditEndEvent.Handler
       boolean asPopup) {
     String formCaption = BeeUtils.notEmpty(caption, formView.getCaption());
 
-    EnumSet<Action> actions = EnumSet.of(Action.CLOSE);
+    EnumSet<Action> actions = EnumSet.of(Action.PRINT, Action.CLOSE);
     if (!edit) {
       actions.add(Action.SAVE);
     } else if (!isReadOnly()) {

@@ -2,7 +2,7 @@
 <g:Grid xmlns="http://www.butent.com/column" xmlns:g="http://www.butent.com/grid"
 
   name="Calendars" viewName="Calendars" caption="=calendars" newRowCaption="=calNewCalendar"
-  newRowForm="Calendar" editForm="Calendar" favorite="Name" flexGrow="1" flexShrink="1"
+  newRowForm="Calendar" editForm="Calendar" favorite="Name" flexGrow="1"
   >
   <g:columns>
     <DataColumn name="Name" visible="true" />
@@ -17,5 +17,9 @@
     <DataColumn name="AssignedTasks" visible="false" />
     <DataColumn name="DelegatedTasks" visible="false" />
     <DataColumn name="ObservedTasks" visible="false" />
+    
+    <PropColumn name="Rights_View" type="boolean" caption="=rightStateView" dynamic="true" flexGrow="0" />
+    <PropColumn name="Rights_Edit" type="boolean" caption="=rightStateEdit" dynamic="true" flexGrow="0" />
+    <PropColumn name="Rights_Delete" type="boolean" caption="=rightStateDelete" dynamic="true" flexGrow="0" />
   </g:columns>
 </g:Grid>

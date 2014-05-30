@@ -25,9 +25,11 @@ public enum Action implements BeeSerializable, HasCaption {
   EDIT(Localized.getConstants().actionEdit(), "edit"),
   EXPORT(Localized.getConstants().actionExport(), "export"),
   FILTER(Localized.getConstants().actionFilter(), "filter"),
+  MENU(Localized.getConstants().menu(), "menu"),
   PRINT(Localized.getConstants().actionPrint(), "print"),
   REFRESH(Localized.getConstants().actionRefresh(), "refresh"),
   REMOVE_FILTER(Localized.getConstants().actionRemoveFilter(), "removeFilter"),
+  RIGHTS(Localized.getConstants().rights(), "rights"),
   SAVE(Localized.getConstants().actionSave(), "save");
 
   public static final Set<Action> NO_ACTIONS = new HashSet<>();

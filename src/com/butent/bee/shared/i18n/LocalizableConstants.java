@@ -104,6 +104,8 @@ public interface LocalizableConstants extends Constants, LocalizableCalendarCons
   String amount();
 
   String article();
+  
+  String autoFit();
 
   String bookmarkName();
 
@@ -420,6 +422,8 @@ public interface LocalizableConstants extends Constants, LocalizableCalendarCons
   String margin();
 
   String maxValue();
+  
+  String menu();
 
   String message();
 
@@ -554,6 +558,8 @@ public interface LocalizableConstants extends Constants, LocalizableCalendarCons
   String responsiblePerson();
 
   String responsiblePersons();
+
+  String rights();
 
   String rightStateCreate();
 
