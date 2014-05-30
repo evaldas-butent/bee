@@ -24,6 +24,10 @@
         <text>=svcInvoices</text>
         <GridPanel name="ObjectInvoices" parent="{form}" child="true" />
       </page>
+      <page>
+        <text>=svcDefects</text>
+        <ChildGrid name="ObjectDefects" relColumn="ServiceObject" />
+      </page>
 
       <page module="Documents">
         <text>=documents</text>

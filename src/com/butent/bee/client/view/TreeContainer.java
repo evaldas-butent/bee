@@ -26,6 +26,7 @@ import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.data.IsRow;
 import com.butent.bee.shared.ui.Action;
 import com.butent.bee.shared.utils.BeeUtils;
+import com.butent.bee.shared.utils.NameUtils;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -56,6 +57,7 @@ public class TreeContainer extends Flow implements TreeView, SelectionHandler<Tr
 
   private Presenter viewPresenter;
   private boolean enabled = true;
+  private List<String> favorite = Lists.newArrayList();
   private final Tree tree;
   private final Map<Long, TreeItem> items = Maps.newHashMap();
 
@@ -63,6 +65,10 @@ public class TreeContainer extends Flow implements TreeView, SelectionHandler<Tr
   private final boolean hasActions;
 
   public TreeContainer(String caption, boolean hideActions, String viewName) {
+    this(caption, hideActions, viewName, BeeConst.STRING_EMPTY);
+  }
+
+  public TreeContainer(String caption, boolean hideActions, String viewName, String favorite) {
     super();
     addStyleName(STYLE_NAME);
 
@@ -74,6 +80,7 @@ public class TreeContainer extends Flow implements TreeView, SelectionHandler<Tr
       hdr.addStyleName(STYLE_NAME + "-actions");
 
       boolean editable = BeeKeeper.getUser().canEditData(viewName);
+      boolean bookmarked = !BeeUtils.isEmpty(favorite);
 
       Image img;
 
@@ -88,6 +95,16 @@ public class TreeContainer extends Flow implements TreeView, SelectionHandler<Tr
         img = new Image(Global.getImages().silverDelete(), new ActionListener(Action.DELETE));
         img.addStyleName(STYLE_NAME + "-delete");
         img.setTitle(Action.DELETE.getCaption());
+        hdr.add(img);
+      }
+
+      if (bookmarked) {
+        setFavorite(NameUtils.toList(favorite));
+        
+        img =
+            new Image(Global.getImages().silverBookmarkAdd(), new ActionListener(Action.BOOKMARK));
+        img.addStyleName(STYLE_NAME + "-bookmark");
+        img.setTitle(Action.BOOKMARK.getCaption());
         hdr.add(img);
       }
 
@@ -173,6 +190,11 @@ public class TreeContainer extends Flow implements TreeView, SelectionHandler<Tr
       }
     }
     return childs;
+  }
+
+  @Override
+  public List<String> getFavorite() {
+    return favorite;
   }
 
   @Override
@@ -346,6 +368,10 @@ public class TreeContainer extends Flow implements TreeView, SelectionHandler<Tr
     }
   }
 
+  private void setFavorite(List<String> favorite) {
+    BeeUtils.overwrite(this.favorite, favorite);
+  }
+  
   private Tree getTree() {
     return tree;
   }

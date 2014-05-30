@@ -196,7 +196,7 @@ public class SystemBean {
 
   public void filterVisibleState(SqlSelect query, String tblName, String tblAlias) {
     BeeTable table = getTable(tblName);
-    table.verifyState(query, tblAlias, RightsState.VIEW, usr.getUserRoles(usr.getCurrentUserId()));
+    table.verifyState(query, tblAlias, RightsState.VIEW, usr.getUserRoles());
   }
 
   public String getAuditSource(String tableName) {
@@ -486,7 +486,6 @@ public class SystemBean {
     }
   }
 
-  @TransactionAttribute(TransactionAttributeType.REQUIRES_NEW)
   @Lock(LockType.WRITE)
   public void rebuildTable(String tblName) {
     rebuildTable(getTable(tblName));

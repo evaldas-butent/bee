@@ -61,6 +61,7 @@ import com.butent.bee.client.view.form.interceptor.FormInterceptor;
 import com.butent.bee.client.view.grid.GridView;
 import com.butent.bee.client.view.grid.GridView.SelectedRows;
 import com.butent.bee.client.view.grid.interceptor.AbstractGridInterceptor;
+import com.butent.bee.client.view.grid.interceptor.GridInterceptor;
 import com.butent.bee.client.websocket.Endpoint;
 import com.butent.bee.client.widget.Button;
 import com.butent.bee.client.widget.DateTimeLabel;
@@ -306,6 +307,11 @@ public class MailPanel extends AbstractFormInterceptor {
       return Data.createRowSet(gridDescription.getViewName());
     }
 
+    @Override
+    public GridInterceptor getInstance() {
+      return new MessagesGrid();
+    }
+    
     @Override
     public AbstractCellRenderer getRenderer(String columnName,
         List<? extends IsColumn> dataColumns, ColumnDescription columnDescription,

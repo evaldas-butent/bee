@@ -11,13 +11,13 @@ class ServiceObjectWrapper {
   private static final String idColumn = Data.getIdColumn(VIEW_SERVICE_OBJECTS);
 
   private static final String categoryLabel = Data.getColumnLabel(VIEW_SERVICE_OBJECTS,
-      COL_SERVICE_OBJECT_CATEGORY);
+      COL_SERVICE_CATEGORY);
   private static final String addressLabel = Data.getColumnLabel(VIEW_SERVICE_OBJECTS,
-      COL_SERVICE_OBJECT_ADDRESS);
+      COL_SERVICE_ADDRESS);
   private static final String customerLabel = Data.getColumnLabel(VIEW_SERVICE_OBJECTS,
-      COL_SERVICE_OBJECT_CUSTOMER);
+      COL_SERVICE_CUSTOMER);
   private static final String contractorLabel = Data.getColumnLabel(VIEW_SERVICE_OBJECTS,
-      COL_SERVICE_OBJECT_CONTRACTOR);
+      COL_SERVICE_CONTRACTOR);
 
   private final Long id;
 
@@ -28,11 +28,11 @@ class ServiceObjectWrapper {
   ServiceObjectWrapper(SimpleRow row) {
     this.id = row.getLong(idColumn);
 
-    this.address = row.getValue(COL_SERVICE_OBJECT_ADDRESS);
+    this.address = row.getValue(COL_SERVICE_ADDRESS);
 
     this.title = TimeBoardHelper.buildTitle(
         categoryLabel, row.getValue(ALS_SERVICE_CATEGORY_NAME),
-        addressLabel, row.getValue(COL_SERVICE_OBJECT_ADDRESS),
+        addressLabel, row.getValue(COL_SERVICE_ADDRESS),
         customerLabel, row.getValue(ALS_SERVICE_CUSTOMER_NAME),
         contractorLabel, row.getValue(ALS_SERVICE_CONTRACTOR_NAME));
   }

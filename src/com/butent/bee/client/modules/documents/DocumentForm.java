@@ -5,12 +5,15 @@ import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
+import com.google.gwt.user.client.ui.HasEnabled;
+import com.google.gwt.user.client.ui.Widget;
 
 import static com.butent.bee.shared.modules.documents.DocumentConstants.*;
 import static com.butent.bee.shared.modules.trade.TradeConstants.*;
 
 import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.Global;
+import com.butent.bee.client.UserInfo;
 import com.butent.bee.client.composite.Autocomplete;
 import com.butent.bee.client.composite.ChildSelector;
 import com.butent.bee.client.composite.DataSelector;
@@ -38,6 +41,7 @@ import com.butent.bee.client.view.form.FormView;
 import com.butent.bee.client.view.form.interceptor.FormInterceptor;
 import com.butent.bee.client.view.grid.GridView;
 import com.butent.bee.client.view.grid.interceptor.AbstractGridInterceptor;
+import com.butent.bee.client.view.grid.interceptor.GridInterceptor;
 import com.butent.bee.client.widget.Button;
 import com.butent.bee.shared.BiConsumer;
 import com.butent.bee.shared.Consumer;
@@ -113,6 +117,11 @@ public class DocumentForm extends DocumentDataForm implements SelectorEvent.Hand
           }
         }
 
+        @Override
+        public GridInterceptor getInstance() {
+          return null;
+        }
+        
         @Override
         public void onEditStart(final EditStartEvent event) {
           if (!BeeUtils.same(event.getColumnId(), COL_DOCUMENT_DATA)) {
@@ -197,14 +206,23 @@ public class DocumentForm extends DocumentDataForm implements SelectorEvent.Hand
   }
 
   @Override
-  public void beforeRefresh(FormView form, IsRow row) {
+  public void afterRefresh(FormView form, IsRow row) {
+    UserInfo user = BeeKeeper.getUser();
+    boolean newRow = DataUtils.isNewRow(row);
+
+    if (!user.isAdministrator()) {
+      Widget category = form.getWidgetBySource(COL_DOCUMENT_CATEGORY);
+
+      if (category instanceof HasEnabled) {
+        ((HasEnabled) category).setEnabled(newRow);
+      }
+    }
     if (getHeaderView() == null) {
       return;
     }
     getHeaderView().clearCommandPanel();
 
-    if (!DataUtils.isNewRow(row) && BeeKeeper.getUser()
-        .isModuleVisible(ModuleAndSub.of(Module.DOCUMENTS, SubModule.TEMPLATES))) {
+    if (!newRow && user.isModuleVisible(ModuleAndSub.of(Module.DOCUMENTS, SubModule.TEMPLATES))) {
       getHeaderView().addCommandItem(newTemplateButton);
     }
   }

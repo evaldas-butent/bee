@@ -17,6 +17,8 @@
     <DateTime name="BlockBefore" label="=blockBefore" />
 
     <Boolean name="MailAssignedTasks" label="=crmMailAssignedTasks" />
+    <Boolean name="MailNewDiscussions" label="=discussMailNewDiscussions" />
+    <Boolean name="MailNewAnnouncements" label="=discussMailNewAnnouncements" />    
       
     <Text name="Properties" label="=userProperties" />
   </Fields>

@@ -377,6 +377,8 @@
       <xs:enumeration value="ServiceCriteria" />
       <xs:enumeration value="ServiceCritGroups" />
       <xs:enumeration value="ServiceDates" />
+      <xs:enumeration value="ServiceDefects" />
+      <xs:enumeration value="ServiceDefectItems" />
       <xs:enumeration value="ServiceDistinctCriteria" />
       <xs:enumeration value="ServiceDistinctCritGroups" />
       <xs:enumeration value="ServiceDistinctCritValues" />
@@ -439,6 +441,7 @@
       <xs:enumeration value="UserGroupMembers" />
       <xs:enumeration value="UserGroups" />
       <xs:enumeration value="UserGroupSettings" />
+      <xs:enumeration value="UserHistory" />
       <xs:enumeration value="UserParameters" />
       <xs:enumeration value="UserRoles" />
       <xs:enumeration value="Users" />

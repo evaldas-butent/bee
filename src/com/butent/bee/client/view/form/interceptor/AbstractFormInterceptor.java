@@ -151,9 +151,6 @@ public abstract class AbstractFormInterceptor implements FormInterceptor {
   }
 
   @Override
-  public abstract FormInterceptor getInstance();
-
-  @Override
   public Integer getIntegerValue(String source) {
     return (getFormView() == null) ? null : getFormView().getIntegerValue(source);
   }

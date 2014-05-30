@@ -68,7 +68,6 @@ import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogUtils;
 import com.butent.bee.shared.modules.BeeParameter;
 import com.butent.bee.shared.modules.administration.AdministrationConstants.ReminderMethod;
-import com.butent.bee.shared.modules.mail.MailConstants;
 import com.butent.bee.shared.modules.tasks.TaskConstants.TaskEvent;
 import com.butent.bee.shared.modules.tasks.TaskConstants.TaskStatus;
 import com.butent.bee.shared.modules.tasks.TaskUtils;
@@ -821,7 +820,7 @@ public class TasksModuleBean implements BeeModule {
 
         if (!response.hasErrors() && response.hasResponse(String.class)) {
           Set<Long> createdTasks = DataUtils.parseIdSet(response.getResponseAsString());
-          Long senderEmailId = getSenderEmailId("create task:");
+          Long senderEmailId = mail.getSenderEmailId("create task:");
 
           if (senderEmailId != null) {
             boolean pref = BeeConst.isTrue(taskRow.getProperty(PROP_MAIL));
@@ -872,7 +871,7 @@ public class TasksModuleBean implements BeeModule {
 
         if (!response.hasErrors() && event == TaskEvent.FORWARD
             && !Objects.equals(currentUser, DataUtils.getLong(taskData, taskRow, COL_EXECUTOR))) {
-          Long senderEmailId = getSenderEmailId("forward task:");
+          Long senderEmailId = mail.getSenderEmailId("forward task:");
 
           if (senderEmailId != null) {
             ResponseObject mailResponse = mailNewTask(senderEmailId, taskId, true, false);
@@ -1271,27 +1270,6 @@ public class TasksModuleBean implements BeeModule {
       return ResponseObject.emptyResponse();
     } else {
       return ResponseObject.response(data);
-    }
-  }
-
-  private Long getSenderEmailId(String logLabel) {
-    Long account = prm.getRelation(MailConstants.PRM_DEFAULT_ACCOUNT);
-    if (!DataUtils.isId(account)) {
-      logger.info(logLabel, "sender account not specified",
-          BeeUtils.bracket(MailConstants.PRM_DEFAULT_ACCOUNT));
-      return null;
-    }
-
-    Long emailId = qs.getLong(new SqlSelect()
-        .addFields(MailConstants.TBL_ACCOUNTS, MailConstants.COL_ADDRESS)
-        .addFrom(MailConstants.TBL_ACCOUNTS)
-        .setWhere(sys.idEquals(MailConstants.TBL_ACCOUNTS, account)));
-
-    if (!DataUtils.isId(emailId)) {
-      logger.severe(logLabel, "email id not available for account", account);
-      return null;
-    } else {
-      return emailId;
     }
   }
 
@@ -1722,7 +1700,7 @@ public class TasksModuleBean implements BeeModule {
       return;
     }
 
-    Long senderEmailId = getSenderEmailId("scheduled tasks:");
+    Long senderEmailId = mail.getSenderEmailId("scheduled tasks:");
     if (senderEmailId == null) {
       return;
     }
@@ -2031,7 +2009,7 @@ public class TasksModuleBean implements BeeModule {
     int count = 0;
     String label = "task reminders:";
 
-    Long senderEmailId = getSenderEmailId(label);
+    Long senderEmailId = mail.getSenderEmailId(label);
     if (!DataUtils.isId(senderEmailId)) {
       return count;
     }

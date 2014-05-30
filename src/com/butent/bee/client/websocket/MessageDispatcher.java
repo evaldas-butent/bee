@@ -304,7 +304,7 @@ class MessageDispatcher {
         if (BeeUtils.isEmpty(info)) {
           WsUtils.onEmptyMessage(message);
         } else {
-          Global.showGrid(caption, new PropertiesData(info));
+          Global.showTable(caption, new PropertiesData(info));
         }
         break;
 
@@ -480,7 +480,7 @@ class MessageDispatcher {
       case SHOW:
         Subject subject = ((ShowMessage) message).getSubject();
         if (subject == Subject.SESSION) {
-          Global.showGrid(subject.getCaption(), new PropertiesData(Endpoint.getInfo()));
+          Global.showTable(subject.getCaption(), new PropertiesData(Endpoint.getInfo()));
         } else {
           WsUtils.onInvalidState(message);
         }

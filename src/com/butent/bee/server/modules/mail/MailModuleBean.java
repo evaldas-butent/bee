@@ -17,6 +17,7 @@ import com.butent.bee.server.data.SystemBean;
 import com.butent.bee.server.data.UserServiceBean;
 import com.butent.bee.server.http.RequestInfo;
 import com.butent.bee.server.modules.BeeModule;
+import com.butent.bee.server.modules.ParamHolderBean;
 import com.butent.bee.server.modules.administration.FileStorageBean;
 import com.butent.bee.server.modules.mail.proxy.MailProxy;
 import com.butent.bee.server.news.NewsBean;
@@ -113,6 +114,9 @@ public class MailModuleBean implements BeeModule {
   SystemBean sys;
   @EJB
   FileStorageBean fs;
+  @EJB
+  ParamHolderBean prm;
+
   @Resource
   SessionContext ctx;
   @EJB
@@ -471,6 +475,27 @@ public class MailModuleBean implements BeeModule {
       response = ResponseObject.error(e);
     }
     return response;
+  }
+
+  public Long getSenderEmailId(String logLabel) {
+    Long account = prm.getRelation(MailConstants.PRM_DEFAULT_ACCOUNT);
+    if (!DataUtils.isId(account)) {
+      logger.info(logLabel, "sender account not specified",
+          BeeUtils.bracket(MailConstants.PRM_DEFAULT_ACCOUNT));
+      return null;
+    }
+
+    Long emailId = qs.getLong(new SqlSelect()
+        .addFields(MailConstants.TBL_ACCOUNTS, MailConstants.COL_ADDRESS)
+        .addFrom(MailConstants.TBL_ACCOUNTS)
+        .setWhere(sys.idEquals(MailConstants.TBL_ACCOUNTS, account)));
+
+    if (!DataUtils.isId(emailId)) {
+      logger.severe(logLabel, "email id not available for account", account);
+      return null;
+    } else {
+      return emailId;
+    }
   }
 
   public ResponseObject sendMail(Long from, Long to, String subject, String content) {

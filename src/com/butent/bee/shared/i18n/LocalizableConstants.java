@@ -409,6 +409,8 @@ public interface LocalizableConstants extends Constants, LocalizableCalendarCons
 
   String loginUserName();
 
+  String mailNotify();
+
   String mainEmail();
 
   String manager();
@@ -582,6 +584,8 @@ public interface LocalizableConstants extends Constants, LocalizableCalendarCons
   String roomUpdateTime();
 
   String roomUsers();
+  
+  String rowIsNotRemovable();
 
   String rowIsReadOnly();
 
@@ -632,6 +636,8 @@ public interface LocalizableConstants extends Constants, LocalizableCalendarCons
   String summer();
 
   String supplier();
+
+  String systemAllUsers();
 
   String tabControl();
 

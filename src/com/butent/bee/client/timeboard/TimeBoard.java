@@ -60,6 +60,7 @@ import com.butent.bee.shared.data.event.RowDeleteEvent;
 import com.butent.bee.shared.data.event.RowInsertEvent;
 import com.butent.bee.shared.data.event.RowUpdateEvent;
 import com.butent.bee.shared.i18n.Localized;
+import com.butent.bee.shared.io.Paths;
 import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogUtils;
 import com.butent.bee.shared.time.HasDateRange;
@@ -121,13 +122,14 @@ public abstract class TimeBoard extends Flow implements Presenter, View, Printab
   private static final String STYLE_ITEM_END = STYLE_ITEM_PREFIX + "end";
   private static final String STYLE_ITEM_HAS_HANDLING = STYLE_ITEM_PREFIX + "has-handling";
 
-  private static final String STYLE_SHEET = "css/timeboard.css?v=140504";
+  private static final String STYLE_SHEET_NAME = "timeboard";
+  private static final JustDate STYLE_SHEET_VERSION = new JustDate(2014, 5, 4);
   private static boolean styleSheetInjected; 
 
   public static void ensureStyleSheet() {
     if (!styleSheetInjected) {
       styleSheetInjected = true;
-      DomUtils.injectExternalStyle(STYLE_SHEET);
+      DomUtils.injectStyleSheet(Paths.getStyleSheetUrl(STYLE_SHEET_NAME, STYLE_SHEET_VERSION));
     }
   }
   

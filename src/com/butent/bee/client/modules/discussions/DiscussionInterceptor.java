@@ -1230,6 +1230,7 @@ class DiscussionInterceptor extends AbstractFormInterceptor {
             && DiscussionStatus.in(status, DiscussionStatus.ACTIVE, DiscussionStatus.INACTIVE)
             && (isAdmin(adminLogin) || allowDelOwnComments);
       case CREATE:
+      case CREATE_MAIL:
         return false;
       case DEACTIVATE:
         return false;

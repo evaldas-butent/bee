@@ -85,13 +85,13 @@ public class Bee implements EntryPoint {
 
     LayoutEngine layoutEngine = LayoutEngine.detect();
     if (layoutEngine != null && layoutEngine.hasStyleSheet()) {
-      DomUtils.injectExternalStyle(layoutEngine.getStyleSheet());
+      DomUtils.injectStyleSheet(layoutEngine.getStyleSheet());
     }
 
     List<String> extStyleSheets = Settings.getStyleSheets();
     if (!BeeUtils.isEmpty(extStyleSheets)) {
       for (String styleSheet : extStyleSheets) {
-        DomUtils.injectExternalStyle(styleSheet);
+        DomUtils.injectStyleSheet(styleSheet);
       }
     }
 

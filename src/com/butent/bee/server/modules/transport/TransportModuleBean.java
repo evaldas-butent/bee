@@ -58,6 +58,7 @@ import com.butent.bee.shared.data.SimpleRowSet;
 import com.butent.bee.shared.data.SimpleRowSet.SimpleRow;
 import com.butent.bee.shared.data.filter.Filter;
 import com.butent.bee.shared.data.view.Order;
+import com.butent.bee.shared.exceptions.BeeException;
 import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogUtils;
@@ -681,12 +682,12 @@ public class TransportModuleBean implements BeeModule {
         new AssesmentRequestsUsageQueryProvider(false));
 
     news.registerHeadlineProducer(Feed.ASSESSMENT_REQUESTS_MY, assessmentsHeadlineProducer);
-    
+
     news.registerUsageQueryProvider(Feed.ASSESSMENT_REQUESTS_MY,
         new AssesmentRequestsUsageQueryProvider(true));
-    
+
     news.registerHeadlineProducer(Feed.ASSESSMENT_ORDERS_ALL, assessmentsHeadlineProducer);
-    
+
     news.registerUsageQueryProvider(Feed.ASSESSMENT_ORDERS_ALL,
         new AssesmentRequestsUsageQueryProvider(false, true));
 
@@ -2729,19 +2730,17 @@ public class TransportModuleBean implements BeeModule {
       }
       ids.append("'").append(row.getValue(COL_SALE)).append("'");
     }
+    String remoteNamespace = prm.getText(PRM_ERP_NAMESPACE);
     String remoteAddress = prm.getText(PRM_ERP_ADDRESS);
     String remoteLogin = prm.getText(PRM_ERP_LOGIN);
     String remotePassword = prm.getText(PRM_ERP_PASSWORD);
 
-    ResponseObject response = ButentWS.getSQLData(remoteAddress, remoteLogin, remotePassword,
-        "SELECT extern_id AS id, apm_data AS data, apm_suma AS suma"
-            + " FROM apyvarta WHERE extern_id IN(" + ids.toString() + ")",
-        new String[] {"id", "data", "suma"});
-
-    if (response.hasErrors()) {
-      logger.severe((Object[]) response.getErrors());
-    } else {
-      SimpleRowSet payments = (SimpleRowSet) response.getResponse();
+    try {
+      SimpleRowSet payments = ButentWS.connect(remoteNamespace, remoteAddress, remoteLogin,
+          remotePassword)
+          .getSQLData("SELECT extern_id AS id, apm_data AS data, apm_suma AS suma"
+              + " FROM apyvarta WHERE extern_id IN(" + ids.toString() + ")",
+              new String[] {"id", "data", "suma"});
 
       for (SimpleRow payment : payments) {
         if (!Objects.equal(payment.getDouble("suma"),
@@ -2755,6 +2754,8 @@ public class TransportModuleBean implements BeeModule {
               .setWhere(sys.idEquals(TBL_SALES, payment.getLong("id"))));
         }
       }
+    } catch (BeeException e) {
+      logger.error(e);
     }
   }
 
@@ -2874,6 +2875,7 @@ public class TransportModuleBean implements BeeModule {
     } else {
       return ResponseObject.error("View source not supported:", trade);
     }
+    String remoteNamespace = prm.getText(PRM_ERP_NAMESPACE);
     String remoteAddress = prm.getText(PRM_ERP_ADDRESS);
     String remoteLogin = prm.getText(PRM_ERP_LOGIN);
     String remotePassword = prm.getText(PRM_ERP_PASSWORD);
@@ -2899,16 +2901,18 @@ public class TransportModuleBean implements BeeModule {
               .addFromLeft(TBL_COUNTRIES, sys.joinTables(TBL_COUNTRIES, TBL_CONTACTS, COL_COUNTRY))
               .setWhere(sys.idEquals(TBL_COMPANIES, id)));
 
-          ResponseObject resp = ButentWS.importClient(remoteAddress, remoteLogin, remotePassword,
-              data.getValue(COL_COMPANY_NAME), data.getValue(COL_COMPANY_CODE),
-              data.getValue(COL_COMPANY_VAT_CODE), data.getValue(COL_ADDRESS),
-              data.getValue(COL_POST_INDEX), data.getValue(COL_CITY), data.getValue(COL_COUNTRY));
+          try {
+            String company = ButentWS.connect(remoteNamespace, remoteAddress, remoteLogin,
+                remotePassword)
+                .importClient(data.getValue(COL_COMPANY_NAME), data.getValue(COL_COMPANY_CODE),
+                    data.getValue(COL_COMPANY_VAT_CODE), data.getValue(COL_ADDRESS),
+                    data.getValue(COL_POST_INDEX), data.getValue(COL_CITY),
+                    data.getValue(COL_COUNTRY));
 
-          if (resp.hasErrors()) {
-            response.addErrorsFrom(resp);
-            break;
-          } else {
-            companies.put(id, resp.getResponseAsString());
+            companies.put(id, company);
+
+          } catch (BeeException e) {
+            response.addError(e);
           }
         }
       }
@@ -2967,10 +2971,11 @@ public class TransportModuleBean implements BeeModule {
       if (response.hasErrors()) {
         break;
       }
-      ResponseObject resp = ButentWS.importDoc(remoteAddress, remoteLogin, remotePassword, doc);
-
-      if (resp.hasErrors()) {
-        response.addErrorsFrom(resp);
+      try {
+        ButentWS.connect(remoteNamespace, remoteAddress, remoteLogin, remotePassword)
+            .importDoc(doc);
+      } catch (BeeException e) {
+        response.addError(e);
         break;
       }
       qs.updateData(new SqlUpdate(trade)

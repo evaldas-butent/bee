@@ -388,6 +388,7 @@ public final class AdministrationConstants {
   public static final String PRM_CURRENCY = "MainCurrency";
   public static final String PRM_VAT_PERCENT = "VATPercent";
 
+  public static final String PRM_ERP_NAMESPACE = "ERPNamespace";
   public static final String PRM_ERP_ADDRESS = "ERPAddress";
   public static final String PRM_ERP_LOGIN = "ERPLogin";
   public static final String PRM_ERP_PASSWORD = "ERPPassword";

@@ -85,6 +85,11 @@ public final class TransportHandler {
 
       return new CargoTripChecker().getDeleteMode(presenter, activeRow, selectedRows, defMode);
     }
+
+    @Override
+    public GridInterceptor getInstance() {
+      return new CargoGridHandler();
+    }
   }
 
   static final class Profit extends Image implements ClickHandler {
@@ -497,6 +502,11 @@ public final class TransportHandler {
     switch (gridName) {
       case GRID_ASSESSMENT_REQUESTS:
         interceptor = new AbstractGridInterceptor() {
+          @Override
+          public GridInterceptor getInstance() {
+            return null;
+          }
+
           @Override
           public boolean onStartNewRow(GridView gridView, IsRow oldRow, IsRow newRow) {
             newRow.setValue(gridView.getDataIndex(COL_ASSESSMENT_STATUS),

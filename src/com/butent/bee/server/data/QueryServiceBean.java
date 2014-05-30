@@ -58,6 +58,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.Collection;
+import java.util.EnumSet;
 import java.util.List;
 import java.util.Map;
 
@@ -112,8 +113,6 @@ public class QueryServiceBean {
     public abstract T processUpdateCount(int updateCount);
   }
 
-  private static final String EDITABLE_STATE_COLUMN = RightsState.EDIT.name();
-
   private static BeeLogger logger = LogUtils.getLogger(QueryServiceBean.class);
 
   private static BeeRowSet rsToBeeRowSet(ResultSet rs, BeeView view) throws SQLException {
@@ -122,6 +121,7 @@ public class QueryServiceBean {
     int idIndex = BeeConst.UNDEF;
     int versionIndex = BeeConst.UNDEF;
     int editableIndex = BeeConst.UNDEF;
+    int removableIndex = BeeConst.UNDEF;
 
     BeeRowSet result;
     List<Integer> indexes = Lists.newArrayListWithCapacity(rsCols.size());
@@ -151,14 +151,18 @@ public class QueryServiceBean {
         } else if (BeeUtils.same(colName, view.getSourceVersionName())) {
           versionIndex = colIndex;
 
-        } else if (BeeUtils.same(colName, EDITABLE_STATE_COLUMN)) {
+        } else if (BeeUtils.same(colName, RightsState.EDIT.name())) {
           editableIndex = colIndex;
+
+        } else if (BeeUtils.same(colName, RightsState.DELETE.name())) {
+          removableIndex = colIndex;
         }
       }
     }
 
     long rowId = 0;
     boolean editable = RightsState.EDIT.isChecked();
+    boolean removable = RightsState.DELETE.isChecked();
 
     int cc = result.getNumberOfColumns();
 
@@ -220,7 +224,11 @@ public class QueryServiceBean {
       if (editableIndex > 0) {
         editable = BeeUtils.toBoolean(rs.getString(editableIndex));
       }
+      if (removableIndex > 0) {
+        removable = BeeUtils.toBoolean(rs.getString(removableIndex));
+      }
       row.setEditable(editable);
+      row.setRemovable(removable);
 
       result.addRow(row);
     }
@@ -750,16 +758,19 @@ public class QueryServiceBean {
       sys.filterVisibleState(query, tableName, tableAlias);
 
       BeeTable table = sys.getTable(tableName);
-      String stateAlias = table.joinState(query, tableAlias, RightsState.EDIT);
 
-      if (!BeeUtils.isEmpty(stateAlias)) {
-        IsExpression xpr = SqlUtils.sqlIf(table.checkState(stateAlias, RightsState.EDIT,
-            usr.getUserRoles()), 1, null);
+      for (RightsState state : EnumSet.of(RightsState.EDIT, RightsState.DELETE)) {
+        String stateAlias = table.joinState(query, tableAlias, state);
 
-        if (!BeeUtils.isEmpty(query.getGroupBy())) {
-          query.addMax(xpr, EDITABLE_STATE_COLUMN);
-        } else {
-          query.addExpr(xpr, EDITABLE_STATE_COLUMN);
+        if (!BeeUtils.isEmpty(stateAlias)) {
+          IsExpression xpr = SqlUtils.sqlIf(table.checkState(stateAlias, state,
+              usr.getUserRoles()), true, false);
+
+          if (!BeeUtils.isEmpty(query.getGroupBy())) {
+            query.addMax(xpr, state.name());
+          } else {
+            query.addExpr(xpr, state.name());
+          }
         }
       }
     }

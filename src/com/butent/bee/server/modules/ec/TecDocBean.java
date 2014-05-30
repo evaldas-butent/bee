@@ -25,16 +25,17 @@ import com.butent.bee.server.sql.SqlSelect;
 import com.butent.bee.server.sql.SqlUpdate;
 import com.butent.bee.server.sql.SqlUtils;
 import com.butent.bee.shared.BeeConst.SqlEngine;
-import com.butent.bee.shared.communication.ResponseObject;
 import com.butent.bee.shared.data.BeeRow;
 import com.butent.bee.shared.data.BeeRowSet;
 import com.butent.bee.shared.data.SimpleRowSet;
 import com.butent.bee.shared.data.SimpleRowSet.SimpleRow;
+import com.butent.bee.shared.exceptions.BeeException;
 import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogLevel;
 import com.butent.bee.shared.logging.LogUtils;
 import com.butent.bee.shared.modules.BeeParameter;
 import com.butent.bee.shared.modules.ec.EcConstants.EcSupplier;
+import com.butent.bee.shared.modules.ec.EcUtils;
 import com.butent.bee.shared.rights.Module;
 import com.butent.bee.shared.time.TimeUtils;
 import com.butent.bee.shared.utils.ArrayUtils;
@@ -94,14 +95,18 @@ public class TecDocBean {
     private final Double price;
     private final String brand;
     private final String articleNr;
+    private final String name;
+    private final String descr;
 
     public RemoteItem(String supplierId, String brand, String articleNr, Double cost,
-        Double price) {
+        Double price, String name, String descr) {
       this.supplierId = supplierId;
       this.brand = brand;
       this.articleNr = articleNr;
       this.cost = cost;
       this.price = price;
+      this.name = name;
+      this.descr = descr;
     }
   }
 
@@ -212,54 +217,52 @@ public class TecDocBean {
   @Asynchronous
   public void suckButent() {
     EcSupplier supplier = EcSupplier.EOLTAS;
+    String remoteNamespace = prm.getText(PRM_ERP_NAMESPACE);
     String remoteAddress = prm.getText(PRM_ERP_ADDRESS);
     String remoteLogin = prm.getText(PRM_ERP_LOGIN);
     String remotePassword = prm.getText(PRM_ERP_PASSWORD);
 
-    String itemsFilter = "prekes.gam_art IS NOT NULL AND prekes.gamintojas IS NOT NULL";
+    try {
+      String itemsFilter = "prekes.gam_art IS NOT NULL AND prekes.gam_art != ''"
+          + " AND prekes.gamintojas IS NOT NULL AND prekes.gamintojas != ''";
 
-    ResponseObject response = ButentWS.getSQLData(remoteAddress, remoteLogin, remotePassword,
-        "SELECT preke AS pr, savikaina AS sv, pard_kaina as kn, gam_art AS ga, gamintojas AS gam"
-            + " FROM prekes"
-            + " WHERE " + itemsFilter,
-        new String[] {"pr", "sv", "kn", "ga", "gam"});
+      SimpleRowSet rows = ButentWS.connect(remoteNamespace, remoteAddress, remoteLogin,
+          remotePassword)
+          .getSQLData("SELECT preke AS pr, savikaina AS sv, pard_kaina AS kn, gam_art AS ga,"
+              + " gamintojas AS gam, pavad AS pav, aprasymas AS apr"
+              + " FROM prekes"
+              + " WHERE " + itemsFilter,
+              new String[] {"pr", "sv", "kn", "ga", "gam", "pav", "apr"});
 
-    if (response.hasErrors()) {
-      logger.severe(supplier, response.getErrors());
-      return;
-    }
-    SimpleRowSet rows = (SimpleRowSet) response.getResponse();
+      if (rows.getNumberOfRows() > 0) {
+        List<RemoteItem> data = Lists.newArrayListWithCapacity(rows.getNumberOfRows());
 
-    if (rows.getNumberOfRows() > 0) {
-      List<RemoteItem> data = Lists.newArrayListWithExpectedSize(rows.getNumberOfRows());
-
-      for (SimpleRow row : rows) {
-        data.add(new RemoteItem(row.getValue("pr"), row.getValue("gam"), row.getValue("ga"),
-            row.getDouble("sv"), row.getDouble("kn")));
+        for (SimpleRow row : rows) {
+          data.add(new RemoteItem(row.getValue("pr"), row.getValue("gam"), row.getValue("ga"),
+              row.getDouble("sv"), row.getDouble("kn"), row.getValue("pav"), row.getValue("apr")));
+        }
+        importItems(supplier, data);
       }
-      importItems(supplier, data);
-    }
-    response = ButentWS.getSQLData(remoteAddress, remoteLogin, remotePassword,
-        "SELECT likuciai.sandelis AS sn, likuciai.preke AS pr, sum(likuciai.kiekis) AS lk"
-            + " FROM likuciai INNER JOIN sand"
-            + " ON likuciai.sandelis = sand.sandelis AND sand.sand_mode LIKE '%e%'"
-            + " INNER JOIN prekes ON likuciai.preke = prekes.preke AND " + itemsFilter
-            + " GROUP by likuciai.sandelis, likuciai.preke HAVING lk > 0",
-        new String[] {"sn", "pr", "lk"});
+      rows = ButentWS.connect(remoteNamespace, remoteAddress, remoteLogin, remotePassword)
+          .getSQLData("SELECT likuciai.sandelis AS sn, likuciai.preke AS pr,"
+              + " sum(likuciai.kiekis) AS lk"
+              + " FROM likuciai INNER JOIN sand"
+              + " ON likuciai.sandelis = sand.sandelis AND sand.sand_mode LIKE '%e%'"
+              + " INNER JOIN prekes ON likuciai.preke = prekes.preke AND " + itemsFilter
+              + " GROUP by likuciai.sandelis, likuciai.preke HAVING lk > 0",
+              new String[] {"sn", "pr", "lk"});
 
-    if (response.hasErrors()) {
-      logger.severe(supplier, response.getErrors());
-      return;
-    }
-    rows = (SimpleRowSet) response.getResponse();
+      if (rows.getNumberOfRows() > 0) {
+        List<RemoteRemainder> data = Lists.newArrayListWithCapacity(rows.getNumberOfRows());
 
-    if (rows.getNumberOfRows() > 0) {
-      List<RemoteRemainder> data = Lists.newArrayListWithExpectedSize(rows.getNumberOfRows());
-
-      for (SimpleRow row : rows) {
-        data.add(new RemoteRemainder(row.getValue("pr"), row.getValue("sn"), row.getDouble("lk")));
+        for (SimpleRow row : rows) {
+          data.add(new RemoteRemainder(row.getValue("pr"), row.getValue("sn"),
+              row.getDouble("lk")));
+        }
+        importRemainders(supplier, data);
       }
-      importRemainders(supplier, data);
+    } catch (BeeException e) {
+      logger.error(e);
     }
   }
 
@@ -278,8 +281,8 @@ public class TecDocBean {
     }
     if (info != null && info.getString().size() > 1) {
       int size = info.getString().size();
-      List<RemoteItem> items = Lists.newArrayListWithExpectedSize(size);
-      List<RemoteRemainder> remainders = Lists.newArrayListWithExpectedSize(size);
+      List<RemoteItem> items = Lists.newArrayListWithCapacity(size);
+      List<RemoteRemainder> remainders = Lists.newArrayListWithCapacity(size);
 
       logger.info(supplier, "Received", size, "records. Updating data...");
 
@@ -309,7 +312,7 @@ public class TecDocBean {
               String supplierId = supplierBrand + values[1];
 
               items.add(new RemoteItem(supplierId, brand, values[1],
-                  BeeUtils.toDoubleOrNull(values[7].replace(',', '.')), null));
+                  BeeUtils.toDoubleOrNull(values[7].replace(',', '.')), null, null, null));
 
               remainders.add(new RemoteRemainder(supplierId, "MotoNet",
                   BeeUtils.toDoubleOrNull(values[3])));
@@ -1145,9 +1148,11 @@ public class TecDocBean {
 
     String tmp = qs.sqlCreateTemp(new SqlSelect()
         .addField(TBL_TCD_ARTICLES, COL_TCD_ARTICLE_NR, COL_TCD_SEARCH_NR)
+        .addFields(TBL_TCD_ARTICLES, COL_TCD_ARTICLE_NR)
         .addFields(TBL_TCD_ARTICLE_SUPPLIERS,
             COL_TCD_SUPPLIER_ID, COL_TCD_COST, COL_TCD_PRICE, idName)
-        .addFields(TBL_TCD_ARTICLES, COL_TCD_BRAND)
+        .addFields(TBL_TCD_ARTICLES,
+            COL_TCD_BRAND, COL_TCD_ARTICLE_NAME, COL_TCD_ARTICLE_DESCRIPTION)
         .addFields(TBL_TCD_BRANDS, COL_TCD_BRAND_NAME)
         .addFrom(TBL_TCD_ARTICLES)
         .addFrom(TBL_TCD_BRANDS)
@@ -1170,18 +1175,22 @@ public class TecDocBean {
           remoteItems.getLong(COL_TCD_BRAND));
     }
     SqlInsert insert = new SqlInsert(tmp)
-        .addFields(COL_TCD_SEARCH_NR, COL_TCD_BRAND_NAME, COL_TCD_BRAND, COL_TCD_COST,
-            COL_TCD_PRICE, COL_TCD_SUPPLIER_ID);
+        .addFields(COL_TCD_SEARCH_NR, COL_TCD_ARTICLE_NR, COL_TCD_BRAND_NAME, COL_TCD_BRAND,
+            COL_TCD_COST, COL_TCD_PRICE, COL_TCD_SUPPLIER_ID, COL_TCD_ARTICLE_NAME,
+            COL_TCD_ARTICLE_DESCRIPTION);
     int tot = 0;
 
     for (RemoteItem info : data) {
-      if (!brands.containsKey(info.brand)) {
-        brands.put(info.brand, qs.insertData(new SqlInsert(TBL_TCD_BRANDS)
-            .addConstant(COL_TCD_BRAND_NAME, info.brand)));
-      }
-      insert.addValues(EcModuleBean.normalizeCode(info.articleNr), info.brand,
-          brands.get(info.brand), info.cost, info.price, info.supplierId);
+      String searchNr = EcUtils.normalizeCode(info.articleNr);
 
+      if (!BeeUtils.isEmpty(searchNr)) {
+        if (!brands.containsKey(info.brand)) {
+          brands.put(info.brand, qs.insertData(new SqlInsert(TBL_TCD_BRANDS)
+              .addConstant(COL_TCD_BRAND_NAME, info.brand)));
+        }
+        insert.addValues(searchNr, info.articleNr, info.brand, brands.get(info.brand), info.cost,
+            info.price, info.supplierId, BeeUtils.left(info.name, 50), info.descr);
+      }
       if (++tot % 1e4 == 0) {
         qs.insertData(insert);
         insert.resetValues();
@@ -1244,8 +1253,8 @@ public class TecDocBean {
                 COL_TCD_SUPPLIER_ID, null)))));
 
     insertData(TBL_TCD_ORPHANS, new SqlSelect()
-        .addField(tmp, COL_TCD_SEARCH_NR, COL_TCD_ARTICLE_NR)
-        .addFields(tmp, COL_TCD_BRAND, COL_TCD_SUPPLIER_ID)
+        .addFields(tmp, COL_TCD_ARTICLE_NR, COL_TCD_BRAND, COL_TCD_SUPPLIER_ID,
+            COL_TCD_ARTICLE_NAME, COL_TCD_ARTICLE_DESCRIPTION)
         .addConstant(supplier.ordinal(), COL_TCD_SUPPLIER)
         .addFrom(tmp)
         .addFromLeft(TBL_TCD_ORPHANS,

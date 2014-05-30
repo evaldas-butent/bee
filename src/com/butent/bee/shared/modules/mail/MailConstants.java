@@ -81,7 +81,6 @@ public final class MailConstants {
   public static final String COL_SUBJECT = "Subject";
   public static final String COL_CONTENT = "Content";
   public static final String COL_HTML_CONTENT = "HtmlContent";
-  public static final String COL_CONTENT_TYPE = "ContentType";
 
   public static final String COL_ACCOUNT_DESCRIPTION = "Description";
   public static final String COL_ACCOUNT_DEFAULT = "Main";

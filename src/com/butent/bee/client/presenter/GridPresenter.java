@@ -182,7 +182,7 @@ public class GridPresenter extends AbstractPresenter implements ReadyForInsertEv
       int rowCount, Filter userFilter, GridInterceptor gridInterceptor,
       Collection<UiOption> uiOptions, GridFactory.GridOptions gridOptions) {
 
-    GridContainerView view = new GridContainerImpl();
+    GridContainerView view = new GridContainerImpl(gridDescription.getName());
     view.create(gridDescription, gridView, rowCount, userFilter, gridInterceptor, uiOptions,
         gridOptions);
 
@@ -340,23 +340,23 @@ public class GridPresenter extends AbstractPresenter implements ReadyForInsertEv
     if (parentLabels != null) {
       return parentLabels;
     }
-    
+
     if (getGridView().isChild()) {
       FormView form = UiHelper.getForm(getWidget().asWidget());
-      
+
       if (form != null && !BeeUtils.isEmpty(form.getViewName()) && form.getActiveRow() != null) {
         DataInfo dataInfo = Data.getDataInfo(form.getViewName());
-        
+
         if (dataInfo != null) {
           String label = DataUtils.getRowCaption(dataInfo, form.getActiveRow());
-          
+
           if (!BeeUtils.isEmpty(label)) {
             return Lists.newArrayList(label);
           }
         }
       }
     }
-    
+
     return BeeConst.EMPTY_IMMUTABLE_STRING_LIST;
   }
 
@@ -430,11 +430,15 @@ public class GridPresenter extends AbstractPresenter implements ReadyForInsertEv
         break;
 
       case DELETE:
-        if (getMainView().isEnabled()) {
+        if (getMainView().isEnabled() && getActiveRow() != null) {
           IsRow row = getActiveRow();
 
-          if (row != null && getGridView().isRowEditable(row, getGridView())) {
-            Collection<RowInfo> selectedRows = getGridView().getSelectedRows(SelectedRows.EDITABLE);
+          if (!row.isRemovable()) {
+            getGridView().notifyWarning(Localized.getConstants().rowIsNotRemovable());
+
+          } else if (getGridView().isRowEditable(row, getGridView())) {
+            Collection<RowInfo> selectedRows =
+                getGridView().getSelectedRows(SelectedRows.REMOVABLE);
 
             GridInterceptor.DeleteMode mode = getDeleteMode(row, selectedRows);
 

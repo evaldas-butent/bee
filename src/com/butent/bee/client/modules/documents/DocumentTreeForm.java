@@ -64,6 +64,9 @@ public class DocumentTreeForm extends AbstractFormInterceptor
   private static final String DATA_KEY_ROLE = "rights-role";
   private static final String DATA_KEY_STATE = "rights-state";
 
+  private final boolean isManager = BeeKeeper.getUser()
+      .isWidgetVisible(RegulatedWidget.DOCUMENT_TREE);
+
   private TreeView treeView;
   private HasWidgets rightsWidget;
 
@@ -75,8 +78,7 @@ public class DocumentTreeForm extends AbstractFormInterceptor
 
   @Override
   public boolean beforeCreateWidget(String name, com.google.gwt.xml.client.Element description) {
-    if (BeeUtils.same(name, "Tree")
-        && !BeeKeeper.getUser().isWidgetVisible(RegulatedWidget.DOCUMENT_TREE)) {
+    if (BeeUtils.same(name, "Tree") && !isManager) {
       description.setAttribute("hideActions", "true");
     }
     return super.beforeCreateWidget(name, description);
@@ -91,8 +93,7 @@ public class DocumentTreeForm extends AbstractFormInterceptor
       treeView.addSelectionHandler(this);
 
     } else if (BeeUtils.same(name, AdministrationConstants.TBL_RIGHTS)
-        && widget instanceof HasWidgets
-        && BeeKeeper.getUser().isWidgetVisible(RegulatedWidget.DOCUMENT_TREE)) {
+        && widget instanceof HasWidgets && isManager) {
       rightsWidget = (HasWidgets) widget;
     }
   }

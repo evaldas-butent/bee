@@ -16,6 +16,8 @@ public interface LocalizableEcConstants {
 
   String ecCarProduced();
 
+  String ecCarTypeHistory();
+
   String ecCarYear();
 
   String ecCategoryMerge();
@@ -79,7 +81,7 @@ public interface LocalizableEcConstants {
   String ecGlobalSearchPlaceholder();
 
   String ecGroups();
-
+  
   String ecInvoiceAmount();
 
   String ecInvoiceDate();
@@ -95,6 +97,8 @@ public interface LocalizableEcConstants {
   String ecInvoices();
 
   String ecInvoiceTerm();
+
+  String ecItemAnalog();
 
   String ecItemAnalogs();
 
@@ -127,6 +131,8 @@ public interface LocalizableEcConstants {
   String ecItemLength();
 
   String ecItemName();
+
+  String ecItemNew();
 
   String ecItemNote();
 
@@ -163,7 +169,7 @@ public interface LocalizableEcConstants {
   String ecListPrice();
 
   String ecMailAccountNotFound();
-  
+
   String ecMailClientAddressNotFound();
 
   String ecMailFailed();
@@ -191,15 +197,15 @@ public interface LocalizableEcConstants {
   String ecOrder();
 
   String ecOrderAmount();
-  
+
   String ecOrderCommandFinish();
-  
+
   String ecOrderCommandMail();
-  
+
   String ecOrderCommandReject();
-  
+
   String ecOrderCommandSendToERP();
-  
+
   String ecOrderCommandUnsuppliedItems();
 
   String ecOrderCopyByMail();
@@ -253,7 +259,7 @@ public interface LocalizableEcConstants {
   String ecRegister();
 
   String ecRegistrationCommandCreate();
-  
+
   String ecRegistrationFormCaption();
 
   String ecRegistrationNew();
@@ -323,4 +329,6 @@ public interface LocalizableEcConstants {
   String ecUnsuppliedItemsRemove();
 
   String ecUpdateCosts();
+  
+  String tcdTypes();
 }

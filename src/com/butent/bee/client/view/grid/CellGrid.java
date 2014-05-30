@@ -68,6 +68,7 @@ import com.butent.bee.shared.css.CssUnit;
 import com.butent.bee.shared.css.values.TextAlign;
 import com.butent.bee.shared.css.values.WhiteSpace;
 import com.butent.bee.shared.data.CellSource;
+import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.IsRow;
 import com.butent.bee.shared.data.event.CellUpdateEvent;
 import com.butent.bee.shared.data.event.MultiDeleteEvent;
@@ -113,7 +114,6 @@ public class CellGrid extends Widget implements IdentifiableWidget, HasDataTable
     @Template("<div data-row=\"{0}\" data-col=\"{1}\" class=\"{2}\" style=\"{3}\" tabindex=\"{4}\">{5}</div>")
     SafeHtml cellFocusable(String rowIdx, int colIdx, String classes, SafeStyles styles,
         int tabIndex, SafeHtml contents);
-
     // CHECKSTYLE:ON
 
     @Template("<div class=\"{0}\">{1}</div>")
@@ -1877,7 +1877,7 @@ public class CellGrid extends Widget implements IdentifiableWidget, HasDataTable
         continue;
       }
 
-      IsRow rowValue = getDataItem(row).copy();
+      IsRow rowValue = DataUtils.cloneRow(getDataItem(row));
       getColumnInfo(col).getSource().set(rowValue, value);
 
       AbstractColumn<?> column = getColumn(col);
@@ -3406,10 +3406,14 @@ public class CellGrid extends Widget implements IdentifiableWidget, HasDataTable
   }
 
   private boolean isRowEditable(IsRow rowValue) {
-    if (getRowEditable() == null) {
-      return (rowValue != null) && rowValue.isEditable();
-    } else {
+    if (rowValue == null) {
+      return false;
+    } else if (!rowValue.isEditable()) {
+      return false;
+    } else if (getRowEditable() != null) {
       return getRowEditable().apply(rowValue);
+    } else {
+      return true;
     }
   }
 
