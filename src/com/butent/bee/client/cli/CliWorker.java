@@ -3,6 +3,7 @@ package com.butent.bee.client.cli;
 import com.google.common.base.Splitter;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
+import com.google.common.collect.Range;
 import com.google.common.collect.Sets;
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.core.client.JavaScriptObject;
@@ -2749,17 +2750,26 @@ public final class CliWorker {
         context.add(s);
       }
     }
+    
+    Range<Character> range = null;
 
     List<Property> styles = PropertyUtils.createProperties(
         CssProperties.DISPLAY, Display.INLINE_BLOCK.getCssName(),
         CssProperties.PADDING, CssUnit.format(5, CssUnit.PX));
 
     if (!BeeUtils.isEmpty(args)) {
+      if (args.startsWith("4.1")) {
+        range = Range.closed(FontAwesome.SPACE_SHUTTLE.getCode(), FontAwesome.BOMB.getCode());
+      }
       styles.addAll(StyleUtils.parseStyles(args));
     }
 
     int count = 0;
     for (FontAwesome fa : FontAwesome.values()) {
+      if (range != null && !range.contains(fa.getCode())) {
+        continue;
+      }
+
       if (!context.isEmpty()) {
         boolean ok = false;
         for (String s : context) {

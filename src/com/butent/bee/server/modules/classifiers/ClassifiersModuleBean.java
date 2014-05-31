@@ -125,7 +125,7 @@ public class ClassifiersModuleBean implements BeeModule {
 
     if (BeeUtils.same(svc, SVC_COMPANY_INFO)) {
       response = getCompanyInfo(BeeUtils.toLongOrNull(reqInfo.getParameter(COL_COMPANY)),
-          reqInfo.getParameter("locale"));
+          reqInfo.getParameter(VAR_LOCALE));
 
     } else if (BeeUtils.same(svc, SVC_CREATE_COMPANY)) {
       response = createCompany(reqInfo);

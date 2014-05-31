@@ -152,7 +152,7 @@ public class AsyncProvider extends Provider {
     @Override
     public void run() {
       int rpcId = Queries.getRowSet(getViewName(), null, queryFilter, queryOrder,
-          queryOffset, queryLimit, caching, callback);
+          queryOffset, queryLimit, caching, getQueryOptions(), callback);
 
       if (!Queries.isResponseFromCache(rpcId)) {
         callback.setStartTime(System.currentTimeMillis());
@@ -297,7 +297,8 @@ public class AsyncProvider extends Provider {
           setLastRepeatTime(now);
 
           if (step == getRepeatStep()) {
-            if (!isPrefetchPending() && duration <= AsyncProvider.maxRepeatMillis) {
+            if (!isPrefetchPending() && duration <= AsyncProvider.maxRepeatMillis
+                && getRightsStates().isEmpty()) {
               prefetch(step, (int) duration);
             }
           } else {

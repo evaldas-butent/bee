@@ -50,6 +50,7 @@ import com.butent.bee.client.view.edit.SaveChangesEvent;
 import com.butent.bee.client.view.form.FormView;
 import com.butent.bee.client.view.form.interceptor.AbstractFormInterceptor;
 import com.butent.bee.client.view.form.interceptor.FormInterceptor;
+import com.butent.bee.client.view.grid.GridView;
 import com.butent.bee.client.view.grid.interceptor.AbstractGridInterceptor;
 import com.butent.bee.client.view.grid.interceptor.GridInterceptor;
 import com.butent.bee.client.widget.Label;
@@ -360,6 +361,11 @@ public class DocumentDataForm extends AbstractFormInterceptor
     public boolean ensureRelId(final IdCallback callback) {
       ensureDataId(null, callback);
       return true;
+    }
+    
+    @Override
+    public GridInterceptor getInstance() {
+      return null;
     }
   };
 
@@ -777,7 +783,10 @@ public class DocumentDataForm extends AbstractFormInterceptor
             @Override
             public void onSuccess(BeeRow result) {
               super.onSuccess(result);
-              getGridView().getGrid().refresh();
+              GridView gridView = getGridView();
+              if (gridView != null) {
+                gridView.getGrid().refresh();
+              }
             }
           });
         }

@@ -1275,6 +1275,10 @@ public final class BeeUtils {
     return (x == null) ? false : x < 0;
   }
   
+  public static boolean isNegativeInt(String s) {
+    return isInt(s) && toInt(s) < 0;
+  }
+  
   public static boolean isNonNegative(Double d) {
     if (isDouble(d)) {
       return Double.compare(d, BeeConst.DOUBLE_ZERO) >= 0;

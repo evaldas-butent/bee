@@ -2,18 +2,12 @@ package com.butent.bee.client;
 
 import com.google.common.base.CharMatcher;
 import com.google.common.base.Function;
-import com.google.common.base.Objects;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Range;
-import com.google.common.collect.Sets;
 import com.google.gwt.dom.client.Element;
-import com.google.gwt.dom.client.Style.Cursor;
 import com.google.gwt.dom.client.StyleInjector;
 import com.google.gwt.dom.client.TableCellElement;
-import com.google.gwt.event.dom.client.ClickEvent;
-import com.google.gwt.event.dom.client.ClickHandler;
-import com.google.gwt.user.client.ui.FlowPanel;
 import com.google.gwt.user.client.ui.IsWidget;
 import com.google.gwt.user.client.ui.Widget;
 
@@ -39,16 +33,11 @@ import com.butent.bee.client.output.ReportSettings;
 import com.butent.bee.client.screen.Favorites;
 import com.butent.bee.client.style.StyleUtils;
 import com.butent.bee.client.ui.IdentifiableWidget;
-import com.butent.bee.client.ui.UiHelper;
 import com.butent.bee.client.ui.WidgetInitializer;
 import com.butent.bee.client.view.edit.Editor;
 import com.butent.bee.client.view.search.Filters;
-import com.butent.bee.client.widget.FaLabel;
-import com.butent.bee.client.widget.InputText;
-import com.butent.bee.client.widget.Label;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
-import com.butent.bee.shared.BiConsumer;
 import com.butent.bee.shared.Consumer;
 import com.butent.bee.shared.communication.ResponseObject;
 import com.butent.bee.shared.css.CssProperties;
@@ -62,7 +51,6 @@ import com.butent.bee.shared.data.IsRow;
 import com.butent.bee.shared.data.IsTable;
 import com.butent.bee.shared.data.cache.CacheManager;
 import com.butent.bee.shared.data.value.ValueType;
-import com.butent.bee.shared.font.FontAwesome;
 import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogUtils;
@@ -275,224 +263,16 @@ public final class Global {
     return users;
   }
 
-  public static void inputCollection(String caption, String valueCaption, final boolean unique,
-      Collection<String> defaultCollection, final Consumer<Collection<String>> consumer,
-      final Function<String, Editor> editorSupplier) {
-
-    Assert.notNull(consumer);
-
-    final HtmlTable table = new HtmlTable();
-    final Consumer<String> rowCreator = new Consumer<String>() {
-      @Override
-      public void accept(String value) {
-        Editor input = null;
-
-        if (editorSupplier != null) {
-          input = editorSupplier.apply(value);
-        }
-        if (input == null) {
-          input = new InputText();
-
-          if (!BeeUtils.isEmpty(value)) {
-            input.setValue(value);
-          }
-        }
-        int row = table.getRowCount();
-        table.setWidget(row, 0, input.asWidget());
-
-        final FaLabel delete = new FaLabel(FontAwesome.TRASH_O);
-        delete.setTitle(Localized.getConstants().delete());
-        delete.getElement().getStyle().setCursor(Cursor.POINTER);
-
-        delete.addClickHandler(new ClickHandler() {
-          @Override
-          public void onClick(ClickEvent event) {
-            for (int i = 0; i < table.getRowCount(); i++) {
-              if (Objects.equal(delete, table.getWidget(i, 1))) {
-                table.removeRow(i);
-                break;
-              }
-            }
-          }
-        });
-        table.setWidget(row, 1, delete);
-      }
-    };
-    if (!BeeUtils.isEmpty(defaultCollection)) {
-      for (String value : defaultCollection) {
-        rowCreator.accept(value);
-      }
-    }
-    FlowPanel widget = new FlowPanel();
-    Label cap = new Label(valueCaption);
-    StyleUtils.setTextAlign(cap.getElement(), TextAlign.CENTER);
-    widget.add(cap);
-
-    widget.add(table);
-
-    FaLabel add = new FaLabel(FontAwesome.PLUS);
-    add.setTitle(Localized.getConstants().actionAdd());
-    add.getElement().getStyle().setCursor(Cursor.POINTER);
-    StyleUtils.setTextAlign(add.getElement(), TextAlign.CENTER);
-
-    add.addClickHandler(new ClickHandler() {
-      @Override
-      public void onClick(ClickEvent event) {
-        rowCreator.accept(null);
-        UiHelper.focus(table.getWidget(table.getRowCount() - 1, 0));
-      }
-    });
-    widget.add(add);
-
-    inputWidget(caption, widget, new InputCallback() {
-      @Override
-      public String getErrorMessage() {
-        String error = super.getErrorMessage();
-
-        if (BeeUtils.isEmpty(error)) {
-          Set<String> values = Sets.newHashSet();
-
-          for (int i = 0; i < table.getRowCount(); i++) {
-            Editor input = (Editor) table.getWidget(i, 0);
-            String value = input.getNormalizedValue();
-
-            if (BeeUtils.isEmpty(value)) {
-              error = Localized.getConstants().valueRequired();
-            } else if (unique && values.contains(BeeUtils.normalize(value))) {
-              error = Localized.getMessages().valueExists(value);
-            } else {
-              values.add(BeeUtils.normalize(value));
-              continue;
-            }
-            UiHelper.focus(input.asWidget());
-            break;
-          }
-        }
-        return error;
-      }
-
-      @Override
-      public void onSuccess() {
-        Collection<String> result;
-
-        if (unique) {
-          result = Sets.newLinkedHashSet();
-        } else {
-          result = Lists.newArrayList();
-        }
-        for (int i = 0; i < table.getRowCount(); i++) {
-          result.add(((Editor) table.getWidget(i, 0)).getNormalizedValue());
-        }
-        consumer.accept(result);
-      }
-    });
+  public static void inputCollection(String caption, String valueCaption, boolean unique,
+      Collection<String> defaultCollection, Consumer<Collection<String>> consumer,
+      Function<String, Editor> editorSupplier) {
+    inpBoxen.inputCollection(caption, valueCaption, unique, defaultCollection, consumer,
+        editorSupplier);
   }
 
-  public static void inputMap(String caption, final String keyCaption, final String valueCaption,
-      Map<String, String> map, final Consumer<Map<String, String>> consumer) {
-
-    final HtmlTable table = new HtmlTable();
-    final BiConsumer<String, String> rowCreator = new BiConsumer<String, String>() {
-      @Override
-      public void accept(String key, String value) {
-        int row = table.getRowCount();
-        InputText input = new InputText();
-        table.setWidget(row, 0, input);
-
-        if (!BeeUtils.isEmpty(key)) {
-          input.setValue(key);
-        }
-        input = new InputText();
-        table.setWidget(row, 1, input);
-
-        if (!BeeUtils.isEmpty(value)) {
-          input.setValue(value);
-        }
-        final FaLabel delete = new FaLabel(FontAwesome.TRASH_O);
-        delete.setTitle(Localized.getConstants().delete());
-        delete.getElement().getStyle().setCursor(Cursor.POINTER);
-
-        delete.addClickHandler(new ClickHandler() {
-          @Override
-          public void onClick(ClickEvent event) {
-            for (int i = 1; i < table.getRowCount(); i++) {
-              if (Objects.equal(delete, table.getWidget(i, 2))) {
-                table.removeRow(i);
-                break;
-              }
-            }
-          }
-        });
-        table.setWidget(row, 2, delete);
-      }
-    };
-    Label cap = new Label(keyCaption);
-    StyleUtils.setMinWidth(cap, 100);
-    StyleUtils.setTextAlign(cap.getElement(), TextAlign.CENTER);
-    table.setWidget(0, 0, cap);
-
-    cap = new Label(valueCaption);
-    StyleUtils.setMinWidth(cap, 100);
-    StyleUtils.setTextAlign(cap.getElement(), TextAlign.CENTER);
-    table.setWidget(0, 1, cap);
-
-    for (String key : map.keySet()) {
-      rowCreator.accept(key, map.get(key));
-    }
-    FlowPanel widget = new FlowPanel();
-    widget.add(table);
-
-    FaLabel add = new FaLabel(FontAwesome.PLUS);
-    add.setTitle(Localized.getConstants().actionAdd());
-    add.getElement().getStyle().setCursor(Cursor.POINTER);
-    StyleUtils.setTextAlign(add.getElement(), TextAlign.CENTER);
-
-    add.addClickHandler(new ClickHandler() {
-      @Override
-      public void onClick(ClickEvent event) {
-        rowCreator.accept(null, null);
-        UiHelper.focus(table.getWidget(table.getRowCount() - 1, 0));
-      }
-    });
-    widget.add(add);
-
-    inputWidget(caption, widget, new InputCallback() {
-      @Override
-      public String getErrorMessage() {
-        String error = super.getErrorMessage();
-
-        if (BeeUtils.isEmpty(error)) {
-          Set<String> values = Sets.newHashSet();
-
-          for (int i = 1; i < table.getRowCount(); i++) {
-            InputText input = (InputText) table.getWidget(i, 0);
-
-            if (BeeUtils.isEmpty(input.getValue())) {
-              error = Localized.getConstants().valueRequired();
-            } else if (values.contains(BeeUtils.normalize(input.getValue()))) {
-              error = Localized.getMessages().valueExists(input.getValue());
-            } else {
-              values.add(BeeUtils.normalize(input.getValue()));
-              continue;
-            }
-            UiHelper.focus(input);
-            break;
-          }
-        }
-        return error;
-      }
-
-      @Override
-      public void onSuccess() {
-        Map<String, String> result = Maps.newLinkedHashMap();
-
-        for (int i = 1; i < table.getRowCount(); i++) {
-          result.put(((InputText) table.getWidget(i, 0)).getValue(),
-              ((InputText) table.getWidget(i, 1)).getValue());
-        }
-        consumer.accept(result);
-      }
-    });
+  public static void inputMap(String caption, String keyCaption, String valueCaption,
+      Map<String, String> map, Consumer<Map<String, String>> consumer) {
+    inpBoxen.inputMap(caption, keyCaption, valueCaption, map, consumer);
   }
 
   public static void inputString(String caption, String prompt, StringCallback callback) {

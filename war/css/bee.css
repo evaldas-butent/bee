@@ -1,6 +1,6 @@
 @font-face {
   font-family: FontAwesome;
-  src: url(../fonts/fontawesome-webfont.woff?v=4.0.3);
+  src: url(../fonts/fontawesome-webfont.woff?v=4.1.0);
   font-weight: normal;
   font-style: normal;
 }
@@ -449,6 +449,18 @@
   overflow-y: hidden;
 }
 
+.bee-Header-container .bee-auto-fit {
+  font-size: 16px;
+  color: #999;
+  padding-left: 3px;
+  align-self: flex-end;
+  -webkit-align-self: flex-end;
+  -ms-flex-item-align: end;
+}
+.bee-Header-container .bee-auto-fit:hover {
+  color: black;
+}
+
 .bee-Header-caption {
   font-size: 14px;
   font-weight: bold;
@@ -462,7 +474,6 @@
   margin-left: auto;
   margin-right: 1ex;
   border-collapse: collapse;
-  margin-top: 2px
 }
 .bee-Header-commandPanel .bee-Button {
   padding: 2px 6px;
@@ -486,10 +497,18 @@
   cursor: pointer;
 }
 
+.bee-CellGrid .bee-fa-label {
+  font-family: FontAwesome;
+}
+
+.bee-CellGridBody.bee-fa-label {
+  font-size: 20px;
+}
+
 .bee-Header-commandPanel .bee-fa-label {
   margin-left: 4px;
   margin-right: 4px;
-  font-size: 18px;
+  font-size: 19px;
   color: #888;
 }
 
@@ -505,7 +524,7 @@
   margin-right: 10px;
 }
 .bee-Header-control.bee-fa-label {
-  font-size: 18px;
+  font-size: 19px;
   color: #888;
 }
 .bee-Header-control.bee-fa-label:hover {
@@ -1641,7 +1660,6 @@
 
 .bee-Appliance-icon {
   position: absolute;
-  top: 4px;
   left: 15px;
 }
 .bee-Appliance-label {
@@ -1691,6 +1709,14 @@
 }
 .bee-GridContainer-scrollable > .bee-GridView > .bee-CellGrid {
   overflow-y: hidden;
+}
+
+.bee-GridContainer-no-data .bee-auto-fit {
+  visibility: hidden;
+}
+.bee-GridContainer-no-data .bee-Header-control.bee-Action-delete,
+.bee-GridContainer-no-data .bee-Header-control.bee-Action-menu {
+  display: none;
 }
 
 .bee-StarPicker {
@@ -3111,4 +3137,35 @@
 }
 .bee-info-table tr:hover {
   background-color: #e1e1e1;
+}
+
+@media print {
+  .bee-auto-fit,
+  .bee-Header-commandPanel,
+  .bee-Header-control {
+    display: none;
+  }
+} 
+
+.bee-GridMenu-popup {
+  background-color: white;
+  border: 1px solid rgba(0, 0, 0, 0.2);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+.bee-GridMenu-table {
+  border-collapse: collapse;
+}
+.bee-GridMenu-table tr:hover {
+  background-color: #f2f2f2;
+  cursor: pointer;
+}
+.bee-GridMenu-table td {
+  padding: 4px 10px;
+}
+.bee-GridMenu-popup .bee-fa-label {
+  font-size: 18px;
+  color: #888;
+}
+.bee-GridMenu-table tr:hover .bee-fa-label {
+  color: black;
 }

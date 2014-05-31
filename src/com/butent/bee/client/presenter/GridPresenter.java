@@ -38,6 +38,7 @@ import com.butent.bee.client.view.edit.SaveChangesEvent;
 import com.butent.bee.client.view.form.FormView;
 import com.butent.bee.client.view.grid.CellGrid;
 import com.butent.bee.client.view.grid.GridFilterManager;
+import com.butent.bee.client.view.grid.GridMenu;
 import com.butent.bee.client.view.grid.GridSettings;
 import com.butent.bee.client.view.grid.GridView;
 import com.butent.bee.client.view.grid.GridView.SelectedRows;
@@ -73,12 +74,14 @@ import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogUtils;
 import com.butent.bee.shared.modules.administration.AdministrationConstants;
+import com.butent.bee.shared.modules.administration.AdministrationConstants.RightsState;
 import com.butent.bee.shared.ui.Action;
 import com.butent.bee.shared.ui.GridDescription;
 import com.butent.bee.shared.utils.ArrayUtils;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.NameUtils;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
@@ -182,7 +185,7 @@ public class GridPresenter extends AbstractPresenter implements ReadyForInsertEv
       int rowCount, Filter userFilter, GridInterceptor gridInterceptor,
       Collection<UiOption> uiOptions, GridFactory.GridOptions gridOptions) {
 
-    GridContainerView view = new GridContainerImpl();
+    GridContainerView view = new GridContainerImpl(gridDescription.getName());
     view.create(gridDescription, gridView, rowCount, userFilter, gridInterceptor, uiOptions,
         gridOptions);
 
@@ -194,6 +197,10 @@ public class GridPresenter extends AbstractPresenter implements ReadyForInsertEv
 
   private final GridFilterManager filterManager;
 
+  private final GridMenu menu;
+
+  private final List<String> favorite = new ArrayList<>();
+  
   private List<String> parentLabels;
 
   public GridPresenter(GridDescription gridDescription, GridView gridView, int rowCount,
@@ -228,6 +235,12 @@ public class GridPresenter extends AbstractPresenter implements ReadyForInsertEv
       }
     } else {
       this.filterManager = null;
+    }
+    
+    this.menu = new GridMenu(gridDescription, uiOptions);
+    
+    if (!BeeUtils.isEmpty(gridDescription.getFavorite())) {
+      favorite.addAll(NameUtils.toList(gridDescription.getFavorite()));
     }
 
     bind();
@@ -360,6 +373,10 @@ public class GridPresenter extends AbstractPresenter implements ReadyForInsertEv
     return BeeConst.EMPTY_IMMUTABLE_STRING_LIST;
   }
 
+  public Set<RightsState> getRightsStates() {
+    return getDataProvider().getRightsStates();
+  }
+  
   @Override
   public String getViewName() {
     return getDataProvider().getViewName();
@@ -369,7 +386,7 @@ public class GridPresenter extends AbstractPresenter implements ReadyForInsertEv
   public IdentifiableWidget getWidget() {
     return getMainView();
   }
-
+  
   @Override
   public void handleAction(Action action) {
     Assert.notNull(action);
@@ -409,8 +426,7 @@ public class GridPresenter extends AbstractPresenter implements ReadyForInsertEv
         break;
 
       case BOOKMARK:
-        Global.getFavorites().bookmark(getViewName(), getActiveRow(), getDataColumns(),
-            gridContainer.getFavorite());
+        Global.getFavorites().bookmark(getViewName(), getActiveRow(), getDataColumns(), favorite);
         break;
 
       case CANCEL:
@@ -462,6 +478,10 @@ public class GridPresenter extends AbstractPresenter implements ReadyForInsertEv
           filterManager.handleFilter(getDataProvider().getQueryFilter(null), getHeaderElement());
         }
         break;
+        
+      case MENU:
+        menu.open(this);
+        break;
 
       case PRINT:
         if (getGridView().getGrid().getRowCount() > 0) {
@@ -486,6 +506,21 @@ public class GridPresenter extends AbstractPresenter implements ReadyForInsertEv
 
     if (getGridInterceptor() != null) {
       getGridInterceptor().afterAction(action, this);
+    }
+  }
+
+  public void handleRights(RightsState rightsState) {
+    Assert.notNull(rightsState);
+
+    if (getGridInterceptor() != null && !getGridInterceptor().beforeAction(Action.RIGHTS, this)) {
+      return;
+    }
+    
+    getDataProvider().toggleRightsState(rightsState);
+    refresh(true);
+    
+    if (getGridInterceptor() != null) {
+      getGridInterceptor().afterAction(Action.RIGHTS, this);
     }
   }
 

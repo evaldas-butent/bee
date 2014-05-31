@@ -8,6 +8,8 @@ public interface LocalizableServiceConstants {
 
   String svcDefect();
   
+  String svcDefectPrintItemLabel();
+
   String svcModule();
 
   String svcNewDefect();

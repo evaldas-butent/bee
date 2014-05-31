@@ -7,6 +7,6 @@
   <g:columns>
     <IdColumn name="Id" />
     <DataColumn name="Email" source="Email" caption="=email" visible="true" />
-    <DataColumn name="Label" source="Label" caption="=caption" />
+    <DataColumn name="Label" source="Label" caption="=name" />
 	</g:columns>
 </g:Grid>

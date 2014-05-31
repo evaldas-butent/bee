@@ -18,6 +18,7 @@ import com.butent.bee.server.DataSourceBean;
 import com.butent.bee.server.InitializationBean;
 import com.butent.bee.server.data.BeeTable.BeeField;
 import com.butent.bee.server.data.BeeTable.BeeRelation;
+import com.butent.bee.server.data.BeeTable;
 import com.butent.bee.server.data.BeeView;
 import com.butent.bee.server.data.DataEditorBean;
 import com.butent.bee.server.data.IdGeneratorBean;
@@ -32,6 +33,7 @@ import com.butent.bee.server.modules.ModuleHolderBean;
 import com.butent.bee.server.modules.ec.TecDocBean;
 import com.butent.bee.server.modules.mail.MailModuleBean;
 import com.butent.bee.server.news.NewsBean;
+import com.butent.bee.server.sql.IsExpression;
 import com.butent.bee.server.sql.SqlDelete;
 import com.butent.bee.server.sql.SqlInsert;
 import com.butent.bee.server.sql.SqlSelect;
@@ -47,6 +49,7 @@ import com.butent.bee.shared.Resource;
 import com.butent.bee.shared.Service;
 import com.butent.bee.shared.communication.ResponseObject;
 import com.butent.bee.shared.data.BeeColumn;
+import com.butent.bee.shared.data.BeeRow;
 import com.butent.bee.shared.data.BeeRowSet;
 import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.RowChildren;
@@ -78,6 +81,7 @@ import com.butent.bee.shared.utils.ExtendedProperty;
 import com.butent.bee.shared.utils.NameUtils;
 import com.butent.bee.shared.utils.Property;
 import com.butent.bee.shared.utils.PropertyUtils;
+import com.butent.bee.shared.utils.Wildcards;
 import com.butent.bee.shared.utils.XmlHelper;
 
 import org.w3c.dom.Document;
@@ -90,8 +94,12 @@ import java.io.FileInputStream;
 import java.io.InputStreamReader;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
+import java.util.TreeMap;
 
 import javax.ejb.EJB;
 import javax.ejb.LocalBean;
@@ -241,6 +249,9 @@ public class UiServiceBean {
           BeeUtils.toLongOrNull(reqInfo.getParameter(COL_ROLE)),
           Codec.deserializeMap(reqInfo.getParameter(COL_OBJECT)));
 
+    } else if (BeeUtils.same(svc, Service.SET_ROW_RIGHTS)) {
+      response = setRowRights(reqInfo);
+      
     } else if (BeeUtils.same(svc, Service.IMPORT_CSV_COMPANIES)) {
       response = importCSVCompanies(reqInfo);
     } else {
@@ -722,6 +733,8 @@ public class UiServiceBean {
     String getSize = reqInfo.getParameter(Service.VAR_VIEW_SIZE);
     String rowId = reqInfo.getParameter(Service.VAR_VIEW_ROW_ID);
 
+    String rights = reqInfo.getParameter(Service.VAR_RIGHTS);
+
     Filter filter = null;
     if (!BeeUtils.isEmpty(rowId)) {
       filter = Filter.compareId(BeeUtils.toLong(rowId));
@@ -745,6 +758,11 @@ public class UiServiceBean {
       res.setTableProperty(Service.VAR_VIEW_SIZE,
           BeeUtils.toString(Math.max(cnt, res.getNumberOfRows())));
     }
+
+    if (!BeeUtils.isEmpty(rights) && !DataUtils.isEmpty(res)) {
+      getViewRights(res, rights, false, false);
+    }
+
     return ResponseObject.response(res);
   }
 
@@ -764,6 +782,83 @@ public class UiServiceBean {
       }
     }
     return ResponseObject.collection(info, ExtendedProperty.class);
+  }
+
+  private void getViewRights(BeeRowSet rowSet, String queryStates,
+      boolean addRoles, boolean addStates) {
+
+    BeeView view = sys.getView(rowSet.getViewName());
+    String tableName = view.getSourceName();
+    String idName = view.getSourceIdName();
+
+    BeeTable table = sys.getTable(tableName);
+
+    Set<RightsState> filterStates = table.getStates();
+    if (!BeeUtils.isEmpty(queryStates) && !Wildcards.isDefaultAny(queryStates)) {
+      filterStates.retainAll(EnumUtils.parseIndexSet(RightsState.class, queryStates));
+    }
+
+    if (filterStates.isEmpty()) {
+      logger.warning(tableName, queryStates, "states not defined");
+      return;
+    }
+
+    Map<RightsState, String> states = new LinkedHashMap<>();
+
+    Map<String, Long> roles = new TreeMap<>();
+    roles.put(BeeConst.STRING_EMPTY, 0L);
+    for (Long role : usr.getRoles()) {
+      roles.put(usr.getRoleName(role), role);
+    }
+
+    SqlSelect query = new SqlSelect()
+        .addFields(tableName, idName)
+        .addFrom(tableName)
+        .setWhere(SqlUtils.inList(tableName, idName, rowSet.getRowIds()));
+
+    boolean stateExists = false;
+
+    for (RightsState state : filterStates) {
+      states.put(state, table.joinState(query, tableName, state));
+
+      if (!BeeUtils.isEmpty(states.get(state))) {
+        for (Long role : roles.values()) {
+          IsExpression xpr = SqlUtils.sqlIf(table.checkState(states.get(state), state, role),
+              true, false);
+          query.addExpr(xpr, state.name() + role);
+        }
+
+        stateExists = true;
+      }
+    }
+
+    SimpleRowSet rs = stateExists ? qs.getData(query) : null;
+    boolean value;
+
+    for (BeeRow row : rowSet) {
+      String rowKey = BeeUtils.toString(row.getId());
+
+      for (RightsState state : states.keySet()) {
+        for (Long role : roles.values()) {
+          if (!BeeUtils.isEmpty(states.get(state))) {
+            value = BeeUtils.toBoolean(rs.getValueByKey(idName, rowKey, state.name() + role));
+          } else {
+            value = state.isChecked();
+          }
+          
+          String name = BeeUtils.join(BeeConst.STRING_UNDER, "Rights", BeeUtils.proper(state),
+              role);
+          row.setProperty(name, Codec.pack(value));
+        }
+      }
+    }
+
+    if (addRoles) {
+      rowSet.setTableProperty(TBL_ROLES, Codec.beeSerialize(roles));
+    }
+    if (addStates) {
+      rowSet.setTableProperty(TBL_RIGHTS, Codec.beeSerialize(states.keySet()));
+    }
   }
 
   private ResponseObject getViewSize(RequestInfo reqInfo) {
@@ -1075,6 +1170,42 @@ public class UiServiceBean {
       response.addError("Rebuild what?");
     }
     return response;
+  }
+  
+  private ResponseObject setRowRights(RequestInfo reqInfo) {
+    String viewName = reqInfo.getParameter(Service.VAR_VIEW_NAME);
+    if (BeeUtils.isEmpty(viewName)) {
+      return ResponseObject.parameterNotFound(reqInfo.getService(), Service.VAR_VIEW_NAME);
+    }
+    
+    if (!sys.isView(viewName)) {
+      return ResponseObject.error(reqInfo.getService(), viewName, "not a view");
+    }
+    
+    Long id = BeeUtils.toLongOrNull(reqInfo.getParameter(Service.VAR_ID));
+    if (!DataUtils.isId(id)) {
+      return ResponseObject.parameterNotFound(reqInfo.getService(), Service.VAR_ID);
+    }
+    
+    Long role = BeeUtils.toLongOrNull(reqInfo.getParameter(COL_ROLE));
+    if (!DataUtils.isId(role) && !Objects.equals(role, 0L)) {
+      return ResponseObject.parameterNotFound(reqInfo.getService(), COL_ROLE);
+    }
+    
+    RightsState state = EnumUtils.getEnumByIndex(RightsState.class,
+        reqInfo.getParameter(COL_STATE));
+    if (state == null) {
+      return ResponseObject.parameterNotFound(reqInfo.getService(), COL_STATE);
+    }
+
+    boolean value = Codec.unpack(reqInfo.getParameter(Service.VAR_VALUE));
+    
+    BeeView view = sys.getView(viewName);
+    String tblName = view.getSourceName();
+    
+    deb.setState(tblName, state, id, role, value);
+    
+    return ResponseObject.emptyResponse();
   }
 
   private ResponseObject switchDsn(String dsn) {

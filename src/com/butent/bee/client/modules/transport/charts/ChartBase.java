@@ -308,7 +308,7 @@ public abstract class ChartBase extends TimeBoard {
 
   @Override
   protected Set<Action> getEnabledActions() {
-    return EnumSet.of(Action.FILTER, Action.REFRESH, Action.ADD, Action.CONFIGURE);
+    return EnumSet.of(Action.FILTER, Action.REFRESH, Action.ADD, Action.CONFIGURE, Action.PRINT);
   }
 
   protected List<ChartData> getFilterData() {

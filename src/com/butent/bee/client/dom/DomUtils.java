@@ -1235,7 +1235,7 @@ public final class DomUtils {
     doc.getBody().appendChild(script);
   }
 
-  public static void injectExternalStyle(String css) {
+  public static void injectStyleSheet(String css) {
     Assert.notEmpty(css);
     HeadElement head = getHead();
     Assert.notNull(head, "<head> element not found");
@@ -1648,6 +1648,18 @@ public final class DomUtils {
   public static void scrollToBottom(UIObject obj) {
     Assert.notNull(obj);
     scrollToBottom(obj.getElement());
+  }
+
+  public static void scrollToTop(Element elem) {
+    Assert.notNull(elem);
+    if (elem.getScrollTop() > 0) {
+      elem.setScrollTop(0);
+    }
+  }
+  
+  public static void scrollToTop(UIObject obj) {
+    Assert.notNull(obj);
+    scrollToTop(obj.getElement());
   }
 
   public static void setAttribute(UIObject obj, String name, int value) {

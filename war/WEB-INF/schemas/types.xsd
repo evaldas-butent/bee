@@ -440,6 +440,7 @@
       <xs:enumeration value="UserGroupMembers" />
       <xs:enumeration value="UserGroups" />
       <xs:enumeration value="UserGroupSettings" />
+      <xs:enumeration value="UserHistory" />
       <xs:enumeration value="UserParameters" />
       <xs:enumeration value="UserRoles" />
       <xs:enumeration value="Users" />

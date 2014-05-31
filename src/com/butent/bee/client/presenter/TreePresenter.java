@@ -183,6 +183,9 @@ public class TreePresenter extends AbstractPresenter implements CatchEvent.Catch
         }
         break;
 
+      case BOOKMARK:
+        createBookmark();
+        break;
       case DELETE:
         if (getView().isEnabled()) {
           removeItem();
@@ -261,6 +264,12 @@ public class TreePresenter extends AbstractPresenter implements CatchEvent.Catch
       ok = false;
     }
     return ok;
+  }
+
+  private void createBookmark() {
+    IsRow activeRow = getView().getSelectedItem();
+    Global.getFavorites().bookmark(getViewName(), activeRow, getDataColumns(),
+        treeView.getFavorite(), BeeConst.STRING_GT);
   }
 
   private void edit(final IsRow item) {

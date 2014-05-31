@@ -4,6 +4,7 @@ import com.google.common.eventbus.Subscribe;
 
 import static com.butent.bee.shared.modules.administration.AdministrationConstants.*;
 import static com.butent.bee.shared.modules.classifiers.ClassifierConstants.*;
+import static com.butent.bee.shared.modules.documents.DocumentConstants.*;
 import static com.butent.bee.shared.modules.service.ServiceConstants.*;
 import static com.butent.bee.shared.modules.tasks.TaskConstants.*;
 import static com.butent.bee.shared.modules.trade.TradeConstants.*;
@@ -42,7 +43,9 @@ import com.butent.bee.shared.rights.Module;
 import com.butent.bee.shared.utils.BeeUtils;
 
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 import javax.ejb.EJB;
@@ -76,6 +79,9 @@ public class ServiceModuleBean implements BeeModule {
 
     } else if (BeeUtils.same(svc, SVC_GET_CALENDAR_DATA)) {
       response = getCalendarData(reqInfo);
+
+    } else if (BeeUtils.same(svc, SVC_COPY_DOCUMENT_CRITERIA)) {
+      response = copyDocumentCriteria(reqInfo);
 
     } else {
       String msg = BeeUtils.joinWords("service not recognized:", svc);
@@ -142,6 +148,88 @@ public class ServiceModuleBean implements BeeModule {
         }
       }
     });
+  }
+
+  private ResponseObject copyDocumentCriteria(RequestInfo reqInfo) {
+    Long dataId = BeeUtils.toLongOrNull(reqInfo.getParameter(COL_DOCUMENT_DATA));
+    if (!DataUtils.isId(dataId)) {
+      return ResponseObject.parameterNotFound(reqInfo.getService(), COL_DOCUMENT_DATA);
+    }
+
+    Long objId = BeeUtils.toLongOrNull(reqInfo.getParameter(COL_SERVICE_OBJECT));
+    if (!DataUtils.isId(objId)) {
+      return ResponseObject.parameterNotFound(reqInfo.getService(), COL_SERVICE_OBJECT);
+    }
+
+    if (qs.sqlExists(TBL_SERVICE_CRITERIA_GROUPS, COL_SERVICE_OBJECT, objId)) {
+      return ResponseObject.emptyResponse();
+    }
+
+    String aliasGroupOrdinal = COL_CRITERIA_GROUP + COL_CRITERIA_ORDINAL;
+
+    SimpleRowSet rs = qs.getData(new SqlSelect()
+        .addField(TBL_CRITERIA_GROUPS, COL_CRITERIA_ORDINAL, aliasGroupOrdinal)
+        .addFields(TBL_CRITERIA_GROUPS, COL_CRITERIA_GROUP_NAME)
+        .addFields(TBL_CRITERIA, COL_CRITERIA_GROUP, COL_CRITERIA_ORDINAL, COL_CRITERION_NAME,
+            COL_CRITERION_VALUE)
+        .addFrom(TBL_CRITERIA_GROUPS)
+        .addFromLeft(TBL_CRITERIA,
+            sys.joinTables(TBL_CRITERIA_GROUPS, TBL_CRITERIA, COL_CRITERIA_GROUP))
+        .setWhere(SqlUtils.equals(TBL_CRITERIA_GROUPS, COL_DOCUMENT_DATA, dataId)));
+
+    if (DataUtils.isEmpty(rs)) {
+      return ResponseObject.emptyResponse();
+    }
+
+    Map<Long, Long> groups = new HashMap<>();
+    Long svcGroupId;
+
+    for (SimpleRow row : rs) {
+      Long docGroupId = row.getLong(COL_CRITERIA_GROUP);
+
+      if (groups.containsKey(docGroupId)) {
+        svcGroupId = groups.get(docGroupId);
+        
+      } else {
+        SqlInsert insGroup = new SqlInsert(TBL_SERVICE_CRITERIA_GROUPS)
+            .addConstant(COL_SERVICE_OBJECT, objId);
+        
+        Integer groupOrdinal = row.getInt(aliasGroupOrdinal);
+        if (groupOrdinal != null) {
+          insGroup.addConstant(COL_SERVICE_CRITERIA_ORDINAL, groupOrdinal);
+        }
+        
+        String groupName = row.getValue(COL_CRITERIA_GROUP_NAME);
+        if (!BeeUtils.isEmpty(groupName)) {
+          insGroup.addConstant(COL_SERVICE_CRITERIA_GROUP_NAME, groupName);
+        }
+        
+        svcGroupId = qs.insertData(insGroup);
+        groups.put(docGroupId, svcGroupId);
+      }
+
+      String criterion = row.getValue(COL_CRITERION_NAME);
+
+      if (DataUtils.isId(svcGroupId) && !BeeUtils.isEmpty(criterion)) {
+        SqlInsert insCrit = new SqlInsert(TBL_SERVICE_CRITERIA)
+        .addConstant(COL_SERVICE_CRITERIA_GROUP, svcGroupId)
+        .addConstant(COL_SERVICE_CRITERION_NAME, criterion);
+
+        Integer ordinal = row.getInt(COL_CRITERIA_ORDINAL);
+        if (ordinal != null) {
+          insCrit.addConstant(COL_SERVICE_CRITERIA_ORDINAL, ordinal);
+        }
+        
+        String value = row.getValue(COL_CRITERION_VALUE);
+        if (!BeeUtils.isEmpty(value)) {
+          insCrit.addConstant(COL_SERVICE_CRITERION_VALUE, value);
+        }
+        
+        qs.insertData(insCrit);
+      }
+    }
+
+    return ResponseObject.response(rs.getNumberOfRows());
   }
 
   private ResponseObject createDefectItems(RequestInfo reqInfo) {
