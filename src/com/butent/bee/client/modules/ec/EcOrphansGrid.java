@@ -1,5 +1,6 @@
 package com.butent.bee.client.modules.ec;
 
+import com.google.common.base.Function;
 import com.google.common.collect.Lists;
 import com.google.gwt.dom.client.Style.Unit;
 import com.google.gwt.event.dom.client.ClickEvent;
@@ -14,12 +15,14 @@ import com.butent.bee.client.Global;
 import com.butent.bee.client.communication.ParameterList;
 import com.butent.bee.client.communication.ResponseCallback;
 import com.butent.bee.client.composite.TabBar;
+import com.butent.bee.client.composite.Thermometer;
 import com.butent.bee.client.composite.UnboundSelector;
 import com.butent.bee.client.data.Data;
 import com.butent.bee.client.data.Queries;
 import com.butent.bee.client.data.Queries.IntCallback;
 import com.butent.bee.client.data.RowCallback;
 import com.butent.bee.client.data.RowEditor;
+import com.butent.bee.client.dialog.ConfirmationCallback;
 import com.butent.bee.client.dialog.InputCallback;
 import com.butent.bee.client.grid.ColumnFooter;
 import com.butent.bee.client.grid.ColumnHeader;
@@ -31,9 +34,14 @@ import com.butent.bee.client.style.StyleUtils;
 import com.butent.bee.client.view.edit.EditableColumn;
 import com.butent.bee.client.view.grid.interceptor.AbstractGridInterceptor;
 import com.butent.bee.client.view.grid.interceptor.GridInterceptor;
+import com.butent.bee.client.websocket.Endpoint;
 import com.butent.bee.client.widget.Button;
 import com.butent.bee.client.widget.Image;
+import com.butent.bee.client.widget.InlineLabel;
 import com.butent.bee.client.widget.InputText;
+import com.butent.bee.shared.BeeConst;
+import com.butent.bee.shared.Consumer;
+import com.butent.bee.shared.Service;
 import com.butent.bee.shared.communication.ResponseObject;
 import com.butent.bee.shared.css.CssUnit;
 import com.butent.bee.shared.data.BeeColumn;
@@ -41,18 +49,20 @@ import com.butent.bee.shared.data.BeeRow;
 import com.butent.bee.shared.data.IsColumn;
 import com.butent.bee.shared.data.IsRow;
 import com.butent.bee.shared.data.event.RowDeleteEvent;
+import com.butent.bee.shared.data.filter.Filter;
 import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.modules.ec.EcUtils;
 import com.butent.bee.shared.ui.Orientation;
 import com.butent.bee.shared.ui.Relation;
 import com.butent.bee.shared.ui.Relation.Caching;
 import com.butent.bee.shared.utils.BeeUtils;
+import com.butent.bee.shared.websocket.messages.ProgressMessage;
 
 import java.util.List;
 
 public class EcOrphansGrid extends AbstractGridInterceptor implements ClickHandler {
 
-  Button button = new Button("Analogų aprišimas", this);
+  Button button = new Button(Localized.getConstants().ecAnalogBinding(), this);
   Image loading = new Image(Global.getImages().loading());
 
   @Override
@@ -93,19 +103,53 @@ public class EcOrphansGrid extends AbstractGridInterceptor implements ClickHandl
   }
 
   @Override
-  public void onClick(ClickEvent arg0) {
-    setLoading(true);
-
-    BeeKeeper.getRpc().makeGetRequest(EcKeeper.createArgs(SVC_ADOPT_ORPHANS),
-        new ResponseCallback() {
+  public void onClick(ClickEvent event) {
+    Global.confirm(Localized.getMessages().ecLocateAnalogs(getGridView().getGrid().getRowCount()),
+        new ConfirmationCallback() {
           @Override
-          public void onResponse(ResponseObject response) {
-            response.notify(getGridView());
+          public void onConfirm() {
+            setLoading(true);
+            final ParameterList args = EcKeeper.createArgs(SVC_ADOPT_ORPHANS);
+            Filter filter = getGridPresenter().getDataProvider().getFilter();
 
-            if (!response.hasErrors()) {
-              getGridPresenter().refresh(true);
+            if (filter != null) {
+              args.addDataItem("filter", filter.serialize());
             }
-            setLoading(false);
+            InlineLabel close = new InlineLabel(String.valueOf(BeeConst.CHAR_TIMES));
+            Thermometer th = new Thermometer(Localized.getConstants().ecAnalogBinding(),
+                BeeConst.DOUBLE_ONE, close);
+
+            final String progressId = BeeKeeper.getScreen().addProgress(th);
+
+            close.addClickHandler(new ClickHandler() {
+              @Override
+              public void onClick(ClickEvent ev) {
+                Endpoint.cancelProgress(progressId);
+              }
+            });
+            Endpoint.enqueuePropgress(progressId, new Consumer<String>() {
+              @Override
+              public void accept(String input) {
+                if (!BeeUtils.isEmpty(input)) {
+                  args.addDataItem(Service.VAR_PROGRESS, input);
+
+                  Endpoint.registerProgressHandler(progressId,
+                      new Function<ProgressMessage, Boolean>() {
+                        @Override
+                        public Boolean apply(ProgressMessage pm) {
+                          if (pm.isClosed() || pm.isCanceled()) {
+                            getGridPresenter().refresh(true);
+                            setLoading(false);
+                          }
+                          return null;
+                        }
+                      });
+                } else {
+                  Endpoint.cancelProgress(progressId);
+                }
+                BeeKeeper.getRpc().makePostRequest(args, (ResponseCallback) null);
+              }
+            });
           }
         });
   }

@@ -2,7 +2,6 @@ package com.butent.bee.server.modules.ec;
 
 import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.HashMultimap;
-import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ListMultimap;
 import com.google.common.collect.Lists;
@@ -41,6 +40,7 @@ import com.butent.bee.server.sql.SqlSelect;
 import com.butent.bee.server.sql.SqlUpdate;
 import com.butent.bee.server.sql.SqlUtils;
 import com.butent.bee.server.ui.UiHolderBean;
+import com.butent.bee.server.websocket.Endpoint;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.Pair;
@@ -130,6 +130,7 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 
+import javax.ejb.Asynchronous;
 import javax.ejb.EJB;
 import javax.ejb.LocalBean;
 import javax.ejb.Stateless;
@@ -234,6 +235,120 @@ public class EcModuleBean implements BeeModule {
   NewsBean news;
   @EJB
   UiHolderBean ui;
+
+  @Asynchronous
+  public void adoptOrphans(String progressId, IsCondition clause) {
+    tcd.adoptOrphans(progressId, qs.getData(new SqlSelect().setDistinctMode(true)
+        .addFields(TBL_TCD_ORPHANS, COL_TCD_ARTICLE_NR)
+        .addFields(TBL_TCD_BRANDS, COL_TCD_BRAND_NAME)
+        .addFrom(TBL_TCD_ORPHANS)
+        .addFromInner(TBL_TCD_BRANDS,
+            sys.joinTables(TBL_TCD_BRANDS, TBL_TCD_ORPHANS, COL_TCD_BRAND))
+        .setWhere(clause)));
+
+    EcSupplier supplier = EcSupplier.EOLTAS;
+    String orphanId = sys.getIdName(TBL_TCD_ORPHANS);
+    SimpleRowSet rows = null;
+
+    SimpleRowSet orphans = qs.getData(new SqlSelect()
+        .addFields(TBL_TCD_ORPHANS, orphanId, COL_TCD_SUPPLIER_ID, COL_TCD_BRAND,
+            COL_TCD_ARTICLE_NR, COL_TCD_ARTICLE_NAME, COL_TCD_ARTICLE_DESCRIPTION)
+        .addFrom(TBL_TCD_ORPHANS)
+        .setWhere(SqlUtils.and(clause,
+            SqlUtils.equals(TBL_TCD_ORPHANS, COL_TCD_SUPPLIER, supplier.ordinal()))));
+
+    boolean ok = !orphans.isEmpty() && (BeeUtils.isEmpty(progressId)
+        || Endpoint.updateProgress(progressId, 1));
+
+    if (ok) {
+      String remoteNamespace = prm.getText(PRM_ERP_NAMESPACE);
+      String remoteAddress = prm.getText(PRM_ERP_ADDRESS);
+      String remoteLogin = prm.getText(PRM_ERP_LOGIN);
+      String remotePassword = prm.getText(PRM_ERP_PASSWORD);
+
+      try {
+        rows = ButentWS.connect(remoteNamespace, remoteAddress, remoteLogin, remotePassword)
+            .getSQLData("SELECT preke AS pr, prekes.grupe AS gr, savikaina AS sv, pard_kaina AS kn"
+                + " FROM prekes"
+                + " INNER JOIN grupes"
+                + " ON prekes.grupe = grupes.grupe"
+                + " WHERE prekes.gam_art IS NOT NULL AND prekes.gam_art != ''"
+                + " AND prekes.gamintojas IS NOT NULL AND prekes.gamintojas != ''"
+                + " AND grupes.pos_mode = 'E'",
+                new String[] {"pr", "gr", "sv", "kn"});
+
+        ok = !rows.isEmpty();
+
+      } catch (BeeException e) {
+        logger.error(e);
+        ok = false;
+      }
+    }
+    if (ok) {
+      Map<String, Long> categories = new HashMap<>();
+      int c = 0;
+
+      for (SimpleRow orphan : orphans) {
+        String supplierId = orphan.getValue(COL_TCD_SUPPLIER_ID);
+        String categoryName = rows.getValueByKey("pr", supplierId, "gr");
+
+        if (!BeeUtils.isEmpty(categoryName)) {
+          if (!categories.containsKey(categoryName)) {
+            Long[] category = qs.getLongColumn(new SqlSelect()
+                .addField(TBL_TCD_CATEGORIES, sys.getIdName(TBL_TCD_CATEGORIES), COL_TCD_CATEGORY)
+                .addFrom(TBL_TCD_CATEGORIES)
+                .setWhere(SqlUtils.equals(TBL_TCD_CATEGORIES, COL_TCD_CATEGORY_NAME, categoryName))
+                .addOrder(TBL_TCD_CATEGORIES, COL_TCD_CATEGORY_PARENT));
+
+            if (category.length > 0) {
+              categories.put(categoryName, category[0]);
+            } else {
+              categories.put(categoryName, qs.insertData(new SqlInsert(TBL_TCD_CATEGORIES)
+                  .addConstant(COL_TCD_CATEGORY_NAME, categoryName)));
+            }
+          }
+          String artNr = orphan.getValue(COL_TCD_ARTICLE_NR);
+          String brand = orphan.getValue(COL_TCD_BRAND);
+
+          long newArt = qs.insertData(new SqlInsert(TBL_TCD_ARTICLES)
+              .addConstant(COL_TCD_ARTICLE_NR, artNr)
+              .addConstant(COL_TCD_BRAND, brand)
+              .addConstant(COL_TCD_ARTICLE_NAME, orphan.getValue(COL_TCD_ARTICLE_NAME))
+              .addConstant(COL_TCD_ARTICLE_DESCRIPTION,
+                  orphan.getValue(COL_TCD_ARTICLE_DESCRIPTION))
+              .addConstant(COL_TCD_ARTICLE_VISIBLE, true));
+
+          qs.insertData(new SqlInsert(TBL_TCD_ARTICLE_SUPPLIERS)
+              .addConstant(COL_TCD_ARTICLE, newArt)
+              .addConstant(COL_TCD_SUPPLIER, supplier.ordinal())
+              .addConstant(COL_TCD_SUPPLIER_ID, supplierId)
+              .addConstant(COL_TCD_COST, rows.getValueByKey("pr", supplierId, "sv"))
+              .addConstant(COL_TCD_PRICE, rows.getValueByKey("pr", supplierId, "kn")));
+
+          qs.insertData(new SqlInsert(TBL_TCD_ARTICLE_CATEGORIES)
+              .addConstant(COL_TCD_ARTICLE, newArt)
+              .addConstant(COL_TCD_CATEGORY, categories.get(categoryName)));
+
+          qs.insertData(new SqlInsert(TBL_TCD_ARTICLE_CODES)
+              .addConstant(COL_TCD_ARTICLE, newArt)
+              .addConstant(COL_TCD_SEARCH_NR, EcUtils.normalizeCode(artNr))
+              .addConstant(COL_TCD_CODE_NR, artNr)
+              .addConstant(COL_TCD_BRAND, brand));
+
+          qs.updateData(new SqlDelete(TBL_TCD_ORPHANS)
+              .setWhere(sys.idEquals(TBL_TCD_ORPHANS, orphan.getLong(orphanId))));
+        }
+        if (!BeeUtils.isEmpty(progressId)
+            && !Endpoint.updateProgress(progressId,
+                1 - (++c / (double) orphans.getNumberOfRows()))) {
+          break;
+        }
+      }
+    }
+    if (!BeeUtils.isEmpty(progressId)) {
+      Endpoint.closeProgress(progressId);
+    }
+  }
 
   @Override
   public List<SearchResult> doSearch(String query) {
@@ -384,7 +499,19 @@ public class EcModuleBean implements BeeModule {
       response = createItem(reqInfo);
 
     } else if (BeeUtils.same(svc, SVC_ADOPT_ORPHANS)) {
-      response = adoptOrphans();
+      IsCondition clause = null;
+      Filter filter = Filter.restore(reqInfo.getParameter("filter"));
+
+      if (filter != null) {
+        clause = SqlUtils.in(TBL_TCD_ORPHANS, sys.getIdName(TBL_TCD_ORPHANS),
+            sys.getView(TBL_TCD_ORPHANS).getQuery(filter, null)
+                .resetFields()
+                .addFields(TBL_TCD_ORPHANS, sys.getIdName(TBL_TCD_ORPHANS)));
+      }
+      Invocation.locateRemoteBean(EcModuleBean.class)
+          .adoptOrphans(reqInfo.getParameter(Service.VAR_PROGRESS), clause);
+
+      response = ResponseObject.emptyResponse();
 
     } else if (BeeUtils.same(svc, SVC_ADD_ARTICLE_CAR_TYPES)) {
       response = addArticleCarTypes(reqInfo);
@@ -432,7 +559,7 @@ public class EcModuleBean implements BeeModule {
     prm.registerParameterEventHandler(new ParameterEventHandler() {
       @Subscribe
       public void initTimers(ParameterEvent event) {
-        if (BeeUtils.inListSame(event.getParameter(), PRM_BUTENT_INTERVAL, PRM_MOTONET_INTERVAL)) {
+        if (BeeUtils.inListSame(event.getParameter(), PRM_BUTENT_INTERVAL, PRM_MOTONET_HOURS)) {
           TecDocBean bean = Invocation.locateRemoteBean(TecDocBean.class);
 
           if (bean != null) {
@@ -711,118 +838,6 @@ public class EcModuleBean implements BeeModule {
     return ResponseObject.response(itemsAdded).setSize(itemsAdded);
   }
 
-  private ResponseObject adoptOrphans() {
-    EcSupplier supplier = EcSupplier.EOLTAS;
-    String orphanId = sys.getIdName(TBL_TCD_ORPHANS);
-
-    SimpleRowSet orphans = qs.getData(new SqlSelect()
-        .addFields(TBL_TCD_ORPHANS, orphanId, COL_TCD_SUPPLIER_ID, COL_TCD_BRAND,
-            COL_TCD_ARTICLE_NR, COL_TCD_ARTICLE_NAME, COL_TCD_ARTICLE_DESCRIPTION)
-        .addFrom(TBL_TCD_ORPHANS)
-        .setWhere(SqlUtils.equals(TBL_TCD_ORPHANS, COL_TCD_SUPPLIER, supplier.ordinal())));
-
-    if (orphans.isEmpty()) {
-      return ResponseObject.info(Localized.getConstants().nothingFound());
-    }
-    String remoteNamespace = prm.getText(PRM_ERP_NAMESPACE);
-    String remoteAddress = prm.getText(PRM_ERP_ADDRESS);
-    String remoteLogin = prm.getText(PRM_ERP_LOGIN);
-    String remotePassword = prm.getText(PRM_ERP_PASSWORD);
-
-    SimpleRowSet rows;
-
-    try {
-      rows = ButentWS.connect(remoteNamespace, remoteAddress, remoteLogin, remotePassword)
-          .getSQLData("SELECT preke AS pr, prekes.grupe AS gr, savikaina AS sv, pard_kaina AS kn"
-              + " FROM prekes"
-              + " INNER JOIN grupes"
-              + " ON prekes.grupe = grupes.grupe"
-              + " WHERE prekes.gam_art IS NOT NULL AND prekes.gam_art != ''"
-              + " AND prekes.gamintojas IS NOT NULL AND prekes.gamintojas != ''"
-              + " AND grupes.pos_mode = 'E'",
-              new String[] {"pr", "gr", "sv", "kn"});
-    } catch (BeeException e) {
-      logger.error(e);
-      return ResponseObject.error(e);
-    }
-    Map<String, Long> categories = new HashMap<>();
-    int cnt = 0;
-    int categCnt = 0;
-
-    for (SimpleRow orphan : orphans) {
-      String supplierId = orphan.getValue(COL_TCD_SUPPLIER_ID);
-      String categoryName = rows.getValueByKey("pr", supplierId, "gr");
-
-      if (!BeeUtils.isEmpty(categoryName)) {
-        if (!categories.containsKey(categoryName)) {
-          Long[] category = qs.getLongColumn(new SqlSelect()
-              .addField(TBL_TCD_CATEGORIES, sys.getIdName(TBL_TCD_CATEGORIES), COL_TCD_CATEGORY)
-              .addFrom(TBL_TCD_CATEGORIES)
-              .setWhere(SqlUtils.equals(TBL_TCD_CATEGORIES, COL_TCD_CATEGORY_NAME, categoryName))
-              .addOrder(TBL_TCD_CATEGORIES, COL_TCD_CATEGORY_PARENT));
-
-          if (category.length > 0) {
-            categories.put(categoryName, category[0]);
-          } else {
-            categories.put(categoryName, qs.insertData(new SqlInsert(TBL_TCD_CATEGORIES)
-                .addConstant(COL_TCD_CATEGORY_NAME, categoryName)));
-            categCnt++;
-          }
-        }
-        cnt++;
-        String artNr = orphan.getValue(COL_TCD_ARTICLE_NR);
-        String brand = orphan.getValue(COL_TCD_BRAND);
-
-        long newArt = qs.insertData(new SqlInsert(TBL_TCD_ARTICLES)
-            .addConstant(COL_TCD_ARTICLE_NR, artNr)
-            .addConstant(COL_TCD_BRAND, brand)
-            .addConstant(COL_TCD_ARTICLE_NAME, orphan.getValue(COL_TCD_ARTICLE_NAME))
-            .addConstant(COL_TCD_ARTICLE_DESCRIPTION, orphan.getValue(COL_TCD_ARTICLE_DESCRIPTION))
-            .addConstant(COL_TCD_ARTICLE_VISIBLE, true));
-
-        qs.insertData(new SqlInsert(TBL_TCD_ARTICLE_SUPPLIERS)
-            .addConstant(COL_TCD_ARTICLE, newArt)
-            .addConstant(COL_TCD_SUPPLIER, supplier.ordinal())
-            .addConstant(COL_TCD_SUPPLIER_ID, supplierId)
-            .addConstant(COL_TCD_COST, rows.getValueByKey("pr", supplierId, "sv"))
-            .addConstant(COL_TCD_PRICE, rows.getValueByKey("pr", supplierId, "kn")));
-
-        qs.insertData(new SqlInsert(TBL_TCD_ARTICLE_CATEGORIES)
-            .addConstant(COL_TCD_ARTICLE, newArt)
-            .addConstant(COL_TCD_CATEGORY, categories.get(categoryName)));
-
-        qs.insertData(new SqlInsert(TBL_TCD_ARTICLE_CODES)
-            .addConstant(COL_TCD_ARTICLE, newArt)
-            .addConstant(COL_TCD_SEARCH_NR, EcUtils.normalizeCode(artNr))
-            .addConstant(COL_TCD_CODE_NR, artNr)
-            .addConstant(COL_TCD_BRAND, brand));
-
-        qs.updateData(new SqlDelete(TBL_TCD_ORPHANS)
-            .setWhere(sys.idEquals(TBL_TCD_ORPHANS, orphan.getLong(orphanId))));
-      }
-    }
-    ResponseObject response = ResponseObject.emptyResponse();
-
-    if (categCnt > 0) {
-      String msg = BeeUtils.join(": ", Localized.maybeTranslate(sys.getView(TBL_TCD_CATEGORIES)
-          .getCaption()), Localized.getMessages().createdRows(categCnt));
-
-      logger.info(msg);
-      response.addInfo(msg);
-    }
-    if (cnt > 0) {
-      String msg = BeeUtils.join(": ", Localized.maybeTranslate(sys.getView(TBL_TCD_ARTICLES)
-          .getCaption()), Localized.getMessages().createdRows(cnt));
-
-      logger.info(msg);
-      response.addInfo(msg);
-    }
-    if (!response.hasNotifications()) {
-      response.addInfo(Localized.getConstants().nothingFound());
-    }
-    return response;
-  }
-
   private ResponseObject clearConfiguration(RequestInfo reqInfo) {
     String column = reqInfo.getParameter(Service.VAR_COLUMN);
     if (BeeUtils.isEmpty(column)) {
@@ -935,96 +950,18 @@ public class EcModuleBean implements BeeModule {
   }
 
   private ResponseObject createItem(RequestInfo reqInfo) {
-    Long art = reqInfo.getParameterLong(COL_TCD_ARTICLE);
+    Long newArt = tcd.cloneItem(reqInfo.getParameterLong(COL_TCD_ARTICLE),
+        reqInfo.getParameter(COL_TCD_ARTICLE_NR), reqInfo.getParameterLong(COL_TCD_BRAND));
 
-    if (!DataUtils.isId(art)) {
-      return ResponseObject.parameterNotFound(SVC_CREATE_ITEM, COL_TCD_ARTICLE);
-    }
-    SqlSelect query = new SqlSelect();
-
-    String[] cols = new String[] {COL_TCD_ARTICLE_NAME, COL_TCD_ARTICLE_DESCRIPTION,
-        COL_TCD_ARTICLE_UNIT, COL_TCD_ARTICLE_WEIGHT, COL_TCD_ARTICLE_VISIBLE};
-
-    SimpleRow analog = qs.getRow(query.addFields(TBL_TCD_ARTICLES, cols)
-        .addFrom(TBL_TCD_ARTICLES)
-        .setWhere(sys.idEquals(TBL_TCD_ARTICLES, art)));
-
-    if (analog == null) {
+    if (!DataUtils.isId(newArt)) {
       return ResponseObject.error(Localized.getMessages()
-          .dataNotAvailable(COL_TCD_ARTICLE + "=" + art));
+          .dataNotAvailable(COL_TCD_ARTICLE + "=" + reqInfo.getParameterLong(COL_TCD_ARTICLE)));
     }
-    String artNr = reqInfo.getParameter(COL_TCD_ARTICLE_NR);
-    String brand = reqInfo.getParameter(COL_TCD_BRAND);
-
-    SqlInsert insert = new SqlInsert(TBL_TCD_ARTICLES)
-        .addConstant(COL_TCD_ARTICLE_NR, artNr)
-        .addConstant(COL_TCD_BRAND, brand);
-
-    for (String col : cols) {
-      insert.addConstant(col, BeeUtils.notEmpty(reqInfo.getParameter(col), analog.getValue(col)));
-    }
-    long newArt = qs.insertData(insert);
-
     qs.insertData(new SqlInsert(TBL_TCD_ARTICLE_SUPPLIERS)
         .addConstant(COL_TCD_ARTICLE, newArt)
         .addConstant(COL_TCD_SUPPLIER, reqInfo.getParameter(COL_TCD_SUPPLIER))
         .addConstant(COL_TCD_SUPPLIER_ID, reqInfo.getParameter(COL_TCD_SUPPLIER_ID)));
 
-    Map<String, String[]> sources = ImmutableMap.of(
-        TBL_TCD_ARTICLE_CRITERIA, new String[] {COL_TCD_CRITERIA, COL_TCD_CRITERIA_VALUE},
-        TBL_TCD_ARTICLE_CATEGORIES, new String[] {COL_TCD_CATEGORY},
-        TBL_TCD_TYPE_ARTICLES, new String[] {COL_TCD_TYPE},
-        TBL_TCD_ARTICLE_GRAPHICS, new String[] {COL_TCD_GRAPHICS, COL_TCD_SORT});
-
-    for (String source : sources.keySet()) {
-      SimpleRowSet rs = qs.getData(new SqlSelect()
-          .addConstant(newArt, COL_TCD_ARTICLE)
-          .addFields(source, sources.get(source))
-          .addFrom(source)
-          .setWhere(SqlUtils.equals(source, COL_TCD_ARTICLE, art)));
-
-      if (!rs.isEmpty()) {
-        for (SimpleRow row : rs) {
-          qs.insertData(new SqlInsert(source)
-              .addFields(rs.getColumnNames())
-              .addValues((Object[]) row.getValues()));
-        }
-      }
-    }
-    Set<Long> analogs = new HashSet<>();
-    analogs.add(newArt);
-
-    SimpleRowSet rs = qs.getData(new SqlSelect()
-        .addField(TBL_TCD_ARTICLES, sys.getIdName(TBL_TCD_ARTICLES), COL_TCD_ARTICLE)
-        .addFields(TBL_TCD_ARTICLE_CODES,
-            COL_TCD_SEARCH_NR, COL_TCD_CODE_NR, COL_TCD_BRAND, COL_TCD_OE_CODE)
-        .addFrom(TBL_TCD_ARTICLE_CODES)
-        .addFromLeft(TBL_TCD_ARTICLES, SqlUtils.and(SqlUtils.join(TBL_TCD_ARTICLE_CODES,
-            COL_TCD_CODE_NR, TBL_TCD_ARTICLES, COL_TCD_ARTICLE_NR),
-            SqlUtils.joinUsing(TBL_TCD_ARTICLE_CODES, TBL_TCD_ARTICLES, COL_TCD_BRAND)))
-        .setWhere(SqlUtils.equals(TBL_TCD_ARTICLE_CODES, COL_TCD_ARTICLE, art)));
-
-    if (!rs.isEmpty()) {
-      for (SimpleRow row : rs) {
-        Long an = row.getLong(COL_TCD_ARTICLE);
-
-        if (DataUtils.isId(an)) {
-          analogs.add(an);
-        }
-        row.setValue(COL_TCD_ARTICLE, BeeUtils.toString(newArt));
-
-        qs.insertData(new SqlInsert(TBL_TCD_ARTICLE_CODES)
-            .addFields(rs.getColumnNames())
-            .addValues((Object[]) row.getValues()));
-      }
-    }
-    for (Long id : analogs) {
-      qs.insertData(new SqlInsert(TBL_TCD_ARTICLE_CODES)
-          .addConstant(COL_TCD_ARTICLE, id)
-          .addConstant(COL_TCD_SEARCH_NR, EcUtils.normalizeCode(artNr))
-          .addConstant(COL_TCD_CODE_NR, artNr)
-          .addConstant(COL_TCD_BRAND, brand));
-    }
     return ResponseObject.response(newArt);
   }
 
@@ -2512,7 +2449,7 @@ public class EcModuleBean implements BeeModule {
 
     if (featured || novelty) {
       long time = System.currentTimeMillis();
-      
+
       HasConditions where = SqlUtils.or();
       if (featured) {
         where.add(SqlUtils.more(TBL_TCD_ARTICLES, COL_TCD_ARTICLE_FEATURED, time));
