@@ -665,6 +665,9 @@ public class GridLoaderBean {
         }
         ok = true;
         break;
+        
+      case RIGHTS:
+        break;
     }
 
     return ok;

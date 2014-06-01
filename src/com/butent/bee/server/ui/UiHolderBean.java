@@ -22,8 +22,8 @@ import com.butent.bee.shared.menu.Menu;
 import com.butent.bee.shared.menu.MenuEntry;
 import com.butent.bee.shared.menu.MenuItem;
 import com.butent.bee.shared.menu.MenuService;
-import com.butent.bee.shared.modules.administration.AdministrationConstants.RightsState;
 import com.butent.bee.shared.rights.Module;
+import com.butent.bee.shared.rights.RightsState;
 import com.butent.bee.shared.rights.RightsUtils;
 import com.butent.bee.shared.ui.GridDescription;
 import com.butent.bee.shared.ui.UiConstants;
@@ -345,7 +345,7 @@ public class UiHolderBean {
   }
 
   private Menu getMenu(String parent, Menu entry, boolean checkRights) {
-    String ref = RightsUtils.JOINER.join(parent, entry.getName());
+    String ref = RightsUtils.NAME_JOINER.join(parent, entry.getName());
 
     boolean visible;
     if (checkRights) {

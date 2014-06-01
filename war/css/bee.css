@@ -459,6 +459,7 @@
 }
 .bee-Header-container .bee-auto-fit:hover {
   color: black;
+  cursor: ew-resize;
 }
 
 .bee-Header-caption {
@@ -3168,4 +3169,29 @@
 }
 .bee-GridMenu-table tr:hover .bee-fa-label {
   color: black;
+}
+
+.bee-CellGridColumn-rights {
+  text-align: center;
+}
+.bee-RightsCell-view,
+.bee-RightsCell-edit,
+.bee-RightsCell-delete {
+  display: inline-block;
+  width: 20px;
+}
+.bee-RightsCell-view:hover,
+.bee-RightsCell-edit:hover,
+.bee-RightsCell-delete:hover {
+  font-size: 16px;
+}
+.bee-RightsCell-view-on,
+.bee-RightsCell-edit-on,
+.bee-RightsCell-delete-on {
+  color: green;
+}
+.bee-RightsCell-view-off,
+.bee-RightsCell-edit-off,
+.bee-RightsCell-delete-off {
+  color: red;
 }

@@ -355,10 +355,6 @@ public final class Queries {
         });
   }
 
-  public static void getRowCount(String viewName, final IntCallback callback) {
-    getRowCount(viewName, null, callback);
-  }
-
   public static int getRowSet(String viewName, List<String> columns, Filter filter, Order order,
       CachingPolicy cachingPolicy, RowSetCallback callback) {
     return getRowSet(viewName, columns, filter, order, BeeConst.UNDEF, BeeConst.UNDEF,

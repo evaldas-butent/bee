@@ -561,6 +561,10 @@ public interface LocalizableConstants extends Constants, LocalizableCalendarCons
 
   String rights();
 
+  String rightsAll();
+  
+  String rightsDefault();
+
   String rightStateCreate();
 
   String rightStateDelete();

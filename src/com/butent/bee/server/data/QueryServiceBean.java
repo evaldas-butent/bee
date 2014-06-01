@@ -42,7 +42,7 @@ import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogLevel;
 import com.butent.bee.shared.logging.LogUtils;
 import com.butent.bee.shared.modules.administration.AdministrationConstants;
-import com.butent.bee.shared.modules.administration.AdministrationConstants.RightsState;
+import com.butent.bee.shared.rights.RightsState;
 import com.butent.bee.shared.time.DateTime;
 import com.butent.bee.shared.time.JustDate;
 import com.butent.bee.shared.time.TimeUtils;
@@ -795,7 +795,14 @@ public class QueryServiceBean {
   }
 
   public int getViewSize(String viewName, Filter filter) {
-    return sqlCount(sys.getView(viewName).getQuery(filter, sys.getViewFinder()));
+    BeeView view = sys.getView(viewName);
+    SqlSelect query = view.getQuery(filter, sys.getViewFinder());
+
+    if (!usr.isAdministrator()) {
+      sys.filterVisibleState(query, view.getSourceName(), view.getSourceAlias());
+    }
+    
+    return sqlCount(query);
   }
 
   @TransactionAttribute(TransactionAttributeType.MANDATORY)

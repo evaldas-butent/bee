@@ -239,11 +239,19 @@ public class ColumnInfo implements HasValueType, Flexible {
     return filterSupplier;
   }
 
+  int getFooterWidth() {
+    return footerWidth;
+  }
+
   Font getHeaderFont() {
     if (getHeaderStyle() == null) {
       return null;
     }
     return getHeaderStyle().getFont();
+  }
+
+  int getHeaderWidth() {
+    return headerWidth;
   }
 
   String getLabel() {
@@ -346,11 +354,11 @@ public class ColumnInfo implements HasValueType, Flexible {
   }
 
   boolean isActionColumn() {
-    return ColType.ACTION.equals(getColumn().getColType());
+    return ColType.ACTION == getColumn().getColType();
   }
 
   boolean isCalculated() {
-    return ColType.CALCULATED.equals(getColumn().getColType());
+    return ColType.CALCULATED == getColumn().getColType();
   }
 
   boolean isCellResizable() {
@@ -362,7 +370,7 @@ public class ColumnInfo implements HasValueType, Flexible {
   }
 
   boolean isDynamic() {
-    return dynGroup != null;
+    return dynGroup != null || isRightsColumn();
   }
 
   boolean isHidable() {
@@ -373,8 +381,12 @@ public class ColumnInfo implements HasValueType, Flexible {
     return getColumn() instanceof RenderableColumn;
   }
 
+  boolean isRightsColumn() {
+    return ColType.RIGHTS == getColumn().getColType();
+  }
+  
   boolean isSelection() {
-    return ColType.SELECTION.equals(getColumn().getColType());
+    return ColType.SELECTION == getColumn().getColType();
   }
 
   void setBodyFont(String fontDeclaration) {
@@ -464,16 +476,8 @@ public class ColumnInfo implements HasValueType, Flexible {
     return footerStyle;
   }
 
-  private int getFooterWidth() {
-    return footerWidth;
-  }
-
   private StyleDescriptor getHeaderStyle() {
     return headerStyle;
-  }
-
-  private int getHeaderWidth() {
-    return headerWidth;
   }
 
   private int getInitialWidth() {

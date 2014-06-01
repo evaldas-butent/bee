@@ -74,7 +74,7 @@ import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogUtils;
 import com.butent.bee.shared.modules.administration.AdministrationConstants;
-import com.butent.bee.shared.modules.administration.AdministrationConstants.RightsState;
+import com.butent.bee.shared.rights.RightsState;
 import com.butent.bee.shared.ui.Action;
 import com.butent.bee.shared.ui.GridDescription;
 import com.butent.bee.shared.utils.ArrayUtils;
@@ -200,8 +200,10 @@ public class GridPresenter extends AbstractPresenter implements ReadyForInsertEv
   private final GridMenu menu;
 
   private final List<String> favorite = new ArrayList<>();
-  
+
   private List<String> parentLabels;
+
+  private Map<Long, String> roles;
 
   public GridPresenter(GridDescription gridDescription, GridView gridView, int rowCount,
       BeeRowSet rowSet, ProviderType providerType, CachingPolicy cachingPolicy,
@@ -236,9 +238,9 @@ public class GridPresenter extends AbstractPresenter implements ReadyForInsertEv
     } else {
       this.filterManager = null;
     }
-    
+
     this.menu = new GridMenu(gridDescription, uiOptions);
-    
+
     if (!BeeUtils.isEmpty(gridDescription.getFavorite())) {
       favorite.addAll(NameUtils.toList(gridDescription.getFavorite()));
     }
@@ -376,7 +378,11 @@ public class GridPresenter extends AbstractPresenter implements ReadyForInsertEv
   public Set<RightsState> getRightsStates() {
     return getDataProvider().getRightsStates();
   }
-  
+
+  public Map<Long, String> getRoles() {
+    return roles;
+  }
+
   @Override
   public String getViewName() {
     return getDataProvider().getViewName();
@@ -386,7 +392,7 @@ public class GridPresenter extends AbstractPresenter implements ReadyForInsertEv
   public IdentifiableWidget getWidget() {
     return getMainView();
   }
-  
+
   @Override
   public void handleAction(Action action) {
     Assert.notNull(action);
@@ -478,7 +484,7 @@ public class GridPresenter extends AbstractPresenter implements ReadyForInsertEv
           filterManager.handleFilter(getDataProvider().getQueryFilter(null), getHeaderElement());
         }
         break;
-        
+
       case MENU:
         menu.open(this);
         break;
@@ -500,6 +506,17 @@ public class GridPresenter extends AbstractPresenter implements ReadyForInsertEv
         }
         break;
 
+      case RIGHTS:
+        if (!BeeUtils.isEmpty(getRoles())) {
+          if (getDataProvider().getRightsStates().containsAll(GridMenu.ALL_STATES)) {
+            getDataProvider().getRightsStates().clear();
+          } else {
+            getDataProvider().getRightsStates().addAll(GridMenu.ALL_STATES);
+          }
+          refresh(true);
+        }
+        break;
+
       default:
         logger.warning(NameUtils.getName(this), action, "not implemented");
     }
@@ -515,10 +532,12 @@ public class GridPresenter extends AbstractPresenter implements ReadyForInsertEv
     if (getGridInterceptor() != null && !getGridInterceptor().beforeAction(Action.RIGHTS, this)) {
       return;
     }
-    
-    getDataProvider().toggleRightsState(rightsState);
-    refresh(true);
-    
+
+    if (!BeeUtils.isEmpty(getRoles())) {
+      getDataProvider().toggleRightsState(rightsState);
+      refresh(true);
+    }
+
     if (getGridInterceptor() != null) {
       getGridInterceptor().afterAction(Action.RIGHTS, this);
     }
@@ -652,6 +671,10 @@ public class GridPresenter extends AbstractPresenter implements ReadyForInsertEv
 
   public void setParentLabels(List<String> parentLabels) {
     this.parentLabels = parentLabels;
+  }
+
+  public void setRoles(Map<Long, String> roles) {
+    this.roles = roles;
   }
 
   @Override

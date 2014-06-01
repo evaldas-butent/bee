@@ -20,7 +20,7 @@ import com.butent.bee.shared.data.event.RowUpdateEvent;
 import com.butent.bee.shared.data.filter.Filter;
 import com.butent.bee.shared.data.view.Order;
 import com.butent.bee.shared.i18n.Localized;
-import com.butent.bee.shared.modules.administration.AdministrationConstants.RightsState;
+import com.butent.bee.shared.rights.RightsState;
 import com.butent.bee.shared.ui.Action;
 import com.butent.bee.shared.ui.HandlesActions;
 import com.butent.bee.shared.ui.NavigationOrigin;

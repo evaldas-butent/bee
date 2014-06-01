@@ -62,7 +62,7 @@ import com.butent.bee.shared.data.view.ViewColumn;
 import com.butent.bee.shared.io.FileNameUtils;
 import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogUtils;
-import com.butent.bee.shared.modules.administration.AdministrationConstants.RightsState;
+import com.butent.bee.shared.rights.RightsState;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.Codec;
 import com.butent.bee.shared.utils.EnumUtils;
