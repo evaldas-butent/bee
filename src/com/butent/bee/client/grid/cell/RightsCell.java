@@ -55,8 +55,8 @@ public class RightsCell extends AbstractCell<String> implements HasViewName {
     for (RightsState state : GridMenu.ALL_STATES) {
       switch (state) {
         case VIEW:
-          faOn = FontAwesome.CHECK;
-          faOff = FontAwesome.TIMES;
+          faOn = FontAwesome.EYE;
+          faOff = FontAwesome.EYE_SLASH;
           break;
 
         case EDIT:
@@ -150,10 +150,10 @@ public class RightsCell extends AbstractCell<String> implements HasViewName {
       }
     }
   }
-  
+
   private void update(IsRow row, RightsState state, boolean value, Element cellElement) {
     row.setProperty(RightsUtils.getAlias(state, roleId), Codec.pack(value));
-    
+
     SafeHtmlBuilder sb = new SafeHtmlBuilder();
     render(row, sb);
     cellElement.setInnerHTML(sb.toSafeHtml().asString());

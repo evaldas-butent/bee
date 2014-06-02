@@ -109,8 +109,8 @@ public class DocumentTreeForm extends AbstractFormInterceptor
   }
 
   private Toggle createValueToggle(long id, final String roleName, final RightsState state) {
-    Toggle toggle = new Toggle(String.valueOf(FontAwesome.TIMES.getCode()),
-        String.valueOf(FontAwesome.CHECK.getCode()), STYLE_VALUE_TOGGLE);
+    Toggle toggle = new Toggle(String.valueOf(FontAwesome.EYE_SLASH.getCode()),
+        String.valueOf(FontAwesome.EYE.getCode()), STYLE_VALUE_TOGGLE);
     StyleUtils.setFontFamily(toggle, FontAwesome.FAMILY);
 
     DomUtils.setDataProperty(toggle.getElement(), DATA_KEY_ID, id);
