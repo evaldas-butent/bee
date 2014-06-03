@@ -60,6 +60,7 @@ import com.butent.bee.shared.data.filter.IsFalseFilter;
 import com.butent.bee.shared.data.filter.IsTrueFilter;
 import com.butent.bee.shared.data.filter.Operator;
 import com.butent.bee.shared.data.filter.VersionFilter;
+import com.butent.bee.shared.data.value.Value;
 import com.butent.bee.shared.data.view.Order;
 import com.butent.bee.shared.data.view.ViewColumn;
 import com.butent.bee.shared.logging.BeeLogger;
@@ -1067,8 +1068,18 @@ public class BeeView implements BeeObject, HasExtendedInfo {
   }
 
   private IsCondition getCondition(ColumnValueFilter flt) {
-    return SqlUtils.compare(getSqlExpression(flt.getColumn()), flt.getOperator(),
-        SqlUtils.constant(flt.getValue()));
+    IsExpression expr = getSqlExpression(flt.getColumn());
+
+    if (flt.getOperator() == Operator.IN) {
+      return SqlUtils.inList(expr, flt.getValue());
+    } else {
+      HasConditions wh = flt.getOperator() == Operator.EQ ? SqlUtils.or() : SqlUtils.and();
+
+      for (Value value : flt.getValue()) {
+        wh.add(SqlUtils.compare(expr, flt.getOperator(), SqlUtils.constant(value)));
+      }
+      return wh;
+    }
   }
 
   private IsCondition getCondition(CompoundFilter flt, ViewFinder viewFinder) {
