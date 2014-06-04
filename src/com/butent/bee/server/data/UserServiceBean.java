@@ -664,9 +664,27 @@ public class UserServiceBean {
     return (userInfo == null) ? null : userInfo.isBlocked(System.currentTimeMillis());
   }
 
-  public boolean isColumnVisible(String viewName, String column) {
+  public boolean isColumnVisible(BeeView view, String column) {
     UserInfo info = getCurrentUserInfo();
-    return (info == null) ? false : info.getUserData().isColumnVisible(viewName, column);
+
+    if (info == null) {
+      return false;
+
+    } else if (view == null || BeeUtils.isEmpty(column)) {
+      return true;
+
+    } else if (!info.getUserData().isColumnVisible(view.getName(), column)) {
+      return false;
+
+    } else {
+      String root = view.getRootField(column);
+
+      if (!BeeUtils.isEmpty(root) && !BeeUtils.same(column, root)) {
+        return info.getUserData().isColumnVisible(view.getName(), root);
+      } else {
+        return true;
+      }
+    }
   }
 
   public boolean isDataVisible(String object) {

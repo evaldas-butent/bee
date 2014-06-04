@@ -163,6 +163,8 @@ public final class DynamicColumnFactory {
     ColumnHeader header = new ColumnHeader(columnId, roleName, roleName);
 
     ColumnInfo columnInfo = new ColumnInfo(columnId, roleName, null, column, header);
+    
+    columnInfo.setCellResizable(false);
     columnInfo.setExportable(false);
 
     return columnInfo;

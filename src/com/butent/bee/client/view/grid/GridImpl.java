@@ -387,12 +387,6 @@ public class GridImpl extends Absolute implements GridView, EditEndEvent.Handler
       relationEditable = cd.getRelation().isEditEnabled(false)
           && Data.isViewVisible(cd.getRelation().getViewName());
 
-      if (!BeeUtils.isEmpty(originalSource) && !originalSource.equals(source)
-          && !BeeUtils.isTrue(cd.getVisible())
-          && !BeeKeeper.getUser().isColumnVisible(getViewName(), source)) {
-        return false;
-      }
-
     } else {
       originalSource = null;
       relationEditable = false;
@@ -842,7 +836,7 @@ public class GridImpl extends Absolute implements GridView, EditEndEvent.Handler
     setNewRowCaption(BeeUtils.notEmpty(gridDescription.getNewRowCaption(),
         (getDataInfo() == null) ? null : getDataInfo().getNewRowCaption()));
 
-    getGrid().estimateHeaderWidths(true);
+    getGrid().estimateHeaderWidths();
 
     getGrid().setDefaultFlexibility(gridDescription.getFlexibility());
 

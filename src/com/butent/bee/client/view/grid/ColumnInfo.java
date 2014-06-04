@@ -31,6 +31,8 @@ public class ColumnInfo implements HasValueType, Flexible {
   private static final int DEFAULT_MIN_WIDTH = 40;
   private static final int DEFAULT_MAX_WIDTH = 400;
 
+  private static final int AUTO_FIT_MIN_WIDTH = 20;
+
   private final String columnId;
   private String label;
 
@@ -50,7 +52,6 @@ public class ColumnInfo implements HasValueType, Flexible {
 
   private int headerWidth = BeeConst.UNDEF;
   private int bodyWidth = BeeConst.UNDEF;
-  private int footerWidth = BeeConst.UNDEF;
 
   private int resizedWidth = BeeConst.UNDEF;
   private int flexWidth = BeeConst.UNDEF;
@@ -202,12 +203,6 @@ public class ColumnInfo implements HasValueType, Flexible {
     }
   }
 
-  void ensureHeaderWidth(int w) {
-    if (w > 0) {
-      setHeaderWidth(Math.max(getHeaderWidth(), w));
-    }
-  }
-
   int getAutoFitRows() {
     return autoFitRows;
   }
@@ -239,10 +234,6 @@ public class ColumnInfo implements HasValueType, Flexible {
     return filterSupplier;
   }
 
-  int getFooterWidth() {
-    return footerWidth;
-  }
-
   Font getHeaderFont() {
     if (getHeaderStyle() == null) {
       return null;
@@ -265,6 +256,14 @@ public class ColumnInfo implements HasValueType, Flexible {
       return DEFAULT_MIN_WIDTH;
     } else {
       return Math.min(DEFAULT_MIN_WIDTH, getInitialWidth());
+    }
+  }
+
+  int getMinAutoFitWidth() {
+    if (getInitialWidth() <= 0) {
+      return AUTO_FIT_MIN_WIDTH;
+    } else {
+      return Math.min(AUTO_FIT_MIN_WIDTH, getInitialWidth());
     }
   }
 
@@ -403,6 +402,10 @@ public class ColumnInfo implements HasValueType, Flexible {
     this.bodyWidth = bodyWidth;
   }
 
+  void setCellResizable(boolean cellResizable) {
+    this.cellResizable = cellResizable;
+  }
+
   void setColReadOnly(boolean colReadOnly) {
     this.colReadOnly = colReadOnly;
   }
@@ -427,10 +430,6 @@ public class ColumnInfo implements HasValueType, Flexible {
     } else {
       getFooterStyle().setFontDeclaration(fontDeclaration);
     }
-  }
-
-  void setFooterWidth(int footerWidth) {
-    this.footerWidth = footerWidth;
   }
 
   void setHeaderFont(String fontDeclaration) {
@@ -509,9 +508,12 @@ public class ColumnInfo implements HasValueType, Flexible {
   }
 
   private int getWidth(int resized, int flex) {
-    int w = BeeUtils.positive(resized, flex, getInitialWidth());
+    if (resized > 0) {
+      return resized;
+    }
+    int w = BeeUtils.positive(flex, getInitialWidth());
     if (w <= 0) {
-      w = BeeUtils.positive(Math.max(getBodyWidth(), getHeaderWidth()), getFooterWidth());
+      w = Math.max(getBodyWidth(), getHeaderWidth());
     }
     return clampWidth(w);
   }
@@ -522,10 +524,6 @@ public class ColumnInfo implements HasValueType, Flexible {
 
   private void setBodyStyle(StyleDescriptor bodyStyle) {
     this.bodyStyle = bodyStyle;
-  }
-
-  private void setCellResizable(boolean cellResizable) {
-    this.cellResizable = cellResizable;
   }
 
   private void setFlexWidth(int flexWidth) {

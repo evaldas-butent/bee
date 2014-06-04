@@ -517,7 +517,7 @@ public class BeeView implements BeeObject, HasExtendedInfo {
   public String getColumnField(String colName) {
     return getColumnInfo(colName).getField();
   }
-
+  
   public String getColumnLabel(String colName) {
     return getColumnInfo(colName).getLabel();
   }
@@ -777,6 +777,21 @@ public class BeeView implements BeeObject, HasExtendedInfo {
 
   public SqlSelect getQuery(Filter flt, ViewFinder viewFinder) {
     return getQuery(flt, null, null, viewFinder);
+  }
+
+  public String getRootField(String colName) {
+    if (hasColumn(colName)) {
+      ColumnInfo column = getColumnInfo(colName);
+
+      if (BeeUtils.isEmpty(column.getParent()) || column.getLevel() <= 0) {
+        return column.getField();
+      } else {
+        return getRootField(column.getParent());
+      }
+
+    } else {
+      return null;
+    }
   }
 
   public String getRowCaption() {

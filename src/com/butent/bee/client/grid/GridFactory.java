@@ -510,7 +510,7 @@ public final class GridFactory {
 
     grid.setReadOnly(true);
 
-    grid.estimateHeaderWidths(true);
+    grid.estimateHeaderWidths();
     grid.estimateColumnWidths(table.getRows(), 0, Math.min(r, 50));
 
     grid.setDefaultFlexibility(new Flexibility(1, -1, true));
