@@ -969,13 +969,15 @@ public class DiscussionsModuleBean implements BeeModule {
             tRow.getInteger(topicRows.getColumnIndex(COL_ORDINAL));
 
         String[] topicData = new String[rs.getNumberOfColumns()];
+
         topicData[rs.getColumnIndex(ALS_TOPIC_NAME)] =
             tRow.getString(topicRows.getColumnIndex(COL_NAME));
         topicData[rs.getColumnIndex(COL_ORDINAL)] =
             tRow.getString(topicRows.getColumnIndex(COL_ORDINAL));
         topicData[rs.getColumnIndex(ALS_BIRTHDAY)] = BeeUtils.toString(true);
 
-        int placeId = rs.getNumberOfColumns() - 1;
+        int placeId = rs.getNumberOfRows() - 1;
+
         for (int i = 0; i < rs.getNumberOfRows(); i++) {
           Integer ord = BeeUtils.toIntOrNull(rs.getValue(i, rs.getColumnIndex(COL_ORDINAL)));
           if (BeeUtils.compareNullsLast(ord, ordinal) >= 0) {
@@ -985,7 +987,11 @@ public class DiscussionsModuleBean implements BeeModule {
           }
         }
 
-        rs.getRows().add(placeId, topicData);
+        if (placeId > 0) {
+          rs.getRows().add(placeId, topicData);
+        } else {
+          rs.getRows().add(topicData);
+        }
       }
     }
 
@@ -1090,9 +1096,9 @@ public class DiscussionsModuleBean implements BeeModule {
     for (BeeRow row : rowSet.getRows()) {
       StoredFile sf =
           new StoredFile(DataUtils.getLong(rowSet, row, AdministrationConstants.COL_FILE),
-              DataUtils.getString(rowSet, row, COL_FILE_NAME),
-              DataUtils.getLong(rowSet, row, COL_FILE_SIZE),
-              DataUtils.getString(rowSet, row, COL_FILE_TYPE));
+              DataUtils.getString(rowSet, row, ALS_FILE_NAME),
+              DataUtils.getLong(rowSet, row, ALS_FILE_SIZE),
+              DataUtils.getString(rowSet, row, ALS_FILE_TYPE));
 
       Long commentId = DataUtils.getLong(rowSet, row, COL_COMMENT);
 
