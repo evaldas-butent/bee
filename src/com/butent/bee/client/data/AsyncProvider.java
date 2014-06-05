@@ -470,7 +470,7 @@ public class AsyncProvider extends Provider {
     Order ord = getOrder();
 
     CachingPolicy caching = getCachingPolicy();
-    if (caching != null && caching.doRead()) {
+    if (caching != null && caching.doRead() && getRightsStates().isEmpty()) {
       BeeRowSet rowSet = Global.getCache().getRowSet(getViewName(), flt, ord, offset, limit);
       if (rowSet != null) {
         requestScheduler.cancel();

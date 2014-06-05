@@ -5,21 +5,19 @@ import com.google.common.collect.Lists;
 import com.butent.bee.shared.Service;
 import com.butent.bee.shared.data.BeeColumn;
 import com.butent.bee.shared.data.value.ValueType;
-import com.butent.bee.shared.i18n.LocalizableConstants;
 import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.i18n.SupportedLocale;
 import com.butent.bee.shared.modules.ParameterType;
 import com.butent.bee.shared.news.Feed;
+import com.butent.bee.shared.rights.RightsObjectType;
+import com.butent.bee.shared.rights.RightsState;
 import com.butent.bee.shared.time.ScheduleDateMode;
 import com.butent.bee.shared.time.WorkdayTransition;
 import com.butent.bee.shared.ui.HasCaption;
-import com.butent.bee.shared.ui.HasLocalizedCaption;
 import com.butent.bee.shared.ui.UserInterface;
 import com.butent.bee.shared.utils.EnumUtils;
 
-import java.util.EnumSet;
 import java.util.List;
-import java.util.Set;
 
 public final class AdministrationConstants {
 
@@ -33,96 +31,6 @@ public final class AdministrationConstants {
       new BeeColumn(ValueType.TEXT, AdministrationConstants.AUDIT_FLD_FIELD, false),
       new BeeColumn(ValueType.TEXT, AdministrationConstants.AUDIT_FLD_VALUE, true),
       new BeeColumn(ValueType.TEXT, AdministrationConstants.COL_RELATION, true));
-
-  public enum RightsObjectType implements HasLocalizedCaption {
-    FIELD(EnumSet.of(RightsState.VIEW, RightsState.EDIT)) {
-      @Override
-      public String getCaption(LocalizableConstants constants) {
-        return constants.objectField();
-      }
-    },
-    WIDGET(EnumSet.of(RightsState.VIEW)) {
-      @Override
-      public String getCaption(LocalizableConstants constants) {
-        return constants.objectWidget();
-      }
-    },
-    DATA(EnumSet.allOf(RightsState.class)) {
-      @Override
-      public String getCaption(LocalizableConstants constants) {
-        return constants.objectData();
-      }
-    },
-    MENU(EnumSet.of(RightsState.VIEW)) {
-      @Override
-      public String getCaption(LocalizableConstants constants) {
-        return constants.objectMenu();
-      }
-    },
-    MODULE(EnumSet.of(RightsState.VIEW)) {
-      @Override
-      public String getCaption(LocalizableConstants constants) {
-        return constants.objectModule();
-      }
-    };
-
-    private final Set<RightsState> registeredStates;
-
-    private RightsObjectType(Set<RightsState> states) {
-      this.registeredStates = states;
-    }
-
-    @Override
-    public String getCaption() {
-      return getCaption(Localized.getConstants());
-    }
-
-    public Set<RightsState> getRegisteredStates() {
-      return registeredStates;
-    }
-  }
-
-  public enum RightsState implements HasLocalizedCaption {
-    VIEW(true) {
-      @Override
-      public String getCaption(LocalizableConstants constants) {
-        return constants.rightStateView();
-      }
-    },
-    CREATE(true) {
-      @Override
-      public String getCaption(LocalizableConstants constants) {
-        return constants.rightStateCreate();
-      }
-    },
-    EDIT(true) {
-      @Override
-      public String getCaption(LocalizableConstants constants) {
-        return constants.rightStateEdit();
-      }
-    },
-    DELETE(true) {
-      @Override
-      public String getCaption(LocalizableConstants constants) {
-        return constants.rightStateDelete();
-      }
-    };
-
-    private final boolean checked;
-
-    private RightsState(boolean checked) {
-      this.checked = checked;
-    }
-
-    @Override
-    public String getCaption() {
-      return getCaption(Localized.getConstants());
-    }
-
-    public boolean isChecked() {
-      return checked;
-    }
-  }
 
   public enum ReminderMethod implements HasCaption {
     EMAIL, SMS;

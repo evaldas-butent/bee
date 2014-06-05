@@ -203,7 +203,14 @@ public class Bee implements EntryPoint {
     Historian.start();
 
     Endpoint.open(BeeKeeper.getUser().getUserId());
-
+    
+    List<String> onStartup = Settings.getOnStartup();
+    if (!BeeUtils.isEmpty(onStartup) && !BeeKeeper.getMenu().isEmpty()) {
+      for (String item : onStartup) {
+        BeeKeeper.getMenu().executeItem(item);
+      }
+    }
+    
     BeeKeeper.getBus().registerExitHandler("Don't leave me this way");
   }
 }

@@ -188,7 +188,7 @@ public class GridContainerImpl extends Split implements GridContainerView, HasNa
       autoFit.addClickHandler(new ClickHandler() {
         @Override
         public void onClick(ClickEvent event) {
-          getGridView().getGrid().autoFit();
+          getGridView().getGrid().autoFit(!EventUtils.hasModifierKey(event.getNativeEvent()));
         }
       });
 

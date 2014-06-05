@@ -31,9 +31,9 @@ import com.butent.bee.shared.communication.ResponseObject;
 import com.butent.bee.shared.data.IsRow;
 import com.butent.bee.shared.font.FontAwesome;
 import com.butent.bee.shared.modules.administration.AdministrationConstants;
-import com.butent.bee.shared.modules.administration.AdministrationConstants.RightsState;
 import com.butent.bee.shared.modules.documents.DocumentConstants;
 import com.butent.bee.shared.rights.RegulatedWidget;
+import com.butent.bee.shared.rights.RightsState;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.Codec;
 import com.butent.bee.shared.utils.EnumUtils;
@@ -109,8 +109,8 @@ public class DocumentTreeForm extends AbstractFormInterceptor
   }
 
   private Toggle createValueToggle(long id, final String roleName, final RightsState state) {
-    Toggle toggle = new Toggle(String.valueOf(FontAwesome.TIMES.getCode()),
-        String.valueOf(FontAwesome.CHECK.getCode()), STYLE_VALUE_TOGGLE);
+    Toggle toggle = new Toggle(String.valueOf(FontAwesome.EYE_SLASH.getCode()),
+        String.valueOf(FontAwesome.EYE.getCode()), STYLE_VALUE_TOGGLE);
     StyleUtils.setFontFamily(toggle, FontAwesome.FAMILY);
 
     DomUtils.setDataProperty(toggle.getElement(), DATA_KEY_ID, id);

@@ -179,7 +179,7 @@ public final class ButentWS {
     String answer;
 
     try {
-      answer = process("ImportClient", doc.getXml());
+      answer = process("ImportDoc", doc.getXml());
     } catch (SOAPException e) {
       throw new BeeException(e);
     }

@@ -134,6 +134,10 @@ public class CellUpdateEvent extends ModificationEvent<CellUpdateEvent.Handler>
     return source.getName();
   }
 
+  public String getValue() {
+    return value;
+  }
+
   public long getVersion() {
     return version;
   }
