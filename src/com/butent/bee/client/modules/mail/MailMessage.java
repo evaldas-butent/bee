@@ -457,8 +457,8 @@ public class MailMessage extends AbstractFormInterceptor {
         if (mailPanel != null) {
           final AccountInfo account = mailPanel.getCurrentAccount();
 
-          NewMailMessage newMessage = NewMailMessage.create(account.getAddressId(),
-              mailPanel.getAccounts(), to, cc, bcc, subject, content, attach, draft);
+          NewMailMessage newMessage = NewMailMessage.create(mailPanel.getAccounts(), account,
+              to, cc, bcc, subject, content, attach, draft);
 
           newMessage.setScheduled(new Consumer<Boolean>() {
             @Override
