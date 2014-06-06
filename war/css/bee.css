@@ -1415,53 +1415,19 @@
   background-color: white;
   border: 1px solid rgba(0, 0, 0, 0.2);
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
-  padding: 2px;
+}
+.bee-Workspace-actionMenu-panel {
+  border-collapse: collapse;
+}
+.bee-Workspace-actionMenu-panel tr:hover {
+  background-color: #f2f2f2;
+}
+.bee-Workspace-actionMenu-panel td {
+  padding: 3px 1em;
 }
 .bee-Workspace-actionMenu-item {
-  width: 16px;
-  height: 16px;
-  padding: 2px 4px;
+  font-size: 12px;
   cursor: pointer;
-}
-
-.bee-Workspace-action-split {
-  border: 1px solid #bbb;
-}
-.bee-Workspace-action-split:hover {
-  border-color: #00b;
-}
-.bee-Workspace-action-north {
-  width: 14px;
-  height: 7px;
-  border-bottom-width: 8px;
-}
-.bee-Workspace-action-south {
-  width: 14px;
-  height: 7px;
-  border-top-width: 8px;
-}
-.bee-Workspace-action-west {
-  width: 7px;
-  height: 14px;
-  border-right-width: 8px;
-}
-.bee-Workspace-action-east {
-  width: 7px;
-  height: 14px;
-  border-left-width: 8px;
-}
-
-.bee-Workspace-action-up {
-  cursor: n-resize;
-}
-.bee-Workspace-action-down {
-  cursor: s-resize;
-}
-.bee-Workspace-action-left {
-  cursor: w-resize;
-}
-.bee-Workspace-action-right {
-  cursor: e-resize;
 }
 
 .bee-MessageBox-message-cell {

@@ -27,9 +27,9 @@ import com.butent.bee.client.layout.Split;
 import com.butent.bee.client.layout.TabbedPages;
 import com.butent.bee.client.screen.TilePanel.Tile;
 import com.butent.bee.client.ui.IdentifiableWidget;
-import com.butent.bee.client.widget.CustomHasHtml;
-import com.butent.bee.client.widget.Image;
 import com.butent.bee.client.widget.CustomDiv;
+import com.butent.bee.client.widget.CustomHasHtml;
+import com.butent.bee.client.widget.Label;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.data.ExtendedPropertiesData;
@@ -49,50 +49,45 @@ public class Workspace extends TabbedPages implements CaptionChangeEvent.Handler
     HasActiveWidgetChangeHandlers, ActiveWidgetChangeEvent.Handler, PreviewHandler {
 
   private enum TabAction {
-    CREATE(new Image(Global.getImages().silverPlus()), null, null,
-        Localized.getConstants().actionWorkspaceNewTab()),
+    CREATE(Localized.getConstants().actionWorkspaceNewTab()),
 
-    NORTH(new CustomDiv(), Direction.NORTH, STYLE_GROUP_SPLIT,
-        Localized.getConstants().actionWorkspaceNewTop()),
-    SOUTH(new CustomDiv(), Direction.SOUTH, STYLE_GROUP_SPLIT,
-        Localized.getConstants().actionWorkspaceNewBottom()),
-    WEST(new CustomDiv(), Direction.WEST, STYLE_GROUP_SPLIT,
-        Localized.getConstants().actionWorkspaceNewLeft()),
-    EAST(new CustomDiv(), Direction.EAST, STYLE_GROUP_SPLIT,
-        Localized.getConstants().actionWorkspaceNewRight()),
+    NORTH(Localized.getConstants().actionWorkspaceNewTop(), Direction.NORTH),
+    SOUTH(Localized.getConstants().actionWorkspaceNewBottom(), Direction.SOUTH),
+    WEST(Localized.getConstants().actionWorkspaceNewLeft(), Direction.WEST),
+    EAST(Localized.getConstants().actionWorkspaceNewRight(), Direction.EAST),
 
-    MAXIMIZE(new Image(Global.getImages().arrowOut()), null, STYLE_GROUP_RESIZE,
-        Localized.getConstants().actionWorkspaceMaxSize()),
-    RESTORE(new Image(Global.getImages().arrowIn()), null, STYLE_GROUP_RESIZE,
-        Localized.getConstants().actionWorkspaceRestoreSize()),
+    MAXIMIZE(Localized.getConstants().actionWorkspaceMaxSize()),
+    RESTORE(Localized.getConstants().actionWorkspaceRestoreSize()),
 
-    UP(new Image(Global.getImages().arrowUp()), Direction.NORTH, STYLE_GROUP_RESIZE,
-        Localized.getConstants().actionWorkspaceEnlargeUp()),
-    DOWN(new Image(Global.getImages().arrowDown()), Direction.SOUTH, STYLE_GROUP_RESIZE,
-        Localized.getConstants().actionWorkspaceEnlargeDown()),
-    LEFT(new Image(Global.getImages().arrowLeft()), Direction.WEST, STYLE_GROUP_RESIZE,
-        Localized.getConstants().actionWorkspaceEnlargeToLeft()),
-    RIGHT(new Image(Global.getImages().arrowRight()), Direction.EAST, STYLE_GROUP_RESIZE,
-        Localized.getConstants().actionWorkspaceEnlargeToRight()),
+    UP(Localized.getConstants().actionWorkspaceEnlargeUp(), Direction.NORTH),
+    DOWN(Localized.getConstants().actionWorkspaceEnlargeDown(), Direction.SOUTH),
+    LEFT(Localized.getConstants().actionWorkspaceEnlargeToLeft(), Direction.WEST),
+    RIGHT(Localized.getConstants().actionWorkspaceEnlargeToRight(), Direction.EAST),
 
-    CLOSE(new Image(Global.getImages().silverMinus()), null, null,
-        Localized.getConstants().actionClose());
+    CLOSE(Localized.getConstants().actionClose()),
+    CLOSE_TAB(Localized.getConstants().actionWorkspaceCloseTab()),
+    CLOSE_OTHER(Localized.getConstants().actionWorkspaceCloseOther()),
+    CLOSE_RIGHT(Localized.getConstants().actionWorkspaceCloseRight()),
+    CLOSE_ALL(Localized.getConstants().actionWorkspaceCloseAll()),
+
+    BOOKMARK_TAB(Localized.getConstants().actionWorkspaceBookmarkTab()),
+    BOOKMARK_ALL(Localized.getConstants().actionWorkspaceBookmarkAll());
 
     private static final String STYLE_NAME_PREFIX = Workspace.STYLE_PREFIX + "action-";
 
     private final IdentifiableWidget widget;
     private final Direction direction;
 
-    private TabAction(IdentifiableWidget widget, Direction direction, String styleGroup,
-        String title) {
-      this.widget = widget;
+    private TabAction(String label) {
+      this(label, null);
+    }
+
+    private TabAction(String label, Direction direction) {
+      this.widget = new Label(label);
       this.direction = direction;
 
-      this.widget.asWidget().addStyleName(STYLE_NAME_PREFIX + this.name().toLowerCase());
-      if (!BeeUtils.isEmpty(styleGroup)) {
-        this.widget.asWidget().addStyleName(STYLE_NAME_PREFIX + styleGroup);
-      }
-      this.widget.asWidget().setTitle(title);
+      this.widget.asWidget().addStyleName(STYLE_NAME_PREFIX 
+          + this.name().toLowerCase().replace(BeeConst.CHAR_UNDER, BeeConst.CHAR_MINUS));
     }
 
     private Direction getDirection() {
@@ -156,9 +151,6 @@ public class Workspace extends TabbedPages implements CaptionChangeEvent.Handler
   private static final BeeLogger logger = LogUtils.getLogger(Workspace.class);
 
   private static final String STYLE_PREFIX = "bee-Workspace-";
-
-  private static final String STYLE_GROUP_SPLIT = "split";
-  private static final String STYLE_GROUP_RESIZE = "resize";
 
   private final Map<Direction, Integer> resized = Maps.newHashMap();
 
@@ -462,6 +454,13 @@ public class Workspace extends TabbedPages implements CaptionChangeEvent.Handler
     return BeeUtils.isPositive(getSiblingSize(direction));
   }
 
+  private void clearPage(int index) {
+    Widget widget = getContentWidget(index);
+    if (widget instanceof TilePanel) {
+      ((TilePanel) widget).clear(this);
+    }
+  }
+
   private void close(Tile tile) {
     TilePanel panel = tile.getPanel();
     int pageIndex = getPageIndex(tile);
@@ -538,6 +537,41 @@ public class Workspace extends TabbedPages implements CaptionChangeEvent.Handler
       case LEFT:
       case RIGHT:
         stretch(action.getDirection(), true);
+        break;
+
+      case BOOKMARK_ALL:
+        break;
+      case BOOKMARK_TAB:
+        break;
+
+      case CLOSE_ALL:
+        while (getPageCount() > 1) {
+          removePage(getPageCount() - 1);
+        }
+        clearPage(0);
+        break;
+
+      case CLOSE_OTHER:
+        while (getPageCount() > index + 1) {
+          removePage(getPageCount() - 1);
+        }
+        while (getPageCount() > 1) {
+          removePage(0);
+        }
+        break;
+
+      case CLOSE_RIGHT:
+        while (getPageCount() > index + 1) {
+          removePage(getPageCount() - 1);
+        }
+        break;
+
+      case CLOSE_TAB:
+        if (getPageCount() > 1) {
+          removePage(index);
+        } else {
+          clearPage(index);
+        }
         break;
     }
   }
@@ -627,6 +661,38 @@ public class Workspace extends TabbedPages implements CaptionChangeEvent.Handler
         enabled = index == getSelectedIndex() && !resized.containsKey(action.getDirection())
             && canGrow(action.getDirection());
         break;
+
+      case BOOKMARK_ALL:
+        enabled = getPageCount() > 1;
+        break;
+
+      case BOOKMARK_TAB:
+        if (index == getSelectedIndex()) {
+          TilePanel panel = getActivePanel();
+          enabled = panel.getTileCount() > 1 || !panel.getActiveTile().isBlank();
+        }
+        break;
+      
+      case CLOSE_ALL:
+        enabled = getPageCount() > 1;
+        break;
+
+      case CLOSE_OTHER:
+        enabled = getPageCount() > 1;
+        break;
+      
+      case CLOSE_RIGHT:
+        enabled = index < getPageCount() - 1;
+        break;
+
+      case CLOSE_TAB:
+        if (getPageCount() > 1 || index != getSelectedIndex()) {
+          enabled = true;
+        } else {
+          TilePanel panel = getActivePanel();
+          enabled = panel.getTileCount() > 1 || !panel.getActiveTile().isBlank();
+        }
+        break;
     }
 
     return enabled;
@@ -646,7 +712,7 @@ public class Workspace extends TabbedPages implements CaptionChangeEvent.Handler
       }
     }
 
-    TabBar bar = new TabBar(STYLE_PREFIX + "actionMenu-", Orientation.HORIZONTAL);
+    TabBar bar = new TabBar(STYLE_PREFIX + "actionMenu-", Orientation.VERTICAL);
     for (TabAction action : actions) {
       bar.addItem(action.getWidget().asWidget());
     }

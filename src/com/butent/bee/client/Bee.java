@@ -190,6 +190,10 @@ public class Bee implements EntryPoint {
           case USERS:
             Global.getUsers().loadUserData(serialized);
             break;
+            
+          case WORKSPACES:
+            Global.getSpaces().load(serialized);
+            break;
         }
       }
     }

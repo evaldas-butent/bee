@@ -1,13 +1,17 @@
 package com.butent.bee.client.screen;
 
 import com.google.common.collect.Lists;
-import com.google.common.collect.Maps;
 import com.google.gwt.dom.client.Node;
 import com.google.gwt.dom.client.Style;
 import com.google.gwt.event.logical.shared.HasSelectionHandlers;
 import com.google.gwt.event.logical.shared.SelectionEvent;
 import com.google.gwt.event.logical.shared.SelectionHandler;
 import com.google.gwt.event.shared.HandlerRegistration;
+import com.google.gwt.json.client.JSONArray;
+import com.google.gwt.json.client.JSONBoolean;
+import com.google.gwt.json.client.JSONNumber;
+import com.google.gwt.json.client.JSONObject;
+import com.google.gwt.json.client.JSONString;
 import com.google.gwt.user.client.ui.Widget;
 
 import com.butent.bee.client.Callback;
@@ -41,6 +45,8 @@ import com.butent.bee.shared.utils.NameUtils;
 import com.butent.bee.shared.utils.Property;
 import com.butent.bee.shared.utils.PropertyUtils;
 
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -50,7 +56,7 @@ class TilePanel extends Split implements HasCaption, SelectionHandler<String> {
       HasInfo, HasCaption, CaptionChangeEvent.HasCaptionChangeHandlers,
       HasActiveWidgetChangeHandlers {
 
-    private final List<String> contentSuppliers = Lists.newArrayList();
+    private final List<String> contentSuppliers = new ArrayList<>();
     private int contentIndex = BeeConst.UNDEF;
 
     private Tile() {
@@ -100,7 +106,7 @@ class TilePanel extends Split implements HasCaption, SelectionHandler<String> {
 
     @Override
     public List<Property> getInfo() {
-      List<Property> info = Lists.newArrayList();
+      List<Property> info = new ArrayList<>();
 
       if (!contentSuppliers.isEmpty()) {
         info.add(new Property("Content Suppliers", BeeUtils.bracket(contentSuppliers.size())));
@@ -259,6 +265,10 @@ class TilePanel extends Split implements HasCaption, SelectionHandler<String> {
 
     private int getContentIndex() {
       return contentIndex;
+    }
+
+    private String getContentSupplier() {
+      return BeeUtils.getQuietly(contentSuppliers, getContentIndex());
     }
 
     private void setActiveStyle(boolean add) {
@@ -449,6 +459,12 @@ class TilePanel extends Split implements HasCaption, SelectionHandler<String> {
   static final int MIN_SIZE = 20;
   static final int TILE_MARGIN = 2;
 
+  private static final String KEY_DIRECTION = "direction";
+  private static final String KEY_SIZE = "size";
+  private static final String KEY_ACTIVE = "active";
+  private static final String KEY_CONTENT = "content";
+  private static final String KEY_SPLIT = "split";
+
   static Tile getTile(Widget widget) {
     for (Widget parent = widget; parent != null; parent = parent.getParent()) {
       if (parent instanceof Tile) {
@@ -461,20 +477,16 @@ class TilePanel extends Split implements HasCaption, SelectionHandler<String> {
 
   private String activeTileId;
 
-  private final Map<String, List<String>> tree = Maps.newHashMap();
+  private final Map<String, List<String>> tree = new HashMap<>();
   private String rootId;
 
   TilePanel(Workspace workspace) {
     super(5);
     addStyleName("bee-TilePanel");
-
-    Tile tile = createTile(workspace);
-    tile.setActiveStyle(true);
-    add(tile);
-
-    setActiveTileId(tile.getId());
+    
+    init(workspace);
   }
-
+  
   @Override
   public String getCaption() {
     String caption = getActiveTile().getCaption();
@@ -492,7 +504,7 @@ class TilePanel extends Split implements HasCaption, SelectionHandler<String> {
     }
     return caption;
   }
-
+  
   @Override
   public List<ExtendedProperty> getExtendedInfo() {
     List<ExtendedProperty> result = super.getExtendedInfo();
@@ -512,6 +524,12 @@ class TilePanel extends Split implements HasCaption, SelectionHandler<String> {
         result.add(new ExtendedProperty(name, entry.getKey(), entry.getValue().toString()));
       }
     }
+
+    JSONObject json = toJson();
+    if (json != null) {
+      result.add(new ExtendedProperty(name, "Json", json.toString()));
+    }
+
     return result;
   }
 
@@ -560,7 +578,7 @@ class TilePanel extends Split implements HasCaption, SelectionHandler<String> {
         String substId = children.get(childCount - 1);
 
         if (childCount > 1) {
-          List<String> rest = Lists.newArrayList(children.subList(0, childCount - 1));
+          List<String> rest = new ArrayList<>(children.subList(0, childCount - 1));
           if (tree.containsKey(substId)) {
             rest.addAll(tree.get(substId));
           }
@@ -735,7 +753,7 @@ class TilePanel extends Split implements HasCaption, SelectionHandler<String> {
     size = (size + TILE_MARGIN * 2 - getSplitterSize()) / 2;
 
     if (size < MIN_SIZE) {
-      Global.showError(Lists.newArrayList("Sub-Planck length is not allowed in this universe"));
+      Global.showError("Sub-Planck length is not allowed in this universe");
       return false;
     } else {
       addTile(workspace, activeTile, direction, size);
@@ -770,6 +788,17 @@ class TilePanel extends Split implements HasCaption, SelectionHandler<String> {
     tile.activate(true);
   }
 
+  void clear(Workspace workspace) {
+    onRemove();
+
+    super.clear();
+    
+    tree.clear();
+    setRootId(null);
+    
+    init(workspace);
+  }
+
   Tile getActiveTile() {
     return getTileById(getActiveTileId());
   }
@@ -779,7 +808,7 @@ class TilePanel extends Split implements HasCaption, SelectionHandler<String> {
   }
 
   List<IdentifiableWidget> getContentWidgets() {
-    List<IdentifiableWidget> result = Lists.newArrayList();
+    List<IdentifiableWidget> result = new ArrayList<>();
 
     for (Widget child : getChildren()) {
       if (child instanceof Tile) {
@@ -789,10 +818,10 @@ class TilePanel extends Split implements HasCaption, SelectionHandler<String> {
         }
       }
     }
-    
+
     return result;
   }
-  
+
   Tile getEventTile(Node target) {
     if (target == null) {
       return null;
@@ -852,6 +881,14 @@ class TilePanel extends Split implements HasCaption, SelectionHandler<String> {
     this.activeTileId = activeTileId;
   }
 
+  JSONObject toJson() {
+    if (BeeUtils.isEmpty(getRootId()) || tree.isEmpty()) {
+      return toJson(getActiveTileId());
+    } else {
+      return toJson(getRootId());
+    }
+  }
+
   private Tile createTile(Workspace workspace) {
     Tile tile = new Tile();
 
@@ -907,6 +944,14 @@ class TilePanel extends Split implements HasCaption, SelectionHandler<String> {
     return null;
   }
 
+  private void init(Workspace workspace) {
+    Tile tile = createTile(workspace);
+    tile.setActiveStyle(true);
+    add(tile);
+
+    setActiveTileId(tile.getId());
+  }
+
   private void layoutNode(String tileId, Boundary boundary, int margin) {
     Tile tile = getTileById(tileId);
 
@@ -951,5 +996,52 @@ class TilePanel extends Split implements HasCaption, SelectionHandler<String> {
 
   private void setRootId(String rootId) {
     this.rootId = rootId;
+  }
+
+  private JSONObject toJson(String tileId) {
+    Tile tile = getTileById(tileId);
+    if (tile == null) {
+      return null;
+    }
+
+    JSONObject json = new JSONObject();
+
+    LayoutData data = getLayoutData(tile);
+    if (data != null) {
+      Direction direction = data.getDirection();
+      if (direction != null) {
+        json.put(KEY_DIRECTION, new JSONString(direction.brief()));
+      }
+
+      int size = data.getSize();
+      if (size > 0) {
+        json.put(KEY_SIZE, new JSONNumber(size));
+      }
+    }
+
+    String contentSupplier = tile.getContentSupplier();
+    if (!BeeUtils.isEmpty(contentSupplier)) {
+      json.put(KEY_CONTENT, new JSONString(contentSupplier));
+    }
+
+    if (tileId.equals(getActiveTileId())) {
+      json.put(KEY_ACTIVE, JSONBoolean.getInstance(true));
+    }
+
+    if (tree.containsKey(tileId)) {
+      JSONArray split = new JSONArray();
+
+      List<String> children = tree.get(tileId);
+      for (int i = 0; i < children.size(); i++) {
+        JSONObject child = toJson(children.get(i));
+        if (child != null) {
+          split.set(i, child);
+        }
+      }
+
+      json.put(KEY_SPLIT, split);
+    }
+
+    return json;
   }
 }

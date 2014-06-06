@@ -31,6 +31,7 @@ import com.butent.bee.client.modules.administration.AdministrationKeeper;
 import com.butent.bee.client.output.Printer;
 import com.butent.bee.client.output.ReportSettings;
 import com.butent.bee.client.screen.Favorites;
+import com.butent.bee.client.screen.Spaces;
 import com.butent.bee.client.style.StyleUtils;
 import com.butent.bee.client.ui.IdentifiableWidget;
 import com.butent.bee.client.ui.WidgetInitializer;
@@ -82,6 +83,7 @@ public final class Global {
   private static final Map<String, String> styleSheets = Maps.newHashMap();
 
   private static final Favorites favorites = new Favorites();
+  private static final Spaces spaces = new Spaces();
 
   private static final Defaults defaults = new ClientDefaults();
 
@@ -253,6 +255,10 @@ public final class Global {
 
   public static Widget getSearchWidget() {
     return search.ensureSearchWidget();
+  }
+
+  public static Spaces getSpaces() {
+    return spaces;
   }
 
   public static Map<String, String> getStyleSheets() {

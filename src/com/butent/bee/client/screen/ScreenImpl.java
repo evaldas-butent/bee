@@ -249,6 +249,9 @@ public class ScreenImpl implements Screen {
   public void onLoad() {
     Global.getSearch().focus();
     
+    if (!Global.getSpaces().isEmpty() && !containsDomainEntry(Domain.WORKSPACES, null)) {
+      addDomainEntry(Domain.WORKSPACES, Global.getSpaces().getPanel(), null, null);
+    }
     if (!Global.getReportSettings().isEmpty() && !containsDomainEntry(Domain.REPORTS, null)) {
       addDomainEntry(Domain.REPORTS, Global.getReportSettings().getPanel(), null, null);
     }

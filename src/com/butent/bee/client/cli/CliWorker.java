@@ -238,6 +238,9 @@ public final class CliWorker {
 
     if ("?".equals(z)) {
       whereAmI();
+      
+    } else if (BeeUtils.isDigit(v.charAt(0)) || v.charAt(0) == '(' || v.charAt(0) == '-') {
+      doEval(v);
 
     } else if (z.startsWith("adm") && !args.isEmpty()) {
       doAdmin(z.substring(3), args, errorPopup);
@@ -334,7 +337,7 @@ public final class CliWorker {
       getResource(arr);
 
     } else if ("eval".equals(z) && !args.isEmpty()) {
-      inform(args, JsUtils.evalToString(args));
+      doEval(args);
 
     } else if (z.startsWith("exch")) {
       if (arr.length >= 4) {
@@ -1225,6 +1228,17 @@ public final class CliWorker {
         }
       }
     });
+  }
+  
+  private static void doEval(String args) {
+    String result;
+    if (BeeUtils.isDigit(args)) {
+      result = new DateTime(BeeUtils.toLong(args)).toString();
+    } else {
+      result = JsUtils.evalToString(args);
+    }
+
+    inform(args, result);
   }
 
   private static void doJdbc(String args, boolean errorPopup) {

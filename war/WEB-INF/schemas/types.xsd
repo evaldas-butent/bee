@@ -444,6 +444,7 @@
       <xs:enumeration value="UserParameters" />
       <xs:enumeration value="UserRoles" />
       <xs:enumeration value="Users" />
+      <xs:enumeration value="UserSettings" />
       <xs:enumeration value="VehicleModels" />
       <xs:enumeration value="VehiclePartUsage" />
       <xs:enumeration value="Vehicles" />
@@ -452,6 +453,7 @@
       <xs:enumeration value="VehicleTracking" />
       <xs:enumeration value="WaitingCargo" />
       <xs:enumeration value="Warehouses" />
+      <xs:enumeration value="Workspaces" />
 
 <!-- samples -->
       <xs:enumeration value="DataTypes" />

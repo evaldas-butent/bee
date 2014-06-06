@@ -174,6 +174,7 @@ public final class AdministrationConstants {
   public static final String VIEW_FILTERS = "Filters";
 
   public static final String VIEW_FAVORITES = "Favorites";
+  public static final String VIEW_WORKSPACES = "Workspaces";
   public static final String VIEW_REPORT_SETTINGS = "ReportSettings";
 
   public static final String GRID_HISTORY = "History";
