@@ -509,9 +509,6 @@ abstract class MultiStateForm extends RightsForm {
   }
 
   private Widget createStateToggle(RightsState state) {
-    Toggle toggle = createToggle(FontAwesome.SQUARE_O, FontAwesome.CHECK_SQUARE_O,
-        STYLE_STATE_TOGGLE);
-
     Set<String> names = getLeaves().keySet();
     boolean checked = true;
 
@@ -522,9 +519,8 @@ abstract class MultiStateForm extends RightsForm {
       }
     }
 
-    if (checked) {
-      toggle.setChecked(true);
-    }
+    Toggle toggle = new Toggle(FontAwesome.SQUARE_O, FontAwesome.CHECK_SQUARE_O,
+        STYLE_STATE_TOGGLE, checked);
 
     DomUtils.setDataProperty(toggle.getElement(), DATA_KEY_STATE, state.ordinal());
     setDataType(toggle, DATA_TYPE_STATE_TOGGLE);

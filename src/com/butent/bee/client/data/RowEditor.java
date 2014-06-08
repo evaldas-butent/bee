@@ -75,7 +75,31 @@ public final class RowEditor {
 
   public static String getSupplierKey(String viewName, long rowId) {
     Assert.notEmpty(viewName);
-    return BeeUtils.join(BeeConst.STRING_UNDER, "row", BeeUtils.normalize(viewName), rowId);
+    String name = BeeUtils.join(BeeConst.STRING_UNDER, viewName, rowId);
+    return WidgetFactory.SupplierKind.ROW_EDITOR.getKey(name);
+  }
+  
+  public static boolean open(String input, final PresenterCallback presenterCallback) {
+    Assert.notEmpty(input);
+    
+    final String viewName = BeeUtils.getPrefix(input, BeeConst.CHAR_UNDER);
+    if (BeeUtils.isEmpty(viewName)) {
+      return false;
+    }
+    
+    Long id = BeeUtils.toLongOrNull(BeeUtils.getSuffix(input, BeeConst.CHAR_UNDER));
+    if (!DataUtils.isId(id)) {
+      return false;
+    }
+    
+    Queries.getRow(viewName, id, new RowCallback() {
+      @Override
+      public void onSuccess(BeeRow result) {
+        openRow(viewName, result, false, null, null, presenterCallback);
+      }
+    });
+    
+    return true;
   }
 
   public static void openRow(String viewName, IsRow row, boolean modal) {

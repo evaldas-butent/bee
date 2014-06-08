@@ -82,6 +82,8 @@ public interface LocalizableConstants extends Constants, LocalizableCalendarCons
   String actionWorkspaceCloseRight();
   
   String actionWorkspaceCloseTab();
+
+  String actionWorkspaceCloseTile();
   
   String actionWorkspaceEnlargeDown();
 
@@ -152,8 +154,6 @@ public interface LocalizableConstants extends Constants, LocalizableCalendarCons
   String clients();
 
   String clientStatus();
-
-  String closeTab();
 
   String code();
 
@@ -738,6 +738,8 @@ public interface LocalizableConstants extends Constants, LocalizableCalendarCons
   String workdayTransitionNone();
   
   String workspaces();
+
+  String workspaceStartup();
 
   String year();
 

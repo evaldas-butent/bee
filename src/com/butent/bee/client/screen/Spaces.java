@@ -20,17 +20,21 @@ import com.butent.bee.client.style.StyleUtils;
 import com.butent.bee.client.ui.IdentifiableWidget;
 import com.butent.bee.client.widget.CustomDiv;
 import com.butent.bee.client.widget.FaLabel;
+import com.butent.bee.client.widget.Toggle;
 import com.butent.bee.shared.Assert;
+import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.css.CssUnit;
 import com.butent.bee.shared.data.BeeColumn;
 import com.butent.bee.shared.data.BeeRow;
 import com.butent.bee.shared.data.BeeRowSet;
 import com.butent.bee.shared.data.DataUtils;
+import com.butent.bee.shared.data.value.BooleanValue;
 import com.butent.bee.shared.data.value.TextValue;
 import com.butent.bee.shared.font.FontAwesome;
 import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.utils.BeeUtils;
 
+import java.util.ArrayList;
 import java.util.List;
 
 public class Spaces {
@@ -68,19 +72,18 @@ public class Spaces {
       return workspace;
     }
 
-    @SuppressWarnings("unused")
     private boolean isStartup() {
       return startup;
     }
 
     private void open() {
+      BeeKeeper.getScreen().restore(workspace, false);
     }
 
     private void setLabel(String label) {
       this.label = label;
     }
 
-    @SuppressWarnings("unused")
     private void setStartup(boolean startup) {
       this.startup = startup;
     }
@@ -93,8 +96,28 @@ public class Spaces {
       super(STYLE_ITEM);
       this.item = item;
 
+      Toggle startup = new Toggle(FontAwesome.SQUARE_O, FontAwesome.HOME, STYLE_STARTUP,
+          item.isStartup());
+      startup.setTitle(Localized.getConstants().workspaceStartup());
+
+      startup.addClickHandler(new ClickHandler() {
+        @Override
+        public void onClick(ClickEvent event) {
+          if (event.getSource() instanceof Toggle) {
+            boolean value = ((Toggle) event.getSource()).isChecked();
+            getItem().setStartup(value);
+
+            Queries.update(VIEW_WORKSPACES, getItem().getId(), COL_STARTUP,
+                BooleanValue.getInstance(value));
+          }
+        }
+      });
+
+      add(startup);
+
       CustomDiv label = new CustomDiv(STYLE_LABEL);
       label.setText(item.getLabel());
+      label.setTitle(item.getWorkspace().replace(BeeConst.CHAR_COMMA, BeeConst.CHAR_EOL));
 
       label.addClickHandler(new ClickHandler() {
         @Override
@@ -167,6 +190,8 @@ public class Spaces {
   private static final String STYLE_PREFIX = StyleUtils.CLASS_NAME_PREFIX + "spaces-";
 
   private static final String STYLE_ITEM = STYLE_PREFIX + "item";
+
+  private static final String STYLE_STARTUP = STYLE_PREFIX + "startup";
   private static final String STYLE_LABEL = STYLE_PREFIX + "label";
   private static final String STYLE_EDIT = STYLE_PREFIX + "edit";
   private static final String STYLE_DELETE = STYLE_PREFIX + "delete";
@@ -192,19 +217,19 @@ public class Spaces {
       return;
     }
 
-    final ItemWidget settingsWidget = find(workspace);
+    final ItemWidget itemWidget = find(workspace);
 
-    String defValue = (settingsWidget == null) ? label : settingsWidget.getItem().getLabel();
+    String defValue = (itemWidget == null) ? label : itemWidget.getItem().getLabel();
     int maxLength = Data.getColumnPrecision(VIEW_WORKSPACES, COL_LABEL);
 
     Global.inputString(Localized.getConstants().bookmarkName(), null, new StringCallback() {
       @Override
       public void onSuccess(String value) {
-        if (settingsWidget == null) {
+        if (itemWidget == null) {
           addItem(BeeUtils.trim(value), workspace);
 
         } else {
-          settingsWidget.setLabel(value);
+          itemWidget.setLabel(value);
           activate();
         }
       }
@@ -213,6 +238,24 @@ public class Spaces {
 
   public IdentifiableWidget getPanel() {
     return panel;
+  }
+
+  public List<String> getStartup() {
+    List<String> result = new ArrayList<>();
+
+    if (!panel.isEmpty()) {
+      for (Widget widget : panel) {
+        if (widget instanceof ItemWidget) {
+          Item item = ((ItemWidget) widget).getItem();
+
+          if (item.isStartup()) {
+            result.add(item.getWorkspace());
+          }
+        }
+      }
+    }
+
+    return result;
   }
 
   public boolean isEmpty() {

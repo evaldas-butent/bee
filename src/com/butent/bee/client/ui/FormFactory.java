@@ -267,7 +267,7 @@ public final class FormFactory {
     String key = (formInterceptor == null) ? null : formInterceptor.getSupplierKey();
     if (BeeUtils.isEmpty(key)) {
       Assert.notEmpty(formName);
-      key = "form_" + BeeUtils.normalize(formName);
+      key = WidgetFactory.SupplierKind.FORM.getKey(formName);
     }
     return key;
   }

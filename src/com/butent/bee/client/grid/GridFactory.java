@@ -384,7 +384,7 @@ public final class GridFactory {
     String key = (gridInterceptor == null) ? null : gridInterceptor.getSupplierKey();
     if (BeeUtils.isEmpty(key)) {
       Assert.notEmpty(gridName);
-      key = "grid_" + BeeUtils.normalize(gridName);
+      key = WidgetFactory.SupplierKind.GRID.getKey(gridName);
     }
     return key;
   }

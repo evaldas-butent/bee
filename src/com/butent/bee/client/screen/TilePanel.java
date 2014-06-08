@@ -1,6 +1,7 @@
 package com.butent.bee.client.screen;
 
 import com.google.common.collect.Lists;
+import com.google.gwt.core.client.Scheduler;
 import com.google.gwt.dom.client.Node;
 import com.google.gwt.dom.client.Style;
 import com.google.gwt.event.logical.shared.HasSelectionHandlers;
@@ -31,10 +32,12 @@ import com.butent.bee.client.ui.HandlesHistory;
 import com.butent.bee.client.ui.HasWidgetSupplier;
 import com.butent.bee.client.ui.IdentifiableWidget;
 import com.butent.bee.client.ui.WidgetFactory;
+import com.butent.bee.client.utils.JsonUtils;
 import com.butent.bee.client.view.View;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.HasInfo;
 import com.butent.bee.shared.State;
+import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogUtils;
 import com.butent.bee.shared.ui.HasCaption;
@@ -459,8 +462,6 @@ class TilePanel extends Split implements HasCaption, SelectionHandler<String> {
   static final int MIN_SIZE = 20;
   static final int TILE_MARGIN = 2;
 
-  private static final String KEY_DIRECTION = "direction";
-  private static final String KEY_SIZE = "size";
   private static final String KEY_ACTIVE = "active";
   private static final String KEY_CONTENT = "content";
   private static final String KEY_SPLIT = "split";
@@ -483,10 +484,10 @@ class TilePanel extends Split implements HasCaption, SelectionHandler<String> {
   TilePanel(Workspace workspace) {
     super(5);
     addStyleName("bee-TilePanel");
-    
+
     init(workspace);
   }
-  
+
   @Override
   public String getCaption() {
     String caption = getActiveTile().getCaption();
@@ -504,7 +505,7 @@ class TilePanel extends Split implements HasCaption, SelectionHandler<String> {
     }
     return caption;
   }
-  
+
   @Override
   public List<ExtendedProperty> getExtendedInfo() {
     List<ExtendedProperty> result = super.getExtendedInfo();
@@ -755,47 +756,22 @@ class TilePanel extends Split implements HasCaption, SelectionHandler<String> {
     if (size < MIN_SIZE) {
       Global.showError("Sub-Planck length is not allowed in this universe");
       return false;
+
     } else {
-      addTile(workspace, activeTile, direction, size);
+      Tile newTile = addTile(workspace, activeTile, direction, size);
+      newTile.activate(true);
       return true;
     }
-  }
-
-  void addTile(Workspace workspace, Tile activeTile, Direction direction, int size) {
-    LayoutData data = getLayoutData(activeTile);
-    if (!data.getDirection().isCenter()
-        && direction.isHorizontal() == data.getDirection().isHorizontal()) {
-      data.setSize(data.getSize() - size - getSplitterSize());
-    }
-
-    Tile tile = createTile(workspace);
-
-    String parentId = activeTile.getId();
-    String childId = tile.getId();
-
-    if (BeeUtils.isEmpty(getRootId())) {
-      setRootId(parentId);
-    }
-    if (tree.containsKey(parentId)) {
-      tree.get(parentId).add(childId);
-    } else {
-      tree.put(parentId, Lists.newArrayList(childId));
-    }
-
-    insert(tile, direction, size, getWidgetIndex(activeTile), getSplitterSize());
-    onResize();
-
-    tile.activate(true);
   }
 
   void clear(Workspace workspace) {
     onRemove();
 
     super.clear();
-    
+
     tree.clear();
     setRootId(null);
-    
+
     init(workspace);
   }
 
@@ -805,6 +781,47 @@ class TilePanel extends Split implements HasCaption, SelectionHandler<String> {
 
   String getActiveTileId() {
     return activeTileId;
+  }
+
+  String getBookmarkLabel() {
+    List<String> labels = new ArrayList<>();
+
+    if (isBookmarkable()) {
+      String label;
+
+      for (Widget child : getChildren()) {
+        if (child instanceof Tile) {
+          Tile tile = (Tile) child;
+
+          if (BeeUtils.isEmpty(tile.getContentSupplier())) {
+            label = null;
+          } else {
+            label = tile.getCaption();
+          }
+
+          if (BeeUtils.isEmpty(label)) {
+            LayoutData data = getLayoutData(tile);
+            if (data != null && data.getDirection() != null) {
+              label = data.getDirection().name();
+            }
+          }
+
+          if (!BeeUtils.isEmpty(label)) {
+            if (DomUtils.idEquals(tile, getActiveTileId()) && !labels.isEmpty()) {
+              labels.add(0, label);
+            } else {
+              labels.add(label);
+            }
+          }
+        }
+      }
+    }
+
+    if (labels.isEmpty()) {
+      return Localized.getConstants().newTab();
+    } else {
+      return BeeUtils.joinItems(labels);
+    }
   }
 
   List<IdentifiableWidget> getContentWidgets() {
@@ -869,12 +886,25 @@ class TilePanel extends Split implements HasCaption, SelectionHandler<String> {
     return count;
   }
 
+  boolean isBookmarkable() {
+    if (getTileCount() > 1) {
+      return true;
+    } else {
+      Tile tile = getActiveTile();
+      return tile != null && !tile.isBlank() && !BeeUtils.isEmpty(tile.getContentSupplier());
+    }
+  }
+
   void onRemove() {
     for (Widget child : getChildren()) {
       if (child instanceof Tile && !((Tile) child).isBlank()) {
         ((Tile) child).blank();
       }
     }
+  }
+
+  void restore(Workspace workspace, JSONObject json) {
+    restore(workspace, json, getActiveTile());
   }
 
   void setActiveTileId(String activeTileId) {
@@ -887,6 +917,33 @@ class TilePanel extends Split implements HasCaption, SelectionHandler<String> {
     } else {
       return toJson(getRootId());
     }
+  }
+
+  private Tile addTile(Workspace workspace, Tile activeTile, Direction direction, int size) {
+    LayoutData data = getLayoutData(activeTile);
+    if (!data.getDirection().isCenter()
+        && direction.isHorizontal() == data.getDirection().isHorizontal()) {
+      data.setSize(data.getSize() - size - getSplitterSize());
+    }
+
+    Tile tile = createTile(workspace);
+
+    String parentId = activeTile.getId();
+    String childId = tile.getId();
+
+    if (BeeUtils.isEmpty(getRootId())) {
+      setRootId(parentId);
+    }
+    if (tree.containsKey(parentId)) {
+      tree.get(parentId).add(childId);
+    } else {
+      tree.put(parentId, Lists.newArrayList(childId));
+    }
+
+    insert(tile, direction, size, getWidgetIndex(activeTile), getSplitterSize());
+    onResize();
+
+    return tile;
   }
 
   private Tile createTile(Workspace workspace) {
@@ -993,29 +1050,86 @@ class TilePanel extends Split implements HasCaption, SelectionHandler<String> {
       }
     }
   }
+  
+  private void restore(Workspace workspace, JSONObject json, final Tile tile) {
+    if (json.containsKey(KEY_SPLIT)) {
+      JSONArray split = json.get(KEY_SPLIT).isArray();
+      
+      if (split != null) {
+        for (int i = 0; i < split.size(); i++) {
+          JSONObject child = split.get(i).isObject();
+
+          if (child != null && child.containsKey(Workspace.KEY_DIRECTION)
+              && child.containsKey(Workspace.KEY_SIZE)) {
+            
+            Direction direction = Direction.parse(JsonUtils.getString(child,
+                Workspace.KEY_DIRECTION));
+            Double size = JsonUtils.getNumber(child, Workspace.KEY_SIZE);
+            
+            if (direction != null) {
+              int max = direction.isHorizontal() ? getOffsetWidth() : getOffsetHeight();
+
+              if (BeeUtils.isPositive(size) && max > 0) {
+                Tile childTile = addTile(workspace, tile, direction,
+                    Workspace.restoreSize(size, max));
+                restore(workspace, child, childTile);
+              }
+            }
+          }
+        }
+      }
+    }
+    
+    if (json.containsKey(KEY_CONTENT)) {
+      final String contentSupplier = JsonUtils.getString(json, KEY_CONTENT);
+      
+      if (!BeeUtils.isEmpty(contentSupplier)) {
+        WidgetFactory.create(contentSupplier, new Callback<IdentifiableWidget>() {
+          @Override
+          public void onSuccess(IdentifiableWidget result) {
+            tile.setWidget(result);
+            tile.addContentSupplier(contentSupplier);
+
+            CaptionChangeEvent.fire(tile, getCaption());
+          }
+        });
+      }
+    }
+    
+    if (json.containsKey(KEY_ACTIVE) && BeeUtils.isTrue(JsonUtils.getBoolean(json, KEY_ACTIVE))) {
+      Scheduler.get().scheduleDeferred(new Scheduler.ScheduledCommand() {
+        @Override
+        public void execute() {
+          tile.activate(false);
+        }
+      });
+    }
+  }
 
   private void setRootId(String rootId) {
     this.rootId = rootId;
   }
 
   private JSONObject toJson(String tileId) {
+    JSONObject json = new JSONObject();
+
     Tile tile = getTileById(tileId);
     if (tile == null) {
-      return null;
+      return json;
     }
-
-    JSONObject json = new JSONObject();
 
     LayoutData data = getLayoutData(tile);
     if (data != null) {
       Direction direction = data.getDirection();
-      if (direction != null) {
-        json.put(KEY_DIRECTION, new JSONString(direction.brief()));
-      }
+      if (direction != null && !direction.isCenter()) {
+        json.put(Workspace.KEY_DIRECTION, new JSONString(direction.brief()));
 
-      int size = data.getSize();
-      if (size > 0) {
-        json.put(KEY_SIZE, new JSONNumber(size));
+        int size = data.getSize();
+        int max = direction.isHorizontal() ? getOffsetWidth() : getOffsetHeight();
+
+        if (size > 0 && max > 0) {
+          json.put(Workspace.KEY_SIZE, new JSONNumber(Workspace.scaleSize(size, max)));
+        }
       }
     }
 
@@ -1024,7 +1138,7 @@ class TilePanel extends Split implements HasCaption, SelectionHandler<String> {
       json.put(KEY_CONTENT, new JSONString(contentSupplier));
     }
 
-    if (tileId.equals(getActiveTileId())) {
+    if (tileId.equals(getActiveTileId()) && getTileCount() > 1) {
       json.put(KEY_ACTIVE, JSONBoolean.getInstance(true));
     }
 

@@ -1592,7 +1592,7 @@ public final class CliWorker {
           }
 
           fileGroup.setCaption("Files: " + fileGroup.getFiles().size() + " size: " + totSize);
-          BeeKeeper.getScreen().updateActivePanel(fileGroup);
+          BeeKeeper.getScreen().showInNewPlace(fileGroup);
         }
       }
     });
@@ -1644,7 +1644,7 @@ public final class CliWorker {
           Resource resource = Resource.restore(response.getResponseAsString());
           ResourceEditor resourceEditor = new ResourceEditor(resource);
 
-          BeeKeeper.getScreen().updateActivePanel(resourceEditor);
+          BeeKeeper.getScreen().showInNewPlace(resourceEditor);
 
         } else {
           ResponseHandler.dispatch(ArrayUtils.joinWords(arr), response);
@@ -1785,7 +1785,7 @@ public final class CliWorker {
       }
     }, ErrorEvent.getType());
 
-    BeeKeeper.getScreen().updateActivePanel(widget);
+    BeeKeeper.getScreen().showInNewPlace(widget);
   }
 
   private static void playVideo(String args) {
@@ -1803,7 +1803,7 @@ public final class CliWorker {
       }
     }, ErrorEvent.getType());
 
-    BeeKeeper.getScreen().updateActivePanel(widget);
+    BeeKeeper.getScreen().showInNewPlace(widget);
   }
 
   private static void print(String args, boolean errorPopup) {
@@ -2005,7 +2005,7 @@ public final class CliWorker {
           Storage stor = Storage.getSessionStorageIfSupported();
 
           if (stor == null) {
-            BeeKeeper.getScreen().updateActivePanel(p);
+            BeeKeeper.getScreen().showInNewPlace(p);
           } else {
             final String tmpKey = BeeUtils.randomString(5, 5, 'a', 'z');
             stor.setItem(tmpKey, area.getValue());
@@ -2372,7 +2372,7 @@ public final class CliWorker {
       table.setHtml(row, col, value);
     }
 
-    BeeKeeper.getScreen().updateActivePanel(table);
+    BeeKeeper.getScreen().showInNewPlace(table);
   }
 
   private static void showCurrentExchangeRate(String currency) {
@@ -2730,7 +2730,7 @@ public final class CliWorker {
           }
 
           if (!table.isEmpty()) {
-            BeeKeeper.getScreen().updateActivePanel(table);
+            BeeKeeper.getScreen().showInNewPlace(table);
           }
         }
       };
@@ -2810,7 +2810,7 @@ public final class CliWorker {
 
     if (count > 0) {
       logger.debug(FontAwesome.FAMILY, names, count);
-      BeeKeeper.getScreen().updateActivePanel(panel);
+      BeeKeeper.getScreen().showInNewPlace(panel);
     } else {
       showError(errorPopup, FontAwesome.FAMILY, names, "not found");
     }
@@ -2929,7 +2929,7 @@ public final class CliWorker {
       }
 
       if (!table.isEmpty()) {
-        BeeKeeper.getScreen().updateActivePanel(table);
+        BeeKeeper.getScreen().showInNewPlace(table);
       }
     }
   }
@@ -3085,7 +3085,7 @@ public final class CliWorker {
       row++;
     }
 
-    BeeKeeper.getScreen().updateActivePanel(table);
+    BeeKeeper.getScreen().showInNewPlace(table);
   }
 
   private static void showListOfCurrencies() {
@@ -3149,7 +3149,7 @@ public final class CliWorker {
           }
 
           MapContainer container = new MapContainer(caption, widget);
-          BeeKeeper.getScreen().showWidget(container, true);
+          BeeKeeper.getScreen().showInNewPlace(container);
         }
       }
     });
@@ -3252,7 +3252,7 @@ public final class CliWorker {
       table.setHtml(r, 0, BeeUtils.toString(i));
       table.setWidget(r, 1, new Meter(min, max, i, low, high, optimum));
     }
-    BeeKeeper.getScreen().updateActivePanel(table);
+    BeeKeeper.getScreen().showInNewPlace(table);
   }
 
   private static boolean showModal(int rowCount) {
@@ -3690,7 +3690,7 @@ public final class CliWorker {
       value = max;
     }
 
-    BeeKeeper.getScreen().updateActivePanel(new SliderBar(value, min, max, step, labels, ticks));
+    BeeKeeper.getScreen().showInNewPlace(new SliderBar(value, min, max, step, labels, ticks));
   }
 
   private static void showSupport(String args, boolean errorPopup) {
@@ -3866,7 +3866,7 @@ public final class CliWorker {
       parent.appendChild(child);
     }
 
-    BeeKeeper.getScreen().updateActivePanel(new Simple(widget, Overflow.HIDDEN));
+    BeeKeeper.getScreen().showInNewPlace(new Simple(widget, Overflow.HIDDEN));
   }
 
   private static void showTable(String caption, IsTable<?, ?> table) {
@@ -4071,7 +4071,7 @@ public final class CliWorker {
         col = 0;
       }
     }
-    BeeKeeper.getScreen().updateActivePanel(table);
+    BeeKeeper.getScreen().showInNewPlace(table);
   }
 
   private static void sortTable(IsTable<?, ?> table, int col) {

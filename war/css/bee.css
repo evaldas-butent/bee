@@ -3161,3 +3161,57 @@
 .bee-RightsCell-delete-off {
   color: red;
 }
+
+.bee-spaces-item {
+  display: flex;
+  display: -webkit-flex;
+  display: -ms-flexbox;
+  align-items: center;
+  -webkit-align-items: center;
+  -ms-flex-align: center;
+  border-bottom: 1px solid #ddd;
+}
+.bee-spaces-item:hover {
+  background-color: #f2f2f2;
+}
+.bee-spaces-item:hover .bee-spaces-edit,
+.bee-spaces-item:hover .bee-spaces-delete {
+  visibility: visible;
+}
+
+.bee-spaces-label {
+  flex: 1;
+  -webkit-flex: 1;
+  -ms-flex: 1;
+  color: #555;
+  margin: 5px 1em;
+  cursor: pointer;
+}
+.bee-spaces-label:hover {
+  text-decoration: underline;
+  color: #00e;
+}
+
+.bee-spaces-startup,
+.bee-spaces-edit,
+.bee-spaces-delete {
+  font-size: 18px;
+  padding: 3px;
+  color: #555;
+}
+.bee-spaces-startup {
+  cursor: pointer;
+}
+.bee-spaces-edit,
+.bee-spaces-delete {
+  visibility: hidden;
+}
+.bee-spaces-startup:hover,
+.bee-spaces-edit:hover {
+  color: white;
+  background-color: #80c4f9;
+}
+.bee-spaces-delete:hover {
+  color: white;
+  background-color: red;
+}
