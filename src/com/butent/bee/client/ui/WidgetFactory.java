@@ -2,12 +2,14 @@ package com.butent.bee.client.ui;
 
 import com.google.common.collect.Maps;
 
+import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.Callback;
 import com.butent.bee.client.data.RowEditor;
 import com.butent.bee.client.grid.GridFactory;
 import com.butent.bee.client.modules.calendar.CalendarKeeper;
 import com.butent.bee.client.presenter.Presenter;
 import com.butent.bee.client.presenter.PresenterCallback;
+import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.Pair;
 import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.utils.BeeUtils;
@@ -115,9 +117,28 @@ public final class WidgetFactory {
       }
     }
   }
+  
+  public static void createAndShow(String key) {
+    Assert.notEmpty(key);
+
+    create(key, new Callback<IdentifiableWidget>() {
+      @Override
+      public void onSuccess(IdentifiableWidget result) {
+        BeeKeeper.getScreen().updateActivePanel(result);
+      }
+    });
+  }
 
   public static Collection<String> getKeys() {
     return new TreeSet<String>(suppliers.keySet());
+  }
+
+  public static WidgetSupplier getSupplier(String key) {
+    if (BeeUtils.isEmpty(key)) {
+      return null;
+    } else {
+      return suppliers.get(BeeUtils.trim(key));
+    }
   }
 
   public static boolean hasSupplier(String key) {

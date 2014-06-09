@@ -802,7 +802,7 @@ class TilePanel extends Split implements HasCaption, SelectionHandler<String> {
           if (BeeUtils.isEmpty(label)) {
             LayoutData data = getLayoutData(tile);
             if (data != null && data.getDirection() != null) {
-              label = data.getDirection().name();
+              label = BeeUtils.proper(data.getDirection().name());
             }
           }
 
@@ -1066,7 +1066,7 @@ class TilePanel extends Split implements HasCaption, SelectionHandler<String> {
                 Workspace.KEY_DIRECTION));
             Double size = JsonUtils.getNumber(child, Workspace.KEY_SIZE);
             
-            if (direction != null) {
+            if (direction != null && !direction.isCenter()) {
               int max = direction.isHorizontal() ? getOffsetWidth() : getOffsetHeight();
 
               if (BeeUtils.isPositive(size) && max > 0) {

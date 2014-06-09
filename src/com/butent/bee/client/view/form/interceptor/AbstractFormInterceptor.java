@@ -176,11 +176,6 @@ public abstract class AbstractFormInterceptor implements FormInterceptor {
   }
 
   @Override
-  public String getSupplierKey() {
-    return null;
-  }
-
-  @Override
   public String getViewName() {
     return (getFormView() == null) ? null : getFormView().getViewName();
   }

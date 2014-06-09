@@ -15,6 +15,7 @@ import com.butent.bee.client.data.RowCallback;
 import com.butent.bee.client.dialog.ConfirmationCallback;
 import com.butent.bee.client.dialog.StringCallback;
 import com.butent.bee.client.dom.DomUtils;
+import com.butent.bee.client.event.EventUtils;
 import com.butent.bee.client.layout.Flow;
 import com.butent.bee.client.style.StyleUtils;
 import com.butent.bee.client.ui.IdentifiableWidget;
@@ -76,8 +77,8 @@ public class Spaces {
       return startup;
     }
 
-    private void open() {
-      BeeKeeper.getScreen().restore(workspace, false);
+    private void open(boolean append) {
+      BeeKeeper.getScreen().restore(workspace, append);
     }
 
     private void setLabel(String label) {
@@ -118,11 +119,13 @@ public class Spaces {
       CustomDiv label = new CustomDiv(STYLE_LABEL);
       label.setText(item.getLabel());
       label.setTitle(item.getWorkspace().replace(BeeConst.CHAR_COMMA, BeeConst.CHAR_EOL));
+      
+      DomUtils.preventSelection(label);
 
       label.addClickHandler(new ClickHandler() {
         @Override
         public void onClick(ClickEvent event) {
-          getItem().open();
+          getItem().open(EventUtils.hasModifierKey(event.getNativeEvent()));
         }
       });
 

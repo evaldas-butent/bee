@@ -1,5 +1,6 @@
 package com.butent.bee.client.screen;
 
+import com.google.common.collect.Maps;
 import com.google.gwt.dom.client.Node;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
@@ -48,7 +49,6 @@ import com.butent.bee.shared.utils.ExtendedProperty;
 import com.butent.bee.shared.utils.PropertyUtils;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -295,7 +295,9 @@ public class Workspace extends TabbedPages implements CaptionChangeEvent.Handler
       void execute(Workspace workspace, int index) {
         TilePanel panel = workspace.getActivePanel();
         if (panel != null) {
-          Global.getSpaces().bookmark(panel.getBookmarkLabel(), panel.toJson().toString());
+          JSONObject json = panel.toJson();
+          workspace.maybeAddResized(json);
+          Global.getSpaces().bookmark(panel.getBookmarkLabel(), json.toString());
         }
       }
 
@@ -421,7 +423,7 @@ public class Workspace extends TabbedPages implements CaptionChangeEvent.Handler
     return BeeUtils.round((double) size * SIZE_FACTOR / max);
   }
 
-  private final Map<Direction, Integer> resized = new HashMap<>();
+  private final Map<Direction, Integer> resized = Maps.newEnumMap(Direction.class);
 
   Workspace() {
     super(STYLE_PREFIX);
@@ -716,6 +718,28 @@ public class Workspace extends TabbedPages implements CaptionChangeEvent.Handler
       clear();
     }
 
+    if (json.containsKey(KEY_RESIZED) && resized.isEmpty()) {
+      JSONArray arr = json.get(KEY_RESIZED).isArray();
+
+      if (arr != null) {
+        for (int i = 0; i < arr.size(); i++) {
+          JSONString string = arr.get(i).isString();
+          
+          if (string != null) {
+            Direction direction = Direction.parse(string.stringValue());
+
+            if (direction != null && !direction.isCenter()) {
+              stretch(direction, false);
+            }
+          }
+        }
+        
+        if (!resized.isEmpty()) {
+          getResizeContainer().doLayout();
+        }
+      }
+    }
+
     TilePanel panel;
 
     if (json.containsKey(KEY_TABS)) {
@@ -740,7 +764,7 @@ public class Workspace extends TabbedPages implements CaptionChangeEvent.Handler
         if (json.containsKey(KEY_SELECTED) && getPageCount() == oldPageCount + tabs.size()) {
           Double value = JsonUtils.getNumber(json, KEY_SELECTED);
           int index = (value == null) ? BeeConst.UNDEF : BeeUtils.round(value);
-          
+
           if (BeeUtils.betweenExclusive(index, 0, tabs.size())) {
             selectPage(oldPageCount + index, SelectionOrigin.SCRIPT);
           }
@@ -889,6 +913,23 @@ public class Workspace extends TabbedPages implements CaptionChangeEvent.Handler
     return panel;
   }
 
+  private void maybeAddResized(JSONObject json) {
+    if (!resized.isEmpty()) {
+      JSONArray arr = new JSONArray();
+      int index = 0;
+      
+      for (Direction direction : resized.keySet()) {
+        if (direction != null) {
+          arr.set(index++, new JSONString(direction.brief()));
+        }
+      }
+      
+      if (index > 0) {
+        json.put(KEY_RESIZED, arr);
+      }
+    }
+  }
+
   private void showActions(String tabId) {
     final int index = getTabIndex(tabId);
     if (BeeConst.isUndef(index)) {
@@ -932,7 +973,7 @@ public class Workspace extends TabbedPages implements CaptionChangeEvent.Handler
       panel.addTile(this, direction);
     }
   }
-
+  
   private void stretch(Direction direction, boolean doLayout) {
     Integer size = getSiblingSize(direction);
     if (BeeUtils.isPositive(size)) {
@@ -947,42 +988,8 @@ public class Workspace extends TabbedPages implements CaptionChangeEvent.Handler
     if (getPageCount() > 1) {
       json.put(KEY_SELECTED, new JSONNumber(getSelectedIndex()));
     }
-
-    if (!resized.isEmpty()) {
-      Split resizeContainer = getResizeContainer();
-
-      JSONArray arr = new JSONArray();
-      int index = 0;
-
-      for (Map.Entry<Direction, Integer> entry : resized.entrySet()) {
-        Direction direction = entry.getKey();
-        Integer size = entry.getValue();
-
-        if (resizeContainer != null && direction != null && BeeUtils.isPositive(size)) {
-          int max;
-          if (direction.isHorizontal()) {
-            max = resizeContainer.getOffsetWidth();
-          } else if (direction.isVertical()) {
-            max = resizeContainer.getOffsetHeight();
-          } else {
-            max = BeeConst.UNDEF;
-          }
-
-          if (max > 0) {
-            JSONObject jsonEntry = new JSONObject();
-
-            jsonEntry.put(Workspace.KEY_DIRECTION, new JSONString(direction.brief()));
-            jsonEntry.put(Workspace.KEY_SIZE, new JSONNumber(Workspace.scaleSize(size, max)));
-
-            arr.set(index++, jsonEntry);
-          }
-        }
-
-        if (index > 0) {
-          json.put(KEY_RESIZED, arr);
-        }
-      }
-    }
+    
+    maybeAddResized(json);
 
     JSONArray tabs = new JSONArray();
 
