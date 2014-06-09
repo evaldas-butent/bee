@@ -725,6 +725,10 @@ public interface LocalizableConstants extends Constants, LocalizableCalendarCons
 
   String weight();
 
+  String welcome();
+
+  String welcomeMessage();
+
   String width();
 
   String winter();
