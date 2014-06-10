@@ -58,7 +58,7 @@ public class ImportOptionsGrid extends AbstractGridInterceptor implements ClickH
   }
 
   @Override
-  public void onShow(GridPresenter presenter) {
+  public void afterCreatePresenter(GridPresenter presenter) {
     setImporting(false);
   }
 

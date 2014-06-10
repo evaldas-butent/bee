@@ -7,13 +7,16 @@ import com.google.common.collect.Sets;
 import static com.butent.bee.shared.modules.classifiers.ClassifierConstants.*;
 
 import com.butent.bee.shared.BeeConst;
+import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.i18n.LocalizableConstants;
 import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.modules.calendar.CalendarConstants;
 import com.butent.bee.shared.modules.discussions.DiscussionsConstants;
 import com.butent.bee.shared.modules.documents.DocumentConstants;
 import com.butent.bee.shared.modules.ec.EcConstants;
+import com.butent.bee.shared.modules.mail.MailConstants;
 import com.butent.bee.shared.modules.tasks.TaskConstants;
+import com.butent.bee.shared.modules.trade.TradeConstants;
 import com.butent.bee.shared.modules.transport.TransportConstants;
 import com.butent.bee.shared.rights.Module;
 import com.butent.bee.shared.rights.ModuleAndSub;
@@ -95,7 +98,7 @@ public enum Feed implements HasLocalizedCaption {
   },
 
   DOCUMENTS(ModuleAndSub.of(Module.DOCUMENTS), DocumentConstants.TBL_DOCUMENTS,
-      DocumentConstants.TBL_DOCUMENTS, DocumentConstants.COL_DOCUMENT_NAME) {
+      DocumentConstants.VIEW_DOCUMENTS, DocumentConstants.COL_DOCUMENT_NAME) {
     @Override
     public String getCaption(LocalizableConstants constants) {
       return constants.feedDocuments();
@@ -274,6 +277,143 @@ public enum Feed implements HasLocalizedCaption {
     }
   },
 
+  ASSESSMENT_REQUESTS_ALL(ModuleAndSub.of(Module.TRANSPORT, SubModule.LOGISTICS),
+      TransportConstants.TBL_ASSESSMENTS, TransportConstants.VIEW_ASSESSMENTS,
+      Lists.newArrayList(TransportConstants.COL_ASSESSMENT, DataUtils.ID_TAG,
+          TransportConstants.COL_STATUS,
+          TransportConstants.ALS_ORDER_NOTES, TransportConstants.ALS_CUSTOMER_NAME)) {
+
+    @Override
+    public String getCaption(LocalizableConstants constants) {
+      return constants.feedTrAssessmentAllRequests();
+    }
+
+  },
+
+  ASSESSMENT_REQUESTS_MY(ModuleAndSub.of(Module.TRANSPORT, SubModule.LOGISTICS),
+      TransportConstants.TBL_ASSESSMENTS, TransportConstants.VIEW_ASSESSMENTS,
+      Lists.newArrayList(TransportConstants.COL_ASSESSMENT, DataUtils.ID_TAG,
+          TransportConstants.COL_STATUS,
+          TransportConstants.ALS_ORDER_NOTES, TransportConstants.ALS_CUSTOMER_NAME)) {
+
+    @Override
+    public String getCaption(LocalizableConstants constants) {
+      return constants.feedTrAssessmentMyRequests();
+    }
+
+  },
+
+  ASSESSMENT_ORDERS_ALL(ModuleAndSub.of(Module.TRANSPORT, SubModule.LOGISTICS),
+      TransportConstants.TBL_ASSESSMENTS, TransportConstants.VIEW_ASSESSMENTS,
+      Lists.newArrayList(TransportConstants.COL_ASSESSMENT, DataUtils.ID_TAG,
+          TransportConstants.ALS_ORDER_NOTES,
+          TransportConstants.COL_STATUS, TransportConstants.ALS_CUSTOMER_NAME)) {
+
+    @Override
+    public String getCaption(LocalizableConstants constants) {
+      return constants.feedTrAssessmentAllOrders();
+    }
+
+  },
+
+  ASSESSMENT_ORDERS_MY(ModuleAndSub.of(Module.TRANSPORT, SubModule.LOGISTICS),
+      TransportConstants.TBL_ASSESSMENTS, TransportConstants.VIEW_ASSESSMENTS,
+      Lists.newArrayList(TransportConstants.COL_ASSESSMENT, DataUtils.ID_TAG,
+          TransportConstants.ALS_ORDER_NOTES, TransportConstants.ALS_CUSTOMER_NAME,
+          TransportConstants.COL_STATUS)) {
+
+    @Override
+    public String getCaption(LocalizableConstants constants) {
+      return constants.feedTrAssessmentMyOrders();
+    }
+
+  },
+
+  ASSESSMENT_TRANSPORTATIONS(ModuleAndSub.of(Module.TRANSPORT, SubModule.LOGISTICS),
+      TransportConstants.TBL_TRIPS,
+      TransportConstants.VIEW_ASSESSMENT_TRANSPORTATIONS,
+      Lists.newArrayList(DataUtils.ID_TAG, TransportConstants.COL_TRIP_DATE,
+          TransportConstants.ALS_FORWARDER_NAME, TransportConstants.ALS_EXPEDITION_TYPE)) {
+
+    @Override
+    public String getCaption(LocalizableConstants constants) {
+      return constants.feedTrAssessmentTransportations();
+    }
+
+  },
+
+  CARGO_SALES(ModuleAndSub.of(Module.TRANSPORT), TransportConstants.TBL_CARGO_INCOMES,
+      TransportConstants.VIEW_CARGO_SALES, Lists.newArrayList(TransportConstants.ALS_ORDER_DATE,
+          TransportConstants.COL_ORDER_NO, TransportConstants.ALS_PAYER_NAME)) {
+
+    @Override
+    public String getCaption(LocalizableConstants constants) {
+      return constants.feedTrOrderCargoSales();
+    }
+
+  },
+
+  CARGO_CREDIT_SALES(ModuleAndSub.of(Module.TRANSPORT), TransportConstants.TBL_CARGO_INCOMES,
+      TransportConstants.VIEW_CARGO_CREDIT_SALES, Lists.newArrayList(
+          TransportConstants.ALS_ORDER_DATE, TransportConstants.COL_ORDER_NO,
+          TransportConstants.ALS_PAYER_NAME)) {
+
+    @Override
+    public String getCaption(LocalizableConstants constants) {
+      return constants.feedTrOrderCargoCreditSales();
+    }
+
+  },
+
+  CARGO_PURCHASES(ModuleAndSub.of(Module.TRANSPORT), TransportConstants.TBL_CARGO_EXPENSES,
+      TransportConstants.VIEW_CARGO_PURCHASES, Lists.newArrayList(
+          TransportConstants.ALS_ORDER_DATE, TransportConstants.COL_ORDER_NO,
+          TransportConstants.COL_SERVICE_NAME)) {
+    @Override
+    public String getCaption(LocalizableConstants constants) {
+
+      return constants.feedTrTripCosts();
+    }
+  },
+
+  CARGO_INVOICES(ModuleAndSub.of(Module.TRANSPORT), TradeConstants.TBL_SALES,
+      TransportConstants.VIEW_CARGO_INVOICES, Lists.newArrayList(TransportConstants.COL_DATE,
+          TransportConstants.COL_NUMBER, TransportConstants.ALS_PAYER_NAME)) {
+    @Override
+    public String getCaption(LocalizableConstants constants) {
+      return constants.feedTrOrderCargoInvoices();
+    }
+  },
+
+  CARGO_PROFORMA_INVOICES(ModuleAndSub.of(Module.TRANSPORT), TradeConstants.TBL_SALES,
+      TransportConstants.VIEW_CARGO_INVOICES, Lists.newArrayList(TransportConstants.COL_DATE,
+          TransportConstants.COL_NUMBER, TransportConstants.ALS_PAYER_NAME)) {
+    @Override
+    public String getCaption(LocalizableConstants constants) {
+      return constants.feedTrCargoProformaInvoices();
+    }
+  },
+
+  CARGO_CREDIT_INVOICES(ModuleAndSub.of(Module.TRANSPORT), TradeConstants.TBL_PURCHASES,
+      TransportConstants.VIEW_CARGO_PURCHASE_INVOICES, Lists.newArrayList(
+          TransportConstants.COL_DATE, TransportConstants.COL_NUMBER,
+          TradeConstants.ALS_SUPPLIER_NAME)) {
+    @Override
+    public String getCaption(LocalizableConstants constants) {
+      return constants.feedTrCargoCreditInvoices();
+    }
+  },
+
+  CARGO_PURCHASE_INVOICES(ModuleAndSub.of(Module.TRANSPORT), TradeConstants.TBL_PURCHASES,
+      TransportConstants.VIEW_CARGO_PURCHASE_INVOICES, Lists.newArrayList(
+          TransportConstants.COL_DATE, TransportConstants.COL_NUMBER,
+          TradeConstants.ALS_SUPPLIER_NAME)) {
+    @Override
+    public String getCaption(LocalizableConstants constants) {
+      return constants.feedTrCargoPurchaseInvoices();
+    }
+  },
+
   DISCUSSIONS(ModuleAndSub.of(Module.DISCUSSIONS), DiscussionsConstants.TBL_DISCUSSIONS,
       DiscussionsConstants.VIEW_DISCUSSIONS, Lists.newArrayList(DiscussionsConstants.COL_SUBJECT)) {
     @Override
@@ -289,7 +429,15 @@ public enum Feed implements HasLocalizedCaption {
     public String getCaption(LocalizableConstants constants) {
       return constants.announcements();
     }
+  },
 
+  MAIL(ModuleAndSub.of(Module.MAIL), MailConstants.TBL_PLACES, MailConstants.TBL_PLACES,
+      Lists.newArrayList(MailConstants.COL_DATE, "SenderEmail", MailConstants.COL_SUBJECT)) {
+
+    @Override
+    public String getCaption(LocalizableConstants constants) {
+      return constants.mail();
+    }
   };
 
   private static final String SEPARATOR = BeeConst.STRING_COMMA;

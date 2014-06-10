@@ -46,6 +46,7 @@ import com.butent.bee.client.view.grid.CellGrid;
 import com.butent.bee.client.view.grid.GridView;
 import com.butent.bee.client.view.grid.GridView.SelectedRows;
 import com.butent.bee.client.view.grid.interceptor.AbstractGridInterceptor;
+import com.butent.bee.client.view.grid.interceptor.GridInterceptor;
 import com.butent.bee.client.widget.Button;
 import com.butent.bee.client.widget.InputArea;
 import com.butent.bee.client.widget.InputBoolean;
@@ -233,7 +234,7 @@ class TripCargoGrid extends AbstractGridInterceptor implements ClickHandler {
           case "Unloading":
             xpr = lbl + ": {" + fld + "Date} {" + fld + "Contact} {" + fld + "Company} {"
                 + fld + "Address} {" + fld + "PostIndex} {" + fld + "CityName} {"
-                + fld + "CountryName} {" + fld + "Terminal} ";
+                + fld + "CountryName} {" + fld + "Number} ";
             break;
 
           default:
@@ -456,16 +457,13 @@ class TripCargoGrid extends AbstractGridInterceptor implements ClickHandler {
   }
 
   @Override
+  public GridInterceptor getInstance() {
+    return new TripCargoGrid(tripForm);
+  }
+  
+  @Override
   public String getRowCaption(IsRow row, boolean edit) {
     return Localized.getConstants().trCargoActualPlaces();
-  }
-
-  @Override
-  public void onAttach(GridView gridView) {
-    if (BeeUtils.same(tripForm.getFormName(), FORM_TRIP)) {
-      HeaderView hdr = gridView.getViewPresenter().getHeader();
-      hdr.addCommandItem(new Button(Localized.getConstants().message(), this));
-    }
   }
 
   @Override
@@ -532,5 +530,13 @@ class TripCargoGrid extends AbstractGridInterceptor implements ClickHandler {
       event.consume();
     }
     super.onEditStart(event);
+  }
+
+  @Override
+  public void onLoad(GridView gridView) {
+    if (BeeUtils.same(tripForm.getFormName(), FORM_TRIP)) {
+      HeaderView hdr = gridView.getViewPresenter().getHeader();
+      hdr.addCommandItem(new Button(Localized.getConstants().message(), this));
+    }
   }
 }

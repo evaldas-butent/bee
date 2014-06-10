@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE Form [
   <!ENTITY separator '<div style="height: 5px; visibility: hidden;"/>'>
-  <!ENTITY lbl1 "width: 73px; margin-right: 1em; text-align: right">
-  <!ENTITY lbl2 "width: 80px; margin-right: 1em; text-align: right">
+  <!ENTITY lbl1 "width: 73px; margin-right: 1em; text-align: right; padding-right: 9px;">
+  <!ENTITY lbl2 "width: 130px; margin-right: 1em; text-align: right; padding-right: 9px;">
 ]>
 <f:Form xmlns="http://www.butent.com/widget"
   xmlns:f="http://www.butent.com/form"
@@ -22,7 +22,7 @@
       <InputText source="Article" />
 
       <Label text="=itemUnits" horizontalAlignment="right" class="bee-required"
-        style="margin-right: 5px; width: 86px; margin-left: 2px;" />
+        style="&lbl2;" />
       <DataSelector source="Unit" style="width: 100px;" visible="true" />
     </FlowPanel>
     &separator;
@@ -32,7 +32,7 @@
       <InputText source="Barcode" />
 
       <Label for="Price" text="=sellingPrice" horizontalAlignment="right"
-        style="&lbl2; margin-left: 15px;" />
+        style="&lbl2;" />
       <InputCurrency source="Price" style="width: 100px;" />
       <DataSelector source="Currency" for="Price" style="width: 50px; margin-left: 1em;" />
     </FlowPanel>
@@ -41,14 +41,14 @@
     <FlowPanel class="flexBox-horizontal">
       <CheckBox source="Vat" text="=vat" style="margin-right:13px; margin-left:20px;" />
       <InputDecimal source="VatPercent" caption="%" decorator="caption-right" 
-        style="width: 30px; margin-left: 4px;" />
+        style="width: 30px; margin-left: 4px; border-left-width: 1px; border-right-width: 1px;" />
     </FlowPanel>
     &separator;
 
     <FlowPanel class="flexBox-horizontal">
       <Label text="=itemCategories" style="&lbl1;" />
       <ChildSelector name="Categories" childTable="ItemCategories" viewName="CategoryTree" 
-        targetRelColumn="Item" sourceRelColumn="Category"
+        targetRelColumn="Item" sourceRelColumn="Category" newRowEnabled="false"
         renderColumns="ParentName Name" style="width: 500px;" label="=categories" />
     </FlowPanel>
   </FlowPanel>

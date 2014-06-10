@@ -2,10 +2,10 @@
 <g:Grid xmlns="http://www.butent.com/column" xmlns:g="http://www.butent.com/grid"
   
   name="Users" viewName="Users" caption="=users"
-  newRowPopup="true" editInPlace="Locale Interface BlockAfter BlockBefore"
+  newRowPopup="true" editInPlace="Interface BlockAfter BlockBefore"
   >
   <g:columns>
-    <IdColumn name="Id" caption="=captionId" />
+    <IdColumn name="Id" />
     <DataColumn name="Login" caption="=userLogin" visible="true" />
 
     <RelColumn name="CompanyPerson" renderColumns="FirstName LastName" caption="=personFullName"

@@ -36,13 +36,13 @@ public final class Images {
 
     @Source("alarm.png")
     ImageResource alarm();
-    
+
     @Source("arrow_down.png")
     ImageResource arrowDown();
 
     @Source("arrow_down_double.png")
     ImageResource arrowDownDouble();
-    
+
     @Source("arrow_in.png")
     ImageResource arrowIn();
 
@@ -51,7 +51,7 @@ public final class Images {
 
     @Source("arrow_left_double.png")
     ImageResource arrowLeftDouble();
-    
+
     @Source("arrow_out.png")
     ImageResource arrowOut();
 
@@ -60,13 +60,13 @@ public final class Images {
 
     @Source("arrow_right_double.png")
     ImageResource arrowRightDouble();
-    
+
     @Source("arrow_up.png")
     ImageResource arrowUp();
 
     @Source("arrow_up_double.png")
     ImageResource arrowUpDouble();
-    
+
     @Source("ascending.gif")
     ImageResource ascending();
 
@@ -93,7 +93,7 @@ public final class Images {
 
     @Source("closeSmall.png")
     ImageResource closeSmall();
-    
+
     @Source("closeSmallRed.png")
     ImageResource closeSmallRed();
 
@@ -115,9 +115,6 @@ public final class Images {
     @Source("disclosureOpen.png")
     ImageResource disclosureOpen();
 
-    @Source("disconnect.png")
-    ImageResource disconnect();
-
     @Source("edit.png")
     ImageResource edit();
 
@@ -129,6 +126,9 @@ public final class Images {
 
     @Source("error.png")
     ImageResource error();
+
+    @Source("silver/excel_17x18.png")
+    ImageResource excel();
 
     @Source("feed.png")
     ImageResource feed();
@@ -223,17 +223,20 @@ public final class Images {
     @Source("searchOptions.gif")
     ImageResource searchOptions();
 
-    @Source("settings.png")
-    ImageResource settings();
-
     @Source("silver/plus_gray_17x18.png")
     ImageResource silverAdd();
-    
+
     @Source("silver/bar_chart_24x24.png")
     ImageResource silverBarChart();
 
+    @Source("silver/bookmark_24x24.png")
+    ImageResource silverBookmark();
+
     @Source("silver/bookmark_add_21x19.png")
     ImageResource silverBookmarkAdd();
+
+    @Source("silver/calendar_24x24.png")
+    ImageResource silverCalendar();
 
     @Source("silver/chat_icon_16x21.gif")
     ImageResource silverChatIcon();
@@ -241,8 +244,14 @@ public final class Images {
     @Source("silver/close_17x18.png")
     ImageResource silverClose();
 
+    @Source("silver/comments_24x24.png")
+    ImageResource silverComments();
+
     @Source("silver/configure_17x18.png")
     ImageResource silverConfigure();
+
+    @Source("silver/configure_24x24.png")
+    ImageResource silverConfigure24();
 
     @Source("silver/delete_17x18.png")
     ImageResource silverDelete();
@@ -259,24 +268,30 @@ public final class Images {
     @Source("silver/edit_17x18.png")
     ImageResource silverEdit();
 
+    @Source("silver/feed_24x24.png")
+    ImageResource silverFeed();
+
     @Source("silver/filter_17x14.png")
     ImageResource silverFilter();
 
     @Source("silver/filter_remove_25x14.png")
     ImageResource silverFilterRemove();
-    
+
     @Source("silver/invoice_17x18.png")
     ImageResource silverInvoice();
 
     @Source("silver/mail_17x18.png")
     ImageResource silverMail();
 
+    @Source("silver/mail_24x24.png")
+    ImageResource silverMail24();
+
     @Source("silver/minus_button_17x18.png")
     ImageResource silverMinus();
-    
+
     @Source("silver/plus_button_17x18.png")
     ImageResource silverPlus();
-    
+
     @Source("silver/print_17x18.png")
     ImageResource silverPrint();
 
@@ -292,6 +307,9 @@ public final class Images {
     @Source("silver/save_17x18.png")
     ImageResource silverSave();
 
+    @Source("silver/save_24x24.png")
+    ImageResource silverSave24();
+
     @Source("silver/smile_24x24.png")
     ImageResource silverSmile();
 
@@ -300,9 +318,12 @@ public final class Images {
 
     @Source("silver/tringle_up_11x9.png")
     ImageResource silverTringleUp();
-    
+
     @Source("silver/truck_17x18.png")
     ImageResource silverTruck();
+
+    @Source("silver/user_24x24.png")
+    ImageResource silverUser();
 
     @Source("slider.gif")
     ImageResource slider();
@@ -321,7 +342,10 @@ public final class Images {
 
     @Source("warning.png")
     ImageResource warning();
-    
+
+    @Source("workspace.png")
+    ImageResource workspace();
+
     @Source("yellow.gif")
     ImageResource yellow();
 
@@ -330,7 +354,7 @@ public final class Images {
   }
 
   public static final long MAX_SIZE_FOR_DATA_URL = 1258292L; /* ~1.2 MB */
-  
+
   private static final Map<String, ImageResource> map = Maps.newHashMap();
 
   private static final ImageElement imageElement = Document.get().createImageElement();
@@ -411,14 +435,14 @@ public final class Images {
     map.put(key("disclosureClosed"), resources.disclosureClosed());
     map.put(key("disclosureOpen"), resources.disclosureOpen());
 
-    map.put(key("disconnect"), resources.disconnect());
-
     map.put(key("edit"), resources.edit());
 
     map.put(key("editAdd"), resources.editAdd());
     map.put(key("editDelete"), resources.editDelete());
 
     map.put(key("error"), resources.error());
+
+    map.put(key("excel"), resources.excel());
 
     map.put(key("feed"), resources.feed());
 
@@ -476,8 +500,6 @@ public final class Images {
 
     map.put(key("search"), resources.search());
 
-    map.put(key("settings"), resources.settings());
-
     map.put(key("slider"), resources.slider());
     map.put(key("sliderDisabled"), resources.sliderDisabled());
     map.put(key("sliderSliding"), resources.sliderSliding());
@@ -487,6 +509,8 @@ public final class Images {
     map.put(key("user"), resources.user());
 
     map.put(key("warning"), resources.warning());
+
+    map.put(key("workspace"), resources.workspace());
 
     map.put(key("yellow"), resources.yellow());
     map.put(key("yellowSmall"), resources.yellowSmall());
@@ -518,7 +542,7 @@ public final class Images {
     map.put(key("silverTringleUp"), resources.silverTringleUp());
     map.put(key("silverTruck"), resources.silverTruck());
   }
-  
+
   public static List<NewFileInfo> sanitizeInput(Collection<NewFileInfo> input,
       NotificationListener notificationListener) {
 

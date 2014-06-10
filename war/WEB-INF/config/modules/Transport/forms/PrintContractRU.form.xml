@@ -16,73 +16,38 @@
     <css id="&form;">
       .&form;-table {border-collapse:collapse; width:100%;}
       .&form;-table td {border:1px solid black; padding:2px;}
+      .&form;-forwarder .bee-co-companyInfo-name .bee-co-companyInfo-item:before {content: "Перевозчик: "; font-weight:normal;}
+      .&form;-customer .bee-co-companyInfo-name .bee-co-companyInfo-item:before {content: "Заказчик: "; font-weight:normal;}
     </css>
     <Image url="images/logo.png" style="display:block; margin:auto;" />
-    <TextLabel source="Number" style="text-align:center; &bold;">
-      <renderToken source="Assessor" prefix="Договор перевозки Но. " />
-      <renderToken source="TripNo" prefix="-" />
+    <TextLabel style="text-align:center; &bold;">
+      <render><ui:expression>'Договор перевозки Но. ' + rowId + (row.Number ? '-' + row.Number : '')</ui:expression></render>
     </TextLabel>
     <DateLabel source="Date" style="text-align:center;" />
 
     <Table class="&form;-table" style="&section;">
       <row>
-      <cell style="vertical-align:top;">
-        <FlowPanel>
-          <TextLabel source="ForwarderName" style="&bold;">
-            <renderToken source="ForwarderName" prefix="Перевозчик: " />
-          </TextLabel>
-          <TextLabel source="ForwarderCode">
-            <renderToken source="ForwarderCode" prefix="Код предприятия: " />
-          </TextLabel>
-          <TextLabel source="ForwarderVATCode">
-            <renderToken source="ForwarderVATCode" prefix="НДС код: " />
-          </TextLabel>
-          <TextLabel source="ForwarderAddress">
-            <renderToken source="ForwarderAddress" prefix="Адрес: " />
-            <renderToken source="ForwarderCity" prefix=", " />
-            <renderToken source="ForwarderCountry" prefix=", " />
-            <renderToken source="ForwarderPostIndex" prefix=", " />
-          </TextLabel>
-          <TextLabel source="ForwarderPhone">
-            <renderToken source="ForwarderPhone" prefix="Телефон: " suffix=" " />
-            <renderToken source="ForwarderMobile" prefix="Мобильный: " suffix=" " />
-            <renderToken source="ForwarderFax" prefix="Факс: " suffix=" " />
-          </TextLabel>
-          <TextLabel source="ForwarderEmail">
-            <renderToken source="ForwarderEmail" prefix="Эл. почта: " />
-          </TextLabel>
-        </FlowPanel>
-      </cell>
+        <cell style="vertical-align:top;">
+          <FlowPanel name="Forwarder" class="&form;-forwarder">
+            <properties locale="ru" />
+          </FlowPanel>
+        </cell>
         
-      <FlowPanel>
-        <TextLabel source="CompanyName" style="&bold;">
-          <renderToken source="CompanyName" />
-        </TextLabel>
-        <TextLabel source="CompanyCode">
-          <renderToken source="CompanyCode" prefix="Код: " />
-        </TextLabel>
-        <TextLabel source="CompanyVATCode">
-          <renderToken source="CompanyVATCode" prefix="НДС код: " />
-        </TextLabel>
-        <TextLabel source="CompanyAddress">
-          <renderToken source="CompanyAddress" prefix="Адрес: " />
-          <renderToken source="CompanyCity" prefix=", " />
-          <renderToken source="CompanyCountry" prefix=", " />
-          <renderToken source="CompanyPostIndex" prefix=", " />
-        </TextLabel>
-        <TextLabel source="CompanyPhone">
-          <renderToken source="CompanyPhone" prefix="Телефон: " suffix=" " />
-          <renderToken source="CompanyMobile" prefix="Мобильный: " suffix=" " />
-          <renderToken source="CompanyFax" prefix="Факс: " suffix=" " />
-        </TextLabel>
-        <TextLabel source="CompanyEmail">
-          <renderToken source="CompanyEmail" prefix="Эл. почта: " />
-        </TextLabel>
-      </FlowPanel>
+        <FlowPanel name="Customer" class="&form;-customer">
+          <properties locale="ru" />
+        </FlowPanel>
       </row>
       <row>
         <Label html="Груз" />
-        <TextLabel source="Description" style="white-space:pre-wrap;" />
+        <TextLabel style="white-space:pre-wrap;" >
+          <renderToken source="Description" suffix="&lt;br&gt;"/>
+          <renderToken source="Quantity" prefix="Количество: " suffix=" " addPrefixWhenEmpty="false" addSuffixWhenEmpty="false" />
+          <renderToken source="QuantityUnit" suffix="&lt;br&gt;" addSuffixWhenEmpty="false" />
+          <renderToken source="Weight" prefix="Вес: " suffix=" " addPrefixWhenEmpty="false" addSuffixWhenEmpty="false" />
+          <renderToken source="WeightUnit" suffix="&lt;br&gt;" addSuffixWhenEmpty="true" />
+          <renderToken source="Volume" prefix="Объем: " suffix=" " addPrefixWhenEmpty="false" addSuffixWhenEmpty="false" />
+          <renderToken source="VolumeUnit" suffix=" " />
+        </TextLabel>
       </row>
       <row>
         <Label html="Место погрузки" />
@@ -126,7 +91,7 @@
         <cell colSpan="2">
           <HtmlPanel style="&section;">
             <span style="white-space:pre-wrap;">Обязательства и ответственность Клиента:
-1.Перевозка осуществляется на условиях Конвенции CMR. Перевозчик во время выполнения данного Договора обязан иметь действующий полис страхования ответственности перевозчика, лицензии и необходимые разрешения для законного выполнения вышеуказанной перевозки. 
+1. Перевозка осуществляется на условиях Конвенции CMR. Перевозчик во время выполнения данного Договора обязан иметь действующий полис страхования ответственности перевозчика, лицензии и необходимые разрешения для законного выполнения вышеуказанной перевозки. 
 2. Заказчик обязывается организовать погрузку и таможенное оформление (при необходимости) в течение 24 часов (НВС 48 часов) с момента прибытия а/м на место погрузки, включая работы по креплению и пломбированию. 
 3. Заказчик обязывается осуществить выгрузку и таможенную очистку груза (при необходимости) в течение 24 часов (НВС 48 часов) с момента прибытия а/м на таможенный пост места назначения или на место доставки. 
 4. В случае превышения терминов, указанных в п. 2-3, Заказчик оплачивает простой Перевозчику в размере 100 еур. 
@@ -136,7 +101,9 @@
 8. Перевозчик несет ответственность за груз с момента его принятия к перевозке и до момента доставки, а также за просрочку в доставке согласно условиям Конвенции CMR. Перевозчик не несет ответственности за количество груза, если груз доставлен с исправными пломбами, за внутреннее состояние и количество мест груза, если упаковка груза не нарушена. 
 9. Заказчик несет ответственность за подачу груза к погрузке, погрузку, выгрузку, повреждение транспортного средства во время погрузки или выгрузки, выполнение таможенных и иных формальностей, оформление документов, инструктирование Перевозчика о свойствах груза и мерах, необходимых для сохранной перевозки груза (крепление и т.д.), оплату Перевозчику и т.д..
 10. Заказчик имеет право отказаться от поргузки не менее чем за 12 часов до назначенного времени. В другом случае за непредъявление груза к погрузке Заказчик уплачивает Перевозчику штраф в размере 20 % от фрахта, если небудет соглосована иначе. 
-11. Перевозчик не имеет права делать никаких платежей от лица заказчика, не получив факса, подтверждающего полномочия.</span>
+11. Перевозчик не имеет права делать никаких платежей от лица заказчика, не получив факса, подтверждающего полномочия.
+12. Заказ не может корректироваться вручную. Любая корректировка договора должна быть подтверждена печатями и подписями обеих сторон "ЗАКАЗА", в противном случае изменения считаются недействительными и не имеет юридической силы. 
+            </span>
           </HtmlPanel>
         </cell>
       </row>

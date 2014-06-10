@@ -271,7 +271,7 @@ public class InputTime extends InputText implements HasBounds, HasIntStep {
   }
 
   protected boolean handleChar(int charCode) {
-    if (charCode == BeeConst.CHAR_ALL) {
+    if (charCode == BeeConst.CHAR_ASTERISK) {
       pickTime();
       return true;
     }

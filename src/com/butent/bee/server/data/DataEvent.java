@@ -168,6 +168,10 @@ public abstract class DataEvent {
     return !isAfter();
   }
 
+  public boolean isTarget(String target) {
+    return BeeUtils.same(getTargetName(), target);
+  }
+
   public void setUserObject(Object userObject) {
     this.userObject = userObject;
   }

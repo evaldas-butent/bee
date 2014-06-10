@@ -17,7 +17,7 @@
     <Relation name="Customer" relation="Companies" label="=trdCustomer" />
 
     <Numeric name="Amount" precision="12" scale="2" label="=trdTotal" />
-    <Relation name="Currency" relation="Currencies" notNull="true" />
+    <Relation name="Currency" relation="Currencies" notNull="true" defExpr="MAIN_CURRENCY" />
 
     <Date name="Term" label="=trdTerm" />
     <DateTime name="PaymentTime" label="=trdPaymentTime" />

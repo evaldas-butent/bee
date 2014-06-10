@@ -76,7 +76,7 @@ public class DateTimeFormat {
 
   private static final int NUMBER_BASE = 10;
 
-  private static final Map<String, DateTimeFormat> cache;
+  private static final Map<String, DateTimeFormat> cache = new HashMap<>();
 
   private static final String PATTERN_CHARS = "GyMLdkHmsSEcDahKzZv";
 
@@ -86,10 +86,6 @@ public class DateTimeFormat {
 
   private static final String GMT = "GMT";
   private static final String UTC = "UTC";
-
-  static {
-    cache = new HashMap<String, DateTimeFormat>();
-  }
 
   public static DateTimeFormat getFormat(PredefinedFormat predef) {
     if (usesFixedEnglishStrings(predef)) {

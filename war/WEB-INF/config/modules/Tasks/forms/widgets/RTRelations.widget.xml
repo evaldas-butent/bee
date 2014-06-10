@@ -6,8 +6,8 @@
   <br/>
 
   <Table xmlns="http://www.butent.com/widget" style="border-collapse: collapse; margin-top: 2ex;"
-      cellStyle="padding-bottom: 3px;">
-    <col index="0" cellStyle="text-align: right; vertical-align: top; padding-right: 1em;" />
+      cellStyle="padding-bottom: 5px;">
+    <col index="0" cellStyle="text-align: right; vertical-align: top; padding-right: 8px; width: 120px;" />
 
     <row data="Relations" for="Company" module="Classifiers.Contacts">
       <Label text="=companies" />
@@ -45,8 +45,16 @@
         renderColumns="Subject" newRowEnabled="false" editPopup="true" style="&inp;" />
     </row>
 
+    <row data="Relations" for="ServiceObject" module="Service">
+      <Label text="=svcObjects" />
+      <ChildSelector childTable="Relations" viewName="ServiceObjects" property="ServiceObjects"
+        targetRelColumn="RecurringTask" sourceRelColumn="ServiceObject"      
+        renderColumns="Address" choiceColumns="Address CustomerName"
+        newRowEnabled="false" editPopup="true" style="&inp;" />
+    </row>
+
     <row data="Relations" for="Task">
-      <Label text="=tasks" />
+      <Label text="=crmTasks" />
       <ChildSelector childTable="Relations" viewName="Tasks" property="Tasks"
         targetRelColumn="RecurringTask" sourceRelColumn="Task"      
         renderColumns="Summary ExecutorFirstName ExecutorLastName"

@@ -151,6 +151,30 @@ public class ListBox extends CustomWidget implements Editor, HasItems, HasValueS
     return "list";
   }
   
+  public int getIndex(String text) {
+    int index = BeeConst.UNDEF;
+    if (BeeUtils.isEmpty(text)) {
+      return index;
+    }
+
+    if (isValueNumeric()) {
+      if (BeeUtils.isDigit(BeeUtils.trim(text))) {
+        int z = BeeUtils.toInt(text) - getValueStartIndex();
+        if (isIndex(z)) {
+          index = z;
+        }
+      }
+    } else {
+      for (int i = 0; i < getItemCount(); i++) {
+        if (BeeUtils.same(getValue(i), text)) {
+          index = i;
+          break;
+        }
+      }
+    }
+    return index;
+  }
+
   @Override
   public int getItemCount() {
     return getSelectElement().getOptions().getLength();
@@ -187,7 +211,7 @@ public class ListBox extends CustomWidget implements Editor, HasItems, HasValueS
       return BeeUtils.trimRight(v);
     }
   }
-
+  
   public OptionElement getOptionElement(int index) {
     if (isIndex(index)) {
       return getSelectElement().getOptions().getItem(index);
@@ -200,16 +224,16 @@ public class ListBox extends CustomWidget implements Editor, HasItems, HasValueS
   public String getOptions() {
     return options;
   }
-  
+
   public int getSelectedIndex() {
     return getSelectElement().getSelectedIndex();
   }
-
+  
   @Override
   public int getTabIndex() {
     return getElement().getTabIndex();
   }
-  
+
   @Override
   public String getValue() {
     int index = getSelectedIndex();
@@ -221,12 +245,12 @@ public class ListBox extends CustomWidget implements Editor, HasItems, HasValueS
       return getValue(index);
     }
   }
-
+  
   public String getValue(int index) {
     checkIndex(index);
     return getSelectElement().getOptions().getItem(index).getValue();
   }
-  
+
   @Override
   public int getValueStartIndex() {
     return valueStartIndex;
@@ -284,11 +308,11 @@ public class ListBox extends CustomWidget implements Editor, HasItems, HasValueS
   public boolean isValueNumeric() {
     return valueNumeric;
   }
-
+  
   @Override
   public void normalizeDisplay(String normalizedValue) {
   }
-  
+
   @Override
   public void onBrowserEvent(Event event) {
     String type = event.getType();
@@ -403,14 +427,14 @@ public class ListBox extends CustomWidget implements Editor, HasItems, HasValueS
   public void setOptions(String options) {
     this.options = options;
   }
-
+  
   public void setSelectedIndex(int index) {
     getSelectElement().setSelectedIndex(index);
     if (!isAttached()) {
       setDeselectPending(BeeConst.isUndef(index));
     }
   }
-  
+
   @Override
   public void setTabIndex(int index) {
     getElement().setTabIndex(index);
@@ -488,30 +512,6 @@ public class ListBox extends CustomWidget implements Editor, HasItems, HasValueS
 
   private void checkIndex(int index) {
     Assert.isIndex(index, getItemCount());
-  }
-
-  private int getIndex(String text) {
-    int index = BeeConst.UNDEF;
-    if (BeeUtils.isEmpty(text)) {
-      return index;
-    }
-
-    if (isValueNumeric()) {
-      if (BeeUtils.isDigit(BeeUtils.trim(text))) {
-        int z = BeeUtils.toInt(text) - getValueStartIndex();
-        if (isIndex(z)) {
-          index = z;
-        }
-      }
-    } else {
-      for (int i = 0; i < getItemCount(); i++) {
-        if (BeeUtils.same(getValue(i), text)) {
-          index = i;
-          break;
-        }
-      }
-    }
-    return index;
   }
 
   private SelectElement getSelectElement() {

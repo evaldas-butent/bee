@@ -31,7 +31,7 @@ import java.util.Map;
 
 public final class MxUtils {
   public static List<Property> getClassLoadingInfo() {
-    List<Property> lst = new ArrayList<Property>();
+    List<Property> lst = new ArrayList<>();
 
     ClassLoadingMXBean mxb = ManagementFactory.getClassLoadingMXBean();
 
@@ -43,7 +43,7 @@ public final class MxUtils {
   }
 
   public static List<Property> getCompilationInfo() {
-    List<Property> lst = new ArrayList<Property>();
+    List<Property> lst = new ArrayList<>();
 
     CompilationMXBean mxb = ManagementFactory.getCompilationMXBean();
 
@@ -54,7 +54,7 @@ public final class MxUtils {
   }
 
   public static List<ExtendedProperty> getGarbageCollectorInfo() {
-    List<ExtendedProperty> lst = new ArrayList<ExtendedProperty>();
+    List<ExtendedProperty> lst = new ArrayList<>();
 
     List<GarbageCollectorMXBean> mxbs = ManagementFactory.getGarbageCollectorMXBeans();
 
@@ -74,7 +74,7 @@ public final class MxUtils {
   }
 
   public static List<ExtendedProperty> getMemoryInfo() {
-    List<ExtendedProperty> lst = new ArrayList<ExtendedProperty>();
+    List<ExtendedProperty> lst = new ArrayList<>();
 
     MemoryMXBean mxb = ManagementFactory.getMemoryMXBean();
     String nm = "Memory";
@@ -92,7 +92,7 @@ public final class MxUtils {
   }
 
   public static List<ExtendedProperty> getMemoryManagerInfo() {
-    List<ExtendedProperty> lst = new ArrayList<ExtendedProperty>();
+    List<ExtendedProperty> lst = new ArrayList<>();
 
     List<MemoryManagerMXBean> mxbs = ManagementFactory.getMemoryManagerMXBeans();
 
@@ -111,7 +111,7 @@ public final class MxUtils {
   }
 
   public static List<ExtendedProperty> getMemoryPoolInfo() {
-    List<ExtendedProperty> lst = new ArrayList<ExtendedProperty>();
+    List<ExtendedProperty> lst = new ArrayList<>();
 
     List<MemoryPoolMXBean> mxbs = ManagementFactory.getMemoryPoolMXBeans();
 
@@ -153,7 +153,7 @@ public final class MxUtils {
   }
 
   public static List<Property> getOperatingSystemInfo() {
-    List<Property> lst = new ArrayList<Property>();
+    List<Property> lst = new ArrayList<>();
 
     OperatingSystemMXBean mxb = ManagementFactory.getOperatingSystemMXBean();
 
@@ -166,7 +166,7 @@ public final class MxUtils {
   }
 
   public static List<ExtendedProperty> getRuntimeInfo() {
-    List<ExtendedProperty> lst = new ArrayList<ExtendedProperty>();
+    List<ExtendedProperty> lst = new ArrayList<>();
 
     RuntimeMXBean mxb = ManagementFactory.getRuntimeMXBean();
     String root = "Runtime";
@@ -202,7 +202,7 @@ public final class MxUtils {
 
   public static List<ExtendedProperty> getThreadInfo(ThreadInfo ti, String msg) {
     Assert.notNull(ti);
-    List<ExtendedProperty> lst = new ArrayList<ExtendedProperty>();
+    List<ExtendedProperty> lst = new ArrayList<>();
 
     String root = BeeUtils.joinWords("Thread Id", ti.getThreadId(), msg);
 
@@ -253,7 +253,7 @@ public final class MxUtils {
   }
 
   public static List<ExtendedProperty> getThreadsInfo() {
-    List<ExtendedProperty> lst = new ArrayList<ExtendedProperty>();
+    List<ExtendedProperty> lst = new ArrayList<>();
 
     ThreadMXBean mxb = ManagementFactory.getThreadMXBean();
     String root = "Threads";
@@ -315,7 +315,7 @@ public final class MxUtils {
     if (mu == null) {
       return null;
     }
-    List<Property> lst = new ArrayList<Property>();
+    List<Property> lst = new ArrayList<>();
 
     PropertyUtils.addProperties(lst, "Committed", mu.getCommitted(), "Init", mu.getInit(),
         "Max", mu.getMax(), "Used", mu.getUsed());

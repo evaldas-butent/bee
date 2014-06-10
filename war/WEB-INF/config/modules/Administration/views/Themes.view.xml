@@ -2,7 +2,8 @@
 <View xmlns="http://www.butent.com/view"
 
   name="Themes" source="Themes" module="Classifiers"
-  caption="=colorThemes"
+  caption="=colorThemes" newRowCaption="=newTheme"
+  editForm="Theme" newRowForm="Theme" rowCaption="Name"
   >
   <Columns>
     <SimpleColumn name="Name" />

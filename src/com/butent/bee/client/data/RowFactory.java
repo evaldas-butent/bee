@@ -18,12 +18,12 @@ import com.butent.bee.client.presenter.NewRowPresenter;
 import com.butent.bee.client.style.StyleUtils;
 import com.butent.bee.client.ui.FormDescription;
 import com.butent.bee.client.ui.FormFactory;
-import com.butent.bee.client.ui.FormFactory.FormInterceptor;
 import com.butent.bee.client.ui.FormWidget;
 import com.butent.bee.client.ui.HasDimensions;
 import com.butent.bee.client.ui.UiHelper;
 import com.butent.bee.client.view.form.CloseCallback;
 import com.butent.bee.client.view.form.FormView;
+import com.butent.bee.client.view.form.interceptor.FormInterceptor;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.data.BeeColumn;
@@ -72,7 +72,7 @@ public final class RowFactory {
     return row;
   }
 
-  public static void createRelatedRow(final DataSelector selector) {
+  public static void createRelatedRow(final DataSelector selector, String defValue) {
     Assert.notNull(selector);
 
     DataInfo dataInfo = selector.getOracle().getDataInfo();
@@ -98,19 +98,16 @@ public final class RowFactory {
 
     BeeRow row = createEmptyRow(dataInfo, true);
 
-    SelectorEvent event = SelectorEvent.fireNewRow(selector, row, formName);
+    SelectorEvent event = SelectorEvent.fireNewRow(selector, row, formName, defValue);
 
     if (!event.isConsumed()) {
-      String defValue = event.getDefValue();
-
-      if (!BeeUtils.isEmpty(defValue)) {
+      if (!BeeUtils.isEmpty(event.getDefValue())) {
         for (String colName : selector.getChoiceColumns()) {
           BeeColumn column = dataInfo.getColumn(colName);
 
           if (column != null && column.isEditable() && ValueType.isString(column.getType())) {
-            String v = (column.getPrecision() > 0)
-                ? BeeUtils.left(defValue.trim(), column.getPrecision()) : defValue.trim();
-            Data.setValue(dataInfo.getViewName(), row, column.getId(), v);
+            Data.squeezeValue(dataInfo.getViewName(), row, column.getId(),
+                event.getDefValue().trim());
             break;
           }
         }
@@ -137,8 +134,10 @@ public final class RowFactory {
 
           @Override
           public void onSuccess(BeeRow result) {
+            SelectorEvent.fireRowCreated(selector, result);
+
             selector.setAdding(false);
-            selector.setSelection(result);
+            selector.setSelection(result, true);
           }
         });
   }
@@ -346,11 +345,11 @@ public final class RowFactory {
     String cap = BeeUtils.notEmpty(caption, formView.getCaption(), DEFAULT_CAPTION);
 
     final NewRowPresenter presenter = new NewRowPresenter(formView, dataInfo, cap);
-    final ModalForm dialog = new ModalForm(presenter.getWidget().asWidget(), formView, false);
+    final ModalForm dialog = new ModalForm(presenter, formView, false);
 
-    final CloseCallback close = new CloseCallback() {
+    final RowCallback closer = new RowCallback() {
       @Override
-      public void onClose() {
+      public void onCancel() {
         dialog.close();
         if (callback != null) {
           callback.onCancel();
@@ -358,27 +357,14 @@ public final class RowFactory {
       }
 
       @Override
-      public void onSave() {
-        presenter.save(new RowCallback() {
-          @Override
-          public void onCancel() {
-            dialog.close();
-            if (callback != null) {
-              callback.onCancel();
-            }
-          }
-
-          @Override
-          public void onSuccess(BeeRow result) {
-            dialog.close();
-            if (callback != null) {
-              callback.onSuccess(result);
-            }
-          }
-        });
+      public void onSuccess(BeeRow result) {
+        dialog.close();
+        if (callback != null) {
+          callback.onSuccess(result);
+        }
       }
     };
-
+    
     presenter.setActionDelegate(new HandlesActions() {
       @Override
       public void handleAction(Action action) {
@@ -389,15 +375,25 @@ public final class RowFactory {
 
         switch (action) {
           case CANCEL:
-            close.onClose();
+            closer.onCancel();
             break;
 
           case CLOSE:
-            formView.onClose(close);
+            formView.onClose(new CloseCallback() {
+              @Override
+              public void onClose() {
+                closer.onCancel();
+              }
+
+              @Override
+              public void onSave() {
+                handleAction(Action.SAVE);
+              }
+            });
             break;
 
           case SAVE:
-            close.onSave();
+            presenter.save(closer);
             break;
 
           default:

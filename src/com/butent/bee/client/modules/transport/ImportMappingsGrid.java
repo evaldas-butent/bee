@@ -20,6 +20,7 @@ import com.butent.bee.client.grid.HtmlTable;
 import com.butent.bee.client.presenter.GridPresenter;
 import com.butent.bee.client.style.StyleUtils;
 import com.butent.bee.client.view.grid.interceptor.AbstractGridInterceptor;
+import com.butent.bee.client.view.grid.interceptor.GridInterceptor;
 import com.butent.bee.client.widget.InputText;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.communication.ResponseObject;
@@ -50,9 +51,11 @@ public class ImportMappingsGrid extends AbstractGridInterceptor {
   }
 
   @Override
-  public boolean beforeAddRow(GridPresenter presenter, boolean copy) {
-    addNewMapping();
-    return false;
+  public void afterCreatePresenter(GridPresenter presenter) {
+    if (presenter != null && presenter.getDataProvider() instanceof LocalProvider) {
+      provider = (LocalProvider) presenter.getDataProvider();
+      requery();
+    }
   }
 
   @Override
@@ -61,6 +64,12 @@ public class ImportMappingsGrid extends AbstractGridInterceptor {
       return super.beforeAction(action, presenter);
     }
     requery();
+    return false;
+  }
+
+  @Override
+  public boolean beforeAddRow(GridPresenter presenter, boolean copy) {
+    addNewMapping();
     return false;
   }
 
@@ -94,17 +103,14 @@ public class ImportMappingsGrid extends AbstractGridInterceptor {
   }
 
   @Override
+  public GridInterceptor getInstance() {
+    return new ImportMappingsGrid(form);
+  }
+  
+  @Override
   public void onParentRow(ParentRowEvent event) {
     this.parentId = event == null ? null : event.getRowId();
     requery();
-  }
-
-  @Override
-  public void onShow(GridPresenter presenter) {
-    if (presenter != null && presenter.getDataProvider() instanceof LocalProvider) {
-      provider = (LocalProvider) presenter.getDataProvider();
-      requery();
-    }
   }
 
   private void addNewMapping() {

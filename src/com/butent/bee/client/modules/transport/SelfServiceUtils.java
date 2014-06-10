@@ -18,6 +18,7 @@ import com.butent.bee.shared.data.cache.CachingPolicy;
 import com.butent.bee.shared.data.event.RowUpdateEvent;
 import com.butent.bee.shared.data.filter.Filter;
 import com.butent.bee.shared.data.view.Order;
+import com.butent.bee.shared.modules.administration.AdministrationConstants;
 
 import java.util.Collection;
 
@@ -57,7 +58,7 @@ final class SelfServiceUtils {
 
   static void sendFiles(Long reqId, Collection<NewFileInfo> files) {
     FileUtils.commitFiles(files, VIEW_CARGO_REQUEST_FILES, COL_CRF_REQUEST, reqId,
-        COL_CRF_FILE, COL_CRF_CAPTION);
+        AdministrationConstants.COL_FILE, AdministrationConstants.COL_FILE_CAPTION);
   }
   
   static void setDefaultExpeditionType(FormView form, IsRow newRow, String targetColumn) {

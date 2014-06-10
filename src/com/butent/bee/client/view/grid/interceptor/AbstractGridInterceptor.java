@@ -44,7 +44,7 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 
-public class AbstractGridInterceptor implements GridInterceptor {
+public abstract class AbstractGridInterceptor implements GridInterceptor {
 
   public static final List<String> DELETE_ROW_MESSAGE =
       Lists.newArrayList(Localized.getConstants().deleteRowQuestion());
@@ -82,6 +82,10 @@ public class AbstractGridInterceptor implements GridInterceptor {
 
   @Override
   public void afterCreateEditor(String source, Editor editor, boolean embedded) {
+  }
+
+  @Override
+  public void afterCreatePresenter(GridPresenter presenter) {
   }
 
   @Override
@@ -135,6 +139,11 @@ public class AbstractGridInterceptor implements GridInterceptor {
   }
 
   @Override
+  public boolean beforeCreateExtWidget(Element root) {
+    return true;
+  }
+
+  @Override
   public boolean beforeCreateWidget(String name, Element description) {
     return true;
   }
@@ -170,11 +179,6 @@ public class AbstractGridInterceptor implements GridInterceptor {
 
   @Override
   public String getCaption() {
-    return null;
-  }
-
-  @Override
-  public String getColumnCaption(String columnName) {
     return null;
   }
 
@@ -251,7 +255,7 @@ public class AbstractGridInterceptor implements GridInterceptor {
   }
 
   @Override
-  public GridInterceptor getInstance() {
+  public List<String> getParentLabels() {
     return null;
   }
 
@@ -277,22 +281,18 @@ public class AbstractGridInterceptor implements GridInterceptor {
   }
 
   @Override
-  public String getSupplierKey() {
-    return null;
-  }
-
-  @Override
   public String getViewName() {
     return (getGridPresenter() == null) ? null : getGridPresenter().getViewName();
   }
 
   @Override
-  public boolean isRowEditable(IsRow row) {
-    return row != null && row.isEditable();
+  public boolean initDescription(GridDescription gridDescription) {
+    return true;
   }
 
   @Override
-  public void onAttach(GridView gridView) {
+  public boolean isRowEditable(IsRow row) {
+    return row != null && row.isEditable();
   }
 
   @Override
@@ -305,13 +305,7 @@ public class AbstractGridInterceptor implements GridInterceptor {
   }
 
   @Override
-  public boolean onLoad(GridDescription gridDescription) {
-    return true;
-  }
-
-  @Override
-  public boolean onLoadExtWidget(Element root) {
-    return true;
+  public void onLoad(GridView gridView) {
   }
 
   @Override
@@ -340,12 +334,12 @@ public class AbstractGridInterceptor implements GridInterceptor {
   }
 
   @Override
-  public void onShow(GridPresenter presenter) {
+  public boolean onStartNewRow(GridView gridView, IsRow oldRow, IsRow newRow) {
+    return true;
   }
 
   @Override
-  public boolean onStartNewRow(GridView gridView, IsRow oldRow, IsRow newRow) {
-    return true;
+  public void onUnload(GridView gridView) {
   }
 
   @Override

@@ -3,13 +3,16 @@
 
 name="Documents" label="=documents" order="50" module="Documents"
 >
-  <Item name="DocumentList" label="=documents" service="grid" parameters="Documents" />
+  <Item name="DocumentList" label="=documentTree" service="grid" parameters="Documents" />
 
-  <Item name="Categories" label="=documentCategories" service="form" parameters="DocumentTree" separator="true" />
+  <Item name="DocumentCategories" label="=documentCategories" service="form" parameters="DocumentTree"
+    separator="true" data="DocumentTree" />
 
-  <Item name="Templates" label="=documentTemplates" service="grid" parameters="DocumentTemplates" separator="true" module="Documents.Templates" />
+  <Item name="Templates" label="=documentTemplates" service="grid" parameters="DocumentTemplates"
+    separator="true" module="Documents.Templates" />
 
-  <Item name="Types" label="=documentTypes" service="grid" parameters="DocumentTypes" separator="true" />
+  <Item name="Types" label="=documentTypes" service="grid" parameters="DocumentTypes"
+    separator="true" />
   <Item name="Places" label="=documentPlaces" service="grid" parameters="DocumentPlaces" />
   <Item name="Statuses" label="=documentStatuses" service="grid" parameters="DocumentStatuses" />
 </Entry>

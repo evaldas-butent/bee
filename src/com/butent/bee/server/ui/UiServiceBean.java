@@ -16,6 +16,7 @@ import static com.butent.bee.shared.modules.classifiers.ClassifierConstants.*;
 import com.butent.bee.server.Config;
 import com.butent.bee.server.DataSourceBean;
 import com.butent.bee.server.InitializationBean;
+import com.butent.bee.server.data.BeeTable;
 import com.butent.bee.server.data.BeeTable.BeeField;
 import com.butent.bee.server.data.BeeTable.BeeRelation;
 import com.butent.bee.server.data.BeeView;
@@ -32,6 +33,7 @@ import com.butent.bee.server.modules.ModuleHolderBean;
 import com.butent.bee.server.modules.ec.TecDocBean;
 import com.butent.bee.server.modules.mail.MailModuleBean;
 import com.butent.bee.server.news.NewsBean;
+import com.butent.bee.server.sql.IsExpression;
 import com.butent.bee.server.sql.SqlDelete;
 import com.butent.bee.server.sql.SqlInsert;
 import com.butent.bee.server.sql.SqlSelect;
@@ -46,6 +48,8 @@ import com.butent.bee.shared.Pair;
 import com.butent.bee.shared.Resource;
 import com.butent.bee.shared.Service;
 import com.butent.bee.shared.communication.ResponseObject;
+import com.butent.bee.shared.data.BeeColumn;
+import com.butent.bee.shared.data.BeeRow;
 import com.butent.bee.shared.data.BeeRowSet;
 import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.RowChildren;
@@ -56,16 +60,17 @@ import com.butent.bee.shared.data.XmlTable;
 import com.butent.bee.shared.data.XmlTable.XmlField;
 import com.butent.bee.shared.data.XmlTable.XmlRelation;
 import com.butent.bee.shared.data.filter.Filter;
-import com.butent.bee.shared.data.value.Value;
 import com.butent.bee.shared.data.view.DataInfo;
 import com.butent.bee.shared.data.view.Order;
 import com.butent.bee.shared.data.view.RowInfo;
 import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogUtils;
-import com.butent.bee.shared.modules.administration.AdministrationConstants.RightsObjectType;
-import com.butent.bee.shared.modules.administration.AdministrationConstants.RightsState;
+import com.butent.bee.shared.modules.classifiers.ClassifierConstants;
 import com.butent.bee.shared.modules.mail.MailConstants;
-import com.butent.bee.shared.time.TimeUtils;
+import com.butent.bee.shared.rights.RightsObjectType;
+import com.butent.bee.shared.rights.RightsState;
+import com.butent.bee.shared.rights.RightsUtils;
+import com.butent.bee.shared.time.DateTime;
 import com.butent.bee.shared.ui.ColumnDescription;
 import com.butent.bee.shared.ui.DecoratorConstants;
 import com.butent.bee.shared.ui.GridDescription;
@@ -77,6 +82,7 @@ import com.butent.bee.shared.utils.ExtendedProperty;
 import com.butent.bee.shared.utils.NameUtils;
 import com.butent.bee.shared.utils.Property;
 import com.butent.bee.shared.utils.PropertyUtils;
+import com.butent.bee.shared.utils.Wildcards;
 import com.butent.bee.shared.utils.XmlHelper;
 
 import org.w3c.dom.Document;
@@ -87,9 +93,12 @@ import java.io.DataInputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.InputStreamReader;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Objects;
 import java.util.Set;
 
 import javax.ejb.EJB;
@@ -180,6 +189,8 @@ public class UiServiceBean {
       response = insertRow(reqInfo);
     } else if (BeeUtils.same(svc, Service.INSERT_ROWS)) {
       response = insertRows(reqInfo);
+    } else if (BeeUtils.same(svc, Service.INSERT_ROW_SILENTLY)) {
+      response = insertRowSilently(reqInfo);
 
     } else if (BeeUtils.same(svc, Service.GET_VIEW_INFO)) {
       response = getViewInfo(reqInfo);
@@ -238,12 +249,11 @@ public class UiServiceBean {
           BeeUtils.toLongOrNull(reqInfo.getParameter(COL_ROLE)),
           Codec.deserializeMap(reqInfo.getParameter(COL_OBJECT)));
 
-    } else if (BeeUtils.same(svc, Service.IMPORT_OSAMA_TIEKEJAI)) {
-      response = importOsamaTiekejai(reqInfo);
-    } else if (BeeUtils.same(svc, Service.IMPORT_OSAMA_DARBUOTOJIAI)) {
-      response = importOsamaDarbuotojai(reqInfo);
-    } else if (BeeUtils.same(svc, Service.IMPORT_OSAMA_PREK_SIST)) {
-      response = importOsamaPrekSist(reqInfo);
+    } else if (BeeUtils.same(svc, Service.SET_ROW_RIGHTS)) {
+      response = setRowRights(reqInfo);
+      
+    } else if (BeeUtils.same(svc, Service.IMPORT_CSV_COMPANIES)) {
+      response = importCSVCompanies(reqInfo);
     } else {
       String msg = BeeUtils.joinWords("data service not recognized:", svc);
       logger.warning(msg);
@@ -262,7 +272,7 @@ public class UiServiceBean {
     SimpleRowSet data = qs.getData(query);
 
     if (!DataUtils.isEmpty(data)) {
-      List<String> result = Lists.newArrayList();
+      List<String> result = new ArrayList<>();
 
       ListMultimap<String, String> map = ArrayListMultimap.create();
       for (SimpleRow row : data) {
@@ -321,7 +331,7 @@ public class UiServiceBean {
   }
 
   public BeeRowSet getFavorites() {
-    return qs.getViewData(TBL_FAVORITES, usr.getCurrentUserFilter(COL_FAVORITE_USER));
+    return qs.getViewData(VIEW_FAVORITES, usr.getCurrentUserFilter(COL_FAVORITE_USER));
   }
 
   public BeeRowSet getFilters() {
@@ -342,6 +352,14 @@ public class UiServiceBean {
     return Pair.of(gridSettings, columnSettings);
   }
 
+  public BeeRowSet getReportSettings() {
+    return qs.getViewData(VIEW_REPORT_SETTINGS, usr.getCurrentUserFilter(COL_RS_USER));
+  }
+
+  public BeeRowSet getWorkspaces() {
+    return qs.getViewData(VIEW_WORKSPACES, usr.getCurrentUserFilter(COL_USER));
+  }
+  
   private void buildDbList(String rootTable, Set<String> tables, boolean initial) {
     boolean recurse = BeeUtils.isSuffix(rootTable, '*');
     String root = BeeUtils.normalize(BeeUtils.removeSuffix(rootTable, '*'));
@@ -369,15 +387,15 @@ public class UiServiceBean {
 
   private ResponseObject buildDbSchema(Iterable<String> roots) {
     XmlSqlDesigner designer = new XmlSqlDesigner();
-    designer.types = Lists.newArrayList();
-    designer.tables = Lists.newArrayList();
+    designer.types = new ArrayList<>();
+    designer.tables = new ArrayList<>();
 
     for (int i = 0; i < 2; i++) {
       boolean extMode = i > 0;
       DataTypeGroup typeGroup = new DataTypeGroup();
       typeGroup.label = BeeUtils.joinWords("SQL", extMode ? "extended" : "", "types");
       typeGroup.color = extMode ? "rgb(0,255,0)" : "rgb(255,255,255)";
-      typeGroup.types = Lists.newArrayList();
+      typeGroup.types = new ArrayList<>();
 
       for (SqlDataType type : SqlDataType.values()) {
         String typeName = type.name();
@@ -399,7 +417,7 @@ public class UiServiceBean {
 
     designer.types.add(typeGroup);
 
-    Set<String> tables = Sets.newHashSet();
+    Set<String> tables = new HashSet<>();
     Iterable<String> r;
 
     if (roots == null || !roots.iterator().hasNext()) {
@@ -414,13 +432,10 @@ public class UiServiceBean {
       XmlTable xmlTable = sys.getXmlTable(sys.getTable(tableName).getModule(), tableName);
 
       if (xmlTable != null) {
-        Collection<XmlField> fields = Lists.newArrayList();
+        Collection<XmlField> fields = new ArrayList<>();
 
         if (!BeeUtils.isEmpty(xmlTable.fields)) {
           fields.addAll(xmlTable.fields);
-        }
-        if (!BeeUtils.isEmpty(xmlTable.extFields)) {
-          fields.addAll(xmlTable.extFields);
         }
         for (XmlField xmlField : fields) {
           if (xmlField instanceof XmlRelation) {
@@ -545,7 +560,7 @@ public class UiServiceBean {
     } else if (rowCount <= 0 || rowCount > 100000) {
       response = ResponseObject.error("Invalid row count:", rowCount);
     } else {
-      Set<String> cache = Sets.newHashSet();
+      Set<String> cache = new HashSet<>();
       response = deb.generateData(tableName, rowCount, refCount, childCount, cache);
     }
     return response;
@@ -558,7 +573,7 @@ public class UiServiceBean {
     }
 
     List<String> viewNames = NameUtils.toList(viewList);
-    List<BeeRowSet> result = Lists.newArrayList();
+    List<BeeRowSet> result = new ArrayList<>();
 
     for (String viewName : viewNames) {
       BeeRowSet rs = qs.getViewData(viewName);
@@ -588,17 +603,7 @@ public class UiServiceBean {
 
   private ResponseObject getGrid(RequestInfo reqInfo) {
     String gridName = reqInfo.getContent();
-
-    if (BeeUtils.isEmpty(gridName)) {
-      return ResponseObject.error("Which grid?");
-    }
-    if (ui.isGrid(gridName)) {
-      return ResponseObject.response(ui.getGrid(gridName));
-    }
-    if (sys.isView(gridName)) {
-      return ResponseObject.response(grd.getDefaultGrid(sys.getView(gridName)));
-    }
-    return ResponseObject.error("Grid", gridName, "not found");
+    return ui.getGrid(gridName);
   }
 
   private ResponseObject getHistogram(RequestInfo reqInfo) {
@@ -644,7 +649,7 @@ public class UiServiceBean {
 
   private ResponseObject getTableInfo(RequestInfo reqInfo) {
     String tableName = reqInfo.getParameter(0);
-    List<ExtendedProperty> info = Lists.newArrayList();
+    List<ExtendedProperty> info = new ArrayList<>();
 
     if (sys.isTable(tableName)) {
       info.addAll(sys.getTableInfo(tableName));
@@ -660,7 +665,7 @@ public class UiServiceBean {
         for (BeeView view : views) {
           sources.put(view.getSourceName(), view.getName());
         }
-        
+
         boolean noViews = BeeUtils.same(tableName, BeeConst.STRING_MINUS);
 
         for (String name : names) {
@@ -676,11 +681,11 @@ public class UiServiceBean {
           } else {
             viewNames = BeeConst.STRING_MINUS;
           }
-          
+
           info.add(new ExtendedProperty(name, String.valueOf(fieldCount), viewNames));
         }
-        
-      } else if (BeeUtils.same(tableName, BeeConst.STRING_ALL)) {
+
+      } else if (BeeUtils.same(tableName, BeeConst.STRING_ASTERISK)) {
         for (String name : names) {
           PropertyUtils.appendWithPrefix(info, name, sys.getTableInfo(name));
         }
@@ -732,6 +737,8 @@ public class UiServiceBean {
     String getSize = reqInfo.getParameter(Service.VAR_VIEW_SIZE);
     String rowId = reqInfo.getParameter(Service.VAR_VIEW_ROW_ID);
 
+    String rights = reqInfo.getParameter(Service.VAR_RIGHTS);
+
     Filter filter = null;
     if (!BeeUtils.isEmpty(rowId)) {
       filter = Filter.compareId(BeeUtils.toLong(rowId));
@@ -755,12 +762,17 @@ public class UiServiceBean {
       res.setTableProperty(Service.VAR_VIEW_SIZE,
           BeeUtils.toString(Math.max(cnt, res.getNumberOfRows())));
     }
+
+    if (!BeeUtils.isEmpty(rights) && !DataUtils.isEmpty(res)) {
+      getViewRights(res, rights);
+    }
+
     return ResponseObject.response(res);
   }
 
   private ResponseObject getViewInfo(RequestInfo reqInfo) {
     String viewName = reqInfo.getParameter(0);
-    List<ExtendedProperty> info = Lists.newArrayList();
+    List<ExtendedProperty> info = new ArrayList<>();
 
     if (!BeeUtils.isEmpty(viewName)) {
       if (sys.isView(viewName)) {
@@ -776,6 +788,70 @@ public class UiServiceBean {
     return ResponseObject.collection(info, ExtendedProperty.class);
   }
 
+  private void getViewRights(BeeRowSet rowSet, String queryStates) {
+    BeeView view = sys.getView(rowSet.getViewName());
+    String tableName = view.getSourceName();
+    String idName = view.getSourceIdName();
+
+    BeeTable table = sys.getTable(tableName);
+
+    Set<RightsState> states = table.getStates();
+    if (!BeeUtils.isEmpty(queryStates) && !Wildcards.isDefaultAny(queryStates)) {
+      states.retainAll(EnumUtils.parseIndexSet(RightsState.class, queryStates));
+    }
+
+    if (states.isEmpty()) {
+      logger.warning(tableName, queryStates, "states not defined");
+      return;
+    }
+
+    Set<RightsState> existingStates = new HashSet<>();
+
+    List<Long> roles = new ArrayList<>();
+    roles.add(0L);
+    roles.addAll(usr.getRoles());
+
+    SqlSelect query = new SqlSelect()
+        .addFields(tableName, idName)
+        .addFrom(tableName)
+        .setWhere(SqlUtils.inList(tableName, idName, rowSet.getRowIds()));
+
+    for (RightsState state : states) {
+      String stateAlias = table.joinState(query, tableName, state);
+
+      if (!BeeUtils.isEmpty(stateAlias)) {
+        for (Long role : roles) {
+          IsExpression xpr = SqlUtils.sqlIf(table.checkState(stateAlias, state, role),
+              true, false);
+          query.addExpr(xpr, RightsUtils.getAlias(state, role));
+        }
+
+        existingStates.add(state);
+      }
+    }
+
+    SimpleRowSet rs = existingStates.isEmpty() ? null : qs.getData(query);
+    boolean value;
+
+    for (BeeRow row : rowSet) {
+      String rowKey = BeeUtils.toString(row.getId());
+
+      for (RightsState state : states) {
+        for (Long role : roles) {
+          String alias = RightsUtils.getAlias(state, role);
+
+          if (existingStates.contains(state)) {
+            value = BeeUtils.toBoolean(rs.getValueByKey(idName, rowKey, alias));
+          } else {
+            value = state.isChecked();
+          }
+          
+          row.setProperty(alias, Codec.pack(value));
+        }
+      }
+    }
+  }
+
   private ResponseObject getViewSize(RequestInfo reqInfo) {
     String viewName = reqInfo.getParameter(Service.VAR_VIEW_NAME);
     String where = reqInfo.getParameter(Service.VAR_VIEW_WHERE);
@@ -788,534 +864,183 @@ public class UiServiceBean {
   }
 
   @Deprecated
-  private ResponseObject importOsamaDarbuotojai(RequestInfo reqInfo) {
+  private ResponseObject importCSVCompanies(RequestInfo reqInfo) {
     String fileId = reqInfo.getContent();
 
-    SqlSelect select = new SqlSelect().addField("Files", "Repository", "Path")
-        .addFrom("Files")
-        .setWhere(SqlUtils.equals("Files", sys.getIdName("Files"), Long.parseLong(fileId)));
+    logger.info("File ID", fileId);
 
-    logger.info("do query: ", select.getQuery());
-
-    SimpleRowSet fd = qs.getData(select);
-
-    String path = fd.getValue(0, fd.getColumnIndex("Path"));
-
-    select = new SqlSelect().addField(TBL_COMPANIES,
-        sys.getIdName(TBL_COMPANIES), "oID")
-        .addFrom(TBL_COMPANIES)
-        .setWhere(SqlUtils.contains(TBL_COMPANIES, COL_COMPANY_NAME, "Osama"));
-
-    logger.info("do query: ", select.getQuery());
-
-    SimpleRowSet osamaCompany = qs.getData(select);
-
-    if (osamaCompany.isEmpty()) {
-      return ResponseObject.error("Osama company not found");
-    }
-
-    long osamaCompanyId = osamaCompany.getLong(0, 0);
+    String path = fileId;
 
     try {
+      SqlInsert insert;
 
       FileInputStream fstream = new FileInputStream(path);
 
       DataInputStream in = new DataInputStream(fstream);
       BufferedReader br = new BufferedReader(new InputStreamReader(in));
       String strLine;
-
+      boolean firstLine = true;
       while ((strLine = br.readLine()) != null) {
+        if (firstLine) {
+          firstLine = false;
+          continue;
+        }
+
         Splitter splitter = Splitter.on(';');
         List<String> lst = Lists.newArrayList(splitter.split(strLine));
 
         String[] data = ArrayUtils.toArray(lst);
+
         logger.info("Current data row", data);
-        /* Check person is exist */
-        select =
-            new SqlSelect().addField(TBL_PERSONS,
-                sys.getIdName(TBL_PERSONS), "personId")
-                .addFrom(TBL_PERSONS)
-                .setWhere(
-                    SqlUtils.and(
-                        SqlUtils.equals(TBL_PERSONS, COL_FIRST_NAME, data[2]),
-                        SqlUtils.equals(TBL_PERSONS, COL_LAST_NAME, data[3])));
 
-        logger.info("do query: ", select.getQuery());
+        String companyName = BeeUtils.isEmpty(data[0]) ? null : data[0];
+        String companyCode = BeeUtils.isEmpty(data[1]) ? null : data[1];
+        String companyVatCode = BeeUtils.isEmpty(data[2]) ? null : data[2];
+        String companyPostCode = BeeUtils.isEmpty(data[3]) ? null : data[3];
+        String companyAddress = BeeUtils.isEmpty(data[4]) ? null : data[4];
+        String companyCity = BeeUtils.isEmpty(data[5]) ? null : data[5];
+        String companyCountry = BeeUtils.isEmpty(data[6]) ? "#" : data[6];
+        String companyPhone = BeeUtils.isEmpty(data[7]) ? null : data[7];
+        String companyEMail = BeeUtils.isEmpty(data[8]) ? null : data[8];
 
-        SimpleRowSet person = qs.getData(select);
+        if (BeeUtils.isEmpty(companyName)) {
+          logger.warning("Record was skipped");
+        }
 
-        if (person.isEmpty()) {
-          /* Person not exists */
-          SqlInsert insert = new SqlInsert(TBL_PERSONS)
-              .addFields(COL_FIRST_NAME, COL_LAST_NAME, "DateOfBirth")
-              .addValues(data[2], data[3], TimeUtils.parseDate(data[7]));
+        Filter filterCompany = Filter.contains(COL_COMPANY_NAME, companyName);
 
-          logger.info("do query: ", insert.getQuery());
+        if (!BeeUtils.isEmpty(companyCode)) {
+          filterCompany = Filter.or(Filter.contains(COL_COMPANY_CODE, companyCode),
+              Filter.contains(COL_COMPANY_NAME, companyName));
+        }
 
-          long personId = qs.insertData(insert);
-          long contactid = -1;
+        BeeRowSet listFilteredCompanies =
+            qs.getViewData(ClassifierConstants.VIEW_COMPANIES, filterCompany);
 
-          insert = new SqlInsert("Contacts")
-              .addFields("Address")
-              .addValues(data[8]);
+        if (!listFilteredCompanies.isEmpty()) {
+          logger.warning("Company ", companyName, companyCode, "allready exists !");
+          continue;
+        }
 
-          logger.info("do query: ", insert.getQuery());
+        insert = new SqlInsert(TBL_COMPANIES)
+            .addFields(COL_COMPANY_CODE, COL_COMPANY_NAME, COL_COMPANY_VAT_CODE, "Notes")
+            .addValues(companyCode, companyName, companyVatCode, "Imported "
+                + (new DateTime().toTimeStamp()));
 
-          contactid = qs.insertData(insert);
+        logger.info("do sql", insert.getQuery());
 
-          /* adding contact id to person */
-          SqlUpdate update = new SqlUpdate("Persons")
-              .addConstant("Contact", contactid)
-              .setWhere(SqlUtils.equals("Persons", sys.getIdName("Persons"), personId));
+        long companyId = qs.insertData(insert);
 
-          logger.info("do query: ", update.getQuery());
+        insert = new SqlInsert(TBL_CONTACTS)
+            .addFields(COL_ADDRESS, COL_POST_INDEX, COL_PHONE)
+            .addValues(companyAddress, companyPostCode, companyPhone);
 
+        logger.info("do sql", insert.getQuery());
+
+        long contactId = qs.insertData(insert);
+
+        SqlUpdate update = new SqlUpdate(TBL_COMPANIES)
+            .addConstant(COL_CONTACT, contactId)
+            .setWhere(SqlUtils.equals(TBL_COMPANIES,
+                sys.getIdName(TBL_COMPANIES), companyId));
+
+        logger.info("do sql", update.getQuery());
+
+        qs.updateData(update);
+
+        BeeRowSet filteredCities = new BeeRowSet();
+        if (!BeeUtils.isEmpty(companyCity)) {
+          Filter filterCity = Filter.contains("Name", companyCity);
+          filteredCities = qs.getViewData(VIEW_CITIES, filterCity);
+        }
+
+        if (!filteredCities.isEmpty()) {
+
+          long countryId =
+              filteredCities.getRow(0).getLong(filteredCities.getColumnIndex(COL_COUNTRY));
+
+          update = new SqlUpdate(TBL_CONTACTS)
+              .addConstant(COL_CITY, filteredCities.getRowIds().get(0))
+              .addConstant(COL_COUNTRY, countryId)
+              .setWhere(SqlUtils.equals(TBL_CONTACTS, sys.getIdName(TBL_CONTACTS), contactId));
+
+          logger.info("do sql", update.getQuery());
           qs.updateData(update);
-
-          /* check department */
-          select =
-              new SqlSelect().addField("CompanyDepartments",
-                  sys.getIdName("CompanyDepartments"), "depId").addFrom("CompanyDepartments")
-                  .setWhere(
-                      SqlUtils.and(SqlUtils.equals("CompanyDepartments", "Company", osamaCompanyId)
-                          , SqlUtils.equals("CompanyDepartments", "Name", data[6])));
-
-          logger.info("do query: ", select.getQuery());
-
-          SimpleRowSet department = qs.getData(select);
-          long departmentId = -1;
-
-          if (department.isEmpty()) {
-            /* department not exists */
-            insert = new SqlInsert("CompanyDepartments").addFields("Company", "Name")
-                .addValues(osamaCompanyId, data[6]);
-
-            logger.info("do query: ", insert.getQuery());
-
-            departmentId = qs.insertData(insert);
-
-          } else {
-            departmentId = department.getLong(0, 0);
-          }
-
-          /* checking positions */
-
-          select =
-              new SqlSelect().addField("Positions",
-                  sys.getIdName("Positions"), "posId").addFrom("Positions")
-                  .setWhere(
-                      SqlUtils.equals("Positions", "Name", data[4])
-                  );
-
-          logger.info("do query: ", select.getQuery());
-
-          SimpleRowSet position = qs.getData(select);
-          long positionId = -1;
-
-          if (position.isEmpty()) {
-            /* position not found */
-            insert = new SqlInsert("Positions").addFields("Name")
-                .addValues(data[4]);
-
-            logger.info("do query: ", insert.getQuery());
-
-            positionId = qs.insertData(insert);
-
-          } else {
-            positionId = position.getLong(0, 0);
-          }
-
-          /* inserting company person contact */
-          long cpcontId = -1;
-
-          /* inserting company person */
-          if (!BeeUtils.isEmpty(data[10]) || !BeeUtils.isEmpty(data[11])) {
-            long emailId = -1;
-
-            if (!BeeUtils.isEmpty(data[10])) {
-              select =
-                  new SqlSelect().addField(TBL_EMAILS,
-                      sys.getIdName(TBL_EMAILS), "emailId")
-                      .addFrom(TBL_EMAILS)
-                      .setWhere(SqlUtils.equals(TBL_EMAILS, COL_EMAIL, data[10]));
-              logger.info("do query: ", select.getQuery());
-
-              SimpleRowSet email = qs.getData(select);
-
-              if (email.isEmpty()) {
-                insert = new SqlInsert(TBL_EMAILS)
-                    .addFields(COL_EMAIL)
-                    .addValues(data[10]);
-
-                logger.info("do query: ", insert.getQuery());
-
-                emailId = qs.insertData(insert);
-              }
-            }
-
-            insert = new SqlInsert(TBL_CONTACTS)
-                .addFields(COL_PHONE, COL_EMAIL)
-                .addValues(data[11], emailId > 0 ? emailId : null);
-
-            logger.info("do query: ", insert.getQuery());
-
-            cpcontId = qs.insertData(insert);
-
-          }
-
-          insert = new SqlInsert("CompanyPersons")
-              .addFields("Company", "Department", "Person", "TabNo", "AccountingCode",
-                  "DateOfEmployment", "Position", "Contact")
-              .addValues(osamaCompanyId, departmentId, personId, data[0],
-                  BeeUtils.isEmpty(data[1]) ? null : data[1],
-                  TimeUtils.parseDate(data[5]), positionId, cpcontId > 0 ? cpcontId : null);
-
-          logger.info("do query: ", insert.getQuery());
-
-          qs.insertData(insert);
-
         } else {
-          logger.warning("record", data, "allready exist!");
-        }
 
-      }
-      in.close();
-    } catch (Exception e) {
-      logger.severe(e);
-      return ResponseObject.error(e);
-    }
+          Filter filterCountry = Filter.contains("Name", companyCountry);
+          BeeRowSet filteredCounties = qs.getViewData(VIEW_COUNTRIES, filterCountry);
 
-    return ResponseObject.info("Data imported");
-  }
-
-  @Deprecated
-  private ResponseObject importOsamaPrekSist(RequestInfo reqInfo) {
-    String fileId =
-        reqInfo.getContent();
-
-    SqlSelect select = new SqlSelect().addField("Files", "Repository", "Path").addFrom("Files")
-        .setWhere(SqlUtils.equals("Files", sys.getIdName("Files"), Long.parseLong(fileId)));
-
-    logger.info("do query: ", select.getQuery());
-
-    SimpleRowSet fd = qs.getData(select);
-
-    String path = fd.getValue(0, fd.getColumnIndex("Path"));
-
-    select = new SqlSelect()
-        .addField(TBL_COMPANIES, sys.getIdName(TBL_COMPANIES), "oID")
-        .addFrom(TBL_COMPANIES)
-        .setWhere(SqlUtils.contains(TBL_COMPANIES, COL_COMPANY_NAME, "Osama"));
-
-    logger.info("do query: ", select.getQuery());
-
-    SimpleRowSet osamaCompany = qs.getData(select);
-
-    if (osamaCompany.isEmpty()) {
-      return ResponseObject.error("Osama company not found");
-    }
-
-    long osamaCompanyId = osamaCompany.getLong(0, 0);
-
-    try {
-      FileInputStream fstream = new FileInputStream(path);
-
-      DataInputStream in = new DataInputStream(fstream);
-      BufferedReader br = new BufferedReader(new
-          InputStreamReader(in));
-      String strLine;
-
-      while ((strLine = br.readLine()) != null) {
-        Splitter splitter = Splitter.on(';');
-        List<String> lst = Lists.newArrayList(splitter.split(strLine));
-
-        String[] data = ArrayUtils.toArray(lst);
-        logger.info("Current data row", data);
-
-        select =
-            new SqlSelect()
-                .addField(TBL_COMPANIES, sys.getIdName(TBL_COMPANIES), "companyId")
-                .addFrom(TBL_COMPANIES)
-                .setWhere(SqlUtils.equals(TBL_COMPANIES, COL_COMPANY_NAME, data[1]));
-
-        logger.info("do query: ", select.getQuery());
-
-        SimpleRowSet company = qs.getData(select);
-        long companyId = -1;
-
-        if (company.isEmpty()) {
-          SqlInsert insert =
-              new SqlInsert(TBL_COMPANIES)
-                  .addFields(COL_COMPANY_NAME, COL_COMPANY_EXCHANGE_CODE)
-                  .addValues(data[1], data[0]);
-
-          logger.info("do query: ", insert.getQuery());
-
-          companyId = qs.insertData(insert);
-
-        } else {
-          companyId = company.getLong(0, 0);
-        }
-
-        long userId = -1;
-
-        if (!BeeUtils.isEmpty(data[2])) {
-          select =
-              new SqlSelect()
-                  .addField(TBL_COMPANY_PERSONS,
-                      sys.getIdName(TBL_COMPANY_PERSONS), "CompanyPersonId")
-                  .addField(TBL_COMPANY_PERSONS, COL_PERSON, "PersonID")
-                  .addField(TBL_PERSONS, COL_FIRST_NAME, COL_FIRST_NAME)
-                  .addField(TBL_PERSONS, COL_LAST_NAME, COL_LAST_NAME)
-                  .addFrom(TBL_COMPANY_PERSONS)
-                  .addFromLeft(TBL_PERSONS,
-                      sys.joinTables(TBL_PERSONS, TBL_COMPANY_PERSONS, COL_PERSON))
-                  .setWhere(
-                      SqlUtils.and(SqlUtils.equals(TBL_COMPANY_PERSONS,
-                          COL_COMPANY, osamaCompanyId),
-                          SqlUtils.equals(TBL_COMPANY_PERSONS, "AccountingCode", data[2])));
-
-          logger.info("do query: ", select.getQuery());
-
-          SimpleRowSet companyPerson = qs.getData(select);
-
-          if (!companyPerson.isEmpty()) {
-            long companyPersonId =
-                companyPerson.getLong(0, companyPerson.getColumnIndex("CompanyPersonId"));
-
-            select =
-                new SqlSelect()
-                    .addField(TBL_USERS, sys.getIdName(TBL_USERS), "userId")
-                    .addFrom(TBL_USERS)
-                    .setWhere(SqlUtils.equals(TBL_USERS, COL_COMPANY_PERSON, companyPersonId));
-
-            logger.info("do query: ", select.getQuery());
-
-            SimpleRowSet user = qs.getData(select);
-
-            if (user.isEmpty()) {
-              String userLogin = (companyPerson.getValue(0, COL_FIRST_NAME)
-                  + companyPerson.getValue(0, COL_LAST_NAME)).toLowerCase();
-
-              SqlInsert insert = new SqlInsert(TBL_USERS)
-                  .addFields(COL_LOGIN, COL_COMPANY_PERSON)
-                  .addValues(userLogin, companyPersonId);
-
-              logger.info("do query: ", insert.getQuery());
-
-              userId = qs.insertData(insert);
-
-            } else {
-              userId = user.getLong(0, 0);
-            }
-          }
-
-        }
-
-        if (userId > 0 && companyId > 0) {
-          SqlInsert insert = new SqlInsert(TBL_COMPANY_USERS)
-              .addFields(COL_COMPANY, COL_USER)
-              .addValues(companyId, userId);
-
-          logger.info("do query: ", insert.getQuery());
-          try {
-            qs.insertData(insert);
-          } catch (Exception sqlerr) {
-            logger.warning("record exists");
-          }
-        } else {
-          logger.warning("No user or company found (created)");
-        }
-
-      }
-      in.close();
-    } catch (Exception e) {
-      logger.severe(e);
-      return ResponseObject.error(e);
-    }
-
-    return ResponseObject.info("Data imported");
-  }
-
-  @Deprecated
-  private ResponseObject importOsamaTiekejai(RequestInfo reqInfo) {
-    String fileId = reqInfo.getContent();
-
-    SqlSelect select = new SqlSelect().addField("Files", "Repository", "Path")
-        .addFrom("Files")
-        .setWhere(SqlUtils.equals("Files", sys.getIdName("Files"), Long.parseLong(fileId)));
-
-    logger.info("do query: ", select.getQuery());
-
-    SimpleRowSet fd = qs.getData(select);
-
-    String path = fd.getValue(0, fd.getColumnIndex("Path"));
-
-    select = new SqlSelect().addField(TBL_COMPANIES,
-        sys.getIdName(TBL_COMPANIES), "oID")
-        .addFrom(TBL_COMPANIES)
-        .setWhere(SqlUtils.contains(TBL_COMPANIES, COL_COMPANY_NAME, "Osama"));
-
-    logger.info("do query: ", select.getQuery());
-
-    SimpleRowSet osamaCompany = qs.getData(select);
-
-    if (osamaCompany.isEmpty()) {
-      return ResponseObject.error("Osama company not found");
-    }
-
-    long osamaCompanyId = osamaCompany.getLong(0, 0);
-
-    try {
-
-      FileInputStream fstream = new FileInputStream(path);
-
-      DataInputStream in = new DataInputStream(fstream);
-      BufferedReader br = new BufferedReader(new InputStreamReader(in));
-      String strLine;
-
-      while ((strLine = br.readLine()) != null) {
-        Splitter splitter = Splitter.on(';');
-        List<String> lst = Lists.newArrayList(splitter.split(strLine));
-
-        String[] data = ArrayUtils.toArray(lst);
-
-        logger.info("Current data row", data);
-
-        SqlSelect check = new SqlSelect().addAllFields(TBL_COMPANIES)
-            .addFrom(TBL_COMPANIES)
-            .setWhere(SqlUtils.and(
-                SqlUtils.equals(TBL_COMPANIES, COL_COMPANY_CODE, data[0]),
-                SqlUtils.equals(TBL_COMPANIES, COL_COMPANY_NAME, data[1])
-                ));
-
-        logger.info("do sql", check.getQuery());
-
-        if (qs.getData(check).isEmpty()) {
-          SqlInsert insert = null;
-          if (!BeeUtils.isEmpty(data[0])) {
-            insert = new SqlInsert(TBL_COMPANIES)
-                .addFields(COL_COMPANY_CODE, COL_COMPANY_NAME)
-                .addValues(data[0], data[1]);
-          } else {
-            insert = new SqlInsert(TBL_COMPANIES)
-                .addFields(COL_COMPANY_NAME)
-                .addValues(data[1]);
-          }
-
-          logger.info("do sql", insert.getQuery());
-
-          long companyId = qs.insertData(insert);
-
-          if (!BeeUtils.isEmpty(data[2])) {
-            insert = new SqlInsert(TBL_CONTACTS)
-                .addFields(COL_ADDRESS)
-                .addValues(data[2]);
+          if (!filteredCounties.isEmpty() && !BeeUtils.isEmpty(companyCity)) {
+            insert = new SqlInsert(TBL_CITIES)
+                .addFields("Name", COL_COUNTRY)
+                .addValues(companyCity, filteredCounties.getRowIds().get(0));
 
             logger.info("do sql", insert.getQuery());
+            long cityId = qs.insertData(insert);
 
-            long contactId = qs.insertData(insert);
-
-            SqlUpdate update = new SqlUpdate(TBL_COMPANIES)
-                .addConstant(COL_CONTACT, contactId)
-                .setWhere(SqlUtils.equals(TBL_COMPANIES,
-                    sys.getIdName(TBL_COMPANIES), companyId));
+            update = new SqlUpdate(TBL_CONTACTS)
+                .addConstant(COL_CITY, cityId)
+                .addConstant(
+                    COL_COUNTRY, filteredCounties.getRowIds().get(0))
+                .setWhere(SqlUtils.equals(TBL_CONTACTS, sys.getIdName(TBL_CONTACTS), contactId));
 
             logger.info("do sql", update.getQuery());
-
             qs.updateData(update);
-          }
+          } else if (filteredCounties.isEmpty()) {
 
-          select = new SqlSelect().addField(TBL_PERSONS,
-              sys.getIdName(TBL_PERSONS), "personId")
-              .addFrom(TBL_PERSONS)
-              .setWhere(
-                  SqlUtils.and(
-                      SqlUtils.equals(TBL_PERSONS, COL_FIRST_NAME, data[4]),
-                      SqlUtils.equals(TBL_PERSONS, COL_LAST_NAME, data[5])));
-
-          logger.info("do sql", select.getQuery());
-
-          SimpleRowSet person = qs.getData(select);
-          long personId = -1;
-          long userId = -1;
-
-          if (person.isEmpty()) {
-            insert = new SqlInsert(TBL_PERSONS)
-                .addFields(COL_FIRST_NAME, COL_LAST_NAME)
-                .addValues(data[4], data[5]);
+            insert = new SqlInsert(TBL_COUNTRIES).addConstant("Name", companyCountry);
 
             logger.info("do sql", insert.getQuery());
+            long countryId = qs.insertData(insert);
 
-            personId = qs.insertData(insert);
-
-            insert = new SqlInsert(TBL_COMPANY_PERSONS)
-                .addFields(COL_COMPANY, COL_PERSON)
-                .addValues(osamaCompanyId, personId);
-
-            logger.info("do sql", insert.getQuery());
-
-            long compPersonId = qs.insertData(insert);
-
-            insert = new SqlInsert(TBL_USERS)
-                .addFields(COL_LOGIN, COL_COMPANY_PERSON)
-                .addValues((data[4] + data[5]).toLowerCase(), compPersonId);
-
-            logger.info("do sql", insert.getQuery());
-
-            userId = qs.insertData(insert);
-
-          } else {
-            select = new SqlSelect().addField(TBL_COMPANY_PERSONS,
-                sys.getIdName(TBL_COMPANY_PERSONS), "compPersonId")
-                .addFrom(TBL_COMPANY_PERSONS)
-                .setWhere(SqlUtils.and(
-                    SqlUtils.equals(TBL_COMPANY_PERSONS, COL_COMPANY, osamaCompanyId),
-                    SqlUtils.equals(TBL_COMPANY_PERSONS, COL_PERSON, person.getLong(0, 0))));
-
-            logger.info("do sql", select.getQuery());
-
-            SimpleRowSet compPerson = qs.getData(select);
-
-            select = new SqlSelect().addField(TBL_USERS,
-                sys.getIdName(TBL_USERS), "userId")
-                .addFrom(TBL_USERS)
-                .setWhere(SqlUtils.equals(TBL_USERS, COL_COMPANY_PERSON, compPerson.getLong(0, 0)));
-
-            logger.info("do sql", select.getQuery());
-
-            SimpleRowSet user = qs.getData(select);
-
-            if (user.isEmpty()) {
-
-              insert = new SqlInsert(TBL_USERS)
-                  .addFields(COL_LOGIN, COL_COMPANY_PERSON)
-                  .addValues((data[4] + data[5]).toLowerCase(), compPerson.getLong(0, 0));
+            Long cityId = null;
+            if (!BeeUtils.isEmpty(companyCity)) {
+              insert = new SqlInsert(TBL_CITIES).addConstant("Name", companyCity)
+                  .addConstant(COL_COUNTRY, countryId);
 
               logger.info("do sql", insert.getQuery());
-
-              userId = qs.insertData(insert);
-            } else {
-              userId = user.getLong(0, 0);
+              cityId = qs.insertData(insert);
             }
+
+            update = new SqlUpdate(TBL_CONTACTS)
+                .addConstant(COL_CITY, cityId)
+                .addConstant(COL_COUNTRY, countryId)
+                .setWhere(SqlUtils.equals(TBL_CONTACTS, sys.getIdName(TBL_CONTACTS), contactId));
+
+            logger.info("do sql", update.getQuery());
+            qs.updateData(update);
+          }
+        }
+
+        if (!BeeUtils.isEmpty(companyEMail)) {
+          Filter filterEMail = Filter.contains(COL_EMAIL, companyEMail);
+          BeeRowSet filteredEMails = qs.getViewData("Emails", filterEMail);
+
+          if (filteredEMails.isEmpty()) {
+            insert = new SqlInsert(TBL_EMAILS)
+                .addConstant(COL_EMAIL, companyEMail)
+                .addConstant("Label", companyName);
+
+            logger.info("do sql", insert.getQuery());
+            long emailId = qs.insertData(insert);
+
+            update = new SqlUpdate(TBL_CONTACTS)
+                .addConstant(COL_EMAIL, emailId)
+                .setWhere(SqlUtils.equals(TBL_CONTACTS, sys.getIdName(TBL_CONTACTS), contactId));
+
+            logger.info("do sql", update.getQuery());
+            qs.updateData(update);
+
           }
 
-          insert = new SqlInsert("CompanyUsers")
-              .addFields(COL_COMPANY, COL_USER)
-              .addValues(companyId, userId);
-
-          logger.info("do sql", insert.getQuery());
-
-          userId = qs.insertData(insert);
-
-        } else {
-          logger.warning("record", data, "allready exist!");
         }
 
       }
       in.close();
     } catch (Exception e) {
       logger.severe(e);
+      return ResponseObject.error(e);
     }
 
     return ResponseObject.info("Data imported");
@@ -1345,6 +1070,10 @@ public class UiServiceBean {
     return ResponseObject.response(count);
   }
 
+  private ResponseObject insertRowSilently(RequestInfo reqInfo) {
+    return deb.commitRow(BeeRowSet.restore(reqInfo.getContent()), RowInfo.class);
+  }
+
   private ResponseObject rebuildData(RequestInfo reqInfo) {
     ResponseObject response = new ResponseObject();
 
@@ -1372,7 +1101,7 @@ public class UiServiceBean {
 
     } else if (BeeUtils.startsSame(cmd, "check")) {
       String err = null;
-      List<String> tbls = Lists.newArrayList();
+      List<String> tbls = new ArrayList<>();
       int idx = -1;
 
       for (String w : NameUtils.NAME_SPLITTER.split(cmd)) {
@@ -1401,24 +1130,6 @@ public class UiServiceBean {
       } else {
         response.addError(err);
       }
-    } else if (BeeUtils.startsSame(cmd, "setState")) {
-      String[] arr = cmd.split(" ", 5);
-      RightsState state = EnumUtils.getEnumByName(RightsState.class, arr[1]);
-      String tbl = arr[2];
-      long id = BeeUtils.toLong(arr[3]);
-      long[] bits = null;
-
-      if (arr.length > 4) {
-        String[] rArr = arr[4].split(" ");
-        bits = new long[rArr.length];
-
-        for (int i = 0; i < rArr.length; i++) {
-          bits[i] = BeeUtils.toLong(rArr[i]);
-        }
-      }
-      deb.setState(tbl, state, id, bits);
-      response.addInfo("Toggle OK");
-
     } else if (BeeUtils.startsSame(cmd, "schema")) {
       String schema = cmd.substring("schema".length()).trim();
 
@@ -1451,6 +1162,42 @@ public class UiServiceBean {
     }
     return response;
   }
+  
+  private ResponseObject setRowRights(RequestInfo reqInfo) {
+    String viewName = reqInfo.getParameter(Service.VAR_VIEW_NAME);
+    if (BeeUtils.isEmpty(viewName)) {
+      return ResponseObject.parameterNotFound(reqInfo.getService(), Service.VAR_VIEW_NAME);
+    }
+    
+    if (!sys.isView(viewName)) {
+      return ResponseObject.error(reqInfo.getService(), viewName, "not a view");
+    }
+    
+    Long id = BeeUtils.toLongOrNull(reqInfo.getParameter(Service.VAR_ID));
+    if (!DataUtils.isId(id)) {
+      return ResponseObject.parameterNotFound(reqInfo.getService(), Service.VAR_ID);
+    }
+    
+    Long role = BeeUtils.toLongOrNull(reqInfo.getParameter(COL_ROLE));
+    if (!DataUtils.isId(role) && !Objects.equals(role, 0L)) {
+      return ResponseObject.parameterNotFound(reqInfo.getService(), COL_ROLE);
+    }
+    
+    RightsState state = EnumUtils.getEnumByIndex(RightsState.class,
+        reqInfo.getParameter(COL_STATE));
+    if (state == null) {
+      return ResponseObject.parameterNotFound(reqInfo.getService(), COL_STATE);
+    }
+
+    boolean value = Codec.unpack(reqInfo.getParameter(Service.VAR_VALUE));
+    
+    BeeView view = sys.getView(viewName);
+    String tblName = view.getSourceName();
+    
+    deb.setState(tblName, state, id, role, value);
+    
+    return ResponseObject.emptyResponse();
+  }
 
   private ResponseObject switchDsn(String dsn) {
     if (!BeeUtils.isEmpty(dsn)) {
@@ -1473,27 +1220,44 @@ public class UiServiceBean {
       return ResponseObject.parameterNotFound(Service.VAR_VIEW_WHERE);
     }
 
-    String column = reqInfo.getParameter(Service.VAR_COLUMN);
-    if (BeeUtils.isEmpty(column)) {
+    String[] cols = Codec.beeDeserializeCollection(reqInfo.getParameter(Service.VAR_COLUMN));
+    if (ArrayUtils.isEmpty(cols)) {
       return ResponseObject.parameterNotFound(Service.VAR_COLUMN);
     }
 
-    String value = reqInfo.getParameter(Service.VAR_VALUE);
-    if (BeeUtils.isEmpty(value)) {
+    String[] values = Codec.beeDeserializeCollection(reqInfo.getParameter(Service.VAR_VALUE));
+    if (ArrayUtils.isEmpty(values)) {
       return ResponseObject.parameterNotFound(Service.VAR_VALUE);
     }
+    List<String> newValues = Lists.newArrayList(values);
 
-    BeeView view = sys.getView(viewName);
-    if (view.isReadOnly()) {
-      return ResponseObject.error("View", BeeUtils.bracket(view.getName()), "is read only.");
+    if (cols.length != values.length) {
+      return ResponseObject.error("Columns does not match values");
     }
+    BeeRowSet rs = qs.getViewData(viewName, Filter.restore(where), null, Lists.newArrayList(cols));
+    List<BeeColumn> columns = new ArrayList<>();
 
-    String tblName = view.getSourceName();
-    Filter filter = Filter.restore(where);
+    for (String col : cols) {
+      columns.add(rs.getColumn(col));
+    }
+    for (int i = 0; i < rs.getNumberOfRows(); i++) {
+      List<String> oldValues = new ArrayList<>();
 
-    return qs.updateDataWithResponse(new SqlUpdate(tblName)
-        .setWhere(view.getCondition(filter, sys.getViewFinder()))
-        .addConstant(column, Value.restore(value)));
+      for (String col : cols) {
+        oldValues.add(rs.getString(i, col));
+      }
+      BeeRowSet childRs = DataUtils.getUpdated(viewName, rs.getRow(i).getId(),
+          rs.getRow(i).getVersion(), columns, oldValues, newValues, null);
+
+      if (childRs != null) {
+        ResponseObject response = deb.commitRow(childRs, RowInfo.class);
+
+        if (response.hasErrors()) {
+          return response;
+        }
+      }
+    }
+    return ResponseObject.response(rs.getNumberOfRows());
   }
 
   private ResponseObject updateAutocomplete(RequestInfo reqInfo) {
@@ -1566,7 +1330,7 @@ public class UiServiceBean {
       return ResponseObject.parameterNotFound(Service.VAR_CHILDREN);
     }
 
-    Collection<RowChildren> children = Lists.newArrayList();
+    Collection<RowChildren> children = new ArrayList<>();
 
     String[] arr = Codec.beeDeserializeCollection(serialized);
     if (!ArrayUtils.isEmpty(arr)) {

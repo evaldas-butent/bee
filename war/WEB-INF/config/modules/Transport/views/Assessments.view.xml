@@ -2,39 +2,34 @@
 <View xmlns="http://www.butent.com/view"
   xmlns:x="http://www.butent.com/expression"
 
-  name="Assessments" source="CargoAssessors"
+  name="Assessments" source="Assessments"
+  caption="=assessments"
   newRowForm="Assessment" newRowCaption="=newAssessmentRequest"
   editForm="Assessment"
   >
   <Columns>
+    <IdColumn name="ID" />
+    <SimpleColumn name="Assessment" label="=captionPid" />
     <SimpleColumn name="Status" />
-    <SimpleColumn name="Date" />
-    <SimpleColumn name="Assessor" />
-    <SimpleColumn name="Cargo" />
-    <SimpleColumn name="Notes" label="=trComment" />
+    <SimpleColumn name="Notes" />
+    <SimpleColumn name="Log" />
+    <SimpleColumn name="ExpensesRegistered" />
 
-    <SimpleColumn name="Manager" />
-    <SimpleJoin name="Manager" joinType="INNER">
-      <SimpleColumn name="CompanyPerson" alias="ManagerPerson" />
-      <SimpleJoin name="CompanyPerson" joinType="LEFT">
-        <SimpleJoin name="Person" joinType="LEFT">
-          <SimpleColumn name="FirstName" />
-          <SimpleColumn name="LastName" />
-        </SimpleJoin>
-      </SimpleJoin>
+    <SimpleColumn name="Department" />
+    <SimpleJoin joinType="LEFT" name="Department">
+      <SimpleColumn name="DepartmentName" />
     </SimpleJoin>
 
+    <SimpleColumn name="Cargo" />
     <SimpleJoin name="Cargo" joinType="INNER">
-      <SimpleColumn name="Order" />
       <SimpleJoin name="Order" joinType="INNER">
-        <SimpleColumn name="Date" alias="OrderDate" editable="true" />
-        <SimpleColumn name="OrderNo" />
+        <SimpleColumn name="Date" editable="true" />
         <SimpleColumn name="Status" alias="OrderStatus" editable="true" />
-        <SimpleColumn name="Notes" alias="Route" label="=route" editable="true" />
+        <SimpleColumn name="Notes" alias="OrderNotes" label="=route" editable="true" />
       
         <SimpleColumn name="Customer" editable="true" />
         <SimpleJoin joinType="LEFT" name="Customer">
-          <SimpleColumn name="Name" alias="CustomerName" />
+          <SimpleColumn name="Name" alias="CustomerName" label="=customer" />
 
           <SimpleJoin name="Contact" joinType="LEFT">
             <SimpleColumn name="Email" alias="CustomerEmail" />
@@ -51,35 +46,45 @@
             <SimpleColumn name="Email" alias="PersonEmail" />
           </SimpleJoin>
         </SimpleJoin>
+
+        <SimpleColumn name="Manager" editable="true" />
+        <SimpleJoin name="Manager" joinType="INNER">
+          <SimpleColumn name="CompanyPerson" />
+          <SimpleJoin name="CompanyPerson" joinType="LEFT">
+            <SimpleJoin name="Person" joinType="LEFT">
+              <SimpleColumn name="FirstName" />
+              <SimpleColumn name="LastName" />
+            </SimpleJoin>
+          </SimpleJoin>
+        </SimpleJoin>
       </SimpleJoin>
 
-      <SimpleColumn name="Notes" alias="CargoNotes" label="Papildoma informacija" editable="true" />
+      <SimpleColumn name="Number" label="=refNumber" editable="true" />
+      <SimpleColumn name="Description" editable="true" />
+      <SimpleColumn name="Notes" alias="CargoNotes" label="=additionalInfo" editable="true" />
+      <SimpleColumn name="LoadedKilometers" label="=trAssessmentPlannedKm" editable="true" />
 
       <SimpleJoin name="LoadingPlace" joinType="LEFT">
-        <SimpleColumn name="Contact" alias="Shipper" editable="true" />
-        <SimpleColumn name="Date" alias="LoadingDate" label="=trLoadingDate" editable="true" />
-        <SimpleColumn name="Address" alias="LoadingAddress" label="=trLoadingAddress" editable="true" />
-        <SimpleColumn name="PostIndex" alias="LoadingPostIndex" label="=trLoadingPostIndex" editable="true" />
-        <SimpleColumn name="Terminal" alias="LoadingTerminal" label="=transportationNumber1" editable="true" />
-        <SimpleColumn name="Country" alias="LoadingCountry" label="=trLoadingCountry" editable="true" />
+        <SimpleColumn name="Contact" alias="Shipper" label="=shipper" editable="true" />
+        <SimpleColumn name="Date" alias="LoadingDate" editable="true" label="=trLoadingDate" />
+        <SimpleColumn name="Address" alias="LoadingAddress" editable="true" label="=trLoadingAddress" />
+        <SimpleColumn name="PostIndex" alias="LoadingPostIndex" editable="true" label="=trLoadingPostIndex" />
+        <SimpleColumn name="Country" alias="LoadingCountry" editable="true" label="=trLoadingCountry" />
         <SimpleJoin joinType="LEFT" name="Country">
           <SimpleColumn name="Name" alias="LoadingCountryName" />
-          <SimpleColumn name="Code" alias="LoadingCountryCode" />
+          <SimpleColumn name="Code" alias="LoadingCountryCode" label="=from" />
         </SimpleJoin>
       </SimpleJoin>
       <SimpleJoin name="UnloadingPlace" joinType="LEFT">
-        <SimpleColumn name="Date" alias="UnloadingDate" label="=trUnloadingDate" editable="true" />
-        <SimpleColumn name="Address" alias="UnloadingAddress" label="=trUnloadingAddress" editable="true" />
-        <SimpleColumn name="PostIndex" alias="UnloadingPostIndex" label="=trUnloadingPostIndex" editable="true" />
-        <SimpleColumn name="Terminal" alias="UnloadingTerminal" label="=transportationNumber2" editable="true" />
-        <SimpleColumn name="Country" alias="UnloadingCountry" label="=trUnloadingCountry" editable="true" />
+        <SimpleColumn name="Date" alias="UnloadingDate" editable="true" label="=trUnloadingDate" />
+        <SimpleColumn name="Address" alias="UnloadingAddress" editable="true" label="=trUnloadingAddress" />
+        <SimpleColumn name="PostIndex" alias="UnloadingPostIndex" editable="true" label="=trUnloadingPostIndex" />
+        <SimpleColumn name="Country" alias="UnloadingCountry" editable="true" label="=trUnloadingCountry" />
         <SimpleJoin joinType="LEFT" name="Country">
           <SimpleColumn name="Name" alias="UnloadingCountryName" />
-          <SimpleColumn name="Code" alias="UnloadingCountryCode" />
+          <SimpleColumn name="Code" alias="UnloadingCountryCode" label="=to" />
         </SimpleJoin>
       </SimpleJoin>
-
-      <SimpleColumn name="Description" editable="true" />
 
       <SimpleColumn name="Weight" editable="true" />
       <SimpleColumn name="WeightUnit" editable="true" />
@@ -105,9 +110,6 @@
         <SimpleColumn name="Name" alias="ValueCurrencyName" />
       </SimpleJoin>
 
-      <SimpleColumn name="Number" editable="true" />
-      <SimpleColumn name="Cmr" editable="true" />
-
       <SimpleColumn name="Partial" editable="true" />
       <SimpleColumn name="Outsized" editable="true" />
       <SimpleColumn name="Dangerous" editable="true" />
@@ -117,6 +119,49 @@
         <SimpleColumn name="Name" alias="CurrencyName" />
       </SimpleJoin>
     </SimpleJoin>
+    
+    <ExternalJoin name="Assessment" source="AssessmentObservers" joinType="LEFT">
+      <HiddenColumn name="User" />
+    </ExternalJoin>
+    
+    <ExternalJoin name="Assessment" source="AssessmentOGroups" joinType="LEFT">
+      <SimpleJoin name="Group" joinType="LEFT">
+        <ExternalJoin name="Group" source="UserGroups" joinType="LEFT">
+          <HiddenColumn name="User" alias="Group" />
+        </ExternalJoin>
+      </SimpleJoin>
+    </ExternalJoin>
+
+    <SimpleJoin name="Cargo" joinType="INNER">
+      <ExternalJoin name="Cargo" source="CargoIncomes" joinType="LEFT">
+        <HiddenColumn name="Sale" alias="Incomes" />
+        <AggregateColumn name="Sale" alias="IncomesCommited" aggregate="MIN">
+          <x:nvl type="LONG">
+            <x:number>"Incomes"</x:number>
+            <x:number>0</x:number>
+          </x:nvl>
+        </AggregateColumn>
+      </ExternalJoin>
+      <ExternalJoin name="Cargo" source="CargoExpenses" joinType="LEFT">
+        <HiddenColumn name="Purchase" alias="Expenses" />
+        <AggregateColumn name="Purchase" alias="ExpensesCommited" aggregate="MIN">
+          <x:nvl type="LONG">
+            <x:number>"Expenses"</x:number>
+            <x:number>0</x:number>
+          </x:nvl>
+        </AggregateColumn>
+        <AggregateColumn name="Cargo" alias="ExpensesCount" aggregate="COUNT_DISTINCT" />
+      </ExternalJoin>
+    </SimpleJoin>
+    
+    <ExternalJoin name="Assessment" source="AssessmentForwarders" joinType="LEFT">
+      <SimpleJoin name="Trip" joinType="LEFT">
+        <HiddenColumn name="ForwarderVehicle" />
+        <AggregateColumn name="ForwarderVehicle" alias="MinVehicle" aggregate="MIN" />
+        <AggregateColumn name="ForwarderVehicle" alias="MaxVehicle" aggregate="MAX" />
+        <AggregateColumn name="ForwarderVehicle" alias="CntVehicle" aggregate="COUNT_DISTINCT" />
+      </SimpleJoin>
+    </ExternalJoin>
   </Columns>
   <Order>
     <OrderBy column="LoadingDate" />

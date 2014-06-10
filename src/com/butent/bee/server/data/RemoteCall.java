@@ -117,6 +117,8 @@ public class RemoteCall {
   QueryServiceBean qs;
   @EJB
   SystemBean sys;
+  @EJB
+  UserServiceBean usr;
 
   public String getViewData(String params) {
     Object rs = buildRequest(ParamHolder.class, params);
@@ -155,7 +157,7 @@ public class RemoteCall {
           }
         }
         if (rs == null && !BeeUtils.isEmpty(prm.filter)) {
-          filter = view.parseFilter(prm.filter);
+          filter = view.parseFilter(prm.filter, usr.getCurrentUserId());
           if (filter == null) {
             rs = "Wrong filter: " + prm.filter;
           }

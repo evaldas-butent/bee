@@ -10,13 +10,14 @@ import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.grid.HtmlTable;
 import com.butent.bee.client.modules.classifiers.ClassifierUtils;
 import com.butent.bee.client.modules.trade.TradeUtils;
-import com.butent.bee.client.ui.AbstractFormInterceptor;
-import com.butent.bee.client.ui.FormFactory.FormInterceptor;
 import com.butent.bee.client.ui.FormFactory.WidgetDescriptionCallback;
 import com.butent.bee.client.ui.IdentifiableWidget;
 import com.butent.bee.client.view.form.FormView;
+import com.butent.bee.client.view.form.interceptor.AbstractFormInterceptor;
+import com.butent.bee.client.view.form.interceptor.FormInterceptor;
 import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.IsRow;
+import com.butent.bee.shared.modules.administration.AdministrationConstants;
 import com.butent.bee.shared.utils.BeeUtils;
 
 import java.util.List;
@@ -46,7 +47,7 @@ public class PrintInvoiceInterceptor extends AbstractFormInterceptor {
   @Override
   public void beforeRefresh(FormView form, IsRow row) {
     for (String name : companies.keySet()) {
-      Long id = form.getActiveRow().getLong(form.getDataIndex(name));
+      Long id = form.getLongValue(name);
 
       if (!DataUtils.isId(id) && !BeeUtils.same(name, COL_SALE_PAYER)) {
         id = BeeKeeper.getUser().getUserData().getCompany();
@@ -54,12 +55,12 @@ public class PrintInvoiceInterceptor extends AbstractFormInterceptor {
       ClassifierUtils.getCompanyInfo(id, companies.get(name));
     }
     if (invoiceDetails != null) {
-      TradeUtils.getDocumentItems(getFormView().getViewName(), row.getId(), invoiceDetails);
+      TradeUtils.getDocumentItems(getViewName(), row.getId(), invoiceDetails);
     }
     for (Widget total : totals) {
-      TradeUtils.getTotalInWords(row.getDouble(form.getDataIndex(COL_TRADE_AMOUNT)),
-          row.getString(form.getDataIndex("CurrencyName")),
-          row.getString(form.getDataIndex("MinorName")), total);
+      TradeUtils.getTotalInWords(form.getDoubleValue(COL_TRADE_AMOUNT),
+          form.getStringValue(AdministrationConstants.ALS_CURRENCY_NAME),
+          form.getStringValue("MinorName"), total);
     }
   }
 

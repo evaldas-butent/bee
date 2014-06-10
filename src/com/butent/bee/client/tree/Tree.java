@@ -274,7 +274,7 @@ public class Tree extends Panel implements HasTreeItems, Focusable, HasAnimation
         Tags.BUTTON, Tags.LABEL);
   }
 
-  private final Map<Widget, TreeItem> childWidgets = new HashMap<Widget, TreeItem>();
+  private final Map<Widget, TreeItem> childWidgets = new HashMap<>();
 
   private TreeItem selectedItem;
 
@@ -536,7 +536,7 @@ public class Tree extends Panel implements HasTreeItems, Focusable, HasAnimation
 
       case Event.ONKEYUP:
         if (event.getKeyCode() == KeyCodes.KEY_TAB) {
-          List<Element> chain = new ArrayList<Element>();
+          List<Element> chain = new ArrayList<>();
           collectElementChain(chain, getElement(), DOM.eventGetTarget(event));
           TreeItem item = findItemByChain(chain, 0, root);
           if (item != getSelectedItem()) {
@@ -627,7 +627,7 @@ public class Tree extends Panel implements HasTreeItems, Focusable, HasAnimation
   }
 
   public Iterator<TreeItem> treeItemIterator() {
-    List<TreeItem> accum = new ArrayList<TreeItem>();
+    List<TreeItem> accum = new ArrayList<>();
     root.addTreeItems(accum);
     return accum.iterator();
   }
@@ -716,7 +716,7 @@ public class Tree extends Panel implements HasTreeItems, Focusable, HasAnimation
       selectCaption(true);
       return true;
     }
-    List<Element> chain = new ArrayList<Element>();
+    List<Element> chain = new ArrayList<>();
     collectElementChain(chain, getElement(), hElem);
 
     TreeItem item = findItemByChain(chain, 0, root);

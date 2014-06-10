@@ -17,12 +17,12 @@
       label="=cargo" maxWidth="200" editEnabled="true" filterSupplier="value" />
 
     <CalcColumn name="Loading" type="string" cellType="html" caption="=loading" 
-      searchBy="LoadingTerminal LoadingContact LoadingAddress 
+      searchBy="LoadingNumber LoadingContact LoadingAddress 
       LoadingPostIndex LoadingCityName LoadingCountryName LoadingCountryCode" 
       filterSupplier="value" />
     <DataColumn name="LoadingDate" caption="=trCargoLoadingDateShort" label="=trCargoLoadingDateShort" />
     <CalcColumn name="Unloading" type="string" cellType="html" caption="=unloading"
-      searchBy="UnloadingTerminal UnloadingContact UnloadingAddress 
+      searchBy="UnloadingNumber UnloadingContact UnloadingAddress 
       UnloadingPostIndex UnloadingCityName UnloadingCountryName UnloadingCountryCode" 
       filterSupplier="value" />
     <DataColumn name="UnloadingDate" caption="=trUnloadingDateShort" label="=trUnloadingDateShort"/>

@@ -4,7 +4,6 @@ import com.google.common.base.Objects;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
-import com.google.common.primitives.Longs;
 
 import com.butent.bee.server.data.BeeTable.BeeField;
 import com.butent.bee.server.data.BeeTable.BeeForeignKey;
@@ -42,7 +41,7 @@ import com.butent.bee.shared.data.view.RowInfo;
 import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogUtils;
 import com.butent.bee.shared.modules.administration.AdministrationConstants;
-import com.butent.bee.shared.modules.administration.AdministrationConstants.RightsState;
+import com.butent.bee.shared.rights.RightsState;
 import com.butent.bee.shared.time.DateTime;
 import com.butent.bee.shared.time.JustDate;
 import com.butent.bee.shared.time.TimeUtils;
@@ -50,6 +49,7 @@ import com.butent.bee.shared.utils.ArrayUtils;
 import com.butent.bee.shared.utils.BeeUtils;
 
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Random;
@@ -188,7 +188,7 @@ public class DataEditorBean {
 
     BeeRow row = rs.getRow(rowIndex);
     boolean isNew = DataUtils.isNewRow(row);
-    
+
     Map<String, TableInfo> updates = Maps.newHashMap();
 
     if (!BeeUtils.isPositive(rs.getNumberOfColumns())) {
@@ -267,7 +267,7 @@ public class DataEditorBean {
 
       if (!response.hasErrors()) {
         if (RowInfo.class.equals(returnType)) {
-          response.setResponse(new RowInfo(id, tblInfo.version, false));
+          response.setResponse(new RowInfo(id, tblInfo.version, false, false));
         } else {
           BeeRowSet newRs = qs.getViewData(view.getName(), Filter.compareId(id));
 
@@ -292,7 +292,7 @@ public class DataEditorBean {
       }
       event.setAfter();
       sys.postDataEvent(event);
-      
+
       if (isNew) {
         news.maybeRecordUpdate(rs.getViewName(), id);
       } else {
@@ -632,21 +632,38 @@ public class DataEditorBean {
     return response;
   }
 
-  public void setState(String tblName, RightsState state, long id, long... bits) {
+  public void setState(String tblName, RightsState state, long id, long role, boolean on) {
     BeeTable table = sys.getTable(tblName);
+    Map<Long, Boolean> oldRoles = getRoles(table, state, id);
 
-    Map<Long, Boolean> bitMap = Maps.newHashMap();
-
-    for (long bit : usr.getRoles()) {
-      bitMap.put(bit, bits == null || Longs.contains(bits, bit));
+    if (oldRoles.get(role) == on) {
+      return;
     }
-    if (table.activateState(state, bitMap.keySet())) {
-      sys.rebuildTable(table.getName());
-    }
-    SqlUpdate su = table.updateState(id, state, bitMap);
+    setState(table, state, id, role, on);
 
-    if (su != null && qs.updateData(su) == 0) {
-      qs.updateData(table.insertState(id, state, bitMap));
+    Map<Long, Boolean> newRoles = getRoles(table, state, id);
+
+    for (Long r : oldRoles.keySet()) {
+      if (r != role) {
+        boolean oldOn = oldRoles.get(r);
+
+        if (oldOn != newRoles.get(r)) {
+          setState(table, state, id, r, oldOn);
+        }
+      }
+    }
+    long defaultRole = 0;
+    boolean defaultOn = newRoles.get(defaultRole);
+    boolean setDefaults = (role == defaultRole) || (defaultOn != state.isChecked());
+
+    if (setDefaults) {
+      int c = newRoles.size();
+      long[] roles = new long[c];
+
+      for (Long r : newRoles.keySet()) {
+        roles[--c] = r;
+      }
+      qs.updateData(table.updateStateDefaults(id, state, defaultOn, roles));
     }
   }
 
@@ -740,8 +757,23 @@ public class DataEditorBean {
         if (!BeeUtils.isEmpty(defaults)) {
           for (String fldName : defaults.keySet()) {
             if (!si.hasField(fldName) && !sys.isExtField(tblName, fldName)) {
-              Pair<DefaultExpression, Object> pair = defaults.get(fldName);
-              si.addConstant(fldName, srvDef.getValue(tblName, fldName, pair.getA(), pair.getB()));
+              DefaultExpression defExpr = defaults.get(fldName).getA();
+              Object defValue = defaults.get(fldName).getB();
+
+              if (defExpr == DefaultExpression.NEXT_NUMBER
+                  && defValue != null && sys.hasField(tblName, defValue.toString())) {
+
+                String fld = defValue.toString();
+                defValue = null;
+
+                for (FieldInfo col : baseUpdate) {
+                  if (BeeUtils.same(col.fieldName, fld)) {
+                    defValue = col.newValue;
+                    break;
+                  }
+                }
+              }
+              si.addConstant(fldName, srvDef.getValue(tblName, fldName, defExpr, defValue));
             }
           }
         }
@@ -856,6 +888,35 @@ public class DataEditorBean {
       c += res;
     }
     return ResponseObject.response(c);
+  }
+
+  private Map<Long, Boolean> getRoles(BeeTable table, RightsState state, long id) {
+    Map<Long, Boolean> roles = new HashMap<>();
+    roles.put(0L, state.isChecked());
+
+    for (Long r : usr.getRoles()) {
+      roles.put(r, state.isChecked());
+    }
+    String tblName = table.getName();
+
+    SqlSelect query = new SqlSelect()
+        .addFrom(tblName)
+        .setWhere(sys.idEquals(tblName, id));
+
+    String stateAlias = table.joinState(query, tblName, state);
+
+    if (!BeeUtils.isEmpty(stateAlias)) {
+      for (Long r : roles.keySet()) {
+        query.addExpr(SqlUtils.sqlIf(table.checkState(stateAlias, state, r), true, false),
+            state.name() + r);
+      }
+      SimpleRow row = qs.getRow(query);
+
+      for (Long r : roles.keySet()) {
+        roles.put(r, BeeUtils.unbox(row.getBoolean(state.name() + r)));
+      }
+    }
+    return roles;
   }
 
   private int insertChildren(long parentId, RowChildren children, ResponseObject response) {
@@ -1017,6 +1078,15 @@ public class DataEditorBean {
       }
     }
     return ok;
+  }
+
+  private void setState(BeeTable table, RightsState state, long id, long role, boolean on) {
+    if (table.activateState(state, role)) {
+      sys.rebuildTable(table.getName());
+    }
+    if (qs.updateData(table.updateState(id, state, role, on)) == 0) {
+      qs.updateData(table.insertState(id, state, role, on));
+    }
   }
 
   private int updateChildren(long parentId, RowChildren children, ResponseObject response) {

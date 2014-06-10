@@ -306,6 +306,14 @@ public final class ArrayUtils {
     return arr;
   }
   
+  public static int sum(int[] arr) {
+    int result = 0;
+    for (int v : arr) {
+      result += v;
+    }
+    return result;
+  }
+  
   public static String[] toArray(List<String> list) {
     if (list == null) {
       return null;

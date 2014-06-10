@@ -49,8 +49,6 @@ import com.butent.bee.client.layout.Simple;
 import com.butent.bee.client.render.PhotoRenderer;
 import com.butent.bee.client.richtext.RichTextEditor;
 import com.butent.bee.client.style.StyleUtils;
-import com.butent.bee.client.ui.AbstractFormInterceptor;
-import com.butent.bee.client.ui.FormFactory.FormInterceptor;
 import com.butent.bee.client.ui.FormFactory.WidgetDescriptionCallback;
 import com.butent.bee.client.ui.IdentifiableWidget;
 import com.butent.bee.client.ui.UiHelper;
@@ -61,6 +59,8 @@ import com.butent.bee.client.view.HeaderView;
 import com.butent.bee.client.view.edit.Editor;
 import com.butent.bee.client.view.edit.SaveChangesEvent;
 import com.butent.bee.client.view.form.FormView;
+import com.butent.bee.client.view.form.interceptor.AbstractFormInterceptor;
+import com.butent.bee.client.view.form.interceptor.FormInterceptor;
 import com.butent.bee.client.widget.Button;
 import com.butent.bee.client.widget.CustomDiv;
 import com.butent.bee.client.widget.CustomWidget;
@@ -82,6 +82,7 @@ import com.butent.bee.shared.data.SimpleRowSet;
 import com.butent.bee.shared.data.event.RowUpdateEvent;
 import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.io.StoredFile;
+import com.butent.bee.shared.modules.administration.AdministrationConstants;
 import com.butent.bee.shared.modules.discussions.DiscussionsConstants.DiscussionEvent;
 import com.butent.bee.shared.modules.discussions.DiscussionsConstants.DiscussionStatus;
 import com.butent.bee.shared.modules.discussions.DiscussionsUtils;
@@ -517,7 +518,7 @@ class DiscussionInterceptor extends AbstractFormInterceptor {
           return;
         }
 
-        RowUpdateEvent.fire(BeeKeeper.getBus(), VIEW_DISCUSSIONS, data);
+        // RowUpdateEvent.fire(BeeKeeper.getBus(), VIEW_DISCUSSIONS, data);
 
         Widget fileWidget = form.getWidgetByName(PROP_FILES);
         if (fileWidget instanceof FileGroup) {
@@ -1229,6 +1230,7 @@ class DiscussionInterceptor extends AbstractFormInterceptor {
             && DiscussionStatus.in(status, DiscussionStatus.ACTIVE, DiscussionStatus.INACTIVE)
             && (isAdmin(adminLogin) || allowDelOwnComments);
       case CREATE:
+      case CREATE_MAIL:
         return false;
       case DEACTIVATE:
         return false;
@@ -1463,7 +1465,7 @@ class DiscussionInterceptor extends AbstractFormInterceptor {
 
     final List<BeeColumn> columns =
         Data.getColumns(VIEW_DISCUSSIONS_FILES, Lists.newArrayList(COL_DISCUSSION, COL_COMMENT,
-            COL_FILE, COL_CAPTION));
+            AdministrationConstants.COL_FILE, COL_CAPTION));
 
     for (final NewFileInfo fileInfo : files) {
       FileUtils.uploadFile(fileInfo, new Callback<Long>() {

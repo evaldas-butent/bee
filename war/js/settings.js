@@ -1,6 +1,6 @@
 var BeeSettings = {
   appName: "B-NOVO",
-  version: "1.02",
+  version: "1.10",
   logoImage: "images/logo.png",
   logoOpen: "http://www.butent.com",
   startMillis: new Date().getTime(),
@@ -12,5 +12,6 @@ var BeeSettings = {
   actionSensitivityMillis: 300,
   minimizeNumberOfConcurrentRequests: true,
   webSocketUrl: "ws://crm.osama.lt/b-novo/ws",
-  showUserPhoto: true
+  showUserPhoto: true,
+  onStartup: "AnnouncementsBoard"
 };

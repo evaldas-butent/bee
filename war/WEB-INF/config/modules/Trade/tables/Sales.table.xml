@@ -8,7 +8,7 @@
     <DateTime name="Date" notNull="true" defExpr="CURRENT_TIME" label="=trdDate" />
     <String name="Number" precision="50" label="=trdNumber" />
     <String name="InvoicePrefix" precision="10" label="=trdInvoicePrefix" />
-    <String name="InvoiceNo" precision="20" label="=trdInvoiceNo" />
+    <String name="InvoiceNo" precision="20" label="=trdInvoiceNo" defExpr="NEXT_NUMBER" defValue="InvoicePrefix" />
 
     <Relation name="Supplier" relation="Companies" label="=trdSupplier" />
     <Relation name="Customer" relation="Companies" label="=trdCustomer" />
@@ -17,7 +17,8 @@
     <Relation name="WarehouseFrom" relation="Warehouses" label="=trdWarehouseFrom" />
 
     <Numeric name="Amount" precision="12" scale="2" label="=trdTotal" />
-    <Relation name="Currency" relation="Currencies" notNull="true" />
+    <Relation name="Currency" relation="Currencies" notNull="true" defExpr="MAIN_CURRENCY"
+      label="=currency" />
 
     <Date name="Term" label="=trdTerm" />
     <DateTime name="PaymentTime" label="=trdPaymentTime" />
@@ -31,6 +32,8 @@
 
     <Boolean name="Proforma" label="=trdProformaInvoice" />
     <DateTime name="Exported" label="=trdExported" />
+    
+    <Integer name="Kind" />
   </Fields>
 
   <Indexes>

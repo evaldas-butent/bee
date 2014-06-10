@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<View xmlns="http://www.butent.com/view"
+
+  name="ServiceCritGroups" source="ServiceCritGroups"
+  newRowCaption="=newCriteriaGroup" caption="=criteriaGroups"
+  >
+  <Columns>
+    <SimpleColumn name="ServiceObject" />
+    <SimpleColumn name="Name" />
+    <SimpleColumn name="Ordinal" />
+  </Columns>
+  <Order>
+    <OrderBy column="Ordinal" />
+  </Order>
+</View>

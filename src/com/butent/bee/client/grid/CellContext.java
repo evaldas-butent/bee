@@ -1,6 +1,7 @@
 package com.butent.bee.client.grid;
 
 import com.butent.bee.client.view.grid.CellGrid;
+import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.data.IsRow;
 
 /**
@@ -10,16 +11,20 @@ import com.butent.bee.shared.data.IsRow;
 public class CellContext {
 
   private final CellGrid grid;
-  private final IsRow rowValue;
-  private final int columnIndex;
+  private IsRow row;
+  private int columnIndex;
+
+  public CellContext(CellGrid grid) {
+    this(grid, null, BeeConst.UNDEF);
+  }
 
   public CellContext(CellGrid grid, int columnIndex) {
     this(grid, null, columnIndex);
   }
 
-  public CellContext(CellGrid grid, IsRow rowValue, int columnIndex) {
+  public CellContext(CellGrid grid, IsRow row, int columnIndex) {
     this.grid = grid;
-    this.rowValue = rowValue;
+    this.row = row;
     this.columnIndex = columnIndex;
   }
 
@@ -31,7 +36,15 @@ public class CellContext {
     return grid;
   }
 
-  public IsRow getRowValue() {
-    return rowValue;
+  public IsRow getRow() {
+    return row;
+  }
+
+  public void setColumnIndex(int columnIndex) {
+    this.columnIndex = columnIndex;
+  }
+
+  public void setRow(IsRow row) {
+    this.row = row;
   }
 }

@@ -1,11 +1,12 @@
 package com.butent.bee.client.websocket;
 
+import com.google.common.base.Function;
 import com.google.common.collect.Lists;
-import com.google.common.collect.Maps;
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.core.client.JavaScriptException;
 import com.google.gwt.user.client.Timer;
 
+import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.Settings;
 import com.butent.bee.client.dom.Features;
 import com.butent.bee.client.utils.JsUtils;
@@ -23,16 +24,17 @@ import com.butent.bee.shared.websocket.WsUtils;
 import com.butent.bee.shared.websocket.messages.Message;
 import com.butent.bee.shared.websocket.messages.ProgressMessage;
 
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import elemental.js.events.JsEvent;
-import elemental.events.MessageEvent;
+import elemental.client.Browser;
 import elemental.events.CloseEvent;
 import elemental.events.Event;
 import elemental.events.EventListener;
-import elemental.client.Browser;
+import elemental.events.MessageEvent;
 import elemental.html.WebSocket;
+import elemental.js.events.JsEvent;
 
 public final class Endpoint {
 
@@ -69,13 +71,17 @@ public final class Endpoint {
 
   private static MessageDispatcher dispatcher = new MessageDispatcher();
 
-  private static Map<String, Consumer<String>> progressQueue = Maps.newHashMap();
+  private static Map<String, Consumer<String>> progressQueue = new HashMap<>();
+  private static Map<String, Function<ProgressMessage, Boolean>> progressHandlers = new HashMap<>();
 
-  public static void cancelPropgress(String progressId) {
+  public static void cancelProgress(String progressId) {
     Assert.notEmpty(progressId);
 
-    dequeuePropgress(progressId);
-    send(ProgressMessage.cancel(progressId));
+    ProgressMessage pm = ProgressMessage.cancel(progressId);
+
+    handleProgress(pm);
+    removeProgress(progressId);
+    send(pm);
   }
 
   public static void close() {
@@ -84,7 +90,7 @@ public final class Endpoint {
     }
   }
 
-  public static void dequeuePropgress(String progressId) {
+  public static void dequeueProgress(String progressId) {
     if (progressQueue.containsKey(progressId)) {
       progressQueue.remove(progressId);
     }
@@ -151,6 +157,15 @@ public final class Endpoint {
     return sessionId;
   }
 
+  public static boolean handleProgress(ProgressMessage pm) {
+    Assert.notNull(pm);
+
+    if (progressHandlers.containsKey(pm.getProgressId())) {
+      return BeeUtils.unbox(progressHandlers.get(pm.getProgressId()).apply(pm));
+    }
+    return false;
+  }
+
   public static boolean isClosed() {
     return socket != null && socket.getReadyState() == ReadyState.CLOSED.value;
   }
@@ -208,6 +223,22 @@ public final class Endpoint {
     }
   }
 
+  public static void registerProgressHandler(String progressId,
+      Function<ProgressMessage, Boolean> function) {
+    Assert.notEmpty(progressId);
+    Assert.notNull(function);
+
+    if (isEnabled()) {
+      progressHandlers.put(progressId, function);
+    }
+  }
+
+  public static void removeProgress(String progressId) {
+    BeeKeeper.getScreen().removeProgress(progressId);
+    dequeueProgress(progressId);
+    unregisterProgressHandler(progressId);
+  }
+
   public static void send(Message message) {
     if (!isOpen()) {
       if (isEnabled()) {
@@ -229,6 +260,12 @@ public final class Endpoint {
 
   public static void setSessionId(String sessionId) {
     Endpoint.sessionId = sessionId;
+  }
+
+  public static void unregisterProgressHandler(String progressId) {
+    if (progressHandlers.containsKey(progressId)) {
+      progressHandlers.remove(progressId);
+    }
   }
 
   static boolean startPropgress(String progressId) {

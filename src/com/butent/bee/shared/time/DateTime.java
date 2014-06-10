@@ -13,7 +13,6 @@ import java.util.Date;
  */
 public class DateTime extends AbstractDate implements Comparable<DateTime> {
 
-
   public static DateTime copyOf(DateTime original) {
     if (original == null) {
       return null;
@@ -131,7 +130,7 @@ public class DateTime extends AbstractDate implements Comparable<DateTime> {
       setLocalDate(date.getYear(), date.getMonth(), date.getDom(), hour, minute, second, millis);
     }
   }
-  
+
   /**
    * Creates new object of {@code DateTime} with milliseconds parameter.
    * 
@@ -424,6 +423,10 @@ public class DateTime extends AbstractDate implements Comparable<DateTime> {
   public int hashCode() {
     return Long.valueOf(getTime()).hashCode();
   }
+  
+  public boolean hasTimePart() {
+    return getHour() != 0 || getMinute() != 0 || getSecond() != 0 || getMillis() != 0;
+  }
 
   /**
    * Serializes the {@code DateTime} object to {@code String}.
@@ -543,7 +546,7 @@ public class DateTime extends AbstractDate implements Comparable<DateTime> {
     StringBuilder sb = new StringBuilder();
     sb.append(TimeUtils.padTwo(getHour()));
     sb.append(TimeUtils.TIME_FIELD_SEPARATOR).append(TimeUtils.padTwo(getMinute()));
-    
+
     if (getSecond() != 0) {
       sb.append(TimeUtils.TIME_FIELD_SEPARATOR).append(TimeUtils.padTwo(getSecond()));
     }
@@ -570,7 +573,8 @@ public class DateTime extends AbstractDate implements Comparable<DateTime> {
     sb.append(toDateString()).append(TimeUtils.DATE_TIME_SEPARATOR).append(toTimeString());
     return sb.toString();
   }
-  
+
+  @Override
   public String toTimeStamp() {
     return TimeUtils.yearToString(getUtcYear()) + TimeUtils.monthToString(getUtcMonth())
         + TimeUtils.dayOfMonthToString(getUtcDom()) + TimeUtils.padTwo(getUtcHour())

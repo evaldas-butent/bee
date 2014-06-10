@@ -100,7 +100,7 @@ public abstract class DataColumn<T> extends AbstractList<T> {
   }
 
   public static List<DataColumn<?>> getAllColumns(AbstractDataTable dataTable) {
-    List<DataColumn<?>> columns = new ArrayList<DataColumn<?>>();
+    List<DataColumn<?>> columns = new ArrayList<>();
     for (int i = 0; i < dataTable.getNumberOfColumns(); i++) {
       columns.add(DataColumn.of(dataTable, i));
     }

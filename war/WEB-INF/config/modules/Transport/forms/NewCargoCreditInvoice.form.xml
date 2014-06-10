@@ -5,7 +5,7 @@
 <f:Form xmlns="http://www.butent.com/widget"
   xmlns:f="http://www.butent.com/form"
   
-  name="NewCargoCreditInvoice" viewName="CargoCreditInvoices" caption="=trNewCargoCreditInvoice"
+  name="NewCargoCreditInvoice" viewName="CargoPurchaseInvoices" caption="=trNewCargoCreditInvoice"
   width="700" height="250"
   >
   <FlowPanel>
@@ -46,7 +46,7 @@
       </row>
       <row>
         <Label text="=trdTerm" style="&lbl; text-align:right;" />
-        <InputDate source="Term" style="width:70px;" />
+        <InputDate source="Term" style="width:75px;" />
         <Label text="=trdManager" style="&lbl;" />
         <DataSelector source="Manager" editSource="ManagerPerson" />
       </row>

@@ -15,6 +15,7 @@ import com.butent.bee.client.data.RowUpdateCallback;
 import com.butent.bee.client.dialog.ConfirmationCallback;
 import com.butent.bee.client.event.DndHelper;
 import com.butent.bee.client.event.DndTarget;
+import com.butent.bee.client.timeboard.Blender;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.BiConsumer;
 import com.butent.bee.shared.data.BeeColumn;
@@ -23,6 +24,7 @@ import com.butent.bee.shared.data.SimpleRowSet.SimpleRow;
 import com.butent.bee.shared.modules.transport.TransportConstants.OrderStatus;
 import com.butent.bee.shared.modules.transport.TransportConstants.VehicleType;
 import com.butent.bee.shared.time.DateTime;
+import com.butent.bee.shared.time.HasDateRange;
 import com.butent.bee.shared.time.JustDate;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.EnumUtils;
@@ -35,6 +37,17 @@ final class Freight extends OrderCargo {
   private static final Set<String> acceptsDropTypes =
       ImmutableSet.of(DATA_TYPE_FREIGHT, DATA_TYPE_ORDER_CARGO);
 
+  private static final Blender blender = new Blender() {
+    @Override
+    public boolean willItBlend(HasDateRange x, HasDateRange y) {
+      if (x instanceof Freight && y instanceof Freight) {
+        return Objects.equal(((Freight) x).getTripId(), ((Freight) y).getTripId());
+      } else {
+        return false;
+      }
+    }
+  };
+  
   static Freight create(SimpleRow row, JustDate minLoad, JustDate maxUnload) {
     return new Freight(row.getLong(COL_ORDER),
         EnumUtils.getEnumByIndex(OrderStatus.class, row.getInt(COL_STATUS)),
@@ -52,8 +65,8 @@ final class Freight extends OrderCargo {
             row.getValue(defaultLoadingColumnAlias(COL_PLACE_POST_INDEX))),
         BeeUtils.nvl(row.getLong(loadingColumnAlias(COL_PLACE_CITY)),
                 row.getLong(defaultLoadingColumnAlias(COL_PLACE_CITY))),
-        BeeUtils.nvl(row.getValue(loadingColumnAlias(COL_PLACE_TERMINAL)),
-            row.getValue(defaultLoadingColumnAlias(COL_PLACE_TERMINAL))),
+        BeeUtils.nvl(row.getValue(loadingColumnAlias(COL_PLACE_NUMBER)),
+            row.getValue(defaultLoadingColumnAlias(COL_PLACE_NUMBER))),
         BeeUtils.nvl(Places.getUnloadingDate(row, unloadingColumnAlias(COL_PLACE_DATE)),
             Places.getUnloadingDate(row, defaultUnloadingColumnAlias(COL_PLACE_DATE)), maxUnload),
         BeeUtils.nvl(row.getLong(unloadingColumnAlias(COL_PLACE_COUNTRY)),
@@ -64,10 +77,14 @@ final class Freight extends OrderCargo {
             row.getValue(defaultUnloadingColumnAlias(COL_PLACE_POST_INDEX))),
         BeeUtils.nvl(row.getLong(unloadingColumnAlias(COL_PLACE_CITY)),
             row.getLong(defaultUnloadingColumnAlias(COL_PLACE_CITY))),
-        BeeUtils.nvl(row.getValue(unloadingColumnAlias(COL_PLACE_TERMINAL)),
-            row.getValue(defaultUnloadingColumnAlias(COL_PLACE_TERMINAL))),
+        BeeUtils.nvl(row.getValue(unloadingColumnAlias(COL_PLACE_NUMBER)),
+            row.getValue(defaultUnloadingColumnAlias(COL_PLACE_NUMBER))),
         row.getLong(COL_TRIP_ID), row.getLong(COL_VEHICLE), row.getLong(COL_TRAILER),
         row.getLong(COL_CARGO_TRIP_ID), row.getLong(ALS_CARGO_TRIP_VERSION));
+  }
+
+  static Blender getBlender() {
+    return blender;
   }
 
   private final Long tripId;
@@ -79,23 +96,23 @@ final class Freight extends OrderCargo {
   private final Long cargoTripVersion;
 
   private String tripTitle;
-  
+
   private boolean editable;
 
   private Freight(Long orderId, OrderStatus orderStatus, DateTime orderDate, String orderNo,
       Long customerId, String customerName, Long cargoId, String cargoDescription, String notes,
       JustDate loadingDate, Long loadingCountry, String loadingPlace, String loadingPostIndex,
-      Long loadingCity, String loadingTerminal,
+      Long loadingCity, String loadingNumber,
       JustDate unloadingDate, Long unloadingCountry, String unloadingPlace, 
       String unloadingPostIndex, Long unloadingCity,
-      String unloadingTerminal, Long tripId, Long truckId, Long trailerId, Long cargoTripId,
+      String unloadingNumber, Long tripId, Long truckId, Long trailerId, Long cargoTripId,
       Long cargoTripVersion) {
 
     super(orderId, orderStatus, orderDate, orderNo, customerId, customerName, cargoId,
         cargoDescription, notes, loadingDate, loadingCountry, loadingPlace, loadingPostIndex,
-        loadingCity, loadingTerminal,
+        loadingCity, loadingNumber,
         unloadingDate, unloadingCountry, unloadingPlace, unloadingPostIndex, unloadingCity,
-        unloadingTerminal);
+        unloadingNumber);
 
     this.tripId = tripId;
     this.truckId = truckId;

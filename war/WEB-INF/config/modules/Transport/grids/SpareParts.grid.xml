@@ -8,7 +8,8 @@
   flexGrow="1" flexShrink="1" minColumnWidth="60"
   >
   <g:west size="150" splitterSize="2">
-    <w:DataTree name="SparePartTypes" caption="=types" source="SparePartTypes" parentColumn="Parent">
+    <w:DataTree name="SparePartTypes" caption="=types" viewName="SparePartTypes"
+      parentColumn="Parent">
       <w:calc>
         <ui:expression>row.Name</ui:expression>
       </w:calc>

@@ -7,7 +7,7 @@
   >
   <Fields>
     <DateTime name="Date" label="=date" />
-    <String name="Terminal" precision="50" label="=ref" />
+    <String name="Number" precision="50" label="=ref" />
     <String name="Contact" precision="50" label="=contact" />
     <String name="Company" precision="100" label="=company" />
     <String name="Phone" precision="50" label="=phone" />
@@ -17,6 +17,5 @@
     <String name="PostIndex" precision="20" label="=postIndex" />
     <Relation name="City" relation="Cities" label="=city" />
     <Relation name="Country" relation="Countries" label="=country" />
-    <String name="Number" precision="30" label="=number" />
   </Fields>
 </Table>

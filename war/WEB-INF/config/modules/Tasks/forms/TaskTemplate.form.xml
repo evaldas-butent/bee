@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE Form [
+  <!ENTITY clbl "text-align: right;">
+  <!ENTITY inp "width: 200px;">
+]>
+<f:Form xmlns="http://www.butent.com/widget" xmlns:f="http://www.butent.com/form"
+  
+  name="TaskTemplates" viewName="TaskTemplates" caption="=crmTaskTemplate"
+  width="720" height="240"
+  >
+  
+  <Table style="border-collapse: collapse; margin-top: 1ex;" 
+      cellStyle="padding: 5px 1em; vertical-align: top;">
+    <col index="0" cellStyle="&clbl;" />
+    <col index="2" cellStyle="&clbl;" />
+
+    <row>
+      <Label for="Name" />
+      <InputText source="Name" style="&inp;" />
+    </row>
+
+    <row>
+      <Label for="Type" />
+      <DataSelector source="Type" renderColumns="TypeName" style="&inp;" newRowEnabled="false" />
+      <Label for="Priority" />
+      <Radio source="Priority" />
+    </row>
+
+    <row>
+      <Label for="Summary" />
+      <InputText source="Summary" style="&inp;" />
+      <Label for="ExpectedDuration" />
+      <InputTime source="ExpectedDuration" style="width: 80px;"/>
+    </row>
+
+    <row>
+      <Label for="Company" />
+      <DataSelector source="Company" style="&inp;" newRowEnabled="false" />
+      <Label for="Contact" />
+      <DataSelector source="Contact" style="&inp;" newRowEnabled="false" />
+    </row>
+
+    <row>
+      <Label for="Reminder" />
+      <DataSelector source="Reminder" style="&inp;" newRowEnabled="false" />
+      <Label for="Description" />
+      <InputArea source="Description" style="&inp;" />
+    </row>
+  </Table>
+</f:Form>

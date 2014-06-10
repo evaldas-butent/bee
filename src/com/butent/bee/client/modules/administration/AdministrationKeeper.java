@@ -1,10 +1,6 @@
 package com.butent.bee.client.modules.administration;
 
 import com.google.common.collect.Lists;
-import com.google.gwt.event.dom.client.ClickEvent;
-import com.google.gwt.event.dom.client.ClickHandler;
-import com.google.gwt.event.dom.client.HasClickHandlers;
-import com.google.gwt.event.shared.HasHandlers;
 
 import static com.butent.bee.shared.modules.administration.AdministrationConstants.*;
 import static com.butent.bee.shared.modules.classifiers.ClassifierConstants.*;
@@ -16,12 +12,7 @@ import com.butent.bee.client.grid.GridFactory;
 import com.butent.bee.client.rights.RightsForm;
 import com.butent.bee.client.style.ColorStyleProvider;
 import com.butent.bee.client.style.ConditionalStyle;
-import com.butent.bee.client.ui.AbstractFormInterceptor;
 import com.butent.bee.client.ui.FormFactory;
-import com.butent.bee.client.ui.FormFactory.FormInterceptor;
-import com.butent.bee.client.ui.FormFactory.WidgetDescriptionCallback;
-import com.butent.bee.client.ui.IdentifiableWidget;
-import com.butent.bee.client.view.add.ReadyForInsertEvent;
 import com.butent.bee.client.view.grid.interceptor.UniqueChildInterceptor;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.data.DataUtils;
@@ -31,7 +22,6 @@ import com.butent.bee.shared.menu.MenuHandler;
 import com.butent.bee.shared.menu.MenuService;
 import com.butent.bee.shared.news.NewsConstants;
 import com.butent.bee.shared.rights.Module;
-import com.butent.bee.shared.utils.BeeUtils;
 
 public final class AdministrationKeeper {
 
@@ -43,38 +33,6 @@ public final class AdministrationKeeper {
             Lists.newArrayList(COL_LOGIN, COL_FIRST_NAME, COL_LAST_NAME, ALS_COMPANY_NAME),
             BeeConst.STRING_SPACE));
       }
-    }
-  }
-
-  private static class UserFormInterceptor extends AbstractFormInterceptor {
-    @Override
-    public void afterCreateWidget(String name, final IdentifiableWidget widget,
-        WidgetDescriptionCallback callback) {
-      if (BeeUtils.same(name, "ChangePassword") && widget instanceof HasClickHandlers) {
-        ((HasClickHandlers) widget).addClickHandler(new ClickHandler() {
-          @Override
-          public void onClick(ClickEvent event) {
-            changePassword();
-          }
-        });
-      }
-    }
-
-    @Override
-    public FormInterceptor getInstance() {
-      return this;
-    }
-
-    @Override
-    public void onReadyForInsert(HasHandlers listener, ReadyForInsertEvent event) {
-      if (BeeUtils.isEmpty(getStringValue(COL_PASSWORD))) {
-        event.consume();
-        changePassword();
-      }
-    }
-
-    private void changePassword() {
-      PasswordService.changePassword(getFormView());
     }
   }
 
@@ -92,7 +50,9 @@ public final class AdministrationKeeper {
       }
     });
 
-    FormFactory.registerFormInterceptor("User", new UserFormInterceptor());
+    FormFactory.registerFormInterceptor(FORM_USER, new UserForm());
+    FormFactory.registerFormInterceptor(FORM_DEPARTMENT, new DepartmentForm());
+    FormFactory.registerFormInterceptor(FORM_NEW_ROLE, new NewRoleForm());
 
     GridFactory.registerGridInterceptor(NewsConstants.GRID_USER_FEEDS, new UserFeedsInterceptor());
 
@@ -105,7 +65,8 @@ public final class AdministrationKeeper {
 
     GridFactory.registerGridInterceptor(GRID_THEME_COLORS,
         new UniqueChildInterceptor(Localized.getConstants().newThemeColors(),
-            COL_THEME, COL_COLOR, VIEW_COLORS, COL_COLOR_NAME));
+            COL_THEME, COL_COLOR, VIEW_COLORS, Lists.newArrayList(COL_COLOR_NAME),
+            Lists.newArrayList(COL_COLOR_NAME, COL_BACKGROUND, COL_FOREGROUND)));
 
     ColorStyleProvider styleProvider = ColorStyleProvider.createDefault(VIEW_COLORS);
     ConditionalStyle.registerGridColumnStyleProvider(GRID_COLORS, COL_BACKGROUND, styleProvider);

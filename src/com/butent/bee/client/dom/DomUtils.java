@@ -25,7 +25,6 @@ import com.google.gwt.dom.client.Style.Position;
 import com.google.gwt.dom.client.TableCellElement;
 import com.google.gwt.dom.client.TableElement;
 import com.google.gwt.dom.client.TableRowElement;
-import com.google.gwt.user.client.DOM;
 import com.google.gwt.user.client.ui.Focusable;
 import com.google.gwt.user.client.ui.HasEnabled;
 import com.google.gwt.user.client.ui.HasOneWidget;
@@ -317,7 +316,7 @@ public final class DomUtils {
 
   public static List<String> getAncestry(Widget w) {
     Assert.notNull(w);
-    List<String> lst = new ArrayList<String>();
+    List<String> lst = new ArrayList<>();
 
     Widget p = w.getParent();
     if (p == null) {
@@ -489,7 +488,7 @@ public final class DomUtils {
     }
 
     if (root.isAttached()) {
-      return getChildByElement(root, DOM.getElementById(id));
+      return getChildByElement(root, Document.get().getElementById(id));
     } else {
       return getLogicalChild(root, id);
     }
@@ -502,7 +501,7 @@ public final class DomUtils {
 
   public static List<Property> getChildrenInfo(Widget w) {
     Assert.notNull(w);
-    List<Property> lst = new ArrayList<Property>();
+    List<Property> lst = new ArrayList<>();
 
     if (w instanceof HasWidgets) {
       for (Widget child : (HasWidgets) w) {
@@ -530,6 +529,11 @@ public final class DomUtils {
 
   public static String getDataColumn(Element elem) {
     return (elem == null) ? null : elem.getAttribute(ATTRIBUTE_DATA_COLUMN);
+  }
+
+  public static int getDataColumnInt(Element elem) {
+    String value = getDataColumn(elem); 
+    return BeeUtils.isEmpty(value) ? BeeConst.UNDEF : BeeUtils.toInt(value);
   }
 
   public static int getDataIndexInt(Element elem) {
@@ -561,14 +565,14 @@ public final class DomUtils {
 
   public static Element getElement(String id) {
     Assert.notEmpty(id);
-    Element el = DOM.getElementById(id);
+    Element el = Document.get().getElementById(id);
     Assert.notNull(el, "id " + id + " element not found");
     return el;
   }
 
   public static List<Property> getElementInfo(Element el) {
     Assert.notNull(el);
-    List<Property> lst = new ArrayList<Property>();
+    List<Property> lst = new ArrayList<>();
 
     PropertyUtils.addProperties(lst,
         "Absolute Bottom", el.getAbsoluteBottom(),
@@ -605,7 +609,7 @@ public final class DomUtils {
     if (BeeUtils.isEmpty(id)) {
       return null;
     } else {
-      return DOM.getElementById(id);
+      return Document.get().getElementById(id);
     }
   }
 
@@ -704,7 +708,7 @@ public final class DomUtils {
 
   public static List<ExtendedProperty> getInfo(Object obj, String prefix, int depth) {
     Assert.notNull(obj);
-    List<ExtendedProperty> lst = new ArrayList<ExtendedProperty>();
+    List<ExtendedProperty> lst = new ArrayList<>();
 
     if (obj instanceof Element) {
       PropertyUtils.appendChildrenToExtended(lst, BeeUtils.joinWords(prefix, "Element"),
@@ -792,7 +796,7 @@ public final class DomUtils {
 
   public static List<Property> getNodeInfo(Node nd) {
     Assert.notNull(nd);
-    List<Property> lst = new ArrayList<Property>();
+    List<Property> lst = new ArrayList<>();
 
     PropertyUtils.addProperties(lst,
         "Child Count", nd.getChildCount(),
@@ -1025,7 +1029,7 @@ public final class DomUtils {
       return null;
     }
 
-    List<Widget> sib = new ArrayList<Widget>();
+    List<Widget> sib = new ArrayList<>();
     for (Widget c : (HasWidgets) p) {
       sib.add(c);
     }
@@ -1077,7 +1081,7 @@ public final class DomUtils {
 
   public static List<ExtendedProperty> getUIObjectExtendedInfo(UIObject obj, String prefix) {
     Assert.notNull(obj);
-    List<ExtendedProperty> lst = new ArrayList<ExtendedProperty>();
+    List<ExtendedProperty> lst = new ArrayList<>();
 
     PropertyUtils.appendChildrenToExtended(lst, BeeUtils.joinWords(prefix, "UI Object"),
         getUIObjectInfo(obj));
@@ -1102,7 +1106,7 @@ public final class DomUtils {
 
   public static List<Property> getUIObjectInfo(UIObject obj) {
     Assert.notNull(obj);
-    List<Property> lst = new ArrayList<Property>();
+    List<Property> lst = new ArrayList<>();
 
     PropertyUtils.addProperties(lst,
         "Absolute Left", obj.getAbsoluteLeft(),
@@ -1185,7 +1189,7 @@ public final class DomUtils {
 
   public static List<ExtendedProperty> getWidgetExtendedInfo(Widget w, String prefix) {
     Assert.notNull(w);
-    List<ExtendedProperty> lst = new ArrayList<ExtendedProperty>();
+    List<ExtendedProperty> lst = new ArrayList<>();
 
     PropertyUtils.appendChildrenToExtended(lst, BeeUtils.joinWords(prefix, "Widget"),
         getWidgetInfo(w));
@@ -1196,7 +1200,7 @@ public final class DomUtils {
 
   public static List<Property> getWidgetInfo(Widget w) {
     Assert.notNull(w);
-    List<Property> lst = new ArrayList<Property>();
+    List<Property> lst = new ArrayList<>();
 
     PropertyUtils.addProperties(lst,
         "Class", transformClass(w),
@@ -1231,7 +1235,7 @@ public final class DomUtils {
     doc.getBody().appendChild(script);
   }
 
-  public static void injectExternalStyle(String css) {
+  public static void injectStyleSheet(String css) {
     Assert.notEmpty(css);
     HeadElement head = getHead();
     Assert.notNull(head, "<head> element not found");
@@ -1340,6 +1344,19 @@ public final class DomUtils {
     return (el != null) && el.getTagName().equalsIgnoreCase(Tags.LABEL);
   }
 
+  public static boolean isOrHasChild(UIObject obj, String id) {
+    if (obj == null || BeeUtils.isEmpty(id)) {
+      return false; 
+
+    } else if (idEquals(obj, id)) {
+      return true;
+    
+    } else {
+      Element child = Document.get().getElementById(id);
+      return (child != null) && obj.getElement().isOrHasChild(child);
+    }
+  }
+  
   public static boolean isOrHasAncestor(Element el, String id) {
     if (el == null || BeeUtils.isEmpty(id)) {
       return false;
@@ -1633,6 +1650,18 @@ public final class DomUtils {
     scrollToBottom(obj.getElement());
   }
 
+  public static void scrollToTop(Element elem) {
+    Assert.notNull(elem);
+    if (elem.getScrollTop() > 0) {
+      elem.setScrollTop(0);
+    }
+  }
+  
+  public static void scrollToTop(UIObject obj) {
+    Assert.notNull(obj);
+    scrollToTop(obj.getElement());
+  }
+
   public static void setAttribute(UIObject obj, String name, int value) {
     setAttribute(obj, name, Integer.toString(value));
   }
@@ -1874,7 +1903,7 @@ public final class DomUtils {
   }
 
   private static void calculateCheckBoxSize() {
-    Element elem = DOM.createInputCheck();
+    Element elem = Document.get().createCheckInputElement();
 
     BodyPanel.conceal(elem);
 
@@ -1888,7 +1917,7 @@ public final class DomUtils {
   }
 
   private static void calculateScrollBarSize() {
-    Element elem = DOM.createDiv();
+    Element elem = Document.get().createDivElement();
 
     elem.getStyle().setPosition(Position.ABSOLUTE);
 
@@ -1914,7 +1943,7 @@ public final class DomUtils {
   }
 
   private static void calculateTextBoxSize() {
-    Element elem = DOM.createInputText();
+    Element elem = Document.get().createTextInputElement();
 
     BodyPanel.conceal(elem);
 

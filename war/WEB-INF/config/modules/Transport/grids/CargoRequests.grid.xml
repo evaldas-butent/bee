@@ -2,7 +2,7 @@
 <g:Grid xmlns="http://www.butent.com/column" xmlns:g="http://www.butent.com/grid"
 
   name="CargoRequests" viewName="CargoRequests" caption="=trRequests"
-  enableCopy="-Date, Time, Status, Cargo=, Order*"
+  enableCopy="- *Date, *Time, Status, Cargo, Order*"
   >
   <g:columns>
     <DataColumn name="Date" visible="true" />

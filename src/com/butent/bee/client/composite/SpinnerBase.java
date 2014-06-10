@@ -81,7 +81,7 @@ public class SpinnerBase {
   private final Image decrementArrow;
   private final Image incrementArrow;
 
-  private List<SpinnerListener> spinnerListeners = new ArrayList<SpinnerListener>();
+  private List<SpinnerListener> spinnerListeners = new ArrayList<>();
 
   private int step;
   private int minStep;

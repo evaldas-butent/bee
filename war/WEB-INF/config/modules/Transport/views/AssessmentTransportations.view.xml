@@ -1,10 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <View xmlns="http://www.butent.com/view"
 
-  name="AssessmentTransportations" source="Trips"
-  filter="!(Assessor)"
+  name="AssessmentTransportations" source="Trips" filter="!(AssessmentForwarder) AND Assessment"
   >
   <Columns>
+    <IdColumn name="ID" />
     <SimpleColumn name="Date" />
     <SimpleColumn name="TripNo" />
     <SimpleColumn name="ForwarderVehicle" />
@@ -20,12 +20,18 @@
     <SimpleJoin joinType="LEFT" name="Forwarder">
       <SimpleColumn name="Name" alias="ForwarderName" />
     </SimpleJoin>
+
+    <ExternalJoin name="Trip" source="AssessmentForwarders" joinType="LEFT">
+      <HiddenColumn name="Trip" alias="AssessmentForwarder" />
+    </ExternalJoin>
     
-    <ExternalJoin name="Trip" source="CargoTrips" joinType="INNER">
-      <HiddenColumn name="Assessor" />
-      
-      <SimpleJoin name="Cargo" joinType="INNER">
-        <SimpleJoin name="Order" joinType="INNER">
+    <ExternalJoin name="Trip" source="CargoTrips" joinType="LEFT">
+      <SimpleJoin name="Cargo" joinType="LEFT">
+        <ExternalJoin name="Cargo" source="Assessments" joinType="LEFT">
+          <HiddenColumn name="Cargo" alias="Assessment" />
+        </ExternalJoin>
+
+        <SimpleJoin name="Order" joinType="LEFT">
           <HiddenColumn name="OrderNo" />
           <AggregateColumn name="OrderNo" alias="MinOrder" aggregate="MIN" />
           <AggregateColumn name="OrderNo" alias="MaxOrder" aggregate="MAX" />

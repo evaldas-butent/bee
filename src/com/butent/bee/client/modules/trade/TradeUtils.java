@@ -216,7 +216,7 @@ public final class TradeUtils {
                   value = BeeUtils.toString(qty);
 
                 } else if (BeeUtils.same(fld, COL_TRADE_ITEM_PRICE)) {
-                  value = BeeUtils.toString(BeeUtils.round(sum / qty, 5));
+                  value = formater.format(sum / qty);
 
                 } else if (BeeUtils.same(fld, COL_TRADE_VAT)) {
                   value = row.getValue(fld);

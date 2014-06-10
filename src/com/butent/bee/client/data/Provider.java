@@ -1,7 +1,5 @@
 package com.butent.bee.client.data;
 
-import com.google.common.collect.Lists;
-import com.google.common.collect.Maps;
 import com.google.web.bindery.event.shared.HandlerRegistration;
 
 import com.butent.bee.client.BeeKeeper;
@@ -11,6 +9,7 @@ import com.butent.bee.client.event.logical.SortEvent;
 import com.butent.bee.client.view.search.FilterConsumer;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.NotificationListener;
+import com.butent.bee.shared.Service;
 import com.butent.bee.shared.data.BeeColumn;
 import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.HasViewName;
@@ -21,13 +20,21 @@ import com.butent.bee.shared.data.event.RowUpdateEvent;
 import com.butent.bee.shared.data.filter.Filter;
 import com.butent.bee.shared.data.view.Order;
 import com.butent.bee.shared.i18n.Localized;
+import com.butent.bee.shared.rights.RightsState;
 import com.butent.bee.shared.ui.Action;
 import com.butent.bee.shared.ui.HandlesActions;
 import com.butent.bee.shared.ui.NavigationOrigin;
 import com.butent.bee.shared.utils.BeeUtils;
+import com.butent.bee.shared.utils.EnumUtils;
+import com.butent.bee.shared.utils.Property;
 
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 /**
  * Enables to manage ranges of data shown in user interface tables.
@@ -46,13 +53,15 @@ public abstract class Provider implements SortEvent.Handler, HandlesAllDataEvent
   private final String idColumnName;
   private final String versionColumnName;
 
-  private final List<HandlerRegistration> handlerRegistry = Lists.newArrayList();
+  private final List<HandlerRegistration> handlerRegistry = new ArrayList<>();
 
   private final Filter immutableFilter;
-  private final Map<String, Filter> parentFilters = Maps.newHashMap();
+  private final Map<String, Filter> parentFilters = new HashMap<>();
   private Filter userFilter;
 
   private Order order;
+  
+  private final Set<RightsState> rightsStates = new HashSet<>();
 
   protected Provider(HasDataTable display, HandlesActions actionHandler,
       NotificationListener notificationListener,
@@ -104,6 +113,10 @@ public abstract class Provider implements SortEvent.Handler, HandlesAllDataEvent
     return columns;
   }
 
+  public Filter getFilter() {
+    return getQueryFilter(getUserFilter());
+  }
+
   public String getIdColumnName() {
     return idColumnName;
   }
@@ -115,9 +128,9 @@ public abstract class Provider implements SortEvent.Handler, HandlesAllDataEvent
   public Order getOrder() {
     return order;
   }
-
+  
   public Filter getQueryFilter(Filter filter) {
-    List<Filter> lst = Lists.newArrayList();
+    List<Filter> lst = new ArrayList<>();
 
     if (getImmutableFilter() != null) {
       lst.add(getImmutableFilter());
@@ -135,9 +148,9 @@ public abstract class Provider implements SortEvent.Handler, HandlesAllDataEvent
     }
     return Filter.and(lst);
   }
-  
-  public boolean hasFilter() {
-    return getImmutableFilter() != null || !getParentFilters().isEmpty() || getUserFilter() != null;
+
+  public Set<RightsState> getRightsStates() {
+    return rightsStates;
   }
 
   public Filter getUserFilter() {
@@ -158,6 +171,10 @@ public abstract class Provider implements SortEvent.Handler, HandlesAllDataEvent
     if (actionHandler != null) {
       actionHandler.handleAction(action);
     }
+  }
+
+  public boolean hasFilter() {
+    return getImmutableFilter() != null || !getParentFilters().isEmpty() || getUserFilter() != null;
   }
 
   @Override
@@ -199,18 +216,18 @@ public abstract class Provider implements SortEvent.Handler, HandlesAllDataEvent
     }
   }
 
-  public abstract void refresh(boolean updateActiveRow);
+  public abstract void refresh(boolean preserveActiveRow);
 
   public void setOrder(Order order) {
     this.order = order;
   }
 
-  public void setParentFilter(String key, Filter filter) {
+  public boolean setParentFilter(String key, Filter filter) {
     Assert.notEmpty(key);
     if (filter == null) {
-      getParentFilters().remove(key);
+      return getParentFilters().remove(key) != null;
     } else {
-      getParentFilters().put(key, filter);
+      return !filter.equals(getParentFilters().put(key, filter));
     }
   }
 
@@ -218,12 +235,18 @@ public abstract class Provider implements SortEvent.Handler, HandlesAllDataEvent
     this.userFilter = userFilter;
   }
 
+  public void toggleRightsState(RightsState rightsState) {
+    Assert.notNull(rightsState);
+
+    if (rightsStates.contains(rightsState)) {
+      rightsStates.remove(rightsState);
+    } else {
+      rightsStates.add(rightsState);
+    }
+  }
+  
   protected HasDataTable getDisplay() {
     return display;
-  }
-
-  protected Filter getFilter() {
-    return getQueryFilter(getUserFilter());
   }
 
   protected int getPageSize() {
@@ -232,6 +255,14 @@ public abstract class Provider implements SortEvent.Handler, HandlesAllDataEvent
 
   protected int getPageStart() {
     return getDisplay().getPageStart();
+  }
+  
+  protected Collection<Property> getQueryOptions() {
+    Collection<Property> result = new HashSet<>();
+    if (!rightsStates.isEmpty()) {
+      result.add(new Property(Service.VAR_RIGHTS, EnumUtils.buildIndexList(rightsStates)));
+    }
+    return result;
   }
 
   protected void goTop() {
@@ -243,7 +274,7 @@ public abstract class Provider implements SortEvent.Handler, HandlesAllDataEvent
     return getPageSize() > 0;
   }
 
-  protected abstract void onRequest(boolean updateActiveRow);
+  protected abstract void onRequest(boolean preserveActiveRow);
 
   protected void rejectFilter(Filter filter, boolean notify) {
     if (filter != null && notify && notificationListener != null) {

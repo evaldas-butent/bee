@@ -16,10 +16,10 @@ import com.butent.bee.client.composite.FileGroup;
 import com.butent.bee.client.data.Queries;
 import com.butent.bee.client.data.RowUpdateCallback;
 import com.butent.bee.client.dialog.StringCallback;
-import com.butent.bee.client.ui.AbstractFormInterceptor;
-import com.butent.bee.client.ui.FormFactory.FormInterceptor;
 import com.butent.bee.client.view.HeaderView;
 import com.butent.bee.client.view.form.FormView;
+import com.butent.bee.client.view.form.interceptor.AbstractFormInterceptor;
+import com.butent.bee.client.view.form.interceptor.FormInterceptor;
 import com.butent.bee.client.widget.Button;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.communication.ResponseObject;
@@ -162,7 +162,7 @@ public class RequestEditor extends AbstractFormInterceptor {
         Queries.update(form.getViewName(), activeRow.getId(), activeRow.getId(),
             columns, oldValues, newValues, form.getChildrenForUpdate(), new SaveCallback(form));
       }
-    }, null, BeeConst.UNDEF, 300, CssUnit.PX);
+    }, null, BeeConst.UNDEF, null, 300, CssUnit.PX);
   }
 
   private void toTaskAndFinish() {

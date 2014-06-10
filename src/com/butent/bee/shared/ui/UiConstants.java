@@ -16,6 +16,7 @@ public final class UiConstants {
   
   public static final String ATTR_CAPTION = "caption";
   public static final String ATTR_LABEL = "label";
+  public static final String ATTR_FAVORITE = "favorite";
 
   public static final String ATTR_VALUE = "value";
   public static final String ATTR_READ_ONLY = "readOnly";
@@ -64,6 +65,9 @@ public final class UiConstants {
 
   public static final String TAG_CHILD_GRID = "ChildGrid";
   public static final String TAG_GRID_PANEL = "GridPanel";
+
+  public static final String TAG_DATA_TREE = "DataTree";
+  public static final String TAG_MULTI_SELECTOR = "MultiSelector";
 
   public static final int MAX_PASSWORD_LENGTH = 30;
 

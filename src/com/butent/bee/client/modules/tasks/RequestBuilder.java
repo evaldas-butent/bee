@@ -12,16 +12,17 @@ import com.butent.bee.client.composite.FileCollector;
 import com.butent.bee.client.data.Data;
 import com.butent.bee.client.data.Queries;
 import com.butent.bee.client.data.RowInsertCallback;
-import com.butent.bee.client.ui.AbstractFormInterceptor;
-import com.butent.bee.client.ui.FormFactory.FormInterceptor;
 import com.butent.bee.client.ui.FormFactory.WidgetDescriptionCallback;
 import com.butent.bee.client.ui.IdentifiableWidget;
 import com.butent.bee.client.utils.FileUtils;
 import com.butent.bee.client.utils.NewFileInfo;
 import com.butent.bee.client.view.add.ReadyForInsertEvent;
+import com.butent.bee.client.view.form.interceptor.AbstractFormInterceptor;
+import com.butent.bee.client.view.form.interceptor.FormInterceptor;
 import com.butent.bee.shared.data.BeeColumn;
 import com.butent.bee.shared.data.BeeRow;
 import com.butent.bee.shared.data.DataUtils;
+import com.butent.bee.shared.modules.administration.AdministrationConstants;
 import com.butent.bee.shared.utils.BeeUtils;
 
 import java.util.List;
@@ -74,7 +75,7 @@ public class RequestBuilder extends AbstractFormInterceptor {
 
     if (widget instanceof FileCollector && !((FileCollector) widget).isEmpty()) {
       final List<BeeColumn> columns = Data.getColumns(VIEW_REQUEST_FILES,
-          Lists.newArrayList(COL_REQUEST, COL_FILE, COL_CAPTION));
+          Lists.newArrayList(COL_REQUEST, AdministrationConstants.COL_FILE, COL_CAPTION));
 
       for (final NewFileInfo fileInfo : ((FileCollector) widget).getFiles()) {
         Long file = null;

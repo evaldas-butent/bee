@@ -37,7 +37,6 @@ import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.Pair;
 import com.butent.bee.shared.Service;
 import com.butent.bee.shared.data.BeeColumn;
-import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.Defaults.DefaultExpression;
 import com.butent.bee.shared.data.SimpleRowSet;
 import com.butent.bee.shared.data.SimpleRowSet.SimpleRow;
@@ -63,9 +62,7 @@ import com.butent.bee.shared.data.view.ViewColumn;
 import com.butent.bee.shared.io.FileNameUtils;
 import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogUtils;
-import com.butent.bee.shared.modules.administration.AdministrationConstants.RightsState;
-import com.butent.bee.shared.time.DateTime;
-import com.butent.bee.shared.time.TimeUtils;
+import com.butent.bee.shared.rights.RightsState;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.Codec;
 import com.butent.bee.shared.utils.EnumUtils;
@@ -73,7 +70,6 @@ import com.butent.bee.shared.utils.ExtendedProperty;
 import com.butent.bee.shared.utils.NameUtils;
 import com.butent.bee.shared.utils.Property;
 import com.butent.bee.shared.utils.PropertyUtils;
-import com.butent.bee.shared.utils.Wildcards;
 
 import java.io.File;
 import java.util.Collection;
@@ -89,7 +85,6 @@ import javax.ejb.LockType;
 import javax.ejb.Singleton;
 import javax.ejb.TransactionAttribute;
 import javax.ejb.TransactionAttributeType;
-import javax.servlet.http.HttpServletRequest;
 
 /**
  * Ensures core data management functionality containing: data structures for tables and views,
@@ -128,23 +123,6 @@ public class SystemBean {
     }
   }
 
-  private static final class IpFilter {
-    private final String host;
-    private final DateTime blockAfter;
-    private final DateTime blockBefore;
-
-    private IpFilter(String host, DateTime blockAfter, DateTime blockBefore) {
-      this.host = host;
-      this.blockAfter = blockAfter;
-      this.blockBefore = blockBefore;
-    }
-
-    private boolean isBlocked(String addr, DateTime dt) {
-      return Wildcards.isLike(addr, host)
-          && TimeUtils.isBetweenExclusiveNotRequired(dt, blockAfter, blockBefore);
-    }
-  }
-
   private static void unregister(String objectName, Map<String, ? extends BeeObject> cache) {
     if (!BeeUtils.isEmpty(objectName)) {
       cache.remove(BeeUtils.normalize(objectName));
@@ -172,8 +150,6 @@ public class SystemBean {
   private final Map<String, BeeView> viewCache = Maps.newHashMap();
 
   private final EventBus dataEventBus = new EventBus();
-
-  private final List<IpFilter> ipFilters = Lists.newArrayList();
 
   @TransactionAttribute(TransactionAttributeType.REQUIRES_NEW)
   @Lock(LockType.WRITE)
@@ -220,9 +196,7 @@ public class SystemBean {
 
   public void filterVisibleState(SqlSelect query, String tblName, String tblAlias) {
     BeeTable table = getTable(tblName);
-
-    table.verifyState(query, tblAlias, RightsState.VIEW, table.areRecordsVisible(),
-        usr.getUserRoles(usr.getCurrentUserId()));
+    table.verifyState(query, tblAlias, RightsState.VIEW, usr.getUserRoles());
   }
 
   public String getAuditSource(String tableName) {
@@ -328,7 +302,7 @@ public class SystemBean {
     }
     return views;
   }
-  
+
   public Collection<BeeView> getViews() {
     return viewCache.values();
   }
@@ -399,33 +373,6 @@ public class SystemBean {
 
   public IsCondition idInList(String tblName, Collection<Long> ids) {
     return SqlUtils.inList(tblName, getIdName(tblName), ids);
-  }
-
-  public void initIpFilters() {
-    List<IpFilter> filters = Lists.newArrayList();
-
-    SimpleRowSet data =
-        qs.getData(new SqlSelect()
-            .addFields(TBL_IP_FILTERS, COL_IP_FILTER_HOST,
-                COL_IP_FILTER_BLOCK_AFTER,
-                COL_IP_FILTER_BLOCK_BEFORE)
-            .addFrom(TBL_IP_FILTERS));
-
-    if (!DataUtils.isEmpty(data)) {
-      for (SimpleRow row : data) {
-        filters.add(new IpFilter(row.getValue(COL_IP_FILTER_HOST),
-            row.getDateTime(COL_IP_FILTER_BLOCK_AFTER),
-            row.getDateTime(COL_IP_FILTER_BLOCK_BEFORE)));
-      }
-    }
-
-    if (!ipFilters.isEmpty()) {
-      ipFilters.clear();
-    }
-    if (!filters.isEmpty()) {
-      ipFilters.addAll(filters);
-      logger.info("Loaded", filters.size(), "ip filters");
-    }
   }
 
   @Lock(LockType.WRITE)
@@ -539,7 +486,6 @@ public class SystemBean {
     }
   }
 
-  @TransactionAttribute(TransactionAttributeType.REQUIRES_NEW)
   @Lock(LockType.WRITE)
   public void rebuildTable(String tblName) {
     rebuildTable(getTable(tblName));
@@ -548,25 +494,6 @@ public class SystemBean {
   @Lock(LockType.WRITE)
   public void registerDataEventHandler(DataEventHandler eventHandler) {
     dataEventBus.register(eventHandler);
-  }
-
-  public boolean validateHost(HttpServletRequest request) {
-    if (ipFilters.isEmpty()) {
-      return true;
-    }
-
-    Assert.notNull(request);
-    String addr = request.getRemoteAddr();
-    DateTime now = TimeUtils.nowMinutes();
-
-    for (IpFilter ipFilter : ipFilters) {
-      if (ipFilter.isBlocked(addr, now)) {
-        logger.warning("remote address", addr, "blocked", BeeUtils.bracket(ipFilter.host));
-        return false;
-      }
-    }
-
-    return true;
   }
 
   private void createAuditTables(BeeTable table) {
@@ -642,8 +569,13 @@ public class SystemBean {
 
   private void createIndexes(Collection<BeeIndex> indexes) {
     for (BeeIndex index : indexes) {
-      makeStructureChanges(SqlUtils.createIndex(index.getTable(), index.getName(),
-          index.getFields(), index.isUnique()));
+      if (!BeeUtils.isEmpty(index.getExpression())) {
+        makeStructureChanges(SqlUtils.createIndex(index.getTable(), index.getName(),
+            index.getExpression(), index.isUnique()));
+      } else {
+        makeStructureChanges(SqlUtils.createIndex(index.getTable(), index.getName(),
+            index.getFields(), index.isUnique()));
+      }
     }
   }
 
@@ -1063,7 +995,7 @@ public class SystemBean {
     xmlView.source = tblName;
     xmlView.columns = columns;
 
-    return new BeeView(getTable(tblName).getModule(), xmlView, tableCache);
+    return new BeeView(getTable(tblName).getModule(), xmlView, tableCache, usr.getCurrentUserId());
   }
 
   private Collection<BeeTable> getTables() {
@@ -1228,19 +1160,33 @@ public class SystemBean {
         table = new BeeTable(moduleName, xmlTable, auditOff);
         String tbl = table.getName();
 
-        for (int i = 0; i < 2; i++) {
-          boolean extMode = i > 0;
-          Collection<XmlField> fields = extMode ? xmlTable.extFields : xmlTable.fields;
-
-          if (!BeeUtils.isEmpty(fields)) {
-            for (XmlField field : fields) {
-              table.addField(field, extMode);
-            }
+        if (!BeeUtils.isEmpty(xmlTable.fields)) {
+          for (XmlField field : xmlTable.fields) {
+            table.addField(field, false);
           }
         }
         if (!BeeUtils.isEmpty(xmlTable.indexes)) {
           for (XmlIndex index : xmlTable.indexes) {
-            if (!BeeUtils.isEmpty(index.fields)) {
+            String expression;
+
+            switch (SqlBuilderFactory.getBuilder().getEngine()) {
+              case POSTGRESQL:
+                expression = index.postgreSql;
+                break;
+              case MSSQL:
+                expression = index.msSql;
+                break;
+              case ORACLE:
+                expression = index.oracle;
+                break;
+              default:
+                expression = null;
+                break;
+            }
+            if (!BeeUtils.isEmpty(expression)) {
+              table.addIndex(tableName, expression, index.unique);
+
+            } else if (!BeeUtils.isEmpty(index.fields)) {
               for (String fld : index.fields) {
                 Assert.state(table.hasField(fld),
                     BeeUtils.joinWords("Unrecognized index field:", tbl, fld));
@@ -1252,24 +1198,21 @@ public class SystemBean {
         if (!BeeUtils.isEmpty(xmlTable.constraints)) {
           for (XmlConstraint constraint : xmlTable.constraints) {
             if (constraint instanceof XmlCheck) {
-              String expression = null;
+              String expression;
 
               switch (SqlBuilderFactory.getBuilder().getEngine()) {
                 case POSTGRESQL:
-                  expression = ((XmlCheck) constraint).postgreSql;
+                  expression = constraint.postgreSql;
                   break;
                 case MSSQL:
-                  expression = ((XmlCheck) constraint).msSql;
+                  expression = constraint.msSql;
                   break;
                 case ORACLE:
-                  expression = ((XmlCheck) constraint).oracle;
+                  expression = constraint.oracle;
                   break;
-                case GENERIC:
-                  expression = ((XmlCheck) constraint).generic;
+                default:
+                  expression = null;
                   break;
-              }
-              if (BeeUtils.isEmpty(expression)) {
-                expression = ((XmlCheck) constraint).generic;
               }
               if (!BeeUtils.isEmpty(expression)) {
                 table.addCheck(tableName, expression);
@@ -1306,7 +1249,7 @@ public class SystemBean {
         }
         if (!BeeUtils.isEmpty(xmlTable.triggers)) {
           for (XmlTrigger trigger : xmlTable.triggers) {
-            String body = null;
+            String body;
             List<SqlTriggerEvent> events = Lists.newArrayList();
 
             for (String event : trigger.events) {
@@ -1322,7 +1265,8 @@ public class SystemBean {
               case ORACLE:
                 body = trigger.oracle;
                 break;
-              case GENERIC:
+              default:
+                body = null;
                 break;
             }
             if (!BeeUtils.isEmpty(body)) {
@@ -1362,7 +1306,7 @@ public class SystemBean {
         if (!isTable(src)) {
           logger.warning("Unrecognized view source:", xmlView.name, src);
         } else {
-          view = new BeeView(moduleName, xmlView, tableCache);
+          view = new BeeView(moduleName, xmlView, tableCache, usr.getCurrentUserId());
 
           if (view.isEmpty()) {
             logger.warning("View has no columns defined:", view.getName());

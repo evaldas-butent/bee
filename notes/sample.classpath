@@ -2,8 +2,8 @@
 <classpath>
 	<classpathentry excluding="**/translatable/**" kind="src" path="src"/>
 	<classpathentry kind="src" path="test"/>
-	<classpathentry kind="lib" path="war/WEB-INF/lib/guava-16.0.jar" sourcepath="C:/sources"/>
-	<classpathentry kind="lib" path="lib/guava-gwt-16.0.jar"/>
+	<classpathentry kind="lib" path="war/WEB-INF/lib/guava-17.0.jar" sourcepath="C:/sources"/>
+	<classpathentry kind="lib" path="lib/guava-gwt-17.0.jar"/>
 	<classpathentry kind="lib" path="war/WEB-INF/lib/icu4j-52_1.jar"/>
 	<classpathentry kind="con" path="oracle.eclipse.tools.glassfish.lib.system">
 		<attributes>
@@ -19,7 +19,8 @@
 	<classpathentry kind="lib" path="war/WEB-INF/lib/slf4j-api-1.7.5.jar"/>
 	<classpathentry kind="lib" path="C:/junit/junit-4.8.2.jar" sourcepath="C:/junit/junit-4.8.2-src.jar"/>
 	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
-	<classpathentry kind="lib" path="war/WEB-INF/lib/poi-3.10-beta2-20130904.jar"/>
-	<classpathentry kind="lib" path="war/WEB-INF/lib/poi-ooxml-3.10-beta2-20130904.jar"/>
+	<classpathentry kind="lib" path="war/WEB-INF/lib/poi-3.10-FINAL-20140208.jar" sourcepath="C:/sources"/>
+	<classpathentry kind="lib" path="war/WEB-INF/lib/poi-ooxml-3.10-FINAL-20140208.jar" sourcepath="C:/sources"/>
+	<classpathentry kind="lib" path="war/WEB-INF/lib/poi-ooxml-schemas-3.10-FINAL-20140208.jar"/>
 	<classpathentry kind="output" path="war/WEB-INF/classes"/>
 </classpath>

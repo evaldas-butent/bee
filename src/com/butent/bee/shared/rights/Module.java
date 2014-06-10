@@ -36,7 +36,7 @@ public enum Module implements HasLocalizedCaption {
   TASKS {
     @Override
     public String getCaption(LocalizableConstants constants) {
-      return constants.tasks();
+      return constants.crmTasks();
     }
   },
   DISCUSSIONS {
@@ -72,6 +72,12 @@ public enum Module implements HasLocalizedCaption {
     @Override
     public String getCaption(LocalizableConstants constants) {
       return constants.transport();
+    }
+  },
+  SERVICE {
+    @Override
+    public String getCaption(LocalizableConstants constants) {
+      return constants.svcModule();
     }
   },
   ADMINISTRATION {

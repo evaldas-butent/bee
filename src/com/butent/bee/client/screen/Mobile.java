@@ -20,6 +20,7 @@ import com.butent.bee.client.layout.LayoutPanel;
 import com.butent.bee.client.logging.ClientLogManager;
 import com.butent.bee.client.style.StyleUtils;
 import com.butent.bee.client.ui.IdentifiableWidget;
+import com.butent.bee.client.ui.UiHelper;
 import com.butent.bee.client.utils.Command;
 import com.butent.bee.client.widget.Button;
 import com.butent.bee.client.widget.CheckBox;
@@ -63,7 +64,9 @@ public class Mobile extends ScreenImpl {
   public void closeWidget(IdentifiableWidget widget) {
     Assert.notNull(widget, "closeWidget: widget is null");
 
-    if (Objects.equal(widget, getActiveWidget())) {
+    if (UiHelper.isModal(widget.asWidget())) {
+      UiHelper.closeDialog(widget.asWidget());
+    } else if (Objects.equal(widget, getActiveWidget())) {
       getScreenPanel().remove(widget);
     } else {
       notifyWarning("closeWidget: widget not found");
@@ -120,13 +123,13 @@ public class Mobile extends ScreenImpl {
   }
 
   @Override
-  public void showWidget(IdentifiableWidget widget, boolean newPlace) {
-    getScreenPanel().updateCenter(widget);
+  public void showInNewPlace(IdentifiableWidget widget) {
+    updateActivePanel(widget);
   }
 
   @Override
   public void updateActivePanel(IdentifiableWidget widget) {
-    showWidget(widget, false);
+    getScreenPanel().updateCenter(widget);
   }
 
   protected int addLogToggle(LayoutPanel panel) {

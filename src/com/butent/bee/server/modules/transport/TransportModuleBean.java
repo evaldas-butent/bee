@@ -13,9 +13,11 @@ import static com.butent.bee.shared.modules.classifiers.ClassifierConstants.*;
 import static com.butent.bee.shared.modules.trade.TradeConstants.*;
 import static com.butent.bee.shared.modules.transport.TransportConstants.*;
 
+import com.butent.bee.server.Invocation;
 import com.butent.bee.server.data.BeeView;
 import com.butent.bee.server.data.DataEditorBean;
 import com.butent.bee.server.data.DataEvent.ViewDeleteEvent;
+import com.butent.bee.server.data.DataEvent.ViewInsertEvent;
 import com.butent.bee.server.data.DataEvent.ViewQueryEvent;
 import com.butent.bee.server.data.DataEventHandler;
 import com.butent.bee.server.data.QueryServiceBean;
@@ -32,6 +34,8 @@ import com.butent.bee.server.modules.trade.TradeModuleBean;
 import com.butent.bee.server.news.ExtendedUsageQueryProvider;
 import com.butent.bee.server.news.NewsBean;
 import com.butent.bee.server.news.NewsHelper;
+import com.butent.bee.server.news.UsageQueryProvider;
+import com.butent.bee.server.sql.HasConditions;
 import com.butent.bee.server.sql.IsCondition;
 import com.butent.bee.server.sql.IsExpression;
 import com.butent.bee.server.sql.SqlDelete;
@@ -40,24 +44,33 @@ import com.butent.bee.server.sql.SqlSelect;
 import com.butent.bee.server.sql.SqlUpdate;
 import com.butent.bee.server.sql.SqlUtils;
 import com.butent.bee.server.utils.XmlUtils;
+import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.Pair;
+import com.butent.bee.shared.Service;
 import com.butent.bee.shared.communication.ResponseObject;
 import com.butent.bee.shared.data.BeeRow;
 import com.butent.bee.shared.data.BeeRowSet;
 import com.butent.bee.shared.data.DataUtils;
+import com.butent.bee.shared.data.IsRow;
 import com.butent.bee.shared.data.SearchResult;
 import com.butent.bee.shared.data.SimpleRowSet;
 import com.butent.bee.shared.data.SimpleRowSet.SimpleRow;
 import com.butent.bee.shared.data.filter.Filter;
 import com.butent.bee.shared.data.view.Order;
+import com.butent.bee.shared.exceptions.BeeException;
 import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogUtils;
 import com.butent.bee.shared.modules.BeeParameter;
+import com.butent.bee.shared.modules.transport.TransportConstants;
+import com.butent.bee.shared.modules.transport.TransportConstants.AssessmentStatus;
 import com.butent.bee.shared.modules.transport.TransportConstants.OrderStatus;
 import com.butent.bee.shared.modules.transport.TransportConstants.VehicleType;
 import com.butent.bee.shared.news.Feed;
+import com.butent.bee.shared.news.Headline;
+import com.butent.bee.shared.news.HeadlineProducer;
+import com.butent.bee.shared.news.NewsConstants;
 import com.butent.bee.shared.rights.Module;
 import com.butent.bee.shared.time.DateTime;
 import com.butent.bee.shared.time.JustDate;
@@ -66,6 +79,8 @@ import com.butent.bee.shared.ui.Color;
 import com.butent.bee.shared.utils.ArrayUtils;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.Codec;
+import com.butent.bee.shared.utils.EnumUtils;
+import com.butent.bee.shared.utils.NameUtils;
 import com.butent.webservice.ButentWS;
 import com.butent.webservice.WSDocument;
 import com.butent.webservice.WSDocument.WSDocumentItem;
@@ -98,6 +113,26 @@ public class TransportModuleBean implements BeeModule {
 
   private static BeeLogger logger = LogUtils.getLogger(TransportModuleBean.class);
 
+  private static IsExpression getAssessmentTurnoverExpression(SqlSelect query, String source,
+      String defDateSource, String defDateAlias, Long currency) {
+
+    if (DataUtils.isId(currency)) {
+      return ExchangeUtils.exchangeFieldTo(query,
+          TradeModuleBean.getTotalExpression(source, SqlUtils.field(source, COL_AMOUNT)),
+          SqlUtils.field(source, COL_CURRENCY),
+          SqlUtils.nvl(SqlUtils.field(source, COL_DATE),
+              SqlUtils.field(defDateSource, defDateAlias)),
+          SqlUtils.constant(currency));
+
+    } else {
+      return ExchangeUtils.exchangeField(query,
+          TradeModuleBean.getTotalExpression(source, SqlUtils.field(source, COL_AMOUNT)),
+          SqlUtils.field(source, COL_CURRENCY),
+          SqlUtils.nvl(SqlUtils.field(source, COL_DATE),
+              SqlUtils.field(defDateSource, defDateAlias)));
+    }
+  }
+
   private static IsCondition tripCondition(IsCondition where) {
     return SqlUtils.and(SqlUtils.isNull(TBL_TRIPS, COL_EXPEDITION), where);
   }
@@ -116,6 +151,7 @@ public class TransportModuleBean implements BeeModule {
   TransportImports imp;
   @EJB
   TradeModuleBean trd;
+
   @EJB
   NewsBean news;
 
@@ -133,9 +169,9 @@ public class TransportModuleBean implements BeeModule {
 
       Filter orderCargoFilter = Filter.anyContains(Sets.newHashSet(COL_CARGO_DESCRIPTION,
           COL_NUMBER, COL_CARGO_CMR, COL_CARGO_NOTES, COL_CARGO_DIRECTIONS,
-          ALS_LOADING_TERMINAL, ALS_LOADING_CONTACT, ALS_LOADING_COMPANY, ALS_LOADING_ADDRESS,
+          ALS_LOADING_NUMBER, ALS_LOADING_CONTACT, ALS_LOADING_COMPANY, ALS_LOADING_ADDRESS,
           ALS_LOADING_POST_INDEX, ALS_LOADING_CITY_NAME, ALS_LOADING_COUNTRY_NAME,
-          ALS_LOADING_COUNTRY_CODE, ALS_UNLOADING_TERMINAL, ALS_UNLOADING_CONTACT,
+          ALS_LOADING_COUNTRY_CODE, ALS_UNLOADING_NUMBER, ALS_UNLOADING_CONTACT,
           ALS_UNLOADING_COMPANY, ALS_UNLOADING_ADDRESS, ALS_UNLOADING_POST_INDEX,
           ALS_UNLOADING_CITY_NAME, ALS_UNLOADING_COUNTRY_NAME, ALS_UNLOADING_COUNTRY_CODE),
           query);
@@ -211,22 +247,29 @@ public class TransportModuleBean implements BeeModule {
           Codec.beeDeserializeCollection(reqInfo.getParameter("IdList")));
 
     } else if (BeeUtils.same(svc, SVC_GET_ASSESSMENT_TOTALS)) {
-      response = getAssessmentTotals(BeeUtils.toLongOrNull(reqInfo.getParameter(COL_ASSESSOR)),
-          BeeUtils.toLongOrNull(reqInfo.getParameter(COL_CARGO)));
+      response = getAssessmentTotals(BeeUtils.toLongOrNull(reqInfo.getParameter(COL_ASSESSMENT)),
+          BeeUtils.toLongOrNull(reqInfo.getParameter(COL_CURRENCY)),
+          BeeUtils.toBoolean(reqInfo.getParameter("isPrimary")));
+
+    } else if (BeeUtils.same(svc, SVC_GET_ASSESSMENT_QUANTITY_REPORT)) {
+      response = getAssessmentQuantityReport(reqInfo);
+    } else if (BeeUtils.same(svc, SVC_GET_ASSESSMENT_TURNOVER_REPORT)) {
+      response = getAssessmentTurnoverReport(reqInfo);
 
     } else if (BeeUtils.same(svc, SVC_CREATE_INVOICE_ITEMS)) {
       Long saleId = BeeUtils.toLongOrNull(reqInfo.getParameter(COL_SALE));
+      Long purchaseId = BeeUtils.toLongOrNull(reqInfo.getParameter(COL_PURCHASE));
       Long currency = BeeUtils.toLongOrNull(reqInfo.getParameter(COL_CURRENCY));
-      Set<Long> ids = DataUtils.parseIdSet(reqInfo.getParameter("IdList"));
+      Set<Long> ids = DataUtils.parseIdSet(reqInfo.getParameter(Service.VAR_ID));
       Long item = BeeUtils.toLongOrNull(reqInfo.getParameter(COL_ITEM));
+      Double creditAmount = BeeUtils.toDoubleOrNull(reqInfo.getParameter(COL_TRADE_AMOUNT));
 
       if (DataUtils.isId(saleId)) {
         response = createInvoiceItems(saleId, currency, ids, item);
+      } else if (BeeUtils.isPositive(creditAmount)) {
+        response = createCreditInvoiceItems(purchaseId, currency, ids, item, creditAmount);
       } else {
-        response = createCreditInvoiceItems(
-            BeeUtils.toLongOrNull(reqInfo.getParameter(COL_PURCHASE)),
-            BeeUtils.toDoubleOrNull(reqInfo.getParameter(COL_TRADE_AMOUNT)),
-            currency, ids, item);
+        response = createPurchaseInvoiceItems(purchaseId, currency, ids, item);
       }
     } else if (BeeUtils.same(svc, SVC_SEND_TO_ERP)) {
       response = sendToERP(reqInfo.getParameter("view_name"),
@@ -263,6 +306,7 @@ public class TransportModuleBean implements BeeModule {
     String module = getModule().getName();
 
     return Lists.newArrayList(
+        BeeParameter.createText(module, PRM_INVOICE_PREFIX, true, null),
         BeeParameter.createCollection(module, PRM_MESSAGE_TEMPLATE, true, null),
         BeeParameter.createText(module, "ERPCreditOperation", false, null),
         BeeParameter.createNumber(module, PRM_ERP_REFRESH_INTERVAL, false, null),
@@ -291,7 +335,11 @@ public class TransportModuleBean implements BeeModule {
       @Subscribe
       public void initTimers(ParameterEvent event) {
         if (BeeUtils.same(event.getParameter(), PRM_ERP_REFRESH_INTERVAL)) {
-          initTimer();
+          TransportModuleBean bean = Invocation.locateRemoteBean(TransportModuleBean.class);
+
+          if (bean != null) {
+            bean.initTimer();
+          }
         }
       }
     });
@@ -299,19 +347,19 @@ public class TransportModuleBean implements BeeModule {
     sys.registerDataEventHandler(new DataEventHandler() {
       @Subscribe
       public void calcAssessmentAmounts(ViewQueryEvent event) {
-        if (BeeUtils.same(event.getTargetName(), TBL_CARGO_ASSESSORS) && event.isAfter()) {
-          for (int i = 0; i < 2; i++) {
-            String tbl = (i == 0) ? TBL_CARGO_INCOMES : TBL_CARGO_EXPENSES;
+        if (BeeUtils.same(event.getTargetName(), VIEW_CHILD_ASSESSMENTS) && event.isAfter()
+            && event.getRowset().getNumberOfRows() > 0) {
 
+          for (String tbl : new String[] {TBL_CARGO_INCOMES, TBL_CARGO_EXPENSES}) {
             SqlSelect query = new SqlSelect()
-                .addField(TBL_CARGO_ASSESSORS, sys.getIdName(TBL_CARGO_ASSESSORS), COL_ASSESSOR)
-                .addFrom(TBL_CARGO_ASSESSORS)
+                .addField(TBL_ASSESSMENTS, sys.getIdName(TBL_ASSESSMENTS), COL_ASSESSMENT)
+                .addFrom(TBL_ASSESSMENTS)
                 .addFromInner(TBL_ORDER_CARGO,
-                    sys.joinTables(TBL_ORDER_CARGO, TBL_CARGO_ASSESSORS, COL_CARGO))
-                .addFromLeft(TBL_ORDERS, sys.joinTables(TBL_ORDERS, TBL_ORDER_CARGO, COL_ORDER))
-                .addFromLeft(tbl, sys.joinTables(TBL_CARGO_ASSESSORS, tbl, COL_ASSESSOR))
-                .setWhere(event.getQuery().getWhere())
-                .addGroup(TBL_CARGO_ASSESSORS, sys.getIdName(TBL_CARGO_ASSESSORS));
+                    sys.joinTables(TBL_ORDER_CARGO, TBL_ASSESSMENTS, COL_CARGO))
+                .addFromInner(TBL_ORDERS, sys.joinTables(TBL_ORDERS, TBL_ORDER_CARGO, COL_ORDER))
+                .addFromInner(tbl, SqlUtils.joinUsing(TBL_ASSESSMENTS, tbl, COL_CARGO))
+                .setWhere(sys.idInList(TBL_ASSESSMENTS, event.getRowset().getRowIds()))
+                .addGroup(TBL_ASSESSMENTS, sys.getIdName(TBL_ASSESSMENTS));
 
             IsExpression xpr = ExchangeUtils.exchangeFieldTo(query,
                 TradeModuleBean.getTotalExpression(tbl, SqlUtils.field(tbl, COL_AMOUNT)),
@@ -322,8 +370,8 @@ public class TransportModuleBean implements BeeModule {
             SimpleRowSet rs = qs.getData(query.addSum(xpr, VAR_TOTAL));
 
             for (BeeRow row : event.getRowset().getRows()) {
-              row.setProperty((i == 0) ? VAR_INCOME : VAR_EXPENSE,
-                  rs.getValueByKey(COL_ASSESSOR, BeeUtils.toString(row.getId()), VAR_TOTAL));
+              row.setProperty((BeeUtils.same(tbl, TBL_CARGO_INCOMES)) ? VAR_INCOME : VAR_EXPENSE,
+                  rs.getValueByKey(COL_ASSESSMENT, BeeUtils.toString(row.getId()), VAR_TOTAL));
             }
           }
         }
@@ -495,7 +543,73 @@ public class TransportModuleBean implements BeeModule {
               SqlUtils.join(view.getSourceAlias(), view.getSourceIdName(), "subq", COL_VEHICLE));
         }
       }
+
+      @Subscribe
+      public void updateAssessmentRelations(ViewInsertEvent event) {
+        String tbl = sys.getViewSource(event.getTargetName());
+
+        if (BeeUtils.inListSame(tbl, TBL_ASSESSMENTS, TBL_ASSESSMENT_FORWARDERS)
+            && event.isAfter()) {
+          String fld;
+          String tblFrom;
+          String joinFrom;
+
+          if (BeeUtils.same(tbl, TBL_ASSESSMENTS)) {
+            fld = COL_ORDER;
+            tblFrom = TBL_ORDER_CARGO;
+            joinFrom = COL_CARGO;
+          } else {
+            fld = COL_TRIP;
+            tblFrom = TBL_CARGO_TRIPS;
+            joinFrom = COL_CARGO_TRIP;
+          }
+          IsCondition clause = sys.idEquals(tbl, event.getRow().getId());
+
+          qs.updateData(new SqlUpdate(tbl)
+              .addExpression(fld, new SqlSelect()
+                  .addFields(tblFrom, fld)
+                  .addFrom(tbl)
+                  .addFromInner(tblFrom, sys.joinTables(tblFrom, tbl, joinFrom))
+                  .setWhere(clause))
+              .setWhere(clause));
+        }
+      }
     });
+
+    HeadlineProducer assessmentsHeadlineProducer = new HeadlineProducer() {
+
+      @Override
+      public Headline produce(Feed feed, long userId, BeeRowSet rowSet, IsRow row, boolean isNew) {
+        String caption = "";
+        String pid = DataUtils.getString(rowSet, row, COL_ASSESSMENT);
+
+        if (!BeeUtils.isEmpty(pid)) {
+          caption = BeeUtils.joinWords(caption, usr.getLocalizableConstants().captionPid()
+              + BeeConst.STRING_COLON, pid);
+        }
+
+        String id = BeeUtils.toString(row.getId());
+
+        caption = BeeUtils.joinWords(caption, usr.getLocalizableConstants().captionId()
+            + BeeConst.STRING_COLON, id);
+
+        AssessmentStatus status =
+            EnumUtils.getEnumByIndex(AssessmentStatus.class,
+                DataUtils.getInteger(rowSet, row, COL_STATUS));
+
+        if (status != null) {
+          caption = BeeUtils.joinWords(caption, status.getCaption(
+              usr.getLocalizableConstants(userId)));
+        }
+
+        String notes = DataUtils.getString(rowSet, row, ALS_ORDER_NOTES);
+        String customer = DataUtils.getString(rowSet, row, TransportConstants.ALS_CUSTOMER_NAME);
+
+        caption = BeeUtils.joinWords(caption, notes, customer);
+
+        return Headline.create(row.getId(), caption, isNew);
+      }
+    };
 
     news.registerUsageQueryProvider(Feed.ORDER_CARGO, new ExtendedUsageQueryProvider() {
       @Override
@@ -523,6 +637,19 @@ public class TransportModuleBean implements BeeModule {
           }
         });
 
+    news.registerUsageQueryProvider(Feed.TRIPS, new ExtendedUsageQueryProvider() {
+
+      @Override
+      protected List<Pair<String, IsCondition>> getJoins() {
+        return NewsHelper.buildJoin(TBL_TRIPS, news.joinUsage(TBL_TRIPS));
+      }
+
+      @Override
+      protected List<IsCondition> getConditions(long userId) {
+        return NewsHelper.buildConditions(SqlUtils.isNull(TBL_TRIPS, COL_EXPEDITION));
+      }
+    });
+
     news.registerUsageQueryProvider(Feed.CARGO_REQUESTS_MY, new ExtendedUsageQueryProvider() {
       @Override
       protected List<IsCondition> getConditions(long userId) {
@@ -548,10 +675,209 @@ public class TransportModuleBean implements BeeModule {
         return NewsHelper.buildJoin(TBL_SHIPMENT_REQUESTS, news.joinUsage(TBL_SHIPMENT_REQUESTS));
       }
     });
+
+    news.registerHeadlineProducer(Feed.ASSESSMENT_REQUESTS_ALL, assessmentsHeadlineProducer);
+
+    news.registerUsageQueryProvider(Feed.ASSESSMENT_REQUESTS_ALL,
+        new AssesmentRequestsUsageQueryProvider(false));
+
+    news.registerHeadlineProducer(Feed.ASSESSMENT_REQUESTS_MY, assessmentsHeadlineProducer);
+
+    news.registerUsageQueryProvider(Feed.ASSESSMENT_REQUESTS_MY,
+        new AssesmentRequestsUsageQueryProvider(true));
+
+    news.registerHeadlineProducer(Feed.ASSESSMENT_ORDERS_ALL, assessmentsHeadlineProducer);
+
+    news.registerUsageQueryProvider(Feed.ASSESSMENT_ORDERS_ALL,
+        new AssesmentRequestsUsageQueryProvider(false, true));
+
+    news.registerHeadlineProducer(Feed.ASSESSMENT_ORDERS_MY, assessmentsHeadlineProducer);
+
+    news.registerUsageQueryProvider(Feed.ASSESSMENT_ORDERS_MY,
+        new AssesmentRequestsUsageQueryProvider(true, true));
+
+    news.registerUsageQueryProvider(Feed.CARGO_SALES, new ExtendedUsageQueryProvider() {
+      @Override
+      protected List<IsCondition> getConditions(long userId) {
+        return NewsHelper.buildConditions(SqlUtils.isNull(TBL_CARGO_INCOMES, COL_SALE));
+      }
+
+      @Override
+      protected List<Pair<String, IsCondition>> getJoins() {
+        return NewsHelper.buildJoin(TBL_CARGO_INCOMES, news.joinUsage(TBL_CARGO_INCOMES));
+      }
+    });
+
+    news.registerUsageQueryProvider(Feed.CARGO_CREDIT_SALES, new ExtendedUsageQueryProvider() {
+      @Override
+      protected List<IsCondition> getConditions(long userId) {
+        return NewsHelper.buildConditions(SqlUtils.isNull(TBL_CARGO_INCOMES, COL_PURCHASE),
+            SqlUtils.isNull(TBL_SALES, COL_SALE_PROFORMA),
+            SqlUtils.notNull(TBL_CARGO_INCOMES, COL_SALE));
+      }
+
+      @Override
+      protected List<Pair<String, IsCondition>> getJoins() {
+        return NewsHelper.buildJoins(TBL_CARGO_INCOMES, news.joinUsage(TBL_CARGO_INCOMES),
+            TBL_SALES, sys.joinTables(TBL_SALES, TBL_CARGO_INCOMES, COL_SALE));
+      }
+    });
+
+    news.registerUsageQueryProvider(Feed.CARGO_PURCHASES, new ExtendedUsageQueryProvider() {
+      @Override
+      protected List<IsCondition> getConditions(long userId) {
+        return NewsHelper.buildConditions(SqlUtils.isNull(TBL_CARGO_EXPENSES, COL_PURCHASE));
+      }
+
+      @Override
+      protected List<Pair<String, IsCondition>> getJoins() {
+        return NewsHelper.buildJoin(TBL_CARGO_EXPENSES, news.joinUsage(TBL_CARGO_EXPENSES));
+      }
+    });
+
+    news.registerUsageQueryProvider(Feed.CARGO_INVOICES, new ExtendedUsageQueryProvider() {
+      @Override
+      protected List<IsCondition> getConditions(long userId) {
+        return NewsHelper.buildConditions(SqlUtils.isNull(TBL_SALES, COL_SALE_PROFORMA));
+      }
+
+      @Override
+      protected List<Pair<String, IsCondition>> getJoins() {
+        return NewsHelper.buildJoins(TBL_SALES, news.joinUsage(TBL_SALES),
+            TBL_CARGO_INCOMES, sys.joinTables(TBL_SALES, TBL_CARGO_INCOMES, COL_SALE));
+      }
+    });
+
+    news.registerUsageQueryProvider(Feed.CARGO_PROFORMA_INVOICES, new ExtendedUsageQueryProvider() {
+      @Override
+      protected List<IsCondition> getConditions(long userId) {
+        return NewsHelper.buildConditions(SqlUtils.notNull(TBL_SALES, COL_SALE_PROFORMA));
+      }
+
+      @Override
+      protected List<Pair<String, IsCondition>> getJoins() {
+        return NewsHelper.buildJoins(TBL_SALES, news.joinUsage(TBL_SALES),
+            TBL_CARGO_INCOMES, sys.joinTables(TBL_SALES, TBL_CARGO_INCOMES, COL_SALE));
+      }
+    });
+
+    news.registerUsageQueryProvider(Feed.CARGO_CREDIT_INVOICES, new ExtendedUsageQueryProvider() {
+      @Override
+      protected List<IsCondition> getConditions(long userId) {
+        return null;
+      }
+
+      @Override
+      protected List<Pair<String, IsCondition>> getJoins() {
+        return NewsHelper.buildJoins(TBL_PURCHASES, news.joinUsage(TBL_PURCHASES),
+            TBL_CARGO_INCOMES, sys.joinTables(TBL_PURCHASES, TBL_CARGO_INCOMES, COL_PURCHASE));
+      }
+    });
+
+    news.registerUsageQueryProvider(Feed.CARGO_PURCHASE_INVOICES, new ExtendedUsageQueryProvider() {
+      @Override
+      protected List<IsCondition> getConditions(long userId) {
+        return null;
+      }
+
+      @Override
+      protected List<Pair<String, IsCondition>> getJoins() {
+        return NewsHelper.buildJoins(TBL_PURCHASES, news.joinUsage(TBL_PURCHASES),
+            TBL_CARGO_EXPENSES, sys.joinTables(TBL_PURCHASES, TBL_CARGO_EXPENSES, COL_PURCHASE));
+      }
+    });
+
+    news.registerUsageQueryProvider(Feed.ASSESSMENT_TRANSPORTATIONS,
+        new UsageQueryProvider() {
+
+          @Override
+          public SqlSelect getQueryForAccess(Feed feed, String relationColumn, long userId,
+              DateTime startDate) {
+            SqlSelect select = new SqlSelect()
+                .addFields(TBL_TRIP_USAGE, COL_TRIP)
+                .addMax(TBL_TRIP_USAGE, NewsConstants.COL_USAGE_ACCESS)
+                .addFrom(TBL_TRIP_USAGE)
+                .addFromInner(TBL_TRIPS, SqlUtils.join(TBL_TRIPS, sys.getIdName(TBL_TRIPS),
+                    TBL_TRIP_USAGE, COL_TRIP))
+                .addFromLeft(
+                    TBL_ASSESSMENT_FORWARDERS,
+                    SqlUtils.join(TBL_ASSESSMENT_FORWARDERS, COL_TRIP, TBL_TRIPS, sys
+                        .getIdName(TBL_TRIPS)))
+                .addFromLeft(
+                    TBL_CARGO_TRIPS,
+                    SqlUtils.join(TBL_CARGO_TRIPS, COL_TRIP, TBL_TRIPS, sys
+                        .getIdName(TBL_TRIPS)))
+                .addFromLeft(TBL_ASSESSMENTS,
+                    SqlUtils.join(TBL_ASSESSMENTS, COL_CARGO, TBL_CARGO_TRIPS, COL_CARGO))
+                .setWhere(SqlUtils.and(
+                    SqlUtils.isNull(TBL_ASSESSMENT_FORWARDERS, COL_TRIP),
+                    SqlUtils.notNull(TBL_ASSESSMENTS, COL_CARGO),
+                    SqlUtils.equals(TBL_TRIP_USAGE, NewsConstants.COL_UF_USER, userId),
+                    SqlUtils.notNull(TBL_TRIP_USAGE, NewsConstants.COL_USAGE_ACCESS)))
+                .addGroup(TBL_TRIP_USAGE, COL_TRIP);
+            return select;
+          }
+
+          @Override
+          public SqlSelect getQueryForUpdates(Feed feed, String relationColumn, long userId,
+              DateTime startDate) {
+            SqlSelect select = new SqlSelect()
+                .addFields(TBL_TRIP_USAGE, COL_TRIP)
+                .addMax(TBL_TRIP_USAGE, NewsConstants.COL_USAGE_UPDATE)
+                .addFrom(TBL_TRIP_USAGE)
+                .addFromInner(TBL_TRIPS, SqlUtils.join(TBL_TRIPS, sys.getIdName(TBL_TRIPS),
+                    TBL_TRIP_USAGE, COL_TRIP))
+                .addFromLeft(
+                    TBL_ASSESSMENT_FORWARDERS,
+                    SqlUtils.join(TBL_ASSESSMENT_FORWARDERS, COL_TRIP, TBL_TRIPS, sys
+                        .getIdName(TBL_TRIPS)))
+                .addFromLeft(
+                    TBL_CARGO_TRIPS,
+                    SqlUtils.join(TBL_CARGO_TRIPS, COL_TRIP, TBL_TRIPS, sys
+                        .getIdName(TBL_TRIPS)))
+                .addFromLeft(TBL_ASSESSMENTS,
+                    SqlUtils.join(TBL_ASSESSMENTS, COL_CARGO, TBL_CARGO_TRIPS, COL_CARGO))
+                .setWhere(SqlUtils.and(
+                    SqlUtils.isNull(TBL_ASSESSMENT_FORWARDERS, COL_TRIP),
+                    SqlUtils.notNull(TBL_ASSESSMENTS, COL_CARGO),
+                    SqlUtils.notEqual(TBL_TRIP_USAGE, NewsConstants.COL_UF_USER, userId),
+                    SqlUtils.more(TBL_TRIP_USAGE, NewsConstants.COL_USAGE_UPDATE,
+                        NewsHelper.getStartTime(startDate))))
+                .addGroup(TBL_TRIP_USAGE, COL_TRIP);
+            return select;
+          }
+        });
   }
 
-  private ResponseObject createCreditInvoiceItems(Long purchaseId, Double amount, Long currency,
-      Set<Long> idList, Long mainItem) {
+  public void initTimer() {
+    Timer erpTimer = null;
+
+    for (Timer timer : timerService.getTimers()) {
+      if (Objects.equal(timer.getInfo(), PRM_ERP_REFRESH_INTERVAL)) {
+        erpTimer = timer;
+        break;
+      }
+    }
+    if (erpTimer != null) {
+      erpTimer.cancel();
+    }
+    Integer minutes = prm.getInteger(PRM_ERP_REFRESH_INTERVAL);
+
+    if (BeeUtils.isPositive(minutes)) {
+      erpTimer = timerService.createIntervalTimer(minutes * TimeUtils.MILLIS_PER_MINUTE,
+          minutes * TimeUtils.MILLIS_PER_MINUTE, new TimerConfig(PRM_ERP_REFRESH_INTERVAL, false));
+
+      logger.info("Created ERP refresh timer every", minutes, "minutes starting at",
+          erpTimer.getNextTimeout());
+    } else {
+      if (erpTimer != null) {
+        logger.info("Removed ERP timer");
+      }
+    }
+  }
+
+  private ResponseObject createCreditInvoiceItems(Long purchaseId, Long currency, Set<Long> idList,
+      Long mainItem, Double amount) {
 
     if (!DataUtils.isId(purchaseId)) {
       return ResponseObject.error("Wrong account ID");
@@ -780,39 +1106,433 @@ public class TransportModuleBean implements BeeModule {
         .setWhere(wh)));
   }
 
-  private ResponseObject getAssessmentTotals(Long assessorId, Long cargoId) {
-    if (!DataUtils.isId(cargoId)) {
-      return ResponseObject.error("Cargo ID is not valid:", cargoId);
+  private ResponseObject createPurchaseInvoiceItems(Long purchaseId, Long currency,
+      Set<Long> idList, Long mainItem) {
+
+    if (!DataUtils.isId(purchaseId)) {
+      return ResponseObject.error("Wrong account ID");
     }
+    if (!DataUtils.isId(currency)) {
+      return ResponseObject.error("Wrong currency ID");
+    }
+    if (BeeUtils.isEmpty(idList)) {
+      return ResponseObject.error("Empty ID list");
+    }
+    IsCondition wh = sys.idInList(TBL_CARGO_EXPENSES, idList);
+
+    SqlSelect ss = new SqlSelect()
+        .addFields(TBL_CARGO_EXPENSES, COL_TRADE_VAT_PLUS, COL_TRADE_VAT, COL_TRADE_VAT_PERC)
+        .addFrom(TBL_CARGO_EXPENSES)
+        .addFromInner(TBL_SERVICES,
+            sys.joinTables(TBL_SERVICES, TBL_CARGO_EXPENSES, COL_SERVICE))
+        .addFromInner(TBL_ORDER_CARGO,
+            sys.joinTables(TBL_ORDER_CARGO, TBL_CARGO_EXPENSES, COL_CARGO))
+        .addFromInner(TBL_ORDERS, sys.joinTables(TBL_ORDERS, TBL_ORDER_CARGO, COL_ORDER))
+        .setWhere(SqlUtils.and(wh, SqlUtils.positive(TBL_CARGO_EXPENSES, COL_AMOUNT)))
+        .addGroup(TBL_CARGO_EXPENSES, COL_TRADE_VAT_PLUS, COL_TRADE_VAT, COL_TRADE_VAT_PERC);
+
+    if (DataUtils.isId(mainItem)) {
+      ss.addConstant(mainItem, COL_ITEM);
+    } else {
+      ss.addFields(TBL_SERVICES, COL_ITEM)
+          .addGroup(TBL_SERVICES, COL_ITEM);
+    }
+    IsExpression xpr = ExchangeUtils.exchangeFieldTo(ss,
+        SqlUtils.field(TBL_CARGO_EXPENSES, COL_AMOUNT),
+        SqlUtils.field(TBL_CARGO_EXPENSES, COL_CURRENCY),
+        SqlUtils.nvl(SqlUtils.field(TBL_CARGO_EXPENSES, COL_DATE),
+            SqlUtils.field(TBL_ORDERS, COL_ORDER_DATE)), SqlUtils.constant(currency));
+
+    SimpleRowSet rs = qs.getData(ss.addSum(xpr, COL_AMOUNT));
+    ResponseObject response = new ResponseObject();
+
+    for (SimpleRow row : rs) {
+      SqlInsert insert = new SqlInsert(TBL_PURCHASE_ITEMS)
+          .addConstant(COL_PURCHASE, purchaseId)
+          .addConstant(COL_ITEM, row.getLong(COL_ITEM))
+          .addConstant(COL_TRADE_ITEM_QUANTITY, 1)
+          .addConstant(COL_TRADE_ITEM_PRICE, BeeUtils.round(row.getDouble(COL_AMOUNT), 2))
+          .addConstant(COL_TRADE_VAT_PLUS, row.getBoolean(COL_TRADE_VAT_PLUS))
+          .addConstant(COL_TRADE_VAT, row.getDouble(COL_TRADE_VAT))
+          .addConstant(COL_TRADE_VAT_PERC, row.getBoolean(COL_TRADE_VAT_PERC));
+
+      qs.insertData(insert);
+    }
+    return response.addErrorsFrom(qs.updateDataWithResponse(new SqlUpdate(TBL_CARGO_EXPENSES)
+        .addConstant(COL_PURCHASE, purchaseId)
+        .setWhere(wh)));
+  }
+
+  private ResponseObject getAssessmentQuantityReport(RequestInfo reqInfo) {
+    Long startDate = BeeUtils.toLongOrNull(reqInfo.getParameter(Service.VAR_FROM));
+    Long endDate = BeeUtils.toLongOrNull(reqInfo.getParameter(Service.VAR_TO));
+
+    Set<Long> departments = DataUtils.parseIdSet(reqInfo.getParameter(AR_DEPARTMENT));
+    Set<Long> managers = DataUtils.parseIdSet(reqInfo.getParameter(AR_MANAGER));
+
+    List<String> groupBy = NameUtils.toList(reqInfo.getParameter(Service.VAR_GROUP_BY));
+
+    HasConditions where = SqlUtils.and(SqlUtils.notNull(TBL_ASSESSMENTS, COL_ASSESSMENT_STATUS));
+
+    if (startDate != null) {
+      where.add(SqlUtils.moreEqual(TBL_ORDERS, COL_ORDER_DATE, startDate));
+    }
+    if (endDate != null) {
+      where.add(SqlUtils.less(TBL_ORDERS, COL_ORDER_DATE, endDate));
+    }
+
+    if (!departments.isEmpty()) {
+      where.add(SqlUtils.inList(TBL_ASSESSMENTS, COL_DEPARTMENT, departments));
+    }
+    if (!managers.isEmpty()) {
+      where.add(SqlUtils.inList(TBL_USERS, COL_COMPANY_PERSON, managers));
+    }
+
+    SqlSelect query = new SqlSelect();
+    query.addFields(TBL_ASSESSMENTS, COL_ASSESSMENT_STATUS, COL_ASSESSMENT);
+
+    if (groupBy.contains(BeeConst.MONTH)) {
+      query.addFields(TBL_ORDERS, COL_ORDER_DATE);
+      query.addEmptyNumeric(BeeConst.YEAR, 4, 0);
+      query.addEmptyNumeric(BeeConst.MONTH, 2, 0);
+    }
+
+    if (groupBy.contains(AR_DEPARTMENT)) {
+      query.addFields(TBL_ASSESSMENTS, COL_DEPARTMENT);
+    }
+    if (groupBy.contains(AR_MANAGER)) {
+      query.addFields(TBL_USERS, COL_COMPANY_PERSON);
+    }
+
+    query.addFrom(TBL_ASSESSMENTS);
+    if (!managers.isEmpty() || groupBy.contains(AR_MANAGER) || groupBy.contains(BeeConst.MONTH)
+        || startDate != null || endDate != null) {
+
+      query.addFromInner(TBL_ORDER_CARGO,
+          sys.joinTables(TBL_ORDER_CARGO, TBL_ASSESSMENTS, COL_CARGO));
+      query.addFromInner(TBL_ORDERS, sys.joinTables(TBL_ORDERS, TBL_ORDER_CARGO, COL_ORDER));
+
+      if (!managers.isEmpty() || groupBy.contains(AR_MANAGER)) {
+        query.addFromLeft(TBL_USERS, sys.joinTables(TBL_USERS, TBL_ORDERS, COL_ORDER_MANAGER));
+      }
+    }
+
+    query.setWhere(where);
+
+    String tmp = qs.sqlCreateTemp(query);
+
+    long count;
+    if (groupBy.contains(BeeConst.MONTH)) {
+      count = qs.setYearMonth(tmp, COL_ORDER_DATE, BeeConst.YEAR, BeeConst.MONTH);
+    } else {
+      count = qs.sqlCount(tmp, null);
+    }
+
+    if (count <= 0) {
+      qs.sqlDropTemp(tmp);
+      return ResponseObject.emptyResponse();
+    }
+
+    query = new SqlSelect();
+    query.addFrom(tmp);
+
+    for (String by : groupBy) {
+      switch (by) {
+        case BeeConst.MONTH:
+          query.addFields(tmp, BeeConst.YEAR, BeeConst.MONTH);
+          query.addGroup(tmp, BeeConst.YEAR, BeeConst.MONTH);
+          query.addOrder(tmp, BeeConst.YEAR, BeeConst.MONTH);
+          break;
+
+        case AR_DEPARTMENT:
+          query.addFields(tmp, COL_DEPARTMENT);
+          query.addFields(TBL_DEPARTMENTS, COL_DEPARTMENT_NAME);
+
+          query.addFromLeft(TBL_DEPARTMENTS,
+              SqlUtils.join(TBL_DEPARTMENTS, sys.getIdName(TBL_DEPARTMENTS), tmp, COL_DEPARTMENT));
+
+          query.addGroup(tmp, COL_DEPARTMENT);
+          query.addGroup(TBL_DEPARTMENTS, COL_DEPARTMENT_NAME);
+          query.addOrder(TBL_DEPARTMENTS, COL_DEPARTMENT_NAME);
+          break;
+
+        case AR_MANAGER:
+          query.addFields(tmp, COL_COMPANY_PERSON);
+          query.addFields(TBL_PERSONS, COL_FIRST_NAME, COL_LAST_NAME);
+
+          query.addFromLeft(TBL_COMPANY_PERSONS,
+              SqlUtils.join(TBL_COMPANY_PERSONS, sys.getIdName(TBL_COMPANY_PERSONS),
+                  tmp, COL_COMPANY_PERSON));
+          query.addFromLeft(TBL_PERSONS,
+              sys.joinTables(TBL_PERSONS, TBL_COMPANY_PERSONS, COL_PERSON));
+
+          query.addGroup(tmp, COL_COMPANY_PERSON);
+          query.addGroup(TBL_PERSONS, COL_FIRST_NAME, COL_LAST_NAME);
+
+          query.addOrder(TBL_PERSONS, COL_LAST_NAME, COL_FIRST_NAME);
+          query.addOrder(tmp, COL_COMPANY_PERSON);
+          break;
+      }
+    }
+
+    query.addCount(AR_RECEIVED);
+
+    IsExpression xpr = SqlUtils.field(tmp, COL_ASSESSMENT_STATUS);
+
+    query.addSum(SqlUtils.sqlCase(xpr, AssessmentStatus.ANSWERED.ordinal(), 1, 0), AR_ANSWERED);
+    query.addSum(SqlUtils.sqlCase(xpr, AssessmentStatus.LOST.ordinal(), 1, 0), AR_LOST);
+    query.addSum(SqlUtils.sqlCase(xpr, AssessmentStatus.APPROVED.ordinal(), 1, 0), AR_APPROVED);
+
+    query.addSum(SqlUtils.sqlIf(SqlUtils.isNull(tmp, COL_ASSESSMENT), 0, 1), AR_SECONDARY);
+
+    SimpleRowSet result = qs.getData(query);
+    qs.sqlDropTemp(tmp);
+
+    if (DataUtils.isEmpty(result)) {
+      return ResponseObject.emptyResponse();
+    } else {
+      return ResponseObject.response(result);
+    }
+  }
+
+  private ResponseObject getAssessmentTotals(Long assessmentId, Long currency, boolean isPrimary) {
+    Assert.state(DataUtils.isId(assessmentId));
+
     SqlSelect query = null;
 
-    for (int i = 0; i < 2; i++) {
-      String tbl = (i == 0) ? TBL_CARGO_INCOMES : TBL_CARGO_EXPENSES;
+    for (String tbl : new String[] {TBL_CARGO_INCOMES, TBL_CARGO_EXPENSES}) {
+      for (int i = 0; i < 2; i++) {
+        if (i > 0 && !isPrimary) {
+          break;
+        }
+        SqlSelect ss = new SqlSelect()
+            .addConstant(tbl + (i > 0 ? VAR_TOTAL : ""), COL_SERVICE)
+            .addFrom(tbl)
+            .addFromInner(TBL_ASSESSMENTS, SqlUtils.joinUsing(tbl, TBL_ASSESSMENTS, COL_CARGO))
+            .addFromInner(TBL_ORDER_CARGO, sys.joinTables(TBL_ORDER_CARGO, tbl, COL_CARGO))
+            .addFromInner(TBL_ORDERS, sys.joinTables(TBL_ORDERS, TBL_ORDER_CARGO, COL_ORDER));
 
-      SqlSelect ss = new SqlSelect()
-          .addConstant(tbl, COL_SERVICE)
-          .addFrom(tbl)
-          .addFromInner(TBL_ORDER_CARGO, sys.joinTables(TBL_ORDER_CARGO, tbl, COL_CARGO))
-          .addFromLeft(TBL_ORDERS, sys.joinTables(TBL_ORDERS, TBL_ORDER_CARGO, COL_ORDER))
-          .setWhere(SqlUtils.equals(tbl, COL_CARGO, cargoId));
+        if (i > 0) {
+          ss.setWhere(SqlUtils.equals(TBL_ASSESSMENTS, COL_ASSESSMENT, assessmentId));
+        } else {
+          ss.setWhere(sys.idEquals(TBL_ASSESSMENTS, assessmentId));
+        }
+        IsExpression xpr = ExchangeUtils.exchangeFieldTo(ss,
+            TradeModuleBean.getTotalExpression(tbl, SqlUtils.field(tbl, COL_AMOUNT)),
+            SqlUtils.field(tbl, COL_CURRENCY),
+            SqlUtils.nvl(SqlUtils.field(tbl, COL_DATE), SqlUtils.field(TBL_ORDERS, COL_DATE)),
+            SqlUtils.constant(currency));
 
-      IsExpression xpr = ExchangeUtils.exchangeFieldTo(ss,
-          TradeModuleBean.getTotalExpression(tbl, SqlUtils.field(tbl, COL_AMOUNT)),
-          SqlUtils.field(tbl, COL_CURRENCY),
-          SqlUtils.nvl(SqlUtils.field(tbl, COL_DATE), SqlUtils.field(TBL_ORDERS, COL_DATE)),
-          SqlUtils.field(TBL_ORDER_CARGO, COL_CURRENCY));
+        ss.addSum(xpr, COL_AMOUNT);
 
-      ss.addSum(xpr, VAR_TOTAL)
-          .addSum(SqlUtils.sqlIf(SqlUtils.equals(tbl, COL_ASSESSOR, assessorId), xpr, null),
-              COL_AMOUNT);
-
-      if (query == null) {
-        query = ss;
-      } else {
-        query.setUnionAllMode(true).addUnion(ss);
+        if (query == null) {
+          query = ss;
+        } else {
+          query.setUnionAllMode(true).addUnion(ss);
+        }
       }
     }
     return ResponseObject.response(qs.getData(query));
+  }
+
+  private ResponseObject getAssessmentTurnoverReport(RequestInfo reqInfo) {
+    Long startDate = reqInfo.getParameterLong(Service.VAR_FROM);
+    Long endDate = reqInfo.getParameterLong(Service.VAR_TO);
+
+    Long currency = reqInfo.getParameterLong(COL_CURRENCY);
+
+    Set<Long> departments = DataUtils.parseIdSet(reqInfo.getParameter(AR_DEPARTMENT));
+    Set<Long> managers = DataUtils.parseIdSet(reqInfo.getParameter(AR_MANAGER));
+    Set<Long> customers = DataUtils.parseIdSet(reqInfo.getParameter(AR_CUSTOMER));
+
+    List<String> groupBy = NameUtils.toList(reqInfo.getParameter(Service.VAR_GROUP_BY));
+
+    HasConditions where = SqlUtils.and(
+        SqlUtils.equals(TBL_ORDERS, COL_STATUS, OrderStatus.COMPLETED.ordinal()),
+        SqlUtils.in(TBL_ASSESSMENTS, COL_CARGO, TBL_CARGO_INCOMES, COL_CARGO,
+            SqlUtils.notNull(TBL_CARGO_INCOMES, COL_SALE)),
+        SqlUtils.not(SqlUtils.in(TBL_ASSESSMENTS, COL_CARGO, TBL_CARGO_INCOMES, COL_CARGO,
+            SqlUtils.isNull(TBL_CARGO_INCOMES, COL_SALE))));
+
+    if (startDate != null || endDate != null) {
+      if (startDate != null) {
+        where.add(SqlUtils.moreEqual(TBL_CARGO_PLACES, COL_PLACE_DATE, startDate));
+      }
+      if (endDate != null) {
+        where.add(SqlUtils.less(TBL_CARGO_PLACES, COL_PLACE_DATE, endDate));
+      }
+    } else {
+      where.add(SqlUtils.notNull(TBL_CARGO_PLACES, COL_PLACE_DATE));
+    }
+
+    if (!departments.isEmpty()) {
+      where.add(SqlUtils.inList(TBL_ASSESSMENTS, COL_DEPARTMENT, departments));
+    }
+    if (!managers.isEmpty()) {
+      where.add(SqlUtils.inList(TBL_USERS, COL_COMPANY_PERSON, managers));
+    }
+    if (!customers.isEmpty()) {
+      where.add(SqlUtils.inList(TBL_ORDERS, COL_CUSTOMER, customers));
+    }
+
+    SqlSelect query = new SqlSelect();
+    query.addFields(TBL_ASSESSMENTS, COL_ASSESSMENT, COL_CARGO);
+
+    String orderDateAlias = "OrdDt" + SqlUtils.uniqueName();
+    query.addField(TBL_ORDERS, COL_ORDER_DATE, orderDateAlias);
+
+    if (groupBy.contains(BeeConst.MONTH)) {
+      query.addFields(TBL_CARGO_PLACES, COL_PLACE_DATE);
+      query.addEmptyNumeric(BeeConst.YEAR, 4, 0);
+      query.addEmptyNumeric(BeeConst.MONTH, 2, 0);
+    }
+
+    if (groupBy.contains(AR_DEPARTMENT)) {
+      query.addFields(TBL_ASSESSMENTS, COL_DEPARTMENT);
+    }
+    if (groupBy.contains(AR_MANAGER)) {
+      query.addFields(TBL_USERS, COL_COMPANY_PERSON);
+    }
+    if (groupBy.contains(AR_CUSTOMER)) {
+      query.addFields(TBL_ORDERS, COL_CUSTOMER);
+    }
+
+    query.addFrom(TBL_ASSESSMENTS);
+    query.addFromInner(TBL_ORDER_CARGO,
+        sys.joinTables(TBL_ORDER_CARGO, TBL_ASSESSMENTS, COL_CARGO));
+    query.addFromInner(TBL_CARGO_PLACES,
+        sys.joinTables(TBL_CARGO_PLACES, TBL_ORDER_CARGO, COL_UNLOADING_PLACE));
+    query.addFromInner(TBL_ORDERS, sys.joinTables(TBL_ORDERS, TBL_ORDER_CARGO, COL_ORDER));
+
+    if (!managers.isEmpty() || groupBy.contains(AR_MANAGER)) {
+      query.addFromLeft(TBL_USERS, sys.joinTables(TBL_USERS, TBL_ORDERS, COL_ORDER_MANAGER));
+    }
+
+    query.setWhere(where);
+
+    String tmp = qs.sqlCreateTemp(query);
+
+    long count;
+    if (groupBy.contains(BeeConst.MONTH)) {
+      count = qs.setYearMonth(tmp, COL_PLACE_DATE, BeeConst.YEAR, BeeConst.MONTH);
+    } else {
+      count = qs.sqlCount(tmp, null);
+    }
+
+    if (count <= 0) {
+      qs.sqlDropTemp(tmp);
+      return ResponseObject.emptyResponse();
+    }
+
+    query = new SqlSelect();
+    query.addFrom(tmp);
+
+    for (String by : groupBy) {
+      switch (by) {
+        case BeeConst.MONTH:
+          query.addFields(tmp, BeeConst.YEAR, BeeConst.MONTH);
+          query.addGroup(tmp, BeeConst.YEAR, BeeConst.MONTH);
+          query.addOrder(tmp, BeeConst.YEAR, BeeConst.MONTH);
+          break;
+
+        case AR_DEPARTMENT:
+          query.addFields(tmp, COL_DEPARTMENT);
+          query.addFields(TBL_DEPARTMENTS, COL_DEPARTMENT_NAME);
+
+          query.addFromLeft(TBL_DEPARTMENTS,
+              SqlUtils.join(TBL_DEPARTMENTS, sys.getIdName(TBL_DEPARTMENTS), tmp, COL_DEPARTMENT));
+
+          query.addGroup(tmp, COL_DEPARTMENT);
+          query.addGroup(TBL_DEPARTMENTS, COL_DEPARTMENT_NAME);
+          query.addOrder(TBL_DEPARTMENTS, COL_DEPARTMENT_NAME);
+          break;
+
+        case AR_MANAGER:
+          query.addFields(tmp, COL_COMPANY_PERSON);
+          query.addFields(TBL_PERSONS, COL_FIRST_NAME, COL_LAST_NAME);
+
+          query.addFromLeft(TBL_COMPANY_PERSONS,
+              SqlUtils.join(TBL_COMPANY_PERSONS, sys.getIdName(TBL_COMPANY_PERSONS),
+                  tmp, COL_COMPANY_PERSON));
+          query.addFromLeft(TBL_PERSONS,
+              sys.joinTables(TBL_PERSONS, TBL_COMPANY_PERSONS, COL_PERSON));
+
+          query.addGroup(tmp, COL_COMPANY_PERSON);
+          query.addGroup(TBL_PERSONS, COL_FIRST_NAME, COL_LAST_NAME);
+
+          query.addOrder(TBL_PERSONS, COL_LAST_NAME, COL_FIRST_NAME);
+          query.addOrder(tmp, COL_COMPANY_PERSON);
+          break;
+
+        case AR_CUSTOMER:
+          query.addFields(tmp, COL_CUSTOMER);
+          query.addField(TBL_COMPANIES, COL_COMPANY_NAME, ALS_COMPANY_NAME);
+
+          query.addFromLeft(TBL_COMPANIES,
+              SqlUtils.join(TBL_COMPANIES, sys.getIdName(TBL_COMPANIES), tmp, COL_CUSTOMER));
+
+          query.addGroup(tmp, COL_CUSTOMER);
+          query.addGroup(TBL_COMPANIES, COL_COMPANY_NAME);
+          query.addOrder(TBL_COMPANIES, COL_COMPANY_NAME);
+          break;
+      }
+    }
+
+    query.addCount(AR_RECEIVED);
+
+    if (!DataUtils.isId(currency)) {
+      currency = prm.getRelation(PRM_CURRENCY);
+    }
+
+    SqlSelect subIncome = new SqlSelect()
+        .addFields(tmp, COL_CARGO)
+        .addFrom(tmp)
+        .addFromInner(TBL_CARGO_INCOMES,
+            SqlUtils.join(TBL_CARGO_INCOMES, COL_CARGO, tmp, COL_CARGO))
+        .addGroup(tmp, COL_CARGO);
+
+    IsExpression incomeXpr = getAssessmentTurnoverExpression(subIncome, TBL_CARGO_INCOMES,
+        tmp, orderDateAlias, currency);
+    subIncome.addSum(incomeXpr, AR_INCOME);
+
+    SqlSelect subExpense = new SqlSelect()
+        .addFields(tmp, COL_CARGO)
+        .addFrom(tmp)
+        .addFromInner(TBL_CARGO_EXPENSES,
+            SqlUtils.join(TBL_CARGO_EXPENSES, COL_CARGO, tmp, COL_CARGO))
+        .addGroup(tmp, COL_CARGO);
+
+    IsExpression expenseXpr = getAssessmentTurnoverExpression(subExpense, TBL_CARGO_EXPENSES,
+        tmp, orderDateAlias, currency);
+    subExpense.addSum(expenseXpr, AR_EXPENSE);
+
+    String incomeAlias = "Inc" + SqlUtils.uniqueName();
+    String expenseAlias = "Exp" + SqlUtils.uniqueName();
+
+    query.addFromLeft(subIncome, incomeAlias,
+        SqlUtils.join(incomeAlias, COL_CARGO, tmp, COL_CARGO));
+    query.addFromLeft(subExpense, expenseAlias,
+        SqlUtils.join(expenseAlias, COL_CARGO, tmp, COL_CARGO));
+
+    query.addSum(incomeAlias, AR_INCOME);
+    query.addSum(expenseAlias, AR_EXPENSE);
+
+    IsCondition condition = SqlUtils.isNull(tmp, COL_ASSESSMENT);
+    query.addSum(SqlUtils.sqlIf(condition, 0, 1), AR_SECONDARY);
+
+    query.addSum(SqlUtils.sqlIf(condition, 0, SqlUtils.field(incomeAlias, AR_INCOME)),
+        AR_SECONDARY_INCOME);
+    query.addSum(SqlUtils.sqlIf(condition, 0, SqlUtils.field(expenseAlias, AR_EXPENSE)),
+        AR_SECONDARY_EXPENSE);
+
+    SimpleRowSet result = qs.getData(query);
+    qs.sqlDropTemp(tmp);
+
+    if (DataUtils.isEmpty(result)) {
+      return ResponseObject.emptyResponse();
+    } else {
+      return ResponseObject.response(result);
+    }
   }
 
   /**
@@ -1028,8 +1748,8 @@ public class TransportModuleBean implements BeeModule {
 
   private ResponseObject getColors(RequestInfo reqInfo) {
     Long theme;
-    if (reqInfo.hasParameter(VAR_ID)) {
-      theme = BeeUtils.toLong(reqInfo.getParameter(VAR_ID));
+    if (reqInfo.hasParameter(Service.VAR_ID)) {
+      theme = BeeUtils.toLong(reqInfo.getParameter(Service.VAR_ID));
     } else {
       theme = null;
     }
@@ -1193,13 +1913,13 @@ public class TransportModuleBean implements BeeModule {
         .addField(loadAlias, COL_PLACE_ADDRESS, loadingColumnAlias(COL_PLACE_ADDRESS))
         .addField(loadAlias, COL_PLACE_POST_INDEX, loadingColumnAlias(COL_PLACE_POST_INDEX))
         .addField(loadAlias, COL_PLACE_CITY, loadingColumnAlias(COL_PLACE_CITY))
-        .addField(loadAlias, COL_PLACE_TERMINAL, loadingColumnAlias(COL_PLACE_TERMINAL))
+        .addField(loadAlias, COL_PLACE_NUMBER, loadingColumnAlias(COL_PLACE_NUMBER))
         .addField(unlAlias, COL_PLACE_DATE, unloadingColumnAlias(COL_PLACE_DATE))
         .addField(unlAlias, COL_PLACE_COUNTRY, unloadingColumnAlias(COL_PLACE_COUNTRY))
         .addField(unlAlias, COL_PLACE_ADDRESS, unloadingColumnAlias(COL_PLACE_ADDRESS))
         .addField(unlAlias, COL_PLACE_POST_INDEX, unloadingColumnAlias(COL_PLACE_POST_INDEX))
         .addField(unlAlias, COL_PLACE_CITY, unloadingColumnAlias(COL_PLACE_CITY))
-        .addField(unlAlias, COL_PLACE_TERMINAL, unloadingColumnAlias(COL_PLACE_TERMINAL))
+        .addField(unlAlias, COL_PLACE_NUMBER, unloadingColumnAlias(COL_PLACE_NUMBER))
         .setWhere(SqlUtils.and(tripWhere, handlingWhere))
         .addOrder(TBL_CARGO_HANDLING, COL_CARGO);
   }
@@ -1236,13 +1956,13 @@ public class TransportModuleBean implements BeeModule {
         .addField(loadAlias, COL_PLACE_ADDRESS, loadingColumnAlias(COL_PLACE_ADDRESS))
         .addField(loadAlias, COL_PLACE_POST_INDEX, loadingColumnAlias(COL_PLACE_POST_INDEX))
         .addField(loadAlias, COL_PLACE_CITY, loadingColumnAlias(COL_PLACE_CITY))
-        .addField(loadAlias, COL_PLACE_TERMINAL, loadingColumnAlias(COL_PLACE_TERMINAL))
+        .addField(loadAlias, COL_PLACE_NUMBER, loadingColumnAlias(COL_PLACE_NUMBER))
         .addField(unlAlias, COL_PLACE_DATE, unloadingColumnAlias(COL_PLACE_DATE))
         .addField(unlAlias, COL_PLACE_COUNTRY, unloadingColumnAlias(COL_PLACE_COUNTRY))
         .addField(unlAlias, COL_PLACE_ADDRESS, unloadingColumnAlias(COL_PLACE_ADDRESS))
         .addField(unlAlias, COL_PLACE_POST_INDEX, unloadingColumnAlias(COL_PLACE_POST_INDEX))
         .addField(unlAlias, COL_PLACE_CITY, unloadingColumnAlias(COL_PLACE_CITY))
-        .addField(unlAlias, COL_PLACE_TERMINAL, unloadingColumnAlias(COL_PLACE_TERMINAL))
+        .addField(unlAlias, COL_PLACE_NUMBER, unloadingColumnAlias(COL_PLACE_NUMBER))
         .addFields(TBL_ORDER_CARGO, COL_ORDER, COL_CARGO_DESCRIPTION, COL_CARGO_NOTES)
         .addField(defLoadAlias, COL_PLACE_DATE, defaultLoadingColumnAlias(COL_PLACE_DATE))
         .addField(defLoadAlias, COL_PLACE_COUNTRY, defaultLoadingColumnAlias(COL_PLACE_COUNTRY))
@@ -1250,14 +1970,14 @@ public class TransportModuleBean implements BeeModule {
         .addField(defLoadAlias, COL_PLACE_POST_INDEX,
             defaultLoadingColumnAlias(COL_PLACE_POST_INDEX))
         .addField(defLoadAlias, COL_PLACE_CITY, defaultLoadingColumnAlias(COL_PLACE_CITY))
-        .addField(defLoadAlias, COL_PLACE_TERMINAL, defaultLoadingColumnAlias(COL_PLACE_TERMINAL))
+        .addField(defLoadAlias, COL_PLACE_NUMBER, defaultLoadingColumnAlias(COL_PLACE_NUMBER))
         .addField(defUnlAlias, COL_PLACE_DATE, defaultUnloadingColumnAlias(COL_PLACE_DATE))
         .addField(defUnlAlias, COL_PLACE_COUNTRY, defaultUnloadingColumnAlias(COL_PLACE_COUNTRY))
         .addField(defUnlAlias, COL_PLACE_ADDRESS, defaultUnloadingColumnAlias(COL_PLACE_ADDRESS))
         .addField(defUnlAlias, COL_PLACE_POST_INDEX,
             defaultUnloadingColumnAlias(COL_PLACE_POST_INDEX))
         .addField(defUnlAlias, COL_PLACE_CITY, defaultUnloadingColumnAlias(COL_PLACE_CITY))
-        .addField(defUnlAlias, COL_PLACE_TERMINAL, defaultUnloadingColumnAlias(COL_PLACE_TERMINAL))
+        .addField(defUnlAlias, COL_PLACE_NUMBER, defaultUnloadingColumnAlias(COL_PLACE_NUMBER))
         .addFields(TBL_ORDERS, COL_ORDER_NO, COL_CUSTOMER, COL_STATUS)
         .addField(TBL_ORDERS, COL_ORDER_DATE, ALS_ORDER_DATE)
         .addField(TBL_COMPANIES, COL_COMPANY_NAME, COL_CUSTOMER_NAME)
@@ -1375,16 +2095,16 @@ public class TransportModuleBean implements BeeModule {
     query.addField(loadAlias, COL_PLACE_ADDRESS, loadingColumnAlias(COL_PLACE_ADDRESS));
     query.addField(loadAlias, COL_PLACE_POST_INDEX, loadingColumnAlias(COL_PLACE_POST_INDEX));
     query.addField(loadAlias, COL_PLACE_CITY, loadingColumnAlias(COL_PLACE_CITY));
-    query.addField(loadAlias, COL_PLACE_TERMINAL, loadingColumnAlias(COL_PLACE_TERMINAL));
+    query.addField(loadAlias, COL_PLACE_NUMBER, loadingColumnAlias(COL_PLACE_NUMBER));
 
     query.addField(unlAlias, COL_PLACE_DATE, unloadingColumnAlias(COL_PLACE_DATE));
     query.addField(unlAlias, COL_PLACE_COUNTRY, unloadingColumnAlias(COL_PLACE_COUNTRY));
     query.addField(unlAlias, COL_PLACE_ADDRESS, unloadingColumnAlias(COL_PLACE_ADDRESS));
     query.addField(unlAlias, COL_PLACE_POST_INDEX, unloadingColumnAlias(COL_PLACE_POST_INDEX));
     query.addField(unlAlias, COL_PLACE_CITY, unloadingColumnAlias(COL_PLACE_CITY));
-    query.addField(unlAlias, COL_PLACE_TERMINAL, unloadingColumnAlias(COL_PLACE_TERMINAL));
+    query.addField(unlAlias, COL_PLACE_NUMBER, unloadingColumnAlias(COL_PLACE_NUMBER));
 
-    Set<Integer> statuses = Sets.newHashSet(OrderStatus.NEW.ordinal(),
+    Set<Integer> statuses = Sets.newHashSet(OrderStatus.REQUEST.ordinal(),
         OrderStatus.ACTIVE.ordinal());
     IsCondition cargoWhere = SqlUtils.and(SqlUtils.inList(TBL_ORDERS, COL_STATUS, statuses),
         SqlUtils.isNull(TBL_CARGO_TRIPS, COL_CARGO));
@@ -1422,13 +2142,13 @@ public class TransportModuleBean implements BeeModule {
         .addField(loadAlias, COL_PLACE_ADDRESS, loadingColumnAlias(COL_PLACE_ADDRESS))
         .addField(loadAlias, COL_PLACE_POST_INDEX, loadingColumnAlias(COL_PLACE_POST_INDEX))
         .addField(loadAlias, COL_PLACE_CITY, loadingColumnAlias(COL_PLACE_CITY))
-        .addField(loadAlias, COL_PLACE_TERMINAL, loadingColumnAlias(COL_PLACE_TERMINAL))
+        .addField(loadAlias, COL_PLACE_NUMBER, loadingColumnAlias(COL_PLACE_NUMBER))
         .addField(unlAlias, COL_PLACE_DATE, unloadingColumnAlias(COL_PLACE_DATE))
         .addField(unlAlias, COL_PLACE_COUNTRY, unloadingColumnAlias(COL_PLACE_COUNTRY))
         .addField(unlAlias, COL_PLACE_ADDRESS, unloadingColumnAlias(COL_PLACE_ADDRESS))
         .addField(unlAlias, COL_PLACE_POST_INDEX, unloadingColumnAlias(COL_PLACE_POST_INDEX))
         .addField(unlAlias, COL_PLACE_CITY, unloadingColumnAlias(COL_PLACE_CITY))
-        .addField(unlAlias, COL_PLACE_TERMINAL, unloadingColumnAlias(COL_PLACE_TERMINAL))
+        .addField(unlAlias, COL_PLACE_NUMBER, unloadingColumnAlias(COL_PLACE_NUMBER))
         .setWhere(SqlUtils.and(cargoWhere, cargoHandlingWhere))
         .addOrder(TBL_CARGO_HANDLING, COL_CARGO);
 
@@ -2010,19 +2730,17 @@ public class TransportModuleBean implements BeeModule {
       }
       ids.append("'").append(row.getValue(COL_SALE)).append("'");
     }
+    String remoteNamespace = prm.getText(PRM_ERP_NAMESPACE);
     String remoteAddress = prm.getText(PRM_ERP_ADDRESS);
     String remoteLogin = prm.getText(PRM_ERP_LOGIN);
     String remotePassword = prm.getText(PRM_ERP_PASSWORD);
 
-    ResponseObject response = ButentWS.getSQLData(remoteAddress, remoteLogin, remotePassword,
-        "SELECT extern_id AS id, apm_data AS data, apm_suma AS suma"
-            + " FROM apyvarta WHERE extern_id IN(" + ids.toString() + ")",
-        new String[] {"id", "data", "suma"});
-
-    if (response.hasErrors()) {
-      logger.severe((Object[]) response.getErrors());
-    } else {
-      SimpleRowSet payments = (SimpleRowSet) response.getResponse();
+    try {
+      SimpleRowSet payments = ButentWS.connect(remoteNamespace, remoteAddress, remoteLogin,
+          remotePassword)
+          .getSQLData("SELECT extern_id AS id, apm_data AS data, apm_suma AS suma"
+              + " FROM apyvarta WHERE extern_id IN(" + ids.toString() + ")",
+              new String[] {"id", "data", "suma"});
 
       for (SimpleRow payment : payments) {
         if (!Objects.equal(payment.getDouble("suma"),
@@ -2036,33 +2754,8 @@ public class TransportModuleBean implements BeeModule {
               .setWhere(sys.idEquals(TBL_SALES, payment.getLong("id"))));
         }
       }
-    }
-  }
-
-  private void initTimer() {
-    Timer erpTimer = null;
-
-    for (Timer timer : timerService.getTimers()) {
-      if (Objects.equal(timer.getInfo(), PRM_ERP_REFRESH_INTERVAL)) {
-        erpTimer = timer;
-        break;
-      }
-    }
-    if (erpTimer != null) {
-      erpTimer.cancel();
-    }
-    Integer minutes = prm.getInteger(PRM_ERP_REFRESH_INTERVAL);
-
-    if (BeeUtils.isPositive(minutes)) {
-      erpTimer = timerService.createIntervalTimer(minutes * TimeUtils.MILLIS_PER_MINUTE,
-          minutes * TimeUtils.MILLIS_PER_MINUTE, new TimerConfig(PRM_ERP_REFRESH_INTERVAL, false));
-
-      logger.info("Created ERP refresh timer every", minutes, "minutes starting at",
-          erpTimer.getNextTimeout());
-    } else {
-      if (erpTimer != null) {
-        logger.info("Removed ERP timer");
-      }
+    } catch (BeeException e) {
+      logger.error(e);
     }
   }
 
@@ -2182,6 +2875,7 @@ public class TransportModuleBean implements BeeModule {
     } else {
       return ResponseObject.error("View source not supported:", trade);
     }
+    String remoteNamespace = prm.getText(PRM_ERP_NAMESPACE);
     String remoteAddress = prm.getText(PRM_ERP_ADDRESS);
     String remoteLogin = prm.getText(PRM_ERP_LOGIN);
     String remotePassword = prm.getText(PRM_ERP_PASSWORD);
@@ -2207,16 +2901,18 @@ public class TransportModuleBean implements BeeModule {
               .addFromLeft(TBL_COUNTRIES, sys.joinTables(TBL_COUNTRIES, TBL_CONTACTS, COL_COUNTRY))
               .setWhere(sys.idEquals(TBL_COMPANIES, id)));
 
-          ResponseObject resp = ButentWS.importClient(remoteAddress, remoteLogin, remotePassword,
-              data.getValue(COL_COMPANY_NAME), data.getValue(COL_COMPANY_CODE),
-              data.getValue(COL_COMPANY_VAT_CODE), data.getValue(COL_ADDRESS),
-              data.getValue(COL_POST_INDEX), data.getValue(COL_CITY), data.getValue(COL_COUNTRY));
+          try {
+            String company = ButentWS.connect(remoteNamespace, remoteAddress, remoteLogin,
+                remotePassword)
+                .importClient(data.getValue(COL_COMPANY_NAME), data.getValue(COL_COMPANY_CODE),
+                    data.getValue(COL_COMPANY_VAT_CODE), data.getValue(COL_ADDRESS),
+                    data.getValue(COL_POST_INDEX), data.getValue(COL_CITY),
+                    data.getValue(COL_COUNTRY));
 
-          if (resp.hasErrors()) {
-            response.addErrorsFrom(resp);
-            break;
-          } else {
-            companies.put(id, resp.getResponseAsString());
+            companies.put(id, company);
+
+          } catch (BeeException e) {
+            response.addError(e);
           }
         }
       }
@@ -2275,14 +2971,15 @@ public class TransportModuleBean implements BeeModule {
       if (response.hasErrors()) {
         break;
       }
-      ResponseObject resp = ButentWS.importDoc(remoteAddress, remoteLogin, remotePassword, doc);
-
-      if (resp.hasErrors()) {
-        response.addErrorsFrom(resp);
+      try {
+        ButentWS.connect(remoteNamespace, remoteAddress, remoteLogin, remotePassword)
+            .importDoc(doc);
+      } catch (BeeException e) {
+        response.addError(e);
         break;
       }
       qs.updateData(new SqlUpdate(trade)
-          .addConstant("Exported", System.currentTimeMillis())
+          .addConstant(COL_TRADE_EXPORTED, System.currentTimeMillis())
           .setWhere(sys.idEquals(trade, invoice.getLong(itemsRelation))));
     }
     if (response.hasErrors()) {

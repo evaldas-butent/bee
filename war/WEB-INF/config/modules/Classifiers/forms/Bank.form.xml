@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE Form [
+  <!ENTITY lbl1 "margin-left: 1em; text-align: right; padding-right: 9px;">
+  <!ENTITY inp1 "width: 180px;">
+]>
+<f:Form xmlns="http://www.butent.com/widget"
+  xmlns:f="http://www.butent.com/form"
+  xmlns:xi="http://www.w3.org/2001/XInclude"
+  xmlns:d="http://www.butent.com/decorator"
+
+  name="Bank" viewName="Banks"  caption="=bank"
+  width="875"
+  height="565"
+  >
+  <FlowPanel class="flexBox-vertical">
+    <Table>
+      <row>
+        <Label text="=name" style="&lbl1;" class="bee-required" />
+        <InputText source="Name" style="&inp1;" visible="true" />
+        <Label style="&lbl1;" for="BankCode" />
+        <InputText source="BankCode" style="&inp1;"/>
+        <Label style="&lbl1;" for="SWIFTCode" />
+        <InputText source="SWIFTCode" style="w" upperCase="true" />
+      </row>
+      <row>
+        <Label text="=notes" style="&lbl1;" for="Notes" />
+        <cell colSpan="5">
+          <InputArea source="Notes" style="width: 100%"/>
+        </cell>
+      </row>
+    </Table>
+
+    <Disclosure xmlns="http://www.butent.com/widget" xmlns:xi="http://www.w3.org/2001/XInclude"
+      open="true">
+       <Label text="=contactInfo" style="text-transform: uppercase; " />
+        <FlowPanel class="flexible">
+         <xi:include href="widgets/ContactDetails.widget.xml" />     
+       </FlowPanel>
+    </Disclosure>
+
+  </FlowPanel>
+</f:Form>

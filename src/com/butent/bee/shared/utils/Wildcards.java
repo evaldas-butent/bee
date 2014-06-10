@@ -507,13 +507,9 @@ public final class Wildcards {
 
     boolean sensitive = pattern.isSensitive();
 
-    if (pattern.isExact()) {
+    if (pattern.isExact() || !pattern.hasWildcards()) {
       String xStr = pattern.getExpr();
       return sensitive ? input.equals(xStr) : BeeUtils.same(xStr, input);
-    }
-    if (!pattern.hasWildcards()) {
-      String cStr = pattern.getExpr();
-      return sensitive ? input.contains(cStr) : BeeUtils.containsSame(input, cStr);
     }
 
     String[] tokens = pattern.getTokens();

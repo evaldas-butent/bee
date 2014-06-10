@@ -5,21 +5,19 @@ import com.google.common.collect.Lists;
 import com.butent.bee.shared.Service;
 import com.butent.bee.shared.data.BeeColumn;
 import com.butent.bee.shared.data.value.ValueType;
-import com.butent.bee.shared.i18n.LocalizableConstants;
 import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.i18n.SupportedLocale;
 import com.butent.bee.shared.modules.ParameterType;
 import com.butent.bee.shared.news.Feed;
+import com.butent.bee.shared.rights.RightsObjectType;
+import com.butent.bee.shared.rights.RightsState;
 import com.butent.bee.shared.time.ScheduleDateMode;
 import com.butent.bee.shared.time.WorkdayTransition;
 import com.butent.bee.shared.ui.HasCaption;
-import com.butent.bee.shared.ui.HasLocalizedCaption;
 import com.butent.bee.shared.ui.UserInterface;
 import com.butent.bee.shared.utils.EnumUtils;
 
-import java.util.EnumSet;
 import java.util.List;
-import java.util.Set;
 
 public final class AdministrationConstants {
 
@@ -33,96 +31,6 @@ public final class AdministrationConstants {
       new BeeColumn(ValueType.TEXT, AdministrationConstants.AUDIT_FLD_FIELD, false),
       new BeeColumn(ValueType.TEXT, AdministrationConstants.AUDIT_FLD_VALUE, true),
       new BeeColumn(ValueType.TEXT, AdministrationConstants.COL_RELATION, true));
-
-  public enum RightsObjectType implements HasLocalizedCaption {
-    FIELD(EnumSet.of(RightsState.VIEW, RightsState.EDIT)) {
-      @Override
-      public String getCaption(LocalizableConstants constants) {
-        return constants.objectField();
-      }
-    },
-    WIDGET(EnumSet.of(RightsState.VIEW)) {
-      @Override
-      public String getCaption(LocalizableConstants constants) {
-        return constants.objectWidget();
-      }
-    },
-    DATA(EnumSet.allOf(RightsState.class)) {
-      @Override
-      public String getCaption(LocalizableConstants constants) {
-        return constants.objectData();
-      }
-    },
-    MENU(EnumSet.of(RightsState.VIEW)) {
-      @Override
-      public String getCaption(LocalizableConstants constants) {
-        return constants.objectMenu();
-      }
-    },
-    MODULE(EnumSet.of(RightsState.VIEW)) {
-      @Override
-      public String getCaption(LocalizableConstants constants) {
-        return constants.objectModule();
-      }
-    };
-
-    private final Set<RightsState> registeredStates;
-
-    private RightsObjectType(Set<RightsState> states) {
-      this.registeredStates = states;
-    }
-
-    @Override
-    public String getCaption() {
-      return getCaption(Localized.getConstants());
-    }
-
-    public Set<RightsState> getRegisteredStates() {
-      return registeredStates;
-    }
-  }
-
-  public enum RightsState implements HasLocalizedCaption {
-    VIEW(true) {
-      @Override
-      public String getCaption(LocalizableConstants constants) {
-        return constants.rightStateView();
-      }
-    },
-    CREATE(true) {
-      @Override
-      public String getCaption(LocalizableConstants constants) {
-        return constants.rightStateCreate();
-      }
-    },
-    EDIT(true) {
-      @Override
-      public String getCaption(LocalizableConstants constants) {
-        return constants.rightStateEdit();
-      }
-    },
-    DELETE(true) {
-      @Override
-      public String getCaption(LocalizableConstants constants) {
-        return constants.rightStateDelete();
-      }
-    };
-
-    private final boolean checked;
-
-    private RightsState(boolean checked) {
-      this.checked = checked;
-    }
-
-    @Override
-    public String getCaption() {
-      return getCaption(Localized.getConstants());
-    }
-
-    public boolean isChecked() {
-      return checked;
-    }
-  }
 
   public enum ReminderMethod implements HasCaption {
     EMAIL, SMS;
@@ -188,6 +96,8 @@ public final class AdministrationConstants {
   public static final String VAR_DATE_LOW = Service.RPC_VAR_PREFIX + "date_low";
   public static final String VAR_DATE_HIGH = Service.RPC_VAR_PREFIX + "date_high";
 
+  public static final String VAR_BASE_ROLE = Service.RPC_VAR_PREFIX + "base_role";
+
   public static final String SVC_GET_CURRENT_EXCHANGE_RATE = "get_current_exchange_rate";
   public static final String SVC_GET_EXCHANGE_RATE = "get_exchange_rate";
   public static final String SVC_GET_LIST_OF_CURRENCIES = "get_list_of_currencies";
@@ -198,6 +108,7 @@ public final class AdministrationConstants {
 
   public static final String SVC_BLOCK_HOST = "block_host";
   public static final String SVC_CREATE_USER = "create_user";
+  public static final String SVC_COPY_RIGHTS = "copy_rights";
 
   public static final String AUDIT_SUFFIX = "AUDIT";
   public static final String AUDIT_USER = "bee.user";
@@ -223,12 +134,14 @@ public final class AdministrationConstants {
   public static final String TBL_REMINDER_TYPES = "ReminderTypes";
 
   public static final String TBL_RELATIONS = "Relations";
-  public static final String TBL_FAVORITES = "Favorites";
 
   public static final String TBL_IP_FILTERS = "IpFilters";
 
   public static final String TBL_CURRENCIES = "Currencies";
   public static final String TBL_CURRENCY_RATES = "CurrencyRates";
+
+  public static final String TBL_DEPARTMENTS = "Departments";
+  public static final String TBL_DEPARTMENT_EMPLOYEES = "DepartmentEmployees";
 
   public static final String TBL_AUTOCOMPLETE = "Autocomplete";
 
@@ -245,6 +158,8 @@ public final class AdministrationConstants {
   public static final String VIEW_CURRENCIES = "Currencies";
   public static final String VIEW_CURRENCY_RATES = "CurrencyRates";
 
+  public static final String VIEW_RELATIONS = "Relations";
+
   public static final String VIEW_IP_FILTERS = "IpFilters";
 
   public static final String VIEW_AUTOCOMPLETE = "Autocomplete";
@@ -257,6 +172,10 @@ public final class AdministrationConstants {
   public static final String VIEW_USER_PARAMETERS = "UserParameters";
 
   public static final String VIEW_FILTERS = "Filters";
+
+  public static final String VIEW_FAVORITES = "Favorites";
+  public static final String VIEW_WORKSPACES = "Workspaces";
+  public static final String VIEW_REPORT_SETTINGS = "ReportSettings";
 
   public static final String GRID_HISTORY = "History";
   public static final String GRID_USER_GROUP_MEMBERS = "UserGroupMembers";
@@ -290,13 +209,15 @@ public final class AdministrationConstants {
   public static final String COL_OBJECT_NAME = "Name";
   public static final String COL_STATE = "State";
 
+  public static final String COL_FILE = "File";
   public static final String COL_FILE_NAME = "Name";
   public static final String COL_FILE_HASH = "Hash";
   public static final String COL_FILE_REPO = "Repository";
   public static final String COL_FILE_SIZE = "Size";
   public static final String COL_FILE_TYPE = "Type";
-  public static final String COL_FILE_FILE = "File";
   public static final String COL_FILE_PART = "Part";
+
+  public static final String COL_FILE_CAPTION = "Caption";
 
   public static final String COL_REMINDER_NAME = "Name";
   public static final String COL_REMINDER_METHOD = "Method";
@@ -343,6 +264,15 @@ public final class AdministrationConstants {
   public static final String COL_UG_GROUP = "Group";
   public static final String COL_UG_USER = "User";
 
+  public static final String COL_DEPARTMENT = "Department";
+  public static final String COL_DEPARTMENT_NAME = "DepartmentName";
+  public static final String COL_DEPARTMENT_HEAD = "DepartmentHead";
+
+  public static final String COL_RS_REPORT = "Report";
+  public static final String COL_RS_USER = "User";
+  public static final String COL_RS_CAPTION = "Caption";
+  public static final String COL_RS_PARAMETERS = "Parameters";
+
   public static final String ALS_FILE_NAME = "FileName";
   public static final String ALS_FILE_SIZE = "FileSize";
   public static final String ALS_FILE_TYPE = "FileType";
@@ -355,9 +285,19 @@ public final class AdministrationConstants {
   public static final String ALS_OBJECT_TYPE = "ObjectType";
   public static final String ALS_OBJECT_NAME = "ObjectName";
 
+  public static final String ALS_CURRENCY_NAME = "CurrencyName";
+
+  public static final String FORM_USER = "User";
+  public static final String FORM_DEPARTMENT = "Department";
+  public static final String FORM_NEW_ROLE = "NewRole";
+
   public static final String PRM_SQL_MESSAGES = "SQLMessages";
+
+  public static final String PRM_COMPANY = "CompanyName";
+  public static final String PRM_CURRENCY = "MainCurrency";
   public static final String PRM_VAT_PERCENT = "VATPercent";
 
+  public static final String PRM_ERP_NAMESPACE = "ERPNamespace";
   public static final String PRM_ERP_ADDRESS = "ERPAddress";
   public static final String PRM_ERP_LOGIN = "ERPLogin";
   public static final String PRM_ERP_PASSWORD = "ERPPassword";

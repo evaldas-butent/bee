@@ -21,13 +21,13 @@ import com.butent.bee.client.widget.InputText;
 import com.butent.bee.client.widget.Label;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.data.BeeColumn;
+import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.filter.ColumnValueFilter;
 import com.butent.bee.shared.data.filter.CompoundFilter;
 import com.butent.bee.shared.data.filter.Filter;
 import com.butent.bee.shared.data.filter.FilterParser;
 import com.butent.bee.shared.data.filter.FilterValue;
 import com.butent.bee.shared.data.filter.Operator;
-import com.butent.bee.shared.data.value.TextValue;
 import com.butent.bee.shared.data.value.ValueType;
 import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.utils.BeeUtils;
@@ -41,11 +41,11 @@ public class ValueFilterSupplier extends AbstractFilterSupplier {
   private static final Splitter valueSplitter =
       Splitter.on(BeeConst.CHAR_COMMA).omitEmptyStrings().trimResults();
 
-  private final List<BeeColumn> columns;
+  private final List<BeeColumn> columns = Lists.newArrayList();
   private final String idColumnName;
   private final String versionColumnName;
 
-  private final List<String> searchBy = Lists.newArrayList();
+  private final List<BeeColumn> searchBy = Lists.newArrayList();
 
   private final InputText editor;
   private final Label errorMessage;
@@ -56,18 +56,24 @@ public class ValueFilterSupplier extends AbstractFilterSupplier {
 
   public ValueFilterSupplier(String viewName, List<BeeColumn> columns,
       String idColumnName, String versionColumnName, BeeColumn column, String label,
-      List<String> searchColumns, String options) {
+      List<BeeColumn> searchColumns, String options) {
 
     super(viewName, column, label, options);
 
-    this.columns = columns;
+    this.columns.addAll(columns);
     this.idColumnName = idColumnName;
     this.versionColumnName = versionColumnName;
 
     if (BeeUtils.isEmpty(searchColumns)) {
-      searchBy.add(column.getId());
+      searchBy.add(column);
     } else {
       searchBy.addAll(searchColumns);
+    }
+    
+    for (BeeColumn by : searchBy) {
+      if (!DataUtils.contains(columns, by.getId())) {
+        this.columns.add(by);
+      }
     }
 
     this.editor = new InputText();
@@ -201,8 +207,8 @@ public class ValueFilterSupplier extends AbstractFilterSupplier {
 
     } else {
       CompoundFilter filter = Filter.or();
-      for (String by : searchBy) {
-        filter.add(ColumnValueFilter.compareWithValue(by, operator, new TextValue(value)));
+      for (BeeColumn by : searchBy) {
+        filter.add(ColumnValueFilter.compareWithValue(by, operator, value));
       }
       return filter;
     }
@@ -231,8 +237,8 @@ public class ValueFilterSupplier extends AbstractFilterSupplier {
 
     } else {
       CompoundFilter filter = Filter.and();
-      for (String by : searchBy) {
-        filter.add(Filter.isNull(by));
+      for (BeeColumn by : searchBy) {
+        filter.add(Filter.isNull(by.getId()));
       }
       return filter;
     }
@@ -244,16 +250,16 @@ public class ValueFilterSupplier extends AbstractFilterSupplier {
 
     } else {
       CompoundFilter filter = Filter.or();
-      for (String by : searchBy) {
-        filter.add(Filter.notNull(by));
+      for (BeeColumn by : searchBy) {
+        filter.add(Filter.notNull(by.getId()));
       }
       return filter;
     }
   }
 
   private boolean containsColumnName(String input) {
-    for (String by : searchBy) {
-      if (BeeUtils.containsSame(input, by)) {
+    for (BeeColumn by : searchBy) {
+      if (BeeUtils.containsSame(input, by.getId())) {
         return true;
       }
     }

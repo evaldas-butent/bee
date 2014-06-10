@@ -15,7 +15,6 @@ import com.butent.bee.client.screen.Domain;
 import com.butent.bee.client.style.StyleUtils;
 import com.butent.bee.client.ui.FormDescription;
 import com.butent.bee.client.ui.FormFactory;
-import com.butent.bee.client.ui.FormFactory.FormInterceptor;
 import com.butent.bee.client.ui.UiOption;
 import com.butent.bee.client.utils.Command;
 import com.butent.bee.client.utils.Evaluator;
@@ -23,6 +22,7 @@ import com.butent.bee.client.view.add.AddEndEvent;
 import com.butent.bee.client.view.add.AddStartEvent;
 import com.butent.bee.client.view.form.FormImpl;
 import com.butent.bee.client.view.form.FormView;
+import com.butent.bee.client.view.form.interceptor.FormInterceptor;
 import com.butent.bee.client.view.navigation.PagerView;
 import com.butent.bee.client.view.search.SearchView;
 import com.butent.bee.client.widget.Image;
@@ -37,6 +37,7 @@ import com.butent.bee.shared.utils.BeeUtils;
 import java.util.Collection;
 import java.util.EnumSet;
 import java.util.List;
+import java.util.Set;
 
 /**
  * Handles such visible components of forms as header and footer.
@@ -93,12 +94,18 @@ public class FormContainerImpl extends Split implements FormContainerView, HasNa
     setInitialRowCount(rowCount);
 
     setHasSearch(hasData());
+    
+    Set<Action> enabledActions = formDescription.getEnabledActions();
+    Set<Action> disabledActions = formDescription.getDisabledActions();
+    
+    if (!disabledActions.contains(Action.PRINT)) {
+      enabledActions.add(Action.PRINT);
+    }
 
     HeaderView header = new HeaderImpl();
     header.create(formDescription.getCaption(), hasData(), formDescription.isReadOnly(),
         formDescription.getViewName(), EnumSet.of(UiOption.ROOT),
-        formDescription.getEnabledActions(), formDescription.getDisabledActions(),
-        Action.NO_ACTIONS);
+        enabledActions, disabledActions, Action.NO_ACTIONS);
 
     FormView content = new FormImpl(formDescription.getName());
     content.create(formDescription, null, dataColumns, true, interceptor);
@@ -248,8 +255,7 @@ public class FormContainerImpl extends Split implements FormContainerView, HasNa
 
   @Override
   public String getSupplierKey() {
-    return FormFactory
-        .getSupplierKey(getContent().getFormName(), getContent().getFormInterceptor());
+    return FormFactory.getSupplierKey(getContent().getFormName());
   }
 
   @Override

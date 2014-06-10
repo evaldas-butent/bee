@@ -32,6 +32,7 @@ import com.butent.bee.client.screen.TilePanel.Tile;
 import com.butent.bee.client.style.StyleUtils;
 import com.butent.bee.client.ui.HasProgress;
 import com.butent.bee.client.ui.IdentifiableWidget;
+import com.butent.bee.client.ui.UiHelper;
 import com.butent.bee.client.utils.BrowsingContext;
 import com.butent.bee.client.widget.FaLabel;
 import com.butent.bee.client.widget.Image;
@@ -140,7 +141,12 @@ public class ScreenImpl implements Screen {
   @Override
   public void closeWidget(IdentifiableWidget widget) {
     Assert.notNull(widget, "closeWidget: widget is null");
-    getWorkspace().closeWidget(widget);
+
+    if (UiHelper.isModal(widget.asWidget())) {
+      UiHelper.closeDialog(widget.asWidget());
+    } else {
+      getWorkspace().closeWidget(widget);
+    }
   }
 
   @Override
@@ -192,7 +198,7 @@ public class ScreenImpl implements Screen {
   public List<IdentifiableWidget> getOpenWidgets() {
     return getWorkspace().getOpenWidgets();
   }
-  
+
   @Override
   public Split getScreenPanel() {
     return screenPanel;
@@ -242,7 +248,14 @@ public class ScreenImpl implements Screen {
   @Override
   public void onLoad() {
     Global.getSearch().focus();
-    
+
+    if (!Global.getSpaces().isEmpty() && !containsDomainEntry(Domain.WORKSPACES, null)) {
+      addDomainEntry(Domain.WORKSPACES, Global.getSpaces().getPanel(), null, null);
+    }
+    if (!Global.getReportSettings().isEmpty() && !containsDomainEntry(Domain.REPORTS, null)) {
+      addDomainEntry(Domain.REPORTS, Global.getReportSettings().getPanel(), null, null);
+    }
+
     if (Global.getNewsAggregator().hasNews()) {
       activateDomainEntry(Domain.NEWS, null);
     }
@@ -253,7 +266,7 @@ public class ScreenImpl implements Screen {
     Assert.notNull(widget, "onWidgetChange: widget is null");
     getWorkspace().onWidgetChange(widget);
   }
-  
+
   @Override
   public boolean removeDomainEntry(Domain domain, Long key) {
     if (getCentralScrutinizer() == null) {
@@ -278,17 +291,20 @@ public class ScreenImpl implements Screen {
   }
 
   @Override
+  public void restore(String input, boolean append) {
+    if (getWorkspace() != null) {
+      getWorkspace().restore(input, append);
+    }
+  }
+
+  @Override
   public void showInfo() {
     getWorkspace().showInfo();
   }
 
   @Override
-  public void showWidget(IdentifiableWidget widget, boolean newPlace) {
-    if (newPlace) {
-      getWorkspace().openInNewPlace(widget);
-    } else {
-      getWorkspace().updateActivePanel(widget);
-    }
+  public void showInNewPlace(IdentifiableWidget widget) {
+    getWorkspace().openInNewPlace(widget);
   }
 
   @Override
@@ -308,14 +324,14 @@ public class ScreenImpl implements Screen {
       if (getCentralScrutinizer() != null && getWorkspace() != null) {
         getWorkspace().addActiveWidgetChangeHandler(getCentralScrutinizer());
       }
-      
+
       Previewer.registerMouseDownPriorHandler(getWorkspace());
     }
   }
 
   @Override
   public void updateActivePanel(IdentifiableWidget widget) {
-    showWidget(widget, false);
+    getWorkspace().updateActivePanel(widget);
   }
 
   @Override
@@ -469,7 +485,7 @@ public class ScreenImpl implements Screen {
     BodyPanel.get().add(p);
     setScreenPanel(p);
   }
-  
+
   protected Widget createUserContainer() {
     Horizontal userContainer = new Horizontal();
 
@@ -600,8 +616,8 @@ public class ScreenImpl implements Screen {
 
     Flow panel = new Flow();
     panel.add(getCentralScrutinizer());
-    panel.add(createCopyright("bee-"));
-    
+    panel.add(createCopyright(StyleUtils.CLASS_NAME_PREFIX));
+
     int width = BeeUtils.resize(Window.getClientWidth(), 1000, 2000, 240, 320);
     return Pair.of(panel, width);
   }

@@ -7,6 +7,7 @@ import com.butent.bee.client.presenter.GridPresenter;
 import com.butent.bee.client.ui.IdentifiableWidget;
 import com.butent.bee.client.ui.FormFactory.WidgetDescriptionCallback;
 import com.butent.bee.client.view.grid.interceptor.AbstractGridInterceptor;
+import com.butent.bee.client.view.grid.interceptor.GridInterceptor;
 import com.butent.bee.client.widget.InputBoolean;
 import com.butent.bee.shared.data.filter.ColumnNotNullFilter;
 import com.butent.bee.shared.data.filter.Filter;
@@ -22,6 +23,11 @@ public class RequestsGridInterceptor extends AbstractGridInterceptor {
 
   private InputBoolean registred;
   private InputBoolean finished;
+
+  @Override
+  public void afterCreatePresenter(GridPresenter presenter) {
+    presenter.handleAction(Action.REFRESH);
+  }
 
   @Override
   public void afterCreateWidget(String name, IdentifiableWidget widget,
@@ -54,8 +60,8 @@ public class RequestsGridInterceptor extends AbstractGridInterceptor {
   }
 
   @Override
-  public void onShow(GridPresenter presenter) {
-    presenter.handleAction(Action.REFRESH);
+  public GridInterceptor getInstance() {
+    return new RequestsGridInterceptor();
   }
 
   private Filter getFilter() {

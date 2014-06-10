@@ -81,7 +81,7 @@ public class ColorEditor extends Flow implements Editor, HasTextBox, HasKeyDownH
     textBox.addKeyPressHandler(new KeyPressHandler() {
       @Override
       public void onKeyPress(KeyPressEvent event) {
-        if (event.getCharCode() == BeeConst.CHAR_ALL) {
+        if (event.getCharCode() == BeeConst.CHAR_ASTERISK) {
           event.preventDefault();
           event.stopPropagation();
 
@@ -305,7 +305,7 @@ public class ColorEditor extends Flow implements Editor, HasTextBox, HasKeyDownH
   public void startEdit(String oldValue, char charCode, EditorAction onEntry,
       Element sourceElement) {
 
-    if (charCode == BeeConst.CHAR_ALL) {
+    if (charCode == BeeConst.CHAR_ASTERISK) {
       setValue(oldValue);
       openPicker();
     } else {

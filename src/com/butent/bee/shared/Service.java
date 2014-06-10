@@ -12,9 +12,9 @@ public final class Service {
   public static final String PROPERTY_MODULES = "Modules";
 
   public static final String RPC_SERVICE_PREFIX = "rpc_";
-  public static final String UI_SERVICE_PREFIX = "ui_";
   public static final String COMPOSITE_SERVICE_PREFIX = "comp_";
-  public static final String UPLOAD_SERVICE_PREFIX = "upd_";
+  public static final String UPLOAD_SERVICE_PREFIX = "upl_";
+  public static final String EXPORT_SERVICE_PREFIX = "exp_";
 
   public static final String DB_SERVICE_PREFIX = RPC_SERVICE_PREFIX + "db_";
   public static final String DB_JDBC = DB_SERVICE_PREFIX + "jdbc";
@@ -43,10 +43,6 @@ public final class Service {
 
   public static final String WHERE_AM_I = RPC_SERVICE_PREFIX + "where_am_i";
 
-  public static final String OPEN_FAVORITE = UI_SERVICE_PREFIX + "open_favorite";
-  public static final String EDIT_ROW = UI_SERVICE_PREFIX + "edit_row";
-  public static final String CELL_ACTION = UI_SERVICE_PREFIX + "cell_action";
-
   public static final String DATA_SERVICE_PREFIX = RPC_SERVICE_PREFIX + "data_";
 
   public static final String GET_GRID = DATA_SERVICE_PREFIX + "get_grid";
@@ -71,15 +67,13 @@ public final class Service {
   public static final String UPDATE = DATA_SERVICE_PREFIX + "update";
   public static final String INSERT_ROW = DATA_SERVICE_PREFIX + "insert_row";
   public static final String INSERT_ROWS = DATA_SERVICE_PREFIX + "insert_rows";
+  public static final String INSERT_ROW_SILENTLY = DATA_SERVICE_PREFIX + "insert_row_silently";
   public static final String SEARCH = DATA_SERVICE_PREFIX + "search";
   public static final String HISTOGRAM = DATA_SERVICE_PREFIX + "histogram";
   public static final String GET_RELATED_VALUES = DATA_SERVICE_PREFIX + "get_related_values";
   public static final String UPDATE_RELATED_VALUES = DATA_SERVICE_PREFIX + "update_related_values";
 
-  public static final String IMPORT_OSAMA_TIEKEJAI = DATA_SERVICE_PREFIX + "import_osama_tiekejai";
-  public static final String IMPORT_OSAMA_DARBUOTOJIAI = DATA_SERVICE_PREFIX + "import_osama_darb";
-  public static final String IMPORT_OSAMA_PREK_SIST = DATA_SERVICE_PREFIX
-      + "import_osama_prek_sist";
+  public static final String IMPORT_CSV_COMPANIES = DATA_SERVICE_PREFIX + "import_csv_companies";
 
   public static final String GET_DSNS = DATA_SERVICE_PREFIX + "get_dsns";
   public static final String SWITCH_DSN = DATA_SERVICE_PREFIX + "switch_dsn";
@@ -95,6 +89,15 @@ public final class Service {
   public static final String GET_ROLE_RIGHTS = DATA_SERVICE_PREFIX + "get_role_rights";
   public static final String SET_STATE_RIGHTS = DATA_SERVICE_PREFIX + "set_state_rights";
   public static final String SET_ROLE_RIGHTS = DATA_SERVICE_PREFIX + "set_role_rights";
+
+  public static final String SET_ROW_RIGHTS = DATA_SERVICE_PREFIX + "set_row_rights";
+
+  public static final String UPLOAD_FILE = UPLOAD_SERVICE_PREFIX + "file";
+  public static final String UPLOAD_TEMP_FILE = UPLOAD_SERVICE_PREFIX + "temp_file";
+  public static final String UPLOAD_PHOTO = UPLOAD_SERVICE_PREFIX + "photo";
+  public static final String DELETE_PHOTO = UPLOAD_SERVICE_PREFIX + "delete_photo";
+
+  public static final String EXPORT_WORKBOOK = EXPORT_SERVICE_PREFIX + "workbook";
 
   public static final String RPC_VAR_PREFIX = "bee_";
   public static final String RPC_VAR_SYS_PREFIX = RPC_VAR_PREFIX + "sys_";
@@ -168,15 +171,6 @@ public final class Service {
 
   public static final String VAR_CHILDREN = RPC_VAR_PREFIX + "children";
 
-  public static final String XML_TAG_DATA = RPC_VAR_PREFIX + "data";
-
-  public static final String VIEW_COLUMN_SEPARATOR = " ";
-
-  public static final String UPLOAD_FILE = UPLOAD_SERVICE_PREFIX + "file";
-  public static final String UPLOAD_TEMP_FILE = UPLOAD_SERVICE_PREFIX + "temp_file";
-  public static final String UPLOAD_PHOTO = UPLOAD_SERVICE_PREFIX + "photo";
-  public static final String DELETE_PHOTO = UPLOAD_SERVICE_PREFIX + "delete_photo";
-
   public static final String VAR_FILE_ID = RPC_VAR_PREFIX + "file_id";
   public static final String VAR_FILE_NAME = RPC_VAR_PREFIX + "file_name";
   public static final String VAR_FILE_TYPE = RPC_VAR_PREFIX + "file_type";
@@ -192,6 +186,15 @@ public final class Service {
   public static final String VAR_FEED = RPC_VAR_PREFIX + "feed";
 
   public static final String VAR_RIGHTS = RPC_VAR_PREFIX + "rights";
+
+  public static final String VAR_FROM = RPC_VAR_PREFIX + "from";
+  public static final String VAR_TO = RPC_VAR_PREFIX + "to";
+  public static final String VAR_GROUP_BY = RPC_VAR_PREFIX + "group_by";
+  public static final String VAR_OPERATOR = RPC_VAR_PREFIX + "operator";
+
+  public static final String VAR_DATA = RPC_VAR_PREFIX + "data";
+
+  public static final String VIEW_COLUMN_SEPARATOR = " ";
 
   /**
    * Returns true if {@code svc} value starts with {@link #DATA_SERVICE_PREFIX}.

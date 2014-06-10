@@ -1,6 +1,8 @@
 package com.butent.bee.server.data;
 
+import com.butent.bee.server.modules.ParamHolderBean;
 import com.butent.bee.shared.data.Defaults;
+import com.butent.bee.shared.modules.administration.AdministrationConstants;
 
 import javax.ejb.EJB;
 import javax.ejb.LocalBean;
@@ -14,6 +16,8 @@ public class ServerDefaults extends Defaults {
   UserServiceBean usr;
   @EJB
   QueryServiceBean qs;
+  @EJB
+  ParamHolderBean prm;
 
   @Override
   public Object getValue(DefaultExpression defExpr, Object defValue) {
@@ -35,6 +39,10 @@ public class ServerDefaults extends Defaults {
         case NEXT_NUMBER:
           String prefix = (defValue == null) ? null : defValue.toString().trim();
           value = qs.getNextNumber(tblName, fldName, prefix, null);
+          break;
+
+        case MAIN_CURRENCY:
+          value = prm.getRelation(AdministrationConstants.PRM_CURRENCY);
           break;
 
         default:

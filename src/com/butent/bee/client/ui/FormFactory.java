@@ -4,8 +4,6 @@ import com.google.common.collect.HashMultimap;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Multimap;
-import com.google.gwt.core.client.Scheduler;
-import com.google.gwt.event.shared.HasHandlers;
 import com.google.gwt.xml.client.Document;
 import com.google.gwt.xml.client.Element;
 import com.google.gwt.xml.client.XMLParser;
@@ -13,41 +11,27 @@ import com.google.gwt.xml.client.XMLParser;
 import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.Callback;
 import com.butent.bee.client.communication.ResponseCallback;
-import com.butent.bee.client.data.HasActiveRow;
 import com.butent.bee.client.data.Queries;
 import com.butent.bee.client.presenter.FormPresenter;
 import com.butent.bee.client.presenter.Presenter;
 import com.butent.bee.client.presenter.PresenterCallback;
-import com.butent.bee.client.render.AbstractCellRenderer;
-import com.butent.bee.client.screen.HandlesStateChange;
-import com.butent.bee.client.screen.HasDomain;
 import com.butent.bee.client.utils.XmlUtils;
-import com.butent.bee.client.view.HasGridView;
-import com.butent.bee.client.view.HeaderView;
-import com.butent.bee.client.view.add.ReadyForInsertEvent;
-import com.butent.bee.client.view.edit.EditableWidget;
-import com.butent.bee.client.view.edit.SaveChangesEvent;
 import com.butent.bee.client.view.form.FormImpl;
 import com.butent.bee.client.view.form.FormView;
+import com.butent.bee.client.view.form.interceptor.FormInterceptor;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.HasItems;
 import com.butent.bee.shared.Pair;
 import com.butent.bee.shared.Service;
-import com.butent.bee.shared.State;
 import com.butent.bee.shared.communication.ResponseObject;
 import com.butent.bee.shared.data.BeeColumn;
 import com.butent.bee.shared.data.BeeRowSet;
 import com.butent.bee.shared.data.DataUtils;
-import com.butent.bee.shared.data.HasViewName;
-import com.butent.bee.shared.data.IsRow;
 import com.butent.bee.shared.data.ProviderType;
 import com.butent.bee.shared.data.cache.CachingPolicy;
 import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogUtils;
-import com.butent.bee.shared.time.DateTime;
-import com.butent.bee.shared.time.JustDate;
-import com.butent.bee.shared.ui.Action;
 import com.butent.bee.shared.ui.EditorDescription;
 import com.butent.bee.shared.ui.EditorType;
 import com.butent.bee.shared.ui.UiConstants;
@@ -64,82 +48,6 @@ import java.util.Map;
  */
 
 public final class FormFactory {
-
-  public interface FormInterceptor extends WidgetInterceptor, HasGridView, HandlesStateChange,
-      HasDomain, HasActiveRow, HasViewName {
-
-    void afterAction(Action action, Presenter presenter);
-
-    void afterCreate(FormView form);
-
-    void afterCreateEditableWidget(EditableWidget editableWidget, IdentifiableWidget widget);
-
-    void afterInsertRow(IsRow result, boolean forced);
-
-    void afterRefresh(FormView form, IsRow row);
-
-    void afterStateChange(State state, boolean modal);
-
-    void afterUpdateRow(IsRow result);
-
-    boolean beforeAction(Action action, Presenter presenter);
-
-    void beforeRefresh(FormView form, IsRow row);
-
-    void beforeStateChange(State state, boolean modal);
-
-    boolean focusSource(String source);
-
-    long getActiveRowId();
-
-    int getDataIndex(String source);
-
-    DateTime getDateTimeValue(String source);
-
-    FormView getFormView();
-
-    HeaderView getHeaderView();
-
-    FormInterceptor getInstance();
-
-    Integer getIntegerValue(String source);
-
-    JustDate getDateValue(String source);
-
-    Long getLongValue(String source);
-
-    AbstractCellRenderer getRenderer(WidgetDescription widgetDescription);
-
-    BeeRowSet getRowSet();
-
-    String getStringValue(String source);
-
-    boolean hasFooter(int rowCount);
-
-    void notifyRequired(String message);
-
-    void onClose(List<String> messages, IsRow oldRow, IsRow newRow);
-
-    void onLoad(FormView form);
-
-    void onReadyForInsert(HasHandlers listener, ReadyForInsertEvent event);
-
-    void onSaveChanges(HasHandlers listener, SaveChangesEvent event);
-
-    void onSetActiveRow(IsRow row);
-
-    void onShow(Presenter presenter);
-
-    void onStart(FormView form);
-
-    boolean onStartEdit(FormView form, IsRow row, Scheduler.ScheduledCommand focusCommand);
-
-    void onStartNewRow(FormView form, IsRow oldRow, IsRow newRow);
-
-    void onUnload(FormView form);
-
-    void setFormView(FormView form);
-  }
 
   public abstract static class FormViewCallback {
     public void onFailure(String... reason) {
@@ -355,13 +263,9 @@ public final class FormFactory {
     return info;
   }
 
-  public static String getSupplierKey(String formName, FormInterceptor formInterceptor) {
-    String key = (formInterceptor == null) ? null : formInterceptor.getSupplierKey();
-    if (BeeUtils.isEmpty(key)) {
-      Assert.notEmpty(formName);
-      key = "form_" + BeeUtils.normalize(formName);
-    }
-    return key;
+  public static String getSupplierKey(String formName) {
+    Assert.notEmpty(formName);
+    return WidgetFactory.SupplierKind.FORM.getKey(formName);
   }
 
   public static FormWidget getWidgetType(BeeColumn column) {
@@ -445,10 +349,9 @@ public final class FormFactory {
   }
 
   public static void openForm(final String formName, final FormInterceptor formInterceptor) {
+    String supplierKey = getSupplierKey(formName);
 
-    String supplierKey = getSupplierKey(formName, formInterceptor);
     if (!WidgetFactory.hasSupplier(supplierKey)) {
-
       WidgetSupplier supplier = new WidgetSupplier() {
         @Override
         public void create(final Callback<IdentifiableWidget> callback) {

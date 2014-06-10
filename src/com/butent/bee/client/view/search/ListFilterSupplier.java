@@ -29,7 +29,7 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Set;
 
-// TODO deep relations, ex. CargoCreditIncomes.OrderNo
+// TODO deep relations, ex. CargoCreditSales.OrderNo
 
 public class ListFilterSupplier extends AbstractFilterSupplier {
 
@@ -185,7 +185,7 @@ public class ListFilterSupplier extends AbstractFilterSupplier {
     clearDisplay();
     super.doClear();
   }
-  
+
   @Override
   protected void doCommit() {
     if (isSelectionEmpty()) {
@@ -244,7 +244,7 @@ public class ListFilterSupplier extends AbstractFilterSupplier {
         filters.add(Filter.isEqual(columnId, Value.parseValue(getColumnType(), value, false)));
       }
     }
-    
+
     return Filter.or(filters);
   }
 

@@ -3,36 +3,56 @@ package com.butent.bee.client.modules.classifiers;
 import com.google.gwt.event.logical.shared.SelectionEvent;
 import com.google.gwt.event.logical.shared.SelectionHandler;
 
+import static com.butent.bee.shared.modules.classifiers.ClassifierConstants.*;
+
 import com.butent.bee.client.data.Data;
-import com.butent.bee.client.presenter.GridPresenter;
 import com.butent.bee.client.ui.FormFactory.WidgetDescriptionCallback;
 import com.butent.bee.client.ui.IdentifiableWidget;
 import com.butent.bee.client.view.TreeView;
 import com.butent.bee.client.view.grid.interceptor.AbstractGridInterceptor;
+import com.butent.bee.client.view.grid.interceptor.GridInterceptor;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.data.IsRow;
 import com.butent.bee.shared.data.filter.Filter;
 import com.butent.bee.shared.i18n.Localized;
-import com.butent.bee.shared.modules.classifiers.ClassifierConstants;
 import com.butent.bee.shared.ui.GridDescription;
 import com.butent.bee.shared.utils.BeeUtils;
+
+import java.util.List;
 
 class ItemsGrid extends AbstractGridInterceptor implements SelectionHandler<IsRow> {
 
   private static final String FILTER_KEY = "f1";
+
+  static String getSupplierKey(boolean services) {
+    return BeeUtils.join(BeeConst.STRING_UNDER, GRID_ITEMS, services ? "services" : "goods");
+  }
+  
+  private static Filter getFilter(Long category) {
+    if (category == null) {
+      return null;
+    } else {
+      return Filter.in(Data.getIdColumn(VIEW_ITEMS),
+          VIEW_ITEM_CATEGORIES, COL_ITEM, Filter.equals(COL_CATEGORY, category));
+    }
+  }
+
   private final boolean services;
 
+  private TreeView treeView;
   private IsRow selectedCategory;
 
-  ItemsGrid(boolean showServices) {
-    this.services = showServices;
+  ItemsGrid(boolean services) {
+    this.services = services;
   }
 
   @Override
   public void afterCreateWidget(String name, IdentifiableWidget widget,
       WidgetDescriptionCallback callback) {
-    if (widget instanceof TreeView && BeeUtils.same(name, "Categories")) {
-      ((TreeView) widget).addSelectionHandler(this);
+
+    if (widget instanceof TreeView) {
+      setTreeView((TreeView) widget);
+      getTreeView().addSelectionHandler(this);
     }
   }
 
@@ -42,6 +62,20 @@ class ItemsGrid extends AbstractGridInterceptor implements SelectionHandler<IsRo
       return Localized.getConstants().services();
     } else {
       return Localized.getConstants().goods();
+    }
+  }
+
+  @Override
+  public GridInterceptor getInstance() {
+    return new ItemsGrid(services);
+  }
+  
+  @Override
+  public List<String> getParentLabels() {
+    if (getSelectedCategory() == null || getTreeView() == null) {
+      return super.getParentLabels();
+    } else {
+      return getTreeView().getPathLabels(getSelectedCategory().getId(), COL_CATEGORY_NAME);
     }
   }
 
@@ -56,20 +90,16 @@ class ItemsGrid extends AbstractGridInterceptor implements SelectionHandler<IsRo
   }
 
   @Override
-  public String getSupplierKey() {
-    return BeeUtils.normalize(BeeUtils.join(BeeConst.STRING_UNDER, "grid",
-        ClassifierConstants.TBL_ITEMS, getCaption()));
-  }
-
-  @Override
-  public boolean onLoad(GridDescription gridDescription) {
+  public boolean initDescription(GridDescription gridDescription) {
     gridDescription.setCaption(null);
 
-    Filter filter = Filter.isNull(ClassifierConstants.COL_ITEM_IS_SERVICE);
-
+    Filter filter;
     if (showServices()) {
-      filter = Filter.isNot(filter);
+      filter = Filter.notNull(COL_ITEM_IS_SERVICE);
+    } else {
+      filter = Filter.isNull(COL_ITEM_IS_SERVICE);
     }
+
     gridDescription.setFilter(filter);
     return true;
   }
@@ -88,11 +118,6 @@ class ItemsGrid extends AbstractGridInterceptor implements SelectionHandler<IsRo
     }
   }
 
-  @Override
-  public void onShow(GridPresenter presenter) {
-    setGridPresenter(presenter);
-  }
-
   public boolean showServices() {
     return services;
   }
@@ -101,17 +126,15 @@ class ItemsGrid extends AbstractGridInterceptor implements SelectionHandler<IsRo
     return selectedCategory;
   }
 
-  private static Filter getFilter(Long category) {
-    if (category == null) {
-      return null;
-    } else {
-      return Filter.in(Data.getIdColumn(ClassifierConstants.VIEW_ITEMS),
-          ClassifierConstants.VIEW_ITEM_CATEGORIES, ClassifierConstants.COL_ITEM,
-          Filter.equals(ClassifierConstants.COL_CATEGORY, category));
-    }
+  private TreeView getTreeView() {
+    return treeView;
   }
 
   private void setSelectedCategory(IsRow selectedCategory) {
     this.selectedCategory = selectedCategory;
+  }
+
+  private void setTreeView(TreeView treeView) {
+    this.treeView = treeView;
   }
 }

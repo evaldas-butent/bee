@@ -14,7 +14,7 @@ interface HasShipmentInfo {
 
   Long getLoadingCity();
 
-  String getLoadingTerminal();
+  String getLoadingNumber();
 
   Long getUnloadingCountry();
 
@@ -26,5 +26,5 @@ interface HasShipmentInfo {
 
   Long getUnloadingCity();
 
-  String getUnloadingTerminal();
+  String getUnloadingNumber();
 }

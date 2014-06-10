@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<View xmlns="http://www.butent.com/view"
+
+  name="ServiceObjects" source="ServiceObjects"
+  caption="=svcObjects" newRowCaption="=svcNewObject"
+  editForm="ServiceObject" newRowForm="ServiceObject"
+  rowCaption="CategoryName Address CustomerName"
+  >
+  <Columns>
+    <SimpleColumn name="Category" />
+    <SimpleJoin joinType="LEFT" name="Category">
+      <SimpleColumn name="Name" alias="CategoryName" />
+    </SimpleJoin>
+
+    <SimpleColumn name="Address" />
+
+    <SimpleColumn name="Customer" />
+    <SimpleJoin joinType="LEFT" name="Customer">
+      <SimpleColumn name="Name" alias="CustomerName" />
+      <SimpleColumn name="CreditDays" />
+    </SimpleJoin>
+
+    <SimpleColumn name="Contractor" />
+    <SimpleJoin joinType="LEFT" name="Contractor">
+      <SimpleColumn name="Name" alias="ContractorName" />
+    </SimpleJoin>
+  </Columns>
+</View>

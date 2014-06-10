@@ -32,7 +32,7 @@ public class BeeConnection {
 
   public static List<Property> getInfo(Connection conn) {
     Assert.notNull(conn);
-    List<Property> lst = new ArrayList<Property>();
+    List<Property> lst = new ArrayList<>();
 
     int z;
 
@@ -89,7 +89,7 @@ public class BeeConnection {
   private boolean readOnly;
   private final Set<State> states = EnumSet.noneOf(State.class);
 
-  private List<SQLException> errors = new ArrayList<SQLException>();
+  private List<SQLException> errors = new ArrayList<>();
 
   public BeeConnection(Connection conn) {
     setConnectionInfo(conn);

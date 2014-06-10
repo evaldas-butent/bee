@@ -16,14 +16,15 @@ import com.butent.bee.client.composite.DataSelector;
 import com.butent.bee.client.data.Data;
 import com.butent.bee.client.grid.ChildGrid;
 import com.butent.bee.client.modules.transport.TransportHandler.Profit;
-import com.butent.bee.client.ui.AbstractFormInterceptor;
-import com.butent.bee.client.ui.FormFactory.FormInterceptor;
 import com.butent.bee.client.ui.FormFactory.WidgetDescriptionCallback;
 import com.butent.bee.client.ui.IdentifiableWidget;
 import com.butent.bee.client.view.HeaderView;
 import com.butent.bee.client.view.edit.EditStopEvent;
 import com.butent.bee.client.view.form.FormView;
+import com.butent.bee.client.view.form.interceptor.AbstractFormInterceptor;
+import com.butent.bee.client.view.form.interceptor.FormInterceptor;
 import com.butent.bee.client.view.grid.interceptor.AbstractGridInterceptor;
+import com.butent.bee.client.view.grid.interceptor.GridInterceptor;
 import com.butent.bee.client.widget.InputBoolean;
 import com.butent.bee.shared.communication.ResponseObject;
 import com.butent.bee.shared.data.DataUtils;
@@ -70,9 +71,14 @@ class OrderCargoForm extends AbstractFormInterceptor {
             refresh(Data.getLong(viewName, getActiveRow(), COL_CURRENCY));
           }
         }
+        
+        @Override
+        public GridInterceptor getInstance() {
+          return null;
+        }
       });
     } else if (widget instanceof InputBoolean
-        && (BeeUtils.same(name, "Partial") || (BeeUtils.same(name, "Outsized")))) {
+        && (BeeUtils.inListSame(name, "Partial", "Outsized"))) {
       ((InputBoolean) widget).addValueChangeHandler(new ValueChangeHandler<String>() {
         @Override
         public void onValueChange(ValueChangeEvent<String> event) {

@@ -545,7 +545,15 @@
     </xs:complexType>
   </xs:element>
 
-  <xs:element name="GridPanel" type="gridType" substitutionGroup="widget" />
+  <xs:element name="GridPanel" substitutionGroup="widget">
+    <xs:complexType>
+      <xs:complexContent>
+        <xs:extension base="gridType">
+          <xs:attribute name="child" type="xs:boolean" />
+        </xs:extension>
+      </xs:complexContent>
+    </xs:complexType>
+  </xs:element>
 
   <xs:complexType name="hasOneChild">
     <xs:complexContent>
@@ -779,16 +787,6 @@
 
   <xs:element name="DataTree" type="dataTree" substitutionGroup="widget" />
 
-  <xs:element name="ChildTree" substitutionGroup="widget">
-    <xs:complexType>
-      <xs:complexContent>
-        <xs:extension base="dataTree">
-          <xs:attribute name="relationColumn" type="type:nameType" use="required" />
-        </xs:extension>
-      </xs:complexContent>
-    </xs:complexType>
-  </xs:element>
-
   <xs:complexType name="dataTree">
     <xs:complexContent>
       <xs:extension base="focusableWidget">
@@ -797,10 +795,11 @@
           <xs:element name="form" type="hasOneChild" minOccurs="0" maxOccurs="1" />
         </xs:sequence>
         <xs:attribute name="caption" type="xs:string" use="required" />
-        <xs:attribute name="source" type="type:tableNameType" use="required" />
+        <xs:attribute name="viewName" type="type:dataView" use="required" />
         <xs:attribute name="parentColumn" type="type:fieldNameType" use="required" />
         <xs:attribute name="orderColumn" type="type:fieldNameType" />
         <xs:attribute name="hideActions" type="xs:boolean" />
+        <xs:attribute name="favorite" type="xs:normalizedString" />
       </xs:extension>
     </xs:complexContent>
   </xs:complexType>

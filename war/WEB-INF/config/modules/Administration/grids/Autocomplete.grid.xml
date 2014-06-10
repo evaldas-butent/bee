@@ -2,7 +2,7 @@
 <g:Grid xmlns="http://www.butent.com/column" xmlns:g="http://www.butent.com/grid"
   
   name="Autocomplete" viewName="Autocomplete" caption="=autocompletion"
-  disabledActions="add" currentUserFilter="User"
+  disabledActions="add" currentUserFilter="User" cacheData="false"
   >
   <g:columns>
     <DataColumn name="Key" visible="true" minWidth="100" flexGrow="1" readOnly="true" />

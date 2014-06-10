@@ -2,19 +2,21 @@
 <g:Grid xmlns="http://www.butent.com/column" xmlns:g="http://www.butent.com/grid" xmlns:ui="http://www.butent.com/ui"
   
   name="Cities" viewName="Cities" caption="=cities"
-  maxColumnWidth="300"
+  maxColumnWidth="300" newRowPopup="true" editPopup="true"
   >
   <g:columns>
     <DataColumn name="Name" minWidth="200" visible="true" />
+
     <RelColumn name="Country" minWidth="100" renderColumns="CountryName" visible="true">
       <selectorColumn source="Name" />
       <selectorColumn source="Code">
         <ui:renderer type="flag" />
       </selectorColumn>
     </RelColumn>
+
     <CalcColumn type="string" name="Flag" source="CountryCode" cellType="html" width="30"
       caption="-" label="=countryFlag" sortable="false" horizontalAlignment="center"
-      filterOptions="-">
+      filterOptions="-" exportWidthFactor="0.5">
       <renderer type="flag" />
     </CalcColumn>
   </g:columns>

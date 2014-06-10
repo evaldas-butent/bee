@@ -674,6 +674,7 @@ public class Popup extends Simple implements HasAnimation, CloseEvent.HasCloseHa
     }
   }
 
+
   private String getDesiredHeight() {
     return desiredHeight;
   }
@@ -812,7 +813,7 @@ public class Popup extends Simple implements HasAnimation, CloseEvent.HasCloseHa
   private void setTopPosition(int topPosition) {
     this.topPosition = topPosition;
   }
-
+  
   private void show() {
     if (isShowing()) {
       return;

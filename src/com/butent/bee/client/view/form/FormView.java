@@ -9,11 +9,8 @@ import com.google.gwt.user.client.ui.Widget;
 import com.butent.bee.client.data.HasDataTable;
 import com.butent.bee.client.event.DndWidget;
 import com.butent.bee.client.event.logical.ActiveWidgetChangeEvent;
-import com.butent.bee.shared.HasState;
-import com.butent.bee.shared.NotificationListener;
 import com.butent.bee.client.output.Printable;
 import com.butent.bee.client.ui.FormDescription;
-import com.butent.bee.client.ui.FormFactory.FormInterceptor;
 import com.butent.bee.client.ui.HasDimensions;
 import com.butent.bee.client.ui.IdentifiableWidget;
 import com.butent.bee.client.view.DataView;
@@ -24,6 +21,9 @@ import com.butent.bee.client.view.edit.EditEndEvent;
 import com.butent.bee.client.view.edit.EditableWidget;
 import com.butent.bee.client.view.edit.HasReadyForUpdateHandlers;
 import com.butent.bee.client.view.edit.HasSaveChangesHandlers;
+import com.butent.bee.client.view.form.interceptor.FormInterceptor;
+import com.butent.bee.shared.HasState;
+import com.butent.bee.shared.NotificationListener;
 import com.butent.bee.shared.data.BeeColumn;
 import com.butent.bee.shared.data.IsRow;
 import com.butent.bee.shared.data.RowChildren;
@@ -52,15 +52,15 @@ public interface FormView extends DataView, HasDataTable, ActiveWidgetChangeEven
       boolean addStyle, FormInterceptor interceptor);
 
   void editRow(IsRow rowValue, Scheduler.ScheduledCommand focusCommand);
-  
+
   boolean focus(String source);
 
   long getActiveRowId();
-  
+
   Collection<RowChildren> getChildrenForInsert();
 
   Collection<RowChildren> getChildrenForUpdate();
-  
+
   List<BeeColumn> getDataColumns();
 
   int getDataIndex(String source);
@@ -69,14 +69,16 @@ public interface FormView extends DataView, HasDataTable, ActiveWidgetChangeEven
 
   HasDataTable getDisplay();
 
+  Double getDoubleValue(String source);
+
   List<EditableWidget> getEditableWidgets();
 
   FormInterceptor getFormInterceptor();
-  
+
   String getFormName();
 
   Integer getIntegerValue(String source);
-  
+
   JustDate getDateValue(String source);
 
   Long getLongValue(String source);
@@ -95,7 +97,9 @@ public interface FormView extends DataView, HasDataTable, ActiveWidgetChangeEven
 
   boolean isInteractive();
 
-  boolean isRowEditable(boolean warn);
+  boolean isRowEditable(IsRow rowValue, boolean warn);
+
+  boolean isRowEnabled(IsRow rowValue);
   
   void observeData();
 
@@ -104,7 +108,7 @@ public interface FormView extends DataView, HasDataTable, ActiveWidgetChangeEven
   void onClose(CloseCallback closeCallback);
 
   void prepareForInsert();
-  
+
   boolean printFooter();
 
   boolean printHeader();

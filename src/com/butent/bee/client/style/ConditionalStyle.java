@@ -8,9 +8,11 @@ import com.google.gwt.core.client.JavaScriptObject;
 
 import com.butent.bee.client.utils.Evaluator;
 import com.butent.bee.shared.Assert;
+import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.data.IsColumn;
 import com.butent.bee.shared.data.IsRow;
 import com.butent.bee.shared.data.value.ValueType;
+import com.butent.bee.shared.export.XSheet;
 import com.butent.bee.shared.ui.ConditionalStyleDeclaration;
 import com.butent.bee.shared.utils.BeeUtils;
 
@@ -154,6 +156,10 @@ public final class ConditionalStyle {
     this.provider = provider;
   }
   
+  public Integer getExportStyleRef(IsRow row, XSheet sheet) {
+    return (provider == null) ? null : provider.getExportStyleRef(row, sheet);
+  }
+  
   public StyleDescriptor getStyleDescriptor(IsRow rowValue, int rowIndex, int colIndex) {
     return getStyleDescriptor(rowValue, rowIndex, colIndex, false, null, null);
   }
@@ -194,7 +200,7 @@ public final class ConditionalStyle {
 
       if (entry.getEvaluator().hasInterpreter()) {
         String z = entry.getEvaluator().evaluate();
-        if (!BeeUtils.toBoolean(z)) {
+        if (BeeUtils.isEmpty(z) || BeeConst.STRING_FALSE.equalsIgnoreCase(z)) {
           continue;
         }
       }

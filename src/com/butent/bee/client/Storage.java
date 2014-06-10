@@ -2,11 +2,15 @@ package com.butent.bee.client;
 
 import com.butent.bee.client.dom.Features;
 import com.butent.bee.shared.Assert;
+import com.butent.bee.shared.time.DateTime;
+import com.butent.bee.shared.time.JustDate;
+import com.butent.bee.shared.time.TimeUtils;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.Property;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -18,10 +22,10 @@ import java.util.Map;
 
 public class Storage {
   
-  private final Map<String, String> items = new HashMap<String, String>();
+  private final Map<String, String> items = new LinkedHashMap<>();
   private final boolean localStorage;
 
-  public Storage() {
+  Storage() {
     this.localStorage = Features.supportsLocalStorage();
   }
 
@@ -33,8 +37,18 @@ public class Storage {
     }
   }
   
+  public String get(String key) {
+    Assert.notEmpty(key);
+
+    if (localStorage) {
+      return lsGetItem(key);
+    } else {
+      return items.get(key);
+    }
+  }
+
   public List<Property> getAll() {
-    List<Property> lst = new ArrayList<Property>();
+    List<Property> lst = new ArrayList<>();
     int len = length();
     String z;
 
@@ -45,23 +59,36 @@ public class Storage {
 
     return lst;
   }
-
-  public boolean getBoolean(String key) {
-    return BeeUtils.toBoolean(get(key));
+  
+  public JustDate getDate(String key) {
+    return TimeUtils.toDateOrNull(get(key));
   }
 
-  public int getInt(String key) {
-    return BeeUtils.toInt(get(key));
+  public DateTime getDateTime(String key) {
+    return TimeUtils.toDateTimeOrNull(get(key));
   }
 
-  public String get(String key) {
-    Assert.notEmpty(key);
+  public Integer getInteger(String key) {
+    return BeeUtils.toIntOrNull(get(key));
+  }
 
-    if (localStorage) {
-      return lsGetItem(key);
-    } else {
-      return items.get(key);
+  public Long getLong(String key) {
+    return BeeUtils.toLongOrNull(get(key));
+  }
+
+  public Map<String, String> getSubMap(String prefix) {
+    Assert.notEmpty(prefix);
+    Map<String, String> result = new HashMap<>();
+
+    int len = length();
+    for (int i = 0; i < len; i++) {
+      String key = key(i);
+      if (BeeUtils.isPrefix(key, prefix)) {
+        result.put(BeeUtils.removePrefix(key, prefix), get(key));
+      }
     }
+    
+    return result;
   }
 
   public boolean hasItem(String key) {
@@ -109,8 +136,36 @@ public class Storage {
     }
   }
 
-  public void set(String key, int value) {
-    set(key, BeeUtils.toString(value));
+  public void set(String key, DateTime value) {
+    if (value == null) {
+      remove(key);
+    } else {
+      set(key, value.serialize());
+    }
+  }
+
+  public void set(String key, Integer value) {
+    if (value == null) {
+      remove(key);
+    } else {
+      set(key, BeeUtils.toString(value));
+    }
+  }
+
+  public void set(String key, JustDate value) {
+    if (value == null) {
+      remove(key);
+    } else {
+      set(key, value.serialize());
+    }
+  }
+
+  public void set(String key, Long value) {
+    if (value == null) {
+      remove(key);
+    } else {
+      set(key, BeeUtils.toString(value));
+    }
   }
 
   public void set(String key, String value) {

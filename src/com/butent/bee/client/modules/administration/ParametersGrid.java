@@ -63,18 +63,18 @@ import java.util.Map;
 
 public class ParametersGrid extends AbstractGridInterceptor {
 
-  private static int indexOf(String colName) {
-    return DataUtils.getColumnIndex(colName, columns);
-  }
-
   private static final String NAME = "Name";
+
   private static final String VALUE = "Value";
   private static final String DESCRIPTION = "Description";
-
   private static final List<BeeColumn> columns = Lists.newArrayList(
       new BeeColumn(ValueType.TEXT, NAME, false),
       new BeeColumn(ValueType.TEXT, VALUE, true),
       new BeeColumn(ValueType.TEXT, DESCRIPTION, true));
+
+  private static int indexOf(String colName) {
+    return DataUtils.getColumnIndex(colName, columns);
+  }
 
   private final String module;
   private LocalProvider provider;
@@ -85,6 +85,14 @@ public class ParametersGrid extends AbstractGridInterceptor {
     Assert.notEmpty(module);
     this.module = module;
     this.userId = BeeKeeper.getUser().getUserId();
+  }
+
+  @Override
+  public void afterCreatePresenter(GridPresenter presenter) {
+    if (presenter != null && presenter.getDataProvider() instanceof LocalProvider) {
+      provider = (LocalProvider) presenter.getDataProvider();
+      requery();
+    }
   }
 
   @Override
@@ -195,11 +203,6 @@ public class ParametersGrid extends AbstractGridInterceptor {
           };
           editor.addEditChangeHandler(new EditChangeHandler() {
             @Override
-            public void onValueChange(ValueChangeEvent<String> e) {
-              executor.execute();
-            }
-
-            @Override
             public void onKeyDown(KeyDownEvent e) {
               int keyCode = e.getNativeKeyCode();
 
@@ -217,6 +220,11 @@ public class ParametersGrid extends AbstractGridInterceptor {
                   executor.execute();
                   break;
               }
+            }
+
+            @Override
+            public void onValueChange(ValueChangeEvent<String> e) {
+              executor.execute();
             }
           });
 
@@ -243,14 +251,6 @@ public class ParametersGrid extends AbstractGridInterceptor {
               EditorAction.REPLACE, null);
           break;
       }
-    }
-  }
-
-  @Override
-  public void onShow(GridPresenter presenter) {
-    if (presenter != null && presenter.getDataProvider() instanceof LocalProvider) {
-      provider = (LocalProvider) presenter.getDataProvider();
-      requery();
     }
   }
 

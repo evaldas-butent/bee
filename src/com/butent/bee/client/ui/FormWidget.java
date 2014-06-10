@@ -4,7 +4,6 @@ import com.google.common.collect.Lists;
 import com.google.gwt.dom.client.Document;
 import com.google.gwt.media.client.MediaBase;
 import com.google.gwt.resources.client.ImageResource;
-import com.google.gwt.user.client.DOM;
 import com.google.gwt.user.client.ui.Focusable;
 import com.google.gwt.user.client.ui.HasEnabled;
 import com.google.gwt.user.client.ui.HasOneWidget;
@@ -39,17 +38,17 @@ import com.butent.bee.client.grid.HtmlTable;
 import com.butent.bee.client.i18n.Format;
 import com.butent.bee.client.images.Images;
 import com.butent.bee.client.layout.Absolute;
-import com.butent.bee.client.layout.Details;
-import com.butent.bee.client.layout.FieldSet;
-import com.butent.bee.client.layout.LayoutPanel;
 import com.butent.bee.client.layout.CellVector;
 import com.butent.bee.client.layout.Complex;
+import com.butent.bee.client.layout.Details;
 import com.butent.bee.client.layout.Direction;
+import com.butent.bee.client.layout.FieldSet;
 import com.butent.bee.client.layout.Flow;
 import com.butent.bee.client.layout.HeaderContentFooter;
 import com.butent.bee.client.layout.Horizontal;
 import com.butent.bee.client.layout.HtmlPanel;
 import com.butent.bee.client.layout.IsHtmlTable;
+import com.butent.bee.client.layout.LayoutPanel;
 import com.butent.bee.client.layout.ResizePanel;
 import com.butent.bee.client.layout.Scroll;
 import com.butent.bee.client.layout.Simple;
@@ -73,14 +72,8 @@ import com.butent.bee.client.view.TreeContainer;
 import com.butent.bee.client.view.TreeView;
 import com.butent.bee.client.view.edit.Editor;
 import com.butent.bee.client.widget.BeeAudio;
-import com.butent.bee.client.widget.Button;
-import com.butent.bee.client.widget.FaLabel;
-import com.butent.bee.client.widget.Frame;
-import com.butent.bee.client.widget.Image;
-import com.butent.bee.client.widget.InternalLink;
-import com.butent.bee.client.widget.Label;
-import com.butent.bee.client.widget.ListBox;
 import com.butent.bee.client.widget.BeeVideo;
+import com.butent.bee.client.widget.Button;
 import com.butent.bee.client.widget.Canvas;
 import com.butent.bee.client.widget.CustomDiv;
 import com.butent.bee.client.widget.CustomWidget;
@@ -88,9 +81,12 @@ import com.butent.bee.client.widget.DateLabel;
 import com.butent.bee.client.widget.DateTimeLabel;
 import com.butent.bee.client.widget.DecimalLabel;
 import com.butent.bee.client.widget.DoubleLabel;
+import com.butent.bee.client.widget.FaLabel;
 import com.butent.bee.client.widget.Flag;
+import com.butent.bee.client.widget.Frame;
 import com.butent.bee.client.widget.Heading;
 import com.butent.bee.client.widget.HtmlList;
+import com.butent.bee.client.widget.Image;
 import com.butent.bee.client.widget.InlineLabel;
 import com.butent.bee.client.widget.InputArea;
 import com.butent.bee.client.widget.InputBoolean;
@@ -106,8 +102,11 @@ import com.butent.bee.client.widget.InputText;
 import com.butent.bee.client.widget.InputTime;
 import com.butent.bee.client.widget.InputTimeOfDay;
 import com.butent.bee.client.widget.IntegerLabel;
+import com.butent.bee.client.widget.InternalLink;
+import com.butent.bee.client.widget.Label;
 import com.butent.bee.client.widget.Legend;
 import com.butent.bee.client.widget.Link;
+import com.butent.bee.client.widget.ListBox;
 import com.butent.bee.client.widget.LongLabel;
 import com.butent.bee.client.widget.Meter;
 import com.butent.bee.client.widget.Progress;
@@ -118,9 +117,9 @@ import com.butent.bee.client.widget.TextLabel;
 import com.butent.bee.client.widget.Toggle;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
-import com.butent.bee.shared.HasItems;
 import com.butent.bee.shared.HasBounds;
 import com.butent.bee.shared.HasIntStep;
+import com.butent.bee.shared.HasItems;
 import com.butent.bee.shared.HasOptions;
 import com.butent.bee.shared.Holder;
 import com.butent.bee.shared.Launchable;
@@ -129,6 +128,7 @@ import com.butent.bee.shared.css.CssUnit;
 import com.butent.bee.shared.css.values.TextAlign;
 import com.butent.bee.shared.css.values.VerticalAlign;
 import com.butent.bee.shared.data.BeeColumn;
+import com.butent.bee.shared.data.CellSource;
 import com.butent.bee.shared.data.CustomProperties;
 import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.value.ValueType;
@@ -189,7 +189,7 @@ public enum FormWidget {
   DISCLOSURE("Disclosure", EnumSet.of(Type.HAS_CHILDREN)),
   DIV("div", null),
   DOUBLE_LABEL("DoubleLabel", EnumSet.of(Type.DISPLAY)),
-  FA_LABEL("FaLabel", EnumSet.of(Type.IS_LABEL)),
+  FA_LABEL("FaLabel", null),
   FIELD_SET("FieldSet", EnumSet.of(Type.HAS_CHILDREN)),
   FILE_COLLECTOR("FileCollector", null),
   FILE_GROUP("FileGroup", EnumSet.of(Type.DISPLAY)),
@@ -227,7 +227,8 @@ public enum FormWidget {
   LIST_BOX("ListBox", EnumSet.of(Type.FOCUSABLE, Type.EDITABLE)),
   LONG_LABEL("LongLabel", EnumSet.of(Type.DISPLAY)),
   METER("Meter", EnumSet.of(Type.DISPLAY)),
-  MULTI_SELECTOR("MultiSelector", EnumSet.of(Type.FOCUSABLE, Type.EDITABLE, Type.DISPLAY)),
+  MULTI_SELECTOR(UiConstants.TAG_MULTI_SELECTOR,
+      EnumSet.of(Type.FOCUSABLE, Type.EDITABLE, Type.DISPLAY)),
   ORDERED_LIST("OrderedList", null),
   PROGRESS("Progress", EnumSet.of(Type.DISPLAY)),
   RADIO("Radio", EnumSet.of(Type.EDITABLE)),
@@ -254,8 +255,7 @@ public enum FormWidget {
   VIDEO("Video", EnumSet.of(Type.DISPLAY)),
   VOLUME_SLIDER("VolumeSlider", EnumSet.of(Type.EDITABLE)),
   TREE("Tree", EnumSet.of(Type.FOCUSABLE)),
-  DATA_TREE("DataTree", EnumSet.of(Type.FOCUSABLE)),
-  CHILD_TREE("ChildTree", EnumSet.of(Type.IS_CHILD, Type.FOCUSABLE));
+  DATA_TREE(UiConstants.TAG_DATA_TREE, EnumSet.of(Type.FOCUSABLE));
 
   private final class HeaderAndContent {
     private final String headerTag;
@@ -413,6 +413,8 @@ public enum FormWidget {
   private static final String ATTR_UP_FACE = "upFace";
   private static final String ATTR_DOWN_FACE = "downFace";
 
+  private static final String ATTR_CHILD = "child";
+
   private static final String TAG_CSS = "css";
   private static final String TAG_HANDLER = "handler";
 
@@ -466,6 +468,22 @@ public enum FormWidget {
     }
 
     EventUtils.addDomHandler(widget.asWidget(), event, handler);
+  }
+
+  private static void associateLabel(IdentifiableWidget label, BeeColumn column) {
+    if (BeeUtils.isEmpty(label.getElement().getInnerHTML())) {
+      label.getElement().setInnerHTML(Localized.getLabel(column));
+    }
+
+    if (column.isEditable()) {
+      if (!column.isNullable() && !label.getElement().hasClassName(StyleUtils.NAME_REQUIRED)) {
+        label.getElement().addClassName(StyleUtils.NAME_REQUIRED);
+      }
+
+      if (column.hasDefaults() && !label.getElement().hasClassName(StyleUtils.NAME_HAS_DEFAULTS)) {
+        label.getElement().addClassName(StyleUtils.NAME_HAS_DEFAULTS);
+      }
+    }
   }
 
   private static IdentifiableWidget createFace(Element element) {
@@ -615,16 +633,17 @@ public enum FormWidget {
     return ok;
   }
 
-  private static BeeColumn getColumn(List<BeeColumn> columns, Map<String, String> attributes) {
+  private static BeeColumn getColumn(List<BeeColumn> columns, Map<String, String> attributes,
+      String key) {
     if (columns == null && attributes == null) {
       return null;
     }
 
-    String source = attributes.get(UiConstants.ATTR_SOURCE);
-    if (BeeUtils.isEmpty(source)) {
+    String colName = attributes.get(key);
+    if (BeeUtils.isEmpty(colName)) {
       return null;
     }
-    return DataUtils.getColumn(source, columns);
+    return DataUtils.getColumn(colName, columns);
   }
 
   private static Edges getEdges(Element element) {
@@ -735,7 +754,7 @@ public enum FormWidget {
         StyleUtils.updateStyle(widget.asWidget().getElement().getStyle(), value);
 
       } else if (BeeUtils.same(name, ATTR_TITLE)) {
-        widget.asWidget().setTitle(value);
+        widget.asWidget().setTitle(Localized.maybeTranslate(value));
 
       } else if (BeeUtils.same(name, HasOptions.ATTR_OPTIONS)) {
         if (widget instanceof HasOptions) {
@@ -857,9 +876,15 @@ public enum FormWidget {
         table.getCellFormatter().setWordWrap(row, col, BeeUtils.toBoolean(z));
       }
 
-      StyleUtils.updateAppearance(table.getCellFormatter().getElement(row, col),
-          element.getAttribute(UiConstants.ATTR_CLASS),
-          element.getAttribute(UiConstants.ATTR_STYLE));
+      z = element.getAttribute(UiConstants.ATTR_CLASS);
+      if (!BeeUtils.isEmpty(z)) {
+        StyleUtils.updateClasses(table.getCellFormatter().ensureElement(row, col), z);
+      }
+
+      z = element.getAttribute(UiConstants.ATTR_STYLE);
+      if (!BeeUtils.isEmpty(z)) {
+        StyleUtils.updateStyle(table.getCellFormatter().ensureElement(row, col), z);
+      }
 
       String span = element.getAttribute(ATTR_COL_SPAN);
       if (BeeUtils.toInt(span) > 1) {
@@ -882,8 +907,15 @@ public enum FormWidget {
     }
 
     if (XmlUtils.tagIs(element, UiConstants.TAG_ROW)) {
-      StyleUtils.updateAppearance(table.getRow(row), element.getAttribute(UiConstants.ATTR_CLASS),
-          element.getAttribute(UiConstants.ATTR_STYLE));
+      z = element.getAttribute(UiConstants.ATTR_CLASS);
+      if (!BeeUtils.isEmpty(z)) {
+        StyleUtils.updateClasses(table.getRowFormatter().ensureElement(row), z);
+      }
+
+      z = element.getAttribute(UiConstants.ATTR_STYLE);
+      if (!BeeUtils.isEmpty(z)) {
+        StyleUtils.updateStyle(table.getRowFormatter().ensureElement(row), z);
+      }
     }
   }
 
@@ -916,7 +948,7 @@ public enum FormWidget {
     }
 
     if (XmlUtils.tagIs(element, UiConstants.TAG_CELL)) {
-      StyleUtils.updateAppearance(DOM.getParent(cellContent.asWidget().getElement()),
+      StyleUtils.updateAppearance(cellContent.asWidget().getElement().getParentElement(),
           element.getAttribute(UiConstants.ATTR_CLASS),
           element.getAttribute(UiConstants.ATTR_STYLE));
     }
@@ -948,7 +980,7 @@ public enum FormWidget {
     Map<String, String> attributes = XmlUtils.getAttributes(element);
     List<Element> children = XmlUtils.getChildrenElements(element);
 
-    BeeColumn column = getColumn(columns, attributes);
+    BeeColumn column = getColumn(columns, attributes, UiConstants.ATTR_SOURCE);
 
     String html = getTextOrHtml(element);
 
@@ -1189,7 +1221,8 @@ public enum FormWidget {
       case GRID_PANEL:
         String gName = BeeUtils.notEmpty(attributes.get(UiConstants.ATTR_GRID_NAME), name);
         if (!BeeUtils.isEmpty(gName)) {
-          widget = new GridPanel(gName, GridFactory.getGridOptions(attributes));
+          widget = new GridPanel(gName, GridFactory.getGridOptions(attributes),
+              BeeConst.isTrue(attributes.get(ATTR_CHILD)));
         }
         break;
 
@@ -1415,7 +1448,19 @@ public enum FormWidget {
       case MULTI_SELECTOR:
         relation = createRelation(null, attributes, children, Relation.RenderMode.SOURCE);
         if (relation != null) {
-          widget = new MultiSelector(relation, true, attributes.get(UiConstants.ATTR_PROPERTY));
+          String property = attributes.get(UiConstants.ATTR_PROPERTY);
+
+          CellSource cellSource = null;
+          if (!BeeUtils.isEmpty(property)) {
+            cellSource = CellSource.forProperty(property, ValueType.TEXT);
+          } else if (column != null) {
+            int columnIndex = DataUtils.getColumnIndex(column.getId(), columns);
+            if (!BeeConst.isUndef(columnIndex)) {
+            cellSource = CellSource.forColumn(column, columnIndex);
+            }
+          }
+
+          widget = new MultiSelector(relation, true, cellSource);
         }
         break;
 
@@ -1558,7 +1603,7 @@ public enum FormWidget {
       case UNBOUND_SELECTOR:
         relation = createRelation(null, attributes, children, Relation.RenderMode.SOURCE);
         if (relation != null) {
-          widget = new UnboundSelector(relation);
+          widget = UnboundSelector.create(relation);
         }
         break;
 
@@ -1609,12 +1654,13 @@ public enum FormWidget {
         break;
 
       case DATA_TREE:
-      case CHILD_TREE:
+        String treeViewName = attributes.get(UiConstants.ATTR_VIEW_NAME);
+        String treeFavoriteName = attributes.get(UiConstants.ATTR_FAVORITE);
         widget = new TreeContainer(attributes.get(UiConstants.ATTR_CAPTION),
-            BeeUtils.toBoolean(attributes.get("hideActions")));
+            BeeUtils.toBoolean(attributes.get("hideActions")), treeViewName, treeFavoriteName);
 
         ((TreeView) widget).setViewPresenter(new TreePresenter((TreeView) widget,
-            attributes.get(UiConstants.ATTR_SOURCE), attributes.get("parentColumn"),
+            treeViewName, attributes.get("parentColumn"),
             attributes.get("orderColumn"), attributes.get("relationColumn"),
             XmlUtils.getCalculation(element, TAG_CALC),
             XmlUtils.getFirstChildElement(element, "form")));
@@ -1684,6 +1730,12 @@ public enum FormWidget {
 
         if (widget instanceof HasBounds) {
           UiHelper.setDefaultBounds((HasBounds) widget, column);
+        }
+
+      } else if (isLabel() && attributes.containsKey(UiConstants.ATTR_FOR)) {
+        BeeColumn forColumn = getColumn(columns, attributes, UiConstants.ATTR_FOR);
+        if (forColumn != null) {
+          associateLabel(widget, forColumn);
         }
       }
 
@@ -1909,6 +1961,10 @@ public enum FormWidget {
     return hasType(Type.CELL_VECTOR);
   }
 
+  private boolean isLabel() {
+    return hasType(Type.IS_LABEL);
+  }
+
   private boolean isTable() {
     return hasType(Type.IS_TABLE);
   }
@@ -2093,13 +2149,13 @@ public enum FormWidget {
     } else if (this == RADIO && BeeUtils.same(childTag, TAG_OPTION)) {
       String opt = XmlUtils.getText(child);
       if (!BeeUtils.isEmpty(opt) && parent instanceof RadioGroup) {
-        ((RadioGroup) parent).addOption(opt);
+        ((RadioGroup) parent).addOption(Localized.maybeTranslate(opt));
       }
 
     } else if (BeeUtils.same(childTag, HasItems.TAG_ITEM) && parent instanceof HasItems) {
       String item = XmlUtils.getText(child);
       if (!BeeUtils.isEmpty(item)) {
-        ((HasItems) parent).addItem(item);
+        ((HasItems) parent).addItem(Localized.maybeTranslate(item));
       }
 
     } else if (this == HEADER_CONTENT_FOOTER) {

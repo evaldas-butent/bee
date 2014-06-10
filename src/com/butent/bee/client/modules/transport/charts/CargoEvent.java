@@ -75,8 +75,32 @@ class CargoEvent {
     }
   }
 
+  Long getCityId() {
+    if (isCargoEvent()) {
+      return loading ? cargo.getLoadingCity() : cargo.getUnloadingCity();
+    } else {
+      return loading ? handling.getLoadingCity() : handling.getUnloadingCity();
+    }
+  }
+
+  String getPostIndex() {
+    if (isCargoEvent()) {
+      return loading ? cargo.getLoadingPostIndex() : cargo.getUnloadingPostIndex();
+    } else {
+      return loading ? handling.getLoadingPostIndex() : handling.getUnloadingPostIndex();
+    }
+  }
+
   CargoHandling getHandling() {
     return handling;
+  }
+
+  String getNumber() {
+    if (isCargoEvent()) {
+      return loading ? cargo.getLoadingNumber() : cargo.getUnloadingNumber();
+    } else {
+      return loading ? handling.getLoadingNumber() : handling.getUnloadingNumber();
+    }
   }
 
   String getPlace() {
@@ -84,14 +108,6 @@ class CargoEvent {
       return loading ? cargo.getLoadingPlace() : cargo.getUnloadingPlace();
     } else {
       return loading ? handling.getLoadingPlace() : handling.getUnloadingPlace();
-    }
-  }
-
-  String getTerminal() {
-    if (isCargoEvent()) {
-      return loading ? cargo.getLoadingTerminal() : cargo.getUnloadingTerminal();
-    } else {
-      return loading ? handling.getLoadingTerminal() : handling.getUnloadingTerminal();
     }
   }
 

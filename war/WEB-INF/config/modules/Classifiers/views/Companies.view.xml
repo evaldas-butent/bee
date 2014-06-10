@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <View xmlns="http://www.butent.com/view"
   name="Companies" source="Companies" caption="=clients" module="Classifiers.Contacts"
-  editForm="Company" newRowForm="Company" newRowCaption="=newClient"
+  editForm="Company" newRowForm="Company" newRowCaption="=newClient" rowCaption="Name"
   >
   <Columns>
     <SimpleColumn name="Name" />
@@ -64,11 +64,6 @@
 
     <SimpleColumn name="Rating" />
 
-    <SimpleColumn name="CompanyRelationType" />
-    <SimpleJoin joinType="LEFT" name="CompanyRelationType">
-      <SimpleColumn alias="RelationTypeName" name="Name" />
-    </SimpleJoin>
-    
     <SimpleColumn name="CompanyRelationTypeState" />
     <SimpleJoin joinType="LEFT" name="CompanyRelationTypeState">
       <SimpleColumn alias="RelationTypeStateName" name="Name" />
@@ -88,7 +83,7 @@
     <SimpleJoin joinType="LEFT" name="FinancialState">
       <SimpleColumn alias="FinancialStateName" name="Name" />
     </SimpleJoin>
-    <SimpleColumn name="BankAccount" />
+    <SimpleColumn name="DefaultBankAccount" />
     <SimpleColumn name="DaysAsBuyer" />
     <SimpleColumn name="DaysAsSupplier" />
     

@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <View xmlns="http://www.butent.com/view"
 
-  name="Sales" source="Sales"
+  name="Sales" source="Sales" caption="=trdSales"
   >
   <Columns>
     <SimpleColumn name="Date" />
@@ -29,5 +29,7 @@
     <SimpleColumn name="Payer" />
     
     <SimpleColumn name="Manager" />
+
+    <SimpleColumn name="Kind" />
   </Columns>
 </View>

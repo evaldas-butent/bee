@@ -5,6 +5,6 @@
   idName="CompanyActivityID"
   >
   <Fields>
-    <String name="Name" precision="100" notNull="true" unique="true" label="=comapnyActivity" />
+    <String name="Name" precision="100" notNull="true" unique="true" label="=companyActivity" />
   </Fields>
 </Table>

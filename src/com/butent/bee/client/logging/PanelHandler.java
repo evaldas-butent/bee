@@ -66,7 +66,7 @@ public class PanelHandler extends Handler implements HasVisibility, HasEnabled {
   }
 
   public int getInitialSize() {
-    return BeeKeeper.getStorage().getInt(STORAGE_KEY);
+    return BeeUtils.unbox(BeeKeeper.getStorage().getInteger(STORAGE_KEY));
   }
 
   public Flow getPanel() {

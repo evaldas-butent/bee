@@ -10,6 +10,7 @@ import com.google.gwt.user.client.Window;
 import com.butent.bee.client.communication.ParameterList;
 import com.butent.bee.client.communication.ResponseCallback;
 import com.butent.bee.client.communication.RpcInfo;
+import com.butent.bee.client.data.ClientDefaults;
 import com.butent.bee.client.data.Data;
 import com.butent.bee.client.decorator.TuningFactory;
 import com.butent.bee.client.dom.DomUtils;
@@ -29,6 +30,7 @@ import com.butent.bee.shared.i18n.LocalizableConstants;
 import com.butent.bee.shared.i18n.LocalizableMessages;
 import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.logging.LogUtils;
+import com.butent.bee.shared.modules.administration.AdministrationConstants;
 import com.butent.bee.shared.rights.Module;
 import com.butent.bee.shared.ui.UserInterface;
 import com.butent.bee.shared.utils.BeeUtils;
@@ -83,13 +85,13 @@ public class Bee implements EntryPoint {
 
     LayoutEngine layoutEngine = LayoutEngine.detect();
     if (layoutEngine != null && layoutEngine.hasStyleSheet()) {
-      DomUtils.injectExternalStyle(layoutEngine.getStyleSheet());
+      DomUtils.injectStyleSheet(layoutEngine.getStyleSheet());
     }
 
     List<String> extStyleSheets = Settings.getStyleSheets();
     if (!BeeUtils.isEmpty(extStyleSheets)) {
       for (String styleSheet : extStyleSheets) {
-        DomUtils.injectExternalStyle(styleSheet);
+        DomUtils.injectStyleSheet(styleSheet);
       }
     }
 
@@ -132,6 +134,10 @@ public class Bee implements EntryPoint {
     BeeKeeper.getUser().setUserData(userData);
 
     Module.setEnabledModules(data.get(Service.PROPERTY_MODULES));
+
+    ClientDefaults.setCurrency(BeeUtils
+        .toLongOrNull(data.get(AdministrationConstants.COL_CURRENCY)));
+    ClientDefaults.setCurrencyName(data.get(AdministrationConstants.ALS_CURRENCY_NAME));
 
     BeeKeeper.getScreen().start(userData);
 
@@ -177,8 +183,16 @@ public class Bee implements EntryPoint {
             Global.getNewsAggregator().loadSubscriptions(serialized);
             break;
 
+          case REPORTS:
+            Global.getReportSettings().load(serialized);
+            break;
+
           case USERS:
             Global.getUsers().loadUserData(serialized);
+            break;
+
+          case WORKSPACES:
+            Global.getSpaces().load(serialized);
             break;
         }
       }
@@ -193,6 +207,22 @@ public class Bee implements EntryPoint {
     Historian.start();
 
     Endpoint.open(BeeKeeper.getUser().getUserId());
+
+    List<String> onStartup = Global.getSpaces().getStartup();
+
+    if (BeeUtils.isEmpty(onStartup)) {
+      onStartup = Settings.getOnStartup();
+      if (!BeeUtils.isEmpty(onStartup) && !BeeKeeper.getMenu().isEmpty()) {
+        for (String item : onStartup) {
+          BeeKeeper.getMenu().executeItem(item);
+        }
+      }
+
+    } else {
+      for (int i = 0; i < onStartup.size(); i++) {
+        BeeKeeper.getScreen().restore(onStartup.get(i), i > 0);
+      }
+    }
 
     BeeKeeper.getBus().registerExitHandler("Don't leave me this way");
   }

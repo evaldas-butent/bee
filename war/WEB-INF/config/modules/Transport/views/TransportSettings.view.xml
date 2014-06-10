@@ -1,8 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <View xmlns="http://www.butent.com/view"
 
-  name="TransportSettings"
-  source="TransportSettings"
+  name="TransportSettings" source="TransportSettings" caption="=userSettings"
   >
   <Columns>
     <SimpleColumn name="User" />
@@ -12,6 +11,9 @@
 
     <SimpleColumn name="FxCountryFlags" />
     <SimpleColumn name="FxPlaceInfo" />
+
+    <SimpleColumn name="FxPlaceCities" />
+    <SimpleColumn name="FxPlaceCodes" />
 
     <SimpleColumn name="FxPixelsPerDay" />
     <SimpleColumn name="FxPixelsPerRow" />
@@ -36,6 +38,9 @@
     <SimpleColumn name="SsCountryFlags" />
     <SimpleColumn name="SsPlaceInfo" />
 
+    <SimpleColumn name="SsPlaceCodes"/>
+    <SimpleColumn name="SsPlaceCities"/>
+
     <SimpleColumn name="SsPixelsPerDay" />
     <SimpleColumn name="SsPixelsPerRow" />
 
@@ -54,6 +59,9 @@
 
     <SimpleColumn name="DtbCountryFlags" />
     <SimpleColumn name="DtbPlaceInfo" />
+
+    <SimpleColumn name="DtbPlaceCodes"/>
+    <SimpleColumn name="DtbPlaceCities"/>
 
     <SimpleColumn name="DtbPixelsPerDay" />
     <SimpleColumn name="DtbPixelsPerRow" />
@@ -77,6 +85,9 @@
     <SimpleColumn name="TruckCountryFlags" />
     <SimpleColumn name="TruckPlaceInfo" />
 
+    <SimpleColumn name="TruckPlaceCities" />
+    <SimpleColumn name="TruckPlaceCodes" />
+
     <SimpleColumn name="TruckPixelsPerDay" />
     <SimpleColumn name="TruckPixelsPerRow" />
 
@@ -98,6 +109,9 @@
 
     <SimpleColumn name="TrailerCountryFlags" />
     <SimpleColumn name="TrailerPlaceInfo" />
+    
+    <SimpleColumn name="TrailerPlaceCities" />
+    <SimpleColumn name="TrailerPlaceCodes" />
 
     <SimpleColumn name="TrailerPixelsPerDay" />
     <SimpleColumn name="TrailerPixelsPerRow" />

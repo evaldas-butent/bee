@@ -20,23 +20,30 @@
       .&form;-customer .bee-co-companyInfo-name .bee-co-companyInfo-item:before {content: "Užsakovas: "; font-weight:normal;}
     </css>
     <Image url="images/logo.png" style="display:block; margin:auto;" />
-    <TextLabel source="Number" style="text-align:center; &bold;">
-      <renderToken source="Assessor" prefix="Krovinio pervežimo sutartis Nr. " />
-      <renderToken source="TripNo" prefix="-" />
+    <TextLabel style="text-align:center; &bold;">
+      <render><ui:expression>'Krovinio pervežimo sutartis Nr. ' + rowId + (row.Number ? '-' + row.Number : '')</ui:expression></render>
     </TextLabel>
     <DateLabel source="Date" style="text-align:center;" />
 
     <Table class="&form;-table" style="&section;">
       <row>
         <cell style="vertical-align:top;">
-          <FlowPanel name="ForwarderInfo" class="&form;-forwarder" />
+          <FlowPanel name="Forwarder" class="&form;-forwarder" />
         </cell>
         
-        <FlowPanel name="CustomerInfo" class="&form;-customer" />
+        <FlowPanel name="Customer" class="&form;-customer" />
       </row>
       <row>
         <Label html="Krovinys" />
-        <TextLabel source="Description" style="white-space:pre-wrap;" />
+        <TextLabel style="white-space:pre-wrap;" >
+          <renderToken source="Description" suffix="&lt;br&gt;"/>
+          <renderToken source="Quantity" prefix="Kiekis: " suffix=" " addPrefixWhenEmpty="false" addSuffixWhenEmpty="false" />
+          <renderToken source="QuantityUnit" suffix="&lt;br&gt;" addSuffixWhenEmpty="false" />
+          <renderToken source="Weight" prefix="Svoris: " suffix=" " addPrefixWhenEmpty="false" addSuffixWhenEmpty="false" />
+          <renderToken source="WeightUnit" suffix="&lt;br&gt;" addSuffixWhenEmpty="true" />
+          <renderToken source="Volume" prefix="Tūris: " suffix=" " addPrefixWhenEmpty="false" addSuffixWhenEmpty="false" />
+          <renderToken source="VolumeUnit" suffix=" " />
+        </TextLabel>
       </row>
       <row>
         <Label html="Pasikrovimo vieta" />
@@ -80,7 +87,7 @@
         <cell colSpan="2">
           <HtmlPanel style="&section;">
             <span style="white-space:pre-wrap;">Šalių įsipareigojimai 
-1. Pervežimas vykdomas CMR Konvencijos sąlygomis. Vežėjas šios Pervežimo sutarties vykdymo metu privalo turėti galiojantį vežėjo CMR draudimo polisą, licenсijas ir leidimus, reikalingus teisėtam aukščiau nurodyto pervežimo vykdymui. 
+1. Pervežimas vykdomas CMR Konvencijos sąlygomis. Vežėjas šios Pervežimo sutarties vykdymo metu privalo turėti galiojantį vežėjo CMR draudimo polisą, licenсijas ir leidimus, reikalingus teisėtam aukščiau nurodyto pervežimo vykdymui.
 2. Užsakovas įsipareigoja organizuoti pakrovimą ir muitinės įforminimą (esant būtinybei) per 24 val. (NVS 48 val.) nuo automobilio atvykimo į pakrovimo vietą momento, įskaitant krovinio tvirtinimo ir plombavimo darbus. 
 3. Užsakovas įsipareigoja įvykdyti iškrovimą ir muitinės formalumus (esant būtinybei) per 24 val. (NVS 48 val.) nuo automobilio atvykimo į muitinės paskirties vietą arba pristatymo vietą momento. 
 4. Jeigu 2-3 p. nurodyti terminai yra viršijami, Užsakovas apmoka Vežėjui prastovas - po 100 eur už kiekvieną darbo dieną. 
@@ -89,8 +96,9 @@
 7. Vežėjas įsipareigoja atvykti į iškrovimo/pakrovimo vietą nustatytu laiku. Vežėjas privalo kontroliuoti pakrovimą/iškrovimą. Krovinys turi atitikti CMR įrašus. Vežėjas atsako už sugadintą krovinį, neteisingą krovinio išdėstymą. Jeigu Vežėjas pavėluoja į pakrovimą, jis privalo sumokėti baudą 100 eur už kiekvieną darbo dieną. 
 8. Vežėjas yra atsakingas už krovinį nuo jo priėmimo iki perdavimo momento, o taip pat krovinio pristatymo vėlavimą pagal CMR Konvencijos sąlygas. Vežėjas nėra atsakingas už krovinio kiekį, jeigu jis pristatytas su nepažeistomis plombomis, už vidinę būklę ir krovinio vienetų kiekį, jeigu krovinio įpakavimas nepažeistas. 
 9. Užsakovas yra atsakingas už tinkamą krovinio pateikimą pakrovimui, pakrovimą, iškrovimą, transporto priemonės pažeidimą pakrovimo ar iškrovimo metu, muitinės ir kitų formalumų įvykdymą, dokumentų įforminimą, Vežėjo instruktavimą dėl krovinio savybių ir priemonių, užtikrinančių saugų krovinio transportavimą (krovinio tvirtinimas ir t.t.), Vežėjo darbo apmokėjimą ir t.t.
-10. Užsakovas turi teisę atšaukti užsakymą likus12 val. iki pasikrovimo. Kitu atveju už krovinio nepateikimą pakrovimui Užsakovas Vežėjui sumoka baudą 20 % nuo pervežimo kainos, jei nesutariama kitaip.
-11. Vežėjas neturi teisės vykdyti jokių apmokėjimų užsakovo vardu, negavęs įgaliojimo patvirtinančio fakso.</span>
+10. Užsakovas turi teisę atšaukti užsakymą likus 12 val. iki pasikrovimo. Kitu atveju už krovinio nepateikimą pakrovimui Užsakovas Vežėjui sumoka baudą 20 % nuo pervežimo kainos, jei nesutariama kitaip.
+11. Vežėjas neturi teisės vykdyti jokių apmokėjimų užsakovo vardu, negavęs įgaliojimo patvirtinančio fakso.
+12. Užsakymas negali būti taisomas ranka. Bet koks sutarties koregavimas turi būti patvirtintas abiejų šalių antspaudais, priešingu atveju pataisymai neturi jokios galios.</span>
           </HtmlPanel>
         </cell>
       </row>

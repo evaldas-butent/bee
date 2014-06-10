@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<g:Grid xmlns="http://www.butent.com/column" xmlns:g="http://www.butent.com/grid"
+  
+  name="Departments" viewName="Departments" caption="=departments" flexGrow="1"
+  >
+  <g:columns>
+    <DataColumn name="DepartmentName" visible="true" />
+    <RelColumn name="DepartmentHead" renderColumns="FirstName LastName" />
+  </g:columns>
+</g:Grid>

@@ -31,6 +31,8 @@ public class ColumnInfo implements HasValueType, Flexible {
   private static final int DEFAULT_MIN_WIDTH = 40;
   private static final int DEFAULT_MAX_WIDTH = 400;
 
+  private static final int AUTO_FIT_MIN_WIDTH = 20;
+
   private final String columnId;
   private String label;
 
@@ -50,7 +52,6 @@ public class ColumnInfo implements HasValueType, Flexible {
 
   private int headerWidth = BeeConst.UNDEF;
   private int bodyWidth = BeeConst.UNDEF;
-  private int footerWidth = BeeConst.UNDEF;
 
   private int resizedWidth = BeeConst.UNDEF;
   private int flexWidth = BeeConst.UNDEF;
@@ -69,6 +70,9 @@ public class ColumnInfo implements HasValueType, Flexible {
   private boolean cellResizable = true;
 
   private boolean hidable = true;
+
+  private boolean exportable = true;
+  private Double exportWidthFactor;
 
   public ColumnInfo(String columnId, String label, CellSource source, AbstractColumn<?> column,
       ColumnHeader header) {
@@ -109,9 +113,29 @@ public class ColumnInfo implements HasValueType, Flexible {
     return (obj instanceof ColumnInfo) && columnId.equals(((ColumnInfo) obj).columnId);
   }
 
+  public AbstractColumn<?> getColumn() {
+    return column;
+  }
+
+  public ConditionalStyle getDynStyles() {
+    return dynStyles;
+  }
+
+  public Double getExportWidthFactor() {
+    return exportWidthFactor;
+  }
+
   @Override
   public Flexibility getFlexibility() {
     return flexibility;
+  }
+
+  public ColumnFooter getFooter() {
+    return footer;
+  }
+
+  public ColumnHeader getHeader() {
+    return header;
   }
 
   @Override
@@ -136,6 +160,10 @@ public class ColumnInfo implements HasValueType, Flexible {
   @Override
   public int hashCode() {
     return columnId.hashCode();
+  }
+
+  public boolean isExportable() {
+    return exportable;
   }
 
   @Override
@@ -175,12 +203,6 @@ public class ColumnInfo implements HasValueType, Flexible {
     }
   }
 
-  void ensureHeaderWidth(int w) {
-    if (w > 0) {
-      setHeaderWidth(Math.max(getHeaderWidth(), w));
-    }
-  }
-
   int getAutoFitRows() {
     return autoFitRows;
   }
@@ -200,10 +222,6 @@ public class ColumnInfo implements HasValueType, Flexible {
     return sd.getClassName();
   }
 
-  AbstractColumn<?> getColumn() {
-    return column;
-  }
-
   String getColumnId() {
     return columnId;
   }
@@ -212,20 +230,8 @@ public class ColumnInfo implements HasValueType, Flexible {
     return dynGroup;
   }
 
-  ConditionalStyle getDynStyles() {
-    return dynStyles;
-  }
-
   AbstractFilterSupplier getFilterSupplier() {
     return filterSupplier;
-  }
-
-  ColumnFooter getFooter() {
-    return footer;
-  }
-
-  ColumnHeader getHeader() {
-    return header;
   }
 
   Font getHeaderFont() {
@@ -233,6 +239,10 @@ public class ColumnInfo implements HasValueType, Flexible {
       return null;
     }
     return getHeaderStyle().getFont();
+  }
+
+  int getHeaderWidth() {
+    return headerWidth;
   }
 
   String getLabel() {
@@ -246,6 +256,14 @@ public class ColumnInfo implements HasValueType, Flexible {
       return DEFAULT_MIN_WIDTH;
     } else {
       return Math.min(DEFAULT_MIN_WIDTH, getInitialWidth());
+    }
+  }
+
+  int getMinAutoFitWidth() {
+    if (getInitialWidth() <= 0) {
+      return AUTO_FIT_MIN_WIDTH;
+    } else {
+      return Math.min(AUTO_FIT_MIN_WIDTH, getInitialWidth());
     }
   }
 
@@ -321,6 +339,13 @@ public class ColumnInfo implements HasValueType, Flexible {
     } else {
       setCellResizable(cr);
     }
+
+    if (BeeUtils.isFalse(columnDescription.getExportable())) {
+      setExportable(false);
+    }
+    if (BeeUtils.isPositive(columnDescription.getExportWidthFactor())) {
+      setExportWidthFactor(columnDescription.getExportWidthFactor());
+    }
   }
 
   boolean is(String id) {
@@ -328,11 +353,11 @@ public class ColumnInfo implements HasValueType, Flexible {
   }
 
   boolean isActionColumn() {
-    return ColType.ACTION.equals(getColumn().getColType());
+    return ColType.ACTION == getColumn().getColType();
   }
 
   boolean isCalculated() {
-    return ColType.CALCULATED.equals(getColumn().getColType());
+    return ColType.CALCULATED == getColumn().getColType();
   }
 
   boolean isCellResizable() {
@@ -344,7 +369,7 @@ public class ColumnInfo implements HasValueType, Flexible {
   }
 
   boolean isDynamic() {
-    return dynGroup != null;
+    return dynGroup != null || isRightsColumn();
   }
 
   boolean isHidable() {
@@ -355,8 +380,12 @@ public class ColumnInfo implements HasValueType, Flexible {
     return getColumn() instanceof RenderableColumn;
   }
 
+  boolean isRightsColumn() {
+    return ColType.RIGHTS == getColumn().getColType();
+  }
+  
   boolean isSelection() {
-    return ColType.SELECTION.equals(getColumn().getColType());
+    return ColType.SELECTION == getColumn().getColType();
   }
 
   void setBodyFont(String fontDeclaration) {
@@ -373,12 +402,24 @@ public class ColumnInfo implements HasValueType, Flexible {
     this.bodyWidth = bodyWidth;
   }
 
+  void setCellResizable(boolean cellResizable) {
+    this.cellResizable = cellResizable;
+  }
+
   void setColReadOnly(boolean colReadOnly) {
     this.colReadOnly = colReadOnly;
   }
 
   void setDynStyles(ConditionalStyle dynStyles) {
     this.dynStyles = dynStyles;
+  }
+
+  void setExportable(boolean exportable) {
+    this.exportable = exportable;
+  }
+
+  void setExportWidthFactor(Double exportWidthFactor) {
+    this.exportWidthFactor = exportWidthFactor;
   }
 
   void setFooterFont(String fontDeclaration) {
@@ -389,10 +430,6 @@ public class ColumnInfo implements HasValueType, Flexible {
     } else {
       getFooterStyle().setFontDeclaration(fontDeclaration);
     }
-  }
-
-  void setFooterWidth(int footerWidth) {
-    this.footerWidth = footerWidth;
   }
 
   void setHeaderFont(String fontDeclaration) {
@@ -438,16 +475,8 @@ public class ColumnInfo implements HasValueType, Flexible {
     return footerStyle;
   }
 
-  private int getFooterWidth() {
-    return footerWidth;
-  }
-
   private StyleDescriptor getHeaderStyle() {
     return headerStyle;
-  }
-
-  private int getHeaderWidth() {
-    return headerWidth;
   }
 
   private int getInitialWidth() {
@@ -479,9 +508,12 @@ public class ColumnInfo implements HasValueType, Flexible {
   }
 
   private int getWidth(int resized, int flex) {
-    int w = BeeUtils.positive(resized, flex, getInitialWidth());
+    if (resized > 0) {
+      return resized;
+    }
+    int w = BeeUtils.positive(flex, getInitialWidth());
     if (w <= 0) {
-      w = BeeUtils.positive(Math.max(getBodyWidth(), getHeaderWidth()), getFooterWidth());
+      w = Math.max(getBodyWidth(), getHeaderWidth());
     }
     return clampWidth(w);
   }
@@ -492,10 +524,6 @@ public class ColumnInfo implements HasValueType, Flexible {
 
   private void setBodyStyle(StyleDescriptor bodyStyle) {
     this.bodyStyle = bodyStyle;
-  }
-
-  private void setCellResizable(boolean cellResizable) {
-    this.cellResizable = cellResizable;
   }
 
   private void setFlexWidth(int flexWidth) {

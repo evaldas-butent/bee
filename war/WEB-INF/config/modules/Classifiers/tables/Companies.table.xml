@@ -22,8 +22,8 @@
 
     <String name="Rating" precision="100" label="=companyRating" />
 
-    <Relation name="CompanyRelationType" relation="CompanyRelationTypes" label="=companyRelation" />
-    <Relation name="CompanyRelationTypeState" relation="RelationTypeStates" label="=companyRelationState" />
+    <Relation name="CompanyRelationTypeState" relation="RelationTypeStates" 
+      label="=companyRelationState" />
 
     <String name="ExchangeCode" precision="30" label="=exchangeCode" />
 
@@ -33,7 +33,7 @@
     <Numeric name="CreditDays" precision="3" label="=creditDays" />
     
     <Relation name="FinancialState" relation="FinancialStates" label="=financialState" />
-    <String name="BankAccount" precision="30" label="=bankAccount" />
+    <Relation name="DefaultBankAccount" relation="CompanyBankAccounts" unique="true" cascade="SET_NULL" label="=defaultBankAccount" />
     <Numeric name="DaysAsBuyer" precision="3" label="=daysAsBuyer" />
     <Numeric name="DaysAsSupplier" precision="3" label="=daysAsSupplier" />
 

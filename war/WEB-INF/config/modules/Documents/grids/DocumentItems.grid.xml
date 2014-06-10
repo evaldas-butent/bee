@@ -27,8 +27,11 @@
       </style>
       <footer aggregate="sum" />
     </CalcColumn>
-    <DataColumn name="Data" caption="-" width="20" sortable="false" readOnly="true">
-      <style><bodyStyle><ui:font>FontAwesome 20</ui:font></bodyStyle></style>
+    <DataColumn name="Data" caption="&#xf044;" width="20" sortable="false" readOnly="true" exportable="false">
+      <style>
+        <headerStyle><ui:class>bee-fa-label</ui:class></headerStyle>
+        <bodyStyle><ui:class>bee-fa-label</ui:class></bodyStyle>
+      </style>
       <render><ui:expression>row.Data ? '\uf044' : ''</ui:expression></render>
     </DataColumn>
   </g:columns>

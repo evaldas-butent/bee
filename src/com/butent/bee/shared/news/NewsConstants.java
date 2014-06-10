@@ -10,6 +10,7 @@ import com.butent.bee.shared.modules.classifiers.ClassifierConstants;
 import com.butent.bee.shared.modules.discussions.DiscussionsConstants;
 import com.butent.bee.shared.modules.documents.DocumentConstants;
 import com.butent.bee.shared.modules.ec.EcConstants;
+import com.butent.bee.shared.modules.trade.TradeConstants;
 import com.butent.bee.shared.modules.transport.TransportConstants;
 import com.butent.bee.shared.utils.BeeUtils;
 
@@ -91,6 +92,7 @@ public final class NewsConstants {
 
     observedColumns.put(TransportConstants.TBL_ORDERS, TransportConstants.COL_STATUS);
     observedColumns.put(TransportConstants.TBL_TRIPS, TransportConstants.COL_TRIP_STATUS);
+    observedColumns.put(TransportConstants.TBL_TRIPS, TransportConstants.COL_TRIP_NO);
 
     observedColumns.put(TransportConstants.TBL_CARGO_REQUESTS,
         TransportConstants.COL_CARGO_REQUEST_STATUS);
@@ -104,6 +106,27 @@ public final class NewsConstants {
     observedColumns.put(TransportConstants.TBL_DRIVERS, TransportConstants.COL_DRIVER_START_DATE);
     observedColumns.put(TransportConstants.TBL_DRIVERS, TransportConstants.COL_DRIVER_END_DATE);
 
+    observedColumns.put(TransportConstants.TBL_ASSESSMENTS, TransportConstants.COL_ASSESSMENT);
+    observedColumns.put(TransportConstants.TBL_ASSESSMENTS, TransportConstants.COL_STATUS);
+    observedColumns.put(TransportConstants.TBL_ASSESSMENTS, TransportConstants.COL_CARGO_NOTES);
+    observedColumns.put(TransportConstants.TBL_ASSESSMENTS, TransportConstants.COL_CARGO_NOTES);
+    observedColumns.put(TransportConstants.TBL_ASSESSMENTS, TransportConstants.COL_ASSESSMENT_LOG);
+    observedColumns.put(TransportConstants.TBL_CARGO_INCOMES, TransportConstants.COL_ORDER);
+    observedColumns.put(TransportConstants.TBL_CARGO_INCOMES, TransportConstants.COL_SERVICE);
+    observedColumns.put(TransportConstants.TBL_CARGO_INCOMES, TradeConstants.COL_SALE);
+    observedColumns.put(TransportConstants.TBL_CARGO_INCOMES, TradeConstants.COL_PURCHASE);
+    observedColumns.put(TransportConstants.TBL_CARGO_INCOMES, TransportConstants.COL_AMOUNT);
+    observedColumns.put(TransportConstants.TBL_CARGO_INCOMES, TransportConstants.COL_NOTE);
+    observedColumns.put(TransportConstants.TBL_CARGO_EXPENSES, TransportConstants.COL_CARGO);
+    observedColumns.put(TransportConstants.TBL_CARGO_EXPENSES, TransportConstants.COL_DATE);
+    observedColumns.put(TransportConstants.TBL_CARGO_EXPENSES, TransportConstants.COL_SERVICE);
+    observedColumns.put(TransportConstants.TBL_CARGO_EXPENSES, TransportConstants.COL_NUMBER);
+    observedColumns.put(TradeConstants.TBL_SALES, TransportConstants.COL_NUMBER);
+    observedColumns.put(TradeConstants.TBL_SALES, TransportConstants.COL_EXPORTED);
+    observedColumns.put(TradeConstants.TBL_SALES, TradeConstants.COL_SALE_PROFORMA);
+    observedColumns.put(TradeConstants.TBL_PURCHASES, TransportConstants.COL_DATE);
+    observedColumns.put(TradeConstants.TBL_PURCHASES, TransportConstants.COL_NUMBER);
+    observedColumns.put(TradeConstants.TBL_PURCHASES, TransportConstants.COL_EXPORTED);
   }
 
   private static void initUsageTables() {
@@ -123,7 +146,7 @@ public final class NewsConstants {
 
     usageTables.put(TransportConstants.TBL_ORDER_CARGO, "OrderCargoUsage");
     usageTables.put(TransportConstants.TBL_ORDERS, "TranspOrderUsage");
-    usageTables.put(TransportConstants.TBL_TRIPS, "TripUsage");
+    usageTables.put(TransportConstants.TBL_TRIPS, TransportConstants.TBL_TRIP_USAGE);
 
     usageTables.put(TransportConstants.TBL_CARGO_REQUESTS, "CargoRequestUsage");
     usageTables.put(TransportConstants.TBL_SHIPMENT_REQUESTS, "ShipmentReqUsage");
@@ -131,6 +154,17 @@ public final class NewsConstants {
 
     usageTables.put(TransportConstants.TBL_VEHICLES, "VehicleUsage");
     usageTables.put(TransportConstants.TBL_DRIVERS, "DriverUsage");
+
+    usageTables.put(TransportConstants.TBL_ASSESSMENTS, TransportConstants.TBL_ASSESSMENTS_USAGE);
+    usageTables.put(TransportConstants.TBL_CARGO_INCOMES,
+        TransportConstants.TBL_CARGO_INCOMES_USAGE);
+
+    usageTables.put(TransportConstants.TBL_CARGO_EXPENSES,
+        TransportConstants.TBL_CARGO_EXPENSES_USAGE);
+
+    usageTables.put(TradeConstants.TBL_SALES, TransportConstants.TBL_SALES_USAGE);
+    usageTables.put(TradeConstants.TBL_PURCHASES, TradeConstants.TBL_PURCHASE_USAGE);
+
     usageTables.put(DiscussionsConstants.TBL_DISCUSSIONS,
         DiscussionsConstants.TBL_DISCUSSIONS_USAGE);
   }

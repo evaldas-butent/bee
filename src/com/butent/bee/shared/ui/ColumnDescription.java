@@ -9,7 +9,6 @@ import com.butent.bee.shared.HasInfo;
 import com.butent.bee.shared.HasOptions;
 import com.butent.bee.shared.data.value.HasValueType;
 import com.butent.bee.shared.data.value.ValueType;
-import com.butent.bee.shared.rights.Module;
 import com.butent.bee.shared.utils.ArrayUtils;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.Codec;
@@ -36,7 +35,8 @@ public class ColumnDescription implements BeeSerializable, HasInfo, HasOptions, 
     VERSION("VerColumn", true),
     SELECTION("SelectionColumn", true),
     ACTION("ActionColumn", true),
-    PROPERTY("PropColumn", true);
+    PROPERTY("PropColumn", true),
+    RIGHTS(null, true);
 
     public static ColType getColType(String tagName) {
       if (!BeeUtils.isEmpty(tagName)) {
@@ -72,12 +72,13 @@ public class ColumnDescription implements BeeSerializable, HasInfo, HasOptions, 
 
   private enum Serial {
     COL_TYPE, ID, CAPTION, LABEL, READ_ONLY, WIDTH, SOURCE, PROPERTY, RELATION,
-    MIN_WIDTH, MAX_WIDTH, SORTABLE, VISIBLE, MODULE, FORMAT, HOR_ALIGN, WHITE_SPACE,
+    MIN_WIDTH, MAX_WIDTH, SORTABLE, VISIBLE, FORMAT, HOR_ALIGN, WHITE_SPACE,
     VALIDATION, EDITABLE, CARRY, EDITOR, MIN_VALUE, MAX_VALUE, REQUIRED, ENUM_KEY,
     RENDERER_DESCR, RENDER, RENDER_TOKENS, VALUE_TYPE, PRECISION, SCALE, RENDER_COLUMNS,
     SEARCH_BY, FILTER_SUPPLIER, FILTER_OPTIONS, SORT_BY,
     HEADER_STYLE, BODY_STYLE, FOOTER_STYLE, DYN_STYLES, CELL_TYPE, CELL_RESIZABLE, UPDATE_MODE,
-    AUTO_FIT, FLEXIBILITY, OPTIONS, ELEMENT_TYPE, FOOTER_DESCRIPTION, DYNAMIC
+    AUTO_FIT, FLEXIBILITY, OPTIONS, ELEMENT_TYPE, FOOTER_DESCRIPTION, DYNAMIC,
+    EXPORTABLE, EXPORT_WIDTH_FACTOR
   }
 
   public static final String VIEW_COLUMN_SETTINGS = "GridColumnSettings";
@@ -111,7 +112,6 @@ public class ColumnDescription implements BeeSerializable, HasInfo, HasOptions, 
   private Boolean sortable;
 
   private Boolean visible;
-  private Module module;
 
   private String format;
   private String horAlign;
@@ -163,6 +163,9 @@ public class ColumnDescription implements BeeSerializable, HasInfo, HasOptions, 
   private String options;
 
   private Boolean dynamic;
+
+  private Boolean exportable;
+  private Double exportWidthFactor;
 
   private boolean relationInitialized;
 
@@ -285,9 +288,6 @@ public class ColumnDescription implements BeeSerializable, HasInfo, HasOptions, 
         case VISIBLE:
           setVisible(BeeUtils.toBooleanOrNull(value));
           break;
-        case MODULE:
-          setModule(Codec.unpack(Module.class, value));
-          break;
         case BODY_STYLE:
           setBodyStyle(StyleDeclaration.restore(value));
           break;
@@ -356,6 +356,12 @@ public class ColumnDescription implements BeeSerializable, HasInfo, HasOptions, 
         case DYNAMIC:
           setDynamic(BeeUtils.toBooleanOrNull(value));
           break;
+        case EXPORTABLE:
+          setExportable(BeeUtils.toBooleanOrNull(value));
+          break;
+        case EXPORT_WIDTH_FACTOR:
+          setExportWidthFactor(BeeUtils.toDoubleOrNull(value));
+          break;
       }
     }
   }
@@ -412,6 +418,14 @@ public class ColumnDescription implements BeeSerializable, HasInfo, HasOptions, 
     return enumKey;
   }
 
+  public Boolean getExportable() {
+    return exportable;
+  }
+
+  public Double getExportWidthFactor() {
+    return exportWidthFactor;
+  }
+
   public String getFilterOptions() {
     return filterOptions;
   }
@@ -464,7 +478,6 @@ public class ColumnDescription implements BeeSerializable, HasInfo, HasOptions, 
         "Auto Fit", getAutoFit(),
         "Sortable", getSortable(),
         "Visible", getVisible(),
-        "Module", getModule(),
         "Format", getFormat(),
         "Horizontal Alignment", getHorAlign(),
         "White Space", getWhiteSpace(),
@@ -485,7 +498,9 @@ public class ColumnDescription implements BeeSerializable, HasInfo, HasOptions, 
         "Enum Key", getEnumKey(),
         "Element Type", getElementType(),
         "Options", getOptions(),
-        "Dynamic", getDynamic());
+        "Dynamic", getDynamic(),
+        "Exportable", getExportable(),
+        "Export Width Factor", getExportWidthFactor());
 
     if (getFlexibility() != null) {
       info.addAll(getFlexibility().getInfo());
@@ -572,10 +587,6 @@ public class ColumnDescription implements BeeSerializable, HasInfo, HasOptions, 
 
   public Integer getMinWidth() {
     return minWidth;
-  }
-
-  public Module getModule() {
-    return module;
   }
 
   @Override
@@ -828,9 +839,6 @@ public class ColumnDescription implements BeeSerializable, HasInfo, HasOptions, 
         case VISIBLE:
           arr[i++] = getVisible();
           break;
-        case MODULE:
-          arr[i++] = Codec.pack(getModule());
-          break;
         case BODY_STYLE:
           arr[i++] = getBodyStyle();
           break;
@@ -885,6 +893,12 @@ public class ColumnDescription implements BeeSerializable, HasInfo, HasOptions, 
         case DYNAMIC:
           arr[i++] = getDynamic();
           break;
+        case EXPORTABLE:
+          arr[i++] = getExportable();
+          break;
+        case EXPORT_WIDTH_FACTOR:
+          arr[i++] = getExportWidthFactor();
+          break;
       }
     }
     return Codec.beeSerialize(arr);
@@ -936,6 +950,14 @@ public class ColumnDescription implements BeeSerializable, HasInfo, HasOptions, 
 
   public void setEnumKey(String enumKey) {
     this.enumKey = enumKey;
+  }
+
+  public void setExportable(Boolean exportable) {
+    this.exportable = exportable;
+  }
+
+  public void setExportWidthFactor(Double exportWidthFactor) {
+    this.exportWidthFactor = exportWidthFactor;
   }
 
   public void setFilterOptions(String filterOptions) {
@@ -994,10 +1016,6 @@ public class ColumnDescription implements BeeSerializable, HasInfo, HasOptions, 
 
   public void setMinWidth(Integer minWidth) {
     this.minWidth = minWidth;
-  }
-
-  public void setModule(Module module) {
-    this.module = module;
   }
 
   @Override
@@ -1080,7 +1098,7 @@ public class ColumnDescription implements BeeSerializable, HasInfo, HasOptions, 
   public void setVisible(Boolean visible) {
     this.visible = visible;
   }
-  
+
   public void setWhiteSpace(String whiteSpace) {
     this.whiteSpace = whiteSpace;
   }

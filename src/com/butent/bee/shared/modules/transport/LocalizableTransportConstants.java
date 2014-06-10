@@ -54,6 +54,8 @@ public interface LocalizableTransportConstants {
 
   String createInvoice();
 
+  String createPurchaseInvoice();
+
   String createTripForCargoCaption();
 
   String createTripForCargoQuestion();
@@ -82,8 +84,6 @@ public interface LocalizableTransportConstants {
 
   String loading();
 
-  String newAssessmentRequest();
-
   String newCargo();
 
   String newTransportationOrder();
@@ -110,8 +110,6 @@ public interface LocalizableTransportConstants {
 
   String shippingSchedule();
 
-  String terminal();
-
   String trailers();
 
   String trailerTimeBoard();
@@ -122,37 +120,57 @@ public interface LocalizableTransportConstants {
 
   String trAssessment();
 
-  String trAssessmentCancelOrderQuestion();
+  String trAssessmentAskAnswered();
 
-  String trAssessmentMarkAsAnsweredQuestion();
+  String trAssessmentAskCanceled();
 
-  String trAssessmentMarkAsCompletedQuestion();
+  String trAssessmentAskCompleted();
 
-  String trAssessmentMarkAsLostQuestion();
+  String trAssessmentAskLost();
+
+  String trAssessmentAskOrder();
+
+  String trAssessmentAskRequest();
 
   String trAssessmentRejection();
 
-  String trAssessmentRejectionReasonRequired();
+  String trAssessmentRejectionReason();
+  
+  String trAssessmentReportAllOrders();
 
-  String trAssessmentReturnToOrderQuestion();
+  String trAssessmentReportAnswered();
+  
+  String trAssessmentReportApproved();
+  
+  String trAssessmentReportApprovedToReceived();
+  
+  String trAssessmentReportApprovedToAnswered();
+  
+  String trAssessmentReportGrowth();
 
-  String trAssessmentReturnToRequestQuestion();
+  String trAssessmentReportLost();
+  
+  String trAssessmentReportPercent();
+  
+  String trAssessmentReportQuantity();
+  
+  String trAssessmentReportReceived();
+  
+  String trAssessmentReportSecondary();
+  
+  String trAssessmentRequest();
 
-  String trAssessmentStatusActive();
+  String trAssessmentRequests();
 
   String trAssessmentStatusAnswered();
 
-  String trAssessmentStatusCanceled();
-
-  String trAssessmentStatusCompleted();
+  String trAssessmentStatusApproved();
 
   String trAssessmentStatusLost();
 
   String trAssessmentStatusNew();
 
-  String trAssessmentThereActiveChildrenOrders();
-
-  String trAssessmentThereUnconfirmedAssessments();
+  String trAssessmentToRequests();
 
   String trAssignCargo();
 
@@ -180,9 +198,9 @@ public interface LocalizableTransportConstants {
 
   String trConfirmProforma();
 
-  String trContractPrinting();
-
   String trCreateTransportation();
+
+  String trCreditInvoice();
 
   String trDriverEndingDate();
 
@@ -193,6 +211,8 @@ public interface LocalizableTransportConstants {
   String trDriverStartingDate();
 
   String trEmptyKilometers();
+  
+  String trExpenses();
 
   String trImport();
 
@@ -207,8 +227,6 @@ public interface LocalizableTransportConstants {
   String trImportProperty();
 
   String trImportValue();
-
-  String trInvoice();
 
   String tripDuration();
 
@@ -225,6 +243,8 @@ public interface LocalizableTransportConstants {
   String trLoadingNumber();
 
   String trLogistics();
+
+  String trNewAssessment();
 
   String trNewExpedition();
 
@@ -244,13 +264,13 @@ public interface LocalizableTransportConstants {
 
   String trOrderStatusCompleted();
 
-  String trOrderStatusNew();
-
   String trOrderStatusRequest();
 
   String trPreInvoice();
 
   String trProformaInvoice();
+
+  String trPurchaseInvoice();
 
   String trRegistrationActionSubmit();
 

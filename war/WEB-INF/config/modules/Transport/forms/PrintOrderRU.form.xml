@@ -17,12 +17,15 @@
     <css id="&form;">
       .&form;-table {border-collapse:collapse; width:100%;}
       .&form;-table td {border:1px solid black; padding:2px;}
+      .&form;-forwarder .bee-co-companyInfo-name .bee-co-companyInfo-item:before {content: "Экспедитор: "; font-weight:normal;}
     </css>
     <HorizontalPanel>
       <Table>
         <row>
           <Label html="Заказ №:" style="text-align:right; &bold;" />
-          <TextLabel source="OrderNo" />
+          <TextLabel>
+            <render><ui:expression>rowId</ui:expression></render>
+          </TextLabel>
         </row>
         <row>
           <Label html="Номер ссылки:" style="text-align:right; &bold;" />
@@ -30,7 +33,7 @@
         </row>
         <row>
           <Label html="Дата:" style="text-align:right; &bold;" />
-          <DateTimeLabel source="OrderDate" format="DATE_SHORT" />
+          <DateTimeLabel source="Date" format="DATE_SHORT" />
         </row>
       </Table>
       <Image  url="images/logo.png" />
@@ -41,57 +44,15 @@
 
       <HorizontalPanel class="&form;-table">
         <cell style="vertical-align:top;">
-          <FlowPanel>
-            <TextLabel source="CustomerName" style="&bold;">
-              <renderToken source="CustomerName" />
-            </TextLabel>
-            <TextLabel source="CustomerCode">
-              <renderToken source="CustomerCode" prefix="Код предприятия: " />
-            </TextLabel>
-            <TextLabel source="CustomerVATCode">
-              <renderToken source="CustomerVATCode" prefix="НДС код: " />
-            </TextLabel>
-            <TextLabel source="CustomerAddress">
-              <renderToken source="CustomerAddress" prefix="Адрес: " />
-              <renderToken source="CustomerCity" prefix=", " />
-              <renderToken source="CustomerCountry" prefix=", " />
-              <renderToken source="CustomerPostIndex" prefix=", " />
-            </TextLabel>
-            <TextLabel source="CustomerPhone">
-              <renderToken source="CustomerPhone" prefix="Телефон: " suffix=" " />
-              <renderToken source="CustomerMobile" prefix="Мобильный: " suffix=" " />
-              <renderToken source="CustomerFax" prefix="Факс: " suffix=" " />
-            </TextLabel>
-            <TextLabel source="CustomerEmail">
-              <renderToken source="CustomerEmail" prefix="Эл. почта: " />
-            </TextLabel>
+          <FlowPanel name="Customer">
+            <properties locale="ru" />
           </FlowPanel>
-        </cell>
+        </cell>        
         
         <FlowPanel>
-          <TextLabel source="CompanyName" style="&bold;">
-            <renderToken source="CompanyName" />
-          </TextLabel>
-          <TextLabel source="CompanyCode">
-            <renderToken source="CompanyCode" prefix="Код: " />
-          </TextLabel>
-          <TextLabel source="CompanyVATCode">
-            <renderToken source="CompanyVATCode" prefix="НДС код: " />
-          </TextLabel>
-          <TextLabel source="CompanyAddress">
-            <renderToken source="CompanyAddress" prefix="Адрес: " />
-            <renderToken source="CompanyCity" prefix=", " />
-            <renderToken source="CompanyCountry" prefix=", " />
-            <renderToken source="CompanyPostIndex" prefix=", " />
-          </TextLabel>
-          <TextLabel source="CompanyPhone">
-            <renderToken source="CompanyPhone" prefix="Телефон: " suffix=" " />
-            <renderToken source="CompanyMobile" prefix="Мобильный: " suffix=" " />
-            <renderToken source="CompanyFax" prefix="Факс: " suffix=" " />
-          </TextLabel>
-          <TextLabel source="CompanyEmail">
-            <renderToken source="CompanyEmail" prefix="Эл. почта: " />
-          </TextLabel>
+          <FlowPanel name="Forwarder" class="&form;-forwarder">
+            <properties locale="ru" />
+          </FlowPanel>
           <br />
           <Label html="Представитель экспедитора" style="&bold;" />
           <TextLabel source="Position">
@@ -170,17 +131,8 @@
     <HorizontalPanel class="&form;-table" style="&section;">
       <Label html="Дополнительная информация:" style="&bold;" />
       <TextLabel source="CargoNotes" style="white-space:pre-wrap;" />
-
-      <FlowPanel>
-        <FlowPanel>
-          <Label html="Номер автомобиля:" style="&inline; width:160px; text-align:right;" />
-          <TextLabel source="LoadingTerminal" style="&inline; margin-left:5px;" />
-        </FlowPanel>
-        <FlowPanel>
-          <Label html="2 Номер автомобиля:" style="&inline; width:160px; text-align:right;" />
-          <TextLabel source="UnloadingTerminal" style="&inline; margin-left:5px;" />
-        </FlowPanel>
-      </FlowPanel>
+      <Label html="Номера автомобилей:" style="&bold;" />
+      <Label name="ForwarderVehicle" />
     </HorizontalPanel>
 
     <HorizontalPanel class="&form;-table" style="&section;">
