@@ -7,10 +7,10 @@ import elemental.client.Browser.Info;
 import elemental.js.JsBrowser;
 
 public enum LayoutEngine {
-  WEBKIT("webkit", "webkit", new JustDate(2014, 3, 14)),
+  WEBKIT("webkit", "webkit", new JustDate(2014, 6, 6)),
   GECKO("gecko", null, null),
   TRIDENT("trident", "trident", new JustDate(2014, 5, 23));
-  
+
   public static LayoutEngine detect() {
     String userAgent = JsBrowser.getWindow().getNavigator().getUserAgent().toLowerCase();
     if (userAgent.contains(TRIDENT.substring)) {
@@ -18,7 +18,7 @@ public enum LayoutEngine {
     }
 
     Info info = JsBrowser.getInfo();
-    
+
     if (info != null) {
       if (info.isWebKit()) {
         return WEBKIT;
@@ -26,11 +26,11 @@ public enum LayoutEngine {
         return GECKO;
       }
     }
-    
+
     if (BrowsingContext.isChrome()) {
       return WEBKIT;
     }
-    
+
     for (LayoutEngine engine : LayoutEngine.values()) {
       if (userAgent.contains(engine.substring)) {
         return engine;
@@ -38,7 +38,7 @@ public enum LayoutEngine {
     }
     return null;
   }
-  
+
   private final String substring;
 
   private final String styleSheetName;
@@ -57,7 +57,7 @@ public enum LayoutEngine {
       return null;
     }
   }
-  
+
   public boolean hasStyleSheet() {
     return styleSheetName != null;
   }

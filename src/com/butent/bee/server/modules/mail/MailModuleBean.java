@@ -174,7 +174,21 @@ public class MailModuleBean implements BeeModule {
         response.log(logger);
 
       } else if (BeeUtils.same(svc, SVC_GET_ACCOUNTS)) {
-        response = getAccounts(BeeUtils.toLongOrNull(reqInfo.getParameter(COL_USER)));
+        response = ResponseObject.response(qs.getData(new SqlSelect()
+            .addField(TBL_ACCOUNTS, sys.getIdName(TBL_ACCOUNTS), COL_ACCOUNT)
+            .addFields(TBL_ACCOUNTS, MailConstants.COL_ADDRESS, COL_USER, COL_ACCOUNT_DESCRIPTION,
+                COL_ACCOUNT_DEFAULT, COL_SIGNATURE,
+                SystemFolder.Inbox.name() + COL_FOLDER,
+                SystemFolder.Drafts.name() + COL_FOLDER,
+                SystemFolder.Sent.name() + COL_FOLDER,
+                SystemFolder.Trash.name() + COL_FOLDER)
+            .addFields(TBL_EMAILS, COL_EMAIL_ADDRESS)
+            .addFrom(TBL_ACCOUNTS)
+            .addFromInner(TBL_EMAILS,
+                sys.joinTables(TBL_EMAILS, TBL_ACCOUNTS, MailConstants.COL_ADDRESS))
+            .setWhere(SqlUtils.equals(TBL_ACCOUNTS, COL_USER,
+                BeeUtils.toLongOrNull(reqInfo.getParameter(COL_USER))))
+            .addOrder(TBL_ACCOUNTS, COL_ACCOUNT_DESCRIPTION)));
 
       } else if (BeeUtils.same(svc, SVC_GET_MESSAGE)) {
         response = getMessage(BeeUtils.toLongOrNull(reqInfo.getParameter(COL_PLACE)),
@@ -738,22 +752,6 @@ public class MailModuleBean implements BeeModule {
     }
     account.dropRemoteFolder(folder);
     mail.disconnectFolder(folder);
-  }
-
-  private ResponseObject getAccounts(Long user) {
-    Assert.notNull(user);
-
-    return ResponseObject.response(qs.getData(new SqlSelect()
-        .addField(TBL_ACCOUNTS, sys.getIdName(TBL_ACCOUNTS), COL_ACCOUNT)
-        .addFields(TBL_ACCOUNTS, MailConstants.COL_ADDRESS, COL_USER, COL_ACCOUNT_DESCRIPTION,
-            COL_ACCOUNT_DEFAULT,
-            SystemFolder.Inbox.name() + COL_FOLDER,
-            SystemFolder.Drafts.name() + COL_FOLDER,
-            SystemFolder.Sent.name() + COL_FOLDER,
-            SystemFolder.Trash.name() + COL_FOLDER)
-        .addFrom(TBL_ACCOUNTS)
-        .setWhere(SqlUtils.equals(TBL_ACCOUNTS, COL_USER, user))
-        .addOrder(TBL_ACCOUNTS, COL_ACCOUNT_DESCRIPTION)));
   }
 
   private Address getAddress(Long id) {

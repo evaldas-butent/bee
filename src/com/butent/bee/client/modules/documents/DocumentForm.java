@@ -121,7 +121,7 @@ public class DocumentForm extends DocumentDataForm implements SelectorEvent.Hand
         public GridInterceptor getInstance() {
           return null;
         }
-        
+
         @Override
         public void onEditStart(final EditStartEvent event) {
           if (!BeeUtils.same(event.getColumnId(), COL_DOCUMENT_DATA)) {
@@ -345,7 +345,7 @@ public class DocumentForm extends DocumentDataForm implements SelectorEvent.Hand
   }
 
   @Override
-  protected void parseContent(String content, long dataId, final Consumer<String> consumer) {
+  protected void parseContent(String content, Long dataId, final Consumer<String> consumer) {
     super.parseContent(content, dataId, new Consumer<String>() {
       @Override
       public void accept(String input) {

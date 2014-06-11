@@ -59,6 +59,7 @@ public final class MailConstants {
   public static final String SVC_SEND_MAIL = "send_mail";
   public static final String SVC_GET_USABLE_CONTENT = "get_usable_content";
 
+  public static final String TBL_SIGNATURES = "Signatures";
   public static final String TBL_ACCOUNTS = "Accounts";
   public static final String TBL_FOLDERS = "Folders";
 
@@ -81,6 +82,10 @@ public final class MailConstants {
   public static final String COL_SUBJECT = "Subject";
   public static final String COL_CONTENT = "Content";
   public static final String COL_HTML_CONTENT = "HtmlContent";
+
+  public static final String COL_SIGNATURE = "Signature";
+  public static final String COL_SIGNATURE_NAME = "Description";
+  public static final String COL_SIGNATURE_CONTENT = "Content";
 
   public static final String COL_ACCOUNT_DESCRIPTION = "Description";
   public static final String COL_ACCOUNT_DEFAULT = "Main";

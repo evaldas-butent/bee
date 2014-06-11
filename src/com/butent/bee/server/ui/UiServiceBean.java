@@ -356,6 +356,10 @@ public class UiServiceBean {
     return qs.getViewData(VIEW_REPORT_SETTINGS, usr.getCurrentUserFilter(COL_RS_USER));
   }
 
+  public BeeRowSet getWorkspaces() {
+    return qs.getViewData(VIEW_WORKSPACES, usr.getCurrentUserFilter(COL_USER));
+  }
+  
   private void buildDbList(String rootTable, Set<String> tables, boolean initial) {
     boolean recurse = BeeUtils.isSuffix(rootTable, '*');
     String root = BeeUtils.normalize(BeeUtils.removeSuffix(rootTable, '*'));

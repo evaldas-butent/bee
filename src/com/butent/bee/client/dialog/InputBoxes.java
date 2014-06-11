@@ -14,8 +14,8 @@ import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.event.dom.client.KeyCodes;
 import com.google.gwt.event.dom.client.KeyDownEvent;
 import com.google.gwt.event.dom.client.KeyDownHandler;
-import com.google.gwt.user.client.Timer;
 import com.google.gwt.user.client.Event.NativePreviewEvent;
+import com.google.gwt.user.client.Timer;
 import com.google.gwt.user.client.ui.FlowPanel;
 import com.google.gwt.user.client.ui.HasEnabled;
 import com.google.gwt.user.client.ui.HasWidgets;
@@ -39,8 +39,8 @@ import com.butent.bee.client.view.form.CloseCallback;
 import com.butent.bee.client.widget.Button;
 import com.butent.bee.client.widget.FaLabel;
 import com.butent.bee.client.widget.Image;
-import com.butent.bee.client.widget.Label;
 import com.butent.bee.client.widget.InputText;
+import com.butent.bee.client.widget.Label;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BiConsumer;
 import com.butent.bee.shared.Consumer;
@@ -423,7 +423,7 @@ public class InputBoxes {
     }
   }
 
-  public void inputWidget(String caption, IsWidget widget, final InputCallback callback,
+  public DialogBox inputWidget(String caption, IsWidget widget, final InputCallback callback,
       String dialogStyle, Element target, Set<Action> enabledActions,
       WidgetInitializer initializer) {
 
@@ -442,7 +442,7 @@ public class InputBoxes {
     boolean enabled = (widget instanceof HasEnabled) ? ((HasEnabled) widget).isEnabled() : true;
 
     final ScheduledCommand onClose;
-    
+
     if (enabled) {
       final Holder<Widget> errorDisplay = new Holder<Widget>(null);
 
@@ -571,6 +571,7 @@ public class InputBoxes {
     dialog.showRelativeTo(target);
 
     UiHelper.focus(widget.asWidget());
+    return dialog;
   }
 
   private static boolean addCommandGroup(final Popup dialog, HasWidgets panel, String confirmHtml,

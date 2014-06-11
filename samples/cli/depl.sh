@@ -5,8 +5,11 @@ clear
 WAR_FOLDER=/media/bnovo/Bee/war
 WAR_FILE=/tmp/Bee.war
 ZIP_FILE=/tmp/Bee
-echo start create war `date` $DEPCOUNTLEFT
+echo start gwt compile `date` $DEPCOUNTLEFT
+#. /media/bnovo/Bee/samples/cli/gwtc.sh
+#. /media/bnovo/Bee/samples/cli/gwtc_dev.sh
 ## Creating zip file due read-only /media/bnovo/ file system
+echo start create war `date`
 cd $WAR_FOLDER
 zip -r -0 -q $ZIP_FILE .
 

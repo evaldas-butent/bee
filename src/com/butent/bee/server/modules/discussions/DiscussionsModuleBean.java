@@ -977,17 +977,17 @@ public class DiscussionsModuleBean implements BeeModule {
         topicData[rs.getColumnIndex(ALS_BIRTHDAY)] = BeeUtils.toString(true);
 
         int placeId = rs.getNumberOfRows() - 1;
-
         for (int i = 0; i < rs.getNumberOfRows(); i++) {
           Integer ord = BeeUtils.toIntOrNull(rs.getValue(i, rs.getColumnIndex(COL_ORDINAL)));
+
           if (BeeUtils.compareNullsLast(ord, ordinal) >= 0) {
-            if (i <= placeId) {
+            if (placeId > i) {
               placeId = i;
             }
           }
         }
 
-        if (placeId > 0) {
+        if (placeId >= 0) {
           rs.getRows().add(placeId, topicData);
         } else {
           rs.getRows().add(topicData);

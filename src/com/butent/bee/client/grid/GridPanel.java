@@ -127,7 +127,7 @@ public class GridPanel extends Simple implements HasEnabled, HasFosterParent,
 
       UiOption uiOption = child ? UiOption.CHILD : UiOption.EMBEDDED;
 
-      GridFactory.createGrid(getGridName(), GridFactory.getSupplierKey(getGridName(), gic), gic,
+      GridFactory.createGrid(getGridName(), GridFactory.getSupplierKey(getGridName()), gic,
           EnumSet.of(uiOption), getGridOptions(), new PresenterCallback() {
             @Override
             public void onCreate(Presenter gp) {

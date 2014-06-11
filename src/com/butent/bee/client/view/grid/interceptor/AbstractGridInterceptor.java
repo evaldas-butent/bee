@@ -281,11 +281,6 @@ public abstract class AbstractGridInterceptor implements GridInterceptor {
   }
 
   @Override
-  public String getSupplierKey() {
-    return null;
-  }
-
-  @Override
   public String getViewName() {
     return (getGridPresenter() == null) ? null : getGridPresenter().getViewName();
   }

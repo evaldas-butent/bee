@@ -343,6 +343,9 @@ public final class Images {
     @Source("warning.png")
     ImageResource warning();
 
+    @Source("workspace.png")
+    ImageResource workspace();
+
     @Source("yellow.gif")
     ImageResource yellow();
 
@@ -506,6 +509,8 @@ public final class Images {
     map.put(key("user"), resources.user());
 
     map.put(key("warning"), resources.warning());
+
+    map.put(key("workspace"), resources.workspace());
 
     map.put(key("yellow"), resources.yellow());
     map.put(key("yellowSmall"), resources.yellowSmall());

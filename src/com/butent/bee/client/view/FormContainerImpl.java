@@ -255,8 +255,7 @@ public class FormContainerImpl extends Split implements FormContainerView, HasNa
 
   @Override
   public String getSupplierKey() {
-    return FormFactory
-        .getSupplierKey(getContent().getFormName(), getContent().getFormInterceptor());
+    return FormFactory.getSupplierKey(getContent().getFormName());
   }
 
   @Override

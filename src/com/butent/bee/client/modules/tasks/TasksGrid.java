@@ -103,16 +103,6 @@ class TasksGrid extends AbstractGridInterceptor implements ClickHandler {
     return consumer;
   }
 
-  static void open(String args) {
-    TaskType type = TaskType.getByPrefix(args);
-
-    if (type == null) {
-      Global.showError(Lists.newArrayList(GRID_TASKS, "Type not recognized:", args));
-    } else {
-      GridFactory.openGrid(GRID_TASKS, new TasksGrid(type, type.getCaption()));
-    }
-  }
-
   private final TaskType type;
   private final String caption;
 
@@ -284,11 +274,6 @@ class TasksGrid extends AbstractGridInterceptor implements ClickHandler {
   @Override
   public GridInterceptor getInstance() {
     return new TasksGrid(type, caption);
-  }
-
-  @Override
-  public String getSupplierKey() {
-    return BeeUtils.normalize(BeeUtils.join(BeeConst.STRING_UNDER, "grid", GRID_TASKS, type));
   }
 
   @Override

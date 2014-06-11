@@ -89,7 +89,12 @@ public final class CalendarKeeper {
               calName = event.getOptions();
             }
 
-            openCalendar(calId, calName, true);
+            openCalendar(calId, calName, new Callback<IdentifiableWidget>() {
+              @Override
+              public void onSuccess(IdentifiableWidget result) {
+                BeeKeeper.getScreen().showInNewPlace(result);
+              }
+            });
           }
 
         } else if (event.hasView(VIEW_APPOINTMENTS)) {
@@ -261,6 +266,17 @@ public final class CalendarKeeper {
     CalendarKeeper.dataLoaded = dataLoaded;
   }
 
+  public static void openCalendar(final long id, final Callback<IdentifiableWidget> callback) {
+    Queries.getValue(VIEW_CALENDARS, id, COL_CALENDAR_NAME, new Callback<String>() {
+      @Override
+      public void onSuccess(String result) {
+        if (!BeeUtils.isEmpty(result)) {
+          openCalendar(id, result, callback);
+        }
+      }
+    });
+  }
+  
   static void createAppointment(final Long calendarId, final DateTime start,
       final Long attendeeId) {
 
@@ -403,7 +419,7 @@ public final class CalendarKeeper {
   }
 
   static String getCalendarSupplierKey(long calendarId) {
-    return "calendar_" + calendarId;
+    return WidgetFactory.SupplierKind.CALENDAR.getKey(BeeUtils.toString(calendarId));
   }
 
   static void getData(Collection<String> viewNames, final Command command) {
@@ -782,19 +798,20 @@ public final class CalendarKeeper {
     }
   }
 
-  private static void openCalendar(final long id, final String name, final boolean newPanel) {
-
+  private static void openCalendar(final long id, final String name,
+      Callback<IdentifiableWidget> callback) {
+    
     final class OpenCommand extends Command {
       private final long calendarId;
       private final String calendarName;
-      private final Callback<IdentifiableWidget> callback;
+      private final Callback<IdentifiableWidget> calendarCallback;
 
       private OpenCommand(long calendarId, String calendarName,
-          Callback<IdentifiableWidget> callback) {
+          Callback<IdentifiableWidget> calendarCallback) {
         super();
         this.calendarId = calendarId;
         this.calendarName = calendarName;
-        this.callback = callback;
+        this.calendarCallback = calendarCallback;
       }
 
       @Override
@@ -811,7 +828,7 @@ public final class CalendarKeeper {
 
             onCreatePanel(calendarId, row.getId(), calendarName, ucAttendees);
 
-            callback.onSuccess(calendarPanel);
+            calendarCallback.onSuccess(calendarPanel);
           }
         });
       }
@@ -821,8 +838,8 @@ public final class CalendarKeeper {
     if (!WidgetFactory.hasSupplier(supplierKey)) {
       WidgetSupplier supplier = new WidgetSupplier() {
         @Override
-        public void create(final Callback<IdentifiableWidget> callback) {
-          OpenCommand command = new OpenCommand(id, name, callback);
+        public void create(final Callback<IdentifiableWidget> cb) {
+          OpenCommand command = new OpenCommand(id, name, cb);
           ensureData(command);
         }
       };
@@ -830,13 +847,7 @@ public final class CalendarKeeper {
       WidgetFactory.registerSupplier(supplierKey, supplier);
     }
 
-    OpenCommand command = new OpenCommand(id, name, new Callback<IdentifiableWidget>() {
-      @Override
-      public void onSuccess(IdentifiableWidget result) {
-        BeeKeeper.getScreen().showWidget(result, newPanel);
-      }
-    });
-
+    OpenCommand command = new OpenCommand(id, name, callback);
     ensureData(command);
   }
 
