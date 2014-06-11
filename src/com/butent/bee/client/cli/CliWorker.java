@@ -1485,7 +1485,10 @@ public final class CliWorker {
       }
 
     } else {
-      BeeKeeper.getScreen().showInfo();
+      List<ExtendedProperty> info = BeeKeeper.getScreen().getExtendedInfo();
+
+      ExtendedPropertiesData data = new ExtendedPropertiesData(info, false);
+      Global.showModalGrid("Screen", data);
     }
   }
 

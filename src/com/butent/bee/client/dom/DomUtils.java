@@ -64,6 +64,7 @@ public final class DomUtils {
   public static final String ATTRIBUTE_DATA_COLUMN = Attributes.DATA_PREFIX + "col";
   public static final String ATTRIBUTE_DATA_ROW = Attributes.DATA_PREFIX + "row";
   public static final String ATTRIBUTE_ROLE = Attributes.DATA_PREFIX + "role";
+  public static final String ATTRIBUTE_DATA_SIZE = Attributes.DATA_PREFIX + "size";
 
   public static final String VALUE_TRUE = "true";
 
@@ -563,6 +564,10 @@ public final class DomUtils {
     return (elem == null) ? null : elem.getAttribute(ATTRIBUTE_DATA_ROW);
   }
 
+  public static int getDataSize(Element elem) {
+    String value = (elem == null) ? null : elem.getAttribute(ATTRIBUTE_DATA_SIZE);
+    return BeeUtils.isEmpty(value) ? BeeConst.UNDEF : BeeUtils.toInt(value);
+  }
   public static Element getElement(String id) {
     Assert.notEmpty(id);
     Element el = Document.get().getElementById(id);
@@ -1740,6 +1745,11 @@ public final class DomUtils {
     }
   }
 
+  public static void setDataSize(Element elem, int size) {
+    Assert.notNull(elem);
+    elem.setAttribute(ATTRIBUTE_DATA_SIZE, Integer.toString(size));
+  }
+  
   public static void setDraggable(Element elem) {
     Assert.notNull(elem);
     elem.setAttribute(Attributes.DRAGGABLE, VALUE_TRUE);

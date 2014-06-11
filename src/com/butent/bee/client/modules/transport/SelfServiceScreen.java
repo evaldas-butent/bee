@@ -164,6 +164,10 @@ public class SelfServiceScreen extends ScreenImpl {
   }
 
   @Override
+  protected void createExpanders() {
+  }
+
+  @Override
   protected Panel createMenuPanel() {
     return null;
   }
