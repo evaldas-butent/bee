@@ -820,13 +820,13 @@ public class TasksModuleBean implements BeeModule {
 
         if (!response.hasErrors() && response.hasResponse(String.class)) {
           Set<Long> createdTasks = DataUtils.parseIdSet(response.getResponseAsString());
-          Long senderEmailId = mail.getSenderEmailId("create task:");
+          Long senderAccountId = mail.getSenderAccountId("create task:");
 
-          if (senderEmailId != null) {
+          if (senderAccountId != null) {
             boolean pref = BeeConst.isTrue(taskRow.getProperty(PROP_MAIL));
 
             for (Long id : createdTasks) {
-              ResponseObject mailResponse = mailNewTask(senderEmailId, id, pref, false);
+              ResponseObject mailResponse = mailNewTask(senderAccountId, id, pref, false);
               response.addMessagesFrom(mailResponse);
             }
           }
@@ -871,10 +871,10 @@ public class TasksModuleBean implements BeeModule {
 
         if (!response.hasErrors() && event == TaskEvent.FORWARD
             && !Objects.equals(currentUser, DataUtils.getLong(taskData, taskRow, COL_EXECUTOR))) {
-          Long senderEmailId = mail.getSenderEmailId("forward task:");
+          Long senderAccountId = mail.getSenderAccountId("forward task:");
 
-          if (senderEmailId != null) {
-            ResponseObject mailResponse = mailNewTask(senderEmailId, taskId, true, false);
+          if (senderAccountId != null) {
+            ResponseObject mailResponse = mailNewTask(senderAccountId, taskId, true, false);
             response.addMessagesFrom(mailResponse);
           }
         }
@@ -1636,7 +1636,7 @@ public class TasksModuleBean implements BeeModule {
     return resp;
   }
 
-  private ResponseObject mailNewTask(Long senderEmailId, long taskId,
+  private ResponseObject mailNewTask(Long senderAccountId, long taskId,
       boolean ownerPreference, boolean automatic) {
 
     ResponseObject response = ResponseObject.emptyResponse();
@@ -1667,8 +1667,8 @@ public class TasksModuleBean implements BeeModule {
 
     Long executor = row.getLong(COL_EXECUTOR);
 
-    Long recipientEmailId = usr.getEmailId(executor, false);
-    if (recipientEmailId == null) {
+    String recipientEmail = usr.getUserEmail(executor, false);
+    if (BeeUtils.isEmpty(recipientEmail)) {
       logger.warning(label, taskId, "executor", executor, "email not available");
       return response;
     }
@@ -1684,9 +1684,9 @@ public class TasksModuleBean implements BeeModule {
         row.getValue(COL_DESCRIPTION), row.getLong(COL_OWNER), executor, constants);
     String content = document.buildLines();
 
-    logger.info(label, taskId, "mail to", executor, recipientEmailId);
+    logger.info(label, taskId, "mail to", executor, recipientEmail);
 
-    ResponseObject mailResponse = mail.sendMail(senderEmailId, recipientEmailId,
+    ResponseObject mailResponse = mail.sendMail(senderAccountId, recipientEmail,
         constants.crmMailTaskSubject(), content);
 
     if (mailResponse.hasErrors()) {
@@ -1700,8 +1700,8 @@ public class TasksModuleBean implements BeeModule {
       return;
     }
 
-    Long senderEmailId = mail.getSenderEmailId("scheduled tasks:");
-    if (senderEmailId == null) {
+    Long senderAccountId = mail.getSenderAccountId("scheduled tasks:");
+    if (senderAccountId == null) {
       return;
     }
 
@@ -1726,7 +1726,7 @@ public class TasksModuleBean implements BeeModule {
     }
 
     for (Long id : ids) {
-      ResponseObject response = mailNewTask(senderEmailId, id, true, true);
+      ResponseObject response = mailNewTask(senderAccountId, id, true, true);
       if (response.hasErrors() || response.hasWarnings()) {
         logger.warning("mail scheduled tasks canceled");
         break;
@@ -2009,11 +2009,11 @@ public class TasksModuleBean implements BeeModule {
     int count = 0;
     String label = "task reminders:";
 
-    Long senderEmailId = mail.getSenderEmailId(label);
-    if (!DataUtils.isId(senderEmailId)) {
+    Long accountId = mail.getSenderAccountId(label);
+
+    if (!DataUtils.isId(accountId)) {
       return count;
     }
-
     Set<Integer> statusValues = Sets.newHashSet(TaskStatus.NOT_VISITED.ordinal(),
         TaskStatus.ACTIVE.ordinal(), TaskStatus.SCHEDULED.ordinal(),
         TaskStatus.SUSPENDED.ordinal());
@@ -2081,8 +2081,8 @@ public class TasksModuleBean implements BeeModule {
         continue;
       }
 
-      Long recipientEmailId = usr.getEmailId(executor, false);
-      if (recipientEmailId == null) {
+      String recipientEmail = usr.getUserEmail(executor, false);
+      if (BeeUtils.isEmpty(recipientEmail)) {
         logger.warning(label, "task", taskId, "executor", executor, "email not available");
         continue;
       }
@@ -2098,9 +2098,9 @@ public class TasksModuleBean implements BeeModule {
           row.getValue(COL_DESCRIPTION), row.getLong(COL_OWNER), executor, constants);
       String content = document.buildLines();
 
-      logger.info(label, taskId, "mail to", executor, recipientEmailId);
+      logger.info(label, taskId, "mail to", executor, recipientEmail);
 
-      ResponseObject mailResponse = mail.sendMail(senderEmailId, recipientEmailId,
+      ResponseObject mailResponse = mail.sendMail(accountId, recipientEmail,
           constants.crmReminderMailSubject(), content);
 
       if (mailResponse.hasErrors()) {
@@ -2147,7 +2147,7 @@ public class TasksModuleBean implements BeeModule {
       columns.add(DataUtils.getColumn(COL_TASK_TYPE, taskColumns));
       values.add(type.toString());
     }
-    
+
     columns.add(DataUtils.getColumn(COL_PRIORITY, taskColumns));
     values.add(DataUtils.getString(rtColumns, rtRow, COL_PRIORITY));
 

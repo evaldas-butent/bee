@@ -308,7 +308,7 @@ public class UserServiceBean {
     return getUserId(getCurrentUser());
   }
 
-  public Long getEmailId(Long userId, boolean checkCompany) {
+  public String getUserEmail(Long userId, boolean checkCompany) {
     if (userId == null) {
       return null;
     }
@@ -317,42 +317,43 @@ public class UserServiceBean {
     if (userInfo == null) {
       return null;
     }
-
     if (DataUtils.isId(userInfo.getCompanyPerson())) {
-      Long id =
-          qs.getLong(new SqlSelect().addFields(TBL_CONTACTS, COL_EMAIL)
-              .addFrom(TBL_CONTACTS)
-              .addFromLeft(TBL_COMPANY_PERSONS,
-                  sys.joinTables(TBL_CONTACTS, TBL_COMPANY_PERSONS, COL_CONTACT))
-              .setWhere(sys.idEquals(TBL_COMPANY_PERSONS, userInfo.getCompanyPerson())));
+      String email = qs.getValue(new SqlSelect()
+          .addFields(TBL_EMAILS, COL_EMAIL_ADDRESS)
+          .addFrom(TBL_COMPANY_PERSONS)
+          .addFromLeft(TBL_CONTACTS,
+              sys.joinTables(TBL_CONTACTS, TBL_COMPANY_PERSONS, COL_CONTACT))
+          .addFromLeft(TBL_EMAILS, sys.joinTables(TBL_EMAILS, TBL_CONTACTS, COL_EMAIL))
+          .setWhere(sys.idEquals(TBL_COMPANY_PERSONS, userInfo.getCompanyPerson())));
 
-      if (DataUtils.isId(id)) {
-        return id;
+      if (!BeeUtils.isEmpty(email)) {
+        return email;
       }
     }
-
     if (DataUtils.isId(userInfo.getPerson())) {
-      Long id = qs.getLong(new SqlSelect().addFields(TBL_CONTACTS, COL_EMAIL)
-          .addFrom(TBL_CONTACTS)
-          .addFromLeft(TBL_PERSONS, sys.joinTables(TBL_CONTACTS, TBL_PERSONS, COL_CONTACT))
+      String email = qs.getValue(new SqlSelect()
+          .addFields(TBL_EMAILS, COL_EMAIL_ADDRESS)
+          .addFrom(TBL_PERSONS)
+          .addFromLeft(TBL_CONTACTS, sys.joinTables(TBL_CONTACTS, TBL_PERSONS, COL_CONTACT))
+          .addFromLeft(TBL_EMAILS, sys.joinTables(TBL_EMAILS, TBL_CONTACTS, COL_EMAIL))
           .setWhere(sys.idEquals(TBL_PERSONS, userInfo.getPerson())));
 
-      if (DataUtils.isId(id)) {
-        return id;
+      if (!BeeUtils.isEmpty(email)) {
+        return email;
       }
     }
-
     if (checkCompany && DataUtils.isId(userInfo.getCompany())) {
-      Long id = qs.getLong(new SqlSelect().addFields(TBL_CONTACTS, COL_EMAIL)
-          .addFrom(TBL_CONTACTS)
-          .addFromLeft(TBL_COMPANIES, sys.joinTables(TBL_CONTACTS, TBL_COMPANIES, COL_CONTACT))
+      String email = qs.getValue(new SqlSelect()
+          .addFields(TBL_EMAILS, COL_EMAIL_ADDRESS)
+          .addFrom(TBL_COMPANIES)
+          .addFromLeft(TBL_CONTACTS, sys.joinTables(TBL_CONTACTS, TBL_COMPANIES, COL_CONTACT))
+          .addFromLeft(TBL_EMAILS, sys.joinTables(TBL_EMAILS, TBL_CONTACTS, COL_EMAIL))
           .setWhere(sys.idEquals(TBL_COMPANIES, userInfo.getCompany())));
 
-      if (DataUtils.isId(id)) {
-        return id;
+      if (!BeeUtils.isEmpty(email)) {
+        return email;
       }
     }
-
     return null;
   }
 
