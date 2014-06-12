@@ -242,7 +242,11 @@ public class MailStorageBean {
       Address sender = envelope.getSender();
 
       if (sender != null) {
-        senderId = storeAddress(userId, sender);
+        try {
+          senderId = storeAddress(userId, sender);
+        } catch (AddressException e) {
+          logger.error(e);
+        }
       }
       try {
         ByteArrayOutputStream bos = new ByteArrayOutputStream();
@@ -265,13 +269,17 @@ public class MailStorageBean {
       Set<Long> allAddresses = Sets.newHashSet();
 
       for (Entry<AddressType, Address> entry : envelope.getRecipients().entries()) {
-        Long adr = storeAddress(userId, entry.getValue());
+        try {
+          Long adr = storeAddress(userId, entry.getValue());
 
-        if (allAddresses.add(adr)) {
-          qs.insertData(new SqlInsert(TBL_RECIPIENTS)
-              .addConstant(COL_MESSAGE, messageId)
-              .addConstant(MailConstants.COL_ADDRESS, adr)
-              .addConstant(COL_ADDRESS_TYPE, entry.getKey().name()));
+          if (allAddresses.add(adr)) {
+            qs.insertData(new SqlInsert(TBL_RECIPIENTS)
+                .addConstant(COL_MESSAGE, messageId)
+                .addConstant(MailConstants.COL_ADDRESS, adr)
+                .addConstant(COL_ADDRESS_TYPE, entry.getKey().name()));
+          }
+        } catch (AddressException e) {
+          logger.error(e);
         }
       }
       try {
