@@ -734,7 +734,7 @@ public class ClassifiersModuleBean implements BeeModule {
     translations.put(COL_PHONE, constants.phone());
     translations.put(COL_MOBILE, constants.mobile());
     translations.put(COL_FAX, constants.fax());
-    translations.put(COL_EMAIL_ADDRESS, constants.address());
+    translations.put(COL_EMAIL_ADDRESS, constants.email());
     translations.put(COL_CITY, constants.city());
     translations.put(COL_COUNTRY, constants.country());
 
