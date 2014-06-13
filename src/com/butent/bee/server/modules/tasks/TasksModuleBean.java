@@ -1642,21 +1642,24 @@ public class TasksModuleBean implements BeeModule {
     ResponseObject response = ResponseObject.emptyResponse();
     String label = "mail new task";
 
+    SqlSelect query = new SqlSelect()
+        .addFields(TBL_TASKS, COL_SUMMARY, COL_DESCRIPTION, COL_OWNER,
+            COL_EXECUTOR, COL_START_TIME, COL_FINISH_TIME)
+        .addFrom(TBL_TASKS);
+
     HasConditions where = SqlUtils.and(SqlUtils.equals(TBL_TASKS, COL_TASK_ID, taskId));
+
     if (!ownerPreference) {
-      where.add(SqlUtils.notNull(TBL_USERS, COL_MAIL_ASSIGNED_TASKS));
+      query.addFromInner(TBL_USER_SETTINGS,
+          SqlUtils.join(TBL_USER_SETTINGS, COL_USER, TBL_TASKS, COL_EXECUTOR));
+      where.add(SqlUtils.notNull(TBL_USER_SETTINGS, COL_MAIL_ASSIGNED_TASKS));
     }
+
     if (!automatic) {
       where.add(SqlUtils.notEqual(TBL_TASKS, COL_OWNER, SqlUtils.field(TBL_TASKS, COL_EXECUTOR)));
     }
 
-    SqlSelect query = new SqlSelect()
-        .addFields(TBL_TASKS, COL_SUMMARY, COL_DESCRIPTION, COL_OWNER,
-            COL_EXECUTOR, COL_START_TIME, COL_FINISH_TIME)
-        .addFrom(TBL_TASKS)
-        .addFromInner(TBL_USERS,
-            sys.joinTables(TBL_USERS, TBL_TASKS, COL_EXECUTOR))
-        .setWhere(where);
+    query.setWhere(where);
 
     SimpleRowSet data = qs.getData(query);
     if (DataUtils.isEmpty(data)) {
@@ -1709,15 +1712,15 @@ public class TasksModuleBean implements BeeModule {
         SqlUtils.inList(TBL_TASKS, COL_TASK_ID, tasks),
         SqlUtils.or(
             SqlUtils.notNull(TBL_RECURRING_TASKS, COL_RT_COPY_BY_MAIL),
-            SqlUtils.notNull(TBL_USERS, COL_MAIL_ASSIGNED_TASKS)));
+            SqlUtils.notNull(TBL_USER_SETTINGS, COL_MAIL_ASSIGNED_TASKS)));
 
     SqlSelect query = new SqlSelect()
         .addFields(TBL_TASKS, COL_TASK_ID)
         .addFrom(TBL_TASKS)
-        .addFromInner(TBL_RECURRING_TASKS,
+        .addFromLeft(TBL_RECURRING_TASKS,
             sys.joinTables(TBL_RECURRING_TASKS, TBL_TASKS, COL_RECURRING_TASK))
-        .addFromInner(TBL_USERS,
-            sys.joinTables(TBL_USERS, TBL_TASKS, COL_EXECUTOR))
+        .addFromLeft(TBL_USER_SETTINGS,
+            SqlUtils.join(TBL_USER_SETTINGS, COL_USER, TBL_TASKS, COL_EXECUTOR))
         .setWhere(where);
 
     Long[] ids = qs.getLongColumn(query);

@@ -1358,7 +1358,6 @@
 
 .bee-Workspace-new-tab {
   margin-left: 1px;
-  margin-right: 60px;
   width: 25px;
   height: 25px;
   text-align: center;
@@ -1378,18 +1377,18 @@
 }
 
 .bee-workspace-expander {
-  position: absolute;
-  top: 5px;
-  right: 0px;
+  margin-left: auto;
 }
 .bee-workspace-expander > div {
   display: inline-block;
+  margin-top: 1px;
   margin-right: 6px;
-  font-size: 18px;
-  color: #aaa;
+  font-size: 15px;
+  color: #999;
   cursor: pointer;
 }
 .bee-workspace-expander > div:hover {
+  background-color: white;
   color: black;
 }
 

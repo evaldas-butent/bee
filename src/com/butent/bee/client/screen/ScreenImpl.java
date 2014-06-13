@@ -45,7 +45,7 @@ import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.HasHtml;
 import com.butent.bee.shared.Pair;
 import com.butent.bee.shared.css.values.FontSize;
-import com.butent.bee.shared.data.DataUtils;
+import com.butent.bee.shared.data.BeeRow;
 import com.butent.bee.shared.data.UserData;
 import com.butent.bee.shared.font.FontAwesome;
 import com.butent.bee.shared.html.Tags;
@@ -627,10 +627,7 @@ public class ScreenImpl implements Screen {
     signature.addClickHandler(new ClickHandler() {
       @Override
       public void onClick(ClickEvent event) {
-        Long userId = BeeKeeper.getUser().getUserId();
-        if (DataUtils.isId(userId)) {
-          onUserSignatureClick(userId);
-        }
+        onUserSignatureClick();
       }
     });
 
@@ -746,8 +743,11 @@ public class ScreenImpl implements Screen {
     return Pair.of(panel, width);
   }
 
-  protected void onUserSignatureClick(long userId) {
-    RowEditor.openRow(AdministrationConstants.VIEW_USERS, userId, true, null);
+  protected void onUserSignatureClick() {
+    BeeRow row = BeeKeeper.getUser().getSettingsRow();
+    if (row != null) {
+      RowEditor.openRow(AdministrationConstants.VIEW_USER_SETTINGS, row, true);
+    }
   }
 
   protected void setMenuPanel(HasWidgets menuPanel) {

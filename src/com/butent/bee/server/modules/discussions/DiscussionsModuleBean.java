@@ -1448,10 +1448,16 @@ public class DiscussionsModuleBean implements BeeModule {
     HasConditions where =
         SqlUtils.and(SqlUtils.equals(TBL_DISCUSSIONS, COL_DISCUSSION_ID, discussionId));
 
+    boolean checkUserSettings;
+
     if (!notifyEmailPreference && typeAnnoucement) {
-      where.add(SqlUtils.notNull(TBL_USERS, COL_MAIL_NEW_ANNOUNCEMENTS));
+      where.add(SqlUtils.notNull(TBL_USER_SETTINGS, COL_MAIL_NEW_ANNOUNCEMENTS));
+      checkUserSettings = true;
     } else if (!notifyEmailPreference) {
-      where.add(SqlUtils.notNull(TBL_USERS, COL_MAIL_NEW_DISCUSSIONS));
+      where.add(SqlUtils.notNull(TBL_USER_SETTINGS, COL_MAIL_NEW_DISCUSSIONS));
+      checkUserSettings = true;
+    } else {
+      checkUserSettings = false;
     }
 
     if (sendAll) {
@@ -1475,10 +1481,16 @@ public class DiscussionsModuleBean implements BeeModule {
       /* Using Cartesian product for sending all mails */
       discussMailList.addFrom(TBL_USERS);
     } else {
-      discussMailList.addFromInner(TBL_DISCUSSIONS_USERS,
-          sys.joinTables(TBL_DISCUSSIONS, TBL_DISCUSSIONS_USERS, COL_DISCUSSION))
+      discussMailList
+          .addFromInner(TBL_DISCUSSIONS_USERS,
+              sys.joinTables(TBL_DISCUSSIONS, TBL_DISCUSSIONS_USERS, COL_DISCUSSION))
           .addFromInner(TBL_USERS,
               sys.joinTables(TBL_USERS, TBL_DISCUSSIONS_USERS, DiscussionsConstants.COL_USER));
+    }
+
+    if (checkUserSettings) {
+      discussMailList.addFromInner(TBL_USER_SETTINGS,
+          sys.joinTables(TBL_USERS, TBL_USER_SETTINGS, AdministrationConstants.COL_USER));
     }
 
     logger.debug(typeAnnoucement ? LOG_CREATE_ANNOUNCEMENT_LABEL : LOG_CREATE_DISCUSSION_LABEL,

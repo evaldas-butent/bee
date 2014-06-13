@@ -41,6 +41,7 @@ import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogUtils;
 import com.butent.bee.shared.ui.HasCaption;
+import com.butent.bee.shared.ui.UserInterface.Component;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.ExtendedProperty;
 import com.butent.bee.shared.utils.PropertyUtils;
@@ -209,7 +210,8 @@ public class Workspace extends TabbedPages implements CaptionChangeEvent.Handler
 
       @Override
       boolean isEnabled(Workspace workspace, int index) {
-        if (index == workspace.getSelectedIndex()) {
+        if (BeeKeeper.getScreen().getUserInterface().hasComponent(Component.WORKSPACES)
+            && index == workspace.getSelectedIndex()) {
           TilePanel panel = workspace.getActivePanel();
           return panel != null && panel.isBookmarkable();
         } else {
@@ -235,7 +237,8 @@ public class Workspace extends TabbedPages implements CaptionChangeEvent.Handler
 
       @Override
       boolean isEnabled(Workspace workspace, int index) {
-        return workspace.getPageCount() > 1;
+        return BeeKeeper.getScreen().getUserInterface().hasComponent(Component.WORKSPACES)
+            && workspace.getPageCount() > 1;
       }
     };
 
@@ -760,10 +763,17 @@ public class Workspace extends TabbedPages implements CaptionChangeEvent.Handler
     }
   }
 
+  private void clearCaption(int index) {
+    TabWidget tab = (TabWidget) getTabWidget(index);
+    tab.setCaption(Localized.getConstants().newTab());
+  }
+
   private void clearPage(int index) {
     Widget widget = getContentWidget(index);
+
     if (widget instanceof TilePanel) {
       ((TilePanel) widget).clear(this);
+      clearCaption(index);
     }
   }
 
@@ -797,7 +807,7 @@ public class Workspace extends TabbedPages implements CaptionChangeEvent.Handler
 
     } else if (!tile.isBlank()) {
       tile.blank();
-      updateCaption(tile, null);
+      clearCaption(pageIndex);
     }
   }
 
@@ -889,7 +899,7 @@ public class Workspace extends TabbedPages implements CaptionChangeEvent.Handler
       panel.addTile(this, direction);
     }
   }
-
+  
   private JSONObject toJson() {
     JSONObject json = new JSONObject();
 

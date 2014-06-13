@@ -208,7 +208,7 @@ public class SelfServiceScreen extends ScreenImpl {
   }
 
   @Override
-  protected void onUserSignatureClick(long userId) {
+  protected void onUserSignatureClick() {
     PasswordService.change();
   }
 

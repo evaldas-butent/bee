@@ -54,12 +54,10 @@ public class Mobile extends ScreenImpl {
   
   @Override
   public void activateWidget(IdentifiableWidget widget) {
-    notifyWarning("The white zone is for loading and unloading only");
   }
 
   @Override
   public void addDomainEntry(Domain domain, IdentifiableWidget widget, Long key, String caption) {
-    notifyWarning("The white zone is for loading and unloading only");
   }
 
   @Override
