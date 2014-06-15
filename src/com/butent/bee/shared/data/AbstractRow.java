@@ -140,7 +140,7 @@ public abstract class AbstractRow implements IsRow {
 
     switch (type) {
       case BOOLEAN:
-        return new BooleanValue(getBoolean(index));
+        return BooleanValue.getInstance(getBoolean(index));
       case DATE:
         return new DateValue(getDate(index));
       case DATE_TIME:

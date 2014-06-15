@@ -69,7 +69,6 @@ import com.butent.bee.shared.data.IsRow;
 import com.butent.bee.shared.data.event.RowUpdateEvent;
 import com.butent.bee.shared.data.filter.CompoundFilter;
 import com.butent.bee.shared.data.filter.Filter;
-import com.butent.bee.shared.data.value.LongValue;
 import com.butent.bee.shared.data.value.TextValue;
 import com.butent.bee.shared.data.value.Value;
 import com.butent.bee.shared.i18n.LocalizableConstants;
@@ -362,7 +361,7 @@ public class DocumentDataForm extends AbstractFormInterceptor
       ensureDataId(null, callback);
       return true;
     }
-    
+
     @Override
     public GridInterceptor getInstance() {
       return null;
@@ -539,9 +538,9 @@ public class DocumentDataForm extends AbstractFormInterceptor
     super.onUnload(form);
   }
 
-  protected void parseContent(final String content, long dataId, final Consumer<String> consumer) {
+  protected void parseContent(final String content, Long dataId, final Consumer<String> consumer) {
     Queries.getRowSet(VIEW_DATA_CRITERIA, null,
-        Filter.isEqual(COL_DOCUMENT_DATA, new LongValue(dataId)), new RowSetCallback() {
+        Filter.equals(COL_DOCUMENT_DATA, dataId), new RowSetCallback() {
           @Override
           public void onSuccess(BeeRowSet result) {
             Multimap<String, Pair<String, String>> data = LinkedListMultimap.create();

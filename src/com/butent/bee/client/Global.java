@@ -19,6 +19,7 @@ import com.butent.bee.client.data.ClientDefaults;
 import com.butent.bee.client.dialog.ChoiceCallback;
 import com.butent.bee.client.dialog.ConfirmationCallback;
 import com.butent.bee.client.dialog.DecisionCallback;
+import com.butent.bee.client.dialog.DialogBox;
 import com.butent.bee.client.dialog.Icon;
 import com.butent.bee.client.dialog.InputBoxes;
 import com.butent.bee.client.dialog.InputCallback;
@@ -31,6 +32,7 @@ import com.butent.bee.client.modules.administration.AdministrationKeeper;
 import com.butent.bee.client.output.Printer;
 import com.butent.bee.client.output.ReportSettings;
 import com.butent.bee.client.screen.Favorites;
+import com.butent.bee.client.screen.Spaces;
 import com.butent.bee.client.style.StyleUtils;
 import com.butent.bee.client.ui.IdentifiableWidget;
 import com.butent.bee.client.ui.WidgetInitializer;
@@ -82,6 +84,7 @@ public final class Global {
   private static final Map<String, String> styleSheets = Maps.newHashMap();
 
   private static final Favorites favorites = new Favorites();
+  private static final Spaces spaces = new Spaces();
 
   private static final Defaults defaults = new ClientDefaults();
 
@@ -255,6 +258,10 @@ public final class Global {
     return search.ensureSearchWidget();
   }
 
+  public static Spaces getSpaces() {
+    return spaces;
+  }
+
   public static Map<String, String> getStyleSheets() {
     return styleSheets;
   }
@@ -312,23 +319,24 @@ public final class Global {
     inputString(caption, null, callback);
   }
 
-  public static void inputWidget(String caption, IsWidget input, InputCallback callback) {
-    inputWidget(caption, input, callback, null, null, Action.NO_ACTIONS);
+  public static DialogBox inputWidget(String caption, IsWidget input, InputCallback callback) {
+    return inputWidget(caption, input, callback, null, null, Action.NO_ACTIONS);
   }
 
-  public static void inputWidget(String caption, IsWidget input, InputCallback callback,
+  public static DialogBox inputWidget(String caption, IsWidget input, InputCallback callback,
       String dialogStyle) {
-    inputWidget(caption, input, callback, dialogStyle, null, Action.NO_ACTIONS);
+    return inputWidget(caption, input, callback, dialogStyle, null, Action.NO_ACTIONS);
   }
 
-  public static void inputWidget(String caption, IsWidget input, InputCallback callback,
+  public static DialogBox inputWidget(String caption, IsWidget input, InputCallback callback,
       String dialogStyle, Element target) {
-    inputWidget(caption, input, callback, dialogStyle, target, Action.NO_ACTIONS);
+    return inputWidget(caption, input, callback, dialogStyle, target, Action.NO_ACTIONS);
   }
 
-  public static void inputWidget(String caption, IsWidget input, InputCallback callback,
+  public static DialogBox inputWidget(String caption, IsWidget input, InputCallback callback,
       String dialogStyle, Element target, Set<Action> enabledActions) {
-    inpBoxen.inputWidget(caption, input, callback, dialogStyle, target, enabledActions, null);
+    return inpBoxen.inputWidget(caption, input, callback, dialogStyle, target, enabledActions,
+        null);
   }
 
   public static boolean isDebug() {
@@ -366,7 +374,7 @@ public final class Global {
       StyleUtils.setTextAlign(cell, TextAlign.CENTER);
       StyleUtils.setProperty(cell, CssProperties.FONT_WEIGHT, FontWeight.BOLD);
     }
-    
+
     Range<Long> maybeTime = Range.closed(
         TimeUtils.startOfYear(TimeUtils.today(), -10).getTime(),
         TimeUtils.startOfYear(TimeUtils.today(), 100).getTime());
@@ -378,7 +386,7 @@ public final class Global {
         if (!row.isNull(i)) {
           ValueType type = data.getColumnType(i);
           String value = DataUtils.render(data.getColumn(i), row, i);
-          
+
           if (type == ValueType.LONG) {
             Long x = row.getLong(i);
             if (x != null && maybeTime.contains(x)) {
@@ -512,7 +520,7 @@ public final class Global {
       logger.warning(caption, "table is empty");
       return;
     }
-    
+
     IdentifiableWidget widget;
 
     if (BeeKeeper.getStorage().hasItem("info-grid")) {
@@ -523,10 +531,10 @@ public final class Global {
     }
 
     if (widget != null) {
-      BeeKeeper.getScreen().showWidget(widget, true);
+      BeeKeeper.getScreen().showInNewPlace(widget);
     }
   }
-  
+
   static void init() {
     initCache();
     initImages();
@@ -543,6 +551,7 @@ public final class Global {
     $wnd.Bee_updateActor = $entry(@com.butent.bee.client.decorator.TuningHelper::updateActor(Lcom/google/gwt/core/client/JavaScriptObject;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;));
     $wnd.Bee_maybeTranslate = $entry(@com.butent.bee.shared.i18n.Localized::maybeTranslate(Ljava/lang/String;));
   }-*/;
+
   // CHECKSTYLE:ON
 
   private static void initCache() {

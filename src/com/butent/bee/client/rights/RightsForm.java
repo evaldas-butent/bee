@@ -99,15 +99,8 @@ public abstract class RightsForm extends AbstractFormInterceptor {
     FormFactory.registerFormInterceptor("WidgetRights", new WidgetRightsHandler());
   }
 
-  protected static Toggle createToggle(FontAwesome up, FontAwesome down, String styleName) {
-    Toggle toggle = new Toggle(String.valueOf(up.getCode()), String.valueOf(down.getCode()),
-        styleName);
-    StyleUtils.setFontFamily(toggle, FontAwesome.FAMILY);
-    return toggle;
-  }
-
   protected static Toggle createValueToggle(String objectName) {
-    Toggle toggle = createToggle(FontAwesome.TIMES, FontAwesome.CHECK, STYLE_VALUE_TOGGLE);
+    Toggle toggle = new Toggle(FontAwesome.TIMES, FontAwesome.CHECK, STYLE_VALUE_TOGGLE, false);
 
     DomUtils.setDataProperty(toggle.getElement(), DATA_KEY_TYPE, DATA_TYPE_VALUE);
     DomUtils.setDataProperty(toggle.getElement(), DATA_KEY_OBJECT, objectName);
@@ -570,12 +563,8 @@ public abstract class RightsForm extends AbstractFormInterceptor {
   }
 
   private Widget createObjectToggle(String objectName) {
-    Toggle toggle = createToggle(FontAwesome.SQUARE_O, FontAwesome.CHECK_SQUARE_O,
-        STYLE_OBJECT_TOGGLE);
-
-    if (isObjectChecked(objectName)) {
-      toggle.setChecked(true);
-    }
+    Toggle toggle = new Toggle(FontAwesome.SQUARE_O, FontAwesome.CHECK_SQUARE_O,
+        STYLE_OBJECT_TOGGLE, isObjectChecked(objectName));
 
     DomUtils.setDataProperty(toggle.getElement(), DATA_KEY_TYPE, DATA_TYPE_OBJECT_TOGGLE);
     DomUtils.setDataProperty(toggle.getElement(), DATA_KEY_OBJECT, objectName);

@@ -73,7 +73,7 @@ public abstract class ChartBase extends TimeBoard {
     final Callback<IdentifiableWidget> showInNewTab = new Callback<IdentifiableWidget>() {
       @Override
       public void onSuccess(IdentifiableWidget result) {
-        BeeKeeper.getScreen().showWidget(result, true);
+        BeeKeeper.getScreen().showInNewPlace(result);
       }
     };
 

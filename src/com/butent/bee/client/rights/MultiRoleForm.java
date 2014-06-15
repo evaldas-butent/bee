@@ -341,12 +341,9 @@ abstract class MultiRoleForm extends RightsForm {
     addRoleOrientationToggle();
 
     if (columnLabelOrientationToggle == null) {
-      this.columnLabelOrientationToggle = createToggle(FontAwesome.ELLIPSIS_H,
-          FontAwesome.ELLIPSIS_V, STYLE_COLUMN_LABEL_ORIENTATION);
-
-      if (columnLabelOrientation.isVertical()) {
-        columnLabelOrientationToggle.setChecked(true);
-      }
+      this.columnLabelOrientationToggle = new Toggle(FontAwesome.ELLIPSIS_H,
+          FontAwesome.ELLIPSIS_V, STYLE_COLUMN_LABEL_ORIENTATION,
+          columnLabelOrientation.isVertical());
 
       columnLabelOrientationToggle.addClickHandler(new ClickHandler() {
         @Override
@@ -567,9 +564,6 @@ abstract class MultiRoleForm extends RightsForm {
   }
 
   private Widget createRoleToggle(final long roleId) {
-    Toggle toggle = createToggle(FontAwesome.SQUARE_O, FontAwesome.CHECK_SQUARE_O,
-        STYLE_ROLE_TOGGLE);
-
     boolean checked = true;
     for (RightsObject object : getObjects()) {
       if (!initialValues.containsEntry(object.getName(), roleId)) {
@@ -578,9 +572,8 @@ abstract class MultiRoleForm extends RightsForm {
       }
     }
 
-    if (checked) {
-      toggle.setChecked(true);
-    }
+    Toggle toggle = new Toggle(FontAwesome.SQUARE_O, FontAwesome.CHECK_SQUARE_O,
+        STYLE_ROLE_TOGGLE, checked);
 
     DomUtils.setDataProperty(toggle.getElement(), DATA_KEY_ROLE, roleId);
     setDataType(toggle, DATA_TYPE_ROLE_TOGGLE);

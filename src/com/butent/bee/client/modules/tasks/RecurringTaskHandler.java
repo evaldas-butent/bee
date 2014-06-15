@@ -674,7 +674,7 @@ class RecurringTaskHandler extends AbstractFormInterceptor implements CellValida
 
     for (int i = cron.field.getMin(); i <= cron.field.getMax(); i++) {
       String text = cron.getLabel(i);
-      Toggle toggle = new Toggle(text, text, STYLE_VALUE_TOGGLE);
+      Toggle toggle = new Toggle(text, text, STYLE_VALUE_TOGGLE, false);
 
       initToggle(cron, toggle, i);
       widget.add(toggle);
