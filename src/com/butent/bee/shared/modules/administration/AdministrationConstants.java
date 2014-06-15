@@ -289,6 +289,7 @@ public final class AdministrationConstants {
   public static final String ALS_CURRENCY_NAME = "CurrencyName";
 
   public static final String FORM_USER = "User";
+  public static final String FORM_USER_SETTINGS = "UserSettings";
   public static final String FORM_DEPARTMENT = "Department";
   public static final String FORM_NEW_ROLE = "NewRole";
 

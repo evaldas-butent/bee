@@ -16,6 +16,7 @@ import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.Global;
 import com.butent.bee.client.Screen;
 import com.butent.bee.client.Settings;
+import com.butent.bee.client.data.RowCallback;
 import com.butent.bee.client.data.RowEditor;
 import com.butent.bee.client.dialog.ConfirmationCallback;
 import com.butent.bee.client.dialog.Icon;
@@ -746,7 +747,13 @@ public class ScreenImpl implements Screen {
   protected void onUserSignatureClick() {
     BeeRow row = BeeKeeper.getUser().getSettingsRow();
     if (row != null) {
-      RowEditor.openRow(AdministrationConstants.VIEW_USER_SETTINGS, row, true);
+      RowEditor.openRow(AdministrationConstants.VIEW_USER_SETTINGS, row, true,
+          new RowCallback() {
+            @Override
+            public void onSuccess(BeeRow result) {
+              BeeKeeper.getUser().updateSettings(result);
+            }
+          });
     }
   }
 

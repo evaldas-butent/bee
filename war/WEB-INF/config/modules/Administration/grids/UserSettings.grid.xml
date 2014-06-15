@@ -2,7 +2,7 @@
 <g:Grid xmlns="http://www.butent.com/column" xmlns:g="http://www.butent.com/grid"
   
   name="UserSettings" viewName="UserSettings" caption="=userSettings"
-  newRowPopup="true"
+  disabledActions="add delete"
   >
   <g:columns>
     <DataColumn name="User" visible="false" />

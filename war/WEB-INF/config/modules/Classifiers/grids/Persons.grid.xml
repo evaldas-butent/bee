@@ -29,5 +29,7 @@
       filterOptions="-" exportWidthFactor="0.5">
       <renderer type="flag" />
     </CalcColumn>
+
+    <DataColumn name="DateOfBirth" visible="false" />
   </g:columns>
 </g:Grid>

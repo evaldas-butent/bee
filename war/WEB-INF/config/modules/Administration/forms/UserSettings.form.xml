@@ -3,10 +3,11 @@
   xmlns:f="http://www.butent.com/form"
   
   name="UserSettings" viewName="UserSettings" caption="=userSettings"
-  width="600" height="80" heightUnit="%"
+  width="700" height="80" heightUnit="%"
   >
   <FlowPanel class="flexBox-vertical">
-    <Table style="border-spacing: 10px;">
+    <Table style="border-collapse: collapse; margin: 2ex 0 2ex 2em;" 
+        cellStyle="padding: 1ex 1em; border: 1px solid #ccc;">
       <col index="0" cellStyle="text-align: right;" />
       <col index="2" cellStyle="text-align: right;" />
 
@@ -25,7 +26,6 @@
       </row>
     </Table>
 
-    <br/>
     <TabbedPages class="flexible">
       <page>
         <text>=feeds</text>

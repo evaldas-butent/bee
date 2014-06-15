@@ -894,10 +894,9 @@
 
 .bee-DataSelector-editableContainer {
   display: inline-block;
-  width: 155px;
 }
 
-.bee-DataSelector-editableInput {
+.bee-DataSelector-editableContainer .bee-DataSelector-editableInput {
   width: calc(100% - 16px);
   border: none !important;
 }
@@ -1279,6 +1278,9 @@
 .bee-NewRow-label {
   padding-top: 1px;
   padding-left: 1em;
+  padding-right: 1em;
+}
+.bee-NewRow-inputCell {
   padding-right: 1em;
 }
 .bee-NewRow-inputCell > .bee-SimpleCheckBox {
@@ -1936,7 +1938,7 @@
   width: 120px;
   height: 23px;
 }
-.bee-ColorEditor-textBox {
+.bee-ColorEditor-container .bee-ColorEditor-textBox {
   width: calc(100% - 30px);
   margin: 0;
 }
@@ -2157,7 +2159,7 @@
   right: 0;
   background-color: WhiteSmoke;
 }
-.bee-ResourceEditor-inputArea {
+.bee-ResourceEditor-wrapper .bee-ResourceEditor-inputArea {
   position: absolute;
   left: 3px;
   top: 3px;
@@ -3262,4 +3264,17 @@
 .bee-spaces-delete:hover {
   color: white;
   background-color: red;
+}
+
+input[type="text"],
+textarea,
+.bee-DataSelector-editableContainer {
+  width: 150px;
+}
+
+.bee-ChangePassword-table {
+  border-collapse: collapse;
+}
+.bee-ChangePassword-table td {
+  padding: 5px 10px;
 }

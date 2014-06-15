@@ -188,4 +188,14 @@ public class UserInfo implements HasInfo {
   public void setUserData(UserData userData) {
     this.userData = userData;
   }
+  
+  public void updateSettings(BeeRow row) {
+    if (settings != null && row != null) {
+      if (!settings.isEmpty()) {
+        settings.clearRows();
+      }
+      
+      settings.addRow(row);
+    }
+  }
 }
