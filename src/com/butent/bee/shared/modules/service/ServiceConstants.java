@@ -1,5 +1,6 @@
 package com.butent.bee.shared.modules.service;
 
+import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.i18n.LocalizableConstants;
 import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.ui.HasLocalizedCaption;
@@ -26,6 +27,63 @@ public final class ServiceConstants {
     @Override
     public String getCaption() {
       return getCaption(Localized.getConstants());
+    }
+  }
+
+  public enum ObjectStatus implements HasLocalizedCaption {
+    SERVICE_OBJECT(Localized.getConstants().svcObjects(),
+        Localized.getConstants().svcActionToServiceObjects()) {
+
+      @Override
+      public String getCaption(LocalizableConstants constants) {
+        return constants.svcObject();
+      }
+    },
+
+    PROJECT_OBJECT(Localized.getConstants().svcProjectObjects(),
+        Localized.getConstants().svcActionToProjectObjects()) {
+
+      @Override
+      public String getCaption(LocalizableConstants constants) {
+        return constants.svcProjectObject();
+      }
+    },
+
+    POTENTIAL_OBJECT(Localized.getConstants().svcObjectsPotential(), null) {
+
+      @Override
+      public String getCaption(LocalizableConstants constants) {
+        return constants.svcObjectPotential();
+      }
+    };
+    
+    private final String listCaption;
+    private final String commandCaption;
+
+    private ObjectStatus(String listCaption, String commandCaption) {
+      this.listCaption = listCaption;
+      this.commandCaption = commandCaption;
+    }
+
+    @Override
+    public String getCaption() {
+      return getCaption(Localized.getConstants());
+    }
+
+    public String getCommandCaption() {
+      return commandCaption;
+    }
+
+    public String getListCaption() {
+      return listCaption;
+    }
+
+    public String getSuplierKey() {
+      return GRID_SERVICE_OBJECTS + BeeConst.STRING_UNDER + name().toLowerCase();
+    }
+
+    public boolean is(Integer status) {
+      return status != null && ordinal() == status;
     }
   }
 
@@ -78,6 +136,8 @@ public final class ServiceConstants {
   
   public static final String COL_SERVICE_CATEGORY_NAME = "Name";
 
+  public static final String COL_OBJECT_STATUS = "Status";
+
   public static final String COL_MAINTENANCE_DATE = "Date";
   public static final String COL_MAINTENANCE_ITEM = "Item";
   public static final String COL_MAINTENANCE_INVOICE = "Invoice";
@@ -111,12 +171,15 @@ public final class ServiceConstants {
   public static final String GRID_OBJECT_INVOICES = "ObjectInvoices";
   public static final String GRID_OBJECT_DEFECTS = "ObjectDefects";
   
+  public static final String GRID_SERVICE_OBJECTS = "ServiceObjects";
+
   public static final String PROP_MAIN_ITEM = "MainItem";
 
   public static final String STYLE_SHEET = "service";
   
   public static void register() {
     EnumUtils.register(ServiceCompanyKind.class);
+    EnumUtils.register(ObjectStatus.class);
   }
   
   private ServiceConstants() {

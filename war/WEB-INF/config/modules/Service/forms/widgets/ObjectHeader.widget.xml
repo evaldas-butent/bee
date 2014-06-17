@@ -15,6 +15,8 @@
       style="&inp;" />
     <Label for="Address" />
     <InputText source="Address" style="&inp;" />
+    <Label name="StatusLabel" for="Status" />
+    <ListBox name="Status" source="Status" style="&inp;" readOnly="true" visible="true" />
   </row>
 
   <row>

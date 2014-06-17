@@ -32,6 +32,7 @@ import com.butent.bee.client.grid.ChildGrid;
 import com.butent.bee.client.style.StyleUtils;
 import com.butent.bee.client.ui.FormFactory.WidgetDescriptionCallback;
 import com.butent.bee.client.ui.IdentifiableWidget;
+import com.butent.bee.client.view.HeaderView;
 import com.butent.bee.client.view.edit.Editor;
 import com.butent.bee.client.view.edit.SaveChangesEvent;
 import com.butent.bee.client.view.form.FormView;
@@ -40,10 +41,12 @@ import com.butent.bee.client.view.form.interceptor.FormInterceptor;
 import com.butent.bee.client.view.grid.GridView;
 import com.butent.bee.client.view.grid.interceptor.AbstractGridInterceptor;
 import com.butent.bee.client.view.grid.interceptor.GridInterceptor;
+import com.butent.bee.client.widget.Button;
 import com.butent.bee.client.widget.Label;
 import com.butent.bee.shared.Consumer;
 import com.butent.bee.shared.Holder;
 import com.butent.bee.shared.State;
+import com.butent.bee.shared.css.values.Display;
 import com.butent.bee.shared.css.values.TextAlign;
 import com.butent.bee.shared.data.BeeColumn;
 import com.butent.bee.shared.data.BeeRow;
@@ -141,6 +144,8 @@ public class ServiceObjectForm extends AbstractFormInterceptor implements ClickH
     }
   };
 
+  private static final String NAME_WIDGET_STATUS_LABEL = "StatusLabel";
+  
   private HasWidgets criteriaPanel;
 
   private final Map<String, String> criteriaHistory = new LinkedHashMap<>();
@@ -186,6 +191,20 @@ public class ServiceObjectForm extends AbstractFormInterceptor implements ClickH
   public void afterInsertRow(IsRow result, boolean forced) {
     if (!forced) {
       save(result);
+    }
+  }
+
+  @Override
+  public void afterRefresh(FormView form, IsRow row) {
+    HeaderView header = form.getViewPresenter().getHeader();
+    header.clearCommandPanel();
+
+    if (row == null) {
+      return;
+    }
+
+    for (ObjectStatus objStatus : ObjectStatus.values()) {
+      createActionButton(header, form, row, objStatus);
     }
   }
 
@@ -284,18 +303,53 @@ public class ServiceObjectForm extends AbstractFormInterceptor implements ClickH
 
   @Override
   public boolean onStartEdit(FormView form, IsRow row, ScheduledCommand focusCommand) {
+    Widget widget = form.getWidgetByName(NAME_WIDGET_STATUS_LABEL);
+    StyleUtils.unhideDisplay(widget);
+
+    widget = form.getWidgetBySource(COL_OBJECT_STATUS);
+    StyleUtils.unhideDisplay(widget);
+
     requery(row);
     return true;
   }
 
   @Override
   public void onStartNewRow(FormView form, IsRow oldRow, IsRow newRow) {
+
+    Widget widget = form.getWidgetByName(NAME_WIDGET_STATUS_LABEL);
+    StyleUtils.setDisplay(widget, Display.NONE);
+
+    widget = form.getWidgetBySource(COL_OBJECT_STATUS);
+    StyleUtils.setDisplay(widget, Display.NONE);
+
     requery(newRow);
   }
 
   @Override
   public void onUnload(FormView form) {
     EventUtils.clearRegistry(registry);
+  }
+  
+  private static void createActionButton(HeaderView headerView, FormView formView, IsRow row,
+      ObjectStatus status) {
+
+    if (BeeUtils.isEmpty(status.getCommandCaption())) {
+      return;
+    }
+
+    if (!isActionEnabled(status, formView, row)) {
+      return;
+    }
+
+    IdentifiableWidget actionItem = new Button(status.getCommandCaption());
+    createActionItemCommand(actionItem, status);
+    headerView.addCommandItem(actionItem);
+
+  }
+
+  @SuppressWarnings("unused")
+  private static void createActionItemCommand(IdentifiableWidget widget, ObjectStatus status) {
+    // TODO:
   }
 
   private Autocomplete createAutocomplete(String viewName, String column, String value) {
@@ -304,6 +358,11 @@ public class ServiceObjectForm extends AbstractFormInterceptor implements ClickH
 
     input.addAutocompleteHandler(new AutocompleteFilter(null, value));
     return input;
+  }
+
+  @SuppressWarnings("unused")
+  private static boolean isActionEnabled(ObjectStatus status, FormView formView, IsRow row) {
+    return true; // TODO
   }
 
   private void render() {

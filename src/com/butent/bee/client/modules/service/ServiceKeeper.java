@@ -1,9 +1,12 @@
 package com.butent.bee.client.modules.service;
 
+import com.google.common.collect.Lists;
+
 import static com.butent.bee.shared.modules.service.ServiceConstants.*;
 
 import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.Callback;
+import com.butent.bee.client.Global;
 import com.butent.bee.client.communication.ParameterList;
 import com.butent.bee.client.event.logical.SelectorEvent;
 import com.butent.bee.client.grid.GridFactory;
@@ -14,10 +17,12 @@ import com.butent.bee.client.ui.IdentifiableWidget;
 import com.butent.bee.client.ui.WidgetFactory;
 import com.butent.bee.client.ui.WidgetSupplier;
 import com.butent.bee.client.view.grid.interceptor.FileGridInterceptor;
+import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.menu.MenuHandler;
 import com.butent.bee.shared.menu.MenuService;
 import com.butent.bee.shared.modules.administration.AdministrationConstants;
 import com.butent.bee.shared.rights.Module;
+import com.butent.bee.shared.utils.EnumUtils;
 
 public final class ServiceKeeper {
 
@@ -30,8 +35,6 @@ public final class ServiceKeeper {
   }
 
   public static void register() {
-    GridFactory.registerGridInterceptor(VIEW_SERVICE_OBJECTS, new ServiceObjectsGrid());
-
     GridFactory.registerGridInterceptor(VIEW_SERVICE_FILES,
         new FileGridInterceptor(COL_SERVICE_OBJECT, AdministrationConstants.COL_FILE,
             AdministrationConstants.COL_FILE_CAPTION, AdministrationConstants.ALS_FILE_NAME));
@@ -49,6 +52,8 @@ public final class ServiceKeeper {
 
     TimeBoard.ensureStyleSheet();
 
+    registerServiceOjectsGridSupplier();
+
     MenuService.SERVICE_CALENDAR.setHandler(new MenuHandler() {
       @Override
       public void onSelection(String parameters) {
@@ -60,6 +65,24 @@ public final class ServiceKeeper {
         });
       }
     });
+    
+    MenuService.SERVICE_OBJECTS.setHandler(new MenuHandler() {
+
+      @Override
+      public void onSelection(String parameters) {
+        Assert.notEmpty(parameters);
+
+        ObjectStatus status = EnumUtils.getEnumByName(ObjectStatus.class, parameters);
+
+        if (status == null) {
+          Global.showError(Lists.newArrayList(GRID_SERVICE_OBJECTS, "Type not recognized:",
+              parameters));
+        } else {
+          WidgetFactory.createAndShow(status.getSuplierKey());
+        }
+      }
+
+    });
 
     WidgetFactory.registerSupplier(ServiceCalendar.SUPPLIER_KEY, new WidgetSupplier() {
       @Override
@@ -67,6 +90,13 @@ public final class ServiceKeeper {
         ServiceCalendar.open(callback);
       }
     });
+  }
+
+  private static void registerServiceOjectsGridSupplier() {
+    for (ObjectStatus objStatus : ObjectStatus.values()) {
+      GridFactory.registerGridSupplier(objStatus.getSuplierKey(), GRID_SERVICE_OBJECTS,
+          new ServiceObjectsGrid(objStatus));
+    }
   }
 
   private ServiceKeeper() {

@@ -3,9 +3,9 @@
 
 name="SvcProjects" label="=svcProjectsMenu" order="110" module="Service.Projects"
 >
-  <Item name="Potential" label="=svcObjectsPotential" service="grid" parameters="ServiceObjects" />
+  <Item name="Potential" label="=svcObjectsPotential" service="service_objects" parameters="potential_object" />
   
-  <Item name="ProjectObjects" label="=svcObjects" service="grid" parameters="ServiceObjects" />
+  <Item name="ProjectObjects" label="=svcObjects" service="service_objects" parameters="project_object" />
 
   <Item name="ServiceInvoices" label="=svcInvoices" service="grid" parameters="ServiceInvoices"
     separator="true" />

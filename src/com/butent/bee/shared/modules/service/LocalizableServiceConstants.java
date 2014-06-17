@@ -2,6 +2,10 @@ package com.butent.bee.shared.modules.service;
 
 public interface LocalizableServiceConstants {
   
+  String svcActionToProjectObjects();
+
+  String svcActionToServiceObjects();
+
   String svcCalendar();
 
   String svcContractor();
@@ -13,4 +17,16 @@ public interface LocalizableServiceConstants {
   String svcModule();
 
   String svcNewDefect();
+
+  String svcObject();
+
+  String svcObjects();
+
+  String svcProjectObject();
+
+  String svcProjectObjects();
+
+  String svcObjectPotential();
+
+  String svcObjectsPotential();
 }
