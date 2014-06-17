@@ -36,6 +36,7 @@ import com.butent.bee.client.render.RendererFactory;
 import com.butent.bee.client.style.StyleUtils;
 import com.butent.bee.client.ui.FormWidget;
 import com.butent.bee.client.ui.HandlesValueChange;
+import com.butent.bee.client.ui.Opener;
 import com.butent.bee.client.ui.UiHelper;
 import com.butent.bee.client.widget.CustomDiv;
 import com.butent.bee.client.widget.FaLabel;
@@ -489,8 +490,8 @@ public class MultiSelector extends DataSelector implements HandlesRendering, Han
         rowCallback = null;
       }
 
-      RowEditor.openRow(getEditForm(), getOracle().getDataInfo(), rowId, modal, getWidget(),
-          rowCallback, null);
+      Opener opener = modal ? Opener.relativeTo(getWidget()) : Opener.NEW_TAB;
+      RowEditor.openForm(getEditForm(), getOracle().getDataInfo(), rowId, opener, rowCallback);
 
     } else {
       BeeRow row = getOracle().getCachedRow(rowId);
@@ -543,8 +544,9 @@ public class MultiSelector extends DataSelector implements HandlesRendering, Han
       rowCallback = null;
     }
 
-    RowEditor.openRow(getEditForm(), Data.getDataInfo(getEditViewName()), sourceId, modal,
-        getWidget(), rowCallback, null);
+    Opener opener = modal ? Opener.relativeTo(getWidget()) : Opener.NEW_TAB;
+    RowEditor.openForm(getEditForm(), Data.getDataInfo(getEditViewName()), sourceId, opener,
+        rowCallback);
   }
 
   private Flow getContainer() {

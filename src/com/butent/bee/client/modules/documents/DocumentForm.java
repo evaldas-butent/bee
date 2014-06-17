@@ -35,6 +35,7 @@ import com.butent.bee.client.grid.ChildGrid;
 import com.butent.bee.client.grid.HtmlTable;
 import com.butent.bee.client.ui.FormFactory.WidgetDescriptionCallback;
 import com.butent.bee.client.ui.IdentifiableWidget;
+import com.butent.bee.client.ui.Opener;
 import com.butent.bee.client.view.edit.EditStartEvent;
 import com.butent.bee.client.view.edit.Editor;
 import com.butent.bee.client.view.form.FormView;
@@ -443,7 +444,7 @@ public class DocumentForm extends DocumentDataForm implements SelectorEvent.Hand
                           @Override
                           public void onSuccess(BeeRow result) {
                             super.onSuccess(result);
-                            RowEditor.openRow(VIEW_DOCUMENT_TEMPLATES, result, true);
+                            RowEditor.open(VIEW_DOCUMENT_TEMPLATES, result, Opener.MODAL);
                           }
                         });
                   }

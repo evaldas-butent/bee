@@ -50,6 +50,7 @@ import com.butent.bee.client.render.RendererFactory;
 import com.butent.bee.client.render.SimpleRenderer;
 import com.butent.bee.client.style.StyleUtils;
 import com.butent.bee.client.ui.FormWidget;
+import com.butent.bee.client.ui.Opener;
 import com.butent.bee.client.ui.UiHelper;
 import com.butent.bee.client.view.edit.EditChangeHandler;
 import com.butent.bee.client.view.edit.EditStartEvent;
@@ -223,7 +224,7 @@ public class DataSelector extends Composite implements Editor, HasVisibleLines, 
 
     @Override
     public void onMouseWheel(MouseWheelEvent event) {
-      if (!isEnabled() || !isActive() || !getSelector().isShowing() 
+      if (!isEnabled() || !isActive() || !getSelector().isShowing()
           || !getOracle().isCachingEnabled()) {
         return;
       }
@@ -332,7 +333,7 @@ public class DataSelector extends Composite implements Editor, HasVisibleLines, 
       if (!isEnabled() || isConsumed() || !isActive()) {
         return;
       }
-      
+
       boolean changed = queryChanged();
 
       if (isQueryValid()) {
@@ -345,7 +346,7 @@ public class DataSelector extends Composite implements Editor, HasVisibleLines, 
         setFound(true);
         setLastRequest(null);
       }
-      
+
       if (!isConsumed() && changed && getSelector().isShowing()) {
         getSelector().hide();
       }
@@ -1457,8 +1458,9 @@ public class DataSelector extends Composite implements Editor, HasVisibleLines, 
       rowCallback = null;
     }
 
-    RowEditor.openRow(getEditForm(), Data.getDataInfo(getEditViewName()), rowId, modal,
-        getWidget(), rowCallback, null);
+    Opener opener = modal ? Opener.relativeTo(getWidget()) : Opener.NEW_TAB;
+    RowEditor.openForm(getEditForm(), Data.getDataInfo(getEditViewName()), rowId, opener,
+        rowCallback);
   }
 
   private void exit(boolean hideSelector, State state) {
@@ -1640,7 +1642,7 @@ public class DataSelector extends Composite implements Editor, HasVisibleLines, 
   private void setEditRowId(Long editRowId) {
     this.editRowId = editRowId;
   }
-  
+
   private void setFound(boolean found) {
     getInput().setStyleName(STYLE_NOT_FOUND, !found);
   }

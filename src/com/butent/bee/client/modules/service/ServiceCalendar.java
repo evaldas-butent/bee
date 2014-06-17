@@ -36,6 +36,7 @@ import com.butent.bee.client.timeboard.TimeBoardHelper;
 import com.butent.bee.client.timeboard.TimeBoardRowLayout;
 import com.butent.bee.client.timeboard.TimeBoardRowLayout.RowData;
 import com.butent.bee.client.ui.IdentifiableWidget;
+import com.butent.bee.client.ui.Opener;
 import com.butent.bee.client.widget.CustomDiv;
 import com.butent.bee.client.widget.Mover;
 import com.butent.bee.shared.Assert;
@@ -306,7 +307,7 @@ final class ServiceCalendar extends TimeBoard {
     final BeeRow oldRow = getSettingsRow();
     Assert.notNull(oldRow);
 
-    RowEditor.openRow(FORM_SETTINGS, getSettings().getViewName(), oldRow, true,
+    RowEditor.openForm(FORM_SETTINGS, getSettings().getViewName(), oldRow, Opener.MODAL,
         new RowCallback() {
           @Override
           public void onSuccess(BeeRow result) {
