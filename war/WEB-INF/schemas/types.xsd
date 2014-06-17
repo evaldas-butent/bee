@@ -205,6 +205,7 @@
       <xs:enumeration value="Transport.SelfService" />
       <xs:enumeration value="Transport.Administration" />
       <xs:enumeration value="Service" />
+      <xs:enumeration value="Service.Projects" />
       <xs:enumeration value="Administration" />
     </xs:restriction>
   </xs:simpleType>

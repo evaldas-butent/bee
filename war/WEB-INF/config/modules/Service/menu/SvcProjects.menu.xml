@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Entry xmlns="http://www.butent.com/menu"
+
+name="SvcProjects" label="=svcProjectsMenu" order="110" module="Service.Projects"
+>
+  <Item name="Potential" label="=svcObjectsPotential" service="grid" parameters="ServiceObjects" />
+  
+  <Item name="ProjectObjects" label="=svcObjects" service="grid" parameters="ServiceObjects" />
+
+  <Item name="ServiceInvoices" label="=svcInvoices" service="grid" parameters="ServiceInvoices"
+    separator="true" />
+  <Item name="ServiceDefects" label="=svcDefects" service="grid" parameters="ServiceDefects" />
+    
+  <Item name="ObjectsCalendar" label="=svcObjectCalendar" service="service_calendar"
+    module="Tasks" separator="true" />
+</Entry>
