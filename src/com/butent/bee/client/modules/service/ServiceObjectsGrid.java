@@ -20,7 +20,6 @@ import com.butent.bee.shared.data.value.Value;
 import com.butent.bee.shared.modules.service.ServiceConstants;
 import com.butent.bee.shared.modules.service.ServiceConstants.ObjectStatus;
 import com.butent.bee.shared.ui.GridDescription;
-import com.butent.bee.shared.utils.EnumUtils;
 
 public class ServiceObjectsGrid extends AbstractGridInterceptor implements
     SelectionHandler<IsRow> {
@@ -92,10 +91,6 @@ public class ServiceObjectsGrid extends AbstractGridInterceptor implements
       newRow.setValue(categoryIdx, oldRow.getString(categoryIdx));
       newRow.setValue(nameIdx, oldRow.getString(nameIdx));
       
-      if (EnumUtils.getEnumByIndex(ObjectStatus.class,
-          oldRow.getInteger(objectStatusIdx)) == null) {
-        newRow.setValue(objectStatusIdx, status.ordinal());
-      }
 
     } else if (categoryTree != null) {
       IsRow category = categoryTree.getSelectedItem();
@@ -106,11 +101,9 @@ public class ServiceObjectsGrid extends AbstractGridInterceptor implements
             category.getString(DataUtils.getColumnIndex(ServiceConstants.COL_SERVICE_CATEGORY_NAME,
                 categoryTree.getTreePresenter().getDataColumns())));
       }
-
-      newRow.setValue(objectStatusIdx, status.ordinal());
-    } else {
-      newRow.setValue(objectStatusIdx, status.ordinal());
     }
+
+    newRow.setValue(objectStatusIdx, status.ordinal());
     return true;
   }
 }

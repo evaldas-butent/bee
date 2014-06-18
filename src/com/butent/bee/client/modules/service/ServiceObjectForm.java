@@ -6,6 +6,7 @@ import com.google.gwt.core.client.Scheduler.ScheduledCommand;
 import com.google.gwt.dom.client.Style.Unit;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
+import com.google.gwt.event.dom.client.HasClickHandlers;
 import com.google.gwt.event.shared.HasHandlers;
 import com.google.gwt.user.client.ui.FlowPanel;
 import com.google.gwt.user.client.ui.HasWidgets;
@@ -24,6 +25,7 @@ import com.butent.bee.client.data.Queries.IntCallback;
 import com.butent.bee.client.data.Queries.RowSetCallback;
 import com.butent.bee.client.data.RowCallback;
 import com.butent.bee.client.data.RowUpdateCallback;
+import com.butent.bee.client.dialog.DecisionCallback;
 import com.butent.bee.client.dom.DomUtils;
 import com.butent.bee.client.event.EventUtils;
 import com.butent.bee.client.event.logical.AutocompleteEvent;
@@ -43,6 +45,7 @@ import com.butent.bee.client.view.grid.interceptor.AbstractGridInterceptor;
 import com.butent.bee.client.view.grid.interceptor.GridInterceptor;
 import com.butent.bee.client.widget.Button;
 import com.butent.bee.client.widget.Label;
+import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.Consumer;
 import com.butent.bee.shared.Holder;
 import com.butent.bee.shared.State;
@@ -51,9 +54,12 @@ import com.butent.bee.shared.css.values.TextAlign;
 import com.butent.bee.shared.data.BeeColumn;
 import com.butent.bee.shared.data.BeeRow;
 import com.butent.bee.shared.data.BeeRowSet;
+import com.butent.bee.shared.data.CellSource;
 import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.IsRow;
 import com.butent.bee.shared.data.RelationUtils;
+import com.butent.bee.shared.data.event.CellUpdateEvent;
+import com.butent.bee.shared.data.event.DataChangeEvent;
 import com.butent.bee.shared.data.filter.CompoundFilter;
 import com.butent.bee.shared.data.filter.Filter;
 import com.butent.bee.shared.data.value.TextValue;
@@ -64,6 +70,7 @@ import com.butent.bee.shared.modules.classifiers.ClassifierConstants;
 import com.butent.bee.shared.modules.tasks.TaskConstants;
 import com.butent.bee.shared.ui.Relation;
 import com.butent.bee.shared.utils.BeeUtils;
+import com.butent.bee.shared.utils.EnumUtils;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -195,20 +202,6 @@ public class ServiceObjectForm extends AbstractFormInterceptor implements ClickH
   }
 
   @Override
-  public void afterRefresh(FormView form, IsRow row) {
-    HeaderView header = form.getViewPresenter().getHeader();
-    header.clearCommandPanel();
-
-    if (row == null) {
-      return;
-    }
-
-    for (ObjectStatus objStatus : ObjectStatus.values()) {
-      createActionButton(header, form, row, objStatus);
-    }
-  }
-
-  @Override
   public void afterUpdateRow(IsRow result) {
     save(result);
   }
@@ -303,25 +296,15 @@ public class ServiceObjectForm extends AbstractFormInterceptor implements ClickH
 
   @Override
   public boolean onStartEdit(FormView form, IsRow row, ScheduledCommand focusCommand) {
-    Widget widget = form.getWidgetByName(NAME_WIDGET_STATUS_LABEL);
-    StyleUtils.unhideDisplay(widget);
-
-    widget = form.getWidgetBySource(COL_OBJECT_STATUS);
-    StyleUtils.unhideDisplay(widget);
-
+    showElements(form, row);
     requery(row);
+
     return true;
   }
 
   @Override
   public void onStartNewRow(FormView form, IsRow oldRow, IsRow newRow) {
-
-    Widget widget = form.getWidgetByName(NAME_WIDGET_STATUS_LABEL);
-    StyleUtils.setDisplay(widget, Display.NONE);
-
-    widget = form.getWidgetBySource(COL_OBJECT_STATUS);
-    StyleUtils.setDisplay(widget, Display.NONE);
-
+    hideElements(form);
     requery(newRow);
   }
 
@@ -342,14 +325,39 @@ public class ServiceObjectForm extends AbstractFormInterceptor implements ClickH
     }
 
     IdentifiableWidget actionItem = new Button(status.getCommandCaption());
-    createActionItemCommand(actionItem, status);
+    createActionItemCommand(actionItem, status, formView, row);
     headerView.addCommandItem(actionItem);
 
   }
 
-  @SuppressWarnings("unused")
-  private static void createActionItemCommand(IdentifiableWidget widget, ObjectStatus status) {
-    // TODO:
+  private static void createActionItemCommand(IdentifiableWidget widget, ObjectStatus status,
+      final FormView formView, final IsRow row) {
+    if (!(widget instanceof HasClickHandlers)) {
+      return;
+    }
+
+    switch (status) {
+      case PROJECT_OBJECT:
+        ((HasClickHandlers) widget).addClickHandler(new ClickHandler() {
+
+          @Override
+          public void onClick(ClickEvent event) {
+            setAsProjectObject(formView, row);
+          }
+        });
+        break;
+      case SERVICE_OBJECT:
+        ((HasClickHandlers) widget).addClickHandler(new ClickHandler() {
+
+          @Override
+          public void onClick(ClickEvent event) {
+            setAsServiceObject(formView, row);
+          }
+        });
+        break;
+      default:
+        break;
+    }
   }
 
   private Autocomplete createAutocomplete(String viewName, String column, String value) {
@@ -360,9 +368,64 @@ public class ServiceObjectForm extends AbstractFormInterceptor implements ClickH
     return input;
   }
 
-  @SuppressWarnings("unused")
   private static boolean isActionEnabled(ObjectStatus status, FormView formView, IsRow row) {
-    return true; // TODO
+    int currStatus = BeeUtils.unbox(row.getInteger(formView.getDataIndex(COL_OBJECT_STATUS)));
+    int actionStatus = status.ordinal();
+
+    boolean currIsUnknown = EnumUtils.getEnumByIndex(ObjectStatus.class, currStatus) == null;
+    boolean currIsServiceObj = currStatus == ObjectStatus.SERVICE_OBJECT.ordinal();
+    boolean currIsProjectObj = currStatus == ObjectStatus.PROJECT_OBJECT.ordinal();
+    boolean currIsPotentialObj = currStatus == ObjectStatus.POTENTIAL_OBJECT.ordinal();
+
+    boolean actionIsServiceObj = actionStatus == ObjectStatus.SERVICE_OBJECT.ordinal();
+    boolean actionIsProjectObj = actionStatus == ObjectStatus.PROJECT_OBJECT.ordinal();
+    
+    boolean result =
+        (currIsUnknown && (actionIsServiceObj || actionIsProjectObj))
+        || (currIsServiceObj && actionIsProjectObj)
+        || (currIsProjectObj && actionIsServiceObj)
+            || (currIsPotentialObj && actionIsProjectObj);
+
+    return result;
+  }
+
+  private static DecisionCallback getObjectStatusDecisionCallback(final FormView formView,
+      final IsRow row, final ObjectStatus status) {
+
+    Assert.notNull(formView);
+    Assert.notNull(row);
+    Assert.notNull(status);
+
+    return new DecisionCallback() {
+
+      @Override
+      public void onConfirm() {
+        Queries.update(formView.getViewName(), Filter.compareId(row.getId()), COL_OBJECT_STATUS,
+            Value.getValue(status.ordinal()), new IntCallback() {
+              @Override
+              public void onSuccess(Integer result) {
+                DataChangeEvent.fireRefresh(BeeKeeper.getBus(), VIEW_SERVICE_OBJECTS);
+                CellUpdateEvent.fire(BeeKeeper.getBus(), formView.getViewName(),
+                    row.getId(), row.getVersion(),
+                    CellSource.forColumn(formView.getDataColumns().get(
+                        formView.getDataIndex(COL_OBJECT_STATUS)), formView
+                        .getDataIndex(COL_OBJECT_STATUS)), BeeUtils.toString(status.ordinal()));
+                showElements(formView, row);
+              }
+            });
+      }
+    };
+
+  }
+
+  private static void hideElements(FormView formView) {
+    Widget widget = formView.getWidgetByName(NAME_WIDGET_STATUS_LABEL);
+    StyleUtils.setDisplay(widget, Display.NONE);
+
+    widget = formView.getWidgetBySource(COL_OBJECT_STATUS);
+    StyleUtils.setDisplay(widget, Display.NONE);
+
+    formView.getViewPresenter().getHeader().clearCommandPanel();
   }
 
   private void render() {
@@ -568,5 +631,43 @@ public class ServiceObjectForm extends AbstractFormInterceptor implements ClickH
     }
 
     return true;
+  }
+
+  private static void setAsProjectObject(final FormView formView, final IsRow row) {
+
+    DecisionCallback decisionCallback = getObjectStatusDecisionCallback(formView, row,
+        ObjectStatus.PROJECT_OBJECT);
+
+    Global.getMsgBoxen().decide(Localized.getConstants().svcActionToProjectObjects(),
+        Lists.newArrayList(Localized.getConstants().svcSendToProjectObjectQuestion()),
+        decisionCallback, 0, null, null, null, null);
+  }
+
+  private static void setAsServiceObject(final FormView formView, final IsRow row) {
+    DecisionCallback decisionCallback = getObjectStatusDecisionCallback(formView, row,
+        ObjectStatus.SERVICE_OBJECT);
+
+    Global.getMsgBoxen().decide(Localized.getConstants().svcActionToServiceObjects(),
+        Lists.newArrayList(Localized.getConstants().svcSendToServiceObjectQuestion()),
+        decisionCallback, 0, null, null, null, null);
+  }
+
+  private static void showElements(FormView form, IsRow row) {
+    Widget widget = form.getWidgetByName(NAME_WIDGET_STATUS_LABEL);
+    StyleUtils.unhideDisplay(widget);
+
+    widget = form.getWidgetBySource(COL_OBJECT_STATUS);
+    StyleUtils.unhideDisplay(widget);
+
+    HeaderView header = form.getViewPresenter().getHeader();
+    header.clearCommandPanel();
+
+    if (row == null) {
+      return;
+    }
+
+    for (ObjectStatus objStatus : ObjectStatus.values()) {
+      createActionButton(header, form, row, objStatus);
+    }
   }
 }

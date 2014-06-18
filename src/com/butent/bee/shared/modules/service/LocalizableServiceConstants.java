@@ -22,11 +22,15 @@ public interface LocalizableServiceConstants {
 
   String svcObjects();
 
+  String svcObjectPotential();
+
+  String svcObjectsPotential();
+
   String svcProjectObject();
 
   String svcProjectObjects();
 
-  String svcObjectPotential();
+  String svcSendToProjectObjectQuestion();
 
-  String svcObjectsPotential();
+  String svcSendToServiceObjectQuestion();
 }
