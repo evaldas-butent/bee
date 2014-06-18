@@ -20,6 +20,8 @@
     <SimpleColumn name="CargoRequest" />
     <SimpleColumn name="Discussion" />
     <SimpleColumn name="ServiceObject" />
+    <SimpleColumn name="ServicePotentialObject" />
+    <SimpleColumn name="ServiceProjectObject" />
  </Columns>
 </View>
  
