@@ -370,13 +370,14 @@ class MessageDispatcher {
         MailMessage mailMessage = (MailMessage) message;
 
         if (mailMessage.isValid()) {
-          boolean refreshFolders = mailMessage.messagesUpdated() || mailMessage.foldersUpdated()
+          boolean updated = mailMessage.messagesUpdated() || mailMessage.foldersUpdated();
+          boolean refreshFolders = updated
               || Objects.equals(mailMessage.getFlag(), MessageFlag.SEEN);
 
           if (Global.getNewsAggregator().hasSubscription(Feed.MAIL) && refreshFolders) {
             Global.getNewsAggregator().refresh();
           }
-          MailKeeper.refreshActivePanel(refreshFolders, mailMessage.getFolderId());
+          MailKeeper.refreshActivePanel(refreshFolders, updated ? mailMessage.getFolderId() : null);
 
         } else {
           logger.severe(mailMessage.getError());
