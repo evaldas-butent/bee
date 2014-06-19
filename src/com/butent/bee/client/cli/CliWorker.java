@@ -194,6 +194,7 @@ import com.butent.bee.shared.utils.Property;
 import com.butent.bee.shared.utils.PropertyUtils;
 import com.butent.bee.shared.utils.Wildcards;
 import com.butent.bee.shared.websocket.messages.AdminMessage;
+import com.butent.bee.shared.websocket.messages.ConfigMessage;
 import com.butent.bee.shared.websocket.messages.EchoMessage;
 import com.butent.bee.shared.websocket.messages.LogMessage;
 import com.butent.bee.shared.websocket.messages.NotificationMessage;
@@ -1523,6 +1524,9 @@ public final class CliWorker {
       Endpoint.send(ShowMessage.showEndpoint());
     } else if (BeeUtils.same(args, "rooms")) {
       Endpoint.send(ShowMessage.showRooms());
+
+    } else if (BeeUtils.inListSame(args, "async", "basic")) {
+      Endpoint.send(ConfigMessage.switchRemoteEndpointType(args));
 
     } else {
       LogLevel level = LogLevel.parse(arr[1]);
