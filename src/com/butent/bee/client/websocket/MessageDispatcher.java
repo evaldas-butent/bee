@@ -49,6 +49,7 @@ import com.butent.bee.shared.websocket.SessionUser;
 import com.butent.bee.shared.websocket.WsUtils;
 import com.butent.bee.shared.websocket.messages.AdminMessage;
 import com.butent.bee.shared.websocket.messages.ChatMessage;
+import com.butent.bee.shared.websocket.messages.ConfigMessage;
 import com.butent.bee.shared.websocket.messages.EchoMessage;
 import com.butent.bee.shared.websocket.messages.InfoMessage;
 import com.butent.bee.shared.websocket.messages.LocationMessage;
@@ -288,6 +289,16 @@ class MessageDispatcher {
 
         if (chatMessage.isValid()) {
           Global.getRooms().addMessage(chatMessage);
+        } else {
+          WsUtils.onEmptyMessage(message);
+        }
+        break;
+        
+      case CONFIG:
+        ConfigMessage configMessage = (ConfigMessage) message;
+
+        if (configMessage.isValid()) {
+          logger.info(configMessage);
         } else {
           WsUtils.onEmptyMessage(message);
         }
