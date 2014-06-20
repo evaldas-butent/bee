@@ -20,6 +20,8 @@ public interface LocalizableServiceConstants {
 
   String svcObject();
 
+  String svcObjectCalendar();
+
   String svcObjects();
 
   String svcObjectPotential();

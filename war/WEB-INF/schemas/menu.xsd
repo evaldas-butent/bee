@@ -53,6 +53,7 @@
       <xs:enumeration value="trailer_time_board" />
       <xs:enumeration value="assessments_grid" />
       <xs:enumeration value="service_calendar" />
+      <xs:enumeration value="svc_projects_calendar" />
       <xs:enumeration value="service_objects" />
     </xs:restriction>
   </xs:simpleType>

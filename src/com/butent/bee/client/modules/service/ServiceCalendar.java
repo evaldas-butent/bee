@@ -17,6 +17,7 @@ import static com.butent.bee.shared.modules.tasks.TaskConstants.*;
 
 import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.Callback;
+import com.butent.bee.client.communication.ParameterList;
 import com.butent.bee.client.communication.ResponseCallback;
 import com.butent.bee.client.data.Queries;
 import com.butent.bee.client.data.RowCallback;
@@ -89,6 +90,7 @@ import java.util.Set;
 final class ServiceCalendar extends TimeBoard {
 
   static final String SUPPLIER_KEY = "service_calendar";
+  static final String SUPPLIER_KEY_PROJECTS = "svc_projects_calendar";
 
   private static final String COL_COMPANY_KIND = "CalendarCompanyKind";
 
@@ -145,8 +147,14 @@ final class ServiceCalendar extends TimeBoard {
   private static final Set<String> relevantDataViews = Sets.newHashSet(VIEW_SERVICE_OBJECTS,
       VIEW_SERVICE_DATES, VIEW_TASKS, VIEW_RECURRING_TASKS, VIEW_RT_DATES, VIEW_TASK_TYPES);
 
-  static void open(final Callback<IdentifiableWidget> callback) {
-    BeeKeeper.getRpc().makeRequest(ServiceKeeper.createArgs(SVC_GET_CALENDAR_DATA),
+  private static ObjectStatus currentStatus;
+
+  static void open(final Callback<IdentifiableWidget> callback, final ObjectStatus status) {
+    Assert.notNull(status);
+    currentStatus = status;
+    ParameterList svcParams = ServiceKeeper.createArgs(SVC_GET_CALENDAR_DATA);
+    svcParams.addDataItem(VAR_SERVICE_OBJECT_STATUS, status.ordinal());
+    BeeKeeper.getRpc().makeRequest(svcParams,
         new ResponseCallback() {
           @Override
           public void onResponse(ResponseObject response) {
@@ -246,7 +254,15 @@ final class ServiceCalendar extends TimeBoard {
 
   @Override
   public String getCaption() {
-    return Localized.getConstants().svcCalendar();
+    if (currentStatus == null) {
+      return Localized.getConstants().svcCalendar();
+    }
+
+    if (currentStatus.getCalendarCaption() == null) {
+      return Localized.getConstants().svcCalendar();
+    }
+
+    return currentStatus.getCalendarCaption();
   }
 
   @Override

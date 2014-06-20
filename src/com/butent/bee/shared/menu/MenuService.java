@@ -87,6 +87,10 @@ public enum MenuService {
   @XmlEnumValue("service_calendar")
   SERVICE_CALENDAR(RightsState.VIEW,
       Sets.newHashSet(ServiceConstants.VIEW_SERVICE_OBJECTS, TaskConstants.VIEW_TASKS)),
+
+  @XmlEnumValue("svc_projects_calendar")
+  SERVICE_PROJECTS_CALENDAR(RightsState.VIEW,
+      Sets.newHashSet(ServiceConstants.VIEW_SERVICE_OBJECTS, TaskConstants.VIEW_TASKS)),
   
   @XmlEnumValue("service_objects")
   SERVICE_OBJECTS(RightsState.VIEW, ServiceConstants.VIEW_SERVICE_OBJECTS);

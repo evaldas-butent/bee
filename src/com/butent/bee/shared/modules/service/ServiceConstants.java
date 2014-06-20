@@ -32,7 +32,8 @@ public final class ServiceConstants {
 
   public enum ObjectStatus implements HasLocalizedCaption {
     SERVICE_OBJECT(Localized.getConstants().svcObjects(),
-        Localized.getConstants().svcActionToServiceObjects()) {
+        Localized.getConstants().svcActionToServiceObjects(),
+        Localized.getConstants().svcCalendar()) {
 
       @Override
       public String getCaption(LocalizableConstants constants) {
@@ -41,7 +42,8 @@ public final class ServiceConstants {
     },
 
     PROJECT_OBJECT(Localized.getConstants().svcProjectObjects(),
-        Localized.getConstants().svcActionToProjectObjects()) {
+        Localized.getConstants().svcActionToProjectObjects(),
+        Localized.getConstants().svcObjectCalendar()) {
 
       @Override
       public String getCaption(LocalizableConstants constants) {
@@ -49,7 +51,8 @@ public final class ServiceConstants {
       }
     },
 
-    POTENTIAL_OBJECT(Localized.getConstants().svcObjectsPotential(), null) {
+    POTENTIAL_OBJECT(Localized.getConstants().svcObjectsPotential(), null,
+        Localized.getConstants().svcObjectCalendar()) {
 
       @Override
       public String getCaption(LocalizableConstants constants) {
@@ -59,15 +62,21 @@ public final class ServiceConstants {
     
     private final String listCaption;
     private final String commandCaption;
+    private final String calendarCaption;
 
-    private ObjectStatus(String listCaption, String commandCaption) {
+    private ObjectStatus(String listCaption, String commandCaption, String calendarCaption) {
       this.listCaption = listCaption;
       this.commandCaption = commandCaption;
+      this.calendarCaption = calendarCaption;
     }
 
     @Override
     public String getCaption() {
       return getCaption(Localized.getConstants());
+    }
+
+    public String getCalendarCaption() {
+      return this.calendarCaption;
     }
 
     public String getCommandCaption() {
@@ -92,6 +101,8 @@ public final class ServiceConstants {
   public static final String SVC_GET_CALENDAR_DATA = "getServiceCalendarData";
   public static final String SVC_COPY_DOCUMENT_CRITERIA = "CopyDocumentCriteria";
   
+  public static final String VAR_SERVICE_OBJECT_STATUS = "ServiceObjectStatus";
+
   public static final String TBL_SERVICE_TREE = "ServiceTree";
   public static final String TBL_SERVICE_OBJECTS = "ServiceObjects";
   public static final String TBL_MAINTENANCE = "Maintenance";

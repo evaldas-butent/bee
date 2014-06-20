@@ -62,10 +62,22 @@ public final class ServiceKeeper {
           public void onSuccess(IdentifiableWidget result) {
             BeeKeeper.getScreen().showWidget(result);
           }
-        });
+        }, ObjectStatus.SERVICE_OBJECT);
       }
     });
     
+    MenuService.SERVICE_PROJECTS_CALENDAR.setHandler(new MenuHandler() {
+      @Override
+      public void onSelection(String parameters) {
+        ServiceCalendar.open(new Callback<IdentifiableWidget>() {
+          @Override
+          public void onSuccess(IdentifiableWidget result) {
+            BeeKeeper.getScreen().showWidget(result);
+          }
+        }, ObjectStatus.PROJECT_OBJECT);
+      }
+    });
+
     MenuService.SERVICE_OBJECTS.setHandler(new MenuHandler() {
 
       @Override
@@ -87,7 +99,14 @@ public final class ServiceKeeper {
     WidgetFactory.registerSupplier(ServiceCalendar.SUPPLIER_KEY, new WidgetSupplier() {
       @Override
       public void create(Callback<IdentifiableWidget> callback) {
-        ServiceCalendar.open(callback);
+        ServiceCalendar.open(callback, ObjectStatus.SERVICE_OBJECT);
+      }
+    });
+
+    WidgetFactory.registerSupplier(ServiceCalendar.SUPPLIER_KEY_PROJECTS, new WidgetSupplier() {
+      @Override
+      public void create(Callback<IdentifiableWidget> callback) {
+        ServiceCalendar.open(callback, ObjectStatus.PROJECT_OBJECT);
       }
     });
   }

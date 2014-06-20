@@ -11,6 +11,6 @@ name="SvcProjects" label="=svcProjectsMenu" order="110" module="Service.Projects
     separator="true" />
   <Item name="ServiceDefects" label="=svcDefects" service="grid" parameters="ServiceDefects" />
     
-  <Item name="ObjectsCalendar" label="=svcObjectCalendar" service="service_calendar"
+  <Item name="ObjectsCalendar" label="=svcObjectCalendar" service="svc_projects_calendar"
     module="Tasks" separator="true" />
 </Entry>

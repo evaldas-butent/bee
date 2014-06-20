@@ -498,7 +498,9 @@ public class ServiceModuleBean implements BeeModule {
       return ResponseObject.error(reqInfo.getService(), "user settings not available");
     }
 
-    SimpleRowSet objectData = getCalendarObjects();
+    int svcObjStatus = BeeUtils.toInt(reqInfo.getParameter(VAR_SERVICE_OBJECT_STATUS));
+
+    SimpleRowSet objectData = getCalendarObjects(svcObjStatus);
     if (DataUtils.isEmpty(objectData)) {
       return ResponseObject.response(settings);
     }
@@ -547,7 +549,7 @@ public class ServiceModuleBean implements BeeModule {
     return qs.getData(query);
   }
 
-  private SimpleRowSet getCalendarObjects() {
+  private SimpleRowSet getCalendarObjects(int svcObjStatus) {
     String idName = sys.getIdName(TBL_SERVICE_OBJECTS);
 
     HasConditions where = SqlUtils.or(
@@ -555,6 +557,12 @@ public class ServiceModuleBean implements BeeModule {
             SqlUtils.or(SqlUtils.notNull(TBL_RELATIONS, COL_TASK),
                 SqlUtils.notNull(TBL_RELATIONS, COL_RECURRING_TASK))),
         SqlUtils.in(TBL_SERVICE_OBJECTS, idName, TBL_SERVICE_DATES, COL_SERVICE_OBJECT));
+
+    if (BeeUtils.isOrdinal(ObjectStatus.class, svcObjStatus)) {
+      where =
+          SqlUtils
+              .and(where, SqlUtils.equals(TBL_SERVICE_OBJECTS, COL_OBJECT_STATUS, svcObjStatus));
+    }
 
     String aliasCustomers = "Cust_" + SqlUtils.uniqueName();
     String aliasContractors = "Contr_" + SqlUtils.uniqueName();
