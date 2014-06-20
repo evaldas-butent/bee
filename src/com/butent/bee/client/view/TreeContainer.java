@@ -63,7 +63,7 @@ public class TreeContainer extends Flow implements TreeView, SelectionHandler<Tr
   private final Map<Long, TreeItem> items = Maps.newHashMap();
 
   private final String caption;
-  private final boolean hasActions;
+  private final boolean hasDnD;
 
   public TreeContainer(String caption, boolean hideActions, String viewName) {
     this(caption, hideActions, viewName, BeeConst.STRING_EMPTY);
@@ -74,10 +74,11 @@ public class TreeContainer extends Flow implements TreeView, SelectionHandler<Tr
     addStyleName(STYLE_NAME);
 
     this.caption = caption;
-    this.hasActions = !hideActions;
-    boolean editable = BeeKeeper.getUser().canEditData(viewName);
 
-    if (hasActions) {
+    if (!hideActions) {
+      boolean editable = BeeKeeper.getUser().canEditData(viewName);
+      this.hasDnD = editable;
+
       Flow hdr = new Flow();
       hdr.addStyleName(STYLE_NAME + "-actions");
 
@@ -123,6 +124,8 @@ public class TreeContainer extends Flow implements TreeView, SelectionHandler<Tr
       hdr.add(img);
 
       add(hdr);
+    } else {
+      this.hasDnD = false;
     }
     this.tree = new Tree(caption);
     add(tree);
@@ -130,7 +133,7 @@ public class TreeContainer extends Flow implements TreeView, SelectionHandler<Tr
     getTree().addStyleName(STYLE_NAME + "-tree");
     getTree().addSelectionHandler(this);
 
-    if (hasActions && editable) {
+    if (hasDnD) {
       getTree().addCatchHandler(this);
     }
   }
@@ -148,7 +151,7 @@ public class TreeContainer extends Flow implements TreeView, SelectionHandler<Tr
 
     TreeItem treeItem = new TreeItem(text, item);
 
-    if (hasActions) {
+    if (hasDnD) {
       treeItem.makeDraggable();
     }
     items.put(id, treeItem);
