@@ -58,7 +58,7 @@ public class TreeContainer extends Flow implements TreeView, SelectionHandler<Tr
 
   private Presenter viewPresenter;
   private boolean enabled = true;
-  private List<String> favorite = Lists.newArrayList();
+  private final List<String> favorite = Lists.newArrayList();
   private final Tree tree;
   private final Map<Long, TreeItem> items = Maps.newHashMap();
 
@@ -75,12 +75,12 @@ public class TreeContainer extends Flow implements TreeView, SelectionHandler<Tr
 
     this.caption = caption;
     this.hasActions = !hideActions;
+    boolean editable = BeeKeeper.getUser().canEditData(viewName);
 
     if (hasActions) {
       Flow hdr = new Flow();
       hdr.addStyleName(STYLE_NAME + "-actions");
 
-      boolean editable = BeeKeeper.getUser().canEditData(viewName);
       boolean bookmarkable = !BeeUtils.isEmpty(favorite)
           && BeeKeeper.getScreen().getUserInterface().hasComponent(Component.FAVORITES);
 
@@ -103,8 +103,8 @@ public class TreeContainer extends Flow implements TreeView, SelectionHandler<Tr
       if (bookmarkable) {
         setFavorite(NameUtils.toList(favorite));
 
-        img =
-            new Image(Global.getImages().silverBookmarkAdd(), new ActionListener(Action.BOOKMARK));
+        img = new Image(Global.getImages().silverBookmarkAdd(),
+            new ActionListener(Action.BOOKMARK));
         img.addStyleName(STYLE_NAME + "-bookmark");
         img.setTitle(Action.BOOKMARK.getCaption());
         hdr.add(img);
@@ -130,7 +130,7 @@ public class TreeContainer extends Flow implements TreeView, SelectionHandler<Tr
     getTree().addStyleName(STYLE_NAME + "-tree");
     getTree().addSelectionHandler(this);
 
-    if (hasActions) {
+    if (hasActions && editable) {
       getTree().addCatchHandler(this);
     }
   }

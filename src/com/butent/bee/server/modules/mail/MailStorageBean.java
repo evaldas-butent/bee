@@ -295,6 +295,8 @@ public class MailStorageBean {
           .addConstant(COL_FOLDER, folderId)
           .addConstant(COL_FLAGS, envelope.getFlagMask())
           .addConstant(COL_MESSAGE_UID, messageUID));
+    } else {
+      placeId = null;
     }
     return placeId;
   }
