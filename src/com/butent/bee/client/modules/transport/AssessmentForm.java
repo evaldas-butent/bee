@@ -61,6 +61,7 @@ import com.butent.bee.client.render.AbstractCellRenderer;
 import com.butent.bee.client.style.StyleUtils;
 import com.butent.bee.client.ui.FormFactory.WidgetDescriptionCallback;
 import com.butent.bee.client.ui.IdentifiableWidget;
+import com.butent.bee.client.ui.Opener;
 import com.butent.bee.client.view.HeaderView;
 import com.butent.bee.client.view.add.ReadyForInsertEvent;
 import com.butent.bee.client.view.edit.EditableColumn;
@@ -214,7 +215,7 @@ public class AssessmentForm extends PrintFormInterceptor implements SelectorEven
     public GridInterceptor getInstance() {
       return new ChildAssessmentsGrid();
     }
-    
+
     @Override
     public AbstractCellRenderer getRenderer(String columnName,
         List<? extends IsColumn> dataColumns, ColumnDescription columnDescription,
@@ -253,7 +254,7 @@ public class AssessmentForm extends PrintFormInterceptor implements SelectorEven
 
         switch (context.getGrid().getColumnId(context.getColumnIndex())) {
           case COL_ASSESSMENT:
-            RowEditor.openRow(TBL_ASSESSMENTS, row.getId(), false, null);
+            RowEditor.open(TBL_ASSESSMENTS, row.getId(), Opener.NEW_TAB);
             break;
 
           case COL_STATUS:
@@ -768,11 +769,11 @@ public class AssessmentForm extends PrintFormInterceptor implements SelectorEven
               + BeeUtils.joinWords(activeRow.getString(form.getDataIndex("FirstName")),
                   activeRow.getString(form.getDataIndex("LastName"))));
 
-          Set<Long> recipient = null;
-          Long addr = activeRow.getLong(form.getDataIndex("PersonEmail"));
+          Set<String> recipient = null;
+          String addr = activeRow.getString(form.getDataIndex("PersonEmail"));
 
           if (addr == null) {
-            addr = activeRow.getLong(form.getDataIndex("CustomerEmail"));
+            addr = activeRow.getString(form.getDataIndex("CustomerEmail"));
           }
           if (addr != null) {
             recipient = Sets.newHashSet(addr);

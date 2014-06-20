@@ -19,7 +19,7 @@
     <Double name="SpeedometerAfter" label="=trSpeedometerAfter" />
     <Numeric name="FuelBefore" precision="7" scale="2" label="=trFuelBalanceBefore" />
     <Numeric name="FuelAfter" precision="7" scale="2" label="=trFuelBalanceAfter" />
-    <Relation name="Expedition" relation="ExpeditionTypes" label="=trExpeditionType" />
+    <Relation name="Expedition" relation="ExpeditionTypes" label="=trExpeditionType" defValue="1" />
     <Relation name="Forwarder" relation="Companies" label="=carrier" />
     <String name="ForwarderVehicle" precision="50" label="=trCarrierVehicle" />
     <String name="ForwarderDriver" precision="50" label="=trCarrierDriver" />

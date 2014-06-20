@@ -18,7 +18,6 @@ import com.butent.bee.client.communication.ResponseCallback;
 import com.butent.bee.client.dom.DomUtils;
 import com.butent.bee.client.event.EventUtils;
 import com.butent.bee.client.grid.HtmlTable;
-import com.butent.bee.client.style.StyleUtils;
 import com.butent.bee.client.ui.FormFactory.WidgetDescriptionCallback;
 import com.butent.bee.client.ui.IdentifiableWidget;
 import com.butent.bee.client.view.TreeView;
@@ -31,9 +30,9 @@ import com.butent.bee.shared.communication.ResponseObject;
 import com.butent.bee.shared.data.IsRow;
 import com.butent.bee.shared.font.FontAwesome;
 import com.butent.bee.shared.modules.administration.AdministrationConstants;
-import com.butent.bee.shared.modules.administration.AdministrationConstants.RightsState;
 import com.butent.bee.shared.modules.documents.DocumentConstants;
 import com.butent.bee.shared.rights.RegulatedWidget;
+import com.butent.bee.shared.rights.RightsState;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.Codec;
 import com.butent.bee.shared.utils.EnumUtils;
@@ -109,9 +108,7 @@ public class DocumentTreeForm extends AbstractFormInterceptor
   }
 
   private Toggle createValueToggle(long id, final String roleName, final RightsState state) {
-    Toggle toggle = new Toggle(String.valueOf(FontAwesome.TIMES.getCode()),
-        String.valueOf(FontAwesome.CHECK.getCode()), STYLE_VALUE_TOGGLE);
-    StyleUtils.setFontFamily(toggle, FontAwesome.FAMILY);
+    Toggle toggle = new Toggle(FontAwesome.EYE_SLASH, FontAwesome.EYE, STYLE_VALUE_TOGGLE, false);
 
     DomUtils.setDataProperty(toggle.getElement(), DATA_KEY_ID, id);
     DomUtils.setDataProperty(toggle.getElement(), DATA_KEY_ROLE, roles.get(roleName));

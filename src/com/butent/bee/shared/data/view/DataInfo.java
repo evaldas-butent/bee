@@ -518,6 +518,19 @@ public class DataInfo implements BeeSerializable, Comparable<DataInfo>, HasExten
     return (fields.size() == 1) ? BeeUtils.peek(fields) : null;
   }
 
+  public String getRootField(String colName) {
+    ViewColumn viewColumn = getViewColumn(colName);
+    if (viewColumn == null) {
+      return null;
+    }
+    
+    if (!BeeUtils.isEmpty(viewColumn.getParent()) && viewColumn.getLevel() > 0) {
+      return getRootField(viewColumn.getParent());
+    } else {
+      return viewColumn.getField();
+    }
+  }
+
   public String getRowCaption() {
     return rowCaption;
   }

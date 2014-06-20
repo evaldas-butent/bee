@@ -1,10 +1,14 @@
 package com.butent.bee.client.utils;
 
 import com.google.common.collect.Lists;
+import com.google.gwt.json.client.JSONBoolean;
+import com.google.gwt.json.client.JSONNumber;
 import com.google.gwt.json.client.JSONObject;
 import com.google.gwt.json.client.JSONParser;
+import com.google.gwt.json.client.JSONString;
 import com.google.gwt.json.client.JSONValue;
 
+import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.utils.BeeUtils;
 
 import java.util.List;
@@ -15,11 +19,31 @@ import java.util.List;
 
 public final class JsonUtils {
 
-  public static String getString(JSONObject obj, String key) {
-    if (obj == null || BeeUtils.isEmpty(key)) {
+  public static Boolean getBoolean(JSONObject obj, String key) {
+    if (obj == null || BeeUtils.isEmpty(key) || !obj.containsKey(key)) {
       return null;
+    } else {
+      JSONBoolean value = obj.get(key).isBoolean();
+      return (value == null) ? null : value.booleanValue();
     }
-    return toString(obj.get(key));
+  }
+
+  public static Double getNumber(JSONObject obj, String key) {
+    if (obj == null || BeeUtils.isEmpty(key) || !obj.containsKey(key)) {
+      return null;
+    } else {
+      JSONNumber value = obj.get(key).isNumber();
+      return (value == null) ? null : value.doubleValue();
+    }
+  }
+
+  public static String getString(JSONObject obj, String key) {
+    if (obj == null || BeeUtils.isEmpty(key) || !obj.containsKey(key)) {
+      return null;
+    } else {
+      JSONString value = obj.get(key).isString();
+      return (value == null) ? null : value.stringValue();
+    }
   }
 
   public static boolean isEmpty(JSONValue value) {
@@ -42,23 +66,27 @@ public final class JsonUtils {
     }
   }
 
-  public static JSONObject toJson(String s) {
-    if (BeeUtils.isEmpty(s)) {
-      return null;
-    }
-    JSONValue value = JSONParser.parseStrict(s);
-    if (value == null) {
-      return null;
-    }
-    return value.isObject();
+  public static boolean isJson(String s) {
+    return BeeUtils.isPrefix(s, BeeConst.STRING_LEFT_BRACE)
+        && BeeUtils.isSuffix(s, BeeConst.STRING_RIGHT_BRACE);
   }
-  
+
+  public static JSONObject parse(String s) {
+    if (isJson(s)) {
+      JSONValue value = JSONParser.parseStrict(s);
+      return (value == null) ? null : value.isObject();
+
+    } else {
+      return null;
+    }
+  }
+
   public static List<String> toList(JSONValue json) {
     List<String> result = Lists.newArrayList();
     if (json == null) {
       return result;
     }
-    
+
     if (json.isArray() == null) {
       result.add(toString(json));
     } else {
@@ -66,7 +94,7 @@ public final class JsonUtils {
         result.add(toString(json.isArray().get(i)));
       }
     }
-    
+
     return result;
   }
 

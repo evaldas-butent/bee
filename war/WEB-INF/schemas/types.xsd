@@ -214,6 +214,7 @@
       <xs:enumeration value="AbsenceTypes" />
       <xs:enumeration value="Accounts" />
       <xs:enumeration value="ActiveTrips" />
+      <xs:enumeration value="Addressbook" />
       <xs:enumeration value="AdsTopics" />
       <xs:enumeration value="AllCargo" />
       <xs:enumeration value="AllDrivers" />
@@ -372,6 +373,7 @@
       <xs:enumeration value="RoleUsers" />
       <xs:enumeration value="RTDates" />
       <xs:enumeration value="RTFiles" />
+      <xs:enumeration value="Rules" />
       <xs:enumeration value="SaleItems" />
       <xs:enumeration value="Sales" />
       <xs:enumeration value="ServiceCriteria" />
@@ -392,6 +394,7 @@
       <xs:enumeration value="ServiceTypes" />
       <xs:enumeration value="ShipmentRequests" />
       <xs:enumeration value="ShippingTerms" />
+      <xs:enumeration value="Signatures" />
       <xs:enumeration value="SpareParts" />
       <xs:enumeration value="SparePartTypes" />
       <xs:enumeration value="SparePartUsage" />
@@ -437,6 +440,7 @@
       <xs:enumeration value="UnsuppliedItems" />
       <xs:enumeration value="UserCalAttendees" />
       <xs:enumeration value="UserCalendars" />
+      <xs:enumeration value="UserEmails" />
       <xs:enumeration value="UserFeeds" />
       <xs:enumeration value="UserGroupMembers" />
       <xs:enumeration value="UserGroups" />
@@ -445,6 +449,7 @@
       <xs:enumeration value="UserParameters" />
       <xs:enumeration value="UserRoles" />
       <xs:enumeration value="Users" />
+      <xs:enumeration value="UserSettings" />
       <xs:enumeration value="VehicleModels" />
       <xs:enumeration value="VehiclePartUsage" />
       <xs:enumeration value="Vehicles" />
@@ -453,6 +458,7 @@
       <xs:enumeration value="VehicleTracking" />
       <xs:enumeration value="WaitingCargo" />
       <xs:enumeration value="Warehouses" />
+      <xs:enumeration value="Workspaces" />
 
 <!-- samples -->
       <xs:enumeration value="DataTypes" />

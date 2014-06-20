@@ -14,9 +14,10 @@ import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.event.dom.client.KeyCodes;
 import com.google.gwt.event.dom.client.KeyDownEvent;
 import com.google.gwt.event.dom.client.KeyDownHandler;
-import com.google.gwt.user.client.Timer;
 import com.google.gwt.user.client.Event.NativePreviewEvent;
+import com.google.gwt.user.client.Timer;
 import com.google.gwt.user.client.ui.FlowPanel;
+import com.google.gwt.user.client.ui.HasEnabled;
 import com.google.gwt.user.client.ui.HasWidgets;
 import com.google.gwt.user.client.ui.IsWidget;
 import com.google.gwt.user.client.ui.Panel;
@@ -38,8 +39,8 @@ import com.butent.bee.client.view.form.CloseCallback;
 import com.butent.bee.client.widget.Button;
 import com.butent.bee.client.widget.FaLabel;
 import com.butent.bee.client.widget.Image;
-import com.butent.bee.client.widget.Label;
 import com.butent.bee.client.widget.InputText;
+import com.butent.bee.client.widget.Label;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BiConsumer;
 import com.butent.bee.shared.Consumer;
@@ -301,7 +302,7 @@ public class InputBoxes {
       }
     });
   }
-  
+
   public void inputString(String caption, String prompt, final StringCallback callback,
       String defaultValue, int maxLength, Element target, double width, CssUnit widthUnit,
       final int timeout, String confirmHtml, String cancelHtml, WidgetInitializer initializer) {
@@ -329,7 +330,7 @@ public class InputBoxes {
     box.addStyleName(STYLE_INPUT_STRING);
 
     if (!BeeUtils.isEmpty(defaultValue)) {
-      String value = (maxLength > 0) 
+      String value = (maxLength > 0)
           ? BeeUtils.left(defaultValue.trim(), maxLength) : defaultValue.trim();
       box.setValue(value);
     }
@@ -422,8 +423,8 @@ public class InputBoxes {
     }
   }
 
-  public void inputWidget(String caption, IsWidget widget, final InputCallback callback,
-      String dialogStyle, Element target, Set<Action> enabledActions, 
+  public DialogBox inputWidget(String caption, IsWidget widget, final InputCallback callback,
+      String dialogStyle, Element target, Set<Action> enabledActions,
       WidgetInitializer initializer) {
 
     Assert.notNull(widget);
@@ -438,37 +439,91 @@ public class InputBoxes {
     widget.asWidget().addStyleName(STYLE_INPUT_WIDGET);
     UiHelper.add(panel, widget.asWidget(), initializer, DialogConstants.WIDGET_INPUT);
 
-    final Holder<Widget> errorDisplay = new Holder<Widget>(null);
-    if (widget instanceof NotificationListener) {
-      errorDisplay.set(widget.asWidget());
+    boolean enabled = (widget instanceof HasEnabled) ? ((HasEnabled) widget).isEnabled() : true;
+
+    final ScheduledCommand onClose;
+
+    if (enabled) {
+      final Holder<Widget> errorDisplay = new Holder<Widget>(null);
+
+      if (widget instanceof NotificationListener) {
+        errorDisplay.set(widget.asWidget());
+      } else {
+        Label errorLabel = new Label();
+        errorLabel.addStyleName(STYLE_INPUT_ERROR);
+        errorLabel.addStyleName(StyleUtils.NAME_ERROR);
+        errorDisplay.set(errorLabel);
+        UiHelper.add(panel, errorDisplay, initializer, DialogConstants.WIDGET_ERROR);
+      }
+
+      final ScheduledCommand onSave = new ScheduledCommand() {
+        @Override
+        public void execute() {
+          String message = callback.getErrorMessage();
+          if (BeeUtils.isEmpty(message)) {
+            dialog.close();
+            callback.onSuccess();
+          } else {
+            showError(errorDisplay.get(), message);
+          }
+        }
+      };
+
+      Image save = new Image(Global.getImages().silverSave(), onSave);
+      save.addStyleName(STYLE_INPUT_SAVE);
+      UiHelper.initialize(save, initializer, DialogConstants.WIDGET_SAVE);
+      dialog.addAction(Action.SAVE, save);
+
+      dialog.setOnSave(new PreviewConsumer() {
+        @Override
+        public void accept(NativePreviewEvent input) {
+          if (input != null) {
+            input.cancel();
+          }
+          onSave.execute();
+        }
+      });
+
+      onClose = new ScheduledCommand() {
+        @Override
+        public void execute() {
+          callback.onClose(new CloseCallback() {
+            @Override
+            public void onClose() {
+              dialog.close();
+              callback.onCancel();
+            }
+
+            @Override
+            public void onSave() {
+              onSave.execute();
+            }
+          });
+        }
+      };
+
     } else {
-      Label errorLabel = new Label();
-      errorLabel.addStyleName(STYLE_INPUT_ERROR);
-      errorLabel.addStyleName(StyleUtils.NAME_ERROR);
-      errorDisplay.set(errorLabel);
-      UiHelper.add(panel, errorDisplay, initializer, DialogConstants.WIDGET_ERROR);
+      onClose = new ScheduledCommand() {
+        @Override
+        public void execute() {
+          callback.onClose(new CloseCallback() {
+            @Override
+            public void onClose() {
+              dialog.close();
+              callback.onCancel();
+            }
+
+            @Override
+            public void onSave() {
+              onClose();
+            }
+          });
+        }
+      };
     }
 
-    final ScheduledCommand onSave = new ScheduledCommand() {
-      @Override
-      public void execute() {
-        String message = callback.getErrorMessage();
-        if (BeeUtils.isEmpty(message)) {
-          dialog.close();
-          callback.onSuccess();
-        } else {
-          showError(errorDisplay.get(), message);
-        }
-      }
-    };
-
-    Image save = new Image(Global.getImages().silverSave(), onSave);
-    save.addStyleName(STYLE_INPUT_SAVE);
-    UiHelper.initialize(save, initializer, DialogConstants.WIDGET_SAVE);
-    dialog.addAction(Action.SAVE, save);
-    
     if (enabledActions != null) {
-      if (enabledActions.contains(Action.DELETE)) {
+      if (enabled && enabledActions.contains(Action.DELETE)) {
         Image delete = new Image(Global.getImages().silverDelete(), new ScheduledCommand() {
           @Override
           public void execute() {
@@ -495,38 +550,10 @@ public class InputBoxes {
       }
     }
 
-    final ScheduledCommand onClose = new ScheduledCommand() {
-      @Override
-      public void execute() {
-        callback.onClose(new CloseCallback() {
-          @Override
-          public void onClose() {
-            dialog.close();
-            callback.onCancel();
-          }
-
-          @Override
-          public void onSave() {
-            onSave.execute();
-          }
-        });
-      }
-    };
-
     Image close = new Image(Global.getImages().silverClose(), onClose);
     close.addStyleName(STYLE_INPUT_CLOSE);
     UiHelper.initialize(close, initializer, DialogConstants.WIDGET_CLOSE);
     dialog.addAction(Action.CLOSE, close);
-
-    dialog.setOnSave(new PreviewConsumer() {
-      @Override
-      public void accept(NativePreviewEvent input) {
-        if (input != null) {
-          input.cancel();
-        }
-        onSave.execute();
-      }
-    });
 
     dialog.setOnEscape(new PreviewConsumer() {
       @Override
@@ -544,6 +571,7 @@ public class InputBoxes {
     dialog.showRelativeTo(target);
 
     UiHelper.focus(widget.asWidget());
+    return dialog;
   }
 
   private static boolean addCommandGroup(final Popup dialog, HasWidgets panel, String confirmHtml,
@@ -601,7 +629,7 @@ public class InputBoxes {
   private void inputWidget(String caption, IsWidget input, InputCallback callback) {
     inputWidget(caption, input, callback, null, null, Action.NO_ACTIONS, null);
   }
-  
+
   private static void showError(Widget widget, String message) {
     if (!BeeUtils.isEmpty(message) && !SILENT_ERROR.equals(message)) {
       if (widget instanceof HasHtml) {

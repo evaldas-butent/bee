@@ -2,6 +2,8 @@ package com.butent.bee.shared.modules.ec;
 
 public interface LocalizableEcConstants {
 
+  String ecAnalogBinding();
+
   String ecBikeItems();
 
   String ecBikeItemsShort();
@@ -81,7 +83,7 @@ public interface LocalizableEcConstants {
   String ecGlobalSearchPlaceholder();
 
   String ecGroups();
-  
+
   String ecInvoiceAmount();
 
   String ecInvoiceDate();
@@ -329,6 +331,6 @@ public interface LocalizableEcConstants {
   String ecUnsuppliedItemsRemove();
 
   String ecUpdateCosts();
-  
+
   String tcdTypes();
 }

@@ -89,7 +89,16 @@ public final class CalendarKeeper {
               calName = event.getOptions();
             }
 
-            openCalendar(calId, calName, true);
+            openCalendar(calId, calName, new Callback<IdentifiableWidget>() {
+              @Override
+              public void onSuccess(IdentifiableWidget result) {
+                if (event.isOpenFavorite()) {
+                  BeeKeeper.getScreen().showWidget(result);
+                } else {
+                  BeeKeeper.getScreen().showInNewPlace(result);
+                }
+              }
+            });
           }
 
         } else if (event.hasView(VIEW_APPOINTMENTS)) {
@@ -261,78 +270,93 @@ public final class CalendarKeeper {
     CalendarKeeper.dataLoaded = dataLoaded;
   }
 
+  public static void openCalendar(final long id, final Callback<IdentifiableWidget> callback) {
+    Queries.getValue(VIEW_CALENDARS, id, COL_CALENDAR_NAME, new Callback<String>() {
+      @Override
+      public void onSuccess(String result) {
+        if (!BeeUtils.isEmpty(result)) {
+          openCalendar(id, result, callback);
+        }
+      }
+    });
+  }
+
   static void createAppointment(final Long calendarId, final DateTime start,
       final Long attendeeId) {
 
-    Long type = null;
-    if (calendarId != null) {
-      BeeRowSet rowSet = CACHE.getRowSet(VIEW_CAL_APPOINTMENT_TYPES);
-      if (rowSet != null) {
-        for (BeeRow row : rowSet.getRows()) {
-          if (Data.equals(VIEW_CAL_APPOINTMENT_TYPES, row, COL_CALENDAR, calendarId)) {
-            type = Data.getLong(VIEW_CAL_APPOINTMENT_TYPES, row, COL_APPOINTMENT_TYPE);
-            break;
+    if (Data.isViewEditable(VIEW_APPOINTMENTS)
+        && BeeKeeper.getUser().canCreateData(VIEW_APPOINTMENTS)) {
+
+      Long type = null;
+      if (calendarId != null) {
+        BeeRowSet rowSet = CACHE.getRowSet(VIEW_CAL_APPOINTMENT_TYPES);
+        if (rowSet != null) {
+          for (BeeRow row : rowSet.getRows()) {
+            if (Data.equals(VIEW_CAL_APPOINTMENT_TYPES, row, COL_CALENDAR, calendarId)) {
+              type = Data.getLong(VIEW_CAL_APPOINTMENT_TYPES, row, COL_APPOINTMENT_TYPE);
+              break;
+            }
           }
         }
       }
-    }
 
-    if (type == null) {
-      type = getDefaultAppointmentType();
-    }
-    final BeeRow typeRow = (type == null) ? null : CACHE.getRow(VIEW_APPOINTMENT_TYPES, type);
+      if (type == null) {
+        type = getDefaultAppointmentType();
+      }
+      final BeeRow typeRow = (type == null) ? null : CACHE.getRow(VIEW_APPOINTMENT_TYPES, type);
 
-    String formName = (typeRow == null) ? null : Data.getString(VIEW_APPOINTMENT_TYPES, typeRow,
-        COL_APPOINTMENT_CREATOR);
-    if (BeeUtils.isEmpty(formName)) {
-      formName = DEFAULT_NEW_APPOINTMENT_FORM;
-    }
+      String formName = (typeRow == null) ? null : Data.getString(VIEW_APPOINTMENT_TYPES, typeRow,
+          COL_APPOINTMENT_CREATOR);
+      if (BeeUtils.isEmpty(formName)) {
+        formName = DEFAULT_NEW_APPOINTMENT_FORM;
+      }
 
-    final AppointmentBuilder builder = new AppointmentBuilder(true);
+      final AppointmentBuilder builder = new AppointmentBuilder(true);
 
-    FormFactory.createFormView(formName, VIEW_APPOINTMENTS,
-        getAppointmentViewColumns(), false, builder, new FormFactory.FormViewCallback() {
-          @Override
-          public void onSuccess(FormDescription formDescription, FormView result) {
-            if (result != null) {
-              result.start(null);
+      FormFactory.createFormView(formName, VIEW_APPOINTMENTS,
+          getAppointmentViewColumns(), false, builder, new FormFactory.FormViewCallback() {
+            @Override
+            public void onSuccess(FormDescription formDescription, FormView result) {
+              if (result != null) {
+                result.start(null);
 
-              Long att = null;
-              if (DataUtils.isId(attendeeId)) {
-                att = attendeeId;
+                Long att = null;
+                if (DataUtils.isId(attendeeId)) {
+                  att = attendeeId;
 
-              } else if (DataUtils.isId(calendarId)) {
-                CalendarController controller = getController(calendarId);
-                if (controller != null) {
-                  List<Long> attendees = controller.getAttendees();
-                  if (!attendees.isEmpty()) {
-                    att = attendees.get(0);
-                    builder.setUcAttendees(attendees);
+                } else if (DataUtils.isId(calendarId)) {
+                  CalendarController controller = getController(calendarId);
+                  if (controller != null) {
+                    List<Long> attendees = controller.getAttendees();
+                    if (!attendees.isEmpty()) {
+                      att = attendees.get(0);
+                      builder.setUcAttendees(attendees);
+                    }
                   }
                 }
+
+                BeeRow row = AppointmentBuilder.createEmptyRow(typeRow, start);
+                if (att != null) {
+                  row.setProperty(TBL_APPOINTMENT_ATTENDEES, BeeUtils.toString(att));
+                }
+
+                result.updateRow(row, false);
+
+                builder.setRequiredFields(formDescription.getOptions());
+                builder.initPeriod(start);
+
+                boolean companyAndVehicle = builder.isRequired(ClassifierConstants.COL_COMPANY)
+                    && builder.isRequired(COL_VEHICLE);
+                SELECTOR_HANDLER.setCompanyHandlerEnabled(companyAndVehicle);
+                SELECTOR_HANDLER.setVehicleHandlerEnabled(companyAndVehicle);
+
+                Global.inputWidget(getAppointmentViewInfo().getNewRowCaption(), result,
+                    builder.getModalCallback(), RowFactory.DIALOG_STYLE, null,
+                    EnumSet.of(Action.PRINT));
               }
-
-              BeeRow row = AppointmentBuilder.createEmptyRow(typeRow, start);
-              if (att != null) {
-                row.setProperty(TBL_APPOINTMENT_ATTENDEES, BeeUtils.toString(att));
-              }
-
-              result.updateRow(row, false);
-
-              builder.setRequiredFields(formDescription.getOptions());
-              builder.initPeriod(start);
-
-              boolean companyAndVehicle = builder.isRequired(ClassifierConstants.COL_COMPANY)
-                  && builder.isRequired(COL_VEHICLE);
-              SELECTOR_HANDLER.setCompanyHandlerEnabled(companyAndVehicle);
-              SELECTOR_HANDLER.setVehicleHandlerEnabled(companyAndVehicle);
-
-              Global.inputWidget(getAppointmentViewInfo().getNewRowCaption(), result,
-                  builder.getModalCallback(), RowFactory.DIALOG_STYLE, null,
-                  EnumSet.of(Action.PRINT));
             }
-          }
-        });
+          });
+    }
   }
 
   static ParameterList createRequestParameters(String service) {
@@ -399,7 +423,7 @@ public final class CalendarKeeper {
   }
 
   static String getCalendarSupplierKey(long calendarId) {
-    return "calendar_" + calendarId;
+    return WidgetFactory.SupplierKind.CALENDAR.getKey(BeeUtils.toString(calendarId));
   }
 
   static void getData(Collection<String> viewNames, final Command command) {
@@ -500,6 +524,11 @@ public final class CalendarKeeper {
   static void openAppointment(final Appointment appointment, final Long calendarId) {
     Assert.notNull(appointment);
 
+    if (!appointment.isVisible(BeeKeeper.getUser().getUserId())) {
+      BeeKeeper.getScreen().notifyInfo(CalendarVisibility.PRIVATE.getCaption());
+      return;
+    }
+
     BeeRow typeRow = getAppointmentTypeRow(appointment);
     String formName = (typeRow == null) ? null : Data.getString(VIEW_APPOINTMENT_TYPES, typeRow,
         COL_APPOINTMENT_EDITOR);
@@ -515,6 +544,10 @@ public final class CalendarKeeper {
           public void onSuccess(FormDescription formDescription, FormView result) {
             if (result != null) {
               result.start(null);
+              if (!appointment.isEditable(BeeKeeper.getUser().getUserId())) {
+                result.setEnabled(false);
+              }
+
               result.updateRow(DataUtils.cloneRow(appointment.getRow()), false);
 
               builder.setProperties(appointment.getProperties());
@@ -536,10 +569,21 @@ public final class CalendarKeeper {
                 }
               }
 
-              Set<Action> enabledActions = BeeKeeper.getUser().is(appointment.getCreator())
-                  ? EnumSet.of(Action.DELETE, Action.PRINT) : EnumSet.of(Action.PRINT);
+              Set<Action> enabledActions;
 
-              Global.inputWidget(result.getCaption(), result, builder.getModalCallback(),
+              if (Data.isViewEditable(VIEW_APPOINTMENTS)
+                  && BeeKeeper.getUser().canDeleteData(VIEW_APPOINTMENTS)
+                  && appointment.isRemovable(BeeKeeper.getUser().getUserId())) {
+                enabledActions = EnumSet.of(Action.DELETE, Action.PRINT);
+              } else {
+                enabledActions = EnumSet.of(Action.PRINT);
+              }
+
+              String caption = result.isEnabled() ? result.getCaption()
+                  : BeeUtils.joinWords(result.getCaption(),
+                      BeeUtils.bracket(Localized.getConstants().rowIsReadOnly().trim()));
+
+              Global.inputWidget(caption, result, builder.getModalCallback(),
                   RowEditor.DIALOG_STYLE, null, enabledActions);
 
               Global.getNewsAggregator().onAccess(VIEW_APPOINTMENTS, appointment.getId());
@@ -758,19 +802,20 @@ public final class CalendarKeeper {
     }
   }
 
-  private static void openCalendar(final long id, final String name, final boolean newPanel) {
+  private static void openCalendar(final long id, final String name,
+      Callback<IdentifiableWidget> callback) {
 
     final class OpenCommand extends Command {
       private final long calendarId;
       private final String calendarName;
-      private final Callback<IdentifiableWidget> callback;
+      private final Callback<IdentifiableWidget> calendarCallback;
 
       private OpenCommand(long calendarId, String calendarName,
-          Callback<IdentifiableWidget> callback) {
+          Callback<IdentifiableWidget> calendarCallback) {
         super();
         this.calendarId = calendarId;
         this.calendarName = calendarName;
-        this.callback = callback;
+        this.calendarCallback = calendarCallback;
       }
 
       @Override
@@ -787,7 +832,7 @@ public final class CalendarKeeper {
 
             onCreatePanel(calendarId, row.getId(), calendarName, ucAttendees);
 
-            callback.onSuccess(calendarPanel);
+            calendarCallback.onSuccess(calendarPanel);
           }
         });
       }
@@ -797,8 +842,8 @@ public final class CalendarKeeper {
     if (!WidgetFactory.hasSupplier(supplierKey)) {
       WidgetSupplier supplier = new WidgetSupplier() {
         @Override
-        public void create(final Callback<IdentifiableWidget> callback) {
-          OpenCommand command = new OpenCommand(id, name, callback);
+        public void create(final Callback<IdentifiableWidget> cb) {
+          OpenCommand command = new OpenCommand(id, name, cb);
           ensureData(command);
         }
       };
@@ -806,13 +851,7 @@ public final class CalendarKeeper {
       WidgetFactory.registerSupplier(supplierKey, supplier);
     }
 
-    OpenCommand command = new OpenCommand(id, name, new Callback<IdentifiableWidget>() {
-      @Override
-      public void onSuccess(IdentifiableWidget result) {
-        BeeKeeper.getScreen().showWidget(result, newPanel);
-      }
-    });
-
+    OpenCommand command = new OpenCommand(id, name, callback);
     ensureData(command);
   }
 

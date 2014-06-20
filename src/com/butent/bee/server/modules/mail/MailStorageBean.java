@@ -33,6 +33,7 @@ import com.butent.bee.shared.modules.mail.MailConstants.AddressType;
 import com.butent.bee.shared.modules.mail.MailConstants.MessageFlag;
 import com.butent.bee.shared.modules.mail.MailConstants.SystemFolder;
 import com.butent.bee.shared.modules.mail.MailFolder;
+import com.butent.bee.shared.utils.ArrayUtils;
 import com.butent.bee.shared.utils.BeeUtils;
 
 import java.io.ByteArrayInputStream;
@@ -54,7 +55,6 @@ import javax.ejb.SessionContext;
 import javax.ejb.Stateless;
 import javax.ejb.TransactionAttribute;
 import javax.ejb.TransactionAttributeType;
-import javax.mail.Address;
 import javax.mail.FetchProfile;
 import javax.mail.Folder;
 import javax.mail.Message;
@@ -146,11 +146,6 @@ public class MailStorageBean {
     return getAccount(sys.idEquals(TBL_ACCOUNTS, accountId), false);
   }
 
-  public MailAccount getAccountByAddressId(Long addressId) {
-    Assert.state(DataUtils.isId(addressId));
-    return getAccount(SqlUtils.equals(TBL_ACCOUNTS, MailConstants.COL_ADDRESS, addressId), false);
-  }
-
   public MailAccount getAccount(IsCondition condition, boolean checkUnread) {
     MailAccount account = new MailAccount(qs.getRow(new SqlSelect()
         .addAllFields(TBL_ACCOUNTS)
@@ -216,37 +211,8 @@ public class MailStorageBean {
         .setWhere(sys.idEquals(TBL_FOLDERS, folder.getId())));
   }
 
-  public Long storeAddress(Address address) throws AddressException {
-    Assert.notNull(address);
-    String email;
-    String label = null;
-
-    if (address instanceof InternetAddress) {
-      ((InternetAddress) address).validate();
-
-      label = ((InternetAddress) address).getPersonal();
-      email = BeeUtils.normalize(((InternetAddress) address).getAddress());
-    } else {
-      email = BeeUtils.normalize(address.toString());
-    }
-    Assert.notEmpty(email);
-
-    Long id = qs.getLong(new SqlSelect()
-        .addFields(TBL_EMAILS, sys.getIdName(TBL_EMAILS))
-        .addFrom(TBL_EMAILS)
-        .setWhere(SqlUtils.equals(TBL_EMAILS, COL_EMAIL_ADDRESS,
-            email)));
-
-    if (id == null) {
-      id = qs.insertData(new SqlInsert(TBL_EMAILS)
-          .addConstant(COL_EMAIL_ADDRESS, email)
-          .addConstant(COL_EMAIL_LABEL, label));
-    }
-    return id;
-  }
-
   @TransactionAttribute(TransactionAttributeType.REQUIRES_NEW)
-  public boolean storeMail(Message message, Long folderId, Long messageUID)
+  public Long storeMail(Long userId, Message message, Long folderId, Long messageUID)
       throws MessagingException {
 
     MailEnvelope envelope = new MailEnvelope(message);
@@ -273,10 +239,14 @@ public class MailStorageBean {
       Long fileId;
       InputStream is = null;
       Long senderId = null;
-      Address sender = envelope.getSender();
+      InternetAddress sender = envelope.getSender();
 
       if (sender != null) {
-        senderId = storeAddress(sender);
+        try {
+          senderId = storeAddress(userId, sender);
+        } catch (AddressException e) {
+          logger.error(e);
+        }
       }
       try {
         ByteArrayOutputStream bos = new ByteArrayOutputStream();
@@ -298,14 +268,18 @@ public class MailStorageBean {
 
       Set<Long> allAddresses = Sets.newHashSet();
 
-      for (Entry<AddressType, Address> entry : envelope.getRecipients().entries()) {
-        Long adr = storeAddress(entry.getValue());
+      for (Entry<AddressType, InternetAddress> entry : envelope.getRecipients().entries()) {
+        try {
+          Long adr = storeAddress(userId, entry.getValue());
 
-        if (allAddresses.add(adr)) {
-          qs.insertData(new SqlInsert(TBL_RECIPIENTS)
-              .addConstant(COL_MESSAGE, messageId)
-              .addConstant(MailConstants.COL_ADDRESS, adr)
-              .addConstant(COL_ADDRESS_TYPE, entry.getKey().name()));
+          if (allAddresses.add(adr)) {
+            qs.insertData(new SqlInsert(TBL_RECIPIENTS)
+                .addConstant(COL_MESSAGE, messageId)
+                .addConstant(MailConstants.COL_ADDRESS, adr)
+                .addConstant(COL_ADDRESS_TYPE, entry.getKey().name()));
+          }
+        } catch (AddressException e) {
+          logger.error(e);
         }
       }
       try {
@@ -316,17 +290,20 @@ public class MailStorageBean {
       }
     }
     if (!DataUtils.isId(placeId)) {
-      qs.insertData(new SqlInsert(TBL_PLACES)
+      placeId = qs.insertData(new SqlInsert(TBL_PLACES)
           .addConstant(COL_MESSAGE, messageId)
           .addConstant(COL_FOLDER, folderId)
           .addConstant(COL_FLAGS, envelope.getFlagMask())
           .addConstant(COL_MESSAGE_UID, messageUID));
+    } else {
+      placeId = null;
     }
-    return !DataUtils.isId(placeId);
+    return placeId;
   }
 
   @TransactionAttribute(TransactionAttributeType.REQUIRES_NEW)
-  public long syncFolder(MailFolder localFolder, Folder remoteFolder) throws MessagingException {
+  public long syncFolder(Long userId, MailFolder localFolder, Folder remoteFolder)
+      throws MessagingException {
     Assert.noNulls(localFolder, remoteFolder);
 
     SimpleRowSet data = qs.getData(new SqlSelect()
@@ -365,7 +342,7 @@ public class MailStorageBean {
           syncedMsgs.add(id);
         } else {
           try {
-            storeMail(message, localFolder.getId(), uid);
+            storeMail(userId, message, localFolder.getId(), uid);
           } catch (MessagingException e) {
             logger.error(e);
           }
@@ -420,6 +397,56 @@ public class MailStorageBean {
       parent.addSubFolder(folder);
     }
     return folder;
+  }
+
+  private Long storeAddress(Long userId, InternetAddress address) throws AddressException {
+    Assert.notNull(address);
+    String email;
+    String label = null;
+
+    address.validate();
+
+    label = address.getPersonal();
+    email = BeeUtils.normalize(address.getAddress());
+
+    Assert.notEmpty(email);
+
+    Long id = null;
+    Long bookId = null;
+    String bookLabel = null;
+    String bookIdName = sys.getIdName(TBL_ADDRESSBOOK);
+
+    SimpleRow row = qs.getRow(new SqlSelect()
+        .addField(TBL_EMAILS, sys.getIdName(TBL_EMAILS), COL_EMAIL)
+        .addFields(TBL_ADDRESSBOOK, bookIdName, COL_EMAIL_LABEL)
+        .addFrom(TBL_EMAILS)
+        .addFromLeft(TBL_ADDRESSBOOK,
+            SqlUtils.and(sys.joinTables(TBL_EMAILS, TBL_ADDRESSBOOK, COL_EMAIL),
+                SqlUtils.equals(TBL_ADDRESSBOOK, COL_USER, userId)))
+        .setWhere(SqlUtils.equals(TBL_EMAILS, COL_EMAIL_ADDRESS, email)));
+
+    if (row != null) {
+      id = row.getLong(COL_EMAIL);
+      bookId = row.getLong(bookIdName);
+      bookLabel = row.getValue(COL_EMAIL_LABEL);
+    }
+    if (!DataUtils.isId(id)) {
+      id = qs.insertData(new SqlInsert(TBL_EMAILS)
+          .addConstant(COL_EMAIL_ADDRESS, email));
+    }
+    if (BeeUtils.isEmpty(bookLabel) && !BeeUtils.isEmpty(label)) {
+      if (DataUtils.isId(bookId)) {
+        qs.updateData(new SqlUpdate(TBL_ADDRESSBOOK)
+            .addConstant(COL_EMAIL_LABEL, label)
+            .setWhere(sys.idEquals(TBL_ADDRESSBOOK, bookId)));
+      } else {
+        qs.insertData(new SqlInsert(TBL_ADDRESSBOOK)
+            .addConstant(COL_USER, userId)
+            .addConstant(COL_EMAIL, id)
+            .addConstant(COL_EMAIL_LABEL, label));
+      }
+    }
+    return id;
   }
 
   private void storePart(Long messageId, Part part, List<Pair<String, String>> contents,
@@ -503,9 +530,13 @@ public class MailStorageBean {
       } catch (ParseException e) {
         logger.warning("( MessageID =", messageId, ") Error getting part file name:", e);
       }
+      boolean isBase64 = BeeUtils.same("base64",
+          ArrayUtils.getQuietly(part.getHeader("Content-Transfer-Encoding"), 0));
+
       if (!part.isMimeType("text/*")
           || BeeUtils.same(disposition, Part.ATTACHMENT)
-          || !BeeUtils.isEmpty(fileName)) {
+          || !BeeUtils.isEmpty(fileName)
+          || isBase64) {
 
         Long fileId = fs.storeFile(part.getInputStream(), fileName, contentType);
 

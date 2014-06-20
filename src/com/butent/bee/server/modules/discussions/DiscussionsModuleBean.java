@@ -664,7 +664,6 @@ public class DiscussionsModuleBean implements BeeModule {
 
         discussionId = ((BeeRow) response.getResponse()).getId();
 
-
         if (!response.hasErrors()) {
           response = createDiscussionUser(discussionId, currentUser, now, true);
         }
@@ -722,7 +721,7 @@ public class DiscussionsModuleBean implements BeeModule {
         if (announcement) {
           BeeRowSet topics =
               qs.getViewData(VIEW_ADS_TOPICS, Filter.compareId(discussRow.getLong(discussData
-              .getColumnIndex(COL_TOPIC))));
+                  .getColumnIndex(COL_TOPIC))));
 
           announcementTopic = topics.getRow(0).getString(topics.getColumnIndex(COL_NAME));
         }
@@ -969,23 +968,29 @@ public class DiscussionsModuleBean implements BeeModule {
             tRow.getInteger(topicRows.getColumnIndex(COL_ORDINAL));
 
         String[] topicData = new String[rs.getNumberOfColumns()];
+
         topicData[rs.getColumnIndex(ALS_TOPIC_NAME)] =
             tRow.getString(topicRows.getColumnIndex(COL_NAME));
         topicData[rs.getColumnIndex(COL_ORDINAL)] =
             tRow.getString(topicRows.getColumnIndex(COL_ORDINAL));
         topicData[rs.getColumnIndex(ALS_BIRTHDAY)] = BeeUtils.toString(true);
 
-        int placeId = rs.getNumberOfColumns() - 1;
+        int placeId = rs.getNumberOfRows() - 1;
         for (int i = 0; i < rs.getNumberOfRows(); i++) {
           Integer ord = BeeUtils.toIntOrNull(rs.getValue(i, rs.getColumnIndex(COL_ORDINAL)));
+
           if (BeeUtils.compareNullsLast(ord, ordinal) >= 0) {
-            if (i <= placeId) {
+            if (placeId > i) {
               placeId = i;
             }
           }
         }
 
-        rs.getRows().add(placeId, topicData);
+        if (placeId >= 0) {
+          rs.getRows().add(placeId, topicData);
+        } else {
+          rs.getRows().add(topicData);
+        }
       }
     }
 
@@ -1045,7 +1050,7 @@ public class DiscussionsModuleBean implements BeeModule {
               .toLong(upRow[up.getColumnIndex(COL_DATE_OF_BIRTH)]));
 
       if (availableDays.contains(Integer.valueOf(date.getDoy()))) {
-        String [] birthdaysRow = new String[] {
+        String[] birthdaysRow = new String[] {
             BeeUtils.joinWords(upRow[up.getColumnIndex(COL_FIRST_NAME)],
                 upRow[up.getColumnIndex(COL_LAST_NAME)]),
             upRow[up.getColumnIndex(COL_DATE_OF_BIRTH)],
@@ -1090,9 +1095,9 @@ public class DiscussionsModuleBean implements BeeModule {
     for (BeeRow row : rowSet.getRows()) {
       StoredFile sf =
           new StoredFile(DataUtils.getLong(rowSet, row, AdministrationConstants.COL_FILE),
-              DataUtils.getString(rowSet, row, COL_FILE_NAME),
-              DataUtils.getLong(rowSet, row, COL_FILE_SIZE),
-              DataUtils.getString(rowSet, row, COL_FILE_TYPE));
+              DataUtils.getString(rowSet, row, ALS_FILE_NAME),
+              DataUtils.getLong(rowSet, row, ALS_FILE_SIZE),
+              DataUtils.getString(rowSet, row, ALS_FILE_TYPE));
 
       Long commentId = DataUtils.getLong(rowSet, row, COL_COMMENT);
 
@@ -1315,25 +1320,25 @@ public class DiscussionsModuleBean implements BeeModule {
   private Document renderDiscussionDocument(long discussionId, boolean typeAnnoucement,
       String anouncmentTopic, SimpleRow discussMailRow, LocalizableConstants constants,
       boolean isPublic) {
-    
+
     String discussSubject = BeeUtils.joinWords(
-            (typeAnnoucement ? constants.announcement()
-                : constants.discussion()) + BeeConst.STRING_COLON, discussMailRow
-                .getValue(COL_SUBJECT));
+        (typeAnnoucement ? constants.announcement()
+            : constants.discussion()) + BeeConst.STRING_COLON, discussMailRow
+            .getValue(COL_SUBJECT));
 
     Document doc = new Document();
     doc.getHead().append(meta().encodingDeclarationUtf8(), title().text(discussSubject));
-    
+
     Div panel = div();
     doc.getBody().append(panel);
-     
+
     boolean important = BeeUtils.unbox(discussMailRow.getBoolean(COL_IMPORTANT));
     String subjectColor = important ? Colors.RED : Colors.BLACK;
-    
+
     H2 subjectElement = h2().text(discussSubject);
-    subjectElement.setColor(subjectColor);    
+    subjectElement.setColor(subjectColor);
     panel.append(subjectElement);
-    
+
     Tbody tableFields = tbody().append(
         tr().append(td().text(constants.date()),
             td().text(TimeUtils.renderCompact(discussMailRow.getDate(COL_CREATED)))));
@@ -1355,7 +1360,7 @@ public class DiscussionsModuleBean implements BeeModule {
         tr().append(td().text(constants.discussDescription()),
             td().append(discussDescriptionContent))
         );
-    
+
     if (isPublic && !typeAnnoucement) {
       tableFields.append(
           tr().append(td().text(constants.discussMembers()),
@@ -1366,7 +1371,7 @@ public class DiscussionsModuleBean implements BeeModule {
       List<Long> discussMemberIds = getDiscussionMembers(discussionId);
 
       String memberList = "";
-      
+
       for (Long userId : discussMemberIds) {
 
         memberList = BeeUtils.joinNoDuplicates(BeeConst.STRING_COMMA + BeeConst.STRING_SPACE,
@@ -1387,7 +1392,7 @@ public class DiscussionsModuleBean implements BeeModule {
         cell.setVerticalAlign(VerticalAlign.TEXT_TOP);
       }
     }
-    
+
     panel.append(table().append(tableFields));
 
     return doc;
@@ -1409,7 +1414,7 @@ public class DiscussionsModuleBean implements BeeModule {
     List<Integer> ordinals = Lists.newArrayList(birthdays.getIntColumn(COL_ORDINAL));
     Collections.sort(ordinals);
     SimpleRowSet sorted = new SimpleRowSet(birthdays.getColumnNames());
-    
+
     for (Integer ordinal : ordinals) {
       for (String[] row : birthdays.getRows()) {
         Integer doy = BeeUtils.toIntOrNull(row[birthdays.getColumnIndex(COL_ORDINAL)]);
@@ -1428,24 +1433,31 @@ public class DiscussionsModuleBean implements BeeModule {
   private ResponseObject sendNewDiscussionMail(long discussionId, boolean typeAnnoucement,
       String annoucementTopic, boolean notifyEmailPreference, boolean sendAll) {
 
-    Long senderEmailId = mail.getSenderEmailId(typeAnnoucement ? LOG_CREATE_ANNOUNCEMENT_LABEL
+    Long senderAccountId = mail.getSenderAccountId(typeAnnoucement
+        ? LOG_CREATE_ANNOUNCEMENT_LABEL
         : LOG_CREATE_DISCUSSION_LABEL);
-    
+
     ResponseObject response = ResponseObject.emptyResponse();
     String label = typeAnnoucement ? LOG_MAIL_NEW_ANNOUNCEMENT_LABEL
         : LOG_MAIL_NEW_DISCUSSION_LABEL;
 
-    if (senderEmailId == null) {
+    if (senderAccountId == null) {
       return response;
     }
 
     HasConditions where =
         SqlUtils.and(SqlUtils.equals(TBL_DISCUSSIONS, COL_DISCUSSION_ID, discussionId));
 
+    boolean checkUserSettings;
+
     if (!notifyEmailPreference && typeAnnoucement) {
-      where.add(SqlUtils.notNull(TBL_USERS, COL_MAIL_NEW_ANNOUNCEMENTS));
+      where.add(SqlUtils.notNull(TBL_USER_SETTINGS, COL_MAIL_NEW_ANNOUNCEMENTS));
+      checkUserSettings = true;
     } else if (!notifyEmailPreference) {
-      where.add(SqlUtils.notNull(TBL_USERS, COL_MAIL_NEW_DISCUSSIONS));
+      where.add(SqlUtils.notNull(TBL_USER_SETTINGS, COL_MAIL_NEW_DISCUSSIONS));
+      checkUserSettings = true;
+    } else {
+      checkUserSettings = false;
     }
 
     if (sendAll) {
@@ -1455,11 +1467,11 @@ public class DiscussionsModuleBean implements BeeModule {
       where.add(SqlUtils.notEqual(TBL_DISCUSSIONS, COL_OWNER,
           SqlUtils.field(TBL_DISCUSSIONS_USERS, DiscussionsConstants.COL_USER)));
     }
-    
+
     SqlSelect discussMailList =
         new SqlSelect()
             .addFields(TBL_DISCUSSIONS, COL_SUBJECT, COL_DESCRIPTION, COL_OWNER,
-            COL_CREATED, COL_TOPIC, COL_IMPORTANT)
+                COL_CREATED, COL_TOPIC, COL_IMPORTANT)
             .addField(TBL_USERS, sys.getIdName(TBL_USERS), DiscussionsConstants.COL_USER)
             .addFrom(TBL_DISCUSSIONS)
             .setDistinctMode(true)
@@ -1469,10 +1481,16 @@ public class DiscussionsModuleBean implements BeeModule {
       /* Using Cartesian product for sending all mails */
       discussMailList.addFrom(TBL_USERS);
     } else {
-      discussMailList.addFromInner(TBL_DISCUSSIONS_USERS,
-          sys.joinTables(TBL_DISCUSSIONS, TBL_DISCUSSIONS_USERS, COL_DISCUSSION))
+      discussMailList
+          .addFromInner(TBL_DISCUSSIONS_USERS,
+              sys.joinTables(TBL_DISCUSSIONS, TBL_DISCUSSIONS_USERS, COL_DISCUSSION))
           .addFromInner(TBL_USERS,
               sys.joinTables(TBL_USERS, TBL_DISCUSSIONS_USERS, DiscussionsConstants.COL_USER));
+    }
+
+    if (checkUserSettings) {
+      discussMailList.addFromInner(TBL_USER_SETTINGS,
+          sys.joinTables(TBL_USERS, TBL_USER_SETTINGS, AdministrationConstants.COL_USER));
     }
 
     logger.debug(typeAnnoucement ? LOG_CREATE_ANNOUNCEMENT_LABEL : LOG_CREATE_DISCUSSION_LABEL,
@@ -1493,9 +1511,9 @@ public class DiscussionsModuleBean implements BeeModule {
         continue;
       }
 
-      Long memberEmailId = usr.getEmailId(member, false);
+      String memberEmail = usr.getUserEmail(member, false);
 
-      if (!DataUtils.isId(memberEmailId)) {
+      if (BeeUtils.isEmpty(memberEmail)) {
         logger.warning(label, discussionId, "member", member, "email not available");
         continue;
       }
@@ -1510,17 +1528,17 @@ public class DiscussionsModuleBean implements BeeModule {
       Document discussMailDocument =
           renderDiscussionDocument(discussionId, typeAnnoucement, annoucementTopic, discussMailRow,
               constants, sendAll);
-      
+
       String htmlDiscussMailContent = discussMailDocument.buildLines();
-      
-      logger.info(label, discussionId, "mail to", member, memberEmailId);
-      
+
+      logger.info(label, discussionId, "mail to", member, memberEmail);
+
       String subject = typeAnnoucement ? constants.discussMailNewAnnouncementSubject()
           : constants.discussMailNewDiscussionSubject();
-      
-      ResponseObject mailResponse = mail.sendMail(senderEmailId, memberEmailId, subject,
+
+      ResponseObject mailResponse = mail.sendMail(senderAccountId, memberEmail, subject,
           htmlDiscussMailContent);
-      
+
       if (mailResponse.hasErrors()) {
         response.addWarning("Send mail failed");
       }

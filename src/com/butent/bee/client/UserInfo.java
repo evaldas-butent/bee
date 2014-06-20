@@ -1,8 +1,21 @@
 package com.butent.bee.client;
 
+import com.google.gwt.dom.client.Document;
+import com.google.gwt.dom.client.StyleElement;
+
+import static com.butent.bee.shared.modules.administration.AdministrationConstants.*;
+
+import com.butent.bee.client.dom.DomUtils;
+import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.HasInfo;
+import com.butent.bee.shared.data.BeeRow;
+import com.butent.bee.shared.data.BeeRowSet;
+import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.UserData;
 import com.butent.bee.shared.data.filter.Filter;
+import com.butent.bee.shared.data.view.DataInfo;
+import com.butent.bee.shared.logging.BeeLogger;
+import com.butent.bee.shared.logging.LogUtils;
 import com.butent.bee.shared.rights.Module;
 import com.butent.bee.shared.rights.ModuleAndSub;
 import com.butent.bee.shared.rights.RegulatedWidget;
@@ -19,8 +32,15 @@ import java.util.List;
 
 public class UserInfo implements HasInfo {
 
+  private static final BeeLogger logger = LogUtils.getLogger(UserInfo.class);
+
   private String sessionId;
   private UserData userData;
+
+  private BeeRowSet settings;
+
+  private boolean openInNewTab;
+  private String styleId;
 
   public boolean canCreateData(String object) {
     return isLoggedIn() && userData.canCreateData(object);
@@ -70,6 +90,10 @@ public class UserInfo implements HasInfo {
     return isLoggedIn() ? userData.getLastName() : null;
   }
 
+  public String getLastWorkspace() {
+    return getSetting(COL_LAST_WORKSPACE);
+  }
+
   public String getLogin() {
     if (!isLoggedIn()) {
       return null;
@@ -86,6 +110,18 @@ public class UserInfo implements HasInfo {
 
   public String getSessionId() {
     return sessionId;
+  }
+
+  public BeeRow getSettingsRow() {
+    if (DataUtils.isEmpty(settings)) {
+      return null;
+    } else {
+      return settings.getRow(0);
+    }
+  }
+
+  public String getStyle() {
+    return getSetting(COL_USER_STYLE);
   }
 
   public UserData getUserData() {
@@ -114,8 +150,25 @@ public class UserInfo implements HasInfo {
     return isModuleVisible(ModuleAndSub.of(Module.ADMINISTRATION));
   }
 
-  public boolean isColumnVisible(String viewName, String column) {
-    return isLoggedIn() && userData.isColumnVisible(viewName, column);
+  public boolean isColumnVisible(DataInfo dataInfo, String column) {
+    if (!isLoggedIn()) {
+      return false;
+
+    } else if (dataInfo == null || BeeUtils.isEmpty(column)) {
+      return true;
+
+    } else if (!userData.isColumnVisible(dataInfo.getViewName(), column)) {
+      return false;
+
+    } else {
+      String root = dataInfo.getRootField(column);
+
+      if (!BeeUtils.isEmpty(root) && !BeeUtils.same(column, root)) {
+        return userData.isColumnVisible(dataInfo.getViewName(), root);
+      } else {
+        return true;
+      }
+    }
   }
 
   public boolean isDataVisible(String object) {
@@ -142,11 +195,124 @@ public class UserInfo implements HasInfo {
     return isLoggedIn() && userData.isWidgetVisible(widget);
   }
 
+  public void loadSettings(String serialized) {
+    if (!BeeUtils.isEmpty(serialized)) {
+      settings = BeeRowSet.restore(serialized);
+
+      setOpenInNewTab(getBooleanSetting(COL_OPEN_IN_NEW_TAB));
+
+      String css = getStyle();
+      if (!BeeUtils.isEmpty(css)) {
+        createStyle(css);
+      }
+
+    } else {
+      settings = null;
+      setOpenInNewTab(false);
+    }
+  }
+  
+  public boolean openInNewTab() {
+    return openInNewTab;
+  }
+
   public void setSessionId(String sessionId) {
     this.sessionId = sessionId;
   }
 
   public void setUserData(UserData userData) {
     this.userData = userData;
+  }
+
+  public void updateSettings(BeeRow row) {
+    if (settings != null && row != null) {
+      if (!settings.isEmpty()) {
+        settings.clearRows();
+      }
+
+      settings.addRow(row);
+
+      setOpenInNewTab(getBooleanSetting(COL_OPEN_IN_NEW_TAB));
+      
+      String css = getStyle();
+
+      if (BeeUtils.isEmpty(css)) {
+        if (!BeeUtils.isEmpty(getStyleId())) {
+          updateStyle(BeeConst.STRING_EMPTY);
+        }
+      } else if (BeeUtils.isEmpty(getStyleId())) {
+        createStyle(css);
+      } else {
+        updateStyle(css.trim());
+      }
+    }
+  }
+
+  public boolean workspaceContinue() {
+    return getBooleanSetting(COL_WORKSPACE_CONTINUE);
+  }
+  
+  private void createStyle(String css) {
+    StyleElement element = Document.get().createStyleElement();
+
+    String id = DomUtils.createId(element, "style-");
+    setStyleId(id);
+
+    element.setInnerText(css.trim());
+    DomUtils.getHead().appendChild(element);
+  }
+
+  private boolean getBooleanSetting(String colName) {
+    if (DataUtils.isEmpty(settings)) {
+      return false;
+
+    } else {
+      int index = getSettingsIndex(colName);
+
+      if (BeeConst.isUndef(index)) {
+        return false;
+      } else {
+        return BeeUtils.unbox(settings.getBoolean(0, index));
+      }
+    }
+  }
+
+  private String getSetting(String colName) {
+    if (DataUtils.isEmpty(settings)) {
+      return null;
+
+    } else {
+      int index = getSettingsIndex(colName);
+
+      if (BeeConst.isUndef(index)) {
+        return null;
+      } else {
+        return settings.getString(0, index);
+      }
+    }
+  }
+
+  private int getSettingsIndex(String colName) {
+    int index = settings.getColumnIndex(colName);
+    if (BeeConst.isUndef(index)) {
+      logger.severe(settings.getViewName(), colName, "not found");
+    }
+    return index;
+  }
+
+  private String getStyleId() {
+    return styleId;
+  }
+
+  private void setOpenInNewTab(boolean openInNewTab) {
+    this.openInNewTab = openInNewTab;
+  }
+
+  private void setStyleId(String styleId) {
+    this.styleId = styleId;
+  }
+
+  private void updateStyle(String css) {
+    DomUtils.setText(getStyleId(), css);
   }
 }

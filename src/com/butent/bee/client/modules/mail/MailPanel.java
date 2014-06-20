@@ -73,6 +73,7 @@ import com.butent.bee.client.widget.ListBox;
 import com.butent.bee.client.widget.TextLabel;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
+import com.butent.bee.shared.BiConsumer;
 import com.butent.bee.shared.Consumer;
 import com.butent.bee.shared.Service;
 import com.butent.bee.shared.State;
@@ -299,7 +300,7 @@ public class MailPanel extends AbstractFormInterceptor {
     public void afterCreatePresenter(GridPresenter presenter) {
       GridView grid = presenter.getGridView();
       grid.getGrid().addActiveRowChangeHandler(new ContentHandler(grid.getDataIndex(COL_SENDER)));
-      activateAccount(currentAccount);
+      activateAccount(getCurrentAccount());
     }
 
     @Override
@@ -311,7 +312,7 @@ public class MailPanel extends AbstractFormInterceptor {
     public GridInterceptor getInstance() {
       return new MessagesGrid();
     }
-    
+
     @Override
     public AbstractCellRenderer getRenderer(String columnName,
         List<? extends IsColumn> dataColumns, ColumnDescription columnDescription,
@@ -322,7 +323,7 @@ public class MailPanel extends AbstractFormInterceptor {
       } else if (BeeUtils.same(columnName, "Envelope")) {
         return new EnvelopeRenderer(dataColumns);
       }
-      return null;
+      return super.getRenderer(columnName, dataColumns, columnDescription, cellSource);
     }
 
     @Override
@@ -369,7 +370,7 @@ public class MailPanel extends AbstractFormInterceptor {
 
   private static final String MESSAGES_FILTER = "MessagesFilter";
 
-  private Integer currentAccount;
+  private AccountInfo currentAccount;
   private Long currentFolder;
 
   private IsRow currentMessage;
@@ -386,24 +387,12 @@ public class MailPanel extends AbstractFormInterceptor {
   private String searchValue;
 
   public MailPanel() {
-    ParameterList params = MailKeeper.createArgs(SVC_GET_ACCOUNTS);
-    params.addDataItem(COL_USER, BeeKeeper.getUser().getUserId());
-
-    BeeKeeper.getRpc().makePostRequest(params, new ResponseCallback() {
+    MailKeeper.getAccounts(new BiConsumer<List<AccountInfo>, AccountInfo>() {
       @Override
-      public void onResponse(ResponseObject response) {
-        Assert.isTrue(response.hasResponse(SimpleRowSet.class));
-        SimpleRowSet rs = SimpleRowSet.restore(response.getResponseAsString());
-
-        for (int i = 0; i < rs.getNumberOfRows(); i++) {
-          SimpleRow row = rs.getRow(i);
-
-          if (currentAccount == null || BeeUtils.unbox(row.getBoolean(COL_ACCOUNT_DEFAULT))) {
-            currentAccount = i;
-          }
-          accounts.add(new AccountInfo(row));
-        }
-        if (!BeeUtils.isEmpty(accounts)) {
+      public void accept(List<AccountInfo> availableAccounts, AccountInfo defaultAccount) {
+        if (!BeeUtils.isEmpty(availableAccounts)) {
+          currentAccount = defaultAccount;
+          accounts.addAll(availableAccounts);
           FormFactory.openForm(FORM_MAIL, MailPanel.this);
         } else {
           BeeKeeper.getScreen().notifyWarning("No accounts found");
@@ -591,8 +580,7 @@ public class MailPanel extends AbstractFormInterceptor {
   }
 
   AccountInfo getCurrentAccount() {
-    Assert.isIndex(accounts, currentAccount);
-    return accounts.get(currentAccount);
+    return currentAccount;
   }
 
   Long getCurrentFolderId() {
@@ -660,7 +648,7 @@ public class MailPanel extends AbstractFormInterceptor {
     });
   }
 
-  private void activateAccount(int selectedAccount) {
+  private void activateAccount(AccountInfo selectedAccount) {
     currentAccount = selectedAccount;
 
     requeryFolders(new ScheduledCommand() {
@@ -677,8 +665,8 @@ public class MailPanel extends AbstractFormInterceptor {
   }
 
   private void createMessage() {
-    NewMailMessage newMessage = NewMailMessage.create(getCurrentAccount().getAddressId(),
-        accounts, null, null, null, null, null, null, null);
+    NewMailMessage newMessage = NewMailMessage.create(accounts, getCurrentAccount(), null, null,
+        null, null, null, null, null);
 
     newMessage.setScheduled(new Consumer<Boolean>() {
       @Override
@@ -761,17 +749,21 @@ public class MailPanel extends AbstractFormInterceptor {
   private void initAccounts(final ListBox accountsWidget) {
     accountsWidget.clear();
 
-    for (AccountInfo account : accounts) {
-      accountsWidget.addItem(account.getDescription());
+    for (int i = 0; i < accounts.size(); i++) {
+      AccountInfo accountInfo = accounts.get(i);
+      accountsWidget.addItem(accountInfo.getDescription() + " <" + accountInfo.getAddress() + ">");
+
+      if (Objects.equals(accountInfo, currentAccount)) {
+        accountsWidget.setSelectedIndex(i);
+      }
     }
     accountsWidget.setEnabled(accountsWidget.getItemCount() > 1);
-    accountsWidget.setSelectedIndex(currentAccount);
     accountsWidget.addChangeHandler(new ChangeHandler() {
       @Override
       public void onChange(ChangeEvent event) {
-        int selectedAccount = accountsWidget.getSelectedIndex();
+        AccountInfo selectedAccount = accounts.get(accountsWidget.getSelectedIndex());
 
-        if (selectedAccount != currentAccount) {
+        if (!Objects.equals(selectedAccount, currentAccount)) {
           activateAccount(selectedAccount);
         }
       }

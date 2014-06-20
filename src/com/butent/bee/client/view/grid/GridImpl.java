@@ -59,6 +59,7 @@ import com.butent.bee.client.ui.FormFactory;
 import com.butent.bee.client.ui.FormFactory.WidgetDescriptionCallback;
 import com.butent.bee.client.ui.FormWidget;
 import com.butent.bee.client.ui.IdentifiableWidget;
+import com.butent.bee.client.ui.Opener;
 import com.butent.bee.client.ui.UiHelper;
 import com.butent.bee.client.ui.WidgetDescription;
 import com.butent.bee.client.utils.Evaluator;
@@ -195,16 +196,16 @@ public class GridImpl extends Absolute implements GridView, EditEndEvent.Handler
 
   private static boolean isColumnReadOnly(String viewName, String source,
       ColumnDescription columnDescription) {
-    
+
     if (columnDescription.getColType().isReadOnly()) {
       return true;
-      
+
     } else if (BeeUtils.isTrue(columnDescription.getReadOnly())) {
       return true;
-      
+
     } else if (BeeUtils.allNotEmpty(viewName, source)) {
       return !BeeKeeper.getUser().canEditColumn(viewName, source);
-      
+
     } else {
       return false;
     }
@@ -387,12 +388,6 @@ public class GridImpl extends Absolute implements GridView, EditEndEvent.Handler
       relationEditable = cd.getRelation().isEditEnabled(false)
           && Data.isViewVisible(cd.getRelation().getViewName());
 
-      if (!BeeUtils.isEmpty(originalSource) && !originalSource.equals(source)
-          && !BeeUtils.isTrue(cd.getVisible())
-          && !BeeKeeper.getUser().isColumnVisible(getViewName(), source)) {
-        return false;
-      }
-      
     } else {
       originalSource = null;
       relationEditable = false;
@@ -425,7 +420,7 @@ public class GridImpl extends Absolute implements GridView, EditEndEvent.Handler
 
       if (!BeeConst.isUndef(index)) {
         label = Localized.getLabel(dataColumns.get(index));
-      } else if (colType == ColType.ID 
+      } else if (colType == ColType.ID
           || !BeeUtils.isEmpty(source) && BeeUtils.same(source, gridDescription.getIdName())) {
         label = Localized.getConstants().captionId();
       }
@@ -564,6 +559,9 @@ public class GridImpl extends Absolute implements GridView, EditEndEvent.Handler
 
       case PROPERTY:
         column = GridFactory.createColumn(cellSource, cellType, renderer);
+        break;
+
+      case RIGHTS:
         break;
     }
 
@@ -839,7 +837,7 @@ public class GridImpl extends Absolute implements GridView, EditEndEvent.Handler
     setNewRowCaption(BeeUtils.notEmpty(gridDescription.getNewRowCaption(),
         (getDataInfo() == null) ? null : getDataInfo().getNewRowCaption()));
 
-    getGrid().estimateHeaderWidths(true);
+    getGrid().estimateHeaderWidths();
 
     getGrid().setDefaultFlexibility(gridDescription.getFlexibility());
 
@@ -1375,12 +1373,17 @@ public class GridImpl extends Absolute implements GridView, EditEndEvent.Handler
       }
     }
 
-    if (event.isBefore() && !event.isConsumed() && !getDynamicColumnGroups().isEmpty()
-        && !BeeUtils.isEmpty(getRowData())) {
-      for (String dynGroup : getDynamicColumnGroups()) {
-        if (!event.canceled()) {
-          DynamicColumnFactory.beforeRender(this, event, dynGroup);
+    if (event.isBefore() && !event.isConsumed() && !BeeUtils.isEmpty(getRowData())) {
+      if (!getDynamicColumnGroups().isEmpty()) {
+        for (String dynGroup : getDynamicColumnGroups()) {
+          if (!event.canceled()) {
+            DynamicColumnFactory.checkDynamicColumns(this, event, dynGroup);
+          }
         }
+      }
+      
+      if (!event.canceled() && getViewPresenter() != null) {
+        DynamicColumnFactory.checkRightsColumns(getViewPresenter(), this, event);
       }
     }
   }
@@ -1674,7 +1677,7 @@ public class GridImpl extends Absolute implements GridView, EditEndEvent.Handler
       boolean asPopup) {
     String formCaption = BeeUtils.notEmpty(caption, formView.getCaption());
 
-    EnumSet<Action> actions = EnumSet.of(Action.CLOSE);
+    EnumSet<Action> actions = EnumSet.of(Action.PRINT, Action.CLOSE);
     if (!edit) {
       actions.add(Action.SAVE);
     } else if (!isReadOnly()) {
@@ -1964,14 +1967,14 @@ public class GridImpl extends Absolute implements GridView, EditEndEvent.Handler
       for (ColumnInfo columnInfo : getGrid().getColumns()) {
         String id = columnInfo.getColumnId();
         EditableColumn ec = getEditableColumn(id, false);
-        
+
         if (ec != null && !result.contains(id)) {
           if (columnInfo.isColReadOnly()) {
             BeeColumn dataColumn = ec.getDataColumn();
             if (dataColumn.isEditable() && !dataColumn.isNullable() && !dataColumn.hasDefaults()) {
               result.add(id);
             }
-            
+
           } else {
             result.add(id);
           }
@@ -2218,8 +2221,9 @@ public class GridImpl extends Absolute implements GridView, EditEndEvent.Handler
     } else {
       rowCallback = null;
     }
-
-    RowEditor.openRow(formName, editDataInfo, id, modal, null, rowCallback, null);
+    
+    Opener opener = modal ? Opener.MODAL : Opener.NEW_TAB;
+    RowEditor.openForm(formName, editDataInfo, id, opener, rowCallback);
     return true;
   }
 

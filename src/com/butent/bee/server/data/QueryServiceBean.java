@@ -42,7 +42,7 @@ import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogLevel;
 import com.butent.bee.shared.logging.LogUtils;
 import com.butent.bee.shared.modules.administration.AdministrationConstants;
-import com.butent.bee.shared.modules.administration.AdministrationConstants.RightsState;
+import com.butent.bee.shared.rights.RightsState;
 import com.butent.bee.shared.time.DateTime;
 import com.butent.bee.shared.time.JustDate;
 import com.butent.bee.shared.time.TimeUtils;
@@ -795,7 +795,14 @@ public class QueryServiceBean {
   }
 
   public int getViewSize(String viewName, Filter filter) {
-    return sqlCount(sys.getView(viewName).getQuery(filter, sys.getViewFinder()));
+    BeeView view = sys.getView(viewName);
+    SqlSelect query = view.getQuery(filter, sys.getViewFinder());
+
+    if (!usr.isAdministrator()) {
+      sys.filterVisibleState(query, view.getSourceName(), view.getSourceAlias());
+    }
+    
+    return sqlCount(query);
   }
 
   @TransactionAttribute(TransactionAttributeType.MANDATORY)
@@ -838,6 +845,58 @@ public class QueryServiceBean {
       response.setResponse(id);
     }
     return response;
+  }
+
+  @TransactionAttribute(TransactionAttributeType.MANDATORY)
+  public int loadData(String target, SqlSelect sourceQuery) {
+    Assert.state(sys.isTable(target));
+    boolean isDebugEnabled = logger.isDebugEnabled();
+
+    int chunk = BeeUtils.toNonNegativeInt(sourceQuery.getLimit());
+    int offset = 0;
+    int tot = 0;
+
+    SimpleRowSet data = null;
+    SqlInsert insert = null;
+
+    do {
+      if (chunk > 0) {
+        sourceQuery.setOffset(offset);
+      }
+      data = getData(sourceQuery);
+
+      if (insert == null) {
+        insert = new SqlInsert(target)
+            .addFields(sys.getIdName(target), sys.getVersionName(target))
+            .addFields(data.getColumnNames());
+      }
+      if (isDebugEnabled) {
+        logger.setLevel(LogLevel.INFO);
+      }
+      for (String[] row : data.getRows()) {
+        Object[] values = new Object[row.length + 2];
+        values[0] = ig.getId(target);
+        values[1] = System.currentTimeMillis();
+        System.arraycopy(row, 0, values, 2, row.length);
+        insert.addValues(values);
+
+        if (++tot % 1e4 == 0) {
+          insertData(insert);
+          insert.resetValues();
+          logger.info("Inserted", tot, "records into table", target);
+        }
+      }
+      if (tot % 1e4 > 0) {
+        insertData(insert);
+        logger.info("Inserted", tot, "records into table", target);
+      }
+      if (isDebugEnabled) {
+        logger.setLevel(LogLevel.DEBUG);
+      }
+      offset += chunk;
+    } while (chunk > 0 && data.getNumberOfRows() == chunk);
+
+    return tot;
   }
 
   public long setYearMonth(String target, String dtCol, String yearCol, String monthCol) {

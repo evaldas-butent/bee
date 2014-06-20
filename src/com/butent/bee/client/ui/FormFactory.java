@@ -16,6 +16,7 @@ import com.butent.bee.client.presenter.FormPresenter;
 import com.butent.bee.client.presenter.Presenter;
 import com.butent.bee.client.presenter.PresenterCallback;
 import com.butent.bee.client.utils.XmlUtils;
+import com.butent.bee.client.view.ViewHelper;
 import com.butent.bee.client.view.form.FormImpl;
 import com.butent.bee.client.view.form.FormView;
 import com.butent.bee.client.view.form.interceptor.FormInterceptor;
@@ -263,13 +264,9 @@ public final class FormFactory {
     return info;
   }
 
-  public static String getSupplierKey(String formName, FormInterceptor formInterceptor) {
-    String key = (formInterceptor == null) ? null : formInterceptor.getSupplierKey();
-    if (BeeUtils.isEmpty(key)) {
-      Assert.notEmpty(formName);
-      key = "form_" + BeeUtils.normalize(formName);
-    }
-    return key;
+  public static String getSupplierKey(String formName) {
+    Assert.notEmpty(formName);
+    return WidgetFactory.SupplierKind.FORM.getKey(formName);
   }
 
   public static FormWidget getWidgetType(BeeColumn column) {
@@ -353,10 +350,9 @@ public final class FormFactory {
   }
 
   public static void openForm(final String formName, final FormInterceptor formInterceptor) {
+    String supplierKey = getSupplierKey(formName);
 
-    String supplierKey = getSupplierKey(formName, formInterceptor);
     if (!WidgetFactory.hasSupplier(supplierKey)) {
-
       WidgetSupplier supplier = new WidgetSupplier() {
         @Override
         public void create(final Callback<IdentifiableWidget> callback) {
@@ -385,7 +381,7 @@ public final class FormFactory {
     getFormDescription(formName, new Callback<FormDescription>() {
       @Override
       public void onSuccess(FormDescription result) {
-        openForm(result, formInterceptor, PresenterCallback.SHOW_IN_ACTIVE_PANEL);
+        openForm(result, formInterceptor, ViewHelper.getPresenterCallback());
       }
     });
   }

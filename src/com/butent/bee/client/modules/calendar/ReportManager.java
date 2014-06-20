@@ -151,13 +151,13 @@ class ReportManager {
     Collection<UiOption> uiOptions = EnumSet.of(UiOption.REPORT);
     
     GridView gridView = GridFactory.createGridView(gridDescription,
-        GridFactory.getSupplierKey(gridName, null), rowSet.getColumns());
+        GridFactory.getSupplierKey(gridName), rowSet.getColumns());
     gridView.initData(rowSet.getNumberOfRows(), rowSet);
     
     GridPresenter presenter = new GridPresenter(gridDescription, gridView,
         rowSet.getNumberOfRows(), rowSet, ProviderType.LOCAL, CachingPolicy.NONE, uiOptions);
 
-    BeeKeeper.getScreen().updateActivePanel(presenter.getWidget());
+    BeeKeeper.getScreen().showWidget(presenter.getWidget());
   }
 
   private final Map<Report, BeeRow> reportOptions = Maps.newHashMap();

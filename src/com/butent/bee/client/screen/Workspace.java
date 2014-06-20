@@ -1,19 +1,19 @@
 package com.butent.bee.client.screen;
 
-import com.google.common.collect.Lists;
-import com.google.common.collect.Maps;
 import com.google.gwt.dom.client.Node;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
-import com.google.gwt.event.logical.shared.SelectionEvent;
-import com.google.gwt.event.logical.shared.SelectionHandler;
 import com.google.gwt.event.shared.HandlerRegistration;
+import com.google.gwt.json.client.JSONArray;
+import com.google.gwt.json.client.JSONNumber;
+import com.google.gwt.json.client.JSONObject;
+import com.google.gwt.json.client.JSONString;
 import com.google.gwt.user.client.Event.NativePreviewEvent;
 import com.google.gwt.user.client.ui.Widget;
 
+import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.Global;
 import com.butent.bee.client.Historian;
-import com.butent.bee.client.composite.TabBar;
 import com.butent.bee.client.dialog.Popup;
 import com.butent.bee.client.dialog.Popup.OutsideClick;
 import com.butent.bee.client.dom.DomUtils;
@@ -23,94 +23,254 @@ import com.butent.bee.client.event.logical.CaptionChangeEvent;
 import com.butent.bee.client.event.logical.HasActiveWidgetChangeHandlers;
 import com.butent.bee.client.layout.Direction;
 import com.butent.bee.client.layout.Flow;
-import com.butent.bee.client.layout.Split;
 import com.butent.bee.client.layout.TabbedPages;
+import com.butent.bee.client.layout.Vertical;
 import com.butent.bee.client.screen.TilePanel.Tile;
+import com.butent.bee.client.style.StyleUtils;
 import com.butent.bee.client.ui.IdentifiableWidget;
-import com.butent.bee.client.widget.CustomHasHtml;
-import com.butent.bee.client.widget.Image;
+import com.butent.bee.client.utils.JsonUtils;
 import com.butent.bee.client.widget.CustomDiv;
+import com.butent.bee.client.widget.CustomHasHtml;
+import com.butent.bee.client.widget.Label;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
+import com.butent.bee.shared.HasExtendedInfo;
 import com.butent.bee.shared.data.ExtendedPropertiesData;
 import com.butent.bee.shared.html.Tags;
 import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogUtils;
 import com.butent.bee.shared.ui.HasCaption;
-import com.butent.bee.shared.ui.Orientation;
+import com.butent.bee.shared.ui.UserInterface.Component;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.ExtendedProperty;
+import com.butent.bee.shared.utils.PropertyUtils;
 
+import java.util.ArrayList;
+import java.util.EnumSet;
 import java.util.List;
-import java.util.Map;
+import java.util.Set;
 
 public class Workspace extends TabbedPages implements CaptionChangeEvent.Handler,
-    HasActiveWidgetChangeHandlers, ActiveWidgetChangeEvent.Handler, PreviewHandler {
+    HasActiveWidgetChangeHandlers, ActiveWidgetChangeEvent.Handler, PreviewHandler,
+    HasExtendedInfo {
 
   private enum TabAction {
-    CREATE(new Image(Global.getImages().silverPlus()), null, null,
-        Localized.getConstants().actionWorkspaceNewTab()),
-
-    NORTH(new CustomDiv(), Direction.NORTH, STYLE_GROUP_SPLIT,
-        Localized.getConstants().actionWorkspaceNewTop()),
-    SOUTH(new CustomDiv(), Direction.SOUTH, STYLE_GROUP_SPLIT,
-        Localized.getConstants().actionWorkspaceNewBottom()),
-    WEST(new CustomDiv(), Direction.WEST, STYLE_GROUP_SPLIT,
-        Localized.getConstants().actionWorkspaceNewLeft()),
-    EAST(new CustomDiv(), Direction.EAST, STYLE_GROUP_SPLIT,
-        Localized.getConstants().actionWorkspaceNewRight()),
-
-    MAXIMIZE(new Image(Global.getImages().arrowOut()), null, STYLE_GROUP_RESIZE,
-        Localized.getConstants().actionWorkspaceMaxSize()),
-    RESTORE(new Image(Global.getImages().arrowIn()), null, STYLE_GROUP_RESIZE,
-        Localized.getConstants().actionWorkspaceRestoreSize()),
-
-    UP(new Image(Global.getImages().arrowUp()), Direction.NORTH, STYLE_GROUP_RESIZE,
-        Localized.getConstants().actionWorkspaceEnlargeUp()),
-    DOWN(new Image(Global.getImages().arrowDown()), Direction.SOUTH, STYLE_GROUP_RESIZE,
-        Localized.getConstants().actionWorkspaceEnlargeDown()),
-    LEFT(new Image(Global.getImages().arrowLeft()), Direction.WEST, STYLE_GROUP_RESIZE,
-        Localized.getConstants().actionWorkspaceEnlargeToLeft()),
-    RIGHT(new Image(Global.getImages().arrowRight()), Direction.EAST, STYLE_GROUP_RESIZE,
-        Localized.getConstants().actionWorkspaceEnlargeToRight()),
-
-    CLOSE(new Image(Global.getImages().silverMinus()), null, null,
-        Localized.getConstants().actionClose());
-
-    private static final String STYLE_NAME_PREFIX = Workspace.STYLE_PREFIX + "action-";
-
-    private final IdentifiableWidget widget;
-    private final Direction direction;
-
-    private TabAction(IdentifiableWidget widget, Direction direction, String styleGroup,
-        String title) {
-      this.widget = widget;
-      this.direction = direction;
-
-      this.widget.asWidget().addStyleName(STYLE_NAME_PREFIX + this.name().toLowerCase());
-      if (!BeeUtils.isEmpty(styleGroup)) {
-        this.widget.asWidget().addStyleName(STYLE_NAME_PREFIX + styleGroup);
+    CREATE(Localized.getConstants().actionWorkspaceNewTab(), GROUP_NEW) {
+      @Override
+      void execute(Workspace workspace, int index) {
+        workspace.insertEmptyPanel(index + 1);
       }
-      this.widget.asWidget().setTitle(title);
+
+      @Override
+      boolean isEnabled(Workspace workspace, int index) {
+        return true;
+      }
+    },
+
+    NORTH(Localized.getConstants().actionWorkspaceNewTop(), GROUP_SPLIT) {
+      @Override
+      void execute(Workspace workspace, int index) {
+        workspace.splitActiveTile(Direction.NORTH);
+      }
+
+      @Override
+      boolean isEnabled(Workspace workspace, int index) {
+        return index == workspace.getSelectedIndex();
+      }
+    },
+
+    SOUTH(Localized.getConstants().actionWorkspaceNewBottom(), GROUP_SPLIT) {
+      @Override
+      void execute(Workspace workspace, int index) {
+        workspace.splitActiveTile(Direction.SOUTH);
+      }
+
+      @Override
+      boolean isEnabled(Workspace workspace, int index) {
+        return index == workspace.getSelectedIndex();
+      }
+    },
+
+    WEST(Localized.getConstants().actionWorkspaceNewLeft(), GROUP_SPLIT) {
+      @Override
+      void execute(Workspace workspace, int index) {
+        workspace.splitActiveTile(Direction.WEST);
+      }
+
+      @Override
+      boolean isEnabled(Workspace workspace, int index) {
+        return index == workspace.getSelectedIndex();
+      }
+    },
+
+    EAST(Localized.getConstants().actionWorkspaceNewRight(), GROUP_SPLIT) {
+      @Override
+      void execute(Workspace workspace, int index) {
+        workspace.splitActiveTile(Direction.EAST);
+      }
+
+      @Override
+      boolean isEnabled(Workspace workspace, int index) {
+        return index == workspace.getSelectedIndex();
+      }
+    },
+
+    CLOSE_TILE(Localized.getConstants().actionWorkspaceCloseTile(), GROUP_CLOSE) {
+      @Override
+      void execute(Workspace workspace, int index) {
+        workspace.close(workspace.getActiveTile());
+      }
+
+      @Override
+      boolean isEnabled(Workspace workspace, int index) {
+        if (index == workspace.getSelectedIndex()) {
+          TilePanel panel = workspace.getActivePanel();
+          return panel != null && panel.getTileCount() > 1;
+        } else {
+          return false;
+        }
+      }
+    },
+
+    CLOSE_TAB(Localized.getConstants().actionWorkspaceCloseTab(), GROUP_CLOSE) {
+      @Override
+      void execute(Workspace workspace, int index) {
+        if (workspace.getPageCount() > 1) {
+          workspace.removePage(index);
+        } else {
+          workspace.clearPage(index);
+        }
+      }
+
+      @Override
+      boolean isEnabled(Workspace workspace, int index) {
+        if (workspace.getPageCount() > 1 || index != workspace.getSelectedIndex()) {
+          return true;
+        } else {
+          TilePanel panel = workspace.getActivePanel();
+          return panel != null && (panel.getTileCount() > 1 || !panel.getActiveTile().isBlank());
+        }
+      }
+    },
+
+    CLOSE_OTHER(Localized.getConstants().actionWorkspaceCloseOther(), GROUP_CLOSE) {
+      @Override
+      void execute(Workspace workspace, int index) {
+        while (workspace.getPageCount() > index + 1) {
+          workspace.removePage(workspace.getPageCount() - 1);
+        }
+        while (workspace.getPageCount() > 1) {
+          workspace.removePage(0);
+        }
+      }
+
+      @Override
+      boolean isEnabled(Workspace workspace, int index) {
+        return workspace.getPageCount() > 1;
+      }
+    },
+
+    CLOSE_RIGHT(Localized.getConstants().actionWorkspaceCloseRight(), GROUP_CLOSE) {
+      @Override
+      void execute(Workspace workspace, int index) {
+        while (workspace.getPageCount() > index + 1) {
+          workspace.removePage(workspace.getPageCount() - 1);
+        }
+      }
+
+      @Override
+      boolean isEnabled(Workspace workspace, int index) {
+        return index < workspace.getPageCount() - 1;
+      }
+    },
+
+    CLOSE_ALL(Localized.getConstants().actionWorkspaceCloseAll(), GROUP_CLOSE) {
+      @Override
+      void execute(Workspace workspace, int index) {
+        workspace.clear();
+      }
+
+      @Override
+      boolean isEnabled(Workspace workspace, int index) {
+        return workspace.getPageCount() > 1;
+      }
+    },
+
+    BOOKMARK_TAB(Localized.getConstants().actionWorkspaceBookmarkTab(), GROUP_BOOKMARK) {
+      @Override
+      void execute(Workspace workspace, int index) {
+        TilePanel panel = workspace.getActivePanel();
+        if (panel != null) {
+          JSONObject json = panel.toJson();
+          maybeAddHidden(json);
+          Global.getSpaces().bookmark(panel.getBookmarkLabel(), json.toString());
+        }
+      }
+
+      @Override
+      boolean isEnabled(Workspace workspace, int index) {
+        if (BeeKeeper.getScreen().getUserInterface().hasComponent(Component.WORKSPACES)
+            && index == workspace.getSelectedIndex()) {
+          TilePanel panel = workspace.getActivePanel();
+          return panel != null && panel.isBookmarkable();
+        } else {
+          return false;
+        }
+      }
+    },
+
+    BOOKMARK_ALL(Localized.getConstants().actionWorkspaceBookmarkAll(), GROUP_BOOKMARK) {
+      @Override
+      void execute(Workspace workspace, int index) {
+        List<String> labels = new ArrayList<>();
+
+        for (int i = 0; i < workspace.getPageCount(); i++) {
+          Widget contentPanel = workspace.getContentWidget(i);
+          if (contentPanel instanceof TilePanel) {
+            labels.add(((TilePanel) contentPanel).getBookmarkLabel());
+          }
+        }
+
+        Global.getSpaces().bookmark(BeeUtils.joinItems(labels), workspace.toJson().toString());
+      }
+
+      @Override
+      boolean isEnabled(Workspace workspace, int index) {
+        return BeeKeeper.getScreen().getUserInterface().hasComponent(Component.WORKSPACES)
+            && workspace.getPageCount() > 1;
+      }
+    };
+
+    private final String label;
+    private final char group;
+
+    private final String styleSuffix;
+
+    private TabAction(String label, char group) {
+      this.label = label;
+      this.group = group;
+
+      this.styleSuffix = name().toLowerCase().replace(BeeConst.CHAR_UNDER, BeeConst.CHAR_MINUS);
     }
 
-    private Direction getDirection() {
-      return direction;
-    }
+    abstract void execute(Workspace workspace, int index);
 
-    private IdentifiableWidget getWidget() {
-      return widget;
-    }
+    abstract boolean isEnabled(Workspace workspace, int index);
   }
 
   private final class TabWidget extends Flow implements HasCaption {
 
-    private TabWidget(String caption) {
-      super(getStylePrefix() + "tabWrapper");
+    private static final String STYLE_WRAPPER = STYLE_PREFIX + "tab-wrapper";
+    private static final String STYLE_DROP_DOWN = STYLE_PREFIX + "tab-drop-down";
+    private static final String STYLE_CAPTION = STYLE_PREFIX + "tab-caption";
+    private static final String STYLE_CLOSE = STYLE_PREFIX + "tab-close";
 
-      CustomDiv dropDown = new CustomDiv(getStylePrefix() + "dropDown");
-      dropDown.setHtml(String.valueOf(BeeConst.DROP_DOWN));
+    private TabWidget(String caption) {
+      super(STYLE_WRAPPER);
+
+      CustomDiv dropDown = new CustomDiv(STYLE_DROP_DOWN);
+      dropDown.setText(String.valueOf(BeeConst.DROP_DOWN));
       dropDown.setTitle(Localized.getConstants().tabControl());
       add(dropDown);
 
@@ -122,19 +282,19 @@ public class Workspace extends TabbedPages implements CaptionChangeEvent.Handler
         }
       });
 
-      CustomDiv label = new CustomDiv(getStylePrefix() + "caption");
+      CustomDiv label = new CustomDiv(STYLE_CAPTION);
       label.setHtml(caption);
       add(label);
 
-      CustomDiv closeTab = new CustomDiv(getStylePrefix() + "closeTab");
+      CustomDiv closeTab = new CustomDiv(STYLE_CLOSE);
       closeTab.setText(String.valueOf(BeeConst.CHAR_TIMES));
-      closeTab.setTitle(Localized.getConstants().closeTab());
+      closeTab.setTitle(Localized.getConstants().actionWorkspaceCloseTab());
       add(closeTab);
 
       closeTab.addClickHandler(new ClickHandler() {
         @Override
         public void onClick(ClickEvent event) {
-          doAction(TabAction.CLOSE, getTabIndex(TabWidget.this.getId()));
+          TabAction.CLOSE_TAB.execute(Workspace.this, getTabIndex(TabWidget.this.getId()));
         }
       });
     }
@@ -155,21 +315,66 @@ public class Workspace extends TabbedPages implements CaptionChangeEvent.Handler
 
   private static final BeeLogger logger = LogUtils.getLogger(Workspace.class);
 
-  private static final String STYLE_PREFIX = "bee-Workspace-";
+  private static final String STYLE_PREFIX = StyleUtils.CLASS_NAME_PREFIX + "Workspace-";
 
-  private static final String STYLE_GROUP_SPLIT = "split";
-  private static final String STYLE_GROUP_RESIZE = "resize";
+  private static final String STYLE_NEW_TAB = STYLE_PREFIX + "new-tab";
 
-  private final Map<Direction, Integer> resized = Maps.newHashMap();
+  private static final String STYLE_ACTION_PREFIX = STYLE_PREFIX + "action-";
+
+  private static final String STYLE_ACTION_POPUP = STYLE_ACTION_PREFIX + "popup";
+  private static final String STYLE_ACTION_TABLE = STYLE_ACTION_PREFIX + "table";
+  private static final String STYLE_ACTION_ENABLED = STYLE_ACTION_PREFIX + "enabled";
+  private static final String STYLE_ACTION_DISABLED = STYLE_ACTION_PREFIX + "disabled";
+  private static final String STYLE_ACTION_SEPARATOR = STYLE_ACTION_PREFIX + "separator";
+
+  static final String KEY_DIRECTION = "direction";
+  static final String KEY_SIZE = "size";
+
+  private static final String KEY_SELECTED = "selected";
+  private static final String KEY_HIDDEN = "hidden";
+  private static final String KEY_TABS = "tabs";
+
+  private static final int SIZE_FACTOR = 1_000_000;
+
+  private static final char GROUP_NEW = 'n';
+  private static final char GROUP_SPLIT = 's';
+  private static final char GROUP_CLOSE = 'c';
+  private static final char GROUP_BOOKMARK = 'b';
+
+  static int restoreSize(double size, int max) {
+    return BeeUtils.round(size * max / SIZE_FACTOR);
+  }
+
+  static int scaleSize(int size, int max) {
+    return BeeUtils.round((double) size * SIZE_FACTOR / max);
+  }
+
+  private static void maybeAddHidden(JSONObject json) {
+    Set<Direction> directions = BeeKeeper.getScreen().getHiddenDirections();
+
+    if (!BeeUtils.isEmpty(directions)) {
+      JSONArray arr = new JSONArray();
+      int index = 0;
+
+      for (Direction direction : directions) {
+        if (direction != null) {
+          arr.set(index++, new JSONString(direction.brief()));
+        }
+      }
+
+      if (index > 0) {
+        json.put(KEY_HIDDEN, arr);
+      }
+    }
+  }
 
   Workspace() {
     super(STYLE_PREFIX);
 
     insertEmptyPanel(0);
 
-    CustomHasHtml newTab = new CustomHasHtml(DomUtils.createElement(Tags.ASIDE),
-        getStylePrefix() + "newTab");
-    newTab.setHtml(BeeConst.STRING_PLUS);
+    CustomHasHtml newTab = new CustomHasHtml(DomUtils.createElement(Tags.ASIDE), STYLE_NEW_TAB);
+    newTab.setText(BeeConst.STRING_PLUS);
     newTab.setTitle(Localized.getConstants().newTab());
 
     newTab.addClickHandler(new ClickHandler() {
@@ -185,6 +390,36 @@ public class Workspace extends TabbedPages implements CaptionChangeEvent.Handler
   @Override
   public HandlerRegistration addActiveWidgetChangeHandler(ActiveWidgetChangeEvent.Handler handler) {
     return addHandler(handler, ActiveWidgetChangeEvent.getType());
+  }
+
+  @Override
+  public void clear() {
+    while (getPageCount() > 1) {
+      removePage(getPageCount() - 1);
+    }
+    clearPage(0);
+  }
+
+  @Override
+  public List<ExtendedProperty> getExtendedInfo() {
+    List<ExtendedProperty> info = new ArrayList<>();
+
+    info.add(new ExtendedProperty("Selected Index", BeeUtils.toString(getSelectedIndex())));
+
+    int tabCount = getPageCount();
+    info.add(new ExtendedProperty("Page Count", BeeUtils.toString(tabCount)));
+
+    info.add(new ExtendedProperty("Json", toJson().toString()));
+
+    for (int i = 0; i < tabCount; i++) {
+      Widget contentPanel = getContentWidget(i);
+      if (contentPanel instanceof TilePanel) {
+        PropertyUtils.appendWithPrefix(info, BeeUtils.progress(i + 1, tabCount),
+            ((TilePanel) contentPanel).getExtendedInfo());
+      }
+    }
+
+    return info;
   }
 
   @Override
@@ -370,6 +605,10 @@ public class Workspace extends TabbedPages implements CaptionChangeEvent.Handler
 
     tile.activate(false);
   }
+  
+  void addToTabBar(IdentifiableWidget widget) {
+    getTabBar().add(widget);
+  }
 
   void closeWidget(IdentifiableWidget widget) {
     Tile tile = TilePanel.getTile(widget.asWidget());
@@ -392,7 +631,7 @@ public class Workspace extends TabbedPages implements CaptionChangeEvent.Handler
   }
 
   List<IdentifiableWidget> getOpenWidgets() {
-    List<IdentifiableWidget> result = Lists.newArrayList();
+    List<IdentifiableWidget> result = new ArrayList<>();
 
     for (int i = 0; i < getPageCount(); i++) {
       Widget contentPanel = getContentWidget(i);
@@ -436,14 +675,103 @@ public class Workspace extends TabbedPages implements CaptionChangeEvent.Handler
     updateActivePanel(widget);
   }
 
-  void showInfo() {
-    TilePanel panel = getActivePanel();
-    if (panel == null) {
+  void restore(String input, boolean append) {
+    JSONObject json = JsonUtils.parse(input);
+    if (json == null) {
+      logger.warning("cannot parse", input);
       return;
     }
 
-    List<ExtendedProperty> info = panel.getExtendedInfo();
-    Global.showModalGrid("Tiles", new ExtendedPropertiesData(info, false));
+    if (!append) {
+      clear();
+    }
+
+    if (json.containsKey(KEY_HIDDEN)) {
+      JSONArray arr = json.get(KEY_HIDDEN).isArray();
+
+      if (arr != null) {
+        Set<Direction> directions = EnumSet.noneOf(Direction.class);
+
+        for (int i = 0; i < arr.size(); i++) {
+          JSONString string = arr.get(i).isString();
+
+          if (string != null) {
+            Direction direction = Direction.parse(string.stringValue());
+            if (direction != null) {
+              directions.add(direction);
+            }
+          }
+        }
+
+        if (!directions.isEmpty()) {
+          BeeKeeper.getScreen().hideDirections(directions);
+        }
+      }
+    }
+
+    TilePanel panel;
+
+    if (json.containsKey(KEY_TABS)) {
+      int oldPageCount = append ? getPageCount() : 0;
+      JSONArray tabs = json.get(KEY_TABS).isArray();
+
+      if (tabs != null) {
+        for (int i = 0; i < tabs.size(); i++) {
+          JSONObject child = tabs.get(i).isObject();
+
+          if (child != null) {
+            if (i > 0 || append) {
+              panel = insertEmptyPanel(getPageCount());
+            } else {
+              panel = getActivePanel();
+            }
+
+            panel.restore(this, child);
+          }
+        }
+
+        if (json.containsKey(KEY_SELECTED) && getPageCount() == oldPageCount + tabs.size()) {
+          Double value = JsonUtils.getNumber(json, KEY_SELECTED);
+          int index = (value == null) ? BeeConst.UNDEF : BeeUtils.round(value);
+
+          if (BeeUtils.betweenExclusive(index, 0, tabs.size())) {
+            selectPage(oldPageCount + index, SelectionOrigin.SCRIPT);
+          }
+        }
+      }
+
+    } else {
+      if (append) {
+        panel = insertEmptyPanel(getPageCount());
+      } else {
+        panel = getActivePanel();
+      }
+
+      panel.restore(this, json);
+    }
+  }
+
+  String serialize() {
+    JSONObject json = toJson();
+    
+    if (json == null || json.size() <= 0) {
+      return null;
+
+    } else if (json.size() == 1 && json.containsKey(KEY_TABS)) {
+      JSONArray arr = json.get(KEY_TABS).isArray();
+      
+      if (arr == null) {
+        return null;
+
+      } else if (arr.size() == 1) {
+        JSONObject tab = arr.get(0).isObject();
+        if (tab == null || tab.size() <= 0) {
+          return null;
+        }
+      }
+    }
+    
+    return json.toString();
   }
 
   void updateActivePanel(IdentifiableWidget widget) {
@@ -458,8 +786,18 @@ public class Workspace extends TabbedPages implements CaptionChangeEvent.Handler
     }
   }
 
-  private boolean canGrow(Direction direction) {
-    return BeeUtils.isPositive(getSiblingSize(direction));
+  private void clearCaption(int index) {
+    TabWidget tab = (TabWidget) getTabWidget(index);
+    tab.setCaption(Localized.getConstants().newTab());
+  }
+
+  private void clearPage(int index) {
+    Widget widget = getContentWidget(index);
+
+    if (widget instanceof TilePanel) {
+      ((TilePanel) widget).clear(this);
+      clearCaption(index);
+    }
   }
 
   private void close(Tile tile) {
@@ -492,53 +830,7 @@ public class Workspace extends TabbedPages implements CaptionChangeEvent.Handler
 
     } else if (!tile.isBlank()) {
       tile.blank();
-    }
-  }
-
-  private void doAction(TabAction action, int index) {
-    switch (action) {
-      case CLOSE:
-        if (index == getSelectedIndex()) {
-          close(getActiveTile());
-        } else {
-          removePage(index);
-        }
-        break;
-
-      case CREATE:
-        insertEmptyPanel(index + 1);
-        break;
-
-      case EAST:
-      case NORTH:
-      case SOUTH:
-      case WEST:
-        splitActiveTile(action.getDirection());
-        break;
-
-      case MAXIMIZE:
-        for (Direction direction : Direction.values()) {
-          if (!Direction.CENTER.equals(direction)) {
-            stretch(direction, false);
-          }
-        }
-        getResizeContainer().doLayout();
-        break;
-
-      case RESTORE:
-        for (Map.Entry<Direction, Integer> entry : resized.entrySet()) {
-          getResizeContainer().setDirectionSize(entry.getKey(), entry.getValue(), false);
-        }
-        resized.clear();
-        getResizeContainer().doLayout();
-        break;
-
-      case UP:
-      case DOWN:
-      case LEFT:
-      case RIGHT:
-        stretch(action.getDirection(), true);
-        break;
+      clearCaption(pageIndex);
     }
   }
 
@@ -552,23 +844,6 @@ public class Workspace extends TabbedPages implements CaptionChangeEvent.Handler
     }
   }
 
-  private Split getResizeContainer() {
-    for (Widget parent = this.getParent(); parent != null; parent = parent.getParent()) {
-      if (parent instanceof Split) {
-        return (Split) parent;
-      }
-    }
-    return null;
-  }
-
-  private Integer getSiblingSize(Direction direction) {
-    Split container = getResizeContainer();
-    if (container == null) {
-      return null;
-    }
-    return container.getDirectionSize(direction);
-  }
-
   private int getTabIndex(String tabId) {
     for (int i = 0; i < getPageCount(); i++) {
       if (tabId.equals(getTabWidget(i).getElement().getId())) {
@@ -578,58 +853,14 @@ public class Workspace extends TabbedPages implements CaptionChangeEvent.Handler
     return BeeConst.UNDEF;
   }
 
-  private void insertEmptyPanel(int before) {
+  private TilePanel insertEmptyPanel(int before) {
     TilePanel panel = new TilePanel(this);
     TabWidget tab = new TabWidget(Localized.getConstants().newTab());
 
     insert(panel, tab, before);
 
     selectPage(before, SelectionOrigin.INSERT);
-  }
-
-  private boolean isActionEnabled(TabAction action, int index) {
-    boolean enabled = false;
-
-    switch (action) {
-      case CREATE:
-        enabled = true;
-        break;
-
-      case CLOSE:
-        if (getPageCount() > 1) {
-          enabled = true;
-        } else {
-          TilePanel panel = getActivePanel();
-          enabled = panel.getTileCount() > 1 || !panel.getActiveTile().isBlank();
-        }
-        break;
-
-      case EAST:
-      case NORTH:
-      case SOUTH:
-      case WEST:
-        enabled = index == getSelectedIndex();
-        break;
-
-      case MAXIMIZE:
-        enabled = index == getSelectedIndex() && (canGrow(Direction.NORTH)
-            || canGrow(Direction.SOUTH) || canGrow(Direction.WEST) || canGrow(Direction.EAST));
-        break;
-
-      case RESTORE:
-        enabled = index == getSelectedIndex() && !resized.isEmpty();
-        break;
-
-      case UP:
-      case DOWN:
-      case LEFT:
-      case RIGHT:
-        enabled = index == getSelectedIndex() && !resized.containsKey(action.getDirection())
-            && canGrow(action.getDirection());
-        break;
-    }
-
-    return enabled;
+    return panel;
   }
 
   private void showActions(String tabId) {
@@ -639,49 +870,80 @@ public class Workspace extends TabbedPages implements CaptionChangeEvent.Handler
       return;
     }
 
-    final List<TabAction> actions = Lists.newArrayList();
-    for (TabAction action : TabAction.values()) {
-      if (isActionEnabled(action, index)) {
-        actions.add(action);
+    final Popup popup = new Popup(OutsideClick.CLOSE, STYLE_ACTION_POPUP);
+
+    Vertical table = new Vertical();
+    table.addStyleName(STYLE_ACTION_TABLE);
+
+    char currentGroup = BeeConst.CHAR_SPACE;
+
+    for (final TabAction action : TabAction.values()) {
+      if (action.group != currentGroup) {
+        currentGroup = action.group;
+
+        if (!table.isEmpty()) {
+          CustomDiv separator = new CustomDiv(STYLE_ACTION_SEPARATOR);
+          table.add(separator);
+        }
       }
+
+      Label actionWidget = new Label(action.label);
+      actionWidget.addStyleName(STYLE_ACTION_PREFIX + action.styleSuffix);
+
+      if (action.isEnabled(this, index)) {
+        actionWidget.addStyleName(STYLE_ACTION_ENABLED);
+
+        actionWidget.addClickHandler(new ClickHandler() {
+          @Override
+          public void onClick(ClickEvent event) {
+            popup.close();
+            action.execute(Workspace.this, index);
+          }
+        });
+
+      } else {
+        actionWidget.addStyleName(STYLE_ACTION_DISABLED);
+      }
+
+      table.add(actionWidget);
     }
 
-    TabBar bar = new TabBar(STYLE_PREFIX + "actionMenu-", Orientation.HORIZONTAL);
-    for (TabAction action : actions) {
-      bar.addItem(action.getWidget().asWidget());
-    }
-
-    final Popup popup = new Popup(OutsideClick.CLOSE, STYLE_PREFIX + "actionPopup");
-
-    bar.addSelectionHandler(new SelectionHandler<Integer>() {
-      @Override
-      public void onSelection(SelectionEvent<Integer> event) {
-        popup.close();
-        doAction(actions.get(event.getSelectedItem()), index);
-      }
-    });
-
-    popup.setWidget(bar);
+    popup.setWidget(table);
     popup.showRelativeTo(getTabWidget(index).getElement());
   }
 
   private void showError(String message) {
     logger.severe(getClass().getName(), message);
   }
-
+  
   private void splitActiveTile(Direction direction) {
     TilePanel panel = getActivePanel();
     if (panel != null) {
       panel.addTile(this, direction);
     }
   }
+  
+  private JSONObject toJson() {
+    JSONObject json = new JSONObject();
 
-  private void stretch(Direction direction, boolean doLayout) {
-    Integer size = getSiblingSize(direction);
-    if (BeeUtils.isPositive(size)) {
-      getResizeContainer().setDirectionSize(direction, 0, doLayout);
-      resized.put(direction, size);
+    if (getPageCount() > 1) {
+      json.put(KEY_SELECTED, new JSONNumber(getSelectedIndex()));
     }
+
+    maybeAddHidden(json);
+
+    JSONArray tabs = new JSONArray();
+
+    for (int i = 0; i < getPageCount(); i++) {
+      Widget contentPanel = getContentWidget(i);
+      if (contentPanel instanceof TilePanel) {
+        tabs.set(i, ((TilePanel) contentPanel).toJson());
+      }
+    }
+
+    json.put(KEY_TABS, tabs);
+
+    return json;
   }
 
   private void updateCaption(Tile tile, String tileCaption) {
@@ -689,7 +951,6 @@ public class Workspace extends TabbedPages implements CaptionChangeEvent.Handler
     if (BeeUtils.isEmpty(caption)) {
       caption = tile.getPanel().getCaption();
     }
-
     if (BeeUtils.isEmpty(caption)) {
       caption = Localized.getConstants().newTab();
     }

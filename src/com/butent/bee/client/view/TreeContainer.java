@@ -25,6 +25,7 @@ import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.data.IsRow;
 import com.butent.bee.shared.ui.Action;
+import com.butent.bee.shared.ui.UserInterface.Component;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.NameUtils;
 
@@ -57,12 +58,12 @@ public class TreeContainer extends Flow implements TreeView, SelectionHandler<Tr
 
   private Presenter viewPresenter;
   private boolean enabled = true;
-  private List<String> favorite = Lists.newArrayList();
+  private final List<String> favorite = Lists.newArrayList();
   private final Tree tree;
   private final Map<Long, TreeItem> items = Maps.newHashMap();
 
   private final String caption;
-  private final boolean hasActions;
+  private final boolean hasDnD;
 
   public TreeContainer(String caption, boolean hideActions, String viewName) {
     this(caption, hideActions, viewName, BeeConst.STRING_EMPTY);
@@ -73,14 +74,16 @@ public class TreeContainer extends Flow implements TreeView, SelectionHandler<Tr
     addStyleName(STYLE_NAME);
 
     this.caption = caption;
-    this.hasActions = !hideActions;
 
-    if (hasActions) {
+    if (!hideActions) {
+      boolean editable = BeeKeeper.getUser().canEditData(viewName);
+      this.hasDnD = editable;
+
       Flow hdr = new Flow();
       hdr.addStyleName(STYLE_NAME + "-actions");
 
-      boolean editable = BeeKeeper.getUser().canEditData(viewName);
-      boolean bookmarked = !BeeUtils.isEmpty(favorite);
+      boolean bookmarkable = !BeeUtils.isEmpty(favorite)
+          && BeeKeeper.getScreen().getUserInterface().hasComponent(Component.FAVORITES);
 
       Image img;
 
@@ -98,11 +101,11 @@ public class TreeContainer extends Flow implements TreeView, SelectionHandler<Tr
         hdr.add(img);
       }
 
-      if (bookmarked) {
+      if (bookmarkable) {
         setFavorite(NameUtils.toList(favorite));
-        
-        img =
-            new Image(Global.getImages().silverBookmarkAdd(), new ActionListener(Action.BOOKMARK));
+
+        img = new Image(Global.getImages().silverBookmarkAdd(),
+            new ActionListener(Action.BOOKMARK));
         img.addStyleName(STYLE_NAME + "-bookmark");
         img.setTitle(Action.BOOKMARK.getCaption());
         hdr.add(img);
@@ -121,6 +124,8 @@ public class TreeContainer extends Flow implements TreeView, SelectionHandler<Tr
       hdr.add(img);
 
       add(hdr);
+    } else {
+      this.hasDnD = false;
     }
     this.tree = new Tree(caption);
     add(tree);
@@ -128,7 +133,7 @@ public class TreeContainer extends Flow implements TreeView, SelectionHandler<Tr
     getTree().addStyleName(STYLE_NAME + "-tree");
     getTree().addSelectionHandler(this);
 
-    if (hasActions) {
+    if (hasDnD) {
       getTree().addCatchHandler(this);
     }
   }
@@ -146,7 +151,7 @@ public class TreeContainer extends Flow implements TreeView, SelectionHandler<Tr
 
     TreeItem treeItem = new TreeItem(text, item);
 
-    if (hasActions) {
+    if (hasDnD) {
       treeItem.makeDraggable();
     }
     items.put(id, treeItem);
@@ -371,7 +376,7 @@ public class TreeContainer extends Flow implements TreeView, SelectionHandler<Tr
   private void setFavorite(List<String> favorite) {
     BeeUtils.overwrite(this.favorite, favorite);
   }
-  
+
   private Tree getTree() {
     return tree;
   }

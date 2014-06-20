@@ -51,6 +51,7 @@ import com.butent.bee.client.screen.HasDomain;
 import com.butent.bee.client.style.StyleUtils;
 import com.butent.bee.client.ui.HasWidgetSupplier;
 import com.butent.bee.client.ui.IdentifiableWidget;
+import com.butent.bee.client.ui.Opener;
 import com.butent.bee.client.ui.UiOption;
 import com.butent.bee.client.view.HeaderImpl;
 import com.butent.bee.client.view.HeaderView;
@@ -168,7 +169,7 @@ public class CalendarPanel extends Split implements AppointmentEvent.Handler, Pr
             CalendarKeeper.openAppointment((Appointment) item, getCalendarId());
             break;
           case TASK:
-            RowEditor.openRow(TaskConstants.VIEW_TASKS, item.getId(), true, null);
+            RowEditor.open(TaskConstants.VIEW_TASKS, item.getId(), Opener.MODAL);
             break;
         }
       }
@@ -193,7 +194,8 @@ public class CalendarPanel extends Split implements AppointmentEvent.Handler, Pr
 
     this.header = new HeaderImpl();
     header.create(caption, false, true, null, EnumSet.of(UiOption.ROOT),
-        EnumSet.of(Action.REFRESH, Action.CONFIGURE), Action.NO_ACTIONS, Action.NO_ACTIONS);
+        EnumSet.of(Action.REFRESH, Action.CONFIGURE, Action.PRINT), Action.NO_ACTIONS,
+        Action.NO_ACTIONS);
     header.setViewPresenter(this);
 
     Button todoListCommand = new Button(Localized.getConstants().crmTodoList());
