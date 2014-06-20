@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <View xmlns="http://www.butent.com/view"
+  xmlns:x="http://www.butent.com/expression"
 
   name="ServiceTree"
   source="ServiceTree"
@@ -14,6 +15,52 @@
     </SimpleJoin>
     <ExternalJoin source="ServiceObjects" joinType="LEFT" name="Category">
       <AggregateColumn alias="ObjectCount" aggregate="COUNT" name="Category" />
+      <HiddenColumn name="Status" alias="SvcObjects" />
+      <AggregateColumn name="Status" alias="SvcObjectsCount" aggregate="COUNT">
+          <x:switch  type="INTEGER">
+             <x:number>"SvcObjects"</x:number>
+             <x:case>
+                <x:number>0</x:number>
+                <x:then>
+                  <x:number>1</x:number>
+                </x:then>
+             </x:case>
+             <x:else>
+              <x:number>null</x:number>
+             </x:else>
+          </x:switch>
+        </AggregateColumn>
+      <HiddenColumn name="Status" alias="ProjObjects" />
+      <AggregateColumn name="Status" alias="ProjObjectsCount" aggregate="COUNT">
+          <x:switch  type="INTEGER">
+             <x:number>"ProjObjects"</x:number>
+             <x:case>
+                <x:number>1</x:number>
+                <x:then>
+                  <x:number>1</x:number>
+                </x:then>
+             </x:case>
+             <x:else>
+              <x:number>null</x:number>
+             </x:else>
+          </x:switch>
+      </AggregateColumn>
+        
+      <HiddenColumn name="Status" alias="PotObjects" />
+      <AggregateColumn name="Status" alias="PotObjectsCount" aggregate="COUNT">
+          <x:switch  type="INTEGER">
+             <x:number>"PotObjects"</x:number>
+             <x:case>
+                <x:number>2</x:number>
+                <x:then>
+                  <x:number>1</x:number>
+                </x:then>
+             </x:case>
+             <x:else>
+              <x:number>null</x:number>
+             </x:else>
+          </x:switch>
+      </AggregateColumn>
     </ExternalJoin>
   </Columns>
   <Order>

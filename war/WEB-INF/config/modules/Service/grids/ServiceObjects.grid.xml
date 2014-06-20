@@ -12,7 +12,11 @@
     <w:DataTree name="ServiceTree" caption="=categories" viewName="ServiceTree"
         parentColumn="Parent">
       <w:calc>
-        <ui:expression>row.Name + (row.ObjectCount > 0 ? ' [' + row.ObjectCount + ']' : '')</ui:expression>
+        <ui:expression>row.Name
+          + '&lt;span class="bee-svc-tree-expr-service-count" &gt;' + (row.SvcObjectsCount > 0 ? ' [' + row.SvcObjectsCount + ']' : '') + '&lt;&#47;span&gt;'
+          + '&lt;span class="bee-svc-tree-expr-projects-count" &gt;' + (row.ProjObjectsCount > 0 ? ' [' + row.ProjObjectsCount + ']' : '') + '&lt;&#47;span&gt;' 
+          + '&lt;span class="bee-svc-tree-expr-potential-count" &gt;' + (row.PotObjectsCount > 0 ? ' [' + row.PotObjectsCount + ']' : '') + '&lt;&#47;span&gt;'
+        </ui:expression>
       </w:calc>
       <w:form>
         <w:HorizontalPanel>

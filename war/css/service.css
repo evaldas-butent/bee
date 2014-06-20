@@ -118,3 +118,30 @@
 .bee-svc-print-defect-items-total-value {
   text-align: right;
 }
+
+.bee-svc-tree-service .bee-svc-tree-expr-projects-count, 
+.bee-svc-tree-service .bee-svc-tree-expr-potential-count {
+  display: none;
+}
+
+.bee-svc-tree-project .bee-svc-tree-expr-service-count, 
+.bee-svc-tree-project .bee-svc-tree-expr-potential-count  {
+  display: none;
+}
+
+.bee-svc-tree-potential .bee-svc-tree-expr-service-count, 
+.bee-svc-tree-potential .bee-svc-tree-expr-projects-count{
+  display: none;
+}
+
+.bee-svc-tree-expr-service-count {
+  
+}
+
+.bee-svc-tree-expr-projects-count {
+  
+}
+
+.bee-svc-tree-expr-potential-count {
+  
+}

@@ -25,6 +25,7 @@ public class ServiceObjectsGrid extends AbstractGridInterceptor implements
     SelectionHandler<IsRow> {
 
   private static final String FILTER_KEY = "f1";
+  private static final String STYLE_TREE_PREFIX = "bee-svc-tree-";
 
   private TreeView categoryTree;
   private ObjectStatus status;
@@ -40,6 +41,21 @@ public class ServiceObjectsGrid extends AbstractGridInterceptor implements
     if (widget instanceof TreeView) {
       categoryTree = (TreeView) widget;
       categoryTree.addSelectionHandler(this);
+
+      switch (status) {
+        case POTENTIAL_OBJECT:
+          categoryTree.addStyleName(STYLE_TREE_PREFIX + "potential");
+          break;
+        case PROJECT_OBJECT:
+          categoryTree.addStyleName(STYLE_TREE_PREFIX + "project");
+          break;
+        case SERVICE_OBJECT:
+          categoryTree.addStyleName(STYLE_TREE_PREFIX + "service");
+          break;
+        default:
+          categoryTree.addStyleName(STYLE_TREE_PREFIX + "service");
+          break;
+      }
     }
   }
 
