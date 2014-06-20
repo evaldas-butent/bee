@@ -923,21 +923,23 @@ public class MailModuleBean implements BeeModule {
             Long placeId = mail.storeMail(account.getUserId(), message, localFolder.getId(),
                 currentUid);
 
-            if (isInbox) {
-              if (rules == null) {
-                rules = qs.getData(new SqlSelect()
-                    .addFields(TBL_RULES, COL_RULE_CONDITION, COL_RULE_CONDITION_OPTIONS,
-                        COL_RULE_ACTION, COL_RULE_ACTION_OPTIONS)
-                    .addFrom(TBL_RULES)
-                    .setWhere(SqlUtils.and(SqlUtils.equals(TBL_RULES, COL_ACCOUNT,
-                        account.getAccountId()), SqlUtils.notNull(TBL_RULES, COL_RULE_ACTIVE)))
-                    .addOrder(TBL_RULES, COL_RULE_ORDINAL));
+            if (DataUtils.isId(placeId)) {
+              if (isInbox) {
+                if (rules == null) {
+                  rules = qs.getData(new SqlSelect()
+                      .addFields(TBL_RULES, COL_RULE_CONDITION, COL_RULE_CONDITION_OPTIONS,
+                          COL_RULE_ACTION, COL_RULE_ACTION_OPTIONS)
+                      .addFrom(TBL_RULES)
+                      .setWhere(SqlUtils.and(SqlUtils.equals(TBL_RULES, COL_ACCOUNT,
+                          account.getAccountId()), SqlUtils.notNull(TBL_RULES, COL_RULE_ACTIVE)))
+                      .addOrder(TBL_RULES, COL_RULE_ORDINAL));
+                }
+                if (!rules.isEmpty()) {
+                  applyRules(message, placeId, account, localFolder, rules);
+                }
               }
-              if (!rules.isEmpty()) {
-                applyRules(message, placeId, account, localFolder, rules);
-              }
+              c++;
             }
-            c++;
           }
           if (!BeeUtils.isEmpty(progressId)
               && !Endpoint.updateProgress(progressId, ++l / (double) newMessages.length)) {

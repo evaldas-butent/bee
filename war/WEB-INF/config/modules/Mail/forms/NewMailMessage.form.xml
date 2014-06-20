@@ -19,27 +19,24 @@
         </row>
         <row>
           <Label text="=mailCc" horizontalAlignment="right" style="white-space:nowrap;" />
-          <cell style="width:100%">
-            <MultiSelector name="Cc" viewName="UserEmails" choiceColumns="Label Email" 
-              valueSource="Email" style="width:100%" />
-          </cell>
+          <MultiSelector name="Cc" viewName="UserEmails" choiceColumns="Label Email" 
+            valueSource="Email" style="width:100%" />
         </row>
         <row>
           <Label text="=mailBcc" horizontalAlignment="right" style="white-space:nowrap;" />
-          <cell style="width:100%">
-            <MultiSelector name="Bcc" viewName="UserEmails" choiceColumns="Label Email" 
-              valueSource="Email" style="width:100%" />
-          </cell>
+          <MultiSelector name="Bcc" viewName="UserEmails" choiceColumns="Label Email" 
+            valueSource="Email" style="width:100%" />
         </row>
       </Table>
 
       <FlowPanel class="flexBox-horizontal">
-        <InputText name="Subject" placeholder="=mailSubject" class="flexible" />
+        <FlowPanel class="flexible">
+          <InputText name="Subject" placeholder="=mailSubject" style="width:100%" />
+        </FlowPanel>
+        <FileCollector name="Attachments" style="display:inline-block;">
+          <face resource="attachment" />
+        </FileCollector>
       </FlowPanel>
-
-      <FileCollector name="Attachments">
-        <face resource="attachment" />
-      </FileCollector>
     </FlowPanel>
 
     <RichTextEditor name="Message" class="bee-mail-Content flexible" />
