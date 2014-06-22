@@ -862,7 +862,7 @@
   cursor: wait;
   border: 1px solid rgba(0, 0, 0, 0.2);
 }
-.bee-DataSelector-notFound {
+.bee-DataSelector-strict.bee-DataSelector-notFound {
   text-decoration: line-through;
 }
 .bee-DataSelector-empty {

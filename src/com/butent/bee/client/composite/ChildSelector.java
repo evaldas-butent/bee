@@ -31,6 +31,7 @@ public final class ChildSelector extends MultiSelector implements HasFosterParen
 
   public static ChildSelector create(String targetView, Relation relation,
       Map<String, String> attributes) {
+
     if (relation == null || BeeUtils.isEmpty(attributes)) {
       return null;
     }
@@ -150,7 +151,7 @@ public final class ChildSelector extends MultiSelector implements HasFosterParen
             @Override
             public void onSuccess(String result) {
               setTargetRowId(rowId);
-              render(result);
+              setIds(result);
             }
           });
 
@@ -164,7 +165,7 @@ public final class ChildSelector extends MultiSelector implements HasFosterParen
         value = getCellSource().getString(event.getRow());
       }
       
-      render(value);
+      setIds(value);
     }
   }
 

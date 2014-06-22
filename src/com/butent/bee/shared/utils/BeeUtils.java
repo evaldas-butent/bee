@@ -840,6 +840,10 @@ public final class BeeUtils {
     return contains(s, 'E') || contains(s, 'e');
   }
 
+  public static boolean hasLength(CharSequence cs) {
+    return hasLength(cs, 1);
+  }
+
   public static boolean hasLength(CharSequence cs, int min) {
     if (cs == null) {
       return false;

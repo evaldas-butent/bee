@@ -333,7 +333,7 @@ public class AssessmentTurnoverReport extends ReportInterceptor {
       widget = form.getWidgetByName(selectorName);
       String idList = parameters.get(selectorName);
       if (widget instanceof MultiSelector && !BeeUtils.isEmpty(idList)) {
-        ((MultiSelector) widget).render(idList);
+        ((MultiSelector) widget).setIds(idList);
       }
     }
 

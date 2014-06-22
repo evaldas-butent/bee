@@ -131,13 +131,13 @@ public class AssessmentQuantityReport extends ReportInterceptor {
     widget = form.getWidgetByName(NAME_DEPARTMENTS);
     String idList = parameters.get(NAME_DEPARTMENTS);
     if (widget instanceof MultiSelector && !BeeUtils.isEmpty(idList)) {
-      ((MultiSelector) widget).render(idList);
+      ((MultiSelector) widget).setIds(idList);
     }
 
     widget = form.getWidgetByName(NAME_MANAGERS);
     idList = parameters.get(NAME_MANAGERS);
     if (widget instanceof MultiSelector && !BeeUtils.isEmpty(idList)) {
-      ((MultiSelector) widget).render(idList);
+      ((MultiSelector) widget).setIds(idList);
     }
 
     for (String groupName : NAME_GROUP_BY) {

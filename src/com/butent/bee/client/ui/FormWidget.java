@@ -1028,7 +1028,7 @@ public enum FormWidget {
         } else {
           label = null;
         }
-        
+
         widget = new InputBoolean(label);
         if (BeeConst.isTrue(attributes.get(ATTR_CHECKED))) {
           ((InputBoolean) widget).setValue(BeeConst.STRING_TRUE);
@@ -1466,11 +1466,16 @@ public enum FormWidget {
           } else if (column != null) {
             int columnIndex = DataUtils.getColumnIndex(column.getId(), columns);
             if (!BeeConst.isUndef(columnIndex)) {
-            cellSource = CellSource.forColumn(column, columnIndex);
+              cellSource = CellSource.forColumn(column, columnIndex);
             }
           }
 
           widget = new MultiSelector(relation, true, cellSource);
+
+          String separators = attributes.get(MultiSelector.ATTR_SEPARATORS);
+          if (BeeUtils.hasLength(separators)) {
+            ((MultiSelector) widget).setSeparators(separators);
+          }
         }
         break;
 

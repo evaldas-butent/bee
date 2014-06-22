@@ -177,7 +177,8 @@ public class DataSelector extends Composite implements Editor, HasVisibleLines, 
             RowFactory.createRelatedRow(DataSelector.this, getDisplayValue());
 
           } else {
-            consumed = inputEvents.isConsumed();
+            consumed = inputEvents.isConsumed()
+                || consumeCharacter(BeeUtils.toChar(event.getCharCode()));
           }
           break;
 
@@ -581,9 +582,10 @@ public class DataSelector extends Composite implements Editor, HasVisibleLines, 
   private static final String ITEM_PREV = String.valueOf('\u25b2');
   private static final String ITEM_NEXT = String.valueOf('\u25bc');
 
-  private static final String STYLE_SELECTOR = "bee-DataSelector";
+  private static final String STYLE_SELECTOR = StyleUtils.CLASS_NAME_PREFIX + "DataSelector";
 
   private static final String STYLE_EMBEDDED = STYLE_SELECTOR + "-embedded";
+  private static final String STYLE_STRICT = STYLE_SELECTOR + "-strict";
 
   private static final String STYLE_WAITING = STYLE_SELECTOR + "-waiting";
   private static final String STYLE_NOT_FOUND = STYLE_SELECTOR + "-notFound";
@@ -882,6 +884,10 @@ public class DataSelector extends Composite implements Editor, HasVisibleLines, 
     }
 
     init(input, embedded);
+
+    if (strict) {
+      input.addStyleName(STYLE_STRICT);
+    }
   }
 
   @Override
@@ -1243,6 +1249,13 @@ public class DataSelector extends Composite implements Editor, HasVisibleLines, 
   @Override
   public List<String> validate(String normalizedValue, boolean checkForNull) {
     return Collections.emptyList();
+  }
+
+  /**
+   * @param ch  
+   */
+  protected boolean consumeCharacter(char ch) {
+    return false;
   }
 
   protected void exit(boolean hideSelector, State state, Integer keyCode, boolean hasModifiers) {

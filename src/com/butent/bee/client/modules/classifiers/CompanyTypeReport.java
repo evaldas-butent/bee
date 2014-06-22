@@ -242,7 +242,7 @@ public class CompanyTypeReport extends ReportInterceptor {
     widget = form.getWidgetByName(NAME_TYPES);
     String idList = parameters.get(NAME_TYPES);
     if (widget instanceof MultiSelector && !BeeUtils.isEmpty(idList)) {
-      ((MultiSelector) widget).render(idList);
+      ((MultiSelector) widget).setIds(idList);
     }
     
     super.onLoad(form);

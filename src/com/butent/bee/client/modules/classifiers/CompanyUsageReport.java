@@ -220,7 +220,7 @@ public class CompanyUsageReport extends ReportInterceptor {
       widget = form.getWidgetByName(name);
       String idList = parameters.get(name);
       if (widget instanceof MultiSelector && !BeeUtils.isEmpty(idList)) {
-        ((MultiSelector) widget).render(idList);
+        ((MultiSelector) widget).setIds(idList);
       }
     }
 
