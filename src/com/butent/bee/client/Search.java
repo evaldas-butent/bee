@@ -20,6 +20,7 @@ import com.butent.bee.client.data.Data;
 import com.butent.bee.client.data.RowEditor;
 import com.butent.bee.client.dom.DomUtils;
 import com.butent.bee.client.event.EventUtils;
+import com.butent.bee.client.event.logical.ReadyEvent;
 import com.butent.bee.client.layout.Flow;
 import com.butent.bee.client.layout.Simple;
 import com.butent.bee.client.modules.ModuleManager;
@@ -28,17 +29,16 @@ import com.butent.bee.client.output.Printer;
 import com.butent.bee.client.presenter.Presenter;
 import com.butent.bee.client.style.StyleUtils;
 import com.butent.bee.client.ui.AutocompleteProvider;
-import com.butent.bee.client.ui.IdentifiableWidget;
 import com.butent.bee.client.ui.Opener;
 import com.butent.bee.client.ui.UiOption;
 import com.butent.bee.client.utils.Command;
 import com.butent.bee.client.view.HeaderImpl;
 import com.butent.bee.client.view.HeaderView;
 import com.butent.bee.client.view.View;
-import com.butent.bee.client.widget.Image;
-import com.butent.bee.client.widget.Label;
 import com.butent.bee.client.widget.CustomWidget;
+import com.butent.bee.client.widget.Image;
 import com.butent.bee.client.widget.InputText;
+import com.butent.bee.client.widget.Label;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.Service;
@@ -128,6 +128,12 @@ public class Search {
     }
 
     @Override
+    public com.google.gwt.event.shared.HandlerRegistration addReadyHandler(
+        ReadyEvent.Handler handler) {
+      return addHandler(handler, ReadyEvent.getType());
+    }
+
+    @Override
     public String getCaption() {
       return header.getCaption();
     }
@@ -159,11 +165,6 @@ public class Search {
 
     @Override
     public Presenter getViewPresenter() {
-      return this;
-    }
-
-    @Override
-    public IdentifiableWidget getWidget() {
       return this;
     }
 
@@ -279,6 +280,13 @@ public class Search {
 
     @Override
     public void setViewPresenter(Presenter viewPresenter) {
+    }
+
+    @Override
+    protected void onLoad() {
+      super.onLoad();
+
+      ReadyEvent.fire(this);
     }
 
     @Override
@@ -437,7 +445,7 @@ public class Search {
   private static final String STYLE_SUBMIT = "bee-MainSearchSubmit";
 
   private static final String KEY_INPUT = "main-search";
-  
+
   private static final int MIN_SEARCH_PHRASE_LENGTH = 3;
 
   private Panel searchPanel;
@@ -534,7 +542,7 @@ public class Search {
 
   private static void showResults(String query, List<SearchResult> results) {
     ResultPanel resultPanel = new ResultPanel(query, results);
-    BeeKeeper.getScreen().showWidget(resultPanel);
+    BeeKeeper.getScreen().show(resultPanel);
   }
 
   private void submit() {
@@ -570,7 +578,7 @@ public class Search {
 
           } else {
             AutocompleteProvider.retainValue(getInput());
-            
+
             ModuleManager.maybeInitialize(new Command() {
               @Override
               public void execute() {

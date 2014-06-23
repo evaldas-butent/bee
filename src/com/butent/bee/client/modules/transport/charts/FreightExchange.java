@@ -13,7 +13,6 @@ import com.google.gwt.user.client.ui.Widget;
 import static com.butent.bee.shared.modules.transport.TransportConstants.*;
 
 import com.butent.bee.client.BeeKeeper;
-import com.butent.bee.client.Callback;
 import com.butent.bee.client.communication.ResponseCallback;
 import com.butent.bee.client.data.Data;
 import com.butent.bee.client.data.RowFactory;
@@ -29,6 +28,7 @@ import com.butent.bee.client.modules.transport.charts.Filterable.FilterType;
 import com.butent.bee.client.style.StyleUtils;
 import com.butent.bee.client.timeboard.TimeBoardHelper;
 import com.butent.bee.client.ui.IdentifiableWidget;
+import com.butent.bee.client.view.ViewCallback;
 import com.butent.bee.client.widget.Label;
 import com.butent.bee.client.widget.Mover;
 import com.butent.bee.shared.BeeConst;
@@ -75,7 +75,7 @@ final class FreightExchange extends ChartBase {
 
   private static final String STYLE_ITEM_DRAG = STYLE_ITEM_PREFIX + "drag";
 
-  static void open(final Callback<IdentifiableWidget> callback) {
+  static void open(final ViewCallback callback) {
     BeeKeeper.getRpc().makePostRequest(TransportHandler.createArgs(DATA_SERVICE),
         new ResponseCallback() {
           @Override

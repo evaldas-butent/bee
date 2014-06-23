@@ -188,7 +188,7 @@ public final class EcKeeper {
         resetActiveCommand();
 
         ItemPanel widget = new ItemPanel();
-        BeeKeeper.getScreen().showWidget(widget);
+        BeeKeeper.getScreen().show(widget);
         renderItems(widget, items);
       }
     });
@@ -387,7 +387,7 @@ public final class EcKeeper {
             resetActiveCommand();
             searchBox.clearValue();
 
-            BeeKeeper.getScreen().showWidget(widget);
+            BeeKeeper.getScreen().show(widget);
           }
         });
       }
@@ -677,7 +677,7 @@ public final class EcKeeper {
         }
         Promo widget = new Promo(pictures.getBanners(), items);
 
-        BeeKeeper.getScreen().showWidget(widget);
+        BeeKeeper.getScreen().show(widget);
       }
     });
   }
@@ -716,7 +716,7 @@ public final class EcKeeper {
     EcView ecView = EcView.create(commandWidget.getService());
     if (ecView != null) {
       searchBox.clearValue();
-      BeeKeeper.getScreen().showWidget(ecView);
+      BeeKeeper.getScreen().show(ecView);
     }
 
     if (activeCommand == null || !activeCommand.getService().equals(commandWidget.getService())) {
@@ -806,7 +806,7 @@ public final class EcKeeper {
           }
         });
 
-        BeeKeeper.getScreen().showWidget(editor);
+        BeeKeeper.getScreen().show(editor);
       }
     });
   }

@@ -18,7 +18,7 @@ import com.butent.bee.client.grid.GridFactory;
 import com.butent.bee.client.style.ColorStyleProvider;
 import com.butent.bee.client.style.ConditionalStyle;
 import com.butent.bee.client.ui.FormFactory;
-import com.butent.bee.client.ui.WidgetFactory;
+import com.butent.bee.client.view.ViewFactory;
 import com.butent.bee.client.view.grid.interceptor.FileGridInterceptor;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
@@ -214,7 +214,7 @@ public final class TasksKeeper {
         if (type == null) {
           Global.showError(Lists.newArrayList(GRID_TASKS, "Type not recognized:", parameters));
         } else {
-          WidgetFactory.createAndShow(type.getSupplierKey());
+          ViewFactory.createAndShow(type.getSupplierKey());
         }
       }
     });

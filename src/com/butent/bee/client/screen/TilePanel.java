@@ -15,7 +15,6 @@ import com.google.gwt.json.client.JSONObject;
 import com.google.gwt.json.client.JSONString;
 import com.google.gwt.user.client.ui.Widget;
 
-import com.butent.bee.client.Callback;
 import com.butent.bee.client.Global;
 import com.butent.bee.client.Historian;
 import com.butent.bee.client.Place;
@@ -31,9 +30,10 @@ import com.butent.bee.client.style.StyleUtils;
 import com.butent.bee.client.ui.HandlesHistory;
 import com.butent.bee.client.ui.HasWidgetSupplier;
 import com.butent.bee.client.ui.IdentifiableWidget;
-import com.butent.bee.client.ui.WidgetFactory;
 import com.butent.bee.client.utils.JsonUtils;
 import com.butent.bee.client.view.View;
+import com.butent.bee.client.view.ViewCallback;
+import com.butent.bee.client.view.ViewFactory;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.HasInfo;
 import com.butent.bee.shared.State;
@@ -153,7 +153,7 @@ class TilePanel extends Split implements HasCaption, SelectionHandler<String> {
         return false;
       }
 
-      WidgetFactory.create(contentSuppliers.get(newIndex), new Callback<IdentifiableWidget>() {
+      ViewFactory.create(contentSuppliers.get(newIndex), new ViewCallback() {
         @Override
         public void onFailure(String... reason) {
           contentSuppliers.remove(newIndex);
@@ -163,7 +163,7 @@ class TilePanel extends Split implements HasCaption, SelectionHandler<String> {
         }
 
         @Override
-        public void onSuccess(IdentifiableWidget result) {
+        public void onSuccess(View result) {
           setContentIndex(newIndex);
           updateContent(result, false);
         }
@@ -252,7 +252,7 @@ class TilePanel extends Split implements HasCaption, SelectionHandler<String> {
     }
 
     private void addContentSupplier(String key) {
-      if (WidgetFactory.hasSupplier(key)) {
+      if (ViewFactory.hasSupplier(key)) {
         if (contentSuppliers.contains(key)) {
           contentSuppliers.remove(key);
         }
@@ -1084,9 +1084,9 @@ class TilePanel extends Split implements HasCaption, SelectionHandler<String> {
       final String contentSupplier = JsonUtils.getString(json, KEY_CONTENT);
       
       if (!BeeUtils.isEmpty(contentSupplier)) {
-        WidgetFactory.create(contentSupplier, new Callback<IdentifiableWidget>() {
+        ViewFactory.create(contentSupplier, new ViewCallback() {
           @Override
-          public void onSuccess(IdentifiableWidget result) {
+          public void onSuccess(View result) {
             tile.setWidget(result);
             tile.addContentSupplier(contentSupplier);
 

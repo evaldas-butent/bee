@@ -1,9 +1,11 @@
 package com.butent.bee.client.maps;
 
+import com.google.gwt.event.shared.HandlerRegistration;
+
 import com.butent.bee.client.BeeKeeper;
+import com.butent.bee.client.event.logical.ReadyEvent;
 import com.butent.bee.client.layout.Flow;
 import com.butent.bee.client.presenter.Presenter;
-import com.butent.bee.client.ui.IdentifiableWidget;
 import com.butent.bee.client.ui.UiOption;
 import com.butent.bee.client.view.HeaderImpl;
 import com.butent.bee.client.view.HeaderView;
@@ -39,6 +41,11 @@ public class MapContainer extends Flow implements Presenter, View {
   }
 
   @Override
+  public HandlerRegistration addReadyHandler(ReadyEvent.Handler handler) {
+    return addHandler(handler, ReadyEvent.getType());
+  }
+  
+  @Override
   public String getCaption() {
     return headerView.getCaption();
   }
@@ -65,11 +72,6 @@ public class MapContainer extends Flow implements Presenter, View {
 
   @Override
   public Presenter getViewPresenter() {
-    return this;
-  }
-
-  @Override
-  public IdentifiableWidget getWidget() {
     return this;
   }
 

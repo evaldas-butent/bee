@@ -133,7 +133,7 @@ public class GridPanel extends Simple implements HasEnabled, HasFosterParent,
             public void onCreate(Presenter gp) {
               if (gp != null) {
                 setPresenter(gp);
-                setWidget(gp.getWidget());
+                setWidget(gp.getMainView());
                 gp.setEventSource(getId());
               }
             }

@@ -134,7 +134,7 @@ public class CalendarWidget extends FlowPanel implements HasOpenHandlers<Calenda
     return view;
   }
 
-  public void loadItems(boolean force, final boolean scroll) {
+  public void loadItems(boolean force, final boolean scroll, final IntCallback callback) {
     if (getView() != null) {
       final long startMillis = System.currentTimeMillis();
       final Range<DateTime> range = getView().getVisibleRange();
@@ -145,6 +145,10 @@ public class CalendarWidget extends FlowPanel implements HasOpenHandlers<Calenda
           logger.debug("load", CalendarUtils.renderRange(range), result,
               TimeUtils.elapsedMillis(startMillis));
           refresh(scroll);
+          
+          if (callback != null) {
+            callback.onSuccess(result);
+          }
         }
       });
     }
@@ -233,7 +237,9 @@ public class CalendarWidget extends FlowPanel implements HasOpenHandlers<Calenda
     layoutSuspended = true;
   }
 
-  public boolean update(CalendarView.Type viewType, JustDate newDate, int days) {
+  public boolean update(CalendarView.Type viewType, JustDate newDate, int days,
+      IntCallback callback) {
+
     boolean changed = false;
     
     if (viewType != null && !viewType.equals(getType())) {
@@ -252,7 +258,7 @@ public class CalendarWidget extends FlowPanel implements HasOpenHandlers<Calenda
     }
     
     if (changed) {
-      loadItems(false, true);
+      loadItems(false, true, callback);
     }
     
     return changed;

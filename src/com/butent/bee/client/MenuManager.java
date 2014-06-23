@@ -257,7 +257,7 @@ public class MenuManager {
       tree.addItem(item);
     }
 
-    BeeKeeper.getScreen().showWidget(tree);
+    BeeKeeper.getScreen().show(tree);
   }
 
   private static MenuItem findItem(Menu menu, String name) {

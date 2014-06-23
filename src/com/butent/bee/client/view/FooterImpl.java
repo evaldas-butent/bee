@@ -1,8 +1,10 @@
 package com.butent.bee.client.view;
 
 import com.google.gwt.dom.client.Element;
+import com.google.gwt.event.shared.HandlerRegistration;
 
 import com.butent.bee.client.dom.DomUtils;
+import com.butent.bee.client.event.logical.ReadyEvent;
 import com.butent.bee.client.event.logical.SelectionCountChangeEvent;
 import com.butent.bee.client.layout.Flow;
 import com.butent.bee.client.presenter.Presenter;
@@ -44,6 +46,11 @@ public class FooterImpl extends Flow implements FooterView, HasNavigation, HasSe
     addStyleName(STYLE_CONTAINER);
   }
 
+  @Override
+  public HandlerRegistration addReadyHandler(ReadyEvent.Handler handler) {
+    return addHandler(handler, ReadyEvent.getType());
+  }
+  
   @Override
   public void create(int maxRowCount, boolean addPaging, boolean showPageSize, boolean addSearch) {
     if (addPaging) {
@@ -146,6 +153,13 @@ public class FooterImpl extends Flow implements FooterView, HasNavigation, HasSe
     this.viewPresenter = viewPresenter;
   }
 
+  @Override
+  protected void onLoad() {
+    super.onLoad();
+    
+    ReadyEvent.fire(this);
+  }
+  
   private String getPagerId() {
     return pagerId;
   }

@@ -17,7 +17,6 @@ import com.butent.bee.client.dialog.Icon;
 import com.butent.bee.client.dialog.InputCallback;
 import com.butent.bee.client.event.logical.CatchEvent;
 import com.butent.bee.client.ui.FormDescription;
-import com.butent.bee.client.ui.IdentifiableWidget;
 import com.butent.bee.client.utils.Evaluator;
 import com.butent.bee.client.view.HeaderView;
 import com.butent.bee.client.view.TreeView;
@@ -165,11 +164,6 @@ public class TreePresenter extends AbstractPresenter implements CatchEvent.Catch
   @Override
   public String getViewName() {
     return viewName;
-  }
-
-  @Override
-  public IdentifiableWidget getWidget() {
-    return getView();
   }
 
   @Override

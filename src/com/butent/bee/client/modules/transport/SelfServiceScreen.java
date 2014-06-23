@@ -61,8 +61,8 @@ public class SelfServiceScreen extends ScreenImpl {
         }
       }
 
-      activeViews.put(viewKey, presenter.getWidget().getId());
-      showInNewPlace(presenter.getWidget());
+      activeViews.put(viewKey, presenter.getMainView().getId());
+      showInNewPlace(presenter.getMainView());
     }
   }
 

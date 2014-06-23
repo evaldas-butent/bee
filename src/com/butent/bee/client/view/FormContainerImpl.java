@@ -2,12 +2,14 @@ package com.butent.bee.client.view;
 
 import com.google.common.collect.Sets;
 import com.google.gwt.dom.client.Element;
+import com.google.gwt.event.shared.HandlerRegistration;
 import com.google.gwt.user.client.ui.Widget;
 
 import com.butent.bee.client.Global;
 import com.butent.bee.client.dom.DomUtils;
 import com.butent.bee.client.dom.ElementSize;
 import com.butent.bee.client.event.logical.ActiveRowChangeEvent;
+import com.butent.bee.client.event.logical.ReadyEvent;
 import com.butent.bee.client.layout.Absolute;
 import com.butent.bee.client.layout.Split;
 import com.butent.bee.client.presenter.Presenter;
@@ -72,6 +74,11 @@ public class FormContainerImpl extends Split implements FormContainerView, HasNa
   }
 
   @Override
+  public HandlerRegistration addReadyHandler(ReadyEvent.Handler handler) {
+    return addHandler(handler, ReadyEvent.getType());
+  }
+
+  @Override
   public void bind() {
     if (hasFooter()) {
       getContent().getDisplay().addSelectionCountChangeHandler(getFooter());
@@ -94,10 +101,10 @@ public class FormContainerImpl extends Split implements FormContainerView, HasNa
     setInitialRowCount(rowCount);
 
     setHasSearch(hasData());
-    
+
     Set<Action> enabledActions = formDescription.getEnabledActions();
     Set<Action> disabledActions = formDescription.getDisabledActions();
-    
+
     if (!disabledActions.contains(Action.PRINT)) {
       enabledActions.add(Action.PRINT);
     }
@@ -340,7 +347,7 @@ public class FormContainerImpl extends Split implements FormContainerView, HasNa
     if (getId().equals(source.getId())) {
       ElementSize.copyWithAdjustment(source, target, getContent().getPrintElement());
       ok = true;
-      
+
     } else if (hasHeader() && getHeader().asWidget().getElement().isOrHasChild(source)) {
       ok = getContent().printHeader() && getHeader().onPrint(source, target);
 
@@ -368,17 +375,17 @@ public class FormContainerImpl extends Split implements FormContainerView, HasNa
 
   @Override
   public void setEnabled(boolean enabled) {
-    if (enabled == isEnabled()) {
-      return;
+    if (enabled != isEnabled()) {
+      this.enabled = enabled;
+      DomUtils.enableChildren(this, enabled);
     }
-    this.enabled = enabled;
-    DomUtils.enableChildren(this, enabled);
   }
 
   @Override
   public void setViewPresenter(Presenter viewPresenter) {
     this.viewPresenter = viewPresenter;
-    for (Widget child : getChildren()) {
+
+    for (Widget child : this) {
       if (child instanceof View && ((View) child).getViewPresenter() == null) {
         ((View) child).setViewPresenter(viewPresenter);
       }
@@ -407,6 +414,8 @@ public class FormContainerImpl extends Split implements FormContainerView, HasNa
     if (!started) {
       start(getInitialRowCount());
       started = true;
+      
+      ReadyEvent.fire(this);
     }
   }
 

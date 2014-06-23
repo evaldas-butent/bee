@@ -440,7 +440,7 @@ public class Rooms implements HasInfo {
 
     if (roomStateMessage.isLoading()) {
       chat = new Chat(room);
-      BeeKeeper.getScreen().showWidget(chat);
+      BeeKeeper.getScreen().show(chat);
 
       updateRoom(room);
 

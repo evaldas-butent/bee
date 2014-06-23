@@ -30,11 +30,11 @@ import com.butent.bee.client.presenter.PresenterCallback;
 import com.butent.bee.client.render.AbstractCellRenderer;
 import com.butent.bee.client.render.RenderableCell;
 import com.butent.bee.client.render.RenderableColumn;
-import com.butent.bee.client.ui.IdentifiableWidget;
 import com.butent.bee.client.ui.UiOption;
-import com.butent.bee.client.ui.WidgetFactory;
-import com.butent.bee.client.ui.WidgetSupplier;
+import com.butent.bee.client.view.ViewCallback;
+import com.butent.bee.client.view.ViewFactory;
 import com.butent.bee.client.view.ViewHelper;
+import com.butent.bee.client.view.ViewSupplier;
 import com.butent.bee.client.view.grid.CellGrid;
 import com.butent.bee.client.view.grid.ColumnInfo;
 import com.butent.bee.client.view.grid.GridFilterManager;
@@ -377,7 +377,7 @@ public final class GridFactory {
 
   public static String getSupplierKey(String gridName) {
     Assert.notEmpty(gridName);
-    return WidgetFactory.SupplierKind.GRID.getKey(gridName);
+    return ViewFactory.SupplierKind.GRID.getKey(gridName);
   }
 
   public static void hideColumn(String gridName, String columnName) {
@@ -410,7 +410,7 @@ public final class GridFactory {
     String supplierKey = getSupplierKey(gridName);
     Collection<UiOption> uiOptions = EnumSet.of(UiOption.ROOT);
 
-    if (!WidgetFactory.hasSupplier(supplierKey)) {
+    if (!ViewFactory.hasSupplier(supplierKey)) {
       registerGridSupplier(supplierKey, gridName, gridInterceptor, uiOptions, gridOptions);
     }
 
@@ -426,7 +426,7 @@ public final class GridFactory {
     gridInterceptors.put(BeeUtils.normalize(gridName), interceptor);
   }
 
-  public static WidgetSupplier registerGridSupplier(String key, String gridName,
+  public static ViewSupplier registerGridSupplier(String key, String gridName,
       GridInterceptor interceptor) {
     return registerGridSupplier(key, gridName, interceptor, EnumSet.of(UiOption.ROOT), null);
   }
@@ -444,27 +444,27 @@ public final class GridFactory {
     }
   }
 
-  public static WidgetSupplier registerGridSupplier(final String key, final String gridName,
+  public static ViewSupplier registerGridSupplier(final String key, final String gridName,
       final GridInterceptor interceptor, final Collection<UiOption> uiOptions,
       final GridOptions gridOptions) {
 
     Assert.notEmpty(key);
     Assert.notEmpty(gridName);
 
-    WidgetSupplier supplier = new WidgetSupplier() {
+    ViewSupplier supplier = new ViewSupplier() {
       @Override
-      public void create(final Callback<IdentifiableWidget> callback) {
+      public void create(final ViewCallback callback) {
         createGrid(gridName, key, getInterceptorInstance(interceptor), uiOptions, gridOptions,
             new PresenterCallback() {
           @Override
           public void onCreate(Presenter presenter) {
-            callback.onSuccess(presenter.getWidget());
+            callback.onSuccess(presenter.getMainView());
           }
         });
       }
     };
 
-    WidgetFactory.registerSupplier(key, supplier);
+    ViewFactory.registerSupplier(key, supplier);
     return supplier;
   }
 

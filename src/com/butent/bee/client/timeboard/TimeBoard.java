@@ -18,7 +18,6 @@ import com.google.gwt.user.client.ui.Widget;
 import com.google.web.bindery.event.shared.HandlerRegistration;
 
 import com.butent.bee.client.BeeKeeper;
-import com.butent.bee.client.Callback;
 import com.butent.bee.client.data.Queries;
 import com.butent.bee.client.data.RowCallback;
 import com.butent.bee.client.data.RowEditor;
@@ -27,6 +26,7 @@ import com.butent.bee.client.dom.Rectangle;
 import com.butent.bee.client.event.Binder;
 import com.butent.bee.client.event.EventUtils;
 import com.butent.bee.client.event.logical.MoveEvent;
+import com.butent.bee.client.event.logical.ReadyEvent;
 import com.butent.bee.client.event.logical.VisibilityChangeEvent;
 import com.butent.bee.client.layout.Flow;
 import com.butent.bee.client.layout.Simple;
@@ -35,13 +35,13 @@ import com.butent.bee.client.output.Printer;
 import com.butent.bee.client.presenter.Presenter;
 import com.butent.bee.client.style.StyleUtils;
 import com.butent.bee.client.ui.HasWidgetSupplier;
-import com.butent.bee.client.ui.IdentifiableWidget;
 import com.butent.bee.client.ui.Opener;
 import com.butent.bee.client.ui.UiHelper;
 import com.butent.bee.client.ui.UiOption;
 import com.butent.bee.client.view.HeaderImpl;
 import com.butent.bee.client.view.HeaderView;
 import com.butent.bee.client.view.View;
+import com.butent.bee.client.view.ViewCallback;
 import com.butent.bee.client.widget.CustomDiv;
 import com.butent.bee.client.widget.Label;
 import com.butent.bee.client.widget.Mover;
@@ -253,6 +253,12 @@ public abstract class TimeBoard extends Flow implements Presenter, View, Printab
   }
 
   @Override
+  public com.google.gwt.event.shared.HandlerRegistration addReadyHandler(
+      ReadyEvent.Handler handler) {
+    return addHandler(handler, ReadyEvent.getType());
+  }
+  
+  @Override
   public String getEventSource() {
     return null;
   }
@@ -290,11 +296,6 @@ public abstract class TimeBoard extends Flow implements Presenter, View, Printab
   @Override
   public Range<JustDate> getVisibleRange() {
     return visibleRange;
-  }
-
-  @Override
-  public IdentifiableWidget getWidget() {
-    return this;
   }
 
   @Override
@@ -904,7 +905,7 @@ public abstract class TimeBoard extends Flow implements Presenter, View, Printab
     return filtered;
   }
 
-  protected void onCreate(ResponseObject response, Callback<IdentifiableWidget> callback) {
+  protected void onCreate(ResponseObject response, ViewCallback callback) {
     if (setData(response)) {
       callback.onSuccess(this);
     } else {
@@ -967,6 +968,8 @@ public abstract class TimeBoard extends Flow implements Presenter, View, Printab
     registry.addAll(register());
 
     render(true);
+    
+    ReadyEvent.fire(this);
   }
 
   protected void onRowResizerMove(MoveEvent event) {

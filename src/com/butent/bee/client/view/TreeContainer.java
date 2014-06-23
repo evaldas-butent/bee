@@ -12,6 +12,7 @@ import com.butent.bee.client.Global;
 import com.butent.bee.client.data.Data;
 import com.butent.bee.client.dom.DomUtils;
 import com.butent.bee.client.event.logical.CatchEvent;
+import com.butent.bee.client.event.logical.ReadyEvent;
 import com.butent.bee.client.event.logical.CatchEvent.CatchHandler;
 import com.butent.bee.client.layout.Flow;
 import com.butent.bee.client.presenter.Presenter;
@@ -143,6 +144,11 @@ public class TreeContainer extends Flow implements TreeView, SelectionHandler<Tr
     return addHandler(handler, CatchEvent.getType());
   }
 
+  @Override
+  public HandlerRegistration addReadyHandler(ReadyEvent.Handler handler) {
+    return addHandler(handler, ReadyEvent.getType());
+  }
+  
   @Override
   public void addItem(Long parentId, String text, IsRow item, boolean focus) {
     Assert.notNull(item);

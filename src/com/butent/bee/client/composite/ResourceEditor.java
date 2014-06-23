@@ -3,6 +3,7 @@ package com.butent.bee.client.composite;
 import com.google.common.collect.Lists;
 import com.google.gwt.dom.client.Document;
 import com.google.gwt.dom.client.Element;
+import com.google.gwt.event.shared.HandlerRegistration;
 
 import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.Global;
@@ -10,12 +11,12 @@ import com.butent.bee.client.communication.ParameterList;
 import com.butent.bee.client.communication.ResponseCallback;
 import com.butent.bee.client.dialog.ConfirmationCallback;
 import com.butent.bee.client.dialog.Icon;
+import com.butent.bee.client.event.logical.ReadyEvent;
 import com.butent.bee.client.layout.Flow;
 import com.butent.bee.client.layout.Simple;
 import com.butent.bee.client.output.Printable;
 import com.butent.bee.client.output.Printer;
 import com.butent.bee.client.presenter.Presenter;
-import com.butent.bee.client.ui.IdentifiableWidget;
 import com.butent.bee.client.ui.UiOption;
 import com.butent.bee.client.view.HeaderImpl;
 import com.butent.bee.client.view.HeaderView;
@@ -87,6 +88,11 @@ public class ResourceEditor extends Flow implements Presenter, View, Printable {
   }
 
   @Override
+  public HandlerRegistration addReadyHandler(ReadyEvent.Handler handler) {
+    return addHandler(handler, ReadyEvent.getType());
+  }
+  
+  @Override
   public String getCaption() {
     return headerView.getCaption();
   }
@@ -121,11 +127,6 @@ public class ResourceEditor extends Flow implements Presenter, View, Printable {
 
   @Override
   public Presenter getViewPresenter() {
-    return this;
-  }
-
-  @Override
-  public IdentifiableWidget getWidget() {
     return this;
   }
 
@@ -180,6 +181,13 @@ public class ResourceEditor extends Flow implements Presenter, View, Printable {
 
   @Override
   public void setViewPresenter(Presenter viewPresenter) {
+  }
+
+  @Override
+  protected void onLoad() {
+    super.onLoad();
+    
+    ReadyEvent.fire(this);
   }
 
   private void save() {

@@ -4,6 +4,7 @@ import com.google.common.collect.Maps;
 import com.google.gwt.dom.client.Element;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
+import com.google.gwt.event.shared.HandlerRegistration;
 import com.google.gwt.resources.client.ImageResource;
 import com.google.gwt.user.client.ui.HasEnabled;
 import com.google.gwt.user.client.ui.Widget;
@@ -13,6 +14,7 @@ import com.butent.bee.client.Global;
 import com.butent.bee.client.Settings;
 import com.butent.bee.client.dom.DomUtils;
 import com.butent.bee.client.event.Binder;
+import com.butent.bee.client.event.logical.ReadyEvent;
 import com.butent.bee.client.layout.Flow;
 import com.butent.bee.client.layout.Horizontal;
 import com.butent.bee.client.presenter.Presenter;
@@ -135,6 +137,11 @@ public class HeaderImpl extends Flow implements HeaderView {
     getCommandPanel().add(widget);
   }
 
+  @Override
+  public HandlerRegistration addReadyHandler(ReadyEvent.Handler handler) {
+    return addHandler(handler, ReadyEvent.getType());
+  }
+  
   @Override
   public void clearCommandPanel() {
     getCommandPanel().clear();
@@ -373,6 +380,13 @@ public class HeaderImpl extends Flow implements HeaderView {
     }
   }
 
+  @Override
+  protected void onLoad() {
+    super.onLoad();
+    
+    ReadyEvent.fire(this);
+  }
+  
   private Widget createFa(FontAwesome fa, Action action, Set<Action> hiddenActions) {
     FaLabel control = new FaLabel(fa);
     initControl(control, action, hiddenActions);

@@ -24,7 +24,6 @@ import com.butent.bee.client.modules.administration.HistoryHandler;
 import com.butent.bee.client.output.Exporter;
 import com.butent.bee.client.output.Printer;
 import com.butent.bee.client.style.StyleUtils;
-import com.butent.bee.client.ui.IdentifiableWidget;
 import com.butent.bee.client.ui.UiHelper;
 import com.butent.bee.client.ui.UiOption;
 import com.butent.bee.client.view.GridContainerImpl;
@@ -357,7 +356,7 @@ public class GridPresenter extends AbstractPresenter implements ReadyForInsertEv
     }
 
     if (getGridView().isChild()) {
-      FormView form = UiHelper.getForm(getWidget().asWidget());
+      FormView form = UiHelper.getForm(getMainView().asWidget());
 
       if (form != null && !BeeUtils.isEmpty(form.getViewName()) && form.getActiveRow() != null) {
         DataInfo dataInfo = Data.getDataInfo(form.getViewName());
@@ -386,11 +385,6 @@ public class GridPresenter extends AbstractPresenter implements ReadyForInsertEv
   @Override
   public String getViewName() {
     return getDataProvider().getViewName();
-  }
-
-  @Override
-  public IdentifiableWidget getWidget() {
-    return getMainView();
   }
 
   @Override
@@ -704,7 +698,7 @@ public class GridPresenter extends AbstractPresenter implements ReadyForInsertEv
   }
 
   public boolean validateParent() {
-    FormView form = UiHelper.getForm(getWidget().asWidget());
+    FormView form = UiHelper.getForm(getMainView().asWidget());
     if (form == null) {
       return true;
     }

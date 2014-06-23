@@ -404,7 +404,7 @@ public class CompanyUsageReport extends ReportInterceptor {
         new PresenterCallback() {
           @Override
           public void onCreate(Presenter presenter) {
-            Widget widget = presenter.getWidget().asWidget();
+            Widget widget = presenter.getMainView().asWidget();
             StyleUtils.occupy(widget);
 
             getDataContainer().add(widget);

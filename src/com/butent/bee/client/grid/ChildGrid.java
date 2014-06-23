@@ -189,7 +189,7 @@ public class ChildGrid extends Simple implements HasEnabled, Launchable, HasFost
     gp.getGridView().getGrid().setPageSize(BeeConst.UNDEF, false);
     gp.setEventSource(getId());
 
-    setWidget(gp.getWidget());
+    setWidget(gp.getMainView());
     setPresenter(gp);
     
     if (getGridInterceptor() != null) {

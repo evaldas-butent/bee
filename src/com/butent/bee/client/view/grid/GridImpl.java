@@ -25,6 +25,7 @@ import com.butent.bee.client.dom.Dimensions;
 import com.butent.bee.client.dom.DomUtils;
 import com.butent.bee.client.event.EventUtils;
 import com.butent.bee.client.event.Previewer.PreviewConsumer;
+import com.butent.bee.client.event.logical.ReadyEvent;
 import com.butent.bee.client.event.logical.RenderingEvent;
 import com.butent.bee.client.event.logical.SortEvent;
 import com.butent.bee.client.grid.ColumnFooter;
@@ -722,6 +723,11 @@ public class GridImpl extends Absolute implements GridView, EditEndEvent.Handler
   @Override
   public HandlerRegistration addReadyForUpdateHandler(ReadyForUpdateEvent.Handler handler) {
     return addHandler(handler, ReadyForUpdateEvent.getType());
+  }
+
+  @Override
+  public HandlerRegistration addReadyHandler(ReadyEvent.Handler handler) {
+    return addHandler(handler, ReadyEvent.getType());
   }
 
   @Override
@@ -1691,7 +1697,7 @@ public class GridImpl extends Absolute implements GridView, EditEndEvent.Handler
 
     final GridFormPresenter gfp = new GridFormPresenter(this, formView, formCaption, actions, edit,
         hasEditSave());
-    Widget container = gfp.getWidget().asWidget();
+    Widget container = gfp.getMainView().asWidget();
 
     if (asPopup) {
       ModalForm popup = new ModalForm(gfp, formView, true);
@@ -1726,7 +1732,6 @@ public class GridImpl extends Absolute implements GridView, EditEndEvent.Handler
     }
 
     formView.setEditing(true);
-    formView.setViewPresenter(gfp);
 
     formView.setState(State.CLOSED);
 

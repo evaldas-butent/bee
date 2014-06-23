@@ -22,7 +22,6 @@ import com.butent.bee.client.dialog.Icon;
 import com.butent.bee.client.dialog.StringCallback;
 import com.butent.bee.client.output.Printer;
 import com.butent.bee.client.ui.FormDescription;
-import com.butent.bee.client.ui.IdentifiableWidget;
 import com.butent.bee.client.view.FormContainerImpl;
 import com.butent.bee.client.view.FormContainerView;
 import com.butent.bee.client.view.HasSearch;
@@ -162,11 +161,6 @@ public class FormPresenter extends AbstractPresenter implements ReadyForInsertEv
       return null;
     }
     return getDataProvider().getViewName();
-  }
-
-  @Override
-  public IdentifiableWidget getWidget() {
-    return getMainView();
   }
 
   @Override

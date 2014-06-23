@@ -1,11 +1,13 @@
 package com.butent.bee.client.view.navigation;
 
 import com.google.gwt.dom.client.Element;
+import com.google.gwt.event.shared.HandlerRegistration;
 import com.google.gwt.i18n.client.NumberFormat;
 
 import com.butent.bee.client.Global;
 import com.butent.bee.client.dom.DomUtils;
 import com.butent.bee.client.dom.Rulers;
+import com.butent.bee.client.event.logical.ReadyEvent;
 import com.butent.bee.client.event.logical.ScopeChangeEvent;
 import com.butent.bee.client.layout.Horizontal;
 import com.butent.bee.client.style.StyleUtils;
@@ -150,6 +152,11 @@ public class SimplePager extends AbstractPager {
     container.add(widgetLast);
   }
 
+  @Override
+  public HandlerRegistration addReadyHandler(ReadyEvent.Handler handler) {
+    return addHandler(handler, ReadyEvent.getType());
+  }
+  
   @Override
   public boolean onPrint(Element source, Element target) {
     return !DomUtils.isImageElement(source);

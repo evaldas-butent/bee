@@ -16,7 +16,10 @@ import com.butent.bee.client.presenter.FormPresenter;
 import com.butent.bee.client.presenter.Presenter;
 import com.butent.bee.client.presenter.PresenterCallback;
 import com.butent.bee.client.utils.XmlUtils;
+import com.butent.bee.client.view.ViewCallback;
+import com.butent.bee.client.view.ViewFactory;
 import com.butent.bee.client.view.ViewHelper;
+import com.butent.bee.client.view.ViewSupplier;
 import com.butent.bee.client.view.form.FormImpl;
 import com.butent.bee.client.view.form.FormView;
 import com.butent.bee.client.view.form.interceptor.FormInterceptor;
@@ -266,7 +269,7 @@ public final class FormFactory {
 
   public static String getSupplierKey(String formName) {
     Assert.notEmpty(formName);
-    return WidgetFactory.SupplierKind.FORM.getKey(formName);
+    return ViewFactory.SupplierKind.FORM.getKey(formName);
   }
 
   public static FormWidget getWidgetType(BeeColumn column) {
@@ -352,15 +355,15 @@ public final class FormFactory {
   public static void openForm(final String formName, final FormInterceptor formInterceptor) {
     String supplierKey = getSupplierKey(formName);
 
-    if (!WidgetFactory.hasSupplier(supplierKey)) {
-      WidgetSupplier supplier = new WidgetSupplier() {
+    if (!ViewFactory.hasSupplier(supplierKey)) {
+      ViewSupplier supplier = new ViewSupplier() {
         @Override
-        public void create(final Callback<IdentifiableWidget> callback) {
+        public void create(final ViewCallback callback) {
 
           final PresenterCallback presenterCallback = new PresenterCallback() {
             @Override
             public void onCreate(Presenter presenter) {
-              callback.onSuccess(presenter.getWidget());
+              callback.onSuccess(presenter.getMainView());
             }
           };
 
@@ -375,7 +378,7 @@ public final class FormFactory {
         }
       };
 
-      WidgetFactory.registerSupplier(supplierKey, supplier);
+      ViewFactory.registerSupplier(supplierKey, supplier);
     }
 
     getFormDescription(formName, new Callback<FormDescription>() {

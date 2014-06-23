@@ -1,4 +1,4 @@
-package com.butent.bee.client.ui;
+package com.butent.bee.client.view;
 
 import com.google.common.collect.Maps;
 
@@ -9,6 +9,9 @@ import com.butent.bee.client.grid.GridFactory;
 import com.butent.bee.client.modules.calendar.CalendarKeeper;
 import com.butent.bee.client.presenter.Presenter;
 import com.butent.bee.client.presenter.PresenterCallback;
+import com.butent.bee.client.ui.FormDescription;
+import com.butent.bee.client.ui.FormFactory;
+import com.butent.bee.client.ui.Opener;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.Pair;
 import com.butent.bee.shared.data.DataUtils;
@@ -18,12 +21,12 @@ import java.util.Collection;
 import java.util.Map;
 import java.util.TreeSet;
 
-public final class WidgetFactory {
+public final class ViewFactory {
 
   public enum SupplierKind {
     GRID("grid_") {
       @Override
-      void create(String item, Callback<IdentifiableWidget> callback) {
+      void create(String item, ViewCallback callback) {
         GridFactory.openGrid(item, GridFactory.getGridInterceptor(item), null,
             getPresenterCallback(callback));
       }
@@ -31,7 +34,7 @@ public final class WidgetFactory {
 
     FORM("form_") {
       @Override
-      void create(final String item, final Callback<IdentifiableWidget> callback) {
+      void create(final String item, final ViewCallback callback) {
         FormFactory.getFormDescription(item, new Callback<FormDescription>() {
           @Override
           public void onSuccess(FormDescription result) {
@@ -44,14 +47,14 @@ public final class WidgetFactory {
 
     ROW_EDITOR("row_") {
       @Override
-      void create(String item, Callback<IdentifiableWidget> callback) {
+      void create(String item, ViewCallback callback) {
         RowEditor.parse(item, Opener.with(getPresenterCallback(callback)));
       }
     },
 
     CALENDAR("calendar_") {
       @Override
-      void create(String item, Callback<IdentifiableWidget> callback) {
+      void create(String item, ViewCallback callback) {
         Long id = BeeUtils.toLongOrNull(item);
         if (DataUtils.isId(id)) {
           CalendarKeeper.openCalendar(id, callback);
@@ -60,12 +63,12 @@ public final class WidgetFactory {
     };
 
     private static PresenterCallback getPresenterCallback(
-        final Callback<IdentifiableWidget> callback) {
+        final ViewCallback callback) {
 
       return new PresenterCallback() {
         @Override
         public void onCreate(Presenter presenter) {
-          callback.onSuccess(presenter.getWidget());
+          callback.onSuccess(presenter.getMainView());
         }
       };
     }
@@ -89,21 +92,21 @@ public final class WidgetFactory {
       return prefix + BeeUtils.trim(item);
     }
 
-    abstract void create(String item, Callback<IdentifiableWidget> callback);
+    abstract void create(String item, ViewCallback callback);
   }
 
-  private static final Map<String, WidgetSupplier> suppliers = Maps.newHashMap();
+  private static final Map<String, ViewSupplier> suppliers = Maps.newHashMap();
 
   public static void clear() {
     suppliers.clear();
   }
 
-  public static void create(String key, Callback<IdentifiableWidget> callback) {
+  public static void create(String key, ViewCallback callback) {
     if (BeeUtils.isEmpty(key) || callback == null) {
       return;
     }
 
-    WidgetSupplier supplier = suppliers.get(BeeUtils.trim(key));
+    ViewSupplier supplier = suppliers.get(BeeUtils.trim(key));
     if (supplier != null) {
       supplier.create(callback);
 
@@ -111,7 +114,7 @@ public final class WidgetFactory {
       Pair<SupplierKind, String> pair = SupplierKind.parse(key);
 
       if (pair == null) {
-        callback.onFailure("widget supplier not found:", key);
+        callback.onFailure("view supplier not found:", key);
       } else {
         pair.getA().create(pair.getB(), callback);
       }
@@ -121,10 +124,10 @@ public final class WidgetFactory {
   public static void createAndShow(String key) {
     Assert.notEmpty(key);
 
-    create(key, new Callback<IdentifiableWidget>() {
+    create(key, new ViewCallback() {
       @Override
-      public void onSuccess(IdentifiableWidget result) {
-        BeeKeeper.getScreen().showWidget(result);
+      public void onSuccess(View result) {
+        BeeKeeper.getScreen().show(result);
       }
     });
   }
@@ -133,7 +136,7 @@ public final class WidgetFactory {
     return new TreeSet<String>(suppliers.keySet());
   }
 
-  public static WidgetSupplier getSupplier(String key) {
+  public static ViewSupplier getSupplier(String key) {
     if (BeeUtils.isEmpty(key)) {
       return null;
     } else {
@@ -149,12 +152,12 @@ public final class WidgetFactory {
     }
   }
 
-  public static void registerSupplier(String key, WidgetSupplier supplier) {
+  public static void registerSupplier(String key, ViewSupplier supplier) {
     if (!BeeUtils.isEmpty(key) && supplier != null && !hasSupplier(key)) {
       suppliers.put(BeeUtils.trim(key), supplier);
     }
   }
 
-  private WidgetFactory() {
+  private ViewFactory() {
   }
 }

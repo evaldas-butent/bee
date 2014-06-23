@@ -76,10 +76,10 @@ public interface Screen extends NotificationListener, HasExtendedInfo {
   void restore(String input, boolean append);
   
   String serialize();
-  
-  void showInNewPlace(IdentifiableWidget widget);
 
-  void showWidget(IdentifiableWidget widget);
+  void show(IdentifiableWidget widget);
+
+  void showInNewPlace(IdentifiableWidget widget);
 
   void start(UserData userData);
   

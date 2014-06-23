@@ -29,9 +29,11 @@ import com.butent.bee.client.style.ConditionalStyle;
 import com.butent.bee.client.ui.FormDescription;
 import com.butent.bee.client.ui.FormFactory;
 import com.butent.bee.client.ui.IdentifiableWidget;
-import com.butent.bee.client.ui.WidgetFactory;
-import com.butent.bee.client.ui.WidgetSupplier;
 import com.butent.bee.client.utils.Command;
+import com.butent.bee.client.view.View;
+import com.butent.bee.client.view.ViewCallback;
+import com.butent.bee.client.view.ViewFactory;
+import com.butent.bee.client.view.ViewSupplier;
 import com.butent.bee.client.view.form.CloseCallback;
 import com.butent.bee.client.view.form.FormView;
 import com.butent.bee.client.view.grid.interceptor.UniqueChildInterceptor;
@@ -89,11 +91,11 @@ public final class CalendarKeeper {
               calName = event.getOptions();
             }
 
-            openCalendar(calId, calName, new Callback<IdentifiableWidget>() {
+            openCalendar(calId, calName, new ViewCallback() {
               @Override
-              public void onSuccess(IdentifiableWidget result) {
+              public void onSuccess(View result) {
                 if (event.isOpenFavorite()) {
-                  BeeKeeper.getScreen().showWidget(result);
+                  BeeKeeper.getScreen().show(result);
                 } else {
                   BeeKeeper.getScreen().showInNewPlace(result);
                 }
@@ -270,7 +272,7 @@ public final class CalendarKeeper {
     CalendarKeeper.dataLoaded = dataLoaded;
   }
 
-  public static void openCalendar(final long id, final Callback<IdentifiableWidget> callback) {
+  public static void openCalendar(final long id, final ViewCallback callback) {
     Queries.getValue(VIEW_CALENDARS, id, COL_CALENDAR_NAME, new Callback<String>() {
       @Override
       public void onSuccess(String result) {
@@ -423,7 +425,7 @@ public final class CalendarKeeper {
   }
 
   static String getCalendarSupplierKey(long calendarId) {
-    return WidgetFactory.SupplierKind.CALENDAR.getKey(BeeUtils.toString(calendarId));
+    return ViewFactory.SupplierKind.CALENDAR.getKey(BeeUtils.toString(calendarId));
   }
 
   static void getData(Collection<String> viewNames, final Command command) {
@@ -802,16 +804,14 @@ public final class CalendarKeeper {
     }
   }
 
-  private static void openCalendar(final long id, final String name,
-      Callback<IdentifiableWidget> callback) {
+  private static void openCalendar(final long id, final String name, ViewCallback callback) {
 
     final class OpenCommand extends Command {
       private final long calendarId;
       private final String calendarName;
-      private final Callback<IdentifiableWidget> calendarCallback;
+      private final ViewCallback calendarCallback;
 
-      private OpenCommand(long calendarId, String calendarName,
-          Callback<IdentifiableWidget> calendarCallback) {
+      private OpenCommand(long calendarId, String calendarName, ViewCallback calendarCallback) {
         super();
         this.calendarId = calendarId;
         this.calendarName = calendarName;
@@ -839,16 +839,16 @@ public final class CalendarKeeper {
     }
 
     String supplierKey = getCalendarSupplierKey(id);
-    if (!WidgetFactory.hasSupplier(supplierKey)) {
-      WidgetSupplier supplier = new WidgetSupplier() {
+    if (!ViewFactory.hasSupplier(supplierKey)) {
+      ViewSupplier supplier = new ViewSupplier() {
         @Override
-        public void create(final Callback<IdentifiableWidget> cb) {
+        public void create(final ViewCallback cb) {
           OpenCommand command = new OpenCommand(id, name, cb);
           ensureData(command);
         }
       };
 
-      WidgetFactory.registerSupplier(supplierKey, supplier);
+      ViewFactory.registerSupplier(supplierKey, supplier);
     }
 
     OpenCommand command = new OpenCommand(id, name, callback);

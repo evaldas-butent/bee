@@ -30,6 +30,7 @@ import com.butent.bee.client.event.logical.ActiveRowChangeEvent;
 import com.butent.bee.client.event.logical.ActiveWidgetChangeEvent;
 import com.butent.bee.client.event.logical.DataRequestEvent;
 import com.butent.bee.client.event.logical.ParentRowEvent;
+import com.butent.bee.client.event.logical.ReadyEvent;
 import com.butent.bee.client.event.logical.ScopeChangeEvent;
 import com.butent.bee.client.event.logical.SelectionCountChangeEvent;
 import com.butent.bee.client.event.logical.SortEvent;
@@ -431,6 +432,11 @@ public class FormImpl extends Absolute implements FormView, PreviewHandler, Tabu
     return addHandler(handler, ReadyForUpdateEvent.getType());
   }
 
+  @Override
+  public HandlerRegistration addReadyHandler(ReadyEvent.Handler handler) {
+    return addHandler(handler, ReadyEvent.getType());
+  }
+  
   @Override
   public HandlerRegistration addSaveChangesHandler(SaveChangesEvent.Handler handler) {
     return addHandler(handler, SaveChangesEvent.getType());
@@ -1641,6 +1647,8 @@ public class FormImpl extends Absolute implements FormView, PreviewHandler, Tabu
     if (getFormInterceptor() != null) {
       getFormInterceptor().onLoad(this);
     }
+    
+    ReadyEvent.fire(this);
   }
 
   @Override

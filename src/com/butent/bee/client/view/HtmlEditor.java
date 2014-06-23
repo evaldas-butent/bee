@@ -5,6 +5,7 @@ import com.google.gwt.core.client.Scheduler;
 import com.google.gwt.dom.client.Element;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
+import com.google.gwt.event.shared.HandlerRegistration;
 
 import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.Global;
@@ -12,13 +13,13 @@ import com.butent.bee.client.dialog.DecisionCallback;
 import com.butent.bee.client.dialog.DialogConstants;
 import com.butent.bee.client.dialog.InputCallback;
 import com.butent.bee.client.dialog.StringCallback;
+import com.butent.bee.client.event.logical.ReadyEvent;
 import com.butent.bee.client.layout.Flow;
 import com.butent.bee.client.output.Printable;
 import com.butent.bee.client.output.Printer;
 import com.butent.bee.client.presenter.Presenter;
 import com.butent.bee.client.richtext.RichTextEditor;
 import com.butent.bee.client.style.StyleUtils;
-import com.butent.bee.client.ui.IdentifiableWidget;
 import com.butent.bee.client.ui.UiOption;
 import com.butent.bee.client.widget.Button;
 import com.butent.bee.client.widget.CustomDiv;
@@ -117,6 +118,11 @@ public class HtmlEditor extends Flow implements Presenter, View, Printable {
   }
 
   @Override
+  public HandlerRegistration addReadyHandler(ReadyEvent.Handler handler) {
+    return addHandler(handler, ReadyEvent.getType());
+  }
+  
+  @Override
   public String getCaption() {
     return caption;
   }
@@ -143,11 +149,6 @@ public class HtmlEditor extends Flow implements Presenter, View, Printable {
 
   @Override
   public Presenter getViewPresenter() {
-    return this;
-  }
-
-  @Override
-  public IdentifiableWidget getWidget() {
     return this;
   }
 
@@ -245,6 +246,8 @@ public class HtmlEditor extends Flow implements Presenter, View, Printable {
   protected void onLoad() {
     super.onLoad();
     updateSizes();
+    
+    ReadyEvent.fire(this);
   }
 
   private boolean changed() {

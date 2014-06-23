@@ -373,7 +373,7 @@ public class ScreenImpl implements Screen {
   }
 
   @Override
-  public void showWidget(IdentifiableWidget widget) {
+  public void show(IdentifiableWidget widget) {
     if (BeeKeeper.getUser().openInNewTab()) {
       showInNewPlace(widget);
     } else {
