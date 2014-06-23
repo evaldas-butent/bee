@@ -3278,3 +3278,9 @@ textarea,
 .bee-ChangePassword-table td {
   padding: 5px 10px;
 }
+
+.bee-output:not(:empty) {
+  background-color: whitesmoke;
+  padding: 1px 2px;
+  border: 1px solid silver;
+}
