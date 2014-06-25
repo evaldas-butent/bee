@@ -1,6 +1,5 @@
 package com.butent.bee.client;
 
-import com.google.common.base.Objects;
 import com.google.common.collect.Lists;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
@@ -53,6 +52,7 @@ import com.butent.bee.shared.websocket.messages.RoomUserMessage;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.Objects;
 
 public class Rooms implements HasInfo {
 
@@ -60,8 +60,8 @@ public class Rooms implements HasInfo {
     private String name;
     private Type type;
 
-    private final List<Long> owners = Lists.newArrayList();
-    private final List<Long> dwellers = Lists.newArrayList();
+    private final List<Long> owners = new ArrayList<>();
+    private final List<Long> dwellers = new ArrayList<>();
 
     private RoomSettings() {
       this.type = Type.DEFAULT;
@@ -154,7 +154,7 @@ public class Rooms implements HasInfo {
     private RoomWidget findRoomWidget(long roomId) {
       for (Widget widget : this) {
         if (widget instanceof RoomWidget
-            && Objects.equal(((RoomWidget) widget).getRoomId(), roomId)) {
+            && Objects.equals(((RoomWidget) widget).getRoomId(), roomId)) {
           return (RoomWidget) widget;
         }
       }
@@ -322,7 +322,7 @@ public class Rooms implements HasInfo {
   private static Chat findChat(long roomId) {
     List<IdentifiableWidget> openWidgets = BeeKeeper.getScreen().getOpenWidgets();
     for (IdentifiableWidget widget : openWidgets) {
-      if (widget instanceof Chat && Objects.equal(((Chat) widget).getRoomId(), roomId)) {
+      if (widget instanceof Chat && Objects.equals(((Chat) widget).getRoomId(), roomId)) {
         return (Chat) widget;
       }
     }
@@ -340,7 +340,7 @@ public class Rooms implements HasInfo {
     });
   }
 
-  private final List<ChatRoom> chatRooms = Lists.newArrayList();
+  private final List<ChatRoom> chatRooms = new ArrayList<>();
 
   private final RoomsPanel roomsPanel = new RoomsPanel();
 
@@ -559,7 +559,7 @@ public class Rooms implements HasInfo {
       @Override
       public void accept(RoomSettings input) {
         if (input.isValid()) {
-          List<TextMessage> messages = Lists.newArrayList();
+          List<TextMessage> messages = new ArrayList<>();
           ChatRoom room = new ChatRoom(input.getName(), input.getType(), messages);
 
           room.getOwners().addAll(input.getOwners());

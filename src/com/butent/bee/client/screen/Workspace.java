@@ -34,6 +34,7 @@ import com.butent.bee.client.widget.CustomHasHtml;
 import com.butent.bee.client.widget.Label;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
+import com.butent.bee.shared.Consumer;
 import com.butent.bee.shared.HasExtendedInfo;
 import com.butent.bee.shared.data.ExtendedPropertiesData;
 import com.butent.bee.shared.html.Tags;
@@ -48,12 +49,68 @@ import com.butent.bee.shared.utils.PropertyUtils;
 
 import java.util.ArrayList;
 import java.util.EnumSet;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 public class Workspace extends TabbedPages implements CaptionChangeEvent.Handler,
     HasActiveWidgetChangeHandlers, ActiveWidgetChangeEvent.Handler, PreviewHandler,
     HasExtendedInfo {
+
+  private final class ContentRestorer implements Consumer<Boolean> {
+
+    private final Map<String, Map<String, String>> contentSuppliers;
+    private final List<String> panelIds;
+
+    private final Consumer<Boolean> callback;
+
+    private int position;
+
+    private ContentRestorer(Map<String, Map<String, String>> contentSuppliers,
+        Consumer<Boolean> callback) {
+
+      this.contentSuppliers = contentSuppliers;
+      this.panelIds = new ArrayList<>(contentSuppliers.keySet());
+
+      this.callback = callback;
+    }
+
+    @Override
+    public void accept(Boolean input) {
+      if (BeeUtils.isTrue(input)) {
+        if (position < panelIds.size() - 1) {
+          position++;
+          run();
+
+        } else if (callback != null) {
+          callback.accept(input);
+        }
+
+      } else if (callback != null) {
+        callback.accept(input);
+      }
+    }
+
+    private void run() {
+      if (BeeUtils.isIndex(panelIds, position)) {
+        String panelId = panelIds.get(position);
+        int index = getContentIndex(panelId);
+
+        Map<String, String> contentByTile = contentSuppliers.get(panelId);
+        logger.info("restoring", position, index, contentByTile);
+
+        if (isIndex(index)) {
+          selectPage(index, SelectionOrigin.SCRIPT);
+
+          TilePanel panel = getActivePanel();
+          if (panel != null) {
+            panel.restoreContent(contentByTile, this);
+          }
+        }
+      }
+    }
+  }
 
   private enum TabAction {
     CREATE(Localized.getConstants().actionWorkspaceNewTab(), GROUP_NEW) {
@@ -368,6 +425,8 @@ public class Workspace extends TabbedPages implements CaptionChangeEvent.Handler
     }
   }
 
+  private int pendingPage = BeeConst.UNDEF;
+
   Workspace() {
     super(STYLE_PREFIX);
 
@@ -605,7 +664,7 @@ public class Workspace extends TabbedPages implements CaptionChangeEvent.Handler
 
     tile.activate(false);
   }
-  
+
   void addToTabBar(IdentifiableWidget widget) {
     getTabBar().add(widget);
   }
@@ -675,91 +734,55 @@ public class Workspace extends TabbedPages implements CaptionChangeEvent.Handler
     updateActivePanel(widget);
   }
 
-  void restore(String input, boolean append) {
-    JSONObject json = JsonUtils.parse(input);
-    if (json == null) {
-      logger.warning("cannot parse", input);
-      return;
-    }
+  void restore(final List<String> spaces, final boolean append) {
+    if (!BeeUtils.isEmpty(spaces)) {
+      if (!append) {
+        while (getPageCount() > 0) {
+          removePage(0);
+        }
+      }
 
-    if (!append) {
-      clear();
-    }
+      final List<Consumer<Boolean>> callbacks = new ArrayList<>();
 
-    if (json.containsKey(KEY_HIDDEN)) {
-      JSONArray arr = json.get(KEY_HIDDEN).isArray();
+      for (int i = 0; i < spaces.size(); i++) {
+        final int index = i;
 
-      if (arr != null) {
-        Set<Direction> directions = EnumSet.noneOf(Direction.class);
+        Consumer<Boolean> callback = new Consumer<Boolean>() {
+          @Override
+          public void accept(Boolean input) {
+            if (index < spaces.size() - 1) {
+              restore(spaces.get(index + 1), callbacks.get(index + 1));
+              
+            } else if (getPageCount() <= 0) {
+              insertEmptyPanel(0);
 
-        for (int i = 0; i < arr.size(); i++) {
-          JSONString string = arr.get(i).isString();
+            } else if (!BeeConst.isUndef(getPendingPage())) {
+              int page = getPendingPage();
+              setPendingPage(BeeConst.UNDEF);
 
-          if (string != null) {
-            Direction direction = Direction.parse(string.stringValue());
-            if (direction != null) {
-              directions.add(direction);
+              if (isIndex(page)) {
+                selectPage(page, SelectionOrigin.SCRIPT);
+              }
             }
           }
-        }
+        };
 
-        if (!directions.isEmpty()) {
-          BeeKeeper.getScreen().hideDirections(directions);
-        }
-      }
-    }
-
-    TilePanel panel;
-
-    if (json.containsKey(KEY_TABS)) {
-      int oldPageCount = append ? getPageCount() : 0;
-      JSONArray tabs = json.get(KEY_TABS).isArray();
-
-      if (tabs != null) {
-        for (int i = 0; i < tabs.size(); i++) {
-          JSONObject child = tabs.get(i).isObject();
-
-          if (child != null) {
-            if (i > 0 || append) {
-              panel = insertEmptyPanel(getPageCount());
-            } else {
-              panel = getActivePanel();
-            }
-
-            panel.restore(this, child);
-          }
-        }
-
-        if (json.containsKey(KEY_SELECTED) && getPageCount() == oldPageCount + tabs.size()) {
-          Double value = JsonUtils.getNumber(json, KEY_SELECTED);
-          int index = (value == null) ? BeeConst.UNDEF : BeeUtils.round(value);
-
-          if (BeeUtils.betweenExclusive(index, 0, tabs.size())) {
-            selectPage(oldPageCount + index, SelectionOrigin.SCRIPT);
-          }
-        }
+        callbacks.add(callback);
       }
 
-    } else {
-      if (append) {
-        panel = insertEmptyPanel(getPageCount());
-      } else {
-        panel = getActivePanel();
-      }
-
-      panel.restore(this, json);
+      restore(spaces.get(0), callbacks.get(0));
     }
   }
 
   String serialize() {
     JSONObject json = toJson();
-    
+
     if (json == null || json.size() <= 0) {
       return null;
 
     } else if (json.size() == 1 && json.containsKey(KEY_TABS)) {
       JSONArray arr = json.get(KEY_TABS).isArray();
-      
+
       if (arr == null) {
         return null;
 
@@ -770,7 +793,7 @@ public class Workspace extends TabbedPages implements CaptionChangeEvent.Handler
         }
       }
     }
-    
+
     return json.toString();
   }
 
@@ -844,6 +867,10 @@ public class Workspace extends TabbedPages implements CaptionChangeEvent.Handler
     }
   }
 
+  private int getPendingPage() {
+    return pendingPage;
+  }
+
   private int getTabIndex(String tabId) {
     for (int i = 0; i < getPageCount(); i++) {
       if (tabId.equals(getTabWidget(i).getElement().getId())) {
@@ -861,6 +888,98 @@ public class Workspace extends TabbedPages implements CaptionChangeEvent.Handler
 
     selectPage(before, SelectionOrigin.INSERT);
     return panel;
+  }
+
+  private void restore(String input, Consumer<Boolean> callback) {
+    JSONObject json = JsonUtils.parse(input);
+    if (json == null) {
+      logger.warning("cannot parse", input);
+
+      if (callback != null) {
+        callback.accept(false);
+      }
+      return;
+    }
+
+    if (json.containsKey(KEY_HIDDEN)) {
+      JSONArray arr = json.get(KEY_HIDDEN).isArray();
+
+      if (arr != null) {
+        Set<Direction> directions = EnumSet.noneOf(Direction.class);
+
+        for (int i = 0; i < arr.size(); i++) {
+          JSONString string = arr.get(i).isString();
+
+          if (string != null) {
+            Direction direction = Direction.parse(string.stringValue());
+            if (direction != null) {
+              directions.add(direction);
+            }
+          }
+        }
+
+        if (!directions.isEmpty()) {
+          BeeKeeper.getScreen().hideDirections(directions);
+        }
+      }
+    }
+
+    Map<String, Map<String, String>> contentSuppliers = new LinkedHashMap<>();
+
+    TilePanel panel;
+
+    if (json.containsKey(KEY_TABS)) {
+      int oldPageCount = getPageCount();
+      JSONArray tabs = json.get(KEY_TABS).isArray();
+
+      if (tabs != null) {
+        for (int i = 0; i < tabs.size(); i++) {
+          JSONObject child = tabs.get(i).isObject();
+
+          if (child != null) {
+            panel = insertEmptyPanel(getPageCount());
+
+            Map<String, String> contentByTile = panel.restore(this, child);
+            if (!BeeUtils.isEmpty(contentByTile)) {
+              contentSuppliers.put(panel.getId(), contentByTile);
+            } else {
+              panel.afterRestore();
+            }
+          }
+        }
+
+        if (json.containsKey(KEY_SELECTED) && getPageCount() == oldPageCount + tabs.size()) {
+          Double value = JsonUtils.getNumber(json, KEY_SELECTED);
+          int index = (value == null) ? BeeConst.UNDEF : BeeUtils.round(value);
+
+          if (BeeUtils.betweenExclusive(index, 0, tabs.size())) {
+            setPendingPage(oldPageCount + index);
+          }
+        }
+      }
+
+    } else {
+      panel = insertEmptyPanel(getPageCount());
+
+      Map<String, String> contentByTile = panel.restore(this, json);
+      if (!BeeUtils.isEmpty(contentByTile)) {
+        contentSuppliers.put(panel.getId(), contentByTile);
+      } else {
+        panel.afterRestore();
+      }
+    }
+
+    if (!contentSuppliers.isEmpty()) {
+      ContentRestorer restorer = new ContentRestorer(contentSuppliers, callback);
+      restorer.run();
+
+    } else if (callback != null) {
+      callback.accept(true);
+    }
+  }
+
+  private void setPendingPage(int pendingPage) {
+    this.pendingPage = pendingPage;
   }
 
   private void showActions(String tabId) {
@@ -915,14 +1034,14 @@ public class Workspace extends TabbedPages implements CaptionChangeEvent.Handler
   private void showError(String message) {
     logger.severe(getClass().getName(), message);
   }
-  
+
   private void splitActiveTile(Direction direction) {
     TilePanel panel = getActivePanel();
     if (panel != null) {
       panel.addTile(this, direction);
     }
   }
-  
+
   private JSONObject toJson() {
     JSONObject json = new JSONObject();
 

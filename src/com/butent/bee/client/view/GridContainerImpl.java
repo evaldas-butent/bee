@@ -115,7 +115,12 @@ public class GridContainerImpl extends Split implements GridContainerView, HasNa
 
   @Override
   public HandlerRegistration addReadyHandler(ReadyEvent.Handler handler) {
-    return addHandler(handler, ReadyEvent.getType());
+    GridView gridView = getGridView();
+    if (gridView != null) {
+      return gridView.addReadyHandler(handler);
+    } else {
+      return null;
+    }
   }
 
   @Override
@@ -293,10 +298,11 @@ public class GridContainerImpl extends Split implements GridContainerView, HasNa
 
   @Override
   public GridView getGridView() {
-    if (getCenter() == null) {
-      return null;
+    if (getCenter() instanceof GridView) {
+      return (GridView) getCenter();
+    } else {
+      return null;      
     }
-    return (GridView) getCenter();
   }
 
   @Override
@@ -608,8 +614,6 @@ public class GridContainerImpl extends Split implements GridContainerView, HasNa
         } else {
           grid.refresh();
         }
-        
-        ReadyEvent.fire(GridContainerImpl.this);
       }
     });
   }

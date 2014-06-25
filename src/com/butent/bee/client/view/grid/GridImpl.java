@@ -1391,6 +1391,9 @@ public class GridImpl extends Absolute implements GridView, EditEndEvent.Handler
       if (!event.canceled() && getViewPresenter() != null) {
         DynamicColumnFactory.checkRightsColumns(getViewPresenter(), this, event);
       }
+
+    } else if (event.isAfter()) {
+      ReadyEvent.fire(this);
     }
   }
 

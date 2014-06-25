@@ -1,5 +1,6 @@
 package com.butent.bee.client;
 
+import com.google.common.collect.Lists;
 import com.google.gwt.core.client.EntryPoint;
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.event.logical.shared.ResizeEvent;
@@ -78,7 +79,7 @@ public class Bee implements EntryPoint {
       String workspace = BeeKeeper.getUser().getLastWorkspace();
 
       if (!BeeUtils.isEmpty(workspace) && !BeeConst.EMPTY.equals(workspace)) {
-        BeeKeeper.getScreen().restore(workspace, false);
+        BeeKeeper.getScreen().restore(Lists.newArrayList(workspace), false);
       }
 
     } else {
@@ -94,9 +95,7 @@ public class Bee implements EntryPoint {
         }
 
       } else {
-        for (int i = 0; i < onStartup.size(); i++) {
-          BeeKeeper.getScreen().restore(onStartup.get(i), i > 0);
-        }
+        BeeKeeper.getScreen().restore(onStartup, false);
       }
     }
   }

@@ -352,9 +352,9 @@ public class ScreenImpl implements Screen {
   }
 
   @Override
-  public void restore(String input, boolean append) {
+  public void restore(List<String> spaces, boolean append) {
     if (getWorkspace() != null) {
-      getWorkspace().restore(input, append);
+      getWorkspace().restore(spaces, append);
     }
   }
 

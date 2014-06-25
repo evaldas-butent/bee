@@ -73,7 +73,7 @@ public interface Screen extends NotificationListener, HasExtendedInfo {
 
   void removeProgress(String id);
   
-  void restore(String input, boolean append);
+  void restore(List<String> spaces, boolean append);
   
   String serialize();
 

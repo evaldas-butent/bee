@@ -1151,9 +1151,9 @@ public class CellGrid extends Widget implements IdentifiableWidget, HasDataTable
 
     if (width > 0) {
       width += LINE_WIDTH_RESERVE;
-        if (columnInfo.getColumn().isSortable()) {
-          width += HeaderCell.SORT_INFO_WIDTH;
-        }
+      if (columnInfo.getColumn().isSortable()) {
+        width += HeaderCell.SORT_INFO_WIDTH;
+      }
       columnInfo.setHeaderWidth(width);
     }
     return width;
@@ -3769,7 +3769,9 @@ public class CellGrid extends Widget implements IdentifiableWidget, HasDataTable
           Element cellElement = getActiveCellElement();
           if (cellElement != null) {
             cellElement.getStyle().setZIndex(incrementZIndex());
-            cellElement.focus();
+            if (DomUtils.isVisible(cellElement)) {
+              cellElement.focus();
+            }
           }
         }
       });
