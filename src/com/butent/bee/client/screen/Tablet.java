@@ -3,7 +3,6 @@ package com.butent.bee.client.screen;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
 
-import com.butent.bee.client.canvas.CanvasDemo;
 import com.butent.bee.client.cli.CliWorker;
 import com.butent.bee.client.composite.VolumeSlider;
 import com.butent.bee.client.grid.HtmlTable;
@@ -12,7 +11,6 @@ import com.butent.bee.client.logging.ClientLogManager;
 import com.butent.bee.client.style.StyleUtils;
 import com.butent.bee.client.ui.IdentifiableWidget;
 import com.butent.bee.client.utils.Command;
-import com.butent.bee.client.visualization.showcase.Showcase;
 import com.butent.bee.client.widget.Button;
 import com.butent.bee.client.widget.Toggle;
 import com.butent.bee.shared.Pair;
@@ -147,28 +145,6 @@ public class Tablet extends Mobile {
     grid.getCellFormatter().setColSpan(r, 0, c);
     r++;
     
-    Button canvas = new Button("Canvas Demo", new Command() {
-      @Override
-      public void execute() {
-        new CanvasDemo().start();
-      }
-    });
-    grid.setWidget(r, 0, canvas);
-    grid.alignCenter(r, 0);
-    grid.getCellFormatter().setColSpan(r, 0, c);
-    r++;
-
-    Button visual = new Button("Visualization", new Command() {
-      @Override
-      public void execute() {
-        Showcase.open();
-      }
-    });
-    grid.setWidget(r, 0, visual);
-    grid.alignCenter(r, 0);
-    grid.getCellFormatter().setColSpan(r, 0, c);
-    r++;
-
     Button cornify = new Button("Cornify", new Command() {
       @Override
       public void execute() {

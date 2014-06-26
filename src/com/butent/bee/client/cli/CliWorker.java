@@ -25,7 +25,6 @@ import com.google.gwt.event.dom.client.ErrorHandler;
 import com.google.gwt.event.logical.shared.AttachEvent;
 import com.google.gwt.geolocation.client.Position;
 import com.google.gwt.geolocation.client.Position.Coordinates;
-import com.google.gwt.i18n.client.LocaleInfo;
 import com.google.gwt.i18n.client.NumberFormat;
 import com.google.gwt.resources.client.ImageResource;
 import com.google.gwt.storage.client.Storage;
@@ -42,11 +41,7 @@ import com.butent.bee.client.Callback;
 import com.butent.bee.client.Global;
 import com.butent.bee.client.Historian;
 import com.butent.bee.client.Settings;
-import com.butent.bee.client.ajaxloader.AjaxKeyRepository;
-import com.butent.bee.client.ajaxloader.AjaxLoader;
-import com.butent.bee.client.ajaxloader.ClientLocation;
 import com.butent.bee.client.animation.RafCallback;
-import com.butent.bee.client.canvas.CanvasDemo;
 import com.butent.bee.client.communication.ParameterList;
 import com.butent.bee.client.communication.ResponseCallback;
 import com.butent.bee.client.communication.RpcInfo;
@@ -84,11 +79,6 @@ import com.butent.bee.client.i18n.Format;
 import com.butent.bee.client.i18n.LocaleUtils;
 import com.butent.bee.client.images.Flags;
 import com.butent.bee.client.images.Images;
-import com.butent.bee.client.language.DetectionCallback;
-import com.butent.bee.client.language.DetectionResult;
-import com.butent.bee.client.language.Language;
-import com.butent.bee.client.language.Translation;
-import com.butent.bee.client.language.TranslationCallback;
 import com.butent.bee.client.layout.Direction;
 import com.butent.bee.client.layout.Flow;
 import com.butent.bee.client.layout.Horizontal;
@@ -126,7 +116,6 @@ import com.butent.bee.client.utils.NewFileInfo;
 import com.butent.bee.client.utils.XmlUtils;
 import com.butent.bee.client.view.ViewFactory;
 import com.butent.bee.client.view.ViewHelper;
-import com.butent.bee.client.visualization.showcase.Showcase;
 import com.butent.bee.client.websocket.Endpoint;
 import com.butent.bee.client.widget.BeeAudio;
 import com.butent.bee.client.widget.BeeVideo;
@@ -171,7 +160,6 @@ import com.butent.bee.shared.data.value.BooleanValue;
 import com.butent.bee.shared.data.view.DataInfo;
 import com.butent.bee.shared.font.FontAwesome;
 import com.butent.bee.shared.html.Attributes;
-import com.butent.bee.shared.html.Tags;
 import com.butent.bee.shared.html.builder.elements.Input;
 import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.io.StoredFile;
@@ -246,9 +234,6 @@ public final class CliWorker {
     } else if (z.startsWith("adm") && !args.isEmpty()) {
       doAdmin(z.substring(3), args, errorPopup);
 
-    } else if (z.startsWith("ajaxk") || z.startsWith("apik") || z.startsWith("gook")) {
-      doAjaxKeys(arr);
-
     } else if ("audio".equals(z)) {
       playAudio(args);
 
@@ -264,9 +249,6 @@ public final class CliWorker {
     } else if (z.startsWith("cap")) {
       showCaptions();
 
-    } else if ("canvas".equals(z)) {
-      new CanvasDemo().start();
-
     } else if (BeeUtils.inList(z, "center", "east", "north", "south", "screen", "west")) {
       doScreen(arr, errorPopup);
 
@@ -281,9 +263,6 @@ public final class CliWorker {
 
     } else if ("clear".equals(z)) {
       clear(args);
-
-    } else if (z.startsWith("client")) {
-      showClientLocation();
 
     } else if (z.startsWith("collect")) {
       doCollections(arr);
@@ -535,9 +514,6 @@ public final class CliWorker {
     } else if (z.startsWith("tile")) {
       doTiles(args);
 
-    } else if (z.startsWith("tran") || z.startsWith("detec")) {
-      translate(arr, z.startsWith("detec"));
-
     } else if ("uc".equals(z) || "unicode".startsWith(z)) {
       unicode(arr);
 
@@ -555,9 +531,6 @@ public final class CliWorker {
 
     } else if (z.startsWith("view")) {
       showViewInfo(v, args);
-
-    } else if (z.startsWith("viz")) {
-      Showcase.open();
 
     } else if ("vm".equals(z)) {
       BeeKeeper.getRpc().invoke("vmInfo", ResponseHandler.callback(z));
@@ -971,30 +944,6 @@ public final class CliWorker {
         Endpoint.send(notificationMessage);
       }
     }
-  }
-
-  private static void doAjaxKeys(String[] arr) {
-    if (ArrayUtils.length(arr) == 3) {
-      String loc = arr[1];
-      String key = arr[2];
-
-      if (Global.nativeConfirm("add api key", loc, key)) {
-        AjaxKeyRepository.putKey(loc, key);
-      }
-    }
-
-    Map<String, String> keyMap = AjaxKeyRepository.getKeys();
-    if (BeeUtils.isEmpty(keyMap)) {
-      logger.warning("api key repository is empty");
-      return;
-    }
-
-    List<Property> lst = new ArrayList<>();
-    for (Map.Entry<String, String> entry : keyMap.entrySet()) {
-      lst.add(new Property(entry.getKey(), entry.getValue()));
-    }
-
-    showPropData("Ajax", lst, "Location", "Api Key");
   }
 
   private static void doCollections(String[] arr) {
@@ -2294,20 +2243,6 @@ public final class CliWorker {
           logger.info(name, StyleUtils.getCssText(widget));
         }
         return widget;
-      }
-    });
-  }
-
-  private static void showClientLocation() {
-    AjaxLoader.load(new Runnable() {
-      @Override
-      public void run() {
-        ClientLocation location = AjaxLoader.getClientLocation();
-
-        showPropData("Client Location", PropertyUtils.createProperties("City", location.getCity(),
-            "Country", location.getCountry(), "Country Code", location.getCountryCode(),
-            "Latitude", location.getLatitude(), "Longitude", location.getLongitude(),
-            "Region", location.getRegion()));
       }
     });
   }
@@ -4246,118 +4181,6 @@ public final class CliWorker {
       StyleInjector.injectAtEnd(st, immediate);
     } else {
       StyleInjector.inject(st, immediate);
-    }
-  }
-
-  private static void translate(final String[] arr, boolean detect) {
-    int len = ArrayUtils.length(arr);
-    if (len < 2) {
-      Global.sayHuh(arr);
-      return;
-    }
-
-    if (detect) {
-      final String detText = ArrayUtils.join(BeeConst.STRING_SPACE, arr, 1, len);
-      Translation.detect(detText, new DetectionCallback() {
-        @Override
-        protected void onCallback(DetectionResult result) {
-          Global.showModalGrid("Language Detection",
-              new PropertiesData(PropertyUtils.createProperties("Text", detText,
-                  "Language Code", result.getLanguage(),
-                  "Language", Language.getByCode(result.getLanguage()),
-                  "Confidence", result.getConfidence(),
-                  "Reliable", result.isReliable())));
-        }
-      });
-      return;
-    }
-
-    final String text;
-    final String codeFrom;
-    final String codeTo;
-
-    Language dst = Language.getByCode(arr[len - 1]);
-
-    if (dst == null) {
-      text = ArrayUtils.join(BeeConst.STRING_SPACE, arr, 1, len);
-      codeFrom = BeeConst.STRING_EMPTY;
-      codeTo = LocaleUtils.getLanguageCode(LocaleInfo.getCurrentLocale());
-    } else {
-      codeTo = dst.getLangCode();
-      if (len <= 2) {
-        text = BeeConst.STRING_EMPTY;
-        codeFrom = BeeConst.STRING_EMPTY;
-      } else if (len <= 3) {
-        text = arr[len - 2];
-        codeFrom = BeeConst.STRING_EMPTY;
-      } else {
-        Language src = Language.getByCode(arr[len - 2]);
-        if (src == null) {
-          text = ArrayUtils.join(BeeConst.STRING_SPACE, arr, 1, len - 1);
-          codeFrom = BeeConst.STRING_EMPTY;
-        } else {
-          text = ArrayUtils.join(BeeConst.STRING_SPACE, arr, 1, len - 2);
-          codeFrom = src.getLangCode();
-        }
-      }
-    }
-
-    if (BeeUtils.isEmpty(text) || BeeUtils.same(text, BeeConst.STRING_ASTERISK)) {
-      logger.info("Translate", codeFrom, codeTo);
-      List<Element> elements = Lists.newArrayList();
-
-      NodeList<Element> nodes = Document.get().getElementsByTagName(Tags.BUTTON);
-      for (int i = 0; i < nodes.getLength(); i++) {
-        elements.add(nodes.getItem(i));
-      }
-      nodes = Document.get().getElementsByTagName(Tags.TH);
-      for (int i = 0; i < nodes.getLength(); i++) {
-        elements.add(nodes.getItem(i));
-      }
-      nodes = Document.get().getElementsByTagName(Tags.LABEL);
-      for (int i = 0; i < nodes.getLength(); i++) {
-        elements.add(nodes.getItem(i));
-      }
-      nodes = Document.get().getElementsByTagName(Tags.OPTION);
-      for (int i = 0; i < nodes.getLength(); i++) {
-        elements.add(nodes.getItem(i));
-      }
-
-      for (final Element elem : elements) {
-        String elTxt = elem.getInnerText();
-        if (!BeeUtils.hasLength(elTxt, 3)) {
-          continue;
-        }
-
-        TranslationCallback elBack = new TranslationCallback() {
-          @Override
-          protected void onCallback(String translation) {
-            elem.setInnerText(translation);
-          }
-        };
-
-        if (BeeUtils.isEmpty(codeFrom)) {
-          Translation.detectAndTranslate(elTxt, codeTo, elBack);
-        } else {
-          Translation.translate(elTxt, codeFrom, codeTo, elBack);
-        }
-      }
-      return;
-    }
-
-    final String info = ArrayUtils.join(BeeConst.STRING_SPACE, arr, 1, len);
-
-    TranslationCallback callback = new TranslationCallback() {
-      @Override
-      protected void onCallback(String translation) {
-        inform(info, translation);
-      }
-    };
-
-    if (BeeUtils.isEmpty(codeFrom)) {
-      Translation.detectAndTranslate(text, codeTo, callback);
-    } else {
-      Translation.translate(text, codeFrom, codeTo, callback);
     }
   }
 
