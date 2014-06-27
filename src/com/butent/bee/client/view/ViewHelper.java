@@ -1,14 +1,15 @@
 package com.butent.bee.client.view;
 
 import com.google.common.collect.ImmutableSet;
-import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
+import com.google.gwt.event.shared.HandlerRegistration;
 import com.google.gwt.user.client.ui.HasOneWidget;
 import com.google.gwt.user.client.ui.HasWidgets;
 import com.google.gwt.user.client.ui.Widget;
 
 import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.data.Provider;
+import com.butent.bee.client.event.logical.ReadyEvent;
 import com.butent.bee.client.presenter.PresenterCallback;
 import com.butent.bee.client.view.grid.GridView;
 import com.butent.bee.client.view.navigation.PagerView;
@@ -17,17 +18,57 @@ import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.data.filter.Filter;
 import com.butent.bee.shared.utils.BeeUtils;
 
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 
 public final class ViewHelper {
-  
+
   private static final ImmutableSet<String> NO_EXCLUSIONS = ImmutableSet.of();
+
+  public static void delegateReadyEvent(View delegator, View delegate) {
+    Assert.notNull(delegate);
+    delegateReadyEvent(delegator, Sets.newHashSet(delegate));
+  }
+
+  public static void delegateReadyEvent(final View delegator, Collection<View> delegates) {
+    Assert.notNull(delegator);
+    Assert.notEmpty(delegates);
+
+    final Map<String, HandlerRegistration> registry = new HashMap<>();
+
+    for (View view : delegates) {
+      if (view != null) {
+        HandlerRegistration registration = view.addReadyHandler(new ReadyEvent.Handler() {
+          @Override
+          public void onReady(ReadyEvent event) {
+            if (event.getSource() instanceof View) {
+              HandlerRegistration hr = registry.remove(((View) event.getSource()).getId());
+              if (hr != null) {
+                hr.removeHandler();
+
+                if (registry.isEmpty()) {
+                  ReadyEvent.fire(delegator);
+                }
+              }
+            }
+          }
+        });
+
+        if (registration != null) {
+          registry.put(view.getId(), registration);
+        }
+      }
+    }
+  }
 
   public static Filter getFilter(HasSearch container, Provider dataProvider) {
     return getFilter(container, dataProvider, NO_EXCLUSIONS);
   }
-  
+
   public static Filter getFilter(HasSearch container, Provider dataProvider,
       ImmutableSet<String> excludeSearchers) {
     Assert.notNull(container);
@@ -38,7 +79,7 @@ public final class ViewHelper {
       return null;
     }
 
-    List<Filter> filters = Lists.newArrayListWithCapacity(searchers.size());
+    List<Filter> filters = new ArrayList<>();
     for (SearchView search : searchers) {
       Filter flt = search.getFilter(dataProvider.getColumns(), dataProvider.getIdColumnName(),
           dataProvider.getVersionColumnName(), excludeSearchers);
@@ -50,14 +91,14 @@ public final class ViewHelper {
   }
 
   public static Collection<GridView> getGrids(Widget root) {
-    Collection<GridView> grids = Sets.newHashSet();
+    Collection<GridView> grids = new HashSet<>();
 
     if (root instanceof GridView) {
       grids.add((GridView) root);
 
     } else if (root instanceof HasGridView) {
       grids.add(((HasGridView) root).getGridView());
-    
+
     } else if (root instanceof HasWidgets) {
       for (Widget child : (HasWidgets) root) {
         grids.addAll(getGrids(child));
@@ -66,7 +107,7 @@ public final class ViewHelper {
     } else if (root instanceof HasOneWidget) {
       grids.addAll(getGrids(((HasOneWidget) root).getWidget()));
     }
-    
+
     return grids;
   }
 
@@ -81,9 +122,33 @@ public final class ViewHelper {
     return null;
   }
 
+  public static Collection<View> getImmediateChildViews(Widget parent) {
+    Collection<View> views = new HashSet<>();
+
+    if (parent instanceof HasWidgets) {
+      for (Widget child : (HasWidgets) parent) {
+        if (child instanceof View) {
+          views.add((View) child);
+        } else {
+          views.addAll(getImmediateChildViews(child));
+        }
+      }
+
+    } else if (parent instanceof HasOneWidget) {
+      Widget child = ((HasOneWidget) parent).getWidget();
+      if (child instanceof View) {
+        views.add((View) child);
+      } else {
+        views.addAll(getImmediateChildViews(child));
+      }
+    }
+
+    return views;
+  }
+
   public static Collection<PagerView> getPagers(HasWidgets container) {
     Assert.notNull(container);
-    Collection<PagerView> pagers = Sets.newHashSet();
+    Collection<PagerView> pagers = new HashSet<>();
 
     for (Widget widget : container) {
       if (widget instanceof PagerView) {
@@ -99,7 +164,7 @@ public final class ViewHelper {
     }
     return pagers;
   }
-  
+
   public static PresenterCallback getPresenterCallback() {
     if (BeeKeeper.getUser().openInNewTab()) {
       return PresenterCallback.SHOW_IN_NEW_TAB;
@@ -110,7 +175,7 @@ public final class ViewHelper {
 
   public static Collection<SearchView> getSearchers(HasWidgets container) {
     Assert.notNull(container);
-    Collection<SearchView> searchers = Sets.newHashSet();
+    Collection<SearchView> searchers = new HashSet<>();
 
     for (Widget widget : container) {
       if (widget instanceof SearchView) {

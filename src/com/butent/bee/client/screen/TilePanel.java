@@ -18,6 +18,7 @@ import com.butent.bee.client.Global;
 import com.butent.bee.client.Historian;
 import com.butent.bee.client.Place;
 import com.butent.bee.client.dom.DomUtils;
+import com.butent.bee.client.event.EventUtils;
 import com.butent.bee.client.event.logical.ActiveWidgetChangeEvent;
 import com.butent.bee.client.event.logical.CaptionChangeEvent;
 import com.butent.bee.client.event.logical.HasActiveWidgetChangeHandlers;
@@ -51,10 +52,8 @@ import com.butent.bee.shared.utils.PropertyUtils;
 
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
 class TilePanel extends Split implements HasCaption, SelectionHandler<String> {
 
@@ -403,6 +402,94 @@ class TilePanel extends Split implements HasCaption, SelectionHandler<String> {
         case CENTER:
           break;
       }
+    }
+  }
+
+  private final class ContentRestorer implements Consumer<Boolean> {
+
+    private final Map<String, String> contentByTile;
+    private final List<String> tileIds;
+
+    private final Consumer<Boolean> callback;
+
+    private final Map<String, HandlerRegistration> readyHandlerRegistry = new HashMap<>();
+
+    private int position;
+
+    private ContentRestorer(Map<String, String> contentByTile, Consumer<Boolean> callback) {
+      this.contentByTile = contentByTile;
+      this.tileIds = new ArrayList<>(contentByTile.keySet());
+
+      this.callback = callback;
+    }
+
+    @Override
+    public void accept(Boolean input) {
+      if (BeeUtils.isTrue(input) && getPosition() < tileIds.size() - 1) {
+        setPosition(getPosition() + 1);
+        run();
+      } else {
+        onComplete(input);
+      }
+    }
+
+    private int getPosition() {
+      return position;
+    }
+
+    private void onComplete(Boolean success) {
+      EventUtils.clearRegistry(readyHandlerRegistry.values());
+
+      afterRestore();
+
+      if (callback != null) {
+        callback.accept(success);
+      }
+    }
+
+    private void run() {
+      final String tileId = tileIds.get(getPosition());
+      final String contentSupplier = contentByTile.get(tileId);
+
+      ViewFactory.create(contentSupplier, new ViewCallback() {
+        @Override
+        public void onSuccess(View result) {
+          HandlerRegistration registration = result.addReadyHandler(new ReadyEvent.Handler() {
+            @Override
+            public void onReady(ReadyEvent event) {
+              HandlerRegistration hr = readyHandlerRegistry.remove(tileId);
+              if (hr != null) {
+                hr.removeHandler();
+              }
+
+              logger.info("restored tile", BeeUtils.progress(tileIds.indexOf(tileId) + 1,
+                  tileIds.size()), contentSupplier);
+              accept(true);
+            }
+          });
+
+          if (registration != null) {
+            readyHandlerRegistry.put(tileId, registration);
+          }
+
+          Tile tile = getTileById(tileId);
+          if (tile == null) {
+            onComplete(false);
+          } else {
+            tile.addContentSupplier(contentSupplier);
+            tile.setWidget(result);
+          }
+        }
+      });
+    }
+
+    private void setPosition(int position) {
+      this.position = position;
+    }
+    
+    private void start() {
+      setPosition(0);
+      run();
     }
   }
 
@@ -767,10 +854,10 @@ class TilePanel extends Split implements HasCaption, SelectionHandler<String> {
       return true;
     }
   }
-  
+
   void afterRestore() {
     Tile tile;
-    
+
     if (!BeeUtils.isEmpty(getPendingTileId())) {
       tile = getTileById(getPendingTileId());
       setPendingTileId(null);
@@ -928,42 +1015,12 @@ class TilePanel extends Split implements HasCaption, SelectionHandler<String> {
   }
 
   void restoreContent(Map<String, String> contentByTile, final Consumer<Boolean> callback) {
-    final Set<String> latch = new HashSet<>(contentByTile.keySet());
+    if (!BeeUtils.isEmpty(contentByTile)) {
+      ContentRestorer restorer = new ContentRestorer(contentByTile, callback);
+      restorer.start();
 
-    for (Map.Entry<String, String> entry : contentByTile.entrySet()) {
-      final Tile tile = getTileById(entry.getKey());
-      final String contentSupplier = entry.getValue();
-
-      if (tile == null || BeeUtils.isEmpty(contentSupplier)) {
-        if (callback != null) {
-          callback.accept(false);
-          break;
-        }
-      }
-
-      ViewFactory.create(contentSupplier, new ViewCallback() {
-        @Override
-        public void onSuccess(View result) {
-          result.addReadyHandler(new ReadyEvent.Handler() {
-            @Override
-            public void onReady(ReadyEvent event) {
-              if (latch.remove(tile.getId())) {
-                logger.info("restored", tile.getId(), contentSupplier);
-
-                if (latch.isEmpty()) {
-                  afterRestore();
-                }
-                if (callback != null) {
-                  callback.accept(true);
-                }
-              }
-            }
-          });
-
-          tile.setWidget(result);
-          tile.addContentSupplier(contentSupplier);
-        }
-      });
+    } else if (callback != null) {
+      callback.accept(false);
     }
   }
 

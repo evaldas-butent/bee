@@ -9,6 +9,7 @@ import com.google.gwt.json.client.JSONNumber;
 import com.google.gwt.json.client.JSONObject;
 import com.google.gwt.json.client.JSONString;
 import com.google.gwt.user.client.Event.NativePreviewEvent;
+import com.google.gwt.user.client.Timer;
 import com.google.gwt.user.client.ui.Widget;
 
 import com.butent.bee.client.BeeKeeper;
@@ -34,17 +35,22 @@ import com.butent.bee.client.widget.CustomHasHtml;
 import com.butent.bee.client.widget.Label;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
+import com.butent.bee.shared.BiConsumer;
 import com.butent.bee.shared.Consumer;
 import com.butent.bee.shared.HasExtendedInfo;
+import com.butent.bee.shared.Holder;
+import com.butent.bee.shared.State;
 import com.butent.bee.shared.data.ExtendedPropertiesData;
 import com.butent.bee.shared.html.Tags;
 import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogUtils;
+import com.butent.bee.shared.time.TimeUtils;
 import com.butent.bee.shared.ui.HasCaption;
 import com.butent.bee.shared.ui.UserInterface.Component;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.ExtendedProperty;
+import com.butent.bee.shared.utils.NameUtils;
 import com.butent.bee.shared.utils.PropertyUtils;
 
 import java.util.ArrayList;
@@ -79,8 +85,8 @@ public class Workspace extends TabbedPages implements CaptionChangeEvent.Handler
     @Override
     public void accept(Boolean input) {
       if (BeeUtils.isTrue(input)) {
-        if (position < panelIds.size() - 1) {
-          position++;
+        if (getPosition() < panelIds.size() - 1 && isLoading()) {
+          setPosition(getPosition() + 1);
           run();
 
         } else if (callback != null) {
@@ -92,23 +98,125 @@ public class Workspace extends TabbedPages implements CaptionChangeEvent.Handler
       }
     }
 
+    private int getPosition() {
+      return position;
+    }
+
     private void run() {
-      if (BeeUtils.isIndex(panelIds, position)) {
-        String panelId = panelIds.get(position);
-        int index = getContentIndex(panelId);
+      String panelId = panelIds.get(getPosition());
+      int index = getContentIndex(panelId);
 
-        Map<String, String> contentByTile = contentSuppliers.get(panelId);
-        logger.info("restoring", position, index, contentByTile);
+      Map<String, String> contentByTile = contentSuppliers.get(panelId);
+      logger.info("restoring panel", BeeUtils.progress(getPosition() + 1, panelIds.size()),
+          contentByTile.values());
 
-        if (isIndex(index)) {
-          selectPage(index, SelectionOrigin.SCRIPT);
+      if (isIndex(index)) {
+        selectPage(index, SelectionOrigin.SCRIPT);
 
-          TilePanel panel = getActivePanel();
-          if (panel != null) {
-            panel.restoreContent(contentByTile, this);
-          }
+        TilePanel panel = getActivePanel();
+        if (panel != null) {
+          panel.restoreContent(contentByTile, this);
         }
       }
+    }
+
+    private void setPosition(int position) {
+      this.position = position;
+    }
+
+    private void start() {
+      setPosition(0);
+      run();
+    }
+  }
+
+  private final class Restorer implements BiConsumer<Boolean, Integer> {
+
+    private final List<JSONObject> spaces;
+    private final boolean append;
+
+    private final Timer timer;
+
+    private int position;
+
+    private int pendingPage = BeeConst.UNDEF;
+
+    private Restorer(List<JSONObject> spaces, boolean append) {
+      this.spaces = spaces;
+      this.append = append;
+
+      this.timer = new Timer() {
+        @Override
+        public void run() {
+          if (isLoading()) {
+            setState(State.EXPIRED);
+          }
+        }
+      };
+    }
+
+    @Override
+    public void accept(Boolean t, Integer u) {
+      if (BeeUtils.isNonNegative(u)) {
+        setPendingPage(u);
+      }
+
+      if (BeeUtils.isTrue(t) && getPosition() < spaces.size() - 1 && isLoading()) {
+        setPosition(getPosition() + 1);
+        run();
+
+      } else {
+        onComplete();
+      }
+    }
+
+    private int getPendingPage() {
+      return pendingPage;
+    }
+
+    private int getPosition() {
+      return position;
+    }
+
+    private void onComplete() {
+      timer.cancel();
+      setState(State.LOADED);
+
+      if (getPageCount() <= 0) {
+        insertEmptyPanel(0);
+      } else if (isIndex(getPendingPage()) && getPendingPage() != getSelectedIndex()) {
+        selectPage(getPendingPage(), SelectionOrigin.CLICK);
+      }
+    }
+
+    private void run() {
+      JSONObject space = spaces.get(getPosition());
+      logger.info("restoring space", BeeUtils.progress(getPosition() + 1, spaces.size()));
+
+      restore(space, this);
+    }
+
+    private void setPendingPage(int pendingPage) {
+      this.pendingPage = pendingPage;
+    }
+
+    private void setPosition(int position) {
+      this.position = position;
+    }
+
+    private void start() {
+      if (!append) {
+        while (getPageCount() > 0) {
+          removePage(0);
+        }
+      }
+
+      setState(State.LOADING);
+
+      setPosition(0);
+      run();
+      
+      timer.schedule(RESTORATION_TIMEOUT);
     }
   }
 
@@ -398,12 +506,37 @@ public class Workspace extends TabbedPages implements CaptionChangeEvent.Handler
   private static final char GROUP_CLOSE = 'c';
   private static final char GROUP_BOOKMARK = 'b';
 
+  private static final int RESTORATION_TIMEOUT = TimeUtils.MILLIS_PER_MINUTE;
+
   static int restoreSize(double size, int max) {
     return BeeUtils.round(size * max / SIZE_FACTOR);
   }
 
   static int scaleSize(int size, int max) {
     return BeeUtils.round((double) size * SIZE_FACTOR / max);
+  }
+
+  private static Set<Direction> getHiddenDirections(JSONObject json) {
+    Set<Direction> directions = EnumSet.noneOf(Direction.class);
+
+    if (json != null && json.containsKey(KEY_HIDDEN)) {
+      JSONArray arr = json.get(KEY_HIDDEN).isArray();
+
+      if (arr != null) {
+        for (int i = 0; i < arr.size(); i++) {
+          JSONString string = arr.get(i).isString();
+
+          if (string != null) {
+            Direction direction = Direction.parse(string.stringValue());
+            if (direction != null) {
+              directions.add(direction);
+            }
+          }
+        }
+      }
+    }
+
+    return directions;
   }
 
   private static void maybeAddHidden(JSONObject json) {
@@ -425,7 +558,7 @@ public class Workspace extends TabbedPages implements CaptionChangeEvent.Handler
     }
   }
 
-  private int pendingPage = BeeConst.UNDEF;
+  private State state;
 
   Workspace() {
     super(STYLE_PREFIX);
@@ -500,6 +633,10 @@ public class Workspace extends TabbedPages implements CaptionChangeEvent.Handler
 
   @Override
   public void onEventPreview(NativePreviewEvent event, Node targetNode) {
+    if (isLoading()) {
+      setState(State.CANCELED);
+      return;
+    }
     if (targetNode == null) {
       return;
     }
@@ -734,43 +871,31 @@ public class Workspace extends TabbedPages implements CaptionChangeEvent.Handler
     updateActivePanel(widget);
   }
 
-  void restore(final List<String> spaces, final boolean append) {
-    if (!BeeUtils.isEmpty(spaces)) {
-      if (!append) {
-        while (getPageCount() > 0) {
-          removePage(0);
+  void restore(List<String> input, boolean append) {
+    if (!BeeUtils.isEmpty(input)) {
+      List<JSONObject> spaces = new ArrayList<>();
+      Set<Direction> hiddenDirections = EnumSet.noneOf(Direction.class);
+
+      for (String s : input) {
+        JSONObject space = JsonUtils.parse(s);
+
+        if (space == null) {
+          showError("cannot parse space " + BeeUtils.trim(s));
+
+        } else {
+          spaces.add(space);
+          hiddenDirections.addAll(getHiddenDirections(space));
         }
       }
 
-      final List<Consumer<Boolean>> callbacks = new ArrayList<>();
-
-      for (int i = 0; i < spaces.size(); i++) {
-        final int index = i;
-
-        Consumer<Boolean> callback = new Consumer<Boolean>() {
-          @Override
-          public void accept(Boolean input) {
-            if (index < spaces.size() - 1) {
-              restore(spaces.get(index + 1), callbacks.get(index + 1));
-              
-            } else if (getPageCount() <= 0) {
-              insertEmptyPanel(0);
-
-            } else if (!BeeConst.isUndef(getPendingPage())) {
-              int page = getPendingPage();
-              setPendingPage(BeeConst.UNDEF);
-
-              if (isIndex(page)) {
-                selectPage(page, SelectionOrigin.SCRIPT);
-              }
-            }
-          }
-        };
-
-        callbacks.add(callback);
+      if (!hiddenDirections.isEmpty()) {
+        BeeKeeper.getScreen().hideDirections(hiddenDirections);
       }
 
-      restore(spaces.get(0), callbacks.get(0));
+      if (!spaces.isEmpty()) {
+        Restorer restorer = new Restorer(spaces, append);
+        restorer.start();
+      }
     }
   }
 
@@ -867,8 +992,8 @@ public class Workspace extends TabbedPages implements CaptionChangeEvent.Handler
     }
   }
 
-  private int getPendingPage() {
-    return pendingPage;
+  private State getState() {
+    return state;
   }
 
   private int getTabIndex(String tabId) {
@@ -890,39 +1015,12 @@ public class Workspace extends TabbedPages implements CaptionChangeEvent.Handler
     return panel;
   }
 
-  private void restore(String input, Consumer<Boolean> callback) {
-    JSONObject json = JsonUtils.parse(input);
-    if (json == null) {
-      logger.warning("cannot parse", input);
+  private boolean isLoading() {
+    return getState() == State.LOADING;
+  }
 
-      if (callback != null) {
-        callback.accept(false);
-      }
-      return;
-    }
-
-    if (json.containsKey(KEY_HIDDEN)) {
-      JSONArray arr = json.get(KEY_HIDDEN).isArray();
-
-      if (arr != null) {
-        Set<Direction> directions = EnumSet.noneOf(Direction.class);
-
-        for (int i = 0; i < arr.size(); i++) {
-          JSONString string = arr.get(i).isString();
-
-          if (string != null) {
-            Direction direction = Direction.parse(string.stringValue());
-            if (direction != null) {
-              directions.add(direction);
-            }
-          }
-        }
-
-        if (!directions.isEmpty()) {
-          BeeKeeper.getScreen().hideDirections(directions);
-        }
-      }
-    }
+  private void restore(JSONObject json, final BiConsumer<Boolean, Integer> callback) {
+    final Holder<Integer> activePage = Holder.of(BeeConst.UNDEF);
 
     Map<String, Map<String, String>> contentSuppliers = new LinkedHashMap<>();
 
@@ -953,13 +1051,14 @@ public class Workspace extends TabbedPages implements CaptionChangeEvent.Handler
           int index = (value == null) ? BeeConst.UNDEF : BeeUtils.round(value);
 
           if (BeeUtils.betweenExclusive(index, 0, tabs.size())) {
-            setPendingPage(oldPageCount + index);
+            activePage.set(oldPageCount + index);
           }
         }
       }
 
     } else {
       panel = insertEmptyPanel(getPageCount());
+      activePage.set(getSelectedIndex());
 
       Map<String, String> contentByTile = panel.restore(this, json);
       if (!BeeUtils.isEmpty(contentByTile)) {
@@ -970,16 +1069,26 @@ public class Workspace extends TabbedPages implements CaptionChangeEvent.Handler
     }
 
     if (!contentSuppliers.isEmpty()) {
-      ContentRestorer restorer = new ContentRestorer(contentSuppliers, callback);
-      restorer.run();
+      ContentRestorer restorer = new ContentRestorer(contentSuppliers, new Consumer<Boolean>() {
+        @Override
+        public void accept(Boolean b) {
+          callback.accept(b, activePage.get());
+        }
+      });
 
-    } else if (callback != null) {
-      callback.accept(true);
+      restorer.start();
+
+    } else {
+      callback.accept(true, activePage.get());
     }
   }
 
-  private void setPendingPage(int pendingPage) {
-    this.pendingPage = pendingPage;
+  private void setState(State state) {
+    this.state = state;
+
+    if (state != null) {
+      logger.info(NameUtils.getName(this), state.name().toLowerCase());
+    }
   }
 
   private void showActions(String tabId) {

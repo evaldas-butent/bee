@@ -62,17 +62,6 @@ public final class ViewFactory {
       }
     };
 
-    private static PresenterCallback getPresenterCallback(
-        final ViewCallback callback) {
-
-      return new PresenterCallback() {
-        @Override
-        public void onCreate(Presenter presenter) {
-          callback.onSuccess(presenter.getMainView());
-        }
-      };
-    }
-
     private static Pair<SupplierKind, String> parse(String key) {
       for (SupplierKind kind : SupplierKind.values()) {
         if (BeeUtils.isPrefix(key, kind.prefix)) {
@@ -152,6 +141,15 @@ public final class ViewFactory {
     }
   }
 
+  public static PresenterCallback getPresenterCallback(final ViewCallback callback) {
+    return new PresenterCallback() {
+      @Override
+      public void onCreate(Presenter presenter) {
+        callback.onSuccess(presenter.getMainView());
+      }
+    };
+  }
+  
   public static void registerSupplier(String key, ViewSupplier supplier) {
     if (!BeeUtils.isEmpty(key) && supplier != null && !hasSupplier(key)) {
       suppliers.put(BeeUtils.trim(key), supplier);

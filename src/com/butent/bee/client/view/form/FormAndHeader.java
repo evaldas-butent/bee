@@ -5,10 +5,11 @@ import com.google.gwt.user.client.ui.Widget;
 
 import com.butent.bee.client.dom.DomUtils;
 import com.butent.bee.client.event.logical.ReadyEvent;
-import com.butent.bee.client.event.logical.ReadyEvent.Handler;
 import com.butent.bee.client.layout.Complex;
 import com.butent.bee.client.presenter.Presenter;
+import com.butent.bee.client.view.HeaderView;
 import com.butent.bee.client.view.View;
+import com.butent.bee.client.view.ViewHelper;
 
 public class FormAndHeader extends Complex implements View {
 
@@ -21,8 +22,31 @@ public class FormAndHeader extends Complex implements View {
   }
 
   @Override
-  public HandlerRegistration addReadyHandler(Handler handler) {
+  public HandlerRegistration addReadyHandler(ReadyEvent.Handler handler) {
+    FormView form = getForm();
+    if (form != null) {
+      ViewHelper.delegateReadyEvent(this, form);
+    }
+
     return addHandler(handler, ReadyEvent.getType());
+  }
+
+  public FormView getForm() {
+    for (Widget child : this) {
+      if (child instanceof FormView) {
+        return (FormView) child;
+      }
+    }
+    return null;
+  }
+
+  public HeaderView getHeader() {
+    for (Widget child : this) {
+      if (child instanceof HeaderView) {
+        return (HeaderView) child;
+      }
+    }
+    return null;
   }
 
   @Override

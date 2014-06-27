@@ -332,8 +332,8 @@ public class FormPresenter extends AbstractPresenter implements ReadyForInsertEv
         }
       }
 
-      view.getContent().addReadyForUpdateHandler(this);
-      view.getContent().addReadyForInsertHandler(this);
+      view.getForm().addReadyForUpdateHandler(this);
+      view.getForm().addReadyForInsertHandler(this);
     }
   }
 
@@ -344,8 +344,8 @@ public class FormPresenter extends AbstractPresenter implements ReadyForInsertEv
       return null;
     }
 
-    HasDataTable display = view.getContent().getDisplay();
-    NotificationListener notificationListener = view.getContent();
+    HasDataTable display = view.getForm().getDisplay();
+    NotificationListener notificationListener = view.getForm();
     Provider provider;
 
     switch (providerType) {
@@ -387,7 +387,7 @@ public class FormPresenter extends AbstractPresenter implements ReadyForInsertEv
   }
 
   private FormView getFormView() {
-    return formContainer.getContent();
+    return formContainer.getForm();
   }
 
   private boolean hasData() {

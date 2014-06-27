@@ -75,21 +75,26 @@ public class FormContainerImpl extends Split implements FormContainerView, HasNa
 
   @Override
   public HandlerRegistration addReadyHandler(ReadyEvent.Handler handler) {
+    FormView form = getForm();
+    if (form != null) {
+      ViewHelper.delegateReadyEvent(this, form);
+    }
+    
     return addHandler(handler, ReadyEvent.getType());
   }
 
   @Override
   public void bind() {
     if (hasFooter()) {
-      getContent().getDisplay().addSelectionCountChangeHandler(getFooter());
+      getForm().getDisplay().addSelectionCountChangeHandler(getFooter());
     }
 
     if (getRowMessage() != null) {
-      getContent().getDisplay().addActiveRowChangeHandler(this);
+      getForm().getDisplay().addActiveRowChangeHandler(this);
     }
 
-    getContent().addAddStartHandler(this);
-    getContent().addAddEndHandler(this);
+    getForm().addAddStartHandler(this);
+    getForm().addAddEndHandler(this);
   }
 
   @Override
@@ -137,14 +142,14 @@ public class FormContainerImpl extends Split implements FormContainerView, HasNa
       Image confirm = new Image(Global.getImages().ok(), new Command() {
         @Override
         public void execute() {
-          getContent().prepareForInsert();
+          getForm().prepareForInsert();
         }
       });
 
       Image cancel = new Image(Global.getImages().cancel(), new Command() {
         @Override
         public void execute() {
-          getContent().finishNewRow(null);
+          getForm().finishNewRow(null);
         }
       });
 
@@ -194,16 +199,8 @@ public class FormContainerImpl extends Split implements FormContainerView, HasNa
   }
 
   @Override
-  public FormView getContent() {
-    if (getCenter() == null) {
-      return null;
-    }
-    return (FormView) getCenter();
-  }
-
-  @Override
   public Domain getDomain() {
-    FormInterceptor interceptor = getContent().getFormInterceptor();
+    FormInterceptor interceptor = getForm().getFormInterceptor();
     return (interceptor == null) ? null : interceptor.getDomain();
   }
 
@@ -217,6 +214,15 @@ public class FormContainerImpl extends Split implements FormContainerView, HasNa
       }
     }
     return null;
+  }
+
+  @Override
+  public FormView getForm() {
+    if (getCenter() instanceof FormView) {
+      return (FormView) getCenter();
+    } else {
+      return null;
+    }
   }
 
   @Override
@@ -262,7 +268,7 @@ public class FormContainerImpl extends Split implements FormContainerView, HasNa
 
   @Override
   public String getSupplierKey() {
-    return FormFactory.getSupplierKey(getContent().getFormName());
+    return FormFactory.getSupplierKey(getForm().getFormName());
   }
 
   @Override
@@ -345,14 +351,14 @@ public class FormContainerImpl extends Split implements FormContainerView, HasNa
     boolean ok;
 
     if (getId().equals(source.getId())) {
-      ElementSize.copyWithAdjustment(source, target, getContent().getPrintElement());
+      ElementSize.copyWithAdjustment(source, target, getForm().getPrintElement());
       ok = true;
 
     } else if (hasHeader() && getHeader().asWidget().getElement().isOrHasChild(source)) {
-      ok = getContent().printHeader() && getHeader().onPrint(source, target);
+      ok = getForm().printHeader() && getHeader().onPrint(source, target);
 
     } else if (hasFooter() && getFooter().asWidget().getElement().isOrHasChild(source)) {
-      ok = getContent().printFooter() && getFooter().onPrint(source, target);
+      ok = getForm().printFooter() && getFooter().onPrint(source, target);
 
     } else {
       ok = true;
@@ -362,7 +368,7 @@ public class FormContainerImpl extends Split implements FormContainerView, HasNa
 
   @Override
   public void onStateChange(State state) {
-    FormInterceptor interceptor = getContent().getFormInterceptor();
+    FormInterceptor interceptor = getForm().getFormInterceptor();
 
     if (interceptor != null) {
       interceptor.onStateChange(state);
@@ -393,17 +399,17 @@ public class FormContainerImpl extends Split implements FormContainerView, HasNa
   }
 
   public void start(int rowCount) {
-    if (getContent() != null && hasData() && rowCount >= 0) {
+    if (getForm() != null && hasData() && rowCount >= 0) {
       Collection<PagerView> pagers = getPagers();
       if (pagers != null) {
         for (PagerView pager : pagers) {
-          pager.start(getContent().getDisplay());
+          pager.start(getForm().getDisplay());
         }
       }
-      getContent().start(rowCount);
+      getForm().start(rowCount);
 
     } else {
-      getContent().start(null);
+      getForm().start(null);
     }
   }
 
@@ -414,8 +420,6 @@ public class FormContainerImpl extends Split implements FormContainerView, HasNa
     if (!started) {
       start(getInitialRowCount());
       started = true;
-      
-      ReadyEvent.fire(this);
     }
   }
 

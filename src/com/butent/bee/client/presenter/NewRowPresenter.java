@@ -8,6 +8,7 @@ import com.butent.bee.client.Callback;
 import com.butent.bee.client.data.ParentRowCreator;
 import com.butent.bee.client.data.Queries;
 import com.butent.bee.client.data.RowCallback;
+import com.butent.bee.client.style.StyleUtils;
 import com.butent.bee.client.ui.AutocompleteProvider;
 import com.butent.bee.client.view.HeaderImpl;
 import com.butent.bee.client.view.HeaderView;
@@ -36,9 +37,9 @@ import java.util.List;
 
 public class NewRowPresenter extends AbstractPresenter implements ParentRowCreator {
 
-  public static final String STYLE_CONTAINER = "bee-NewRowContainer";
-  public static final String STYLE_HEADER = "bee-NewRowHeader";
-  public static final String STYLE_CAPTION = "bee-NewRowCaption";
+  public static final String STYLE_CONTAINER = StyleUtils.CLASS_NAME_PREFIX + "NewRowContainer";
+  public static final String STYLE_HEADER = StyleUtils.CLASS_NAME_PREFIX + "NewRowHeader";
+  public static final String STYLE_CAPTION = StyleUtils.CLASS_NAME_PREFIX + "NewRowCaption";
 
   private static HeaderView createHeader(String caption) {
     HeaderView formHeader = new HeaderImpl();

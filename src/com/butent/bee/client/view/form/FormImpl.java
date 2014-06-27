@@ -55,6 +55,7 @@ import com.butent.bee.client.utils.Evaluator;
 import com.butent.bee.client.validation.CellValidateEvent.Handler;
 import com.butent.bee.client.validation.ValidationHelper;
 import com.butent.bee.client.validation.ValidationOrigin;
+import com.butent.bee.client.view.View;
 import com.butent.bee.client.view.ViewHelper;
 import com.butent.bee.client.view.add.AddEndEvent;
 import com.butent.bee.client.view.add.AddStartEvent;
@@ -434,9 +435,14 @@ public class FormImpl extends Absolute implements FormView, PreviewHandler, Tabu
 
   @Override
   public HandlerRegistration addReadyHandler(ReadyEvent.Handler handler) {
+    Collection<View> views = ViewHelper.getImmediateChildViews(this);
+    if (!views.isEmpty()) {
+      ViewHelper.delegateReadyEvent(this, views);
+    }
+
     return addHandler(handler, ReadyEvent.getType());
   }
-  
+
   @Override
   public HandlerRegistration addSaveChangesHandler(SaveChangesEvent.Handler handler) {
     return addHandler(handler, SaveChangesEvent.getType());
@@ -1647,8 +1653,11 @@ public class FormImpl extends Absolute implements FormView, PreviewHandler, Tabu
     if (getFormInterceptor() != null) {
       getFormInterceptor().onLoad(this);
     }
-    
-    ReadyEvent.fire(this);
+
+    Collection<View> views = ViewHelper.getImmediateChildViews(this);
+    if (views.isEmpty()) {
+      ReadyEvent.fire(this);
+    }
   }
 
   @Override
