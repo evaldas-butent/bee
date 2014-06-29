@@ -4,6 +4,7 @@ import com.google.common.collect.Maps;
 
 import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.Callback;
+import com.butent.bee.client.composite.ResourceEditor;
 import com.butent.bee.client.data.RowEditor;
 import com.butent.bee.client.grid.GridFactory;
 import com.butent.bee.client.modules.calendar.CalendarKeeper;
@@ -59,6 +60,19 @@ public final class ViewFactory {
         if (DataUtils.isId(id)) {
           CalendarKeeper.openCalendar(id, callback);
         }
+      }
+    },
+    
+    RESOURCE("resource_") {
+      @Override
+      void create(String item, final ViewCallback callback) {
+        ResourceEditor.open(item, callback);
+      }
+    },
+    
+    CHAT("chat_") {
+      @Override
+      void create(String item, ViewCallback callback) {
       }
     };
 

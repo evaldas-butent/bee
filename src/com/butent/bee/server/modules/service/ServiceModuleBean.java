@@ -40,6 +40,8 @@ import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogUtils;
 import com.butent.bee.shared.modules.BeeParameter;
 import com.butent.bee.shared.rights.Module;
+import com.butent.bee.shared.time.JustDate;
+import com.butent.bee.shared.time.TimeUtils;
 import com.butent.bee.shared.utils.BeeUtils;
 
 import java.util.Collection;
@@ -189,21 +191,21 @@ public class ServiceModuleBean implements BeeModule {
 
       if (groups.containsKey(docGroupId)) {
         svcGroupId = groups.get(docGroupId);
-        
+
       } else {
         SqlInsert insGroup = new SqlInsert(TBL_SERVICE_CRITERIA_GROUPS)
             .addConstant(COL_SERVICE_OBJECT, objId);
-        
+
         Integer groupOrdinal = row.getInt(aliasGroupOrdinal);
         if (groupOrdinal != null) {
           insGroup.addConstant(COL_SERVICE_CRITERIA_ORDINAL, groupOrdinal);
         }
-        
+
         String groupName = row.getValue(COL_CRITERIA_GROUP_NAME);
         if (!BeeUtils.isEmpty(groupName)) {
           insGroup.addConstant(COL_SERVICE_CRITERIA_GROUP_NAME, groupName);
         }
-        
+
         svcGroupId = qs.insertData(insGroup);
         groups.put(docGroupId, svcGroupId);
       }
@@ -212,19 +214,19 @@ public class ServiceModuleBean implements BeeModule {
 
       if (DataUtils.isId(svcGroupId) && !BeeUtils.isEmpty(criterion)) {
         SqlInsert insCrit = new SqlInsert(TBL_SERVICE_CRITERIA)
-        .addConstant(COL_SERVICE_CRITERIA_GROUP, svcGroupId)
-        .addConstant(COL_SERVICE_CRITERION_NAME, criterion);
+            .addConstant(COL_SERVICE_CRITERIA_GROUP, svcGroupId)
+            .addConstant(COL_SERVICE_CRITERION_NAME, criterion);
 
         Integer ordinal = row.getInt(COL_CRITERIA_ORDINAL);
         if (ordinal != null) {
           insCrit.addConstant(COL_SERVICE_CRITERIA_ORDINAL, ordinal);
         }
-        
+
         String value = row.getValue(COL_CRITERION_VALUE);
         if (!BeeUtils.isEmpty(value)) {
           insCrit.addConstant(COL_SERVICE_CRITERION_VALUE, value);
         }
-        
+
         qs.insertData(insCrit);
       }
     }
@@ -505,7 +507,18 @@ public class ServiceModuleBean implements BeeModule {
 
     settings.setTableProperty(TBL_SERVICE_OBJECTS, objectData.serialize());
 
-    SimpleRowSet datesData = getCalendarDates();
+    BeeRow row = settings.getRow(0);
+    JustDate minDate = DataUtils.getDate(settings, row, COL_SERVICE_CALENDAR_MIN_DATE);
+    JustDate maxDate = DataUtils.getDate(settings, row, COL_SERVICE_CALENDAR_MAX_DATE);
+
+    if (minDate != null && maxDate != null && BeeUtils.isLess(maxDate, minDate)) {
+      maxDate = JustDate.copyOf(minDate);
+    }
+    
+    Long minTime = (minDate == null) ? null : TimeUtils.startOfDay(minDate, -1).getTime();
+    Long maxTime = (maxDate == null) ? null : TimeUtils.startOfDay(maxDate, 1).getTime();
+
+    SimpleRowSet datesData = getCalendarDates(minTime, maxTime);
     if (!DataUtils.isEmpty(datesData)) {
       settings.setTableProperty(TBL_SERVICE_DATES, datesData.serialize());
     }
@@ -520,12 +533,12 @@ public class ServiceModuleBean implements BeeModule {
     Set<Long> taskTypes = DataUtils.parseIdSet(
         settings.getString(0, COL_SERVICE_CALENDAR_TASK_TYPES));
 
-    SimpleRowSet taskData = getCalendarTasks(taskTypes);
+    SimpleRowSet taskData = getCalendarTasks(taskTypes, minTime, maxTime);
     if (!DataUtils.isEmpty(taskData)) {
       settings.setTableProperty(TBL_TASKS, taskData.serialize());
     }
 
-    SimpleRowSet rtData = getCalendarRecurringTasks(taskTypes);
+    SimpleRowSet rtData = getCalendarRecurringTasks(taskTypes, minTime, maxTime);
     if (!DataUtils.isEmpty(rtData)) {
       settings.setTableProperty(TBL_RECURRING_TASKS, rtData.serialize());
 
@@ -538,11 +551,25 @@ public class ServiceModuleBean implements BeeModule {
     return ResponseObject.response(settings);
   }
 
-  private SimpleRowSet getCalendarDates() {
+  private SimpleRowSet getCalendarDates(Long minTime, Long maxTime) {
     SqlSelect query = new SqlSelect()
         .addAllFields(TBL_SERVICE_DATES)
         .addFrom(TBL_SERVICE_DATES)
         .addOrder(TBL_SERVICE_DATES, COL_SERVICE_OBJECT, COL_SERVICE_DATE_FROM);
+
+    if (minTime != null || maxTime != null) {
+      HasConditions where = SqlUtils.and();
+
+      if (minTime != null) {
+        where.add(SqlUtils.or(SqlUtils.isNull(TBL_SERVICE_DATES, COL_SERVICE_DATE_UNTIL),
+            SqlUtils.moreEqual(TBL_SERVICE_DATES, COL_SERVICE_DATE_UNTIL, minTime)));
+      }
+      if (maxTime != null) {
+        where.add(SqlUtils.lessEqual(TBL_SERVICE_DATES, COL_SERVICE_DATE_FROM, maxTime));
+      }
+
+      query.setWhere(where);
+    }
 
     return qs.getData(query);
   }
@@ -582,7 +609,7 @@ public class ServiceModuleBean implements BeeModule {
     return qs.getData(query);
   }
 
-  private SimpleRowSet getCalendarRecurringTasks(Set<Long> taskTypes) {
+  private SimpleRowSet getCalendarRecurringTasks(Set<Long> taskTypes, Long minTime, Long maxTime) {
     String idName = sys.getIdName(TBL_RECURRING_TASKS);
 
     SqlSelect spawnQuery = new SqlSelect()
@@ -597,8 +624,17 @@ public class ServiceModuleBean implements BeeModule {
     HasConditions where = SqlUtils.and(SqlUtils.in(TBL_RECURRING_TASKS, idName,
         TBL_RELATIONS, COL_RECURRING_TASK,
         SqlUtils.notNull(TBL_RELATIONS, COL_SERVICE_OBJECT)));
+
     if (!taskTypes.isEmpty()) {
       where.add(SqlUtils.inList(TBL_RECURRING_TASKS, COL_TASK_TYPE, taskTypes));
+    }
+
+    if (minTime != null) {
+      where.add(SqlUtils.or(SqlUtils.isNull(TBL_RECURRING_TASKS, COL_RT_SCHEDULE_UNTIL),
+          SqlUtils.moreEqual(TBL_RECURRING_TASKS, COL_RT_SCHEDULE_UNTIL, minTime)));
+    }
+    if (maxTime != null) {
+      where.add(SqlUtils.lessEqual(TBL_RECURRING_TASKS, COL_RT_SCHEDULE_FROM, maxTime));
     }
 
     SqlSelect query = new SqlSelect()
@@ -631,13 +667,21 @@ public class ServiceModuleBean implements BeeModule {
     return qs.getData(query);
   }
 
-  private SimpleRowSet getCalendarTasks(Set<Long> taskTypes) {
+  private SimpleRowSet getCalendarTasks(Set<Long> taskTypes, Long minTime, Long maxTime) {
     String idName = sys.getIdName(TBL_TASKS);
 
     HasConditions where = SqlUtils.and(SqlUtils.in(TBL_TASKS, idName, TBL_RELATIONS, COL_TASK,
         SqlUtils.notNull(TBL_RELATIONS, COL_SERVICE_OBJECT)));
+
     if (!taskTypes.isEmpty()) {
       where.add(SqlUtils.inList(TBL_TASKS, COL_TASK_TYPE, taskTypes));
+    }
+
+    if (minTime != null) {
+      where.add(SqlUtils.moreEqual(TBL_TASKS, COL_FINISH_TIME, minTime));
+    }
+    if (maxTime != null) {
+      where.add(SqlUtils.lessEqual(TBL_TASKS, COL_START_TIME, maxTime));
     }
 
     SqlSelect query = new SqlSelect()

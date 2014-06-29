@@ -10,17 +10,13 @@ import com.butent.bee.client.event.Previewer.PreviewConsumer;
 import com.butent.bee.client.event.logical.OpenEvent;
 import com.butent.bee.client.event.logical.RowActionEvent;
 import com.butent.bee.client.output.Printer;
-import com.butent.bee.client.presenter.Presenter;
-import com.butent.bee.client.presenter.PresenterCallback;
 import com.butent.bee.client.presenter.RowPresenter;
 import com.butent.bee.client.ui.AutocompleteProvider;
 import com.butent.bee.client.ui.FormDescription;
 import com.butent.bee.client.ui.FormFactory;
 import com.butent.bee.client.ui.Opener;
 import com.butent.bee.client.ui.UiHelper;
-import com.butent.bee.client.view.ViewCallback;
 import com.butent.bee.client.view.ViewFactory;
-import com.butent.bee.client.view.ViewSupplier;
 import com.butent.bee.client.view.edit.SaveChangesEvent;
 import com.butent.bee.client.view.form.CloseCallback;
 import com.butent.bee.client.view.form.FormView;
@@ -223,26 +219,6 @@ public final class RowEditor {
 
   private static void getRow(final String formName, final DataInfo dataInfo, final long rowId,
       final Opener opener, final RowCallback rowCallback, final FormInterceptor formInteceptor) {
-
-    String supplierKey = getSupplierKey(dataInfo.getViewName(), rowId);
-
-    if (!opener.isModal() && !ViewFactory.hasSupplier(supplierKey)) {
-      ViewSupplier supplier = new ViewSupplier() {
-        @Override
-        public void create(final ViewCallback callback) {
-          Opener widgetOpener = Opener.with(new PresenterCallback() {
-            @Override
-            public void onCreate(Presenter presenter) {
-              callback.onSuccess(presenter.getMainView());
-            }
-          });
-
-          getRow(formName, dataInfo, rowId, widgetOpener, null, formInteceptor);
-        }
-      };
-
-      ViewFactory.registerSupplier(supplierKey, supplier);
-    }
 
     Queries.getRow(dataInfo.getViewName(), rowId, new RowCallback() {
       @Override

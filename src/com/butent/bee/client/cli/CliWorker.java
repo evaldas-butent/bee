@@ -1590,10 +1590,10 @@ public final class CliWorker {
 
     ParameterList params = BeeKeeper.getRpc().createParameters(Service.GET_RESOURCE);
     for (String v : arr) {
-      params.addPositionalHeader(v);
+      params.addPositionalData(v);
     }
 
-    BeeKeeper.getRpc().makeGetRequest(params, new ResponseCallback() {
+    BeeKeeper.getRpc().makeRequest(params, new ResponseCallback() {
       @Override
       public void onResponse(ResponseObject response) {
         if (response.hasResponse(Resource.class)) {

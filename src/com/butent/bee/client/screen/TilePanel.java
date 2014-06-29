@@ -254,7 +254,7 @@ class TilePanel extends Split implements HasCaption, SelectionHandler<String> {
     }
 
     private void addContentSupplier(String key) {
-      if (ViewFactory.hasSupplier(key)) {
+      if (!BeeUtils.isEmpty(key)) {
         if (contentSuppliers.contains(key)) {
           contentSuppliers.remove(key);
         }

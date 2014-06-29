@@ -21,12 +21,14 @@ import com.butent.bee.client.layout.Flow;
 import com.butent.bee.client.output.Printable;
 import com.butent.bee.client.output.Printer;
 import com.butent.bee.client.presenter.Presenter;
+import com.butent.bee.client.ui.HasWidgetSupplier;
 import com.butent.bee.client.ui.IdentifiableWidget;
 import com.butent.bee.client.ui.UiHelper;
 import com.butent.bee.client.ui.UiOption;
 import com.butent.bee.client.view.HeaderImpl;
 import com.butent.bee.client.view.HeaderView;
 import com.butent.bee.client.view.View;
+import com.butent.bee.client.view.ViewFactory;
 import com.butent.bee.client.websocket.Endpoint;
 import com.butent.bee.client.widget.Button;
 import com.butent.bee.client.widget.CustomDiv;
@@ -53,7 +55,7 @@ import java.util.EnumSet;
 import java.util.List;
 
 public class Chat extends Flow implements Presenter, View, Printable,
-    VisibilityChangeEvent.Handler {
+    VisibilityChangeEvent.Handler, HasWidgetSupplier {
 
   private static final class MessageWidget extends Flow {
 
@@ -267,6 +269,11 @@ public class Chat extends Flow implements Presenter, View, Printable,
   }
 
   @Override
+  public String getSupplierKey() {
+    return ViewFactory.SupplierKind.CHAT.getKey(BeeUtils.toString(roomId));
+  }
+
+  @Override
   public Presenter getViewPresenter() {
     return this;
   }
@@ -352,6 +359,8 @@ public class Chat extends Flow implements Presenter, View, Printable,
     registry.add(VisibilityChangeEvent.register(this));
 
     maybeScroll(false);
+    
+    ReadyEvent.fire(this);
   }
 
   @Override

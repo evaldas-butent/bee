@@ -13,13 +13,10 @@ import com.butent.bee.client.Callback;
 import com.butent.bee.client.communication.ResponseCallback;
 import com.butent.bee.client.data.Queries;
 import com.butent.bee.client.presenter.FormPresenter;
-import com.butent.bee.client.presenter.Presenter;
 import com.butent.bee.client.presenter.PresenterCallback;
 import com.butent.bee.client.utils.XmlUtils;
-import com.butent.bee.client.view.ViewCallback;
 import com.butent.bee.client.view.ViewFactory;
 import com.butent.bee.client.view.ViewHelper;
-import com.butent.bee.client.view.ViewSupplier;
 import com.butent.bee.client.view.form.FormImpl;
 import com.butent.bee.client.view.form.FormView;
 import com.butent.bee.client.view.form.interceptor.FormInterceptor;
@@ -353,34 +350,6 @@ public final class FormFactory {
   }
 
   public static void openForm(final String formName, final FormInterceptor formInterceptor) {
-    String supplierKey = getSupplierKey(formName);
-
-    if (!ViewFactory.hasSupplier(supplierKey)) {
-      ViewSupplier supplier = new ViewSupplier() {
-        @Override
-        public void create(final ViewCallback callback) {
-
-          final PresenterCallback presenterCallback = new PresenterCallback() {
-            @Override
-            public void onCreate(Presenter presenter) {
-              callback.onSuccess(presenter.getMainView());
-            }
-          };
-
-          Callback<FormDescription> descriptionCallback = new Callback<FormDescription>() {
-            @Override
-            public void onSuccess(FormDescription result) {
-              openForm(result, formInterceptor, presenterCallback);
-            }
-          };
-
-          getFormDescription(formName, descriptionCallback);
-        }
-      };
-
-      ViewFactory.registerSupplier(supplierKey, supplier);
-    }
-
     getFormDescription(formName, new Callback<FormDescription>() {
       @Override
       public void onSuccess(FormDescription result) {

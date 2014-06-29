@@ -55,7 +55,6 @@ import com.butent.bee.client.utils.Evaluator;
 import com.butent.bee.client.validation.CellValidateEvent.Handler;
 import com.butent.bee.client.validation.ValidationHelper;
 import com.butent.bee.client.validation.ValidationOrigin;
-import com.butent.bee.client.view.View;
 import com.butent.bee.client.view.ViewHelper;
 import com.butent.bee.client.view.add.AddEndEvent;
 import com.butent.bee.client.view.add.AddStartEvent;
@@ -381,6 +380,8 @@ public class FormImpl extends Absolute implements FormView, PreviewHandler, Tabu
 
   private String options;
   private final Map<String, String> properties = new HashMap<>();
+  
+  private boolean hasReadyDelegates;
 
   public FormImpl(String formName) {
     super(Position.RELATIVE, Overflow.AUTO);
@@ -435,11 +436,7 @@ public class FormImpl extends Absolute implements FormView, PreviewHandler, Tabu
 
   @Override
   public HandlerRegistration addReadyHandler(ReadyEvent.Handler handler) {
-    Collection<View> views = ViewHelper.getImmediateChildViews(this);
-    if (!views.isEmpty()) {
-      ViewHelper.delegateReadyEvent(this, views);
-    }
-
+    setHasReadyDelegates(ReadyEvent.maybeDelegate(this));
     return addHandler(handler, ReadyEvent.getType());
   }
 
@@ -1653,9 +1650,8 @@ public class FormImpl extends Absolute implements FormView, PreviewHandler, Tabu
     if (getFormInterceptor() != null) {
       getFormInterceptor().onLoad(this);
     }
-
-    Collection<View> views = ViewHelper.getImmediateChildViews(this);
-    if (views.isEmpty()) {
+    
+    if (!hasReadyDelegates()) {
       ReadyEvent.fire(this);
     }
   }
@@ -1830,6 +1826,10 @@ public class FormImpl extends Absolute implements FormView, PreviewHandler, Tabu
 
   private boolean hasData() {
     return hasData;
+  }
+
+  private boolean hasReadyDelegates() {
+    return hasReadyDelegates;
   }
 
   private boolean isAdding() {
@@ -2065,6 +2065,10 @@ public class FormImpl extends Absolute implements FormView, PreviewHandler, Tabu
 
   private void setHasData(boolean hasData) {
     this.hasData = hasData;
+  }
+
+  private void setHasReadyDelegates(boolean hasReadyDelegates) {
+    this.hasReadyDelegates = hasReadyDelegates;
   }
 
   private void setOldRow(IsRow oldRow) {

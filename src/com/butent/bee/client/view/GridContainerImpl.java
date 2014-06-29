@@ -115,11 +115,7 @@ public class GridContainerImpl extends Split implements GridContainerView, HasNa
 
   @Override
   public HandlerRegistration addReadyHandler(ReadyEvent.Handler handler) {
-    GridView gridView = getGridView();
-    if (gridView != null) {
-      ViewHelper.delegateReadyEvent(this, gridView);
-    }
-    
+    ReadyEvent.maybeDelegate(this, getGridView());
     return addHandler(handler, ReadyEvent.getType());
   }
 

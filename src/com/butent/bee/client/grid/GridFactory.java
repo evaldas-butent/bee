@@ -410,10 +410,6 @@ public final class GridFactory {
     String supplierKey = getSupplierKey(gridName);
     Collection<UiOption> uiOptions = EnumSet.of(UiOption.ROOT);
 
-    if (!ViewFactory.hasSupplier(supplierKey)) {
-      registerGridSupplier(supplierKey, gridName, gridInterceptor, uiOptions, gridOptions);
-    }
-
     createGrid(gridName, supplierKey, gridInterceptor, uiOptions, gridOptions, presenterCallback);
   }
 

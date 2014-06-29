@@ -9,7 +9,6 @@ import com.butent.bee.client.layout.Complex;
 import com.butent.bee.client.presenter.Presenter;
 import com.butent.bee.client.view.HeaderView;
 import com.butent.bee.client.view.View;
-import com.butent.bee.client.view.ViewHelper;
 
 public class FormAndHeader extends Complex implements View {
 
@@ -23,12 +22,11 @@ public class FormAndHeader extends Complex implements View {
 
   @Override
   public HandlerRegistration addReadyHandler(ReadyEvent.Handler handler) {
-    FormView form = getForm();
-    if (form != null) {
-      ViewHelper.delegateReadyEvent(this, form);
+    if (ReadyEvent.maybeDelegate(this, getForm())) {
+      return addHandler(handler, ReadyEvent.getType());
+    } else {
+      return null;
     }
-
-    return addHandler(handler, ReadyEvent.getType());
   }
 
   public FormView getForm() {

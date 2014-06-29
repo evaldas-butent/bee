@@ -60,6 +60,8 @@ import com.butent.bee.shared.export.XRow;
 import com.butent.bee.shared.export.XSheet;
 import com.butent.bee.shared.export.XStyle;
 import com.butent.bee.shared.i18n.Localized;
+import com.butent.bee.shared.logging.BeeLogger;
+import com.butent.bee.shared.logging.LogUtils;
 import com.butent.bee.shared.modules.administration.AdministrationConstants;
 import com.butent.bee.shared.modules.classifiers.ClassifierConstants;
 import com.butent.bee.shared.modules.service.ServiceConstants.ServiceCompanyKind;
@@ -90,6 +92,8 @@ final class ServiceCalendar extends TimeBoard {
 
   static final String SUPPLIER_KEY = "service_calendar";
 
+  private static final BeeLogger logger = LogUtils.getLogger(ServiceCalendar.class);
+
   private static final String COL_COMPANY_KIND = "CalendarCompanyKind";
 
   private static final String COL_PIXELS_PER_COMPANY = "CalendarPixelsPerCompany";
@@ -102,6 +106,8 @@ final class ServiceCalendar extends TimeBoard {
 
   private static final String COL_HEADER_HEIGHT = "CalendarHeaderHeight";
   private static final String COL_FOOTER_HEIGHT = "CalendarFooterHeight";
+
+  private static final String COL_FOOTER_MAP = "CalendarFooterMap";
 
   private static final String COL_ITEM_OPACITY = "CalendarItemOpacity";
   private static final String COL_STRIP_OPACITY = "CalendarStripOpacity";
@@ -312,23 +318,19 @@ final class ServiceCalendar extends TimeBoard {
           @Override
           public void onSuccess(BeeRow result) {
             if (updateSetting(result)) {
-              int typesIndex = getSettings().getColumnIndex(COL_SERVICE_CALENDAR_TASK_TYPES);
-              int kindIndex = getSettings().getColumnIndex(COL_COMPANY_KIND);
-
-              if (Objects.equals(oldRow.getString(typesIndex), result.getString(typesIndex))
-                  && Objects.equals(oldRow.getInteger(kindIndex), result.getInteger(kindIndex))) {
-                render(false);
-              } else {
+              if (requiresRefresh(oldRow, result)) {
                 refresh();
+              } else {
+                render(false);
               }
             }
           }
         });
   }
-
+  
   @Override
   protected Collection<? extends HasDateRange> getChartItems() {
-    List<HasDateRange> items = Lists.newArrayList();
+    List<HasDateRange> items = new ArrayList<>();
 
     items.addAll(tasks.values());
     items.addAll(recurringTasks.values());
@@ -346,6 +348,15 @@ final class ServiceCalendar extends TimeBoard {
   @Override
   protected String getFooterHeightColumnName() {
     return COL_FOOTER_HEIGHT;
+  }
+
+  @Override
+  protected Collection<? extends HasDateRange> getFooterItems() {
+    if (TimeBoardHelper.getBoolean(getSettings(), COL_FOOTER_MAP)) {
+      return super.getFooterItems();
+    } else {
+      return Collections.emptySet();
+    }
   }
 
   @Override
@@ -558,9 +569,20 @@ final class ServiceCalendar extends TimeBoard {
     setSettings(rowSet);
 
     ServiceCompanyKind companyKind = getCompanyKind(rowSet);
+    
+    JustDate minDate = TimeBoardHelper.getDate(rowSet, COL_SERVICE_CALENDAR_MIN_DATE);
+    JustDate maxDate = TimeBoardHelper.getDate(rowSet, COL_SERVICE_CALENDAR_MAX_DATE);
+    
+    if (minDate != null && maxDate != null && BeeUtils.isLess(maxDate, minDate)) {
+      maxDate = JustDate.copyOf(minDate);
+    }
 
-    initData(companyKind, rowSet.getTableProperties());
+    initData(companyKind, minDate, maxDate, rowSet.getTableProperties());
+
     updateMaxRange();
+    if (minDate != null || maxDate != null) {
+      clampMaxRange(minDate, maxDate);
+    }
 
     return true;
   }
@@ -797,7 +819,7 @@ final class ServiceCalendar extends TimeBoard {
   }
 
   private List<TimeBoardRowLayout> doLayout() {
-    List<TimeBoardRowLayout> result = Lists.newArrayList();
+    List<TimeBoardRowLayout> result = new ArrayList<>();
     Range<JustDate> range = getVisibleRange();
 
     List<HasDateRange> items;
@@ -1055,7 +1077,9 @@ final class ServiceCalendar extends TimeBoard {
     return color;
   }
 
-  private void initData(ServiceCompanyKind companyKind, Map<String, String> properties) {
+  private void initData(ServiceCompanyKind companyKind, JustDate minDate, JustDate maxDate,
+      Map<String, String> properties) {
+    
     companies.clear();
     objects.clear();
 
@@ -1129,6 +1153,8 @@ final class ServiceCalendar extends TimeBoard {
     }
 
     if (!DataUtils.isEmpty(rtData) && !DataUtils.isEmpty(relationData)) {
+      long startMillis = System.currentTimeMillis();
+
       BeeRowSet rtDates = BeeRowSet.getIfPresent(properties, VIEW_RT_DATES);
       Multimap<Long, ScheduleDateRange> sdRanges = TaskUtils.getScheduleDateRangesByTask(rtDates);
 
@@ -1139,7 +1165,8 @@ final class ServiceCalendar extends TimeBoard {
           Collection<ScheduleDateRange> sdrs =
               sdRanges.containsKey(rtId) ? sdRanges.get(rtId) : null;
 
-          List<RecurringTaskWrapper> rts = RecurringTaskWrapper.spawn(rtRow, sdrs);
+          List<RecurringTaskWrapper> rts = RecurringTaskWrapper.spawn(rtRow, sdrs,
+              minDate, maxDate);
 
           if (!rts.isEmpty()) {
             for (SimpleRow relationRow : relationData) {
@@ -1153,6 +1180,11 @@ final class ServiceCalendar extends TimeBoard {
             }
           }
         }
+      }
+
+      if (!recurringTasks.isEmpty()) {
+        logger.debug("spawned", recurringTasks.size(), "recurring tasks in",
+            System.currentTimeMillis() - startMillis);
       }
     }
   }
@@ -1253,6 +1285,19 @@ final class ServiceCalendar extends TimeBoard {
         lastObject = currentObject;
       }
     }
+  }
+
+  private boolean requiresRefresh(BeeRow oldSettings, BeeRow newSettings) {
+    Set<String> colNames = Sets.newHashSet(COL_SERVICE_CALENDAR_TASK_TYPES, COL_COMPANY_KIND,
+        COL_SERVICE_CALENDAR_MIN_DATE, COL_SERVICE_CALENDAR_MAX_DATE);
+    
+    for (String colName : colNames) {
+      int index = getSettings().getColumnIndex(colName);
+      if (!Objects.equals(oldSettings.getString(index), newSettings.getString(index))) {
+        return true;
+      }
+    }
+    return false;
   }
 
   private boolean separateObjects() {

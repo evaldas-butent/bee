@@ -6,6 +6,8 @@ import com.google.web.bindery.event.shared.HandlerRegistration;
 
 import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.event.logical.ParentRowEvent;
+import com.butent.bee.client.event.logical.ReadyEvent;
+import com.butent.bee.client.event.logical.ReadyEvent.HasReadyHandlers;
 import com.butent.bee.client.layout.Simple;
 import com.butent.bee.client.presenter.Presenter;
 import com.butent.bee.client.presenter.PresenterCallback;
@@ -20,7 +22,7 @@ import com.butent.bee.shared.utils.BeeUtils;
 import java.util.EnumSet;
 
 public class GridPanel extends Simple implements HasEnabled, HasFosterParent,
-    ParentRowEvent.Handler, HasGridView {
+    ParentRowEvent.Handler, HasGridView, ReadyEvent.HasReadyHandlers {
 
   private final String gridName;
   private GridFactory.GridOptions gridOptions;
@@ -48,6 +50,13 @@ public class GridPanel extends Simple implements HasEnabled, HasFosterParent,
     return gridOptions;
   }
 
+  @Override
+  public com.google.gwt.event.shared.HandlerRegistration addReadyHandler(
+      ReadyEvent.Handler handler) {
+
+    return addHandler(handler, ReadyEvent.getType());
+  }
+  
   @Override
   public GridView getGridView() {
     if (getPresenter() instanceof HasGridView) {
@@ -113,7 +122,12 @@ public class GridPanel extends Simple implements HasEnabled, HasFosterParent,
   public void setWidget(Widget w) {
     if (w != null) {
       StyleUtils.makeAbsolute(w);
+      
+      if (w instanceof HasReadyHandlers) {
+        ReadyEvent.maybeDelegate(this, (HasReadyHandlers) w);
+      }
     }
+    
     super.setWidget(w);
   }
 

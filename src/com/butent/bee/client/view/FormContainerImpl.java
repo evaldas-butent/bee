@@ -75,12 +75,11 @@ public class FormContainerImpl extends Split implements FormContainerView, HasNa
 
   @Override
   public HandlerRegistration addReadyHandler(ReadyEvent.Handler handler) {
-    FormView form = getForm();
-    if (form != null) {
-      ViewHelper.delegateReadyEvent(this, form);
+    if (ReadyEvent.maybeDelegate(this, getForm())) {
+      return addHandler(handler, ReadyEvent.getType());
+    } else {
+      return null;
     }
-    
-    return addHandler(handler, ReadyEvent.getType());
   }
 
   @Override
