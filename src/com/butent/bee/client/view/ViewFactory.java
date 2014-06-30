@@ -4,6 +4,7 @@ import com.google.common.collect.Maps;
 
 import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.Callback;
+import com.butent.bee.client.Search;
 import com.butent.bee.client.composite.ResourceEditor;
 import com.butent.bee.client.data.RowEditor;
 import com.butent.bee.client.grid.GridFactory;
@@ -74,6 +75,19 @@ public final class ViewFactory {
       @Override
       void create(String item, ViewCallback callback) {
       }
+    },
+
+    MAP("map_") {
+      @Override
+      void create(String item, ViewCallback callback) {
+      }
+    },
+
+    SEARCH("search_") {
+      @Override
+      void create(String item, ViewCallback callback) {
+        Search.doQuery(item, callback);
+      }
     };
 
     private static Pair<SupplierKind, String> parse(String key) {
@@ -139,6 +153,15 @@ public final class ViewFactory {
     return new TreeSet<String>(suppliers.keySet());
   }
 
+  public static PresenterCallback getPresenterCallback(final ViewCallback callback) {
+    return new PresenterCallback() {
+      @Override
+      public void onCreate(Presenter presenter) {
+        callback.onSuccess(presenter.getMainView());
+      }
+    };
+  }
+
   public static ViewSupplier getSupplier(String key) {
     if (BeeUtils.isEmpty(key)) {
       return null;
@@ -153,15 +176,6 @@ public final class ViewFactory {
     } else {
       return suppliers.containsKey(BeeUtils.trim(key));
     }
-  }
-
-  public static PresenterCallback getPresenterCallback(final ViewCallback callback) {
-    return new PresenterCallback() {
-      @Override
-      public void onCreate(Presenter presenter) {
-        callback.onSuccess(presenter.getMainView());
-      }
-    };
   }
   
   public static void registerSupplier(String key, ViewSupplier supplier) {
