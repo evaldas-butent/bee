@@ -1,7 +1,5 @@
 package com.butent.bee.client.view;
 
-import com.google.common.collect.Lists;
-import com.google.common.collect.Maps;
 import com.google.gwt.core.client.Scheduler;
 import com.google.gwt.event.logical.shared.SelectionEvent;
 import com.google.gwt.event.logical.shared.SelectionHandler;
@@ -17,6 +15,7 @@ import com.butent.bee.client.event.logical.CatchEvent.CatchHandler;
 import com.butent.bee.client.layout.Flow;
 import com.butent.bee.client.presenter.Presenter;
 import com.butent.bee.client.presenter.TreePresenter;
+import com.butent.bee.client.style.StyleUtils;
 import com.butent.bee.client.tree.HasTreeItems;
 import com.butent.bee.client.tree.Tree;
 import com.butent.bee.client.tree.TreeItem;
@@ -33,6 +32,7 @@ import com.butent.bee.shared.utils.NameUtils;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -55,24 +55,19 @@ public class TreeContainer extends Flow implements TreeView, SelectionHandler<Tr
     }
   }
 
-  private static final String STYLE_NAME = "bee-TreeView";
+  private static final String STYLE_NAME = StyleUtils.CLASS_NAME_PREFIX + "TreeView";
 
   private Presenter viewPresenter;
   private boolean enabled = true;
-  private final List<String> favorite = Lists.newArrayList();
+  private final List<String> favorite = new ArrayList<>();
   private final Tree tree;
-  private final Map<Long, TreeItem> items = Maps.newHashMap();
+  private final Map<Long, TreeItem> items = new HashMap<>();
 
   private final String caption;
   private final boolean hasDnD;
 
-  public TreeContainer(String caption, boolean hideActions, String viewName) {
-    this(caption, hideActions, viewName, BeeConst.STRING_EMPTY);
-  }
-
   public TreeContainer(String caption, boolean hideActions, String viewName, String favorite) {
-    super();
-    addStyleName(STYLE_NAME);
+    super(STYLE_NAME);
 
     this.caption = caption;
 
@@ -187,7 +182,7 @@ public class TreeContainer extends Flow implements TreeView, SelectionHandler<Tr
     Assert.contains(items, item.getId());
 
     TreeItem treeItem = items.get(item.getId());
-    Collection<IsRow> childs = Lists.newArrayList();
+    Collection<IsRow> childs = new ArrayList<>();
 
     if (treeItem.getChildCount() > 0) {
       for (int i = 0; i < treeItem.getChildCount(); i++) {

@@ -1,6 +1,5 @@
 package com.butent.bee.client.view;
 
-import com.google.common.collect.Maps;
 import com.google.gwt.dom.client.Element;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
@@ -34,6 +33,7 @@ import com.butent.bee.shared.ui.Captions;
 import com.butent.bee.shared.utils.BeeUtils;
 
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 
@@ -111,7 +111,7 @@ public class HeaderImpl extends Flow implements HeaderView {
 
   private boolean enabled = true;
 
-  private final Map<Action, String> actionControls = Maps.newHashMap();
+  private final Map<Action, String> actionControls = new HashMap<>();
 
   private final Horizontal commandPanel = new Horizontal();
 
@@ -383,7 +383,6 @@ public class HeaderImpl extends Flow implements HeaderView {
   @Override
   protected void onLoad() {
     super.onLoad();
-    
     ReadyEvent.fire(this);
   }
   

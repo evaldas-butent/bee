@@ -299,6 +299,8 @@ public class GridImpl extends Absolute implements GridView, EditEndEvent.Handler
 
   private final List<com.google.web.bindery.event.shared.HandlerRegistration> registry =
       new ArrayList<>();
+      
+  private State state;
 
   public GridImpl(GridDescription gridDescription, String gridKey,
       List<BeeColumn> dataColumns, String relColumn, GridInterceptor gridInterceptor) {
@@ -1392,7 +1394,8 @@ public class GridImpl extends Absolute implements GridView, EditEndEvent.Handler
         DynamicColumnFactory.checkRightsColumns(getViewPresenter(), this, event);
       }
 
-    } else if (event.isAfter()) {
+    } else if (event.isAfter() && getState() == null) {
+      setState(State.INITIALIZED);
       ReadyEvent.fire(this);
     }
   }
@@ -2038,6 +2041,10 @@ public class GridImpl extends Absolute implements GridView, EditEndEvent.Handler
     return saveChangesCallback;
   }
 
+  private State getState() {
+    return state;
+  }
+
   private boolean hasEditMode() {
     return editMode;
   }
@@ -2670,6 +2677,10 @@ public class GridImpl extends Absolute implements GridView, EditEndEvent.Handler
     this.singleForm = singleForm;
   }
 
+  private void setState(State state) {
+    this.state = state;
+  }
+
   private boolean showEditPopup() {
     return showEditPopup;
   }
@@ -2682,9 +2693,9 @@ public class GridImpl extends Absolute implements GridView, EditEndEvent.Handler
 
     FormView form = getForm(edit);
 
-    State state = show ? State.OPEN : State.CLOSED;
+    State formState = show ? State.OPEN : State.CLOSED;
     if (form.getFormInterceptor() != null) {
-      form.getFormInterceptor().beforeStateChange(state, modal);
+      form.getFormInterceptor().beforeStateChange(formState, modal);
     }
 
     if (show) {
@@ -2742,9 +2753,9 @@ public class GridImpl extends Absolute implements GridView, EditEndEvent.Handler
       setActiveFormContainerId(null);
     }
 
-    form.setState(state);
+    form.setState(formState);
     if (form.getFormInterceptor() != null) {
-      form.getFormInterceptor().afterStateChange(state, modal);
+      form.getFormInterceptor().afterStateChange(formState, modal);
     }
   }
 

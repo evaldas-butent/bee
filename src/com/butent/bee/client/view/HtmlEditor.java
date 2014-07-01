@@ -20,6 +20,7 @@ import com.butent.bee.client.output.Printer;
 import com.butent.bee.client.presenter.Presenter;
 import com.butent.bee.client.richtext.RichTextEditor;
 import com.butent.bee.client.style.StyleUtils;
+import com.butent.bee.client.ui.HasWidgetSupplier;
 import com.butent.bee.client.ui.UiOption;
 import com.butent.bee.client.widget.Button;
 import com.butent.bee.client.widget.CustomDiv;
@@ -36,11 +37,11 @@ import com.butent.bee.shared.utils.BeeUtils;
 
 import java.util.EnumSet;
 
-public class HtmlEditor extends Flow implements Presenter, View, Printable {
+public class HtmlEditor extends Flow implements Presenter, View, Printable, HasWidgetSupplier {
 
   private static final BeeLogger logger = LogUtils.getLogger(HtmlEditor.class);
 
-  private static final String STYLE_PREFIX = "bee-HtmlEditor-";
+  private static final String STYLE_PREFIX = StyleUtils.CLASS_NAME_PREFIX + "HtmlEditor-";
 
   private static final String STYLE_VIEW = STYLE_PREFIX + "view";
   private static final String STYLE_CANVAS = STYLE_PREFIX + "canvas";
@@ -52,7 +53,8 @@ public class HtmlEditor extends Flow implements Presenter, View, Printable {
   private static final String STYLE_SUFFIX_URL = "-url";
   private static final String STYLE_SUFFIX_HTML = "-html";
   private static final String STYLE_SUFFIX_TEXT = "-text";
-
+  
+  private final String supplierKey;
   private final String caption;
 
   private final String oldUrl;
@@ -74,10 +76,12 @@ public class HtmlEditor extends Flow implements Presenter, View, Printable {
 
   private boolean enabled = true;
 
-  public HtmlEditor(String caption, String url, String html, BiConsumer<String, String> onSave) {
-    super();
-    addStyleName(STYLE_VIEW);
+  public HtmlEditor(String supplierKey, String caption, String url, String html,
+      BiConsumer<String, String> onSave) {
 
+    super(STYLE_VIEW);
+
+    this.supplierKey = supplierKey;
     this.caption = caption;
 
     this.oldUrl = url;
@@ -145,6 +149,11 @@ public class HtmlEditor extends Flow implements Presenter, View, Printable {
   @Override
   public Element getPrintElement() {
     return getElement();
+  }
+
+  @Override
+  public String getSupplierKey() {
+    return supplierKey;
   }
 
   @Override

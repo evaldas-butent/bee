@@ -8,6 +8,7 @@ import com.butent.bee.client.event.logical.ReadyEvent;
 import com.butent.bee.client.event.logical.SelectionCountChangeEvent;
 import com.butent.bee.client.layout.Flow;
 import com.butent.bee.client.presenter.Presenter;
+import com.butent.bee.client.style.StyleUtils;
 import com.butent.bee.client.view.navigation.PagerView;
 import com.butent.bee.client.view.navigation.SimplePager;
 import com.butent.bee.client.view.search.SearchBox;
@@ -25,11 +26,12 @@ import java.util.Collection;
 
 public class FooterImpl extends Flow implements FooterView, HasNavigation, HasSearch {
 
-  private static final String STYLE_CONTAINER = "bee-FooterContainer";
-  
-  private static final String STYLE_PAGER = "bee-SimplePager";
-  private static final String STYLE_SEARCH = "bee-FooterSearch";
-  private static final String STYLE_SELECTION_COUNTER = "bee-SelectionCounter";
+  private static final String STYLE_CONTAINER = StyleUtils.CLASS_NAME_PREFIX + "FooterContainer";
+
+  private static final String STYLE_PAGER = StyleUtils.CLASS_NAME_PREFIX + "SimplePager";
+  private static final String STYLE_SEARCH = StyleUtils.CLASS_NAME_PREFIX + "FooterSearch";
+  private static final String STYLE_SELECTION_COUNTER = StyleUtils.CLASS_NAME_PREFIX
+      + "SelectionCounter";
 
   private static final int HEIGHT = 26;
 
@@ -42,15 +44,14 @@ public class FooterImpl extends Flow implements FooterView, HasNavigation, HasSe
   private boolean enabled = true;
 
   public FooterImpl() {
-    super();
-    addStyleName(STYLE_CONTAINER);
+    super(STYLE_CONTAINER);
   }
 
   @Override
   public HandlerRegistration addReadyHandler(ReadyEvent.Handler handler) {
     return addHandler(handler, ReadyEvent.getType());
   }
-  
+
   @Override
   public void create(int maxRowCount, boolean addPaging, boolean showPageSize, boolean addSearch) {
     if (addPaging) {
@@ -122,7 +123,7 @@ public class FooterImpl extends Flow implements FooterView, HasNavigation, HasSe
         }
       }
     }
-    
+
     if (!BeeUtils.isEmpty(getSearchId()) && getSearchId().equals(source.getId())) {
       return !BeeUtils.isEmpty(DomUtils.getValue(source));
     }
@@ -156,10 +157,9 @@ public class FooterImpl extends Flow implements FooterView, HasNavigation, HasSe
   @Override
   protected void onLoad() {
     super.onLoad();
-    
     ReadyEvent.fire(this);
   }
-  
+
   private String getPagerId() {
     return pagerId;
   }

@@ -1385,10 +1385,14 @@
   color: black;
 }
 
-.bee-workspace-expander {
+.bee-Workspace-expander {
   margin-left: auto;
+  visibility: hidden;
 }
-.bee-workspace-expander > div {
+.bee-Workspace-tabPanel:hover .bee-Workspace-expander {
+  visibility: visible;
+}
+.bee-Workspace-expander > div {
   display: inline-block;
   margin-top: 1px;
   margin-right: 6px;
@@ -1396,7 +1400,7 @@
   color: #999;
   cursor: pointer;
 }
-.bee-workspace-expander > div:hover {
+.bee-Workspace-expander > div:hover {
   background-color: white;
   color: black;
 }

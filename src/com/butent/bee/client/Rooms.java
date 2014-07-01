@@ -10,6 +10,8 @@ import static com.butent.bee.shared.modules.classifiers.ClassifierConstants.*;
 
 import com.butent.bee.client.communication.Chat;
 import com.butent.bee.client.communication.ChatUtils;
+import com.butent.bee.client.communication.ParameterList;
+import com.butent.bee.client.communication.ResponseCallback;
 import com.butent.bee.client.composite.MultiSelector;
 import com.butent.bee.client.composite.RadioGroup;
 import com.butent.bee.client.dialog.ConfirmationCallback;
@@ -20,6 +22,7 @@ import com.butent.bee.client.layout.Flow;
 import com.butent.bee.client.screen.Domain;
 import com.butent.bee.client.style.StyleUtils;
 import com.butent.bee.client.ui.IdentifiableWidget;
+import com.butent.bee.client.view.ViewCallback;
 import com.butent.bee.client.websocket.Endpoint;
 import com.butent.bee.client.widget.Badge;
 import com.butent.bee.client.widget.Button;
@@ -31,7 +34,9 @@ import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.Consumer;
 import com.butent.bee.shared.HasInfo;
+import com.butent.bee.shared.Service;
 import com.butent.bee.shared.communication.ChatRoom;
+import com.butent.bee.shared.communication.ResponseObject;
 import com.butent.bee.shared.communication.ChatRoom.Type;
 import com.butent.bee.shared.communication.TextMessage;
 import com.butent.bee.shared.data.DataUtils;
@@ -300,9 +305,9 @@ public class Rooms implements HasInfo {
 
   private static final BeeLogger logger = LogUtils.getLogger(Rooms.class);
 
-  private static final String STYLE_ROOMS_PREFIX = "bee-Rooms-";
+  private static final String STYLE_ROOMS_PREFIX = StyleUtils.CLASS_NAME_PREFIX + "Rooms-";
 
-  private static final String STYLE_ROOM_PREFIX = "bee-Room-";
+  private static final String STYLE_ROOM_PREFIX = StyleUtils.CLASS_NAME_PREFIX + "Room-";
   private static final String STYLE_GUEST = STYLE_ROOM_PREFIX + "guest";
   private static final String STYLE_USER = STYLE_ROOM_PREFIX + "user";
   private static final String STYLE_ROOM_UPDATED = STYLE_ROOM_PREFIX + "updated";
@@ -507,6 +512,25 @@ public class Rooms implements HasInfo {
         }
       }
     }
+  }
+  
+  public void open(long roomId, final ViewCallback callback) {
+    Assert.notNull(callback);
+
+    ParameterList params = BeeKeeper.getRpc().createParameters(Service.GET_ROOM);
+    params.addQueryItem(Service.VAR_ID, roomId);
+    
+    BeeKeeper.getRpc().makeRequest(params, new ResponseCallback() {
+      @Override
+      public void onResponse(ResponseObject response) {
+        if (response.hasResponse(ChatRoom.class)) {
+          ChatRoom room = ChatRoom.restore(response.getResponseAsString());
+          Chat chat = new Chat(room);
+          
+          callback.onSuccess(chat);
+        }
+      }
+    });
   }
 
   public void setRoomData(List<ChatRoom> data) {

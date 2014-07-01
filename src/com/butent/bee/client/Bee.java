@@ -23,6 +23,7 @@ import com.butent.bee.client.utils.LayoutEngine;
 import com.butent.bee.client.view.grid.GridSettings;
 import com.butent.bee.client.websocket.Endpoint;
 import com.butent.bee.shared.BeeConst;
+import com.butent.bee.shared.Consumer;
 import com.butent.bee.shared.Pair;
 import com.butent.bee.shared.Service;
 import com.butent.bee.shared.communication.ResponseObject;
@@ -187,17 +188,20 @@ public class Bee implements EntryPoint {
   }
 
   private static void start() {
+    BeeKeeper.getBus().registerExitHandler("Don't leave me this way");
+
     BeeKeeper.getScreen().onLoad();
 
     ModuleManager.onLoad();
 
     Historian.start();
 
-    Endpoint.open(BeeKeeper.getUser().getUserId());
-
-    BeeKeeper.getBus().registerExitHandler("Don't leave me this way");
-
-    initWorkspace();
+    Endpoint.open(BeeKeeper.getUser().getUserId(), new Consumer<Boolean>() {
+      @Override
+      public void accept(Boolean input) {
+        initWorkspace();
+      }
+    });
   }
 
   @Override

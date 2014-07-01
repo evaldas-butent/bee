@@ -40,6 +40,7 @@ public final class Service {
   public static final String LOGOUT = RPC_SERVICE_PREFIX + "logout";
 
   public static final String GET_MENU = RPC_SERVICE_PREFIX + "get_menu";
+  public static final String GET_ROOM = RPC_SERVICE_PREFIX + "get_room";
 
   public static final String WHERE_AM_I = RPC_SERVICE_PREFIX + "where_am_i";
 

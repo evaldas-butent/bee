@@ -67,7 +67,7 @@ public class SimplePager extends AbstractPager {
     FIRST, REWIND, PREV, NEXT, FORWARD, LAST
   }
 
-  private static final String STYLE_PREFIX = "bee-SimplePager-";
+  private static final String STYLE_PREFIX = StyleUtils.CLASS_NAME_PREFIX + "SimplePager-";
   private static final String STYLE_CONTAINER = STYLE_PREFIX + "container";
   private static final String STYLE_DISABLED_BUTTON = STYLE_PREFIX + "disabledButton";
   private static final String STYLE_INFO = STYLE_PREFIX + "info";
@@ -217,6 +217,12 @@ public class SimplePager extends AbstractPager {
     return NavigationOrigin.PAGER;
   }
 
+  @Override
+  protected void onLoad() {
+    super.onLoad();
+    ReadyEvent.fire(this);
+  }
+  
   private String createText(int start, int end, int rowCount) {
     StringBuilder sb = new StringBuilder(format(start));
     if (showPageSize) {

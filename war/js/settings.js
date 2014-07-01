@@ -12,5 +12,5 @@ var BeeSettings = {
   actionSensitivityMillis: 300,
   minimizeNumberOfConcurrentRequests: true,
   showUserPhoto: true,
-  onStartup: "AnnouncementsBoard"
+  onStartup: "-AnnouncementsBoard"
 };

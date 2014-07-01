@@ -181,14 +181,21 @@ public final class Endpoint {
     return socket != null && socket.getReadyState() == ReadyState.OPEN.value;
   }
 
-  public static void open(Long userId) {
-    if (isEnabled() && (socket == null || isClosed()) && userId != null) {
+  public static void open(Long userId, final Consumer<Boolean> callback) {
+    if (!isEnabled() || userId == null) {
+      if (callback != null) {
+        callback.accept(false);
+      }
 
+    } else if (socket == null || isClosed()) {
       try {
         socket = Browser.getWindow().newWebSocket(url(userId));
       } catch (JavaScriptException ex) {
         socket = null;
         logger.severe(ex, "cannot open websocket");
+        if (callback != null) {
+          callback.accept(false);
+        }
       }
 
       if (socket != null) {
@@ -196,6 +203,9 @@ public final class Endpoint {
           @Override
           public void handleEvent(Event evt) {
             onOpen();
+            if (callback != null) {
+              callback.accept(isOpen());
+            }
           }
         });
 
@@ -220,6 +230,9 @@ public final class Endpoint {
           }
         });
       }
+
+    } else if (callback != null) {
+      callback.accept(isOpen());
     }
   }
 

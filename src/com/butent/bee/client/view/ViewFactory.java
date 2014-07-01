@@ -4,10 +4,12 @@ import com.google.common.collect.Maps;
 
 import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.Callback;
+import com.butent.bee.client.Global;
 import com.butent.bee.client.Search;
 import com.butent.bee.client.composite.ResourceEditor;
 import com.butent.bee.client.data.RowEditor;
 import com.butent.bee.client.grid.GridFactory;
+import com.butent.bee.client.maps.MapUtils;
 import com.butent.bee.client.modules.calendar.CalendarKeeper;
 import com.butent.bee.client.presenter.Presenter;
 import com.butent.bee.client.presenter.PresenterCallback;
@@ -63,23 +65,28 @@ public final class ViewFactory {
         }
       }
     },
-    
+
     RESOURCE("resource_") {
       @Override
       void create(String item, final ViewCallback callback) {
         ResourceEditor.open(item, callback);
       }
     },
-    
+
     CHAT("chat_") {
       @Override
       void create(String item, ViewCallback callback) {
+        Long id = BeeUtils.toLongOrNull(item);
+        if (id != null) {
+          Global.getRooms().open(id, callback);
+        }
       }
     },
 
     MAP("map_") {
       @Override
       void create(String item, ViewCallback callback) {
+        MapUtils.open(item, callback);
       }
     },
 
@@ -106,7 +113,11 @@ public final class ViewFactory {
     }
 
     public String getKey(String item) {
-      return prefix + BeeUtils.trim(item);
+      if (BeeUtils.isEmpty(item)) {
+        return null;
+      } else {
+        return prefix + BeeUtils.trim(item);
+      }
     }
 
     abstract void create(String item, ViewCallback callback);
@@ -137,7 +148,7 @@ public final class ViewFactory {
       }
     }
   }
-  
+
   public static void createAndShow(String key) {
     Assert.notEmpty(key);
 
@@ -177,7 +188,7 @@ public final class ViewFactory {
       return suppliers.containsKey(BeeUtils.trim(key));
     }
   }
-  
+
   public static void registerSupplier(String key, ViewSupplier supplier) {
     if (!BeeUtils.isEmpty(key) && supplier != null && !hasSupplier(key)) {
       suppliers.put(BeeUtils.trim(key), supplier);

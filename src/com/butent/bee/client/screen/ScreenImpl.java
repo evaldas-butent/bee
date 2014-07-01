@@ -477,7 +477,7 @@ public class ScreenImpl implements Screen {
 
   protected void createExpanders() {
     CustomComplex container = new CustomComplex(DomUtils.createElement(Tags.NAV),
-        StyleUtils.CLASS_NAME_PREFIX + "workspace-expander");
+        StyleUtils.CLASS_NAME_PREFIX + "Workspace-expander");
 
     Toggle toggle = new Toggle(FontAwesome.LONG_ARROW_LEFT, FontAwesome.LONG_ARROW_RIGHT,
         StyleUtils.CLASS_NAME_PREFIX + "west-toggle", false);

@@ -105,6 +105,12 @@ public class ScrollPager extends AbstractPager implements RequiresResize {
   protected NavigationOrigin getNavigationOrigin() {
     return NavigationOrigin.SCROLLER;
   }
+  
+  @Override
+  protected void onLoad() {
+    super.onLoad();
+    ReadyEvent.fire(this);
+  }
 
   private static long calculateHeight(int pageSize, int rowCount, int widgetHeight) {
     if (pageSize <= 0 || rowCount < pageSize || widgetHeight <= 0) {

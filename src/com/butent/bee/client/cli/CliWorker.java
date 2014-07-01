@@ -94,8 +94,6 @@ import com.butent.bee.client.maps.MapContainer;
 import com.butent.bee.client.maps.MapOptions;
 import com.butent.bee.client.maps.MapUtils;
 import com.butent.bee.client.maps.MapWidget;
-import com.butent.bee.client.maps.Marker;
-import com.butent.bee.client.maps.MarkerOptions;
 import com.butent.bee.client.modules.administration.AdministrationKeeper;
 import com.butent.bee.client.modules.ec.EcKeeper;
 import com.butent.bee.client.modules.tasks.TasksKeeper;
@@ -1451,7 +1449,12 @@ public final class CliWorker {
         inform("endpoint already open");
       } else {
         logger.debug("opening endpoint");
-        Endpoint.open(BeeKeeper.getUser().getUserId());
+        Endpoint.open(BeeKeeper.getUser().getUserId(), new Consumer<Boolean>() {
+          @Override
+          public void accept(Boolean input) {
+            logger.debug("endpoint open", input);
+          }
+        });
       }
 
     } else if (BeeUtils.same(args, "close")) {
@@ -3077,12 +3080,7 @@ public final class CliWorker {
                     Double lng = BeeUtils.toDoubleOrNull(arr[i + 2]);
 
                     if (lat != null && lng != null) {
-                      LatLng position = LatLng.create(lat, lng);
-                      MarkerOptions markerOptions = MarkerOptions.create(position,
-                          widget.getMapImpl());
-                      markerOptions.setTitle(BeeUtils.joinWords(arr[i], position.getString()));
-
-                      Marker.create(markerOptions);
+                      widget.addMarker(lat, lng, BeeUtils.joinWords(lat, lng, arr[i]));
                     }
                   }
                 }
