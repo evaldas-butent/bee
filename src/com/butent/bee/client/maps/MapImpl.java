@@ -74,6 +74,14 @@ public class MapImpl extends JavaScriptObject {
     setMapTypeIdImpl(mapTypeId.name());
   }
 
+  public final native void setOnLoad(Runnable callback) /*-{
+    var fnc = $entry(function() {
+      callback.@java.lang.Runnable::run()();
+    });
+
+    $wnd.google.maps.event.addListenerOnce(this, 'idle', fnc);
+  }-*/;
+
   public final native void setOptions(MapOptions options) /*-{
     this.setOptions(options);
   }-*/;

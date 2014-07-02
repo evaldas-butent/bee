@@ -10,8 +10,6 @@ import static com.butent.bee.shared.modules.classifiers.ClassifierConstants.*;
 
 import com.butent.bee.client.communication.Chat;
 import com.butent.bee.client.communication.ChatUtils;
-import com.butent.bee.client.communication.ParameterList;
-import com.butent.bee.client.communication.ResponseCallback;
 import com.butent.bee.client.composite.MultiSelector;
 import com.butent.bee.client.composite.RadioGroup;
 import com.butent.bee.client.dialog.ConfirmationCallback;
@@ -34,9 +32,7 @@ import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.Consumer;
 import com.butent.bee.shared.HasInfo;
-import com.butent.bee.shared.Service;
 import com.butent.bee.shared.communication.ChatRoom;
-import com.butent.bee.shared.communication.ResponseObject;
 import com.butent.bee.shared.communication.ChatRoom.Type;
 import com.butent.bee.shared.communication.TextMessage;
 import com.butent.bee.shared.data.DataUtils;
@@ -56,7 +52,9 @@ import com.butent.bee.shared.websocket.messages.RoomUserMessage;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 
 public class Rooms implements HasInfo {
@@ -353,6 +351,8 @@ public class Rooms implements HasInfo {
 
   private Badge sizeBadge;
 
+  private Map<Long, ViewCallback> viewCallbacks = new HashMap<>();
+
   Rooms() {
     this.timer = new Timer() {
       @Override
@@ -445,7 +445,13 @@ public class Rooms implements HasInfo {
 
     if (roomStateMessage.isLoading()) {
       chat = new Chat(room);
-      BeeKeeper.getScreen().show(chat);
+
+      ViewCallback callback = viewCallbacks.remove(room.getId());
+      if (callback == null) {
+        BeeKeeper.getScreen().show(chat);
+      } else {
+        callback.onSuccess(chat);
+      }
 
       updateRoom(room);
 
@@ -513,24 +519,15 @@ public class Rooms implements HasInfo {
       }
     }
   }
-  
-  public void open(long roomId, final ViewCallback callback) {
+
+  public void open(long roomId, ViewCallback callback) {
     Assert.notNull(callback);
 
-    ParameterList params = BeeKeeper.getRpc().createParameters(Service.GET_ROOM);
-    params.addQueryItem(Service.VAR_ID, roomId);
-    
-    BeeKeeper.getRpc().makeRequest(params, new ResponseCallback() {
-      @Override
-      public void onResponse(ResponseObject response) {
-        if (response.hasResponse(ChatRoom.class)) {
-          ChatRoom room = ChatRoom.restore(response.getResponseAsString());
-          Chat chat = new Chat(room);
-          
-          callback.onSuccess(chat);
-        }
-      }
-    });
+    ChatRoom room = findRoom(roomId);
+    if (room != null) {
+      viewCallbacks.put(roomId, callback);
+      Endpoint.send(RoomUserMessage.enter(roomId, BeeKeeper.getUser().getUserId()));
+    }
   }
 
   public void setRoomData(List<ChatRoom> data) {
@@ -719,8 +716,9 @@ public class Rooms implements HasInfo {
     Label dwellersLabel = new Label(Localized.getConstants().roomDwellers());
     table.setWidgetAndStyle(row, 0, dwellersLabel, stylePrefix + "dwellersLabel");
 
-    final MultiSelector dwellersWidget = MultiSelector.autonomous(AdministrationConstants.TBL_USERS,
-        Lists.newArrayList(COL_FIRST_NAME, COL_LAST_NAME));
+    final MultiSelector dwellersWidget =
+        MultiSelector.autonomous(AdministrationConstants.TBL_USERS,
+            Lists.newArrayList(COL_FIRST_NAME, COL_LAST_NAME));
     if (!BeeUtils.isEmpty(roomSettings.getDwellers())) {
       dwellersWidget.setIds(roomSettings.getDwellers());
     }

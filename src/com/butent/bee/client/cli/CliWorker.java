@@ -225,7 +225,7 @@ public final class CliWorker {
 
     if ("?".equals(z)) {
       whereAmI();
-      
+
     } else if (BeeUtils.isDigit(v.charAt(0)) || v.charAt(0) == '(' || v.charAt(0) == '-') {
       doEval(v);
 
@@ -377,7 +377,7 @@ public final class CliWorker {
     } else if ("gwt".equals(z)) {
       showGwt();
 
-    } else if (BeeUtils.inList(z, "h5", "html5") || z.startsWith("supp") || z.startsWith("feat")) {
+    } else if (BeeUtils.inList(z, "h5", "html5") || z.startsWith("feat")) {
       showSupport(args, errorPopup);
 
     } else if (z.startsWith("hist")) {
@@ -503,6 +503,9 @@ public final class CliWorker {
     } else if ("style".equals(z)) {
       style(v, arr, errorPopup);
 
+    } else if (z.startsWith("suppl")) {
+      showViewSuppliers();
+
     } else if ("svg".equals(z)) {
       showSvg(arr);
 
@@ -532,9 +535,6 @@ public final class CliWorker {
 
     } else if ("vm".equals(z)) {
       BeeKeeper.getRpc().invoke("vmInfo", ResponseHandler.callback(z));
-
-    } else if ("wf".equals(z) || z.startsWith("suppl")) {
-      showWidgetSuppliers();
 
     } else if ("widget".equals(z) && arr.length >= 2) {
       showWidgetInfo(arr, errorPopup);
@@ -1177,7 +1177,7 @@ public final class CliWorker {
       }
     });
   }
-  
+
   private static void doEval(String args) {
     String result;
     if (BeeUtils.isDigit(args)) {
@@ -2034,6 +2034,7 @@ public final class CliWorker {
       }
     }
   }-*/;
+
   // CHECKSTYLE:ON
 
   private static void scheduleTasks(String[] arr, boolean errorPopup) {
@@ -2709,7 +2710,7 @@ public final class CliWorker {
         context.add(s);
       }
     }
-    
+
     Range<Character> range = null;
 
     List<Property> styles = PropertyUtils.createProperties(
@@ -3802,7 +3803,7 @@ public final class CliWorker {
       child.setAttribute("fill", "rgb(" + r + "," + g + "," + b + ")");
       child.setAttribute("opacity", BeeUtils.toString((minOpacity == maxOpacity)
           ? minOpacity : BeeUtils.randomDouble(minOpacity, maxOpacity)));
-      
+
       DomUtils.createId(child, child.getTagName());
 
       parent.appendChild(child);
@@ -3892,6 +3893,25 @@ public final class CliWorker {
     }
 
     BeeKeeper.getRpc().makeGetRequest(params, ResponseHandler.callback(input));
+  }
+
+  private static void showViewSuppliers() {
+    Collection<String> keys = ViewFactory.getKeys();
+
+    if (keys.isEmpty()) {
+      logger.info("view suppliers not registered");
+
+    } else {
+      HtmlTable table = new HtmlTable(StyleUtils.CLASS_NAME_PREFIX + "info-table");
+      table.setCaption("Suppliers");
+
+      int row = 0;
+      for (String key : keys) {
+        table.setText(row++, 0, key);
+      }
+      
+      BeeKeeper.getScreen().show(table);
+    }
   }
 
   private static void showWebNote(String[] arr) {
@@ -3991,29 +4011,6 @@ public final class CliWorker {
 
     List<ExtendedProperty> info = DomUtils.getInfo(widget, id, depth);
     showExtData(BeeUtils.joinWords("Widget", id, z), info);
-  }
-
-  private static void showWidgetSuppliers() {
-    Collection<String> keys = ViewFactory.getKeys();
-    if (keys.isEmpty()) {
-      logger.info("widget factory is empty");
-      return;
-    }
-
-    HtmlTable table = new HtmlTable();
-    table.setBorderSpacing(10);
-
-    int row = 0;
-    int col = 0;
-
-    for (String key : keys) {
-      table.setHtml(row, col++, key);
-      if (col >= 5) {
-        row++;
-        col = 0;
-      }
-    }
-    BeeKeeper.getScreen().show(table);
   }
 
   private static void sortTable(IsTable<?, ?> table, int col) {

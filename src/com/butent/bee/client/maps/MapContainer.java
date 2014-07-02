@@ -50,6 +50,7 @@ public class MapContainer extends Flow implements Presenter, View, HasWidgetSupp
 
   @Override
   public HandlerRegistration addReadyHandler(ReadyEvent.Handler handler) {
+    ReadyEvent.maybeDelegate(this);
     return addHandler(handler, ReadyEvent.getType());
   }
   
@@ -138,12 +139,6 @@ public class MapContainer extends Flow implements Presenter, View, HasWidgetSupp
 
   @Override
   public void setViewPresenter(Presenter viewPresenter) {
-  }
-  
-  @Override
-  protected void onLoad() {
-    super.onLoad();
-    ReadyEvent.fire(this);
   }
   
   private MapWidget getMapWidget() {

@@ -73,6 +73,8 @@ public final class Endpoint {
 
   private static Map<String, Consumer<String>> progressQueue = new HashMap<>();
   private static Map<String, Function<ProgressMessage, Boolean>> progressHandlers = new HashMap<>();
+  
+  private static Consumer<Boolean> onlineCallback;
 
   public static void cancelProgress(String progressId) {
     Assert.notEmpty(progressId);
@@ -202,10 +204,8 @@ public final class Endpoint {
         socket.setOnopen(new EventListener() {
           @Override
           public void handleEvent(Event evt) {
+            onlineCallback = callback;
             onOpen();
-            if (callback != null) {
-              callback.accept(isOpen());
-            }
           }
         });
 
@@ -278,6 +278,13 @@ public final class Endpoint {
   public static void unregisterProgressHandler(String progressId) {
     if (progressHandlers.containsKey(progressId)) {
       progressHandlers.remove(progressId);
+    }
+  }
+  
+  static void online() {
+    if (onlineCallback != null) {
+      onlineCallback.accept(true);
+      onlineCallback = null;
     }
   }
 

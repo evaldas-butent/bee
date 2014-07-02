@@ -2,8 +2,11 @@ package com.butent.bee.client.maps;
 
 import com.google.gwt.dom.client.Document;
 import com.google.gwt.dom.client.Element;
+import com.google.gwt.event.shared.HandlerRegistration;
 import com.google.gwt.user.client.ui.RequiresResize;
 
+import com.butent.bee.client.event.logical.ReadyEvent;
+import com.butent.bee.client.event.logical.ReadyEvent.Handler;
 import com.butent.bee.client.style.StyleUtils;
 import com.butent.bee.client.widget.CustomWidget;
 import com.butent.bee.shared.BeeConst;
@@ -13,7 +16,8 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
-public final class MapWidget extends CustomWidget implements RequiresResize {
+public final class MapWidget extends CustomWidget implements RequiresResize,
+    ReadyEvent.HasReadyHandlers {
 
   public static MapWidget create(MapOptions options) {
     if (options == null) {
@@ -49,6 +53,11 @@ public final class MapWidget extends CustomWidget implements RequiresResize {
     } else {
       return false;
     }
+  }
+
+  @Override
+  public HandlerRegistration addReadyHandler(Handler handler) {
+    return addHandler(handler, ReadyEvent.getType());
   }
 
   public void fitBounds(LatLngBounds bounds) {
@@ -189,6 +198,14 @@ public final class MapWidget extends CustomWidget implements RequiresResize {
   @Override
   protected void onLoad() {
     super.onLoad();
+
     this.impl = MapImpl.create(getElement(), mapOptions);
+
+    impl.setOnLoad(new Runnable() {
+      @Override
+      public void run() {
+        ReadyEvent.fire(MapWidget.this);
+      }
+    });
   }
 }
