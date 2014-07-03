@@ -173,6 +173,11 @@ public abstract class ReportInterceptor extends AbstractFormInterceptor implemen
   }
 
   @Override
+  public String getSupplierKey() {
+    return getReport().getSupplierKey();
+  }
+
+  @Override
   public void onLoad(FormView form) {
     if (getInitialParameters() != null) {
       doReport();
@@ -186,12 +191,12 @@ public abstract class ReportInterceptor extends AbstractFormInterceptor implemen
       }
     }
   }
-
+  
   @Override
   public boolean onPrint(Element source, Element target) {
     return true;
   }
-  
+
   public void setInitialParameters(ReportParameters initialParameters) {
     this.initialParameters = initialParameters;
   }
@@ -243,9 +248,9 @@ public abstract class ReportInterceptor extends AbstractFormInterceptor implemen
   protected void export() {
     logger.warning("export not implemented");
   }
-
-  protected abstract String getBookmarkLabel();
   
+  protected abstract String getBookmarkLabel();
+
   protected HasIndexedWidgets getDataContainer() {
     Widget widget = getFormView().getWidgetByName(NAME_DATA_CONTAINER);
     if (widget instanceof HasIndexedWidgets) {

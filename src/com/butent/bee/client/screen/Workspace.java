@@ -506,7 +506,7 @@ public class Workspace extends TabbedPages implements CaptionChangeEvent.Handler
   private static final char GROUP_CLOSE = 'c';
   private static final char GROUP_BOOKMARK = 'b';
 
-  private static final int RESTORATION_TIMEOUT = TimeUtils.MILLIS_PER_MINUTE;
+  private static final int RESTORATION_TIMEOUT = TimeUtils.MILLIS_PER_MINUTE * 5;
 
   static int restoreSize(double size, int max) {
     return BeeUtils.round(size * max / SIZE_FACTOR);

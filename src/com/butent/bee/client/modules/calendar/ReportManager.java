@@ -24,6 +24,7 @@ import com.butent.bee.client.ui.UiOption;
 import com.butent.bee.client.utils.Command;
 import com.butent.bee.client.view.edit.Editor;
 import com.butent.bee.client.view.grid.GridView;
+import com.butent.bee.client.view.grid.interceptor.GridInterceptor;
 import com.butent.bee.client.widget.Button;
 import com.butent.bee.client.widget.Label;
 import com.butent.bee.client.widget.InputDate;
@@ -149,9 +150,13 @@ class ReportManager {
     }
 
     Collection<UiOption> uiOptions = EnumSet.of(UiOption.REPORT);
+    
+    GridInterceptor gridInterceptor = GridFactory.getGridInterceptor(gridName);
 
     GridView gridView = GridFactory.createGridView(gridDescription,
-        GridFactory.getSupplierKey(gridName), rowSet.getColumns());
+        GridFactory.getSupplierKey(gridName, gridInterceptor), rowSet.getColumns(), null,
+        gridInterceptor, null);
+
     gridView.initData(rowSet.getNumberOfRows(), rowSet);
 
     GridPresenter presenter = new GridPresenter(gridDescription, gridView,

@@ -1396,7 +1396,10 @@ public class GridImpl extends Absolute implements GridView, EditEndEvent.Handler
 
     } else if (event.isAfter() && getState() == null) {
       setState(State.INITIALIZED);
-      ReadyEvent.fire(this);
+
+      if (isAttached()) {
+        ReadyEvent.fire(this);
+      }
     }
   }
 
@@ -1609,6 +1612,10 @@ public class GridImpl extends Absolute implements GridView, EditEndEvent.Handler
 
     registry.add(BeeKeeper.getBus().registerRowInsertHandler(this, false));
     registry.add(BeeKeeper.getBus().registerRowUpdateHandler(this, false));
+    
+    if (getState() == State.INITIALIZED) {
+      ReadyEvent.fire(this);
+    }
   }
 
   @Override

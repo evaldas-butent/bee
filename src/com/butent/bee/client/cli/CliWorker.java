@@ -94,6 +94,7 @@ import com.butent.bee.client.maps.MapContainer;
 import com.butent.bee.client.maps.MapOptions;
 import com.butent.bee.client.maps.MapUtils;
 import com.butent.bee.client.maps.MapWidget;
+import com.butent.bee.client.menu.MenuCommand;
 import com.butent.bee.client.modules.administration.AdministrationKeeper;
 import com.butent.bee.client.modules.ec.EcKeeper;
 import com.butent.bee.client.modules.tasks.TasksKeeper;
@@ -426,7 +427,7 @@ public final class CliWorker {
       showMap(arr, errorPopup);
 
     } else if ("menu".equals(z)) {
-      doMenu(args);
+      doMenu(args, errorPopup);
 
     } else if ("meter".equals(z)) {
       showMeter(arr, errorPopup);
@@ -1355,11 +1356,93 @@ public final class CliWorker {
     }
   }
 
-  private static void doMenu(String args) {
+  private static void doMenu(String args, boolean errorPopup) {
     if (BeeUtils.isEmpty(args)) {
       BeeKeeper.getMenu().showMenuInfo();
-    } else {
+
+    } else if (BeeUtils.same(args, "load")) {
       BeeKeeper.getMenu().loadMenu();
+
+    } else if (BeeUtils.isDigit(args)) {
+      BeeKeeper.getScreen().closeAll();
+
+      final List<MenuCommand> commands = new ArrayList<>();
+
+      List<MenuCommand> menuCommands = BeeKeeper.getMenu().getCommands();
+      for (MenuCommand command : menuCommands) {
+        switch (command.getService()) {
+          case ASSESSMENTS_GRID:
+          case DISCUSS_LIST:
+          case DRIVER_TIME_BOARD:
+          case EDIT_EC_CONTACTS:
+          case EDIT_TERMS_OF_DELIVERY:
+          case ENSURE_CATEGORIES_AND_OPEN_GRID:
+          case FORM:
+          case FREIGHT_EXCHANGE:
+          case GRID:
+          case ITEMS:
+          case OPEN_MAIL:
+          case PARAMETERS:
+          case REPORT:
+          case SERVICE_CALENDAR:
+          case SHIPPING_SCHEDULE:
+          case TASK_LIST:
+          case TASK_REPORTS:
+          case TRAILER_TIME_BOARD:
+          case TRUCK_TIME_BOARD:
+            commands.add(command);
+            break;
+
+          default:
+            logger.debug("skip", command.getService(), command.getParameters());
+            break;
+        }
+      }
+
+      final Holder<Integer> position = Holder.of(0);
+      final Holder<String> progId = Holder.of(null);
+
+      InlineLabel close = new InlineLabel(String.valueOf(BeeConst.CHAR_TIMES));
+      close.addClickHandler(new ClickHandler() {
+        @Override
+        public void onClick(ClickEvent event) {
+          BeeKeeper.getScreen().removeProgress(progId.get());
+          progId.set(null);
+        }
+      });
+
+      Thermometer thermometer = new Thermometer(args, (double) commands.size(), close);
+      progId.set(BeeKeeper.getScreen().addProgress(thermometer));
+
+      final Timer timer = new Timer() {
+        @Override
+        public void run() {
+          int index = position.get();
+
+          if (index < commands.size()
+              && BeeKeeper.getScreen().updateProgress(progId.get(), index + 0.5)) {
+
+            position.set(index + 1);
+
+            MenuCommand command = commands.get(index);
+            logger.debug(index, command.getService(), command.getParameters());
+
+            command.execute();
+
+          } else {
+            cancel();
+            if (progId.isNotNull()) {
+              BeeKeeper.getScreen().removeProgress(progId.get());
+            }
+          }
+        }
+      };
+
+      int period = Math.max(BeeUtils.toInt(args), 1);
+      timer.scheduleRepeating(period);
+
+    } else {
+      showError(errorPopup, args);
     }
   }
 
@@ -3909,7 +3992,7 @@ public final class CliWorker {
       for (String key : keys) {
         table.setText(row++, 0, key);
       }
-      
+
       BeeKeeper.getScreen().show(table);
     }
   }

@@ -48,6 +48,10 @@ import java.util.Map;
  * Creates and handles user interface forms.
  */
 
+/**
+ * @author Marius
+ *
+ */
 public final class FormFactory {
 
   public abstract static class FormViewCallback {
@@ -349,6 +353,9 @@ public final class FormFactory {
     openForm(formName, getFormInterceptor(formName));
   }
 
+  /**
+   * This method should be used in sync with {@code ViewFactory.registerSupplier}.
+   */
   public static void openForm(final String formName, final FormInterceptor formInterceptor) {
     getFormDescription(formName, new Callback<FormDescription>() {
       @Override

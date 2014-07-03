@@ -8,7 +8,7 @@ var BeeSettings = {
   providerRepeatMillis: 200,
   providerMinPrefetchSteps: 1,
   providerMaxPrefetchSteps: 100,
-  logCapacity: 1000,
+  logCapacity: 10000,
   actionSensitivityMillis: 300,
   minimizeNumberOfConcurrentRequests: true,
   showUserPhoto: true,

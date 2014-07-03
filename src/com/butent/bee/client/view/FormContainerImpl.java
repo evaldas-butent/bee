@@ -267,7 +267,14 @@ public class FormContainerImpl extends Split implements FormContainerView, HasNa
 
   @Override
   public String getSupplierKey() {
-    return FormFactory.getSupplierKey(getForm().getFormName());
+    FormInterceptor interceptor = getForm().getFormInterceptor();
+    String key = (interceptor == null) ? null : interceptor.getSupplierKey();
+
+    if (BeeUtils.isEmpty(key)) {
+      return FormFactory.getSupplierKey(getForm().getFormName());
+    } else {
+      return key;
+    }
   }
 
   @Override

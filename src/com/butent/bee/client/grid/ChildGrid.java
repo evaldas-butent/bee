@@ -239,7 +239,7 @@ public class ChildGrid extends Simple implements HasEnabled, Launchable, HasFost
   }
 
   private String getGridKey() {
-    return GridFactory.getSupplierKey(gridName);
+    return GridFactory.getSupplierKey(gridName, getGridInterceptor());
   }
 
   private GridFactory.GridOptions getGridOptions() {

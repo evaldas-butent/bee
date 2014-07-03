@@ -247,12 +247,6 @@ public final class GridFactory {
   }
 
   public static GridView createGridView(GridDescription gridDescription, String supplierKey,
-      List<BeeColumn> dataColumns) {
-    return createGridView(gridDescription, supplierKey, dataColumns, null,
-        getGridInterceptor(gridDescription.getName()), null);
-  }
-
-  public static GridView createGridView(GridDescription gridDescription, String supplierKey,
       List<BeeColumn> dataColumns, String relColumn, GridInterceptor gridInterceptor, Order order) {
 
     GridView gridView = new GridImpl(gridDescription, supplierKey, dataColumns, relColumn,
@@ -375,9 +369,15 @@ public final class GridFactory {
     }
   }
 
-  public static String getSupplierKey(String gridName) {
+  public static String getSupplierKey(String gridName, GridInterceptor gridInterceptor) {
     Assert.notEmpty(gridName);
-    return ViewFactory.SupplierKind.GRID.getKey(gridName);
+
+    String key = (gridInterceptor == null) ? null : gridInterceptor.getSupplierKey();
+    if (BeeUtils.isEmpty(key)) {
+      return ViewFactory.SupplierKind.GRID.getKey(gridName);
+    } else {
+      return key;
+    }
   }
 
   public static void hideColumn(String gridName, String columnName) {
@@ -407,7 +407,7 @@ public final class GridFactory {
   public static void openGrid(String gridName, GridInterceptor gridInterceptor,
       GridOptions gridOptions, PresenterCallback presenterCallback) {
 
-    String supplierKey = getSupplierKey(gridName);
+    String supplierKey = getSupplierKey(gridName, gridInterceptor);
     Collection<UiOption> uiOptions = EnumSet.of(UiOption.ROOT);
 
     createGrid(gridName, supplierKey, gridInterceptor, uiOptions, gridOptions, presenterCallback);
@@ -426,7 +426,7 @@ public final class GridFactory {
       GridInterceptor interceptor) {
     return registerGridSupplier(key, gridName, interceptor, EnumSet.of(UiOption.ROOT), null);
   }
-  
+
   private static GridInterceptor getInterceptorInstance(GridInterceptor interceptor) {
     if (interceptor == null) {
       return null;
@@ -452,11 +452,11 @@ public final class GridFactory {
       public void create(final ViewCallback callback) {
         createGrid(gridName, key, getInterceptorInstance(interceptor), uiOptions, gridOptions,
             new PresenterCallback() {
-          @Override
-          public void onCreate(Presenter presenter) {
-            callback.onSuccess(presenter.getMainView());
-          }
-        });
+              @Override
+              public void onCreate(Presenter presenter) {
+                callback.onSuccess(presenter.getMainView());
+              }
+            });
       }
     };
 

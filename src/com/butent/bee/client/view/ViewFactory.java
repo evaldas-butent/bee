@@ -10,7 +10,9 @@ import com.butent.bee.client.composite.ResourceEditor;
 import com.butent.bee.client.data.RowEditor;
 import com.butent.bee.client.grid.GridFactory;
 import com.butent.bee.client.maps.MapUtils;
+import com.butent.bee.client.modules.administration.ParametersGrid;
 import com.butent.bee.client.modules.calendar.CalendarKeeper;
+import com.butent.bee.client.output.Report;
 import com.butent.bee.client.presenter.Presenter;
 import com.butent.bee.client.presenter.PresenterCallback;
 import com.butent.bee.client.ui.FormDescription;
@@ -56,13 +58,17 @@ public final class ViewFactory {
       }
     },
 
-    CALENDAR("calendar_") {
+    REPORT("report_") {
       @Override
       void create(String item, ViewCallback callback) {
-        Long id = BeeUtils.toLongOrNull(item);
-        if (DataUtils.isId(id)) {
-          CalendarKeeper.openCalendar(id, callback);
-        }
+        Report.open(item, callback);
+      }
+    },
+
+    PARAMETERS("parameters_") {
+      @Override
+      void create(String item, ViewCallback callback) {
+        ParametersGrid.open(item, callback);
       }
     },
 
@@ -94,6 +100,16 @@ public final class ViewFactory {
       @Override
       void create(String item, ViewCallback callback) {
         Search.doQuery(item, callback);
+      }
+    },
+    
+    CALENDAR("calendar_") {
+      @Override
+      void create(String item, ViewCallback callback) {
+        Long id = BeeUtils.toLongOrNull(item);
+        if (DataUtils.isId(id)) {
+          CalendarKeeper.openCalendar(id, callback);
+        }
       }
     };
 

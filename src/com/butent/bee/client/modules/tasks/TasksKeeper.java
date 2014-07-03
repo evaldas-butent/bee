@@ -15,6 +15,7 @@ import com.butent.bee.client.data.Queries;
 import com.butent.bee.client.data.RowCallback;
 import com.butent.bee.client.event.logical.SelectorEvent;
 import com.butent.bee.client.grid.GridFactory;
+import com.butent.bee.client.modules.tasks.TasksReportsInterceptor.ReportType;
 import com.butent.bee.client.style.ColorStyleProvider;
 import com.butent.bee.client.style.ConditionalStyle;
 import com.butent.bee.client.ui.FormFactory;
@@ -223,19 +224,23 @@ public final class TasksKeeper {
       @Override
       public void onSelection(String parameters) {
         if (BeeUtils.startsSame(parameters, COMPANY_TIMES_REPORT)) {
-          FormFactory.openForm(FORM_TASKS_REPORT, new TasksReportsInterceptor(
-              TasksReportsInterceptor.ReportType.COMPANY_TIMES));
+          FormFactory.openForm(FORM_TASKS_REPORT,
+              new TasksReportsInterceptor(ReportType.COMPANY_TIMES));
         } else if (BeeUtils.startsSame(parameters, TYPE_HOURS_REPORT)) {
-          FormFactory.openForm(FORM_TASKS_REPORT, new TasksReportsInterceptor(
-              TasksReportsInterceptor.ReportType.TYPE_HOURS));
+          FormFactory.openForm(FORM_TASKS_REPORT,
+              new TasksReportsInterceptor(ReportType.TYPE_HOURS));
         } else if (BeeUtils.startsSame(parameters, USERS_HOURS_REPORT)) {
-          FormFactory.openForm(FORM_TASKS_REPORT, new TasksReportsInterceptor(
-              TasksReportsInterceptor.ReportType.USERS_HOURS));
+          FormFactory.openForm(FORM_TASKS_REPORT,
+              new TasksReportsInterceptor(ReportType.USERS_HOURS));
         } else {
           Global.showError("Service type '" + parameters + "' not found");
         }
       }
     });
+    
+    for (ReportType reportType : ReportType.values()) {
+      reportType.register();
+    }
 
     SelectorEvent.register(new TaskSelectorHandler());
 

@@ -14,7 +14,6 @@ import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.IsUnique;
 import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogUtils;
-import com.butent.bee.shared.utils.NameUtils;
 
 import java.util.Collection;
 import java.util.HashMap;
@@ -37,7 +36,6 @@ public final class ReadyEvent extends GwtEvent<ReadyEvent.Handler> {
 
   public static void fire(HasReadyHandlers source) {
     Assert.notNull(source);
-    logger.debug("ready", NameUtils.getName(source), source.getId());
     source.fireEvent(new ReadyEvent());
   }
 
@@ -95,10 +93,6 @@ public final class ReadyEvent extends GwtEvent<ReadyEvent.Handler> {
       if (registration != null) {
         registry.put(delegate.getId(), registration);
       }
-    }
-    
-    if (!registry.isEmpty()) {
-      logger.debug(NameUtils.getName(delegator), "=>", registry.keySet());
     }
   }
 

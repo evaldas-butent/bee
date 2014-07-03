@@ -1,5 +1,7 @@
 package com.butent.bee.client.modules.discussions;
 
+import com.google.common.collect.Lists;
+
 import static com.butent.bee.shared.modules.discussions.DiscussionsConstants.*;
 
 import com.butent.bee.client.BeeKeeper;
@@ -7,8 +9,8 @@ import com.butent.bee.client.Global;
 import com.butent.bee.client.communication.ParameterList;
 import com.butent.bee.client.grid.GridFactory;
 import com.butent.bee.client.grid.GridFactory.GridOptions;
-import com.butent.bee.client.modules.discussions.DiscussionsList.ListType;
 import com.butent.bee.client.ui.FormFactory;
+import com.butent.bee.client.view.ViewFactory;
 import com.butent.bee.shared.Consumer;
 import com.butent.bee.shared.menu.MenuHandler;
 import com.butent.bee.shared.menu.MenuService;
@@ -25,12 +27,24 @@ public final class DiscussionsKeeper {
     FormFactory.registerFormInterceptor(FORM_DISCUSSION, new DiscussionInterceptor());
     FormFactory.registerFormInterceptor(FORM_ANNOUNCEMENTS_BOARD,
         new AnnouncementsBoardInterceptor());
+    
+    for (DiscussionsListType type : DiscussionsListType.values()) {
+      GridFactory.registerGridSupplier(type.getSupplierKey(), GRID_DISCUSSIONS,
+          new DiscussionsGridHandler(type));
+    }
 
     /* Menu */
     MenuService.DISCUSS_LIST.setHandler(new MenuHandler() {
       @Override
       public void onSelection(String parameters) {
-        DiscussionsList.open(parameters);
+        DiscussionsListType type = DiscussionsListType.getByPrefix(parameters);
+        
+        if (type == null) {
+          Global.showError(Lists.newArrayList(GRID_DISCUSSIONS, "Type not recognized:",
+              parameters));
+        } else {
+          ViewFactory.createAndShow(type.getSupplierKey());
+        }
       }
     });
 
@@ -56,7 +70,8 @@ public final class DiscussionsKeeper {
 
       @Override
       public void accept(GridOptions input) {
-        GridFactory.openGrid(GRID_DISCUSSIONS, new DiscussionsGridHandler(ListType.ALL), input);
+        GridFactory.openGrid(GRID_DISCUSSIONS, new DiscussionsGridHandler(DiscussionsListType.ALL),
+            input);
       }
     };
 
@@ -64,6 +79,5 @@ public final class DiscussionsKeeper {
   }
 
   private DiscussionsKeeper() {
-
   }
 }
