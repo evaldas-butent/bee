@@ -19,9 +19,11 @@ import com.butent.bee.client.dialog.Popup.OutsideClick;
 import com.butent.bee.client.event.logical.CloseEvent;
 import com.butent.bee.client.grid.GridFactory;
 import com.butent.bee.client.presenter.GridPresenter;
+import com.butent.bee.client.presenter.PresenterCallback;
 import com.butent.bee.client.style.StyleUtils;
 import com.butent.bee.client.view.ViewCallback;
 import com.butent.bee.client.view.ViewFactory;
+import com.butent.bee.client.view.ViewHelper;
 import com.butent.bee.client.view.edit.EditChangeHandler;
 import com.butent.bee.client.view.edit.EditStartEvent;
 import com.butent.bee.client.view.edit.EditStopEvent;
@@ -80,19 +82,21 @@ public final class ParametersGrid extends AbstractGridInterceptor {
 
   public static void open(String module) {
     Assert.notEmpty(module);
-    GridFactory.openGrid(GRID_NAME, new ParametersGrid(module));
+    openGrid(module, ViewHelper.getPresenterCallback());
   }
 
   public static void open(String module, ViewCallback callback) {
     Assert.notEmpty(module);
     Assert.notNull(callback);
-    
-    GridFactory.openGrid(GRID_NAME, new ParametersGrid(module), null,
-        ViewFactory.getPresenterCallback(callback));
+    openGrid(module, ViewFactory.getPresenterCallback(callback));
   }
-
+  
   private static int indexOf(String colName) {
     return DataUtils.getColumnIndex(colName, columns);
+  }
+
+  private static void openGrid(String module, PresenterCallback callback) {
+    GridFactory.openGrid(GRID_NAME, new ParametersGrid(module), null, callback);
   }
 
   private final String module;

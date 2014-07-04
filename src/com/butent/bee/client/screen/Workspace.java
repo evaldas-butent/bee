@@ -1,5 +1,6 @@
 package com.butent.bee.client.screen;
 
+import com.google.common.collect.Lists;
 import com.google.gwt.dom.client.Node;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
@@ -15,6 +16,7 @@ import com.google.gwt.user.client.ui.Widget;
 import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.Global;
 import com.butent.bee.client.Historian;
+import com.butent.bee.client.Settings;
 import com.butent.bee.client.dialog.Popup;
 import com.butent.bee.client.dialog.Popup.OutsideClick;
 import com.butent.bee.client.dom.DomUtils;
@@ -306,6 +308,7 @@ public class Workspace extends TabbedPages implements CaptionChangeEvent.Handler
         } else {
           workspace.clearPage(index);
         }
+        workspace.checkEmptiness();
       }
 
       @Override
@@ -354,6 +357,7 @@ public class Workspace extends TabbedPages implements CaptionChangeEvent.Handler
       @Override
       void execute(Workspace workspace, int index) {
         workspace.clear();
+        workspace.checkEmptiness();
       }
 
       @Override
@@ -618,7 +622,7 @@ public class Workspace extends TabbedPages implements CaptionChangeEvent.Handler
   public boolean isModal() {
     return false;
   }
-
+  
   @Override
   public void onActiveWidgetChange(ActiveWidgetChangeEvent event) {
     fireEvent(event);
@@ -810,6 +814,7 @@ public class Workspace extends TabbedPages implements CaptionChangeEvent.Handler
     Tile tile = TilePanel.getTile(widget.asWidget());
     if (tile != null) {
       close(tile);
+      checkEmptiness();
     }
   }
 
@@ -934,6 +939,15 @@ public class Workspace extends TabbedPages implements CaptionChangeEvent.Handler
     }
   }
 
+  private void checkEmptiness() {
+    if (isBlank()) {
+      JSONObject json = Settings.getOnEmptyWorkspace();
+      if (json != null) {
+        restore(Lists.newArrayList(json.toString()), false);
+      }
+    }
+  }
+
   private void clearCaption(int index) {
     TabWidget tab = (TabWidget) getTabWidget(index);
     tab.setCaption(Localized.getConstants().newTab());
@@ -947,7 +961,7 @@ public class Workspace extends TabbedPages implements CaptionChangeEvent.Handler
       clearCaption(index);
     }
   }
-
+  
   private void close(Tile tile) {
     TilePanel panel = tile.getPanel();
     int pageIndex = getPageIndex(tile);
@@ -1013,6 +1027,18 @@ public class Workspace extends TabbedPages implements CaptionChangeEvent.Handler
 
     selectPage(before, SelectionOrigin.INSERT);
     return panel;
+  }
+
+  private boolean isBlank() {
+    if (getPageCount() == 1) {
+      TilePanel panel = getActivePanel();
+
+      if (panel != null && panel.getTileCount() == 1) {
+        Tile tile = panel.getActiveTile();
+        return tile != null && tile.isBlank();
+      }
+    }
+    return false;
   }
 
   private boolean isLoading() {

@@ -2,7 +2,6 @@ package com.butent.bee.client.view.form.interceptor;
 
 import com.google.common.collect.Lists;
 import com.google.gwt.dom.client.Element;
-import com.google.gwt.dom.client.NativeEvent;
 import com.google.gwt.i18n.client.NumberFormat;
 import com.google.gwt.user.client.ui.Widget;
 
@@ -11,8 +10,6 @@ import com.butent.bee.client.Global;
 import com.butent.bee.client.composite.MultiSelector;
 import com.butent.bee.client.composite.UnboundSelector;
 import com.butent.bee.client.dialog.ModalGrid;
-import com.butent.bee.client.dialog.Popup;
-import com.butent.bee.client.event.EventUtils;
 import com.butent.bee.client.grid.GridFactory;
 import com.butent.bee.client.grid.GridFactory.GridOptions;
 import com.butent.bee.client.i18n.Format;
@@ -61,21 +58,11 @@ public abstract class ReportInterceptor extends AbstractFormInterceptor implemen
 
   private static final String STORAGE_KEY_SEPARATOR = "-";
 
-  protected static void drillDown(String gridName, String caption, Filter filter, boolean modal) {
+  protected static void drillDown(String gridName, String caption, Filter filter) {
     GridOptions gridOptions = GridOptions.forCaptionAndFilter(caption, filter);
-
-    PresenterCallback presenterCallback;
-    if (modal) {
-      presenterCallback = ModalGrid.opener(80, CssUnit.PCT, 60, CssUnit.PCT);
-    } else {
-      presenterCallback = PresenterCallback.SHOW_IN_NEW_TAB;
-    }
+    PresenterCallback presenterCallback = ModalGrid.opener(80, CssUnit.PCT, 60, CssUnit.PCT);
 
     GridFactory.openGrid(gridName, null, gridOptions, presenterCallback);
-  }
-
-  protected static boolean drillModal(NativeEvent event) {
-    return Popup.getActivePopup() != null || !EventUtils.hasModifierKey(event);
   }
 
   protected static Double percent(int x, int y) {

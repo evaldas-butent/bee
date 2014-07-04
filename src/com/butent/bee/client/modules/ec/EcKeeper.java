@@ -647,11 +647,11 @@ public final class EcKeeper {
   }
 
   public static boolean showGlobalSearch() {
-    return Settings.getPropertyBoolean("showGlobalSearch");
+    return Settings.getBoolean("showGlobalSearch");
   }
 
   public static boolean showItemSuppliers() {
-    return Settings.getPropertyBoolean("showItemSuppliers");
+    return Settings.getBoolean("showItemSuppliers");
   }
 
   public static void showPromo(final boolean checkView) {

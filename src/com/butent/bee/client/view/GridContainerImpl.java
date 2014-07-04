@@ -79,6 +79,8 @@ public class GridContainerImpl extends Split implements GridContainerView, HasNa
   private static final Set<Action> HEADER_ACTIONS =
       EnumSet.of(Action.REFRESH, Action.FILTER, Action.REMOVE_FILTER, Action.ADD, Action.DELETE,
           Action.MENU, Action.CLOSE);
+  
+  private final String supplierKey;
 
   private Presenter viewPresenter;
 
@@ -104,13 +106,15 @@ public class GridContainerImpl extends Split implements GridContainerView, HasNa
 
   private boolean resizeSuspended;
 
-  public GridContainerImpl(String gridName) {
+  public GridContainerImpl(String gridName, String supplierKey) {
     super(-1);
 
     addStyleName(STYLE_NAME);
     if (!BeeUtils.isEmpty(gridName)) {
       addStyleName(StyleUtils.CLASS_NAME_PREFIX + "grid-" + gridName.trim());
     }
+    
+    this.supplierKey = supplierKey; 
   }
 
   @Override
@@ -345,7 +349,7 @@ public class GridContainerImpl extends Split implements GridContainerView, HasNa
 
   @Override
   public String getSupplierKey() {
-    return getGridView().getGridKey();
+    return supplierKey;
   }
 
   @Override

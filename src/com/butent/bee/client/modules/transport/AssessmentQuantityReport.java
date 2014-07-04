@@ -783,8 +783,7 @@ public class AssessmentQuantityReport extends ReportInterceptor {
           int dataIndex = DomUtils.getDataIndexInt(rowElement);
 
           if (!BeeConst.isUndef(dataIndex)) {
-            boolean modal = drillModal(event.getNativeEvent());
-            showDetails(data.getRow(dataIndex), cellElement, modal);
+            showDetails(data.getRow(dataIndex), cellElement);
           }
         }
       }
@@ -793,7 +792,7 @@ public class AssessmentQuantityReport extends ReportInterceptor {
     container.add(table);
   }
 
-  private void showDetails(SimpleRow dataRow, TableCellElement cellElement, boolean modal) {
+  private void showDetails(SimpleRow dataRow, TableCellElement cellElement) {
     CompoundFilter filter = Filter.and();
     List<String> captions = Lists.newArrayList();
 
@@ -892,6 +891,6 @@ public class AssessmentQuantityReport extends ReportInterceptor {
     String caption = BeeUtils.notEmpty(BeeUtils.joinItems(captions),
         Localized.getConstants().trAssessmentRequests());
 
-    drillDown(DRILL_DOWN_GRID_NAME, caption, filter, modal);
+    drillDown(DRILL_DOWN_GRID_NAME, caption, filter);
   }
 }

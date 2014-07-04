@@ -1,10 +1,10 @@
 package com.butent.bee.client;
 
-import com.google.common.collect.Lists;
 import com.google.gwt.core.client.EntryPoint;
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.event.logical.shared.ResizeEvent;
 import com.google.gwt.event.logical.shared.ResizeHandler;
+import com.google.gwt.json.client.JSONObject;
 import com.google.gwt.user.client.Timer;
 import com.google.gwt.user.client.Window;
 
@@ -38,6 +38,7 @@ import com.butent.bee.shared.ui.UserInterface;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.Codec;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
@@ -76,28 +77,41 @@ public class Bee implements EntryPoint {
   }
 
   private static void initWorkspace() {
+    List<String> onStartup = new ArrayList<>();
+
     if (BeeKeeper.getUser().workspaceContinue()) {
       String workspace = BeeKeeper.getUser().getLastWorkspace();
 
       if (!BeeUtils.isEmpty(workspace) && !BeeConst.EMPTY.equals(workspace)) {
-        BeeKeeper.getScreen().restore(Lists.newArrayList(workspace), false);
+        onStartup.add(workspace);
+
+      } else {
+        JSONObject onEmpty = Settings.getOnEmptyWorkspace();
+        if (onEmpty != null) {
+          onStartup.add(onEmpty.toString());
+        }
       }
 
     } else {
+      List<String> home = Global.getSpaces().getStartup();
 
-      List<String> onStartup = Global.getSpaces().getStartup();
+      if (BeeUtils.isEmpty(home)) {
+        JSONObject json = Settings.getOnStartup();
+        if (json == null) {
+          json = Settings.getOnEmptyWorkspace();
+        }
 
-      if (BeeUtils.isEmpty(onStartup)) {
-        onStartup = Settings.getOnStartup();
-        if (!BeeUtils.isEmpty(onStartup) && !BeeKeeper.getMenu().isEmpty()) {
-          for (String item : onStartup) {
-            BeeKeeper.getMenu().executeItem(item);
-          }
+        if (json != null) {
+          onStartup.add(json.toString());
         }
 
       } else {
-        BeeKeeper.getScreen().restore(onStartup, false);
+        onStartup.addAll(home);
       }
+    }
+
+    if (!onStartup.isEmpty()) {
+      BeeKeeper.getScreen().restore(onStartup, false);
     }
   }
 

@@ -691,7 +691,7 @@ public class ScreenImpl implements Screen {
   }
 
   protected int getNorthHeight(int defHeight) {
-    return BeeUtils.positive(Settings.getPropertyInt("northHeight"), defHeight);
+    return BeeUtils.positive(Settings.getInt("northHeight"), defHeight);
   }
 
   protected Notification getNotification() {

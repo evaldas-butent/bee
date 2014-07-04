@@ -25,7 +25,6 @@ import com.butent.bee.client.view.ViewFactory;
 import com.butent.bee.client.view.ViewHelper;
 import com.butent.bee.client.view.ViewSupplier;
 import com.butent.bee.shared.BiConsumer;
-import com.butent.bee.shared.Consumer;
 import com.butent.bee.shared.communication.ResponseObject;
 import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.SimpleRowSet;
@@ -101,9 +100,9 @@ public final class MailKeeper {
     FormFactory.registerFormInterceptor(FORM_RULE, new RuleForm());
 
     Global.getNewsAggregator().registerFilterHandler(Feed.MAIL,
-        new Consumer<GridFactory.GridOptions>() {
+        new BiConsumer<GridFactory.GridOptions, PresenterCallback>() {
           @Override
-          public void accept(GridOptions input) {
+          public void accept(GridOptions gridOptions, PresenterCallback callback) {
           }
         });
 
@@ -359,7 +358,7 @@ public final class MailKeeper {
         if (!BeeUtils.isEmpty(availableAccounts)) {
           final MailPanel mailPanel = new MailPanel(availableAccounts, defaultAccount);
           mailPanels.add(mailPanel);
-        
+
           FormFactory.getFormDescription(FORM_MAIL, new Callback<FormDescription>() {
             @Override
             public void onSuccess(FormDescription result) {

@@ -64,6 +64,7 @@ import com.butent.bee.shared.data.view.Order;
 import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogUtils;
+import com.butent.bee.shared.news.Feed;
 import com.butent.bee.shared.ui.CellType;
 import com.butent.bee.shared.ui.Flexibility;
 import com.butent.bee.shared.ui.GridDescription;
@@ -85,15 +86,21 @@ public final class GridFactory {
   public static final class GridOptions implements HasCaption {
 
     public static GridOptions forCaptionAndFilter(String cap, Filter flt) {
-      return (BeeUtils.isEmpty(cap) && flt == null) ? null : new GridOptions(cap, null, flt, null);
+      return (BeeUtils.isEmpty(cap) && flt == null) 
+          ? null : new GridOptions(cap, null, flt, null, null);
     }
 
     public static GridOptions forCurrentUserFilter(String column) {
-      return BeeUtils.isEmpty(column) ? null : new GridOptions(null, null, null, column);
+      return BeeUtils.isEmpty(column) ? null : new GridOptions(null, null, null, column, null);
     }
 
+    public static GridOptions forFeed(Feed feed, String cap, Filter flt) {
+      return (feed == null) 
+          ? forCaptionAndFilter(cap, flt) : new GridOptions(cap, null, flt, null, feed);
+    }
+    
     public static GridOptions forFilter(Filter flt) {
-      return (flt == null) ? null : new GridOptions(null, null, flt, null);
+      return (flt == null) ? null : new GridOptions(null, null, flt, null, null);
     }
 
     private final String caption;
@@ -102,18 +109,25 @@ public final class GridFactory {
     private final Filter filter;
 
     private final String currentUserFilter;
+    
+    private final Feed feed;
 
     private GridOptions(String caption, String filterDescription, Filter filter,
-        String currentUserFilter) {
+        String currentUserFilter, Feed feed) {
       this.caption = caption;
       this.filterDescription = filterDescription;
       this.filter = filter;
       this.currentUserFilter = currentUserFilter;
+      this.feed = feed;
     }
 
     @Override
     public String getCaption() {
       return caption;
+    }
+    
+    public Feed getFeed() {
+      return feed;
     }
 
     private Filter buildFilter(String viewName) {
@@ -262,17 +276,13 @@ public final class GridFactory {
     return new RenderableColumn(cell, cellSource, renderer);
   }
 
-  public static void getGridDescription(String name, Callback<GridDescription> callback) {
-    getGridDescription(name, callback, false);
-  }
-
   public static void getGridDescription(final String name,
-      final Callback<GridDescription> callback, boolean reload) {
+      final Callback<GridDescription> callback) {
 
     Assert.notEmpty(name);
     Assert.notNull(callback);
 
-    if (!reload && isGridDescriptionCached(name)) {
+    if (isGridDescriptionCached(name)) {
       callback.onSuccess(descriptionCache.get(gridDescriptionKey(name)));
       return;
     }
@@ -316,7 +326,7 @@ public final class GridFactory {
       return null;
     } else {
       return new GridOptions(Localized.maybeTranslate(caption), filterDescription, null,
-          currentUserFilter);
+          currentUserFilter, null);
     }
   }
 
@@ -392,16 +402,7 @@ public final class GridFactory {
   }
 
   public static void openGrid(String gridName) {
-    openGrid(gridName, getGridInterceptor(gridName));
-  }
-
-  public static void openGrid(String gridName, GridInterceptor gridInterceptor) {
-    openGrid(gridName, gridInterceptor, null);
-  }
-
-  public static void openGrid(String gridName, GridInterceptor gridInterceptor,
-      GridOptions gridOptions) {
-    openGrid(gridName, gridInterceptor, gridOptions, ViewHelper.getPresenterCallback());
+    openGrid(gridName, getGridInterceptor(gridName), null, ViewHelper.getPresenterCallback());
   }
 
   public static void openGrid(String gridName, GridInterceptor gridInterceptor,
@@ -413,10 +414,6 @@ public final class GridFactory {
     createGrid(gridName, supplierKey, gridInterceptor, uiOptions, gridOptions, presenterCallback);
   }
 
-  public static void openGrid(String gridName, GridOptions gridOptions) {
-    openGrid(gridName, getGridInterceptor(gridName), gridOptions);
-  }
-
   public static void registerGridInterceptor(String gridName, GridInterceptor interceptor) {
     Assert.notEmpty(gridName);
     gridInterceptors.put(BeeUtils.normalize(gridName), interceptor);
@@ -425,6 +422,11 @@ public final class GridFactory {
   public static ViewSupplier registerGridSupplier(String key, String gridName,
       GridInterceptor interceptor) {
     return registerGridSupplier(key, gridName, interceptor, EnumSet.of(UiOption.ROOT), null);
+  }
+
+  public static ViewSupplier registerGridSupplier(String key, String gridName,
+      GridInterceptor interceptor, GridOptions gridOptions) {
+    return registerGridSupplier(key, gridName, interceptor, EnumSet.of(UiOption.ROOT), gridOptions);
   }
 
   private static GridInterceptor getInterceptorInstance(GridInterceptor interceptor) {

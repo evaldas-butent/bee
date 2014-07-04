@@ -102,6 +102,13 @@ public final class ViewFactory {
         Search.doQuery(item, callback);
       }
     },
+
+    NEWS("news_") {
+      @Override
+      void create(String item, ViewCallback callback) {
+        Global.getNewsAggregator().filterNews(item, callback);
+      }
+    },
     
     CALENDAR("calendar_") {
       @Override

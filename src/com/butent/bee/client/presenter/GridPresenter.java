@@ -31,6 +31,7 @@ import com.butent.bee.client.view.GridContainerView;
 import com.butent.bee.client.view.HasGridView;
 import com.butent.bee.client.view.HeaderView;
 import com.butent.bee.client.view.View;
+import com.butent.bee.client.view.ViewFactory;
 import com.butent.bee.client.view.add.ReadyForInsertEvent;
 import com.butent.bee.client.view.edit.ReadyForUpdateEvent;
 import com.butent.bee.client.view.edit.SaveChangesEvent;
@@ -73,6 +74,7 @@ import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogUtils;
 import com.butent.bee.shared.modules.administration.AdministrationConstants;
+import com.butent.bee.shared.news.Feed;
 import com.butent.bee.shared.rights.RightsState;
 import com.butent.bee.shared.ui.Action;
 import com.butent.bee.shared.ui.GridDescription;
@@ -183,8 +185,12 @@ public class GridPresenter extends AbstractPresenter implements ReadyForInsertEv
   private static GridContainerView createView(GridDescription gridDescription, GridView gridView,
       int rowCount, Filter userFilter, GridInterceptor gridInterceptor,
       Collection<UiOption> uiOptions, GridFactory.GridOptions gridOptions) {
+    
+    Feed feed = (gridOptions == null) ? null : gridOptions.getFeed();
+    String key = (feed == null) 
+        ? gridView.getGridKey() : ViewFactory.SupplierKind.NEWS.getKey(feed.name().toLowerCase());
 
-    GridContainerView view = new GridContainerImpl(gridDescription.getName());
+    GridContainerView view = new GridContainerImpl(gridDescription.getName(), key);
     view.create(gridDescription, gridView, rowCount, userFilter, gridInterceptor, uiOptions,
         gridOptions);
 
@@ -199,7 +205,7 @@ public class GridPresenter extends AbstractPresenter implements ReadyForInsertEv
   private final GridMenu menu;
 
   private final List<String> favorite = new ArrayList<>();
-
+  
   private List<String> parentLabels;
 
   private Map<Long, String> roles;
