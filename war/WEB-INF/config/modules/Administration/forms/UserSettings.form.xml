@@ -66,7 +66,7 @@
       <page>
         <text>=style</text>
         <SimplePanel>
-          <InputArea source="Style" class="occupy-1" />
+          <InputArea source="Style" class="occupy-1" style="font-family: monospace;" />
         </SimplePanel>
       </page>
     </TabbedPages>     

@@ -1,6 +1,6 @@
 var BeeSettings = {
   "appName": "B-NOVO",
-  "version": "1.10",
+  "version": "1.15",
   "logoImage": "images/logo.png",
   "logoOpen": "http://www.butent.com",
   "providerSensitivityMillis": 300,
@@ -11,5 +11,5 @@ var BeeSettings = {
   "actionSensitivityMillis": 300,
   "minimizeNumberOfConcurrentRequests": true,
   "showUserPhoto": true,
-  "onEmptyWorkspace": {"content": "form_AnnouncementsBoard"}
+  "onStartup": {"content": "form_AnnouncementsBoard"}
 };

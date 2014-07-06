@@ -17,10 +17,6 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-/**
- * Manages a settings array.
- */
-
 public final class Settings {
 
   private static final Splitter VALUE_SPLITTER =

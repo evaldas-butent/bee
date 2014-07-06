@@ -25,9 +25,6 @@ import elemental.events.EventListener;
 import elemental.html.ImageElement;
 import elemental.js.dom.JsElement;
 
-/**
- * Controls scale parameters between lenght measure units and screen pixels.
- */
 public final class Rulers {
 
   private static final double cmToPx = 1.0;

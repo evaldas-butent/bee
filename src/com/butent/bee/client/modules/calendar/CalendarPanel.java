@@ -21,7 +21,6 @@ import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.composite.TabBar;
 import com.butent.bee.client.data.Data;
 import com.butent.bee.client.data.Queries;
-import com.butent.bee.client.data.Queries.IntCallback;
 import com.butent.bee.client.data.RowCallback;
 import com.butent.bee.client.data.RowEditor;
 import com.butent.bee.client.datepicker.DatePicker;
@@ -226,7 +225,7 @@ public class CalendarPanel extends Split implements AppointmentEvent.Handler, Pr
       public void onSelection(SelectionEvent<Integer> event) {
         Integer index = event.getSelectedItem();
         if (BeeUtils.isIndex(views, index)) {
-          activateView(views.get(index), null);
+          activateView(views.get(index));
         }
       }
     });
@@ -311,18 +310,13 @@ public class CalendarPanel extends Split implements AppointmentEvent.Handler, Pr
     updateUcAttendees(ucAttendees, false);
 
     int viewIndex = updateViews(settings);
-
-    activateView(views.get(viewIndex), new IntCallback() {
-      @Override
-      public void onSuccess(Integer result) {
-        ReadyEvent.fire(CalendarPanel.this);
-      }
-    });
+    activateView(views.get(viewIndex));
   }
 
   @Override
   public com.google.gwt.event.shared.HandlerRegistration addReadyHandler(
       ReadyEvent.Handler handler) {
+    ReadyEvent.maybeDelegate(this);
     return addHandler(handler, ReadyEvent.getType());
   }
 
@@ -581,7 +575,7 @@ public class CalendarPanel extends Split implements AppointmentEvent.Handler, Pr
 
   void setDate(JustDate date, boolean sync) {
     if (date != null && !date.equals(calendar.getDate())) {
-      calendar.update(calendar.getType(), date, calendar.getDisplayedDays(), null);
+      calendar.update(calendar.getType(), date, calendar.getDisplayedDays());
       if (sync) {
         CalendarKeeper.synchronizeDate(calendarId, date, false);
       }
@@ -593,7 +587,7 @@ public class CalendarPanel extends Split implements AppointmentEvent.Handler, Pr
     getSettings().loadFrom(row, columns);
 
     int viewIndex = updateViews(getSettings());
-    boolean updated = activateView(views.get(viewIndex), null);
+    boolean updated = activateView(views.get(viewIndex));
 
     if (requery) {
       refresh(true);
@@ -614,7 +608,7 @@ public class CalendarPanel extends Split implements AppointmentEvent.Handler, Pr
     calendar.setAttendees(attIds, refresh);
   }
 
-  private boolean activateView(ViewType view, IntCallback callback) {
+  private boolean activateView(ViewType view) {
     if (view == null) {
       return false;
     }
@@ -657,7 +651,7 @@ public class CalendarPanel extends Split implements AppointmentEvent.Handler, Pr
         break;
     }
 
-    boolean changed = calendar.update(type, date, days, callback);
+    boolean changed = calendar.update(type, date, days);
     if (changed) {
       CalendarKeeper.synchronizeDate(calendarId, date, false);
       refreshDateBox();
@@ -751,7 +745,7 @@ public class CalendarPanel extends Split implements AppointmentEvent.Handler, Pr
   }
 
   private void refresh(boolean scroll) {
-    calendar.loadItems(true, scroll, null);
+    calendar.loadItems(true, scroll);
   }
 
   private void refreshCalendar(boolean scroll) {

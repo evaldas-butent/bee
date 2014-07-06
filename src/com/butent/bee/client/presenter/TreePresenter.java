@@ -16,7 +16,6 @@ import com.butent.bee.client.dialog.ConfirmationCallback;
 import com.butent.bee.client.dialog.Icon;
 import com.butent.bee.client.dialog.InputCallback;
 import com.butent.bee.client.event.logical.CatchEvent;
-import com.butent.bee.client.event.logical.ReadyEvent;
 import com.butent.bee.client.ui.FormDescription;
 import com.butent.bee.client.utils.Evaluator;
 import com.butent.bee.client.view.HeaderView;
@@ -27,7 +26,6 @@ import com.butent.bee.client.view.form.FormImpl;
 import com.butent.bee.client.view.form.FormView;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
-import com.butent.bee.shared.Consumer;
 import com.butent.bee.shared.data.BeeColumn;
 import com.butent.bee.shared.data.BeeRow;
 import com.butent.bee.shared.data.BeeRowSet;
@@ -119,12 +117,7 @@ public class TreePresenter extends AbstractPresenter implements CatchEvent.Catch
     this.catchHandler = getView().addCatchHandler(this);
 
     if (BeeUtils.isEmpty(relationColumnName)) {
-      requery(new Consumer<Boolean>() {
-        @Override
-        public void accept(Boolean input) {
-          ReadyEvent.fire(getView());
-        }
-      });
+      requery();
     }
   }
 
@@ -201,7 +194,7 @@ public class TreePresenter extends AbstractPresenter implements CatchEvent.Catch
         break;
 
       case REFRESH:
-        requery(null);
+        requery();
         break;
 
       default:
@@ -234,7 +227,7 @@ public class TreePresenter extends AbstractPresenter implements CatchEvent.Catch
 
   public void updateRelation(Long parentId) {
     this.relationId = parentId;
-    requery(null);
+    requery();
   }
 
   private void addBranch(Long parentId, Map<Long, List<Long>> hierarchy, Map<Long, IsRow> items) {
@@ -364,7 +357,7 @@ public class TreePresenter extends AbstractPresenter implements CatchEvent.Catch
   private TreeView getView() {
     return treeView;
   }
-
+  
   private void removeItem() {
     final IsRow data = getView().getSelectedItem();
 
@@ -389,7 +382,7 @@ public class TreePresenter extends AbstractPresenter implements CatchEvent.Catch
     }
   }
 
-  private void requery(final Consumer<Boolean> callback) {
+  private void requery() {
     Filter flt = null;
 
     if (!BeeUtils.isEmpty(relationColumnName)) {
@@ -408,18 +401,14 @@ public class TreePresenter extends AbstractPresenter implements CatchEvent.Catch
         getView().removeItems();
 
         if (result.isEmpty()) {
-          if (callback != null) {
-            callback.accept(true);
-          }
+          getView().afterRequery();
           return;
         }
         int parentIndex = result.getColumnIndex(parentColumnName);
 
         if (Objects.equal(parentIndex, BeeConst.UNDEF)) {
           BeeKeeper.getScreen().notifySevere("Parent column not found", parentColumnName);
-          if (callback != null) {
-            callback.accept(false);
-          }
+          getView().afterRequery();
           return;
         }
         Map<Long, List<Long>> hierarchy = Maps.newLinkedHashMap();
@@ -442,9 +431,7 @@ public class TreePresenter extends AbstractPresenter implements CatchEvent.Catch
           }
         }
         
-        if (callback != null) {
-          callback.accept(true);
-        }
+        getView().afterRequery();
       }
     });
   }

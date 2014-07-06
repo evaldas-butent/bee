@@ -23,6 +23,7 @@ import com.butent.bee.client.utils.Command;
 import com.butent.bee.client.widget.Image;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
+import com.butent.bee.shared.State;
 import com.butent.bee.shared.data.IsRow;
 import com.butent.bee.shared.ui.Action;
 import com.butent.bee.shared.ui.UserInterface.Component;
@@ -65,6 +66,8 @@ public class TreeContainer extends Flow implements TreeView, SelectionHandler<Tr
 
   private final String caption;
   private final boolean hasDnD;
+  
+  private State state;
 
   public TreeContainer(String caption, boolean hideActions, String viewName, String favorite) {
     super(STYLE_NAME);
@@ -140,11 +143,6 @@ public class TreeContainer extends Flow implements TreeView, SelectionHandler<Tr
   }
 
   @Override
-  public HandlerRegistration addReadyHandler(ReadyEvent.Handler handler) {
-    return addHandler(handler, ReadyEvent.getType());
-  }
-  
-  @Override
   public void addItem(Long parentId, String text, IsRow item, boolean focus) {
     Assert.notNull(item);
     long id = item.getId();
@@ -165,10 +163,26 @@ public class TreeContainer extends Flow implements TreeView, SelectionHandler<Tr
       getTree().ensureSelectedItemVisible();
     }
   }
+  
+  @Override
+  public HandlerRegistration addReadyHandler(ReadyEvent.Handler handler) {
+    return addHandler(handler, ReadyEvent.getType());
+  }
 
   @Override
   public HandlerRegistration addSelectionHandler(SelectionHandler<IsRow> handler) {
     return addHandler(handler, SelectionEvent.getType());
+  }
+
+  @Override
+  public void afterRequery() {
+    if (getState() == null) {
+      setState(State.INITIALIZED);
+      
+      if (isAttached()) {
+        ReadyEvent.fire(this);
+      }
+    }
   }
 
   @Override
@@ -263,11 +277,21 @@ public class TreeContainer extends Flow implements TreeView, SelectionHandler<Tr
   }
 
   @Override
+  public State getState() {
+    return state;
+  }
+
+  @Override
   public TreePresenter getTreePresenter() {
     if (viewPresenter instanceof TreePresenter) {
       return (TreePresenter) viewPresenter;
     }
     return null;
+  }
+
+  @Override
+  public String getViewName() {
+    return (getTreePresenter() == null) ? null : getTreePresenter().getViewName();
   }
 
   @Override
@@ -355,6 +379,11 @@ public class TreeContainer extends Flow implements TreeView, SelectionHandler<Tr
   }
 
   @Override
+  public void setState(State state) {
+    this.state = state;
+  }
+
+  @Override
   public void setViewPresenter(Presenter viewPresenter) {
     this.viewPresenter = viewPresenter;
   }
@@ -373,9 +402,14 @@ public class TreeContainer extends Flow implements TreeView, SelectionHandler<Tr
       getTree().setSelectedItem(treeItem);
     }
   }
-
-  private void setFavorite(List<String> favorite) {
-    BeeUtils.overwrite(this.favorite, favorite);
+  
+  @Override
+  protected void onLoad() {
+    super.onLoad();
+    
+    if (getState() == State.INITIALIZED) {
+      ReadyEvent.fire(this);
+    }
   }
 
   private Tree getTree() {
@@ -389,8 +423,7 @@ public class TreeContainer extends Flow implements TreeView, SelectionHandler<Tr
     items.remove(((IsRow) item.getUserObject()).getId());
   }
 
-  @Override
-  public String getViewName() {
-    return (getTreePresenter() == null) ? null : getTreePresenter().getViewName();
+  private void setFavorite(List<String> favorite) {
+    BeeUtils.overwrite(this.favorite, favorite);
   }
 }
