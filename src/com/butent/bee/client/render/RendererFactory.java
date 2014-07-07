@@ -72,8 +72,7 @@ public final class RendererFactory {
       if (renderColumns.size() == 1) {
         int index = DataUtils.getColumnIndex(renderColumns.get(0), dataColumns);
         if (BeeConst.isUndef(index)) {
-          logger.severe("render column not found", renderColumns);
-          return null;
+          return new SimpleRenderer(CellSource.forProperty(renderColumns.get(0), ValueType.TEXT));
         } else {
           return new SimpleRenderer(CellSource.forColumn(dataColumns.get(index), index));
         }

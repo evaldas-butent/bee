@@ -658,8 +658,7 @@ final class ServiceCalendar extends TimeBoard {
 
     } else {
       panel.setTitle(BeeUtils.buildLines(date.getTitle(), BeeConst.STRING_EMPTY,
-          object.getTitle(), BeeConst.STRING_EMPTY));
-      object.appendMainCriteriaTitle(panel);
+          object.getTitle()));
       bindOpener(panel, VIEW_SERVICE_OBJECTS, objectId);
     }
 

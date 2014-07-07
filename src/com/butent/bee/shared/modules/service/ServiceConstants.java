@@ -114,6 +114,7 @@ public final class ServiceConstants {
   public static final String GRID_OBJECT_DEFECTS = "ObjectDefects";
   
   public static final String PROP_MAIN_ITEM = "MainItem";
+  public static final String PROP_CRITERIA = "Criteria";
 
   public static final String STYLE_SHEET = "service";
   

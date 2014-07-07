@@ -647,11 +647,7 @@ public final class Relation implements BeeSerializable, HasInfo, HasViewName {
     }
 
     if (!BeeUtils.isEmpty(displCols)) {
-      if (sourceInfo == null) {
-        setChoiceColumns(displCols);
-      } else {
-        setChoiceColumns(sourceInfo.parseColumns(displCols));
-      }
+      setChoiceColumns(displCols);
     }
 
     if (!BeeUtils.isEmpty(searchCols)) {

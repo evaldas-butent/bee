@@ -1637,9 +1637,14 @@ public class DataSelector extends Composite implements Editor, HasVisibleLines, 
       if (!getCellRenderers().containsKey(i)) {
         int index = dataInfo.getColumnIndex(getChoiceColumns().get(i));
 
-        CellSource cellSource = CellSource.forColumn(dataInfo.getColumns().get(index), index);
-        AbstractCellRenderer renderer = new SimpleRenderer(cellSource);
+        CellSource cellSource;
+        if (BeeConst.isUndef(index)) {
+          cellSource = CellSource.forProperty(getChoiceColumns().get(i), ValueType.TEXT);
+        } else {
+          cellSource = CellSource.forColumn(dataInfo.getColumns().get(index), index);
+        }
 
+        AbstractCellRenderer renderer = new SimpleRenderer(cellSource);
         getCellRenderers().put(i, renderer);
       }
     }

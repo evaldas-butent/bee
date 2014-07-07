@@ -1,5 +1,7 @@
 package com.butent.bee.server.modules.service;
 
+import com.google.common.collect.ArrayListMultimap;
+import com.google.common.collect.Multimap;
 import com.google.common.eventbus.Subscribe;
 
 import static com.butent.bee.shared.modules.administration.AdministrationConstants.*;
@@ -42,7 +44,10 @@ import com.butent.bee.shared.modules.BeeParameter;
 import com.butent.bee.shared.rights.Module;
 import com.butent.bee.shared.time.JustDate;
 import com.butent.bee.shared.time.TimeUtils;
+import com.butent.bee.shared.utils.ArrayUtils;
 import com.butent.bee.shared.utils.BeeUtils;
+import com.butent.bee.shared.utils.Codec;
+import com.butent.bee.shared.utils.Property;
 
 import java.util.Collection;
 import java.util.HashMap;
@@ -514,7 +519,7 @@ public class ServiceModuleBean implements BeeModule {
     if (minDate != null && maxDate != null && BeeUtils.isLess(maxDate, minDate)) {
       maxDate = JustDate.copyOf(minDate);
     }
-    
+
     Long minTime = (minDate == null) ? null : TimeUtils.startOfDay(minDate, -1).getTime();
     Long maxTime = (maxDate == null) ? null : TimeUtils.startOfDay(maxDate, 1).getTime();
 
@@ -574,6 +579,32 @@ public class ServiceModuleBean implements BeeModule {
     return qs.getData(query);
   }
 
+  private Multimap<Long, Property> getCalendarObjectCriteria(SimpleRowSet objects) {
+    Multimap<Long, Property> criteria = ArrayListMultimap.create();
+
+    BeeRowSet data = qs.getViewData(VIEW_SERVICE_OBJECT_CRITERIA,
+        Filter.isNull(COL_SERVICE_CRITERIA_GROUP_NAME));
+    if (DataUtils.isEmpty(data)) {
+      return criteria;
+    }
+
+    Long[] objIds = objects.getLongColumn(sys.getIdName(TBL_SERVICE_OBJECTS));
+
+    int objIndex = data.getColumnIndex(COL_SERVICE_OBJECT);
+    int nameIndex = data.getColumnIndex(COL_SERVICE_CRITERION_NAME);
+    int valueIndex = data.getColumnIndex(COL_SERVICE_CRITERION_VALUE);
+
+    for (BeeRow row : data) {
+      Long objId = row.getLong(objIndex);
+
+      if (ArrayUtils.contains(objIds, objId)) {
+        criteria.put(objId, new Property(row.getString(nameIndex), row.getString(valueIndex)));
+      }
+    }
+
+    return criteria;
+  }
+
   private SimpleRowSet getCalendarObjects() {
     String idName = sys.getIdName(TBL_SERVICE_OBJECTS);
 
@@ -594,6 +625,7 @@ public class ServiceModuleBean implements BeeModule {
         .addField(TBL_SERVICE_TREE, COL_SERVICE_CATEGORY_NAME, ALS_SERVICE_CATEGORY_NAME)
         .addField(aliasCustomers, COL_COMPANY_NAME, ALS_SERVICE_CUSTOMER_NAME)
         .addField(aliasContractors, COL_COMPANY_NAME, ALS_SERVICE_CONTRACTOR_NAME)
+        .addConstant(BeeConst.STRING_SPACE, PROP_CRITERIA)
         .addFrom(TBL_SERVICE_OBJECTS)
         .addFromLeft(TBL_SERVICE_TREE, sys.joinTables(TBL_SERVICE_TREE,
             TBL_SERVICE_OBJECTS, COL_SERVICE_CATEGORY))
@@ -606,7 +638,23 @@ public class ServiceModuleBean implements BeeModule {
         .setWhere(where)
         .addOrder(TBL_SERVICE_OBJECTS, COL_SERVICE_ADDRESS, idName);
 
-    return qs.getData(query);
+    SimpleRowSet data = qs.getData(query);
+    
+    if (!DataUtils.isEmpty(data)) {
+      Multimap<Long, Property> criteria = getCalendarObjectCriteria(data);
+
+      if (!criteria.isEmpty()) {
+        for (SimpleRow row : data) {
+          Long objId = row.getLong(idName);
+          
+          if (criteria.containsKey(objId)) {
+            row.setValue(PROP_CRITERIA, Codec.beeSerialize(criteria.get(objId)));
+          }
+        }
+      }
+    }
+    
+    return data;
   }
 
   private SimpleRowSet getCalendarRecurringTasks(Set<Long> taskTypes, Long minTime, Long maxTime) {
