@@ -33,6 +33,7 @@ public final class Service {
   public static final String GET_DIGEST = SYS_SERVICE_PREFIX + "get_digest";
   public static final String GET_FILES = SYS_SERVICE_PREFIX + "get_files";
   public static final String GET_FLAGS = SYS_SERVICE_PREFIX + "get_flags";
+  public static final String RUN = SYS_SERVICE_PREFIX + "run";
 
   public static final String INVOKE = RPC_SERVICE_PREFIX + "invoke";
 
@@ -119,9 +120,6 @@ public final class Service {
   public static final String RPC_VAR_METH = RPC_VAR_SYS_PREFIX + "meth";
 
   public static final String VAR_USER = RPC_VAR_PREFIX + "user";
-
-  public static final String VAR_CLASS_NAME = RPC_VAR_PREFIX + "class_name";
-  public static final String VAR_PACKAGE_LIST = RPC_VAR_PREFIX + "package_list";
 
   public static final String VAR_JDBC_QUERY = RPC_VAR_PREFIX + "jdbc_query";
   public static final String VAR_CONNECTION_AUTO_COMMIT = RPC_VAR_PREFIX + "conn_auto_commit";

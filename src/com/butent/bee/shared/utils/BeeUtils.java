@@ -235,7 +235,7 @@ public final class BeeUtils {
     }
     return sb.toString();
   }
-
+  
   public static String buildLines(String... lines) {
     if (lines == null) {
       return null;
@@ -502,7 +502,7 @@ public final class BeeUtils {
       return src.trim().toLowerCase().contains(ctxt.trim().toLowerCase());
     }
   }
-  
+
   public static boolean containsWhitespace(CharSequence cs) {
     if (cs == null) {
       return false;
@@ -514,7 +514,7 @@ public final class BeeUtils {
     }
     return false;
   }
-
+  
   /**
    * Counts the appearances of the specified character {@code ch} in a CharSequence.
    * 
@@ -568,9 +568,17 @@ public final class BeeUtils {
     }
     return src.substring(0, start) + src.substring(end);
   }
-  
+
   public static double div(int x, int y) {
     return x / (double) y;
+  }
+  
+  public static String embrace(String s) {
+    if (isEmpty(s)) {
+      return BeeConst.STRING_EMPTY;
+    } else {
+      return BeeConst.STRING_LEFT_BRACE + s + BeeConst.STRING_RIGHT_BRACE;
+    }
   }
 
   /**

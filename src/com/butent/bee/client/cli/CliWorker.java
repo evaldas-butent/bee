@@ -284,6 +284,9 @@ public final class CliWorker {
     } else if ("cornify".equals(z)) {
       cornify(arr);
 
+    } else if ("create".equals(z)) {
+      createResource(args, errorPopup);
+
     } else if (z.startsWith("dbinf")) {
       getDbInfo(args);
 
@@ -474,6 +477,9 @@ public final class CliWorker {
     } else if ("rts".equals(z)) {
       scheduleTasks(arr, errorPopup);
 
+    } else if ("run".equals(z)) {
+      BeeKeeper.getRpc().sendText(Service.RUN, args);
+      
     } else if (z.startsWith("selector") && arr.length >= 2) {
       querySelector(z, args, errorPopup);
 
@@ -814,6 +820,18 @@ public final class CliWorker {
     } catch (err) {
     }
   }-*/;
+
+  private static void createResource(String args, boolean errorPopup) {
+    if (BeeUtils.isEmpty(args)) {
+      showError(errorPopup, "path not specified");
+
+    } else {
+      Resource resource = new Resource(args, BeeConst.STRING_EMPTY);
+      ResourceEditor resourceEditor = new ResourceEditor(resource);
+
+      BeeKeeper.getScreen().show(resourceEditor);
+    }
+  }
 
   private static void debugWithSeparator(String message) {
     logger.debug(message);
@@ -1587,22 +1605,14 @@ public final class CliWorker {
   }
 
   private static void getClassInfo(String args, boolean errorPopup) {
-    Pair<String, String> params = Pair.split(args);
-
-    String cls = (params == null) ? null : params.getA();
-    String pck = (params == null) ? null : params.getB();
-
-    if (BeeUtils.isEmpty(cls)) {
+    if (BeeUtils.isEmpty(args)) {
       showError(errorPopup, "Class name not specified");
 
-    } else if (cls.length() < 2) {
-      showError(errorPopup, "Class name", cls, "too short");
+    } else if (args.length() < 2) {
+      showError(errorPopup, "Class name", args, "too short");
 
     } else {
-      BeeKeeper.getRpc().makePostRequest(Service.GET_CLASS_INFO,
-          XmlUtils.createString(Service.VAR_DATA,
-              Service.VAR_CLASS_NAME, cls, Service.VAR_PACKAGE_LIST, pck),
-          ResponseHandler.callback(args));
+      BeeKeeper.getRpc().sendText(Service.GET_CLASS_INFO, args, ResponseHandler.callback(args));
     }
   }
 

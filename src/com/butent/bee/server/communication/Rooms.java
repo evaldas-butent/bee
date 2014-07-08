@@ -1,6 +1,8 @@
 package com.butent.bee.server.communication;
 
+import com.butent.bee.server.Config;
 import com.butent.bee.server.http.RequestInfo;
+import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.Service;
 import com.butent.bee.shared.communication.ChatRoom;
 import com.butent.bee.shared.communication.ResponseObject;
@@ -24,8 +26,12 @@ public final class Rooms {
   private static Queue<ChatRoom> chatRooms = new ConcurrentLinkedQueue<>();
 
   static {
-    chatRooms.add(new ChatRoom("101", ChatRoom.Type.PUBLIC,
-        emptyTextMessages(ChatRoom.DEFAULT_CAPACITY)));
+    String defRoom = Config.getProperty("DefaultChatRoom");
+
+    if (!BeeUtils.isEmpty(defRoom) && !BeeConst.STRING_MINUS.equals(defRoom)) {
+      chatRooms.add(new ChatRoom(defRoom.trim(), ChatRoom.Type.PUBLIC,
+          emptyTextMessages(ChatRoom.DEFAULT_CAPACITY)));
+    }
   }
 
   public static boolean addMessage(ChatRoom room, TextMessage message) {
