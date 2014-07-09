@@ -133,7 +133,7 @@ public class ServiceModuleBean implements BeeModule {
           List<Long> rowIds = rowSet.getRowIds();
 
           BeeView view = sys.getView(VIEW_SERVICE_OBJECT_CRITERIA);
-          SqlSelect query = view.getQuery();
+          SqlSelect query = view.getQuery(usr.getCurrentUserId());
 
           query.setWhere(SqlUtils.and(query.getWhere(),
               SqlUtils.isNull(view.getSourceAlias(), COL_SERVICE_CRITERIA_GROUP_NAME),

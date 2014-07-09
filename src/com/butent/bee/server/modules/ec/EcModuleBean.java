@@ -504,7 +504,7 @@ public class EcModuleBean implements BeeModule {
 
       if (filter != null) {
         clause = SqlUtils.in(TBL_TCD_ORPHANS, sys.getIdName(TBL_TCD_ORPHANS),
-            sys.getView(TBL_TCD_ORPHANS).getQuery(filter, null)
+            sys.getView(TBL_TCD_ORPHANS).getQuery(usr.getCurrentUserId(), filter)
                 .resetFields()
                 .addFields(TBL_TCD_ORPHANS, sys.getIdName(TBL_TCD_ORPHANS)));
       }

@@ -16,7 +16,8 @@
 
       <SimpleJoin name="Sender" joinType="LEFT">
         <SimpleColumn name="Email" alias="SenderEmail" />
-        <ExternalJoin name="Email" source="Addressbook" joinType="LEFT">
+        <ExternalJoin name="Email" source="Addressbook" joinType="LEFT" filter="SenderUser={u}">
+          <HiddenColumn name="User" alias="SenderUser" />
           <SimpleColumn name="Label" alias="SenderLabel" />
         </ExternalJoin>
       </SimpleJoin>
@@ -26,7 +27,8 @@
 
         <SimpleJoin name="Address" joinType="LEFT">
           <AggregateColumn name="Email" alias="RecipientEmail" aggregate="MAX" />
-          <ExternalJoin name="Email" source="Addressbook" joinType="LEFT">
+          <ExternalJoin name="Email" source="Addressbook" joinType="LEFT" filter="RecipientUser={u}">
+            <HiddenColumn name="User" alias="RecipientUser" />
             <AggregateColumn name="Label" alias="RecipientLabel" aggregate="MAX" />
           </ExternalJoin>
         </SimpleJoin>
