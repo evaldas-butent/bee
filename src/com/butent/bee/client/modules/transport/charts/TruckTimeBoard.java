@@ -3,10 +3,9 @@ package com.butent.bee.client.modules.transport.charts;
 import static com.butent.bee.shared.modules.transport.TransportConstants.*;
 
 import com.butent.bee.client.BeeKeeper;
-import com.butent.bee.client.Callback;
 import com.butent.bee.client.communication.ResponseCallback;
 import com.butent.bee.client.modules.transport.TransportHandler;
-import com.butent.bee.client.ui.IdentifiableWidget;
+import com.butent.bee.client.view.ViewCallback;
 import com.butent.bee.shared.communication.ResponseObject;
 import com.butent.bee.shared.i18n.Localized;
 
@@ -15,7 +14,7 @@ final class TruckTimeBoard extends VehicleTimeBoard {
   static final String SUPPLIER_KEY = "truck_time_board";
   private static final String DATA_SERVICE = SVC_GET_TRUCK_TB_DATA;
 
-  static void open(final Callback<IdentifiableWidget> callback) {
+  static void open(final ViewCallback callback) {
     BeeKeeper.getRpc().makePostRequest(TransportHandler.createArgs(DATA_SERVICE),
         new ResponseCallback() {
           @Override

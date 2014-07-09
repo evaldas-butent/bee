@@ -58,6 +58,8 @@ public class XmlView {
   public static class XmlSimpleJoin extends XmlColumn {
     @XmlAttribute
     public String joinType;
+    @XmlAttribute
+    public String filter;
     @XmlElementRef
     public Collection<XmlColumn> columns;
   }

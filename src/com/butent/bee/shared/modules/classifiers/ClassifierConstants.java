@@ -162,6 +162,9 @@ public final class ClassifierConstants {
 
   public static final String ALS_CATEGORY_PARENT_NAME = "ParentName";
 
+  public static final String PROP_COMPANY_NAMES = "CompanyNames";
+  public static final String PROP_COMPANY_IDS = "CompanyIds";
+  
   public static final String FILTER_COMPANY_CREATION_AND_TYPE = "company_creation_and_type";
   public static final String FILTER_COMPANY_USAGE = "company_usage";
 

@@ -1,8 +1,6 @@
 package com.butent.bee.client.view;
 
 import com.google.common.collect.ImmutableSet;
-import com.google.common.collect.Lists;
-import com.google.common.collect.Sets;
 import com.google.gwt.user.client.ui.HasOneWidget;
 import com.google.gwt.user.client.ui.HasWidgets;
 import com.google.gwt.user.client.ui.Widget;
@@ -17,17 +15,19 @@ import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.data.filter.Filter;
 import com.butent.bee.shared.utils.BeeUtils;
 
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashSet;
 import java.util.List;
 
 public final class ViewHelper {
-  
+
   private static final ImmutableSet<String> NO_EXCLUSIONS = ImmutableSet.of();
 
   public static Filter getFilter(HasSearch container, Provider dataProvider) {
     return getFilter(container, dataProvider, NO_EXCLUSIONS);
   }
-  
+
   public static Filter getFilter(HasSearch container, Provider dataProvider,
       ImmutableSet<String> excludeSearchers) {
     Assert.notNull(container);
@@ -38,7 +38,7 @@ public final class ViewHelper {
       return null;
     }
 
-    List<Filter> filters = Lists.newArrayListWithCapacity(searchers.size());
+    List<Filter> filters = new ArrayList<>();
     for (SearchView search : searchers) {
       Filter flt = search.getFilter(dataProvider.getColumns(), dataProvider.getIdColumnName(),
           dataProvider.getVersionColumnName(), excludeSearchers);
@@ -50,14 +50,14 @@ public final class ViewHelper {
   }
 
   public static Collection<GridView> getGrids(Widget root) {
-    Collection<GridView> grids = Sets.newHashSet();
+    Collection<GridView> grids = new HashSet<>();
 
     if (root instanceof GridView) {
       grids.add((GridView) root);
 
     } else if (root instanceof HasGridView) {
       grids.add(((HasGridView) root).getGridView());
-    
+
     } else if (root instanceof HasWidgets) {
       for (Widget child : (HasWidgets) root) {
         grids.addAll(getGrids(child));
@@ -66,7 +66,7 @@ public final class ViewHelper {
     } else if (root instanceof HasOneWidget) {
       grids.addAll(getGrids(((HasOneWidget) root).getWidget()));
     }
-    
+
     return grids;
   }
 
@@ -83,7 +83,7 @@ public final class ViewHelper {
 
   public static Collection<PagerView> getPagers(HasWidgets container) {
     Assert.notNull(container);
-    Collection<PagerView> pagers = Sets.newHashSet();
+    Collection<PagerView> pagers = new HashSet<>();
 
     for (Widget widget : container) {
       if (widget instanceof PagerView) {
@@ -99,7 +99,7 @@ public final class ViewHelper {
     }
     return pagers;
   }
-  
+
   public static PresenterCallback getPresenterCallback() {
     if (BeeKeeper.getUser().openInNewTab()) {
       return PresenterCallback.SHOW_IN_NEW_TAB;
@@ -110,7 +110,7 @@ public final class ViewHelper {
 
   public static Collection<SearchView> getSearchers(HasWidgets container) {
     Assert.notNull(container);
-    Collection<SearchView> searchers = Sets.newHashSet();
+    Collection<SearchView> searchers = new HashSet<>();
 
     for (Widget widget : container) {
       if (widget instanceof SearchView) {

@@ -7,6 +7,7 @@ import com.google.gwt.dom.client.EventTarget;
 import com.google.gwt.dom.client.Node;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
+import com.google.gwt.event.shared.HandlerRegistration;
 import com.google.gwt.user.client.Event;
 import com.google.gwt.user.client.ui.Widget;
 
@@ -19,6 +20,7 @@ import com.butent.bee.client.event.EventUtils;
 import com.butent.bee.client.event.logical.ActiveRowChangeEvent;
 import com.butent.bee.client.event.logical.DataRequestEvent;
 import com.butent.bee.client.event.logical.ParentRowEvent;
+import com.butent.bee.client.event.logical.ReadyEvent;
 import com.butent.bee.client.event.logical.RenderingEvent;
 import com.butent.bee.client.grid.GridFactory;
 import com.butent.bee.client.layout.Split;
@@ -77,6 +79,8 @@ public class GridContainerImpl extends Split implements GridContainerView, HasNa
   private static final Set<Action> HEADER_ACTIONS =
       EnumSet.of(Action.REFRESH, Action.FILTER, Action.REMOVE_FILTER, Action.ADD, Action.DELETE,
           Action.MENU, Action.CLOSE);
+  
+  private final String supplierKey;
 
   private Presenter viewPresenter;
 
@@ -102,13 +106,21 @@ public class GridContainerImpl extends Split implements GridContainerView, HasNa
 
   private boolean resizeSuspended;
 
-  public GridContainerImpl(String gridName) {
+  public GridContainerImpl(String gridName, String supplierKey) {
     super(-1);
 
     addStyleName(STYLE_NAME);
     if (!BeeUtils.isEmpty(gridName)) {
       addStyleName(StyleUtils.CLASS_NAME_PREFIX + "grid-" + gridName.trim());
     }
+    
+    this.supplierKey = supplierKey; 
+  }
+
+  @Override
+  public HandlerRegistration addReadyHandler(ReadyEvent.Handler handler) {
+    ReadyEvent.maybeDelegate(this);
+    return addHandler(handler, ReadyEvent.getType());
   }
 
   @Override
@@ -152,7 +164,7 @@ public class GridContainerImpl extends Split implements GridContainerView, HasNa
       if (!enabledActions.isEmpty()) {
         enabledActions.retainAll(HEADER_ACTIONS);
       }
-      
+
       Set<Action> disabledActions = new HashSet<>(gridDescription.getDisabledActions());
       Set<Action> hiddenActions = new HashSet<>();
 
@@ -181,7 +193,7 @@ public class GridContainerImpl extends Split implements GridContainerView, HasNa
       if (!disabledActions.contains(Action.MENU)) {
         enabledActions.add(Action.MENU);
       }
-      
+
       FaLabel autoFit = new FaLabel(FontAwesome.ARROWS_H, STYLE_AUTO_FIT);
       autoFit.setTitle(Localized.getConstants().autoFit());
 
@@ -286,10 +298,11 @@ public class GridContainerImpl extends Split implements GridContainerView, HasNa
 
   @Override
   public GridView getGridView() {
-    if (getCenter() == null) {
-      return null;
+    if (getCenter() instanceof GridView) {
+      return (GridView) getCenter();
+    } else {
+      return null;      
     }
-    return (GridView) getCenter();
   }
 
   @Override
@@ -336,7 +349,7 @@ public class GridContainerImpl extends Split implements GridContainerView, HasNa
 
   @Override
   public String getSupplierKey() {
-    return getGridView().getGridKey();
+    return supplierKey;
   }
 
   @Override
@@ -576,27 +589,28 @@ public class GridContainerImpl extends Split implements GridContainerView, HasNa
         }
 
         CellGrid grid = getGridView().getGrid();
-        if (!hasPaging()) {
-          grid.refresh();
-          return;
-        }
 
-        Collection<PagerView> pagers = getPagers();
-        if (pagers != null) {
-          for (PagerView pager : pagers) {
-            pager.start(grid);
+        if (hasPaging()) {
+          Collection<PagerView> pagers = getPagers();
+          if (pagers != null) {
+            for (PagerView pager : pagers) {
+              pager.start(grid);
+            }
           }
-        }
 
-        int ps = estimatePageSize();
-        grid.setPageSize(ps, true);
+          int ps = estimatePageSize();
+          grid.setPageSize(ps, true);
 
-        int ds = grid.getDataSize();
-        if (ps > 0 && ps < ds) {
-          grid.getRowData().subList(ps, ds).clear();
-          grid.refresh();
-        } else if (ps > 0 && ps > ds && ds < grid.getRowCount()) {
-          DataRequestEvent.fire(grid, NavigationOrigin.SYSTEM);
+          int ds = grid.getDataSize();
+          if (ps > 0 && ps < ds) {
+            grid.getRowData().subList(ps, ds).clear();
+            grid.refresh();
+          } else if (ps > 0 && ps > ds && ds < grid.getRowCount()) {
+            DataRequestEvent.fire(grid, NavigationOrigin.SYSTEM);
+          } else {
+            grid.refresh();
+          }
+        
         } else {
           grid.refresh();
         }

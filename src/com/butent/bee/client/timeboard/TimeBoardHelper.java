@@ -223,6 +223,20 @@ public final class TimeBoardHelper {
     return BeeUtils.unbox(settings.getBoolean(0, index));
   }
 
+  public static JustDate getDate(BeeRowSet settings, String colName) {
+    if (DataUtils.isEmpty(settings)) {
+      return null;
+    }
+    
+    int index = settings.getColumnIndex(colName);
+    if (BeeConst.isUndef(index)) {
+      logger.severe(settings.getViewName(), colName, "column not found");
+      return null;
+    }
+    
+    return settings.getDate(0, index);
+  }
+
   public static List<HasDateRange> getInactivity(HasDateRange item, Range<JustDate> activeRange) {
     List<HasDateRange> result = Lists.newArrayList();
     if (activeRange == null || item == null || item.getRange() == null) {

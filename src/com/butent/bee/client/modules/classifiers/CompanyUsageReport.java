@@ -220,7 +220,7 @@ public class CompanyUsageReport extends ReportInterceptor {
       widget = form.getWidgetByName(name);
       String idList = parameters.get(name);
       if (widget instanceof MultiSelector && !BeeUtils.isEmpty(idList)) {
-        ((MultiSelector) widget).render(idList);
+        ((MultiSelector) widget).setIds(idList);
       }
     }
 
@@ -404,7 +404,7 @@ public class CompanyUsageReport extends ReportInterceptor {
         new PresenterCallback() {
           @Override
           public void onCreate(Presenter presenter) {
-            Widget widget = presenter.getWidget().asWidget();
+            Widget widget = presenter.getMainView().asWidget();
             StyleUtils.occupy(widget);
 
             getDataContainer().add(widget);

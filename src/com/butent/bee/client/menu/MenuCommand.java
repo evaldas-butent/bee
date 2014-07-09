@@ -39,7 +39,7 @@ public class MenuCommand implements Scheduler.ScheduledCommand {
         break;
       
       case PARAMETERS:
-        GridFactory.openGrid("Parameters", new ParametersGrid(parameters));
+        ParametersGrid.open(parameters);
         break;
 
       case REPORT:
@@ -53,5 +53,13 @@ public class MenuCommand implements Scheduler.ScheduledCommand {
           service.getHandler().onSelection(parameters);
         }
     }
+  }
+
+  public String getParameters() {
+    return parameters;
+  }
+
+  public MenuService getService() {
+    return service;
   }
 }

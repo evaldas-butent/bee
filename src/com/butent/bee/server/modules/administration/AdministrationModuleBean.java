@@ -494,7 +494,8 @@ public class AdministrationModuleBean implements BeeModule {
     }
     BeeView view = sys.getView(viewName);
 
-    SqlSelect query = view.getQuery(Filter.idIn(idList), null).resetFields().resetOrder();
+    SqlSelect query = view.getQuery(usr.getCurrentUserId(), Filter.idIn(idList))
+        .resetFields().resetOrder();
 
     Multimap<String, ViewColumn> columnMap = HashMultimap.create();
     Map<String, Pair<String, String>> idMap = Maps.newHashMap();

@@ -29,6 +29,7 @@ import com.butent.bee.client.event.Binder;
 import com.butent.bee.client.event.EventUtils;
 import com.butent.bee.client.event.HasInputHandlers;
 import com.butent.bee.client.event.InputHandler;
+import com.butent.bee.client.style.StyleUtils;
 import com.butent.bee.client.ui.FormWidget;
 import com.butent.bee.client.ui.UiHelper;
 import com.butent.bee.client.view.edit.EditChangeHandler;
@@ -477,7 +478,7 @@ public class InputText extends CustomWidget implements Editor, TextBox, HasChara
     super.init();
 
     if (isTextBox()) {
-      addStyleName("bee-TextBox");
+      addStyleName(StyleUtils.NAME_TEXT_BOX);
     }
     addStyleName(getDefaultStyleName());
 

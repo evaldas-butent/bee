@@ -30,6 +30,7 @@ import com.butent.bee.client.event.logical.ActiveRowChangeEvent;
 import com.butent.bee.client.event.logical.ActiveWidgetChangeEvent;
 import com.butent.bee.client.event.logical.DataRequestEvent;
 import com.butent.bee.client.event.logical.ParentRowEvent;
+import com.butent.bee.client.event.logical.ReadyEvent;
 import com.butent.bee.client.event.logical.ScopeChangeEvent;
 import com.butent.bee.client.event.logical.SelectionCountChangeEvent;
 import com.butent.bee.client.event.logical.SortEvent;
@@ -379,6 +380,8 @@ public class FormImpl extends Absolute implements FormView, PreviewHandler, Tabu
 
   private String options;
   private final Map<String, String> properties = new HashMap<>();
+  
+  private boolean hasReadyDelegates;
 
   public FormImpl(String formName) {
     super(Position.RELATIVE, Overflow.AUTO);
@@ -429,6 +432,12 @@ public class FormImpl extends Absolute implements FormView, PreviewHandler, Tabu
   @Override
   public HandlerRegistration addReadyForUpdateHandler(ReadyForUpdateEvent.Handler handler) {
     return addHandler(handler, ReadyForUpdateEvent.getType());
+  }
+
+  @Override
+  public HandlerRegistration addReadyHandler(ReadyEvent.Handler handler) {
+    setHasReadyDelegates(ReadyEvent.maybeDelegate(this));
+    return addHandler(handler, ReadyEvent.getType());
   }
 
   @Override
@@ -1641,6 +1650,10 @@ public class FormImpl extends Absolute implements FormView, PreviewHandler, Tabu
     if (getFormInterceptor() != null) {
       getFormInterceptor().onLoad(this);
     }
+    
+    if (!hasReadyDelegates()) {
+      ReadyEvent.fire(this);
+    }
   }
 
   @Override
@@ -1813,6 +1826,10 @@ public class FormImpl extends Absolute implements FormView, PreviewHandler, Tabu
 
   private boolean hasData() {
     return hasData;
+  }
+
+  private boolean hasReadyDelegates() {
+    return hasReadyDelegates;
   }
 
   private boolean isAdding() {
@@ -2048,6 +2065,10 @@ public class FormImpl extends Absolute implements FormView, PreviewHandler, Tabu
 
   private void setHasData(boolean hasData) {
     this.hasData = hasData;
+  }
+
+  private void setHasReadyDelegates(boolean hasReadyDelegates) {
+    this.hasReadyDelegates = hasReadyDelegates;
   }
 
   private void setOldRow(IsRow oldRow) {

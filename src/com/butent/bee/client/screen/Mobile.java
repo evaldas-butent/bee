@@ -61,6 +61,14 @@ public class Mobile extends ScreenImpl {
   }
 
   @Override
+  public void closeAll() {
+    IdentifiableWidget widget = getActiveWidget();
+    if (widget != null) {
+      getScreenPanel().remove(widget);
+    }
+  }
+  
+  @Override
   public void closeWidget(IdentifiableWidget widget) {
     Assert.notNull(widget, "closeWidget: widget is null");
 

@@ -5,7 +5,6 @@ import com.butent.bee.client.data.Queries;
 import com.butent.bee.client.grid.ColumnHeader;
 import com.butent.bee.client.images.Images;
 import com.butent.bee.client.images.star.Stars;
-import com.butent.bee.client.modules.discussions.DiscussionsList.ListType;
 import com.butent.bee.client.presenter.GridPresenter;
 import com.butent.bee.client.render.AttachmentRenderer;
 import com.butent.bee.client.style.StyleUtils;
@@ -30,6 +29,7 @@ import com.butent.bee.shared.data.value.LongValue;
 import com.butent.bee.shared.data.value.ValueType;
 import com.butent.bee.shared.data.view.RowInfo;
 import com.butent.bee.shared.font.FontAwesome;
+import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.modules.administration.AdministrationConstants;
 import com.butent.bee.shared.ui.ColumnDescription;
 import com.butent.bee.shared.ui.GridDescription;
@@ -42,12 +42,18 @@ class DiscussionsGridHandler extends AbstractGridInterceptor {
   private static final int DEFAULT_STAR_COUNT = 3;
   private static final String NAME_STAR = "Star";
 
-  private final ListType type;
+  private final DiscussionsListType type;
   private final Long userId;
 
-  public DiscussionsGridHandler(ListType type) {
+  public DiscussionsGridHandler(DiscussionsListType type) {
     this.type = type;
     this.userId = BeeKeeper.getUser().getUserId();
+  }
+
+  @Override
+  public String getCaption() {
+    return BeeUtils.joinWords(Localized.getConstants().discussions(),
+        BeeUtils.parenthesize(type.getCaption()));
   }
 
   @Override

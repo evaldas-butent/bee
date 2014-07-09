@@ -1925,6 +1925,7 @@ public class TasksModuleBean implements BeeModule {
       }
 
       CronExpression.Builder builder = new CronExpression.Builder(from, until)
+          .id(BeeUtils.toString(rtId))
           .dayOfMonth(DataUtils.getString(rtData, rtRow, COL_RT_DAY_OF_MONTH))
           .month(DataUtils.getString(rtData, rtRow, COL_RT_MONTH))
           .dayOfWeek(DataUtils.getString(rtData, rtRow, COL_RT_DAY_OF_WEEK))

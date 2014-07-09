@@ -1,7 +1,7 @@
 package com.butent.bee.server;
 
+import com.google.common.base.Splitter;
 import com.google.common.collect.Lists;
-import com.google.common.collect.Maps;
 
 import com.butent.bee.server.http.RequestInfo;
 import com.butent.bee.server.io.FileUtils;
@@ -29,13 +29,19 @@ import com.butent.bee.shared.utils.ArrayUtils;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.Codec;
 import com.butent.bee.shared.utils.ExtendedProperty;
-import com.butent.bee.shared.utils.NameUtils;
 import com.butent.bee.shared.utils.Property;
 import com.butent.bee.shared.utils.PropertyUtils;
 
+import java.io.BufferedReader;
 import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.lang.ProcessBuilder.Redirect;
 import java.nio.charset.Charset;
+import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -75,6 +81,9 @@ public class SystemServiceBean {
       response = getFiles();
     } else if (BeeUtils.same(svc, Service.GET_FLAGS)) {
       response = getFlags();
+
+    } else if (BeeUtils.same(svc, Service.RUN)) {
+      response = run(reqInfo);
       
     } else {
       String msg = BeeUtils.joinWords(svc, "system service not recognized");
@@ -86,21 +95,20 @@ public class SystemServiceBean {
   }
 
   private static ResponseObject classInfo(RequestInfo reqInfo) {
-    String cnm = reqInfo.getParameter(Service.VAR_CLASS_NAME);
-    String pck = reqInfo.getParameter(Service.VAR_PACKAGE_LIST);
+    String cnm = reqInfo.getContent();
 
     if (BeeUtils.isEmpty(cnm)) {
-      return ResponseObject.parameterNotFound(reqInfo.getService(), Service.VAR_CLASS_NAME);
+      return ResponseObject.error(reqInfo.getService(), "class name not specified");
     }
 
-    Set<Class<?>> classes = JvmUtils.findClass(cnm, NameUtils.toList(pck));
+    Set<Class<?>> classes = JvmUtils.findClass(cnm);
     if (BeeUtils.isEmpty(classes)) {
-      return ResponseObject.warning("Class not found", cnm, pck);
+      return ResponseObject.warning("class not found", cnm);
     }
     int c = classes.size();
     
-    List<ExtendedProperty> result = Lists.newArrayList();
-    result.add(new ExtendedProperty(cnm, pck, BeeUtils.bracket(c)));
+    List<ExtendedProperty> result = new ArrayList<>();
+    result.add(new ExtendedProperty(cnm, BeeUtils.bracket(c)));
 
     int i = 0;
     if (c > 1) {
@@ -150,7 +158,7 @@ public class SystemServiceBean {
   }
   
   private static ResponseObject getFlags() {
-    Map<String, String> flags = Maps.newHashMap(); 
+    Map<String, String> flags = new HashMap<>(); 
 
     File dir = new File(Config.IMAGE_DIR, Paths.FLAG_DIR);
     File[] files = dir.listFiles();
@@ -216,7 +224,7 @@ public class SystemServiceBean {
         roots = Lists.newArrayList(Config.SOURCE_DIR);
       }
 
-      List<Filter> filters = Lists.newArrayList();
+      List<Filter> filters = new ArrayList<>();
       if (BeeUtils.same(mode, "dir")) {
         filters.add(FileUtils.DIRECTORY_FILTER);
       } else if (BeeUtils.same(mode, "file")) {
@@ -238,7 +246,7 @@ public class SystemServiceBean {
       }
 
       if (files.size() > 1 && !FileNameUtils.hasSeparator(search)) {
-        List<File> nameMatch = Lists.newArrayList();
+        List<File> nameMatch = new ArrayList<>();
         for (File fl : files) {
           if (BeeUtils.same(fl.getName(), search)) {
             nameMatch.add(fl);
@@ -345,6 +353,121 @@ public class SystemServiceBean {
     return response.setCollection(result, Property.class);
   }
 
+  private static ResponseObject run(RequestInfo reqInfo) {
+    String content = reqInfo.getContent();
+    if (BeeUtils.isEmpty(content)) {
+      return ResponseObject.error(reqInfo.getService(), "command not found");
+    }
+    
+    char separator;
+    if (BeeUtils.contains(content, BeeConst.CHAR_SEMICOLON)) {
+      separator = BeeConst.CHAR_SEMICOLON;
+    } else if (BeeUtils.contains(content, BeeConst.CHAR_COMMA)) {
+      separator = BeeConst.CHAR_COMMA;
+    } else {
+      separator = BeeConst.CHAR_SPACE;
+    }
+
+    List<String> command = new ArrayList<>();
+    
+    String directory = null;
+    Map<String, String> env = new HashMap<>();
+    
+    String log = null;
+    Boolean wait = null;
+    
+    Splitter splitter = Splitter.on(separator).omitEmptyStrings().trimResults();
+    for (String s : splitter.split(content)) {
+      if (BeeUtils.contains(s, BeeConst.CHAR_EQ)) {
+        String key = BeeUtils.getPrefix(s, BeeConst.CHAR_EQ);
+        String value = BeeUtils.getSuffix(s, BeeConst.CHAR_EQ);
+        
+        if (BeeUtils.anyEmpty(key, value)) {
+          command.add(s);
+
+        } else if (BeeUtils.same(key, "dir")) {
+          directory = value;
+        } else if (BeeUtils.same(key, "log")) {
+          log = value;
+        } else if (BeeUtils.same(key, "wait")) {
+          wait = BeeUtils.toBoolean(value);
+     
+        } else {
+          env.put(key, value);
+        }
+        
+      } else {
+        command.add(Config.substitutePath(s));
+      }
+    }
+    
+    if (command.isEmpty()) {
+      return ResponseObject.error(reqInfo.getService(), content, "cannot parse command");
+    }
+    
+    logger.info("run", command);
+    
+    ProcessBuilder pb = new ProcessBuilder(command);
+    
+    if (!BeeUtils.isEmpty(directory)) {
+      File dir = new File(Config.substitutePath(directory));
+      pb.directory(dir);
+    
+      logger.debug("working directory", dir.getAbsolutePath());
+    }
+
+    if (!env.isEmpty()) {
+      pb.environment().putAll(env);
+      logger.debug("run environment", env);
+    }
+
+    ResponseObject response = ResponseObject.emptyResponse();
+    response.addInfo(command.toString());
+    
+    if (!BeeUtils.isEmpty(log)) {
+      File file = new File(Config.substitutePath(log));
+
+      if (file.exists()) {
+        pb.redirectOutput(Redirect.appendTo(file));
+      } else {
+        pb.redirectOutput(file);
+      }
+      
+      logger.debug("run log", file.getAbsolutePath());
+      wait = false;
+
+    } else if (wait == null) {
+      wait = true;
+    }
+
+    pb.redirectErrorStream(true);
+    
+    try {
+      Process process = pb.start();
+      
+      if (wait) {
+        InputStream stream = process.getInputStream();
+
+        if (stream != null) {
+          InputStreamReader isr = new InputStreamReader(stream);
+          BufferedReader br = new BufferedReader(isr);
+          
+          String line;
+          while ((line = br.readLine()) != null) {
+            logger.info(line);
+            response.addInfo(line);
+          }
+        }
+      }
+
+    } catch (IOException ex) {
+      logger.error(ex);
+      response.addError(ex);
+    }
+
+    return response;
+  }
+  
   private static ResponseObject saveResource(RequestInfo reqInfo) {
     long start = System.currentTimeMillis();
 
@@ -352,7 +475,8 @@ public class SystemServiceBean {
     if (BeeUtils.isEmpty(pUri)) {
       return ResponseObject.parameterNotFound(Service.SAVE_RESOURCE, Service.RPC_VAR_URI);
     }
-    String uri = Codec.decodeBase64(pUri);
+    
+    String uri = Config.substitutePath(Codec.decodeBase64(pUri));
 
     String md5 = reqInfo.getParameter(Service.RPC_VAR_MD5);
 
@@ -376,11 +500,11 @@ public class SystemServiceBean {
       }
     }
 
-    boolean ok = FileUtils.saveToFile(content, uri);
-    if (ok) {
-      response.addInfo("saved", content.length(), TimeUtils.elapsedSeconds(start));
-    } else {
+    String path = FileUtils.saveToFile(content, uri);
+    if (BeeUtils.isEmpty(path)) {
       response.addError("error saving to", uri);
+    } else {
+      response.addInfo("saved", content.length(), TimeUtils.elapsedSeconds(start), "to", path);
     }
     
     return response;

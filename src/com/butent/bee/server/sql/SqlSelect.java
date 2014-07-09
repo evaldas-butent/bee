@@ -8,6 +8,7 @@ import com.butent.bee.shared.data.SqlConstants.SqlFunction;
 import com.butent.bee.shared.utils.ArrayUtils;
 import com.butent.bee.shared.utils.BeeUtils;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
@@ -16,7 +17,7 @@ import java.util.List;
  * GROUP BY clauses, union, distinct, result limitations support etc).
  */
 
-public class SqlSelect extends HasFrom<SqlSelect> {
+public class SqlSelect extends HasFrom<SqlSelect> implements IsCloneable<SqlSelect> {
 
   public static final int FIELD_EXPR = 0;
   public static final int FIELD_ALIAS = 1;
@@ -575,32 +576,54 @@ public class SqlSelect extends HasFrom<SqlSelect> {
     return getReference();
   }
 
-  /**
-   * Copies the current query and returns it.
-   * 
-   * @return the current SqlSelect query
-   */
+  @Override
   public SqlSelect copyOf() {
+    return copyOf(false);
+  }
+
+  public SqlSelect copyOf(boolean deep) {
     SqlSelect query = new SqlSelect();
 
     if (fieldList != null) {
       query.fieldList = Lists.newArrayList(fieldList);
     }
-    if (getFrom() != null) {
-      query.setFrom(Lists.newArrayList(getFrom()));
-    }
-    query.setWhere(whereClause);
+    List<IsFrom> fromList = getFrom();
 
+    if (fromList != null) {
+      if (deep) {
+        List<IsFrom> froms = new ArrayList<>();
+
+        for (IsFrom from : fromList) {
+          froms.add(from.copyOf());
+        }
+        query.setFrom(froms);
+      } else {
+        query.setFrom(Lists.newArrayList(fromList));
+      }
+    }
+    if (whereClause != null) {
+      query.setWhere(deep ? whereClause.copyOf() : whereClause);
+    }
     if (groupList != null) {
       query.groupList = Lists.newArrayList(groupList);
     }
     if (orderList != null) {
       query.orderList = Lists.newArrayList(orderList);
     }
-    query.setHaving(havingClause);
-
+    if (havingClause != null) {
+      query.setHaving(deep ? havingClause.copyOf() : havingClause);
+    }
     if (unionList != null) {
-      query.unionList = Lists.newArrayList(unionList);
+      if (deep) {
+        List<SqlSelect> unions = new ArrayList<>();
+
+        for (SqlSelect union : unionList) {
+          unions.add(union.copyOf(deep));
+        }
+        query.unionList = unions;
+      } else {
+        query.unionList = Lists.newArrayList(unionList);
+      }
     }
     query.setDistinctMode(distinctMode);
     query.setUnionAllMode(unionAllMode);

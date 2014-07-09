@@ -161,6 +161,8 @@ public final class ServiceConstants {
   public static final String COL_SERVICE_DATE_NOTE = "Note";
 
   public static final String COL_SERVICE_CALENDAR_TASK_TYPES = "CalendarTaskTypes";
+  public static final String COL_SERVICE_CALENDAR_MIN_DATE = "CalendarMinDate";
+  public static final String COL_SERVICE_CALENDAR_MAX_DATE = "CalendarMaxDate";
 
   public static final String COL_DEFECT_SUPPLIER = "Supplier";
   public static final String COL_DEFECT_MANAGER = "Manager";
@@ -185,6 +187,7 @@ public final class ServiceConstants {
   public static final String GRID_SERVICE_OBJECTS = "ServiceObjects";
 
   public static final String PROP_MAIN_ITEM = "MainItem";
+  public static final String PROP_CRITERIA = "Criteria";
 
   public static final String STYLE_SHEET = "service";
   

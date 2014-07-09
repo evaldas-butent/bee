@@ -146,7 +146,7 @@ public class CompanyTypeReport extends ReportInterceptor {
   private static final String DATA_KEY_MONTH = "month";
   
   private static void showDetails(YearMonth ym, Column column, DateTime start, DateTime end,
-      String types, String typesLabel, boolean modal) {
+      String types, String typesLabel) {
     
     List<String> labels = Lists.newArrayList(Localized.getConstants().clients());
     List<String> filterArgs = Lists.newArrayList();
@@ -173,7 +173,7 @@ public class CompanyTypeReport extends ReportInterceptor {
     }
     
     drillDown(GRID_COMPANIES, BeeUtils.join(BeeConst.STRING_SPACE, labels),
-        Filter.custom(FILTER_COMPANY_CREATION_AND_TYPE, filterArgs), modal);
+        Filter.custom(FILTER_COMPANY_CREATION_AND_TYPE, filterArgs));
   }
 
   private static Table<YearMonth, Column, Integer> transformData(SimpleRowSet data) {
@@ -242,7 +242,7 @@ public class CompanyTypeReport extends ReportInterceptor {
     widget = form.getWidgetByName(NAME_TYPES);
     String idList = parameters.get(NAME_TYPES);
     if (widget instanceof MultiSelector && !BeeUtils.isEmpty(idList)) {
-      ((MultiSelector) widget).render(idList);
+      ((MultiSelector) widget).setIds(idList);
     }
     
     super.onLoad(form);
@@ -529,8 +529,7 @@ public class CompanyTypeReport extends ReportInterceptor {
           }
           
           if (BeeUtils.isIndex(columns, index)) {
-            boolean modal = drillModal(event.getNativeEvent());
-            showDetails(ym, columns.get(index), start, end, types, typesLabel, modal);
+            showDetails(ym, columns.get(index), start, end, types, typesLabel);
           }
         }
       }

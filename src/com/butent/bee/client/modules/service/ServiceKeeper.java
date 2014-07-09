@@ -5,7 +5,6 @@ import com.google.common.collect.Lists;
 import static com.butent.bee.shared.modules.service.ServiceConstants.*;
 
 import com.butent.bee.client.BeeKeeper;
-import com.butent.bee.client.Callback;
 import com.butent.bee.client.Global;
 import com.butent.bee.client.communication.ParameterList;
 import com.butent.bee.client.event.logical.SelectorEvent;
@@ -13,9 +12,10 @@ import com.butent.bee.client.grid.GridFactory;
 import com.butent.bee.client.style.StyleUtils;
 import com.butent.bee.client.timeboard.TimeBoard;
 import com.butent.bee.client.ui.FormFactory;
-import com.butent.bee.client.ui.IdentifiableWidget;
-import com.butent.bee.client.ui.WidgetFactory;
-import com.butent.bee.client.ui.WidgetSupplier;
+import com.butent.bee.client.view.View;
+import com.butent.bee.client.view.ViewCallback;
+import com.butent.bee.client.view.ViewFactory;
+import com.butent.bee.client.view.ViewSupplier;
 import com.butent.bee.client.view.grid.interceptor.FileGridInterceptor;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.menu.MenuHandler;
@@ -57,10 +57,10 @@ public final class ServiceKeeper {
     MenuService.SERVICE_CALENDAR.setHandler(new MenuHandler() {
       @Override
       public void onSelection(String parameters) {
-        ServiceCalendar.open(new Callback<IdentifiableWidget>() {
+        ServiceCalendar.open(new ViewCallback() {
           @Override
-          public void onSuccess(IdentifiableWidget result) {
-            BeeKeeper.getScreen().showWidget(result);
+          public void onSuccess(View result) {
+            BeeKeeper.getScreen().show(result);
           }
         }, ObjectStatus.SERVICE_OBJECT);
       }
@@ -96,9 +96,9 @@ public final class ServiceKeeper {
 
     });
 
-    WidgetFactory.registerSupplier(ServiceCalendar.SUPPLIER_KEY, new WidgetSupplier() {
+    ViewFactory.registerSupplier(ServiceCalendar.SUPPLIER_KEY, new ViewSupplier() {
       @Override
-      public void create(Callback<IdentifiableWidget> callback) {
+      public void create(ViewCallback callback) {
         ServiceCalendar.open(callback, ObjectStatus.SERVICE_OBJECT);
       }
     });

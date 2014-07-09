@@ -9,6 +9,7 @@ import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.communication.ParameterList;
 import com.butent.bee.client.data.Data;
 import com.butent.bee.client.grid.GridFactory;
+import com.butent.bee.client.grid.GridFactory.GridOptions;
 import com.butent.bee.client.rights.RightsForm;
 import com.butent.bee.client.style.ColorStyleProvider;
 import com.butent.bee.client.style.ConditionalStyle;
@@ -56,6 +57,12 @@ public final class AdministrationKeeper {
     FormFactory.registerFormInterceptor(FORM_NEW_ROLE, new NewRoleForm());
 
     GridFactory.registerGridInterceptor(NewsConstants.GRID_USER_FEEDS, new UserFeedsInterceptor());
+    
+    GridFactory.registerGridSupplier(
+        GridFactory.getSupplierKey(NewsConstants.GRID_USER_FEEDS, null),
+        NewsConstants.GRID_USER_FEEDS,
+        new UserFeedsInterceptor(BeeKeeper.getUser().getUserId()),
+        GridOptions.forCurrentUserFilter(NewsConstants.COL_UF_USER));
 
     GridFactory.registerGridInterceptor(GRID_USER_GROUP_MEMBERS,
         UniqueChildInterceptor.forUsers(Localized.getConstants().userGroupAddMembers(),

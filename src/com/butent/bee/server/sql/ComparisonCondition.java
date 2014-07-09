@@ -30,6 +30,18 @@ class ComparisonCondition implements IsCondition {
   }
 
   @Override
+  public ComparisonCondition copyOf() {
+    int c = values.length;
+    IsSql[] vals = new IsSql[c];
+
+    for (int i = 0; i < c; i++) {
+      IsSql val = values[i];
+      vals[i] = val instanceof IsCloneable<?> ? ((IsCloneable<?>) val).copyOf() : val;
+    }
+    return new ComparisonCondition(operator, expression, vals);
+  }
+
+  @Override
   public Collection<String> getSources() {
     Collection<String> sources = null;
 

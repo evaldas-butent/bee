@@ -4,9 +4,7 @@ import com.google.common.base.Ascii;
 import com.google.common.base.Splitter;
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.Lists;
-import com.google.common.collect.Maps;
 import com.google.common.collect.Multimap;
-import com.google.common.collect.Sets;
 import com.google.common.collect.TreeMultimap;
 
 import com.butent.bee.shared.Assert;
@@ -20,8 +18,11 @@ import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.Property;
 import com.butent.bee.shared.utils.PropertyUtils;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -55,18 +56,18 @@ public final class CronExpression implements HasInfo {
       }
     }
 
-    private static void itemFailure(Field field, Item item) {
-      logger.severe(field.caption, "invalid item state", item);
+    private static void itemFailure(String id, Field field, Item item) {
+      logger.severe(id, field.caption, "invalid item state", item);
     }
 
-    private static List<Item> parse(Field field, String input) {
-      return parse(field, input, null);
+    private static List<Item> parse(String id, Field field, String input) {
+      return parse(id, field, input, null);
     }
 
-    private static List<Item> parse(Field field, String input,
+    private static List<Item> parse(String id, Field field, String input,
         Consumer<Map<Integer, String>> failureHandler) {
 
-      List<Item> items = Lists.newArrayList();
+      List<Item> items = new ArrayList<>();
       if (BeeUtils.isEmpty(input)) {
         return items;
       }
@@ -78,7 +79,7 @@ public final class CronExpression implements HasInfo {
         }
       }
       
-      Map<Integer, String> failures = Maps.newHashMap();
+      Map<Integer, String> failures = new HashMap<>();
 
       for (int itemIndex = 0; itemIndex < separatorPositions.size(); itemIndex++) {
         int beginIndex = separatorPositions.get(itemIndex) + 1;
@@ -147,7 +148,7 @@ public final class CronExpression implements HasInfo {
           }
 
         } else {
-          List<Token> tokens = tokenize(s);
+          List<Token> tokens = tokenize(id, s);
 
           Token t1 = tokens.get(0);
           Token t2;
@@ -283,7 +284,7 @@ public final class CronExpression implements HasInfo {
 
         } else if (!ok) {
           if (failureHandler == null) {
-            parseFailure(field, input, beginIndex, inputItem);
+            parseFailure(id, field, input, beginIndex, inputItem);
           } else {
             failures.put(beginIndex, inputItem);
           }
@@ -297,8 +298,8 @@ public final class CronExpression implements HasInfo {
       return items;
     }
 
-    private static void parseFailure(Field field, String input, int at, String item) {
-      logger.warning(field.caption, "cannot parse", input, "at", at,
+    private static void parseFailure(String id, Field field, String input, int at, String item) {
+      logger.warning(id, field.caption, "cannot parse", input, "at", at,
           input.equals(item) ? null : BeeUtils.bracket(item));
     }
 
@@ -316,10 +317,12 @@ public final class CronExpression implements HasInfo {
     private String year;
     private WorkdayTransition workdayTransition;
 
-    private final Set<JustDate> exclude = Sets.newHashSet();
-    private final Set<JustDate> include = Sets.newHashSet();
-    private final Set<JustDate> working = Sets.newHashSet();
-    private final Set<JustDate> nonWorking = Sets.newHashSet();
+    private final Set<JustDate> exclude = new HashSet<>();
+    private final Set<JustDate> include = new HashSet<>();
+    private final Set<JustDate> working = new HashSet<>();
+    private final Set<JustDate> nonWorking = new HashSet<>();
+    
+    private String id;
 
     public Builder(DateRange dateRange) {
       this.dateRange = normalizeRange(dateRange);
@@ -333,34 +336,34 @@ public final class CronExpression implements HasInfo {
       CronExpression result = new CronExpression(dateRange, BeeUtils.nvl(workdayTransition,
           WorkdayTransition.DEFAULT));
 
-      List<Item> items = parse(Field.SECONDS, seconds);
+      List<Item> items = parse(id, Field.SECONDS, seconds);
       for (Item item : items) {
         if (item.isSimple()) {
           result.addSeconds(item.getSimpleValues());
         } else {
-          itemFailure(Field.SECONDS, item);
+          itemFailure(id, Field.SECONDS, item);
         }
       }
 
-      items = parse(Field.MINUTES, minutes);
+      items = parse(id, Field.MINUTES, minutes);
       for (Item item : items) {
         if (item.isSimple()) {
           result.addMinutes(item.getSimpleValues());
         } else {
-          itemFailure(Field.MINUTES, item);
+          itemFailure(id, Field.MINUTES, item);
         }
       }
 
-      items = parse(Field.HOURS, hours);
+      items = parse(id, Field.HOURS, hours);
       for (Item item : items) {
         if (item.isSimple()) {
           result.addHours(item.getSimpleValues());
         } else {
-          itemFailure(Field.HOURS, item);
+          itemFailure(id, Field.HOURS, item);
         }
       }
 
-      items = parse(Field.DAY_OF_MONTH, dayOfMonth);
+      items = parse(id, Field.DAY_OF_MONTH, dayOfMonth);
       for (Item item : items) {
         if (item.isSimple()) {
           result.addDaysOfMonth(item.getSimpleValues());
@@ -381,11 +384,11 @@ public final class CronExpression implements HasInfo {
           result.addWeekdayOrdinal(item.lower, item.weekdayOrdinal);
 
         } else {
-          itemFailure(Field.DAY_OF_MONTH, item);
+          itemFailure(id, Field.DAY_OF_MONTH, item);
         }
       }
 
-      items = parse(Field.MONTH, month);
+      items = parse(id, Field.MONTH, month);
       for (Item item : items) {
         if (item.isSimple()) {
           result.addMonths(item.getSimpleValues());
@@ -394,11 +397,11 @@ public final class CronExpression implements HasInfo {
           result.addMonthStep(item.step);
 
         } else {
-          itemFailure(Field.MONTH, item);
+          itemFailure(id, Field.MONTH, item);
         }
       }
 
-      items = parse(Field.DAY_OF_WEEK, dayOfWeek);
+      items = parse(id, Field.DAY_OF_WEEK, dayOfWeek);
       for (Item item : items) {
         if (item.lower != null && item.step != null && item.step > 1) {
           int bound = BeeUtils.nvl(item.upper, item.lower);
@@ -416,16 +419,16 @@ public final class CronExpression implements HasInfo {
           result.addWeekdayOrdinal(item.lower, item.weekdayOrdinal);
 
         } else {
-          itemFailure(Field.DAY_OF_WEEK, item);
+          itemFailure(id, Field.DAY_OF_WEEK, item);
         }
       }
 
-      items = parse(Field.YEAR, year);
+      items = parse(id, Field.YEAR, year);
       for (Item item : items) {
         if (item.isSimple()) {
           result.addYears(item.getSimpleValues());
         } else {
-          itemFailure(Field.YEAR, item);
+          itemFailure(id, Field.YEAR, item);
         }
       }
 
@@ -480,6 +483,11 @@ public final class CronExpression implements HasInfo {
 
     public Builder hours(String input) {
       this.hours = appendItem(hours, input);
+      return this;
+    }
+
+    public Builder id(String input) {
+      this.id = input;
       return this;
     }
 
@@ -726,7 +734,7 @@ public final class CronExpression implements HasInfo {
     }
 
     private Set<Integer> getSimpleValues() {
-      Set<Integer> values = Sets.newHashSet();
+      Set<Integer> values = new HashSet<>();
 
       if (isSimple()) {
         if (upper == null) {
@@ -855,9 +863,9 @@ public final class CronExpression implements HasInfo {
 
   private static BeeLogger logger = LogUtils.getLogger(CronExpression.class);
 
-  private static final List<Property> dayOfMonthExamples = Lists.newArrayList();
-  private static final List<Property> monthExamples = Lists.newArrayList();
-  private static final List<Property> dayOfWeekExamples = Lists.newArrayList();
+  private static final List<Property> dayOfMonthExamples = new ArrayList<>();
+  private static final List<Property> monthExamples = new ArrayList<>();
+  private static final List<Property> dayOfWeekExamples = new ArrayList<>();
 
   public static List<Property> getDayOfMonthExamples() {
     if (dayOfMonthExamples.isEmpty()) {
@@ -956,14 +964,14 @@ public final class CronExpression implements HasInfo {
     return DateRange.closed(lower, upper);
   }
   
-  public static Set<Integer> parseSimpleValues(Field field, String input,
+  public static Set<Integer> parseSimpleValues(String id, Field field, String input,
       Consumer<Map<Integer, String>> failureHandler) {
     Assert.notNull(field);
 
-    Set<Integer> values = Sets.newHashSet();
+    Set<Integer> values = new HashSet<>();
 
     if (!BeeUtils.isEmpty(input)) {
-      List<Item> items = Builder.parse(field, input, failureHandler);
+      List<Item> items = Builder.parse(id, field, input, failureHandler);
       
       for (Item item : items) {
         if (item.isSimple()) {
@@ -1000,7 +1008,7 @@ public final class CronExpression implements HasInfo {
   
   public static List<String> splitItems(String input) {
     if (BeeUtils.isEmpty(input)) {
-      return Lists.newArrayList();
+      return new ArrayList<>();
     } else {
       return Lists.newArrayList(itemSplitter.split(input));
     }
@@ -1048,14 +1056,14 @@ public final class CronExpression implements HasInfo {
       return values.toString();
 
     } else {
-      List<T> list = Lists.newArrayList(values);
+      List<T> list = new ArrayList<>(values);
       Collections.sort(list);
       return list.toString();
     }
   }
 
-  private static List<Token> tokenize(String s) {
-    List<Token> tokens = Lists.newArrayList();
+  private static List<Token> tokenize(String id, String s) {
+    List<Token> tokens = new ArrayList<>();
 
     int i = 0;
     while (i < s.length()) {
@@ -1135,7 +1143,7 @@ public final class CronExpression implements HasInfo {
 
         } else {
           token = new Token(Token.Kind.UNKNOWN, String.valueOf(ch));
-          logger.warning("character not recognized", ch, BeeUtils.bracket(ch));
+          logger.warning(id, s, "character not recognized", ch, BeeUtils.bracket(ch));
         }
       }
 
@@ -1151,31 +1159,31 @@ public final class CronExpression implements HasInfo {
 
   private final WorkdayTransition workdayTransition;
 
-  private final Set<Integer> seconds = Sets.newHashSet();
-  private final Set<Integer> minutes = Sets.newHashSet();
-  private final Set<Integer> hours = Sets.newHashSet();
+  private final Set<Integer> seconds = new HashSet<>();
+  private final Set<Integer> minutes = new HashSet<>();
+  private final Set<Integer> hours = new HashSet<>();
 
-  private final Set<Integer> daysOfMonth = Sets.newHashSet();
-  private final Set<Integer> daySteps = Sets.newHashSet();
+  private final Set<Integer> daysOfMonth = new HashSet<>();
+  private final Set<Integer> daySteps = new HashSet<>();
 
-  private final Set<Integer> months = Sets.newHashSet();
-  private final Set<Integer> monthSteps = Sets.newHashSet();
+  private final Set<Integer> months = new HashSet<>();
+  private final Set<Integer> monthSteps = new HashSet<>();
 
-  private final Set<Integer> daysOfWeek = Sets.newHashSet();
+  private final Set<Integer> daysOfWeek = new HashSet<>();
   private final Multimap<Integer, Integer> weekdayOrdinals = HashMultimap.create();
   private final Multimap<Integer, Integer> weekSteps = HashMultimap.create();
-  private final Set<Integer> lastWeekdays = Sets.newHashSet();
+  private final Set<Integer> lastWeekdays = new HashSet<>();
 
   private boolean lastWorkday;
-  private final Set<Integer> nearestWorkdays = Sets.newHashSet();
+  private final Set<Integer> nearestWorkdays = new HashSet<>();
 
-  private final Set<Integer> years = Sets.newHashSet();
+  private final Set<Integer> years = new HashSet<>();
 
-  private final Set<JustDate> exclude = Sets.newHashSet();
-  private final Set<JustDate> include = Sets.newHashSet();
+  private final Set<JustDate> exclude = new HashSet<>();
+  private final Set<JustDate> include = new HashSet<>();
 
-  private final Set<JustDate> working = Sets.newHashSet();
-  private final Set<JustDate> nonWorking = Sets.newHashSet();
+  private final Set<JustDate> working = new HashSet<>();
+  private final Set<JustDate> nonWorking = new HashSet<>();
 
   private CronExpression(DateRange dateRange, WorkdayTransition workdayTransition) {
     this.lowerBound = dateRange.getMinDate();
@@ -1199,7 +1207,7 @@ public final class CronExpression implements HasInfo {
   }
 
   public List<JustDate> getDates(JustDate from, JustDate until) {
-    List<JustDate> result = Lists.newArrayList();
+    List<JustDate> result = new ArrayList<>();
 
     if (from != null && TimeUtils.isMore(from, upperBound)) {
       return result;

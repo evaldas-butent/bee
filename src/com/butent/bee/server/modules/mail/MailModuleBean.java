@@ -11,7 +11,6 @@ import static com.butent.bee.shared.modules.mail.MailConstants.*;
 import com.butent.bee.server.data.BeeView;
 import com.butent.bee.server.data.BeeView.ConditionProvider;
 import com.butent.bee.server.data.DataEvent.ViewInsertEvent;
-import com.butent.bee.server.data.DataEvent.ViewQueryEvent;
 import com.butent.bee.server.data.DataEventHandler;
 import com.butent.bee.server.data.QueryServiceBean;
 import com.butent.bee.server.data.SystemBean;
@@ -24,7 +23,6 @@ import com.butent.bee.server.modules.mail.proxy.MailProxy;
 import com.butent.bee.server.news.NewsBean;
 import com.butent.bee.server.news.UsageQueryProvider;
 import com.butent.bee.server.sql.IsCondition;
-import com.butent.bee.server.sql.IsFrom;
 import com.butent.bee.server.sql.SqlDelete;
 import com.butent.bee.server.sql.SqlInsert;
 import com.butent.bee.server.sql.SqlSelect;
@@ -427,32 +425,6 @@ public class MailModuleBean implements BeeModule {
       public void initAccount(ViewInsertEvent event) {
         if (event.isTarget(TBL_ACCOUNTS) && event.isAfter()) {
           mail.initAccount(event.getRow().getId());
-        }
-      }
-
-      @Subscribe
-      public void modifyUserEmailsQuery(ViewQueryEvent event) {
-        if (event.isTarget("UserEmails") && event.isBefore()) {
-          for (Iterator<IsFrom> iterator = event.getQuery().getFrom().iterator();
-          iterator.hasNext();) {
-
-            IsFrom from = iterator.next();
-
-            if (from.getSource() instanceof String
-                && BeeUtils.same((String) from.getSource(), TBL_ADDRESSBOOK)) {
-
-              iterator.remove();
-
-              BeeView view = sys.getView(event.getTargetName());
-              String src = (String) from.getSource();
-              String als = BeeUtils.notEmpty(from.getAlias(), src);
-
-              event.getQuery().addFromLeft(src, als,
-                  SqlUtils.and(sys.joinTables(view.getSourceName(), view.getSourceAlias(), als,
-                      COL_EMAIL), SqlUtils.equals(als, COL_USER, usr.getCurrentUserId())));
-              break;
-            }
-          }
         }
       }
     });
@@ -932,7 +904,7 @@ public class MailModuleBean implements BeeModule {
                       .addFrom(TBL_RULES)
                       .setWhere(SqlUtils.and(SqlUtils.equals(TBL_RULES, COL_ACCOUNT,
                           account.getAccountId()), SqlUtils.notNull(TBL_RULES, COL_RULE_ACTIVE)))
-                      .addOrder(TBL_RULES, COL_RULE_ORDINAL));
+                      .addOrder(TBL_RULES, COL_RULE_ORDINAL, sys.getIdName(TBL_RULES)));
                 }
                 if (!rules.isEmpty()) {
                   applyRules(message, placeId, account, localFolder, rules);

@@ -10,6 +10,8 @@ import com.butent.bee.client.Callback;
 import com.butent.bee.client.data.Data;
 import com.butent.bee.client.data.Queries;
 import com.butent.bee.client.event.logical.ParentRowEvent;
+import com.butent.bee.client.event.logical.ReadyEvent;
+import com.butent.bee.client.event.logical.ReadyEvent.HasReadyHandlers;
 import com.butent.bee.client.layout.Simple;
 import com.butent.bee.client.presenter.GridPresenter;
 import com.butent.bee.client.style.StyleUtils;
@@ -41,7 +43,7 @@ import java.util.Map;
  */
 
 public class ChildGrid extends Simple implements HasEnabled, Launchable, HasFosterParent,
-    ParentRowEvent.Handler, HasGridView {
+    ParentRowEvent.Handler, HasGridView, ReadyEvent.HasReadyHandlers {
   
   private static final Collection<UiOption> uiOptions = EnumSet.of(UiOption.CHILD);
 
@@ -79,6 +81,13 @@ public class ChildGrid extends Simple implements HasEnabled, Launchable, HasFost
     addStyleName("bee-ChildGrid");
   }
 
+  @Override
+  public com.google.gwt.event.shared.HandlerRegistration addReadyHandler(
+      ReadyEvent.Handler handler) {
+
+    return addHandler(handler, ReadyEvent.getType());
+  }
+  
   @Override
   public GridView getGridView() {
     return getPresenter() == null ? null : getPresenter().getGridView();
@@ -162,7 +171,12 @@ public class ChildGrid extends Simple implements HasEnabled, Launchable, HasFost
   public void setWidget(Widget w) {
     if (w != null) {
       StyleUtils.makeAbsolute(w);
+      
+      if (w instanceof HasReadyHandlers) {
+        ReadyEvent.maybeDelegate(this, (HasReadyHandlers) w);
+      }
     }
+
     super.setWidget(w);
   }
 
@@ -189,7 +203,7 @@ public class ChildGrid extends Simple implements HasEnabled, Launchable, HasFost
     gp.getGridView().getGrid().setPageSize(BeeConst.UNDEF, false);
     gp.setEventSource(getId());
 
-    setWidget(gp.getWidget());
+    setWidget(gp.getMainView());
     setPresenter(gp);
     
     if (getGridInterceptor() != null) {
@@ -225,7 +239,7 @@ public class ChildGrid extends Simple implements HasEnabled, Launchable, HasFost
   }
 
   private String getGridKey() {
-    return GridFactory.getSupplierKey(gridName);
+    return GridFactory.getSupplierKey(gridName, getGridInterceptor());
   }
 
   private GridFactory.GridOptions getGridOptions() {
