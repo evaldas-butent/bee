@@ -190,7 +190,10 @@ public class ServiceObjectForm extends AbstractFormInterceptor implements ClickH
       } else if (BeeUtils.same(name, VIEW_SERVICE_CRITERIA)) {
         criteriaGrid = grid;
         grid.setGridInterceptor(childInterceptor);
-      }
+      } // else if (BeeUtils.same(name, VIEW_SERVICE_DEFECTS)) {
+//        
+//        grid.getGridView().getViewPresenter().getHeader().
+//      }
     }
   }
 
@@ -373,7 +376,7 @@ public class ServiceObjectForm extends AbstractFormInterceptor implements ClickH
     int actionStatus = status.ordinal();
 
     boolean currIsUnknown = EnumUtils.getEnumByIndex(ObjectStatus.class, currStatus) == null;
-    boolean currIsServiceObj = currStatus == ObjectStatus.SERVICE_OBJECT.ordinal();
+    // boolean currIsServiceObj = currStatus == ObjectStatus.SERVICE_OBJECT.ordinal();
     boolean currIsProjectObj = currStatus == ObjectStatus.PROJECT_OBJECT.ordinal();
     boolean currIsPotentialObj = currStatus == ObjectStatus.POTENTIAL_OBJECT.ordinal();
 
@@ -382,7 +385,7 @@ public class ServiceObjectForm extends AbstractFormInterceptor implements ClickH
     
     boolean result =
         (currIsUnknown && (actionIsServiceObj || actionIsProjectObj))
-        || (currIsServiceObj && actionIsProjectObj)
+            // || (currIsServiceObj && actionIsProjectObj) /* Deprecated action*/
         || (currIsProjectObj && actionIsServiceObj)
             || (currIsPotentialObj && actionIsProjectObj);
 

@@ -155,7 +155,7 @@ final class ServiceCalendar extends TimeBoard {
 
   private static ObjectStatus currentStatus;
 
-  static void open(final Callback<IdentifiableWidget> callback, final ObjectStatus status) {
+  static void open(final ViewCallback callback, final ObjectStatus status) {
     Assert.notNull(status);
     currentStatus = status;
     ParameterList svcParams = ServiceKeeper.createArgs(SVC_GET_CALENDAR_DATA);

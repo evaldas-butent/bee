@@ -69,10 +69,10 @@ public final class ServiceKeeper {
     MenuService.SERVICE_PROJECTS_CALENDAR.setHandler(new MenuHandler() {
       @Override
       public void onSelection(String parameters) {
-        ServiceCalendar.open(new Callback<IdentifiableWidget>() {
+        ServiceCalendar.open(new ViewCallback() {
           @Override
-          public void onSuccess(IdentifiableWidget result) {
-            BeeKeeper.getScreen().showWidget(result);
+          public void onSuccess(View result) {
+            BeeKeeper.getScreen().show(result);
           }
         }, ObjectStatus.PROJECT_OBJECT);
       }
@@ -90,7 +90,7 @@ public final class ServiceKeeper {
           Global.showError(Lists.newArrayList(GRID_SERVICE_OBJECTS, "Type not recognized:",
               parameters));
         } else {
-          WidgetFactory.createAndShow(status.getSuplierKey());
+          ViewFactory.createAndShow(status.getSuplierKey());
         }
       }
 
@@ -103,9 +103,9 @@ public final class ServiceKeeper {
       }
     });
 
-    WidgetFactory.registerSupplier(ServiceCalendar.SUPPLIER_KEY_PROJECTS, new WidgetSupplier() {
+    ViewFactory.registerSupplier(ServiceCalendar.SUPPLIER_KEY_PROJECTS, new ViewSupplier() {
       @Override
-      public void create(Callback<IdentifiableWidget> callback) {
+      public void create(ViewCallback callback) {
         ServiceCalendar.open(callback, ObjectStatus.PROJECT_OBJECT);
       }
     });

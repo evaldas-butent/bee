@@ -12,6 +12,8 @@
     <SimpleJoin joinType="LEFT" name="ServiceObject">
       <SimpleColumn name="Address" />
     </SimpleJoin>
+    
+    <SimpleColumn name="Status" />
 
     <SimpleColumn name="Supplier" />
     <SimpleJoin joinType="LEFT" name="Supplier">

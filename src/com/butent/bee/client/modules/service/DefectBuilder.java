@@ -83,6 +83,9 @@ final class DefectBuilder {
         
         dfRow.setValue(dfInfo.getColumnIndex(COL_SERVICE_OBJECT), objRow.getId());
 
+        Integer objectStatus = Data.getInteger(VIEW_SERVICE_OBJECTS, objRow, COL_OBJECT_STATUS);
+        dfRow.setValue(dfInfo.getColumnIndex(COL_OBJECT_STATUS), objectStatus);
+
         Long customer = Data.getLong(VIEW_SERVICE_OBJECTS, objRow, COL_SERVICE_CUSTOMER);
         if (DataUtils.isId(customer)) {
           dfRow.setValue(dfInfo.getColumnIndex(COL_SERVICE_CUSTOMER), customer);

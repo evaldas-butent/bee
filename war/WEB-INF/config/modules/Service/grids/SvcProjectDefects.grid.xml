@@ -2,8 +2,8 @@
 <g:Grid xmlns="http://www.butent.com/column" xmlns:g="http://www.butent.com/grid"
   xmlns:xi="http://www.w3.org/2001/XInclude"
 
-  name="ServiceDefects" viewName="ServiceDefects"
-  flexGrow="1" disabledActions="add" caption="=svcDefects" filter="Status 0 or !(Status)"
+  name="SvcProjectDefects" viewName="ServiceDefects"
+  flexGrow="1" disabledActions="add" caption="=svcDefects" filter="Status 1 or Status 2"
   >
   <g:columns>
     <RelColumn name="ServiceObject" editEnabled="true" editPopup="true" />
