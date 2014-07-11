@@ -43,6 +43,8 @@ public final class ServiceKeeper {
 
     GridFactory.registerGridInterceptor(GRID_OBJECT_INVOICES, new ObjectInvoicesGrid());
     GridFactory.registerGridInterceptor(GRID_OBJECT_DEFECTS, new ObjectDefectsGrid());
+    GridFactory.registerGridInterceptor(GRID_SERVICE_DEFECTS, new ServiceDefectsGrid());
+    GridFactory.registerGridInterceptor(GRID_SERVICE_INVOICES, new ServiceInvoicesGrid());
 
     FormFactory.registerFormInterceptor("ServiceObject", new ServiceObjectForm());
     FormFactory.registerFormInterceptor("ServiceInvoice", new ServiceInvoiceForm());

@@ -101,7 +101,7 @@ final class InvoiceBuilder {
               STYLE_PREFIX, new BiConsumer<Long, BeeRowSet>() {
                 @Override
                 public void accept(Long t, BeeRowSet u) {
-                  buildHeader(t, u);
+                  buildHeader(t, u, form);
                 }
               });
         }
@@ -109,14 +109,18 @@ final class InvoiceBuilder {
     });
   }
 
-  private static void buildHeader(long objId, final BeeRowSet items) {
+  private static void buildHeader(long objId, final BeeRowSet items, final FormView form) {
     Queries.getRow(VIEW_SERVICE_OBJECTS, objId, new RowCallback() {
       @Override
       public void onSuccess(BeeRow objRow) {
         DataInfo invInfo = Data.getDataInfo(VIEW_SERVICE_INVOICES);
         BeeRow invRow = RowFactory.createEmptyRow(invInfo, true);
+        
+        int kindType =
+            BeeUtils.unbox(form.getActiveRow().getInteger(form.getDataIndex(COL_OBJECT_STATUS)))
+            == ObjectStatus.SERVICE_OBJECT.ordinal() ? 1 : 2;
 
-        invRow.setValue(invInfo.getColumnIndex(TradeConstants.COL_TRADE_KIND), 1);
+        invRow.setValue(invInfo.getColumnIndex(TradeConstants.COL_TRADE_KIND), kindType);
 
         Long customer = Data.getLong(VIEW_SERVICE_OBJECTS, objRow, COL_SERVICE_CUSTOMER);
         if (DataUtils.isId(customer)) {
