@@ -92,13 +92,17 @@ public class DispatcherBean {
     data.put(Service.PROPERTY_MODULES, Module.getEnabledModulesAsString());
 
     Long currency = prm.getRelation(PRM_CURRENCY);
-
     if (DataUtils.isId(currency)) {
       data.put(COL_CURRENCY, currency);
       data.put(ALS_CURRENCY_NAME, qs.getValue(new SqlSelect()
           .addFields(TBL_CURRENCIES, COL_CURRENCY_NAME)
           .addFrom(TBL_CURRENCIES)
           .setWhere(sys.idEquals(TBL_CURRENCIES, currency))));
+    }
+    
+    Long company = prm.getRelation(PRM_COMPANY);
+    if (DataUtils.isId(company)) {
+      data.put(PRM_COMPANY, company);
     }
 
     UserInterface userInterface = null;

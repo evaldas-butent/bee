@@ -1,19 +1,14 @@
 package com.butent.bee.client.modules.service;
 
-import com.butent.bee.client.modules.transport.CargoPurchaseInvoiceForm;
-import com.butent.bee.client.view.form.FormView;
+import com.butent.bee.client.modules.trade.TradeDocumentRenderer;
+import com.butent.bee.client.output.PrintFormInterceptor;
 import com.butent.bee.client.view.form.interceptor.FormInterceptor;
-import com.butent.bee.shared.data.IsRow;
 import com.butent.bee.shared.modules.trade.TradeConstants;
 
-public class ServiceInvoiceForm extends CargoPurchaseInvoiceForm {
+public class ServiceInvoiceForm extends PrintFormInterceptor {
 
   ServiceInvoiceForm() {
     super();
-  }
-
-  @Override
-  public void beforeRefresh(FormView form, IsRow row) {
   }
 
   @Override
@@ -22,7 +17,7 @@ public class ServiceInvoiceForm extends CargoPurchaseInvoiceForm {
   }
 
   @Override
-  protected String getTradeItemsName() {
-    return TradeConstants.TBL_SALE_ITEMS;
+  public FormInterceptor getPrintFormInterceptor() {
+    return new TradeDocumentRenderer(TradeConstants.VIEW_SALE_ITEMS, TradeConstants.COL_SALE);
   }
 }

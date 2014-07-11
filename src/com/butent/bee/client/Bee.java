@@ -8,6 +8,8 @@ import com.google.gwt.json.client.JSONObject;
 import com.google.gwt.user.client.Timer;
 import com.google.gwt.user.client.Window;
 
+import static com.butent.bee.shared.modules.administration.AdministrationConstants.*;
+
 import com.butent.bee.client.communication.ParameterList;
 import com.butent.bee.client.communication.ResponseCallback;
 import com.butent.bee.client.communication.RpcInfo;
@@ -17,6 +19,7 @@ import com.butent.bee.client.decorator.TuningFactory;
 import com.butent.bee.client.dom.DomUtils;
 import com.butent.bee.client.logging.ClientLogManager;
 import com.butent.bee.client.modules.ModuleManager;
+import com.butent.bee.client.modules.administration.AdministrationKeeper;
 import com.butent.bee.client.screen.BodyPanel;
 import com.butent.bee.client.ui.AutocompleteProvider;
 import com.butent.bee.client.utils.LayoutEngine;
@@ -32,7 +35,6 @@ import com.butent.bee.shared.i18n.LocalizableConstants;
 import com.butent.bee.shared.i18n.LocalizableMessages;
 import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.logging.LogUtils;
-import com.butent.bee.shared.modules.administration.AdministrationConstants;
 import com.butent.bee.shared.rights.Module;
 import com.butent.bee.shared.ui.UserInterface;
 import com.butent.bee.shared.utils.BeeUtils;
@@ -121,9 +123,12 @@ public class Bee implements EntryPoint {
 
     Module.setEnabledModules(data.get(Service.PROPERTY_MODULES));
 
-    ClientDefaults.setCurrency(BeeUtils
-        .toLongOrNull(data.get(AdministrationConstants.COL_CURRENCY)));
-    ClientDefaults.setCurrencyName(data.get(AdministrationConstants.ALS_CURRENCY_NAME));
+    ClientDefaults.setCurrency(BeeUtils.toLongOrNull(data.get(COL_CURRENCY)));
+    ClientDefaults.setCurrencyName(data.get(ALS_CURRENCY_NAME));
+    
+    if (data.containsKey(PRM_COMPANY)) {
+      AdministrationKeeper.setCompany(BeeUtils.toLongOrNull(data.get(PRM_COMPANY)));
+    }
 
     BeeKeeper.getScreen().start(userData);
 
@@ -193,9 +198,9 @@ public class Bee implements EntryPoint {
     ParameterList params = BeeKeeper.getRpc().createParameters(Service.LOGOUT);
 
     if (!BeeUtils.isEmpty(workspace)) {
-      params.addDataItem(AdministrationConstants.COL_LAST_WORKSPACE, workspace);
+      params.addDataItem(COL_LAST_WORKSPACE, workspace);
     } else if (BeeKeeper.getUser().workspaceContinue()) {
-      params.addQueryItem(AdministrationConstants.COL_LAST_WORKSPACE, BeeConst.EMPTY);
+      params.addQueryItem(COL_LAST_WORKSPACE, BeeConst.EMPTY);
     }
 
     BeeKeeper.getRpc().makeRequest(params);

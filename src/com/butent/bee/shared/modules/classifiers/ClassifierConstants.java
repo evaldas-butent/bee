@@ -60,6 +60,7 @@ public final class ClassifierConstants {
   public static final String VIEW_INFORMATION_SOURCES = "InformationSources";
   public static final String VIEW_COMPANY_ACTIVITIES = "CompanyActivities";
   public static final String VIEW_COMPANY_ACTIVITY_STORE = "CompActStore";
+  public static final String VIEW_COMPANY_BANK_ACCOUNTS = "CompanyBankAccounts";
 
   public static final String VIEW_COMPANY_CONTACTS = "CompanyContacts";
   public static final String VIEW_COMPANY_DEPARTMENTS = "CompanyDepartments";

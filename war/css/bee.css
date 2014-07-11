@@ -386,12 +386,6 @@
   background-color: Snow;
 }
 
-.bee-form-PrintableContent {
-  max-width: 100%;
-  padding: 1em;
-  background-color: white !important;
-}
-
 .bee-ProgressBar-bar {
   background-color: SpringGreen;
 }
@@ -3156,15 +3150,6 @@
   .bee-Header-commandPanel,
   .bee-Header-control {
     display: none;
-  }
-
-  .bee-form-PrintableContent {
-    display: block;
-    box-sizing: border-box; /* Don't render content out of margin */
-    width: 100%;
-    min-width: 17.5cm; /* B5 format width*/
-    padding: 0.5cm !important; /* Allow user set manual margins */
-    overflow: hidden !important; /* Hide all scrools */
   }
 }
 

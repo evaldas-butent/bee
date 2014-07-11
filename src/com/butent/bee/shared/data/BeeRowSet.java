@@ -38,6 +38,14 @@ public class BeeRowSet extends RowList<BeeRow, BeeColumn> implements BeeSerializ
     return null;
   }
 
+  public static BeeRowSet maybeRestore(String s) {
+    if (BeeUtils.isEmpty(s)) {
+      return null;
+    } else {
+      return restore(s);
+    }
+  }
+
   public static BeeRowSet restore(String s) {
     BeeRowSet rs = new BeeRowSet();
     rs.deserialize(s);

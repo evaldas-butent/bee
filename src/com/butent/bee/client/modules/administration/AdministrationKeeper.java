@@ -25,7 +25,7 @@ import com.butent.bee.shared.news.NewsConstants;
 import com.butent.bee.shared.rights.Module;
 
 public final class AdministrationKeeper {
-
+  
   private static class RowTransformHandler implements RowTransformEvent.Handler {
     @Override
     public void onRowTransform(RowTransformEvent event) {
@@ -37,10 +37,16 @@ public final class AdministrationKeeper {
     }
   }
 
+  private static Long company;
+
   public static ParameterList createArgs(String name) {
     ParameterList args = BeeKeeper.getRpc().createParameters(Module.ADMINISTRATION.getName());
     args.addQueryItem(METHOD, name);
     return args;
+  }
+
+  public static Long getCompany() {
+    return company;
   }
 
   public static void register() {
@@ -92,6 +98,10 @@ public final class AdministrationKeeper {
     BeeKeeper.getBus().registerRowTransformHandler(new RowTransformHandler(), false);
 
     RightsForm.register();
+  }
+
+  public static void setCompany(Long company) {
+    AdministrationKeeper.company = company;
   }
 
   private AdministrationKeeper() {
