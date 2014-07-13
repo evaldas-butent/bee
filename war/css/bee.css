@@ -3273,3 +3273,14 @@ textarea,
   padding: 1px 2px;
   border: 1px solid silver;
 }
+
+.bee-ModalForm .bee-PrintableForm {
+  background-color: white;
+  padding: 1ex 1em 0 1em; 
+}
+.bee-Print .bee-PrintableForm {
+  position: static !important;
+  width: auto !important;
+  height: auto !important;
+  background-color: inherit;
+}

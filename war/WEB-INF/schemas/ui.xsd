@@ -393,6 +393,7 @@
       <xs:enumeration value="mail" />
       <xs:enumeration value="url" />
       <xs:enumeration value="total" />
+      <xs:enumeration value="vat" />
     </xs:restriction>
   </xs:simpleType>
   

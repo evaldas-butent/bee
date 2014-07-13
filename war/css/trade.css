@@ -1,23 +1,41 @@
-.itemsInfo-table {
-  border-collapse:collapse;
+.bee-trade-itemsInfo-table {
+  border-collapse: collapse;
 }
-.itemsInfo-table td {
-  padding:2px 5px 2px 5px;
+
+.bee-trade-itemsInfo-table td {
+  padding: 2px 5px 2px 5px;
 }
-.itemsInfo-header {
-  font-weight:bold;
-  border:1px solid black;
+
+.bee-trade-itemsInfo-header {
+  font-weight: bold;
+  border: 1px solid black;
 }
-.itemsInfo-data {
-  border-bottom:1px solid silver;
+
+.bee-trade-itemsInfo-data {
+  border-bottom: 1px solid silver;
 }
-.itemsInfo-Quantity, .itemsInfo-Price, .itemsInfo-Vat, .itemsInfo-Amount, .itemsInfo-RateAmount,
-  .itemsInfo-QuantityTotal, .itemsInfo-AmountTotal, .itemsInfo-VatTotal, .itemsInfo-Total,
-  .itemsInfo-RateAmountTotal, .itemsInfo-RateVatTotal, .itemsInfo-RateTotal,
-  .itemsInfo-AmountTotal-caption, .itemsInfo-VatTotal-caption, .itemsInfo-Total-caption {
-  text-align:right;
+
+.bee-trade-itemsInfo-Quantity,
+.bee-trade-itemsInfo-Price,
+.bee-trade-itemsInfo-Vat,
+.bee-trade-itemsInfo-Amount,
+.bee-trade-itemsInfo-RateAmount,
+.bee-trade-itemsInfo-QuantityTotal,
+.bee-trade-itemsInfo-AmountTotal,
+.bee-trade-itemsInfo-VatTotal,
+.bee-trade-itemsInfo-Total,
+.bee-trade-itemsInfo-RateAmountTotal,
+.bee-trade-itemsInfo-RateVatTotal,
+.bee-trade-itemsInfo-RateTotal,
+.bee-trade-itemsInfo-AmountTotal-caption,
+.bee-trade-itemsInfo-VatTotal-caption,
+.bee-trade-itemsInfo-Total-caption {
+  text-align: right;
   white-space: nowrap;
 }
-.itemsInfo-AmountTotal-caption:after, .itemsInfo-VatTotal-caption:after, .itemsInfo-Total-caption:after {
+
+.bee-trade-itemsInfo-AmountTotal-caption:after,
+.bee-trade-itemsInfo-VatTotal-caption:after,
+.bee-trade-itemsInfo-Total-caption:after {
   content: ":";
 }

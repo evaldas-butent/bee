@@ -61,6 +61,11 @@ public final class Data {
     COLUMN_MAPPER.clearCell(viewName, row, colName);
   }
 
+  public static boolean containsColumn(String viewName, String colName) {
+    DataInfo dataInfo = getDataInfo(viewName);
+    return (dataInfo == null) ? false : dataInfo.containsColumn(colName);
+  }
+  
   public static BeeRowSet createRowSet(String viewName) {
     return new BeeRowSet(viewName, getColumns(viewName));
   }

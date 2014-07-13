@@ -13,21 +13,19 @@ import com.google.gwt.dom.client.TextAreaElement;
 import com.butent.bee.client.dom.DomUtils;
 import com.butent.bee.client.screen.BodyPanel;
 import com.butent.bee.client.style.StyleUtils;
-import com.butent.bee.client.style.StyleUtils.ScrollBars;
 import com.butent.bee.client.utils.LayoutEngine;
 import com.butent.bee.client.widget.Frame;
 import com.butent.bee.shared.Assert;
-import com.butent.bee.shared.css.values.Overflow;
 import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogUtils;
 import com.butent.bee.shared.utils.BeeUtils;
 
 import java.util.List;
 
-import elemental.js.dom.JsElement;
 import elemental.client.Browser;
 import elemental.dom.Document;
 import elemental.html.Window;
+import elemental.js.dom.JsElement;
 
 public final class Printer {
 
@@ -144,17 +142,15 @@ public final class Printer {
     return true;
   }
 
-  private static void prepareBody(Element targetBody, Overflow overflow) {
+  private static void prepareBody(Element targetBody) {
     String className = BodyPanel.get().getElement().getClassName();
     if (!BeeUtils.isEmpty(className)) {
       targetBody.addClassName(className);
     }
 
-    targetBody.addClassName(StyleUtils.CLASS_NAME_PREFIX + "print");
-
-    if (overflow != null) {
-      StyleUtils.setOverflow(targetBody, ScrollBars.VERTICAL, overflow);
-    }
+    targetBody.addClassName(StyleUtils.CLASS_NAME_PREFIX + "Print");
+    targetBody.addClassName(StyleUtils.CLASS_NAME_PREFIX + "Print-"
+        + (useFrame ? "Frame" : "Window"));
   }
 
   private static void prepareElements(NodeList<Element> elements, Printable widget) {
@@ -201,7 +197,7 @@ public final class Printer {
           frame.getContentDocument().setTitle(BeeUtils.trim(widget.getCaption()));
         }
 
-        prepareBody(frame.getBody(), null);
+        prepareBody(frame.getBody());
         prepareElements(elements, widget);
 
         printFrame();
@@ -238,7 +234,7 @@ public final class Printer {
     }
 
     Element body = ((JsElement) document.getBody()).cast();
-    prepareBody(body, Overflow.AUTO);
+    prepareBody(body);
 
     NodeList<Element> elements = getElements(document);
     prepareElements(elements, widget);
