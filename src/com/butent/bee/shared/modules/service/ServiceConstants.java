@@ -184,6 +184,7 @@ public final class ServiceConstants {
   public static final String GRID_OBJECT_INVOICES = "ObjectInvoices";
   public static final String GRID_OBJECT_DEFECTS = "ObjectDefects";
   public static final String GRID_SERVICE_INVOICES = "ServiceInvoices";
+  public static final String GRID_SVC_PROJECT_INVOICES = "SvcProjectInvoices";
   
   public static final String GRID_SERVICE_OBJECTS = "ServiceObjects";
   public static final String GRID_SERVICE_DEFECTS = "ServiceDefects";
