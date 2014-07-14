@@ -346,7 +346,6 @@ public final class TransportConstants {
   public static final String SVC_DO_IMPORT = "DoImport";
   public static final String SVC_GET_CREDIT_INFO = "GetCreditInfo";
 
-  public static final String SVC_SEND_TO_ERP = "SendToERP";
   public static final String SVC_SEND_MESSAGE = "SendMessage";
 
   public static final String PRM_ERP_REFRESH_INTERVAL = "ERPRefreshIntervalInMinutes";
