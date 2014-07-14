@@ -82,8 +82,6 @@ import com.butent.bee.shared.utils.Codec;
 import com.butent.bee.shared.utils.EnumUtils;
 import com.butent.bee.shared.utils.NameUtils;
 import com.butent.webservice.ButentWS;
-import com.butent.webservice.WSDocument;
-import com.butent.webservice.WSDocument.WSDocumentItem;
 
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
@@ -271,10 +269,6 @@ public class TransportModuleBean implements BeeModule {
       } else {
         response = createPurchaseInvoiceItems(purchaseId, currency, ids, item);
       }
-    } else if (BeeUtils.same(svc, SVC_SEND_TO_ERP)) {
-      response = sendToERP(reqInfo.getParameter("view_name"),
-          DataUtils.parseIdSet(reqInfo.getParameter("IdList")));
-
     } else if (BeeUtils.same(svc, SVC_SEND_MESSAGE)) {
       response = sendMessage(reqInfo.getParameter(COL_DESCRIPTION),
           Codec.beeDeserializeCollection(reqInfo.getParameter(COL_MOBILE)));
@@ -2840,151 +2834,5 @@ public class TransportModuleBean implements BeeModule {
     return response;
   }
 
-  private ResponseObject sendToERP(String viewName, Set<Long> ids) {
-    if (!sys.isView(viewName)) {
-      return ResponseObject.error("Wrong view name");
-    }
-    String trade = sys.getView(viewName).getSourceName();
-    String tradeItems;
-    String itemsRelation;
 
-    SqlSelect query = new SqlSelect()
-        .addFields(trade, COL_TRADE_DATE, COL_TRADE_INVOICE_PREFIX, COL_TRADE_INVOICE_NO,
-            COL_TRADE_NUMBER, COL_TRADE_TERM, COL_TRADE_SUPPLIER, COL_TRADE_CUSTOMER)
-        .addField(TBL_CURRENCIES, COL_CURRENCY_NAME, COL_CURRENCY)
-        .addField(COL_TRADE_WAREHOUSE_FROM, COL_WAREHOUSE_CODE, COL_TRADE_WAREHOUSE_FROM)
-        .addFrom(trade)
-        .addFromLeft(TBL_CURRENCIES, sys.joinTables(TBL_CURRENCIES, trade, COL_CURRENCY))
-        .addFromLeft(TBL_WAREHOUSES, COL_TRADE_WAREHOUSE_FROM,
-            sys.joinTables(TBL_WAREHOUSES, COL_TRADE_WAREHOUSE_FROM, trade,
-                COL_TRADE_WAREHOUSE_FROM))
-        .setWhere(sys.idInList(trade, ids));
-
-    if (BeeUtils.same(trade, TBL_SALES)) {
-      tradeItems = TBL_SALE_ITEMS;
-      itemsRelation = COL_SALE;
-      query.addFields(trade, COL_SALE_PAYER);
-
-    } else if (BeeUtils.same(trade, TBL_PURCHASES)) {
-      tradeItems = TBL_PURCHASE_ITEMS;
-      itemsRelation = COL_PURCHASE;
-      query.addField(COL_PURCHASE_WAREHOUSE_TO, COL_WAREHOUSE_CODE, COL_PURCHASE_WAREHOUSE_TO)
-          .addFromLeft(TBL_WAREHOUSES, COL_PURCHASE_WAREHOUSE_TO,
-              sys.joinTables(TBL_WAREHOUSES, COL_PURCHASE_WAREHOUSE_TO, trade,
-                  COL_PURCHASE_WAREHOUSE_TO));
-    } else {
-      return ResponseObject.error("View source not supported:", trade);
-    }
-    String remoteNamespace = prm.getText(PRM_ERP_NAMESPACE);
-    String remoteAddress = prm.getText(PRM_ERP_ADDRESS);
-    String remoteLogin = prm.getText(PRM_ERP_LOGIN);
-    String remotePassword = prm.getText(PRM_ERP_PASSWORD);
-
-    SimpleRowSet invoices = qs.getData(query.addField(trade, sys.getIdName(trade), itemsRelation));
-
-    Map<Long, String> companies = Maps.newHashMap();
-    ResponseObject response = ResponseObject.emptyResponse();
-
-    for (SimpleRow invoice : invoices) {
-      for (String col : new String[] {COL_TRADE_SUPPLIER, COL_TRADE_CUSTOMER, COL_SALE_PAYER}) {
-        Long id = invoices.hasColumn(col) ? invoice.getLong(col) : null;
-
-        if (DataUtils.isId(id) && !companies.containsKey(id)) {
-          SimpleRow data = qs.getRow(new SqlSelect()
-              .addFields(TBL_COMPANIES, COL_COMPANY_NAME, COL_COMPANY_CODE, COL_COMPANY_VAT_CODE)
-              .addFields(TBL_CONTACTS, COL_ADDRESS, COL_POST_INDEX)
-              .addField(TBL_CITIES, COL_CITY_NAME, COL_CITY)
-              .addField(TBL_COUNTRIES, COL_COUNTRY_NAME, COL_COUNTRY)
-              .addFrom(TBL_COMPANIES)
-              .addFromLeft(TBL_CONTACTS, sys.joinTables(TBL_CONTACTS, TBL_COMPANIES, COL_CONTACT))
-              .addFromLeft(TBL_CITIES, sys.joinTables(TBL_CITIES, TBL_CONTACTS, COL_CITY))
-              .addFromLeft(TBL_COUNTRIES, sys.joinTables(TBL_COUNTRIES, TBL_CONTACTS, COL_COUNTRY))
-              .setWhere(sys.idEquals(TBL_COMPANIES, id)));
-
-          try {
-            String company = ButentWS.connect(remoteNamespace, remoteAddress, remoteLogin,
-                remotePassword)
-                .importClient(data.getValue(COL_COMPANY_NAME), data.getValue(COL_COMPANY_CODE),
-                    data.getValue(COL_COMPANY_VAT_CODE), data.getValue(COL_ADDRESS),
-                    data.getValue(COL_POST_INDEX), data.getValue(COL_CITY),
-                    data.getValue(COL_COUNTRY));
-
-            companies.put(id, company);
-
-          } catch (BeeException e) {
-            response.addError(e);
-          }
-        }
-      }
-      if (response.hasErrors()) {
-        break;
-      }
-      String operation;
-      String warehouse;
-      String client;
-
-      if (invoices.hasColumn(COL_PURCHASE_WAREHOUSE_TO)) {
-        operation = prm.getText("ERPCreditOperation");
-        warehouse = invoice.getValue(COL_PURCHASE_WAREHOUSE_TO);
-        client = companies.get(invoice.getLong(COL_TRADE_SUPPLIER));
-      } else {
-        operation = prm.getText("ERPOperation");
-        warehouse = prm.getText("ERPWarehouse");
-        client = companies.get(invoice.getLong(COL_TRADE_CUSTOMER));
-      }
-      WSDocument doc = new WSDocument(invoice.getValue(itemsRelation),
-          invoice.getDateTime(COL_TRADE_DATE), operation, client, warehouse);
-
-      if (invoices.hasColumn(COL_SALE_PAYER)) {
-        doc.setPayer(companies.get(invoice.getLong(COL_SALE_PAYER)));
-      }
-      doc.setNumber(invoice.getValue(COL_TRADE_NUMBER));
-      doc.setInvoice(invoice.getValue(COL_TRADE_INVOICE_PREFIX),
-          invoice.getValue(COL_TRADE_INVOICE_NO));
-      doc.setSupplier(companies.get(invoice.getLong(COL_TRADE_SUPPLIER)));
-      doc.setCustomer(companies.get(invoice.getLong(COL_TRADE_CUSTOMER)));
-      doc.setTerm(invoice.getDate(COL_TRADE_TERM));
-      doc.setCurrency(invoice.getValue(COL_CURRENCY));
-
-      SimpleRowSet items = qs.getData(new SqlSelect()
-          .addFields(TBL_ITEMS, COL_ITEM_NAME, COL_ITEM_EXTERNAL_CODE)
-          .addFields(tradeItems, COL_TRADE_ITEM_QUANTITY, COL_TRADE_ITEM_PRICE,
-              COL_TRADE_VAT_PLUS, COL_TRADE_VAT, COL_TRADE_VAT_PERC, COL_TRADE_ITEM_NOTE)
-          .addFrom(tradeItems)
-          .addFromInner(TBL_ITEMS, sys.joinTables(TBL_ITEMS, tradeItems, COL_ITEM))
-          .setWhere(SqlUtils.equals(tradeItems, itemsRelation, invoice.getLong(itemsRelation))));
-
-      for (SimpleRow item : items) {
-        if (BeeUtils.isEmpty(item.getValue(COL_ITEM_EXTERNAL_CODE))) {
-          response.addError("Item", BeeUtils.bracket(item.getValue(COL_ITEM_NAME)),
-              "does not have ERP code");
-          break;
-        }
-        WSDocumentItem wsItem = doc.addItem(item.getValue(COL_ITEM_EXTERNAL_CODE),
-            item.getValue(COL_TRADE_ITEM_QUANTITY));
-
-        wsItem.setPrice(item.getValue(COL_TRADE_ITEM_PRICE));
-        wsItem.setVat(item.getValue(COL_TRADE_VAT), item.getBoolean(COL_TRADE_VAT_PERC),
-            item.getBoolean(COL_TRADE_VAT_PLUS));
-        wsItem.setNote(item.getValue(COL_TRADE_ITEM_NOTE));
-      }
-      if (response.hasErrors()) {
-        break;
-      }
-      try {
-        ButentWS.connect(remoteNamespace, remoteAddress, remoteLogin, remotePassword)
-            .importDoc(doc);
-      } catch (BeeException e) {
-        response.addError(e);
-        break;
-      }
-      qs.updateData(new SqlUpdate(trade)
-          .addConstant(COL_TRADE_EXPORTED, System.currentTimeMillis())
-          .setWhere(sys.idEquals(trade, invoice.getLong(itemsRelation))));
-    }
-    if (response.hasErrors()) {
-      response.log(logger);
-    }
-    return response;
-  }
 }

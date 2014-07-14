@@ -5,12 +5,16 @@ public final class TradeConstants {
   public static final String SVC_ITEMS_INFO = "ItemsInfo";
   public static final String SVC_CREDIT_INFO = "CreditInfo";
   public static final String SVC_GET_DOCUMENT_DATA = "getTradeDocumentData";
+  public static final String SVC_SEND_TO_ERP = "SendToERP";
 
   public static final String TBL_PURCHASES = "Purchases";
   public static final String TBL_PURCHASE_USAGE = "PurchaseUsage";
   public static final String TBL_PURCHASE_ITEMS = "PurchaseItems";
   public static final String TBL_SALES = "Sales";
   public static final String TBL_SALE_ITEMS = "SaleItems";
+
+  public static final String VAR_VIEW_NAME = "view_name";
+  public static final String VAR_ID_LIST = "IdList";
 
   public static final String VIEW_PURCHASES = "Purchases";
   public static final String VIEW_PURCHASE_ITEMS = "PurchaseItems";
