@@ -9,6 +9,7 @@ import com.google.gwt.event.dom.client.KeyCodes;
 import com.google.gwt.user.client.ui.Focusable;
 import com.google.gwt.user.client.ui.HasOneWidget;
 import com.google.gwt.user.client.ui.HasWidgets;
+import com.google.gwt.user.client.ui.IsWidget;
 import com.google.gwt.user.client.ui.RequiresResize;
 import com.google.gwt.user.client.ui.UIObject;
 import com.google.gwt.user.client.ui.Widget;
@@ -224,6 +225,14 @@ public final class UiHelper {
     return result;
   }
 
+  public static FormView getForm(IsWidget widget) {
+    if (widget == null) {
+      return null;
+    } else {
+      return getForm(widget.asWidget());
+    }
+  }
+  
   public static FormView getForm(Widget widget) {
     if (widget == null) {
       return null;

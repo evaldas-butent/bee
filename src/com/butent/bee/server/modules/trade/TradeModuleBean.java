@@ -1,6 +1,5 @@
 package com.butent.bee.server.modules.trade;
 
-import com.google.common.collect.Maps;
 import com.google.common.eventbus.Subscribe;
 
 import static com.butent.bee.shared.modules.administration.AdministrationConstants.*;
@@ -21,24 +20,32 @@ import com.butent.bee.server.sql.IsExpression;
 import com.butent.bee.server.sql.SqlSelect;
 import com.butent.bee.server.sql.SqlUtils;
 import com.butent.bee.shared.BeeConst;
+import com.butent.bee.shared.Service;
 import com.butent.bee.shared.communication.ResponseObject;
 import com.butent.bee.shared.data.BeeColumn;
+import com.butent.bee.shared.data.BeeRowSet;
 import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.IsRow;
 import com.butent.bee.shared.data.SearchResult;
 import com.butent.bee.shared.data.SimpleRowSet.SimpleRow;
+import com.butent.bee.shared.data.filter.Filter;
 import com.butent.bee.shared.data.value.Value;
 import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogUtils;
 import com.butent.bee.shared.modules.BeeParameter;
+import com.butent.bee.shared.modules.trade.TradeDocumentData;
 import com.butent.bee.shared.modules.transport.TransportConstants;
 import com.butent.bee.shared.rights.Module;
 import com.butent.bee.shared.time.TimeUtils;
 import com.butent.bee.shared.utils.BeeUtils;
+import com.butent.bee.shared.utils.Codec;
 
 import java.util.Collection;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import javax.ejb.EJB;
 import javax.ejb.LocalBean;
@@ -91,6 +98,9 @@ public class TradeModuleBean implements BeeModule {
     } else if (BeeUtils.same(svc, SVC_CREDIT_INFO)) {
       response = getCreditInfo(BeeUtils.toLongOrNull(reqInfo.getParameter(COL_COMPANY)));
 
+    } else if (BeeUtils.same(svc, SVC_GET_DOCUMENT_DATA)) {
+      response = getTradeDocumentData(reqInfo);
+
     } else {
       String msg = BeeUtils.joinWords("Trade service not recognized:", svc);
       logger.warning(msg);
@@ -112,7 +122,7 @@ public class TradeModuleBean implements BeeModule {
             sys.joinTables(TBL_CURRENCIES, TBL_COMPANIES, COL_COMPANY_LIMIT_CURRENCY))
         .setWhere(sys.idEquals(TBL_COMPANIES, companyId)));
 
-    Map<String, Object> resp = Maps.newHashMap();
+    Map<String, Object> resp = new HashMap<>();
 
     if (company != null) {
       double limit = BeeUtils.unbox(company.getDouble(COL_COMPANY_CREDIT_LIMIT));
@@ -268,5 +278,51 @@ public class TradeModuleBean implements BeeModule {
           .addField(currAlias, COL_CURRENCY_NAME, COL_CURRENCY_RATE + COL_CURRENCY);
     }
     return ResponseObject.response(qs.getData(query));
+  }
+  
+  private ResponseObject getTradeDocumentData(RequestInfo reqInfo) {
+    Long docId = reqInfo.getParameterLong(Service.VAR_ID);
+    if (!DataUtils.isId(docId)) {
+      return ResponseObject.parameterNotFound(reqInfo.getService(), Service.VAR_ID);
+    }
+    
+    String itemViewName = reqInfo.getParameter(Service.VAR_VIEW_NAME);
+    if (BeeUtils.isEmpty(itemViewName)) {
+      return ResponseObject.parameterNotFound(reqInfo.getService(), Service.VAR_VIEW_NAME);
+    }
+
+    String itemRelation = reqInfo.getParameter(Service.VAR_COLUMN);
+    if (BeeUtils.isEmpty(itemRelation)) {
+      return ResponseObject.parameterNotFound(reqInfo.getService(), Service.VAR_COLUMN);
+    }
+    
+    Set<Long> companyIds = DataUtils.parseIdSet(reqInfo.getParameter(VIEW_COMPANIES));
+    
+    Set<String> currencyNames = new HashSet<>();
+    
+    String[] arr = Codec.beeDeserializeCollection(reqInfo.getParameter(VIEW_CURRENCIES));
+    if (arr != null) {
+      for (String s : arr) {
+        currencyNames.add(s);
+      }
+    }
+    
+    BeeRowSet companies;
+    BeeRowSet bankAccounts;
+    
+    if (companyIds.isEmpty()) {
+      companies = null;
+      bankAccounts = null;
+
+    } else {
+      companies = qs.getViewData(VIEW_COMPANIES, Filter.idIn(companyIds));
+      bankAccounts = qs.getViewData(VIEW_COMPANY_BANK_ACCOUNTS,
+          Filter.any(COL_COMPANY, companyIds));
+    }
+    
+    BeeRowSet items = qs.getViewData(itemViewName, Filter.equals(itemRelation, docId));
+    
+    TradeDocumentData tdd = new TradeDocumentData(companies, bankAccounts, items, null);
+    return ResponseObject.response(tdd);
   }
 }
