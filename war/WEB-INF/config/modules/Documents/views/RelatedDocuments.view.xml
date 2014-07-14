@@ -19,6 +19,8 @@
     <SimpleColumn name="CargoRequest" />
     <SimpleColumn name="Discussion" />
     <SimpleColumn name="ServiceObject" />
+    <SimpleColumn name="ServicePotentialObject" />
+    <SimpleColumn name="ServiceProjectObject" />
 
     <SimpleJoin name="Document" joinType="INNER">
 
