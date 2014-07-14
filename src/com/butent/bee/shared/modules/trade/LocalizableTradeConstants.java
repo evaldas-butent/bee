@@ -9,6 +9,18 @@ public interface LocalizableTradeConstants {
   String itemCategoryTree();
 
   String itemUnits();
+  
+  String printBankAccount();
+  
+  String printBankCode();
+
+  String printBankSwift();
+  
+  String printDocumentNumber();
+
+  String printInvoice();
+  
+  String printInvoiceVat();
 
   String sellingPrice();
 

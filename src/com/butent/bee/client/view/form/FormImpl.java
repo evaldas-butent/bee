@@ -750,6 +750,19 @@ public class FormImpl extends Absolute implements FormView, PreviewHandler, Tabu
   }
 
   @Override
+  public Map<String, Widget> getNamedWidgets() {
+    Map<String, Widget> result = new HashMap<>();
+    
+    for (Map.Entry<String, String> entry : creationCallback.getNamedWidgets().entrySet()) {
+      Widget widget = getWidgetById(entry.getValue());
+      if (widget != null) {
+        result.put(entry.getKey(), widget);
+      }
+    }
+    return result;
+  }
+
+  @Override
   public IsRow getOldRow() {
     return oldRow;
   }
@@ -846,7 +859,7 @@ public class FormImpl extends Absolute implements FormView, PreviewHandler, Tabu
   public Presenter getViewPresenter() {
     return viewPresenter;
   }
-
+  
   @Override
   public Widget getWidgetByName(String name) {
     Assert.notEmpty(name);
