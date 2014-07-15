@@ -117,6 +117,7 @@ public final class ClassifierConstants {
   public static final String COL_EMAIL_ADDRESS = "Email";
   public static final String COL_ADDRESS = "Address";
   public static final String COL_POST_INDEX = "PostIndex";
+  public static final String COL_WEBSITE = "Website";
 
   public static final String COL_CITY = "City";
   public static final String COL_CITY_NAME = "Name";
@@ -149,6 +150,12 @@ public final class ClassifierConstants {
 
   public static final String COL_COMPANY_TYPE_NAME = "Name";
 
+  public static final String COL_BANK_NAME = "Name";
+  public static final String COL_BANK_CODE = "BankCode";
+  public static final String COL_SWIFT_CODE = "SWIFTCode";
+
+  public static final String COL_BANK_ACCOUNT = "BankAccount";
+  
   public static final String ALS_COMPANY_NAME = "CompanyName";
   public static final String ALS_COMPANY_CODE = "CompanyCode";
   public static final String ALS_COMPANY_TYPE = "CompanyType";
@@ -162,6 +169,8 @@ public final class ClassifierConstants {
   public static final String ALS_EMAIL_ID = "EmailId";
 
   public static final String ALS_CATEGORY_PARENT_NAME = "ParentName";
+
+  public static final String ALS_BANK_NAME = "BankName";
 
   public static final String PROP_COMPANY_NAMES = "CompanyNames";
   public static final String PROP_COMPANY_IDS = "CompanyIds";

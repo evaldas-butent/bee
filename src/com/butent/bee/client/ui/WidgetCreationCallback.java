@@ -1,6 +1,5 @@
 package com.butent.bee.client.ui;
 
-import com.google.common.collect.Maps;
 import com.google.gwt.user.client.ui.Widget;
 
 import com.butent.bee.client.dom.DomUtils;
@@ -9,6 +8,7 @@ import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogUtils;
 import com.butent.bee.shared.utils.BeeUtils;
 
+import java.util.HashMap;
 import java.util.Map;
 
 public class WidgetCreationCallback implements FormFactory.WidgetDescriptionCallback {
@@ -17,8 +17,8 @@ public class WidgetCreationCallback implements FormFactory.WidgetDescriptionCall
 
   private static final String PARENT_IS_FORM = "{form}";
   
-  private final Map<String, String> namedWidgets = Maps.newHashMap();
-  private final Map<String, String> potentialChildren = Maps.newHashMap();
+  private final Map<String, String> namedWidgets = new HashMap<>();
+  private final Map<String, String> potentialChildren = new HashMap<>();
 
   private WidgetDescription lastWidgetDescription;
   
@@ -74,6 +74,10 @@ public class WidgetCreationCallback implements FormFactory.WidgetDescriptionCall
     return lastWidgetDescription; 
   }
   
+  public Map<String, String> getNamedWidgets() {
+    return namedWidgets;
+  }
+
   public String getWidgetIdByName(String name) {
     return namedWidgets.get(name);
   }

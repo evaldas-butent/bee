@@ -126,7 +126,7 @@ public final class NewMailMessage extends AbstractFormInterceptor
         if (!BeeUtils.isEmpty(availableAccounts)) {
           create(availableAccounts, defaultAccount, to, cc, bcc, subject, content, attach, draftId);
         } else {
-          BeeKeeper.getScreen().notifyWarning("No accounts found");
+          BeeKeeper.getScreen().notifyWarning(Localized.getConstants().mailNoAccountsFound());
         }
       }
     });
@@ -306,7 +306,13 @@ public final class NewMailMessage extends AbstractFormInterceptor
       if (currentContent.contains(oldSignature)) {
         currentContent = currentContent.replace(oldSignature, newSignature);
       } else {
-        currentContent = SIGNATURE_SEPARATOR + newSignature + currentContent;
+        if (BeeUtils.startsWith(subject, Localized.getConstants().mailReplayPrefix())
+            || BeeUtils.startsWith(subject, Localized.getConstants().mailForwardedPrefix())) {
+
+          currentContent = SIGNATURE_SEPARATOR + newSignature + currentContent;
+        } else {
+          currentContent = currentContent + SIGNATURE_SEPARATOR + newSignature;
+        }
       }
       contentWidget.setValue(currentContent);
 
