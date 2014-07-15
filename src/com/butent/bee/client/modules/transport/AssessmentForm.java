@@ -6,8 +6,7 @@ import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Multimap;
 import com.google.common.collect.Sets;
-import com.google.gwt.dom.client.Document;
-import com.google.gwt.dom.client.Element;
+import com.google.gwt.core.client.Scheduler.ScheduledCommand;
 import com.google.gwt.dom.client.Style.Cursor;
 import com.google.gwt.dom.client.Style.Unit;
 import com.google.gwt.event.dom.client.ClickEvent;
@@ -78,7 +77,6 @@ import com.butent.bee.client.widget.InputBoolean;
 import com.butent.bee.shared.Holder;
 import com.butent.bee.shared.Pair;
 import com.butent.bee.shared.communication.ResponseObject;
-import com.butent.bee.shared.css.values.WhiteSpace;
 import com.butent.bee.shared.data.BeeColumn;
 import com.butent.bee.shared.data.BeeRow;
 import com.butent.bee.shared.data.BeeRowSet;
@@ -88,6 +86,7 @@ import com.butent.bee.shared.data.IsColumn;
 import com.butent.bee.shared.data.IsRow;
 import com.butent.bee.shared.data.SimpleRowSet;
 import com.butent.bee.shared.data.event.DataChangeEvent;
+import com.butent.bee.shared.data.event.RowUpdateEvent;
 import com.butent.bee.shared.data.filter.Filter;
 import com.butent.bee.shared.data.value.IntegerValue;
 import com.butent.bee.shared.data.value.LongValue;
@@ -263,7 +262,7 @@ public class AssessmentForm extends PrintFormInterceptor implements SelectorEven
                 Data.getInteger(view, row, COL_ASSESSMENT_STATUS));
 
             if (isRevocable(status)) {
-              Global.inputString(loc.trAssessmentRejection(), loc.trAssessmentRejectionReason(),
+              Global.inputString(loc.trAssessmentRejection(), loc.trAssessmentReason(),
                   new StringCallback() {
                     @Override
                     public void onSuccess(String value) {
@@ -468,21 +467,40 @@ public class AssessmentForm extends PrintFormInterceptor implements SelectorEven
     private void confirm() {
       if (Objects.equal(orderStatus, OrderStatus.CANCELED)
           || Objects.equal(status, AssessmentStatus.LOST)) {
-        Global.inputString(confirmationQuestion,
-            loc.trAssessmentRejectionReason(), new StringCallback() {
-              @Override
-              public void onSuccess(String value) {
-                update(value);
-              }
-            });
+        Global.inputString(confirmationQuestion, loc.trAssessmentReason(), new StringCallback() {
+          @Override
+          public void onSuccess(String value) {
+            save(value);
+          }
+        });
       } else {
         Global.confirm(confirmationQuestion, new ConfirmationCallback() {
           @Override
           public void onConfirm() {
-            update(null);
+            save(null);
           }
         });
       }
+    }
+
+    public void save(final String notes) {
+      confirmUpdates(new ScheduledCommand() {
+        @Override
+        public void execute() {
+          int updateSize = Queries.update(getViewName(), form.getDataColumns(),
+              form.getOldRow(), form.getActiveRow(), form.getChildrenForUpdate(),
+              new RowCallback() {
+                @Override
+                public void onSuccess(BeeRow result) {
+                  RowUpdateEvent.fire(BeeKeeper.getBus(), getViewName(), result);
+                  update(notes);
+                }
+              });
+          if (updateSize == 0) {
+            update(notes);
+          }
+        }
+      });
     }
 
     public void update(String notes) {
@@ -762,13 +780,7 @@ public class AssessmentForm extends PrintFormInterceptor implements SelectorEven
       header.addCommandItem(new Button(loc.trWriteEmail(), new ClickHandler() {
         @Override
         public void onClick(ClickEvent event) {
-          Element div = Document.get().createDivElement();
-          StyleUtils.setWhiteSpace(div, WhiteSpace.PRE_WRAP);
           IsRow activeRow = form.getActiveRow();
-          div.setInnerHTML("\n\n---\n"
-              + BeeUtils.joinWords(activeRow.getString(form.getDataIndex("FirstName")),
-                  activeRow.getString(form.getDataIndex("LastName"))));
-
           Set<String> recipient = null;
           String addr = activeRow.getString(form.getDataIndex("PersonEmail"));
 
@@ -778,7 +790,7 @@ public class AssessmentForm extends PrintFormInterceptor implements SelectorEven
           if (addr != null) {
             recipient = Sets.newHashSet(addr);
           }
-          NewMailMessage.create(recipient, null, null, null, div.getString(), null, null);
+          NewMailMessage.create(recipient, null, null, null, null, null, null);
         }
       }));
       if (request) {
@@ -831,46 +843,13 @@ public class AssessmentForm extends PrintFormInterceptor implements SelectorEven
   @Override
   public boolean beforeAction(final Action action, final Presenter presenter) {
     if (action == Action.SAVE && !isNewRow()) {
-      final int logIdx = form.getDataIndex(COL_ASSESSMENT_LOG);
-      final String oldLog = form.getOldRow().getString(logIdx);
-      String newLog = form.getActiveRow().getString(logIdx);
-
-      if (Objects.equal(oldLog, newLog)) {
-        final Map<String, DateTime> dates = Maps.newLinkedHashMap();
-
-        for (String col : new String[] {COL_DATE, "LoadingDate", "UnloadingDate"}) {
-          int idx = form.getDataIndex(col);
-          DateTime oldValue = form.getOldRow().getDateTime(idx);
-          DateTime value = form.getActiveRow().getDateTime(idx);
-
-          if (!Objects.equal(oldValue, value)) {
-            dates.put(Localized.maybeTranslate(form.getDataColumns().get(idx).getLabel()), value);
-          }
+      confirmUpdates(new ScheduledCommand() {
+        @Override
+        public void execute() {
+          presenter.handleAction(action);
         }
-        if (!BeeUtils.isEmpty(dates)) {
-          Global.inputString(BeeUtils.join("/", dates.keySet()), loc.trAssessmentRejectionReason(),
-              new StringCallback() {
-                @Override
-                public void onSuccess(String value) {
-                  String log = oldLog;
-
-                  for (Entry<String, DateTime> entry : dates.entrySet()) {
-                    log = buildLog(BeeUtils.joinWords(entry.getKey(),
-                        entry.getValue() != null ? entry.getValue().toCompactString()
-                            : loc.filterNullLabel()), value, log);
-                  }
-                  form.getActiveRow().setValue(logIdx, log);
-
-                  int cntIdx = form.getDataIndex(COL_ASSESSMENT_LOG + "Count");
-                  form.getActiveRow().setValue(cntIdx,
-                      BeeUtils.unbox(form.getActiveRow().getInteger(cntIdx)) + dates.size());
-
-                  presenter.handleAction(action);
-                }
-              });
-          return false;
-        }
-      }
+      });
+      return false;
     }
     return super.beforeAction(action, presenter);
   }
@@ -980,6 +959,50 @@ public class AssessmentForm extends PrintFormInterceptor implements SelectorEven
           && !AssessmentStatus.LOST.is(form.getIntegerValue(COL_ASSESSMENT_STATUS))
           && !OrderStatus.CANCELED.is(form.getIntegerValue(ALS_ORDER_STATUS)));
     }
+  }
+
+  private void confirmUpdates(final ScheduledCommand action) {
+    final int logIdx = form.getDataIndex(COL_ASSESSMENT_LOG);
+    final String oldLog = form.getOldRow().getString(logIdx);
+    String newLog = form.getActiveRow().getString(logIdx);
+
+    if (Objects.equal(oldLog, newLog)) {
+      final Map<String, DateTime> dates = Maps.newLinkedHashMap();
+
+      for (String col : new String[] {COL_DATE, "LoadingDate", "UnloadingDate"}) {
+        int idx = form.getDataIndex(col);
+        DateTime oldValue = form.getOldRow().getDateTime(idx);
+        DateTime value = form.getActiveRow().getDateTime(idx);
+
+        if (!Objects.equal(oldValue, value)) {
+          dates.put(Localized.maybeTranslate(form.getDataColumns().get(idx).getLabel()), value);
+        }
+      }
+      if (!BeeUtils.isEmpty(dates)) {
+        Global.inputString(BeeUtils.join("/", dates.keySet()), loc.trAssessmentReason(),
+            new StringCallback() {
+              @Override
+              public void onSuccess(String value) {
+                String log = oldLog;
+
+                for (Entry<String, DateTime> entry : dates.entrySet()) {
+                  log = buildLog(BeeUtils.joinWords(entry.getKey(),
+                      entry.getValue() != null ? entry.getValue().toCompactString()
+                          : loc.filterNullLabel()), value, log);
+                }
+                form.getActiveRow().setValue(logIdx, log);
+
+                int cntIdx = form.getDataIndex(COL_ASSESSMENT_LOG + "Count");
+                form.getActiveRow().setValue(cntIdx,
+                    BeeUtils.unbox(form.getActiveRow().getInteger(cntIdx)) + dates.size());
+
+                action.execute();
+              }
+            });
+        return;
+      }
+    }
+    action.execute();
   }
 
   private boolean isExecutor() {

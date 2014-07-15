@@ -33,6 +33,8 @@ public interface Screen extends NotificationListener, HasExtendedInfo {
   
   String addProgress(HasProgress widget);
   
+  void closeAll();
+  
   void closeWidget(IdentifiableWidget widget);
 
   boolean containsDomainEntry(Domain domain, Long key);
@@ -73,13 +75,13 @@ public interface Screen extends NotificationListener, HasExtendedInfo {
 
   void removeProgress(String id);
   
-  void restore(String input, boolean append);
+  void restore(List<String> spaces, boolean append);
   
   String serialize();
-  
-  void showInNewPlace(IdentifiableWidget widget);
 
-  void showWidget(IdentifiableWidget widget);
+  void show(IdentifiableWidget widget);
+
+  void showInNewPlace(IdentifiableWidget widget);
 
   void start(UserData userData);
   
@@ -89,7 +91,7 @@ public interface Screen extends NotificationListener, HasExtendedInfo {
   
   void updateMenu(IdentifiableWidget widget);
 
-  void updateProgress(String id, double value);
+  boolean updateProgress(String id, double value);
   
   void updateUserData(UserData userData);
 }

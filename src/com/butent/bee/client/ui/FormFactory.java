@@ -13,9 +13,9 @@ import com.butent.bee.client.Callback;
 import com.butent.bee.client.communication.ResponseCallback;
 import com.butent.bee.client.data.Queries;
 import com.butent.bee.client.presenter.FormPresenter;
-import com.butent.bee.client.presenter.Presenter;
 import com.butent.bee.client.presenter.PresenterCallback;
 import com.butent.bee.client.utils.XmlUtils;
+import com.butent.bee.client.view.ViewFactory;
 import com.butent.bee.client.view.ViewHelper;
 import com.butent.bee.client.view.form.FormImpl;
 import com.butent.bee.client.view.form.FormView;
@@ -48,6 +48,10 @@ import java.util.Map;
  * Creates and handles user interface forms.
  */
 
+/**
+ * @author Marius
+ *
+ */
 public final class FormFactory {
 
   public abstract static class FormViewCallback {
@@ -266,7 +270,7 @@ public final class FormFactory {
 
   public static String getSupplierKey(String formName) {
     Assert.notEmpty(formName);
-    return WidgetFactory.SupplierKind.FORM.getKey(formName);
+    return ViewFactory.SupplierKind.FORM.getKey(formName);
   }
 
   public static FormWidget getWidgetType(BeeColumn column) {
@@ -349,35 +353,10 @@ public final class FormFactory {
     openForm(formName, getFormInterceptor(formName));
   }
 
+  /**
+   * This method should be used in sync with {@code ViewFactory.registerSupplier}.
+   */
   public static void openForm(final String formName, final FormInterceptor formInterceptor) {
-    String supplierKey = getSupplierKey(formName);
-
-    if (!WidgetFactory.hasSupplier(supplierKey)) {
-      WidgetSupplier supplier = new WidgetSupplier() {
-        @Override
-        public void create(final Callback<IdentifiableWidget> callback) {
-
-          final PresenterCallback presenterCallback = new PresenterCallback() {
-            @Override
-            public void onCreate(Presenter presenter) {
-              callback.onSuccess(presenter.getWidget());
-            }
-          };
-
-          Callback<FormDescription> descriptionCallback = new Callback<FormDescription>() {
-            @Override
-            public void onSuccess(FormDescription result) {
-              openForm(result, formInterceptor, presenterCallback);
-            }
-          };
-
-          getFormDescription(formName, descriptionCallback);
-        }
-      };
-
-      WidgetFactory.registerSupplier(supplierKey, supplier);
-    }
-
     getFormDescription(formName, new Callback<FormDescription>() {
       @Override
       public void onSuccess(FormDescription result) {

@@ -216,6 +216,15 @@ public class TabbedPages extends Flow implements
     return addHandler(handler, SelectionEvent.getType());
   }
 
+  public int getContentIndex(String id) {
+    for (int i = 0; i < getPageCount(); i++) {
+      if (DomUtils.idEquals(getContentWidget(i), id)) {
+        return i;
+      }
+    }
+    return BeeConst.UNDEF;
+  }
+
   public int getContentIndex(Widget content) {
     return deckPanel.getWidgetIndex(content);
   }
@@ -254,6 +263,10 @@ public class TabbedPages extends Flow implements
     insertPage(content, new Tab(tab), beforeIndex);
   }
 
+  public boolean isIndex(int index) {
+    return BeeUtils.betweenExclusive(index, 0, getPageCount());
+  }
+  
   public void removePage(int index) {
     checkIndex(index);
 

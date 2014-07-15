@@ -66,6 +66,7 @@ import javax.mail.internet.AddressException;
 import javax.mail.internet.ContentType;
 import javax.mail.internet.InternetAddress;
 import javax.mail.internet.MimeMessage;
+import javax.mail.internet.MimeUtility;
 import javax.mail.internet.ParseException;
 
 @Stateless
@@ -263,7 +264,7 @@ public class MailStorageBean {
           .addConstant(COL_UNIQUE_ID, envelope.getUniqueId())
           .addConstant(COL_DATE, envelope.getDate())
           .addNotNull(COL_SENDER, senderId)
-          .addConstant(COL_SUBJECT, envelope.getSubject())
+          .addConstant(COL_SUBJECT, BeeUtils.left(envelope.getSubject(), 255))
           .addConstant(COL_RAW_CONTENT, fileId));
 
       Set<Long> allAddresses = Sets.newHashSet();
@@ -527,6 +528,10 @@ public class MailStorageBean {
 
       try {
         fileName = part.getFileName();
+
+        if (!BeeUtils.isEmpty(fileName)) {
+          fileName = MimeUtility.decodeText(fileName);
+        }
       } catch (ParseException e) {
         logger.warning("( MessageID =", messageId, ") Error getting part file name:", e);
       }

@@ -148,7 +148,7 @@ public class DocumentsModuleBean implements BeeModule {
           }
           if (!indexedRows.isEmpty()) {
             BeeView view = sys.getView(VIEW_DATA_CRITERIA);
-            SqlSelect query = view.getQuery();
+            SqlSelect query = view.getQuery(usr.getCurrentUserId());
 
             query.setWhere(SqlUtils.and(query.getWhere(),
                 SqlUtils.isNull(view.getSourceAlias(), COL_CRITERIA_GROUP_NAME),

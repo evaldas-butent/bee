@@ -52,13 +52,11 @@ import com.butent.bee.shared.communication.ResponseObject;
 import com.butent.bee.shared.data.BeeRowSet;
 import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.filter.Filter;
-import com.butent.bee.shared.data.value.Value;
 import com.butent.bee.shared.font.FontAwesome;
 import com.butent.bee.shared.html.builder.elements.Div;
 import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.modules.mail.AccountInfo;
 import com.butent.bee.shared.modules.mail.MailConstants.AddressType;
-import com.butent.bee.shared.utils.ArrayUtils;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.Codec;
 import com.butent.bee.shared.utils.EnumUtils;
@@ -128,7 +126,7 @@ public final class NewMailMessage extends AbstractFormInterceptor
         if (!BeeUtils.isEmpty(availableAccounts)) {
           create(availableAccounts, defaultAccount, to, cc, bcc, subject, content, attach, draftId);
         } else {
-          BeeKeeper.getScreen().notifyWarning("No accounts found");
+          BeeKeeper.getScreen().notifyWarning(Localized.getConstants().mailNoAccountsFound());
         }
       }
     });
@@ -225,14 +223,8 @@ public final class NewMailMessage extends AbstractFormInterceptor
       MultiSelector input = (MultiSelector) widget;
 
       Collection<String> lst = recipients.get(type.name());
-
       if (!BeeUtils.isEmpty(lst)) {
-        List<Value> choices = new ArrayList<>();
-
-        for (String address : lst) {
-          choices.add(Value.getValue(address));
-        }
-        input.render(Codec.beeSerialize(choices));
+        input.setValues(lst);
       }
       recipientWidgets.put(type.name(), input);
 
@@ -314,7 +306,13 @@ public final class NewMailMessage extends AbstractFormInterceptor
       if (currentContent.contains(oldSignature)) {
         currentContent = currentContent.replace(oldSignature, newSignature);
       } else {
-        currentContent = SIGNATURE_SEPARATOR + newSignature + currentContent;
+        if (BeeUtils.startsWith(subject, Localized.getConstants().mailReplayPrefix())
+            || BeeUtils.startsWith(subject, Localized.getConstants().mailForwardedPrefix())) {
+
+          currentContent = SIGNATURE_SEPARATOR + newSignature + currentContent;
+        } else {
+          currentContent = currentContent + SIGNATURE_SEPARATOR + newSignature;
+        }
       }
       contentWidget.setValue(currentContent);
 
@@ -325,14 +323,7 @@ public final class NewMailMessage extends AbstractFormInterceptor
 
   private boolean hasChanges() {
     for (String type : recipientWidgets.keySet()) {
-      Set<String> values = new HashSet<>();
-      String[] recs = Codec.beeDeserializeCollection(recipientWidgets.get(type).getValue());
-
-      if (!ArrayUtils.isEmpty(recs)) {
-        for (String rec : recs) {
-          values.add(Value.restore(rec).getString());
-        }
-      }
+      Set<String> values = new HashSet<>(recipientWidgets.get(type).getValues());
       if (!BeeUtils.sameElements(recipients.get(type), values)) {
         return true;
       }
@@ -416,17 +407,12 @@ public final class NewMailMessage extends AbstractFormInterceptor
     params.addDataItem(COL_ACCOUNT, account.getAccountId());
 
     for (String type : recipientWidgets.keySet()) {
-      String[] recs = Codec.beeDeserializeCollection(recipientWidgets.get(type).getValue());
-
-      if (!ArrayUtils.isEmpty(recs)) {
-        Set<String> values = new HashSet<>();
-
-        for (String rec : recs) {
-          values.add(Value.restore(rec).getString());
-        }
+      Set<String> values = new HashSet<>(recipientWidgets.get(type).getValues());
+      if (!BeeUtils.isEmpty(values)) {
         params.addDataItem(type, Codec.beeSerialize(values));
       }
     }
+
     if (draftId != null) {
       params.addDataItem("DraftId", draftId);
     }
@@ -456,7 +442,7 @@ public final class NewMailMessage extends AbstractFormInterceptor
     String error = null;
 
     for (MultiSelector r : recipientWidgets.values()) {
-      if (!ArrayUtils.isEmpty(Codec.beeDeserializeCollection(r.getValue()))) {
+      if (!BeeUtils.isEmpty(r.getValues())) {
         hasRecipients = true;
         break;
       }

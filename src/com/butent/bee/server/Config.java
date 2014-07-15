@@ -18,20 +18,25 @@ import com.butent.bee.shared.utils.ExtendedProperty;
 import com.butent.bee.shared.utils.PropertyUtils;
 
 import java.io.File;
+import java.util.ArrayList;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
 
 /**
- * Contains essential server configuration parameters like directory structure or files blacklist.
+ * Contains essential server configuration parameters like directory structure.
  */
 
 public final class Config {
+
   private static BeeLogger logger = LogUtils.getLogger(Config.class);
 
   public static final File WAR_DIR;
   public static final File WEB_INF_DIR;
 
+  public static final File ROOT_DIR;
   public static final File SOURCE_DIR;
 
   public static final File SCHEMA_DIR;
@@ -40,13 +45,16 @@ public final class Config {
   public static final File LOG_DIR;
 
   public static final File IMAGE_DIR;
+  
+  public static final Map<String, File> DIRECTORY_SUBSTITUTES;
 
   private static Properties properties;
-
+  
   private static final Splitter VALUE_SPLITTER =
       Splitter.on(BeeConst.CHAR_COMMA).trimResults().omitEmptyStrings();
 
   private static List<Filter> fileBlacklist;
+
   private static List<String> textExtensions;
 
   static {
@@ -61,7 +69,8 @@ public final class Config {
     WAR_DIR = dir.getParentFile();
     WEB_INF_DIR = dir;
 
-    SOURCE_DIR = new File(WAR_DIR.getParentFile(), "src");
+    ROOT_DIR = WAR_DIR.getParentFile();
+    SOURCE_DIR = new File(ROOT_DIR, "src");
 
     SCHEMA_DIR = new File(dir, "schemas");
     CONFIG_DIR = new File(dir, "config");
@@ -70,8 +79,20 @@ public final class Config {
     LOG_DIR = new File(LOCAL_DIR, "logs");
 
     IMAGE_DIR = new File(WAR_DIR, Paths.IMAGE_DIR);
+    
+    DIRECTORY_SUBSTITUTES = new LinkedHashMap<>();
+    
+    DIRECTORY_SUBSTITUTES.put(BeeUtils.embrace("war"), WAR_DIR);
+    DIRECTORY_SUBSTITUTES.put(BeeUtils.embrace("web"), WEB_INF_DIR);
+    DIRECTORY_SUBSTITUTES.put(BeeUtils.embrace("root"), ROOT_DIR);
+    DIRECTORY_SUBSTITUTES.put(BeeUtils.embrace("src"), SOURCE_DIR);
+    DIRECTORY_SUBSTITUTES.put(BeeUtils.embrace("schema"), SCHEMA_DIR);
+    DIRECTORY_SUBSTITUTES.put(BeeUtils.embrace("config"), CONFIG_DIR);
+    DIRECTORY_SUBSTITUTES.put(BeeUtils.embrace("local"), LOCAL_DIR);
+    DIRECTORY_SUBSTITUTES.put(BeeUtils.embrace("log"), LOG_DIR);
+    DIRECTORY_SUBSTITUTES.put(BeeUtils.embrace("image"), IMAGE_DIR);
   }
-
+  
   public static String getConfigPath(String resource) {
     Assert.notEmpty(resource);
 
@@ -80,7 +101,7 @@ public final class Config {
     }
     return null;
   }
-
+  
   public static List<File> getDefaultSearchDirectories() {
     return Lists.newArrayList(LOCAL_DIR, CONFIG_DIR, SCHEMA_DIR, WAR_DIR, SOURCE_DIR);
   }
@@ -90,7 +111,7 @@ public final class Config {
       return null;
     }
 
-    List<File> directories = Lists.newArrayList();
+    List<File> directories = new ArrayList<>();
     File dir;
 
     for (int i = 0; i < pfx.length(); i++) {
@@ -122,7 +143,7 @@ public final class Config {
 
   public static List<Filter> getFileBlacklist() {
     if (fileBlacklist == null) {
-      fileBlacklist = Lists.newArrayList();
+      fileBlacklist = new ArrayList<>();
       for (String expr : getList("FileBlacklist")) {
         fileBlacklist.add(new WildcardFilter(expr, Component.NAME));
       }
@@ -131,13 +152,13 @@ public final class Config {
   }
 
   public static List<ExtendedProperty> getInfo() {
-    List<ExtendedProperty> lst = Lists.newArrayList();
-    PropertyUtils.addProperties(lst, true,
-        "War dir", WAR_DIR.isDirectory(), WAR_DIR.getAbsolutePath(),
-        "Source dir", SOURCE_DIR.isDirectory(), SOURCE_DIR.getAbsolutePath(),
-        "Config dir", CONFIG_DIR.isDirectory(), CONFIG_DIR.getAbsolutePath(),
-        "Local dir", LOCAL_DIR.isDirectory(), LOCAL_DIR.getAbsolutePath(),
-        "Log dir", LOG_DIR.isDirectory(), LOG_DIR.getAbsolutePath());
+    List<ExtendedProperty> lst = new ArrayList<>();
+    
+    for (Map.Entry<String, File> entry : DIRECTORY_SUBSTITUTES.entrySet()) {
+      if (entry.getValue() != null) {
+        lst.add(new ExtendedProperty(entry.getKey(), entry.getValue().getAbsolutePath()));
+      }
+    }
 
     if (fileBlacklist == null) {
       PropertyUtils.addExtended(lst, "File Blacklist", "not initialized");
@@ -176,7 +197,7 @@ public final class Config {
   public static List<String> getList(String key) {
     String values = getProperty(key);
     if (BeeUtils.isEmpty(values)) {
-      return Lists.newArrayList();
+      return new ArrayList<>();
     }
     return Lists.newArrayList(VALUE_SPLITTER.split(values));
   }
@@ -286,6 +307,26 @@ public final class Config {
     return result;
   }
 
+  public static String substitutePath(String input) {
+    if (!BeeUtils.isEmpty(input) && input.startsWith(BeeConst.STRING_LEFT_BRACE)
+        && input.contains(BeeConst.STRING_RIGHT_BRACE)) {
+      
+      String path = input;
+      
+      for (Map.Entry<String, File> entry : DIRECTORY_SUBSTITUTES.entrySet()) {
+        path = substituteDirectory(path, entry.getKey(), entry.getValue());
+        if (!path.startsWith(BeeConst.STRING_LEFT_BRACE)) {
+          break;
+        }
+      }
+      
+      return path;
+      
+    } else {
+      return input;
+    }
+  }
+
   private static int getSize(Properties props) {
     if (props == null) {
       return 0;
@@ -304,6 +345,16 @@ public final class Config {
     Properties props = new Properties();
     FileUtils.loadProperties(props, file);
     return props;
+  }
+
+  private static String substituteDirectory(String input, String key, File directory) {
+    if (BeeUtils.same(input, key)) {
+      return directory.getAbsolutePath();
+    } else if (BeeUtils.isPrefix(input, key)) {
+      return new File(directory, BeeUtils.removePrefix(input, key)).getAbsolutePath();
+    } else {
+      return input;
+    }
   }
 
   private Config() {

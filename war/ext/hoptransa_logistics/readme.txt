@@ -1,6 +1,6 @@
 1. Before deploy
    1.1 *.xml settings
-   		-Set default value from ExpeditionTypes min TipeID value to Trips.table.xml
+   		-Set default value from ExpeditionTypes min TypeID value to Trips.table.xml
    		  <Relation name="Expedition" relation="ExpeditionTypes" label="=trExpeditionType" defValue="1" />
    		  
     

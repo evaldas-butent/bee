@@ -13,6 +13,7 @@ import com.butent.bee.client.Global;
 import com.butent.bee.client.communication.ParameterList;
 import com.butent.bee.client.communication.ResponseCallback;
 import com.butent.bee.client.data.RowEditor;
+import com.butent.bee.client.data.RowFactory;
 import com.butent.bee.client.grid.HtmlTable;
 import com.butent.bee.client.i18n.DateTimeFormat;
 import com.butent.bee.client.i18n.DateTimeFormat.PredefinedFormat;
@@ -20,7 +21,6 @@ import com.butent.bee.client.layout.Flow;
 import com.butent.bee.client.presenter.Presenter;
 import com.butent.bee.client.render.PhotoRenderer;
 import com.butent.bee.client.style.StyleUtils;
-import com.butent.bee.client.ui.FormFactory;
 import com.butent.bee.client.ui.Opener;
 import com.butent.bee.client.view.form.FormView;
 import com.butent.bee.client.view.form.interceptor.AbstractFormInterceptor;
@@ -315,7 +315,7 @@ class AnnouncementsBoardInterceptor extends AbstractFormInterceptor implements
         @Override
         public void execute() {
         // RowEditor.openRow(VIEW_DISCUSSIONS, rowId, false, null);
-        FormFactory.openForm(FORM_NEW_DISCUSSION, new CreateDiscussionInterceptor());
+          RowFactory.createRow(VIEW_DISCUSSIONS);
         }
       };
 

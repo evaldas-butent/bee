@@ -1967,6 +1967,7 @@ public final class DomUtils {
 
   private static void calculateTextBoxSize() {
     Element elem = Document.get().createTextInputElement();
+    elem.addClassName(StyleUtils.NAME_TEXT_BOX);
 
     BodyPanel.conceal(elem);
 

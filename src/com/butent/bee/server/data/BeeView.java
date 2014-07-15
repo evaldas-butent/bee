@@ -1,10 +1,10 @@
 package com.butent.bee.server.data;
 
-import com.google.common.base.Function;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
 
+import com.butent.bee.server.Invocation;
 import com.butent.bee.server.data.BeeTable.BeeField;
 import com.butent.bee.server.data.BeeTable.BeeRelation;
 import com.butent.bee.server.sql.HasConditions;
@@ -73,8 +73,10 @@ import com.butent.bee.shared.utils.PropertyUtils;
 
 import java.util.Collection;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -87,9 +89,6 @@ public class BeeView implements BeeObject, HasExtendedInfo {
 
   public interface ConditionProvider {
     IsCondition getCondition(BeeView view, List<String> args);
-  }
-
-  public interface ViewFinder extends Function<String, BeeView> {
   }
 
   private class ColumnInfo {
@@ -423,11 +422,12 @@ public class BeeView implements BeeObject, HasExtendedInfo {
   private final boolean hasGrouping;
   private final SqlSelect query;
   private final Map<String, ColumnInfo> columns = Maps.newLinkedHashMap();
-  private final Filter filter;
+  private final String filter;
+  private final Map<HasConditions, String> joinFilters = new HashMap<>();
 
   private Order order;
 
-  BeeView(String module, XmlView xmlView, Map<String, BeeTable> tables, Long userId) {
+  BeeView(String module, XmlView xmlView, Map<String, BeeTable> tables) {
     Assert.notNull(xmlView);
     this.module = BeeUtils.notEmpty(xmlView.module, module);
     this.name = xmlView.name;
@@ -467,11 +467,7 @@ public class BeeView implements BeeObject, HasExtendedInfo {
     }
     setGrouping(grouping);
 
-    if (BeeUtils.isEmpty(xmlView.filter)) {
-      this.filter = null;
-    } else {
-      this.filter = parseFilter(xmlView.filter, userId);
-    }
+    this.filter = xmlView.filter;
 
     if (!BeeUtils.isEmpty(xmlView.orders)) {
       this.order = new Order();
@@ -517,7 +513,7 @@ public class BeeView implements BeeObject, HasExtendedInfo {
   public String getColumnField(String colName) {
     return getColumnInfo(colName).getField();
   }
-  
+
   public String getColumnLabel(String colName) {
     return getColumnInfo(colName).getLabel();
   }
@@ -577,7 +573,7 @@ public class BeeView implements BeeObject, HasExtendedInfo {
     return getColumnInfo(colName).getType();
   }
 
-  public IsCondition getCondition(Filter flt, ViewFinder viewFinder) {
+  public IsCondition getCondition(Filter flt) {
     if (flt != null) {
       String clazz = NameUtils.getClassName(flt.getClass());
 
@@ -594,7 +590,7 @@ public class BeeView implements BeeObject, HasExtendedInfo {
         return getCondition((ColumnNotNullFilter) flt);
 
       } else if (NameUtils.getClassName(CompoundFilter.class).equals(clazz)) {
-        return getCondition((CompoundFilter) flt, viewFinder);
+        return getCondition((CompoundFilter) flt);
 
       } else if (NameUtils.getClassName(IdFilter.class).equals(clazz)) {
         return getCondition((IdFilter) flt);
@@ -609,7 +605,7 @@ public class BeeView implements BeeObject, HasExtendedInfo {
         return SqlUtils.sqlTrue();
 
       } else if (NameUtils.getClassName(ColumnInFilter.class).equals(clazz)) {
-        return getCondition((ColumnInFilter) flt, viewFinder);
+        return getCondition((ColumnInFilter) flt);
 
       } else if (NameUtils.getClassName(CustomFilter.class).equals(clazz)) {
         return getCondition((CustomFilter) flt);
@@ -632,7 +628,7 @@ public class BeeView implements BeeObject, HasExtendedInfo {
     PropertyUtils.addProperties(info, false, "Module", getModule(), "Name", getName(),
         "Source", getSourceName(), "Source Alias", getSourceAlias(),
         "Source Id Name", getSourceIdName(), "Source Version Name", getSourceVersionName(),
-        "Filter", getFilter(), "Read Only", isReadOnly(), "Caption", getCaption(),
+        "Read Only", isReadOnly(), "Caption", getCaption(),
         "Edit Form", getEditForm(), "Row Caption", getRowCaption(), "New Row Form",
         getNewRowForm(),
         "New Row Columns", getNewRowColumns(), "New Row Caption", getNewRowCaption(),
@@ -665,10 +661,6 @@ public class BeeView implements BeeObject, HasExtendedInfo {
     return info;
   }
 
-  public Filter getFilter() {
-    return filter;
-  }
-
   @Override
   public String getModule() {
     return module;
@@ -691,12 +683,26 @@ public class BeeView implements BeeObject, HasExtendedInfo {
     return newRowForm;
   }
 
-  public SqlSelect getQuery() {
-    return getQuery(null, null);
+  public SqlSelect getQuery(Long userId) {
+    return getQuery(userId, null);
   }
 
-  public SqlSelect getQuery(Filter flt, Order ord, List<String> cols, ViewFinder viewFinder) {
-    SqlSelect ss = query.copyOf();
+  public SqlSelect getQuery(Long userId, Filter flt, Order ord, List<String> cols) {
+
+    SqlSelect ss;
+
+    if (!BeeUtils.isEmpty(joinFilters)) {
+      synchronized (this) {
+        for (Entry<HasConditions, String> joinFilter : joinFilters.entrySet()) {
+          HasConditions join = joinFilter.getKey();
+          join.clear();
+          join.add(getCondition(parseFilter(joinFilter.getValue(), userId)));
+        }
+        ss = query.copyOf(true);
+      }
+    } else {
+      ss = query.copyOf();
+    }
     Collection<String> activeCols = null;
 
     if (!BeeUtils.isEmpty(cols)) {
@@ -711,7 +717,7 @@ public class BeeView implements BeeObject, HasExtendedInfo {
         }
       }
     }
-    setFilter(ss, flt, viewFinder);
+    setFilter(ss, flt, userId);
 
     String src = getSourceAlias();
     String idCol = getSourceIdName();
@@ -775,8 +781,8 @@ public class BeeView implements BeeObject, HasExtendedInfo {
     return ss;
   }
 
-  public SqlSelect getQuery(Filter flt, ViewFinder viewFinder) {
-    return getQuery(flt, null, null, viewFinder);
+  public SqlSelect getQuery(Long userId, Filter flt) {
+    return getQuery(userId, flt, null, null);
   }
 
   public String getRootField(String colName) {
@@ -982,6 +988,11 @@ public class BeeView implements BeeObject, HasExtendedInfo {
           relTable = tables.get(BeeUtils.normalize(((BeeRelation) field).getRelation()));
           join = SqlUtils.join(als, field.getName(), relAls, relTable.getIdName());
         }
+        if (!BeeUtils.isEmpty(col.filter)) {
+          HasConditions compound = SqlUtils.and();
+          joinFilters.put(compound, col.filter);
+          join = SqlUtils.and(join, compound);
+        }
         String relTbl = relTable.getName();
 
         switch (JoinType.valueOf(col.joinType)) {
@@ -1042,19 +1053,19 @@ public class BeeView implements BeeObject, HasExtendedInfo {
         getSqlExpression(flt.getColumn()), flt.getOperator(), getSqlExpression(flt.getValue()));
   }
 
-  private IsCondition getCondition(ColumnInFilter flt, ViewFinder viewFinder) {
-    if (viewFinder == null) {
-      logger.warning(flt.getClass().getSimpleName(), "view finder not supplied");
+  private IsCondition getCondition(ColumnInFilter flt) {
+    SystemBean sys = Invocation.locateRemoteBean(SystemBean.class);
+
+    if (sys == null) {
       return null;
     }
-    BeeView inView = viewFinder.apply(flt.getInView());
+    BeeView inView = sys.getView(flt.getInView());
+
     if (inView == null) {
       logger.warning(flt.getClass().getSimpleName(), "view not found:", flt.getInView());
       return null;
     }
-
     String column = flt.getColumn();
-
     String tbl;
     String fld;
 
@@ -1065,13 +1076,12 @@ public class BeeView implements BeeObject, HasExtendedInfo {
       tbl = getColumnTable(column);
       fld = getColumnField(column);
     }
-
     String inTbl = inView.getColumnTable(flt.getInColumn());
     String inFld = inView.getColumnField(flt.getInColumn());
 
     Filter inFilter = flt.getInFilter();
 
-    return SqlUtils.in(tbl, fld, inTbl, inFld, inView.getCondition(inFilter, viewFinder));
+    return SqlUtils.in(tbl, fld, inTbl, inFld, inView.getCondition(inFilter));
   }
 
   private IsCondition getCondition(ColumnIsNullFilter flt) {
@@ -1097,7 +1107,7 @@ public class BeeView implements BeeObject, HasExtendedInfo {
     }
   }
 
-  private IsCondition getCondition(CompoundFilter flt, ViewFinder viewFinder) {
+  private IsCondition getCondition(CompoundFilter flt) {
     HasConditions condition = null;
 
     if (!flt.isEmpty()) {
@@ -1109,10 +1119,10 @@ public class BeeView implements BeeObject, HasExtendedInfo {
           condition = SqlUtils.or();
           break;
         case NOT:
-          return SqlUtils.not(getCondition(flt.getSubFilters().get(0), viewFinder));
+          return SqlUtils.not(getCondition(flt.getSubFilters().get(0)));
       }
       for (Filter subFilter : flt.getSubFilters()) {
-        condition.add(getCondition(subFilter, viewFinder));
+        condition.add(getCondition(subFilter));
       }
     }
     return condition;
@@ -1168,18 +1178,18 @@ public class BeeView implements BeeObject, HasExtendedInfo {
     }
   }
 
-  private void setFilter(SqlSelect ss, Filter flt, ViewFinder viewFinder) {
+  private void setFilter(SqlSelect ss, Filter flt, Long userId) {
     CompoundFilter f = Filter.and();
 
     if (filter != null) {
-      f.add(filter);
+      f.add(parseFilter(filter, userId));
     }
     if (flt != null) {
       f.add(flt);
     }
 
     if (!f.isEmpty()) {
-      IsCondition condition = getCondition(f, viewFinder);
+      IsCondition condition = getCondition(f);
 
       if (hasAggregate) {
         for (String col : columns.keySet()) {

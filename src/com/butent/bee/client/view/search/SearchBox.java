@@ -2,12 +2,15 @@ package com.butent.bee.client.view.search;
 
 import com.google.common.collect.ImmutableSet;
 import com.google.gwt.event.dom.client.KeyCodes;
+import com.google.gwt.event.shared.HandlerRegistration;
 import com.google.gwt.user.client.Event;
 
 import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.dom.DomUtils;
 import com.butent.bee.client.event.EventUtils;
+import com.butent.bee.client.event.logical.ReadyEvent;
 import com.butent.bee.client.presenter.Presenter;
+import com.butent.bee.client.style.StyleUtils;
 import com.butent.bee.client.widget.InputText;
 import com.butent.bee.shared.data.IsColumn;
 import com.butent.bee.shared.data.filter.Filter;
@@ -39,6 +42,11 @@ public class SearchBox extends InputText implements SearchView {
     sinkEvents(Event.ONKEYDOWN);
   }
 
+  @Override
+  public HandlerRegistration addReadyHandler(ReadyEvent.Handler handler) {
+    return addHandler(handler, ReadyEvent.getType());
+  }
+  
   @Override
   public Filter getFilter(List<? extends IsColumn> columns, String idColumnName,
       String versionColumnName, ImmutableSet<String> excludeSearchers) {
@@ -89,9 +97,15 @@ public class SearchBox extends InputText implements SearchView {
 
   @Override
   protected String getDefaultStyleName() {
-    return "bee-SearchBox";
+    return StyleUtils.CLASS_NAME_PREFIX + "SearchBox";
   }
 
+  @Override
+  protected void onLoad() {
+    super.onLoad();
+    ReadyEvent.fire(this);
+  }
+  
   private FilterHandler getFilterHandler() {
     return filterHandler;
   }

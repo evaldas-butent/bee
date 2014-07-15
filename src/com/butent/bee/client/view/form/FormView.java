@@ -32,6 +32,7 @@ import com.butent.bee.shared.time.JustDate;
 
 import java.util.Collection;
 import java.util.List;
+import java.util.Map;
 
 /**
  * Contains necessary methods for form implementing classes.
@@ -84,6 +85,8 @@ public interface FormView extends DataView, HasDataTable, ActiveWidgetChangeEven
   JustDate getDateValue(String source);
 
   Long getLongValue(String source);
+  
+  Map<String, Widget> getNamedWidgets();
 
   IsRow getOldRow();
 

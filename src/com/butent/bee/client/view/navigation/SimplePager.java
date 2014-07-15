@@ -1,11 +1,13 @@
 package com.butent.bee.client.view.navigation;
 
 import com.google.gwt.dom.client.Element;
+import com.google.gwt.event.shared.HandlerRegistration;
 import com.google.gwt.i18n.client.NumberFormat;
 
 import com.butent.bee.client.Global;
 import com.butent.bee.client.dom.DomUtils;
 import com.butent.bee.client.dom.Rulers;
+import com.butent.bee.client.event.logical.ReadyEvent;
 import com.butent.bee.client.event.logical.ScopeChangeEvent;
 import com.butent.bee.client.layout.Horizontal;
 import com.butent.bee.client.style.StyleUtils;
@@ -65,7 +67,7 @@ public class SimplePager extends AbstractPager {
     FIRST, REWIND, PREV, NEXT, FORWARD, LAST
   }
 
-  private static final String STYLE_PREFIX = "bee-SimplePager-";
+  private static final String STYLE_PREFIX = StyleUtils.CLASS_NAME_PREFIX + "SimplePager-";
   private static final String STYLE_CONTAINER = STYLE_PREFIX + "container";
   private static final String STYLE_DISABLED_BUTTON = STYLE_PREFIX + "disabledButton";
   private static final String STYLE_INFO = STYLE_PREFIX + "info";
@@ -151,6 +153,11 @@ public class SimplePager extends AbstractPager {
   }
 
   @Override
+  public HandlerRegistration addReadyHandler(ReadyEvent.Handler handler) {
+    return addHandler(handler, ReadyEvent.getType());
+  }
+  
+  @Override
   public boolean onPrint(Element source, Element target) {
     return !DomUtils.isImageElement(source);
   }
@@ -210,6 +217,12 @@ public class SimplePager extends AbstractPager {
     return NavigationOrigin.PAGER;
   }
 
+  @Override
+  protected void onLoad() {
+    super.onLoad();
+    ReadyEvent.fire(this);
+  }
+  
   private String createText(int start, int end, int rowCount) {
     StringBuilder sb = new StringBuilder(format(start));
     if (showPageSize) {

@@ -517,6 +517,8 @@ public interface LocalizableConstants extends Constants, LocalizableCalendarCons
 
   String parameter();
 
+  String parameters();
+
   String partial();
 
   String password();

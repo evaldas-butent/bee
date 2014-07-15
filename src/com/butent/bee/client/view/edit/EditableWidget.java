@@ -466,10 +466,15 @@ public class EditableWidget implements EditChangeHandler, FocusHandler, BlurHand
   }
 
   public boolean validate(ValidationOrigin origin) {
-    String oldValue = getOldValue();
-    String newValue = getEditor().getNormalizedValue();
+    if (isReadOnly()) {
+      return true;
 
-    return validate(oldValue, newValue, origin);
+    } else {
+      String oldValue = getOldValue();
+      String newValue = getEditor().getNormalizedValue();
+
+      return validate(oldValue, newValue, origin);
+    }
   }
 
   private void end(Integer keyCode, boolean hasModifiers) {

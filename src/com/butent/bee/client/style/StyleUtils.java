@@ -170,6 +170,8 @@ public final class StyleUtils {
   public static final String NAME_RESIZABLE = CLASS_NAME_PREFIX + "resizable";
   public static final String NAME_FOCUSABLE = CLASS_NAME_PREFIX + "focusable";
 
+  public static final String NAME_TEXT_BOX = CLASS_NAME_PREFIX + "TextBox";
+
   public static final String TRANSFORM_ROTATE = "rotate";
   public static final String TRANSFORM_SCALE = "scale";
   public static final String TRANSFORM_SKEW = "skew";

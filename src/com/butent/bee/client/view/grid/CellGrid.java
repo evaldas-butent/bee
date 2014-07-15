@@ -656,15 +656,18 @@ public class CellGrid extends Widget implements IdentifiableWidget, HasDataTable
   private static final Template template = GWT.create(Template.class);
 
   public static int getDefaultBodyCellHeight() {
-    return BeeUtils.resize(BeeKeeper.getScreen().getHeight(), 300, 1500, 14, 25);
+    int h = Math.max(DomUtils.getTextBoxClientHeight(), 10);
+    return BeeUtils.resize(BeeKeeper.getScreen().getHeight(), 300, 1300, h - 2, h + 2);
   }
 
   public static int getDefaultFooterCellHeight() {
-    return BeeUtils.resize(BeeKeeper.getScreen().getHeight(), 300, 1500, 16, 21);
+    int h = Math.max(DomUtils.getTextBoxClientHeight(), 10);
+    return BeeUtils.resize(BeeKeeper.getScreen().getHeight(), 300, 1300, h, h + 2);
   }
 
   public static int getDefaultHeaderCellHeight() {
-    return BeeUtils.resize(BeeKeeper.getScreen().getHeight(), 300, 800, 16, 28);
+    int h = Math.max(DomUtils.getTextBoxClientHeight(), 10);
+    return BeeUtils.resize(BeeKeeper.getScreen().getHeight(), 300, 1300, h, h + 10);
   }
 
   public static boolean isBodyRow(String rowIdx) {
@@ -1151,9 +1154,9 @@ public class CellGrid extends Widget implements IdentifiableWidget, HasDataTable
 
     if (width > 0) {
       width += LINE_WIDTH_RESERVE;
-        if (columnInfo.getColumn().isSortable()) {
-          width += HeaderCell.SORT_INFO_WIDTH;
-        }
+      if (columnInfo.getColumn().isSortable()) {
+        width += HeaderCell.SORT_INFO_WIDTH;
+      }
       columnInfo.setHeaderWidth(width);
     }
     return width;
@@ -3769,7 +3772,9 @@ public class CellGrid extends Widget implements IdentifiableWidget, HasDataTable
           Element cellElement = getActiveCellElement();
           if (cellElement != null) {
             cellElement.getStyle().setZIndex(incrementZIndex());
-            cellElement.focus();
+            if (DomUtils.isVisible(cellElement)) {
+              cellElement.focus();
+            }
           }
         }
       });

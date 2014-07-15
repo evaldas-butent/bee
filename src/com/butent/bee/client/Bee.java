@@ -4,8 +4,11 @@ import com.google.gwt.core.client.EntryPoint;
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.event.logical.shared.ResizeEvent;
 import com.google.gwt.event.logical.shared.ResizeHandler;
+import com.google.gwt.json.client.JSONObject;
 import com.google.gwt.user.client.Timer;
 import com.google.gwt.user.client.Window;
+
+import static com.butent.bee.shared.modules.administration.AdministrationConstants.*;
 
 import com.butent.bee.client.communication.ParameterList;
 import com.butent.bee.client.communication.ResponseCallback;
@@ -16,12 +19,14 @@ import com.butent.bee.client.decorator.TuningFactory;
 import com.butent.bee.client.dom.DomUtils;
 import com.butent.bee.client.logging.ClientLogManager;
 import com.butent.bee.client.modules.ModuleManager;
+import com.butent.bee.client.modules.administration.AdministrationKeeper;
 import com.butent.bee.client.screen.BodyPanel;
 import com.butent.bee.client.ui.AutocompleteProvider;
 import com.butent.bee.client.utils.LayoutEngine;
 import com.butent.bee.client.view.grid.GridSettings;
 import com.butent.bee.client.websocket.Endpoint;
 import com.butent.bee.shared.BeeConst;
+import com.butent.bee.shared.Consumer;
 import com.butent.bee.shared.Pair;
 import com.butent.bee.shared.Service;
 import com.butent.bee.shared.communication.ResponseObject;
@@ -30,12 +35,12 @@ import com.butent.bee.shared.i18n.LocalizableConstants;
 import com.butent.bee.shared.i18n.LocalizableMessages;
 import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.logging.LogUtils;
-import com.butent.bee.shared.modules.administration.AdministrationConstants;
 import com.butent.bee.shared.rights.Module;
 import com.butent.bee.shared.ui.UserInterface;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.Codec;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
@@ -74,30 +79,41 @@ public class Bee implements EntryPoint {
   }
 
   private static void initWorkspace() {
+    List<String> onStartup = new ArrayList<>();
+
     if (BeeKeeper.getUser().workspaceContinue()) {
       String workspace = BeeKeeper.getUser().getLastWorkspace();
 
       if (!BeeUtils.isEmpty(workspace) && !BeeConst.EMPTY.equals(workspace)) {
-        BeeKeeper.getScreen().restore(workspace, false);
+        onStartup.add(workspace);
+
+      } else {
+        JSONObject onEmpty = Settings.getOnEmptyWorkspace();
+        if (onEmpty != null) {
+          onStartup.add(onEmpty.toString());
+        }
       }
 
     } else {
+      List<String> home = Global.getSpaces().getStartup();
 
-      List<String> onStartup = Global.getSpaces().getStartup();
+      if (BeeUtils.isEmpty(home)) {
+        JSONObject json = Settings.getOnStartup();
+        if (json == null) {
+          json = Settings.getOnEmptyWorkspace();
+        }
 
-      if (BeeUtils.isEmpty(onStartup)) {
-        onStartup = Settings.getOnStartup();
-        if (!BeeUtils.isEmpty(onStartup) && !BeeKeeper.getMenu().isEmpty()) {
-          for (String item : onStartup) {
-            BeeKeeper.getMenu().executeItem(item);
-          }
+        if (json != null) {
+          onStartup.add(json.toString());
         }
 
       } else {
-        for (int i = 0; i < onStartup.size(); i++) {
-          BeeKeeper.getScreen().restore(onStartup.get(i), i > 0);
-        }
+        onStartup.addAll(home);
       }
+    }
+
+    if (!onStartup.isEmpty()) {
+      BeeKeeper.getScreen().restore(onStartup, false);
     }
   }
 
@@ -107,9 +123,12 @@ public class Bee implements EntryPoint {
 
     Module.setEnabledModules(data.get(Service.PROPERTY_MODULES));
 
-    ClientDefaults.setCurrency(BeeUtils
-        .toLongOrNull(data.get(AdministrationConstants.COL_CURRENCY)));
-    ClientDefaults.setCurrencyName(data.get(AdministrationConstants.ALS_CURRENCY_NAME));
+    ClientDefaults.setCurrency(BeeUtils.toLongOrNull(data.get(COL_CURRENCY)));
+    ClientDefaults.setCurrencyName(data.get(ALS_CURRENCY_NAME));
+    
+    if (data.containsKey(PRM_COMPANY)) {
+      AdministrationKeeper.setCompany(BeeUtils.toLongOrNull(data.get(PRM_COMPANY)));
+    }
 
     BeeKeeper.getScreen().start(userData);
 
@@ -179,26 +198,29 @@ public class Bee implements EntryPoint {
     ParameterList params = BeeKeeper.getRpc().createParameters(Service.LOGOUT);
 
     if (!BeeUtils.isEmpty(workspace)) {
-      params.addDataItem(AdministrationConstants.COL_LAST_WORKSPACE, workspace);
+      params.addDataItem(COL_LAST_WORKSPACE, workspace);
     } else if (BeeKeeper.getUser().workspaceContinue()) {
-      params.addQueryItem(AdministrationConstants.COL_LAST_WORKSPACE, BeeConst.EMPTY);
+      params.addQueryItem(COL_LAST_WORKSPACE, BeeConst.EMPTY);
     }
 
     BeeKeeper.getRpc().makeRequest(params);
   }
 
   private static void start() {
+    BeeKeeper.getBus().registerExitHandler("Don't leave me this way");
+
     BeeKeeper.getScreen().onLoad();
 
     ModuleManager.onLoad();
 
     Historian.start();
 
-    Endpoint.open(BeeKeeper.getUser().getUserId());
-
-    BeeKeeper.getBus().registerExitHandler("Don't leave me this way");
-
-    initWorkspace();
+    Endpoint.open(BeeKeeper.getUser().getUserId(), new Consumer<Boolean>() {
+      @Override
+      public void accept(Boolean input) {
+        initWorkspace();
+      }
+    });
   }
 
   @Override

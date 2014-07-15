@@ -1,12 +1,11 @@
 package com.butent.bee.shared.utils;
 
-import com.google.common.base.Objects;
-
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
 
 import java.util.Arrays;
 import java.util.List;
+import java.util.Objects;
 
 /**
  * Contains methods for processing arrays.
@@ -109,7 +108,7 @@ public final class ArrayUtils {
     }
 
     for (int i = 0; i < len; i++) {
-      if (Objects.equal(value, arr[i])) {
+      if (Objects.equals(value, arr[i])) {
         idx = i;
         break;
       }

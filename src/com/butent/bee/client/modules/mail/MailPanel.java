@@ -50,7 +50,6 @@ import com.butent.bee.client.presenter.Presenter;
 import com.butent.bee.client.render.AbstractCellRenderer;
 import com.butent.bee.client.screen.BodyPanel;
 import com.butent.bee.client.screen.Domain;
-import com.butent.bee.client.ui.FormFactory;
 import com.butent.bee.client.ui.FormFactory.WidgetDescriptionCallback;
 import com.butent.bee.client.ui.IdentifiableWidget;
 import com.butent.bee.client.view.HeaderView;
@@ -73,7 +72,6 @@ import com.butent.bee.client.widget.ListBox;
 import com.butent.bee.client.widget.TextLabel;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
-import com.butent.bee.shared.BiConsumer;
 import com.butent.bee.shared.Consumer;
 import com.butent.bee.shared.Service;
 import com.butent.bee.shared.State;
@@ -110,7 +108,6 @@ import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.Codec;
 import com.butent.bee.shared.websocket.messages.ProgressMessage;
 
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
@@ -378,7 +375,7 @@ public class MailPanel extends AbstractFormInterceptor {
   private final MessagesGrid messages = new MessagesGrid();
   private final MailMessage message = new MailMessage(this);
 
-  private final List<AccountInfo> accounts = new ArrayList<>();
+  private final List<AccountInfo> accounts;
   private final BiMap<String, Long> progresses = HashBiMap.create();
 
   private Widget messageWidget;
@@ -386,20 +383,9 @@ public class MailPanel extends AbstractFormInterceptor {
   private InputText searchWidget;
   private String searchValue;
 
-  public MailPanel() {
-    MailKeeper.getAccounts(new BiConsumer<List<AccountInfo>, AccountInfo>() {
-      @Override
-      public void accept(List<AccountInfo> availableAccounts, AccountInfo defaultAccount) {
-        if (!BeeUtils.isEmpty(availableAccounts)) {
-          currentAccount = defaultAccount;
-          accounts.addAll(availableAccounts);
-          FormFactory.openForm(FORM_MAIL, MailPanel.this);
-        } else {
-          BeeKeeper.getScreen().notifyWarning("No accounts found");
-          MailKeeper.removeMailPanel(MailPanel.this);
-        }
-      }
-    });
+  MailPanel(List<AccountInfo> availableAccounts, AccountInfo defaultAccount) {
+    this.accounts = availableAccounts;
+    this.currentAccount = defaultAccount;
   }
 
   @Override

@@ -17,7 +17,6 @@ import com.butent.bee.client.dialog.Icon;
 import com.butent.bee.client.dialog.InputCallback;
 import com.butent.bee.client.event.logical.CatchEvent;
 import com.butent.bee.client.ui.FormDescription;
-import com.butent.bee.client.ui.IdentifiableWidget;
 import com.butent.bee.client.utils.Evaluator;
 import com.butent.bee.client.view.HeaderView;
 import com.butent.bee.client.view.TreeView;
@@ -165,11 +164,6 @@ public class TreePresenter extends AbstractPresenter implements CatchEvent.Catch
   @Override
   public String getViewName() {
     return viewName;
-  }
-
-  @Override
-  public IdentifiableWidget getWidget() {
-    return getView();
   }
 
   @Override
@@ -363,7 +357,7 @@ public class TreePresenter extends AbstractPresenter implements CatchEvent.Catch
   private TreeView getView() {
     return treeView;
   }
-
+  
   private void removeItem() {
     final IsRow data = getView().getSelectedItem();
 
@@ -395,6 +389,7 @@ public class TreePresenter extends AbstractPresenter implements CatchEvent.Catch
       flt = Filter.compareWithValue(relationColumnName, Operator.EQ,
           new LongValue(relationId == null ? BeeConst.UNDEF : relationId));
     }
+
     Queries.getRowSet(getViewName(), null, flt, null, new RowSetCallback() {
       @Override
       public void onSuccess(BeeRowSet result) {
@@ -406,12 +401,14 @@ public class TreePresenter extends AbstractPresenter implements CatchEvent.Catch
         getView().removeItems();
 
         if (result.isEmpty()) {
+          getView().afterRequery();
           return;
         }
         int parentIndex = result.getColumnIndex(parentColumnName);
 
         if (Objects.equal(parentIndex, BeeConst.UNDEF)) {
           BeeKeeper.getScreen().notifySevere("Parent column not found", parentColumnName);
+          getView().afterRequery();
           return;
         }
         Map<Long, List<Long>> hierarchy = Maps.newLinkedHashMap();
@@ -433,6 +430,8 @@ public class TreePresenter extends AbstractPresenter implements CatchEvent.Catch
             addBranch(parent, hierarchy, items);
           }
         }
+        
+        getView().afterRequery();
       }
     });
   }
