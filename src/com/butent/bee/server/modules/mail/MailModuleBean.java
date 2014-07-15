@@ -103,6 +103,7 @@ import javax.mail.internet.InternetAddress;
 import javax.mail.internet.MimeBodyPart;
 import javax.mail.internet.MimeMessage;
 import javax.mail.internet.MimeMultipart;
+import javax.mail.internet.MimeUtility;
 
 @Stateless
 @LocalBean
@@ -141,13 +142,14 @@ public class MailModuleBean implements BeeModule {
     if (localFolder.isConnected()) {
       try {
         store = account.connectToStore();
-        c = checkFolder(account, account.getRemoteFolder(store, localFolder), localFolder,
-            progressId);
 
         if (account.isInbox(localFolder)) {
           f = syncFolders(account, account.getRemoteFolder(store, account.getRootFolder()),
               account.getRootFolder());
         }
+        c = checkFolder(account, account.getRemoteFolder(store, localFolder), localFolder,
+            progressId);
+
       } catch (Exception e) {
         ctx.setRollbackOnly();
         logger.error(e, "LOGIN:", account.getStoreLogin());
@@ -418,6 +420,8 @@ public class MailModuleBean implements BeeModule {
 
   @Override
   public void init() {
+    System.setProperty("mail.mime.decodetext.strict", "false");
+
     proxy.initServer();
 
     sys.registerDataEventHandler(new DataEventHandler() {
@@ -603,11 +607,12 @@ public class MailModuleBean implements BeeModule {
     }
   }
 
-  private void applyRules(Message message, long placeId, MailAccount account, MailFolder folder,
-      SimpleRowSet rules) throws MessagingException {
+  private Set<MailFolder> applyRules(Message message, long placeId, MailAccount account,
+      MailFolder folder, SimpleRowSet rules) throws MessagingException {
 
     MailEnvelope envelope = new MailEnvelope(message);
     String sender = envelope.getSender() != null ? envelope.getSender().getAddress() : null;
+    Set<MailFolder> changedFolders = new HashSet<>();
 
     for (SimpleRow row : rules) {
       RuleCondition condition = EnumUtils.getEnumByIndex(RuleCondition.class,
@@ -661,14 +666,17 @@ public class MailModuleBean implements BeeModule {
           boolean move = EnumSet.of(RuleAction.MOVE, RuleAction.DELETE).contains(action);
           MailFolder folderTo = account.findFolder(row.getLong(COL_RULE_ACTION_OPTIONS));
 
-          logger.debug(log, folderTo != null
-              ? BeeUtils.join("/", folderTo.getParent().getName(), folderTo.getName()) : null);
+          if (folderTo != null) {
+            changedFolders.add(folderTo);
+            log += " " + BeeUtils.join("/", folderTo.getParent().getName(), folderTo.getName());
+          }
+          logger.debug(log);
 
           processMessages(account, folder, folderTo,
               new String[] {BeeUtils.toString(placeId)}, move);
 
           if (move) {
-            return;
+            return changedFolders;
           }
           break;
 
@@ -764,6 +772,7 @@ public class MailModuleBean implements BeeModule {
           break;
       }
     }
+    return changedFolders;
   }
 
   private static MimeMessage buildMessage(MailAccount account, String[] to, String[] cc,
@@ -812,7 +821,7 @@ public class MailModuleBean implements BeeModule {
 
         try {
           p.attachFile(file, fileInfo.getType(), null);
-          p.setFileName(fileInfo.getName());
+          p.setFileName(MimeUtility.encodeText(fileInfo.getName()));
 
         } catch (IOException ex) {
           logger.error(ex);
@@ -864,6 +873,7 @@ public class MailModuleBean implements BeeModule {
     SimpleRowSet rules = null;
 
     if (localFolder.isConnected() && account.holdsMessages(remoteFolder)) {
+      Set<MailFolder> changedFolders = new HashSet<>();
       boolean uidMode = remoteFolder instanceof UIDFolder;
       Long uidValidity = uidMode ? ((UIDFolder) remoteFolder).getUIDValidity() : null;
 
@@ -907,7 +917,7 @@ public class MailModuleBean implements BeeModule {
                       .addOrder(TBL_RULES, COL_RULE_ORDINAL, sys.getIdName(TBL_RULES)));
                 }
                 if (!rules.isEmpty()) {
-                  applyRules(message, placeId, account, localFolder, rules);
+                  changedFolders.addAll(applyRules(message, placeId, account, localFolder, rules));
                 }
               }
               c++;
@@ -926,6 +936,9 @@ public class MailModuleBean implements BeeModule {
             logger.warning(e);
           }
         }
+      }
+      for (MailFolder mailFolder : changedFolders) {
+        ctx.getBusinessObject(this.getClass()).checkMail(account, mailFolder, null);
       }
     }
     return c;
