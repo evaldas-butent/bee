@@ -336,7 +336,7 @@ public class TradeModuleBean implements BeeModule {
     
     BeeRowSet items = qs.getViewData(itemViewName, Filter.equals(itemRelation, docId));
     
-    TradeDocumentData tdd = new TradeDocumentData(companies, bankAccounts, items, null);
+    TradeDocumentData tdd = new TradeDocumentData(companies, bankAccounts, items, null, null);
     return ResponseObject.response(tdd);
   }
 

@@ -19,8 +19,24 @@ public interface LocalizableTradeConstants {
   String printDocumentNumber();
 
   String printInvoice();
+
+  String printInvoiceItemName();
   
   String printInvoiceVat();
+  
+  String printItemOrdinal();
+  
+  String printItemQuantity();
+  
+  String printItemVatAmount();
+  
+  String printItemVatRate();
+  
+  String printItemTotalWithoutVat();
+  
+  String printItemTotalWithVat();
+  
+  String printItemUom();
 
   String sellingPrice();
 

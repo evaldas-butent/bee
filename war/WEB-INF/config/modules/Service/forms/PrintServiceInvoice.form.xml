@@ -1,13 +1,13 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <f:Form xmlns="http://www.butent.com/widget"
   xmlns:f="http://www.butent.com/form"
-  xmlns:ui="http://www.butent.com/ui" 
   
   name="PrintServiceInvoice" caption="=trdInvoice" disabledActions="save"
-  width="70" widthUnit="%" height="70" heightUnit="%"
+  width="75" widthUnit="%" height="75" heightUnit="%"
   >
-  <FlowPanel class="bee-PrintableForm">
+  <f:properties currencies="EUR, Lt" />
 
+  <FlowPanel class="bee-PrintableForm">
     <Table>
       <row>
         <Label name="DocTitle" />
@@ -76,82 +76,8 @@
       </row>
     </Table>
 
-    <Table name="InvoiceDetails" style="width: 100%;">
-      <properties rateCurrency="EUR" />
-      <row>
-       <Label text="=ordinal" style="text-align:center;">
-          <properties name="Ordinal" />
-        </Label>
-        <Label text="=itemName">
-          <properties name="Name" />
-        </Label>
-        <Label text="=article">
-          <properties name="Article" />
-        </Label>
-        <Label text="=trdQuantity">
-          <properties name="Quantity" />
-        </Label>
-        <Label text="=unit">
-          <properties name="Unit" />
-        </Label>
-        <Label text="=trdPrice">
-          <properties name="Price" />
-        </Label>
-        <Label text="=trdAmountWoVat">
-          <properties name="Amount" />
-        </Label>
-        <Label text="=trdVat" horizontalAlignment="right">
-          <properties name="Vat" />
-        </Label>
-        <FlowPanel>
-          <properties name="RateAmount" />
-          <InlineLabel text="=trdAmount" />
-          <InlineLabel html="EUR" style="padding-left: 3px;" />
-        </FlowPanel>
-      </row>
-
-      <row>
-        <cell colSpan="5">
-          <FlowPanel style="text-align: right;">
-            <Label text="Bendra suma:" />
-            <Label text="PVM suma:" />
-            <Label text="VISO:" />
-          </FlowPanel>
-        </cell>
-        <FlowPanel>
-          <Label>
-            <properties name="AmountTotal" />
-          </Label>
-          <Label>
-            <properties name="VatTotal" />
-          </Label>
-          <Label>
-            <properties name="Total" />
-          </Label>
-         </FlowPanel>
-        <FlowPanel>
-          <Label>
-            <properties name="Currency" />
-          </Label>
-          <Label>
-            <properties name="Currency" />
-          </Label>
-          <Label>
-            <properties name="Currency" />
-          </Label>
-        </FlowPanel>
-        <FlowPanel>
-          <Label>
-            <properties name="RateAmountTotal" />
-          </Label>
-          <Label>
-            <properties name="RateVatTotal" />
-          </Label>
-          <Label>
-            <properties name="RateTotal" />
-          </Label>
-        </FlowPanel>
-      </row>
+    <Table name="Items">
+      <properties columns="Ordinal, Name, Article, Quantity, Unit, Price, Total" />
     </Table>
 
     <HorizontalPanel>
@@ -159,26 +85,26 @@
       <Label name="TotalInWords" />
     </HorizontalPanel>
 
-    <TextLabel source="Term" style="white-space: pre-wrap;">
+    <TextLabel source="Term">
       <renderToken source="Term" prefix="Sąskaitą apmokėti iki: " />
     </TextLabel>
 
-    <TextLabel source="Notes" style="white-space: pre-wrap;" />
+    <TextLabel source="Notes" />
 
-    <Table style="width: 100%; margin-top: 10px;">
+    <Table>
       <row>
         <Label html="Išdavė" />
         <Label html="Priėmė" />
       </row>
 
-      <row style="min-height: 1em;">
-        <TextLabel source="Manager" style="margin-top: 5px;">
+      <row>
+        <TextLabel source="Manager">
           <renderToken source="ManagerFirstName" />
           <renderToken source="ManagerLastName" />
         </TextLabel>
       </row>
 
-      <row style="font-size: xx-small;">
+      <row>
         <Label html="(vardas, pavardė, pareigos ir parašas)" />
         <Label html="(vardas, pavardė, pareigos ir parašas)" />
       </row>  
