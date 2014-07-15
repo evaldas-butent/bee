@@ -54,6 +54,7 @@ import com.butent.bee.client.view.grid.interceptor.FileGridInterceptor;
 import com.butent.bee.client.view.grid.interceptor.GridInterceptor;
 import com.butent.bee.client.widget.Image;
 import com.butent.bee.shared.Assert;
+import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.communication.ResponseObject;
 import com.butent.bee.shared.data.BeeColumn;
 import com.butent.bee.shared.data.BeeRow;
@@ -61,6 +62,7 @@ import com.butent.bee.shared.data.BeeRowSet;
 import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.IsColumn;
 import com.butent.bee.shared.data.IsRow;
+import com.butent.bee.shared.data.event.RowTransformEvent;
 import com.butent.bee.shared.data.filter.Filter;
 import com.butent.bee.shared.data.value.LongValue;
 import com.butent.bee.shared.data.value.Value;
@@ -139,6 +141,17 @@ public final class TransportHandler {
           }
         }
       });
+    }
+  }
+
+  private static class RowTransformHandler implements RowTransformEvent.Handler {
+    @Override
+    public void onRowTransform(RowTransformEvent event) {
+      if (event.hasView(VIEW_ASSESSMENTS)) {
+        event.setResult(DataUtils.join(Data.getDataInfo(VIEW_ASSESSMENTS), event.getRow(),
+            Lists.newArrayList("ID", COL_STATUS, COL_DATE, "CustomerName", "OrderNotes"),
+            BeeConst.STRING_SPACE));
+      }
     }
   }
 
@@ -426,11 +439,11 @@ public final class TransportHandler {
         });
     ViewFactory.registerSupplier(GridFactory.getSupplierKey(GRID_ASSESSMENT_ORDERS, null),
         new ViewSupplier() {
-      @Override
-      public void create(ViewCallback callback) {
-        openAssessment(GRID_ASSESSMENT_ORDERS, ViewFactory.getPresenterCallback(callback));
-      }
-    });
+          @Override
+          public void create(ViewCallback callback) {
+            openAssessment(GRID_ASSESSMENT_ORDERS, ViewFactory.getPresenterCallback(callback));
+          }
+        });
 
     SelectorEvent.register(new TransportSelectorHandler());
 
@@ -511,6 +524,8 @@ public final class TransportHandler {
     FormFactory.registerFormInterceptor(FORM_IMPORT_OPTION, new ImportOptionForm());
 
     BeeKeeper.getBus().registerRowActionHandler(new TransportActionHandler(), false);
+
+    BeeKeeper.getBus().registerRowTransformHandler(new RowTransformHandler(), false);
 
     ChartBase.registerBoards();
     CargoIncomesObserver.register();
