@@ -1,5 +1,6 @@
 package com.butent.bee.client.modules.trade;
 
+import com.google.gwt.dom.client.Element;
 import com.google.gwt.i18n.client.NumberFormat;
 import com.google.gwt.user.client.ui.Widget;
 
@@ -11,9 +12,11 @@ import com.butent.bee.client.communication.ParameterList;
 import com.butent.bee.client.communication.ResponseCallback;
 import com.butent.bee.client.data.Data;
 import com.butent.bee.client.dom.DomUtils;
+import com.butent.bee.client.dom.Selectors;
 import com.butent.bee.client.grid.HtmlTable;
 import com.butent.bee.client.i18n.Format;
 import com.butent.bee.client.modules.administration.AdministrationKeeper;
+import com.butent.bee.client.style.StyleUtils;
 import com.butent.bee.client.view.form.FormView;
 import com.butent.bee.client.view.form.interceptor.AbstractFormInterceptor;
 import com.butent.bee.client.view.form.interceptor.FormInterceptor;
@@ -29,6 +32,7 @@ import com.butent.bee.shared.i18n.LocalizableConstants;
 import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.modules.administration.AdministrationConstants;
 import com.butent.bee.shared.modules.trade.TradeDocumentData;
+import com.butent.bee.shared.time.DateTime;
 import com.butent.bee.shared.ui.HasLocalizedCaption;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.Codec;
@@ -46,7 +50,7 @@ import java.util.Set;
 public class TradeDocumentRenderer extends AbstractFormInterceptor {
 
   private enum ItemColumn implements HasLocalizedCaption {
-    ORDINAL {
+    ORDINAL("ordinal", false) {
       @Override
       public String getCaption(LocalizableConstants constants) {
         return constants.printItemOrdinal();
@@ -58,7 +62,7 @@ public class TradeDocumentRenderer extends AbstractFormInterceptor {
       }
     },
 
-    NAME {
+    NAME("name", false) {
       @Override
       public String getCaption(LocalizableConstants constants) {
         return constants.printInvoiceItemName();
@@ -70,7 +74,7 @@ public class TradeDocumentRenderer extends AbstractFormInterceptor {
       }
     },
 
-    ARTICLE {
+    ARTICLE("article", false) {
       @Override
       public String getCaption(LocalizableConstants constants) {
         return constants.article();
@@ -82,7 +86,7 @@ public class TradeDocumentRenderer extends AbstractFormInterceptor {
       }
     },
 
-    QUANTITY {
+    QUANTITY("quantity", false) {
       @Override
       public String getCaption(LocalizableConstants constants) {
         return constants.printItemQuantity();
@@ -94,7 +98,7 @@ public class TradeDocumentRenderer extends AbstractFormInterceptor {
       }
     },
 
-    UNIT {
+    UNIT("unit", false) {
       @Override
       public String getCaption(LocalizableConstants constants) {
         return constants.printItemUom();
@@ -106,7 +110,7 @@ public class TradeDocumentRenderer extends AbstractFormInterceptor {
       }
     },
 
-    PRICE {
+    PRICE("price", true) {
       @Override
       public String getCaption(LocalizableConstants constants) {
         return constants.price();
@@ -119,7 +123,19 @@ public class TradeDocumentRenderer extends AbstractFormInterceptor {
       }
     },
 
-    TOTAL_WITHOUT_VAT {
+    AMOUNT("amount", true) {
+      @Override
+      public String getCaption(LocalizableConstants constants) {
+        return constants.amount();
+      }
+
+      @Override
+      String render(BeeRowSet rowSet, int rowIndex, double vat, double total) {
+        return AMOUNT_FORMAT.format(total - vat);
+      }
+    },
+
+    TOTAL_WITHOUT_VAT("total-without-vat", true) {
       @Override
       public String getCaption(LocalizableConstants constants) {
         return constants.printItemTotalWithoutVat();
@@ -131,7 +147,7 @@ public class TradeDocumentRenderer extends AbstractFormInterceptor {
       }
     },
 
-    VAT_RATE {
+    VAT_RATE("vat-rate", false) {
       @Override
       public String getCaption(LocalizableConstants constants) {
         return constants.printItemVatRate();
@@ -157,7 +173,7 @@ public class TradeDocumentRenderer extends AbstractFormInterceptor {
       }
     },
 
-    VAT_AMOUNT {
+    VAT_AMOUNT("vat-amount", true) {
       @Override
       public String getCaption(LocalizableConstants constants) {
         return constants.printItemVatAmount();
@@ -169,7 +185,7 @@ public class TradeDocumentRenderer extends AbstractFormInterceptor {
       }
     },
 
-    TOTAL_WITH_VAT {
+    TOTAL_WITH_VAT("total-with-vat", true) {
       @Override
       public String getCaption(LocalizableConstants constants) {
         return constants.printItemTotalWithVat();
@@ -179,19 +195,15 @@ public class TradeDocumentRenderer extends AbstractFormInterceptor {
       String render(BeeRowSet rowSet, int rowIndex, double vat, double total) {
         return AMOUNT_FORMAT.format(total);
       }
-    },
-
-    TOTAL {
-      @Override
-      public String getCaption(LocalizableConstants constants) {
-        return constants.amount();
-      }
-
-      @Override
-      String render(BeeRowSet rowSet, int rowIndex, double vat, double total) {
-        return AMOUNT_FORMAT.format(total);
-      }
     };
+
+    private final String styleSuffix;
+    private final boolean hasCurency;
+
+    private ItemColumn(String styleSuffix, boolean hasCurency) {
+      this.styleSuffix = styleSuffix;
+      this.hasCurency = hasCurency;
+    }
 
     @Override
     public String getCaption() {
@@ -206,6 +218,8 @@ public class TradeDocumentRenderer extends AbstractFormInterceptor {
   private static final String NAME_DOC_ID = "DocId";
 
   private static final String NAME_ITEMS = "Items";
+
+  private static final String NAME_TOTAL_IN_WORDS = "TotalInWords";
 
   private static final String PREFIX_SUPPLIER = "Supplier";
   private static final String PREFIX_CUSTOMER = "Customer";
@@ -225,6 +239,8 @@ public class TradeDocumentRenderer extends AbstractFormInterceptor {
   private static final NumberFormat PRICE_FORMAT = Format.getDecimalFormat(2);
   private static final NumberFormat AMOUNT_FORMAT = Format.getDecimalFormat(2);
 
+  private static final String STYLE_PREFIX = "bee-trade-print-";
+
   private static Long getCompany(FormView form, IsRow row, String colName, boolean checkDefault) {
     int index = form.getDataIndex(colName);
 
@@ -241,6 +257,13 @@ public class TradeDocumentRenderer extends AbstractFormInterceptor {
         }
       }
       return company;
+    }
+  }
+
+  private static void hideElement(FormView form, String styleName) {
+    Element element = Selectors.getElement(form.getElement(), Selectors.classSelector(styleName));
+    if (element != null) {
+      StyleUtils.hideDisplay(element);
     }
   }
 
@@ -348,8 +371,8 @@ public class TradeDocumentRenderer extends AbstractFormInterceptor {
   private final String itemViewName;
 
   private final String itemRelation;
-
   private final TotalRenderer itemTotalRenderer;
+
   private final VatRenderer itemVatRenderer;
 
   public TradeDocumentRenderer(String itemViewName, String itemRelation) {
@@ -382,6 +405,20 @@ public class TradeDocumentRenderer extends AbstractFormInterceptor {
       ParameterList params = TradeKeeper.createArgs(SVC_GET_DOCUMENT_DATA);
 
       params.addDataItem(Service.VAR_ID, id);
+
+      DateTime date = row.getDateTime(form.getDataIndex(COL_TRADE_DATE));
+      if (date != null) {
+        params.addDataItem(COL_TRADE_DATE, date.getTime());
+      }
+
+      Double amount = row.getDouble(form.getDataIndex(COL_TRADE_AMOUNT));
+      if (BeeUtils.isDouble(amount)) {
+        params.addDataItem(COL_TRADE_AMOUNT, amount);
+      }
+      Long currency = row.getLong(form.getDataIndex(COL_TRADE_CURRENCY));
+      if (DataUtils.isId(currency)) {
+        params.addDataItem(COL_TRADE_CURRENCY, currency);
+      }
 
       params.addDataItem(Service.VAR_VIEW_NAME, itemViewName);
       params.addDataItem(Service.VAR_COLUMN, itemRelation);
@@ -450,21 +487,34 @@ public class TradeDocumentRenderer extends AbstractFormInterceptor {
     Long supplier = companies.get(COL_TRADE_SUPPLIER);
     if (DataUtils.isId(supplier) && tdd.containsCompany(supplier)) {
       renderCompany(supplier, tdd, PREFIX_SUPPLIER, namedWidgets);
+    } else {
+      hideElement(form, STYLE_PREFIX + "supplier");
     }
 
     Long customer = companies.get(COL_TRADE_CUSTOMER);
     if (DataUtils.isId(customer) && tdd.containsCompany(customer)) {
       renderCompany(customer, tdd, PREFIX_CUSTOMER, namedWidgets);
+    } else {
+      hideElement(form, STYLE_PREFIX + "customer");
     }
 
     Long payer = companies.get(COL_SALE_PAYER);
     if (DataUtils.isId(payer) && tdd.containsCompany(payer)) {
       renderCompany(payer, tdd, PREFIX_PAYER, namedWidgets);
+    } else {
+      hideElement(form, STYLE_PREFIX + "payer");
     }
 
     widget = namedWidgets.get(NAME_ITEMS);
     if (widget instanceof HtmlTable && !DataUtils.isEmpty(tdd.getItems())) {
       renderItems(tdd.getItems(), (HtmlTable) widget);
+    }
+
+    widget = namedWidgets.get(NAME_TOTAL_IN_WORDS);
+    if (widget != null) {
+      TradeUtils.getTotalInWords(form.getDoubleValue(COL_TRADE_AMOUNT),
+          form.getStringValue(AdministrationConstants.ALS_CURRENCY_NAME),
+          form.getStringValue(AdministrationConstants.COL_CURRENCY_MINOR_NAME), widget);
     }
   }
 
@@ -501,10 +551,20 @@ public class TradeDocumentRenderer extends AbstractFormInterceptor {
 
     int r = 0;
 
+    String currencyName = getStringValue(AdministrationConstants.ALS_CURRENCY_NAME);
+
     for (int j = 0; j < columns.size(); j++) {
       ItemColumn itemColumn = columns.get(j);
-      table.setText(r, j, itemColumn.getCaption());
+
+      String label = itemColumn.hasCurency
+          ? BeeUtils.joinWords(itemColumn.getCaption(), currencyName) : itemColumn.getCaption();
+      table.setText(r, j, label);
     }
+
+    table.getRowFormatter().addStyleName(r, STYLE_PREFIX + "items-header");
+
+    double vatSum = BeeConst.DOUBLE_ZERO;
+    double totSum = BeeConst.DOUBLE_ZERO;
 
     for (int i = 0; i < items.getNumberOfRows(); i++) {
       double vat = getItemVat(items, i);
@@ -513,8 +573,32 @@ public class TradeDocumentRenderer extends AbstractFormInterceptor {
       r++;
       for (int j = 0; j < columns.size(); j++) {
         ItemColumn itemColumn = columns.get(j);
-        table.setText(r, j, itemColumn.render(items, i, vat, total));
+        table.setText(r, j, itemColumn.render(items, i, vat, total),
+            STYLE_PREFIX + "item-" + itemColumn.styleSuffix);
       }
+
+      vatSum += vat;
+      totSum += total;
+    }
+
+    if (columns.size() > 1) {
+      r++;
+      table.setText(r, columns.size() - 2, Localized.getConstants().printDocumentSubtotal(),
+          STYLE_PREFIX + "items-total-label");
+      table.setText(r, columns.size() - 1, AMOUNT_FORMAT.format(totSum - vatSum),
+          STYLE_PREFIX + "items-total-value");
+
+      r++;
+      table.setText(r, columns.size() - 2, Localized.getConstants().printDocumentVat(),
+          STYLE_PREFIX + "items-total-label");
+      table.setText(r, columns.size() - 1, AMOUNT_FORMAT.format(vatSum),
+          STYLE_PREFIX + "items-total-value");
+
+      r++;
+      table.setText(r, columns.size() - 2, Localized.getConstants().printDocumentTotal(),
+          STYLE_PREFIX + "items-total-label");
+      table.setText(r, columns.size() - 1, AMOUNT_FORMAT.format(totSum),
+          STYLE_PREFIX + "items-total-value");
     }
   }
 
@@ -555,7 +639,7 @@ public class TradeDocumentRenderer extends AbstractFormInterceptor {
           currencies.add(currency);
         }
       }
-      
+
       currencies.addAll(NameUtils.toSet(form.getProperty(ATTRIBUTE_CURRENCIES)));
     }
   }

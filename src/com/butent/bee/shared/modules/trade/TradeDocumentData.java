@@ -10,6 +10,7 @@ import com.butent.bee.shared.modules.classifiers.ClassifierConstants;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.Codec;
 
+import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
 
@@ -79,9 +80,7 @@ public class TradeDocumentData implements BeeSerializable {
           break;
           
         case CURRENCY_RATES:
-          if (!getCurrencyRates().isEmpty()) {
-            getCurrencyRates().clear();
-          }
+          this.currencyRates = new HashMap<>(); 
           
           Map<String, String> map = Codec.deserializeMap(value);
           for (Map.Entry<String, String> entry : map.entrySet()) {
