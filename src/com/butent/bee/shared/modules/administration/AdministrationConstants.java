@@ -243,6 +243,7 @@ public final class AdministrationConstants {
 
   public static final String COL_CURRENCY = "Currency";
   public static final String COL_CURRENCY_NAME = "Name";
+  public static final String COL_CURRENCY_MINOR_NAME = "MinorName";
   public static final String COL_CURRENCY_UPDATE_TAG = "UpdateTag";
 
   public static final String COL_CURRENCY_RATE_CURRENCY = "Currency";

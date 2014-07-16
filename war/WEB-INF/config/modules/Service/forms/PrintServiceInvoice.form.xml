@@ -1,187 +1,100 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<f:Form xmlns="http://www.butent.com/widget"
-  xmlns:f="http://www.butent.com/form"
-  xmlns:ui="http://www.butent.com/ui" 
-  
-  name="PrintServiceInvoice" caption="=trdInvoice" disabledActions="save"
-  width="70" widthUnit="%" height="70" heightUnit="%"
-  >
-  <FlowPanel class="bee-PrintableForm">
+<f:Form xmlns="http://www.butent.com/widget" xmlns:f="http://www.butent.com/form" name="PrintServiceInvoice"
+  caption="=trdInvoice" disabledActions="save" width="75" widthUnit="%" height="75" heightUnit="%">
+  <f:properties currencies="EUR, Lt" />
 
-    <Table>
+  <FlowPanel class="bee-PrintableForm bee-trade-print-document">
+    <Table class="bee-trade-print-document-header">
       <row>
-        <Label name="DocTitle" />
-        <DateTimeLabel source="Date" format="DATE_LONG" />
+        <Label name="DocTitle" class="bee-trade-print-document-title" />
+        <DateTimeLabel source="Date" format="DATE_LONG" class="bee-trade-print-document-date" />
       </row>
       <row>
-        <Label name="DocNumber" />
-        <Label name="DocId" />
+        <Label name="DocNumber" class="bee-trade-print-document-number" />
+        <Label name="DocId" class="bee-trade-print-document-id" />
       </row>
     </Table>
 
-    <Table>
-      <row>
-        <Label text="=printInvoiceSeller" />
-        <Table>
+    <Table class="bee-trade-print-companies">
+      <row class="bee-trade-print-supplier" >
+        <Label text="=printInvoiceSeller" class="bee-trade-print-company-label" />
+        <Table class="bee-trade-print-company-info">
           <row>
-            <Label name="SupplierName" />
-            <Label name="SupplierCode" />
+            <Label name="SupplierName" class="bee-trade-print-company-name" />
+            <Label name="SupplierCode" class="bee-trade-print-company-code" />
           </row>
           <row>
-            <Label name="SupplierAddress" />
-            <Label name="SupplierVatCode" />
+            <Label name="SupplierAddress" class="bee-trade-print-company-address" />
+            <Label name="SupplierVatCode" class="bee-trade-print-company-vat-code" />
           </row>
 
-          <Label name="SupplierPhone" />
-          <Label name="SupplierBank" />
-          <Link name="SupplierWebsite" />
+          <Label name="SupplierPhone" class="bee-trade-print-company-phone" />
+          <Label name="SupplierBank" class="bee-trade-print-company-bank" />
+          <Link name="SupplierWebsite" class="bee-trade-print-" />
         </Table>
       </row>
 
-      <row>
-        <Label text="=printInvoiceBuyer" />
-        <Table>
+      <row class="bee-trade-print-customer">
+        <Label text="=printInvoiceBuyer" class="bee-trade-print-company-label" />
+        <Table class="bee-trade-print-company-info">
           <row>
-            <Label name="CustomerName" />
-            <Label name="CustomerCode" />
+            <Label name="CustomerName" class="bee-trade-print-company-name" />
+            <Label name="CustomerCode" class="bee-trade-print-company-code" />
           </row>
           <row>
-            <Label name="CustomerAddress" />
-            <Label name="CustomerVatCode" />
+            <Label name="CustomerAddress" class="bee-trade-print-company-address" />
+            <Label name="CustomerVatCode" class="bee-trade-print-company-vat-code" />
           </row>
           <row>
-            <Label name="CustomerPhone" />
-            <Label name="CustomerLicence" />
+            <Label name="CustomerPhone" class="bee-trade-print-company-phone" />
+            <Label name="CustomerLicence" class="bee-trade-print-company-licence" />
           </row>
- 
-          <Label name="CustomerBank" />
+
+          <Label name="CustomerBank" class="bee-trade-print-company-bank" />
         </Table>
       </row>
 
-      <row>
-        <Label text="=payer" />
-        <Table>
+      <row class="bee-trade-print-payer">
+        <Label text="=payer" class="bee-trade-print-company-label" />
+        <Table class="bee-trade-print-company-info">
           <row>
-            <Label name="PayerName" />
-            <Label name="PayerCode" />
+            <Label name="PayerName" class="bee-trade-print-company-name" />
+            <Label name="PayerCode" class="bee-trade-print-company-code" />
           </row>
           <row>
-            <Label name="PayerAddress" />
-            <Label name="PayerVatCode" />
+            <Label name="PayerAddress" class="bee-trade-print-company-address" />
+            <Label name="PayerVatCode" class="bee-trade-print-company-vat-code" />
           </row>
 
-          <Label name="PayerPhone" />
-          <Label name="PayerBank" />
+          <Label name="PayerPhone" class="bee-trade-print-company-phone" />
+          <Label name="PayerBank" class="bee-trade-print-company-bank" />
         </Table>
       </row>
     </Table>
 
-    <Table name="InvoiceDetails" style="width: 100%;">
-      <properties rateCurrency="EUR" />
-      <row>
-       <Label text="=ordinal" style="text-align:center;">
-          <properties name="Ordinal" />
-        </Label>
-        <Label text="=itemName">
-          <properties name="Name" />
-        </Label>
-        <Label text="=article">
-          <properties name="Article" />
-        </Label>
-        <Label text="=trdQuantity">
-          <properties name="Quantity" />
-        </Label>
-        <Label text="=unit">
-          <properties name="Unit" />
-        </Label>
-        <Label text="=trdPrice">
-          <properties name="Price" />
-        </Label>
-        <Label text="=trdAmountWoVat">
-          <properties name="Amount" />
-        </Label>
-        <Label text="=trdVat" horizontalAlignment="right">
-          <properties name="Vat" />
-        </Label>
-        <FlowPanel>
-          <properties name="RateAmount" />
-          <InlineLabel text="=trdAmount" />
-          <InlineLabel html="EUR" style="padding-left: 3px;" />
-        </FlowPanel>
-      </row>
-
-      <row>
-        <cell colSpan="5">
-          <FlowPanel style="text-align: right;">
-            <Label text="Bendra suma:" />
-            <Label text="PVM suma:" />
-            <Label text="VISO:" />
-          </FlowPanel>
-        </cell>
-        <FlowPanel>
-          <Label>
-            <properties name="AmountTotal" />
-          </Label>
-          <Label>
-            <properties name="VatTotal" />
-          </Label>
-          <Label>
-            <properties name="Total" />
-          </Label>
-         </FlowPanel>
-        <FlowPanel>
-          <Label>
-            <properties name="Currency" />
-          </Label>
-          <Label>
-            <properties name="Currency" />
-          </Label>
-          <Label>
-            <properties name="Currency" />
-          </Label>
-        </FlowPanel>
-        <FlowPanel>
-          <Label>
-            <properties name="RateAmountTotal" />
-          </Label>
-          <Label>
-            <properties name="RateVatTotal" />
-          </Label>
-          <Label>
-            <properties name="RateTotal" />
-          </Label>
-        </FlowPanel>
-      </row>
+    <Table name="Items" class="bee-trade-print-items">
+      <properties columns="Ordinal, Name, Article, Quantity, Unit, Price, Amount" />
     </Table>
 
-    <HorizontalPanel>
-      <Label html="Suma žodžiais:" />
-      <Label name="TotalInWords" />
+    <HorizontalPanel class="bee-trade-print-words">
+      <Label text="=printTotalInWords" class="bee-trade-print-words-label" />
+      <Label name="TotalInWords" class="bee-trade-print-words-value" />
     </HorizontalPanel>
 
-    <TextLabel source="Term" style="white-space: pre-wrap;">
-      <renderToken source="Term" prefix="Sąskaitą apmokėti iki: " />
-    </TextLabel>
+    <Label name="Term" class="bee-trade-print-term" />
 
-    <TextLabel source="Notes" style="white-space: pre-wrap;" />
+    <TextLabel source="Notes" class="bee-trade-print-notes" />
 
-    <Table style="width: 100%; margin-top: 10px;">
-      <row>
-        <Label html="Išdavė" />
-        <Label html="Priėmė" />
-      </row>
+    <HorizontalPanel class="bee-trade-print-manager" >
+      <TextLabel source="ManagerFirstName" />
+      <TextLabel source="ManagerLastName" />
+    </HorizontalPanel>
 
-      <row style="min-height: 1em;">
-        <TextLabel source="Manager" style="margin-top: 5px;">
-          <renderToken source="ManagerFirstName" />
-          <renderToken source="ManagerLastName" />
-        </TextLabel>
-      </row>
-
-      <row style="font-size: xx-small;">
-        <Label html="(vardas, pavardė, pareigos ir parašas)" />
-        <Label html="(vardas, pavardė, pareigos ir parašas)" />
-      </row>  
-    </Table>
+    <HorizontalPanel class="bee-trade-print-dispenser-receiver" >
+      <Label text="=printDocumentDispenser" class="bee-trade-print-dispenser" />
+      <Label text="=printSignature" class="bee-trade-print-signature" />
+      <Label text="=printDocumentReceiver" class="bee-trade-print-receiver" />
+      <Label text="=printSignature" class="bee-trade-print-signature" />
+    </HorizontalPanel>
   </FlowPanel>
 </f:Form>

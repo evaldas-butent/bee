@@ -17,10 +17,34 @@ public interface LocalizableTradeConstants {
   String printBankSwift();
   
   String printDocumentNumber();
+  
+  String printDocumentSubtotal();
+  
+  String printDocumentTotal();
+
+  String printDocumentVat();
+  
+  String printDueDate();
 
   String printInvoice();
+
+  String printInvoiceItemName();
   
   String printInvoiceVat();
+  
+  String printItemOrdinal();
+  
+  String printItemQuantity();
+  
+  String printItemVatAmount();
+  
+  String printItemVatRate();
+  
+  String printItemTotalWithoutVat();
+  
+  String printItemTotalWithVat();
+  
+  String printItemUom();
 
   String sellingPrice();
 

@@ -172,6 +172,9 @@ public final class ClassifierConstants {
 
   public static final String ALS_BANK_NAME = "BankName";
 
+  public static final String ALS_ITEM_NAME = "ItemName";
+  public static final String ALS_UNIT_NAME = "UnitName";
+  
   public static final String PROP_COMPANY_NAMES = "CompanyNames";
   public static final String PROP_COMPANY_IDS = "CompanyIds";
   

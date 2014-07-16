@@ -172,10 +172,6 @@ public class BeeRowSet extends RowList<BeeRow, BeeColumn> implements BeeSerializ
     return getShadowString(rowIdx, getColumnIndex(columnId));
   }
 
-  public String getString(int rowIdx, String columnId) {
-    return getString(rowIdx, getColumnIndex(columnId));
-  }
-
   public String getStringByRowId(long rowId, String columnId) {
     return getString(getRowIndex(rowId), getColumnIndex(columnId));
   }
