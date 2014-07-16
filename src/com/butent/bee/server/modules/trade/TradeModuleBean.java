@@ -53,6 +53,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 
 import javax.ejb.EJB;
@@ -293,13 +294,13 @@ public class TradeModuleBean implements BeeModule {
     }
     return ResponseObject.response(qs.getData(query));
   }
-  
+
   private ResponseObject getTradeDocumentData(RequestInfo reqInfo) {
     Long docId = reqInfo.getParameterLong(Service.VAR_ID);
     if (!DataUtils.isId(docId)) {
       return ResponseObject.parameterNotFound(reqInfo.getService(), Service.VAR_ID);
     }
-    
+
     String itemViewName = reqInfo.getParameter(Service.VAR_VIEW_NAME);
     if (BeeUtils.isEmpty(itemViewName)) {
       return ResponseObject.parameterNotFound(reqInfo.getService(), Service.VAR_VIEW_NAME);
@@ -309,21 +310,21 @@ public class TradeModuleBean implements BeeModule {
     if (BeeUtils.isEmpty(itemRelation)) {
       return ResponseObject.parameterNotFound(reqInfo.getService(), Service.VAR_COLUMN);
     }
-    
+
     Set<Long> companyIds = DataUtils.parseIdSet(reqInfo.getParameter(VIEW_COMPANIES));
-    
+
     Set<String> currencyNames = new HashSet<>();
-    
+
     String[] arr = Codec.beeDeserializeCollection(reqInfo.getParameter(VIEW_CURRENCIES));
     if (arr != null) {
       for (String s : arr) {
         currencyNames.add(s);
       }
     }
-    
+
     BeeRowSet companies;
     BeeRowSet bankAccounts;
-    
+
     if (companyIds.isEmpty()) {
       companies = null;
       bankAccounts = null;
@@ -333,9 +334,9 @@ public class TradeModuleBean implements BeeModule {
       bankAccounts = qs.getViewData(VIEW_COMPANY_BANK_ACCOUNTS,
           Filter.any(COL_COMPANY, companyIds));
     }
-    
+
     BeeRowSet items = qs.getViewData(itemViewName, Filter.equals(itemRelation, docId));
-    
+
     TradeDocumentData tdd = new TradeDocumentData(companies, bankAccounts, items, null);
     return ResponseObject.response(tdd);
   }
@@ -386,6 +387,25 @@ public class TradeModuleBean implements BeeModule {
     ResponseObject response = ResponseObject.emptyResponse();
 
     for (SimpleRow invoice : invoices) {
+      Long customer;
+
+      if (invoices.hasColumn(COL_PURCHASE_WAREHOUSE_TO)) {
+        customer = invoice.getLong(COL_TRADE_CUSTOMER);
+      } else {
+        customer = invoice.getLong(COL_TRADE_SUPPLIER);
+      }
+      if (DataUtils.isId(customer) && Objects.equals(customer, prm.getRelation("ERPCustomer"))) {
+        remoteNamespace = prm.getText("ERPCustomerNamespace");
+        remoteAddress = prm.getText("ERPCustomerAddress");
+        remoteLogin = prm.getText("ERPCustomerLogin");
+        remotePassword = prm.getText("ERPCustomerPassword");
+      } else {
+        customer = null;
+        remoteNamespace = prm.getText(PRM_ERP_NAMESPACE);
+        remoteAddress = prm.getText(PRM_ERP_ADDRESS);
+        remoteLogin = prm.getText(PRM_ERP_LOGIN);
+        remotePassword = prm.getText(PRM_ERP_PASSWORD);
+      }
       for (String col : new String[] {COL_TRADE_SUPPLIER, COL_TRADE_CUSTOMER, COL_SALE_PAYER}) {
         Long id = invoices.hasColumn(col) ? invoice.getLong(col) : null;
 
@@ -447,7 +467,7 @@ public class TradeModuleBean implements BeeModule {
       doc.setCurrency(invoice.getValue(COL_CURRENCY));
 
       SimpleRowSet items = qs.getData(new SqlSelect()
-          .addFields(TBL_ITEMS, COL_ITEM_NAME, COL_ITEM_EXTERNAL_CODE)
+          .addFields(TBL_ITEMS, COL_ITEM_NAME, COL_ITEM_EXTERNAL_CODE, "ExternalCustomerCode")
           .addFields(tradeItems, COL_TRADE_ITEM_QUANTITY, COL_TRADE_ITEM_PRICE,
               COL_TRADE_VAT_PLUS, COL_TRADE_VAT, COL_TRADE_VAT_PERC, COL_TRADE_ITEM_NOTE)
           .addFrom(tradeItems)
@@ -455,12 +475,14 @@ public class TradeModuleBean implements BeeModule {
           .setWhere(SqlUtils.equals(tradeItems, itemsRelation, invoice.getLong(itemsRelation))));
 
       for (SimpleRow item : items) {
-        if (BeeUtils.isEmpty(item.getValue(COL_ITEM_EXTERNAL_CODE))) {
+        String erpCode = DataUtils.isId(customer) ? "ExternalCustomerCode" : COL_ITEM_EXTERNAL_CODE;
+
+        if (BeeUtils.isEmpty(item.getValue(erpCode))) {
           response.addError("Item", BeeUtils.bracket(item.getValue(COL_ITEM_NAME)),
               "does not have ERP code");
           break;
         }
-        WSDocumentItem wsItem = doc.addItem(item.getValue(COL_ITEM_EXTERNAL_CODE),
+        WSDocumentItem wsItem = doc.addItem(item.getValue(erpCode),
             item.getValue(COL_TRADE_ITEM_QUANTITY));
 
         wsItem.setPrice(item.getValue(COL_TRADE_ITEM_PRICE));

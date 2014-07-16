@@ -29,5 +29,6 @@
     <DataColumn name="VatPercent" />
 
     <DataColumn name="ExternalCode" />
+    <DataColumn name="ExternalCustomerCode" />
   </g:columns>
 </g:Grid>

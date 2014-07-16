@@ -163,7 +163,12 @@ public class AdministrationModuleBean implements BeeModule {
         BeeParameter.createText(module, PRM_ERP_PASSWORD, false, null),
         BeeParameter.createText(module, "ERPOperation", false, null),
         BeeParameter.createText(module, "ERPWarehouse", false, null),
-        BeeParameter.createText(module, PRM_URL, false, null));
+        BeeParameter.createText(module, PRM_URL, false, null),
+        BeeParameter.createRelation(module, "ERPCustomer", false, TBL_COMPANIES, COL_COMPANY_NAME),
+        BeeParameter.createText(module, "ERPCustomerNamespace", false, null),
+        BeeParameter.createText(module, "ERPCustomerAddress", false, null),
+        BeeParameter.createText(module, "ERPCustomerLogin", false, null),
+        BeeParameter.createText(module, "ERPCustomerPassword", false, null));
 
     params.addAll(getSqlEngineParameters());
     return params;

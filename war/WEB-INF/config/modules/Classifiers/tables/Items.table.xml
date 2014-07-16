@@ -15,6 +15,7 @@
     <Numeric name="VatPercent" precision="3" label="=vatPercent" />
     <Boolean name="IsService" label="=service" />
     <String name="ExternalCode" precision="10" label="ERPCode" />
+    <String name="ExternalCustomerCode" precision="10" label="ERPCustomerCode" />
   </Fields>
 
   <Indexes>
