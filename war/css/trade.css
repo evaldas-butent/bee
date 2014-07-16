@@ -70,6 +70,13 @@
   font-size: 11pt;
   font-weight: bolder;
 }
+.bee-trade-print-company-code,
+.bee-trade-print-company-vat-code {
+  white-space: nowrap;
+}
+.bee-trade-print-company-bank {
+  white-space: pre-line;
+}
 .bee-trade-print-company-separator {
   height: 5px;
 }
@@ -112,6 +119,10 @@
 .bee-trade-print-items-total-label,
 .bee-trade-print-items-total-value {
   font-size: 11pt;
+}
+
+.bee-trade-print-document-footer {
+  page-break-inside: avoid;
 }
 
 .bee-trade-print-words td,

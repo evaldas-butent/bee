@@ -109,30 +109,32 @@
       <properties columns="Ordinal, Name, Article, Quantity, Unit, Price, Amount" />
     </Table>
 
-    <HorizontalPanel class="bee-trade-print-words">
-      <Label text="=printTotalInWords" class="bee-trade-print-words-label" />
-      <Label name="TotalInWords" class="bee-trade-print-words-value" />
-    </HorizontalPanel>
+    <FlowPanel class="bee-trade-print-document-footer">
+      <HorizontalPanel class="bee-trade-print-words">
+        <Label text="=printTotalInWords" class="bee-trade-print-words-label" />
+        <Label name="TotalInWords" class="bee-trade-print-words-value" />
+      </HorizontalPanel>
 
-    <HorizontalPanel class="bee-trade-print-term">
-      <Label text="=printDueDate" class="bee-trade-print-words-label" />
-      <DateLabel source="Term" format="DATE_LONG" class="bee-trade-print-term-value" />
-    </HorizontalPanel>
+      <HorizontalPanel class="bee-trade-print-term">
+        <Label text="=printDueDate" class="bee-trade-print-words-label" />
+        <DateLabel source="Term" format="DATE_LONG" class="bee-trade-print-term-value" />
+      </HorizontalPanel>
 
-    <TextLabel source="Notes" class="bee-trade-print-notes" />
+      <TextLabel source="Notes" class="bee-trade-print-notes" />
 
-    <br/>
-    <FlowPanel class="bee-trade-print-dispenser-receiver flexBox-horizontal" >
-      <Label text="=printDocumentDispenser" class="bee-trade-print-dispenser" />
-      <FlowPanel class="bee-trade-print-signature flexible">
-        <hr/>
-        <Label text="=printSignature" class="bee-trade-print-signature-label" />
-      </FlowPanel>
+      <br/>
+      <FlowPanel class="bee-trade-print-dispenser-receiver flexBox-horizontal" >
+        <Label text="=printDocumentDispenser" class="bee-trade-print-dispenser" />
+        <FlowPanel class="bee-trade-print-signature flexible">
+          <hr/>
+          <Label text="=printSignature" class="bee-trade-print-signature-label" />
+        </FlowPanel>
 
-      <Label text="=printDocumentReceiver" class="bee-trade-print-receiver" />
-      <FlowPanel class="bee-trade-print-signature flexible">
-        <hr/>
-        <Label text="=printSignature" class="bee-trade-print-signature-label" />
+        <Label text="=printDocumentReceiver" class="bee-trade-print-receiver" />
+        <FlowPanel class="bee-trade-print-signature flexible">
+          <hr/>
+          <Label text="=printSignature" class="bee-trade-print-signature-label" />
+        </FlowPanel>
       </FlowPanel>
     </FlowPanel>
   </FlowPanel>
