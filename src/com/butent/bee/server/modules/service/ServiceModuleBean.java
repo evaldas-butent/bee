@@ -41,6 +41,7 @@ import com.butent.bee.shared.data.filter.Filter;
 import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogUtils;
 import com.butent.bee.shared.modules.BeeParameter;
+import com.butent.bee.shared.modules.documents.DocumentConstants;
 import com.butent.bee.shared.rights.Module;
 import com.butent.bee.shared.time.JustDate;
 import com.butent.bee.shared.time.TimeUtils;
@@ -57,6 +58,8 @@ import java.util.Set;
 
 import javax.ejb.EJB;
 import javax.ejb.Stateless;
+
+import jersey.repackaged.com.google.common.collect.Lists;
 
 @Stateless
 public class ServiceModuleBean implements BeeModule {
@@ -101,7 +104,18 @@ public class ServiceModuleBean implements BeeModule {
 
   @Override
   public Collection<BeeParameter> getDefaultParameters() {
-    return null;
+    String module = getModule().getName();
+
+    List<BeeParameter> params = Lists.newArrayList(
+        BeeParameter.createRelation(module, PRM_SVC_POTENTIAL_OBJECT_CATEGORY, false,
+            TBL_DOCUMENT_TREE, DocumentConstants.COL_CATEGORY_NAME),
+        BeeParameter.createRelation(module, PRM_SVC_PROJECT_OBJECT_CATEGORY, false,
+            TBL_DOCUMENT_TREE, DocumentConstants.COL_CATEGORY_NAME),
+            BeeParameter.createRelation(module, PRM_SVC_SERVICE_OBJECT_CATEGORY, false,
+            TBL_DOCUMENT_TREE, DocumentConstants.COL_CATEGORY_NAME)
+        );
+
+    return params;
   }
 
   @Override

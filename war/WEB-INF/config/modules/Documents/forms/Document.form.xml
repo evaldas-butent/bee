@@ -115,22 +115,6 @@
             targetRelColumn="Document" sourceRelColumn="ServiceObject"
             renderColumns="Address" choiceColumns="Address CustomerName" />
         </FlowPanel>
-        
-         <FlowPanel class="flexBox-horizontal" style="&row;"
-            data="Relations" for="ServiceObject" module="Service.Projects">
-          <Label text="=svcObjectsPotential" style="&chlabel;" />
-          <ChildSelector class="flexible" viewName="ServiceObjects" childTable="Relations" 
-            targetRelColumn="Document" sourceRelColumn="ServiceObject"
-            renderColumns="Address" choiceColumns="Address CustomerName" />
-        </FlowPanel>
-        
-        <FlowPanel class="flexBox-horizontal" style="&row;"
-            data="Relations" for="ServiceObject" module="Service.Projects">
-          <Label text="=svcProjectObjects" style="&chlabel;" />
-          <ChildSelector class="flexible" viewName="ServiceObjects" childTable="Relations" 
-            targetRelColumn="Document" sourceRelColumn="ServiceObject"
-            renderColumns="Address" choiceColumns="Address CustomerName" />
-        </FlowPanel>
       </FlowPanel>
     </page>
 

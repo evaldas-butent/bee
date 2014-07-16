@@ -20,6 +20,7 @@ import com.butent.bee.client.data.RowCallback;
 import com.butent.bee.client.data.RowEditor;
 import com.butent.bee.client.data.RowFactory;
 import com.butent.bee.client.grid.GridFactory;
+import com.butent.bee.client.modules.service.ServiceUtils;
 import com.butent.bee.client.modules.trade.TradeUtils;
 import com.butent.bee.client.presenter.GridFormPresenter;
 import com.butent.bee.client.presenter.GridPresenter;
@@ -51,10 +52,12 @@ import com.butent.bee.shared.data.CellSource;
 import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.IsColumn;
 import com.butent.bee.shared.data.IsRow;
+import com.butent.bee.shared.data.view.DataInfo;
 import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogUtils;
 import com.butent.bee.shared.modules.administration.AdministrationConstants;
+import com.butent.bee.shared.modules.service.ServiceConstants;
 import com.butent.bee.shared.rights.Module;
 import com.butent.bee.shared.time.TimeUtils;
 import com.butent.bee.shared.ui.Action;
@@ -298,7 +301,12 @@ public final class DocumentsHandler {
 
     @Override
     public boolean beforeAddRow(final GridPresenter presenter, boolean copy) {
-      RowFactory.createRow(VIEW_DOCUMENTS, new RowCallback() {
+      DataInfo dataInfo = Data.getDataInfo(VIEW_DOCUMENTS);
+      BeeRow formRow = RowFactory.createEmptyRow(dataInfo, true);
+      
+      ensureDefaultFields(dataInfo, formRow);
+
+      RowFactory.createRow(dataInfo, formRow, new RowCallback() {
         @Override
         public void onSuccess(BeeRow result) {
           final long docId = result.getId();
@@ -319,7 +327,6 @@ public final class DocumentsHandler {
           });
         }
       });
-
       return false;
     }
 
@@ -343,6 +350,23 @@ public final class DocumentsHandler {
             }
           });
         }
+      }
+    }
+
+    private void ensureDefaultFields(DataInfo dataInfo, IsRow formRow) {
+      GridPresenter presenter = getGridPresenter();
+      FormView parentForm = UiHelper.getForm(presenter.getMainView().asWidget());
+
+      if (parentForm == null) {
+        return;
+      }
+
+      if (BeeUtils.isEmpty(parentForm.getViewName()) && parentForm.getActiveRow() == null) {
+        return;
+      }
+      
+      if (BeeUtils.same(parentForm.getViewName(), ServiceConstants.VIEW_SERVICE_OBJECTS)) {
+        ServiceUtils.ensureDocumentDefaultValues(dataInfo, formRow, parentForm);
       }
     }
   }

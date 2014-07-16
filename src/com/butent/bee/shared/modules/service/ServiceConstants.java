@@ -96,6 +96,10 @@ public final class ServiceConstants {
     }
   }
 
+  public static final String PRM_SVC_POTENTIAL_OBJECT_CATEGORY = "PotentialObjectDocumentCat";
+  public static final String PRM_SVC_PROJECT_OBJECT_CATEGORY = "ProjectObjectDocumentCat";
+  public static final String PRM_SVC_SERVICE_OBJECT_CATEGORY = "ServiceObjectDocumentCat";
+
   public static final String SVC_CREATE_INVOICE_ITEMS = "CreateInvoiceItems";
   public static final String SVC_CREATE_DEFECT_ITEMS = "CreateDefectItems";
   public static final String SVC_GET_CALENDAR_DATA = "getServiceCalendarData";

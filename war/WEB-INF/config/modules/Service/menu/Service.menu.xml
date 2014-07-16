@@ -11,4 +11,6 @@ name="Service" label="=svcMenu" order="120" module="Service"
     
   <Item name="ServiceCalendar" label="=svcCalendar" service="service_calendar"
     module="Tasks" separator="true" />
+    
+  <Item name="ServiceParameters" label="=parameters" service="parameters" parameters="Service" separator="true" />
 </Entry>

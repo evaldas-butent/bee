@@ -190,10 +190,7 @@ public class ServiceObjectForm extends AbstractFormInterceptor implements ClickH
       } else if (BeeUtils.same(name, VIEW_SERVICE_CRITERIA)) {
         criteriaGrid = grid;
         grid.setGridInterceptor(childInterceptor);
-      } // else if (BeeUtils.same(name, VIEW_SERVICE_DEFECTS)) {
-//        
-//        grid.getGridView().getViewPresenter().getHeader().
-//      }
+      }
     }
   }
 
