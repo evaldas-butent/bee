@@ -1445,55 +1445,73 @@ public class DiscussionsModuleBean implements BeeModule {
       return response;
     }
 
-    HasConditions where =
-        SqlUtils.and(SqlUtils.equals(TBL_DISCUSSIONS, COL_DISCUSSION_ID, discussionId));
-
-    boolean checkUserSettings;
-
-    if (!notifyEmailPreference && typeAnnoucement) {
-      where.add(SqlUtils.notNull(TBL_USER_SETTINGS, COL_MAIL_NEW_ANNOUNCEMENTS));
-      checkUserSettings = true;
-    } else if (!notifyEmailPreference) {
-      where.add(SqlUtils.notNull(TBL_USER_SETTINGS, COL_MAIL_NEW_DISCUSSIONS));
-      checkUserSettings = true;
-    } else {
-      checkUserSettings = false;
-    }
-
-    if (sendAll) {
-      where.add(SqlUtils.notEqual(TBL_DISCUSSIONS, COL_OWNER,
-          SqlUtils.field(TBL_USERS, sys.getIdName(TBL_USERS))));
-    } else {
-      where.add(SqlUtils.notEqual(TBL_DISCUSSIONS, COL_OWNER,
-          SqlUtils.field(TBL_DISCUSSIONS_USERS, DiscussionsConstants.COL_USER)));
-    }
-
     SqlSelect discussMailList =
         new SqlSelect()
             .addFields(TBL_DISCUSSIONS, COL_SUBJECT, COL_DESCRIPTION, COL_OWNER,
                 COL_CREATED, COL_TOPIC, COL_IMPORTANT)
-            .addField(TBL_USERS, sys.getIdName(TBL_USERS), DiscussionsConstants.COL_USER)
             .addFrom(TBL_DISCUSSIONS)
-            .setDistinctMode(true)
-            .setWhere(where);
+            .setDistinctMode(true);
 
-    if (sendAll) {
-      /* Using Cartesian product for sending all mails */
+    HasConditions where =
+        SqlUtils.and(SqlUtils.equals(TBL_DISCUSSIONS, COL_DISCUSSION_ID, discussionId));
+
+    if (notifyEmailPreference && sendAll) {
+      discussMailList.addField(TBL_USERS, sys.getIdName(TBL_USERS), DiscussionsConstants.COL_USER);
+
+      /* Using Cartesian product force sending all mails */
       discussMailList.addFrom(TBL_USERS);
-    } else {
+
+      where.add(SqlUtils.notEqual(TBL_DISCUSSIONS, COL_OWNER,
+          SqlUtils.field(TBL_USERS, sys.getIdName(TBL_USERS))));
+
+    } else if (!notifyEmailPreference && sendAll) {
+      discussMailList.addField(TBL_USER_SETTINGS, AdministrationConstants.COL_USER,
+          DiscussionsConstants.COL_USER);
+
+      /* Using Cartesian product for sending all mails by settings */
+      discussMailList.addFrom(TBL_USER_SETTINGS);
+
+      where.add(SqlUtils.notEqual(TBL_DISCUSSIONS, COL_OWNER,
+          SqlUtils.field(TBL_USER_SETTINGS, AdministrationConstants.COL_USER)));
+
+      where.add(typeAnnoucement ? SqlUtils.notNull(TBL_USER_SETTINGS, COL_MAIL_NEW_ANNOUNCEMENTS)
+          : SqlUtils.notNull(TBL_USER_SETTINGS, COL_MAIL_NEW_DISCUSSIONS));
+
+    } else if (notifyEmailPreference && !sendAll) {
+      discussMailList.addField(TBL_USERS, sys.getIdName(TBL_USERS), DiscussionsConstants.COL_USER);
+
       discussMailList
           .addFromInner(TBL_DISCUSSIONS_USERS,
               sys.joinTables(TBL_DISCUSSIONS, TBL_DISCUSSIONS_USERS, COL_DISCUSSION))
           .addFromInner(TBL_USERS,
               sys.joinTables(TBL_USERS, TBL_DISCUSSIONS_USERS, DiscussionsConstants.COL_USER));
+
+      where.add(SqlUtils.notEqual(TBL_DISCUSSIONS, COL_OWNER,
+          SqlUtils.field(TBL_DISCUSSIONS_USERS, DiscussionsConstants.COL_USER)));
+
+    } else if (!notifyEmailPreference && !sendAll) {
+      discussMailList.addField(TBL_USERS, sys.getIdName(TBL_USERS), DiscussionsConstants.COL_USER);
+      
+      discussMailList
+          .addFromInner(TBL_DISCUSSIONS_USERS,
+              sys.joinTables(TBL_DISCUSSIONS, TBL_DISCUSSIONS_USERS, COL_DISCUSSION))
+          .addFromInner(TBL_USERS,
+              sys.joinTables(TBL_USERS, TBL_DISCUSSIONS_USERS, DiscussionsConstants.COL_USER))
+          .addFromInner(TBL_USER_SETTINGS,
+              sys.joinTables(TBL_USERS, TBL_USER_SETTINGS,
+                  AdministrationConstants.COL_USER));
+
+      where.add(SqlUtils.notEqual(TBL_DISCUSSIONS, COL_OWNER,
+          SqlUtils.field(TBL_DISCUSSIONS_USERS, DiscussionsConstants.COL_USER)));
+
+      where.add(typeAnnoucement ? SqlUtils.notNull(TBL_USER_SETTINGS, COL_MAIL_NEW_ANNOUNCEMENTS)
+          : SqlUtils.notNull(TBL_USER_SETTINGS, COL_MAIL_NEW_DISCUSSIONS));
+
     }
 
-    if (checkUserSettings) {
-      discussMailList.addFromInner(TBL_USER_SETTINGS,
-          sys.joinTables(TBL_USERS, TBL_USER_SETTINGS, AdministrationConstants.COL_USER));
-    }
+    discussMailList.setWhere(where);
 
-    logger.debug(typeAnnoucement ? LOG_CREATE_ANNOUNCEMENT_LABEL : LOG_CREATE_DISCUSSION_LABEL,
+    logger.warning(typeAnnoucement ? LOG_CREATE_ANNOUNCEMENT_LABEL : LOG_CREATE_DISCUSSION_LABEL,
         "query:",
         discussMailList.getQuery());
 
