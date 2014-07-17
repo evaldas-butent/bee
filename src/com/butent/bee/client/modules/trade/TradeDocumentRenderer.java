@@ -1,5 +1,7 @@
 package com.butent.bee.client.modules.trade;
 
+import com.google.gwt.dom.client.Element;
+import com.google.gwt.i18n.client.NumberFormat;
 import com.google.gwt.user.client.ui.Widget;
 
 import static com.butent.bee.shared.modules.classifiers.ClassifierConstants.*;
@@ -8,7 +10,13 @@ import static com.butent.bee.shared.modules.trade.TradeConstants.*;
 import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.communication.ParameterList;
 import com.butent.bee.client.communication.ResponseCallback;
+import com.butent.bee.client.data.Data;
+import com.butent.bee.client.dom.DomUtils;
+import com.butent.bee.client.dom.Selectors;
+import com.butent.bee.client.grid.HtmlTable;
+import com.butent.bee.client.i18n.Format;
 import com.butent.bee.client.modules.administration.AdministrationKeeper;
+import com.butent.bee.client.style.StyleUtils;
 import com.butent.bee.client.view.form.FormView;
 import com.butent.bee.client.view.form.interceptor.AbstractFormInterceptor;
 import com.butent.bee.client.view.form.interceptor.FormInterceptor;
@@ -16,14 +24,20 @@ import com.butent.bee.client.widget.Link;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.Service;
 import com.butent.bee.shared.communication.ResponseObject;
+import com.butent.bee.shared.data.BeeColumn;
 import com.butent.bee.shared.data.BeeRowSet;
 import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.IsRow;
+import com.butent.bee.shared.i18n.LocalizableConstants;
 import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.modules.administration.AdministrationConstants;
 import com.butent.bee.shared.modules.trade.TradeDocumentData;
+import com.butent.bee.shared.time.DateTime;
+import com.butent.bee.shared.ui.HasLocalizedCaption;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.Codec;
+import com.butent.bee.shared.utils.EnumUtils;
+import com.butent.bee.shared.utils.NameUtils;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -35,9 +49,177 @@ import java.util.Set;
 
 public class TradeDocumentRenderer extends AbstractFormInterceptor {
 
+  private enum ItemColumn implements HasLocalizedCaption {
+    ORDINAL("ordinal", false) {
+      @Override
+      public String getCaption(LocalizableConstants constants) {
+        return constants.printItemOrdinal();
+      }
+
+      @Override
+      String render(BeeRowSet rowSet, int rowIndex, double vat, double total) {
+        return BeeUtils.toString(rowIndex + 1);
+      }
+    },
+
+    NAME("name", false) {
+      @Override
+      public String getCaption(LocalizableConstants constants) {
+        return constants.printInvoiceItemName();
+      }
+
+      @Override
+      String render(BeeRowSet rowSet, int rowIndex, double vat, double total) {
+        return rowSet.getString(rowIndex, ALS_ITEM_NAME);
+      }
+    },
+
+    ARTICLE("article", false) {
+      @Override
+      public String getCaption(LocalizableConstants constants) {
+        return constants.article();
+      }
+
+      @Override
+      String render(BeeRowSet rowSet, int rowIndex, double vat, double total) {
+        return rowSet.getString(rowIndex, COL_TRADE_ITEM_ARTICLE);
+      }
+    },
+
+    QUANTITY("quantity", false) {
+      @Override
+      public String getCaption(LocalizableConstants constants) {
+        return constants.printItemQuantity();
+      }
+
+      @Override
+      String render(BeeRowSet rowSet, int rowIndex, double vat, double total) {
+        return rowSet.getString(rowIndex, COL_TRADE_ITEM_QUANTITY);
+      }
+    },
+
+    UNIT("unit", false) {
+      @Override
+      public String getCaption(LocalizableConstants constants) {
+        return constants.printItemUom();
+      }
+
+      @Override
+      String render(BeeRowSet rowSet, int rowIndex, double vat, double total) {
+        return rowSet.getString(rowIndex, ALS_UNIT_NAME);
+      }
+    },
+
+    PRICE("price", true) {
+      @Override
+      public String getCaption(LocalizableConstants constants) {
+        return constants.price();
+      }
+
+      @Override
+      String render(BeeRowSet rowSet, int rowIndex, double vat, double total) {
+        Double price = rowSet.getDouble(rowIndex, COL_TRADE_ITEM_PRICE);
+        return PRICE_FORMAT.format(BeeUtils.unbox(price));
+      }
+    },
+
+    AMOUNT("amount", true) {
+      @Override
+      public String getCaption(LocalizableConstants constants) {
+        return constants.amount();
+      }
+
+      @Override
+      String render(BeeRowSet rowSet, int rowIndex, double vat, double total) {
+        return AMOUNT_FORMAT.format(total - vat);
+      }
+    },
+
+    TOTAL_WITHOUT_VAT("total-without-vat", true) {
+      @Override
+      public String getCaption(LocalizableConstants constants) {
+        return constants.printItemTotalWithoutVat();
+      }
+
+      @Override
+      String render(BeeRowSet rowSet, int rowIndex, double vat, double total) {
+        return AMOUNT_FORMAT.format(total - vat);
+      }
+    },
+
+    VAT_RATE("vat-rate", false) {
+      @Override
+      public String getCaption(LocalizableConstants constants) {
+        return constants.printItemVatRate();
+      }
+
+      @Override
+      String render(BeeRowSet rowSet, int rowIndex, double vat, double total) {
+        Double percent;
+
+        if (BeeUtils.isTrue(rowSet.getBoolean(rowIndex, COL_TRADE_VAT_PERC))) {
+          percent = rowSet.getDouble(rowIndex, COL_TRADE_VAT);
+        } else if (BeeUtils.isPositive(vat) && BeeUtils.isPositive(total)) {
+          percent = vat * 100d / total;
+        } else {
+          percent = null;
+        }
+
+        if (BeeUtils.isDouble(percent)) {
+          return BeeUtils.toString(percent, rowSet.getColumn(COL_TRADE_VAT).getScale());
+        } else {
+          return null;
+        }
+      }
+    },
+
+    VAT_AMOUNT("vat-amount", true) {
+      @Override
+      public String getCaption(LocalizableConstants constants) {
+        return constants.printItemVatAmount();
+      }
+
+      @Override
+      String render(BeeRowSet rowSet, int rowIndex, double vat, double total) {
+        return AMOUNT_FORMAT.format(vat);
+      }
+    },
+
+    TOTAL_WITH_VAT("total-with-vat", true) {
+      @Override
+      public String getCaption(LocalizableConstants constants) {
+        return constants.printItemTotalWithVat();
+      }
+
+      @Override
+      String render(BeeRowSet rowSet, int rowIndex, double vat, double total) {
+        return AMOUNT_FORMAT.format(total);
+      }
+    };
+
+    private final String styleSuffix;
+    private final boolean hasCurency;
+
+    private ItemColumn(String styleSuffix, boolean hasCurency) {
+      this.styleSuffix = styleSuffix;
+      this.hasCurency = hasCurency;
+    }
+
+    @Override
+    public String getCaption() {
+      return getCaption(Localized.getConstants());
+    }
+
+    abstract String render(BeeRowSet rowSet, int rowIndex, double vat, double total);
+  }
+
   private static final String NAME_DOC_TITLE = "DocTitle";
   private static final String NAME_DOC_NUMBER = "DocNumber";
   private static final String NAME_DOC_ID = "DocId";
+
+  private static final String NAME_ITEMS = "Items";
+
+  private static final String NAME_TOTAL_IN_WORDS = "TotalInWords";
 
   private static final String PREFIX_SUPPLIER = "Supplier";
   private static final String PREFIX_CUSTOMER = "Customer";
@@ -50,6 +232,14 @@ public class TradeDocumentRenderer extends AbstractFormInterceptor {
   private static final String SUFFIX_PHONE = "Phone";
   private static final String SUFFIX_BANK = "Bank";
   private static final String SUFFIX_WEBSITE = "Website";
+
+  private static final String ATTRIBUTE_CURRENCIES = "currencies";
+  private static final String ATTRIBUTE_COLUMNS = "columns";
+
+  private static final NumberFormat PRICE_FORMAT = Format.getDecimalFormat(2);
+  private static final NumberFormat AMOUNT_FORMAT = Format.getDecimalFormat(2);
+
+  private static final String STYLE_PREFIX = "bee-trade-print-";
 
   private static Long getCompany(FormView form, IsRow row, String colName, boolean checkDefault) {
     int index = form.getDataIndex(colName);
@@ -67,6 +257,13 @@ public class TradeDocumentRenderer extends AbstractFormInterceptor {
         }
       }
       return company;
+    }
+  }
+
+  private static void hideElement(FormView form, String styleName) {
+    Element element = Selectors.getElement(form.getElement(), Selectors.classSelector(styleName));
+    if (element != null) {
+      StyleUtils.hideDisplay(element);
     }
   }
 
@@ -174,10 +371,18 @@ public class TradeDocumentRenderer extends AbstractFormInterceptor {
   private final String itemViewName;
 
   private final String itemRelation;
+  private final TotalRenderer itemTotalRenderer;
+
+  private final VatRenderer itemVatRenderer;
 
   public TradeDocumentRenderer(String itemViewName, String itemRelation) {
     this.itemViewName = itemViewName;
     this.itemRelation = itemRelation;
+
+    List<BeeColumn> columns = Data.getColumns(itemViewName);
+
+    this.itemTotalRenderer = new TotalRenderer(columns);
+    this.itemVatRenderer = new VatRenderer(columns);
   }
 
   @Override
@@ -200,6 +405,20 @@ public class TradeDocumentRenderer extends AbstractFormInterceptor {
       ParameterList params = TradeKeeper.createArgs(SVC_GET_DOCUMENT_DATA);
 
       params.addDataItem(Service.VAR_ID, id);
+
+      DateTime date = row.getDateTime(form.getDataIndex(COL_TRADE_DATE));
+      if (date != null) {
+        params.addDataItem(COL_TRADE_DATE, date.getTime());
+      }
+
+      Double amount = row.getDouble(form.getDataIndex(COL_TRADE_AMOUNT));
+      if (BeeUtils.isDouble(amount)) {
+        params.addDataItem(COL_TRADE_AMOUNT, amount);
+      }
+      Long currency = row.getLong(form.getDataIndex(COL_TRADE_CURRENCY));
+      if (DataUtils.isId(currency)) {
+        params.addDataItem(COL_TRADE_CURRENCY, currency);
+      }
 
       params.addDataItem(Service.VAR_VIEW_NAME, itemViewName);
       params.addDataItem(Service.VAR_COLUMN, itemRelation);
@@ -225,6 +444,14 @@ public class TradeDocumentRenderer extends AbstractFormInterceptor {
         }
       });
     }
+  }
+
+  private double getItemTotal(BeeRowSet rowSet, int rowIndex) {
+    return BeeUtils.unbox(itemTotalRenderer.getTotal(rowSet.getRow(rowIndex)));
+  }
+
+  private double getItemVat(BeeRowSet rowSet, int rowIndex) {
+    return BeeUtils.unbox(itemVatRenderer.getVat(rowSet.getRow(rowIndex)));
   }
 
   private String getString(IsRow row, String colName) {
@@ -260,16 +487,34 @@ public class TradeDocumentRenderer extends AbstractFormInterceptor {
     Long supplier = companies.get(COL_TRADE_SUPPLIER);
     if (DataUtils.isId(supplier) && tdd.containsCompany(supplier)) {
       renderCompany(supplier, tdd, PREFIX_SUPPLIER, namedWidgets);
+    } else {
+      hideElement(form, STYLE_PREFIX + "supplier");
     }
 
     Long customer = companies.get(COL_TRADE_CUSTOMER);
     if (DataUtils.isId(customer) && tdd.containsCompany(customer)) {
       renderCompany(customer, tdd, PREFIX_CUSTOMER, namedWidgets);
+    } else {
+      hideElement(form, STYLE_PREFIX + "customer");
     }
 
     Long payer = companies.get(COL_SALE_PAYER);
     if (DataUtils.isId(payer) && tdd.containsCompany(payer)) {
       renderCompany(payer, tdd, PREFIX_PAYER, namedWidgets);
+    } else {
+      hideElement(form, STYLE_PREFIX + "payer");
+    }
+
+    widget = namedWidgets.get(NAME_ITEMS);
+    if (widget instanceof HtmlTable && !DataUtils.isEmpty(tdd.getItems())) {
+      renderItems(tdd.getItems(), (HtmlTable) widget);
+    }
+
+    widget = namedWidgets.get(NAME_TOTAL_IN_WORDS);
+    if (widget != null) {
+      TradeUtils.getTotalInWords(form.getDoubleValue(COL_TRADE_AMOUNT),
+          form.getStringValue(AdministrationConstants.ALS_CURRENCY_NAME),
+          form.getStringValue(AdministrationConstants.COL_CURRENCY_MINOR_NAME), widget);
     }
   }
 
@@ -297,6 +542,63 @@ public class TradeDocumentRenderer extends AbstractFormInterceptor {
 
     } else {
       return Localized.getConstants().printInvoiceVat();
+    }
+  }
+
+  private void renderItems(BeeRowSet items, HtmlTable table) {
+    List<ItemColumn> columns = EnumUtils.parseNameList(ItemColumn.class,
+        DomUtils.getDataProperty(table.getElement(), ATTRIBUTE_COLUMNS));
+
+    int r = 0;
+
+    String currencyName = getStringValue(AdministrationConstants.ALS_CURRENCY_NAME);
+
+    for (int j = 0; j < columns.size(); j++) {
+      ItemColumn itemColumn = columns.get(j);
+
+      String label = itemColumn.hasCurency
+          ? BeeUtils.joinWords(itemColumn.getCaption(), currencyName) : itemColumn.getCaption();
+      table.setText(r, j, label);
+    }
+
+    table.getRowFormatter().addStyleName(r, STYLE_PREFIX + "items-header");
+
+    double vatSum = BeeConst.DOUBLE_ZERO;
+    double totSum = BeeConst.DOUBLE_ZERO;
+
+    for (int i = 0; i < items.getNumberOfRows(); i++) {
+      double vat = getItemVat(items, i);
+      double total = getItemTotal(items, i);
+
+      r++;
+      for (int j = 0; j < columns.size(); j++) {
+        ItemColumn itemColumn = columns.get(j);
+        table.setText(r, j, itemColumn.render(items, i, vat, total),
+            STYLE_PREFIX + "item-" + itemColumn.styleSuffix);
+      }
+
+      vatSum += vat;
+      totSum += total;
+    }
+
+    if (columns.size() > 1) {
+      r++;
+      table.setText(r, columns.size() - 2, Localized.getConstants().printDocumentSubtotal(),
+          STYLE_PREFIX + "items-total-label");
+      table.setText(r, columns.size() - 1, AMOUNT_FORMAT.format(totSum - vatSum),
+          STYLE_PREFIX + "items-total-value");
+
+      r++;
+      table.setText(r, columns.size() - 2, Localized.getConstants().printDocumentVat(),
+          STYLE_PREFIX + "items-total-label");
+      table.setText(r, columns.size() - 1, AMOUNT_FORMAT.format(vatSum),
+          STYLE_PREFIX + "items-total-value");
+
+      r++;
+      table.setText(r, columns.size() - 2, Localized.getConstants().printDocumentTotal(),
+          STYLE_PREFIX + "items-total-label");
+      table.setText(r, columns.size() - 1, AMOUNT_FORMAT.format(totSum),
+          STYLE_PREFIX + "items-total-value");
     }
   }
 
@@ -337,6 +639,8 @@ public class TradeDocumentRenderer extends AbstractFormInterceptor {
           currencies.add(currency);
         }
       }
+
+      currencies.addAll(NameUtils.toSet(form.getProperty(ATTRIBUTE_CURRENCIES)));
     }
   }
 }

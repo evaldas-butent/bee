@@ -3284,3 +3284,7 @@ textarea,
   height: auto !important;
   background-color: inherit;
 }
+
+.bee-Print-Window {
+  overflow: auto;
+}

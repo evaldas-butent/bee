@@ -10,13 +10,14 @@ import com.butent.bee.shared.modules.classifiers.ClassifierConstants;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.Codec;
 
+import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
 
 public class TradeDocumentData implements BeeSerializable {
 
   private enum Serial {
-    COMPANIES, BANK_ACCOUNTS, ITEMS, TOTAL_IN_WORDS
+    COMPANIES, BANK_ACCOUNTS, ITEMS, CURRENCY_RATES, TOTAL_IN_WORDS
   }
 
   public static TradeDocumentData restore(String s) {
@@ -30,14 +31,17 @@ public class TradeDocumentData implements BeeSerializable {
 
   private BeeRowSet items;
 
+  private Map<String, Double> currencyRates;
   private Map<String, String> totalInWords;
 
   public TradeDocumentData(BeeRowSet companies, BeeRowSet bankAccounts, BeeRowSet items,
-      Map<String, String> totalInWords) {
+      Map<String, Double> currencyRates, Map<String, String> totalInWords) {
 
     this.companies = companies;
     this.bankAccounts = bankAccounts;
     this.items = items;
+    
+    this.currencyRates = currencyRates;
     this.totalInWords = totalInWords;
   }
 
@@ -73,6 +77,15 @@ public class TradeDocumentData implements BeeSerializable {
 
         case ITEMS:
           setItems(BeeRowSet.maybeRestore(value));
+          break;
+          
+        case CURRENCY_RATES:
+          this.currencyRates = new HashMap<>(); 
+          
+          Map<String, String> map = Codec.deserializeMap(value);
+          for (Map.Entry<String, String> entry : map.entrySet()) {
+            getCurrencyRates().put(entry.getKey(), BeeUtils.toDoubleOrNull(entry.getValue()));
+          }
           break;
 
         case TOTAL_IN_WORDS:
@@ -121,6 +134,10 @@ public class TradeDocumentData implements BeeSerializable {
     return null;
   }
 
+  public Map<String, Double> getCurrencyRates() {
+    return currencyRates;
+  }
+
   public BeeRowSet getItems() {
     return items;
   }
@@ -147,6 +164,10 @@ public class TradeDocumentData implements BeeSerializable {
 
         case ITEMS:
           arr[i++] = getItems();
+          break;
+        
+        case CURRENCY_RATES:
+          arr[i++] = getCurrencyRates();
           break;
 
         case TOTAL_IN_WORDS:
