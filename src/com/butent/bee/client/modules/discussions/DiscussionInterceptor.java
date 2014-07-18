@@ -298,11 +298,20 @@ class DiscussionInterceptor extends AbstractFormInterceptor {
         public void onValueChange(ValueChangeEvent<String> event) {
           boolean value = BeeUtils.toBoolean(ac.getValue());
           MultiSelector ms = getMultiSelector(getFormView(), PROP_MEMBERS);
-          ms.setEnabled(!value);
-          ms.setNullable(value);
-          getLabel(getFormView(), WIDGET_LABEL_MEMBERS).setStyleName(StyleUtils.NAME_REQUIRED,
+          Label label = getLabel(getFormView(), WIDGET_LABEL_MEMBERS);
+
+          if (ms != null) {
+            ms.setEnabled(!value);
+            ms.setNullable(value);
+          }
+
+          if (label != null) {
+
+          label.setStyleName(StyleUtils.NAME_REQUIRED,
               !BeeUtils.toBoolean(ac.getValue()));
-          if (value) {
+          }
+
+          if (value && ms != null) {
             ms.clearValue();
             ms.setValue(null);
             getFormView().getActiveRow().setProperty(PROP_MEMBERS, null);
@@ -430,16 +439,32 @@ class DiscussionInterceptor extends AbstractFormInterceptor {
 
     event.consume();
 
-    boolean isTopic =
-        DataUtils.isId(BeeUtils.toLongOrNull(((DataSelector) getFormView().getWidgetBySource(
-            COL_TOPIC)).getValue()));
+    boolean isTopic = false;
+    
+    DataSelector wTopic = (DataSelector) getFormView().getWidgetBySource(
+        COL_TOPIC);
+
+    if (wTopic != null) {
+      isTopic =
+        DataUtils.isId(BeeUtils.toLongOrNull(wTopic.getValue()));
+    }
 
     if (isTopic) {
-      String validFromVal = ((InputDateTime) getFormView().getWidgetBySource(
-          COL_VISIBLE_FROM)).getValue();
+      String validFromVal = null;
+      String validToVal = null;
 
-      String validToVal = ((InputDateTime) getFormView().getWidgetBySource(
-          COL_VISIBLE_TO)).getValue();
+      InputDateTime wVisibleFrom = (InputDateTime) getFormView().getWidgetBySource(
+          COL_VISIBLE_FROM);
+      InputDateTime wVisibleTo = (InputDateTime) getFormView().getWidgetBySource(
+          COL_VISIBLE_TO);
+      
+      if (wVisibleFrom != null) {
+        validFromVal = wVisibleFrom.getValue();
+      }
+      
+      if (wVisibleTo != null) {
+        validToVal = wVisibleTo.getValue();
+      }
 
       Long validFrom = null;
       if (!BeeUtils.isEmpty(validFromVal)) {
@@ -480,19 +505,24 @@ class DiscussionInterceptor extends AbstractFormInterceptor {
     Widget accessWidget = form.getWidgetBySource(COL_ACCESSIBILITY);
     InputBoolean accessibility = (InputBoolean) accessWidget;
 
-    accessibility.setEnabled(isOwner(userId, BeeUtils.unbox(owner)));
+    if (accessibility != null && members != null) {
+      accessibility.setEnabled(isOwner(userId, BeeUtils.unbox(owner)));
 
-    if (!BeeUtils.isEmpty(accessibility.getValue())) {
-      if (!BeeUtils.isEmpty(members.getValue())) {
-        members.clearDisplay();
-        members.clearValue();
-        row.setProperty(PROP_MEMBERS, null);
+      if (!BeeUtils.isEmpty(accessibility.getValue())) {
+
+        if (!BeeUtils.isEmpty(members.getValue())) {
+          members.clearDisplay();
+          members.clearValue();
+          row.setProperty(PROP_MEMBERS, null);
+        }
       }
     }
 
-    if (!BeeUtils.isEmpty(members.getValue())) {
-      members.setEnabled(isMember(userId, form, row));
-      row.setValue(form.getDataIndex(COL_ACCESSIBILITY), (Boolean) null);
+    if (members != null) {
+      if (!BeeUtils.isEmpty(members.getValue())) {
+        members.setEnabled(isMember(userId, form, row));
+        row.setValue(form.getDataIndex(COL_ACCESSIBILITY), (Boolean) null);
+      }
     }
 
     BeeRow visitedRow = DataUtils.cloneRow(row);
@@ -543,8 +573,12 @@ class DiscussionInterceptor extends AbstractFormInterceptor {
           clearCommentsCache(form);
         }
 
-        form.getWidgetByName(COL_DESCRIPTION).getElement().setInnerHTML(
-            data.getString(form.getDataIndex(COL_DESCRIPTION)));
+        Widget wDescription = form.getWidgetByName(COL_DESCRIPTION);
+
+        if (wDescription != null) {
+          wDescription.getElement().setInnerHTML(
+              data.getString(form.getDataIndex(COL_DESCRIPTION)));
+        }
 
         form.updateRow(data, true);
         form.refresh();
@@ -1504,22 +1538,12 @@ class DiscussionInterceptor extends AbstractFormInterceptor {
     if (from == null && to != null) {
       if (to.longValue() >= now) {
         return true;
-        // } else {
-        // event.getCallback().onFailure(
-        // BeeUtils.joinWords(Localized.getConstants().displayInBoard(), Localized.getConstants()
-        // .invalidDate(), Localized.getConstants().dateToShort()));
-        // return false;
       }
     }
 
     if (from != null && to == null) {
       if (from.longValue() <= now) {
         return true;
-        // } else {
-        // event.getCallback().onFailure(
-        // BeeUtils.joinWords(Localized.getConstants().displayInBoard(), Localized.getConstants()
-        // .invalidDate(), Localized.getConstants().dateFromShort()));
-        // return false;
       }
     }
 
