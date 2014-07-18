@@ -1196,8 +1196,7 @@ public final class DomUtils {
   }
 
   public static Widget getWidget(String id) {
-    Widget root = BeeKeeper.getScreen().getScreenPanel();
-    return (root == null) ? null : getPhysicalChild(root, id);
+    return getPhysicalChild(BodyPanel.get(), id);
   }
 
   public static int getWidgetCount(HasWidgets container) {

@@ -1,18 +1,25 @@
 package com.butent.bee.client.view;
 
 import com.google.common.collect.ImmutableSet;
+import com.google.gwt.dom.client.Element;
 import com.google.gwt.user.client.ui.HasOneWidget;
 import com.google.gwt.user.client.ui.HasWidgets;
 import com.google.gwt.user.client.ui.Widget;
 
 import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.data.Provider;
+import com.butent.bee.client.dialog.Popup;
+import com.butent.bee.client.dom.DomUtils;
+import com.butent.bee.client.presenter.Presenter;
 import com.butent.bee.client.presenter.PresenterCallback;
+import com.butent.bee.client.ui.IdentifiableWidget;
+import com.butent.bee.client.view.form.FormView;
 import com.butent.bee.client.view.grid.GridView;
 import com.butent.bee.client.view.navigation.PagerView;
 import com.butent.bee.client.view.search.SearchView;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.data.filter.Filter;
+import com.butent.bee.shared.ui.Action;
 import com.butent.bee.shared.utils.BeeUtils;
 
 import java.util.ArrayList;
@@ -23,6 +30,88 @@ import java.util.List;
 public final class ViewHelper {
 
   private static final ImmutableSet<String> NO_EXCLUSIONS = ImmutableSet.of();
+
+  public static View getActiveView(Element target) {
+    Popup popup = Popup.getActivePopup();
+
+    Widget root;
+    if (popup == null) {
+      IdentifiableWidget activeWidget = BeeKeeper.getScreen().getActiveWidget();
+      root = (activeWidget == null) ? null : activeWidget.asWidget();
+    } else {
+      root = popup.getWidget();
+    }
+    
+    View view;
+    if (root == null) {
+      view = null;
+
+    } else if (target != null && root.getElement().isOrHasChild(target)) {
+      Widget widget = DomUtils.getChildByElement(root, target);
+      view = getView(widget);
+
+    } else {
+      view = (root instanceof View) ? (View) root : null;
+    }
+    
+    return getFacade(view);
+  }
+  
+  public static View getActiveView(Element target, Action action) {
+    Assert.notNull(action);
+
+    View view = getActiveView(target);
+
+    if (view == null) {
+      return null;
+
+    } else if (isActionEnabled(view, action)) {
+      return view;
+
+    } else {
+      Collection<View> children = getChildViews(view.asWidget(), false);
+
+      View actionView = null;
+      for (View child : children) {
+        if (DomUtils.isVisible(child.getElement()) && isActionEnabled(child, action)) {
+          if (actionView == null) {
+            actionView = child;
+          } else {
+            actionView = null;
+            break;
+          }
+        }
+      }
+      
+      if (actionView != null) {
+        View facade = getFacade(actionView);
+        if (facade != null && !actionView.getId().equals(facade.getId())) {
+          actionView = isActionEnabled(facade, action) ? facade : null;
+        }
+      }
+      
+      return actionView;
+    }
+  }
+
+  public static Collection<View> getChildViews(Widget parent, boolean include) {
+    Collection<View> views = new HashSet<>();
+    
+    if (parent instanceof View && include) {
+      views.add((View) parent);
+    }
+      
+    if (parent instanceof HasWidgets) {
+      for (Widget child : (HasWidgets) parent) {
+        views.addAll(getChildViews(child, true));
+      }
+      
+    } else if (parent instanceof HasOneWidget) {
+      views.addAll(getChildViews(((HasOneWidget) parent).getWidget(), true));
+    }
+    
+    return views;
+  }
 
   public static Filter getFilter(HasSearch container, Provider dataProvider) {
     return getFilter(container, dataProvider, NO_EXCLUSIONS);
@@ -127,8 +216,59 @@ public final class ViewHelper {
     return searchers;
   }
 
+  public static View getView(Widget widget) {
+    if (widget == null) {
+      return null;
+    }
+
+    Widget p = widget;
+    for (int i = 0; i < DomUtils.MAX_GENERATIONS; i++) {
+      if (p instanceof View) {
+        return (View) p;
+      }
+
+      p = p.getParent();
+      if (p == null) {
+        break;
+      }
+    }
+    return null;
+  }
+
   public static boolean hasHeader(Widget container) {
     return getHeader(container) != null;
+  }
+
+  public static boolean isActionEnabled(View view, Action action) {
+    if (view == null || action == null) {
+      return false;
+
+    } else {
+      Presenter presenter = view.getViewPresenter();
+      HeaderView header = (presenter == null) ? null : presenter.getHeader();
+
+      return header != null && header.isActionEnabled(action);
+    }
+  }
+
+  private static View getFacade(View baseView) {
+    GridView grid;
+    if (baseView instanceof HasGridView) {
+      grid = ((HasGridView) baseView).getGridView();
+    } else if (baseView instanceof GridView) {
+      grid = (GridView) baseView;
+    } else {
+      grid = null;
+    }
+    
+    if (grid != null) {
+      FormView form = grid.getActiveForm();
+      if (form != null) {
+        return form;
+      }
+    }
+    
+    return baseView;
   }
 
   private ViewHelper() {

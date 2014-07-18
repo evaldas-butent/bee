@@ -55,6 +55,8 @@ public interface GridView extends DataView, HasAddStartHandlers, HasAddEndHandle
 
   void formConfirm();
   
+  FormView getActiveForm();
+  
   List<BeeColumn> getDataColumns();
 
   int getDataIndex(String source);

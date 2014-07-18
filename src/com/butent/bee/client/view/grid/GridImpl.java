@@ -299,7 +299,7 @@ public class GridImpl extends Absolute implements GridView, EditEndEvent.Handler
 
   private final List<com.google.web.bindery.event.shared.HandlerRegistration> registry =
       new ArrayList<>();
-      
+
   private State state;
 
   public GridImpl(GridDescription gridDescription, String gridKey,
@@ -1099,6 +1099,17 @@ public class GridImpl extends Absolute implements GridView, EditEndEvent.Handler
   }
 
   @Override
+  public FormView getActiveForm() {
+    if (!BeeUtils.isEmpty(getActiveFormContainerId())) {
+      FormView form = getForm(!isAdding());
+      if (form != null && form.getState() == State.OPEN) {
+        return form;
+      }
+    }
+    return null;
+  }
+
+  @Override
   public IsRow getActiveRow() {
     if (isAdding() && getNewRowForm() != null) {
       return getNewRowForm().getActiveRow();
@@ -1389,7 +1400,7 @@ public class GridImpl extends Absolute implements GridView, EditEndEvent.Handler
           }
         }
       }
-      
+
       if (!event.canceled() && getViewPresenter() != null) {
         DynamicColumnFactory.checkRightsColumns(getViewPresenter(), this, event);
       }
@@ -1612,7 +1623,7 @@ public class GridImpl extends Absolute implements GridView, EditEndEvent.Handler
 
     registry.add(BeeKeeper.getBus().registerRowInsertHandler(this, false));
     registry.add(BeeKeeper.getBus().registerRowUpdateHandler(this, false));
-    
+
     if (getState() == State.INITIALIZED) {
       ReadyEvent.fire(this);
     }
@@ -2243,7 +2254,7 @@ public class GridImpl extends Absolute implements GridView, EditEndEvent.Handler
     } else {
       rowCallback = null;
     }
-    
+
     Opener opener = modal ? Opener.MODAL : Opener.NEW_TAB;
     RowEditor.openForm(formName, editDataInfo, id, opener, rowCallback);
     return true;
