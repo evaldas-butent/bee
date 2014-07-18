@@ -1,7 +1,12 @@
 package com.butent.bee.client.modules.discussions;
 
+import com.google.common.collect.Lists;
+
 import com.butent.bee.client.BeeKeeper;
+import com.butent.bee.client.Global;
+import com.butent.bee.client.UserInfo;
 import com.butent.bee.client.data.Queries;
+import com.butent.bee.client.event.logical.RenderingEvent;
 import com.butent.bee.client.grid.ColumnHeader;
 import com.butent.bee.client.images.Images;
 import com.butent.bee.client.images.star.Stars;
@@ -10,6 +15,7 @@ import com.butent.bee.client.render.AttachmentRenderer;
 import com.butent.bee.client.style.StyleUtils;
 import com.butent.bee.client.view.edit.EditStartEvent;
 import com.butent.bee.client.view.edit.EditorAssistant;
+import com.butent.bee.client.view.grid.GridView;
 import com.butent.bee.client.view.grid.interceptor.AbstractGridInterceptor;
 import com.butent.bee.client.view.grid.interceptor.GridInterceptor;
 import com.butent.bee.client.view.search.AbstractFilterSupplier;
@@ -36,6 +42,7 @@ import com.butent.bee.shared.ui.GridDescription;
 import com.butent.bee.shared.utils.BeeUtils;
 
 import java.util.Collection;
+import java.util.List;
 
 class DiscussionsGridHandler extends AbstractGridInterceptor {
 
@@ -43,11 +50,20 @@ class DiscussionsGridHandler extends AbstractGridInterceptor {
   private static final String NAME_STAR = "Star";
 
   private final DiscussionsListType type;
-  private final Long userId;
+  private final UserInfo currentUser;
+  private String discussionAdminLogin;
 
   public DiscussionsGridHandler(DiscussionsListType type) {
     this.type = type;
-    this.userId = BeeKeeper.getUser().getUserId();
+    this.currentUser = BeeKeeper.getUser();
+    this.discussionAdminLogin = "";
+  }
+
+  @Override
+  public void beforeRender(GridView gridView, RenderingEvent event) {
+    super.beforeRender(gridView, event);
+
+    Global.getParameter(PRM_DISCUSS_ADMIN, getDiscussAdminParameterConsumer());
   }
 
   @Override
@@ -59,9 +75,44 @@ class DiscussionsGridHandler extends AbstractGridInterceptor {
   @Override
   public DeleteMode getDeleteMode(GridPresenter presenter, IsRow activeRow,
       Collection<RowInfo> selectedRows, DeleteMode defMode) {
+
+    if (presenter == null && activeRow == null && currentUser == null) {
+      return DeleteMode.CANCEL;
+    }
+    
+    GridView gridView = presenter.getGridView();
+    
+    if (gridView == null) {
+      return DeleteMode.CANCEL;
+    }
+    
+    long discussOwner = BeeUtils.unbox(activeRow.getLong(gridView.getDataIndex(COL_OWNER)));
+    boolean isAdmin = isDiscussAdmin(currentUser.getLogin(), getDiscussionAdminLogin());
+    boolean isOwner = currentUser.getUserId().longValue() == discussOwner;
+    
+    if (!isAdmin && !isOwner) {
+      gridView.notifyWarning(BeeUtils.joinWords(Localized.getConstants().discussion(),
+          activeRow.getId(), Localized.getConstants().discussDeleteCanOwnerOrAdmin()));
+      return DeleteMode.CANCEL;
+    }
+
     return DeleteMode.SINGLE;
   }
-  
+
+  @Override
+  public List<String> getDeleteRowMessage(IsRow row) {
+    GridView gridView = getGridView();
+    if (row == null && gridView == null) {
+      return super.getDeleteRowMessage(row);
+    }
+    
+    String m1 = BeeUtils.joinWords(Localized.getConstants().discussion(), 
+        row.getValue(gridView.getDataIndex(COL_SUBJECT)));
+    String m2 = Localized.getConstants().discussDeleteQuestion();
+    
+    return Lists.newArrayList(m1, m2);
+  }
+
   @Override
   public AbstractFilterSupplier getFilterSupplier(String columnName,
       ColumnDescription columnDescription) {
@@ -101,9 +152,12 @@ class DiscussionsGridHandler extends AbstractGridInterceptor {
   
   @Override
   public boolean initDescription(GridDescription gridDescription) {
-    gridDescription.setFilter(type.getFilter(new LongValue(userId)));
+    if (currentUser != null) {
+      gridDescription.setFilter(type.getFilter(new LongValue(currentUser.getUserId())));
+    }
     return true;
   }
+
 
   @Override
   public void onEditStart(final EditStartEvent event) {
@@ -127,12 +181,46 @@ class DiscussionsGridHandler extends AbstractGridInterceptor {
     }
   }
 
+  private static boolean isDiscussAdmin(String currentUserLogin, String adminLoginName) {
+    if (BeeUtils.isEmpty(currentUserLogin)) {
+      return false;
+    }
+
+    if (BeeUtils.isEmpty(adminLoginName)) {
+      return false;
+    }
+
+    return BeeUtils.equalsTrim(currentUserLogin, adminLoginName);
+  }
+
+  private String getDiscussionAdminLogin() {
+    return this.discussionAdminLogin;
+  }
+
+  private Consumer<String> getDiscussAdminParameterConsumer() {
+    return new Consumer<String>() {
+
+      @Override
+      public void accept(String input) {
+        setDiscussionAdminLogin(input);
+      }
+    };
+  }
+
+  private void setDiscussionAdminLogin(String loginName) {
+    this.discussionAdminLogin = loginName;
+  }
+
   private void updateStar(final EditStartEvent event, final CellSource source,
       final Integer value) {
     final long rowId = event.getRowValue().getId();
 
+    if (currentUser == null) {
+      return;
+    }
+
     Filter filter = Filter.and(Filter.equals(COL_DISCUSSION, rowId),
-        Filter.equals(AdministrationConstants.COL_USER, userId));
+        Filter.equals(AdministrationConstants.COL_USER, currentUser.getUserId()));
 
     Queries.update(VIEW_DISCUSSIONS_USERS, filter, COL_STAR, new IntegerValue(value),
         new Queries.IntCallback() {
