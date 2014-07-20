@@ -24,7 +24,7 @@ public class RowUpdateEvent extends ModificationEvent<RowUpdateEvent.Handler> im
     void onRowUpdate(RowUpdateEvent event);
   }
 
-  private static final Type<Handler> TYPE = new Type<Handler>();
+  private static final Type<Handler> TYPE = new Type<>();
 
   public static void fire(FiresModificationEvents eventManager, String viewName, BeeRow row) {
     Assert.notNull(eventManager);

@@ -2266,7 +2266,7 @@ public final class CliWorker {
     int timeout = BeeConst.UNDEF;
     String cancelHtml = null;
 
-    final Holder<String> widgetName = new Holder<String>(null);
+    final Holder<String> widgetName = new Holder<>(null);
     final Holder<String> widgetStyle = Holder.of("background-color:green");
 
     String v;
@@ -2749,7 +2749,7 @@ public final class CliWorker {
           int row = 0;
           int col = 0;
 
-          Map<String, String> flags = new TreeMap<String, String>(Flags.getFlags());
+          Map<String, String> flags = new TreeMap<>(Flags.getFlags());
 
           for (Map.Entry<String, String> entry : flags.entrySet()) {
             table.setHtml(row, col, entry.getKey());
@@ -2952,7 +2952,7 @@ public final class CliWorker {
       int row = 0;
       int col = 0;
 
-      Map<String, ImageResource> map = new TreeMap<String, ImageResource>(Images.getMap());
+      Map<String, ImageResource> map = new TreeMap<>(Images.getMap());
 
       for (Map.Entry<String, ImageResource> entry : map.entrySet()) {
         table.setHtml(row, col, entry.getKey());
@@ -2986,7 +2986,7 @@ public final class CliWorker {
 
     boolean required = true;
 
-    final Holder<String> widgetName = new Holder<String>(null);
+    final Holder<String> widgetName = new Holder<>(null);
     final Holder<String> widgetStyle = Holder.of("background-color:green");
 
     String v;

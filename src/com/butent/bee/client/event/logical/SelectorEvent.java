@@ -20,7 +20,7 @@ public final class SelectorEvent extends GwtEvent<SelectorEvent.Handler> impleme
     void onDataSelector(SelectorEvent event);
   }
 
-  private static final Type<Handler> TYPE = new Type<Handler>();
+  private static final Type<Handler> TYPE = new Type<>();
 
   public static void fire(DataSelector selector, State state) {
     fireEvent(selector, new SelectorEvent(state));

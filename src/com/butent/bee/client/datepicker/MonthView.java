@@ -128,7 +128,7 @@ class MonthView extends Component implements HasKeyDownHandlers {
       }
     }
 
-    private final ElementMapperImpl<Cell> elementToCell = new ElementMapperImpl<Cell>();
+    private final ElementMapperImpl<Cell> elementToCell = new ElementMapperImpl<>();
     private final List<Cell> cellList = Lists.newArrayList();
 
     private int activeCellIndex = BeeConst.UNDEF;

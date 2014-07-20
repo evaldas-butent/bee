@@ -17,7 +17,7 @@ public class CaptionChangeEvent extends GwtEvent<CaptionChangeEvent.Handler> imp
     void onCaptionChange(CaptionChangeEvent event);
   }
 
-  private static final Type<Handler> TYPE = new Type<Handler>();
+  private static final Type<Handler> TYPE = new Type<>();
   
   public static void fire(HasCaptionChangeHandlers source, String caption) {
     source.fireEvent(new CaptionChangeEvent(caption));

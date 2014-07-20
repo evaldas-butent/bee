@@ -14,7 +14,7 @@ public class RowTransformEvent extends Event<RowTransformEvent.Handler> implemen
     void onRowTransform(RowTransformEvent event);
   }
 
-  private static final Type<Handler> TYPE = new Type<Handler>();
+  private static final Type<Handler> TYPE = new Type<>();
 
   public static HandlerRegistration register(EventBus eventBus, Handler handler) {
     Assert.notNull(eventBus);

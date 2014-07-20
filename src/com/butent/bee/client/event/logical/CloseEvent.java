@@ -23,7 +23,7 @@ public class CloseEvent extends GwtEvent<CloseEvent.Handler> {
     HandlerRegistration addCloseHandler(Handler handler);
   }
 
-  private static final Type<Handler> TYPE = new Type<Handler>();
+  private static final Type<Handler> TYPE = new Type<>();
   
   public static void fire(HasCloseHandlers source, Cause cause, Node target) {
     Assert.notNull(source);

@@ -17,7 +17,7 @@ public class AddEndEvent extends GwtEvent<AddEndEvent.Handler> {
     void onAddEnd(AddEndEvent event);
   }
 
-  private static final Type<Handler> TYPE = new Type<Handler>();
+  private static final Type<Handler> TYPE = new Type<>();
 
   public static Type<Handler> getType() {
     return TYPE;

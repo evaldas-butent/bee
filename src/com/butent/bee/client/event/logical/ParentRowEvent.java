@@ -15,7 +15,7 @@ public class ParentRowEvent extends Event<ParentRowEvent.Handler> implements Has
     void onParentRow(ParentRowEvent event);
   }
 
-  private static final Type<Handler> TYPE = new Type<Handler>();
+  private static final Type<Handler> TYPE = new Type<>();
 
   public static HandlerRegistration register(EventBus eventBus, Object source, Handler handler) {
     Assert.notNull(eventBus);

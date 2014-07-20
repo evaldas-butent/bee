@@ -16,7 +16,7 @@ public class MotionEvent extends Event<MotionEvent.Handler> {
     void onMotion(MotionEvent event);
   }
 
-  private static final Type<Handler> TYPE = new Type<Handler>();
+  private static final Type<Handler> TYPE = new Type<>();
 
   public static HandlerRegistration register(Handler handler) {
     return BeeKeeper.getBus().addHandler(TYPE, handler, false);

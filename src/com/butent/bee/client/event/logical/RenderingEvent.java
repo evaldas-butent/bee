@@ -19,7 +19,7 @@ public final class RenderingEvent extends GwtEvent<RenderingEvent.Handler> imple
     HandlerRegistration addRenderingHandler(Handler handler);
   }
 
-  private static final Type<Handler> TYPE = new Type<Handler>();
+  private static final Type<Handler> TYPE = new Type<>();
   
   public static RenderingEvent after() {
     return new RenderingEvent(true);

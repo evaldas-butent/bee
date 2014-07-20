@@ -26,7 +26,7 @@ public class DataChangeEvent extends ModificationEvent<DataChangeEvent.Handler> 
   public static final EnumSet<Effect> CANCEL_RESET_REFRESH = 
       EnumSet.of(Effect.CANCEL, Effect.REFRESH, Effect.RESET);
 
-  private static final Type<Handler> TYPE = new Type<Handler>();
+  private static final Type<Handler> TYPE = new Type<>();
   
   public static void fire(FiresModificationEvents em, String viewName, EnumSet<Effect> effects) {
     Assert.notNull(em);

@@ -18,7 +18,7 @@ public class VisibilityChangeEvent extends Event<VisibilityChangeEvent.Handler> 
     void onVisibilityChange(VisibilityChangeEvent event);
   }
 
-  private static final Type<Handler> TYPE = new Type<Handler>();
+  private static final Type<Handler> TYPE = new Type<>();
   
   private static final Map<String, HandlerRegistration> registry = Maps.newHashMap();
 

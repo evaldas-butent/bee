@@ -105,4 +105,7 @@
   <module name="Translation"/>
   <module name="SuppressionCommentFilter"/>
   <module name="UniqueProperties"/>
+  <module name="RegexpSingleline">
+    <property name="format" value="\s+$"/>
+  </module>
 </module>

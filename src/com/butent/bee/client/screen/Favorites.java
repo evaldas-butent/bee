@@ -494,7 +494,7 @@ public class Favorites implements HandlesDeleteEvents {
     }
 
     for (Group group : Group.values()) {
-      Set<String> keys = new TreeSet<String>(group.displays.keySet());
+      Set<String> keys = new TreeSet<>(group.displays.keySet());
       for (String key : keys) {
         group.registerDomainEntry(key);
       }

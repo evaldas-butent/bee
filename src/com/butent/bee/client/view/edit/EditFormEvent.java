@@ -11,7 +11,7 @@ public class EditFormEvent extends GwtEvent<EditFormEvent.Handler> {
     void onEditForm(EditFormEvent event);
   }
 
-  private static final Type<Handler> TYPE = new Type<Handler>();
+  private static final Type<Handler> TYPE = new Type<>();
 
   public static Type<Handler> getType() {
     return TYPE;

@@ -18,7 +18,7 @@ public final class SettingsChangeEvent extends GwtEvent<SettingsChangeEvent.Hand
     HandlerRegistration addSettingsChangeHandler(Handler handler);
   }
 
-  private static final Type<Handler> TYPE = new Type<Handler>();
+  private static final Type<Handler> TYPE = new Type<>();
   
   public static void fireHeight(HasSettingsChangeHandlers source, ComponentType componentType,
       int height) {

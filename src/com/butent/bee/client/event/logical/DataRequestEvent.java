@@ -13,7 +13,7 @@ public class DataRequestEvent extends GwtEvent<DataRequestEvent.Handler> {
     void onDataRequest(DataRequestEvent event);
   }
 
-  private static final Type<Handler> TYPE = new Type<Handler>();
+  private static final Type<Handler> TYPE = new Type<>();
   
   public static void fire(HasHandlers source, NavigationOrigin origin) {
     Assert.notNull(source);

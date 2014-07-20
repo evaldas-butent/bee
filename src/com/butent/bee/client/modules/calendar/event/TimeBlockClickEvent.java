@@ -11,7 +11,7 @@ public final class TimeBlockClickEvent extends GwtEvent<TimeBlockClickEvent.Hand
     void onTimeBlockClick(TimeBlockClickEvent event);
   }
 
-  private static final Type<Handler> TYPE = new Type<Handler>();
+  private static final Type<Handler> TYPE = new Type<>();
   
   public static void fire(HasTimeBlockClickHandlers source, DateTime start, Long attendeeId) {
     source.fireEvent(new TimeBlockClickEvent(start, attendeeId));

@@ -32,7 +32,7 @@ public class ReadyForUpdateEvent extends GwtEvent<ReadyForUpdateEvent.Handler> i
     boolean onReadyForUpdate(ReadyForUpdateEvent event);
   }
 
-  private static final Type<Handler> TYPE = new Type<Handler>();
+  private static final Type<Handler> TYPE = new Type<>();
 
   public static Type<Handler> getType() {
     return TYPE;

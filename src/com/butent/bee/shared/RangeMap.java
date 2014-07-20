@@ -8,7 +8,7 @@ import java.util.HashMap;
 public final class RangeMap<K extends Comparable<?>, V> extends HashMap<Range<K>, V> {
 
   public static <K extends Comparable<?>, V> RangeMap<K, V> create() {
-    return new RangeMap<K, V>();
+    return new RangeMap<>();
   }
 
   public static <K extends Comparable<?>, V> RangeMap<K, V> create(Range<K> range, V value) {

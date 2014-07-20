@@ -184,7 +184,7 @@ public final class ViewFactory {
   }
 
   public static Collection<String> getKeys() {
-    return new TreeSet<String>(suppliers.keySet());
+    return new TreeSet<>(suppliers.keySet());
   }
 
   public static PresenterCallback getPresenterCallback(final ViewCallback callback) {

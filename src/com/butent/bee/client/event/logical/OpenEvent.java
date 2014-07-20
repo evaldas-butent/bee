@@ -17,7 +17,7 @@ public final class OpenEvent extends GwtEvent<OpenEvent.Handler> {
     void onOpen(OpenEvent event);
   }
 
-  private static final Type<Handler> TYPE = new Type<Handler>();
+  private static final Type<Handler> TYPE = new Type<>();
   
   public static void fire(HasOpenHandlers source) {
     Assert.notNull(source);

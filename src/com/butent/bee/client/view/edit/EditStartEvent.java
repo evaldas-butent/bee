@@ -27,7 +27,7 @@ public class EditStartEvent extends GwtEvent<EditStartEvent.Handler> implements 
   public static final int ENTER = 2;
   public static final int DELETE = 3;
   
-  private static final Type<Handler> TYPE = new Type<Handler>();
+  private static final Type<Handler> TYPE = new Type<>();
 
   public static int getStartKey(int keyCode) {
     int startKey;

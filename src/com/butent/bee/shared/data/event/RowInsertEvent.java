@@ -24,7 +24,7 @@ public class RowInsertEvent extends ModificationEvent<RowInsertEvent.Handler> im
     void onRowInsert(RowInsertEvent event);
   }
 
-  private static final Type<Handler> TYPE = new Type<Handler>();
+  private static final Type<Handler> TYPE = new Type<>();
   
   public static void fire(FiresModificationEvents eventManager, String viewName, BeeRow row,
       String sourceId) {

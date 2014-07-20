@@ -519,7 +519,7 @@ public final class Wildcards {
     int tokIdx = 0;
     int inpIdx = 0;
     boolean anyChars = false;
-    Stack<int[]> backtrack = new Stack<int[]>();
+    Stack<int[]> backtrack = new Stack<>();
 
     do {
       if (!backtrack.isEmpty()) {

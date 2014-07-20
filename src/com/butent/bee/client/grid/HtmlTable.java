@@ -304,7 +304,7 @@ public class HtmlTable extends Panel implements IdentifiableWidget, IsHtmlTable,
 
     setElement(tableElem);
 
-    this.widgetMap = new ElementMapperImpl<Widget>();
+    this.widgetMap = new ElementMapperImpl<>();
 
     this.cellFormatter = new CellFormatter();
     this.rowFormatter = new RowFormatter();

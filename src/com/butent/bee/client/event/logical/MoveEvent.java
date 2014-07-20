@@ -22,7 +22,7 @@ public final class MoveEvent extends GwtEvent<MoveEvent.Handler> {
     MOVING, FINISHED
   }
 
-  private static final Type<Handler> TYPE = new Type<Handler>();
+  private static final Type<Handler> TYPE = new Type<>();
   
   public static void fireFinish(HasMoveHandlers source, int deltaX, int deltaY) {
     Assert.notNull(source);

@@ -24,7 +24,7 @@ public class RowDeleteEvent extends ModificationEvent<RowDeleteEvent.Handler> im
     void onRowDelete(RowDeleteEvent event);
   }
 
-  private static final Type<Handler> TYPE = new Type<Handler>();
+  private static final Type<Handler> TYPE = new Type<>();
 
   public static void fire(FiresModificationEvents eventManager, String viewName, long rowId) {
     Assert.notNull(eventManager);

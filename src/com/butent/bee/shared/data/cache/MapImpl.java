@@ -30,7 +30,7 @@ class MapImpl<K, V> extends AbstractCache<K, V> {
     super(maxSize, replacementPolicy);
     
     if (maxSize > 0) {
-      this.map = new LimitedMap<K, V>(replacementPolicy.isAccessOrder());
+      this.map = new LimitedMap<>(replacementPolicy.isAccessOrder());
     } else {
       this.map = Maps.newHashMap();
     }

@@ -15,7 +15,7 @@ public class AppointmentEvent extends Event<AppointmentEvent.Handler> {
     void onAppointment(AppointmentEvent event);
   }
 
-  private static final Type<Handler> TYPE = new Type<Handler>();
+  private static final Type<Handler> TYPE = new Type<>();
   
   public static void fire(Appointment appointment, State state) {
     fire(appointment, state, null);

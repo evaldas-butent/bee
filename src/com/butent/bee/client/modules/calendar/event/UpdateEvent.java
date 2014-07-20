@@ -12,7 +12,7 @@ public final class UpdateEvent extends GwtEvent<UpdateEvent.Handler> {
     void onUpdate(UpdateEvent event);
   }
 
-  private static final Type<Handler> TYPE = new Type<Handler>();
+  private static final Type<Handler> TYPE = new Type<>();
   
   public static boolean fire(HasUpdateHandlers source, Appointment appointment,
       DateTime newStart, DateTime newEnd, int oldColumnIndex, int newColumnIndex) {
