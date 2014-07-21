@@ -821,7 +821,7 @@ public class MailModuleBean implements BeeModule {
 
         try {
           p.attachFile(file, fileInfo.getType(), null);
-          p.setFileName(MimeUtility.encodeText(fileInfo.getName()));
+          p.setFileName(MimeUtility.encodeText(fileInfo.getName(), BeeConst.CHARSET_UTF8, null));
 
         } catch (IOException ex) {
           logger.error(ex);

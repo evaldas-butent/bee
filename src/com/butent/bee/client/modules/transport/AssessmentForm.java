@@ -8,6 +8,7 @@ import com.google.common.collect.Maps;
 import com.google.common.collect.Multimap;
 import com.google.common.collect.Sets;
 import com.google.gwt.core.client.Scheduler.ScheduledCommand;
+import com.google.gwt.dom.client.Document;
 import com.google.gwt.dom.client.Style.Cursor;
 import com.google.gwt.dom.client.Style.Unit;
 import com.google.gwt.event.dom.client.ClickEvent;
@@ -1073,7 +1074,9 @@ public class AssessmentForm extends PrintFormInterceptor implements SelectorEven
                     if (addr != null) {
                       to = Sets.newHashSet(addr);
                     }
-                    NewMailMessage.create(to, null, null, null, table.toString(), null, null);
+                    NewMailMessage.create(to, null, null, null,
+                        Document.get().createBRElement().getString() + table.toString(),
+                        null, null);
                   }
                 });
           }
