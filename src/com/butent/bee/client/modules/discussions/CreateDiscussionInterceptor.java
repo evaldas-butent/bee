@@ -211,9 +211,9 @@ class CreateDiscussionInterceptor extends AbstractFormInterceptor {
 
     HasCheckedness wIsPublic = (HasCheckedness) getFormView().getWidgetByName(WIDGET_ACCESSIBILITY);
     HasCheckedness wPermitComment = (HasCheckedness) getFormView().
-        getWidgetByName(WIDGET_ACCESSIBILITY);
+        getWidgetByName(COL_PERMIT_COMMENT);
 
-    Editor wDescription = (Editor) getFormView().getWidgetByName(WIDGET_DESCRIPTION);
+    Editor wDescription = (Editor) getFormView().getWidgetByName(WIDGET_DESCRIPTION);    
     DataSelector wTopic = (DataSelector) getFormView().getWidgetBySource(COL_TOPIC);
 
     if (wIsPublic != null) {

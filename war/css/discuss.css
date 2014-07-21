@@ -365,3 +365,11 @@
 .bee-discuss-adsFormContent-NewAnnouncement > .bee-discuss-adsFormContent-chatBalloon:after {
   border-right: 9px solid #ffffCC;
 }
+
+.bee-discuss-Description-disabled {
+  display: none !important;
+}
+
+.bee-discuss-DescriptionEditor-disabled {
+   display: none !important;
+}

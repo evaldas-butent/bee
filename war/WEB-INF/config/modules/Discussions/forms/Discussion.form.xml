@@ -27,7 +27,7 @@
   <!ENTITY membersInp "&inpLeft; width: 400px;">
   
   <!ENTITY descriptionLbl "&lblRight;">
-  <!ENTITY descriptionInp "&inpLeft; width: calc(100&#37; - 10em); min-height: 1.5em;
+  <!ENTITY descriptionInp "&inpLeft; /*width: calc(100&#37; - 10em);*/ min-height: 1.5em;
   max-height: 9em; overflow: auto;">
   
   <!ENTITY FilesInp "&inpLeft;">
@@ -62,8 +62,7 @@
     <FlowPanel class="flexBox-horizontal">
       <FlowPanel>
         <Label for="Subject" text="=discussSubject" class="bee-required" style="&subjectLbl;" />
-        <InputText source="Subject" style="&subjectInp;"
-          readOnly="true" />
+        <InputText source="Subject" style="&subjectInp;" />
         <Label for="Created" text="=discussCreated" style="&createdLbl;" />
         <InputDateTime source="Created" style="&createdInp;"
           readOnly="true" />
@@ -81,7 +80,11 @@
         <Label text="=discussDescription" style="text-transform: uppercase;" />
         
         <FlowPanel>
-            <Label class="bee-InputArea" name="Description" style="&descriptionInp; width:80%; min-width: 640px; min-height: 390px" />
+          <Label class="bee-InputArea bee-discuss-Description"
+           name="Description" style="&descriptionInp; width:80%; min-width: 640px; min-height: 390px" />
+           
+          <RichTextEditor class="bee-discuss-DescriptionEditor" 
+          name="DescriptionEditor" source="Description" style="&descriptionInp; width:80%; min-width: 640px; min-height: 390px" />
         </FlowPanel>
                 
       </Disclosure>
