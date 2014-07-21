@@ -41,7 +41,7 @@ public final class ViewHelper {
     } else {
       root = popup.getWidget();
     }
-    
+
     View view;
     if (root == null) {
       view = null;
@@ -53,10 +53,10 @@ public final class ViewHelper {
     } else {
       view = (root instanceof View) ? (View) root : null;
     }
-    
+
     return getFacade(view);
   }
-  
+
   public static View getActiveView(Element target, Action action) {
     Assert.notNull(action);
 
@@ -82,34 +82,34 @@ public final class ViewHelper {
           }
         }
       }
-      
+
       if (actionView != null) {
         View facade = getFacade(actionView);
         if (facade != null && !actionView.getId().equals(facade.getId())) {
           actionView = isActionEnabled(facade, action) ? facade : null;
         }
       }
-      
+
       return actionView;
     }
   }
 
   public static Collection<View> getChildViews(Widget parent, boolean include) {
     Collection<View> views = new HashSet<>();
-    
+
     if (parent instanceof View && include) {
       views.add((View) parent);
     }
-      
+
     if (parent instanceof HasWidgets) {
       for (Widget child : (HasWidgets) parent) {
         views.addAll(getChildViews(child, true));
       }
-      
+
     } else if (parent instanceof HasOneWidget) {
       views.addAll(getChildViews(((HasOneWidget) parent).getWidget(), true));
     }
-    
+
     return views;
   }
 
@@ -260,14 +260,14 @@ public final class ViewHelper {
     } else {
       grid = null;
     }
-    
+
     if (grid != null) {
       FormView form = grid.getActiveForm();
       if (form != null) {
         return form;
       }
     }
-    
+
     return baseView;
   }
 

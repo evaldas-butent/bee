@@ -43,19 +43,19 @@ class BannerGridInterceptor extends AbstractGridInterceptor {
 
   BannerGridInterceptor() {
   }
-  
+
   @Override
   public boolean afterCreateColumn(String columnName, List<? extends IsColumn> dataColumns,
       AbstractColumn<?> column, ColumnHeader header, ColumnFooter footer,
       EditableColumn editableColumn) {
-    
+
     if (BeeUtils.same(columnName, COL_BANNER_PICTURE)) {
       EcKeeper.addPictureCellHandlers(column.getCell(), TBL_BANNERS);
     }
-    
+
     return super.afterCreateColumn(columnName, dataColumns, column, header, footer, editableColumn);
   }
-  
+
   @Override
   public boolean beforeAction(Action action, final GridPresenter presenter) {
     if (action == Action.ADD) {
@@ -103,7 +103,7 @@ class BannerGridInterceptor extends AbstractGridInterceptor {
           }
         }
       });
-      
+
       collector.setAccept(Keywords.ACCEPT_IMAGE);
 
       getGridView().add(collector);

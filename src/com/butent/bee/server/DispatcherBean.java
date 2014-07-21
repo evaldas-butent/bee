@@ -99,7 +99,7 @@ public class DispatcherBean {
           .addFrom(TBL_CURRENCIES)
           .setWhere(sys.idEquals(TBL_CURRENCIES, currency))));
     }
-    
+
     Long company = prm.getRelation(PRM_COMPANY);
     if (DataUtils.isId(company)) {
       data.put(PRM_COMPANY, company);

@@ -71,7 +71,7 @@ public class SimplePager extends AbstractPager {
   private static final String STYLE_CONTAINER = STYLE_PREFIX + "container";
   private static final String STYLE_DISABLED_BUTTON = STYLE_PREFIX + "disabledButton";
   private static final String STYLE_INFO = STYLE_PREFIX + "info";
-  
+
   private static final NumberFormat NUMBER_FORMAT = NumberFormat.getFormat("#,###");
   private static final String POSITION_SEPARATOR = " - ";
   private static final String ROW_COUNT_SEPARATOR = " / ";
@@ -88,15 +88,15 @@ public class SimplePager extends AbstractPager {
   private final Image widgetLast;
 
   private final Label widgetInfo;
-  
+
   private final boolean showPageSize;
-  
+
   private int maxRowCount;
 
   public SimplePager(int maxRowCount) {
     this(maxRowCount, true);
   }
-  
+
   public SimplePager(int maxRowCount, boolean showPageSize) {
     this(maxRowCount, showPageSize, maxRowCount >= MIN_ROW_COUNT_FOR_FAST_NAVIGATION);
   }
@@ -156,7 +156,7 @@ public class SimplePager extends AbstractPager {
   public HandlerRegistration addReadyHandler(ReadyEvent.Handler handler) {
     return addHandler(handler, ReadyEvent.getType());
   }
-  
+
   @Override
   public boolean onPrint(Element source, Element target) {
     return !DomUtils.isImageElement(source);
@@ -167,18 +167,18 @@ public class SimplePager extends AbstractPager {
     if (event == null) {
       return;
     }
-    
+
     int start = BeeUtils.toNonNegativeInt(event.getStart());
     int length = BeeUtils.toNonNegativeInt(event.getLength());
     int rowCount = BeeUtils.toNonNegativeInt(event.getTotal());
-    
+
     if (start >= rowCount) {
       start = Math.max(rowCount - 1, 0);
     }
     if (start + length > rowCount) {
       length = Math.max(rowCount - start, 0);
     }
-    
+
     if (rowCount > getMaxRowCount()) {
       setMaxRowCount(rowCount);
       StyleUtils.setWidth(widgetInfo, getMaxInfoWidth(rowCount));
@@ -222,7 +222,7 @@ public class SimplePager extends AbstractPager {
     super.onLoad();
     ReadyEvent.fire(this);
   }
-  
+
   private String createText(int start, int end, int rowCount) {
     StringBuilder sb = new StringBuilder(format(start));
     if (showPageSize) {
@@ -273,7 +273,7 @@ public class SimplePager extends AbstractPager {
       return pos - pos % pageSize;
     }
   }
-  
+
   private int getMaxInfoWidth(int rowCount) {
     return Rulers.getLineWidth(null, createText(rowCount, rowCount, rowCount), false) + 1;
   }

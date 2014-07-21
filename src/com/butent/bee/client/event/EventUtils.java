@@ -731,7 +731,7 @@ public final class EventUtils {
       return null;
     }
   }
-  
+
   public static String getTargetTagName(EventTarget et) {
     if (Element.is(et)) {
       return Element.as(et).getTagName();

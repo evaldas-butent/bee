@@ -128,7 +128,7 @@ public class RadioGroup extends Span implements Editor, ValueChangeHandler<Boole
   public HandlerRegistration addEditChangeHandler(EditChangeHandler handler) {
     return addValueChangeHandler(handler);
   }
-  
+
   @Override
   public HandlerRegistration addEditStopHandler(Handler handler) {
     return addHandler(handler, EditStopEvent.getType());

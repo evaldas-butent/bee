@@ -84,10 +84,10 @@ public class OnlineMessage extends Message {
   @Override
   protected String serialize() {
     List<Object> values = new ArrayList<>();
-    
+
     values.add(getSessionUsers());
     values.add(getChatRooms());
-    
+
     return Codec.beeSerialize(values);
   }
 }

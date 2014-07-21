@@ -104,7 +104,7 @@ public final class CalendarKeeper {
       });
     }
   }
-  
+
   private static class RowActionHandler implements RowActionEvent.Handler {
     @Override
     public void onRowAction(final RowActionEvent event) {

@@ -260,14 +260,14 @@ public final class EnumUtils {
     if (clazz == null || BeeUtils.isEmpty(input)) {
       return result;
     }
-    
+
     for (String s : splitter.split(input)) {
       E e = getEnumByName(clazz, s);
       if (e != null) {
         result.add(e);
       }
     }
-    
+
     return result;
   }
 

@@ -429,7 +429,7 @@ public class SystemBean {
 
   /**
    * Creates SQL joins between tables.
-   * 
+   *
    * @param tblName Source table with represented own column Id name, where called
    *          {@link SystemBean#getIdName(String)}
    * @param dstTable Distance table with reference of source table

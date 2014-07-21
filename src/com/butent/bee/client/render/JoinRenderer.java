@@ -15,11 +15,11 @@ import java.util.Collection;
 import java.util.List;
 
 public class JoinRenderer extends AbstractCellRenderer implements HasItems {
-  
+
   public static final String DEFAULT_SEPARATOR = BeeConst.STRING_SPACE;
-  
+
   private final List<BeeColumn> dataColumns;
-  
+
   private final List<CellSource> sources = new ArrayList<>();
 
   private final String separator;
@@ -27,7 +27,7 @@ public class JoinRenderer extends AbstractCellRenderer implements HasItems {
   public JoinRenderer(List<BeeColumn> dataColumns, String sep, List<String> items) {
     super(null);
     this.dataColumns = dataColumns;
-    
+
     if (BeeUtils.isDigit(sep)) {
       this.separator = BeeUtils.space(BeeUtils.toInt(sep));
     } else if (BeeUtils.hasLength(sep, 1)) {
@@ -35,7 +35,7 @@ public class JoinRenderer extends AbstractCellRenderer implements HasItems {
     } else {
       this.separator = DEFAULT_SEPARATOR;
     }
-    
+
     if (!BeeUtils.isEmpty(items)) {
       addItems(items);
     }
@@ -44,16 +44,16 @@ public class JoinRenderer extends AbstractCellRenderer implements HasItems {
   @Override
   public void addItem(String item) {
     Assert.notEmpty(item);
-    
+
     CellSource source;
-    
+
     int index = DataUtils.getColumnIndex(item, dataColumns);
     if (BeeConst.isUndef(index)) {
       source = CellSource.forProperty(item, ValueType.TEXT);
     } else {
       source = CellSource.forColumn(dataColumns.get(index), index);
     }
-    
+
     sources.add(source);
   }
 
@@ -83,18 +83,18 @@ public class JoinRenderer extends AbstractCellRenderer implements HasItems {
   public boolean isEmpty() {
     return getItemCount() <= 0;
   }
-  
+
   @Override
   public boolean isIndex(int index) {
     return index >= 0 && index < getItemCount();
   }
-  
+
   @Override
   public String render(IsRow row) {
     if (row == null) {
       return null;
     }
-    
+
     StringBuilder sb = new StringBuilder();
     for (CellSource source : sources) {
       String value = source.getString(row);

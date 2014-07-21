@@ -16,7 +16,7 @@ public class AppointmentEvent extends Event<AppointmentEvent.Handler> {
   }
 
   private static final Type<Handler> TYPE = new Type<>();
-  
+
   public static void fire(Appointment appointment, State state) {
     fire(appointment, state, null);
   }
@@ -56,7 +56,7 @@ public class AppointmentEvent extends Event<AppointmentEvent.Handler> {
   public State getState() {
     return state;
   }
-  
+
   public boolean isNew() {
     return State.CREATED.equals(state);
   }

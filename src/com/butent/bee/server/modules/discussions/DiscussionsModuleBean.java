@@ -1491,7 +1491,7 @@ public class DiscussionsModuleBean implements BeeModule {
 
     } else if (!notifyEmailPreference && !sendAll) {
       discussMailList.addField(TBL_USERS, sys.getIdName(TBL_USERS), DiscussionsConstants.COL_USER);
-      
+
       discussMailList
           .addFromInner(TBL_DISCUSSIONS_USERS,
               sys.joinTables(TBL_DISCUSSIONS, TBL_DISCUSSIONS_USERS, COL_DISCUSSION))

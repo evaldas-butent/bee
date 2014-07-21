@@ -117,7 +117,7 @@ public final class RowActionEvent extends Event<RowActionEvent.Handler> implemen
     }
     return false;
   }
-  
+
   public boolean hasRow() {
     return row != null;
   }

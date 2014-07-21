@@ -27,7 +27,7 @@ import java.util.List;
 
 public class InputNumber extends InputText implements HasBounds, HasIntStep,
     HasNumberFormat, HasPrecision, HasScale {
-  
+
   public static final CharMatcher INT_CHAR_MATCHER =
       CharMatcher.inRange(BeeConst.CHAR_ZERO, BeeConst.CHAR_NINE)
           .or(CharMatcher.is(BeeConst.CHAR_SPACE))
@@ -36,7 +36,7 @@ public class InputNumber extends InputText implements HasBounds, HasIntStep,
   public static final CharMatcher NUM_CHAR_MATCHER = INT_CHAR_MATCHER
       .or(CharMatcher.is(BeeConst.CHAR_POINT))
       .or(CharMatcher.is(BeeConst.CHAR_COMMA));
-  
+
   private int precision = BeeConst.UNDEF;
   private int scale = BeeConst.UNDEF;
 

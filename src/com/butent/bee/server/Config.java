@@ -45,11 +45,11 @@ public final class Config {
   public static final File LOG_DIR;
 
   public static final File IMAGE_DIR;
-  
+
   public static final Map<String, File> DIRECTORY_SUBSTITUTES;
 
   private static Properties properties;
-  
+
   private static final Splitter VALUE_SPLITTER =
       Splitter.on(BeeConst.CHAR_COMMA).trimResults().omitEmptyStrings();
 
@@ -79,9 +79,9 @@ public final class Config {
     LOG_DIR = new File(LOCAL_DIR, "logs");
 
     IMAGE_DIR = new File(WAR_DIR, Paths.IMAGE_DIR);
-    
+
     DIRECTORY_SUBSTITUTES = new LinkedHashMap<>();
-    
+
     DIRECTORY_SUBSTITUTES.put(BeeUtils.embrace("war"), WAR_DIR);
     DIRECTORY_SUBSTITUTES.put(BeeUtils.embrace("web"), WEB_INF_DIR);
     DIRECTORY_SUBSTITUTES.put(BeeUtils.embrace("root"), ROOT_DIR);
@@ -92,7 +92,7 @@ public final class Config {
     DIRECTORY_SUBSTITUTES.put(BeeUtils.embrace("log"), LOG_DIR);
     DIRECTORY_SUBSTITUTES.put(BeeUtils.embrace("image"), IMAGE_DIR);
   }
-  
+
   public static String getConfigPath(String resource) {
     Assert.notEmpty(resource);
 
@@ -101,7 +101,7 @@ public final class Config {
     }
     return null;
   }
-  
+
   public static List<File> getDefaultSearchDirectories() {
     return Lists.newArrayList(LOCAL_DIR, CONFIG_DIR, SCHEMA_DIR, WAR_DIR, SOURCE_DIR);
   }
@@ -153,7 +153,7 @@ public final class Config {
 
   public static List<ExtendedProperty> getInfo() {
     List<ExtendedProperty> lst = new ArrayList<>();
-    
+
     for (Map.Entry<String, File> entry : DIRECTORY_SUBSTITUTES.entrySet()) {
       if (entry.getValue() != null) {
         lst.add(new ExtendedProperty(entry.getKey(), entry.getValue().getAbsolutePath()));
@@ -310,18 +310,18 @@ public final class Config {
   public static String substitutePath(String input) {
     if (!BeeUtils.isEmpty(input) && input.startsWith(BeeConst.STRING_LEFT_BRACE)
         && input.contains(BeeConst.STRING_RIGHT_BRACE)) {
-      
+
       String path = input;
-      
+
       for (Map.Entry<String, File> entry : DIRECTORY_SUBSTITUTES.entrySet()) {
         path = substituteDirectory(path, entry.getKey(), entry.getValue());
         if (!path.startsWith(BeeConst.STRING_LEFT_BRACE)) {
           break;
         }
       }
-      
+
       return path;
-      
+
     } else {
       return input;
     }

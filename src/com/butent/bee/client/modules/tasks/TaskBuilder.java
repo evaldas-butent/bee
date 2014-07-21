@@ -72,7 +72,7 @@ class TaskBuilder extends AbstractFormInterceptor {
   private static final String NAME_REMINDER_TIME = "Reminder_Time";
 
   private static final String NAME_FILES = "Files";
-  
+
   private HasCheckedness mailToggle;
   private InputTime expectedDurationInput;
   private Label endDateInputLabel;
@@ -200,7 +200,7 @@ class TaskBuilder extends AbstractFormInterceptor {
   @Override
   public void onReadyForInsert(HasHandlers listener, final ReadyForInsertEvent event) {
     event.consume();
-    
+
     IsRow activeRow = getFormView().getActiveRow();
 
     DateTime start = getStart();
@@ -219,7 +219,7 @@ class TaskBuilder extends AbstractFormInterceptor {
       event.getCallback().onFailure(Localized.getConstants().crmFinishTimeMustBeGreaterThanStart());
       return;
     }
-    
+
     DateTime reminderTime = getReminderTime(end);
     if (reminderTime != null) {
       DateTime now = TimeUtils.nowMinutes();
@@ -251,11 +251,11 @@ class TaskBuilder extends AbstractFormInterceptor {
 
     Data.setValue(VIEW_TASKS, newRow, COL_START_TIME, start);
     Data.setValue(VIEW_TASKS, newRow, COL_FINISH_TIME, end);
-    
+
     if (reminderTime != null) {
       Data.setValue(VIEW_TASKS, newRow, COL_REMINDER_TIME, reminderTime);
     }
-    
+
     if (mailToggle != null && mailToggle.isChecked()) {
       newRow.setProperty(PROP_MAIL, BooleanValue.S_TRUE);
     }
@@ -274,13 +274,13 @@ class TaskBuilder extends AbstractFormInterceptor {
         if (response.hasWarnings()) {
           BeeKeeper.getScreen().notifyWarning(response.getWarnings());
         }
-        
+
         if (response.hasErrors()) {
           event.getCallback().onFailure(response.getErrors());
-          
+
         } else if (!response.hasResponse()) {
           event.getCallback().onFailure("No tasks created");
-          
+
         } else if (response.hasResponse(BeeRowSet.class)) {
           BeeRowSet tasks = BeeRowSet.restore(response.getResponseAsString());
           if (tasks.isEmpty()) {
@@ -298,12 +298,12 @@ class TaskBuilder extends AbstractFormInterceptor {
           createFiles(tasks.getRowIds());
 
           event.getCallback().onSuccess(null);
-          
+
           String message = Localized.getMessages().crmCreatedNewTasks(tasks.getNumberOfRows());
           BeeKeeper.getScreen().notifyInfo(message);
-          
+
           event.getCallback().onSuccess(tasks.getRow(0));
-          
+
           DataChangeEvent.fireRefresh(BeeKeeper.getBus(), VIEW_TASKS);
 
         } else {
@@ -369,7 +369,7 @@ class TaskBuilder extends AbstractFormInterceptor {
     }
     return null;
   }
-  
+
   private Long getMillis(String widgetName) {
     Widget widget = getFormView().getWidgetByName(widgetName);
     if (widget instanceof InputTime) {
@@ -382,7 +382,7 @@ class TaskBuilder extends AbstractFormInterceptor {
   private DateTime getReminderTime(DateTime end) {
     HasDateValue datePart = getDate(NAME_REMINDER_DATE);
     Long timePart = getMillis(NAME_REMINDER_TIME);
-    
+
     if (datePart == null && timePart == null) {
       return null;
     } else if (datePart == null) {
@@ -391,7 +391,7 @@ class TaskBuilder extends AbstractFormInterceptor {
       return TimeUtils.combine(datePart, timePart);
     }
   }
-  
+
   private DateTime getStart() {
     HasDateValue datePart = getDate(NAME_START_DATE);
     if (datePart == null) {

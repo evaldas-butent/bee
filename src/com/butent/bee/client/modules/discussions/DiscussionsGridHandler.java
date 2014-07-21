@@ -79,17 +79,17 @@ class DiscussionsGridHandler extends AbstractGridInterceptor {
     if (presenter == null && activeRow == null && currentUser == null) {
       return DeleteMode.CANCEL;
     }
-    
+
     GridView gridView = presenter.getGridView();
-    
+
     if (gridView == null) {
       return DeleteMode.CANCEL;
     }
-    
+
     long discussOwner = BeeUtils.unbox(activeRow.getLong(gridView.getDataIndex(COL_OWNER)));
     boolean isAdmin = isDiscussAdmin(currentUser.getLogin(), getDiscussionAdminLogin());
     boolean isOwner = currentUser.getUserId().longValue() == discussOwner;
-    
+
     if (!isAdmin && !isOwner) {
       gridView.notifyWarning(BeeUtils.joinWords(Localized.getConstants().discussion(),
           activeRow.getId(), Localized.getConstants().discussDeleteCanOwnerOrAdmin()));
@@ -105,11 +105,11 @@ class DiscussionsGridHandler extends AbstractGridInterceptor {
     if (row == null && gridView == null) {
       return super.getDeleteRowMessage(row);
     }
-    
-    String m1 = BeeUtils.joinWords(Localized.getConstants().discussion(), 
+
+    String m1 = BeeUtils.joinWords(Localized.getConstants().discussion(),
         row.getValue(gridView.getDataIndex(COL_SUBJECT)));
     String m2 = Localized.getConstants().discussDeleteQuestion();
-    
+
     return Lists.newArrayList(m1, m2);
   }
 
@@ -129,17 +129,17 @@ class DiscussionsGridHandler extends AbstractGridInterceptor {
       return new ColumnHeader(columnName, Stars.getDefaultHeader(), BeeConst.STRING_ASTERISK);
 
     } else if (PROP_FILES_COUNT.equals(columnName)) {
-      return new ColumnHeader(columnName, 
+      return new ColumnHeader(columnName,
           Images.asString(Images.get(AttachmentRenderer.IMAGE_ATTACHMENT)), null);
-    
+
     } else if (PROP_RELATIONS_COUNT.equals(columnName)) {
       return new ColumnHeader(columnName, Images.asString(Images.get("link")), null);
-    
+
     } else if (PROP_ANNOUNCMENT.equals(columnName)) {
       FaLabel fl = new FaLabel(FontAwesome.BULLHORN);
       StyleUtils.setFontSize(fl, 16);
       return new ColumnHeader(columnName, fl.toString(), null);
-      
+
     } else {
       return super.getHeader(columnName, caption);
     }
@@ -149,7 +149,7 @@ class DiscussionsGridHandler extends AbstractGridInterceptor {
   public GridInterceptor getInstance() {
     return new DiscussionsGridHandler(type);
   }
-  
+
   @Override
   public boolean initDescription(GridDescription gridDescription) {
     if (currentUser != null) {
@@ -158,16 +158,15 @@ class DiscussionsGridHandler extends AbstractGridInterceptor {
     return true;
   }
 
-
   @Override
   public void onEditStart(final EditStartEvent event) {
     IsRow row = event.getRowValue();
-    
+
     if (row == null) {
       return;
     }
-    
-    if (PROP_STAR.equals(event.getColumnId())) {     
+
+    if (PROP_STAR.equals(event.getColumnId())) {
       if (row.getProperty(PROP_USER) != null) {
 
         final CellSource source = CellSource.forProperty(PROP_STAR, ValueType.INTEGER);

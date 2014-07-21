@@ -38,7 +38,7 @@ public class EditFormEvent extends GwtEvent<EditFormEvent.Handler> {
   public boolean isCanceled() {
     return State.CANCELED.equals(getState());
   }
-  
+
   public boolean isChanged() {
     return State.CHANGED.equals(getState());
   }

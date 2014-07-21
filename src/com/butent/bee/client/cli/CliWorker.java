@@ -479,7 +479,7 @@ public final class CliWorker {
 
     } else if ("run".equals(z)) {
       BeeKeeper.getRpc().sendText(Service.RUN, args);
-      
+
     } else if (z.startsWith("selector") && arr.length >= 2) {
       querySelector(z, args, errorPopup);
 

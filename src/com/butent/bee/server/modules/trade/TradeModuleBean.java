@@ -293,13 +293,13 @@ public class TradeModuleBean implements BeeModule {
     }
     return ResponseObject.response(qs.getData(query));
   }
-  
+
   private ResponseObject getTradeDocumentData(RequestInfo reqInfo) {
     Long docId = reqInfo.getParameterLong(Service.VAR_ID);
     if (!DataUtils.isId(docId)) {
       return ResponseObject.parameterNotFound(reqInfo.getService(), Service.VAR_ID);
     }
-    
+
     String itemViewName = reqInfo.getParameter(Service.VAR_VIEW_NAME);
     if (BeeUtils.isEmpty(itemViewName)) {
       return ResponseObject.parameterNotFound(reqInfo.getService(), Service.VAR_VIEW_NAME);
@@ -309,21 +309,21 @@ public class TradeModuleBean implements BeeModule {
     if (BeeUtils.isEmpty(itemRelation)) {
       return ResponseObject.parameterNotFound(reqInfo.getService(), Service.VAR_COLUMN);
     }
-    
+
     Set<Long> companyIds = DataUtils.parseIdSet(reqInfo.getParameter(VIEW_COMPANIES));
-    
+
     Set<String> currencyNames = new HashSet<>();
-    
+
     String[] arr = Codec.beeDeserializeCollection(reqInfo.getParameter(VIEW_CURRENCIES));
     if (arr != null) {
       for (String s : arr) {
         currencyNames.add(s);
       }
     }
-    
+
     BeeRowSet companies;
     BeeRowSet bankAccounts;
-    
+
     if (companyIds.isEmpty()) {
       companies = null;
       bankAccounts = null;
@@ -333,9 +333,9 @@ public class TradeModuleBean implements BeeModule {
       bankAccounts = qs.getViewData(VIEW_COMPANY_BANK_ACCOUNTS,
           Filter.any(COL_COMPANY, companyIds));
     }
-    
+
     BeeRowSet items = qs.getViewData(itemViewName, Filter.equals(itemRelation, docId));
-    
+
     TradeDocumentData tdd = new TradeDocumentData(companies, bankAccounts, items, null, null);
     return ResponseObject.response(tdd);
   }

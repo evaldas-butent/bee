@@ -43,7 +43,7 @@ public class SqlSelect extends HasFrom<SqlSelect> implements IsCloneable<SqlSele
    * <p>
    * E.g: source.*
    * </p>
-   * 
+   *
    * @param source the source table
    * @return object's SqlSelect instance.
    */
@@ -55,7 +55,7 @@ public class SqlSelect extends HasFrom<SqlSelect> implements IsCloneable<SqlSele
 
   /**
    * Adds an AVG function with a specified expression {@code expr} and alias {@code alias}.
-   * 
+   *
    * @param expr the expression
    * @param alias the alias name
    * @return object's SqlSelect instance.
@@ -68,7 +68,7 @@ public class SqlSelect extends HasFrom<SqlSelect> implements IsCloneable<SqlSele
 
   /**
    * Adds an AVG function for {@code source} table and field {@code field}.
-   * 
+   *
    * @param source the source's name
    * @param field the field's name
    * @return object's SqlSelect instance.
@@ -80,7 +80,7 @@ public class SqlSelect extends HasFrom<SqlSelect> implements IsCloneable<SqlSele
   /**
    * Adds an AVG function for {@code source} table and field {@code field} using an alias
    * {@code alias}.
-   * 
+   *
    * @param source the source's name
    * @param field the field's name
    * @param alias the alias name.
@@ -92,7 +92,7 @@ public class SqlSelect extends HasFrom<SqlSelect> implements IsCloneable<SqlSele
 
   /**
    * Adds an AVG DISTINCT function with a specified expression {@code expr} and alias {@code alias}.
-   * 
+   *
    * @param expr the expression
    * @param alias the alias name
    * @return object's SqlSelect instance.
@@ -106,7 +106,7 @@ public class SqlSelect extends HasFrom<SqlSelect> implements IsCloneable<SqlSele
   /**
    * Adds an AVG DISTINCT function for {@code source} table and field {@code field} using an alias
    * {@code alias}.
-   * 
+   *
    * @param source the source's name
    * @param field the field's name
    * @param alias the alias name.
@@ -118,7 +118,7 @@ public class SqlSelect extends HasFrom<SqlSelect> implements IsCloneable<SqlSele
 
   /**
    * Creates a constant expression.
-   * 
+   *
    * @param constant the constant value.
    * @param alias the alias name.
    * @return object's SqlSelect instance.
@@ -130,7 +130,7 @@ public class SqlSelect extends HasFrom<SqlSelect> implements IsCloneable<SqlSele
 
   /**
    * Adds a COUNT function with a specified expression {@code expr} and alias {@code alias}.
-   * 
+   *
    * @param expr the expression
    * @param alias the alias name
    * @return object's SqlSelect instance.
@@ -142,7 +142,7 @@ public class SqlSelect extends HasFrom<SqlSelect> implements IsCloneable<SqlSele
 
   /**
    * Adds an COUNT function for {@code source} table and field {@code field}.
-   * 
+   *
    * @param source the source's name
    * @param field the field's name
    * @return object's SqlSelect instance.
@@ -154,7 +154,7 @@ public class SqlSelect extends HasFrom<SqlSelect> implements IsCloneable<SqlSele
   /**
    * Adds an COUNT function for {@code source} table and field {@code field} using an alias
    * {@code alias}.
-   * 
+   *
    * @param source the source's name
    * @param field the field's name
    * @param alias the alias name.
@@ -166,7 +166,7 @@ public class SqlSelect extends HasFrom<SqlSelect> implements IsCloneable<SqlSele
 
   /**
    * Adds a COUNT function without any defined expressions.
-   * 
+   *
    * @param alias the alias name.
    * @return object's SqlSelect instance.
    */
@@ -175,9 +175,9 @@ public class SqlSelect extends HasFrom<SqlSelect> implements IsCloneable<SqlSele
   }
 
   /**
-   * Adds a COUNT DISTINCT function with a specified expression {@code expr} and alias {@code alias}
-   * .
-   * 
+   * Adds a COUNT DISTINCT function with a specified expression {@code expr}
+   * and alias {@code alias}.
+   *
    * @param expr the expression
    * @param alias the alias name
    * @return object's SqlSelect instance.
@@ -191,7 +191,7 @@ public class SqlSelect extends HasFrom<SqlSelect> implements IsCloneable<SqlSele
   /**
    * Adds an COUNT DISTINCT function for {@code source} table and field {@code field} using an alias
    * {@code alias}.
-   * 
+   *
    * @param source the source's name
    * @param field the field's name
    * @param alias the alias name.
@@ -203,7 +203,7 @@ public class SqlSelect extends HasFrom<SqlSelect> implements IsCloneable<SqlSele
 
   /**
    * Adds an empty BOOLEAN field with the specified {@code alias} name.
-   * 
+   *
    * @param alias the alias name.
    * @return object's SqlSelect instance.
    */
@@ -213,7 +213,7 @@ public class SqlSelect extends HasFrom<SqlSelect> implements IsCloneable<SqlSele
 
   /**
    * Adds an empty CHAR field with the specified {@code alias} name and precition.
-   * 
+   *
    * @param alias the alias name
    * @param precision the fields precision
    * @return object's SqlSelect instance.
@@ -224,7 +224,7 @@ public class SqlSelect extends HasFrom<SqlSelect> implements IsCloneable<SqlSele
 
   /**
    * Adds an empty DATE field with the specified {@code alias} name.
-   * 
+   *
    * @param alias the alias name
    * @return object's SqlSelect instance.
    */
@@ -234,7 +234,7 @@ public class SqlSelect extends HasFrom<SqlSelect> implements IsCloneable<SqlSele
 
   /**
    * Adds an empty DATETIME field with the specified {@code alias} name.
-   * 
+   *
    * @param alias the alias name
    * @return object's SqlSelect instance.
    */
@@ -244,7 +244,7 @@ public class SqlSelect extends HasFrom<SqlSelect> implements IsCloneable<SqlSele
 
   /**
    * Adds an empty DOUBLE field with the specified {@code alias} name.
-   * 
+   *
    * @param alias the alias name
    * @return object's SqlSelect instance.
    */
@@ -254,7 +254,7 @@ public class SqlSelect extends HasFrom<SqlSelect> implements IsCloneable<SqlSele
 
   /**
    * Adds a specified type {@code type} field with a specified precision and scale.
-   * 
+   *
    * @param alias the alias name
    * @param type the field's type to add
    * @param precision the field's name
@@ -277,7 +277,7 @@ public class SqlSelect extends HasFrom<SqlSelect> implements IsCloneable<SqlSele
 
   /**
    * Creates an empty INTEGER type field and adds it.
-   * 
+   *
    * @param alias the alias to use
    * @return object's SqlSelect instance
    */
@@ -287,7 +287,7 @@ public class SqlSelect extends HasFrom<SqlSelect> implements IsCloneable<SqlSele
 
   /**
    * Creates an empty LONG type field and adds it.
-   * 
+   *
    * @param alias the alias to use
    * @return object's SqlSelect instance
    */
@@ -298,7 +298,7 @@ public class SqlSelect extends HasFrom<SqlSelect> implements IsCloneable<SqlSele
   /**
    * Creates an empty NUMERIC type field with specified precision {@code precision} and scale
    * {@code scale} and adds it.
-   * 
+   *
    * @param alias the alias to use
    * @param precision the precision
    * @param scale the scale
@@ -310,7 +310,7 @@ public class SqlSelect extends HasFrom<SqlSelect> implements IsCloneable<SqlSele
 
   /**
    * Creates an empty STRING type field with specified precision {@code precision} and adds it.
-   * 
+   *
    * @param alias the alias to use
    * @param precision the precision
    * @return object's SqlSelect instance
@@ -321,7 +321,7 @@ public class SqlSelect extends HasFrom<SqlSelect> implements IsCloneable<SqlSele
 
   /**
    * Creates an empty TEXT type field and adds it.
-   * 
+   *
    * @param alias the alias to use
    * @return object's SqlSelect instance
    */
@@ -331,7 +331,7 @@ public class SqlSelect extends HasFrom<SqlSelect> implements IsCloneable<SqlSele
 
   /**
    * Adds an expression {@code expr}.
-   * 
+   *
    * @param expr the expression
    * @param alias the alias
    * @return object's SqlSelect instance
@@ -347,7 +347,7 @@ public class SqlSelect extends HasFrom<SqlSelect> implements IsCloneable<SqlSele
   /**
    * Adds a field to a specified source destination {@code source}. Fields name is {@code field} and
    * alias {@code alias}.
-   * 
+   *
    * @param source the source table to add to
    * @param field the field to add
    * @param alias alias to use
@@ -360,7 +360,7 @@ public class SqlSelect extends HasFrom<SqlSelect> implements IsCloneable<SqlSele
 
   /**
    * Adds multiple fields {@code fields} to a specified source table {@code  source}.
-   * 
+   *
    * @param source the source table to add to
    * @param fields the fields to add
    * @return object's SqlSelect instance
@@ -376,7 +376,7 @@ public class SqlSelect extends HasFrom<SqlSelect> implements IsCloneable<SqlSele
 
   /**
    * Adds specified fields to a group list.
-   * 
+   *
    * @param source the source table
    * @param fields the fields to add to the group
    * @return object's SqlSelect instance.
@@ -397,7 +397,7 @@ public class SqlSelect extends HasFrom<SqlSelect> implements IsCloneable<SqlSele
 
   /**
    * Adds a MAX function with a specified expression {@code expr} and alias {@code alias}.
-   * 
+   *
    * @param expr the expression
    * @param alias the alias name
    * @return object's SqlSelect instance.
@@ -410,7 +410,7 @@ public class SqlSelect extends HasFrom<SqlSelect> implements IsCloneable<SqlSele
 
   /**
    * Adds a MAX function with a specified table {@code source} and field {@code field}.
-   * 
+   *
    * @param source the source table name
    * @param field the field's name
    * @return object's SqlSelect instance.
@@ -422,7 +422,7 @@ public class SqlSelect extends HasFrom<SqlSelect> implements IsCloneable<SqlSele
   /**
    * Adds a MAX function with a specified table {@code source} and field {@code field} using an
    * alias.
-   * 
+   *
    * @param source the source table name
    * @param field the field's name
    * @param alias the alias name
@@ -434,7 +434,7 @@ public class SqlSelect extends HasFrom<SqlSelect> implements IsCloneable<SqlSele
 
   /**
    * Adds a MIN function with a specified expression {@code expr} and alias {@code alias}.
-   * 
+   *
    * @param expr the expression
    * @param alias the alias name
    * @return object's SqlSelect instance.
@@ -447,7 +447,7 @@ public class SqlSelect extends HasFrom<SqlSelect> implements IsCloneable<SqlSele
 
   /**
    * Adds a MIN function with a specified table {@code source} and field {@code field}.
-   * 
+   *
    * @param source the source table name
    * @param field the field's name
    * @return object's SqlSelect instance.
@@ -459,7 +459,7 @@ public class SqlSelect extends HasFrom<SqlSelect> implements IsCloneable<SqlSele
   /**
    * Adds a MIN function with a specified table {@code source} and field {@code field} using an
    * alias.
-   * 
+   *
    * @param source the source table name
    * @param field the field's name
    * @param alias the alias name
@@ -471,7 +471,7 @@ public class SqlSelect extends HasFrom<SqlSelect> implements IsCloneable<SqlSele
 
   /**
    * Adds {@code order} to an order list.
-   * 
+   *
    * @param source the source table.
    * @param order the fields to add to the order list
    * @return object's SqlSelect instance.
@@ -483,7 +483,7 @@ public class SqlSelect extends HasFrom<SqlSelect> implements IsCloneable<SqlSele
 
   /**
    * Adds {@code order} to an order list. Uses descending ordering.
-   * 
+   *
    * @param source the source table.
    * @param order the fields to add to the order list
    * @return object's SqlSelect instance.
@@ -495,7 +495,7 @@ public class SqlSelect extends HasFrom<SqlSelect> implements IsCloneable<SqlSele
 
   /**
    * Adds a SUM function with a specified expression {@code expr} and alias {@code alias}.
-   * 
+   *
    * @param expr the expression
    * @param alias the alias name
    * @return object's SqlSelect instance.
@@ -508,7 +508,7 @@ public class SqlSelect extends HasFrom<SqlSelect> implements IsCloneable<SqlSele
 
   /**
    * Adds a SUM function with a specified table {@code source} and field {@code field}.
-   * 
+   *
    * @param source the source table name
    * @param field the field's name
    * @return object's SqlSelect instance.
@@ -520,7 +520,7 @@ public class SqlSelect extends HasFrom<SqlSelect> implements IsCloneable<SqlSele
   /**
    * Adds a SUM function with a specified table {@code source} and field {@code field} using an
    * alias.
-   * 
+   *
    * @param source the source table name
    * @param field the field's name
    * @param alias the alias name
@@ -532,7 +532,7 @@ public class SqlSelect extends HasFrom<SqlSelect> implements IsCloneable<SqlSele
 
   /**
    * Adds a SUM DISTINCT function with a specified expression {@code expr} and alias {@code alias}.
-   * 
+   *
    * @param expr the expression
    * @param alias the alias name
    * @return object's SqlSelect instance.
@@ -546,7 +546,7 @@ public class SqlSelect extends HasFrom<SqlSelect> implements IsCloneable<SqlSele
   /**
    * Adds a SUM DISTINCT function with a specified table {@code source} and field {@code field}
    * using an alias.
-   * 
+   *
    * @param source the source table name
    * @param field the field's name
    * @param alias the alias name
@@ -558,7 +558,7 @@ public class SqlSelect extends HasFrom<SqlSelect> implements IsCloneable<SqlSele
 
   /**
    * Adds other SqlSelect {@code union} sentences to the union list.
-   * 
+   *
    * @param union specified SqlSelect sentences
    * @return object's SqlSelect instance.
    */
@@ -679,7 +679,7 @@ public class SqlSelect extends HasFrom<SqlSelect> implements IsCloneable<SqlSele
   /**
    * Returns a list of sources found in the where clause {@code whereClause} , having clause
    * {@code havingClause}, union list {@code unionList} .
-   * 
+   *
    * @return the list of sources
    */
   @Override
@@ -725,7 +725,7 @@ public class SqlSelect extends HasFrom<SqlSelect> implements IsCloneable<SqlSele
 
   /**
    * Checks if the current SqlSelect object is empty.
-   * 
+   *
    * @return true - if the object is empty, otherwise false.
    */
   @Override
@@ -742,7 +742,7 @@ public class SqlSelect extends HasFrom<SqlSelect> implements IsCloneable<SqlSele
 
   /**
    * Clears the SqlSelect object.
-   * 
+   *
    * @return a cleared SqlSelect object.
    */
   @Override
@@ -762,7 +762,7 @@ public class SqlSelect extends HasFrom<SqlSelect> implements IsCloneable<SqlSele
 
   /**
    * Clears all fields from the field list.
-   * 
+   *
    * @return object's SqlSelect instance
    */
   public SqlSelect resetFields() {
@@ -774,7 +774,7 @@ public class SqlSelect extends HasFrom<SqlSelect> implements IsCloneable<SqlSele
 
   /**
    * Resets the group list.
-   * 
+   *
    * @return object's SqlSelect instance.
    */
   public SqlSelect resetGroup() {
@@ -786,7 +786,7 @@ public class SqlSelect extends HasFrom<SqlSelect> implements IsCloneable<SqlSele
 
   /**
    * Resets the order list.
-   * 
+   *
    * @return object's SqlSelect instance.
    */
   public SqlSelect resetOrder() {
@@ -798,7 +798,7 @@ public class SqlSelect extends HasFrom<SqlSelect> implements IsCloneable<SqlSele
 
   /**
    * Resets the union list.
-   * 
+   *
    * @return object's SqlSelect instance.
    */
   public SqlSelect resetUnion() {
@@ -810,7 +810,7 @@ public class SqlSelect extends HasFrom<SqlSelect> implements IsCloneable<SqlSele
 
   /**
    * Resets the distinct mode to the specified {@code distinct} value.
-   * 
+   *
    * @param distinct the value to change to
    * @return object's SqlSelect instance.
    */
@@ -821,7 +821,7 @@ public class SqlSelect extends HasFrom<SqlSelect> implements IsCloneable<SqlSele
 
   /**
    * Sets the having clause.
-   * 
+   *
    * @param having the clause's condition to set
    * @return object's SqlSelect instance.
    */
@@ -832,7 +832,7 @@ public class SqlSelect extends HasFrom<SqlSelect> implements IsCloneable<SqlSele
 
   /**
    * Sets the limit parameter to {@code limit}.
-   * 
+   *
    * @param lim the value to set to
    * @return object's SqlSelect instance.
    */
@@ -844,7 +844,7 @@ public class SqlSelect extends HasFrom<SqlSelect> implements IsCloneable<SqlSele
 
   /**
    * Sets the offset parameter to {@code offset}.
-   * 
+   *
    * @param off the value to set to.
    * @return object's SqlSelect instance.
    */
@@ -856,7 +856,7 @@ public class SqlSelect extends HasFrom<SqlSelect> implements IsCloneable<SqlSele
 
 /**
    * Sets the  union all mode to the specified argument {@code unionAll).
-   * 
+   *
    * @param unionAll the argument to use for setting the mode
    * @return object's SqlSelect instance
    */
@@ -867,7 +867,7 @@ public class SqlSelect extends HasFrom<SqlSelect> implements IsCloneable<SqlSele
 
   /**
    * Sets the where condition.
-   * 
+   *
    * @param clause the condition to set.
    * @return object's SqlSelect instance.
    */

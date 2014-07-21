@@ -53,7 +53,7 @@ public class HtmlEditor extends Flow implements Presenter, View, Printable, HasW
   private static final String STYLE_SUFFIX_URL = "-url";
   private static final String STYLE_SUFFIX_HTML = "-html";
   private static final String STYLE_SUFFIX_TEXT = "-text";
-  
+
   private final String supplierKey;
   private final String caption;
 
@@ -125,7 +125,7 @@ public class HtmlEditor extends Flow implements Presenter, View, Printable, HasW
   public HandlerRegistration addReadyHandler(ReadyEvent.Handler handler) {
     return addHandler(handler, ReadyEvent.getType());
   }
-  
+
   @Override
   public String getCaption() {
     return caption;
@@ -176,7 +176,7 @@ public class HtmlEditor extends Flow implements Presenter, View, Printable, HasW
       case PRINT:
         Printer.print(this);
         break;
-        
+
       case CANCEL:
         close();
         break;
@@ -225,7 +225,7 @@ public class HtmlEditor extends Flow implements Presenter, View, Printable, HasW
   @Override
   public void onResize() {
     super.onResize();
-    
+
     Scheduler.get().scheduleDeferred(new Scheduler.ScheduledCommand() {
       @Override
       public void execute() {
@@ -255,7 +255,7 @@ public class HtmlEditor extends Flow implements Presenter, View, Printable, HasW
   protected void onLoad() {
     super.onLoad();
     updateSizes();
-    
+
     ReadyEvent.fire(this);
   }
 

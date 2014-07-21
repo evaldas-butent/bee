@@ -22,7 +22,7 @@ public class AddStartEvent extends GwtEvent<AddStartEvent.Handler> {
   public static Type<Handler> getType() {
     return TYPE;
   }
-  
+
   private final String caption;
   private final boolean popup;
 

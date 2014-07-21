@@ -27,7 +27,7 @@ class ItemsGrid extends AbstractGridInterceptor implements SelectionHandler<IsRo
   static String getSupplierKey(boolean services) {
     return BeeUtils.join(BeeConst.STRING_UNDER, GRID_ITEMS, services ? "services" : "goods");
   }
-  
+
   private static Filter getFilter(Long category) {
     if (category == null) {
       return null;
@@ -69,7 +69,7 @@ class ItemsGrid extends AbstractGridInterceptor implements SelectionHandler<IsRo
   public GridInterceptor getInstance() {
     return new ItemsGrid(services);
   }
-  
+
   @Override
   public List<String> getParentLabels() {
     if (getSelectedCategory() == null || getTreeView() == null) {

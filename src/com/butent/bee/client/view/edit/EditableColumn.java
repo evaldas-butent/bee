@@ -187,11 +187,11 @@ public class EditableColumn implements BlurHandler, EditChangeHandler, EditStopE
     if (result instanceof HasBounds) {
       UiHelper.setBounds((HasBounds) result, getMinValue(), getMaxValue());
     }
-    
+
     if (consumer != null) {
       consumer.afterCreateEditor(getColumnId(), result, embedded);
     }
-    
+
     return result;
   }
 
@@ -434,7 +434,7 @@ public class EditableColumn implements BlurHandler, EditChangeHandler, EditStopE
     endEdit(null, false);
   }
 
-  public void openEditor(HasWidgets editorContainer, EditorConsumer editorConsumer, 
+  public void openEditor(HasWidgets editorContainer, EditorConsumer editorConsumer,
       Element sourceElement, Element adjustElement, int zIndex, IsRow row, char charCode,
       EditEndEvent.Handler handler) {
     Assert.notNull(handler);

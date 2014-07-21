@@ -371,6 +371,7 @@ public class FileCollector extends HtmlTable implements DragOverHandler, DropHan
       Column.SIZE, Column.EDIT, Column.DELETE);
 
   private static final List<Column> DEFAULT_EDITABLE_COLUMNS = Lists.newArrayList(Column.NAME);
+
   public static IdentifiableWidget getDefaultFace() {
     return new Button(Localized.getConstants().chooseFiles());
   }
@@ -496,7 +497,7 @@ public class FileCollector extends HtmlTable implements DragOverHandler, DropHan
       removeRow(0);
     }
   }
-  
+
   public void clickInput() {
     inputFile.click();
   }
@@ -556,7 +557,7 @@ public class FileCollector extends HtmlTable implements DragOverHandler, DropHan
   public void setAccept(String accept) {
     inputFile.setAccept(accept);
   }
-  
+
   @Override
   public void setOptions(String options) {
     this.options = options;

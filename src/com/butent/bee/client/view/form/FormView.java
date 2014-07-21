@@ -83,7 +83,7 @@ public interface FormView extends DataView, HasDataTable, ActiveWidgetChangeEven
   JustDate getDateValue(String source);
 
   Long getLongValue(String source);
-  
+
   Map<String, Widget> getNamedWidgets();
 
   IsRow getOldRow();
@@ -103,7 +103,7 @@ public interface FormView extends DataView, HasDataTable, ActiveWidgetChangeEven
   boolean isRowEditable(IsRow rowValue, boolean warn);
 
   boolean isRowEnabled(IsRow rowValue);
-  
+
   void observeData();
 
   boolean observesData();

@@ -10,6 +10,6 @@ public interface WidgetInterceptor extends HasWidgetSupplier {
       WidgetDescriptionCallback callback);
 
   boolean beforeCreateWidget(String name, Element description);
-  
+
   IdentifiableWidget createCustomWidget(String name, Element description);
 }

@@ -32,7 +32,7 @@ public class SortEvent extends GwtEvent<SortEvent.Handler> {
   public static Type<Handler> getType() {
     return TYPE;
   }
-  
+
   private final Order order;
 
   protected SortEvent(Order order) {

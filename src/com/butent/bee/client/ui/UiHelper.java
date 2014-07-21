@@ -137,7 +137,7 @@ public final class UiHelper {
 
     return result;
   }
-  
+
   public static Collection<Widget> getChildrenByStyleName(Widget parent,
       Collection<String> styleNames) {
 
@@ -180,7 +180,7 @@ public final class UiHelper {
     }
     return null;
   }
-  
+
   public static TextAlign getDefaultHorizontalAlignment(ValueType type) {
     if (type == null) {
       return null;
@@ -232,7 +232,7 @@ public final class UiHelper {
       return getForm(widget.asWidget());
     }
   }
-  
+
   public static FormView getForm(Widget widget) {
     if (widget == null) {
       return null;
@@ -559,9 +559,9 @@ public final class UiHelper {
     if (parent == null || BeeUtils.isEmpty(styleName)) {
       return 0;
     }
-    
+
     Collection<Widget> children = getChildrenByStyleName(parent, Sets.newHashSet(styleName));
-    
+
     for (Widget child : children) {
       child.removeStyleName(styleName);
     }

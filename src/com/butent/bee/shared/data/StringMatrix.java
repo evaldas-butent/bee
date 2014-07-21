@@ -35,7 +35,7 @@ public class StringMatrix<C extends IsColumn> extends AbstractTable<StringRow, C
       rows.set(i, new StringRow(i + 1, data[i]));
     }
   }
-  
+
   protected StringMatrix() {
     super();
     this.rows = new StringRowArray(new StringRow[0]);

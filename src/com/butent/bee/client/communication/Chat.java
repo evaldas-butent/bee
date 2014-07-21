@@ -359,7 +359,7 @@ public class Chat extends Flow implements Presenter, View, Printable,
     registry.add(VisibilityChangeEvent.register(this));
 
     maybeScroll(false);
-    
+
     ReadyEvent.fire(this);
   }
 

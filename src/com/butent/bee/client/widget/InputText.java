@@ -75,9 +75,9 @@ public class InputText extends CustomWidget implements Editor, TextBox, HasChara
   private boolean handlesTabulation;
 
   private boolean valueChangeHandlerInitialized;
-  
+
   private String suggestionSource;
-  
+
   public InputText() {
     super(Document.get().createTextInputElement());
   }
@@ -104,7 +104,7 @@ public class InputText extends CustomWidget implements Editor, TextBox, HasChara
   public HandlerRegistration addChangeHandler(ChangeHandler handler) {
     return addDomHandler(handler, ChangeEvent.getType());
   }
-  
+
   @Override
   public HandlerRegistration addEditChangeHandler(EditChangeHandler handler) {
     return addKeyDownHandler(handler);
@@ -147,10 +147,10 @@ public class InputText extends CustomWidget implements Editor, TextBox, HasChara
         }
       });
     }
-    
+
     return addHandler(handler, ValueChangeEvent.getType());
   }
-  
+
   @Override
   public void clearValue() {
     setValue(BeeConst.STRING_EMPTY);
@@ -289,7 +289,7 @@ public class InputText extends CustomWidget implements Editor, TextBox, HasChara
   public boolean isEnabled() {
     return !getInputElement().isDisabled();
   }
-  
+
   @Override
   public boolean isMultiline() {
     return false;
@@ -393,7 +393,7 @@ public class InputText extends CustomWidget implements Editor, TextBox, HasChara
   public void setId(String id) {
     DomUtils.setId(this, id);
   }
-  
+
   @Override
   public void setMaxLength(int maxLength) {
     getInputElement().setMaxLength(maxLength);

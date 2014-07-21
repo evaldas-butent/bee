@@ -117,7 +117,7 @@ public final class Features {
 
   private static Boolean xhrCrossDomain;
   private static Boolean xhrUploadProgress;
-  
+
   public static String getAudioAac() {
     if (!supportsAudio()) {
       return BeeConst.STRING_EMPTY;
@@ -215,7 +215,7 @@ public final class Features {
         "Input Time", supportsInputTime(),
         "Input Url", supportsInputUrl(),
         "Input Week", supportsInputWeek(),
-        
+
         "Intl", supportsIntl(),
         "Local Storage", supportsLocalStorage(),
         "Microdata", supportsMicrodata(),
@@ -611,7 +611,7 @@ public final class Features {
     }
     return intl;
   }
-  
+
   public static boolean supportsLocalStorage() {
     if (localStorage == null) {
       localStorage = testLocalStorage();
@@ -647,7 +647,7 @@ public final class Features {
     return requestAnimationFrame;
   }
 
-    public static boolean supportsSelectors() {
+  public static boolean supportsSelectors() {
     if (selectors == null) {
       selectors = testSelectors();
     }
@@ -795,7 +795,7 @@ public final class Features {
     var ok;
 
     try {
-      ok = (typeof($doc[fnc]) == "function");
+      ok = (typeof ($doc[fnc]) == "function");
     } catch (err) {
       ok = false;
     }
@@ -835,7 +835,7 @@ public final class Features {
     var ok;
 
     try {
-      ok = (typeof($wnd[fnc]) == "function");
+      ok = (typeof ($wnd[fnc]) == "function");
     } catch (err) {
       ok = false;
     }
@@ -1092,7 +1092,7 @@ public final class Features {
     if (BeeUtils.isEmpty(type)) {
       return false;
     }
-    
+
     InputElement inputElement = Browser.getDocument().createInputElement();
 
     boolean ok;
@@ -1102,7 +1102,7 @@ public final class Features {
     } catch (JavaScriptException ex) {
       ok = false;
     }
-    
+
     return ok && BeeUtils.same(inputElement.getType(), type);
   }
 
@@ -1117,7 +1117,7 @@ public final class Features {
   private static native boolean testIntl() /*-{
     return typeof Intl != 'undefined';
   }-*/;
-  
+
   private static boolean testLocalStorage() {
     return getWindowProperty("localStorage") != null;
   }
@@ -1133,7 +1133,7 @@ public final class Features {
   private static boolean testPostMessage() {
     return isWindowProperty("postMessage");
   }
-  
+
   private static boolean testRequestAnimationFrame() {
     return isWindowFunction("requestAnimationFrame");
   }

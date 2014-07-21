@@ -290,9 +290,9 @@ public final class Previewer implements NativePreviewHandler, HasInfo {
   private void tryAction(NativePreviewEvent event, Action action) {
     Node node = getTargetNode(event);
     Element element = Element.is(node) ? Element.as(node) : null;
-    
+
     View view = ViewHelper.getActiveView(element, action);
-    
+
     if (view != null) {
       event.consume();
       view.getViewPresenter().handleAction(action);

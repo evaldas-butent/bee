@@ -79,7 +79,7 @@ public class GridContainerImpl extends Split implements GridContainerView, HasNa
   private static final Set<Action> HEADER_ACTIONS =
       EnumSet.of(Action.REFRESH, Action.FILTER, Action.REMOVE_FILTER, Action.ADD, Action.DELETE,
           Action.MENU, Action.CLOSE);
-  
+
   private final String supplierKey;
 
   private Presenter viewPresenter;
@@ -113,8 +113,8 @@ public class GridContainerImpl extends Split implements GridContainerView, HasNa
     if (!BeeUtils.isEmpty(gridName)) {
       addStyleName(StyleUtils.CLASS_NAME_PREFIX + "grid-" + gridName.trim());
     }
-    
-    this.supplierKey = supplierKey; 
+
+    this.supplierKey = supplierKey;
   }
 
   @Override
@@ -301,7 +301,7 @@ public class GridContainerImpl extends Split implements GridContainerView, HasNa
     if (getCenter() instanceof GridView) {
       return (GridView) getCenter();
     } else {
-      return null;      
+      return null;
     }
   }
 
@@ -610,7 +610,7 @@ public class GridContainerImpl extends Split implements GridContainerView, HasNa
           } else {
             grid.refresh();
           }
-        
+
         } else {
           grid.refresh();
         }

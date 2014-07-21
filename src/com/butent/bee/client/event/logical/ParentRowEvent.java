@@ -22,7 +22,7 @@ public class ParentRowEvent extends Event<ParentRowEvent.Handler> implements Has
     Assert.notNull(handler);
     return eventBus.addHandlerToSource(TYPE, source, handler);
   }
-  
+
   private final String viewName;
   private final IsRow row;
   private final boolean enabled;
@@ -42,7 +42,7 @@ public class ParentRowEvent extends Event<ParentRowEvent.Handler> implements Has
   public IsRow getRow() {
     return row;
   }
-  
+
   public Long getRowId() {
     return (row == null) ? null : row.getId();
   }

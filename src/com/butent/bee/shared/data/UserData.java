@@ -263,7 +263,7 @@ public class UserData implements BeeSerializable, HasInfo {
     }
     return null;
   }
-  
+
   public long getUserId() {
     return userId;
   }

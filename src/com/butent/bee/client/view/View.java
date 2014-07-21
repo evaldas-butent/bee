@@ -7,7 +7,7 @@ import com.butent.bee.client.presenter.Presenter;
 import com.butent.bee.client.ui.IdentifiableWidget;
 
 public interface View extends IdentifiableWidget, HasEnabled, ReadyEvent.HasReadyHandlers {
-  
+
   Presenter getViewPresenter();
 
   String getWidgetId();

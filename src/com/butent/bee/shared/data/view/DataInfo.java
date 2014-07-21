@@ -523,7 +523,7 @@ public class DataInfo implements BeeSerializable, Comparable<DataInfo>, HasExten
     if (viewColumn == null) {
       return null;
     }
-    
+
     if (!BeeUtils.isEmpty(viewColumn.getParent()) && viewColumn.getLevel() > 0) {
       return getRootField(viewColumn.getParent());
     } else {
@@ -621,7 +621,7 @@ public class DataInfo implements BeeSerializable, Comparable<DataInfo>, HasExten
         getCacheMaximumSize(), getCacheEviction(),
         getColumns(), getViewColumns()});
   }
-  
+
   private String getCacheEviction() {
     return cacheEviction;
   }

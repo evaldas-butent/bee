@@ -1535,7 +1535,7 @@ public class TransportModuleBean implements BeeModule {
 
   /**
    * Return SqlSelect query, calculating cargo costs from CargoServices table.
-   * 
+   *
    * @param flt - query filter with <b>unique</b> "Cargo" values.
    * @return query with columns: "Cargo", "Expense"
    */
@@ -1563,7 +1563,7 @@ public class TransportModuleBean implements BeeModule {
 
   /**
    * Return SqlSelect query, calculating cargo incomes from CargoServices table.
-   * 
+   *
    * @param flt - query filter with <b>unique</b> "Cargo" values.
    * @param currency - currencyId, to which convert amounts.
    * @return query with columns: "Cargo", "CargoIncome", "ServicesIncome"
@@ -1985,7 +1985,7 @@ public class TransportModuleBean implements BeeModule {
 
   /**
    * Return SqlSelect query, calculating trip fuel consumptions from TripRoutes table.
-   * 
+   *
    * @param flt - query filter with <b>unique</b> TripRoutes ID values.
    * @param routeMode - if true, returns results, grouped by TripRoutes ID, else grouped by Trip ID
    * @return query with two columns: (TripRoutes ID or "Trip") and "Quantity"
@@ -2292,7 +2292,7 @@ public class TransportModuleBean implements BeeModule {
 
   /**
    * Return Temporary table name with calculated trip costs.
-   * 
+   *
    * @param flt - query filter with <b>unique</b> "Trip" values.
    * @return Temporary table name with following structure: <br>
    *         "Trip" - trip ID <br>
@@ -2504,7 +2504,7 @@ public class TransportModuleBean implements BeeModule {
 
   /**
    * Return Temporary table name with calculated trip incomes by each cargo.
-   * 
+   *
    * @param flt - query filter with <b>unique</b> "Trip" values.
    * @return Temporary table name with following structure: <br>
    *         "Trip" - trip ID <br>

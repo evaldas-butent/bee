@@ -606,11 +606,11 @@ public class Search {
   private void setInput(InputText input) {
     this.input = input;
   }
-  
+
   private void setSearchPanel(Panel panel) {
     this.searchPanel = panel;
   }
-  
+
   private void submit() {
     String value = BeeUtils.trim(getInput().getValue());
 

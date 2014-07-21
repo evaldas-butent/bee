@@ -44,7 +44,7 @@ public class MapContainer extends Flow implements Presenter, View, HasWidgetSupp
 
     headerView.setViewPresenter(this);
     add(headerView);
-    
+
     add(mapWidget);
   }
 
@@ -53,7 +53,7 @@ public class MapContainer extends Flow implements Presenter, View, HasWidgetSupp
     ReadyEvent.maybeDelegate(this);
     return addHandler(handler, ReadyEvent.getType());
   }
-  
+
   @Override
   public String getCaption() {
     return headerView.getCaption();
@@ -83,7 +83,7 @@ public class MapContainer extends Flow implements Presenter, View, HasWidgetSupp
   public String getSupplierKey() {
     MapWidget mapWidget = getMapWidget();
     List<String> values = (mapWidget == null) ? null : mapWidget.getValues();
-    
+
     if (BeeUtils.isEmpty(values)) {
       return null;
 
@@ -91,7 +91,7 @@ public class MapContainer extends Flow implements Presenter, View, HasWidgetSupp
       List<String> data = new ArrayList<>();
       data.add(getCaption());
       data.addAll(values);
-      
+
       return ViewFactory.SupplierKind.MAP.getKey(Codec.beeSerialize(data));
     }
   }
@@ -140,7 +140,7 @@ public class MapContainer extends Flow implements Presenter, View, HasWidgetSupp
   @Override
   public void setViewPresenter(Presenter viewPresenter) {
   }
-  
+
   private MapWidget getMapWidget() {
     for (Widget widget : this) {
       if (widget instanceof MapWidget) {

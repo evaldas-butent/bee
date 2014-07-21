@@ -82,7 +82,7 @@ public final class ChildSelector extends MultiSelector implements HasFosterParen
         && BeeUtils.same(targetColumn, sourceColumn)) {
       return null;
     }
-    
+
     String rowProperty = attributes.get(UiConstants.ATTR_PROPERTY);
     return new ChildSelector(relation, table, targetColumn, sourceColumn, rowProperty);
   }
@@ -98,7 +98,7 @@ public final class ChildSelector extends MultiSelector implements HasFosterParen
 
   private ChildSelector(Relation relation, String childTable, String targetRelColumn,
       String sourceRelColumn, String rowProperty) {
-    super(relation, true, 
+    super(relation, true,
         (rowProperty == null) ? null : CellSource.forProperty(rowProperty, ValueType.TEXT));
 
     this.childTable = childTable;
@@ -157,14 +157,14 @@ public final class ChildSelector extends MultiSelector implements HasFosterParen
 
     } else {
       setTargetRowId(rowId);
-      
+
       String value;
       if (event.getRow() == null || getCellSource() == null) {
-        value = BeeConst.STRING_EMPTY; 
+        value = BeeConst.STRING_EMPTY;
       } else {
         value = getCellSource().getString(event.getRow());
       }
-      
+
       setIds(value);
     }
   }

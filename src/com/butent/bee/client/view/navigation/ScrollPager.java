@@ -78,7 +78,7 @@ public class ScrollPager extends AbstractPager implements RequiresResize {
   public HandlerRegistration addReadyHandler(ReadyEvent.Handler handler) {
     return addHandler(handler, ReadyEvent.getType());
   }
-  
+
   @Override
   public boolean onPrint(Element source, Element target) {
     return false;
@@ -105,7 +105,7 @@ public class ScrollPager extends AbstractPager implements RequiresResize {
   protected NavigationOrigin getNavigationOrigin() {
     return NavigationOrigin.SCROLLER;
   }
-  
+
   @Override
   protected void onLoad() {
     super.onLoad();

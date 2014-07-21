@@ -86,7 +86,7 @@ public final class GridFactory {
   public static final class GridOptions implements HasCaption {
 
     public static GridOptions forCaptionAndFilter(String cap, Filter flt) {
-      return (BeeUtils.isEmpty(cap) && flt == null) 
+      return (BeeUtils.isEmpty(cap) && flt == null)
           ? null : new GridOptions(cap, null, flt, null, null);
     }
 
@@ -95,10 +95,10 @@ public final class GridFactory {
     }
 
     public static GridOptions forFeed(Feed feed, String cap, Filter flt) {
-      return (feed == null) 
+      return (feed == null)
           ? forCaptionAndFilter(cap, flt) : new GridOptions(cap, null, flt, null, feed);
     }
-    
+
     public static GridOptions forFilter(Filter flt) {
       return (flt == null) ? null : new GridOptions(null, null, flt, null, null);
     }
@@ -109,7 +109,7 @@ public final class GridFactory {
     private final Filter filter;
 
     private final String currentUserFilter;
-    
+
     private final Feed feed;
 
     private GridOptions(String caption, String filterDescription, Filter filter,
@@ -125,7 +125,7 @@ public final class GridFactory {
     public String getCaption() {
       return caption;
     }
-    
+
     public Feed getFeed() {
       return feed;
     }

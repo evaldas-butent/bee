@@ -35,7 +35,7 @@ public class WebNotification extends JavaScriptObject {
 
     void onSuccess();
   }
-  
+
   private static final int PERMISSION_TIMEOUT = 5000;
 
   public static void create(final String title, final NotificationOptions options,
@@ -58,7 +58,7 @@ public class WebNotification extends JavaScriptObject {
         }
       };
       timer.schedule(PERMISSION_TIMEOUT);
-      
+
       PermissionCallback permissionCallback = new PermissionCallback() {
         @Override
         public void onSuccess() {
@@ -88,7 +88,7 @@ public class WebNotification extends JavaScriptObject {
           }
         }
       };
-      
+
       requestPermission(permissionCallback);
     }
   }
@@ -135,7 +135,7 @@ public class WebNotification extends JavaScriptObject {
       BeeKeeper.getScreen().notifyWarning(title, body);
     }
   }
-  
+
   private static native boolean isDeniedImpl() /*-{
     return Notification.permission === "denied";
   }-*/;

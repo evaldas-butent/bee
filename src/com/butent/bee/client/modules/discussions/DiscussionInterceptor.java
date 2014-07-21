@@ -307,8 +307,8 @@ class DiscussionInterceptor extends AbstractFormInterceptor {
 
           if (label != null) {
 
-          label.setStyleName(StyleUtils.NAME_REQUIRED,
-              !BeeUtils.toBoolean(ac.getValue()));
+            label.setStyleName(StyleUtils.NAME_REQUIRED,
+                !BeeUtils.toBoolean(ac.getValue()));
           }
 
           if (value && ms != null) {
@@ -440,13 +440,13 @@ class DiscussionInterceptor extends AbstractFormInterceptor {
     event.consume();
 
     boolean isTopic = false;
-    
+
     DataSelector wTopic = (DataSelector) getFormView().getWidgetBySource(
         COL_TOPIC);
 
     if (wTopic != null) {
       isTopic =
-        DataUtils.isId(BeeUtils.toLongOrNull(wTopic.getValue()));
+          DataUtils.isId(BeeUtils.toLongOrNull(wTopic.getValue()));
     }
 
     if (isTopic) {
@@ -457,11 +457,11 @@ class DiscussionInterceptor extends AbstractFormInterceptor {
           COL_VISIBLE_FROM);
       InputDateTime wVisibleTo = (InputDateTime) getFormView().getWidgetBySource(
           COL_VISIBLE_TO);
-      
+
       if (wVisibleFrom != null) {
         validFromVal = wVisibleFrom.getValue();
       }
-      
+
       if (wVisibleTo != null) {
         validToVal = wVisibleTo.getValue();
       }

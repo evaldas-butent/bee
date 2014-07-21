@@ -30,10 +30,10 @@ public class RowUpdateEvent extends ModificationEvent<RowUpdateEvent.Handler> im
     Assert.notNull(eventManager);
     Assert.notEmpty(viewName);
     Assert.notNull(row);
-    
+
     eventManager.fireModificationEvent(new RowUpdateEvent(viewName, row), Locality.ENTANGLED);
   }
-  
+
   public static HandlerRegistration register(EventBus eventBus, Handler handler) {
     Assert.notNull(eventBus);
     Assert.notNull(handler);
@@ -47,7 +47,7 @@ public class RowUpdateEvent extends ModificationEvent<RowUpdateEvent.Handler> im
     this.viewName = viewName;
     this.row = row;
   }
-  
+
   RowUpdateEvent() {
   }
 
@@ -55,7 +55,7 @@ public class RowUpdateEvent extends ModificationEvent<RowUpdateEvent.Handler> im
   public void deserialize(String s) {
     String[] arr = Codec.beeDeserializeCollection(s);
     Assert.lengthEquals(arr, 2);
-    
+
     this.viewName = arr[0];
     this.row = BeeRow.restore(arr[1]);
   }
@@ -78,7 +78,7 @@ public class RowUpdateEvent extends ModificationEvent<RowUpdateEvent.Handler> im
   public long getRowId() {
     return getRow().getId();
   }
-  
+
   @Override
   public String getViewName() {
     return viewName;

@@ -36,7 +36,7 @@ public class ReadyForInsertEvent extends GwtEvent<ReadyForInsertEvent.Handler> i
   private final List<String> values;
   private final Collection<RowChildren> children;
   private final RowCallback callback;
-  
+
   private final String sourceId;
 
   private boolean consumed;
@@ -72,7 +72,7 @@ public class ReadyForInsertEvent extends GwtEvent<ReadyForInsertEvent.Handler> i
   public List<BeeColumn> getColumns() {
     return columns;
   }
-  
+
   public String getSourceId() {
     return sourceId;
   }

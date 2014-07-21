@@ -66,7 +66,7 @@ public class TreeContainer extends Flow implements TreeView, SelectionHandler<Tr
 
   private final String caption;
   private final boolean hasDnD;
-  
+
   private State state;
 
   public TreeContainer(String caption, boolean hideActions, String viewName, String favorite) {
@@ -163,7 +163,7 @@ public class TreeContainer extends Flow implements TreeView, SelectionHandler<Tr
       getTree().ensureSelectedItemVisible();
     }
   }
-  
+
   @Override
   public HandlerRegistration addReadyHandler(ReadyEvent.Handler handler) {
     return addHandler(handler, ReadyEvent.getType());
@@ -178,7 +178,7 @@ public class TreeContainer extends Flow implements TreeView, SelectionHandler<Tr
   public void afterRequery() {
     if (getState() == null) {
       setState(State.INITIALIZED);
-      
+
       if (isAttached()) {
         ReadyEvent.fire(this);
       }
@@ -402,11 +402,11 @@ public class TreeContainer extends Flow implements TreeView, SelectionHandler<Tr
       getTree().setSelectedItem(treeItem);
     }
   }
-  
+
   @Override
   protected void onLoad() {
     super.onLoad();
-    
+
     if (getState() == State.INITIALIZED) {
       ReadyEvent.fire(this);
     }

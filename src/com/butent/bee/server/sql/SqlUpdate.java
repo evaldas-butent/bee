@@ -23,7 +23,7 @@ public class SqlUpdate extends SqlQuery<SqlUpdate> implements HasTarget {
 
   /**
    * Creates an SqlUpdate statement with a specified target {@code target}.
-   * 
+   *
    * @param target the String target
    */
   public SqlUpdate(String target) {
@@ -33,7 +33,7 @@ public class SqlUpdate extends SqlQuery<SqlUpdate> implements HasTarget {
 
   /**
    * Adds a constant value expression in a field for an SqlUpdate statement.
-   * 
+   *
    * @param field the field's name
    * @param value the field's value
    * @return object's SqlInsert instance.
@@ -44,7 +44,7 @@ public class SqlUpdate extends SqlQuery<SqlUpdate> implements HasTarget {
 
   /**
    * Adds an expression for an SqlUpdate statement.
-   * 
+   *
    * @param field the field to add
    * @param value the expression to add
    * @return object's SqlInsert instance.
@@ -107,7 +107,7 @@ public class SqlUpdate extends SqlQuery<SqlUpdate> implements HasTarget {
   /**
    * Checks if the current instance of SqlUpdate is empty. Checks if the target and {@code updates}
    * list are empty.
-   * 
+   *
    * @returns true if it is empty, otherwise false.
    */
   @Override
@@ -117,7 +117,7 @@ public class SqlUpdate extends SqlQuery<SqlUpdate> implements HasTarget {
 
   /**
    * Clears the update {@code updates} list and the Where clause.
-   * 
+   *
    * @return object's SqlUpdate instance
    */
   @Override
@@ -149,9 +149,9 @@ public class SqlUpdate extends SqlQuery<SqlUpdate> implements HasTarget {
 
   /**
    * Sets the Where clause to the specified clause {@code clause}.
-   * 
+   *
    * @param clause a clause to set Where to.
-   * 
+   *
    * @return object's SqlUpdate instance
    */
   public SqlUpdate setWhere(IsCondition clause) {

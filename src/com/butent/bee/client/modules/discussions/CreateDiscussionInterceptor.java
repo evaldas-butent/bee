@@ -75,7 +75,7 @@ class CreateDiscussionInterceptor extends AbstractFormInterceptor {
   public void afterRefresh(FormView form, IsRow row) {
     Widget widget = getFormView().getWidgetByName(WIDGET_ACCESSIBILITY);
     if (widget instanceof InputBoolean) {
-      InputBoolean ac = (InputBoolean) widget;      
+      InputBoolean ac = (InputBoolean) widget;
       MultiSelector ms = getMultiSelector(getFormView(), PROP_MEMBERS);
 
       if (ms != null) {
@@ -165,11 +165,11 @@ class CreateDiscussionInterceptor extends AbstractFormInterceptor {
         }
       });
     }
-    
+
     if (BeeUtils.same(name, COL_TOPIC) && widget instanceof DataSelector) {
       final DataSelector tds = (DataSelector) widget;
       Handler selHandler = new Handler() {
-        
+
         @Override
         public void onDataSelector(SelectorEvent event) {
           Label label = (Label) getFormView().getWidgetByName(WIDGET_LABEL_DISPLAY_IN_BOARD);
@@ -178,7 +178,7 @@ class CreateDiscussionInterceptor extends AbstractFormInterceptor {
           }
         }
       };
-      
+
       tds.addSelectorHandler(selHandler);
     }
 
@@ -212,8 +212,8 @@ class CreateDiscussionInterceptor extends AbstractFormInterceptor {
     HasCheckedness wIsPublic = (HasCheckedness) getFormView().getWidgetByName(WIDGET_ACCESSIBILITY);
     HasCheckedness wPermitComment = (HasCheckedness) getFormView().
         getWidgetByName(WIDGET_ACCESSIBILITY);
-    
-    Editor wDescription = (Editor) getFormView().getWidgetByName(WIDGET_DESCRIPTION);    
+
+    Editor wDescription = (Editor) getFormView().getWidgetByName(WIDGET_DESCRIPTION);
     DataSelector wTopic = (DataSelector) getFormView().getWidgetBySource(COL_TOPIC);
 
     if (wIsPublic != null) {
@@ -231,7 +231,7 @@ class CreateDiscussionInterceptor extends AbstractFormInterceptor {
     if (isTopic) {
       InputDateTime wVisibleFrom = (InputDateTime) getFormView().getWidgetBySource(
           COL_VISIBLE_FROM);
-      
+
       InputDateTime wVisibleTo = (InputDateTime) getFormView().getWidgetBySource(
           COL_VISIBLE_TO);
 
@@ -324,7 +324,7 @@ class CreateDiscussionInterceptor extends AbstractFormInterceptor {
           DataChangeEvent.fireRefresh(BeeKeeper.getBus(), VIEW_DISCUSSIONS);
 
           for (long discussionId : discussions) {
-          ParameterList mailArgs =
+            ParameterList mailArgs =
                 DiscussionsKeeper.createDiscussionRpcParameters(DiscussionEvent.CREATE_MAIL);
             mailArgs.addDataItem(VAR_DISCUSSION_DATA, Codec.beeSerialize(rowSet));
             mailArgs.addDataItem(VAR_DISCUSSION_ID, discussionId);

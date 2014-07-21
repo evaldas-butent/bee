@@ -22,14 +22,14 @@ import java.util.Collection;
 import java.util.List;
 
 public class FileGridInterceptor extends AbstractGridInterceptor {
-  
+
   private final String parentColumn;
   private final String fileColumn;
   private final String captionColumn;
   private final String nameColumn;
 
   private FileCollector collector;
-  
+
   public FileGridInterceptor(String parentColumn, String fileColumn, String captionColumn,
       String nameColumn) {
     this.parentColumn = parentColumn;

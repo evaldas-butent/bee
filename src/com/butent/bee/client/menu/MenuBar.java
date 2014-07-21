@@ -91,12 +91,12 @@ public class MenuBar extends Widget implements IdentifiableWidget, CloseEvent.Ha
   public MenuBar(int level, boolean vert, BAR_TYPE bt, ITEM_TYPE it) {
     this(level, vert, bt, it, false);
   }
- 
+
   public MenuBar(int level, boolean vert, BAR_TYPE bt, ITEM_TYPE it, boolean wheel) {
     this.level = level;
     this.vertical = vert;
 
-    this.barType = (bt == null) ? BAR_TYPE.TABLE : bt;  
+    this.barType = (bt == null) ? BAR_TYPE.TABLE : bt;
     this.itemType = (it == null) ? MenuItem.DEFAULT_TYPE : it;
 
     init(wheel);
@@ -261,7 +261,7 @@ public class MenuBar extends Widget implements IdentifiableWidget, CloseEvent.Ha
   public void onBrowserEvent(Event event) {
     Element target = DOM.eventGetTarget(event);
     int type = DOM.eventGetType(event);
-    
+
     if (type == Event.ONBLUR) {
       if (childMenu == null) {
         selectItem(null);
@@ -275,7 +275,7 @@ public class MenuBar extends Widget implements IdentifiableWidget, CloseEvent.Ha
       super.onBrowserEvent(event);
       return;
     }
-    
+
     switch (type) {
       case Event.ONCLICK:
         if (!DomUtils.isLabelElement(target)) {
@@ -426,7 +426,7 @@ public class MenuBar extends Widget implements IdentifiableWidget, CloseEvent.Ha
       selectItem(items.get(items.size() - 1));
     }
   }
-  
+
   @Override
   public void setId(String id) {
     DomUtils.setId(this, id);
@@ -552,7 +552,7 @@ public class MenuBar extends Widget implements IdentifiableWidget, CloseEvent.Ha
 
   private MenuItem findItem(Element elem) {
     for (MenuItem item : items) {
-      if (item.getElement().isOrHasChild(elem) 
+      if (item.getElement().isOrHasChild(elem)
           || DomUtils.isTdElement(elem) && elem.equals(item.getElement().getParentElement())) {
         return item;
       }
@@ -678,7 +678,7 @@ public class MenuBar extends Widget implements IdentifiableWidget, CloseEvent.Ha
 
     return separator;
   }
-  
+
   private boolean moveTo(int code) {
     boolean ok = false;
     if (code <= BeeConst.CHAR_SPACE) {

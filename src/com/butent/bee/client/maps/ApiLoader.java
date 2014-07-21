@@ -40,7 +40,7 @@ public final class ApiLoader {
       }
     }
   }
-  
+
   public static boolean isLoaded() {
     return state == State.LOADED;
   }

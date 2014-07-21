@@ -125,7 +125,7 @@ public class Bee implements EntryPoint {
 
     ClientDefaults.setCurrency(BeeUtils.toLongOrNull(data.get(COL_CURRENCY)));
     ClientDefaults.setCurrencyName(data.get(ALS_CURRENCY_NAME));
-    
+
     if (data.containsKey(PRM_COMPANY)) {
       AdministrationKeeper.setCompany(BeeUtils.toLongOrNull(data.get(PRM_COMPANY)));
     }

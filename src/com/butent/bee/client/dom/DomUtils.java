@@ -514,7 +514,7 @@ public final class DomUtils {
 
   public static native String getClassName(Element elem) /*-{
     var cl = elem.className;
-    
+
     if (typeof cl == 'string') {
       return cl;
     } else if (cl instanceof SVGAnimatedString) {

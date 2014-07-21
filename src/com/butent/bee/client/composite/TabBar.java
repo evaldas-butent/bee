@@ -164,7 +164,7 @@ public class TabBar extends Composite implements HasBeforeSelectionHandlers<Inte
   public HandlerRegistration addClickHandler(ClickHandler handler) {
     return addDomHandler(handler, ClickEvent.getType());
   }
-  
+
   @Override
   public void addItem(String text) {
     addItem(text, null);

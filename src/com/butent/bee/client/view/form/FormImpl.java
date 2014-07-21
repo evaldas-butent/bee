@@ -380,7 +380,7 @@ public class FormImpl extends Absolute implements FormView, PreviewHandler, Tabu
 
   private String options;
   private final Map<String, String> properties = new HashMap<>();
-  
+
   private boolean hasReadyDelegates;
 
   public FormImpl(String formName) {
@@ -752,7 +752,7 @@ public class FormImpl extends Absolute implements FormView, PreviewHandler, Tabu
   @Override
   public Map<String, Widget> getNamedWidgets() {
     Map<String, Widget> result = new HashMap<>();
-    
+
     for (Map.Entry<String, String> entry : creationCallback.getNamedWidgets().entrySet()) {
       Widget widget = getWidgetById(entry.getValue());
       if (widget != null) {
@@ -859,7 +859,7 @@ public class FormImpl extends Absolute implements FormView, PreviewHandler, Tabu
   public Presenter getViewPresenter() {
     return viewPresenter;
   }
-  
+
   @Override
   public Widget getWidgetByName(String name) {
     Assert.notEmpty(name);
@@ -1663,7 +1663,7 @@ public class FormImpl extends Absolute implements FormView, PreviewHandler, Tabu
     if (getFormInterceptor() != null) {
       getFormInterceptor().onLoad(this);
     }
-    
+
     if (!hasReadyDelegates()) {
       ReadyEvent.fire(this);
     }

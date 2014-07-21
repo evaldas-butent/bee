@@ -266,7 +266,7 @@ public class TabbedPages extends Flow implements
   public boolean isIndex(int index) {
     return BeeUtils.betweenExclusive(index, 0, getPageCount());
   }
-  
+
   public void removePage(int index) {
     checkIndex(index);
 

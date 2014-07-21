@@ -9,41 +9,41 @@ public interface LocalizableTradeConstants {
   String itemCategoryTree();
 
   String itemUnits();
-  
+
   String printBankAccount();
-  
+
   String printBankCode();
 
   String printBankSwift();
-  
+
   String printDocumentNumber();
-  
+
   String printDocumentSubtotal();
-  
+
   String printDocumentTotal();
 
   String printDocumentVat();
-  
+
   String printDueDate();
 
   String printInvoice();
 
   String printInvoiceItemName();
-  
+
   String printInvoiceVat();
-  
+
   String printItemOrdinal();
-  
+
   String printItemQuantity();
-  
+
   String printItemVatAmount();
-  
+
   String printItemVatRate();
-  
+
   String printItemTotalWithoutVat();
-  
+
   String printItemTotalWithVat();
-  
+
   String printItemUom();
 
   String sellingPrice();
@@ -55,7 +55,7 @@ public interface LocalizableTradeConstants {
   String trdAmountWoVat();
 
   String trdDebt();
-  
+
   String trdInvoice();
 
   String trdNewInvoice();

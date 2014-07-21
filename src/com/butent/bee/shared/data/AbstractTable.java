@@ -389,7 +389,7 @@ public abstract class AbstractTable<R extends IsRow, C extends IsColumn> impleme
   public Double getDouble(int rowIndex, String columnId) {
     return getDouble(rowIndex, getColumnIndex(columnId));
   }
-  
+
   @Override
   public R findRow(RowFilter filter) {
     Assert.notNull(filter);
@@ -509,7 +509,7 @@ public abstract class AbstractTable<R extends IsRow, C extends IsColumn> impleme
   public String getString(int rowIndex, String columnId) {
     return getString(rowIndex, getColumnIndex(columnId));
   }
-  
+
   @Override
   public CustomProperties getTableProperties() {
     return properties;

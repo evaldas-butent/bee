@@ -1252,7 +1252,7 @@ public class DataSelector extends Composite implements Editor, HasVisibleLines, 
   }
 
   /**
-   * @param ch  
+   * @param ch
    */
   protected boolean consumeCharacter(char ch) {
     return false;

@@ -30,7 +30,7 @@ public final class RightsUtils {
       return NAME_JOINER.join(normalizeName(parent), normalizeName(child));
     }
   }
-  
+
   public static String getAlias(RightsState state, Long role) {
     Assert.notNull(state);
     Assert.isTrue(BeeUtils.isNonNegative(role));
@@ -42,21 +42,21 @@ public final class RightsUtils {
   public static String normalizeName(String name) {
     return BeeUtils.trim(name);
   }
-  
+
   public static Pair<RightsState, Long> parseStateRoleAlias(String input) {
     Assert.notEmpty(input);
 
     List<String> list = Lists.newArrayList(STATE_ROLE_ALIAS_SPLITTER.split(input));
-    
+
     int size = list.size();
     Assert.isTrue(size >= 2);
-    
+
     RightsState state = EnumUtils.getEnumByIndex(RightsState.class, list.get(size - 2));
     Long role = BeeUtils.toLongOrNull(list.get(size - 1));
 
     Assert.notNull(state);
     Assert.isTrue(BeeUtils.isNonNegative(role));
-    
+
     return Pair.of(state, role);
   }
 

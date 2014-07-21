@@ -117,7 +117,7 @@ public class InputBoxes {
     UiHelper.add(panel, commandGroup, initializer, DialogConstants.WIDGET_COMMAND_GROUP);
     return true;
   }
-  
+
   private static Holder<Widget> hold(Widget widget) {
     return Holder.of(widget);
   }
@@ -133,6 +133,7 @@ public class InputBoxes {
       }
     }
   }
+
   public static final String SILENT_ERROR = "-";
   private static final String STYLE_INPUT_PANEL = "bee-InputPanel";
   private static final String STYLE_INPUT_PROMPT = "bee-InputPrompt";

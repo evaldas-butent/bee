@@ -54,7 +54,7 @@ public final class FileUtils {
   private static final String UPLOAD_URL = "upload";
 
   private static final long MIN_FILE_SIZE_FOR_PROGRESS = 100000;
-  
+
   public static void commitFiles(Collection<NewFileInfo> files, final String viewName,
       final String parentColumn, final Long parentId, final String fileColumn,
       final String captionColumn) {

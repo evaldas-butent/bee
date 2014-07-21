@@ -72,7 +72,7 @@ public class CalendarWidget extends Flow implements HasOpenHandlers<CalendarItem
   private boolean scrollPending;
 
   private State state;
-  
+
   public CalendarWidget(long calendarId, CalendarSettings settings) {
     super();
 
@@ -99,7 +99,7 @@ public class CalendarWidget extends Flow implements HasOpenHandlers<CalendarItem
   public HandlerRegistration addReadyHandler(ReadyEvent.Handler handler) {
     return addHandler(handler, ReadyEvent.getType());
   }
-  
+
   @Override
   public HandlerRegistration addTimeBlockClickHandler(TimeBlockClickEvent.Handler handler) {
     return addHandler(handler, TimeBlockClickEvent.getType());
@@ -158,10 +158,10 @@ public class CalendarWidget extends Flow implements HasOpenHandlers<CalendarItem
           logger.debug("load", CalendarUtils.renderRange(range), result,
               TimeUtils.elapsedMillis(startMillis));
           refresh(scroll);
-          
+
           if (getState() == null) {
             setState(State.INITIALIZED);
-            
+
             if (isAttached()) {
               ReadyEvent.fire(CalendarWidget.this);
             }
@@ -254,40 +254,40 @@ public class CalendarWidget extends Flow implements HasOpenHandlers<CalendarItem
   public void setState(State state) {
     this.state = state;
   }
-  
+
   public void suspendLayout() {
     layoutSuspended = true;
   }
 
   public boolean update(CalendarView.Type viewType, JustDate newDate, int days) {
     boolean changed = false;
-    
+
     if (viewType != null && !viewType.equals(getType())) {
       setType(viewType);
       changed = true;
     }
-    
+
     if (newDate != null && !newDate.equals(getDate())) {
       setDate(newDate);
       changed = true;
     }
-    
+
     if (days != getDisplayedDays()) {
       setDisplayedDays(days);
       changed = true;
     }
-    
+
     if (changed) {
       loadItems(false, true);
     }
-    
+
     return changed;
   }
 
   @Override
   protected void onLoad() {
     super.onLoad();
-    
+
     if (getState() == State.INITIALIZED) {
       ReadyEvent.fire(this);
     }
@@ -298,7 +298,7 @@ public class CalendarWidget extends Flow implements HasOpenHandlers<CalendarItem
       long startMillis = System.currentTimeMillis();
 
       getView().doLayout(calendarId);
-      
+
       logger.debug("layout", getView().getItemWidgets().size(),
           TimeUtils.elapsedMillis(startMillis));
     }
@@ -346,7 +346,7 @@ public class CalendarWidget extends Flow implements HasOpenHandlers<CalendarItem
       setView(cached);
       return;
     }
-    
+
     CalendarView cv;
 
     switch (viewType) {

@@ -180,24 +180,24 @@ public class ClassifiersModuleBean implements BeeModule {
             query.setWhere(SqlUtils.inList(TBL_COMPANY_PERSONS, COL_PERSON,
                 event.getRowset().getRowIds()));
           }
-          
+
           SimpleRowSet data = qs.getData(query);
           if (!DataUtils.isEmpty(data)) {
             Multimap<Long, Long> companyIds = ArrayListMultimap.create();
             Multimap<Long, String> companyNames = ArrayListMultimap.create();
-            
+
             for (SimpleRow row : data) {
               Long person = row.getLong(COL_PERSON);
-              
+
               companyIds.put(person, row.getLong(COL_COMPANY));
               companyNames.put(person, row.getValue(COL_COMPANY_NAME));
             }
-            
+
             for (BeeRow row : event.getRowset()) {
               if (companyIds.containsKey(row.getId())) {
-                row.setProperty(PROP_COMPANY_IDS, 
+                row.setProperty(PROP_COMPANY_IDS,
                     DataUtils.buildIdList(companyIds.get(row.getId())));
-                row.setProperty(PROP_COMPANY_NAMES, 
+                row.setProperty(PROP_COMPANY_NAMES,
                     BeeUtils.joinItems(companyNames.get(row.getId())));
               }
             }

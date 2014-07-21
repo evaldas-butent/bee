@@ -370,7 +370,7 @@ public class MultiSelector extends DataSelector implements HandlesRendering, Han
 
   /**
    * @returns the internal representation.
-   * 
+   *
    * This method is only provided for compatibility with the HasStringValue interface.
    * Use getIds(), getValues(), getChoices() instead.
    */
@@ -509,7 +509,7 @@ public class MultiSelector extends DataSelector implements HandlesRendering, Han
 
   /**
    * Sets the internal representation.
-   * 
+   *
    * This method is only provided for compatibility with the HasStringValue interface.
    * Use setIds, setValues, setChoices instead.
    */

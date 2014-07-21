@@ -22,7 +22,7 @@ public class BookmarkEvent extends Event<BookmarkEvent.Handler> {
     Assert.notNull(handler);
     return eventBus.addHandler(TYPE, handler);
   }
-  
+
   private final Favorites.Group group;
   private final long rowId;
 

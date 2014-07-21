@@ -357,7 +357,7 @@ public class TreePresenter extends AbstractPresenter implements CatchEvent.Catch
   private TreeView getView() {
     return treeView;
   }
-  
+
   private void removeItem() {
     final IsRow data = getView().getSelectedItem();
 
@@ -430,7 +430,7 @@ public class TreePresenter extends AbstractPresenter implements CatchEvent.Catch
             addBranch(parent, hierarchy, items);
           }
         }
-        
+
         getView().afterRequery();
       }
     });

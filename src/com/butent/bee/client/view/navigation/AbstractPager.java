@@ -96,7 +96,7 @@ public abstract class AbstractPager extends Composite implements PagerView {
   public void setEnabled(boolean enabled) {
     this.enabled = enabled;
   }
-  
+
   @Override
   public void setId(String id) {
     getIdentifiableWidget().setId(id);
@@ -151,7 +151,7 @@ public abstract class AbstractPager extends Composite implements PagerView {
       Assert.unsupported("only IdentifiableWidget can be used as Pager");
     }
   }
-  
+
   protected void nextPage() {
     if (getPageSize() > 0) {
       setPageStart(getPageStart() + getPageSize());
@@ -170,7 +170,7 @@ public abstract class AbstractPager extends Composite implements PagerView {
       if (getPageSize() > 0) {
         start = Math.min(index, getRowCount() - getPageSize());
       } else {
-        start = Math.min(index,  getRowCount() - 1);
+        start = Math.min(index, getRowCount() - 1);
       }
 
       if (start != getPageStart()) {

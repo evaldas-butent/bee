@@ -463,6 +463,7 @@ public class NewsAggregator implements HandlesAllDataEvents {
       Maps.newEnumMap(Feed.class);
 
   private final Map<String, HeadlineAccessor> registeredAccessHandlers = Maps.newHashMap();
+
   NewsAggregator() {
   }
 
@@ -477,11 +478,11 @@ public class NewsAggregator implements HandlesAllDataEvents {
   public void filterNews(String input, ViewCallback callback) {
     Assert.notEmpty(input);
     Assert.notNull(callback);
-    
+
     Feed feed = EnumUtils.getEnumByName(Feed.class, input);
     if (feed == null) {
       callback.onFailure("cannot parse feed", input);
-    
+
     } else {
       Subscription subscription = findSubscription(feed);
       if (subscription == null) {
@@ -491,7 +492,7 @@ public class NewsAggregator implements HandlesAllDataEvents {
       }
     }
   }
-  
+
   public IdentifiableWidget getNewsPanel() {
     return newsPanel;
   }
@@ -692,7 +693,7 @@ public class NewsAggregator implements HandlesAllDataEvents {
 
     Set<Long> idSet = subscription.getIdSet();
     Filter filter = idSet.isEmpty() ? Filter.isFalse() : Filter.idIn(idSet);
-    
+
     GridOptions gridOptions = GridOptions.forFeed(feed, caption, filter);
 
     if (registeredFilterHandlers.containsKey(feed)) {

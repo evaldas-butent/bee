@@ -36,7 +36,7 @@ public interface Editor extends IdentifiableWidget, HasStringValue, Focusable,
   boolean isNullable();
 
   boolean isOrHasPartner(Node node);
-  
+
   void normalizeDisplay(String normalizedValue);
 
   void setNullable(boolean nullable);

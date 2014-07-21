@@ -47,12 +47,12 @@ public class Image extends CustomWidget implements HasEnabled, HasCommand, HasAl
     this(resource);
     setCommand(cmnd);
   }
-  
+
   public Image(ImageResource resource, ScheduledCommand cmnd, String styleDisabled) {
     this(resource, cmnd);
     this.styleDisabled = styleDisabled;
   }
-  
+
   public Image(String url) {
     this();
     setUrl(url);
@@ -62,12 +62,12 @@ public class Image extends CustomWidget implements HasEnabled, HasCommand, HasAl
   public HandlerRegistration addMouseDownHandler(MouseDownHandler handler) {
     return addDomHandler(handler, MouseDownEvent.getType());
   }
-  
+
   @Override
   public HandlerRegistration addMouseMoveHandler(MouseMoveHandler handler) {
     return addDomHandler(handler, MouseMoveEvent.getType());
   }
-  
+
   @Override
   public HandlerRegistration addMouseOutHandler(MouseOutHandler handler) {
     return addDomHandler(handler, MouseOutEvent.getType());
@@ -77,7 +77,7 @@ public class Image extends CustomWidget implements HasEnabled, HasCommand, HasAl
   public HandlerRegistration addMouseOverHandler(MouseOverHandler handler) {
     return addDomHandler(handler, MouseOverEvent.getType());
   }
-  
+
   @Override
   public HandlerRegistration addMouseUpHandler(MouseUpHandler handler) {
     return addDomHandler(handler, MouseUpEvent.getType());
@@ -92,7 +92,7 @@ public class Image extends CustomWidget implements HasEnabled, HasCommand, HasAl
   public ScheduledCommand getCommand() {
     return command;
   }
-  
+
   public int getHeight() {
     return getImageElement().getHeight();
   }
@@ -105,7 +105,7 @@ public class Image extends CustomWidget implements HasEnabled, HasCommand, HasAl
   public String getUrl() {
     return getImageElement().getSrc();
   }
-  
+
   public int getWidth() {
     return getImageElement().getWidth();
   }
@@ -156,11 +156,11 @@ public class Image extends CustomWidget implements HasEnabled, HasCommand, HasAl
   public void setResource(ImageResource resource) {
     getImageElement().setSrc(resource.getSafeUri().asString());
   }
-  
+
   public void setUrl(String url) {
     getImageElement().setSrc(url);
   }
-  
+
   @Override
   protected void init() {
     super.init();
