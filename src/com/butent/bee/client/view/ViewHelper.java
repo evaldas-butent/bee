@@ -62,10 +62,10 @@ public final class ViewHelper {
 
     View view = getActiveView(target);
 
-    if (view == null) {
+    if (view == null || !view.isEnabled()) {
       return null;
 
-    } else if (isActionEnabled(view, action)) {
+    } else if (view.reactsTo(action)) {
       return view;
 
     } else {
@@ -73,7 +73,7 @@ public final class ViewHelper {
 
       View actionView = null;
       for (View child : children) {
-        if (DomUtils.isVisible(child.getElement()) && isActionEnabled(child, action)) {
+        if (DomUtils.isVisible(child.getElement()) && child.isEnabled() && child.reactsTo(action)) {
           if (actionView == null) {
             actionView = child;
           } else {
@@ -86,7 +86,7 @@ public final class ViewHelper {
       if (actionView != null) {
         View facade = getFacade(actionView);
         if (facade != null && !actionView.getId().equals(facade.getId())) {
-          actionView = isActionEnabled(facade, action) ? facade : null;
+          actionView = (facade.isEnabled() && facade.reactsTo(action)) ? facade : null;
         }
       }
 

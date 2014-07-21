@@ -72,19 +72,19 @@ public interface LocalizableConstants extends Constants, LocalizableCalendarCons
   String actionUpdate();
 
   String actionWorkspaceBookmarkAll();
-  
+
   String actionWorkspaceBookmarkTab();
-  
+
   String actionWorkspaceCloseAll();
-  
+
   String actionWorkspaceCloseOther();
-  
+
   String actionWorkspaceCloseRight();
-  
+
   String actionWorkspaceCloseTab();
 
   String actionWorkspaceCloseTile();
-  
+
   String actionWorkspaceEnlargeDown();
 
   String actionWorkspaceEnlargeToLeft();
@@ -118,7 +118,7 @@ public interface LocalizableConstants extends Constants, LocalizableCalendarCons
   String amount();
 
   String article();
-  
+
   String autoFit();
 
   String bookmarkName();
@@ -254,7 +254,7 @@ public interface LocalizableConstants extends Constants, LocalizableCalendarCons
   String exchangeCode();
 
   String exportToMsExcel();
-  
+
   String externalId();
 
   String fax();
@@ -434,7 +434,7 @@ public interface LocalizableConstants extends Constants, LocalizableCalendarCons
   String margin();
 
   String maxValue();
-  
+
   String menu();
 
   String message();
@@ -576,7 +576,7 @@ public interface LocalizableConstants extends Constants, LocalizableCalendarCons
   String rights();
 
   String rightsAll();
-  
+
   String rightsDefault();
 
   String rightStateCreate();
@@ -608,7 +608,7 @@ public interface LocalizableConstants extends Constants, LocalizableCalendarCons
   String roomUpdateTime();
 
   String roomUsers();
-  
+
   String rowIsNotRemovable();
 
   String rowIsReadOnly();
@@ -742,7 +742,7 @@ public interface LocalizableConstants extends Constants, LocalizableCalendarCons
   String workdayTransitionNearest();
 
   String workdayTransitionNone();
-  
+
   String workspaces();
 
   String workspaceStartup();

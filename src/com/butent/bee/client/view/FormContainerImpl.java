@@ -381,6 +381,12 @@ public class FormContainerImpl extends Split implements FormContainerView, HasNa
     }
   }
 
+  @Override
+  public boolean reactsTo(Action action) {
+    FormView form = getForm();
+    return form != null && form.reactsTo(action);
+  }
+
   public void setCommandHeight(int commandHeight) {
     this.commandHeight = commandHeight;
   }

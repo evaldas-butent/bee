@@ -19,6 +19,7 @@ import com.butent.bee.shared.logging.LogUtils;
 import com.butent.bee.shared.ui.Action;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.Codec;
+import com.butent.bee.shared.utils.EnumUtils;
 import com.butent.bee.shared.utils.NameUtils;
 
 import java.util.ArrayList;
@@ -126,6 +127,11 @@ public class MapContainer extends Flow implements Presenter, View, HasWidgetSupp
 
   @Override
   public void onViewUnload() {
+  }
+
+  @Override
+  public boolean reactsTo(Action action) {
+    return EnumUtils.in(action, Action.CANCEL, Action.CLOSE);
   }
 
   @Override

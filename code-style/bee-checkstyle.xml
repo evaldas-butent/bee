@@ -100,6 +100,10 @@
     <module name="ArrayTypeStyle"/>
     <module name="UpperEll"/>
     <module name="OuterTypeFilename"/>
+    <module name="RegexpSinglelineJava">
+      <property name="format" value="\s+$"/>
+      <property name="ignoreComments" value="true"/>
+    </module>
   </module>
   <module name="FileTabCharacter"/>
   <module name="Translation"/>
@@ -107,5 +111,6 @@
   <module name="UniqueProperties"/>
   <module name="RegexpSingleline">
     <property name="format" value="\s+$"/>
+    <property name="fileExtensions" value="properties"/>
   </module>
 </module>

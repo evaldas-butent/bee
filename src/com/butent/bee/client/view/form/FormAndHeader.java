@@ -9,6 +9,7 @@ import com.butent.bee.client.layout.Complex;
 import com.butent.bee.client.presenter.Presenter;
 import com.butent.bee.client.view.HeaderView;
 import com.butent.bee.client.view.View;
+import com.butent.bee.shared.ui.Action;
 
 public class FormAndHeader extends Complex implements View {
 
@@ -60,6 +61,12 @@ public class FormAndHeader extends Complex implements View {
   @Override
   public boolean isEnabled() {
     return enabled;
+  }
+
+  @Override
+  public boolean reactsTo(Action action) {
+    FormView form = getForm();
+    return form != null && form.reactsTo(action);
   }
 
   @Override

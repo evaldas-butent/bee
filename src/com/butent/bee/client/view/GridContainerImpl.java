@@ -554,6 +554,12 @@ public class GridContainerImpl extends Split implements GridContainerView, HasNa
   }
 
   @Override
+  public boolean reactsTo(Action action) {
+    GridView gridView = getGridView();
+    return gridView != null && gridView.reactsTo(action);
+  }
+
+  @Override
   public void setEditing(boolean editing) {
     this.editing = editing;
   }

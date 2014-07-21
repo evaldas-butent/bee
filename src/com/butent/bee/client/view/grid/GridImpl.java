@@ -69,6 +69,7 @@ import com.butent.bee.client.validation.CellValidation;
 import com.butent.bee.client.validation.EditorValidation;
 import com.butent.bee.client.validation.ValidationHelper;
 import com.butent.bee.client.validation.ValidationOrigin;
+import com.butent.bee.client.view.ViewHelper;
 import com.butent.bee.client.view.add.AddEndEvent;
 import com.butent.bee.client.view.add.AddStartEvent;
 import com.butent.bee.client.view.add.ReadyForInsertEvent;
@@ -1510,6 +1511,11 @@ public class GridImpl extends Absolute implements GridView, EditEndEvent.Handler
   @Override
   public void onSort(SortEvent event) {
     GridSettings.saveSortOrder(gridKey, event.getOrder());
+  }
+
+  @Override
+  public boolean reactsTo(Action action) {
+    return ViewHelper.isActionEnabled(this, action);
   }
 
   @Override

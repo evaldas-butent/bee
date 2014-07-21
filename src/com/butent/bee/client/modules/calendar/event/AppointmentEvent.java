@@ -24,7 +24,7 @@ public class AppointmentEvent extends Event<AppointmentEvent.Handler> {
   public static void fire(Appointment appointment, State state, CalendarWidget ignore) {
     BeeKeeper.getBus().fireEvent(new AppointmentEvent(appointment, state, ignore));
   }
-  
+
   public static Type<Handler> getType() {
     return TYPE;
   }
@@ -60,7 +60,7 @@ public class AppointmentEvent extends Event<AppointmentEvent.Handler> {
   public boolean isNew() {
     return State.CREATED.equals(state);
   }
-  
+
   public boolean isRelevant(CalendarWidget calendarWidget) {
     return (ignore == null) ? true : !ignore.equals(calendarWidget);
   }
@@ -68,7 +68,7 @@ public class AppointmentEvent extends Event<AppointmentEvent.Handler> {
   public boolean isUpdated() {
     return State.CHANGED.equals(state);
   }
-  
+
   @Override
   protected void dispatch(Handler handler) {
     handler.onAppointment(this);

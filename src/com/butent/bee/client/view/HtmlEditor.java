@@ -34,6 +34,7 @@ import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogUtils;
 import com.butent.bee.shared.ui.Action;
 import com.butent.bee.shared.utils.BeeUtils;
+import com.butent.bee.shared.utils.EnumUtils;
 
 import java.util.EnumSet;
 
@@ -236,6 +237,11 @@ public class HtmlEditor extends Flow implements Presenter, View, Printable, HasW
 
   @Override
   public void onViewUnload() {
+  }
+
+  @Override
+  public boolean reactsTo(Action action) {
+    return EnumUtils.in(action, Action.SAVE, Action.PRINT, Action.CANCEL, Action.CLOSE);
   }
 
   @Override

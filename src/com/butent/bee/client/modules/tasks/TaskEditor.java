@@ -189,7 +189,7 @@ class TaskEditor extends AbstractFormInterceptor {
 
     return notes;
   }
-  
+
   private static boolean hasRelations(IsRow row) {
     if (row == null) {
       return false;
@@ -562,7 +562,7 @@ class TaskEditor extends AbstractFormInterceptor {
   public boolean isRowEditable(IsRow row) {
     return row != null && BeeKeeper.getUser().is(row.getLong(getDataIndex(COL_OWNER)));
   }
-  
+
   @Override
   public void onSaveChanges(HasHandlers listener, SaveChangesEvent event) {
     final IsRow oldRow = event.getOldRow();
@@ -586,7 +586,7 @@ class TaskEditor extends AbstractFormInterceptor {
 
         if (data != null) {
           RowUpdateEvent.fire(BeeKeeper.getBus(), VIEW_TASKS, data);
-          
+
           if (hasRelations(oldRow) || hasRelations(data)) {
             DataChangeEvent.fireRefresh(BeeKeeper.getBus(), VIEW_RELATED_TASKS);
           }

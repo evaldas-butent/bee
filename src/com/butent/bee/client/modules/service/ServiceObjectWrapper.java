@@ -61,11 +61,11 @@ class ServiceObjectWrapper {
 
           for (int i = 0; i < properties.size(); i++) {
             Property property = properties.get(i);
-            
+
             labelsAndValues[i * 2] = property.getName();
             labelsAndValues[i * 2 + 1] = property.getValue();
           }
-          
+
           t2 = TimeBoardHelper.buildTitle(labelsAndValues);
         }
       }

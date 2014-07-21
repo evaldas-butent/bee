@@ -47,6 +47,7 @@ import com.butent.bee.shared.logging.LogUtils;
 import com.butent.bee.shared.time.TimeUtils;
 import com.butent.bee.shared.ui.Action;
 import com.butent.bee.shared.utils.BeeUtils;
+import com.butent.bee.shared.utils.EnumUtils;
 import com.butent.bee.shared.utils.NameUtils;
 import com.butent.bee.shared.websocket.messages.ChatMessage;
 
@@ -336,6 +337,11 @@ public class Chat extends Flow implements Presenter, View, Printable,
     if (event.isVisible() && DomUtils.isOrHasAncestor(getElement(), event.getId())) {
       maybeScroll(false);
     }
+  }
+
+  @Override
+  public boolean reactsTo(Action action) {
+    return EnumUtils.in(action, Action.CONFIGURE, Action.PRINT, Action.CANCEL, Action.CLOSE);
   }
 
   @Override

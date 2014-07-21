@@ -109,7 +109,7 @@ public final class ViewFactory {
         Global.getNewsAggregator().filterNews(item, callback);
       }
     },
-    
+
     CALENDAR("calendar_") {
       @Override
       void create(String item, ViewCallback callback) {

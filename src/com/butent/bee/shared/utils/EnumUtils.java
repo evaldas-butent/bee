@@ -235,6 +235,27 @@ public final class EnumUtils {
     return key;
   }
 
+  @SafeVarargs
+  public static <E extends Enum<?>> boolean in(E x, E first, E second, E... rest) {
+    if (x == null) {
+      return false;
+
+    } else if (x == first || x == second) {
+      return true;
+
+    } else if (rest == null) {
+      return false;
+
+    } else {
+      for (E y : rest) {
+        if (x == y) {
+          return true;
+        }
+      }
+      return false;
+    }
+  }
+
   public static boolean isRegistered(String key) {
     return CLASSES.containsKey(BeeUtils.normalize(key));
   }

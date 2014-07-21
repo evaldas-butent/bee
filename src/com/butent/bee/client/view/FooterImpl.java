@@ -16,6 +16,7 @@ import com.butent.bee.client.view.search.SearchView;
 import com.butent.bee.client.widget.Label;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
+import com.butent.bee.shared.ui.Action;
 import com.butent.bee.shared.utils.BeeUtils;
 
 import java.util.Collection;
@@ -138,6 +139,11 @@ public class FooterImpl extends Flow implements FooterView, HasNavigation, HasSe
       String text = (cnt > 0) ? BeeUtils.toString(cnt) : BeeConst.STRING_EMPTY;
       DomUtils.setText(getSelectionCounterId(), text);
     }
+  }
+
+  @Override
+  public boolean reactsTo(Action action) {
+    return false;
   }
 
   @Override

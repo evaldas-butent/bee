@@ -31,7 +31,7 @@ public class RowTransformEvent extends Event<RowTransformEvent.Handler> implemen
     this.viewName = viewName;
     this.row = row;
   }
-  
+
   @Override
   public Type<Handler> getAssociatedType() {
     return TYPE;
@@ -44,7 +44,7 @@ public class RowTransformEvent extends Event<RowTransformEvent.Handler> implemen
   public BeeRow getRow() {
     return row;
   }
-  
+
   @Override
   public String getViewName() {
     return viewName;
@@ -54,7 +54,7 @@ public class RowTransformEvent extends Event<RowTransformEvent.Handler> implemen
   public boolean hasView(String view) {
     return BeeUtils.same(view, getViewName());
   }
-  
+
   public void setResult(String result) {
     this.result = result;
   }

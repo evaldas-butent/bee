@@ -56,7 +56,7 @@ public class GridPanel extends Simple implements HasEnabled, HasFosterParent,
 
     return addHandler(handler, ReadyEvent.getType());
   }
-  
+
   @Override
   public GridView getGridView() {
     if (getPresenter() instanceof HasGridView) {
@@ -122,12 +122,12 @@ public class GridPanel extends Simple implements HasEnabled, HasFosterParent,
   public void setWidget(Widget w) {
     if (w != null) {
       StyleUtils.makeAbsolute(w);
-      
+
       if (w instanceof HasReadyHandlers) {
         ReadyEvent.maybeDelegate(this, (HasReadyHandlers) w);
       }
     }
-    
+
     super.setWidget(w);
   }
 

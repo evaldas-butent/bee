@@ -25,7 +25,7 @@ import com.butent.bee.shared.news.NewsConstants;
 import com.butent.bee.shared.rights.Module;
 
 public final class AdministrationKeeper {
-  
+
   private static class RowTransformHandler implements RowTransformEvent.Handler {
     @Override
     public void onRowTransform(RowTransformEvent event) {

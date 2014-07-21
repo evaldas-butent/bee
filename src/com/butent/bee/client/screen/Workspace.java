@@ -217,7 +217,7 @@ public class Workspace extends TabbedPages implements CaptionChangeEvent.Handler
 
       setPosition(0);
       run();
-      
+
       timer.schedule(RESTORATION_TIMEOUT);
     }
   }
@@ -622,7 +622,7 @@ public class Workspace extends TabbedPages implements CaptionChangeEvent.Handler
   public boolean isModal() {
     return false;
   }
-  
+
   @Override
   public void onActiveWidgetChange(ActiveWidgetChangeEvent event) {
     fireEvent(event);
@@ -961,7 +961,7 @@ public class Workspace extends TabbedPages implements CaptionChangeEvent.Handler
       clearCaption(index);
     }
   }
-  
+
   private void close(Tile tile) {
     TilePanel panel = tile.getPanel();
     int pageIndex = getPageIndex(tile);

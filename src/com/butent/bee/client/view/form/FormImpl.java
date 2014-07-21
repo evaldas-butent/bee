@@ -1342,6 +1342,11 @@ public class FormImpl extends Absolute implements FormView, PreviewHandler, Tabu
   }
 
   @Override
+  public boolean reactsTo(Action action) {
+    return ViewHelper.isActionEnabled(this, action);
+  }
+
+  @Override
   public void refresh() {
     refresh(true, false);
   }

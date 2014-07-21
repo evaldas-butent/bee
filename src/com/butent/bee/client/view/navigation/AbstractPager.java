@@ -12,6 +12,7 @@ import com.butent.bee.client.presenter.Presenter;
 import com.butent.bee.client.ui.IdentifiableWidget;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
+import com.butent.bee.shared.ui.Action;
 import com.butent.bee.shared.ui.NavigationOrigin;
 
 /**
@@ -77,6 +78,11 @@ public abstract class AbstractPager extends Composite implements PagerView {
   @Override
   public boolean isEnabled() {
     return enabled;
+  }
+
+  @Override
+  public boolean reactsTo(Action action) {
+    return false;
   }
 
   public void setDisplay(HasDataTable display) {

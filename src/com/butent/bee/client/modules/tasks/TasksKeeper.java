@@ -201,7 +201,7 @@ public final class TasksKeeper {
     GridFactory.registerGridInterceptor(GRID_RELATED_TASKS, new RelatedTasksGrid());
     GridFactory.registerGridInterceptor(GRID_RELATED_RECURRING_TASKS,
         new RelatedRecurringTasksGrid());
-    
+
     for (TaskType tt : TaskType.values()) {
       GridFactory.registerGridSupplier(tt.getSupplierKey(), GRID_TASKS,
           new TasksGrid(tt, tt.getCaption()));
@@ -237,7 +237,7 @@ public final class TasksKeeper {
         }
       }
     });
-    
+
     for (ReportType reportType : ReportType.values()) {
       reportType.register();
     }
