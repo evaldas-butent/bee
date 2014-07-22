@@ -93,6 +93,11 @@
       <SimpleColumn alias="DelayedPaymentRiskName" name="Name" />
     </SimpleJoin>
     
+    <SimpleColumn name="InvoiceTransferType"/>
+    <SimpleJoin joinType="LEFT" name="InvoiceTransferType">
+      <SimpleColumn alias="InvoiceTransferTypeName" name="Name" />
+    </SimpleJoin>
+    
     <SimpleColumn name="DefaultBankAccount" />
     <SimpleColumn name="DaysAsBuyer" />
     <SimpleColumn name="DaysAsSupplier" />

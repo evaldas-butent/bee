@@ -10,6 +10,7 @@ name="ContactClassifiers" label="=contactClassifiers" parent="Contacts" order="1
   <Item name="FinancialStates" label="=clientsFinancialStates" service="grid" parameters="FinancialStates" separator="true" />
   <Item name="BankruptRisks" label="=clientsBankruptcyRisks" service="grid" parameters="CompanyBankruptRisks" />
   <Item name="DelayedPaymentRisks" label="=clientsDelayedPaymentRisks" service="grid" parameters="DelayedPaymentRisks" />
+  <Item name="InvoiceTransferTypes" label="=invoiceTransferTypes" service="grid" parameters="InvoicetransferTypes" />
   <Item name="InformationSources" label="=clientsInformationSources" service="grid" parameters="InformationSources" separator="true"/>
   <Item name="CompanyActivities" label="=clientsCompanyActivities" service="grid" parameters="CompanyActivities" />
   <Item name="Responsibilities" label="=responsibilities" service="grid" parameters="Responsibilities" />

@@ -44,12 +44,16 @@
         <Label text="=status" style="&lbl1;" for="CompanyRelationTypeState" />
         <DataSelector source="CompanyRelationTypeState" style="&inp1;" />
       </row>
-       <row>
-    	 <Label style="&lbl1;" for="BankruptcyRisk" text="=clientBankruptcyRisk" />
-    	 <DataSelector style="&inp1;" source="BankruptcyRisk" />
-         <Label style="&lbl1;" for="DelayedPaymentRisk" text="=clientDelayedPaymentRisk" />
-         <DataSelector style="&inp1;" source="DelayedPaymentRisk" />
-  	   </row>
+      <row>
+  	   <Label style="&lbl1;" for="BankruptcyRisk" text="=clientBankruptcyRisk" />
+  	   <DataSelector style="&inp1;" source="BankruptcyRisk" />
+       <Label style="&lbl1;" for="DelayedPaymentRisk" text="=clientDelayedPaymentRisk" />
+       <DataSelector style="&inp1;" source="DelayedPaymentRisk" />
+      </row>
+      <row>
+       <Label style="&lbl1;" for="InvoiceTransferType" text="=invoiceTransferType" />
+       <DataSelector style="&inp1;" source="InvoiceTransferType" />
+      </row>
     </Table>
 
     <Disclosure xmlns="http://www.butent.com/widget" xmlns:xi="http://www.w3.org/2001/XInclude"
