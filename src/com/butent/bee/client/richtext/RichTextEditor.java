@@ -101,7 +101,7 @@ public class RichTextEditor extends Flow implements Editor, AdjustmentListener, 
   public HandlerRegistration addEditChangeHandler(EditChangeHandler handler) {
     return addKeyDownHandler(handler);
   }
-  
+
   @Override
   public HandlerRegistration addEditStopHandler(Handler handler) {
     return addHandler(handler, EditStopEvent.getType());

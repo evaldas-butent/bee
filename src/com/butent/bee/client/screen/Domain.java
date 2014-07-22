@@ -9,6 +9,7 @@ import com.butent.bee.shared.ui.HasCaption;
 public enum Domain implements HasCaption {
   NEWS(Global.getImages().feed(), Localized.getConstants().domainNews(), false, false),
   FAVORITES(Global.getImages().bookmark(), null, false, false),
+  WORKSPACES(Global.getImages().workspace(), Localized.getConstants().workspaces(), false, false),
   REPORTS(Global.getImages().report(), Localized.getConstants().reports(), false, false),
   CALENDAR(Global.getImages().calendar(), null, true, true),
   MAIL(Global.getImages().plane(), null, true, true),

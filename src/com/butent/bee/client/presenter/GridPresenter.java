@@ -19,13 +19,11 @@ import com.butent.bee.client.dialog.ChoiceCallback;
 import com.butent.bee.client.dialog.ConfirmationCallback;
 import com.butent.bee.client.dialog.Icon;
 import com.butent.bee.client.dialog.ModalGrid;
-import com.butent.bee.client.dialog.StringCallback;
 import com.butent.bee.client.grid.GridFactory;
 import com.butent.bee.client.modules.administration.HistoryHandler;
 import com.butent.bee.client.output.Exporter;
 import com.butent.bee.client.output.Printer;
 import com.butent.bee.client.style.StyleUtils;
-import com.butent.bee.client.ui.IdentifiableWidget;
 import com.butent.bee.client.ui.UiHelper;
 import com.butent.bee.client.ui.UiOption;
 import com.butent.bee.client.view.GridContainerImpl;
@@ -33,12 +31,14 @@ import com.butent.bee.client.view.GridContainerView;
 import com.butent.bee.client.view.HasGridView;
 import com.butent.bee.client.view.HeaderView;
 import com.butent.bee.client.view.View;
+import com.butent.bee.client.view.ViewFactory;
 import com.butent.bee.client.view.add.ReadyForInsertEvent;
 import com.butent.bee.client.view.edit.ReadyForUpdateEvent;
 import com.butent.bee.client.view.edit.SaveChangesEvent;
 import com.butent.bee.client.view.form.FormView;
 import com.butent.bee.client.view.grid.CellGrid;
 import com.butent.bee.client.view.grid.GridFilterManager;
+import com.butent.bee.client.view.grid.GridMenu;
 import com.butent.bee.client.view.grid.GridSettings;
 import com.butent.bee.client.view.grid.GridView;
 import com.butent.bee.client.view.grid.GridView.SelectedRows;
@@ -74,12 +74,15 @@ import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogUtils;
 import com.butent.bee.shared.modules.administration.AdministrationConstants;
+import com.butent.bee.shared.news.Feed;
+import com.butent.bee.shared.rights.RightsState;
 import com.butent.bee.shared.ui.Action;
 import com.butent.bee.shared.ui.GridDescription;
 import com.butent.bee.shared.utils.ArrayUtils;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.NameUtils;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
@@ -183,7 +186,11 @@ public class GridPresenter extends AbstractPresenter implements ReadyForInsertEv
       int rowCount, Filter userFilter, GridInterceptor gridInterceptor,
       Collection<UiOption> uiOptions, GridFactory.GridOptions gridOptions) {
 
-    GridContainerView view = new GridContainerImpl();
+    Feed feed = (gridOptions == null) ? null : gridOptions.getFeed();
+    String key = (feed == null)
+        ? gridView.getGridKey() : ViewFactory.SupplierKind.NEWS.getKey(feed.name().toLowerCase());
+
+    GridContainerView view = new GridContainerImpl(gridDescription.getName(), key);
     view.create(gridDescription, gridView, rowCount, userFilter, gridInterceptor, uiOptions,
         gridOptions);
 
@@ -195,7 +202,13 @@ public class GridPresenter extends AbstractPresenter implements ReadyForInsertEv
 
   private final GridFilterManager filterManager;
 
+  private final GridMenu menu;
+
+  private final List<String> favorite = new ArrayList<>();
+
   private List<String> parentLabels;
+
+  private Map<Long, String> roles;
 
   public GridPresenter(GridDescription gridDescription, GridView gridView, int rowCount,
       BeeRowSet rowSet, ProviderType providerType, CachingPolicy cachingPolicy,
@@ -229,6 +242,12 @@ public class GridPresenter extends AbstractPresenter implements ReadyForInsertEv
       }
     } else {
       this.filterManager = null;
+    }
+
+    this.menu = new GridMenu(gridDescription, uiOptions);
+
+    if (!BeeUtils.isEmpty(gridDescription.getFavorite())) {
+      favorite.addAll(NameUtils.toList(gridDescription.getFavorite()));
     }
 
     bind();
@@ -341,34 +360,37 @@ public class GridPresenter extends AbstractPresenter implements ReadyForInsertEv
     if (parentLabels != null) {
       return parentLabels;
     }
-    
+
     if (getGridView().isChild()) {
-      FormView form = UiHelper.getForm(getWidget().asWidget());
-      
+      FormView form = UiHelper.getForm(getMainView().asWidget());
+
       if (form != null && !BeeUtils.isEmpty(form.getViewName()) && form.getActiveRow() != null) {
         DataInfo dataInfo = Data.getDataInfo(form.getViewName());
-        
+
         if (dataInfo != null) {
           String label = DataUtils.getRowCaption(dataInfo, form.getActiveRow());
-          
+
           if (!BeeUtils.isEmpty(label)) {
             return Lists.newArrayList(label);
           }
         }
       }
     }
-    
+
     return BeeConst.EMPTY_IMMUTABLE_STRING_LIST;
+  }
+
+  public Set<RightsState> getRightsStates() {
+    return getDataProvider().getRightsStates();
+  }
+
+  public Map<Long, String> getRoles() {
+    return roles;
   }
 
   @Override
   public String getViewName() {
     return getDataProvider().getViewName();
-  }
-
-  @Override
-  public IdentifiableWidget getWidget() {
-    return getMainView();
   }
 
   @Override
@@ -410,8 +432,7 @@ public class GridPresenter extends AbstractPresenter implements ReadyForInsertEv
         break;
 
       case BOOKMARK:
-        Global.getFavorites().bookmark(getViewName(), getActiveRow(), getDataColumns(),
-            gridContainer.getFavorite());
+        Global.getFavorites().bookmark(getViewName(), getActiveRow(), getDataColumns(), favorite);
         break;
 
       case CANCEL:
@@ -431,11 +452,15 @@ public class GridPresenter extends AbstractPresenter implements ReadyForInsertEv
         break;
 
       case DELETE:
-        if (getMainView().isEnabled()) {
+        if (getMainView().isEnabled() && getActiveRow() != null) {
           IsRow row = getActiveRow();
 
-          if (row != null && getGridView().isRowEditable(row, getGridView())) {
-            Collection<RowInfo> selectedRows = getGridView().getSelectedRows(SelectedRows.EDITABLE);
+          if (!row.isRemovable()) {
+            getGridView().notifyWarning(Localized.getConstants().rowIsNotRemovable());
+
+          } else if (getGridView().isRowEditable(row, getGridView())) {
+            Collection<RowInfo> selectedRows =
+                getGridView().getSelectedRows(SelectedRows.REMOVABLE);
 
             GridInterceptor.DeleteMode mode = getDeleteMode(row, selectedRows);
 
@@ -460,6 +485,10 @@ public class GridPresenter extends AbstractPresenter implements ReadyForInsertEv
         }
         break;
 
+      case MENU:
+        menu.open(this);
+        break;
+
       case PRINT:
         if (getGridView().getGrid().getRowCount() > 0) {
           Printer.print(gridContainer);
@@ -477,12 +506,40 @@ public class GridPresenter extends AbstractPresenter implements ReadyForInsertEv
         }
         break;
 
+      case RIGHTS:
+        if (!BeeUtils.isEmpty(getRoles())) {
+          if (getDataProvider().getRightsStates().containsAll(GridMenu.ALL_STATES)) {
+            getDataProvider().getRightsStates().clear();
+          } else {
+            getDataProvider().getRightsStates().addAll(GridMenu.ALL_STATES);
+          }
+          refresh(true);
+        }
+        break;
+
       default:
         logger.warning(NameUtils.getName(this), action, "not implemented");
     }
 
     if (getGridInterceptor() != null) {
       getGridInterceptor().afterAction(action, this);
+    }
+  }
+
+  public void handleRights(RightsState rightsState) {
+    Assert.notNull(rightsState);
+
+    if (getGridInterceptor() != null && !getGridInterceptor().beforeAction(Action.RIGHTS, this)) {
+      return;
+    }
+
+    if (!BeeUtils.isEmpty(getRoles())) {
+      getDataProvider().toggleRightsState(rightsState);
+      refresh(true);
+    }
+
+    if (getGridInterceptor() != null) {
+      getGridInterceptor().afterAction(Action.RIGHTS, this);
     }
   }
 
@@ -616,6 +673,10 @@ public class GridPresenter extends AbstractPresenter implements ReadyForInsertEv
     this.parentLabels = parentLabels;
   }
 
+  public void setRoles(Map<Long, String> roles) {
+    this.roles = roles;
+  }
+
   @Override
   public void tryFilter(final Filter filter, final Consumer<Boolean> callback, boolean notify) {
     if (Objects.equals(getDataProvider().getUserFilter(), filter)) {
@@ -643,7 +704,7 @@ public class GridPresenter extends AbstractPresenter implements ReadyForInsertEv
   }
 
   public boolean validateParent() {
-    FormView form = UiHelper.getForm(getWidget().asWidget());
+    FormView form = UiHelper.getForm(getMainView().asWidget());
     if (form == null) {
       return true;
     }
@@ -748,15 +809,10 @@ public class GridPresenter extends AbstractPresenter implements ReadyForInsertEv
       caption = null;
     }
 
-    Exporter.confirm(caption, new StringCallback() {
+    Exporter.confirm(caption, new Exporter.FileNameCallback() {
       @Override
       public void onSuccess(String value) {
         Exporter.export(GridPresenter.this, caption, value);
-      }
-
-      @Override
-      public boolean validate(String value) {
-        return Exporter.validateFileName(value);
       }
     });
   }

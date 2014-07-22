@@ -304,7 +304,7 @@ public class HtmlTable extends Panel implements IdentifiableWidget, IsHtmlTable,
 
     setElement(tableElem);
 
-    this.widgetMap = new ElementMapperImpl<Widget>();
+    this.widgetMap = new ElementMapperImpl<>();
 
     this.cellFormatter = new CellFormatter();
     this.rowFormatter = new RowFormatter();
@@ -415,7 +415,7 @@ public class HtmlTable extends Panel implements IdentifiableWidget, IsHtmlTable,
 
     return index;
   }
-  
+
   public Element getEventRowElement(GwtEvent<?> event, boolean incl) {
     Integer row = getEventRow(event, incl);
     return (row == null) ? null : getRow(row);

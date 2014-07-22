@@ -152,7 +152,7 @@ public class AsyncProvider extends Provider {
     @Override
     public void run() {
       int rpcId = Queries.getRowSet(getViewName(), null, queryFilter, queryOrder,
-          queryOffset, queryLimit, caching, callback);
+          queryOffset, queryLimit, caching, getQueryOptions(), callback);
 
       if (!Queries.isResponseFromCache(rpcId)) {
         callback.setStartTime(System.currentTimeMillis());
@@ -235,7 +235,7 @@ public class AsyncProvider extends Provider {
 
   private boolean prefetchPending;
 
-  public AsyncProvider(HasDataTable display, HandlesActions actionHandler, 
+  public AsyncProvider(HasDataTable display, HandlesActions actionHandler,
       NotificationListener notificationListener,
       String viewName, List<BeeColumn> columns, CachingPolicy cachingPolicy) {
     this(display, actionHandler, notificationListener,
@@ -297,7 +297,8 @@ public class AsyncProvider extends Provider {
           setLastRepeatTime(now);
 
           if (step == getRepeatStep()) {
-            if (!isPrefetchPending() && duration <= AsyncProvider.maxRepeatMillis) {
+            if (!isPrefetchPending() && duration <= AsyncProvider.maxRepeatMillis
+                && getRightsStates().isEmpty()) {
               prefetch(step, (int) duration);
             }
           } else {
@@ -414,7 +415,7 @@ public class AsyncProvider extends Provider {
 
         } else {
           rejectFilter(newFilter, notify);
-          
+
           if (callback != null) {
             callback.accept(false);
           }
@@ -469,7 +470,7 @@ public class AsyncProvider extends Provider {
     Order ord = getOrder();
 
     CachingPolicy caching = getCachingPolicy();
-    if (caching != null && caching.doRead()) {
+    if (caching != null && caching.doRead() && getRightsStates().isEmpty()) {
       BeeRowSet rowSet = Global.getCache().getRowSet(getViewName(), flt, ord, offset, limit);
       if (rowSet != null) {
         requestScheduler.cancel();

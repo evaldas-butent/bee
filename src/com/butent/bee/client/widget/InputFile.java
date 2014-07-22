@@ -79,7 +79,7 @@ public class InputFile extends Widget implements HasName, HasChangeHandlers, Has
   public void setAccept(String accept) {
     getInputElement().setAccept(accept);
   }
-  
+
   @Override
   public void setEnabled(boolean enabled) {
     getInputElement().setDisabled(!enabled);

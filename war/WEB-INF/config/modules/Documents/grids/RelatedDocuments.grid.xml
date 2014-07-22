@@ -16,7 +16,7 @@
     <DataColumn name="PlaceName" />
     <DataColumn name="StatusName" />
 
-    <IdColumn name="Id" caption="=captionId" visible="false" />
+    <IdColumn name="Id" visible="false" />
     <DataColumn name="RegistrationNumber" visible="false" />
     <DataColumn name="Received" visible="false" />
     <DataColumn name="Sent" visible="false" />

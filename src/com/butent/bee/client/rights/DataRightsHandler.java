@@ -9,9 +9,9 @@ import com.butent.bee.client.view.form.interceptor.FormInterceptor;
 import com.butent.bee.shared.Consumer;
 import com.butent.bee.shared.data.view.DataInfo;
 import com.butent.bee.shared.i18n.Localized;
-import com.butent.bee.shared.modules.administration.AdministrationConstants.RightsObjectType;
-import com.butent.bee.shared.modules.administration.AdministrationConstants.RightsState;
 import com.butent.bee.shared.rights.ModuleAndSub;
+import com.butent.bee.shared.rights.RightsObjectType;
+import com.butent.bee.shared.rights.RightsState;
 import com.butent.bee.shared.utils.BeeUtils;
 
 import java.util.Collection;
@@ -50,7 +50,7 @@ final class DataRightsHandler extends MultiStateForm {
     return Lists.newArrayList(RightsState.CREATE, RightsState.VIEW, RightsState.EDIT,
         RightsState.DELETE);
   }
-  
+
   @Override
   protected int getValueStartCol() {
     return 3;
@@ -68,7 +68,7 @@ final class DataRightsHandler extends MultiStateForm {
     Collection<DataInfo> views = Data.getDataInfoProvider().getViews();
     for (DataInfo view : views) {
       ModuleAndSub ms = ModuleAndSub.parse(view.getModule());
-   
+
       if (ms == null) {
         warning("view", view.getViewName(), "module", view.getModule(), "not recognized");
       }

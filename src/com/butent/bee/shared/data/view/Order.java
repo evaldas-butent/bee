@@ -113,17 +113,17 @@ public class Order implements BeeSerializable {
   public static final String SORT_DESCENDING = "descending";
 
   private static BeeLogger logger = LogUtils.getLogger(Order.class);
-  
+
   public static Order ascending(String source) {
     return new Order(source, true);
   }
 
   public static Order ascending(String first, String second) {
     Order order = new Order();
-    
+
     order.add(first, true);
     order.add(second, true);
-    
+
     return order;
   }
 

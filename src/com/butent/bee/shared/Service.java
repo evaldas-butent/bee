@@ -33,6 +33,7 @@ public final class Service {
   public static final String GET_DIGEST = SYS_SERVICE_PREFIX + "get_digest";
   public static final String GET_FILES = SYS_SERVICE_PREFIX + "get_files";
   public static final String GET_FLAGS = SYS_SERVICE_PREFIX + "get_flags";
+  public static final String RUN = SYS_SERVICE_PREFIX + "run";
 
   public static final String INVOKE = RPC_SERVICE_PREFIX + "invoke";
 
@@ -40,6 +41,7 @@ public final class Service {
   public static final String LOGOUT = RPC_SERVICE_PREFIX + "logout";
 
   public static final String GET_MENU = RPC_SERVICE_PREFIX + "get_menu";
+  public static final String GET_ROOM = RPC_SERVICE_PREFIX + "get_room";
 
   public static final String WHERE_AM_I = RPC_SERVICE_PREFIX + "where_am_i";
 
@@ -90,6 +92,8 @@ public final class Service {
   public static final String SET_STATE_RIGHTS = DATA_SERVICE_PREFIX + "set_state_rights";
   public static final String SET_ROLE_RIGHTS = DATA_SERVICE_PREFIX + "set_role_rights";
 
+  public static final String SET_ROW_RIGHTS = DATA_SERVICE_PREFIX + "set_row_rights";
+
   public static final String UPLOAD_FILE = UPLOAD_SERVICE_PREFIX + "file";
   public static final String UPLOAD_TEMP_FILE = UPLOAD_SERVICE_PREFIX + "temp_file";
   public static final String UPLOAD_PHOTO = UPLOAD_SERVICE_PREFIX + "photo";
@@ -116,9 +120,6 @@ public final class Service {
   public static final String RPC_VAR_METH = RPC_VAR_SYS_PREFIX + "meth";
 
   public static final String VAR_USER = RPC_VAR_PREFIX + "user";
-
-  public static final String VAR_CLASS_NAME = RPC_VAR_PREFIX + "class_name";
-  public static final String VAR_PACKAGE_LIST = RPC_VAR_PREFIX + "package_list";
 
   public static final String VAR_JDBC_QUERY = RPC_VAR_PREFIX + "jdbc_query";
   public static final String VAR_CONNECTION_AUTO_COMMIT = RPC_VAR_PREFIX + "conn_auto_commit";
@@ -196,7 +197,7 @@ public final class Service {
 
   /**
    * Returns true if {@code svc} value starts with {@link #DATA_SERVICE_PREFIX}.
-   * 
+   *
    * @param svc name of service
    * @return true if name of service starts with {@link #DATA_SERVICE_PREFIX}
    */
@@ -207,7 +208,7 @@ public final class Service {
 
   /**
    * Returns true if {@code svc} value starts with {@link #DB_META_SERVICE_PREFIX}.
-   * 
+   *
    * @param svc name of service
    * @return true if name of service starts with {@link #DB_META_SERVICE_PREFIX}
    */
@@ -218,7 +219,7 @@ public final class Service {
 
   /**
    * Returns true if {@code svc} value starts with {@link #DB_SERVICE_PREFIX}.
-   * 
+   *
    * @param svc name of service;
    * @return true if name of service starts with {@link #DB_SERVICE_PREFIX}
    */
@@ -229,7 +230,7 @@ public final class Service {
 
   /**
    * Returns true if {@code svc} value has {@link #INVOKE}.
-   * 
+   *
    * @param svc name of service;
    * @return true if name of service starts {@link #INVOKE}
    */
@@ -239,7 +240,7 @@ public final class Service {
 
   /**
    * Returns true if {@code svc} value starts with {@link #SYS_SERVICE_PREFIX}.
-   * 
+   *
    * @param svc name of service
    * @return true if name of service starts with {@link #SYS_SERVICE_PREFIX};
    */

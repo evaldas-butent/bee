@@ -14,17 +14,23 @@
       <SimpleColumn name="AttachmentCount" />
       <SimpleColumn name="Sender" />
 
-      <SimpleJoin name="Sender" joinType="INNER">
-        <SimpleColumn name="Label" alias="SenderLabel" />
+      <SimpleJoin name="Sender" joinType="LEFT">
         <SimpleColumn name="Email" alias="SenderEmail" />
+        <ExternalJoin name="Email" source="Addressbook" joinType="LEFT" filter="SenderUser={u}">
+          <HiddenColumn name="User" alias="SenderUser" />
+          <SimpleColumn name="Label" alias="SenderLabel" />
+        </ExternalJoin>
       </SimpleJoin>
 
       <ExternalJoin name="Message" source="Recipients" joinType="LEFT">
         <AggregateColumn name="Address" alias="RecipientCount" aggregate="COUNT" />
 
         <SimpleJoin name="Address" joinType="LEFT">
-          <AggregateColumn name="Label" alias="RecipientLabel" aggregate="MAX" />
           <AggregateColumn name="Email" alias="RecipientEmail" aggregate="MAX" />
+          <ExternalJoin name="Email" source="Addressbook" joinType="LEFT" filter="RecipientUser={u}">
+            <HiddenColumn name="User" alias="RecipientUser" />
+            <AggregateColumn name="Label" alias="RecipientLabel" aggregate="MAX" />
+          </ExternalJoin>
         </SimpleJoin>
       </ExternalJoin>
     </SimpleJoin>

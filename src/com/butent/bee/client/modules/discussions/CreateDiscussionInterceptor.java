@@ -36,6 +36,7 @@ import com.butent.bee.client.widget.InputDateTime;
 import com.butent.bee.client.widget.Label;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
+import com.butent.bee.shared.State;
 import com.butent.bee.shared.communication.ResponseObject;
 import com.butent.bee.shared.data.BeeColumn;
 import com.butent.bee.shared.data.BeeRow;
@@ -43,11 +44,13 @@ import com.butent.bee.shared.data.BeeRowSet;
 import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.IsRow;
 import com.butent.bee.shared.data.event.DataChangeEvent;
+import com.butent.bee.shared.data.value.BooleanValue;
 import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.modules.administration.AdministrationConstants;
 import com.butent.bee.shared.modules.discussions.DiscussionsConstants.DiscussionEvent;
 import com.butent.bee.shared.modules.discussions.DiscussionsUtils;
 import com.butent.bee.shared.time.TimeUtils;
+import com.butent.bee.shared.ui.HasCheckedness;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.Codec;
 
@@ -62,6 +65,8 @@ class CreateDiscussionInterceptor extends AbstractFormInterceptor {
   private static final String WIDGET_LABEL_MEMBERS = "membersLabel";
   private static final String WIDGET_LABEL_DISPLAY_IN_BOARD = "DisplayInBoard";
 
+  private HasCheckedness mailToggle;
+
   CreateDiscussionInterceptor() {
     super();
   }
@@ -71,7 +76,11 @@ class CreateDiscussionInterceptor extends AbstractFormInterceptor {
     Widget widget = getFormView().getWidgetByName(WIDGET_ACCESSIBILITY);
     if (widget instanceof InputBoolean) {
       InputBoolean ac = (InputBoolean) widget;
-      getMultiSelector(getFormView(), PROP_MEMBERS).setEnabled(!BeeUtils.toBoolean(ac.getValue()));
+      MultiSelector ms = getMultiSelector(getFormView(), PROP_MEMBERS);
+
+      if (ms != null) {
+        ms.setEnabled(!BeeUtils.toBoolean(ac.getValue()));
+      }
     }
   }
 
@@ -132,6 +141,7 @@ class CreateDiscussionInterceptor extends AbstractFormInterceptor {
         @Override
         public void onValueChange(ValueChangeEvent<String> event) {
           MultiSelector ms = getMultiSelector(form, PROP_MEMBERS);
+
           Label lbl = getLabel(form, WIDGET_LABEL_MEMBERS);
           boolean checked = BeeUtils.toBoolean(ac.getValue());
 
@@ -139,25 +149,27 @@ class CreateDiscussionInterceptor extends AbstractFormInterceptor {
             lbl.setStyleName(StyleUtils.NAME_REQUIRED, !BeeUtils.toBoolean(ac.getValue()));
           }
 
-          if (ms != null) {
-            ms.setEnabled(!checked);
-            ms.setNullable(checked);
-            
-            if (checked) {
-              ms.clearValue();
-              form.getActiveRow().setProperty(PROP_MEMBERS, null);
-            } else {
-              form.getActiveRow().setValue(form.getDataIndex(COL_ACCESSIBILITY), (Boolean) null);
-            }
+          if (ms == null) {
+            return;
+          }
+
+          ms.setEnabled(!checked);
+          ms.setNullable(checked);
+
+          if (checked) {
+            ms.clearValue();
+            form.getActiveRow().setProperty(PROP_MEMBERS, null);
+          } else {
+            form.getActiveRow().setValue(form.getDataIndex(COL_ACCESSIBILITY), (Boolean) null);
           }
         }
       });
     }
-    
+
     if (BeeUtils.same(name, COL_TOPIC) && widget instanceof DataSelector) {
       final DataSelector tds = (DataSelector) widget;
       Handler selHandler = new Handler() {
-        
+
         @Override
         public void onDataSelector(SelectorEvent event) {
           Label label = (Label) getFormView().getWidgetByName(WIDGET_LABEL_DISPLAY_IN_BOARD);
@@ -166,8 +178,19 @@ class CreateDiscussionInterceptor extends AbstractFormInterceptor {
           }
         }
       };
-      
+
       tds.addSelectorHandler(selHandler);
+    }
+
+    if (BeeUtils.same(name, PROP_MAIL) && (widget instanceof HasCheckedness)) {
+      mailToggle = (HasCheckedness) widget;
+    }
+  }
+
+  @Override
+  public void beforeStateChange(State state, boolean modal) {
+    if (state == State.OPEN && mailToggle != null && mailToggle.isChecked()) {
+      mailToggle.setChecked(false);
     }
   }
 
@@ -181,24 +204,47 @@ class CreateDiscussionInterceptor extends AbstractFormInterceptor {
     event.consume();
     IsRow activeRow = getFormView().getActiveRow();
 
-    boolean discussPublic = BeeUtils.toBoolean(
-        ((InputBoolean) getFormView().getWidgetByName(WIDGET_ACCESSIBILITY)).getValue());
+    boolean discussPublic = true;
+    boolean discussClosed = false;
+    boolean isTopic = false;
+    String description = "";
 
-    boolean discussClosed =
-        BeeUtils.toBoolean(((InputBoolean) getFormView().getWidgetByName(COL_PERMIT_COMMENT))
-            .getValue());
-    
-    boolean isTopic =
-        DataUtils.isId(BeeUtils.toLongOrNull(((DataSelector) getFormView().getWidgetBySource(
-            COL_TOPIC)).getValue()));
+    HasCheckedness wIsPublic = (HasCheckedness) getFormView().getWidgetByName(WIDGET_ACCESSIBILITY);
+    HasCheckedness wPermitComment = (HasCheckedness) getFormView().
+        getWidgetByName(COL_PERMIT_COMMENT);
+
+    Editor wDescription = (Editor) getFormView().getWidgetByName(WIDGET_DESCRIPTION);    
+    DataSelector wTopic = (DataSelector) getFormView().getWidgetBySource(COL_TOPIC);
+
+    if (wIsPublic != null) {
+      discussPublic = wIsPublic.isChecked();
+    }
+
+    if (wPermitComment != null) {
+      discussClosed = wPermitComment.isChecked();
+    }
+
+    if (wTopic != null) {
+      isTopic = DataUtils.isId(BeeUtils.toLongOrNull(wTopic.getValue()));
+    }
 
     if (isTopic) {
+      InputDateTime wVisibleFrom = (InputDateTime) getFormView().getWidgetBySource(
+          COL_VISIBLE_FROM);
 
-      String validFromVal = ((InputDateTime) getFormView().getWidgetBySource(
-          COL_VISIBLE_FROM)).getValue();
+      InputDateTime wVisibleTo = (InputDateTime) getFormView().getWidgetBySource(
+          COL_VISIBLE_TO);
 
-      String validToVal = ((InputDateTime) getFormView().getWidgetBySource(
-          COL_VISIBLE_TO)).getValue();
+      String validFromVal = null;
+      String validToVal = null;
+
+      if (wVisibleFrom != null) {
+        validFromVal = wVisibleFrom.getValue();
+      }
+
+      if (wVisibleTo != null) {
+        validToVal = wVisibleTo.getValue();
+      }
 
       Long validFrom = null;
       if (!BeeUtils.isEmpty(validFromVal)) {
@@ -215,8 +261,9 @@ class CreateDiscussionInterceptor extends AbstractFormInterceptor {
       }
     }
 
-    String description = ((Editor) getFormView().getWidgetByName(WIDGET_DESCRIPTION))
-        .getValue();
+    if (wDescription != null) {
+      description = wDescription.getValue();
+    }
 
     if (!discussPublic && BeeUtils.isEmpty(activeRow.getProperty(PROP_MEMBERS))) {
       event.getCallback().onFailure(Localized.getConstants().discussSelectMembers());
@@ -240,7 +287,11 @@ class CreateDiscussionInterceptor extends AbstractFormInterceptor {
           .valueOf(DiscussionStatus.CLOSED.ordinal()));
     }
 
-    BeeRowSet rowSet =
+    if (mailToggle != null && mailToggle.isChecked()) {
+      newRow.setProperty(PROP_MAIL, BooleanValue.S_TRUE);
+    }
+
+    final BeeRowSet rowSet =
         DataUtils.createRowSetForInsert(VIEW_DISCUSSIONS, getFormView().getDataColumns(), newRow,
             null, true);
     ParameterList args = DiscussionsKeeper.createDiscussionRpcParameters(DiscussionEvent.CREATE);
@@ -272,6 +323,18 @@ class CreateDiscussionInterceptor extends AbstractFormInterceptor {
 
           DataChangeEvent.fireRefresh(BeeKeeper.getBus(), VIEW_DISCUSSIONS);
 
+          for (long discussionId : discussions) {
+            ParameterList mailArgs =
+                DiscussionsKeeper.createDiscussionRpcParameters(DiscussionEvent.CREATE_MAIL);
+            mailArgs.addDataItem(VAR_DISCUSSION_DATA, Codec.beeSerialize(rowSet));
+            mailArgs.addDataItem(VAR_DISCUSSION_ID, discussionId);
+            BeeKeeper.getRpc().makePostRequest(mailArgs, new ResponseCallback() {
+              @Override
+              public void onResponse(ResponseObject emptyResp) {
+
+              }
+            });
+          }
         } else {
           event.getCallback().onFailure("Unknown response");
         }
@@ -344,22 +407,12 @@ class CreateDiscussionInterceptor extends AbstractFormInterceptor {
     if (from == null && to != null) {
       if (to.longValue() >= now) {
         return true;
-        // } else {
-        // event.getCallback().onFailure(
-        // BeeUtils.joinWords(Localized.getConstants().displayInBoard(), Localized.getConstants()
-        // .invalidDate(), Localized.getConstants().dateToShort()));
-        // return false;
       }
     }
 
     if (from != null && to == null) {
       if (from.longValue() <= now) {
         return true;
-        // } else {
-        // event.getCallback().onFailure(
-        // BeeUtils.joinWords(Localized.getConstants().displayInBoard(), Localized.getConstants()
-        // .invalidDate(), Localized.getConstants().dateFromShort()));
-        // return false;
       }
     }
 

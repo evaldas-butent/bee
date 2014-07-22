@@ -2,7 +2,6 @@ package com.butent.bee.client.view.form.interceptor;
 
 import com.google.common.collect.Lists;
 import com.google.gwt.dom.client.Element;
-import com.google.gwt.dom.client.NativeEvent;
 import com.google.gwt.i18n.client.NumberFormat;
 import com.google.gwt.user.client.ui.Widget;
 
@@ -11,8 +10,6 @@ import com.butent.bee.client.Global;
 import com.butent.bee.client.composite.MultiSelector;
 import com.butent.bee.client.composite.UnboundSelector;
 import com.butent.bee.client.dialog.ModalGrid;
-import com.butent.bee.client.dialog.Popup;
-import com.butent.bee.client.event.EventUtils;
 import com.butent.bee.client.grid.GridFactory;
 import com.butent.bee.client.grid.GridFactory.GridOptions;
 import com.butent.bee.client.i18n.Format;
@@ -23,6 +20,7 @@ import com.butent.bee.client.output.ReportParameters;
 import com.butent.bee.client.presenter.Presenter;
 import com.butent.bee.client.presenter.PresenterCallback;
 import com.butent.bee.client.ui.HasIndexedWidgets;
+import com.butent.bee.client.view.HeaderView;
 import com.butent.bee.client.view.edit.Editor;
 import com.butent.bee.client.view.form.FormView;
 import com.butent.bee.client.widget.InputDateTime;
@@ -38,6 +36,7 @@ import com.butent.bee.shared.time.DateTime;
 import com.butent.bee.shared.time.TimeUtils;
 import com.butent.bee.shared.ui.Action;
 import com.butent.bee.shared.ui.HasStringValue;
+import com.butent.bee.shared.ui.UserInterface.Component;
 import com.butent.bee.shared.utils.BeeUtils;
 
 import java.util.List;
@@ -59,21 +58,11 @@ public abstract class ReportInterceptor extends AbstractFormInterceptor implemen
 
   private static final String STORAGE_KEY_SEPARATOR = "-";
 
-  protected static void drillDown(String gridName, String caption, Filter filter, boolean modal) {
+  protected static void drillDown(String gridName, String caption, Filter filter) {
     GridOptions gridOptions = GridOptions.forCaptionAndFilter(caption, filter);
-
-    PresenterCallback presenterCallback;
-    if (modal) {
-      presenterCallback = ModalGrid.opener(80, CssUnit.PCT, 60, CssUnit.PCT);
-    } else {
-      presenterCallback = PresenterCallback.SHOW_IN_NEW_TAB;
-    }
+    PresenterCallback presenterCallback = ModalGrid.opener(80, CssUnit.PCT, 60, CssUnit.PCT);
 
     GridFactory.openGrid(gridName, null, gridOptions, presenterCallback);
-  }
-
-  protected static boolean drillModal(NativeEvent event) {
-    return Popup.getActivePopup() != null || !EventUtils.hasModifierKey(event);
   }
 
   protected static Double percent(int x, int y) {
@@ -83,7 +72,7 @@ public abstract class ReportInterceptor extends AbstractFormInterceptor implemen
       return null;
     }
   }
-  
+
   protected static String renderAmount(Double x) {
     if (BeeUtils.nonZero(x)) {
       return amountFormat.format(x);
@@ -146,7 +135,7 @@ public abstract class ReportInterceptor extends AbstractFormInterceptor implemen
       case BOOKMARK:
         bookmark();
         return false;
-        
+
       case EXPORT:
         export();
         return false;
@@ -155,7 +144,7 @@ public abstract class ReportInterceptor extends AbstractFormInterceptor implemen
         return super.beforeAction(action, presenter);
     }
   }
-  
+
   @Override
   public String getCaption() {
     return getFormView().getCaption();
@@ -171,9 +160,22 @@ public abstract class ReportInterceptor extends AbstractFormInterceptor implemen
   }
 
   @Override
+  public String getSupplierKey() {
+    return getReport().getSupplierKey();
+  }
+
+  @Override
   public void onLoad(FormView form) {
     if (getInitialParameters() != null) {
       doReport();
+    }
+
+    if (!BeeKeeper.getScreen().getUserInterface().hasComponent(Component.REPORTS)) {
+      HeaderView header = form.getViewPresenter().getHeader();
+
+      if (header != null && header.hasAction(Action.BOOKMARK)) {
+        header.showAction(Action.BOOKMARK, false);
+      }
     }
   }
 
@@ -181,7 +183,7 @@ public abstract class ReportInterceptor extends AbstractFormInterceptor implemen
   public boolean onPrint(Element source, Element target) {
     return true;
   }
-  
+
   public void setInitialParameters(ReportParameters initialParameters) {
     this.initialParameters = initialParameters;
   }
@@ -235,7 +237,7 @@ public abstract class ReportInterceptor extends AbstractFormInterceptor implemen
   }
 
   protected abstract String getBookmarkLabel();
-  
+
   protected HasIndexedWidgets getDataContainer() {
     Widget widget = getFormView().getWidgetByName(NAME_DATA_CONTAINER);
     if (widget instanceof HasIndexedWidgets) {
@@ -283,7 +285,7 @@ public abstract class ReportInterceptor extends AbstractFormInterceptor implemen
 
         return BeeUtils.joinItems(labels);
       }
-      
+
     } else if (widget instanceof UnboundSelector) {
       return ((UnboundSelector) widget).getRenderedValue();
 

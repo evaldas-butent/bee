@@ -1,8 +1,5 @@
 package com.butent.bee.client.view.form;
 
-import com.google.common.collect.Lists;
-import com.google.common.collect.Maps;
-import com.google.common.collect.Sets;
 import com.google.gwt.core.client.JavaScriptObject;
 import com.google.gwt.core.client.Scheduler;
 import com.google.gwt.dom.client.Element;
@@ -33,6 +30,7 @@ import com.butent.bee.client.event.logical.ActiveRowChangeEvent;
 import com.butent.bee.client.event.logical.ActiveWidgetChangeEvent;
 import com.butent.bee.client.event.logical.DataRequestEvent;
 import com.butent.bee.client.event.logical.ParentRowEvent;
+import com.butent.bee.client.event.logical.ReadyEvent;
 import com.butent.bee.client.event.logical.ScopeChangeEvent;
 import com.butent.bee.client.event.logical.SelectionCountChangeEvent;
 import com.butent.bee.client.event.logical.SortEvent;
@@ -104,8 +102,11 @@ import com.butent.bee.shared.ui.NavigationOrigin;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.NameUtils;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -312,9 +313,11 @@ public class FormImpl extends Absolute implements FormView, PreviewHandler, Tabu
 
   private static final BeeLogger logger = LogUtils.getLogger(FormImpl.class);
 
-  private static final String STYLE_FORM = "bee-Form";
-  private static final String STYLE_FORM_DISABLED = "bee-Form-disabled";
-  private static final String STYLE_WIDGET_DISABLED = "bee-disabled";
+  private static final String STYLE_FORM = StyleUtils.CLASS_NAME_PREFIX + "Form";
+  private static final String STYLE_FORM_DISABLED = StyleUtils.CLASS_NAME_PREFIX + "Form-"
+      + StyleUtils.NAME_DISABLED;
+  private static final String STYLE_WIDGET_DISABLED = StyleUtils.CLASS_NAME_PREFIX
+      + StyleUtils.NAME_DISABLED;
 
   private static final String NEW_ROW_CAPTION = "Create New";
 
@@ -358,12 +361,12 @@ public class FormImpl extends Absolute implements FormView, PreviewHandler, Tabu
   private FormInterceptor formInterceptor;
 
   private final CreationCallback creationCallback = new CreationCallback();
-  private final List<String> disablableWidgets = Lists.newArrayList();
+  private final List<String> disablableWidgets = new ArrayList<>();
 
-  private final Set<DisplayWidget> displayWidgets = Sets.newHashSet();
-  private final List<EditableWidget> editableWidgets = Lists.newArrayList();
+  private final Set<DisplayWidget> displayWidgets = new HashSet<>();
+  private final List<EditableWidget> editableWidgets = new ArrayList<>();
 
-  private final List<TabEntry> tabOrder = Lists.newArrayList();
+  private final List<TabEntry> tabOrder = new ArrayList<>();
 
   private String previewId;
 
@@ -376,15 +379,17 @@ public class FormImpl extends Absolute implements FormView, PreviewHandler, Tabu
   private DataObserver dataObserver;
 
   private String options;
-  private final Map<String, String> properties = Maps.newHashMap();
+  private final Map<String, String> properties = new HashMap<>();
+
+  private boolean hasReadyDelegates;
 
   public FormImpl(String formName) {
-    this(formName, Position.RELATIVE);
-  }
-
-  public FormImpl(String formName, Position position) {
-    super(position, Overflow.AUTO);
+    super(Position.RELATIVE, Overflow.AUTO);
     this.formName = formName;
+
+    if (!BeeUtils.isEmpty(formName)) {
+      addStyleName(StyleUtils.CLASS_NAME_PREFIX + "form-" + formName.trim());
+    }
   }
 
   @Override
@@ -427,6 +432,12 @@ public class FormImpl extends Absolute implements FormView, PreviewHandler, Tabu
   @Override
   public HandlerRegistration addReadyForUpdateHandler(ReadyForUpdateEvent.Handler handler) {
     return addHandler(handler, ReadyForUpdateEvent.getType());
+  }
+
+  @Override
+  public HandlerRegistration addReadyHandler(ReadyEvent.Handler handler) {
+    setHasReadyDelegates(ReadyEvent.maybeDelegate(this));
+    return addHandler(handler, ReadyEvent.getType());
   }
 
   @Override
@@ -618,7 +629,7 @@ public class FormImpl extends Absolute implements FormView, PreviewHandler, Tabu
 
   @Override
   public Collection<RowChildren> getChildrenForInsert() {
-    Collection<RowChildren> result = Lists.newArrayList();
+    Collection<RowChildren> result = new ArrayList<>();
 
     for (EditableWidget editableWidget : getEditableWidgets()) {
       if (editableWidget.getEditor() instanceof HasRowChildren) {
@@ -634,7 +645,7 @@ public class FormImpl extends Absolute implements FormView, PreviewHandler, Tabu
 
   @Override
   public Collection<RowChildren> getChildrenForUpdate() {
-    Collection<RowChildren> result = Lists.newArrayList();
+    Collection<RowChildren> result = new ArrayList<>();
 
     for (EditableWidget editableWidget : getEditableWidgets()) {
       if (editableWidget.getEditor() instanceof HasRowChildren) {
@@ -739,6 +750,19 @@ public class FormImpl extends Absolute implements FormView, PreviewHandler, Tabu
   }
 
   @Override
+  public Map<String, Widget> getNamedWidgets() {
+    Map<String, Widget> result = new HashMap<>();
+
+    for (Map.Entry<String, String> entry : creationCallback.getNamedWidgets().entrySet()) {
+      Widget widget = getWidgetById(entry.getValue());
+      if (widget != null) {
+        result.put(entry.getKey(), widget);
+      }
+    }
+    return result;
+  }
+
+  @Override
   public IsRow getOldRow() {
     return oldRow;
   }
@@ -785,7 +809,7 @@ public class FormImpl extends Absolute implements FormView, PreviewHandler, Tabu
 
   @Override
   public List<? extends IsRow> getRowData() {
-    List<IsRow> data = Lists.newArrayList();
+    List<IsRow> data = new ArrayList<>();
     if (getActiveRow() != null) {
       data.add(getActiveRow());
     }
@@ -841,11 +865,12 @@ public class FormImpl extends Absolute implements FormView, PreviewHandler, Tabu
     Assert.notEmpty(name);
     String id = creationCallback.getWidgetIdByName(name);
 
-    if (BeeUtils.isEmpty(id)) {
-      return null;
-    } else {
-      return getWidgetById(id);
+    Widget widget = getWidgetById(id);
+    if (widget == null) {
+      logger.warning("widget not found:", name);
     }
+
+    return widget;
   }
 
   @Override
@@ -912,11 +937,31 @@ public class FormImpl extends Absolute implements FormView, PreviewHandler, Tabu
   }
 
   @Override
-  public boolean isRowEditable(boolean warn) {
-    if (getActiveRow() == null || isReadOnly() || !isEnabled()) {
+  public boolean isRowEditable(IsRow rowValue, boolean warn) {
+    if (rowValue == null) {
       return false;
     }
-    return isRowEditable(getActiveRow(), warn);
+
+    boolean ok = rowValue.isEditable();
+
+    if (ok && getFormInterceptor() != null) {
+      ok = getFormInterceptor().isRowEditable(rowValue);
+    }
+
+    if (ok && getRowEditable() != null) {
+      getRowEditable().update(rowValue);
+      ok = BeeUtils.toBoolean(getRowEditable().evaluate());
+    }
+
+    if (!ok && warn) {
+      notifyWarning(Localized.getConstants().rowIsReadOnly());
+    }
+    return ok;
+  }
+
+  @Override
+  public boolean isRowEnabled(IsRow rowValue) {
+    return !isReadOnly() && isEnabled() && isRowEditable(rowValue, false);
   }
 
   @Override
@@ -978,7 +1023,7 @@ public class FormImpl extends Absolute implements FormView, PreviewHandler, Tabu
 
     boolean wasRowEnabled = isRowEnabled(rowValue);
 
-    Set<String> refreshed = Sets.newHashSet();
+    Set<String> refreshed = new HashSet<>();
     for (EditableWidget editableWidget : getEditableWidgets()) {
       if (editableWidget.hasSource(source)) {
         editableWidget.refresh(rowValue);
@@ -1006,7 +1051,7 @@ public class FormImpl extends Absolute implements FormView, PreviewHandler, Tabu
       }
 
       if (rowEnabled != wasRowEnabled) {
-        Set<String> editableIds = Sets.newHashSet();
+        Set<String> editableIds = new HashSet<>();
         for (EditableWidget editableWidget : getEditableWidgets()) {
           editableIds.add(editableWidget.getWidgetId());
         }
@@ -1039,8 +1084,8 @@ public class FormImpl extends Absolute implements FormView, PreviewHandler, Tabu
 
     boolean isNew = DataUtils.isNewRow(getActiveRow());
 
-    List<String> messages = Lists.newArrayList();
-    List<String> updatedLabels = Lists.newArrayList();
+    List<String> messages = new ArrayList<>();
+    List<String> updatedLabels = new ArrayList<>();
 
     final BeeRowSet rowSet =
         DataUtils.getUpdated(getViewName(), getDataColumns(), getOldRow(), getActiveRow(), null);
@@ -1142,11 +1187,22 @@ public class FormImpl extends Absolute implements FormView, PreviewHandler, Tabu
       if (isFlushable()) {
         rowValue.setValue(index, newValue);
 
-        Set<String> refreshed = Sets.newHashSet();
+        Set<String> refreshed = new HashSet<>();
 
         if (event.hasRelation() && source instanceof EditableWidget) {
-          ((EditableWidget) source).maybeUpdateRelation(getViewName(), rowValue, false);
+          Collection<String> updatedColumns =
+              ((EditableWidget) source).maybeUpdateRelation(getViewName(), rowValue, false);
+
           refreshed.addAll(refreshEditableWidget(index));
+
+          if (!BeeUtils.isEmpty(updatedColumns)) {
+            for (String uc : updatedColumns) {
+              if (!column.getId().equals(uc)) {
+                refreshed.addAll(refreshEditableWidget(getDataIndex(uc)));
+              }
+            }
+          }
+
         } else if (event.isRowMode()) {
           refreshed.addAll(refreshEditableWidgets());
         }
@@ -1220,8 +1276,8 @@ public class FormImpl extends Absolute implements FormView, PreviewHandler, Tabu
       return;
     }
 
-    List<BeeColumn> columns = Lists.newArrayList();
-    List<String> values = Lists.newArrayList();
+    List<BeeColumn> columns = new ArrayList<>();
+    List<String> values = new ArrayList<>();
 
     for (int i = 0; i < getDataColumns().size(); i++) {
       String value = getActiveRow().getString(i);
@@ -1286,6 +1342,11 @@ public class FormImpl extends Absolute implements FormView, PreviewHandler, Tabu
   }
 
   @Override
+  public boolean reactsTo(Action action) {
+    return ViewHelper.isActionEnabled(this, action);
+  }
+
+  @Override
   public void refresh() {
     refresh(true, false);
   }
@@ -1298,7 +1359,7 @@ public class FormImpl extends Absolute implements FormView, PreviewHandler, Tabu
   @Override
   public int refreshBySource(String source) {
     Assert.notEmpty(source);
-    Set<String> refreshed = Sets.newHashSet();
+    Set<String> refreshed = new HashSet<>();
 
     for (EditableWidget editableWidget : getEditableWidgets()) {
       if (editableWidget.hasSource(source)) {
@@ -1607,6 +1668,10 @@ public class FormImpl extends Absolute implements FormView, PreviewHandler, Tabu
     if (getFormInterceptor() != null) {
       getFormInterceptor().onLoad(this);
     }
+
+    if (!hasReadyDelegates()) {
+      ReadyEvent.fire(this);
+    }
   }
 
   @Override
@@ -1663,7 +1728,7 @@ public class FormImpl extends Absolute implements FormView, PreviewHandler, Tabu
     if (!BeeUtils.isIndex(getTabOrder(), index)) {
       return;
     }
-    if (hasData() && !isRowEditable(false)) {
+    if (hasData() && !isRowEnabled(getActiveRow())) {
       return;
     }
 
@@ -1781,6 +1846,10 @@ public class FormImpl extends Absolute implements FormView, PreviewHandler, Tabu
     return hasData;
   }
 
+  private boolean hasReadyDelegates() {
+    return hasReadyDelegates;
+  }
+
   private boolean isAdding() {
     return adding;
   }
@@ -1800,32 +1869,6 @@ public class FormImpl extends Absolute implements FormView, PreviewHandler, Tabu
 
   private boolean isReadOnly() {
     return readOnly;
-  }
-
-  private boolean isRowEditable(IsRow rowValue, boolean warn) {
-    if (rowValue == null) {
-      return false;
-    }
-
-    boolean ok = rowValue.isEditable();
-
-    if (ok && getFormInterceptor() != null) {
-      ok = getFormInterceptor().isRowEditable(rowValue);
-    }
-
-    if (ok && getRowEditable() != null) {
-      getRowEditable().update(rowValue);
-      ok = BeeUtils.toBoolean(getRowEditable().evaluate());
-    }
-
-    if (!ok && warn) {
-      notifyWarning(Localized.getConstants().rowIsReadOnly());
-    }
-    return ok;
-  }
-
-  private boolean isRowEnabled(IsRow rowValue) {
-    return !isReadOnly() && isEnabled() && isRowEditable(rowValue, false);
   }
 
   private boolean isWidgetDisablable(String widgetId) {
@@ -1918,21 +1961,23 @@ public class FormImpl extends Absolute implements FormView, PreviewHandler, Tabu
   }
 
   private Set<String> refreshEditableWidget(int dataIndex) {
-    Set<String> refreshed = Sets.newHashSet();
+    Set<String> refreshed = new HashSet<>();
 
-    for (EditableWidget editableWidget : getEditableWidgets()) {
-      if (editableWidget.getDataIndex() == dataIndex) {
-        editableWidget.refresh(getActiveRow());
-        refreshed.add(editableWidget.getWidgetId());
+    if (!BeeConst.isUndef(dataIndex)) {
+      for (EditableWidget editableWidget : getEditableWidgets()) {
+        if (editableWidget.getDataIndex() == dataIndex) {
+          editableWidget.refresh(getActiveRow());
+          refreshed.add(editableWidget.getWidgetId());
+        }
       }
     }
     return refreshed;
   }
 
   private Set<String> refreshEditableWidgets() {
-    Set<String> refreshed = Sets.newHashSet();
+    Set<String> refreshed = new HashSet<>();
 
-    boolean rowEnabled = isRowEditable(false);
+    boolean rowEnabled = isRowEnabled(getActiveRow());
     boolean isNew = DataUtils.isNewRow(getActiveRow());
 
     for (EditableWidget editableWidget : getEditableWidgets()) {
@@ -2038,6 +2083,10 @@ public class FormImpl extends Absolute implements FormView, PreviewHandler, Tabu
 
   private void setHasData(boolean hasData) {
     this.hasData = hasData;
+  }
+
+  private void setHasReadyDelegates(boolean hasReadyDelegates) {
+    this.hasReadyDelegates = hasReadyDelegates;
   }
 
   private void setOldRow(IsRow oldRow) {

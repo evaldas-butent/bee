@@ -22,7 +22,6 @@ import com.butent.bee.client.dialog.Icon;
 import com.butent.bee.client.dialog.StringCallback;
 import com.butent.bee.client.output.Printer;
 import com.butent.bee.client.ui.FormDescription;
-import com.butent.bee.client.ui.IdentifiableWidget;
 import com.butent.bee.client.view.FormContainerImpl;
 import com.butent.bee.client.view.FormContainerView;
 import com.butent.bee.client.view.HasSearch;
@@ -113,7 +112,7 @@ public class FormPresenter extends AbstractPresenter implements ReadyForInsertEv
 
   @Override
   public IsRow getActiveRow() {
-    return formContainer.getContent().getActiveRow();
+    return getFormView().getActiveRow();
   }
 
   @Override
@@ -141,7 +140,7 @@ public class FormPresenter extends AbstractPresenter implements ReadyForInsertEv
   }
 
   public NotificationListener getNotificationListener() {
-    return formContainer.getContent();
+    return getFormView();
   }
 
   @Override
@@ -165,11 +164,6 @@ public class FormPresenter extends AbstractPresenter implements ReadyForInsertEv
   }
 
   @Override
-  public IdentifiableWidget getWidget() {
-    return getMainView();
-  }
-
-  @Override
   public void handleAction(Action action) {
     Assert.notNull(action);
 
@@ -187,14 +181,14 @@ public class FormPresenter extends AbstractPresenter implements ReadyForInsertEv
         Global.inputString("Options", new StringCallback() {
           @Override
           public void onSuccess(String value) {
-            formContainer.getContent().applyOptions(value);
+            getFormView().applyOptions(value);
           }
         });
         break;
 
       case DELETE:
-        if (hasData() && formContainer.getContent().isRowEditable(true)) {
-          IsRow row = formContainer.getContent().getActiveRow();
+        IsRow row = getFormView().getActiveRow();
+        if (hasData() && getFormView().isRowEnabled(row)) {
           deleteRow(row.getId(), row.getVersion());
         }
         break;
@@ -207,12 +201,12 @@ public class FormPresenter extends AbstractPresenter implements ReadyForInsertEv
 
       case ADD:
         if (hasData()) {
-          formContainer.getContent().startNewRow(false);
+          getFormView().startNewRow(false);
         }
         break;
 
       case PRINT:
-        FormView form = formContainer.getContent();
+        FormView form = getFormView();
         if (form.printHeader() || form.printFooter()) {
           Printer.print(formContainer);
         } else {
@@ -338,8 +332,8 @@ public class FormPresenter extends AbstractPresenter implements ReadyForInsertEv
         }
       }
 
-      view.getContent().addReadyForUpdateHandler(this);
-      view.getContent().addReadyForInsertHandler(this);
+      view.getForm().addReadyForUpdateHandler(this);
+      view.getForm().addReadyForInsertHandler(this);
     }
   }
 
@@ -350,8 +344,8 @@ public class FormPresenter extends AbstractPresenter implements ReadyForInsertEv
       return null;
     }
 
-    HasDataTable display = view.getContent().getDisplay();
-    NotificationListener notificationListener = view.getContent();
+    HasDataTable display = view.getForm().getDisplay();
+    NotificationListener notificationListener = view.getForm();
     Provider provider;
 
     switch (providerType) {
@@ -389,7 +383,11 @@ public class FormPresenter extends AbstractPresenter implements ReadyForInsertEv
   }
 
   private FormInterceptor getFormInterceptor() {
-    return formContainer.getContent().getFormInterceptor();
+    return getFormView().getFormInterceptor();
+  }
+
+  private FormView getFormView() {
+    return formContainer.getForm();
   }
 
   private boolean hasData() {

@@ -45,7 +45,6 @@ class PersonForm extends AbstractFormInterceptor {
 
   private static final String DEFAULT_PHOTO_IMAGE = "images/silver/person_profile.png";
 
-
   private Image photoImageWidget;
   private NewFileInfo photoImageAttachment;
 
@@ -198,7 +197,7 @@ class PersonForm extends AbstractFormInterceptor {
       return row.getString(form.getDataIndex(ClassifierConstants.COL_PHOTO));
     }
   }
-  
+
   private static void setPhotoFileName(FormView form, IsRow row, String value) {
     if (form != null && row != null) {
       row.setValue(form.getDataIndex(ClassifierConstants.COL_PHOTO), value);

@@ -1,6 +1,5 @@
 package com.butent.bee.client.modules.tasks;
 
-import com.google.common.base.Objects;
 import com.google.common.collect.Lists;
 import com.google.gwt.core.client.Scheduler.ScheduledCommand;
 
@@ -16,9 +15,11 @@ import com.butent.bee.client.data.Queries;
 import com.butent.bee.client.data.RowCallback;
 import com.butent.bee.client.event.logical.SelectorEvent;
 import com.butent.bee.client.grid.GridFactory;
+import com.butent.bee.client.modules.tasks.TasksReportsInterceptor.ReportType;
 import com.butent.bee.client.style.ColorStyleProvider;
 import com.butent.bee.client.style.ConditionalStyle;
 import com.butent.bee.client.ui.FormFactory;
+import com.butent.bee.client.view.ViewFactory;
 import com.butent.bee.client.view.grid.interceptor.FileGridInterceptor;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
@@ -36,6 +37,7 @@ import com.butent.bee.shared.modules.administration.AdministrationConstants;
 import com.butent.bee.shared.modules.classifiers.ClassifierConstants;
 import com.butent.bee.shared.modules.tasks.TaskConstants.TaskEvent;
 import com.butent.bee.shared.modules.tasks.TaskConstants.TaskStatus;
+import com.butent.bee.shared.modules.tasks.TaskType;
 import com.butent.bee.shared.modules.tasks.TaskUtils;
 import com.butent.bee.shared.news.Feed;
 import com.butent.bee.shared.rights.Module;
@@ -46,9 +48,11 @@ import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.Codec;
 import com.butent.bee.shared.utils.EnumUtils;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 
 public final class TasksKeeper {
 
@@ -112,7 +116,7 @@ public final class TasksKeeper {
               return;
             }
 
-            if (Objects.equal(newStart, oldStart) && Objects.equal(newEnd, oldEnd)) {
+            if (Objects.equals(newStart, oldStart) && Objects.equals(newEnd, oldEnd)) {
               Global.showError(Localized.getConstants().crmTermNotChanged());
               return;
             }
@@ -131,18 +135,18 @@ public final class TasksKeeper {
               return;
             }
 
-            List<String> notes = Lists.newArrayList();
+            List<String> notes = new ArrayList<>();
 
             ParameterList params = createArgs(SVC_EXTEND_TASK);
             params.addQueryItem(VAR_TASK_ID, taskId);
 
-            if (startId != null && newStart != null && !Objects.equal(newStart, oldStart)) {
+            if (startId != null && newStart != null && !Objects.equals(newStart, oldStart)) {
               params.addQueryItem(COL_START_TIME, newStart.getTime());
               notes.add(TaskUtils.getUpdateNote(Localized.getConstants().crmStartDate(),
                   TimeUtils.renderCompact(oldStart), TimeUtils.renderCompact(newStart)));
             }
 
-            if (!Objects.equal(newEnd, oldEnd)) {
+            if (!Objects.equals(newEnd, oldEnd)) {
               params.addQueryItem(COL_FINISH_TIME, newEnd.getTime());
               notes.add(TaskUtils.getUpdateNote(Localized.getConstants().crmFinishDate(),
                   TimeUtils.renderCompact(oldEnd), TimeUtils.renderCompact(newEnd)));
@@ -198,10 +202,21 @@ public final class TasksKeeper {
     GridFactory.registerGridInterceptor(GRID_RELATED_RECURRING_TASKS,
         new RelatedRecurringTasksGrid());
 
+    for (TaskType tt : TaskType.values()) {
+      GridFactory.registerGridSupplier(tt.getSupplierKey(), GRID_TASKS,
+          new TasksGrid(tt, tt.getCaption()));
+    }
+
     MenuService.TASK_LIST.setHandler(new MenuHandler() {
       @Override
       public void onSelection(String parameters) {
-        TasksGrid.open(parameters);
+        TaskType type = TaskType.getByPrefix(parameters);
+
+        if (type == null) {
+          Global.showError(Lists.newArrayList(GRID_TASKS, "Type not recognized:", parameters));
+        } else {
+          ViewFactory.createAndShow(type.getSupplierKey());
+        }
       }
     });
 
@@ -209,19 +224,23 @@ public final class TasksKeeper {
       @Override
       public void onSelection(String parameters) {
         if (BeeUtils.startsSame(parameters, COMPANY_TIMES_REPORT)) {
-          FormFactory.openForm(FORM_TASKS_REPORT, new TasksReportsInterceptor(
-              TasksReportsInterceptor.ReportType.COMPANY_TIMES));
+          FormFactory.openForm(FORM_TASKS_REPORT,
+              new TasksReportsInterceptor(ReportType.COMPANY_TIMES));
         } else if (BeeUtils.startsSame(parameters, TYPE_HOURS_REPORT)) {
-          FormFactory.openForm(FORM_TASKS_REPORT, new TasksReportsInterceptor(
-              TasksReportsInterceptor.ReportType.TYPE_HOURS));
+          FormFactory.openForm(FORM_TASKS_REPORT,
+              new TasksReportsInterceptor(ReportType.TYPE_HOURS));
         } else if (BeeUtils.startsSame(parameters, USERS_HOURS_REPORT)) {
-          FormFactory.openForm(FORM_TASKS_REPORT, new TasksReportsInterceptor(
-              TasksReportsInterceptor.ReportType.USERS_HOURS));
+          FormFactory.openForm(FORM_TASKS_REPORT,
+              new TasksReportsInterceptor(ReportType.USERS_HOURS));
         } else {
           Global.showError("Service type '" + parameters + "' not found");
         }
       }
     });
+
+    for (ReportType reportType : ReportType.values()) {
+      reportType.register();
+    }
 
     SelectorEvent.register(new TaskSelectorHandler());
 

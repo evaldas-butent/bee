@@ -11,9 +11,9 @@ import com.butent.bee.shared.Consumer;
 import com.butent.bee.shared.data.BeeColumn;
 import com.butent.bee.shared.data.view.DataInfo;
 import com.butent.bee.shared.i18n.Localized;
-import com.butent.bee.shared.modules.administration.AdministrationConstants.RightsObjectType;
-import com.butent.bee.shared.modules.administration.AdministrationConstants.RightsState;
 import com.butent.bee.shared.rights.ModuleAndSub;
+import com.butent.bee.shared.rights.RightsObjectType;
+import com.butent.bee.shared.rights.RightsState;
 import com.butent.bee.shared.utils.BeeUtils;
 
 import java.util.Collection;
@@ -52,7 +52,7 @@ final class FieldRightsHandler extends MultiStateForm {
   protected List<RightsState> getRightsStates() {
     return Lists.newArrayList(RightsState.VIEW, RightsState.EDIT);
   }
-  
+
   @Override
   protected int getValueStartCol() {
     return 4;
@@ -62,7 +62,7 @@ final class FieldRightsHandler extends MultiStateForm {
   protected boolean hasValue(RightsObject object) {
     return object.hasParent();
   }
-  
+
   @Override
   protected void initObjects(Consumer<List<RightsObject>> consumer) {
     List<RightsObject> result = Lists.newArrayList();
@@ -70,14 +70,14 @@ final class FieldRightsHandler extends MultiStateForm {
     Collection<DataInfo> views = Data.getDataInfoProvider().getViews();
     for (DataInfo view : views) {
       ModuleAndSub ms = ModuleAndSub.parse(view.getModule());
-   
+
       if (ms != null && ms.isEnabled()) {
         String viewName = view.getViewName();
         String caption = BeeUtils.notEmpty(Localized.maybeTranslate(view.getCaption()), viewName);
 
         RightsObject viewObject = new RightsObject(viewName, caption, ms);
         result.add(viewObject);
-        
+
         List<BeeColumn> columns = view.getColumns();
         for (BeeColumn column : columns) {
           if (!column.isForeign() || column.isEditable()) {

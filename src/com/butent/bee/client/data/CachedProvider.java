@@ -16,6 +16,7 @@ import com.butent.bee.shared.data.BeeColumn;
 import com.butent.bee.shared.data.BeeRow;
 import com.butent.bee.shared.data.BeeRowSet;
 import com.butent.bee.shared.data.DataUtils;
+import com.butent.bee.shared.data.cache.CachingPolicy;
 import com.butent.bee.shared.data.event.CellUpdateEvent;
 import com.butent.bee.shared.data.event.MultiDeleteEvent;
 import com.butent.bee.shared.data.event.RowDeleteEvent;
@@ -232,7 +233,7 @@ public class CachedProvider extends Provider {
       if (callback != null) {
         callback.accept(true);
       }
-      
+
     } else if (isComplete()) {
       tryNotEmptyFilter(newFilter, callback, notify);
 
@@ -338,32 +339,34 @@ public class CachedProvider extends Provider {
     final int oldPageSize = getPageSize();
     final int oldTableSize = getTable().getNumberOfRows();
 
-    Queries.getRowSet(getViewName(), null, getQueryFilter(null), getOrder(), new RowSetCallback() {
-      @Override
-      public void onSuccess(BeeRowSet rowSet) {
-        Assert.notNull(rowSet);
-        setTable(rowSet);
-        setComplete(true);
+    Queries.getRowSet(getViewName(), null, getQueryFilter(null), getOrder(),
+        BeeConst.UNDEF, BeeConst.UNDEF, CachingPolicy.NONE, getQueryOptions(),
+        new RowSetCallback() {
+          @Override
+          public void onSuccess(BeeRowSet rowSet) {
+            Assert.notNull(rowSet);
+            setTable(rowSet);
+            setComplete(true);
 
-        applyFilter(getUserFilter());
+            applyFilter(getUserFilter());
 
-        int newTableSize = rowSet.getNumberOfRows();
+            int newTableSize = rowSet.getNumberOfRows();
 
-        int oldRc = getDisplay().getRowCount();
-        int newRc = getRowCount();
+            int oldRc = getDisplay().getRowCount();
+            int newRc = getRowCount();
 
-        if (newTableSize != oldTableSize && oldPageSize >= oldTableSize) {
-          getDisplay().setPageSize(newTableSize, oldRc == newRc);
-        }
-        getDisplay().setRowCount(newRc, true);
+            if (newTableSize != oldTableSize && oldPageSize >= oldTableSize) {
+              getDisplay().setPageSize(newTableSize, oldRc == newRc);
+            }
+            getDisplay().setRowCount(newRc, true);
 
-        updateDisplay(preserveActiveRow);
+            updateDisplay(preserveActiveRow);
 
-        if (callback != null) {
-          callback.execute();
-        }
-      }
-    });
+            if (callback != null) {
+              callback.execute();
+            }
+          }
+        });
   }
 
   private void setComplete(boolean complete) {

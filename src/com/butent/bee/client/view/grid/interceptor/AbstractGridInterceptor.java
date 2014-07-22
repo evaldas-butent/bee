@@ -44,7 +44,7 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 
-public class AbstractGridInterceptor implements GridInterceptor {
+public abstract class AbstractGridInterceptor implements GridInterceptor {
 
   public static final List<String> DELETE_ROW_MESSAGE =
       Lists.newArrayList(Localized.getConstants().deleteRowQuestion());
@@ -251,11 +251,6 @@ public class AbstractGridInterceptor implements GridInterceptor {
 
   @Override
   public BeeRowSet getInitialRowSet(GridDescription gridDescription) {
-    return null;
-  }
-
-  @Override
-  public GridInterceptor getInstance() {
     return null;
   }
 

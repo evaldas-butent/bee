@@ -110,7 +110,7 @@ public class MailAccount {
     storeHost = data.getValue(COL_STORE_SERVER);
     storePort = data.getInt(COL_STORE_SPORT);
     storeLogin = BeeUtils.notEmpty(data.getValue(COL_STORE_LOGIN),
-        data.getValue(ClassifierConstants.COL_EMAIL));
+        data.getValue(ClassifierConstants.COL_EMAIL_ADDRESS));
     storePassword = BeeUtils.isEmpty(data.getValue(COL_STORE_PASSWORD))
         ? null : Codec.decodeBase64(data.getValue(COL_STORE_PASSWORD));
     storeSSL = BeeUtils.isTrue(data.getBoolean(COL_STORE_SSL));
@@ -119,7 +119,7 @@ public class MailAccount {
     transportHost = data.getValue(COL_TRANSPORT_SERVER);
     transportPort = data.getInt(COL_TRANSPORT_PORT);
     transportLogin = BeeUtils.notEmpty(data.getValue(COL_TRANSPORT_LOGIN),
-        data.getValue(ClassifierConstants.COL_EMAIL));
+        data.getValue(ClassifierConstants.COL_EMAIL_ADDRESS));
     transportPassword = BeeUtils.isEmpty(data.getValue(COL_TRANSPORT_PASSWORD))
         ? null : Codec.decodeBase64(data.getValue(COL_TRANSPORT_PASSWORD));
     transportSSL = BeeUtils.isTrue(data.getBoolean(COL_TRANSPORT_SSL));
@@ -132,8 +132,16 @@ public class MailAccount {
     return accountInfo.getAccountId();
   }
 
+  public String getAddress() {
+    return accountInfo.getAddress();
+  }
+
   public Long getAddressId() {
     return accountInfo.getAddressId();
+  }
+
+  public Long getSignatureId() {
+    return accountInfo.getSignatureId();
   }
 
   public String getStoreErrorMessage() {

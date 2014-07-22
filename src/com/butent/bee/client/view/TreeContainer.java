@@ -1,7 +1,5 @@
 package com.butent.bee.client.view;
 
-import com.google.common.collect.Lists;
-import com.google.common.collect.Maps;
 import com.google.gwt.core.client.Scheduler;
 import com.google.gwt.event.logical.shared.SelectionEvent;
 import com.google.gwt.event.logical.shared.SelectionHandler;
@@ -12,10 +10,12 @@ import com.butent.bee.client.Global;
 import com.butent.bee.client.data.Data;
 import com.butent.bee.client.dom.DomUtils;
 import com.butent.bee.client.event.logical.CatchEvent;
+import com.butent.bee.client.event.logical.ReadyEvent;
 import com.butent.bee.client.event.logical.CatchEvent.CatchHandler;
 import com.butent.bee.client.layout.Flow;
 import com.butent.bee.client.presenter.Presenter;
 import com.butent.bee.client.presenter.TreePresenter;
+import com.butent.bee.client.style.StyleUtils;
 import com.butent.bee.client.tree.HasTreeItems;
 import com.butent.bee.client.tree.Tree;
 import com.butent.bee.client.tree.TreeItem;
@@ -23,15 +23,21 @@ import com.butent.bee.client.utils.Command;
 import com.butent.bee.client.widget.Image;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
+import com.butent.bee.shared.State;
 import com.butent.bee.shared.data.IsRow;
 import com.butent.bee.shared.ui.Action;
+import com.butent.bee.shared.ui.UserInterface.Component;
 import com.butent.bee.shared.utils.BeeUtils;
+import com.butent.bee.shared.utils.NameUtils;
 
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 public class TreeContainer extends Flow implements TreeView, SelectionHandler<TreeItem>,
     CatchEvent.CatchHandler<TreeItem> {
@@ -52,28 +58,35 @@ public class TreeContainer extends Flow implements TreeView, SelectionHandler<Tr
     }
   }
 
-  private static final String STYLE_NAME = "bee-TreeView";
+  private static final String STYLE_NAME = StyleUtils.CLASS_NAME_PREFIX + "TreeView";
 
   private Presenter viewPresenter;
   private boolean enabled = true;
+  private final List<String> favorite = new ArrayList<>();
   private final Tree tree;
-  private final Map<Long, TreeItem> items = Maps.newHashMap();
+  private final Map<Long, TreeItem> items = new HashMap<>();
 
   private final String caption;
-  private final boolean hasActions;
+  private final boolean hasDnD;
 
-  public TreeContainer(String caption, boolean hideActions, String viewName) {
-    super();
-    addStyleName(STYLE_NAME);
+  private State state;
+
+  private final Set<Action> enabledActions = new HashSet<>();
+
+  public TreeContainer(String caption, boolean hideActions, String viewName, String favorite) {
+    super(STYLE_NAME);
 
     this.caption = caption;
-    this.hasActions = !hideActions;
 
-    if (hasActions) {
+    if (!hideActions) {
+      boolean editable = BeeKeeper.getUser().canEditData(viewName);
+      this.hasDnD = editable;
+
       Flow hdr = new Flow();
       hdr.addStyleName(STYLE_NAME + "-actions");
 
-      boolean editable = BeeKeeper.getUser().canEditData(viewName);
+      boolean bookmarkable = !BeeUtils.isEmpty(favorite)
+          && BeeKeeper.getScreen().getUserInterface().hasComponent(Component.FAVORITES);
 
       Image img;
 
@@ -82,6 +95,8 @@ public class TreeContainer extends Flow implements TreeView, SelectionHandler<Tr
         img.addStyleName(STYLE_NAME + "-add");
         img.setTitle(Action.ADD.getCaption());
         hdr.add(img);
+
+        enabledActions.add(Action.ADD);
       }
 
       if (editable && BeeKeeper.getUser().canDeleteData(viewName)) {
@@ -89,6 +104,20 @@ public class TreeContainer extends Flow implements TreeView, SelectionHandler<Tr
         img.addStyleName(STYLE_NAME + "-delete");
         img.setTitle(Action.DELETE.getCaption());
         hdr.add(img);
+
+        enabledActions.add(Action.DELETE);
+      }
+
+      if (bookmarkable) {
+        setFavorite(NameUtils.toList(favorite));
+
+        img = new Image(Global.getImages().silverBookmarkAdd(),
+            new ActionListener(Action.BOOKMARK));
+        img.addStyleName(STYLE_NAME + "-bookmark");
+        img.setTitle(Action.BOOKMARK.getCaption());
+        hdr.add(img);
+
+        enabledActions.add(Action.BOOKMARK);
       }
 
       if (editable) {
@@ -96,6 +125,8 @@ public class TreeContainer extends Flow implements TreeView, SelectionHandler<Tr
         img.addStyleName(STYLE_NAME + "-edit");
         img.setTitle(Action.EDIT.getCaption());
         hdr.add(img);
+
+        enabledActions.add(Action.EDIT);
       }
 
       img = new Image(Global.getImages().silverReload(), new ActionListener(Action.REFRESH));
@@ -103,7 +134,11 @@ public class TreeContainer extends Flow implements TreeView, SelectionHandler<Tr
       img.setTitle(Action.REFRESH.getCaption());
       hdr.add(img);
 
+      enabledActions.add(Action.REFRESH);
+
       add(hdr);
+    } else {
+      this.hasDnD = false;
     }
     this.tree = new Tree(caption);
     add(tree);
@@ -111,7 +146,7 @@ public class TreeContainer extends Flow implements TreeView, SelectionHandler<Tr
     getTree().addStyleName(STYLE_NAME + "-tree");
     getTree().addSelectionHandler(this);
 
-    if (hasActions) {
+    if (hasDnD) {
       getTree().addCatchHandler(this);
     }
   }
@@ -129,7 +164,7 @@ public class TreeContainer extends Flow implements TreeView, SelectionHandler<Tr
 
     TreeItem treeItem = new TreeItem(text, item);
 
-    if (hasActions) {
+    if (hasDnD) {
       treeItem.makeDraggable();
     }
     items.put(id, treeItem);
@@ -144,8 +179,24 @@ public class TreeContainer extends Flow implements TreeView, SelectionHandler<Tr
   }
 
   @Override
+  public HandlerRegistration addReadyHandler(ReadyEvent.Handler handler) {
+    return addHandler(handler, ReadyEvent.getType());
+  }
+
+  @Override
   public HandlerRegistration addSelectionHandler(SelectionHandler<IsRow> handler) {
     return addHandler(handler, SelectionEvent.getType());
+  }
+
+  @Override
+  public void afterRequery() {
+    if (getState() == null) {
+      setState(State.INITIALIZED);
+
+      if (isAttached()) {
+        ReadyEvent.fire(this);
+      }
+    }
   }
 
   @Override
@@ -159,7 +210,7 @@ public class TreeContainer extends Flow implements TreeView, SelectionHandler<Tr
     Assert.contains(items, item.getId());
 
     TreeItem treeItem = items.get(item.getId());
-    Collection<IsRow> childs = Lists.newArrayList();
+    Collection<IsRow> childs = new ArrayList<>();
 
     if (treeItem.getChildCount() > 0) {
       for (int i = 0; i < treeItem.getChildCount(); i++) {
@@ -173,6 +224,11 @@ public class TreeContainer extends Flow implements TreeView, SelectionHandler<Tr
       }
     }
     return childs;
+  }
+
+  @Override
+  public List<String> getFavorite() {
+    return favorite;
   }
 
   @Override
@@ -235,11 +291,21 @@ public class TreeContainer extends Flow implements TreeView, SelectionHandler<Tr
   }
 
   @Override
+  public State getState() {
+    return state;
+  }
+
+  @Override
   public TreePresenter getTreePresenter() {
     if (viewPresenter instanceof TreePresenter) {
       return (TreePresenter) viewPresenter;
     }
     return null;
+  }
+
+  @Override
+  public String getViewName() {
+    return (getTreePresenter() == null) ? null : getTreePresenter().getViewName();
   }
 
   @Override
@@ -297,6 +363,11 @@ public class TreeContainer extends Flow implements TreeView, SelectionHandler<Tr
   }
 
   @Override
+  public boolean reactsTo(Action action) {
+    return enabledActions.contains(action);
+  }
+
+  @Override
   public void removeItem(IsRow item) {
     Assert.notNull(item);
     Assert.contains(items, item.getId());
@@ -327,6 +398,11 @@ public class TreeContainer extends Flow implements TreeView, SelectionHandler<Tr
   }
 
   @Override
+  public void setState(State state) {
+    this.state = state;
+  }
+
+  @Override
   public void setViewPresenter(Presenter viewPresenter) {
     this.viewPresenter = viewPresenter;
   }
@@ -346,6 +422,15 @@ public class TreeContainer extends Flow implements TreeView, SelectionHandler<Tr
     }
   }
 
+  @Override
+  protected void onLoad() {
+    super.onLoad();
+
+    if (getState() == State.INITIALIZED) {
+      ReadyEvent.fire(this);
+    }
+  }
+
   private Tree getTree() {
     return tree;
   }
@@ -357,8 +442,7 @@ public class TreeContainer extends Flow implements TreeView, SelectionHandler<Tr
     items.remove(((IsRow) item.getUserObject()).getId());
   }
 
-  @Override
-  public String getViewName() {
-    return (getTreePresenter() == null) ? null : getTreePresenter().getViewName();
+  private void setFavorite(List<String> favorite) {
+    BeeUtils.overwrite(this.favorite, favorite);
   }
 }

@@ -13,16 +13,18 @@
 .bee-crm-taskEvent-col-0,
 .bee-crm-taskEvent-col-1,
 .bee-crm-taskEvent-col-2 {
-  margin-left: 1em;
+  margin-left: 1ex;
 }
 
 .bee-crm-taskEvent-col-0,
 .bee-crm-taskEvent-col-2 {
   width: 145px;
+  min-width: 145px;
 }
 
 .bee-crm-taskEvent-col-1 {
   margin-right: auto;
+  min-width: 125px;
 }
 
 .bee-crm-taskEvent-Event,
@@ -199,6 +201,8 @@
 .bee-crm-taskEvent-col-Photo {
   width: 2.5em;
   height: 2.5em;
+  max-width: 2.5em;
+  min-width: 2.5em;
   align-self: center;
   -webkit-align-self: center;
   -ms-flex-item-align: center;
@@ -212,13 +216,7 @@
 }
 
 .bee-crm-rt-actionSchedule {
-  font-size: 17px;
-  padding-right: 3px;
-  color: #888;
-  cursor: pointer;
-}
-.bee-crm-rt-actionSchedule:hover {
-  color: black;
+  font-size: 18px !important;
 }
 
 .bee-crm-rt-cron-values {
@@ -387,4 +385,8 @@
 .bee-crm-rt-offspring-delete:hover {
   background-color: red;
   color: white;
+}
+
+.bee-crm-task-alien {
+  background-image: url(../images/checkered_background.png) !important;
 }

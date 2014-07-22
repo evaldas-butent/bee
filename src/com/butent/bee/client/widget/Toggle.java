@@ -15,6 +15,7 @@ import com.google.gwt.user.client.Event;
 
 import com.butent.bee.client.dom.DomUtils;
 import com.butent.bee.client.event.EventUtils;
+import com.butent.bee.client.style.StyleUtils;
 import com.butent.bee.client.ui.FormWidget;
 import com.butent.bee.client.view.edit.EditChangeHandler;
 import com.butent.bee.client.view.edit.EditStopEvent;
@@ -22,6 +23,7 @@ import com.butent.bee.client.view.edit.EditStopEvent.Handler;
 import com.butent.bee.client.view.edit.Editor;
 import com.butent.bee.shared.State;
 import com.butent.bee.shared.data.value.BooleanValue;
+import com.butent.bee.shared.font.FontAwesome;
 import com.butent.bee.shared.ui.EditorAction;
 import com.butent.bee.shared.ui.HasCheckedness;
 import com.butent.bee.shared.utils.BeeUtils;
@@ -34,7 +36,7 @@ import elemental.js.dom.JsElement;
 
 public class Toggle extends CustomWidget implements Editor, HasValueChangeHandlers<String>,
     HasCheckedness {
-  
+
   private static final String STYLE_SUFFIX_CHECKED = "checked";
   private static final String STYLE_SUFFIX_UNCHECKED = "unchecked";
 
@@ -60,18 +62,36 @@ public class Toggle extends CustomWidget implements Editor, HasValueChangeHandle
   }
 
   public Toggle(String upFace, String downFace) {
-    this(upFace, downFace, null);
+    this(upFace, downFace, null, false);
   }
 
-  public Toggle(String upFace, String downFace, String styleName) {
-    super(Document.get().createDivElement(), BeeUtils.notEmpty(styleName, "bee-Toggle"));
+  public Toggle(String upFace, String downFace, String styleName, boolean checked) {
+    this(Document.get().createDivElement(), upFace, downFace, styleName, checked);
+  }
+
+  public Toggle(Element element, String upFace, String downFace, String styleName,
+      boolean checked) {
+
+    super(element, BeeUtils.notEmpty(styleName, "bee-Toggle"));
     addStyleDependentName(STYLE_SUFFIX_UNCHECKED);
 
     this.upFace = upFace;
     this.downFace = downFace;
 
-    getElement().setInnerHTML(upFace);
+    this.checked = checked;
+
+    getElement().setInnerHTML(checked ? downFace : upFace);
     sinkEvents(Event.ONCLICK);
+  }
+
+  public Toggle(FontAwesome up, FontAwesome down, String styleName, boolean checked) {
+    this(Document.get().createDivElement(), up, down, styleName, checked);
+  }
+
+  public Toggle(Element element, FontAwesome up, FontAwesome down, String styleName,
+      boolean checked) {
+    this(element, String.valueOf(up.getCode()), String.valueOf(down.getCode()), styleName, checked);
+    StyleUtils.setFontFamily(this, FontAwesome.FAMILY);
   }
 
   @Override

@@ -49,7 +49,7 @@ public class InputColor extends Widget implements HasEnabled, IdentifiableWidget
   public HandlerRegistration addClickHandler(ClickHandler handler) {
     return Binder.addClickHandler(this, handler);
   }
-  
+
   public HandlerRegistration addColorChangeHandler(final Scheduler.ScheduledCommand command) {
     Assert.notNull(command);
 
@@ -101,7 +101,7 @@ public class InputColor extends Widget implements HasEnabled, IdentifiableWidget
           String newValue = Color.normalize(value);
           if (!BeeUtils.equalsTrim(newValue, getValue())) {
             setValue(newValue);
-            ValueChangeEvent.fire(InputColor.this, newValue);            
+            ValueChangeEvent.fire(InputColor.this, newValue);
           }
         }
 

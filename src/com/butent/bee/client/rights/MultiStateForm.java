@@ -30,8 +30,8 @@ import com.butent.bee.shared.communication.ResponseObject;
 import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.font.FontAwesome;
 import com.butent.bee.shared.i18n.Localized;
-import com.butent.bee.shared.modules.administration.AdministrationConstants.RightsState;
 import com.butent.bee.shared.rights.ModuleAndSub;
+import com.butent.bee.shared.rights.RightsState;
 import com.butent.bee.shared.ui.Relation;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.Codec;
@@ -60,7 +60,7 @@ abstract class MultiStateForm extends RightsForm {
   private static final String STYLE_SUB_MODULE = STYLE_PREFIX + "sub-module";
   private static final String STYLE_MODULE_CELL = STYLE_MODULE + STYLE_SUFFIX_CELL;
   private static final String STYLE_MODULE_SELECTED = STYLE_MODULE + "-selected";
-//  private static final String STYLE_MODULE_CHANGED = STYLE_MODULE + "-changed";
+  // private static final String STYLE_MODULE_CHANGED = STYLE_MODULE + "-changed";
 
   private static final String STYLE_MSO = STYLE_PREFIX + "mso";
   private static final String STYLE_MSO_COL_PREFIX = STYLE_MSO + "-col-";
@@ -70,7 +70,7 @@ abstract class MultiStateForm extends RightsForm {
   private static final String STYLE_MSO_LEAF = STYLE_MSO + "-leaf";
   private static final String STYLE_MSO_LEAF_CELL = STYLE_MSO_LEAF + STYLE_SUFFIX_CELL;
   private static final String STYLE_MSO_SELECTED = STYLE_MSO + "-selected";
-//  private static final String STYLE_MSO_CHANGED = STYLE_MSO + "-changed";
+  // private static final String STYLE_MSO_CHANGED = STYLE_MSO + "-changed";
 
   private static final String DATA_KEY_STATE = "rights-state";
   private static final String DATA_KEY_MODULE = "rights-module";
@@ -509,9 +509,6 @@ abstract class MultiStateForm extends RightsForm {
   }
 
   private Widget createStateToggle(RightsState state) {
-    Toggle toggle = createToggle(FontAwesome.SQUARE_O, FontAwesome.CHECK_SQUARE_O,
-        STYLE_STATE_TOGGLE);
-
     Set<String> names = getLeaves().keySet();
     boolean checked = true;
 
@@ -522,9 +519,8 @@ abstract class MultiStateForm extends RightsForm {
       }
     }
 
-    if (checked) {
-      toggle.setChecked(true);
-    }
+    Toggle toggle = new Toggle(FontAwesome.SQUARE_O, FontAwesome.CHECK_SQUARE_O,
+        STYLE_STATE_TOGGLE, checked);
 
     DomUtils.setDataProperty(toggle.getElement(), DATA_KEY_STATE, state.ordinal());
     setDataType(toggle, DATA_TYPE_STATE_TOGGLE);
@@ -592,7 +588,7 @@ abstract class MultiStateForm extends RightsForm {
 
   private Map<String, Integer> getLeaves() {
     Map<String, Integer> leaves = Maps.newHashMap();
-    
+
     int col = getValueStartCol() - 2;
 
     for (int row = getValueStartRow(); row < getTable().getRowCount(); row++) {

@@ -4,6 +4,7 @@ import com.google.common.collect.Maps;
 
 import static com.butent.bee.shared.modules.administration.AdministrationConstants.*;
 
+import com.butent.bee.server.communication.Rooms;
 import com.butent.bee.server.data.DataServiceBean;
 import com.butent.bee.server.data.QueryServiceBean;
 import com.butent.bee.server.data.SystemBean;
@@ -70,6 +71,14 @@ public class DispatcherBean {
   @EJB
   QueryServiceBean qs;
 
+  public void beforeLogout(RequestInfo reqInfo) {
+    String workspace = reqInfo.getParameter(COL_LAST_WORKSPACE);
+
+    if (!BeeUtils.isEmpty(workspace)) {
+      userService.saveWorkspace(userService.getCurrentUserId(), workspace);
+    }
+  }
+
   public ResponseObject doLogin(RequestInfo reqInfo) {
     ResponseObject response = new ResponseObject();
     Map<String, Object> data = Maps.newHashMap();
@@ -83,13 +92,17 @@ public class DispatcherBean {
     data.put(Service.PROPERTY_MODULES, Module.getEnabledModulesAsString());
 
     Long currency = prm.getRelation(PRM_CURRENCY);
-
     if (DataUtils.isId(currency)) {
       data.put(COL_CURRENCY, currency);
       data.put(ALS_CURRENCY_NAME, qs.getValue(new SqlSelect()
           .addFields(TBL_CURRENCIES, COL_CURRENCY_NAME)
           .addFrom(TBL_CURRENCIES)
           .setWhere(sys.idEquals(TBL_CURRENCIES, currency))));
+    }
+
+    Long company = prm.getRelation(PRM_COMPANY);
+    if (DataUtils.isId(company)) {
+      data.put(PRM_COMPANY, company);
     }
 
     UserInterface userInterface = null;
@@ -198,9 +211,23 @@ public class DispatcherBean {
               data.put(component.key(), reportSettings);
             }
             break;
-            
+
+          case SETTINGS:
+            BeeRowSet userSettings = userService.ensureUserSettings();
+            if (!DataUtils.isEmpty(userSettings)) {
+              data.put(component.key(), userSettings);
+            }
+            break;
+
           case USERS:
             data.put(component.key(), userService.getAllUserData());
+            break;
+
+          case WORKSPACES:
+            BeeRowSet workspaces = uiService.getWorkspaces();
+            if (!DataUtils.isEmpty(workspaces)) {
+              data.put(component.key(), workspaces);
+            }
             break;
         }
 
@@ -232,6 +259,9 @@ public class DispatcherBean {
 
     } else if (BeeUtils.same(svc, Service.GET_MENU)) {
       response = uiHolder.getMenu(reqInfo.hasParameter(Service.VAR_RIGHTS));
+
+    } else if (BeeUtils.same(svc, Service.GET_ROOM)) {
+      response = Rooms.getRoom(reqInfo);
 
     } else if (BeeUtils.same(svc, Service.WHERE_AM_I)) {
       response = ResponseObject.info(System.currentTimeMillis(), BeeConst.whereAmI());

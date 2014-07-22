@@ -62,7 +62,7 @@ public abstract class AbstractFormInterceptor implements FormInterceptor {
   @Override
   public void afterStateChange(State state, boolean modal) {
   }
-  
+
   @Override
   public void afterUpdateRow(IsRow result) {
   }
@@ -84,7 +84,7 @@ public abstract class AbstractFormInterceptor implements FormInterceptor {
   @Override
   public void beforeStateChange(State state, boolean modal) {
   }
-  
+
   @Override
   public IdentifiableWidget createCustomWidget(String name, Element description) {
     return null;
@@ -151,9 +151,6 @@ public abstract class AbstractFormInterceptor implements FormInterceptor {
   }
 
   @Override
-  public abstract FormInterceptor getInstance();
-
-  @Override
   public Integer getIntegerValue(String source) {
     return (getFormView() == null) ? null : getFormView().getIntegerValue(source);
   }
@@ -197,7 +194,7 @@ public abstract class AbstractFormInterceptor implements FormInterceptor {
   public boolean isRowEditable(IsRow row) {
     return row != null && row.isEditable();
   }
-  
+
   @Override
   public void notifyRequired(String message) {
     if (getFormView() != null) {

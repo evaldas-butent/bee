@@ -7,12 +7,10 @@ import java.util.List;
  */
 
 public interface Sequence<T> extends HasLength, Iterable<T> {
-  
+
   void add(T value);
 
   void clear();
-  
-  Sequence<T> copy();
 
   T get(int index);
 

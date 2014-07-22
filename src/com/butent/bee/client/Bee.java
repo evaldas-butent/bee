@@ -4,8 +4,11 @@ import com.google.gwt.core.client.EntryPoint;
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.event.logical.shared.ResizeEvent;
 import com.google.gwt.event.logical.shared.ResizeHandler;
+import com.google.gwt.json.client.JSONObject;
 import com.google.gwt.user.client.Timer;
 import com.google.gwt.user.client.Window;
+
+import static com.butent.bee.shared.modules.administration.AdministrationConstants.*;
 
 import com.butent.bee.client.communication.ParameterList;
 import com.butent.bee.client.communication.ResponseCallback;
@@ -16,12 +19,14 @@ import com.butent.bee.client.decorator.TuningFactory;
 import com.butent.bee.client.dom.DomUtils;
 import com.butent.bee.client.logging.ClientLogManager;
 import com.butent.bee.client.modules.ModuleManager;
+import com.butent.bee.client.modules.administration.AdministrationKeeper;
 import com.butent.bee.client.screen.BodyPanel;
 import com.butent.bee.client.ui.AutocompleteProvider;
 import com.butent.bee.client.utils.LayoutEngine;
 import com.butent.bee.client.view.grid.GridSettings;
 import com.butent.bee.client.websocket.Endpoint;
 import com.butent.bee.shared.BeeConst;
+import com.butent.bee.shared.Consumer;
 import com.butent.bee.shared.Pair;
 import com.butent.bee.shared.Service;
 import com.butent.bee.shared.communication.ResponseObject;
@@ -30,12 +35,12 @@ import com.butent.bee.shared.i18n.LocalizableConstants;
 import com.butent.bee.shared.i18n.LocalizableMessages;
 import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.logging.LogUtils;
-import com.butent.bee.shared.modules.administration.AdministrationConstants;
 import com.butent.bee.shared.rights.Module;
 import com.butent.bee.shared.ui.UserInterface;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.Codec;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
@@ -46,6 +51,8 @@ import java.util.Map;
 public class Bee implements EntryPoint {
 
   public static void exit() {
+    final String workspace = BeeKeeper.getScreen().serialize();
+
     ClientLogManager.close();
     BodyPanel.get().clear();
 
@@ -60,72 +67,53 @@ public class Bee implements EntryPoint {
             info.cancel();
           }
 
-          logout();
+          logout(workspace);
         }
       };
 
       timer.schedule(1000);
 
     } else {
-      logout();
+      logout(workspace);
     }
   }
 
-  private static void logout() {
-    BeeKeeper.getRpc().makeGetRequest(Service.LOGOUT);
-  }
+  private static void initWorkspace() {
+    List<String> onStartup = new ArrayList<>();
 
-  @Override
-  public void onModuleLoad() {
-    BeeConst.setClient();
-    LogUtils.setLoggerFactory(new ClientLogManager());
+    if (BeeKeeper.getUser().workspaceContinue()) {
+      String workspace = BeeKeeper.getUser().getLastWorkspace();
 
-    Localized.setConstants((LocalizableConstants) GWT.create(LocalizableConstants.class));
-    Localized.setMessages((LocalizableMessages) GWT.create(LocalizableMessages.class));
+      if (!BeeUtils.isEmpty(workspace) && !BeeConst.EMPTY.equals(workspace)) {
+        onStartup.add(workspace);
 
-    LayoutEngine layoutEngine = LayoutEngine.detect();
-    if (layoutEngine != null && layoutEngine.hasStyleSheet()) {
-      DomUtils.injectExternalStyle(layoutEngine.getStyleSheet());
-    }
+      } else {
+        JSONObject onEmpty = Settings.getOnEmptyWorkspace();
+        if (onEmpty != null) {
+          onStartup.add(onEmpty.toString());
+        }
+      }
 
-    List<String> extStyleSheets = Settings.getStyleSheets();
-    if (!BeeUtils.isEmpty(extStyleSheets)) {
-      for (String styleSheet : extStyleSheets) {
-        DomUtils.injectExternalStyle(styleSheet);
+    } else {
+      List<String> home = Global.getSpaces().getStartup();
+
+      if (BeeUtils.isEmpty(home)) {
+        JSONObject json = Settings.getOnStartup();
+        if (json == null) {
+          json = Settings.getOnEmptyWorkspace();
+        }
+
+        if (json != null) {
+          onStartup.add(json.toString());
+        }
+
+      } else {
+        onStartup.addAll(home);
       }
     }
 
-    BeeKeeper.init();
-    Global.init();
-
-    if (GWT.isProdMode()) {
-      GWT.setUncaughtExceptionHandler(new ExceptionHandler());
-    }
-
-    BeeKeeper.getScreen().init();
-    Window.addResizeHandler(new ResizeHandler() {
-      @Override
-      public void onResize(ResizeEvent event) {
-        BeeKeeper.getScreen().getScreenPanel().onResize();
-      }
-    });
-
-    ParameterList params = BeeKeeper.getRpc().createParameters(Service.LOGIN);
-    params.addQueryItem(Service.VAR_UI, BeeKeeper.getScreen().getUserInterface().getShortName());
-
-    BeeKeeper.getRpc().makeRequest(params, new ResponseCallback() {
-      @Override
-      public void onResponse(ResponseObject response) {
-        load(Codec.deserializeMap((String) response.getResponse()));
-        start();
-      }
-    });
-
-    List<String> extScripts = Settings.getScripts();
-    if (!BeeUtils.isEmpty(extScripts)) {
-      for (String script : extScripts) {
-        DomUtils.injectExternalScript(script);
-      }
+    if (!onStartup.isEmpty()) {
+      BeeKeeper.getScreen().restore(onStartup, false);
     }
   }
 
@@ -135,9 +123,12 @@ public class Bee implements EntryPoint {
 
     Module.setEnabledModules(data.get(Service.PROPERTY_MODULES));
 
-    ClientDefaults.setCurrency(BeeUtils
-        .toLongOrNull(data.get(AdministrationConstants.COL_CURRENCY)));
-    ClientDefaults.setCurrencyName(data.get(AdministrationConstants.ALS_CURRENCY_NAME));
+    ClientDefaults.setCurrency(BeeUtils.toLongOrNull(data.get(COL_CURRENCY)));
+    ClientDefaults.setCurrencyName(data.get(ALS_CURRENCY_NAME));
+
+    if (data.containsKey(PRM_COMPANY)) {
+      AdministrationKeeper.setCompany(BeeUtils.toLongOrNull(data.get(PRM_COMPANY)));
+    }
 
     BeeKeeper.getScreen().start(userData);
 
@@ -182,28 +173,107 @@ public class Bee implements EntryPoint {
           case NEWS:
             Global.getNewsAggregator().loadSubscriptions(serialized);
             break;
-            
+
           case REPORTS:
             Global.getReportSettings().load(serialized);
             break;
 
+          case SETTINGS:
+            BeeKeeper.getUser().loadSettings(serialized);
+            break;
+
           case USERS:
             Global.getUsers().loadUserData(serialized);
+            break;
+
+          case WORKSPACES:
+            Global.getSpaces().load(serialized);
             break;
         }
       }
     }
   }
 
+  private static void logout(String workspace) {
+    ParameterList params = BeeKeeper.getRpc().createParameters(Service.LOGOUT);
+
+    if (!BeeUtils.isEmpty(workspace)) {
+      params.addDataItem(COL_LAST_WORKSPACE, workspace);
+    } else if (BeeKeeper.getUser().workspaceContinue()) {
+      params.addQueryItem(COL_LAST_WORKSPACE, BeeConst.EMPTY);
+    }
+
+    BeeKeeper.getRpc().makeRequest(params);
+  }
+
   private static void start() {
+    BeeKeeper.getBus().registerExitHandler("Don't leave me this way");
+
     BeeKeeper.getScreen().onLoad();
 
     ModuleManager.onLoad();
 
     Historian.start();
 
-    Endpoint.open(BeeKeeper.getUser().getUserId());
+    Endpoint.open(BeeKeeper.getUser().getUserId(), new Consumer<Boolean>() {
+      @Override
+      public void accept(Boolean input) {
+        initWorkspace();
+      }
+    });
+  }
 
-    BeeKeeper.getBus().registerExitHandler("Don't leave me this way");
+  @Override
+  public void onModuleLoad() {
+    BeeConst.setClient();
+    LogUtils.setLoggerFactory(new ClientLogManager());
+
+    Localized.setConstants((LocalizableConstants) GWT.create(LocalizableConstants.class));
+    Localized.setMessages((LocalizableMessages) GWT.create(LocalizableMessages.class));
+
+    LayoutEngine layoutEngine = LayoutEngine.detect();
+    if (layoutEngine != null && layoutEngine.hasStyleSheet()) {
+      DomUtils.injectStyleSheet(layoutEngine.getStyleSheet());
+    }
+
+    List<String> extStyleSheets = Settings.getStyleSheets();
+    if (!BeeUtils.isEmpty(extStyleSheets)) {
+      for (String styleSheet : extStyleSheets) {
+        DomUtils.injectStyleSheet(styleSheet);
+      }
+    }
+
+    BeeKeeper.init();
+    Global.init();
+
+    if (GWT.isProdMode()) {
+      GWT.setUncaughtExceptionHandler(new ExceptionHandler());
+    }
+
+    BeeKeeper.getScreen().init();
+    Window.addResizeHandler(new ResizeHandler() {
+      @Override
+      public void onResize(ResizeEvent event) {
+        BeeKeeper.getScreen().getScreenPanel().onResize();
+      }
+    });
+
+    ParameterList params = BeeKeeper.getRpc().createParameters(Service.LOGIN);
+    params.addQueryItem(Service.VAR_UI, BeeKeeper.getScreen().getUserInterface().getShortName());
+
+    BeeKeeper.getRpc().makeRequest(params, new ResponseCallback() {
+      @Override
+      public void onResponse(ResponseObject response) {
+        load(Codec.deserializeMap((String) response.getResponse()));
+        start();
+      }
+    });
+
+    List<String> extScripts = Settings.getScripts();
+    if (!BeeUtils.isEmpty(extScripts)) {
+      for (String script : extScripts) {
+        DomUtils.injectExternalScript(script);
+      }
+    }
   }
 }

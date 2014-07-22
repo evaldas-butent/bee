@@ -30,6 +30,7 @@ import com.butent.bee.client.dom.DomUtils;
 import com.butent.bee.client.dom.Selectors;
 import com.butent.bee.client.event.logical.SelectorEvent;
 import com.butent.bee.client.presenter.Presenter;
+import com.butent.bee.client.ui.Opener;
 import com.butent.bee.client.view.HeaderView;
 import com.butent.bee.client.widget.Button;
 import com.butent.bee.client.widget.CustomDiv;
@@ -47,7 +48,7 @@ import com.butent.bee.shared.data.filter.Filter;
 import com.butent.bee.shared.font.FontAwesome;
 import com.butent.bee.shared.html.Attributes;
 import com.butent.bee.shared.i18n.Localized;
-import com.butent.bee.shared.modules.administration.AdministrationConstants.RightsState;
+import com.butent.bee.shared.rights.RightsState;
 import com.butent.bee.shared.ui.Orientation;
 import com.butent.bee.shared.ui.Relation;
 import com.butent.bee.shared.utils.BeeUtils;
@@ -221,11 +222,10 @@ abstract class MultiRoleForm extends RightsForm {
 
   @Override
   protected void initData(final Consumer<Boolean> callback) {
-    Queries.getRowSet(VIEW_ROLES, Lists.newArrayList(COL_ROLE_NAME), new Queries.RowSetCallback() {
+    Roles.getData(new Consumer<Map<Long, String>>() {
       @Override
-      public void onSuccess(BeeRowSet roleData) {
-        if (DataUtils.isEmpty(roleData)) {
-          severe("roles not available");
+      public void accept(Map<Long, String> roleData) {
+        if (BeeUtils.isEmpty(roleData)) {
           callback.accept(false);
           return;
         }
@@ -233,10 +233,7 @@ abstract class MultiRoleForm extends RightsForm {
         if (!roles.isEmpty()) {
           roles.clear();
         }
-
-        for (BeeRow roleRow : roleData) {
-          roles.put(roleRow.getId(), DataUtils.getString(roleData, roleRow, COL_ROLE_NAME));
-        }
+        roles.putAll(roleData);
 
         ParameterList params = BeeKeeper.getRpc().createParameters(Service.GET_STATE_RIGHTS);
         params.addQueryItem(COL_OBJECT_TYPE, getObjectType().ordinal());
@@ -345,12 +342,9 @@ abstract class MultiRoleForm extends RightsForm {
     addRoleOrientationToggle();
 
     if (columnLabelOrientationToggle == null) {
-      this.columnLabelOrientationToggle = createToggle(FontAwesome.ELLIPSIS_H,
-          FontAwesome.ELLIPSIS_V, STYLE_COLUMN_LABEL_ORIENTATION);
-
-      if (columnLabelOrientation.isVertical()) {
-        columnLabelOrientationToggle.setChecked(true);
-      }
+      this.columnLabelOrientationToggle = new Toggle(FontAwesome.ELLIPSIS_H,
+          FontAwesome.ELLIPSIS_V, STYLE_COLUMN_LABEL_ORIENTATION,
+          columnLabelOrientation.isVertical());
 
       columnLabelOrientationToggle.addClickHandler(new ClickHandler() {
         @Override
@@ -553,7 +547,7 @@ abstract class MultiRoleForm extends RightsForm {
     widget.addClickHandler(new ClickHandler() {
       @Override
       public void onClick(ClickEvent event) {
-        RowEditor.openRow(VIEW_ROLES, roleId, true, new RowCallback() {
+        RowEditor.open(VIEW_ROLES, roleId, Opener.MODAL, new RowCallback() {
           @Override
           public void onSuccess(BeeRow result) {
             String name = Data.getString(VIEW_ROLES, result, COL_ROLE_NAME);
@@ -571,9 +565,6 @@ abstract class MultiRoleForm extends RightsForm {
   }
 
   private Widget createRoleToggle(final long roleId) {
-    Toggle toggle = createToggle(FontAwesome.SQUARE_O, FontAwesome.CHECK_SQUARE_O,
-        STYLE_ROLE_TOGGLE);
-
     boolean checked = true;
     for (RightsObject object : getObjects()) {
       if (!initialValues.containsEntry(object.getName(), roleId)) {
@@ -582,9 +573,8 @@ abstract class MultiRoleForm extends RightsForm {
       }
     }
 
-    if (checked) {
-      toggle.setChecked(true);
-    }
+    Toggle toggle = new Toggle(FontAwesome.SQUARE_O, FontAwesome.CHECK_SQUARE_O,
+        STYLE_ROLE_TOGGLE, checked);
 
     DomUtils.setDataProperty(toggle.getElement(), DATA_KEY_ROLE, roleId);
     setDataType(toggle, DATA_TYPE_ROLE_TOGGLE);

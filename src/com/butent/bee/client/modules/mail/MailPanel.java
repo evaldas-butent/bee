@@ -52,7 +52,6 @@ import com.butent.bee.client.presenter.Presenter;
 import com.butent.bee.client.render.AbstractCellRenderer;
 import com.butent.bee.client.screen.BodyPanel;
 import com.butent.bee.client.screen.Domain;
-import com.butent.bee.client.ui.FormFactory;
 import com.butent.bee.client.ui.FormFactory.WidgetDescriptionCallback;
 import com.butent.bee.client.ui.IdentifiableWidget;
 import com.butent.bee.client.utils.NewFileInfo;
@@ -64,6 +63,7 @@ import com.butent.bee.client.view.form.interceptor.FormInterceptor;
 import com.butent.bee.client.view.grid.GridView;
 import com.butent.bee.client.view.grid.GridView.SelectedRows;
 import com.butent.bee.client.view.grid.interceptor.AbstractGridInterceptor;
+import com.butent.bee.client.view.grid.interceptor.GridInterceptor;
 import com.butent.bee.client.websocket.Endpoint;
 import com.butent.bee.client.widget.Button;
 import com.butent.bee.client.widget.DateTimeLabel;
@@ -110,7 +110,6 @@ import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.Codec;
 import com.butent.bee.shared.websocket.messages.ProgressMessage;
 
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
@@ -300,12 +299,17 @@ public class MailPanel extends AbstractFormInterceptor {
     public void afterCreatePresenter(GridPresenter presenter) {
       GridView grid = presenter.getGridView();
       grid.getGrid().addActiveRowChangeHandler(new ContentHandler(grid.getDataIndex(COL_SENDER)));
-      activateAccount(currentAccount);
+      activateAccount(getCurrentAccount());
     }
 
     @Override
     public BeeRowSet getInitialRowSet(GridDescription gridDescription) {
       return Data.createRowSet(gridDescription.getViewName());
+    }
+
+    @Override
+    public GridInterceptor getInstance() {
+      return new MessagesGrid();
     }
 
     @Override
@@ -318,7 +322,7 @@ public class MailPanel extends AbstractFormInterceptor {
       } else if (BeeUtils.same(columnName, "Envelope")) {
         return new EnvelopeRenderer(dataColumns);
       }
-      return null;
+      return super.getRenderer(columnName, dataColumns, columnDescription, cellSource);
     }
 
     @Override
@@ -365,7 +369,7 @@ public class MailPanel extends AbstractFormInterceptor {
 
   private static final String MESSAGES_FILTER = "MessagesFilter";
 
-  private Integer currentAccount;
+  private AccountInfo currentAccount;
   private Long currentFolder;
 
   private IsRow currentMessage;
@@ -373,7 +377,7 @@ public class MailPanel extends AbstractFormInterceptor {
   private final MessagesGrid messages = new MessagesGrid();
   private final MailMessage message = new MailMessage(this);
 
-  private final List<AccountInfo> accounts = new ArrayList<>();
+  private final List<AccountInfo> accounts;
   private final BiMap<String, Long> progresses = HashBiMap.create();
 
   private Widget messageWidget;
@@ -381,32 +385,9 @@ public class MailPanel extends AbstractFormInterceptor {
   private InputText searchWidget;
   private String searchValue;
 
-  public MailPanel() {
-    ParameterList params = MailKeeper.createArgs(SVC_GET_ACCOUNTS);
-    params.addDataItem(COL_USER, BeeKeeper.getUser().getUserId());
-
-    BeeKeeper.getRpc().makePostRequest(params, new ResponseCallback() {
-      @Override
-      public void onResponse(ResponseObject response) {
-        Assert.isTrue(response.hasResponse(SimpleRowSet.class));
-        SimpleRowSet rs = SimpleRowSet.restore(response.getResponseAsString());
-
-        for (int i = 0; i < rs.getNumberOfRows(); i++) {
-          SimpleRow row = rs.getRow(i);
-
-          if (currentAccount == null || BeeUtils.unbox(row.getBoolean(COL_ACCOUNT_DEFAULT))) {
-            currentAccount = i;
-          }
-          accounts.add(new AccountInfo(row));
-        }
-        if (!BeeUtils.isEmpty(accounts)) {
-          FormFactory.openForm(FORM_MAIL, MailPanel.this);
-        } else {
-          BeeKeeper.getScreen().notifyWarning("No accounts found");
-          MailKeeper.removeMailPanel(MailPanel.this);
-        }
-      }
-    });
+  MailPanel(List<AccountInfo> availableAccounts, AccountInfo defaultAccount) {
+    this.accounts = availableAccounts;
+    this.currentAccount = defaultAccount;
   }
 
   @Override
@@ -587,8 +568,7 @@ public class MailPanel extends AbstractFormInterceptor {
   }
 
   AccountInfo getCurrentAccount() {
-    Assert.isIndex(accounts, currentAccount);
-    return accounts.get(currentAccount);
+    return currentAccount;
   }
 
   Long getCurrentFolderId() {
@@ -656,7 +636,7 @@ public class MailPanel extends AbstractFormInterceptor {
     });
   }
 
-  private void activateAccount(int selectedAccount) {
+  private void activateAccount(AccountInfo selectedAccount) {
     currentAccount = selectedAccount;
 
     requeryFolders(new ScheduledCommand() {
@@ -673,8 +653,8 @@ public class MailPanel extends AbstractFormInterceptor {
   }
 
   private void createMessage() {
-    NewMailMessage newMessage = NewMailMessage.create(getCurrentAccount().getAddressId(),
-        accounts, null, null, null, null, null, null, null);
+    NewMailMessage newMessage = NewMailMessage.create(accounts, getCurrentAccount(), null, null,
+        null, null, null, null, null);
 
     newMessage.setScheduled(new Consumer<Boolean>() {
       @Override
@@ -762,17 +742,21 @@ public class MailPanel extends AbstractFormInterceptor {
   private void initAccounts(final ListBox accountsWidget) {
     accountsWidget.clear();
 
-    for (AccountInfo account : accounts) {
-      accountsWidget.addItem(account.getDescription());
+    for (int i = 0; i < accounts.size(); i++) {
+      AccountInfo accountInfo = accounts.get(i);
+      accountsWidget.addItem(accountInfo.getDescription() + " <" + accountInfo.getAddress() + ">");
+
+      if (Objects.equals(accountInfo, currentAccount)) {
+        accountsWidget.setSelectedIndex(i);
+      }
     }
     accountsWidget.setEnabled(accountsWidget.getItemCount() > 1);
-    accountsWidget.setSelectedIndex(currentAccount);
     accountsWidget.addChangeHandler(new ChangeHandler() {
       @Override
       public void onChange(ChangeEvent event) {
-        int selectedAccount = accountsWidget.getSelectedIndex();
+        AccountInfo selectedAccount = accounts.get(accountsWidget.getSelectedIndex());
 
-        if (selectedAccount != currentAccount) {
+        if (!Objects.equals(selectedAccount, currentAccount)) {
           activateAccount(selectedAccount);
         }
       }

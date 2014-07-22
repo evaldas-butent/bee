@@ -7,21 +7,26 @@
   <Fields>
     <Relation name="User" notNull="true" relation="Users" cascade="DELETE" unique="true" />
 
+    <Date name="CalendarMinDate" label="=dateFrom" />
+    <Date name="CalendarMaxDate" label="=dateTo" />
+
     <Enum name="CalendarCompanyKind" key="ServiceCompanyKind" label="=company" />
 
-    <Integer name="CalendarPixelsPerCompany" />
-    <Integer name="CalendarPixelsPerInfo" />
+    <Integer name="CalendarPixelsPerCompany" label="=svcCalendarPixelsPerCompany" />
+    <Integer name="CalendarPixelsPerInfo" label="=svcCalendarPixelsPerInfo" />
 
-    <Boolean name="CalendarSeparateObjects" />
+    <Boolean name="CalendarSeparateObjects" label="=svcCalendarSeparateObjects" />
 
-    <Integer name="CalendarPixelsPerDay" />
-    <Integer name="CalendarPixelsPerRow" />
+    <Integer name="CalendarPixelsPerDay" label="=timeboardPixelsPerDay" />
+    <Integer name="CalendarPixelsPerRow" label="=timeboardPixelsPerRow" />
 
-    <Integer name="CalendarHeaderHeight" />
-    <Integer name="CalendarFooterHeight" />
+    <Integer name="CalendarHeaderHeight" label="=timeboardHeaderHeight" />
+    <Integer name="CalendarFooterHeight" label="=timeboardFooterHeight" />
 
-    <Integer name="CalendarItemOpacity" />
-    <Integer name="CalendarStripOpacity" />
+    <Boolean name="CalendarFooterMap" label="=timeboardFooterMap" />
+
+    <Integer name="CalendarItemOpacity" label="=timeboardItemOpacity" />
+    <Integer name="CalendarStripOpacity" label="=timeboardStripOpacity" />
 
     <String name="CalendarDatesColor" precision="100" label="=svcDates" />
     <String name="CalendarTaskColor" precision="100" label="=crmTasks" />
@@ -35,6 +40,6 @@
     <String name="CalendarTaskColor5" precision="100" label="=crmTaskStatusApproved" />
     <String name="CalendarTaskColor6" precision="100" label="=crmTaskStatusCanceled" />
     
-    <Text name="CalendarTaskTypes" />
+    <Text name="CalendarTaskTypes" label="=crmTaskTypes" />
   </Fields>
 </Table>

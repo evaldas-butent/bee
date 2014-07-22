@@ -128,6 +128,7 @@ import com.butent.bee.shared.css.CssUnit;
 import com.butent.bee.shared.css.values.TextAlign;
 import com.butent.bee.shared.css.values.VerticalAlign;
 import com.butent.bee.shared.data.BeeColumn;
+import com.butent.bee.shared.data.CellSource;
 import com.butent.bee.shared.data.CustomProperties;
 import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.value.ValueType;
@@ -136,6 +137,7 @@ import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogUtils;
 import com.butent.bee.shared.ui.Calculation;
+import com.butent.bee.shared.ui.Captions;
 import com.butent.bee.shared.ui.ConditionalStyleDeclaration;
 import com.butent.bee.shared.ui.HasCapsLock;
 import com.butent.bee.shared.ui.HasMaxLength;
@@ -1018,7 +1020,16 @@ public enum FormWidget {
         break;
 
       case CHECK_BOX:
-        widget = new InputBoolean(html);
+        String label;
+        if (BeeUtils.isEmpty(html)) {
+          label = (column == null) ? null : Localized.getLabel(column);
+        } else if (Captions.isCaption(html)) {
+          label = html;
+        } else {
+          label = null;
+        }
+
+        widget = new InputBoolean(label);
         if (BeeConst.isTrue(attributes.get(ATTR_CHECKED))) {
           ((InputBoolean) widget).setValue(BeeConst.STRING_TRUE);
         }
@@ -1447,7 +1458,24 @@ public enum FormWidget {
       case MULTI_SELECTOR:
         relation = createRelation(null, attributes, children, Relation.RenderMode.SOURCE);
         if (relation != null) {
-          widget = new MultiSelector(relation, true, attributes.get(UiConstants.ATTR_PROPERTY));
+          String property = attributes.get(UiConstants.ATTR_PROPERTY);
+
+          CellSource cellSource = null;
+          if (!BeeUtils.isEmpty(property)) {
+            cellSource = CellSource.forProperty(property, ValueType.TEXT);
+          } else if (column != null) {
+            int columnIndex = DataUtils.getColumnIndex(column.getId(), columns);
+            if (!BeeConst.isUndef(columnIndex)) {
+              cellSource = CellSource.forColumn(column, columnIndex);
+            }
+          }
+
+          widget = new MultiSelector(relation, true, cellSource);
+
+          String separators = attributes.get(MultiSelector.ATTR_SEPARATORS);
+          if (BeeUtils.hasLength(separators)) {
+            ((MultiSelector) widget).setSeparators(separators);
+          }
         }
         break;
 
@@ -1642,8 +1670,9 @@ public enum FormWidget {
 
       case DATA_TREE:
         String treeViewName = attributes.get(UiConstants.ATTR_VIEW_NAME);
+        String treeFavoriteName = attributes.get(UiConstants.ATTR_FAVORITE);
         widget = new TreeContainer(attributes.get(UiConstants.ATTR_CAPTION),
-            BeeUtils.toBoolean(attributes.get("hideActions")), treeViewName);
+            BeeUtils.toBoolean(attributes.get("hideActions")), treeViewName, treeFavoriteName);
 
         ((TreeView) widget).setViewPresenter(new TreePresenter((TreeView) widget,
             treeViewName, attributes.get("parentColumn"),

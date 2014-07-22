@@ -157,6 +157,7 @@ public class AdministrationModuleBean implements BeeModule {
         BeeParameter.createRelation(module, PRM_CURRENCY, false, TBL_CURRENCIES,
             COL_CURRENCY_NAME),
         BeeParameter.createNumber(module, PRM_VAT_PERCENT, false, 21),
+        BeeParameter.createText(module, PRM_ERP_NAMESPACE, false, null),
         BeeParameter.createText(module, PRM_ERP_ADDRESS, false, null),
         BeeParameter.createText(module, PRM_ERP_LOGIN, false, null),
         BeeParameter.createText(module, PRM_ERP_PASSWORD, false, null),
@@ -307,8 +308,7 @@ public class AdministrationModuleBean implements BeeModule {
     if (!BeeUtils.isEmpty(email)) {
       cpRow.setValue(DataUtils.getColumnIndex(ALS_EMAIL_ID, cpColumns),
           qs.insertData(new SqlInsert(TBL_EMAILS)
-              .addConstant(COL_EMAIL_ADDRESS, address)
-              .addNotEmpty(COL_EMAIL_LABEL, BeeUtils.joinWords(firstName, lastName))));
+              .addConstant(COL_EMAIL_ADDRESS, address)));
     }
 
     if (!BeeUtils.isEmpty(positionName)) {
@@ -494,7 +494,8 @@ public class AdministrationModuleBean implements BeeModule {
     }
     BeeView view = sys.getView(viewName);
 
-    SqlSelect query = view.getQuery(Filter.idIn(idList), null).resetFields().resetOrder();
+    SqlSelect query = view.getQuery(usr.getCurrentUserId(), Filter.idIn(idList))
+        .resetFields().resetOrder();
 
     Multimap<String, ViewColumn> columnMap = HashMultimap.create();
     Map<String, Pair<String, String>> idMap = Maps.newHashMap();

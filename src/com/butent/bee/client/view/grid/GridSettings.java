@@ -1,7 +1,6 @@
 package com.butent.bee.client.view.grid;
 
 import com.google.common.collect.Lists;
-import com.google.common.collect.Maps;
 import com.google.gwt.dom.client.Element;
 import com.google.gwt.event.dom.client.DropEvent;
 import com.google.gwt.user.client.ui.Widget;
@@ -35,6 +34,8 @@ import com.butent.bee.shared.ui.GridDescription;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.NameUtils;
 
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -55,7 +56,7 @@ public final class GridSettings {
   private static final int CHECK_COL = 0;
   private static final int LABEL_COL = 1;
 
-  private static final Map<String, GridConfig> grids = Maps.newHashMap();
+  private static final Map<String, GridConfig> grids = new HashMap<>();
 
   public static GridDescription apply(String key, GridDescription input) {
     GridConfig gridConfig = grids.get(key);
@@ -127,7 +128,7 @@ public final class GridSettings {
         List<Integer> selectedColumns = getSelectedColumns(table, predefinedColumns);
 
         if (grid.updateStaticVisibleColumns(selectedColumns)) {
-          List<String> names = Lists.newArrayList();
+          List<String> names = new ArrayList<>();
 
           List<ColumnInfo> columns = grid.getColumns();
           for (ColumnInfo columnInfo : columns) {
@@ -141,12 +142,12 @@ public final class GridSettings {
       }
     }, STYLE_DIALOG, target);
   }
-  
+
   public static boolean hasVisibleColumns(String key) {
     GridConfig gridConfig = grids.get(key);
     return gridConfig != null && gridConfig.hasVisibleColumns();
   }
-  
+
   public static void load(String serializedGridSettings, String serializedColumnSettings) {
     grids.clear();
 
@@ -183,7 +184,7 @@ public final class GridSettings {
       }
     }
   }
-  
+
   public static void onSettingsChange(String key, SettingsChangeEvent event) {
     if (HasDimensions.ATTR_HEIGHT.equals(event.getAttribute())) {
       int index = BeeConst.UNDEF;
@@ -250,13 +251,13 @@ public final class GridSettings {
   }
 
   private static int getDataIndex(HtmlTable table, int row) {
-    return DomUtils.getDataIndexInt(table.getWidget(row, LABEL_COL).getElement());    
+    return DomUtils.getDataIndexInt(table.getWidget(row, LABEL_COL).getElement());
   }
 
-  private static List<Integer> getSelectedColumns(HtmlTable table, 
+  private static List<Integer> getSelectedColumns(HtmlTable table,
       List<ColumnInfo> predefinedColumns) {
 
-    List<Integer> selectedColumns = Lists.newArrayList();
+    List<Integer> selectedColumns = new ArrayList<>();
 
     for (int i = 0; i < table.getRowCount(); i++) {
       int index = getDataIndex(table, i);
@@ -276,7 +277,7 @@ public final class GridSettings {
         selectedColumns.add(index);
       }
     }
-    
+
     return selectedColumns;
   }
 
@@ -284,7 +285,7 @@ public final class GridSettings {
       List<ColumnInfo> predefinedColumns) {
 
     int y = event.getNativeEvent().getClientY();
-    
+
     int sourceRow = BeeConst.UNDEF;
     int targetRow = BeeConst.UNDEF;
 
@@ -294,13 +295,13 @@ public final class GridSettings {
       if (sourceRow == BeeConst.UNDEF && getDataIndex(table, i) == sourceIndex) {
         sourceRow = i;
       }
-      
+
       if (targetRow == BeeConst.UNDEF) {
         Element rowElement = table.getRow(i);
-      
+
         int top = rowElement.getAbsoluteTop();
         int height = rowElement.getOffsetHeight();
-        
+
         if (y < top + height / 2) {
           targetRow = i;
         } else if (i >= rowCount - 1) {
@@ -308,30 +309,30 @@ public final class GridSettings {
         }
       }
     }
-    
+
     if (sourceRow == BeeConst.UNDEF || targetRow == BeeConst.UNDEF
         || sourceRow == targetRow || targetRow == rowCount && sourceRow >= rowCount - 1) {
       return;
     }
-    
-    List<Integer> indexes = Lists.newArrayList();
+
+    List<Integer> indexes = new ArrayList<>();
     for (int i = 0; i < rowCount; i++) {
       if (i == targetRow) {
         indexes.add(sourceIndex);
-      } 
+      }
       if (i != sourceRow) {
         indexes.add(getDataIndex(table, i));
       }
     }
-    
+
     if (targetRow == rowCount) {
       indexes.add(sourceIndex);
     }
-    
+
     List<Integer> selectedColumns = getSelectedColumns(table, predefinedColumns);
-    
+
     table.clear();
-    
+
     int row = 0;
 
     for (int index : indexes) {
@@ -356,7 +357,7 @@ public final class GridSettings {
       gridConfig.saveColumnSetting(name, index, value);
 
     } else if (!BeeUtils.isEmpty(value)) {
-      List<BeeColumn> columns = Lists.newArrayList();
+      List<BeeColumn> columns = new ArrayList<>();
       columns.add(GridConfig.getDataColumns().get(GridConfig.getUserIndex()));
       columns.add(GridConfig.getDataColumns().get(GridConfig.getKeyIndex()));
 
@@ -385,7 +386,7 @@ public final class GridSettings {
     GridConfig gridConfig = grids.get(key);
     if (gridConfig == null) {
       if (newValue != null) {
-        List<BeeColumn> columns = Lists.newArrayList();
+        List<BeeColumn> columns = new ArrayList<>();
         columns.add(GridConfig.getDataColumns().get(GridConfig.getUserIndex()));
         columns.add(GridConfig.getDataColumns().get(GridConfig.getKeyIndex()));
         columns.add(dataColumn);

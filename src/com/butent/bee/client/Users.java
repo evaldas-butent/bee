@@ -13,6 +13,7 @@ import com.butent.bee.client.layout.Flow;
 import com.butent.bee.client.render.PhotoRenderer;
 import com.butent.bee.client.screen.Domain;
 import com.butent.bee.client.ui.IdentifiableWidget;
+import com.butent.bee.client.ui.Opener;
 import com.butent.bee.client.websocket.Endpoint;
 import com.butent.bee.client.widget.Badge;
 import com.butent.bee.client.widget.CustomDiv;
@@ -80,7 +81,7 @@ public class Users {
       nameWidget.addClickHandler(new ClickHandler() {
         @Override
         public void onClick(ClickEvent event) {
-          RowEditor.openRow(ClassifierConstants.VIEW_PERSONS, personId, true, null);
+          RowEditor.open(ClassifierConstants.VIEW_PERSONS, personId, Opener.MODAL);
         }
       });
 
@@ -248,10 +249,6 @@ public class Users {
     return openSessions.get(sessionId);
   }
 
-  public void setUsers(Map<Long, UserData> users) {
-    this.users = users;
-  }
-
   public String getUserSignatureBySession(String sessionId) {
     Long userId = openSessions.get(sessionId);
     UserData userData = (userId == null) ? null : users.get(userId);
@@ -262,7 +259,7 @@ public class Users {
   public boolean isOpen(String sessionId) {
     return !BeeUtils.isEmpty(sessionId) && openSessions.containsKey(sessionId);
   }
-  
+
   public void loadUserData(String serialized) {
     String[] arr = Codec.beeDeserializeCollection(serialized);
     if (ArrayUtils.isEmpty(arr)) {
@@ -424,7 +421,7 @@ public class Users {
     if (header == null) {
       return;
     }
-    
+
     int size = openSessions.size();
 
     if (getSizeBadge() == null) {
@@ -432,7 +429,7 @@ public class Users {
 
       header.add(badge);
       setSizeBadge(badge);
-    
+
     } else if (initial) {
       getSizeBadge().setValue(size);
 

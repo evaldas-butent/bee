@@ -10,6 +10,7 @@ import com.butent.bee.client.ui.FormFactory.WidgetDescriptionCallback;
 import com.butent.bee.client.ui.IdentifiableWidget;
 import com.butent.bee.client.view.TreeView;
 import com.butent.bee.client.view.grid.interceptor.AbstractGridInterceptor;
+import com.butent.bee.client.view.grid.interceptor.GridInterceptor;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.data.IsRow;
 import com.butent.bee.shared.data.filter.Filter;
@@ -22,6 +23,10 @@ import java.util.List;
 class ItemsGrid extends AbstractGridInterceptor implements SelectionHandler<IsRow> {
 
   private static final String FILTER_KEY = "f1";
+
+  static String getSupplierKey(boolean services) {
+    return BeeUtils.join(BeeConst.STRING_UNDER, GRID_ITEMS, services ? "services" : "goods");
+  }
 
   private static Filter getFilter(Long category) {
     if (category == null) {
@@ -37,8 +42,8 @@ class ItemsGrid extends AbstractGridInterceptor implements SelectionHandler<IsRo
   private TreeView treeView;
   private IsRow selectedCategory;
 
-  ItemsGrid(boolean showServices) {
-    this.services = showServices;
+  ItemsGrid(boolean services) {
+    this.services = services;
   }
 
   @Override
@@ -61,6 +66,11 @@ class ItemsGrid extends AbstractGridInterceptor implements SelectionHandler<IsRo
   }
 
   @Override
+  public GridInterceptor getInstance() {
+    return new ItemsGrid(services);
+  }
+
+  @Override
   public List<String> getParentLabels() {
     if (getSelectedCategory() == null || getTreeView() == null) {
       return super.getParentLabels();
@@ -77,12 +87,6 @@ class ItemsGrid extends AbstractGridInterceptor implements SelectionHandler<IsRo
       return showServices() ? Localized.getConstants().newService()
           : Localized.getConstants().newItem();
     }
-  }
-
-  @Override
-  public String getSupplierKey() {
-    return BeeUtils.normalize(BeeUtils.join(BeeConst.STRING_UNDER, "grid", VIEW_ITEMS,
-        showServices() ? "services" : "goods"));
   }
 
   @Override

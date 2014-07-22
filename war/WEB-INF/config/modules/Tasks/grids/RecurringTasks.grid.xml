@@ -6,7 +6,7 @@
   currentUserFilter="Owner" enabledActions="copy"
   >
   <g:columns>
-    <IdColumn name="Id" caption="=captionId" />
+    <IdColumn name="Id" />
     <RelColumn name="Owner" renderColumns="OwnerFirstName OwnerLastName"
       sortBy="OwnerLastName OwnerFirstName" visible="false" />
   </g:columns>

@@ -173,7 +173,7 @@ public final class Collator implements Comparator<String> {
   }-*/;
 
   private native int compareImpl(String source, String target, String loc) /*-{
-    // chromium issue 314210    
+    // chromium issue 314210
     var z;
     try {
       z = source.localeCompare(target, loc);

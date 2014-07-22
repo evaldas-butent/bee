@@ -346,7 +346,6 @@ public final class TransportConstants {
   public static final String SVC_DO_IMPORT = "DoImport";
   public static final String SVC_GET_CREDIT_INFO = "GetCreditInfo";
 
-  public static final String SVC_SEND_TO_ERP = "SendToERP";
   public static final String SVC_SEND_MESSAGE = "SendMessage";
 
   public static final String PRM_ERP_REFRESH_INTERVAL = "ERPRefreshIntervalInMinutes";
@@ -537,6 +536,7 @@ public final class TransportConstants {
   public static final String COL_COSTS_EXTERNAL_ID = "ExternalID";
 
   public static final String COL_ORDER = "Order";
+  public static final String COL_ORDER_ID = "OrderID";
   public static final String COL_ORDER_NO = "OrderNo";
   public static final String COL_ORDER_DATE = "Date";
   public static final String COL_ORDER_MANAGER = "Manager";
@@ -906,7 +906,7 @@ public final class TransportConstants {
   public static final String AR_EXPENSE = "Expense";
   public static final String AR_SECONDARY_INCOME = "SecondaryIncome";
   public static final String AR_SECONDARY_EXPENSE = "SecondaryExpense";
-  
+
   public static final String STYLE_SHEET = "transport";
 
   public static String defaultLoadingColumnAlias(String colName) {

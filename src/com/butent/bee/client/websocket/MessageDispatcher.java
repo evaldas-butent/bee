@@ -49,6 +49,7 @@ import com.butent.bee.shared.websocket.SessionUser;
 import com.butent.bee.shared.websocket.WsUtils;
 import com.butent.bee.shared.websocket.messages.AdminMessage;
 import com.butent.bee.shared.websocket.messages.ChatMessage;
+import com.butent.bee.shared.websocket.messages.ConfigMessage;
 import com.butent.bee.shared.websocket.messages.EchoMessage;
 import com.butent.bee.shared.websocket.messages.InfoMessage;
 import com.butent.bee.shared.websocket.messages.LocationMessage;
@@ -293,6 +294,16 @@ class MessageDispatcher {
         }
         break;
 
+      case CONFIG:
+        ConfigMessage configMessage = (ConfigMessage) message;
+
+        if (configMessage.isValid()) {
+          logger.info(configMessage);
+        } else {
+          WsUtils.onEmptyMessage(message);
+        }
+        break;
+
       case ECHO:
         BeeKeeper.getScreen().notifyInfo(((EchoMessage) message).getText());
         break;
@@ -304,7 +315,7 @@ class MessageDispatcher {
         if (BeeUtils.isEmpty(info)) {
           WsUtils.onEmptyMessage(message);
         } else {
-          Global.showGrid(caption, new PropertiesData(info));
+          Global.showTable(caption, new PropertiesData(info));
         }
         break;
 
@@ -359,13 +370,14 @@ class MessageDispatcher {
         MailMessage mailMessage = (MailMessage) message;
 
         if (mailMessage.isValid()) {
-          boolean refreshFolders = mailMessage.messagesUpdated() || mailMessage.foldersUpdated()
+          boolean updated = mailMessage.messagesUpdated() || mailMessage.foldersUpdated();
+          boolean refreshFolders = updated
               || Objects.equals(mailMessage.getFlag(), MessageFlag.SEEN);
 
           if (Global.getNewsAggregator().hasSubscription(Feed.MAIL) && refreshFolders) {
             Global.getNewsAggregator().refresh();
           }
-          MailKeeper.refreshActivePanel(refreshFolders, mailMessage.getFolderId());
+          MailKeeper.refreshActivePanel(refreshFolders, updated ? mailMessage.getFolderId() : null);
 
         } else {
           logger.severe(mailMessage.getError());
@@ -398,7 +410,9 @@ class MessageDispatcher {
         break;
 
       case ONLINE:
-        List<SessionUser> sessionUsers = ((OnlineMessage) message).getSessionUsers();
+        OnlineMessage om = (OnlineMessage) message;
+
+        List<SessionUser> sessionUsers = om.getSessionUsers();
         if (sessionUsers.size() > 1) {
           for (int i = 0; i < sessionUsers.size() - 1; i++) {
             SessionUser sessionUser = sessionUsers.get(i);
@@ -408,8 +422,15 @@ class MessageDispatcher {
 
         if (sessionUsers.isEmpty()) {
           WsUtils.onEmptyMessage(message);
+
         } else {
           Endpoint.setSessionId(sessionUsers.get(sessionUsers.size() - 1).getSessionId());
+
+          if (!om.getChatRooms().isEmpty()) {
+            Global.getRooms().setRoomData(om.getChatRooms());
+          }
+
+          Endpoint.online();
         }
         break;
 
@@ -480,7 +501,7 @@ class MessageDispatcher {
       case SHOW:
         Subject subject = ((ShowMessage) message).getSubject();
         if (subject == Subject.SESSION) {
-          Global.showGrid(subject.getCaption(), new PropertiesData(Endpoint.getInfo()));
+          Global.showTable(subject.getCaption(), new PropertiesData(Endpoint.getInfo()));
         } else {
           WsUtils.onInvalidState(message);
         }

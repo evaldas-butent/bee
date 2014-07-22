@@ -10,8 +10,10 @@ import com.butent.bee.client.ui.FormWidget;
 import com.butent.bee.client.ui.HasFosterParent;
 import com.butent.bee.client.ui.HasRowChildren;
 import com.butent.bee.shared.BeeConst;
+import com.butent.bee.shared.data.CellSource;
 import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.RowChildren;
+import com.butent.bee.shared.data.value.ValueType;
 import com.butent.bee.shared.data.view.DataInfo;
 import com.butent.bee.shared.modules.administration.AdministrationConstants;
 import com.butent.bee.shared.ui.Relation;
@@ -29,6 +31,7 @@ public final class ChildSelector extends MultiSelector implements HasFosterParen
 
   public static ChildSelector create(String targetView, Relation relation,
       Map<String, String> attributes) {
+
     if (relation == null || BeeUtils.isEmpty(attributes)) {
       return null;
     }
@@ -79,7 +82,7 @@ public final class ChildSelector extends MultiSelector implements HasFosterParen
         && BeeUtils.same(targetColumn, sourceColumn)) {
       return null;
     }
-    
+
     String rowProperty = attributes.get(UiConstants.ATTR_PROPERTY);
     return new ChildSelector(relation, table, targetColumn, sourceColumn, rowProperty);
   }
@@ -95,7 +98,8 @@ public final class ChildSelector extends MultiSelector implements HasFosterParen
 
   private ChildSelector(Relation relation, String childTable, String targetRelColumn,
       String sourceRelColumn, String rowProperty) {
-    super(relation, true, rowProperty);
+    super(relation, true,
+        (rowProperty == null) ? null : CellSource.forProperty(rowProperty, ValueType.TEXT));
 
     this.childTable = childTable;
     this.targetRelColumn = targetRelColumn;
@@ -147,21 +151,21 @@ public final class ChildSelector extends MultiSelector implements HasFosterParen
             @Override
             public void onSuccess(String result) {
               setTargetRowId(rowId);
-              render(result);
+              setIds(result);
             }
           });
 
     } else {
       setTargetRowId(rowId);
-      
+
       String value;
-      if (event.getRow() == null || BeeUtils.isEmpty(getRowProperty())) {
-        value = BeeConst.STRING_EMPTY; 
+      if (event.getRow() == null || getCellSource() == null) {
+        value = BeeConst.STRING_EMPTY;
       } else {
-        value = event.getRow().getProperty(getRowProperty());
+        value = getCellSource().getString(event.getRow());
       }
-      
-      render(value);
+
+      setIds(value);
     }
   }
 

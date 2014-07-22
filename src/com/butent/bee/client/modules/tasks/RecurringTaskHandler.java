@@ -11,6 +11,7 @@ import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.event.dom.client.HasClickHandlers;
 import com.google.gwt.i18n.client.LocaleInfo;
+import com.google.gwt.user.client.ui.HasEnabled;
 import com.google.gwt.user.client.ui.Widget;
 import com.google.web.bindery.event.shared.HandlerRegistration;
 
@@ -36,6 +37,7 @@ import com.butent.bee.client.layout.Flow;
 import com.butent.bee.client.style.StyleUtils;
 import com.butent.bee.client.ui.FormFactory.WidgetDescriptionCallback;
 import com.butent.bee.client.ui.IdentifiableWidget;
+import com.butent.bee.client.ui.Opener;
 import com.butent.bee.client.ui.UiHelper;
 import com.butent.bee.client.validation.CellValidateEvent;
 import com.butent.bee.client.view.HeaderView;
@@ -351,15 +353,22 @@ class RecurringTaskHandler extends AbstractFormInterceptor implements CellValida
           setExecutors(null);
 
           if (DataUtils.hasId(activeRow)) {
-            int updateSize = Queries.update(getViewName(), getFormView().getDataColumns(),
-                getFormView().getOldRow(), activeRow, getFormView().getChildrenForUpdate(),
-                new RowCallback() {
-                  @Override
-                  public void onSuccess(BeeRow result) {
-                    RowUpdateEvent.fire(BeeKeeper.getBus(), getViewName(), result);
-                    showSchedule(result.getId());
-                  }
-                });
+            int updateSize;
+
+            if (getFormView().isRowEnabled(activeRow)) {
+              updateSize = Queries.update(getViewName(), getFormView().getDataColumns(),
+                  getFormView().getOldRow(), activeRow, getFormView().getChildrenForUpdate(),
+                  new RowCallback() {
+                    @Override
+                    public void onSuccess(BeeRow result) {
+                      RowUpdateEvent.fire(BeeKeeper.getBus(), getViewName(), result);
+                      showSchedule(result.getId());
+                    }
+                  });
+
+            } else {
+              updateSize = 0;
+            }
 
             if (updateSize == 0) {
               showSchedule(activeRow.getId());
@@ -376,8 +385,10 @@ class RecurringTaskHandler extends AbstractFormInterceptor implements CellValida
     }
 
     for (Cron cron : Cron.values()) {
-      refreshValues(cron, row.getString(form.getDataIndex(cron.source)));
+      refreshValues(row.getId(), cron, row.getString(form.getDataIndex(cron.source)));
     }
+
+    enableToggles(form.isRowEnabled(row));
   }
 
   @Override
@@ -389,7 +400,7 @@ class RecurringTaskHandler extends AbstractFormInterceptor implements CellValida
   public boolean isRowEditable(IsRow row) {
     return row != null && BeeKeeper.getUser().is(row.getLong(getDataIndex(COL_OWNER)));
   }
-  
+
   @Override
   public Boolean validateCell(CellValidateEvent event) {
     if (event.isCellValidation() && event.isPreValidation()) {
@@ -408,7 +419,7 @@ class RecurringTaskHandler extends AbstractFormInterceptor implements CellValida
         clearErrors(cron);
 
       } else {
-        refreshValues(cron, event.getNewValue());
+        refreshValues(event.getRowId(), cron, event.getNewValue());
       }
     }
 
@@ -524,6 +535,16 @@ class RecurringTaskHandler extends AbstractFormInterceptor implements CellValida
     dialog.showRelativeTo(target);
   }
 
+  private void enableToggles(boolean enabled) {
+    for (Flow container : toggleContainers.values()) {
+      for (Widget widget : container) {
+        if (widget instanceof HasEnabled) {
+          ((HasEnabled) widget).setEnabled(enabled);
+        }
+      }
+    }
+  }
+
   private BeeRowSet getExecutors() {
     return executors;
   }
@@ -599,7 +620,7 @@ class RecurringTaskHandler extends AbstractFormInterceptor implements CellValida
       case EDIT:
         dataRow = getOffspring(dataId);
         if (dataRow != null) {
-          RowEditor.openRow(VIEW_TASKS, dataRow, true);
+          RowEditor.open(VIEW_TASKS, dataRow, Opener.MODAL);
         }
         break;
 
@@ -643,7 +664,7 @@ class RecurringTaskHandler extends AbstractFormInterceptor implements CellValida
       @Override
       public void onClick(ClickEvent event) {
         String updated = updateCronValue(cron.source, value, toggle.isChecked());
-        refreshErrors(cron, updated);
+        refreshErrors(getActiveRowId(), cron, updated);
       }
     });
   }
@@ -653,7 +674,7 @@ class RecurringTaskHandler extends AbstractFormInterceptor implements CellValida
 
     for (int i = cron.field.getMin(); i <= cron.field.getMax(); i++) {
       String text = cron.getLabel(i);
-      Toggle toggle = new Toggle(text, text, STYLE_VALUE_TOGGLE);
+      Toggle toggle = new Toggle(text, text, STYLE_VALUE_TOGGLE, false);
 
       initToggle(cron, toggle, i);
       widget.add(toggle);
@@ -763,11 +784,12 @@ class RecurringTaskHandler extends AbstractFormInterceptor implements CellValida
     }
   }
 
-  private void refreshErrors(Cron cron, String input) {
+  private void refreshErrors(long id, Cron cron, String input) {
     if (BeeUtils.isEmpty(input)) {
       clearErrors(cron);
     } else {
-      CronExpression.parseSimpleValues(cron.field, input, getFailureHandler(cron, input));
+      CronExpression.parseSimpleValues(BeeUtils.toString(id), cron.field, input,
+          getFailureHandler(cron, input));
     }
   }
 
@@ -778,13 +800,13 @@ class RecurringTaskHandler extends AbstractFormInterceptor implements CellValida
     }
   }
 
-  private void refreshValues(Cron cron, String input) {
-    Set<Integer> values = CronExpression.parseSimpleValues(cron.field, input,
-        getFailureHandler(cron, input));
+  private void refreshValues(long id, Cron cron, String input) {
+    Set<Integer> values = CronExpression.parseSimpleValues(BeeUtils.toString(id),
+        cron.field, input, getFailureHandler(cron, input));
     setValues(cron, values);
   }
 
-  private Widget renderMonth(YearMonth ym, List<DayOfMonth> days, boolean fertile) {
+  private Widget renderMonth(YearMonth ym, List<DayOfMonth> days, final boolean fertile) {
     Flow panel = new Flow(STYLE_MONTH_PANEL);
 
     Label monthLabel = new Label(BeeUtils.joinWords(ym.getYear(),
@@ -830,7 +852,7 @@ class RecurringTaskHandler extends AbstractFormInterceptor implements CellValida
                 if (offspring.containsKey(number)) {
                   editOffspring(target, number);
 
-                } else if (!DataUtils.isEmpty(getExecutors())) {
+                } else if (fertile && !DataUtils.isEmpty(getExecutors())) {
                   maybeSpawn(target, number, null, new Runnable() {
                     @Override
                     public void run() {
@@ -878,6 +900,7 @@ class RecurringTaskHandler extends AbstractFormInterceptor implements CellValida
     List<BeeColumn> taskColumns = Data.getColumns(VIEW_TASKS);
 
     if (!BeeUtils.isEmpty(taskData) && !BeeUtils.isEmpty(taskColumns)) {
+      int ownerIndex = DataUtils.getColumnIndex(COL_OWNER, taskColumns);
       int executorIndex = DataUtils.getColumnIndex(COL_EXECUTOR, taskColumns);
       int firstNameIndex = DataUtils.getColumnIndex(ALS_EXECUTOR_FIRST_NAME, taskColumns);
       int lastNameIndex = DataUtils.getColumnIndex(ALS_EXECUTOR_LAST_NAME, taskColumns);
@@ -914,19 +937,21 @@ class RecurringTaskHandler extends AbstractFormInterceptor implements CellValida
 
         table.setWidgetAndStyle(r, COL_OFFSPRING_OPEN, open, STYLE_OFFSPRING_OPEN);
 
-        FaLabel delete = new FaLabel(FontAwesome.TRASH_O);
-        delete.setTitle(Localized.getConstants().actionDelete());
+        if (BeeKeeper.getUser().is(taskRow.getLong(ownerIndex))) {
+          FaLabel delete = new FaLabel(FontAwesome.TRASH_O);
+          delete.setTitle(Localized.getConstants().actionDelete());
 
-        delete.addClickHandler(new ClickHandler() {
-          @Override
-          public void onClick(ClickEvent event) {
-            if (event.getSource() instanceof FaLabel) {
-              handleOffspring(Action.DELETE, dayNumber, (Widget) event.getSource());
+          delete.addClickHandler(new ClickHandler() {
+            @Override
+            public void onClick(ClickEvent event) {
+              if (event.getSource() instanceof FaLabel) {
+                handleOffspring(Action.DELETE, dayNumber, (Widget) event.getSource());
+              }
             }
-          }
-        });
+          });
 
-        table.setWidgetAndStyle(r, COL_OFFSPRING_DELETE, delete, STYLE_OFFSPRING_DELETE);
+          table.setWidgetAndStyle(r, COL_OFFSPRING_DELETE, delete, STYLE_OFFSPRING_DELETE);
+        }
 
         DomUtils.setDataIndex(table.getRow(r), taskRow.getId());
         table.getRowFormatter().addStyleName(r, STYLE_OFFSPRING_ACTUAL);
@@ -935,7 +960,7 @@ class RecurringTaskHandler extends AbstractFormInterceptor implements CellValida
       }
     }
 
-    if (!DataUtils.isEmpty(getExecutors())) {
+    if (!DataUtils.isEmpty(getExecutors()) && getFormView().isRowEnabled(getActiveRow())) {
       for (BeeRow userRow : getExecutors().getRows()) {
         if (taskExecutors.contains(userRow.getId())) {
           continue;
@@ -978,7 +1003,6 @@ class RecurringTaskHandler extends AbstractFormInterceptor implements CellValida
     Widget widget = toggleContainers.get(cron).getWidget(index);
     if (widget instanceof Toggle) {
       ((Toggle) widget).setChecked(selected);
-
     }
   }
 
@@ -1037,7 +1061,8 @@ class RecurringTaskHandler extends AbstractFormInterceptor implements CellValida
           }
         }
 
-        timeCube(scheduleDateRanges, getExecutors() != null);
+        boolean fertile = getExecutors() != null && getFormView().isRowEnabled(getActiveRow());
+        timeCube(scheduleDateRanges, fertile);
       }
     });
   }
@@ -1047,6 +1072,7 @@ class RecurringTaskHandler extends AbstractFormInterceptor implements CellValida
     JustDate until = getDateValue(COL_RT_SCHEDULE_UNTIL);
 
     CronExpression.Builder builder = new CronExpression.Builder(from, until)
+        .id(BeeUtils.toString(getActiveRowId()))
         .dayOfMonth(getStringValue(COL_RT_DAY_OF_MONTH))
         .month(getStringValue(COL_RT_MONTH))
         .dayOfWeek(getStringValue(COL_RT_DAY_OF_WEEK))

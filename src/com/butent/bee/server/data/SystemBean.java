@@ -62,7 +62,7 @@ import com.butent.bee.shared.data.view.ViewColumn;
 import com.butent.bee.shared.io.FileNameUtils;
 import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogUtils;
-import com.butent.bee.shared.modules.administration.AdministrationConstants.RightsState;
+import com.butent.bee.shared.rights.RightsState;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.Codec;
 import com.butent.bee.shared.utils.EnumUtils;
@@ -196,9 +196,7 @@ public class SystemBean {
 
   public void filterVisibleState(SqlSelect query, String tblName, String tblAlias) {
     BeeTable table = getTable(tblName);
-
-    table.verifyState(query, tblAlias, RightsState.VIEW, table.areRecordsVisible(),
-        usr.getUserRoles(usr.getCurrentUserId()));
+    table.verifyState(query, tblAlias, RightsState.VIEW, usr.getUserRoles());
   }
 
   public String getAuditSource(String tableName) {
@@ -285,15 +283,6 @@ public class SystemBean {
       register(view, viewCache);
     }
     return view;
-  }
-
-  public BeeView.ViewFinder getViewFinder() {
-    return new BeeView.ViewFinder() {
-      @Override
-      public BeeView apply(String input) {
-        return viewCache.get(BeeUtils.normalize(input));
-      }
-    };
   }
 
   public Collection<String> getViewNames() {
@@ -440,7 +429,7 @@ public class SystemBean {
 
   /**
    * Creates SQL joins between tables.
-   * 
+   *
    * @param tblName Source table with represented own column Id name, where called
    *          {@link SystemBean#getIdName(String)}
    * @param dstTable Distance table with reference of source table
@@ -488,7 +477,6 @@ public class SystemBean {
     }
   }
 
-  @TransactionAttribute(TransactionAttributeType.REQUIRES_NEW)
   @Lock(LockType.WRITE)
   public void rebuildTable(String tblName) {
     rebuildTable(getTable(tblName));
@@ -998,7 +986,7 @@ public class SystemBean {
     xmlView.source = tblName;
     xmlView.columns = columns;
 
-    return new BeeView(getTable(tblName).getModule(), xmlView, tableCache, usr.getCurrentUserId());
+    return new BeeView(getTable(tblName).getModule(), xmlView, tableCache);
   }
 
   private Collection<BeeTable> getTables() {
@@ -1309,7 +1297,7 @@ public class SystemBean {
         if (!isTable(src)) {
           logger.warning("Unrecognized view source:", xmlView.name, src);
         } else {
-          view = new BeeView(moduleName, xmlView, tableCache, usr.getCurrentUserId());
+          view = new BeeView(moduleName, xmlView, tableCache);
 
           if (view.isEmpty()) {
             logger.warning("View has no columns defined:", view.getName());

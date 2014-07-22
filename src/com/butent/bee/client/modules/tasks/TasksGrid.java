@@ -28,6 +28,7 @@ import com.butent.bee.client.grid.GridFactory.GridOptions;
 import com.butent.bee.client.grid.column.AbstractColumn;
 import com.butent.bee.client.images.star.Stars;
 import com.butent.bee.client.presenter.GridPresenter;
+import com.butent.bee.client.presenter.PresenterCallback;
 import com.butent.bee.client.render.HasCellRenderer;
 import com.butent.bee.client.validation.ValidationHelper;
 import com.butent.bee.client.view.edit.EditStartEvent;
@@ -42,6 +43,7 @@ import com.butent.bee.client.view.search.AbstractFilterSupplier;
 import com.butent.bee.client.widget.FaLabel;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
+import com.butent.bee.shared.BiConsumer;
 import com.butent.bee.shared.Consumer;
 import com.butent.bee.shared.communication.ResponseObject;
 import com.butent.bee.shared.data.BeeRow;
@@ -88,29 +90,20 @@ class TasksGrid extends AbstractGridInterceptor implements ClickHandler {
 
   private static final int DEFAULT_STAR_COUNT = 3;
 
-  static Consumer<GridOptions> getFeedFilterHandler(Feed feed) {
+  static BiConsumer<GridOptions, PresenterCallback> getFeedFilterHandler(Feed feed) {
     final TaskType type = TaskType.getByFeed(feed);
     Assert.notNull(type);
 
-    Consumer<GridOptions> consumer = new Consumer<GridFactory.GridOptions>() {
-      @Override
-      public void accept(GridOptions input) {
-        String cap = BeeUtils.notEmpty(input.getCaption(), type.getCaption());
-        GridFactory.openGrid(GRID_TASKS, new TasksGrid(type, cap), input);
-      }
-    };
+    BiConsumer<GridOptions, PresenterCallback> consumer =
+        new BiConsumer<GridFactory.GridOptions, PresenterCallback>() {
+          @Override
+          public void accept(GridOptions gridOptions, PresenterCallback callback) {
+            String cap = BeeUtils.notEmpty(gridOptions.getCaption(), type.getCaption());
+            GridFactory.openGrid(GRID_TASKS, new TasksGrid(type, cap), gridOptions, callback);
+          }
+        };
 
     return consumer;
-  }
-
-  static void open(String args) {
-    TaskType type = TaskType.getByPrefix(args);
-
-    if (type == null) {
-      Global.showError(Lists.newArrayList(GRID_TASKS, "Type not recognized:", args));
-    } else {
-      GridFactory.openGrid(GRID_TASKS, new TasksGrid(type, type.getCaption()));
-    }
   }
 
   private final TaskType type;
@@ -287,11 +280,6 @@ class TasksGrid extends AbstractGridInterceptor implements ClickHandler {
   }
 
   @Override
-  public String getSupplierKey() {
-    return BeeUtils.normalize(BeeUtils.join(BeeConst.STRING_UNDER, "grid", GRID_TASKS, type));
-  }
-
-  @Override
   public boolean initDescription(GridDescription gridDescription) {
     gridDescription.setFilter(type.getFilter(new LongValue(userId)));
     return true;
@@ -322,24 +310,7 @@ class TasksGrid extends AbstractGridInterceptor implements ClickHandler {
 
   @Override
   public void onEditStart(final EditStartEvent event) {
-    if (PROP_STAR.equals(event.getColumnId())) {
-      IsRow row = event.getRowValue();
-      if (row == null) {
-        return;
-      }
-
-      if (row.getProperty(PROP_USER) == null) {
-        return;
-      }
-
-      final CellSource source = CellSource.forProperty(PROP_STAR, ValueType.INTEGER);
-      EditorAssistant.editStarCell(DEFAULT_STAR_COUNT, event, source, new Consumer<Integer>() {
-        @Override
-        public void accept(Integer parameter) {
-          updateStar(event, source, parameter);
-        }
-      });
-    }
+    maybeEditStar(event);
   }
 
   protected void afterCopyAsRecurringTask() {
@@ -350,6 +321,24 @@ class TasksGrid extends AbstractGridInterceptor implements ClickHandler {
 
   protected Long getTaskId(IsRow row) {
     return (row == null) ? null : row.getId();
+  }
+
+  protected boolean maybeEditStar(final EditStartEvent event) {
+    if (event != null && PROP_STAR.equals(event.getColumnId())
+        && event.getRowValue() != null && event.getRowValue().getProperty(PROP_USER) != null) {
+
+      final CellSource source = CellSource.forProperty(PROP_STAR, ValueType.INTEGER);
+      EditorAssistant.editStarCell(DEFAULT_STAR_COUNT, event, source, new Consumer<Integer>() {
+        @Override
+        public void accept(Integer parameter) {
+          updateStar(event, source, parameter);
+        }
+      });
+
+      return true;
+    } else {
+      return false;
+    }
   }
 
   private void confirmTask(final GridView gridView, final IsRow row) {

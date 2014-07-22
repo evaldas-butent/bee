@@ -1,20 +1,23 @@
 package com.butent.bee.server.modules.classifiers;
 
+import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
+import com.google.common.collect.Multimap;
 import com.google.common.collect.Sets;
 import com.google.common.eventbus.Subscribe;
 
 import static com.butent.bee.shared.modules.administration.AdministrationConstants.*;
 import static com.butent.bee.shared.modules.classifiers.ClassifierConstants.*;
 
+import com.butent.bee.server.data.BeeTable;
 import com.butent.bee.server.data.BeeView;
 import com.butent.bee.server.data.DataEditorBean;
 import com.butent.bee.server.data.DataEvent.ViewDeleteEvent;
 import com.butent.bee.server.data.DataEvent.ViewInsertEvent;
 import com.butent.bee.server.data.DataEvent.ViewModifyEvent;
+import com.butent.bee.server.data.DataEvent.ViewQueryEvent;
 import com.butent.bee.server.data.DataEvent.ViewUpdateEvent;
-import com.butent.bee.server.data.BeeTable;
 import com.butent.bee.server.data.DataEventHandler;
 import com.butent.bee.server.data.QueryServiceBean;
 import com.butent.bee.server.data.SystemBean;
@@ -125,7 +128,7 @@ public class ClassifiersModuleBean implements BeeModule {
 
     if (BeeUtils.same(svc, SVC_COMPANY_INFO)) {
       response = getCompanyInfo(BeeUtils.toLongOrNull(reqInfo.getParameter(COL_COMPANY)),
-          reqInfo.getParameter("locale"));
+          reqInfo.getParameter(VAR_LOCALE));
 
     } else if (BeeUtils.same(svc, SVC_CREATE_COMPANY)) {
       response = createCompany(reqInfo);
@@ -159,6 +162,49 @@ public class ClassifiersModuleBean implements BeeModule {
   @Override
   public void init() {
     sys.registerDataEventHandler(new DataEventHandler() {
+      @Subscribe
+      public void setPersonCompanies(ViewQueryEvent event) {
+        if (event.isAfter() && event.isTarget(VIEW_PERSONS)
+            && !DataUtils.isEmpty(event.getRowset())) {
+
+          SqlSelect query = new SqlSelect()
+              .addFields(TBL_COMPANY_PERSONS, COL_PERSON, COL_COMPANY)
+              .addFields(TBL_COMPANIES, COL_COMPANY_NAME)
+              .addFrom(TBL_COMPANY_PERSONS)
+              .addFromInner(TBL_COMPANIES,
+                  sys.joinTables(TBL_COMPANIES, TBL_COMPANY_PERSONS, COL_COMPANY))
+              .addOrder(TBL_COMPANY_PERSONS, COL_PERSON)
+              .addOrder(TBL_COMPANIES, COL_COMPANY_NAME);
+
+          if (event.getRowset().getNumberOfRows() < 100) {
+            query.setWhere(SqlUtils.inList(TBL_COMPANY_PERSONS, COL_PERSON,
+                event.getRowset().getRowIds()));
+          }
+
+          SimpleRowSet data = qs.getData(query);
+          if (!DataUtils.isEmpty(data)) {
+            Multimap<Long, Long> companyIds = ArrayListMultimap.create();
+            Multimap<Long, String> companyNames = ArrayListMultimap.create();
+
+            for (SimpleRow row : data) {
+              Long person = row.getLong(COL_PERSON);
+
+              companyIds.put(person, row.getLong(COL_COMPANY));
+              companyNames.put(person, row.getValue(COL_COMPANY_NAME));
+            }
+
+            for (BeeRow row : event.getRowset()) {
+              if (companyIds.containsKey(row.getId())) {
+                row.setProperty(PROP_COMPANY_IDS,
+                    DataUtils.buildIdList(companyIds.get(row.getId())));
+                row.setProperty(PROP_COMPANY_NAMES,
+                    BeeUtils.joinItems(companyNames.get(row.getId())));
+              }
+            }
+          }
+        }
+      }
+
       @Subscribe
       public void storeEmail(ViewModifyEvent event) {
         if (BeeUtils.same(event.getTargetName(), TBL_EMAILS) && event.isBefore()
@@ -404,7 +450,7 @@ public class ClassifiersModuleBean implements BeeModule {
               break;
 
             case ServiceConstants.VIEW_SERVICE_OBJECTS:
-              sourceField = ServiceConstants.COL_SERVICE_OBJECT_CUSTOMER;
+              sourceField = ServiceConstants.COL_SERVICE_CUSTOMER;
               dtField = relView.getSourceVersionName();
               break;
 
@@ -431,7 +477,7 @@ public class ClassifiersModuleBean implements BeeModule {
 
           if (BeeUtils.allEmpty(sourceField, relationsField)) {
             logger.severe("filter", FILTER_COMPANY_USAGE, "relation", relation, "not supported");
-          
+
           } else if (!BeeUtils.isPositive(count) && operator == Operator.LT) {
             conditions.add(SqlUtils.sqlFalse());
 
@@ -647,8 +693,7 @@ public class ClassifiersModuleBean implements BeeModule {
     if (!BeeUtils.isEmpty(email)) {
       row.setValue(DataUtils.getColumnIndex(ALS_EMAIL_ID, columns),
           qs.insertData(new SqlInsert(TBL_EMAILS)
-              .addConstant(COL_EMAIL_ADDRESS, address)
-              .addNotEmpty(COL_EMAIL_LABEL, companyName)));
+              .addConstant(COL_EMAIL_ADDRESS, address)));
     }
     Long country = null;
 
@@ -735,7 +780,7 @@ public class ClassifiersModuleBean implements BeeModule {
     translations.put(COL_PHONE, constants.phone());
     translations.put(COL_MOBILE, constants.mobile());
     translations.put(COL_FAX, constants.fax());
-    translations.put(COL_EMAIL_ADDRESS, constants.address());
+    translations.put(COL_EMAIL_ADDRESS, constants.email());
     translations.put(COL_CITY, constants.city());
     translations.put(COL_COUNTRY, constants.country());
 

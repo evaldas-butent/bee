@@ -52,21 +52,28 @@ import com.butent.bee.shared.communication.ResponseObject;
 import com.butent.bee.shared.data.BeeRow;
 import com.butent.bee.shared.data.BeeRowSet;
 import com.butent.bee.shared.data.DataUtils;
+import com.butent.bee.shared.data.IsRow;
 import com.butent.bee.shared.data.SearchResult;
 import com.butent.bee.shared.data.SimpleRowSet;
 import com.butent.bee.shared.data.SimpleRowSet.SimpleRow;
 import com.butent.bee.shared.data.filter.Filter;
 import com.butent.bee.shared.data.view.Order;
+import com.butent.bee.shared.exceptions.BeeException;
 import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogUtils;
 import com.butent.bee.shared.modules.BeeParameter;
+import com.butent.bee.shared.modules.transport.TransportConstants;
 import com.butent.bee.shared.modules.transport.TransportConstants.AssessmentStatus;
 import com.butent.bee.shared.modules.transport.TransportConstants.OrderStatus;
 import com.butent.bee.shared.modules.transport.TransportConstants.VehicleType;
 import com.butent.bee.shared.news.Feed;
+import com.butent.bee.shared.news.Headline;
+import com.butent.bee.shared.news.HeadlineProducer;
 import com.butent.bee.shared.news.NewsConstants;
 import com.butent.bee.shared.rights.Module;
+import com.butent.bee.shared.rights.ModuleAndSub;
+import com.butent.bee.shared.rights.SubModule;
 import com.butent.bee.shared.time.DateTime;
 import com.butent.bee.shared.time.JustDate;
 import com.butent.bee.shared.time.TimeUtils;
@@ -74,10 +81,9 @@ import com.butent.bee.shared.ui.Color;
 import com.butent.bee.shared.utils.ArrayUtils;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.Codec;
+import com.butent.bee.shared.utils.EnumUtils;
 import com.butent.bee.shared.utils.NameUtils;
 import com.butent.webservice.ButentWS;
-import com.butent.webservice.WSDocument;
-import com.butent.webservice.WSDocument.WSDocumentItem;
 
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
@@ -161,21 +167,23 @@ public class TransportModuleBean implements BeeModule {
           Filter.anyContains(Sets.newHashSet(COL_NUMBER, COL_PARENT_MODEL_NAME, COL_MODEL_NAME,
               COL_OWNER_NAME), query));
 
-      Filter orderCargoFilter = Filter.anyContains(Sets.newHashSet(COL_CARGO_DESCRIPTION,
-          COL_NUMBER, COL_CARGO_CMR, COL_CARGO_NOTES, COL_CARGO_DIRECTIONS,
-          ALS_LOADING_NUMBER, ALS_LOADING_CONTACT, ALS_LOADING_COMPANY, ALS_LOADING_ADDRESS,
-          ALS_LOADING_POST_INDEX, ALS_LOADING_CITY_NAME, ALS_LOADING_COUNTRY_NAME,
-          ALS_LOADING_COUNTRY_CODE, ALS_UNLOADING_NUMBER, ALS_UNLOADING_CONTACT,
-          ALS_UNLOADING_COMPANY, ALS_UNLOADING_ADDRESS, ALS_UNLOADING_POST_INDEX,
-          ALS_UNLOADING_CITY_NAME, ALS_UNLOADING_COUNTRY_NAME, ALS_UNLOADING_COUNTRY_CODE),
-          query);
-
       List<SearchResult> orderCargoResult = qs.getSearchResults(VIEW_ORDER_CARGO,
-          orderCargoFilter
-          );
+          Filter.anyContains(Sets.newHashSet(COL_CARGO_DESCRIPTION,
+              COL_NUMBER, COL_CARGO_CMR, COL_CARGO_NOTES, COL_CARGO_DIRECTIONS,
+              ALS_LOADING_NUMBER, ALS_LOADING_CONTACT, ALS_LOADING_COMPANY, ALS_LOADING_ADDRESS,
+              ALS_LOADING_POST_INDEX, ALS_LOADING_CITY_NAME, ALS_LOADING_COUNTRY_NAME,
+              ALS_LOADING_COUNTRY_CODE, ALS_UNLOADING_NUMBER, ALS_UNLOADING_CONTACT,
+              ALS_UNLOADING_COMPANY, ALS_UNLOADING_ADDRESS, ALS_UNLOADING_POST_INDEX,
+              ALS_UNLOADING_CITY_NAME, ALS_UNLOADING_COUNTRY_NAME, ALS_UNLOADING_COUNTRY_CODE),
+              query));
 
       result.addAll(vehiclesResult);
       result.addAll(orderCargoResult);
+
+      if (usr.isModuleVisible(ModuleAndSub.of(Module.TRANSPORT, SubModule.LOGISTICS))) {
+        result.addAll(qs.getSearchResults(VIEW_ASSESSMENTS,
+            Filter.compareId(BeeUtils.toLong(query))));
+      }
     }
 
     return result;
@@ -265,10 +273,6 @@ public class TransportModuleBean implements BeeModule {
       } else {
         response = createPurchaseInvoiceItems(purchaseId, currency, ids, item);
       }
-    } else if (BeeUtils.same(svc, SVC_SEND_TO_ERP)) {
-      response = sendToERP(reqInfo.getParameter("view_name"),
-          DataUtils.parseIdSet(reqInfo.getParameter("IdList")));
-
     } else if (BeeUtils.same(svc, SVC_SEND_MESSAGE)) {
       response = sendMessage(reqInfo.getParameter(COL_DESCRIPTION),
           Codec.beeDeserializeCollection(reqInfo.getParameter(COL_MOBILE)));
@@ -570,6 +574,41 @@ public class TransportModuleBean implements BeeModule {
       }
     });
 
+    HeadlineProducer assessmentsHeadlineProducer = new HeadlineProducer() {
+
+      @Override
+      public Headline produce(Feed feed, long userId, BeeRowSet rowSet, IsRow row, boolean isNew) {
+        String caption = "";
+        String pid = DataUtils.getString(rowSet, row, COL_ASSESSMENT);
+
+        if (!BeeUtils.isEmpty(pid)) {
+          caption = BeeUtils.joinWords(caption, usr.getLocalizableConstants().captionPid()
+              + BeeConst.STRING_COLON, pid);
+        }
+
+        String id = BeeUtils.toString(row.getId());
+
+        caption = BeeUtils.joinWords(caption, usr.getLocalizableConstants().captionId()
+            + BeeConst.STRING_COLON, id);
+
+        AssessmentStatus status =
+            EnumUtils.getEnumByIndex(AssessmentStatus.class,
+                DataUtils.getInteger(rowSet, row, COL_STATUS));
+
+        if (status != null) {
+          caption = BeeUtils.joinWords(caption, status.getCaption(
+              usr.getLocalizableConstants(userId)));
+        }
+
+        String notes = DataUtils.getString(rowSet, row, ALS_ORDER_NOTES);
+        String customer = DataUtils.getString(rowSet, row, TransportConstants.ALS_CUSTOMER_NAME);
+
+        caption = BeeUtils.joinWords(caption, notes, customer);
+
+        return Headline.create(row.getId(), caption, isNew);
+      }
+    };
+
     news.registerUsageQueryProvider(Feed.ORDER_CARGO, new ExtendedUsageQueryProvider() {
       @Override
       protected List<IsCondition> getConditions(long userId) {
@@ -595,6 +634,19 @@ public class TransportModuleBean implements BeeModule {
             return NewsHelper.buildJoin(TBL_ORDERS, news.joinUsage(TBL_ORDERS));
           }
         });
+
+    news.registerUsageQueryProvider(Feed.TRIPS, new ExtendedUsageQueryProvider() {
+
+      @Override
+      protected List<Pair<String, IsCondition>> getJoins() {
+        return NewsHelper.buildJoin(TBL_TRIPS, news.joinUsage(TBL_TRIPS));
+      }
+
+      @Override
+      protected List<IsCondition> getConditions(long userId) {
+        return NewsHelper.buildConditions(SqlUtils.isNull(TBL_TRIPS, COL_EXPEDITION));
+      }
+    });
 
     news.registerUsageQueryProvider(Feed.CARGO_REQUESTS_MY, new ExtendedUsageQueryProvider() {
       @Override
@@ -622,95 +674,25 @@ public class TransportModuleBean implements BeeModule {
       }
     });
 
-    news.registerUsageQueryProvider(Feed.ASSESSMENT_REQUESTS_ALL, new ExtendedUsageQueryProvider() {
+    news.registerHeadlineProducer(Feed.ASSESSMENT_REQUESTS_ALL, assessmentsHeadlineProducer);
 
-      @Override
-      protected List<IsCondition> getConditions(long userId) {
-        return NewsHelper.buildConditions(
-            SqlUtils.equals(TBL_ORDERS, COL_STATUS, OrderStatus.REQUEST.ordinal()));
-      }
+    news.registerUsageQueryProvider(Feed.ASSESSMENT_REQUESTS_ALL,
+        new AssesmentRequestsUsageQueryProvider(false));
 
-      @Override
-      protected List<Pair<String, IsCondition>> getJoins() {
-        List<Pair<String, IsCondition>> joins = Lists.newArrayList();
-        joins.addAll(NewsHelper.buildJoin(TBL_ASSESSMENTS, news.joinUsage(TBL_ASSESSMENTS)));
-        joins.addAll(NewsHelper.buildJoin(TBL_ORDER_CARGO,
-            sys.joinTables(TBL_ORDER_CARGO, TBL_ASSESSMENTS, COL_CARGO)));
-        joins.addAll(NewsHelper.buildJoin(TBL_ORDERS,
-            sys.joinTables(TBL_ORDERS, TBL_ORDER_CARGO, COL_ORDER)));
+    news.registerHeadlineProducer(Feed.ASSESSMENT_REQUESTS_MY, assessmentsHeadlineProducer);
 
-        return joins;
-      }
+    news.registerUsageQueryProvider(Feed.ASSESSMENT_REQUESTS_MY,
+        new AssesmentRequestsUsageQueryProvider(true));
 
-    });
+    news.registerHeadlineProducer(Feed.ASSESSMENT_ORDERS_ALL, assessmentsHeadlineProducer);
 
-    news.registerUsageQueryProvider(Feed.ASSESSMENT_REQUESTS_MY, new ExtendedUsageQueryProvider() {
+    news.registerUsageQueryProvider(Feed.ASSESSMENT_ORDERS_ALL,
+        new AssesmentRequestsUsageQueryProvider(false, true));
 
-      @Override
-      protected List<IsCondition> getConditions(long userId) {
-        return NewsHelper.buildConditions(SqlUtils.and(SqlUtils.equals(TBL_ORDERS,
-            COL_ORDER_MANAGER,
-            userId), SqlUtils.equals(TBL_ORDERS, COL_STATUS, OrderStatus.REQUEST.ordinal())));
-      }
+    news.registerHeadlineProducer(Feed.ASSESSMENT_ORDERS_MY, assessmentsHeadlineProducer);
 
-      @Override
-      protected List<Pair<String, IsCondition>> getJoins() {
-        List<Pair<String, IsCondition>> joins = Lists.newArrayList();
-        joins.addAll(NewsHelper.buildJoin(TBL_ASSESSMENTS, news.joinUsage(TBL_ASSESSMENTS)));
-        joins.addAll(NewsHelper.buildJoin(TBL_ORDER_CARGO,
-            sys.joinTables(TBL_ORDER_CARGO, TBL_ASSESSMENTS, COL_CARGO)));
-        joins.addAll(NewsHelper.buildJoin(TBL_ORDERS,
-            sys.joinTables(TBL_ORDERS, TBL_ORDER_CARGO, COL_ORDER)));
-
-        return joins;
-      }
-
-    });
-
-    news.registerUsageQueryProvider(Feed.ASSESSMENT_ORDERS_ALL, new ExtendedUsageQueryProvider() {
-
-      @Override
-      protected List<IsCondition> getConditions(long userId) {
-        return NewsHelper.buildConditions(
-            SqlUtils.notEqual(TBL_ORDERS, COL_STATUS, OrderStatus.REQUEST.ordinal()));
-      }
-
-      @Override
-      protected List<Pair<String, IsCondition>> getJoins() {
-        List<Pair<String, IsCondition>> joins = Lists.newArrayList();
-        joins.addAll(NewsHelper.buildJoin(TBL_ASSESSMENTS, news.joinUsage(TBL_ASSESSMENTS)));
-        joins.addAll(NewsHelper.buildJoin(TBL_ORDER_CARGO,
-            sys.joinTables(TBL_ORDER_CARGO, TBL_ASSESSMENTS, COL_CARGO)));
-        joins.addAll(NewsHelper.buildJoin(TBL_ORDERS,
-            sys.joinTables(TBL_ORDERS, TBL_ORDER_CARGO, COL_ORDER)));
-
-        return joins;
-      }
-
-    });
-
-    news.registerUsageQueryProvider(Feed.ASSESSMENT_ORDERS_MY, new ExtendedUsageQueryProvider() {
-
-      @Override
-      protected List<IsCondition> getConditions(long userId) {
-        return NewsHelper.buildConditions(SqlUtils.and(SqlUtils.equals(TBL_ORDERS,
-            COL_ORDER_MANAGER,
-            userId), SqlUtils.notEqual(TBL_ORDERS, COL_STATUS, OrderStatus.REQUEST.ordinal())));
-      }
-
-      @Override
-      protected List<Pair<String, IsCondition>> getJoins() {
-        List<Pair<String, IsCondition>> joins = Lists.newArrayList();
-        joins.addAll(NewsHelper.buildJoin(TBL_ASSESSMENTS, news.joinUsage(TBL_ASSESSMENTS)));
-        joins.addAll(NewsHelper.buildJoin(TBL_ORDER_CARGO,
-            sys.joinTables(TBL_ORDER_CARGO, TBL_ASSESSMENTS, COL_CARGO)));
-        joins.addAll(NewsHelper.buildJoin(TBL_ORDERS,
-            sys.joinTables(TBL_ORDERS, TBL_ORDER_CARGO, COL_ORDER)));
-
-        return joins;
-      }
-
-    });
+    news.registerUsageQueryProvider(Feed.ASSESSMENT_ORDERS_MY,
+        new AssesmentRequestsUsageQueryProvider(true, true));
 
     news.registerUsageQueryProvider(Feed.CARGO_SALES, new ExtendedUsageQueryProvider() {
       @Override
@@ -1553,7 +1535,7 @@ public class TransportModuleBean implements BeeModule {
 
   /**
    * Return SqlSelect query, calculating cargo costs from CargoServices table.
-   * 
+   *
    * @param flt - query filter with <b>unique</b> "Cargo" values.
    * @return query with columns: "Cargo", "Expense"
    */
@@ -1581,7 +1563,7 @@ public class TransportModuleBean implements BeeModule {
 
   /**
    * Return SqlSelect query, calculating cargo incomes from CargoServices table.
-   * 
+   *
    * @param flt - query filter with <b>unique</b> "Cargo" values.
    * @param currency - currencyId, to which convert amounts.
    * @return query with columns: "Cargo", "CargoIncome", "ServicesIncome"
@@ -2003,7 +1985,7 @@ public class TransportModuleBean implements BeeModule {
 
   /**
    * Return SqlSelect query, calculating trip fuel consumptions from TripRoutes table.
-   * 
+   *
    * @param flt - query filter with <b>unique</b> TripRoutes ID values.
    * @param routeMode - if true, returns results, grouped by TripRoutes ID, else grouped by Trip ID
    * @return query with two columns: (TripRoutes ID or "Trip") and "Quantity"
@@ -2310,7 +2292,7 @@ public class TransportModuleBean implements BeeModule {
 
   /**
    * Return Temporary table name with calculated trip costs.
-   * 
+   *
    * @param flt - query filter with <b>unique</b> "Trip" values.
    * @return Temporary table name with following structure: <br>
    *         "Trip" - trip ID <br>
@@ -2522,7 +2504,7 @@ public class TransportModuleBean implements BeeModule {
 
   /**
    * Return Temporary table name with calculated trip incomes by each cargo.
-   * 
+   *
    * @param flt - query filter with <b>unique</b> "Trip" values.
    * @return Temporary table name with following structure: <br>
    *         "Trip" - trip ID <br>
@@ -2746,19 +2728,17 @@ public class TransportModuleBean implements BeeModule {
       }
       ids.append("'").append(row.getValue(COL_SALE)).append("'");
     }
+    String remoteNamespace = prm.getText(PRM_ERP_NAMESPACE);
     String remoteAddress = prm.getText(PRM_ERP_ADDRESS);
     String remoteLogin = prm.getText(PRM_ERP_LOGIN);
     String remotePassword = prm.getText(PRM_ERP_PASSWORD);
 
-    ResponseObject response = ButentWS.getSQLData(remoteAddress, remoteLogin, remotePassword,
-        "SELECT extern_id AS id, apm_data AS data, apm_suma AS suma"
-            + " FROM apyvarta WHERE extern_id IN(" + ids.toString() + ")",
-        new String[] {"id", "data", "suma"});
-
-    if (response.hasErrors()) {
-      logger.severe((Object[]) response.getErrors());
-    } else {
-      SimpleRowSet payments = (SimpleRowSet) response.getResponse();
+    try {
+      SimpleRowSet payments = ButentWS.connect(remoteNamespace, remoteAddress, remoteLogin,
+          remotePassword)
+          .getSQLData("SELECT extern_id AS id, apm_data AS data, apm_suma AS suma"
+              + " FROM apyvarta WHERE extern_id IN(" + ids.toString() + ")",
+              new String[] {"id", "data", "suma"});
 
       for (SimpleRow payment : payments) {
         if (!Objects.equal(payment.getDouble("suma"),
@@ -2772,6 +2752,8 @@ public class TransportModuleBean implements BeeModule {
               .setWhere(sys.idEquals(TBL_SALES, payment.getLong("id"))));
         }
       }
+    } catch (BeeException e) {
+      logger.error(e);
     }
   }
 
@@ -2856,147 +2838,4 @@ public class TransportModuleBean implements BeeModule {
     return response;
   }
 
-  private ResponseObject sendToERP(String viewName, Set<Long> ids) {
-    if (!sys.isView(viewName)) {
-      return ResponseObject.error("Wrong view name");
-    }
-    String trade = sys.getView(viewName).getSourceName();
-    String tradeItems;
-    String itemsRelation;
-
-    SqlSelect query = new SqlSelect()
-        .addFields(trade, COL_TRADE_DATE, COL_TRADE_INVOICE_PREFIX, COL_TRADE_INVOICE_NO,
-            COL_TRADE_NUMBER, COL_TRADE_TERM, COL_TRADE_SUPPLIER, COL_TRADE_CUSTOMER)
-        .addField(TBL_CURRENCIES, COL_CURRENCY_NAME, COL_CURRENCY)
-        .addField(COL_TRADE_WAREHOUSE_FROM, COL_WAREHOUSE_CODE, COL_TRADE_WAREHOUSE_FROM)
-        .addFrom(trade)
-        .addFromLeft(TBL_CURRENCIES, sys.joinTables(TBL_CURRENCIES, trade, COL_CURRENCY))
-        .addFromLeft(TBL_WAREHOUSES, COL_TRADE_WAREHOUSE_FROM,
-            sys.joinTables(TBL_WAREHOUSES, COL_TRADE_WAREHOUSE_FROM, trade,
-                COL_TRADE_WAREHOUSE_FROM))
-        .setWhere(sys.idInList(trade, ids));
-
-    if (BeeUtils.same(trade, TBL_SALES)) {
-      tradeItems = TBL_SALE_ITEMS;
-      itemsRelation = COL_SALE;
-      query.addFields(trade, COL_SALE_PAYER);
-
-    } else if (BeeUtils.same(trade, TBL_PURCHASES)) {
-      tradeItems = TBL_PURCHASE_ITEMS;
-      itemsRelation = COL_PURCHASE;
-      query.addField(COL_PURCHASE_WAREHOUSE_TO, COL_WAREHOUSE_CODE, COL_PURCHASE_WAREHOUSE_TO)
-          .addFromLeft(TBL_WAREHOUSES, COL_PURCHASE_WAREHOUSE_TO,
-              sys.joinTables(TBL_WAREHOUSES, COL_PURCHASE_WAREHOUSE_TO, trade,
-                  COL_PURCHASE_WAREHOUSE_TO));
-    } else {
-      return ResponseObject.error("View source not supported:", trade);
-    }
-    String remoteAddress = prm.getText(PRM_ERP_ADDRESS);
-    String remoteLogin = prm.getText(PRM_ERP_LOGIN);
-    String remotePassword = prm.getText(PRM_ERP_PASSWORD);
-
-    SimpleRowSet invoices = qs.getData(query.addField(trade, sys.getIdName(trade), itemsRelation));
-
-    Map<Long, String> companies = Maps.newHashMap();
-    ResponseObject response = ResponseObject.emptyResponse();
-
-    for (SimpleRow invoice : invoices) {
-      for (String col : new String[] {COL_TRADE_SUPPLIER, COL_TRADE_CUSTOMER, COL_SALE_PAYER}) {
-        Long id = invoices.hasColumn(col) ? invoice.getLong(col) : null;
-
-        if (DataUtils.isId(id) && !companies.containsKey(id)) {
-          SimpleRow data = qs.getRow(new SqlSelect()
-              .addFields(TBL_COMPANIES, COL_COMPANY_NAME, COL_COMPANY_CODE, COL_COMPANY_VAT_CODE)
-              .addFields(TBL_CONTACTS, COL_ADDRESS, COL_POST_INDEX)
-              .addField(TBL_CITIES, COL_CITY_NAME, COL_CITY)
-              .addField(TBL_COUNTRIES, COL_COUNTRY_NAME, COL_COUNTRY)
-              .addFrom(TBL_COMPANIES)
-              .addFromLeft(TBL_CONTACTS, sys.joinTables(TBL_CONTACTS, TBL_COMPANIES, COL_CONTACT))
-              .addFromLeft(TBL_CITIES, sys.joinTables(TBL_CITIES, TBL_CONTACTS, COL_CITY))
-              .addFromLeft(TBL_COUNTRIES, sys.joinTables(TBL_COUNTRIES, TBL_CONTACTS, COL_COUNTRY))
-              .setWhere(sys.idEquals(TBL_COMPANIES, id)));
-
-          ResponseObject resp = ButentWS.importClient(remoteAddress, remoteLogin, remotePassword,
-              data.getValue(COL_COMPANY_NAME), data.getValue(COL_COMPANY_CODE),
-              data.getValue(COL_COMPANY_VAT_CODE), data.getValue(COL_ADDRESS),
-              data.getValue(COL_POST_INDEX), data.getValue(COL_CITY), data.getValue(COL_COUNTRY));
-
-          if (resp.hasErrors()) {
-            response.addErrorsFrom(resp);
-            break;
-          } else {
-            companies.put(id, resp.getResponseAsString());
-          }
-        }
-      }
-      if (response.hasErrors()) {
-        break;
-      }
-      String operation;
-      String warehouse;
-      String client;
-
-      if (invoices.hasColumn(COL_PURCHASE_WAREHOUSE_TO)) {
-        operation = prm.getText("ERPCreditOperation");
-        warehouse = invoice.getValue(COL_PURCHASE_WAREHOUSE_TO);
-        client = companies.get(invoice.getLong(COL_TRADE_SUPPLIER));
-      } else {
-        operation = prm.getText("ERPOperation");
-        warehouse = prm.getText("ERPWarehouse");
-        client = companies.get(invoice.getLong(COL_TRADE_CUSTOMER));
-      }
-      WSDocument doc = new WSDocument(invoice.getValue(itemsRelation),
-          invoice.getDateTime(COL_TRADE_DATE), operation, client, warehouse);
-
-      if (invoices.hasColumn(COL_SALE_PAYER)) {
-        doc.setPayer(companies.get(invoice.getLong(COL_SALE_PAYER)));
-      }
-      doc.setNumber(invoice.getValue(COL_TRADE_NUMBER));
-      doc.setInvoice(invoice.getValue(COL_TRADE_INVOICE_PREFIX),
-          invoice.getValue(COL_TRADE_INVOICE_NO));
-      doc.setSupplier(companies.get(invoice.getLong(COL_TRADE_SUPPLIER)));
-      doc.setCustomer(companies.get(invoice.getLong(COL_TRADE_CUSTOMER)));
-      doc.setTerm(invoice.getDate(COL_TRADE_TERM));
-      doc.setCurrency(invoice.getValue(COL_CURRENCY));
-
-      SimpleRowSet items = qs.getData(new SqlSelect()
-          .addFields(TBL_ITEMS, COL_ITEM_NAME, COL_ITEM_EXTERNAL_CODE)
-          .addFields(tradeItems, COL_TRADE_ITEM_QUANTITY, COL_TRADE_ITEM_PRICE,
-              COL_TRADE_VAT_PLUS, COL_TRADE_VAT, COL_TRADE_VAT_PERC, COL_TRADE_ITEM_NOTE)
-          .addFrom(tradeItems)
-          .addFromInner(TBL_ITEMS, sys.joinTables(TBL_ITEMS, tradeItems, COL_ITEM))
-          .setWhere(SqlUtils.equals(tradeItems, itemsRelation, invoice.getLong(itemsRelation))));
-
-      for (SimpleRow item : items) {
-        if (BeeUtils.isEmpty(item.getValue(COL_ITEM_EXTERNAL_CODE))) {
-          response.addError("Item", BeeUtils.bracket(item.getValue(COL_ITEM_NAME)),
-              "does not have ERP code");
-          break;
-        }
-        WSDocumentItem wsItem = doc.addItem(item.getValue(COL_ITEM_EXTERNAL_CODE),
-            item.getValue(COL_TRADE_ITEM_QUANTITY));
-
-        wsItem.setPrice(item.getValue(COL_TRADE_ITEM_PRICE));
-        wsItem.setVat(item.getValue(COL_TRADE_VAT), item.getBoolean(COL_TRADE_VAT_PERC),
-            item.getBoolean(COL_TRADE_VAT_PLUS));
-        wsItem.setNote(item.getValue(COL_TRADE_ITEM_NOTE));
-      }
-      if (response.hasErrors()) {
-        break;
-      }
-      ResponseObject resp = ButentWS.importDoc(remoteAddress, remoteLogin, remotePassword, doc);
-
-      if (resp.hasErrors()) {
-        response.addErrorsFrom(resp);
-        break;
-      }
-      qs.updateData(new SqlUpdate(trade)
-          .addConstant(COL_TRADE_EXPORTED, System.currentTimeMillis())
-          .setWhere(sys.idEquals(trade, invoice.getLong(itemsRelation))));
-    }
-    if (response.hasErrors()) {
-      response.log(logger);
-    }
-    return response;
-  }
 }

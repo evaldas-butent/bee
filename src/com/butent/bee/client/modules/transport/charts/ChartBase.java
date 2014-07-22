@@ -14,7 +14,6 @@ import com.google.gwt.user.client.ui.Widget;
 import static com.butent.bee.shared.modules.transport.TransportConstants.*;
 
 import com.butent.bee.client.BeeKeeper;
-import com.butent.bee.client.Callback;
 import com.butent.bee.client.communication.ParameterList;
 import com.butent.bee.client.communication.ResponseCallback;
 import com.butent.bee.client.data.Queries;
@@ -27,9 +26,11 @@ import com.butent.bee.client.modules.transport.charts.Filterable.FilterType;
 import com.butent.bee.client.style.StyleUtils;
 import com.butent.bee.client.timeboard.TimeBoard;
 import com.butent.bee.client.timeboard.TimeBoardHelper;
-import com.butent.bee.client.ui.IdentifiableWidget;
-import com.butent.bee.client.ui.WidgetFactory;
-import com.butent.bee.client.ui.WidgetSupplier;
+import com.butent.bee.client.ui.Opener;
+import com.butent.bee.client.view.View;
+import com.butent.bee.client.view.ViewCallback;
+import com.butent.bee.client.view.ViewFactory;
+import com.butent.bee.client.view.ViewSupplier;
 import com.butent.bee.client.widget.CustomDiv;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.Pair;
@@ -70,23 +71,23 @@ public abstract class ChartBase extends TimeBoard {
   public static void registerBoards() {
     ensureStyleSheet();
 
-    final Callback<IdentifiableWidget> showInNewTab = new Callback<IdentifiableWidget>() {
+    final ViewCallback showCallback = new ViewCallback() {
       @Override
-      public void onSuccess(IdentifiableWidget result) {
-        BeeKeeper.getScreen().showWidget(result, true);
+      public void onSuccess(View result) {
+        BeeKeeper.getScreen().show(result);
       }
     };
 
     MenuService.FREIGHT_EXCHANGE.setHandler(new MenuHandler() {
       @Override
       public void onSelection(String parameters) {
-        FreightExchange.open(showInNewTab);
+        FreightExchange.open(showCallback);
       }
     });
 
-    WidgetFactory.registerSupplier(FreightExchange.SUPPLIER_KEY, new WidgetSupplier() {
+    ViewFactory.registerSupplier(FreightExchange.SUPPLIER_KEY, new ViewSupplier() {
       @Override
-      public void create(Callback<IdentifiableWidget> callback) {
+      public void create(ViewCallback callback) {
         FreightExchange.open(callback);
       }
     });
@@ -94,13 +95,13 @@ public abstract class ChartBase extends TimeBoard {
     MenuService.SHIPPING_SCHEDULE.setHandler(new MenuHandler() {
       @Override
       public void onSelection(String parameters) {
-        ShippingSchedule.open(showInNewTab);
+        ShippingSchedule.open(showCallback);
       }
     });
 
-    WidgetFactory.registerSupplier(ShippingSchedule.SUPPLIER_KEY, new WidgetSupplier() {
+    ViewFactory.registerSupplier(ShippingSchedule.SUPPLIER_KEY, new ViewSupplier() {
       @Override
-      public void create(Callback<IdentifiableWidget> callback) {
+      public void create(ViewCallback callback) {
         ShippingSchedule.open(callback);
       }
     });
@@ -108,13 +109,13 @@ public abstract class ChartBase extends TimeBoard {
     MenuService.DRIVER_TIME_BOARD.setHandler(new MenuHandler() {
       @Override
       public void onSelection(String parameters) {
-        DriverTimeBoard.open(showInNewTab);
+        DriverTimeBoard.open(showCallback);
       }
     });
 
-    WidgetFactory.registerSupplier(DriverTimeBoard.SUPPLIER_KEY, new WidgetSupplier() {
+    ViewFactory.registerSupplier(DriverTimeBoard.SUPPLIER_KEY, new ViewSupplier() {
       @Override
-      public void create(Callback<IdentifiableWidget> callback) {
+      public void create(ViewCallback callback) {
         DriverTimeBoard.open(callback);
       }
     });
@@ -122,13 +123,13 @@ public abstract class ChartBase extends TimeBoard {
     MenuService.TRUCK_TIME_BOARD.setHandler(new MenuHandler() {
       @Override
       public void onSelection(String parameters) {
-        TruckTimeBoard.open(showInNewTab);
+        TruckTimeBoard.open(showCallback);
       }
     });
 
-    WidgetFactory.registerSupplier(TruckTimeBoard.SUPPLIER_KEY, new WidgetSupplier() {
+    ViewFactory.registerSupplier(TruckTimeBoard.SUPPLIER_KEY, new ViewSupplier() {
       @Override
-      public void create(Callback<IdentifiableWidget> callback) {
+      public void create(ViewCallback callback) {
         TruckTimeBoard.open(callback);
       }
     });
@@ -136,18 +137,18 @@ public abstract class ChartBase extends TimeBoard {
     MenuService.TRAILER_TIME_BOARD.setHandler(new MenuHandler() {
       @Override
       public void onSelection(String parameters) {
-        TrailerTimeBoard.open(showInNewTab);
+        TrailerTimeBoard.open(showCallback);
       }
     });
 
-    WidgetFactory.registerSupplier(TrailerTimeBoard.SUPPLIER_KEY, new WidgetSupplier() {
+    ViewFactory.registerSupplier(TrailerTimeBoard.SUPPLIER_KEY, new ViewSupplier() {
       @Override
-      public void create(Callback<IdentifiableWidget> callback) {
+      public void create(ViewCallback callback) {
         TrailerTimeBoard.open(callback);
       }
     });
   }
-  
+
   private final Multimap<Long, CargoHandling> cargoHandling = ArrayListMultimap.create();
 
   private boolean showCountryFlags;
@@ -201,7 +202,7 @@ public abstract class ChartBase extends TimeBoard {
         super.handleAction(action);
     }
   }
-  
+
   protected void addRelevantDataViews(String... viewNames) {
     if (viewNames != null) {
       for (String viewName : viewNames) {
@@ -259,8 +260,8 @@ public abstract class ChartBase extends TimeBoard {
     BeeRow oldSettings = getSettings().getRow(0);
     final Long oldTheme = getColorTheme(oldSettings);
 
-    RowEditor.openRow(getSettingsFormName(), getSettings().getViewName(), oldSettings, true,
-        new RowCallback() {
+    RowEditor.openForm(getSettingsFormName(), getSettings().getViewName(), oldSettings,
+        Opener.MODAL, new RowCallback() {
           @Override
           public void onSuccess(BeeRow result) {
             if (result != null) {
@@ -285,7 +286,6 @@ public abstract class ChartBase extends TimeBoard {
 
   protected abstract boolean filter(FilterType filterType);
 
-
   protected Collection<CargoHandling> getCargoHandling(Long cargoId) {
     return cargoHandling.get(cargoId);
   }
@@ -308,7 +308,7 @@ public abstract class ChartBase extends TimeBoard {
 
   @Override
   protected Set<Action> getEnabledActions() {
-    return EnumSet.of(Action.FILTER, Action.REFRESH, Action.ADD, Action.CONFIGURE);
+    return EnumSet.of(Action.FILTER, Action.REFRESH, Action.ADD, Action.CONFIGURE, Action.PRINT);
   }
 
   protected List<ChartData> getFilterData() {
@@ -343,7 +343,7 @@ public abstract class ChartBase extends TimeBoard {
   }
 
   protected abstract boolean persistFilter();
-  
+
   @Override
   protected void prepareDefaults(Size canvasSize) {
     super.prepareDefaults(canvasSize);
@@ -560,14 +560,14 @@ public abstract class ChartBase extends TimeBoard {
           if (!BeeUtils.isEmpty(number) && BeeUtils.containsSame(info, number)) {
             info.add(number);
           }
-          
+
           if (showPlaceCities()) {
             String cityLabel = Places.getCityLabel(event.getCityId());
             if (!BeeUtils.isEmpty(cityLabel) && !BeeUtils.containsSame(info, cityLabel)) {
               info.add(cityLabel);
             }
           }
-          
+
         }
 
         if (!info.isEmpty()) {
@@ -595,7 +595,7 @@ public abstract class ChartBase extends TimeBoard {
           widget.add(label);
         }
       }
-      
+
       if (showPlaceCodes()) {
         List<String> info = Lists.newArrayList();
 
@@ -733,7 +733,7 @@ public abstract class ChartBase extends TimeBoard {
   private boolean showPlaceInfo() {
     return showPlaceInfo;
   }
-  
+
   private void updateColorTheme(Long theme) {
     ParameterList args = TransportHandler.createArgs(SVC_GET_COLORS);
     if (theme != null) {
@@ -748,7 +748,7 @@ public abstract class ChartBase extends TimeBoard {
       }
     });
   }
-  
+
   private void updateFilterData() {
     List<ChartData> newData = FilterHelper.notEmptyData(prepareFilterData(null));
     if (newData != null) {
@@ -793,7 +793,7 @@ public abstract class ChartBase extends TimeBoard {
 
           persistFilter();
           refreshFilterInfo();
-          
+
         } else {
           clearFilter();
         }

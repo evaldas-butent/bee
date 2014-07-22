@@ -1,9 +1,9 @@
 package com.butent.bee.client.view;
 
-import com.google.common.collect.Maps;
 import com.google.gwt.dom.client.Element;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
+import com.google.gwt.event.shared.HandlerRegistration;
 import com.google.gwt.resources.client.ImageResource;
 import com.google.gwt.user.client.ui.HasEnabled;
 import com.google.gwt.user.client.ui.Widget;
@@ -13,9 +13,11 @@ import com.butent.bee.client.Global;
 import com.butent.bee.client.Settings;
 import com.butent.bee.client.dom.DomUtils;
 import com.butent.bee.client.event.Binder;
+import com.butent.bee.client.event.logical.ReadyEvent;
 import com.butent.bee.client.layout.Flow;
 import com.butent.bee.client.layout.Horizontal;
 import com.butent.bee.client.presenter.Presenter;
+import com.butent.bee.client.style.StyleUtils;
 import com.butent.bee.client.ui.IdentifiableWidget;
 import com.butent.bee.client.ui.UiOption;
 import com.butent.bee.client.widget.FaLabel;
@@ -31,6 +33,7 @@ import com.butent.bee.shared.ui.Captions;
 import com.butent.bee.shared.utils.BeeUtils;
 
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 
@@ -75,17 +78,19 @@ public class HeaderImpl extends Flow implements HeaderView {
 
   private static final int HEIGHT = 30;
 
-  private static final String STYLE_CONTAINER = "bee-Header-container";
+  private static final String STYLE_PREFIX = StyleUtils.CLASS_NAME_PREFIX + "Header-";
 
-  private static final String STYLE_CAPTION = "bee-Header-caption";
-  private static final String STYLE_MESSAGE = "bee-Header-message";
+  private static final String STYLE_CONTAINER = STYLE_PREFIX + "container";
 
-  private static final String STYLE_COMMAND_PANEL = "bee-Header-commandPanel";
+  private static final String STYLE_CAPTION = STYLE_PREFIX + "caption";
+  private static final String STYLE_MESSAGE = STYLE_PREFIX + "message";
 
-  private static final String STYLE_CONTROL = "bee-Header-control";
+  private static final String STYLE_COMMAND_PANEL = STYLE_PREFIX + "commandPanel";
+
+  private static final String STYLE_CONTROL = STYLE_PREFIX + "control";
   private static final String STYLE_CONTROL_HIDDEN = STYLE_CONTROL + "-hidden";
 
-  private static final String STYLE_DISABLED = "bee-Header-disabled";
+  private static final String STYLE_DISABLED = STYLE_PREFIX + "disabled";
 
   private static final int ACTION_SENSITIVITY_MILLIS =
       BeeUtils.positive(Settings.getActionSensitivityMillis(), 300);
@@ -106,12 +111,19 @@ public class HeaderImpl extends Flow implements HeaderView {
 
   private boolean enabled = true;
 
-  private final Map<Action, String> actionControls = Maps.newHashMap();
+  private final Map<Action, String> actionControls = new HashMap<>();
 
   private final Horizontal commandPanel = new Horizontal();
 
   public HeaderImpl() {
     super();
+  }
+
+  public HeaderImpl(Widget widget) {
+    this();
+    if (widget != null) {
+      add(widget);
+    }
   }
 
   @Override
@@ -123,6 +135,11 @@ public class HeaderImpl extends Flow implements HeaderView {
   @Override
   public void addCommandItem(IdentifiableWidget widget) {
     getCommandPanel().add(widget);
+  }
+
+  @Override
+  public HandlerRegistration addReadyHandler(ReadyEvent.Handler handler) {
+    return addHandler(handler, ReadyEvent.getType());
   }
 
   @Override
@@ -159,7 +176,7 @@ public class HeaderImpl extends Flow implements HeaderView {
     if (hasAction(Action.REMOVE_FILTER, false, enabledActions, disabledActions)) {
       add(createImage(Global.getImages().closeSmallRed(), Action.REMOVE_FILTER, hiddenActions));
     }
-    
+
     boolean canAdd = hasData && !readOnly && BeeKeeper.getUser().canCreateData(viewName);
     if (hasAction(Action.ADD, canAdd, enabledActions, disabledActions)) {
       add(createImage(Global.getImages().silverAdd(), Action.ADD, hiddenActions));
@@ -194,11 +211,15 @@ public class HeaderImpl extends Flow implements HeaderView {
     }
 
     if (hasAction(Action.AUDIT, false, enabledActions, disabledActions)) {
-      add(createImage(Global.getImages().silverChatIcon(), Action.AUDIT, hiddenActions));
+      add(createFa(FontAwesome.HISTORY, Action.AUDIT, hiddenActions));
     }
 
-    if (hasAction(Action.PRINT, true, enabledActions, disabledActions)) {
+    if (hasAction(Action.PRINT, false, enabledActions, disabledActions)) {
       add(createImage(Global.getImages().silverPrint(), Action.PRINT, hiddenActions));
+    }
+
+    if (hasAction(Action.MENU, false, enabledActions, disabledActions)) {
+      add(createFa(FontAwesome.NAVICON, Action.MENU, hiddenActions));
     }
 
     if (hasAction(Action.CLOSE, UiOption.isWindow(options), enabledActions, disabledActions)) {
@@ -250,7 +271,10 @@ public class HeaderImpl extends Flow implements HeaderView {
     if (action == null || !isEnabled()) {
       return false;
     }
-    String id = getActionControls().get(action);
+
+    Action a = (action == Action.CANCEL) ? Action.CLOSE : action;
+
+    String id = getActionControls().get(a);
     if (BeeUtils.isEmpty(id)) {
       return false;
     }
@@ -262,7 +286,7 @@ public class HeaderImpl extends Flow implements HeaderView {
       return false;
     }
   }
-  
+
   @Override
   public boolean isActionOrCommand(Element target) {
     if (target == null) {
@@ -270,7 +294,7 @@ public class HeaderImpl extends Flow implements HeaderView {
     } else if (commandPanel.getElement().isOrHasChild(target)) {
       return true;
     } else {
-      return !BeeUtils.isEmpty(target.getId()) 
+      return !BeeUtils.isEmpty(target.getId())
           && getActionControls().values().contains(target.getId());
     }
   }
@@ -288,6 +312,11 @@ public class HeaderImpl extends Flow implements HeaderView {
       String id = source.getId();
       return BeeUtils.isEmpty(id) ? true : !actionControls.containsValue(id);
     }
+  }
+
+  @Override
+  public boolean reactsTo(Action action) {
+    return false;
   }
 
   @Override
@@ -334,7 +363,7 @@ public class HeaderImpl extends Flow implements HeaderView {
   public void setMessageTitle(String title) {
     messageWidget.setTitle(title);
   }
-  
+
   @Override
   public void setViewPresenter(Presenter viewPresenter) {
     this.viewPresenter = viewPresenter;
@@ -350,13 +379,19 @@ public class HeaderImpl extends Flow implements HeaderView {
       }
       return;
     }
-    
+
     Element controlElement = DomUtils.getElement(widgetId);
     if (visible) {
       controlElement.removeClassName(STYLE_CONTROL_HIDDEN);
     } else {
       controlElement.addClassName(STYLE_CONTROL_HIDDEN);
     }
+  }
+
+  @Override
+  protected void onLoad() {
+    super.onLoad();
+    ReadyEvent.fire(this);
   }
 
   private Widget createFa(FontAwesome fa, Action action, Set<Action> hiddenActions) {

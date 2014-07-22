@@ -32,7 +32,9 @@ import com.butent.bee.shared.Pair;
 import com.butent.bee.shared.css.CssUnit;
 import com.butent.bee.shared.ui.UserInterface;
 import com.butent.bee.shared.utils.BeeUtils;
+import com.butent.bee.shared.utils.ExtendedProperty;
 
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -49,15 +51,21 @@ public class Mobile extends ScreenImpl {
   public boolean activateDomainEntry(Domain domain, Long key) {
     return false;
   }
-  
+
   @Override
   public void activateWidget(IdentifiableWidget widget) {
-    notifyWarning("The white zone is for loading and unloading only");
   }
 
   @Override
   public void addDomainEntry(Domain domain, IdentifiableWidget widget, Long key, String caption) {
-    notifyWarning("The white zone is for loading and unloading only");
+  }
+
+  @Override
+  public void closeAll() {
+    IdentifiableWidget widget = getActiveWidget();
+    if (widget != null) {
+      getScreenPanel().remove(widget);
+    }
   }
 
   @Override
@@ -72,7 +80,7 @@ public class Mobile extends ScreenImpl {
       notifyWarning("closeWidget: widget not found");
     }
   }
-  
+
   @Override
   public boolean containsDomainEntry(Domain domain, Long key) {
     return false;
@@ -87,10 +95,20 @@ public class Mobile extends ScreenImpl {
   public int getActivePanelWidth() {
     return getScreenPanel().getCenterWidth();
   }
-  
+
   @Override
   public IdentifiableWidget getActiveWidget() {
     return getScreenPanel().getCenter();
+  }
+
+  @Override
+  public List<ExtendedProperty> getExtendedInfo() {
+    List<ExtendedProperty> info = new ArrayList<>();
+
+    info.add(new ExtendedProperty("Center Width", BeeUtils.toString(getActivePanelWidth())));
+    info.add(new ExtendedProperty("Center Height", BeeUtils.toString(getActivePanelHeight())));
+
+    return info;
   }
 
   @Override
@@ -101,7 +119,7 @@ public class Mobile extends ScreenImpl {
     }
     return result;
   }
-  
+
   @Override
   public UserInterface getUserInterface() {
     return UserInterface.MOBILE;
@@ -110,26 +128,20 @@ public class Mobile extends ScreenImpl {
   @Override
   public void onWidgetChange(IdentifiableWidget widget) {
   }
-  
+
   @Override
   public boolean removeDomainEntry(Domain domain, Long key) {
     return false;
   }
 
   @Override
-  public void showInfo() {
-    Global.showInfo(Lists.newArrayList(String.valueOf(getActivePanelWidth()),
-        String.valueOf(getActivePanelHeight())));
-  }
-
-  @Override
-  public void showWidget(IdentifiableWidget widget, boolean newPlace) {
-    getScreenPanel().updateCenter(widget);
+  public void showInNewPlace(IdentifiableWidget widget) {
+    updateActivePanel(widget);
   }
 
   @Override
   public void updateActivePanel(IdentifiableWidget widget) {
-    showWidget(widget, false);
+    getScreenPanel().updateCenter(widget);
   }
 
   protected int addLogToggle(LayoutPanel panel) {
@@ -156,19 +168,19 @@ public class Mobile extends ScreenImpl {
   protected IdentifiableWidget initCenter() {
     return new CustomDiv();
   }
-  
+
   @Override
   protected Pair<? extends IdentifiableWidget, Integer> initNorth() {
     Complex panel = new Complex();
     panel.addStyleName("bee-NorthContainer");
-    
+
     panel.addLeftTop(Global.getSearchWidget(), 40, 2);
-    
+
     Flow menuContainer = new Flow();
     menuContainer.addStyleName("bee-MainMenu");
     panel.addLeftTop(menuContainer, 10, 30);
     setMenuPanel(menuContainer);
-    
+
     setNotification(new Notification());
     panel.addRightTop(getNotification(), 1, 1);
 

@@ -1,9 +1,14 @@
 package com.butent.bee.server.modules.service;
 
+import com.google.common.collect.ArrayListMultimap;
+import com.google.common.collect.Multimap;
 import com.google.common.eventbus.Subscribe;
 
 import static com.butent.bee.shared.modules.administration.AdministrationConstants.*;
+import static com.butent.bee.shared.modules.classifiers.ClassifierConstants.*;
+import static com.butent.bee.shared.modules.documents.DocumentConstants.*;
 import static com.butent.bee.shared.modules.service.ServiceConstants.*;
+import static com.butent.bee.shared.modules.tasks.TaskConstants.*;
 import static com.butent.bee.shared.modules.trade.TradeConstants.*;
 
 import com.butent.bee.server.data.BeeView;
@@ -17,6 +22,7 @@ import com.butent.bee.server.modules.BeeModule;
 import com.butent.bee.server.modules.administration.ExchangeUtils;
 import com.butent.bee.server.modules.administration.ExtensionIcons;
 import com.butent.bee.server.modules.trade.TradeModuleBean;
+import com.butent.bee.server.sql.HasConditions;
 import com.butent.bee.server.sql.IsCondition;
 import com.butent.bee.server.sql.IsExpression;
 import com.butent.bee.server.sql.SqlInsert;
@@ -35,14 +41,18 @@ import com.butent.bee.shared.data.filter.Filter;
 import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogUtils;
 import com.butent.bee.shared.modules.BeeParameter;
-import com.butent.bee.shared.modules.administration.AdministrationConstants;
-import com.butent.bee.shared.modules.classifiers.ClassifierConstants;
-import com.butent.bee.shared.modules.tasks.TaskConstants;
 import com.butent.bee.shared.rights.Module;
+import com.butent.bee.shared.time.JustDate;
+import com.butent.bee.shared.time.TimeUtils;
+import com.butent.bee.shared.utils.ArrayUtils;
 import com.butent.bee.shared.utils.BeeUtils;
+import com.butent.bee.shared.utils.Codec;
+import com.butent.bee.shared.utils.Property;
 
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 import javax.ejb.EJB;
@@ -71,9 +81,14 @@ public class ServiceModuleBean implements BeeModule {
 
     if (BeeUtils.same(svc, SVC_CREATE_INVOICE_ITEMS)) {
       response = createInvoiceItems(reqInfo);
+    } else if (BeeUtils.same(svc, SVC_CREATE_DEFECT_ITEMS)) {
+      response = createDefectItems(reqInfo);
 
     } else if (BeeUtils.same(svc, SVC_GET_CALENDAR_DATA)) {
       response = getCalendarData(reqInfo);
+
+    } else if (BeeUtils.same(svc, SVC_COPY_DOCUMENT_CRITERIA)) {
+      response = copyDocumentCriteria(reqInfo);
 
     } else {
       String msg = BeeUtils.joinWords("service not recognized:", svc);
@@ -109,8 +124,7 @@ public class ServiceModuleBean implements BeeModule {
         }
 
         if (BeeUtils.same(event.getTargetName(), VIEW_SERVICE_FILES)) {
-          ExtensionIcons.setIcons(event.getRowset(), AdministrationConstants.ALS_FILE_NAME,
-              AdministrationConstants.PROP_ICON);
+          ExtensionIcons.setIcons(event.getRowset(), ALS_FILE_NAME, PROP_ICON);
 
         } else if (BeeUtils.same(event.getTargetName(), VIEW_SERVICE_OBJECTS)
             && !DataUtils.isEmpty(event.getRowset())) {
@@ -119,7 +133,7 @@ public class ServiceModuleBean implements BeeModule {
           List<Long> rowIds = rowSet.getRowIds();
 
           BeeView view = sys.getView(VIEW_SERVICE_OBJECT_CRITERIA);
-          SqlSelect query = view.getQuery();
+          SqlSelect query = view.getQuery(usr.getCurrentUserId());
 
           query.setWhere(SqlUtils.and(query.getWhere(),
               SqlUtils.isNull(view.getSourceAlias(), COL_SERVICE_CRITERIA_GROUP_NAME),
@@ -143,6 +157,193 @@ public class ServiceModuleBean implements BeeModule {
     });
   }
 
+  private ResponseObject copyDocumentCriteria(RequestInfo reqInfo) {
+    Long dataId = BeeUtils.toLongOrNull(reqInfo.getParameter(COL_DOCUMENT_DATA));
+    if (!DataUtils.isId(dataId)) {
+      return ResponseObject.parameterNotFound(reqInfo.getService(), COL_DOCUMENT_DATA);
+    }
+
+    Long objId = BeeUtils.toLongOrNull(reqInfo.getParameter(COL_SERVICE_OBJECT));
+    if (!DataUtils.isId(objId)) {
+      return ResponseObject.parameterNotFound(reqInfo.getService(), COL_SERVICE_OBJECT);
+    }
+
+    if (qs.sqlExists(TBL_SERVICE_CRITERIA_GROUPS, COL_SERVICE_OBJECT, objId)) {
+      return ResponseObject.emptyResponse();
+    }
+
+    String aliasGroupOrdinal = COL_CRITERIA_GROUP + COL_CRITERIA_ORDINAL;
+
+    SimpleRowSet rs = qs.getData(new SqlSelect()
+        .addField(TBL_CRITERIA_GROUPS, COL_CRITERIA_ORDINAL, aliasGroupOrdinal)
+        .addFields(TBL_CRITERIA_GROUPS, COL_CRITERIA_GROUP_NAME)
+        .addFields(TBL_CRITERIA, COL_CRITERIA_GROUP, COL_CRITERIA_ORDINAL, COL_CRITERION_NAME,
+            COL_CRITERION_VALUE)
+        .addFrom(TBL_CRITERIA_GROUPS)
+        .addFromLeft(TBL_CRITERIA,
+            sys.joinTables(TBL_CRITERIA_GROUPS, TBL_CRITERIA, COL_CRITERIA_GROUP))
+        .setWhere(SqlUtils.equals(TBL_CRITERIA_GROUPS, COL_DOCUMENT_DATA, dataId)));
+
+    if (DataUtils.isEmpty(rs)) {
+      return ResponseObject.emptyResponse();
+    }
+
+    Map<Long, Long> groups = new HashMap<>();
+    Long svcGroupId;
+
+    for (SimpleRow row : rs) {
+      Long docGroupId = row.getLong(COL_CRITERIA_GROUP);
+
+      if (groups.containsKey(docGroupId)) {
+        svcGroupId = groups.get(docGroupId);
+
+      } else {
+        SqlInsert insGroup = new SqlInsert(TBL_SERVICE_CRITERIA_GROUPS)
+            .addConstant(COL_SERVICE_OBJECT, objId);
+
+        Integer groupOrdinal = row.getInt(aliasGroupOrdinal);
+        if (groupOrdinal != null) {
+          insGroup.addConstant(COL_SERVICE_CRITERIA_ORDINAL, groupOrdinal);
+        }
+
+        String groupName = row.getValue(COL_CRITERIA_GROUP_NAME);
+        if (!BeeUtils.isEmpty(groupName)) {
+          insGroup.addConstant(COL_SERVICE_CRITERIA_GROUP_NAME, groupName);
+        }
+
+        svcGroupId = qs.insertData(insGroup);
+        groups.put(docGroupId, svcGroupId);
+      }
+
+      String criterion = row.getValue(COL_CRITERION_NAME);
+
+      if (DataUtils.isId(svcGroupId) && !BeeUtils.isEmpty(criterion)) {
+        SqlInsert insCrit = new SqlInsert(TBL_SERVICE_CRITERIA)
+            .addConstant(COL_SERVICE_CRITERIA_GROUP, svcGroupId)
+            .addConstant(COL_SERVICE_CRITERION_NAME, criterion);
+
+        Integer ordinal = row.getInt(COL_CRITERIA_ORDINAL);
+        if (ordinal != null) {
+          insCrit.addConstant(COL_SERVICE_CRITERIA_ORDINAL, ordinal);
+        }
+
+        String value = row.getValue(COL_CRITERION_VALUE);
+        if (!BeeUtils.isEmpty(value)) {
+          insCrit.addConstant(COL_SERVICE_CRITERION_VALUE, value);
+        }
+
+        qs.insertData(insCrit);
+      }
+    }
+
+    return ResponseObject.response(rs.getNumberOfRows());
+  }
+
+  private ResponseObject createDefectItems(RequestInfo reqInfo) {
+    Long dfId = BeeUtils.toLongOrNull(reqInfo.getParameter(COL_DEFECT));
+    if (!DataUtils.isId(dfId)) {
+      return ResponseObject.parameterNotFound(reqInfo.getService(), COL_DEFECT);
+    }
+
+    Long currency = BeeUtils.toLongOrNull(reqInfo.getParameter(COL_CURRENCY));
+    if (!DataUtils.isId(currency)) {
+      return ResponseObject.parameterNotFound(reqInfo.getService(), COL_CURRENCY);
+    }
+
+    Set<Long> ids = DataUtils.parseIdSet(reqInfo.getParameter(VIEW_MAINTENANCE));
+    if (ids.isEmpty()) {
+      return ResponseObject.parameterNotFound(reqInfo.getService(), VIEW_MAINTENANCE);
+    }
+
+    IsCondition where = sys.idInList(TBL_MAINTENANCE, ids);
+
+    SqlSelect query = new SqlSelect()
+        .addFields(TBL_MAINTENANCE, COL_MAINTENANCE_ITEM, COL_TRADE_ITEM_QUANTITY,
+            COL_TRADE_VAT_PLUS, COL_TRADE_VAT, COL_TRADE_VAT_PERC, COL_MAINTENANCE_NOTES)
+        .addFrom(TBL_MAINTENANCE)
+        .setWhere(where);
+
+    IsExpression priceExch = ExchangeUtils.exchangeFieldTo(query,
+        TBL_MAINTENANCE, COL_TRADE_ITEM_PRICE, COL_CURRENCY, COL_MAINTENANCE_DATE, currency);
+    String priceAlias = "Price_" + SqlUtils.uniqueName();
+
+    IsExpression vatExch = ExchangeUtils.exchangeFieldTo(query,
+        TBL_MAINTENANCE, COL_TRADE_VAT, COL_CURRENCY, COL_MAINTENANCE_DATE, currency);
+    String vatAlias = "Vat_" + SqlUtils.uniqueName();
+
+    query.addExpr(priceExch, priceAlias)
+        .addExpr(vatExch, vatAlias)
+        .addOrder(TBL_MAINTENANCE, sys.getIdName(TBL_MAINTENANCE));
+
+    SimpleRowSet data = qs.getData(query);
+    if (DataUtils.isEmpty(data)) {
+      return ResponseObject.error(TBL_MAINTENANCE, ids, "not found");
+    }
+
+    ResponseObject response = new ResponseObject();
+
+    for (SimpleRow row : data) {
+      Long item = row.getLong(COL_MAINTENANCE_ITEM);
+
+      SqlInsert insert = new SqlInsert(TBL_SERVICE_DEFECT_ITEMS)
+          .addConstant(COL_DEFECT, dfId)
+          .addConstant(COL_DEFECT_ITEM, item);
+
+      Boolean vatPerc = row.getBoolean(COL_TRADE_VAT_PERC);
+      Double vat;
+
+      if (BeeUtils.isTrue(vatPerc)) {
+        insert.addConstant(COL_TRADE_VAT_PERC, vatPerc);
+        vat = row.getDouble(COL_TRADE_VAT);
+      } else {
+        vat = row.getDouble(vatAlias);
+      }
+
+      if (BeeUtils.nonZero(vat)) {
+        insert.addConstant(COL_TRADE_VAT, vat);
+      }
+
+      Boolean vatPlus = row.getBoolean(COL_TRADE_VAT_PLUS);
+      if (BeeUtils.isTrue(vatPlus)) {
+        insert.addConstant(COL_TRADE_VAT_PLUS, vatPlus);
+      }
+
+      Double quantity = row.getDouble(COL_TRADE_ITEM_QUANTITY);
+      Double price = row.getDouble(priceAlias);
+
+      insert.addConstant(COL_TRADE_ITEM_QUANTITY, BeeUtils.unbox(quantity));
+      if (price != null) {
+        insert.addConstant(COL_TRADE_ITEM_PRICE, price);
+      }
+
+      if (data.hasColumn(COL_MAINTENANCE_NOTES)) {
+        String notes = row.getValue(COL_MAINTENANCE_NOTES);
+        if (!BeeUtils.isEmpty(notes)) {
+          insert.addConstant(COL_DEFECT_NOTE, notes);
+        }
+      }
+
+      ResponseObject insResponse = qs.insertDataWithResponse(insert);
+      if (insResponse.hasErrors()) {
+        response.addMessagesFrom(insResponse);
+        break;
+      }
+    }
+
+    if (!response.hasErrors()) {
+      SqlUpdate update = new SqlUpdate(TBL_MAINTENANCE)
+          .addConstant(COL_MAINTENANCE_DEFECT, dfId)
+          .setWhere(where);
+
+      ResponseObject updResponse = qs.updateDataWithResponse(update);
+      if (updResponse.hasErrors()) {
+        response.addMessagesFrom(updResponse);
+      }
+    }
+
+    return response;
+  }
+
   private ResponseObject createInvoiceItems(RequestInfo reqInfo) {
     Long invId = BeeUtils.toLongOrNull(reqInfo.getParameter(COL_MAINTENANCE_INVOICE));
     if (!DataUtils.isId(invId)) {
@@ -150,10 +351,9 @@ public class ServiceModuleBean implements BeeModule {
     }
 
     Long currency =
-        BeeUtils.toLongOrNull(reqInfo.getParameter(AdministrationConstants.COL_CURRENCY));
+        BeeUtils.toLongOrNull(reqInfo.getParameter(COL_CURRENCY));
     if (!DataUtils.isId(currency)) {
-      return ResponseObject.parameterNotFound(reqInfo.getService(),
-          AdministrationConstants.COL_CURRENCY);
+      return ResponseObject.parameterNotFound(reqInfo.getService(), COL_CURRENCY);
     }
 
     Set<Long> ids = DataUtils.parseIdSet(reqInfo.getParameter(VIEW_MAINTENANCE));
@@ -171,8 +371,7 @@ public class ServiceModuleBean implements BeeModule {
         .setWhere(where);
 
     IsExpression vatExch = ExchangeUtils.exchangeFieldTo(query,
-        TBL_MAINTENANCE, COL_TRADE_VAT, AdministrationConstants.COL_CURRENCY,
-        COL_MAINTENANCE_DATE, currency);
+        TBL_MAINTENANCE, COL_TRADE_VAT, COL_CURRENCY, COL_MAINTENANCE_DATE, currency);
 
     String vatAlias = "Vat_" + SqlUtils.uniqueName();
 
@@ -182,7 +381,7 @@ public class ServiceModuleBean implements BeeModule {
     if (DataUtils.isId(mainItem) && ids.size() > 1) {
       IsExpression amountExch = ExchangeUtils.exchangeFieldTo(query,
           TradeModuleBean.getTotalExpression(TBL_MAINTENANCE),
-          SqlUtils.field(TBL_MAINTENANCE, AdministrationConstants.COL_CURRENCY),
+          SqlUtils.field(TBL_MAINTENANCE, COL_CURRENCY),
           SqlUtils.field(TBL_MAINTENANCE, COL_MAINTENANCE_DATE),
           SqlUtils.constant(currency));
 
@@ -196,8 +395,7 @@ public class ServiceModuleBean implements BeeModule {
 
     } else {
       IsExpression priceExch = ExchangeUtils.exchangeFieldTo(query,
-          TBL_MAINTENANCE, COL_TRADE_ITEM_PRICE, AdministrationConstants.COL_CURRENCY,
-          COL_MAINTENANCE_DATE, currency);
+          TBL_MAINTENANCE, COL_TRADE_ITEM_PRICE, COL_CURRENCY, COL_MAINTENANCE_DATE, currency);
 
       priceAlias = "Price_" + SqlUtils.uniqueName();
       amountAlias = null;
@@ -221,7 +419,7 @@ public class ServiceModuleBean implements BeeModule {
 
       SqlInsert insert = new SqlInsert(TBL_SALE_ITEMS)
           .addConstant(COL_SALE, invId)
-          .addConstant(ClassifierConstants.COL_ITEM, item);
+          .addConstant(COL_ITEM, item);
 
       Boolean vatPerc = row.getBoolean(COL_TRADE_VAT_PERC);
       Double vat;
@@ -307,97 +505,250 @@ public class ServiceModuleBean implements BeeModule {
       return ResponseObject.error(reqInfo.getService(), "user settings not available");
     }
 
-    String idName = sys.getIdName(TBL_SERVICE_OBJECTS);
-
-    IsCondition where = SqlUtils.or(
-        SqlUtils.in(TBL_SERVICE_OBJECTS, idName, TBL_RELATIONS, COL_SERVICE_OBJECT,
-            SqlUtils.or(SqlUtils.notNull(TBL_RELATIONS, TaskConstants.COL_TASK),
-                SqlUtils.notNull(TBL_RELATIONS, TaskConstants.COL_RECURRING_TASK))),
-        SqlUtils.in(TBL_SERVICE_OBJECTS, idName, TBL_SERVICE_DATES, COL_SERVICE_OBJECT));
-
-    SqlSelect objectQuery = new SqlSelect()
-        .addFields(TBL_SERVICE_OBJECTS, idName, COL_SERVICE_OBJECT_CATEGORY,
-            COL_SERVICE_OBJECT_CUSTOMER, COL_SERVICE_OBJECT_ADDRESS)
-        .addField(TBL_SERVICE_TREE, COL_SERVICE_CATEGORY_NAME, ALS_SERVICE_CATEGORY_NAME)
-        .addField(ClassifierConstants.TBL_COMPANIES,
-            ClassifierConstants.COL_COMPANY_NAME, ALS_SERVICE_CUSTOMER_NAME)
-        .addFrom(TBL_SERVICE_OBJECTS)
-        .addFromLeft(TBL_SERVICE_TREE, sys.joinTables(TBL_SERVICE_TREE,
-            TBL_SERVICE_OBJECTS, COL_SERVICE_OBJECT_CATEGORY))
-        .addFromLeft(ClassifierConstants.TBL_COMPANIES,
-            sys.joinTables(ClassifierConstants.TBL_COMPANIES,
-                TBL_SERVICE_OBJECTS, COL_SERVICE_OBJECT_CUSTOMER))
-        .setWhere(where)
-        .addOrder(ClassifierConstants.TBL_COMPANIES, ClassifierConstants.COL_COMPANY_NAME)
-        .addOrder(TBL_SERVICE_OBJECTS, COL_SERVICE_OBJECT_ADDRESS, idName);
-
-    SimpleRowSet objectData = qs.getData(objectQuery);
+    SimpleRowSet objectData = getCalendarObjects();
     if (DataUtils.isEmpty(objectData)) {
       return ResponseObject.response(settings);
     }
 
     settings.setTableProperty(TBL_SERVICE_OBJECTS, objectData.serialize());
 
-    idName = sys.getIdName(TaskConstants.TBL_TASKS);
+    BeeRow row = settings.getRow(0);
+    JustDate minDate = DataUtils.getDate(settings, row, COL_SERVICE_CALENDAR_MIN_DATE);
+    JustDate maxDate = DataUtils.getDate(settings, row, COL_SERVICE_CALENDAR_MAX_DATE);
 
-    SqlSelect taskQuery = new SqlSelect()
-        .addAllFields(TaskConstants.TBL_TASKS)
-        .addFields(TaskConstants.TBL_TASK_USERS, TaskConstants.COL_STAR)
-        .addFrom(TaskConstants.TBL_TASKS)
-        .addFromLeft(TaskConstants.TBL_TASK_USERS,
-            SqlUtils.and(
-                SqlUtils.join(TaskConstants.TBL_TASKS, idName,
-                    TaskConstants.TBL_TASK_USERS, TaskConstants.COL_TASK),
-                SqlUtils.equals(TaskConstants.TBL_TASK_USERS, COL_USER, usr.getCurrentUserId())))
-        .setWhere(SqlUtils.in(TaskConstants.TBL_TASKS, idName,
-            TBL_RELATIONS, TaskConstants.COL_TASK,
-            SqlUtils.notNull(TBL_RELATIONS, COL_SERVICE_OBJECT)))
-        .addOrder(TaskConstants.TBL_TASKS, TaskConstants.COL_FINISH_TIME, idName);
-
-    SimpleRowSet taskData = qs.getData(taskQuery);
-    if (!DataUtils.isEmpty(taskData)) {
-      settings.setTableProperty(TaskConstants.TBL_TASKS, taskData.serialize());
+    if (minDate != null && maxDate != null && BeeUtils.isLess(maxDate, minDate)) {
+      maxDate = JustDate.copyOf(minDate);
     }
 
-    idName = sys.getIdName(TaskConstants.TBL_RECURRING_TASKS);
+    Long minTime = (minDate == null) ? null : TimeUtils.startOfDay(minDate, -1).getTime();
+    Long maxTime = (maxDate == null) ? null : TimeUtils.startOfDay(maxDate, 1).getTime();
 
-    SqlSelect rtQuery = new SqlSelect()
-        .addAllFields(TaskConstants.TBL_RECURRING_TASKS)
-        .addFrom(TaskConstants.TBL_RECURRING_TASKS)
-        .setWhere(SqlUtils.in(TaskConstants.TBL_RECURRING_TASKS, idName,
-            TBL_RELATIONS, TaskConstants.COL_RECURRING_TASK,
-            SqlUtils.notNull(TBL_RELATIONS, COL_SERVICE_OBJECT)))
-        .addOrder(TaskConstants.TBL_RECURRING_TASKS, TaskConstants.COL_RT_SCHEDULE_FROM, idName);
-
-    SimpleRowSet rtData = qs.getData(rtQuery);
-    if (!DataUtils.isEmpty(rtData)) {
-      settings.setTableProperty(TaskConstants.TBL_RECURRING_TASKS, rtData.serialize());
-    }
-
-    SqlSelect relationQuery = new SqlSelect()
-        .addFields(TBL_RELATIONS, COL_SERVICE_OBJECT, TaskConstants.COL_TASK,
-            TaskConstants.COL_RECURRING_TASK)
-        .addFrom(TBL_RELATIONS)
-        .setWhere(SqlUtils.and(SqlUtils.notNull(TBL_RELATIONS, COL_SERVICE_OBJECT),
-            SqlUtils.or(SqlUtils.notNull(TBL_RELATIONS, TaskConstants.COL_TASK),
-                SqlUtils.notNull(TBL_RELATIONS, TaskConstants.COL_RECURRING_TASK))));
-
-    SimpleRowSet relationData = qs.getData(relationQuery);
-    if (!DataUtils.isEmpty(relationData)) {
-      settings.setTableProperty(TBL_RELATIONS, relationData.serialize());
-    }
-
-    SqlSelect datesQuery = new SqlSelect()
-        .addAllFields(TBL_SERVICE_DATES)
-        .addFrom(TBL_SERVICE_DATES)
-        .addOrder(TBL_SERVICE_DATES, COL_SERVICE_OBJECT, COL_SERVICE_DATE_FROM);
-
-    SimpleRowSet datesData = qs.getData(datesQuery);
+    SimpleRowSet datesData = getCalendarDates(minTime, maxTime);
     if (!DataUtils.isEmpty(datesData)) {
       settings.setTableProperty(TBL_SERVICE_DATES, datesData.serialize());
     }
 
+    SimpleRowSet relationData = getCalendarRelations();
+    if (DataUtils.isEmpty(relationData)) {
+      return ResponseObject.response(settings);
+    }
+
+    settings.setTableProperty(TBL_RELATIONS, relationData.serialize());
+
+    Set<Long> taskTypes = DataUtils.parseIdSet(
+        settings.getString(0, COL_SERVICE_CALENDAR_TASK_TYPES));
+
+    SimpleRowSet taskData = getCalendarTasks(taskTypes, minTime, maxTime);
+    if (!DataUtils.isEmpty(taskData)) {
+      settings.setTableProperty(TBL_TASKS, taskData.serialize());
+    }
+
+    SimpleRowSet rtData = getCalendarRecurringTasks(taskTypes, minTime, maxTime);
+    if (!DataUtils.isEmpty(rtData)) {
+      settings.setTableProperty(TBL_RECURRING_TASKS, rtData.serialize());
+
+      BeeRowSet rtDates = qs.getViewData(VIEW_RT_DATES);
+      if (!DataUtils.isEmpty(rtDates)) {
+        settings.setTableProperty(VIEW_RT_DATES, rtDates.serialize());
+      }
+    }
+
     return ResponseObject.response(settings);
+  }
+
+  private SimpleRowSet getCalendarDates(Long minTime, Long maxTime) {
+    SqlSelect query = new SqlSelect()
+        .addAllFields(TBL_SERVICE_DATES)
+        .addFrom(TBL_SERVICE_DATES)
+        .addOrder(TBL_SERVICE_DATES, COL_SERVICE_OBJECT, COL_SERVICE_DATE_FROM);
+
+    if (minTime != null || maxTime != null) {
+      HasConditions where = SqlUtils.and();
+
+      if (minTime != null) {
+        where.add(SqlUtils.or(SqlUtils.isNull(TBL_SERVICE_DATES, COL_SERVICE_DATE_UNTIL),
+            SqlUtils.moreEqual(TBL_SERVICE_DATES, COL_SERVICE_DATE_UNTIL, minTime)));
+      }
+      if (maxTime != null) {
+        where.add(SqlUtils.lessEqual(TBL_SERVICE_DATES, COL_SERVICE_DATE_FROM, maxTime));
+      }
+
+      query.setWhere(where);
+    }
+
+    return qs.getData(query);
+  }
+
+  private Multimap<Long, Property> getCalendarObjectCriteria(SimpleRowSet objects) {
+    Multimap<Long, Property> criteria = ArrayListMultimap.create();
+
+    BeeRowSet data = qs.getViewData(VIEW_SERVICE_OBJECT_CRITERIA,
+        Filter.isNull(COL_SERVICE_CRITERIA_GROUP_NAME));
+    if (DataUtils.isEmpty(data)) {
+      return criteria;
+    }
+
+    Long[] objIds = objects.getLongColumn(sys.getIdName(TBL_SERVICE_OBJECTS));
+
+    int objIndex = data.getColumnIndex(COL_SERVICE_OBJECT);
+    int nameIndex = data.getColumnIndex(COL_SERVICE_CRITERION_NAME);
+    int valueIndex = data.getColumnIndex(COL_SERVICE_CRITERION_VALUE);
+
+    for (BeeRow row : data) {
+      Long objId = row.getLong(objIndex);
+
+      if (ArrayUtils.contains(objIds, objId)) {
+        criteria.put(objId, new Property(row.getString(nameIndex), row.getString(valueIndex)));
+      }
+    }
+
+    return criteria;
+  }
+
+  private SimpleRowSet getCalendarObjects() {
+    String idName = sys.getIdName(TBL_SERVICE_OBJECTS);
+
+    HasConditions where = SqlUtils.or(
+        SqlUtils.in(TBL_SERVICE_OBJECTS, idName, TBL_RELATIONS, COL_SERVICE_OBJECT,
+            SqlUtils.or(SqlUtils.notNull(TBL_RELATIONS, COL_TASK),
+                SqlUtils.notNull(TBL_RELATIONS, COL_RECURRING_TASK))),
+        SqlUtils.in(TBL_SERVICE_OBJECTS, idName, TBL_SERVICE_DATES, COL_SERVICE_OBJECT));
+
+    String aliasCustomers = "Cust_" + SqlUtils.uniqueName();
+    String aliasContractors = "Contr_" + SqlUtils.uniqueName();
+
+    String companyIdName = sys.getIdName(TBL_COMPANIES);
+
+    SqlSelect query = new SqlSelect()
+        .addFields(TBL_SERVICE_OBJECTS, idName, COL_SERVICE_CATEGORY,
+            COL_SERVICE_CUSTOMER, COL_SERVICE_CONTRACTOR, COL_SERVICE_ADDRESS)
+        .addField(TBL_SERVICE_TREE, COL_SERVICE_CATEGORY_NAME, ALS_SERVICE_CATEGORY_NAME)
+        .addField(aliasCustomers, COL_COMPANY_NAME, ALS_SERVICE_CUSTOMER_NAME)
+        .addField(aliasContractors, COL_COMPANY_NAME, ALS_SERVICE_CONTRACTOR_NAME)
+        .addConstant(BeeConst.STRING_SPACE, PROP_CRITERIA)
+        .addFrom(TBL_SERVICE_OBJECTS)
+        .addFromLeft(TBL_SERVICE_TREE, sys.joinTables(TBL_SERVICE_TREE,
+            TBL_SERVICE_OBJECTS, COL_SERVICE_CATEGORY))
+        .addFromLeft(TBL_COMPANIES, aliasCustomers,
+            SqlUtils.join(aliasCustomers, companyIdName,
+                TBL_SERVICE_OBJECTS, COL_SERVICE_CUSTOMER))
+        .addFromLeft(TBL_COMPANIES, aliasContractors,
+            SqlUtils.join(aliasContractors, companyIdName,
+                TBL_SERVICE_OBJECTS, COL_SERVICE_CONTRACTOR))
+        .setWhere(where)
+        .addOrder(TBL_SERVICE_OBJECTS, COL_SERVICE_ADDRESS, idName);
+
+    SimpleRowSet data = qs.getData(query);
+
+    if (!DataUtils.isEmpty(data)) {
+      Multimap<Long, Property> criteria = getCalendarObjectCriteria(data);
+
+      if (!criteria.isEmpty()) {
+        for (SimpleRow row : data) {
+          Long objId = row.getLong(idName);
+
+          if (criteria.containsKey(objId)) {
+            row.setValue(PROP_CRITERIA, Codec.beeSerialize(criteria.get(objId)));
+          }
+        }
+      }
+    }
+
+    return data;
+  }
+
+  private SimpleRowSet getCalendarRecurringTasks(Set<Long> taskTypes, Long minTime, Long maxTime) {
+    String idName = sys.getIdName(TBL_RECURRING_TASKS);
+
+    SqlSelect spawnQuery = new SqlSelect()
+        .addFields(TBL_TASKS, COL_RECURRING_TASK)
+        .addMax(TBL_TASKS, COL_START_TIME, ALS_LAST_SPAWN)
+        .addFrom(TBL_TASKS)
+        .setWhere(SqlUtils.notNull(TBL_TASKS, COL_RECURRING_TASK))
+        .addGroup(TBL_TASKS, COL_RECURRING_TASK);
+
+    String spawnAlias = "Spawn_" + SqlUtils.uniqueName();
+
+    HasConditions where = SqlUtils.and(SqlUtils.in(TBL_RECURRING_TASKS, idName,
+        TBL_RELATIONS, COL_RECURRING_TASK,
+        SqlUtils.notNull(TBL_RELATIONS, COL_SERVICE_OBJECT)));
+
+    if (!taskTypes.isEmpty()) {
+      where.add(SqlUtils.inList(TBL_RECURRING_TASKS, COL_TASK_TYPE, taskTypes));
+    }
+
+    if (minTime != null) {
+      where.add(SqlUtils.or(SqlUtils.isNull(TBL_RECURRING_TASKS, COL_RT_SCHEDULE_UNTIL),
+          SqlUtils.moreEqual(TBL_RECURRING_TASKS, COL_RT_SCHEDULE_UNTIL, minTime)));
+    }
+    if (maxTime != null) {
+      where.add(SqlUtils.lessEqual(TBL_RECURRING_TASKS, COL_RT_SCHEDULE_FROM, maxTime));
+    }
+
+    SqlSelect query = new SqlSelect()
+        .addAllFields(TBL_RECURRING_TASKS)
+        .addField(TBL_TASK_TYPES, COL_TASK_TYPE_NAME, ALS_TASK_TYPE_NAME)
+        .addField(TBL_TASK_TYPES, COL_BACKGROUND, ALS_TASK_TYPE_BACKGROUND)
+        .addField(TBL_TASK_TYPES, COL_FOREGROUND, ALS_TASK_TYPE_FOREGROUND)
+        .addFields(spawnAlias, ALS_LAST_SPAWN)
+        .addFrom(TBL_RECURRING_TASKS)
+        .addFromLeft(TBL_TASK_TYPES,
+            sys.joinTables(TBL_TASK_TYPES, TBL_RECURRING_TASKS, COL_TASK_TYPE))
+        .addFromLeft(spawnQuery, spawnAlias,
+            SqlUtils.join(spawnAlias, COL_RECURRING_TASK, TBL_RECURRING_TASKS, idName))
+        .setWhere(where)
+        .addOrder(TBL_RECURRING_TASKS, COL_RT_SCHEDULE_FROM, idName);
+
+    return qs.getData(query);
+  }
+
+  private SimpleRowSet getCalendarRelations() {
+    SqlSelect query = new SqlSelect()
+        .addFields(TBL_RELATIONS, COL_SERVICE_OBJECT, COL_TASK, COL_RECURRING_TASK)
+        .addFrom(TBL_RELATIONS)
+        .setWhere(SqlUtils.and(
+            SqlUtils.notNull(TBL_RELATIONS, COL_SERVICE_OBJECT),
+            SqlUtils.or(
+                SqlUtils.notNull(TBL_RELATIONS, COL_TASK),
+                SqlUtils.notNull(TBL_RELATIONS, COL_RECURRING_TASK))));
+
+    return qs.getData(query);
+  }
+
+  private SimpleRowSet getCalendarTasks(Set<Long> taskTypes, Long minTime, Long maxTime) {
+    String idName = sys.getIdName(TBL_TASKS);
+
+    HasConditions where = SqlUtils.and(SqlUtils.in(TBL_TASKS, idName, TBL_RELATIONS, COL_TASK,
+        SqlUtils.notNull(TBL_RELATIONS, COL_SERVICE_OBJECT)));
+
+    if (!taskTypes.isEmpty()) {
+      where.add(SqlUtils.inList(TBL_TASKS, COL_TASK_TYPE, taskTypes));
+    }
+
+    if (minTime != null) {
+      where.add(SqlUtils.moreEqual(TBL_TASKS, COL_FINISH_TIME, minTime));
+    }
+    if (maxTime != null) {
+      where.add(SqlUtils.lessEqual(TBL_TASKS, COL_START_TIME, maxTime));
+    }
+
+    SqlSelect query = new SqlSelect()
+        .addAllFields(TBL_TASKS)
+        .addField(TBL_TASK_TYPES, COL_TASK_TYPE_NAME, ALS_TASK_TYPE_NAME)
+        .addField(TBL_TASK_TYPES, COL_BACKGROUND, ALS_TASK_TYPE_BACKGROUND)
+        .addField(TBL_TASK_TYPES, COL_FOREGROUND, ALS_TASK_TYPE_FOREGROUND)
+        .addFields(TBL_TASK_USERS, COL_STAR)
+        .addFrom(TBL_TASKS)
+        .addFromLeft(TBL_TASK_TYPES,
+            sys.joinTables(TBL_TASK_TYPES, TBL_TASKS, COL_TASK_TYPE))
+        .addFromLeft(TBL_TASK_USERS,
+            SqlUtils.and(
+                SqlUtils.join(TBL_TASKS, idName, TBL_TASK_USERS, COL_TASK),
+                SqlUtils.equals(TBL_TASK_USERS, COL_USER, usr.getCurrentUserId())))
+        .setWhere(where)
+        .addOrder(TBL_TASKS, COL_FINISH_TIME, idName);
+
+    return qs.getData(query);
   }
 
   private BeeRowSet getSettings() {

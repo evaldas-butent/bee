@@ -14,6 +14,7 @@ import com.butent.bee.client.data.Data;
 import com.butent.bee.client.data.IdCallback;
 import com.butent.bee.client.data.RowEditor;
 import com.butent.bee.client.modules.administration.AdministrationUtils;
+import com.butent.bee.client.ui.Opener;
 import com.butent.bee.client.view.HeaderView;
 import com.butent.bee.client.view.form.FormView;
 import com.butent.bee.client.view.form.interceptor.AbstractFormInterceptor;
@@ -87,7 +88,7 @@ class EcRegistrationForm extends AbstractFormInterceptor {
     if (BeeUtils.isEmpty(companyName)) {
       companyName = BeeUtils.joinWords(firstName, getStringValue(COL_REGISTRATION_LAST_NAME));
     }
-    
+
     final EcClientType type = EnumUtils.getEnumByIndex(EcClientType.class,
         getIntegerValue(COL_REGISTRATION_TYPE));
     if (type == null) {
@@ -100,7 +101,7 @@ class EcRegistrationForm extends AbstractFormInterceptor {
       notifyRequired(Localized.getConstants().branch());
       return;
     }
-    
+
     final String personCode = getStringValue(COL_REGISTRATION_PERSON_CODE);
     final String activity = getStringValue(COL_REGISTRATION_ACTIVITY);
 
@@ -123,7 +124,7 @@ class EcRegistrationForm extends AbstractFormInterceptor {
 
     String login = BeeUtils.notEmpty(BeeUtils.getPrefix(email, BeeConst.CHAR_AT), email);
     final String password = BeeUtils.left(login, 1);
-    
+
     final Integer locale = getIntegerValue(COL_REGISTRATION_LANGUAGE);
 
     String caption = Localized.getConstants().ecRegistrationCommandCreate();
@@ -134,29 +135,29 @@ class EcRegistrationForm extends AbstractFormInterceptor {
             if (getFormView().isInteractive()) {
               getHeaderView().clearCommandPanel();
             }
-            
+
             ParameterList params = EcKeeper.createArgs(SVC_CREATE_CLIENT);
             params.addQueryItem(EcConstants.VAR_MAIL, 1);
-            
+
             params.addDataItem(COL_CLIENT_USER, result);
             params.addDataItem(COL_CLIENT_TYPE, type.ordinal());
             params.addDataItem(COL_CLIENT_PRIMARY_BRANCH, branch);
-            
+
             params.addNotEmptyData(COL_CLIENT_PERSON_CODE, personCode);
             params.addNotEmptyData(COL_CLIENT_ACTIVITY, activity);
 
             params.addDataItem(AdministrationConstants.COL_PASSWORD, password);
             params.addNotNullData(AdministrationConstants.COL_USER_LOCALE, locale);
-            
+
             BeeKeeper.getRpc().makeRequest(params, new ResponseCallback() {
               @Override
               public void onResponse(ResponseObject response) {
                 EcKeeper.dispatchMessages(response);
-                
+
                 if (response.hasResponse(BeeRow.class)) {
                   DataChangeEvent.fireRefresh(BeeKeeper.getBus(), VIEW_CLIENTS);
-                  RowEditor.openRow(VIEW_CLIENTS, BeeRow.restore(response.getResponseAsString()),
-                      true);
+                  RowEditor.open(VIEW_CLIENTS, BeeRow.restore(response.getResponseAsString()),
+                      Opener.MODAL);
                 }
               }
             });

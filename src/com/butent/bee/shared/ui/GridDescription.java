@@ -1,9 +1,5 @@
 package com.butent.bee.shared.ui;
 
-import com.google.common.collect.Lists;
-import com.google.common.collect.Maps;
-import com.google.common.collect.Sets;
-
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeSerializable;
 import com.butent.bee.shared.HasExtendedInfo;
@@ -18,7 +14,10 @@ import com.butent.bee.shared.utils.Codec;
 import com.butent.bee.shared.utils.ExtendedProperty;
 import com.butent.bee.shared.utils.PropertyUtils;
 
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -122,10 +121,10 @@ public class GridDescription implements BeeSerializable, HasExtendedInfo, HasVie
   private String autoFit;
   private Flexibility flexibility;
 
-  private final List<ColumnDescription> columns = Lists.newArrayList();
+  private final List<ColumnDescription> columns = new ArrayList<>();
 
-  private Set<Action> enabledActions = Sets.newHashSet();
-  private Set<Action> disabledActions = Sets.newHashSet();
+  private final Set<Action> enabledActions = new HashSet<>();
+  private final Set<Action> disabledActions = new HashSet<>();
 
   private String favorite;
   private String enableCopy;
@@ -137,13 +136,13 @@ public class GridDescription implements BeeSerializable, HasExtendedInfo, HasVie
 
   private Integer rowChangeSensitivityMillis;
 
-  private final List<String> widgets = Lists.newArrayList();
+  private final List<String> widgets = new ArrayList<>();
 
-  private final List<FilterDescription> predefinedFilters = Lists.newArrayList();
+  private final List<FilterDescription> predefinedFilters = new ArrayList<>();
 
   private String options;
-  private final Map<String, String> properties = Maps.newHashMap();  
-  
+  private final Map<String, String> properties = new HashMap<>();
+
   public GridDescription(String name) {
     this(name, null, null, null);
   }
@@ -258,7 +257,7 @@ public class GridDescription implements BeeSerializable, HasExtendedInfo, HasVie
           if (ArrayUtils.isEmpty(styles)) {
             setRowStyles(null);
           } else {
-            List<ConditionalStyleDeclaration> lst = Lists.newArrayList();
+            List<ConditionalStyleDeclaration> lst = new ArrayList<>();
             for (String cs : styles) {
               lst.add(ConditionalStyleDeclaration.restore(cs));
             }
@@ -339,7 +338,7 @@ public class GridDescription implements BeeSerializable, HasExtendedInfo, HasVie
           if (ArrayUtils.isEmpty(css)) {
             setStyleSheets(null);
           } else {
-            Map<String, String> map = Maps.newHashMap();
+            Map<String, String> map = new HashMap<>();
             for (int j = 0; j < css.length - 1; j += 2) {
               map.put(css[j], css[j + 1]);
             }
@@ -401,7 +400,7 @@ public class GridDescription implements BeeSerializable, HasExtendedInfo, HasVie
         case PREDEFINED_FILTERS:
           setPredefinedFilters(FilterDescription.restoreList(value));
           break;
-          
+
         case OPTIONS:
           setOptions(value);
           break;
@@ -431,7 +430,7 @@ public class GridDescription implements BeeSerializable, HasExtendedInfo, HasVie
   public String getCaption() {
     return caption;
   }
-  
+
   public ColumnDescription getColumn(String id) {
     for (ColumnDescription column : getColumns()) {
       if (column.is(id)) {
@@ -503,7 +502,7 @@ public class GridDescription implements BeeSerializable, HasExtendedInfo, HasVie
 
   @Override
   public List<ExtendedProperty> getExtendedInfo() {
-    List<ExtendedProperty> info = Lists.newArrayList();
+    List<ExtendedProperty> info = new ArrayList<>();
 
     PropertyUtils.addProperties(info, false,
         "Name", getName(),
@@ -1024,7 +1023,7 @@ public class GridDescription implements BeeSerializable, HasExtendedInfo, HasVie
   }
 
   public void setDisabledActions(Set<Action> disabledActions) {
-    this.disabledActions = disabledActions;
+    BeeUtils.overwrite(this.disabledActions, disabledActions);
   }
 
   public void setEditForm(String editForm) {
@@ -1064,7 +1063,7 @@ public class GridDescription implements BeeSerializable, HasExtendedInfo, HasVie
   }
 
   public void setEnabledActions(Set<Action> enabledActions) {
-    this.enabledActions = enabledActions;
+    BeeUtils.overwrite(this.enabledActions, enabledActions);
   }
 
   public void setFavorite(String favorite) {
@@ -1122,7 +1121,7 @@ public class GridDescription implements BeeSerializable, HasExtendedInfo, HasVie
   public void setNewRowColumns(String newRowColumns) {
     this.newRowColumns = newRowColumns;
   }
-  
+
   public void setNewRowDefaults(String newRowDefaults) {
     this.newRowDefaults = newRowDefaults;
   }
@@ -1178,7 +1177,7 @@ public class GridDescription implements BeeSerializable, HasExtendedInfo, HasVie
   public void setRowMessage(Calculation rowMessage) {
     this.rowMessage = rowMessage;
   }
-  
+
   public void setRowStyles(Collection<ConditionalStyleDeclaration> rowStyles) {
     this.rowStyles = rowStyles;
   }

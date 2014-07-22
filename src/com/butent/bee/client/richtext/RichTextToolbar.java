@@ -214,7 +214,7 @@ public class RichTextToolbar extends Flow implements HasEnabled {
   }
 
   private static final String STYLE_ROW = "bee-RichTextToolbar-row";
-  
+
   private static final RichTextArea.FontSize[] fontSizesConstants = new RichTextArea.FontSize[] {
       RichTextArea.FontSize.XX_SMALL, RichTextArea.FontSize.X_SMALL,
       RichTextArea.FontSize.SMALL, RichTextArea.FontSize.MEDIUM,
@@ -258,13 +258,13 @@ public class RichTextToolbar extends Flow implements HasEnabled {
   private final ListBox fontSizes;
 
   private final Command accept;
-  
+
   private boolean waiting;
 
   public RichTextToolbar(Editor editor, RichTextArea richText, boolean embedded) {
     this.area = richText;
     this.formatter = richText.getFormatter();
-    
+
     if (embedded) {
       this.accept = null;
     } else {
@@ -281,7 +281,7 @@ public class RichTextToolbar extends Flow implements HasEnabled {
 
     this.removeFormat = createButton(images.removeFormat(), "Remove Formatting");
     firstRow.add(removeFormat);
-    
+
     firstRow.add(createSpacer());
 
     this.bold = createToggle(images.bold(), "Toggle Bold");
@@ -295,7 +295,7 @@ public class RichTextToolbar extends Flow implements HasEnabled {
 
     this.subscript = createToggle(images.subscript(), "Toggle Subscript");
     firstRow.add(subscript);
-    
+
     this.superscript = createToggle(images.superscript(), "Toggle Superscript");
     firstRow.add(superscript);
 
@@ -318,9 +318,9 @@ public class RichTextToolbar extends Flow implements HasEnabled {
 
     this.outdent = createButton(images.outdent(), "Indent Left");
     firstRow.add(outdent);
-    
+
     firstRow.add(createSpacer());
-    
+
     if (formatter.queryCommandSupported("InsertHTML")) {
       this.insertHtml = createButton(Global.getImages().html(), "Insert HTML");
       firstRow.add(insertHtml);
@@ -330,7 +330,7 @@ public class RichTextToolbar extends Flow implements HasEnabled {
 
     this.hr = createButton(images.hr(), "Insert Horizontal Rule");
     firstRow.add(hr);
-    
+
     this.ol = createButton(images.ol(), "Insert Ordered List");
     firstRow.add(ol);
 
@@ -344,7 +344,7 @@ public class RichTextToolbar extends Flow implements HasEnabled {
 
     this.createLink = createButton(images.createLink(), "Create Link");
     firstRow.add(createLink);
-    
+
     if (!embedded) {
       firstRow.add(createSpacer(1.0, CssUnit.EM));
       firstRow.add(new Image(Global.getImages().close(), new EditorFactory.Cancel(editor)));
@@ -421,7 +421,7 @@ public class RichTextToolbar extends Flow implements HasEnabled {
     lb.addItem("Green", "green");
     lb.addItem("Yellow", "yellow");
     lb.addItem("Blue", "blue");
-    
+
     return lb;
   }
 
@@ -472,7 +472,7 @@ public class RichTextToolbar extends Flow implements HasEnabled {
   private Toggle createToggle(ImageResource ir, String tip) {
     Image image = new Image(ir);
     String html = DomUtils.getOuterHtml(image.getElement());
-    
+
     Toggle toggle = new Toggle(html, html);
     toggle.addClickHandler(handler);
     toggle.setTitle(tip);
@@ -494,10 +494,10 @@ public class RichTextToolbar extends Flow implements HasEnabled {
       public void onSuccess(String value) {
         setWaiting(false);
         procedure.accept(value);
-      } 
+      }
     }, defaultValue);
   }
-  
+
   private void setWaiting(boolean waiting) {
     this.waiting = waiting;
   }

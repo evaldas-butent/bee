@@ -1,6 +1,7 @@
 package com.butent.bee.client.ui;
 
 import com.google.common.collect.Lists;
+import com.google.common.collect.Sets;
 import com.google.gwt.core.client.Scheduler;
 import com.google.gwt.dom.client.Element;
 import com.google.gwt.dom.client.NativeEvent;
@@ -8,6 +9,7 @@ import com.google.gwt.event.dom.client.KeyCodes;
 import com.google.gwt.user.client.ui.Focusable;
 import com.google.gwt.user.client.ui.HasOneWidget;
 import com.google.gwt.user.client.ui.HasWidgets;
+import com.google.gwt.user.client.ui.IsWidget;
 import com.google.gwt.user.client.ui.RequiresResize;
 import com.google.gwt.user.client.ui.UIObject;
 import com.google.gwt.user.client.ui.Widget;
@@ -46,6 +48,7 @@ import com.butent.bee.shared.ui.Color;
 import com.butent.bee.shared.ui.HasMaxLength;
 import com.butent.bee.shared.utils.BeeUtils;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
@@ -110,6 +113,29 @@ public final class UiHelper {
     } else {
       return false;
     }
+  }
+
+  @SuppressWarnings("unchecked")
+  public static <T extends Widget> Collection<T> getChildren(Widget parent, Class<T> clazz) {
+    Collection<T> result = new ArrayList<>();
+    if (parent == null || clazz == null) {
+      return result;
+    }
+
+    if (parent.getClass().equals(clazz)) {
+      result.add((T) parent);
+    }
+
+    if (parent instanceof HasOneWidget) {
+      result.addAll(getChildren(((HasOneWidget) parent).getWidget(), clazz));
+
+    } else if (parent instanceof HasWidgets) {
+      for (Widget child : (HasWidgets) parent) {
+        result.addAll(getChildren(child, clazz));
+      }
+    }
+
+    return result;
   }
 
   public static Collection<Widget> getChildrenByStyleName(Widget parent,
@@ -199,6 +225,14 @@ public final class UiHelper {
     return result;
   }
 
+  public static FormView getForm(IsWidget widget) {
+    if (widget == null) {
+      return null;
+    } else {
+      return getForm(widget.asWidget());
+    }
+  }
+
   public static FormView getForm(Widget widget) {
     if (widget == null) {
       return null;
@@ -222,7 +256,7 @@ public final class UiHelper {
     FormView form = getForm(widget);
     return (form == null) ? null : form.getActiveRowId();
   }
-  
+
   public static GridView getGrid(Widget widget) {
     DataView dataView = getDataView(widget);
 
@@ -346,7 +380,21 @@ public final class UiHelper {
     }
     return null;
   }
-  
+
+  public static GridView getSiblingGrid(Widget widget, String gridName) {
+    FormView form = getForm(widget);
+    if (form == null) {
+      return null;
+    }
+
+    Widget gridWidget = form.getWidgetByName(gridName);
+    if (gridWidget instanceof HasGridView) {
+      return ((HasGridView) gridWidget).getGridView();
+    } else {
+      return null;
+    }
+  }
+
   public static Consumer<InputText> getTextBoxResizer(final int reserve) {
     return new Consumer<InputText>() {
       @Override
@@ -505,6 +553,20 @@ public final class UiHelper {
 
     widget.setText(newText);
     widget.setCursorPos(pos + 1);
+  }
+
+  public static int removeChildStyleName(Widget parent, String styleName) {
+    if (parent == null || BeeUtils.isEmpty(styleName)) {
+      return 0;
+    }
+
+    Collection<Widget> children = getChildrenByStyleName(parent, Sets.newHashSet(styleName));
+
+    for (Widget child : children) {
+      child.removeStyleName(styleName);
+    }
+
+    return children.size();
   }
 
   public static void selectDeferred(final TextBox widget) {

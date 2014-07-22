@@ -26,7 +26,7 @@ public class Horizontal extends CellVector {
     DOM.appendChild(tableRow, td);
     add(w, td);
   }
-  
+
   @Override
   public String getIdPrefix() {
     return "hor";
@@ -43,7 +43,7 @@ public class Horizontal extends CellVector {
 
   @Override
   public boolean remove(Widget w) {
-    Element td = DOM.getParent(w.getElement());
+    Element td = w.getElement().getParentElement();
     boolean removed = super.remove(w);
     if (removed) {
       tableRow.removeChild(td);

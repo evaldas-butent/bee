@@ -373,7 +373,7 @@ public class MessageBoxes {
     UiHelper.setWidget(popup, table, initializer, DialogConstants.WIDGET_PANEL);
 
     popup.setAnimationEnabled(true);
-    
+
     if (target == null) {
       popup.center();
     } else {
@@ -449,7 +449,7 @@ public class MessageBoxes {
         }
       }
     });
-    
+
     popup.setWidget(cluster);
 
     popup.setAnimationEnabled(true);
@@ -567,7 +567,7 @@ public class MessageBoxes {
     } else {
       popup = DialogBox.create(caption);
     }
-    
+
     popup.setAnimationEnabled(true);
     popup.setHideOnEscape(true);
 

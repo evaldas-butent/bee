@@ -70,7 +70,6 @@ import com.butent.bee.shared.modules.calendar.CalendarConstants.Report;
 import com.butent.bee.shared.modules.calendar.CalendarConstants.ViewType;
 import com.butent.bee.shared.modules.calendar.CalendarSettings;
 import com.butent.bee.shared.modules.calendar.CalendarTask;
-import com.butent.bee.shared.modules.mail.MailConstants;
 import com.butent.bee.shared.modules.tasks.TaskConstants;
 import com.butent.bee.shared.modules.tasks.TaskConstants.TaskStatus;
 import com.butent.bee.shared.modules.tasks.TaskType;
@@ -412,7 +411,8 @@ public class CalendarModuleBean implements BeeModule {
               COL_APPOINTMENT_LOCATION, ALS_COMPANY_NAME, COL_VEHICLE_NUMBER), query),
           Filter.anyItemContains(COL_STATUS, AppointmentStatus.class, query));
 
-      List<BeeRow> appointments = getAppointments(filter, new Order(COL_START_DATE_TIME, false));
+      List<BeeRow> appointments = getAppointments(filter,
+          new Order(COL_START_DATE_TIME, false), true);
       if (!BeeUtils.isEmpty(appointments)) {
         for (BeeRow row : appointments) {
           results.add(new SearchResult(VIEW_APPOINTMENTS, row));
@@ -753,7 +753,7 @@ public class CalendarModuleBean implements BeeModule {
     }
   }
 
-  private List<BeeRow> getAppointments(Filter filter, Order order) {
+  private List<BeeRow> getAppointments(Filter filter, Order order, boolean checkVisibility) {
     List<BeeRow> result = Lists.newArrayList();
 
     Long userId = usr.getCurrentUserId();
@@ -761,14 +761,23 @@ public class CalendarModuleBean implements BeeModule {
       return result;
     }
 
-    Filter visible = Filter.or().add(
-        Filter.equals(COL_CREATOR, userId),
-        Filter.in(sys.getIdName(TBL_APPOINTMENTS), VIEW_APPOINTMENT_OWNERS, COL_APPOINTMENT,
-            Filter.equals(COL_APPOINTMENT_OWNER, userId)),
-        Filter.isNull(COL_VISIBILITY),
-        Filter.isEqual(COL_VISIBILITY, IntegerValue.of(CalendarVisibility.PUBLIC)));
+    Filter queryFilter;
 
-    BeeRowSet appointments = qs.getViewData(VIEW_APPOINTMENTS, Filter.and(filter, visible), order);
+    if (checkVisibility) {
+      Filter visible = Filter.or().add(
+          Filter.equals(COL_CREATOR, userId),
+          Filter.in(sys.getIdName(TBL_APPOINTMENTS), VIEW_APPOINTMENT_OWNERS, COL_APPOINTMENT,
+              Filter.equals(COL_APPOINTMENT_OWNER, userId)),
+          Filter.isNull(COL_VISIBILITY),
+          Filter.isEqual(COL_VISIBILITY, IntegerValue.of(CalendarVisibility.PUBLIC)));
+
+      queryFilter = Filter.and(filter, visible);
+
+    } else {
+      queryFilter = filter;
+    }
+
+    BeeRowSet appointments = qs.getViewData(VIEW_APPOINTMENTS, queryFilter, order);
     if (!DataUtils.isEmpty(appointments)) {
       result.addAll(appointments.getRows());
     }
@@ -1063,7 +1072,7 @@ public class CalendarModuleBean implements BeeModule {
 
     long millis = System.currentTimeMillis();
 
-    List<BeeRow> appointments = getAppointments(appFilter, null);
+    List<BeeRow> appointments = getAppointments(appFilter, null, false);
     long appDuration = System.currentTimeMillis() - millis;
 
     List<CalendarTask> tasks = getCalendarTasks(calendarId, startTime, endTime);
@@ -1400,7 +1409,16 @@ public class CalendarModuleBean implements BeeModule {
   }
 
   private BeeRowSet getUserCalAttendees(long ucId, long userId, long calendarId, boolean isNew) {
-    Filter filter = Filter.equals(COL_USER_CALENDAR, ucId);
+    BeeRowSet attendees = qs.getViewData(VIEW_ATTENDEES);
+    if (DataUtils.isEmpty(attendees)) {
+      logger.warning("attendees not available, user", userId);
+      return null;
+    }
+
+    List<Long> attIds = attendees.getRowIds();
+
+    Filter filter = Filter.and(Filter.equals(COL_USER_CALENDAR, ucId),
+        Filter.any(COL_ATTENDEE, attIds));
 
     if (!isNew) {
       BeeRowSet ucAttendees = qs.getViewData(VIEW_USER_CAL_ATTENDEES, filter);
@@ -1410,8 +1428,8 @@ public class CalendarModuleBean implements BeeModule {
     }
 
     BeeRowSet calendarAttendees = getCalendarAttendees(userId, calendarId);
-    if (calendarAttendees.isEmpty()) {
-      logger.warning("calendar attendees not found, calendar id:", calendarId);
+    if (DataUtils.isEmpty(calendarAttendees)) {
+      logger.warning("calendar attendees not available, calendar", calendarId, "user", userId);
       return null;
     }
 
@@ -1523,15 +1541,16 @@ public class CalendarModuleBean implements BeeModule {
     IsCondition wh = sys.idEquals(TBL_APPOINTMENT_REMINDERS, reminderId);
 
     String personContacts = SqlUtils.uniqueName();
+    String personEmails = SqlUtils.uniqueName();
     String personEmail = SqlUtils.uniqueName();
 
     SimpleRow data = qs.getRow(new SqlSelect()
         .addFields(TBL_APPOINTMENTS, COL_START_DATE_TIME)
-        .addFields(TBL_CONTACTS, COL_EMAIL)
+        .addFields(TBL_EMAILS, COL_EMAIL_ADDRESS)
         .addFields(TBL_APPOINTMENT_REMINDERS, COL_APPOINTMENT, COL_MESSAGE)
         .addFields(TBL_REMINDER_TYPES, COL_REMINDER_METHOD,
             COL_REMINDER_TEMPLATE_CAPTION, COL_REMINDER_TEMPLATE)
-        .addField(personContacts, COL_EMAIL, personEmail)
+        .addField(personEmails, COL_EMAIL_ADDRESS, personEmail)
         .addFrom(TBL_APPOINTMENTS)
         .addFromInner(TBL_APPOINTMENT_REMINDERS,
             sys.joinTables(TBL_APPOINTMENTS, TBL_APPOINTMENT_REMINDERS, COL_APPOINTMENT))
@@ -1541,12 +1560,14 @@ public class CalendarModuleBean implements BeeModule {
         .addFromLeft(VIEW_COMPANIES,
             sys.joinTables(VIEW_COMPANIES, TBL_APPOINTMENTS, COL_COMPANY))
         .addFromLeft(TBL_CONTACTS, sys.joinTables(TBL_CONTACTS, VIEW_COMPANIES, COL_CONTACT))
+        .addFromLeft(TBL_EMAILS, sys.joinTables(TBL_EMAILS, TBL_CONTACTS, COL_EMAIL))
         .addFromLeft(TBL_COMPANY_PERSONS,
             sys.joinTables(TBL_COMPANY_PERSONS, TBL_APPOINTMENT_REMINDERS,
                 COL_RECIPIENT))
         .addFromLeft(TBL_CONTACTS, personContacts,
-            SqlUtils.join(personContacts, sys.getIdName(TBL_CONTACTS),
-                TBL_COMPANY_PERSONS, COL_CONTACT))
+            sys.joinTables(TBL_CONTACTS, personContacts, TBL_COMPANY_PERSONS, COL_CONTACT))
+        .addFromLeft(TBL_EMAILS, personEmails,
+            sys.joinTables(TBL_EMAILS, personEmails, personContacts, COL_EMAIL))
         .setWhere(SqlUtils.and(wh,
             SqlUtils.more(TBL_APPOINTMENTS, COL_START_DATE_TIME,
                 System.currentTimeMillis() - TimeUtils.MILLIS_PER_MINUTE),
@@ -1571,16 +1592,16 @@ public class CalendarModuleBean implements BeeModule {
             data.getInt(COL_REMINDER_METHOD));
 
         if (method == ReminderMethod.EMAIL) {
-          Long sender = prm.getRelation(MailConstants.PRM_DEFAULT_ACCOUNT);
-          Long email = BeeUtils.toLongOrNull(BeeUtils.notEmpty(data.getValue(personEmail),
-              data.getValue(COL_EMAIL)));
+          Long account = mail.getSenderAccountId("CalendarRemainders");
+          String email = BeeUtils.notEmpty(data.getValue(personEmail),
+              data.getValue(COL_EMAIL_ADDRESS));
 
-          if (!DataUtils.isId(sender)) {
-            error = "No default sender specified (parameter DefaultAccount)";
-          } else if (!DataUtils.isId(email)) {
+          if (!DataUtils.isId(account)) {
+            error = "No default account specified";
+          } else if (BeeUtils.isEmpty(email)) {
             error = "No recipient email address specified";
           } else {
-            ResponseObject response = mail.sendMail(sender, email, subject,
+            ResponseObject response = mail.sendMail(account, email, subject,
                 template.replace("{time}", data.getDateTime(COL_START_DATE_TIME).toString()));
 
             if (response.hasErrors()) {

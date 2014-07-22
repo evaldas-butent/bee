@@ -8,6 +8,7 @@ import com.butent.bee.shared.data.SqlConstants.SqlFunction;
 import com.butent.bee.shared.utils.ArrayUtils;
 import com.butent.bee.shared.utils.BeeUtils;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
@@ -16,7 +17,7 @@ import java.util.List;
  * GROUP BY clauses, union, distinct, result limitations support etc).
  */
 
-public class SqlSelect extends HasFrom<SqlSelect> {
+public class SqlSelect extends HasFrom<SqlSelect> implements IsCloneable<SqlSelect> {
 
   public static final int FIELD_EXPR = 0;
   public static final int FIELD_ALIAS = 1;
@@ -42,7 +43,7 @@ public class SqlSelect extends HasFrom<SqlSelect> {
    * <p>
    * E.g: source.*
    * </p>
-   * 
+   *
    * @param source the source table
    * @return object's SqlSelect instance.
    */
@@ -54,7 +55,7 @@ public class SqlSelect extends HasFrom<SqlSelect> {
 
   /**
    * Adds an AVG function with a specified expression {@code expr} and alias {@code alias}.
-   * 
+   *
    * @param expr the expression
    * @param alias the alias name
    * @return object's SqlSelect instance.
@@ -67,7 +68,7 @@ public class SqlSelect extends HasFrom<SqlSelect> {
 
   /**
    * Adds an AVG function for {@code source} table and field {@code field}.
-   * 
+   *
    * @param source the source's name
    * @param field the field's name
    * @return object's SqlSelect instance.
@@ -79,7 +80,7 @@ public class SqlSelect extends HasFrom<SqlSelect> {
   /**
    * Adds an AVG function for {@code source} table and field {@code field} using an alias
    * {@code alias}.
-   * 
+   *
    * @param source the source's name
    * @param field the field's name
    * @param alias the alias name.
@@ -91,7 +92,7 @@ public class SqlSelect extends HasFrom<SqlSelect> {
 
   /**
    * Adds an AVG DISTINCT function with a specified expression {@code expr} and alias {@code alias}.
-   * 
+   *
    * @param expr the expression
    * @param alias the alias name
    * @return object's SqlSelect instance.
@@ -105,7 +106,7 @@ public class SqlSelect extends HasFrom<SqlSelect> {
   /**
    * Adds an AVG DISTINCT function for {@code source} table and field {@code field} using an alias
    * {@code alias}.
-   * 
+   *
    * @param source the source's name
    * @param field the field's name
    * @param alias the alias name.
@@ -117,7 +118,7 @@ public class SqlSelect extends HasFrom<SqlSelect> {
 
   /**
    * Creates a constant expression.
-   * 
+   *
    * @param constant the constant value.
    * @param alias the alias name.
    * @return object's SqlSelect instance.
@@ -129,7 +130,7 @@ public class SqlSelect extends HasFrom<SqlSelect> {
 
   /**
    * Adds a COUNT function with a specified expression {@code expr} and alias {@code alias}.
-   * 
+   *
    * @param expr the expression
    * @param alias the alias name
    * @return object's SqlSelect instance.
@@ -141,7 +142,7 @@ public class SqlSelect extends HasFrom<SqlSelect> {
 
   /**
    * Adds an COUNT function for {@code source} table and field {@code field}.
-   * 
+   *
    * @param source the source's name
    * @param field the field's name
    * @return object's SqlSelect instance.
@@ -153,7 +154,7 @@ public class SqlSelect extends HasFrom<SqlSelect> {
   /**
    * Adds an COUNT function for {@code source} table and field {@code field} using an alias
    * {@code alias}.
-   * 
+   *
    * @param source the source's name
    * @param field the field's name
    * @param alias the alias name.
@@ -165,7 +166,7 @@ public class SqlSelect extends HasFrom<SqlSelect> {
 
   /**
    * Adds a COUNT function without any defined expressions.
-   * 
+   *
    * @param alias the alias name.
    * @return object's SqlSelect instance.
    */
@@ -174,9 +175,9 @@ public class SqlSelect extends HasFrom<SqlSelect> {
   }
 
   /**
-   * Adds a COUNT DISTINCT function with a specified expression {@code expr} and alias {@code alias}
-   * .
-   * 
+   * Adds a COUNT DISTINCT function with a specified expression {@code expr}
+   * and alias {@code alias}.
+   *
    * @param expr the expression
    * @param alias the alias name
    * @return object's SqlSelect instance.
@@ -190,7 +191,7 @@ public class SqlSelect extends HasFrom<SqlSelect> {
   /**
    * Adds an COUNT DISTINCT function for {@code source} table and field {@code field} using an alias
    * {@code alias}.
-   * 
+   *
    * @param source the source's name
    * @param field the field's name
    * @param alias the alias name.
@@ -202,7 +203,7 @@ public class SqlSelect extends HasFrom<SqlSelect> {
 
   /**
    * Adds an empty BOOLEAN field with the specified {@code alias} name.
-   * 
+   *
    * @param alias the alias name.
    * @return object's SqlSelect instance.
    */
@@ -212,7 +213,7 @@ public class SqlSelect extends HasFrom<SqlSelect> {
 
   /**
    * Adds an empty CHAR field with the specified {@code alias} name and precition.
-   * 
+   *
    * @param alias the alias name
    * @param precision the fields precision
    * @return object's SqlSelect instance.
@@ -223,7 +224,7 @@ public class SqlSelect extends HasFrom<SqlSelect> {
 
   /**
    * Adds an empty DATE field with the specified {@code alias} name.
-   * 
+   *
    * @param alias the alias name
    * @return object's SqlSelect instance.
    */
@@ -233,7 +234,7 @@ public class SqlSelect extends HasFrom<SqlSelect> {
 
   /**
    * Adds an empty DATETIME field with the specified {@code alias} name.
-   * 
+   *
    * @param alias the alias name
    * @return object's SqlSelect instance.
    */
@@ -243,7 +244,7 @@ public class SqlSelect extends HasFrom<SqlSelect> {
 
   /**
    * Adds an empty DOUBLE field with the specified {@code alias} name.
-   * 
+   *
    * @param alias the alias name
    * @return object's SqlSelect instance.
    */
@@ -253,7 +254,7 @@ public class SqlSelect extends HasFrom<SqlSelect> {
 
   /**
    * Adds a specified type {@code type} field with a specified precision and scale.
-   * 
+   *
    * @param alias the alias name
    * @param type the field's type to add
    * @param precision the field's name
@@ -276,7 +277,7 @@ public class SqlSelect extends HasFrom<SqlSelect> {
 
   /**
    * Creates an empty INTEGER type field and adds it.
-   * 
+   *
    * @param alias the alias to use
    * @return object's SqlSelect instance
    */
@@ -286,7 +287,7 @@ public class SqlSelect extends HasFrom<SqlSelect> {
 
   /**
    * Creates an empty LONG type field and adds it.
-   * 
+   *
    * @param alias the alias to use
    * @return object's SqlSelect instance
    */
@@ -297,7 +298,7 @@ public class SqlSelect extends HasFrom<SqlSelect> {
   /**
    * Creates an empty NUMERIC type field with specified precision {@code precision} and scale
    * {@code scale} and adds it.
-   * 
+   *
    * @param alias the alias to use
    * @param precision the precision
    * @param scale the scale
@@ -309,7 +310,7 @@ public class SqlSelect extends HasFrom<SqlSelect> {
 
   /**
    * Creates an empty STRING type field with specified precision {@code precision} and adds it.
-   * 
+   *
    * @param alias the alias to use
    * @param precision the precision
    * @return object's SqlSelect instance
@@ -320,7 +321,7 @@ public class SqlSelect extends HasFrom<SqlSelect> {
 
   /**
    * Creates an empty TEXT type field and adds it.
-   * 
+   *
    * @param alias the alias to use
    * @return object's SqlSelect instance
    */
@@ -330,7 +331,7 @@ public class SqlSelect extends HasFrom<SqlSelect> {
 
   /**
    * Adds an expression {@code expr}.
-   * 
+   *
    * @param expr the expression
    * @param alias the alias
    * @return object's SqlSelect instance
@@ -346,7 +347,7 @@ public class SqlSelect extends HasFrom<SqlSelect> {
   /**
    * Adds a field to a specified source destination {@code source}. Fields name is {@code field} and
    * alias {@code alias}.
-   * 
+   *
    * @param source the source table to add to
    * @param field the field to add
    * @param alias alias to use
@@ -359,7 +360,7 @@ public class SqlSelect extends HasFrom<SqlSelect> {
 
   /**
    * Adds multiple fields {@code fields} to a specified source table {@code  source}.
-   * 
+   *
    * @param source the source table to add to
    * @param fields the fields to add
    * @return object's SqlSelect instance
@@ -375,7 +376,7 @@ public class SqlSelect extends HasFrom<SqlSelect> {
 
   /**
    * Adds specified fields to a group list.
-   * 
+   *
    * @param source the source table
    * @param fields the fields to add to the group
    * @return object's SqlSelect instance.
@@ -396,7 +397,7 @@ public class SqlSelect extends HasFrom<SqlSelect> {
 
   /**
    * Adds a MAX function with a specified expression {@code expr} and alias {@code alias}.
-   * 
+   *
    * @param expr the expression
    * @param alias the alias name
    * @return object's SqlSelect instance.
@@ -409,7 +410,7 @@ public class SqlSelect extends HasFrom<SqlSelect> {
 
   /**
    * Adds a MAX function with a specified table {@code source} and field {@code field}.
-   * 
+   *
    * @param source the source table name
    * @param field the field's name
    * @return object's SqlSelect instance.
@@ -421,7 +422,7 @@ public class SqlSelect extends HasFrom<SqlSelect> {
   /**
    * Adds a MAX function with a specified table {@code source} and field {@code field} using an
    * alias.
-   * 
+   *
    * @param source the source table name
    * @param field the field's name
    * @param alias the alias name
@@ -433,7 +434,7 @@ public class SqlSelect extends HasFrom<SqlSelect> {
 
   /**
    * Adds a MIN function with a specified expression {@code expr} and alias {@code alias}.
-   * 
+   *
    * @param expr the expression
    * @param alias the alias name
    * @return object's SqlSelect instance.
@@ -446,7 +447,7 @@ public class SqlSelect extends HasFrom<SqlSelect> {
 
   /**
    * Adds a MIN function with a specified table {@code source} and field {@code field}.
-   * 
+   *
    * @param source the source table name
    * @param field the field's name
    * @return object's SqlSelect instance.
@@ -458,7 +459,7 @@ public class SqlSelect extends HasFrom<SqlSelect> {
   /**
    * Adds a MIN function with a specified table {@code source} and field {@code field} using an
    * alias.
-   * 
+   *
    * @param source the source table name
    * @param field the field's name
    * @param alias the alias name
@@ -470,7 +471,7 @@ public class SqlSelect extends HasFrom<SqlSelect> {
 
   /**
    * Adds {@code order} to an order list.
-   * 
+   *
    * @param source the source table.
    * @param order the fields to add to the order list
    * @return object's SqlSelect instance.
@@ -482,7 +483,7 @@ public class SqlSelect extends HasFrom<SqlSelect> {
 
   /**
    * Adds {@code order} to an order list. Uses descending ordering.
-   * 
+   *
    * @param source the source table.
    * @param order the fields to add to the order list
    * @return object's SqlSelect instance.
@@ -494,7 +495,7 @@ public class SqlSelect extends HasFrom<SqlSelect> {
 
   /**
    * Adds a SUM function with a specified expression {@code expr} and alias {@code alias}.
-   * 
+   *
    * @param expr the expression
    * @param alias the alias name
    * @return object's SqlSelect instance.
@@ -507,7 +508,7 @@ public class SqlSelect extends HasFrom<SqlSelect> {
 
   /**
    * Adds a SUM function with a specified table {@code source} and field {@code field}.
-   * 
+   *
    * @param source the source table name
    * @param field the field's name
    * @return object's SqlSelect instance.
@@ -519,7 +520,7 @@ public class SqlSelect extends HasFrom<SqlSelect> {
   /**
    * Adds a SUM function with a specified table {@code source} and field {@code field} using an
    * alias.
-   * 
+   *
    * @param source the source table name
    * @param field the field's name
    * @param alias the alias name
@@ -531,7 +532,7 @@ public class SqlSelect extends HasFrom<SqlSelect> {
 
   /**
    * Adds a SUM DISTINCT function with a specified expression {@code expr} and alias {@code alias}.
-   * 
+   *
    * @param expr the expression
    * @param alias the alias name
    * @return object's SqlSelect instance.
@@ -545,7 +546,7 @@ public class SqlSelect extends HasFrom<SqlSelect> {
   /**
    * Adds a SUM DISTINCT function with a specified table {@code source} and field {@code field}
    * using an alias.
-   * 
+   *
    * @param source the source table name
    * @param field the field's name
    * @param alias the alias name
@@ -557,7 +558,7 @@ public class SqlSelect extends HasFrom<SqlSelect> {
 
   /**
    * Adds other SqlSelect {@code union} sentences to the union list.
-   * 
+   *
    * @param union specified SqlSelect sentences
    * @return object's SqlSelect instance.
    */
@@ -575,32 +576,54 @@ public class SqlSelect extends HasFrom<SqlSelect> {
     return getReference();
   }
 
-  /**
-   * Copies the current query and returns it.
-   * 
-   * @return the current SqlSelect query
-   */
+  @Override
   public SqlSelect copyOf() {
+    return copyOf(false);
+  }
+
+  public SqlSelect copyOf(boolean deep) {
     SqlSelect query = new SqlSelect();
 
     if (fieldList != null) {
       query.fieldList = Lists.newArrayList(fieldList);
     }
-    if (getFrom() != null) {
-      query.setFrom(Lists.newArrayList(getFrom()));
-    }
-    query.setWhere(whereClause);
+    List<IsFrom> fromList = getFrom();
 
+    if (fromList != null) {
+      if (deep) {
+        List<IsFrom> froms = new ArrayList<>();
+
+        for (IsFrom from : fromList) {
+          froms.add(from.copyOf());
+        }
+        query.setFrom(froms);
+      } else {
+        query.setFrom(Lists.newArrayList(fromList));
+      }
+    }
+    if (whereClause != null) {
+      query.setWhere(deep ? whereClause.copyOf() : whereClause);
+    }
     if (groupList != null) {
       query.groupList = Lists.newArrayList(groupList);
     }
     if (orderList != null) {
       query.orderList = Lists.newArrayList(orderList);
     }
-    query.setHaving(havingClause);
-
+    if (havingClause != null) {
+      query.setHaving(deep ? havingClause.copyOf() : havingClause);
+    }
     if (unionList != null) {
-      query.unionList = Lists.newArrayList(unionList);
+      if (deep) {
+        List<SqlSelect> unions = new ArrayList<>();
+
+        for (SqlSelect union : unionList) {
+          unions.add(union.copyOf(deep));
+        }
+        query.unionList = unions;
+      } else {
+        query.unionList = Lists.newArrayList(unionList);
+      }
     }
     query.setDistinctMode(distinctMode);
     query.setUnionAllMode(unionAllMode);
@@ -656,7 +679,7 @@ public class SqlSelect extends HasFrom<SqlSelect> {
   /**
    * Returns a list of sources found in the where clause {@code whereClause} , having clause
    * {@code havingClause}, union list {@code unionList} .
-   * 
+   *
    * @return the list of sources
    */
   @Override
@@ -702,7 +725,7 @@ public class SqlSelect extends HasFrom<SqlSelect> {
 
   /**
    * Checks if the current SqlSelect object is empty.
-   * 
+   *
    * @return true - if the object is empty, otherwise false.
    */
   @Override
@@ -719,7 +742,7 @@ public class SqlSelect extends HasFrom<SqlSelect> {
 
   /**
    * Clears the SqlSelect object.
-   * 
+   *
    * @return a cleared SqlSelect object.
    */
   @Override
@@ -739,7 +762,7 @@ public class SqlSelect extends HasFrom<SqlSelect> {
 
   /**
    * Clears all fields from the field list.
-   * 
+   *
    * @return object's SqlSelect instance
    */
   public SqlSelect resetFields() {
@@ -751,7 +774,7 @@ public class SqlSelect extends HasFrom<SqlSelect> {
 
   /**
    * Resets the group list.
-   * 
+   *
    * @return object's SqlSelect instance.
    */
   public SqlSelect resetGroup() {
@@ -763,7 +786,7 @@ public class SqlSelect extends HasFrom<SqlSelect> {
 
   /**
    * Resets the order list.
-   * 
+   *
    * @return object's SqlSelect instance.
    */
   public SqlSelect resetOrder() {
@@ -775,7 +798,7 @@ public class SqlSelect extends HasFrom<SqlSelect> {
 
   /**
    * Resets the union list.
-   * 
+   *
    * @return object's SqlSelect instance.
    */
   public SqlSelect resetUnion() {
@@ -787,7 +810,7 @@ public class SqlSelect extends HasFrom<SqlSelect> {
 
   /**
    * Resets the distinct mode to the specified {@code distinct} value.
-   * 
+   *
    * @param distinct the value to change to
    * @return object's SqlSelect instance.
    */
@@ -798,7 +821,7 @@ public class SqlSelect extends HasFrom<SqlSelect> {
 
   /**
    * Sets the having clause.
-   * 
+   *
    * @param having the clause's condition to set
    * @return object's SqlSelect instance.
    */
@@ -809,7 +832,7 @@ public class SqlSelect extends HasFrom<SqlSelect> {
 
   /**
    * Sets the limit parameter to {@code limit}.
-   * 
+   *
    * @param lim the value to set to
    * @return object's SqlSelect instance.
    */
@@ -821,7 +844,7 @@ public class SqlSelect extends HasFrom<SqlSelect> {
 
   /**
    * Sets the offset parameter to {@code offset}.
-   * 
+   *
    * @param off the value to set to.
    * @return object's SqlSelect instance.
    */
@@ -833,7 +856,7 @@ public class SqlSelect extends HasFrom<SqlSelect> {
 
 /**
    * Sets the  union all mode to the specified argument {@code unionAll).
-   * 
+   *
    * @param unionAll the argument to use for setting the mode
    * @return object's SqlSelect instance
    */
@@ -844,7 +867,7 @@ public class SqlSelect extends HasFrom<SqlSelect> {
 
   /**
    * Sets the where condition.
-   * 
+   *
    * @param clause the condition to set.
    * @return object's SqlSelect instance.
    */
