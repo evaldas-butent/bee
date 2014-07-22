@@ -88,6 +88,11 @@
       <SimpleColumn alias="BankruptcyRiskName" name="Name" />
     </SimpleJoin>
     
+    <SimpleColumn name="DelayedPaymentRisk"/>
+    <SimpleJoin joinType="LEFT" name="DelayedPaymentRisk">
+      <SimpleColumn alias="DelayedPaymentRiskName" name="Name" />
+    </SimpleJoin>
+    
     <SimpleColumn name="DefaultBankAccount" />
     <SimpleColumn name="DaysAsBuyer" />
     <SimpleColumn name="DaysAsSupplier" />

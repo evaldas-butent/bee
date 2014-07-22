@@ -282,6 +282,7 @@
       <xs:enumeration value="CurrencyRates" />
       <xs:enumeration value="DataCriteria" />
       <xs:enumeration value="DeliveryMethods" />
+      <xs:enumeration value="DelayedPaymentRisks" />
       <xs:enumeration value="Departments" />
       <xs:enumeration value="DepartmentEmployees" />
       <xs:enumeration value="Discussions" />

@@ -47,6 +47,8 @@
        <row>
     	 <Label style="&lbl1;" for="BankruptcyRisk" text="=clientBankruptcyRisk" />
     	 <DataSelector style="&inp1;" source="BankruptcyRisk" />
+         <Label style="&lbl1;" for="DelayedPaymentRisk" text="=clientDelayedPaymentRisk" />
+         <DataSelector style="&inp1;" source="DelayedPaymentRisk" />
   	   </row>
     </Table>
 

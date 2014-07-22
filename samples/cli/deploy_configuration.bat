@@ -19,4 +19,4 @@ SET APP_FOLDER=C:\glassfish4\glassfish\domains\domain1\applications\Bee
  xcopy %WAR_FOLDER%\images\*  %APP_FOLDER%\images /c /d /e /h /i /k /q /r /s /x /y
  xcopy %WAR_FOLDER%\js\*  %APP_FOLDER%\js /c /d /e /h /i /k /q /r /s /x /y
  xcopy %WAR_FOLDER%\WEB-INF\config\*  %APP_FOLDER%\WEB-INF\config /c /d /e /h /i /k /q /r /s /x /y
- xcopy %WAR_FOLDER%\WEB-INF\web.xml  %APP_FOLDER%\WEB-INF\web.xml /c /d /e /h /i /k /q /r /s /x /y
+ xcopy %WAR_FOLDER%\WEB-INF\web.xml  %APP_FOLDER%\WEB-INF\web.xml /c /d /e /h /i /k /q /r /s /x /y | echo f
