@@ -82,6 +82,12 @@
     <SimpleJoin joinType="LEFT" name="FinancialState">
       <SimpleColumn alias="FinancialStateName" name="Name" />
     </SimpleJoin>
+    
+    <SimpleColumn name="BankruptcyRisk"/>
+    <SimpleJoin joinType="LEFT" name="BankruptcyRisk">
+      <SimpleColumn alias="BankruptcyRiskName" name="Name" />
+    </SimpleJoin>
+    
     <SimpleColumn name="DefaultBankAccount" />
     <SimpleColumn name="DaysAsBuyer" />
     <SimpleColumn name="DaysAsSupplier" />

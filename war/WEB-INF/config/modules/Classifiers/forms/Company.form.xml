@@ -44,13 +44,17 @@
         <Label text="=status" style="&lbl1;" for="CompanyRelationTypeState" />
         <DataSelector source="CompanyRelationTypeState" style="&inp1;" />
       </row>
+       <row>
+    	 <Label style="&lbl1;" for="BankruptcyRisk" text="=clientBankruptcyRisk" />
+    	 <DataSelector style="&inp1;" source="BankruptcyRisk" />
+  	   </row>
     </Table>
 
     <Disclosure xmlns="http://www.butent.com/widget" xmlns:xi="http://www.w3.org/2001/XInclude"
       open="true">
        <Label text="=contactInfo" style="text-transform: uppercase; " />
         <FlowPanel class="flexible">
-         <xi:include href="widgets/ContactDetails.widget.xml" />     
+         <xi:include href="widgets/ContactDetails.widget.xml" />
          <ChildGrid name="CompanyContacts" relColumn="Company" style="min-height: 150px" />
        </FlowPanel>
     </Disclosure>
@@ -59,44 +63,7 @@
       <page>
         <text>=financialInfo</text>
         <FlowPanel class="flexBox-horizontal">
-          <Table style="margin-right: 8px;" >
-            <row>
-              <Label text="=creditLimit" for="CreditLimit" style="&lbl1;"/>
-              <FlowPanel>
-                <InputInteger source="CreditLimit" style="text-align: right" />
-                <DataSelector source="LimitCurrency" editEnabled="false" placeholder="=currencyShort"
-                  style="width:40px; margin-left:5px; display:inline-block;" for="CreditLimit" />
-              </FlowPanel>
-              <cell rowSpan="5" verticalAlignment="top">
-                <FlowPanel name="CreditInfo" />
-              </cell>
-            </row>
-  
-            <row for="CreditTolerance">
-              <Label text="=creditTolerance" style="&lbl1;"/>
-              <InputInteger source="CreditTolerance" style="width: 60px;" />
-            </row>
-  
-            <row for="CreditDays">
-              <Label text="=creditDays" style="&lbl1;"/>
-              <InputDecimal source="CreditDays" style="width: 60px;" />
-            </row>
-  
-            <row for="FinancialState">
-              <Label text="=financialState" style="&lbl1;"/>
-              <DataSelector source="FinancialState" />
-            </row>
-  
-            <row for="DaysAsBuyer">
-              <Label text="=daysAsBuyer" style="&lbl1;"/>
-              <InputDecimal source="DaysAsBuyer" style="width: 60px;" />
-            </row>
-  
-            <row for="DaysAsSupplier">
-              <Label text="=daysAsSupplier" style="&lbl1;"/>
-              <InputDecimal source="DaysAsSupplier" style="width: 60px;" />
-            </row>
-          </Table>   
+          <xi:include href="widgets/CompanyFinancialInfo.widget.xml" />
           <ChildGrid name="CompanyBankAccounts" class="flexible" relColumn="Company" style="min-heght: 150px;"/>
         </FlowPanel>
       </page>

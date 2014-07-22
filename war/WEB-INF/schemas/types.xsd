@@ -263,6 +263,7 @@
       <xs:enumeration value="CompaniesAndPersons" />
       <xs:enumeration value="CompanyActivities" />
       <xs:enumeration value="CompanyBankAccounts" />
+      <xs:enumeration value="CompanyBankruptRisks" />
       <xs:enumeration value="CompanyContacts" />
       <xs:enumeration value="CompanyDepartments" />
       <xs:enumeration value="CompanyGroups" />
