@@ -31,7 +31,7 @@
     <Relation name="LimitCurrency" relation="Currencies" label="=limitCurrency" />
     <Integer name="CreditTolerance" label="=creditTolerance" />
     <Numeric name="CreditDays" precision="3" label="=creditDays" />
-    
+      
     <Relation name="FinancialState" relation="FinancialStates" label="=financialState" />
     <Relation name="BankruptcyRisk" relation="CompanyBankruptRisks" label="=clientBankruptcyRisk" />
     <Relation name="DelayedPaymentRisk" relation="DelayedPaymentRisks" label="=clientDelayedPaymentRisk" />
@@ -40,7 +40,8 @@
     <Relation name="DefaultBankAccount" relation="CompanyBankAccounts" unique="true" cascade="SET_NULL" label="=defaultBankAccount" />
     <Numeric name="DaysAsBuyer" precision="3" label="=daysAsBuyer" />
     <Numeric name="DaysAsSupplier" precision="3" label="=daysAsSupplier" />
-
+    <Numeric name="PercentInterest" precision="6" scale="2" label="=percentInterest" />
+     
     <Text name="Notes" label="=notes" />
   </Fields>
 </Table>

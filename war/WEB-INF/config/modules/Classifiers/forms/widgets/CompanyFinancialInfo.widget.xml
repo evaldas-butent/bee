@@ -46,4 +46,8 @@
     <Label text="=daysAsSupplier" style="&lbl1;" />
     <InputDecimal source="DaysAsSupplier" style="width: 60px;" />
   </row>
+  <row for="PercentInterst">
+    <Label text="=percentInterest" style="&lbl1;" />
+    <InputDecimal source="PercentInterest" style="width: 60px;" />
+  </row>
 </Table>  

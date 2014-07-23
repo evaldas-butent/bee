@@ -108,7 +108,8 @@
     <SimpleColumn name="DefaultBankAccount" />
     <SimpleColumn name="DaysAsBuyer" />
     <SimpleColumn name="DaysAsSupplier" />
-    
+    <SimpleColumn name="PercentInterest" />
+        
     <SimpleColumn name="Notes" />
    </Columns>
   <Order>

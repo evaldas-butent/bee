@@ -49,10 +49,14 @@
   	   <DataSelector style="&inp1;" source="BankruptcyRisk" />
        <Label style="&lbl1;" for="DelayedPaymentRisk" text="=clientDelayedPaymentRisk" />
        <DataSelector style="&inp1;" source="DelayedPaymentRisk" />
-      </row>
-      <row>
        <Label style="&lbl1;" for="InvoiceTransferType" text="=invoiceTransferType" />
        <DataSelector style="&inp1;" source="InvoiceTransferType" />
+      </row>
+      <row data="CompActStore">       
+        <Label  text="=companyActivities" style="&lbl1;" />          
+        <ChildSelector viewName="CompanyActivities" childTable="CompActStore"
+          targetRelColumn="Company" sourceRelColumn="Activity"
+          label="=companyActivities" style="&inp1;" />
       </row>
     </Table>
 
@@ -61,8 +65,15 @@
        <Label text="=contactInfo" style="text-transform: uppercase; " />
         <FlowPanel class="flexible">
          <xi:include href="widgets/ContactDetails.widget.xml" />
-         <ChildGrid name="CompanyContacts" relColumn="Company" style="min-height: 150px" />
        </FlowPanel>
+    </Disclosure>
+    
+    <Disclosure xmlns="http://www.butent.com/widget" xmlns:xi="http://www.w3.org/2001/XInclude"
+      open="false" style="width: 100%;">
+      <Label text="=additionalContacts" style="text-transform: uppercase; " />
+      <FlowPanel class="flexible" style="min-height: 175px;">
+        <ChildGrid name="CompanyContacts" relColumn="Company" style="min-height: 175px;" />
+      </FlowPanel>
     </Disclosure>
 
     <TabbedPages class="flexible" style="margin-top: 15px;">
@@ -93,14 +104,6 @@
               <DataSelector source="CompanySize" style="width: 100px;" />
               <Label style="margin-left: 8px; margin-right: 8px;" for="InformationSource" />
               <DataSelector source="InformationSource" style="width: 100px;" />
-            </row>
-            <row data="CompActStore">
-              <Label text="=companyActivities" style="&lbl1;" />
-              <cell colSpan="3">
-                <ChildSelector viewName="CompanyActivities" childTable="CompActStore"
-                  targetRelColumn="Company" sourceRelColumn="Activity"
-                  label="=companyActivities" style="width: 338px;" />
-              </cell>
             </row>
             <row for="Rating">
               <Label text="=rating" style="&lbl1;"/>
