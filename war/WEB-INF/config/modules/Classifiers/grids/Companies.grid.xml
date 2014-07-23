@@ -26,5 +26,9 @@
       filterOptions="-" exportWidthFactor="0.5" visible="false">
       <renderer type="flag" />
     </CalcColumn>
+    
+    <DataColumn name="BankruptcyRisk" visible="false" />
+    <DataColumn name="DelayedPaymentRisk" visible="false" />
+    <DataColumn name="InvoiceTransferType" visible="false" />
   </g:columns>
 </g:Grid>

@@ -1,7 +1,10 @@
 package com.butent.bee.client.modules.classifiers;
 
+import com.google.common.collect.Lists;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
+import com.google.gwt.event.dom.client.HasClickHandlers;
+import com.google.gwt.user.client.ui.UIObject;
 import com.google.gwt.user.client.ui.Widget;
 
 import static com.butent.bee.shared.modules.classifiers.ClassifierConstants.*;
@@ -13,7 +16,9 @@ import com.butent.bee.client.communication.ResponseCallback;
 import com.butent.bee.client.data.Data;
 import com.butent.bee.client.data.Queries;
 import com.butent.bee.client.data.Queries.IntCallback;
+import com.butent.bee.client.dialog.ModalGrid;
 import com.butent.bee.client.grid.ChildGrid;
+import com.butent.bee.client.grid.GridFactory;
 import com.butent.bee.client.grid.HtmlTable;
 import com.butent.bee.client.modules.trade.TradeKeeper;
 import com.butent.bee.client.presenter.GridPresenter;
@@ -36,12 +41,16 @@ import com.butent.bee.shared.data.filter.Filter;
 import com.butent.bee.shared.data.value.Value;
 import com.butent.bee.shared.font.FontAwesome;
 import com.butent.bee.shared.i18n.Localized;
+import com.butent.bee.shared.modules.administration.AdministrationConstants;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.Codec;
 
 import java.util.Map;
 
 public class CompanyForm extends AbstractFormInterceptor {
+
+  private static final String WIDGET_FINANCIAL_STATE_AUDIT_NAME = COL_COMPANY_FINANCIAL_STATE
+      + "Audit";
 
   @Override
   public void afterCreateWidget(String name, IdentifiableWidget widget,
@@ -119,6 +128,17 @@ public class CompanyForm extends AbstractFormInterceptor {
 
       });
     }
+
+    if (widget instanceof HasClickHandlers
+        && BeeUtils.same(name, WIDGET_FINANCIAL_STATE_AUDIT_NAME)) {
+
+      HasClickHandlers button = (HasClickHandlers) widget;
+      button.addClickHandler(getFinancialStateAuditClickHandler());
+      
+      if (widget instanceof UIObject) {
+        ((UIObject) widget).setTitle(Localized.getConstants().actionAudit());
+      }
+    }
   }
 
   @Override
@@ -131,6 +151,31 @@ public class CompanyForm extends AbstractFormInterceptor {
     return new CompanyForm();
   }
 
+  private ClickHandler getFinancialStateAuditClickHandler() {
+    return new ClickHandler() {
+
+      @Override
+      public void onClick(ClickEvent event) {
+        FormView formView = getFormView();
+
+        if (formView == null) {
+          return;
+        }
+
+        IsRow activeRow = formView.getActiveRow();
+
+        if (activeRow == null) {
+          return;
+        }
+
+        GridFactory.openGrid(AdministrationConstants.GRID_HISTORY,
+            new FinancialStateHistoryHandler(formView.getViewName(),
+                Lists.newArrayList(Long.valueOf(activeRow.getId()))),
+            null, ModalGrid.opener(500, 500));
+      }
+    };
+  }
+  
   private void refreshCreditInfo() {
     final FormView form = getFormView();
     final Widget widget = form.getWidgetByName(SVC_CREDIT_INFO);

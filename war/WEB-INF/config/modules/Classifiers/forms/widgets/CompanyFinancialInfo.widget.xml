@@ -29,7 +29,12 @@
 
   <row for="FinancialState">
     <Label text="=financialState" style="&lbl1;" />
-    <DataSelector source="FinancialState" />
+    <Table>
+      <row>
+        <DataSelector source="FinancialState" />
+        <FaLabel name="FinancialStateAudit" char="history" style="font-size: larger;"/>
+      </row>
+    </Table>    
   </row>
 
   <row for="DaysAsBuyer">
