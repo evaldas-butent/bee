@@ -5,9 +5,11 @@ import com.google.gwt.dom.client.Element;
 
 public class ClientRect extends JavaScriptObject {
 
+//@formatter:off
   public static native ClientRect createBounding(Element element) /*-{
     return element.getBoundingClientRect();
   }-*/;
+//@formatter:on
 
   protected ClientRect() {
   }
@@ -17,6 +19,7 @@ public class ClientRect extends JavaScriptObject {
         && other.getTop() >= getTop() && other.getBottom() <= getBottom();
   }
 
+//@formatter:off
   public final native double getBottom() /*-{
     return this.bottom;
   }-*/;
@@ -40,6 +43,7 @@ public class ClientRect extends JavaScriptObject {
   public final native double getWidth() /*-{
     return this.width;
   }-*/;
+//@formatter:on
 
   public final boolean intersects(ClientRect other) {
     return other != null && other.getLeft() < getRight() && other.getRight() > getLeft()

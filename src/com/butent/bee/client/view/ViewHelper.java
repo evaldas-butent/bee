@@ -69,16 +69,32 @@ public final class ViewHelper {
       return view;
 
     } else {
-      Collection<View> children = getChildViews(view.asWidget(), false);
-
       View actionView = null;
-      for (View child : children) {
-        if (DomUtils.isVisible(child.getElement()) && child.isEnabled() && child.reactsTo(action)) {
-          if (actionView == null) {
-            actionView = child;
-          } else {
-            actionView = null;
+
+      List<View> children = getChildViews(view.asWidget(), false);
+
+      if (children.isEmpty()) {
+        View parent = getView(view.asWidget().getParent());
+
+        while (parent != null) {
+          if (parent.isEnabled() && parent.reactsTo(action)) {
+            actionView = parent;
             break;
+          } else {
+            parent = getView(parent.asWidget().getParent());
+          }
+        }
+
+      } else {
+        for (View child : children) {
+          if (DomUtils.isVisible(child.getElement()) && child.isEnabled()
+              && child.reactsTo(action)) {
+            if (actionView == null) {
+              actionView = child;
+            } else if (!actionView.getElement().isOrHasChild(child.getElement())) {
+              actionView = null;
+              break;
+            }
           }
         }
       }
@@ -94,8 +110,8 @@ public final class ViewHelper {
     }
   }
 
-  public static Collection<View> getChildViews(Widget parent, boolean include) {
-    Collection<View> views = new HashSet<>();
+  public static List<View> getChildViews(Widget parent, boolean include) {
+    List<View> views = new ArrayList<>();
 
     if (parent instanceof View && include) {
       views.add((View) parent);

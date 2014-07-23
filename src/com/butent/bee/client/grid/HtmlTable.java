@@ -149,9 +149,11 @@ public class HtmlTable extends Panel implements IdentifiableWidget, IsHtmlTable,
       StyleUtils.setWordWrap(ensureElement(row, column), wrap);
     }
 
+    //@formatter:off
     private native TableCellElement getCell(Element table, int row, int column) /*-{
       return table.rows[row].cells[column];
     }-*/;
+    //@formatter:on
   }
 
   public class ColumnFormatter {
@@ -271,9 +273,11 @@ public class HtmlTable extends Panel implements IdentifiableWidget, IsHtmlTable,
       UIObject.setVisible(getElement(row), visible);
     }
 
+    //@formatter:off
     private native Element getTr(Element elem, int row) /*-{
       return elem.rows[row];
     }-*/;
+    //@formatter:on
   }
 
   private static final String STYLE_SUFFIX_COL = "-col";
@@ -729,6 +733,7 @@ public class HtmlTable extends Panel implements IdentifiableWidget, IsHtmlTable,
     return defaultCellStyles;
   }
 
+//@formatter:off
   private native int getDOMCellCount(Element tableBody, int row) /*-{
     return tableBody.rows[row].cells.length;
   }-*/;
@@ -736,6 +741,7 @@ public class HtmlTable extends Panel implements IdentifiableWidget, IsHtmlTable,
   private native int getDOMRowCount(Element elem) /*-{
     return elem.rows.length;
   }-*/;
+//@formatter:on
 
   private Widget getWidgetImpl(int row, int column) {
     Element td = cellFormatter.getElement(row, column);

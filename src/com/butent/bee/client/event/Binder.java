@@ -363,6 +363,7 @@ public final class Binder {
     sinkInput(obj.getElement());
   }
 
+//@formatter:off
   // CHECKSTYLE:OFF
   private static native void initDispatcher() /*-{
     @com.butent.bee.client.event.Binder::dispatcher = $entry(function(evt) {
@@ -378,8 +379,8 @@ public final class Binder {
       }
     });
   }-*/;
-
   // CHECKSTYLE:ON
+//@formatter:on
 
   private static void maybeInitialize() {
     if (!initialized) {
@@ -388,9 +389,11 @@ public final class Binder {
     }
   }
 
+//@formatter:off
   private static native void sinkInputImpl(Element elem) /*-{
     elem.oninput = @com.butent.bee.client.event.Binder::dispatcher;
   }-*/;
+//@formatter:on
 
   private Binder() {
   }

@@ -151,18 +151,22 @@ public final class DomUtils {
     return (DtElement) createElement(DtElement.TAG);
   }
 
+//@formatter:off
   public static native Element createElement(Document doc, String tag) /*-{
     return doc.createElement(tag);
   }-*/;
+//@formatter:on
 
   public static Element createElement(String tag) {
     Assert.notEmpty(tag);
     return createElement(Document.get(), tag);
   }
 
+//@formatter:off
   public static native Element createElementNs(Document doc, String ns, String tag) /*-{
     return doc.createElementNS(ns, tag);
   }-*/;
+//@formatter:on
 
   public static Element createElementNs(String ns, String tag) {
     Assert.notEmpty(ns);
@@ -311,9 +315,11 @@ public final class DomUtils {
     }
   }
 
+//@formatter:off
   public static native Element getActiveElement() /*-{
     return $doc.activeElement;
   }-*/;
+//@formatter:on
 
   public static List<String> getAncestry(Widget w) {
     Assert.notNull(w);
@@ -425,7 +431,7 @@ public final class DomUtils {
       return root;
     }
 
-    Widget ret = null;
+    Widget ret = root;
     Widget found;
     for (Widget child : (HasWidgets) root) {
       found = getChildByElement(child, elem);
@@ -512,6 +518,7 @@ public final class DomUtils {
     return lst;
   }
 
+//@formatter:off
   public static native String getClassName(Element elem) /*-{
     var cl = elem.className;
 
@@ -523,6 +530,7 @@ public final class DomUtils {
       return '';
     }
   }-*/;
+//@formatter:on
 
   public static int getClientHeight() {
     return Document.get().getClientHeight();
@@ -670,9 +678,11 @@ public final class DomUtils {
     return result;
   }
 
+//@formatter:off
   public static native NodeList<Element> getElementsByName(String name) /*-{
     return $doc.getElementsByName(name);
   }-*/;
+//@formatter:on
 
   public static Element getFirstVisibleChild(Element parent) {
     if (parent == null) {
@@ -808,9 +818,11 @@ public final class DomUtils {
     return elem.getPropertyString(Attributes.NAME);
   }
 
+//@formatter:off
   public static native String getNamespaceUri(Node nd) /*-{
     return nd.namespaceURI;
   }-*/;
+//@formatter:on
 
   public static List<Property> getNodeInfo(Node nd) {
     Assert.notNull(nd);
@@ -839,6 +851,7 @@ public final class DomUtils {
         + ComputedStyles.getPixels(elem, StyleUtils.STYLE_MARGIN_BOTTOM);
   }
 
+//@formatter:off
   public static native String getOuterHtml(Element elem) /*-{
     if (elem == null) {
       return "";
@@ -858,6 +871,7 @@ public final class DomUtils {
 
     return new XMLSerializer().serializeToString(elem);
   }-*/;
+//@formatter:on
 
   public static int getOuterWidth(Element elem) {
     Assert.notNull(elem);
@@ -1979,9 +1993,11 @@ public final class DomUtils {
     elem.removeFromParent();
   }
 
+//@formatter:off
   private static native void setType(InputElement el, String tp) /*-{
     el.type = tp;
   }-*/;
+//@formatter:on
 
   private static String transformNode(Node nd) {
     if (nd == null) {

@@ -79,6 +79,7 @@ public class ComputedStyles implements HasLength, HasInfo {
     return BeeUtils.remove(s, NAME_SEPARATOR).trim().toLowerCase();
   }
 
+//@formatter:off
   private static native String getComputedStyle(Element el, String p, String c) /*-{
     if ("getComputedStyle" in $wnd) {
       return $wnd.getComputedStyle(el, null).getPropertyValue(p);
@@ -115,6 +116,7 @@ public class ComputedStyles implements HasLength, HasInfo {
 
     return arr;
   }-*/;
+//@formatter:on
 
   private final JsArrayString styles;
 

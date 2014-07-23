@@ -178,6 +178,7 @@ public class Storage {
     }
   }
 
+//@formatter:off
   private native void lsClear() /*-{
     $wnd.localStorage.clear();
   }-*/;
@@ -201,6 +202,7 @@ public class Storage {
   private native void lsSetItem(String key, String value) /*-{
     $wnd.localStorage.setItem(key, value);
   }-*/;
+//@formatter:on
 
   private boolean validIndex(int index) {
     return index >= 0 && index < length();

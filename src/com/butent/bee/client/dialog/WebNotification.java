@@ -110,6 +110,7 @@ public class WebNotification extends JavaScriptObject {
     }
   }
 
+//@formatter:off
   private static native WebNotification createImpl(String title, JavaScriptObject options) /*-{
     return new Notification(title, options);
   }-*/;
@@ -117,6 +118,7 @@ public class WebNotification extends JavaScriptObject {
   private static native WebNotification createImpl(String title) /*-{
     return new Notification(title);
   }-*/;
+//@formatter:on
 
   private static void fallback(String title, NotificationOptions options) {
     if (options == null) {
@@ -136,6 +138,7 @@ public class WebNotification extends JavaScriptObject {
     }
   }
 
+//@formatter:off
   private static native boolean isDeniedImpl() /*-{
     return Notification.permission === "denied";
   }-*/;
@@ -165,10 +168,12 @@ public class WebNotification extends JavaScriptObject {
       }
     });
   }-*/;
+//@formatter:on
 
   protected WebNotification() {
   }
 
+//@formatter:off
   public final native void close() /*-{
     this.close();
   }-*/;
@@ -229,4 +234,5 @@ public class WebNotification extends JavaScriptObject {
     this.onshow = @elemental.js.dom.JsElementalMixinBase::getHandlerFor(Lelemental/events/EventListener;)(listener);
   }-*/;
   // CHECKSTYLE:ON
+//@formatter:on
 }
