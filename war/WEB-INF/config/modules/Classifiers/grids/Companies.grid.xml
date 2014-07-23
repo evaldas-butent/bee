@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
 <g:Grid xmlns="http://www.butent.com/column" xmlns:g="http://www.butent.com/grid"
+ xmlns:ui="http://www.butent.com/ui"
 
   name="Companies" viewName="Companies" caption="=clients" favorite="Name" flexGrow="1"
   >
@@ -31,4 +32,8 @@
     <DataColumn name="DelayedPaymentRisk" visible="false" />
     <DataColumn name="InvoiceTransferType" visible="false" />
   </g:columns>
+  <g:rowStyle>
+    <ui:inline>="background-color: " + row.Background + "; color: " + row.Foreground +"; "</ui:inline>
+    <ui:expression>row.Color != null</ui:expression>
+  </g:rowStyle>
 </g:Grid>

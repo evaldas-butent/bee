@@ -9,6 +9,8 @@ import com.butent.bee.client.communication.ParameterList;
 import com.butent.bee.client.data.Data;
 import com.butent.bee.client.event.logical.SelectorEvent;
 import com.butent.bee.client.grid.GridFactory;
+import com.butent.bee.client.style.ColorStyleProvider;
+import com.butent.bee.client.style.ConditionalStyle;
 import com.butent.bee.client.ui.FormFactory;
 import com.butent.bee.client.view.ViewFactory;
 import com.butent.bee.shared.BeeConst;
@@ -49,6 +51,10 @@ public final class ClassifierKeeper {
         new ItemsGrid(false));
     GridFactory.registerGridSupplier(ItemsGrid.getSupplierKey(true), GRID_ITEMS,
         new ItemsGrid(true));
+
+    ConditionalStyle.registerGridColumnStyleProvider(GRID_FINANCIAL_STATES,
+        AdministrationConstants.ALS_COLOR_NAME, ColorStyleProvider
+            .createDefault(VIEW_FINANCIAL_STATES));
 
     MenuService.ITEMS.setHandler(new MenuHandler() {
       @Override

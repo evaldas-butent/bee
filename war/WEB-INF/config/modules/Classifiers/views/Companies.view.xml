@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <View xmlns="http://www.butent.com/view"
+
   name="Companies" source="Companies" caption="=clients" module="Classifiers.Contacts"
   editForm="Company" newRowForm="Company" newRowCaption="=newClient" rowCaption="Name"
   >
@@ -81,6 +82,12 @@
     <SimpleColumn name="FinancialState" />
     <SimpleJoin joinType="LEFT" name="FinancialState">
       <SimpleColumn alias="FinancialStateName" name="Name" />
+      <SimpleColumn name="Color" />
+       <SimpleJoin name="Color" joinType="LEFT">
+        <SimpleColumn alias="ColorName" name="Name" />
+        <SimpleColumn name="Background" />
+        <SimpleColumn name="Foreground" />
+       </SimpleJoin>
     </SimpleJoin>
     
     <SimpleColumn name="BankruptcyRisk"/>
