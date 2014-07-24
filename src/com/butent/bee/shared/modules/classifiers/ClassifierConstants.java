@@ -115,10 +115,12 @@ public final class ClassifierConstants {
   public static final String COL_MOBILE = "Mobile";
   public static final String COL_FAX = "Fax";
   public static final String COL_EMAIL = "Email";
+  public static final String COL_EMAIL_ID = "EmailId";
   public static final String COL_EMAIL_ADDRESS = "Email";
   public static final String COL_ADDRESS = "Address";
   public static final String COL_POST_INDEX = "PostIndex";
   public static final String COL_WEBSITE = "Website";
+  public static final String COL_REMIND_EMAIL = "RemindEmail";
 
   public static final String COL_CITY = "City";
   public static final String COL_CITY_NAME = "Name";

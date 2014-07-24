@@ -635,6 +635,8 @@ public interface LocalizableConstants extends Constants, LocalizableCalendarCons
 
   String send();
 
+  String sendReminder();
+
   String service();
 
   String setAsPrimary();

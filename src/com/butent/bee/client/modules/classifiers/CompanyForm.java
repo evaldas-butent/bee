@@ -1,6 +1,7 @@
 package com.butent.bee.client.modules.classifiers;
 
 import com.google.common.collect.Lists;
+import com.google.gwt.core.client.Scheduler.ScheduledCommand;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.event.dom.client.HasClickHandlers;
@@ -13,6 +14,7 @@ import static com.butent.bee.shared.modules.trade.TradeConstants.*;
 import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.communication.ParameterList;
 import com.butent.bee.client.communication.ResponseCallback;
+import com.butent.bee.client.composite.DataSelector;
 import com.butent.bee.client.data.Data;
 import com.butent.bee.client.data.Queries;
 import com.butent.bee.client.data.Queries.IntCallback;
@@ -33,7 +35,9 @@ import com.butent.bee.client.view.grid.GridView;
 import com.butent.bee.client.view.grid.interceptor.AbstractGridInterceptor;
 import com.butent.bee.client.view.grid.interceptor.GridInterceptor;
 import com.butent.bee.client.widget.FaLabel;
+import com.butent.bee.client.widget.InputBoolean;
 import com.butent.bee.shared.communication.ResponseObject;
+import com.butent.bee.shared.css.values.Display;
 import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.IsRow;
 import com.butent.bee.shared.data.event.DataChangeEvent;
@@ -51,6 +55,11 @@ public class CompanyForm extends AbstractFormInterceptor {
 
   private static final String WIDGET_FINANCIAL_STATE_AUDIT_NAME = COL_COMPANY_FINANCIAL_STATE
       + "Audit";
+
+  @SuppressWarnings("unused")
+  private InputBoolean wRemindEmail;
+  @SuppressWarnings("unused")
+  private DataSelector wEmail;
 
   @Override
   public void afterCreateWidget(String name, IdentifiableWidget widget,
@@ -139,6 +148,19 @@ public class CompanyForm extends AbstractFormInterceptor {
         ((UIObject) widget).setTitle(Localized.getConstants().actionAudit());
       }
     }
+    
+    if (widget instanceof InputBoolean && BeeUtils.same(name, COL_REMIND_EMAIL)) {
+      wRemindEmail = (InputBoolean) widget;
+      StyleUtils.setDisplay(widget.getElement(), Display.INLINE_BLOCK);
+
+      if (widget instanceof UIObject) {
+        ((UIObject) widget).setTitle(Localized.getConstants().sendReminder());
+      }
+    }
+
+    if (widget instanceof DataSelector && BeeUtils.same(name, COL_EMAIL_ID)) {
+      wEmail = (DataSelector) widget;
+    }
   }
 
   @Override
@@ -175,7 +197,21 @@ public class CompanyForm extends AbstractFormInterceptor {
       }
     };
   }
-  
+
+  @Override
+  public boolean onStartEdit(FormView form, IsRow row, ScheduledCommand focusCommand) {
+    // TODO:
+    // if (wRemindEmail != null && wEmail != null) {
+    // if (BeeUtils.isEmpty(wEmail.getValue())) {
+    // wRemindEmail.setEnabled(false);
+    // } else {
+    // wRemindEmail.setEnabled(true);
+    // }
+    // }
+
+    return super.onStartEdit(form, row, focusCommand);
+  }
+
   private void refreshCreditInfo() {
     final FormView form = getFormView();
     final Widget widget = form.getWidgetByName(SVC_CREDIT_INFO);

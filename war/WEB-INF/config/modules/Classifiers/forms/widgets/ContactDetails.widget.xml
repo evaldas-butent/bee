@@ -15,7 +15,12 @@
   <row>
     <Label for="EmailId" style="&lbl;" />
     <cell colSpan="2" for="EmailId" >
-      <DataSelector source="EmailId" style="width: 100%;" />
+      <Table>
+        <row>
+          <DataSelector name="EmailId" source="EmailId" style="width: 100%;" />
+          <CheckBox html="-" name="RemindEmail" source="RemindEmail" style="display: none;" />
+        </row>
+      </Table>
     </cell>
 
     <Label text="=website" style="&lbl;" for="Website" />

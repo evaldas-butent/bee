@@ -2,7 +2,7 @@
 <g:Grid xmlns="http://www.butent.com/column" xmlns:g="http://www.butent.com/grid"
 
   name="CompanyContacts" viewName="CompanyContacts" caption="=additionalContacts"
-  flexGrow="1" flexShrink="1"
+  flexGrow="1" flexShrink="1" editInPlace="RemindEmail"
   >
   <g:columns>  
     <DataColumn name="Address" minWidth="200" maxWidth="300" visible="true" />
@@ -16,6 +16,7 @@
     </CalcColumn>  
     <DataColumn name="Phone" minWidth="100" maxWidth="200"/>
     <DataColumn name="Fax" minWidth="50" maxWidth="200" visible="false" />
+    <DataColumn name="RemindEmail" maxWidth="30"/>
     <RelColumn name="EmailId" />
     <DataColumn name="Website" minWidth="100" maxWidth="200" visible="false" />
     <DataColumn name="SocialContacts" minWidth="100" maxWidth="200" visible="false" />
