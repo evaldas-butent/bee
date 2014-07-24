@@ -386,6 +386,15 @@ public class GridMenu {
     }
   }
 
+  public boolean isActionVisible(GridPresenter presenter, Action action) {
+    for (Item item : enabledItems) {
+      if (item.action == action) {
+        return item.isVisible(presenter);
+      }
+    }
+    return false;
+  }
+
   public void open(final GridPresenter presenter) {
     final HtmlTable table = new HtmlTable(STYLE_TABLE);
     int r = 0;

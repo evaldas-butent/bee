@@ -277,10 +277,9 @@ class DiscussionInterceptor extends AbstractFormInterceptor {
 
   private static final String STYLE_DESCRIPTION_EDITOR_DISABLED = DISCUSSIONS_STYLE_PREFIX
       + WIDGET_DESCRIPTION_EDITOR + STYLE_DISABLED;
- 
+
   private static final String WIDGET_LABEL_MEMBERS = "membersLabel";
   private static final String WIDGET_LABEL_DISPLAY_IN_BOARD = "DisplayInBoard";
-
 
   private static final int INITIAL_COMMENT_ROW_PADDING_LEFT = 0;
   private static final int MAX_COMMENT_ROW_PADDING_LEFT = 5;
@@ -413,9 +412,9 @@ class DiscussionInterceptor extends AbstractFormInterceptor {
     if (widget instanceof InputBoolean) {
       InputBoolean ac = (InputBoolean) widget;
       boolean val = BeeUtils.toBoolean(ac.getValue());
-      
+
       MultiSelector wMembers = getMultiSelector(form, PROP_MEMBERS);
-      
+
       if (wMembers != null) {
         wMembers.setEnabled(!val);
       }
@@ -584,7 +583,6 @@ class DiscussionInterceptor extends AbstractFormInterceptor {
       }
     }
 
-
     BeeRow visitedRow = DataUtils.cloneRow(row);
 
     BeeRowSet rowSet = new BeeRowSet(form.getViewName(), form.getDataColumns());
@@ -627,8 +625,7 @@ class DiscussionInterceptor extends AbstractFormInterceptor {
         SimpleRowSet markData = DiscussionsUtils.getMarkData(data);
         Map<String, String> disscussParams = DiscussionsUtils.getDiscussionsParameters(data);
         clearCommentsCache(form);
-        
-        
+
         if (!BeeUtils.isEmpty(comments)) {
           showCommentsAndMarks(form, data, BeeRowSet.restore(comments), files);
           establishAdminFormForEdit(disscussParams, form);
@@ -641,12 +638,12 @@ class DiscussionInterceptor extends AbstractFormInterceptor {
         }
 
         Widget wDescription = form.getWidgetByName(COL_DESCRIPTION);
-        
+
         if (wDescription != null) {
           wDescription.getElement().setInnerHTML(
               data.getString(form.getDataIndex(COL_DESCRIPTION)));
         }
-        
+
         Widget wDescriptionEdit = form.getWidgetByName(WIDGET_DESCRIPTION_EDITOR);
 
         if (wDescriptionEdit instanceof Editor) {
@@ -962,11 +959,11 @@ class DiscussionInterceptor extends AbstractFormInterceptor {
     if (form == null) {
       return;
     }
-    
-   form.setEnabled(enabled);
-   
-   Widget widget = form.getWidgetByName(COL_DESCRIPTION);
-    
+
+    form.setEnabled(enabled);
+
+    Widget widget = form.getWidgetByName(COL_DESCRIPTION);
+
     if (widget != null) {
       if (getFormView().isEnabled()) {
         widget.getElement().addClassName(STYLE_DESCRIPTION_DISABLED);
@@ -976,7 +973,7 @@ class DiscussionInterceptor extends AbstractFormInterceptor {
     }
 
     widget = form.getWidgetByName(WIDGET_DESCRIPTION_EDITOR);
-    
+
     if (widget != null) {
       if (getFormView().isEnabled()) {
         widget.getElement().removeClassName(STYLE_DESCRIPTION_EDITOR_DISABLED);

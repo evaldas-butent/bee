@@ -547,6 +547,17 @@ public class GridPresenter extends AbstractPresenter implements ReadyForInsertEv
     return getDataProvider().hasFilter();
   }
 
+  public boolean isActionEnabled(Action action) {
+    if (action == null) {
+      return false;
+    } else if (menu.isActionVisible(this, action)) {
+      return true;
+    } else {
+      HeaderView header = getHeader();
+      return header != null && header.isActionEnabled(action);
+    }
+  }
+
   @Override
   public void onReadyForInsert(final ReadyForInsertEvent event) {
     Queries.insert(getViewName(), event.getColumns(), event.getValues(), event.getChildren(),

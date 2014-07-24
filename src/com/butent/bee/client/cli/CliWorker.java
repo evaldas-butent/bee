@@ -814,12 +814,14 @@ public final class CliWorker {
     }, delay);
   }
 
+//@formatter:off
   private static native void cornifyAdd() /*-{
     try {
       $wnd.cornify_add();
     } catch (err) {
     }
   }-*/;
+//@formatter:on
 
   private static void createResource(String args, boolean errorPopup) {
     if (BeeUtils.isEmpty(args)) {
@@ -2116,6 +2118,7 @@ public final class CliWorker {
     }
   }
 
+//@formatter:off
   // CHECKSTYLE:OFF
   private static native void sampleCanvas(Element el) /*-{
     var ctx = el.getContext("2d");
@@ -2127,8 +2130,8 @@ public final class CliWorker {
       }
     }
   }-*/;
-
   // CHECKSTYLE:ON
+//@formatter:on
 
   private static void scheduleTasks(String[] arr, boolean errorPopup) {
     JustDate from = (arr.length > 1) ? TimeUtils.parseDate(arr[1]) : TimeUtils.today();

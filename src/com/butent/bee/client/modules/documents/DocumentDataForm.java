@@ -260,6 +260,7 @@ public class DocumentDataForm extends AbstractFormInterceptor
       }
     }
 
+    //@formatter:off
     private native void destroy(JavaScriptObject editor, boolean automatic) /*-{
       editor.destroy(automatic);
     }-*/;
@@ -284,6 +285,7 @@ public class DocumentDataForm extends AbstractFormInterceptor
       editor.setContent(content);
       editor.isNotDirty = 1;
     }-*/;
+    //@formatter:on
   }
 
   private final class AutocompleteFilter implements AutocompleteEvent.Handler {

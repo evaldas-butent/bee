@@ -189,9 +189,11 @@ public final class Settings {
     }
   }
 
+//@formatter:off
   private static native JavaScriptObject read() /*-{
     return $wnd['BeeSettings'];
   }-*/;
+//@formatter:on
 
   private Settings() {
   }

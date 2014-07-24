@@ -340,9 +340,11 @@ public final class FileUtils {
     });
   }
 
+//@formatter:off
   static native double getLastModifiedMillis(File file) /*-{
     return file.lastModifiedDate.getTime();
   }-*/;
+//@formatter:on
 
   private static void addProgressListener(XMLHttpRequest xhr, final String progressId) {
     if (progressId != null) {
