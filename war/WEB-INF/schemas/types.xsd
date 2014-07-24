@@ -214,6 +214,7 @@
       <xs:enumeration value="AbsenceTypes" />
       <xs:enumeration value="Accounts" />
       <xs:enumeration value="ActiveTrips" />
+      <xs:enumeration value="ActivityTypes" />
       <xs:enumeration value="Addressbook" />
       <xs:enumeration value="AdsTopics" />
       <xs:enumeration value="AllCargo" />
@@ -274,6 +275,7 @@
       <xs:enumeration value="CompanyUsers" />
       <xs:enumeration value="CompRelTypeStore" />
       <xs:enumeration value="Configuration" />
+      <xs:enumeration value="CostCenters" />
       <xs:enumeration value="Countries" />
       <xs:enumeration value="Criteria" />
       <xs:enumeration value="CriteriaGroups" />
@@ -340,7 +342,9 @@
       <xs:enumeration value="InformationSources" />
       <xs:enumeration value="IpFilters" />
       <xs:enumeration value="ItemCategories" />
+      <xs:enumeration value="ItemGroups" />
       <xs:enumeration value="Items" />
+      <xs:enumeration value="ItemTypes" />
       <xs:enumeration value="Maintenance" />
       <xs:enumeration value="Objects" />
       <xs:enumeration value="OrderCargo" />
