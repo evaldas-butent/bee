@@ -151,7 +151,7 @@
           <FlowPanel for="Topic" class="flexBox-horizontal">
             <Label text="=adTopic" style="&lbl1; min-width:150px;" />
             <DataSelector name="Topic" source="Topic" style="&inp2x; width: 250px"
-              choiceColumns="Name" filter="Visible" disablable="false"/>
+              choiceColumns="Name" filter="Visible" />
           </FlowPanel>
   
           <FlowPanel for="Topic" class="flexBox-horizontal">
@@ -159,18 +159,17 @@
             <Label for="VisibleFrom" text="=dateFromShort"
               style="text-transform: lowercase; margin-right:4px" />
             <InputDateTime source="VisibleFrom"
-              style="&inp2x; width: 100px; margin-right:8px" disablable="false" />
+              style="&inp2x; width: 100px; margin-right:8px" />
             <Label for="VisibleTo" text="=dateToShort"
               style="text-transform: lowercase; margin-right:4px" />
-            <InputDateTime source="VisibleTo" style="&inp2x; width: 100px" disablable="false" />
+            <InputDateTime source="VisibleTo" style="&inp2x; width: 100px" />
           </FlowPanel>
   
           <FlowPanel class="flexBox-horizontal">
             <CheckBox name="Important" source="Important" text="=important"
-              style="&top1; min-width:70px; padding-right:18px;" disablable="false"/>
+              style="&top1; min-width:70px; padding-right:18px;" />
             <CheckBox name="PermitComment"
-              text="=prohibitComment" style="&top1; min-width: 135px; padding-right:18px;" 
-              disablable="false" />
+              text="=prohibitComment" style="&top1; min-width: 135px; padding-right:18px;" />
           </FlowPanel>
         </FlowPanel>
       </Disclosure>

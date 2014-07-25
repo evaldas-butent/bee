@@ -632,6 +632,8 @@ class DiscussionInterceptor extends AbstractFormInterceptor {
         } else if (markData != null) {
           if (!markData.isEmpty()) {
             establishAdminFormForEdit(disscussParams, form);
+          } else {
+            establishFormForEdit(disscussParams, form, row, discussStatus, owner);
           }
         } else {
           establishFormForEdit(disscussParams, form, row, discussStatus, owner);
