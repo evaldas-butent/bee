@@ -362,7 +362,7 @@
   content: '';
  }
 
-.bee-discuss-adsFormContent-NewAnnouncement > .bee-discuss-adsFormContent-chatBalloon:after {
+.bee-discuss-adsFormContent-NewAnnouncement .bee-discuss-adsFormContent-chatBalloon:after {
   border-right: 9px solid #ffffCC;
 }
 
