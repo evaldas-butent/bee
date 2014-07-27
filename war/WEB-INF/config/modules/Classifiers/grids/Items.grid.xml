@@ -17,12 +17,12 @@
   </g:west>
   
   <g:columns>
-    <DataColumn name="Name" flexGrow="2" visible="true" />
-    <RelColumn name="UnitName" />
+    <DataColumn name="Name" visible="true" />
+    <RelColumn name="Unit" />
     <DataColumn name="Article" flexGrow="1" />
     <DataColumn name="Barcode" flexGrow="1" />
     <DataColumn name="Price" />
-    <RelColumn name="CurrencyName" />
+    <RelColumn name="Currency" />
     <DataColumn name="Vat" width="40">
       <carry><ui:expression>row.Vat</ui:expression></carry>
     </DataColumn>

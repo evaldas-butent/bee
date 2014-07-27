@@ -21,14 +21,13 @@
       <Label for="Article" text="=article" style="&lbl1;" />
       <InputText source="Article" />
 
-      <Label text="=itemUnits" horizontalAlignment="right" class="bee-required"
-        style="&lbl2;" />
+      <Label for="Unit" horizontalAlignment="right" style="&lbl2;" />
       <DataSelector source="Unit" style="width: 100px;" visible="true" />
     </FlowPanel>
     &separator;
 
     <FlowPanel class="flexBox-horizontal">
-      <Label for="Barcode" text="=barcode" style="&lbl1;" />
+      <Label for="Barcode" style="&lbl1;" />
       <InputText source="Barcode" />
 
       <Label for="Price" text="=sellingPrice" horizontalAlignment="right"

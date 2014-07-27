@@ -2,14 +2,6 @@ package com.butent.bee.shared.modules.trade;
 
 public interface LocalizableTradeConstants {
 
-  String barcode();
-
-  String itemCategories();
-
-  String itemCategoryTree();
-
-  String itemUnits();
-
   String printBankAccount();
 
   String printBankCode();
@@ -45,8 +37,6 @@ public interface LocalizableTradeConstants {
   String printItemTotalWithVat();
 
   String printItemUom();
-
-  String sellingPrice();
 
   String trade();
 

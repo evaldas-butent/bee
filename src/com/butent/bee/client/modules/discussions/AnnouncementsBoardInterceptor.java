@@ -227,7 +227,7 @@ class AnnouncementsBoardInterceptor extends AbstractFormInterceptor implements
     subjectContent.add(subjectDiv);
     adsTable.setWidget(row, 1, subjectContent,
         STYLE_PREFIX + COL_SUBJECT);
- 
+
     row++;
     adsTable.setHtml(row, 0, renderPhotoAndAuthor(rsRow, rs, STYLE_PREFIX + COL_OWNER
         + BeeConst.STRING_MINUS),
@@ -314,7 +314,6 @@ class AnnouncementsBoardInterceptor extends AbstractFormInterceptor implements
     adsTable.getCellFormatter().setColSpan(row, 0, 2);
     adsTable.getRow(row).addClassName(STYLE_PREFIX + ALS_TOPIC_NAME);
 
-
     row++;
     adsTable.setHtml(row, 0, BeeConst.STRING_EMPTY,
         STYLE_PREFIX + COL_CREATED);
@@ -334,11 +333,11 @@ class AnnouncementsBoardInterceptor extends AbstractFormInterceptor implements
 
     ScheduledCommand command = new ScheduledCommand() {
 
-        @Override
-        public void execute() {
-          RowFactory.createRow(VIEW_DISCUSSIONS);
-        }
-      };
+      @Override
+      public void execute() {
+        RowFactory.createRow(VIEW_DISCUSSIONS);
+      }
+    };
 
     String btnCaption = BeeUtils.joinWords(
         new FaLabel(FontAwesome.SQUARE_O).toString(),
@@ -367,11 +366,9 @@ class AnnouncementsBoardInterceptor extends AbstractFormInterceptor implements
     return widget;
   }
 
-
-
   private static void openFileList(final Image link, final long discussId) {
     Assert.notNull(link);
-    
+
     link.addClickHandler(new ClickHandler() {
 
       @Override
@@ -388,7 +385,7 @@ class AnnouncementsBoardInterceptor extends AbstractFormInterceptor implements
         dialog.setHideOnEscape(true);
         dialog.center();
       }
-      
+
     });
   }
 
@@ -485,6 +482,5 @@ class AnnouncementsBoardInterceptor extends AbstractFormInterceptor implements
       container.add(image);
     }
   }
-
 
 }
