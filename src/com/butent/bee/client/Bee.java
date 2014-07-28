@@ -36,6 +36,7 @@ import com.butent.bee.shared.i18n.LocalizableMessages;
 import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.logging.LogUtils;
 import com.butent.bee.shared.rights.Module;
+import com.butent.bee.shared.rights.RightsUtils;
 import com.butent.bee.shared.ui.UserInterface;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.Codec;
@@ -122,6 +123,8 @@ public class Bee implements EntryPoint {
     BeeKeeper.getUser().setUserData(userData);
 
     Module.setEnabledModules(data.get(Service.PROPERTY_MODULES));
+
+    RightsUtils.setViewModules(Codec.deserializeMap(data.get(Service.PROPERTY_VIEW_MODULES)));
 
     ClientDefaults.setCurrency(BeeUtils.toLongOrNull(data.get(COL_CURRENCY)));
     ClientDefaults.setCurrencyName(data.get(ALS_CURRENCY_NAME));

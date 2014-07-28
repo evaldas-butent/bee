@@ -40,7 +40,7 @@ import com.butent.bee.shared.data.SimpleRowSet.SimpleRow;
 import com.butent.bee.shared.exceptions.BeeRuntimeException;
 import com.butent.bee.shared.i18n.LocalizableConstants;
 import com.butent.bee.shared.i18n.Localized;
-import com.butent.bee.shared.io.StoredFile;
+import com.butent.bee.shared.io.FileInfo;
 import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogUtils;
 import com.butent.bee.shared.modules.BeeParameter;
@@ -336,11 +336,11 @@ public class MailModuleBean implements BeeModule {
           processMessages(account, account.getDraftsFolder(), null,
               new String[] {BeeUtils.toString(draftId)}, true);
         }
-        List<StoredFile> attachments = Lists.newArrayList();
+        List<FileInfo> attachments = Lists.newArrayList();
 
         for (Long fileId : DataUtils.parseIdSet(reqInfo.getParameter("Attachments"))) {
           try {
-            StoredFile fileInfo = fs.getFile(fileId);
+            FileInfo fileInfo = fs.getFile(fileId);
             attachments.add(fileInfo);
           } catch (IOException e) {
             logger.error(e);
@@ -369,14 +369,15 @@ public class MailModuleBean implements BeeModule {
           }
           response.addInfo(usr.getLocalizableConstants().mailMessageIsSavedInDraft());
         }
-        for (StoredFile fileInfo : attachments) {
+        for (FileInfo fileInfo : attachments) {
           if (fileInfo.isTemporary()) {
             logger.debug("File deleted:", fileInfo.getPath(),
                 new File(fileInfo.getPath()).delete());
           }
         }
-      } else if (BeeUtils.same(svc, SVC_GET_USABLE_CONTENT)) {
-        response = getUsableContent(BeeUtils.toLongOrNull(reqInfo.getParameter(COL_MESSAGE)));
+      } else if (BeeUtils.same(svc, SVC_STRIP_HTML)) {
+        response = ResponseObject
+            .response(HtmlUtils.stripHtml(reqInfo.getParameter(COL_HTML_CONTENT)));
 
       } else {
         String msg = BeeUtils.joinWords("Mail service not recognized:", svc);
@@ -520,7 +521,7 @@ public class MailModuleBean implements BeeModule {
   }
 
   public void sendMail(MailAccount account, String[] to, String[] cc, String[] bcc, String subject,
-      String content, List<StoredFile> attachments, boolean store) throws MessagingException {
+      String content, List<FileInfo> attachments, boolean store) throws MessagingException {
 
     Transport transport = null;
 
@@ -691,7 +692,7 @@ public class MailModuleBean implements BeeModule {
         case FORWARD:
           logger.debug(log, row.getValue(COL_RULE_ACTION_OPTIONS));
 
-          List<StoredFile> attachments = Lists.newArrayList();
+          List<FileInfo> attachments = Lists.newArrayList();
 
           SimpleRowSet rs = qs.getData(new SqlSelect()
               .addFields(TBL_ATTACHMENTS, AdministrationConstants.COL_FILE, COL_ATTACHMENT_NAME)
@@ -704,7 +705,7 @@ public class MailModuleBean implements BeeModule {
 
           for (SimpleRow attach : rs) {
             try {
-              StoredFile fileInfo = fs.getFile(attach.getLong(AdministrationConstants.COL_FILE));
+              FileInfo fileInfo = fs.getFile(attach.getLong(AdministrationConstants.COL_FILE));
 
               fileInfo.setCaption(BeeUtils.notEmpty(attach.getValue(COL_ATTACHMENT_NAME),
                   fileInfo.getCaption()));
@@ -743,7 +744,7 @@ public class MailModuleBean implements BeeModule {
           sendMail(account, new String[] {row.getValue(COL_RULE_ACTION_OPTIONS)}, null, null,
               envelope.getSubject(), content, attachments, false);
 
-          for (StoredFile fileInfo : attachments) {
+          for (FileInfo fileInfo : attachments) {
             if (fileInfo.isTemporary()) {
               logger.debug("File deleted:", fileInfo.getPath(),
                   new File(fileInfo.getPath()).delete());
@@ -776,7 +777,7 @@ public class MailModuleBean implements BeeModule {
   }
 
   private static MimeMessage buildMessage(MailAccount account, String[] to, String[] cc,
-      String[] bcc, String subject, String content, List<StoredFile> attachments)
+      String[] bcc, String subject, String content, List<FileInfo> attachments)
       throws MessagingException {
 
     MimeMessage message = new MimeMessage((Session) null);
@@ -815,7 +816,7 @@ public class MailModuleBean implements BeeModule {
     if (!BeeUtils.isEmpty(attachments)) {
       multi = new MimeMultipart();
 
-      for (StoredFile fileInfo : attachments) {
+      for (FileInfo fileInfo : attachments) {
         MimeBodyPart p = new MimeBodyPart();
         File file = new File(fileInfo.getPath());
 
@@ -1016,7 +1017,7 @@ public class MailModuleBean implements BeeModule {
     packet.put(TBL_ATTACHMENTS, qs.getData(new SqlSelect()
         .addFields(TBL_ATTACHMENTS, AdministrationConstants.COL_FILE, COL_ATTACHMENT_NAME)
         .addFields(AdministrationConstants.TBL_FILES, AdministrationConstants.COL_FILE_NAME,
-            AdministrationConstants.COL_FILE_SIZE)
+            AdministrationConstants.COL_FILE_SIZE, AdministrationConstants.COL_FILE_TYPE)
         .addFrom(TBL_ATTACHMENTS)
         .addFromInner(AdministrationConstants.TBL_FILES,
             sys.joinTables(AdministrationConstants.TBL_FILES, TBL_ATTACHMENTS,
@@ -1030,76 +1031,6 @@ public class MailModuleBean implements BeeModule {
         logger.error(e);
       }
     }
-    return ResponseObject.response(packet);
-  }
-
-  private ResponseObject getUsableContent(Long messageId) {
-    Assert.notNull(messageId);
-
-    Map<String, Object> packet = Maps.newHashMap();
-
-    SimpleRow data = qs.getRow(new SqlSelect()
-        .addFields(TBL_COMPANY_PERSONS, COL_COMPANY)
-        .addField(TBL_COMPANY_PERSONS, sys.getIdName(TBL_COMPANY_PERSONS), COL_PERSON)
-        .addFields(TBL_PERSONS, COL_FIRST_NAME, COL_LAST_NAME)
-        .addFields(TBL_COMPANIES, COL_COMPANY_NAME)
-        .addFrom(TBL_MESSAGES)
-        .addFromInner(TBL_CONTACTS,
-            SqlUtils.join(TBL_MESSAGES, COL_SENDER, TBL_CONTACTS, COL_EMAIL))
-        .addFromInner(TBL_COMPANY_PERSONS,
-            sys.joinTables(TBL_CONTACTS, TBL_COMPANY_PERSONS, COL_CONTACT))
-        .addFromInner(TBL_PERSONS, sys.joinTables(TBL_PERSONS, TBL_COMPANY_PERSONS, COL_PERSON))
-        .addFromInner(TBL_COMPANIES,
-            sys.joinTables(TBL_COMPANIES, TBL_COMPANY_PERSONS, COL_COMPANY))
-        .setWhere(sys.idEquals(TBL_MESSAGES, messageId)));
-
-    if (data != null) {
-      packet.put(COL_COMPANY, data.getLong(COL_COMPANY));
-      packet.put(COL_COMPANY + COL_COMPANY_NAME, data.getValue(COL_COMPANY_NAME));
-      packet.put(COL_PERSON, data.getLong(COL_PERSON));
-      packet.put(COL_FIRST_NAME, data.getValue(COL_FIRST_NAME));
-      packet.put(COL_LAST_NAME, data.getValue(COL_LAST_NAME));
-    } else {
-      data = qs.getRow(new SqlSelect()
-          .addField(TBL_COMPANIES, sys.getIdName(TBL_COMPANIES), COL_COMPANY)
-          .addFields(TBL_COMPANIES, COL_COMPANY_NAME)
-          .addFrom(TBL_MESSAGES)
-          .addFromInner(TBL_CONTACTS,
-              SqlUtils.join(TBL_MESSAGES, COL_SENDER, TBL_CONTACTS, COL_EMAIL))
-          .addFromInner(TBL_COMPANIES, sys.joinTables(TBL_CONTACTS, TBL_COMPANIES, COL_CONTACT))
-          .setWhere(sys.idEquals(TBL_MESSAGES, messageId)));
-
-      if (data != null) {
-        packet.put(COL_COMPANY, data.getValue(COL_COMPANY));
-        packet.put(COL_COMPANY + COL_COMPANY_NAME, data.getValue(COL_COMPANY_NAME));
-      }
-    }
-    SimpleRowSet rs = qs.getData(new SqlSelect()
-        .addFields(TBL_PARTS, COL_CONTENT, COL_HTML_CONTENT)
-        .addFrom(TBL_PARTS)
-        .setWhere(SqlUtils.equals(TBL_PARTS, COL_MESSAGE, messageId)));
-
-    StringBuilder content = new StringBuilder();
-
-    for (SimpleRow row : rs) {
-      if (content.length() > 0) {
-        content.append("\n\n");
-      }
-      content.append(BeeUtils.notEmpty(HtmlUtils.stripHtml(row.getValue(COL_HTML_CONTENT)),
-          row.getValue(COL_CONTENT)));
-    }
-    packet.put(COL_CONTENT, content.toString());
-
-    packet.put(TBL_ATTACHMENTS, qs.getData(new SqlSelect()
-        .addFields(TBL_ATTACHMENTS, AdministrationConstants.COL_FILE, COL_ATTACHMENT_NAME)
-        .addFields(AdministrationConstants.TBL_FILES, AdministrationConstants.COL_FILE_NAME,
-            AdministrationConstants.COL_FILE_SIZE)
-        .addFrom(TBL_ATTACHMENTS)
-        .addFromInner(AdministrationConstants.TBL_FILES,
-            sys.joinTables(AdministrationConstants.TBL_FILES, TBL_ATTACHMENTS,
-                AdministrationConstants.COL_FILE))
-        .setWhere(SqlUtils.equals(TBL_ATTACHMENTS, COL_MESSAGE, messageId))));
-
     return ResponseObject.response(packet);
   }
 
@@ -1160,7 +1091,7 @@ public class MailModuleBean implements BeeModule {
               .setWhere(wh));
 
           for (Long fileId : contents) {
-            StoredFile fileInfo = null;
+            FileInfo fileInfo = null;
             File file = null;
             InputStream is = null;
 

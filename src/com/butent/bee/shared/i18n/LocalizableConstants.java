@@ -463,6 +463,8 @@ public interface LocalizableConstants extends Constants, LocalizableCalendarCons
 
   String newProperty();
 
+  String newRelation();
+
   String newService();
 
   String newTab();
@@ -556,6 +558,8 @@ public interface LocalizableConstants extends Constants, LocalizableCalendarCons
   String registered();
 
   String relatedTo();
+
+  String relations();
 
   String removeFilter();
 

@@ -61,6 +61,8 @@ public class DataInfo implements BeeSerializable, Comparable<DataInfo>, HasExten
 
   private String versionColumn;
 
+  private String mainColumns;
+
   private String caption;
   private String editForm;
 
@@ -77,8 +79,8 @@ public class DataInfo implements BeeSerializable, Comparable<DataInfo>, HasExten
   private final List<ViewColumn> viewColumns = Lists.newArrayList();
 
   public DataInfo(String module, String viewName, String tableName,
-      String idColumn, String versionColumn, String caption, String editForm, String rowCaption,
-      String newRowForm, String newRowColumns, String newRowCaption,
+      String idColumn, String versionColumn, String mainColumns, String caption, String editForm,
+      String rowCaption, String newRowForm, String newRowColumns, String newRowCaption,
       Integer cacheMaximumSize, String cacheEviction,
       List<BeeColumn> columns, List<ViewColumn> viewColumns) {
 
@@ -89,6 +91,8 @@ public class DataInfo implements BeeSerializable, Comparable<DataInfo>, HasExten
 
     setIdColumn(idColumn);
     setVersionColumn(versionColumn);
+
+    setMainColumns(mainColumns);
 
     setCaption(caption);
 
@@ -153,7 +157,7 @@ public class DataInfo implements BeeSerializable, Comparable<DataInfo>, HasExten
   @Override
   public void deserialize(String s) {
     String[] arr = Codec.beeDeserializeCollection(s);
-    Assert.lengthEquals(arr, 15);
+    Assert.lengthEquals(arr, 16);
     int index = 0;
 
     setModule(arr[index++]);
@@ -163,6 +167,8 @@ public class DataInfo implements BeeSerializable, Comparable<DataInfo>, HasExten
 
     setIdColumn(arr[index++]);
     setVersionColumn(arr[index++]);
+
+    setMainColumns(arr[index++]);
 
     setCaption(arr[index++]);
 
@@ -404,6 +410,7 @@ public class DataInfo implements BeeSerializable, Comparable<DataInfo>, HasExten
         "Table Name", getTableName(),
         "Id Column", getIdColumn(),
         "Version Column", getVersionColumn(),
+        "Main Columns", getMainColumns(),
         "Caption", getCaption(),
         "Edit Form", getEditForm(),
         "Row Caption", getRowCaption(),
@@ -454,6 +461,10 @@ public class DataInfo implements BeeSerializable, Comparable<DataInfo>, HasExten
       }
     }
     return children;
+  }
+
+  public String getMainColumns() {
+    return mainColumns;
   }
 
   public String getModule() {
@@ -616,10 +627,9 @@ public class DataInfo implements BeeSerializable, Comparable<DataInfo>, HasExten
   @Override
   public String serialize() {
     return Codec.beeSerialize(new Object[] {getModule(), getViewName(), getTableName(),
-        getIdColumn(), getVersionColumn(), getCaption(), getEditForm(), getRowCaption(),
-        getNewRowForm(), getNewRowColumns(), getNewRowCaption(),
-        getCacheMaximumSize(), getCacheEviction(),
-        getColumns(), getViewColumns()});
+        getIdColumn(), getVersionColumn(), getMainColumns(), getCaption(), getEditForm(),
+        getRowCaption(), getNewRowForm(), getNewRowColumns(), getNewRowCaption(),
+        getCacheMaximumSize(), getCacheEviction(), getColumns(), getViewColumns()});
   }
 
   private String getCacheEviction() {
@@ -644,6 +654,10 @@ public class DataInfo implements BeeSerializable, Comparable<DataInfo>, HasExten
 
   private void setIdColumn(String idColumn) {
     this.idColumn = idColumn;
+  }
+
+  private void setMainColumns(String mainColumns) {
+    this.mainColumns = mainColumns;
   }
 
   private void setModule(String module) {

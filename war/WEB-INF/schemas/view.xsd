@@ -41,6 +41,7 @@
       <xs:attribute name="newRowCaption" type="xs:string" />
       <xs:attribute name="cacheMaximumSize" type="xs:int" />
       <xs:attribute name="cacheEviction" type="type:replacementPolicy" />
+      <xs:attribute name="mainColumns" type="type:nameList" />
     </xs:complexType>
   </xs:element>
 

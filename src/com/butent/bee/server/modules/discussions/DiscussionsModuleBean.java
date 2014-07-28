@@ -58,7 +58,7 @@ import com.butent.bee.shared.html.builder.elements.Div;
 import com.butent.bee.shared.html.builder.elements.H2;
 import com.butent.bee.shared.html.builder.elements.Tbody;
 import com.butent.bee.shared.i18n.LocalizableConstants;
-import com.butent.bee.shared.io.StoredFile;
+import com.butent.bee.shared.io.FileInfo;
 import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogUtils;
 import com.butent.bee.shared.modules.BeeParameter;
@@ -415,7 +415,7 @@ public class DiscussionsModuleBean implements BeeModule {
       row.setProperty(property, DataUtils.buildIdList(discussionRelations.get(property)));
     }
 
-    List<StoredFile> files = getDiscussionFiles(discussionId);
+    List<FileInfo> files = getDiscussionFiles(discussionId);
     if (!files.isEmpty()) {
       row.setProperty(PROP_FILES, Codec.beeSerialize(files));
     }
@@ -1082,8 +1082,8 @@ public class DiscussionsModuleBean implements BeeModule {
     return ResponseObject.response(data);
   }
 
-  private List<StoredFile> getDiscussionFiles(long discussionId) {
-    List<StoredFile> result = Lists.newArrayList();
+  private List<FileInfo> getDiscussionFiles(long discussionId) {
+    List<FileInfo> result = Lists.newArrayList();
 
     BeeRowSet rowSet =
         qs.getViewData(VIEW_DISCUSSIONS_FILES, Filter.equals(COL_DISCUSSION, discussionId));
@@ -1093,8 +1093,8 @@ public class DiscussionsModuleBean implements BeeModule {
     }
 
     for (BeeRow row : rowSet.getRows()) {
-      StoredFile sf =
-          new StoredFile(DataUtils.getLong(rowSet, row, AdministrationConstants.COL_FILE),
+      FileInfo sf =
+          new FileInfo(DataUtils.getLong(rowSet, row, AdministrationConstants.COL_FILE),
               DataUtils.getString(rowSet, row, ALS_FILE_NAME),
               DataUtils.getLong(rowSet, row, ALS_FILE_SIZE),
               DataUtils.getString(rowSet, row, ALS_FILE_TYPE));

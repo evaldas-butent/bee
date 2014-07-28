@@ -145,6 +145,7 @@ public class InputBoxes {
 
   private static final String STYLE_INPUT_CONFIRM = "bee-InputConfirm";
   private static final String STYLE_INPUT_CANCEL = "bee-InputCancel";
+  private static final String STYLE_INPUT_ADD = "bee-InputAdd";
   private static final String STYLE_INPUT_DELETE = "bee-InputDelete";
   private static final String STYLE_INPUT_PRINT = "bee-InputPrint";
 
@@ -592,6 +593,19 @@ public class InputBoxes {
     }
 
     if (enabledActions != null) {
+      if (enabled && enabledActions.contains(Action.ADD)) {
+        Image add = new Image(Global.getImages().silverAdd(), new ScheduledCommand() {
+          @Override
+          public void execute() {
+            callback.onAdd();
+          }
+        });
+
+        add.addStyleName(STYLE_INPUT_ADD);
+        UiHelper.initialize(add, initializer, DialogConstants.WIDGET_ADD);
+        dialog.addAction(Action.ADD, add);
+      }
+
       if (enabled && enabledActions.contains(Action.DELETE)) {
         Image delete = new Image(Global.getImages().silverDelete(), new ScheduledCommand() {
           @Override

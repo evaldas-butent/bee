@@ -161,7 +161,7 @@ import com.butent.bee.shared.font.FontAwesome;
 import com.butent.bee.shared.html.Attributes;
 import com.butent.bee.shared.html.builder.elements.Input;
 import com.butent.bee.shared.i18n.Localized;
-import com.butent.bee.shared.io.StoredFile;
+import com.butent.bee.shared.io.FileInfo;
 import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogLevel;
 import com.butent.bee.shared.logging.LogUtils;
@@ -1641,7 +1641,7 @@ public final class CliWorker {
           }
 
           long totSize = 0;
-          for (StoredFile sf : fileGroup.getFiles()) {
+          for (FileInfo sf : fileGroup.getFiles()) {
             totSize += sf.getSize();
           }
 

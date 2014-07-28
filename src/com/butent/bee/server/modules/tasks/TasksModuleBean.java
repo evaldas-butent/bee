@@ -63,7 +63,7 @@ import com.butent.bee.shared.html.builder.elements.Div;
 import com.butent.bee.shared.html.builder.elements.Tbody;
 import com.butent.bee.shared.html.builder.elements.Td;
 import com.butent.bee.shared.i18n.LocalizableConstants;
-import com.butent.bee.shared.io.StoredFile;
+import com.butent.bee.shared.io.FileInfo;
 import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogUtils;
 import com.butent.bee.shared.modules.BeeParameter;
@@ -453,7 +453,7 @@ public class TasksModuleBean implements BeeModule {
     }
 
     if (propNames.contains(PROP_FILES)) {
-      List<StoredFile> files = getTaskFiles(taskId);
+      List<FileInfo> files = getTaskFiles(taskId);
       if (!files.isEmpty()) {
         row.setProperty(PROP_FILES, Codec.beeSerialize(files));
       }
@@ -1224,10 +1224,10 @@ public class TasksModuleBean implements BeeModule {
                 sys.joinTables(TBL_FILES, TBL_REQUEST_FILES, COL_FILE))
             .setWhere(SqlUtils.equals(TBL_REQUEST_FILES, COL_REQUEST, requestId)));
 
-    List<StoredFile> files = Lists.newArrayList();
+    List<FileInfo> files = Lists.newArrayList();
 
     for (SimpleRow file : data) {
-      StoredFile sf = new StoredFile(file.getLong(COL_FILE),
+      FileInfo sf = new FileInfo(file.getLong(COL_FILE),
           BeeUtils.notEmpty(file.getValue(COL_CAPTION),
               file.getValue(COL_FILE_NAME)),
           file.getLong(COL_FILE_SIZE),
@@ -1334,8 +1334,8 @@ public class TasksModuleBean implements BeeModule {
     return getTaskData(taskId, null, propNames, addRelations);
   }
 
-  private List<StoredFile> getTaskFiles(long taskId) {
-    List<StoredFile> result = Lists.newArrayList();
+  private List<FileInfo> getTaskFiles(long taskId) {
+    List<FileInfo> result = Lists.newArrayList();
 
     BeeRowSet rowSet = qs.getViewData(VIEW_TASK_FILES, Filter.equals(COL_TASK, taskId));
     if (rowSet == null || rowSet.isEmpty()) {
@@ -1343,7 +1343,7 @@ public class TasksModuleBean implements BeeModule {
     }
 
     for (BeeRow row : rowSet.getRows()) {
-      StoredFile sf = new StoredFile(DataUtils.getLong(rowSet, row, COL_FILE),
+      FileInfo sf = new FileInfo(DataUtils.getLong(rowSet, row, COL_FILE),
           DataUtils.getString(rowSet, row, ALS_FILE_NAME),
           DataUtils.getLong(rowSet, row, ALS_FILE_SIZE),
           DataUtils.getString(rowSet, row, ALS_FILE_TYPE));

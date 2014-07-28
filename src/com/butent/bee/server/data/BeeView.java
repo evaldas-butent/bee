@@ -407,6 +407,8 @@ public class BeeView implements BeeObject, HasExtendedInfo {
 
   private final boolean readOnly;
 
+  private final String mainColumns;
+
   private final String caption;
   private final String editForm;
 
@@ -432,6 +434,8 @@ public class BeeView implements BeeObject, HasExtendedInfo {
     this.module = BeeUtils.notEmpty(xmlView.module, module);
     this.name = xmlView.name;
     Assert.notEmpty(name);
+
+    this.mainColumns = xmlView.mainColumns;
 
     this.caption = xmlView.caption;
 
@@ -628,7 +632,7 @@ public class BeeView implements BeeObject, HasExtendedInfo {
     PropertyUtils.addProperties(info, false, "Module", getModule(), "Name", getName(),
         "Source", getSourceName(), "Source Alias", getSourceAlias(),
         "Source Id Name", getSourceIdName(), "Source Version Name", getSourceVersionName(),
-        "Read Only", isReadOnly(), "Caption", getCaption(),
+        "Read Only", isReadOnly(), "Main Columns", getMainColumns(), "Caption", getCaption(),
         "Edit Form", getEditForm(), "Row Caption", getRowCaption(), "New Row Form",
         getNewRowForm(),
         "New Row Columns", getNewRowColumns(), "New Row Caption", getNewRowCaption(),
@@ -659,6 +663,10 @@ public class BeeView implements BeeObject, HasExtendedInfo {
       }
     }
     return info;
+  }
+
+  public String getMainColumns() {
+    return mainColumns;
   }
 
   @Override

@@ -21,7 +21,7 @@ import com.butent.bee.shared.data.BeeRowSet;
 import com.butent.bee.shared.data.value.ValueType;
 import com.butent.bee.shared.io.FileNameUtils;
 import com.butent.bee.shared.io.Paths;
-import com.butent.bee.shared.io.StoredFile;
+import com.butent.bee.shared.io.FileInfo;
 import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogUtils;
 import com.butent.bee.shared.time.TimeUtils;
@@ -149,7 +149,7 @@ public class SystemServiceBean {
   }
 
   private ResponseObject getFiles() {
-    List<StoredFile> files = fs.getFiles();
+    List<FileInfo> files = fs.getFiles();
     if (files.isEmpty()) {
       return ResponseObject.warning("file repository is empty");
     } else {

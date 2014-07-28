@@ -53,7 +53,6 @@ import com.butent.bee.client.ui.FormFactory.WidgetDescriptionCallback;
 import com.butent.bee.client.ui.IdentifiableWidget;
 import com.butent.bee.client.ui.UiHelper;
 import com.butent.bee.client.utils.FileUtils;
-import com.butent.bee.client.utils.NewFileInfo;
 import com.butent.bee.client.view.HeaderView;
 import com.butent.bee.client.view.edit.Editor;
 import com.butent.bee.client.view.edit.SaveChangesEvent;
@@ -79,7 +78,7 @@ import com.butent.bee.shared.data.IsRow;
 import com.butent.bee.shared.data.SimpleRowSet;
 import com.butent.bee.shared.data.event.RowUpdateEvent;
 import com.butent.bee.shared.i18n.Localized;
-import com.butent.bee.shared.io.StoredFile;
+import com.butent.bee.shared.io.FileInfo;
 import com.butent.bee.shared.modules.administration.AdministrationConstants;
 import com.butent.bee.shared.modules.discussions.DiscussionsConstants.DiscussionEvent;
 import com.butent.bee.shared.modules.discussions.DiscussionsConstants.DiscussionStatus;
@@ -174,11 +173,10 @@ class DiscussionInterceptor extends AbstractFormInterceptor {
       final Map<String, String> discussParams = DiscussionsUtils.getDiscussionsParameters(formRow);
       if (discussParams != null) {
 
-        collector.addSelectionHandler(new SelectionHandler<NewFileInfo>() {
-
+        collector.addSelectionHandler(new SelectionHandler<FileInfo>() {
           @Override
-          public void onSelection(SelectionEvent<NewFileInfo> event) {
-            NewFileInfo fileInfo = event.getSelectedItem();
+          public void onSelection(SelectionEvent<FileInfo> event) {
+            FileInfo fileInfo = event.getSelectedItem();
 
             if (DiscussionsUtils.isFileSizeLimitExceeded(fileInfo.getSize(),
                 BeeUtils.toLongOrNull(discussParams.get(PRM_MAX_UPLOAD_FILE_SIZE)))) {
@@ -246,7 +244,7 @@ class DiscussionInterceptor extends AbstractFormInterceptor {
       return (HtmlTable) getContent();
     }
 
-    private List<NewFileInfo> getFiles(String id) {
+    private List<FileInfo> getFiles(String id) {
       Widget child = getChild(id);
       if (child instanceof FileCollector) {
         return ((FileCollector) child).getFiles();
@@ -611,10 +609,10 @@ class DiscussionInterceptor extends AbstractFormInterceptor {
           ((FileGroup) fileWidget).clear();
         }
 
-        List<StoredFile> files = StoredFile.restoreCollection(data.getProperty(PROP_FILES));
+        List<FileInfo> files = FileInfo.restoreCollection(data.getProperty(PROP_FILES));
         if (!files.isEmpty()) {
           if (fileWidget instanceof FileGroup) {
-            for (StoredFile file : files) {
+            for (FileInfo file : files) {
               if (file.getRelatedId() == null) {
                 ((FileGroup) fileWidget).addFile(file);
               }
@@ -751,14 +749,14 @@ class DiscussionInterceptor extends AbstractFormInterceptor {
     }
   }
 
-  private static List<StoredFile> filterCommentFiles(List<StoredFile> input, long commentId) {
+  private static List<FileInfo> filterCommentFiles(List<FileInfo> input, long commentId) {
     if (input.isEmpty()) {
       return input;
     }
 
-    List<StoredFile> result = Lists.newArrayList();
+    List<FileInfo> result = Lists.newArrayList();
 
-    for (StoredFile file : input) {
+    for (FileInfo file : input) {
       Long id = file.getRelatedId();
       if (id != null && id == commentId) {
         result.add(file);
@@ -842,7 +840,7 @@ class DiscussionInterceptor extends AbstractFormInterceptor {
   }
 
   private void showComment(IsRow formRow, Flow panel, BeeRow commentRow, List<BeeColumn> columns,
-      List<StoredFile> files, boolean renderPhoto, int paddingLeft, String allowDelOwnComments,
+      List<FileInfo> files, boolean renderPhoto, int paddingLeft, String allowDelOwnComments,
       String discussAdmin) {
 
     boolean deleted = BeeUtils.unbox(
@@ -941,7 +939,7 @@ class DiscussionInterceptor extends AbstractFormInterceptor {
     panel.add(container);
   }
 
-  private void showAnsweredCommentsAndMarks(IsRow activeRow, Flow panel, List<StoredFile> files,
+  private void showAnsweredCommentsAndMarks(IsRow activeRow, Flow panel, List<FileInfo> files,
       Multimap<Long, Long> data, long parent, BeeRowSet rowSet, int paddingLeft,
       String allowDelOwnComments, String discussAdmin) {
     if (data.containsKey(parent)) {
@@ -989,7 +987,7 @@ class DiscussionInterceptor extends AbstractFormInterceptor {
 
   private void showCommentsAndMarks(final FormView form, final IsRow formRow,
       final BeeRowSet rowSet,
-      final List<StoredFile> files) {
+      final List<FileInfo> files) {
     Widget widget = form.getWidgetByName(VIEW_DISCUSSIONS_COMMENTS);
 
     if (!(widget instanceof Flow) || DataUtils.isEmpty(rowSet)) {
@@ -1226,7 +1224,7 @@ class DiscussionInterceptor extends AbstractFormInterceptor {
           params.addDataItem(VAR_DISCUSSION_PARENT_COMMENT, replayedCommentId);
         }
 
-        final List<NewFileInfo> files = dialog.getFiles(fid);
+        final List<FileInfo> files = dialog.getFiles(fid);
 
         dialog.close();
 
@@ -1454,12 +1452,12 @@ class DiscussionInterceptor extends AbstractFormInterceptor {
     String comments = data.getProperty(PROP_COMMENTS);
 
     if (!BeeUtils.isEmpty(comments)) {
-      List<StoredFile> files = StoredFile.restoreCollection(data.getProperty(PROP_FILES));
+      List<FileInfo> files = FileInfo.restoreCollection(data.getProperty(PROP_FILES));
       showCommentsAndMarks(form, form.getActiveRow(), BeeRowSet.restore(comments), files);
     }
   }
 
-  private static void renderFiles(List<StoredFile> files, Flow container) {
+  private static void renderFiles(List<FileInfo> files, Flow container) {
     Simple fileContainer = new Simple();
     fileContainer.addStyleName(STYLE_COMMENT_FILES);
 
@@ -1629,7 +1627,7 @@ class DiscussionInterceptor extends AbstractFormInterceptor {
     sendRequest(params, callback);
   }
 
-  private void sendFiles(final List<NewFileInfo> files, final long discussionId,
+  private void sendFiles(final List<FileInfo> files, final long discussionId,
       final long commentId) {
 
     final Holder<Integer> counter = Holder.of(0);
@@ -1638,7 +1636,7 @@ class DiscussionInterceptor extends AbstractFormInterceptor {
         Data.getColumns(VIEW_DISCUSSIONS_FILES, Lists.newArrayList(COL_DISCUSSION, COL_COMMENT,
             AdministrationConstants.COL_FILE, COL_CAPTION));
 
-    for (final NewFileInfo fileInfo : files) {
+    for (final FileInfo fileInfo : files) {
       FileUtils.uploadFile(fileInfo, new Callback<Long>() {
 
         @Override

@@ -1851,7 +1851,8 @@ public class GridImpl extends Absolute implements GridView, EditEndEvent.Handler
 
   private void generateNewRowForm() {
     String newRowColumns = BeeUtils.notEmpty(gridDescription.getNewRowColumns(),
-        (getDataInfo() == null) ? null : getDataInfo().getNewRowColumns());
+        (getDataInfo() == null) ? null
+            : BeeUtils.notEmpty(getDataInfo().getNewRowColumns(), getDataInfo().getMainColumns()));
 
     if (BeeConst.STRING_MINUS.equals(newRowColumns)) {
       return;

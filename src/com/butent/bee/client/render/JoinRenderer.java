@@ -97,7 +97,7 @@ public class JoinRenderer extends AbstractCellRenderer implements HasItems {
 
     StringBuilder sb = new StringBuilder();
     for (CellSource source : sources) {
-      String value = source.getString(row);
+      String value = source.render(row);
       if (!BeeUtils.isEmpty(value)) {
         if (sb.length() > 0) {
           sb.append(separator);

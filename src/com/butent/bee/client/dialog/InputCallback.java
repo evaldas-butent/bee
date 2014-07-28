@@ -8,6 +8,9 @@ public abstract class InputCallback {
     return null;
   }
 
+  public void onAdd() {
+  }
+
   public void onCancel() {
   }
 

@@ -6,7 +6,7 @@ import com.butent.bee.server.modules.administration.FileStorageBean;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.Service;
 import com.butent.bee.shared.data.DataUtils;
-import com.butent.bee.shared.io.StoredFile;
+import com.butent.bee.shared.io.FileInfo;
 import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogUtils;
 import com.butent.bee.shared.utils.BeeUtils;
@@ -68,7 +68,7 @@ public class FileServlet extends LoginServlet {
     }
     if (DataUtils.isId(fileId)) {
       try {
-        StoredFile sf = fs.getFile(fileId);
+        FileInfo sf = fs.getFile(fileId);
         path = sf.getPath();
         fileName = BeeUtils.notEmpty(fileName, sf.getName());
         mimeType = sf.getType();

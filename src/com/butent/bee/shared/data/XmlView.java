@@ -117,6 +117,9 @@ public class XmlView {
   @XmlAttribute
   public String cacheEviction;
 
+  @XmlAttribute
+  public String mainColumns;
+
   @XmlElementWrapper(name = "Columns", namespace = DataUtils.VIEW_NAMESPACE)
   @XmlElementRef
   public Collection<XmlColumn> columns;

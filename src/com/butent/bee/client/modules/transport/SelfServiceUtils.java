@@ -7,7 +7,6 @@ import com.butent.bee.client.data.Data;
 import com.butent.bee.client.data.Queries;
 import com.butent.bee.client.data.RowCallback;
 import com.butent.bee.client.utils.FileUtils;
-import com.butent.bee.client.utils.NewFileInfo;
 import com.butent.bee.client.view.form.FormView;
 import com.butent.bee.shared.data.BeeRow;
 import com.butent.bee.shared.data.BeeRowSet;
@@ -18,6 +17,7 @@ import com.butent.bee.shared.data.cache.CachingPolicy;
 import com.butent.bee.shared.data.event.RowUpdateEvent;
 import com.butent.bee.shared.data.filter.Filter;
 import com.butent.bee.shared.data.view.Order;
+import com.butent.bee.shared.io.FileInfo;
 import com.butent.bee.shared.modules.administration.AdministrationConstants;
 
 import java.util.Collection;
@@ -56,7 +56,7 @@ final class SelfServiceUtils {
     }
   }
 
-  static void sendFiles(Long reqId, Collection<NewFileInfo> files) {
+  static void sendFiles(Long reqId, Collection<FileInfo> files) {
     FileUtils.commitFiles(files, VIEW_CARGO_REQUEST_FILES, COL_CRF_REQUEST, reqId,
         AdministrationConstants.COL_FILE, AdministrationConstants.COL_FILE_CAPTION);
   }
