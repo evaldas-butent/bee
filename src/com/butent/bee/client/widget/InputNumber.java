@@ -83,7 +83,7 @@ public class InputNumber extends InputText implements HasBounds, HasIntStep,
       if (d == null) {
         return null;
       }
-      v = BeeUtils.toString(d, BeeUtils.getDecimals(s));
+      v = BeeUtils.toString(d, getDecimals(s));
     }
     return normalize(v);
   }
@@ -195,7 +195,7 @@ public class InputNumber extends InputText implements HasBounds, HasIntStep,
         return messages;
       }
 
-      v = BeeUtils.toString(d, BeeUtils.getDecimals(s));
+      v = BeeUtils.toString(d, getDecimals(s));
     }
 
     if (!checkType(sanitize(v))) {
@@ -246,7 +246,7 @@ public class InputNumber extends InputText implements HasBounds, HasIntStep,
 
   protected String normalize(String v) {
     String input = sanitize(v);
-    return BeeUtils.toString(BeeUtils.toDouble(input), BeeUtils.getDecimals(input));
+    return BeeUtils.toString(BeeUtils.toDouble(input), getDecimals(input));
   }
 
   protected String sanitize(String v) {
@@ -272,5 +272,14 @@ public class InputNumber extends InputText implements HasBounds, HasIntStep,
       return false;
     }
     return true;
+  }
+
+  private int getDecimals(String s) {
+    int decimals = BeeUtils.getDecimals(s);
+    if (decimals < 0 || getScale() < 0) {
+      return decimals;
+    } else {
+      return Math.min(decimals, getScale());
+    }
   }
 }

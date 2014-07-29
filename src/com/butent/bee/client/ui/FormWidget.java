@@ -318,127 +318,6 @@ public enum FormWidget {
     IS_TABLE, IS_CHILD, IS_GRID, PANEL, CELL_VECTOR, INPUT, IS_CUSTOM, IS_DECORATOR
   }
 
-  private static final BeeLogger logger = LogUtils.getLogger(FormWidget.class);
-
-  public static final String ATTR_SPLITTER_SIZE = "splitterSize";
-  public static final String ATTR_SIZE = "size";
-
-  private static final String ATTR_STYLE_PREFIX = "stylePrefix";
-
-  private static final String ATTR_TITLE = "title";
-  private static final String ATTR_DISABLABLE = "disablable";
-
-  private static final String ATTR_INLINE = "inline";
-  private static final String ATTR_CHAR = "char";
-
-  private static final String ATTR_URL = "url";
-  private static final String ATTR_ALT = "alt";
-  private static final String ATTR_TAB_INDEX = "tabIndex";
-
-  private static final String ATTR_LEFT = "left";
-  private static final String ATTR_LEFT_UNIT = "leftUnit";
-  private static final String ATTR_RIGHT = "right";
-  private static final String ATTR_RIGHT_UNIT = "rightUnit";
-  private static final String ATTR_TOP = "top";
-  private static final String ATTR_TOP_UNIT = "topUnit";
-  private static final String ATTR_BOTTOM = "bottom";
-  private static final String ATTR_BOTTOM_UNIT = "bottomUnit";
-
-  private static final String ATTR_CELL_CLASS = "cellClass";
-  private static final String ATTR_CELL_STYLE = "cellStyle";
-  private static final String ATTR_COL_SPAN = "colSpan";
-  private static final String ATTR_ROW_SPAN = "rowSpan";
-  private static final String ATTR_WORD_WRAP = "wordWrap";
-  private static final String ATTR_INDEX = "index";
-
-  private static final String ATTR_HEADER_SIZE = "headerSize";
-
-  private static final String ATTR_RESOURCE = "resource";
-  private static final String ATTR_VERTICAL = "vertical";
-
-  private static final String ATTR_MULTI_SELECT = "multiSelect";
-  private static final String ATTR_ALL_ITEMS_VISIBLE = "allItemsVisible";
-  private static final String ATTR_MIN_SIZE = "minSize";
-  private static final String ATTR_MAX_SIZE = "maxSize";
-
-  private static final String ATTR_VALUE_NUMERIC = "valueNumeric";
-
-  private static final String ATTR_MIN = "min";
-  private static final String ATTR_MAX = "max";
-  private static final String ATTR_STEP = "step";
-
-  private static final String ATTR_MIN_STEP = "minStep";
-  private static final String ATTR_MAX_STEP = "maxStep";
-
-  private static final String ATTR_HIGH = "high";
-  private static final String ATTR_LOW = "low";
-  private static final String ATTR_OPTIMUM = "optimum";
-
-  private static final String ATTR_NUM_LABELS = "numLabels";
-  private static final String ATTR_NUM_TICKS = "numTicks";
-
-  private static final String ATTR_AUTOPLAY = "autoplay";
-  private static final String ATTR_CONTROLS = "controls";
-  private static final String ATTR_CURRENT_TIME = "currentTime";
-  private static final String ATTR_DEFAULT_PLAYBACK_RATE = "defaultPlaybackRate";
-  private static final String ATTR_LOOP = "loop";
-  private static final String ATTR_MUTED = "muted";
-  private static final String ATTR_PLAYBACK_RATE = "playbackRate";
-  private static final String ATTR_PRELOAD = "preload";
-  private static final String ATTR_VOLUME = "volume";
-
-  private static final String ATTR_REL_COLUMN = "relColumn";
-
-  private static final String ATTR_ANIMATE = "animate";
-  private static final String ATTR_OPEN = "open";
-
-  private static final String ATTR_EVENT = "event";
-
-  private static final String ATTR_ID = "id";
-
-  private static final String ATTR_CHECKED = "checked";
-  private static final String ATTR_MULTIPLE = "multiple";
-  private static final String ATTR_ACCEPT = "accept";
-
-  private static final String ATTR_DECORATOR = "decorator";
-  private static final String ATTR_DEFAULT_DECORATOR = "defaultDecorator";
-
-  private static final String ATTR_PLACEHOLDER = "placeholder";
-  private static final String ATTR_MAX_LENGTH = "maxLength";
-
-  private static final String ATTR_VISIBLE_COLUMNS = "visibleColumns";
-  private static final String ATTR_EDITABLE_COLUMNS = "editableColumns";
-
-  private static final String ATTR_TEXT_ONLY = "textOnly";
-
-  private static final String ATTR_UP_FACE = "upFace";
-  private static final String ATTR_DOWN_FACE = "downFace";
-
-  private static final String ATTR_CHILD = "child";
-
-  private static final String TAG_CSS = "css";
-  private static final String TAG_HANDLER = "handler";
-
-  private static final String TAG_CALC = "calc";
-  private static final String TAG_VALIDATION = "validation";
-  private static final String TAG_EDITABLE = "editable";
-  private static final String TAG_CARRY = "carry";
-
-  private static final String TAG_HTML = "html";
-  private static final String TAG_TEXT = "text";
-
-  private static final String TAG_LAYER = "layer";
-  private static final String TAG_HEADER = "header";
-  private static final String TAG_CONTENT = "content";
-  private static final String TAG_FOOTER = "footer";
-  private static final String TAG_STACK = "stack";
-  private static final String TAG_PAGE = "page";
-  private static final String TAG_OPTION = "option";
-  private static final String TAG_TREE_ITEM = "TreeItem";
-  private static final String TAG_TAB = "tab";
-
-  private static final String TAG_FACE = "face";
-
   public static FormWidget getByTagName(String tagName) {
     if (!BeeUtils.isEmpty(tagName)) {
       for (FormWidget widget : FormWidget.values()) {
@@ -676,6 +555,21 @@ public enum FormWidget {
       }
     }
     return Pair.of(html, image);
+  }
+
+  private static int getScale(Map<String, String> attributes, BeeColumn column, int defScale) {
+    if (!BeeUtils.isEmpty(attributes)) {
+      String value = attributes.get(UiConstants.ATTR_SCALE);
+      if (BeeUtils.isDigit(value)) {
+        return BeeUtils.toInt(value);
+      }
+    }
+
+    if (column != null && !BeeConst.isUndef(column.getScale())) {
+      return column.getScale();
+    } else {
+      return defScale;
+    }
   }
 
   private static String getTextOrHtml(Element element) {
@@ -954,6 +848,140 @@ public enum FormWidget {
           element.getAttribute(UiConstants.ATTR_STYLE));
     }
   }
+
+  private static final BeeLogger logger = LogUtils.getLogger(FormWidget.class);
+  public static final String ATTR_SPLITTER_SIZE = "splitterSize";
+  public static final String ATTR_SIZE = "size";
+  private static final String ATTR_STYLE_PREFIX = "stylePrefix";
+  private static final String ATTR_TITLE = "title";
+
+  private static final String ATTR_DISABLABLE = "disablable";
+
+  private static final String ATTR_INLINE = "inline";
+  private static final String ATTR_CHAR = "char";
+
+  private static final String ATTR_URL = "url";
+  private static final String ATTR_ALT = "alt";
+  private static final String ATTR_TAB_INDEX = "tabIndex";
+  private static final String ATTR_LEFT = "left";
+
+  private static final String ATTR_LEFT_UNIT = "leftUnit";
+
+  private static final String ATTR_RIGHT = "right";
+  private static final String ATTR_RIGHT_UNIT = "rightUnit";
+  private static final String ATTR_TOP = "top";
+
+  private static final String ATTR_TOP_UNIT = "topUnit";
+  private static final String ATTR_BOTTOM = "bottom";
+
+  private static final String ATTR_BOTTOM_UNIT = "bottomUnit";
+  private static final String ATTR_CELL_CLASS = "cellClass";
+  private static final String ATTR_CELL_STYLE = "cellStyle";
+
+  private static final String ATTR_COL_SPAN = "colSpan";
+  private static final String ATTR_ROW_SPAN = "rowSpan";
+
+  private static final String ATTR_WORD_WRAP = "wordWrap";
+  private static final String ATTR_INDEX = "index";
+  private static final String ATTR_HEADER_SIZE = "headerSize";
+  private static final String ATTR_RESOURCE = "resource";
+  private static final String ATTR_VERTICAL = "vertical";
+  private static final String ATTR_MULTI_SELECT = "multiSelect";
+  private static final String ATTR_ALL_ITEMS_VISIBLE = "allItemsVisible";
+  private static final String ATTR_MIN_SIZE = "minSize";
+  private static final String ATTR_MAX_SIZE = "maxSize";
+
+  private static final String ATTR_VALUE_NUMERIC = "valueNumeric";
+
+  private static final String ATTR_MIN = "min";
+  private static final String ATTR_MAX = "max";
+
+  private static final String ATTR_STEP = "step";
+
+  private static final String ATTR_MIN_STEP = "minStep";
+
+  private static final String ATTR_MAX_STEP = "maxStep";
+  private static final String ATTR_HIGH = "high";
+  private static final String ATTR_LOW = "low";
+
+  private static final String ATTR_OPTIMUM = "optimum";
+  private static final String ATTR_NUM_LABELS = "numLabels";
+
+  private static final String ATTR_NUM_TICKS = "numTicks";
+  private static final String ATTR_AUTOPLAY = "autoplay";
+
+  private static final String ATTR_CONTROLS = "controls";
+  private static final String ATTR_CURRENT_TIME = "currentTime";
+
+  private static final String ATTR_DEFAULT_PLAYBACK_RATE = "defaultPlaybackRate";
+
+  private static final String ATTR_LOOP = "loop";
+  private static final String ATTR_MUTED = "muted";
+
+  private static final String ATTR_PLAYBACK_RATE = "playbackRate";
+
+  private static final String ATTR_PRELOAD = "preload";
+  private static final String ATTR_VOLUME = "volume";
+
+  private static final String ATTR_REL_COLUMN = "relColumn";
+  private static final String ATTR_ANIMATE = "animate";
+  private static final String ATTR_OPEN = "open";
+  private static final String ATTR_EVENT = "event";
+
+  private static final String ATTR_ID = "id";
+  private static final String ATTR_CHECKED = "checked";
+
+  private static final String ATTR_MULTIPLE = "multiple";
+  private static final String ATTR_ACCEPT = "accept";
+  private static final String ATTR_DECORATOR = "decorator";
+  private static final String ATTR_DEFAULT_DECORATOR = "defaultDecorator";
+  private static final String ATTR_PLACEHOLDER = "placeholder";
+  private static final String ATTR_MAX_LENGTH = "maxLength";
+  private static final String ATTR_VISIBLE_COLUMNS = "visibleColumns";
+  private static final String ATTR_EDITABLE_COLUMNS = "editableColumns";
+  private static final String ATTR_TEXT_ONLY = "textOnly";
+
+  private static final String ATTR_UP_FACE = "upFace";
+
+  private static final String ATTR_DOWN_FACE = "downFace";
+
+  private static final String ATTR_CHILD = "child";
+
+  private static final String TAG_CSS = "css";
+
+  private static final String TAG_HANDLER = "handler";
+
+  private static final String TAG_CALC = "calc";
+
+  private static final String TAG_VALIDATION = "validation";
+
+  private static final String TAG_EDITABLE = "editable";
+
+  private static final String TAG_CARRY = "carry";
+
+  private static final String TAG_HTML = "html";
+
+  private static final String TAG_TEXT = "text";
+
+  private static final String TAG_LAYER = "layer";
+
+  private static final String TAG_HEADER = "header";
+
+  private static final String TAG_CONTENT = "content";
+
+  private static final String TAG_FOOTER = "footer";
+
+  private static final String TAG_STACK = "stack";
+
+  private static final String TAG_PAGE = "page";
+
+  private static final String TAG_OPTION = "option";
+
+  private static final String TAG_TREE_ITEM = "TreeItem";
+
+  private static final String TAG_TAB = "tab";
+
+  private static final String TAG_FACE = "face";
 
   private final String tagName;
 
@@ -1295,6 +1323,7 @@ public enum FormWidget {
 
       case INPUT_CURRENCY:
         widget = new InputNumber();
+        ((InputNumber) widget).setScale(2);
         ((InputNumber) widget).setNumberFormat(Format.getNumberFormat(
             attributes.get(UiConstants.ATTR_FORMAT), Format.getDefaultCurrencyFormat()));
         break;
@@ -1317,9 +1346,16 @@ public enum FormWidget {
 
       case INPUT_DECIMAL:
         widget = new InputNumber();
-        ((InputNumber) widget).setNumberFormat(Format.getNumberFormat(
-            attributes.get(UiConstants.ATTR_FORMAT),
-            Format.getDecimalFormat(BeeUtils.toInt(attributes.get(UiConstants.ATTR_SCALE)))));
+
+        format = attributes.get(UiConstants.ATTR_FORMAT);
+        int scale = getScale(attributes, column, 0);
+
+        ((InputNumber) widget).setScale(scale);
+        if (BeeUtils.isEmpty(format)) {
+          ((InputNumber) widget).setNumberFormat(Format.getDecimalFormat(scale));
+        } else {
+          ((InputNumber) widget).setNumberFormat(Format.getNumberFormat(format));
+        }
         break;
 
       case INPUT_DOUBLE:
