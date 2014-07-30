@@ -36,6 +36,7 @@ import com.butent.bee.client.grid.HtmlTable;
 import com.butent.bee.client.ui.FormFactory.WidgetDescriptionCallback;
 import com.butent.bee.client.ui.IdentifiableWidget;
 import com.butent.bee.client.utils.FileUtils;
+import com.butent.bee.client.view.form.FormView;
 import com.butent.bee.client.view.form.interceptor.AbstractFormInterceptor;
 import com.butent.bee.client.view.form.interceptor.FormInterceptor;
 import com.butent.bee.client.widget.CustomDiv;
@@ -49,6 +50,7 @@ import com.butent.bee.shared.communication.ResponseObject;
 import com.butent.bee.shared.data.BeeRow;
 import com.butent.bee.shared.data.BeeRowSet;
 import com.butent.bee.shared.data.DataUtils;
+import com.butent.bee.shared.data.IsRow;
 import com.butent.bee.shared.data.SimpleRowSet;
 import com.butent.bee.shared.data.SimpleRowSet.SimpleRow;
 import com.butent.bee.shared.data.filter.Filter;
@@ -210,10 +212,13 @@ public class MailMessage extends AbstractFormInterceptor {
   private final List<FileInfo> attachments = new ArrayList<>();
   private final Map<String, Widget> widgets = Maps.newHashMap();
 
-  private Relations relations = new Relations(COL_PLACE,
-      Lists.newArrayList(TBL_REQUESTS, TBL_TASKS)).setSelectorHandler(new RelationsHandler());
+  private Relations relations;
 
-  public MailMessage(MailPanel mailPanel) {
+  public MailMessage() {
+    this(null);
+  }
+
+  MailMessage(MailPanel mailPanel) {
     this.mailPanel = mailPanel;
     widgets.put(WAITING, null);
     widgets.put(CONTAINER, null);
@@ -312,15 +317,17 @@ public class MailMessage extends AbstractFormInterceptor {
             popup.showRelativeTo(widget.asWidget().getElement());
           }
         });
-      } else if (BeeUtils.same(name, AdministrationConstants.TBL_RELATIONS)) {
-        clickWidget.addClickHandler(relations);
       }
+    }
+    if (widget instanceof Relations) {
+      this.relations = (Relations) widget;
+      relations.setSelectorHandler(new RelationsHandler());
     }
   }
 
   @Override
   public FormInterceptor getInstance() {
-    return null;
+    return new MailMessage();
   }
 
   public void reset() {
@@ -333,7 +340,16 @@ public class MailMessage extends AbstractFormInterceptor {
     draftId = null;
     recipients.clear();
     attachments.clear();
-    relations.reset();
+
+    if (relations != null) {
+      relations.reset();
+    }
+  }
+
+  @Override
+  public boolean onStartEdit(FormView form, IsRow row, ScheduledCommand focusCommand) {
+    requery(row.getId(), false);
+    return super.onStartEdit(form, row, focusCommand);
   }
 
   void requery(final Long placeId, boolean showBcc) {
@@ -363,7 +379,10 @@ public class MailMessage extends AbstractFormInterceptor {
           packet.put(data[i], SimpleRowSet.restore(data[i + 1]));
         }
         SimpleRow row = packet.get(TBL_MESSAGES).getRow(0);
-        relations.requery(placeId);
+
+        if (relations != null) {
+          relations.requery(placeId);
+        }
         draftId = row.getLong(SystemFolder.Drafts.name());
         String lbl = row.getValue(COL_EMAIL_LABEL);
         String mail = row.getValue(COL_EMAIL_ADDRESS);

@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <g:Grid xmlns="http://www.butent.com/column" xmlns:g="http://www.butent.com/grid"
 
-  name="Messages" viewName="Places" headerMode="none" readOnly="true"
+  name="Messages" viewName="Places" headerMode="none" readOnly="true" editForm="-"
   rowChangeSensitivityMillis="500"
   >
   <g:body height="35" borderWidth="0 0 1 0" />

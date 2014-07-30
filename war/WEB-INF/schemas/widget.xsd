@@ -1012,4 +1012,29 @@
     </xs:complexType>
   </xs:element>
 
+  <xs:element name="Relations" substitutionGroup="widget">
+    <xs:complexType>
+      <xs:complexContent>
+        <xs:extension base="widgetType">
+          <xs:sequence>
+            <xs:element name="Relation" minOccurs="0" maxOccurs="unbounded">
+              <xs:complexType>
+                <xs:complexContent>
+                  <xs:extension base="selectorType">
+                    <xs:attribute name="viewName" type="type:dataView" use="required" />
+                  </xs:extension>
+                </xs:complexContent>
+              </xs:complexType>
+            </xs:element>
+          </xs:sequence>
+          <xs:attribute name="relColumn" type="type:nameType" use="required" />
+          <xs:attribute name="inline" type="xs:boolean" />
+          <xs:attribute name="blockedRelations">
+            <xs:simpleType><xs:list itemType="type:dataView" /></xs:simpleType>
+          </xs:attribute>
+        </xs:extension>
+      </xs:complexContent>
+    </xs:complexType>
+  </xs:element>
+
 </xs:schema>

@@ -633,9 +633,11 @@ public class FormImpl extends Absolute implements FormView, PreviewHandler, Tabu
 
     for (EditableWidget editableWidget : getEditableWidgets()) {
       if (editableWidget.getEditor() instanceof HasRowChildren) {
-        RowChildren children = ((HasRowChildren) editableWidget.getEditor()).getChildrenForInsert();
+        Collection<RowChildren> children = ((HasRowChildren) editableWidget.getEditor())
+            .getChildrenForInsert();
+
         if (children != null) {
-          result.add(children);
+          result.addAll(children);
         }
       }
     }
@@ -649,9 +651,11 @@ public class FormImpl extends Absolute implements FormView, PreviewHandler, Tabu
 
     for (EditableWidget editableWidget : getEditableWidgets()) {
       if (editableWidget.getEditor() instanceof HasRowChildren) {
-        RowChildren children = ((HasRowChildren) editableWidget.getEditor()).getChildrenForUpdate();
+        Collection<RowChildren> children = ((HasRowChildren) editableWidget.getEditor())
+            .getChildrenForUpdate();
+
         if (children != null) {
-          result.add(children);
+          result.addAll(children);
         }
       }
     }

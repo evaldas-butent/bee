@@ -422,6 +422,7 @@ public class MailModuleBean implements BeeModule {
   @Override
   public void init() {
     System.setProperty("mail.mime.decodetext.strict", "false");
+    System.setProperty("mail.mime.ignoreunknownencoding", "true");
 
     proxy.initServer();
 
@@ -939,7 +940,9 @@ public class MailModuleBean implements BeeModule {
         }
       }
       for (MailFolder mailFolder : changedFolders) {
-        ctx.getBusinessObject(this.getClass()).checkMail(account, mailFolder, null);
+        if (!account.isInbox(mailFolder)) {
+          ctx.getBusinessObject(this.getClass()).checkMail(account, mailFolder, null);
+        }
       }
     }
     return c;
@@ -1155,18 +1158,23 @@ public class MailModuleBean implements BeeModule {
         .setWhere(sys.idEquals(TBL_PLACES, placeId)));
 
     Assert.notNull(row);
-    int value = BeeUtils.unbox(row.getInt(COL_FLAGS));
+    int oldValue = BeeUtils.unbox(row.getInt(COL_FLAGS));
+    int value;
+
+    if (on) {
+      value = oldValue | flag.getMask();
+    } else {
+      value = oldValue & ~flag.getMask();
+    }
+    if (value == oldValue) {
+      return value;
+    }
     MailAccount account = mail.getAccount(row.getLong(COL_ACCOUNT));
     MailFolder folder = account.findFolder(row.getLong(COL_FOLDER));
 
     account.setFlag(folder, new long[] {BeeUtils.unbox(row.getLong(COL_MESSAGE_UID))},
         MailEnvelope.getFlag(flag), on);
 
-    if (on) {
-      value = value | flag.getMask();
-    } else {
-      value = value & ~flag.getMask();
-    }
     qs.updateData(new SqlUpdate(TBL_PLACES)
         .addConstant(COL_FLAGS, value)
         .setWhere(sys.idEquals(TBL_PLACES, placeId)));

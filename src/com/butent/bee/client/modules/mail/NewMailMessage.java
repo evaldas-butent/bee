@@ -180,9 +180,7 @@ public final class NewMailMessage extends AbstractFormInterceptor
       Set<String> to, Set<String> cc, Set<String> bcc, String subject, String content,
       Collection<FileInfo> attachments, Long draftId) {
 
-    Assert.notNull(defaultAccount);
-
-    this.account = defaultAccount;
+    this.account = Assert.notNull(defaultAccount);
     this.accounts.addAll(availableAccounts);
     this.draftId = draftId;
 
@@ -241,6 +239,7 @@ public final class NewMailMessage extends AbstractFormInterceptor
 
   @Override
   public FormInterceptor getInstance() {
+    Assert.unsupported();
     return null;
   }
 

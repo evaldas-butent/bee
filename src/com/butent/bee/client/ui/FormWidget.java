@@ -58,6 +58,7 @@ import com.butent.bee.client.layout.Split;
 import com.butent.bee.client.layout.Stack;
 import com.butent.bee.client.layout.TabbedPages;
 import com.butent.bee.client.layout.Vertical;
+import com.butent.bee.client.modules.mail.Relations;
 import com.butent.bee.client.presenter.TreePresenter;
 import com.butent.bee.client.richtext.RichTextEditor;
 import com.butent.bee.client.style.HasTextAlign;
@@ -154,6 +155,8 @@ import com.butent.bee.shared.utils.EnumUtils;
 import com.butent.bee.shared.utils.NameUtils;
 import com.butent.bee.shared.utils.XmlHelper;
 
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.EnumSet;
 import java.util.Iterator;
 import java.util.List;
@@ -233,6 +236,7 @@ public enum FormWidget {
   ORDERED_LIST("OrderedList", null),
   PROGRESS("Progress", EnumSet.of(Type.DISPLAY)),
   RADIO("Radio", EnumSet.of(Type.EDITABLE)),
+  RELATIONS("Relations", EnumSet.of(Type.EDITABLE, Type.IS_CHILD)),
   RESIZE_PANEL("ResizePanel", EnumSet.of(Type.HAS_ONE_CHILD)),
   RICH_TEXT_EDITOR("RichTextEditor", EnumSet.of(Type.FOCUSABLE, Type.EDITABLE)),
   ROW_ID_LABEL("RowIdLabel", EnumSet.of(Type.DISPLAY)),
@@ -1538,6 +1542,20 @@ public enum FormWidget {
       case RADIO:
         widget = new RadioGroup(BeeUtils.toBoolean(attributes.get(ATTR_VERTICAL))
             ? Orientation.VERTICAL : Orientation.HORIZONTAL);
+        break;
+
+      case RELATIONS:
+        Collection<Relation> relations = new ArrayList<>();
+
+        for (Element child : children) {
+          if (BeeUtils.same(XmlUtils.getLocalName(child), "Relation")) {
+            relations.add(createRelation(null, XmlUtils.getAttributes(child),
+                XmlUtils.getChildrenElements(child), Relation.RenderMode.SOURCE));
+          }
+        }
+        widget = new Relations(attributes.get(ATTR_REL_COLUMN),
+            BeeUtils.toBoolean(attributes.get(ATTR_INLINE)), relations,
+            NameUtils.toList(attributes.get("blockedRelations")));
         break;
 
       case RESIZE_PANEL:
