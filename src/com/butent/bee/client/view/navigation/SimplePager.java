@@ -11,6 +11,7 @@ import com.butent.bee.client.event.logical.ReadyEvent;
 import com.butent.bee.client.event.logical.ScopeChangeEvent;
 import com.butent.bee.client.layout.Horizontal;
 import com.butent.bee.client.style.StyleUtils;
+import com.butent.bee.client.ui.UiHelper;
 import com.butent.bee.client.utils.Command;
 import com.butent.bee.client.widget.Image;
 import com.butent.bee.client.widget.Label;
@@ -199,7 +200,7 @@ public class SimplePager extends AbstractPager {
         widgetRewind.setTitle(format(getRewindPosition(start, length, rowCount) + 1));
       } else {
         widgetRewind.setEnabled(false);
-        DomUtils.clearTitle(widgetRewind);
+        UiHelper.clearTitle(widgetRewind);
       }
 
       if (start + length < rowCount) {
@@ -207,7 +208,7 @@ public class SimplePager extends AbstractPager {
         widgetForw.setTitle(format(getForwardPosition(start, length, rowCount) + 1));
       } else {
         widgetForw.setEnabled(false);
-        DomUtils.clearTitle(widgetForw);
+        UiHelper.clearTitle(widgetForw);
       }
     }
   }

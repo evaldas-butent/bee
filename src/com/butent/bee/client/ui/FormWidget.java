@@ -1,11 +1,10 @@
 package com.butent.bee.client.ui;
 
-import com.google.common.collect.Lists;
 import com.google.gwt.dom.client.Document;
+import com.google.gwt.i18n.client.NumberFormat;
 import com.google.gwt.media.client.MediaBase;
 import com.google.gwt.resources.client.ImageResource;
 import com.google.gwt.user.client.ui.Focusable;
-import com.google.gwt.user.client.ui.HasEnabled;
 import com.google.gwt.user.client.ui.HasOneWidget;
 import com.google.gwt.user.client.ui.HasWidgets;
 import com.google.gwt.xml.client.Element;
@@ -178,7 +177,6 @@ public enum FormWidget {
   CHILD_SELECTOR("ChildSelector", EnumSet.of(Type.FOCUSABLE, Type.EDITABLE, Type.IS_CHILD)),
   COLOR_EDITOR("ColorEditor", EnumSet.of(Type.FOCUSABLE, Type.EDITABLE, Type.INPUT)),
   COMPLEX_PANEL("ComplexPanel", EnumSet.of(Type.HAS_LAYERS)),
-  CURRENCY_LABEL("CurrencyLabel", EnumSet.of(Type.DISPLAY)),
   CUSTOM("Custom", EnumSet.of(Type.IS_CUSTOM)),
   CUSTOM_CHILD("CustomChild", EnumSet.of(Type.IS_CUSTOM, Type.IS_CHILD)),
   CUSTOM_DISPLAY("CustomDisplay", EnumSet.of(Type.IS_CUSTOM, Type.DISPLAY)),
@@ -209,7 +207,6 @@ public enum FormWidget {
   IMAGE("Image", EnumSet.of(Type.DISPLAY)),
   INLINE_LABEL("InlineLabel", EnumSet.of(Type.IS_LABEL)),
   INPUT_AREA("InputArea", EnumSet.of(Type.FOCUSABLE, Type.EDITABLE, Type.INPUT)),
-  INPUT_CURRENCY("InputCurrency", EnumSet.of(Type.FOCUSABLE, Type.EDITABLE, Type.INPUT)),
   INPUT_DATE("InputDate", EnumSet.of(Type.FOCUSABLE, Type.EDITABLE, Type.INPUT)),
   INPUT_DATE_TIME("InputDateTime", EnumSet.of(Type.FOCUSABLE, Type.EDITABLE, Type.INPUT)),
   INPUT_DECIMAL("InputDecimal", EnumSet.of(Type.FOCUSABLE, Type.EDITABLE, Type.INPUT)),
@@ -217,6 +214,7 @@ public enum FormWidget {
   INPUT_FILE("InputFile", EnumSet.of(Type.INPUT)),
   INPUT_INTEGER("InputInteger", EnumSet.of(Type.FOCUSABLE, Type.EDITABLE, Type.INPUT)),
   INPUT_LONG("InputLong", EnumSet.of(Type.FOCUSABLE, Type.EDITABLE, Type.INPUT)),
+  INPUT_MONEY("InputMoney", EnumSet.of(Type.FOCUSABLE, Type.EDITABLE, Type.INPUT)),
   INPUT_RANGE("InputRange", EnumSet.of(Type.EDITABLE, Type.INPUT)),
   INPUT_SPINNER("InputSpinner", EnumSet.of(Type.FOCUSABLE, Type.EDITABLE, Type.INPUT)),
   INPUT_TEXT("InputText", EnumSet.of(Type.FOCUSABLE, Type.EDITABLE, Type.INPUT)),
@@ -231,6 +229,7 @@ public enum FormWidget {
   LIST_BOX("ListBox", EnumSet.of(Type.FOCUSABLE, Type.EDITABLE)),
   LONG_LABEL("LongLabel", EnumSet.of(Type.DISPLAY)),
   METER("Meter", EnumSet.of(Type.DISPLAY)),
+  MONEY_LABEL("MoneyLabel", EnumSet.of(Type.DISPLAY)),
   MULTI_SELECTOR(UiConstants.TAG_MULTI_SELECTOR,
       EnumSet.of(Type.FOCUSABLE, Type.EDITABLE, Type.DISPLAY)),
   ORDERED_LIST("OrderedList", null),
@@ -432,6 +431,43 @@ public enum FormWidget {
     return widget;
   }
 
+  private static IdentifiableWidget createInputNumber(Map<String, String> attributes,
+      BeeColumn column, boolean money) {
+
+    InputNumber widget = new InputNumber();
+
+    String s = attributes.get(UiConstants.ATTR_SCALE);
+    int scale;
+
+    if (BeeUtils.isDigit(s)) {
+      scale = BeeUtils.toInt(s);
+    } else if (column != null && !BeeConst.isUndef(column.getScale())) {
+      scale = money
+          ? Math.min(column.getScale(), Format.getDefaultCurrencyScale()) : column.getScale();
+    } else {
+      scale = money ? Format.getDefaultCurrencyScale() : BeeConst.UNDEF;
+    }
+
+    widget.setScale(scale);
+
+    String pattern = attributes.get(UiConstants.ATTR_FORMAT);
+    NumberFormat format;
+
+    if (BeeUtils.isEmpty(pattern)) {
+      if (money && scale == Format.getDefaultCurrencyScale()) {
+        format = Format.getDefaultCurrencyFormat();
+      } else {
+        format = Format.getDecimalFormat(scale);
+      }
+    } else {
+      format = Format.getNumberFormat(pattern);
+    }
+
+    widget.setNumberFormat(format);
+
+    return widget;
+  }
+
   private static IdentifiableWidget createOneChild(String formName, Element parent,
       String viewName, List<BeeColumn> columns,
       WidgetDescriptionCallback widgetDescriptionCallback, WidgetInterceptor widgetCallback) {
@@ -559,21 +595,6 @@ public enum FormWidget {
       }
     }
     return Pair.of(html, image);
-  }
-
-  private static int getScale(Map<String, String> attributes, BeeColumn column, int defScale) {
-    if (!BeeUtils.isEmpty(attributes)) {
-      String value = attributes.get(UiConstants.ATTR_SCALE);
-      if (BeeUtils.isDigit(value)) {
-        return BeeUtils.toInt(value);
-      }
-    }
-
-    if (column != null && !BeeConst.isUndef(column.getScale())) {
-      return column.getScale();
-    } else {
-      return defScale;
-    }
   }
 
   private static String getTextOrHtml(Element element) {
@@ -1102,16 +1123,6 @@ public enum FormWidget {
         widget = new Complex();
         break;
 
-      case CURRENCY_LABEL:
-        format = attributes.get(UiConstants.ATTR_FORMAT);
-        inline = BeeUtils.toBoolean(attributes.get(ATTR_INLINE));
-        if (BeeUtils.isEmpty(format)) {
-          widget = new DecimalLabel(Format.getDefaultCurrencyFormat(), inline);
-        } else {
-          widget = new DecimalLabel(format, inline);
-        }
-        break;
-
       case CUSTOM:
       case CUSTOM_CHILD:
       case CUSTOM_DISPLAY:
@@ -1325,13 +1336,6 @@ public enum FormWidget {
         widget = new InputArea();
         break;
 
-      case INPUT_CURRENCY:
-        widget = new InputNumber();
-        ((InputNumber) widget).setScale(2);
-        ((InputNumber) widget).setNumberFormat(Format.getNumberFormat(
-            attributes.get(UiConstants.ATTR_FORMAT), Format.getDefaultCurrencyFormat()));
-        break;
-
       case INPUT_DATE:
         widget = new InputDate();
         format = attributes.get(UiConstants.ATTR_FORMAT);
@@ -1349,17 +1353,7 @@ public enum FormWidget {
         break;
 
       case INPUT_DECIMAL:
-        widget = new InputNumber();
-
-        format = attributes.get(UiConstants.ATTR_FORMAT);
-        int scale = getScale(attributes, column, 0);
-
-        ((InputNumber) widget).setScale(scale);
-        if (BeeUtils.isEmpty(format)) {
-          ((InputNumber) widget).setNumberFormat(Format.getDecimalFormat(scale));
-        } else {
-          ((InputNumber) widget).setNumberFormat(Format.getNumberFormat(format));
-        }
+        widget = createInputNumber(attributes, column, false);
         break;
 
       case INPUT_DOUBLE:
@@ -1389,6 +1383,10 @@ public enum FormWidget {
         widget = new InputLong();
         ((InputLong) widget).setNumberFormat(Format.getNumberFormat(
             attributes.get(UiConstants.ATTR_FORMAT), Format.getDefaultLongFormat()));
+        break;
+
+      case INPUT_MONEY:
+        widget = createInputNumber(attributes, column, true);
         break;
 
       case INPUT_RANGE:
@@ -1492,6 +1490,16 @@ public enum FormWidget {
           if (BeeUtils.isDouble(z)) {
             ((Meter) widget).setOptimum(BeeUtils.toDouble(z));
           }
+        }
+        break;
+
+      case MONEY_LABEL:
+        format = attributes.get(UiConstants.ATTR_FORMAT);
+        inline = BeeUtils.toBoolean(attributes.get(ATTR_INLINE));
+        if (BeeUtils.isEmpty(format)) {
+          widget = new DecimalLabel(Format.getDefaultCurrencyFormat(), inline);
+        } else {
+          widget = new DecimalLabel(format, inline);
         }
         break;
 
@@ -1761,7 +1769,7 @@ public enum FormWidget {
       widgetDescription.setRelation(relation);
     }
 
-    boolean disablable = widget instanceof HasEnabled;
+    boolean disablable = widget instanceof EnablableWidget;
 
     if (!attributes.isEmpty()) {
       if (column != null) {
@@ -1816,7 +1824,7 @@ public enum FormWidget {
 
     widgetDescription.setDisablable(disablable);
 
-    List<ConditionalStyleDeclaration> dynStyles = Lists.newArrayList();
+    List<ConditionalStyleDeclaration> dynStyles = new ArrayList<>();
     Calculation calc;
 
     if (!children.isEmpty()) {

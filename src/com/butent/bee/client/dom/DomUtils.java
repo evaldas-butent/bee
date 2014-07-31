@@ -1,7 +1,5 @@
 package com.butent.bee.client.dom;
 
-import com.google.common.collect.Iterables;
-import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 import com.google.gwt.core.client.JavaScriptObject;
 import com.google.gwt.dom.client.ButtonElement;
@@ -25,8 +23,6 @@ import com.google.gwt.dom.client.Style.Position;
 import com.google.gwt.dom.client.TableCellElement;
 import com.google.gwt.dom.client.TableElement;
 import com.google.gwt.dom.client.TableRowElement;
-import com.google.gwt.user.client.ui.Focusable;
-import com.google.gwt.user.client.ui.HasEnabled;
 import com.google.gwt.user.client.ui.HasOneWidget;
 import com.google.gwt.user.client.ui.HasWidgets;
 import com.google.gwt.user.client.ui.UIObject;
@@ -106,11 +102,6 @@ public final class DomUtils {
     while (nd.getFirstChild() != null) {
       nd.removeChild(nd.getFirstChild());
     }
-  }
-
-  public static void clearTitle(UIObject obj) {
-    Assert.notNull(obj);
-    obj.setTitle(null);
   }
 
   public static Element createButton(String html) {
@@ -282,15 +273,6 @@ public final class DomUtils {
     return !BeeUtils.isEmpty(value) && BeeUtils.same(getDataProperty(elem, key), value);
   }
 
-  public static void enableChildren(HasWidgets parent, boolean enabled) {
-    Assert.notNull(parent);
-    for (Widget child : parent) {
-      if (child instanceof HasEnabled) {
-        ((HasEnabled) child).setEnabled(enabled);
-      }
-    }
-  }
-
   public static String ensureId(Element elem, String prefix) {
     Assert.notNull(elem);
 
@@ -306,47 +288,11 @@ public final class DomUtils {
     return ensureId(obj.getElement(), prefix);
   }
 
-  public static boolean focus(UIObject obj) {
-    if (obj instanceof Focusable && isEnabled(obj) && isVisible(obj)) {
-      ((Focusable) obj).setFocus(true);
-      return true;
-    } else {
-      return false;
-    }
-  }
-
 //@formatter:off
   public static native Element getActiveElement() /*-{
     return $doc.activeElement;
   }-*/;
 //@formatter:on
-
-  public static List<String> getAncestry(Widget w) {
-    Assert.notNull(w);
-    List<String> lst = new ArrayList<>();
-
-    Widget p = w.getParent();
-    if (p == null) {
-      return lst;
-    }
-
-    for (int i = 0; i < MAX_GENERATIONS; i++) {
-      lst.add(BeeUtils.joinWords(transformClass(p), p.getElement().getId(), p.getStyleName()));
-
-      p = p.getParent();
-      if (p == null) {
-        break;
-      }
-    }
-    return lst;
-  }
-
-  public static String getAttribute(UIObject obj, String name) {
-    Assert.notNull(obj);
-    Assert.notEmpty(name);
-
-    return obj.getElement().getAttribute(name);
-  }
 
   public static String getAutocomplete(Element elem) {
     Assert.notNull(elem);
@@ -653,7 +599,7 @@ public final class DomUtils {
 
   public static List<Element> getElementsByAttributeValueUsingCollectionFilters(Element root,
       String name, String value, Collection<Element> exclude, Collection<Element> cutoff) {
-    List<Element> result = Lists.newArrayList();
+    List<Element> result = new ArrayList<>();
     if (root == null || BeeUtils.isEmpty(name)) {
       return result;
     }
@@ -811,11 +757,6 @@ public final class DomUtils {
       }
     }
     return ret;
-  }
-
-  public static String getName(Element elem) {
-    Assert.notNull(elem);
-    return elem.getPropertyString(Attributes.NAME);
   }
 
 //@formatter:off
@@ -1027,10 +968,6 @@ public final class DomUtils {
     return top;
   }
 
-  public static String getRole(Element el) {
-    return Assert.notNull(el).getAttribute(ATTRIBUTE_ROLE);
-  }
-
   public static int getRowSpan(Element elem) {
     if (isTableCellElement(elem)) {
       return elem.getPropertyInt(Attributes.ROW_SPAN);
@@ -1051,21 +988,6 @@ public final class DomUtils {
       calculateScrollBarSize();
     }
     return scrollBarWidth;
-  }
-
-  public static List<Widget> getSiblings(Widget w) {
-    Assert.notNull(w);
-
-    Widget p = w.getParent();
-    if (!(p instanceof HasWidgets)) {
-      return null;
-    }
-
-    List<Widget> sib = new ArrayList<>();
-    for (Widget c : (HasWidgets) p) {
-      sib.add(c);
-    }
-    return sib;
   }
 
   public static int getTabIndex(Element el) {
@@ -1195,7 +1117,7 @@ public final class DomUtils {
   }
 
   public static List<Element> getVisibleChildren(Element parent) {
-    List<Element> result = Lists.newArrayList();
+    List<Element> result = new ArrayList<>();
     if (parent == null) {
       return result;
     }
@@ -1211,11 +1133,6 @@ public final class DomUtils {
 
   public static Widget getWidget(String id) {
     return getPhysicalChild(BodyPanel.get(), id);
-  }
-
-  public static int getWidgetCount(HasWidgets container) {
-    Assert.notNull(container);
-    return Iterables.size(container);
   }
 
   public static List<ExtendedProperty> getWidgetExtendedInfo(Widget w, String prefix) {
@@ -1310,24 +1227,8 @@ public final class DomUtils {
     return isChecked(obj.getElement());
   }
 
-  public static boolean isEmpty(HasWidgets container) {
-    if (container == null) {
-      return true;
-    }
-    return !container.iterator().hasNext();
-  }
-
   public static boolean isEmpty(NodeList<?> nodes) {
     return nodes == null || nodes.getLength() <= 0;
-  }
-
-  public static boolean isEnabled(UIObject obj) {
-    Assert.notNull(obj);
-    if (obj instanceof HasEnabled) {
-      return ((HasEnabled) obj).isEnabled();
-    } else {
-      return true;
-    }
   }
 
   public static boolean isImageElement(JavaScriptObject obj) {

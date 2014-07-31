@@ -386,7 +386,7 @@
   <xs:element name="IntegerLabel" type="valueLabel" substitutionGroup="widget" />
   <xs:element name="LongLabel" type="valueLabel" substitutionGroup="widget" />
   <xs:element name="DoubleLabel" type="valueLabel" substitutionGroup="widget" />
-  <xs:element name="CurrencyLabel" type="valueLabel" substitutionGroup="widget" />
+  <xs:element name="MoneyLabel" type="valueLabel" substitutionGroup="widget" />
 
   <xs:element name="DecimalLabel" substitutionGroup="widget">
     <xs:complexType>
@@ -644,17 +644,17 @@
   <xs:element name="InputLong" type="inputWidget" substitutionGroup="widget" />
   <xs:element name="InputDouble" type="inputWidget" substitutionGroup="widget" />
 
-  <xs:element name="InputDecimal" substitutionGroup="widget">
-    <xs:complexType>
-      <xs:complexContent>
-        <xs:extension base="inputWidget">
-          <xs:attribute name="scale" type="xs:unsignedByte" />
-        </xs:extension>
-      </xs:complexContent>
-    </xs:complexType>
-  </xs:element>
+  <xs:complexType name="fractionalInput">
+    <xs:complexContent>
+      <xs:extension base="inputWidget">
+        <xs:attribute name="scale" type="xs:unsignedByte" />
+        <xs:attribute name="currencySource" type="type:nameType" />
+      </xs:extension>
+    </xs:complexContent>
+  </xs:complexType>
 
-  <xs:element name="InputCurrency" type="inputWidget" substitutionGroup="widget" />
+  <xs:element name="InputDecimal" type="fractionalInput" substitutionGroup="widget" />
+  <xs:element name="InputMoney" type="fractionalInput" substitutionGroup="widget" />
 
   <xs:element name="InputSpinner" type="quantizedInput" substitutionGroup="widget" />
   <xs:element name="InputRange" type="quantizedInput" substitutionGroup="widget" />

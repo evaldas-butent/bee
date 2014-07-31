@@ -8,10 +8,9 @@ import com.google.gwt.event.shared.HandlerRegistration;
 import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.Global;
 import com.butent.bee.client.data.Data;
-import com.butent.bee.client.dom.DomUtils;
 import com.butent.bee.client.event.logical.CatchEvent;
-import com.butent.bee.client.event.logical.ReadyEvent;
 import com.butent.bee.client.event.logical.CatchEvent.CatchHandler;
+import com.butent.bee.client.event.logical.ReadyEvent;
 import com.butent.bee.client.layout.Flow;
 import com.butent.bee.client.presenter.Presenter;
 import com.butent.bee.client.presenter.TreePresenter;
@@ -19,6 +18,7 @@ import com.butent.bee.client.style.StyleUtils;
 import com.butent.bee.client.tree.HasTreeItems;
 import com.butent.bee.client.tree.Tree;
 import com.butent.bee.client.tree.TreeItem;
+import com.butent.bee.client.ui.UiHelper;
 import com.butent.bee.client.utils.Command;
 import com.butent.bee.client.widget.Image;
 import com.butent.bee.shared.Assert;
@@ -394,7 +394,7 @@ public class TreeContainer extends Flow implements TreeView, SelectionHandler<Tr
       return;
     }
     this.enabled = enabled;
-    DomUtils.enableChildren(this, enabled);
+    UiHelper.enableChildren(this, enabled);
   }
 
   @Override

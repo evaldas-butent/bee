@@ -1495,7 +1495,7 @@ class DiscussionInterceptor extends AbstractFormInterceptor {
 
     if (!enabled) {
       imgMark.addStyleName(DISCUSSIONS_STYLE_PREFIX + STYLE_ACTIONS + STYLE_MARK + STYLE_DISABLED);
-      imgMark.addStyleName(StyleUtils.CLASS_NAME_PREFIX + StyleUtils.NAME_DISABLED);
+      imgMark.addStyleName(StyleUtils.NAME_DISABLED);
     }
 
     if (marked) {

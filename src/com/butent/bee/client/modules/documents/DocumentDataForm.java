@@ -43,6 +43,7 @@ import com.butent.bee.client.presenter.Presenter;
 import com.butent.bee.client.style.StyleUtils;
 import com.butent.bee.client.ui.FormFactory.WidgetDescriptionCallback;
 import com.butent.bee.client.ui.IdentifiableWidget;
+import com.butent.bee.client.ui.UiHelper;
 import com.butent.bee.client.utils.JsUtils;
 import com.butent.bee.client.view.add.ReadyForInsertEvent;
 import com.butent.bee.client.view.edit.Editor;
@@ -728,8 +729,7 @@ public class DocumentDataForm extends AbstractFormInterceptor
                   Autocomplete box = createAutocomplete("DistinctCriterionValues",
                       COL_CRITERION_VALUE, name);
 
-                  box.setEnabled(row.isEditable());
-                  box.setStyleName("bee-disabled", !row.isEditable());
+                  UiHelper.enableAndStyle(box, row.isEditable());
                   box.setValue(value);
 
                   criteriaHistory.put(name, value);

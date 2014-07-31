@@ -14,14 +14,14 @@ import com.google.gwt.event.dom.client.KeyUpEvent;
 import com.google.gwt.event.dom.client.KeyUpHandler;
 import com.google.gwt.event.shared.HandlerRegistration;
 import com.google.gwt.user.client.Event;
-import com.google.gwt.user.client.ui.HasEnabled;
 
 import com.butent.bee.client.event.EventUtils;
 import com.butent.bee.client.event.Previewer;
+import com.butent.bee.client.ui.EnablableWidget;
 import com.butent.bee.client.widget.CustomWidget;
 import com.butent.bee.shared.HasHtml;
 
-class RichTextArea extends CustomWidget implements HasHtml, HasAllFocusHandlers, HasEnabled {
+class RichTextArea extends CustomWidget implements HasHtml, HasAllFocusHandlers, EnablableWidget {
 
   enum FontSize {
     XX_SMALL(1),

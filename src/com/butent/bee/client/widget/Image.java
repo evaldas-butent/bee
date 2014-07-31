@@ -19,15 +19,16 @@ import com.google.gwt.event.dom.client.MouseWheelHandler;
 import com.google.gwt.event.shared.HandlerRegistration;
 import com.google.gwt.resources.client.ImageResource;
 import com.google.gwt.user.client.Event;
-import com.google.gwt.user.client.ui.HasEnabled;
 
 import com.butent.bee.client.event.EventUtils;
+import com.butent.bee.client.ui.EnablableWidget;
 import com.butent.bee.client.utils.HasCommand;
 
 /**
  * Implements an image holding user interface component, that displays the image at a given URL.
  */
-public class Image extends CustomWidget implements HasEnabled, HasCommand, HasAllMouseHandlers {
+public class Image extends CustomWidget implements EnablableWidget, HasCommand,
+    HasAllMouseHandlers {
 
   private ScheduledCommand command;
 

@@ -20,6 +20,7 @@ import com.butent.bee.client.dom.DomUtils;
 import com.butent.bee.client.layout.Flow;
 import com.butent.bee.client.richtext.RichTextArea.Formatter;
 import com.butent.bee.client.style.StyleUtils;
+import com.butent.bee.client.ui.EnablableWidget;
 import com.butent.bee.client.ui.UiHelper;
 import com.butent.bee.client.utils.Command;
 import com.butent.bee.client.view.edit.Editor;
@@ -36,7 +37,7 @@ import com.butent.bee.shared.css.CssUnit;
  * Handles a rich text editor toolbar with all the buttons for formatting the text.
  */
 
-public class RichTextToolbar extends Flow implements HasEnabled {
+public class RichTextToolbar extends Flow implements EnablableWidget {
 
   /**
    * Contains a list of necessary methods for text editing functions (bold, italic, justify,
@@ -389,7 +390,7 @@ public class RichTextToolbar extends Flow implements HasEnabled {
 
   @Override
   public void setEnabled(boolean enabled) {
-    DomUtils.enableChildren(this, enabled);
+    UiHelper.enableChildren(this, enabled);
   }
 
   public void updateStatus() {

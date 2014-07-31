@@ -36,6 +36,7 @@ import com.butent.bee.client.ui.FormWidget;
 import com.butent.bee.client.ui.HandlesValueChange;
 import com.butent.bee.client.ui.HasFosterParent;
 import com.butent.bee.client.ui.HasRowChildren;
+import com.butent.bee.client.ui.UiHelper;
 import com.butent.bee.client.view.edit.EditChangeHandler;
 import com.butent.bee.client.view.edit.EditStopEvent;
 import com.butent.bee.client.view.edit.Editor;
@@ -451,8 +452,7 @@ public class Relations extends Flow implements Editor, ClickHandler, SelectorEve
       MultiSelector multi = entry.getValue();
 
       if (multi != null) {
-        multi.setEnabled(enabled);
-        multi.setStyleName("bee-disabled", !enabled);
+        UiHelper.enableAndStyle(multi, enabled);
       }
     }
     this.enabled = enabled;

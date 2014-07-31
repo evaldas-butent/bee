@@ -3,10 +3,10 @@ package com.butent.bee.client.view.form;
 import com.google.gwt.event.shared.HandlerRegistration;
 import com.google.gwt.user.client.ui.Widget;
 
-import com.butent.bee.client.dom.DomUtils;
 import com.butent.bee.client.event.logical.ReadyEvent;
 import com.butent.bee.client.layout.Complex;
 import com.butent.bee.client.presenter.Presenter;
+import com.butent.bee.client.ui.UiHelper;
 import com.butent.bee.client.view.HeaderView;
 import com.butent.bee.client.view.View;
 import com.butent.bee.shared.ui.Action;
@@ -73,7 +73,7 @@ public class FormAndHeader extends Complex implements View {
   public void setEnabled(boolean enabled) {
     if (enabled != isEnabled()) {
       this.enabled = enabled;
-      DomUtils.enableChildren(this, enabled);
+      UiHelper.enableChildren(this, enabled);
     }
   }
 

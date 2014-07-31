@@ -9,7 +9,6 @@ import com.google.gwt.dom.client.Style.Position;
 import com.google.gwt.event.dom.client.KeyCodes;
 import com.google.gwt.event.shared.HandlerRegistration;
 import com.google.gwt.user.client.Event.NativePreviewEvent;
-import com.google.gwt.user.client.ui.HasEnabled;
 import com.google.gwt.user.client.ui.Widget;
 
 import com.butent.bee.client.BeeKeeper;
@@ -41,6 +40,7 @@ import com.butent.bee.client.render.HandlesRendering;
 import com.butent.bee.client.render.RendererFactory;
 import com.butent.bee.client.style.StyleUtils;
 import com.butent.bee.client.ui.AutocompleteProvider;
+import com.butent.bee.client.ui.EnablableWidget;
 import com.butent.bee.client.ui.FormDescription;
 import com.butent.bee.client.ui.FormFactory;
 import com.butent.bee.client.ui.FormWidget;
@@ -315,9 +315,7 @@ public class FormImpl extends Absolute implements FormView, PreviewHandler, Tabu
 
   private static final String STYLE_FORM = StyleUtils.CLASS_NAME_PREFIX + "Form";
   private static final String STYLE_FORM_DISABLED = StyleUtils.CLASS_NAME_PREFIX + "Form-"
-      + StyleUtils.NAME_DISABLED;
-  private static final String STYLE_WIDGET_DISABLED = StyleUtils.CLASS_NAME_PREFIX
-      + StyleUtils.NAME_DISABLED;
+      + StyleUtils.SUFFIX_DISABLED;
 
   private static final String NEW_ROW_CAPTION = "Create New";
 
@@ -1049,8 +1047,7 @@ public class FormImpl extends Absolute implements FormView, PreviewHandler, Tabu
 
         boolean editable = rowEnabled && editableWidget.isEditable(rowValue);
         if (editable != editor.isEnabled()) {
-          editor.setEnabled(editable);
-          editor.asWidget().setStyleName(STYLE_WIDGET_DISABLED, !editable);
+          UiHelper.enableAndStyle(editor, editable);
         }
       }
 
@@ -1063,9 +1060,10 @@ public class FormImpl extends Absolute implements FormView, PreviewHandler, Tabu
         for (String id : getDisablableWidgets()) {
           if (!editableIds.contains(id)) {
             Widget widget = getWidgetById(id);
-            if (widget instanceof HasEnabled && rowEnabled != ((HasEnabled) widget).isEnabled()) {
-              ((HasEnabled) widget).setEnabled(rowEnabled);
-              widget.setStyleName(STYLE_WIDGET_DISABLED, !rowEnabled);
+
+            if (widget instanceof EnablableWidget
+                && rowEnabled != ((EnablableWidget) widget).isEnabled()) {
+              UiHelper.enableAndStyle((EnablableWidget) widget, rowEnabled);
             }
           }
         }
@@ -1426,9 +1424,8 @@ public class FormImpl extends Absolute implements FormView, PreviewHandler, Tabu
 
     for (String id : getDisablableWidgets()) {
       Widget widget = getWidgetById(id);
-      if (widget instanceof HasEnabled) {
-        ((HasEnabled) widget).setEnabled(enabled);
-        widget.setStyleName(STYLE_WIDGET_DISABLED, !enabled);
+      if (widget instanceof EnablableWidget) {
+        UiHelper.enableAndStyle((EnablableWidget) widget, enabled);
       }
     }
 
@@ -2014,8 +2011,7 @@ public class FormImpl extends Absolute implements FormView, PreviewHandler, Tabu
 
       editableWidget.refresh(getActiveRow());
       if (editable != editor.isEnabled() && isWidgetDisablable(editableWidget.getWidgetId())) {
-        editor.setEnabled(editable);
-        editor.asWidget().setStyleName(STYLE_WIDGET_DISABLED, !editable);
+        UiHelper.enableAndStyle(editor, editable);
       }
 
       refreshed.add(editableWidget.getWidgetId());

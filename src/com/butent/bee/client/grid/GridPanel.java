@@ -1,6 +1,5 @@
 package com.butent.bee.client.grid;
 
-import com.google.gwt.user.client.ui.HasEnabled;
 import com.google.gwt.user.client.ui.Widget;
 import com.google.web.bindery.event.shared.HandlerRegistration;
 
@@ -12,6 +11,7 @@ import com.butent.bee.client.layout.Simple;
 import com.butent.bee.client.presenter.Presenter;
 import com.butent.bee.client.presenter.PresenterCallback;
 import com.butent.bee.client.style.StyleUtils;
+import com.butent.bee.client.ui.EnablableWidget;
 import com.butent.bee.client.ui.HasFosterParent;
 import com.butent.bee.client.ui.UiOption;
 import com.butent.bee.client.view.HasGridView;
@@ -21,7 +21,7 @@ import com.butent.bee.shared.utils.BeeUtils;
 
 import java.util.EnumSet;
 
-public class GridPanel extends Simple implements HasEnabled, HasFosterParent,
+public class GridPanel extends Simple implements EnablableWidget, HasFosterParent,
     ParentRowEvent.Handler, HasGridView, ReadyEvent.HasReadyHandlers {
 
   private final String gridName;
