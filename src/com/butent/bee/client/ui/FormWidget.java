@@ -321,6 +321,49 @@ public enum FormWidget {
     IS_TABLE, IS_CHILD, IS_GRID, PANEL, CELL_VECTOR, INPUT, IS_CUSTOM, IS_DECORATOR
   }
 
+  public static Relation createRelation(String viewName, Map<String, String> attributes,
+      List<Element> children, Relation.RenderMode renderMode) {
+    Relation relation = XmlUtils.getRelation(attributes, children);
+
+    String source = attributes.get(UiConstants.ATTR_SOURCE);
+    List<String> renderColumns =
+        NameUtils.toList(attributes.get(RendererDescription.ATTR_RENDER_COLUMNS));
+
+    if (renderColumns.isEmpty() && !children.isEmpty()) {
+      for (Element child : children) {
+        if (BeeUtils.same(XmlUtils.getLocalName(child), RenderableToken.TAG_RENDER_TOKEN)) {
+          String tokenSource = child.getAttribute(UiConstants.ATTR_SOURCE);
+          if (!BeeUtils.isEmpty(tokenSource)) {
+            renderColumns.add(tokenSource.trim());
+          }
+        }
+      }
+    }
+
+    Holder<String> sourceHolder = Holder.of(source);
+    Holder<List<String>> listHolder = Holder.of(renderColumns);
+
+    relation.initialize(Data.getDataInfoProvider(), viewName, sourceHolder, listHolder, renderMode,
+        BeeKeeper.getUser().getUserId());
+    if (relation.getViewName() == null) {
+      logger.severe("Cannot create relation:");
+      logger.severe(viewName, source, renderColumns);
+      return null;
+    }
+
+    source = sourceHolder.get();
+    renderColumns = listHolder.get();
+
+    if (!BeeUtils.isEmpty(source)) {
+      attributes.put(UiConstants.ATTR_SOURCE, source);
+    }
+    if (!BeeUtils.isEmpty(renderColumns)) {
+      attributes.put(RendererDescription.ATTR_RENDER_COLUMNS, XmlHelper.getList(renderColumns));
+    }
+
+    return relation;
+  }
+
   public static FormWidget getByTagName(String tagName) {
     if (!BeeUtils.isEmpty(tagName)) {
       for (FormWidget widget : FormWidget.values()) {
@@ -480,49 +523,6 @@ public enum FormWidget {
       }
     }
     return null;
-  }
-
-  private static Relation createRelation(String viewName, Map<String, String> attributes,
-      List<Element> children, Relation.RenderMode renderMode) {
-    Relation relation = XmlUtils.getRelation(attributes, children);
-
-    String source = attributes.get(UiConstants.ATTR_SOURCE);
-    List<String> renderColumns =
-        NameUtils.toList(attributes.get(RendererDescription.ATTR_RENDER_COLUMNS));
-
-    if (renderColumns.isEmpty() && !children.isEmpty()) {
-      for (Element child : children) {
-        if (BeeUtils.same(XmlUtils.getLocalName(child), RenderableToken.TAG_RENDER_TOKEN)) {
-          String tokenSource = child.getAttribute(UiConstants.ATTR_SOURCE);
-          if (!BeeUtils.isEmpty(tokenSource)) {
-            renderColumns.add(tokenSource.trim());
-          }
-        }
-      }
-    }
-
-    Holder<String> sourceHolder = Holder.of(source);
-    Holder<List<String>> listHolder = Holder.of(renderColumns);
-
-    relation.initialize(Data.getDataInfoProvider(), viewName, sourceHolder, listHolder, renderMode,
-        BeeKeeper.getUser().getUserId());
-    if (relation.getViewName() == null) {
-      logger.severe("Cannot create relation:");
-      logger.severe(viewName, source, renderColumns);
-      return null;
-    }
-
-    source = sourceHolder.get();
-    renderColumns = listHolder.get();
-
-    if (!BeeUtils.isEmpty(source)) {
-      attributes.put(UiConstants.ATTR_SOURCE, source);
-    }
-    if (!BeeUtils.isEmpty(renderColumns)) {
-      attributes.put(RendererDescription.ATTR_RENDER_COLUMNS, XmlHelper.getList(renderColumns));
-    }
-
-    return relation;
   }
 
   private static boolean createTableCell(HtmlTable table, String formName, Element element,
@@ -1563,6 +1563,7 @@ public enum FormWidget {
         }
         widget = new Relations(attributes.get(ATTR_REL_COLUMN),
             BeeUtils.toBoolean(attributes.get(ATTR_INLINE)), relations,
+            NameUtils.toList(attributes.get("defaultRelations")),
             NameUtils.toList(attributes.get("blockedRelations")));
         break;
 

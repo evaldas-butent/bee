@@ -14,6 +14,7 @@ import com.google.gwt.event.dom.client.FocusEvent;
 import com.google.gwt.event.dom.client.FocusHandler;
 import com.google.gwt.event.logical.shared.ValueChangeEvent;
 import com.google.gwt.event.shared.HandlerRegistration;
+import com.google.gwt.xml.client.Document;
 
 import static com.butent.bee.shared.modules.administration.AdministrationConstants.*;
 
@@ -37,6 +38,7 @@ import com.butent.bee.client.ui.HandlesValueChange;
 import com.butent.bee.client.ui.HasFosterParent;
 import com.butent.bee.client.ui.HasRowChildren;
 import com.butent.bee.client.ui.UiHelper;
+import com.butent.bee.client.utils.XmlUtils;
 import com.butent.bee.client.view.edit.EditChangeHandler;
 import com.butent.bee.client.view.edit.EditStopEvent;
 import com.butent.bee.client.view.edit.Editor;
@@ -45,7 +47,6 @@ import com.butent.bee.client.widget.FaLabel;
 import com.butent.bee.client.widget.ListBox;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
-import com.butent.bee.shared.data.BeeColumn;
 import com.butent.bee.shared.data.BeeRow;
 import com.butent.bee.shared.data.BeeRowSet;
 import com.butent.bee.shared.data.DataUtils;
@@ -54,10 +55,12 @@ import com.butent.bee.shared.data.filter.Filter;
 import com.butent.bee.shared.data.view.DataInfo;
 import com.butent.bee.shared.font.FontAwesome;
 import com.butent.bee.shared.i18n.Localized;
+import com.butent.bee.shared.logging.LogUtils;
 import com.butent.bee.shared.modules.mail.MailConstants;
 import com.butent.bee.shared.ui.Action;
 import com.butent.bee.shared.ui.EditorAction;
 import com.butent.bee.shared.ui.Relation;
+import com.butent.bee.shared.ui.UiConstants;
 import com.butent.bee.shared.utils.BeeUtils;
 
 import java.util.ArrayList;
@@ -94,7 +97,7 @@ public class Relations extends Flow implements Editor, ClickHandler, SelectorEve
   private SelectorEvent.Handler handler;
 
   public Relations(String column, boolean inline, Collection<Relation> relations,
-      List<String> blockedRelations) {
+      List<String> defaultRelations, List<String> blockedRelations) {
 
     DataInfo info = Data.getDataInfo(STORAGE);
 
@@ -141,6 +144,15 @@ public class Relations extends Flow implements Editor, ClickHandler, SelectorEve
 
         if (!BeeUtils.isEmpty(col)) {
           createMultiSelector(col, relation);
+        }
+      }
+    }
+    if (!BeeUtils.isEmpty(defaultRelations)) {
+      for (String relation : defaultRelations) {
+        String col = viewMap.get(relation);
+
+        if (!BeeUtils.isEmpty(col) && widgetMap.get(col) == null) {
+          createMultiSelector(col, null);
         }
       }
     }
@@ -278,9 +290,7 @@ public class Relations extends Flow implements Editor, ClickHandler, SelectorEve
 
   @Override
   public boolean isValueChanged() {
-    for (Entry<String, MultiSelector> entry : widgetMap.entrySet()) {
-      MultiSelector multi = entry.getValue();
-
+    for (MultiSelector multi : widgetMap.values()) {
       if (multi != null && multi.isValueChanged()) {
         return true;
       }
@@ -347,7 +357,7 @@ public class Relations extends Flow implements Editor, ClickHandler, SelectorEve
 
   @Override
   public void onDataSelector(SelectorEvent event) {
-    if (BeeUtils.same(event.getRelatedViewName(), MailConstants.TBL_PLACES)) {
+    if (BeeUtils.same(event.getRelatedViewName(), MailConstants.TBL_MESSAGES)) {
       if (event.isNewRow()) {
         event.consume();
       } else if (event.isOpened()) {
@@ -369,8 +379,9 @@ public class Relations extends Flow implements Editor, ClickHandler, SelectorEve
         if (multi == null) {
           multi = createMultiSelector(col, null);
         }
-        multi.setIds(ids.get(col));
-
+        if (multi != null) {
+          multi.setIds(ids.get(col));
+        }
       } else if (multi != null) {
         multi.clearValue();
       }
@@ -448,9 +459,7 @@ public class Relations extends Flow implements Editor, ClickHandler, SelectorEve
 
   @Override
   public void setEnabled(boolean enabled) {
-    for (Entry<String, MultiSelector> entry : widgetMap.entrySet()) {
-      MultiSelector multi = entry.getValue();
-
+    for (MultiSelector multi : widgetMap.values()) {
       if (multi != null) {
         UiHelper.enableAndStyle(multi, enabled);
       }
@@ -573,17 +582,22 @@ public class Relations extends Flow implements Editor, ClickHandler, SelectorEve
     Relation relation = rel;
 
     if (relation == null) {
-      DataInfo dataInfo = Data.getDataInfo(viewName);
-      List<String> cols = DataUtils.parseColumns(dataInfo.getMainColumns(), dataInfo.getColumns());
+      String relationInfo = Data.getDataInfo(viewName).getRelationInfo();
 
-      if (BeeUtils.isEmpty(cols)) {
-        for (BeeColumn beeCol : Data.getColumns(viewName)) {
-          if (!beeCol.isNullable()) {
-            cols.add(beeCol.getId());
-          }
+      if (!BeeUtils.isEmpty(relationInfo)) {
+        Document doc = XmlUtils.parse(relationInfo);
+
+        if (doc != null) {
+          Map<String, String> attributes = XmlUtils.getAttributes(doc.getDocumentElement());
+          attributes.put(UiConstants.ATTR_VIEW_NAME, viewName);
+          relation = FormWidget.createRelation(null, attributes,
+              XmlUtils.getChildrenElements(doc.getDocumentElement()), Relation.RenderMode.SOURCE);
         }
       }
-      relation = Relation.create(viewName, cols);
+      if (relation == null) {
+        LogUtils.getRootLogger().severe("Missing relation info:", viewName);
+        return null;
+      }
     }
     List<String> cols = relation.getOriginalRenderColumns();
 

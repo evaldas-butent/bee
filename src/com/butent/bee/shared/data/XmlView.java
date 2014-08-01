@@ -4,6 +4,7 @@ package com.butent.bee.shared.data;
 import java.util.Collection;
 import java.util.Set;
 
+import javax.xml.bind.annotation.XmlAnyElement;
 import javax.xml.bind.annotation.XmlAttribute;
 import javax.xml.bind.annotation.XmlElementRef;
 import javax.xml.bind.annotation.XmlElementWrapper;
@@ -117,8 +118,8 @@ public class XmlView {
   @XmlAttribute
   public String cacheEviction;
 
-  @XmlAttribute
-  public String mainColumns;
+  @XmlAnyElement
+  public Object relation;
 
   @XmlElementWrapper(name = "Columns", namespace = DataUtils.VIEW_NAMESPACE)
   @XmlElementRef

@@ -118,7 +118,7 @@ public class MailPanel extends AbstractFormInterceptor {
       showMessage(currentMessage != null);
 
       if (currentMessage != null) {
-        message.requery(currentMessage.getId(),
+        message.requery(COL_PLACE, currentMessage.getId(),
             Objects.equals(currentMessage.getLong(sender), getCurrentAccount().getAddressId()));
       }
     }
@@ -380,7 +380,7 @@ public class MailPanel extends AbstractFormInterceptor {
   @Override
   public void afterCreateWidget(String name, IdentifiableWidget widget,
       WidgetDescriptionCallback callback) {
-    if (widget instanceof GridPanel && BeeUtils.same(name, "Messages")) {
+    if (widget instanceof GridPanel && BeeUtils.same(name, TBL_PLACES)) {
       ((GridPanel) widget).setGridInterceptor(messages);
 
     } else if (BeeUtils.same(name, COL_MESSAGE)) {

@@ -13,6 +13,7 @@ import com.butent.bee.server.sql.IsExpression;
 import com.butent.bee.server.sql.SqlBuilderFactory;
 import com.butent.bee.server.sql.SqlSelect;
 import com.butent.bee.server.sql.SqlUtils;
+import com.butent.bee.server.utils.XmlUtils;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.BeeConst.SqlEngine;
@@ -65,11 +66,14 @@ import com.butent.bee.shared.data.view.Order;
 import com.butent.bee.shared.data.view.ViewColumn;
 import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogUtils;
+import com.butent.bee.shared.modules.administration.AdministrationConstants;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.EnumUtils;
 import com.butent.bee.shared.utils.ExtendedProperty;
 import com.butent.bee.shared.utils.NameUtils;
 import com.butent.bee.shared.utils.PropertyUtils;
+
+import org.w3c.dom.Node;
 
 import java.util.Collection;
 import java.util.Collections;
@@ -407,7 +411,7 @@ public class BeeView implements BeeObject, HasExtendedInfo {
 
   private final boolean readOnly;
 
-  private final String mainColumns;
+  private final String relationInfo;
 
   private final String caption;
   private final String editForm;
@@ -432,11 +436,14 @@ public class BeeView implements BeeObject, HasExtendedInfo {
   BeeView(String module, XmlView xmlView, Map<String, BeeTable> tables) {
     Assert.notNull(xmlView);
     this.module = BeeUtils.notEmpty(xmlView.module, module);
-    this.name = xmlView.name;
-    Assert.notEmpty(name);
+    this.name = Assert.notEmpty(xmlView.name);
 
-    this.mainColumns = xmlView.mainColumns;
-
+    if (xmlView.relation instanceof Node && BeeUtils.same(((Node) xmlView.relation).getNodeName(),
+        AdministrationConstants.COL_RELATION)) {
+      this.relationInfo = XmlUtils.toString((Node) xmlView.relation, true);
+    } else {
+      this.relationInfo = null;
+    }
     this.caption = xmlView.caption;
 
     this.editForm = xmlView.editForm;
@@ -632,9 +639,8 @@ public class BeeView implements BeeObject, HasExtendedInfo {
     PropertyUtils.addProperties(info, false, "Module", getModule(), "Name", getName(),
         "Source", getSourceName(), "Source Alias", getSourceAlias(),
         "Source Id Name", getSourceIdName(), "Source Version Name", getSourceVersionName(),
-        "Read Only", isReadOnly(), "Main Columns", getMainColumns(), "Caption", getCaption(),
-        "Edit Form", getEditForm(), "Row Caption", getRowCaption(), "New Row Form",
-        getNewRowForm(),
+        "Read Only", isReadOnly(), "Caption", getCaption(), "Edit Form", getEditForm(),
+        "Row Caption", getRowCaption(), "New Row Form", getNewRowForm(),
         "New Row Columns", getNewRowColumns(), "New Row Caption", getNewRowCaption(),
         "Cache Maximum Size", getCacheMaximumSize(), "Cache Eviction", getCacheEviction(),
         "Query", query.getQuery(), "Columns", columns.size());
@@ -663,10 +669,6 @@ public class BeeView implements BeeObject, HasExtendedInfo {
       }
     }
     return info;
-  }
-
-  public String getMainColumns() {
-    return mainColumns;
   }
 
   @Override
@@ -791,6 +793,10 @@ public class BeeView implements BeeObject, HasExtendedInfo {
 
   public SqlSelect getQuery(Long userId, Filter flt) {
     return getQuery(userId, flt, null, null);
+  }
+
+  public String getRelationInfo() {
+    return relationInfo;
   }
 
   public String getRootField(String colName) {

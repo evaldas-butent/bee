@@ -783,7 +783,7 @@ public class DataSelector extends Composite implements Editor, HasVisibleLines, 
 
     this.newRowForm = BeeUtils.notEmpty(relation.getNewRowForm(), dataInfo.getNewRowForm());
     this.newRowColumns = BeeUtils.notEmpty(relation.getNewRowColumns(),
-        dataInfo.getNewRowColumns(), dataInfo.getMainColumns());
+        dataInfo.getNewRowColumns());
     this.newRowCaption = BeeUtils.notEmpty(relation.getNewRowCaption(),
         dataInfo.getNewRowCaption());
     this.newRowEnabled = relation.isNewRowEnabled() && Data.isViewEditable(relation.getViewName())

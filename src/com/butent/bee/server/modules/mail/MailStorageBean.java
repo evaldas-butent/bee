@@ -436,17 +436,16 @@ public class MailStorageBean {
       id = qs.insertData(new SqlInsert(TBL_EMAILS)
           .addConstant(COL_EMAIL_ADDRESS, email));
     }
-    if (BeeUtils.isEmpty(bookLabel) && !BeeUtils.isEmpty(label)) {
-      if (DataUtils.isId(bookId)) {
-        qs.updateData(new SqlUpdate(TBL_ADDRESSBOOK)
-            .addConstant(COL_EMAIL_LABEL, label)
-            .setWhere(sys.idEquals(TBL_ADDRESSBOOK, bookId)));
-      } else {
-        qs.insertData(new SqlInsert(TBL_ADDRESSBOOK)
-            .addConstant(COL_USER, userId)
-            .addConstant(COL_EMAIL, id)
-            .addConstant(COL_EMAIL_LABEL, label));
-      }
+    if (!DataUtils.isId(bookId)) {
+      qs.insertData(new SqlInsert(TBL_ADDRESSBOOK)
+          .addConstant(COL_USER, userId)
+          .addConstant(COL_EMAIL, id)
+          .addConstant(COL_EMAIL_LABEL, label));
+
+    } else if (BeeUtils.isEmpty(bookLabel) && !BeeUtils.isEmpty(label)) {
+      qs.updateData(new SqlUpdate(TBL_ADDRESSBOOK)
+          .addConstant(COL_EMAIL_LABEL, label)
+          .setWhere(sys.idEquals(TBL_ADDRESSBOOK, bookId)));
     }
     return id;
   }

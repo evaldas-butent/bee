@@ -2,15 +2,18 @@
 <xs:schema targetNamespace="http://www.butent.com/view" elementFormDefault="qualified"
   xmlns="http://www.butent.com/view"
   xmlns:xs="http://www.w3.org/2001/XMLSchema"
+  xmlns:w="http://www.butent.com/widget"
   xmlns:type="http://www.butent.com/type"
   xmlns:expression="http://www.butent.com/expression">
 
+  <xs:import namespace="http://www.butent.com/widget" schemaLocation="widget.xsd" />
   <xs:import namespace="http://www.butent.com/type" schemaLocation="types.xsd" />
   <xs:import namespace="http://www.butent.com/expression" schemaLocation="expressions.xsd" />
 
   <xs:element name="View">
     <xs:complexType>
       <xs:sequence>
+        <xs:element name="Relation" type="w:selectorType" minOccurs="0" maxOccurs="1" />
         <xs:element name="Columns" minOccurs="1" maxOccurs="1">
           <xs:complexType>
             <xs:choice maxOccurs="unbounded">
@@ -41,7 +44,6 @@
       <xs:attribute name="newRowCaption" type="xs:string" />
       <xs:attribute name="cacheMaximumSize" type="xs:int" />
       <xs:attribute name="cacheEviction" type="type:replacementPolicy" />
-      <xs:attribute name="mainColumns" type="type:nameList" />
     </xs:complexType>
   </xs:element>
 

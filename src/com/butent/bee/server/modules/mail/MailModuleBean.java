@@ -201,7 +201,8 @@ public class MailModuleBean implements BeeModule {
             .addOrder(TBL_ACCOUNTS, COL_ACCOUNT_DESCRIPTION)));
 
       } else if (BeeUtils.same(svc, SVC_GET_MESSAGE)) {
-        response = getMessage(BeeUtils.toLongOrNull(reqInfo.getParameter(COL_PLACE)),
+        response = getMessage(BeeUtils.toLongOrNull(reqInfo.getParameter(COL_MESSAGE)),
+            BeeUtils.toLongOrNull(reqInfo.getParameter(COL_PLACE)),
             Codec.unpack(reqInfo.getParameter("showBcc")));
 
       } else if (BeeUtils.same(svc, SVC_FLAG_MESSAGE)) {
@@ -956,34 +957,43 @@ public class MailModuleBean implements BeeModule {
     mail.disconnectFolder(folder);
   }
 
-  private ResponseObject getMessage(Long placeId, boolean showBcc) {
-    Assert.notNull(placeId);
+  private ResponseObject getMessage(Long messageId, Long placeId, boolean showBcc) {
+    Assert.isTrue(BeeUtils.anyNotNull(messageId, placeId));
 
     Map<String, SimpleRowSet> packet = Maps.newHashMap();
     String drafts = SystemFolder.Drafts.name();
 
-    SimpleRow msg = qs.getRow(new SqlSelect()
-        .addFields(TBL_PLACES, COL_MESSAGE, COL_FLAGS)
+    SqlSelect query = new SqlSelect()
         .addFields(TBL_MESSAGES, COL_DATE, COL_SUBJECT)
         .addFields(TBL_EMAILS, COL_EMAIL_ADDRESS)
         .addFields(TBL_ADDRESSBOOK, COL_EMAIL_LABEL)
-        .addExpr(SqlUtils.sqlIf(SqlUtils.equals(TBL_PLACES, COL_FOLDER,
-            SqlUtils.field(TBL_ACCOUNTS, drafts + COL_FOLDER)),
-            SqlUtils.constant(placeId), null), drafts)
-        .addFrom(TBL_PLACES)
-        .addFromInner(TBL_MESSAGES, sys.joinTables(TBL_MESSAGES, TBL_PLACES, COL_MESSAGE))
+        .addFrom(TBL_MESSAGES)
         .addFromLeft(TBL_EMAILS, sys.joinTables(TBL_EMAILS, TBL_MESSAGES, COL_SENDER))
         .addFromLeft(TBL_ADDRESSBOOK,
             SqlUtils.and(sys.joinTables(TBL_EMAILS, TBL_ADDRESSBOOK, COL_EMAIL),
-                SqlUtils.equals(TBL_ADDRESSBOOK, COL_USER, usr.getCurrentUserId())))
-        .addFromInner(TBL_FOLDERS, sys.joinTables(TBL_FOLDERS, TBL_PLACES, COL_FOLDER))
-        .addFromInner(TBL_ACCOUNTS, sys.joinTables(TBL_ACCOUNTS, TBL_FOLDERS, COL_ACCOUNT))
-        .setWhere(sys.idEquals(TBL_PLACES, placeId)));
+                SqlUtils.equals(TBL_ADDRESSBOOK, COL_USER, usr.getCurrentUserId())));
+
+    if (DataUtils.isId(placeId)) {
+      query.addFields(TBL_PLACES, COL_MESSAGE, COL_FLAGS)
+          .addExpr(SqlUtils.sqlIf(SqlUtils.equals(TBL_PLACES, COL_FOLDER,
+              SqlUtils.field(TBL_ACCOUNTS, drafts + COL_FOLDER)),
+              SqlUtils.constant(placeId), null), drafts)
+          .addFromInner(TBL_PLACES, sys.joinTables(TBL_MESSAGES, TBL_PLACES, COL_MESSAGE))
+          .addFromInner(TBL_FOLDERS, sys.joinTables(TBL_FOLDERS, TBL_PLACES, COL_FOLDER))
+          .addFromInner(TBL_ACCOUNTS, sys.joinTables(TBL_ACCOUNTS, TBL_FOLDERS, COL_ACCOUNT))
+          .setWhere(sys.idEquals(TBL_PLACES, placeId));
+    } else {
+      query.addConstant(messageId, COL_MESSAGE)
+          .addEmptyLong(drafts)
+          .setWhere(sys.idEquals(TBL_MESSAGES, messageId));
+    }
+    SimpleRow msg = qs.getRow(query);
+    Assert.notNull(msg);
 
     packet.put(TBL_MESSAGES, msg.getRowSet());
 
-    Long messageId = msg.getLong(COL_MESSAGE);
-    IsCondition wh = SqlUtils.equals(TBL_RECIPIENTS, COL_MESSAGE, messageId);
+    Long message = msg.getLong(COL_MESSAGE);
+    IsCondition wh = SqlUtils.equals(TBL_RECIPIENTS, COL_MESSAGE, message);
 
     if (!showBcc) {
       wh = SqlUtils.and(wh,
@@ -1007,7 +1017,7 @@ public class MailModuleBean implements BeeModule {
     SimpleRowSet rs = qs.getData(new SqlSelect()
         .addFields(TBL_PARTS, cols)
         .addFrom(TBL_PARTS)
-        .setWhere(SqlUtils.equals(TBL_PARTS, COL_MESSAGE, messageId)));
+        .setWhere(SqlUtils.equals(TBL_PARTS, COL_MESSAGE, message)));
 
     SimpleRowSet newRs = new SimpleRowSet(cols);
 
@@ -1025,9 +1035,9 @@ public class MailModuleBean implements BeeModule {
         .addFromInner(AdministrationConstants.TBL_FILES,
             sys.joinTables(AdministrationConstants.TBL_FILES, TBL_ATTACHMENTS,
                 AdministrationConstants.COL_FILE))
-        .setWhere(SqlUtils.equals(TBL_ATTACHMENTS, COL_MESSAGE, messageId))));
+        .setWhere(SqlUtils.equals(TBL_ATTACHMENTS, COL_MESSAGE, message))));
 
-    if (!MessageFlag.SEEN.isSet(msg.getInt(COL_FLAGS))) {
+    if (DataUtils.isId(placeId) && !MessageFlag.SEEN.isSet(msg.getInt(COL_FLAGS))) {
       try {
         setMessageFlag(placeId, MessageFlag.SEEN, true);
       } catch (MessagingException e) {

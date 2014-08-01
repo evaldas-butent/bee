@@ -2,9 +2,10 @@
 <View xmlns="http://www.butent.com/view"
 
   name="Tasks" source="Tasks" caption="=crmTasks"
-  mainColumns="Summary ExecutorFirstName ExecutorLastName StartTime FinishTime"
   newRowForm="NewTask" editForm="Task" rowCaption="Summary" 
   >
+  <Relation renderColumns="Summary ExecutorFirstName ExecutorLastName"
+    choiceColumns="Summary ExecutorFirstName ExecutorLastName StartTime FinishTime" />
   <Columns>
     <SimpleColumn name="Summary" />
     <SimpleColumn name="Description" />

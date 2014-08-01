@@ -346,6 +346,7 @@
       <xs:enumeration value="Items" />
       <xs:enumeration value="ItemTypes" />
       <xs:enumeration value="Maintenance" />
+      <xs:enumeration value="Messages" />
       <xs:enumeration value="Objects" />
       <xs:enumeration value="OrderCargo" />
       <xs:enumeration value="Parameters" />
@@ -360,6 +361,7 @@
       <xs:enumeration value="RecurringTasks" />
       <xs:enumeration value="RejectionReasons" />
       <xs:enumeration value="RelatedDocuments" />
+      <xs:enumeration value="RelatedMessages" />
       <xs:enumeration value="RelatedRecurringTasks" />
       <xs:enumeration value="RelatedTasks" />
       <xs:enumeration value="Relations" />

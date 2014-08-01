@@ -225,10 +225,10 @@ public class SystemBean {
     List<ViewColumn> viewColumns = view.getViewColumns();
 
     return new DataInfo(view.getModule(), viewName, source.getName(), source.getIdName(),
-        source.getVersionName(), view.getMainColumns(), view.getCaption(), view.getEditForm(),
+        source.getVersionName(), view.getCaption(), view.getEditForm(),
         view.getRowCaption(), view.getNewRowForm(), view.getNewRowColumns(),
         view.getNewRowCaption(), view.getCacheMaximumSize(), view.getCacheEviction(),
-        columns, viewColumns);
+        columns, viewColumns, view.getRelationInfo());
   }
 
   public String getDbName() {

@@ -1029,6 +1029,9 @@
           </xs:sequence>
           <xs:attribute name="relColumn" type="type:nameType" use="required" />
           <xs:attribute name="inline" type="xs:boolean" />
+          <xs:attribute name="defaultRelations">
+            <xs:simpleType><xs:list itemType="type:dataView" /></xs:simpleType>
+          </xs:attribute>
           <xs:attribute name="blockedRelations">
             <xs:simpleType><xs:list itemType="type:dataView" /></xs:simpleType>
           </xs:attribute>

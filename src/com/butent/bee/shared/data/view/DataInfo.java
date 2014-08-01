@@ -3,6 +3,7 @@ package com.butent.bee.shared.data.view;
 import com.google.common.base.Predicate;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
+import com.google.gwt.safehtml.shared.SafeHtmlUtils;
 
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
@@ -61,8 +62,6 @@ public class DataInfo implements BeeSerializable, Comparable<DataInfo>, HasExten
 
   private String versionColumn;
 
-  private String mainColumns;
-
   private String caption;
   private String editForm;
 
@@ -78,11 +77,13 @@ public class DataInfo implements BeeSerializable, Comparable<DataInfo>, HasExten
 
   private final List<ViewColumn> viewColumns = Lists.newArrayList();
 
+  private String relationInfo;
+
   public DataInfo(String module, String viewName, String tableName,
-      String idColumn, String versionColumn, String mainColumns, String caption, String editForm,
+      String idColumn, String versionColumn, String caption, String editForm,
       String rowCaption, String newRowForm, String newRowColumns, String newRowCaption,
       Integer cacheMaximumSize, String cacheEviction,
-      List<BeeColumn> columns, List<ViewColumn> viewColumns) {
+      List<BeeColumn> columns, List<ViewColumn> viewColumns, String relationInfo) {
 
     setModule(module);
 
@@ -91,8 +92,6 @@ public class DataInfo implements BeeSerializable, Comparable<DataInfo>, HasExten
 
     setIdColumn(idColumn);
     setVersionColumn(versionColumn);
-
-    setMainColumns(mainColumns);
 
     setCaption(caption);
 
@@ -112,6 +111,7 @@ public class DataInfo implements BeeSerializable, Comparable<DataInfo>, HasExten
     if (viewColumns != null) {
       this.viewColumns.addAll(viewColumns);
     }
+    setRelationInfo(relationInfo);
   }
 
   private DataInfo() {
@@ -168,8 +168,6 @@ public class DataInfo implements BeeSerializable, Comparable<DataInfo>, HasExten
     setIdColumn(arr[index++]);
     setVersionColumn(arr[index++]);
 
-    setMainColumns(arr[index++]);
-
     setCaption(arr[index++]);
 
     setEditForm(arr[index++]);
@@ -197,6 +195,7 @@ public class DataInfo implements BeeSerializable, Comparable<DataInfo>, HasExten
         getViewColumns().add(ViewColumn.restore(col));
       }
     }
+    setRelationInfo(arr[index++]);
   }
 
   @Override
@@ -410,7 +409,6 @@ public class DataInfo implements BeeSerializable, Comparable<DataInfo>, HasExten
         "Table Name", getTableName(),
         "Id Column", getIdColumn(),
         "Version Column", getVersionColumn(),
-        "Main Columns", getMainColumns(),
         "Caption", getCaption(),
         "Edit Form", getEditForm(),
         "Row Caption", getRowCaption(),
@@ -419,7 +417,9 @@ public class DataInfo implements BeeSerializable, Comparable<DataInfo>, HasExten
         "New Row Caption", getNewRowCaption(),
         "Cache Maximum Size", getCacheMaximumSize(),
         "Cache Eviction", getCacheEviction(),
-        "Column Count", getColumnCount());
+        "Column Count", getColumnCount(),
+        "Relation Info", !BeeUtils.isEmpty(getRelationInfo())
+            ? SafeHtmlUtils.htmlEscape(getRelationInfo()) : null);
 
     int cc = getColumnCount();
     for (int i = 0; i < cc; i++) {
@@ -461,10 +461,6 @@ public class DataInfo implements BeeSerializable, Comparable<DataInfo>, HasExten
       }
     }
     return children;
-  }
-
-  public String getMainColumns() {
-    return mainColumns;
   }
 
   public String getModule() {
@@ -527,6 +523,10 @@ public class DataInfo implements BeeSerializable, Comparable<DataInfo>, HasExten
     }
 
     return (fields.size() == 1) ? BeeUtils.peek(fields) : null;
+  }
+
+  public String getRelationInfo() {
+    return relationInfo;
   }
 
   public String getRootField(String colName) {
@@ -627,9 +627,10 @@ public class DataInfo implements BeeSerializable, Comparable<DataInfo>, HasExten
   @Override
   public String serialize() {
     return Codec.beeSerialize(new Object[] {getModule(), getViewName(), getTableName(),
-        getIdColumn(), getVersionColumn(), getMainColumns(), getCaption(), getEditForm(),
+        getIdColumn(), getVersionColumn(), getCaption(), getEditForm(),
         getRowCaption(), getNewRowForm(), getNewRowColumns(), getNewRowCaption(),
-        getCacheMaximumSize(), getCacheEviction(), getColumns(), getViewColumns()});
+        getCacheMaximumSize(), getCacheEviction(), getColumns(), getViewColumns(),
+        getRelationInfo()});
   }
 
   private String getCacheEviction() {
@@ -656,10 +657,6 @@ public class DataInfo implements BeeSerializable, Comparable<DataInfo>, HasExten
     this.idColumn = idColumn;
   }
 
-  private void setMainColumns(String mainColumns) {
-    this.mainColumns = mainColumns;
-  }
-
   private void setModule(String module) {
     this.module = module;
   }
@@ -674,6 +671,10 @@ public class DataInfo implements BeeSerializable, Comparable<DataInfo>, HasExten
 
   private void setNewRowForm(String newRowForm) {
     this.newRowForm = newRowForm;
+  }
+
+  public void setRelationInfo(String relationInfo) {
+    this.relationInfo = relationInfo;
   }
 
   private void setRowCaption(String rowCaption) {

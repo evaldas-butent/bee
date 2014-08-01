@@ -35,6 +35,7 @@ import com.butent.bee.client.event.logical.SelectorEvent;
 import com.butent.bee.client.grid.HtmlTable;
 import com.butent.bee.client.ui.FormFactory.WidgetDescriptionCallback;
 import com.butent.bee.client.ui.IdentifiableWidget;
+import com.butent.bee.client.utils.BrowsingContext;
 import com.butent.bee.client.utils.FileUtils;
 import com.butent.bee.client.view.form.FormView;
 import com.butent.bee.client.view.form.interceptor.AbstractFormInterceptor;
@@ -297,24 +298,30 @@ public class MailMessage extends AbstractFormInterceptor {
           @Override
           public void onClick(ClickEvent event) {
             event.stopPropagation();
-            final Popup popup = new Popup(OutsideClick.CLOSE, "bee-mail-AttachmentsPopup");
-            TabBar bar = new TabBar("bee-mail-AttachmentsMenu-", Orientation.VERTICAL);
 
-            for (FileInfo file : attachments) {
-              Link link = new Link(BeeUtils.joinWords(file.getName(),
-                  BeeUtils.parenthesize(FileUtils.sizeToText(file.getSize()))),
-                  FileUtils.getUrl(file.getName(), file.getId()));
+            if (attachments.size() == 1) {
+              FileInfo file = attachments.get(0);
+              BrowsingContext.open(FileUtils.getUrl(file.getName(), file.getId()));
+            } else {
+              final Popup popup = new Popup(OutsideClick.CLOSE, "bee-mail-AttachmentsPopup");
+              TabBar bar = new TabBar("bee-mail-AttachmentsMenu-", Orientation.VERTICAL);
 
-              link.addClickHandler(new ClickHandler() {
-                @Override
-                public void onClick(ClickEvent ev) {
-                  popup.close();
-                }
-              });
-              bar.addItem(link);
+              for (FileInfo file : attachments) {
+                Link link = new Link(BeeUtils.joinWords(file.getName(),
+                    BeeUtils.parenthesize(FileUtils.sizeToText(file.getSize()))),
+                    FileUtils.getUrl(file.getName(), file.getId()));
+
+                link.addClickHandler(new ClickHandler() {
+                  @Override
+                  public void onClick(ClickEvent ev) {
+                    popup.close();
+                  }
+                });
+                bar.addItem(link);
+              }
+              popup.setWidget(bar);
+              popup.showRelativeTo(widget.asWidget().getElement());
             }
-            popup.setWidget(bar);
-            popup.showRelativeTo(widget.asWidget().getElement());
           }
         });
       }
@@ -347,21 +354,30 @@ public class MailMessage extends AbstractFormInterceptor {
   }
 
   @Override
+  public void onSetActiveRow(IsRow row) {
+    if (relations != null && !BeeUtils.isEmpty(relations.getParentId())) {
+      relations.setParentId(null);
+    }
+    super.onSetActiveRow(row);
+  }
+
+  @Override
   public boolean onStartEdit(FormView form, IsRow row, ScheduledCommand focusCommand) {
-    requery(row.getId(), false);
+    requery(COL_MESSAGE, row != null ? Data.getLong(form.getViewName(), row, COL_MESSAGE)
+        : null, false);
     return super.onStartEdit(form, row, focusCommand);
   }
 
-  void requery(final Long placeId, boolean showBcc) {
+  void requery(String column, Long columnId, boolean showBcc) {
     reset();
 
-    if (!DataUtils.isId(placeId)) {
+    if (BeeUtils.isEmpty(column) || !DataUtils.isId(columnId)) {
       return;
     }
     setLoading(true);
 
     ParameterList params = MailKeeper.createArgs(SVC_GET_MESSAGE);
-    params.addDataItem(COL_PLACE, placeId);
+    params.addDataItem(column, columnId);
     params.addDataItem("showBcc", Codec.pack(showBcc));
 
     BeeKeeper.getRpc().makePostRequest(params, new ResponseCallback() {
@@ -381,7 +397,7 @@ public class MailMessage extends AbstractFormInterceptor {
         SimpleRow row = packet.get(TBL_MESSAGES).getRow(0);
 
         if (relations != null) {
-          relations.requery(placeId);
+          relations.requery(row.getLong(COL_MESSAGE));
         }
         draftId = row.getLong(SystemFolder.Drafts.name());
         String lbl = row.getValue(COL_EMAIL_LABEL);
@@ -425,9 +441,12 @@ public class MailMessage extends AbstractFormInterceptor {
 
           if (cnt > 1) {
             table.setText(0, c++, BeeUtils.toString(cnt));
+          } else {
+            table.setText(0, c + 1, attachments.get(0).getName());
           }
-          table.setWidget(0, c++, new FaLabel(FontAwesome.PAPERCLIP));
-          table.setText(0, c, BeeUtils.parenthesize(FileUtils.sizeToText(size)));
+          table.setWidget(0, c, new FaLabel(FontAwesome.PAPERCLIP));
+          table.setText(0, table.getCellCount(0),
+              BeeUtils.parenthesize(FileUtils.sizeToText(size)));
 
           Widget widget = widgets.get(ATTACHMENTS);
 

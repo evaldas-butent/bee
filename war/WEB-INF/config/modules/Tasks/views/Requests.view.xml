@@ -3,9 +3,9 @@
   xmlns:x="http://www.butent.com/expression"
 
   name="Requests" source="Requests" caption="=crmRequests"
-  mainColumns="Date CustomerName"
   newRowForm="NewRequest" editForm="Request"
   >
+  <Relation renderColumns="Date CustomerName" />
   <Columns>
     <SimpleColumn name="Date" />
     <SimpleColumn name="Content" />

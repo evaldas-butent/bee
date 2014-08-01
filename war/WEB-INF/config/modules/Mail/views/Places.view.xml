@@ -2,7 +2,6 @@
 <View xmlns="http://www.butent.com/view"
 
   name="Places" source="Places" caption="=mails"
-  editForm="MailMessage"
   >
   <Columns>
     <HiddenColumn name="Folder" />
@@ -35,7 +34,7 @@
         </SimpleJoin>
       </ExternalJoin>
     </SimpleJoin>
-    </Columns>
+  </Columns>
   <Order>
     <OrderBy column="Date" descending="true" />
   </Order>
