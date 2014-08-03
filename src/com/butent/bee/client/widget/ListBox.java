@@ -344,6 +344,11 @@ public class ListBox extends CustomWidget implements Editor, HasItems, HasValueS
   }
 
   @Override
+  public void render(String value) {
+    setValue(value);
+  }
+
+  @Override
   public void setAccessKey(char key) {
     ((JsElement) getElement().cast()).setAccessKey(String.valueOf(key));
   }

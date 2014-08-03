@@ -39,6 +39,8 @@ public interface Editor extends IdentifiableWidget, HasStringValue, Focusable,
 
   void normalizeDisplay(String normalizedValue);
 
+  void render(String value);
+
   void setNullable(boolean nullable);
 
   void startEdit(String oldValue, char charCode, EditorAction onEntry, Element sourceElement);

@@ -388,6 +388,11 @@ public class Relations extends Flow implements Editor, ClickHandler, SelectorEve
     }
   }
 
+  @Override
+  public void render(String value) {
+    setValue(value);
+  }
+
   public void requery(final Long parent) {
     reset();
 

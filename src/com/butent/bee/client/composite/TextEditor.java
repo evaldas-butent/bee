@@ -210,6 +210,11 @@ public class TextEditor extends Absolute implements Editor, HasTextDimensions, H
   }
 
   @Override
+  public void render(String value) {
+    setValue(value);
+  }
+
+  @Override
   public void setAccessKey(char key) {
     getArea().setAccessKey(key);
   }

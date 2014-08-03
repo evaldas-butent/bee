@@ -290,6 +290,11 @@ public class RadioGroup extends Span implements Editor, ValueChangeHandler<Boole
   }
 
   @Override
+  public void render(String value) {
+    setValue(value);
+  }
+
+  @Override
   public void setAccessKey(char key) {
   }
 

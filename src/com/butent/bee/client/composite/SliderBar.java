@@ -409,6 +409,11 @@ public class SliderBar extends Focus implements RequiresResize, Editor,
     }
   }
 
+  @Override
+  public void render(String value) {
+    setValue(value);
+  }
+
   public void setCurrentValue(double cv, boolean fireEvents) {
     this.curValue = Math.max(minValue, Math.min(maxValue, cv));
     double remainder = (this.curValue - minValue) % stepSize;

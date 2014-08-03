@@ -1189,24 +1189,28 @@ public class FormImpl extends Absolute implements FormView, PreviewHandler, Tabu
       if (isFlushable()) {
         rowValue.setValue(index, newValue);
 
+        Collection<String> updatedColumns;
+        if (source instanceof EditableWidget) {
+          updatedColumns = ((EditableWidget) source).maybeUpdateRelation(getViewName(), rowValue);
+        } else {
+          updatedColumns = Collections.emptySet();
+        }
+
         Set<String> refreshed = new HashSet<>();
 
         if (event.hasRelation() && source instanceof EditableWidget) {
-          Collection<String> updatedColumns =
-              ((EditableWidget) source).maybeUpdateRelation(getViewName(), rowValue, false);
-
           refreshed.addAll(refreshEditableWidget(index));
+        }
 
-          if (!BeeUtils.isEmpty(updatedColumns)) {
-            for (String uc : updatedColumns) {
-              if (!column.getId().equals(uc)) {
-                refreshed.addAll(refreshEditableWidget(getDataIndex(uc)));
-              }
+        if (!event.hasRelation() && event.isRowMode()) {
+          refreshed.addAll(refreshEditableWidgets());
+
+        } else if (!BeeUtils.isEmpty(updatedColumns)) {
+          for (String uc : updatedColumns) {
+            if (!column.getId().equals(uc)) {
+              refreshed.addAll(refreshEditableWidget(getDataIndex(uc)));
             }
           }
-
-        } else if (event.isRowMode()) {
-          refreshed.addAll(refreshEditableWidgets());
         }
 
         refreshDisplayWidgets(refreshed);

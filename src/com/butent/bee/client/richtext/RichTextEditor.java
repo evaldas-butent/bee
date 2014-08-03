@@ -223,6 +223,11 @@ public class RichTextEditor extends Flow implements Editor, AdjustmentListener, 
   }
 
   @Override
+  public void render(String value) {
+    setValue(value);
+  }
+
+  @Override
   public void setAccessKey(char key) {
     ((JsElement) getElement().cast()).setAccessKey(String.valueOf(key));
   }

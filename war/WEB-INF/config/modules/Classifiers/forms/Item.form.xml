@@ -71,25 +71,25 @@
 
           <row>
             <Label for="Price" />
-            <InputDecimal source="Price" />
+            <InputDecimal source="Price" currencySource="Currency" />
             <DataSelector source="Currency" for="Price" newRowEnabled="false" editEnabled="false"
               style="width: 50px;" />
           </row>
           <row>
             <Label for="Cost" />
-            <InputDecimal source="Cost" />
+            <InputDecimal source="Cost" currencySource="CostCurrency" />
             <DataSelector source="CostCurrency" for="Cost" newRowEnabled="false" editEnabled="false"
               style="width: 50px;" />
           </row>
           <row>
             <Label for="Price1" />
-            <InputDecimal source="Price1" />
+            <InputDecimal source="Price1" currencySource="Currency1" />
             <DataSelector source="Currency1" for="Price1" newRowEnabled="false" editEnabled="false"
               style="width: 50px;" />
           </row>
           <row>
             <Label for="Price2" />
-            <InputDecimal source="Price2" />
+            <InputDecimal source="Price2" currencySource="Currency2" />
             <DataSelector source="Currency2" for="Price2" newRowEnabled="false" editEnabled="false"
               style="width: 50px;" />
           </row>

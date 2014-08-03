@@ -13,6 +13,7 @@ import com.butent.bee.shared.HasBounds;
 import com.butent.bee.shared.HasIntStep;
 import com.butent.bee.shared.HasPrecision;
 import com.butent.bee.shared.HasScale;
+import com.butent.bee.shared.data.HasRelatedCurrency;
 import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.ui.EditorAction;
 import com.butent.bee.shared.utils.BeeUtils;
@@ -25,7 +26,7 @@ import java.util.List;
  */
 
 public class InputNumber extends InputText implements HasBounds, HasIntStep,
-    HasNumberFormat, HasPrecision, HasScale {
+    HasNumberFormat, HasPrecision, HasScale, HasRelatedCurrency {
 
   public static final CharMatcher INT_CHAR_MATCHER =
       CharMatcher.inRange(BeeConst.CHAR_ZERO, BeeConst.CHAR_NINE)
@@ -46,12 +47,19 @@ public class InputNumber extends InputText implements HasBounds, HasIntStep,
 
   private NumberFormat format;
 
+  private String currencySource;
+
   public InputNumber() {
     super();
   }
 
   public InputNumber(Element element) {
     super(element);
+  }
+
+  @Override
+  public String getCurrencySource() {
+    return currencySource;
   }
 
   @Override
@@ -116,8 +124,18 @@ public class InputNumber extends InputText implements HasBounds, HasIntStep,
   @Override
   public void normalizeDisplay(String normalizedValue) {
     if (getNumberFormat() != null || getScale() >= 0) {
-      setValue(normalizedValue);
+      render(normalizedValue);
     }
+  }
+
+  @Override
+  public void render(String value) {
+    setValue(parse(BeeUtils.trim(value)));
+  }
+
+  @Override
+  public void setCurrencySource(String currencySource) {
+    this.currencySource = currencySource;
   }
 
   @Override
@@ -151,12 +169,7 @@ public class InputNumber extends InputText implements HasBounds, HasIntStep,
   }
 
   public void setValue(Double v) {
-    super.setValue(format(v));
-  }
-
-  @Override
-  public void setValue(String value) {
-    setValue(parse(BeeUtils.trim(value)));
+    setValue(format(v));
   }
 
   @Override

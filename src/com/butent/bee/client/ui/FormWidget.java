@@ -131,6 +131,7 @@ import com.butent.bee.shared.data.BeeColumn;
 import com.butent.bee.shared.data.CellSource;
 import com.butent.bee.shared.data.CustomProperties;
 import com.butent.bee.shared.data.DataUtils;
+import com.butent.bee.shared.data.HasRelatedCurrency;
 import com.butent.bee.shared.data.value.ValueType;
 import com.butent.bee.shared.font.FontAwesome;
 import com.butent.bee.shared.i18n.Localized;
@@ -507,6 +508,11 @@ public enum FormWidget {
     }
 
     widget.setNumberFormat(format);
+
+    String currencySource = attributes.get(HasRelatedCurrency.ATTR_CURRENCY_SOURCE);
+    if (!BeeUtils.isEmpty(currencySource)) {
+      widget.setCurrencySource(currencySource);
+    }
 
     return widget;
   }
