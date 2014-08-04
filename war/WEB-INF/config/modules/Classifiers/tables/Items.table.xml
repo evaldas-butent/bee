@@ -31,8 +31,8 @@
 
     <Boolean name="IsService" label="=service" />
 
-    <Relation name="Type" relation="ItemTypes" label="=type" />
-    <Relation name="Group" relation="ItemGroups" label="=group" />
+    <Relation name="Type" relation="CategoryTree" label="=type" />
+    <Relation name="Group" relation="CategoryTree" label="=group" />
 
     <Relation name="Department" relation="Departments" label="=department" />
     <Relation name="ActivityType" relation="ActivityTypes" label="=activityType" />

@@ -3288,3 +3288,15 @@ textarea,
 .bee-Print-Window {
   overflow: auto;
 }
+
+.bee-Form .bee-HtmlTable {
+  border-collapse: collapse;
+}
+.bee-Form .bee-HtmlTable td {
+  padding-top: 5px;
+}
+.bee-LabelCell {
+  text-align: right;
+  padding-left: 10px;
+  padding-right: 6px;
+}

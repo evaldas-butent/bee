@@ -342,9 +342,7 @@
       <xs:enumeration value="InformationSources" />
       <xs:enumeration value="IpFilters" />
       <xs:enumeration value="ItemCategories" />
-      <xs:enumeration value="ItemGroups" />
       <xs:enumeration value="Items" />
-      <xs:enumeration value="ItemTypes" />
       <xs:enumeration value="Maintenance" />
       <xs:enumeration value="Messages" />
       <xs:enumeration value="Objects" />
