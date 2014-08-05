@@ -21,18 +21,6 @@
           <SimpleColumn name="Label" alias="SenderLabel" />
         </ExternalJoin>
       </SimpleJoin>
-
-      <ExternalJoin name="Message" source="Recipients" joinType="LEFT">
-        <AggregateColumn name="Address" alias="RecipientCount" aggregate="COUNT" />
-
-        <SimpleJoin name="Address" joinType="LEFT">
-          <AggregateColumn name="Email" alias="RecipientEmail" aggregate="MAX" />
-          <ExternalJoin name="Email" source="Addressbook" joinType="LEFT" filter="RecipientUser={u}">
-            <HiddenColumn name="User" alias="RecipientUser" />
-            <AggregateColumn name="Label" alias="RecipientLabel" aggregate="MAX" />
-          </ExternalJoin>
-        </SimpleJoin>
-      </ExternalJoin>
     </SimpleJoin>
   </Columns>
   <Order>

@@ -12,6 +12,7 @@ import com.butent.bee.server.Config;
 import com.butent.bee.server.data.BeeView;
 import com.butent.bee.server.data.BeeView.ConditionProvider;
 import com.butent.bee.server.data.DataEvent.ViewInsertEvent;
+import com.butent.bee.server.data.DataEvent.ViewQueryEvent;
 import com.butent.bee.server.data.DataEventHandler;
 import com.butent.bee.server.data.QueryServiceBean;
 import com.butent.bee.server.data.SystemBean;
@@ -34,6 +35,8 @@ import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.Service;
 import com.butent.bee.shared.communication.ResponseObject;
+import com.butent.bee.shared.data.BeeRow;
+import com.butent.bee.shared.data.BeeRowSet;
 import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.SearchResult;
 import com.butent.bee.shared.data.SimpleRowSet;
@@ -433,6 +436,52 @@ public class MailModuleBean implements BeeModule {
       public void initAccount(ViewInsertEvent event) {
         if (event.isTarget(TBL_ACCOUNTS) && event.isAfter()) {
           mail.initAccount(event.getRow().getId());
+        }
+      }
+
+      @Subscribe
+      public void getRecipients(ViewQueryEvent event) {
+        if (event.isTarget(TBL_PLACES) && event.isAfter()) {
+          Set<Long> messages = new HashSet<>();
+
+          BeeRowSet rowSet = event.getRowset();
+          int idx = BeeConst.UNDEF;
+
+          if (!DataUtils.isEmpty(rowSet)) {
+            idx = event.getRowset().getColumnIndex(COL_MESSAGE);
+
+            if (idx != BeeConst.UNDEF) {
+              for (BeeRow row : event.getRowset()) {
+                messages.add(row.getLong(idx));
+              }
+            }
+          }
+          if (!BeeUtils.isEmpty(messages)) {
+            SimpleRowSet result = qs.getData(new SqlSelect()
+                .addFields(TBL_RECIPIENTS, COL_MESSAGE)
+                .addCount(TBL_RECIPIENTS, MailConstants.COL_ADDRESS)
+                .addMax(TBL_EMAILS, COL_EMAIL_ADDRESS)
+                .addMax(TBL_ADDRESSBOOK, COL_EMAIL_LABEL)
+                .addFrom(TBL_RECIPIENTS)
+                .addFromInner(TBL_EMAILS,
+                    sys.joinTables(TBL_EMAILS, TBL_RECIPIENTS, MailConstants.COL_ADDRESS))
+                .addFromLeft(TBL_ADDRESSBOOK,
+                    SqlUtils.and(sys.joinTables(TBL_EMAILS, TBL_ADDRESSBOOK, COL_EMAIL),
+                        SqlUtils.equals(TBL_ADDRESSBOOK, COL_USER, usr.getCurrentUserId())))
+                .setWhere(SqlUtils.inList(TBL_RECIPIENTS, COL_MESSAGE, messages))
+                .addGroup(TBL_RECIPIENTS, COL_MESSAGE));
+
+            for (BeeRow row : event.getRowset()) {
+              SimpleRow simpleRow = result.getRowByKey(COL_MESSAGE, row.getString(idx));
+
+              if (simpleRow != null) {
+                for (String fld : new String[] {MailConstants.COL_ADDRESS, COL_EMAIL_ADDRESS,
+                    COL_EMAIL_LABEL}) {
+                  row.setProperty(fld, simpleRow.getValue(fld));
+                }
+              }
+            }
+          }
         }
       }
     });

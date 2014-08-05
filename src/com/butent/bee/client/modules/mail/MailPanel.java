@@ -85,6 +85,7 @@ import com.butent.bee.shared.font.FontAwesome;
 import com.butent.bee.shared.i18n.LocalizableMessages;
 import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.logging.LogUtils;
+import com.butent.bee.shared.modules.classifiers.ClassifierConstants;
 import com.butent.bee.shared.modules.mail.AccountInfo;
 import com.butent.bee.shared.modules.mail.MailConstants.MessageFlag;
 import com.butent.bee.shared.modules.mail.MailConstants.SystemFolder;
@@ -135,9 +136,6 @@ public class MailPanel extends AbstractFormInterceptor {
   private class EnvelopeRenderer extends AbstractCellRenderer {
     private final int senderEmail;
     private final int senderLabel;
-    private final int recipientEmail;
-    private final int recipientLabel;
-    private final int recipientCount;
     private final int dateIdx;
     private final int subjectIdx;
     private final int flagsIdx;
@@ -148,9 +146,6 @@ public class MailPanel extends AbstractFormInterceptor {
 
       senderEmail = DataUtils.getColumnIndex("SenderEmail", dataColumns);
       senderLabel = DataUtils.getColumnIndex("SenderLabel", dataColumns);
-      recipientEmail = DataUtils.getColumnIndex("RecipientEmail", dataColumns);
-      recipientLabel = DataUtils.getColumnIndex("RecipientLabel", dataColumns);
-      recipientCount = DataUtils.getColumnIndex("RecipientCount", dataColumns);
       dateIdx = DataUtils.getColumnIndex(COL_DATE, dataColumns);
       subjectIdx = DataUtils.getColumnIndex(COL_SUBJECT, dataColumns);
       flagsIdx = DataUtils.getColumnIndex(COL_FLAGS, dataColumns);
@@ -171,10 +166,11 @@ public class MailPanel extends AbstractFormInterceptor {
       sender.setStyleName("bee-mail-HeaderAddress");
       String address;
 
-      if (getCurrentAccount().isDraftsFolder(getCurrentFolderId())
-          || getCurrentAccount().isSentFolder(getCurrentFolderId())) {
-        address = BeeUtils.notEmpty(row.getString(recipientLabel), row.getString(recipientEmail));
-        int cnt = BeeUtils.unbox(row.getInteger(recipientCount)) - 1;
+      if (isSenderFolder(getCurrentFolderId())) {
+        address = BeeUtils.notEmpty(row.getProperty(COL_EMAIL_LABEL),
+            row.getProperty(ClassifierConstants.COL_EMAIL_ADDRESS));
+
+        int cnt = BeeUtils.toInt(row.getProperty(COL_ADDRESS)) - 1;
 
         if (cnt > 0) {
           address += " (" + cnt + "+)";
@@ -576,7 +572,7 @@ public class MailPanel extends AbstractFormInterceptor {
         presenter.getDataProvider().setUserFilter(Filter.custom(FILTER_SEARCH,
             Codec.beeSerialize(ImmutableMap.of(COL_FOLDER, folderId,
                 FILTER_SEARCH, searchWidget.getValue(),
-                SystemFolder.Sent.name(), getCurrentAccount().isSentFolder(folderId)))));
+                SystemFolder.Sent.name(), isSenderFolder(folderId)))));
       }
       presenter.getDataProvider().setParentFilter(MESSAGES_FILTER,
           Filter.equals(COL_FOLDER, folderId));
@@ -646,6 +642,17 @@ public class MailPanel extends AbstractFormInterceptor {
     });
   }
 
+  private void doSearch() {
+    if (searchWidget != null) {
+      String value = searchWidget.getValue();
+
+      if (!BeeUtils.same(value, searchValue)) {
+        searchValue = value;
+        refreshMessages();
+      }
+    }
+  }
+
   private void flagMessage(final IsRow row, final int flagIdx, MessageFlag flag,
       final ScheduledCommand command) {
 
@@ -695,15 +702,9 @@ public class MailPanel extends AbstractFormInterceptor {
     });
   }
 
-  private void doSearch() {
-    if (searchWidget != null) {
-      String value = searchWidget.getValue();
-
-      if (!BeeUtils.same(value, searchValue)) {
-        searchValue = value;
-        refreshMessages();
-      }
-    }
+  private boolean isSenderFolder(Long folderId) {
+    return getCurrentAccount().isSentFolder(folderId)
+        || getCurrentAccount().isDraftsFolder(folderId);
   }
 
   private void removeMessages() {
