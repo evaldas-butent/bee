@@ -9,6 +9,7 @@ import static com.butent.bee.shared.modules.administration.AdministrationConstan
 import static com.butent.bee.shared.modules.classifiers.ClassifierConstants.*;
 import static com.butent.bee.shared.modules.ec.EcConstants.*;
 
+import com.butent.bee.server.Config;
 import com.butent.bee.server.data.IdGeneratorBean;
 import com.butent.bee.server.data.QueryServiceBean;
 import com.butent.bee.server.data.SystemBean;
@@ -937,6 +938,9 @@ public class TecDocBean {
 
   @Timeout
   private void doTimerEvent(Timer timer) {
+    if (!Config.isInitialized()) {
+      return;
+    }
     if (timer.getInfo() instanceof EcSupplier) {
       switch ((EcSupplier) timer.getInfo()) {
         case EOLTAS:

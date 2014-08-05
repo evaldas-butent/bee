@@ -357,13 +357,6 @@ public class Relations extends Flow implements Editor, ClickHandler, SelectorEve
 
   @Override
   public void onDataSelector(SelectorEvent event) {
-    if (BeeUtils.same(event.getRelatedViewName(), MailConstants.TBL_MESSAGES)) {
-      if (event.isNewRow()) {
-        event.consume();
-      } else if (event.isOpened()) {
-        event.getSelector().setAdditionalFilter(Filter.isFalse());
-      }
-    }
   }
 
   @Override
@@ -466,7 +459,8 @@ public class Relations extends Flow implements Editor, ClickHandler, SelectorEve
   public void setEnabled(boolean enabled) {
     for (MultiSelector multi : widgetMap.values()) {
       if (multi != null) {
-        UiHelper.enableAndStyle(multi, enabled);
+        UiHelper.enableAndStyle(multi, enabled
+            && !BeeUtils.same(multi.getOracle().getViewName(), MailConstants.TBL_MESSAGES));
       }
     }
     this.enabled = enabled;

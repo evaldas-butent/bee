@@ -8,6 +8,7 @@ import com.google.common.eventbus.Subscribe;
 import static com.butent.bee.shared.modules.classifiers.ClassifierConstants.*;
 import static com.butent.bee.shared.modules.mail.MailConstants.*;
 
+import com.butent.bee.server.Config;
 import com.butent.bee.server.data.BeeView;
 import com.butent.bee.server.data.BeeView.ConditionProvider;
 import com.butent.bee.server.data.DataEvent.ViewInsertEvent;
@@ -1049,6 +1050,9 @@ public class MailModuleBean implements BeeModule {
 
   @Schedule(minute = "*/5", hour = "*", persistent = false)
   private void mailChecker() {
+    if (!Config.isInitialized()) {
+      return;
+    }
     for (String accountId : qs.getColumn(new SqlSelect()
         .addFields(TBL_ACCOUNTS, sys.getIdName(TBL_ACCOUNTS))
         .addFrom(TBL_ACCOUNTS)

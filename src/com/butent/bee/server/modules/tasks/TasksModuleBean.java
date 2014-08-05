@@ -13,6 +13,7 @@ import static com.butent.bee.shared.modules.administration.AdministrationConstan
 import static com.butent.bee.shared.modules.classifiers.ClassifierConstants.*;
 import static com.butent.bee.shared.modules.tasks.TaskConstants.*;
 
+import com.butent.bee.server.Config;
 import com.butent.bee.server.data.BeeView;
 import com.butent.bee.server.data.DataEditorBean;
 import com.butent.bee.server.data.DataEvent.ViewQueryEvent;
@@ -473,6 +474,9 @@ public class TasksModuleBean implements BeeModule {
 
   @Schedule(hour = "5", persistent = false)
   private void checkTaskStatus() {
+    if (!Config.isInitialized()) {
+      return;
+    }
     logger.info("check task status timeout");
 
     int count = maybeUpdateTaskStatus();
@@ -1769,6 +1773,9 @@ public class TasksModuleBean implements BeeModule {
 
   @Schedule(hour = "4", persistent = false)
   private void recurringTaskSchedulingTimeout() {
+    if (!Config.isInitialized()) {
+      return;
+    }
     logger.info("recurring task scheduling timeout ");
 
     Set<Long> tasks = scheduleRecurringTasks(DateRange.day(TimeUtils.today()));
@@ -2322,6 +2329,9 @@ public class TasksModuleBean implements BeeModule {
 
   @Schedule(minute = "0,30", hour = "*", persistent = false)
   private void taskReminderTimeout(Timer timer) {
+    if (!Config.isInitialized()) {
+      return;
+    }
     long timeRemaining = timer.getTimeRemaining();
     logger.info("task reminder timeout, time remainining", timeRemaining);
 
