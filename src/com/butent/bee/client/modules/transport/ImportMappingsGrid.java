@@ -106,7 +106,7 @@ public class ImportMappingsGrid extends AbstractGridInterceptor {
   public GridInterceptor getInstance() {
     return new ImportMappingsGrid(form);
   }
-  
+
   @Override
   public void onParentRow(ParentRowEvent event) {
     this.parentId = event == null ? null : event.getRowId();

@@ -27,7 +27,8 @@ public class SqlInsert extends SqlQuery<SqlInsert> implements HasTarget {
    * Creates an SqlInserte statement with a specified target {@code target}. Target type is
    * FromSingle.
    * 
-   * @param target the FromSingle target
+   * @param target
+   *          the FromSingle target
    */
   public SqlInsert(String target) {
     Assert.notEmpty(target);
@@ -37,8 +38,10 @@ public class SqlInsert extends SqlQuery<SqlInsert> implements HasTarget {
   /**
    * Adds a constant value expression in a field for an SqlInsert statement.
    * 
-   * @param field the field's name
-   * @param value the field's value
+   * @param field
+   *          the field's name
+   * @param value
+   *          the field's value
    * @return object's SqlInsert instance.
    */
   public SqlInsert addConstant(String field, Object value) {
@@ -50,8 +53,10 @@ public class SqlInsert extends SqlQuery<SqlInsert> implements HasTarget {
   /**
    * Adds an expression for an SqlInsert statement.
    * 
-   * @param field the field to add
-   * @param value the expression to add
+   * @param field
+   *          the field to add
+   * @param value
+   *          the expression to add
    * @return object's SqlInsert instance.
    */
   public SqlInsert addExpression(String field, IsExpression value) {
@@ -76,7 +81,8 @@ public class SqlInsert extends SqlQuery<SqlInsert> implements HasTarget {
   /**
    * Adds the specified fields {@code fields} to the field list.
    * 
-   * @param fields the fields to add
+   * @param fields
+   *          the fields to add
    * @return object's SqlInsert instance.
    */
   public SqlInsert addFields(String... fields) {
@@ -103,7 +109,7 @@ public class SqlInsert extends SqlQuery<SqlInsert> implements HasTarget {
       return addConstant(field, value);
     }
   }
-  
+
   public SqlInsert addValues(Object... values) {
     Assert.notNull(values);
     Assert.state(getFieldCount() == values.length);
@@ -178,7 +184,8 @@ public class SqlInsert extends SqlQuery<SqlInsert> implements HasTarget {
   }
 
   /**
-   * @param field the field, which value must be returned
+   * @param field
+   *          the field, which value must be returned
    * @return value of the given field.
    */
   public IsExpression getValue(String field) {
@@ -192,7 +199,8 @@ public class SqlInsert extends SqlQuery<SqlInsert> implements HasTarget {
   /**
    * Checks if a field name {@code field} is already in a field list.
    * 
-   * @param field the field to check
+   * @param field
+   *          the field to check
    * @return true if the field exist in the list, otherwise false.
    */
   public boolean hasField(String field) {
@@ -235,7 +243,8 @@ public class SqlInsert extends SqlQuery<SqlInsert> implements HasTarget {
    * If there are no values in the {@code valueList} created sets the {@code dataSource} from an
    * SqlSelect query {@code query}.
    * 
-   * @param query the query to use for setting the dataSource
+   * @param query
+   *          the query to use for setting the dataSource
    * @return object's SqlInsert instance
    */
   public SqlInsert setDataSource(SqlSelect query) {

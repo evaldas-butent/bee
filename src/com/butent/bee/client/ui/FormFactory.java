@@ -22,7 +22,6 @@ import com.butent.bee.client.view.form.FormView;
 import com.butent.bee.client.view.form.interceptor.FormInterceptor;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
-import com.butent.bee.shared.HasItems;
 import com.butent.bee.shared.Pair;
 import com.butent.bee.shared.Service;
 import com.butent.bee.shared.communication.ResponseObject;
@@ -33,8 +32,6 @@ import com.butent.bee.shared.data.ProviderType;
 import com.butent.bee.shared.data.cache.CachingPolicy;
 import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogUtils;
-import com.butent.bee.shared.ui.EditorDescription;
-import com.butent.bee.shared.ui.EditorType;
 import com.butent.bee.shared.ui.UiConstants;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.Property;
@@ -73,8 +70,6 @@ public final class FormFactory {
   private static final BeeLogger logger = LogUtils.getLogger(FormFactory.class);
 
   public static final String TAG_FORM = "Form";
-
-  private static final String ATTR_TYPE = "type";
 
   private static final Map<String, FormDescription> descriptionCache = Maps.newHashMap();
   private static final Map<String, Pair<FormInterceptor, Integer>> formInterceptors =
@@ -178,28 +173,6 @@ public final class FormFactory {
       logger.severe(messagePrefix, "cannot create root widget", formWidget);
     }
     return widget;
-  }
-
-  public static EditorDescription getEditorDescription(Element element) {
-    Assert.notNull(element);
-
-    String typeCode = element.getAttribute(ATTR_TYPE);
-    if (BeeUtils.isEmpty(typeCode)) {
-      return null;
-    }
-    EditorType editorType = EditorType.getByTypeCode(typeCode);
-    if (editorType == null) {
-      return null;
-    }
-
-    EditorDescription editor = new EditorDescription(editorType);
-    editor.setAttributes(XmlUtils.getAttributes(element));
-
-    List<String> items = XmlUtils.getChildrenText(element, HasItems.TAG_ITEM);
-    if (!BeeUtils.isEmpty(items)) {
-      editor.setItems(items);
-    }
-    return editor;
   }
 
   public static FormDescription getFormDescription(String formName) {

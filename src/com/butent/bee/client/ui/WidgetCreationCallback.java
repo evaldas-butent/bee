@@ -16,16 +16,16 @@ public class WidgetCreationCallback implements FormFactory.WidgetDescriptionCall
   private static final BeeLogger logger = LogUtils.getLogger(WidgetCreationCallback.class);
 
   private static final String PARENT_IS_FORM = "{form}";
-  
+
   private final Map<String, String> namedWidgets = new HashMap<>();
   private final Map<String, String> potentialChildren = new HashMap<>();
 
   private WidgetDescription lastWidgetDescription;
-  
+
   public WidgetCreationCallback() {
     super();
   }
-  
+
   public void addBinding(String widgetName, String widgetId, String parentName) {
     Assert.notNull(widgetId);
     if (!BeeUtils.isEmpty(widgetName)) {
@@ -68,12 +68,12 @@ public class WidgetCreationCallback implements FormFactory.WidgetDescriptionCall
       }
     }
   }
-  
+
   @Override
   public WidgetDescription getLastWidgetDescription() {
-    return lastWidgetDescription; 
+    return lastWidgetDescription;
   }
-  
+
   public Map<String, String> getNamedWidgets() {
     return namedWidgets;
   }
@@ -90,7 +90,7 @@ public class WidgetCreationCallback implements FormFactory.WidgetDescriptionCall
   @Override
   public void onSuccess(WidgetDescription result, IdentifiableWidget widget) {
     lastWidgetDescription = result;
-    
+
     String id = result.getWidgetId();
     if (!BeeUtils.isEmpty(id)) {
       if (!BeeUtils.isEmpty(result.getWidgetName())) {

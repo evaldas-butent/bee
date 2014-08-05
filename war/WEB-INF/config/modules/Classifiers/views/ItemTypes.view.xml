@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<View xmlns="http://www.butent.com/view"
+
+  name="ItemTypes" source="ItemTypes" module="Classifiers"
+  caption="=itemTypes" newRowCaption="=newItemType"
+  >
+  <Columns>
+    <SimpleColumn name="ItemTypeName" />
+
+    <SimpleColumn name="Department" />
+    <SimpleJoin joinType="LEFT" name="Department">
+      <SimpleColumn name="DepartmentName" />
+    </SimpleJoin>
+    <SimpleColumn name="ActivityType" />
+    <SimpleJoin joinType="LEFT" name="ActivityType">
+      <SimpleColumn name="ActivityTypeName" />
+    </SimpleJoin>
+    <SimpleColumn name="CostCenter" />
+    <SimpleJoin joinType="LEFT" name="CostCenter">
+      <SimpleColumn name="CostCenterName" />
+    </SimpleJoin>
+
+    <SimpleColumn name="Description" />
+  </Columns>
+  <Order>
+    <OrderBy column="ItemTypeName" />
+  </Order>
+</View>

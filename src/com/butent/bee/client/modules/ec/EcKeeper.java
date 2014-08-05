@@ -478,7 +478,7 @@ public final class EcKeeper {
         editEcContacts(null);
       }
     });
-    
+
     ViewFactory.registerSupplier(KEY_TERMS_OF_DELIVERY, new ViewSupplier() {
       @Override
       public void create(ViewCallback callback) {

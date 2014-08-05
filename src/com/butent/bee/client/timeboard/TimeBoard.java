@@ -71,6 +71,7 @@ import com.butent.bee.shared.ui.Color;
 import com.butent.bee.shared.ui.Orientation;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.Codec;
+import com.butent.bee.shared.utils.EnumUtils;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -584,6 +585,19 @@ public abstract class TimeBoard extends Flow implements Presenter, View, Printab
     Opener opener = EventUtils.hasModifierKey(event.getNativeEvent())
         ? Opener.NEW_TAB : Opener.MODAL;
     RowEditor.open(viewName, rowId, opener);
+  }
+
+  @Override
+  public boolean reactsTo(Action action) {
+    if (BeeUtils.contains(getEnabledActions(), action)) {
+      return true;
+    } else if (EnumUtils.in(action, Action.CANCEL, Action.CLOSE)) {
+      return true;
+    } else if (action == Action.REMOVE_FILTER) {
+      return BeeUtils.contains(getEnabledActions(), Action.FILTER);
+    } else {
+      return false;
+    }
   }
 
   @Override

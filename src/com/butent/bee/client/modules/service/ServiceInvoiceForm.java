@@ -17,7 +17,7 @@ public class ServiceInvoiceForm extends AbstractFormInterceptor {
 
   ServiceInvoiceForm() {
   }
-  
+
   @Override
   public boolean beforeAction(Action action, Presenter presenter) {
     if (action == Action.PRINT) {

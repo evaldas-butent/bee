@@ -90,7 +90,7 @@ public final class ParametersGrid extends AbstractGridInterceptor {
     Assert.notNull(callback);
     openGrid(module, ViewFactory.getPresenterCallback(callback));
   }
-  
+
   private static int indexOf(String colName) {
     return DataUtils.getColumnIndex(colName, columns);
   }
@@ -362,7 +362,7 @@ public final class ParametersGrid extends AbstractGridInterceptor {
     }
     return editor;
   }
-  
+
   private String render(BeeParameter param) {
     String value = null;
 

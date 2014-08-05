@@ -89,6 +89,7 @@ import com.butent.bee.shared.time.TimeUtils;
 import com.butent.bee.shared.ui.Action;
 import com.butent.bee.shared.ui.Orientation;
 import com.butent.bee.shared.utils.BeeUtils;
+import com.butent.bee.shared.utils.EnumUtils;
 import com.butent.bee.shared.utils.NameUtils;
 
 import java.util.EnumSet;
@@ -541,6 +542,12 @@ public class CalendarPanel extends Split implements AppointmentEvent.Handler, Pr
     if (event.isVisible() && DomUtils.isOrHasAncestor(getElement(), event.getId())) {
       calendar.resumeLayout();
     }
+  }
+
+  @Override
+  public boolean reactsTo(Action action) {
+    return EnumUtils.in(action,
+        Action.REFRESH, Action.CONFIGURE, Action.CANCEL, Action.CLOSE, Action.PRINT);
   }
 
   @Override

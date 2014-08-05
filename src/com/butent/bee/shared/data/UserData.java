@@ -94,21 +94,20 @@ public class UserData implements BeeSerializable, HasInfo {
   private UserData() {
   }
 
-  public boolean canCreateData(String object) {
-    return hasDataRight(object, RightsState.CREATE);
+  public boolean canCreateData(String viewName) {
+    return hasDataRight(viewName, RightsState.CREATE);
   }
 
-  public boolean canDeleteData(String object) {
-    return hasDataRight(object, RightsState.DELETE);
+  public boolean canDeleteData(String viewName) {
+    return hasDataRight(viewName, RightsState.DELETE);
   }
 
   public boolean canEditColumn(String viewName, String column) {
-    return BeeUtils.anyEmpty(viewName, column)
-        || hasFieldRight(RightsUtils.buildName(viewName, column), RightsState.EDIT);
+    return BeeUtils.anyEmpty(viewName, column) || hasFieldRight(viewName, column, RightsState.EDIT);
   }
 
-  public boolean canEditData(String object) {
-    return hasDataRight(object, RightsState.EDIT);
+  public boolean canEditData(String viewName) {
+    return hasDataRight(viewName, RightsState.EDIT);
   }
 
   @Override
@@ -263,7 +262,7 @@ public class UserData implements BeeSerializable, HasInfo {
     }
     return null;
   }
-  
+
   public long getUserId() {
     return userId;
   }
@@ -272,17 +271,17 @@ public class UserData implements BeeSerializable, HasInfo {
     return BeeUtils.notEmpty(BeeUtils.joinWords(getFirstName(), getLastName()), getLogin());
   }
 
-  public boolean hasDataRight(String object, RightsState state) {
-    return hasRight(RightsObjectType.DATA, object, state);
+  public boolean hasDataRight(String viewName, RightsState state) {
+    return isModuleVisible(RightsUtils.getViewModule(viewName))
+        && hasRight(RightsObjectType.DATA, viewName, state);
   }
 
   public boolean isColumnVisible(String viewName, String column) {
-    return BeeUtils.anyEmpty(viewName, column)
-        || hasFieldRight(RightsUtils.buildName(viewName, column), RightsState.VIEW);
+    return BeeUtils.anyEmpty(viewName, column) || hasFieldRight(viewName, column, RightsState.VIEW);
   }
 
-  public boolean isDataVisible(String object) {
-    return hasDataRight(object, RightsState.VIEW);
+  public boolean isDataVisible(String viewName) {
+    return hasDataRight(viewName, RightsState.VIEW);
   }
 
   public boolean isMenuVisible(String object) {
@@ -407,8 +406,9 @@ public class UserData implements BeeSerializable, HasInfo {
     this.rights = rights;
   }
 
-  private boolean hasFieldRight(String object, RightsState state) {
-    return hasRight(RightsObjectType.FIELD, object, state);
+  private boolean hasFieldRight(String viewName, String column, RightsState state) {
+    return hasDataRight(viewName, state)
+        && hasRight(RightsObjectType.FIELD, RightsUtils.buildName(viewName, column), state);
   }
 
   private boolean hasRight(RightsObjectType type, String object, RightsState state) {

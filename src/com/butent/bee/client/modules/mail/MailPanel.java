@@ -33,7 +33,6 @@ import com.butent.bee.client.communication.ParameterList;
 import com.butent.bee.client.communication.ResponseCallback;
 import com.butent.bee.client.composite.Thermometer;
 import com.butent.bee.client.data.Data;
-import com.butent.bee.client.data.RowFactory;
 import com.butent.bee.client.dialog.ChoiceCallback;
 import com.butent.bee.client.dialog.Icon;
 import com.butent.bee.client.dom.DomUtils;
@@ -62,7 +61,6 @@ import com.butent.bee.client.view.grid.GridView.SelectedRows;
 import com.butent.bee.client.view.grid.interceptor.AbstractGridInterceptor;
 import com.butent.bee.client.view.grid.interceptor.GridInterceptor;
 import com.butent.bee.client.websocket.Endpoint;
-import com.butent.bee.client.widget.Button;
 import com.butent.bee.client.widget.DateTimeLabel;
 import com.butent.bee.client.widget.FaLabel;
 import com.butent.bee.client.widget.InlineLabel;
@@ -76,29 +74,21 @@ import com.butent.bee.shared.Consumer;
 import com.butent.bee.shared.Service;
 import com.butent.bee.shared.State;
 import com.butent.bee.shared.communication.ResponseObject;
-import com.butent.bee.shared.data.BeeRow;
 import com.butent.bee.shared.data.BeeRowSet;
 import com.butent.bee.shared.data.CellSource;
 import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.IsColumn;
 import com.butent.bee.shared.data.IsRow;
-import com.butent.bee.shared.data.SimpleRowSet;
-import com.butent.bee.shared.data.SimpleRowSet.SimpleRow;
 import com.butent.bee.shared.data.filter.Filter;
-import com.butent.bee.shared.data.view.DataInfo;
 import com.butent.bee.shared.data.view.RowInfo;
 import com.butent.bee.shared.font.FontAwesome;
 import com.butent.bee.shared.i18n.LocalizableMessages;
 import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.logging.LogUtils;
-import com.butent.bee.shared.modules.classifiers.ClassifierConstants;
 import com.butent.bee.shared.modules.mail.AccountInfo;
 import com.butent.bee.shared.modules.mail.MailConstants.MessageFlag;
 import com.butent.bee.shared.modules.mail.MailConstants.SystemFolder;
 import com.butent.bee.shared.modules.mail.MailFolder;
-import com.butent.bee.shared.modules.transport.TransportConstants;
-import com.butent.bee.shared.modules.transport.TransportConstants.AssessmentStatus;
-import com.butent.bee.shared.modules.transport.TransportConstants.OrderStatus;
 import com.butent.bee.shared.time.DateTime;
 import com.butent.bee.shared.time.TimeUtils;
 import com.butent.bee.shared.ui.Action;
@@ -110,7 +100,6 @@ import com.butent.bee.shared.websocket.messages.ProgressMessage;
 
 import java.util.Collection;
 import java.util.List;
-import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 
@@ -129,7 +118,7 @@ public class MailPanel extends AbstractFormInterceptor {
       showMessage(currentMessage != null);
 
       if (currentMessage != null) {
-        message.requery(currentMessage.getId(),
+        message.requery(COL_PLACE, currentMessage.getId(),
             Objects.equals(currentMessage.getLong(sender), getCurrentAccount().getAddressId()));
       }
     }
@@ -391,7 +380,7 @@ public class MailPanel extends AbstractFormInterceptor {
   @Override
   public void afterCreateWidget(String name, IdentifiableWidget widget,
       WidgetDescriptionCallback callback) {
-    if (widget instanceof GridPanel && BeeUtils.same(name, "Messages")) {
+    if (widget instanceof GridPanel && BeeUtils.same(name, TBL_PLACES)) {
       ((GridPanel) widget).setGridInterceptor(messages);
 
     } else if (BeeUtils.same(name, COL_MESSAGE)) {
@@ -457,14 +446,6 @@ public class MailPanel extends AbstractFormInterceptor {
     initAccounts(accountsWidget);
     header.addCommandItem(accountsWidget);
 
-    header.addCommandItem(new Button(Localized.getConstants().crmRequest(), new ClickHandler() {
-      @Override
-      public void onClick(ClickEvent event) {
-        createRequest(currentMessage != null
-            ? currentMessage.getLong(DataUtils.getColumnIndex(COL_MESSAGE,
-                messages.getGridPresenter().getDataColumns())) : null);
-      }
-    }));
     message.setFormView(getFormView());
   }
 
@@ -661,48 +642,6 @@ public class MailPanel extends AbstractFormInterceptor {
           checkFolder(getCurrentAccount().getSystemFolder(SystemFolder.Sent));
         }
         checkFolder(getCurrentAccount().getSystemFolder(SystemFolder.Drafts));
-      }
-    });
-  }
-
-  private void createRequest(Long messageId) {
-    if (!DataUtils.isId(messageId)) {
-      return;
-    }
-    ParameterList params = MailKeeper.createArgs(SVC_GET_USABLE_CONTENT);
-    params.addDataItem(COL_MESSAGE, messageId);
-
-    BeeKeeper.getRpc().makePostRequest(params, new ResponseCallback() {
-      @Override
-      public void onResponse(ResponseObject response) {
-        response.notify(getFormView());
-
-        if (response.hasErrors()) {
-          return;
-        }
-        Map<String, String> packet = Codec.deserializeMap(response.getResponseAsString());
-
-        DataInfo dataInfo = Data.getDataInfo(TransportConstants.VIEW_ASSESSMENTS);
-        BeeRow row = RowFactory.createEmptyRow(dataInfo, true);
-
-        row.setValue(dataInfo.getColumnIndex("Customer"),
-            BeeUtils.toLongOrNull(packet.get(ClassifierConstants.COL_COMPANY)));
-        row.setValue(dataInfo.getColumnIndex("CustomerName"),
-            packet.get(ClassifierConstants.COL_COMPANY + ClassifierConstants.COL_COMPANY_NAME));
-        row.setValue(dataInfo.getColumnIndex("CustomerPerson"),
-            BeeUtils.toLongOrNull(packet.get(ClassifierConstants.COL_PERSON)));
-        row.setValue(dataInfo.getColumnIndex("PersonFirstName"),
-            packet.get(ClassifierConstants.COL_FIRST_NAME));
-        row.setValue(dataInfo.getColumnIndex("PersonLastName"),
-            packet.get(ClassifierConstants.COL_LAST_NAME));
-        row.setValue(dataInfo.getColumnIndex("OrderNotes"), packet.get(COL_CONTENT));
-
-        row.setValue(dataInfo.getColumnIndex(TransportConstants.COL_ASSESSMENT_STATUS),
-            AssessmentStatus.NEW.ordinal());
-        row.setValue(dataInfo.getColumnIndex(TransportConstants.ALS_ORDER_STATUS),
-            OrderStatus.REQUEST.ordinal());
-
-        RowFactory.createRow(dataInfo.getNewRowForm(), null, dataInfo, row, null, null, null);
       }
     });
   }

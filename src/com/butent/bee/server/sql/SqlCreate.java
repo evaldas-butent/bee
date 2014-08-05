@@ -36,7 +36,7 @@ public class SqlCreate extends SqlQuery<SqlCreate> implements HasTarget {
     /**
      * Returns a field name as an expression. See
      * {@link com.butent.bee.shared. sql.SqlUtils#name(String)} for details.
-     * 
+     *
      * @return a field name as an expression
      */
     public String getName() {
@@ -81,7 +81,7 @@ public class SqlCreate extends SqlQuery<SqlCreate> implements HasTarget {
   /**
    * Creates an SqlCreate statement with a specified IsFrom target. {@code target} and sets the
    * temporary argument to true
-   * 
+   *
    * @param target the IsFrom target
    */
   public SqlCreate(String target) {
@@ -91,7 +91,7 @@ public class SqlCreate extends SqlQuery<SqlCreate> implements HasTarget {
   /**
    * Creates an SqlCreate statement with a specified IsFrom target {@code target} and a specified
    * {@code temporary} value.
-   * 
+   *
    * @param target the IsFrom target
    * @param temporary the temporary keyword value
    */
@@ -102,7 +102,7 @@ public class SqlCreate extends SqlQuery<SqlCreate> implements HasTarget {
 
   /**
    * Adds a BOOLEAN type field with a field name {@code field} and notNull {@code notNull}.
-   * 
+   *
    * @param field the field's name
    * @param notNull field's not null
    * @return the object's SqlCreate instance
@@ -114,7 +114,7 @@ public class SqlCreate extends SqlQuery<SqlCreate> implements HasTarget {
   /**
    * Adds a CHAR type field with a field name {@code field}, precision {@code precision} and notNull
    * {@code notNull}.
-   * 
+   *
    * @param field the field's name
    * @param precision the field's precision
    * @param notNull field's not null
@@ -127,7 +127,7 @@ public class SqlCreate extends SqlQuery<SqlCreate> implements HasTarget {
 
   /**
    * Adds a DATE type field with a field name {@code field} and notNull {@code notNull}.
-   * 
+   *
    * @param field the field's name
    * @param notNull field's not null
    * @return object's SqlCreate instance
@@ -138,7 +138,7 @@ public class SqlCreate extends SqlQuery<SqlCreate> implements HasTarget {
 
   /**
    * Adds a DATETIME type field with a field name {@code field} and notNull {@code notNull}.
-   * 
+   *
    * @param field the field's name
    * @param notNull field's not null
    * @return object's SqlCreate instance
@@ -150,7 +150,7 @@ public class SqlCreate extends SqlQuery<SqlCreate> implements HasTarget {
   /**
    * Adds a DECIMAL type field with a field name {@code field}, precision {@code precision}, scale
    * {@code scale} and notNull {@code notNull}.
-   * 
+   *
    * @param field the field's name
    * @param precision the field's precision
    * @param scale the field's scale
@@ -165,7 +165,7 @@ public class SqlCreate extends SqlQuery<SqlCreate> implements HasTarget {
 
   /**
    * Adds a DATETIME type field with a field name {@code field} and notNull {@code notNull}.
-   * 
+   *
    * @param field the field's name
    * @param notNull field's not null
    * @return object's SqlCreate instance
@@ -178,7 +178,7 @@ public class SqlCreate extends SqlQuery<SqlCreate> implements HasTarget {
    * Adds a specified type {@code type} field with a field name {@code field}, precision
    * {@code precision}, scale {@code scale} and notNull {@code notNull}. Note: a field name
    * {@code field} must not exist, and dataSource must be empty.
-   * 
+   *
    * @param field the field's name
    * @param type the field's type
    * @param precision he field's precision
@@ -199,7 +199,7 @@ public class SqlCreate extends SqlQuery<SqlCreate> implements HasTarget {
 
   /**
    * Adds an INTEGER type field with a field name {@code field} and notNull {@code notNull}.
-   * 
+   *
    * @param field the field's name
    * @param notNull field's not null
    * @return object's SqlCreate instance
@@ -210,7 +210,7 @@ public class SqlCreate extends SqlQuery<SqlCreate> implements HasTarget {
 
   /**
    * Adds a LONG type field with a field name {@code field} and notNull {@code notNull}.
-   * 
+   *
    * @param field the field's name
    * @param notNull field's not null
    * @return object's SqlCreate instance
@@ -222,7 +222,7 @@ public class SqlCreate extends SqlQuery<SqlCreate> implements HasTarget {
   /**
    * Adds a STRING type field with a field name {@code field}, precision {@code precision} and
    * notNull {@code notNull}.
-   * 
+   *
    * @param field the field's name
    * @param precision the field's precision
    * @param notNull field's not null
@@ -235,7 +235,7 @@ public class SqlCreate extends SqlQuery<SqlCreate> implements HasTarget {
 
   /**
    * Adds a TEXT type field with a field name {@code field} and notNull {@code notNull}.
-   * 
+   *
    * @param field the field's name
    * @param notNull field's not null
    * @return object's SqlCreate instance
@@ -253,7 +253,7 @@ public class SqlCreate extends SqlQuery<SqlCreate> implements HasTarget {
 
   /**
    * Returns a field named {@code field} if such exists.
-   * 
+   *
    * @param field the field's name
    * @return a field named {@code field} if such exists, {@code null} if the name was not found.
    */
@@ -276,7 +276,7 @@ public class SqlCreate extends SqlQuery<SqlCreate> implements HasTarget {
   /**
    * Returns a list of sources found in the {@code dataSource}. For more details see
    * {@link com.butent.bee.shared.sql.SqlSelect#getSources()}.
-   * 
+   *
    * @returns a list of sources found in the {@code dataSource}.
    */
   @Override
@@ -299,7 +299,7 @@ public class SqlCreate extends SqlQuery<SqlCreate> implements HasTarget {
 
   /**
    * Checks if a field named {@code field} exists.
-   * 
+   *
    * @param field the field's name to check
    * @return true if the field exists, otherwise false.
    */
@@ -309,7 +309,7 @@ public class SqlCreate extends SqlQuery<SqlCreate> implements HasTarget {
 
   /**
    * Checks if the current SqlCreate instance is empty.
-   * 
+   *
    * @return true if it is empty, otherwise false.
    */
   @Override
@@ -319,7 +319,7 @@ public class SqlCreate extends SqlQuery<SqlCreate> implements HasTarget {
 
   /**
    * Checks the value of a variable {@code temporary}.
-   * 
+   *
    * @return the current value
    */
   public boolean isTemporary() {
@@ -334,7 +334,7 @@ public class SqlCreate extends SqlQuery<SqlCreate> implements HasTarget {
   /**
    * If there are no fields created sets the {@code dataSource} from an SqlSelect query
    * {@code query}.
-   * 
+   *
    * @param query the query to use for setting the dataSource
    * @return object's SqlCreate instance
    */
@@ -350,7 +350,7 @@ public class SqlCreate extends SqlQuery<SqlCreate> implements HasTarget {
 
   /**
    * Sets the name of a table, to be created.
-   * 
+   *
    * @param targetName table to create
    * @return object's SqlCreate instance
    */

@@ -486,7 +486,7 @@ class TilePanel extends Split implements HasCaption, SelectionHandler<String> {
     private void setPosition(int position) {
       this.position = position;
     }
-    
+
     private void start() {
       setPosition(0);
       run();

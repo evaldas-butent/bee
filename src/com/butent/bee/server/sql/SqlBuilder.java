@@ -44,7 +44,7 @@ public abstract class SqlBuilder {
    * Generates an SQL CREATE query from the specified argument {@code sc}. There are two ways to
    * generate the query. First: by defining a {@code  dataSource}. Second: describing the fields
    * manually. Only one at an instance of the SqlCreate object is possible.
-   * 
+   *
    * @param sc the SqlCreate object
    * @return a generated SQL CREATE query
    */
@@ -88,7 +88,7 @@ public abstract class SqlBuilder {
   /**
    * Generates an SQL DELETE query from the specified argument {@code sd}. {@code sd} must have From
    * and Where conditions set.
-   * 
+   *
    * @param sd the SqlDelete object to use for generating
    * @return a generated SQL DELETE query
    */
@@ -112,7 +112,7 @@ public abstract class SqlBuilder {
    * Generates an SQL INSERT query from the specified argument {@code si}. There are two ways to
    * generate the query. First: by defining a {@code  dataSource}. Second: describing the fields
    * manually. Only one at an instance of the SqlInsert object is possible.
-   * 
+   *
    * @param si the SqlInsert object
    * @return a generated SQL INSERT query
    */
@@ -189,7 +189,7 @@ public abstract class SqlBuilder {
   /**
    * Generates an SQL SELECT query from the specified argument {@code ss}. From value must be
    * defined in order to generate the query.
-   * 
+   *
    * @param ss the SqlSelect object
    * @return a generated SQL SELECT query
    */
@@ -312,7 +312,7 @@ public abstract class SqlBuilder {
   /**
    * Generates an SQL UPDATE query from the specified argument {@code su}. A target table and at
    * least one expression must be defined.
-   * 
+   *
    * @param su the SqlUpdate object.
    * @return a generated SQL UPDATE query
    */

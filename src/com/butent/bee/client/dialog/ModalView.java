@@ -47,7 +47,7 @@ public class ModalView extends Popup {
       return false;
     }
   }
-  
+
   private void setDimensions(HasDimensions dimensions) {
     double v;
     CssUnit u;

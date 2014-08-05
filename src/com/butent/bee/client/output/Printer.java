@@ -98,9 +98,11 @@ public final class Printer {
     frame.setHtml(HTML_START + StyleUtils.getRules() + HTML_MIDDLE + html + HTML_END);
   }
 
+//@formatter:off
   private static native NodeList<Element> getElements(Document d) /*-{
     return d.body.getElementsByTagName("*");
   }-*/;
+//@formatter:on
 
   private static boolean prepare(Element target, Printable widget) {
     if (target == null) {

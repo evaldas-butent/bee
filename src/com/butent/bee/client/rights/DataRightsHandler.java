@@ -50,7 +50,7 @@ final class DataRightsHandler extends MultiStateForm {
     return Lists.newArrayList(RightsState.CREATE, RightsState.VIEW, RightsState.EDIT,
         RightsState.DELETE);
   }
-  
+
   @Override
   protected int getValueStartCol() {
     return 3;
@@ -68,7 +68,7 @@ final class DataRightsHandler extends MultiStateForm {
     Collection<DataInfo> views = Data.getDataInfoProvider().getViews();
     for (DataInfo view : views) {
       ModuleAndSub ms = ModuleAndSub.parse(view.getModule());
-   
+
       if (ms == null) {
         warning("view", view.getViewName(), "module", view.getModule(), "not recognized");
       }

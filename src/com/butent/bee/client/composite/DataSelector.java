@@ -1087,6 +1087,11 @@ public class DataSelector extends Composite implements Editor, HasVisibleLines, 
   }
 
   @Override
+  public void render(String value) {
+    setValue(value);
+  }
+
+  @Override
   public void setAccessKey(char key) {
     getInput().setAccessKey(key);
   }
@@ -1252,7 +1257,7 @@ public class DataSelector extends Composite implements Editor, HasVisibleLines, 
   }
 
   /**
-   * @param ch  
+   * @param ch
    */
   protected boolean consumeCharacter(char ch) {
     return false;

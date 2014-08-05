@@ -10,6 +10,7 @@ public final class Service {
 
   public static final String PROPERTY_AUDIT_OFF = "DisableAuditing";
   public static final String PROPERTY_MODULES = "Modules";
+  public static final String PROPERTY_VIEW_MODULES = "ViewModules";
 
   public static final String RPC_SERVICE_PREFIX = "rpc_";
   public static final String COMPOSITE_SERVICE_PREFIX = "comp_";
@@ -197,7 +198,7 @@ public final class Service {
 
   /**
    * Returns true if {@code svc} value starts with {@link #DATA_SERVICE_PREFIX}.
-   * 
+   *
    * @param svc name of service
    * @return true if name of service starts with {@link #DATA_SERVICE_PREFIX}
    */
@@ -208,7 +209,7 @@ public final class Service {
 
   /**
    * Returns true if {@code svc} value starts with {@link #DB_META_SERVICE_PREFIX}.
-   * 
+   *
    * @param svc name of service
    * @return true if name of service starts with {@link #DB_META_SERVICE_PREFIX}
    */
@@ -219,7 +220,7 @@ public final class Service {
 
   /**
    * Returns true if {@code svc} value starts with {@link #DB_SERVICE_PREFIX}.
-   * 
+   *
    * @param svc name of service;
    * @return true if name of service starts with {@link #DB_SERVICE_PREFIX}
    */
@@ -230,7 +231,7 @@ public final class Service {
 
   /**
    * Returns true if {@code svc} value has {@link #INVOKE}.
-   * 
+   *
    * @param svc name of service;
    * @return true if name of service starts {@link #INVOKE}
    */
@@ -240,7 +241,7 @@ public final class Service {
 
   /**
    * Returns true if {@code svc} value starts with {@link #SYS_SERVICE_PREFIX}.
-   * 
+   *
    * @param svc name of service
    * @return true if name of service starts with {@link #SYS_SERVICE_PREFIX};
    */

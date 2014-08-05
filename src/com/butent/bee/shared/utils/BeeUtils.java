@@ -127,7 +127,7 @@ public final class BeeUtils {
     if (rest == null) {
       return false;
     }
-    
+
     for (String s : rest) {
       if (!isEmpty(s)) {
         return true;
@@ -167,7 +167,7 @@ public final class BeeUtils {
     }
     return false;
   }
-  
+
   /**
    * Checks if the specified value {@code x} is between values {@code min} and {@code max}. Note:
    * {@code min} value is inclusive, {@code max} value - exclusive.
@@ -235,7 +235,7 @@ public final class BeeUtils {
     }
     return sb.toString();
   }
-  
+
   public static String buildLines(String... lines) {
     if (lines == null) {
       return null;
@@ -514,7 +514,7 @@ public final class BeeUtils {
     }
     return false;
   }
-  
+
   /**
    * Counts the appearances of the specified character {@code ch} in a CharSequence.
    * 
@@ -572,7 +572,7 @@ public final class BeeUtils {
   public static double div(int x, int y) {
     return x / (double) y;
   }
-  
+
   public static String embrace(String s) {
     if (isEmpty(s)) {
       return BeeConst.STRING_EMPTY;
@@ -1013,7 +1013,7 @@ public final class BeeUtils {
   public static boolean isAsciiLetter(char c) {
     return Ascii.isUpperCase(c) || Ascii.isLowerCase(c);
   }
-  
+
   public static boolean isBetween(Double d, Double min, boolean minInclusive,
       Double max, boolean maxInclusive) {
     if (!isDouble(d)) {
@@ -1286,11 +1286,11 @@ public final class BeeUtils {
   public static boolean isNegative(Integer x) {
     return (x == null) ? false : x < 0;
   }
-  
+
   public static boolean isNegativeInt(String s) {
     return isInt(s) && toInt(s) < 0;
   }
-  
+
   public static boolean isNonNegative(Double d) {
     if (isDouble(d)) {
       return Double.compare(d, BeeConst.DOUBLE_ZERO) >= 0;
@@ -2071,6 +2071,14 @@ public final class BeeUtils {
       idx--;
     }
     return str.substring(0, idx);
+  }
+
+  public static String removeWhiteSpace(String str) {
+    if (str == null) {
+      return null;
+    } else {
+      return CharMatcher.WHITESPACE.removeFrom(str);
+    }
   }
 
   /**

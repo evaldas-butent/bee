@@ -1461,12 +1461,6 @@ public class TecDocBean {
     qs.sqlDropTemp(tmp);
     tmp = zz;
 
-    qs.updateData(new SqlUpdate(tmp)
-        .addExpression(COL_TCD_ARTICLE,
-            SqlUtils.field(TBL_TCD_ARTICLES, sys.getIdName(TBL_TCD_ARTICLES)))
-        .setFrom(TBL_TCD_ARTICLES, SqlUtils.and(SqlUtils.notNull(tmp, idName),
-            SqlUtils.join(tmp, idName, TBL_TCD_ARTICLES, TCD_TECDOC_ID))));
-
     qs.loadData(TBL_TCD_ARTICLE_SUPPLIERS, new SqlSelect().setLimit(100000)
         .addFields(tmp, COL_TCD_ARTICLE, COL_TCD_COST, COL_TCD_PRICE, COL_TCD_SUPPLIER_ID)
         .addConstant(supplier.ordinal(), COL_TCD_SUPPLIER)

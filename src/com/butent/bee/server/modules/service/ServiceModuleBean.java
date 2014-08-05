@@ -639,21 +639,21 @@ public class ServiceModuleBean implements BeeModule {
         .addOrder(TBL_SERVICE_OBJECTS, COL_SERVICE_ADDRESS, idName);
 
     SimpleRowSet data = qs.getData(query);
-    
+
     if (!DataUtils.isEmpty(data)) {
       Multimap<Long, Property> criteria = getCalendarObjectCriteria(data);
 
       if (!criteria.isEmpty()) {
         for (SimpleRow row : data) {
           Long objId = row.getLong(idName);
-          
+
           if (criteria.containsKey(objId)) {
             row.setValue(PROP_CRITERIA, Codec.beeSerialize(criteria.get(objId)));
           }
         }
       }
     }
-    
+
     return data;
   }
 

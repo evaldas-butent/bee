@@ -118,7 +118,7 @@ public class GridFormPresenter extends AbstractPresenter implements HasGridView,
     if (action == null) {
       return;
     }
-    
+
     FormInterceptor interceptor = getForm().getFormInterceptor();
     if (interceptor != null && !interceptor.beforeAction(action, this)) {
       return;
@@ -128,7 +128,7 @@ public class GridFormPresenter extends AbstractPresenter implements HasGridView,
       case CANCEL:
         gridView.formCancel();
         break;
-        
+
       case CLOSE:
         getForm().onClose(new CloseCallback() {
           @Override
@@ -224,7 +224,7 @@ public class GridFormPresenter extends AbstractPresenter implements HasGridView,
 
   private static FormAndHeader createContainer(HeaderView headerView, FormView formView,
       boolean edit) {
-    
+
     FormAndHeader formContainer = new FormAndHeader();
     formContainer.addStyleName(STYLE_FORM_CONTAINER);
     formContainer.addStyleName(getFormStyle(STYLE_FORM_CONTAINER, edit));

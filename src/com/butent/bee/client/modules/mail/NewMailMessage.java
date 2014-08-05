@@ -36,7 +36,6 @@ import com.butent.bee.client.ui.FormFactory.WidgetDescriptionCallback;
 import com.butent.bee.client.ui.IdentifiableWidget;
 import com.butent.bee.client.ui.UiHelper;
 import com.butent.bee.client.utils.FileUtils;
-import com.butent.bee.client.utils.NewFileInfo;
 import com.butent.bee.client.view.edit.Editor;
 import com.butent.bee.client.view.form.CloseCallback;
 import com.butent.bee.client.view.form.FormView;
@@ -55,6 +54,7 @@ import com.butent.bee.shared.data.filter.Filter;
 import com.butent.bee.shared.font.FontAwesome;
 import com.butent.bee.shared.html.builder.elements.Div;
 import com.butent.bee.shared.i18n.Localized;
+import com.butent.bee.shared.io.FileInfo;
 import com.butent.bee.shared.modules.mail.AccountInfo;
 import com.butent.bee.shared.modules.mail.MailConstants.AddressType;
 import com.butent.bee.shared.utils.BeeUtils;
@@ -71,7 +71,7 @@ import java.util.Objects;
 import java.util.Set;
 
 public final class NewMailMessage extends AbstractFormInterceptor
-    implements ClickHandler, SelectionHandler<NewFileInfo> {
+    implements ClickHandler, SelectionHandler<FileInfo> {
 
   private class DialogCallback extends InputCallback {
     @Override
@@ -117,14 +117,15 @@ public final class NewMailMessage extends AbstractFormInterceptor
   }
 
   public static void create(final Set<String> to, final Set<String> cc, final Set<String> bcc,
-      final String subject, final String content, final Map<Long, NewFileInfo> attach,
+      final String subject, final String content, final Collection<FileInfo> attachments,
       final Long draftId) {
 
     MailKeeper.getAccounts(new BiConsumer<List<AccountInfo>, AccountInfo>() {
       @Override
       public void accept(List<AccountInfo> availableAccounts, AccountInfo defaultAccount) {
         if (!BeeUtils.isEmpty(availableAccounts)) {
-          create(availableAccounts, defaultAccount, to, cc, bcc, subject, content, attach, draftId);
+          create(availableAccounts, defaultAccount, to, cc, bcc, subject, content, attachments,
+              draftId);
         } else {
           BeeKeeper.getScreen().notifyWarning(Localized.getConstants().mailNoAccountsFound());
         }
@@ -134,10 +135,10 @@ public final class NewMailMessage extends AbstractFormInterceptor
 
   public static NewMailMessage create(List<AccountInfo> availableAccounts,
       AccountInfo defaultAccount, Set<String> to, Set<String> cc, Set<String> bcc, String subject,
-      String content, Map<Long, NewFileInfo> attach, Long draftId) {
+      String content, Collection<FileInfo> attachments, Long draftId) {
 
     final NewMailMessage newMessage = new NewMailMessage(availableAccounts, defaultAccount,
-        to, cc, bcc, subject, content, attach, draftId);
+        to, cc, bcc, subject, content, attachments, draftId);
 
     FormFactory.createFormView(FORM_NEW_MAIL_MESSAGE, null, null, false, newMessage,
         new FormViewCallback() {
@@ -165,37 +166,29 @@ public final class NewMailMessage extends AbstractFormInterceptor
   private final Multimap<String, String> recipients = HashMultimap.create();
   private final String subject;
   private final String content;
-  private final Map<Long, NewFileInfo> defaultAttachments;
+  private final Collection<FileInfo> defaultAttachments;
 
   private final Map<String, MultiSelector> recipientWidgets = Maps.newHashMap();
   private Editor subjectWidget;
   private Editor contentWidget;
   private final ListBox signaturesWidget = new ListBox();
-  private final Map<String, Long> attachments = Maps.newLinkedHashMap();
+  private FileCollector attachmentsWidget;
 
   private Consumer<Boolean> scheduled;
 
   private NewMailMessage(List<AccountInfo> availableAccounts, AccountInfo defaultAccount,
       Set<String> to, Set<String> cc, Set<String> bcc, String subject, String content,
-      Map<Long, NewFileInfo> attach, Long draftId) {
+      Collection<FileInfo> attachments, Long draftId) {
 
-    Assert.notNull(defaultAccount);
-
-    this.account = defaultAccount;
+    this.account = Assert.notNull(defaultAccount);
     this.accounts.addAll(availableAccounts);
     this.draftId = draftId;
 
     this.subject = subject;
     this.content = content;
 
-    if (!BeeUtils.isEmpty(attach)) {
-      this.defaultAttachments = attach;
-    } else {
-      this.defaultAttachments = Maps.newHashMap();
-    }
-    for (Long id : defaultAttachments.keySet()) {
-      attachments.put(defaultAttachments.get(id).getName(), id);
-    }
+    this.defaultAttachments = attachments;
+
     Map<AddressType, Set<String>> recs = new HashMap<>();
     recs.put(AddressType.TO, to);
     recs.put(AddressType.CC, cc);
@@ -237,16 +230,16 @@ public final class NewMailMessage extends AbstractFormInterceptor
       contentWidget.setValue(content);
 
     } else if (widget instanceof FileCollector && BeeUtils.same(name, TBL_ATTACHMENTS)) {
-      if (!BeeUtils.isEmpty(defaultAttachments)) {
-        ((FileCollector) widget).addFiles(defaultAttachments.values());
-      }
-      ((FileCollector) widget).bindDnd(getFormView());
-      ((FileCollector) widget).addSelectionHandler(this);
+      attachmentsWidget = (FileCollector) widget;
+      attachmentsWidget.addFiles(defaultAttachments);
+      attachmentsWidget.bindDnd(getFormView());
+      attachmentsWidget.addSelectionHandler(this);
     }
   }
 
   @Override
   public FormInterceptor getInstance() {
+    Assert.unsupported();
     return null;
   }
 
@@ -262,28 +255,19 @@ public final class NewMailMessage extends AbstractFormInterceptor
   }
 
   @Override
-  public void onSelection(SelectionEvent<NewFileInfo> event) {
-    final String fileName = event.getSelectedItem().getName();
+  public void onSelection(SelectionEvent<FileInfo> event) {
+    final FileInfo file = event.getSelectedItem();
 
-    if (attachments.containsKey(fileName)) {
-      attachments.remove(fileName);
-    } else {
-      attachments.put(fileName, 0L);
-
-      FileUtils.uploadFile(event.getSelectedItem(), new Callback<Long>() {
+    if (attachmentsWidget.getFiles().contains(file)) {
+      FileUtils.uploadFile(file, new Callback<Long>() {
         @Override
         public void onFailure(String... reason) {
-          if (attachments.containsKey(fileName)) {
-            attachments.put(fileName, -1L);
-            super.onFailure(reason);
-          }
+          super.onFailure(reason);
         }
 
         @Override
         public void onSuccess(Long id) {
-          if (attachments.containsKey(fileName)) {
-            attachments.put(fileName, id);
-          }
+          file.setFileId(id);
         }
       });
     }
@@ -335,8 +319,7 @@ public final class NewMailMessage extends AbstractFormInterceptor
         contentWidget.getValue().replace(SIGNATURE_SEPARATOR + signature.toString(), ""))) {
       return true;
     }
-    if (!BeeUtils.same(DataUtils.buildIdList(defaultAttachments.keySet()),
-        DataUtils.buildIdList(attachments.values()))) {
+    if (!BeeUtils.sameElements(defaultAttachments, attachmentsWidget.getFiles())) {
       return true;
     }
     return false;
@@ -420,10 +403,15 @@ public final class NewMailMessage extends AbstractFormInterceptor
     params.addDataItem(COL_SUBJECT, subjectWidget.getValue());
     params.addDataItem(COL_CONTENT, contentWidget.getValue());
 
-    String ids = DataUtils.buildIdList(attachments.values());
+    List<Long> ids = new ArrayList<>();
 
+    for (FileInfo file : attachmentsWidget.getFiles()) {
+      if (DataUtils.isId(file.getId())) {
+        ids.add(file.getId());
+      }
+    }
     if (!BeeUtils.isEmpty(ids)) {
-      params.addDataItem(TBL_ATTACHMENTS, ids);
+      params.addDataItem(TBL_ATTACHMENTS, DataUtils.buildIdList(ids));
     }
     BeeKeeper.getRpc().makePostRequest(params, new ResponseCallback() {
       @Override
@@ -456,8 +444,13 @@ public final class NewMailMessage extends AbstractFormInterceptor
     } else if (contentWidget == null || BeeUtils.isEmpty(contentWidget.getValue())) {
       error = Localized.getConstants().mailMessageBodyIsEmpty();
 
-    } else if (attachments.values().contains(0L)) {
-      error = Localized.getConstants().mailThereIsStackOfUnfinishedAttachments();
+    } else {
+      for (FileInfo file : attachmentsWidget.getFiles()) {
+        if (!DataUtils.isId(file.getId())) {
+          error = Localized.getConstants().mailThereIsStackOfUnfinishedAttachments();
+          break;
+        }
+      }
     }
     if (!BeeUtils.isEmpty(error)) {
       getFormView().notifySevere(error);

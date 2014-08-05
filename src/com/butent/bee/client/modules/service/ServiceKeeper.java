@@ -46,7 +46,7 @@ public final class ServiceKeeper {
     FormFactory.registerFormInterceptor("ServiceInvoice", new ServiceInvoiceForm());
     FormFactory.registerFormInterceptor("ServiceDefect", new ServiceDefectForm());
 
-    SelectorEvent.register(new SelectorHandler());    
+    SelectorEvent.register(new SelectorHandler());
 
     TimeBoard.ensureStyleSheet();
 

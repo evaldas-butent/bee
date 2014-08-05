@@ -394,7 +394,7 @@ public final class FileUtils {
     Assert.notEmpty(child);
     return new File(parent, child).exists();
   }
-  
+
   public static boolean isInputFile(File fl) {
     if (fl == null) {
       return false;
@@ -489,7 +489,7 @@ public final class FileUtils {
       }
       fw = new OutputStreamWriter(new FileOutputStream(file), cs);
       fw.append(src);
-    
+
       path = file.getCanonicalPath();
 
     } catch (IOException ex) {

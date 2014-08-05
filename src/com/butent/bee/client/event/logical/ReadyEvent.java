@@ -32,7 +32,7 @@ public final class ReadyEvent extends GwtEvent<ReadyEvent.Handler> {
 
   private static final BeeLogger logger = LogUtils.getLogger(ReadyEvent.class);
 
-  private static final Type<Handler> TYPE = new Type<Handler>();
+  private static final Type<Handler> TYPE = new Type<>();
 
   public static void fire(HasReadyHandlers source) {
     Assert.notNull(source);

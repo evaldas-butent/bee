@@ -63,6 +63,7 @@ import com.butent.bee.shared.io.FileNameUtils;
 import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogUtils;
 import com.butent.bee.shared.rights.RightsState;
+import com.butent.bee.shared.rights.RightsUtils;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.Codec;
 import com.butent.bee.shared.utils.EnumUtils;
@@ -74,6 +75,7 @@ import com.butent.bee.shared.utils.PropertyUtils;
 import java.io.File;
 import java.util.Collection;
 import java.util.EnumSet;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -223,9 +225,10 @@ public class SystemBean {
     List<ViewColumn> viewColumns = view.getViewColumns();
 
     return new DataInfo(view.getModule(), viewName, source.getName(), source.getIdName(),
-        source.getVersionName(), view.getCaption(), view.getEditForm(), view.getRowCaption(),
-        view.getNewRowForm(), view.getNewRowColumns(), view.getNewRowCaption(),
-        view.getCacheMaximumSize(), view.getCacheEviction(), columns, viewColumns);
+        source.getVersionName(), view.getCaption(), view.getEditForm(),
+        view.getRowCaption(), view.getNewRowForm(), view.getNewRowColumns(),
+        view.getNewRowCaption(), view.getCacheMaximumSize(), view.getCacheEviction(),
+        columns, viewColumns, view.getRelationInfo());
   }
 
   public String getDbName() {
@@ -400,6 +403,13 @@ public class SystemBean {
   @Lock(LockType.WRITE)
   public void initViews() {
     initObjects(SysObject.VIEW);
+
+    Map<String, String> viewModules = new HashMap<>();
+
+    for (BeeView view : getViews()) {
+      viewModules.put(view.getName(), view.getModule());
+    }
+    RightsUtils.setViewModules(viewModules);
   }
 
   public boolean isExtField(String tblName, String fldName) {
@@ -429,7 +439,7 @@ public class SystemBean {
 
   /**
    * Creates SQL joins between tables.
-   * 
+   *
    * @param tblName Source table with represented own column Id name, where called
    *          {@link SystemBean#getIdName(String)}
    * @param dstTable Distance table with reference of source table

@@ -88,7 +88,7 @@ public enum TaskType implements HasCaption, HasWidgetSupplier {
   }
 
   public abstract Filter getFilter(LongValue userValue);
-  
+
   @Override
   public String getSupplierKey() {
     return GRID_TASKS + BeeConst.STRING_UNDER + name().toLowerCase();

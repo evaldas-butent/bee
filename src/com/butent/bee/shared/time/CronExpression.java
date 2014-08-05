@@ -38,11 +38,11 @@ public final class CronExpression implements HasInfo {
       if (t1.isWeekdayOrdinal()) {
         weekday = Field.DAY_OF_WEEK.getValue(t2);
         ordinal = WEEKDAY_ORDINALS.indexOf(t1.value) + 1;
-      
+
       } else if (t2.isWeekdayOrdinal()) {
         weekday = Field.DAY_OF_WEEK.getValue(t1);
         ordinal = WEEKDAY_ORDINALS.indexOf(t2.value) + 1;
-   
+
       } else {
         Integer value = BeeUtils.toIntOrNull(t1.value);
         ordinal = (value == null) ? BeeConst.UNDEF : value;
@@ -71,25 +71,25 @@ public final class CronExpression implements HasInfo {
       if (BeeUtils.isEmpty(input)) {
         return items;
       }
-      
+
       List<Integer> separatorPositions = Lists.newArrayList(-1);
       for (int i = 0; i < input.length(); i++) {
         if (input.charAt(i) == ITEM_SEPARATOR) {
           separatorPositions.add(i);
         }
       }
-      
+
       Map<Integer, String> failures = new HashMap<>();
 
       for (int itemIndex = 0; itemIndex < separatorPositions.size(); itemIndex++) {
         int beginIndex = separatorPositions.get(itemIndex) + 1;
-        int endIndex = (itemIndex < separatorPositions.size() - 1) 
+        int endIndex = (itemIndex < separatorPositions.size() - 1)
             ? separatorPositions.get(itemIndex + 1) : input.length();
-            
+
         if (beginIndex >= input.length() || endIndex <= beginIndex) {
           continue;
         }
-        
+
         String inputItem = input.substring(beginIndex, endIndex);
         if (inputItem.isEmpty()) {
           continue;
@@ -290,7 +290,7 @@ public final class CronExpression implements HasInfo {
           }
         }
       }
-      
+
       if (failureHandler != null && !failures.isEmpty()) {
         failureHandler.accept(failures);
       }
@@ -321,7 +321,7 @@ public final class CronExpression implements HasInfo {
     private final Set<JustDate> include = new HashSet<>();
     private final Set<JustDate> working = new HashSet<>();
     private final Set<JustDate> nonWorking = new HashSet<>();
-    
+
     private String id;
 
     public Builder(DateRange dateRange) {
@@ -331,7 +331,7 @@ public final class CronExpression implements HasInfo {
     public Builder(JustDate from, JustDate until) {
       this.dateRange = normalizeRange(from, until);
     }
-    
+
     public CronExpression build() {
       CronExpression result = new CronExpression(dateRange, BeeUtils.nvl(workdayTransition,
           WorkdayTransition.DEFAULT));
@@ -913,7 +913,7 @@ public final class CronExpression implements HasInfo {
     }
     return dayOfWeekExamples;
   }
-  
+
   public static List<Property> getMonthExamples() {
     if (monthExamples.isEmpty()) {
       monthExamples.addAll(PropertyUtils.createProperties(
@@ -943,12 +943,12 @@ public final class CronExpression implements HasInfo {
     } else if (BeeUtils.isEmpty(input) || BeeUtils.same(value, input)
         || BeeUtils.containsSame(splitItems(value), input)) {
       return value;
-    
+
     } else {
       return value + String.valueOf(ITEM_SEPARATOR) + input.trim();
     }
   }
-  
+
   public static DateRange normalizeRange(DateRange range) {
     if (range == null) {
       return DateRange.closed(MIN_DATE, MAX_DATE);
@@ -963,7 +963,7 @@ public final class CronExpression implements HasInfo {
 
     return DateRange.closed(lower, upper);
   }
-  
+
   public static Set<Integer> parseSimpleValues(String id, Field field, String input,
       Consumer<Map<Integer, String>> failureHandler) {
     Assert.notNull(field);
@@ -972,14 +972,14 @@ public final class CronExpression implements HasInfo {
 
     if (!BeeUtils.isEmpty(input)) {
       List<Item> items = Builder.parse(id, field, input, failureHandler);
-      
+
       for (Item item : items) {
         if (item.isSimple()) {
           values.addAll(item.getSimpleValues());
         }
       }
     }
-    
+
     return values;
   }
 
@@ -989,23 +989,23 @@ public final class CronExpression implements HasInfo {
 
     } else if (!BeeUtils.containsSame(value, input)) {
       return value;
-    
+
     } else if (BeeUtils.same(value, input)) {
       return null;
-    
+
     } else {
       List<String> list = splitItems(value);
-      
+
       int index = BeeUtils.indexOfSame(list, input);
       while (!BeeConst.isUndef(index)) {
         list.remove(index);
         index = BeeUtils.indexOfSame(list, input);
       }
-      
+
       return list.isEmpty() ? null : BeeUtils.join(String.valueOf(ITEM_SEPARATOR), list);
     }
   }
-  
+
   public static List<String> splitItems(String input) {
     if (BeeUtils.isEmpty(input)) {
       return new ArrayList<>();
@@ -1338,7 +1338,7 @@ public final class CronExpression implements HasInfo {
   private void addYears(Set<Integer> values) {
     this.years.addAll(values);
   }
-  
+
   private JustDate checkWorkday(JustDate date) {
     switch (workdayTransition) {
       case BACKWARD:
@@ -1460,10 +1460,10 @@ public final class CronExpression implements HasInfo {
           || nearestWorkdays.contains(date.getDom() - TimeUtils.monthLength(date))) {
         return nearestWorkday(date);
       } else if (!BeeUtils.isTrue(ok)) {
-        return null; 
+        return null;
       }
     }
-    
+
     if (BeeUtils.isFalse(ok)) {
       return null;
     } else {

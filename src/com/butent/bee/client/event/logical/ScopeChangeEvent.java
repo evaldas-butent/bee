@@ -9,7 +9,7 @@ public class ScopeChangeEvent extends GwtEvent<ScopeChangeEvent.Handler> {
     void onScopeChange(ScopeChangeEvent event);
   }
 
-  private static final Type<Handler> TYPE = new Type<Handler>();
+  private static final Type<Handler> TYPE = new Type<>();
 
   public static Type<Handler> getType() {
     return TYPE;

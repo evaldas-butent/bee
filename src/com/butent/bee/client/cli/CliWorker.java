@@ -161,7 +161,7 @@ import com.butent.bee.shared.font.FontAwesome;
 import com.butent.bee.shared.html.Attributes;
 import com.butent.bee.shared.html.builder.elements.Input;
 import com.butent.bee.shared.i18n.Localized;
-import com.butent.bee.shared.io.StoredFile;
+import com.butent.bee.shared.io.FileInfo;
 import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogLevel;
 import com.butent.bee.shared.logging.LogUtils;
@@ -479,7 +479,7 @@ public final class CliWorker {
 
     } else if ("run".equals(z)) {
       BeeKeeper.getRpc().sendText(Service.RUN, args);
-      
+
     } else if (z.startsWith("selector") && arr.length >= 2) {
       querySelector(z, args, errorPopup);
 
@@ -814,12 +814,14 @@ public final class CliWorker {
     }, delay);
   }
 
+//@formatter:off
   private static native void cornifyAdd() /*-{
     try {
       $wnd.cornify_add();
     } catch (err) {
     }
   }-*/;
+//@formatter:on
 
   private static void createResource(String args, boolean errorPopup) {
     if (BeeUtils.isEmpty(args)) {
@@ -1639,7 +1641,7 @@ public final class CliWorker {
           }
 
           long totSize = 0;
-          for (StoredFile sf : fileGroup.getFiles()) {
+          for (FileInfo sf : fileGroup.getFiles()) {
             totSize += sf.getSize();
           }
 
@@ -2116,6 +2118,7 @@ public final class CliWorker {
     }
   }
 
+//@formatter:off
   // CHECKSTYLE:OFF
   private static native void sampleCanvas(Element el) /*-{
     var ctx = el.getContext("2d");
@@ -2127,8 +2130,8 @@ public final class CliWorker {
       }
     }
   }-*/;
-
   // CHECKSTYLE:ON
+//@formatter:on
 
   private static void scheduleTasks(String[] arr, boolean errorPopup) {
     JustDate from = (arr.length > 1) ? TimeUtils.parseDate(arr[1]) : TimeUtils.today();
@@ -2266,7 +2269,7 @@ public final class CliWorker {
     int timeout = BeeConst.UNDEF;
     String cancelHtml = null;
 
-    final Holder<String> widgetName = new Holder<String>(null);
+    final Holder<String> widgetName = new Holder<>(null);
     final Holder<String> widgetStyle = Holder.of("background-color:green");
 
     String v;
@@ -2749,7 +2752,7 @@ public final class CliWorker {
           int row = 0;
           int col = 0;
 
-          Map<String, String> flags = new TreeMap<String, String>(Flags.getFlags());
+          Map<String, String> flags = new TreeMap<>(Flags.getFlags());
 
           for (Map.Entry<String, String> entry : flags.entrySet()) {
             table.setHtml(row, col, entry.getKey());
@@ -2952,7 +2955,7 @@ public final class CliWorker {
       int row = 0;
       int col = 0;
 
-      Map<String, ImageResource> map = new TreeMap<String, ImageResource>(Images.getMap());
+      Map<String, ImageResource> map = new TreeMap<>(Images.getMap());
 
       for (Map.Entry<String, ImageResource> entry : map.entrySet()) {
         table.setHtml(row, col, entry.getKey());
@@ -2986,7 +2989,7 @@ public final class CliWorker {
 
     boolean required = true;
 
-    final Holder<String> widgetName = new Holder<String>(null);
+    final Holder<String> widgetName = new Holder<>(null);
     final Holder<String> widgetStyle = Holder.of("background-color:green");
 
     String v;

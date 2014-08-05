@@ -1,6 +1,5 @@
 package com.butent.bee.client;
 
-import com.google.common.collect.Lists;
 import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.Window.ClosingEvent;
 import com.google.gwt.user.client.Window.ClosingHandler;
@@ -30,6 +29,7 @@ import com.butent.bee.shared.data.event.RowTransformEvent;
 import com.butent.bee.shared.data.event.RowUpdateEvent;
 import com.butent.bee.shared.websocket.messages.ModificationMessage;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
@@ -107,7 +107,7 @@ public class EventManager implements FiresModificationEvents {
       boolean prior) {
     Assert.notNull(handler);
 
-    List<HandlerRegistration> registry = Lists.newArrayList();
+    List<HandlerRegistration> registry = new ArrayList<>();
 
     registry.add(registerCellUpdateHandler(handler, prior));
     registry.add(registerMultiDeleteHandler(handler, prior));
@@ -124,7 +124,7 @@ public class EventManager implements FiresModificationEvents {
       boolean prior) {
     Assert.notNull(handler);
 
-    List<HandlerRegistration> registry = Lists.newArrayList();
+    List<HandlerRegistration> registry = new ArrayList<>();
     registry.add(registerRowDeleteHandler(handler, prior));
     registry.add(registerMultiDeleteHandler(handler, prior));
 
@@ -149,8 +149,7 @@ public class EventManager implements FiresModificationEvents {
   }
 
   public HandlerRegistration registerParentRowHandler(Object source,
-      ParentRowEvent.Handler handler,
-      boolean prior) {
+      ParentRowEvent.Handler handler, boolean prior) {
     return ParentRowEvent.register(getBus(prior), source, handler);
   }
 
@@ -183,7 +182,7 @@ public class EventManager implements FiresModificationEvents {
       boolean prior) {
     Assert.notNull(handler);
 
-    List<HandlerRegistration> registry = Lists.newArrayList();
+    List<HandlerRegistration> registry = new ArrayList<>();
     registry.add(registerCellUpdateHandler(handler, prior));
     registry.add(registerRowUpdateHandler(handler, prior));
 

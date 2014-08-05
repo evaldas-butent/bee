@@ -14,7 +14,7 @@ import com.butent.bee.shared.utils.PropertyUtils;
 
 import java.util.List;
 
-public class StoredFile implements HasInfo, HasCaption, BeeSerializable {
+public class FileInfo implements HasInfo, HasCaption, BeeSerializable {
 
   private enum Serial {
     ID, NAME, SIZE, TYPE, ICON, DATE, VERSION, CAPTION, DESCRIPTION, RELATED
@@ -25,19 +25,19 @@ public class StoredFile implements HasInfo, HasCaption, BeeSerializable {
     return Paths.buildPath(Paths.IMAGE_DIR, Paths.FILE_ICON_DIR, icon);
   }
 
-  public static StoredFile restore(String s) {
+  public static FileInfo restore(String s) {
     if (BeeUtils.isEmpty(s)) {
       return null;
     }
 
-    StoredFile result = new StoredFile();
+    FileInfo result = new FileInfo();
     result.deserialize(s);
 
     return result;
   }
 
-  public static List<StoredFile> restoreCollection(String s) {
-    List<StoredFile> result = Lists.newArrayList();
+  public static List<FileInfo> restoreCollection(String s) {
+    List<FileInfo> result = Lists.newArrayList();
     if (BeeUtils.isEmpty(s)) {
       return result;
     }
@@ -48,7 +48,7 @@ public class StoredFile implements HasInfo, HasCaption, BeeSerializable {
     }
 
     for (String item : arr) {
-      StoredFile storedFile = restore(item);
+      FileInfo storedFile = restore(item);
       if (storedFile != null) {
         result.add(storedFile);
       }
@@ -56,7 +56,7 @@ public class StoredFile implements HasInfo, HasCaption, BeeSerializable {
     return result;
   }
 
-  private long fileId;
+  private Long fileId;
 
   private String name;
   private Long size;
@@ -75,15 +75,14 @@ public class StoredFile implements HasInfo, HasCaption, BeeSerializable {
   private String path;
   private boolean temporary;
 
-  public StoredFile(long fileId, String name, Long size, String type) {
-    super();
-    this.fileId = fileId;
-    this.name = name;
-    this.size = size;
-    this.type = type;
+  public FileInfo(Long fileId, String name, Long size, String type) {
+    setFileId(fileId);
+    setName(name);
+    setSize(size);
+    setType(type);
   }
 
-  private StoredFile() {
+  private FileInfo() {
   }
 
   @Override
@@ -101,7 +100,7 @@ public class StoredFile implements HasInfo, HasCaption, BeeSerializable {
 
       switch (member) {
         case ID:
-          setFileId(BeeUtils.toLong(value));
+          setFileId(BeeUtils.toLongOrNull(value));
           break;
 
         case NAME:
@@ -109,7 +108,7 @@ public class StoredFile implements HasInfo, HasCaption, BeeSerializable {
           break;
 
         case SIZE:
-          setSize(BeeUtils.toLong(value));
+          setSize(BeeUtils.toLongOrNull(value));
           break;
 
         case TYPE:
@@ -144,6 +143,49 @@ public class StoredFile implements HasInfo, HasCaption, BeeSerializable {
   }
 
   @Override
+  public boolean equals(Object obj) {
+    if (this == obj) {
+      return true;
+    }
+    if (obj == null) {
+      return false;
+    }
+    if (!(obj instanceof FileInfo)) {
+      return false;
+    }
+    FileInfo other = (FileInfo) obj;
+    if (fileId == null) {
+      if (other.fileId != null) {
+        return false;
+      }
+    } else if (fileId.equals(other.fileId)) {
+      return true;
+    }
+    if (name == null) {
+      if (other.name != null) {
+        return false;
+      }
+    } else if (!name.equals(other.name)) {
+      return false;
+    }
+    if (size == null) {
+      if (other.size != null) {
+        return false;
+      }
+    } else if (!size.equals(other.size)) {
+      return false;
+    }
+    if (type == null) {
+      if (other.type != null) {
+        return false;
+      }
+    } else if (!type.equals(other.type)) {
+      return false;
+    }
+    return true;
+  }
+
+  @Override
   public String getCaption() {
     return caption;
   }
@@ -156,7 +198,7 @@ public class StoredFile implements HasInfo, HasCaption, BeeSerializable {
     return fileDate;
   }
 
-  public long getFileId() {
+  public Long getId() {
     return fileId;
   }
 
@@ -170,7 +212,7 @@ public class StoredFile implements HasInfo, HasCaption, BeeSerializable {
 
   @Override
   public List<Property> getInfo() {
-    return PropertyUtils.createProperties("Id", getFileId(),
+    return PropertyUtils.createProperties("Id", getId(),
         "Name", getName(),
         "Size", getSize(),
         "Type", getType(),
@@ -202,6 +244,17 @@ public class StoredFile implements HasInfo, HasCaption, BeeSerializable {
     return type;
   }
 
+  @Override
+  public int hashCode() {
+    final int prime = 31;
+    int result = 1;
+    result = prime * result + ((fileId == null) ? 0 : fileId.hashCode());
+    result = prime * result + ((name == null) ? 0 : name.hashCode());
+    result = prime * result + ((size == null) ? 0 : size.hashCode());
+    result = prime * result + ((type == null) ? 0 : type.hashCode());
+    return result;
+  }
+
   public boolean isTemporary() {
     return temporary;
   }
@@ -215,7 +268,7 @@ public class StoredFile implements HasInfo, HasCaption, BeeSerializable {
     for (Serial member : members) {
       switch (member) {
         case ID:
-          arr[i++] = getFileId();
+          arr[i++] = getId();
           break;
 
         case NAME:
@@ -270,6 +323,10 @@ public class StoredFile implements HasInfo, HasCaption, BeeSerializable {
     this.fileDate = fileDate;
   }
 
+  public void setFileId(Long fileId) {
+    this.fileId = fileId;
+  }
+
   public void setFileVersion(String fileVersion) {
     this.fileVersion = fileVersion;
   }
@@ -292,10 +349,6 @@ public class StoredFile implements HasInfo, HasCaption, BeeSerializable {
 
   public void setType(String type) {
     this.type = type;
-  }
-
-  private void setFileId(long fileId) {
-    this.fileId = fileId;
   }
 
   private void setName(String name) {
