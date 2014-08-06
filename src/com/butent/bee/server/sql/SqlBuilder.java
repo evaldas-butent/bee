@@ -427,12 +427,16 @@ public abstract class SqlBuilder {
       case ENDS:
       case CONTAINS:
       case MATCHES:
+      case FULL_TEXT:
         boolean matches = operator == Operator.MATCHES;
         value = value.replace("|", "||").replace("%", "|%").replace("_", "|_");
 
         if (matches) {
           value = value.replace(Operator.CHAR_ANY, "%").replace(Operator.CHAR_ONE, "_");
         } else {
+          if (operator == Operator.FULL_TEXT) {
+            value = sqlTransform(value);
+          }
           value = value.replaceFirst("^(" + sqlTransform(")(.*)(") + ")$",
               "$1" + (operator != Operator.STARTS ? "%" : "")
                   + "$2" + (operator != Operator.ENDS ? "%" : "") + "$3");
@@ -600,8 +604,8 @@ public abstract class SqlBuilder {
             "CREATE", isEmpty(params.get("isUnique")) ? "" : "UNIQUE",
             "INDEX", params.get("name"),
             "ON", params.get("table"),
-            BeeUtils.parenthesize(BeeUtils.notEmpty((String) params.get("expression"),
-                (String) params.get("fields"))));
+            BeeUtils.notEmpty((String) params.get("expression"),
+                BeeUtils.parenthesize(params.get("fields"))));
 
       case ADD_CONSTRAINT:
         return BeeUtils.joinWords(

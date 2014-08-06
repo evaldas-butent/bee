@@ -499,13 +499,11 @@ public class MailModuleBean implements BeeModule {
             .addFields(TBL_PLACES, COL_MESSAGE)
             .addFrom(TBL_PLACES)
             .addFromInner(TBL_MESSAGES, sys.joinTables(TBL_MESSAGES, TBL_PLACES, COL_MESSAGE))
-            .addFromLeft(TBL_PARTS, sys.joinTables(TBL_MESSAGES, TBL_PARTS, COL_MESSAGE))
             .setWhere(SqlUtils.and(SqlUtils.equals(TBL_PLACES, COL_FOLDER,
                 BeeUtils.toLong(keys.get(COL_FOLDER))),
                 SqlUtils.or(SqlUtils.contains(TBL_EMAILS, COL_EMAIL_ADDRESS, search),
                     SqlUtils.contains(TBL_ADDRESSBOOK, COL_EMAIL_LABEL, search),
-                    SqlUtils.contains(TBL_MESSAGES, COL_SUBJECT, search),
-                    SqlUtils.contains(TBL_PARTS, COL_CONTENT, search))));
+                    SqlUtils.contains(TBL_MESSAGES, COL_SUBJECT, search))));
 
         if (BeeUtils.toBoolean(keys.get(SystemFolder.Sent.name()))) {
           query.addFromLeft(TBL_RECIPIENTS,
@@ -518,7 +516,18 @@ public class MailModuleBean implements BeeModule {
         return SqlUtils.in(TBL_PLACES, COL_MESSAGE,
             query.addFromLeft(TBL_ADDRESSBOOK,
                 SqlUtils.and(sys.joinTables(TBL_EMAILS, TBL_ADDRESSBOOK, COL_EMAIL),
-                    SqlUtils.equals(TBL_ADDRESSBOOK, COL_USER, usr.getCurrentUserId()))));
+                    SqlUtils.equals(TBL_ADDRESSBOOK, COL_USER, usr.getCurrentUserId())))
+                .setUnionAllMode(false)
+                .addUnion(new SqlSelect().setDistinctMode(true)
+                    .addFields(TBL_PLACES, COL_MESSAGE)
+                    .addFrom(TBL_PLACES)
+                    .addFromInner(TBL_MESSAGES,
+                        sys.joinTables(TBL_MESSAGES, TBL_PLACES, COL_MESSAGE))
+                    .addFromLeft(TBL_PARTS,
+                        sys.joinTables(TBL_MESSAGES, TBL_PARTS, COL_MESSAGE))
+                    .setWhere(SqlUtils.and(SqlUtils.equals(TBL_PLACES, COL_FOLDER,
+                        BeeUtils.toLong(keys.get(COL_FOLDER))),
+                        SqlUtils.fullText(TBL_PARTS, COL_CONTENT, search)))));
       }
     });
 
