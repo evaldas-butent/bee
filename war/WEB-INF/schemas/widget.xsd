@@ -173,6 +173,7 @@
     <xs:attributeGroup ref="ui:alignment" />
     <xs:attributeGroup ref="ui:dimension" />
     <xs:attributeGroup ref="ui:appearance" />
+    <xs:attribute name="kind" type="ui:cellKind" />
     <xs:attributeGroup ref="visibility" />
   </xs:complexType>
 
@@ -499,6 +500,7 @@
                 <xs:attribute name="widthUnit" type="ui:cssUnit" />
                 <xs:attributeGroup ref="ui:appearance" />
                 <xs:attributeGroup ref="ui:cellAppearance" />
+                <xs:attribute name="kind" type="ui:cellKind" />
               </xs:complexType>
             </xs:element>
 

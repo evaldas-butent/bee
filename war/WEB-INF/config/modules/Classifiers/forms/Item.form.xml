@@ -1,7 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!DOCTYPE Form [
-  <!ENTITY clbl "text-align: right; padding-left: 1em; padding-right: 6px; white-space: nowrap;">
-]>
+<!DOCTYPE Form>
 <f:Form xmlns="http://www.butent.com/widget"
   xmlns:f="http://www.butent.com/form"
   
@@ -9,10 +7,9 @@
   width="700" height="450"
   >
   <FlowPanel class="flexBox-vertical">
-    <Table style="border-collapse: collapse; margin-top: 1ex;" cellStyle="padding-top: 5px;">
-      <col index="0" cellStyle="&clbl;" />
-      <col index="2" cellStyle="&clbl;" />
-      <col index="4" cellStyle="&clbl;" />
+    <Table style="margin-top: 1ex;">
+      <col index="0" kind="label" />
+      <col index="2" kind="label" />
       
       <row>
         <Label for="Type" />
@@ -37,10 +34,12 @@
         <DataSelector source="Unit" visible="true" newRowEnabled="false" style="width: 80px;" />
 
         <CheckBox source="Vat" text="=vat" />
-        <FlowPanel>
-          <InputDecimal source="VatPercent" style="width: 40px;" />
-          <InlineLabel html="%" style="padding-left: 3px;"/>
-        </FlowPanel>
+        <cell style="padding-left: 6px;">
+          <FlowPanel>
+            <InputDecimal source="VatPercent" style="width: 40px;" />
+            <InlineLabel html="%" style="padding-left: 3px;"/>
+          </FlowPanel>
+        </cell>
       </row>
 
       <row>
@@ -65,8 +64,8 @@
     <TabbedPages class="flexible">
       <page>
         <text>=prices</text>
-        <Table style="border-collapse: collapse; margin-top: 1ex;" cellStyle="padding-top: 5px;">
-          <col index="0" cellStyle="&clbl;" />
+        <Table style="margin-top: 1ex;">
+          <col index="0" kind="label" />
           <col index="2" cellStyle="padding-left: 6px;" />
 
           <row>
@@ -98,9 +97,9 @@
 
       <page>
         <text>=additionalInfo</text>
-        <Table style="border-collapse: collapse; margin-top: 1ex;" cellStyle="padding-top: 5px;">
-          <col index="0" cellStyle="&clbl;" />
-          <col index="2" cellStyle="&clbl;" />
+        <Table style="margin-top: 1ex;">
+          <col index="0" kind="label" />
+          <col index="2" kind="label" />
       
           <row>
             <Label for="Name2" />

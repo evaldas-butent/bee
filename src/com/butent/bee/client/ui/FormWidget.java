@@ -1,6 +1,7 @@
 package com.butent.bee.client.ui;
 
 import com.google.gwt.dom.client.Document;
+import com.google.gwt.dom.client.TableCellElement;
 import com.google.gwt.i18n.client.NumberFormat;
 import com.google.gwt.media.client.MediaBase;
 import com.google.gwt.resources.client.ImageResource;
@@ -30,6 +31,7 @@ import com.butent.bee.client.dom.DomUtils;
 import com.butent.bee.client.dom.Edges;
 import com.butent.bee.client.dom.Features;
 import com.butent.bee.client.event.EventUtils;
+import com.butent.bee.client.grid.CellKind;
 import com.butent.bee.client.grid.ChildGrid;
 import com.butent.bee.client.grid.GridFactory;
 import com.butent.bee.client.grid.GridPanel;
@@ -807,6 +809,14 @@ public enum FormWidget {
         StyleUtils.updateClasses(table.getCellFormatter().ensureElement(row, col), z);
       }
 
+      z = element.getAttribute(ATTR_KIND);
+      if (!BeeUtils.isEmpty(z)) {
+        CellKind cellKind = CellKind.parse(z);
+        if (cellKind != null) {
+          table.getCellFormatter().addStyleName(row, col, cellKind.getStyleName());
+        }
+      }
+
       z = element.getAttribute(UiConstants.ATTR_STYLE);
       if (!BeeUtils.isEmpty(z)) {
         StyleUtils.updateStyle(table.getCellFormatter().ensureElement(row, col), z);
@@ -874,9 +884,20 @@ public enum FormWidget {
     }
 
     if (XmlUtils.tagIs(element, UiConstants.TAG_CELL)) {
-      StyleUtils.updateAppearance(cellContent.asWidget().getElement().getParentElement(),
-          element.getAttribute(UiConstants.ATTR_CLASS),
-          element.getAttribute(UiConstants.ATTR_STYLE));
+      TableCellElement cell = DomUtils.getParentCell(cellContent.getElement(), false);
+
+      if (cell != null && parent.getElement().isOrHasChild(cell)) {
+        StyleUtils.updateAppearance(cell, element.getAttribute(UiConstants.ATTR_CLASS),
+            element.getAttribute(UiConstants.ATTR_STYLE));
+
+        z = element.getAttribute(ATTR_KIND);
+        if (!BeeUtils.isEmpty(z)) {
+          CellKind cellKind = CellKind.parse(z);
+          if (cellKind != null) {
+            cell.addClassName(cellKind.getStyleName());
+          }
+        }
+      }
     }
   }
 
@@ -894,18 +915,16 @@ public enum FormWidget {
   private static final String ATTR_URL = "url";
   private static final String ATTR_ALT = "alt";
   private static final String ATTR_TAB_INDEX = "tabIndex";
+
   private static final String ATTR_LEFT = "left";
-
   private static final String ATTR_LEFT_UNIT = "leftUnit";
-
   private static final String ATTR_RIGHT = "right";
   private static final String ATTR_RIGHT_UNIT = "rightUnit";
   private static final String ATTR_TOP = "top";
-
   private static final String ATTR_TOP_UNIT = "topUnit";
   private static final String ATTR_BOTTOM = "bottom";
-
   private static final String ATTR_BOTTOM_UNIT = "bottomUnit";
+
   private static final String ATTR_CELL_CLASS = "cellClass";
   private static final String ATTR_CELL_STYLE = "cellStyle";
 
@@ -973,10 +992,11 @@ public enum FormWidget {
   private static final String ATTR_TEXT_ONLY = "textOnly";
 
   private static final String ATTR_UP_FACE = "upFace";
-
   private static final String ATTR_DOWN_FACE = "downFace";
 
   private static final String ATTR_CHILD = "child";
+
+  private static final String ATTR_KIND = "kind";
 
   private static final String TAG_CSS = "css";
 
@@ -2113,6 +2133,15 @@ public enum FormWidget {
           if (!BeeUtils.isEmpty(classes)) {
             table.setColumnCellClasses(c, classes);
           }
+
+          String kind = child.getAttribute(ATTR_KIND);
+          if (!BeeUtils.isEmpty(kind)) {
+            CellKind cellKind = CellKind.parse(kind);
+            if (cellKind != null) {
+              table.setColumnCellKind(c, cellKind);
+            }
+          }
+
           String styles = child.getAttribute(ATTR_CELL_STYLE);
           if (!BeeUtils.isEmpty(styles)) {
             table.setColumnCellStyles(c, styles);

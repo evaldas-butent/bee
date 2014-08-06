@@ -133,6 +133,13 @@
     </xs:restriction>
   </xs:simpleType>
 
+  <xs:simpleType name="cellKind">
+    <xs:restriction base="xs:string">
+      <xs:enumeration value="label" />
+      <xs:enumeration value="input" />
+    </xs:restriction>
+  </xs:simpleType>
+
   <xs:complexType name="editor">
     <xs:sequence>
       <xs:element name="item" type="xs:normalizedString" minOccurs="0" maxOccurs="unbounded" />
