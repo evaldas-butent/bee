@@ -9,4 +9,11 @@
     <Text name="Content" />
     <Text name="HtmlContent" />
   </Fields>
+  <Indexes>
+    <Index>
+      <PostgreSql>USING gin(to_tsvector('simple', "Content"))</PostgreSql>
+      <MsSql></MsSql>
+      <Oracle></Oracle>
+    </Index>
+  </Indexes>
 </Table>
