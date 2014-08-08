@@ -25,7 +25,7 @@
   </Columns>
 
   <Order>
-    <OrderBy column="ParentName" />
+    <OrderBy column="ParentName" nulls="first" />
     <OrderBy column="Name" />
   </Order>
 </View>

@@ -1,11 +1,9 @@
 package com.butent.bee.server.data;
 
-import com.google.common.base.Objects;
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
-import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
 import com.google.common.eventbus.EventBus;
 
@@ -34,6 +32,7 @@ import com.butent.bee.server.sql.SqlUtils;
 import com.butent.bee.server.utils.XmlUtils;
 import com.butent.bee.server.websocket.Endpoint;
 import com.butent.bee.shared.Assert;
+import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.Pair;
 import com.butent.bee.shared.Service;
 import com.butent.bee.shared.data.BeeColumn;
@@ -73,11 +72,15 @@ import com.butent.bee.shared.utils.Property;
 import com.butent.bee.shared.utils.PropertyUtils;
 
 import java.io.File;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.EnumSet;
 import java.util.HashMap;
+import java.util.HashSet;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 
 import javax.annotation.PostConstruct;
@@ -148,8 +151,8 @@ public class SystemBean {
   private String dbName;
   private String dbSchema;
   private String dbAuditSchema;
-  private final Map<String, BeeTable> tableCache = Maps.newHashMap();
-  private final Map<String, BeeView> viewCache = Maps.newHashMap();
+  private final Map<String, BeeTable> tableCache = new HashMap<>();
+  private final Map<String, BeeView> viewCache = new HashMap<>();
 
   private final EventBus dataEventBus = new EventBus();
 
@@ -164,14 +167,14 @@ public class SystemBean {
   }
 
   public List<Property> checkTables(List<String> tbls, String progressId) {
-    List<Property> diff = Lists.newArrayList();
+    List<Property> diff = new ArrayList<>();
     List<String> tables;
 
     if (BeeUtils.isEmpty(tbls)) {
       initTables();
       tables = getTableNames();
     } else {
-      tables = Lists.newArrayList(tbls);
+      tables = new ArrayList<>(tbls);
     }
 
     int size = tables.size();
@@ -192,6 +195,21 @@ public class SystemBean {
     return diff;
   }
 
+  public String clampValue(String tblName, String fldName, String value) {
+    if (value == null) {
+      return null;
+    } else if (value.isEmpty()) {
+      return BeeConst.STRING_EMPTY;
+    } else {
+      int precision = getFieldPrecision(tblName, fldName);
+      if (precision > 0 && value.length() > precision) {
+        return BeeUtils.left(value.trim(), precision);
+      } else {
+        return value;
+      }
+    }
+  }
+
   public void filterVisibleState(SqlSelect query, String tblName) {
     filterVisibleState(query, tblName, null);
   }
@@ -207,7 +225,7 @@ public class SystemBean {
   }
 
   public List<DataInfo> getDataInfo() {
-    List<DataInfo> result = Lists.newArrayList();
+    List<DataInfo> result = new ArrayList<>();
 
     Collection<String> viewNames = getViewNames();
     for (String viewName : viewNames) {
@@ -239,6 +257,10 @@ public class SystemBean {
     return dbSchema;
   }
 
+  public int getFieldPrecision(String tblName, String fldName) {
+    return getTable(tblName).getField(fldName).getPrecision();
+  }
+
   public String getIdName(String tblName) {
     return getTable(tblName).getIdName();
   }
@@ -265,7 +287,7 @@ public class SystemBean {
   }
 
   public List<String> getTableNames() {
-    List<String> tables = Lists.newArrayList();
+    List<String> tables = new ArrayList<>();
 
     for (BeeTable table : getTables()) {
       tables.add(table.getName());
@@ -289,7 +311,7 @@ public class SystemBean {
   }
 
   public Collection<String> getViewNames() {
-    Collection<String> views = Lists.newArrayList();
+    Collection<String> views = new ArrayList<>();
 
     for (BeeView view : viewCache.values()) {
       views.add(view.getName());
@@ -582,7 +604,7 @@ public class SystemBean {
 
   private Map<String, String> createTable(BeeTable table, List<Property> diff) {
     String tblName = table.getName();
-    Map<String, SqlCreate> newTables = Maps.newHashMap();
+    Map<String, SqlCreate> newTables = new HashMap<>();
 
     newTables.put(tblName, new SqlCreate(tblName, false)
         .addLong(table.getIdName(), true)
@@ -621,7 +643,7 @@ public class SystemBean {
         newTables.put(tblName, sc);
       }
     }
-    Map<String, String> rebuilds = Maps.newHashMap();
+    Map<String, String> rebuilds = new HashMap<>();
 
     for (SqlCreate sc : newTables.values()) {
       tblName = sc.getTarget();
@@ -639,7 +661,7 @@ public class SystemBean {
         tblBackup = tblName + "_BAK";
         logger.debug("Checking indexes...");
         int c = 0;
-        Set<String> indexes = Sets.newHashSet();
+        Set<String> indexes = new HashSet<>();
 
         for (String index : qs.dbIndexes(getDbName(), getDbSchema(), tblName)
             .getColumn(SqlConstants.KEY_NAME)) {
@@ -681,7 +703,7 @@ public class SystemBean {
       if (!update) {
         logger.debug("Checking unique keys...");
         int c = 0;
-        Set<String> keys = Sets.newHashSet();
+        Set<String> keys = new HashSet<>();
 
         for (String key : qs.dbConstraints(getDbName(), getDbSchema(), tblName,
             SqlKeyword.UNIQUE, SqlKeyword.PRIMARY_KEY).getColumn(SqlConstants.KEY_NAME)) {
@@ -723,7 +745,7 @@ public class SystemBean {
       if (!update) {
         logger.debug("Checking foreign keys...");
         int c = 0;
-        Set<String> fKeys = Sets.newHashSet();
+        Set<String> fKeys = new HashSet<>();
 
         for (String fKey : qs.dbConstraints(getDbName(), getDbSchema(), tblName,
             SqlKeyword.FOREIGN_KEY).getColumn(SqlConstants.KEY_NAME)) {
@@ -769,7 +791,7 @@ public class SystemBean {
       if (!update) {
         logger.debug("Checking check constraints...");
         int c = 0;
-        Set<String> checks = Sets.newHashSet();
+        Set<String> checks = new HashSet<>();
 
         for (String check : qs.dbConstraints(getDbName(), getDbSchema(), tblName, SqlKeyword.CHECK)
             .getColumn(SqlConstants.KEY_NAME)) {
@@ -809,7 +831,7 @@ public class SystemBean {
       if (!update) {
         logger.debug("Checking triggers...");
         int c = 0;
-        Set<String> triggers = Sets.newHashSet();
+        Set<String> triggers = new HashSet<>();
 
         for (String trigger : qs.dbTriggers(getDbName(), getDbSchema(), tblName)
             .getColumn(SqlConstants.TRIGGER_NAME)) {
@@ -890,7 +912,7 @@ public class SystemBean {
             if (oldFieldInfo != null) {
               for (String info : oldFieldInfo.getColumnNames()) {
                 if (!BeeUtils.same(info, SqlConstants.TBL_NAME)
-                    && !Objects.equal(oldFieldInfo.getValue(info), newFieldInfo.getValue(info))) {
+                    && !Objects.equals(oldFieldInfo.getValue(info), newFieldInfo.getValue(info))) {
 
                   String msg = BeeUtils.joinWords("FIELD", fldName + ":",
                       info, oldFieldInfo.getValue(info), "!=", newFieldInfo.getValue(info));
@@ -931,7 +953,7 @@ public class SystemBean {
           }
         }
         if (update) {
-          Map<String, String> updFlds = Maps.newLinkedHashMap();
+          Map<String, String> updFlds = new LinkedHashMap<>();
           String[] oldList = oldFields.getColumn(SqlConstants.FLD_NAME);
 
           for (String newFld : newFields.getColumn(SqlConstants.FLD_NAME)) {
@@ -986,7 +1008,7 @@ public class SystemBean {
   }
 
   private BeeView getDefaultView(String tblName) {
-    List<XmlColumn> columns = Lists.newArrayList();
+    List<XmlColumn> columns = new ArrayList<>();
 
     for (BeeField field : getTableFields(tblName)) {
       XmlColumn column = new XmlSimpleColumn();
@@ -1017,7 +1039,7 @@ public class SystemBean {
     dbAuditSchema = BeeUtils.join("_", dbSchema, AUDIT_SUFFIX);
 
     String[] dbTables = qs.dbTables(dbName, dbSchema, null).getColumn(SqlConstants.TBL_NAME);
-    Set<String> names = Sets.newHashSet();
+    Set<String> names = new HashSet<>();
     for (String name : dbTables) {
       names.add(BeeUtils.normalize(name));
     }
@@ -1026,7 +1048,7 @@ public class SystemBean {
       String tblName = table.getName();
       table.setActive(names.contains(BeeUtils.normalize(tblName)));
 
-      Map<String, String[]> tableFields = Maps.newHashMap();
+      Map<String, String[]> tableFields = new HashMap<>();
 
       for (RightsState state : table.getStates()) {
         tblName = table.getStateTable(state);
@@ -1044,7 +1066,7 @@ public class SystemBean {
 
   private void initDbTriggers() {
     for (BeeTable table : getTables()) {
-      Map<String, List<Map<String, String>>> tr = Maps.newHashMap();
+      Map<String, List<Map<String, String>>> tr = new HashMap<>();
 
       for (BeeField field : table.getFields()) {
         if (field instanceof BeeRelation && ((BeeRelation) field).isEditable()) {
@@ -1054,7 +1076,7 @@ public class SystemBean {
           List<Map<String, String>> entry = tr.get(tblName);
 
           if (BeeUtils.isEmpty(entry)) {
-            entry = Lists.newArrayList();
+            entry = new ArrayList<>();
             tr.put(tblName, entry);
           }
           entry.add(ImmutableMap.of("field", field.getName(),
@@ -1101,7 +1123,7 @@ public class SystemBean {
         break;
     }
     int cnt = 0;
-    Collection<File> roots = Lists.newArrayList();
+    Collection<File> roots = new ArrayList<>();
 
     for (String moduleName : moduleBean.getModules()) {
       roots.clear();
@@ -1119,7 +1141,7 @@ public class SystemBean {
           FileUtils.findFiles(obj.getFileName("*"), roots, null, null, false, true);
 
       if (!BeeUtils.isEmpty(resources)) {
-        Set<String> objects = Sets.newHashSet();
+        Set<String> objects = new HashSet<>();
 
         for (File resource : resources) {
           String resourcePath = resource.getPath();
@@ -1269,7 +1291,7 @@ public class SystemBean {
         if (!BeeUtils.isEmpty(xmlTable.triggers)) {
           for (XmlTrigger trigger : xmlTable.triggers) {
             String body;
-            List<SqlTriggerEvent> events = Lists.newArrayList();
+            List<SqlTriggerEvent> events = new ArrayList<>();
 
             for (String event : trigger.events) {
               events.add(EnumUtils.getEnumByName(SqlTriggerEvent.class, event));
@@ -1358,21 +1380,21 @@ public class SystemBean {
     Map<String, String> rebuilds = createTable(table, null);
 
     if (rebuilds.containsKey(tblMain)) {
-      Collection<BeeIndex> indexes = Lists.newArrayList();
+      Collection<BeeIndex> indexes = new ArrayList<>();
 
       for (BeeIndex index : table.getIndexes()) {
         if (BeeUtils.same(index.getTable(), tblMain)) {
           indexes.add(index);
         }
       }
-      Collection<BeeUniqueKey> uniqueKeys = Lists.newArrayList();
+      Collection<BeeUniqueKey> uniqueKeys = new ArrayList<>();
 
       for (BeeUniqueKey key : table.getUniqueKeys()) {
         if (BeeUtils.same(key.getTable(), tblMain)) {
           uniqueKeys.add(key);
         }
       }
-      Collection<BeeForeignKey> foreignKeys = Lists.newArrayList();
+      Collection<BeeForeignKey> foreignKeys = new ArrayList<>();
 
       for (BeeForeignKey fKey : table.getForeignKeys()) {
         String refTable = fKey.getRefTable();
@@ -1393,14 +1415,14 @@ public class SystemBean {
           }
         }
       }
-      Collection<BeeCheck> checks = Lists.newArrayList();
+      Collection<BeeCheck> checks = new ArrayList<>();
 
       for (BeeCheck check : table.getChecks()) {
         if (BeeUtils.same(check.getTable(), tblMain)) {
           checks.add(check);
         }
       }
-      Collection<BeeTrigger> triggers = Lists.newArrayList();
+      Collection<BeeTrigger> triggers = new ArrayList<>();
 
       for (BeeTrigger trigger : table.getTriggers()) {
         if (BeeUtils.same(trigger.getTable(), tblMain)) {
@@ -1428,21 +1450,21 @@ public class SystemBean {
 
     for (String tbl : rebuilds.keySet()) {
       if (!BeeUtils.same(tbl, tblMain)) {
-        Collection<BeeIndex> indexes = Lists.newArrayList();
+        Collection<BeeIndex> indexes = new ArrayList<>();
 
         for (BeeIndex index : table.getIndexes()) {
           if (BeeUtils.same(index.getTable(), tbl)) {
             indexes.add(index);
           }
         }
-        Collection<BeeUniqueKey> uniqueKeys = Lists.newArrayList();
+        Collection<BeeUniqueKey> uniqueKeys = new ArrayList<>();
 
         for (BeeUniqueKey key : table.getUniqueKeys()) {
           if (BeeUtils.same(key.getTable(), tbl)) {
             uniqueKeys.add(key);
           }
         }
-        Collection<BeeForeignKey> foreignKeys = Lists.newArrayList();
+        Collection<BeeForeignKey> foreignKeys = new ArrayList<>();
 
         for (BeeForeignKey fKey : table.getForeignKeys()) {
           String refTable = fKey.getRefTable();
@@ -1453,14 +1475,14 @@ public class SystemBean {
             foreignKeys.add(fKey);
           }
         }
-        Collection<BeeCheck> checks = Lists.newArrayList();
+        Collection<BeeCheck> checks = new ArrayList<>();
 
         for (BeeCheck check : table.getChecks()) {
           if (BeeUtils.same(check.getTable(), tbl)) {
             checks.add(check);
           }
         }
-        Collection<BeeTrigger> triggers = Lists.newArrayList();
+        Collection<BeeTrigger> triggers = new ArrayList<>();
 
         for (BeeTrigger trigger : table.getTriggers()) {
           if (BeeUtils.same(trigger.getTable(), tbl)) {

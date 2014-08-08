@@ -484,7 +484,7 @@ public class BeeView implements BeeObject, HasExtendedInfo {
       this.order = new Order();
 
       for (XmlOrder ord : xmlView.orders) {
-        order.add(ord.column, !ord.descending);
+        order.add(ord.column, !ord.descending, ord.nulls);
       }
     }
   }
@@ -661,11 +661,10 @@ public class BeeView implements BeeObject, HasExtendedInfo {
           "Label", getColumnLabel(col), "Enum key", getColumnEnumKey(col));
     }
     if (order != null) {
-      info.add(new ExtendedProperty("Orders", BeeUtils.toString(order.getSize())));
+      info.add(new ExtendedProperty("Order", BeeUtils.toString(order.getSize())));
       i = 0;
       for (Order.Column ordCol : order.getColumns()) {
-        String key = BeeUtils.joinWords("Order", ++i, ordCol.isAscending() ? "" : "DESC");
-        PropertyUtils.addChildren(info, key, "Sources", ordCol.getSources());
+        info.add(new ExtendedProperty("Order", BeeUtils.toString(++i), ordCol.toString()));
       }
     }
     return info;
@@ -770,11 +769,7 @@ public class BeeView implements BeeObject, HasExtendedInfo {
             continue;
           }
 
-          if (!ordCol.isAscending()) {
-            ss.addOrderDesc(alias, colName);
-          } else {
-            ss.addOrder(alias, colName);
-          }
+          ss.addOrderBy(ordCol, alias, colName);
         }
       }
     }

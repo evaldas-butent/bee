@@ -105,6 +105,8 @@ public final class ClassifierConstants {
   public static final String COL_ITEM_EXTERNAL_CODE = "ExternalCode";
   public static final String COL_ITEM_PRICE = "Price";
   public static final String COL_ITEM_CURRENCY = "Currency";
+  public static final String COL_ITEM_TYPE = "Type";
+  public static final String COL_ITEM_GROUP = "Group";
 
   public static final String COL_UNIT = "Unit";
   public static final String COL_UNIT_NAME = "Name";

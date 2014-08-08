@@ -282,7 +282,9 @@ public abstract class SqlBuilder {
             ? SqlUtils.name(orderEntry[SqlSelect.ORDER_FLD])
             : SqlUtils.field(src, orderEntry[SqlSelect.ORDER_FLD]);
 
-        query.append(order.getSqlString(this)).append(orderEntry[SqlSelect.ORDER_DESC]);
+        query.append(order.getSqlString(this))
+            .append(orderEntry[SqlSelect.ORDER_DESC])
+            .append(orderEntry[SqlSelect.ORDER_NULLS]);
       }
     }
     return query.toString();

@@ -122,7 +122,7 @@ public class Popup extends Simple implements HasAnimation, CloseEvent.HasCloseHa
         }
       }
       StyleUtils.clearClip(curPanel);
-      curPanel.getElement().getStyle().setOverflow(Overflow.VISIBLE);
+      curPanel.getElement().getStyle().clearOverflow();
     }
 
     @Override
@@ -178,7 +178,7 @@ public class Popup extends Simple implements HasAnimation, CloseEvent.HasCloseHa
           BodyPanel.get().remove(curPanel);
         }
       }
-      curPanel.getElement().getStyle().setOverflow(Overflow.VISIBLE);
+      curPanel.getElement().getStyle().clearOverflow();
     }
 
     private void setState(boolean sh, boolean unl) {

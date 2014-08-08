@@ -13,6 +13,7 @@ import com.butent.bee.client.Global;
 import com.butent.bee.client.utils.Duration;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.Service;
+import com.butent.bee.shared.State;
 import com.butent.bee.shared.communication.CommUtils;
 import com.butent.bee.shared.communication.ContentType;
 import com.butent.bee.shared.communication.ResponseMessage;
@@ -56,6 +57,7 @@ public class AsyncCallback implements RequestCallback {
     if (!Bee.isEnabled()) {
       if (info != null) {
         info.done();
+        info.setState(State.CLOSED);
       }
       return;
     }
