@@ -158,8 +158,7 @@ class PostgreSqlBuilder extends SqlBuilder {
         for (int i = 0; i < values.size(); i++) {
           values.set(i, values.get(i).replace("'", "''") + ":*");
         }
-        return "to_tsvector('simple', " + expression + ") @@ to_tsquery('simple', '"
-            + BeeUtils.join("&", values) + "')";
+        return expression + " @@ to_tsquery('simple', '" + BeeUtils.join("&", values) + "')";
 
       default:
         return super.sqlCondition(operator, params);

@@ -1105,10 +1105,10 @@ public class TecDocBean {
         .addFromInner(tcdTypeArticles,
             SqlUtils.joinUsing(art, tcdTypeArticles, TCD_ARTICLE_ID));
 
-    tweakSql(true);
+    qs.tweakSql(true);
     analyzeQuery(query);
     String typArt = qs.sqlCreateTemp(query);
-    tweakSql(false);
+    qs.tweakSql(false);
 
     qs.sqlIndex(typArt, TCD_TYPE_ID);
     String tcdTypes = SqlUtils.table(TCD_SCHEMA, TBL_TCD_TYPES);
@@ -1677,12 +1677,5 @@ public class TecDocBean {
       }
       tcd.cleanup(entry.preparations);
     }
-  }
-
-  private void tweakSql(boolean on) {
-    if (SqlEngine.POSTGRESQL != SqlBuilderFactory.getBuilder().getEngine()) {
-      return;
-    }
-    qs.doSql("set enable_seqscan=" + (on ? "off" : "on"));
   }
 }

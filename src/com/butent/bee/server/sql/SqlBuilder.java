@@ -73,9 +73,13 @@ public abstract class SqlBuilder {
           query.append(", ");
         }
         SqlField field = fieldList.get(i);
-        query.append(SqlUtils.name(field.getName()).getSqlString(this))
-            .append(" ").append(sqlType(field.getType(), field.getPrecision(), field.getScale()));
+        query.append(SqlUtils.name(field.getName()).getSqlString(this)).append(" ");
 
+        if (!BeeUtils.isEmpty(field.getExpression())) {
+          query.append(field.getExpression());
+        } else {
+          query.append(sqlType(field.getType(), field.getPrecision(), field.getScale()));
+        }
         if (field.isNotNull()) {
           query.append(" NOT NULL");
         }

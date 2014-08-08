@@ -201,8 +201,7 @@ public class MailMessage extends AbstractFormInterceptor {
   private static final String RECIPIENTS = "Recipients";
   private static final String ATTACHMENTS = "Attachments";
   private static final String PARTS = "Parts";
-  private static final String SENDER_LABEL = "SenderLabel";
-  private static final String SENDER_EMAIL = "SenderEmail";
+  private static final String SENDER = "Sender";
   private static final String DATE = "Date";
   private static final String SUBJECT = "Subject";
 
@@ -226,8 +225,7 @@ public class MailMessage extends AbstractFormInterceptor {
     widgets.put(RECIPIENTS, null);
     widgets.put(ATTACHMENTS, null);
     widgets.put(PARTS, null);
-    widgets.put(SENDER_LABEL, null);
-    widgets.put(SENDER_EMAIL, null);
+    widgets.put(SENDER, null);
     widgets.put(DATE, null);
     widgets.put(SUBJECT, null);
   }
@@ -275,15 +273,15 @@ public class MailMessage extends AbstractFormInterceptor {
                   String email = address.getA();
                   String label = address.getB();
 
-                  InlineLabel nm = new InlineLabel(BeeUtils.notEmpty(label, email));
-                  nm.setStyleName("bee-mail-RecipientLabel");
-                  adr.add(nm);
-
                   if (!BeeUtils.isEmpty(label)) {
-                    nm = new InlineLabel(email);
-                    nm.setStyleName("bee-mail-RecipientEmail");
+                    InlineLabel nm = new InlineLabel(label);
+                    nm.setStyleName("bee-mail-RecipientLabel");
                     adr.add(nm);
                   }
+                  InlineLabel nm = new InlineLabel(email);
+                  nm.setStyleName("bee-mail-RecipientEmail");
+                  adr.add(nm);
+
                   fp.add(adr);
                 }
                 ft.setWidget(c, 1, fp);
@@ -404,9 +402,11 @@ public class MailMessage extends AbstractFormInterceptor {
         String mail = row.getValue(COL_EMAIL_ADDRESS);
 
         sender = Pair.of(mail, lbl);
+        setWidgetText(SENDER, BeeUtils.notEmpty(lbl, mail));
 
-        setWidgetText(SENDER_LABEL, BeeUtils.notEmpty(lbl, mail));
-        setWidgetText(SENDER_EMAIL, BeeUtils.isEmpty(lbl) ? "" : mail);
+        if (!BeeUtils.isEmpty(lbl) && widgets.get(SENDER) != null) {
+          widgets.get(SENDER).setTitle(mail);
+        }
         ((DateTimeLabel) widgets.get(DATE)).setValue(row.getDateTime(COL_DATE));
         setWidgetText(SUBJECT, row.getValue(COL_SUBJECT));
 

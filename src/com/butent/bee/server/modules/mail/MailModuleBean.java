@@ -448,10 +448,10 @@ public class MailModuleBean implements BeeModule {
           int idx = BeeConst.UNDEF;
 
           if (!DataUtils.isEmpty(rowSet)) {
-            idx = event.getRowset().getColumnIndex(COL_MESSAGE);
+            idx = rowSet.getColumnIndex(COL_MESSAGE);
 
             if (idx != BeeConst.UNDEF) {
-              for (BeeRow row : event.getRowset()) {
+              for (BeeRow row : rowSet) {
                 messages.add(row.getLong(idx));
               }
             }
@@ -471,7 +471,7 @@ public class MailModuleBean implements BeeModule {
                 .setWhere(SqlUtils.inList(TBL_RECIPIENTS, COL_MESSAGE, messages))
                 .addGroup(TBL_RECIPIENTS, COL_MESSAGE));
 
-            for (BeeRow row : event.getRowset()) {
+            for (BeeRow row : rowSet) {
               SimpleRow simpleRow = result.getRowByKey(COL_MESSAGE, row.getString(idx));
 
               if (simpleRow != null) {
@@ -486,26 +486,30 @@ public class MailModuleBean implements BeeModule {
       }
     });
 
-    BeeView.registerConditionProvider(FILTER_SEARCH, new ConditionProvider() {
+    BeeView.registerConditionProvider(TBL_PLACES, new ConditionProvider() {
       @Override
       public IsCondition getCondition(BeeView view, List<String> args) {
-        Map<String, String> keys = Codec.deserializeMap(args.get(0));
-        String search = keys.get(FILTER_SEARCH);
+        Map<String, String> params = Codec.deserializeMap(args.get(0));
 
-        if (BeeUtils.isEmpty(search)) {
+        if (BeeUtils.isEmpty(params) || BeeUtils.isEmpty(params.get(COL_CONTENT))) {
           return null;
         }
+        String search = params.get(COL_CONTENT);
+        Long folder = BeeUtils.toLong(params.get(COL_FOLDER));
+
         SqlSelect query = new SqlSelect().setDistinctMode(true)
             .addFields(TBL_PLACES, COL_MESSAGE)
             .addFrom(TBL_PLACES)
             .addFromInner(TBL_MESSAGES, sys.joinTables(TBL_MESSAGES, TBL_PLACES, COL_MESSAGE))
-            .setWhere(SqlUtils.and(SqlUtils.equals(TBL_PLACES, COL_FOLDER,
-                BeeUtils.toLong(keys.get(COL_FOLDER))),
+            .addFromLeft(TBL_PARTS, sys.joinTables(TBL_MESSAGES, TBL_PARTS, COL_MESSAGE))
+            .setWhere(SqlUtils.and(DataUtils.isId(folder)
+                ? SqlUtils.equals(TBL_PLACES, COL_FOLDER, folder) : null,
                 SqlUtils.or(SqlUtils.contains(TBL_EMAILS, COL_EMAIL_ADDRESS, search),
                     SqlUtils.contains(TBL_ADDRESSBOOK, COL_EMAIL_LABEL, search),
-                    SqlUtils.contains(TBL_MESSAGES, COL_SUBJECT, search))));
+                    SqlUtils.contains(TBL_MESSAGES, COL_SUBJECT, search),
+                    SqlUtils.fullText(TBL_PARTS, COL_CONTENT + "FTS", search))));
 
-        if (BeeUtils.toBoolean(keys.get(SystemFolder.Sent.name()))) {
+        if (BeeUtils.toBoolean(params.get(SystemFolder.Sent.name()))) {
           query.addFromLeft(TBL_RECIPIENTS,
               sys.joinTables(TBL_MESSAGES, TBL_RECIPIENTS, COL_MESSAGE))
               .addFromLeft(TBL_EMAILS,
@@ -513,21 +517,11 @@ public class MailModuleBean implements BeeModule {
         } else {
           query.addFromLeft(TBL_EMAILS, sys.joinTables(TBL_EMAILS, TBL_MESSAGES, COL_SENDER));
         }
-        return SqlUtils.in(TBL_PLACES, COL_MESSAGE,
-            query.addFromLeft(TBL_ADDRESSBOOK,
-                SqlUtils.and(sys.joinTables(TBL_EMAILS, TBL_ADDRESSBOOK, COL_EMAIL),
-                    SqlUtils.equals(TBL_ADDRESSBOOK, COL_USER, usr.getCurrentUserId())))
-                .setUnionAllMode(false)
-                .addUnion(new SqlSelect().setDistinctMode(true)
-                    .addFields(TBL_PLACES, COL_MESSAGE)
-                    .addFrom(TBL_PLACES)
-                    .addFromInner(TBL_MESSAGES,
-                        sys.joinTables(TBL_MESSAGES, TBL_PLACES, COL_MESSAGE))
-                    .addFromLeft(TBL_PARTS,
-                        sys.joinTables(TBL_MESSAGES, TBL_PARTS, COL_MESSAGE))
-                    .setWhere(SqlUtils.and(SqlUtils.equals(TBL_PLACES, COL_FOLDER,
-                        BeeUtils.toLong(keys.get(COL_FOLDER))),
-                        SqlUtils.fullText(TBL_PARTS, COL_CONTENT, search)))));
+        query.addFromLeft(TBL_ADDRESSBOOK,
+            SqlUtils.and(sys.joinTables(TBL_EMAILS, TBL_ADDRESSBOOK, COL_EMAIL),
+                SqlUtils.equals(TBL_ADDRESSBOOK, COL_USER, usr.getCurrentUserId())));
+
+        return SqlUtils.in(TBL_PLACES, COL_MESSAGE, query);
       }
     });
 
