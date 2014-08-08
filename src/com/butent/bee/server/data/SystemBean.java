@@ -597,10 +597,12 @@ public class SystemBean {
         if (sc != null) {
           newTables.put(tblName, sc);
         }
+      } else if (!BeeUtils.isEmpty(field.getExpression())) {
+        newTables.get(tblName).addField(field.getName(), field.getType(), field.getExpression(),
+            field.isNotNull());
       } else {
-        newTables.get(tblName)
-            .addField(field.getName(), field.getType(), field.getPrecision(), field.getScale(),
-                field.isNotNull());
+        newTables.get(tblName).addField(field.getName(), field.getType(), field.getPrecision(),
+            field.getScale(), field.isNotNull());
       }
       if (field.isTranslatable()) {
         tblName = table.getTranslationTable(field);
@@ -1163,7 +1165,23 @@ public class SystemBean {
 
         if (!BeeUtils.isEmpty(xmlTable.fields)) {
           for (XmlField field : xmlTable.fields) {
-            table.addField(field, false);
+            String expression;
+
+            switch (SqlBuilderFactory.getBuilder().getEngine()) {
+              case POSTGRESQL:
+                expression = field.postgreSql;
+                break;
+              case MSSQL:
+                expression = field.msSql;
+                break;
+              case ORACLE:
+                expression = field.oracle;
+                break;
+              default:
+                expression = null;
+                break;
+            }
+            table.addField(field, expression, false);
           }
         }
         if (!BeeUtils.isEmpty(xmlTable.indexes)) {

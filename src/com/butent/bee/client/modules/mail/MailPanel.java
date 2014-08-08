@@ -84,7 +84,6 @@ import com.butent.bee.shared.data.view.RowInfo;
 import com.butent.bee.shared.font.FontAwesome;
 import com.butent.bee.shared.i18n.LocalizableMessages;
 import com.butent.bee.shared.i18n.Localized;
-import com.butent.bee.shared.logging.LogUtils;
 import com.butent.bee.shared.modules.classifiers.ClassifierConstants;
 import com.butent.bee.shared.modules.mail.AccountInfo;
 import com.butent.bee.shared.modules.mail.MailConstants.MessageFlag;
@@ -453,7 +452,6 @@ public class MailPanel extends AbstractFormInterceptor {
     } else if (State.REMOVED.equals(state)) {
       MailKeeper.removeMailPanel(this);
     }
-    LogUtils.getRootLogger().debug("MailPanel", state);
   }
 
   @Override
@@ -569,9 +567,9 @@ public class MailPanel extends AbstractFormInterceptor {
       Long folderId = getCurrentFolderId();
 
       if (searchWidget != null) {
-        presenter.getDataProvider().setUserFilter(Filter.custom(FILTER_SEARCH,
+        presenter.getDataProvider().setUserFilter(Filter.custom(TBL_PLACES,
             Codec.beeSerialize(ImmutableMap.of(COL_FOLDER, folderId,
-                FILTER_SEARCH, searchWidget.getValue(),
+                COL_CONTENT, searchWidget.getValue(),
                 SystemFolder.Sent.name(), isSenderFolder(folderId)))));
       }
       presenter.getDataProvider().setParentFilter(MESSAGES_FILTER,
