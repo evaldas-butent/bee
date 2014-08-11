@@ -105,6 +105,8 @@ public final class ClassifierConstants {
   public static final String COL_ITEM_EXTERNAL_CODE = "ExternalCode";
   public static final String COL_ITEM_PRICE = "Price";
   public static final String COL_ITEM_CURRENCY = "Currency";
+  public static final String COL_ITEM_TYPE = "Type";
+  public static final String COL_ITEM_GROUP = "Group";
 
   public static final String COL_UNIT = "Unit";
   public static final String COL_UNIT_NAME = "Name";
@@ -155,7 +157,7 @@ public final class ClassifierConstants {
   public static final String COL_SWIFT_CODE = "SWIFTCode";
 
   public static final String COL_BANK_ACCOUNT = "BankAccount";
-  
+
   public static final String ALS_COMPANY_NAME = "CompanyName";
   public static final String ALS_COMPANY_CODE = "CompanyCode";
   public static final String ALS_COMPANY_TYPE = "CompanyType";
@@ -174,10 +176,10 @@ public final class ClassifierConstants {
 
   public static final String ALS_ITEM_NAME = "ItemName";
   public static final String ALS_UNIT_NAME = "UnitName";
-  
+
   public static final String PROP_COMPANY_NAMES = "CompanyNames";
   public static final String PROP_COMPANY_IDS = "CompanyIds";
-  
+
   public static final String FILTER_COMPANY_CREATION_AND_TYPE = "company_creation_and_type";
   public static final String FILTER_COMPANY_USAGE = "company_usage";
 

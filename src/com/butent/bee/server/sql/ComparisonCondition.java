@@ -12,7 +12,6 @@ import java.util.Map;
 /**
  * Generates comparison condition parts for SQL statements depending on specific SQL server
  * requirements.
- * 
  */
 
 class ComparisonCondition implements IsCondition {

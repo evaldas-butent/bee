@@ -3284,3 +3284,20 @@ textarea,
   height: auto !important;
   background-color: inherit;
 }
+
+.bee-Print-Window {
+  overflow: auto;
+}
+
+.bee-Form .bee-HtmlTable {
+  border-collapse: collapse;
+}
+.bee-Form .bee-HtmlTable td {
+  padding-top: 5px;
+}
+.bee-LabelCell {
+  text-align: right;
+  vertical-align: top;
+  padding-left: 10px;
+  padding-right: 6px;
+}

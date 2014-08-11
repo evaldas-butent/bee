@@ -24,7 +24,7 @@ final class TruckTimeBoard extends VehicleTimeBoard {
           }
         });
   }
-  
+
   private TruckTimeBoard() {
     super();
   }
@@ -78,7 +78,7 @@ final class TruckTimeBoard extends VehicleTimeBoard {
   protected String getItemOpacityColumnName() {
     return COL_TRUCK_ITEM_OPACITY;
   }
-  
+
   @Override
   protected String getNumberWidthColumnName() {
     return COL_TRUCK_PIXELS_PER_NUMBER;
@@ -108,7 +108,7 @@ final class TruckTimeBoard extends VehicleTimeBoard {
   protected String getShowPlaceInfoColumnName() {
     return COL_TRUCK_PLACE_INFO;
   }
-  
+
   @Override
   protected String getShowPlaceCitiesColumnName() {
     return COL_TRUCK_PLACE_CITIES;

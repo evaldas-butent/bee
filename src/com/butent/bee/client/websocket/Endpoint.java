@@ -73,7 +73,7 @@ public final class Endpoint {
 
   private static Map<String, Consumer<String>> progressQueue = new HashMap<>();
   private static Map<String, Function<ProgressMessage, Boolean>> progressHandlers = new HashMap<>();
-  
+
   private static Consumer<Boolean> onlineCallback;
 
   public static void cancelProgress(String progressId) {
@@ -280,7 +280,7 @@ public final class Endpoint {
       progressHandlers.remove(progressId);
     }
   }
-  
+
   static void online() {
     if (onlineCallback != null) {
       onlineCallback.accept(true);

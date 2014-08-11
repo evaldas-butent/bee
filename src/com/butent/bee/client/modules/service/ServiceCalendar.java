@@ -343,7 +343,7 @@ final class ServiceCalendar extends TimeBoard {
           }
         });
   }
-  
+
   @Override
   protected Collection<? extends HasDateRange> getChartItems() {
     List<HasDateRange> items = new ArrayList<>();
@@ -585,10 +585,10 @@ final class ServiceCalendar extends TimeBoard {
     setSettings(rowSet);
 
     ServiceCompanyKind companyKind = getCompanyKind(rowSet);
-    
+
     JustDate minDate = TimeBoardHelper.getDate(rowSet, COL_SERVICE_CALENDAR_MIN_DATE);
     JustDate maxDate = TimeBoardHelper.getDate(rowSet, COL_SERVICE_CALENDAR_MAX_DATE);
-    
+
     if (minDate != null && maxDate != null && BeeUtils.isLess(maxDate, minDate)) {
       maxDate = JustDate.copyOf(minDate);
     }
@@ -1094,7 +1094,7 @@ final class ServiceCalendar extends TimeBoard {
 
   private void initData(ServiceCompanyKind companyKind, JustDate minDate, JustDate maxDate,
       Map<String, String> properties) {
-    
+
     companies.clear();
     objects.clear();
 
@@ -1305,7 +1305,7 @@ final class ServiceCalendar extends TimeBoard {
   private boolean requiresRefresh(BeeRow oldSettings, BeeRow newSettings) {
     Set<String> colNames = Sets.newHashSet(COL_SERVICE_CALENDAR_TASK_TYPES, COL_COMPANY_KIND,
         COL_SERVICE_CALENDAR_MIN_DATE, COL_SERVICE_CALENDAR_MAX_DATE);
-    
+
     for (String colName : colNames) {
       int index = getSettings().getColumnIndex(colName);
       if (!Objects.equals(oldSettings.getString(index), newSettings.getString(index))) {

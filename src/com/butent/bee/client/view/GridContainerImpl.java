@@ -26,6 +26,7 @@ import com.butent.bee.client.grid.GridFactory;
 import com.butent.bee.client.layout.Split;
 import com.butent.bee.client.presenter.Presenter;
 import com.butent.bee.client.style.StyleUtils;
+import com.butent.bee.client.ui.UiHelper;
 import com.butent.bee.client.ui.UiOption;
 import com.butent.bee.client.ui.WidgetCreationCallback;
 import com.butent.bee.client.utils.Evaluator;
@@ -79,7 +80,7 @@ public class GridContainerImpl extends Split implements GridContainerView, HasNa
   private static final Set<Action> HEADER_ACTIONS =
       EnumSet.of(Action.REFRESH, Action.FILTER, Action.REMOVE_FILTER, Action.ADD, Action.DELETE,
           Action.MENU, Action.CLOSE);
-  
+
   private final String supplierKey;
 
   private Presenter viewPresenter;
@@ -113,8 +114,8 @@ public class GridContainerImpl extends Split implements GridContainerView, HasNa
     if (!BeeUtils.isEmpty(gridName)) {
       addStyleName(StyleUtils.CLASS_NAME_PREFIX + "grid-" + gridName.trim());
     }
-    
-    this.supplierKey = supplierKey; 
+
+    this.supplierKey = supplierKey;
   }
 
   @Override
@@ -301,7 +302,7 @@ public class GridContainerImpl extends Split implements GridContainerView, HasNa
     if (getCenter() instanceof GridView) {
       return (GridView) getCenter();
     } else {
-      return null;      
+      return null;
     }
   }
 
@@ -554,6 +555,12 @@ public class GridContainerImpl extends Split implements GridContainerView, HasNa
   }
 
   @Override
+  public boolean reactsTo(Action action) {
+    GridView gridView = getGridView();
+    return gridView != null && gridView.reactsTo(action);
+  }
+
+  @Override
   public void setEditing(boolean editing) {
     this.editing = editing;
   }
@@ -564,7 +571,7 @@ public class GridContainerImpl extends Split implements GridContainerView, HasNa
       return;
     }
     this.enabled = enabled;
-    DomUtils.enableChildren(this, enabled);
+    UiHelper.enableChildren(this, enabled);
   }
 
   @Override
@@ -610,7 +617,7 @@ public class GridContainerImpl extends Split implements GridContainerView, HasNa
           } else {
             grid.refresh();
           }
-        
+
         } else {
           grid.refresh();
         }

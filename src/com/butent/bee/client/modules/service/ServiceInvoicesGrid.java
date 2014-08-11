@@ -141,7 +141,7 @@ public class ServiceInvoicesGrid extends AbstractGridInterceptor implements Clic
         response.notify(BeeKeeper.getScreen());
         Data.onViewChange(presenter.getViewName(), DataChangeEvent.CANCEL_RESET_REFRESH);
       }
-      
+
     };
   }
   

@@ -35,11 +35,11 @@ public class Tablet extends Mobile {
     @Override
     public void execute() {
       String opt = BeeUtils.joinWords("t" + type,
-        "c" + minCount.getValue() + "-" + maxCount.getValue(),
-        "r" + minRadius.getValue() + "-" + maxRadius.getValue(),
-        "s" + colorStep.getValue(),
-        "o" + BeeUtils.toString(minOpacity.getLong() / 100.0) + "-"
-            + BeeUtils.toString(maxOpacity.getLong() / 100.0));
+          "c" + minCount.getValue() + "-" + maxCount.getValue(),
+          "r" + minRadius.getValue() + "-" + maxRadius.getValue(),
+          "s" + colorStep.getValue(),
+          "o" + BeeUtils.toString(minOpacity.getLong() / 100.0) + "-"
+              + BeeUtils.toString(maxOpacity.getLong() / 100.0));
       CliWorker.execute("svg " + opt, true);
     }
   }
@@ -60,7 +60,7 @@ public class Tablet extends Mobile {
   public UserInterface getUserInterface() {
     return UserInterface.TABLET;
   }
-  
+
   @Override
   protected int addLogToggle(LayoutPanel panel) {
     final Toggle toggle = new Toggle("Hide Log", "Show Log", "toggleLog", true);
@@ -144,7 +144,7 @@ public class Tablet extends Mobile {
     grid.alignCenter(r, 0);
     grid.getCellFormatter().setColSpan(r, 0, c);
     r++;
-    
+
     Button cornify = new Button("Cornify", new Command() {
       @Override
       public void execute() {

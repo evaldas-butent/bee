@@ -30,30 +30,30 @@ public enum Report implements HasWidgetSupplier {
       return new CompanyUsageReport();
     }
   },
-  
+
   ASSESSMENT_QUANTITY("AssessmentQuantity", "AssessmentQuantityReport") {
     @Override
     protected ReportInterceptor getInterceptor() {
       return new AssessmentQuantityReport();
     }
   },
-  
+
   ASSESSMENT_TURNOVER("AssessmentTurnover", "AssessmentTurnoverReport") {
     @Override
     protected ReportInterceptor getInterceptor() {
       return new AssessmentTurnoverReport();
     }
   };
-  
+
   private static BeeLogger logger = LogUtils.getLogger(Report.class);
-  
+
   public static void open(String reportName) {
     Report report = parse(reportName);
     if (report != null) {
       report.open();
     }
   }
-  
+
   public static void open(String reportName, final ViewCallback callback) {
     Assert.notNull(callback);
 
@@ -68,18 +68,18 @@ public enum Report implements HasWidgetSupplier {
       });
     }
   }
-  
+
   public static Report parse(String input) {
     for (Report report : values()) {
       if (BeeUtils.same(report.reportName, input)) {
         return report;
       }
     }
-    
+
     logger.severe("report not recognized:", input);
     return null;
   }
-  
+
   private final String reportName;
   private final String formName;
 
@@ -111,6 +111,6 @@ public enum Report implements HasWidgetSupplier {
 
     FormFactory.openForm(formName, interceptor);
   }
-  
+
   protected abstract ReportInterceptor getInterceptor();
 }

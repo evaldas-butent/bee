@@ -63,6 +63,7 @@ import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.ui.Action;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.Codec;
+import com.butent.bee.shared.utils.EnumUtils;
 
 import java.util.ArrayList;
 import java.util.EnumSet;
@@ -286,6 +287,11 @@ public class Search {
 
     @Override
     public void onViewUnload() {
+    }
+
+    @Override
+    public boolean reactsTo(Action action) {
+      return EnumUtils.in(action, Action.CANCEL, Action.CLOSE, Action.PRINT);
     }
 
     @Override
@@ -606,11 +612,11 @@ public class Search {
   private void setInput(InputText input) {
     this.input = input;
   }
-  
+
   private void setSearchPanel(Panel panel) {
     this.searchPanel = panel;
   }
-  
+
   private void submit() {
     String value = BeeUtils.trim(getInput().getValue());
 

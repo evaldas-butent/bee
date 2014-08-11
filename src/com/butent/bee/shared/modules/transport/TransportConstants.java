@@ -342,7 +342,6 @@ public final class TransportConstants {
   public static final String SVC_GET_ASSESSMENT_QUANTITY_REPORT = "GetAssessmentQuantityReport";
   public static final String SVC_GET_ASSESSMENT_TURNOVER_REPORT = "GetAssessmentTurnoverReport";
   public static final String SVC_CREATE_INVOICE_ITEMS = "CreateInvoiceItems";
-  public static final String SVC_GET_IMPORT_MAPPINGS = "GetImportMappings";
   public static final String SVC_DO_IMPORT = "DoImport";
   public static final String SVC_GET_CREDIT_INFO = "GetCreditInfo";
 
@@ -906,7 +905,7 @@ public final class TransportConstants {
   public static final String AR_EXPENSE = "Expense";
   public static final String AR_SECONDARY_INCOME = "SecondaryIncome";
   public static final String AR_SECONDARY_EXPENSE = "SecondaryExpense";
-  
+
   public static final String STYLE_SHEET = "transport";
 
   public static String defaultLoadingColumnAlias(String colName) {

@@ -141,7 +141,7 @@ public class HeaderImpl extends Flow implements HeaderView {
   public HandlerRegistration addReadyHandler(ReadyEvent.Handler handler) {
     return addHandler(handler, ReadyEvent.getType());
   }
-  
+
   @Override
   public void clearCommandPanel() {
     getCommandPanel().clear();
@@ -221,7 +221,7 @@ public class HeaderImpl extends Flow implements HeaderView {
     if (hasAction(Action.MENU, false, enabledActions, disabledActions)) {
       add(createFa(FontAwesome.NAVICON, Action.MENU, hiddenActions));
     }
-    
+
     if (hasAction(Action.CLOSE, UiOption.isWindow(options), enabledActions, disabledActions)) {
       add(createImage(Global.getImages().silverClose(), Action.CLOSE, hiddenActions));
     }
@@ -271,7 +271,10 @@ public class HeaderImpl extends Flow implements HeaderView {
     if (action == null || !isEnabled()) {
       return false;
     }
-    String id = getActionControls().get(action);
+
+    Action a = (action == Action.CANCEL) ? Action.CLOSE : action;
+
+    String id = getActionControls().get(a);
     if (BeeUtils.isEmpty(id)) {
       return false;
     }
@@ -309,6 +312,11 @@ public class HeaderImpl extends Flow implements HeaderView {
       String id = source.getId();
       return BeeUtils.isEmpty(id) ? true : !actionControls.containsValue(id);
     }
+  }
+
+  @Override
+  public boolean reactsTo(Action action) {
+    return false;
   }
 
   @Override
@@ -385,7 +393,7 @@ public class HeaderImpl extends Flow implements HeaderView {
     super.onLoad();
     ReadyEvent.fire(this);
   }
-  
+
   private Widget createFa(FontAwesome fa, Action action, Set<Action> hiddenActions) {
     FaLabel control = new FaLabel(fa);
     initControl(control, action, hiddenActions);

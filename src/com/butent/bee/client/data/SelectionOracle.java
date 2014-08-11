@@ -217,9 +217,9 @@ public class SelectionOracle implements HandlesAllDataEvents, HasViewName {
         this.searchColumns.add(column);
       }
     }
-    
+
     String cuf = relation.getCurrentUserFilter();
-    this.immutableFilter = BeeUtils.isEmpty(cuf) ? relation.getFilter() 
+    this.immutableFilter = BeeUtils.isEmpty(cuf) ? relation.getFilter()
         : Filter.and(relation.getFilter(), BeeKeeper.getUser().getFilter(cuf));
 
     this.viewOrder = relation.getOrder();
@@ -234,13 +234,13 @@ public class SelectionOracle implements HandlesAllDataEvents, HasViewName {
       dataReceivedHandlers.add(handler);
     }
   }
- 
+
   public void addRowCountChangeHandler(Consumer<Integer> handler) {
     if (handler != null) {
       rowCountChangeHandlers.add(handler);
     }
   }
-  
+
   public void clearData() {
     if (isFullCaching()) {
       setViewData(null);
@@ -249,7 +249,7 @@ public class SelectionOracle implements HandlesAllDataEvents, HasViewName {
 
     resetState();
   }
-  
+
   public void clearExclusions() {
     if (!exclusions.isEmpty()) {
       exclusions.clear();
@@ -269,7 +269,7 @@ public class SelectionOracle implements HandlesAllDataEvents, HasViewName {
   public Filter getAdditionalFilter() {
     return additionalFilter;
   }
-  
+
   public BeeRow getCachedRow(long rowId) {
     if (getViewData() == null) {
       return null;
@@ -367,7 +367,7 @@ public class SelectionOracle implements HandlesAllDataEvents, HasViewName {
     rowCountChangeHandlers.clear();
     dataReceivedHandlers.clear();
   }
-  
+
   public void requestSuggestions(Request request, Callback callback) {
     Assert.notNull(request);
     Assert.notNull(callback);
@@ -390,7 +390,7 @@ public class SelectionOracle implements HandlesAllDataEvents, HasViewName {
       return;
     }
     this.additionalFilter = additionalFilter;
-    
+
     clearData();
   }
 
@@ -420,11 +420,11 @@ public class SelectionOracle implements HandlesAllDataEvents, HasViewName {
     result.add(immutableFilter);
     result.add(getAdditionalFilter());
     result.add(queryFilter);
-    
+
     if (checkExclusions && !exclusions.isEmpty()) {
       result.add(Filter.idNotIn(exclusions));
     }
-    
+
     return result;
   }
 

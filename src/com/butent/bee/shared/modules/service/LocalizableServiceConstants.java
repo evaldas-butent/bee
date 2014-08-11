@@ -1,7 +1,7 @@
 package com.butent.bee.shared.modules.service;
 
 public interface LocalizableServiceConstants {
-  
+
   String svcActionShowFromProjects();
 
   String svcActionToProjectObjects();
@@ -13,7 +13,7 @@ public interface LocalizableServiceConstants {
   String svcContractor();
 
   String svcDefect();
-  
+
   String svcDefectPrintItemLabel();
 
   String svcModule();

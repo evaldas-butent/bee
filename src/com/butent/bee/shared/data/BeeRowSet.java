@@ -27,7 +27,7 @@ public class BeeRowSet extends RowList<BeeRow, BeeColumn> implements BeeSerializ
   private enum Serial {
     VIEW, COLUMNS, ROWS, PROPERTIES
   }
-  
+
   public static BeeRowSet getIfPresent(Map<String, String> map, String key) {
     if (BeeUtils.containsKey(map, key)) {
       String serialized = map.get(key);

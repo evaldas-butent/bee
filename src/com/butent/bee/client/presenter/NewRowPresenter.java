@@ -198,16 +198,16 @@ public class NewRowPresenter extends AbstractPresenter implements ParentRowCreat
               event.getCallback().onFailure(reason);
             }
           }
-  
+
           @Override
           public void onSuccess(BeeRow result) {
             RowInsertEvent.fire(BeeKeeper.getBus(), dataInfo.getViewName(), result,
                 event.getSourceId());
-  
+
             if (formView.getFormInterceptor() != null) {
               formView.getFormInterceptor().afterInsertRow(result, forced);
             }
-  
+
             if (event.getCallback() != null) {
               event.getCallback().onSuccess(result);
             }

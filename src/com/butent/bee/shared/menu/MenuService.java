@@ -94,7 +94,7 @@ public enum MenuService {
   
   @XmlEnumValue("service_objects")
   SERVICE_OBJECTS(RightsState.VIEW, ServiceConstants.VIEW_SERVICE_OBJECTS);
-  
+
   private final Set<RightsState> dataRightsStates;
   private DataNameProvider dataNameProvider;
 

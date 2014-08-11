@@ -80,7 +80,7 @@ final class DefectBuilder {
       public void onSuccess(BeeRow objRow) {
         DataInfo dfInfo = Data.getDataInfo(VIEW_SERVICE_DEFECTS);
         BeeRow dfRow = RowFactory.createEmptyRow(dfInfo, true);
-        
+
         dfRow.setValue(dfInfo.getColumnIndex(COL_SERVICE_OBJECT), objRow.getId());
 
         Integer objectStatus = Data.getInteger(VIEW_SERVICE_OBJECTS, objRow, COL_OBJECT_STATUS);

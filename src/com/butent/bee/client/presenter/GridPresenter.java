@@ -185,9 +185,9 @@ public class GridPresenter extends AbstractPresenter implements ReadyForInsertEv
   private static GridContainerView createView(GridDescription gridDescription, GridView gridView,
       int rowCount, Filter userFilter, GridInterceptor gridInterceptor,
       Collection<UiOption> uiOptions, GridFactory.GridOptions gridOptions) {
-    
+
     Feed feed = (gridOptions == null) ? null : gridOptions.getFeed();
-    String key = (feed == null) 
+    String key = (feed == null)
         ? gridView.getGridKey() : ViewFactory.SupplierKind.NEWS.getKey(feed.name().toLowerCase());
 
     GridContainerView view = new GridContainerImpl(gridDescription.getName(), key);
@@ -205,7 +205,7 @@ public class GridPresenter extends AbstractPresenter implements ReadyForInsertEv
   private final GridMenu menu;
 
   private final List<String> favorite = new ArrayList<>();
-  
+
   private List<String> parentLabels;
 
   private Map<Long, String> roles;
@@ -545,6 +545,17 @@ public class GridPresenter extends AbstractPresenter implements ReadyForInsertEv
 
   public boolean hasFilter() {
     return getDataProvider().hasFilter();
+  }
+
+  public boolean isActionEnabled(Action action) {
+    if (action == null) {
+      return false;
+    } else if (menu.isActionVisible(this, action)) {
+      return true;
+    } else {
+      HeaderView header = getHeader();
+      return header != null && header.isActionEnabled(action);
+    }
   }
 
   @Override

@@ -38,6 +38,7 @@ import com.butent.bee.shared.logging.LogUtils;
 import com.butent.bee.shared.ui.Action;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.Codec;
+import com.butent.bee.shared.utils.EnumUtils;
 import com.butent.bee.shared.utils.NameUtils;
 
 import java.util.EnumSet;
@@ -47,21 +48,21 @@ public class ResourceEditor extends Flow implements Presenter, View, Printable, 
   private static final BeeLogger logger = LogUtils.getLogger(ResourceEditor.class);
 
   private static final String STYLE_PREFIX = StyleUtils.CLASS_NAME_PREFIX + "ResourceEditor-";
-  
+
   public static void open(final String item, final ViewCallback callback) {
     Assert.notEmpty(item);
     Assert.notNull(callback);
 
     ParameterList params = BeeKeeper.getRpc().createParameters(Service.GET_RESOURCE);
     params.addPositionalData("get", item);
-   
+
     BeeKeeper.getRpc().makeRequest(params, new ResponseCallback() {
       @Override
       public void onResponse(ResponseObject response) {
         if (response.hasResponse(Resource.class)) {
           Resource resource = Resource.restore(response.getResponseAsString());
           ResourceEditor resourceEditor = new ResourceEditor(resource);
-          
+
           callback.onSuccess(resourceEditor);
 
         } else {
@@ -201,6 +202,11 @@ public class ResourceEditor extends Flow implements Presenter, View, Printable, 
 
   @Override
   public void onViewUnload() {
+  }
+
+  @Override
+  public boolean reactsTo(Action action) {
+    return EnumUtils.in(action, Action.CANCEL, Action.CLOSE) || getHeader().isActionEnabled(action);
   }
 
   @Override

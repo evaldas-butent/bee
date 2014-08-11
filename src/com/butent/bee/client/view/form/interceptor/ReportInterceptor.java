@@ -72,7 +72,7 @@ public abstract class ReportInterceptor extends AbstractFormInterceptor implemen
       return null;
     }
   }
-  
+
   protected static String renderAmount(Double x) {
     if (BeeUtils.nonZero(x)) {
       return amountFormat.format(x);
@@ -135,7 +135,7 @@ public abstract class ReportInterceptor extends AbstractFormInterceptor implemen
       case BOOKMARK:
         bookmark();
         return false;
-        
+
       case EXPORT:
         export();
         return false;
@@ -144,7 +144,7 @@ public abstract class ReportInterceptor extends AbstractFormInterceptor implemen
         return super.beforeAction(action, presenter);
     }
   }
-  
+
   @Override
   public String getCaption() {
     return getFormView().getCaption();
@@ -169,16 +169,16 @@ public abstract class ReportInterceptor extends AbstractFormInterceptor implemen
     if (getInitialParameters() != null) {
       doReport();
     }
-    
+
     if (!BeeKeeper.getScreen().getUserInterface().hasComponent(Component.REPORTS)) {
       HeaderView header = form.getViewPresenter().getHeader();
-      
+
       if (header != null && header.hasAction(Action.BOOKMARK)) {
         header.showAction(Action.BOOKMARK, false);
       }
     }
   }
-  
+
   @Override
   public boolean onPrint(Element source, Element target) {
     return true;
@@ -235,7 +235,7 @@ public abstract class ReportInterceptor extends AbstractFormInterceptor implemen
   protected void export() {
     logger.warning("export not implemented");
   }
-  
+
   protected abstract String getBookmarkLabel();
 
   protected HasIndexedWidgets getDataContainer() {
@@ -285,7 +285,7 @@ public abstract class ReportInterceptor extends AbstractFormInterceptor implemen
 
         return BeeUtils.joinItems(labels);
       }
-      
+
     } else if (widget instanceof UnboundSelector) {
       return ((UnboundSelector) widget).getRenderedValue();
 

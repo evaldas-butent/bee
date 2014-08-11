@@ -15,6 +15,7 @@ import com.butent.bee.client.widget.InputText;
 import com.butent.bee.shared.data.IsColumn;
 import com.butent.bee.shared.data.filter.Filter;
 import com.butent.bee.shared.data.filter.FilterParser;
+import com.butent.bee.shared.ui.Action;
 import com.butent.bee.shared.utils.BeeUtils;
 
 import java.util.List;
@@ -46,7 +47,7 @@ public class SearchBox extends InputText implements SearchView {
   public HandlerRegistration addReadyHandler(ReadyEvent.Handler handler) {
     return addHandler(handler, ReadyEvent.getType());
   }
-  
+
   @Override
   public Filter getFilter(List<? extends IsColumn> columns, String idColumnName,
       String versionColumnName, ImmutableSet<String> excludeSearchers) {
@@ -86,6 +87,11 @@ public class SearchBox extends InputText implements SearchView {
   }
 
   @Override
+  public boolean reactsTo(Action action) {
+    return false;
+  }
+
+  @Override
   public void setFilterHandler(FilterHandler filterHandler) {
     this.filterHandler = filterHandler;
   }
@@ -105,7 +111,7 @@ public class SearchBox extends InputText implements SearchView {
     super.onLoad();
     ReadyEvent.fire(this);
   }
-  
+
   private FilterHandler getFilterHandler() {
     return filterHandler;
   }

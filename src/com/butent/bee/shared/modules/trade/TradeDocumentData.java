@@ -40,7 +40,7 @@ public class TradeDocumentData implements BeeSerializable {
     this.companies = companies;
     this.bankAccounts = bankAccounts;
     this.items = items;
-    
+
     this.currencyRates = currencyRates;
     this.totalInWords = totalInWords;
   }
@@ -78,10 +78,10 @@ public class TradeDocumentData implements BeeSerializable {
         case ITEMS:
           setItems(BeeRowSet.maybeRestore(value));
           break;
-          
+
         case CURRENCY_RATES:
-          this.currencyRates = new HashMap<>(); 
-          
+          this.currencyRates = new HashMap<>();
+
           Map<String, String> map = Codec.deserializeMap(value);
           for (Map.Entry<String, String> entry : map.entrySet()) {
             getCurrencyRates().put(entry.getKey(), BeeUtils.toDoubleOrNull(entry.getValue()));
@@ -165,7 +165,7 @@ public class TradeDocumentData implements BeeSerializable {
         case ITEMS:
           arr[i++] = getItems();
           break;
-        
+
         case CURRENCY_RATES:
           arr[i++] = getCurrencyRates();
           break;

@@ -64,7 +64,7 @@ class UserSettingsForm extends AbstractFormInterceptor {
                     roles.add(r.getString(index));
                   }
                 }
-                
+
                 if (roleWidget != null) {
                   roleWidget.getElement().setInnerText(BeeUtils.joinItems(roles));
                 }

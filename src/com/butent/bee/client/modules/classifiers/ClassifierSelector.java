@@ -249,13 +249,13 @@ public class ClassifierSelector implements SelectorEvent.Handler {
       removePersonSelector(selectorId);
       return;
     }
-    
+
     Widget companySelector = form.getWidgetByName(companySelectorName);
     if (!(companySelector instanceof DataSelector)) {
       removePersonSelector(selectorId);
       return;
     }
-    
+
     String companyValue = ((DataSelector) companySelector).getValue();
 
     if (Objects.equals(companyValue, personSelectors.get(selectorId))) {
@@ -280,16 +280,16 @@ public class ClassifierSelector implements SelectorEvent.Handler {
       if (rowSet == null || rowSet.getNumberOfRows() <= 1) {
         return;
       }
-      
+
       Multimap<Long, BeeRow> filteredRows = ArrayListMultimap.create();
 
       for (Iterator<BeeRow> it = rowSet.iterator(); it.hasNext();) {
         BeeRow row = it.next();
-        
+
         String value = row.getProperty(PROP_COMPANY_IDS);
         if (!BeeUtils.isEmpty(value)) {
           Set<Long> values = DataUtils.parseIdSet(value);
-          
+
           for (Long id : companyIds) {
             if (values.contains(id)) {
               filteredRows.put(id, row);
@@ -317,7 +317,7 @@ public class ClassifierSelector implements SelectorEvent.Handler {
       }
     }
   }
-  
+
   private void removeCompanyPersonSelector(String id) {
     if (companyPersonSelectors.containsKey(id)) {
       companyPersonSelectors.remove(id);

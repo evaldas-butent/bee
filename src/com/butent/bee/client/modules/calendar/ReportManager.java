@@ -150,7 +150,7 @@ class ReportManager {
     }
 
     Collection<UiOption> uiOptions = EnumSet.of(UiOption.REPORT);
-    
+
     GridInterceptor gridInterceptor = GridFactory.getGridInterceptor(gridName);
 
     GridView gridView = GridFactory.createGridView(gridDescription,

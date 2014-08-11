@@ -3,7 +3,7 @@ package com.butent.bee.client.presenter;
 public abstract class AbstractPresenter implements Presenter {
 
   private String eventSource;
-  
+
   @Override
   public String getEventSource() {
     return eventSource;

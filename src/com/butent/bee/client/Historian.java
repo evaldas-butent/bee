@@ -194,7 +194,7 @@ public final class Historian implements HasInfo {
 
     getHistory().pushState(BrowserHistoryState.REST.getCaption(), null);
     getHistory().pushState(BrowserHistoryState.LAST.getCaption(), null);
-    
+
     getHistory().back();
 
     JsBrowser.getWindow().setOnpopstate(new EventListener() {

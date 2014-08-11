@@ -23,10 +23,20 @@
 
     <DataColumn name="VatPlus" width="20" sortable="false" horizontalAlignment="center" caption="+">
       <render><ui:expression>row.VatPlus ? '+' : ''</ui:expression></render>
+      <carry>
+        <ui:expression>cell.value</ui:expression>
+      </carry>
     </DataColumn>
-    <DataColumn name="Vat" />
+    <DataColumn name="Vat">
+      <carry>
+        <ui:expression>cell.value</ui:expression>
+      </carry>
+    </DataColumn>
     <DataColumn name="VatPercent" width="20" sortable="false" horizontalAlignment="center" caption="%">
       <render><ui:expression>row.VatPercent ? '%' : ''</ui:expression></render>
+      <carry>
+        <ui:expression>cell.value</ui:expression>
+      </carry>
     </DataColumn>
 
     <CalcColumn name="VatSum" type="decimal" caption="=vatSum" format="0.00" visible="false">

@@ -465,8 +465,6 @@ public class DocumentForm extends DocumentDataForm implements SelectorEvent.Hand
     }
   }
 
-
-
   private void createTemplate() {
     LocalizableConstants loc = Localized.getConstants();
 

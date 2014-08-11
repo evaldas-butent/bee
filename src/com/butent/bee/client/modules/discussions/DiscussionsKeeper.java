@@ -34,6 +34,10 @@ public final class DiscussionsKeeper {
           new DiscussionsGridHandler(type));
     }
 
+    /* Grid handlers */
+
+    GridFactory.registerGridInterceptor(GRID_DISCUSSION_FILES, new DiscussionFilesGrid());
+
     /* Menu */
     MenuService.DISCUSS_LIST.setHandler(new MenuHandler() {
       @Override

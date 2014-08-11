@@ -78,7 +78,7 @@ public class ObjectDefectsGrid extends AbstractGridInterceptor {
       return super.beforeAction(action, presenter);
     }
   }
-  
+
   @Override
   public void beforeRefresh(GridPresenter presenter) {
     FormView form = UiHelper.getForm(presenter.getMainView().asWidget());

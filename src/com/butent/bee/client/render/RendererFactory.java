@@ -249,11 +249,11 @@ public final class RendererFactory {
       case URL:
         renderer = new UrlRenderer(source);
         break;
-        
+
       case TOTAL:
         renderer = new TotalRenderer(dataColumns);
         break;
-        
+
       case VAT:
         renderer = new VatRenderer(dataColumns);
         break;

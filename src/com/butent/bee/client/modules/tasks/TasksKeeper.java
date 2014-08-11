@@ -186,7 +186,7 @@ public final class TasksKeeper {
 
     FormFactory.registerFormInterceptor(FORM_RECURRING_TASK, new RecurringTaskHandler());
 
-    FormFactory.registerFormInterceptor(FORM_NEW_REQUEST, new RequestBuilder(null));
+    FormFactory.registerFormInterceptor(FORM_NEW_REQUEST, new RequestBuilder());
     FormFactory.registerFormInterceptor(FORM_REQUEST, new RequestEditor());
 
     GridFactory.registerGridInterceptor(GRID_REQUESTS, new RequestsGridInterceptor());
@@ -201,7 +201,7 @@ public final class TasksKeeper {
     GridFactory.registerGridInterceptor(GRID_RELATED_TASKS, new RelatedTasksGrid());
     GridFactory.registerGridInterceptor(GRID_RELATED_RECURRING_TASKS,
         new RelatedRecurringTasksGrid());
-    
+
     for (TaskType tt : TaskType.values()) {
       GridFactory.registerGridSupplier(tt.getSupplierKey(), GRID_TASKS,
           new TasksGrid(tt, tt.getCaption()));
@@ -237,7 +237,7 @@ public final class TasksKeeper {
         }
       }
     });
-    
+
     for (ReportType reportType : ReportType.values()) {
       reportType.register();
     }

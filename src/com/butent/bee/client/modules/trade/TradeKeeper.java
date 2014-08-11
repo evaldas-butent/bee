@@ -11,13 +11,13 @@ import com.butent.bee.shared.rights.Module;
 public final class TradeKeeper {
 
   public static final String STYLE_PREFIX = StyleUtils.CLASS_NAME_PREFIX + "trade-";
-  
+
   public static ParameterList createArgs(String name) {
     ParameterList args = BeeKeeper.getRpc().createParameters(Module.TRADE.getName());
     args.addQueryItem(AdministrationConstants.METHOD, name);
     return args;
   }
-  
+
   public static void register() {
     GridFactory.registerGridInterceptor(TradeConstants.VIEW_PURCHASE_ITEMS, new TradeItemsGrid());
     GridFactory.registerGridInterceptor(TradeConstants.VIEW_SALE_ITEMS, new TradeItemsGrid());

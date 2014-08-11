@@ -21,10 +21,9 @@ public class ScrollPager extends AbstractPager implements RequiresResize {
 
   private static final int MAX_HEIGHT = 10000;
 
-  private int lastPos = BeeConst.UNDEF;
+  private int lastPos;
   private long lastHeight;
 
-  private boolean isScrolling;
   private boolean isUpdating;
 
   public ScrollPager() {
@@ -66,7 +65,6 @@ public class ScrollPager extends AbstractPager implements RequiresResize {
         start = BeeUtils.clamp(start, 0, rowCount - pageSize);
 
         if (start != getPageStart()) {
-          isScrolling = true;
           setPageStart(start);
         }
         lastPos = pos;
@@ -78,7 +76,7 @@ public class ScrollPager extends AbstractPager implements RequiresResize {
   public HandlerRegistration addReadyHandler(ReadyEvent.Handler handler) {
     return addHandler(handler, ReadyEvent.getType());
   }
-  
+
   @Override
   public boolean onPrint(Element source, Element target) {
     return false;
@@ -91,21 +89,17 @@ public class ScrollPager extends AbstractPager implements RequiresResize {
 
   @Override
   public void onScopeChange(ScopeChangeEvent event) {
-    if (isScrolling) {
-      isScrolling = false;
-      return;
+    if (event.getOrigin() != getNavigationOrigin()) {
+      updateHeight();
+      isUpdating = updatePosition();
     }
-    isUpdating = true;
-
-    updateHeight();
-    updatePosition();
   }
 
   @Override
   protected NavigationOrigin getNavigationOrigin() {
     return NavigationOrigin.SCROLLER;
   }
-  
+
   @Override
   protected void onLoad() {
     super.onLoad();
@@ -163,16 +157,20 @@ public class ScrollPager extends AbstractPager implements RequiresResize {
     }
   }
 
-  private void updateHeight() {
+  private boolean updateHeight() {
     long h = calculateHeight(getPageSize(), getRowCount(), getWidgetHeight());
+
     if (h >= 0 && h != lastHeight) {
       lastHeight = h;
       int z = (h < MAX_HEIGHT) ? (int) h : MAX_HEIGHT;
       StyleUtils.setHeight(getInnerWidget(), z);
+      return true;
+    } else {
+      return false;
     }
   }
 
-  private void updatePosition() {
+  private boolean updatePosition() {
     int pageStart = getPageStart();
     int pageSize = getPageSize();
     int rowCount = getRowCount();
@@ -185,9 +183,12 @@ public class ScrollPager extends AbstractPager implements RequiresResize {
       pos = pageStart * (maxPos - height) / (rowCount - pageSize);
     }
 
-    if (pos >= 0 && pos <= maxPos - height) {
+    if (pos >= 0 && pos <= maxPos - height && pos != getPosition()) {
       setPosition(pos);
       lastPos = pos;
+      return true;
+    } else {
+      return false;
     }
   }
 }

@@ -13,14 +13,17 @@ import static com.butent.bee.shared.modules.classifiers.ClassifierConstants.*;
 import static com.butent.bee.shared.modules.trade.TradeConstants.*;
 import static com.butent.bee.shared.modules.transport.TransportConstants.*;
 
+import com.butent.bee.server.Config;
 import com.butent.bee.server.Invocation;
 import com.butent.bee.server.data.BeeView;
+import com.butent.bee.server.data.BeeView.ConditionProvider;
 import com.butent.bee.server.data.DataEditorBean;
 import com.butent.bee.server.data.DataEvent.ViewDeleteEvent;
 import com.butent.bee.server.data.DataEvent.ViewInsertEvent;
 import com.butent.bee.server.data.DataEvent.ViewQueryEvent;
 import com.butent.bee.server.data.DataEventHandler;
 import com.butent.bee.server.data.QueryServiceBean;
+import com.butent.bee.server.data.QueryServiceBean.ViewDataProvider;
 import com.butent.bee.server.data.SystemBean;
 import com.butent.bee.server.data.UserServiceBean;
 import com.butent.bee.server.http.RequestInfo;
@@ -56,6 +59,8 @@ import com.butent.bee.shared.data.IsRow;
 import com.butent.bee.shared.data.SearchResult;
 import com.butent.bee.shared.data.SimpleRowSet;
 import com.butent.bee.shared.data.SimpleRowSet.SimpleRow;
+import com.butent.bee.shared.data.filter.CompoundFilter;
+import com.butent.bee.shared.data.filter.CustomFilter;
 import com.butent.bee.shared.data.filter.Filter;
 import com.butent.bee.shared.data.view.Order;
 import com.butent.bee.shared.exceptions.BeeException;
@@ -162,7 +167,7 @@ public class TransportModuleBean implements BeeModule {
   public List<SearchResult> doSearch(String query) {
     List<SearchResult> result = Lists.newArrayList();
 
-    if (usr.isModuleVisible(Module.TRANSPORT.getName())) {
+    if (usr.isModuleVisible(ModuleAndSub.of(Module.TRANSPORT))) {
       List<SearchResult> vehiclesResult = qs.getSearchResults(VIEW_VEHICLES,
           Filter.anyContains(Sets.newHashSet(COL_NUMBER, COL_PARENT_MODEL_NAME, COL_MODEL_NAME,
               COL_OWNER_NAME), query));
@@ -277,10 +282,6 @@ public class TransportModuleBean implements BeeModule {
       response = sendMessage(reqInfo.getParameter(COL_DESCRIPTION),
           Codec.beeDeserializeCollection(reqInfo.getParameter(COL_MOBILE)));
 
-    } else if (BeeUtils.same(svc, SVC_GET_IMPORT_MAPPINGS)) {
-      response = getImportMappings(BeeUtils.toLong(reqInfo.getParameter(COL_IMPORT_PROPERTY)),
-          reqInfo.getParameter(VAR_MAPPING_TABLE), reqInfo.getParameter(VAR_MAPPING_FIELD));
-
     } else if (BeeUtils.same(svc, SVC_DO_IMPORT)) {
       response = imp.doImport(reqInfo);
 
@@ -339,6 +340,66 @@ public class TransportModuleBean implements BeeModule {
             bean.initTimer();
           }
         }
+      }
+    });
+
+    BeeView.registerConditionProvider(TBL_IMPORT_MAPPINGS, new ConditionProvider() {
+      @Override
+      public IsCondition getCondition(BeeView view, List<String> args) {
+        return null;
+      }
+    });
+
+    QueryServiceBean.registerViewDataProvider(TBL_IMPORT_MAPPINGS, new ViewDataProvider() {
+      @Override
+      public BeeRowSet getViewData(BeeView view, SqlSelect query, Filter filter) {
+        BeeRowSet rs = qs.getViewData(query, view);
+        Map<String, String> params = getParameters(filter);
+
+        if (!DataUtils.isEmpty(rs) && !BeeUtils.isEmpty(params)) {
+          String tbl = params.get(VAR_MAPPING_TABLE);
+
+          SimpleRowSet result = qs.getData(new SqlSelect()
+              .addField(TBL_IMPORT_MAPPINGS, sys.getIdName(TBL_IMPORT_MAPPINGS),
+                  COL_IMPORT_MAPPING)
+              .addField(tbl, params.get(VAR_MAPPING_FIELD), COL_IMPORT_VALUE)
+              .addFrom(TBL_IMPORT_MAPPINGS)
+              .addFromInner(tbl, sys.joinTables(tbl, TBL_IMPORT_MAPPINGS, COL_IMPORT_MAPPING))
+              .setWhere(sys.idInList(TBL_IMPORT_MAPPINGS, rs.getRowIds())));
+
+          for (BeeRow row : rs) {
+            row.setProperty(COL_IMPORT_MAPPING + COL_IMPORT_VALUE,
+                result.getValueByKey(COL_IMPORT_MAPPING, BeeUtils.toString(row.getId()),
+                    COL_IMPORT_VALUE));
+          }
+        }
+        return rs;
+      }
+
+      @Override
+      public int getViewSize(BeeView view, SqlSelect query, Filter filter) {
+        return qs.sqlCount(query);
+      }
+
+      private Map<String, String> getParameters(Filter filter) {
+        Map<String, String> params = null;
+
+        if (filter != null) {
+          if (filter instanceof CustomFilter
+              && BeeUtils.same(((CustomFilter) filter).getKey(), TBL_IMPORT_MAPPINGS)) {
+            return Codec.deserializeMap(((CustomFilter) filter).getArg(0));
+
+          } else if (filter instanceof CompoundFilter) {
+            for (Filter flt : ((CompoundFilter) filter).getSubFilters()) {
+              params = getParameters(flt);
+
+              if (!BeeUtils.isEmpty(params)) {
+                break;
+              }
+            }
+          }
+        }
+        return params;
       }
     });
 
@@ -575,7 +636,6 @@ public class TransportModuleBean implements BeeModule {
     });
 
     HeadlineProducer assessmentsHeadlineProducer = new HeadlineProducer() {
-
       @Override
       public Headline produce(Feed feed, long userId, BeeRowSet rowSet, IsRow row, boolean isNew) {
         String caption = "";
@@ -785,66 +845,64 @@ public class TransportModuleBean implements BeeModule {
       }
     });
 
-    news.registerUsageQueryProvider(Feed.ASSESSMENT_TRANSPORTATIONS,
-        new UsageQueryProvider() {
+    news.registerUsageQueryProvider(Feed.ASSESSMENT_TRANSPORTATIONS, new UsageQueryProvider() {
+      @Override
+      public SqlSelect getQueryForAccess(Feed feed, String relationColumn, long userId,
+          DateTime startDate) {
+        SqlSelect select = new SqlSelect()
+            .addFields(TBL_TRIP_USAGE, COL_TRIP)
+            .addMax(TBL_TRIP_USAGE, NewsConstants.COL_USAGE_ACCESS)
+            .addFrom(TBL_TRIP_USAGE)
+            .addFromInner(TBL_TRIPS, SqlUtils.join(TBL_TRIPS, sys.getIdName(TBL_TRIPS),
+                TBL_TRIP_USAGE, COL_TRIP))
+            .addFromLeft(
+                TBL_ASSESSMENT_FORWARDERS,
+                SqlUtils.join(TBL_ASSESSMENT_FORWARDERS, COL_TRIP, TBL_TRIPS, sys
+                    .getIdName(TBL_TRIPS)))
+            .addFromLeft(
+                TBL_CARGO_TRIPS,
+                SqlUtils.join(TBL_CARGO_TRIPS, COL_TRIP, TBL_TRIPS, sys
+                    .getIdName(TBL_TRIPS)))
+            .addFromLeft(TBL_ASSESSMENTS,
+                SqlUtils.join(TBL_ASSESSMENTS, COL_CARGO, TBL_CARGO_TRIPS, COL_CARGO))
+            .setWhere(SqlUtils.and(
+                SqlUtils.isNull(TBL_ASSESSMENT_FORWARDERS, COL_TRIP),
+                SqlUtils.notNull(TBL_ASSESSMENTS, COL_CARGO),
+                SqlUtils.equals(TBL_TRIP_USAGE, NewsConstants.COL_UF_USER, userId),
+                SqlUtils.notNull(TBL_TRIP_USAGE, NewsConstants.COL_USAGE_ACCESS)))
+            .addGroup(TBL_TRIP_USAGE, COL_TRIP);
+        return select;
+      }
 
-          @Override
-          public SqlSelect getQueryForAccess(Feed feed, String relationColumn, long userId,
-              DateTime startDate) {
-            SqlSelect select = new SqlSelect()
-                .addFields(TBL_TRIP_USAGE, COL_TRIP)
-                .addMax(TBL_TRIP_USAGE, NewsConstants.COL_USAGE_ACCESS)
-                .addFrom(TBL_TRIP_USAGE)
-                .addFromInner(TBL_TRIPS, SqlUtils.join(TBL_TRIPS, sys.getIdName(TBL_TRIPS),
-                    TBL_TRIP_USAGE, COL_TRIP))
-                .addFromLeft(
-                    TBL_ASSESSMENT_FORWARDERS,
-                    SqlUtils.join(TBL_ASSESSMENT_FORWARDERS, COL_TRIP, TBL_TRIPS, sys
-                        .getIdName(TBL_TRIPS)))
-                .addFromLeft(
-                    TBL_CARGO_TRIPS,
-                    SqlUtils.join(TBL_CARGO_TRIPS, COL_TRIP, TBL_TRIPS, sys
-                        .getIdName(TBL_TRIPS)))
-                .addFromLeft(TBL_ASSESSMENTS,
-                    SqlUtils.join(TBL_ASSESSMENTS, COL_CARGO, TBL_CARGO_TRIPS, COL_CARGO))
-                .setWhere(SqlUtils.and(
-                    SqlUtils.isNull(TBL_ASSESSMENT_FORWARDERS, COL_TRIP),
-                    SqlUtils.notNull(TBL_ASSESSMENTS, COL_CARGO),
-                    SqlUtils.equals(TBL_TRIP_USAGE, NewsConstants.COL_UF_USER, userId),
-                    SqlUtils.notNull(TBL_TRIP_USAGE, NewsConstants.COL_USAGE_ACCESS)))
-                .addGroup(TBL_TRIP_USAGE, COL_TRIP);
-            return select;
-          }
-
-          @Override
-          public SqlSelect getQueryForUpdates(Feed feed, String relationColumn, long userId,
-              DateTime startDate) {
-            SqlSelect select = new SqlSelect()
-                .addFields(TBL_TRIP_USAGE, COL_TRIP)
-                .addMax(TBL_TRIP_USAGE, NewsConstants.COL_USAGE_UPDATE)
-                .addFrom(TBL_TRIP_USAGE)
-                .addFromInner(TBL_TRIPS, SqlUtils.join(TBL_TRIPS, sys.getIdName(TBL_TRIPS),
-                    TBL_TRIP_USAGE, COL_TRIP))
-                .addFromLeft(
-                    TBL_ASSESSMENT_FORWARDERS,
-                    SqlUtils.join(TBL_ASSESSMENT_FORWARDERS, COL_TRIP, TBL_TRIPS, sys
-                        .getIdName(TBL_TRIPS)))
-                .addFromLeft(
-                    TBL_CARGO_TRIPS,
-                    SqlUtils.join(TBL_CARGO_TRIPS, COL_TRIP, TBL_TRIPS, sys
-                        .getIdName(TBL_TRIPS)))
-                .addFromLeft(TBL_ASSESSMENTS,
-                    SqlUtils.join(TBL_ASSESSMENTS, COL_CARGO, TBL_CARGO_TRIPS, COL_CARGO))
-                .setWhere(SqlUtils.and(
-                    SqlUtils.isNull(TBL_ASSESSMENT_FORWARDERS, COL_TRIP),
-                    SqlUtils.notNull(TBL_ASSESSMENTS, COL_CARGO),
-                    SqlUtils.notEqual(TBL_TRIP_USAGE, NewsConstants.COL_UF_USER, userId),
-                    SqlUtils.more(TBL_TRIP_USAGE, NewsConstants.COL_USAGE_UPDATE,
-                        NewsHelper.getStartTime(startDate))))
-                .addGroup(TBL_TRIP_USAGE, COL_TRIP);
-            return select;
-          }
-        });
+      @Override
+      public SqlSelect getQueryForUpdates(Feed feed, String relationColumn, long userId,
+          DateTime startDate) {
+        SqlSelect select = new SqlSelect()
+            .addFields(TBL_TRIP_USAGE, COL_TRIP)
+            .addMax(TBL_TRIP_USAGE, NewsConstants.COL_USAGE_UPDATE)
+            .addFrom(TBL_TRIP_USAGE)
+            .addFromInner(TBL_TRIPS, SqlUtils.join(TBL_TRIPS, sys.getIdName(TBL_TRIPS),
+                TBL_TRIP_USAGE, COL_TRIP))
+            .addFromLeft(
+                TBL_ASSESSMENT_FORWARDERS,
+                SqlUtils.join(TBL_ASSESSMENT_FORWARDERS, COL_TRIP, TBL_TRIPS, sys
+                    .getIdName(TBL_TRIPS)))
+            .addFromLeft(
+                TBL_CARGO_TRIPS,
+                SqlUtils.join(TBL_CARGO_TRIPS, COL_TRIP, TBL_TRIPS, sys
+                    .getIdName(TBL_TRIPS)))
+            .addFromLeft(TBL_ASSESSMENTS,
+                SqlUtils.join(TBL_ASSESSMENTS, COL_CARGO, TBL_CARGO_TRIPS, COL_CARGO))
+            .setWhere(SqlUtils.and(
+                SqlUtils.isNull(TBL_ASSESSMENT_FORWARDERS, COL_TRIP),
+                SqlUtils.notNull(TBL_ASSESSMENTS, COL_CARGO),
+                SqlUtils.notEqual(TBL_TRIP_USAGE, NewsConstants.COL_UF_USER, userId),
+                SqlUtils.more(TBL_TRIP_USAGE, NewsConstants.COL_USAGE_UPDATE,
+                    NewsHelper.getStartTime(startDate))))
+            .addGroup(TBL_TRIP_USAGE, COL_TRIP);
+        return select;
+      }
+    });
   }
 
   public void initTimer() {
@@ -1535,7 +1593,7 @@ public class TransportModuleBean implements BeeModule {
 
   /**
    * Return SqlSelect query, calculating cargo costs from CargoServices table.
-   * 
+   *
    * @param flt - query filter with <b>unique</b> "Cargo" values.
    * @return query with columns: "Cargo", "Expense"
    */
@@ -1563,7 +1621,7 @@ public class TransportModuleBean implements BeeModule {
 
   /**
    * Return SqlSelect query, calculating cargo incomes from CargoServices table.
-   * 
+   *
    * @param flt - query filter with <b>unique</b> "Cargo" values.
    * @param currency - currencyId, to which convert amounts.
    * @return query with columns: "Cargo", "CargoIncome", "ServicesIncome"
@@ -1985,7 +2043,7 @@ public class TransportModuleBean implements BeeModule {
 
   /**
    * Return SqlSelect query, calculating trip fuel consumptions from TripRoutes table.
-   * 
+   *
    * @param flt - query filter with <b>unique</b> TripRoutes ID values.
    * @param routeMode - if true, returns results, grouped by TripRoutes ID, else grouped by Trip ID
    * @return query with two columns: (TripRoutes ID or "Trip") and "Quantity"
@@ -2158,20 +2216,6 @@ public class TransportModuleBean implements BeeModule {
     return ResponseObject.response(settings);
   }
 
-  private ResponseObject getImportMappings(long propId, String tbl, String fld) {
-    BeeRowSet rs = qs.getViewData(new SqlSelect()
-        .addFields(TBL_IMPORT_MAPPINGS, COL_IMPORT_PROPERTY, COL_IMPORT_VALUE, COL_IMPORT_MAPPING)
-        .addField(tbl, fld, COL_IMPORT_MAPPING + COL_IMPORT_VALUE)
-        .addFields(TBL_IMPORT_MAPPINGS,
-            sys.getIdName(TBL_IMPORT_MAPPINGS), sys.getVersionName(TBL_IMPORT_MAPPINGS))
-        .addFrom(TBL_IMPORT_MAPPINGS)
-        .addFromLeft(tbl, sys.joinTables(tbl, TBL_IMPORT_MAPPINGS, COL_IMPORT_MAPPING))
-        .setWhere(SqlUtils.equals(TBL_IMPORT_MAPPINGS, COL_IMPORT_PROPERTY, propId))
-        .addOrder(TBL_IMPORT_MAPPINGS, COL_IMPORT_VALUE), sys.getView(TBL_IMPORT_MAPPINGS));
-
-    return ResponseObject.response(rs);
-  }
-
   private BeeRowSet getSettings() {
     long userId = usr.getCurrentUserId();
     Filter filter = Filter.equals(COL_USER, userId);
@@ -2292,7 +2336,7 @@ public class TransportModuleBean implements BeeModule {
 
   /**
    * Return Temporary table name with calculated trip costs.
-   * 
+   *
    * @param flt - query filter with <b>unique</b> "Trip" values.
    * @return Temporary table name with following structure: <br>
    *         "Trip" - trip ID <br>
@@ -2504,7 +2548,7 @@ public class TransportModuleBean implements BeeModule {
 
   /**
    * Return Temporary table name with calculated trip incomes by each cargo.
-   * 
+   *
    * @param flt - query filter with <b>unique</b> "Trip" values.
    * @return Temporary table name with following structure: <br>
    *         "Trip" - trip ID <br>
@@ -2708,6 +2752,9 @@ public class TransportModuleBean implements BeeModule {
 
   @Timeout
   private void importERPPayments() {
+    if (!Config.isInitialized()) {
+      return;
+    }
     SimpleRowSet debts = qs.getData(new SqlSelect()
         .addField(TBL_SALES, sys.getIdName(TBL_SALES), COL_SALE)
         .addFields(TBL_SALES, COL_TRADE_PAID)

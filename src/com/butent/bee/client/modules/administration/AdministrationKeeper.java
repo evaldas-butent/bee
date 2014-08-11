@@ -25,7 +25,7 @@ import com.butent.bee.shared.news.NewsConstants;
 import com.butent.bee.shared.rights.Module;
 
 public final class AdministrationKeeper {
-  
+
   private static class RowTransformHandler implements RowTransformEvent.Handler {
     @Override
     public void onRowTransform(RowTransformEvent event) {
@@ -63,7 +63,7 @@ public final class AdministrationKeeper {
     FormFactory.registerFormInterceptor(FORM_NEW_ROLE, new NewRoleForm());
 
     GridFactory.registerGridInterceptor(NewsConstants.GRID_USER_FEEDS, new UserFeedsInterceptor());
-    
+
     GridFactory.registerGridSupplier(
         GridFactory.getSupplierKey(NewsConstants.GRID_USER_FEEDS, null),
         NewsConstants.GRID_USER_FEEDS,

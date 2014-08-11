@@ -19,7 +19,7 @@ import com.butent.bee.shared.data.event.RowUpdateEvent;
 import com.butent.bee.shared.utils.BeeUtils;
 
 public class TradeItemsGrid extends AbstractGridInterceptor {
-  
+
   private final ScheduledCommand refresher;
 
   public TradeItemsGrid() {
@@ -43,21 +43,21 @@ public class TradeItemsGrid extends AbstractGridInterceptor {
       refresher.execute();
     }
   }
-  
+
   @Override
   public GridInterceptor getInstance() {
     return new TradeItemsGrid();
   }
-  
+
   private ScheduledCommand createRefresher() {
     return new ScheduledCommand() {
       @Override
       public void execute() {
         FormView form = UiHelper.getForm(getGridView());
-        
+
         final String viewName = (form == null) ? null : form.getViewName();
-        final Long rowId = (form == null) ? null : form.getActiveRowId(); 
-        
+        final Long rowId = (form == null) ? null : form.getActiveRowId();
+
         if (DataUtils.isId(rowId)) {
           Queries.getRow(viewName, rowId, new RowCallback() {
             @Override

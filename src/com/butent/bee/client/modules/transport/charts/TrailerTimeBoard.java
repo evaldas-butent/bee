@@ -24,16 +24,16 @@ final class TrailerTimeBoard extends VehicleTimeBoard {
           }
         });
   }
-  
+
   private TrailerTimeBoard() {
     super();
   }
-  
+
   @Override
   public String getCaption() {
     return Localized.getConstants().trailerTimeBoard();
   }
-  
+
   @Override
   public String getIdPrefix() {
     return "trailer-park";
@@ -78,7 +78,7 @@ final class TrailerTimeBoard extends VehicleTimeBoard {
   protected String getItemOpacityColumnName() {
     return COL_TRAILER_ITEM_OPACITY;
   }
-  
+
   @Override
   protected String getNumberWidthColumnName() {
     return COL_TRAILER_PIXELS_PER_NUMBER;
@@ -108,7 +108,7 @@ final class TrailerTimeBoard extends VehicleTimeBoard {
   protected String getShowPlaceInfoColumnName() {
     return COL_TRAILER_PLACE_INFO;
   }
-  
+
   @Override
   protected String getShowPlaceCitiesColumnName() {
     return COL_TRAILER_PLACE_CITIES;
