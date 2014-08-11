@@ -594,7 +594,7 @@ public class FormImpl extends Absolute implements FormView, PreviewHandler, Tabu
       int rc = getRowCount();
       setPageStart(rc, false, false, NavigationOrigin.SYSTEM);
       setRowCount(rc + 1, false);
-      fireScopeChange();
+      fireScopeChange(NavigationOrigin.SYSTEM);
     }
 
     setAdding(false);
@@ -1469,7 +1469,7 @@ public class FormImpl extends Absolute implements FormView, PreviewHandler, Tabu
     this.pageStart = start;
 
     if (fireScopeChange) {
-      fireScopeChange();
+      fireScopeChange(origin);
     }
     if (fireDataRequest) {
       fireDataRequest(origin);
@@ -1488,7 +1488,7 @@ public class FormImpl extends Absolute implements FormView, PreviewHandler, Tabu
     if (getPageStart() >= count) {
       setPageStart(Math.max(count - 1, 0), true, false, NavigationOrigin.SYSTEM);
     } else if (fireScopeChange) {
-      fireScopeChange();
+      fireScopeChange(NavigationOrigin.SYSTEM);
     }
   }
 
@@ -1710,8 +1710,8 @@ public class FormImpl extends Absolute implements FormView, PreviewHandler, Tabu
     fireEvent(new DataRequestEvent(origin));
   }
 
-  private void fireScopeChange() {
-    fireEvent(new ScopeChangeEvent(getPageStart(), getPageSize(), getRowCount()));
+  private void fireScopeChange(NavigationOrigin origin) {
+    fireEvent(new ScopeChangeEvent(getPageStart(), getPageSize(), getRowCount(), origin));
   }
 
   private void fireUpdate(IsRow rowValue, final IsColumn column, String oldValue,
