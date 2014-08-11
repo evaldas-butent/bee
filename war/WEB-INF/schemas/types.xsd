@@ -325,6 +325,7 @@
       <xs:enumeration value="EcOrderItems" />
       <xs:enumeration value="EcOrders" />
       <xs:enumeration value="EcRegistrations" />
+      <xs:enumeration value="EditorTemplates" />
       <xs:enumeration value="Emails" />
       <xs:enumeration value="ExpeditionTypes" />
       <xs:enumeration value="ExpeditionTrips" />

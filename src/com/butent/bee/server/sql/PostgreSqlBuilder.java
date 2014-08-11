@@ -156,7 +156,7 @@ class PostgreSqlBuilder extends SqlBuilder {
         List<String> values = NameUtils.toList(params.get("value" + 0));
 
         for (int i = 0; i < values.size(); i++) {
-          values.set(i, values.get(i).replace("'", "''") + ":*");
+          values.set(i, values.get(i).replace("'", "''").replace(":", " ") + ":*");
         }
         return expression + " @@ to_tsquery('simple', '" + BeeUtils.join("&", values) + "')";
 

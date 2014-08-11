@@ -52,10 +52,10 @@
 .bee-mail-RecipientLabel {
   font-weight: bold;
   display: inline-block;
+  margin-right: 5px;
 }
 
 .bee-mail-RecipientEmail {
-  margin-left: 5px;
   display: inline-block;
 }
 
@@ -114,6 +114,7 @@
   border: 1px solid rgba(0, 0, 0, 0.2);
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
   padding: 2px;
+  max-height: 400px;
   overflow: auto;
 }
 

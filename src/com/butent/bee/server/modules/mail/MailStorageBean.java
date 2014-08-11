@@ -577,10 +577,28 @@ public class MailStorageBean {
 
   private void savePart(Long messageId, String text, String html) {
     if (BeeUtils.anyNotEmpty(text, html)) {
+      String cleanHtml = html;
+
+      if (!BeeUtils.isEmpty(html)) {
+        int idx = html.indexOf(0);
+
+        switch (idx) {
+          case -1:
+            break;
+
+          case 0:
+            cleanHtml = null;
+            break;
+
+          default:
+            cleanHtml = html.substring(0, idx);
+            break;
+        }
+      }
       qs.insertData(new SqlInsert(TBL_PARTS)
           .addConstant(COL_MESSAGE, messageId)
-          .addConstant(COL_CONTENT, BeeUtils.isEmpty(text) ? HtmlUtils.stripHtml(html) : text)
-          .addConstant(COL_HTML_CONTENT, html));
+          .addConstant(COL_CONTENT, BeeUtils.isEmpty(text) ? HtmlUtils.stripHtml(cleanHtml) : text)
+          .addConstant(COL_HTML_CONTENT, cleanHtml));
     }
   }
 }
