@@ -167,7 +167,7 @@ public class TransportModuleBean implements BeeModule {
   public List<SearchResult> doSearch(String query) {
     List<SearchResult> result = Lists.newArrayList();
 
-    if (usr.isModuleVisible(Module.TRANSPORT.getName())) {
+    if (usr.isModuleVisible(ModuleAndSub.of(Module.TRANSPORT))) {
       List<SearchResult> vehiclesResult = qs.getSearchResults(VIEW_VEHICLES,
           Filter.anyContains(Sets.newHashSet(COL_NUMBER, COL_PARENT_MODEL_NAME, COL_MODEL_NAME,
               COL_OWNER_NAME), query));

@@ -209,6 +209,10 @@
     </xs:restriction>
   </xs:simpleType>
 
+  <xs:simpleType name="modules">
+    <xs:list itemType="module" />
+  </xs:simpleType>
+
   <xs:simpleType name="dataView">
     <xs:restriction base="xs:string">
       <xs:enumeration value="AbsenceTypes" />

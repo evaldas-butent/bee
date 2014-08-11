@@ -71,6 +71,7 @@ import com.butent.bee.shared.modules.discussions.DiscussionsUtils;
 import com.butent.bee.shared.news.Feed;
 import com.butent.bee.shared.news.NewsConstants;
 import com.butent.bee.shared.rights.Module;
+import com.butent.bee.shared.rights.ModuleAndSub;
 import com.butent.bee.shared.time.DateTime;
 import com.butent.bee.shared.time.JustDate;
 import com.butent.bee.shared.time.TimeUtils;
@@ -142,7 +143,7 @@ public class DiscussionsModuleBean implements BeeModule {
   public List<SearchResult> doSearch(String query) {
     List<SearchResult> result = Lists.newArrayList();
 
-    if (usr.isModuleVisible(Module.DISCUSSIONS.getName())) {
+    if (usr.isModuleVisible(ModuleAndSub.of(Module.DISCUSSIONS))) {
       result.addAll(qs.getSearchResults(VIEW_DISCUSSIONS,
           Filter.anyContains(Sets.newHashSet(COL_SUBJECT, COL_DESCRIPTION, ALS_OWNER_FIRST_NAME,
               ALS_OWNER_LAST_NAME), query)));

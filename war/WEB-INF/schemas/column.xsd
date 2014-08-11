@@ -31,7 +31,7 @@
     <xs:attributeGroup ref="flex" />
     <xs:attribute name="sortable" type="xs:boolean" default="true" />
     <xs:attribute name="visible" type="xs:boolean" />
-    <xs:attribute name="module" type="type:module" />
+    <xs:attribute name="module" type="type:modules" />
     <xs:attribute name="format" type="xs:normalizedString" />
     <xs:attribute name="horizontalAlignment" type="ui:horizontalAlignmentType" />
     <xs:attribute name="whiteSpace" type="ui:whiteSpaceType" />

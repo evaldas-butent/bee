@@ -16,10 +16,17 @@ name="References" label="=classifiers" order="10" module="Classifiers"
   <Item name="UpdateExchangeRates" label="=updateExchangeRatesMenu"
     service="update_exchange_rates" />
 
+  <Item name="Warehouses" label="=warehouses" service="grid" parameters="Warehouses"
+    separator="true" module="Trade Ec" />
+
   <Item name="Cities" label="=cities" service="grid" parameters="Cities" separator="true" />
   <Item name="Countries" label="=countries" service="grid" parameters="Countries" />
   
   <Item name="Banks" label="=banks" service="grid" parameters="Banks" separator="true" />
+
+  <Item name="ActivityTypes" label="=activityTypes" service="grid" parameters="ActivityTypes"
+    separator="true" />
+  <Item name="CostCenters" label="=costCenters" service="grid" parameters="CostCenters" />
 
   <Item name="Colors" label="=colors" service="grid" parameters="Colors" separator="true" />
   <Item name="Themes" label="=colorThemes" service="grid" parameters="Themes" />

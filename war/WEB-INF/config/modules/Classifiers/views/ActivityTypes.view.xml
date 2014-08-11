@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <View xmlns="http://www.butent.com/view"
 
-  name="ActivityTypes" source="ActivityTypes" module="Administration"
+  name="ActivityTypes" source="ActivityTypes" module="Classifiers"
   caption="=activityTypes" newRowCaption="=newActivityType"
   >
   <Columns>
