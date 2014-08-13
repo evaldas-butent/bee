@@ -15,7 +15,7 @@
     <Relation name="Brand" relation="TcdBrands" label="=ecItemBrand" />
     <Relation name="Article" relation="TcdArticles" label="=ecItem" />
 
-    <Numeric name="Percent" precision="7" scale="3" label="=ecDiscountPercent" />
+    <Numeric name="Percent" precision="7" scale="3" label="=discountPercent" />
     <Numeric name="Price" precision="10" scale="2" label="=ecDiscountPrice" />
     
     <String name="Note" precision="100" label="=ecDiscountNote" />

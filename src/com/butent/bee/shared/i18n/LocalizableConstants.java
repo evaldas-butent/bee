@@ -10,12 +10,13 @@ import com.butent.bee.shared.modules.mail.LocalizableMailConstants;
 import com.butent.bee.shared.modules.service.LocalizableServiceConstants;
 import com.butent.bee.shared.modules.tasks.LocalizableTaskConstants;
 import com.butent.bee.shared.modules.trade.LocalizableTradeConstants;
+import com.butent.bee.shared.modules.trade.acts.LocalizableTradeActConstants;
 import com.butent.bee.shared.modules.transport.LocalizableTransportConstants;
 
 public interface LocalizableConstants extends Constants, LocalizableCalendarConstants,
     LocalizableMailConstants, LocalizableTransportConstants, LocalizableTradeConstants,
     LocalizableTaskConstants, LocalizableEcConstants, LocalizableDiscussionsConstants,
-    LocalizableDocumentsConstants, LocalizableServiceConstants {
+    LocalizableDocumentsConstants, LocalizableServiceConstants, LocalizableTradeActConstants {
 
   String actionAdd();
 
@@ -554,6 +555,8 @@ public interface LocalizableConstants extends Constants, LocalizableCalendarCons
   String quantity();
 
   String questionLogout();
+
+  String references();
 
   String registered();
 

@@ -16,7 +16,7 @@ public enum Module implements HasLocalizedCaption {
   CLASSIFIERS(SubModule.CONTACTS) {
     @Override
     public String getCaption(LocalizableConstants constants) {
-      return constants.classifiers();
+      return constants.references();
     }
   },
   CALENDAR {
@@ -60,7 +60,7 @@ public enum Module implements HasLocalizedCaption {
       return "Ec";
     }
   },
-  TRADE {
+  TRADE(SubModule.ACTS) {
     @Override
     public String getCaption(LocalizableConstants constants) {
       return constants.trade();

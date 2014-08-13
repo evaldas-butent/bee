@@ -22,7 +22,7 @@
     
     <Boolean name="CreditLimitWarning" label="=ecClientCreditLimitWarning" />
     
-    <Numeric name="DiscountPercent" precision="7" scale="3" label="=ecDiscountPercent" />
+    <Numeric name="DiscountPercent" precision="7" scale="3" label="=discountPercent" />
     <Relation name="DiscountParent" relation="EcClients" label="=ecDiscountParent" />
     
     <Enum name="DisplayedPrice" key="EcDisplayedPrice" label="=ecDisplayedPrice" />

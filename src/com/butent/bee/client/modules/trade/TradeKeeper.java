@@ -3,6 +3,7 @@ package com.butent.bee.client.modules.trade;
 import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.communication.ParameterList;
 import com.butent.bee.client.grid.GridFactory;
+import com.butent.bee.client.modules.trade.acts.TradeActKeeper;
 import com.butent.bee.client.style.StyleUtils;
 import com.butent.bee.shared.modules.administration.AdministrationConstants;
 import com.butent.bee.shared.modules.trade.TradeConstants;
@@ -21,6 +22,8 @@ public final class TradeKeeper {
   public static void register() {
     GridFactory.registerGridInterceptor(TradeConstants.VIEW_PURCHASE_ITEMS, new TradeItemsGrid());
     GridFactory.registerGridInterceptor(TradeConstants.VIEW_SALE_ITEMS, new TradeItemsGrid());
+
+    TradeActKeeper.register();
   }
 
   private TradeKeeper() {
