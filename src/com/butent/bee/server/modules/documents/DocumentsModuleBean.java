@@ -29,6 +29,7 @@ import com.butent.bee.shared.data.BeeRow;
 import com.butent.bee.shared.data.BeeRowSet;
 import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.IsRow;
+import com.butent.bee.shared.data.RowChildren;
 import com.butent.bee.shared.data.SearchResult;
 import com.butent.bee.shared.data.SimpleRowSet;
 import com.butent.bee.shared.data.SimpleRowSet.SimpleRow;
@@ -92,6 +93,9 @@ public class DocumentsModuleBean implements BeeModule {
 
     if (BeeUtils.same(svc, SVC_COPY_DOCUMENT_DATA)) {
       response = copyDocumentData(BeeUtils.toLongOrNull(reqInfo.getParameter(COL_DOCUMENT_DATA)));
+
+    } else if (BeeUtils.same(svc, "copy_document")) {
+      response = copyDocument(reqInfo);
 
     } else if (BeeUtils.same(svc, SVC_SET_CATEGORY_STATE)) {
       response = setCategoryState(BeeUtils.toLongOrNull(reqInfo.getParameter("id")),
@@ -273,6 +277,50 @@ public class DocumentsModuleBean implements BeeModule {
         }
       }
     });
+  }
+
+  private ResponseObject copyDocument(RequestInfo reqInfo) {
+    Long dataId = reqInfo.getParameterLong(COL_DOCUMENT_DATA);
+
+    if (DataUtils.isId(dataId)) {
+      dataId = copyDocumentData(dataId).getResponseAsLong();
+    }
+    long documentId = qs.insertData(new SqlInsert(TBL_DOCUMENTS)
+        .addConstant(COL_DOCUMENT_CATEGORY, reqInfo.getParameter(COL_DOCUMENT_CATEGORY))
+        .addConstant(COL_DOCUMENT_NAME, reqInfo.getParameter(COL_DOCUMENT_NAME))
+        .addConstant(COL_DOCUMENT_DATA, dataId));
+
+    SimpleRowSet rs = qs.getData(new SqlSelect()
+        .addFields(VIEW_DOCUMENT_ITEMS, COL_DOCUMENT_DATA,
+            "Description", "Quantity", "Price", "VatPlus", "Vat", "VatPercent")
+        .addFrom(VIEW_DOCUMENT_ITEMS)
+        .setWhere(SqlUtils.equals(VIEW_DOCUMENT_ITEMS, COL_DOCUMENT,
+            reqInfo.getParameterLong(COL_DOCUMENT))));
+
+    for (SimpleRow row : rs) {
+      dataId = row.getLong(COL_DOCUMENT_DATA);
+
+      if (DataUtils.isId(dataId)) {
+        dataId = copyDocumentData(dataId).getResponseAsLong();
+      }
+      SqlInsert insert = new SqlInsert(VIEW_DOCUMENT_ITEMS)
+          .addConstant(COL_DOCUMENT, documentId)
+          .addConstant(COL_DOCUMENT_DATA, dataId);
+
+      for (String fld : new String[] {"Description", "Quantity", "Price", "VatPlus", "Vat",
+          "VatPercent"}) {
+        insert.addConstant(fld, row.getValue(fld));
+      }
+      qs.insertData(insert);
+    }
+    ResponseObject response = ResponseObject.response(qs.getViewData(TBL_DOCUMENTS,
+        Filter.compareId(documentId)).getRow(0));
+
+    deb.commitChildren(documentId,
+        Lists.newArrayList(RowChildren.create(AdministrationConstants.TBL_RELATIONS, COL_DOCUMENT,
+            null, COL_DOCUMENT, reqInfo.getParameter(COL_DOCUMENT))), response);
+
+    return response;
   }
 
   private ResponseObject copyDocumentData(Long data) {

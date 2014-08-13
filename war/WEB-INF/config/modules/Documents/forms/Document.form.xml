@@ -115,6 +115,14 @@
             targetRelColumn="Document" sourceRelColumn="ServiceObject"
             renderColumns="Address" choiceColumns="Address CustomerName" />
         </FlowPanel>
+
+        <FlowPanel class="flexBox-horizontal" style="&row;"
+            data="Relations" for="Document" module="Documents">
+          <Label text="=documents" style="&chlabel;" />
+          <ChildSelector class="flexible" viewName="Documents" childTable="Relations" 
+            targetRelColumn="Document" sourceRelColumn="Document"
+            renderColumns="Name" newRowEnabled="false" />
+        </FlowPanel>
       </FlowPanel>
     </page>
 

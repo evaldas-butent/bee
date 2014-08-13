@@ -14,6 +14,8 @@ import static com.butent.bee.shared.modules.trade.TradeConstants.*;
 import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.Global;
 import com.butent.bee.client.UserInfo;
+import com.butent.bee.client.communication.ParameterList;
+import com.butent.bee.client.communication.ResponseCallback;
 import com.butent.bee.client.composite.Autocomplete;
 import com.butent.bee.client.composite.ChildSelector;
 import com.butent.bee.client.composite.DataSelector;
@@ -48,6 +50,7 @@ import com.butent.bee.shared.BiConsumer;
 import com.butent.bee.shared.Consumer;
 import com.butent.bee.shared.Holder;
 import com.butent.bee.shared.State;
+import com.butent.bee.shared.communication.ResponseObject;
 import com.butent.bee.shared.data.BeeColumn;
 import com.butent.bee.shared.data.BeeRow;
 import com.butent.bee.shared.data.BeeRowSet;
@@ -72,6 +75,14 @@ import java.util.List;
 import java.util.Map;
 
 public class DocumentForm extends DocumentDataForm implements SelectorEvent.Handler {
+
+  private final Button newDocumentButton = new Button(Localized.maybeTranslate("=documentNew"),
+      new ClickHandler() {
+        @Override
+        public void onClick(ClickEvent event) {
+          createDocument();
+        }
+      });
 
   private final Button newTemplateButton = new Button(Localized.getConstants()
       .newDocumentTemplate(), new ClickHandler() {
@@ -227,6 +238,7 @@ public class DocumentForm extends DocumentDataForm implements SelectorEvent.Hand
     getHeaderView().clearCommandPanel();
 
     if (!newRow && user.isModuleVisible(ModuleAndSub.of(Module.DOCUMENTS, SubModule.TEMPLATES))) {
+      getHeaderView().addCommandItem(newDocumentButton);
       getHeaderView().addCommandItem(newTemplateButton);
     }
   }
@@ -463,6 +475,38 @@ public class DocumentForm extends DocumentDataForm implements SelectorEvent.Hand
             });
       }
     }
+  }
+
+  private void createDocument() {
+    LocalizableConstants loc = Localized.getConstants();
+
+    Global.inputString(Localized.maybeTranslate("=documentNew"), loc.documentName(),
+        new StringCallback() {
+          @Override
+          public void onSuccess(String name) {
+            ParameterList args = DocumentsHandler.createArgs("copy_document");
+            args.addDataItem(COL_DOCUMENT, getActiveRowId());
+            args.addDataItem(COL_DOCUMENT_CATEGORY, getStringValue(COL_DOCUMENT_CATEGORY));
+            args.addDataItem(COL_DOCUMENT_NAME, name);
+            Long dataId = getLongValue(COL_DOCUMENT_DATA);
+
+            if (DataUtils.isId(dataId)) {
+              args.addDataItem(COL_DOCUMENT_DATA, dataId);
+            }
+            BeeKeeper.getRpc().makePostRequest(args, new ResponseCallback() {
+              @Override
+              public void onResponse(ResponseObject response) {
+                response.notify(BeeKeeper.getScreen());
+
+                if (!response.hasErrors()) {
+                  IsRow newDocument = BeeRow.restore(response.getResponseAsString());
+                  getGridView().getGrid().insertRow(newDocument, false);
+                  RowEditor.open(VIEW_DOCUMENTS, newDocument, Opener.MODAL);
+                }
+              }
+            });
+          }
+        });
   }
 
   private void createTemplate() {
