@@ -385,9 +385,11 @@ public class DocumentDataForm extends AbstractFormInterceptor
                     .getGridView().getDataIndex(COL_CRITERIA_GROUP_NAME))));
           }
           if (BeeUtils.same(source, COL_CRITERION_VALUE) && criteriaGrid != null) {
-            flt.add(Filter.isEqual(COL_CRITERION_NAME,
-                criteriaGrid.getPresenter().getActiveRow().getValue(criteriaGrid.getPresenter()
-                    .getGridView().getDataIndex(COL_CRITERION_NAME))));
+            String val = criteriaGrid.getPresenter().getActiveRow().getString(criteriaGrid
+                .getPresenter().getGridView().getDataIndex(COL_CRITERION_NAME));
+
+            flt.add(BeeUtils.isEmpty(val) ? Filter.isNull(COL_CRITERION_NAME)
+                : Filter.isEqual(COL_CRITERION_NAME, Value.getValue(val)));
           }
         }
         event.getSelector().setAdditionalFilter(flt);
@@ -634,12 +636,10 @@ public class DocumentDataForm extends AbstractFormInterceptor
 
                     if (j % 2 > 0 && j < criteriaBlocks.size() - 1) {
                       for (Pair<String, String> pair : data.get(group)) {
-                        if (!BeeUtils.isEmpty(pair.getA())) {
-                          sb.append(criteriaBlock.replace("{" + COL_CRITERION_NAME + "}",
-                              pair.getA())
-                              .replace("{" + COL_CRITERION_VALUE + "}",
-                                  BeeUtils.nvl(pair.getB(), "")));
-                        }
+                        sb.append(criteriaBlock.replace("{" + COL_CRITERION_NAME + "}",
+                            BeeUtils.nvl(pair.getA(), ""))
+                            .replace("{" + COL_CRITERION_VALUE + "}",
+                                BeeUtils.nvl(pair.getB(), "")));
                       }
                     } else {
                       sb.append(criteriaBlock);
