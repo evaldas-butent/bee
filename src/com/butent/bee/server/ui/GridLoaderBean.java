@@ -685,7 +685,7 @@ public class GridLoaderBean {
     }
 
     if (element.hasAttribute(UiConstants.ATTR_MODULE)
-        && !usr.isModuleVisible(element.getAttribute(UiConstants.ATTR_MODULE))) {
+        && !usr.isAnyModuleVisible(element.getAttribute(UiConstants.ATTR_MODULE))) {
       return false;
     }
 

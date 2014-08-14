@@ -284,7 +284,7 @@ public class MenuManager {
     Tree tree = new Tree();
 
     for (Menu menu : roots) {
-      TreeItem item = new TreeItem(menu.getLabel());
+      TreeItem item = new TreeItem(Localized.maybeTranslate(menu.getLabel()));
       collectMenuInfo(item, menu);
       tree.addItem(item);
     }
@@ -312,7 +312,7 @@ public class MenuManager {
       TreeItem cc = new TreeItem("Items");
 
       for (Menu item : ((MenuEntry) menu).getItems()) {
-        TreeItem itm = new TreeItem(item.getLabel());
+        TreeItem itm = new TreeItem(Localized.maybeTranslate(item.getLabel()));
         collectMenuInfo(itm, item);
         cc.addItem(itm);
       }

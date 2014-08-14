@@ -2192,7 +2192,7 @@ public class CellGrid extends Widget implements IdentifiableWidget, HasDataTable
     this.pageSize = size;
 
     if (fireScopeChange) {
-      fireScopeChange();
+      fireScopeChange(NavigationOrigin.SYSTEM);
     }
   }
 
@@ -2207,7 +2207,7 @@ public class CellGrid extends Widget implements IdentifiableWidget, HasDataTable
     this.pageStart = start;
 
     if (fireScopeChange) {
-      fireScopeChange();
+      fireScopeChange(origin);
     }
     if (fireDataRequest) {
       fireDataRequest(origin);
@@ -2251,7 +2251,7 @@ public class CellGrid extends Widget implements IdentifiableWidget, HasDataTable
     if (start != getPageStart()) {
       setPageStart(start, true, false, NavigationOrigin.SYSTEM);
     } else if (fireScopeChange) {
-      fireScopeChange();
+      fireScopeChange(NavigationOrigin.SYSTEM);
     }
   }
 
@@ -2664,8 +2664,8 @@ public class CellGrid extends Widget implements IdentifiableWidget, HasDataTable
     }
   }
 
-  private void fireScopeChange() {
-    fireEvent(new ScopeChangeEvent(getPageStart(), getPageSize(), getRowCount()));
+  private void fireScopeChange(NavigationOrigin origin) {
+    fireEvent(new ScopeChangeEvent(getPageStart(), getPageSize(), getRowCount(), origin));
   }
 
   private void fireSelectionCountChange() {

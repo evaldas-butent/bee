@@ -45,7 +45,7 @@ public final class RightsUtils {
         + state.ordinal() + STATE_ROLE_ALIAS_SEPARATOR + role;
   }
 
-  public static String getViewModule(String viewName) {
+  public static String getViewModules(String viewName) {
     return VIEW_MODULES.get(BeeUtils.normalize(viewName));
   }
 

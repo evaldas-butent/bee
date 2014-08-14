@@ -359,7 +359,7 @@ public class UiHolderBean {
       visible = usr.isMenuVisible(ref);
 
       if (visible && !BeeUtils.isEmpty(entry.getModule())) {
-        visible = usr.isModuleVisible(entry.getModule());
+        visible = usr.isAnyModuleVisible(entry.getModule());
       }
       if (visible && !BeeUtils.isEmpty(entry.getData())) {
         visible = usr.isDataVisible(entry.getData());
@@ -370,7 +370,7 @@ public class UiHolderBean {
       }
 
     } else {
-      visible = Module.isEnabled(entry.getModule());
+      visible = Module.isAnyEnabled(entry.getModule());
     }
 
     if (visible) {
@@ -548,7 +548,7 @@ public class UiHolderBean {
 
   private boolean isWidgetVisible(Element element, BeeView view) {
     if (element.hasAttribute(UiConstants.ATTR_MODULE)
-        && !usr.isModuleVisible(element.getAttribute(UiConstants.ATTR_MODULE))) {
+        && !usr.isAnyModuleVisible(element.getAttribute(UiConstants.ATTR_MODULE))) {
       return false;
     }
 

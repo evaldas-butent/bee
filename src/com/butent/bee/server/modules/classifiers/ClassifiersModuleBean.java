@@ -113,7 +113,7 @@ public class ClassifiersModuleBean implements BeeModule {
       search.addAll(personsSr);
     }
 
-    if (usr.isModuleVisible(Module.TRADE.getName())) {
+    if (usr.isModuleVisible(ModuleAndSub.of(Module.TRADE))) {
       List<SearchResult> itemsSr = qs.getSearchResults(VIEW_ITEMS,
           Filter.anyContains(Sets.newHashSet(COL_ITEM_NAME, COL_ITEM_ARTICLE, COL_ITEM_BARCODE),
               query));

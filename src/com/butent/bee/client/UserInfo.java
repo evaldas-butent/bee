@@ -149,6 +149,10 @@ public class UserInfo implements HasInfo {
     return isModuleVisible(ModuleAndSub.of(Module.ADMINISTRATION));
   }
 
+  public boolean isAnyModuleVisible(String input) {
+    return isLoggedIn() && userData.isAnyModuleVisible(input);
+  }
+
   public boolean isColumnVisible(DataInfo dataInfo, String column) {
     if (!isLoggedIn()) {
       return false;
@@ -184,10 +188,6 @@ public class UserInfo implements HasInfo {
 
   public boolean isModuleVisible(ModuleAndSub moduleAndSub) {
     return isLoggedIn() && userData.isModuleVisible(moduleAndSub);
-  }
-
-  public boolean isModuleVisible(String object) {
-    return isLoggedIn() && userData.isModuleVisible(object);
   }
 
   public boolean isWidgetVisible(RegulatedWidget widget) {

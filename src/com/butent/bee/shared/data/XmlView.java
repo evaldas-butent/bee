@@ -1,6 +1,8 @@
 // CHECKSTYLE:OFF
 package com.butent.bee.shared.data;
 
+import com.butent.bee.shared.utils.NullOrdering;
+
 import java.util.Collection;
 import java.util.Set;
 
@@ -83,6 +85,8 @@ public class XmlView {
     public String column;
     @XmlAttribute
     public boolean descending;
+    @XmlAttribute
+    public NullOrdering nulls;
   }
 
   @XmlAttribute

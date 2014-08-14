@@ -404,8 +404,8 @@ public class MailMessage extends AbstractFormInterceptor {
         sender = Pair.of(mail, lbl);
         setWidgetText(SENDER, BeeUtils.notEmpty(lbl, mail));
 
-        if (!BeeUtils.isEmpty(lbl) && widgets.get(SENDER) != null) {
-          widgets.get(SENDER).setTitle(mail);
+        if (widgets.get(SENDER) != null) {
+          widgets.get(SENDER).setTitle(BeeUtils.isEmpty(lbl) ? null : mail);
         }
         ((DateTimeLabel) widgets.get(DATE)).setValue(row.getDateTime(COL_DATE));
         setWidgetText(SUBJECT, row.getValue(COL_SUBJECT));

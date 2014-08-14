@@ -1,6 +1,5 @@
 package com.butent.bee.client;
 
-import com.google.common.collect.Lists;
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.http.client.Request;
 import com.google.gwt.http.client.RequestBuilder;
@@ -21,6 +20,7 @@ import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogUtils;
 import com.butent.bee.shared.utils.BeeUtils;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 
@@ -77,7 +77,7 @@ public class RpcFactory {
   }
 
   public List<RpcInfo> getPendingRequests() {
-    List<RpcInfo> result = Lists.newArrayList();
+    List<RpcInfo> result = new ArrayList<>();
 
     for (RpcInfo info : rpcList.values()) {
       if (info != null && info.isPending()) {
@@ -126,7 +126,7 @@ public class RpcFactory {
   }
 
   public int invoke(String method, String data, ResponseCallback callback) {
-    return invoke(method, null, data, callback);
+    return invoke(method, ContentType.TEXT, data, callback);
   }
 
   public int makeGetRequest(ParameterList params) {

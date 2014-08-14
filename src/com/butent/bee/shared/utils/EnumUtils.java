@@ -19,6 +19,7 @@ import com.butent.bee.shared.modules.ec.EcConstants;
 import com.butent.bee.shared.modules.mail.MailConstants;
 import com.butent.bee.shared.modules.service.ServiceConstants;
 import com.butent.bee.shared.modules.tasks.TaskConstants;
+import com.butent.bee.shared.modules.trade.acts.TradeActConstants;
 import com.butent.bee.shared.modules.transport.TransportConstants;
 import com.butent.bee.shared.ui.HasCaption;
 import com.butent.bee.shared.ui.HasLocalizedCaption;
@@ -59,6 +60,7 @@ public final class EnumUtils {
     TransportConstants.register();
     ServiceConstants.register();
     MailConstants.register();
+    TradeActConstants.register();
   }
 
   public static String buildIndexList(Collection<? extends Enum<?>> values) {

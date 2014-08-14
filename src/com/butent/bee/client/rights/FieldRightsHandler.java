@@ -69,9 +69,9 @@ final class FieldRightsHandler extends MultiStateForm {
 
     Collection<DataInfo> views = Data.getDataInfoProvider().getViews();
     for (DataInfo view : views) {
-      ModuleAndSub ms = ModuleAndSub.parse(view.getModule());
+      ModuleAndSub ms = getFirstVisibleModule(view.getModule());
 
-      if (ms != null && ms.isEnabled()) {
+      if (ms != null) {
         String viewName = view.getViewName();
         String caption = BeeUtils.notEmpty(Localized.maybeTranslate(view.getCaption()), viewName);
 

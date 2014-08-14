@@ -200,6 +200,7 @@
       <xs:enumeration value="Ec.Administration" />
       <xs:enumeration value="Ec.Classifiers" />
       <xs:enumeration value="Trade" />
+      <xs:enumeration value="Trade.Acts" />
       <xs:enumeration value="Transport" />
       <xs:enumeration value="Transport.Logistics" />
       <xs:enumeration value="Transport.SelfService" />
@@ -207,6 +208,10 @@
       <xs:enumeration value="Service" />
       <xs:enumeration value="Administration" />
     </xs:restriction>
+  </xs:simpleType>
+
+  <xs:simpleType name="modules">
+    <xs:list itemType="module" />
   </xs:simpleType>
 
   <xs:simpleType name="dataView">
@@ -322,6 +327,7 @@
       <xs:enumeration value="EcOrderItems" />
       <xs:enumeration value="EcOrders" />
       <xs:enumeration value="EcRegistrations" />
+      <xs:enumeration value="EditorTemplates" />
       <xs:enumeration value="Emails" />
       <xs:enumeration value="ExpeditionTypes" />
       <xs:enumeration value="ExpeditionTrips" />
@@ -429,6 +435,12 @@
       <xs:enumeration value="ThemeColors" />
       <xs:enumeration value="Themes" />
       <xs:enumeration value="TimeZones" />
+      <xs:enumeration value="TradeActItems" />
+      <xs:enumeration value="TradeActs" />
+      <xs:enumeration value="TradeActServices" />
+      <xs:enumeration value="TradeOperations" />
+      <xs:enumeration value="TradeSeries" />
+      <xs:enumeration value="TradeStatuses" />
       <xs:enumeration value="TransportationOrders" />
       <xs:enumeration value="TransportGroups" />
       <xs:enumeration value="TransportSettings" />
