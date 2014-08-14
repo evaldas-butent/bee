@@ -41,6 +41,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -258,16 +259,18 @@ public class MailStorageBean {
         is = new ByteArrayInputStream(bos.toByteArray());
         String contentType = message.getContentType();
 
-        fileId = fs.storeFile(is, envelope.getMessageId(), !BeeUtils.isEmpty(contentType)
+        fileId = fs.storeFile(is, "mail@" + envelope.getUniqueId(), !BeeUtils.isEmpty(contentType)
             ? new ContentType(message.getContentType()).getBaseType() : null);
       } catch (IOException e) {
+        ctx.setRollbackOnly();
         throw new MessagingException(e.toString());
       }
       messageId = qs.insertData(new SqlInsert(TBL_MESSAGES)
           .addConstant(COL_UNIQUE_ID, envelope.getUniqueId())
           .addConstant(COL_DATE, envelope.getDate())
           .addNotNull(COL_SENDER, senderId)
-          .addConstant(COL_SUBJECT, BeeUtils.left(envelope.getSubject(), 255))
+          .addConstant(COL_SUBJECT,
+              sys.clampValue(TBL_MESSAGES, COL_SUBJECT, envelope.getSubject()))
           .addConstant(COL_RAW_CONTENT, fileId));
 
       Set<Long> allAddresses = Sets.newHashSet();
@@ -289,7 +292,10 @@ public class MailStorageBean {
       try {
         is.reset();
         storePart(messageId, new MimeMessage(null, is), null, null);
-      } catch (IOException e) {
+      } catch (UnsupportedEncodingException e) {
+        logger.error(e);
+      } catch (MessagingException | IOException e) {
+        ctx.setRollbackOnly();
         throw new MessagingException(e.toString());
       }
     }
@@ -557,7 +563,8 @@ public class MailStorageBean {
         qs.insertData(new SqlInsert(TBL_ATTACHMENTS)
             .addConstant(COL_MESSAGE, messageId)
             .addConstant(AdministrationConstants.COL_FILE, fileId)
-            .addConstant(COL_ATTACHMENT_NAME, fileName));
+            .addConstant(COL_ATTACHMENT_NAME,
+                sys.clampValue(TBL_ATTACHMENTS, COL_ATTACHMENT_NAME, fileName)));
       } else {
         String text = getStringContent(part.getContent());
         String html = null;

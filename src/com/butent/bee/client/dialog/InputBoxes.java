@@ -632,8 +632,4 @@ public class InputBoxes {
     UiHelper.focus(widget.asWidget());
     return dialog;
   }
-
-  private void inputWidget(String caption, IsWidget input, InputCallback callback) {
-    inputWidget(caption, input, callback, null, null, Action.NO_ACTIONS, null);
-  }
 }
