@@ -437,6 +437,10 @@
       <xs:enumeration value="TradeActItems" />
       <xs:enumeration value="TradeActs" />
       <xs:enumeration value="TradeActServices" />
+      <xs:enumeration value="TradeActTemplates" />
+      <xs:enumeration value="TradeActTmplItems" />
+      <xs:enumeration value="TradeActTmplServices" />
+      <xs:enumeration value="TradeNotes" />
       <xs:enumeration value="TradeOperations" />
       <xs:enumeration value="TradeSeries" />
       <xs:enumeration value="TradeStatuses" />

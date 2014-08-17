@@ -21,6 +21,9 @@ public final class TradeConstants {
   public static final String VIEW_SALES = "Sales";
   public static final String VIEW_SALE_ITEMS = "SaleItems";
 
+  public static final String VIEW_TRADE_OPERATIONS = "TradeOperations";
+  public static final String VIEW_TRADE_STATUSES = "TradeStatuses";
+
   public static final String COL_PURCHASE = "Purchase";
   public static final String COL_PURCHASE_WAREHOUSE_TO = "WarehouseTo";
 
@@ -57,9 +60,17 @@ public final class TradeConstants {
   public static final String ALS_CUSTOMER_NAME = "CustomerName";
   public static final String ALS_SUPPLIER_NAME = "SupplierName";
 
+  public static final String ALS_OPERATION_BACKGROUND = "OperationBackground";
+  public static final String ALS_OPERATION_FOREGROUND = "OperationForeground";
+  public static final String ALS_STATUS_BACKGROUND = "StatusBackground";
+  public static final String ALS_STATUS_FOREGROUND = "StatusForeground";
+
   public static final String VAR_TOTAL = "Total";
   public static final String VAR_DEBT = "Debt";
   public static final String VAR_OVERDUE = "Overdue";
+
+  public static final String GRID_TRADE_OPERATIONS = "TradeOperations";
+  public static final String GRID_TRADE_STATUSES = "TradeStatuses";
 
   public static final String STYLE_SHEET = "trade";
 

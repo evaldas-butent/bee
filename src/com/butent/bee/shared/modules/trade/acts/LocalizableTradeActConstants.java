@@ -16,5 +16,11 @@ public interface LocalizableTradeActConstants {
 
   String taKindWriteOff();
 
+  String taTimeUnitDay();
+
+  String taTimeUnitMonth();
+
   String tradeActs();
+
+  String tradeActsAll();
 }
