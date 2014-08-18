@@ -22,7 +22,7 @@
 
     <RelColumn name="Currency" renderColumns="CurrencyName" />
 
-    <RelColumn name="Vehicle" renderColumns="VehicleParentModel VehicleModel" />
+    <RelColumn name="Vehicle" renderColumns="VehicleParentModel VehicleModel VehicleNumber" />
     <RelColumn name="Driver" renderColumns="DriverFirstName DriverLastName" />
 
     <DataColumn name="Notes" />

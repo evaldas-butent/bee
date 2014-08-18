@@ -3,7 +3,7 @@
 
   name="TradeActTemplates" source="TradeActTemplates" module="Trade.Acts"
   caption="=tradeActTemplates" newRowCaption="=tradeActNewTemplate"
-  editForm="TradeActTemplate"
+  editForm="TradeActTemplate" newRowForm="TradeActTemplate"
   >
   <Columns>
     <SimpleColumn name="Template" />
@@ -58,6 +58,7 @@
 
     <SimpleColumn name="Vehicle" />
     <SimpleJoin name="Vehicle" joinType="LEFT">
+      <SimpleColumn name="Number" alias="VehicleNumber" />
       <SimpleJoin name="Type" joinType="LEFT">
         <SimpleColumn name="Name" alias="VehicleType" />
       </SimpleJoin>

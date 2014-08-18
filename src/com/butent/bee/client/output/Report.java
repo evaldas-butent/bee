@@ -3,6 +3,9 @@ package com.butent.bee.client.output;
 import com.butent.bee.client.Callback;
 import com.butent.bee.client.modules.classifiers.CompanyTypeReport;
 import com.butent.bee.client.modules.classifiers.CompanyUsageReport;
+import com.butent.bee.client.modules.trade.acts.TradeActItemsByCompanyReport;
+import com.butent.bee.client.modules.trade.acts.TradeActServicesReport;
+import com.butent.bee.client.modules.trade.acts.TradeActStockReport;
 import com.butent.bee.client.modules.transport.AssessmentQuantityReport;
 import com.butent.bee.client.modules.transport.AssessmentTurnoverReport;
 import com.butent.bee.client.ui.FormDescription;
@@ -23,7 +26,6 @@ public enum Report implements HasWidgetSupplier {
       return new CompanyTypeReport();
     }
   },
-
   COMPANY_USAGE("CompanyUsage", "CompanyUsageReport") {
     @Override
     protected ReportInterceptor getInterceptor() {
@@ -37,11 +39,29 @@ public enum Report implements HasWidgetSupplier {
       return new AssessmentQuantityReport();
     }
   },
-
   ASSESSMENT_TURNOVER("AssessmentTurnover", "AssessmentTurnoverReport") {
     @Override
     protected ReportInterceptor getInterceptor() {
       return new AssessmentTurnoverReport();
+    }
+  },
+
+  TRADE_ACT_ITEMS_BY_COMPANY("TradeActItemsByCompany", "TradeActItemsByCompanyReport") {
+    @Override
+    protected ReportInterceptor getInterceptor() {
+      return new TradeActItemsByCompanyReport();
+    }
+  },
+  TRADE_ACT_STOCK("TradeActStock", "TradeActStockReport") {
+    @Override
+    protected ReportInterceptor getInterceptor() {
+      return new TradeActStockReport();
+    }
+  },
+  TRADE_ACT_SERVICES("TradeActServices", "TradeActServicesReport") {
+    @Override
+    protected ReportInterceptor getInterceptor() {
+      return new TradeActServicesReport();
     }
   };
 

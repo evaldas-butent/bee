@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<f:Form xmlns="http://www.butent.com/widget"
+  xmlns:f="http://www.butent.com/form"
+  
+  name="TradeActInvoiceBuilder" caption="=taInvoiceBuilder"
+  >
+  <FlowPanel>
+    <br/>
+    <Table>
+      <col index="0" kind="label" />
+      <col index="2" kind="label" />
+      
+      <row>
+        <Label text="=client" />
+        <cell colSpan="3">
+          <UnboundSelector name="Company" viewName="Companies" renderColumns="Name" 
+            style="width: 100%;" />
+        </cell>
+      </row>
+      
+      <row>
+        <Label text="=dateFrom" />
+        <InputDate name="StartDate" style="width: 100px;" />
+    
+        <Label text="=dateTo" />
+        <InputDate name="EndDate" style="width: 100px;" />
+      </row>
+    </Table>
+    
+    <br/>
+    <FlowPanel name="DataContainer" style="margin-left: 1em;" />
+  </FlowPanel>
+</f:Form>
