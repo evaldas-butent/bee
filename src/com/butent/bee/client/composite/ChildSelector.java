@@ -1,5 +1,6 @@
 package com.butent.bee.client.composite;
 
+import com.google.common.collect.Lists;
 import com.google.web.bindery.event.shared.HandlerRegistration;
 
 import com.butent.bee.client.BeeKeeper;
@@ -20,6 +21,7 @@ import com.butent.bee.shared.ui.Relation;
 import com.butent.bee.shared.ui.UiConstants;
 import com.butent.bee.shared.utils.BeeUtils;
 
+import java.util.Collection;
 import java.util.Map;
 
 public final class ChildSelector extends MultiSelector implements HasFosterParent,
@@ -107,7 +109,7 @@ public final class ChildSelector extends MultiSelector implements HasFosterParen
   }
 
   @Override
-  public RowChildren getChildrenForInsert() {
+  public Collection<RowChildren> getChildrenForInsert() {
     if (DataUtils.isId(getTargetRowId()) || BeeUtils.isEmpty(getValue())) {
       return null;
     } else {
@@ -116,7 +118,7 @@ public final class ChildSelector extends MultiSelector implements HasFosterParen
   }
 
   @Override
-  public RowChildren getChildrenForUpdate() {
+  public Collection<RowChildren> getChildrenForUpdate() {
     if (DataUtils.isId(getTargetRowId()) && isValueChanged()) {
       return getChildren();
     } else {
@@ -189,9 +191,9 @@ public final class ChildSelector extends MultiSelector implements HasFosterParen
     super.onUnload();
   }
 
-  private RowChildren getChildren() {
-    return RowChildren.create(childTable, targetRelColumn, getTargetRowId(), sourceRelColumn,
-        getValue());
+  private Collection<RowChildren> getChildren() {
+    return Lists.newArrayList(RowChildren.create(childTable, targetRelColumn, getTargetRowId(),
+        sourceRelColumn, getValue()));
   }
 
   private HandlerRegistration getParentRowReg() {

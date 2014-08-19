@@ -143,12 +143,12 @@ public class CompanyForm extends AbstractFormInterceptor {
 
       HasClickHandlers button = (HasClickHandlers) widget;
       button.addClickHandler(getFinancialStateAuditClickHandler());
-      
+
       if (widget instanceof UIObject) {
         ((UIObject) widget).setTitle(Localized.getConstants().actionAudit());
       }
     }
-    
+
     if (widget instanceof InputBoolean && BeeUtils.same(name, COL_REMIND_EMAIL)) {
       wRemindEmail = (InputBoolean) widget;
       StyleUtils.setDisplay(widget.getElement(), Display.INLINE_BLOCK);

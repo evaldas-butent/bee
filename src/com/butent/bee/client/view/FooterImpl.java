@@ -9,6 +9,7 @@ import com.butent.bee.client.event.logical.SelectionCountChangeEvent;
 import com.butent.bee.client.layout.Flow;
 import com.butent.bee.client.presenter.Presenter;
 import com.butent.bee.client.style.StyleUtils;
+import com.butent.bee.client.ui.UiHelper;
 import com.butent.bee.client.view.navigation.PagerView;
 import com.butent.bee.client.view.navigation.SimplePager;
 import com.butent.bee.client.view.search.SearchBox;
@@ -152,7 +153,7 @@ public class FooterImpl extends Flow implements FooterView, HasNavigation, HasSe
       return;
     }
     this.enabled = enabled;
-    DomUtils.enableChildren(this, enabled);
+    UiHelper.enableChildren(this, enabled);
   }
 
   @Override

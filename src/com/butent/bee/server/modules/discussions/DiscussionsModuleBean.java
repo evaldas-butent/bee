@@ -13,6 +13,7 @@ import static com.butent.bee.shared.modules.administration.AdministrationConstan
 import static com.butent.bee.shared.modules.classifiers.ClassifierConstants.*;
 import static com.butent.bee.shared.modules.discussions.DiscussionsConstants.*;
 
+import com.butent.bee.server.Config;
 import com.butent.bee.server.Invocation;
 import com.butent.bee.server.data.DataEditorBean;
 import com.butent.bee.server.data.DataEvent.ViewQueryEvent;
@@ -58,7 +59,7 @@ import com.butent.bee.shared.html.builder.elements.Div;
 import com.butent.bee.shared.html.builder.elements.H2;
 import com.butent.bee.shared.html.builder.elements.Tbody;
 import com.butent.bee.shared.i18n.LocalizableConstants;
-import com.butent.bee.shared.io.StoredFile;
+import com.butent.bee.shared.io.FileInfo;
 import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogUtils;
 import com.butent.bee.shared.modules.BeeParameter;
@@ -70,6 +71,7 @@ import com.butent.bee.shared.modules.discussions.DiscussionsUtils;
 import com.butent.bee.shared.news.Feed;
 import com.butent.bee.shared.news.NewsConstants;
 import com.butent.bee.shared.rights.Module;
+import com.butent.bee.shared.rights.ModuleAndSub;
 import com.butent.bee.shared.time.DateTime;
 import com.butent.bee.shared.time.JustDate;
 import com.butent.bee.shared.time.TimeUtils;
@@ -141,7 +143,7 @@ public class DiscussionsModuleBean implements BeeModule {
   public List<SearchResult> doSearch(String query) {
     List<SearchResult> result = Lists.newArrayList();
 
-    if (usr.isModuleVisible(Module.DISCUSSIONS.getName())) {
+    if (usr.isModuleVisible(ModuleAndSub.of(Module.DISCUSSIONS))) {
       result.addAll(qs.getSearchResults(VIEW_DISCUSSIONS,
           Filter.anyContains(Sets.newHashSet(COL_SUBJECT, COL_DESCRIPTION, ALS_OWNER_FIRST_NAME,
               ALS_OWNER_LAST_NAME), query)));
@@ -415,7 +417,7 @@ public class DiscussionsModuleBean implements BeeModule {
       row.setProperty(property, DataUtils.buildIdList(discussionRelations.get(property)));
     }
 
-    List<StoredFile> files = getDiscussionFiles(discussionId);
+    List<FileInfo> files = getDiscussionFiles(discussionId);
     if (!files.isEmpty()) {
       row.setProperty(PROP_FILES, Codec.beeSerialize(files));
     }
@@ -793,6 +795,9 @@ public class DiscussionsModuleBean implements BeeModule {
 
   @Timeout
   private void doInactiveDiscussions() {
+    if (!Config.isInitialized()) {
+      return;
+    }
     Long days = prm.getLong(PRM_DISCUSS_INACTIVE_TIME_IN_DAYS);
 
     if (!BeeUtils.isPositive(days)) {
@@ -1082,8 +1087,8 @@ public class DiscussionsModuleBean implements BeeModule {
     return ResponseObject.response(data);
   }
 
-  private List<StoredFile> getDiscussionFiles(long discussionId) {
-    List<StoredFile> result = Lists.newArrayList();
+  private List<FileInfo> getDiscussionFiles(long discussionId) {
+    List<FileInfo> result = Lists.newArrayList();
 
     BeeRowSet rowSet =
         qs.getViewData(VIEW_DISCUSSIONS_FILES, Filter.equals(COL_DISCUSSION, discussionId));
@@ -1093,8 +1098,8 @@ public class DiscussionsModuleBean implements BeeModule {
     }
 
     for (BeeRow row : rowSet.getRows()) {
-      StoredFile sf =
-          new StoredFile(DataUtils.getLong(rowSet, row, AdministrationConstants.COL_FILE),
+      FileInfo sf =
+          new FileInfo(DataUtils.getLong(rowSet, row, AdministrationConstants.COL_FILE),
               DataUtils.getString(rowSet, row, ALS_FILE_NAME),
               DataUtils.getLong(rowSet, row, ALS_FILE_SIZE),
               DataUtils.getString(rowSet, row, ALS_FILE_TYPE));

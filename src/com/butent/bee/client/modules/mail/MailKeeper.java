@@ -15,7 +15,6 @@ import com.butent.bee.client.communication.ResponseCallback;
 import com.butent.bee.client.dialog.StringCallback;
 import com.butent.bee.client.grid.GridFactory;
 import com.butent.bee.client.grid.GridFactory.GridOptions;
-import com.butent.bee.client.presenter.Presenter;
 import com.butent.bee.client.presenter.PresenterCallback;
 import com.butent.bee.client.screen.Domain;
 import com.butent.bee.client.ui.FormDescription;
@@ -24,6 +23,7 @@ import com.butent.bee.client.view.ViewCallback;
 import com.butent.bee.client.view.ViewFactory;
 import com.butent.bee.client.view.ViewHelper;
 import com.butent.bee.client.view.ViewSupplier;
+import com.butent.bee.client.view.form.FormView;
 import com.butent.bee.shared.BiConsumer;
 import com.butent.bee.shared.communication.ResponseObject;
 import com.butent.bee.shared.data.DataUtils;
@@ -97,6 +97,7 @@ public final class MailKeeper {
 
     FormFactory.registerFormInterceptor(FORM_ACCOUNT, new AccountEditor());
     FormFactory.registerFormInterceptor(FORM_NEW_ACCOUNT, new AccountEditor());
+    FormFactory.registerFormInterceptor(FORM_MAIL_MESSAGE, new MailMessage());
     FormFactory.registerFormInterceptor(FORM_RULE, new RuleForm());
 
     Global.getNewsAggregator().registerFilterHandler(Feed.MAIL,
@@ -119,10 +120,11 @@ public final class MailKeeper {
 
       @Override
       public boolean read(final Long id) {
-        FormFactory.openForm(FORM_MAIL_MESSAGE, new MailMessage(null) {
+        FormFactory.openForm(FORM_MAIL_MESSAGE, new MailMessage() {
           @Override
-          public void onShow(Presenter presenter) {
-            requery(id, false);
+          public void onLoad(FormView form) {
+            requery(COL_PLACE, id, false);
+            super.onLoad(form);
           }
         });
         return true;

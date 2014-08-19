@@ -1,12 +1,12 @@
 package com.butent.bee.server.sql;
 
-import com.google.common.collect.Lists;
-
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.data.SqlConstants.SqlDataType;
 import com.butent.bee.shared.data.SqlConstants.SqlFunction;
+import com.butent.bee.shared.data.view.Order;
 import com.butent.bee.shared.utils.ArrayUtils;
 import com.butent.bee.shared.utils.BeeUtils;
+import com.butent.bee.shared.utils.NullOrdering;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -25,6 +25,7 @@ public class SqlSelect extends HasFrom<SqlSelect> implements IsCloneable<SqlSele
   static final int ORDER_SRC = 0;
   static final int ORDER_FLD = 1;
   static final int ORDER_DESC = 2;
+  static final int ORDER_NULLS = 3;
 
   private List<IsExpression[]> fieldList;
   private IsCondition whereClause;
@@ -175,8 +176,8 @@ public class SqlSelect extends HasFrom<SqlSelect> implements IsCloneable<SqlSele
   }
 
   /**
-   * Adds a COUNT DISTINCT function with a specified expression {@code expr}
-   * and alias {@code alias}.
+   * Adds a COUNT DISTINCT function with a specified expression {@code expr} and alias {@code alias}
+   * .
    *
    * @param expr the expression
    * @param alias the alias name
@@ -388,7 +389,7 @@ public class SqlSelect extends HasFrom<SqlSelect> implements IsCloneable<SqlSele
 
   public void addGroup(IsExpression... group) {
     if (BeeUtils.isEmpty(groupList)) {
-      groupList = Lists.newArrayList();
+      groupList = new ArrayList<>();
     }
     for (IsExpression grp : group) {
       groupList.add(grp);
@@ -477,7 +478,15 @@ public class SqlSelect extends HasFrom<SqlSelect> implements IsCloneable<SqlSele
    * @return object's SqlSelect instance.
    */
   public SqlSelect addOrder(String source, String... order) {
-    addOrder(false, source, order);
+    addOrder(false, null, source, order);
+    return getReference();
+  }
+
+  public SqlSelect addOrderBy(Order.Column column, String source, String field) {
+    Assert.notNull(column);
+    Assert.notEmpty(field);
+
+    addOrder(!column.isAscending(), column.getNullOrdering(), source, field);
     return getReference();
   }
 
@@ -489,7 +498,7 @@ public class SqlSelect extends HasFrom<SqlSelect> implements IsCloneable<SqlSele
    * @return object's SqlSelect instance.
    */
   public SqlSelect addOrderDesc(String source, String... order) {
-    addOrder(true, source, order);
+    addOrder(true, null, source, order);
     return getReference();
   }
 
@@ -566,7 +575,7 @@ public class SqlSelect extends HasFrom<SqlSelect> implements IsCloneable<SqlSele
     Assert.noNulls((Object[]) union);
 
     if (BeeUtils.isEmpty(unionList)) {
-      this.unionList = Lists.newArrayList();
+      this.unionList = new ArrayList<>();
     }
     for (SqlSelect un : union) {
       if (!un.isEmpty()) {
@@ -585,7 +594,7 @@ public class SqlSelect extends HasFrom<SqlSelect> implements IsCloneable<SqlSele
     SqlSelect query = new SqlSelect();
 
     if (fieldList != null) {
-      query.fieldList = Lists.newArrayList(fieldList);
+      query.fieldList = new ArrayList<>(fieldList);
     }
     List<IsFrom> fromList = getFrom();
 
@@ -598,17 +607,17 @@ public class SqlSelect extends HasFrom<SqlSelect> implements IsCloneable<SqlSele
         }
         query.setFrom(froms);
       } else {
-        query.setFrom(Lists.newArrayList(fromList));
+        query.setFrom(new ArrayList<>(fromList));
       }
     }
     if (whereClause != null) {
       query.setWhere(deep ? whereClause.copyOf() : whereClause);
     }
     if (groupList != null) {
-      query.groupList = Lists.newArrayList(groupList);
+      query.groupList = new ArrayList<>(groupList);
     }
     if (orderList != null) {
-      query.orderList = Lists.newArrayList(orderList);
+      query.orderList = new ArrayList<>(orderList);
     }
     if (havingClause != null) {
       query.setHaving(deep ? havingClause.copyOf() : havingClause);
@@ -622,7 +631,7 @@ public class SqlSelect extends HasFrom<SqlSelect> implements IsCloneable<SqlSele
         }
         query.unionList = unions;
       } else {
-        query.unionList = Lists.newArrayList(unionList);
+        query.unionList = new ArrayList<>(unionList);
       }
     }
     query.setDistinctMode(distinctMode);
@@ -882,20 +891,23 @@ public class SqlSelect extends HasFrom<SqlSelect> implements IsCloneable<SqlSele
     fieldEntry[FIELD_ALIAS] = BeeUtils.isEmpty(alias) ? null : SqlUtils.name(alias);
 
     if (BeeUtils.isEmpty(fieldList)) {
-      fieldList = Lists.newArrayList();
+      fieldList = new ArrayList<>();
     }
     fieldList.add(fieldEntry);
   }
 
-  private void addOrder(Boolean desc, String source, String... fields) {
+  private void addOrder(Boolean desc, NullOrdering nullOrdering, String source, String... fields) {
     for (String ord : fields) {
-      String[] orderEntry = new String[3];
+      String[] orderEntry = new String[4];
       orderEntry[ORDER_SRC] = source;
       orderEntry[ORDER_FLD] = ord;
       orderEntry[ORDER_DESC] = BeeUtils.isTrue(desc) ? " DESC" : "";
 
+      orderEntry[ORDER_NULLS] = (nullOrdering == null) ? ""
+          : (" NULLS " + ((nullOrdering == NullOrdering.NULLS_FIRST) ? "FIRST" : "LAST"));
+
       if (BeeUtils.isEmpty(orderList)) {
-        orderList = Lists.newArrayList();
+        orderList = new ArrayList<>();
       }
       orderList.add(orderEntry);
     }

@@ -3,6 +3,7 @@ package com.butent.bee.client.ui;
 import com.google.gwt.xml.client.Element;
 
 import com.butent.bee.client.ui.FormFactory.WidgetDescriptionCallback;
+import com.butent.bee.shared.ui.HasWidgetSupplier;
 
 public interface WidgetInterceptor extends HasWidgetSupplier {
 

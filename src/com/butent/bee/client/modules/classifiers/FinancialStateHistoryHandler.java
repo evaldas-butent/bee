@@ -48,7 +48,7 @@ class FinancialStateHistoryHandler extends HistoryHandler {
       LocalProvider provider = (LocalProvider) presenter.getDataProvider();
       provider.setUserFilter(getFilter());
       provider.setParentFilter(FILTER_KEY, getFilter());
-      
+
       super.afterCreatePresenter(presenter);
     }
   }

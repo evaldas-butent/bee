@@ -1048,6 +1048,10 @@ public class UiServiceBean {
       ui.initGrids();
       response.addInfo("Grids OK");
 
+    } else if (BeeUtils.same(cmd, "forms")) {
+      ui.initForms();
+      response.addInfo("Forms OK");
+
     } else if (BeeUtils.same(cmd, "menu")) {
       ui.initMenu();
       response.addInfo("Menu OK");

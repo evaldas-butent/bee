@@ -52,6 +52,7 @@ public class SqlUpdate extends SqlQuery<SqlUpdate> implements HasTarget {
   public SqlUpdate addExpression(String field, IsSql value) {
     Assert.notEmpty(field);
     Assert.notNull(value);
+    Assert.state(!hasField(field), "Field " + field + " already exists");
 
     updates.put(field, value);
     return getReference();
@@ -97,11 +98,21 @@ public class SqlUpdate extends SqlQuery<SqlUpdate> implements HasTarget {
     return updates;
   }
 
+  public IsSql getValue(String field) {
+    Assert.state(hasField(field));
+    return updates.get(field);
+  }
+
   /**
    * @return a Where clause.
    */
   public IsCondition getWhere() {
     return whereClause;
+  }
+
+  public boolean hasField(String field) {
+    Assert.notEmpty(field);
+    return updates.containsKey(field);
   }
 
   /**
@@ -156,6 +167,15 @@ public class SqlUpdate extends SqlQuery<SqlUpdate> implements HasTarget {
    */
   public SqlUpdate setWhere(IsCondition clause) {
     whereClause = clause;
+    return getReference();
+  }
+
+  public SqlUpdate updExpression(String field, IsSql value) {
+    Assert.notEmpty(field);
+    Assert.notNull(value);
+    Assert.state(hasField(field), "Field " + field + " does not exist");
+
+    updates.put(field, value);
     return getReference();
   }
 }

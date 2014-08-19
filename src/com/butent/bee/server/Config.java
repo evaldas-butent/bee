@@ -48,6 +48,8 @@ public final class Config {
 
   public static final Map<String, File> DIRECTORY_SUBSTITUTES;
 
+  private static boolean initialized;
+
   private static Properties properties;
 
   private static final Splitter VALUE_SPLITTER =
@@ -254,6 +256,10 @@ public final class Config {
     properties = loadProperties("server.properties");
   }
 
+  public static boolean isInitialized() {
+    return initialized;
+  }
+
   public static boolean isText(File file) {
     if (file == null) {
       return false;
@@ -305,6 +311,10 @@ public final class Config {
       }
     }
     return result;
+  }
+
+  public static void setInitialized(boolean initialized) {
+    Config.initialized = initialized;
   }
 
   public static String substitutePath(String input) {

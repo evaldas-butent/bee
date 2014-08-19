@@ -8,7 +8,7 @@ import com.butent.bee.shared.data.IsRow;
 import com.butent.bee.shared.export.XCell;
 import com.butent.bee.shared.export.XPicture;
 import com.butent.bee.shared.export.XSheet;
-import com.butent.bee.shared.io.StoredFile;
+import com.butent.bee.shared.io.FileInfo;
 import com.butent.bee.shared.utils.BeeUtils;
 
 public class FileIconRenderer extends AbstractCellRenderer {
@@ -57,7 +57,7 @@ public class FileIconRenderer extends AbstractCellRenderer {
     if (BeeUtils.isEmpty(icon)) {
       return null;
     } else {
-      return StoredFile.getIconUrl(icon);
+      return FileInfo.getIconUrl(icon);
     }
   }
 }

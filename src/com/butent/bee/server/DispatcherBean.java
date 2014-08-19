@@ -27,6 +27,7 @@ import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogUtils;
 import com.butent.bee.shared.rights.Module;
+import com.butent.bee.shared.rights.RightsUtils;
 import com.butent.bee.shared.time.TimeUtils;
 import com.butent.bee.shared.ui.UserInterface;
 import com.butent.bee.shared.ui.UserInterface.Component;
@@ -90,6 +91,7 @@ public class DispatcherBean {
     }
     data.put(Service.VAR_USER, userData.getResponse());
     data.put(Service.PROPERTY_MODULES, Module.getEnabledModulesAsString());
+    data.put(Service.PROPERTY_VIEW_MODULES, RightsUtils.getViewModulesAsString());
 
     Long currency = prm.getRelation(PRM_CURRENCY);
     if (DataUtils.isId(currency)) {

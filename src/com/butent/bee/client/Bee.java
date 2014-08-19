@@ -5,14 +5,15 @@ import com.google.gwt.core.client.GWT;
 import com.google.gwt.event.logical.shared.ResizeEvent;
 import com.google.gwt.event.logical.shared.ResizeHandler;
 import com.google.gwt.json.client.JSONObject;
-import com.google.gwt.user.client.Timer;
 import com.google.gwt.user.client.Window;
+import com.google.gwt.user.client.Window.ClosingEvent;
+import com.google.gwt.user.client.Window.ClosingHandler;
 
 import static com.butent.bee.shared.modules.administration.AdministrationConstants.*;
 
+import com.butent.bee.client.animation.RafCallback;
 import com.butent.bee.client.communication.ParameterList;
 import com.butent.bee.client.communication.ResponseCallback;
-import com.butent.bee.client.communication.RpcInfo;
 import com.butent.bee.client.data.ClientDefaults;
 import com.butent.bee.client.data.Data;
 import com.butent.bee.client.decorator.TuningFactory;
@@ -29,6 +30,7 @@ import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.Consumer;
 import com.butent.bee.shared.Pair;
 import com.butent.bee.shared.Service;
+import com.butent.bee.shared.State;
 import com.butent.bee.shared.communication.ResponseObject;
 import com.butent.bee.shared.data.UserData;
 import com.butent.bee.shared.i18n.LocalizableConstants;
@@ -36,6 +38,7 @@ import com.butent.bee.shared.i18n.LocalizableMessages;
 import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.logging.LogUtils;
 import com.butent.bee.shared.rights.Module;
+import com.butent.bee.shared.rights.RightsUtils;
 import com.butent.bee.shared.ui.UserInterface;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.Codec;
@@ -48,9 +51,11 @@ import java.util.Map;
  * The entry point class of the application, initializes <code>BeeKeeper</code> class.
  */
 
-public class Bee implements EntryPoint {
+public class Bee implements EntryPoint, ClosingHandler {
 
   public static void exit() {
+    setState(State.UNLOADING);
+
     final String workspace = BeeKeeper.getScreen().serialize();
 
     ClientLogManager.close();
@@ -59,23 +64,31 @@ public class Bee implements EntryPoint {
     Endpoint.close();
 
     if (BeeKeeper.getRpc().hasPendingRequests()) {
-      Timer timer = new Timer() {
+      RafCallback callback = new RafCallback(3_000) {
         @Override
-        public void run() {
-          List<RpcInfo> pendingRequests = BeeKeeper.getRpc().getPendingRequests();
-          for (RpcInfo info : pendingRequests) {
-            info.cancel();
-          }
+        protected boolean run(double elapsed) {
+          return BeeKeeper.getRpc().hasPendingRequests();
+        }
 
+        @Override
+        protected void onComplete() {
           logout(workspace);
         }
       };
 
-      timer.schedule(1000);
+      callback.start();
 
     } else {
       logout(workspace);
     }
+  }
+
+  private static State getState() {
+    return state;
+  }
+
+  public static boolean isEnabled() {
+    return !(getState() == State.UNLOADING || getState() == State.CLOSED);
   }
 
   private static void initWorkspace() {
@@ -122,6 +135,8 @@ public class Bee implements EntryPoint {
     BeeKeeper.getUser().setUserData(userData);
 
     Module.setEnabledModules(data.get(Service.PROPERTY_MODULES));
+
+    RightsUtils.setViewModules(Codec.deserializeMap(data.get(Service.PROPERTY_VIEW_MODULES)));
 
     ClientDefaults.setCurrency(BeeUtils.toLongOrNull(data.get(COL_CURRENCY)));
     ClientDefaults.setCurrencyName(data.get(ALS_CURRENCY_NAME));
@@ -204,11 +219,14 @@ public class Bee implements EntryPoint {
     }
 
     BeeKeeper.getRpc().makeRequest(params);
+    setState(State.CLOSED);
+  }
+
+  private static void setState(State state) {
+    Bee.state = state;
   }
 
   private static void start() {
-    BeeKeeper.getBus().registerExitHandler("Don't leave me this way");
-
     BeeKeeper.getScreen().onLoad();
 
     ModuleManager.onLoad();
@@ -223,8 +241,12 @@ public class Bee implements EntryPoint {
     });
   }
 
+  private static State state;
+
   @Override
   public void onModuleLoad() {
+    setState(State.LOADING);
+
     BeeConst.setClient();
     LogUtils.setLoggerFactory(new ClientLogManager());
 
@@ -265,7 +287,11 @@ public class Bee implements EntryPoint {
       @Override
       public void onResponse(ResponseObject response) {
         load(Codec.deserializeMap((String) response.getResponse()));
+
+        BeeKeeper.getBus().registerExitHandler(Bee.this);
+
         start();
+        setState(State.INITIALIZED);
       }
     });
 
@@ -275,5 +301,10 @@ public class Bee implements EntryPoint {
         DomUtils.injectExternalScript(script);
       }
     }
+  }
+
+  @Override
+  public void onWindowClosing(ClosingEvent event) {
+    event.setMessage("Don't leave me this way");
   }
 }

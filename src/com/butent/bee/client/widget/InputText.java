@@ -335,6 +335,11 @@ public class InputText extends CustomWidget implements Editor, TextBox, HasChara
   }
 
   @Override
+  public void render(String value) {
+    setValue(value);
+  }
+
+  @Override
   public void selectAll() {
     if (BeeUtils.hasLength(getText(), 1)) {
       getInputElement().select();

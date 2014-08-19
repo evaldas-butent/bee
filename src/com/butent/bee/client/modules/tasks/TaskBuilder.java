@@ -20,10 +20,9 @@ import com.butent.bee.client.composite.MultiSelector;
 import com.butent.bee.client.data.Data;
 import com.butent.bee.client.data.Queries;
 import com.butent.bee.client.style.StyleUtils;
-import com.butent.bee.client.ui.IdentifiableWidget;
 import com.butent.bee.client.ui.FormFactory.WidgetDescriptionCallback;
+import com.butent.bee.client.ui.IdentifiableWidget;
 import com.butent.bee.client.utils.FileUtils;
-import com.butent.bee.client.utils.NewFileInfo;
 import com.butent.bee.client.validation.CellValidateEvent;
 import com.butent.bee.client.view.add.ReadyForInsertEvent;
 import com.butent.bee.client.view.edit.EditChangeHandler;
@@ -45,6 +44,7 @@ import com.butent.bee.shared.data.IsRow;
 import com.butent.bee.shared.data.event.DataChangeEvent;
 import com.butent.bee.shared.data.value.BooleanValue;
 import com.butent.bee.shared.i18n.Localized;
+import com.butent.bee.shared.io.FileInfo;
 import com.butent.bee.shared.modules.administration.AdministrationConstants;
 import com.butent.bee.shared.modules.tasks.TaskConstants.TaskEvent;
 import com.butent.bee.shared.time.DateTime;
@@ -324,12 +324,12 @@ class TaskBuilder extends AbstractFormInterceptor {
     Widget widget = getFormView().getWidgetByName(NAME_FILES);
 
     if (widget instanceof FileCollector && !((FileCollector) widget).isEmpty()) {
-      List<NewFileInfo> files = Lists.newArrayList(((FileCollector) widget).getFiles());
+      List<FileInfo> files = Lists.newArrayList(((FileCollector) widget).getFiles());
 
       final List<BeeColumn> columns = Data.getColumns(VIEW_TASK_FILES,
           Lists.newArrayList(COL_TASK, AdministrationConstants.COL_FILE, COL_CAPTION));
 
-      for (final NewFileInfo fileInfo : files) {
+      for (final FileInfo fileInfo : files) {
         FileUtils.uploadFile(fileInfo, new Callback<Long>() {
           @Override
           public void onSuccess(Long result) {

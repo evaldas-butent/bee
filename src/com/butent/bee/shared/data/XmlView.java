@@ -1,9 +1,12 @@
 // CHECKSTYLE:OFF
 package com.butent.bee.shared.data;
 
+import com.butent.bee.shared.utils.NullOrdering;
+
 import java.util.Collection;
 import java.util.Set;
 
+import javax.xml.bind.annotation.XmlAnyElement;
 import javax.xml.bind.annotation.XmlAttribute;
 import javax.xml.bind.annotation.XmlElementRef;
 import javax.xml.bind.annotation.XmlElementWrapper;
@@ -82,6 +85,8 @@ public class XmlView {
     public String column;
     @XmlAttribute
     public boolean descending;
+    @XmlAttribute
+    public NullOrdering nulls;
   }
 
   @XmlAttribute
@@ -116,6 +121,9 @@ public class XmlView {
   public Integer cacheMaximumSize;
   @XmlAttribute
   public String cacheEviction;
+
+  @XmlAnyElement
+  public Object relation;
 
   @XmlElementWrapper(name = "Columns", namespace = DataUtils.VIEW_NAMESPACE)
   @XmlElementRef

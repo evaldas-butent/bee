@@ -13,11 +13,8 @@ import static com.butent.bee.shared.modules.classifiers.ClassifierConstants.*;
 import com.butent.bee.server.data.BeeTable;
 import com.butent.bee.server.data.BeeView;
 import com.butent.bee.server.data.DataEditorBean;
-import com.butent.bee.server.data.DataEvent.ViewDeleteEvent;
-import com.butent.bee.server.data.DataEvent.ViewInsertEvent;
-import com.butent.bee.server.data.DataEvent.ViewModifyEvent;
+import com.butent.bee.server.data.DataEvent.TableModifyEvent;
 import com.butent.bee.server.data.DataEvent.ViewQueryEvent;
-import com.butent.bee.server.data.DataEvent.ViewUpdateEvent;
 import com.butent.bee.server.data.DataEventHandler;
 import com.butent.bee.server.data.QueryServiceBean;
 import com.butent.bee.server.data.SystemBean;
@@ -32,8 +29,10 @@ import com.butent.bee.server.news.UsageQueryProvider;
 import com.butent.bee.server.sql.HasConditions;
 import com.butent.bee.server.sql.IsCondition;
 import com.butent.bee.server.sql.IsExpression;
+import com.butent.bee.server.sql.IsQuery;
 import com.butent.bee.server.sql.SqlInsert;
 import com.butent.bee.server.sql.SqlSelect;
+import com.butent.bee.server.sql.SqlUpdate;
 import com.butent.bee.server.sql.SqlUtils;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.Pair;
@@ -49,6 +48,7 @@ import com.butent.bee.shared.data.SimpleRowSet.SimpleRow;
 import com.butent.bee.shared.data.SqlConstants.SqlFunction;
 import com.butent.bee.shared.data.filter.Filter;
 import com.butent.bee.shared.data.filter.Operator;
+import com.butent.bee.shared.data.value.Value;
 import com.butent.bee.shared.i18n.LocalizableConstants;
 import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.logging.BeeLogger;
@@ -113,7 +113,7 @@ public class ClassifiersModuleBean implements BeeModule {
       search.addAll(personsSr);
     }
 
-    if (usr.isModuleVisible(Module.TRADE.getName())) {
+    if (usr.isModuleVisible(ModuleAndSub.of(Module.TRADE))) {
       List<SearchResult> itemsSr = qs.getSearchResults(VIEW_ITEMS,
           Filter.anyContains(Sets.newHashSet(COL_ITEM_NAME, COL_ITEM_ARTICLE, COL_ITEM_BARCODE),
               query));
@@ -206,28 +206,37 @@ public class ClassifiersModuleBean implements BeeModule {
       }
 
       @Subscribe
-      public void storeEmail(ViewModifyEvent event) {
+      public void storeEmail(TableModifyEvent event) {
         if (BeeUtils.same(event.getTargetName(), TBL_EMAILS) && event.isBefore()
-            && !(event instanceof ViewDeleteEvent)) {
+            && (event.getQuery() instanceof SqlInsert || event.getQuery() instanceof SqlUpdate)) {
 
-          List<BeeColumn> cols;
-          BeeRow row;
+          IsQuery query = event.getQuery();
+          Object expr = null;
 
-          if (event instanceof ViewInsertEvent) {
-            cols = ((ViewInsertEvent) event).getColumns();
-            row = ((ViewInsertEvent) event).getRow();
-          } else {
-            cols = ((ViewUpdateEvent) event).getColumns();
-            row = ((ViewUpdateEvent) event).getRow();
+          if (query instanceof SqlInsert) {
+            if (!((SqlInsert) query).isMultipleInsert()
+                && ((SqlInsert) query).hasField(COL_EMAIL_ADDRESS)) {
+
+              expr = ((SqlInsert) query).getValue(COL_EMAIL_ADDRESS).getValue();
+            }
+          } else if (((SqlUpdate) query).hasField(COL_EMAIL_ADDRESS)) {
+            expr = ((SqlUpdate) query).getValue(COL_EMAIL_ADDRESS);
+
+            if (expr instanceof IsExpression) {
+              expr = ((IsExpression) expr).getValue();
+            }
           }
-          int idx = DataUtils.getColumnIndex(COL_EMAIL_ADDRESS, cols);
-
-          if (idx != BeeConst.UNDEF) {
-            String email = BeeUtils.normalize(row.getString(idx));
+          if (expr instanceof Value) {
+            String email = BeeUtils.normalize(((Value) expr).getString());
 
             try {
               new InternetAddress(email, true).validate();
-              row.setValue(idx, email);
+
+              if (query instanceof SqlInsert) {
+                ((SqlInsert) query).updExpression(COL_EMAIL_ADDRESS, SqlUtils.constant(email));
+              } else {
+                ((SqlUpdate) query).updExpression(COL_EMAIL_ADDRESS, SqlUtils.constant(email));
+              }
             } catch (AddressException ex) {
               event.addErrorMessage(BeeUtils.joinWords("Wrong address:", ex.getMessage()));
             }

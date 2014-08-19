@@ -1,0 +1,86 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE Form>
+<f:Form xmlns="http://www.butent.com/widget"
+  xmlns:f="http://www.butent.com/form"
+  
+  name="TradeActTemplate" viewName="TradeActTemplates"
+  caption="=tradeActTemplate"
+  width="800" height="600"
+  >
+  <FlowPanel class="flexBox-vertical">
+    <br/>
+    <Table>
+      <col index="0" kind="label" />
+      <col index="2" kind="label" />
+      
+      <row>
+        <Label for="Template" visible="true" />
+        <cell colSpan="3">
+          <InputText source="Template" visible="true" style="width: 100%;" />
+        </cell>
+      </row>
+
+      <row>
+        <Label for="Until" />
+        <InputDateTime source="Until" />
+
+        <Label for="Series" />
+        <DataSelector source="Series" />
+      </row>
+
+      <row>
+        <Label for="Operation" />
+        <DataSelector source="Operation" renderColumns="OperationName" />
+
+        <Label for="Status" />
+        <DataSelector source="Status" renderColumns="StatusName" />
+      </row>
+
+      <row>
+        <Label for="Company" visible="true" />
+        <DataSelector source="Company" visible="true" />
+
+        <Label for="ServiceObject" />
+        <DataSelector source="ServiceObject" />
+      </row>
+
+      <row>
+        <Label for="Manager" />
+        <DataSelector source="Manager" editSource="ManagerPerson" 
+          renderColumns="ManagerFirstName ManagerLastName" />
+        
+        <Label for="Currency" />
+        <DataSelector source="Currency" renderColumns="CurrencyName" editEnabled="false" />
+      </row>
+
+      <row>
+        <Label for="Vehicle" />
+        <DataSelector source="Vehicle" 
+          renderColumns="VehicleParentModel VehicleModel VehicleNumber" />
+        
+        <Label for="Driver" />
+        <DataSelector source="Driver" renderColumns="DriverFirstName DriverLastName" />
+      </row>
+    </Table>
+
+    <br/>
+    <TabbedPages class="flexible">
+      <page>
+        <text>=goods</text>
+        <ChildGrid name="TradeActTmplItems" relColumn="TradeActTemplate" />
+      </page>
+
+      <page>
+        <text>=services</text>
+        <ChildGrid name="TradeActTmplServices" relColumn="TradeActTemplate" />
+      </page>
+
+      <page>
+        <text>=notes</text>
+        <SimplePanel>
+          <InputArea source="Notes" class="occupy-1" />
+        </SimplePanel>
+      </page>
+    </TabbedPages>
+  </FlowPanel>
+</f:Form>

@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<View xmlns="http://www.butent.com/view"
+
+  name="TradeSeries" source="TradeSeries"
+  caption="=trdSeriesPlural" newRowCaption="=trdNewSeries"
+  >
+  <Columns>
+    <SimpleColumn name="SeriesName" />
+    <SimpleColumn name="Notes" />
+  </Columns>
+  
+  <Order>
+    <OrderBy column="SeriesName" />
+  </Order>
+</View>
+ 

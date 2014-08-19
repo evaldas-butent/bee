@@ -1,7 +1,6 @@
 package com.butent.bee.client.grid;
 
 import com.google.common.base.Objects;
-import com.google.gwt.user.client.ui.HasEnabled;
 import com.google.gwt.user.client.ui.Widget;
 import com.google.web.bindery.event.shared.HandlerRegistration;
 
@@ -15,6 +14,7 @@ import com.butent.bee.client.event.logical.ReadyEvent.HasReadyHandlers;
 import com.butent.bee.client.layout.Simple;
 import com.butent.bee.client.presenter.GridPresenter;
 import com.butent.bee.client.style.StyleUtils;
+import com.butent.bee.client.ui.EnablableWidget;
 import com.butent.bee.client.ui.HasFosterParent;
 import com.butent.bee.client.ui.UiOption;
 import com.butent.bee.client.view.HasGridView;
@@ -42,7 +42,7 @@ import java.util.Map;
  * Enables using data grids with data related to another source.
  */
 
-public class ChildGrid extends Simple implements HasEnabled, Launchable, HasFosterParent,
+public class ChildGrid extends Simple implements EnablableWidget, Launchable, HasFosterParent,
     ParentRowEvent.Handler, HasGridView, ReadyEvent.HasReadyHandlers {
 
   private static final Collection<UiOption> uiOptions = EnumSet.of(UiOption.CHILD);

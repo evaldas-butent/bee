@@ -25,7 +25,6 @@ import com.butent.bee.client.style.StyleUtils;
 import com.butent.bee.client.ui.FormFactory.WidgetDescriptionCallback;
 import com.butent.bee.client.ui.IdentifiableWidget;
 import com.butent.bee.client.utils.FileUtils;
-import com.butent.bee.client.utils.NewFileInfo;
 import com.butent.bee.client.view.add.ReadyForInsertEvent;
 import com.butent.bee.client.view.edit.Editor;
 import com.butent.bee.client.view.form.FormView;
@@ -46,8 +45,10 @@ import com.butent.bee.shared.data.IsRow;
 import com.butent.bee.shared.data.event.DataChangeEvent;
 import com.butent.bee.shared.data.value.BooleanValue;
 import com.butent.bee.shared.i18n.Localized;
+import com.butent.bee.shared.io.FileInfo;
 import com.butent.bee.shared.modules.administration.AdministrationConstants;
 import com.butent.bee.shared.modules.discussions.DiscussionsConstants.DiscussionEvent;
+import com.butent.bee.shared.modules.discussions.DiscussionsConstants.DiscussionStatus;
 import com.butent.bee.shared.modules.discussions.DiscussionsUtils;
 import com.butent.bee.shared.time.TimeUtils;
 import com.butent.bee.shared.ui.HasCheckedness;
@@ -101,11 +102,11 @@ class CreateDiscussionInterceptor extends AbstractFormInterceptor {
         return;
       }
 
-      fc.addSelectionHandler(new SelectionHandler<NewFileInfo>() {
+      fc.addSelectionHandler(new SelectionHandler<FileInfo>() {
 
         @Override
-        public void onSelection(SelectionEvent<NewFileInfo> event) {
-          NewFileInfo fileInfo = event.getSelectedItem();
+        public void onSelection(SelectionEvent<FileInfo> event) {
+          FileInfo fileInfo = event.getSelectedItem();
 
           if (DiscussionsUtils.isFileSizeLimitExceeded(fileInfo.getSize(),
               BeeUtils.toLongOrNull(discussParams.get(PRM_MAX_UPLOAD_FILE_SIZE)))) {
@@ -367,13 +368,13 @@ class CreateDiscussionInterceptor extends AbstractFormInterceptor {
     Widget widget = getFormView().getWidgetByName(WIDGET_FILES);
 
     if (widget instanceof FileCollector && !((FileCollector) widget).isEmpty()) {
-      List<NewFileInfo> files = Lists.newArrayList(((FileCollector) widget).getFiles());
+      List<FileInfo> files = Lists.newArrayList(((FileCollector) widget).getFiles());
 
       final List<BeeColumn> columns =
           Data.getColumns(VIEW_DISCUSSIONS_FILES, Lists.newArrayList(COL_DISCUSSION,
               AdministrationConstants.COL_FILE, COL_CAPTION));
 
-      for (final NewFileInfo fileInfo : files) {
+      for (final FileInfo fileInfo : files) {
         FileUtils.uploadFile(fileInfo, new Callback<Long>() {
 
           @Override

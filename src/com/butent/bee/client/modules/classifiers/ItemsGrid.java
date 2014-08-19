@@ -32,8 +32,10 @@ class ItemsGrid extends AbstractGridInterceptor implements SelectionHandler<IsRo
     if (category == null) {
       return null;
     } else {
-      return Filter.in(Data.getIdColumn(VIEW_ITEMS),
-          VIEW_ITEM_CATEGORIES, COL_ITEM, Filter.equals(COL_CATEGORY, category));
+      return Filter.or(Filter.equals(COL_ITEM_TYPE, category),
+          Filter.equals(COL_ITEM_GROUP, category),
+          Filter.in(Data.getIdColumn(VIEW_ITEMS),
+              VIEW_ITEM_CATEGORIES, COL_ITEM, Filter.equals(COL_CATEGORY, category)));
     }
   }
 

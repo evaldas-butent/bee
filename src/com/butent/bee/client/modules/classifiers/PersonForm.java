@@ -28,6 +28,7 @@ import com.butent.bee.client.widget.Image;
 import com.butent.bee.shared.data.IsRow;
 import com.butent.bee.shared.data.UserData;
 import com.butent.bee.shared.i18n.Localized;
+import com.butent.bee.shared.io.FileInfo;
 import com.butent.bee.shared.modules.classifiers.ClassifierConstants;
 import com.butent.bee.shared.utils.BeeUtils;
 
@@ -58,10 +59,13 @@ class PersonForm extends AbstractFormInterceptor {
 
     if (BeeUtils.same(name, PHOTO_FILE_WIDGET_NAME) && widget instanceof FileCollector) {
       final FileCollector fc = (FileCollector) widget;
-      fc.addSelectionHandler(new SelectionHandler<NewFileInfo>() {
+      fc.addSelectionHandler(new SelectionHandler<FileInfo>() {
         @Override
-        public void onSelection(SelectionEvent<NewFileInfo> event) {
-          NewFileInfo fileInfo = event.getSelectedItem();
+        public void onSelection(SelectionEvent<FileInfo> event) {
+          if (!(event.getSelectedItem() instanceof NewFileInfo)) {
+            return;
+          }
+          NewFileInfo fileInfo = (NewFileInfo) event.getSelectedItem();
           fc.clear();
 
           if (photoImageWidget != null && fileInfo != null) {

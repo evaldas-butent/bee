@@ -186,7 +186,7 @@ public final class TasksKeeper {
 
     FormFactory.registerFormInterceptor(FORM_RECURRING_TASK, new RecurringTaskHandler());
 
-    FormFactory.registerFormInterceptor(FORM_NEW_REQUEST, new RequestBuilder(null));
+    FormFactory.registerFormInterceptor(FORM_NEW_REQUEST, new RequestBuilder());
     FormFactory.registerFormInterceptor(FORM_REQUEST, new RequestEditor());
 
     GridFactory.registerGridInterceptor(GRID_REQUESTS, new RequestsGridInterceptor());

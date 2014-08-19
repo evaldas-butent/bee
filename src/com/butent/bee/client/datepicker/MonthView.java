@@ -10,7 +10,6 @@ import com.google.gwt.event.shared.HandlerRegistration;
 import com.google.gwt.user.client.DOM;
 import com.google.gwt.user.client.Event;
 import com.google.gwt.user.client.impl.ElementMapperImpl;
-import com.google.gwt.user.client.ui.HasEnabled;
 import com.google.gwt.user.client.ui.UIObject;
 
 import com.butent.bee.client.datepicker.DatePicker.CssClasses;
@@ -19,6 +18,7 @@ import com.butent.bee.client.event.Binder;
 import com.butent.bee.client.event.EventUtils;
 import com.butent.bee.client.grid.HtmlTable;
 import com.butent.bee.client.style.StyleUtils;
+import com.butent.bee.client.ui.EnablableWidget;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.time.JustDate;
@@ -33,7 +33,7 @@ class MonthView extends Component implements HasKeyDownHandlers {
 
   private final class DayGrid extends HtmlTable {
 
-    private final class Cell extends UIObject implements HasEnabled {
+    private final class Cell extends UIObject implements EnablableWidget {
 
       private final int index;
       private final JustDate value = new JustDate();

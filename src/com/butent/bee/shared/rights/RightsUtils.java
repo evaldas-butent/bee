@@ -7,9 +7,13 @@ import com.google.common.collect.Lists;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.Pair;
 import com.butent.bee.shared.utils.BeeUtils;
+import com.butent.bee.shared.utils.Codec;
 import com.butent.bee.shared.utils.EnumUtils;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
 
 public final class RightsUtils {
 
@@ -22,6 +26,8 @@ public final class RightsUtils {
   private static final String STATE_ROLE_ALIAS_SEPARATOR = "_";
 
   public static final Splitter STATE_ROLE_ALIAS_SPLITTER = Splitter.on(STATE_ROLE_ALIAS_SEPARATOR);
+
+  private static final Map<String, String> VIEW_MODULES = new HashMap<>();
 
   public static String buildName(String parent, String child) {
     if (BeeUtils.isEmpty(parent)) {
@@ -37,6 +43,14 @@ public final class RightsUtils {
 
     return STATE_ROLE_ALIAS_PREFIX + STATE_ROLE_ALIAS_SEPARATOR
         + state.ordinal() + STATE_ROLE_ALIAS_SEPARATOR + role;
+  }
+
+  public static String getViewModules(String viewName) {
+    return VIEW_MODULES.get(BeeUtils.normalize(viewName));
+  }
+
+  public static String getViewModulesAsString() {
+    return Codec.beeSerialize(VIEW_MODULES);
   }
 
   public static String normalizeName(String name) {
@@ -58,6 +72,16 @@ public final class RightsUtils {
     Assert.isTrue(BeeUtils.isNonNegative(role));
 
     return Pair.of(state, role);
+  }
+
+  public static void setViewModules(Map<String, String> viewModules) {
+    VIEW_MODULES.clear();
+
+    if (!BeeUtils.isEmpty(viewModules)) {
+      for (Entry<String, String> entry : viewModules.entrySet()) {
+        VIEW_MODULES.put(BeeUtils.normalize(entry.getKey()), entry.getValue());
+      }
+    }
   }
 
   private RightsUtils() {

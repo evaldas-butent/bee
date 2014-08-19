@@ -10,6 +10,7 @@ import com.butent.bee.shared.modules.discussions.DiscussionsConstants;
 import com.butent.bee.shared.modules.ec.EcConstants;
 import com.butent.bee.shared.modules.service.ServiceConstants;
 import com.butent.bee.shared.modules.tasks.TaskConstants;
+import com.butent.bee.shared.modules.trade.acts.TradeActConstants;
 import com.butent.bee.shared.modules.transport.TransportConstants;
 import com.butent.bee.shared.rights.RightsState;
 
@@ -86,7 +87,12 @@ public enum MenuService {
 
   @XmlEnumValue("service_calendar")
   SERVICE_CALENDAR(RightsState.VIEW,
-      Sets.newHashSet(ServiceConstants.VIEW_SERVICE_OBJECTS, TaskConstants.VIEW_TASKS));
+      Sets.newHashSet(ServiceConstants.VIEW_SERVICE_OBJECTS, TaskConstants.VIEW_TASKS)),
+
+  @XmlEnumValue("trade_act_new")
+  TRADE_ACT_NEW(RightsState.CREATE, TradeActConstants.VIEW_TRADE_ACTS),
+  @XmlEnumValue("trade_act_list")
+  TRADE_ACT_LIST(RightsState.VIEW, TradeActConstants.VIEW_TRADE_ACTS);
 
   private final Set<RightsState> dataRightsStates;
   private DataNameProvider dataNameProvider;

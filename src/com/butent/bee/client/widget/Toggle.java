@@ -226,6 +226,11 @@ public class Toggle extends CustomWidget implements Editor, HasValueChangeHandle
   }
 
   @Override
+  public void render(String value) {
+    setValue(value);
+  }
+
+  @Override
   public void setAccessKey(char key) {
     ((JsElement) getElement().cast()).setAccessKey(String.valueOf(key));
   }

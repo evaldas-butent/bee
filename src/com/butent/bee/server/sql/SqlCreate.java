@@ -21,16 +21,21 @@ public class SqlCreate extends SqlQuery<SqlCreate> implements HasTarget {
     private final int precision;
     private final int scale;
     private final boolean notNull;
+    private final String expression;
 
-    private SqlField(String name, SqlDataType type, int precision, int scale, boolean notNull) {
-      Assert.notEmpty(name);
-      Assert.notNull(type);
+    private SqlField(String name, SqlDataType type, int precision, int scale, boolean notNull,
+        String expression) {
 
-      this.name = name;
-      this.type = type;
+      this.name = Assert.notEmpty(name);
+      this.type = Assert.notNull(type);
       this.precision = precision;
       this.scale = scale;
       this.notNull = notNull;
+      this.expression = expression;
+    }
+
+    public String getExpression() {
+      return expression;
     }
 
     /**
@@ -192,7 +197,17 @@ public class SqlCreate extends SqlQuery<SqlCreate> implements HasTarget {
     Assert.notEmpty(field);
     Assert.state(!hasField(field), "Field " + field + " already exist");
 
-    fieldList.add(new SqlField(field, type, precision, scale, notNull));
+    fieldList.add(new SqlField(field, type, precision, scale, notNull, null));
+
+    return getReference();
+  }
+
+  public SqlCreate addField(String field, SqlDataType type, String expression, boolean notNull) {
+    Assert.state(dataSource == null);
+    Assert.notEmpty(field);
+    Assert.state(!hasField(field), "Field " + field + " already exist");
+
+    fieldList.add(new SqlField(field, type, 0, 0, notNull, expression));
 
     return getReference();
   }

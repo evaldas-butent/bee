@@ -17,6 +17,7 @@ import com.butent.bee.client.screen.Domain;
 import com.butent.bee.client.style.StyleUtils;
 import com.butent.bee.client.ui.FormDescription;
 import com.butent.bee.client.ui.FormFactory;
+import com.butent.bee.client.ui.UiHelper;
 import com.butent.bee.client.ui.UiOption;
 import com.butent.bee.client.utils.Command;
 import com.butent.bee.client.utils.Evaluator;
@@ -395,7 +396,7 @@ public class FormContainerImpl extends Split implements FormContainerView, HasNa
   public void setEnabled(boolean enabled) {
     if (enabled != isEnabled()) {
       this.enabled = enabled;
-      DomUtils.enableChildren(this, enabled);
+      UiHelper.enableChildren(this, enabled);
     }
   }
 

@@ -135,7 +135,7 @@ public class MessageBoxes {
     Flow container = new Flow();
     container.addStyleName(STYLE_CHOICE_CONTAINER);
     container.addStyleName(STYLE_CHOICE_CONTAINER + BeeConst.STRING_MINUS
-        + (vertical ? StyleUtils.NAME_VERTICAL : StyleUtils.NAME_HORIZONTAL));
+        + (vertical ? StyleUtils.SUFFIX_VERTICAL : StyleUtils.SUFFIX_HORIZONTAL));
 
     UiHelper.add(container, group, initializer, DialogConstants.WIDGET_COMMAND_GROUP);
     panel.add(container);

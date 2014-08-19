@@ -1,6 +1,5 @@
 package com.butent.bee.client.menu;
 
-import com.google.common.collect.Lists;
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.core.client.Scheduler;
 import com.google.gwt.dom.client.Document;
@@ -29,6 +28,7 @@ import com.butent.bee.shared.menu.MenuConstants.ITEM_TYPE;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.NameUtils;
 
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -55,8 +55,8 @@ public class MenuBar extends Widget implements IdentifiableWidget, CloseEvent.Ha
     subMenuIcon = AbstractImagePrototype.create(resources.subMenuIcon());
   }
 
-  private final List<UIObject> allItems = Lists.newArrayList();
-  private final List<MenuItem> items = Lists.newArrayList();
+  private final List<UIObject> allItems = new ArrayList<>();
+  private final List<MenuItem> items = new ArrayList<>();
 
   private Element body;
 
@@ -643,9 +643,9 @@ public class MenuBar extends Widget implements IdentifiableWidget, CloseEvent.Ha
       addStyleDependentName("level-" + getLevel());
     }
     if (isVertical()) {
-      addStyleDependentName(StyleUtils.NAME_VERTICAL);
+      addStyleDependentName(StyleUtils.SUFFIX_VERTICAL);
     } else {
-      addStyleDependentName(StyleUtils.NAME_HORIZONTAL);
+      addStyleDependentName(StyleUtils.SUFFIX_HORIZONTAL);
     }
 
     addStyleDependentName(barType.name().toLowerCase());

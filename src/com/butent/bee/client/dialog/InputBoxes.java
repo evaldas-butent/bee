@@ -16,7 +16,6 @@ import com.google.gwt.event.dom.client.KeyDownEvent;
 import com.google.gwt.event.dom.client.KeyDownHandler;
 import com.google.gwt.user.client.Event.NativePreviewEvent;
 import com.google.gwt.user.client.Timer;
-import com.google.gwt.user.client.ui.FlowPanel;
 import com.google.gwt.user.client.ui.HasEnabled;
 import com.google.gwt.user.client.ui.HasWidgets;
 import com.google.gwt.user.client.ui.IsWidget;
@@ -56,6 +55,7 @@ import com.butent.bee.shared.ui.Action;
 import com.butent.bee.shared.utils.BeeUtils;
 
 import java.util.Collection;
+import java.util.EnumSet;
 import java.util.Map;
 import java.util.Set;
 
@@ -145,6 +145,7 @@ public class InputBoxes {
 
   private static final String STYLE_INPUT_CONFIRM = "bee-InputConfirm";
   private static final String STYLE_INPUT_CANCEL = "bee-InputCancel";
+  private static final String STYLE_INPUT_ADD = "bee-InputAdd";
   private static final String STYLE_INPUT_DELETE = "bee-InputDelete";
   private static final String STYLE_INPUT_PRINT = "bee-InputPrint";
 
@@ -159,6 +160,10 @@ public class InputBoxes {
     Assert.notNull(consumer);
 
     final HtmlTable table = new HtmlTable();
+    table.setText(0, 0, valueCaption);
+    table.getCellFormatter().setHorizontalAlignment(0, 0, TextAlign.CENTER);
+    StyleUtils.setMinWidth(table.getCellFormatter().getElement(0, 0), 100);
+
     final Consumer<String> rowCreator = new Consumer<String>() {
       @Override
       public void accept(String value) {
@@ -184,7 +189,7 @@ public class InputBoxes {
         delete.addClickHandler(new ClickHandler() {
           @Override
           public void onClick(ClickEvent event) {
-            for (int i = 0; i < table.getRowCount(); i++) {
+            for (int i = 1; i < table.getRowCount(); i++) {
               if (Objects.equal(delete, table.getWidget(i, 1))) {
                 table.removeRow(i);
                 break;
@@ -200,28 +205,7 @@ public class InputBoxes {
         rowCreator.accept(value);
       }
     }
-    FlowPanel widget = new FlowPanel();
-    Label cap = new Label(valueCaption);
-    StyleUtils.setTextAlign(cap.getElement(), TextAlign.CENTER);
-    widget.add(cap);
-
-    widget.add(table);
-
-    FaLabel add = new FaLabel(FontAwesome.PLUS);
-    add.setTitle(Localized.getConstants().actionAdd());
-    add.getElement().getStyle().setCursor(Cursor.POINTER);
-    StyleUtils.setTextAlign(add.getElement(), TextAlign.CENTER);
-
-    add.addClickHandler(new ClickHandler() {
-      @Override
-      public void onClick(ClickEvent event) {
-        rowCreator.accept(null);
-        UiHelper.focus(table.getWidget(table.getRowCount() - 1, 0));
-      }
-    });
-    widget.add(add);
-
-    inputWidget(caption, widget, new InputCallback() {
+    inputWidget(caption, table, new InputCallback() {
       @Override
       public String getErrorMessage() {
         String error = super.getErrorMessage();
@@ -229,7 +213,7 @@ public class InputBoxes {
         if (BeeUtils.isEmpty(error)) {
           Set<String> values = Sets.newHashSet();
 
-          for (int i = 0; i < table.getRowCount(); i++) {
+          for (int i = 1; i < table.getRowCount(); i++) {
             Editor input = (Editor) table.getWidget(i, 0);
             String value = input.getNormalizedValue();
 
@@ -249,6 +233,12 @@ public class InputBoxes {
       }
 
       @Override
+      public void onAdd() {
+        rowCreator.accept(null);
+        UiHelper.focus(table.getWidget(table.getRowCount() - 1, 0));
+      }
+
+      @Override
       public void onSuccess() {
         Collection<String> result;
 
@@ -257,18 +247,26 @@ public class InputBoxes {
         } else {
           result = Lists.newArrayList();
         }
-        for (int i = 0; i < table.getRowCount(); i++) {
+        for (int i = 1; i < table.getRowCount(); i++) {
           result.add(((Editor) table.getWidget(i, 0)).getNormalizedValue());
         }
         consumer.accept(result);
       }
-    });
+    }, null, null, EnumSet.of(Action.ADD), null);
   }
 
   public void inputMap(String caption, final String keyCaption, final String valueCaption,
       Map<String, String> map, final Consumer<Map<String, String>> consumer) {
 
     final HtmlTable table = new HtmlTable();
+    table.setText(0, 0, keyCaption);
+    table.getCellFormatter().setHorizontalAlignment(0, 0, TextAlign.CENTER);
+    StyleUtils.setMinWidth(table.getCellFormatter().getElement(0, 0), 100);
+
+    table.setText(0, 1, valueCaption);
+    table.getCellFormatter().setHorizontalAlignment(0, 1, TextAlign.CENTER);
+    StyleUtils.setMinWidth(table.getCellFormatter().getElement(0, 1), 100);
+
     final BiConsumer<String, String> rowCreator = new BiConsumer<String, String>() {
       @Override
       public void accept(String key, String value) {
@@ -303,37 +301,10 @@ public class InputBoxes {
         table.setWidget(row, 2, delete);
       }
     };
-    Label cap = new Label(keyCaption);
-    StyleUtils.setMinWidth(cap, 100);
-    StyleUtils.setTextAlign(cap.getElement(), TextAlign.CENTER);
-    table.setWidget(0, 0, cap);
-
-    cap = new Label(valueCaption);
-    StyleUtils.setMinWidth(cap, 100);
-    StyleUtils.setTextAlign(cap.getElement(), TextAlign.CENTER);
-    table.setWidget(0, 1, cap);
-
     for (String key : map.keySet()) {
       rowCreator.accept(key, map.get(key));
     }
-    FlowPanel widget = new FlowPanel();
-    widget.add(table);
-
-    FaLabel add = new FaLabel(FontAwesome.PLUS);
-    add.setTitle(Localized.getConstants().actionAdd());
-    add.getElement().getStyle().setCursor(Cursor.POINTER);
-    StyleUtils.setTextAlign(add.getElement(), TextAlign.CENTER);
-
-    add.addClickHandler(new ClickHandler() {
-      @Override
-      public void onClick(ClickEvent event) {
-        rowCreator.accept(null, null);
-        UiHelper.focus(table.getWidget(table.getRowCount() - 1, 0));
-      }
-    });
-    widget.add(add);
-
-    inputWidget(caption, widget, new InputCallback() {
+    inputWidget(caption, table, new InputCallback() {
       @Override
       public String getErrorMessage() {
         String error = super.getErrorMessage();
@@ -360,6 +331,12 @@ public class InputBoxes {
       }
 
       @Override
+      public void onAdd() {
+        rowCreator.accept(null, null);
+        UiHelper.focus(table.getWidget(table.getRowCount() - 1, 0));
+      }
+
+      @Override
       public void onSuccess() {
         Map<String, String> result = Maps.newLinkedHashMap();
 
@@ -369,7 +346,7 @@ public class InputBoxes {
         }
         consumer.accept(result);
       }
-    });
+    }, null, null, EnumSet.of(Action.ADD), null);
   }
 
   public void inputString(String caption, String prompt, final StringCallback callback,
@@ -592,6 +569,19 @@ public class InputBoxes {
     }
 
     if (enabledActions != null) {
+      if (enabled && enabledActions.contains(Action.ADD)) {
+        Image add = new Image(Global.getImages().silverAdd(), new ScheduledCommand() {
+          @Override
+          public void execute() {
+            callback.onAdd();
+          }
+        });
+
+        add.addStyleName(STYLE_INPUT_ADD);
+        UiHelper.initialize(add, initializer, DialogConstants.WIDGET_ADD);
+        dialog.addAction(Action.ADD, add);
+      }
+
       if (enabled && enabledActions.contains(Action.DELETE)) {
         Image delete = new Image(Global.getImages().silverDelete(), new ScheduledCommand() {
           @Override
@@ -641,9 +631,5 @@ public class InputBoxes {
 
     UiHelper.focus(widget.asWidget());
     return dialog;
-  }
-
-  private void inputWidget(String caption, IsWidget input, InputCallback callback) {
-    inputWidget(caption, input, callback, null, null, Action.NO_ACTIONS, null);
   }
 }

@@ -1,7 +1,5 @@
 package com.butent.bee.client.grid;
 
-import com.google.common.collect.Lists;
-import com.google.common.collect.Maps;
 import com.google.gwt.dom.client.Document;
 import com.google.gwt.dom.client.Element;
 import com.google.gwt.dom.client.NodeList;
@@ -41,6 +39,7 @@ import com.butent.bee.shared.ui.HasCaption;
 import com.butent.bee.shared.utils.BeeUtils;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -296,8 +295,8 @@ public class HtmlTable extends Panel implements IdentifiableWidget, IsHtmlTable,
   private String defaultCellClasses;
   private String defaultCellStyles;
 
-  private final Map<Integer, String> columnCellClases = Maps.newHashMap();
-  private final Map<Integer, String> columnCellStyles = Maps.newHashMap();
+  private final Map<Integer, String> columnCellClases = new HashMap<>();
+  private final Map<Integer, String> columnCellStyles = new HashMap<>();
 
   private String caption;
 
@@ -382,7 +381,7 @@ public class HtmlTable extends Panel implements IdentifiableWidget, IsHtmlTable,
 
   public List<TableCellElement> getColumnCells(int column) {
     Assert.nonNegative(column);
-    List<TableCellElement> cells = Lists.newArrayList();
+    List<TableCellElement> cells = new ArrayList<>();
 
     for (int row = 0; row < getRowCount(); row++) {
       if (getCellCount(row) > column) {
@@ -441,7 +440,7 @@ public class HtmlTable extends Panel implements IdentifiableWidget, IsHtmlTable,
 
   public List<TableCellElement> getRowCells(int row) {
     Assert.nonNegative(row);
-    List<TableCellElement> cells = Lists.newArrayList();
+    List<TableCellElement> cells = new ArrayList<>();
 
     if (row < getRowCount()) {
       int cc = getCellCount(row);
@@ -562,6 +561,18 @@ public class HtmlTable extends Panel implements IdentifiableWidget, IsHtmlTable,
       columnCellClases.remove(column);
     } else {
       columnCellClases.put(column, classes);
+    }
+  }
+
+  public void setColumnCellKind(int column, CellKind cellKind) {
+    Assert.nonNegative(column);
+    Assert.notNull(cellKind);
+
+    String classes = columnCellClases.get(column);
+    if (BeeUtils.isEmpty(classes)) {
+      columnCellClases.put(column, cellKind.getStyleName());
+    } else {
+      columnCellClases.put(column, StyleUtils.buildClasses(classes, cellKind.getStyleName()));
     }
   }
 

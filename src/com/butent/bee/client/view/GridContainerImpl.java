@@ -26,6 +26,7 @@ import com.butent.bee.client.grid.GridFactory;
 import com.butent.bee.client.layout.Split;
 import com.butent.bee.client.presenter.Presenter;
 import com.butent.bee.client.style.StyleUtils;
+import com.butent.bee.client.ui.UiHelper;
 import com.butent.bee.client.ui.UiOption;
 import com.butent.bee.client.ui.WidgetCreationCallback;
 import com.butent.bee.client.utils.Evaluator;
@@ -570,7 +571,7 @@ public class GridContainerImpl extends Split implements GridContainerView, HasNa
       return;
     }
     this.enabled = enabled;
-    DomUtils.enableChildren(this, enabled);
+    UiHelper.enableChildren(this, enabled);
   }
 
   @Override

@@ -362,8 +362,13 @@
   content: '';
  }
 
-.bee-discuss-adsFormContent-NewAnnouncement > .bee-discuss-adsFormContent-chatBalloon:after {
+.bee-discuss-adsFormContent-NewAnnouncement .bee-discuss-adsFormContent-chatBalloon:after {
   border-right: 9px solid #ffffCC;
+}
+
+.bee-discuss-adsFormContent-NewAnnouncement .bee-discuss-adsFormContent-chatBalloon {
+   border-top: 9px solid white;
+   border-bottom: 9px solid white;
 }
 
 .bee-discuss-Description-disabled {

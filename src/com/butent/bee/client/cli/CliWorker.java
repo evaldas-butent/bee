@@ -161,7 +161,7 @@ import com.butent.bee.shared.font.FontAwesome;
 import com.butent.bee.shared.html.Attributes;
 import com.butent.bee.shared.html.builder.elements.Input;
 import com.butent.bee.shared.i18n.Localized;
-import com.butent.bee.shared.io.StoredFile;
+import com.butent.bee.shared.io.FileInfo;
 import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogLevel;
 import com.butent.bee.shared.logging.LogUtils;
@@ -494,6 +494,9 @@ public final class CliWorker {
 
     } else if ("size".equals(z) && arr.length >= 2) {
       showSize(arr);
+
+    } else if ("sleep".equals(z) && arr.length >= 2) {
+      sleep(arr);
 
     } else if ("slider".equals(z)) {
       showSlider(arr);
@@ -1320,7 +1323,7 @@ public final class CliWorker {
       showExtData("Locale info", LocaleUtils.getInfo());
 
     } else if (BeeUtils.contains(arr[0], 's')) {
-      BeeKeeper.getRpc().invoke("localeInfo", ContentType.TEXT, args,
+      BeeKeeper.getRpc().invoke("localeInfo", args,
           ResponseHandler.callback(ArrayUtils.joinWords(arr)));
 
     } else {
@@ -1410,6 +1413,7 @@ public final class CliWorker {
           case TASK_REPORTS:
           case TRAILER_TIME_BOARD:
           case TRUCK_TIME_BOARD:
+          case TRADE_ACT_LIST:
             commands.add(command);
             break;
 
@@ -1641,7 +1645,7 @@ public final class CliWorker {
           }
 
           long totSize = 0;
-          for (StoredFile sf : fileGroup.getFiles()) {
+          for (FileInfo sf : fileGroup.getFiles()) {
             totSize += sf.getSize();
           }
 
@@ -4109,6 +4113,23 @@ public final class CliWorker {
     showExtData(BeeUtils.joinWords("Widget", id, z), info);
   }
 
+  private static void sleep(String[] arr) {
+    for (int i = 1; i < arr.length; i++) {
+      String millis = arr[i];
+
+      if (BeeUtils.isPositiveInt(millis)) {
+        BeeKeeper.getRpc().invoke("sleep", millis, new ResponseCallback() {
+          @Override
+          public void onResponse(ResponseObject response) {
+            if (response.hasResponse()) {
+              logger.debug(response.getResponseAsString());
+            }
+          }
+        });
+      }
+    }
+  }
+
   private static void sortTable(IsTable<?, ?> table, int col) {
     if (table.getNumberOfRows() > 1) {
       List<Pair<Integer, Boolean>> sortInfo = Lists.newArrayList();
@@ -4314,7 +4335,7 @@ public final class CliWorker {
 
     final String input = sb.toString();
 
-    BeeKeeper.getRpc().invoke("stringInfo", ContentType.TEXT, input, new ResponseCallback() {
+    BeeKeeper.getRpc().invoke("stringInfo", input, new ResponseCallback() {
       @Override
       public void onResponse(ResponseObject response) {
         ResponseHandler.unicodeTest(input, response);
