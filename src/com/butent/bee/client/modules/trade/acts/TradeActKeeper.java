@@ -3,6 +3,8 @@ package com.butent.bee.client.modules.trade.acts;
 import static com.butent.bee.shared.modules.trade.TradeConstants.*;
 import static com.butent.bee.shared.modules.trade.acts.TradeActConstants.*;
 
+import com.butent.bee.client.BeeKeeper;
+import com.butent.bee.client.communication.ParameterList;
 import com.butent.bee.client.data.Data;
 import com.butent.bee.client.data.RowFactory;
 import com.butent.bee.client.grid.GridFactory;
@@ -17,6 +19,8 @@ import com.butent.bee.shared.logging.LogUtils;
 import com.butent.bee.shared.menu.MenuHandler;
 import com.butent.bee.shared.menu.MenuService;
 import com.butent.bee.shared.modules.trade.acts.TradeActKind;
+import com.butent.bee.shared.rights.Module;
+import com.butent.bee.shared.rights.SubModule;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.EnumUtils;
 
@@ -88,6 +92,10 @@ public final class TradeActKeeper {
         ColorStyleProvider.create(VIEW_TRADE_ACT_TEMPLATES,
             ALS_STATUS_BACKGROUND, ALS_STATUS_FOREGROUND));
 
+  }
+
+  static ParameterList createArgs(String method) {
+    return BeeKeeper.getRpc().createParameters(Module.TRADE, SubModule.ACTS, method);
   }
 
   private TradeActKeeper() {

@@ -71,8 +71,6 @@ public final class AdministrationConstants {
     EnumUtils.register(WorkdayTransition.class);
   }
 
-  public static final String METHOD = "Service";
-
   public static final String PARAMETERS_PREFIX = "parameters_";
 
   public static final String SVC_GET_PARAMETER = PARAMETERS_PREFIX + "parameter";

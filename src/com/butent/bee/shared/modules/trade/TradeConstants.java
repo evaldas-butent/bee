@@ -57,6 +57,8 @@ public final class TradeConstants {
   public static final String COL_TRADE_ITEM_PRICE = "Price";
   public static final String COL_TRADE_ITEM_NOTE = "Note";
 
+  public static final String COL_SERIES = "Series";
+
   public static final String ALS_CUSTOMER_NAME = "CustomerName";
   public static final String ALS_SUPPLIER_NAME = "SupplierName";
 
@@ -71,6 +73,8 @@ public final class TradeConstants {
 
   public static final String GRID_TRADE_OPERATIONS = "TradeOperations";
   public static final String GRID_TRADE_STATUSES = "TradeStatuses";
+
+  public static final String GRID_SERIES_MANAGERS = "SeriesManagers";
 
   public static final String STYLE_SHEET = "trade";
 

@@ -18,8 +18,8 @@
     <DataColumn name="DateFrom" />
     <DataColumn name="DateTo" />
 
+    <DataColumn name="Tariff" />
     <DataColumn name="Factor" />
-    <DataColumn name="FactorDays" />
 
     <DataColumn name="DaysPerWeek" maxValue="7" />
     <DataColumn name="MinTerm" />

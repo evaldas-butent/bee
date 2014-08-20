@@ -2,6 +2,7 @@
 <!DOCTYPE Form>
 <f:Form xmlns="http://www.butent.com/widget"
   xmlns:f="http://www.butent.com/form"
+  xmlns:ui="http://www.butent.com/ui"
   
   name="Item" viewName="Items" caption="=item"
   width="700" height="450"
@@ -45,9 +46,19 @@
       <row>
         <Label for="Barcode" />
         <InputText source="Barcode" />
-    
-        <Label for="Weight" />
-        <InputDecimal source="Weight" style="width: 80px;" />
+
+        <Label for="TimeUnit" module="Trade.Acts">
+          <dynStyle>
+            <ui:inline>display: none;</ui:inline>
+            <ui:expression>!row.IsService</ui:expression>
+          </dynStyle>
+        </Label>
+        <ListBox source="TimeUnit" style="width: 80px;" module="Trade.Acts">
+          <dynStyle>
+            <ui:inline>display: none;</ui:inline>
+            <ui:expression>!row.IsService</ui:expression>
+          </dynStyle>
+        </ListBox>
       </row>
 
       <row data="ItemCategories">
@@ -130,6 +141,11 @@
 
             <Label for="CostCenter" />
             <DataSelector source="CostCenter" />
+          </row>
+
+          <row>
+            <Label for="Weight" />
+            <InputDecimal source="Weight" style="width: 80px;" />
           </row>
         </Table>
       </page>  

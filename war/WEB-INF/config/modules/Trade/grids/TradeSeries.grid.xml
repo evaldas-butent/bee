@@ -2,11 +2,10 @@
 <g:Grid xmlns="http://www.butent.com/column" xmlns:g="http://www.butent.com/grid"
   
   name="TradeSeries" viewName="TradeSeries" caption="=trdSeriesPlural"
-  minColumnWidth="100"
   >
   <g:columns>
-    <DataColumn name="SeriesName" visible="true" />
+    <DataColumn name="SeriesName" minWidth="100" visible="true" />
 
-    <DataColumn name="Notes" whiteSpace="pre-line" />
+    <DataColumn name="Notes" whiteSpace="normal" flexGrow="1" />
   </g:columns>
 </g:Grid>

@@ -3,6 +3,7 @@
 
   name="TradeSeries" source="TradeSeries"
   caption="=trdSeriesPlural" newRowCaption="=trdNewSeries"
+  editForm="TradeSeries" newRowForm="TradeSeries"
   >
   <Columns>
     <SimpleColumn name="SeriesName" />

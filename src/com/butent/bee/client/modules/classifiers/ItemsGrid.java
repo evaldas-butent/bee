@@ -9,12 +9,14 @@ import com.butent.bee.client.data.Data;
 import com.butent.bee.client.ui.FormFactory.WidgetDescriptionCallback;
 import com.butent.bee.client.ui.IdentifiableWidget;
 import com.butent.bee.client.view.TreeView;
+import com.butent.bee.client.view.grid.GridView;
 import com.butent.bee.client.view.grid.interceptor.AbstractGridInterceptor;
 import com.butent.bee.client.view.grid.interceptor.GridInterceptor;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.data.IsRow;
 import com.butent.bee.shared.data.filter.Filter;
 import com.butent.bee.shared.i18n.Localized;
+import com.butent.bee.shared.ui.ColumnDescription;
 import com.butent.bee.shared.ui.GridDescription;
 import com.butent.bee.shared.utils.BeeUtils;
 
@@ -55,6 +57,17 @@ class ItemsGrid extends AbstractGridInterceptor implements SelectionHandler<IsRo
     if (widget instanceof TreeView) {
       setTreeView((TreeView) widget);
       getTreeView().addSelectionHandler(this);
+    }
+  }
+
+  @Override
+  public ColumnDescription beforeCreateColumn(GridView gridView,
+      ColumnDescription columnDescription) {
+
+    if (!showServices() && COL_TIME_UNIT.equals(columnDescription.getId())) {
+      return null;
+    } else {
+      return super.beforeCreateColumn(gridView, columnDescription);
     }
   }
 

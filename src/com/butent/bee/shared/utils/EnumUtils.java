@@ -14,6 +14,7 @@ import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogUtils;
 import com.butent.bee.shared.modules.administration.AdministrationConstants;
 import com.butent.bee.shared.modules.calendar.CalendarConstants;
+import com.butent.bee.shared.modules.classifiers.ClassifierConstants;
 import com.butent.bee.shared.modules.discussions.DiscussionsConstants;
 import com.butent.bee.shared.modules.ec.EcConstants;
 import com.butent.bee.shared.modules.mail.MailConstants;
@@ -52,8 +53,9 @@ public final class EnumUtils {
   };
 
   static {
-    CalendarConstants.register();
     AdministrationConstants.register();
+    ClassifierConstants.register();
+    CalendarConstants.register();
     TaskConstants.register();
     DiscussionsConstants.register();
     EcConstants.register();

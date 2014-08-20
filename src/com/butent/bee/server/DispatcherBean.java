@@ -248,7 +248,7 @@ public class DispatcherBean {
     ResponseObject response;
 
     if (moduleHolder.hasModule(svc)) {
-      response = moduleHolder.doModule(reqInfo);
+      response = moduleHolder.doModule(svc, reqInfo);
 
     } else if (Service.isDataService(svc)) {
       response = uiService.doService(reqInfo);
@@ -269,7 +269,7 @@ public class DispatcherBean {
       response = ResponseObject.info(System.currentTimeMillis(), BeeConst.whereAmI());
 
     } else if (BeeUtils.same(svc, Service.INVOKE)) {
-      response = Reflection.invoke(invocation, reqInfo.getParameter(Service.RPC_VAR_METH), reqInfo);
+      response = Reflection.invoke(invocation, reqInfo.getParameter(Service.VAR_METHOD), reqInfo);
 
     } else {
       String msg = BeeUtils.joinWords(svc, "service not recognized");
