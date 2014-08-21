@@ -35,13 +35,12 @@ import com.butent.bee.shared.data.view.RowInfo;
 import com.butent.bee.shared.ui.Action;
 import com.butent.bee.shared.ui.ColumnDescription;
 import com.butent.bee.shared.ui.GridDescription;
-import com.butent.bee.shared.ui.HasCaption;
 
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 
-public interface GridInterceptor extends WidgetInterceptor, ParentRowEvent.Handler, HasCaption,
+public interface GridInterceptor extends WidgetInterceptor, ParentRowEvent.Handler,
     EditStartEvent.Handler, ProvidesGridColumnRenderer, DynamicColumnEnumerator, HasViewName,
     EditorConsumer, RowUpdateEvent.Handler {
 

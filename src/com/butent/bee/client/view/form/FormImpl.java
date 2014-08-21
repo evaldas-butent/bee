@@ -656,6 +656,13 @@ public class FormImpl extends Absolute implements FormView, PreviewHandler, Tabu
 
   @Override
   public String getCaption() {
+    if (getFormInterceptor() != null) {
+      String s = getFormInterceptor().getCaption();
+      if (!BeeUtils.isEmpty(s)) {
+        return s;
+      }
+    }
+
     return caption;
   }
 

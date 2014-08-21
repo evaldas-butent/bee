@@ -64,11 +64,15 @@ class ItemsGrid extends AbstractGridInterceptor implements SelectionHandler<IsRo
   public ColumnDescription beforeCreateColumn(GridView gridView,
       ColumnDescription columnDescription) {
 
-    if (!showServices() && COL_TIME_UNIT.equals(columnDescription.getId())) {
+    if (showServices()) {
+      if (COL_ITEM_WEIGHT.equals(columnDescription.getId())) {
+        return null;
+      }
+    } else if (COL_TIME_UNIT.equals(columnDescription.getId())) {
       return null;
-    } else {
-      return super.beforeCreateColumn(gridView, columnDescription);
     }
+
+    return super.beforeCreateColumn(gridView, columnDescription);
   }
 
   @Override
@@ -91,16 +95,6 @@ class ItemsGrid extends AbstractGridInterceptor implements SelectionHandler<IsRo
       return super.getParentLabels();
     } else {
       return getTreeView().getPathLabels(getSelectedCategory().getId(), COL_CATEGORY_NAME);
-    }
-  }
-
-  @Override
-  public String getRowCaption(IsRow row, boolean edit) {
-    if (edit) {
-      return showServices() ? Localized.getConstants().service() : Localized.getConstants().item();
-    } else {
-      return showServices() ? Localized.getConstants().newService()
-          : Localized.getConstants().newItem();
     }
   }
 
