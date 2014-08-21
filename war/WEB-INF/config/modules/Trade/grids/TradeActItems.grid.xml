@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <g:Grid xmlns="http://www.butent.com/column" xmlns:g="http://www.butent.com/grid"
   xmlns:ui="http://www.butent.com/ui"
+  xmlns:xi="http://www.w3.org/2001/XInclude"
 
   name="TradeActItems" viewName="TradeActItems"
   flexGrow="1"
@@ -11,29 +12,18 @@
       filter="!(IsService)" visible="true">
       <footer text="=totalOf" horizontalAlignment="right" />
     </RelColumn>
+
     <DataColumn name="Article" />
+  </g:columns>
 
-    <DataColumn name="Quantity" visible="true">
-      <footer aggregate="sum" />
-    </DataColumn>
-    <DataColumn name="UnitName" caption="=unitShort" flexGrow="0" />
+  <xi:include href="columns/TradeActQuantity.columns.xml" />
+  <xi:include href="columns/TradeActPrice.columns.xml" />
 
-    <DataColumn name="Price">
-      <footer expression="row.Quantity * row.Price" />
-    </DataColumn>
+  <xi:include href="columns/TradeActDiscount.columns.xml" />
+  <xi:include href="columns/TradeActVat.columns.xml" />
+  <xi:include href="columns/TradeActTotal.columns.xml" />
 
-    <DataColumn name="Discount" carry="true">
-      <footer expression="row.Quantity * row.Price * row.Discount / 100" />
-    </DataColumn>
-
-    <CalcColumn name="Total" type="decimal" caption="=trdAmount" format="0.00">
-      <style>
-        <bodyStyle><ui:font>bold</ui:font></bodyStyle>
-      </style>
-      <renderer type="total" />
-      <footer aggregate="sum" />
-    </CalcColumn>
-
+  <g:columns>
     <DataColumn name="Note" visible="false" />
   </g:columns>
 </g:Grid>

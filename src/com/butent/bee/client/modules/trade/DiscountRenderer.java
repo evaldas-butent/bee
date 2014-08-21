@@ -5,14 +5,14 @@ import com.butent.bee.shared.data.IsRow;
 
 import java.util.List;
 
-public class VatRenderer extends TotalRenderer {
+public class DiscountRenderer extends TotalRenderer {
 
-  public VatRenderer(List<? extends IsColumn> columns) {
+  public DiscountRenderer(List<? extends IsColumn> columns) {
     super(columns);
   }
 
   @Override
   protected Double evaluate(IsRow row) {
-    return getVat(row);
+    return getDiscount(row);
   }
 }

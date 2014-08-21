@@ -15,11 +15,12 @@ import java.util.Map;
 public class FooterDescription implements BeeSerializable, HasInfo, HasOptions {
 
   private enum Serial {
-    AGGREGATE, EXPRESSION, TYPE, TEXT, HTML, FORMAT, HOR_ALIGN, SCALE, OPTIONS
+    AGGREGATE, EXPRESSION, EVALUATOR, TYPE, TEXT, HTML, FORMAT, HOR_ALIGN, SCALE, OPTIONS
   }
 
   private static final String ATTR_AGGREGATE = "aggregate";
   private static final String ATTR_EXPRESSION = "expression";
+  private static final String ATTR_EVALUATOR = "evaluator";
   private static final String ATTR_TYPE = "type";
 
   public static FooterDescription restore(String s) {
@@ -33,6 +34,7 @@ public class FooterDescription implements BeeSerializable, HasInfo, HasOptions {
 
   private String aggregate;
   private String expression;
+  private String evaluator;
   private String type;
 
   private String text;
@@ -76,6 +78,9 @@ public class FooterDescription implements BeeSerializable, HasInfo, HasOptions {
         case EXPRESSION:
           setExpression(value);
           break;
+        case EVALUATOR:
+          setEvaluator(value);
+          break;
         case TYPE:
           setType(value);
           break;
@@ -105,6 +110,10 @@ public class FooterDescription implements BeeSerializable, HasInfo, HasOptions {
     return aggregate;
   }
 
+  public String getEvaluator() {
+    return evaluator;
+  }
+
   public String getExpression() {
     return expression;
   }
@@ -126,6 +135,7 @@ public class FooterDescription implements BeeSerializable, HasInfo, HasOptions {
     List<Property> info = PropertyUtils.createProperties(
         "Aggregate", getAggregate(),
         "Expression", getExpression(),
+        "Evaluator", getEvaluator(),
         "Type", getType(),
         "Text", getText(),
         "Html", getHtml(),
@@ -175,6 +185,9 @@ public class FooterDescription implements BeeSerializable, HasInfo, HasOptions {
         case EXPRESSION:
           arr[i++] = getExpression();
           break;
+        case EVALUATOR:
+          arr[i++] = getEvaluator();
+          break;
         case TYPE:
           arr[i++] = getType();
           break;
@@ -221,6 +234,8 @@ public class FooterDescription implements BeeSerializable, HasInfo, HasOptions {
         setAggregate(value);
       } else if (BeeUtils.same(key, ATTR_EXPRESSION)) {
         setExpression(value);
+      } else if (BeeUtils.same(key, ATTR_EVALUATOR)) {
+        setEvaluator(value);
       } else if (BeeUtils.same(key, ATTR_TYPE)) {
         setType(value);
 
@@ -239,6 +254,10 @@ public class FooterDescription implements BeeSerializable, HasInfo, HasOptions {
         setOptions(value);
       }
     }
+  }
+
+  public void setEvaluator(String evaluator) {
+    this.evaluator = evaluator;
   }
 
   public void setExpression(String expression) {

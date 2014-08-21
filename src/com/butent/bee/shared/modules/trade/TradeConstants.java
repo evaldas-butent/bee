@@ -21,8 +21,12 @@ public final class TradeConstants {
   public static final String VIEW_SALES = "Sales";
   public static final String VIEW_SALE_ITEMS = "SaleItems";
 
+  public static final String VIEW_TRADE_NOTES = "TradeNotes";
   public static final String VIEW_TRADE_OPERATIONS = "TradeOperations";
+  public static final String VIEW_TRADE_SERIES = "TradeSeries";
   public static final String VIEW_TRADE_STATUSES = "TradeStatuses";
+
+  public static final String VIEW_SERIES_MANAGERS = "SeriesManagers";
 
   public static final String COL_PURCHASE = "Purchase";
   public static final String COL_PURCHASE_WAREHOUSE_TO = "WarehouseTo";
@@ -52,12 +56,18 @@ public final class TradeConstants {
   public static final String COL_TRADE_VAT = "Vat";
   public static final String COL_TRADE_VAT_PERC = "VatPercent";
 
+  public static final String COL_TRADE_DISCOUNT = "Discount";
+
   public static final String COL_TRADE_ITEM_ARTICLE = "Article";
   public static final String COL_TRADE_ITEM_QUANTITY = "Quantity";
   public static final String COL_TRADE_ITEM_PRICE = "Price";
   public static final String COL_TRADE_ITEM_NOTE = "Note";
 
   public static final String COL_SERIES = "Series";
+
+  public static final String COL_OPERATION_PRICE = "Price";
+  public static final String COL_OPERATION_WAREHOUSE_FROM = "WarehouseFrom";
+  public static final String COL_OPERATION_WAREHOUSE_TO = "WarehouseTo";
 
   public static final String ALS_CUSTOMER_NAME = "CustomerName";
   public static final String ALS_SUPPLIER_NAME = "SupplierName";

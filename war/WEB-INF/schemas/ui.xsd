@@ -401,6 +401,7 @@
       <xs:enumeration value="url" />
       <xs:enumeration value="total" />
       <xs:enumeration value="vat" />
+      <xs:enumeration value="discount" />
     </xs:restriction>
   </xs:simpleType>
   
