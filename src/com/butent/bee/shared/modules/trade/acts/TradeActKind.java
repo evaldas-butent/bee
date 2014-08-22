@@ -8,7 +8,7 @@ import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.ui.HasLocalizedCaption;
 
 public enum TradeActKind implements HasLocalizedCaption {
-  SALE {
+  SALE(true, true) {
     @Override
     public String getCaption(LocalizableConstants constants) {
       return constants.taKindSale();
@@ -19,7 +19,7 @@ public enum TradeActKind implements HasLocalizedCaption {
       return Filter.or(super.getFilter(), SUPPLEMENT.getFilter());
     }
   },
-  SUPPLEMENT {
+  SUPPLEMENT(false, false) {
     @Override
     public String getCaption(LocalizableConstants constants) {
       return constants.taKindSupplement();
@@ -30,36 +30,52 @@ public enum TradeActKind implements HasLocalizedCaption {
       return null;
     }
   },
-  RETURN {
+  RETURN(false, false) {
     @Override
     public String getCaption(LocalizableConstants constants) {
       return constants.taKindReturn();
     }
   },
-  TENDER {
+  TENDER(true, true) {
     @Override
     public String getCaption(LocalizableConstants constants) {
       return constants.taKindTender();
     }
   },
-  PURCHASE {
+  PURCHASE(true, true) {
     @Override
     public String getCaption(LocalizableConstants constants) {
       return constants.taKindPurchase();
     }
   },
-  WRITE_OFF {
+  WRITE_OFF(false, false) {
     @Override
     public String getCaption(LocalizableConstants constants) {
       return constants.taKindWriteOff();
     }
   },
-  RESERVE {
+  RESERVE(false, false) {
     @Override
     public String getCaption(LocalizableConstants constants) {
       return constants.taKindReserve();
     }
   };
+
+  private final boolean copy;
+  private final boolean template;
+
+  private TradeActKind(boolean copy, boolean template) {
+    this.copy = copy;
+    this.template = template;
+  }
+
+  public boolean enableCopy() {
+    return copy;
+  }
+
+  public boolean enableTemplate() {
+    return template;
+  }
 
   @Override
   public String getCaption() {

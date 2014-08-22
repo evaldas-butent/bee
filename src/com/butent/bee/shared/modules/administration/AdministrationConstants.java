@@ -317,8 +317,6 @@ public final class AdministrationConstants {
 
   public static final String PROP_ICON = "Icon";
 
-  public static final String STYLE_SHEET = "commons";
-
   private AdministrationConstants() {
   }
 }

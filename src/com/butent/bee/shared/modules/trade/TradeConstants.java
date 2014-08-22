@@ -86,8 +86,6 @@ public final class TradeConstants {
 
   public static final String GRID_SERIES_MANAGERS = "SeriesManagers";
 
-  public static final String STYLE_SHEET = "trade";
-
   private TradeConstants() {
   }
 }

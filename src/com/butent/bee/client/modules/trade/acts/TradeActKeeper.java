@@ -1,5 +1,7 @@
 package com.butent.bee.client.modules.trade.acts;
 
+import com.google.gwt.user.client.ui.Widget;
+
 import static com.butent.bee.shared.modules.trade.TradeConstants.*;
 import static com.butent.bee.shared.modules.trade.acts.TradeActConstants.*;
 
@@ -10,6 +12,8 @@ import com.butent.bee.client.data.RowFactory;
 import com.butent.bee.client.grid.GridFactory;
 import com.butent.bee.client.style.ColorStyleProvider;
 import com.butent.bee.client.style.ConditionalStyle;
+import com.butent.bee.client.style.StyleUtils;
+import com.butent.bee.client.ui.EnablableWidget;
 import com.butent.bee.client.view.ViewFactory;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.data.BeeRow;
@@ -25,6 +29,11 @@ import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.EnumUtils;
 
 public final class TradeActKeeper {
+
+  static final String STYLE_PREFIX = StyleUtils.CLASS_NAME_PREFIX + "ta-";
+
+  private static final String STYLE_COMMAND_PREFIX = STYLE_PREFIX + "command-";
+  private static final String STYLE_COMMAND_DISABLED = STYLE_COMMAND_PREFIX + "disabled";
 
   private static final BeeLogger logger = LogUtils.getLogger(TradeActKeeper.class);
 
@@ -94,8 +103,17 @@ public final class TradeActKeeper {
 
   }
 
+  static void addCommandStyle(Widget command, String suffix) {
+    command.addStyleName(STYLE_COMMAND_PREFIX + suffix);
+  }
+
   static ParameterList createArgs(String method) {
     return BeeKeeper.getRpc().createParameters(Module.TRADE, SubModule.ACTS, method);
+  }
+
+  static void setCommandEnabled(EnablableWidget command, boolean enabled) {
+    command.setEnabled(enabled);
+    command.setStyleName(STYLE_COMMAND_DISABLED, !enabled);
   }
 
   private TradeActKeeper() {
