@@ -33,6 +33,15 @@
   </security-role>
 
   <data-source>
+    <name>BeeDS</name>
+    <class-name>org.postgresql.ds.PGSimpleDataSource</class-name>
+    <server-name>127.0.0.1</server-name>
+    <port-number>5432</port-number>
+    <database-name>bee</database-name>
+    <user>postgres</user>
+    <password>admin</password>
+  </data-source>
+  <data-source>
     <name>_BeeDS</name>
     <class-name>org.postgresql.ds.PGSimpleDataSource</class-name>
     <server-name>10.0.0.3</server-name>

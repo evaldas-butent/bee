@@ -34,6 +34,7 @@ public final class ClassifierConstants {
   public static final String TBL_WAREHOUSES = "Warehouses";
 
   public static final String FORM_COMPANY = "Company";
+  public static final String FORM_COMPANY_ACTION = "CompanyAction";
   public static final String FORM_PERSON = "Person";
 
   public static final String VIEW_COMPANIES = "Companies";

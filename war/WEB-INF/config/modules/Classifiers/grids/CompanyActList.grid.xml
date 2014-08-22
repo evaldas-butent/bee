@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<g:Grid xmlns="http://www.butent.com/column" xmlns:g="http://www.butent.com/grid"
+  
+  name="CompanyActList" viewName="Appointments"
+  newRowCaption="=calNewAction" newRowForm="CompanyAction" editForm="CompanyAction"
+  enabledActions="filter"
+  flexGrow="1"
+  >
+  <g:columns>
+      <DataColumn name="Created" />
+      <DataColumn name="TypeName" />
+      <DataColumn name="Summary" />
+      <DataColumn name="CompanyName" label="=company" />
+      <RelColumn name="CompanyPerson" editEnabled="true" visible="true"/>
+      <RelColumn name="Creator" editEnabled="true" visible="true" />
+      <DataColumn name="Status" />
+  </g:columns>
+</g:Grid>

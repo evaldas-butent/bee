@@ -60,6 +60,19 @@
       </SimpleJoin>
     </SimpleJoin>
     
+    <SimpleColumn name="CompanyPerson"/>
+    <SimpleJoin name="CompanyPerson" joinType="LEFT">    
+      <SimpleJoin name="Person" joinType="LEFT">
+        <SimpleColumn alias="PersonFirstName" name="FirstName" />
+        <SimpleColumn alias="PersonLastName" name="LastName" />
+      </SimpleJoin>
+      
+      <SimpleColumn name="Company" alias="PersonCompany" />
+      <SimpleJoin name="Company" joinType="LEFT">
+        <SimpleColumn alias="PersonCompanyName" name="Name" />
+      </SimpleJoin>
+    </SimpleJoin>
+    
     <SimpleColumn name="Vehicle" />
     <SimpleJoin name="Vehicle" joinType="LEFT">
       <SimpleJoin name="Type" joinType="LEFT">

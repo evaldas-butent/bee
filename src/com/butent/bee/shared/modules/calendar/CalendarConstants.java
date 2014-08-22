@@ -300,6 +300,7 @@ public final class CalendarConstants {
   public static final String COL_APPOINTMENT_TYPE = "AppointmentType";
 
   public static final String COL_APPOINTMENT_TYPE_NAME = "Name";
+  public static final String COL_APPOINTMENT_TYPE_DURATION = "PlannedDuration";
 
   public static final String COL_ATTENDEE = "Attendee";
   public static final String COL_ATTENDEE_NAME = "Name";

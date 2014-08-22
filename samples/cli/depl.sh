@@ -24,13 +24,13 @@ if [ "$1" == "reconfig" ]; then
  cp -u -v -r $WAR_FOLDER/WEB-INF/config/*  $APP_FOLDER/WEB-INF/config
  cp -u -v  $WAR_FOLDER/WEB-INF/web.xml  $APP_FOLDER/WEB-INF/web.xml
  echo reconfig completed
- return 0
+ return
 fi
 #
 ## Creating zip file due read-only /media/bnovo/ file system
 echo start create war `date`
 cd $WAR_FOLDER
-zip -r -0 -q $ZIP_FILE .
+zip -r -0 $ZIP_FILE .
 
 ## Rename zip to war
 mv $ZIP_FILE.zip $WAR_FILE
@@ -39,11 +39,11 @@ echo start deploy `date`
 
 
 if [ -z "${DEPCOUNTLEFT}" ]; then
-export DEPCOUNTLEFT="####"
+export DEPCOUNTLEFT="######"
 echo restart server due deploy count `date`
 /opt/glassfish4/glassfish/bin/asadmin stop-domain domain1
 /opt/glassfish4/glassfish/bin/asadmin start-domain domain1
 fi
 export DEPCOUNTLEFT=${DEPCOUNTLEFT%?}
 echo end deploy `date` $DEPCOUNTLEFT
-free
+free -h
