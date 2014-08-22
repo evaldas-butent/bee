@@ -1776,6 +1776,22 @@ public final class BeeUtils {
     return null;
   }
 
+  public static Double percent(Double d, Double p) {
+    if (isDouble(d) && isDouble(p)) {
+      return d * p / 100d;
+    } else {
+      return null;
+    }
+  }
+
+  public static Double percentInclusive(Double d, Double p) {
+    if (isDouble(d) && isPositive(p)) {
+      return d * p / (p + 100d);
+    } else {
+      return null;
+    }
+  }
+
   public static Double plusPercent(Double d, Double p) {
     if (isDouble(d) && isDouble(p)) {
       return d + d * p / 100d;

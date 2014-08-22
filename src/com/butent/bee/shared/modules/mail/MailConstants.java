@@ -225,8 +225,6 @@ public final class MailConstants {
 
   public static final String PRM_DEFAULT_ACCOUNT = "DefaultAccount";
 
-  public static final String STYLE_SHEET = "mail";
-
   public static void register() {
     EnumUtils.register(RuleCondition.class);
     EnumUtils.register(RuleAction.class);

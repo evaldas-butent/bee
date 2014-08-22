@@ -5,6 +5,7 @@ import com.google.common.collect.Lists;
 import com.google.common.collect.Table;
 
 import com.butent.bee.client.data.Data;
+import com.butent.bee.client.modules.trade.DiscountRenderer;
 import com.butent.bee.client.modules.trade.TotalRenderer;
 import com.butent.bee.client.modules.trade.VatRenderer;
 import com.butent.bee.client.utils.Evaluator;
@@ -256,6 +257,10 @@ public final class RendererFactory {
 
       case VAT:
         renderer = new VatRenderer(dataColumns);
+        break;
+
+      case DISCOUNT:
+        renderer = new DiscountRenderer(dataColumns);
         break;
 
       case TOKEN:

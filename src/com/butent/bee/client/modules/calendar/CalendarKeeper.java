@@ -391,10 +391,8 @@ public final class CalendarKeeper {
     }
   }
 
-  static ParameterList createRequestParameters(String service) {
-    ParameterList params = BeeKeeper.getRpc().createParameters(Module.CALENDAR.getName());
-    params.addQueryItem(METHOD, service);
-    return params;
+  static ParameterList createArgs(String service) {
+    return BeeKeeper.getRpc().createParameters(Module.CALENDAR, service);
   }
 
   static void editSettings(long id, final CalendarPanel calendarPanel) {
@@ -686,7 +684,7 @@ public final class CalendarKeeper {
 
   static void saveActiveView(final CalendarSettings settings) {
     if (settings != null && settings.getActiveView() != null) {
-      ParameterList params = createRequestParameters(SVC_SAVE_ACTIVE_VIEW);
+      ParameterList params = createArgs(SVC_SAVE_ACTIVE_VIEW);
       params.addQueryItem(PARAM_USER_CALENDAR_ID, settings.getId());
       params.addQueryItem(PARAM_ACTIVE_VIEW, settings.getActiveView().ordinal());
 
@@ -808,7 +806,7 @@ public final class CalendarKeeper {
   }
 
   private static void getUserCalendar(long id, final Queries.RowSetCallback callback) {
-    ParameterList params = createRequestParameters(SVC_GET_USER_CALENDAR);
+    ParameterList params = createArgs(SVC_GET_USER_CALENDAR);
     params.addQueryItem(PARAM_CALENDAR_ID, id);
 
     BeeKeeper.getRpc().makeGetRequest(params, new ResponseCallback() {

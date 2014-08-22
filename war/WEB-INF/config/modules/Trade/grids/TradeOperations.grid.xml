@@ -8,6 +8,7 @@
     <DataColumn name="OperationName" visible="true" />
     
     <DataColumn name="Kind" module="Trade.Acts" />
+    <DataColumn name="Price" />
     
     <RelColumn name="WarehouseFrom" />
     <RelColumn name="WarehouseTo" />

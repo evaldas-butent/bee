@@ -24,9 +24,7 @@ public final class ServiceKeeper {
   public static final String STYLE_PREFIX = StyleUtils.CLASS_NAME_PREFIX + "svc-";
 
   public static ParameterList createArgs(String method) {
-    ParameterList args = BeeKeeper.getRpc().createParameters(Module.SERVICE.getName());
-    args.addQueryItem(AdministrationConstants.METHOD, method);
-    return args;
+    return BeeKeeper.getRpc().createParameters(Module.SERVICE, method);
   }
 
   public static void register() {

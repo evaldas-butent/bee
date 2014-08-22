@@ -10,21 +10,25 @@ import com.butent.bee.client.modules.trade.acts.TradeActKeeper;
 import com.butent.bee.client.style.ColorStyleProvider;
 import com.butent.bee.client.style.ConditionalStyle;
 import com.butent.bee.client.style.StyleUtils;
+import com.butent.bee.client.view.grid.interceptor.UniqueChildInterceptor;
+import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.rights.Module;
 
 public final class TradeKeeper {
 
   public static final String STYLE_PREFIX = StyleUtils.CLASS_NAME_PREFIX + "trade-";
 
-  public static ParameterList createArgs(String name) {
-    ParameterList args = BeeKeeper.getRpc().createParameters(Module.TRADE.getName());
-    args.addQueryItem(METHOD, name);
-    return args;
+  public static ParameterList createArgs(String method) {
+    return BeeKeeper.getRpc().createParameters(Module.TRADE, method);
   }
 
   public static void register() {
     GridFactory.registerGridInterceptor(VIEW_PURCHASE_ITEMS, new TradeItemsGrid());
     GridFactory.registerGridInterceptor(VIEW_SALE_ITEMS, new TradeItemsGrid());
+
+    GridFactory.registerGridInterceptor(GRID_SERIES_MANAGERS,
+        UniqueChildInterceptor.forUsers(Localized.getConstants().managers(),
+            COL_SERIES, COL_TRADE_MANAGER));
 
     ColorStyleProvider csp = ColorStyleProvider.createDefault(VIEW_TRADE_OPERATIONS);
     ConditionalStyle.registerGridColumnStyleProvider(GRID_TRADE_OPERATIONS, COL_BACKGROUND, csp);

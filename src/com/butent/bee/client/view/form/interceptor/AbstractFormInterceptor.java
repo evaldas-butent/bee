@@ -111,6 +111,11 @@ public abstract class AbstractFormInterceptor implements FormInterceptor {
   }
 
   @Override
+  public String getCaption() {
+    return null;
+  }
+
+  @Override
   public int getDataIndex(String source) {
     return (getFormView() == null) ? BeeConst.UNDEF : getFormView().getDataIndex(source);
   }

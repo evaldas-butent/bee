@@ -204,10 +204,19 @@
       <xs:enumeration value="avg" />
     </xs:restriction>
   </xs:simpleType>
+
+  <xs:simpleType name="rowEvaluator">
+    <xs:restriction base="xs:string">
+      <xs:enumeration value="total" />
+      <xs:enumeration value="vat" />
+      <xs:enumeration value="discount" />
+    </xs:restriction>
+  </xs:simpleType>
   
   <xs:complexType name="columnFooter">
     <xs:attribute name="aggregate" type="columnAggregate" />
     <xs:attribute name="expression" type="xs:string" />
+    <xs:attribute name="evaluator" type="rowEvaluator" />
     <xs:attribute name="type" type="type:valueType" />
     <xs:attribute name="text" type="xs:string" />
     <xs:attribute name="html" type="xs:string" />

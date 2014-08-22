@@ -9,6 +9,7 @@ import com.google.gwt.user.client.ui.FocusWidget;
 
 import com.butent.bee.client.dom.DomUtils;
 import com.butent.bee.client.event.EventUtils;
+import com.butent.bee.client.ui.EnablableWidget;
 import com.butent.bee.client.ui.IdentifiableWidget;
 import com.butent.bee.client.utils.HasCommand;
 import com.butent.bee.shared.HasHtml;
@@ -17,7 +18,8 @@ import com.butent.bee.shared.HasHtml;
  * Implements a push button user interface component.
  */
 
-public class Button extends FocusWidget implements IdentifiableWidget, HasCommand, HasHtml {
+public class Button extends FocusWidget implements IdentifiableWidget, HasCommand, HasHtml,
+    EnablableWidget {
 
   private Scheduler.ScheduledCommand command;
 

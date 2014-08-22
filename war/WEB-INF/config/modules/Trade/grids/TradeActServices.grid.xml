@@ -1,48 +1,27 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <g:Grid xmlns="http://www.butent.com/column" xmlns:g="http://www.butent.com/grid"
   xmlns:ui="http://www.butent.com/ui"
+  xmlns:xi="http://www.w3.org/2001/XInclude"
 
   name="TradeActServices" viewName="TradeActServices"
   flexGrow="1"
   newRowCaption="=newService"
   >
+  <xi:include href="columns/TradeActService.columns.xml" />
+
   <g:columns>
-    <RelColumn name="Item" renderColumns="ItemName" choiceColumns="Name Article" visible="true">
-      <footer text="=totalOf" horizontalAlignment="right" />
-    </RelColumn>
-    <DataColumn name="Article" />
-
-    <DataColumn name="UnitName" caption="=unitShort" flexGrow="0" />
-    <DataColumn name="TimeUnit" />
-
-    <DataColumn name="DateFrom" />
-    <DataColumn name="DateTo" />
-
-    <DataColumn name="Factor" />
-    <DataColumn name="FactorDays" />
-
-    <DataColumn name="DaysPerWeek" maxValue="7" />
-    <DataColumn name="MinTerm" />
-
     <DataColumn name="Quantity" visible="true">
       <footer aggregate="sum" />
     </DataColumn>
-    <DataColumn name="Price">
-      <footer expression="row.Quantity * row.Price" />
-    </DataColumn>
+  </g:columns>
 
-    <DataColumn name="Discount" carry="true">
-      <footer expression="row.Quantity * row.Price * row.Discount / 100" />
-    </DataColumn>
+  <xi:include href="columns/TradeActPrice.columns.xml" />
 
-    <CalcColumn name="Total" type="decimal" caption="=trdAmount" format="0.00">
-      <style>
-        <bodyStyle><ui:font>bold</ui:font></bodyStyle>
-      </style>
-      <renderer type="total" />
-      <footer aggregate="sum" />
-    </CalcColumn>
+  <xi:include href="columns/TradeActDiscount.columns.xml" />
+  <xi:include href="columns/TradeActVat.columns.xml" />
+  <xi:include href="columns/TradeActTotal.columns.xml" />
 
+  <g:columns>
     <DataColumn name="Note" visible="false" />
   </g:columns>
 </g:Grid>

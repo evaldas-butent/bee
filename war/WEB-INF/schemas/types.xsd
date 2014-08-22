@@ -388,6 +388,7 @@
       <xs:enumeration value="Rules" />
       <xs:enumeration value="SaleItems" />
       <xs:enumeration value="Sales" />
+      <xs:enumeration value="SeriesManagers" />
       <xs:enumeration value="ServiceCriteria" />
       <xs:enumeration value="ServiceCritGroups" />
       <xs:enumeration value="ServiceDates" />

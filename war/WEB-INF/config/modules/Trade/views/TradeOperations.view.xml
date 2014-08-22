@@ -8,6 +8,7 @@
     <SimpleColumn name="OperationName" />
 
     <SimpleColumn name="Kind" />
+    <SimpleColumn name="Price" />
 
     <SimpleColumn name="WarehouseFrom" />
     <SimpleJoin joinType="LEFT" name="WarehouseFrom">

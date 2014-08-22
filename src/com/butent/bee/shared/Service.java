@@ -118,7 +118,8 @@ public final class Service {
   public static final String RPC_VAR_PRM_CNT = RPC_VAR_SYS_PREFIX + "p_c";
   public static final String RPC_VAR_PRM = RPC_VAR_SYS_PREFIX + "prm";
 
-  public static final String RPC_VAR_METH = RPC_VAR_SYS_PREFIX + "meth";
+  public static final String VAR_SUB_MODULE = RPC_VAR_PREFIX + "sub_module";
+  public static final String VAR_METHOD = RPC_VAR_PREFIX + "method";
 
   public static final String VAR_USER = RPC_VAR_PREFIX + "user";
 

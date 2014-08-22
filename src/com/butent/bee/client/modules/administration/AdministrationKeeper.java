@@ -39,10 +39,8 @@ public final class AdministrationKeeper {
 
   private static Long company;
 
-  public static ParameterList createArgs(String name) {
-    ParameterList args = BeeKeeper.getRpc().createParameters(Module.ADMINISTRATION.getName());
-    args.addQueryItem(METHOD, name);
-    return args;
+  public static ParameterList createArgs(String method) {
+    return BeeKeeper.getRpc().createParameters(Module.ADMINISTRATION, method);
   }
 
   public static Long getCompany() {

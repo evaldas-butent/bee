@@ -404,6 +404,10 @@ public class GridContainerImpl extends Split implements GridContainerView, HasNa
       }
     }
 
+    if (gridView.getGridInterceptor() != null) {
+      gridView.getGridInterceptor().onActiveRowChange(event);
+    }
+
     String eventSource = BeeUtils.notEmpty(getViewPresenter().getEventSource(), getId());
     BeeKeeper.getBus().fireEventFromSource(new ParentRowEvent(gridView.getViewName(), rowValue,
         rowEnabled), eventSource);

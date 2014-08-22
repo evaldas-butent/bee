@@ -15,6 +15,8 @@
       <SimpleJoin joinType="INNER" name="Unit">
         <SimpleColumn name="Name" alias="UnitName" />
       </SimpleJoin>
+  
+      <SimpleColumn name="Weight" />
     </SimpleJoin>
 
     <SimpleColumn name="Quantity" />

@@ -392,9 +392,7 @@ public final class DocumentsHandler {
   }
 
   static ParameterList createArgs(String method) {
-    ParameterList args = BeeKeeper.getRpc().createParameters(Module.DOCUMENTS.getName());
-    args.addQueryItem(AdministrationConstants.METHOD, method);
-    return args;
+    return BeeKeeper.getRpc().createParameters(Module.DOCUMENTS, method);
   }
 
   private static void sendFiles(final Long docId, Collection<FileInfo> files,
