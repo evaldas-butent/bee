@@ -14,6 +14,7 @@ import com.butent.bee.client.style.ColorStyleProvider;
 import com.butent.bee.client.style.ConditionalStyle;
 import com.butent.bee.client.style.StyleUtils;
 import com.butent.bee.client.ui.EnablableWidget;
+import com.butent.bee.client.ui.FormFactory;
 import com.butent.bee.client.view.ViewFactory;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.data.BeeRow;
@@ -101,6 +102,7 @@ public final class TradeActKeeper {
         ColorStyleProvider.create(VIEW_TRADE_ACT_TEMPLATES,
             ALS_STATUS_BACKGROUND, ALS_STATUS_FOREGROUND));
 
+    FormFactory.registerFormInterceptor(FORM_TRADE_ACT, new TradeActForm());
   }
 
   static void addCommandStyle(Widget command, String suffix) {

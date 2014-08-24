@@ -28,7 +28,6 @@ public class TradeActGrid extends AbstractGridInterceptor {
   private Button templateCommand;
 
   TradeActGrid(TradeActKind kind) {
-    super();
     this.kind = kind;
   }
 

@@ -8,4 +8,6 @@ public interface IdentifiableWidget extends IsWidget, HasIdentity {
   void addStyleName(String style);
 
   Element getElement();
+
+  void removeStyleName(String style);
 }

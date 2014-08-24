@@ -47,6 +47,8 @@ public final class TradeActConstants {
   public static final String GRID_TRADE_ACT_ITEMS = "TradeActItems";
   public static final String GRID_TRADE_ACT_SERVICES = "TradeActServices";
 
+  public static final String FORM_TRADE_ACT = "TradeAct";
+
   public static void register() {
     EnumUtils.register(TradeActKind.class);
     EnumUtils.register(TradeActTimeUnit.class);
