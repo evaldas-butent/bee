@@ -12,17 +12,19 @@
     <Table>
       <col index="0" kind="label" />
       <col index="2" kind="label" />
-      <col index="4" kind="label" />
+
+      <row class="bee-ta-template-selection" data="TradeActTemplates">
+        <Label text="=template" />
+        <DataSelector name="Template" viewName="TradeActTemplates" choiceColumns="Template"
+          newRowEnabled="false" style="width: 100%;" />
+      </row>
 
       <row>
-        <Label for="Kind" visible="true" />
-        <ListBox source="Kind" visible="true" />
-
         <Label for="Date" visible="true" />
         <InputDateTime source="Date" visible="true" />
 
-        <Label for="Until" />
-        <InputDateTime source="Until" />
+        <Label for="Until" class="bee-ta-until-label" />
+        <InputDateTime source="Until" class="bee-ta-until-input" />
       </row>
 
       <row>
@@ -75,7 +77,7 @@
         <ChildGrid name="TradeActItems" relColumn="TradeAct" />
       </page>
 
-      <page>
+      <page class="bee-ta-services-tab">
         <text>=services</text>
         <ChildGrid name="TradeActServices" relColumn="TradeAct" />
       </page>

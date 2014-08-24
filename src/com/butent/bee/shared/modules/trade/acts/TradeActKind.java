@@ -16,7 +16,7 @@ public enum TradeActKind implements HasLocalizedCaption {
 
     @Override
     public Filter getFilter() {
-      return Filter.or(super.getFilter(), SUPPLEMENT.getFilter());
+      return Filter.or(super.getFilter(), SUPPLEMENT.getFilter(), RETURN.getFilter());
     }
   },
   SUPPLEMENT(false, false, true) {
@@ -34,6 +34,11 @@ public enum TradeActKind implements HasLocalizedCaption {
     @Override
     public String getCaption(LocalizableConstants constants) {
       return constants.taKindReturn();
+    }
+
+    @Override
+    public String getGridSupplierKey() {
+      return null;
     }
   },
   TENDER(true, true, true) {

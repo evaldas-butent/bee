@@ -109,6 +109,8 @@ public class UniqueChildInterceptor extends AbstractGridInterceptor {
       relation.setFilter(filter);
     }
 
+    relation.disableNewRow();
+
     final MultiSelector selector = MultiSelector.autonomous(relation, renderColumns);
 
     int width = presenter.getGridView().asWidget().getOffsetWidth();

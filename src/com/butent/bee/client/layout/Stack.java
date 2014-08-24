@@ -39,7 +39,7 @@ public class Stack extends ComplexPanel implements ProvidesResize, RequiresResiz
     HasBeforeSelectionHandlers<Integer>, HasSelectionHandlers<Integer>, IdentifiableWidget {
 
   private static final class Header extends Composite implements HasClickHandlers, ProvidesResize,
-      RequiresResize {
+      RequiresResize, IdentifiableWidget {
 
     private final int size;
 
@@ -63,10 +63,29 @@ public class Stack extends ComplexPanel implements ProvidesResize, RequiresResiz
     }
 
     @Override
+    public String getId() {
+      return DomUtils.getId(this);
+    }
+
+    @Override
+    public String getIdPrefix() {
+      if (getWidget() instanceof IdentifiableWidget) {
+        return ((IdentifiableWidget) getWidget()).getIdPrefix();
+      } else {
+        return "header";
+      }
+    }
+
+    @Override
     public void onResize() {
       if (getWidget() instanceof RequiresResize) {
         ((RequiresResize) getWidget()).onResize();
       }
+    }
+
+    @Override
+    public void setId(String id) {
+      DomUtils.setId(this, id);
     }
 
     @Override
@@ -129,12 +148,12 @@ public class Stack extends ComplexPanel implements ProvidesResize, RequiresResiz
     Assert.unsupported("Single-argument add() is not supported for Stack");
   }
 
-  public void add(Widget widget, String header, int headerSize) {
-    insert(widget, header, headerSize, getStackSize());
+  public IdentifiableWidget add(Widget widget, String header, int headerSize) {
+    return insert(widget, header, headerSize, getStackSize());
   }
 
-  public void add(Widget widget, Widget header, int headerSize) {
-    insert(widget, header, headerSize, getStackSize());
+  public IdentifiableWidget add(Widget widget, Widget header, int headerSize) {
+    return insert(widget, header, headerSize, getStackSize());
   }
 
   @Override
@@ -205,13 +224,15 @@ public class Stack extends ComplexPanel implements ProvidesResize, RequiresResiz
     }
   }
 
-  public void insert(Widget child, String text, int headerSize, int before) {
+  public IdentifiableWidget insert(Widget child, String text, int headerSize, int before) {
     Label contents = new Label(text);
-    insert(child, contents, headerSize, before);
+    return insert(child, contents, headerSize, before);
   }
 
-  public void insert(Widget child, Widget header, int headerSize, int before) {
-    insert(child, new Header(header, headerSize), before);
+  public IdentifiableWidget insert(Widget child, Widget headerWidget, int headerSize, int before) {
+    Header header = new Header(headerWidget, headerSize);
+    insert(child, header, before);
+    return header;
   }
 
   public boolean isEmpty() {
