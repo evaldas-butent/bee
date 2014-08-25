@@ -857,6 +857,7 @@ public enum FormWidget {
 
   private static void setVectorCellAttributes(CellVector parent, Element element,
       IdentifiableWidget cellContent) {
+
     String z = element.getAttribute(UiConstants.ATTR_HORIZONTAL_ALIGNMENT);
     if (!BeeUtils.isEmpty(z)) {
       TextAlign horAlign = StyleUtils.parseTextAlign(z);
@@ -902,9 +903,12 @@ public enum FormWidget {
   }
 
   private static final BeeLogger logger = LogUtils.getLogger(FormWidget.class);
+
   public static final String ATTR_SPLITTER_SIZE = "splitterSize";
   public static final String ATTR_SIZE = "size";
+
   private static final String ATTR_STYLE_PREFIX = "stylePrefix";
+
   private static final String ATTR_TITLE = "title";
 
   private static final String ATTR_DISABLABLE = "disablable";
@@ -2239,12 +2243,20 @@ public enum FormWidget {
 
       if (BeeUtils.isPositive(headerSize) && hc != null && hc.isValid()
           && parent instanceof Stack) {
+
+        IdentifiableWidget header;
+
         if (hc.isHeaderText() || hc.isHeaderHtml()) {
-          ((Stack) parent).add(hc.getContent().asWidget(), hc.getHeaderString(), headerSize);
-        } else {
-          ((Stack) parent).add(hc.getContent().asWidget(), hc.getHeaderWidget().asWidget(),
+          header = ((Stack) parent).add(hc.getContent().asWidget(), hc.getHeaderString(),
               headerSize);
+        } else {
+          header = ((Stack) parent).add(hc.getContent().asWidget(),
+              hc.getHeaderWidget().asWidget(), headerSize);
         }
+
+        StyleUtils.updateAppearance(header.getElement(),
+            child.getAttribute(UiConstants.ATTR_CLASS),
+            child.getAttribute(UiConstants.ATTR_STYLE));
       }
 
     } else if (this == TABBED_PAGES && BeeUtils.same(childTag, TAG_PAGE)) {
@@ -2252,11 +2264,17 @@ public enum FormWidget {
           widgetCallback);
 
       if (hc != null && hc.isValid() && parent instanceof TabbedPages) {
+        IdentifiableWidget tab;
+
         if (hc.isHeaderText() || hc.isHeaderHtml()) {
-          ((TabbedPages) parent).add(hc.getContent().asWidget(), hc.getHeaderString());
+          tab = ((TabbedPages) parent).add(hc.getContent().asWidget(), hc.getHeaderString());
         } else {
-          ((TabbedPages) parent).add(hc.getContent().asWidget(), hc.getHeaderWidget().asWidget());
+          tab = ((TabbedPages) parent).add(hc.getContent().asWidget(),
+              hc.getHeaderWidget().asWidget());
         }
+
+        StyleUtils.updateAppearance(tab.getElement(), child.getAttribute(UiConstants.ATTR_CLASS),
+            child.getAttribute(UiConstants.ATTR_STYLE));
       }
 
     } else if (this == RADIO && BeeUtils.same(childTag, TAG_OPTION)) {

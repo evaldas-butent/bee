@@ -1,6 +1,5 @@
 package com.butent.bee.client.layout;
 
-import com.google.common.collect.Sets;
 import com.google.gwt.core.client.Scheduler;
 import com.google.gwt.dom.client.Style.Position;
 import com.google.gwt.event.dom.client.ClickEvent;
@@ -20,6 +19,7 @@ import com.butent.bee.client.dom.DomUtils;
 import com.butent.bee.client.dom.ElementSize;
 import com.butent.bee.client.event.logical.VisibilityChangeEvent;
 import com.butent.bee.client.style.StyleUtils;
+import com.butent.bee.client.ui.IdentifiableWidget;
 import com.butent.bee.client.widget.Label;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
@@ -27,6 +27,7 @@ import com.butent.bee.shared.Pair;
 import com.butent.bee.shared.ui.Orientation;
 import com.butent.bee.shared.utils.BeeUtils;
 
+import java.util.HashSet;
 import java.util.Set;
 
 public class TabbedPages extends Flow implements
@@ -40,7 +41,7 @@ public class TabbedPages extends Flow implements
   private static final class Deck extends Complex {
 
     private String visibleId;
-    private final Set<String> pendingResize = Sets.newHashSet();
+    private final Set<String> pendingResize = new HashSet<>();
 
     private Deck() {
       super(Position.RELATIVE);
@@ -196,12 +197,14 @@ public class TabbedPages extends Flow implements
     Assert.untouchable(getClass().getName() + ": cannot add widget without tab");
   }
 
-  public void add(Widget content, String text) {
-    add(content, new Label(text));
+  public IdentifiableWidget add(Widget content, String text) {
+    return add(content, new Label(text));
   }
 
-  public void add(Widget content, Widget tab) {
-    insertPage(content, new Tab(tab));
+  public IdentifiableWidget add(Widget content, Widget widget) {
+    Tab tab = new Tab(widget);
+    insertPage(content, tab);
+    return tab;
   }
 
   @Override

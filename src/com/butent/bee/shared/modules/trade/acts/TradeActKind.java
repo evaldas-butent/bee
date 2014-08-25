@@ -8,7 +8,7 @@ import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.ui.HasLocalizedCaption;
 
 public enum TradeActKind implements HasLocalizedCaption {
-  SALE(true, true) {
+  SALE(true, true, true) {
     @Override
     public String getCaption(LocalizableConstants constants) {
       return constants.taKindSale();
@@ -16,10 +16,10 @@ public enum TradeActKind implements HasLocalizedCaption {
 
     @Override
     public Filter getFilter() {
-      return Filter.or(super.getFilter(), SUPPLEMENT.getFilter());
+      return Filter.or(super.getFilter(), SUPPLEMENT.getFilter(), RETURN.getFilter());
     }
   },
-  SUPPLEMENT(false, false) {
+  SUPPLEMENT(false, false, true) {
     @Override
     public String getCaption(LocalizableConstants constants) {
       return constants.taKindSupplement();
@@ -30,31 +30,41 @@ public enum TradeActKind implements HasLocalizedCaption {
       return null;
     }
   },
-  RETURN(false, false) {
+  RETURN(false, false, false) {
     @Override
     public String getCaption(LocalizableConstants constants) {
       return constants.taKindReturn();
     }
+
+    @Override
+    public String getGridSupplierKey() {
+      return null;
+    }
   },
-  TENDER(true, true) {
+  TENDER(true, true, true) {
     @Override
     public String getCaption(LocalizableConstants constants) {
       return constants.taKindTender();
     }
   },
-  PURCHASE(true, true) {
+  PURCHASE(true, true, false) {
     @Override
     public String getCaption(LocalizableConstants constants) {
       return constants.taKindPurchase();
     }
   },
-  WRITE_OFF(false, false) {
+  WRITE_OFF(false, false, false) {
     @Override
     public String getCaption(LocalizableConstants constants) {
       return constants.taKindWriteOff();
     }
+
+    @Override
+    public String getStyleSuffix() {
+      return "write-off";
+    }
   },
-  RESERVE(false, false) {
+  RESERVE(false, false, false) {
     @Override
     public String getCaption(LocalizableConstants constants) {
       return constants.taKindReserve();
@@ -63,14 +73,20 @@ public enum TradeActKind implements HasLocalizedCaption {
 
   private final boolean copy;
   private final boolean template;
+  private final boolean services;
 
-  private TradeActKind(boolean copy, boolean template) {
+  private TradeActKind(boolean copy, boolean template, boolean services) {
     this.copy = copy;
     this.template = template;
+    this.services = services;
   }
 
   public boolean enableCopy() {
     return copy;
+  }
+
+  public boolean enableServices() {
+    return services;
   }
 
   public boolean enableTemplate() {
@@ -88,5 +104,9 @@ public enum TradeActKind implements HasLocalizedCaption {
 
   public String getGridSupplierKey() {
     return TradeActConstants.GRID_TRADE_ACTS + BeeConst.STRING_UNDER + name().toLowerCase();
+  }
+
+  public String getStyleSuffix() {
+    return name().toLowerCase();
   }
 }

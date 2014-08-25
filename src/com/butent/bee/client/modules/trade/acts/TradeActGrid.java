@@ -1,13 +1,17 @@
 package com.butent.bee.client.modules.trade.acts;
 
+import com.google.common.collect.Lists;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
 
 import static com.butent.bee.shared.modules.trade.acts.TradeActConstants.*;
 
 import com.butent.bee.client.BeeKeeper;
+import com.butent.bee.client.Global;
+import com.butent.bee.client.dialog.ChoiceCallback;
 import com.butent.bee.client.event.logical.ActiveRowChangeEvent;
 import com.butent.bee.client.presenter.GridPresenter;
+import com.butent.bee.client.view.grid.GridView;
 import com.butent.bee.client.view.grid.interceptor.AbstractGridInterceptor;
 import com.butent.bee.client.view.grid.interceptor.GridInterceptor;
 import com.butent.bee.client.widget.Button;
@@ -16,7 +20,11 @@ import com.butent.bee.shared.data.filter.Filter;
 import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.modules.trade.acts.TradeActKind;
 import com.butent.bee.shared.ui.GridDescription;
+import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.EnumUtils;
+
+import java.util.ArrayList;
+import java.util.List;
 
 public class TradeActGrid extends AbstractGridInterceptor {
 
@@ -27,8 +35,9 @@ public class TradeActGrid extends AbstractGridInterceptor {
   private Button copyCommand;
   private Button templateCommand;
 
+  private TradeActKind newActKind;
+
   TradeActGrid(TradeActKind kind) {
-    super();
     this.kind = kind;
   }
 
@@ -50,6 +59,36 @@ public class TradeActGrid extends AbstractGridInterceptor {
     }
 
     super.afterCreatePresenter(presenter);
+  }
+
+  @Override
+  public boolean beforeAddRow(GridPresenter presenter, boolean copy) {
+    newActKind = kind;
+
+    if (kind == null) {
+      final List<TradeActKind> kinds = Lists.newArrayList(TradeActKind.SALE, TradeActKind.TENDER,
+          TradeActKind.PURCHASE, TradeActKind.WRITE_OFF, TradeActKind.RESERVE);
+
+      List<String> options = new ArrayList<>();
+      for (TradeActKind k : kinds) {
+        options.add(k.getCaption());
+      }
+
+      Global.choice(Localized.getConstants().tradeActNew(), null, options, new ChoiceCallback() {
+        @Override
+        public void onSuccess(int value) {
+          if (BeeUtils.isIndex(kinds, value)) {
+            newActKind = kinds.get(value);
+            getGridView().startNewRow(false);
+          }
+        }
+      });
+
+      return false;
+
+    } else {
+      return super.beforeAddRow(presenter, copy);
+    }
   }
 
   @Override
@@ -92,6 +131,14 @@ public class TradeActGrid extends AbstractGridInterceptor {
     }
 
     super.onActiveRowChange(event);
+  }
+
+  @Override
+  public boolean onStartNewRow(GridView gridView, IsRow oldRow, IsRow newRow) {
+    if (newActKind != null) {
+      newRow.setValue(getDataIndex(COL_TA_KIND), newActKind.ordinal());
+    }
+    return super.onStartNewRow(gridView, oldRow, newRow);
   }
 
   private Button ensureCopyCommand() {

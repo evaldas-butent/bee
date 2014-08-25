@@ -20,6 +20,10 @@ public interface LocalizableTradeActConstants {
 
   String taTimeUnitMonth();
 
+  String tradeAct();
+
+  String tradeActNew();
+
   String tradeActs();
 
   String tradeActsAll();
