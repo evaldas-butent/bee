@@ -8,7 +8,9 @@ import static com.butent.bee.shared.modules.trade.acts.TradeActConstants.*;
 import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.communication.ParameterList;
 import com.butent.bee.client.data.Data;
+import com.butent.bee.client.data.DataCache;
 import com.butent.bee.client.data.RowFactory;
+import com.butent.bee.client.event.logical.SelectorEvent;
 import com.butent.bee.client.grid.GridFactory;
 import com.butent.bee.client.style.ColorStyleProvider;
 import com.butent.bee.client.style.ConditionalStyle;
@@ -41,7 +43,11 @@ public final class TradeActKeeper {
   private static final String GRID_ALL_ACTS_KEY = GRID_TRADE_ACTS + BeeConst.STRING_UNDER
       + BeeConst.ALL;
 
+  private static final DataCache cache = new DataCache();
+
   public static void register() {
+    BeeKeeper.getBus().registerDataHandler(cache, false);
+
     for (TradeActKind kind : TradeActKind.values()) {
       if (kind.getGridSupplierKey() != null) {
         GridFactory.registerGridSupplier(kind.getGridSupplierKey(), GRID_TRADE_ACTS,
@@ -103,6 +109,8 @@ public final class TradeActKeeper {
             ALS_STATUS_BACKGROUND, ALS_STATUS_FOREGROUND));
 
     FormFactory.registerFormInterceptor(FORM_TRADE_ACT, new TradeActForm());
+
+    SelectorEvent.register(new TradeActSelectorHandler());
   }
 
   static void addCommandStyle(Widget command, String suffix) {

@@ -66,10 +66,6 @@ public interface FormView extends DataView, HasDataTable, ActiveWidgetChangeEven
 
   Collection<RowChildren> getChildrenForUpdate();
 
-  List<BeeColumn> getDataColumns();
-
-  int getDataIndex(String source);
-
   DateTime getDateTimeValue(String source);
 
   HasDataTable getDisplay();

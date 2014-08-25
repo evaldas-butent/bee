@@ -223,6 +223,14 @@ public abstract class Filter implements BeeSerializable, RowFilter {
     return compareWithValue(column, Operator.EQ, new LongValue(value));
   }
 
+  public static Filter equals(String column, Enum<?> value) {
+    if (value == null) {
+      return isNull(column);
+    } else {
+      return compareWithValue(column, Operator.EQ, new IntegerValue(value.ordinal()));
+    }
+  }
+
   public static Filter idIn(Collection<Long> values) {
     Assert.notNull(values);
 

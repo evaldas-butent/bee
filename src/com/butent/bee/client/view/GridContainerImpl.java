@@ -145,7 +145,8 @@ public class GridContainerImpl extends Split implements GridContainerView, HasNa
       GridFactory.GridOptions gridOptions) {
 
     setHasPaging(UiOption.hasPaging(uiOptions));
-    setHasSearch(UiOption.hasSearch(uiOptions));
+    setHasSearch(UiOption.hasSearch(uiOptions)
+        || gridDescription.getEnabledActions().contains(Action.FILTER));
 
     boolean hasData = !BeeUtils.isEmpty(gridDescription.getViewName());
     boolean readOnly = BeeUtils.isTrue(gridDescription.isReadOnly())

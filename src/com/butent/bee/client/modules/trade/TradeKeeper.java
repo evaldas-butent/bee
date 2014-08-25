@@ -13,6 +13,8 @@ import com.butent.bee.client.style.StyleUtils;
 import com.butent.bee.client.view.grid.interceptor.UniqueChildInterceptor;
 import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.rights.Module;
+import com.butent.bee.shared.rights.ModuleAndSub;
+import com.butent.bee.shared.rights.SubModule;
 
 public final class TradeKeeper {
 
@@ -38,7 +40,9 @@ public final class TradeKeeper {
     ConditionalStyle.registerGridColumnStyleProvider(GRID_TRADE_STATUSES, COL_BACKGROUND, csp);
     ConditionalStyle.registerGridColumnStyleProvider(GRID_TRADE_STATUSES, COL_FOREGROUND, csp);
 
-    TradeActKeeper.register();
+    if (ModuleAndSub.of(Module.TRADE, SubModule.ACTS).isEnabled()) {
+      TradeActKeeper.register();
+    }
   }
 
   private TradeKeeper() {
