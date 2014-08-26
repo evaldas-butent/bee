@@ -64,7 +64,11 @@ public final class TradeConstants {
   public static final String COL_TRADE_ITEM_NOTE = "Note";
 
   public static final String COL_SERIES = "Series";
+  public static final String COL_SERIES_NAME = "SeriesName";
+  public static final String COL_SERIES_MANAGER = "Manager";
 
+  public static final String COL_OPERATION_NAME = "OperationName";
+  public static final String COL_OPERATION_KIND = "Kind";
   public static final String COL_OPERATION_PRICE = "Price";
   public static final String COL_OPERATION_WAREHOUSE_FROM = "WarehouseFrom";
   public static final String COL_OPERATION_WAREHOUSE_TO = "WarehouseTo";

@@ -1,5 +1,7 @@
 package com.butent.bee.client.modules.trade.acts;
 
+import com.google.common.collect.Lists;
+import com.google.gwt.core.client.Scheduler.ScheduledCommand;
 import com.google.gwt.user.client.ui.Widget;
 
 import static com.butent.bee.shared.modules.trade.TradeConstants.*;
@@ -12,15 +14,27 @@ import com.butent.bee.client.data.DataCache;
 import com.butent.bee.client.data.RowFactory;
 import com.butent.bee.client.event.logical.SelectorEvent;
 import com.butent.bee.client.grid.GridFactory;
+import com.butent.bee.client.grid.GridFactory.GridOptions;
+import com.butent.bee.client.presenter.PresenterCallback;
 import com.butent.bee.client.style.ColorStyleProvider;
 import com.butent.bee.client.style.ConditionalStyle;
 import com.butent.bee.client.style.StyleUtils;
 import com.butent.bee.client.ui.EnablableWidget;
 import com.butent.bee.client.ui.FormFactory;
+import com.butent.bee.client.ui.UiOption;
+import com.butent.bee.client.view.ViewCallback;
 import com.butent.bee.client.view.ViewFactory;
+import com.butent.bee.client.view.ViewSupplier;
 import com.butent.bee.shared.BeeConst;
+import com.butent.bee.shared.Consumer;
+import com.butent.bee.shared.Pair;
 import com.butent.bee.shared.data.BeeRow;
+import com.butent.bee.shared.data.BeeRowSet;
+import com.butent.bee.shared.data.DataUtils;
+import com.butent.bee.shared.data.IsRow;
+import com.butent.bee.shared.data.filter.Filter;
 import com.butent.bee.shared.data.view.DataInfo;
+import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogUtils;
 import com.butent.bee.shared.menu.MenuHandler;
@@ -28,8 +42,16 @@ import com.butent.bee.shared.menu.MenuService;
 import com.butent.bee.shared.modules.trade.acts.TradeActKind;
 import com.butent.bee.shared.rights.Module;
 import com.butent.bee.shared.rights.SubModule;
+import com.butent.bee.shared.time.TimeUtils;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.EnumUtils;
+
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.EnumSet;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 
 public final class TradeActKeeper {
 
@@ -44,34 +66,39 @@ public final class TradeActKeeper {
       + BeeConst.ALL;
 
   private static final DataCache cache = new DataCache();
+  private static boolean cacheLoaded;
 
   public static void register() {
     BeeKeeper.getBus().registerDataHandler(cache, false);
 
     for (TradeActKind kind : TradeActKind.values()) {
       if (kind.getGridSupplierKey() != null) {
-        GridFactory.registerGridSupplier(kind.getGridSupplierKey(), GRID_TRADE_ACTS,
-            new TradeActGrid(kind));
+        ViewFactory.registerSupplier(kind.getGridSupplierKey(), createActViewSupplier(kind));
       }
     }
 
-    GridFactory.registerGridSupplier(GRID_ALL_ACTS_KEY, GRID_TRADE_ACTS, new TradeActGrid(null));
+    ViewFactory.registerSupplier(GRID_ALL_ACTS_KEY, createActViewSupplier(null));
 
     MenuService.TRADE_ACT_NEW.setHandler(new MenuHandler() {
       @Override
       public void onSelection(String parameters) {
-        TradeActKind kind = EnumUtils.getEnumByName(TradeActKind.class, parameters);
+        final TradeActKind kind = EnumUtils.getEnumByName(TradeActKind.class, parameters);
 
         if (kind == null) {
           logger.severe(MenuService.TRADE_ACT_NEW.name(), "kind not recognized", parameters);
 
         } else {
-          DataInfo dataInfo = Data.getDataInfo(VIEW_TRADE_ACTS);
+          ensureChache(new ScheduledCommand() {
+            @Override
+            public void execute() {
+              DataInfo dataInfo = Data.getDataInfo(VIEW_TRADE_ACTS);
+              BeeRow row = RowFactory.createEmptyRow(dataInfo, true);
 
-          BeeRow row = RowFactory.createEmptyRow(dataInfo, true);
-          row.setValue(dataInfo.getColumnIndex(COL_TA_KIND), kind.ordinal());
+              prepareNewTradeAct(row, kind);
 
-          RowFactory.createRow(dataInfo, row);
+              RowFactory.createRow(dataInfo, row);
+            }
+          });
         }
       }
     });
@@ -111,6 +138,13 @@ public final class TradeActKeeper {
     FormFactory.registerFormInterceptor(FORM_TRADE_ACT, new TradeActForm());
 
     SelectorEvent.register(new TradeActSelectorHandler());
+
+    GridFactory.registerPreloader(GRID_TRADE_ACT_TEMPLATES, new Consumer<ScheduledCommand>() {
+      @Override
+      public void accept(ScheduledCommand input) {
+        ensureChache(input);
+      }
+    });
   }
 
   static void addCommandStyle(Widget command, String suffix) {
@@ -121,9 +155,192 @@ public final class TradeActKeeper {
     return BeeKeeper.getRpc().createParameters(Module.TRADE, SubModule.ACTS, method);
   }
 
+  static Collection<Long> filterOperations(TradeActKind kind) {
+    List<Long> operations = new ArrayList<>();
+    if (kind == null) {
+      return operations;
+    }
+
+    BeeRowSet rowSet = cache.getRowSet(VIEW_TRADE_OPERATIONS);
+    if (DataUtils.isEmpty(rowSet)) {
+      return operations;
+    }
+
+    int index = rowSet.getColumnIndex(COL_OPERATION_KIND);
+
+    for (BeeRow row : rowSet) {
+      if (getKind(row, index) == kind) {
+        operations.add(row.getId());
+      }
+    }
+
+    return operations;
+  }
+
+  static TradeActKind getKind(IsRow row, int index) {
+    if (row == null || BeeConst.isUndef(index)) {
+      return null;
+    } else {
+      return EnumUtils.getEnumByIndex(TradeActKind.class, row.getInteger(index));
+    }
+  }
+
+  static BeeRowSet getUserSeries() {
+    Long userId = BeeKeeper.getUser().getUserId();
+    if (!DataUtils.isId(userId)) {
+      return null;
+    }
+
+    BeeRowSet seriesManagers = cache.getRowSet(VIEW_SERIES_MANAGERS);
+    if (DataUtils.isEmpty(seriesManagers)) {
+      return null;
+    }
+
+    int seriesIndex = seriesManagers.getColumnIndex(COL_SERIES);
+    int managerIndex = seriesManagers.getColumnIndex(COL_SERIES_MANAGER);
+
+    Set<Long> ms = new HashSet<>();
+    for (BeeRow row : seriesManagers) {
+      if (userId.equals(row.getLong(managerIndex))) {
+        ms.add(row.getLong(seriesIndex));
+      }
+    }
+
+    if (ms.isEmpty()) {
+      return null;
+    }
+
+    BeeRowSet series = cache.getRowSet(VIEW_TRADE_SERIES);
+    if (DataUtils.isEmpty(series)) {
+      return null;
+    }
+
+    BeeRowSet result = new BeeRowSet(series.getViewName(), series.getColumns());
+    for (BeeRow row : series) {
+      if (ms.contains(row.getId())) {
+        result.addRow(row);
+      }
+    }
+
+    if (result.isEmpty()) {
+      return null;
+    } else {
+      return result;
+    }
+  }
+
+  static void prepareNewTradeAct(IsRow row, TradeActKind kind) {
+    if (kind != null) {
+      Data.setValue(VIEW_TRADE_ACTS, row, COL_TA_KIND, kind.ordinal());
+
+      Pair<Long, String> operation = getDefaultOperation(kind);
+      if (operation != null) {
+        Data.setValue(VIEW_TRADE_ACTS, row, COL_TA_OPERATION, operation.getA());
+        Data.setValue(VIEW_TRADE_ACTS, row, COL_OPERATION_NAME, operation.getB());
+      }
+    }
+
+    BeeRowSet userSeries = getUserSeries();
+    if (userSeries != null && userSeries.getNumberOfRows() == 1) {
+      Data.setValue(VIEW_TRADE_ACTS, row, COL_TA_SERIES, userSeries.getRow(0).getId());
+      Data.setValue(VIEW_TRADE_ACTS, row, COL_SERIES_NAME,
+          userSeries.getString(0, userSeries.getColumnIndex(COL_SERIES_NAME)));
+    }
+  }
+
   static void setCommandEnabled(EnablableWidget command, boolean enabled) {
     command.setEnabled(enabled);
     command.setStyleName(STYLE_COMMAND_DISABLED, !enabled);
+  }
+
+  private static void ensureChache(final ScheduledCommand command) {
+    if (cacheLoaded) {
+      command.execute();
+
+    } else {
+      List<String> viewNames = Lists.newArrayList(VIEW_TRADE_OPERATIONS, VIEW_TRADE_SERIES,
+          VIEW_SERIES_MANAGERS);
+      final long start = System.currentTimeMillis();
+
+      cache.getData(viewNames, new DataCache.MultiCallback() {
+        @Override
+        public void onSuccess(Integer result) {
+          cacheLoaded = true;
+          logger.debug("trade act cache loaded", result, TimeUtils.elapsedMillis(start));
+
+          command.execute();
+        }
+      });
+    }
+  }
+
+  private static Pair<Long, String> getDefaultOperation(TradeActKind kind) {
+    if (kind == null) {
+      return null;
+    }
+    BeeRowSet rowSet = cache.getRowSet(VIEW_TRADE_OPERATIONS);
+    if (DataUtils.isEmpty(rowSet)) {
+      return null;
+    }
+
+    Long id = null;
+    String name = null;
+
+    int nameIndex = rowSet.getColumnIndex(COL_OPERATION_NAME);
+    int kindIndex = rowSet.getColumnIndex(COL_OPERATION_KIND);
+
+    for (BeeRow row : rowSet) {
+      if (getKind(row, kindIndex) == kind) {
+        if (DataUtils.isId(id)) {
+          id = null;
+          break;
+        } else {
+          id = row.getId();
+          name = row.getString(nameIndex);
+        }
+      }
+    }
+
+    if (DataUtils.isId(id)) {
+      return Pair.of(id, name);
+    } else if (kind == TradeActKind.SUPPLEMENT) {
+      return getDefaultOperation(TradeActKind.SALE);
+    } else {
+      return null;
+    }
+  }
+
+  private static ViewSupplier createActViewSupplier(final TradeActKind kind) {
+    return new ViewSupplier() {
+      @Override
+      public void create(ViewCallback callback) {
+        openActGrid(kind, ViewFactory.getPresenterCallback(callback));
+      }
+    };
+  }
+
+  private static void openActGrid(final TradeActKind kind, final PresenterCallback callback) {
+    ensureChache(new ScheduledCommand() {
+      @Override
+      public void execute() {
+        String supplierKey;
+        String caption;
+        Filter filter;
+
+        if (kind == null) {
+          supplierKey = GRID_ALL_ACTS_KEY;
+          caption = Localized.getConstants().tradeActsAll();
+          filter = null;
+        } else {
+          supplierKey = kind.getGridSupplierKey();
+          caption = Localized.getConstants().tradeActs() + " - " + kind.getCaption();
+          filter = kind.getFilter();
+        }
+
+        GridFactory.createGrid(GRID_TRADE_ACTS, supplierKey, new TradeActGrid(kind),
+            EnumSet.of(UiOption.ROOT), GridOptions.forCaptionAndFilter(caption, filter), callback);
+      }
+    });
   }
 
   private TradeActKeeper() {

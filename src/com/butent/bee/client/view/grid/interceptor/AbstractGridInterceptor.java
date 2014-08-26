@@ -34,6 +34,7 @@ import com.butent.bee.shared.data.IsRow;
 import com.butent.bee.shared.data.event.RowInsertEvent;
 import com.butent.bee.shared.data.event.RowUpdateEvent;
 import com.butent.bee.shared.data.filter.Filter;
+import com.butent.bee.shared.data.filter.FilterComponent;
 import com.butent.bee.shared.data.filter.FilterDescription;
 import com.butent.bee.shared.data.view.RowInfo;
 import com.butent.bee.shared.i18n.Localized;
@@ -253,6 +254,11 @@ public abstract class AbstractGridInterceptor implements GridInterceptor {
   @Override
   public BeeRowSet getInitialRowSet(GridDescription gridDescription) {
     return null;
+  }
+
+  @Override
+  public List<FilterComponent> getInitialUserFilters(List<FilterComponent> defaultFilters) {
+    return defaultFilters;
   }
 
   @Override

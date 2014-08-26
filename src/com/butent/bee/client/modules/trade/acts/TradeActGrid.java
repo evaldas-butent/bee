@@ -15,13 +15,14 @@ import com.butent.bee.client.view.grid.GridView;
 import com.butent.bee.client.view.grid.interceptor.AbstractGridInterceptor;
 import com.butent.bee.client.view.grid.interceptor.GridInterceptor;
 import com.butent.bee.client.widget.Button;
+import com.butent.bee.shared.data.BeeRowSet;
+import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.IsRow;
-import com.butent.bee.shared.data.filter.Filter;
+import com.butent.bee.shared.data.filter.FilterComponent;
+import com.butent.bee.shared.data.filter.FilterValue;
 import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.modules.trade.acts.TradeActKind;
-import com.butent.bee.shared.ui.GridDescription;
 import com.butent.bee.shared.utils.BeeUtils;
-import com.butent.bee.shared.utils.EnumUtils;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -92,12 +93,30 @@ public class TradeActGrid extends AbstractGridInterceptor {
   }
 
   @Override
-  public String getCaption() {
-    if (kind == null) {
-      return Localized.getConstants().tradeActsAll();
-    } else {
-      return Localized.getConstants().tradeActs() + " - " + kind.getCaption();
+  public List<FilterComponent> getInitialUserFilters(List<FilterComponent> defaultFilters) {
+    if (!BeeUtils.isEmpty(defaultFilters)) {
+      for (FilterComponent component : defaultFilters) {
+        if (component != null && BeeUtils.same(component.getName(), COL_TA_SERIES)) {
+          return super.getInitialUserFilters(defaultFilters);
+        }
+      }
     }
+
+    BeeRowSet series = TradeActKeeper.getUserSeries();
+    if (DataUtils.isEmpty(series)) {
+      return super.getInitialUserFilters(defaultFilters);
+    }
+
+    List<FilterComponent> result = new ArrayList<>();
+    if (!BeeUtils.isEmpty(defaultFilters)) {
+      result.addAll(defaultFilters);
+    }
+
+    FilterComponent component = new FilterComponent(COL_TA_SERIES,
+        FilterValue.of(DataUtils.buildIdList(series)));
+    result.add(component);
+
+    return result;
   }
 
   @Override
@@ -106,15 +125,8 @@ public class TradeActGrid extends AbstractGridInterceptor {
   }
 
   @Override
-  public boolean initDescription(GridDescription gridDescription) {
-    Filter filter = (kind == null) ? null : kind.getFilter();
-    gridDescription.setFilter(filter);
-    return true;
-  }
-
-  @Override
   public void onActiveRowChange(ActiveRowChangeEvent event) {
-    TradeActKind k = getRowKind(event.getRowValue());
+    TradeActKind k = TradeActKeeper.getKind(event.getRowValue(), getDataIndex(COL_TA_KIND));
 
     if (supplementCommand != null) {
       TradeActKeeper.setCommandEnabled(supplementCommand, k == TradeActKind.SALE);
@@ -135,9 +147,7 @@ public class TradeActGrid extends AbstractGridInterceptor {
 
   @Override
   public boolean onStartNewRow(GridView gridView, IsRow oldRow, IsRow newRow) {
-    if (newActKind != null) {
-      newRow.setValue(getDataIndex(COL_TA_KIND), newActKind.ordinal());
-    }
+    TradeActKeeper.prepareNewTradeAct(newRow, newActKind);
     return super.onStartNewRow(gridView, oldRow, newRow);
   }
 
@@ -199,14 +209,5 @@ public class TradeActGrid extends AbstractGridInterceptor {
       TradeActKeeper.setCommandEnabled(templateCommand, false);
     }
     return templateCommand;
-  }
-
-  private TradeActKind getRowKind(IsRow row) {
-    if (row == null) {
-      return null;
-    } else {
-      return EnumUtils.getEnumByIndex(TradeActKind.class,
-          row.getInteger(getDataIndex(COL_TA_KIND)));
-    }
   }
 }
