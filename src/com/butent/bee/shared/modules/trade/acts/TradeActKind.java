@@ -2,7 +2,6 @@ package com.butent.bee.shared.modules.trade.acts;
 
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.data.filter.Filter;
-import com.butent.bee.shared.data.value.IntegerValue;
 import com.butent.bee.shared.i18n.LocalizableConstants;
 import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.ui.HasLocalizedCaption;
@@ -99,7 +98,7 @@ public enum TradeActKind implements HasLocalizedCaption {
   }
 
   public Filter getFilter() {
-    return Filter.isEqual(TradeActConstants.COL_TA_KIND, IntegerValue.of(this));
+    return Filter.equals(TradeActConstants.COL_TA_KIND, this);
   }
 
   public String getGridSupplierKey() {

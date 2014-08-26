@@ -31,6 +31,7 @@ import com.butent.bee.shared.data.IsRow;
 import com.butent.bee.shared.data.event.RowInsertEvent;
 import com.butent.bee.shared.data.event.RowUpdateEvent;
 import com.butent.bee.shared.data.filter.Filter;
+import com.butent.bee.shared.data.filter.FilterComponent;
 import com.butent.bee.shared.data.filter.FilterDescription;
 import com.butent.bee.shared.data.view.RowInfo;
 import com.butent.bee.shared.ui.Action;
@@ -124,6 +125,8 @@ public interface GridInterceptor extends WidgetInterceptor, ActiveRowChangeEvent
   Map<String, Filter> getInitialParentFilters();
 
   BeeRowSet getInitialRowSet(GridDescription gridDescription);
+
+  List<FilterComponent> getInitialUserFilters(List<FilterComponent> defaultFilters);
 
   GridInterceptor getInstance();
 

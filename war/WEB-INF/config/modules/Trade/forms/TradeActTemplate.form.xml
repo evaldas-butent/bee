@@ -1,5 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!DOCTYPE Form>
+<!DOCTYPE Form[
+  <!ENTITY inpw "width: 200px;">
+]>
 <f:Form xmlns="http://www.butent.com/widget"
   xmlns:f="http://www.butent.com/form"
   
@@ -15,51 +17,54 @@
       
       <row>
         <Label for="Template" visible="true" />
-        <cell colSpan="3">
-          <InputText source="Template" visible="true" style="width: 100%;" />
-        </cell>
+        <InputText source="Template" visible="true" style="&inpw;" />
       </row>
 
       <row>
         <Label for="Until" />
-        <InputDateTime source="Until" />
+        <InputDateTime source="Until" style="width: 120px;" />
 
         <Label for="Series" />
-        <DataSelector source="Series" />
+        <DataSelector source="Series" newRowEnabled="false" style="width: 120px;" />
       </row>
 
       <row>
         <Label for="Operation" />
-        <DataSelector source="Operation" renderColumns="OperationName" />
+        <DataSelector source="Operation" renderColumns="OperationName" newRowEnabled="false"
+          style="&inpw;" />
 
         <Label for="Status" />
-        <DataSelector source="Status" renderColumns="StatusName" />
+        <DataSelector source="Status" renderColumns="StatusName" newRowEnabled="false"
+          style="&inpw;" />
       </row>
 
       <row>
-        <Label for="Company" visible="true" />
-        <DataSelector source="Company" visible="true" />
+        <Label for="Company" />
+        <DataSelector source="Company" newRowEnabled="false" style="&inpw;" />
 
         <Label for="ServiceObject" />
-        <DataSelector source="ServiceObject" />
+        <DataSelector source="ServiceObject" newRowEnabled="false" style="&inpw;" />
       </row>
 
       <row>
         <Label for="Manager" />
         <DataSelector source="Manager" editSource="ManagerPerson" 
-          renderColumns="ManagerFirstName ManagerLastName" />
+          renderColumns="ManagerFirstName ManagerLastName" newRowEnabled="false" style="&inpw;" />
         
         <Label for="Currency" />
-        <DataSelector source="Currency" renderColumns="CurrencyName" editEnabled="false" />
+        <DataSelector source="Currency" renderColumns="CurrencyName" editEnabled="false"
+          newRowEnabled="false" style="width: 60px;" />
       </row>
 
       <row>
         <Label for="Vehicle" />
         <DataSelector source="Vehicle" 
-          renderColumns="VehicleParentModel VehicleModel VehicleNumber" />
+          renderColumns="VehicleParentModel VehicleModel VehicleNumber" newRowEnabled="false"
+          style="&inpw;" />
         
         <Label for="Driver" />
-        <DataSelector source="Driver" renderColumns="DriverFirstName DriverLastName" />
+        <DataSelector source="Driver" renderColumns="DriverFirstName DriverLastName" 
+          newRowEnabled="false" style="&inpw;" />
       </row>
     </Table>
 

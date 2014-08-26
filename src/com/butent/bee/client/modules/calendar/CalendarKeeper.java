@@ -14,6 +14,7 @@ import com.butent.bee.client.Global;
 import com.butent.bee.client.communication.ParameterList;
 import com.butent.bee.client.communication.ResponseCallback;
 import com.butent.bee.client.data.Data;
+import com.butent.bee.client.data.DataCache;
 import com.butent.bee.client.data.Queries;
 import com.butent.bee.client.data.RowEditor;
 import com.butent.bee.client.data.RowFactory;
@@ -163,7 +164,7 @@ public final class CalendarKeeper {
     }
   }
 
-  static final CalendarCache CACHE = new CalendarCache();
+  static final DataCache CACHE = new DataCache();
 
   private static final List<String> CACHED_VIEWS =
       Lists.newArrayList(VIEW_CONFIGURATION, VIEW_APPOINTMENT_TYPES, VIEW_ATTENDEES,
@@ -194,7 +195,7 @@ public final class CalendarKeeper {
     } else {
       final long startMillis = System.currentTimeMillis();
 
-      CACHE.getData(CACHED_VIEWS, new CalendarCache.MultiCallback() {
+      CACHE.getData(CACHED_VIEWS, new DataCache.MultiCallback() {
         @Override
         public void onSuccess(Integer result) {
           setDataLoaded(true);
@@ -233,8 +234,7 @@ public final class CalendarKeeper {
   }
 
   public static String getReminderTypeName(long id) {
-    return CACHE.getString(VIEW_REMINDER_TYPES, id,
-        COL_REMINDER_NAME);
+    return CACHE.getString(VIEW_REMINDER_TYPES, id, COL_REMINDER_NAME);
   }
 
   public static boolean isDataLoaded() {
@@ -433,11 +433,11 @@ public final class CalendarKeeper {
   }
 
   static List<BeeColumn> getAppointmentViewColumns() {
-    return CACHE.getAppointmentViewColumns();
+    return Data.getColumns(VIEW_APPOINTMENTS);
   }
 
   static DataInfo getAppointmentViewInfo() {
-    return CACHE.getAppointmentViewInfo();
+    return Data.getDataInfo(VIEW_APPOINTMENTS);
   }
 
   static BeeRowSet getAttendeeProps() {
@@ -457,7 +457,7 @@ public final class CalendarKeeper {
   }
 
   static void getData(Collection<String> viewNames, final Command command) {
-    CACHE.getData(viewNames, new CalendarCache.MultiCallback() {
+    CACHE.getData(viewNames, new DataCache.MultiCallback() {
       @Override
       public void onSuccess(Integer result) {
         command.execute();

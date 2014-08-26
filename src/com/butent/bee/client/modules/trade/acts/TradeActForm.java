@@ -10,7 +10,6 @@ import com.butent.bee.shared.data.IsRow;
 import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.modules.trade.acts.TradeActKind;
 import com.butent.bee.shared.utils.BeeUtils;
-import com.butent.bee.shared.utils.EnumUtils;
 
 public class TradeActForm extends AbstractFormInterceptor {
 
@@ -29,7 +28,7 @@ public class TradeActForm extends AbstractFormInterceptor {
 
   @Override
   public void afterRefresh(FormView form, IsRow row) {
-    TradeActKind kind = getKind(row);
+    TradeActKind kind = TradeActKeeper.getKind(row, getDataIndex(COL_TA_KIND));
     String caption;
 
     if (DataUtils.isNewRow(row)) {
@@ -71,14 +70,5 @@ public class TradeActForm extends AbstractFormInterceptor {
   @Override
   public FormInterceptor getInstance() {
     return new TradeActForm();
-  }
-
-  private TradeActKind getKind(IsRow row) {
-    if (row == null) {
-      return null;
-    } else {
-      return EnumUtils.getEnumByIndex(TradeActKind.class,
-          row.getInteger(getDataIndex(COL_TA_KIND)));
-    }
   }
 }
