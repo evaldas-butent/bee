@@ -156,7 +156,7 @@ public class RuleForm extends AbstractFormInterceptor implements SelectorEvent.H
   public void onDataSelector(SelectorEvent event) {
     if (event.isOpened()) {
       event.getSelector().setAdditionalFilter(Filter.equals(COL_ACCOUNT,
-          UiHelper.getFormRowId(getGridView().asWidget())));
+          UiHelper.getFormRowId(getGridView())));
     }
   }
 

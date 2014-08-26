@@ -4,6 +4,8 @@ import com.butent.bee.shared.utils.EnumUtils;
 
 public final class TradeActConstants {
 
+  public static final String SVC_GET_ITEMS_FOR_SELECTION = "GetItemsForSelection";
+
   public static final String TBL_TRADE_ACTS = "TradeActs";
   public static final String TBL_TRADE_ACT_ITEMS = "TradeActItems";
 
@@ -48,6 +50,9 @@ public final class TradeActConstants {
   public static final String GRID_TRADE_ACT_SERVICES = "TradeActServices";
 
   public static final String FORM_TRADE_ACT = "TradeAct";
+
+  public static final String PRP_QUANTITY = "qty";
+  public static final String PRP_WAREHOUSE_PREFIX = "w-";
 
   public static void register() {
     EnumUtils.register(TradeActKind.class);

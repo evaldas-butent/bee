@@ -261,6 +261,10 @@ public class SystemBean {
     return getTable(tblName).getField(fldName).getPrecision();
   }
 
+  public int getFieldScale(String tblName, String fldName) {
+    return getTable(tblName).getField(fldName).getScale();
+  }
+
   public String getIdName(String tblName) {
     return getTable(tblName).getIdName();
   }

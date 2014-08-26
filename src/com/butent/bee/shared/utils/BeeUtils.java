@@ -723,6 +723,15 @@ public final class BeeUtils {
     }
   }
 
+  public static <T> T getLast(List<? extends T> lst) {
+    int size = size(lst);
+    if (size > 0) {
+      return lst.get(size - 1);
+    } else {
+      return null;
+    }
+  }
+
   public static <C extends Comparable<C>> C getLowerEndpoint(Range<C> range) {
     return (range != null && range.hasLowerBound()) ? range.lowerEndpoint() : null;
   }
