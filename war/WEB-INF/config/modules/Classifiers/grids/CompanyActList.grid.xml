@@ -9,10 +9,11 @@
   <g:columns>
       <DataColumn name="Created" />
       <DataColumn name="TypeName" />
-      <DataColumn name="Summary" />
+      <DataColumn name="Summary" filterOptions="Summary" />
       <DataColumn name="CompanyName" label="=company" />
       <RelColumn name="CompanyPerson" editEnabled="true" visible="true"/>
       <RelColumn name="Creator" editEnabled="true" visible="true" />
       <DataColumn name="Status" />
+      <DataColumn name="ActionResult" visible="false" />
   </g:columns>
 </g:Grid>

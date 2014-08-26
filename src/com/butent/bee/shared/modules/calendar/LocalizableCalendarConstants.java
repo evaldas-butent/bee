@@ -1,6 +1,11 @@
 package com.butent.bee.shared.modules.calendar;
 
 public interface LocalizableCalendarConstants {
+  String calAction();
+
+  String calActionRegisterResult();
+
+  String calActionResult();
 
   String calAddAttendees();
 

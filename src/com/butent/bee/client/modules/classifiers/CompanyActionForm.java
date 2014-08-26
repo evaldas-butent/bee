@@ -3,42 +3,75 @@ package com.butent.bee.client.modules.classifiers;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.gwt.core.client.Scheduler.ScheduledCommand;
+import com.google.gwt.event.dom.client.ClickEvent;
+import com.google.gwt.event.dom.client.ClickHandler;
+import com.google.gwt.event.logical.shared.ValueChangeEvent;
+import com.google.gwt.event.logical.shared.ValueChangeHandler;
 
 import com.butent.bee.client.data.Queries;
 import com.butent.bee.client.data.Queries.RowSetCallback;
 import com.butent.bee.client.presenter.Presenter;
+import com.butent.bee.client.style.StyleUtils;
 import com.butent.bee.client.ui.FormFactory.WidgetDescriptionCallback;
 import com.butent.bee.client.ui.IdentifiableWidget;
 import com.butent.bee.client.ui.UiHelper;
 import com.butent.bee.client.validation.CellValidateEvent;
 import com.butent.bee.client.validation.CellValidateEvent.Handler;
+import com.butent.bee.client.view.HeaderView;
 import com.butent.bee.client.view.form.FormView;
 import com.butent.bee.client.view.form.interceptor.AbstractFormInterceptor;
 import com.butent.bee.client.view.form.interceptor.FormInterceptor;
 import com.butent.bee.client.view.grid.GridView;
+import com.butent.bee.client.widget.Button;
+import com.butent.bee.client.widget.InputArea;
+import com.butent.bee.client.widget.InputBoolean;
+import com.butent.bee.client.widget.Label;
+import com.butent.bee.shared.css.values.Display;
 import com.butent.bee.shared.data.BeeRowSet;
 import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.IsRow;
 import com.butent.bee.shared.data.filter.Filter;
 import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.modules.calendar.CalendarConstants;
+import com.butent.bee.shared.modules.calendar.CalendarConstants.AppointmentStatus;
 import com.butent.bee.shared.modules.classifiers.ClassifierConstants;
 import com.butent.bee.shared.time.DateTime;
 import com.butent.bee.shared.time.TimeUtils;
 import com.butent.bee.shared.ui.Action;
 import com.butent.bee.shared.utils.BeeUtils;
+import com.butent.bee.shared.utils.EnumUtils;
 
 import java.util.List;
 import java.util.Map;
 
 final class CompanyActionForm extends AbstractFormInterceptor {
 
+  private static final String WIDGET_REGISTER_RESULT = "RegisterResult";
+  private static final String WIDGET_ACTION_RESULT_LABEL = "ActionResultLabel";
+
   private final Map<Long, IsRow> plannedDurations = Maps.newHashMap();
   private int planedDurationColumnIndex = -1;
+  private boolean requiredResultValidation;
+
+  private InputBoolean registerResult;
+  private InputArea actionResult;
+  private Label actionResultLabel;
 
   @Override
   public void afterCreateWidget(String name, IdentifiableWidget widget,
       WidgetDescriptionCallback callback) {
+
+    if (BeeUtils.same(WIDGET_REGISTER_RESULT, name) && widget instanceof InputBoolean) {
+      registerResult = (InputBoolean) widget;
+    }
+
+    if (BeeUtils.same(CalendarConstants.COL_ACTION_RESULT, name) && widget instanceof InputArea) {
+      actionResult = (InputArea) widget;
+    }
+
+    if (BeeUtils.same(WIDGET_ACTION_RESULT_LABEL, name) && widget instanceof Label) {
+      actionResultLabel = (Label) widget;
+    }
   }
 
   @Override
@@ -49,15 +82,22 @@ final class CompanyActionForm extends AbstractFormInterceptor {
       return validateDates(row
           .getLong(form.getDataIndex(CalendarConstants.COL_START_DATE_TIME)),
           row
-              .getLong(form.getDataIndex(CalendarConstants.COL_END_DATE_TIME)), form);
+              .getLong(form.getDataIndex(CalendarConstants.COL_END_DATE_TIME)), form)
+          && ensureActionResultAndStatus(form, row);
     }
     return super.beforeAction(action, presenter);
   }
 
-
   @Override
   public FormInterceptor getInstance() {
     return new CompanyActionForm();
+  }
+
+  @Override
+  public HeaderView getHeaderView() {
+    HeaderView header = super.getHeaderView();
+    header.clearCommandPanel();
+    return header;
   }
 
   @Override
@@ -72,7 +112,14 @@ final class CompanyActionForm extends AbstractFormInterceptor {
 
   @Override
   public boolean onStartEdit(FormView form, IsRow row, ScheduledCommand focusCommand) {
+    HeaderView header = getHeaderView();
+
+    ensureCanModify(form, row);
     createValidationEvents(form, row);
+
+    if (form.isEnabled()) {
+      createRegisterResultAction(header);
+    }
     return super.onStartEdit(form, row, focusCommand);
   }
 
@@ -112,10 +159,29 @@ final class CompanyActionForm extends AbstractFormInterceptor {
       }
     }
 
-
+    createRegisterResultCheckBox();
 
     super.onStartNewRow(form, oldRow, newRow);
   }
+
+  private void createRegisterResultAction(HeaderView header) {
+    Button action = new Button(Localized.getConstants().calActionRegisterResult());
+    action.addClickHandler(getShowAndHideResultClickHandler());
+    header.addCommandItem(action);
+  }
+
+  private void createRegisterResultCheckBox() {
+    if (registerResult == null) {
+      return;
+    }
+
+    StyleUtils.setDisplay(registerResult, Display.INLINE);
+    registerResult.addValueChangeHandler(getShowAndHideResultValueChangeHandler());
+    registerResult.setChecked(false);
+    hideActionResultInput();
+  }
+
+
 
   private void createValidationEvents(FormView form, IsRow row) {
     form.addCellValidationHandler(CalendarConstants.COL_START_DATE_TIME,
@@ -125,6 +191,104 @@ final class CompanyActionForm extends AbstractFormInterceptor {
     form.addCellValidationHandler(CalendarConstants.COL_APPOINTMENT_TYPE,
         getAppointmentTypeValidation(form, row));
 
+    form.addCellValidationHandler(CalendarConstants.COL_ACTION_RESULT,
+        getActionResultValidationHandler(form, row));
+
+    form.addCellValidationHandler(CalendarConstants.COL_STATUS, getStatusValidationHandler());
+  }
+
+  private boolean ensureActionResultAndStatus(FormView form, IsRow row) {
+    if (form == null || row == null) {
+      return false;
+    }
+
+    if (isRequiredResultValidation()) {
+      int idxActionResult = form.getDataIndex(CalendarConstants.COL_ACTION_RESULT);
+      int idxStatus = form.getDataIndex(CalendarConstants.COL_STATUS);
+
+      if (idxActionResult < 0) {
+        return false;
+      }
+
+      if (BeeUtils.isEmpty(row.getString(idxActionResult))) {
+        form.notifySevere(Localized.getConstants().calActionResult(),
+            Localized.getConstants().valueRequired());
+
+        form.focus(CalendarConstants.COL_ACTION_RESULT);
+        return false;
+      }
+
+      if (idxStatus > -1) {
+        row.setValue(idxStatus, AppointmentStatus.COMPLETED.ordinal());
+      }
+
+      return true;
+    } else {
+      int idxActionResult = form.getDataIndex(CalendarConstants.COL_ACTION_RESULT);
+
+      if (idxActionResult > -1) {
+        row.setValue(idxActionResult, (String) null);
+      }
+      return true;
+    }
+
+  }
+
+  private void ensureCanModify(FormView form, IsRow row) {
+
+    if (form == null || row == null) {
+      form.setEnabled(false);
+    }
+
+    int idxActionResult = form.getDataIndex(CalendarConstants.COL_ACTION_RESULT);
+    int idxStatus = form.getDataIndex(CalendarConstants.COL_STATUS);
+    boolean canModify = false;
+
+    if (idxActionResult > -1) {
+      String actionResultValue = row.getString(idxActionResult);
+
+      canModify = canModify || BeeUtils.isEmpty(actionResultValue);
+    }
+
+    if (idxStatus > -1) {
+      canModify = canModify || AppointmentStatus.COMPLETED.ordinal() != row.getInteger(idxStatus);
+    }
+
+    form.setEnabled(canModify);
+
+    if (!canModify) {
+      showActionResultInput();
+    } else {
+      hideActionResultInput();
+    }
+  }
+
+  private Handler getActionResultValidationHandler(final FormView form, final IsRow row) {
+    return new Handler() {
+
+      @Override
+      public Boolean validateCell(CellValidateEvent event) {
+
+        if (form == null || row == null) {
+          return true;
+        }
+
+        if (isRequiredResultValidation() && BeeUtils.isEmpty(event.getNewValue())) {
+          form.notifySevere(Localized.getConstants().calActionResult(),
+              Localized.getConstants().valueRequired());
+
+          form.focus(CalendarConstants.COL_ACTION_RESULT);
+          return false;
+        } else if (!isRequiredResultValidation()) {
+          int idxActionResult = form.getDataIndex(CalendarConstants.COL_ACTION_RESULT);
+
+          if (idxActionResult > -1) {
+            row.setValue(idxActionResult, (String) null);
+          }
+        }
+        return true;
+      }
+    };
   }
 
   private RowSetCallback getAppointmentTypesCallback() {
@@ -200,6 +364,36 @@ final class CompanyActionForm extends AbstractFormInterceptor {
     };
   }
 
+  private int getPlanedDurationColumnIndex() {
+    return planedDurationColumnIndex;
+  }
+
+  private ClickHandler getShowAndHideResultClickHandler() {
+    return new ClickHandler() {
+
+      @Override
+      public void onClick(ClickEvent arg0) {
+        showActionResultInput();
+      }
+    };
+  }
+
+  private ValueChangeHandler<String> getShowAndHideResultValueChangeHandler() {
+    return new ValueChangeHandler<String>() {
+
+      @Override
+      public void onValueChange(ValueChangeEvent<String> value) {
+        Boolean boolValue = BeeUtils.toBooleanOrNull(value.getValue());
+
+        if (BeeUtils.isTrue(boolValue)) {
+          showActionResultInput();
+        } else {
+          hideActionResultInput();
+        }
+      }
+    };
+  }
+
   private static Handler getEndDateTimeValidation(final FormView form, final IsRow row) {
     return new Handler() {
 
@@ -216,14 +410,6 @@ final class CompanyActionForm extends AbstractFormInterceptor {
         return true;
       }
     };
-  }
-
-  private int getPlanedDurationColumnIndex() {
-    return planedDurationColumnIndex;
-  }
-
-  private void setPlanedDurationColumnIndex(int index) {
-    planedDurationColumnIndex = index;
   }
 
   private Handler getStartDateTimeValidation(final FormView form, final IsRow row) {
@@ -273,6 +459,68 @@ final class CompanyActionForm extends AbstractFormInterceptor {
         return true;
       }
     };
+  }
+
+  private Handler getStatusValidationHandler() {
+    return new Handler() {
+
+      @Override
+      public Boolean validateCell(CellValidateEvent event) {
+        String newValue = event.getNewValue();
+        AppointmentStatus newStatus = EnumUtils.getEnumByIndex(AppointmentStatus.class, newValue);
+
+        if (newStatus.compareTo(AppointmentStatus.COMPLETED) == 0) {
+          showActionResultInput();
+        } else {
+          hideActionResultInput();
+        }
+        return Boolean.TRUE;
+      }
+    };
+  }
+
+  private void hideActionResultInput() {
+    if (actionResult != null) {
+      if (registerResult == null) {
+        StyleUtils.setDisplay(actionResult, Display.NONE);
+      } else if (!registerResult.isChecked()) {
+        StyleUtils.setDisplay(actionResult, Display.NONE);
+      }
+    }
+
+    if (actionResultLabel != null) {
+      if (registerResult == null) {
+        StyleUtils.setDisplay(actionResultLabel, Display.NONE);
+      } else if (!registerResult.isChecked()) {
+        StyleUtils.setDisplay(actionResultLabel, Display.NONE);
+      }
+    }
+
+    setRequiredResultValidation(false);
+  }
+
+  private boolean isRequiredResultValidation() {
+    return this.requiredResultValidation;
+  }
+
+  private void setPlanedDurationColumnIndex(int index) {
+    planedDurationColumnIndex = index;
+  }
+
+  private void setRequiredResultValidation(boolean requiredResultValidation) {
+    this.requiredResultValidation = requiredResultValidation;
+  }
+
+  private void showActionResultInput() {
+    if (actionResult != null) {
+      StyleUtils.setDisplay(actionResult, Display.INLINE_BLOCK);
+    }
+
+    if (actionResultLabel != null) {
+      StyleUtils.setDisplay(actionResultLabel, Display.BLOCK);
+    }
+
+    setRequiredResultValidation(true);
   }
 
   private static boolean validateDates(Long from, Long to,

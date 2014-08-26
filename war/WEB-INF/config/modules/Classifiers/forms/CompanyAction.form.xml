@@ -1,58 +1,83 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE Form [
   <!ENTITY inp1 "width: 200px;">
+  
+  <!ENTITY inp2 "width: 100&#37;;">
 ]>
-<f:Form xmlns="http://www.butent.com/widget"
-  xmlns:f="http://www.butent.com/form"
-  xmlns:ui="http://www.butent.com/ui"
+<f:Form xmlns="http://www.butent.com/widget" xmlns:f="http://www.butent.com/form"
+	xmlns:ui="http://www.butent.com/ui" name="CompanyAction" viewName="Appointments"
+	caption="=calAction" showRowId="true" width="660" height="300">
 
-  name="CompanyAction" viewName="Appointments" caption="=calAction" showRowId="true" width="660" height="250">
+	<FlowPanel class="flexBox-vertical">
+		<Table
+			style="border-collapse: collapse; margin-top: 1ex; margin-bottom: 2ex;"
+			cellStyle="padding: 4px 10px;">
 
-  <FlowPanel class="flexBox-vertical">
-    <Table style="border-collapse: collapse; margin-top: 1ex; margin-bottom: 2ex;"
-       cellStyle="padding: 4px 10px;">
-        
-      <col index="0" cellStyle="text-align: right;" />
-      <col index="2" cellStyle="text-align: right;" />
+			<col index="0" cellStyle="text-align: right;" />
+			<col index="2" cellStyle="text-align: right;" />
 
-      <row>
-        <Label for="Summary" class="bee-required" visible="true" />
-        <InputText source="Summary" visible="true" style="&inp1;"/>
-        <Label text="=type" for="Type" visible="true" class="bee-required"/>
-        <DataSelector name="AppointmentType" source="AppointmentType" renderColumns="TypeName" 
-          visible="true" style="&inp1;"/>
-      </row>
+			<row>
+				<Label for="Summary" class="bee-required" visible="true" />
+				<InputText source="Summary" visible="true" style="&inp1;" />
+				<Label text="=type" for="Type" visible="true" class="bee-required" />
+				<DataSelector name="AppointmentType" source="AppointmentType"
+					renderColumns="TypeName" visible="true" style="&inp1;" />
+			</row>
 
-      <row>
-        <Label for="Company" />
-        <DataSelector name="Company" source="Company" renderColumns="CompanyName" style="&inp1;"/>
-        <Label for="CompanyPerson" />
-        <DataSelector name="CompanyPerson" source="CompanyPerson" renderColumns="PersonFirstName PersonLastName PersonCompanyName"  style="&inp1;"
-              choiceColumns="FirstName LastName CompanyNames"
-              searchableColumns="FirstName LastName" options="Company" />
-        
-      </row>
- 
-      <row>
-        <Label for="StartDateTime" visible="true" />
-        <InputDateTime name="StartDateTime" source="StartDateTime" visible="true"  style="&inp1;" />
-        <Label for="EndDateTime" visible="true" />
-        <InputDateTime name="EndDateTime" source="EndDateTime" visible="true"  style="&inp1;"/>
-      </row>
+			<row>
+				<Label for="Company" />
+				<DataSelector name="Company" source="Company"
+					renderColumns="CompanyName" style="&inp1;" />
 
-      <row>
-        <Label for="Created" />
-        <InputDateTime source="Created"  style="&inp1;"/>
-        <Label for="Status" visible="true" />
-        <ListBox source="Status" visible="true"  style="&inp1;"/>
-      </row>
+				<Label for="Status" visible="true" />
+				<ListBox name="Status" source="Status" visible="true" style="&inp1;" />
+			</row>
 
-      <row>       
-        <Label for="Creator" />
-        <DataSelector source="Creator" editSource="CreatorCompanyPerson"
-          renderColumns="CreatorFirstName CreatorLastName" style="&inp1;" />
-      </row>
+			<row>
+				<Label for="CompanyPerson" />
+				<cell colSpan="3">
+					<DataSelector name="CompanyPerson" source="CompanyPerson"
+						renderColumns="PersonFirstName 
+        PersonLastName PersonCompanyName PersonPhone PersonMobile PersonEmail"
+						style="&inp2;" choiceColumns="FirstName 
+        LastName CompanyName Phone Mobile Email"
+						searchableColumns="FirstName LastName CompanyName Phone Mobile Email"
+						options="Company" />
+				</cell>
+			</row>
 
-    </Table> 
-  </FlowPanel>
+			<row>
+				<Label for="StartDateTime" visible="true" />
+				<InputDateTime name="StartDateTime" source="StartDateTime"
+					visible="true" style="&inp1;" />
+				<Label for="EndDateTime" visible="true" />
+				<InputDateTime name="EndDateTime" source="EndDateTime"
+					visible="true" style="&inp1;" />
+			</row>
+
+			<row>
+				<Label for="Created" />
+				<InputDateTime source="Created" style="&inp1;" />
+				<Label for="Creator" />
+				<DataSelector source="Creator" editSource="CreatorCompanyPerson"
+					renderColumns="CreatorFirstName CreatorLastName" style="&inp1;" />
+			</row>
+
+			<row>
+				<cell colSpan="4" style="text-align: left">
+					<CheckBox name="RegisterResult" text="=calActionRegisterResult"
+						style="display: none" />
+				</cell>
+			</row>
+
+			<row>
+				<Label name="ActionResultLabel" text="=calActionResult" class="bee-required"
+					style="display: none; " />
+				<cell colSpan="3">
+					<InputArea name="ActionResult" source="ActionResult"
+						style="&inp2; display: none" visibleLines="3" />
+				</cell>
+			</row>
+		</Table>
+	</FlowPanel>
 </f:Form>  
