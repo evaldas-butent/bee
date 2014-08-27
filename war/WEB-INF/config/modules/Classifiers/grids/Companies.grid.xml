@@ -1,39 +1,46 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
 <g:Grid xmlns="http://www.butent.com/column" xmlns:g="http://www.butent.com/grid"
- xmlns:ui="http://www.butent.com/ui"
+	xmlns:ui="http://www.butent.com/ui" name="Companies" viewName="Companies"
+	caption="=clients" favorite="Name" flexGrow="1">
+	<g:columns>
+		<DataColumn name="Name" visible="true" />
+		<DataColumn name="TypeName" caption="=companyStatus" />
+		<DataColumn name="GroupName" caption="=group" />
+		<DataColumn name="PriorityName" caption="=priority" />
+		<DataColumn name="Code" />
+		<DataColumn name="VATCode" visible="false" />
+		<DataColumn name="ExchangeCode" caption="=code" visible="false"
+			module="Transport" />
+		<DataColumn name="Phone" />
+		<DataColumn name="Mobile" />
+		<DataColumn name="Fax" visible="false" />
+		<RelColumn name="EmailId" />
 
-  name="Companies" viewName="Companies" caption="=clients" favorite="Name" flexGrow="1"
-  >
-  <g:columns>
-    <DataColumn name="Name" visible="true" />
-    <DataColumn name="TypeName" caption="=companyStatus" />
-    <DataColumn name="GroupName" caption="=group" />
-    <DataColumn name="PriorityName" caption="=priority" />
-    <DataColumn name="Code" />
-    <DataColumn name="VATCode" visible="false" />
-    <DataColumn name="ExchangeCode" caption="=code" visible="false" module="Transport" />
-    <DataColumn name="Phone" />
-    <DataColumn name="Mobile" />
-    <DataColumn name="Fax" visible="false" />
-    <RelColumn name="EmailId" />
+		<DataColumn name="Address" />
+		<DataColumn name="PostIndex" />
 
-    <DataColumn name="Address" />
-    <DataColumn name="PostIndex" />
+		<DataColumn name="CityName" caption="=city" />
+		<DataColumn name="CountryName" caption="=country" />
+		<CalcColumn type="string" name="Flag" source="CountryCode"
+			cellType="html" width="30" caption="-" label="=countryFlag" sortable="false"
+			horizontalAlignment="center" filterOptions="-" exportWidthFactor="0.5"
+			visible="false">
+			<renderer type="flag" />
+		</CalcColumn>
 
-    <DataColumn name="CityName" caption="=city" />
-    <DataColumn name="CountryName" caption="=country" />
-    <CalcColumn type="string" name="Flag" source="CountryCode" cellType="html" width="30"
-      caption="-" label="=countryFlag" sortable="false" horizontalAlignment="center"
-      filterOptions="-" exportWidthFactor="0.5" visible="false">
-      <renderer type="flag" />
-    </CalcColumn>
-    
-    <DataColumn name="BankruptcyRisk" visible="false" />
-    <DataColumn name="DelayedPaymentRisk" visible="false" />
-    <DataColumn name="InvoiceTransferType" visible="false" />
-  </g:columns>
-  <g:rowStyle>
-    <ui:inline>="background-color: " + row.Background + "; color: " + row.Foreground +"; "</ui:inline>
-    <ui:expression>row.Color != null</ui:expression>
-  </g:rowStyle>
+		<DataColumn name="BankruptcyRiskName" visible="false"
+			caption="=clientBankruptcyRisk" label="=clientBankruptcyRisk" />
+		<DataColumn name="DelayedPaymentRiskName" visible="false"
+			caption="=clientDelayedPaymentRisk" label="=clientDelayedPaymentRisk" />
+		<DataColumn name="InvoiceTransferTypeName" visible="false"
+			caption="=percentInterest" label="=percentInterest" />
+
+		<DataColumn name="FinancialStateName" visible="false"
+			label="=financialState" caption="=financialState" />
+	</g:columns>
+	<g:rowStyle>
+		<ui:inline>="background-color: " + row.Background + "; color: " +
+			row.Foreground +"; "</ui:inline>
+		<ui:expression>row.Color != null</ui:expression>
+	</g:rowStyle>
 </g:Grid>

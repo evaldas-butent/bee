@@ -7,6 +7,7 @@ import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.event.dom.client.HasClickHandlers;
 import com.google.gwt.user.client.ui.UIObject;
 import com.google.gwt.user.client.ui.Widget;
+import com.google.gwt.xml.client.Element;
 
 import static com.butent.bee.shared.modules.classifiers.ClassifierConstants.*;
 import static com.butent.bee.shared.modules.trade.TradeConstants.*;
@@ -46,6 +47,7 @@ import com.butent.bee.shared.data.value.Value;
 import com.butent.bee.shared.font.FontAwesome;
 import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.modules.administration.AdministrationConstants;
+import com.butent.bee.shared.rights.RegulatedWidget;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.Codec;
 
@@ -196,6 +198,16 @@ public class CompanyForm extends AbstractFormInterceptor {
             null, ModalGrid.opener(500, 500));
       }
     };
+  }
+
+  @Override
+  public boolean beforeCreateWidget(String name, Element description) {
+
+    if (BeeUtils.same(name, WIDGET_FINANCIAL_STATE_AUDIT_NAME)) {
+      return BeeKeeper.getUser().isWidgetVisible(RegulatedWidget.AUDIT);
+    }
+
+    return super.beforeCreateWidget(name, description);
   }
 
   @Override
