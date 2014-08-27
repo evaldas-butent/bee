@@ -17,23 +17,19 @@ import java.util.List;
 
 public interface IsTable<R extends IsRow, C extends IsColumn> extends Iterable<R> {
 
-  int addColumn(C column);
+  void addColumn(C column);
 
-  int addColumn(ValueType type);
+  void addColumn(ValueType type);
 
-  int addColumn(ValueType type, String label);
+  void addColumn(ValueType type, String label);
 
-  int addColumn(ValueType type, String label, String id);
+  void addColumn(ValueType type, String label, String id);
 
-  int addColumns(Collection<C> columnsToAdd);
+  void addColumns(Collection<C> columnsToAdd);
 
-  int addRow();
+  void addRow(R row);
 
-  int addRow(R row);
-
-  int addRows(Collection<R> rowsToAdd);
-
-  int addRows(int rowCount);
+  void addRows(Collection<R> rowsToAdd);
 
   void addWarning(DataWarning warning);
 

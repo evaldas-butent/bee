@@ -4,6 +4,7 @@ import com.google.common.collect.Lists;
 import com.google.gwt.core.client.Scheduler.ScheduledCommand;
 import com.google.gwt.user.client.ui.Widget;
 
+import static com.butent.bee.shared.modules.classifiers.ClassifierConstants.*;
 import static com.butent.bee.shared.modules.trade.TradeConstants.*;
 import static com.butent.bee.shared.modules.trade.acts.TradeActConstants.*;
 
@@ -50,8 +51,10 @@ import com.butent.bee.shared.utils.EnumUtils;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.EnumSet;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 public final class TradeActKeeper {
@@ -250,6 +253,37 @@ public final class TradeActKeeper {
     }
   }
 
+  static Map<Long, String> getWarehouseCodes(Collection<Long> warehouses) {
+    Map<Long, String> result = new HashMap<>();
+
+    if (!BeeUtils.isEmpty(warehouses)) {
+      for (Long id : warehouses) {
+        if (DataUtils.isId(id)) {
+          String code = cache.getString(VIEW_WAREHOUSES, id, COL_WAREHOUSE_CODE);
+          if (!BeeUtils.isEmpty(code)) {
+            result.put(id, code);
+          }
+        }
+      }
+    }
+
+    return result;
+  }
+
+  static Long getWarehouseFrom(String viewName, IsRow row) {
+    int index = Data.getColumnIndex(viewName, COL_TA_OPERATION);
+    if (row == null || BeeConst.isUndef(index)) {
+      return null;
+    }
+
+    Long operation = row.getLong(index);
+    if (DataUtils.isId(operation)) {
+      return cache.getLong(VIEW_TRADE_OPERATIONS, operation, COL_OPERATION_WAREHOUSE_FROM);
+    } else {
+      return null;
+    }
+  }
+
   static void prepareNewTradeAct(IsRow row, TradeActKind kind) {
     if (kind != null) {
       Data.setValue(VIEW_TRADE_ACTS, row, COL_TA_KIND, kind.ordinal());
@@ -280,7 +314,7 @@ public final class TradeActKeeper {
 
     } else {
       List<String> viewNames = Lists.newArrayList(VIEW_TRADE_OPERATIONS, VIEW_TRADE_SERIES,
-          VIEW_SERIES_MANAGERS);
+          VIEW_SERIES_MANAGERS, VIEW_WAREHOUSES);
       final long start = System.currentTimeMillis();
 
       cache.getData(viewNames, new DataCache.MultiCallback() {

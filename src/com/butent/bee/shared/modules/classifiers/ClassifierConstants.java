@@ -187,6 +187,11 @@ public final class ClassifierConstants {
   public static final String ALS_ITEM_NAME = "ItemName";
   public static final String ALS_UNIT_NAME = "UnitName";
 
+  public static final String ALS_PARENT_TYPE_NAME = "ParentTypeName";
+  public static final String ALS_ITEM_TYPE_NAME = "ItemTypeName";
+  public static final String ALS_PARENT_GROUP_NAME = "ParentGroupName";
+  public static final String ALS_ITEM_GROUP_NAME = "ItemGroupName";
+
   public static final String PROP_COMPANY_NAMES = "CompanyNames";
   public static final String PROP_COMPANY_IDS = "CompanyIds";
 
