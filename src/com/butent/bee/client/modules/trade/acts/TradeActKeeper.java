@@ -39,6 +39,7 @@ import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogUtils;
 import com.butent.bee.shared.menu.MenuHandler;
 import com.butent.bee.shared.menu.MenuService;
+import com.butent.bee.shared.modules.classifiers.ItemPrice;
 import com.butent.bee.shared.modules.trade.acts.TradeActKind;
 import com.butent.bee.shared.rights.Module;
 import com.butent.bee.shared.rights.SubModule;
@@ -145,6 +146,9 @@ public final class TradeActKeeper {
         ensureChache(input);
       }
     });
+
+    GridFactory.registerGridInterceptor(GRID_TRADE_ACT_ITEMS, new TradeActItemsGrid());
+    GridFactory.registerGridInterceptor(GRID_TRADE_ACT_SERVICES, new TradeActServicesGrid());
   }
 
   static void addCommandStyle(Widget command, String suffix) {
@@ -175,6 +179,23 @@ public final class TradeActKeeper {
     }
 
     return operations;
+  }
+
+  static ItemPrice getItemPrice(Long operation) {
+    if (DataUtils.isId(operation)) {
+      return EnumUtils.getEnumByIndex(ItemPrice.class,
+          cache.getInteger(VIEW_TRADE_OPERATIONS, operation, COL_OPERATION_PRICE));
+    } else {
+      return null;
+    }
+  }
+
+  static ItemPrice getItemPrice(String viewName, IsRow row) {
+    return getItemPrice(Data.getLong(viewName, row, COL_TA_OPERATION));
+  }
+
+  static TradeActKind getKind(String viewName, IsRow row) {
+    return getKind(row, Data.getColumnIndex(viewName, COL_TA_KIND));
   }
 
   static TradeActKind getKind(IsRow row, int index) {
