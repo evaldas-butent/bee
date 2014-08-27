@@ -15,7 +15,6 @@ import static com.butent.bee.shared.modules.trade.TradeConstants.*;
 import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.communication.ParameterList;
 import com.butent.bee.client.communication.ResponseCallback;
-import com.butent.bee.client.composite.DataSelector;
 import com.butent.bee.client.data.Data;
 import com.butent.bee.client.data.Queries;
 import com.butent.bee.client.data.Queries.IntCallback;
@@ -28,6 +27,8 @@ import com.butent.bee.client.presenter.GridPresenter;
 import com.butent.bee.client.style.StyleUtils;
 import com.butent.bee.client.ui.FormFactory.WidgetDescriptionCallback;
 import com.butent.bee.client.ui.IdentifiableWidget;
+import com.butent.bee.client.validation.CellValidateEvent;
+import com.butent.bee.client.validation.CellValidateEvent.Handler;
 import com.butent.bee.client.view.HeaderView;
 import com.butent.bee.client.view.form.FormView;
 import com.butent.bee.client.view.form.interceptor.AbstractFormInterceptor;
@@ -38,7 +39,6 @@ import com.butent.bee.client.view.grid.interceptor.GridInterceptor;
 import com.butent.bee.client.widget.FaLabel;
 import com.butent.bee.client.widget.InputBoolean;
 import com.butent.bee.shared.communication.ResponseObject;
-import com.butent.bee.shared.css.values.Display;
 import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.IsRow;
 import com.butent.bee.shared.data.event.DataChangeEvent;
@@ -47,6 +47,7 @@ import com.butent.bee.shared.data.value.Value;
 import com.butent.bee.shared.font.FontAwesome;
 import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.modules.administration.AdministrationConstants;
+import com.butent.bee.shared.modules.classifiers.ClassifierConstants;
 import com.butent.bee.shared.rights.RegulatedWidget;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.Codec;
@@ -57,11 +58,6 @@ public class CompanyForm extends AbstractFormInterceptor {
 
   private static final String WIDGET_FINANCIAL_STATE_AUDIT_NAME = COL_COMPANY_FINANCIAL_STATE
       + "Audit";
-
-  @SuppressWarnings("unused")
-  private InputBoolean wRemindEmail;
-  @SuppressWarnings("unused")
-  private DataSelector wEmail;
 
   @Override
   public void afterCreateWidget(String name, IdentifiableWidget widget,
@@ -152,16 +148,10 @@ public class CompanyForm extends AbstractFormInterceptor {
     }
 
     if (widget instanceof InputBoolean && BeeUtils.same(name, COL_REMIND_EMAIL)) {
-      wRemindEmail = (InputBoolean) widget;
-      StyleUtils.setDisplay(widget.getElement(), Display.INLINE_BLOCK);
 
       if (widget instanceof UIObject) {
         ((UIObject) widget).setTitle(Localized.getConstants().sendReminder());
       }
-    }
-
-    if (widget instanceof DataSelector && BeeUtils.same(name, COL_EMAIL_ID)) {
-      wEmail = (DataSelector) widget;
     }
   }
 
@@ -173,6 +163,60 @@ public class CompanyForm extends AbstractFormInterceptor {
   @Override
   public FormInterceptor getInstance() {
     return new CompanyForm();
+  }
+
+  @Override
+  public boolean beforeCreateWidget(String name, Element description) {
+
+    if (BeeUtils.same(name, WIDGET_FINANCIAL_STATE_AUDIT_NAME)) {
+      return BeeKeeper.getUser().isWidgetVisible(RegulatedWidget.AUDIT);
+    }
+
+    return super.beforeCreateWidget(name, description);
+  }
+
+  @Override
+  public boolean onStartEdit(FormView form, IsRow row, ScheduledCommand focusCommand) {
+    createCellValidationHandlers(form, row);
+    return super.onStartEdit(form, row, focusCommand);
+  }
+
+  @Override
+  public void onStartNewRow(FormView form, IsRow oldRow, IsRow newRow) {
+    createCellValidationHandlers(form, newRow);
+    super.onStartNewRow(form, oldRow, newRow);
+  }
+
+  private static void createCellValidationHandlers(FormView form, IsRow row) {
+    if (form == null || row == null) {
+      return;
+    }
+
+    form.addCellValidationHandler(ClassifierConstants.COL_REMIND_EMAIL,
+        getRemindEmailValidationHandler(form, row));
+    form.addCellValidationHandler(COL_EMAIL_ID, getEmailIdValidationHandler(form, row));
+  }
+
+  private static Handler getEmailIdValidationHandler(final FormView form, final IsRow row) {
+    return new Handler() {
+
+      @Override
+      public Boolean validateCell(CellValidateEvent event) {
+        if (DataUtils.isId(BeeUtils.toLongOrNull(event.getNewValue()))) {
+          return Boolean.TRUE;
+        }
+
+        int idxRemindEmail = form.getDataIndex(COL_REMIND_EMAIL);
+
+        if (idxRemindEmail < 0) {
+          return Boolean.TRUE;
+        }
+
+        row.setValue(idxRemindEmail, (Boolean) null);
+        form.refreshBySource(COL_REMIND_EMAIL);
+        return Boolean.TRUE;
+      }
+    };
   }
 
   private ClickHandler getFinancialStateAuditClickHandler() {
@@ -200,28 +244,34 @@ public class CompanyForm extends AbstractFormInterceptor {
     };
   }
 
-  @Override
-  public boolean beforeCreateWidget(String name, Element description) {
+  private static Handler getRemindEmailValidationHandler(final FormView form, final IsRow row) {
+    return new Handler() {
 
-    if (BeeUtils.same(name, WIDGET_FINANCIAL_STATE_AUDIT_NAME)) {
-      return BeeKeeper.getUser().isWidgetVisible(RegulatedWidget.AUDIT);
-    }
+      @Override
+      public Boolean validateCell(CellValidateEvent event) {
+        String eventValue = event.getNewValue();
 
-    return super.beforeCreateWidget(name, description);
-  }
+        if (!BeeUtils.toBoolean(eventValue)) {
+          return Boolean.TRUE;
+        }
 
-  @Override
-  public boolean onStartEdit(FormView form, IsRow row, ScheduledCommand focusCommand) {
-    // TODO:
-    // if (wRemindEmail != null && wEmail != null) {
-    // if (BeeUtils.isEmpty(wEmail.getValue())) {
-    // wRemindEmail.setEnabled(false);
-    // } else {
-    // wRemindEmail.setEnabled(true);
-    // }
-    // }
+        int idxEmailId = form.getDataIndex(COL_EMAIL_ID);
 
-    return super.onStartEdit(form, row, focusCommand);
+        if (idxEmailId < 0) {
+          return Boolean.FALSE;
+        }
+
+        Long emailId = BeeUtils.unbox(row.getLong(idxEmailId));
+
+        if (DataUtils.isId(emailId)) {
+          return Boolean.TRUE;
+        } else {
+          form.notifySevere(Localized.getConstants().email(), Localized.getConstants()
+              .valueRequired());
+          return Boolean.FALSE;
+        }
+      }
+    };
   }
 
   private void refreshCreditInfo() {

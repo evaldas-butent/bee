@@ -50,6 +50,8 @@ public final class ClassifierKeeper {
     GridFactory.registerGridSupplier(ItemsGrid.getSupplierKey(true), GRID_ITEMS,
         new ItemsGrid(true));
 
+    GridFactory.registerGridInterceptor(GRID_COMPANY_CONTACTS, new CompanyContactsGrid());
+
     ConditionalStyle.registerGridColumnStyleProvider(GRID_FINANCIAL_STATES,
         AdministrationConstants.ALS_COLOR_NAME, ColorStyleProvider
             .createDefault(VIEW_FINANCIAL_STATES));
@@ -61,6 +63,7 @@ public final class ClassifierKeeper {
         ViewFactory.createAndShow(key);
       }
     });
+
 
     FormFactory.registerFormInterceptor("Item", new ItemForm());
     FormFactory.registerFormInterceptor(FORM_PERSON, new PersonForm());
