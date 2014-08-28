@@ -8,7 +8,7 @@
   >
   <g:columns>
       <DataColumn name="Created" />
-      <DataColumn name="TypeName" />
+      <DataColumn name="TypeName" caption="=type" label="=type" />
       <DataColumn name="Summary" filterOptions="Summary" />
       <DataColumn name="CompanyName" label="=company" />
       <RelColumn name="CompanyPerson" editEnabled="true" visible="true"/>

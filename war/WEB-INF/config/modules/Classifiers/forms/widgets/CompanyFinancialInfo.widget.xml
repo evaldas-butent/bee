@@ -31,7 +31,7 @@
     <Label text="=financialState" style="&lbl1;" />
     <Table>
       <row>
-        <DataSelector source="FinancialState" />
+        <DataSelector source="FinancialState" renderColumns="FinancialStateName" />
         <FaLabel name="FinancialStateAudit" char="history" style="font-size: larger;"/>
       </row>
     </Table>    
