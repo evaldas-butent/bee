@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Table xmlns="http://www.butent.com/table"
+
+  name="TradeStatuses"
+  idName="TradeStatusID"
+  >
+  <Fields>
+    <String name="StatusName" notNull="true" precision="30" label="=status" />
+
+    <String name="Background" precision="100" label="=backgroundColor" />
+    <String name="Foreground" precision="100" label="=foregroundColor" />
+  </Fields>
+</Table>

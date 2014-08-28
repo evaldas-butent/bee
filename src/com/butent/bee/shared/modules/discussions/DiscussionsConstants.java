@@ -97,7 +97,6 @@ public final class DiscussionsConstants {
 
   public static final String DISCUSSIONS_PREFIX = "discuss_";
   public static final String DISCUSSIONS_STYLE_PREFIX = "bee-discuss-";
-  public static final String STYLE_SHEET = "discuss";
 
   public static final String ALS_BIRTHDAY = "Birthday";
   public static final String ALS_BIRTHDAY_VALID = "BirthdayValid";

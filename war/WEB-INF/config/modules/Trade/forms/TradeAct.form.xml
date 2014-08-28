@@ -1,0 +1,101 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE Form[
+  <!ENTITY inpw "width: 200px;">
+  <!ENTITY inpdt "width: 120px;">
+]>
+<f:Form xmlns="http://www.butent.com/widget"
+  xmlns:f="http://www.butent.com/form"
+  
+  name="TradeAct" viewName="TradeActs"
+  caption="=tradeAct" showRowId="true"
+  width="800" height="600"
+  >
+  <FlowPanel class="flexBox-vertical">
+    <br/>
+    <Table>
+      <col index="0" kind="label" />
+      <col index="2" kind="label" />
+
+      <row class="bee-ta-template-selection" data="TradeActTemplates">
+        <Label text="=template" />
+        <DataSelector name="Template" viewName="TradeActTemplates" choiceColumns="Template"
+          newRowEnabled="false" style="&inpw;" />
+      </row>
+
+      <row>
+        <Label for="Date" visible="true" />
+        <InputDateTime source="Date" style="&inpdt;" visible="true" />
+
+        <Label for="Until" class="bee-ta-until-label" />
+        <InputDateTime source="Until" class="bee-ta-until-input" style="&inpdt;" />
+      </row>
+
+      <row>
+        <Label for="Series" />
+        <DataSelector source="Series" newRowEnabled="false" style="width: 120px;" />
+
+        <Label for="Number" visible="true" />
+        <InputText source="Number" style="&inpw;" visible="true" />
+      </row>
+
+      <row>
+        <Label for="Operation" />
+        <DataSelector source="Operation" renderColumns="OperationName" newRowEnabled="false"
+          style="&inpw;" />
+
+        <Label for="Status" />
+        <DataSelector source="Status" renderColumns="StatusName" newRowEnabled="false"
+          style="&inpw;" />
+      </row>
+
+      <row>
+        <Label for="Company" visible="true" />
+        <DataSelector source="Company" style="&inpw;" visible="true" />
+
+        <Label for="ServiceObject" />
+        <DataSelector source="ServiceObject" style="&inpw;" />
+      </row>
+
+      <row>
+        <Label for="Manager" />
+        <DataSelector source="Manager" editSource="ManagerPerson" 
+          renderColumns="ManagerFirstName ManagerLastName" newRowEnabled="false" style="&inpw;" />
+        
+        <Label for="Currency" />
+        <DataSelector source="Currency" renderColumns="CurrencyName" editEnabled="false"
+          newRowEnabled="false" style="width: 60px;" />
+      </row>
+
+      <row>
+        <Label for="Vehicle" />
+        <DataSelector source="Vehicle" 
+          renderColumns="VehicleParentModel VehicleModel VehicleNumber" newRowEnabled="false"
+          style="&inpw;" />
+        
+        <Label for="Driver" />
+        <DataSelector source="Driver" renderColumns="DriverFirstName DriverLastName"
+          newRowEnabled="false" style="&inpw;" />
+      </row>
+    </Table>
+
+    <br/>
+    <TabbedPages class="flexible">
+      <page>
+        <text>=goods</text>
+        <ChildGrid name="TradeActItems" relColumn="TradeAct" />
+      </page>
+
+      <page class="bee-ta-services-tab">
+        <text>=services</text>
+        <ChildGrid name="TradeActServices" relColumn="TradeAct" />
+      </page>
+
+      <page>
+        <text>=notes</text>
+        <SimplePanel>
+          <InputArea source="Notes" class="occupy-1" />
+        </SimplePanel>
+      </page>
+    </TabbedPages>
+  </FlowPanel>
+</f:Form>

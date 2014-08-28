@@ -570,7 +570,6 @@ public final class EcConstants {
 
   public static final String PICTURE_PREFIX = "data:image/";
 
-  public static final String STYLE_SHEET = "ecommerce";
   public static final String CLIENT_STYLE_SHEET = "ec";
 
   public static final String PRP_SUPPLIER_PRICE = "SupplPrice";

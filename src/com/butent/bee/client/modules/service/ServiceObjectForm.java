@@ -67,6 +67,7 @@ import com.butent.bee.shared.data.value.Value;
 import com.butent.bee.shared.i18n.LocalizableConstants;
 import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.modules.classifiers.ClassifierConstants;
+import com.butent.bee.shared.modules.service.ServiceConstants.ObjectStatus;
 import com.butent.bee.shared.modules.tasks.TaskConstants;
 import com.butent.bee.shared.ui.Relation;
 import com.butent.bee.shared.utils.BeeUtils;
@@ -152,7 +153,7 @@ public class ServiceObjectForm extends AbstractFormInterceptor implements ClickH
   };
 
   private static final String NAME_WIDGET_STATUS_LABEL = "StatusLabel";
-  
+
   private HasWidgets criteriaPanel;
 
   private final Map<String, String> criteriaHistory = new LinkedHashMap<>();
@@ -312,7 +313,7 @@ public class ServiceObjectForm extends AbstractFormInterceptor implements ClickH
   public void onUnload(FormView form) {
     EventUtils.clearRegistry(registry);
   }
-  
+
   private static void createActionButton(HeaderView headerView, FormView formView, IsRow row,
       ObjectStatus status) {
 
@@ -379,7 +380,7 @@ public class ServiceObjectForm extends AbstractFormInterceptor implements ClickH
 
     boolean actionIsServiceObj = actionStatus == ObjectStatus.SERVICE_OBJECT.ordinal();
     boolean actionIsProjectObj = actionStatus == ObjectStatus.PROJECT_OBJECT.ordinal();
-    
+
     boolean result =
         (currIsUnknown && (actionIsServiceObj || actionIsProjectObj))
             // || (currIsServiceObj && actionIsProjectObj) /* Deprecated action*/

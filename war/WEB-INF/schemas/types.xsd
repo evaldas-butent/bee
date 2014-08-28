@@ -200,6 +200,7 @@
       <xs:enumeration value="Ec.Administration" />
       <xs:enumeration value="Ec.Classifiers" />
       <xs:enumeration value="Trade" />
+      <xs:enumeration value="Trade.Acts" />
       <xs:enumeration value="Transport" />
       <xs:enumeration value="Transport.Logistics" />
       <xs:enumeration value="Transport.SelfService" />
@@ -385,6 +386,7 @@
       <xs:enumeration value="Rules" />
       <xs:enumeration value="SaleItems" />
       <xs:enumeration value="Sales" />
+      <xs:enumeration value="SeriesManagers" />
       <xs:enumeration value="ServiceCriteria" />
       <xs:enumeration value="ServiceCritGroups" />
       <xs:enumeration value="ServiceDates" />
@@ -434,6 +436,16 @@
       <xs:enumeration value="ThemeColors" />
       <xs:enumeration value="Themes" />
       <xs:enumeration value="TimeZones" />
+      <xs:enumeration value="TradeActItems" />
+      <xs:enumeration value="TradeActs" />
+      <xs:enumeration value="TradeActServices" />
+      <xs:enumeration value="TradeActTemplates" />
+      <xs:enumeration value="TradeActTmplItems" />
+      <xs:enumeration value="TradeActTmplServices" />
+      <xs:enumeration value="TradeNotes" />
+      <xs:enumeration value="TradeOperations" />
+      <xs:enumeration value="TradeSeries" />
+      <xs:enumeration value="TradeStatuses" />
       <xs:enumeration value="TransportationOrders" />
       <xs:enumeration value="TransportGroups" />
       <xs:enumeration value="TransportSettings" />

@@ -1,4 +1,4 @@
-package com.butent.bee.client.ui;
+package com.butent.bee.shared.ui;
 
 public interface HasWidgetSupplier {
   String getSupplierKey();

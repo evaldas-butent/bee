@@ -18,7 +18,7 @@ import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.EnumUtils;
 
 public final class ServiceUtils {
-  
+
   private ServiceUtils() {
   }
 
@@ -38,9 +38,9 @@ public final class ServiceUtils {
 
     fillCategory(status, formDataInfo, formRow);
   }
-  
+
   private static void fillCategory(ObjectStatus status, DataInfo dataInfo, IsRow formRow) {
-    
+
     switch (status) {
       case POTENTIAL_OBJECT:
         Global.getParameter(PRM_SVC_POTENTIAL_OBJECT_CATEGORY,
@@ -70,7 +70,7 @@ public final class ServiceUtils {
         if (!DataUtils.isId(categoryId)) {
           return;
         }
-        
+
         Queries.getRow(DocumentConstants.VIEW_DOCUMENT_TREE, categoryId,
             getDocumentsTreeRowCallback(dataInfo, formRow));
 
@@ -80,7 +80,7 @@ public final class ServiceUtils {
       }
     };
   }
-  
+
   private static RowCallback getDocumentsTreeRowCallback(final DataInfo dataInfo,
       final IsRow formRow) {
     return new RowCallback() {

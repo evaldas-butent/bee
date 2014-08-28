@@ -723,10 +723,14 @@ public final class Relation implements BeeSerializable, HasInfo, HasViewName {
   public boolean isEditEnabled(boolean defEnabled) {
     if (!BeeUtils.isEmpty(getValueSource())) {
       return false;
+
     } else if (defEnabled) {
       return !BeeConst.isFalse(getAttribute(UiConstants.ATTR_EDIT_ENABLED));
+
     } else {
-      return BeeConst.isTrue(getAttribute(UiConstants.ATTR_EDIT_ENABLED));
+      String enabled = getAttribute(UiConstants.ATTR_EDIT_ENABLED);
+      return BeeConst.isTrue(enabled)
+          || BeeUtils.isEmpty(enabled) && getAttributes().containsKey(UiConstants.ATTR_EDIT_POPUP);
     }
   }
 

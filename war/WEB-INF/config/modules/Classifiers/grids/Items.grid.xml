@@ -30,9 +30,11 @@
     <DataColumn name="Barcode" />
 
     <RelColumn name="Unit" caption="=unitShort" carry="true" />
+    <DataColumn name="TimeUnit" module="Trade.Acts" />
+
     <DataColumn name="Weight" visible="false" />
 
-    <DataColumn name="Price" />
+    <DataColumn name="Price" caption="=salePriceShort" />
     <RelColumn name="Currency" caption="=currencyShort" />
 
     <DataColumn name="Cost" visible="false" />

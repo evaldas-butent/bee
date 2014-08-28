@@ -16,13 +16,13 @@ import com.butent.bee.client.view.HeaderView;
 import com.butent.bee.client.view.grid.GridView.SelectedRows;
 import com.butent.bee.client.view.grid.interceptor.AbstractGridInterceptor;
 import com.butent.bee.client.view.grid.interceptor.GridInterceptor;
-import com.butent.bee.shared.i18n.LocalizableConstants;
 import com.butent.bee.client.widget.Button;
 import com.butent.bee.client.widget.Image;
 import com.butent.bee.shared.communication.ResponseObject;
 import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.event.DataChangeEvent;
 import com.butent.bee.shared.data.view.RowInfo;
+import com.butent.bee.shared.i18n.LocalizableConstants;
 import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.modules.trade.TradeConstants;
 
@@ -30,7 +30,7 @@ import java.util.Set;
 
 public class SvcProjectInvoicesGrid extends AbstractGridInterceptor implements ClickHandler {
   private static final LocalizableConstants localizableConstants = Localized.getConstants();
- 
+
   private final Button action = new Button(localizableConstants.trSendToERP(), this);
 
   public SvcProjectInvoicesGrid() {
@@ -47,7 +47,7 @@ public class SvcProjectInvoicesGrid extends AbstractGridInterceptor implements C
   public GridInterceptor getInstance() {
     return new SvcProjectInvoicesGrid();
   }
-  
+
   @Override
   public void onClick(ClickEvent event) {
     final GridPresenter presenter = getGridPresenter();
@@ -90,7 +90,6 @@ public class SvcProjectInvoicesGrid extends AbstractGridInterceptor implements C
         response.notify(BeeKeeper.getScreen());
         Data.onViewChange(presenter.getViewName(), DataChangeEvent.CANCEL_RESET_REFRESH);
       }
-      
     };
   }
 }

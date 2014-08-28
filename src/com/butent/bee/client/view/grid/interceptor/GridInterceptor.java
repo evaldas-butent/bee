@@ -3,6 +3,7 @@ package com.butent.bee.client.view.grid.interceptor;
 import com.google.gwt.xml.client.Element;
 
 import com.butent.bee.client.data.IdCallback;
+import com.butent.bee.client.event.logical.ActiveRowChangeEvent;
 import com.butent.bee.client.event.logical.ParentRowEvent;
 import com.butent.bee.client.event.logical.RenderingEvent;
 import com.butent.bee.client.grid.ColumnFooter;
@@ -30,20 +31,20 @@ import com.butent.bee.shared.data.IsRow;
 import com.butent.bee.shared.data.event.RowInsertEvent;
 import com.butent.bee.shared.data.event.RowUpdateEvent;
 import com.butent.bee.shared.data.filter.Filter;
+import com.butent.bee.shared.data.filter.FilterComponent;
 import com.butent.bee.shared.data.filter.FilterDescription;
 import com.butent.bee.shared.data.view.RowInfo;
 import com.butent.bee.shared.ui.Action;
 import com.butent.bee.shared.ui.ColumnDescription;
 import com.butent.bee.shared.ui.GridDescription;
-import com.butent.bee.shared.ui.HasCaption;
 
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 
-public interface GridInterceptor extends WidgetInterceptor, ParentRowEvent.Handler, HasCaption,
-    EditStartEvent.Handler, ProvidesGridColumnRenderer, DynamicColumnEnumerator, HasViewName,
-    EditorConsumer, RowUpdateEvent.Handler {
+public interface GridInterceptor extends WidgetInterceptor, ActiveRowChangeEvent.Handler,
+    ParentRowEvent.Handler, EditStartEvent.Handler, ProvidesGridColumnRenderer,
+    DynamicColumnEnumerator, HasViewName, EditorConsumer, RowUpdateEvent.Handler {
 
   public enum DeleteMode {
     CANCEL, DEFAULT, SILENT, CONFIRM, SINGLE, MULTI;
@@ -124,6 +125,8 @@ public interface GridInterceptor extends WidgetInterceptor, ParentRowEvent.Handl
   Map<String, Filter> getInitialParentFilters();
 
   BeeRowSet getInitialRowSet(GridDescription gridDescription);
+
+  List<FilterComponent> getInitialUserFilters(List<FilterComponent> defaultFilters);
 
   GridInterceptor getInstance();
 

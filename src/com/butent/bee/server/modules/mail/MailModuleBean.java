@@ -427,7 +427,13 @@ public class MailModuleBean implements BeeModule {
   @Override
   public void init() {
     System.setProperty("mail.mime.decodetext.strict", "false");
+
+    System.setProperty("mail.mime.parameters.strict", "false");
     System.setProperty("mail.mime.ignoreunknownencoding", "true");
+    System.setProperty("mail.mime.uudecode.ignoreerrors", "true");
+    System.setProperty("mail.mime.uudecode.ignoremissingbeginend", "true");
+    System.setProperty("mail.mime.ignoremultipartencoding", "false");
+    System.setProperty("mail.mime.allowencodedmessages", "true");
 
     proxy.initServer();
 

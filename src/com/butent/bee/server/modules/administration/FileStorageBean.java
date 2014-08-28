@@ -17,8 +17,8 @@ import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.SimpleRowSet;
 import com.butent.bee.shared.data.SimpleRowSet.SimpleRow;
 import com.butent.bee.shared.exceptions.BeeRuntimeException;
-import com.butent.bee.shared.io.Paths;
 import com.butent.bee.shared.io.FileInfo;
+import com.butent.bee.shared.io.Paths;
 import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogUtils;
 import com.butent.bee.shared.time.DateTime;
@@ -181,7 +181,7 @@ public class FileStorageBean {
   }
 
   public Long storeFile(InputStream is, String fileName, String mimeType) throws IOException {
-    String name = BeeUtils.notEmpty(fileName, "unknown");
+    String name = sys.clampValue(TBL_FILES, COL_FILE_NAME, BeeUtils.notEmpty(fileName, "unknown"));
     boolean storeAsFile = repositoryDir != null;
     MessageDigest md = null;
 
@@ -271,7 +271,7 @@ public class FileStorageBean {
             .addConstant(COL_FILE_REPO, repo)
             .addConstant(COL_FILE_NAME, name)
             .addConstant(COL_FILE_SIZE, size)
-            .addConstant(COL_FILE_TYPE, mimeType));
+            .addConstant(COL_FILE_TYPE, sys.clampValue(TBL_FILES, COL_FILE_TYPE, mimeType)));
       }
       if (!storeAsFile) {
         buffer = new byte[0x100000];

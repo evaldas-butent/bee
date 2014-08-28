@@ -183,6 +183,7 @@ public final class ConditionalStyle {
 
   private StyleDescriptor getStyleDescriptor(IsRow rowValue, int rowIndex, int colIndex,
       boolean updateCell, ValueType cellType, String cellValue) {
+
     if (rowValue == null) {
       return null;
     }
@@ -192,7 +193,7 @@ public final class ConditionalStyle {
     }
 
     for (Entry entry : entries) {
-      if (updateCell) {
+      if (updateCell && cellType != null) {
         entry.getEvaluator().update(rowValue, rowIndex, colIndex, cellType, cellValue);
       } else {
         entry.getEvaluator().update(rowValue, rowIndex, colIndex);

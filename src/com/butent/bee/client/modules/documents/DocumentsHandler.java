@@ -306,7 +306,7 @@ public final class DocumentsHandler {
     public boolean beforeAddRow(final GridPresenter presenter, boolean copy) {
       DataInfo dataInfo = Data.getDataInfo(VIEW_DOCUMENTS);
       BeeRow formRow = RowFactory.createEmptyRow(dataInfo, true);
-      
+
       ensureDefaultFields(dataInfo, formRow);
 
       RowFactory.createRow(dataInfo, formRow, new RowCallback() {
@@ -367,7 +367,7 @@ public final class DocumentsHandler {
       if (BeeUtils.isEmpty(parentForm.getViewName()) && parentForm.getActiveRow() == null) {
         return;
       }
-      
+
       if (BeeUtils.same(parentForm.getViewName(), ServiceConstants.VIEW_SERVICE_OBJECTS)) {
         ServiceUtils.ensureDocumentDefaultValues(dataInfo, formRow, parentForm);
       }
@@ -416,9 +416,7 @@ public final class DocumentsHandler {
   }
 
   static ParameterList createArgs(String method) {
-    ParameterList args = BeeKeeper.getRpc().createParameters(Module.DOCUMENTS.getName());
-    args.addQueryItem(AdministrationConstants.METHOD, method);
-    return args;
+    return BeeKeeper.getRpc().createParameters(Module.DOCUMENTS, method);
   }
 
   private static void sendFiles(final Long docId, Collection<FileInfo> files,

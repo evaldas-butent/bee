@@ -9,6 +9,9 @@ import com.butent.bee.client.i18n.DateTimeFormat;
 import com.butent.bee.client.i18n.Format;
 import com.butent.bee.client.i18n.HasDateTimeFormat;
 import com.butent.bee.client.i18n.HasNumberFormat;
+import com.butent.bee.client.modules.trade.DiscountRenderer;
+import com.butent.bee.client.modules.trade.TotalRenderer;
+import com.butent.bee.client.modules.trade.VatRenderer;
 import com.butent.bee.client.render.AbstractCellRenderer;
 import com.butent.bee.client.render.HasCellRenderer;
 import com.butent.bee.client.style.HasTextAlign;
@@ -46,6 +49,29 @@ public class ColumnFooter extends Header<String> implements HasTextAlign,
 
   public enum Aggregate {
     SUM, COUNT, MIN, MAX, AVG
+  }
+
+  private enum EvaluatorType {
+    TOTAL {
+      @Override
+      HasRowValue getFunction(List<? extends IsColumn> columns) {
+        return new TotalRenderer(columns);
+      }
+    },
+    VAT {
+      @Override
+      HasRowValue getFunction(List<? extends IsColumn> columns) {
+        return new VatRenderer(columns);
+      }
+    },
+    DISCOUNT {
+      @Override
+      HasRowValue getFunction(List<? extends IsColumn> columns) {
+        return new DiscountRenderer(columns);
+      }
+    };
+
+    abstract HasRowValue getFunction(List<? extends IsColumn> columns);
   }
 
   private static final Aggregate DEFAULT_AGGREGATE = Aggregate.SUM;
@@ -325,26 +351,38 @@ public class ColumnFooter extends Header<String> implements HasTextAlign,
         setAggregate(EnumUtils.getEnumByName(Aggregate.class, footerDescription.getAggregate()));
       }
 
-      String expression = footerDescription.getExpression();
-      if (!BeeUtils.isEmpty(expression) && getAggregate() == null) {
-        setAggregate(DEFAULT_AGGREGATE);
-      }
+      EvaluatorType evaluatorType = EnumUtils.getEnumByName(EvaluatorType.class,
+          footerDescription.getEvaluator());
 
-      if (getAggregate() != null) {
-        Calculation calculation;
-        if (BeeUtils.isEmpty(expression)) {
-          calculation = columnDescription.getRender();
-        } else {
-          calculation = new Calculation(expression, null);
+      if (evaluatorType != null) {
+        if (getAggregate() == null) {
+          setAggregate(DEFAULT_AGGREGATE);
+        }
+        setRowEvaluator(evaluatorType.getFunction(dataColumns));
+
+      } else {
+        String expression = footerDescription.getExpression();
+        if (!BeeUtils.isEmpty(expression) && getAggregate() == null) {
+          setAggregate(DEFAULT_AGGREGATE);
         }
 
-        if (calculation != null) {
-          setRowEvaluator(Evaluator.create(calculation, null, dataColumns));
+        if (getAggregate() != null) {
+          Calculation calculation;
 
-        } else if (column instanceof HasCellRenderer) {
-          AbstractCellRenderer renderer = ((HasCellRenderer) column).getRenderer();
-          if (renderer instanceof HasRowValue) {
-            setRowEvaluator((HasRowValue) renderer);
+          if (BeeUtils.isEmpty(expression)) {
+            calculation = columnDescription.getRender();
+          } else {
+            calculation = new Calculation(expression, null);
+          }
+
+          if (calculation != null) {
+            setRowEvaluator(Evaluator.create(calculation, null, dataColumns));
+
+          } else if (column instanceof HasCellRenderer) {
+            AbstractCellRenderer renderer = ((HasCellRenderer) column).getRenderer();
+            if (renderer instanceof HasRowValue) {
+              setRowEvaluator((HasRowValue) renderer);
+            }
           }
         }
       }
@@ -393,7 +431,9 @@ public class ColumnFooter extends Header<String> implements HasTextAlign,
       if (getDateTimeFormat() == null && column instanceof HasDateTimeFormat) {
         setDateTimeFormat(((HasDateTimeFormat) column).getDateTimeFormat());
       }
-      if (getNumberFormat() == null && column instanceof HasNumberFormat) {
+
+      if (getNumberFormat() == null && column instanceof HasNumberFormat
+          && (footerDescription == null || footerDescription.getScale() == null)) {
         setNumberFormat(((HasNumberFormat) column).getNumberFormat());
       }
     }

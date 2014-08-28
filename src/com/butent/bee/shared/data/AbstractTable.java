@@ -104,7 +104,7 @@ public abstract class AbstractTable<R extends IsRow, C extends IsColumn> impleme
   }
 
   @Override
-  public int addColumn(C column) {
+  public void addColumn(C column) {
     assertNewColumnId(column.getId());
     columns.add(column);
 
@@ -114,63 +114,40 @@ public abstract class AbstractTable<R extends IsRow, C extends IsColumn> impleme
         row.addCell(new TableCell(nullValue));
       }
     }
-    return columns.size() - 1;
   }
 
   @Override
-  public int addColumn(ValueType type) {
-    return addColumn(type, DataUtils.defaultColumnLabel(getNumberOfColumns()));
+  public void addColumn(ValueType type) {
+    addColumn(type, DataUtils.defaultColumnLabel(getNumberOfColumns()));
   }
 
   @Override
-  public int addColumn(ValueType type, String label) {
-    return addColumn(type, label, DataUtils.defaultColumnId(getNumberOfColumns()));
+  public void addColumn(ValueType type, String label) {
+    addColumn(type, label, DataUtils.defaultColumnId(getNumberOfColumns()));
   }
 
   @Override
-  public int addColumn(ValueType type, String label, String id) {
-    return addColumn(createColumn(type, label, id));
+  public void addColumn(ValueType type, String label, String id) {
+    addColumn(createColumn(type, label, id));
   }
 
   @Override
-  public int addColumns(Collection<C> columnsToAdd) {
+  public void addColumns(Collection<C> columnsToAdd) {
     Assert.notEmpty(columnsToAdd);
-    int lastIndex = BeeConst.UNDEF;
     for (C column : columnsToAdd) {
-      lastIndex = addColumn(column);
+      addColumn(column);
     }
-    return lastIndex;
   }
 
   @Override
-  public int addRow() {
-    return addRow(fillRow(createRow()));
-  }
-
-  @Override
-  public int addRow(R row) {
+  public void addRow(R row) {
     getRows().add(row);
-    return getNumberOfRows() - 1;
   }
 
   @Override
-  public int addRows(Collection<R> rowsToAdd) {
+  public void addRows(Collection<R> rowsToAdd) {
     Assert.notNull(rowsToAdd);
-    int lastIndex = BeeConst.UNDEF;
-    for (R row : rowsToAdd) {
-      lastIndex = addRow(row);
-    }
-    return lastIndex;
-  }
-
-  @Override
-  public int addRows(int rowCount) {
-    Assert.isPositive(rowCount);
-    int lastIndex = BeeConst.UNDEF;
-    for (int i = 0; i < rowCount; i++) {
-      lastIndex = addRow();
-    }
-    return lastIndex;
+    getRows().addAll(rowsToAdd);
   }
 
   @Override

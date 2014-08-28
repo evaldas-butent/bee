@@ -13,9 +13,11 @@
     <String name="Barcode" precision="30" unique="true" label="=itemBarcode" />
 
     <Relation name="Unit" notNull="true" relation="Units" label="=unit" />
+    <Enum name="TimeUnit" key="TradeActTimeUnit" label="=taTimeUnit" />
+
     <Numeric name="Weight" precision="10" scale="3" label="=weight" />
 
-    <Numeric name="Price" precision="15" scale="5" label="=sellingPrice" />
+    <Numeric name="Price" precision="15" scale="5" label="=salePrice" />
     <Relation name="Currency" relation="Currencies" label="=currency" />
 
     <Numeric name="Cost" precision="15" scale="5" label="=cost" />

@@ -6,8 +6,8 @@ import com.google.gwt.event.logical.shared.SelectionHandler;
 import static com.butent.bee.shared.modules.service.ServiceConstants.*;
 
 import com.butent.bee.client.data.Data;
-import com.butent.bee.client.ui.IdentifiableWidget;
 import com.butent.bee.client.ui.FormFactory.WidgetDescriptionCallback;
+import com.butent.bee.client.ui.IdentifiableWidget;
 import com.butent.bee.client.view.TreeView;
 import com.butent.bee.client.view.grid.GridView;
 import com.butent.bee.client.view.grid.interceptor.AbstractGridInterceptor;
@@ -73,8 +73,8 @@ public class ServiceObjectsGrid extends AbstractGridInterceptor implements
   public GridInterceptor getInstance() {
     return new ServiceObjectsGrid(status);
   }
-  
-  @Override 
+
+  @Override
   public boolean initDescription(GridDescription gridDescription) {
     gridDescription.setFilter(Filter.isEqual(COL_OBJECT_STATUS, Value.getValue(status.ordinal())));
     return true;
@@ -106,8 +106,6 @@ public class ServiceObjectsGrid extends AbstractGridInterceptor implements
     if (oldRow != null) {
       newRow.setValue(categoryIdx, oldRow.getString(categoryIdx));
       newRow.setValue(nameIdx, oldRow.getString(nameIdx));
-      
-
     } else if (categoryTree != null) {
       IsRow category = categoryTree.getSelectedItem();
 

@@ -41,6 +41,7 @@ import com.butent.bee.shared.modules.BeeParameter;
 import com.butent.bee.shared.modules.trade.TradeDocumentData;
 import com.butent.bee.shared.modules.transport.TransportConstants;
 import com.butent.bee.shared.rights.Module;
+import com.butent.bee.shared.rights.SubModule;
 import com.butent.bee.shared.time.TimeUtils;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.Codec;
@@ -91,6 +92,8 @@ public class TradeModuleBean implements BeeModule {
   UserServiceBean usr;
   @EJB
   ParamHolderBean prm;
+  @EJB
+  TradeActBean act;
 
   @Override
   public List<SearchResult> doSearch(String query) {
@@ -101,7 +104,12 @@ public class TradeModuleBean implements BeeModule {
   public ResponseObject doService(String svc, RequestInfo reqInfo) {
     ResponseObject response = null;
 
-    if (BeeUtils.same(svc, SVC_ITEMS_INFO)) {
+    SubModule subModule = reqInfo.getSubModule();
+
+    if (subModule == SubModule.ACTS) {
+      response = act.doService(svc, reqInfo);
+
+    } else if (BeeUtils.same(svc, SVC_ITEMS_INFO)) {
       response = getItemsInfo(reqInfo.getParameter("view_name"),
           BeeUtils.toLongOrNull(reqInfo.getParameter("id")),
           reqInfo.getParameter(COL_CURRENCY));
@@ -121,6 +129,7 @@ public class TradeModuleBean implements BeeModule {
       logger.warning(msg);
       response = ResponseObject.error(msg);
     }
+
     return response;
   }
 

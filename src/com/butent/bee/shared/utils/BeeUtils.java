@@ -723,6 +723,15 @@ public final class BeeUtils {
     }
   }
 
+  public static <T> T getLast(List<? extends T> lst) {
+    int size = size(lst);
+    if (size > 0) {
+      return lst.get(size - 1);
+    } else {
+      return null;
+    }
+  }
+
   public static <C extends Comparable<C>> C getLowerEndpoint(Range<C> range) {
     return (range != null && range.hasLowerBound()) ? range.lowerEndpoint() : null;
   }
@@ -1774,6 +1783,22 @@ public final class BeeUtils {
       return element;
     }
     return null;
+  }
+
+  public static Double percent(Double d, Double p) {
+    if (isDouble(d) && isDouble(p)) {
+      return d * p / 100d;
+    } else {
+      return null;
+    }
+  }
+
+  public static Double percentInclusive(Double d, Double p) {
+    if (isDouble(d) && isPositive(p)) {
+      return d * p / (p + 100d);
+    } else {
+      return null;
+    }
   }
 
   public static Double plusPercent(Double d, Double p) {

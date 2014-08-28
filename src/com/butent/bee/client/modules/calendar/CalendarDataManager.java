@@ -187,7 +187,7 @@ public class CalendarDataManager {
       return;
     }
 
-    ParameterList params = CalendarKeeper.createRequestParameters(SVC_GET_CALENDAR_ITEMS);
+    ParameterList params = CalendarKeeper.createArgs(SVC_GET_CALENDAR_ITEMS);
     params.addQueryItem(PARAM_CALENDAR_ID, calendarId);
 
     if (visibleRange != null) {

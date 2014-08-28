@@ -3289,7 +3289,9 @@ textarea,
   overflow: auto;
 }
 
-.bee-Form .bee-HtmlTable {
+.bee-Form .bee-HtmlTable,
+.bee-Form .bee-Horizontal,
+.bee-Form .bee-Disclosure {
   border-collapse: collapse;
 }
 .bee-Form .bee-HtmlTable td {

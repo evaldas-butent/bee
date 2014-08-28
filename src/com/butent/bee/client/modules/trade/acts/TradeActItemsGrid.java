@@ -1,0 +1,122 @@
+package com.butent.bee.client.modules.trade.acts;
+
+import com.google.common.collect.Lists;
+import com.google.gwt.event.logical.shared.SelectionEvent;
+import com.google.gwt.event.logical.shared.SelectionHandler;
+
+import static com.butent.bee.shared.modules.classifiers.ClassifierConstants.*;
+import static com.butent.bee.shared.modules.trade.TradeConstants.*;
+import static com.butent.bee.shared.modules.trade.acts.TradeActConstants.*;
+
+import com.butent.bee.client.data.Data;
+import com.butent.bee.client.data.IdCallback;
+import com.butent.bee.client.data.Queries;
+import com.butent.bee.client.presenter.GridPresenter;
+import com.butent.bee.client.ui.UiHelper;
+import com.butent.bee.client.view.grid.interceptor.AbstractGridInterceptor;
+import com.butent.bee.client.view.grid.interceptor.GridInterceptor;
+import com.butent.bee.shared.data.BeeRow;
+import com.butent.bee.shared.data.BeeRowSet;
+import com.butent.bee.shared.data.DataUtils;
+import com.butent.bee.shared.data.IsRow;
+import com.butent.bee.shared.modules.classifiers.ItemPrice;
+import com.butent.bee.shared.utils.BeeUtils;
+
+import java.util.List;
+
+public class TradeActItemsGrid extends AbstractGridInterceptor implements
+    SelectionHandler<BeeRowSet> {
+
+  private final TradeActItemPicker picker;
+
+  TradeActItemsGrid() {
+    this.picker = new TradeActItemPicker();
+
+    picker.addSelectionHandler(this);
+  }
+
+  @Override
+  public boolean beforeAddRow(GridPresenter presenter, boolean copy) {
+    IsRow parentRow = UiHelper.getFormRow(presenter.getMainView());
+    if (parentRow != null) {
+      picker.show(parentRow);
+    }
+
+    return false;
+  }
+
+  @Override
+  public GridInterceptor getInstance() {
+    return new TradeActItemsGrid();
+  }
+
+  @Override
+  public void onSelection(SelectionEvent<BeeRowSet> event) {
+    final BeeRowSet rowSet = event.getSelectedItem();
+
+    if (!DataUtils.isEmpty(rowSet) && VIEW_ITEMS.equals(rowSet.getViewName())) {
+      getGridView().ensureRelId(new IdCallback() {
+        @Override
+        public void onSuccess(Long result) {
+          IsRow parentRow = UiHelper.getFormRow(getGridView());
+
+          if (DataUtils.idEquals(parentRow, result)) {
+            ItemPrice itemPrice = TradeActKeeper.getItemPrice(VIEW_TRADE_ACTS, parentRow);
+            addItems(parentRow, itemPrice, getDefaultDiscount(), rowSet);
+          }
+        }
+      });
+    }
+  }
+
+  private void addItems(IsRow parentRow, ItemPrice itemPrice, Double discount, BeeRowSet items) {
+    List<String> colNames = Lists.newArrayList(COL_TRADE_ACT, COL_TA_ITEM,
+        COL_TRADE_ITEM_QUANTITY, COL_TRADE_ITEM_PRICE, COL_TRADE_DISCOUNT);
+    BeeRowSet rowSet = new BeeRowSet(getViewName(), Data.getColumns(getViewName(), colNames));
+
+    int actIndex = rowSet.getColumnIndex(COL_TRADE_ACT);
+    int itemIndex = rowSet.getColumnIndex(COL_TA_ITEM);
+    int qtyIndex = rowSet.getColumnIndex(COL_TRADE_ITEM_QUANTITY);
+    int priceIndex = rowSet.getColumnIndex(COL_TRADE_ITEM_PRICE);
+    int discountIndex = rowSet.getColumnIndex(COL_TRADE_DISCOUNT);
+
+    for (BeeRow item : items) {
+      Double qty = BeeUtils.toDoubleOrNull(item.getProperty(PRP_QUANTITY));
+
+      if (BeeUtils.isDouble(qty)) {
+        BeeRow row = DataUtils.createEmptyRow(rowSet.getNumberOfColumns());
+
+        row.setValue(actIndex, parentRow.getId());
+        row.setValue(itemIndex, item.getId());
+
+        row.setValue(qtyIndex, qty);
+
+        if (itemPrice != null) {
+          Double price = item.getDouble(items.getColumnIndex(itemPrice.getPriceColumn()));
+          if (BeeUtils.isDouble(price)) {
+            row.setValue(priceIndex, price);
+          }
+        }
+
+        if (BeeUtils.nonZero(discount)) {
+          row.setValue(discountIndex, discount);
+        }
+
+        rowSet.addRow(row);
+      }
+    }
+
+    if (!rowSet.isEmpty()) {
+      Queries.insertRows(rowSet);
+    }
+  }
+
+  private Double getDefaultDiscount() {
+    IsRow row = getGridView().getActiveRow();
+    if (row == null) {
+      row = BeeUtils.getLast(getGridView().getRowData());
+    }
+
+    return (row == null) ? null : row.getDouble(getDataIndex(COL_TRADE_DISCOUNT));
+  }
+}

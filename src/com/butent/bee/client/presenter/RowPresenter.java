@@ -9,7 +9,6 @@ import com.butent.bee.client.data.RowEditor;
 import com.butent.bee.client.dom.ElementSize;
 import com.butent.bee.client.output.Printable;
 import com.butent.bee.client.style.StyleUtils;
-import com.butent.bee.client.ui.HasWidgetSupplier;
 import com.butent.bee.client.view.HeaderImpl;
 import com.butent.bee.client.view.HeaderView;
 import com.butent.bee.client.view.View;
@@ -24,6 +23,7 @@ import com.butent.bee.shared.data.view.DataInfo;
 import com.butent.bee.shared.ui.Action;
 import com.butent.bee.shared.ui.HandlesActions;
 import com.butent.bee.shared.ui.HasCaption;
+import com.butent.bee.shared.ui.HasWidgetSupplier;
 import com.butent.bee.shared.utils.BeeUtils;
 
 import java.util.Set;

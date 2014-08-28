@@ -19,27 +19,27 @@ import com.butent.bee.client.view.HeaderView;
 import com.butent.bee.client.view.grid.GridView.SelectedRows;
 import com.butent.bee.client.view.grid.interceptor.AbstractGridInterceptor;
 import com.butent.bee.client.view.grid.interceptor.GridInterceptor;
-import com.butent.bee.client.widget.CheckBox;
-import com.butent.bee.shared.Assert;
-import com.butent.bee.shared.data.filter.Filter;
-import com.butent.bee.shared.data.value.Value;
-import com.butent.bee.shared.i18n.LocalizableConstants;
 import com.butent.bee.client.widget.Button;
+import com.butent.bee.client.widget.CheckBox;
 import com.butent.bee.client.widget.Image;
+import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.communication.ResponseObject;
 import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.event.DataChangeEvent;
+import com.butent.bee.shared.data.filter.Filter;
+import com.butent.bee.shared.data.value.Value;
 import com.butent.bee.shared.data.view.RowInfo;
+import com.butent.bee.shared.i18n.LocalizableConstants;
 import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.modules.trade.TradeConstants;
 import com.butent.bee.shared.ui.Action;
 
-import java.util.Set;
 import java.util.Map;
+import java.util.Set;
 
 public class ServiceInvoicesGrid extends AbstractGridInterceptor implements ClickHandler {
   private static final LocalizableConstants localizableConstants = Localized.getConstants();
- 
+
   private final Button action = new Button(localizableConstants.trSendToERP(), this);
   private Filter defaultFilter;
   private Filter customFilter = Filter.isTrue();
@@ -98,7 +98,7 @@ public class ServiceInvoicesGrid extends AbstractGridInterceptor implements Clic
 
     return defaultFilters;
   }
-  
+
   @Override
   public void onClick(ClickEvent event) {
     final GridPresenter presenter = getGridPresenter();
@@ -144,7 +144,7 @@ public class ServiceInvoicesGrid extends AbstractGridInterceptor implements Clic
 
     };
   }
-  
+
   private Filter getFilter() {
     return customFilter;
   }

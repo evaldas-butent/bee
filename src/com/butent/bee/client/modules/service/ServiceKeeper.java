@@ -21,6 +21,7 @@ import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.menu.MenuHandler;
 import com.butent.bee.shared.menu.MenuService;
 import com.butent.bee.shared.modules.administration.AdministrationConstants;
+import com.butent.bee.shared.modules.service.ServiceConstants.ObjectStatus;
 import com.butent.bee.shared.rights.Module;
 import com.butent.bee.shared.utils.EnumUtils;
 
@@ -29,9 +30,7 @@ public final class ServiceKeeper {
   public static final String STYLE_PREFIX = StyleUtils.CLASS_NAME_PREFIX + "svc-";
 
   public static ParameterList createArgs(String method) {
-    ParameterList args = BeeKeeper.getRpc().createParameters(Module.SERVICE.getName());
-    args.addQueryItem(AdministrationConstants.METHOD, method);
-    return args;
+    return BeeKeeper.getRpc().createParameters(Module.SERVICE, method);
   }
 
   public static void register() {
@@ -68,7 +67,7 @@ public final class ServiceKeeper {
         }, ObjectStatus.SERVICE_OBJECT);
       }
     });
-    
+
     MenuService.SERVICE_PROJECTS_CALENDAR.setHandler(new MenuHandler() {
       @Override
       public void onSelection(String parameters) {

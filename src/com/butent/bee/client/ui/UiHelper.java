@@ -42,6 +42,7 @@ import com.butent.bee.shared.css.values.VerticalAlign;
 import com.butent.bee.shared.css.values.WhiteSpace;
 import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.IsColumn;
+import com.butent.bee.shared.data.IsRow;
 import com.butent.bee.shared.data.value.ValueType;
 import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogUtils;
@@ -283,7 +284,12 @@ public final class UiHelper {
     return null;
   }
 
-  public static Long getFormRowId(Widget widget) {
+  public static IsRow getFormRow(IsWidget widget) {
+    FormView form = getForm(widget);
+    return (form == null) ? null : form.getActiveRow();
+  }
+
+  public static Long getFormRowId(IsWidget widget) {
     FormView form = getForm(widget);
     return (form == null) ? null : form.getActiveRowId();
   }

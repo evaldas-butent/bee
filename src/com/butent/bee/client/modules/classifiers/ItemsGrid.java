@@ -9,12 +9,14 @@ import com.butent.bee.client.data.Data;
 import com.butent.bee.client.ui.FormFactory.WidgetDescriptionCallback;
 import com.butent.bee.client.ui.IdentifiableWidget;
 import com.butent.bee.client.view.TreeView;
+import com.butent.bee.client.view.grid.GridView;
 import com.butent.bee.client.view.grid.interceptor.AbstractGridInterceptor;
 import com.butent.bee.client.view.grid.interceptor.GridInterceptor;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.data.IsRow;
 import com.butent.bee.shared.data.filter.Filter;
 import com.butent.bee.shared.i18n.Localized;
+import com.butent.bee.shared.ui.ColumnDescription;
 import com.butent.bee.shared.ui.GridDescription;
 import com.butent.bee.shared.utils.BeeUtils;
 
@@ -59,6 +61,21 @@ class ItemsGrid extends AbstractGridInterceptor implements SelectionHandler<IsRo
   }
 
   @Override
+  public ColumnDescription beforeCreateColumn(GridView gridView,
+      ColumnDescription columnDescription) {
+
+    if (showServices()) {
+      if (COL_ITEM_WEIGHT.equals(columnDescription.getId())) {
+        return null;
+      }
+    } else if (COL_TIME_UNIT.equals(columnDescription.getId())) {
+      return null;
+    }
+
+    return super.beforeCreateColumn(gridView, columnDescription);
+  }
+
+  @Override
   public String getCaption() {
     if (showServices()) {
       return Localized.getConstants().services();
@@ -78,16 +95,6 @@ class ItemsGrid extends AbstractGridInterceptor implements SelectionHandler<IsRo
       return super.getParentLabels();
     } else {
       return getTreeView().getPathLabels(getSelectedCategory().getId(), COL_CATEGORY_NAME);
-    }
-  }
-
-  @Override
-  public String getRowCaption(IsRow row, boolean edit) {
-    if (edit) {
-      return showServices() ? Localized.getConstants().service() : Localized.getConstants().item();
-    } else {
-      return showServices() ? Localized.getConstants().newService()
-          : Localized.getConstants().newItem();
     }
   }
 

@@ -416,10 +416,8 @@ public final class TransportHandler {
     }
   }
 
-  public static ParameterList createArgs(String name) {
-    ParameterList args = BeeKeeper.getRpc().createParameters(Module.TRANSPORT.getName());
-    args.addQueryItem(AdministrationConstants.METHOD, name);
-    return args;
+  public static ParameterList createArgs(String method) {
+    return BeeKeeper.getRpc().createParameters(Module.TRANSPORT, method);
   }
 
   public static void register() {

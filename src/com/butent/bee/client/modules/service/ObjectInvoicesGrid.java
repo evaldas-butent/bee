@@ -81,7 +81,7 @@ public class ObjectInvoicesGrid extends AbstractGridInterceptor {
       if (dataInfo != null) {
         int objStatus = BeeUtils.unbox(
             form.getActiveRow().getInteger(dataInfo.getColumnIndex(COL_OBJECT_STATUS)));
-        
+
         int filteredValue = ObjectStatus.SERVICE_OBJECT.ordinal() == objStatus
             ? 1 : 2;
 
