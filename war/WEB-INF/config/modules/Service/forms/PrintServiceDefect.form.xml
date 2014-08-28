@@ -12,7 +12,6 @@
 
   <FlowPanel class="bee-PrintableForm">
     <FlowPanel class="flexBox-horizontal-top">
-      <Image url="images/logo.png" />
       <Label text="=svcDefectSupplier" style="&lbl; &bold;" class="flexible bee-Label-withColon"
         horizontalAlignment="right" />
       <div name="Supplier" style="max-width: 45%" />
