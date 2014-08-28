@@ -80,5 +80,9 @@ public enum ItemPrice implements HasLocalizedCaption {
 
   public abstract String getCurrencyColumn();
 
+  public String getCurrencyNameAlias() {
+    return getCurrencyColumn() + "Name";
+  }
+
   public abstract String getPriceColumn();
 }

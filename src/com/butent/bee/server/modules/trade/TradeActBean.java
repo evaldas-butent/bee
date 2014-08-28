@@ -28,8 +28,11 @@ import com.butent.bee.shared.modules.trade.acts.TradeActKind;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.EnumUtils;
 
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -69,6 +72,8 @@ public class TradeActBean {
     }
 
     Long actId = reqInfo.getParameterLong(COL_TRADE_ACT);
+    Long warehouse = reqInfo.getParameterLong(COL_WAREHOUSE);
+
     String where = reqInfo.getParameter(Service.VAR_VIEW_WHERE);
 
     Set<Long> actItems;
@@ -97,20 +102,51 @@ public class TradeActBean {
       logger.debug(reqInfo.getService(), "no items found", filter);
     }
 
-    Table<Long, Long, Double> stock = getStock(items.getRowIds());
-    if (stock != null) {
-      int scale = sys.getFieldScale(TBL_TRADE_ACT_ITEMS, COL_TRADE_ITEM_QUANTITY);
+    if (kind.showStock()) {
+      List<Long> itemIds = (items.getNumberOfRows() < 200)
+          ? items.getRowIds() : Collections.emptyList();
+      Table<Long, Long, Double> stock = getStock(itemIds);
 
-      for (BeeRow row : items) {
-        if (stock.containsRow(row.getId())) {
-          for (Map.Entry<Long, Double> entry : stock.row(row.getId()).entrySet()) {
-            row.setProperty(PRP_WAREHOUSE_PREFIX + BeeUtils.toString(entry.getKey()),
-                BeeUtils.toString(entry.getValue(), scale));
+      if (stock != null) {
+        int scale = sys.getFieldScale(TBL_TRADE_ACT_ITEMS, COL_TRADE_ITEM_QUANTITY);
+
+        List<BeeRow> hasStock = new ArrayList<>();
+        List<BeeRow> noStock = new ArrayList<>();
+
+        for (BeeRow row : items) {
+          boolean has = false;
+
+          if (stock.containsRow(row.getId())) {
+            for (Map.Entry<Long, Double> entry : stock.row(row.getId()).entrySet()) {
+              row.setProperty(PRP_WAREHOUSE_PREFIX + BeeUtils.toString(entry.getKey()),
+                  BeeUtils.toString(entry.getValue(), scale));
+
+              if (warehouse != null && warehouse.equals(entry.getKey())) {
+                has = BeeUtils.isPositive(entry.getValue());
+              }
+            }
+          }
+
+          if (warehouse != null) {
+            if (has) {
+              hasStock.add(row);
+            } else {
+              noStock.add(row);
+            }
+          }
+
+          if (!hasStock.isEmpty() && !noStock.isEmpty()) {
+            items.clearRows();
+            items.addRows(hasStock);
+            items.addRows(noStock);
+
+            logger.debug(reqInfo.getService(), hasStock.size(), noStock.size(),
+                items.getNumberOfRows());
           }
         }
-      }
 
-      items.setTableProperty(TBL_WAREHOUSES, DataUtils.buildIdList(stock.columnKeySet()));
+        items.setTableProperty(TBL_WAREHOUSES, DataUtils.buildIdList(stock.columnKeySet()));
+      }
     }
 
     return ResponseObject.response(items);
