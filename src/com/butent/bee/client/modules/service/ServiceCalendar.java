@@ -65,6 +65,7 @@ import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogUtils;
 import com.butent.bee.shared.modules.administration.AdministrationConstants;
 import com.butent.bee.shared.modules.classifiers.ClassifierConstants;
+import com.butent.bee.shared.modules.service.ServiceConstants.ObjectStatus;
 import com.butent.bee.shared.modules.service.ServiceConstants.ServiceCompanyKind;
 import com.butent.bee.shared.modules.tasks.TaskConstants.TaskPriority;
 import com.butent.bee.shared.modules.tasks.TaskConstants.TaskStatus;
@@ -292,6 +293,14 @@ final class ServiceCalendar extends TimeBoard {
         export();
         break;
 
+      case FILTER:
+        // TODO:
+        SvcCalendarFilterHelper.openDialog();
+        break;
+      case REMOVE_FILTER:
+        // TODO:
+        render(false);
+        break;
       default:
         super.handleAction(action);
     }
@@ -358,7 +367,9 @@ final class ServiceCalendar extends TimeBoard {
 
   @Override
   protected Set<Action> getEnabledActions() {
-    return EnumSet.of(Action.REFRESH, Action.ADD, Action.EXPORT, Action.CONFIGURE, Action.PRINT);
+    return EnumSet.of(/* Action.FILTER, */Action.REFRESH, Action.ADD, Action.EXPORT,
+        Action.CONFIGURE,
+        Action.PRINT);
   }
 
   @Override
