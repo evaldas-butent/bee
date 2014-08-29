@@ -243,17 +243,20 @@ final class CompanyActionForm extends AbstractFormInterceptor {
     int idxActionResult = form.getDataIndex(CalendarConstants.COL_ACTION_RESULT);
     int idxStatus = form.getDataIndex(CalendarConstants.COL_STATUS);
     boolean canModify = false;
+    boolean hasValue = false;
+    boolean isCompleted = false;
 
     if (idxActionResult > -1) {
       String actionResultValue = row.getString(idxActionResult);
 
-      canModify = canModify || BeeUtils.isEmpty(actionResultValue);
+      hasValue = !BeeUtils.isEmpty(actionResultValue);
     }
 
     if (idxStatus > -1) {
-      canModify = canModify || AppointmentStatus.COMPLETED.ordinal() != row.getInteger(idxStatus);
+      isCompleted = AppointmentStatus.COMPLETED.ordinal() == row.getInteger(idxStatus);
     }
 
+    canModify = !hasValue && !isCompleted;
     form.setEnabled(canModify);
 
     if (!canModify) {

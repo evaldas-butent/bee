@@ -18,19 +18,26 @@
 
 			<row>
 				<Label for="Summary" class="bee-required" visible="true" />
-				<InputText source="Summary" visible="true" style="&inp1;" />
+				<cell colSpan="3">
+					<InputText source="Summary" visible="true" style="&inp2;" />
+				</cell>
+			</row>
+
+			<row>
 				<Label text="=type" for="Type" visible="true" class="bee-required" />
 				<DataSelector name="AppointmentType" source="AppointmentType"
 					renderColumns="TypeName" visible="true" style="&inp1;" />
+				<Label for="Status" visible="true" />
+				<ListBox name="Status" source="Status" visible="true" style="&inp1;" />
 			</row>
 
 			<row>
 				<Label for="Company" />
-				<DataSelector name="Company" source="Company"
-					renderColumns="CompanyName" style="&inp1;" />
-
-				<Label for="Status" visible="true" />
-				<ListBox name="Status" source="Status" visible="true" style="&inp1;" />
+				<cell colSpan="3">
+					<DataSelector name="Company" source="Company"
+						renderColumns="CompanyName CompanyType CompanyPhone CompanyMobile CompanyEmail"
+						style="&inp2;" />
+				</cell>
 			</row>
 
 			<row>
