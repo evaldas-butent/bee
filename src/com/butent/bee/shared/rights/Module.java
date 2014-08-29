@@ -124,7 +124,7 @@ public enum Module implements HasLocalizedCaption {
     }
   },
 
-  SERVICE {
+  SERVICE(SubModule.PROJECTS) {
     @Override
     public String getCaption(LocalizableConstants constants) {
       return constants.svcModule();

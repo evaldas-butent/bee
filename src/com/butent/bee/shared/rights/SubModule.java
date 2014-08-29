@@ -52,6 +52,12 @@ public enum SubModule implements HasLocalizedCaption {
     public String getCaption(LocalizableConstants constants) {
       return constants.tradeActs();
     }
+  },
+  PROJECTS {
+    @Override
+    public String getCaption(LocalizableConstants constants) {
+      return constants.svcProjects();
+    }
   };
 
   public static SubModule parse(String input) {

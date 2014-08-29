@@ -30,6 +30,8 @@ public interface LocalizableServiceConstants {
 
   String svcObjectsPotential();
 
+  String svcProjects();
+
   String svcProjectObject();
 
   String svcProjectObjects();

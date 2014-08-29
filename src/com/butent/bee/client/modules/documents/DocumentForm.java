@@ -63,6 +63,7 @@ import com.butent.bee.shared.i18n.LocalizableConstants;
 import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.modules.classifiers.ClassifierConstants;
 import com.butent.bee.shared.modules.service.ServiceConstants;
+import com.butent.bee.shared.modules.service.ServiceConstants.ObjectStatus;
 import com.butent.bee.shared.modules.tasks.TaskConstants;
 import com.butent.bee.shared.rights.Module;
 import com.butent.bee.shared.rights.ModuleAndSub;
@@ -339,6 +340,9 @@ public class DocumentForm extends DocumentDataForm implements SelectorEvent.Hand
   private void createNewServiceObjectRelation(SelectorEvent event) {
     final BeeRow row = event.getNewRow();
     final List<Long> companies = Lists.newArrayList();
+
+    Data.setValue(ServiceConstants.VIEW_SERVICE_OBJECTS, row, ServiceConstants.COL_OBJECT_STATUS,
+        ObjectStatus.POTENTIAL_OBJECT.ordinal());
 
     for (ChildSelector selector : childSelectors.values()) {
       if (selector.hasRelatedView(ClassifierConstants.VIEW_COMPANIES)) {

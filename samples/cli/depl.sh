@@ -46,4 +46,4 @@ echo restart server due deploy count `date`
 fi
 export DEPCOUNTLEFT=${DEPCOUNTLEFT%?}
 echo end deploy `date` $DEPCOUNTLEFT
-free
+free -h
