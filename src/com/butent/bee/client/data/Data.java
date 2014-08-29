@@ -131,6 +131,10 @@ public final class Data {
     return result;
   }
 
+  public static Integer getColumnScale(String viewName, String colName) {
+    return getDataInfo(viewName).getColumnScale(colName);
+  }
+
   public static ValueType getColumnType(String viewName, String colName) {
     return getDataInfo(viewName).getColumnType(colName);
   }

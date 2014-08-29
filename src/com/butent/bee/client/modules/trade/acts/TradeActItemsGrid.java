@@ -27,19 +27,16 @@ import java.util.List;
 public class TradeActItemsGrid extends AbstractGridInterceptor implements
     SelectionHandler<BeeRowSet> {
 
-  private final TradeActItemPicker picker;
+  private TradeActItemPicker picker;
 
   TradeActItemsGrid() {
-    this.picker = new TradeActItemPicker();
-
-    picker.addSelectionHandler(this);
   }
 
   @Override
   public boolean beforeAddRow(GridPresenter presenter, boolean copy) {
     IsRow parentRow = UiHelper.getFormRow(presenter.getMainView());
     if (parentRow != null) {
-      picker.show(parentRow);
+      ensurePicker().show(parentRow);
     }
 
     return false;
@@ -109,6 +106,15 @@ public class TradeActItemsGrid extends AbstractGridInterceptor implements
     if (!rowSet.isEmpty()) {
       Queries.insertRows(rowSet);
     }
+  }
+
+  private TradeActItemPicker ensurePicker() {
+    if (picker == null) {
+      picker = new TradeActItemPicker();
+      picker.addSelectionHandler(this);
+    }
+
+    return picker;
   }
 
   private Double getDefaultDiscount() {

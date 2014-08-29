@@ -27,6 +27,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Objects;
 import java.util.Set;
 
 /**
@@ -666,6 +667,10 @@ public final class DataUtils {
     return id != null && id > 0;
   }
 
+  public static boolean isId(String s) {
+    return s != null && BeeUtils.isDigit(s.trim()) && isId(BeeUtils.toLongOrNull(s));
+  }
+
   public static boolean isNewRow(IsRow row) {
     return row != null && row.getId() == NEW_ROW_ID;
   }
@@ -955,23 +960,12 @@ public final class DataUtils {
   }
 
   public static boolean sameId(IsRow r1, IsRow r2) {
-    if (r1 == null) {
-      return r2 == null;
-    } else if (r2 == null) {
-      return false;
-    } else {
-      return r1.getId() == r2.getId();
-    }
+    return r1 != null && r2 != null && r1.getId() == r2.getId();
   }
 
   public static boolean sameIdAndVersion(IsRow r1, IsRow r2) {
-    if (r1 == null) {
-      return r2 == null;
-    } else if (r2 == null) {
-      return false;
-    } else {
-      return r1.getId() == r2.getId() && r1.getVersion() == r2.getVersion();
-    }
+    return r1 != null && r2 != null
+        && r1.getId() == r2.getId() && r1.getVersion() == r2.getVersion();
   }
 
   public static boolean sameIdSet(String s, Collection<Long> col) {
@@ -985,6 +979,20 @@ public final class DataUtils {
 
   public static boolean sameIdSet(String s1, String s2) {
     return sameIdSet(s1, parseIdSet(s2));
+  }
+
+  public static boolean sameValues(IsRow r1, IsRow r2) {
+    if (r1 != null && r2 != null && r1.getNumberOfCells() == r2.getNumberOfCells()) {
+      for (int i = 0; i < r1.getNumberOfCells(); i++) {
+        if (!Objects.equals(r1.getString(i), r2.getString(i))) {
+          return false;
+        }
+      }
+      return true;
+
+    } else {
+      return false;
+    }
   }
 
   public static int setDefaults(IsRow row, Collection<String> colNames, List<BeeColumn> columns,

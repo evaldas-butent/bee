@@ -72,6 +72,8 @@ public interface LocalizableConstants extends Constants, LocalizableClassifierCo
 
   String actionSave();
 
+  String actionSelect();
+
   String actionUpdate();
 
   String actionWorkspaceBookmarkAll();

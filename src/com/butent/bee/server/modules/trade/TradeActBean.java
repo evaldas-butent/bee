@@ -100,6 +100,7 @@ public class TradeActBean {
     BeeRowSet items = qs.getViewData(VIEW_ITEMS, filter);
     if (DataUtils.isEmpty(items)) {
       logger.debug(reqInfo.getService(), "no items found", filter);
+      return ResponseObject.emptyResponse();
     }
 
     if (kind.showStock()) {
@@ -134,15 +135,12 @@ public class TradeActBean {
               noStock.add(row);
             }
           }
+        }
 
-          if (!hasStock.isEmpty() && !noStock.isEmpty()) {
-            items.clearRows();
-            items.addRows(hasStock);
-            items.addRows(noStock);
-
-            logger.debug(reqInfo.getService(), hasStock.size(), noStock.size(),
-                items.getNumberOfRows());
-          }
+        if (!hasStock.isEmpty() && !noStock.isEmpty()) {
+          items.clearRows();
+          items.addRows(hasStock);
+          items.addRows(noStock);
         }
 
         items.setTableProperty(TBL_WAREHOUSES, DataUtils.buildIdList(stock.columnKeySet()));
