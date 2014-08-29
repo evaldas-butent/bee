@@ -47,7 +47,7 @@
     <class-name>org.postgresql.ds.PGSimpleDataSource</class-name>
     <server-name>localhost</server-name>
     <port-number>5432</port-number>
-    <database-name>bee</database-name>
+    <database-name>bee1</database-name>
     <user>postgres</user>
     <password>admin</password>
   </data-source>
