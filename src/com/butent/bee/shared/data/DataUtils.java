@@ -268,18 +268,24 @@ public final class DataUtils {
   }
 
   public static int getColumnIndex(String columnId, List<? extends IsColumn> columns) {
-    int index = BeeConst.UNDEF;
-    if (BeeUtils.isEmpty(columnId) || BeeUtils.isEmpty(columns)) {
-      return index;
-    }
+    return getColumnIndex(columnId, columns, false);
+  }
 
-    for (int i = 0; i < columns.size(); i++) {
-      if (BeeUtils.same(columns.get(i).getId(), columnId)) {
-        index = i;
-        break;
+  public static int getColumnIndex(String columnId, List<? extends IsColumn> columns,
+      boolean warn) {
+
+    if (columns != null) {
+      for (int i = 0; i < columns.size(); i++) {
+        if (BeeUtils.same(columns.get(i).getId(), columnId)) {
+          return i;
+        }
       }
     }
-    return index;
+
+    if (warn) {
+      logger.warning("column not found", columnId);
+    }
+    return BeeConst.UNDEF;
   }
 
   public static String getColumnName(String input, List<? extends IsColumn> columns,
@@ -690,7 +696,7 @@ public final class DataUtils {
     for (String colName : colNames) {
       int i = dataInfo.getColumnIndex(colName);
       if (BeeConst.isUndef(i)) {
-        logger.warning(dataInfo.getViewName(), "column not found:", colName);
+        logger.warning(dataInfo.getViewName(), "column not found", colName);
         continue;
       }
 

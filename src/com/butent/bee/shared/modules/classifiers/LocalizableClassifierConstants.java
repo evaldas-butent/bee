@@ -26,6 +26,8 @@ public interface LocalizableClassifierConstants {
 
   String currency();
 
+  String currencyRates();
+
   String defaultColor();
 
   String department();

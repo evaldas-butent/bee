@@ -18,6 +18,7 @@ import com.butent.bee.client.data.ClientDefaults;
 import com.butent.bee.client.data.Data;
 import com.butent.bee.client.decorator.TuningFactory;
 import com.butent.bee.client.dom.DomUtils;
+import com.butent.bee.client.i18n.Money;
 import com.butent.bee.client.logging.ClientLogManager;
 import com.butent.bee.client.modules.ModuleManager;
 import com.butent.bee.client.modules.administration.AdministrationKeeper;
@@ -183,6 +184,10 @@ public class Bee implements EntryPoint, ClosingHandler {
 
           case MENU:
             BeeKeeper.getMenu().restore(serialized);
+            break;
+
+          case MONEY:
+            Money.load(serialized);
             break;
 
           case NEWS:

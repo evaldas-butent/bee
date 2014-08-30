@@ -171,6 +171,8 @@ public final class StyleUtils {
 
   public static final String NAME_TEXT_BOX = CLASS_NAME_PREFIX + "TextBox";
 
+  public static final String NAME_INFO_TABLE = CLASS_NAME_PREFIX + "info-table";
+
   public static final String TRANSFORM_ROTATE = "rotate";
   public static final String TRANSFORM_SCALE = "scale";
   public static final String TRANSFORM_SKEW = "skew";

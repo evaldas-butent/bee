@@ -11,6 +11,7 @@ import static com.butent.bee.shared.modules.trade.acts.TradeActConstants.*;
 import com.butent.bee.client.data.Data;
 import com.butent.bee.client.data.IdCallback;
 import com.butent.bee.client.data.Queries;
+import com.butent.bee.client.i18n.Money;
 import com.butent.bee.client.presenter.GridPresenter;
 import com.butent.bee.client.ui.UiHelper;
 import com.butent.bee.client.view.grid.interceptor.AbstractGridInterceptor;
@@ -20,6 +21,7 @@ import com.butent.bee.shared.data.BeeRowSet;
 import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.IsRow;
 import com.butent.bee.shared.modules.classifiers.ItemPrice;
+import com.butent.bee.shared.time.DateTime;
 import com.butent.bee.shared.utils.BeeUtils;
 
 import java.util.List;
@@ -59,14 +61,20 @@ public class TradeActItemsGrid extends AbstractGridInterceptor implements
 
           if (DataUtils.idEquals(parentRow, result)) {
             ItemPrice itemPrice = TradeActKeeper.getItemPrice(VIEW_TRADE_ACTS, parentRow);
-            addItems(parentRow, itemPrice, getDefaultDiscount(), rowSet);
+
+            DateTime date = Data.getDateTime(VIEW_TRADE_ACTS, parentRow, COL_TA_DATE);
+            Long currency = Data.getLong(VIEW_TRADE_ACTS, parentRow, COL_TA_CURRENCY);
+
+            addItems(parentRow, date, currency, itemPrice, getDefaultDiscount(), rowSet);
           }
         }
       });
     }
   }
 
-  private void addItems(IsRow parentRow, ItemPrice itemPrice, Double discount, BeeRowSet items) {
+  private void addItems(IsRow parentRow, DateTime date, Long currency, ItemPrice itemPrice,
+      Double discount, BeeRowSet items) {
+
     List<String> colNames = Lists.newArrayList(COL_TRADE_ACT, COL_TA_ITEM,
         COL_TRADE_ITEM_QUANTITY, COL_TRADE_ITEM_PRICE, COL_TRADE_DISCOUNT);
     BeeRowSet rowSet = new BeeRowSet(getViewName(), Data.getColumns(getViewName(), colNames));
@@ -90,7 +98,15 @@ public class TradeActItemsGrid extends AbstractGridInterceptor implements
 
         if (itemPrice != null) {
           Double price = item.getDouble(items.getColumnIndex(itemPrice.getPriceColumn()));
+
           if (BeeUtils.isDouble(price)) {
+            if (DataUtils.isId(currency)) {
+              Long ic = item.getLong(items.getColumnIndex(itemPrice.getCurrencyColumn()));
+              if (DataUtils.isId(ic) && !currency.equals(ic)) {
+                price = Money.exchange(ic, currency, price, date);
+              }
+            }
+
             row.setValue(priceIndex, price);
           }
         }

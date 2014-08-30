@@ -397,7 +397,8 @@ public final class Global {
 
           table.setHtml(r, i, value);
 
-          if (ValueType.isNumeric(type)) {
+          if (ValueType.isNumeric(type) || ValueType.TEXT == type
+              && CharMatcher.DIGIT.matchesAnyOf(value) && BeeUtils.isDouble(value)) {
             table.getCellFormatter().setHorizontalAlignment(r, i, TextAlign.RIGHT);
           }
         }
@@ -527,7 +528,7 @@ public final class Global {
       widget = GridFactory.simpleGrid(caption, table, BeeKeeper.getScreen().getActivePanelWidth());
     } else {
       widget = renderTable(caption, table);
-      widget.addStyleName(StyleUtils.CLASS_NAME_PREFIX + "info-table");
+      widget.addStyleName(StyleUtils.NAME_INFO_TABLE);
     }
 
     if (widget != null) {
