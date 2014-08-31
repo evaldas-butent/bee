@@ -1,6 +1,8 @@
 package com.butent.bee.client.modules.trade.acts;
 
 import com.google.common.collect.Lists;
+import com.google.gwt.event.dom.client.ClickEvent;
+import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.event.logical.shared.SelectionEvent;
 import com.google.gwt.event.logical.shared.SelectionHandler;
 
@@ -16,10 +18,12 @@ import com.butent.bee.client.presenter.GridPresenter;
 import com.butent.bee.client.ui.UiHelper;
 import com.butent.bee.client.view.grid.interceptor.AbstractGridInterceptor;
 import com.butent.bee.client.view.grid.interceptor.GridInterceptor;
+import com.butent.bee.client.widget.Button;
 import com.butent.bee.shared.data.BeeRow;
 import com.butent.bee.shared.data.BeeRowSet;
 import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.IsRow;
+import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.modules.classifiers.ItemPrice;
 import com.butent.bee.shared.time.DateTime;
 import com.butent.bee.shared.utils.BeeUtils;
@@ -35,10 +39,25 @@ public class TradeActItemsGrid extends AbstractGridInterceptor implements
   }
 
   @Override
+  public void afterCreatePresenter(GridPresenter presenter) {
+    Button command = new Button(Localized.getConstants().actionImport());
+    command.addClickHandler(new ClickHandler() {
+      @Override
+      public void onClick(ClickEvent event) {
+        onImport();
+      }
+    });
+
+    presenter.getHeader().addCommandItem(command);
+
+    super.afterCreatePresenter(presenter);
+  }
+
+  @Override
   public boolean beforeAddRow(GridPresenter presenter, boolean copy) {
     IsRow parentRow = UiHelper.getFormRow(presenter.getMainView());
     if (parentRow != null) {
-      ensurePicker().show(parentRow);
+      ensurePicker().show(parentRow, presenter.getMainView().getElement());
     }
 
     return false;
@@ -107,7 +126,7 @@ public class TradeActItemsGrid extends AbstractGridInterceptor implements
               }
             }
 
-            row.setValue(priceIndex, price);
+            row.setValue(priceIndex, Data.round(getViewName(), COL_TRADE_ITEM_PRICE, price));
           }
         }
 
@@ -140,5 +159,9 @@ public class TradeActItemsGrid extends AbstractGridInterceptor implements
     }
 
     return (row == null) ? null : row.getDouble(getDataIndex(COL_TRADE_DISCOUNT));
+  }
+
+  private void onImport() {
+
   }
 }

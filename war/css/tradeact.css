@@ -45,7 +45,8 @@
   padding: 3px 5px;
   font-weight: bold;
 }
-.bee-ta-picker-price-label {
+.bee-ta-picker-price-label,
+.bee-ta-picker-def-price-label {
   max-width: 80px;
 }
 
@@ -56,7 +57,7 @@
   background-color: #ebebeb;
 }
 .bee-ta-picker-item:hover {
-  background-color: #dfd;
+  background-color: blanchedalmond;
 }
 .bee-ta-picker-item-selected td {
   background-color: aquamarine;
@@ -84,21 +85,15 @@
 }
 
 .bee-ta-picker-def-price-label,
-.bee-ta-picker-def-price-cell {
-  font-style: italic;
-  color: darkblue;
-  background-color: white;
+.bee-ta-picker-def-price-cell:not(:empty) {
+  background-color: honeydew;
 }
 .bee-ta-picker-from-label,
 .bee-ta-picker-from-cell {
-  background-color: yellow;
-}
-.bee-ta-picker-from-cell .bee-ta-picker-stock-positive {
-  font-weight: bold;
-  color: darkgreen;
-  cursor: pointer;
+  background-color: azure;
 }
 
 .bee-ta-picker-qty-input.bee-ta-picker-qty-input {
   width: 60px;
+  font-weight: bold;
 }

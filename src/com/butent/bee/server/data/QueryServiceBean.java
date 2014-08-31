@@ -732,6 +732,17 @@ public class QueryServiceBean {
     return res.getRow(0);
   }
 
+  public SimpleRow getRow(String tblName, long id) {
+    Assert.notEmpty(tblName);
+
+    SqlSelect query = new SqlSelect()
+        .addAllFields(tblName)
+        .addFrom(tblName)
+        .setWhere(sys.idEquals(tblName, id));
+
+    return getRow(query);
+  }
+
   public List<SearchResult> getSearchResults(String viewName, Filter filter) {
     List<SearchResult> results = new ArrayList<>();
 

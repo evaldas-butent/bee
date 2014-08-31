@@ -26,6 +26,8 @@ public interface LocalizableTradeActConstants {
 
   String tradeActNew();
 
+  String tradeActNewTemplate();
+
   String tradeActs();
 
   String tradeActsAll();

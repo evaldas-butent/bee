@@ -1,6 +1,7 @@
 package com.butent.bee.client.modules.trade.acts;
 
 import com.google.common.collect.Lists;
+import com.google.gwt.core.client.Scheduler;
 import com.google.gwt.dom.client.Element;
 import com.google.gwt.dom.client.InputElement;
 import com.google.gwt.dom.client.TableCellElement;
@@ -31,13 +32,16 @@ import com.butent.bee.client.data.Queries.RowSetCallback;
 import com.butent.bee.client.dialog.DecisionCallback;
 import com.butent.bee.client.dialog.DialogBox;
 import com.butent.bee.client.dialog.DialogConstants;
+import com.butent.bee.client.dialog.Popup;
 import com.butent.bee.client.dom.DomUtils;
 import com.butent.bee.client.dom.Selectors;
 import com.butent.bee.client.event.EventUtils;
+import com.butent.bee.client.event.logical.OpenEvent;
 import com.butent.bee.client.grid.HtmlTable;
 import com.butent.bee.client.i18n.Format;
 import com.butent.bee.client.layout.Flow;
 import com.butent.bee.client.ui.UiHelper;
+import com.butent.bee.client.view.edit.Editor;
 import com.butent.bee.client.widget.FaLabel;
 import com.butent.bee.client.widget.Image;
 import com.butent.bee.client.widget.InputNumber;
@@ -46,6 +50,7 @@ import com.butent.bee.client.widget.ListBox;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.Service;
 import com.butent.bee.shared.communication.ResponseObject;
+import com.butent.bee.shared.data.BeeColumn;
 import com.butent.bee.shared.data.BeeRow;
 import com.butent.bee.shared.data.BeeRowSet;
 import com.butent.bee.shared.data.DataUtils;
@@ -78,6 +83,17 @@ class TradeActItemPicker extends Flow implements HasSelectionHandlers<BeeRowSet>
   private static final String STYLE_DIALOG = STYLE_PREFIX + "dialog";
   private static final String STYLE_SAVE = STYLE_PREFIX + "save";
   private static final String STYLE_CLOSE = STYLE_PREFIX + "close";
+
+  private static final String STYLE_CONTAINER = STYLE_PREFIX + "container";
+
+  private static final String STYLE_SEARCH_PREFIX = STYLE_PREFIX + "search-";
+  private static final String STYLE_SEARCH_PANEL = STYLE_SEARCH_PREFIX + "panel";
+  private static final String STYLE_SEARCH_BY = STYLE_SEARCH_PREFIX + "by";
+  private static final String STYLE_SEARCH_BOX = STYLE_SEARCH_PREFIX + "box";
+  private static final String STYLE_SEARCH_COMMAND = STYLE_SEARCH_PREFIX + "command";
+
+  private static final String STYLE_ITEM_PANEL = STYLE_PREFIX + "item-panel";
+  private static final String STYLE_ITEM_TABLE = STYLE_PREFIX + "item-table";
 
   private static final String STYLE_HEADER_ROW = STYLE_PREFIX + "header";
   private static final String STYLE_ITEM_ROW = STYLE_PREFIX + "item";
@@ -226,14 +242,14 @@ class TradeActItemPicker extends Flow implements HasSelectionHandlers<BeeRowSet>
   private final List<Long> warehouses = new ArrayList<>();
   private final Map<Long, String> warehouseLabels = new HashMap<>();
 
-  private final Flow itemPanel = new Flow(STYLE_PREFIX + "item-panel");
+  private final Flow itemPanel = new Flow(STYLE_ITEM_PANEL);
 
   private NumberFormat priceFormat = Format.getDecimalFormat(2, 5);
 
   private ChangeHandler quantityChangeHandler;
 
   TradeActItemPicker() {
-    super(STYLE_PREFIX + "container");
+    super(STYLE_CONTAINER);
 
     add(createSearch());
     add(itemPanel);
@@ -254,29 +270,29 @@ class TradeActItemPicker extends Flow implements HasSelectionHandlers<BeeRowSet>
     return addHandler(handler, SelectionEvent.getType());
   }
 
-  void show(IsRow taRow) {
+  void show(IsRow taRow, Element target) {
     lastTaRow = DataUtils.cloneRow(taRow);
 
     warehouseFrom = TradeActKeeper.getWarehouseFrom(VIEW_TRADE_ACTS, taRow);
     itemPrice = TradeActKeeper.getItemPrice(VIEW_TRADE_ACTS, taRow);
 
-    getItems(null, new RowSetCallback() {
-      @Override
-      public void onSuccess(BeeRowSet result) {
-        items = result;
-        prepareWarehouses(extractWarehouses(result));
+    items = null;
 
-        renderItems();
-        openDialog();
-      }
-    });
+    warehouses.clear();
+    warehouseLabels.clear();
+
+    if (!itemPanel.isEmpty()) {
+      itemPanel.clear();
+    }
+
+    openDialog(target);
   }
 
   private Widget createSearch() {
-    Flow panel = new Flow(STYLE_PREFIX + "search-panel");
+    Flow panel = new Flow(STYLE_SEARCH_PANEL);
 
     final ListBox searchBy = new ListBox();
-    searchBy.addStyleName(STYLE_PREFIX + "search-by");
+    searchBy.addStyleName(STYLE_SEARCH_BY);
 
     searchBy.addItem(BeeConst.STRING_EMPTY, BeeConst.STRING_ASTERISK);
     for (String column : SEARCH_COLUMNS) {
@@ -288,7 +304,8 @@ class TradeActItemPicker extends Flow implements HasSelectionHandlers<BeeRowSet>
 
     final InputText searchBox = new InputText();
     DomUtils.setSearch(searchBox);
-    searchBox.addStyleName(STYLE_PREFIX + "search-box");
+    searchBox.setMaxLength(20);
+    searchBox.addStyleName(STYLE_SEARCH_BOX);
 
     searchBox.addKeyDownHandler(new KeyDownHandler() {
       @Override
@@ -304,7 +321,7 @@ class TradeActItemPicker extends Flow implements HasSelectionHandlers<BeeRowSet>
 
     panel.add(searchBox);
 
-    FaLabel searchCommand = new FaLabel(FontAwesome.SEARCH, STYLE_PREFIX + "search-command");
+    FaLabel searchCommand = new FaLabel(FontAwesome.SEARCH, STYLE_SEARCH_COMMAND);
 
     searchCommand.addClickHandler(new ClickHandler() {
       @Override
@@ -339,10 +356,44 @@ class TradeActItemPicker extends Flow implements HasSelectionHandlers<BeeRowSet>
       getItems(filter, new RowSetCallback() {
         @Override
         public void onSuccess(BeeRowSet result) {
-          items = result;
-          prepareWarehouses(extractWarehouses(result));
+          Map<Long, Double> quantities = getQuantities();
 
-          renderItems();
+          Collection<Long> whs = extractWarehouses(result);
+
+          if (quantities.isEmpty() || DataUtils.isEmpty(items)) {
+            items = result;
+
+          } else {
+            whs.addAll(extractWarehouses(items));
+
+            List<BeeRow> rows = new ArrayList<>();
+
+            for (BeeRow row : items) {
+              if (quantities.containsKey(row.getId())) {
+                rows.add(row);
+              }
+            }
+            for (BeeRow row : result) {
+              if (!quantities.containsKey(row.getId())) {
+                rows.add(row);
+              }
+            }
+
+            items.setRows(rows);
+          }
+
+          prepareWarehouses(whs);
+          renderItems(quantities);
+
+          Scheduler.get().scheduleDeferred(new Scheduler.ScheduledCommand() {
+            @Override
+            public void execute() {
+              Popup popup = UiHelper.getParentPopup(TradeActItemPicker.this);
+              if (popup != null) {
+                popup.onResize();
+              }
+            }
+          });
         }
       });
     }
@@ -433,7 +484,7 @@ class TradeActItemPicker extends Flow implements HasSelectionHandlers<BeeRowSet>
     return warehouseFrom != null && warehouseFrom.equals(warehouse);
   }
 
-  private void openDialog() {
+  private void openDialog(Element target) {
     final DialogBox dialog = DialogBox.withoutCloseBox(Localized.getConstants().goods(),
         STYLE_DIALOG);
 
@@ -486,8 +537,19 @@ class TradeActItemPicker extends Flow implements HasSelectionHandlers<BeeRowSet>
 
     dialog.addAction(Action.CLOSE, close);
 
+    dialog.addOpenHandler(new OpenEvent.Handler() {
+      @Override
+      public void onOpen(OpenEvent event) {
+        Widget searchBox = UiHelper.getChildByStyleName(TradeActItemPicker.this, STYLE_SEARCH_BOX);
+        if (searchBox instanceof Editor) {
+          ((Editor) searchBox).clearValue();
+          ((Editor) searchBox).setFocus(true);
+        }
+      }
+    });
+
     dialog.setWidget(this);
-    dialog.center();
+    dialog.showOnTop(target);
   }
 
   private void prepareWarehouses(Collection<Long> ids) {
@@ -522,10 +584,10 @@ class TradeActItemPicker extends Flow implements HasSelectionHandlers<BeeRowSet>
     }
   }
 
-  private void renderItems() {
+  private void renderItems(Map<Long, Double> quantities) {
     itemPanel.clear();
 
-    HtmlTable table = new HtmlTable(STYLE_PREFIX + "item-table");
+    HtmlTable table = new HtmlTable(STYLE_ITEM_TABLE);
 
     int r = 0;
     int c = 0;
@@ -576,6 +638,9 @@ class TradeActItemPicker extends Flow implements HasSelectionHandlers<BeeRowSet>
       currencyIndexes.put(ip, items.getColumnIndex(ip.getCurrencyNameAlias()));
     }
 
+    BeeColumn qtyColumn = Data.getColumn(VIEW_TRADE_ACT_ITEMS,
+        TradeConstants.COL_TRADE_ITEM_QUANTITY);
+
     r++;
     for (BeeRow item : items) {
       c = 0;
@@ -619,10 +684,15 @@ class TradeActItemPicker extends Flow implements HasSelectionHandlers<BeeRowSet>
 
       c += warehouses.size();
 
-      table.setWidget(r, c, renderQty(), STYLE_QTY_PREFIX + STYLE_CELL_SUFFIX);
+      Double qty = quantities.get(item.getId());
+      table.setWidget(r, c, renderQty(qtyColumn, qty), STYLE_QTY_PREFIX + STYLE_CELL_SUFFIX);
 
       DomUtils.setDataIndex(table.getRow(r), item.getId());
+
       table.getRowFormatter().addStyleName(r, STYLE_ITEM_ROW);
+      if (BeeUtils.isPositive(qty)) {
+        table.getRowFormatter().addStyleName(r, STYLE_SELECTED_ROW);
+      }
 
       r++;
     }
@@ -649,14 +719,22 @@ class TradeActItemPicker extends Flow implements HasSelectionHandlers<BeeRowSet>
     }
   }
 
-  private Widget renderQty() {
+  private Widget renderQty(BeeColumn column, Double qty) {
     InputNumber input = new InputNumber();
 
     input.setMinValue(BeeConst.STRING_ZERO);
-    input.setScale(Data.getColumnPrecision(VIEW_TRADE_ACT_ITEMS,
-        TradeConstants.COL_TRADE_ITEM_QUANTITY));
+
+    if (column != null) {
+      input.setMaxValue(DataUtils.getMaxValue(column));
+      input.setScale(column.getScale());
+      input.setMaxLength(UiHelper.getMaxLength(column));
+    }
 
     input.addStyleName(STYLE_QTY_INPUT);
+
+    if (BeeUtils.isPositive(qty)) {
+      input.setValue(qty);
+    }
 
     input.addChangeHandler(ensureQuantityChangeHandler());
 

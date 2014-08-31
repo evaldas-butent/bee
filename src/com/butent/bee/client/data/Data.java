@@ -237,6 +237,16 @@ public final class Data {
     onTableChange(getDataInfo(viewName).getTableName(), effects);
   }
 
+  public static Double round(String viewName, String colName, Double value) {
+    if (BeeUtils.nonZero(value)) {
+      Integer scale = getColumnScale(viewName, colName);
+      if (BeeUtils.isNonNegative(scale)) {
+        return BeeUtils.round(value, scale);
+      }
+    }
+    return value;
+  }
+
   public static boolean sameTable(String v1, String v2) {
     String t1 = getViewTable(v1);
     if (BeeUtils.isEmpty(t1)) {

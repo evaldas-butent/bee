@@ -17,6 +17,7 @@ import com.butent.bee.client.communication.ResponseCallback;
 import com.butent.bee.client.data.ClientDefaults;
 import com.butent.bee.client.data.Data;
 import com.butent.bee.client.decorator.TuningFactory;
+import com.butent.bee.client.dialog.Popup;
 import com.butent.bee.client.dom.DomUtils;
 import com.butent.bee.client.i18n.Money;
 import com.butent.bee.client.logging.ClientLogManager;
@@ -45,6 +46,7 @@ import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.Codec;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 
@@ -282,6 +284,13 @@ public class Bee implements EntryPoint, ClosingHandler {
       @Override
       public void onResize(ResizeEvent event) {
         BeeKeeper.getScreen().getScreenPanel().onResize();
+
+        Collection<Popup> popups = Popup.getVisiblePopups();
+        if (!BeeUtils.isEmpty(popups)) {
+          for (Popup popup : popups) {
+            popup.onResize();
+          }
+        }
       }
     });
 

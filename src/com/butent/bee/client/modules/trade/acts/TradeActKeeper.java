@@ -184,6 +184,42 @@ public final class TradeActKeeper {
     return operations;
   }
 
+  static Pair<Long, String> getDefaultOperation(TradeActKind kind) {
+    if (kind == null) {
+      return null;
+    }
+    BeeRowSet rowSet = cache.getRowSet(VIEW_TRADE_OPERATIONS);
+    if (DataUtils.isEmpty(rowSet)) {
+      return null;
+    }
+
+    Long id = null;
+    String name = null;
+
+    int nameIndex = rowSet.getColumnIndex(COL_OPERATION_NAME);
+    int kindIndex = rowSet.getColumnIndex(COL_OPERATION_KIND);
+
+    for (BeeRow row : rowSet) {
+      if (getKind(row, kindIndex) == kind) {
+        if (DataUtils.isId(id)) {
+          id = null;
+          break;
+        } else {
+          id = row.getId();
+          name = row.getString(nameIndex);
+        }
+      }
+    }
+
+    if (DataUtils.isId(id)) {
+      return Pair.of(id, name);
+    } else if (kind == TradeActKind.SUPPLEMENT) {
+      return getDefaultOperation(TradeActKind.SALE);
+    } else {
+      return null;
+    }
+  }
+
   static ItemPrice getItemPrice(Long operation) {
     if (DataUtils.isId(operation)) {
       return EnumUtils.getEnumByIndex(ItemPrice.class,
@@ -287,12 +323,7 @@ public final class TradeActKeeper {
   static void prepareNewTradeAct(IsRow row, TradeActKind kind) {
     if (kind != null) {
       Data.setValue(VIEW_TRADE_ACTS, row, COL_TA_KIND, kind.ordinal());
-
-      Pair<Long, String> operation = getDefaultOperation(kind);
-      if (operation != null) {
-        Data.setValue(VIEW_TRADE_ACTS, row, COL_TA_OPERATION, operation.getA());
-        Data.setValue(VIEW_TRADE_ACTS, row, COL_OPERATION_NAME, operation.getB());
-      }
+      setDefaultOperation(row, kind);
     }
 
     BeeRowSet userSeries = getUserSeries();
@@ -306,6 +337,14 @@ public final class TradeActKeeper {
   static void setCommandEnabled(EnablableWidget command, boolean enabled) {
     command.setEnabled(enabled);
     command.setStyleName(STYLE_COMMAND_DISABLED, !enabled);
+  }
+
+  static void setDefaultOperation(IsRow row, TradeActKind kind) {
+    Pair<Long, String> operation = getDefaultOperation(kind);
+    if (operation != null) {
+      Data.setValue(VIEW_TRADE_ACTS, row, COL_TA_OPERATION, operation.getA());
+      Data.setValue(VIEW_TRADE_ACTS, row, COL_OPERATION_NAME, operation.getB());
+    }
   }
 
   private static void ensureChache(final ScheduledCommand command) {
@@ -326,42 +365,6 @@ public final class TradeActKeeper {
           command.execute();
         }
       });
-    }
-  }
-
-  private static Pair<Long, String> getDefaultOperation(TradeActKind kind) {
-    if (kind == null) {
-      return null;
-    }
-    BeeRowSet rowSet = cache.getRowSet(VIEW_TRADE_OPERATIONS);
-    if (DataUtils.isEmpty(rowSet)) {
-      return null;
-    }
-
-    Long id = null;
-    String name = null;
-
-    int nameIndex = rowSet.getColumnIndex(COL_OPERATION_NAME);
-    int kindIndex = rowSet.getColumnIndex(COL_OPERATION_KIND);
-
-    for (BeeRow row : rowSet) {
-      if (getKind(row, kindIndex) == kind) {
-        if (DataUtils.isId(id)) {
-          id = null;
-          break;
-        } else {
-          id = row.getId();
-          name = row.getString(nameIndex);
-        }
-      }
-    }
-
-    if (DataUtils.isId(id)) {
-      return Pair.of(id, name);
-    } else if (kind == TradeActKind.SUPPLEMENT) {
-      return getDefaultOperation(TradeActKind.SALE);
-    } else {
-      return null;
     }
   }
 
