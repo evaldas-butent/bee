@@ -33,7 +33,7 @@
 		<DataColumn name="DelayedPaymentRiskName" visible="false"
 			caption="=clientDelayedPaymentRisk" label="=clientDelayedPaymentRisk" />
 		<DataColumn name="InvoiceTransferTypeName" visible="false"
-			caption="=percentInterest" label="=percentInterest" />
+			caption="=invoiceTransferType" label="=invoiceTransferType" />
 
 		<DataColumn name="FinancialStateName" visible="false"
 			label="=financialState" caption="=financialState" />
