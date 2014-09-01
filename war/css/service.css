@@ -42,6 +42,21 @@
   -ms-flex-align: center;
   overflow: hidden;
 }
+
+.bee-svc-calendar-filter-actionsGroup {
+	margin-top: 2px;
+  display: flex;
+  display: -webkit-flex;
+  display: -ms-flexbox;
+  justify-content: center;
+  -webkit-justify-content: center;
+  -ms-flex-pack: center;
+}
+
+.bee-svc-calendar-filter-actionClear {
+  margin-left: 2em;
+}
+
 .bee-svc-calendar-info-panel {
   position: absolute;
   overflow: auto;
