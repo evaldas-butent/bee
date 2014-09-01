@@ -1,7 +1,5 @@
 package com.butent.bee.server;
 
-import com.google.common.collect.Maps;
-
 import static com.butent.bee.shared.modules.administration.AdministrationConstants.*;
 
 import com.butent.bee.server.communication.Rooms;
@@ -34,6 +32,7 @@ import com.butent.bee.shared.ui.UserInterface.Component;
 import com.butent.bee.shared.utils.BeeUtils;
 
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.Map;
 
 import javax.ejb.EJB;
@@ -82,7 +81,7 @@ public class DispatcherBean {
 
   public ResponseObject doLogin(RequestInfo reqInfo) {
     ResponseObject response = new ResponseObject();
-    Map<String, Object> data = Maps.newHashMap();
+    Map<String, Object> data = new HashMap<>();
 
     ResponseObject userData = userService.login(reqInfo.getRemoteAddr(), reqInfo.getUserAgent());
     response.addMessagesFrom(userData);
@@ -194,6 +193,13 @@ public class DispatcherBean {
               if (!menuData.hasErrors() && menuData.hasResponse()) {
                 data.put(component.key(), menuData.getResponse());
               }
+            }
+            break;
+
+          case MONEY:
+            BeeRowSet rates = qs.getViewData(VIEW_CURRENCY_RATES);
+            if (!DataUtils.isEmpty(rates)) {
+              data.put(component.key(), rates);
             }
             break;
 

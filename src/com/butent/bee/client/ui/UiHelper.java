@@ -1,6 +1,5 @@
 package com.butent.bee.client.ui;
 
-import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 import com.google.gwt.core.client.Scheduler;
 import com.google.gwt.dom.client.Element;
@@ -170,11 +169,21 @@ public final class UiHelper {
     return result;
   }
 
+  public static Widget getChildByStyleName(Widget parent, String styleName) {
+    Collection<Widget> children = getChildrenByStyleName(parent, Sets.newHashSet(styleName));
+
+    if (children.size() == 1) {
+      return BeeUtils.peek(children);
+    } else {
+      return null;
+    }
+  }
+
   public static Collection<Widget> getChildrenByStyleName(Widget parent,
       Collection<String> styleNames) {
 
-    Collection<Widget> result = Lists.newArrayList();
-    if (parent == null || styleNames == null) {
+    Collection<Widget> result = new ArrayList<>();
+    if (parent == null || BeeUtils.isEmpty(styleNames)) {
       return result;
     }
 
@@ -236,7 +245,7 @@ public final class UiHelper {
   }
 
   public static List<Focusable> getFocusableChildren(Widget parent) {
-    List<Focusable> result = Lists.newArrayList();
+    List<Focusable> result = new ArrayList<>();
     if (parent == null) {
       return result;
     }
@@ -309,7 +318,7 @@ public final class UiHelper {
   }
 
   public static List<Widget> getImmediateChildren(Widget parent) {
-    List<Widget> result = Lists.newArrayList();
+    List<Widget> result = new ArrayList<>();
     if (parent == null) {
       return result;
     }

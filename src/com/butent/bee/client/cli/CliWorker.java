@@ -5,6 +5,7 @@ import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Range;
 import com.google.common.collect.Sets;
+import com.google.common.collect.Table;
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.core.client.JavaScriptObject;
 import com.google.gwt.core.client.JsArrayString;
@@ -54,6 +55,7 @@ import com.butent.bee.client.composite.SliderBar;
 import com.butent.bee.client.composite.Thermometer;
 import com.butent.bee.client.data.Data;
 import com.butent.bee.client.data.JsData;
+import com.butent.bee.client.data.Queries;
 import com.butent.bee.client.decorator.TuningFactory;
 import com.butent.bee.client.dialog.ChoiceCallback;
 import com.butent.bee.client.dialog.Icon;
@@ -77,6 +79,7 @@ import com.butent.bee.client.i18n.Collator;
 import com.butent.bee.client.i18n.DateTimeFormat;
 import com.butent.bee.client.i18n.Format;
 import com.butent.bee.client.i18n.LocaleUtils;
+import com.butent.bee.client.i18n.Money;
 import com.butent.bee.client.images.Flags;
 import com.butent.bee.client.images.Images;
 import com.butent.bee.client.layout.Direction;
@@ -145,8 +148,10 @@ import com.butent.bee.shared.css.CssProperties;
 import com.butent.bee.shared.css.CssUnit;
 import com.butent.bee.shared.css.values.Display;
 import com.butent.bee.shared.css.values.FontSize;
+import com.butent.bee.shared.css.values.FontWeight;
 import com.butent.bee.shared.css.values.TextAlign;
 import com.butent.bee.shared.css.values.WhiteSpace;
+import com.butent.bee.shared.data.BeeRow;
 import com.butent.bee.shared.data.BeeRowSet;
 import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.ExtendedPropertiesData;
@@ -227,7 +232,8 @@ public final class CliWorker {
     if ("?".equals(z)) {
       whereAmI();
 
-    } else if (BeeUtils.isDigit(v.charAt(0)) || v.charAt(0) == '(' || v.charAt(0) == '-') {
+    } else if (BeeUtils.isDigit(v.charAt(0)) || v.charAt(0) == '(' || v.charAt(0) == '-'
+        || v.startsWith("Math.")) {
       doEval(v);
 
     } else if (z.startsWith("adm") && !args.isEmpty()) {
@@ -429,14 +435,17 @@ public final class CliWorker {
     } else if ("map".equals(z) && arr.length >= 3) {
       showMap(arr, errorPopup);
 
+    } else if ("md5".equals(z)) {
+      digest(v);
+
     } else if ("menu".equals(z)) {
       doMenu(args, errorPopup);
 
     } else if ("meter".equals(z)) {
       showMeter(arr, errorPopup);
 
-    } else if ("md5".equals(z)) {
-      digest(v);
+    } else if ("money".equals(z)) {
+      showExtData(z, Money.getExtendedInfo());
 
     } else if ("nf".equals(z) && arr.length >= 3) {
       logger.info(NumberFormat.getFormat(arr[1]).format(BeeUtils.toDouble(arr[2])));
@@ -458,6 +467,9 @@ public final class CliWorker {
 
     } else if ("progress".equals(z)) {
       showProgress(arr, errorPopup);
+
+    } else if ("rates".equals(z)) {
+      showRates(args, errorPopup);
 
     } else if ("rebuild".equals(z)) {
       rebuildSomething(args, errorPopup);
@@ -3477,6 +3489,63 @@ public final class CliWorker {
 
     sortTable(table, 0);
     showTable(v, table);
+  }
+
+  private static void showRates(String args, final boolean errorPopup) {
+    final DateTime dt = TimeUtils.parseDateTime(args);
+    final Table<Long, Long, Double> rates = Money.getRates(dt);
+
+    if (rates.isEmpty()) {
+      showError(errorPopup, "rates not available");
+      return;
+    }
+
+    Queries.getRowSet(VIEW_CURRENCIES, Lists.newArrayList(COL_CURRENCY_NAME),
+        new Queries.RowSetCallback() {
+          @Override
+          public void onSuccess(BeeRowSet result) {
+            if (DataUtils.isEmpty(result)) {
+              showError(errorPopup, VIEW_CURRENCIES, "not available");
+              return;
+            }
+
+            List<Pair<Long, String>> currencies = new ArrayList<>();
+            int index = result.getColumnIndex(COL_CURRENCY_NAME);
+
+            for (BeeRow row : result) {
+              currencies.add(Pair.of(row.getId(), row.getString(index)));
+            }
+
+            HtmlTable table = new HtmlTable(StyleUtils.NAME_INFO_TABLE);
+
+            String center = StyleUtils.className(TextAlign.CENTER);
+            String right = StyleUtils.className(TextAlign.RIGHT);
+            String bold = StyleUtils.className(FontWeight.BOLD);
+
+            table.setText(0, 0, Localized.getConstants().currency());
+
+            for (int i = 0; i < currencies.size(); i++) {
+              String name = currencies.get(i).getB();
+
+              table.setText(i + 1, 0, name, bold);
+              table.setText(0, i + 1, name, bold, center);
+            }
+
+            for (int r = 0; r < currencies.size(); r++) {
+              long from = currencies.get(r).getA();
+
+              for (int c = 0; c < currencies.size(); c++) {
+                Double rate = rates.get(from, currencies.get(c).getA());
+                if (rate != null) {
+                  table.setText(r + 1, c + 1, BeeUtils.toString(rate, 10), right);
+                }
+              }
+            }
+
+            table.setCaption(BeeUtils.joinWords(Localized.getConstants().currencyRates(), dt));
+            BeeKeeper.getScreen().show(table);
+          }
+        });
   }
 
   private static void showRectangle(String id, boolean errorPopup) {

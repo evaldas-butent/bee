@@ -52,6 +52,8 @@ public interface LocalizableConstants extends Constants, LocalizableClassifierCo
 
   String actionFilter();
 
+  String actionImport();
+
   String actionNew();
 
   String actionNew1();
@@ -71,6 +73,8 @@ public interface LocalizableConstants extends Constants, LocalizableClassifierCo
   String actionRenameFilter();
 
   String actionSave();
+
+  String actionSelect();
 
   String actionUpdate();
 

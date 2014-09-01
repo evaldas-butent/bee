@@ -8,19 +8,34 @@ import static com.butent.bee.shared.modules.trade.acts.TradeActConstants.*;
 
 import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.Global;
+import com.butent.bee.client.communication.ParameterList;
+import com.butent.bee.client.communication.ResponseCallback;
+import com.butent.bee.client.data.Data;
+import com.butent.bee.client.data.RowCallback;
+import com.butent.bee.client.data.RowEditor;
+import com.butent.bee.client.data.RowFactory;
 import com.butent.bee.client.dialog.ChoiceCallback;
+import com.butent.bee.client.dialog.StringCallback;
 import com.butent.bee.client.event.logical.ActiveRowChangeEvent;
 import com.butent.bee.client.presenter.GridPresenter;
+import com.butent.bee.client.ui.Opener;
+import com.butent.bee.client.view.grid.CellGrid;
 import com.butent.bee.client.view.grid.GridView;
 import com.butent.bee.client.view.grid.interceptor.AbstractGridInterceptor;
 import com.butent.bee.client.view.grid.interceptor.GridInterceptor;
 import com.butent.bee.client.widget.Button;
+import com.butent.bee.shared.communication.ResponseObject;
+import com.butent.bee.shared.data.BeeRow;
 import com.butent.bee.shared.data.BeeRowSet;
 import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.IsRow;
+import com.butent.bee.shared.data.event.DataChangeEvent;
 import com.butent.bee.shared.data.filter.FilterComponent;
 import com.butent.bee.shared.data.filter.FilterValue;
+import com.butent.bee.shared.data.view.DataInfo;
 import com.butent.bee.shared.i18n.Localized;
+import com.butent.bee.shared.logging.BeeLogger;
+import com.butent.bee.shared.logging.LogUtils;
 import com.butent.bee.shared.modules.trade.acts.TradeActKind;
 import com.butent.bee.shared.utils.BeeUtils;
 
@@ -28,6 +43,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class TradeActGrid extends AbstractGridInterceptor {
+
+  private static final BeeLogger logger = LogUtils.getLogger(TradeActGrid.class);
 
   private final TradeActKind kind;
 
@@ -187,6 +204,10 @@ public class TradeActGrid extends AbstractGridInterceptor {
           new ClickHandler() {
             @Override
             public void onClick(ClickEvent event) {
+              IsRow row = getGridView().getActiveRow();
+              if (row != null) {
+                createSupplement(row);
+              }
             }
           });
 
@@ -196,12 +217,60 @@ public class TradeActGrid extends AbstractGridInterceptor {
     return supplementCommand;
   }
 
+  private void createSupplement(IsRow base) {
+    DataInfo dataInfo = Data.getDataInfo(getViewName());
+    BeeRow newRow = RowFactory.createEmptyRow(dataInfo, true);
+
+    for (int i = 0; i < getDataColumns().size(); i++) {
+      String colId = getDataColumns().get(i).getId();
+
+      switch (colId) {
+        case COL_TA_KIND:
+          newRow.setValue(i, TradeActKind.SUPPLEMENT.ordinal());
+          break;
+
+        case COL_TA_DATE:
+        case COL_TA_UNTIL:
+        case COL_TA_NOTES:
+          break;
+
+        default:
+          if (!base.isNull(i) && !colId.startsWith(COL_TA_STATUS)) {
+            newRow.setValue(i, base.getValue(i));
+          }
+      }
+    }
+
+    TradeActKeeper.setDefaultOperation(newRow, TradeActKind.SUPPLEMENT);
+
+    RowFactory.createRow(dataInfo, newRow, new RowCallback() {
+      @Override
+      public void onSuccess(BeeRow result) {
+        CellGrid grid = getGridView().getGrid();
+        if (grid != null && grid.isAttached() && !grid.containsRow(result.getId())) {
+          grid.insertRow(result, true);
+        }
+      }
+    });
+  }
+
   private Button ensureTemplateCommand() {
     if (templateCommand == null) {
       templateCommand = new Button(Localized.getConstants().tradeActSaveAsTemplate(),
           new ClickHandler() {
             @Override
             public void onClick(ClickEvent event) {
+              int maxLen = Data.getColumnPrecision(VIEW_TRADE_ACT_TEMPLATES, COL_TA_TEMPLATE_NAME);
+
+              Global.inputString(Localized.getConstants().tradeActNewTemplate(),
+                  Localized.getConstants().name(), new StringCallback() {
+                    @Override
+                    public void onSuccess(String value) {
+                      if (!BeeUtils.isEmpty(value)) {
+                        saveAsTemplate(value.trim());
+                      }
+                    }
+                  }, null, maxLen);
             }
           });
 
@@ -209,5 +278,32 @@ public class TradeActGrid extends AbstractGridInterceptor {
       TradeActKeeper.setCommandEnabled(templateCommand, false);
     }
     return templateCommand;
+  }
+
+  private void saveAsTemplate(String name) {
+    IsRow row = getGridView().getActiveRow();
+
+    if (row == null) {
+      logger.severe(SVC_SAVE_ACT_AS_TEMPLATE, "act row not available");
+
+    } else {
+      ParameterList params = TradeActKeeper.createArgs(SVC_SAVE_ACT_AS_TEMPLATE);
+      params.addDataItem(COL_TRADE_ACT, row.getId());
+      params.addDataItem(COL_TA_TEMPLATE_NAME, name);
+
+      BeeKeeper.getRpc().makeRequest(params, new ResponseCallback() {
+        @Override
+        public void onResponse(ResponseObject response) {
+          response.notify(getGridView());
+
+          if (response.hasResponse(BeeRow.class)) {
+            BeeRow template = BeeRow.restore(response.getResponseAsString());
+            DataChangeEvent.fireRefresh(BeeKeeper.getBus(), VIEW_TRADE_ACT_TEMPLATES);
+
+            RowEditor.open(VIEW_TRADE_ACT_TEMPLATES, template, Opener.MODAL);
+          }
+        }
+      });
+    }
   }
 }

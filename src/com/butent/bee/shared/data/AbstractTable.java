@@ -187,7 +187,7 @@ public abstract class AbstractTable<R extends IsRow, C extends IsColumn> impleme
 
   @Override
   public boolean containsColumn(String columnId) {
-    return getColumnIndex(columnId) >= 0;
+    return DataUtils.contains(getColumns(), columnId);
   }
 
   @Override
@@ -241,7 +241,7 @@ public abstract class AbstractTable<R extends IsRow, C extends IsColumn> impleme
 
   @Override
   public int getColumnIndex(String columnId) {
-    return DataUtils.getColumnIndex(columnId, getColumns());
+    return DataUtils.getColumnIndex(columnId, getColumns(), true);
   }
 
   @Override

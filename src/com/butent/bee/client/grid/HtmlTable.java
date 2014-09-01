@@ -603,9 +603,13 @@ public class HtmlTable extends Panel implements IdentifiableWidget, IsHtmlTable,
     }
   }
 
-  public void setHtml(int row, int column, String html, String cellStyleName) {
+  public void setHtml(int row, int column, String html, String... cellStyles) {
     setHtml(row, column, html);
-    getCellFormatter().addStyleName(row, column, cellStyleName);
+    if (cellStyles != null) {
+      for (String cellStyle : cellStyles) {
+        getCellFormatter().addStyleName(row, column, cellStyle);
+      }
+    }
   }
 
   @Override

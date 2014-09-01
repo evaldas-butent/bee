@@ -2,19 +2,25 @@ package com.butent.bee.server.modules.trade;
 
 import com.google.common.collect.HashBasedTable;
 import com.google.common.collect.Table;
+import com.google.common.eventbus.Subscribe;
 
 import static com.butent.bee.shared.modules.classifiers.ClassifierConstants.*;
 import static com.butent.bee.shared.modules.trade.acts.TradeActConstants.*;
 import static com.butent.bee.shared.modules.trade.TradeConstants.*;
 
+import com.butent.bee.server.data.DataEventHandler;
 import com.butent.bee.server.data.QueryServiceBean;
 import com.butent.bee.server.data.SystemBean;
+import com.butent.bee.server.data.UserServiceBean;
+import com.butent.bee.server.data.DataEvent.ViewInsertEvent;
 import com.butent.bee.server.http.RequestInfo;
 import com.butent.bee.server.sql.IsCondition;
+import com.butent.bee.server.sql.SqlInsert;
 import com.butent.bee.server.sql.SqlSelect;
 import com.butent.bee.server.sql.SqlUtils;
 import com.butent.bee.shared.Service;
 import com.butent.bee.shared.communication.ResponseObject;
+import com.butent.bee.shared.data.BeeColumn;
 import com.butent.bee.shared.data.BeeRow;
 import com.butent.bee.shared.data.BeeRowSet;
 import com.butent.bee.shared.data.DataUtils;
@@ -22,12 +28,15 @@ import com.butent.bee.shared.data.SimpleRowSet;
 import com.butent.bee.shared.data.SimpleRowSet.SimpleRow;
 import com.butent.bee.shared.data.filter.CompoundFilter;
 import com.butent.bee.shared.data.filter.Filter;
+import com.butent.bee.shared.data.value.TextValue;
 import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogUtils;
 import com.butent.bee.shared.modules.trade.acts.TradeActKind;
+import com.butent.bee.shared.utils.ArrayUtils;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.EnumUtils;
 
+import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -48,12 +57,17 @@ public class TradeActBean {
   SystemBean sys;
   @EJB
   QueryServiceBean qs;
+  @EJB
+  UserServiceBean usr;
 
   public ResponseObject doService(String svc, RequestInfo reqInfo) {
     ResponseObject response;
 
     if (BeeUtils.same(svc, SVC_GET_ITEMS_FOR_SELECTION)) {
       response = getItemsForSelection(reqInfo);
+
+    } else if (BeeUtils.same(svc, SVC_SAVE_ACT_AS_TEMPLATE)) {
+      response = saveActAsTemplate(reqInfo);
 
     } else {
       String msg = BeeUtils.joinWords("service not recognized:", svc);
@@ -62,6 +76,79 @@ public class TradeActBean {
     }
 
     return response;
+  }
+
+  public void init() {
+    sys.registerDataEventHandler(new DataEventHandler() {
+      @Subscribe
+      public void fillActNumber(ViewInsertEvent event) {
+        if (event.isBefore() && event.isTarget(VIEW_TRADE_ACTS)
+            && !DataUtils.contains(event.getColumns(), COL_TA_NUMBER)) {
+
+          TradeActKind kind = null;
+          Long series = null;
+
+          for (int i = 0; i < event.getColumns().size(); i++) {
+            switch (event.getColumns().get(i).getId()) {
+              case COL_TA_KIND:
+                kind = EnumUtils.getEnumByIndex(TradeActKind.class, event.getRow().getInteger(i));
+                break;
+              case COL_TA_SERIES:
+                series = event.getRow().getLong(i);
+                break;
+            }
+          }
+
+          if (kind != null && kind.autoNumber() && DataUtils.isId(series)) {
+            String number = getNextActNumber(series);
+            BeeColumn column = sys.getView(VIEW_TRADE_ACTS).getBeeColumn(COL_TA_NUMBER);
+
+            if (!BeeUtils.isEmpty(number) && number.length() <= column.getPrecision()) {
+              event.addValue(column, new TextValue(number));
+            }
+          }
+        }
+      }
+    });
+  }
+
+  private String getNextActNumber(long series) {
+    IsCondition where = SqlUtils.and(SqlUtils.equals(TBL_TRADE_ACTS, COL_TA_SERIES, series),
+        SqlUtils.notNull(TBL_TRADE_ACTS, COL_TA_NUMBER));
+
+    SqlSelect query = new SqlSelect()
+        .addFields(TBL_TRADE_ACTS, COL_TA_NUMBER)
+        .addFrom(TBL_TRADE_ACTS)
+        .setWhere(where);
+
+    String[] values = qs.getColumn(query);
+
+    long max = 0;
+    BigInteger bigMax = null;
+
+    if (!ArrayUtils.isEmpty(values)) {
+      for (String value : values) {
+        if (BeeUtils.isDigit(value)) {
+          if (BeeUtils.isLong(value)) {
+            max = Math.max(max, BeeUtils.toLong(value));
+
+          } else {
+            BigInteger big = new BigInteger(value);
+
+            if (bigMax == null || BeeUtils.isLess(bigMax, big)) {
+              bigMax = big;
+            }
+          }
+        }
+      }
+    }
+
+    BigInteger big = new BigInteger(BeeUtils.toString(max));
+    if (bigMax != null) {
+      big = big.max(bigMax);
+    }
+
+    return big.add(BigInteger.ONE).toString();
   }
 
   private ResponseObject getItemsForSelection(RequestInfo reqInfo) {
@@ -100,6 +187,7 @@ public class TradeActBean {
     BeeRowSet items = qs.getViewData(VIEW_ITEMS, filter);
     if (DataUtils.isEmpty(items)) {
       logger.debug(reqInfo.getService(), "no items found", filter);
+      return ResponseObject.emptyResponse();
     }
 
     if (kind.showStock()) {
@@ -134,15 +222,12 @@ public class TradeActBean {
               noStock.add(row);
             }
           }
+        }
 
-          if (!hasStock.isEmpty() && !noStock.isEmpty()) {
-            items.clearRows();
-            items.addRows(hasStock);
-            items.addRows(noStock);
-
-            logger.debug(reqInfo.getService(), hasStock.size(), noStock.size(),
-                items.getNumberOfRows());
-          }
+        if (!hasStock.isEmpty() && !noStock.isEmpty()) {
+          items.clearRows();
+          items.addRows(hasStock);
+          items.addRows(noStock);
         }
 
         items.setTableProperty(TBL_WAREHOUSES, DataUtils.buildIdList(stock.columnKeySet()));
@@ -212,5 +297,82 @@ public class TradeActBean {
         .setWhere(SqlUtils.and(SqlUtils.notNull(TBL_TRADE_OPERATIONS, colWarehouse), condition))
         .addGroup(TBL_TRADE_ACT_ITEMS, COL_TA_ITEM)
         .addGroup(TBL_TRADE_OPERATIONS, colWarehouse);
+  }
+
+  private ResponseObject saveActAsTemplate(RequestInfo reqInfo) {
+    Long actId = reqInfo.getParameterLong(COL_TRADE_ACT);
+    if (!DataUtils.isId(actId)) {
+      return ResponseObject.parameterNotFound(reqInfo.getService(), COL_TRADE_ACT);
+    }
+
+    String name = reqInfo.getParameter(COL_TA_TEMPLATE_NAME);
+    if (BeeUtils.isEmpty(name)) {
+      return ResponseObject.parameterNotFound(reqInfo.getService(), COL_TA_TEMPLATE_NAME);
+    }
+
+    if (qs.sqlExists(TBL_TRADE_ACT_TEMPLATES, COL_TA_TEMPLATE_NAME, name)) {
+      return ResponseObject.error(usr.getLocalizableMesssages().valueExists(name));
+    }
+
+    SimpleRow actRow = qs.getRow(TBL_TRADE_ACTS, actId);
+    if (actRow == null) {
+      String msg = BeeUtils.joinWords(reqInfo.getService(), COL_TRADE_ACT, actId, "not found");
+      logger.severe(msg);
+      return ResponseObject.error(msg);
+    }
+
+    SqlInsert insert = new SqlInsert(TBL_TRADE_ACT_TEMPLATES)
+        .addConstant(COL_TA_TEMPLATE_NAME, name);
+
+    for (String colName : actRow.getColumnNames()) {
+      String value = actRow.getValue(colName);
+      if (!BeeUtils.isEmpty(value) && sys.hasField(TBL_TRADE_ACT_TEMPLATES, colName)) {
+        insert.addConstant(colName, value);
+      }
+    }
+
+    long templateId = qs.insertData(insert);
+    if (!DataUtils.isId(templateId)) {
+      return ResponseObject.error(reqInfo.getService(), "cannot create template");
+    }
+
+    saveActChildrenToTemplate(actId, templateId, TBL_TRADE_ACT_ITEMS, TBL_TRADE_ACT_TMPL_ITEMS);
+    saveActChildrenToTemplate(actId, templateId, TBL_TRADE_ACT_SERVICES,
+        TBL_TRADE_ACT_TMPL_SERVICES);
+
+    BeeRowSet data = qs.getViewData(VIEW_TRADE_ACT_TEMPLATES, Filter.compareId(templateId));
+    if (DataUtils.isEmpty(data)) {
+      return ResponseObject.error(reqInfo.getService(), "template is dead");
+    } else {
+      return ResponseObject.response(data.getRow(0));
+    }
+  }
+
+  private void saveActChildrenToTemplate(long actId, long templateId,
+      String sourceTable, String targetTable) {
+
+    SimpleRowSet data = qs.getData(new SqlSelect()
+        .addAllFields(sourceTable)
+        .addFrom(sourceTable)
+        .setWhere(SqlUtils.equals(sourceTable, COL_TRADE_ACT, actId)));
+
+    if (!DataUtils.isEmpty(data)) {
+      for (SimpleRow row : data) {
+        SqlInsert insert = new SqlInsert(targetTable)
+            .addConstant(COL_TRADE_ACT_TEMPLATE, templateId);
+
+        for (String colName : row.getColumnNames()) {
+          String value = row.getValue(colName);
+          if (!BeeUtils.isEmpty(value) && sys.hasField(targetTable, colName)) {
+            insert.addConstant(colName, value);
+          }
+        }
+
+        long id = qs.insertData(insert);
+        if (!DataUtils.isId(id)) {
+          break;
+        }
+      }
+    }
   }
 }
