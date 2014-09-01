@@ -1001,6 +1001,15 @@ public class GridImpl extends Absolute implements GridView, EditEndEvent.Handler
   }
 
   @Override
+  public void ensureRow(IsRow row, boolean focus) {
+    Assert.isTrue(DataUtils.hasId(row));
+
+    if (!getGrid().containsRow(row.getId())) {
+      getGrid().insertRow(row, focus);
+    }
+  }
+
+  @Override
   public int estimatePageSize(int containerWidth, int containerHeight) {
     return getGrid().estimatePageSize(containerWidth, containerHeight, true);
   }

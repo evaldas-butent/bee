@@ -8,6 +8,7 @@ import static com.butent.bee.shared.modules.classifiers.ClassifierConstants.*;
 import static com.butent.bee.shared.modules.trade.acts.TradeActConstants.*;
 import static com.butent.bee.shared.modules.trade.TradeConstants.*;
 
+import com.butent.bee.server.data.DataEditorBean;
 import com.butent.bee.server.data.DataEventHandler;
 import com.butent.bee.server.data.QueryServiceBean;
 import com.butent.bee.server.data.SystemBean;
@@ -32,6 +33,7 @@ import com.butent.bee.shared.data.value.TextValue;
 import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogUtils;
 import com.butent.bee.shared.modules.trade.acts.TradeActKind;
+import com.butent.bee.shared.time.TimeUtils;
 import com.butent.bee.shared.utils.ArrayUtils;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.EnumUtils;
@@ -59,12 +61,18 @@ public class TradeActBean {
   QueryServiceBean qs;
   @EJB
   UserServiceBean usr;
+  @EJB
+  DataEditorBean deb;
 
+  @EJB
   public ResponseObject doService(String svc, RequestInfo reqInfo) {
     ResponseObject response;
 
     if (BeeUtils.same(svc, SVC_GET_ITEMS_FOR_SELECTION)) {
       response = getItemsForSelection(reqInfo);
+
+    } else if (BeeUtils.same(svc, SVC_COPY_ACT)) {
+      response = copyAct(reqInfo);
 
     } else if (BeeUtils.same(svc, SVC_SAVE_ACT_AS_TEMPLATE)) {
       response = saveActAsTemplate(reqInfo);
@@ -110,6 +118,43 @@ public class TradeActBean {
         }
       }
     });
+  }
+
+  private ResponseObject copyAct(RequestInfo reqInfo) {
+    Long actId = reqInfo.getParameterLong(COL_TRADE_ACT);
+    if (!DataUtils.isId(actId)) {
+      return ResponseObject.parameterNotFound(reqInfo.getService(), COL_TRADE_ACT);
+    }
+
+    BeeRowSet rowSet = qs.getViewData(VIEW_TRADE_ACTS, Filter.compareId(actId));
+    if (DataUtils.isEmpty(rowSet)) {
+      return ResponseObject.error(reqInfo.getService(), VIEW_TRADE_ACTS, actId, "not available");
+    }
+
+    BeeRow row = rowSet.getRow(0);
+
+    row.setValue(rowSet.getColumnIndex(COL_TA_DATE), TimeUtils.nowMinutes());
+
+    int index = rowSet.getColumnIndex(COL_TA_UNTIL);
+    if (!row.isNull(index) && BeeUtils.isLess(row.getDateTime(index),
+        TimeUtils.startOfNextMonth(TimeUtils.today()).getDateTime())) {
+      row.clearCell(index);
+    }
+
+    row.clearCell(rowSet.getColumnIndex(COL_TA_NUMBER));
+
+    BeeRowSet insert = DataUtils.createRowSetForInsert(rowSet.getViewName(), rowSet.getColumns(),
+        row);
+    ResponseObject response = deb.commitRow(insert);
+
+    if (!response.hasErrors() && response.hasResponse(BeeRow.class)) {
+      long newId = ((BeeRow) response.getResponse()).getId();
+
+      qs.copyData(TBL_TRADE_ACT_ITEMS, COL_TRADE_ACT, actId, newId);
+      qs.copyData(TBL_TRADE_ACT_SERVICES, COL_TRADE_ACT, actId, newId);
+    }
+
+    return response;
   }
 
   private String getNextActNumber(long series) {

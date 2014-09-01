@@ -11,32 +11,40 @@ import com.butent.bee.client.Global;
 import com.butent.bee.client.communication.ParameterList;
 import com.butent.bee.client.communication.ResponseCallback;
 import com.butent.bee.client.data.Data;
+import com.butent.bee.client.data.Queries;
 import com.butent.bee.client.data.RowCallback;
 import com.butent.bee.client.data.RowEditor;
 import com.butent.bee.client.data.RowFactory;
 import com.butent.bee.client.dialog.ChoiceCallback;
+import com.butent.bee.client.dialog.ConfirmationCallback;
+import com.butent.bee.client.dialog.Icon;
 import com.butent.bee.client.dialog.StringCallback;
+import com.butent.bee.client.dom.DomUtils;
 import com.butent.bee.client.event.logical.ActiveRowChangeEvent;
 import com.butent.bee.client.presenter.GridPresenter;
 import com.butent.bee.client.ui.Opener;
-import com.butent.bee.client.view.grid.CellGrid;
+import com.butent.bee.client.view.edit.EditStartEvent;
 import com.butent.bee.client.view.grid.GridView;
 import com.butent.bee.client.view.grid.interceptor.AbstractGridInterceptor;
 import com.butent.bee.client.view.grid.interceptor.GridInterceptor;
+import com.butent.bee.client.view.search.ListFilterSupplier;
 import com.butent.bee.client.widget.Button;
+import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.communication.ResponseObject;
 import com.butent.bee.shared.data.BeeRow;
 import com.butent.bee.shared.data.BeeRowSet;
 import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.IsRow;
 import com.butent.bee.shared.data.event.DataChangeEvent;
+import com.butent.bee.shared.data.event.RowInsertEvent;
 import com.butent.bee.shared.data.filter.FilterComponent;
-import com.butent.bee.shared.data.filter.FilterValue;
 import com.butent.bee.shared.data.view.DataInfo;
 import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogUtils;
+import com.butent.bee.shared.modules.trade.TradeConstants;
 import com.butent.bee.shared.modules.trade.acts.TradeActKind;
+import com.butent.bee.shared.time.TimeUtils;
 import com.butent.bee.shared.utils.BeeUtils;
 
 import java.util.ArrayList;
@@ -129,8 +137,13 @@ public class TradeActGrid extends AbstractGridInterceptor {
       result.addAll(defaultFilters);
     }
 
+    List<String> items = new ArrayList<>();
+    for (BeeRow row : series) {
+      items.add(BeeUtils.toString(row.getId()));
+    }
+
     FilterComponent component = new FilterComponent(COL_TA_SERIES,
-        FilterValue.of(DataUtils.buildIdList(series)));
+        ListFilterSupplier.buildValue(items));
     result.add(component);
 
     return result;
@@ -174,6 +187,28 @@ public class TradeActGrid extends AbstractGridInterceptor {
           new ClickHandler() {
             @Override
             public void onClick(ClickEvent event) {
+              final IsRow row = getGridView().getActiveRow();
+
+              if (row != null) {
+                List<String> colNames = Lists.newArrayList(COL_TA_KIND,
+                    TradeConstants.COL_SERIES_NAME, COL_TA_NUMBER);
+                String caption = DataUtils.join(Data.getDataInfo(getViewName()), row, colNames,
+                    BeeConst.STRING_SPACE);
+
+                List<String> messages =
+                    Lists.newArrayList(Localized.getConstants().tradeActCopyQuestion());
+
+                Global.confirm(caption, Icon.QUESTION, messages,
+                    Localized.getConstants().actionCopy(), Localized.getConstants().actionCancel(),
+                    new ConfirmationCallback() {
+                      @Override
+                      public void onConfirm() {
+                        if (DataUtils.sameId(row, getGridView().getActiveRow())) {
+                          doCopy(row.getId());
+                        }
+                      }
+                    });
+              }
             }
           });
 
@@ -183,12 +218,43 @@ public class TradeActGrid extends AbstractGridInterceptor {
     return copyCommand;
   }
 
+  private void doCopy(long id) {
+    ParameterList params = TradeActKeeper.createArgs(SVC_COPY_ACT);
+    params.addQueryItem(COL_TRADE_ACT, id);
+
+    BeeKeeper.getRpc().makeGetRequest(params, new ResponseCallback() {
+      @Override
+      public void onResponse(ResponseObject response) {
+        if (Queries.checkRowResponse(SVC_COPY_ACT, getViewName(), response)) {
+          BeeRow row = BeeRow.restore(response.getResponseAsString());
+          GridView gridView = getGridView();
+
+          if (gridView != null && gridView.asWidget().isAttached()) {
+            gridView.ensureRow(row, true);
+
+            if (DomUtils.isVisible(gridView.getGrid())) {
+              gridView.onEditStart(new EditStartEvent(row, null, null,
+                  EditStartEvent.CLICK, gridView.isReadOnly()));
+            }
+          }
+
+          RowInsertEvent.fire(BeeKeeper.getBus(), getViewName(), row,
+              (gridView == null) ? null : gridView.getId());
+        }
+      }
+    });
+  }
+
   private Button ensureReturnCommand() {
     if (returnCommand == null) {
       returnCommand = new Button(Localized.getConstants().taKindReturn(),
           new ClickHandler() {
             @Override
             public void onClick(ClickEvent event) {
+              IsRow row = getGridView().getActiveRow();
+              if (row != null) {
+                createReturn(row);
+              }
             }
           });
 
@@ -196,6 +262,44 @@ public class TradeActGrid extends AbstractGridInterceptor {
       TradeActKeeper.setCommandEnabled(returnCommand, false);
     }
     return returnCommand;
+  }
+
+  private void createReturn(IsRow base) {
+    DataInfo dataInfo = Data.getDataInfo(getViewName());
+    BeeRow newRow = RowFactory.createEmptyRow(dataInfo, false);
+
+    for (int i = 0; i < getDataColumns().size(); i++) {
+      String colId = getDataColumns().get(i).getId();
+
+      switch (colId) {
+        case COL_TA_KIND:
+          newRow.setValue(i, TradeActKind.RETURN.ordinal());
+          break;
+
+        case COL_TA_DATE:
+          newRow.setValue(i, TimeUtils.nowMinutes());
+          break;
+
+        case COL_TA_UNTIL:
+        case COL_TA_NOTES:
+          break;
+
+        default:
+          if (!base.isNull(i) && !colId.startsWith(COL_TA_STATUS)
+              && !colId.startsWith(COL_TA_OPERATION)) {
+            newRow.setValue(i, base.getValue(i));
+          }
+      }
+    }
+
+    TradeActKeeper.setDefaultOperation(newRow, TradeActKind.RETURN);
+
+    RowFactory.createRow(dataInfo, newRow, new RowCallback() {
+      @Override
+      public void onSuccess(BeeRow result) {
+        getGridView().ensureRow(result, true);
+      }
+    });
   }
 
   private Button ensureSupplementCommand() {
@@ -219,7 +323,7 @@ public class TradeActGrid extends AbstractGridInterceptor {
 
   private void createSupplement(IsRow base) {
     DataInfo dataInfo = Data.getDataInfo(getViewName());
-    BeeRow newRow = RowFactory.createEmptyRow(dataInfo, true);
+    BeeRow newRow = RowFactory.createEmptyRow(dataInfo, false);
 
     for (int i = 0; i < getDataColumns().size(); i++) {
       String colId = getDataColumns().get(i).getId();
@@ -230,6 +334,9 @@ public class TradeActGrid extends AbstractGridInterceptor {
           break;
 
         case COL_TA_DATE:
+          newRow.setValue(i, TimeUtils.nowMinutes());
+          break;
+
         case COL_TA_UNTIL:
         case COL_TA_NOTES:
           break;
@@ -246,10 +353,7 @@ public class TradeActGrid extends AbstractGridInterceptor {
     RowFactory.createRow(dataInfo, newRow, new RowCallback() {
       @Override
       public void onSuccess(BeeRow result) {
-        CellGrid grid = getGridView().getGrid();
-        if (grid != null && grid.isAttached() && !grid.containsRow(result.getId())) {
-          grid.insertRow(result, true);
-        }
+        getGridView().ensureRow(result, true);
       }
     });
   }

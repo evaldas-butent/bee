@@ -1,7 +1,6 @@
 package com.butent.bee.client.modules.transport;
 
 import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.Sets;
 
 import static com.butent.bee.shared.modules.trade.TradeConstants.*;
 import static com.butent.bee.shared.modules.transport.TransportConstants.*;
@@ -28,6 +27,7 @@ import com.butent.bee.shared.modules.classifiers.ClassifierConstants;
 import com.butent.bee.shared.time.TimeUtils;
 import com.butent.bee.shared.utils.BeeUtils;
 
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -126,7 +126,7 @@ public class TransportSelectorHandler implements Handler {
       return;
     }
 
-    Set<String> updatedColumns = Sets.newHashSet();
+    Set<String> updatedColumns = new HashSet<>();
 
     for (int i = 0; i < sourceColumns.size(); i++) {
       String colName = sourceColumns.get(i).getId();
