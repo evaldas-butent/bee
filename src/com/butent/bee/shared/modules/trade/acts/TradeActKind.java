@@ -7,7 +7,7 @@ import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.ui.HasLocalizedCaption;
 
 public enum TradeActKind implements HasLocalizedCaption {
-  SALE(true, true, true, true) {
+  SALE(true, true, true, true, true) {
     @Override
     public String getCaption(LocalizableConstants constants) {
       return constants.taKindSale();
@@ -18,7 +18,7 @@ public enum TradeActKind implements HasLocalizedCaption {
       return Filter.or(super.getFilter(), SUPPLEMENT.getFilter(), RETURN.getFilter());
     }
   },
-  SUPPLEMENT(false, false, true, true) {
+  SUPPLEMENT(false, false, true, true, false) {
     @Override
     public String getCaption(LocalizableConstants constants) {
       return constants.taKindSupplement();
@@ -29,7 +29,7 @@ public enum TradeActKind implements HasLocalizedCaption {
       return null;
     }
   },
-  RETURN(false, false, false, false) {
+  RETURN(false, false, false, false, false) {
     @Override
     public String getCaption(LocalizableConstants constants) {
       return constants.taKindReturn();
@@ -40,19 +40,19 @@ public enum TradeActKind implements HasLocalizedCaption {
       return null;
     }
   },
-  TENDER(true, true, true, true) {
+  TENDER(true, true, true, true, false) {
     @Override
     public String getCaption(LocalizableConstants constants) {
       return constants.taKindTender();
     }
   },
-  PURCHASE(true, true, false, false) {
+  PURCHASE(true, true, false, false, true) {
     @Override
     public String getCaption(LocalizableConstants constants) {
       return constants.taKindPurchase();
     }
   },
-  WRITE_OFF(false, false, false, true) {
+  WRITE_OFF(false, false, false, true, true) {
     @Override
     public String getCaption(LocalizableConstants constants) {
       return constants.taKindWriteOff();
@@ -63,7 +63,7 @@ public enum TradeActKind implements HasLocalizedCaption {
       return "write-off";
     }
   },
-  RESERVE(false, false, false, true) {
+  RESERVE(false, false, false, true, true) {
     @Override
     public String getCaption(LocalizableConstants constants) {
       return constants.taKindReserve();
@@ -74,12 +74,20 @@ public enum TradeActKind implements HasLocalizedCaption {
   private final boolean template;
   private final boolean services;
   private final boolean showStock;
+  private final boolean number;
 
-  private TradeActKind(boolean copy, boolean template, boolean services, boolean showStock) {
+  private TradeActKind(boolean copy, boolean template, boolean services, boolean showStock,
+      boolean number) {
+
     this.copy = copy;
     this.template = template;
     this.services = services;
     this.showStock = showStock;
+    this.number = number;
+  }
+
+  public boolean autoNumber() {
+    return number;
   }
 
   public boolean enableCopy() {

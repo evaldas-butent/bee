@@ -5,14 +5,23 @@ import com.butent.bee.shared.utils.EnumUtils;
 public final class TradeActConstants {
 
   public static final String SVC_GET_ITEMS_FOR_SELECTION = "GetItemsForSelection";
+  public static final String SVC_SAVE_ACT_AS_TEMPLATE = "SaveActAsTemplate";
 
   public static final String TBL_TRADE_ACTS = "TradeActs";
   public static final String TBL_TRADE_ACT_ITEMS = "TradeActItems";
+  public static final String TBL_TRADE_ACT_SERVICES = "TradeActServices";
+
+  public static final String TBL_TRADE_ACT_TEMPLATES = "TradeActTemplates";
+  public static final String TBL_TRADE_ACT_TMPL_ITEMS = "TradeActTmplItems";
+  public static final String TBL_TRADE_ACT_TMPL_SERVICES = "TradeActTmplServices";
 
   public static final String VIEW_TRADE_ACTS = "TradeActs";
-  public static final String VIEW_TRADE_ACT_TEMPLATES = "TradeActTemplates";
   public static final String VIEW_TRADE_ACT_ITEMS = "TradeActItems";
   public static final String VIEW_TRADE_ACT_SERVICES = "TradeActServices";
+
+  public static final String VIEW_TRADE_ACT_TEMPLATES = "TradeActTemplates";
+  public static final String VIEW_TRADE_ACT_TMPL_ITEMS = "TradeActTmplItems";
+  public static final String VIEW_TRADE_ACT_TMPL_SERVICES = "TradeActTmplServices";
 
   public static final String COL_TRADE_ACT = "TradeAct";
   public static final String COL_TRADE_ACT_TEMPLATE = "TradeActTemplate";

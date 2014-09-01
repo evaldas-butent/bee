@@ -41,8 +41,9 @@ public abstract class AbstractRow implements IsRow {
   }
 
   @Override
-  public void addCell(Value value) {
-    addCell(new TableCell(value));
+  public void addCell(IsCell cell) {
+    Assert.notNull(cell);
+    addValue(cell.getValue());
   }
 
   @Override

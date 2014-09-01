@@ -489,6 +489,12 @@ public class BeeView implements BeeObject, HasExtendedInfo {
     }
   }
 
+  public BeeColumn getBeeColumn(String colName) {
+    BeeColumn column = new BeeColumn();
+    initColumn(colName, column);
+    return column;
+  }
+
   public String getCacheEviction() {
     return cacheEviction;
   }

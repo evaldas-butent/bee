@@ -27,6 +27,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Objects;
 import java.util.Set;
 
 /**
@@ -267,18 +268,24 @@ public final class DataUtils {
   }
 
   public static int getColumnIndex(String columnId, List<? extends IsColumn> columns) {
-    int index = BeeConst.UNDEF;
-    if (BeeUtils.isEmpty(columnId) || BeeUtils.isEmpty(columns)) {
-      return index;
-    }
+    return getColumnIndex(columnId, columns, false);
+  }
 
-    for (int i = 0; i < columns.size(); i++) {
-      if (BeeUtils.same(columns.get(i).getId(), columnId)) {
-        index = i;
-        break;
+  public static int getColumnIndex(String columnId, List<? extends IsColumn> columns,
+      boolean warn) {
+
+    if (columns != null) {
+      for (int i = 0; i < columns.size(); i++) {
+        if (BeeUtils.same(columns.get(i).getId(), columnId)) {
+          return i;
+        }
       }
     }
-    return index;
+
+    if (warn) {
+      logger.warning("column not found", columnId);
+    }
+    return BeeConst.UNDEF;
   }
 
   public static String getColumnName(String input, List<? extends IsColumn> columns,
@@ -666,6 +673,10 @@ public final class DataUtils {
     return id != null && id > 0;
   }
 
+  public static boolean isId(String s) {
+    return s != null && BeeUtils.isDigit(s.trim()) && isId(BeeUtils.toLongOrNull(s));
+  }
+
   public static boolean isNewRow(IsRow row) {
     return row != null && row.getId() == NEW_ROW_ID;
   }
@@ -685,7 +696,7 @@ public final class DataUtils {
     for (String colName : colNames) {
       int i = dataInfo.getColumnIndex(colName);
       if (BeeConst.isUndef(i)) {
-        logger.warning(dataInfo.getViewName(), "column not found:", colName);
+        logger.warning(dataInfo.getViewName(), "column not found", colName);
         continue;
       }
 
@@ -955,23 +966,12 @@ public final class DataUtils {
   }
 
   public static boolean sameId(IsRow r1, IsRow r2) {
-    if (r1 == null) {
-      return r2 == null;
-    } else if (r2 == null) {
-      return false;
-    } else {
-      return r1.getId() == r2.getId();
-    }
+    return r1 != null && r2 != null && r1.getId() == r2.getId();
   }
 
   public static boolean sameIdAndVersion(IsRow r1, IsRow r2) {
-    if (r1 == null) {
-      return r2 == null;
-    } else if (r2 == null) {
-      return false;
-    } else {
-      return r1.getId() == r2.getId() && r1.getVersion() == r2.getVersion();
-    }
+    return r1 != null && r2 != null
+        && r1.getId() == r2.getId() && r1.getVersion() == r2.getVersion();
   }
 
   public static boolean sameIdSet(String s, Collection<Long> col) {
@@ -985,6 +985,20 @@ public final class DataUtils {
 
   public static boolean sameIdSet(String s1, String s2) {
     return sameIdSet(s1, parseIdSet(s2));
+  }
+
+  public static boolean sameValues(IsRow r1, IsRow r2) {
+    if (r1 != null && r2 != null && r1.getNumberOfCells() == r2.getNumberOfCells()) {
+      for (int i = 0; i < r1.getNumberOfCells(); i++) {
+        if (!Objects.equals(r1.getString(i), r2.getString(i))) {
+          return false;
+        }
+      }
+      return true;
+
+    } else {
+      return false;
+    }
   }
 
   public static int setDefaults(IsRow row, Collection<String> colNames, List<BeeColumn> columns,

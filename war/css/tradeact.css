@@ -13,14 +13,21 @@
 }
 
 .bee-ta-picker-search-panel {
-  margin: 1ex 0 2ex 3em;
+  margin-top: 2ex;
+  margin-bottom: 2ex;
 }
 .bee-ta-picker-search-box {
   margin-left: 1em;
+  font-size: medium;
 }
 .bee-ta-picker-search-command {
   display: inline-block;
   margin-left: 1em;
+  font-size: 18px;
+  color: #888;
+}
+.bee-ta-picker-search-command:hover {
+  color: black;
 }
 
 .bee-ta-picker-item-panel {
@@ -29,14 +36,17 @@
 }
 .bee-ta-picker-item-table {
   border-collapse: collapse;
-  table-layout: fixed;
+}
+.bee-ta-picker-item-table td {
+  border: 1px solid #ddd;
 }
 .bee-ta-picker-header td {
   text-align: center;
   padding: 3px 5px;
   font-weight: bold;
 }
-.bee-ta-picker-price-label {
+.bee-ta-picker-price-label,
+.bee-ta-picker-def-price-label {
   max-width: 80px;
 }
 
@@ -47,16 +57,20 @@
   background-color: #ebebeb;
 }
 .bee-ta-picker-item:hover {
-  background-color: #dfd;
+  background-color: blanchedalmond;
+}
+.bee-ta-picker-item-selected td {
+  background-color: aquamarine;
 }
 .bee-ta-picker-item td {
   padding: 2px 5px;
-  border: 1px solid #ddd;
 }
 
 .bee-ta-picker-id-cell,
 .bee-ta-picker-price-cell,
-.bee-ta-picker-stock-cell {
+.bee-ta-picker-def-price-cell,
+.bee-ta-picker-stock-cell,
+.bee-ta-picker-from-cell {
   text-align: right;
 }
 
@@ -65,7 +79,21 @@
   white-space: pre-line;
 }
 
-.bee-ta-picker-qty-input {
+.bee-ta-picker-price-currency {
+  padding-left: 5px;
+  font-size: x-small;
+}
+
+.bee-ta-picker-def-price-label,
+.bee-ta-picker-def-price-cell:not(:empty) {
+  background-color: honeydew;
+}
+.bee-ta-picker-from-label,
+.bee-ta-picker-from-cell {
+  background-color: azure;
+}
+
+.bee-ta-picker-qty-input.bee-ta-picker-qty-input {
   width: 60px;
-  text-align: right;
+  font-weight: bold;
 }

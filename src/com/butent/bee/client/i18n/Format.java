@@ -161,12 +161,37 @@ public final class Format {
     return getNumberFormat(getDecimalPattern(scale));
   }
 
+  public static NumberFormat getDecimalFormat(int minScale, int maxScale) {
+    return getNumberFormat(getDecimalPattern(minScale, maxScale));
+  }
+
   public static String getDecimalPattern(int scale) {
     if (scale <= 0) {
       return DEFAULT_DECIMAL_PATTERN_INTEGER;
     } else {
       return DEFAULT_DECIMAL_PATTERN_INTEGER + BeeConst.STRING_POINT
           + BeeUtils.replicate(BeeConst.CHAR_ZERO, scale);
+    }
+  }
+
+  public static String getDecimalPattern(int minScale, int maxScale) {
+    if (minScale <= 0 && maxScale <= 0) {
+      return DEFAULT_DECIMAL_PATTERN_INTEGER;
+
+    } else {
+      StringBuilder sb = new StringBuilder();
+      sb.append(DEFAULT_DECIMAL_PATTERN_INTEGER).append(BeeConst.STRING_POINT);
+
+      if (minScale > 0) {
+        sb.append(BeeUtils.replicate(BeeConst.CHAR_ZERO, minScale));
+      }
+      if (maxScale > minScale) {
+        for (int i = Math.max(minScale, 0); i < maxScale; i++) {
+          sb.append(BeeConst.STRING_NUMBER_SIGN);
+        }
+      }
+
+      return sb.toString();
     }
   }
 

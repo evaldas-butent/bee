@@ -41,9 +41,8 @@ public class StringRow extends AbstractRow {
   }
 
   @Override
-  public void addCell(IsCell cell) {
-    Assert.notNull(cell);
-    values.add(cell.getValue().getString());
+  public void addValue(Value value) {
+    values.add((value == null) ? null : value.getString());
   }
 
   @Override

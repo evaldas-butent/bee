@@ -242,12 +242,14 @@ public class TradeModuleBean implements BeeModule {
           if (!BeeUtils.isEmpty(prefix)
               && DataUtils.getColumnIndex(COL_TRADE_INVOICE_NO, cols) == BeeConst.UNDEF) {
             cols.add(new BeeColumn(COL_TRADE_INVOICE_NO));
-            row.addCell(Value.getValue(qs.getNextNumber(TBL_SALES, COL_TRADE_INVOICE_NO, prefix,
+            row.addValue(Value.getValue(qs.getNextNumber(TBL_SALES, COL_TRADE_INVOICE_NO, prefix,
                 COL_TRADE_INVOICE_PREFIX)));
           }
         }
       }
     });
+
+    act.init();
   }
 
   private ResponseObject getItemsInfo(String viewName, Long id, String currencyTo) {
