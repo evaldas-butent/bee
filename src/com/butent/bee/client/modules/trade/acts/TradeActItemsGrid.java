@@ -10,6 +10,7 @@ import static com.butent.bee.shared.modules.classifiers.ClassifierConstants.*;
 import static com.butent.bee.shared.modules.trade.TradeConstants.*;
 import static com.butent.bee.shared.modules.trade.acts.TradeActConstants.*;
 
+import com.butent.bee.client.composite.FileCollector;
 import com.butent.bee.client.data.Data;
 import com.butent.bee.client.data.IdCallback;
 import com.butent.bee.client.data.Queries;
@@ -19,21 +20,26 @@ import com.butent.bee.client.ui.UiHelper;
 import com.butent.bee.client.view.grid.interceptor.AbstractGridInterceptor;
 import com.butent.bee.client.view.grid.interceptor.GridInterceptor;
 import com.butent.bee.client.widget.Button;
+import com.butent.bee.shared.Consumer;
 import com.butent.bee.shared.data.BeeRow;
 import com.butent.bee.shared.data.BeeRowSet;
 import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.IsRow;
 import com.butent.bee.shared.i18n.Localized;
+import com.butent.bee.shared.io.FileInfo;
+import com.butent.bee.shared.logging.LogUtils;
 import com.butent.bee.shared.modules.classifiers.ItemPrice;
 import com.butent.bee.shared.time.DateTime;
 import com.butent.bee.shared.utils.BeeUtils;
 
+import java.util.Collection;
 import java.util.List;
 
 public class TradeActItemsGrid extends AbstractGridInterceptor implements
     SelectionHandler<BeeRowSet> {
 
   private TradeActItemPicker picker;
+  private FileCollector collector;
 
   TradeActItemsGrid() {
   }
@@ -44,7 +50,7 @@ public class TradeActItemsGrid extends AbstractGridInterceptor implements
     command.addClickHandler(new ClickHandler() {
       @Override
       public void onClick(ClickEvent event) {
-        onImport();
+        ensureCollector().clickInput();
       }
     });
 
@@ -143,6 +149,21 @@ public class TradeActItemsGrid extends AbstractGridInterceptor implements
     }
   }
 
+  private FileCollector ensureCollector() {
+    if (collector == null) {
+      collector = FileCollector.headless(new Consumer<Collection<? extends FileInfo>>() {
+        @Override
+        public void accept(Collection<? extends FileInfo> input) {
+          if (!BeeUtils.isEmpty(input)) {
+            importItems(input);
+          }
+        }
+      });
+      getGridView().add(collector);
+    }
+    return collector;
+  }
+
   private TradeActItemPicker ensurePicker() {
     if (picker == null) {
       picker = new TradeActItemPicker();
@@ -161,7 +182,9 @@ public class TradeActItemsGrid extends AbstractGridInterceptor implements
     return (row == null) ? null : row.getDouble(getDataIndex(COL_TRADE_DISCOUNT));
   }
 
-  private void onImport() {
-
+  private static void importItems(Collection<? extends FileInfo> input) {
+    for (FileInfo fileInfo : input) {
+      LogUtils.getRootLogger().debug(fileInfo.getInfo());
+    }
   }
 }
