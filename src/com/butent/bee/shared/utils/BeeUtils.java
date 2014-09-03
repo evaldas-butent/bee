@@ -2946,6 +2946,10 @@ public final class BeeUtils {
     return result;
   }
 
+  public static String unquote(String s) {
+    return removePrefixAndSuffix(s, BeeConst.CHAR_QUOT);
+  }
+
   /**
    * Searches for an Integer value from a String {@code s}.
    * 

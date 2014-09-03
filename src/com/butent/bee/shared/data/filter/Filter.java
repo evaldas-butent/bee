@@ -75,11 +75,28 @@ public abstract class Filter implements BeeSerializable, RowFilter {
     if (values.isEmpty()) {
       return null;
     }
-    List<Value> vals = new ArrayList<>();
 
+    List<Value> vals = new ArrayList<>();
     for (Long value : values) {
       vals.add(new LongValue(value));
     }
+
+    return new ColumnValueFilter(column, vals);
+  }
+
+  public static Filter anyString(String column, Collection<String> values) {
+    Assert.notEmpty(column);
+    Assert.notNull(values);
+
+    if (values.isEmpty()) {
+      return null;
+    }
+
+    List<Value> vals = new ArrayList<>();
+    for (String value : values) {
+      vals.add(new TextValue(value));
+    }
+
     return new ColumnValueFilter(column, vals);
   }
 

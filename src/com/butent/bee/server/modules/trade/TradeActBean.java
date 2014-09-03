@@ -1,6 +1,7 @@
 package com.butent.bee.server.modules.trade;
 
 import com.google.common.collect.HashBasedTable;
+import com.google.common.collect.Lists;
 import com.google.common.collect.Table;
 import com.google.common.eventbus.Subscribe;
 
@@ -32,6 +33,7 @@ import com.butent.bee.shared.data.filter.Filter;
 import com.butent.bee.shared.data.value.TextValue;
 import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogUtils;
+import com.butent.bee.shared.modules.BeeParameter;
 import com.butent.bee.shared.modules.trade.acts.TradeActKind;
 import com.butent.bee.shared.time.TimeUtils;
 import com.butent.bee.shared.utils.ArrayUtils;
@@ -64,7 +66,6 @@ public class TradeActBean {
   @EJB
   DataEditorBean deb;
 
-  @EJB
   public ResponseObject doService(String svc, RequestInfo reqInfo) {
     ResponseObject response;
 
@@ -84,6 +85,11 @@ public class TradeActBean {
     }
 
     return response;
+  }
+
+  public Collection<BeeParameter> getDefaultParameters(String module) {
+    return Lists.newArrayList(
+        BeeParameter.createText(module, PRM_IMPORT_TA_ITEM_RX, false, RX_IMPORT_ACT_ITEM));
   }
 
   public void init() {
