@@ -487,6 +487,21 @@ public class MailModuleBean implements BeeModule {
                 }
               }
             }
+            String relations = AdministrationConstants.TBL_RELATIONS;
+            String relation = AdministrationConstants.COL_RELATION;
+
+            result = qs.getData(new SqlSelect()
+                .addFields(relations, COL_MESSAGE)
+                .addCount(relation)
+                .addFrom(relations)
+                .setWhere(SqlUtils.and(SqlUtils.inList(relations, COL_MESSAGE, messages),
+                    SqlUtils.isNull(relations, COL_COMPANY)))
+                .addGroup(relations, COL_MESSAGE));
+
+            for (BeeRow row : rowSet) {
+              row.setProperty(relation,
+                  result.getValueByKey(COL_MESSAGE, row.getString(idx), relation));
+            }
           }
         }
       }
