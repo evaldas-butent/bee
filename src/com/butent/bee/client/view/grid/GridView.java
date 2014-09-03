@@ -48,6 +48,8 @@ public interface GridView extends DataView, HasAddStartHandlers, HasAddEndHandle
 
   void ensureRelId(IdCallback callback);
 
+  void ensureRow(IsRow row, boolean focus);
+
   int estimatePageSize(int containerWidth, int containerHeight);
 
   void formCancel();

@@ -18,7 +18,7 @@
 
       <row class="bee-ta-template-selection" data="TradeActTemplates">
         <Label text="=template" />
-        <DataSelector name="Template" viewName="TradeActTemplates" choiceColumns="Template"
+        <UnboundSelector viewName="TradeActTemplates" choiceColumns="Template"
           newRowEnabled="false" style="&inpw;" />
       </row>
 
@@ -92,9 +92,21 @@
 
       <page>
         <text>=notes</text>
-        <SimplePanel>
-          <InputArea source="Notes" class="occupy-1" />
-        </SimplePanel>
+        <FlowPanel class="flexBox-vertical">
+          <br/>
+          <HorizontalPanel data="TradeNotes">
+            <cell kind="label">
+              <Label text="=trdNoteTemplate" />
+            </cell>
+            <UnboundSelector viewName="TradeNotes" choiceColumns="Name"
+              newRowEnabled="false" style="&inpw;" />
+          </HorizontalPanel>
+
+          <br/>
+          <SimplePanel class="flexible" style="position: relative;">
+            <InputArea source="Notes" class="occupy-1" />
+          </SimplePanel>
+        </FlowPanel>
       </page>
     </TabbedPages>
   </FlowPanel>

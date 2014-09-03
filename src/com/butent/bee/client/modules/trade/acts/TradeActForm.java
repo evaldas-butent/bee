@@ -2,6 +2,8 @@ package com.butent.bee.client.modules.trade.acts;
 
 import static com.butent.bee.shared.modules.trade.acts.TradeActConstants.*;
 
+import com.butent.bee.client.composite.UnboundSelector;
+import com.butent.bee.client.ui.UiHelper;
 import com.butent.bee.client.view.form.FormView;
 import com.butent.bee.client.view.form.interceptor.AbstractFormInterceptor;
 import com.butent.bee.client.view.form.interceptor.FormInterceptor;
@@ -10,6 +12,8 @@ import com.butent.bee.shared.data.IsRow;
 import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.modules.trade.acts.TradeActKind;
 import com.butent.bee.shared.utils.BeeUtils;
+
+import java.util.Collection;
 
 public class TradeActForm extends AbstractFormInterceptor {
 
@@ -62,6 +66,14 @@ public class TradeActForm extends AbstractFormInterceptor {
 
     if (form.getViewPresenter() != null && form.getViewPresenter().getHeader() != null) {
       form.getViewPresenter().getHeader().setCaption(caption);
+    }
+
+    Collection<UnboundSelector> unboundSelectors =
+        UiHelper.getChildren(form.asWidget(), UnboundSelector.class);
+    if (!BeeUtils.isEmpty(unboundSelectors)) {
+      for (UnboundSelector unboundSelector : unboundSelectors) {
+        unboundSelector.clearValue();
+      }
     }
 
     super.afterRefresh(form, row);
