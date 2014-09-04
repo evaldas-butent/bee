@@ -28,6 +28,7 @@ import com.butent.bee.shared.Pair;
 import com.butent.bee.shared.communication.ResponseObject;
 import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.SimpleRowSet;
+import com.butent.bee.shared.data.SimpleRowSet.SimpleRow;
 import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogUtils;
@@ -40,6 +41,7 @@ import com.butent.bee.shared.utils.BeeUtils;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.Map;
+import java.util.Objects;
 
 import javax.ejb.EJB;
 import javax.ejb.Lock;
@@ -311,9 +313,11 @@ public class ParamHolderBean {
 
       for (BeeParameter param : defaults) {
         if (param.supportsUsers() && DataUtils.isId(param.getId())) {
-          String id = BeeUtils.toString(param.getId());
-          param.setValue(BeeUtils.toLong(data.getValueByKey(FLD_PARAM, id, FLD_USER)),
-              data.getValueByKey(FLD_PARAM, id, FLD_VALUE));
+          for (SimpleRow row : data) {
+            if (Objects.equals(param.getId(), row.getLong(FLD_PARAM))) {
+              param.setValue(row.getLong(FLD_USER), row.getValue(FLD_VALUE));
+            }
+          }
         }
       }
     }

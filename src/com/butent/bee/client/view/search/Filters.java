@@ -3,8 +3,6 @@ package com.butent.bee.client.view.search;
 import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Multimap;
-import com.google.common.collect.Sets;
-import com.google.common.primitives.Longs;
 import com.google.gwt.core.client.Scheduler;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
@@ -46,8 +44,10 @@ import com.butent.bee.shared.utils.ExtendedProperty;
 import com.butent.bee.shared.utils.Property;
 import com.butent.bee.shared.utils.PropertyUtils;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
@@ -112,7 +112,7 @@ public class Filters implements HasExtendedInfo {
 
     @Override
     public int hashCode() {
-      return Longs.hashCode(getId());
+      return Long.hashCode(getId());
     }
 
     private boolean containsAnyComponent(Collection<String> names) {
@@ -241,7 +241,7 @@ public class Filters implements HasExtendedInfo {
 
   private static void synchronizeInitialFilters(List<Item> items, Item checkedItem,
       HtmlTable table) {
-    Set<String> checkedKeys = Sets.newHashSet();
+    Set<String> checkedKeys = new HashSet<>();
     for (FilterComponent component : checkedItem.getComponents()) {
       checkedKeys.add(component.getName());
     }
@@ -432,8 +432,8 @@ public class Filters implements HasExtendedInfo {
           public void onClick(ClickEvent event) {
             final Item delItem = getItem(items, id);
             List<String> messages =
-                Lists.newArrayList(Localized.getConstants().actionDeleteFilter(), BeeUtils
-                    .joinWords(delItem.getLabel(), "?"));
+                Lists.newArrayList(Localized.getConstants().actionDeleteFilter(),
+                    BeeUtils.joinWords(delItem.getLabel(), "?"));
 
             Global.confirmDelete(Localized.getConstants().filterRemove(), Icon.WARNING, messages,
                 new ConfirmationCallback() {
@@ -478,7 +478,7 @@ public class Filters implements HasExtendedInfo {
 
   public void ensurePredefinedFilters(final String key, List<FilterDescription> filters) {
     if (!BeeUtils.isEmpty(key) && !BeeUtils.isEmpty(filters) && !itemsByKey.containsKey(key)) {
-      List<FilterDescription> predefinedFilters = Lists.newArrayList(filters);
+      List<FilterDescription> predefinedFilters = new ArrayList<>(filters);
       ensureIndexes();
 
       for (int i = 0; i < predefinedFilters.size(); i++) {
@@ -503,13 +503,13 @@ public class Filters implements HasExtendedInfo {
 
   @Override
   public List<ExtendedProperty> getExtendedInfo() {
-    List<ExtendedProperty> info = Lists.newArrayList();
+    List<ExtendedProperty> info = new ArrayList<>();
     info.add(new ExtendedProperty("keys", BeeUtils.bracket(itemsByKey.keySet().size())));
     if (itemsByKey.isEmpty()) {
       return info;
     }
 
-    List<String> keys = Lists.newArrayList(itemsByKey.keySet());
+    List<String> keys = new ArrayList<>(itemsByKey.keySet());
     if (keys.size() > 1) {
       Collections.sort(keys);
     }
@@ -532,7 +532,7 @@ public class Filters implements HasExtendedInfo {
   }
 
   public List<FilterComponent> getInitialValues(String key) {
-    List<FilterComponent> initialValues = Lists.newArrayList();
+    List<FilterComponent> initialValues = new ArrayList<>();
 
     if (itemsByKey.containsKey(key)) {
       for (Item item : itemsByKey.get(key)) {
@@ -620,7 +620,7 @@ public class Filters implements HasExtendedInfo {
   }
 
   private List<Item> getItems(String key) {
-    List<Item> result = Lists.newArrayList();
+    List<Item> result = new ArrayList<>();
 
     if (itemsByKey.containsKey(key)) {
       result.addAll(itemsByKey.get(key));

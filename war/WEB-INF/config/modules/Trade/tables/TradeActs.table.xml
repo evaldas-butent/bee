@@ -12,21 +12,19 @@
     <String name="Number" precision="30" label="=number" />
 
     <Enum name="Kind" key="TradeActKind" notNull="true" label="=taKind" />
-    <Relation name="Operation" notNull="true" relation="TradeOperations" label="=trdOperation" />
+    <Relation name="Operation" relation="TradeOperations" label="=trdOperation" />
 
     <Relation name="Status" relation="TradeStatuses" label="=status" />
 
     <Relation name="Company" relation="Companies" label="=client" />
     <Relation name="ServiceObject" relation="ServiceObjects" label="=svcObject" />
-    <Relation name="Manager" relation="Users" label="=manager" />
+    <Relation name="Manager" relation="Users" label="=manager" defExpr="CURRENT_USER" />
 
     <Relation name="Currency" relation="Currencies" notNull="true" defExpr="MAIN_CURRENCY"
       label="=currency" />
 
-    <String name="Vehicle" precision="100" label="=trVehicle" />
-    <String name="Driver" precision="100" label="=trdDriver" />
-
-    <String name="Template" precision="100" label="=template" />
+    <Relation name="Vehicle" relation="Vehicles" label="=trVehicle" />
+    <Relation name="Driver" relation="Drivers" label="=trdDriver" />
 
     <Text name="Notes" label="=notes" />
   </Fields>

@@ -1,13 +1,14 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <g:Grid xmlns="http://www.butent.com/column" xmlns:g="http://www.butent.com/grid"
   
-  name="TradeOperation" viewName="TradeOperations" caption="=trdOperations"
+  name="TradeOperations" viewName="TradeOperations" caption="=trdOperations"
   minColumnWidth="100"
   >
   <g:columns>
     <DataColumn name="OperationName" visible="true" />
     
     <DataColumn name="Kind" module="Trade.Acts" />
+    <DataColumn name="Price" />
     
     <RelColumn name="WarehouseFrom" />
     <RelColumn name="WarehouseTo" />

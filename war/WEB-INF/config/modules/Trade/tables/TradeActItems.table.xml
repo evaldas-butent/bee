@@ -8,7 +8,6 @@
     <Relation name="TradeAct" notNull="true" relation="TradeActs" cascade="DELETE" />
 
     <Relation name="Item" notNull="true" relation="Items" label="=item" />
-    <String name="Article" precision="30" label="=article" />
 
     <Numeric name="Quantity" precision="12" scale="3" notNull="true" label="=quantity" />
     <Numeric name="Price" precision="12" scale="2" label="=price" />

@@ -78,21 +78,20 @@ public class BeeRowSet extends RowList<BeeRow, BeeColumn> implements BeeSerializ
     setRows(rows);
   }
 
-  public int addEmptyRow() {
-    return addRow(new BeeRow(DataUtils.NEW_ROW_ID, new String[getNumberOfColumns()]));
+  public void addEmptyRow() {
+    addRow(new BeeRow(DataUtils.NEW_ROW_ID, new String[getNumberOfColumns()]));
   }
 
-  public int addRow(long id, String[] data) {
-    int idx = addRow(id, 0, data);
-    return idx;
+  public void addRow(long id, String[] data) {
+    addRow(id, 0, data);
   }
 
-  public int addRow(long id, long version, String[] data) {
-    return addRow(new BeeRow(id, version, data));
+  public void addRow(long id, long version, String[] data) {
+    addRow(new BeeRow(id, version, data));
   }
 
-  public int addRow(long id, long version, List<String> data) {
-    return addRow(new BeeRow(id, version, data));
+  public void addRow(long id, long version, List<String> data) {
+    addRow(new BeeRow(id, version, data));
   }
 
   @Override

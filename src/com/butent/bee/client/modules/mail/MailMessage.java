@@ -64,6 +64,7 @@ import com.butent.bee.shared.modules.administration.AdministrationConstants;
 import com.butent.bee.shared.modules.mail.AccountInfo;
 import com.butent.bee.shared.modules.mail.MailConstants.AddressType;
 import com.butent.bee.shared.modules.mail.MailConstants.SystemFolder;
+import com.butent.bee.shared.modules.transport.TransportConstants;
 import com.butent.bee.shared.ui.Orientation;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.Codec;
@@ -87,6 +88,7 @@ public class MailMessage extends AbstractFormInterceptor {
         switch (viewName) {
           case TBL_REQUESTS:
           case TBL_TASKS:
+          case TransportConstants.TBL_ASSESSMENTS:
             event.consume();
             final String formName = event.getNewRowFormName();
             final DataSelector selector = event.getSelector();
@@ -98,7 +100,9 @@ public class MailMessage extends AbstractFormInterceptor {
               @Override
               public void execute() {
                 if (++counter == 2) {
-                  FileCollector.pushFiles(attachments);
+                  if (!BeeUtils.same(viewName, TransportConstants.TBL_ASSESSMENTS)) {
+                    FileCollector.pushFiles(attachments);
+                  }
                   RowFactory.createRelatedRow(formName, row, selector);
                 }
               }
@@ -127,6 +131,7 @@ public class MailMessage extends AbstractFormInterceptor {
                           break;
 
                         case TBL_REQUESTS:
+                        case TransportConstants.TBL_ASSESSMENTS:
                           Data.setValue(viewName, row, "Customer", company);
                           Data.setValue(viewName, row, "CustomerName", companyName);
                           Data.setValue(viewName, row, "CustomerPerson", persion);
@@ -152,6 +157,7 @@ public class MailMessage extends AbstractFormInterceptor {
                                     break;
 
                                   case TBL_REQUESTS:
+                                  case TransportConstants.TBL_ASSESSMENTS:
                                     Data.setValue(viewName, row, "Customer", company);
                                     Data.setValue(viewName, row, "CustomerName", companyName);
                                     break;
@@ -180,6 +186,10 @@ public class MailMessage extends AbstractFormInterceptor {
 
                     case TBL_REQUESTS:
                       Data.setValue(viewName, row, COL_CONTENT, response.getResponseAsString());
+                      break;
+
+                    case TransportConstants.TBL_ASSESSMENTS:
+                      Data.setValue(viewName, row, "OrderNotes", response.getResponseAsString());
                       break;
                   }
                 }

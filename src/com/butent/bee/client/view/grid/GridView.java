@@ -17,7 +17,6 @@ import com.butent.bee.client.view.edit.HasSaveChangesHandlers;
 import com.butent.bee.client.view.form.FormView;
 import com.butent.bee.client.view.grid.interceptor.GridInterceptor;
 import com.butent.bee.shared.NotificationListener;
-import com.butent.bee.shared.data.BeeColumn;
 import com.butent.bee.shared.data.BeeRowSet;
 import com.butent.bee.shared.data.IsRow;
 import com.butent.bee.shared.data.event.RowInsertEvent;
@@ -49,6 +48,8 @@ public interface GridView extends DataView, HasAddStartHandlers, HasAddEndHandle
 
   void ensureRelId(IdCallback callback);
 
+  void ensureRow(IsRow row, boolean focus);
+
   int estimatePageSize(int containerWidth, int containerHeight);
 
   void formCancel();
@@ -56,10 +57,6 @@ public interface GridView extends DataView, HasAddStartHandlers, HasAddEndHandle
   void formConfirm();
 
   FormView getActiveForm();
-
-  List<BeeColumn> getDataColumns();
-
-  int getDataIndex(String source);
 
   List<String> getDynamicColumnGroups();
 

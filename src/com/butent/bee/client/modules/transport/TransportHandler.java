@@ -72,8 +72,6 @@ import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.menu.MenuHandler;
 import com.butent.bee.shared.menu.MenuService;
 import com.butent.bee.shared.modules.administration.AdministrationConstants;
-import com.butent.bee.shared.modules.transport.TransportConstants.AssessmentStatus;
-import com.butent.bee.shared.modules.transport.TransportConstants.OrderStatus;
 import com.butent.bee.shared.rights.Module;
 import com.butent.bee.shared.ui.GridDescription;
 import com.butent.bee.shared.utils.BeeUtils;
@@ -416,10 +414,8 @@ public final class TransportHandler {
     }
   }
 
-  public static ParameterList createArgs(String name) {
-    ParameterList args = BeeKeeper.getRpc().createParameters(Module.TRANSPORT.getName());
-    args.addQueryItem(AdministrationConstants.METHOD, name);
-    return args;
+  public static ParameterList createArgs(String method) {
+    return BeeKeeper.getRpc().createParameters(Module.TRANSPORT, method);
   }
 
   public static void register() {
@@ -536,20 +532,7 @@ public final class TransportHandler {
 
     switch (gridName) {
       case GRID_ASSESSMENT_REQUESTS:
-        interceptor = new AbstractGridInterceptor() {
-          @Override
-          public GridInterceptor getInstance() {
-            return null;
-          }
-
-          @Override
-          public boolean onStartNewRow(GridView gridView, IsRow oldRow, IsRow newRow) {
-            newRow.setValue(gridView.getDataIndex(COL_ASSESSMENT_STATUS),
-                AssessmentStatus.NEW.ordinal());
-            newRow.setValue(gridView.getDataIndex(ALS_ORDER_STATUS), OrderStatus.REQUEST.ordinal());
-            return true;
-          }
-        };
+        interceptor = null;
         break;
 
       case GRID_ASSESSMENT_ORDERS:

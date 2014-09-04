@@ -4,6 +4,7 @@ import com.google.common.collect.Lists;
 import com.google.gwt.xml.client.Element;
 
 import com.butent.bee.client.data.IdCallback;
+import com.butent.bee.client.event.logical.ActiveRowChangeEvent;
 import com.butent.bee.client.event.logical.ParentRowEvent;
 import com.butent.bee.client.event.logical.RenderingEvent;
 import com.butent.bee.client.grid.ColumnFooter;
@@ -33,6 +34,7 @@ import com.butent.bee.shared.data.IsRow;
 import com.butent.bee.shared.data.event.RowInsertEvent;
 import com.butent.bee.shared.data.event.RowUpdateEvent;
 import com.butent.bee.shared.data.filter.Filter;
+import com.butent.bee.shared.data.filter.FilterComponent;
 import com.butent.bee.shared.data.filter.FilterDescription;
 import com.butent.bee.shared.data.view.RowInfo;
 import com.butent.bee.shared.i18n.Localized;
@@ -255,6 +257,11 @@ public abstract class AbstractGridInterceptor implements GridInterceptor {
   }
 
   @Override
+  public List<FilterComponent> getInitialUserFilters(List<FilterComponent> defaultFilters) {
+    return defaultFilters;
+  }
+
+  @Override
   public List<String> getParentLabels() {
     return null;
   }
@@ -298,6 +305,10 @@ public abstract class AbstractGridInterceptor implements GridInterceptor {
   @Override
   public boolean isRowEditable(IsRow row) {
     return row != null && row.isEditable();
+  }
+
+  @Override
+  public void onActiveRowChange(ActiveRowChangeEvent event) {
   }
 
   @Override

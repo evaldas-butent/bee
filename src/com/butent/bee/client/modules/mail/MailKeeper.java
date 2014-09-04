@@ -32,7 +32,6 @@ import com.butent.bee.shared.data.SimpleRowSet.SimpleRow;
 import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.menu.MenuHandler;
 import com.butent.bee.shared.menu.MenuService;
-import com.butent.bee.shared.modules.administration.AdministrationConstants;
 import com.butent.bee.shared.modules.mail.AccountInfo;
 import com.butent.bee.shared.modules.mail.MailConstants.MessageFlag;
 import com.butent.bee.shared.news.Feed;
@@ -183,10 +182,8 @@ public final class MailKeeper {
     });
   }
 
-  static ParameterList createArgs(String name) {
-    ParameterList args = BeeKeeper.getRpc().createParameters(Module.MAIL.getName());
-    args.addQueryItem(AdministrationConstants.METHOD, name);
-    return args;
+  static ParameterList createArgs(String method) {
+    return BeeKeeper.getRpc().createParameters(Module.MAIL, method);
   }
 
   static void createFolder(String title) {

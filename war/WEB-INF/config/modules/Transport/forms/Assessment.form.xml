@@ -28,7 +28,8 @@
         <InputDateTime source="Date" style="&input;" />
         <Label for="CustomerPerson" style="&labelRight; width:120px;" />
         <DataSelector source="CustomerPerson" style="&input; width:200px;" 
-          choiceColumns="FirstName LastName CompanyName" options="Customer" />
+          choiceColumns="FirstName LastName CompanyName" renderColumns="PersonFirstName PersonLastName"
+          options="Customer" />
       </FlowPanel>
     
       <FlowPanel style="&section;">

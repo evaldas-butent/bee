@@ -38,6 +38,8 @@ import com.butent.bee.client.presenter.Presenter;
 import com.butent.bee.client.render.AbstractCellRenderer;
 import com.butent.bee.client.render.HandlesRendering;
 import com.butent.bee.client.render.RendererFactory;
+import com.butent.bee.client.style.ConditionalStyle;
+import com.butent.bee.client.style.DynamicStyler;
 import com.butent.bee.client.style.StyleUtils;
 import com.butent.bee.client.ui.AutocompleteProvider;
 import com.butent.bee.client.ui.EnablableWidget;
@@ -195,6 +197,14 @@ public class FormImpl extends Absolute implements FormView, PreviewHandler, Tabu
 
         if (getFormInterceptor() != null) {
           getFormInterceptor().afterCreateEditableWidget(editableWidget, widget);
+        }
+      }
+
+      if (hasData() && !BeeUtils.isEmpty(result.getDynStyles()) && !BeeUtils.isEmpty(id)) {
+        ConditionalStyle conditionalStyle =
+            ConditionalStyle.create(result.getDynStyles(), source, getDataColumns());
+        if (conditionalStyle != null) {
+          addDynamicStyle(id, cellSource, conditionalStyle);
         }
       }
 
@@ -381,6 +391,8 @@ public class FormImpl extends Absolute implements FormView, PreviewHandler, Tabu
 
   private boolean hasReadyDelegates;
 
+  private final List<DynamicStyler> dynamicStylers = new ArrayList<>();
+
   public FormImpl(String formName) {
     super(Position.RELATIVE, Overflow.AUTO);
     this.formName = formName;
@@ -420,6 +432,28 @@ public class FormImpl extends Absolute implements FormView, PreviewHandler, Tabu
   @Override
   public HandlerRegistration addDataRequestHandler(DataRequestEvent.Handler handler) {
     return addHandler(handler, DataRequestEvent.getType());
+  }
+
+  @Override
+  public void addDynamicStyle(String widgetId, CellSource cellSource,
+      ConditionalStyle conditionalStyle) {
+
+    Assert.notEmpty(widgetId);
+    Assert.notNull(conditionalStyle);
+
+    boolean found = false;
+
+    for (DynamicStyler ds : dynamicStylers) {
+      if (widgetId.equals(ds.getElementId())) {
+        ds.addConditionalStyle(conditionalStyle);
+        found = true;
+        break;
+      }
+    }
+
+    if (!found) {
+      dynamicStylers.add(new DynamicStyler(widgetId, cellSource, conditionalStyle));
+    }
   }
 
   @Override
@@ -632,6 +666,13 @@ public class FormImpl extends Absolute implements FormView, PreviewHandler, Tabu
 
   @Override
   public String getCaption() {
+    if (getFormInterceptor() != null) {
+      String s = getFormInterceptor().getCaption();
+      if (!BeeUtils.isEmpty(s)) {
+        return s;
+      }
+    }
+
     return caption;
   }
 
@@ -1083,6 +1124,7 @@ public class FormImpl extends Absolute implements FormView, PreviewHandler, Tabu
     }
 
     refreshDisplayWidgets(refreshed);
+    refreshDynamicStyles();
   }
 
   @Override
@@ -1224,6 +1266,7 @@ public class FormImpl extends Absolute implements FormView, PreviewHandler, Tabu
         }
 
         refreshDisplayWidgets(refreshed);
+        refreshDynamicStyles();
 
       } else {
         fireUpdate(rowValue, column, oldValue, newValue, event.isRowMode());
@@ -1639,8 +1682,11 @@ public class FormImpl extends Absolute implements FormView, PreviewHandler, Tabu
     if (!BeeUtils.equalsTrimRight(oldValue, newValue)) {
       if (isFlushable()) {
         rowValue.setValue(index, newValue);
+
         Set<String> refreshed = refreshEditableWidget(index);
         refreshDisplayWidgets(refreshed);
+        refreshDynamicStyles();
+
       } else {
         BeeColumn column = getDataColumns().get(index);
         fireUpdate(rowValue, column, oldValue, newValue, column.isForeign());
@@ -1975,6 +2021,14 @@ public class FormImpl extends Absolute implements FormView, PreviewHandler, Tabu
     }
   }
 
+  private void refreshDynamicStyles() {
+    if (!dynamicStylers.isEmpty()) {
+      for (DynamicStyler ds : dynamicStylers) {
+        ds.apply(getActiveRow());
+      }
+    }
+  }
+
   private Set<String> refreshEditableWidget(int dataIndex) {
     Set<String> refreshed = new HashSet<>();
 
@@ -2044,6 +2098,8 @@ public class FormImpl extends Absolute implements FormView, PreviewHandler, Tabu
     if (refreshChildren) {
       refreshChildWidgets(getActiveRow());
     }
+
+    refreshDynamicStyles();
 
     fireEvent(new ActiveRowChangeEvent(getActiveRow()));
 

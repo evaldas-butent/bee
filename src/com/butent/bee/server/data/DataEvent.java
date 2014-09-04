@@ -8,6 +8,7 @@ import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.data.BeeColumn;
 import com.butent.bee.shared.data.BeeRow;
 import com.butent.bee.shared.data.BeeRowSet;
+import com.butent.bee.shared.data.value.Value;
 import com.butent.bee.shared.utils.BeeUtils;
 
 import java.util.List;
@@ -62,6 +63,11 @@ public abstract class DataEvent {
 
       this.columns = columns;
       this.row = row;
+    }
+
+    public void addValue(BeeColumn column, Value value) {
+      columns.add(column);
+      row.addValue(value);
     }
 
     public List<BeeColumn> getColumns() {

@@ -1,6 +1,5 @@
 package com.butent.bee.client.ui;
 
-import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 import com.google.gwt.core.client.Scheduler;
 import com.google.gwt.dom.client.Element;
@@ -42,6 +41,7 @@ import com.butent.bee.shared.css.values.VerticalAlign;
 import com.butent.bee.shared.css.values.WhiteSpace;
 import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.IsColumn;
+import com.butent.bee.shared.data.IsRow;
 import com.butent.bee.shared.data.value.ValueType;
 import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogUtils;
@@ -169,11 +169,21 @@ public final class UiHelper {
     return result;
   }
 
+  public static Widget getChildByStyleName(Widget parent, String styleName) {
+    Collection<Widget> children = getChildrenByStyleName(parent, Sets.newHashSet(styleName));
+
+    if (children.size() == 1) {
+      return BeeUtils.peek(children);
+    } else {
+      return null;
+    }
+  }
+
   public static Collection<Widget> getChildrenByStyleName(Widget parent,
       Collection<String> styleNames) {
 
-    Collection<Widget> result = Lists.newArrayList();
-    if (parent == null || styleNames == null) {
+    Collection<Widget> result = new ArrayList<>();
+    if (parent == null || BeeUtils.isEmpty(styleNames)) {
       return result;
     }
 
@@ -235,7 +245,7 @@ public final class UiHelper {
   }
 
   public static List<Focusable> getFocusableChildren(Widget parent) {
-    List<Focusable> result = Lists.newArrayList();
+    List<Focusable> result = new ArrayList<>();
     if (parent == null) {
       return result;
     }
@@ -283,7 +293,12 @@ public final class UiHelper {
     return null;
   }
 
-  public static Long getFormRowId(Widget widget) {
+  public static IsRow getFormRow(IsWidget widget) {
+    FormView form = getForm(widget);
+    return (form == null) ? null : form.getActiveRow();
+  }
+
+  public static Long getFormRowId(IsWidget widget) {
     FormView form = getForm(widget);
     return (form == null) ? null : form.getActiveRowId();
   }
@@ -303,7 +318,7 @@ public final class UiHelper {
   }
 
   public static List<Widget> getImmediateChildren(Widget parent) {
-    List<Widget> result = Lists.newArrayList();
+    List<Widget> result = new ArrayList<>();
     if (parent == null) {
       return result;
     }

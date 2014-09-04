@@ -4,7 +4,6 @@
        module="Trade.Acts">
   
   <Item name="TradeActNewSale" label="=taKindSale" service="trade_act_new" parameters="sale" />
-  <Item name="TradeActNewReturn" label="=taKindReturn" service="trade_act_new" parameters="return" />
   <Item name="TradeActNewTender" label="=taKindTender" service="trade_act_new" parameters="tender" />
   <Item name="TradeActNewPurchase" label="=taKindPurchase" service="trade_act_new" parameters="purchase" />
   <Item name="TradeActNewWriteOff" label="=taKindWriteOff" service="trade_act_new" parameters="write_off" />

@@ -1,5 +1,7 @@
 package com.butent.bee.shared.modules.classifiers;
 
+import com.butent.bee.shared.utils.EnumUtils;
+
 public final class ClassifierConstants {
 
   public static final String SVC_CREATE_COMPANY = "create_company";
@@ -105,11 +107,19 @@ public final class ClassifierConstants {
   public static final String COL_ITEM_EXTERNAL_CODE = "ExternalCode";
   public static final String COL_ITEM_PRICE = "Price";
   public static final String COL_ITEM_CURRENCY = "Currency";
+  public static final String COL_ITEM_COST = "Cost";
+  public static final String COL_ITEM_COST_CURRENCY = "CostCurrency";
+  public static final String COL_ITEM_PRICE_1 = "Price1";
+  public static final String COL_ITEM_CURRENCY_1 = "Currency1";
+  public static final String COL_ITEM_PRICE_2 = "Price2";
+  public static final String COL_ITEM_CURRENCY_2 = "Currency2";
   public static final String COL_ITEM_TYPE = "Type";
   public static final String COL_ITEM_GROUP = "Group";
+  public static final String COL_ITEM_WEIGHT = "Weight";
 
   public static final String COL_UNIT = "Unit";
   public static final String COL_UNIT_NAME = "Name";
+  public static final String COL_TIME_UNIT = "TimeUnit";
 
   public static final String COL_CONTACT = "Contact";
   public static final String COL_PHONE = "Phone";
@@ -177,11 +187,20 @@ public final class ClassifierConstants {
   public static final String ALS_ITEM_NAME = "ItemName";
   public static final String ALS_UNIT_NAME = "UnitName";
 
+  public static final String ALS_PARENT_TYPE_NAME = "ParentTypeName";
+  public static final String ALS_ITEM_TYPE_NAME = "ItemTypeName";
+  public static final String ALS_PARENT_GROUP_NAME = "ParentGroupName";
+  public static final String ALS_ITEM_GROUP_NAME = "ItemGroupName";
+
   public static final String PROP_COMPANY_NAMES = "CompanyNames";
   public static final String PROP_COMPANY_IDS = "CompanyIds";
 
   public static final String FILTER_COMPANY_CREATION_AND_TYPE = "company_creation_and_type";
   public static final String FILTER_COMPANY_USAGE = "company_usage";
+
+  public static void register() {
+    EnumUtils.register(ItemPrice.class);
+  }
 
   private ClassifierConstants() {
   }

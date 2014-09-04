@@ -41,6 +41,7 @@ import com.butent.bee.shared.modules.BeeParameter;
 import com.butent.bee.shared.modules.trade.TradeDocumentData;
 import com.butent.bee.shared.modules.transport.TransportConstants;
 import com.butent.bee.shared.rights.Module;
+import com.butent.bee.shared.rights.SubModule;
 import com.butent.bee.shared.time.TimeUtils;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.Codec;
@@ -90,6 +91,8 @@ public class TradeModuleBean implements BeeModule {
   UserServiceBean usr;
   @EJB
   ParamHolderBean prm;
+  @EJB
+  TradeActBean act;
 
   @Override
   public List<SearchResult> doSearch(String query) {
@@ -100,7 +103,12 @@ public class TradeModuleBean implements BeeModule {
   public ResponseObject doService(String svc, RequestInfo reqInfo) {
     ResponseObject response = null;
 
-    if (BeeUtils.same(svc, SVC_ITEMS_INFO)) {
+    SubModule subModule = reqInfo.getSubModule();
+
+    if (subModule == SubModule.ACTS) {
+      response = act.doService(svc, reqInfo);
+
+    } else if (BeeUtils.same(svc, SVC_ITEMS_INFO)) {
       response = getItemsInfo(reqInfo.getParameter("view_name"),
           BeeUtils.toLongOrNull(reqInfo.getParameter("id")),
           reqInfo.getParameter(COL_CURRENCY));
@@ -120,6 +128,7 @@ public class TradeModuleBean implements BeeModule {
       logger.warning(msg);
       response = ResponseObject.error(msg);
     }
+
     return response;
   }
 
@@ -191,7 +200,8 @@ public class TradeModuleBean implements BeeModule {
 
   @Override
   public Collection<BeeParameter> getDefaultParameters() {
-    return null;
+    String module = getModule().getName();
+    return act.getDefaultParameters(module);
   }
 
   @Override
@@ -232,12 +242,14 @@ public class TradeModuleBean implements BeeModule {
           if (!BeeUtils.isEmpty(prefix)
               && DataUtils.getColumnIndex(COL_TRADE_INVOICE_NO, cols) == BeeConst.UNDEF) {
             cols.add(new BeeColumn(COL_TRADE_INVOICE_NO));
-            row.addCell(Value.getValue(qs.getNextNumber(TBL_SALES, COL_TRADE_INVOICE_NO, prefix,
+            row.addValue(Value.getValue(qs.getNextNumber(TBL_SALES, COL_TRADE_INVOICE_NO, prefix,
                 COL_TRADE_INVOICE_PREFIX)));
           }
         }
       }
     });
+
+    act.init();
   }
 
   private ResponseObject getItemsInfo(String viewName, Long id, String currencyTo) {

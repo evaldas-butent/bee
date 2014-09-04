@@ -290,6 +290,11 @@ public class DataInfo implements BeeSerializable, Comparable<DataInfo>, HasExten
     return columns;
   }
 
+  public Integer getColumnScale(String columnId) {
+    BeeColumn column = getColumn(columnId);
+    return (column == null) ? null : column.getScale();
+  }
+
   public ValueType getColumnType(int index) {
     if (index == DataUtils.ID_INDEX) {
       return DataUtils.ID_TYPE;

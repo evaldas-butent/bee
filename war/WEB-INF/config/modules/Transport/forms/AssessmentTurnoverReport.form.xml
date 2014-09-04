@@ -41,8 +41,7 @@
       <row>
         <Label text="=clients" />
         <MultiSelector name="Customers" viewName="Companies" renderColumns="Name"
-          choiceColumns="FirstName LastName CompanyName PositionName" newRowEnabled="false"
-          style="width: 500px;" />
+          newRowEnabled="false" style="width: 500px;" />
       </row>
 
       <row>

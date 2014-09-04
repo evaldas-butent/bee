@@ -3,7 +3,6 @@ package com.butent.bee.client.style;
 import com.google.common.base.Joiner;
 import com.google.common.base.Splitter;
 import com.google.common.collect.Iterables;
-import com.google.common.collect.Lists;
 import com.google.gwt.dom.client.Element;
 import com.google.gwt.dom.client.NodeList;
 import com.google.gwt.dom.client.Style;
@@ -43,6 +42,7 @@ import com.butent.bee.shared.utils.NameUtils;
 import com.butent.bee.shared.utils.Property;
 import com.butent.bee.shared.utils.StringPredicate;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
@@ -170,6 +170,8 @@ public final class StyleUtils {
   public static final String NAME_DISABLED = CLASS_NAME_PREFIX + SUFFIX_DISABLED;
 
   public static final String NAME_TEXT_BOX = CLASS_NAME_PREFIX + "TextBox";
+
+  public static final String NAME_INFO_TABLE = CLASS_NAME_PREFIX + "info-table";
 
   public static final String TRANSFORM_ROTATE = "rotate";
   public static final String TRANSFORM_SCALE = "scale";
@@ -1242,7 +1244,7 @@ public final class StyleUtils {
 
   public static List<Property> parseStyles(String styles) {
     Assert.notEmpty(styles);
-    List<Property> result = Lists.newArrayList();
+    List<Property> result = new ArrayList<>();
 
     for (String style : DEFINITION_SPLITTER.split(styles)) {
       String name = BeeUtils.getPrefix(style, NAME_VALUE_SEPARATOR);
@@ -2300,13 +2302,28 @@ public final class StyleUtils {
     setZIndex(obj.getElement(), value);
   }
 
+  public static List<String> splitClasses(String classes) {
+    List<String> result = new ArrayList<>();
+
+    if (!BeeUtils.isEmpty(classes)) {
+      for (String name : CLASS_NAME_SPLITTER.split(classes)) {
+        if (!result.contains(name)) {
+          result.add(name);
+        }
+      }
+    }
+
+    return result;
+  }
+
   public static String toCssLength(double value, CssUnit unit) {
     return BeeUtils.toString(value, 5) + normalizeUnit(unit).getCaption();
   }
 
   public static SafeStyles toSafeStyles(String s) {
-    Assert.notEmpty(s);
-    if (s.trim().endsWith(DEFINITION_SEPARATOR)) {
+    if (BeeUtils.isEmpty(s)) {
+      return null;
+    } else if (s.trim().endsWith(DEFINITION_SEPARATOR)) {
       return SafeStylesUtils.fromTrustedString(s.trim());
     } else {
       return SafeStylesUtils.fromTrustedString(s.trim() + DEFINITION_SEPARATOR);

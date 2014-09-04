@@ -41,6 +41,10 @@ import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.utils.BeeUtils;
 
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
+
 public class Popup extends Simple implements HasAnimation, CloseEvent.HasCloseHandlers,
     OpenEvent.HasOpenHandlers, PreviewHandler {
 
@@ -232,13 +236,27 @@ public class Popup extends Simple implements HasAnimation, CloseEvent.HasCloseHa
 
   public static Popup getActivePopup() {
     int widgetCount = BodyPanel.get().getWidgetCount();
+
     for (int i = widgetCount - 1; i >= 0; i--) {
       Widget child = BodyPanel.get().getWidget(i);
       if (child instanceof Popup && ((Popup) child).isShowing()) {
         return (Popup) child;
       }
     }
+
     return null;
+  }
+
+  public static Collection<Popup> getVisiblePopups() {
+    List<Popup> popups = new ArrayList<>();
+
+    for (Widget child : BodyPanel.get()) {
+      if (child instanceof Popup && ((Popup) child).isShowing()) {
+        popups.add((Popup) child);
+      }
+    }
+
+    return popups;
   }
 
   private static int clampLeft(int left, int width) {
@@ -503,6 +521,16 @@ public class Popup extends Simple implements HasAnimation, CloseEvent.HasCloseHa
     } else {
       event.cancel();
     }
+  }
+
+  @Override
+  public void onResize() {
+    int x = Math.min(getAbsoluteLeft(), DomUtils.getClientWidth() - getOffsetWidth());
+    int y = Math.min(getAbsoluteTop(), DomUtils.getClientHeight() - getOffsetHeight());
+
+    setPopupPosition(Math.max(x, 0), Math.max(y, 0));
+
+    super.onResize();
   }
 
   @Override

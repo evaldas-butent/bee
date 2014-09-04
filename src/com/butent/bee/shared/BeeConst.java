@@ -111,6 +111,7 @@ public final class BeeConst {
   public static final char CHAR_POINT = '.';
   public static final char CHAR_COMMA = ',';
   public static final char CHAR_EOL = '\n';
+  public static final char CHAR_CR = '\r';
   public static final char CHAR_EQ = '=';
   public static final char CHAR_AMP = '&';
   public static final char CHAR_LT = '<';

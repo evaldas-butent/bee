@@ -72,7 +72,7 @@ class ReportManager {
   }
 
   private static void doReport(final Report report, final BeeRow row) {
-    ParameterList params = CalendarKeeper.createRequestParameters(SVC_DO_REPORT);
+    ParameterList params = CalendarKeeper.createArgs(SVC_DO_REPORT);
     params.addQueryItem(PARAM_REPORT, report.ordinal());
 
     BeeRowSet rowSet = new BeeRowSet(VIEW_REPORT_OPTIONS, Data.getColumns(VIEW_REPORT_OPTIONS));
@@ -180,7 +180,7 @@ class ReportManager {
       return;
     }
 
-    ParameterList params = CalendarKeeper.createRequestParameters(SVC_GET_REPORT_OPTIONS);
+    ParameterList params = CalendarKeeper.createArgs(SVC_GET_REPORT_OPTIONS);
     params.addQueryItem(PARAM_REPORT, report.ordinal());
 
     BeeKeeper.getRpc().makeGetRequest(params, new ResponseCallback() {

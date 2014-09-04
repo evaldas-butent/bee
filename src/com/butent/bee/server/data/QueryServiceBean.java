@@ -57,10 +57,13 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.EnumSet;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
 import javax.ejb.EJB;
@@ -485,7 +488,7 @@ public class QueryServiceBean {
     return getData(null, query, new ResultSetProcessor<List<byte[]>>() {
       @Override
       public List<byte[]> processResultSet(ResultSet rs) throws SQLException {
-        List<byte[]> data = Lists.newArrayList();
+        List<byte[]> data = new ArrayList<>();
 
         while (rs.next()) {
           data.add(rs.getBytes(1));
@@ -637,7 +640,20 @@ public class QueryServiceBean {
   }
 
   public List<Long> getLongList(IsQuery query) {
-    List<Long> result = Lists.newArrayList();
+    List<Long> result = new ArrayList<>();
+
+    Long[] arr = getLongColumn(query);
+    if (arr != null && arr.length > 0) {
+      for (Long value : arr) {
+        result.add(value);
+      }
+    }
+
+    return result;
+  }
+
+  public Set<Long> getLongSet(IsQuery query) {
+    Set<Long> result = new HashSet<>();
 
     Long[] arr = getLongColumn(query);
     if (arr != null && arr.length > 0) {
@@ -716,8 +732,19 @@ public class QueryServiceBean {
     return res.getRow(0);
   }
 
+  public SimpleRow getRow(String tblName, long id) {
+    Assert.notEmpty(tblName);
+
+    SqlSelect query = new SqlSelect()
+        .addAllFields(tblName)
+        .addFrom(tblName)
+        .setWhere(sys.idEquals(tblName, id));
+
+    return getRow(query);
+  }
+
   public List<SearchResult> getSearchResults(String viewName, Filter filter) {
-    List<SearchResult> results = Lists.newArrayList();
+    List<SearchResult> results = new ArrayList<>();
 
     BeeRowSet rowSet = getViewData(viewName, filter);
     if (rowSet != null) {

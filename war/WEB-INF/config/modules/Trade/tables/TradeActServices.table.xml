@@ -7,10 +7,18 @@
   <Fields>
     <Relation name="TradeAct" notNull="true" relation="TradeActs" cascade="DELETE" />
 
-    <Relation name="Item" notNull="true" relation="Items" label="=item" />
-    <String name="Article" precision="30" label="=article" />
+    <Relation name="Item" notNull="true" relation="Items" label="=service" />
 
-    <Numeric name="Quantity" precision="12" scale="3" notNull="true" label="=quantity" />
+    <Date name="DateFrom" label="=dateFrom" />
+    <Date name="DateTo" label="=dateTo" />
+
+    <Numeric name="Tariff" precision="7" scale="1" label="=taTariff" />
+    <Numeric name="Factor" precision="7" scale="3" label="=taFactor" />
+
+    <Numeric name="DaysPerWeek" precision="1" label="=taDaysPerWeek" />
+    <Numeric name="MinTerm" precision="3" label="=taMinTerm" />
+
+    <Numeric name="Quantity" precision="12" scale="3" label="=quantity" />
     <Numeric name="Price" precision="12" scale="2" label="=price" />
 
     <Boolean name="VatPlus" label="=vatPlus" />

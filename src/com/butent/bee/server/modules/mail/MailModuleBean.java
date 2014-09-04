@@ -427,7 +427,13 @@ public class MailModuleBean implements BeeModule {
   @Override
   public void init() {
     System.setProperty("mail.mime.decodetext.strict", "false");
+
+    System.setProperty("mail.mime.parameters.strict", "false");
     System.setProperty("mail.mime.ignoreunknownencoding", "true");
+    System.setProperty("mail.mime.uudecode.ignoreerrors", "true");
+    System.setProperty("mail.mime.uudecode.ignoremissingbeginend", "true");
+    System.setProperty("mail.mime.ignoremultipartencoding", "false");
+    System.setProperty("mail.mime.allowencodedmessages", "true");
 
     proxy.initServer();
 
@@ -480,6 +486,21 @@ public class MailModuleBean implements BeeModule {
                   row.setProperty(fld, simpleRow.getValue(fld));
                 }
               }
+            }
+            String relations = AdministrationConstants.TBL_RELATIONS;
+            String relation = AdministrationConstants.COL_RELATION;
+
+            result = qs.getData(new SqlSelect()
+                .addFields(relations, COL_MESSAGE)
+                .addCount(relation)
+                .addFrom(relations)
+                .setWhere(SqlUtils.and(SqlUtils.inList(relations, COL_MESSAGE, messages),
+                    SqlUtils.isNull(relations, COL_COMPANY)))
+                .addGroup(relations, COL_MESSAGE));
+
+            for (BeeRow row : rowSet) {
+              row.setProperty(relation,
+                  result.getValueByKey(COL_MESSAGE, row.getString(idx), relation));
             }
           }
         }

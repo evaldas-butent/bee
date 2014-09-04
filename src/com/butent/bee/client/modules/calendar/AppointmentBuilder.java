@@ -743,7 +743,7 @@ class AppointmentBuilder extends AbstractFormInterceptor implements SelectorEven
     setLastCheckStart(start);
     setLastCheckEnd(end);
 
-    ParameterList params = CalendarKeeper.createRequestParameters(SVC_GET_OVERLAPPING_APPOINTMENTS);
+    ParameterList params = CalendarKeeper.createArgs(SVC_GET_OVERLAPPING_APPOINTMENTS);
     if (!isNew) {
       params.addQueryItem(PARAM_APPOINTMENT_ID, getFormView().getActiveRow().getId());
     }
@@ -1329,7 +1329,7 @@ class AppointmentBuilder extends AbstractFormInterceptor implements SelectorEven
     }
 
     final String svc = isNew ? SVC_CREATE_APPOINTMENT : SVC_UPDATE_APPOINTMENT;
-    ParameterList params = CalendarKeeper.createRequestParameters(svc);
+    ParameterList params = CalendarKeeper.createArgs(svc);
 
     BeeKeeper.getRpc().sendText(params, Codec.beeSerialize(rowSet), new ResponseCallback() {
       @Override
