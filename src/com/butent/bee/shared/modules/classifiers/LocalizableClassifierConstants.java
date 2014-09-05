@@ -6,6 +6,8 @@ public interface LocalizableClassifierConstants {
 
   String branch();
 
+  String category();
+
   String chief();
 
   String city();

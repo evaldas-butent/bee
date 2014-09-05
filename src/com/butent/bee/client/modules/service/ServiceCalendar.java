@@ -295,7 +295,7 @@ final class ServiceCalendar extends TimeBoard {
 
       case FILTER:
         // TODO:
-        SvcCalendarFilterHelper.openDialog();
+        SvcCalendarFilterHelper.openDialog(objects, getFilterDialogCallback());
         break;
       case REMOVE_FILTER:
         // TODO:
@@ -367,7 +367,7 @@ final class ServiceCalendar extends TimeBoard {
 
   @Override
   protected Set<Action> getEnabledActions() {
-    return EnumSet.of(/* Action.FILTER, */Action.REFRESH, Action.ADD, Action.EXPORT,
+    return EnumSet.of(/*Action.FILTER,*/ Action.REFRESH, Action.ADD, Action.EXPORT,
         Action.CONFIGURE,
         Action.PRINT);
   }
@@ -1015,6 +1015,26 @@ final class ServiceCalendar extends TimeBoard {
 
   private int getCompanyWidth() {
     return companyWidth;
+  }
+
+  private static SvcCalendarFilterHelper.DialogCallback getFilterDialogCallback() {
+    return  new SvcCalendarFilterHelper.DialogCallback() {
+
+      @Override
+      public void onClear() {
+        // TODO Auto-generated method stub
+      }
+
+      @Override
+      public void onFilter() {
+        // TODO Auto-generated method stub
+      }
+
+      @Override
+      public void onSelectionChange(HasWidgets dataContainer) {
+        // TODO Auto-generated method stub
+      }
+    };
   }
 
   private void getFilterLabels(final Consumer<List<String>> consumer) {

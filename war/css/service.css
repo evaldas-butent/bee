@@ -57,6 +57,36 @@
   margin-left: 2em;
 }
 
+.bee-svc-calendar-filter-data-caption {
+  height: 35px;
+  font-weight: bold;
+  text-align: center;
+}
+
+.bee-svc-calendar-filter-data-item {
+  font-size: 12px;
+  white-space: nowrap;
+  cursor: pointer;
+}
+
+.bee-svc-calendar-filter-data-panel {
+  overflow: hidden;
+}
+
+.bee-svc-calendar-filter-data-unselected.bee-svc-calendar-filter-data-itemContainer {
+  top: 36px;
+  bottom: 50%; 
+}
+
+.bee-svc-calendar-filter-data-unselected.bee-svc-calendar-filter-data-controls {
+  top: calc(50% + 4px);
+  bottom: 0; 
+}
+
+.bee-svc-calendar-filter-data-wrapper {
+  overflow: auto;
+}
+
 .bee-svc-calendar-info-panel {
   position: absolute;
   overflow: auto;
