@@ -20,6 +20,7 @@ import com.butent.bee.server.sql.IsCondition;
 import com.butent.bee.server.sql.SqlInsert;
 import com.butent.bee.server.sql.SqlSelect;
 import com.butent.bee.server.sql.SqlUtils;
+import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.Service;
 import com.butent.bee.shared.communication.ResponseObject;
 import com.butent.bee.shared.data.BeeColumn;
@@ -43,7 +44,6 @@ import com.butent.bee.shared.utils.EnumUtils;
 import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -243,7 +243,7 @@ public class TradeActBean {
 
     if (kind.showStock()) {
       List<Long> itemIds = (items.getNumberOfRows() < 200)
-          ? items.getRowIds() : Collections.emptyList();
+          ? items.getRowIds() : BeeConst.EMPTY_IMMUTABLE_LONG_LIST;
       Table<Long, Long, Double> stock = getStock(itemIds);
 
       if (stock != null) {

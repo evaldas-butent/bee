@@ -2,6 +2,7 @@ package com.butent.bee.client.modules.trade.acts;
 
 import com.google.common.collect.Lists;
 import com.google.common.net.MediaType;
+import com.google.gwt.dom.client.Element;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.event.logical.shared.SelectionEvent;
@@ -15,6 +16,8 @@ import static com.butent.bee.shared.modules.trade.acts.TradeActConstants.*;
 
 import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.Global;
+import com.butent.bee.client.communication.ParameterList;
+import com.butent.bee.client.communication.ResponseCallback;
 import com.butent.bee.client.composite.FileCollector;
 import com.butent.bee.client.data.Data;
 import com.butent.bee.client.data.IdCallback;
@@ -22,6 +25,7 @@ import com.butent.bee.client.data.Queries;
 import com.butent.bee.client.dialog.DialogBox;
 import com.butent.bee.client.grid.HtmlTable;
 import com.butent.bee.client.i18n.Money;
+import com.butent.bee.client.layout.Simple;
 import com.butent.bee.client.presenter.GridPresenter;
 import com.butent.bee.client.ui.UiHelper;
 import com.butent.bee.client.utils.FileUtils;
@@ -30,37 +34,88 @@ import com.butent.bee.client.view.grid.interceptor.AbstractGridInterceptor;
 import com.butent.bee.client.view.grid.interceptor.GridInterceptor;
 import com.butent.bee.client.widget.Button;
 import com.butent.bee.client.widget.Image;
-import com.butent.bee.shared.BeeConst;
+import com.butent.bee.client.widget.Toggle;
+import com.butent.bee.shared.BiConsumer;
 import com.butent.bee.shared.Consumer;
 import com.butent.bee.shared.Latch;
+import com.butent.bee.shared.Service;
+import com.butent.bee.shared.communication.ResponseObject;
 import com.butent.bee.shared.data.BeeRow;
 import com.butent.bee.shared.data.BeeRowSet;
 import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.IsRow;
 import com.butent.bee.shared.data.filter.Filter;
+import com.butent.bee.shared.font.FontAwesome;
 import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.io.FileInfo;
 import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogUtils;
 import com.butent.bee.shared.modules.classifiers.ItemPrice;
+import com.butent.bee.shared.modules.trade.acts.TradeActKind;
 import com.butent.bee.shared.time.DateTime;
 import com.butent.bee.shared.ui.Action;
 import com.butent.bee.shared.utils.BeeUtils;
 
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.LinkedHashMap;
+import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import elemental.html.File;
 
 public class TradeActItemsGrid extends AbstractGridInterceptor implements
     SelectionHandler<BeeRowSet> {
 
+  private static final class ImportEntry {
+    private final String article;
+    private final String name;
+
+    private final Double quantity;
+
+    private BeeRow item;
+
+    private ImportEntry(String article, String name, Double quantity) {
+      this.article = article;
+      this.name = name;
+      this.quantity = quantity;
+    }
+  }
+
   private static final BeeLogger logger = LogUtils.getLogger(TradeActItemsGrid.class);
 
   private static final String STYLE_IMPORT_PREFIX = TradeActKeeper.STYLE_PREFIX + "import-items-";
+
+  private static final String STYLE_IMPORT_DIALOG = STYLE_IMPORT_PREFIX + "dialog";
+  private static final String STYLE_IMPORT_SAVE = STYLE_IMPORT_PREFIX + "save";
+  private static final String STYLE_IMPORT_CLOSE = STYLE_IMPORT_PREFIX + "close";
+
+  private static final String STYLE_IMPORT_WRAPPER = STYLE_IMPORT_PREFIX + "wrapper";
+  private static final String STYLE_IMPORT_TABLE = STYLE_IMPORT_PREFIX + "table";
+
+  private static final String STYLE_IMPORT_HEADER_ROW = STYLE_IMPORT_PREFIX + "header";
+  private static final String STYLE_IMPORT_ITEM_ROW = STYLE_IMPORT_PREFIX + "item";
+  private static final String STYLE_IMPORT_SELECTED_ROW = STYLE_IMPORT_PREFIX + "selected";
+  private static final String STYLE_IMPORT_DUPLICATE_ROW = STYLE_IMPORT_PREFIX + "duplicate";
+  private static final String STYLE_IMPORT_NO_STOCK_ROW = STYLE_IMPORT_PREFIX + "no-stock";
+
+  private static final String STYLE_IMPORT_TOGGLE_PREFIX = STYLE_IMPORT_PREFIX + "toggle-";
+  private static final String STYLE_IMPORT_TOGGLE_WIDGET = STYLE_IMPORT_PREFIX + "toggle";
+
+  private static final String STYLE_IMPORT_ARTICLE_PREFIX = STYLE_IMPORT_PREFIX + "article-";
+  private static final String STYLE_IMPORT_NAME_PREFIX = STYLE_IMPORT_PREFIX + "name-";
+  private static final String STYLE_IMPORT_QTY_PREFIX = STYLE_IMPORT_PREFIX + "qty-";
+
+  private static final String STYLE_IMPORT_STOCK_PREFIX = STYLE_IMPORT_PREFIX + "stock-";
+  private static final String STYLE_IMPORT_FROM_PREFIX = STYLE_IMPORT_PREFIX + "from-";
+
+  private static final String STYLE_IMPORT_ID_PREFIX = STYLE_IMPORT_PREFIX + "id-";
+  private static final String STYLE_IMPORT_ITEM_NAME_PREFIX = STYLE_IMPORT_PREFIX + "item-name-";
+
+  private static final String STYLE_HEADER_CELL_SUFFIX = "label";
+  private static final String STYLE_CELL_SUFFIX = "cell";
 
   private TradeActItemPicker picker;
   private FileCollector collector;
@@ -200,23 +255,21 @@ public class TradeActItemsGrid extends AbstractGridInterceptor implements
                   Global.getParameter(PRM_IMPORT_TA_ITEM_RX, new Consumer<String>() {
                     @Override
                     public void accept(String pattern) {
-                      final Map<String, Double> quantityByCode =
+                      final List<ImportEntry> importEntries =
                           parseImport(lines, BeeUtils.notEmpty(pattern, RX_IMPORT_ACT_ITEM));
 
-                      if (quantityByCode.isEmpty()) {
+                      if (importEntries.isEmpty()) {
                         getGridView().notifyWarning(importCaption,
                             Localized.getConstants().nothingFound());
 
                       } else {
-                        Filter filter = Filter.and(Filter.isNull(COL_ITEM_IS_SERVICE),
-                            Filter.anyString(COL_ITEM_ARTICLE, quantityByCode.keySet()));
-
-                        Queries.getRowSet(VIEW_ITEMS, null, filter, new Queries.RowSetCallback() {
-                          @Override
-                          public void onSuccess(BeeRowSet items) {
-                            showImportData(importCaption, quantityByCode, items);
-                          }
-                        });
+                        queryImportItems(importEntries,
+                            new BiConsumer<List<ImportEntry>, Map<Long, String>>() {
+                              @Override
+                              public void accept(List<ImportEntry> t, Map<Long, String> u) {
+                                showImport(importCaption, t, u);
+                              }
+                            });
                       }
                     }
                   });
@@ -233,63 +286,209 @@ public class TradeActItemsGrid extends AbstractGridInterceptor implements
     return collector;
   }
 
-  private void showImportData(String caption, final Map<String, Double> quantities,
-      final BeeRowSet items) {
+  private void queryImportItems(final List<ImportEntry> input,
+      final BiConsumer<List<ImportEntry>, Map<Long, String>> consumer) {
 
-    final int codeIndex;
-    int nameIndex;
+    ParameterList params = TradeActKeeper.createArgs(SVC_GET_ITEMS_FOR_SELECTION);
 
-    if (DataUtils.isEmpty(items)) {
-      codeIndex = BeeConst.UNDEF;
-      nameIndex = BeeConst.UNDEF;
-    } else {
-      codeIndex = items.getColumnIndex(COL_ITEM_ARTICLE);
-      nameIndex = items.getColumnIndex(COL_ITEM_NAME);
+    IsRow parentRow = UiHelper.getFormRow(getGridView());
+    TradeActKind kind = TradeActKeeper.getKind(VIEW_TRADE_ACTS, parentRow);
+    if (kind != null) {
+      params.addDataItem(COL_TA_KIND, kind.ordinal());
     }
 
-    HtmlTable table = new HtmlTable(STYLE_IMPORT_PREFIX + "table");
+    Set<String> articles = new HashSet<>();
+    for (ImportEntry entry : input) {
+      articles.add(entry.article);
+    }
+
+    Filter filter = Filter.anyString(COL_ITEM_ARTICLE, articles);
+    params.addDataItem(Service.VAR_VIEW_WHERE, filter.serialize());
+
+    BeeKeeper.getRpc().makeRequest(params, new ResponseCallback() {
+      @Override
+      public void onResponse(ResponseObject response) {
+        if (response.hasResponse(BeeRowSet.class)) {
+          BeeRowSet items = BeeRowSet.restore(response.getResponseAsString());
+          int index = items.getColumnIndex(COL_ITEM_ARTICLE);
+
+          List<ImportEntry> output = new ArrayList<>();
+          for (ImportEntry ie : input) {
+            ImportEntry entry = new ImportEntry(ie.article, ie.name, ie.quantity);
+            entry.item = findItem(items, index, entry.article);
+
+            output.add(entry);
+          }
+
+          consumer.accept(output,
+              TradeActKeeper.getWarehouses(TradeActKeeper.extractWarehouses(items)));
+
+        } else {
+          Map<Long, String> whs = Collections.emptyMap();
+          consumer.accept(input, whs);
+        }
+      }
+    });
+  }
+
+  private void showImport(String caption, final List<ImportEntry> entries,
+      Map<Long, String> warehouses) {
+
+    List<Long> warehouseIds = new ArrayList<>();
+    if (!BeeUtils.isEmpty(warehouses)) {
+      warehouseIds.addAll(warehouses.keySet());
+    }
+
+    Long warehouseFrom = TradeActKeeper.getWarehouseFrom(VIEW_TRADE_ACTS,
+        UiHelper.getFormRow(getGridView()));
+
+    final HtmlTable table = new HtmlTable(STYLE_IMPORT_TABLE);
 
     int r = 0;
-    int c;
+    int c = 0;
 
-    BeeRow item;
+    String pfx;
+    boolean duplicate;
 
-    for (Map.Entry<String, Double> entry : quantities.entrySet()) {
-      String code = entry.getKey();
-      item = BeeConst.isUndef(codeIndex) ? null : findItem(items, codeIndex, code);
+    table.setText(r, c++, Localized.getConstants().actionImport(),
+        STYLE_IMPORT_TOGGLE_PREFIX + STYLE_HEADER_CELL_SUFFIX);
 
+    table.setText(r, c++, Localized.getConstants().article(),
+        STYLE_IMPORT_ARTICLE_PREFIX + STYLE_HEADER_CELL_SUFFIX);
+    table.setText(r, c++, Localized.getConstants().name(),
+        STYLE_IMPORT_NAME_PREFIX + STYLE_HEADER_CELL_SUFFIX);
+    table.setText(r, c++, Localized.getConstants().quantity(),
+        STYLE_IMPORT_QTY_PREFIX + STYLE_HEADER_CELL_SUFFIX);
+
+    for (Long w : warehouseIds) {
+      pfx = w.equals(warehouseFrom) ? STYLE_IMPORT_FROM_PREFIX : STYLE_IMPORT_STOCK_PREFIX;
+      table.setText(r, c++, warehouses.get(w), pfx + STYLE_HEADER_CELL_SUFFIX);
+    }
+
+    table.setText(r, c++, Localized.getLabel(Data.getColumn(VIEW_ITEMS, COL_ITEM_NAME)),
+        STYLE_IMPORT_ID_PREFIX + STYLE_HEADER_CELL_SUFFIX);
+    table.setText(r, c++, Localized.getConstants().captionId(),
+        STYLE_IMPORT_ID_PREFIX + STYLE_HEADER_CELL_SUFFIX);
+
+    table.getRowFormatter().addStyleName(r, STYLE_IMPORT_HEADER_ROW);
+
+    int nameIndex = Data.getColumnIndex(VIEW_ITEMS, COL_ITEM_NAME);
+    int qtyScale = Data.getColumnScale(getViewName(), COL_TRADE_ITEM_QUANTITY);
+
+    Set<Long> itemIds = new HashSet<>();
+    for (IsRow item : getGridView().getRowData()) {
+      itemIds.add(item.getId());
+    }
+
+    boolean hasItems = false;
+
+    r++;
+    for (ImportEntry entry : entries) {
       c = 0;
 
-      if (item != null) {
-        table.setText(r, c, item.getString(nameIndex), STYLE_IMPORT_PREFIX + "name");
+      duplicate = entry.item != null && !itemIds.contains(entry.item.getId());
+
+      if (entry.item != null && !duplicate) {
+        Toggle toggle = new Toggle(FontAwesome.SQUARE_O, FontAwesome.CHECK_SQUARE_O,
+            STYLE_IMPORT_TOGGLE_WIDGET, true);
+
+        toggle.addClickHandler(new ClickHandler() {
+          @Override
+          public void onClick(ClickEvent event) {
+            Element rowElement = table.getEventRowElement(event, false);
+
+            if (rowElement != null && event.getSource() instanceof Toggle) {
+              if (((Toggle) event.getSource()).isChecked()) {
+                rowElement.addClassName(STYLE_IMPORT_SELECTED_ROW);
+              } else {
+                rowElement.removeClassName(STYLE_IMPORT_SELECTED_ROW);
+              }
+            }
+          }
+        });
+
+        table.setWidget(r, c, toggle, STYLE_IMPORT_TOGGLE_PREFIX + STYLE_CELL_SUFFIX);
+
+        itemIds.add(entry.item.getId());
+        hasItems = true;
+      }
+      c++;
+
+      table.setText(r, c++, entry.article, STYLE_IMPORT_ARTICLE_PREFIX + STYLE_CELL_SUFFIX);
+      table.setText(r, c++, entry.name, STYLE_IMPORT_NAME_PREFIX + STYLE_CELL_SUFFIX);
+
+      table.setText(r, c++, BeeUtils.toString(entry.quantity, qtyScale),
+          STYLE_IMPORT_QTY_PREFIX + STYLE_CELL_SUFFIX);
+
+      if (entry.item != null) {
+        Double qtyFrom = null;
+
+        if (!warehouseIds.isEmpty() && !BeeUtils.isEmpty(entry.item.getProperties())) {
+          for (Map.Entry<String, String> property : entry.item.getProperties().entrySet()) {
+            if (BeeUtils.isPrefix(property.getKey(), PRP_WAREHOUSE_PREFIX)) {
+              Long w = BeeUtils.toLongOrNull(BeeUtils.removePrefix(property.getKey(),
+                  PRP_WAREHOUSE_PREFIX));
+
+              if (DataUtils.isId(w) && warehouseIds.contains(w)) {
+                if (w.equals(warehouseFrom)) {
+                  pfx = STYLE_IMPORT_FROM_PREFIX;
+                  qtyFrom = BeeUtils.toDoubleOrNull(property.getValue());
+                } else {
+                  pfx = STYLE_IMPORT_STOCK_PREFIX;
+                }
+
+                table.setText(r, c + warehouseIds.indexOf(w), property.getValue(),
+                    pfx + STYLE_CELL_SUFFIX);
+              }
+            }
+          }
+        }
+        c += warehouseIds.size();
+
+        table.setText(r, c++, entry.item.getString(nameIndex),
+            STYLE_IMPORT_ITEM_NAME_PREFIX + STYLE_CELL_SUFFIX);
+        table.setText(r, c++, BeeUtils.toString(entry.item.getId()),
+            STYLE_IMPORT_ID_PREFIX + STYLE_CELL_SUFFIX);
+
+        if (DataUtils.isId(warehouseFrom)
+            && (!BeeUtils.isPositive(qtyFrom) || BeeUtils.isLess(entry.quantity, qtyFrom))) {
+          table.getRowFormatter().addStyleName(r, STYLE_IMPORT_NO_STOCK_ROW);
+        }
       }
 
-      table.setText(r, c++, code, STYLE_IMPORT_PREFIX + "code");
-      table.setText(r, c++, BeeUtils.toString(entry.getValue()), STYLE_IMPORT_PREFIX + "qty");
+      table.getRowFormatter().addStyleName(r, STYLE_IMPORT_ITEM_ROW);
+
+      if (duplicate) {
+        table.getRowFormatter().addStyleName(r, STYLE_IMPORT_DUPLICATE_ROW);
+      } else if (entry.item != null) {
+        table.getRowFormatter().addStyleName(r, STYLE_IMPORT_SELECTED_ROW);
+      }
 
       r++;
     }
 
-    final DialogBox dialog = DialogBox.withoutCloseBox(caption, STYLE_IMPORT_PREFIX + "dialog");
+    final DialogBox dialog = DialogBox.withoutCloseBox(caption, STYLE_IMPORT_DIALOG);
 
-    if (!DataUtils.isEmpty(items)) {
+    if (hasItems) {
       Image save = new Image(Global.getImages().silverSave());
-      save.addStyleName(STYLE_IMPORT_PREFIX + "save");
+      save.addStyleName(STYLE_IMPORT_SAVE);
 
       save.addClickHandler(new ClickHandler() {
         @Override
         public void onClick(ClickEvent event) {
           dialog.close();
 
-          BeeRowSet selection = new BeeRowSet(items.getViewName(), items.getColumns());
-          for (Map.Entry<String, Double> entry : quantities.entrySet()) {
-            BeeRow ir = findItem(items, codeIndex, entry.getKey());
+          BeeRowSet selection = new BeeRowSet(VIEW_ITEMS, Data.getColumns(VIEW_ITEMS));
+          for (int i = 0; i < entries.size(); i++) {
+            if (table.getRow(i + 1).hasClassName(STYLE_IMPORT_SELECTED_ROW)) {
+              ImportEntry entry = entries.get(i);
 
-            if (ir != null) {
-              BeeRow row = DataUtils.cloneRow(ir);
-              row.setProperty(PRP_QUANTITY, BeeUtils.toString(entry.getValue()));
+              if (entry.item != null) {
+                BeeRow row = DataUtils.cloneRow(entry.item);
+                row.setProperty(PRP_QUANTITY, BeeUtils.toString(entry.quantity));
 
-              selection.addRow(row);
+                selection.addRow(row);
+              }
             }
           }
 
@@ -303,7 +502,7 @@ public class TradeActItemsGrid extends AbstractGridInterceptor implements
     }
 
     Image close = new Image(Global.getImages().silverClose());
-    close.addStyleName(STYLE_IMPORT_PREFIX + "close");
+    close.addStyleName(STYLE_IMPORT_CLOSE);
 
     close.addClickHandler(new ClickHandler() {
       @Override
@@ -314,7 +513,10 @@ public class TradeActItemsGrid extends AbstractGridInterceptor implements
 
     dialog.addAction(Action.CLOSE, close);
 
-    dialog.setWidget(table);
+    Simple wrapper = new Simple(table);
+    wrapper.addStyleName(STYLE_IMPORT_WRAPPER);
+
+    dialog.setWidget(wrapper);
     dialog.center();
   }
 
@@ -327,8 +529,8 @@ public class TradeActItemsGrid extends AbstractGridInterceptor implements
     return null;
   }
 
-  private static Map<String, Double> parseImport(List<String> lines, String pattern) {
-    Map<String, Double> result = new LinkedHashMap<>();
+  private static List<ImportEntry> parseImport(List<String> lines, String pattern) {
+    List<ImportEntry> result = new ArrayList<>();
 
     RegExp rx;
     try {
@@ -344,26 +546,16 @@ public class TradeActItemsGrid extends AbstractGridInterceptor implements
       for (String line : lines) {
         MatchResult matchResult = rx.exec(line);
 
-        if (matchResult != null && matchResult.getGroupCount() == 3) {
-          String code = BeeUtils.trim(matchResult.getGroup(1));
-          Double qty = BeeUtils.toDoubleOrNull(matchResult.getGroup(2));
+        if (matchResult != null && matchResult.getGroupCount() == 4) {
+          String article = BeeUtils.trim(matchResult.getGroup(1));
+          String name = BeeUtils.trim(matchResult.getGroup(2));
+          Double qty = BeeUtils.toDoubleOrNull(matchResult.getGroup(3));
 
-          if (!BeeUtils.isEmpty(code) && BeeUtils.isPositive(qty)) {
-            if (result.containsKey(code)) {
-              Double value = result.get(code);
-
-              logger.warning(line);
-              logger.warning("duplicate code", code, "qty", value, "+", qty);
-
-              result.put(code, value + qty);
-
-            } else {
-              result.put(code, qty);
-            }
-
+          if (!BeeUtils.isEmpty(article) && BeeUtils.isPositive(qty)) {
+            result.add(new ImportEntry(article, name, qty));
           } else {
-            logger.warning(line);
-            logger.warning("code", code, "qty", matchResult.getGroup(2));
+            logger.warning("cannot parse", line);
+            logger.warning("article", article, "name", name, "qty", matchResult.getGroup(3));
           }
 
         } else {

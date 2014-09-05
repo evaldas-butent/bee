@@ -591,11 +591,9 @@ public class MultiSelector extends DataSelector implements HandlesRendering, Han
   protected void init(final InputWidget inputWidget, boolean embed) {
     final Flow container = new Flow(STYLE_CONTAINER);
 
-    int maxLength = inputWidget.getMaxLength();
-    maxLength = (maxLength > 0) ? Math.min(maxLength, MAX_INPUT_LENGTH) : MAX_INPUT_LENGTH;
-    inputWidget.setMaxLength(maxLength);
-
+    inputWidget.setMaxLength(MAX_INPUT_LENGTH);
     inputWidget.addStyleName(STYLE_INPUT);
+
     container.add(inputWidget);
 
     if (isNewRowEnabled()) {

@@ -51,11 +51,12 @@ import com.butent.bee.shared.utils.EnumUtils;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.EnumSet;
-import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.TreeMap;
 
 public final class TradeActKeeper {
 
@@ -160,6 +161,14 @@ public final class TradeActKeeper {
 
   static ParameterList createArgs(String method) {
     return BeeKeeper.getRpc().createParameters(Module.TRADE, SubModule.ACTS, method);
+  }
+
+  static Collection<Long> extractWarehouses(BeeRowSet rowSet) {
+    if (DataUtils.isEmpty(rowSet)) {
+      return new HashSet<>();
+    } else {
+      return DataUtils.parseIdSet(rowSet.getTableProperty(TBL_WAREHOUSES));
+    }
   }
 
   static Collection<Long> filterOperations(TradeActKind kind) {
@@ -289,16 +298,28 @@ public final class TradeActKeeper {
     }
   }
 
-  static Map<Long, String> getWarehouseCodes(Collection<Long> warehouses) {
-    Map<Long, String> result = new HashMap<>();
+  static Map<Long, String> getWarehouses(Collection<Long> ids) {
+    Map<Long, String> result = new LinkedHashMap<>();
 
-    if (!BeeUtils.isEmpty(warehouses)) {
-      for (Long id : warehouses) {
+    if (!BeeUtils.isEmpty(ids)) {
+      for (Long id : ids) {
         if (DataUtils.isId(id)) {
           String code = cache.getString(VIEW_WAREHOUSES, id, COL_WAREHOUSE_CODE);
           if (!BeeUtils.isEmpty(code)) {
             result.put(id, code);
           }
+        }
+      }
+
+      if (result.size() > 1) {
+        TreeMap<String, Long> sorted = new TreeMap<>();
+        for (Map.Entry<Long, String> entry : result.entrySet()) {
+          sorted.put(entry.getValue(), entry.getKey());
+        }
+
+        result.clear();
+        for (Map.Entry<String, Long> entry : sorted.entrySet()) {
+          result.put(entry.getValue(), entry.getKey());
         }
       }
     }

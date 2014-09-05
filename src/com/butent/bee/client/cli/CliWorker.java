@@ -31,7 +31,6 @@ import com.google.gwt.resources.client.ImageResource;
 import com.google.gwt.storage.client.Storage;
 import com.google.gwt.storage.client.StorageEvent;
 import com.google.gwt.user.client.Timer;
-import com.google.gwt.user.client.ui.TextBox;
 import com.google.gwt.user.client.ui.Widget;
 
 import static com.butent.bee.shared.modules.administration.AdministrationConstants.*;
@@ -164,6 +163,7 @@ import com.butent.bee.shared.data.value.BooleanValue;
 import com.butent.bee.shared.data.view.DataInfo;
 import com.butent.bee.shared.font.FontAwesome;
 import com.butent.bee.shared.html.Attributes;
+import com.butent.bee.shared.html.Tags;
 import com.butent.bee.shared.html.builder.elements.Input;
 import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.io.FileInfo;
@@ -3108,14 +3108,14 @@ public final class CliWorker {
     HtmlTable table = new HtmlTable();
     table.setBorderSpacing(3);
 
-    TextBox widget;
+    CustomWidget widget;
 
     int row = 0;
     for (Input.Type type : Input.Type.values()) {
       table.setWidget(row, 0, new Label(type.getKeyword()));
 
       if (Features.supportsInputType(type.getKeyword())) {
-        widget = new TextBox();
+        widget = new CustomWidget(DomUtils.createElement(Tags.INPUT));
         DomUtils.setInputType(widget, type);
 
         if (Input.Type.SEARCH.equals(type)) {
