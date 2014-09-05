@@ -35,6 +35,9 @@ import com.butent.bee.client.style.StyleUtils;
 import com.butent.bee.client.utils.JsUtils;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
+import com.butent.bee.shared.css.CssProperties;
+import com.butent.bee.shared.css.values.Display;
+import com.butent.bee.shared.css.values.Visibility;
 import com.butent.bee.shared.html.Attributes;
 import com.butent.bee.shared.html.Tags;
 import com.butent.bee.shared.html.builder.elements.Input;
@@ -1350,6 +1353,16 @@ public final class DomUtils {
 
     for (Element p = el; p != null; p = p.getParentElement()) {
       if (!UIObject.isVisible(p)) {
+        return false;
+      }
+      if (Visibility.HIDDEN.getCssName().equals(p.getStyle().getVisibility())) {
+        return false;
+      }
+
+      if (Display.NONE.getCssName().equals(ComputedStyles.get(p, CssProperties.DISPLAY))) {
+        return false;
+      }
+      if (Visibility.HIDDEN.getCssName().equals(ComputedStyles.get(p, CssProperties.DISPLAY))) {
         return false;
       }
     }

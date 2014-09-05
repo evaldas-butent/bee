@@ -1,7 +1,5 @@
 package com.butent.bee.client.style;
 
-import com.google.common.collect.Lists;
-import com.google.common.collect.Maps;
 import com.google.gwt.core.client.JsArrayString;
 import com.google.gwt.dom.client.Element;
 import com.google.gwt.user.client.ui.UIObject;
@@ -15,6 +13,8 @@ import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.NameUtils;
 import com.butent.bee.shared.utils.Property;
 
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -38,7 +38,7 @@ public class ComputedStyles implements HasLength, HasInfo {
 
   public static Map<String, String> getNormalized(Element el) {
     Assert.notNull(el);
-    Map<String, String> result = Maps.newHashMap();
+    Map<String, String> result = new HashMap<>();
 
     ComputedStyles cs = new ComputedStyles(el);
     for (int i = 0; i < cs.getLength(); i++) {
@@ -127,7 +127,7 @@ public class ComputedStyles implements HasLength, HasInfo {
 
   @Override
   public List<Property> getInfo() {
-    List<Property> info = Lists.newArrayList();
+    List<Property> info = new ArrayList<>();
     for (int i = 0; i < getLength(); i++) {
       info.add(new Property(getItem(i), getValue(i)));
     }
