@@ -205,6 +205,7 @@ public class TradeActBean {
   private ResponseObject getItemsForSelection(RequestInfo reqInfo) {
     TradeActKind kind = EnumUtils.getEnumByIndex(TradeActKind.class,
         reqInfo.getParameter(COL_TA_KIND));
+
     if (kind == null) {
       return ResponseObject.parameterNotFound(reqInfo.getService(), COL_TA_KIND);
     }

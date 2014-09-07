@@ -328,6 +328,9 @@ public final class CliWorker {
     } else if (BeeUtils.inList(z, "dir", "file", "get", "download", "src")) {
       getResource(arr);
 
+    } else if (z.startsWith("el") && !args.isEmpty()) {
+      showElement(v, arr, errorPopup);
+
     } else if ("eval".equals(z) && !args.isEmpty()) {
       doEval(args);
 
@@ -2681,24 +2684,29 @@ public final class CliWorker {
       return;
     }
 
-    JavaScriptObject obj = Document.get().getElementById(arr[1]);
-    if (obj == null) {
+    Element el = Document.get().getElementById(arr[1]);
+    if (el == null) {
       showError(errorPopup, arr[1], "element id not found");
       return;
     }
 
-    String patt = ArrayUtils.getQuietly(arr, 2);
-    JsArrayString prp = JsUtils.getProperties(obj, patt);
+    if (v.startsWith("id")) {
+      String patt = ArrayUtils.getQuietly(arr, 2);
+      JsArrayString prp = JsUtils.getProperties(el, patt);
 
-    if (JsUtils.isEmpty(prp)) {
-      showError(errorPopup, v, "properties not found");
-      return;
+      if (JsUtils.isEmpty(prp)) {
+        showError(errorPopup, v, "properties not found");
+        return;
+      }
+
+      JsData<?> table = new JsData<TableColumn>(prp, "property", "type", "value");
+
+      sortTable(table, 0);
+      showTable(v, table);
+
+    } else {
+      showPropData(v, DomUtils.getElementInfo(el));
     }
-
-    JsData<?> table = new JsData<TableColumn>(prp, "property", "type", "value");
-
-    sortTable(table, 0);
-    showTable(v, table);
   }
 
   private static void showError(boolean popup, String... messages) {
@@ -4295,26 +4303,44 @@ public final class CliWorker {
       }
 
       List<Property> info = new ArrayList<>();
-      List<Property> lst;
 
-      if (elem.getStyle() != null) {
-        lst = JsUtils.getInfo(elem.getStyle());
+      if (arr.length > 2) {
+        for (int i = 2; i < arr.length; i++) {
+          String key = arr[i];
+
+          String value = elem.getStyle().getProperty(key);
+          if (value != null) {
+            info.add(new Property(key, value));
+          }
+
+          value = ComputedStyles.get(elem, key);
+          if (!BeeUtils.isEmpty(value)) {
+            info.add(new Property("computed " + key, value));
+          }
+        }
+
+      } else {
+        List<Property> lst;
+
+        if (elem.getStyle() != null) {
+          lst = JsUtils.getInfo(elem.getStyle());
+          if (!BeeUtils.isEmpty(lst)) {
+            info.add(new Property("element style", BeeUtils.bracket(lst.size())));
+            info.addAll(lst);
+          }
+        }
+
+        lst = new ComputedStyles(elem).getInfo();
         if (!BeeUtils.isEmpty(lst)) {
-          info.add(new Property("element style", BeeUtils.bracket(lst.size())));
+          info.add(new Property("computed style", BeeUtils.bracket(lst.size())));
           info.addAll(lst);
         }
       }
 
-      lst = new ComputedStyles(elem).getInfo();
-      if (!BeeUtils.isEmpty(lst)) {
-        info.add(new Property("computed style", BeeUtils.bracket(lst.size())));
-        info.addAll(lst);
-      }
-
       if (BeeUtils.isEmpty(info)) {
-        inform("element id", arr[1], "has no style");
+        inform("id", arr[1], "has no style", ArrayUtils.join(BeeConst.STRING_SPACE, arr, 2));
       } else {
-        showPropData(BeeUtils.joinWords("Element", arr[1], "style"), info);
+        showPropData(v, info);
       }
       return;
     }

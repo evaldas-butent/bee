@@ -1,7 +1,6 @@
 package com.butent.bee.client.modules.trade.acts;
 
 import com.google.common.collect.Lists;
-import com.google.common.net.MediaType;
 import com.google.gwt.dom.client.Element;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
@@ -39,6 +38,7 @@ import com.butent.bee.shared.BiConsumer;
 import com.butent.bee.shared.Consumer;
 import com.butent.bee.shared.Latch;
 import com.butent.bee.shared.Service;
+import com.butent.bee.shared.communication.CommUtils;
 import com.butent.bee.shared.communication.ResponseObject;
 import com.butent.bee.shared.data.BeeRow;
 import com.butent.bee.shared.data.BeeRowSet;
@@ -280,7 +280,7 @@ public class TradeActItemsGrid extends AbstractGridInterceptor implements
         }
       });
 
-      collector.setAccept(MediaType.PLAIN_TEXT_UTF_8);
+      collector.setAccept(CommUtils.MEDIA_TYPE_TEXT_PLAIN);
       getGridView().add(collector);
     }
     return collector;
@@ -376,8 +376,12 @@ public class TradeActItemsGrid extends AbstractGridInterceptor implements
     int qtyScale = Data.getColumnScale(getViewName(), COL_TRADE_ITEM_QUANTITY);
 
     Set<Long> itemIds = new HashSet<>();
-    for (IsRow item : getGridView().getRowData()) {
-      itemIds.add(item.getId());
+
+    if (!BeeUtils.isEmpty(getGridView().getRowData())) {
+      int itemIndex = getDataIndex(COL_TA_ITEM);
+      for (IsRow row : getGridView().getRowData()) {
+        itemIds.add(row.getLong(itemIndex));
+      }
     }
 
     boolean hasItems = false;
@@ -386,7 +390,7 @@ public class TradeActItemsGrid extends AbstractGridInterceptor implements
     for (ImportEntry entry : entries) {
       c = 0;
 
-      duplicate = entry.item != null && !itemIds.contains(entry.item.getId());
+      duplicate = entry.item != null && itemIds.contains(entry.item.getId());
 
       if (entry.item != null && !duplicate) {
         Toggle toggle = new Toggle(FontAwesome.SQUARE_O, FontAwesome.CHECK_SQUARE_O,
@@ -450,8 +454,8 @@ public class TradeActItemsGrid extends AbstractGridInterceptor implements
         table.setText(r, c++, BeeUtils.toString(entry.item.getId()),
             STYLE_IMPORT_ID_PREFIX + STYLE_CELL_SUFFIX);
 
-        if (DataUtils.isId(warehouseFrom)
-            && (!BeeUtils.isPositive(qtyFrom) || BeeUtils.isLess(entry.quantity, qtyFrom))) {
+        if (!duplicate && DataUtils.isId(warehouseFrom)
+            && (!BeeUtils.isPositive(qtyFrom) || BeeUtils.isMore(entry.quantity, qtyFrom))) {
           table.getRowFormatter().addStyleName(r, STYLE_IMPORT_NO_STOCK_ROW);
         }
       }
@@ -460,6 +464,8 @@ public class TradeActItemsGrid extends AbstractGridInterceptor implements
 
       if (duplicate) {
         table.getRowFormatter().addStyleName(r, STYLE_IMPORT_DUPLICATE_ROW);
+        table.getRow(r).setTitle(Localized.getMessages().valueExists(entry.article));
+
       } else if (entry.item != null) {
         table.getRowFormatter().addStyleName(r, STYLE_IMPORT_SELECTED_ROW);
       }

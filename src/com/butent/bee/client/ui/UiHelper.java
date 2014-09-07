@@ -502,7 +502,7 @@ public final class UiHelper {
 
   public static boolean maybeResize(Widget root, String id) {
     Widget child = DomUtils.getChildQuietly(root, id);
-    if (child instanceof RequiresResize && child.isVisible()) {
+    if (child instanceof RequiresResize && DomUtils.isVisible(child)) {
       ((RequiresResize) child).onResize();
       return true;
     } else {

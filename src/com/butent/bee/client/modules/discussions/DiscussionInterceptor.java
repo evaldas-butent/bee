@@ -1035,7 +1035,7 @@ class DiscussionInterceptor extends AbstractFormInterceptor {
           discussParams.get(PRM_DISCUSS_ADMIN));
     }
 
-    if (panel.getWidgetCount() > 0 && form.asWidget().isVisible()) {
+    if (panel.getWidgetCount() > 0 && DomUtils.isVisible(form.getElement())) {
       final Widget last = panel.getWidget(panel.getWidgetCount() - 1);
       Scheduler.get().scheduleDeferred(new ScheduledCommand() {
         @Override

@@ -82,7 +82,7 @@ public class HtmlTable extends Panel implements IdentifiableWidget, IsHtmlTable,
     }
 
     public boolean isVisible(int row, int column) {
-      return UIObject.isVisible(getElement(row, column));
+      return DomUtils.isVisible(getElement(row, column));
     }
 
     public void removeStyleName(int row, int column, String styleName) {
@@ -243,7 +243,7 @@ public class HtmlTable extends Panel implements IdentifiableWidget, IsHtmlTable,
     }
 
     public boolean isVisible(int row) {
-      return UIObject.isVisible(getElement(row));
+      return DomUtils.isVisible(getElement(row));
     }
 
     public void removeStyleName(int row, String styleName) {

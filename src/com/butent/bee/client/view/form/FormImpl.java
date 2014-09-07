@@ -1268,24 +1268,22 @@ public class FormImpl extends Absolute implements FormView, PreviewHandler, Tabu
 
   @Override
   public void onEventPreview(NativePreviewEvent event, Node targetNode) {
-    if (isInteractive()) {
-      String type = event.getNativeEvent().getType();
+    String type = event.getNativeEvent().getType();
 
-      if (EventUtils.isClick(type)) {
-        if (!BeeUtils.isEmpty(getPreviewId())) {
-          setPreviewId(null);
-          event.cancel();
-        }
+    if (EventUtils.isClick(type)) {
+      if (!BeeUtils.isEmpty(getPreviewId())) {
+        setPreviewId(null);
+        event.cancel();
+      }
 
-      } else if (EventUtils.isMouseDown(type)) {
-        if (!BeeConst.isUndef(getActiveEditableIndex())) {
-          EditableWidget editableWidget = getEditableWidgets().get(getActiveEditableIndex());
+    } else if (EventUtils.isMouseDown(type)) {
+      if (!BeeConst.isUndef(getActiveEditableIndex()) && isInteractive()) {
+        EditableWidget editableWidget = getEditableWidgets().get(getActiveEditableIndex());
 
-          if (!editableWidget.getEditor().isOrHasPartner(targetNode)) {
-            if (!editableWidget.checkForUpdate(true)) {
-              setPreviewId(editableWidget.getWidgetId());
-              event.cancel();
-            }
+        if (!editableWidget.getEditor().isOrHasPartner(targetNode)) {
+          if (!editableWidget.checkForUpdate(true)) {
+            setPreviewId(editableWidget.getWidgetId());
+            event.cancel();
           }
         }
       }
