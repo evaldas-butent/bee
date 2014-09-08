@@ -78,6 +78,9 @@ public class TradeActBean {
     } else if (BeeUtils.same(svc, SVC_SAVE_ACT_AS_TEMPLATE)) {
       response = saveActAsTemplate(reqInfo);
 
+    } else if (BeeUtils.same(svc, SVC_GET_TEMPLATE_ITEMS_AND_SERVICES)) {
+      response = getTemplateItemsAndServices(reqInfo);
+
     } else {
       String msg = BeeUtils.joinWords("service not recognized:", svc);
       logger.warning(msg);
@@ -163,6 +166,30 @@ public class TradeActBean {
     return response;
   }
 
+  private Set<Long> getActItems(Long actId) {
+    if (DataUtils.isId(actId)) {
+      return qs.getLongSet(new SqlSelect()
+          .addFields(TBL_TRADE_ACT_ITEMS, COL_TA_ITEM)
+          .addFrom(TBL_TRADE_ACT_ITEMS)
+          .setWhere(SqlUtils.equals(TBL_TRADE_ACT_ITEMS, COL_TRADE_ACT, actId)));
+
+    } else {
+      return BeeConst.EMPTY_IMMUTABLE_LONG_SET;
+    }
+  }
+
+  private Set<Long> getActServices(Long actId) {
+    if (DataUtils.isId(actId)) {
+      return qs.getLongSet(new SqlSelect()
+          .addFields(TBL_TRADE_ACT_SERVICES, COL_TA_ITEM)
+          .addFrom(TBL_TRADE_ACT_SERVICES)
+          .setWhere(SqlUtils.equals(TBL_TRADE_ACT_SERVICES, COL_TRADE_ACT, actId)));
+
+    } else {
+      return BeeConst.EMPTY_IMMUTABLE_LONG_SET;
+    }
+  }
+
   private String getNextActNumber(long series) {
     IsCondition where = SqlUtils.and(SqlUtils.equals(TBL_TRADE_ACTS, COL_TA_SERIES, series),
         SqlUtils.notNull(TBL_TRADE_ACTS, COL_TA_NUMBER));
@@ -215,23 +242,14 @@ public class TradeActBean {
 
     String where = reqInfo.getParameter(Service.VAR_VIEW_WHERE);
 
-    Set<Long> actItems;
-    if (DataUtils.isId(actId)) {
-      actItems = qs.getLongSet(new SqlSelect()
-          .addFields(TBL_TRADE_ACT_ITEMS, COL_TA_ITEM)
-          .addFrom(TBL_TRADE_ACT_ITEMS)
-          .setWhere(SqlUtils.equals(TBL_TRADE_ACT_ITEMS, COL_TRADE_ACT, actId)));
-
-    } else {
-      actItems = new HashSet<>();
-    }
-
     CompoundFilter filter = Filter.and();
     filter.add(Filter.isNull(COL_ITEM_IS_SERVICE));
 
-    if (!actItems.isEmpty()) {
+    Set<Long> actItems = getActItems(actId);
+    if (actItems.isEmpty()) {
       filter.add(Filter.idNotIn(actItems));
     }
+
     if (!BeeUtils.isEmpty(where)) {
       filter.add(Filter.restore(where));
     }
@@ -349,6 +367,67 @@ public class TradeActBean {
         .setWhere(SqlUtils.and(SqlUtils.notNull(TBL_TRADE_OPERATIONS, colWarehouse), condition))
         .addGroup(TBL_TRADE_ACT_ITEMS, COL_TA_ITEM)
         .addGroup(TBL_TRADE_OPERATIONS, colWarehouse);
+  }
+
+  private static Filter getTemplateChildrenFilter(Long templateId, Collection<Long> excludeItems) {
+    if (BeeUtils.isEmpty(excludeItems)) {
+      return Filter.equals(COL_TRADE_ACT_TEMPLATE, templateId);
+    } else {
+      return Filter.and(Filter.equals(COL_TRADE_ACT_TEMPLATE, templateId),
+          Filter.exclude(COL_TA_ITEM, excludeItems));
+    }
+  }
+
+  private ResponseObject getTemplateItemsAndServices(RequestInfo reqInfo) {
+    Long templateId = reqInfo.getParameterLong(COL_TRADE_ACT_TEMPLATE);
+    if (!DataUtils.isId(templateId)) {
+      return ResponseObject.parameterNotFound(reqInfo.getService(), COL_TRADE_ACT_TEMPLATE);
+    }
+
+    Long actId = reqInfo.getParameterLong(COL_TRADE_ACT);
+    TradeActKind kind = EnumUtils.getEnumByIndex(TradeActKind.class,
+        reqInfo.getParameter(COL_TA_KIND));
+
+    List<BeeRowSet> result = new ArrayList<>();
+
+    Set<Long> itemIds = new HashSet<>();
+
+    Set<Long> actItems = getActItems(actId);
+    Filter filter = getTemplateChildrenFilter(templateId, actItems);
+
+    BeeRowSet templateItems = qs.getViewData(VIEW_TRADE_ACT_TMPL_ITEMS, filter);
+    if (!DataUtils.isEmpty(templateItems)) {
+      result.add(templateItems);
+
+      int index = templateItems.getColumnIndex(COL_TA_ITEM);
+      itemIds.addAll(templateItems.getDistinctLongs(index));
+    }
+
+    if (kind != null && kind.enableServices()) {
+      Set<Long> actServices = getActServices(actId);
+      filter = getTemplateChildrenFilter(templateId, actServices);
+
+      BeeRowSet templateServices = qs.getViewData(VIEW_TRADE_ACT_TMPL_SERVICES, filter);
+      if (!DataUtils.isEmpty(templateServices)) {
+        result.add(templateServices);
+
+        int index = templateServices.getColumnIndex(COL_TA_ITEM);
+        itemIds.addAll(templateServices.getDistinctLongs(index));
+      }
+    }
+
+    if (!itemIds.isEmpty()) {
+      BeeRowSet items = qs.getViewData(VIEW_ITEMS, Filter.idIn(itemIds));
+      if (!DataUtils.isEmpty(items)) {
+        result.add(items);
+      }
+    }
+
+    if (result.isEmpty()) {
+      return ResponseObject.emptyResponse();
+    } else {
+      return ResponseObject.response(result).setSize(result.size());
+    }
   }
 
   private ResponseObject saveActAsTemplate(RequestInfo reqInfo) {

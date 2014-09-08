@@ -254,6 +254,15 @@ public final class TradeActKeeper {
     }
   }
 
+  static TradeActKind getOperationKind(Long operation) {
+    if (DataUtils.isId(operation)) {
+      return EnumUtils.getEnumByIndex(TradeActKind.class,
+          cache.getInteger(VIEW_TRADE_OPERATIONS, operation, COL_OPERATION_KIND));
+    } else {
+      return null;
+    }
+  }
+
   static BeeRowSet getUserSeries() {
     Long userId = BeeKeeper.getUser().getUserId();
     if (!DataUtils.isId(userId)) {
@@ -339,6 +348,32 @@ public final class TradeActKeeper {
     } else {
       return null;
     }
+  }
+
+  static boolean isUserSeries(Long series) {
+    if (!DataUtils.isId(series)) {
+      return false;
+    }
+
+    Long userId = BeeKeeper.getUser().getUserId();
+    if (!DataUtils.isId(userId)) {
+      return false;
+    }
+
+    BeeRowSet seriesManagers = cache.getRowSet(VIEW_SERIES_MANAGERS);
+    if (DataUtils.isEmpty(seriesManagers)) {
+      return false;
+    }
+
+    int seriesIndex = seriesManagers.getColumnIndex(COL_SERIES);
+    int managerIndex = seriesManagers.getColumnIndex(COL_SERIES_MANAGER);
+
+    for (BeeRow row : seriesManagers) {
+      if (series.equals(row.getLong(seriesIndex)) && userId.equals(row.getLong(managerIndex))) {
+        return true;
+      }
+    }
+    return false;
   }
 
   static void prepareNewTradeAct(IsRow row, TradeActKind kind) {

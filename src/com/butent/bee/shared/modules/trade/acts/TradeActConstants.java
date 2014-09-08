@@ -7,6 +7,7 @@ public final class TradeActConstants {
   public static final String SVC_GET_ITEMS_FOR_SELECTION = "GetItemsForSelection";
   public static final String SVC_COPY_ACT = "CopyAct";
   public static final String SVC_SAVE_ACT_AS_TEMPLATE = "SaveActAsTemplate";
+  public static final String SVC_GET_TEMPLATE_ITEMS_AND_SERVICES = "GetTemplateItemsAndServices";
 
   public static final String TBL_TRADE_ACTS = "TradeActs";
   public static final String TBL_TRADE_ACT_ITEMS = "TradeActItems";

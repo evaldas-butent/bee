@@ -248,6 +248,11 @@ public abstract class Filter implements BeeSerializable, RowFilter {
     }
   }
 
+  public static Filter exclude(String column, Collection<Long> values) {
+    Filter flt = any(column, values);
+    return (flt == null) ? null : isNot(flt);
+  }
+
   public static Filter idIn(Collection<Long> values) {
     Assert.notNull(values);
 
@@ -259,11 +264,7 @@ public abstract class Filter implements BeeSerializable, RowFilter {
 
   public static Filter idNotIn(Collection<Long> values) {
     Filter flt = idIn(values);
-
-    if (flt != null) {
-      flt = isNot(flt);
-    }
-    return flt;
+    return (flt == null) ? null : isNot(flt);
   }
 
   public static Filter in(String column, String inView, String inColumn) {

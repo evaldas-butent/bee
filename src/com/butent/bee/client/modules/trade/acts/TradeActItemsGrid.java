@@ -315,7 +315,7 @@ public class TradeActItemsGrid extends AbstractGridInterceptor implements
           List<ImportEntry> output = new ArrayList<>();
           for (ImportEntry ie : input) {
             ImportEntry entry = new ImportEntry(ie.article, ie.name, ie.quantity);
-            entry.item = findItem(items, index, entry.article);
+            entry.item = items.findRow(index, entry.article);
 
             output.add(entry);
           }
@@ -524,15 +524,6 @@ public class TradeActItemsGrid extends AbstractGridInterceptor implements
 
     dialog.setWidget(wrapper);
     dialog.center();
-  }
-
-  private static BeeRow findItem(BeeRowSet items, int columnIndex, String code) {
-    for (BeeRow row : items) {
-      if (code.equals(row.getString(columnIndex))) {
-        return row;
-      }
-    }
-    return null;
   }
 
   private static List<ImportEntry> parseImport(List<String> lines, String pattern) {
