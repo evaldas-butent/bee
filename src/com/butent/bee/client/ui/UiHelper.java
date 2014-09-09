@@ -203,6 +203,21 @@ public final class UiHelper {
     return result;
   }
 
+  public static GridView getChildGrid(FormView form, String gridName) {
+    if (form == null) {
+      return null;
+
+    } else {
+      Widget gridWidget = form.getWidgetByName(gridName);
+
+      if (gridWidget instanceof HasGridView) {
+        return ((HasGridView) gridWidget).getGridView();
+      } else {
+        return null;
+      }
+    }
+  }
+
   public static DataView getDataView(Widget widget) {
     if (widget == null) {
       return null;
@@ -429,16 +444,7 @@ public final class UiHelper {
 
   public static GridView getSiblingGrid(Widget widget, String gridName) {
     FormView form = getForm(widget);
-    if (form == null) {
-      return null;
-    }
-
-    Widget gridWidget = form.getWidgetByName(gridName);
-    if (gridWidget instanceof HasGridView) {
-      return ((HasGridView) gridWidget).getGridView();
-    } else {
-      return null;
-    }
+    return getChildGrid(form, gridName);
   }
 
   public static Consumer<InputText> getTextBoxResizer(final int reserve) {
@@ -502,7 +508,7 @@ public final class UiHelper {
 
   public static boolean maybeResize(Widget root, String id) {
     Widget child = DomUtils.getChildQuietly(root, id);
-    if (child instanceof RequiresResize && child.isVisible()) {
+    if (child instanceof RequiresResize && DomUtils.isVisible(child)) {
       ((RequiresResize) child).onResize();
       return true;
     } else {

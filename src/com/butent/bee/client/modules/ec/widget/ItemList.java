@@ -329,7 +329,7 @@ public class ItemList extends Flow implements KeyDownHandler {
       int max = table.getRowCount() - 1;
 
       int oldRow = BeeUtils.clamp(eventRow, min, max);
-      if (oldRow == max && moreWidget.isVisible()
+      if (oldRow == max && DomUtils.isVisible(moreWidget)
           && BeeUtils.inList(keyCode, KeyCodes.KEY_DOWN, KeyCodes.KEY_PAGEDOWN)) {
         moreWidget.click();
         return;

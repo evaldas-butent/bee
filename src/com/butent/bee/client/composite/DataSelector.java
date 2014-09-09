@@ -84,6 +84,7 @@ import com.butent.bee.shared.menu.MenuConstants.BAR_TYPE;
 import com.butent.bee.shared.menu.MenuConstants.ITEM_TYPE;
 import com.butent.bee.shared.ui.EditorAction;
 import com.butent.bee.shared.ui.HasCapsLock;
+import com.butent.bee.shared.ui.HasMaxLength;
 import com.butent.bee.shared.ui.HasVisibleLines;
 import com.butent.bee.shared.ui.Relation;
 import com.butent.bee.shared.ui.SelectorColumn;
@@ -104,7 +105,7 @@ import java.util.Objects;
  */
 
 public class DataSelector extends Composite implements Editor, HasVisibleLines, HasTextBox,
-    HasRelatedRow, HasCapsLock, HasKeyDownHandlers {
+    HasRelatedRow, HasCapsLock, HasKeyDownHandlers, HasMaxLength {
 
   protected final class InputWidget extends InputText implements HasMouseWheelHandlers {
 
@@ -956,6 +957,11 @@ public class DataSelector extends Composite implements Editor, HasVisibleLines, 
     return "selector";
   }
 
+  @Override
+  public int getMaxLength() {
+    return getInput().getMaxLength();
+  }
+
   public String getNewRowCaption() {
     return newRowCaption;
   }
@@ -1135,6 +1141,11 @@ public class DataSelector extends Composite implements Editor, HasVisibleLines, 
   @Override
   public void setId(String id) {
     DomUtils.setId(this, id);
+  }
+
+  @Override
+  public void setMaxLength(int maxLength) {
+    getInput().setMaxLength(maxLength);
   }
 
   @Override

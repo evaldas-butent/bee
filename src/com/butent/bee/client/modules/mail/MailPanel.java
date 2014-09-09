@@ -49,6 +49,7 @@ import com.butent.bee.client.presenter.Presenter;
 import com.butent.bee.client.render.AbstractCellRenderer;
 import com.butent.bee.client.screen.BodyPanel;
 import com.butent.bee.client.screen.Domain;
+import com.butent.bee.client.style.StyleUtils;
 import com.butent.bee.client.ui.FormFactory.WidgetDescriptionCallback;
 import com.butent.bee.client.ui.IdentifiableWidget;
 import com.butent.bee.client.view.HeaderView;
@@ -74,6 +75,8 @@ import com.butent.bee.shared.Consumer;
 import com.butent.bee.shared.Service;
 import com.butent.bee.shared.State;
 import com.butent.bee.shared.communication.ResponseObject;
+import com.butent.bee.shared.css.CssProperties;
+import com.butent.bee.shared.css.values.Cursor;
 import com.butent.bee.shared.data.BeeRowSet;
 import com.butent.bee.shared.data.CellSource;
 import com.butent.bee.shared.data.DataUtils;
@@ -84,6 +87,7 @@ import com.butent.bee.shared.data.view.RowInfo;
 import com.butent.bee.shared.font.FontAwesome;
 import com.butent.bee.shared.i18n.LocalizableMessages;
 import com.butent.bee.shared.i18n.Localized;
+import com.butent.bee.shared.modules.administration.AdministrationConstants;
 import com.butent.bee.shared.modules.classifiers.ClassifierConstants;
 import com.butent.bee.shared.modules.mail.AccountInfo;
 import com.butent.bee.shared.modules.mail.MailConstants.MessageFlag;
@@ -316,14 +320,16 @@ public class MailPanel extends AbstractFormInterceptor {
           return;
         }
         final int flagIdx = Data.getColumnIndex(getGridPresenter().getViewName(), COL_FLAGS);
-        event.getSourceElement()
-            .setInnerHTML(StarRenderer.render(!MessageFlag.FLAGGED.isSet(row.getInteger(flagIdx))));
+        event.getSourceElement().setInnerHTML(StarRenderer
+            .render(!MessageFlag.FLAGGED.isSet(row.getInteger(flagIdx)),
+                row.getProperty(AdministrationConstants.COL_RELATION)));
 
         flagMessage(row, flagIdx, MessageFlag.FLAGGED, new ScheduledCommand() {
           @Override
           public void execute() {
             event.getSourceElement().setInnerHTML(StarRenderer
-                .render(MessageFlag.FLAGGED.isSet(row.getInteger(flagIdx))));
+                .render(MessageFlag.FLAGGED.isSet(row.getInteger(flagIdx)),
+                    row.getProperty(AdministrationConstants.COL_RELATION)));
           }
         });
       }
@@ -332,8 +338,20 @@ public class MailPanel extends AbstractFormInterceptor {
 
   private static class StarRenderer extends AbstractCellRenderer {
 
-    public static String render(boolean flagged) {
-      return flagged ? Stars.getHtml(0) : Stars.getDefaultHeader();
+    private static final FaLabel CHAIN = new FaLabel(FontAwesome.CHAIN);
+
+    static {
+      StyleUtils.setProperty(CHAIN, CssProperties.CURSOR, Cursor.DEFAULT);
+    }
+
+    public static String render(boolean flagged, String chained) {
+      String star = flagged ? Stars.getHtml(0) : Stars.getDefaultHeader();
+
+      if (!BeeUtils.isEmpty(chained)) {
+        CHAIN.setTitle(chained);
+        star += CHAIN.getElement().getString();
+      }
+      return star;
     }
 
     private final int flags;
@@ -345,7 +363,8 @@ public class MailPanel extends AbstractFormInterceptor {
 
     @Override
     public String render(IsRow row) {
-      return render(MessageFlag.FLAGGED.isSet(row.getInteger(flags)));
+      return render(MessageFlag.FLAGGED.isSet(row.getInteger(flags)),
+          row.getProperty(AdministrationConstants.COL_RELATION));
     }
   }
 
@@ -566,11 +585,13 @@ public class MailPanel extends AbstractFormInterceptor {
     if (presenter != null) {
       Long folderId = getCurrentFolderId();
 
-      if (searchWidget != null) {
+      if (!BeeUtils.isEmpty(searchWidget.getValue())) {
         presenter.getDataProvider().setUserFilter(Filter.custom(TBL_PLACES,
             Codec.beeSerialize(ImmutableMap.of(COL_FOLDER, folderId,
                 COL_CONTENT, searchWidget.getValue(),
                 SystemFolder.Sent.name(), isSenderFolder(folderId)))));
+      } else {
+        presenter.getDataProvider().setUserFilter(null);
       }
       presenter.getDataProvider().setParentFilter(MESSAGES_FILTER,
           Filter.equals(COL_FOLDER, folderId));

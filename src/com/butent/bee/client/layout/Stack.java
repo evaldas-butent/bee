@@ -246,7 +246,7 @@ public class Stack extends ComplexPanel implements ProvidesResize, RequiresResiz
   @Override
   public void onResize() {
     for (Widget child : getChildren()) {
-      if (child instanceof RequiresResize && child.isVisible()) {
+      if (child instanceof RequiresResize && DomUtils.isVisible(child)) {
         ((RequiresResize) child).onResize();
       }
     }

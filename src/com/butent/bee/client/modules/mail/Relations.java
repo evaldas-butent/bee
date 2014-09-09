@@ -67,6 +67,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.EnumSet;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -90,7 +91,7 @@ public class Relations extends Flow implements Editor, ClickHandler, SelectorEve
   private String parentId;
 
   final Multimap<String, Long> ids = HashMultimap.create();
-  final Map<String, MultiSelector> widgetMap = new HashMap<>();
+  final Map<String, MultiSelector> widgetMap = new LinkedHashMap<>();
   final Map<MultiSelector, HandlerRegistration> registry = new HashMap<>();
 
   private Long id;

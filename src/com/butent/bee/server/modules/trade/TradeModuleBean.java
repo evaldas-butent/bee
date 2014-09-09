@@ -201,7 +201,8 @@ public class TradeModuleBean implements BeeModule {
 
   @Override
   public Collection<BeeParameter> getDefaultParameters() {
-    return null;
+    String module = getModule().getName();
+    return act.getDefaultParameters(module);
   }
 
   @Override

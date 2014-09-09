@@ -904,6 +904,12 @@ public class AssessmentForm extends PrintFormInterceptor implements SelectorEven
   }
 
   @Override
+  public void onStartNewRow(FormView formView, IsRow oldRow, IsRow newRow) {
+    newRow.setValue(formView.getDataIndex(COL_ASSESSMENT_STATUS), AssessmentStatus.NEW.ordinal());
+    newRow.setValue(formView.getDataIndex(ALS_ORDER_STATUS), OrderStatus.REQUEST.ordinal());
+  }
+
+  @Override
   public void onValueChange(ValueChangeEvent<String> event) {
     if (childExpenses != null && expensesRegistered != null) {
       childExpenses.setEnabled(isExecutor() && !expensesRegistered.isChecked()

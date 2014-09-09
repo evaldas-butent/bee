@@ -2,11 +2,12 @@
 <View xmlns="http://www.butent.com/view"
   xmlns:x="http://www.butent.com/expression"
 
-  name="Assessments" source="Assessments"
+  name="Assessments" source="Assessments" module="Transport.Logistics"
   caption="=assessments"
-  newRowForm="Assessment" newRowCaption="=newAssessmentRequest"
+  newRowForm="Assessment"
   editForm="Assessment"
   >
+  <Relation renderColumns="ID Date CustomerName" />
   <Columns>
     <IdColumn name="ID" />
     <SimpleColumn name="Assessment" label="=captionPid" />

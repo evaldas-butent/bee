@@ -34,7 +34,6 @@ import com.butent.bee.shared.data.SearchResult;
 import com.butent.bee.shared.data.SimpleRowSet;
 import com.butent.bee.shared.data.SimpleRowSet.SimpleRow;
 import com.butent.bee.shared.data.filter.Filter;
-import com.butent.bee.shared.data.value.Value;
 import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogUtils;
 import com.butent.bee.shared.modules.BeeParameter;
@@ -259,8 +258,8 @@ public class DocumentsModuleBean implements BeeModule {
             List<Long> categories = new ArrayList<>();
 
             if (BeeUtils.isNonNegative(categoryIdx)) {
-              for (Value category : rs.getDistinctValues(categoryIdx)) {
-                categories.add(category.getLong());
+              for (Long category : rs.getDistinctLongs(categoryIdx)) {
+                categories.add(category);
               }
             }
             if (!BeeUtils.isEmpty(categories)) {
