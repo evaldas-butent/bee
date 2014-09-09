@@ -367,7 +367,7 @@ final class ServiceCalendar extends TimeBoard {
 
   @Override
   protected Set<Action> getEnabledActions() {
-    return EnumSet.of(/*Action.FILTER,*/ Action.REFRESH, Action.ADD, Action.EXPORT,
+    return EnumSet.of(Action.FILTER, Action.REFRESH, Action.ADD, Action.EXPORT,
         Action.CONFIGURE,
         Action.PRINT);
   }

@@ -63,14 +63,66 @@
   text-align: center;
 }
 
+.bee-svc-calendar-filter-data-commandAll {
+  -webkit-filter: grayscale(50%);
+}
+
+.bee-svc-calendar-filter-data-controls {
+  position: absolute;
+  left: 0;
+  right: 2px;
+  height: 16px;
+  display: flex;
+  display: -webkit-flex;
+  display: -ms-flexbox;
+  justify-content: flex-end;
+  -webkit-justify-content: flex-end;
+  -ms-flex-pack: end;
+}
+
 .bee-svc-calendar-filter-data-item {
   font-size: 12px;
   white-space: nowrap;
   cursor: pointer;
 }
 
+.bee-svc-calendar-filter-data-item:hover {
+  background-color: rgba(0, 0, 255, 0.5);
+  color: white;
+}
+
+.bee-svc-calendar-filter-data-itemContainer {
+  position: absolute;
+  left: 1px;
+  right: 1px;
+  overflow-x: hidden;
+  overflow-y: auto;
+}
+
 .bee-svc-calendar-filter-data-panel {
   overflow: hidden;
+}
+
+.bee-svc-calendar-filter-data-search {
+  position: absolute;
+  left: 1px;
+  right: 1px;
+  top: calc(50% + 25px);
+}
+
+.bee-svc-calendar-filter-data-selected.bee-svc-calendar-filter-data-controls {
+  top: calc(50% + 48px);
+  bottom: 0; 
+}
+
+.bee-svc-calendar-filter-data-selected.bee-svc-calendar-filter-data-itemContainer {
+  top: calc(50% + 70px);
+  bottom: 0; 
+}
+
+.bee-svc-calendar-filter-data-size {
+  font-weight: bold;
+  margin-right: 3px;
 }
 
 .bee-svc-calendar-filter-data-unselected.bee-svc-calendar-filter-data-itemContainer {

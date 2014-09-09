@@ -1,5 +1,6 @@
 package com.butent.bee.client.modules.service;
 
+import com.google.common.collect.Maps;
 import com.google.common.collect.Multimap;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
@@ -14,10 +15,13 @@ import com.butent.bee.client.layout.Simple;
 import com.butent.bee.client.layout.Split;
 import com.butent.bee.client.style.StyleUtils;
 import com.butent.bee.client.widget.Button;
+import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.i18n.LocalizableConstants;
 import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.ui.HasCaption;
 import com.butent.bee.shared.utils.BeeUtils;
+
+import java.util.Map;
 
 final class SvcCalendarFilterHelper {
 
@@ -46,6 +50,11 @@ final class SvcCalendarFilterHelper {
   private static final int DEFAULT_DATA_COUNT = 4;
   private static final double DIALOG_SIZE_MAX_FACTOR = 0.8;
   private static final int COMAND_GROUP_HEIGHT = 32;
+
+  private static Map<Long, ServiceObjectWrapper> categoryObjects = Maps.newHashMap();
+  private static Map<Long, ServiceObjectWrapper> addressObjects = Maps.newHashMap();
+  private static Map<Long, ServiceObjectWrapper> customerObjects = Maps.newHashMap();
+  private static Map<Long, ServiceObjectWrapper> contractorObjects = Maps.newHashMap();
 
   enum DataType implements HasCaption {
     CATEGORY(localizedConstants.category()),
@@ -118,11 +127,33 @@ final class SvcCalendarFilterHelper {
     // };
 
     int dataIndex = 0;
+    prepareObjectsByType(objects);
     for (DataType type : DataType.values()) {
       for (ServiceObjectWrapper obj : objects.values()) {
         obj.saveState(type);
       }
-      SvcFilterDataWidget dataWidget = new SvcFilterDataWidget(type, objects);
+
+      Map<Long, ServiceObjectWrapper> typedObjects;
+
+      switch (type) {
+        case ADDRESS:
+          typedObjects = addressObjects;
+          break;
+        case CATEGORY:
+          typedObjects = categoryObjects;
+          break;
+        case CONTRACTOR:
+          typedObjects = contractorObjects;
+          break;
+        case CUSTOMER:
+          typedObjects = customerObjects;
+          break;
+        default:
+          typedObjects = addressObjects;
+          break;
+      }
+
+      SvcFilterDataWidget dataWidget = new SvcFilterDataWidget(type, typedObjects);
       dataIndex++;
       if (dataIndex < DEFAULT_DATA_COUNT) {
         dataContainer.addWest(dataWidget, dataPanelWidth, DATA_SPLITTER_WIDTH);
@@ -148,6 +179,32 @@ final class SvcCalendarFilterHelper {
 
     filterDialog.center();
 
+  }
+
+  private static void prepareObjectsByType(Multimap<Long, ServiceObjectWrapper> objects) {
+    categoryObjects.clear();
+    addressObjects.clear();
+    addressObjects.clear();
+    categoryObjects.clear();
+
+    for (ServiceObjectWrapper object : objects.values()) {
+
+      if (DataUtils.isId(object.getCategoryId())) {
+        categoryObjects.put(object.getCategoryId(), object);
+      }
+
+      if (DataUtils.isId(object.getId())) {
+        addressObjects.put(object.getId(), object);
+      }
+
+      if (DataUtils.isId(object.getContractorId())) {
+        contractorObjects.put(object.getContractorId(), object);
+      }
+
+      if (DataUtils.isId(object.getCategoryId())) {
+        categoryObjects.put(object.getCategoryId(), object);
+      }
+    }
   }
 
   private SvcCalendarFilterHelper() {

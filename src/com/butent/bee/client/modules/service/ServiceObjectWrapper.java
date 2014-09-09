@@ -84,6 +84,13 @@ class ServiceObjectWrapper {
   private final Long id;
 
   private final String address;
+  private final String contractor;
+  private final String category;
+  private final String customer;
+
+  private final Long contractorId;
+  private final Long categoryId;
+  private final Long customerId;
 
   private final String title;
 
@@ -93,9 +100,28 @@ class ServiceObjectWrapper {
   private Map<SvcCalendarFilterHelper.DataType, Boolean> wasSelected = Maps.newHashMap();
   private Map<SvcCalendarFilterHelper.DataType, Boolean> wasEnabled = Maps.newHashMap();
 
+  private String getContractor() {
+    return contractor;
+  }
+
+  private String getCategory() {
+    return category;
+  }
+
+  private String getCustomer() {
+    return customer;
+  }
+
   ServiceObjectWrapper(SimpleRow row) {
     this.id = row.getLong(idColumn);
     this.address = row.getValue(COL_SERVICE_ADDRESS);
+    this.contractor = row.getValue(ALS_SERVICE_CONTRACTOR_NAME);
+    this.contractorId = row.getLong(COL_SERVICE_CONTRACTOR);
+    this.category = row.getValue(ALS_SERVICE_CATEGORY_NAME);
+    this.categoryId = row.getLong(COL_SERVICE_CATEGORY);
+    this.customer = row.getValue(ALS_SERVICE_CUSTOMER_NAME);
+    this.customerId = row.getLong(COL_SERVICE_CUSTOMER);
+
     this.title = buildTitle(row);
 
     for (SvcCalendarFilterHelper.DataType type : SvcCalendarFilterHelper.DataType.values()) {
@@ -107,21 +133,32 @@ class ServiceObjectWrapper {
     return address;
   }
 
+  Long getCategoryId() {
+    return categoryId;
+  }
+
+  Long getContractorId() {
+    return contractorId;
+  }
+
+  Long getCustomerId() {
+    return customerId;
+  }
+
   Long getId() {
     return id;
   }
 
   String getFilterListName(SvcCalendarFilterHelper.DataType type) {
-    // TODO: use values instead captions
     switch (type) {
       case ADDRESS:
         return getAddress();
       case CONTRACTOR:
-        return contractorLabel;
+        return getContractor();
       case CATEGORY:
-        return categoryLabel;
+        return getCategory();
       case CUSTOMER:
-        return customerLabel;
+        return getCustomer();
       default:
         return getAddress();
     }
