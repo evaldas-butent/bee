@@ -1,16 +1,18 @@
 package com.butent.bee.client.modules.trade.acts;
 
-import com.google.common.collect.Lists;
-
 import static com.butent.bee.shared.modules.classifiers.ClassifierConstants.*;
+import static com.butent.bee.shared.modules.trade.TradeConstants.*;
 import static com.butent.bee.shared.modules.trade.acts.TradeActConstants.*;
 
 import com.butent.bee.client.BeeKeeper;
+import com.butent.bee.client.Global;
 import com.butent.bee.client.communication.ParameterList;
 import com.butent.bee.client.communication.ResponseCallback;
 import com.butent.bee.client.data.Data;
 import com.butent.bee.client.data.IdCallback;
 import com.butent.bee.client.data.Queries;
+import com.butent.bee.client.dialog.ConfirmationCallback;
+import com.butent.bee.client.dialog.Icon;
 import com.butent.bee.client.event.logical.SelectorEvent;
 import com.butent.bee.client.i18n.Money;
 import com.butent.bee.client.ui.UiHelper;
@@ -26,9 +28,10 @@ import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.IsRow;
 import com.butent.bee.shared.data.filter.CompoundFilter;
 import com.butent.bee.shared.data.filter.Filter;
-
-import static com.butent.bee.shared.modules.trade.TradeConstants.*;
-
+import com.butent.bee.shared.i18n.Localized;
+import com.butent.bee.shared.logging.BeeLogger;
+import com.butent.bee.shared.logging.LogUtils;
+import com.butent.bee.shared.modules.administration.AdministrationConstants;
 import com.butent.bee.shared.modules.classifiers.ItemPrice;
 import com.butent.bee.shared.modules.trade.acts.TradeActKind;
 import com.butent.bee.shared.time.DateTime;
@@ -39,6 +42,7 @@ import com.butent.bee.shared.utils.EnumUtils;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -46,6 +50,8 @@ import java.util.Map;
 import java.util.Set;
 
 class TradeActSelectorHandler implements SelectorEvent.Handler {
+
+  private static final BeeLogger logger = LogUtils.getLogger(TradeActSelectorHandler.class);
 
   private static void addNotes(String notes, FormView form) {
     IsRow row = form.getActiveRow();
@@ -58,6 +64,95 @@ class TradeActSelectorHandler implements SelectorEvent.Handler {
         row.setValue(index, BeeUtils.buildLines(oldValue, notes));
         form.refreshBySource(COL_TA_NOTES);
       }
+    }
+  }
+
+  private static void addTemplateChildren(String viewName, IsRow templRow, IsRow actRow,
+      BeeRowSet templChildren, BeeRowSet items) {
+
+    ItemPrice itemPrice = TradeActKeeper.getItemPrice(VIEW_TRADE_ACTS, actRow);
+
+    DateTime date = Data.getDateTime(VIEW_TRADE_ACTS, actRow, COL_TA_DATE);
+
+    Long templCurrency = Data.getLong(VIEW_TRADE_ACT_TEMPLATES, templRow, COL_TA_CURRENCY);
+    Long actCurrency = Data.getLong(VIEW_TRADE_ACTS, actRow, COL_TA_CURRENCY);
+
+    List<BeeColumn> columns = new ArrayList<>();
+    Map<Integer, Integer> indexes = new HashMap<>();
+
+    for (BeeColumn column : Data.getColumns(viewName)) {
+      if (COL_TRADE_ACT.equals(column.getId())) {
+        columns.add(column);
+
+      } else if (column.isEditable()) {
+        int templIndex = templChildren.getColumnIndex(column.getId());
+
+        if (!BeeConst.isUndef(templIndex)) {
+          indexes.put(templIndex, columns.size());
+          columns.add(column);
+        }
+      }
+    }
+
+    BeeRowSet actItems = new BeeRowSet(viewName, columns);
+
+    int actIndex = actItems.getColumnIndex(COL_TRADE_ACT);
+    int itemIndex = actItems.getColumnIndex(COL_TA_ITEM);
+
+    int qtyIndex = actItems.getColumnIndex(COL_TRADE_ITEM_QUANTITY);
+    boolean qtyNullable = BeeConst.isUndef(qtyIndex)
+        ? true : actItems.getColumn(qtyIndex).isNullable();
+
+    int priceIndex = actItems.getColumnIndex(COL_TRADE_ITEM_PRICE);
+
+    for (BeeRow templItem : templChildren) {
+      BeeRow actItem = DataUtils.createEmptyRow(actItems.getNumberOfColumns());
+      actItem.setValue(actIndex, actRow.getId());
+
+      for (Map.Entry<Integer, Integer> indexEntry : indexes.entrySet()) {
+        if (!templItem.isNull(indexEntry.getKey())) {
+          actItem.setValue(indexEntry.getValue(), templItem.getString(indexEntry.getKey()));
+        }
+      }
+
+      if (!qtyNullable && actItem.isNull(qtyIndex)) {
+        actItem.setValue(qtyIndex, 0);
+      }
+
+      if (!BeeConst.isUndef(priceIndex)) {
+        Double price = actItem.getDouble(priceIndex);
+
+        if (BeeUtils.nonZero(price)) {
+          if (DataUtils.isId(templCurrency) && DataUtils.isId(actCurrency)
+              && !templCurrency.equals(actCurrency)) {
+            actItem.setValue(priceIndex, Money.exchange(templCurrency, actCurrency, price, date));
+          }
+
+        } else if (!BeeUtils.isDouble(price) && itemPrice != null && items != null) {
+          BeeRow item = items.getRowById(actItem.getLong(itemIndex));
+
+          if (item != null) {
+            price = item.getDouble(items.getColumnIndex(itemPrice.getPriceColumn()));
+
+            if (BeeUtils.isDouble(price)) {
+              if (DataUtils.isId(actCurrency)) {
+                Long ic = item.getLong(items.getColumnIndex(itemPrice.getCurrencyColumn()));
+                if (DataUtils.isId(ic) && !actCurrency.equals(ic)) {
+                  price = Money.exchange(ic, actCurrency, price, date);
+                }
+              }
+
+              actItem.setValue(priceIndex, Data.round(viewName, COL_TRADE_ITEM_PRICE, price));
+            }
+          }
+        }
+      }
+
+      actItems.addRow(actItem);
+    }
+
+    if (!actItems.isEmpty()) {
+      Queries.insertRows(actItems);
     }
   }
 
@@ -85,8 +180,8 @@ class TradeActSelectorHandler implements SelectorEvent.Handler {
           upd = false;
 
         } else if (COL_TA_UNTIL.equals(colName)) {
-          upd = !templRow.isNull(i) && BeeUtils.isMeq(templRow.getDateTime(i),
-              TimeUtils.startOfNextMonth(TimeUtils.today()).getDateTime());
+          upd = !templRow.isNull(i) && targetRow.isNull(targetIndex)
+              && TimeUtils.monthDiff(TimeUtils.today(), templRow.getDateTime(i)) > 0;
 
         } else if (colName.contains(COL_TA_SERIES)) {
           upd = isTemplatable(actRow, templRow, COL_TA_SERIES)
@@ -133,8 +228,11 @@ class TradeActSelectorHandler implements SelectorEvent.Handler {
         }
       }
 
-      for (String colName : updatedColumns) {
-        form.refreshBySource(colName);
+      if (!updatedColumns.isEmpty()) {
+        for (String colName : updatedColumns) {
+          form.refreshBySource(colName);
+        }
+        logger.debug(updatedColumns);
       }
 
       ParameterList params = TradeActKeeper.createArgs(SVC_GET_TEMPLATE_ITEMS_AND_SERVICES);
@@ -150,15 +248,18 @@ class TradeActSelectorHandler implements SelectorEvent.Handler {
       BeeKeeper.getRpc().makeRequest(params, new ResponseCallback() {
         @Override
         public void onResponse(ResponseObject response) {
-          final List<BeeRowSet> data = new ArrayList<>();
+          final Map<String, BeeRowSet> data = new HashMap<>();
 
           if (response.getSize() > 0) {
             String[] arr = Codec.beeDeserializeCollection(response.getResponseAsString());
+
             if (arr != null) {
               for (String s : arr) {
                 BeeRowSet rowSet = BeeRowSet.restore(s);
+
                 if (!DataUtils.isEmpty(rowSet)) {
-                  data.add(rowSet);
+                  data.put(rowSet.getViewName(), rowSet);
+                  logger.debug(rowSet.getViewName(), rowSet.getNumberOfRows());
                 }
               }
             }
@@ -172,29 +273,14 @@ class TradeActSelectorHandler implements SelectorEvent.Handler {
                 @Override
                 public void onSuccess(Long result) {
                   if (DataUtils.isId(result) && DataUtils.idEquals(form.getActiveRow(), result)) {
-                    BeeRowSet templateItems = null;
-                    BeeRowSet templateServices = null;
-                    BeeRowSet items = null;
-
-                    for (BeeRowSet rowSet : data) {
-                      switch (rowSet.getViewName()) {
-                        case VIEW_TRADE_ACT_TMPL_ITEMS:
-                          templateItems = rowSet;
-                          break;
-                        case VIEW_TRADE_ACT_TMPL_SERVICES:
-                          templateServices = rowSet;
-                          break;
-                        case VIEW_ITEMS:
-                          items = rowSet;
-                          break;
-                      }
+                    if (data.containsKey(VIEW_TRADE_ACT_TMPL_ITEMS)) {
+                      addTemplateChildren(VIEW_TRADE_ACT_ITEMS, templRow, form.getActiveRow(),
+                          data.get(VIEW_TRADE_ACT_TMPL_ITEMS), data.get(VIEW_ITEMS));
                     }
 
-                    if (!DataUtils.isEmpty(templateItems)) {
-                      addTemplateItems(templRow, form.getActiveRow(), templateItems, items);
-                    }
-                    if (!DataUtils.isEmpty(templateServices)) {
-                      addTemplateServices(templRow, form.getActiveRow(), templateServices, items);
+                    if (data.containsKey(VIEW_TRADE_ACT_TMPL_SERVICES)) {
+                      addTemplateChildren(VIEW_TRADE_ACT_SERVICES, templRow, form.getActiveRow(),
+                          data.get(VIEW_TRADE_ACT_TMPL_SERVICES), data.get(VIEW_ITEMS));
                     }
                   }
                 }
@@ -204,109 +290,6 @@ class TradeActSelectorHandler implements SelectorEvent.Handler {
         }
       });
     }
-  }
-
-  private static void addTemplateItems(IsRow templRow, IsRow actRow, BeeRowSet templItems,
-      BeeRowSet items) {
-
-    ItemPrice itemPrice = TradeActKeeper.getItemPrice(VIEW_TRADE_ACTS, actRow);
-
-    DateTime date = Data.getDateTime(VIEW_TRADE_ACTS, actRow, COL_TA_DATE);
-
-    Long templCurrency = Data.getLong(VIEW_TRADE_ACT_TEMPLATES, templRow, COL_TA_CURRENCY);
-    Long actCurrency = Data.getLong(VIEW_TRADE_ACTS, actRow, COL_TA_CURRENCY);
-
-    List<String> colNames = Lists.newArrayList(COL_TRADE_ACT, COL_TA_ITEM,
-        COL_TRADE_ITEM_QUANTITY, COL_TRADE_ITEM_PRICE,
-        COL_TRADE_VAT_PLUS, COL_TRADE_VAT, COL_TRADE_VAT_PERC,
-        COL_TRADE_DISCOUNT, COL_TRADE_ITEM_NOTE);
-
-    BeeRowSet actItems = new BeeRowSet(VIEW_TRADE_ACT_ITEMS,
-        Data.getColumns(VIEW_TRADE_ACT_ITEMS, colNames));
-
-    Map<Integer, Integer> indexes = new HashMap<>();
-    for (String colName : colNames) {
-      if (!COL_TRADE_ACT.equals(colName)) {
-        int sourceIndex = templItems.getColumnIndex(colName);
-        int destinationIndex = actItems.getColumnIndex(colName);
-
-        if (!BeeConst.isUndef(sourceIndex) && !BeeConst.isUndef(destinationIndex)) {
-          indexes.put(sourceIndex, destinationIndex);
-        }
-      }
-    }
-
-    int itemIndex = actItems.getColumnIndex(COL_TA_ITEM);
-    int actIndex = actItems.getColumnIndex(COL_TRADE_ACT);
-    int qtyIndex = actItems.getColumnIndex(COL_TRADE_ITEM_QUANTITY);
-    int priceIndex = actItems.getColumnIndex(COL_TRADE_ITEM_PRICE);
-
-    for (BeeRow templItem : templItems) {
-      BeeRow actItem = DataUtils.createEmptyRow(actItems.getNumberOfColumns());
-      actItem.setValue(actIndex, templItem.getId());
-
-      for (Map.Entry<Integer, Integer> indexEntry : indexes.entrySet()) {
-        if (!templItem.isNull(indexEntry.getKey())) {
-          actItem.setValue(indexEntry.getValue(), templItem.getString(indexEntry.getKey()));
-        }
-      }
-
-      if (actItem.isNull(qtyIndex)) {
-        actItem.setValue(qtyIndex, 0);
-      }
-
-      Double price = actItem.getDouble(priceIndex);
-
-      if (BeeUtils.isPositive(price)) {
-        if (DataUtils.isId(templCurrency) && DataUtils.isId(actCurrency)
-            && !templCurrency.equals(actCurrency)) {
-          actItem.setValue(priceIndex, Money.exchange(templCurrency, actCurrency, price, date));
-        }
-
-      } else if (itemPrice != null && items != null) {
-        BeeRow item = items.getRowById(actItem.getLong(itemIndex));
-
-        if (item != null) {
-          price = item.getDouble(items.getColumnIndex(itemPrice.getPriceColumn()));
-
-          if (BeeUtils.isDouble(price)) {
-            if (DataUtils.isId(actCurrency)) {
-              Long ic = item.getLong(items.getColumnIndex(itemPrice.getCurrencyColumn()));
-              if (DataUtils.isId(ic) && !actCurrency.equals(ic)) {
-                price = Money.exchange(ic, actCurrency, price, date);
-              }
-            }
-
-            actItem.setValue(priceIndex,
-                Data.round(actItems.getViewName(), COL_TRADE_ITEM_PRICE, price));
-          }
-        }
-      }
-
-      actItems.addRow(actItem);
-    }
-
-    if (!actItems.isEmpty()) {
-      Queries.insertRows(actItems);
-    }
-  }
-
-  @SuppressWarnings("unused")
-  private static void addTemplateServices(IsRow templRow, IsRow actRow, BeeRowSet templServices,
-      BeeRowSet items) {
-  }
-
-  private static boolean isTemplatable(IsRow actRow, IsRow templRow, String colName) {
-    int actIndex = Data.getColumnIndex(VIEW_TRADE_ACTS, colName);
-    int templIndex = Data.getColumnIndex(VIEW_TRADE_ACT_TEMPLATES, colName);
-
-    return !BeeConst.isUndef(actIndex) && !BeeConst.isUndef(templIndex)
-        && actRow.isNull(actIndex) && !templRow.isNull(templIndex);
-  }
-
-  private static Long getTemplateLong(IsRow row, String colName) {
-    int index = Data.getColumnIndex(VIEW_TRADE_ACT_TEMPLATES, colName);
-    return BeeConst.isUndef(index) ? null : row.getLong(index);
   }
 
   private static TradeActKind getKind(SelectorEvent event) {
@@ -331,6 +314,80 @@ class TradeActSelectorHandler implements SelectorEvent.Handler {
       return dataView.getActiveRow().getLong(dataView.getDataIndex(COL_TA_SERIES));
     } else {
       return null;
+    }
+  }
+
+  private static Long getTemplateLong(IsRow row, String colName) {
+    int index = Data.getColumnIndex(VIEW_TRADE_ACT_TEMPLATES, colName);
+    return BeeConst.isUndef(index) ? null : row.getLong(index);
+  }
+
+  private static boolean isTemplatable(IsRow actRow, IsRow templRow, String colName) {
+    int actIndex = Data.getColumnIndex(VIEW_TRADE_ACTS, colName);
+    int templIndex = Data.getColumnIndex(VIEW_TRADE_ACT_TEMPLATES, colName);
+
+    return !BeeConst.isUndef(actIndex) && !BeeConst.isUndef(templIndex)
+        && actRow.isNull(actIndex) && !templRow.isNull(templIndex);
+  }
+
+  private static void maybeExchange(final FormView actForm, final long fromId, String fromName,
+      final long toId, String toName) {
+
+    final List<IsRow> actItems = new ArrayList<>();
+    final List<IsRow> actServices = new ArrayList<>();
+
+    GridView itemGrid = UiHelper.getChildGrid(actForm, GRID_TRADE_ACT_ITEMS);
+
+    if (itemGrid != null && !itemGrid.isEmpty()) {
+      int index = itemGrid.getDataIndex(COL_TRADE_ITEM_PRICE);
+
+      for (IsRow row : itemGrid.getRowData()) {
+        if (BeeUtils.isPositive(row.getDouble(index))) {
+          actItems.add(row);
+        }
+      }
+    }
+
+    TradeActKind kind = TradeActKeeper.getKind(actForm.getViewName(), actForm.getActiveRow());
+    if (kind != null && kind.enableServices()) {
+      GridView serviceGrid = UiHelper.getChildGrid(actForm, GRID_TRADE_ACT_SERVICES);
+
+      if (serviceGrid != null && !serviceGrid.isEmpty()) {
+        int index = serviceGrid.getDataIndex(COL_TRADE_ITEM_PRICE);
+
+        for (IsRow row : serviceGrid.getRowData()) {
+          if (BeeUtils.isPositive(row.getDouble(index))) {
+            actServices.add(row);
+          }
+        }
+      }
+    }
+
+    if (!actItems.isEmpty() || !actServices.isEmpty()) {
+      Global.confirm(null, Icon.QUESTION,
+          Collections.singletonList(Localized.getMessages().exchangeFromTo(fromName, toName)),
+          Localized.getConstants().actionExchange(), Localized.getConstants().actionCancel(),
+          new ConfirmationCallback() {
+            @Override
+            public void onConfirm() {
+              DateTime date = actForm.getDateTimeValue(COL_TA_DATE);
+
+              int updated = 0;
+
+              if (!actItems.isEmpty()) {
+                updated += Money.exchange(fromId, toId, date,
+                    VIEW_TRADE_ACT_ITEMS, actItems, COL_TRADE_ITEM_PRICE);
+              }
+              if (!actServices.isEmpty()) {
+                updated += Money.exchange(fromId, toId, date,
+                    VIEW_TRADE_ACT_SERVICES, actServices, COL_TRADE_ITEM_PRICE);
+              }
+
+              if (updated > 0) {
+                logger.debug(updated);
+              }
+            }
+          });
     }
   }
 
@@ -404,7 +461,8 @@ class TradeActSelectorHandler implements SelectorEvent.Handler {
 
           FormView form = UiHelper.getForm(event.getSelector());
 
-          if (!BeeUtils.isEmpty(notes) && form != null) {
+          if (!BeeUtils.isEmpty(notes) && form != null
+              && VIEW_TRADE_ACTS.equals(form.getViewName())) {
             addNotes(notes, form);
           }
         }
@@ -446,6 +504,31 @@ class TradeActSelectorHandler implements SelectorEvent.Handler {
 
           if (relatedRow != null && form != null) {
             applyActTemplate(relatedRow, form);
+          }
+        }
+        break;
+
+      case AdministrationConstants.VIEW_CURRENCIES:
+        if (event.isChanged() && event.getRelatedRow() != null) {
+          FormView form = UiHelper.getForm(event.getSelector());
+
+          if (form != null && VIEW_TRADE_ACTS.equals(form.getViewName())
+              && DataUtils.hasId(form.getActiveRow())) {
+
+            int index = form.getDataIndex(COL_TA_CURRENCY);
+            Long oldValue = (form.getOldRow() == null) ? null : form.getOldRow().getLong(index);
+
+            if (DataUtils.isId(oldValue) && !DataUtils.idEquals(event.getRelatedRow(), oldValue)) {
+              int nameIndex =
+                  Data.getColumnIndex(relatedViewName, AdministrationConstants.COL_CURRENCY_NAME);
+
+              String oldName =
+                  DataUtils.getStringQuietly(
+                      event.getSelector().getOracle().getCachedRow(oldValue), nameIndex);
+              String newName = event.getRelatedRow().getString(nameIndex);
+
+              maybeExchange(form, oldValue, oldName, event.getRelatedRow().getId(), newName);
+            }
           }
         }
         break;

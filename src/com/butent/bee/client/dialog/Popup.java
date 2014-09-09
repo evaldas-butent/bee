@@ -1,6 +1,5 @@
 package com.butent.bee.client.dialog;
 
-import com.google.gwt.animation.client.Animation;
 import com.google.gwt.core.client.Scheduler.ScheduledCommand;
 import com.google.gwt.dom.client.Element;
 import com.google.gwt.dom.client.NativeEvent;
@@ -24,6 +23,7 @@ import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.ui.HasAnimation;
 import com.google.gwt.user.client.ui.Widget;
 
+import com.butent.bee.client.animation.Animation;
 import com.butent.bee.client.dom.DomUtils;
 import com.butent.bee.client.dom.Edges;
 import com.butent.bee.client.dom.Stacking;

@@ -572,15 +572,21 @@ public final class DataUtils {
     return row.getString(getColumnIndex(columnId, columns));
   }
 
-  public static String getString(IsRow row, int index) {
+  public static String getStringQuietly(IsRow row, int index) {
     if (row == null) {
       return null;
+
     } else if (index == ID_INDEX) {
       return BeeUtils.toString(row.getId());
+
     } else if (index == VERSION_INDEX) {
       return BeeUtils.toString(row.getVersion());
-    } else {
+
+    } else if (index >= 0 && index < row.getNumberOfCells()) {
       return row.getString(index);
+
+    } else {
+      return null;
     }
   }
 
