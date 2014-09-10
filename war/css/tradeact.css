@@ -121,16 +121,20 @@
 .bee-ta-import-items-toggle-cell {
   text-align: center;
 }
+.bee-ta-import-items-toggle-label .bee-ta-import-items-toggle {
+  font-size: 18px;
+  font-weight: normal;
+}
 .bee-ta-import-items-toggle {
   cursor: pointer;
-  font-size: 18px;
+  font-size: 16px;
 }
 
 .bee-ta-import-items-selected {
-  background-color: #cfc;
+  background-color: #dfd;
 }
 .bee-ta-import-items-duplicate td {
-  background-color: deeppink;
+  background-color: red;
   color: white;
 }
 .bee-ta-import-items-no-stock .bee-ta-import-items-qty-cell,

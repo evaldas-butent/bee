@@ -384,7 +384,7 @@ class TradeActSelectorHandler implements SelectorEvent.Handler {
               }
 
               if (updated > 0) {
-                logger.debug(updated);
+                actForm.flush();
               }
             }
           });
