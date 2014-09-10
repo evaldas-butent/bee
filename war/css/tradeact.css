@@ -2,9 +2,14 @@
   visibility: hidden;
 }
 
-.bee-ta-form-edit .bee-ta-template-selection {
+.bee-ta-template-selection {
   display: none;
 }
+.bee-GridFormContainer-newRow .bee-ta-template-selection,
+.bee-NewRowContainer .bee-ta-template-selection {
+  display: table-row;
+}
+
 .bee-ta-form-no-services .bee-ta-until-label,
 .bee-ta-form-no-services .bee-ta-until-input,
 .bee-ta-form-no-services .bee-ta-services-tab,
@@ -122,7 +127,7 @@
 }
 
 .bee-ta-import-items-selected {
-  background-color: aquamarine;
+  background-color: #cfc;
 }
 .bee-ta-import-items-duplicate td {
   background-color: deeppink;

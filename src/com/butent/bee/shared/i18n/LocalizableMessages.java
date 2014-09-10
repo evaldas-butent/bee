@@ -26,6 +26,8 @@ public interface LocalizableMessages extends Messages, LocalizableTaskMessages,
 
   String endSession(String appName);
 
+  String exchangeFromTo(String from, String to);
+
   String fileNotFound(String file);
 
   String fileSizeExceeded(long size, long max);

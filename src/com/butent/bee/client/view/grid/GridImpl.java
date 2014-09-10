@@ -1277,6 +1277,11 @@ public class GridImpl extends Absolute implements GridView, EditEndEvent.Handler
   }
 
   @Override
+  public boolean isEmpty() {
+    return getRowData().isEmpty();
+  }
+
+  @Override
   public boolean isEnabled() {
     return getGrid().isEnabled();
   }

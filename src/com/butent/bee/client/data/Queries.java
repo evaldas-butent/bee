@@ -557,7 +557,9 @@ public final class Queries {
   }
 
   public static void insertRows(BeeRowSet rowSet) {
-    if (checkRowSet(Service.INSERT_ROWS, rowSet, null)) {
+    if (rowSet == null) {
+      error(null, Service.INSERT_ROWS, "rowSet is null");
+    } else {
       insertRows(rowSet, new DataChangeCallback(rowSet.getViewName()));
     }
   }
@@ -697,6 +699,37 @@ public final class Queries {
 
   public static void updateRow(BeeRowSet rowSet, RowCallback callback) {
     doRow(Service.UPDATE_ROW, rowSet, callback);
+  }
+
+  public static void updateRows(BeeRowSet rowSet) {
+    if (rowSet == null) {
+      error(null, Service.UPDATE_ROWS, "rowSet is null");
+    } else {
+      updateRows(rowSet, new DataChangeCallback(rowSet.getViewName()));
+    }
+  }
+
+  public static void updateRows(BeeRowSet rowSet, final IntCallback callback) {
+    if (!checkRowSet(Service.UPDATE_ROWS, rowSet, callback)) {
+      return;
+    }
+
+    final String viewName = rowSet.getViewName();
+
+    BeeKeeper.getRpc().sendText(Service.UPDATE_ROWS, Codec.beeSerialize(rowSet),
+        new ResponseCallback() {
+          @Override
+          public void onResponse(ResponseObject response) {
+            if (checkResponse(Service.UPDATE_ROWS, viewName, response, Integer.class, callback)) {
+              int count = BeeUtils.toInt(response.getResponseAsString());
+              logger.info(viewName, "updated", count, "rows");
+
+              if (callback != null) {
+                callback.onSuccess(count);
+              }
+            }
+          }
+        });
   }
 
   private static boolean checkRowSet(String service, BeeRowSet rowSet, Callback<?> callback) {
