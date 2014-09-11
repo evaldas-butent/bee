@@ -102,6 +102,14 @@ public class ModuleHolderBean {
         }
       }
     }
+
+    List<String> etf = Config.getList("EnsureTableFields");
+    if (!BeeUtils.isEmpty(etf)) {
+      for (String tblName : etf) {
+        sys.ensureFields(tblName);
+      }
+    }
+
     for (String mod : getModules()) {
       prm.refreshModuleParameters(mod);
       getModule(mod).init();

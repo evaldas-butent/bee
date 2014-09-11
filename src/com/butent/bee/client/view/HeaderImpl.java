@@ -73,7 +73,7 @@ public class HeaderImpl extends Flow implements HeaderView {
 
   private static final BeeLogger logger = LogUtils.getLogger(HeaderImpl.class);
 
-  private static final int HEIGHT = 30;
+  private static final int DEFAULT_HEIGHT = 30;
 
   private static final String STYLE_PREFIX = StyleUtils.CLASS_NAME_PREFIX + "Header-";
 
@@ -231,7 +231,12 @@ public class HeaderImpl extends Flow implements HeaderView {
 
   @Override
   public int getHeight() {
-    return HEIGHT;
+    int height = BeeKeeper.getUser().getViewHeaderHeight();
+    if (height <= 0) {
+      height = Settings.getViewHeaderHeight();
+    }
+
+    return (height > 0) ? height : DEFAULT_HEIGHT;
   }
 
   @Override

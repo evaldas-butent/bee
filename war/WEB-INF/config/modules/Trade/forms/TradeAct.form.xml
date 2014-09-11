@@ -28,7 +28,7 @@
         <Label for="Parent">
           &forparent;
         </Label>
-        <LongLabel source="Parent" inline="true" style="font-style: italic;">
+        <LongLabel source="Parent" inline="true" class="bee-output">
           &forparent;
         </LongLabel>
       </row>
