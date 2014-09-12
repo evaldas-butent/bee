@@ -49,6 +49,8 @@ import java.util.Set;
 public class FormContainerImpl extends Split implements FormContainerView, HasNavigation,
     HasSearch, ActiveRowChangeEvent.Handler, AddStartEvent.Handler, AddEndEvent.Handler {
 
+  private static final String STYLE_NAME = StyleUtils.CLASS_NAME_PREFIX + "FormContainer";
+
   private Presenter viewPresenter;
 
   private String headerId;
@@ -72,6 +74,7 @@ public class FormContainerImpl extends Split implements FormContainerView, HasNa
 
   public FormContainerImpl() {
     super(-1);
+    addStyleName(STYLE_NAME);
   }
 
   @Override

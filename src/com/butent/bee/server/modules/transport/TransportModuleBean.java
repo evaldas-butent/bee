@@ -167,28 +167,26 @@ public class TransportModuleBean implements BeeModule {
   public List<SearchResult> doSearch(String query) {
     List<SearchResult> result = Lists.newArrayList();
 
-    if (usr.isModuleVisible(ModuleAndSub.of(Module.TRANSPORT))) {
-      List<SearchResult> vehiclesResult = qs.getSearchResults(VIEW_VEHICLES,
-          Filter.anyContains(Sets.newHashSet(COL_NUMBER, COL_PARENT_MODEL_NAME, COL_MODEL_NAME,
-              COL_OWNER_NAME), query));
+    List<SearchResult> vehiclesResult = qs.getSearchResults(VIEW_VEHICLES,
+        Filter.anyContains(Sets.newHashSet(COL_NUMBER, COL_PARENT_MODEL_NAME, COL_MODEL_NAME,
+            COL_OWNER_NAME), query));
 
-      List<SearchResult> orderCargoResult = qs.getSearchResults(VIEW_ORDER_CARGO,
-          Filter.anyContains(Sets.newHashSet(COL_CARGO_DESCRIPTION,
-              COL_NUMBER, COL_CARGO_CMR, COL_CARGO_NOTES, COL_CARGO_DIRECTIONS,
-              ALS_LOADING_NUMBER, ALS_LOADING_CONTACT, ALS_LOADING_COMPANY, ALS_LOADING_ADDRESS,
-              ALS_LOADING_POST_INDEX, ALS_LOADING_CITY_NAME, ALS_LOADING_COUNTRY_NAME,
-              ALS_LOADING_COUNTRY_CODE, ALS_UNLOADING_NUMBER, ALS_UNLOADING_CONTACT,
-              ALS_UNLOADING_COMPANY, ALS_UNLOADING_ADDRESS, ALS_UNLOADING_POST_INDEX,
-              ALS_UNLOADING_CITY_NAME, ALS_UNLOADING_COUNTRY_NAME, ALS_UNLOADING_COUNTRY_CODE),
-              query));
+    List<SearchResult> orderCargoResult = qs.getSearchResults(VIEW_ORDER_CARGO,
+        Filter.anyContains(Sets.newHashSet(COL_CARGO_DESCRIPTION,
+            COL_NUMBER, COL_CARGO_CMR, COL_CARGO_NOTES, COL_CARGO_DIRECTIONS,
+            ALS_LOADING_NUMBER, ALS_LOADING_CONTACT, ALS_LOADING_COMPANY, ALS_LOADING_ADDRESS,
+            ALS_LOADING_POST_INDEX, ALS_LOADING_CITY_NAME, ALS_LOADING_COUNTRY_NAME,
+            ALS_LOADING_COUNTRY_CODE, ALS_UNLOADING_NUMBER, ALS_UNLOADING_CONTACT,
+            ALS_UNLOADING_COMPANY, ALS_UNLOADING_ADDRESS, ALS_UNLOADING_POST_INDEX,
+            ALS_UNLOADING_CITY_NAME, ALS_UNLOADING_COUNTRY_NAME, ALS_UNLOADING_COUNTRY_CODE),
+            query));
 
-      result.addAll(vehiclesResult);
-      result.addAll(orderCargoResult);
+    result.addAll(vehiclesResult);
+    result.addAll(orderCargoResult);
 
-      if (usr.isModuleVisible(ModuleAndSub.of(Module.TRANSPORT, SubModule.LOGISTICS))) {
-        result.addAll(qs.getSearchResults(VIEW_ASSESSMENTS,
-            Filter.compareId(BeeUtils.toLong(query))));
-      }
+    if (usr.isModuleVisible(ModuleAndSub.of(Module.TRANSPORT, SubModule.LOGISTICS))) {
+      result.addAll(qs.getSearchResults(VIEW_ASSESSMENTS,
+          Filter.compareId(BeeUtils.toLong(query))));
     }
 
     return result;
