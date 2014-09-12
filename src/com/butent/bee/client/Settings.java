@@ -29,6 +29,10 @@ public final class Settings {
     return getInt("actionSensitivityMillis");
   }
 
+  public static int getApplianceHeaderHeight() {
+    return getInt("applianceHeaderHeight");
+  }
+
   public static String getAppName() {
     return getString("appName");
   }
@@ -128,6 +132,10 @@ public final class Settings {
 
   public static String getVersion() {
     return getString("version");
+  }
+
+  public static int getViewHeaderHeight() {
+    return getInt("viewHeaderHeight");
   }
 
   public static String getWebSocketUrl() {

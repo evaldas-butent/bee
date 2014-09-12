@@ -27,5 +27,7 @@
     <Relation name="Driver" relation="Drivers" label="=trdDriver" />
 
     <Text name="Notes" label="=notes" />
+
+    <Relation name="Parent" relation="TradeActs" label="=taParent" />
   </Fields>
 </Table>

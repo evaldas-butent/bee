@@ -782,6 +782,10 @@ public class ScreenImpl implements Screen {
             @Override
             public void onSuccess(BeeRow result) {
               BeeKeeper.getUser().updateSettings(result);
+
+              if (getCentralScrutinizer() != null) {
+                getCentralScrutinizer().maybeUpdateHeaders();
+              }
             }
           });
     }

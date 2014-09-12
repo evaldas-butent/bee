@@ -2844,7 +2844,10 @@ public final class CliWorker {
     if (!BeeUtils.isEmpty(args)) {
       if (args.startsWith("4.1")) {
         range = Range.closed(FontAwesome.SPACE_SHUTTLE.getCode(), FontAwesome.BOMB.getCode());
+      } else if (args.startsWith("4.2")) {
+        range = Range.closed(FontAwesome.SOCCER_BALL_O.getCode(), FontAwesome.MEANPATH.getCode());
       }
+
       styles.addAll(StyleUtils.parseStyles(args));
     }
 

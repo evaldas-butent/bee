@@ -8,6 +8,7 @@ public final class TradeActConstants {
   public static final String SVC_COPY_ACT = "CopyAct";
   public static final String SVC_SAVE_ACT_AS_TEMPLATE = "SaveActAsTemplate";
   public static final String SVC_GET_TEMPLATE_ITEMS_AND_SERVICES = "GetTemplateItemsAndServices";
+  public static final String SVC_GET_ITEMS_FOR_RETURN = "GetItemsForReturn";
 
   public static final String TBL_TRADE_ACTS = "TradeActs";
   public static final String TBL_TRADE_ACT_ITEMS = "TradeActItems";
@@ -42,6 +43,7 @@ public final class TradeActConstants {
   public static final String COL_TA_VEHICLE = "Vehicle";
   public static final String COL_TA_DRIVER = "Driver";
   public static final String COL_TA_NOTES = "Notes";
+  public static final String COL_TA_PARENT = "Parent";
 
   public static final String COL_TA_TEMPLATE_NAME = "Template";
 

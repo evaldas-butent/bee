@@ -277,6 +277,8 @@ public final class AdministrationConstants {
   public static final String COL_WORKSPACE_CONTINUE = "WorkspaceContinue";
   public static final String COL_LAST_WORKSPACE = "LastWorkspace";
 
+  public static final String COL_APPLIANCE_HEADER_HEIGHT = "ApplianceHeaderHeight";
+  public static final String COL_VIEW_HEADER_HEIGHT = "ViewHeaderHeight";
   public static final String COL_USER_STYLE = "Style";
 
   public static final String ALS_FILE_NAME = "FileName";

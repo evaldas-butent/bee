@@ -85,6 +85,8 @@
     </SimpleJoin>
 
     <SimpleColumn name="Notes" />
+
+    <SimpleColumn name="Parent" />
   </Columns>
   
   <Order>

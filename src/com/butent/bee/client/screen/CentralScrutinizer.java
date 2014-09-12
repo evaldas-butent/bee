@@ -11,6 +11,7 @@ import com.google.gwt.user.client.ui.Widget;
 
 import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.Global;
+import com.butent.bee.client.Settings;
 import com.butent.bee.client.cli.Shell;
 import com.butent.bee.client.event.logical.ActiveWidgetChangeEvent;
 import com.butent.bee.client.layout.Flow;
@@ -100,7 +101,16 @@ class CentralScrutinizer extends Stack implements CloseHandler<IdentifiableWidge
 
   private static final BeeLogger logger = LogUtils.getLogger(CentralScrutinizer.class);
 
-  private static final int DEFAULT_HEADER_SIZE = 25;
+  private static final int DEFAULT_HEADER_HEIGHT = 25;
+
+  private static int getHeaderHeight() {
+    int height = BeeKeeper.getUser().getApplianceHeaderHeight();
+    if (height <= 0) {
+      height = Settings.getApplianceHeaderHeight();
+    }
+
+    return (height > 0) ? height : DEFAULT_HEADER_HEIGHT;
+  }
 
   CentralScrutinizer() {
     super();
@@ -194,11 +204,15 @@ class CentralScrutinizer extends Stack implements CloseHandler<IdentifiableWidge
     Appliance appliance = new Appliance(domain, key, caption);
     appliance.addCloseHandler(this);
 
-    insert(widget.asWidget(), appliance, DEFAULT_HEADER_SIZE, before);
+    insert(widget.asWidget(), appliance, getHeaderHeight(), before);
   }
 
   boolean contains(Domain domain, Long key) {
     return find(domain, key) >= 0;
+  }
+
+  boolean maybeUpdateHeaders() {
+    return updateHeaderSize(getHeaderHeight());
   }
 
   boolean remove(Domain domain, Long key) {

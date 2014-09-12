@@ -14,6 +14,7 @@ import com.google.gwt.user.client.ui.Widget;
 import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.Global;
 import com.butent.bee.client.data.HasDataTable;
+import com.butent.bee.client.data.Queries;
 import com.butent.bee.client.data.RowCallback;
 import com.butent.bee.client.dialog.DecisionCallback;
 import com.butent.bee.client.dialog.DialogConstants;
@@ -642,6 +643,32 @@ public class FormImpl extends Absolute implements FormView, PreviewHandler, Tabu
 
     Widget widget = getWidgetBySource(source);
     return UiHelper.focus(widget);
+  }
+
+  @Override
+  public int flush() {
+    if (hasData() && DataUtils.hasId(getActiveRow())
+        && DataUtils.sameId(getActiveRow(), getOldRow()) && validate(this, true)) {
+
+      return Queries.update(getViewName(), getDataColumns(), getOldRow(), getActiveRow(),
+          getChildrenForUpdate(), new RowCallback() {
+            @Override
+            public void onFailure(String... reason) {
+              notifySevere(reason);
+            }
+
+            @Override
+            public void onSuccess(BeeRow result) {
+              if (DataUtils.sameId(result, getActiveRow()) && !observesData()) {
+                updateRow(result, false);
+              }
+              RowUpdateEvent.fire(BeeKeeper.getBus(), getViewName(), result);
+            }
+          });
+
+    } else {
+      return BeeConst.INT_ERROR;
+    }
   }
 
   @Override

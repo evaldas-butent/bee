@@ -39,6 +39,10 @@ public class UserInfo implements HasInfo {
   private BeeRowSet settings;
 
   private boolean openInNewTab;
+
+  private int applianceHeaderHeight;
+  private int viewHeaderHeight;
+
   private String styleId;
 
   public boolean canCreateData(String object) {
@@ -55,6 +59,10 @@ public class UserInfo implements HasInfo {
 
   public boolean canEditData(String object) {
     return isLoggedIn() && userData.canEditData(object);
+  }
+
+  public int getApplianceHeaderHeight() {
+    return applianceHeaderHeight;
   }
 
   public Long getCompany() {
@@ -141,6 +149,10 @@ public class UserInfo implements HasInfo {
     return userData.getUserSign();
   }
 
+  public int getViewHeaderHeight() {
+    return viewHeaderHeight;
+  }
+
   public boolean is(Long id) {
     return id != null && id.equals(getUserId());
   }
@@ -200,14 +212,13 @@ public class UserInfo implements HasInfo {
 
       setOpenInNewTab(getBooleanSetting(COL_OPEN_IN_NEW_TAB));
 
+      setApplianceHeaderHeight(getIntSetting(COL_APPLIANCE_HEADER_HEIGHT));
+      setViewHeaderHeight(getIntSetting(COL_VIEW_HEADER_HEIGHT));
+
       String css = getStyle();
       if (!BeeUtils.isEmpty(css)) {
         createStyle(css);
       }
-
-    } else {
-      settings = null;
-      setOpenInNewTab(false);
     }
   }
 
@@ -232,6 +243,9 @@ public class UserInfo implements HasInfo {
       settings.addRow(row);
 
       setOpenInNewTab(getBooleanSetting(COL_OPEN_IN_NEW_TAB));
+
+      setApplianceHeaderHeight(getIntSetting(COL_APPLIANCE_HEADER_HEIGHT));
+      setViewHeaderHeight(getIntSetting(COL_VIEW_HEADER_HEIGHT));
 
       String css = getStyle();
 
@@ -276,6 +290,22 @@ public class UserInfo implements HasInfo {
     }
   }
 
+  private int getIntSetting(String colName) {
+    if (DataUtils.isEmpty(settings)) {
+      return BeeConst.UNDEF;
+
+    } else {
+      int index = getSettingsIndex(colName);
+
+      if (BeeConst.isUndef(index)) {
+        return BeeConst.UNDEF;
+      } else {
+        Integer value = settings.getInteger(0, index);
+        return BeeUtils.nvl(value, BeeConst.UNDEF);
+      }
+    }
+  }
+
   private String getSetting(String colName) {
     if (DataUtils.isEmpty(settings)) {
       return null;
@@ -303,12 +333,20 @@ public class UserInfo implements HasInfo {
     return styleId;
   }
 
+  private void setApplianceHeaderHeight(int applianceHeaderHeight) {
+    this.applianceHeaderHeight = applianceHeaderHeight;
+  }
+
   private void setOpenInNewTab(boolean openInNewTab) {
     this.openInNewTab = openInNewTab;
   }
 
   private void setStyleId(String styleId) {
     this.styleId = styleId;
+  }
+
+  private void setViewHeaderHeight(int viewHeaderHeight) {
+    this.viewHeaderHeight = viewHeaderHeight;
   }
 
   private void updateStyle(String css) {

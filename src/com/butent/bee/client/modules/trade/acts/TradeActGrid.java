@@ -264,7 +264,7 @@ public class TradeActGrid extends AbstractGridInterceptor {
     return returnCommand;
   }
 
-  private void createReturn(IsRow base) {
+  private void createReturn(IsRow parent) {
     DataInfo dataInfo = Data.getDataInfo(getViewName());
     BeeRow newRow = RowFactory.createEmptyRow(dataInfo, false);
 
@@ -280,14 +280,18 @@ public class TradeActGrid extends AbstractGridInterceptor {
           newRow.setValue(i, TimeUtils.nowMinutes());
           break;
 
+        case COL_TA_PARENT:
+          newRow.setValue(i, parent.getId());
+          break;
+
         case COL_TA_UNTIL:
         case COL_TA_NOTES:
           break;
 
         default:
-          if (!base.isNull(i) && !colId.startsWith(COL_TA_STATUS)
+          if (!parent.isNull(i) && !colId.startsWith(COL_TA_STATUS)
               && !colId.startsWith(COL_TA_OPERATION)) {
-            newRow.setValue(i, base.getValue(i));
+            newRow.setValue(i, parent.getValue(i));
           }
       }
     }
@@ -321,7 +325,7 @@ public class TradeActGrid extends AbstractGridInterceptor {
     return supplementCommand;
   }
 
-  private void createSupplement(IsRow base) {
+  private void createSupplement(IsRow parent) {
     DataInfo dataInfo = Data.getDataInfo(getViewName());
     BeeRow newRow = RowFactory.createEmptyRow(dataInfo, false);
 
@@ -337,13 +341,17 @@ public class TradeActGrid extends AbstractGridInterceptor {
           newRow.setValue(i, TimeUtils.nowMinutes());
           break;
 
+        case COL_TA_PARENT:
+          newRow.setValue(i, parent.getId());
+          break;
+
         case COL_TA_UNTIL:
         case COL_TA_NOTES:
           break;
 
         default:
-          if (!base.isNull(i) && !colId.startsWith(COL_TA_STATUS)) {
-            newRow.setValue(i, base.getValue(i));
+          if (!parent.isNull(i) && !colId.startsWith(COL_TA_STATUS)) {
+            newRow.setValue(i, parent.getValue(i));
           }
       }
     }
