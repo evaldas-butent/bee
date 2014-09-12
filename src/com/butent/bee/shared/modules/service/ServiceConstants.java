@@ -3,6 +3,7 @@ package com.butent.bee.shared.modules.service;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.i18n.LocalizableConstants;
 import com.butent.bee.shared.i18n.Localized;
+import com.butent.bee.shared.ui.HasCaption;
 import com.butent.bee.shared.ui.HasLocalizedCaption;
 import com.butent.bee.shared.utils.EnumUtils;
 
@@ -28,6 +29,25 @@ public final class ServiceConstants {
     public String getCaption() {
       return getCaption(Localized.getConstants());
     }
+  }
+
+  public enum ServiceFilterDataType implements HasCaption {
+    CATEGORY(Localized.getConstants().category()),
+    ADDRESS(Localized.getConstants().address()),
+    CUSTOMER(Localized.getConstants().customer()),
+    CONTRACTOR(Localized.getConstants().svcContractor());
+
+    private final String caption;
+
+    private ServiceFilterDataType(String caption) {
+      this.caption = caption;
+    }
+
+    @Override
+    public String getCaption() {
+      return caption;
+    }
+
   }
 
   public enum ObjectStatus implements HasLocalizedCaption {
@@ -106,6 +126,7 @@ public final class ServiceConstants {
   public static final String SVC_COPY_DOCUMENT_CRITERIA = "CopyDocumentCriteria";
 
   public static final String VAR_SERVICE_OBJECT_STATUS = "ServiceObjectStatus";
+  public static final String VAR_SERVICE_FILTER_DATA = "FilterData";
 
   public static final String TBL_SERVICE_TREE = "ServiceTree";
   public static final String TBL_SERVICE_OBJECTS = "ServiceObjects";

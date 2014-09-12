@@ -42,12 +42,15 @@ import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogUtils;
 import com.butent.bee.shared.modules.BeeParameter;
 import com.butent.bee.shared.modules.documents.DocumentConstants;
+import com.butent.bee.shared.modules.service.ServiceConstants.ObjectStatus;
+import com.butent.bee.shared.modules.service.ServiceConstants.ServiceFilterDataType;
 import com.butent.bee.shared.rights.Module;
 import com.butent.bee.shared.time.JustDate;
 import com.butent.bee.shared.time.TimeUtils;
 import com.butent.bee.shared.utils.ArrayUtils;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.Codec;
+import com.butent.bee.shared.utils.EnumUtils;
 import com.butent.bee.shared.utils.Property;
 
 import java.util.Collection;
@@ -520,8 +523,10 @@ public class ServiceModuleBean implements BeeModule {
     }
 
     int svcObjStatus = BeeUtils.toInt(reqInfo.getParameter(VAR_SERVICE_OBJECT_STATUS));
+    Map<String, String> filterData =
+        Codec.deserializeMap(reqInfo.getParameter(VAR_SERVICE_FILTER_DATA));
 
-    SimpleRowSet objectData = getCalendarObjects(svcObjStatus);
+    SimpleRowSet objectData = getCalendarObjects(svcObjStatus, filterData);
     if (DataUtils.isEmpty(objectData)) {
       return ResponseObject.response(settings);
     }
@@ -621,7 +626,7 @@ public class ServiceModuleBean implements BeeModule {
     return criteria;
   }
 
-  private SimpleRowSet getCalendarObjects(int svcObjStatus) {
+  private SimpleRowSet getCalendarObjects(int svcObjStatus, Map<String, String> filterData) {
     String idName = sys.getIdName(TBL_SERVICE_OBJECTS);
 
     HasConditions where = SqlUtils.or(
@@ -634,6 +639,46 @@ public class ServiceModuleBean implements BeeModule {
       where =
           SqlUtils
               .and(where, SqlUtils.equals(TBL_SERVICE_OBJECTS, COL_OBJECT_STATUS, svcObjStatus));
+    }
+
+    for (String key : filterData.keySet()) {
+      ServiceFilterDataType type = EnumUtils.getEnumByName(ServiceFilterDataType.class, key);
+      List<Long> ids = DataUtils.parseIdList(filterData.get(key));
+
+      if (BeeUtils.isEmpty(ids)) {
+        continue;
+      }
+
+      boolean isId = true;
+
+      for (Long id : ids) {
+        isId &= DataUtils.isId(id);
+      }
+
+      if (!isId) {
+        continue;
+      }
+
+      switch (type) {
+        case ADDRESS:
+          SqlUtils.and(where, SqlUtils.inList(TBL_SERVICE_OBJECTS,
+              sys.getIdName(TBL_SERVICE_OBJECTS), ids));
+          break;
+        case CATEGORY:
+          SqlUtils.and(where, SqlUtils.inList(TBL_SERVICE_OBJECTS,
+              COL_SERVICE_CATEGORY, ids));
+          break;
+        case CONTRACTOR:
+          SqlUtils.and(where, SqlUtils.inList(TBL_SERVICE_OBJECTS,
+              COL_SERVICE_CONTRACTOR, ids));
+          break;
+        case CUSTOMER:
+          SqlUtils.and(where, SqlUtils.inList(TBL_SERVICE_OBJECTS,
+              COL_SERVICE_CUSTOMER, ids));
+          break;
+        default:
+          break;
+      }
     }
 
     String aliasCustomers = "Cust_" + SqlUtils.uniqueName();

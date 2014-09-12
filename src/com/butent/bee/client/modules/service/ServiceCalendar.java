@@ -2,6 +2,7 @@ package com.butent.bee.client.modules.service;
 
 import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.Lists;
+import com.google.common.collect.Maps;
 import com.google.common.collect.Multimap;
 import com.google.common.collect.Range;
 import com.google.common.collect.Sets;
@@ -67,6 +68,7 @@ import com.butent.bee.shared.modules.administration.AdministrationConstants;
 import com.butent.bee.shared.modules.classifiers.ClassifierConstants;
 import com.butent.bee.shared.modules.service.ServiceConstants.ObjectStatus;
 import com.butent.bee.shared.modules.service.ServiceConstants.ServiceCompanyKind;
+import com.butent.bee.shared.modules.service.ServiceConstants.ServiceFilterDataType;
 import com.butent.bee.shared.modules.tasks.TaskConstants.TaskPriority;
 import com.butent.bee.shared.modules.tasks.TaskConstants.TaskStatus;
 import com.butent.bee.shared.modules.tasks.TaskUtils;
@@ -77,6 +79,7 @@ import com.butent.bee.shared.time.TimeUtils;
 import com.butent.bee.shared.ui.Action;
 import com.butent.bee.shared.ui.Color;
 import com.butent.bee.shared.utils.BeeUtils;
+import com.butent.bee.shared.utils.Codec;
 import com.butent.bee.shared.utils.EnumUtils;
 
 import java.util.ArrayList;
@@ -254,6 +257,8 @@ final class ServiceCalendar extends TimeBoard {
 
   private final Map<Integer, Long> objectsByRow = new HashMap<>();
 
+  private Map<String, String> filterData;
+
   private ServiceCalendar() {
     super();
     addStyleName(STYLE_VIEW);
@@ -294,7 +299,6 @@ final class ServiceCalendar extends TimeBoard {
         break;
 
       case FILTER:
-        // TODO:
         SvcCalendarFilterHelper.openDialog(objects, getFilterDialogCallback());
         break;
       case REMOVE_FILTER:
@@ -434,7 +438,14 @@ final class ServiceCalendar extends TimeBoard {
 
   @Override
   protected void refresh() {
-    BeeKeeper.getRpc().makeRequest(ServiceKeeper.createArgs(SVC_GET_CALENDAR_DATA),
+    Map<String, String> fData = getFilterData();
+
+    ParameterList params = ServiceKeeper.createArgs(SVC_GET_CALENDAR_DATA);
+    if (fData != null) {
+      params.addDataItem(VAR_SERVICE_FILTER_DATA, Codec.beeSerialize(fData));
+    }
+
+    BeeKeeper.getRpc().makeRequest(params,
         new ResponseCallback() {
           @Override
           public void onResponse(ResponseObject response) {
@@ -1017,24 +1028,46 @@ final class ServiceCalendar extends TimeBoard {
     return companyWidth;
   }
 
-  private static SvcCalendarFilterHelper.DialogCallback getFilterDialogCallback() {
+  private SvcCalendarFilterHelper.DialogCallback getFilterDialogCallback() {
     return  new SvcCalendarFilterHelper.DialogCallback() {
 
       @Override
       public void onClear() {
-        // TODO Auto-generated method stub
+        logger.debug("Wee are here on clear");
       }
 
       @Override
-      public void onFilter() {
-        // TODO Auto-generated method stub
+      public void onFilter(Map<ServiceFilterDataType, List<Long>> selectedData) {
+        boolean emptySet = true;
+
+        for (List<Long> value : selectedData.values()) {
+          emptySet &= BeeUtils.isEmpty(value);
+        }
+
+        if (emptySet) {
+          logger.info("nothing changes");
+          return;
+        }
+
+        Map<String, String> fData = Maps.newHashMap();
+
+        for (ServiceFilterDataType key : selectedData.keySet()) {
+          fData.put(key.name(), DataUtils.buildIdList(selectedData.get(key)));
+        }
+
+        setFilterData(fData);
+        refresh();
       }
 
       @Override
       public void onSelectionChange(HasWidgets dataContainer) {
-        // TODO Auto-generated method stub
+        logger.debug("Wee are here on selection change");
       }
     };
+  }
+
+  private Map<String, String> getFilterData() {
+    return filterData;
   }
 
   private void getFilterLabels(final Consumer<List<String>> consumer) {
@@ -1352,6 +1385,10 @@ final class ServiceCalendar extends TimeBoard {
 
   private void setCompanyWidth(int companyWidth) {
     this.companyWidth = companyWidth;
+  }
+
+  private void setFilterData(Map<String, String> filterData) {
+    this.filterData = filterData;
   }
 
   private void setInfoWidth(int infoWidth) {

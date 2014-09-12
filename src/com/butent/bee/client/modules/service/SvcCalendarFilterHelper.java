@@ -4,7 +4,10 @@ import com.google.common.collect.Maps;
 import com.google.common.collect.Multimap;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
+import com.google.gwt.event.logical.shared.SelectionEvent;
+import com.google.gwt.event.logical.shared.SelectionHandler;
 import com.google.gwt.user.client.ui.HasWidgets;
+import com.google.gwt.user.client.ui.Widget;
 
 import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.dialog.DialogBox;
@@ -18,9 +21,11 @@ import com.butent.bee.client.widget.Button;
 import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.i18n.LocalizableConstants;
 import com.butent.bee.shared.i18n.Localized;
-import com.butent.bee.shared.ui.HasCaption;
+import com.butent.bee.shared.modules.service.ServiceConstants;
+import com.butent.bee.shared.modules.service.ServiceConstants.ServiceFilterDataType;
 import com.butent.bee.shared.utils.BeeUtils;
 
+import java.util.List;
 import java.util.Map;
 
 final class SvcCalendarFilterHelper {
@@ -28,7 +33,7 @@ final class SvcCalendarFilterHelper {
   interface DialogCallback {
     void onClear();
 
-    void onFilter();
+    void onFilter(Map<ServiceFilterDataType, List<Long>> selectedData);
 
     void onSelectionChange(HasWidgets dataContainer);
   }
@@ -55,25 +60,6 @@ final class SvcCalendarFilterHelper {
   private static Map<Long, ServiceObjectWrapper> addressObjects = Maps.newHashMap();
   private static Map<Long, ServiceObjectWrapper> customerObjects = Maps.newHashMap();
   private static Map<Long, ServiceObjectWrapper> contractorObjects = Maps.newHashMap();
-
-  enum DataType implements HasCaption {
-    CATEGORY(localizedConstants.category()),
-    ADDRESS(localizedConstants.address()),
-    CUSTOMER(localizedConstants.customer()),
-    CONTRACTOR(localizedConstants.svcContractor());
-
-    private final String caption;
-
-    private DataType(String caption) {
-      this.caption = caption;
-    }
-
-    @Override
-    public String getCaption() {
-      return caption;
-    }
-
-  }
 
   static void openDialog(final Multimap<Long, ServiceObjectWrapper> objects,
       final DialogCallback callback) {
@@ -103,35 +89,32 @@ final class SvcCalendarFilterHelper {
     int dataWrapperWidth = Math.min(dataContainerWidth, dialogMaxWidth);
     int dataWrapperHeigh = dataContainerHeight + DomUtils.getScrollBarHeight();
 
-    // int contentWidth = dataWrapperWidth;
-    // int contentHeight = dataWrapperHeigh + COMAND_GROUP_HEIGHT;
+    int contentWidth = dataWrapperWidth;
+    int contentHeight = dataWrapperHeigh + COMAND_GROUP_HEIGHT;
 
-    filterDialog.addCloseHandler(getFilterDialogCloseHandler());
+
 
     filterDialog.setHideOnEscape(true);
     filterDialog.setAnimationEnabled(true);
 
     filterContent.addStyleName(STYLE_CONTENT);
-    // StyleUtils.setSize(filterContent, contentMaxWidth, contentMaxHeight);
+    StyleUtils.setSize(filterContent, contentWidth, contentHeight);
     filterDialog.add(filterContent);
 
     dataContainer.addStyleName(STYLE_DATA_CONTAINER);
     StyleUtils.setSize(dataContainer, dataContainerWidth, dataContainerHeight);
 
-    // SelectionHandler<DataType> selectionHandler = new SelectionHandler<DataType>() {
-    //
-    // @Override
-    // public void onSelection(SelectionEvent<DataType> event) {
-    // callback.onSelectionChange(dataContainer);
-    // }
-    // };
+    SelectionHandler<ServiceConstants.ServiceFilterDataType> selectionHandler =
+        getSelectionHandler(callback, dataContainer);
 
     int dataIndex = 0;
     prepareObjectsByType(objects);
-    for (DataType type : DataType.values()) {
+    for (ServiceConstants.ServiceFilterDataType type : ServiceConstants.ServiceFilterDataType
+        .values()) {
       for (ServiceObjectWrapper obj : objects.values()) {
         obj.saveState(type);
       }
+
 
       Map<Long, ServiceObjectWrapper> typedObjects;
 
@@ -154,6 +137,7 @@ final class SvcCalendarFilterHelper {
       }
 
       SvcFilterDataWidget dataWidget = new SvcFilterDataWidget(type, typedObjects);
+      dataWidget.addSelectionHandler(selectionHandler);
       dataIndex++;
       if (dataIndex < DEFAULT_DATA_COUNT) {
         dataContainer.addWest(dataWidget, dataPanelWidth, DATA_SPLITTER_WIDTH);
@@ -170,22 +154,88 @@ final class SvcCalendarFilterHelper {
     filterContent.add(actions);
 
     filterButton.addStyleName(STYLE_ACTION_FILTER);
-    filterButton.addClickHandler(getFilterClickHandler(filterDialog, callback));
+    filterButton.addClickHandler(getFilterClickHandler(filterDialog, callback, dataContainer));
     actions.add(filterButton);
 
     clearButton.addStyleName(STYLE_ACTION_CLEAR);
     clearButton.addClickHandler(getClearClickHandler(dataContainer, callback));
     actions.add(clearButton);
 
+    filterDialog.addCloseHandler(getFilterDialogCloseHandler(dataContainer));
     filterDialog.center();
+    filterButton.setFocus(true);
+  }
 
+  private static ClickHandler getFilterClickHandler(final DialogBox filterDialog,
+      final DialogCallback callback, final Split dataContainer) {
+    return new ClickHandler() {
+
+      @Override
+      public void onClick(ClickEvent event) {
+        filterDialog.close();
+        Map<ServiceFilterDataType, List<Long>> selectedData = Maps.newHashMap();
+
+        for (Widget widget : dataContainer) {
+          if (widget instanceof SvcFilterDataWidget) {
+            SvcFilterDataWidget filter = (SvcFilterDataWidget) widget;
+            selectedData.put(filter.getDataType(), filter.getSelectedDataIds());
+          }
+        }
+
+        callback.onFilter(selectedData);
+      }
+    };
+  }
+
+  private static ClickHandler getClearClickHandler(
+      final Split dataContainer,
+      final DialogCallback callback) {
+    return new ClickHandler() {
+
+      @Override
+      public void onClick(ClickEvent event) {
+        for (Widget widget : dataContainer) {
+          if (widget instanceof SvcFilterDataWidget) {
+            ((SvcFilterDataWidget) widget).reset(true);
+          }
+        }
+
+        callback.onClear();
+      }
+    };
+  }
+
+  private static CloseEvent.Handler getFilterDialogCloseHandler(final Split dataContainer) {
+    return new CloseEvent.Handler() {
+
+      @Override
+      public void onClose(CloseEvent event) {
+        for (Widget widget : dataContainer) {
+          if (widget instanceof SvcFilterDataWidget) {
+            ((SvcFilterDataWidget) widget).restoreDataState();
+          }
+        }
+      }
+    };
+  }
+
+  private static SelectionHandler<ServiceFilterDataType> getSelectionHandler(
+      final DialogCallback callback, final Split dataContainer) {
+    return new SelectionHandler<ServiceFilterDataType>() {
+
+      @Override
+      public void onSelection(SelectionEvent<ServiceConstants.ServiceFilterDataType> event) {
+        // TODO: remove related items.
+        callback.onSelectionChange(dataContainer);
+      }
+    };
   }
 
   private static void prepareObjectsByType(Multimap<Long, ServiceObjectWrapper> objects) {
     categoryObjects.clear();
     addressObjects.clear();
-    addressObjects.clear();
-    categoryObjects.clear();
+    contractorObjects.clear();
+    customerObjects.clear();
 
     for (ServiceObjectWrapper object : objects.values()) {
 
@@ -201,52 +251,12 @@ final class SvcCalendarFilterHelper {
         contractorObjects.put(object.getContractorId(), object);
       }
 
-      if (DataUtils.isId(object.getCategoryId())) {
-        categoryObjects.put(object.getCategoryId(), object);
+      if (DataUtils.isId(object.getCustomerId())) {
+        customerObjects.put(object.getCategoryId(), object);
       }
     }
   }
 
   private SvcCalendarFilterHelper() {
-  }
-
-  private static ClickHandler getFilterClickHandler(final DialogBox filterDialog,
-      final DialogCallback callback) {
-    return new ClickHandler() {
-
-      @Override
-      public void onClick(ClickEvent arg0) {
-        filterDialog.close();
-        callback.onFilter();
-      }
-    };
-  }
-
-  private static ClickHandler getClearClickHandler(
-      @SuppressWarnings("unused") final Split dataContainer,
-      final DialogCallback callback) {
-    return new ClickHandler() {
-
-      @Override
-      public void onClick(ClickEvent arg0) {
-        // for (Widget widget : dataContainer) {
-        // // TODO: reset filter types
-        // }
-
-        callback.onClear();
-      }
-    };
-  }
-
-  private static CloseEvent.Handler getFilterDialogCloseHandler() {
-    return new CloseEvent.Handler() {
-
-      @Override
-      public void onClose(CloseEvent event) {
-        // if (event.userCaused()) {
-        // // TODO: restore data;
-        // }
-      }
-    };
   }
 }

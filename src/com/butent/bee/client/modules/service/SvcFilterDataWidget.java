@@ -1,5 +1,6 @@
 package com.butent.bee.client.modules.service;
 
+import com.google.common.collect.Lists;
 import com.google.gwt.dom.client.Document;
 import com.google.gwt.dom.client.Element;
 import com.google.gwt.event.dom.client.ClickEvent;
@@ -18,7 +19,6 @@ import com.butent.bee.client.event.EventUtils;
 import com.butent.bee.client.event.InputEvent;
 import com.butent.bee.client.event.InputHandler;
 import com.butent.bee.client.layout.Flow;
-import com.butent.bee.client.modules.service.SvcCalendarFilterHelper.DataType;
 import com.butent.bee.client.style.StyleUtils;
 import com.butent.bee.client.ui.AutocompleteProvider;
 import com.butent.bee.client.widget.CustomDiv;
@@ -28,13 +28,16 @@ import com.butent.bee.client.widget.InputText;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.i18n.LocalizableConstants;
 import com.butent.bee.shared.i18n.Localized;
+import com.butent.bee.shared.modules.service.ServiceConstants;
+import com.butent.bee.shared.modules.service.ServiceConstants.ServiceFilterDataType;
 import com.butent.bee.shared.utils.BeeUtils;
 
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 
-public class SvcFilterDataWidget extends Flow implements HasSelectionHandlers<DataType> {
+public class SvcFilterDataWidget extends Flow implements
+    HasSelectionHandlers<ServiceFilterDataType> {
 
   private static final int MIN_SIZE_FOR_SEARCH = 5;
   private static final int MIN_SIZE_FOR_COMMAND_ALL = 2;
@@ -51,8 +54,10 @@ public class SvcFilterDataWidget extends Flow implements HasSelectionHandlers<Da
   private static final String STYLE_DATA_SEARCH = STYLE_PREFIX + "search";
   private static final String STYLE_DATA_SELECTED = STYLE_PREFIX + "selected";
 
-  Map<Long, ServiceObjectWrapper> data;
-  SvcCalendarFilterHelper.DataType dataType;
+  private Map<Long, ServiceObjectWrapper> data;
+  private ServiceConstants.ServiceFilterDataType dataType;
+  private int dataNumberOfSelectedItems;
+  private int dataNumberOfDisabledItems;
 
   private final Element unselectedContainer;
   private final Element selectedContainer;
@@ -70,7 +75,7 @@ public class SvcFilterDataWidget extends Flow implements HasSelectionHandlers<Da
   private String searchQuery;
   private int numberOfHiddenItems;
 
-  SvcFilterDataWidget(SvcCalendarFilterHelper.DataType dataType,
+  SvcFilterDataWidget(ServiceConstants.ServiceFilterDataType dataType,
       Map<Long, ServiceObjectWrapper> objects) {
     super();
     this.data = objects;
@@ -146,7 +151,7 @@ public class SvcFilterDataWidget extends Flow implements HasSelectionHandlers<Da
   }
 
   @Override
-  public HandlerRegistration addSelectionHandler(SelectionHandler<DataType> handler) {
+  public HandlerRegistration addSelectionHandler(SelectionHandler<ServiceFilterDataType> handler) {
     return addHandler(handler, SelectionEvent.getType());
   }
 
@@ -167,6 +172,16 @@ public class SvcFilterDataWidget extends Flow implements HasSelectionHandlers<Da
       index++;
     }
     return count;
+  }
+
+  private void deselectDataAll() {
+    if (getDataNumberOfSelectedItems() > 0) {
+      for (ServiceObjectWrapper obj : data.values()) {
+        obj.setSelected(dataType, false);
+      }
+
+      setDataNumberOfSelectedItems(0);
+    }
   }
 
   private boolean doAll(boolean wasSelected) {
@@ -223,6 +238,16 @@ public class SvcFilterDataWidget extends Flow implements HasSelectionHandlers<Da
     }
   }
 
+  private void enableDataAll() {
+    if (getDataNumberOfDisabledItems() > 0) {
+      for (ServiceObjectWrapper obj : data.values()) {
+        obj.setEnabled(dataType, true);
+      }
+
+      setDataNumberOfDisabledItems(0);
+    }
+  }
+
   private void fireSelection() {
     SelectionEvent.fire(this, dataType);
   }
@@ -235,21 +260,14 @@ public class SvcFilterDataWidget extends Flow implements HasSelectionHandlers<Da
       if (pos == index) {
         return object;
       }
+      pos++;
     }
 
     return null;
   }
 
   private int getDataNumberOfDisabledItems() {
-    int result = 0;
-
-    for (ServiceObjectWrapper obj : data.values()) {
-      if (!obj.isEnabled(dataType)) {
-        result++;
-      }
-    }
-
-    return result;
+    return dataNumberOfDisabledItems;
   }
 
   private int getDataNumberOfEnabledUnselectedItems() {
@@ -261,15 +279,7 @@ public class SvcFilterDataWidget extends Flow implements HasSelectionHandlers<Da
   }
 
   private int getDataNumberOfSelectedItems() {
-    int result = 0;
-
-    for (ServiceObjectWrapper obj : data.values()) {
-      if (!obj.isSelected(dataType)) {
-        result++;
-      }
-    }
-
-    return result;
+    return dataNumberOfSelectedItems;
   }
 
   private int getDataSize() {
@@ -281,7 +291,7 @@ public class SvcFilterDataWidget extends Flow implements HasSelectionHandlers<Da
 
       @Override
       public void onClick(ClickEvent event) {
-        SvcFilterDataWidget.this.doAll(false);
+        SvcFilterDataWidget.this.doAll(true);
       }
     };
   }
@@ -355,10 +365,7 @@ public class SvcFilterDataWidget extends Flow implements HasSelectionHandlers<Da
   private boolean moveItem(Element itemElement, boolean wasSelected) {
     ServiceObjectWrapper object = getDataByIndex(DomUtils.getDataIndexInt(itemElement));
     boolean updated = StyleUtils.hasClassName(itemElement, STYLE_DATA_ITEM)
-        && object != null;
-    if (object != null) {
-      object.setSelected(dataType, !wasSelected);
-    }
+        && setDataSelected(object, !wasSelected);
 
     if (updated) {
       if (wasSelected) {
@@ -432,6 +439,24 @@ public class SvcFilterDataWidget extends Flow implements HasSelectionHandlers<Da
     }
   }
 
+  private void setDataNumberOfDisabledItems(int dataNumberOfDisabledItems) {
+    this.dataNumberOfDisabledItems = dataNumberOfDisabledItems;
+  }
+
+  private void setDataNumberOfSelectedItems(int dataNumberOfSelectedItems) {
+    this.dataNumberOfSelectedItems = dataNumberOfSelectedItems;
+  }
+
+  private boolean setDataSelected(ServiceObjectWrapper object, boolean selected) {
+    if (object != null && object.isSelected(dataType) != selected) {
+      object.setSelected(dataType, selected);
+      setDataNumberOfSelectedItems(getDataNumberOfSelectedItems() + (selected ? 1 : -1));
+      return true;
+    } else {
+      return false;
+    }
+  }
+
   private void setNumberOfHiddenItems(int numberOfHiddenItems) {
     this.numberOfHiddenItems = numberOfHiddenItems;
   }
@@ -458,6 +483,75 @@ public class SvcFilterDataWidget extends Flow implements HasSelectionHandlers<Da
         setNumberOfHiddenItems(getNumberOfHiddenItems() + 1);
       }
       unselectedContainer.appendChild(itemElement);
+    }
+  }
+
+  void reset(boolean resetData) {
+    if (searchBox != null) {
+      searchBox.clearValue();
+      setSearchQuery(null);
+      setNumberOfHiddenItems(0);
+    }
+
+    if (resetData) {
+      enableDataAll();
+      deselectDataAll();
+    }
+  }
+
+  ServiceConstants.ServiceFilterDataType getDataType() {
+    return dataType;
+  }
+
+  List<Long> getSelectedDataIds() {
+    List<Long> objects = Lists.newArrayList();
+    List<Element> children = DomUtils.getVisibleChildren(selectedContainer);
+
+    for (Element child : children) {
+      ServiceObjectWrapper object = getDataByIndex(DomUtils.getDataIndexInt(child));
+      if (object != null) {
+
+        switch (dataType) {
+          case ADDRESS:
+            objects.add(object.getId());
+            break;
+          case CATEGORY:
+            objects.add(object.getCategoryId());
+            break;
+          case CONTRACTOR:
+            objects.add(object.getContractorId());
+            break;
+          case CUSTOMER:
+            objects.add(object.getCustomerId());
+            break;
+          default:
+            break;
+        }
+      }
+    }
+
+    return objects;
+  }
+
+  void restoreDataState() {
+    if (!data.isEmpty()) {
+      int countSelected = 0;
+      int countDisabled = 0;
+
+      for (ServiceObjectWrapper obj : data.values()) {
+        obj.restoreState(dataType);
+
+        if (obj.isSelected(dataType)) {
+          countSelected++;
+        }
+
+        if (!obj.isEnabled(dataType)) {
+          countDisabled++;
+        }
+      }
+
+      setDataNumberOfSelectedItems(countSelected);
+      setDataNumberOfDisabledItems(countDisabled);
     }
   }
 }

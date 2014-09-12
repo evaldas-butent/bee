@@ -8,6 +8,7 @@ import com.butent.bee.client.data.Data;
 import com.butent.bee.client.timeboard.TimeBoardHelper;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.data.SimpleRowSet.SimpleRow;
+import com.butent.bee.shared.modules.service.ServiceConstants;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.Codec;
 import com.butent.bee.shared.utils.Property;
@@ -94,11 +95,11 @@ class ServiceObjectWrapper {
 
   private final String title;
 
-  private Map<SvcCalendarFilterHelper.DataType, Boolean> selected = Maps.newHashMap();
-  private Map<SvcCalendarFilterHelper.DataType, Boolean> enabled = Maps.newHashMap();
+  private Map<ServiceConstants.ServiceFilterDataType, Boolean> selected = Maps.newHashMap();
+  private Map<ServiceConstants.ServiceFilterDataType, Boolean> enabled = Maps.newHashMap();
 
-  private Map<SvcCalendarFilterHelper.DataType, Boolean> wasSelected = Maps.newHashMap();
-  private Map<SvcCalendarFilterHelper.DataType, Boolean> wasEnabled = Maps.newHashMap();
+  private Map<ServiceConstants.ServiceFilterDataType, Boolean> wasSelected = Maps.newHashMap();
+  private Map<ServiceConstants.ServiceFilterDataType, Boolean> wasEnabled = Maps.newHashMap();
 
   private String getContractor() {
     return contractor;
@@ -124,7 +125,8 @@ class ServiceObjectWrapper {
 
     this.title = buildTitle(row);
 
-    for (SvcCalendarFilterHelper.DataType type : SvcCalendarFilterHelper.DataType.values()) {
+    for (ServiceConstants.ServiceFilterDataType type
+        : ServiceConstants.ServiceFilterDataType.values()) {
       enabled.put(type, Boolean.TRUE);
     }
   }
@@ -149,7 +151,7 @@ class ServiceObjectWrapper {
     return id;
   }
 
-  String getFilterListName(SvcCalendarFilterHelper.DataType type) {
+  String getFilterListName(ServiceConstants.ServiceFilterDataType type) {
     switch (type) {
       case ADDRESS:
         return getAddress();
@@ -168,29 +170,29 @@ class ServiceObjectWrapper {
     return title;
   }
 
-  boolean isEnabled(SvcCalendarFilterHelper.DataType type) {
+  boolean isEnabled(ServiceConstants.ServiceFilterDataType type) {
     return BeeUtils.unbox(enabled.get(type));
   }
 
-  boolean isSelected(SvcCalendarFilterHelper.DataType type) {
+  boolean isSelected(ServiceConstants.ServiceFilterDataType type) {
     return BeeUtils.unbox(selected.get(type));
   }
 
-  void restoreState(SvcCalendarFilterHelper.DataType type) {
+  void restoreState(ServiceConstants.ServiceFilterDataType type) {
     selected.put(type, wasSelected.get(type));
     enabled.put(type, wasEnabled.get(type));
   }
 
-  void saveState(SvcCalendarFilterHelper.DataType type) {
+  void saveState(ServiceConstants.ServiceFilterDataType type) {
     wasSelected.put(type, selected.get(type));
     wasEnabled.put(type, enabled.get(type));
   }
 
-  void setEnabled(SvcCalendarFilterHelper.DataType type, boolean value) {
+  void setEnabled(ServiceConstants.ServiceFilterDataType type, boolean value) {
     this.enabled.put(type, Boolean.valueOf(value));
   }
 
-  void setSelected(SvcCalendarFilterHelper.DataType type, boolean value) {
+  void setSelected(ServiceConstants.ServiceFilterDataType type, boolean value) {
     this.selected.put(type, Boolean.valueOf(value));
   }
 }
