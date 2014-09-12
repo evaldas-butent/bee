@@ -824,10 +824,7 @@ public final class EventUtils {
         EVENT_TYPE_DRAG_LEAVE, EVENT_TYPE_DRAG_OVER, EVENT_TYPE_DRAG_START, EVENT_TYPE_DROP);
   }
 
-  public static boolean isEventType(String t1, String t2) {
-    if (BeeUtils.isEmpty(t1)) {
-      return false;
-    }
+  private static boolean isEventType(String t1, String t2) {
     return BeeUtils.same(t1, t2);
   }
 

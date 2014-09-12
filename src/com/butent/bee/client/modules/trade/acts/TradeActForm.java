@@ -71,8 +71,10 @@ public class TradeActForm extends AbstractFormInterceptor {
     Collection<UnboundSelector> unboundSelectors =
         UiHelper.getChildren(form.asWidget(), UnboundSelector.class);
     if (!BeeUtils.isEmpty(unboundSelectors)) {
-      for (UnboundSelector unboundSelector : unboundSelectors) {
-        unboundSelector.clearValue();
+      for (UnboundSelector us : unboundSelectors) {
+        if (DataUtils.isNewRow(row) || !us.hasRelatedView(VIEW_TRADE_ACT_TEMPLATES)) {
+          us.clearValue();
+        }
       }
     }
 

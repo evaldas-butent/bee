@@ -4,12 +4,10 @@ import com.google.gwt.dom.client.Element;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.event.shared.HandlerRegistration;
-import com.google.gwt.resources.client.ImageResource;
 import com.google.gwt.user.client.ui.HasEnabled;
 import com.google.gwt.user.client.ui.Widget;
 
 import com.butent.bee.client.BeeKeeper;
-import com.butent.bee.client.Global;
 import com.butent.bee.client.Settings;
 import com.butent.bee.client.dom.DomUtils;
 import com.butent.bee.client.event.Binder;
@@ -21,7 +19,6 @@ import com.butent.bee.client.style.StyleUtils;
 import com.butent.bee.client.ui.IdentifiableWidget;
 import com.butent.bee.client.ui.UiOption;
 import com.butent.bee.client.widget.FaLabel;
-import com.butent.bee.client.widget.Image;
 import com.butent.bee.client.widget.Label;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.font.FontAwesome;
@@ -76,7 +73,7 @@ public class HeaderImpl extends Flow implements HeaderView {
 
   private static final BeeLogger logger = LogUtils.getLogger(HeaderImpl.class);
 
-  private static final int HEIGHT = 30;
+  private static final int DEFAULT_HEIGHT = 30;
 
   private static final String STYLE_PREFIX = StyleUtils.CLASS_NAME_PREFIX + "Header-";
 
@@ -167,19 +164,19 @@ public class HeaderImpl extends Flow implements HeaderView {
     add(commandPanel);
 
     if (hasAction(Action.REFRESH, hasData, enabledActions, disabledActions)) {
-      add(createImage(Global.getImages().silverReload(), Action.REFRESH, hiddenActions));
+      add(createFa(FontAwesome.REFRESH, Action.REFRESH, hiddenActions));
     }
 
     if (hasAction(Action.FILTER, false, enabledActions, disabledActions)) {
-      add(createImage(Global.getImages().silverFilter(), Action.FILTER, hiddenActions));
+      add(createFa(FontAwesome.FILTER, Action.FILTER, hiddenActions));
     }
     if (hasAction(Action.REMOVE_FILTER, false, enabledActions, disabledActions)) {
-      add(createImage(Global.getImages().closeSmallRed(), Action.REMOVE_FILTER, hiddenActions));
+      add(createFa(FontAwesome.REMOVE, Action.REMOVE_FILTER, hiddenActions));
     }
 
     boolean canAdd = hasData && !readOnly && BeeKeeper.getUser().canCreateData(viewName);
     if (hasAction(Action.ADD, canAdd, enabledActions, disabledActions)) {
-      add(createImage(Global.getImages().silverAdd(), Action.ADD, hiddenActions));
+      add(createFa(FontAwesome.PLUS, Action.ADD, hiddenActions));
     }
 
     if (hasAction(Action.COPY, false, enabledActions, disabledActions)) {
@@ -188,26 +185,26 @@ public class HeaderImpl extends Flow implements HeaderView {
 
     boolean canDelete = hasData && !readOnly && BeeKeeper.getUser().canDeleteData(viewName);
     if (hasAction(Action.DELETE, canDelete, enabledActions, disabledActions)) {
-      add(createImage(Global.getImages().silverDelete(), Action.DELETE, hiddenActions));
+      add(createFa(FontAwesome.TRASH_O, Action.DELETE, hiddenActions));
     }
 
     if (hasAction(Action.BOOKMARK, false, enabledActions, disabledActions)) {
-      add(createImage(Global.getImages().silverBookmarkAdd(), Action.BOOKMARK, hiddenActions));
+      add(createFa(FontAwesome.BOOKMARK_O, Action.BOOKMARK, hiddenActions));
     }
 
     if (hasAction(Action.EDIT, false, enabledActions, disabledActions)) {
-      add(createImage(Global.getImages().silverEdit(), Action.EDIT, hiddenActions));
+      add(createFa(FontAwesome.EDIT, Action.EDIT, hiddenActions));
     }
     if (hasAction(Action.SAVE, false, enabledActions, disabledActions)) {
-      add(createImage(Global.getImages().silverSave(), Action.SAVE, hiddenActions));
+      add(createFa(FontAwesome.SAVE, Action.SAVE, hiddenActions));
     }
 
     if (hasAction(Action.EXPORT, false, enabledActions, disabledActions)) {
-      add(createImage(Global.getImages().excel(), Action.EXPORT, hiddenActions));
+      add(createFa(FontAwesome.FILE_EXCEL_O, Action.EXPORT, hiddenActions));
     }
 
     if (hasAction(Action.CONFIGURE, false, enabledActions, disabledActions)) {
-      add(createImage(Global.getImages().silverConfigure(), Action.CONFIGURE, hiddenActions));
+      add(createFa(FontAwesome.COG, Action.CONFIGURE, hiddenActions));
     }
 
     if (hasAction(Action.AUDIT, false, enabledActions, disabledActions)) {
@@ -215,7 +212,7 @@ public class HeaderImpl extends Flow implements HeaderView {
     }
 
     if (hasAction(Action.PRINT, false, enabledActions, disabledActions)) {
-      add(createImage(Global.getImages().silverPrint(), Action.PRINT, hiddenActions));
+      add(createFa(FontAwesome.PRINT, Action.PRINT, hiddenActions));
     }
 
     if (hasAction(Action.MENU, false, enabledActions, disabledActions)) {
@@ -223,7 +220,7 @@ public class HeaderImpl extends Flow implements HeaderView {
     }
 
     if (hasAction(Action.CLOSE, UiOption.isWindow(options), enabledActions, disabledActions)) {
-      add(createImage(Global.getImages().silverClose(), Action.CLOSE, hiddenActions));
+      add(createFa(FontAwesome.CLOSE, Action.CLOSE, hiddenActions));
     }
   }
 
@@ -234,7 +231,12 @@ public class HeaderImpl extends Flow implements HeaderView {
 
   @Override
   public int getHeight() {
-    return HEIGHT;
+    int height = BeeKeeper.getUser().getViewHeaderHeight();
+    if (height <= 0) {
+      height = Settings.getViewHeaderHeight();
+    }
+
+    return (height > 0) ? height : DEFAULT_HEIGHT;
   }
 
   @Override
@@ -281,7 +283,7 @@ public class HeaderImpl extends Flow implements HeaderView {
 
     Widget child = DomUtils.getChildQuietly(this, id);
     if (child instanceof HasEnabled) {
-      return child.isVisible() && ((HasEnabled) child).isEnabled();
+      return DomUtils.isVisible(child) && ((HasEnabled) child).isEnabled();
     } else {
       return false;
     }
@@ -396,12 +398,6 @@ public class HeaderImpl extends Flow implements HeaderView {
 
   private Widget createFa(FontAwesome fa, Action action, Set<Action> hiddenActions) {
     FaLabel control = new FaLabel(fa);
-    initControl(control, action, hiddenActions);
-    return control;
-  }
-
-  private Widget createImage(ImageResource image, Action action, Set<Action> hiddenActions) {
-    Image control = new Image(image);
     initControl(control, action, hiddenActions);
     return control;
   }

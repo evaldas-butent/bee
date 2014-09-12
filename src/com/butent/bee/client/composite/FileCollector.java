@@ -3,6 +3,7 @@ package com.butent.bee.client.composite;
 import com.google.common.base.Strings;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
+import com.google.common.net.MediaType;
 import com.google.gwt.dom.client.Element;
 import com.google.gwt.dom.client.Style.Visibility;
 import com.google.gwt.event.dom.client.ChangeEvent;
@@ -567,6 +568,10 @@ public class FileCollector extends HtmlTable implements DragOverHandler, DropHan
     Collection<FileInfo> files = new ArrayList<>(FILE_STACK);
     FILE_STACK.clear();
     return files;
+  }
+
+  public void setAccept(MediaType mediaType) {
+    inputFile.setAccept(mediaType);
   }
 
   public void setAccept(String accept) {

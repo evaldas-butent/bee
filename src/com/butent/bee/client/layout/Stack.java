@@ -41,7 +41,7 @@ public class Stack extends ComplexPanel implements ProvidesResize, RequiresResiz
   private static final class Header extends Composite implements HasClickHandlers, ProvidesResize,
       RequiresResize, IdentifiableWidget {
 
-    private final int size;
+    private int size;
 
     private Header(Widget child, int size) {
       super();
@@ -95,6 +95,18 @@ public class Stack extends ComplexPanel implements ProvidesResize, RequiresResiz
 
     private int getSize() {
       return size;
+    }
+
+    private boolean updateSize(int newSize) {
+      if (newSize > 0 && getSize() != newSize) {
+        size = newSize;
+        StyleUtils.setHeight(this, newSize);
+
+        return true;
+
+      } else {
+        return false;
+      }
     }
   }
 
@@ -246,7 +258,7 @@ public class Stack extends ComplexPanel implements ProvidesResize, RequiresResiz
   @Override
   public void onResize() {
     for (Widget child : getChildren()) {
-      if (child instanceof RequiresResize && child.isVisible()) {
+      if (child instanceof RequiresResize && DomUtils.isVisible(child)) {
         ((RequiresResize) child).onResize();
       }
     }
@@ -322,6 +334,20 @@ public class Stack extends ComplexPanel implements ProvidesResize, RequiresResiz
 
   public void showWidget(Widget child) {
     showWidget(getContentIndex(child));
+  }
+
+  public boolean updateHeaderSize(int size) {
+    boolean updated = false;
+
+    for (int i = 0; i < getStackSize(); i++) {
+      updated |= getHeader(i).updateSize(size);
+    }
+
+    if (updated) {
+      doLayout(false);
+    }
+
+    return updated;
   }
 
   protected boolean close() {

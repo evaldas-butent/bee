@@ -6,11 +6,11 @@
   width="700" height="80" heightUnit="%"
   >
   <FlowPanel class="flexBox-vertical">
-    <Table style="border-collapse: collapse; margin: 2ex 0 3ex 1em;"
-       cellStyle="padding-top: 1ex; padding-left: 1em;">
-      <col index="0" cellStyle="text-align: right;" />
-      <col index="2" cellStyle="text-align: right;" />
-
+    <br/>
+    <Table>
+      <col index="0" kind="label" />
+      <col index="2" kind="label" />
+      
       <row>
         <Label for="Login" />
         <TextLabel source="Login" class="bee-output" style="min-width: 150px;" />
@@ -34,6 +34,7 @@
       </row>
     </Table>
 
+    <br/>
     <TabbedPages class="flexible">
       <page>
         <text>=feeds</text>
@@ -42,7 +43,8 @@
 
       <page module="Mail">
         <text>=mailNotify</text>
-        <FlowPanel style="padding-left: 2em; padding-top: 2ex;">
+        <FlowPanel style="padding-left: 2em;">
+          <br/>
           <CheckBox source="MailAssignedTasks" module="Tasks" />
           <br/>
           <br/>
@@ -55,16 +57,34 @@
       
       <page>
         <text>=userInterface</text>
-        <FlowPanel style="padding-left: 2em; padding-top: 2ex;">
+        <FlowPanel style="padding-left: 2em;">
+          <br/>
           <CheckBox source="OpenInNewTab" />
           <br/>
           <br/>
           <CheckBox source="WorkspaceContinue" />
+          <br/>
+          <br/>
+
+          <Table>
+            <col index="0" cellStyle="padding-right: 6px;" />
+       
+            <row>
+              <Label for="ApplianceHeaderHeight" />
+              <InputSpinner source="ApplianceHeaderHeight" minValue="0" maxValue="99"
+                style="width: 40px;" />
+            </row>
+            <row>
+              <Label for="ViewHeaderHeight" />
+              <InputSpinner source="ViewHeaderHeight" minValue="0" maxValue="99"
+                style="width: 40px;"/>
+            </row>
+          </Table>
         </FlowPanel>
       </page>
 
       <page>
-        <text>=style</text>
+        <text>CSS</text>
         <SimplePanel>
           <InputArea source="Style" class="occupy-1" style="font-family: monospace;" />
         </SimplePanel>

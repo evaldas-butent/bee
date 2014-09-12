@@ -14,6 +14,7 @@ import com.google.gwt.user.client.ui.Widget;
 import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.Global;
 import com.butent.bee.client.data.HasDataTable;
+import com.butent.bee.client.data.Queries;
 import com.butent.bee.client.data.RowCallback;
 import com.butent.bee.client.dialog.DecisionCallback;
 import com.butent.bee.client.dialog.DialogConstants;
@@ -645,6 +646,32 @@ public class FormImpl extends Absolute implements FormView, PreviewHandler, Tabu
   }
 
   @Override
+  public int flush() {
+    if (hasData() && DataUtils.hasId(getActiveRow())
+        && DataUtils.sameId(getActiveRow(), getOldRow()) && validate(this, true)) {
+
+      return Queries.update(getViewName(), getDataColumns(), getOldRow(), getActiveRow(),
+          getChildrenForUpdate(), new RowCallback() {
+            @Override
+            public void onFailure(String... reason) {
+              notifySevere(reason);
+            }
+
+            @Override
+            public void onSuccess(BeeRow result) {
+              if (DataUtils.sameId(result, getActiveRow()) && !observesData()) {
+                updateRow(result, false);
+              }
+              RowUpdateEvent.fire(BeeKeeper.getBus(), getViewName(), result);
+            }
+          });
+
+    } else {
+      return BeeConst.INT_ERROR;
+    }
+  }
+
+  @Override
   public IsRow getActiveRow() {
     return activeRow;
   }
@@ -1268,24 +1295,22 @@ public class FormImpl extends Absolute implements FormView, PreviewHandler, Tabu
 
   @Override
   public void onEventPreview(NativePreviewEvent event, Node targetNode) {
-    if (isInteractive()) {
-      String type = event.getNativeEvent().getType();
+    String type = event.getNativeEvent().getType();
 
-      if (EventUtils.isClick(type)) {
-        if (!BeeUtils.isEmpty(getPreviewId())) {
-          setPreviewId(null);
-          event.cancel();
-        }
+    if (EventUtils.isClick(type)) {
+      if (!BeeUtils.isEmpty(getPreviewId())) {
+        setPreviewId(null);
+        event.cancel();
+      }
 
-      } else if (EventUtils.isMouseDown(type)) {
-        if (!BeeConst.isUndef(getActiveEditableIndex())) {
-          EditableWidget editableWidget = getEditableWidgets().get(getActiveEditableIndex());
+    } else if (EventUtils.isMouseDown(type)) {
+      if (!BeeConst.isUndef(getActiveEditableIndex()) && isInteractive()) {
+        EditableWidget editableWidget = getEditableWidgets().get(getActiveEditableIndex());
 
-          if (!editableWidget.getEditor().isOrHasPartner(targetNode)) {
-            if (!editableWidget.checkForUpdate(true)) {
-              setPreviewId(editableWidget.getWidgetId());
-              event.cancel();
-            }
+        if (!editableWidget.getEditor().isOrHasPartner(targetNode)) {
+          if (!editableWidget.checkForUpdate(true)) {
+            setPreviewId(editableWidget.getWidgetId());
+            event.cancel();
           }
         }
       }

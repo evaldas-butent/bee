@@ -28,8 +28,7 @@ public enum MenuService {
   @XmlEnumValue("new")
   NEW(EnumSet.of(RightsState.VIEW, RightsState.EDIT, RightsState.CREATE), true),
   @XmlEnumValue("parameters")
-  PARAMETERS(RightsState.VIEW, Sets.newHashSet(AdministrationConstants.VIEW_PARAMETERS,
-      AdministrationConstants.VIEW_USER_PARAMETERS)),
+  PARAMETERS(RightsState.VIEW),
   @XmlEnumValue("report")
   REPORT(RightsState.VIEW),
 

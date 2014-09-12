@@ -9,7 +9,7 @@
     <DateTime name="Date" notNull="true" label="=date" />
     <Relation name="Sender" relation="Emails" label="=mailSender" />
     <String name="Subject" precision="255" label="=mailSubject" />
-    <Numeric name="AttachmentCount" precision="2" />
+    <Numeric name="AttachmentCount" precision="3" />
     <Relation name="RawContent" relation="Files" notNull="true" editable="true" />
   </Fields>
 

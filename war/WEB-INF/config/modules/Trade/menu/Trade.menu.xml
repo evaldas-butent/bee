@@ -12,5 +12,5 @@ name="Trade" label="=trade" order="90" module="Trade"
   <Item name="Sales" label="=trdInvoices" service="grid" parameters="Sales" />
 
   <Item name="TradeParameters" label="=trdParameters" service="parameters" parameters="Trade"
-    separator="true" order="100" />
+    separator="true" order="100" module="Administration" />
 </Entry>

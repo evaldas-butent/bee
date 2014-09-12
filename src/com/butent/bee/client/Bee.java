@@ -42,6 +42,7 @@ import com.butent.bee.shared.logging.LogUtils;
 import com.butent.bee.shared.rights.Module;
 import com.butent.bee.shared.rights.RightsUtils;
 import com.butent.bee.shared.ui.UserInterface;
+import com.butent.bee.shared.ui.UserInterface.Component;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.Codec;
 
@@ -137,6 +138,11 @@ public class Bee implements EntryPoint, ClosingHandler {
     UserData userData = UserData.restore(data.get(Service.VAR_USER));
     BeeKeeper.getUser().setUserData(userData);
 
+    String userSettings = data.get(Component.SETTINGS.key());
+    if (!BeeUtils.isEmpty(userSettings)) {
+      BeeKeeper.getUser().loadSettings(userSettings);
+    }
+
     Module.setEnabledModules(data.get(Service.PROPERTY_MODULES));
 
     RightsUtils.setViewModules(Codec.deserializeMap(data.get(Service.PROPERTY_VIEW_MODULES)));
@@ -201,7 +207,6 @@ public class Bee implements EntryPoint, ClosingHandler {
             break;
 
           case SETTINGS:
-            BeeKeeper.getUser().loadSettings(serialized);
             break;
 
           case USERS:

@@ -2,7 +2,6 @@ package com.butent.bee.client.cli;
 
 import com.google.common.base.Splitter;
 import com.google.common.collect.Lists;
-import com.google.common.collect.Maps;
 import com.google.common.collect.Range;
 import com.google.common.collect.Sets;
 import com.google.common.collect.Table;
@@ -31,7 +30,6 @@ import com.google.gwt.resources.client.ImageResource;
 import com.google.gwt.storage.client.Storage;
 import com.google.gwt.storage.client.StorageEvent;
 import com.google.gwt.user.client.Timer;
-import com.google.gwt.user.client.ui.TextBox;
 import com.google.gwt.user.client.ui.Widget;
 
 import static com.butent.bee.shared.modules.administration.AdministrationConstants.*;
@@ -164,6 +162,7 @@ import com.butent.bee.shared.data.value.BooleanValue;
 import com.butent.bee.shared.data.view.DataInfo;
 import com.butent.bee.shared.font.FontAwesome;
 import com.butent.bee.shared.html.Attributes;
+import com.butent.bee.shared.html.Tags;
 import com.butent.bee.shared.html.builder.elements.Input;
 import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.io.FileInfo;
@@ -195,9 +194,14 @@ import com.butent.bee.shared.websocket.messages.ProgressMessage;
 import com.butent.bee.shared.websocket.messages.ShowMessage;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.EnumMap;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.LinkedHashMap;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -323,6 +327,9 @@ public final class CliWorker {
 
     } else if (BeeUtils.inList(z, "dir", "file", "get", "download", "src")) {
       getResource(arr);
+
+    } else if (z.startsWith("el") && !args.isEmpty()) {
+      showElement(v, arr, errorPopup);
 
     } else if ("eval".equals(z) && !args.isEmpty()) {
       doEval(args);
@@ -580,8 +587,8 @@ public final class CliWorker {
       private final String function;
       private Axis axis;
 
-      private final EnumMap<Axis, Double> from = Maps.newEnumMap(Axis.class);
-      private final EnumMap<Axis, Double> to = Maps.newEnumMap(Axis.class);
+      private final EnumMap<Axis, Double> from = new EnumMap<>(Axis.class);
+      private final EnumMap<Axis, Double> to = new EnumMap<>(Axis.class);
 
       private Style style;
 
@@ -892,7 +899,7 @@ public final class CliWorker {
     String cmnd;
 
     boolean all;
-    Set<Long> userIds = Sets.newHashSet();
+    Set<Long> userIds = new HashSet<>();
 
     if (args.startsWith(BeeConst.STRING_ASTERISK)) {
       all = true;
@@ -994,25 +1001,25 @@ public final class CliWorker {
       }
     }
 
-    List<Integer> lia = Lists.newArrayList();
-    List<Long> lla = Lists.newArrayList();
-    List<Double> lda = Lists.newArrayList();
-    List<String> lsa = Lists.newArrayList();
+    List<Integer> lia = new ArrayList<>();
+    List<Long> lla = new ArrayList<>();
+    List<Double> lda = new ArrayList<>();
+    List<String> lsa = new ArrayList<>();
 
-    List<Integer> lil = Lists.newLinkedList();
-    List<Long> lll = Lists.newLinkedList();
-    List<Double> ldl = Lists.newLinkedList();
-    List<String> lsl = Lists.newLinkedList();
+    List<Integer> lil = new LinkedList<>();
+    List<Long> lll = new LinkedList<>();
+    List<Double> ldl = new LinkedList<>();
+    List<String> lsl = new LinkedList<>();
 
-    Map<Integer, String> mih = Maps.newHashMap();
-    Map<Long, String> mlh = Maps.newHashMap();
-    Map<Double, String> mdh = Maps.newHashMap();
-    Map<String, String> msh = Maps.newHashMap();
+    Map<Integer, String> mih = new HashMap<>();
+    Map<Long, String> mlh = new HashMap<>();
+    Map<Double, String> mdh = new HashMap<>();
+    Map<String, String> msh = new HashMap<>();
 
-    Map<Integer, String> mil = Maps.newLinkedHashMap();
-    Map<Long, String> mll = Maps.newLinkedHashMap();
-    Map<Double, String> mdl = Maps.newLinkedHashMap();
-    Map<String, String> msl = Maps.newLinkedHashMap();
+    Map<Integer, String> mil = new LinkedHashMap<>();
+    Map<Long, String> mll = new LinkedHashMap<>();
+    Map<Double, String> mdl = new LinkedHashMap<>();
+    Map<String, String> msl = new LinkedHashMap<>();
 
     for (int i = 0; i < size; i++) {
       String s = Integer.toString(i);
@@ -1158,7 +1165,7 @@ public final class CliWorker {
     BeeKeeper.getRpc().makeGetRequest(Service.GET_DSNS, new ResponseCallback() {
       @Override
       public void onResponse(ResponseObject response) {
-        final List<String> dsns = Lists.newArrayList();
+        final List<String> dsns = new ArrayList<>();
         String current = null;
 
         if (response.hasResponse()) {
@@ -1177,7 +1184,7 @@ public final class CliWorker {
           }
         }
         if (dsns.isEmpty()) {
-          Global.showError(Lists.newArrayList("No DSN's available"));
+          Global.showError(Collections.singletonList("No DSN's available"));
 
         } else if (dsns.size() == 1) {
           inform("Only one DSN is available:", dsns.get(0));
@@ -1232,14 +1239,14 @@ public final class CliWorker {
     }
 
     Splitter splitter = Splitter.on(BeeConst.CHAR_SEMICOLON).omitEmptyStrings().trimResults();
-    List<String> input = Lists.newArrayList(splitter.split(args));
+    List<String> input = splitter.splitToList(args);
 
     if (BeeUtils.isEmpty(input)) {
       showError(errorPopup, "Query not specified");
       return;
     }
 
-    Map<String, String> params = Maps.newHashMap();
+    Map<String, String> params = new HashMap<>();
     params.put(Service.VAR_JDBC_QUERY, input.get(0));
 
     if (input.size() > 1) {
@@ -1339,7 +1346,7 @@ public final class CliWorker {
           ResponseHandler.callback(ArrayUtils.joinWords(arr)));
 
     } else {
-      List<Property> info = Lists.newArrayList();
+      List<Property> info = new ArrayList<>();
       for (int i = 1; i < arr.length; i++) {
         String value = Localized.translate(arr[i]);
         PropertyUtils.addProperty(info, arr[i], BeeUtils.notEmpty(value, BeeConst.NULL));
@@ -1728,7 +1735,7 @@ public final class CliWorker {
       @Override
       public void onResponse(ResponseObject response) {
         if (response.hasErrors()) {
-          Global.showError(Lists.newArrayList(response.getErrors()));
+          Global.showError(Arrays.asList(response.getErrors()));
         } else if (response.hasResponse(SimpleRowSet.class)) {
           showSimpleRowSet(caption, SimpleRowSet.restore(response.getResponseAsString()));
         } else {
@@ -1833,7 +1840,7 @@ public final class CliWorker {
   }
 
   private static void inform(String... messages) {
-    List<String> lst = Lists.newArrayList(messages);
+    List<String> lst = Arrays.asList(messages);
     Global.showInfo(lst);
   }
 
@@ -2280,7 +2287,7 @@ public final class CliWorker {
   private static void showChoice(String[] arr) {
     String caption = null;
     String prompt = null;
-    List<String> options = Lists.newArrayList();
+    List<String> options = new ArrayList<>();
     int defaultValue = BeeConst.UNDEF;
     int timeout = BeeConst.UNDEF;
     String cancelHtml = null;
@@ -2364,7 +2371,7 @@ public final class CliWorker {
   }
 
   private static void showColor(String[] arr) {
-    Map<String, String> output = Maps.newHashMap();
+    Map<String, String> output = new HashMap<>();
 
     if (arr.length > 1) {
       for (int i = 1; i < arr.length; i++) {
@@ -2398,7 +2405,7 @@ public final class CliWorker {
       return;
     }
 
-    List<String> keys = Lists.newArrayList(output.keySet());
+    List<String> keys = new ArrayList<>(output.keySet());
     Collections.sort(keys);
 
     HtmlTable table = new HtmlTable();
@@ -2454,7 +2461,7 @@ public final class CliWorker {
         }
       }
 
-      List<DataInfo> list = Lists.newArrayList();
+      List<DataInfo> list = new ArrayList<>();
       if (BeeUtils.isEmpty(viewName)) {
         list.addAll(Data.getDataInfoProvider().getViews());
       } else {
@@ -2536,7 +2543,7 @@ public final class CliWorker {
       d = new JustDate(t);
     }
 
-    List<Property> lst = Lists.newArrayList();
+    List<Property> lst = new ArrayList<>();
     if (dtf != null) {
       lst.add(new Property("Format", dtf.getPattern()));
     }
@@ -2677,29 +2684,34 @@ public final class CliWorker {
       return;
     }
 
-    JavaScriptObject obj = Document.get().getElementById(arr[1]);
-    if (obj == null) {
+    Element el = Document.get().getElementById(arr[1]);
+    if (el == null) {
       showError(errorPopup, arr[1], "element id not found");
       return;
     }
 
-    String patt = ArrayUtils.getQuietly(arr, 2);
-    JsArrayString prp = JsUtils.getProperties(obj, patt);
+    if (v.startsWith("id")) {
+      String patt = ArrayUtils.getQuietly(arr, 2);
+      JsArrayString prp = JsUtils.getProperties(el, patt);
 
-    if (JsUtils.isEmpty(prp)) {
-      showError(errorPopup, v, "properties not found");
-      return;
+      if (JsUtils.isEmpty(prp)) {
+        showError(errorPopup, v, "properties not found");
+        return;
+      }
+
+      JsData<?> table = new JsData<TableColumn>(prp, "property", "type", "value");
+
+      sortTable(table, 0);
+      showTable(v, table);
+
+    } else {
+      showPropData(v, DomUtils.getElementInfo(el));
     }
-
-    JsData<?> table = new JsData<TableColumn>(prp, "property", "type", "value");
-
-    sortTable(table, 0);
-    showTable(v, table);
   }
 
   private static void showError(boolean popup, String... messages) {
     if (popup) {
-      Global.showError(null, Lists.newArrayList(messages), null, "kthxbai");
+      Global.showError(null, Arrays.asList(messages), null, "kthxbai");
     } else {
       logger.severe(ArrayUtils.joinWords(messages));
     }
@@ -2816,7 +2828,7 @@ public final class CliWorker {
     StyleUtils.setFontFamily(panel, FontAwesome.FAMILY);
     StyleUtils.setFontSize(panel, FontSize.MEDIUM);
 
-    Set<String> context = Sets.newHashSet();
+    Set<String> context = new HashSet<>();
     if (!BeeUtils.isEmpty(names)) {
       for (String s : NameUtils.NAME_SPLITTER.split(names)) {
         context.add(s);
@@ -2832,7 +2844,10 @@ public final class CliWorker {
     if (!BeeUtils.isEmpty(args)) {
       if (args.startsWith("4.1")) {
         range = Range.closed(FontAwesome.SPACE_SHUTTLE.getCode(), FontAwesome.BOMB.getCode());
+      } else if (args.startsWith("4.2")) {
+        range = Range.closed(FontAwesome.SOCCER_BALL_O.getCode(), FontAwesome.MEANPATH.getCode());
       }
+
       styles.addAll(StyleUtils.parseStyles(args));
     }
 
@@ -3108,14 +3123,14 @@ public final class CliWorker {
     HtmlTable table = new HtmlTable();
     table.setBorderSpacing(3);
 
-    TextBox widget;
+    CustomWidget widget;
 
     int row = 0;
     for (Input.Type type : Input.Type.values()) {
       table.setWidget(row, 0, new Label(type.getKeyword()));
 
       if (Features.supportsInputType(type.getKeyword())) {
-        widget = new TextBox();
+        widget = new CustomWidget(DomUtils.createElement(Tags.INPUT));
         DomUtils.setInputType(widget, type);
 
         if (Input.Type.SEARCH.equals(type)) {
@@ -3336,7 +3351,7 @@ public final class CliWorker {
     }
 
     for (String msg : Splitter.on(';').omitEmptyStrings().trimResults().split(args)) {
-      List<String> lst = Lists.newArrayList();
+      List<String> lst = new ArrayList<>();
       for (String line : Splitter.on(',').trimResults().split(msg)) {
         lst.add(line);
       }
@@ -3403,7 +3418,7 @@ public final class CliWorker {
 
     final long now = System.currentTimeMillis();
 
-    final List<Prog> list = Lists.newArrayList();
+    final List<Prog> list = new ArrayList<>();
     for (int i = 0; i < count; i++) {
       double max = BeeUtils.randomDouble(100, 10000);
       long start = now + BeeUtils.randomInt(0, maxDuration / 2);
@@ -3500,7 +3515,7 @@ public final class CliWorker {
       return;
     }
 
-    Queries.getRowSet(VIEW_CURRENCIES, Lists.newArrayList(COL_CURRENCY_NAME),
+    Queries.getRowSet(VIEW_CURRENCIES, Collections.singletonList(COL_CURRENCY_NAME),
         new Queries.RowSetCallback() {
           @Override
           public void onSuccess(BeeRowSet result) {
@@ -3810,7 +3825,7 @@ public final class CliWorker {
       showPropData("Support", data);
 
     } else {
-      List<Property> filtered = Lists.newArrayList();
+      List<Property> filtered = new ArrayList<>();
       for (Property p : data) {
         if (BeeUtils.containsSame(p.getName(), args) || p.getValue().equalsIgnoreCase(args)) {
           filtered.add(p);
@@ -4026,7 +4041,7 @@ public final class CliWorker {
       i++;
     }
 
-    List<CssUnit> units = Lists.newArrayList();
+    List<CssUnit> units = new ArrayList<>();
     if (value == null) {
       value = 1.0;
     }
@@ -4201,7 +4216,7 @@ public final class CliWorker {
 
   private static void sortTable(IsTable<?, ?> table, int col) {
     if (table.getNumberOfRows() > 1) {
-      List<Pair<Integer, Boolean>> sortInfo = Lists.newArrayList();
+      List<Pair<Integer, Boolean>> sortInfo = new ArrayList<>();
       sortInfo.add(Pair.of(col, true));
 
       table.sort(sortInfo, Collator.DEFAULT);
@@ -4255,7 +4270,7 @@ public final class CliWorker {
       JsStyleSheetList sheets = JsBrowser.getDocument().getStyleSheets();
       int sheetCnt = (sheets == null) ? 0 : sheets.getLength();
 
-      List<ExtendedProperty> lst = Lists.newArrayList();
+      List<ExtendedProperty> lst = new ArrayList<>();
       PropertyUtils.addExtended(lst, "sheets", "count", sheetCnt);
 
       for (int i = 0; i < sheetCnt; i++) {
@@ -4290,27 +4305,45 @@ public final class CliWorker {
         return;
       }
 
-      List<Property> info = Lists.newArrayList();
-      List<Property> lst;
+      List<Property> info = new ArrayList<>();
 
-      if (elem.getStyle() != null) {
-        lst = JsUtils.getInfo(elem.getStyle());
+      if (arr.length > 2) {
+        for (int i = 2; i < arr.length; i++) {
+          String key = arr[i];
+
+          String value = elem.getStyle().getProperty(key);
+          if (value != null) {
+            info.add(new Property(key, value));
+          }
+
+          value = ComputedStyles.get(elem, key);
+          if (!BeeUtils.isEmpty(value)) {
+            info.add(new Property("computed " + key, value));
+          }
+        }
+
+      } else {
+        List<Property> lst;
+
+        if (elem.getStyle() != null) {
+          lst = JsUtils.getInfo(elem.getStyle());
+          if (!BeeUtils.isEmpty(lst)) {
+            info.add(new Property("element style", BeeUtils.bracket(lst.size())));
+            info.addAll(lst);
+          }
+        }
+
+        lst = new ComputedStyles(elem).getInfo();
         if (!BeeUtils.isEmpty(lst)) {
-          info.add(new Property("element style", BeeUtils.bracket(lst.size())));
+          info.add(new Property("computed style", BeeUtils.bracket(lst.size())));
           info.addAll(lst);
         }
       }
 
-      lst = new ComputedStyles(elem).getInfo();
-      if (!BeeUtils.isEmpty(lst)) {
-        info.add(new Property("computed style", BeeUtils.bracket(lst.size())));
-        info.addAll(lst);
-      }
-
       if (BeeUtils.isEmpty(info)) {
-        inform("element id", arr[1], "has no style");
+        inform("id", arr[1], "has no style", ArrayUtils.join(BeeConst.STRING_SPACE, arr, 2));
       } else {
-        showPropData(BeeUtils.joinWords("Element", arr[1], "style"), info);
+        showPropData(v, info);
       }
       return;
     }

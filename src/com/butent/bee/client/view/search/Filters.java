@@ -3,6 +3,7 @@ package com.butent.bee.client.view.search;
 import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Multimap;
+import com.google.common.primitives.Longs;
 import com.google.gwt.core.client.Scheduler;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
@@ -112,7 +113,7 @@ public class Filters implements HasExtendedInfo {
 
     @Override
     public int hashCode() {
-      return Long.hashCode(getId());
+      return Longs.hashCode(getId());
     }
 
     private boolean containsAnyComponent(Collection<String> names) {

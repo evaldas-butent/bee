@@ -149,6 +149,7 @@ public final class StyleUtils {
   public static final String VALUE_FIXED = "fixed";
   public static final String VALUE_HIDDEN = "hidden";
   public static final String VALUE_INHERIT = "inherit";
+  public static final String VALUE_NONE = "none";
 
   public static final String SUFFIX_HORIZONTAL = "horizontal";
   public static final String SUFFIX_VERTICAL = "vertical";

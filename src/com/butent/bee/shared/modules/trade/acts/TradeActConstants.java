@@ -7,6 +7,8 @@ public final class TradeActConstants {
   public static final String SVC_GET_ITEMS_FOR_SELECTION = "GetItemsForSelection";
   public static final String SVC_COPY_ACT = "CopyAct";
   public static final String SVC_SAVE_ACT_AS_TEMPLATE = "SaveActAsTemplate";
+  public static final String SVC_GET_TEMPLATE_ITEMS_AND_SERVICES = "GetTemplateItemsAndServices";
+  public static final String SVC_GET_ITEMS_FOR_RETURN = "GetItemsForReturn";
 
   public static final String TBL_TRADE_ACTS = "TradeActs";
   public static final String TBL_TRADE_ACT_ITEMS = "TradeActItems";
@@ -41,6 +43,7 @@ public final class TradeActConstants {
   public static final String COL_TA_VEHICLE = "Vehicle";
   public static final String COL_TA_DRIVER = "Driver";
   public static final String COL_TA_NOTES = "Notes";
+  public static final String COL_TA_PARENT = "Parent";
 
   public static final String COL_TA_TEMPLATE_NAME = "Template";
 
@@ -63,6 +66,9 @@ public final class TradeActConstants {
 
   public static final String PRP_QUANTITY = "qty";
   public static final String PRP_WAREHOUSE_PREFIX = "w-";
+
+  public static final String PRM_IMPORT_TA_ITEM_RX = "ImportActItemRegEx";
+  public static final String RX_IMPORT_ACT_ITEM = "^(.+);(.*);(\\d+\\.*\\d*)$";
 
   public static void register() {
     EnumUtils.register(TradeActKind.class);

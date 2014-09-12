@@ -14,6 +14,6 @@ name="TransportClassifiers" label="=classifiers" parent="Transport" order="20" s
   <Item name="Fueltypes" label="=trFuelTypes" service="grid" parameters="FuelTypes" />
   <Item name="TransportGroups" label="=trTransportGroups" service="grid" parameters="TransportGroups" />
  
-  <Item name="Parameters" label="=trParameters" service="parameters" parameters="Transport"  separator="true"
-    module="Transport.Administration" />
+  <Item name="Parameters" label="=trParameters" service="parameters" parameters="Transport"
+    separator="true" module="Transport.Administration" />
 </Entry>

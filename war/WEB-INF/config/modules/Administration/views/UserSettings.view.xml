@@ -38,6 +38,9 @@
     <SimpleColumn name="WorkspaceContinue" />
     <SimpleColumn name="LastWorkspace" />
 
+    <SimpleColumn name="ApplianceHeaderHeight" />
+    <SimpleColumn name="ViewHeaderHeight" />
+
     <SimpleColumn name="Style" />
   </Columns>
   
