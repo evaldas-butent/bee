@@ -17,6 +17,7 @@ import static com.butent.bee.shared.modules.service.ServiceConstants.*;
 import static com.butent.bee.shared.modules.tasks.TaskConstants.*;
 
 import com.butent.bee.client.BeeKeeper;
+import com.butent.bee.client.Global;
 import com.butent.bee.client.communication.ParameterList;
 import com.butent.bee.client.communication.ResponseCallback;
 import com.butent.bee.client.data.Queries;
@@ -40,6 +41,7 @@ import com.butent.bee.client.ui.IdentifiableWidget;
 import com.butent.bee.client.ui.Opener;
 import com.butent.bee.client.view.ViewCallback;
 import com.butent.bee.client.widget.CustomDiv;
+import com.butent.bee.client.widget.Image;
 import com.butent.bee.client.widget.Mover;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
@@ -302,8 +304,11 @@ final class ServiceCalendar extends TimeBoard {
         SvcCalendarFilterHelper.openDialog(objects, getFilterDialogCallback());
         break;
       case REMOVE_FILTER:
-        // TODO:
-        render(false);
+        setFilterData(null);
+        setFiltered(false);
+        getFilterLabel().getElement().setInnerText(BeeConst.STRING_EMPTY);
+        getRemoveFilter().setVisible(false);
+        refresh();
         break;
       default:
         super.handleAction(action);
@@ -443,14 +448,24 @@ final class ServiceCalendar extends TimeBoard {
     ParameterList params = ServiceKeeper.createArgs(SVC_GET_CALENDAR_DATA);
     if (fData != null) {
       params.addDataItem(VAR_SERVICE_FILTER_DATA, Codec.beeSerialize(fData));
+      setFiltered(true);
     }
+
+    getHeader().clearCommandPanel();
+    getHeader().addCommandItem(new Image(Global.getImages().loading()));
 
     BeeKeeper.getRpc().makeRequest(params,
         new ResponseCallback() {
           @Override
           public void onResponse(ResponseObject response) {
+            getHeader().clearCommandPanel();
             if (setData(response)) {
               render(false);
+              if (isFiltered()) {
+                getHeader().addCommandItem(getFilterLabel());
+                getHeader().addCommandItem(getRemoveFilter());
+                getRemoveFilter().setVisible(true);
+              }
             }
           }
         });
@@ -1037,7 +1052,7 @@ final class ServiceCalendar extends TimeBoard {
       }
 
       @Override
-      public void onFilter(Map<ServiceFilterDataType, List<Long>> selectedData) {
+      public void onFilter(Map<ServiceFilterDataType, List<Long>> selectedData, String label) {
         boolean emptySet = true;
 
         for (List<Long> value : selectedData.values()) {
@@ -1056,6 +1071,7 @@ final class ServiceCalendar extends TimeBoard {
         }
 
         setFilterData(fData);
+        getFilterLabel().getElement().setInnerText(label);
         refresh();
       }
 

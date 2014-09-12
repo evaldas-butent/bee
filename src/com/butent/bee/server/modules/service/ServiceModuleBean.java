@@ -661,19 +661,19 @@ public class ServiceModuleBean implements BeeModule {
 
       switch (type) {
         case ADDRESS:
-          SqlUtils.and(where, SqlUtils.inList(TBL_SERVICE_OBJECTS,
+          where = SqlUtils.and(where, SqlUtils.inList(TBL_SERVICE_OBJECTS,
               sys.getIdName(TBL_SERVICE_OBJECTS), ids));
           break;
         case CATEGORY:
-          SqlUtils.and(where, SqlUtils.inList(TBL_SERVICE_OBJECTS,
+          where = SqlUtils.and(where, SqlUtils.inList(TBL_SERVICE_OBJECTS,
               COL_SERVICE_CATEGORY, ids));
           break;
         case CONTRACTOR:
-          SqlUtils.and(where, SqlUtils.inList(TBL_SERVICE_OBJECTS,
+          where = SqlUtils.and(where, SqlUtils.inList(TBL_SERVICE_OBJECTS,
               COL_SERVICE_CONTRACTOR, ids));
           break;
         case CUSTOMER:
-          SqlUtils.and(where, SqlUtils.inList(TBL_SERVICE_OBJECTS,
+          where = SqlUtils.and(where, SqlUtils.inList(TBL_SERVICE_OBJECTS,
               COL_SERVICE_CUSTOMER, ids));
           break;
         default:

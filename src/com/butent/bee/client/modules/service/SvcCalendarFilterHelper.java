@@ -1,5 +1,6 @@
 package com.butent.bee.client.modules.service;
 
+import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Multimap;
 import com.google.gwt.event.dom.client.ClickEvent;
@@ -18,6 +19,7 @@ import com.butent.bee.client.layout.Simple;
 import com.butent.bee.client.layout.Split;
 import com.butent.bee.client.style.StyleUtils;
 import com.butent.bee.client.widget.Button;
+import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.i18n.LocalizableConstants;
 import com.butent.bee.shared.i18n.Localized;
@@ -33,7 +35,7 @@ final class SvcCalendarFilterHelper {
   interface DialogCallback {
     void onClear();
 
-    void onFilter(Map<ServiceFilterDataType, List<Long>> selectedData);
+    void onFilter(Map<ServiceFilterDataType, List<Long>> selectedData, String label);
 
     void onSelectionChange(HasWidgets dataContainer);
   }
@@ -174,15 +176,18 @@ final class SvcCalendarFilterHelper {
       public void onClick(ClickEvent event) {
         filterDialog.close();
         Map<ServiceFilterDataType, List<Long>> selectedData = Maps.newHashMap();
-
+        String filterName = BeeConst.STRING_EMPTY;
+        List<String> names = Lists.newArrayList();
         for (Widget widget : dataContainer) {
           if (widget instanceof SvcFilterDataWidget) {
             SvcFilterDataWidget filter = (SvcFilterDataWidget) widget;
             selectedData.put(filter.getDataType(), filter.getSelectedDataIds());
+            names.add(filter.getFilterLabel());
           }
         }
 
-        callback.onFilter(selectedData);
+        filterName = BeeUtils.join(BeeConst.STRING_COMMA, names);
+        callback.onFilter(selectedData, filterName);
       }
     };
   }

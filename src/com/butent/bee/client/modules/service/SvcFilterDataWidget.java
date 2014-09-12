@@ -499,8 +499,25 @@ public class SvcFilterDataWidget extends Flow implements
     }
   }
 
-  ServiceConstants.ServiceFilterDataType getDataType() {
+  ServiceFilterDataType getDataType() {
     return dataType;
+  }
+
+  String getFilterLabel() {
+    String label = BeeConst.STRING_EMPTY;
+
+    List<Element> children = DomUtils.getVisibleChildren(selectedContainer);
+    List<String> labels = Lists.newArrayList();
+
+    for (Element child : children) {
+      ServiceObjectWrapper object = getDataByIndex(DomUtils.getDataIndexInt(child));
+      if (object != null) {
+        labels.add(object.getFilterListName(dataType));
+      }
+    }
+
+    label = BeeUtils.join(BeeConst.STRING_COMMA, labels);
+    return label;
   }
 
   List<Long> getSelectedDataIds() {
