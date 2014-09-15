@@ -1470,9 +1470,7 @@ public class GridImpl extends Absolute implements GridView, EditEndEvent.Handler
 
   @Override
   public void onRowCountChange(RowCountChangeEvent event) {
-    String summary =
-        (event.getCount() > 0) ? BeeUtils.toString(event.getCount()) : BeeConst.STRING_EMPTY;
-    SummaryChangeEvent.fire(this, summary);
+    SummaryChangeEvent.fire(this, event.getCount());
   }
 
   @Override

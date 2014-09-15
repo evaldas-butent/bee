@@ -1172,10 +1172,11 @@
 }
 .bee-TabbedPages-tabSummary {
   display: inline-block;
-  padding-left: 1px;
   font-size: 12px;
   line-height: normal;
   vertical-align: super;
+  position: relative;
+  left: 5px;
 }
 
 .bee-TabbedPages-content {

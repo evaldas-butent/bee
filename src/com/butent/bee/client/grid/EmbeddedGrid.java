@@ -18,6 +18,7 @@ import com.butent.bee.client.ui.HasFosterParent;
 import com.butent.bee.client.view.HasGridView;
 import com.butent.bee.client.view.grid.GridView;
 import com.butent.bee.client.view.grid.interceptor.GridInterceptor;
+import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.utils.BeeUtils;
 
 import java.util.ArrayList;
@@ -25,7 +26,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-public abstract class EmbeddedGrid extends Simple implements EnablableWidget, HasFosterParent,
+abstract class EmbeddedGrid extends Simple implements EnablableWidget, HasFosterParent,
     ParentRowEvent.Handler, HasGridView, ReadyEvent.HasReadyHandlers, HasSummaryChangeHandlers {
 
   private final String gridName;
@@ -40,7 +41,7 @@ public abstract class EmbeddedGrid extends Simple implements EnablableWidget, Ha
   private final List<SummaryChangeEvent.Handler> pendingSummaryChangeHandlers = new ArrayList<>();
   private final Map<EventHandler, HandlerRegistration> gridHandlerRegistry = new HashMap<>();
 
-  protected EmbeddedGrid(String gridName, GridFactory.GridOptions gridOptions) {
+  EmbeddedGrid(String gridName, GridFactory.GridOptions gridOptions) {
     super();
 
     this.gridName = gridName;
@@ -141,6 +142,11 @@ public abstract class EmbeddedGrid extends Simple implements EnablableWidget, Ha
       }
 
       pendingSummaryChangeHandlers.clear();
+
+      int rowCount = gridView.getGrid().getRowCount();
+      if (!BeeConst.isUndef(rowCount)) {
+        SummaryChangeEvent.fire(gridView, rowCount);
+      }
     }
   }
 

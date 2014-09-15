@@ -6,6 +6,9 @@ import com.google.gwt.user.client.ui.HasOneWidget;
 import com.google.gwt.user.client.ui.HasWidgets;
 import com.google.gwt.user.client.ui.Widget;
 
+import com.butent.bee.shared.BeeConst;
+import com.butent.bee.shared.utils.BeeUtils;
+
 public class SummaryChangeEvent extends GwtEvent<SummaryChangeEvent.Handler> {
 
   public interface Handler extends EventHandler {
@@ -34,6 +37,11 @@ public class SummaryChangeEvent extends GwtEvent<SummaryChangeEvent.Handler> {
     }
 
     return null;
+  }
+
+  public static void fire(HasSummaryChangeHandlers source, int size) {
+    String summary = (size > 0) ? BeeUtils.toString(size) : BeeConst.STRING_EMPTY;
+    fire(source, summary);
   }
 
   public static void fire(HasSummaryChangeHandlers source, String summary) {
