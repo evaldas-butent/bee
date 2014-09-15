@@ -831,9 +831,6 @@ public class ImportBean {
 
     commitData(io, tmp, null, progress, status, !usr.canCreateData(io.getViewName()));
 
-    if (!BeeUtils.isEmpty(progress)) {
-      Endpoint.closeProgress(progress);
-    }
     qs.sqlDropTemp(tmp);
 
     if (test) {

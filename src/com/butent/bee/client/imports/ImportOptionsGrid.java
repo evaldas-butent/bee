@@ -60,6 +60,7 @@ import com.butent.bee.shared.time.TimeUtils;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.Codec;
 import com.butent.bee.shared.utils.EnumUtils;
+import com.butent.bee.shared.websocket.messages.ProgressMessage;
 
 import java.util.List;
 import java.util.Map;
@@ -69,14 +70,24 @@ import java.util.TreeMap;
 
 public class ImportOptionsGrid extends AbstractGridInterceptor implements ClickHandler {
 
-  private static final String STYLE_UPDATE_RATES_PREFIX = "bee-co-updateRates-";
+  private final class ImportCallback implements ResponseCallback {
 
-  private final Image loading = new Image(Global.getImages().loading());
-  private final Button importButton = new Button(Localized.getConstants().dataImport(), this);
+    private final String progressId;
 
-  private final ResponseCallback importCallback = new ResponseCallback() {
+    public ImportCallback() {
+      this(null);
+    }
+
+    public ImportCallback(String progressId) {
+      this.progressId = progressId;
+    }
+
     @Override
     public void onResponse(ResponseObject response) {
+      if (progressId != null) {
+        Endpoint.removeProgress(progressId);
+        Endpoint.send(ProgressMessage.close(progressId));
+      }
       setImporting(false);
       Assert.notNull(response);
 
@@ -125,7 +136,12 @@ public class ImportOptionsGrid extends AbstractGridInterceptor implements ClickH
       }
       Global.showModalWidget(table);
     }
-  };
+  }
+
+  private static final String STYLE_UPDATE_RATES_PREFIX = "bee-co-updateRates-";
+
+  private final Image loading = new Image(Global.getImages().loading());
+  private final Button importButton = new Button(Localized.getConstants().dataImport(), this);
 
   @Override
   public GridInterceptor getInstance() {
@@ -245,7 +261,7 @@ public class ImportOptionsGrid extends AbstractGridInterceptor implements ClickH
                 progressId = null;
               }
               if (progressId == null) {
-                BeeKeeper.getRpc().makePostRequest(args, importCallback);
+                BeeKeeper.getRpc().makePostRequest(args, new ImportCallback());
               } else {
                 Endpoint.enqueuePropgress(progressId, new Consumer<String>() {
                   @Override
@@ -255,7 +271,7 @@ public class ImportOptionsGrid extends AbstractGridInterceptor implements ClickH
                     } else {
                       Endpoint.cancelProgress(progressId);
                     }
-                    BeeKeeper.getRpc().makePostRequest(args, importCallback);
+                    BeeKeeper.getRpc().makePostRequest(args, new ImportCallback(progressId));
                   }
                 });
               }
@@ -335,7 +351,7 @@ public class ImportOptionsGrid extends AbstractGridInterceptor implements ClickH
         args.addDataItem(VAR_DATE_LOW, lowDate.getDays());
         args.addDataItem(VAR_DATE_HIGH, hightDate.getDays());
 
-        BeeKeeper.getRpc().makePostRequest(args, importCallback);
+        BeeKeeper.getRpc().makePostRequest(args, new ImportCallback());
       }
     });
   }
