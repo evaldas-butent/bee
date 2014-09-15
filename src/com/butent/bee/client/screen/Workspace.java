@@ -1023,7 +1023,7 @@ public class Workspace extends TabbedPages implements CaptionChangeEvent.Handler
     TilePanel panel = new TilePanel(this);
     TabWidget tab = new TabWidget(Localized.getConstants().newTab());
 
-    insert(panel, tab, before);
+    insert(panel, tab, NO_SUMMARY, before);
 
     selectPage(before, SelectionOrigin.INSERT);
     return panel;

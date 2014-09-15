@@ -89,6 +89,10 @@ public class DialogBox extends Popup implements Printable {
     }
   }
 
+  public void addCommand(Widget widget) {
+    addAction(null, widget);
+  }
+
   public void addDefaultCloseBox() {
     addCloseBox(Global.getImages().silverClose());
   }

@@ -27,7 +27,9 @@ import com.butent.bee.client.event.EventUtils;
 import com.butent.bee.client.event.Previewer.PreviewConsumer;
 import com.butent.bee.client.event.logical.ReadyEvent;
 import com.butent.bee.client.event.logical.RenderingEvent;
+import com.butent.bee.client.event.logical.RowCountChangeEvent;
 import com.butent.bee.client.event.logical.SortEvent;
+import com.butent.bee.client.event.logical.SummaryChangeEvent;
 import com.butent.bee.client.grid.ColumnFooter;
 import com.butent.bee.client.grid.ColumnHeader;
 import com.butent.bee.client.grid.GridFactory;
@@ -146,7 +148,8 @@ import java.util.Set;
  */
 
 public class GridImpl extends Absolute implements GridView, EditEndEvent.Handler,
-    SortEvent.Handler, SettingsChangeEvent.Handler, RenderingEvent.Handler {
+    SortEvent.Handler, SettingsChangeEvent.Handler, RenderingEvent.Handler,
+    RowCountChangeEvent.Handler {
 
   private class SaveChangesCallback extends RowCallback {
     @Override
@@ -738,6 +741,11 @@ public class GridImpl extends Absolute implements GridView, EditEndEvent.Handler
   }
 
   @Override
+  public HandlerRegistration addSummaryChangeHandler(SummaryChangeEvent.Handler handler) {
+    return addHandler(handler, SummaryChangeEvent.getType());
+  }
+
+  @Override
   public void clearNotifications() {
     if (getNotification() != null) {
       getNotification().clear();
@@ -856,6 +864,7 @@ public class GridImpl extends Absolute implements GridView, EditEndEvent.Handler
     getGrid().addSortHandler(this);
     getGrid().addSettingsChangeHandler(this);
     getGrid().addRenderingHandler(this);
+    getGrid().addRowCountChangeHandler(this);
 
     add(getGrid());
     add(getNotification());
@@ -1457,6 +1466,11 @@ public class GridImpl extends Absolute implements GridView, EditEndEvent.Handler
         pendingResize.add(id);
       }
     }
+  }
+
+  @Override
+  public void onRowCountChange(RowCountChangeEvent event) {
+    SummaryChangeEvent.fire(this, event.getCount());
   }
 
   @Override

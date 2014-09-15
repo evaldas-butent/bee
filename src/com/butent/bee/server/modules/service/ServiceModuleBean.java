@@ -2,6 +2,7 @@ package com.butent.bee.server.modules.service;
 
 import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.Multimap;
+import com.google.common.collect.Sets;
 import com.google.common.eventbus.Subscribe;
 
 import static com.butent.bee.shared.modules.administration.AdministrationConstants.*;
@@ -78,7 +79,10 @@ public class ServiceModuleBean implements BeeModule {
 
   @Override
   public List<SearchResult> doSearch(String query) {
-    return null;
+    Set<String> columns = Sets.newHashSet(ALS_SERVICE_CATEGORY_NAME, COL_SERVICE_ADDRESS,
+        ALS_SERVICE_CUSTOMER_NAME, ALS_SERVICE_CONTRACTOR_NAME);
+
+    return qs.getSearchResults(VIEW_SERVICE_OBJECTS, Filter.anyContains(columns, query));
   }
 
   @Override

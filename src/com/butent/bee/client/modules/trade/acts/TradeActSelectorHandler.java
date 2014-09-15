@@ -180,7 +180,8 @@ class TradeActSelectorHandler implements SelectorEvent.Handler {
           upd = false;
 
         } else if (COL_TA_UNTIL.equals(colName)) {
-          upd = !templRow.isNull(i) && targetRow.isNull(targetIndex)
+          upd = actKind != null && actKind.enableServices()
+              && !templRow.isNull(i) && targetRow.isNull(targetIndex)
               && TimeUtils.monthDiff(TimeUtils.today(), templRow.getDateTime(i)) > 0;
 
         } else if (colName.contains(COL_TA_SERIES)) {

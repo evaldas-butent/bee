@@ -31,6 +31,7 @@ import com.butent.bee.client.event.logical.ActiveWidgetChangeEvent;
 import com.butent.bee.client.event.logical.DataRequestEvent;
 import com.butent.bee.client.event.logical.ParentRowEvent;
 import com.butent.bee.client.event.logical.ReadyEvent;
+import com.butent.bee.client.event.logical.RowCountChangeEvent;
 import com.butent.bee.client.event.logical.ScopeChangeEvent;
 import com.butent.bee.client.event.logical.SelectionCountChangeEvent;
 import com.butent.bee.client.event.logical.SortEvent;
@@ -471,6 +472,11 @@ public class FormImpl extends Absolute implements FormView, PreviewHandler, Tabu
   public HandlerRegistration addReadyHandler(ReadyEvent.Handler handler) {
     setHasReadyDelegates(ReadyEvent.maybeDelegate(this));
     return addHandler(handler, ReadyEvent.getType());
+  }
+
+  @Override
+  public HandlerRegistration addRowCountChangeHandler(RowCountChangeEvent.Handler handler) {
+    return addHandler(handler, RowCountChangeEvent.getType());
   }
 
   @Override
@@ -1558,6 +1564,8 @@ public class FormImpl extends Absolute implements FormView, PreviewHandler, Tabu
     } else if (fireScopeChange) {
       fireScopeChange(NavigationOrigin.SYSTEM);
     }
+
+    fireEvent(new RowCountChangeEvent(count));
   }
 
   @Override

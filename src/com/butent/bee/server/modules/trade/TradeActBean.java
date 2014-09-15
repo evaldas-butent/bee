@@ -2,6 +2,7 @@ package com.butent.bee.server.modules.trade;
 
 import com.google.common.collect.HashBasedTable;
 import com.google.common.collect.Lists;
+import com.google.common.collect.Sets;
 import com.google.common.collect.Table;
 import com.google.common.eventbus.Subscribe;
 
@@ -27,6 +28,7 @@ import com.butent.bee.shared.data.BeeColumn;
 import com.butent.bee.shared.data.BeeRow;
 import com.butent.bee.shared.data.BeeRowSet;
 import com.butent.bee.shared.data.DataUtils;
+import com.butent.bee.shared.data.SearchResult;
 import com.butent.bee.shared.data.SimpleRowSet;
 import com.butent.bee.shared.data.SimpleRowSet.SimpleRow;
 import com.butent.bee.shared.data.filter.CompoundFilter;
@@ -65,6 +67,12 @@ public class TradeActBean {
   UserServiceBean usr;
   @EJB
   DataEditorBean deb;
+
+  public List<SearchResult> doSearch(String query) {
+    Set<String> columns = Sets.newHashSet(COL_TA_NUMBER, COL_OPERATION_NAME, COL_STATUS_NAME,
+        ALS_COMPANY_NAME);
+    return qs.getSearchResults(VIEW_TRADE_ACTS, Filter.anyContains(columns, query));
+  }
 
   public ResponseObject doService(String svc, RequestInfo reqInfo) {
     ResponseObject response;
@@ -237,6 +245,7 @@ public class TradeActBean {
     if (!DataUtils.isId(actId)) {
       return ResponseObject.parameterNotFound(reqInfo.getService(), COL_TRADE_ACT);
     }
+
     Filter filter = Filter.and(Filter.equals(COL_TRADE_ACT, actId),
         Filter.isPositive(COL_TRADE_ITEM_QUANTITY));
 
@@ -244,6 +253,9 @@ public class TradeActBean {
     if (DataUtils.isEmpty(parentItems)) {
       return ResponseObject.emptyResponse();
     }
+
+    BeeRowSet parentAct = qs.getViewData(VIEW_TRADE_ACTS, Filter.compareId(actId));
+    String serializedParent = DataUtils.isEmpty(parentAct) ? null : parentAct.getRow(0).serialize();
 
     SqlSelect query = new SqlSelect()
         .addFields(TBL_TRADE_ACT_ITEMS, COL_TA_ITEM)
@@ -257,6 +269,7 @@ public class TradeActBean {
 
     SimpleRowSet returnedItems = qs.getData(query);
     if (DataUtils.isEmpty(returnedItems)) {
+      parentItems.setTableProperty(PRP_PARENT_ACT, serializedParent);
       return ResponseObject.response(parentItems);
     }
 
@@ -289,6 +302,7 @@ public class TradeActBean {
     if (DataUtils.isEmpty(result)) {
       return ResponseObject.emptyResponse();
     } else {
+      result.setTableProperty(PRP_PARENT_ACT, serializedParent);
       return ResponseObject.response(result);
     }
   }

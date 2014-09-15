@@ -39,7 +39,6 @@ import com.butent.bee.shared.logging.LogUtils;
 import com.butent.bee.shared.modules.BeeParameter;
 import com.butent.bee.shared.modules.administration.AdministrationConstants;
 import com.butent.bee.shared.rights.Module;
-import com.butent.bee.shared.rights.ModuleAndSub;
 import com.butent.bee.shared.rights.RegulatedWidget;
 import com.butent.bee.shared.rights.RightsState;
 import com.butent.bee.shared.utils.BeeUtils;
@@ -74,16 +73,12 @@ public class DocumentsModuleBean implements BeeModule {
 
   @Override
   public List<SearchResult> doSearch(String query) {
-    List<SearchResult> result = Lists.newArrayList();
+    List<SearchResult> docsSr = qs.getSearchResults(VIEW_DOCUMENTS,
+        Filter.anyContains(Sets.newHashSet(COL_NUMBER, COL_REGISTRATION_NUMBER,
+            COL_DOCUMENT_NAME, ALS_CATEGORY_NAME, ALS_TYPE_NAME,
+            ALS_PLACE_NAME, ALS_STATUS_NAME), query));
 
-    if (usr.isModuleVisible(ModuleAndSub.of(Module.DOCUMENTS))) {
-      List<SearchResult> docsSr = qs.getSearchResults(VIEW_DOCUMENTS,
-          Filter.anyContains(Sets.newHashSet(COL_NUMBER, COL_REGISTRATION_NUMBER,
-              COL_DOCUMENT_NAME, ALS_CATEGORY_NAME, ALS_TYPE_NAME,
-              ALS_PLACE_NAME, ALS_STATUS_NAME), query));
-      result.addAll(docsSr);
-    }
-    return result;
+    return docsSr;
   }
 
   @Override

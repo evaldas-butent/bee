@@ -231,7 +231,7 @@ class TradeActItemPicker extends Flow implements HasSelectionHandlers<BeeRowSet>
 
   private final Flow itemPanel = new Flow(STYLE_ITEM_PANEL);
 
-  private NumberFormat priceFormat = Format.getDecimalFormat(2, 5);
+  private NumberFormat priceFormat;
 
   private ChangeHandler quantityChangeHandler;
 

@@ -442,6 +442,11 @@ public final class UiHelper {
     return null;
   }
 
+  public static Widget getSiblingByName(Widget widget, String name) {
+    FormView form = getForm(widget);
+    return (form == null) ? null : form.getWidgetByName(name);
+  }
+
   public static GridView getSiblingGrid(Widget widget, String gridName) {
     FormView form = getForm(widget);
     return getChildGrid(form, gridName);

@@ -48,7 +48,6 @@ import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogUtils;
 import com.butent.bee.shared.modules.BeeParameter;
 import com.butent.bee.shared.rights.Module;
-import com.butent.bee.shared.rights.ModuleAndSub;
 import com.butent.bee.shared.time.DateTime;
 import com.butent.bee.shared.time.JustDate;
 import com.butent.bee.shared.time.TimeUtils;
@@ -94,14 +93,9 @@ public class AdministrationModuleBean implements BeeModule {
 
   @Override
   public List<SearchResult> doSearch(String query) {
-    List<SearchResult> commonsSr = Lists.newArrayList();
-
-    if (usr.isModuleVisible(ModuleAndSub.of(Module.ADMINISTRATION))) {
-      List<SearchResult> usersSr = qs.getSearchResults(VIEW_USERS,
-          Filter.anyContains(Sets.newHashSet(COL_LOGIN, COL_FIRST_NAME, COL_LAST_NAME), query));
-      commonsSr.addAll(usersSr);
-    }
-    return commonsSr;
+    List<SearchResult> usersSr = qs.getSearchResults(VIEW_USERS,
+        Filter.anyContains(Sets.newHashSet(COL_LOGIN, COL_FIRST_NAME, COL_LAST_NAME), query));
+    return usersSr;
   }
 
   @Override
