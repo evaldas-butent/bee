@@ -238,16 +238,6 @@ public class SvcFilterDataWidget extends Flow implements
     }
   }
 
-  private void enableDataAll() {
-    if (getDataNumberOfDisabledItems() > 0) {
-      for (ServiceObjectWrapper obj : data.values()) {
-        obj.setEnabled(dataType, true);
-      }
-
-      setDataNumberOfDisabledItems(0);
-    }
-  }
-
   private void fireSelection() {
     SelectionEvent.fire(this, dataType);
   }
@@ -477,6 +467,7 @@ public class SvcFilterDataWidget extends Flow implements
 
     if (item.isSelected(dataType)) {
       selectedContainer.appendChild(itemElement);
+      setDataNumberOfSelectedItems(getDataNumberOfSelectedItems() + 1);
     } else {
       if (!matches(itemElement, getSearchQuery())) {
         StyleUtils.setVisible(itemElement, false);
@@ -496,6 +487,62 @@ public class SvcFilterDataWidget extends Flow implements
     if (resetData) {
       enableDataAll();
       deselectDataAll();
+    }
+
+    DomUtils.clear(unselectedContainer);
+    DomUtils.clear(selectedContainer);
+
+    int objectCount = addItems(data.values());
+    updateVisibility(objectCount);
+    refresh();
+  }
+
+  void disableDataByType(ServiceFilterDataType type, List<Long> values) {
+    if (type == getDataType()) {
+      return;
+    }
+
+    for (ServiceObjectWrapper object : data.values()) {
+      switch (type) {
+        case ADDRESS:
+          if (BeeUtils.contains(values, object.getId())) {
+            object.setEnabled(getDataType(), false);
+            setDataNumberOfDisabledItems(getDataNumberOfDisabledItems() + 1);
+          }
+          break;
+        case CATEGORY:
+          if (BeeUtils.contains(values, object.getCategoryId())) {
+            object.setEnabled(getDataType(), false);
+            setDataNumberOfDisabledItems(getDataNumberOfDisabledItems() + 1);
+          }
+          break;
+        case CONTRACTOR:
+          if (BeeUtils.contains(values, object.getContractorId())) {
+            object.setEnabled(getDataType(), false);
+            setDataNumberOfDisabledItems(getDataNumberOfDisabledItems() + 1);
+          }
+          break;
+        case CUSTOMER:
+          if (BeeUtils.contains(values, object.getCustomerId())) {
+            object.setEnabled(getDataType(), false);
+            setDataNumberOfDisabledItems(getDataNumberOfDisabledItems() + 1);
+          }
+          break;
+        default:
+          break;
+      }
+    }
+
+    reset(false);
+  }
+
+  void enableDataAll() {
+    if (getDataNumberOfDisabledItems() > 0) {
+      for (ServiceObjectWrapper obj : data.values()) {
+        obj.setEnabled(dataType, true);
+      }
+
+      setDataNumberOfDisabledItems(0);
     }
   }
 

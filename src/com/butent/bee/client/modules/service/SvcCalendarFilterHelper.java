@@ -54,7 +54,7 @@ final class SvcCalendarFilterHelper {
   private static final String STYLE_DATA_CONTAINER = STYLE_PREFIX + "data-conatainer";
 
   private static final int DATA_SPLITTER_WIDTH = 3;
-  private static final int DEFAULT_DATA_COUNT = 4;
+  private static final int DEFAULT_DATA_COUNT = ServiceFilterDataType.values().length;
   private static final double DIALOG_SIZE_MAX_FACTOR = 0.8;
   private static final int COMAND_GROUP_HEIGHT = 32;
 
@@ -215,9 +215,11 @@ final class SvcCalendarFilterHelper {
 
       @Override
       public void onClose(CloseEvent event) {
-        for (Widget widget : dataContainer) {
-          if (widget instanceof SvcFilterDataWidget) {
-            ((SvcFilterDataWidget) widget).restoreDataState();
+        if (event.userCaused()) {
+          for (Widget widget : dataContainer) {
+            if (widget instanceof SvcFilterDataWidget) {
+              ((SvcFilterDataWidget) widget).restoreDataState();
+            }
           }
         }
       }
@@ -230,7 +232,35 @@ final class SvcCalendarFilterHelper {
 
       @Override
       public void onSelection(SelectionEvent<ServiceConstants.ServiceFilterDataType> event) {
-        // TODO: remove related items.
+        List<Long> selectedData = null;
+
+        for (Widget widget : dataContainer) {
+          if (widget instanceof SvcFilterDataWidget) {
+            SvcFilterDataWidget filter = (SvcFilterDataWidget) widget;
+            if (filter.getDataType() == event.getSelectedItem()) {
+              selectedData = filter.getSelectedDataIds();
+              break;
+            }
+
+          }
+        }
+
+        if (BeeUtils.isEmpty(selectedData)) {
+          return;
+        }
+
+        for (Widget widget : dataContainer) {
+          if (widget instanceof SvcFilterDataWidget) {
+            SvcFilterDataWidget filter = (SvcFilterDataWidget) widget;
+            filter.enableDataAll();
+
+            if (filter.getDataType() == event.getSelectedItem()) {
+              continue;
+            }
+
+            filter.disableDataByType(event.getSelectedItem(), selectedData);
+          }
+        }
         callback.onSelectionChange(dataContainer);
       }
     };

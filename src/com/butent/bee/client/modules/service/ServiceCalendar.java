@@ -241,6 +241,7 @@ final class ServiceCalendar extends TimeBoard {
   private final List<ServiceCompanyWrapper> companies = new ArrayList<>();
 
   private final Multimap<Long, ServiceObjectWrapper> objects = ArrayListMultimap.create();
+  private final Multimap<Long, ServiceObjectWrapper> oldFilterData = ArrayListMultimap.create();
   private final Multimap<Long, TaskWrapper> tasks = ArrayListMultimap.create();
 
   private final Multimap<Long, RecurringTaskWrapper> recurringTasks = ArrayListMultimap.create();
@@ -259,10 +260,14 @@ final class ServiceCalendar extends TimeBoard {
 
   private final Map<Integer, Long> objectsByRow = new HashMap<>();
 
+  private final Image loadingImage = new Image(Global.getImages().loading());
+
   private Map<String, String> filterData;
 
   private ServiceCalendar() {
     super();
+    getHeader().addCommandItem(loadingImage);
+    loadingImage.setVisible(false);
     addStyleName(STYLE_VIEW);
   }
 
@@ -301,7 +306,8 @@ final class ServiceCalendar extends TimeBoard {
         break;
 
       case FILTER:
-        SvcCalendarFilterHelper.openDialog(objects, getFilterDialogCallback());
+        SvcCalendarFilterHelper.openDialog(isFiltered() ? oldFilterData : objects,
+            getFilterDialogCallback());
         break;
       case REMOVE_FILTER:
         setFilterData(null);
@@ -451,22 +457,19 @@ final class ServiceCalendar extends TimeBoard {
       setFiltered(true);
     }
 
-    getHeader().clearCommandPanel();
-    getHeader().addCommandItem(new Image(Global.getImages().loading()));
-
+    loadingImage.setVisible(true);
     BeeKeeper.getRpc().makeRequest(params,
         new ResponseCallback() {
           @Override
           public void onResponse(ResponseObject response) {
-            getHeader().clearCommandPanel();
             if (setData(response)) {
               render(false);
               if (isFiltered()) {
-                getHeader().addCommandItem(getFilterLabel());
-                getHeader().addCommandItem(getRemoveFilter());
                 getRemoveFilter().setVisible(true);
+                getFilterLabel().setVisible(true);
               }
             }
+            loadingImage.setVisible(false);
           }
         });
   }
@@ -679,6 +682,13 @@ final class ServiceCalendar extends TimeBoard {
       }
     }
     return false;
+  }
+
+  private void copyFilterData() {
+    oldFilterData.clear();
+    for (Long id : objects.keys()) {
+      oldFilterData.putAll(id, objects.get(id));
+    }
   }
 
   private IdentifiableWidget createCompanyWidget(ServiceCompanyWrapper company) {
@@ -1048,7 +1058,6 @@ final class ServiceCalendar extends TimeBoard {
 
       @Override
       public void onClear() {
-        logger.debug("Wee are here on clear");
       }
 
       @Override
@@ -1059,9 +1068,11 @@ final class ServiceCalendar extends TimeBoard {
           emptySet &= BeeUtils.isEmpty(value);
         }
 
-        if (emptySet) {
+        if (emptySet && !isFiltered()) {
           logger.info("nothing changes");
           return;
+        } else if (emptySet && isFiltered()) {
+          handleAction(Action.REMOVE_FILTER);
         }
 
         Map<String, String> fData = Maps.newHashMap();
@@ -1072,12 +1083,13 @@ final class ServiceCalendar extends TimeBoard {
 
         setFilterData(fData);
         getFilterLabel().getElement().setInnerText(label);
+        getFilterLabel().setVisible(false);
+        copyFilterData();
         refresh();
       }
 
       @Override
       public void onSelectionChange(HasWidgets dataContainer) {
-        logger.debug("Wee are here on selection change");
       }
     };
   }
