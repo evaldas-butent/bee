@@ -18,7 +18,6 @@ public class RowCountChangeEvent extends GwtEvent<RowCountChangeEvent.Handler> {
   private final int count;
 
   public RowCountChangeEvent(int count) {
-    super();
     this.count = count;
   }
 

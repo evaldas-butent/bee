@@ -9,6 +9,7 @@ import com.butent.bee.client.event.logical.HasSummaryChangeHandlers;
 import com.butent.bee.client.event.logical.ParentRowEvent;
 import com.butent.bee.client.event.logical.ReadyEvent;
 import com.butent.bee.client.event.logical.ReadyEvent.HasReadyHandlers;
+import com.butent.bee.client.event.logical.RowCountChangeEvent;
 import com.butent.bee.client.event.logical.SummaryChangeEvent;
 import com.butent.bee.client.layout.Simple;
 import com.butent.bee.client.presenter.GridPresenter;
@@ -145,7 +146,7 @@ abstract class EmbeddedGrid extends Simple implements EnablableWidget, HasFoster
 
       int rowCount = gridView.getGrid().getRowCount();
       if (!BeeConst.isUndef(rowCount)) {
-        SummaryChangeEvent.fire(gridView, rowCount);
+        gridView.onRowCountChange(new RowCountChangeEvent(rowCount));
       }
     }
   }

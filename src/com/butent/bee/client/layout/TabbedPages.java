@@ -22,6 +22,7 @@ import com.butent.bee.client.event.logical.SummaryChangeEvent;
 import com.butent.bee.client.event.logical.VisibilityChangeEvent;
 import com.butent.bee.client.style.StyleUtils;
 import com.butent.bee.client.ui.IdentifiableWidget;
+import com.butent.bee.client.ui.UiHelper;
 import com.butent.bee.client.widget.CustomDiv;
 import com.butent.bee.client.widget.Label;
 import com.butent.bee.shared.Assert;
@@ -138,7 +139,17 @@ public class TabbedPages extends Flow implements
 
   private final class Tab extends Simple implements HasClickHandlers {
 
+    private final CustomDiv summaryWidget;
+    private final String summarySource;
+
     private Tab(Widget child) {
+      this(child, null, null);
+    }
+
+    private Tab(Widget child, CustomDiv summaryWidget, String summarySource) {
+      this.summaryWidget = summaryWidget;
+      this.summarySource = summarySource;
+
       setWidget(child);
       addStyleName(getStylePrefix() + "tab");
     }
@@ -151,6 +162,27 @@ public class TabbedPages extends Flow implements
     @Override
     public String getIdPrefix() {
       return "tab";
+    }
+
+    @Override
+    protected void onLoad() {
+      super.onLoad();
+
+      if (summaryWidget != null && !BeeUtils.isEmpty(summarySource)) {
+        Widget sibling = UiHelper.getSiblingByName(this, summarySource);
+        bindSummary(SummaryChangeEvent.findSource(sibling));
+      }
+    }
+
+    private void bindSummary(HasSummaryChangeHandlers hasSummaryChangeHandlers) {
+      if (hasSummaryChangeHandlers != null && summaryWidget != null) {
+        hasSummaryChangeHandlers.addSummaryChangeHandler(new SummaryChangeEvent.Handler() {
+          @Override
+          public void onSummaryChange(SummaryChangeEvent event) {
+            summaryWidget.setHtml(event.getSummary());
+          }
+        });
+      }
     }
 
     private void setSelected(boolean selected) {
@@ -385,37 +417,38 @@ public class TabbedPages extends Flow implements
   }
 
   private Tab createTab(Widget content, Widget caption, String summarySource) {
+    if (NO_SUMMARY.equals(summarySource) || content == null) {
+      return new Tab(caption);
+    }
+
     HasSummaryChangeHandlers hasSummary;
 
-    if (NO_SUMMARY.equals(summarySource) || content == null) {
-      hasSummary = null;
-    } else {
+    if (BeeUtils.isEmpty(summarySource)) {
       hasSummary = SummaryChangeEvent.findSource(content);
-    }
-
-    if (hasSummary == null) {
-      return new Tab(caption);
-
-    } else {
-      Flow wrapper = new Flow(getStylePrefix() + "tabWrapper");
-
-      if (caption != null) {
-        caption.addStyleName(getStylePrefix() + "tabCaption");
-        wrapper.add(caption);
+      if (hasSummary == null) {
+        return new Tab(caption);
       }
 
-      final CustomDiv summaryWidget = new CustomDiv(getStylePrefix() + "tabSummary");
-      hasSummary.addSummaryChangeHandler(new SummaryChangeEvent.Handler() {
-        @Override
-        public void onSummaryChange(SummaryChangeEvent event) {
-          summaryWidget.setHtml(event.getSummary());
-        }
-      });
-
-      wrapper.add(summaryWidget);
-
-      return new Tab(wrapper);
+    } else {
+      hasSummary = null;
     }
+
+    Flow wrapper = new Flow(getStylePrefix() + "tabWrapper");
+
+    if (caption != null) {
+      caption.addStyleName(getStylePrefix() + "tabCaption");
+      wrapper.add(caption);
+    }
+
+    CustomDiv summaryWidget = new CustomDiv(getStylePrefix() + "tabSummary");
+    wrapper.add(summaryWidget);
+
+    Tab tab = new Tab(wrapper, summaryWidget, summarySource);
+    if (hasSummary != null) {
+      tab.bindSummary(hasSummary);
+    }
+
+    return tab;
   }
 
   private static Widget createCaption(String text) {

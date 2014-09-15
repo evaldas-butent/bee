@@ -18,8 +18,12 @@ import com.google.gwt.user.client.Event;
 import com.butent.bee.client.dom.DomUtils;
 import com.butent.bee.client.dom.Features;
 import com.butent.bee.client.event.Binder;
+import com.butent.bee.client.event.EventUtils;
 import com.butent.bee.client.event.HasInputHandlers;
 import com.butent.bee.client.event.InputHandler;
+import com.butent.bee.client.event.logical.HasSummaryChangeHandlers;
+import com.butent.bee.client.event.logical.SummaryChangeEvent;
+import com.butent.bee.client.style.StyleUtils;
 import com.butent.bee.client.ui.FormWidget;
 import com.butent.bee.client.ui.HandlesAfterSave;
 import com.butent.bee.client.ui.UiHelper;
@@ -52,7 +56,9 @@ import elemental.html.TextAreaElement;
 
 public class InputArea extends CustomWidget implements Editor, TextBox, HandlesAfterSave,
     HasTextDimensions, HasInputHandlers, HasTextBox, HasMaxLength, HasAutocomplete,
-    HasKeyDownHandlers {
+    HasKeyDownHandlers, HasSummaryChangeHandlers {
+
+  private static final String STYLE_NAME = StyleUtils.CLASS_NAME_PREFIX + "InputArea";
 
   private Resource resource;
 
@@ -114,6 +120,11 @@ public class InputArea extends CustomWidget implements Editor, TextBox, HandlesA
   @Override
   public HandlerRegistration addKeyDownHandler(KeyDownHandler handler) {
     return addDomHandler(handler, KeyDownEvent.getType());
+  }
+
+  @Override
+  public HandlerRegistration addSummaryChangeHandler(SummaryChangeEvent.Handler handler) {
+    return addHandler(handler, SummaryChangeEvent.getType());
   }
 
   @Override
@@ -299,6 +310,11 @@ public class InputArea extends CustomWidget implements Editor, TextBox, HandlesA
       fireEvent(new EditStopEvent(State.CHANGED));
       return;
     }
+
+    if (EventUtils.isChange(event.getType())) {
+      updateSummary(getValue());
+    }
+
     super.onBrowserEvent(event);
   }
 
@@ -411,7 +427,9 @@ public class InputArea extends CustomWidget implements Editor, TextBox, HandlesA
   @Override
   public void setValue(String value) {
     getTextAreaElement().setValue(Strings.nullToEmpty(value));
+
     updateDigest(getValue());
+    updateSummary(value);
   }
 
   @Override
@@ -444,6 +462,10 @@ public class InputArea extends CustomWidget implements Editor, TextBox, HandlesA
     return getDigest();
   }
 
+  public void updateSummary(String value) {
+    SummaryChangeEvent.fire(this, BeeUtils.countLines(value));
+  }
+
   @Override
   public List<String> validate(boolean checkForNull) {
     return Collections.emptyList();
@@ -457,7 +479,9 @@ public class InputArea extends CustomWidget implements Editor, TextBox, HandlesA
   @Override
   protected void init() {
     super.init();
-    addStyleName("bee-InputArea");
+    addStyleName(STYLE_NAME);
+
+    sinkEvents(Event.ONCHANGE);
   }
 
   private TextAreaElement getTextAreaElement() {

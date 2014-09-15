@@ -148,8 +148,7 @@ import java.util.Set;
  */
 
 public class GridImpl extends Absolute implements GridView, EditEndEvent.Handler,
-    SortEvent.Handler, SettingsChangeEvent.Handler, RenderingEvent.Handler,
-    RowCountChangeEvent.Handler {
+    SortEvent.Handler, SettingsChangeEvent.Handler, RenderingEvent.Handler {
 
   private class SaveChangesCallback extends RowCallback {
     @Override
@@ -1470,6 +1469,10 @@ public class GridImpl extends Absolute implements GridView, EditEndEvent.Handler
 
   @Override
   public void onRowCountChange(RowCountChangeEvent event) {
+    if (getGridInterceptor() != null && !getGridInterceptor().onRowCountChange(this, event)) {
+      return;
+    }
+
     SummaryChangeEvent.fire(this, event.getCount());
   }
 
