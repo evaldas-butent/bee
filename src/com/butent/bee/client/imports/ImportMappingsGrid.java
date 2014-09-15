@@ -1,9 +1,9 @@
-package com.butent.bee.client.modules.transport;
+package com.butent.bee.client.imports;
 
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
 
-import static com.butent.bee.shared.modules.transport.TransportConstants.*;
+import static com.butent.bee.shared.modules.administration.AdministrationConstants.*;
 
 import com.butent.bee.client.Global;
 import com.butent.bee.client.composite.UnboundSelector;
@@ -23,7 +23,7 @@ import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.data.BeeRow;
 import com.butent.bee.shared.data.filter.Filter;
 import com.butent.bee.shared.i18n.Localized;
-import com.butent.bee.shared.modules.transport.TransportConstants.ImportType.ImportProperty;
+import com.butent.bee.shared.imports.ImportProperty;
 import com.butent.bee.shared.ui.Relation;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.Codec;
@@ -51,6 +51,9 @@ public class ImportMappingsGrid extends AbstractGridInterceptor {
 
   @Override
   public void onParentRow(ParentRowEvent event) {
+    if (getGridPresenter() == null) {
+      return;
+    }
     Filter filter = null;
     ImportProperty target = form.getMappingProperty();
 
@@ -108,7 +111,7 @@ public class ImportMappingsGrid extends AbstractGridInterceptor {
           @Override
           public void onSuccess(Long id) {
             Queries.insert(TBL_IMPORT_MAPPINGS, Data.getColumns(TBL_IMPORT_MAPPINGS,
-                Lists.newArrayList(COL_IMPORT_PROPERTY, COL_IMPORT_VALUE, COL_IMPORT_MAPPING)),
+                Lists.newArrayList(COL_IMPORT_OPTION, COL_IMPORT_VALUE, COL_IMPORT_MAPPING)),
                 Lists.newArrayList(BeeUtils.toString(id), value.getValue(), mapping.getValue()),
                 null, new RowCallback() {
                   @Override

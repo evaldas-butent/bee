@@ -87,6 +87,8 @@ public class AdministrationModuleBean implements BeeModule {
   QueryServiceBean qs;
   @EJB
   ParamHolderBean prm;
+  @EJB
+  ImportBean imp;
 
   @Resource
   EJBContext ctx;
@@ -133,6 +135,9 @@ public class AdministrationModuleBean implements BeeModule {
     } else if (BeeUtils.same(svc, SVC_NUMBER_TO_WORDS)) {
       response = getNumberInWords(BeeUtils.toLongOrNull(reqInfo.getParameter(VAR_AMOUNT)),
           reqInfo.getParameter(VAR_LOCALE));
+
+    } else if (BeeUtils.same(svc, SVC_DO_IMPORT)) {
+      response = imp.doImport(reqInfo);
 
     } else {
       String msg = BeeUtils.joinWords("Commons service not recognized:", svc);

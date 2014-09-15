@@ -153,8 +153,6 @@ public class TransportModuleBean implements BeeModule {
   @EJB
   ParamHolderBean prm;
   @EJB
-  TransportImports imp;
-  @EJB
   TradeModuleBean trd;
 
   @EJB
@@ -279,9 +277,6 @@ public class TransportModuleBean implements BeeModule {
     } else if (BeeUtils.same(svc, SVC_SEND_MESSAGE)) {
       response = sendMessage(reqInfo.getParameter(COL_DESCRIPTION),
           Codec.beeDeserializeCollection(reqInfo.getParameter(COL_MOBILE)));
-
-    } else if (BeeUtils.same(svc, SVC_DO_IMPORT)) {
-      response = imp.doImport(reqInfo);
 
     } else if (BeeUtils.same(svc, SVC_GET_CREDIT_INFO)) {
       response = getCreditInfo(reqInfo);

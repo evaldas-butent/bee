@@ -573,11 +573,9 @@ public class DiscussionsModuleBean implements BeeModule {
 
   private ResponseObject deleteDiscussionComment(long discussionId, long commentId) {
 
-    String reasonText =
-        BeeUtils.joinWords("<i style=\"font-size: smaller; color:red\">(", usr
-            .getLocalizableConstants().discussEventCommentDeleted()
-            + " )</i>:", new DateTime().toString() + ",",
-            usr.getCurrentUserData().getFirstName(), usr.getCurrentUserData().getLastName());
+    String reasonText = BeeUtils.joinWords("<i style=\"font-size: smaller; color:red\">(", usr
+        .getLocalizableConstants().discussEventCommentDeleted()
+        + " )</i>:", new DateTime().toString() + ",", usr.getCurrentUserSign());
 
     SqlUpdate update =
         new SqlUpdate(TBL_DISCUSSIONS_COMMENTS)

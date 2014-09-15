@@ -8,6 +8,8 @@ public interface LocalizableClassifierConstants {
 
   String chief();
 
+  String cities();
+
   String city();
 
   String code();
@@ -21,6 +23,8 @@ public interface LocalizableClassifierConstants {
   String colorTheme();
 
   String colorTitle();
+
+  String countries();
 
   String country();
 

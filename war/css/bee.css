@@ -1713,7 +1713,8 @@
 }
 
 .bee-ModalTableContainer {
-  max-height: 500px;
+  max-height: 60vh;
+  max-width: 80vw;
   overflow: auto;
 }
 
