@@ -119,17 +119,14 @@
 }
 .bee-crm-Slack-late .bee-crm-Slack-label {
   left: 3px;
-  font-size: bold;
   color: white;
 }
 .bee-crm-Slack-opening .bee-crm-Slack-label {
   left: 30%;
-  font-size: bold;
   color: white;
 }
 .bee-crm-Slack-endgame .bee-crm-Slack-label {
   right: 30%;
-  font-size: bold;
   color: white;
 }
 .bee-crm-Slack-scheduled .bee-crm-Slack-label {
@@ -190,10 +187,6 @@
   max-width: 100%;
   max-height: 100%;
   cursor: default;
-}
-
-.bee-crm-rt-actionSchedule {
-  font-size: 18px !important;
 }
 
 .bee-crm-rt-cron-values {

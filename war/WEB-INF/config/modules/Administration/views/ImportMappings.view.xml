@@ -7,12 +7,8 @@
   caption="=trImportMappings"
   >
   <Columns>
-    <SimpleColumn name="Property" />
+    <SimpleColumn name="Option" />
     <SimpleColumn name="Value" />
     <SimpleColumn name="Mapping" />
   </Columns>
-  <Order>
-    <OrderBy column="Property" />
-    <OrderBy column="Value" />
-  </Order>
 </View>

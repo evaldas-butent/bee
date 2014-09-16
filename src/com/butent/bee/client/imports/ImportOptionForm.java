@@ -1,7 +1,10 @@
-package com.butent.bee.client.modules.transport;
+package com.butent.bee.client.imports;
 
-import static com.butent.bee.shared.modules.transport.TransportConstants.*;
+import com.google.gwt.user.client.ui.Widget;
 
+import static com.butent.bee.shared.modules.administration.AdministrationConstants.*;
+
+import com.butent.bee.client.data.Data;
 import com.butent.bee.client.grid.ChildGrid;
 import com.butent.bee.client.ui.FormFactory.WidgetDescriptionCallback;
 import com.butent.bee.client.ui.IdentifiableWidget;
@@ -9,17 +12,22 @@ import com.butent.bee.client.view.form.FormView;
 import com.butent.bee.client.view.form.interceptor.AbstractFormInterceptor;
 import com.butent.bee.client.view.form.interceptor.FormInterceptor;
 import com.butent.bee.client.view.grid.interceptor.GridInterceptor;
+import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.IsRow;
-import com.butent.bee.shared.modules.transport.TransportConstants.ImportType;
-import com.butent.bee.shared.modules.transport.TransportConstants.ImportType.ImportProperty;
+import com.butent.bee.shared.data.view.ViewColumn;
+import com.butent.bee.shared.imports.ImportProperty;
+import com.butent.bee.shared.imports.ImportType;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.EnumUtils;
 
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Objects;
 
 public class ImportOptionForm extends AbstractFormInterceptor {
 
   private GridInterceptor properties;
+  private Widget mappings;
 
   @Override
   public void afterCreateWidget(String name, IdentifiableWidget widget,
@@ -34,6 +42,7 @@ public class ImportOptionForm extends AbstractFormInterceptor {
 
       } else if (BeeUtils.same(name, TBL_IMPORT_MAPPINGS)) {
         interceptor = new ImportMappingsGrid(this);
+        this.mappings = widget.asWidget();
       }
       if (interceptor != null) {
         ((ChildGrid) widget).setGridInterceptor(interceptor);
@@ -43,9 +52,14 @@ public class ImportOptionForm extends AbstractFormInterceptor {
 
   @Override
   public void beforeRefresh(FormView form, IsRow row) {
-    getHeaderView().setCaption(BeeUtils.join(": ", form.getCaption(),
-        EnumUtils.getEnumByIndex(ImportType.class,
-            row.getInteger(form.getDataIndex(COL_IMPORT_TYPE))).getCaption()));
+    ImportType type = getImportType();
+    String cap = type.getCaption();
+
+    if (Objects.equals(type, ImportType.DATA)) {
+      cap = BeeUtils.joinWords(cap,
+          BeeUtils.parenthesize(Data.getViewCaption(getStringValue(COL_IMPORT_DATA))));
+    }
+    getHeaderView().setCaption(BeeUtils.join(": ", form.getCaption(), cap));
   }
 
   @Override
@@ -74,29 +88,48 @@ public class ImportOptionForm extends AbstractFormInterceptor {
   public Collection<ImportProperty> getProperties() {
     ImportType type = getImportType();
 
-    if (type != null) {
-      return type.getProperties();
+    Collection<ImportProperty> props = new ArrayList<>(type.getProperties());
+
+    if (Objects.equals(type, ImportType.DATA)) {
+      String viewName = getStringValue(COL_IMPORT_DATA);
+
+      for (ViewColumn col : Data.getDataInfo(viewName).getViewColumns()) {
+        if (col.isReadOnly() || !BeeUtils.unbox(col.getEditable())
+            && BeeUtils.isPositive(col.getLevel())) {
+          continue;
+        }
+        String name = col.getName();
+        ImportProperty prop = new ImportProperty(name, Data.getColumnLabel(viewName, name), true);
+
+        if (!BeeUtils.isEmpty(col.getRelation())) {
+          prop.setRelTable(col.getRelation());
+        }
+        props.add(prop);
+      }
     }
-    return null;
+    return props;
   }
 
   public ImportProperty getProperty(String name) {
-    ImportType type = getImportType();
-
-    if (type != null) {
-      return type.getProperty(name);
+    for (ImportProperty prop : getProperties()) {
+      if (BeeUtils.same(name, prop.getName())) {
+        return prop;
+      }
     }
     return null;
   }
 
-  private ImportType getImportType() {
-    FormView formView = getFormView();
-    IsRow row = formView.getActiveRow();
+  public boolean isSubOption() {
+    return DataUtils.isId(getLongValue(COL_IMPORT_RELATION_OPTION));
+  }
 
-    if (row != null) {
-      return EnumUtils.getEnumByIndex(ImportType.class,
-          row.getInteger(formView.getDataIndex(COL_IMPORT_TYPE)));
+  public void showMappings(boolean show) {
+    if (mappings != null) {
+      mappings.setVisible(show);
     }
-    return null;
+  }
+
+  private ImportType getImportType() {
+    return EnumUtils.getEnumByIndex(ImportType.class, getIntegerValue(COL_IMPORT_TYPE));
   }
 }

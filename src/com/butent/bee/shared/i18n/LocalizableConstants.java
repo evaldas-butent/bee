@@ -48,6 +48,8 @@ public interface LocalizableConstants extends Constants, LocalizableClassifierCo
 
   String actionEdit();
 
+  String actionExchange();
+
   String actionExport();
 
   String actionFilter();
@@ -186,6 +188,10 @@ public interface LocalizableConstants extends Constants, LocalizableClassifierCo
 
   String dangerous();
 
+  String data();
+
+  String dataImport();
+
   String date();
 
   String dateFormat();
@@ -227,6 +233,8 @@ public interface LocalizableConstants extends Constants, LocalizableClassifierCo
   String enterTime();
 
   String error();
+
+  String errors();
 
   String exchangeCode();
 
@@ -351,6 +359,8 @@ public interface LocalizableConstants extends Constants, LocalizableClassifierCo
   String filterRemove();
 
   String height();
+
+  String imported();
 
   String imageUploadFailed();
 
@@ -516,6 +526,8 @@ public interface LocalizableConstants extends Constants, LocalizableClassifierCo
 
   String questionLogout();
 
+  String reason();
+
   String registered();
 
   String relatedTo();
@@ -603,6 +615,8 @@ public interface LocalizableConstants extends Constants, LocalizableClassifierCo
   String setAsPrimary();
 
   String settings();
+
+  String sheetName();
 
   String signOut();
 

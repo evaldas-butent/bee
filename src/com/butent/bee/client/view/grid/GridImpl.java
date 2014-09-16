@@ -27,7 +27,9 @@ import com.butent.bee.client.event.EventUtils;
 import com.butent.bee.client.event.Previewer.PreviewConsumer;
 import com.butent.bee.client.event.logical.ReadyEvent;
 import com.butent.bee.client.event.logical.RenderingEvent;
+import com.butent.bee.client.event.logical.RowCountChangeEvent;
 import com.butent.bee.client.event.logical.SortEvent;
+import com.butent.bee.client.event.logical.SummaryChangeEvent;
 import com.butent.bee.client.grid.ColumnFooter;
 import com.butent.bee.client.grid.ColumnHeader;
 import com.butent.bee.client.grid.GridFactory;
@@ -738,6 +740,11 @@ public class GridImpl extends Absolute implements GridView, EditEndEvent.Handler
   }
 
   @Override
+  public HandlerRegistration addSummaryChangeHandler(SummaryChangeEvent.Handler handler) {
+    return addHandler(handler, SummaryChangeEvent.getType());
+  }
+
+  @Override
   public void clearNotifications() {
     if (getNotification() != null) {
       getNotification().clear();
@@ -856,6 +863,7 @@ public class GridImpl extends Absolute implements GridView, EditEndEvent.Handler
     getGrid().addSortHandler(this);
     getGrid().addSettingsChangeHandler(this);
     getGrid().addRenderingHandler(this);
+    getGrid().addRowCountChangeHandler(this);
 
     add(getGrid());
     add(getNotification());
@@ -1277,6 +1285,11 @@ public class GridImpl extends Absolute implements GridView, EditEndEvent.Handler
   }
 
   @Override
+  public boolean isEmpty() {
+    return getRowData().isEmpty();
+  }
+
+  @Override
   public boolean isEnabled() {
     return getGrid().isEnabled();
   }
@@ -1452,6 +1465,15 @@ public class GridImpl extends Absolute implements GridView, EditEndEvent.Handler
         pendingResize.add(id);
       }
     }
+  }
+
+  @Override
+  public void onRowCountChange(RowCountChangeEvent event) {
+    if (getGridInterceptor() != null && !getGridInterceptor().onRowCountChange(this, event)) {
+      return;
+    }
+
+    SummaryChangeEvent.fire(this, event.getCount());
   }
 
   @Override

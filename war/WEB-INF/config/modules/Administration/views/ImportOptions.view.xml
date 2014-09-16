@@ -9,6 +9,10 @@
   <Columns>
     <SimpleColumn name="Type"/>
     <SimpleColumn name="Description"/>
+    <SimpleColumn name="Data"/>
+    <ExternalJoin source="ImportProperties" name="RelationOption" joinType="LEFT">
+      <SimpleColumn name="RelationOption" />
+    </ExternalJoin>
   </Columns>
   <Order>
     <OrderBy column="Type" />

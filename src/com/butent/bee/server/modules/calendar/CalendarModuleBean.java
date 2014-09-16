@@ -78,7 +78,6 @@ import com.butent.bee.shared.news.Headline;
 import com.butent.bee.shared.news.HeadlineProducer;
 import com.butent.bee.shared.news.NewsConstants;
 import com.butent.bee.shared.rights.Module;
-import com.butent.bee.shared.rights.ModuleAndSub;
 import com.butent.bee.shared.time.DateTime;
 import com.butent.bee.shared.time.JustDate;
 import com.butent.bee.shared.time.TimeUtils;
@@ -406,20 +405,19 @@ public class CalendarModuleBean implements BeeModule {
   public List<SearchResult> doSearch(String query) {
     List<SearchResult> results = Lists.newArrayList();
 
-    if (usr.isModuleVisible(ModuleAndSub.of(Module.CALENDAR))) {
-      Filter filter = Filter.or(
-          Filter.anyContains(Sets.newHashSet(COL_SUMMARY, COL_DESCRIPTION,
-              COL_APPOINTMENT_LOCATION, ALS_COMPANY_NAME, COL_VEHICLE_NUMBER), query),
-          Filter.anyItemContains(COL_STATUS, AppointmentStatus.class, query));
+    Filter filter = Filter.or(
+        Filter.anyContains(Sets.newHashSet(COL_SUMMARY, COL_DESCRIPTION,
+            COL_APPOINTMENT_LOCATION, ALS_COMPANY_NAME, COL_VEHICLE_NUMBER), query),
+        Filter.anyItemContains(COL_STATUS, AppointmentStatus.class, query));
 
-      List<BeeRow> appointments = getAppointments(filter,
-          new Order(COL_START_DATE_TIME, false), true);
-      if (!BeeUtils.isEmpty(appointments)) {
-        for (BeeRow row : appointments) {
-          results.add(new SearchResult(VIEW_APPOINTMENTS, row));
-        }
+    List<BeeRow> appointments = getAppointments(filter,
+        new Order(COL_START_DATE_TIME, false), true);
+    if (!BeeUtils.isEmpty(appointments)) {
+      for (BeeRow row : appointments) {
+        results.add(new SearchResult(VIEW_APPOINTMENTS, row));
       }
     }
+
     return results;
   }
 

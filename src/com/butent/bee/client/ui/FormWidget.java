@@ -265,17 +265,24 @@ public enum FormWidget {
   DATA_TREE(UiConstants.TAG_DATA_TREE, EnumSet.of(Type.FOCUSABLE));
 
   private final class HeaderAndContent {
+
     private final String headerTag;
     private final String headerString;
     private final IdentifiableWidget headerWidget;
+
     private final IdentifiableWidget content;
+    private final String summary;
 
     private HeaderAndContent(String headerTag, String headerString,
-        IdentifiableWidget headerWidget, IdentifiableWidget content) {
+        IdentifiableWidget headerWidget, IdentifiableWidget content, String summary) {
+
       this.headerTag = headerTag;
       this.headerString = headerString;
       this.headerWidget = headerWidget;
+
       this.content = content;
+
+      this.summary = summary;
     }
 
     private IdentifiableWidget getContent() {
@@ -292,6 +299,10 @@ public enum FormWidget {
 
     private IdentifiableWidget getHeaderWidget() {
       return headerWidget;
+    }
+
+    private String getSummary() {
+      return summary;
     }
 
     private boolean isHeaderHtml() {
@@ -999,8 +1010,8 @@ public enum FormWidget {
   private static final String ATTR_DOWN_FACE = "downFace";
 
   private static final String ATTR_CHILD = "child";
-
   private static final String ATTR_KIND = "kind";
+  private static final String ATTR_SUMMARY = "summary";
 
   private static final String TAG_CSS = "css";
 
@@ -1128,9 +1139,8 @@ public enum FormWidget {
 
         if (!BeeUtils.isEmpty(gridName) && !BeeUtils.isEmpty(relColumn)
             && !BeeConst.isUndef(sourceIndex)) {
-          widget = new ChildGrid(gridName, sourceIndex, relColumn,
-              GridFactory.getGridOptions(attributes),
-              !BeeConst.isFalse(attributes.get(ATTR_DISABLABLE)));
+          widget = new ChildGrid(gridName, GridFactory.getGridOptions(attributes),
+              sourceIndex, relColumn, !BeeConst.isFalse(attributes.get(ATTR_DISABLABLE)));
         }
         break;
 
@@ -2003,6 +2013,7 @@ public enum FormWidget {
     String headerTag = null;
     String headerString = null;
     IdentifiableWidget headerWidget = null;
+
     IdentifiableWidget content = null;
 
     for (Element child : XmlUtils.getChildrenElements(parent)) {
@@ -2039,7 +2050,10 @@ public enum FormWidget {
         break;
       }
     }
-    return new HeaderAndContent(headerTag, headerString, headerWidget, content);
+
+    String summary = parent.getAttribute(ATTR_SUMMARY);
+
+    return new HeaderAndContent(headerTag, headerString, headerWidget, content, summary);
   }
 
   private Set<Type> getTypes() {
@@ -2267,10 +2281,11 @@ public enum FormWidget {
         IdentifiableWidget tab;
 
         if (hc.isHeaderText() || hc.isHeaderHtml()) {
-          tab = ((TabbedPages) parent).add(hc.getContent().asWidget(), hc.getHeaderString());
+          tab = ((TabbedPages) parent).add(hc.getContent().asWidget(), hc.getHeaderString(),
+              hc.getSummary());
         } else {
           tab = ((TabbedPages) parent).add(hc.getContent().asWidget(),
-              hc.getHeaderWidget().asWidget());
+              hc.getHeaderWidget().asWidget(), hc.getSummary());
         }
 
         StyleUtils.updateAppearance(tab.getElement(), child.getAttribute(UiConstants.ATTR_CLASS),

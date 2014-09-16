@@ -82,7 +82,7 @@ public class HtmlTable extends Panel implements IdentifiableWidget, IsHtmlTable,
     }
 
     public boolean isVisible(int row, int column) {
-      return UIObject.isVisible(getElement(row, column));
+      return DomUtils.isVisible(getElement(row, column));
     }
 
     public void removeStyleName(int row, int column, String styleName) {
@@ -243,7 +243,7 @@ public class HtmlTable extends Panel implements IdentifiableWidget, IsHtmlTable,
     }
 
     public boolean isVisible(int row) {
-      return UIObject.isVisible(getElement(row));
+      return DomUtils.isVisible(getElement(row));
     }
 
     public void removeStyleName(int row, String styleName) {
@@ -279,6 +279,8 @@ public class HtmlTable extends Panel implements IdentifiableWidget, IsHtmlTable,
     //@formatter:on
   }
 
+  private static final String STYLE_NAME = StyleUtils.CLASS_NAME_PREFIX + "HtmlTable";
+
   private static final String STYLE_SUFFIX_COL = "-col";
   private static final String STYLE_SUFFIX_CELL = "-cell";
 
@@ -313,7 +315,7 @@ public class HtmlTable extends Panel implements IdentifiableWidget, IsHtmlTable,
     this.rowFormatter = new RowFormatter();
     this.columnFormatter = new ColumnFormatter();
 
-    setStyleName("bee-HtmlTable");
+    setStyleName(STYLE_NAME);
 
     init();
   }

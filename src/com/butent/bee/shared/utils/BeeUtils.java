@@ -536,6 +536,24 @@ public final class BeeUtils {
     return cnt;
   }
 
+  public static int countLines(String src) {
+    if (src == null) {
+      return 0;
+    }
+
+    String s = src.trim();
+    if (s.isEmpty()) {
+      return 0;
+    }
+
+    int cnt = count(s, BeeConst.CHAR_EOL);
+    if (cnt <= 0) {
+      cnt = count(s, BeeConst.CHAR_CR);
+    }
+
+    return cnt + 1;
+  }
+
   /**
    * Deletes a part of a String from specified {@code start} to {@code end}.
    * 

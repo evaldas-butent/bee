@@ -28,6 +28,7 @@ import com.butent.bee.client.composite.MultiSelector;
 import com.butent.bee.client.data.Data;
 import com.butent.bee.client.data.Queries;
 import com.butent.bee.client.data.RowCallback;
+import com.butent.bee.client.dom.DomUtils;
 import com.butent.bee.client.grid.HtmlTable;
 import com.butent.bee.client.i18n.Format;
 import com.butent.bee.client.layout.Flow;
@@ -472,7 +473,7 @@ class TaskEditor extends AbstractFormInterceptor {
     showExtensions(form, rowSet);
     showDurations(form, durations);
 
-    if (panel.getWidgetCount() > 1 && form.asWidget().isVisible()) {
+    if (panel.getWidgetCount() > 1 && DomUtils.isVisible(form.getElement())) {
       final Widget last = panel.getWidget(panel.getWidgetCount() - 1);
       Scheduler.get().scheduleDeferred(new ScheduledCommand() {
         @Override

@@ -175,12 +175,16 @@ public class UiServiceBean {
       response = deleteRows(reqInfo);
     } else if (BeeUtils.same(svc, Service.DELETE)) {
       response = delete(reqInfo);
+
     } else if (BeeUtils.same(svc, Service.UPDATE_CELL)) {
       response = updateCell(reqInfo);
     } else if (BeeUtils.same(svc, Service.UPDATE_ROW)) {
       response = updateRow(reqInfo);
+    } else if (BeeUtils.same(svc, Service.UPDATE_ROWS)) {
+      response = updateRows(reqInfo);
     } else if (BeeUtils.same(svc, Service.UPDATE)) {
       response = update(reqInfo);
+
     } else if (BeeUtils.same(svc, Service.INSERT_ROW)) {
       response = insertRow(reqInfo);
     } else if (BeeUtils.same(svc, Service.INSERT_ROWS)) {
@@ -1318,5 +1322,25 @@ public class UiServiceBean {
 
   private ResponseObject updateRow(RequestInfo reqInfo) {
     return deb.commitRow(BeeRowSet.restore(reqInfo.getContent()));
+  }
+
+  private ResponseObject updateRows(RequestInfo reqInfo) {
+    BeeRowSet rowSet = BeeRowSet.restore(reqInfo.getContent());
+    if (DataUtils.isEmpty(rowSet)) {
+      return ResponseObject.error(reqInfo.getService(), "row set is empty");
+    }
+
+    int count = 0;
+
+    for (int i = 0; i < rowSet.getNumberOfRows(); i++) {
+      ResponseObject response = deb.commitRow(rowSet, i, RowInfo.class);
+      if (response.hasErrors()) {
+        return response;
+      }
+
+      count++;
+    }
+
+    return ResponseObject.response(count);
   }
 }

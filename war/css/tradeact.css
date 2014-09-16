@@ -2,13 +2,21 @@
   visibility: hidden;
 }
 
-.bee-ta-form-edit .bee-ta-template-selection {
+.bee-GridFormContainer-edit .bee-ta-template-selection,
+.bee-FormContainer .bee-ta-template-selection,
+.bee-RowContainer .bee-ta-template-selection,
+.bee-ta-form-return .bee-ta-template-selection {
   display: none;
 }
+
 .bee-ta-form-no-services .bee-ta-until-label,
 .bee-ta-form-no-services .bee-ta-until-input,
 .bee-ta-form-no-services .bee-ta-services-tab,
 .bee-ta-form-no-services .bee-grid-TradeActServices {
+  display: none;
+}
+
+.bee-ta-form-return .bee-ta-command-import-items {
   display: none;
 }
 
@@ -30,17 +38,25 @@
   color: black;
 }
 
-.bee-ta-picker-item-panel {
+.bee-ta-picker-item-panel,
+.bee-ta-return-items-wrapper,
+.bee-ta-import-items-wrapper {
   max-height: 70vh;
   overflow: auto;
 }
-.bee-ta-picker-item-table {
+.bee-ta-picker-item-table,
+.bee-ta-return-items-table,
+.bee-ta-import-items-table {
   border-collapse: collapse;
 }
-.bee-ta-picker-item-table td {
+.bee-ta-picker-item-table td,
+.bee-ta-return-items-table td,
+.bee-ta-import-items-table td {
   border: 1px solid #ddd;
 }
-.bee-ta-picker-header td {
+.bee-ta-picker-header td,
+.bee-ta-return-items-header td,
+.bee-ta-import-items-header td {
   text-align: center;
   padding: 3px 5px;
   font-weight: bold;
@@ -49,20 +65,31 @@
 .bee-ta-picker-def-price-label {
   max-width: 80px;
 }
+.bee-ta-return-items-header,
+.bee-ta-import-items-header {
+  white-space: nowrap;
+}
 
+.bee-ta-return-items-item:nth-child(odd),
 .bee-ta-picker-item:nth-child(odd) {
   background-color: #f5f5f5;
 }
+.bee-ta-return-items-item:nth-child(even),
 .bee-ta-picker-item:nth-child(even) {
   background-color: #ebebeb;
 }
-.bee-ta-picker-item:hover {
+.bee-ta-picker-item:hover,
+.bee-ta-return-items-item:hover,
+.bee-ta-import-items-item:hover {
   background-color: blanchedalmond;
 }
+.bee-ta-return-items-selected td,
 .bee-ta-picker-item-selected td {
   background-color: aquamarine;
 }
-.bee-ta-picker-item td {
+.bee-ta-picker-item td,
+.bee-ta-return-items-item td,
+.bee-ta-import-items-item td {
   padding: 2px 5px;
 }
 
@@ -70,7 +97,13 @@
 .bee-ta-picker-price-cell,
 .bee-ta-picker-def-price-cell,
 .bee-ta-picker-stock-cell,
-.bee-ta-picker-from-cell {
+.bee-ta-picker-from-cell,
+.bee-ta-return-items-price-cell,
+.bee-ta-return-items-qty-cell,
+.bee-ta-import-items-qty-cell,
+.bee-ta-import-items-stock-cell,
+.bee-ta-import-items-from-cell,
+.bee-ta-import-items-id-cell {
   text-align: right;
 }
 
@@ -79,6 +112,7 @@
   white-space: pre-line;
 }
 
+.bee-ta-return-items-price-currency,
 .bee-ta-picker-price-currency {
   padding-left: 5px;
   font-size: x-small;
@@ -89,11 +123,45 @@
   background-color: honeydew;
 }
 .bee-ta-picker-from-label,
-.bee-ta-picker-from-cell {
+.bee-ta-picker-from-cell,
+.bee-ta-import-items-from-label,
+.bee-ta-import-items-from-cell {
   background-color: azure;
 }
+.bee-ta-return-items-qty-cell,
+.bee-ta-picker-from-cell .bee-ta-picker-stock-positive {
+  cursor: pointer;
+}
 
+.bee-ta-return-items-input-cell,
+.bee-ta-picker-qty-cell {
+  text-align: center;
+}
+.bee-ta-return-items-input-widget.bee-ta-return-items-input-widget,
 .bee-ta-picker-qty-input.bee-ta-picker-qty-input {
   width: 60px;
   font-weight: bold;
+}
+
+.bee-ta-import-items-toggle-cell {
+  text-align: center;
+}
+.bee-ta-import-items-toggle-label .bee-ta-import-items-toggle {
+  font-size: 18px;
+  font-weight: normal;
+}
+.bee-ta-import-items-toggle {
+  cursor: pointer;
+  font-size: 16px;
+}
+
+.bee-ta-import-items-selected {
+  background-color: #dfd;
+}
+.bee-ta-import-items-duplicate td {
+  background-color: #fdd;
+}
+.bee-ta-import-items-no-stock .bee-ta-import-items-qty-cell,
+.bee-ta-import-items-no-stock .bee-ta-import-items-from-cell {
+  background-color: yellow;
 }

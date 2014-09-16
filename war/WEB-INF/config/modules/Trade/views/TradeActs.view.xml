@@ -39,7 +39,7 @@
 
     <SimpleColumn name="ServiceObject" />
     <SimpleJoin joinType="LEFT" name="ServiceObject">
-      <SimpleColumn name="Address" alias="ObjectAddress" />
+      <SimpleColumn name="Address" alias="ServiceObjectAddress" />
     </SimpleJoin>
 
     <SimpleColumn name="Manager" />
@@ -85,9 +85,13 @@
     </SimpleJoin>
 
     <SimpleColumn name="Notes" />
+
+    <SimpleColumn name="Parent" />
   </Columns>
   
   <Order>
+    <OrderBy column="SeriesName" />
+    <OrderBy column="Number" />
     <OrderBy column="Date" />
   </Order>
 </View>

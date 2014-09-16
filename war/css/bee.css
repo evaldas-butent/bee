@@ -1,6 +1,6 @@
 @font-face {
   font-family: FontAwesome;
-  src: url(../fonts/fontawesome-webfont.woff?v=4.1.0);
+  src: url(../fonts/fontawesome-webfont.woff?v=4.2.0);
   font-weight: normal;
   font-style: normal;
 }
@@ -242,7 +242,7 @@
   margin-left: 1em;
 }
 .bee-UserExit {
-  font-size: 18px;
+  font-size: large;
   cursor: pointer;
   color: #888;
 }
@@ -510,7 +510,7 @@
 .bee-Header-commandPanel .bee-fa-label, .bee-Dialog-header .bee-fa-label {
   margin-left: 4px;
   margin-right: 4px;
-  font-size: 19px;
+  font-size: large;
   color: #888;
 }
 
@@ -524,20 +524,20 @@
 
 .bee-Header-control {
   margin-right: 10px;
-}
-.bee-Header-control.bee-fa-label {
-  font-size: 19px;
+  font-size: large;
   color: #888;
 }
-.bee-Header-control.bee-fa-label:hover {
+.bee-Header-control:hover {
   color: black;
 }
 
 .bee-Header-control.bee-Action-removeFilter {
   margin-right: 0;
+  font-size: 12px;
+  color: red;
   position: relative;
-  top: -10px;
-  left: -10px;
+  top: -8px;
+  left: -8px;
 }
 
 .bee-Header-disabled .bee-Header-control {
@@ -685,7 +685,6 @@
   position: absolute;
   background-color: white;
   box-sizing: content-box !important;
-  -moz-box-sizing: content-box !important;
 }
 
 .bee-SelectionHeader {
@@ -1168,6 +1167,18 @@
   cursor: default;
 }
 
+.bee-TabbedPages-tabCaption {
+  display: inline-block;
+}
+.bee-TabbedPages-tabSummary {
+  display: inline-block;
+  font-size: 12px;
+  line-height: normal;
+  vertical-align: super;
+  position: relative;
+  left: 5px;
+}
+
 .bee-TabbedPages-content {
   overflow: auto;
 }
@@ -1247,7 +1258,7 @@
 }
 .bee-FavoritesEdit,
 .bee-FavoritesDelete {
-  font-size: 18px;
+  font-size: large;
   padding: 3px;
   cursor: pointer;
   color: #555;
@@ -1702,7 +1713,8 @@
 }
 
 .bee-ModalTableContainer {
-  max-height: 500px;
+  max-height: 60vh;
+  max-width: 80vw;
   overflow: auto;
 }
 
@@ -2043,7 +2055,6 @@
 .bee-DataSelector-editableContainer,
 .bee-MultiSelector-container {
   box-sizing: border-box;
-  -moz-box-sizing: border-box;
   margin: 0;
   background-color: white;
   color: inherit;
@@ -2112,7 +2123,6 @@
 .bee-GridSettings-drag {
   background-color: yellow;
   box-sizing: border-box;
-  -moz-box-sizing: border-box;
   border: 1px solid darkgreen;
 }
 
@@ -2404,7 +2414,7 @@
 
 .bee-Online-tweet,
 .bee-Online-home {
-  font-size: 18px;
+  font-size: large;
   padding: 3px;
   cursor: pointer;
   color: #555;
@@ -2445,7 +2455,7 @@
 .bee-Room-infoCommand,
 .bee-Room-settingsCommand,
 .bee-Room-deleteCommand {
-  font-size: 18px;
+  font-size: large;
   padding: 3px;
   cursor: pointer;
   color: #888;
@@ -2720,7 +2730,7 @@
   position: absolute;
   top: 5px;
   color: #888;
-  font-size: 18px;
+  font-size: large;
   padding: 1px 3px;
   cursor: pointer;
 }
@@ -2815,7 +2825,7 @@
   margin-right: 2px;
 }
 .bee-News-subscription-filter {
-  font-size: 18px;
+  font-size: large;
   margin-left: 4px;
   margin-right: 2px;
   border-radius: 4px;
@@ -2941,7 +2951,7 @@
 
 .bee-Rights-role-orientation,
 .bee-Rights-column-label-orientation {
-  font-size: 18px;
+  font-size: large;
   width: 20px;
   padding: 2px;
   cursor: pointer;
@@ -3109,7 +3119,7 @@
 
 .bee-report-settings-edit,
 .bee-report-settings-delete {
-  font-size: 18px;
+  font-size: large;
   padding: 3px;
   cursor: pointer;
   color: #555;
@@ -3169,7 +3179,7 @@
   padding: 4px 10px;
 }
 .bee-GridMenu-popup .bee-fa-label {
-  font-size: 18px;
+  font-size: large;
   color: #888;
 }
 .bee-GridMenu-table tr:hover .bee-fa-label {
@@ -3234,7 +3244,7 @@
 .bee-spaces-startup,
 .bee-spaces-edit,
 .bee-spaces-delete {
-  font-size: 18px;
+  font-size: large;
   padding: 3px;
   color: #555;
 }
@@ -3270,6 +3280,7 @@ textarea,
 
 .bee-output:not(:empty) {
   background-color: whitesmoke;
+  box-sizing: border-box;
   padding: 1px 2px;
   border: 1px solid silver;
 }

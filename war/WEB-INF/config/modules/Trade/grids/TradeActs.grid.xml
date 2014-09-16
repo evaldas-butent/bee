@@ -4,8 +4,10 @@
   name="TradeActs" viewName="TradeActs" caption="=tradeActs"
   >
   <g:columns>
-    <DataColumn name="Kind" visible="true" />
     <IdColumn name="Id" />
+    <DataColumn name="Parent" />
+
+    <DataColumn name="Kind" visible="true" />
 
     <DataColumn name="Date" visible="true" />
     <DataColumn name="Until" />

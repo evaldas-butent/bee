@@ -165,6 +165,7 @@
         <xs:group ref="widgetOrDecorator" />
         <xs:attributeGroup ref="ui:appearance" />
         <xs:attributeGroup ref="visibility" />
+        <xs:attribute name="summary" type="xs:normalizedString" />
       </xs:extension>
     </xs:complexContent>
   </xs:complexType>

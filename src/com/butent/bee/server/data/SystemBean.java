@@ -210,6 +210,33 @@ public class SystemBean {
     }
   }
 
+  public void ensureFields(String tblName) {
+    Collection<String> fldNames = getTableFieldNames(tblName);
+
+    SqlSelect query = new SqlSelect()
+        .addAllFields(tblName)
+        .addFrom(tblName)
+        .setWhere(SqlUtils.sqlFalse());
+
+    SimpleRowSet data = qs.getData(query);
+
+    if (data != null) {
+      boolean rebuild = false;
+
+      for (String fldName : fldNames) {
+        if (!data.hasColumn(fldName)) {
+          logger.info(tblName, fldName, "column not found, rebuilding");
+          rebuild = true;
+          break;
+        }
+      }
+
+      if (rebuild) {
+        rebuildTable(tblName);
+      }
+    }
+  }
+
   public void filterVisibleState(SqlSelect query, String tblName) {
     filterVisibleState(query, tblName, null);
   }

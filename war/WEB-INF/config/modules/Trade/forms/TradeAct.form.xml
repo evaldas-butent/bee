@@ -2,9 +2,11 @@
 <!DOCTYPE Form[
   <!ENTITY inpw "width: 200px;">
   <!ENTITY inpdt "width: 120px;">
+  <!ENTITY forparent "<dynStyle><ui:inline>display: none;</ui:inline><ui:expression>!row.Parent</ui:expression></dynStyle>">
 ]>
 <f:Form xmlns="http://www.butent.com/widget"
   xmlns:f="http://www.butent.com/form"
+  xmlns:ui="http://www.butent.com/ui"
   
   name="TradeAct" viewName="TradeActs"
   caption="=tradeAct" showRowId="true"
@@ -20,6 +22,15 @@
         <Label text="=template" />
         <UnboundSelector viewName="TradeActTemplates" choiceColumns="Template"
           newRowEnabled="false" style="&inpw;" />
+      </row>
+
+      <row>
+        <Label for="Parent">
+          &forparent;
+        </Label>
+        <LongLabel source="Parent" class="bee-output" style="width: 120px;">
+          &forparent;
+        </LongLabel>
       </row>
 
       <row>

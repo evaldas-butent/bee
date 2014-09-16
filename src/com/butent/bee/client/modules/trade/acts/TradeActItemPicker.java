@@ -70,12 +70,10 @@ import com.butent.bee.shared.utils.BeeUtils;
 
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.EnumMap;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.TreeMap;
 
 class TradeActItemPicker extends Flow implements HasSelectionHandlers<BeeRowSet> {
 
@@ -190,14 +188,6 @@ class TradeActItemPicker extends Flow implements HasSelectionHandlers<BeeRowSet>
     return Filter.compareWithValue(column, operator, new TextValue(value));
   }
 
-  private static Collection<Long> extractWarehouses(BeeRowSet rowSet) {
-    if (DataUtils.isEmpty(rowSet)) {
-      return Collections.emptySet();
-    } else {
-      return DataUtils.parseIdSet(rowSet.getTableProperty(TBL_WAREHOUSES));
-    }
-  }
-
   private static void onItemClick(Element source) {
     TableCellElement cell = DomUtils.getParentCell(source, true);
 
@@ -239,12 +229,9 @@ class TradeActItemPicker extends Flow implements HasSelectionHandlers<BeeRowSet>
 
   private BeeRowSet items;
 
-  private final List<Long> warehouses = new ArrayList<>();
-  private final Map<Long, String> warehouseLabels = new HashMap<>();
-
   private final Flow itemPanel = new Flow(STYLE_ITEM_PANEL);
 
-  private NumberFormat priceFormat = Format.getDecimalFormat(2, 5);
+  private NumberFormat priceFormat;
 
   private ChangeHandler quantityChangeHandler;
 
@@ -277,9 +264,6 @@ class TradeActItemPicker extends Flow implements HasSelectionHandlers<BeeRowSet>
     itemPrice = TradeActKeeper.getItemPrice(VIEW_TRADE_ACTS, taRow);
 
     items = null;
-
-    warehouses.clear();
-    warehouseLabels.clear();
 
     if (!itemPanel.isEmpty()) {
       itemPanel.clear();
@@ -358,13 +342,13 @@ class TradeActItemPicker extends Flow implements HasSelectionHandlers<BeeRowSet>
         public void onSuccess(BeeRowSet result) {
           Map<Long, Double> quantities = getQuantities();
 
-          Collection<Long> whs = extractWarehouses(result);
+          Collection<Long> whs = TradeActKeeper.extractWarehouses(result);
 
           if (quantities.isEmpty() || DataUtils.isEmpty(items)) {
             items = result;
 
           } else {
-            whs.addAll(extractWarehouses(items));
+            whs.addAll(TradeActKeeper.extractWarehouses(items));
 
             List<BeeRow> rows = new ArrayList<>();
 
@@ -382,8 +366,8 @@ class TradeActItemPicker extends Flow implements HasSelectionHandlers<BeeRowSet>
             items.setRows(rows);
           }
 
-          prepareWarehouses(whs);
-          renderItems(quantities);
+          Map<Long, String> warehouses = TradeActKeeper.getWarehouses(whs);
+          renderItems(quantities, warehouses);
 
           Scheduler.get().scheduleDeferred(new Scheduler.ScheduledCommand() {
             @Override
@@ -552,39 +536,12 @@ class TradeActItemPicker extends Flow implements HasSelectionHandlers<BeeRowSet>
     dialog.showOnTop(target);
   }
 
-  private void prepareWarehouses(Collection<Long> ids) {
-    warehouses.clear();
-    warehouseLabels.clear();
-
-    if (!BeeUtils.isEmpty(ids)) {
-      Map<Long, String> codes = TradeActKeeper.getWarehouseCodes(ids);
-      if (codes.size() < ids.size()) {
-        for (Long id : ids) {
-          if (DataUtils.isId(id) && !codes.containsKey(id)) {
-            codes.put(id, BeeUtils.toString(id));
-          }
-        }
-      }
-
-      if (codes.size() == 1) {
-        warehouses.addAll(codes.keySet());
-        warehouseLabels.putAll(codes);
-
-      } else if (codes.size() > 1) {
-        TreeMap<String, Long> sorted = new TreeMap<>();
-        for (Map.Entry<Long, String> entry : codes.entrySet()) {
-          sorted.put(entry.getValue(), entry.getKey());
-        }
-
-        for (Map.Entry<String, Long> entry : sorted.entrySet()) {
-          warehouses.add(entry.getValue());
-          warehouseLabels.put(entry.getValue(), entry.getKey());
-        }
-      }
+  private void renderItems(Map<Long, Double> quantities, Map<Long, String> warehouses) {
+    List<Long> warehouseIds = new ArrayList<>();
+    if (!BeeUtils.isEmpty(warehouses)) {
+      warehouseIds.addAll(warehouses.keySet());
     }
-  }
 
-  private void renderItems(Map<Long, Double> quantities) {
     itemPanel.clear();
 
     HtmlTable table = new HtmlTable(STYLE_ITEM_TABLE);
@@ -612,9 +569,9 @@ class TradeActItemPicker extends Flow implements HasSelectionHandlers<BeeRowSet>
       table.setText(r, c++, ip.getCaption(), pfx + STYLE_HEADER_CELL_SUFFIX);
     }
 
-    for (Long w : warehouses) {
+    for (Long w : warehouseIds) {
       pfx = isFrom(w) ? STYLE_FROM_PREFIX : STYLE_STOCK_PREFIX;
-      table.setText(r, c++, warehouseLabels.get(w), pfx + STYLE_HEADER_CELL_SUFFIX);
+      table.setText(r, c++, warehouses.get(w), pfx + STYLE_HEADER_CELL_SUFFIX);
     }
 
     table.setText(r, c++, Localized.getConstants().quantity(),
@@ -667,22 +624,22 @@ class TradeActItemPicker extends Flow implements HasSelectionHandlers<BeeRowSet>
         c++;
       }
 
-      if (!warehouses.isEmpty() && !BeeUtils.isEmpty(item.getProperties())) {
+      if (!warehouseIds.isEmpty() && !BeeUtils.isEmpty(item.getProperties())) {
         for (Map.Entry<String, String> entry : item.getProperties().entrySet()) {
           if (BeeUtils.isPrefix(entry.getKey(), PRP_WAREHOUSE_PREFIX)) {
             Long w = BeeUtils.toLongOrNull(BeeUtils.removePrefix(entry.getKey(),
                 PRP_WAREHOUSE_PREFIX));
 
-            if (DataUtils.isId(w) && warehouses.contains(w)) {
+            if (DataUtils.isId(w) && warehouseIds.contains(w)) {
               pfx = isFrom(w) ? STYLE_FROM_PREFIX : STYLE_STOCK_PREFIX;
-              table.setHtml(r, c + warehouses.indexOf(w), renderStock(w, entry.getValue()),
+              table.setHtml(r, c + warehouseIds.indexOf(w), renderStock(w, entry.getValue()),
                   pfx + STYLE_CELL_SUFFIX);
             }
           }
         }
       }
 
-      c += warehouses.size();
+      c += warehouseIds.size();
 
       Double qty = quantities.get(item.getId());
       table.setWidget(r, c, renderQty(qtyColumn, qty), STYLE_QTY_PREFIX + STYLE_CELL_SUFFIX);

@@ -96,14 +96,14 @@
         <text>=carriers</text>
         <ChildGrid name="AssessmentForwarders" relColumn="Assessment" />
       </page>
-      <page data="CargoIncomes">
+      <page data="CargoIncomes" summary="-">
         <FlowPanel>
           <Label text="=income" style="&inline;" />
           <FlowPanel name="Income" style="&inline;" />
         </FlowPanel>
         <ChildGrid name="CargoIncomes" relColumn="Cargo" source="Cargo" />
       </page>
-      <page data="CargoExpenses">
+      <page data="CargoExpenses" summary="-">
         <FlowPanel>
           <CheckBox name="ExpensesRegistered" source="ExpensesRegistered" html="-"
             title="=trExpensesRegistered" style="&inline; margin:0 5px 0 0; position:relative; top:4px;" />

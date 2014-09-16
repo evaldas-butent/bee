@@ -60,6 +60,8 @@ public interface FormView extends DataView, HasDataTable, ActiveWidgetChangeEven
 
   boolean focus(String source);
 
+  int flush();
+
   long getActiveRowId();
 
   Boolean getBooleanValue(String source);

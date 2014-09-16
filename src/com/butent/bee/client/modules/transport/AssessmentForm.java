@@ -489,7 +489,7 @@ public class AssessmentForm extends PrintFormInterceptor implements SelectorEven
     }
 
     public void save(final String notes) {
-      confirmUpdates(new ScheduledCommand() {
+      ScheduledCommand command = new ScheduledCommand() {
         @Override
         public void execute() {
           int updateSize = Queries.update(getViewName(), form.getDataColumns(),
@@ -505,7 +505,10 @@ public class AssessmentForm extends PrintFormInterceptor implements SelectorEven
             update(notes);
           }
         }
-      });
+      };
+      if (!handleSaveAction(command)) {
+        command.execute();
+      }
     }
 
     public void update(String notes) {
@@ -837,13 +840,13 @@ public class AssessmentForm extends PrintFormInterceptor implements SelectorEven
 
   @Override
   public boolean beforeAction(final Action action, final Presenter presenter) {
-    if (action == Action.SAVE && !isNewRow()) {
-      confirmUpdates(new ScheduledCommand() {
-        @Override
-        public void execute() {
-          presenter.handleAction(action);
-        }
-      });
+    if (action == Action.SAVE && !isNewRow()
+        && handleSaveAction(new ScheduledCommand() {
+          @Override
+          public void execute() {
+            presenter.handleAction(action);
+          }
+        })) {
       return false;
     }
     return super.beforeAction(action, presenter);
@@ -962,7 +965,7 @@ public class AssessmentForm extends PrintFormInterceptor implements SelectorEven
     }
   }
 
-  private void confirmUpdates(final ScheduledCommand action) {
+  private boolean handleSaveAction(final ScheduledCommand action) {
     final int logIdx = form.getDataIndex(COL_ASSESSMENT_LOG);
     final String oldLog = form.getOldRow().getString(logIdx);
     String newLog = form.getActiveRow().getString(logIdx);
@@ -1000,10 +1003,10 @@ public class AssessmentForm extends PrintFormInterceptor implements SelectorEven
                 action.execute();
               }
             });
-        return;
+        return true;
       }
     }
-    action.execute();
+    return false;
   }
 
   private boolean isExecutor() {

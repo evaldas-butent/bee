@@ -33,13 +33,11 @@ import com.butent.bee.shared.data.SearchResult;
 import com.butent.bee.shared.data.SimpleRowSet;
 import com.butent.bee.shared.data.SimpleRowSet.SimpleRow;
 import com.butent.bee.shared.data.filter.Filter;
-import com.butent.bee.shared.data.value.Value;
 import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogUtils;
 import com.butent.bee.shared.modules.BeeParameter;
 import com.butent.bee.shared.modules.administration.AdministrationConstants;
 import com.butent.bee.shared.rights.Module;
-import com.butent.bee.shared.rights.ModuleAndSub;
 import com.butent.bee.shared.rights.RegulatedWidget;
 import com.butent.bee.shared.rights.RightsState;
 import com.butent.bee.shared.utils.BeeUtils;
@@ -74,16 +72,12 @@ public class DocumentsModuleBean implements BeeModule {
 
   @Override
   public List<SearchResult> doSearch(String query) {
-    List<SearchResult> result = Lists.newArrayList();
+    List<SearchResult> docsSr = qs.getSearchResults(VIEW_DOCUMENTS,
+        Filter.anyContains(Sets.newHashSet(COL_NUMBER, COL_REGISTRATION_NUMBER,
+            COL_DOCUMENT_NAME, ALS_CATEGORY_NAME, ALS_TYPE_NAME,
+            ALS_PLACE_NAME, ALS_STATUS_NAME), query));
 
-    if (usr.isModuleVisible(ModuleAndSub.of(Module.DOCUMENTS))) {
-      List<SearchResult> docsSr = qs.getSearchResults(VIEW_DOCUMENTS,
-          Filter.anyContains(Sets.newHashSet(COL_NUMBER, COL_REGISTRATION_NUMBER,
-              COL_DOCUMENT_NAME, ALS_CATEGORY_NAME, ALS_TYPE_NAME,
-              ALS_PLACE_NAME, ALS_STATUS_NAME), query));
-      result.addAll(docsSr);
-    }
-    return result;
+    return docsSr;
   }
 
   @Override
@@ -255,8 +249,8 @@ public class DocumentsModuleBean implements BeeModule {
             List<Long> categories = new ArrayList<>();
 
             if (BeeUtils.isNonNegative(categoryIdx)) {
-              for (Value category : rs.getDistinctValues(categoryIdx)) {
-                categories.add(category.getLong());
+              for (Long category : rs.getDistinctLongs(categoryIdx)) {
+                categories.add(category);
               }
             }
             if (!BeeUtils.isEmpty(categories)) {

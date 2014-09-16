@@ -2,6 +2,7 @@ package com.butent.bee.server.modules.trade;
 
 import com.google.common.collect.HashBasedTable;
 import com.google.common.collect.Lists;
+import com.google.common.collect.Sets;
 import com.google.common.collect.Table;
 import com.google.common.eventbus.Subscribe;
 
@@ -20,12 +21,14 @@ import com.butent.bee.server.sql.IsCondition;
 import com.butent.bee.server.sql.SqlInsert;
 import com.butent.bee.server.sql.SqlSelect;
 import com.butent.bee.server.sql.SqlUtils;
+import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.Service;
 import com.butent.bee.shared.communication.ResponseObject;
 import com.butent.bee.shared.data.BeeColumn;
 import com.butent.bee.shared.data.BeeRow;
 import com.butent.bee.shared.data.BeeRowSet;
 import com.butent.bee.shared.data.DataUtils;
+import com.butent.bee.shared.data.SearchResult;
 import com.butent.bee.shared.data.SimpleRowSet;
 import com.butent.bee.shared.data.SimpleRowSet.SimpleRow;
 import com.butent.bee.shared.data.filter.CompoundFilter;
@@ -43,7 +46,6 @@ import com.butent.bee.shared.utils.EnumUtils;
 import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -66,6 +68,12 @@ public class TradeActBean {
   @EJB
   DataEditorBean deb;
 
+  public List<SearchResult> doSearch(String query) {
+    Set<String> columns = Sets.newHashSet(COL_TA_NUMBER, COL_OPERATION_NAME, COL_STATUS_NAME,
+        ALS_COMPANY_NAME);
+    return qs.getSearchResults(VIEW_TRADE_ACTS, Filter.anyContains(columns, query));
+  }
+
   public ResponseObject doService(String svc, RequestInfo reqInfo) {
     ResponseObject response;
 
@@ -77,6 +85,12 @@ public class TradeActBean {
 
     } else if (BeeUtils.same(svc, SVC_SAVE_ACT_AS_TEMPLATE)) {
       response = saveActAsTemplate(reqInfo);
+
+    } else if (BeeUtils.same(svc, SVC_GET_TEMPLATE_ITEMS_AND_SERVICES)) {
+      response = getTemplateItemsAndServices(reqInfo);
+
+    } else if (BeeUtils.same(svc, SVC_GET_ITEMS_FOR_RETURN)) {
+      response = getItemsForReturn(reqInfo);
 
     } else {
       String msg = BeeUtils.joinWords("service not recognized:", svc);
@@ -163,6 +177,30 @@ public class TradeActBean {
     return response;
   }
 
+  private Set<Long> getActItems(Long actId) {
+    if (DataUtils.isId(actId)) {
+      return qs.getLongSet(new SqlSelect()
+          .addFields(TBL_TRADE_ACT_ITEMS, COL_TA_ITEM)
+          .addFrom(TBL_TRADE_ACT_ITEMS)
+          .setWhere(SqlUtils.equals(TBL_TRADE_ACT_ITEMS, COL_TRADE_ACT, actId)));
+
+    } else {
+      return BeeConst.EMPTY_IMMUTABLE_LONG_SET;
+    }
+  }
+
+  private Set<Long> getActServices(Long actId) {
+    if (DataUtils.isId(actId)) {
+      return qs.getLongSet(new SqlSelect()
+          .addFields(TBL_TRADE_ACT_SERVICES, COL_TA_ITEM)
+          .addFrom(TBL_TRADE_ACT_SERVICES)
+          .setWhere(SqlUtils.equals(TBL_TRADE_ACT_SERVICES, COL_TRADE_ACT, actId)));
+
+    } else {
+      return BeeConst.EMPTY_IMMUTABLE_LONG_SET;
+    }
+  }
+
   private String getNextActNumber(long series) {
     IsCondition where = SqlUtils.and(SqlUtils.equals(TBL_TRADE_ACTS, COL_TA_SERIES, series),
         SqlUtils.notNull(TBL_TRADE_ACTS, COL_TA_NUMBER));
@@ -202,9 +240,77 @@ public class TradeActBean {
     return big.add(BigInteger.ONE).toString();
   }
 
+  private ResponseObject getItemsForReturn(RequestInfo reqInfo) {
+    Long actId = reqInfo.getParameterLong(COL_TRADE_ACT);
+    if (!DataUtils.isId(actId)) {
+      return ResponseObject.parameterNotFound(reqInfo.getService(), COL_TRADE_ACT);
+    }
+
+    Filter filter = Filter.and(Filter.equals(COL_TRADE_ACT, actId),
+        Filter.isPositive(COL_TRADE_ITEM_QUANTITY));
+
+    BeeRowSet parentItems = qs.getViewData(VIEW_TRADE_ACT_ITEMS, filter);
+    if (DataUtils.isEmpty(parentItems)) {
+      return ResponseObject.emptyResponse();
+    }
+
+    BeeRowSet parentAct = qs.getViewData(VIEW_TRADE_ACTS, Filter.compareId(actId));
+    String serializedParent = DataUtils.isEmpty(parentAct) ? null : parentAct.getRow(0).serialize();
+
+    SqlSelect query = new SqlSelect()
+        .addFields(TBL_TRADE_ACT_ITEMS, COL_TA_ITEM)
+        .addSum(TBL_TRADE_ACT_ITEMS, COL_TRADE_ITEM_QUANTITY)
+        .addFrom(TBL_TRADE_ACTS)
+        .addFromInner(TBL_TRADE_ACT_ITEMS,
+            sys.joinTables(TBL_TRADE_ACTS, TBL_TRADE_ACT_ITEMS, COL_TRADE_ACT))
+        .setWhere(SqlUtils.and(SqlUtils.equals(TBL_TRADE_ACTS, COL_TA_PARENT, actId),
+            SqlUtils.equals(TBL_TRADE_ACTS, COL_TA_KIND, TradeActKind.RETURN.ordinal())))
+        .addGroup(TBL_TRADE_ACT_ITEMS, COL_TA_ITEM);
+
+    SimpleRowSet returnedItems = qs.getData(query);
+    if (DataUtils.isEmpty(returnedItems)) {
+      parentItems.setTableProperty(PRP_PARENT_ACT, serializedParent);
+      return ResponseObject.response(parentItems);
+    }
+
+    BeeRowSet result = new BeeRowSet(parentItems.getViewName(), parentItems.getColumns());
+
+    int itemIndex = parentItems.getColumnIndex(COL_TA_ITEM);
+    int qtyIndex = parentItems.getColumnIndex(COL_TRADE_ITEM_QUANTITY);
+
+    for (BeeRow parentRow : parentItems) {
+      double qty = parentRow.getDouble(qtyIndex);
+
+      String returnedQty = returnedItems.getValueByKey(COL_TA_ITEM, parentRow.getString(itemIndex),
+          COL_TRADE_ITEM_QUANTITY);
+
+      boolean found = BeeUtils.isPositiveDouble(returnedQty);
+      if (found) {
+        qty -= BeeUtils.toDouble(returnedQty);
+      }
+
+      if (BeeUtils.isPositive(qty)) {
+        BeeRow row = DataUtils.cloneRow(parentRow);
+        if (found) {
+          row.setValue(qtyIndex, qty);
+        }
+
+        result.addRow(row);
+      }
+    }
+
+    if (DataUtils.isEmpty(result)) {
+      return ResponseObject.emptyResponse();
+    } else {
+      result.setTableProperty(PRP_PARENT_ACT, serializedParent);
+      return ResponseObject.response(result);
+    }
+  }
+
   private ResponseObject getItemsForSelection(RequestInfo reqInfo) {
     TradeActKind kind = EnumUtils.getEnumByIndex(TradeActKind.class,
         reqInfo.getParameter(COL_TA_KIND));
+
     if (kind == null) {
       return ResponseObject.parameterNotFound(reqInfo.getService(), COL_TA_KIND);
     }
@@ -214,23 +320,14 @@ public class TradeActBean {
 
     String where = reqInfo.getParameter(Service.VAR_VIEW_WHERE);
 
-    Set<Long> actItems;
-    if (DataUtils.isId(actId)) {
-      actItems = qs.getLongSet(new SqlSelect()
-          .addFields(TBL_TRADE_ACT_ITEMS, COL_TA_ITEM)
-          .addFrom(TBL_TRADE_ACT_ITEMS)
-          .setWhere(SqlUtils.equals(TBL_TRADE_ACT_ITEMS, COL_TRADE_ACT, actId)));
-
-    } else {
-      actItems = new HashSet<>();
-    }
-
     CompoundFilter filter = Filter.and();
     filter.add(Filter.isNull(COL_ITEM_IS_SERVICE));
 
+    Set<Long> actItems = getActItems(actId);
     if (!actItems.isEmpty()) {
       filter.add(Filter.idNotIn(actItems));
     }
+
     if (!BeeUtils.isEmpty(where)) {
       filter.add(Filter.restore(where));
     }
@@ -243,7 +340,7 @@ public class TradeActBean {
 
     if (kind.showStock()) {
       List<Long> itemIds = (items.getNumberOfRows() < 200)
-          ? items.getRowIds() : Collections.emptyList();
+          ? items.getRowIds() : BeeConst.EMPTY_IMMUTABLE_LONG_LIST;
       Table<Long, Long, Double> stock = getStock(itemIds);
 
       if (stock != null) {
@@ -348,6 +445,67 @@ public class TradeActBean {
         .setWhere(SqlUtils.and(SqlUtils.notNull(TBL_TRADE_OPERATIONS, colWarehouse), condition))
         .addGroup(TBL_TRADE_ACT_ITEMS, COL_TA_ITEM)
         .addGroup(TBL_TRADE_OPERATIONS, colWarehouse);
+  }
+
+  private static Filter getTemplateChildrenFilter(Long templateId, Collection<Long> excludeItems) {
+    if (BeeUtils.isEmpty(excludeItems)) {
+      return Filter.equals(COL_TRADE_ACT_TEMPLATE, templateId);
+    } else {
+      return Filter.and(Filter.equals(COL_TRADE_ACT_TEMPLATE, templateId),
+          Filter.exclude(COL_TA_ITEM, excludeItems));
+    }
+  }
+
+  private ResponseObject getTemplateItemsAndServices(RequestInfo reqInfo) {
+    Long templateId = reqInfo.getParameterLong(COL_TRADE_ACT_TEMPLATE);
+    if (!DataUtils.isId(templateId)) {
+      return ResponseObject.parameterNotFound(reqInfo.getService(), COL_TRADE_ACT_TEMPLATE);
+    }
+
+    Long actId = reqInfo.getParameterLong(COL_TRADE_ACT);
+    TradeActKind kind = EnumUtils.getEnumByIndex(TradeActKind.class,
+        reqInfo.getParameter(COL_TA_KIND));
+
+    List<BeeRowSet> result = new ArrayList<>();
+
+    Set<Long> itemIds = new HashSet<>();
+
+    Set<Long> actItems = getActItems(actId);
+    Filter filter = getTemplateChildrenFilter(templateId, actItems);
+
+    BeeRowSet templateItems = qs.getViewData(VIEW_TRADE_ACT_TMPL_ITEMS, filter);
+    if (!DataUtils.isEmpty(templateItems)) {
+      result.add(templateItems);
+
+      int index = templateItems.getColumnIndex(COL_TA_ITEM);
+      itemIds.addAll(templateItems.getDistinctLongs(index));
+    }
+
+    if (kind != null && kind.enableServices()) {
+      Set<Long> actServices = getActServices(actId);
+      filter = getTemplateChildrenFilter(templateId, actServices);
+
+      BeeRowSet templateServices = qs.getViewData(VIEW_TRADE_ACT_TMPL_SERVICES, filter);
+      if (!DataUtils.isEmpty(templateServices)) {
+        result.add(templateServices);
+
+        int index = templateServices.getColumnIndex(COL_TA_ITEM);
+        itemIds.addAll(templateServices.getDistinctLongs(index));
+      }
+    }
+
+    if (!itemIds.isEmpty()) {
+      BeeRowSet items = qs.getViewData(VIEW_ITEMS, Filter.idIn(itemIds));
+      if (!DataUtils.isEmpty(items)) {
+        result.add(items);
+      }
+    }
+
+    if (result.isEmpty()) {
+      return ResponseObject.emptyResponse();
+    } else {
+      return ResponseObject.response(result).setSize(result.size());
+    }
   }
 
   private ResponseObject saveActAsTemplate(RequestInfo reqInfo) {

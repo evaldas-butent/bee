@@ -545,7 +545,7 @@ public class GridContainerImpl extends Split implements GridContainerView, HasNa
   @Override
   public void onRender(RenderingEvent event) {
     if (event != null && event.isAfter()) {
-      boolean empty = getGridView().getGrid().getRowData().isEmpty();
+      boolean empty = getGridView().isEmpty();
 
       setStyleName(STYLE_HAS_DATA, !empty);
       setStyleName(STYLE_NO_DATA, empty);
