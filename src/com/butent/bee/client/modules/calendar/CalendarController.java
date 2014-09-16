@@ -657,7 +657,7 @@ class CalendarController extends Flow implements HandlesStateChange, HasCaption,
     int index = ucaIds.indexOf(rowId);
 
     if (index >= 0) {
-      updateCell(rowId, COL_ENABLED, BooleanValue.getInstance(enabled));
+      updateCell(rowId, COL_ENABLED, BooleanValue.of(enabled));
       getRow(rowId).setValue(enabledIndex, enabled);
 
       table.getRowFormatter().removeStyleName(index, STYLE_CONTAINER

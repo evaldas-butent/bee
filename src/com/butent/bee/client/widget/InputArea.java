@@ -18,10 +18,8 @@ import com.google.gwt.user.client.Event;
 import com.butent.bee.client.dom.DomUtils;
 import com.butent.bee.client.dom.Features;
 import com.butent.bee.client.event.Binder;
-import com.butent.bee.client.event.EventUtils;
 import com.butent.bee.client.event.HasInputHandlers;
 import com.butent.bee.client.event.InputHandler;
-import com.butent.bee.client.event.logical.HasSummaryChangeHandlers;
 import com.butent.bee.client.event.logical.SummaryChangeEvent;
 import com.butent.bee.client.style.StyleUtils;
 import com.butent.bee.client.ui.FormWidget;
@@ -36,6 +34,8 @@ import com.butent.bee.client.view.edit.TextBox;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.Resource;
 import com.butent.bee.shared.State;
+import com.butent.bee.shared.data.value.IntegerValue;
+import com.butent.bee.shared.data.value.Value;
 import com.butent.bee.shared.html.Attributes;
 import com.butent.bee.shared.html.Autocomplete;
 import com.butent.bee.shared.ui.EditorAction;
@@ -56,7 +56,7 @@ import elemental.html.TextAreaElement;
 
 public class InputArea extends CustomWidget implements Editor, TextBox, HandlesAfterSave,
     HasTextDimensions, HasInputHandlers, HasTextBox, HasMaxLength, HasAutocomplete,
-    HasKeyDownHandlers, HasSummaryChangeHandlers {
+    HasKeyDownHandlers {
 
   private static final String STYLE_NAME = StyleUtils.CLASS_NAME_PREFIX + "InputArea";
 
@@ -73,6 +73,8 @@ public class InputArea extends CustomWidget implements Editor, TextBox, HandlesA
   private String options;
 
   private boolean handlesTabulation;
+
+  private boolean summarize;
 
   public InputArea() {
     super(Document.get().createTextAreaElement());
@@ -213,6 +215,11 @@ public class InputArea extends CustomWidget implements Editor, TextBox, HandlesA
   }
 
   @Override
+  public Value getSummary() {
+    return new IntegerValue(BeeUtils.countLines(getValue()));
+  }
+
+  @Override
   public int getTabIndex() {
     return getTextAreaElement().getTabIndex();
   }
@@ -309,10 +316,6 @@ public class InputArea extends CustomWidget implements Editor, TextBox, HandlesA
       event.preventDefault();
       fireEvent(new EditStopEvent(State.CHANGED));
       return;
-    }
-
-    if (EventUtils.isChange(event.getType())) {
-      updateSummary(getValue());
     }
 
     super.onBrowserEvent(event);
@@ -415,6 +418,11 @@ public class InputArea extends CustomWidget implements Editor, TextBox, HandlesA
   }
 
   @Override
+  public void setSummarize(boolean summarize) {
+    this.summarize = summarize;
+  }
+
+  @Override
   public void setTabIndex(int index) {
     getTextAreaElement().setTabIndex(index);
   }
@@ -427,9 +435,7 @@ public class InputArea extends CustomWidget implements Editor, TextBox, HandlesA
   @Override
   public void setValue(String value) {
     getTextAreaElement().setValue(Strings.nullToEmpty(value));
-
     updateDigest(getValue());
-    updateSummary(value);
   }
 
   @Override
@@ -449,6 +455,11 @@ public class InputArea extends CustomWidget implements Editor, TextBox, HandlesA
     EditorAssistant.doEditorAction(this, oldValue, charCode, action);
   }
 
+  @Override
+  public boolean summarize() {
+    return summarize;
+  }
+
   public String updateDigest() {
     return updateDigest(getValue());
   }
@@ -460,10 +471,6 @@ public class InputArea extends CustomWidget implements Editor, TextBox, HandlesA
       setDigest(Codec.md5(value));
     }
     return getDigest();
-  }
-
-  public void updateSummary(String value) {
-    SummaryChangeEvent.fire(this, BeeUtils.countLines(value));
   }
 
   @Override
@@ -480,8 +487,6 @@ public class InputArea extends CustomWidget implements Editor, TextBox, HandlesA
   protected void init() {
     super.init();
     addStyleName(STYLE_NAME);
-
-    sinkEvents(Event.ONCHANGE);
   }
 
   private TextAreaElement getTextAreaElement() {

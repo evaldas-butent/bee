@@ -9,7 +9,6 @@ import com.butent.bee.client.event.logical.HasSummaryChangeHandlers;
 import com.butent.bee.client.event.logical.ParentRowEvent;
 import com.butent.bee.client.event.logical.ReadyEvent;
 import com.butent.bee.client.event.logical.ReadyEvent.HasReadyHandlers;
-import com.butent.bee.client.event.logical.RowCountChangeEvent;
 import com.butent.bee.client.event.logical.SummaryChangeEvent;
 import com.butent.bee.client.layout.Simple;
 import com.butent.bee.client.presenter.GridPresenter;
@@ -20,6 +19,8 @@ import com.butent.bee.client.view.HasGridView;
 import com.butent.bee.client.view.grid.GridView;
 import com.butent.bee.client.view.grid.interceptor.GridInterceptor;
 import com.butent.bee.shared.BeeConst;
+import com.butent.bee.shared.data.value.BooleanValue;
+import com.butent.bee.shared.data.value.Value;
 import com.butent.bee.shared.utils.BeeUtils;
 
 import java.util.ArrayList;
@@ -38,6 +39,8 @@ abstract class EmbeddedGrid extends Simple implements EnablableWidget, HasFoster
 
   private String parentId;
   private HandlerRegistration parentRowReg;
+
+  private boolean summarize = true;
 
   private final List<SummaryChangeEvent.Handler> pendingSummaryChangeHandlers = new ArrayList<>();
   private final Map<EventHandler, HandlerRegistration> gridHandlerRegistry = new HashMap<>();
@@ -96,6 +99,12 @@ abstract class EmbeddedGrid extends Simple implements EnablableWidget, HasFoster
   }
 
   @Override
+  public Value getSummary() {
+    GridView gridView = getGridView();
+    return (gridView == null) ? BooleanValue.NULL : gridView.getSummary();
+  }
+
+  @Override
   public boolean isEnabled() {
     if (getPresenter() == null) {
       return false;
@@ -124,6 +133,16 @@ abstract class EmbeddedGrid extends Simple implements EnablableWidget, HasFoster
   }
 
   @Override
+  public void setSummarize(boolean summarize) {
+    this.summarize = summarize;
+
+    GridView gridView = getGridView();
+    if (gridView != null) {
+      gridView.setSummarize(summarize);
+    }
+  }
+
+  @Override
   public void setWidget(Widget w) {
     if (w != null) {
       StyleUtils.makeAbsolute(w);
@@ -136,17 +155,25 @@ abstract class EmbeddedGrid extends Simple implements EnablableWidget, HasFoster
     super.setWidget(w);
   }
 
+  @Override
+  public boolean summarize() {
+    return summarize;
+  }
+
   protected void afterCreateGrid(GridView gridView) {
-    if (gridView != null && !pendingSummaryChangeHandlers.isEmpty()) {
-      for (SummaryChangeEvent.Handler handler : pendingSummaryChangeHandlers) {
-        gridHandlerRegistry.put(handler, gridView.addSummaryChangeHandler(handler));
-      }
+    if (gridView != null) {
+      gridView.setSummarize(summarize());
 
-      pendingSummaryChangeHandlers.clear();
+      if (!pendingSummaryChangeHandlers.isEmpty()) {
+        for (SummaryChangeEvent.Handler handler : pendingSummaryChangeHandlers) {
+          gridHandlerRegistry.put(handler, gridView.addSummaryChangeHandler(handler));
+        }
 
-      int rowCount = gridView.getGrid().getRowCount();
-      if (!BeeConst.isUndef(rowCount)) {
-        gridView.onRowCountChange(new RowCountChangeEvent(rowCount));
+        pendingSummaryChangeHandlers.clear();
+
+        if (summarize() && !BeeConst.isUndef(gridView.getGrid().getRowCount())) {
+          SummaryChangeEvent.fire(gridView);
+        }
       }
     }
   }

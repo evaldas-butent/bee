@@ -45,13 +45,13 @@
         <text>=mailNotify</text>
         <FlowPanel style="padding-left: 2em;">
           <br/>
-          <CheckBox source="MailAssignedTasks" module="Tasks" />
+          <CheckBox source="MailAssignedTasks" module="Tasks" summarize="true" />
           <br/>
           <br/>
-          <CheckBox source="MailNewAnnouncements" module="Discussions" />
+          <CheckBox source="MailNewAnnouncements" module="Discussions" summarize="true" />
           <br/>
           <br/>
-          <CheckBox source="MailNewDiscussions" module="Discussions" />
+          <CheckBox source="MailNewDiscussions" module="Discussions" summarize="true" />
         </FlowPanel>
       </page>
       
@@ -59,10 +59,10 @@
         <text>=userInterface</text>
         <FlowPanel style="padding-left: 2em;">
           <br/>
-          <CheckBox source="OpenInNewTab" />
+          <CheckBox source="OpenInNewTab" summarize="true" />
           <br/>
           <br/>
-          <CheckBox source="WorkspaceContinue" />
+          <CheckBox source="WorkspaceContinue" summarize="true" />
           <br/>
           <br/>
 
@@ -72,12 +72,12 @@
             <row>
               <Label for="ApplianceHeaderHeight" />
               <InputSpinner source="ApplianceHeaderHeight" minValue="0" maxValue="99"
-                style="width: 40px;" />
+                style="width: 40px;" summarize="true" />
             </row>
             <row>
               <Label for="ViewHeaderHeight" />
               <InputSpinner source="ViewHeaderHeight" minValue="0" maxValue="99"
-                style="width: 40px;"/>
+                style="width: 40px;" summarize="true" />
             </row>
           </Table>
         </FlowPanel>
@@ -86,7 +86,8 @@
       <page>
         <text>CSS</text>
         <SimplePanel>
-          <InputArea source="Style" class="occupy-1" style="font-family: monospace;" />
+          <InputArea source="Style" class="occupy-1" style="font-family: monospace;" 
+            summarize="true" />
         </SimplePanel>
       </page>
     </TabbedPages>     

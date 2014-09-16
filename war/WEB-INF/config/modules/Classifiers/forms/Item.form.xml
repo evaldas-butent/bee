@@ -89,25 +89,25 @@
 
           <row>
             <Label for="Price" />
-            <InputDecimal source="Price" currencySource="Currency" />
+            <InputDecimal source="Price" currencySource="Currency" summarize="true" />
             <DataSelector source="Currency" for="Price" newRowEnabled="false" editEnabled="false"
               style="width: 50px;" />
           </row>
           <row>
             <Label for="Cost" />
-            <InputDecimal source="Cost" currencySource="CostCurrency" />
+            <InputDecimal source="Cost" currencySource="CostCurrency" summarize="true" />
             <DataSelector source="CostCurrency" for="Cost" newRowEnabled="false" editEnabled="false"
               style="width: 50px;" />
           </row>
           <row>
             <Label for="Price1" />
-            <InputDecimal source="Price1" currencySource="Currency1" />
+            <InputDecimal source="Price1" currencySource="Currency1" summarize="true" />
             <DataSelector source="Currency1" for="Price1" newRowEnabled="false" editEnabled="false"
               style="width: 50px;" />
           </row>
           <row>
             <Label for="Price2" />
-            <InputDecimal source="Price2" currencySource="Currency2" />
+            <InputDecimal source="Price2" currencySource="Currency2" summarize="true" />
             <DataSelector source="Currency2" for="Price2" newRowEnabled="false" editEnabled="false"
               style="width: 50px;" />
           </row>
@@ -123,32 +123,33 @@
           <row>
             <Label for="Name2" />
             <cell colSpan="3">
-              <InputText source="Name2" autocomplete="true" visible="true" style="width: 100%;" />
+              <InputText source="Name2" autocomplete="true" visible="true" style="width: 100%;"
+                summarize="true" />
             </cell>
           </row>
 
           <row>
             <Label for="Article2" />
-            <InputText source="Article2" />
+            <InputText source="Article2" summarize="true" />
 
             <Label for="Ordinal" />
-            <InputInteger source="Ordinal" />
+            <InputInteger source="Ordinal" summarize="true" />
           </row>
 
           <row>
             <Label for="Department" />
-            <DataSelector source="Department" />
+            <DataSelector source="Department" summarize="true" />
 
             <Label for="ExternalCode" />
-            <InputText source="ExternalCode" />
+            <InputText source="ExternalCode" summarize="true" />
           </row>
 
           <row>
             <Label for="ActivityType" />
-            <DataSelector source="ActivityType" />
+            <DataSelector source="ActivityType" summarize="true" />
 
             <Label for="CostCenter" />
-            <DataSelector source="CostCenter" />
+            <DataSelector source="CostCenter" summarize="true" />
           </row>
         </Table>
       </page>  
@@ -156,14 +157,14 @@
       <page for="Description">
         <text>=description</text>
         <SimplePanel>
-          <InputArea source="Description" class="occupy-1" />
+          <InputArea source="Description" class="occupy-1" summarize="true" />
         </SimplePanel>
       </page>
 
       <page for="Notes">
         <text>=notes</text>
         <SimplePanel>
-          <InputArea source="Notes" class="occupy-1" />
+          <InputArea source="Notes" class="occupy-1" summarize="true" />
         </SimplePanel>
       </page>  
     </TabbedPages>
