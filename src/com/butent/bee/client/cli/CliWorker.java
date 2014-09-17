@@ -406,9 +406,6 @@ public final class CliWorker {
     } else if (z.startsWith("image")) {
       showImages(arr);
 
-    } else if ("import_csv".equals(z)) {
-      importCSV(arr);
-
     } else if ("inject".equals(z) && arr.length == 2) {
       DomUtils.injectExternalScript(arr[1]);
 
@@ -1779,64 +1776,6 @@ public final class CliWorker {
     }
 
     BeeKeeper.getRpc().makeRequest(params, ResponseHandler.callback(input));
-  }
-
-  @Deprecated
-  private static void importCSV(String[] arr) {
-    LogUtils.getRootLogger().debug((Object[]) arr);
-    if (arr.length < 2) {
-      return;
-    }
-
-    String servName = "";
-    if (BeeUtils.same(arr[1], "companies")) {
-      servName = Service.IMPORT_CSV_COMPANIES;
-    }
-
-    if (!BeeUtils.isEmpty(servName)) {
-      final String serviceName = servName;
-      LogUtils.getRootLogger().debug("do");
-      final Popup popup = new Popup(OutsideClick.CLOSE);
-
-      final InputFile widget = new InputFile(true);
-      widget.addChangeHandler(new ChangeHandler() {
-        @Override
-        public void onChange(ChangeEvent event) {
-          popup.close();
-          List<NewFileInfo> files = FileUtils.getNewFileInfos(widget.getFiles());
-
-          for (final NewFileInfo fi : files) {
-            logger.debug("uploading", fi.getName(), fi.getType(), fi.getSize());
-            FileUtils.uploadTempFile(fi, new Callback<String>() {
-              @Override
-              public void onSuccess(String result) {
-                BeeKeeper.getRpc().sendText(serviceName,
-                    result,
-                    new ResponseCallback() {
-                      @Override
-                      public void onResponse(ResponseObject response) {
-                        Assert.notNull(response);
-
-                        if (response.hasResponse(BeeRowSet.class)) {
-                          BeeRowSet rs = BeeRowSet.restore((String) response.getResponse());
-
-                          if (rs.isEmpty()) {
-                            logger.debug("sql: RowSet is empty");
-                          } else {
-                            Global.showTable(null, rs);
-                          }
-                        }
-                      }
-                    });
-              }
-            });
-          }
-        }
-      });
-
-      popup.setWidget(widget);
-      popup.center();
-    }
   }
 
   private static void inform(String... messages) {
