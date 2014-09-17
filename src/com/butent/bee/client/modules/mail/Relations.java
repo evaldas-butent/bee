@@ -53,7 +53,7 @@ import com.butent.bee.shared.data.BeeRowSet;
 import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.RowChildren;
 import com.butent.bee.shared.data.filter.Filter;
-import com.butent.bee.shared.data.value.BooleanValue;
+import com.butent.bee.shared.data.value.IntegerValue;
 import com.butent.bee.shared.data.value.Value;
 import com.butent.bee.shared.data.view.DataInfo;
 import com.butent.bee.shared.font.FontAwesome;
@@ -77,7 +77,8 @@ import java.util.Map;
 import java.util.Map.Entry;
 
 public class Relations extends Flow implements Editor, ClickHandler, SelectorEvent.Handler,
-    ParentRowEvent.Handler, HasFosterParent, HasRowChildren, HandlesValueChange {
+    ParentRowEvent.Handler, HasFosterParent, HasRowChildren, HandlesValueChange,
+    SummaryChangeEvent.Handler {
 
   private static final String STORAGE = TBL_RELATIONS;
 
@@ -257,7 +258,15 @@ public class Relations extends Flow implements Editor, ClickHandler, SelectorEve
 
   @Override
   public Value getSummary() {
-    return BooleanValue.of(!BeeUtils.isEmpty(getValue()));
+    int count = 0;
+
+    for (MultiSelector multi : widgetMap.values()) {
+      if (multi != null) {
+        count += multi.getChoices().size();
+      }
+    }
+
+    return new IntegerValue(count);
   }
 
   @Override
@@ -379,6 +388,11 @@ public class Relations extends Flow implements Editor, ClickHandler, SelectorEve
   @Override
   public void onParentRow(ParentRowEvent event) {
     requery(event.getRowId());
+  }
+
+  @Override
+  public void onSummaryChange(SummaryChangeEvent event) {
+    SummaryChangeEvent.maybeFire(this);
   }
 
   public void refresh() {
@@ -528,6 +542,12 @@ public class Relations extends Flow implements Editor, ClickHandler, SelectorEve
   @Override
   public void setSummarize(boolean summarize) {
     this.summarize = summarize;
+
+    for (MultiSelector multi : widgetMap.values()) {
+      if (multi != null) {
+        multi.setSummarize(summarize);
+      }
+    }
   }
 
   @Override
@@ -636,6 +656,9 @@ public class Relations extends Flow implements Editor, ClickHandler, SelectorEve
     multi.addSelectorHandler(this);
     registerSelectorHandler(multi);
     multi.setWidth("100%");
+
+    multi.setSummarize(summarize());
+    multi.addSummaryChangeHandler(this);
 
     int c = inline ? table.insertRow(table.getRowCount() - 1) : table.getRowCount();
 

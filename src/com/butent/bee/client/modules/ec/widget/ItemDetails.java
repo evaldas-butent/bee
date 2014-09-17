@@ -355,32 +355,43 @@ public class ItemDetails extends Flow {
     }
 
     TabbedPages widget = new TabbedPages();
+    String summary;
 
     Widget remainders = renderRemainders(item);
     if (remainders != null) {
-      widget.add(remainders, Localized.getConstants().ecItemDetailsRemainders());
+      int count = 0;
+      for (ArticleSupplier as : item.getSuppliers()) {
+        count += as.getRemainders().size();
+      }
+
+      summary = BeeUtils.toString(count);
+      widget.add(remainders, Localized.getConstants().ecItemDetailsRemainders(), summary, null);
     }
 
     Widget oeNumbers = renderOeNumbers(info);
     if (oeNumbers != null) {
-      widget.add(oeNumbers, Localized.getConstants().ecItemDetailsOeNumbers());
+      summary = BeeUtils.toString(info.getOeNumbers().size());
+      widget.add(oeNumbers, Localized.getConstants().ecItemDetailsOeNumbers(), summary, null);
     }
 
     if (EcKeeper.showItemSuppliers()) {
       Widget suppliers = renderSuppliers(item);
       if (suppliers != null) {
-        widget.add(suppliers, Localized.getConstants().ecItemDetailsSuppliers());
+        summary = BeeUtils.toString(item.getSuppliers().size());
+        widget.add(suppliers, Localized.getConstants().ecItemDetailsSuppliers(), summary, null);
       }
     }
 
     Widget carTypes = renderCarTypes(info);
     if (carTypes != null) {
-      widget.add(carTypes, Localized.getConstants().ecItemDetailsCarTypes());
+      summary = BeeUtils.toString(info.getCarTypes().size());
+      widget.add(carTypes, Localized.getConstants().ecItemDetailsCarTypes(), summary, null);
     }
-    Widget analogs = renderAnalogs(item);
 
+    Widget analogs = renderAnalogs(item);
     if (analogs != null) {
-      widget.add(analogs, Localized.getConstants().ecItemAnalogs());
+      summary = BeeUtils.toString(item.getAnalogCount());
+      widget.add(analogs, Localized.getConstants().ecItemAnalogs(), summary, null);
     }
 
     return widget;

@@ -277,23 +277,15 @@ public class TabbedPages extends Flow implements
     Assert.untouchable(getClass().getName() + ": cannot add widget without tab");
   }
 
-  public IdentifiableWidget add(Widget content, String text) {
-    return add(content, text, null);
-  }
-
-  public IdentifiableWidget add(Widget content, Widget caption) {
-    return add(content, caption, null);
-  }
-
-  public IdentifiableWidget add(Widget content, String text,
+  public IdentifiableWidget add(Widget content, String text, String summary,
       Collection<HasSummaryChangeHandlers> summarySources) {
-    return add(content, createCaption(text), summarySources);
+    return add(content, createCaption(text), summary, summarySources);
   }
 
-  public IdentifiableWidget add(Widget content, Widget caption,
+  public IdentifiableWidget add(Widget content, Widget caption, String summary,
       Collection<HasSummaryChangeHandlers> summarySources) {
 
-    Tab tab = createTab(caption, summarySources);
+    Tab tab = createTab(caption, summary, summarySources);
     insertPage(content, tab);
 
     return tab;
@@ -350,14 +342,14 @@ public class TabbedPages extends Flow implements
     return getTab(index).getWidget();
   }
 
-  public void insert(Widget content, String text,
+  public void insert(Widget content, String text, String summary,
       Collection<HasSummaryChangeHandlers> summarySources, int beforeIndex) {
-    insert(content, createCaption(text), summarySources, beforeIndex);
+    insert(content, createCaption(text), summary, summarySources, beforeIndex);
   }
 
-  public void insert(Widget content, Widget caption,
+  public void insert(Widget content, Widget caption, String summary,
       Collection<HasSummaryChangeHandlers> summarySources, int beforeIndex) {
-    insertPage(content, createTab(caption, summarySources), beforeIndex);
+    insertPage(content, createTab(caption, summary, summarySources), beforeIndex);
   }
 
   public boolean isIndex(int index) {
@@ -465,12 +457,13 @@ public class TabbedPages extends Flow implements
     Assert.betweenExclusive(index, 0, getPageCount(), "page index out of bounds");
   }
 
-  private Tab createTab(Widget caption, Collection<HasSummaryChangeHandlers> summarySources) {
+  private Tab createTab(Widget caption, String summary,
+      Collection<HasSummaryChangeHandlers> summarySources) {
 
-    if (BeeUtils.isEmpty(summarySources)) {
+    if (BeeUtils.isEmpty(summary) && BeeUtils.isEmpty(summarySources)) {
       return new Tab(caption);
-    } else {
 
+    } else {
       Flow wrapper = new Flow(getStylePrefix() + "tabWrapper");
 
       if (caption != null) {
@@ -479,6 +472,10 @@ public class TabbedPages extends Flow implements
       }
 
       CustomDiv summaryWidget = new CustomDiv(getStylePrefix() + "tabSummary");
+      if (!BeeUtils.isEmpty(summary)) {
+        summaryWidget.setHtml(summary);
+      }
+
       wrapper.add(summaryWidget);
 
       Tab tab = new Tab(wrapper, summaryWidget, summarySources);

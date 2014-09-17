@@ -115,7 +115,7 @@
 
           <br/>
           <SimplePanel class="flexible" style="position: relative;">
-            <InputArea source="Notes" class="occupy-1" />
+            <InputArea source="Notes" class="occupy-1" summarize="true" />
           </SimplePanel>
         </FlowPanel>
       </page>

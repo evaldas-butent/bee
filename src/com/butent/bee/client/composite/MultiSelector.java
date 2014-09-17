@@ -315,6 +315,8 @@ public class MultiSelector extends DataSelector implements HandlesRendering, Han
 
     clearChoices();
     setExclusions(null);
+
+    SummaryChangeEvent.maybeFire(this);
   }
 
   public CellSource getCellSource() {
@@ -502,6 +504,7 @@ public class MultiSelector extends DataSelector implements HandlesRendering, Han
 
         if (fire) {
           SelectorEvent.fire(this, State.INSERTED);
+          SummaryChangeEvent.maybeFire(this);
         }
       }
 
@@ -887,6 +890,7 @@ public class MultiSelector extends DataSelector implements HandlesRendering, Han
 
     if (removed) {
       SelectorEvent.fire(this, State.REMOVED);
+      SummaryChangeEvent.maybeFire(this);
     }
   }
 

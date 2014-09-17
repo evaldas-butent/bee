@@ -80,11 +80,11 @@
           &separator;
           <FlowPanel class="flexBox-horizontal">
             <Label for="DiscountPercent" style="margin-left: 2em; margin-right: 10px;" />
-            <InputDecimal source="DiscountPercent" style="width: 80px;" />
+            <InputDecimal source="DiscountPercent" style="width: 80px;" summarize="true" />
 
             <Label for="DiscountParent" style="margin-left: 2em; margin-right: 10px;" />
             <DataSelector source="DiscountParent" class="flexible" 
-              style="min-width: 100px; max-width: 400px;">
+              style="min-width: 100px; max-width: 400px;" summarize="true">
               <renderToken source="ParentFirstName" />
               <renderToken source="ParentLastName" />
               <renderToken source="ParentCompanyName" prefix=", " />
@@ -109,18 +109,18 @@
         <FlowPanel>
           <FlowPanel class="flexBox-horizontal-top" style="margin-top: 2ex; margin-bottom: 1ex;">
             <Label for="PersonCode" style="&lbl;" />
-            <InputText source="PersonCode" style="&inp;" />
+            <InputText source="PersonCode" style="&inp;" summarize="true" />
 
             <Label for="Activity" style="&lbl;" />
-            <InputArea source="Activity" style="&inp; height: 40px;" />
+            <InputArea source="Activity" style="&inp; height: 40px;" summarize="true" />
           </FlowPanel>
       
           <FlowPanel style="margin-left: 2em;">
             <Label text="=ecKeyboardShortcuts" />
   
-            <CheckBox text="=ecToggleListPrice" source="ToggleListPrice" style="&toggle;" />
-            <CheckBox text="=ecTogglePrice" source="TogglePrice" style="&toggle;" />
-            <CheckBox text="=ecToggleStockLimit" source="ToggleStockLimit" style="&toggle;" />
+            <CheckBox text="=ecToggleListPrice" source="ToggleListPrice" style="&toggle;" summarize="true" />
+            <CheckBox text="=ecTogglePrice" source="TogglePrice" style="&toggle;" summarize="true" />
+            <CheckBox text="=ecToggleStockLimit" source="ToggleStockLimit" style="&toggle;" summarize="true" />
           </FlowPanel>
 
           <FlowPanel class="flexBox-horizontal" style="margin-left: 2em; margin-top: 2ex;">
@@ -134,7 +134,7 @@
       <page>
         <text>=notes</text>
         <SimplePanel>
-          <InputArea source="Notes" class="occupy-1" />
+          <InputArea source="Notes" class="occupy-1" summarize="true" />
         </SimplePanel>
       </page>
     </TabbedPages>

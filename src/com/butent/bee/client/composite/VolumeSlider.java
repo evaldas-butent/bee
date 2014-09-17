@@ -212,7 +212,7 @@ public class VolumeSlider extends Absolute implements Editor, HasValueChangeHand
 
   @Override
   public Value getSummary() {
-    return BooleanValue.of(BeeUtils.isMore(spinner.getValue(),  spinner.getMin()));
+    return BooleanValue.of(BeeUtils.isMore(spinner.getValue(), spinner.getMin()));
   }
 
   @Override

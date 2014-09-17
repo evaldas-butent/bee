@@ -2284,9 +2284,9 @@ public enum FormWidget {
         Collection<HasSummaryChangeHandlers> sources = SummaryChangeEvent.findSources(content);
 
         if (hc.isHeaderText() || hc.isHeaderHtml()) {
-          tab = ((TabbedPages) parent).add(content, hc.getHeaderString(), sources);
+          tab = ((TabbedPages) parent).add(content, hc.getHeaderString(), null, sources);
         } else {
-          tab = ((TabbedPages) parent).add(content, hc.getHeaderWidget().asWidget(), sources);
+          tab = ((TabbedPages) parent).add(content, hc.getHeaderWidget().asWidget(), null, sources);
         }
 
         StyleUtils.updateAppearance(tab.getElement(), child.getAttribute(UiConstants.ATTR_CLASS),
