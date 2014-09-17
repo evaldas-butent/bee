@@ -71,6 +71,7 @@ import com.butent.bee.client.validation.CellValidation;
 import com.butent.bee.client.validation.EditorValidation;
 import com.butent.bee.client.validation.ValidationHelper;
 import com.butent.bee.client.validation.ValidationOrigin;
+import com.butent.bee.client.view.ViewHelper;
 import com.butent.bee.client.view.add.AddEndEvent;
 import com.butent.bee.client.view.add.AddStartEvent;
 import com.butent.bee.client.view.add.ReadyForInsertEvent;
@@ -978,7 +979,7 @@ public class GridImpl extends Absolute implements GridView, EditEndEvent.Handler
       return;
     }
 
-    FormView parentForm = UiHelper.getForm(this);
+    FormView parentForm = ViewHelper.getForm(this);
     if (parentForm == null) {
       callback.onFailure(getViewName(), "parent form not found");
       return;

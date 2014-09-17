@@ -19,7 +19,7 @@ import com.butent.bee.client.layout.Horizontal;
 import com.butent.bee.client.layout.Simple;
 import com.butent.bee.client.layout.Vertical;
 import com.butent.bee.client.style.StyleUtils;
-import com.butent.bee.client.ui.UiHelper;
+import com.butent.bee.client.view.ViewHelper;
 import com.butent.bee.client.widget.Image;
 import com.butent.bee.shared.Assert;
 
@@ -44,7 +44,7 @@ public class Disclosure extends Vertical implements HasOpenHandlers<Disclosure>,
           panel.getContentWidget().setVisible(true);
         }
 
-        UiHelper.maybeResizeForm(panel);
+        ViewHelper.maybeResizeForm(panel);
       }
     }
 
@@ -57,7 +57,7 @@ public class Disclosure extends Vertical implements HasOpenHandlers<Disclosure>,
       }
       StyleUtils.autoHeight(curPanel.contentWrapper);
 
-      UiHelper.maybeResizeForm(curPanel);
+      ViewHelper.maybeResizeForm(curPanel);
       curPanel = null;
     }
 

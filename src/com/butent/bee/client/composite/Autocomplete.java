@@ -72,7 +72,6 @@ import com.butent.bee.shared.utils.Codec;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
-import java.util.Objects;
 
 public final class Autocomplete extends Composite implements Editor, HasVisibleLines, HasTextBox,
     HasCapsLock, HasKeyDownHandlers, Launchable {
@@ -769,11 +768,9 @@ public final class Autocomplete extends Composite implements Editor, HasVisibleL
   }
 
   public void setAdditionalFilter(Filter additionalFilter) {
-    if (Objects.equals(additionalFilter, getOracle().getAdditionalFilter())) {
-      return;
+    if (getOracle().setAdditionalFilter(additionalFilter, false)) {
+      setAlive(true);
     }
-    getOracle().setAdditionalFilter(additionalFilter);
-    setAlive(true);
   }
 
   @Override

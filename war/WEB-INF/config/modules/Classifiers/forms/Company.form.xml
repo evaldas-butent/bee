@@ -142,6 +142,11 @@
         <ChildGrid name="RelatedDocuments" relColumn="Company" />
       </page>
 
+      <page>
+        <text>=objects</text>
+        <ChildGrid name="CompanyObjects" relColumn="Company" module="Trade.Acts" />
+      </page>
+
       <page for="Notes">
         <text>=notes</text>
         <SimplePanel>

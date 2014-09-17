@@ -1121,11 +1121,13 @@ public class DataSelector extends Composite implements Editor, HasVisibleLines, 
   }
 
   public void setAdditionalFilter(Filter additionalFilter) {
-    if (Objects.equals(additionalFilter, getOracle().getAdditionalFilter())) {
-      return;
+    setAdditionalFilter(additionalFilter, false);
+  }
+
+  public void setAdditionalFilter(Filter additionalFilter, boolean force) {
+    if (getOracle().setAdditionalFilter(additionalFilter, force)) {
+      setAlive(true);
     }
-    getOracle().setAdditionalFilter(additionalFilter);
-    setAlive(true);
   }
 
   public void setDisplayValue(String value) {
