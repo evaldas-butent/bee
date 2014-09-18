@@ -65,6 +65,16 @@ final class SvcCalendarFilterHelper {
 
   static void openDialog(final Multimap<Long, ServiceObjectWrapper> objects,
       final DialogCallback callback) {
+
+    if (objects == null) {
+      BeeKeeper.getScreen().notifyWarning(localizedConstants.tooLittleData());
+      return;
+    }
+    if (BeeUtils.isEmpty(objects.values())) {
+      BeeKeeper.getScreen().notifyWarning(localizedConstants.tooLittleData());
+      return;
+    }
+
     DialogBox filterDialog = DialogBox.create(Localized.getConstants().filter(), STYLE_DIALOG);
     Flow filterContent = new Flow();
     Flow actions = new Flow();
@@ -245,9 +255,10 @@ final class SvcCalendarFilterHelper {
           }
         }
 
-        if (BeeUtils.isEmpty(selectedData)) {
-          return;
-        }
+        // if (BeeUtils.isEmpty(selectedData)) {
+        //
+        // return;
+        // }
 
         for (Widget widget : dataContainer) {
           if (widget instanceof SvcFilterDataWidget) {
@@ -258,7 +269,11 @@ final class SvcCalendarFilterHelper {
               continue;
             }
 
-            filter.disableDataByType(event.getSelectedItem(), selectedData);
+            if (!BeeUtils.isEmpty(selectedData)) {
+              filter.disableDataByType(event.getSelectedItem(), selectedData);
+            } else {
+              filter.reset(false);
+            }
           }
         }
         callback.onSelectionChange(dataContainer);

@@ -80,6 +80,7 @@ public class SvcFilterDataWidget extends Flow implements
     super();
     this.data = objects;
     this.dataType = dataType;
+    initData();
 
     addStyleName(STYLE_DATA_PANEL);
 
@@ -352,6 +353,20 @@ public class SvcFilterDataWidget extends Flow implements
     };
   }
 
+  private void initData() {
+    setDataNumberOfSelectedItems(0);
+    setDataNumberOfDisabledItems(0);
+    for (ServiceObjectWrapper obj : data.values()) {
+      if (obj.isSelected(dataType)) {
+        setDataNumberOfSelectedItems(getDataNumberOfSelectedItems() + 1);
+      }
+
+      if (!obj.isEnabled(dataType)) {
+        setDataNumberOfDisabledItems(getDataNumberOfDisabledItems() + 1);
+      }
+    }
+  }
+
   private boolean moveItem(Element itemElement, boolean wasSelected) {
     ServiceObjectWrapper object = getDataByIndex(DomUtils.getDataIndexInt(itemElement));
     boolean updated = StyleUtils.hasClassName(itemElement, STYLE_DATA_ITEM)
@@ -467,7 +482,7 @@ public class SvcFilterDataWidget extends Flow implements
 
     if (item.isSelected(dataType)) {
       selectedContainer.appendChild(itemElement);
-      setDataNumberOfSelectedItems(getDataNumberOfSelectedItems() + 1);
+      // setDataNumberOfSelectedItems(getDataNumberOfSelectedItems() + 1);
     } else {
       if (!matches(itemElement, getSearchQuery())) {
         StyleUtils.setVisible(itemElement, false);

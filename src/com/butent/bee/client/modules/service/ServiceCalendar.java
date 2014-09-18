@@ -1073,6 +1073,7 @@ final class ServiceCalendar extends TimeBoard {
           return;
         } else if (emptySet && isFiltered()) {
           handleAction(Action.REMOVE_FILTER);
+          return;
         }
 
         Map<String, String> fData = Maps.newHashMap();
@@ -1084,7 +1085,9 @@ final class ServiceCalendar extends TimeBoard {
         setFilterData(fData);
         getFilterLabel().getElement().setInnerText(label);
         getFilterLabel().setVisible(false);
-        copyFilterData();
+        if (!isFiltered()) {
+          copyFilterData();
+        }
         refresh();
       }
 
