@@ -421,12 +421,12 @@ public class ScreenImpl implements Screen {
   }
 
   @Override
-  public boolean updateProgress(String id, double value) {
+  public boolean updateProgress(String id, String label, double value) {
     if (getProgressPanel() != null && !BeeUtils.isEmpty(id)) {
       Widget item = DomUtils.getChildById(getProgressPanel(), id);
 
       if (item instanceof HasProgress) {
-        ((HasProgress) item).update(value);
+        ((HasProgress) item).update(label, value);
         return true;
       }
     }

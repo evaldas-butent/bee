@@ -1460,7 +1460,7 @@ public final class CliWorker {
           int index = position.get();
 
           if (index < commands.size()
-              && BeeKeeper.getScreen().updateProgress(progId.get(), index + 0.5)) {
+              && BeeKeeper.getScreen().updateProgress(progId.get(), null, index + 0.5)) {
 
             position.set(index + 1);
 
@@ -3393,7 +3393,7 @@ public final class CliWorker {
 
           } else if (prog.finish > time) {
             double value = prog.max * (time - prog.start) / (prog.finish - prog.start);
-            BeeKeeper.getScreen().updateProgress(prog.id, value);
+            BeeKeeper.getScreen().updateProgress(prog.id, null, value);
 
           } else {
             BeeKeeper.getScreen().removeProgress(prog.id);

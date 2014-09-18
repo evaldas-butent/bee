@@ -450,7 +450,7 @@ class MessageDispatcher {
               logger.warning("cannot start progress", progressId);
             }
           } else if (pm.isUpdate()) {
-            BeeKeeper.getScreen().updateProgress(progressId, pm.getValue());
+            BeeKeeper.getScreen().updateProgress(progressId, pm.getLabel(), pm.getValue());
 
           } else if (pm.isCanceled() || pm.isClosed()) {
             Endpoint.removeProgress(progressId);

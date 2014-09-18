@@ -20,9 +20,8 @@
 
     <SimpleColumn name="Person" />
     <SimpleJoin name="Person" joinType="LEFT">
-      <SimpleColumn name="FirstName" />
-      <SimpleColumn name="LastName" />
-      <SimpleColumn name="DateOfBirth"  />
+      <SimpleColumn name="FirstName" editable="true" />
+      <SimpleColumn name="LastName" editable="true" />
     </SimpleJoin>
 
     <SimpleJoin name="Contact" joinType="LEFT">
