@@ -1228,6 +1228,7 @@ public class DataSelector extends Composite implements Editor, HasVisibleLines, 
   @Override
   public void startEdit(String oldValue, char charCode, EditorAction onEntry,
       Element sourceElement) {
+
     SelectorEvent.fire(this, State.OPEN);
 
     setRelatedRow(null);

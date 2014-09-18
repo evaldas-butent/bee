@@ -37,9 +37,10 @@
       <SimpleColumn name="Name" alias="CompanyName" />
     </SimpleJoin>
 
-    <SimpleColumn name="ServiceObject" />
-    <SimpleJoin joinType="LEFT" name="ServiceObject">
-      <SimpleColumn name="Address" alias="ServiceObjectAddress" />
+    <SimpleColumn name="Object" />
+    <SimpleJoin joinType="LEFT" name="Object">
+      <SimpleColumn name="ObjectName" />
+      <SimpleColumn name="ObjectAddress" />
     </SimpleJoin>
 
     <SimpleColumn name="Manager" />

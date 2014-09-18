@@ -2,7 +2,6 @@
 <g:Grid xmlns="http://www.butent.com/column" xmlns:g="http://www.butent.com/grid"
 
   name="CompanyObjects" viewName="CompanyObjects"
-  newRowColumns="ObjectName ObjectAddress DateFrom DateUntil"
   >
   <g:columns>
     <DataColumn name="ObjectName" visible="true" flexGrow="1" />
@@ -11,7 +10,7 @@
     <DataColumn name="DateFrom" />
     <DataColumn name="DateUntil" />
 
-    <RelColumn name="ObjectPerson" flexGrow="1" newRowEnabled="false" />
+    <RelColumn name="ObjectPerson" flexGrow="1" newRowEnabled="false" caching="local" />
 
     <DataColumn name="Notes" visible="false" flexGrow="1" />
   </g:columns>

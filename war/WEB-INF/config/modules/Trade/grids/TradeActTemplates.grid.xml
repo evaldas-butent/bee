@@ -14,7 +14,7 @@
     <RelColumn name="Status" renderColumns="StatusName" />
 
     <RelColumn name="Company" />
-    <RelColumn name="ServiceObject" />
+    <RelColumn name="Object" renderColumns="ObjectName" />
     <RelColumn name="Manager" renderColumns="ManagerFirstName ManagerLastName" />
 
     <RelColumn name="Currency" renderColumns="CurrencyName" />

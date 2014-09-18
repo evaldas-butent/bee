@@ -323,6 +323,11 @@ class TradeActSelectorHandler implements SelectorEvent.Handler {
     return BeeConst.isUndef(index) ? null : row.getLong(index);
   }
 
+  private static boolean isActOrTemplate(FormView form) {
+    return form != null
+        && BeeUtils.inListSame(form.getViewName(), VIEW_TRADE_ACTS, VIEW_TRADE_ACT_TEMPLATES);
+  }
+
   private static boolean isTemplatable(IsRow actRow, IsRow templRow, String colName) {
     int actIndex = Data.getColumnIndex(VIEW_TRADE_ACTS, colName);
     int templIndex = Data.getColumnIndex(VIEW_TRADE_ACT_TEMPLATES, colName);
@@ -532,6 +537,35 @@ class TradeActSelectorHandler implements SelectorEvent.Handler {
             }
           }
         }
+        break;
+
+      case VIEW_COMPANY_OBJECTS:
+        if (event.isOpened()) {
+          FormView form = ViewHelper.getForm(event.getSelector());
+
+          if (isActOrTemplate(form)) {
+            Long company = form.getLongValue(COL_TA_COMPANY);
+            Filter filter = DataUtils.isId(company) ? Filter.equals(COL_COMPANY, company) : null;
+
+            event.getSelector().setAdditionalFilter(filter);
+          }
+
+        } else if (event.isChanged() && event.getRelatedRow() != null) {
+          FormView form = ViewHelper.getForm(event.getSelector());
+
+          if (isActOrTemplate(form) && form.getActiveRow() != null
+              && !DataUtils.isId(form.getLongValue(COL_TA_COMPANY))) {
+
+            Long company = Data.getLong(relatedViewName, event.getRelatedRow(), COL_COMPANY);
+            form.getActiveRow().setValue(form.getDataIndex(COL_TA_COMPANY), company);
+
+            String name = Data.getString(relatedViewName, event.getRelatedRow(), ALS_COMPANY_NAME);
+            form.getActiveRow().setValue(form.getDataIndex(ALS_COMPANY_NAME), name);
+
+            form.refreshBySource(COL_TA_COMPANY);
+          }
+        }
+
         break;
     }
   }
