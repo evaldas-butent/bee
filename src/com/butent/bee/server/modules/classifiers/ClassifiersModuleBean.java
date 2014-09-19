@@ -238,7 +238,8 @@ public class ClassifiersModuleBean implements BeeModule {
                 ((SqlUpdate) query).updExpression(COL_EMAIL_ADDRESS, SqlUtils.constant(email));
               }
             } catch (AddressException ex) {
-              event.addErrorMessage(BeeUtils.joinWords("Wrong address:", ex.getMessage()));
+              event.addErrorMessage(BeeUtils.joinWords("Wrong address ", email, ": ",
+                  ex.getMessage()));
             }
           }
         }

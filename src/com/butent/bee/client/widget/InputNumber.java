@@ -14,6 +14,8 @@ import com.butent.bee.shared.HasIntStep;
 import com.butent.bee.shared.HasPrecision;
 import com.butent.bee.shared.HasScale;
 import com.butent.bee.shared.data.HasRelatedCurrency;
+import com.butent.bee.shared.data.value.BooleanValue;
+import com.butent.bee.shared.data.value.Value;
 import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.ui.EditorAction;
 import com.butent.bee.shared.utils.BeeUtils;
@@ -114,6 +116,11 @@ public class InputNumber extends InputText implements HasBounds, HasIntStep,
   @Override
   public int getStepValue() {
     return stepValue;
+  }
+
+  @Override
+  public Value getSummary() {
+    return BooleanValue.of(BeeUtils.nonZero(getNumber()));
   }
 
   @Override

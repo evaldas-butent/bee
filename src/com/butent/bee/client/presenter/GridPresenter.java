@@ -24,7 +24,6 @@ import com.butent.bee.client.modules.administration.HistoryHandler;
 import com.butent.bee.client.output.Exporter;
 import com.butent.bee.client.output.Printer;
 import com.butent.bee.client.style.StyleUtils;
-import com.butent.bee.client.ui.UiHelper;
 import com.butent.bee.client.ui.UiOption;
 import com.butent.bee.client.view.GridContainerImpl;
 import com.butent.bee.client.view.GridContainerView;
@@ -32,6 +31,7 @@ import com.butent.bee.client.view.HasGridView;
 import com.butent.bee.client.view.HeaderView;
 import com.butent.bee.client.view.View;
 import com.butent.bee.client.view.ViewFactory;
+import com.butent.bee.client.view.ViewHelper;
 import com.butent.bee.client.view.add.ReadyForInsertEvent;
 import com.butent.bee.client.view.edit.ReadyForUpdateEvent;
 import com.butent.bee.client.view.edit.SaveChangesEvent;
@@ -362,7 +362,7 @@ public class GridPresenter extends AbstractPresenter implements ReadyForInsertEv
     }
 
     if (getGridView().isChild()) {
-      FormView form = UiHelper.getForm(getMainView().asWidget());
+      FormView form = ViewHelper.getForm(getMainView().asWidget());
 
       if (form != null && !BeeUtils.isEmpty(form.getViewName()) && form.getActiveRow() != null) {
         DataInfo dataInfo = Data.getDataInfo(form.getViewName());
@@ -715,7 +715,7 @@ public class GridPresenter extends AbstractPresenter implements ReadyForInsertEv
   }
 
   public boolean validateParent() {
-    FormView form = UiHelper.getForm(getMainView().asWidget());
+    FormView form = ViewHelper.getForm(getMainView().asWidget());
     if (form == null) {
       return true;
     }

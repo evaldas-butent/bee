@@ -11,8 +11,8 @@ import com.butent.bee.client.event.logical.ParentRowEvent;
 import com.butent.bee.client.event.logical.RenderingEvent;
 import com.butent.bee.client.presenter.GridPresenter;
 import com.butent.bee.client.style.StyleUtils;
-import com.butent.bee.client.ui.UiHelper;
 import com.butent.bee.client.view.HeaderView;
+import com.butent.bee.client.view.ViewHelper;
 import com.butent.bee.client.view.form.FormView;
 import com.butent.bee.client.view.grid.GridView;
 import com.butent.bee.client.view.grid.interceptor.AbstractGridInterceptor;
@@ -74,7 +74,7 @@ public class ObjectInvoicesGrid extends AbstractGridInterceptor {
 
   @Override
   public void beforeRefresh(GridPresenter presenter) {
-    FormView form = UiHelper.getForm(presenter.getMainView().asWidget());
+    FormView form = ViewHelper.getForm(presenter.getMainView().asWidget());
     if (form != null && !BeeUtils.isEmpty(form.getViewName()) && form.getActiveRow() != null) {
       DataInfo dataInfo = Data.getDataInfo(form.getViewName());
 
@@ -121,7 +121,7 @@ public class ObjectInvoicesGrid extends AbstractGridInterceptor {
 
   private void displayElements(GridPresenter presenter) {
 
-    FormView form = UiHelper.getForm(presenter.getMainView().asWidget());
+    FormView form = ViewHelper.getForm(presenter.getMainView().asWidget());
     if (form != null && !BeeUtils.isEmpty(form.getViewName()) && form.getActiveRow() != null) {
       DataInfo dataInfo = Data.getDataInfo(form.getViewName());
 

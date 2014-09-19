@@ -71,6 +71,7 @@ import com.butent.bee.client.validation.CellValidation;
 import com.butent.bee.client.validation.EditorValidation;
 import com.butent.bee.client.validation.ValidationHelper;
 import com.butent.bee.client.validation.ValidationOrigin;
+import com.butent.bee.client.view.ViewHelper;
 import com.butent.bee.client.view.add.AddEndEvent;
 import com.butent.bee.client.view.add.AddStartEvent;
 import com.butent.bee.client.view.add.ReadyForInsertEvent;
@@ -108,6 +109,8 @@ import com.butent.bee.shared.data.RowChildren;
 import com.butent.bee.shared.data.event.RowInsertEvent;
 import com.butent.bee.shared.data.event.RowUpdateEvent;
 import com.butent.bee.shared.data.value.BooleanValue;
+import com.butent.bee.shared.data.value.IntegerValue;
+import com.butent.bee.shared.data.value.Value;
 import com.butent.bee.shared.data.value.ValueType;
 import com.butent.bee.shared.data.view.DataInfo;
 import com.butent.bee.shared.data.view.Order;
@@ -148,8 +151,7 @@ import java.util.Set;
  */
 
 public class GridImpl extends Absolute implements GridView, EditEndEvent.Handler,
-    SortEvent.Handler, SettingsChangeEvent.Handler, RenderingEvent.Handler,
-    RowCountChangeEvent.Handler {
+    SortEvent.Handler, SettingsChangeEvent.Handler, RenderingEvent.Handler {
 
   private class SaveChangesCallback extends RowCallback {
     @Override
@@ -304,6 +306,8 @@ public class GridImpl extends Absolute implements GridView, EditEndEvent.Handler
       new ArrayList<>();
 
   private State state;
+
+  private boolean summarize;
 
   public GridImpl(GridDescription gridDescription, String gridKey,
       List<BeeColumn> dataColumns, String relColumn, GridInterceptor gridInterceptor) {
@@ -975,7 +979,7 @@ public class GridImpl extends Absolute implements GridView, EditEndEvent.Handler
       return;
     }
 
-    FormView parentForm = UiHelper.getForm(this);
+    FormView parentForm = ViewHelper.getForm(this);
     if (parentForm == null) {
       callback.onFailure(getViewName(), "parent form not found");
       return;
@@ -1248,6 +1252,11 @@ public class GridImpl extends Absolute implements GridView, EditEndEvent.Handler
   }
 
   @Override
+  public Value getSummary() {
+    return new IntegerValue(Math.max(getGrid().getRowCount(), 0));
+  }
+
+  @Override
   public String getViewName() {
     return gridDescription.getViewName();
   }
@@ -1470,7 +1479,13 @@ public class GridImpl extends Absolute implements GridView, EditEndEvent.Handler
 
   @Override
   public void onRowCountChange(RowCountChangeEvent event) {
-    SummaryChangeEvent.fire(this, event.getCount());
+    if (getGridInterceptor() != null && !getGridInterceptor().onRowCountChange(this, event)) {
+      return;
+    }
+
+    if (summarize()) {
+      SummaryChangeEvent.fire(this);
+    }
   }
 
   @Override
@@ -1573,6 +1588,11 @@ public class GridImpl extends Absolute implements GridView, EditEndEvent.Handler
   }
 
   @Override
+  public void setSummarize(boolean summarize) {
+    this.summarize = summarize;
+  }
+
+  @Override
   public void setViewPresenter(Presenter presenter) {
     if (presenter instanceof GridPresenter) {
       this.viewPresenter = (GridPresenter) presenter;
@@ -1598,6 +1618,11 @@ public class GridImpl extends Absolute implements GridView, EditEndEvent.Handler
         createNewRowForm();
       }
     }
+  }
+
+  @Override
+  public boolean summarize() {
+    return summarize;
   }
 
   @Override

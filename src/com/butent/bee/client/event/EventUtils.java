@@ -92,9 +92,9 @@ import com.google.web.bindery.event.shared.HandlerRegistration;
 
 import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.dom.DomUtils;
-import com.butent.bee.client.ui.UiHelper;
 import com.butent.bee.client.utils.JsFunction;
 import com.butent.bee.client.utils.JsUtils;
+import com.butent.bee.client.view.ViewHelper;
 import com.butent.bee.client.view.form.FormView;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
@@ -1194,7 +1194,7 @@ public final class EventUtils {
     double rowId;
     double rowVersion;
 
-    FormView form = UiHelper.getForm(widget);
+    FormView form = ViewHelper.getForm(widget);
     IsRow data = (form == null) ? null : form.getActiveRow();
 
     if (data == null) {

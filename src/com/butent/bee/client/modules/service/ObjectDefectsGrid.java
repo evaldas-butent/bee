@@ -9,8 +9,8 @@ import com.butent.bee.client.data.Data;
 import com.butent.bee.client.event.logical.RenderingEvent;
 import com.butent.bee.client.presenter.GridPresenter;
 import com.butent.bee.client.style.StyleUtils;
-import com.butent.bee.client.ui.UiHelper;
 import com.butent.bee.client.view.HeaderView;
+import com.butent.bee.client.view.ViewHelper;
 import com.butent.bee.client.view.form.FormView;
 import com.butent.bee.client.view.grid.GridView;
 import com.butent.bee.client.view.grid.interceptor.AbstractGridInterceptor;
@@ -23,6 +23,7 @@ import com.butent.bee.shared.data.value.Value;
 import com.butent.bee.shared.data.view.DataInfo;
 import com.butent.bee.shared.i18n.LocalizableConstants;
 import com.butent.bee.shared.i18n.Localized;
+import com.butent.bee.shared.modules.service.ServiceConstants.ObjectStatus;
 import com.butent.bee.shared.ui.Action;
 import com.butent.bee.shared.utils.BeeUtils;
 
@@ -81,7 +82,7 @@ public class ObjectDefectsGrid extends AbstractGridInterceptor {
 
   @Override
   public void beforeRefresh(GridPresenter presenter) {
-    FormView form = UiHelper.getForm(presenter.getMainView().asWidget());
+    FormView form = ViewHelper.getForm(presenter.getMainView().asWidget());
     if (form != null && !BeeUtils.isEmpty(form.getViewName()) && form.getActiveRow() != null) {
       DataInfo dataInfo = Data.getDataInfo(form.getViewName());
 
@@ -112,7 +113,7 @@ public class ObjectDefectsGrid extends AbstractGridInterceptor {
 
   private void displayElements(GridPresenter presenter) {
 
-    FormView form = UiHelper.getForm(presenter.getMainView().asWidget());
+    FormView form = ViewHelper.getForm(presenter.getMainView().asWidget());
     if (form != null && !BeeUtils.isEmpty(form.getViewName()) && form.getActiveRow() != null) {
       DataInfo dataInfo = Data.getDataInfo(form.getViewName());
 

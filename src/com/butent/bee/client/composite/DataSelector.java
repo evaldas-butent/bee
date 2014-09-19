@@ -41,6 +41,7 @@ import com.butent.bee.client.event.Binder;
 import com.butent.bee.client.event.EventUtils;
 import com.butent.bee.client.event.logical.CloseEvent;
 import com.butent.bee.client.event.logical.SelectorEvent;
+import com.butent.bee.client.event.logical.SummaryChangeEvent;
 import com.butent.bee.client.layout.Flow;
 import com.butent.bee.client.menu.MenuBar;
 import com.butent.bee.client.menu.MenuItem;
@@ -73,6 +74,7 @@ import com.butent.bee.shared.data.IsRow;
 import com.butent.bee.shared.data.RelationUtils;
 import com.butent.bee.shared.data.filter.Filter;
 import com.butent.bee.shared.data.filter.Operator;
+import com.butent.bee.shared.data.value.BooleanValue;
 import com.butent.bee.shared.data.value.LongValue;
 import com.butent.bee.shared.data.value.Value;
 import com.butent.bee.shared.data.value.ValueType;
@@ -706,6 +708,8 @@ public class DataSelector extends Composite implements Editor, HasVisibleLines, 
 
   private boolean handlesTabulation;
 
+  private boolean summarize;
+
   public DataSelector(Relation relation, boolean embedded) {
     super();
 
@@ -920,6 +924,11 @@ public class DataSelector extends Composite implements Editor, HasVisibleLines, 
     return addHandler(handler, SelectorEvent.getType());
   }
 
+  @Override
+  public HandlerRegistration addSummaryChangeHandler(SummaryChangeEvent.Handler handler) {
+    return addHandler(handler, SummaryChangeEvent.getType());
+  }
+
   public void clearDisplay() {
     setDisplayValue(BeeConst.STRING_EMPTY);
   }
@@ -996,6 +1005,11 @@ public class DataSelector extends Composite implements Editor, HasVisibleLines, 
   @Override
   public BeeRow getRelatedRow() {
     return relatedRow;
+  }
+
+  @Override
+  public Value getSummary() {
+    return BooleanValue.of(!BeeUtils.isEmpty(getValue()));
   }
 
   @Override
@@ -1107,11 +1121,13 @@ public class DataSelector extends Composite implements Editor, HasVisibleLines, 
   }
 
   public void setAdditionalFilter(Filter additionalFilter) {
-    if (Objects.equals(additionalFilter, getOracle().getAdditionalFilter())) {
-      return;
+    setAdditionalFilter(additionalFilter, false);
+  }
+
+  public void setAdditionalFilter(Filter additionalFilter, boolean force) {
+    if (getOracle().setAdditionalFilter(additionalFilter, force)) {
+      setAlive(true);
     }
-    getOracle().setAdditionalFilter(additionalFilter);
-    setAlive(true);
   }
 
   public void setDisplayValue(String value) {
@@ -1185,6 +1201,11 @@ public class DataSelector extends Composite implements Editor, HasVisibleLines, 
   }
 
   @Override
+  public void setSummarize(boolean summarize) {
+    this.summarize = summarize;
+  }
+
+  @Override
   public void setTabIndex(int index) {
     getInput().setTabIndex(index);
   }
@@ -1207,6 +1228,7 @@ public class DataSelector extends Composite implements Editor, HasVisibleLines, 
   @Override
   public void startEdit(String oldValue, char charCode, EditorAction onEntry,
       Element sourceElement) {
+
     SelectorEvent.fire(this, State.OPEN);
 
     setRelatedRow(null);
@@ -1255,6 +1277,11 @@ public class DataSelector extends Composite implements Editor, HasVisibleLines, 
     if (createNew) {
       RowFactory.createRelatedRow(this, null);
     }
+  }
+
+  @Override
+  public boolean summarize() {
+    return summarize;
   }
 
   @Override

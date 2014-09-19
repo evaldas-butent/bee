@@ -17,7 +17,7 @@
     <Relation name="Status" relation="TradeStatuses" label="=status" />
 
     <Relation name="Company" relation="Companies" label="=client" />
-    <Relation name="ServiceObject" relation="ServiceObjects" label="=svcObject" />
+    <Relation name="Object" relation="CompanyObjects" label="=object" />
     <Relation name="Manager" relation="Users" label="=manager" defExpr="CURRENT_USER" />
 
     <Relation name="Currency" relation="Currencies" notNull="true" defExpr="MAIN_CURRENCY"

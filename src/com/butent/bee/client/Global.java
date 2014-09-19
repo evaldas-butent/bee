@@ -548,7 +548,7 @@ public final class Global {
 //@formatter:off
   // CHECKSTYLE:OFF
   private static native void exportMethods() /*-{
-    $wnd.Bee_updateForm = $entry(@com.butent.bee.client.ui.UiHelper::updateForm(Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;));
+    $wnd.Bee_updateForm = $entry(@com.butent.bee.client.view.ViewHelper::updateForm(Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;));
     $wnd.Bee_debug = $entry(@com.butent.bee.client.Global::debug(Ljava/lang/String;));
     $wnd.Bee_updateActor = $entry(@com.butent.bee.client.decorator.TuningHelper::updateActor(Lcom/google/gwt/core/client/JavaScriptObject;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;));
     $wnd.Bee_maybeTranslate = $entry(@com.butent.bee.shared.i18n.Localized::maybeTranslate(Ljava/lang/String;));

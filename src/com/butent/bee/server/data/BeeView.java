@@ -702,7 +702,7 @@ public class BeeView implements BeeObject, HasExtendedInfo {
     return getQuery(userId, null);
   }
 
-  public SqlSelect getQuery(Long userId, Filter flt, Order ord, List<String> cols) {
+  public SqlSelect getQuery(Long userId, Filter flt, Order ord, Collection<String> cols) {
 
     SqlSelect ss;
 

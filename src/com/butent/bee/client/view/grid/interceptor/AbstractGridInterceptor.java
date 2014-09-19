@@ -7,6 +7,7 @@ import com.butent.bee.client.data.IdCallback;
 import com.butent.bee.client.event.logical.ActiveRowChangeEvent;
 import com.butent.bee.client.event.logical.ParentRowEvent;
 import com.butent.bee.client.event.logical.RenderingEvent;
+import com.butent.bee.client.event.logical.RowCountChangeEvent;
 import com.butent.bee.client.grid.ColumnFooter;
 import com.butent.bee.client.grid.ColumnHeader;
 import com.butent.bee.client.grid.column.AbstractColumn;
@@ -334,6 +335,11 @@ public abstract class AbstractGridInterceptor implements GridInterceptor {
 
   @Override
   public void onReadyForUpdate(GridView gridView, ReadyForUpdateEvent event) {
+  }
+
+  @Override
+  public boolean onRowCountChange(GridView gridView, RowCountChangeEvent event) {
+    return true;
   }
 
   @Override

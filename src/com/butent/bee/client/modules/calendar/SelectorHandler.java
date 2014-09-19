@@ -14,8 +14,8 @@ import com.butent.bee.client.data.RowCallback;
 import com.butent.bee.client.data.RowFactory;
 import com.butent.bee.client.dialog.ChoiceCallback;
 import com.butent.bee.client.event.logical.SelectorEvent;
-import com.butent.bee.client.ui.UiHelper;
 import com.butent.bee.client.view.DataView;
+import com.butent.bee.client.view.ViewHelper;
 import com.butent.bee.client.view.grid.GridView;
 import com.butent.bee.shared.data.BeeRow;
 import com.butent.bee.shared.data.BeeRowSet;
@@ -157,7 +157,7 @@ class SelectorHandler implements SelectorEvent.Handler {
       return;
     }
 
-    final DataView dataView = UiHelper.getDataView(event.getSelector());
+    final DataView dataView = ViewHelper.getDataView(event.getSelector());
     if (dataView == null) {
       return;
     }
@@ -202,7 +202,7 @@ class SelectorHandler implements SelectorEvent.Handler {
       return;
     }
 
-    GridView gridView = UiHelper.getGrid(event.getSelector());
+    GridView gridView = ViewHelper.getGrid(event.getSelector());
     if (gridView == null) {
       return;
     }
@@ -249,7 +249,7 @@ class SelectorHandler implements SelectorEvent.Handler {
   }
 
   private static void handleVehicle(final SelectorEvent event) {
-    final DataView dataView = UiHelper.getDataView(event.getSelector());
+    final DataView dataView = ViewHelper.getDataView(event.getSelector());
     if (dataView == null) {
       return;
     }

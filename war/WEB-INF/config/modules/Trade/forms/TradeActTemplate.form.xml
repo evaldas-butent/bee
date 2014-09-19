@@ -42,8 +42,10 @@
         <Label for="Company" />
         <DataSelector source="Company" newRowEnabled="false" style="&inpw;" />
 
-        <Label for="ServiceObject" />
-        <DataSelector source="ServiceObject" newRowEnabled="false" style="&inpw;" />
+        <Label for="Object" />
+        <DataSelector source="Object" renderColumns="ObjectName"
+          choiceColumns="CompanyName ObjectName ObjectAddress" newRowEnabled="false"
+          style="&inpw;" />
       </row>
 
       <row>
@@ -83,7 +85,7 @@
       <page>
         <text>=notes</text>
         <SimplePanel>
-          <InputArea source="Notes" class="occupy-1" />
+          <InputArea source="Notes" class="occupy-1" summarize="true" />
         </SimplePanel>
       </page>
     </TabbedPages>

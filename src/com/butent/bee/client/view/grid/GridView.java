@@ -6,6 +6,7 @@ import com.butent.bee.client.data.IdCallback;
 import com.butent.bee.client.data.ParentRowCreator;
 import com.butent.bee.client.event.DndWidget;
 import com.butent.bee.client.event.logical.HasSummaryChangeHandlers;
+import com.butent.bee.client.event.logical.RowCountChangeEvent;
 import com.butent.bee.client.ui.HandlesHistory;
 import com.butent.bee.client.view.DataView;
 import com.butent.bee.client.view.add.HasAddEndHandlers;
@@ -38,7 +39,7 @@ public interface GridView extends DataView, HasAddStartHandlers, HasAddEndHandle
     HasReadyForInsertHandlers, HasReadyForUpdateHandlers, HasSaveChangesHandlers,
     HasEditFormHandlers, ParentRowCreator, HandlesHistory, DndWidget, HasWidgets,
     RowInsertEvent.Handler, RowUpdateEvent.Handler, EditStartEvent.Handler,
-    HasSummaryChangeHandlers {
+    RowCountChangeEvent.Handler, HasSummaryChangeHandlers {
 
   public enum SelectedRows {
     ALL, EDITABLE, REMOVABLE

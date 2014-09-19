@@ -366,7 +366,7 @@ public class Filters implements HasExtendedInfo {
           Item updatedItem = getItem(items, id);
           updatedItem.setInitial(value);
 
-          Queries.update(VIEW_FILTERS, id, COL_INITIAL, BooleanValue.getInstance(value));
+          Queries.update(VIEW_FILTERS, id, COL_INITIAL, BooleanValue.of(value));
 
           if (BeeUtils.isTrue(value) && items.size() > 1) {
             synchronizeInitialFilters(items, updatedItem, table);

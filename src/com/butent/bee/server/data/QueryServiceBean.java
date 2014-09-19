@@ -442,6 +442,21 @@ public class QueryServiceBean {
     return getData(SqlUtils.dbTriggers(dbName, dbSchema, table));
   }
 
+  public boolean debugOff() {
+    boolean isDebugEnabled = logger.isDebugEnabled();
+
+    if (isDebugEnabled) {
+      logger.setLevel(LogLevel.INFO);
+    }
+    return isDebugEnabled;
+  }
+
+  public void debugOn(boolean isDebugEnabled) {
+    if (isDebugEnabled) {
+      logger.setLevel(LogLevel.DEBUG);
+    }
+  }
+
   @TransactionAttribute(TransactionAttributeType.MANDATORY)
   public Object doSql(String sql) {
     BeeDataSource bds = dsb.locateDs(SqlBuilderFactory.getDsn());
@@ -902,7 +917,6 @@ public class QueryServiceBean {
   @TransactionAttribute(TransactionAttributeType.MANDATORY)
   public int loadData(String target, SqlSelect sourceQuery) {
     Assert.state(sys.isTable(target));
-    boolean isDebugEnabled = logger.isDebugEnabled();
 
     int chunk = BeeUtils.toNonNegativeInt(sourceQuery.getLimit());
     int offset = 0;
@@ -922,9 +936,8 @@ public class QueryServiceBean {
             .addFields(sys.getIdName(target), sys.getVersionName(target))
             .addFields(data.getColumnNames());
       }
-      if (isDebugEnabled) {
-        logger.setLevel(LogLevel.INFO);
-      }
+      boolean isDebugEnabled = debugOff();
+
       for (String[] row : data.getRows()) {
         Object[] values = new Object[row.length + 2];
         values[0] = ig.getId(target);
@@ -942,9 +955,7 @@ public class QueryServiceBean {
         insertData(insert);
         logger.info("Inserted", tot, "records into table", target);
       }
-      if (isDebugEnabled) {
-        logger.setLevel(LogLevel.DEBUG);
-      }
+      debugOn(isDebugEnabled);
       offset += chunk;
     } while (chunk > 0 && data.getNumberOfRows() == chunk);
 

@@ -702,7 +702,7 @@ public abstract class AbstractTable<R extends IsRow, C extends IsColumn> impleme
 
   @Override
   public void setValue(int rowIndex, int colIndex, Boolean value) {
-    setValue(rowIndex, colIndex, BooleanValue.getInstance(value));
+    setValue(rowIndex, colIndex, BooleanValue.of(value));
   }
 
   @Override

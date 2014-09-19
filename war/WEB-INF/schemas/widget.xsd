@@ -138,6 +138,7 @@
         <xs:attribute name="required" type="xs:boolean" />
         <xs:attribute name="updateMode" type="ui:refreshType" />
         <xs:attribute name="value" type="xs:normalizedString" />
+        <xs:attribute name="summarize" type="xs:boolean" />
       </xs:extension>
     </xs:complexContent>
   </xs:complexType>
@@ -165,7 +166,6 @@
         <xs:group ref="widgetOrDecorator" />
         <xs:attributeGroup ref="ui:appearance" />
         <xs:attributeGroup ref="visibility" />
-        <xs:attribute name="summary" type="xs:normalizedString" />
       </xs:extension>
     </xs:complexContent>
   </xs:complexType>
@@ -544,6 +544,7 @@
         <xs:extension base="gridType">
           <xs:attribute name="relColumn" type="type:nameType" use="required" />
           <xs:attribute name="source" type="type:nameType" />
+          <xs:attribute name="summarize" type="xs:boolean" />
         </xs:extension>
       </xs:complexContent>
     </xs:complexType>
@@ -554,6 +555,7 @@
       <xs:complexContent>
         <xs:extension base="gridType">
           <xs:attribute name="child" type="xs:boolean" />
+          <xs:attribute name="summarize" type="xs:boolean" />
         </xs:extension>
       </xs:complexContent>
     </xs:complexType>
@@ -956,7 +958,7 @@
   <xs:element name="OrderedList" type="htmlList" substitutionGroup="widget" />
   <xs:element name="UnorderedList" type="htmlList" substitutionGroup="widget" />
 
-  <xs:element name="RichTextEditor" type="display" substitutionGroup="widget" />
+  <xs:element name="RichTextEditor" type="editableWidget" substitutionGroup="widget" />
 
   <xs:element name="Flag" substitutionGroup="widget">
     <xs:complexType>
@@ -1039,6 +1041,7 @@
           <xs:attribute name="blockedRelations">
             <xs:simpleType><xs:list itemType="type:dataView" /></xs:simpleType>
           </xs:attribute>
+          <xs:attribute name="summarize" type="xs:boolean" />
         </xs:extension>
       </xs:complexContent>
     </xs:complexType>

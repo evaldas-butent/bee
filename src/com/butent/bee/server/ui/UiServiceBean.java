@@ -10,7 +10,6 @@ import com.google.common.collect.Multimap;
 import com.google.common.collect.Sets;
 
 import static com.butent.bee.shared.modules.administration.AdministrationConstants.*;
-import static com.butent.bee.shared.modules.classifiers.ClassifierConstants.*;
 
 import com.butent.bee.server.Config;
 import com.butent.bee.server.DataSourceBean;
@@ -64,11 +63,9 @@ import com.butent.bee.shared.data.view.Order;
 import com.butent.bee.shared.data.view.RowInfo;
 import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogUtils;
-import com.butent.bee.shared.modules.classifiers.ClassifierConstants;
 import com.butent.bee.shared.rights.RightsObjectType;
 import com.butent.bee.shared.rights.RightsState;
 import com.butent.bee.shared.rights.RightsUtils;
-import com.butent.bee.shared.time.DateTime;
 import com.butent.bee.shared.ui.ColumnDescription;
 import com.butent.bee.shared.ui.DecoratorConstants;
 import com.butent.bee.shared.ui.GridDescription;
@@ -86,11 +83,7 @@ import com.butent.bee.shared.utils.XmlHelper;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
-import java.io.BufferedReader;
-import java.io.DataInputStream;
 import java.io.File;
-import java.io.FileInputStream;
-import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -251,9 +244,6 @@ public class UiServiceBean {
 
     } else if (BeeUtils.same(svc, Service.SET_ROW_RIGHTS)) {
       response = setRowRights(reqInfo);
-
-    } else if (BeeUtils.same(svc, Service.IMPORT_CSV_COMPANIES)) {
-      response = importCSVCompanies(reqInfo);
     } else {
       String msg = BeeUtils.joinWords("data service not recognized:", svc);
       logger.warning(msg);
@@ -818,189 +808,6 @@ public class UiServiceBean {
       filter = Filter.restore(where);
     }
     return ResponseObject.response(qs.getViewSize(viewName, filter));
-  }
-
-  @Deprecated
-  private ResponseObject importCSVCompanies(RequestInfo reqInfo) {
-    String fileId = reqInfo.getContent();
-
-    logger.info("File ID", fileId);
-
-    String path = fileId;
-
-    try {
-      SqlInsert insert;
-
-      FileInputStream fstream = new FileInputStream(path);
-
-      DataInputStream in = new DataInputStream(fstream);
-      BufferedReader br = new BufferedReader(new InputStreamReader(in));
-      String strLine;
-      boolean firstLine = true;
-      while ((strLine = br.readLine()) != null) {
-        if (firstLine) {
-          firstLine = false;
-          continue;
-        }
-
-        Splitter splitter = Splitter.on(';');
-        List<String> lst = Lists.newArrayList(splitter.split(strLine));
-
-        String[] data = ArrayUtils.toArray(lst);
-
-        logger.info("Current data row", data);
-
-        String companyName = BeeUtils.isEmpty(data[0]) ? null : data[0];
-        String companyCode = BeeUtils.isEmpty(data[1]) ? null : data[1];
-        String companyVatCode = BeeUtils.isEmpty(data[2]) ? null : data[2];
-        String companyPostCode = BeeUtils.isEmpty(data[3]) ? null : data[3];
-        String companyAddress = BeeUtils.isEmpty(data[4]) ? null : data[4];
-        String companyCity = BeeUtils.isEmpty(data[5]) ? null : data[5];
-        String companyCountry = BeeUtils.isEmpty(data[6]) ? "#" : data[6];
-        String companyPhone = BeeUtils.isEmpty(data[7]) ? null : data[7];
-        String companyEMail = BeeUtils.isEmpty(data[8]) ? null : data[8];
-
-        if (BeeUtils.isEmpty(companyName)) {
-          logger.warning("Record was skipped");
-        }
-
-        Filter filterCompany = Filter.contains(COL_COMPANY_NAME, companyName);
-
-        if (!BeeUtils.isEmpty(companyCode)) {
-          filterCompany = Filter.or(Filter.contains(COL_COMPANY_CODE, companyCode),
-              Filter.contains(COL_COMPANY_NAME, companyName));
-        }
-
-        BeeRowSet listFilteredCompanies =
-            qs.getViewData(ClassifierConstants.VIEW_COMPANIES, filterCompany);
-
-        if (!listFilteredCompanies.isEmpty()) {
-          logger.warning("Company ", companyName, companyCode, "allready exists !");
-          continue;
-        }
-
-        insert = new SqlInsert(TBL_COMPANIES)
-            .addFields(COL_COMPANY_CODE, COL_COMPANY_NAME, COL_COMPANY_VAT_CODE, "Notes")
-            .addValues(companyCode, companyName, companyVatCode, "Imported "
-                + (new DateTime().toTimeStamp()));
-
-        logger.info("do sql", insert.getQuery());
-
-        long companyId = qs.insertData(insert);
-
-        insert = new SqlInsert(TBL_CONTACTS)
-            .addFields(COL_ADDRESS, COL_POST_INDEX, COL_PHONE)
-            .addValues(companyAddress, companyPostCode, companyPhone);
-
-        logger.info("do sql", insert.getQuery());
-
-        long contactId = qs.insertData(insert);
-
-        SqlUpdate update = new SqlUpdate(TBL_COMPANIES)
-            .addConstant(COL_CONTACT, contactId)
-            .setWhere(SqlUtils.equals(TBL_COMPANIES,
-                sys.getIdName(TBL_COMPANIES), companyId));
-
-        logger.info("do sql", update.getQuery());
-
-        qs.updateData(update);
-
-        BeeRowSet filteredCities = new BeeRowSet();
-        if (!BeeUtils.isEmpty(companyCity)) {
-          Filter filterCity = Filter.contains("Name", companyCity);
-          filteredCities = qs.getViewData(VIEW_CITIES, filterCity);
-        }
-
-        if (!filteredCities.isEmpty()) {
-
-          long countryId =
-              filteredCities.getRow(0).getLong(filteredCities.getColumnIndex(COL_COUNTRY));
-
-          update = new SqlUpdate(TBL_CONTACTS)
-              .addConstant(COL_CITY, filteredCities.getRowIds().get(0))
-              .addConstant(COL_COUNTRY, countryId)
-              .setWhere(SqlUtils.equals(TBL_CONTACTS, sys.getIdName(TBL_CONTACTS), contactId));
-
-          logger.info("do sql", update.getQuery());
-          qs.updateData(update);
-        } else {
-
-          Filter filterCountry = Filter.contains("Name", companyCountry);
-          BeeRowSet filteredCounties = qs.getViewData(VIEW_COUNTRIES, filterCountry);
-
-          if (!filteredCounties.isEmpty() && !BeeUtils.isEmpty(companyCity)) {
-            insert = new SqlInsert(TBL_CITIES)
-                .addFields("Name", COL_COUNTRY)
-                .addValues(companyCity, filteredCounties.getRowIds().get(0));
-
-            logger.info("do sql", insert.getQuery());
-            long cityId = qs.insertData(insert);
-
-            update = new SqlUpdate(TBL_CONTACTS)
-                .addConstant(COL_CITY, cityId)
-                .addConstant(
-                    COL_COUNTRY, filteredCounties.getRowIds().get(0))
-                .setWhere(SqlUtils.equals(TBL_CONTACTS, sys.getIdName(TBL_CONTACTS), contactId));
-
-            logger.info("do sql", update.getQuery());
-            qs.updateData(update);
-          } else if (filteredCounties.isEmpty()) {
-
-            insert = new SqlInsert(TBL_COUNTRIES).addConstant("Name", companyCountry);
-
-            logger.info("do sql", insert.getQuery());
-            long countryId = qs.insertData(insert);
-
-            Long cityId = null;
-            if (!BeeUtils.isEmpty(companyCity)) {
-              insert = new SqlInsert(TBL_CITIES).addConstant("Name", companyCity)
-                  .addConstant(COL_COUNTRY, countryId);
-
-              logger.info("do sql", insert.getQuery());
-              cityId = qs.insertData(insert);
-            }
-
-            update = new SqlUpdate(TBL_CONTACTS)
-                .addConstant(COL_CITY, cityId)
-                .addConstant(COL_COUNTRY, countryId)
-                .setWhere(SqlUtils.equals(TBL_CONTACTS, sys.getIdName(TBL_CONTACTS), contactId));
-
-            logger.info("do sql", update.getQuery());
-            qs.updateData(update);
-          }
-        }
-
-        if (!BeeUtils.isEmpty(companyEMail)) {
-          Filter filterEMail = Filter.contains(COL_EMAIL, companyEMail);
-          BeeRowSet filteredEMails = qs.getViewData("Emails", filterEMail);
-
-          if (filteredEMails.isEmpty()) {
-            insert = new SqlInsert(TBL_EMAILS)
-                .addConstant(COL_EMAIL, companyEMail)
-                .addConstant("Label", companyName);
-
-            logger.info("do sql", insert.getQuery());
-            long emailId = qs.insertData(insert);
-
-            update = new SqlUpdate(TBL_CONTACTS)
-                .addConstant(COL_EMAIL, emailId)
-                .setWhere(SqlUtils.equals(TBL_CONTACTS, sys.getIdName(TBL_CONTACTS), contactId));
-
-            logger.info("do sql", update.getQuery());
-            qs.updateData(update);
-
-          }
-
-        }
-
-      }
-      in.close();
-    } catch (Exception e) {
-      logger.severe(e);
-      return ResponseObject.error(e);
-    }
-
-    return ResponseObject.info("Data imported");
   }
 
   private ResponseObject insertRow(RequestInfo reqInfo) {

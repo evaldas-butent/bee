@@ -108,8 +108,7 @@ public class Spaces {
             boolean value = ((Toggle) event.getSource()).isChecked();
             getItem().setStartup(value);
 
-            Queries.update(VIEW_WORKSPACES, getItem().getId(), COL_STARTUP,
-                BooleanValue.getInstance(value));
+            Queries.update(VIEW_WORKSPACES, getItem().getId(), COL_STARTUP, BooleanValue.of(value));
           }
         }
       });

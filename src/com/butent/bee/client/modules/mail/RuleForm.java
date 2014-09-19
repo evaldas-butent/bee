@@ -14,6 +14,7 @@ import com.butent.bee.client.style.StyleUtils;
 import com.butent.bee.client.ui.FormFactory.WidgetDescriptionCallback;
 import com.butent.bee.client.ui.IdentifiableWidget;
 import com.butent.bee.client.ui.UiHelper;
+import com.butent.bee.client.view.ViewHelper;
 import com.butent.bee.client.view.edit.EditableWidget;
 import com.butent.bee.client.view.edit.Editor;
 import com.butent.bee.client.view.form.FormView;
@@ -156,7 +157,7 @@ public class RuleForm extends AbstractFormInterceptor implements SelectorEvent.H
   public void onDataSelector(SelectorEvent event) {
     if (event.isOpened()) {
       event.getSelector().setAdditionalFilter(Filter.equals(COL_ACCOUNT,
-          UiHelper.getFormRowId(getGridView())));
+          ViewHelper.getFormRowId(getGridView())));
     }
   }
 

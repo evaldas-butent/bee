@@ -30,8 +30,8 @@ import com.butent.bee.client.ui.FormFactory;
 import com.butent.bee.client.ui.FormFactory.WidgetDescriptionCallback;
 import com.butent.bee.client.ui.IdentifiableWidget;
 import com.butent.bee.client.ui.Opener;
-import com.butent.bee.client.ui.UiHelper;
 import com.butent.bee.client.utils.FileUtils;
+import com.butent.bee.client.view.ViewHelper;
 import com.butent.bee.client.view.add.ReadyForInsertEvent;
 import com.butent.bee.client.view.edit.EditStartEvent;
 import com.butent.bee.client.view.form.FormView;
@@ -281,7 +281,7 @@ public final class DocumentsHandler {
 
         gridView.add(collector);
 
-        FormView form = UiHelper.getForm(gridView.asWidget());
+        FormView form = ViewHelper.getForm(gridView.asWidget());
         if (form != null) {
           collector.bindDnd(form);
         }
@@ -358,7 +358,7 @@ public final class DocumentsHandler {
 
     private void ensureDefaultFields(DataInfo dataInfo, IsRow formRow) {
       GridPresenter presenter = getGridPresenter();
-      FormView parentForm = UiHelper.getForm(presenter.getMainView().asWidget());
+      FormView parentForm = ViewHelper.getForm(presenter.getMainView().asWidget());
 
       if (parentForm == null) {
         return;

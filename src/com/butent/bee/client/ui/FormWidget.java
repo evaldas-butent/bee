@@ -8,6 +8,7 @@ import com.google.gwt.resources.client.ImageResource;
 import com.google.gwt.user.client.ui.Focusable;
 import com.google.gwt.user.client.ui.HasOneWidget;
 import com.google.gwt.user.client.ui.HasWidgets;
+import com.google.gwt.user.client.ui.Widget;
 import com.google.gwt.xml.client.Element;
 
 import com.butent.bee.client.BeeKeeper;
@@ -31,6 +32,8 @@ import com.butent.bee.client.dom.DomUtils;
 import com.butent.bee.client.dom.Edges;
 import com.butent.bee.client.dom.Features;
 import com.butent.bee.client.event.EventUtils;
+import com.butent.bee.client.event.logical.HasSummaryChangeHandlers;
+import com.butent.bee.client.event.logical.SummaryChangeEvent;
 import com.butent.bee.client.grid.CellKind;
 import com.butent.bee.client.grid.ChildGrid;
 import com.butent.bee.client.grid.GridFactory;
@@ -271,18 +274,15 @@ public enum FormWidget {
     private final IdentifiableWidget headerWidget;
 
     private final IdentifiableWidget content;
-    private final String summary;
 
     private HeaderAndContent(String headerTag, String headerString,
-        IdentifiableWidget headerWidget, IdentifiableWidget content, String summary) {
+        IdentifiableWidget headerWidget, IdentifiableWidget content) {
 
       this.headerTag = headerTag;
       this.headerString = headerString;
       this.headerWidget = headerWidget;
 
       this.content = content;
-
-      this.summary = summary;
     }
 
     private IdentifiableWidget getContent() {
@@ -299,10 +299,6 @@ public enum FormWidget {
 
     private IdentifiableWidget getHeaderWidget() {
       return headerWidget;
-    }
-
-    private String getSummary() {
-      return summary;
     }
 
     private boolean isHeaderHtml() {
@@ -778,6 +774,11 @@ public enum FormWidget {
         if (widget instanceof HasCapsLock && BeeConst.isTrue(value)) {
           ((HasCapsLock) widget).setUpperCase(true);
         }
+
+      } else if (BeeUtils.same(name, ATTR_SUMMARIZE)) {
+        if (widget instanceof HasSummaryChangeHandlers) {
+          ((HasSummaryChangeHandlers) widget).setSummarize(BeeUtils.toBoolean(value));
+        }
       }
     }
   }
@@ -1011,7 +1012,8 @@ public enum FormWidget {
 
   private static final String ATTR_CHILD = "child";
   private static final String ATTR_KIND = "kind";
-  private static final String ATTR_SUMMARY = "summary";
+
+  private static final String ATTR_SUMMARIZE = "summarize";
 
   private static final String TAG_CSS = "css";
 
@@ -2051,9 +2053,7 @@ public enum FormWidget {
       }
     }
 
-    String summary = parent.getAttribute(ATTR_SUMMARY);
-
-    return new HeaderAndContent(headerTag, headerString, headerWidget, content, summary);
+    return new HeaderAndContent(headerTag, headerString, headerWidget, content);
   }
 
   private Set<Type> getTypes() {
@@ -2280,12 +2280,13 @@ public enum FormWidget {
       if (hc != null && hc.isValid() && parent instanceof TabbedPages) {
         IdentifiableWidget tab;
 
+        Widget content = hc.getContent().asWidget();
+        Collection<HasSummaryChangeHandlers> sources = SummaryChangeEvent.findSources(content);
+
         if (hc.isHeaderText() || hc.isHeaderHtml()) {
-          tab = ((TabbedPages) parent).add(hc.getContent().asWidget(), hc.getHeaderString(),
-              hc.getSummary());
+          tab = ((TabbedPages) parent).add(content, hc.getHeaderString(), null, sources);
         } else {
-          tab = ((TabbedPages) parent).add(hc.getContent().asWidget(),
-              hc.getHeaderWidget().asWidget(), hc.getSummary());
+          tab = ((TabbedPages) parent).add(content, hc.getHeaderWidget().asWidget(), null, sources);
         }
 
         StyleUtils.updateAppearance(tab.getElement(), child.getAttribute(UiConstants.ATTR_CLASS),

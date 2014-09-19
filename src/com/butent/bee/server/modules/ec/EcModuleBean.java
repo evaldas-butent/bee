@@ -1752,7 +1752,8 @@ public class EcModuleBean implements BeeModule {
             DateTime term = TimeUtils.parseDateTime(row.getValue("terminas"));
 
             if (term == null) {
-              term = TimeUtils.nextDay(date, finInfo.getDaysForPayment()).getDateTime();
+              term = TimeUtils.nextDay(date, BeeUtils.unbox(finInfo.getDaysForPayment()))
+                  .getDateTime();
             }
             double debt = BeeUtils.unbox(row.getDouble("skola_w"));
             totalDebt += debt;

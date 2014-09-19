@@ -6,9 +6,7 @@
   >
   <Fields>
     <Enum name="Type" key="ImportType" notNull="true" label="=trImportType" />
-    <String name="Description" precision="30" notNull="true" label="=description" />
+    <String name="Description" precision="30" label="=description" />
+    <String name="Data" precision="30" label="=data" />
   </Fields>
-  <Constraints>
-    <Unique fields="Type Description" />
-  </Constraints>
 </Table>
