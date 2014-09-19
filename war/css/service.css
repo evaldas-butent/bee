@@ -212,8 +212,124 @@
   padding-top: 5px;
   padding-bottom: 5px;
 }
+
+.bee-svc-print-companies td {
+  vertical-align: top;
+  padding-left: 15px;
+}
+
+.bee-svc-print-company-bank {
+  white-space: pre-line;
+}
+
+.bee-svc-print-company-code,
+.bee-svc-print-company-vat-code {
+  white-space: nowrap;
+}
+
+.bee-svc-print-company-name {
+  font-size: 11pt;
+  font-weight: bolder;
+}
+
+.bee-svc-print-company-separator {
+  height: 5px;
+}
+
 .bee-svc-print-defect-items-total-value {
   text-align: right;
+}
+
+.bee-svc-print-dispenser {
+  margin-right: 10px;
+}
+
+.bee-svc-print-document-id {
+  text-align: right;
+  margin-top: 3px;
+}
+
+.bee-svc-print-document-footer {
+  page-break-inside: avoid;
+}
+
+.bee-svc-print-document-number {
+  font-family: Tahoma;
+  font-size: 12pt;
+  font-weight: bold;
+  text-align: center;
+  margin-top: 10px;
+}
+
+.bee-svc-print-document-title {
+  font-family: Tahoma;
+  font-size: 16pt;
+  font-style: italic;
+  text-align: center;
+}
+
+.bee-trade-print-items-header td {
+  font-weight: bolder;
+  text-align: center;
+  padding: 5px 5px;
+  border: 1px solid #ccc;
+}
+
+.bee-trade-print-item-ordinal,
+.bee-trade-print-item-name,
+.bee-trade-print-item-article,
+.bee-trade-print-item-quantity,
+.bee-trade-print-item-unit,
+.bee-trade-print-item-price,
+.bee-trade-print-item-amount,
+.bee-trade-print-items-total-label,
+.bee-trade-print-items-total-value {
+  padding: 2px 5px;
+  border: 1px solid #ccc;
+}
+
+.bee-trade-print-item-quantity,
+.bee-trade-print-item-price,
+.bee-trade-print-item-amount,
+.bee-trade-print-items-total-label,
+.bee-trade-print-items-total-value {
+  text-align: right;
+}
+
+.bee-trade-print-items-total-label,
+.bee-trade-print-items-total-value {
+  font-size: 11pt;
+}
+
+.bee-svc-print-notes {
+  margin-top: 10px;
+  white-space: pre-wrap;
+}
+
+.bee-svc-print-signature {
+  margin-top: 15px;
+}
+.bee-svc-print-signature-label {
+  text-align: center;
+  font-size: 8pt;
+  margin-top: -5px;
+}
+
+.bee-svc-print-term {
+  margin-top: 10px;
+  font-size: 11pt;
+  font-weight: bold;
+}
+
+.bee-svc-print-words td,
+.bee-svc-print-term td {
+  padding-right: 7px;
+}
+
+.bee-svc-print-words-value {
+  font-size: 11pt;
+  font-style: italic;
+  text-decoration: underline;
 }
 
 .bee-svc-tree-service .bee-svc-tree-expr-projects-count, 
