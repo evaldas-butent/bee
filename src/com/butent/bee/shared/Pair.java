@@ -22,6 +22,10 @@ public final class Pair<A, B> implements BeeSerializable {
   public static final Splitter SPLITTER =
       Splitter.on(CharMatcher.anyOf(" ,;=")).trimResults().omitEmptyStrings().limit(2);
 
+  public static <A, B> Pair<A, B> of() {
+    return of(null, null);
+  }
+
   /**
    * Creates the new {@code Pair} object passing the pair of objects.
    * 

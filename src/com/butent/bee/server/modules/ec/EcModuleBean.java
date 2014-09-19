@@ -26,8 +26,6 @@ import com.butent.bee.server.http.RequestInfo;
 import com.butent.bee.server.i18n.Localizations;
 import com.butent.bee.server.modules.BeeModule;
 import com.butent.bee.server.modules.ParamHolderBean;
-import com.butent.bee.server.modules.ParameterEvent;
-import com.butent.bee.server.modules.ParameterEventHandler;
 import com.butent.bee.server.modules.mail.MailModuleBean;
 import com.butent.bee.server.news.ExtendedUsageQueryProvider;
 import com.butent.bee.server.news.NewsBean;
@@ -555,19 +553,6 @@ public class EcModuleBean implements BeeModule {
   @Override
   public void init() {
     tcd.initTimers();
-
-    prm.registerParameterEventHandler(new ParameterEventHandler() {
-      @Subscribe
-      public void initTimers(ParameterEvent event) {
-        if (BeeUtils.inListSame(event.getParameter(), PRM_BUTENT_INTERVAL, PRM_MOTONET_HOURS)) {
-          TecDocBean bean = Invocation.locateRemoteBean(TecDocBean.class);
-
-          if (bean != null) {
-            bean.initTimers();
-          }
-        }
-      }
-    });
 
     sys.registerDataEventHandler(new DataEventHandler() {
       @Subscribe

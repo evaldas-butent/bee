@@ -10,6 +10,8 @@ import com.google.common.io.CharStreams;
 import static com.butent.bee.shared.modules.classifiers.ClassifierConstants.*;
 import static com.butent.bee.shared.modules.mail.MailConstants.*;
 
+import com.butent.bee.server.Invocation;
+import com.butent.bee.server.concurrency.ConcurrencyBean;
 import com.butent.bee.server.data.QueryServiceBean;
 import com.butent.bee.server.data.SystemBean;
 import com.butent.bee.server.modules.administration.FileStorageBean;
@@ -97,6 +99,8 @@ public class MailStorageBean {
   SystemBean sys;
   @EJB
   FileStorageBean fs;
+  @EJB
+  ConcurrencyBean cb;
   @Resource
   SessionContext ctx;
 
@@ -220,27 +224,47 @@ public class MailStorageBean {
       throws MessagingException {
 
     MailEnvelope envelope = new MailEnvelope(message);
-    Long messageId = null;
+    Pair<Long, Boolean> pair = Pair.of();
+
+    cb.synchronizedCall(new Runnable() {
+      @Override
+      public void run() {
+        Long messageId = null;
+        boolean existed = false;
+        QueryServiceBean queryBean = Invocation.locateRemoteBean(QueryServiceBean.class);
+
+        SimpleRow data = queryBean.getRow(new SqlSelect()
+            .addField(TBL_MESSAGES, sys.getIdName(TBL_MESSAGES), COL_MESSAGE)
+            .addFrom(TBL_MESSAGES)
+            .setWhere(SqlUtils.equals(TBL_MESSAGES, COL_UNIQUE_ID, envelope.getUniqueId())));
+
+        existed = data != null;
+
+        if (existed) {
+          messageId = data.getLong(COL_MESSAGE);
+        } else {
+          messageId = queryBean.insertData(new SqlInsert(TBL_MESSAGES)
+              .addConstant(COL_UNIQUE_ID, envelope.getUniqueId())
+              .addConstant(COL_DATE, envelope.getDate())
+              .addConstant(COL_SUBJECT,
+                  sys.clampValue(TBL_MESSAGES, COL_SUBJECT, envelope.getSubject())));
+        }
+        pair.setA(messageId);
+        pair.setB(existed);
+      }
+    });
+    Long messageId = pair.getA();
     Long placeId = null;
 
-    SimpleRow data = qs.getRow(new SqlSelect()
-        .addField(TBL_MESSAGES, sys.getIdName(TBL_MESSAGES), COL_MESSAGE)
-        .addMax(TBL_PLACES, sys.getIdName(TBL_PLACES), COL_UNIQUE_ID)
-        .addFrom(TBL_MESSAGES)
-        .addFromLeft(TBL_PLACES,
-            SqlUtils.and(sys.joinTables(TBL_MESSAGES, TBL_PLACES, COL_MESSAGE),
-                SqlUtils.equals(TBL_PLACES, COL_FOLDER, folderId),
-                messageUID == null ? SqlUtils.isNull(TBL_PLACES, COL_MESSAGE_UID)
-                    : SqlUtils.equals(TBL_PLACES, COL_MESSAGE_UID, messageUID)))
-        .setWhere(SqlUtils.equals(TBL_MESSAGES, COL_UNIQUE_ID, envelope.getUniqueId()))
-        .addGroup(TBL_MESSAGES, sys.getIdName(TBL_MESSAGES)));
-
-    if (data != null) {
-      messageId = data.getLong(COL_MESSAGE);
-      placeId = data.getLong(COL_UNIQUE_ID);
-    }
-    if (!DataUtils.isId(messageId)) {
-      Long fileId;
+    if (pair.getB()) {
+      placeId = qs.getLong(new SqlSelect()
+          .addField(TBL_PLACES, sys.getIdName(TBL_PLACES), COL_UNIQUE_ID)
+          .addFrom(TBL_PLACES)
+          .setWhere(SqlUtils.and(messageUID == null ? SqlUtils.isNull(TBL_PLACES, COL_MESSAGE_UID)
+              : SqlUtils.equals(TBL_PLACES, COL_MESSAGE_UID, messageUID),
+              SqlUtils.equals(TBL_PLACES, COL_MESSAGE, messageId, COL_FOLDER, folderId))));
+    } else {
+      Long fileId = null;
       InputStream is = null;
       Long senderId = null;
       InternetAddress sender = envelope.getSender();
@@ -261,16 +285,12 @@ public class MailStorageBean {
         fileId = fs.storeFile(is, "mail@" + envelope.getUniqueId(), !BeeUtils.isEmpty(contentType)
             ? new ContentType(message.getContentType()).getBaseType() : null);
       } catch (IOException e) {
-        ctx.setRollbackOnly();
-        throw new MessagingException(e.toString());
+        logger.error(e);
       }
-      messageId = qs.insertData(new SqlInsert(TBL_MESSAGES)
-          .addConstant(COL_UNIQUE_ID, envelope.getUniqueId())
-          .addConstant(COL_DATE, envelope.getDate())
-          .addNotNull(COL_SENDER, senderId)
-          .addConstant(COL_SUBJECT,
-              sys.clampValue(TBL_MESSAGES, COL_SUBJECT, envelope.getSubject()))
-          .addConstant(COL_RAW_CONTENT, fileId));
+      qs.updateData(new SqlUpdate(TBL_MESSAGES)
+          .addConstant(COL_SENDER, senderId)
+          .addConstant(COL_RAW_CONTENT, fileId)
+          .setWhere(sys.idEquals(TBL_MESSAGES, messageId)));
 
       Set<Long> allAddresses = Sets.newHashSet();
 

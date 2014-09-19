@@ -1,6 +1,5 @@
 package com.butent.bee.server.modules.ec;
 
-import com.google.common.base.Objects;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
@@ -9,7 +8,8 @@ import static com.butent.bee.shared.modules.administration.AdministrationConstan
 import static com.butent.bee.shared.modules.classifiers.ClassifierConstants.*;
 import static com.butent.bee.shared.modules.ec.EcConstants.*;
 
-import com.butent.bee.server.Config;
+import com.butent.bee.server.concurrency.ConcurrencyBean;
+import com.butent.bee.server.concurrency.ConcurrencyBean.HasTimerService;
 import com.butent.bee.server.data.IdGeneratorBean;
 import com.butent.bee.server.data.QueryServiceBean;
 import com.butent.bee.server.data.SystemBean;
@@ -41,7 +41,6 @@ import com.butent.bee.shared.modules.BeeParameter;
 import com.butent.bee.shared.modules.ec.EcConstants.EcSupplier;
 import com.butent.bee.shared.modules.ec.EcUtils;
 import com.butent.bee.shared.rights.Module;
-import com.butent.bee.shared.time.TimeUtils;
 import com.butent.bee.shared.utils.ArrayUtils;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.Codec;
@@ -54,17 +53,14 @@ import java.io.IOException;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
-import java.util.Map.Entry;
 
 import javax.annotation.Resource;
 import javax.ejb.Asynchronous;
 import javax.ejb.EJB;
 import javax.ejb.LocalBean;
-import javax.ejb.ScheduleExpression;
 import javax.ejb.Stateless;
 import javax.ejb.Timeout;
 import javax.ejb.Timer;
-import javax.ejb.TimerConfig;
 import javax.ejb.TimerService;
 import javax.imageio.ImageIO;
 import javax.net.ssl.HostnameVerifier;
@@ -77,7 +73,7 @@ import pl.motonet.WSMotoOfertaSoap;
 
 @Stateless
 @LocalBean
-public class TecDocBean {
+public class TecDocBean implements HasTimerService {
 
   static {
     HttpsURLConnection.setDefaultHostnameVerifier(new HostnameVerifier() {
@@ -178,6 +174,8 @@ public class TecDocBean {
   IdGeneratorBean ig;
   @EJB
   ParamHolderBean prm;
+  @EJB
+  ConcurrencyBean cb;
 
   @Resource
   TimerService timerService;
@@ -351,62 +349,14 @@ public class TecDocBean {
         BeeParameter.createText(Module.ECOMMERCE.getName(), PRM_MOTONET_HOURS, false, null));
   }
 
+  @Override
+  public TimerService getTimerService() {
+    return timerService;
+  }
+
   public void initTimers() {
-    for (Entry<String, EcSupplier> entry : ImmutableMap.of(PRM_BUTENT_INTERVAL, EcSupplier.EOLTAS,
-        PRM_MOTONET_HOURS, EcSupplier.MOTOPROFIL).entrySet()) {
-
-      String parameter = entry.getKey();
-      EcSupplier supplier = entry.getValue();
-
-      Timer tcdTimer = null;
-
-      for (Timer timer : timerService.getTimers()) {
-        if (Objects.equal(timer.getInfo(), supplier)) {
-          tcdTimer = timer;
-          break;
-        }
-      }
-      if (tcdTimer != null) {
-        tcdTimer.cancel();
-      }
-      boolean ok = false;
-
-      switch (supplier) {
-        case EOLTAS:
-          Integer minutes = prm.getInteger(parameter);
-          ok = BeeUtils.isPositive(minutes);
-
-          if (ok) {
-            tcdTimer = timerService.createIntervalTimer(minutes * TimeUtils.MILLIS_PER_MINUTE,
-                minutes * TimeUtils.MILLIS_PER_MINUTE, new TimerConfig(supplier, false));
-
-            logger.info(supplier, "created timer every", minutes, "minutes starting at",
-                tcdTimer.getNextTimeout());
-          }
-          break;
-
-        case MOTOPROFIL:
-          String hours = prm.getText(parameter);
-          ok = !BeeUtils.isEmpty(hours);
-
-          if (ok) {
-            try {
-              tcdTimer = timerService.createCalendarTimer(new ScheduleExpression().hour(hours),
-                  new TimerConfig(supplier, false));
-
-              logger.info(supplier, "created timer on", hours, "hours starting at",
-                  tcdTimer.getNextTimeout());
-            } catch (IllegalArgumentException e) {
-              logger.error(e, parameter);
-              ok = false;
-            }
-          }
-          break;
-      }
-      if (!ok && tcdTimer != null) {
-        logger.info(supplier, "removed timer");
-      }
-    }
+    cb.createIntervalTimer(this.getClass(), PRM_BUTENT_INTERVAL);
+    cb.createCalendarTimer(this.getClass(), PRM_MOTONET_HOURS);
   }
 
   @Asynchronous
@@ -938,19 +888,10 @@ public class TecDocBean {
 
   @Timeout
   private void doTimerEvent(Timer timer) {
-    if (!Config.isInitialized()) {
-      return;
-    }
-    if (timer.getInfo() instanceof EcSupplier) {
-      switch ((EcSupplier) timer.getInfo()) {
-        case EOLTAS:
-          suckButent();
-          break;
-
-        case MOTOPROFIL:
-          suckMotonet();
-          break;
-      }
+    if (cb.isTimerEvent(timer, PRM_BUTENT_INTERVAL)) {
+      suckButent();
+    } else if (cb.isTimerEvent(timer, PRM_MOTONET_HOURS)) {
+      suckMotonet();
     }
   }
 
