@@ -21,9 +21,9 @@ import com.butent.bee.client.data.Queries;
 import com.butent.bee.client.i18n.Money;
 import com.butent.bee.client.modules.trade.acts.TradeActItemImporter.ImportEntry;
 import com.butent.bee.client.presenter.GridPresenter;
-import com.butent.bee.client.ui.UiHelper;
 import com.butent.bee.client.utils.FileUtils;
 import com.butent.bee.client.utils.NewFileInfo;
+import com.butent.bee.client.view.ViewHelper;
 import com.butent.bee.client.view.grid.interceptor.AbstractGridInterceptor;
 import com.butent.bee.client.view.grid.interceptor.GridInterceptor;
 import com.butent.bee.client.widget.Button;
@@ -84,7 +84,7 @@ public class TradeActItemsGrid extends AbstractGridInterceptor implements
 
   @Override
   public boolean beforeAddRow(GridPresenter presenter, boolean copy) {
-    IsRow parentRow = UiHelper.getFormRow(presenter.getMainView());
+    IsRow parentRow = ViewHelper.getFormRow(presenter.getMainView());
 
     if (parentRow != null) {
       final TradeActKind kind = TradeActKeeper.getKind(VIEW_TRADE_ACTS, parentRow);
@@ -140,7 +140,7 @@ public class TradeActItemsGrid extends AbstractGridInterceptor implements
       getGridView().ensureRelId(new IdCallback() {
         @Override
         public void onSuccess(Long result) {
-          IsRow parentRow = UiHelper.getFormRow(getGridView());
+          IsRow parentRow = ViewHelper.getFormRow(getGridView());
 
           if (DataUtils.idEquals(parentRow, result)) {
             Long sourceCurrency =
@@ -207,7 +207,7 @@ public class TradeActItemsGrid extends AbstractGridInterceptor implements
       getGridView().ensureRelId(new IdCallback() {
         @Override
         public void onSuccess(Long result) {
-          IsRow parentRow = UiHelper.getFormRow(getGridView());
+          IsRow parentRow = ViewHelper.getFormRow(getGridView());
 
           if (DataUtils.idEquals(parentRow, result)) {
             ItemPrice itemPrice = TradeActKeeper.getItemPrice(VIEW_TRADE_ACTS, parentRow);
@@ -275,7 +275,7 @@ public class TradeActItemsGrid extends AbstractGridInterceptor implements
   }
 
   private IsRow getParentRow() {
-    return UiHelper.getFormRow(getGridView());
+    return ViewHelper.getFormRow(getGridView());
   }
 
   private FileCollector ensureCollector() {

@@ -9,7 +9,7 @@ import com.butent.bee.client.composite.DataSelector;
 import com.butent.bee.client.composite.MultiSelector;
 import com.butent.bee.client.data.Data;
 import com.butent.bee.client.event.logical.SelectorEvent;
-import com.butent.bee.client.ui.UiHelper;
+import com.butent.bee.client.view.ViewHelper;
 import com.butent.bee.client.view.form.FormView;
 import com.butent.bee.shared.data.BeeColumn;
 import com.butent.bee.shared.data.CellSource;
@@ -30,7 +30,7 @@ class TaskSelectorHandler implements SelectorEvent.Handler {
   @Override
   public void onDataSelector(SelectorEvent event) {
 
-    FormView form = UiHelper.getForm(event.getSelector());
+    FormView form = ViewHelper.getForm(event.getSelector());
     if (form == null) {
       return;
     }

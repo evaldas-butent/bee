@@ -130,7 +130,7 @@ public class UniqueChildInterceptor extends AbstractGridInterceptor {
       }
 
       if (!children.isEmpty()) {
-        selector.getOracle().setAdditionalFilter(Filter.idNotIn(children));
+        selector.setAdditionalFilter(Filter.idNotIn(children));
       }
     }
 

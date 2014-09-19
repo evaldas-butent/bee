@@ -304,6 +304,7 @@ public final class AdministrationConstants {
   public static final String COL_IMPORT_OPTION = "Option";
   public static final String COL_IMPORT_TYPE = "Type";
   public static final String COL_IMPORT_DATA = "Data";
+  public static final String COL_IMPORT_DESCRIPTION = "Description";
   public static final String COL_IMPORT_PROPERTY = "Property";
   public static final String COL_IMPORT_VALUE = "Value";
   public static final String COL_IMPORT_RELATION_OPTION = "RelationOption";

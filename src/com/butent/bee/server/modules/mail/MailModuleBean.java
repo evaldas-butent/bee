@@ -8,7 +8,8 @@ import com.google.common.eventbus.Subscribe;
 import static com.butent.bee.shared.modules.classifiers.ClassifierConstants.*;
 import static com.butent.bee.shared.modules.mail.MailConstants.*;
 
-import com.butent.bee.server.Config;
+import com.butent.bee.server.concurrency.ConcurrencyBean;
+import com.butent.bee.server.concurrency.ConcurrencyBean.HasTimerService;
 import com.butent.bee.server.data.BeeView;
 import com.butent.bee.server.data.BeeView.ConditionProvider;
 import com.butent.bee.server.data.DataEvent.ViewInsertEvent;
@@ -33,6 +34,7 @@ import com.butent.bee.server.sql.SqlUtils;
 import com.butent.bee.server.websocket.Endpoint;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
+import com.butent.bee.shared.Pair;
 import com.butent.bee.shared.Service;
 import com.butent.bee.shared.communication.ResponseObject;
 import com.butent.bee.shared.data.BeeRow;
@@ -83,14 +85,18 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.Future;
 
 import javax.annotation.Resource;
+import javax.ejb.AsyncResult;
 import javax.ejb.Asynchronous;
 import javax.ejb.EJB;
 import javax.ejb.LocalBean;
-import javax.ejb.Schedule;
 import javax.ejb.SessionContext;
 import javax.ejb.Stateless;
+import javax.ejb.Timeout;
+import javax.ejb.Timer;
+import javax.ejb.TimerService;
 import javax.mail.Address;
 import javax.mail.FetchProfile;
 import javax.mail.Flags.Flag;
@@ -111,9 +117,11 @@ import javax.mail.internet.MimeUtility;
 
 @Stateless
 @LocalBean
-public class MailModuleBean implements BeeModule {
+public class MailModuleBean implements BeeModule, HasTimerService {
 
   private static final BeeLogger logger = LogUtils.getLogger(MailModuleBean.class);
+
+  private static final Map<Long, Pair<Future<Long>, Long>> asyncThreads = new HashMap<>();
 
   @EJB
   MailProxy proxy;
@@ -129,14 +137,18 @@ public class MailModuleBean implements BeeModule {
   FileStorageBean fs;
   @EJB
   ParamHolderBean prm;
+  @EJB
+  NewsBean news;
+  @EJB
+  ConcurrencyBean cb;
 
   @Resource
   SessionContext ctx;
-  @EJB
-  NewsBean news;
+  @Resource
+  TimerService timerService;
 
   @Asynchronous
-  public void checkMail(final MailAccount account, MailFolder localFolder, String progressId) {
+  public Future<Long> checkMail(MailAccount account, MailFolder localFolder, String progressId) {
     Assert.noNulls(account, localFolder);
     Store store = null;
     int c = 0;
@@ -171,6 +183,8 @@ public class MailModuleBean implements BeeModule {
     mailMessage.setFoldersUpdated(f > 0);
     mailMessage.setError(error);
     Endpoint.sendToUser(account.getUserId(), mailMessage);
+
+    return new AsyncResult<>(localFolder.getId());
   }
 
   @Override
@@ -316,8 +330,7 @@ public class MailModuleBean implements BeeModule {
         if (folder == null) {
           response = ResponseObject.error("Folder does not exist: ID =", folderId);
         } else {
-          ctx.getBusinessObject(this.getClass()).checkMail(account, folder,
-              reqInfo.getParameter(Service.VAR_PROGRESS));
+          check(account, folder, reqInfo.getParameter(Service.VAR_PROGRESS));
           response = ResponseObject.emptyResponse();
         }
       } else if (BeeUtils.same(svc, SVC_SEND_MAIL)) {
@@ -409,7 +422,8 @@ public class MailModuleBean implements BeeModule {
         BeeParameter.createNumber(module, "POP3BindPort", false, null),
         BeeParameter.createText(module, "SMTPServer", false, null),
         BeeParameter.createNumber(module, "SMTPServerPort", false, null),
-        BeeParameter.createNumber(module, "SMTPBindPort", false, null));
+        BeeParameter.createNumber(module, "SMTPBindPort", false, null),
+        BeeParameter.createNumber(module, PRM_MAIL_CHECK_INTERVAL, false, null));
 
     return params;
   }
@@ -425,15 +439,21 @@ public class MailModuleBean implements BeeModule {
   }
 
   @Override
+  public TimerService getTimerService() {
+    return timerService;
+  }
+
+  @Override
   public void init() {
     System.setProperty("mail.mime.decodetext.strict", "false");
-
     System.setProperty("mail.mime.parameters.strict", "false");
     System.setProperty("mail.mime.ignoreunknownencoding", "true");
     System.setProperty("mail.mime.uudecode.ignoreerrors", "true");
     System.setProperty("mail.mime.uudecode.ignoremissingbeginend", "true");
     System.setProperty("mail.mime.ignoremultipartencoding", "false");
     System.setProperty("mail.mime.allowencodedmessages", "true");
+
+    cb.createIntervalTimer(this.getClass(), PRM_MAIL_CHECK_INTERVAL);
 
     proxy.initServer();
 
@@ -942,6 +962,26 @@ public class MailModuleBean implements BeeModule {
     return message;
   }
 
+  private void check(MailAccount account, MailFolder localFolder, String progressId) {
+    Assert.notNull(localFolder);
+    Pair<Future<Long>, Long> pair = asyncThreads.get(localFolder.getId());
+
+    if (pair != null) {
+      Future<Long> future = pair.getA();
+      boolean timeout = BeeUtils.isMore(System.currentTimeMillis() - pair.getB(),
+          TimeUtils.MILLIS_PER_HOUR);
+
+      if (!future.isDone() && (!timeout || !future.cancel(true))) {
+        if (!BeeUtils.isEmpty(progressId)) {
+          Endpoint.closeProgress(progressId);
+        }
+        return;
+      }
+    }
+    asyncThreads.put(localFolder.getId(), Pair.of(ctx.getBusinessObject(this.getClass())
+        .checkMail(account, localFolder, progressId), System.currentTimeMillis()));
+  }
+
   private int checkFolder(MailAccount account, Folder remoteFolder, MailFolder localFolder,
       String progressId) throws MessagingException {
     Assert.noNulls(remoteFolder, localFolder);
@@ -1016,7 +1056,7 @@ public class MailModuleBean implements BeeModule {
       }
       for (MailFolder mailFolder : changedFolders) {
         if (!account.isInbox(mailFolder)) {
-          ctx.getBusinessObject(this.getClass()).checkMail(account, mailFolder, null);
+          check(account, mailFolder, null);
         }
       }
     }
@@ -1121,9 +1161,9 @@ public class MailModuleBean implements BeeModule {
     return ResponseObject.response(packet);
   }
 
-  @Schedule(minute = "*/5", hour = "*", persistent = false)
-  private void mailChecker() {
-    if (!Config.isInitialized()) {
+  @Timeout
+  private void mailChecker(Timer timer) {
+    if (!cb.isTimerEvent(timer, PRM_MAIL_CHECK_INTERVAL)) {
       return;
     }
     for (String accountId : qs.getColumn(new SqlSelect()
@@ -1132,7 +1172,7 @@ public class MailModuleBean implements BeeModule {
         .setWhere(SqlUtils.notNull(TBL_ACCOUNTS, COL_STORE_SERVER)))) {
 
       MailAccount account = mail.getAccount(BeeUtils.toLongOrNull(accountId));
-      ctx.getBusinessObject(this.getClass()).checkMail(account, account.getInboxFolder(), null);
+      check(account, account.getInboxFolder(), null);
     }
   }
 

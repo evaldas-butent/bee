@@ -221,7 +221,7 @@ public class ImportOptionsGrid extends AbstractGridInterceptor implements ClickH
 
           if (Objects.equals(type, ImportType.DATA)) {
             String viewName = row.getString(getGridView().getDataIndex(COL_IMPORT_DATA));
-            cap = Data.getViewCaption(viewName);
+            cap = row.getString(getGridView().getDataIndex(COL_IMPORT_DESCRIPTION));
 
             if (!BeeKeeper.getUser().canCreateData(viewName)) {
               getGridView().notifyWarning(Localized.getConstants().no());

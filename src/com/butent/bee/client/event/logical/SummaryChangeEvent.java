@@ -6,10 +6,13 @@ import com.google.gwt.user.client.ui.HasOneWidget;
 import com.google.gwt.user.client.ui.HasWidgets;
 import com.google.gwt.user.client.ui.Widget;
 
-import com.butent.bee.shared.BeeConst;
-import com.butent.bee.shared.utils.BeeUtils;
+import com.butent.bee.shared.Assert;
+import com.butent.bee.shared.data.value.Value;
 
-public class SummaryChangeEvent extends GwtEvent<SummaryChangeEvent.Handler> {
+import java.util.ArrayList;
+import java.util.Collection;
+
+public final class SummaryChangeEvent extends GwtEvent<SummaryChangeEvent.Handler> {
 
   public interface Handler extends EventHandler {
     void onSummaryChange(SummaryChangeEvent event);
@@ -17,45 +20,47 @@ public class SummaryChangeEvent extends GwtEvent<SummaryChangeEvent.Handler> {
 
   private static final Type<Handler> TYPE = new Type<>();
 
-  public static HasSummaryChangeHandlers findSource(Widget parent) {
-    if (parent == null) {
-      return null;
+  public static Collection<HasSummaryChangeHandlers> findSources(Widget parent) {
+    Collection<HasSummaryChangeHandlers> sources = new ArrayList<>();
 
-    } else if (parent instanceof HasSummaryChangeHandlers) {
-      return (HasSummaryChangeHandlers) parent;
+    if (parent instanceof HasSummaryChangeHandlers) {
+      if (((HasSummaryChangeHandlers) parent).summarize()) {
+        sources.add((HasSummaryChangeHandlers) parent);
+      }
 
     } else if (parent instanceof HasOneWidget) {
-      return findSource(((HasOneWidget) parent).getWidget());
+      sources.addAll(findSources(((HasOneWidget) parent).getWidget()));
 
     } else if (parent instanceof HasWidgets) {
       for (Widget child : (HasWidgets) parent) {
-        HasSummaryChangeHandlers found = findSource(child);
-        if (found != null) {
-          return found;
-        }
+        sources.addAll(findSources(child));
       }
     }
 
-    return null;
+    return sources;
   }
 
-  public static void fire(HasSummaryChangeHandlers source, int size) {
-    String summary = (size > 0) ? BeeUtils.toString(size) : BeeConst.STRING_EMPTY;
-    fire(source, summary);
+  public static void fire(HasSummaryChangeHandlers source) {
+    Assert.notNull(source);
+    source.fireEvent(new SummaryChangeEvent(source.getId(), source.getSummary()));
   }
 
-  public static void fire(HasSummaryChangeHandlers source, String summary) {
-    source.fireEvent(new SummaryChangeEvent(summary));
+  public static void maybeFire(HasSummaryChangeHandlers source) {
+    if (source != null && source.summarize()) {
+      fire(source);
+    }
   }
 
   public static Type<Handler> getType() {
     return TYPE;
   }
 
-  private final String summary;
+  private final String sourceId;
+  private final Value value;
 
-  public SummaryChangeEvent(String summary) {
-    this.summary = summary;
+  private SummaryChangeEvent(String sourceId, Value value) {
+    this.sourceId = sourceId;
+    this.value = value;
   }
 
   @Override
@@ -63,8 +68,12 @@ public class SummaryChangeEvent extends GwtEvent<SummaryChangeEvent.Handler> {
     return TYPE;
   }
 
-  public String getSummary() {
-    return summary;
+  public String getSourceId() {
+    return sourceId;
+  }
+
+  public Value getValue() {
+    return value;
   }
 
   @Override

@@ -15,7 +15,6 @@
     <DataColumn name="Phone" />
     <DataColumn name="Mobile" />
     <DataColumn name="Fax" />
- 
     <RelColumn name="EmailId" />
   </g:columns>
 </g:Grid>

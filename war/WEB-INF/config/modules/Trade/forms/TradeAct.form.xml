@@ -63,8 +63,10 @@
         <Label for="Company" visible="true" />
         <DataSelector source="Company" style="&inpw;" visible="true" />
 
-        <Label for="ServiceObject" />
-        <DataSelector source="ServiceObject" style="&inpw;" />
+        <Label for="Object" />
+        <DataSelector source="Object" renderColumns="ObjectName" 
+          choiceColumns="CompanyName ObjectName ObjectAddress" newRowEnabled="false"
+          style="&inpw;" />
       </row>
 
       <row>
@@ -115,7 +117,7 @@
 
           <br/>
           <SimplePanel class="flexible" style="position: relative;">
-            <InputArea source="Notes" class="occupy-1" />
+            <InputArea source="Notes" class="occupy-1" summarize="true" />
           </SimplePanel>
         </FlowPanel>
       </page>

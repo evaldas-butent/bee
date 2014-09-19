@@ -16,10 +16,10 @@ import com.butent.bee.client.ui.FormFactory.WidgetDescriptionCallback;
 import com.butent.bee.client.ui.FormDescription;
 import com.butent.bee.client.ui.FormFactory;
 import com.butent.bee.client.ui.IdentifiableWidget;
-import com.butent.bee.client.ui.UiHelper;
 import com.butent.bee.client.view.HeaderView;
 import com.butent.bee.client.view.ViewCallback;
 import com.butent.bee.client.view.ViewFactory;
+import com.butent.bee.client.view.ViewHelper;
 import com.butent.bee.client.view.ViewSupplier;
 import com.butent.bee.client.view.form.FormView;
 import com.butent.bee.client.view.form.interceptor.AbstractFormInterceptor;
@@ -67,7 +67,7 @@ public class TasksReportsInterceptor extends AbstractFormInterceptor {
 
     @Override
     public void onClick(ClickEvent event) {
-      final FormView form = UiHelper.getForm((Widget) event.getSource());
+      final FormView form = ViewHelper.getForm((Widget) event.getSource());
 
       InputDate fromDate = (InputDate) form.getWidgetByName(WIDGET_DATE_FROM_NAME);
 
@@ -110,7 +110,7 @@ public class TasksReportsInterceptor extends AbstractFormInterceptor {
 
     @Override
     public void onClick(ClickEvent event) {
-      final FormView form = UiHelper.getForm((Widget) event.getSource());
+      final FormView form = ViewHelper.getForm((Widget) event.getSource());
       ParameterList params = null;
 
       switch (reportType) {

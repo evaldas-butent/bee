@@ -12,7 +12,12 @@
       <SimpleJoin name="Order" joinType="INNER">
         <SimpleColumn name="Date" />
         <SimpleColumn name="Notes" alias="OrderNotes" />
+
         <SimpleColumn name="Customer" />
+        <SimpleJoin name="Customer" joinType="INNER">
+          <SimpleColumn name="CreditDays" />
+          <SimpleColumn name="DaysAsBuyer" />
+        </SimpleJoin>
 
         <SimpleJoin name="Manager" joinType="INNER">
           <SimpleJoin name="CompanyPerson" joinType="LEFT">

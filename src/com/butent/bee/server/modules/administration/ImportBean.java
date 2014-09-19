@@ -3,13 +3,16 @@ package com.butent.bee.server.modules.administration;
 import com.google.common.base.Function;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
+import com.google.common.collect.Sets;
 
 import static com.butent.bee.shared.modules.administration.AdministrationConstants.*;
 import static com.butent.bee.shared.modules.classifiers.ClassifierConstants.*;
 import static com.butent.bee.shared.modules.trade.TradeConstants.*;
 import static com.butent.bee.shared.modules.transport.TransportConstants.*;
 
+import com.butent.bee.server.data.BeeTable;
 import com.butent.bee.server.data.BeeTable.BeeField;
+import com.butent.bee.server.data.BeeTable.BeeIndex;
 import com.butent.bee.server.data.BeeTable.BeeRelation;
 import com.butent.bee.server.data.BeeTable.BeeUniqueKey;
 import com.butent.bee.server.data.BeeView;
@@ -72,10 +75,12 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Set;
 
 import javax.annotation.Resource;
 import javax.ejb.EJB;
@@ -136,8 +141,7 @@ public class ImportBean {
             data[prpValue] = row.getValue(COL_IMPORT_VALUE);
             data[prpRelId] = row.getLong(COL_IMPORT_RELATION_OPTION);
 
-          } else if (!BeeUtils.same(view.getColumnTable(name), view.getSourceName())
-              || view.isColNullable(name)) {
+          } else if (view.isColNullable(name)) {
             continue;
           }
           ImportProperty prop = new ImportProperty(name,
@@ -154,6 +158,27 @@ public class ImportBean {
 
     public Map<String, String> getDataProperties() {
       return getDataProperties(null);
+    }
+
+    public Map<String, String> getDataProperties(String parentName) {
+      Map<String, String> propNames = new LinkedHashMap<>();
+
+      for (ImportProperty prop : getProperties()) {
+        if (!prop.isDataProperty()) {
+          continue;
+        }
+        String propName = prop.getName();
+        String propValue = getValue(propName);
+        ImportObject ro = getRelationObject(propName);
+
+        propName = BeeUtils.join("_", parentName, propName);
+        propNames.put(propName, propValue);
+
+        if (ro != null) {
+          propNames.putAll(ro.getDataProperties(propName));
+        }
+      }
+      return propNames;
     }
 
     public Collection<ImportProperty> getProperties() {
@@ -208,27 +233,6 @@ public class ImportBean {
       if (props.containsKey(prop)) {
         props.get(prop)[prpRelation] = io;
       }
-    }
-
-    private Map<String, String> getDataProperties(String parentName) {
-      Map<String, String> propNames = new LinkedHashMap<>();
-
-      for (ImportProperty prop : getProperties()) {
-        if (!prop.isDataProperty()) {
-          continue;
-        }
-        String propName = prop.getName();
-        String propValue = getValue(propName);
-        ImportObject ro = getRelationObject(propName);
-
-        propName = BeeUtils.join("_", parentName, propName);
-        propNames.put(propName, propValue);
-
-        if (ro != null) {
-          propNames.putAll(ro.getDataProperties(propName));
-        }
-      }
-      return propNames;
     }
   }
 
@@ -544,6 +548,7 @@ public class ImportBean {
     HasConditions clause = SqlUtils.or();
     HasConditions updateClause = SqlUtils.and();
 
+    // PREPARE VIEW DATA
     SqlSelect query = new SqlSelect()
         .addMax(data, REC_NO)
         .addEmptyLong(idName)
@@ -557,13 +562,19 @@ public class ImportBean {
     for (ImportProperty prop : io.getProperties()) {
       String col = prop.getName();
 
-      if (!prop.isDataProperty() || view.isColReadOnly(col)
-          || BeeUtils.isFalse(view.isColEditable(col))
-          && BeeUtils.isPositive(view.getColumnLevel(col))) {
+      if (!prop.isDataProperty()) {
         continue;
       }
       String realCol = BeeUtils.join("_", parentName, col);
 
+      if (BeeUtils.same(view.getSourceName(), TBL_EMAILS)
+          && BeeUtils.same(view.getColumnField(col), COL_EMAIL_ADDRESS)) {
+
+        qs.updateData(new SqlUpdate(data)
+            .addExpression(realCol,
+                SqlUtils.expression("LTRIM(RTRIM(LOWER(", SqlUtils.name(realCol), ")))"))
+            .setWhere(SqlUtils.notNull(data, realCol)));
+      }
       query.addField(data, realCol, col)
           .addGroup(data, realCol);
 
@@ -572,14 +583,13 @@ public class ImportBean {
       ImportObject ro = io.getRelationObject(col);
 
       if (ro != null) {
-        commitData(ro, data, realCol, null, status, readOnly || io.isLocked(col)
+        commitData(ro, data, realCol, progress, status, readOnly || io.isLocked(col)
             || !usr.canCreateData(ro.getViewName()));
       }
-      if (!BeeUtils.isEmpty(parentName)) {
-        updateClause.add(SqlUtils.or(SqlUtils.and(SqlUtils.isNull(tmp, col),
-            SqlUtils.isNull(data, realCol)), SqlUtils.and(SqlUtils.notNull(tmp, col),
-            SqlUtils.notNull(data, realCol), SqlUtils.join(tmp, col, data, realCol))));
-      }
+      updateClause.add(SqlUtils.or(SqlUtils.and(SqlUtils.isNull(tmp, col),
+          SqlUtils.isNull(data, realCol)), SqlUtils.and(SqlUtils.notNull(tmp, col),
+          SqlUtils.notNull(data, realCol), SqlUtils.join(tmp, col, data, realCol))));
+
       cols.put(col, sys.getTable(view.getColumnTable(col)).getField(view.getColumnField(col)));
     }
     if (BeeUtils.isEmpty(cols)) {
@@ -591,6 +601,52 @@ public class ImportBean {
       qs.sqlDropTemp(tmp);
       return;
     }
+    // GET UNIQUE KEYS
+    List<Set<String>> uniqueKeys = new ArrayList<>();
+
+    for (Entry<String, BeeField> entry : cols.entrySet()) {
+      if (entry.getValue().isUnique()) {
+        uniqueKeys.add(Sets.newHashSet(entry.getKey()));
+      }
+    }
+    BeeTable table = sys.getTable(view.getSourceName());
+
+    for (int i = 0; i < 2; i++) {
+      List<List<String>> unique = new ArrayList<>();
+
+      switch (i) {
+        case 0:
+          for (BeeUniqueKey key : table.getUniqueKeys()) {
+            unique.add(key.getFields());
+          }
+          break;
+        case 1:
+          for (BeeIndex index : table.getIndexes()) {
+            if (index.isUnique() && !BeeUtils.isEmpty(index.getFields())) {
+              unique.add(index.getFields());
+            }
+          }
+          break;
+      }
+      for (List<String> key : unique) {
+        Set<String> keys = new HashSet<>();
+
+        for (String fld : key) {
+          for (Entry<String, BeeField> entry : cols.entrySet()) {
+            BeeField field = entry.getValue();
+
+            if (BeeUtils.same(field.getName(), fld)
+                && BeeUtils.same(field.getStorageTable(), table.getName())) {
+              keys.add(entry.getKey());
+            }
+          }
+        }
+        if (keys.size() == key.size() && !uniqueKeys.contains(keys)) {
+          uniqueKeys.add(keys);
+        }
+      }
+    }
+    // FIND MATCHING ROWS FROM DATABASE
     String vw = SqlUtils.temporaryName();
     qs.updateData(new SqlCreate(vw)
         .setDataSource(view.getQuery(usr.getCurrentUserId(), null, null, cols.keySet())));
@@ -599,53 +655,38 @@ public class ImportBean {
         .addExpression(idName, SqlUtils.field(vw, view.getSourceIdName()))
         .setFrom(vw, SqlUtils.isNull(tmp, idName));
 
-    clause = SqlUtils.and();
+    for (Set<String> key : uniqueKeys) {
+      HasConditions condition = SqlUtils.and();
 
-    for (Entry<String, BeeField> entry : cols.entrySet()) {
-      String col = entry.getKey();
-      BeeField field = entry.getValue();
-
-      IsCondition condition = SqlUtils.and(SqlUtils.notNull(tmp, col),
-          SqlUtils.compare(SqlUtils.field(tmp, col), Operator.EQ,
-              SqlUtils.cast(SqlUtils.field(vw, col), SqlDataType.TEXT, 0, 0)));
-
-      if (field.isNotNull()) {
-        clause.add(condition);
-      } else {
-        condition = SqlUtils.and(SqlUtils.notNull(vw, col), condition);
-        clause.add(SqlUtils.or(SqlUtils.and(SqlUtils.isNull(tmp, col), SqlUtils.isNull(vw, col)),
-            condition));
+      for (String col : key) {
+        condition.add(SqlUtils.notNull(tmp, col),
+            cols.get(col).isNotNull() ? null : SqlUtils.notNull(vw, col),
+            SqlUtils.compare(SqlUtils.field(tmp, col), Operator.EQ,
+                SqlUtils.cast(SqlUtils.field(vw, col), SqlDataType.TEXT, 0, 0)));
       }
-      if (field.isUnique()) {
-        if (cols.size() == 1) {
-          clause.clear();
-        }
-        qs.updateData(update.setWhere(condition));
-      }
+      qs.updateData(update.setWhere(condition));
     }
-    for (BeeUniqueKey key : sys.getTable(view.getSourceName()).getUniqueKeys()) {
-      if (key.getFields().size() > 1) {
-        HasConditions condition = SqlUtils.and();
+    if (qs.sqlExists(tmp, SqlUtils.isNull(tmp, idName))) {
+      clause = SqlUtils.and();
 
-        for (String col : key.getFields()) {
-          if (io.getProperty(col) == null) {
-            condition.clear();
-            break;
-          }
-          condition.add(SqlUtils.notNull(tmp, col), SqlUtils.notNull(vw, col),
-              SqlUtils.compare(SqlUtils.field(tmp, col), Operator.EQ,
-                  SqlUtils.cast(SqlUtils.field(vw, col), SqlDataType.TEXT, 0, 0)));
-        }
-        if (!condition.isEmpty()) {
-          qs.updateData(update.setWhere(condition));
+      for (String col : cols.keySet()) {
+        IsCondition condition = SqlUtils.and(SqlUtils.notNull(tmp, col),
+            SqlUtils.compare(SqlUtils.field(tmp, col), Operator.EQ,
+                SqlUtils.cast(SqlUtils.field(vw, col), SqlDataType.TEXT, 0, 0)));
+
+        if (cols.get(col).isNotNull()) {
+          clause.add(condition);
+        } else {
+          condition = SqlUtils.and(SqlUtils.notNull(vw, col), condition);
+          clause.add(SqlUtils.or(SqlUtils.and(SqlUtils.isNull(tmp, col), SqlUtils.isNull(vw, col)),
+              condition));
         }
       }
-    }
-    if (!clause.isEmpty() && qs.sqlExists(tmp, SqlUtils.isNull(tmp, idName))) {
       qs.updateData(update.setWhere(clause));
     }
     qs.sqlDropTemp(vw);
 
+    // INSERT
     if (!readOnly) {
       String ins = SqlUtils.temporaryName();
       qs.updateData(new SqlCreate(ins)
@@ -654,50 +695,36 @@ public class ImportBean {
               .addFrom(tmp)
               .setWhere(SqlUtils.isNull(tmp, idName))));
 
-      BeeRowSet rowSet = new BeeRowSet(view.getName(), new ArrayList<>());
-      Pair<Integer, BeeRowSet> pair = null;
+      for (Set<String> key : uniqueKeys) {
+        HasConditions condition = SqlUtils.and();
 
-      for (BeeUniqueKey key : sys.getTable(view.getSourceName()).getUniqueKeys()) {
-        if (key.getFields().size() > 1) {
-          List<String> flds = new ArrayList<>();
+        for (String col : key) {
+          condition.add(SqlUtils.notNull(ins, col));
+        }
+        SimpleRowSet rs = qs.getData(new SqlSelect()
+            .addFields(ins, key.toArray(new String[0]))
+            .addFrom(ins)
+            .setWhere(condition)
+            .addGroup(ins, key.toArray(new String[0]))
+            .setHaving(SqlUtils.more(SqlUtils.aggregate(SqlFunction.COUNT, null), 1)));
 
-          for (String fld : key.getFields()) {
-            if (io.getProperty(fld) == null) {
-              flds.clear();
-              break;
+        if (!rs.isEmpty()) {
+          condition = SqlUtils.or();
+
+          for (SimpleRow row : rs) {
+            HasConditions wh = SqlUtils.and();
+
+            for (String col : key) {
+              wh.add(SqlUtils.equals(ins, col, row.getValue(col)));
             }
-            flds.add(fld);
+            condition.add(wh);
           }
-          if (!flds.isEmpty()) {
-            HasConditions condition = SqlUtils.and();
-
-            for (String fld : flds) {
-              condition.add(SqlUtils.notNull(ins, fld));
-            }
-            SimpleRowSet rs = qs.getData(new SqlSelect()
-                .addFields(ins, flds.toArray(new String[0]))
-                .addFrom(ins)
-                .setWhere(condition)
-                .addGroup(ins, flds.toArray(new String[0]))
-                .setHaving(SqlUtils.more(SqlUtils.aggregate(SqlFunction.COUNT, null), 1)));
-
-            if (!rs.isEmpty()) {
-              condition = SqlUtils.or();
-
-              for (SimpleRow row : rs) {
-                HasConditions wh = SqlUtils.and();
-
-                for (String fld : flds) {
-                  wh.add(SqlUtils.equals(ins, fld, row.getValue(fld)));
-                }
-                condition.add(wh);
-              }
-              qs.updateData(new SqlDelete(ins)
-                  .setWhere(condition));
-            }
-          }
+          qs.updateData(new SqlDelete(ins)
+              .setWhere(condition));
         }
       }
+      BeeRowSet rowSet = new BeeRowSet(view.getName(), new ArrayList<>());
+
       for (Entry<String, BeeField> entry : cols.entrySet()) {
         String col = entry.getKey();
         BeeField field = entry.getValue();
@@ -706,24 +733,17 @@ public class ImportBean {
           qs.updateData(new SqlDelete(ins)
               .setWhere(SqlUtils.isNull(ins, col)));
         }
-        if (field.isUnique()) {
-          SimpleRowSet rs = qs.getData(new SqlSelect()
-              .addFields(ins, col)
-              .addFrom(ins)
-              .setWhere(SqlUtils.notNull(ins, col))
-              .addGroup(ins, col)
-              .setHaving(SqlUtils.more(SqlUtils.aggregate(SqlFunction.COUNT, null), 1)));
-
-          if (!rs.isEmpty()) {
-            qs.updateData(new SqlDelete(ins)
-                .setWhere(SqlUtils.inList(ins, col, (Object[]) rs.getColumn(col))));
-          }
-        }
         rowSet.addColumn(view.getBeeColumn(col));
       }
-      SimpleRowSet newRows = qs.getData(new SqlSelect().addAllFields(ins).addFrom(ins));
+      SimpleRowSet newRows = qs.getData(new SqlSelect()
+          .addAllFields(ins)
+          .addFrom(ins));
       int c = 0;
+      Pair<Integer, BeeRowSet> pair = null;
 
+      if (!BeeUtils.isEmpty(progress)) {
+        Endpoint.updateProgress(progress, Localized.maybeTranslate(view.getCaption()), 0);
+      }
       for (SimpleRow row : newRows) {
         if (!BeeUtils.isEmpty(progress)
             && !Endpoint.updateProgress(progress, ++c / (double) newRows.getNumberOfRows())) {
@@ -759,6 +779,7 @@ public class ImportBean {
       }
       qs.sqlDropTemp(ins);
     }
+    // CHECK FOR UNRECOGNIZED RECORDS
     int c = qs.updateData(new SqlUpdate(tmp)
         .addConstant(idName, BeeConst.UNDEF)
         .setWhere(SqlUtils.isNull(tmp, idName)));
@@ -769,13 +790,14 @@ public class ImportBean {
       if (!status.containsKey(viewName)) {
         status.put(viewName, Pair.of(0, null));
       }
-      BeeRowSet rs = status.get(viewName).getB();
-
       BeeRowSet newRs = (BeeRowSet) qs.doSql(new SqlSelect()
-          .addFields(tmp, cols.keySet().toArray(new String[0]))
-          .addFrom(tmp)
+          .setDistinctMode(true)
+          .addFields(data, io.getDataProperties(parentName).keySet().toArray(new String[0]))
+          .addFrom(data)
+          .addFromInner(tmp, updateClause)
           .setWhere(SqlUtils.equals(tmp, idName, BeeConst.UNDEF))
           .getQuery());
+      BeeRowSet rs = status.get(viewName).getB();
 
       if (rs != null) {
         rs.addRows(newRs.getRows());
@@ -783,7 +805,8 @@ public class ImportBean {
         status.get(viewName).setB(newRs);
       }
     }
-    if (!updateClause.isEmpty()) {
+    // UPDATE PARENT RELATION
+    if (!BeeUtils.isEmpty(parentName)) {
       qs.updateData(new SqlUpdate(data)
           .addExpression(parentName, SqlUtils.field(tmp, idName))
           .setFrom(tmp, updateClause));
@@ -1036,6 +1059,9 @@ public class ImportBean {
 
     for (int i = startRow; i <= shit.getLastRowNum(); i++) {
       Row row = shit.getRow(i);
+      if (row == null) {
+        continue;
+      }
       values.clear();
 
       for (Entry<String, String> entry : io.getDataProperties().entrySet()) {

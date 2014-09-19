@@ -401,7 +401,7 @@ public final class FileUtils {
       xhr.getUpload().setOnprogress(new EventListener() {
         @Override
         public void handleEvent(Event evt) {
-          BeeKeeper.getScreen().updateProgress(progressId, ((ProgressEvent) evt).getLoaded());
+          BeeKeeper.getScreen().updateProgress(progressId, null, ((ProgressEvent) evt).getLoaded());
         }
       });
     }
