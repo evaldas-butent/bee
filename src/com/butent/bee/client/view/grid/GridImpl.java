@@ -182,7 +182,7 @@ public class GridImpl extends Absolute implements GridView, EditEndEvent.Handler
 
   private static final BeeLogger logger = LogUtils.getLogger(GridImpl.class);
 
-  private static final String STYLE_NAME = "bee-GridView";
+  private static final String STYLE_NAME = StyleUtils.CLASS_NAME_PREFIX + "GridView";
 
   private static void amendGeneratedSize(final ModalForm popup, final FormView form) {
     popup.attachAmendDetach(new ScheduledCommand() {
@@ -392,6 +392,10 @@ public class GridImpl extends Absolute implements GridView, EditEndEvent.Handler
         cd.setSource(source);
         cd.setRenderColumns(renderColumns);
         cd.setRelationInitialized(true);
+      }
+
+      if (gridInterceptor != null) {
+        gridInterceptor.configureRelation(columnId, cd.getRelation());
       }
 
       originalSource = cd.getRelation().getOriginalTarget();

@@ -9,6 +9,7 @@ import com.butent.bee.client.data.ParentRowCreator;
 import com.butent.bee.client.dom.ElementSize;
 import com.butent.bee.client.output.Printable;
 import com.butent.bee.client.output.Printer;
+import com.butent.bee.client.style.StyleUtils;
 import com.butent.bee.client.view.HasGridView;
 import com.butent.bee.client.view.HeaderImpl;
 import com.butent.bee.client.view.HeaderView;
@@ -28,9 +29,10 @@ import java.util.Set;
 public class GridFormPresenter extends AbstractPresenter implements HasGridView, Printable,
     ParentRowCreator {
 
-  public static final String STYLE_FORM_CONTAINER = "bee-GridFormContainer";
-  public static final String STYLE_FORM_HEADER = "bee-GridFormHeader";
-  public static final String STYLE_FORM_CAPTION = "bee-GridFormCaption";
+  public static final String STYLE_FORM_CONTAINER = StyleUtils.CLASS_NAME_PREFIX
+      + "GridFormContainer";
+  public static final String STYLE_FORM_HEADER = StyleUtils.CLASS_NAME_PREFIX + "GridFormHeader";
+  public static final String STYLE_FORM_CAPTION = StyleUtils.CLASS_NAME_PREFIX + "GridFormCaption";
 
   private static final String SUFFIX_EDIT = "-edit";
   private static final String SUFFIX_NEW_ROW = "-newRow";

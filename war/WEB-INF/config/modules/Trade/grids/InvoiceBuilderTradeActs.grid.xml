@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<g:Grid xmlns="http://www.butent.com/column" xmlns:g="http://www.butent.com/grid"
+  xmlns:xi="http://www.w3.org/2001/XInclude"
+  
+  name="InvoiceBuilderTradeActs" viewName="TradeActs" 
+  caption="=tradeActs" disabledActions="add delete"
+  >
+  <g:columns>
+    <SelectionColumn name="Select" width="20" />
+  </g:columns>
+
+  <xi:include href="columns/CompanyTradeAct.columns.xml" />
+
+  <g:columns>
+    <PropColumn name="LastBuild" type="date" visible="true" />
+  </g:columns>
+</g:Grid>

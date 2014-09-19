@@ -25,6 +25,9 @@ public class TradeActForm extends AbstractFormInterceptor {
   private static final String STYLE_HAS_SERVICES = STYLE_PREFIX + "has-services";
   private static final String STYLE_NO_SERVICES = STYLE_PREFIX + "no-services";
 
+  private static final String STYLE_HAS_INVOICES = STYLE_PREFIX + "has-invoices";
+  private static final String STYLE_NO_INVOICES = STYLE_PREFIX + "no-invoices";
+
   private TradeActKind lastKind;
 
   TradeActForm() {
@@ -60,6 +63,10 @@ public class TradeActForm extends AbstractFormInterceptor {
       boolean hasServices = kind != null && kind.enableServices();
       form.setStyleName(STYLE_HAS_SERVICES, hasServices);
       form.setStyleName(STYLE_NO_SERVICES, !hasServices);
+
+      boolean hasInvoices = kind != null && kind.enableInvoices();
+      form.setStyleName(STYLE_HAS_INVOICES, hasInvoices);
+      form.setStyleName(STYLE_NO_INVOICES, !hasInvoices);
 
       lastKind = kind;
     }

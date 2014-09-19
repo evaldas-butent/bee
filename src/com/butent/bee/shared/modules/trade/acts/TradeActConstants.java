@@ -18,6 +18,8 @@ public final class TradeActConstants {
   public static final String TBL_TRADE_ACT_TMPL_ITEMS = "TradeActTmplItems";
   public static final String TBL_TRADE_ACT_TMPL_SERVICES = "TradeActTmplServices";
 
+  public static final String TBL_TRADE_ACT_INVOICES = "TradeActInvoices";
+
   public static final String VIEW_TRADE_ACTS = "TradeActs";
   public static final String VIEW_TRADE_ACT_ITEMS = "TradeActItems";
   public static final String VIEW_TRADE_ACT_SERVICES = "TradeActServices";
@@ -56,6 +58,9 @@ public final class TradeActConstants {
   public static final String COL_TA_SERVICE_DAYS = "DaysPerWeek";
   public static final String COL_TA_SERVICE_MIN = "MinTerm";
 
+  public static final String COL_TA_INVOICE_FROM = "DateFrom";
+  public static final String COL_TA_INVOICE_TO = "DateTo";
+
   public static final String GRID_TRADE_ACTS = "TradeActs";
   public static final String GRID_TRADE_ACT_TEMPLATES = "TradeActTemplates";
 
@@ -63,6 +68,7 @@ public final class TradeActConstants {
   public static final String GRID_TRADE_ACT_SERVICES = "TradeActServices";
 
   public static final String FORM_TRADE_ACT = "TradeAct";
+  public static final String FORM_INVOICE_BUILDER = "TradeActInvoiceBuilder";
 
   public static final String PRP_QUANTITY = "qty";
   public static final String PRP_WAREHOUSE_PREFIX = "w-";

@@ -103,6 +103,11 @@
         <ChildGrid name="TradeActServices" relColumn="TradeAct" />
       </page>
 
+      <page class="bee-ta-invoices-tab">
+        <text>=trdInvoices</text>
+        <ChildGrid name="TradeActInvoices" relColumn="TradeAct" />
+      </page>
+
       <page>
         <text>=notes</text>
         <FlowPanel class="flexBox-vertical">

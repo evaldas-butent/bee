@@ -146,6 +146,10 @@
         <text>=objects</text>
         <ChildGrid name="CompanyObjects" relColumn="Company" module="Trade.Acts" />
       </page>
+      <page>
+        <text>=tradeActs</text>
+        <ChildGrid name="CompanyTradeActs" relColumn="Company" module="Trade.Acts" />
+      </page>
 
       <page for="Notes">
         <text>=notes</text>

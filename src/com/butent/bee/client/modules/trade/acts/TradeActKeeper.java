@@ -141,18 +141,22 @@ public final class TradeActKeeper {
             ALS_STATUS_BACKGROUND, ALS_STATUS_FOREGROUND));
 
     FormFactory.registerFormInterceptor(FORM_TRADE_ACT, new TradeActForm());
+    FormFactory.registerFormInterceptor(FORM_INVOICE_BUILDER, new TradeActInvoiceBuilder());
+
+    GridFactory.registerGridInterceptor(GRID_TRADE_ACT_ITEMS, new TradeActItemsGrid());
+    GridFactory.registerGridInterceptor(GRID_TRADE_ACT_SERVICES, new TradeActServicesGrid());
 
     SelectorEvent.register(new TradeActSelectorHandler());
 
-    GridFactory.registerPreloader(GRID_TRADE_ACT_TEMPLATES, new Consumer<ScheduledCommand>() {
+    Consumer<ScheduledCommand> cacheLoader = new Consumer<ScheduledCommand>() {
       @Override
       public void accept(ScheduledCommand input) {
         ensureChache(input);
       }
-    });
+    };
 
-    GridFactory.registerGridInterceptor(GRID_TRADE_ACT_ITEMS, new TradeActItemsGrid());
-    GridFactory.registerGridInterceptor(GRID_TRADE_ACT_SERVICES, new TradeActServicesGrid());
+    FormFactory.registerPreloader(FORM_TRADE_ACT, cacheLoader);
+    GridFactory.registerPreloader(GRID_TRADE_ACT_TEMPLATES, cacheLoader);
   }
 
   static void addCommandStyle(Widget command, String suffix) {
@@ -403,6 +407,15 @@ public final class TradeActKeeper {
     }
   }
 
+  private static ViewSupplier createActViewSupplier(final TradeActKind kind) {
+    return new ViewSupplier() {
+      @Override
+      public void create(ViewCallback callback) {
+        openActGrid(kind, ViewFactory.getPresenterCallback(callback));
+      }
+    };
+  }
+
   private static void ensureChache(final ScheduledCommand command) {
     if (cacheLoaded) {
       command.execute();
@@ -422,15 +435,6 @@ public final class TradeActKeeper {
         }
       });
     }
-  }
-
-  private static ViewSupplier createActViewSupplier(final TradeActKind kind) {
-    return new ViewSupplier() {
-      @Override
-      public void create(ViewCallback callback) {
-        openActGrid(kind, ViewFactory.getPresenterCallback(callback));
-      }
-    };
   }
 
   private static void openActGrid(final TradeActKind kind, final PresenterCallback callback) {
