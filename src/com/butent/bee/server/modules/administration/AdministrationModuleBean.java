@@ -3,7 +3,6 @@ package com.butent.bee.server.modules.administration;
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
-import com.google.common.collect.Maps;
 import com.google.common.collect.Multimap;
 import com.google.common.collect.Sets;
 import com.google.common.eventbus.Subscribe;
@@ -57,7 +56,9 @@ import com.butent.bee.shared.utils.EnumUtils;
 import com.ibm.icu.text.RuleBasedNumberFormat;
 
 import java.math.BigDecimal;
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
@@ -498,7 +499,7 @@ public class AdministrationModuleBean implements BeeModule {
         .resetFields().resetOrder();
 
     Multimap<String, ViewColumn> columnMap = HashMultimap.create();
-    Map<String, Pair<String, String>> idMap = Maps.newHashMap();
+    Map<String, Pair<String, String>> idMap = new HashMap<>();
 
     for (ViewColumn col : view.getViewColumns()) {
       if (!col.isHidden() && !col.isReadOnly()
@@ -541,8 +542,8 @@ public class AdministrationModuleBean implements BeeModule {
       String src = sys.getAuditSource(table.getName());
       SqlSelect subq = new SqlSelect();
 
-      List<String> fields = Lists.newArrayList();
-      List<Object> pairs = Lists.newArrayList();
+      List<String> fields = new ArrayList<>();
+      List<Object> pairs = new ArrayList<>();
 
       for (ViewColumn col : columnMap.get(als)) {
         fields.add(col.getField());
@@ -656,7 +657,7 @@ public class AdministrationModuleBean implements BeeModule {
   }
 
   private Collection<? extends BeeParameter> getSqlEngineParameters() {
-    List<BeeParameter> params = Lists.newArrayList();
+    List<BeeParameter> params = new ArrayList<>();
 
     for (SqlEngine engine : SqlEngine.values()) {
       Map<String, String> value = null;

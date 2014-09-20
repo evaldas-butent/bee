@@ -71,6 +71,8 @@ import com.butent.bee.shared.utils.Codec;
 import com.butent.bee.shared.utils.EnumUtils;
 
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -220,7 +222,7 @@ public class MailMessage extends AbstractFormInterceptor {
   private Pair<String, String> sender;
   private final Multimap<String, Pair<String, String>> recipients = HashMultimap.create();
   private final List<FileInfo> attachments = new ArrayList<>();
-  private final Map<String, Widget> widgets = Maps.newHashMap();
+  private final Map<String, Widget> widgets = new HashMap<>();
 
   private Relations relations;
 
@@ -524,7 +526,7 @@ public class MailMessage extends AbstractFormInterceptor {
   }
 
   private Set<String> getRecipients(String type) {
-    Set<String> emails = Sets.newHashSet();
+    Set<String> emails = new HashSet<>();
 
     if (recipients.containsKey(type)) {
       for (Pair<String, String> r : recipients.get(type)) {

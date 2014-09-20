@@ -2,7 +2,6 @@ package com.butent.bee.client.modules.trade;
 
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.Maps;
 import com.google.common.collect.Multimap;
 import com.google.gwt.dom.client.Element;
 import com.google.gwt.dom.client.NodeList;
@@ -36,6 +35,7 @@ import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.modules.classifiers.ClassifierConstants;
 import com.butent.bee.shared.utils.BeeUtils;
 
+import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Map.Entry;
 
@@ -82,7 +82,7 @@ public final class TradeUtils {
           return;
         }
         if (table.getRowCount() == 0) {
-          Map<String, String> cols = Maps.newLinkedHashMap();
+          Map<String, String> cols = new LinkedHashMap<>();
           // cols.put(COL_ORDINAL, Localized.getConstants().ordinal());
           cols.put(COL_NAME, Localized.getConstants().item());
           cols.put(ClassifierConstants.COL_ITEM_ARTICLE, Localized.getConstants().article());

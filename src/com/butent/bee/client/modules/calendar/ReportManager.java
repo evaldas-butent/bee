@@ -1,7 +1,6 @@
 package com.butent.bee.client.modules.calendar;
 
 import com.google.common.collect.Lists;
-import com.google.common.collect.Maps;
 import com.google.gwt.user.client.ui.Widget;
 
 import static com.butent.bee.shared.modules.calendar.CalendarConstants.*;
@@ -53,6 +52,7 @@ import com.butent.bee.shared.utils.Codec;
 
 import java.util.Collection;
 import java.util.EnumSet;
+import java.util.HashMap;
 import java.util.Map;
 
 class ReportManager {
@@ -165,7 +165,7 @@ class ReportManager {
     BeeKeeper.getScreen().show(presenter.getMainView());
   }
 
-  private final Map<Report, BeeRow> reportOptions = Maps.newHashMap();
+  private final Map<Report, BeeRow> reportOptions = new HashMap<>();
 
   ReportManager() {
     super();

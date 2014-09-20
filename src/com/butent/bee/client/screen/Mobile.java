@@ -1,7 +1,5 @@
 package com.butent.bee.client.screen;
 
-import com.google.common.base.Objects;
-import com.google.common.collect.Lists;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.event.logical.shared.ValueChangeEvent;
@@ -36,6 +34,7 @@ import com.butent.bee.shared.utils.ExtendedProperty;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 /**
  * Handles mobile phone size screen implementation.
@@ -74,7 +73,7 @@ public class Mobile extends ScreenImpl {
 
     if (UiHelper.isModal(widget.asWidget())) {
       UiHelper.closeDialog(widget.asWidget());
-    } else if (Objects.equal(widget, getActiveWidget())) {
+    } else if (Objects.equals(widget, getActiveWidget())) {
       getScreenPanel().remove(widget);
     } else {
       notifyWarning("closeWidget: widget not found");
@@ -113,7 +112,7 @@ public class Mobile extends ScreenImpl {
 
   @Override
   public List<IdentifiableWidget> getOpenWidgets() {
-    List<IdentifiableWidget> result = Lists.newArrayList();
+    List<IdentifiableWidget> result = new ArrayList<>();
     if (getActiveWidget() != null) {
       result.add(getActiveWidget());
     }

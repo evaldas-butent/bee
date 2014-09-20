@@ -1,8 +1,5 @@
 package com.butent.bee.client;
 
-import com.google.common.collect.Lists;
-import com.google.common.collect.Maps;
-import com.google.common.collect.Sets;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.user.client.ui.Widget;
@@ -33,7 +30,10 @@ import com.butent.bee.shared.utils.NameUtils;
 import com.butent.bee.shared.websocket.messages.LocationMessage;
 import com.butent.bee.shared.websocket.messages.NotificationMessage;
 
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -141,8 +141,8 @@ public class Users {
 
   private static final String STYLE_PREFIX = "bee-Online-";
 
-  private Map<Long, UserData> users = Maps.newHashMap();
-  private final Map<String, Long> openSessions = Maps.newHashMap();
+  private Map<Long, UserData> users = new HashMap<>();
+  private final Map<String, Long> openSessions = new HashMap<>();
 
   private final OnlinePanel onlinePanel = new OnlinePanel();
 
@@ -200,7 +200,7 @@ public class Users {
   }
 
   public Set<String> getSessions(Collection<Long> userIds) {
-    Set<String> result = Sets.newHashSet();
+    Set<String> result = new HashSet<>();
 
     if (!BeeUtils.isEmpty(userIds) && !openSessions.isEmpty()) {
       for (Map.Entry<String, Long> entry : openSessions.entrySet()) {
@@ -218,7 +218,7 @@ public class Users {
   }
 
   public List<String> getSignatures(Collection<Long> userIds) {
-    List<String> result = Lists.newArrayList();
+    List<String> result = new ArrayList<>();
     if (BeeUtils.isEmpty(userIds)) {
       return result;
     }
@@ -267,7 +267,7 @@ public class Users {
       return;
     }
 
-    List<UserData> data = Lists.newArrayList();
+    List<UserData> data = new ArrayList<>();
     for (String s : arr) {
       data.add(UserData.restore(s));
     }
@@ -283,14 +283,14 @@ public class Users {
       return null;
     }
 
-    List<Long> loginEquals = Lists.newArrayList();
-    List<Long> loginContains = Lists.newArrayList();
+    List<Long> loginEquals = new ArrayList<>();
+    List<Long> loginContains = new ArrayList<>();
 
-    List<Long> firstNameEquals = Lists.newArrayList();
-    List<Long> firstNameContains = Lists.newArrayList();
+    List<Long> firstNameEquals = new ArrayList<>();
+    List<Long> firstNameContains = new ArrayList<>();
 
-    List<Long> lastNameEquals = Lists.newArrayList();
-    List<Long> lastNameContains = Lists.newArrayList();
+    List<Long> lastNameEquals = new ArrayList<>();
+    List<Long> lastNameContains = new ArrayList<>();
 
     for (UserData userData : users.values()) {
       long userId = userData.getUserId();
@@ -382,7 +382,7 @@ public class Users {
     }
 
     if (!openSessions.isEmpty()) {
-      Set<String> sessionsToRemove = Sets.newHashSet();
+      Set<String> sessionsToRemove = new HashSet<>();
       for (Map.Entry<String, Long> entry : openSessions.entrySet()) {
         if (!users.containsKey(entry.getValue())) {
           sessionsToRemove.add(entry.getKey());

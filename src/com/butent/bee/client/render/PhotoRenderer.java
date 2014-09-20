@@ -1,6 +1,5 @@
 package com.butent.bee.client.render;
 
-import com.google.common.collect.Maps;
 import com.google.gwt.dom.client.Document;
 import com.google.gwt.dom.client.ImageElement;
 
@@ -13,6 +12,7 @@ import com.butent.bee.shared.export.XSheet;
 import com.butent.bee.shared.io.Paths;
 import com.butent.bee.shared.utils.BeeUtils;
 
+import java.util.HashMap;
 import java.util.Map;
 
 public class PhotoRenderer extends AbstractCellRenderer {
@@ -27,7 +27,7 @@ public class PhotoRenderer extends AbstractCellRenderer {
     imageElement = Document.get().createImageElement();
     imageElement.addClassName(STYLE_EMBEDDED);
 
-    urlCache = Maps.newHashMap();
+    urlCache = new HashMap<>();
   }
 
   public static void addToCache(String fileName, String url) {

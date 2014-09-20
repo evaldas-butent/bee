@@ -1,8 +1,6 @@
 package com.butent.bee.server.modules.mail;
 
 import com.google.common.collect.Lists;
-import com.google.common.collect.Maps;
-import com.google.common.collect.Sets;
 import com.google.common.eventbus.Subscribe;
 
 import static com.butent.bee.shared.modules.classifiers.ClassifierConstants.*;
@@ -354,7 +352,7 @@ public class MailModuleBean implements BeeModule, HasTimerService {
           processMessages(account, account.getDraftsFolder(), null,
               new String[] {BeeUtils.toString(draftId)}, true);
         }
-        List<FileInfo> attachments = Lists.newArrayList();
+        List<FileInfo> attachments = new ArrayList<>();
 
         for (Long fileId : DataUtils.parseIdSet(reqInfo.getParameter("Attachments"))) {
           try {
@@ -788,7 +786,7 @@ public class MailModuleBean implements BeeModule, HasTimerService {
         case FORWARD:
           logger.debug(log, row.getValue(COL_RULE_ACTION_OPTIONS));
 
-          List<FileInfo> attachments = Lists.newArrayList();
+          List<FileInfo> attachments = new ArrayList<>();
 
           SimpleRowSet rs = qs.getData(new SqlSelect()
               .addFields(TBL_ATTACHMENTS, AdministrationConstants.COL_FILE, COL_ATTACHMENT_NAME)
@@ -1074,7 +1072,7 @@ public class MailModuleBean implements BeeModule, HasTimerService {
   private ResponseObject getMessage(Long messageId, Long placeId, boolean showBcc) {
     Assert.isTrue(BeeUtils.anyNotNull(messageId, placeId));
 
-    Map<String, SimpleRowSet> packet = Maps.newHashMap();
+    Map<String, SimpleRowSet> packet = new HashMap<>();
     String drafts = SystemFolder.Drafts.name();
 
     SqlSelect query = new SqlSelect()
@@ -1180,7 +1178,7 @@ public class MailModuleBean implements BeeModule, HasTimerService {
       String[] places, boolean move) throws MessagingException {
     Assert.state(!ArrayUtils.isEmpty(places), "Empty message list");
 
-    List<Long> lst = Lists.newArrayList();
+    List<Long> lst = new ArrayList<>();
 
     for (String id : places) {
       lst.add(BeeUtils.toLong(id));
@@ -1316,7 +1314,7 @@ public class MailModuleBean implements BeeModule, HasTimerService {
   private int syncFolders(MailAccount account, Folder remoteFolder, MailFolder localFolder)
       throws MessagingException {
     int c = 0;
-    Set<String> visitedFolders = Sets.newHashSet();
+    Set<String> visitedFolders = new HashSet<>();
 
     if (account.holdsFolders(remoteFolder)) {
       for (Folder subFolder : remoteFolder.list()) {

@@ -1,7 +1,6 @@
 package com.butent.bee.client.imports;
 
 import com.google.common.collect.Lists;
-import com.google.common.collect.Maps;
 import com.google.gwt.dom.client.OptionElement;
 
 import static com.butent.bee.shared.modules.administration.AdministrationConstants.*;
@@ -43,6 +42,7 @@ import com.butent.bee.shared.utils.BeeUtils;
 
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -51,7 +51,7 @@ import java.util.Set;
 public class ImportPropertiesGrid extends AbstractGridInterceptor {
 
   private final ImportOptionForm form;
-  private Map<String, String> propMap = Maps.newLinkedHashMap();
+  private Map<String, String> propMap = new LinkedHashMap<>();
 
   public ImportPropertiesGrid(ImportOptionForm form) {
     this.form = Assert.notNull(form);

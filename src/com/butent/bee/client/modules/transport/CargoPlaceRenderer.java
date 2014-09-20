@@ -1,7 +1,5 @@
 package com.butent.bee.client.modules.transport;
 
-import com.google.common.collect.Maps;
-
 import static com.butent.bee.shared.modules.transport.TransportConstants.*;
 
 import com.butent.bee.client.grid.HtmlTable;
@@ -20,6 +18,7 @@ import com.butent.bee.shared.time.JustDate;
 import com.butent.bee.shared.ui.ColumnDescription;
 import com.butent.bee.shared.utils.BeeUtils;
 
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -36,7 +35,7 @@ public class CargoPlaceRenderer extends AbstractCellRenderer {
 
   private static final String STYLE_PREFIX = "bee-places-";
 
-  final Map<String, Pair<Integer, String>> data = Maps.newLinkedHashMap();
+  final Map<String, Pair<Integer, String>> data = new LinkedHashMap<>();
   private final FlagRenderer flagRenderer;
   private final int postIndex;
 

@@ -1,7 +1,6 @@
 package com.butent.bee.server.ui;
 
 import com.google.common.collect.Lists;
-import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
 
 import com.butent.bee.server.data.BeeView;
@@ -46,6 +45,8 @@ import com.butent.bee.shared.utils.NameUtils;
 
 import org.w3c.dom.Element;
 
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -197,7 +198,7 @@ public class GridLoaderBean {
 
     List<Element> itemNodes = XmlUtils.getElementsByLocalName(element, HasItems.TAG_ITEM);
     if (!itemNodes.isEmpty()) {
-      List<String> items = Lists.newArrayList();
+      List<String> items = new ArrayList<>();
       for (int i = 0; i < itemNodes.size(); i++) {
         String item = itemNodes.get(i).getTextContent();
         if (!BeeUtils.isEmpty(item)) {
@@ -218,7 +219,7 @@ public class GridLoaderBean {
     Calculation rowRender = null;
     List<RenderableToken> rowRenderTokens = null;
 
-    List<SelectorColumn> selectorColumns = Lists.newArrayList();
+    List<SelectorColumn> selectorColumns = new ArrayList<>();
 
     for (Element child : XmlUtils.getChildrenElements(element)) {
       String tagName = XmlUtils.getLocalName(child);
@@ -268,7 +269,7 @@ public class GridLoaderBean {
     RendererDescription renderer = new RendererDescription(type);
     renderer.setAttributes(XmlUtils.getAttributes(element));
 
-    List<String> items = Lists.newArrayList();
+    List<String> items = new ArrayList<>();
     List<Element> itemNodes = XmlUtils.getElementsByLocalName(element, HasItems.TAG_ITEM);
     if (!itemNodes.isEmpty()) {
       for (int i = 0; i < itemNodes.size(); i++) {
@@ -313,7 +314,7 @@ public class GridLoaderBean {
       return null;
     }
 
-    List<RenderableToken> result = Lists.newArrayList();
+    List<RenderableToken> result = new ArrayList<>();
     for (Element token : tokens) {
       RenderableToken renderableToken = RenderableToken.create(XmlUtils.getAttributes(token));
       if (renderableToken != null) {
@@ -458,7 +459,7 @@ public class GridLoaderBean {
     List<Element> dynStyleNodes = XmlUtils.getElementsByLocalName(src,
         ConditionalStyleDeclaration.TAG_DYN_STYLE);
     if (!dynStyleNodes.isEmpty()) {
-      List<ConditionalStyleDeclaration> dynStyles = Lists.newArrayList();
+      List<ConditionalStyleDeclaration> dynStyles = new ArrayList<>();
       for (int i = 0; i < dynStyleNodes.size(); i++) {
         ConditionalStyleDeclaration cs = XmlUtils.getConditionalStyle(dynStyleNodes.get(i));
         if (cs != null) {
@@ -558,7 +559,7 @@ public class GridLoaderBean {
       return null;
     }
 
-    List<Element> columns = Lists.newArrayList();
+    List<Element> columns = new ArrayList<>();
     for (int i = 0; i < columnGroups.size(); i++) {
       columns.addAll(XmlUtils.getChildrenElements(columnGroups.get(i)));
     }
@@ -763,7 +764,7 @@ public class GridLoaderBean {
     String flexBasis = src.getAttribute(Flexibility.ATTR_BASIS);
 
     if (!BeeUtils.allEmpty(flexGrow, flexShrink, flexBasis)) {
-      Map<String, String> flexAttributes = Maps.newHashMap();
+      Map<String, String> flexAttributes = new HashMap<>();
       flexAttributes.put(Flexibility.ATTR_GROW, flexGrow);
       flexAttributes.put(Flexibility.ATTR_SHRINK, flexShrink);
       flexAttributes.put(Flexibility.ATTR_BASIS, flexBasis);
@@ -908,7 +909,7 @@ public class GridLoaderBean {
 
     List<Element> cssNodes = XmlUtils.getElementsByLocalName(src, TAG_CSS);
     if (!cssNodes.isEmpty()) {
-      Map<String, String> styleSheets = Maps.newHashMap();
+      Map<String, String> styleSheets = new HashMap<>();
       for (int i = 0; i < cssNodes.size(); i++) {
         String name = cssNodes.get(i).getAttribute(ATTR_ID);
         String text = cssNodes.get(i).getTextContent();
@@ -923,7 +924,7 @@ public class GridLoaderBean {
 
     List<Element> widgetElements = XmlUtils.getChildrenElements(src, WIDGET_TAGS);
     if (!widgetElements.isEmpty()) {
-      List<String> widgets = Lists.newArrayList();
+      List<String> widgets = new ArrayList<>();
 
       for (Element widgetElement : widgetElements) {
         ui.checkWidgetChildrenVisibility(widgetElement);
@@ -952,7 +953,7 @@ public class GridLoaderBean {
 
     List<Element> rowStyleNodes = XmlUtils.getElementsByLocalName(src, TAG_ROW_STYLE);
     if (!rowStyleNodes.isEmpty()) {
-      List<ConditionalStyleDeclaration> rowStyles = Lists.newArrayList();
+      List<ConditionalStyleDeclaration> rowStyles = new ArrayList<>();
       for (int i = 0; i < rowStyleNodes.size(); i++) {
         ConditionalStyleDeclaration cs = XmlUtils.getConditionalStyle(rowStyleNodes.get(i));
         if (cs != null) {
@@ -981,14 +982,14 @@ public class GridLoaderBean {
         FilterDescription.TAG_PREDEFINED_FILTER);
 
     if (!filterDescriptionElements.isEmpty()) {
-      List<FilterDescription> predefinedFilters = Lists.newArrayList();
+      List<FilterDescription> predefinedFilters = new ArrayList<>();
 
       for (Element fdElement : filterDescriptionElements) {
         List<Element> filterComponentElements = XmlUtils.getElementsByLocalName(fdElement,
             FilterDescription.TAG_COLUMN);
 
         if (!filterComponentElements.isEmpty()) {
-          List<FilterComponent> filterComponents = Lists.newArrayList();
+          List<FilterComponent> filterComponents = new ArrayList<>();
 
           for (Element componentlement : filterComponentElements) {
             FilterComponent component =

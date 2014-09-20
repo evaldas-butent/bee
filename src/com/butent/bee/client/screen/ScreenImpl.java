@@ -1,7 +1,6 @@
 package com.butent.bee.client.screen;
 
 import com.google.common.collect.Lists;
-import com.google.common.collect.Maps;
 import com.google.gwt.core.client.Scheduler.ScheduledCommand;
 import com.google.gwt.dom.client.Style.Cursor;
 import com.google.gwt.event.dom.client.ClickEvent;
@@ -61,6 +60,7 @@ import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.ExtendedProperty;
 import com.butent.bee.shared.utils.NameUtils;
 
+import java.util.EnumMap;
 import java.util.EnumSet;
 import java.util.List;
 import java.util.Map;
@@ -93,7 +93,7 @@ public class ScreenImpl implements Screen {
 
   private Panel progressPanel;
 
-  private final Map<Direction, Integer> hidden = Maps.newEnumMap(Direction.class);
+  private final Map<Direction, Integer> hidden = new EnumMap<>(Direction.class);
 
   private Toggle northToggle;
   private Toggle westToggle;

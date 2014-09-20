@@ -1,8 +1,6 @@
 package com.butent.bee.client.modules.calendar;
 
 import com.google.common.collect.Lists;
-import com.google.common.collect.Maps;
-import com.google.common.collect.Sets;
 import com.google.gwt.user.client.ui.Widget;
 
 import static com.butent.bee.shared.modules.administration.AdministrationConstants.*;
@@ -68,6 +66,8 @@ import com.butent.bee.shared.utils.EnumUtils;
 
 import java.util.Collection;
 import java.util.EnumSet;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -181,8 +181,8 @@ public final class CalendarKeeper {
 
   private static final BeeLogger logger = LogUtils.getLogger(CalendarKeeper.class);
 
-  private static final Map<String, Long> activePanels = Maps.newHashMap();
-  private static final Map<Long, String> activeControllers = Maps.newHashMap();
+  private static final Map<String, Long> activePanels = new HashMap<>();
+  private static final Map<Long, String> activeControllers = new HashMap<>();
 
   private static FormView settingsForm;
 
@@ -226,7 +226,7 @@ public final class CalendarKeeper {
         return controller.getAttendeeColors();
       }
     }
-    return Maps.newHashMap();
+    return new HashMap<>();
   }
 
   public static String getPropertyName(long id) {
@@ -755,7 +755,7 @@ public final class CalendarKeeper {
   }
 
   private static Set<CalendarPanel> getActivePanels(long calendarId) {
-    Set<CalendarPanel> panels = Sets.newHashSet();
+    Set<CalendarPanel> panels = new HashSet<>();
 
     for (Map.Entry<String, Long> entry : activePanels.entrySet()) {
       if (entry.getValue() == calendarId) {

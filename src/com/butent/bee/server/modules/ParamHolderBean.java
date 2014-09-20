@@ -1,9 +1,7 @@
 package com.butent.bee.server.modules;
 
 import com.google.common.collect.HashMultimap;
-import com.google.common.collect.Lists;
 import com.google.common.collect.Multimap;
-import com.google.common.collect.Sets;
 import com.google.common.collect.Table;
 import com.google.common.collect.TreeBasedTable;
 import com.google.common.eventbus.EventBus;
@@ -38,6 +36,7 @@ import com.butent.bee.shared.time.DateTime;
 import com.butent.bee.shared.time.JustDate;
 import com.butent.bee.shared.utils.BeeUtils;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.Map;
@@ -162,7 +161,7 @@ public class ParamHolderBean {
 
   public Collection<BeeParameter> getModuleParameters(String module) {
     Assert.notEmpty(module);
-    Collection<BeeParameter> params = Lists.newArrayList();
+    Collection<BeeParameter> params = new ArrayList<>();
     Multimap<String, BeeParameter> map = HashMultimap.create();
 
     for (BeeParameter param : parameters.values()) {
@@ -176,7 +175,7 @@ public class ParamHolderBean {
       }
     }
     for (String opt : map.keySet()) {
-      HashSet<Long> ids = Sets.newHashSet();
+      HashSet<Long> ids = new HashSet<>();
 
       for (BeeParameter param : map.get(opt)) {
         for (Long userId : param.getUsers()) {

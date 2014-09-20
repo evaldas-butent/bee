@@ -2,6 +2,7 @@ package com.butent.bee.client.modules.classifiers;
 
 import com.google.common.collect.HashBasedTable;
 import com.google.common.collect.Lists;
+//import com.google.common.collect.Lists;
 import com.google.common.collect.Table;
 import com.google.gwt.dom.client.TableCellElement;
 import com.google.gwt.dom.client.TableRowElement;
@@ -50,6 +51,7 @@ import com.butent.bee.shared.time.TimeUtils;
 import com.butent.bee.shared.time.YearMonth;
 import com.butent.bee.shared.utils.BeeUtils;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
@@ -149,7 +151,7 @@ public class CompanyTypeReport extends ReportInterceptor {
       String types, String typesLabel) {
 
     List<String> labels = Lists.newArrayList(Localized.getConstants().clients());
-    List<String> filterArgs = Lists.newArrayList();
+    List<String> filterArgs = new ArrayList<>();
 
     DateTime lower = (ym == null) ? start : BeeUtils.max(ym.getDate().getDateTime(), start);
     DateTime upper = (ym == null) ? end : BeeUtils.min(ym.nextMonth().getDate().getDateTime(), end);
@@ -377,12 +379,12 @@ public class CompanyTypeReport extends ReportInterceptor {
       container.clear();
     }
 
-    List<YearMonth> yms = Lists.newArrayList(data.rowKeySet());
+    List<YearMonth> yms = new ArrayList<>(data.rowKeySet());
     if (yms.size() > 1) {
       Collections.sort(yms);
     }
 
-    final List<Column> columns = Lists.newArrayList(data.columnKeySet());
+    final List<Column> columns = new ArrayList<>(data.columnKeySet());
     if (columns.size() > 1) {
       Collections.sort(columns);
     }

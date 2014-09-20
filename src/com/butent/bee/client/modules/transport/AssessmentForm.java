@@ -1,10 +1,8 @@
 package com.butent.bee.client.modules.transport;
 
-import com.google.common.base.Objects;
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.LinkedListMultimap;
 import com.google.common.collect.Lists;
-import com.google.common.collect.Maps;
 import com.google.common.collect.Multimap;
 import com.google.common.collect.Sets;
 import com.google.gwt.core.client.Scheduler.ScheduledCommand;
@@ -109,10 +107,14 @@ import com.butent.bee.shared.ui.Relation.Caching;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.EnumUtils;
 
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Objects;
 import java.util.Set;
 
 public class AssessmentForm extends PrintFormInterceptor implements SelectorEvent.Handler,
@@ -287,7 +289,7 @@ public class AssessmentForm extends PrintFormInterceptor implements SelectorEven
     }
 
     private boolean isRevocable(Enum<?> status) {
-      return Objects.equal(status, AssessmentStatus.ANSWERED);
+      return Objects.equals(status, AssessmentStatus.ANSWERED);
     }
   }
 
@@ -432,8 +434,8 @@ public class AssessmentForm extends PrintFormInterceptor implements SelectorEven
     }
 
     public void process() {
-      if (Objects.equal(orderStatus, OrderStatus.CANCELED)
-          || Objects.equal(status, AssessmentStatus.LOST)) {
+      if (Objects.equals(orderStatus, OrderStatus.CANCELED)
+          || Objects.equals(status, AssessmentStatus.LOST)) {
         Global.inputString(confirmationQuestion, loc.trAssessmentReason(), new StringCallback() {
           @Override
           public void onSuccess(String value) {
@@ -474,9 +476,9 @@ public class AssessmentForm extends PrintFormInterceptor implements SelectorEven
     }
 
     public void update(String notes) {
-      final List<BeeColumn> columns = Lists.newArrayList();
-      List<String> oldValues = Lists.newArrayList();
-      final List<String> newValues = Lists.newArrayList();
+      final List<BeeColumn> columns = new ArrayList<>();
+      List<String> oldValues = new ArrayList<>();
+      final List<String> newValues = new ArrayList<>();
       final String viewName = form.getViewName();
 
       if (status != null) {
@@ -503,8 +505,8 @@ public class AssessmentForm extends PrintFormInterceptor implements SelectorEven
               new RowUpdateCallback(form.getViewName()).onSuccess(result);
 
               if (isPrimary() && !check) {
-                List<String> cols = Lists.newArrayList();
-                List<String> vals = Lists.newArrayList();
+                List<String> cols = new ArrayList<>();
+                List<String> vals = new ArrayList<>();
 
                 for (int i = 0; i < columns.size(); i++) {
                   if (BeeUtils.inListSame(columns.get(i).getId(),
@@ -642,7 +644,7 @@ public class AssessmentForm extends PrintFormInterceptor implements SelectorEven
   private ChildGrid childExpenses;
   private DataSelector manager;
   private final Long userPerson = BeeKeeper.getUser().getUserData().getCompanyPerson();
-  private final Map<Long, Long> departments = Maps.newHashMap();
+  private final Map<Long, Long> departments = new HashMap<>();
   private final Multimap<Long, Long> employees = HashMultimap.create();
 
   @Override
@@ -852,7 +854,7 @@ public class AssessmentForm extends PrintFormInterceptor implements SelectorEven
       if (event.isChanged() && !isNewRow()) {
         refreshTotals();
       }
-    } else if (Objects.equal(event.getSelector(), manager)) {
+    } else if (Objects.equals(event.getSelector(), manager)) {
       if (event.isOpened()) {
         manager.setAdditionalFilter(Filter.any(COL_DEPARTMENT, employees.get(userPerson)));
 
@@ -926,15 +928,15 @@ public class AssessmentForm extends PrintFormInterceptor implements SelectorEven
     final String oldLog = form.getOldRow().getString(logIdx);
     String newLog = form.getActiveRow().getString(logIdx);
 
-    if (Objects.equal(oldLog, newLog)) {
-      final Map<String, DateTime> dates = Maps.newLinkedHashMap();
+    if (Objects.equals(oldLog, newLog)) {
+      final Map<String, DateTime> dates = new LinkedHashMap<>();
 
       for (String col : new String[] {COL_DATE, "LoadingDate", "UnloadingDate"}) {
         int idx = form.getDataIndex(col);
         DateTime oldValue = form.getOldRow().getDateTime(idx);
         DateTime value = form.getActiveRow().getDateTime(idx);
 
-        if (!Objects.equal(oldValue, value)) {
+        if (!Objects.equals(oldValue, value)) {
           dates.put(Localized.maybeTranslate(form.getDataColumns().get(idx).getLabel()), value);
         }
       }
@@ -961,8 +963,8 @@ public class AssessmentForm extends PrintFormInterceptor implements SelectorEven
   }
 
   private boolean isExecutor() {
-    return Objects.equal(form.getLongValue(COL_COMPANY_PERSON), userPerson)
-        || Objects.equal(departments.get(form.getLongValue(COL_DEPARTMENT)), userPerson);
+    return Objects.equals(form.getLongValue(COL_COMPANY_PERSON), userPerson)
+        || Objects.equals(departments.get(form.getLongValue(COL_DEPARTMENT)), userPerson);
   }
 
   private boolean isPrimary() {

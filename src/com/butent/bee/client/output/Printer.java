@@ -1,6 +1,5 @@
 package com.butent.bee.client.output;
 
-import com.google.common.collect.Lists;
 import com.google.gwt.core.client.Scheduler;
 import com.google.gwt.dom.client.Element;
 import com.google.gwt.dom.client.InputElement;
@@ -20,6 +19,7 @@ import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogUtils;
 import com.butent.bee.shared.utils.BeeUtils;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import elemental.client.Browser;
@@ -156,7 +156,7 @@ public final class Printer {
   }
 
   private static void prepareElements(NodeList<Element> elements, Printable widget) {
-    List<Element> hide = Lists.newArrayList();
+    List<Element> hide = new ArrayList<>();
 
     for (int i = 0; i < elements.getLength(); i++) {
       Element element = elements.getItem(i);

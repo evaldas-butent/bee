@@ -16,6 +16,7 @@ import com.butent.bee.shared.utils.NameUtils;
 import com.butent.bee.shared.utils.Property;
 import com.butent.bee.shared.utils.PropertyUtils;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
@@ -301,7 +302,7 @@ public class ColumnDescription implements BeeSerializable, HasInfo, HasOptions, 
           if (ArrayUtils.isEmpty(scs)) {
             setDynStyles(null);
           } else {
-            List<ConditionalStyleDeclaration> lst = Lists.newArrayList();
+            List<ConditionalStyleDeclaration> lst = new ArrayList<>();
             for (String z : scs) {
               lst.add(ConditionalStyleDeclaration.restore(z));
             }

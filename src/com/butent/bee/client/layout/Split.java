@@ -1,6 +1,5 @@
 package com.butent.bee.client.layout;
 
-import com.google.common.collect.Lists;
 import com.google.gwt.dom.client.Document;
 import com.google.gwt.dom.client.Element;
 import com.google.gwt.dom.client.Style;
@@ -42,6 +41,7 @@ import com.butent.bee.shared.utils.NameUtils;
 import com.butent.bee.shared.utils.Property;
 import com.butent.bee.shared.utils.PropertyUtils;
 
+import java.util.ArrayList;
 import java.util.List;
 
 public class Split extends ComplexPanel implements RequiresResize, ProvidesResize,
@@ -440,7 +440,7 @@ public class Split extends ComplexPanel implements RequiresResize, ProvidesResiz
 
   public List<ExtendedProperty> getDirectionInfo(Direction dir) {
     Assert.notNull(dir);
-    List<ExtendedProperty> lst = Lists.newArrayList();
+    List<ExtendedProperty> lst = new ArrayList<>();
 
     List<Widget> children = getDirectionChildren(dir);
     int c = children.size();
@@ -473,7 +473,7 @@ public class Split extends ComplexPanel implements RequiresResize, ProvidesResiz
 
   @Override
   public List<ExtendedProperty> getExtendedInfo() {
-    List<ExtendedProperty> lst = Lists.newArrayList();
+    List<ExtendedProperty> lst = new ArrayList<>();
 
     PropertyUtils.addChildren(lst, NameUtils.getName(this),
         "Id", getId(),
@@ -563,7 +563,7 @@ public class Split extends ComplexPanel implements RequiresResize, ProvidesResiz
   public void setDirectionSize(Direction direction, int size, boolean doLayout) {
     Assert.isTrue(validDirection(direction, false));
 
-    List<LayoutData> data = Lists.newArrayList();
+    List<LayoutData> data = new ArrayList<>();
     for (Widget child : getChildren()) {
       if (!isSplitter(child) && direction.equals(getWidgetDirection(child))) {
         LayoutData ld = getLayoutData(child);
@@ -683,7 +683,7 @@ public class Split extends ComplexPanel implements RequiresResize, ProvidesResiz
   }
 
   protected List<Property> getChildInfo(Widget w) {
-    List<Property> info = Lists.newArrayList();
+    List<Property> info = new ArrayList<>();
 
     Style style = w.getElement().getStyle();
 
@@ -870,7 +870,7 @@ public class Split extends ComplexPanel implements RequiresResize, ProvidesResiz
   }
 
   private List<Widget> getDirectionChildren(Direction dir) {
-    List<Widget> lst = Lists.newArrayList();
+    List<Widget> lst = new ArrayList<>();
 
     for (Widget w : getChildren()) {
       if (getWidgetDirection(w) == dir) {

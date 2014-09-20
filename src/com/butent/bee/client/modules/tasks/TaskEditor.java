@@ -1,8 +1,6 @@
 package com.butent.bee.client.modules.tasks;
 
-import com.google.common.base.Objects;
 import com.google.common.collect.Lists;
-import com.google.common.collect.Sets;
 import com.google.common.collect.Table;
 import com.google.common.collect.TreeBasedTable;
 import com.google.gwt.core.client.Scheduler;
@@ -69,9 +67,13 @@ import com.butent.bee.shared.utils.Codec;
 import com.butent.bee.shared.utils.EnumUtils;
 import com.butent.bee.shared.utils.NameUtils;
 
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 
 class TaskEditor extends AbstractFormInterceptor {
@@ -111,7 +113,7 @@ class TaskEditor extends AbstractFormInterceptor {
     if (input.isEmpty()) {
       return input;
     }
-    List<FileInfo> result = Lists.newArrayList();
+    List<FileInfo> result = new ArrayList<>();
 
     for (FileInfo file : input) {
       Long id = file.getRelatedId();
@@ -144,7 +146,7 @@ class TaskEditor extends AbstractFormInterceptor {
   }
 
   private static List<String> getUpdatedRelations(IsRow oldRow, IsRow newRow) {
-    List<String> updatedRelations = Lists.newArrayList();
+    List<String> updatedRelations = new ArrayList<>();
     if (oldRow == null || newRow == null) {
       return updatedRelations;
     }
@@ -158,7 +160,7 @@ class TaskEditor extends AbstractFormInterceptor {
   }
 
   private static List<String> getUpdateNotes(DataInfo dataInfo, IsRow oldRow, IsRow newRow) {
-    List<String> notes = Lists.newArrayList();
+    List<String> notes = new ArrayList<>();
     if (dataInfo == null || oldRow == null || newRow == null) {
       return notes;
     }
@@ -334,7 +336,7 @@ class TaskEditor extends AbstractFormInterceptor {
   }
 
   private static void showError(String message) {
-    Global.showError(Localized.getConstants().error(), Lists.newArrayList(message));
+    Global.showError(Localized.getConstants().error(), Collections.singletonList(message));
   }
 
   private static void showEvent(Flow panel, BeeRow row, List<BeeColumn> columns,
@@ -501,7 +503,7 @@ class TaskEditor extends AbstractFormInterceptor {
     HasWidgets panel = (HasWidgets) widget;
     panel.clear();
 
-    List<DateTime> extensions = Lists.newArrayList();
+    List<DateTime> extensions = new ArrayList<>();
 
     for (BeeRow row : rowSet.getRows()) {
       DateTime dt = row.getDateTime(index);
@@ -609,16 +611,16 @@ class TaskEditor extends AbstractFormInterceptor {
 
     DateTime start = row.getDateTime(form.getDataIndex(COL_START_TIME));
 
-    form.setEnabled(Objects.equal(owner, userId));
+    form.setEnabled(Objects.equals(owner, userId));
 
     TaskStatus newStatus = null;
 
     if (TaskStatus.NOT_VISITED.equals(oldStatus)) {
-      if (Objects.equal(executor, userId)) {
+      if (Objects.equals(executor, userId)) {
         newStatus = TaskStatus.ACTIVE;
       }
     } else if (TaskStatus.SCHEDULED.equals(oldStatus) && !TaskUtils.isScheduled(start)) {
-      newStatus = Objects.equal(executor, userId) ? TaskStatus.ACTIVE : TaskStatus.NOT_VISITED;
+      newStatus = Objects.equals(executor, userId) ? TaskStatus.ACTIVE : TaskStatus.NOT_VISITED;
     }
 
     BeeRow visitedRow = DataUtils.cloneRow(row);
@@ -987,7 +989,7 @@ class TaskEditor extends AbstractFormInterceptor {
           return;
         }
 
-        if (Objects.equal(newStart, oldStart) && Objects.equal(newEnd, oldEnd)) {
+        if (Objects.equals(newStart, oldStart) && Objects.equals(newEnd, oldEnd)) {
           showError(Localized.getConstants().crmTermNotChanged());
           return;
         }
@@ -1000,21 +1002,21 @@ class TaskEditor extends AbstractFormInterceptor {
         DateTime now = TimeUtils.nowMinutes();
         if (TimeUtils.isLess(newEnd, TimeUtils.nowMinutes())) {
           Global.showError("Time travel not supported",
-              Lists.newArrayList(Localized.getConstants().crmFinishDateMustBeGreaterThan() + " "
-                  + now.toCompactString()));
+              Collections.singletonList(Localized.getConstants().crmFinishDateMustBeGreaterThan()
+                  + " " + now.toCompactString()));
           return;
         }
 
         BeeRow newRow = getNewRow();
-        if (startId != null && newStart != null && !Objects.equal(newStart, oldStart)) {
+        if (startId != null && newStart != null && !Objects.equals(newStart, oldStart)) {
           newRow.setValue(getFormView().getDataIndex(COL_START_TIME), newStart);
         }
-        if (!Objects.equal(newEnd, oldEnd)) {
+        if (!Objects.equals(newEnd, oldEnd)) {
           newRow.setValue(getFormView().getDataIndex(COL_FINISH_TIME), newEnd);
         }
 
         ParameterList params = createParams(TaskEvent.EXTEND, newRow, dialog.getComment(cid));
-        if (oldEnd != null && !Objects.equal(newEnd, oldEnd)) {
+        if (oldEnd != null && !Objects.equals(newEnd, oldEnd)) {
           params.addDataItem(VAR_TASK_FINISH_TIME, oldEnd.getTime());
         }
 
@@ -1028,7 +1030,7 @@ class TaskEditor extends AbstractFormInterceptor {
 
   private void doForward() {
     final Long oldUser = getExecutor();
-    Set<Long> exclusions = Sets.newHashSet();
+    Set<Long> exclusions = new HashSet<>();
     if (oldUser != null) {
       exclusions.add(oldUser);
     }
@@ -1053,7 +1055,7 @@ class TaskEditor extends AbstractFormInterceptor {
           showError(Localized.getConstants().crmEnterExecutor());
           return;
         }
-        if (Objects.equal(newUser, oldUser)) {
+        if (Objects.equals(newUser, oldUser)) {
           showError(Localized.getConstants().crmSelectedSameExecutor());
           return;
         }
@@ -1072,9 +1074,9 @@ class TaskEditor extends AbstractFormInterceptor {
             newRow.getInteger(getDataIndex(COL_STATUS)));
         TaskStatus newStatus = null;
 
-        if (oldStatus == TaskStatus.ACTIVE && !Objects.equal(newUser, userId)) {
+        if (oldStatus == TaskStatus.ACTIVE && !Objects.equals(newUser, userId)) {
           newStatus = TaskStatus.NOT_VISITED;
-        } else if (oldStatus == TaskStatus.NOT_VISITED && Objects.equal(newUser, userId)) {
+        } else if (oldStatus == TaskStatus.NOT_VISITED && Objects.equals(newUser, userId)) {
           newStatus = TaskStatus.ACTIVE;
         }
 
@@ -1227,7 +1229,7 @@ class TaskEditor extends AbstractFormInterceptor {
   }
 
   private boolean isExecutor() {
-    return Objects.equal(userId, getExecutor());
+    return Objects.equals(userId, getExecutor());
   }
 
   private void onResponse(BeeRow data) {

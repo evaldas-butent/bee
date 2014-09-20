@@ -1,7 +1,6 @@
 package com.butent.bee.client.modules.transport;
 
 import com.google.common.collect.Lists;
-import com.google.common.collect.Maps;
 import com.google.gwt.dom.client.TableCellElement;
 import com.google.gwt.dom.client.TableRowElement;
 import com.google.gwt.event.dom.client.ClickEvent;
@@ -63,7 +62,9 @@ import com.butent.bee.shared.utils.ArrayUtils;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.NameUtils;
 
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -180,7 +181,7 @@ public class AssessmentTurnoverReport extends ReportInterceptor {
   }
 
   private static Map<Integer, RowValue> getPreviuosValues(SimpleRowSet data, SimpleRowSet prev) {
-    Map<Integer, RowValue> result = Maps.newHashMap();
+    Map<Integer, RowValue> result = new HashMap<>();
     if (DataUtils.isEmpty(data)
         || !data.hasColumn(BeeConst.YEAR) || !data.hasColumn(BeeConst.MONTH)) {
       return result;
@@ -658,7 +659,7 @@ public class AssessmentTurnoverReport extends ReportInterceptor {
   }
 
   private List<String> getGroupBy() {
-    List<String> groupBy = Lists.newArrayList();
+    List<String> groupBy = new ArrayList<>();
 
     for (String groupName : NAME_GROUP_BY) {
       Integer index = getSelectedIndex(groupName);
@@ -1352,7 +1353,7 @@ public class AssessmentTurnoverReport extends ReportInterceptor {
     filter.add(Filter.isNot(Filter.in(COL_CARGO, VIEW_CARGO_INCOMES, COL_CARGO,
         Filter.isNull(TradeConstants.COL_SALE))));
 
-    List<String> captions = Lists.newArrayList();
+    List<String> captions = new ArrayList<>();
 
     String[] colNames = dataRow.getColumnNames();
 

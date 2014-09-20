@@ -1,8 +1,8 @@
 package com.butent.bee.shared.utils;
 
 import com.google.common.base.Predicate;
-import com.google.common.collect.Lists;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
@@ -50,7 +50,7 @@ public class StringList implements List<String> {
     return new StringList(predicate, true, true);
   }
 
-  private final List<String> list = Lists.newArrayList();
+  private final List<String> list = new ArrayList<>();
 
   private final Predicate<String> predicate;
 

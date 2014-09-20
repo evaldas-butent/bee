@@ -58,6 +58,7 @@ import com.butent.bee.shared.utils.ArrayUtils;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.NameUtils;
 
+import java.util.ArrayList;
 import java.util.List;
 
 public class AssessmentQuantityReport extends ReportInterceptor {
@@ -223,7 +224,7 @@ public class AssessmentQuantityReport extends ReportInterceptor {
       headers.add(BeeUtils.joinWords(label, getFilterLabel(NAME_MANAGERS)));
     }
 
-    List<String> groupBy = Lists.newArrayList();
+    List<String> groupBy = new ArrayList<>();
     for (String groupName : NAME_GROUP_BY) {
       Integer index = getSelectedIndex(groupName);
 
@@ -794,7 +795,7 @@ public class AssessmentQuantityReport extends ReportInterceptor {
 
   private void showDetails(SimpleRow dataRow, TableCellElement cellElement) {
     CompoundFilter filter = Filter.and();
-    List<String> captions = Lists.newArrayList();
+    List<String> captions = new ArrayList<>();
 
     String[] colNames = dataRow.getColumnNames();
 

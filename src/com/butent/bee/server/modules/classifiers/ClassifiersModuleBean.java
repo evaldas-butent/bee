@@ -2,7 +2,6 @@ package com.butent.bee.server.modules.classifiers;
 
 import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.Lists;
-import com.google.common.collect.Maps;
 import com.google.common.collect.Multimap;
 import com.google.common.collect.Sets;
 import com.google.common.eventbus.Subscribe;
@@ -68,7 +67,9 @@ import com.butent.bee.shared.rights.SubModule;
 import com.butent.bee.shared.time.DateTime;
 import com.butent.bee.shared.utils.BeeUtils;
 
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
@@ -99,7 +100,7 @@ public class ClassifiersModuleBean implements BeeModule {
 
   @Override
   public List<SearchResult> doSearch(String query) {
-    List<SearchResult> search = Lists.newArrayList();
+    List<SearchResult> search = new ArrayList<>();
 
     if (usr.isModuleVisible(ModuleAndSub.of(getModule(), SubModule.CONTACTS))) {
       List<SearchResult> companiesSr = qs.getSearchResults(VIEW_COMPANIES,
@@ -781,7 +782,7 @@ public class ClassifiersModuleBean implements BeeModule {
     LocalizableConstants constants = (loc == null)
         ? Localized.getConstants() : Localizations.getConstants(loc);
 
-    Map<String, String> translations = Maps.newHashMap();
+    Map<String, String> translations = new HashMap<>();
     translations.put(COL_COMPANY_NAME, constants.company());
     translations.put(COL_COMPANY_CODE, constants.companyCode());
     translations.put(COL_COMPANY_VAT_CODE, constants.companyVATCode());
@@ -794,7 +795,7 @@ public class ClassifiersModuleBean implements BeeModule {
     translations.put(COL_CITY, constants.city());
     translations.put(COL_COUNTRY, constants.country());
 
-    Map<String, Pair<String, String>> info = Maps.newHashMap();
+    Map<String, Pair<String, String>> info = new HashMap<>();
 
     for (String col : translations.keySet()) {
       info.put(col, Pair.of(translations.get(col), row.getValue(col)));

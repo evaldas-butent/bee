@@ -1,11 +1,7 @@
 package com.butent.bee.client.dialog;
 
 import com.google.common.base.Function;
-import com.google.common.base.Objects;
 import com.google.common.base.Supplier;
-import com.google.common.collect.Lists;
-import com.google.common.collect.Maps;
-import com.google.common.collect.Sets;
 import com.google.gwt.core.client.Scheduler.ScheduledCommand;
 import com.google.gwt.dom.client.Element;
 import com.google.gwt.dom.client.Style.Cursor;
@@ -54,9 +50,14 @@ import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.ui.Action;
 import com.butent.bee.shared.utils.BeeUtils;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.EnumSet;
+import java.util.HashSet;
+import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 
 /**
@@ -190,7 +191,7 @@ public class InputBoxes {
           @Override
           public void onClick(ClickEvent event) {
             for (int i = 1; i < table.getRowCount(); i++) {
-              if (Objects.equal(delete, table.getWidget(i, 1))) {
+              if (Objects.equals(delete, table.getWidget(i, 1))) {
                 table.removeRow(i);
                 break;
               }
@@ -211,7 +212,7 @@ public class InputBoxes {
         String error = super.getErrorMessage();
 
         if (BeeUtils.isEmpty(error)) {
-          Set<String> values = Sets.newHashSet();
+          Set<String> values = new HashSet<>();
 
           for (int i = 1; i < table.getRowCount(); i++) {
             Editor input = (Editor) table.getWidget(i, 0);
@@ -243,9 +244,9 @@ public class InputBoxes {
         Collection<String> result;
 
         if (unique) {
-          result = Sets.newLinkedHashSet();
+          result = new LinkedHashSet<>();
         } else {
-          result = Lists.newArrayList();
+          result = new ArrayList<>();
         }
         for (int i = 1; i < table.getRowCount(); i++) {
           result.add(((Editor) table.getWidget(i, 0)).getNormalizedValue());
@@ -291,7 +292,7 @@ public class InputBoxes {
           @Override
           public void onClick(ClickEvent event) {
             for (int i = 1; i < table.getRowCount(); i++) {
-              if (Objects.equal(delete, table.getWidget(i, 2))) {
+              if (Objects.equals(delete, table.getWidget(i, 2))) {
                 table.removeRow(i);
                 break;
               }
@@ -310,7 +311,7 @@ public class InputBoxes {
         String error = super.getErrorMessage();
 
         if (BeeUtils.isEmpty(error)) {
-          Set<String> values = Sets.newHashSet();
+          Set<String> values = new HashSet<>();
 
           for (int i = 1; i < table.getRowCount(); i++) {
             InputText input = (InputText) table.getWidget(i, 0);
@@ -338,7 +339,7 @@ public class InputBoxes {
 
       @Override
       public void onSuccess() {
-        Map<String, String> result = Maps.newLinkedHashMap();
+        Map<String, String> result = new LinkedHashMap<>();
 
         for (int i = 1; i < table.getRowCount(); i++) {
           result.put(((InputText) table.getWidget(i, 0)).getValue(),

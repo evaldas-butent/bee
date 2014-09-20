@@ -1,7 +1,5 @@
 package com.butent.bee.server.data;
 
-import com.google.common.collect.Lists;
-
 import com.butent.bee.server.sql.IsQuery;
 import com.butent.bee.server.sql.SqlSelect;
 import com.butent.bee.shared.Assert;
@@ -11,6 +9,7 @@ import com.butent.bee.shared.data.BeeRowSet;
 import com.butent.bee.shared.data.value.Value;
 import com.butent.bee.shared.utils.BeeUtils;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 
@@ -149,7 +148,7 @@ public abstract class DataEvent {
     Assert.notEmpty(message);
 
     if (errors == null) {
-      errors = Lists.newArrayList();
+      errors = new ArrayList<>();
     }
     errors.add(message);
   }

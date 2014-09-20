@@ -34,6 +34,7 @@ import com.butent.bee.shared.ui.HasCaption;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.Codec;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
@@ -90,7 +91,7 @@ public class ReportSettings {
       label.setText(item.getCaption());
 
       if (Global.isDebug()) {
-        List<String> params = Lists.newArrayList();
+        List<String> params = new ArrayList<>();
         for (Map.Entry<String, String> entry : item.getParameters().entrySet()) {
           params.add(BeeUtils.joinWords(entry.getKey(), entry.getValue()));
         }

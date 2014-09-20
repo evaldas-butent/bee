@@ -1,7 +1,5 @@
 package com.butent.bee.client.grid;
 
-import com.google.common.base.Objects;
-
 import com.butent.bee.client.Callback;
 import com.butent.bee.client.data.Data;
 import com.butent.bee.client.data.Queries;
@@ -27,6 +25,7 @@ import com.butent.bee.shared.utils.BeeUtils;
 import java.util.Collection;
 import java.util.EnumSet;
 import java.util.Map;
+import java.util.Objects;
 
 /**
  * Enables using data grids with data related to another source.
@@ -120,7 +119,7 @@ public class ChildGrid extends EmbeddedGrid implements Launchable {
       getGridInterceptor().afterCreatePresenter(gp);
     }
 
-    if (Objects.equal(row, getPendingRow())) {
+    if (Objects.equals(row, getPendingRow())) {
       updateFilter(row);
       resetState();
       if (row == null) {

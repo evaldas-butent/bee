@@ -1,6 +1,5 @@
 package com.butent.bee.client.screen;
 
-import com.google.common.base.Objects;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.event.logical.shared.CloseEvent;
@@ -29,6 +28,8 @@ import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogUtils;
 import com.butent.bee.shared.rights.RegulatedWidget;
 import com.butent.bee.shared.utils.BeeUtils;
+
+import java.util.Objects;
 
 class CentralScrutinizer extends Stack implements CloseHandler<IdentifiableWidget>,
     ActiveWidgetChangeEvent.Handler {
@@ -95,7 +96,7 @@ class CentralScrutinizer extends Stack implements CloseHandler<IdentifiableWidge
     }
 
     private boolean is(Domain otherDomain, Long otherKey) {
-      return getDomain().equals(otherDomain) && Objects.equal(getKey(), otherKey);
+      return getDomain().equals(otherDomain) && Objects.equals(getKey(), otherKey);
     }
   }
 

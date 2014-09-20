@@ -1,7 +1,5 @@
 package com.butent.bee.client.modules.transport.charts;
 
-import com.google.common.base.Objects;
-import com.google.common.collect.Maps;
 import com.google.gwt.user.client.ui.ComplexPanel;
 import com.google.gwt.user.client.ui.HasWidgets;
 
@@ -26,7 +24,9 @@ import com.butent.bee.shared.modules.transport.TransportConstants.VehicleType;
 import com.butent.bee.shared.time.JustDate;
 import com.butent.bee.shared.ui.Action;
 
+import java.util.HashMap;
 import java.util.Map;
+import java.util.Objects;
 
 final class ShippingSchedule extends VehicleTimeBoard {
 
@@ -56,7 +56,7 @@ final class ShippingSchedule extends VehicleTimeBoard {
 
   private boolean separateTrips;
 
-  private final Map<Integer, Long> tripsByRow = Maps.newHashMap();
+  private final Map<Integer, Long> tripsByRow = new HashMap<>();
 
   private ShippingSchedule() {
     super();
@@ -244,7 +244,7 @@ final class ShippingSchedule extends VehicleTimeBoard {
       int top = rowIndex * getRowHeight();
       Long currentTrip = tripsByRow.get(rowIndex);
 
-      if (Objects.equal(lastTrip, currentTrip)) {
+      if (Objects.equals(lastTrip, currentTrip)) {
         TimeBoardHelper.addRowSeparator(panel, top, getChartLeft(), getCalendarWidth());
       } else {
         TimeBoardHelper.addRowSeparator(panel, STYLE_TRIP_GROUP_ROW_SEPARATOR, top,

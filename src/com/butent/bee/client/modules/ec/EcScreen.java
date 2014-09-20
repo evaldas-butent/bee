@@ -1,7 +1,5 @@
 package com.butent.bee.client.modules.ec;
 
-import com.google.common.base.Objects;
-import com.google.common.collect.Lists;
 import com.google.gwt.core.client.Scheduler;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
@@ -40,6 +38,7 @@ import com.butent.bee.shared.utils.ExtendedProperty;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 public class EcScreen extends ScreenImpl {
 
@@ -133,7 +132,7 @@ public class EcScreen extends ScreenImpl {
     if (widget != null) {
       if (UiHelper.isModal(widget.asWidget())) {
         UiHelper.closeDialog(widget.asWidget());
-      } else if (Objects.equal(widget, getActiveWidget())) {
+      } else if (Objects.equals(widget, getActiveWidget())) {
         getScreenPanel().remove(widget);
       }
     }
@@ -171,7 +170,7 @@ public class EcScreen extends ScreenImpl {
 
   @Override
   public List<IdentifiableWidget> getOpenWidgets() {
-    List<IdentifiableWidget> result = Lists.newArrayList();
+    List<IdentifiableWidget> result = new ArrayList<>();
     if (getActiveWidget() != null) {
       result.add(getActiveWidget());
     }

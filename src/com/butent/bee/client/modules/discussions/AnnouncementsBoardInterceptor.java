@@ -1,6 +1,5 @@
 package com.butent.bee.client.modules.discussions;
 
-import com.google.common.collect.Lists;
 import com.google.gwt.core.client.Scheduler.ScheduledCommand;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
@@ -56,6 +55,7 @@ import com.butent.bee.shared.time.JustDate;
 import com.butent.bee.shared.ui.Action;
 import com.butent.bee.shared.utils.BeeUtils;
 
+import java.util.ArrayList;
 import java.util.Collection;
 
 class AnnouncementsBoardInterceptor extends AbstractFormInterceptor implements
@@ -67,7 +67,7 @@ class AnnouncementsBoardInterceptor extends AbstractFormInterceptor implements
   private static final String STYLE_ACTION = "action";
   private static final String STYLE_CHAT_BALLOON = "chatBalloon";
 
-  private final Collection<HandlerRegistration> registry = Lists.newArrayList();
+  private final Collection<HandlerRegistration> registry = new ArrayList<>();
 
   @Override
   public FormInterceptor getInstance() {

@@ -18,6 +18,7 @@ import com.butent.bee.shared.data.IsRow;
 import com.butent.bee.shared.modules.classifiers.ClassifierConstants;
 import com.butent.bee.shared.utils.BeeUtils;
 
+import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
@@ -147,7 +148,7 @@ class TaskSelectorHandler implements SelectorEvent.Handler {
       return;
     }
 
-    Set<String> updatedColumns = Sets.newHashSet();
+    Set<String> updatedColumns = new HashSet<>();
 
     for (int i = 0; i < templateColumns.size(); i++) {
       String colName = templateColumns.get(i).getId();

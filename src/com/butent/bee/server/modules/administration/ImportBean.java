@@ -2,7 +2,6 @@ package com.butent.bee.server.modules.administration;
 
 import com.google.common.base.Function;
 import com.google.common.collect.Lists;
-import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
 
 import static com.butent.bee.shared.modules.administration.AdministrationConstants.*;
@@ -104,7 +103,7 @@ public class ImportBean {
     private final int prpObject = 3;
 
     private final String viewName;
-    private final Map<String, Object[]> props = Maps.newHashMap();
+    private final Map<String, Object[]> props = new HashMap<>();
 
     public ImportObject(SimpleRowSet rs, SystemBean sys) {
       Assert.notNull(rs);
@@ -286,7 +285,7 @@ public class ImportBean {
   }
 
   private List<ExtendedProperty> checkMappings(ImportObject imp, String prfx, String tmp) {
-    List<ExtendedProperty> info = Lists.newArrayList();
+    List<ExtendedProperty> info = new ArrayList<>();
     PropertyUtils.addExtended(info, "NEŽINOMIEJI", null, ":");
 
     for (ImportProperty prop : imp.getProperties()) {
@@ -879,7 +878,7 @@ public class ImportBean {
     }
     String prfx = "_";
 
-    List<String> cols = Lists.newArrayList();
+    List<String> cols = new ArrayList<>();
 
     for (BeeField fld : sys.getTableFields(TBL_VEHICLE_TRACKING)) {
       if (!(fld instanceof BeeRelation)) {
@@ -1054,7 +1053,7 @@ public class ImportBean {
     }
     qs.updateData(create.addInteger(REC_NO, true));
     String target = create.getTarget();
-    Map<String, String> values = Maps.newHashMap();
+    Map<String, String> values = new HashMap<>();
     int recNo = 0;
 
     for (int i = startRow; i <= shit.getLastRowNum(); i++) {

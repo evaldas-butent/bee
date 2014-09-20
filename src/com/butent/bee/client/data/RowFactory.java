@@ -1,6 +1,5 @@
 package com.butent.bee.client.data;
 
-import com.google.common.collect.Lists;
 import com.google.gwt.user.client.Event.NativePreviewEvent;
 import com.google.gwt.user.client.ui.UIObject;
 import com.google.gwt.xml.client.Document;
@@ -41,6 +40,7 @@ import com.butent.bee.shared.ui.UiConstants;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.NameUtils;
 
+import java.util.ArrayList;
 import java.util.List;
 
 public final class RowFactory {
@@ -193,7 +193,7 @@ public final class RowFactory {
       return BeeConst.UNDEF;
     }
 
-    List<String> colNames = Lists.newArrayList();
+    List<String> colNames = new ArrayList<>();
     for (BeeColumn column : dataInfo.getColumns()) {
       if (column.hasDefaults()) {
         colNames.add(column.getId());
@@ -283,9 +283,9 @@ public final class RowFactory {
 
   private static List<BeeColumn> getColumns(DataInfo dataInfo, String specified,
       List<String> preferred) {
-    List<BeeColumn> result = Lists.newArrayList();
+    List<BeeColumn> result = new ArrayList<>();
 
-    List<String> colNames = Lists.newArrayList();
+    List<String> colNames = new ArrayList<>();
     if (!BeeUtils.isEmpty(specified)) {
       List<String> list = DataUtils.parseColumns(specified, dataInfo.getColumns());
       if (list != null) {

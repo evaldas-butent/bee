@@ -11,6 +11,7 @@ import com.butent.bee.shared.utils.ArrayUtils;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.RangeOptions;
 
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
@@ -686,7 +687,7 @@ public final class TimeUtils {
   }
 
   public static List<Integer> parseFields(String input) {
-    List<Integer> result = Lists.newArrayList();
+    List<Integer> result = new ArrayList<>();
     if (BeeUtils.isEmpty(input)) {
       return result;
     }
@@ -1337,7 +1338,7 @@ public final class TimeUtils {
   }
 
   private static List<Integer> parseDigits(String input, List<Integer> slices) {
-    List<Integer> result = Lists.newArrayList();
+    List<Integer> result = new ArrayList<>();
     if (BeeUtils.isEmpty(input) || slices.isEmpty()) {
       return result;
     }

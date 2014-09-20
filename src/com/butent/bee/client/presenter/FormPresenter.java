@@ -1,9 +1,7 @@
 package com.butent.bee.client.presenter;
 
-import com.google.common.base.Objects;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Lists;
-import com.google.common.collect.Sets;
 import com.google.gwt.event.shared.HandlerRegistration;
 
 import com.butent.bee.client.BeeKeeper;
@@ -58,7 +56,10 @@ import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.NameUtils;
 
 import java.util.Collection;
+import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Objects;
 import java.util.Set;
 
 public class FormPresenter extends AbstractPresenter implements ReadyForInsertEvent.Handler,
@@ -94,7 +95,7 @@ public class FormPresenter extends AbstractPresenter implements ReadyForInsertEv
   private final FormContainerView formContainer;
   private final Provider dataProvider;
 
-  private final Set<HandlerRegistration> filterChangeHandlers = Sets.newHashSet();
+  private final Set<HandlerRegistration> filterChangeHandlers = new HashSet<>();
   private Filter lastFilter;
 
   public FormPresenter(FormDescription formDescription, String viewName, int rowCount,
@@ -150,7 +151,7 @@ public class FormPresenter extends AbstractPresenter implements ReadyForInsertEv
     if (getMainView() instanceof HasSearch) {
       searchers = ((HasSearch) getMainView()).getSearchers();
     } else {
-      searchers = Sets.newHashSet();
+      searchers = new HashSet<>();
     }
     return searchers;
   }
@@ -378,7 +379,7 @@ public class FormPresenter extends AbstractPresenter implements ReadyForInsertEv
 
   private void deleteRow(long rowId, long version) {
     Global.confirmDelete(getCaption(), Icon.WARNING,
-        Lists.newArrayList(Localized.getConstants().deleteRecordQuestion()),
+        Collections.singletonList(Localized.getConstants().deleteRecordQuestion()),
         new DeleteCallback(rowId, version));
   }
 
@@ -404,7 +405,7 @@ public class FormPresenter extends AbstractPresenter implements ReadyForInsertEv
 
   private void updateFilter() {
     Filter filter = ViewHelper.getFilter(this, getDataProvider());
-    if (Objects.equal(filter, getLastFilter())) {
+    if (Objects.equals(filter, getLastFilter())) {
       logger.info("filter not changed", filter);
     } else {
       lastFilter = filter;

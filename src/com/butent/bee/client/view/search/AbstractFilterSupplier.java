@@ -45,6 +45,7 @@ import com.butent.bee.shared.utils.NameUtils;
 import com.butent.bee.shared.utils.Property;
 import com.butent.bee.shared.utils.PropertyUtils;
 
+import java.util.ArrayList;
 import java.util.List;
 
 public abstract class AbstractFilterSupplier implements HasViewName, HasOptions,
@@ -96,7 +97,7 @@ public abstract class AbstractFilterSupplier implements HasViewName, HasOptions,
 
   private int counterValue;
 
-  private final List<Integer> selectedItems = Lists.newArrayList();
+  private final List<Integer> selectedItems = new ArrayList<>();
 
   private String displayId;
 
@@ -295,11 +296,11 @@ public abstract class AbstractFilterSupplier implements HasViewName, HasOptions,
   }
 
   protected List<SupplierAction> getActions() {
-    return Lists.newArrayList();
+    return new ArrayList<>();
   }
 
   protected List<? extends IdentifiableWidget> getAutocompletableWidgets() {
-    return Lists.newArrayList();
+    return new ArrayList<>();
   }
 
   protected BeeColumn getColumn() {

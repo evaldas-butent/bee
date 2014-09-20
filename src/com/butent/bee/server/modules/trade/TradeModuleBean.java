@@ -1,6 +1,5 @@
 package com.butent.bee.server.modules.trade;
 
-import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
 import com.google.common.eventbus.Subscribe;
 
@@ -409,7 +408,7 @@ public class TradeModuleBean implements BeeModule {
 
     SimpleRowSet invoices = qs.getData(query.addField(trade, sys.getIdName(trade), itemsRelation));
 
-    Map<Long, String> companies = Maps.newHashMap();
+    Map<Long, String> companies = new HashMap<>();
     ResponseObject response = ResponseObject.emptyResponse();
 
     for (SimpleRow invoice : invoices) {

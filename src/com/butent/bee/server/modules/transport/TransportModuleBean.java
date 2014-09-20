@@ -1,9 +1,7 @@
 package com.butent.bee.server.modules.transport;
 
-import com.google.common.base.Objects;
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.Lists;
-import com.google.common.collect.Maps;
 import com.google.common.collect.Multimap;
 import com.google.common.collect.Sets;
 import com.google.common.eventbus.Subscribe;
@@ -95,9 +93,12 @@ import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
 import java.net.HttpURLConnection;
 import java.net.URL;
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 
 import javax.annotation.Resource;
@@ -161,7 +162,7 @@ public class TransportModuleBean implements BeeModule, HasTimerService {
 
   @Override
   public List<SearchResult> doSearch(String query) {
-    List<SearchResult> result = Lists.newArrayList();
+    List<SearchResult> result = new ArrayList<>();
 
     List<SearchResult> vehiclesResult = qs.getSearchResults(VIEW_VEHICLES,
         Filter.anyContains(Sets.newHashSet(COL_NUMBER, COL_PARENT_MODEL_NAME, COL_MODEL_NAME,
@@ -1791,7 +1792,7 @@ public class TransportModuleBean implements BeeModule, HasTimerService {
         company = BeeUtils.nvl(row.getLong(COL_PAYER), row.getLong(COL_CUSTOMER));
       }
     }
-    Map<String, Object> resp = Maps.newHashMap();
+    Map<String, Object> resp = new HashMap<>();
 
     if (DataUtils.isId(company)) {
       ResponseObject response = trd.getCreditInfo(company);
@@ -2193,7 +2194,7 @@ public class TransportModuleBean implements BeeModule, HasTimerService {
   }
 
   private List<Color> getThemeColors(Long theme) {
-    List<Color> result = Lists.newArrayList();
+    List<Color> result = new ArrayList<>();
 
     BeeRowSet rowSet;
     if (theme != null) {
@@ -2744,7 +2745,7 @@ public class TransportModuleBean implements BeeModule, HasTimerService {
               new String[] {"id", "data", "suma"});
 
       for (SimpleRow payment : payments) {
-        if (!Objects.equal(payment.getDouble("suma"),
+        if (!Objects.equals(payment.getDouble("suma"),
             BeeUtils.toDoubleOrNull(debts.getValueByKey(COL_SALE, payment.getValue("id"),
                 COL_TRADE_PAID)))) {
 

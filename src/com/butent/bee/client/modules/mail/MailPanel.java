@@ -5,7 +5,6 @@ import com.google.common.collect.BiMap;
 import com.google.common.collect.HashBiMap;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
-import com.google.common.collect.Sets;
 import com.google.gwt.core.client.Scheduler.ScheduledCommand;
 import com.google.gwt.dom.client.Element;
 import com.google.gwt.dom.client.EventTarget;
@@ -102,7 +101,9 @@ import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.Codec;
 import com.butent.bee.shared.websocket.messages.ProgressMessage;
 
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Objects;
 import java.util.Set;
@@ -240,7 +241,7 @@ public class MailPanel extends AbstractFormInterceptor {
 
           Collection<RowInfo> rows =
               getGridPresenter().getGridView().getSelectedRows(SelectedRows.ALL);
-          Set<Long> ids = Sets.newHashSet();
+          Set<Long> ids = new HashSet<>();
 
           if (!BeeUtils.isEmpty(rows)) {
             for (RowInfo info : rows) {
@@ -755,7 +756,7 @@ public class MailPanel extends AbstractFormInterceptor {
         if (value == 0) {
           ids = Lists.newArrayList(currentMessage.getId());
         } else if (value == 1) {
-          ids = Lists.newArrayList();
+          ids = new ArrayList<>();
 
           for (RowInfo info : rows) {
             ids.add(info.getId());

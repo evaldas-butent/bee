@@ -1,6 +1,5 @@
 package com.butent.bee.client.modules.transport.charts;
 
-import com.google.common.collect.Lists;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.event.logical.shared.SelectionEvent;
@@ -24,6 +23,7 @@ import com.butent.bee.shared.logging.LogUtils;
 import com.butent.bee.shared.time.HasDateRange;
 import com.butent.bee.shared.utils.BeeUtils;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
@@ -147,7 +147,7 @@ final class FilterHelper {
   static <T extends Filterable & HasDateRange> List<HasDateRange> getPersistentItems(
       Collection<T> items) {
 
-    List<HasDateRange> result = Lists.newArrayList();
+    List<HasDateRange> result = new ArrayList<>();
     if (items == null) {
       return result;
     }
@@ -161,7 +161,7 @@ final class FilterHelper {
   }
 
   static List<ChartData> getSelectedData(Collection<ChartData> data) {
-    List<ChartData> result = Lists.newArrayList();
+    List<ChartData> result = new ArrayList<>();
 
     if (data != null) {
       for (ChartData input : data) {
@@ -198,7 +198,7 @@ final class FilterHelper {
   }
 
   static List<ChartData> notEmptyData(Collection<ChartData> data) {
-    List<ChartData> result = Lists.newArrayList();
+    List<ChartData> result = new ArrayList<>();
 
     if (data != null) {
       for (ChartData cd : data) {

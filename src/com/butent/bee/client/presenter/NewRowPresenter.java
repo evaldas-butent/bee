@@ -1,6 +1,5 @@
 package com.butent.bee.client.presenter;
 
-import com.google.common.collect.Lists;
 import com.google.gwt.user.client.ui.Widget;
 
 import com.butent.bee.client.BeeKeeper;
@@ -31,6 +30,7 @@ import com.butent.bee.shared.ui.HandlesActions;
 import com.butent.bee.shared.ui.HasCaption;
 import com.butent.bee.shared.utils.BeeUtils;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.EnumSet;
 import java.util.List;
@@ -220,8 +220,8 @@ public class NewRowPresenter extends AbstractPresenter implements ParentRowCreat
   }
 
   private void insert(IsRow row, boolean forced, RowCallback callback) {
-    List<BeeColumn> columns = Lists.newArrayList();
-    List<String> values = Lists.newArrayList();
+    List<BeeColumn> columns = new ArrayList<>();
+    List<String> values = new ArrayList<>();
 
     for (int i = 0; i < dataInfo.getColumnCount(); i++) {
       BeeColumn column = dataInfo.getColumns().get(i);

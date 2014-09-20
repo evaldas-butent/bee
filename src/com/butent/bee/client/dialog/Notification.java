@@ -1,6 +1,5 @@
 package com.butent.bee.client.dialog;
 
-import com.google.common.base.Objects;
 import com.google.common.collect.Lists;
 import com.google.gwt.dom.client.DivElement;
 import com.google.gwt.dom.client.Document;
@@ -27,6 +26,7 @@ import com.butent.bee.shared.utils.BeeUtils;
 
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Objects;
 
 /**
  * Enables using popup notifications with different levels of information (warnings, info messages,
@@ -55,8 +55,8 @@ public class Notification extends Composite implements PreviewHandler, Identifia
     @Override
     public boolean equals(Object obj) {
       if (obj instanceof Message) {
-        return Objects.equal(level, ((Message) obj).level)
-            && Objects.equal(lines, ((Message) obj).lines);
+        return Objects.equals(level, ((Message) obj).level)
+            && Objects.equals(lines, ((Message) obj).lines);
       } else {
         return false;
       }
@@ -158,7 +158,7 @@ public class Notification extends Composite implements PreviewHandler, Identifia
 
   private State state = State.PENDING;
 
-  private final LinkedList<Message> pendingMessages = Lists.newLinkedList();
+  private final LinkedList<Message> pendingMessages = new LinkedList<>();
 
   public Notification() {
     messageContainer.setId(DomUtils.createUniqueId("note-messages"));

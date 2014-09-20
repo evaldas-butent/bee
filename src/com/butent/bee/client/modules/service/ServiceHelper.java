@@ -1,6 +1,5 @@
 package com.butent.bee.client.modules.service;
 
-import com.google.common.collect.Lists;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.i18n.client.NumberFormat;
@@ -29,6 +28,7 @@ import com.butent.bee.shared.time.DateTime;
 import com.butent.bee.shared.ui.HasCheckedness;
 import com.butent.bee.shared.utils.BeeUtils;
 
+import java.util.ArrayList;
 import java.util.List;
 
 final class ServiceHelper {
@@ -114,7 +114,7 @@ final class ServiceHelper {
     select.addClickHandler(new ClickHandler() {
       @Override
       public void onClick(ClickEvent event) {
-        List<BeeRow> selectedRows = Lists.newArrayList();
+        List<BeeRow> selectedRows = new ArrayList<>();
 
         for (int i = 0; i < data.getNumberOfRows(); i++) {
           Widget widget = table.getWidget(i, 0);
