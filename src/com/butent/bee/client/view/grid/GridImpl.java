@@ -182,7 +182,7 @@ public class GridImpl extends Absolute implements GridView, EditEndEvent.Handler
 
   private static final BeeLogger logger = LogUtils.getLogger(GridImpl.class);
 
-  private static final String STYLE_NAME = StyleUtils.CLASS_NAME_PREFIX + "GridView";
+  private static final String STYLE_NAME = BeeConst.CSS_CLASS_PREFIX + "GridView";
 
   private static void amendGeneratedSize(final ModalForm popup, final FormView form) {
     popup.attachAmendDetach(new ScheduledCommand() {

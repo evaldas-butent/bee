@@ -28,6 +28,7 @@ import com.butent.bee.client.widget.CustomDiv;
 import com.butent.bee.client.widget.Image;
 import com.butent.bee.client.widget.InputText;
 import com.butent.bee.client.widget.Label;
+import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.Pair;
 import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.modules.ec.EcConstants;
@@ -274,7 +275,7 @@ public class EcScreen extends ScreenImpl {
   @Override
   protected Pair<? extends IdentifiableWidget, Integer> initSouth() {
     Flow panel = new Flow(EcStyles.name("ProgressPanel"));
-    panel.add(createCopyright("bee-ec-"));
+    panel.add(createCopyright(BeeConst.CSS_CLASS_PREFIX + "ec-"));
     setProgressPanel(panel);
 
     return Pair.of(panel, 18);

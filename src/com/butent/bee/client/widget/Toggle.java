@@ -22,6 +22,7 @@ import com.butent.bee.client.view.edit.EditChangeHandler;
 import com.butent.bee.client.view.edit.EditStopEvent;
 import com.butent.bee.client.view.edit.EditStopEvent.Handler;
 import com.butent.bee.client.view.edit.Editor;
+import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.State;
 import com.butent.bee.shared.data.value.BooleanValue;
 import com.butent.bee.shared.data.value.Value;
@@ -76,7 +77,7 @@ public class Toggle extends CustomWidget implements Editor, HasValueChangeHandle
   public Toggle(Element element, String upFace, String downFace, String styleName,
       boolean checked) {
 
-    super(element, BeeUtils.notEmpty(styleName, StyleUtils.CLASS_NAME_PREFIX + "Toggle"));
+    super(element, BeeUtils.notEmpty(styleName, BeeConst.CSS_CLASS_PREFIX + "Toggle"));
     addStyleDependentName(checked ? STYLE_SUFFIX_CHECKED : STYLE_SUFFIX_UNCHECKED);
 
     this.upFace = upFace;

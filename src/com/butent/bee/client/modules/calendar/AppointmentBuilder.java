@@ -305,7 +305,8 @@ class AppointmentBuilder extends AbstractFormInterceptor implements SelectorEven
   private static final String NAME_BUILD = "Build";
   private static final String NAME_BUILD_INFO = "BuildInfo";
 
-  private static final String STYLE_COLOR_BAR_PREFIX = "bee-cal-ColorBar-";
+  private static final String STYLE_COLOR_BAR_PREFIX = BeeConst.CSS_CLASS_PREFIX
+      + "cal-ColorBar-";
 
   static BeeRow createEmptyRow(BeeRow typeRow, DateTime start) {
     BeeRow row = RowFactory.createEmptyRow(CalendarKeeper.getAppointmentViewInfo(), true);

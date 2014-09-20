@@ -16,7 +16,6 @@ import com.butent.bee.client.event.EventUtils;
 import com.butent.bee.client.event.logical.SummaryChangeEvent;
 import com.butent.bee.client.layout.Absolute;
 import com.butent.bee.client.layout.Simple;
-import com.butent.bee.client.style.StyleUtils;
 import com.butent.bee.client.ui.FormWidget;
 import com.butent.bee.client.ui.UiHelper;
 import com.butent.bee.client.view.edit.EditChangeHandler;
@@ -44,7 +43,7 @@ import java.util.List;
 public class TextEditor extends Absolute implements Editor, HasTextDimensions, HasTextBox,
     HasKeyDownHandlers {
 
-  private static final String STYLE_NAME = StyleUtils.CLASS_NAME_PREFIX + "TextEditor";
+  private static final String STYLE_NAME = BeeConst.CSS_CLASS_PREFIX + "TextEditor";
 
   private final InputArea area;
   private final String acceptId;

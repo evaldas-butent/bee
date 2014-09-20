@@ -23,6 +23,7 @@ import com.butent.bee.client.view.edit.EditChangeHandler;
 import com.butent.bee.client.view.edit.EditStopEvent;
 import com.butent.bee.client.view.edit.EditStopEvent.Handler;
 import com.butent.bee.client.view.edit.Editor;
+import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.data.value.BooleanValue;
 import com.butent.bee.shared.data.value.Value;
 import com.butent.bee.shared.ui.EditorAction;
@@ -119,7 +120,7 @@ public class VolumeSlider extends Absolute implements Editor, HasValueChangeHand
 
   public VolumeSlider(long value, long min, long max, int minStep, int maxStep) {
     super(Position.RELATIVE, Overflow.HIDDEN);
-    setStyleName(StyleUtils.CLASS_NAME_PREFIX + "VolumeSlider");
+    setStyleName(BeeConst.CSS_CLASS_PREFIX + "VolumeSlider");
 
     progressBar = new ProgressBar(min, max, value);
     spinner = new VolumeSpinner(listener, value, min, max, minStep, maxStep, true);

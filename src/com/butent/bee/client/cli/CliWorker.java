@@ -4025,7 +4025,7 @@ public final class CliWorker {
       logger.info("view suppliers not registered");
 
     } else {
-      HtmlTable table = new HtmlTable(StyleUtils.CLASS_NAME_PREFIX + "info-table");
+      HtmlTable table = new HtmlTable(BeeConst.CSS_CLASS_PREFIX + "info-table");
       table.setCaption("Suppliers");
 
       int row = 0;

@@ -500,7 +500,7 @@ public class InputText extends CustomWidget implements Editor, TextBox, HasChara
   }
 
   protected String getDefaultStyleName() {
-    return StyleUtils.CLASS_NAME_PREFIX + "InputText";
+    return BeeConst.CSS_CLASS_PREFIX + "InputText";
   }
 
   @Override

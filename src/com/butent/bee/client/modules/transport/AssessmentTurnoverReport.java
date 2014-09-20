@@ -23,7 +23,6 @@ import com.butent.bee.client.i18n.Format;
 import com.butent.bee.client.output.Exporter;
 import com.butent.bee.client.output.Report;
 import com.butent.bee.client.output.ReportParameters;
-import com.butent.bee.client.style.StyleUtils;
 import com.butent.bee.client.ui.HasIndexedWidgets;
 import com.butent.bee.client.view.form.FormView;
 import com.butent.bee.client.view.form.interceptor.FormInterceptor;
@@ -131,7 +130,7 @@ public class AssessmentTurnoverReport extends ReportInterceptor {
   private static final List<String> NAME_GROUP_BY =
       Lists.newArrayList("Group0", "Group1", "Group2", "Group3");
 
-  private static final String STYLE_PREFIX = StyleUtils.CLASS_NAME_PREFIX + "tr-atr-";
+  private static final String STYLE_PREFIX = BeeConst.CSS_CLASS_PREFIX + "tr-atr-";
 
   private static final String STYLE_TABLE = STYLE_PREFIX + "table";
   private static final String STYLE_HEADER = STYLE_PREFIX + "header";

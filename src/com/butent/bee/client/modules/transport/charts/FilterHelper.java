@@ -17,6 +17,7 @@ import com.butent.bee.client.layout.Split;
 import com.butent.bee.client.modules.transport.charts.Filterable.FilterType;
 import com.butent.bee.client.style.StyleUtils;
 import com.butent.bee.client.widget.Button;
+import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogUtils;
@@ -38,7 +39,7 @@ final class FilterHelper {
     void onSelectionChange(HasWidgets dataContainer);
   }
 
-  static final String STYLE_PREFIX = "bee-tr-chart-filter-";
+  static final String STYLE_PREFIX = BeeConst.CSS_CLASS_PREFIX + "tr-chart-filter-";
   static final String STYLE_DATA_PREFIX = STYLE_PREFIX + "data-";
 
   private static final BeeLogger logger = LogUtils.getLogger(FilterHelper.class);

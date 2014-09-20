@@ -77,7 +77,8 @@ public abstract class AbstractFilterSupplier implements HasViewName, HasOptions,
   protected static final String NOT_NULL_VALUE_LABEL =
       Localized.getConstants().filterNotNullLabel();
 
-  protected static final String DEFAULT_STYLE_PREFIX = "bee-FilterSupplier-";
+  protected static final String DEFAULT_STYLE_PREFIX = BeeConst.CSS_CLASS_PREFIX
+      + "FilterSupplier-";
 
   private static final String BIN_SIZE_CELL_STYLE_SUFFIX = "binSizeCell";
 

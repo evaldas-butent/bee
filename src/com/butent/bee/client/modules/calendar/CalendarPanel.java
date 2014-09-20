@@ -103,7 +103,7 @@ public class CalendarPanel extends Split implements AppointmentEvent.Handler, Pr
 
   private static final BeeLogger logger = LogUtils.getLogger(CalendarPanel.class);
 
-  private static final String STYLE_PANEL = "bee-cal-Panel";
+  private static final String STYLE_PANEL = BeeConst.CSS_CLASS_PREFIX + "cal-Panel";
   private static final String STYLE_PREFIX = STYLE_PANEL + "-";
 
   private static final String STYLE_CONTROLS = STYLE_PREFIX + "controls";

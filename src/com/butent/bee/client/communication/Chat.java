@@ -104,7 +104,7 @@ public class Chat extends Flow implements Presenter, View, Printable,
 
   private static final BeeLogger logger = LogUtils.getLogger(Chat.class);
 
-  private static final String STYLE_PREFIX = "bee-Chat-";
+  private static final String STYLE_PREFIX = BeeConst.CSS_CLASS_PREFIX + "Chat-";
   private static final String STYLE_MESSAGE_WRAPPER = STYLE_PREFIX + "message";
 
   private static final String STYLE_MESSAGE_PREFIX = STYLE_PREFIX + "message-";

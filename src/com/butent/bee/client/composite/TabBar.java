@@ -114,7 +114,7 @@ public class TabBar extends Composite implements HasBeforeSelectionHandlers<Inte
     }
   }
 
-  private static final String DEFAULT_STYLE_PREFIX = "bee-TabBar-";
+  private static final String DEFAULT_STYLE_PREFIX = BeeConst.CSS_CLASS_PREFIX + "TabBar-";
 
   private static final String STYLE_PANEL = "panel";
   private static final String STYLE_ITEM = "item";

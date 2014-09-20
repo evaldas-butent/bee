@@ -183,7 +183,7 @@ public class Filters implements HasExtendedInfo {
   private static final String COL_PREDEFINED = "Predefined";
   private static final String COL_VALUE = "Value";
 
-  private static final String STYLE_PREFIX = "bee-Filters-";
+  private static final String STYLE_PREFIX = BeeConst.CSS_CLASS_PREFIX + "Filters-";
   private static final String STYLE_WRAPPER = STYLE_PREFIX + "wrapper";
 
   private static final String STYLE_TABLE = STYLE_PREFIX + "table";

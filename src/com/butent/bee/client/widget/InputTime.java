@@ -33,11 +33,11 @@ import java.util.List;
 
 public class InputTime extends InputText implements HasBounds, HasIntStep {
 
-  private static final String STYLE_INPUT = "bee-InputTime";
+  private static final String STYLE_INPUT = BeeConst.CSS_CLASS_PREFIX + "InputTime";
   private static final String STYLE_ACTIVE = STYLE_INPUT + "-active";
 
-  private static final String STYLE_POPUP = "bee-TimeBox-popup";
-  private static final String STYLE_TIME_PICKER = "bee-TimePicker";
+  private static final String STYLE_POPUP = BeeConst.CSS_CLASS_PREFIX + "TimeBox-popup";
+  private static final String STYLE_TIME_PICKER = BeeConst.CSS_CLASS_PREFIX + "TimePicker";
 
   private static final int DEFAULT_PICKER_SIZE = 10;
 

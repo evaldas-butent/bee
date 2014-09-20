@@ -17,6 +17,7 @@ import com.butent.bee.client.widget.CustomDiv;
 import com.butent.bee.client.widget.FaLabel;
 import com.butent.bee.client.widget.Image;
 import com.butent.bee.shared.Assert;
+import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.communication.TextMessage;
 import com.butent.bee.shared.data.UserData;
 import com.butent.bee.shared.font.FontAwesome;
@@ -139,7 +140,7 @@ public class Users {
 
   private static final BeeLogger logger = LogUtils.getLogger(Users.class);
 
-  private static final String STYLE_PREFIX = "bee-Online-";
+  private static final String STYLE_PREFIX = BeeConst.CSS_CLASS_PREFIX + "Online-";
 
   private Map<Long, UserData> users = new HashMap<>();
   private final Map<String, Long> openSessions = new HashMap<>();

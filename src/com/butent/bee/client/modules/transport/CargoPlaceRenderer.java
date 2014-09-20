@@ -33,7 +33,7 @@ public class CargoPlaceRenderer extends AbstractCellRenderer {
     }
   }
 
-  private static final String STYLE_PREFIX = "bee-places-";
+  private static final String STYLE_PREFIX = BeeConst.CSS_CLASS_PREFIX + "places-";
 
   final Map<String, Pair<Integer, String>> data = new LinkedHashMap<>();
   private final FlagRenderer flagRenderer;

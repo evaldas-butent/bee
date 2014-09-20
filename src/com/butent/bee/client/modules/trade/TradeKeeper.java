@@ -9,8 +9,8 @@ import com.butent.bee.client.grid.GridFactory;
 import com.butent.bee.client.modules.trade.acts.TradeActKeeper;
 import com.butent.bee.client.style.ColorStyleProvider;
 import com.butent.bee.client.style.ConditionalStyle;
-import com.butent.bee.client.style.StyleUtils;
 import com.butent.bee.client.view.grid.interceptor.UniqueChildInterceptor;
+import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.rights.Module;
 import com.butent.bee.shared.rights.ModuleAndSub;
@@ -18,7 +18,7 @@ import com.butent.bee.shared.rights.SubModule;
 
 public final class TradeKeeper {
 
-  public static final String STYLE_PREFIX = StyleUtils.CLASS_NAME_PREFIX + "trade-";
+  public static final String STYLE_PREFIX = BeeConst.CSS_CLASS_PREFIX + "trade-";
 
   public static ParameterList createArgs(String method) {
     return BeeKeeper.getRpc().createParameters(Module.TRADE, method);

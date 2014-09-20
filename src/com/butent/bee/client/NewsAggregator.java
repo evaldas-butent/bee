@@ -450,7 +450,7 @@ public class NewsAggregator implements HandlesAllDataEvents {
 
   private static final BeeLogger logger = LogUtils.getLogger(NewsAggregator.class);
 
-  private static final String STYLE_PREFIX = "bee-News-";
+  private static final String STYLE_PREFIX = BeeConst.CSS_CLASS_PREFIX + "News-";
   private static final String STYLE_APATHY = STYLE_PREFIX + "apathy";
 
   private final List<Subscription> subscriptions = new ArrayList<>();

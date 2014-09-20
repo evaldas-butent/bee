@@ -403,7 +403,7 @@ public final class SlideDeck extends CustomComplex implements PreviewHandler {
 
   private static final String EFFECT_KEY = "SlideDeckEffect";
 
-  private static final String STYLE_PREFIX = "bee-SlideDeck-";
+  private static final String STYLE_PREFIX = BeeConst.CSS_CLASS_PREFIX + "SlideDeck-";
 
   private static final String STYLE_TN_ACTIVE = STYLE_PREFIX + "tn-active";
   private static final String STYLE_NAV_DISABLED = STYLE_PREFIX + "nav-disabled";

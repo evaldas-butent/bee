@@ -9,7 +9,6 @@ import com.butent.bee.client.data.ParentRowCreator;
 import com.butent.bee.client.dom.ElementSize;
 import com.butent.bee.client.output.Printable;
 import com.butent.bee.client.output.Printer;
-import com.butent.bee.client.style.StyleUtils;
 import com.butent.bee.client.view.HasGridView;
 import com.butent.bee.client.view.HeaderImpl;
 import com.butent.bee.client.view.HeaderView;
@@ -20,6 +19,7 @@ import com.butent.bee.client.view.form.FormView;
 import com.butent.bee.client.view.form.interceptor.FormInterceptor;
 import com.butent.bee.client.view.grid.GridView;
 import com.butent.bee.client.view.grid.interceptor.GridInterceptor;
+import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.NotificationListener;
 import com.butent.bee.shared.data.IsRow;
 import com.butent.bee.shared.ui.Action;
@@ -29,10 +29,10 @@ import java.util.Set;
 public class GridFormPresenter extends AbstractPresenter implements HasGridView, Printable,
     ParentRowCreator {
 
-  public static final String STYLE_FORM_CONTAINER = StyleUtils.CLASS_NAME_PREFIX
+  public static final String STYLE_FORM_CONTAINER = BeeConst.CSS_CLASS_PREFIX
       + "GridFormContainer";
-  public static final String STYLE_FORM_HEADER = StyleUtils.CLASS_NAME_PREFIX + "GridFormHeader";
-  public static final String STYLE_FORM_CAPTION = StyleUtils.CLASS_NAME_PREFIX + "GridFormCaption";
+  public static final String STYLE_FORM_HEADER = BeeConst.CSS_CLASS_PREFIX + "GridFormHeader";
+  public static final String STYLE_FORM_CAPTION = BeeConst.CSS_CLASS_PREFIX + "GridFormCaption";
 
   private static final String SUFFIX_EDIT = "-edit";
   private static final String SUFFIX_NEW_ROW = "-newRow";

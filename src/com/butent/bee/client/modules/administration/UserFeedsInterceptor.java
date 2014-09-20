@@ -14,6 +14,7 @@ import com.butent.bee.client.view.grid.interceptor.AbstractGridInterceptor;
 import com.butent.bee.client.view.grid.interceptor.GridInterceptor;
 import com.butent.bee.client.websocket.Endpoint;
 import com.butent.bee.client.widget.ListBox;
+import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.Service;
 import com.butent.bee.shared.communication.ResponseObject;
 import com.butent.bee.shared.data.CellSource;
@@ -139,7 +140,7 @@ public class UserFeedsInterceptor extends AbstractGridInterceptor {
           subscribe(selection);
         }
       }
-    }, "bee-UserFeeds-add", presenter.getHeader().getElement());
+    }, BeeConst.CSS_CLASS_PREFIX + "UserFeeds-add", presenter.getHeader().getElement());
 
     return false;
   }

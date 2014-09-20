@@ -45,7 +45,7 @@ public class GridFilterManager {
 
   private static final BeeLogger logger = LogUtils.getLogger(GridFilterManager.class);
 
-  private static final String STYLE_PREFIX = "bee-GridFilter-";
+  private static final String STYLE_PREFIX = BeeConst.CSS_CLASS_PREFIX + "GridFilter-";
   private static final String STYLE_DIALOG = STYLE_PREFIX + "dialog";
 
   private static final String STYLE_CONTENT = STYLE_PREFIX + "content";

@@ -159,15 +159,15 @@ public class MailPanel extends AbstractFormInterceptor {
     @Override
     public String render(final IsRow row) {
       Flow fp = new Flow();
-      fp.setStyleName("bee-mail-Header");
+      fp.setStyleName(BeeConst.CSS_CLASS_PREFIX + "mail-Header");
 
       DomUtils.setDraggable(fp);
 
       if (!MessageFlag.SEEN.isSet(row.getInteger(flagsIdx))) {
-        fp.addStyleName("bee-mail-HeaderUnread");
+        fp.addStyleName(BeeConst.CSS_CLASS_PREFIX + "mail-HeaderUnread");
       }
       TextLabel sender = new TextLabel(false);
-      sender.setStyleName("bee-mail-HeaderAddress");
+      sender.setStyleName(BeeConst.CSS_CLASS_PREFIX + "mail-HeaderAddress");
       String address;
 
       if (isSenderFolder(getCurrentFolderId())) {
@@ -189,12 +189,12 @@ public class MailPanel extends AbstractFormInterceptor {
 
       if (BeeUtils.isPositive(att)) {
         Widget image = new FaLabel(FontAwesome.PAPERCLIP);
-        image.setStyleName("bee-mail-AttachmentImage");
+        image.setStyleName(BeeConst.CSS_CLASS_PREFIX + "mail-AttachmentImage");
         fp.add(image);
 
         if (att > 1) {
           TextLabel attachments = new TextLabel(false);
-          attachments.setStyleName("bee-mail-AttachmentCount");
+          attachments.setStyleName(BeeConst.CSS_CLASS_PREFIX + "mail-AttachmentCount");
           attachments.setHtml(BeeUtils.toString(att));
           fp.add(attachments);
         }
@@ -202,12 +202,12 @@ public class MailPanel extends AbstractFormInterceptor {
       DateTime date = row.getDateTime(dateIdx);
       DateTimeLabel dt = TimeUtils.isToday(date)
           ? new DateTimeLabel("TIME_SHORT", false) : new DateTimeLabel("DATE_SHORT", false);
-      dt.setStyleName("bee-mail-HeaderDate");
+      dt.setStyleName(BeeConst.CSS_CLASS_PREFIX + "mail-HeaderDate");
       dt.setValue(date);
       fp.add(dt);
 
       TextLabel subject = new TextLabel(false);
-      subject.setStyleName("bee-mail-HeaderSubject");
+      subject.setStyleName(BeeConst.CSS_CLASS_PREFIX + "mail-HeaderSubject");
       subject.setHtml(row.getString(subjectIdx));
       fp.add(subject);
 

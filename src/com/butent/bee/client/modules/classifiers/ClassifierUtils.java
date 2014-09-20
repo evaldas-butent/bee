@@ -10,9 +10,9 @@ import com.butent.bee.client.communication.ResponseCallback;
 import com.butent.bee.client.data.IdCallback;
 import com.butent.bee.client.dom.DomUtils;
 import com.butent.bee.client.layout.Flow;
-import com.butent.bee.client.style.StyleUtils;
 import com.butent.bee.client.widget.Label;
 import com.butent.bee.shared.Assert;
+import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.NotificationListener;
 import com.butent.bee.shared.Pair;
 import com.butent.bee.shared.communication.ResponseObject;
@@ -28,7 +28,7 @@ import java.util.Map;
 
 public final class ClassifierUtils {
 
-  private static final String STYLE_COMPANY = StyleUtils.CLASS_NAME_PREFIX + "co-companyInfo";
+  private static final String STYLE_COMPANY = BeeConst.CSS_CLASS_PREFIX + "co-companyInfo";
   private static final String STYLE_COMPANY_ITEM = STYLE_COMPANY + "-item";
   private static final String STYLE_COMPANY_LABEL = STYLE_COMPANY + "-label";
 

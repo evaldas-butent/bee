@@ -7,6 +7,7 @@ import com.google.gwt.user.client.ui.Widget;
 import com.butent.bee.client.dom.DomUtils;
 import com.butent.bee.client.ui.IdentifiableWidget;
 import com.butent.bee.shared.Assert;
+import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.HasItems;
 
 import java.util.ArrayList;
@@ -36,7 +37,7 @@ public class HtmlList extends Widget implements IdentifiableWidget, HasItems {
       setElement(Document.get().createULElement());
     }
 
-    setStyleName("bee-HtmlList");
+    setStyleName(BeeConst.CSS_CLASS_PREFIX + "HtmlList");
     DomUtils.createId(this, getIdPrefix());
 
     this.ordered = ordered;
@@ -102,7 +103,7 @@ public class HtmlList extends Widget implements IdentifiableWidget, HasItems {
 
   public void insertItem(String item, int index) {
     LIElement child = DomUtils.createListItem(item).cast();
-    child.setClassName("bee-HtmlListItem");
+    child.setClassName(BeeConst.CSS_CLASS_PREFIX + "HtmlListItem");
 
     if ((index < 0) || (index >= getItemCount())) {
       getElement().appendChild(child);

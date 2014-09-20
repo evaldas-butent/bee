@@ -95,7 +95,7 @@ public class Split extends ComplexPanel implements RequiresResize, ProvidesResiz
 
       this.minSize = size * 2;
 
-      addStyleName("bee-Splitter");
+      addStyleName(BeeConst.CSS_CLASS_PREFIX + "Splitter");
 
       sinkEvents(Event.ONMOUSEDOWN | Event.ONMOUSEUP | Event.ONMOUSEMOVE);
     }
@@ -235,7 +235,7 @@ public class Split extends ComplexPanel implements RequiresResize, ProvidesResiz
       super(size, reverse);
 
       StyleUtils.setWidth(getElement(), size);
-      addStyleName("bee-HSplitter");
+      addStyleName(BeeConst.CSS_CLASS_PREFIX + "HSplitter");
     }
 
     @Override
@@ -260,7 +260,7 @@ public class Split extends ComplexPanel implements RequiresResize, ProvidesResiz
       super(size, reverse);
 
       StyleUtils.setHeight(getElement(), size);
-      addStyleName("bee-VSplitter");
+      addStyleName(BeeConst.CSS_CLASS_PREFIX + "VSplitter");
     }
 
     @Override
@@ -283,7 +283,7 @@ public class Split extends ComplexPanel implements RequiresResize, ProvidesResiz
 
   private static final int DEFAULT_SPLITTER_SIZE = 8;
 
-  private static final String STYLE_NAME = "bee-Split";
+  private static final String STYLE_NAME = BeeConst.CSS_CLASS_PREFIX + "Split";
   private static final String STYLE_CHILD = STYLE_NAME + "Child";
   private static final String STYLE_HIDDEN = STYLE_NAME + "-hidden";
 

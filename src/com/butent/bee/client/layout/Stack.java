@@ -138,9 +138,9 @@ public class Stack extends ComplexPanel implements ProvidesResize, RequiresResiz
     }
   }
 
-  private static final String CONTAINER_STYLE = "bee-StackContainer";
-  private static final String HEADER_STYLE = "bee-StackHeader";
-  private static final String CONTENT_STYLE = "bee-StackContent";
+  private static final String CONTAINER_STYLE = BeeConst.CSS_CLASS_PREFIX + "StackContainer";
+  private static final String HEADER_STYLE = BeeConst.CSS_CLASS_PREFIX + "StackHeader";
+  private static final String CONTENT_STYLE = BeeConst.CSS_CLASS_PREFIX + "StackContent";
 
   private static final String SELECTED_STYLE = HEADER_STYLE + "-selected";
 

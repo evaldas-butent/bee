@@ -26,6 +26,7 @@ import com.butent.bee.client.widget.CustomDiv;
 import com.butent.bee.client.widget.Image;
 import com.butent.bee.client.widget.Label;
 import com.butent.bee.shared.Assert;
+import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.Pair;
 import com.butent.bee.shared.css.CssUnit;
 import com.butent.bee.shared.ui.UserInterface;
@@ -171,12 +172,12 @@ public class Mobile extends ScreenImpl {
   @Override
   protected Pair<? extends IdentifiableWidget, Integer> initNorth() {
     Complex panel = new Complex();
-    panel.addStyleName("bee-NorthContainer");
+    panel.addStyleName(BeeConst.CSS_CLASS_PREFIX + "NorthContainer");
 
     panel.addLeftTop(Global.getSearchWidget(), 40, 2);
 
     Flow menuContainer = new Flow();
-    menuContainer.addStyleName("bee-MainMenu");
+    menuContainer.addStyleName(BeeConst.CSS_CLASS_PREFIX + "MainMenu");
     panel.addLeftTop(menuContainer, 10, 30);
     setMenuPanel(menuContainer);
 

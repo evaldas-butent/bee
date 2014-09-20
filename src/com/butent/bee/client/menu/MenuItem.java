@@ -8,6 +8,7 @@ import com.google.gwt.user.client.ui.UIObject;
 import com.butent.bee.client.dom.DomUtils;
 import com.butent.bee.client.ui.HasIdentity;
 import com.butent.bee.shared.Assert;
+import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.menu.MenuConstants.ITEM_TYPE;
 import com.butent.bee.shared.utils.BeeUtils;
 
@@ -19,7 +20,7 @@ public class MenuItem extends UIObject implements HasIdentity {
 
   public static final ITEM_TYPE DEFAULT_TYPE = ITEM_TYPE.LABEL;
 
-  private static final String STYLENAME_DEFAULT = "bee-MenuItem";
+  private static final String STYLENAME_DEFAULT = BeeConst.CSS_CLASS_PREFIX + "MenuItem";
   private static final String STYLENAME_SELECTED = "selected";
 
   private Scheduler.ScheduledCommand command;

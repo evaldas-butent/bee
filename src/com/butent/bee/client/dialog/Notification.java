@@ -91,7 +91,7 @@ public class Notification extends Composite implements PreviewHandler, Identifia
       if (getLevel() == null) {
         return STYLE_DEFAULT;
       } else {
-        return "bee-Notification-" + getLevel().name().toLowerCase();
+        return BeeConst.CSS_CLASS_PREFIX + "Notification-" + getLevel().name().toLowerCase();
       }
     }
   }
@@ -143,11 +143,13 @@ public class Notification extends Composite implements PreviewHandler, Identifia
   public static final int DEFAULT_OPEN_DURATION = 500;
   public static final int DEFAULT_CLOSE_DURATION = 500;
 
-  private static final String STYLE_CONTAINER = "bee-NotificationContainer";
-  private static final String STYLE_MESSAGES = "bee-NotificationMessages";
-  private static final String STYLE_TEXT = "bee-NotificationText";
+  private static final String STYLE_CONTAINER = BeeConst.CSS_CLASS_PREFIX
+      + "NotificationContainer";
+  private static final String STYLE_MESSAGES = BeeConst.CSS_CLASS_PREFIX
+      + "NotificationMessages";
+  private static final String STYLE_TEXT = BeeConst.CSS_CLASS_PREFIX + "NotificationText";
 
-  private static final String STYLE_DEFAULT = "bee-Notification-info";
+  private static final String STYLE_DEFAULT = BeeConst.CSS_CLASS_PREFIX + "Notification-info";
 
   private final DivElement messageContainer = Document.get().createDivElement();
 

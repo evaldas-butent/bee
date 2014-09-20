@@ -138,7 +138,8 @@ public class ImportOptionsGrid extends AbstractGridInterceptor implements ClickH
     }
   }
 
-  private static final String STYLE_UPDATE_RATES_PREFIX = "bee-co-updateRates-";
+  private static final String STYLE_UPDATE_RATES_PREFIX = BeeConst.CSS_CLASS_PREFIX
+      + "co-updateRates-";
 
   private final Image loading = new Image(Global.getImages().loading());
   private final Button importButton = new Button(Localized.getConstants().dataImport(), this);

@@ -11,7 +11,6 @@ import com.butent.bee.client.event.logical.OpenEvent;
 import com.butent.bee.client.event.logical.RowActionEvent;
 import com.butent.bee.client.output.Printer;
 import com.butent.bee.client.presenter.RowPresenter;
-import com.butent.bee.client.style.StyleUtils;
 import com.butent.bee.client.ui.AutocompleteProvider;
 import com.butent.bee.client.ui.FormDescription;
 import com.butent.bee.client.ui.FormFactory;
@@ -41,8 +40,8 @@ import java.util.Set;
 
 public final class RowEditor {
 
-  public static final String DIALOG_STYLE = StyleUtils.CLASS_NAME_PREFIX + "EditRow";
-  public static final String EDITABLE_RELATION_STYLE = StyleUtils.CLASS_NAME_PREFIX
+  public static final String DIALOG_STYLE = BeeConst.CSS_CLASS_PREFIX + "EditRow";
+  public static final String EDITABLE_RELATION_STYLE = BeeConst.CSS_CLASS_PREFIX
       + "EditableRelation";
 
   private static final BeeLogger logger = LogUtils.getLogger(RowEditor.class);

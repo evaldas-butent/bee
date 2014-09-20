@@ -58,7 +58,7 @@ final class FreightExchange extends ChartBase {
   static final String SUPPLIER_KEY = "freight_exchange";
   private static final String DATA_SERVICE = SVC_GET_FX_DATA;
 
-  private static final String STYLE_PREFIX = "bee-tr-fx-";
+  private static final String STYLE_PREFIX = BeeConst.CSS_CLASS_PREFIX + "tr-fx-";
 
   private static final String STYLE_CUSTOMER_PREFIX = STYLE_PREFIX + "Customer-";
   private static final String STYLE_CUSTOMER_ROW_SEPARATOR = STYLE_CUSTOMER_PREFIX + "row-sep";

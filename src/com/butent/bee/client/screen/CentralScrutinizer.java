@@ -37,7 +37,7 @@ class CentralScrutinizer extends Stack implements CloseHandler<IdentifiableWidge
   private static final class Appliance extends Flow implements
       HasCloseHandlers<IdentifiableWidget>, HasDomain {
 
-    private static final String STYLE_NAME = "bee-Appliance";
+    private static final String STYLE_NAME = BeeConst.CSS_CLASS_PREFIX + "Appliance";
 
     private final Domain domain;
     private final Long key;
@@ -115,7 +115,7 @@ class CentralScrutinizer extends Stack implements CloseHandler<IdentifiableWidge
 
   CentralScrutinizer() {
     super();
-    addStyleName("bee-CentralScrutinizer");
+    addStyleName(BeeConst.CSS_CLASS_PREFIX + "CentralScrutinizer");
   }
 
   public Flow getDomainHeader(Domain domain, Long key) {
@@ -240,7 +240,7 @@ class CentralScrutinizer extends Stack implements CloseHandler<IdentifiableWidge
     }
 
     if (BeeKeeper.getUser().isWidgetVisible(RegulatedWidget.ADMIN)) {
-      Shell shell = new Shell("bee-Shell");
+      Shell shell = new Shell(BeeConst.CSS_CLASS_PREFIX + "Shell");
       shell.restore();
 
       Simple wrapper = new Simple(shell);

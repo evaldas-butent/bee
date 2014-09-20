@@ -235,7 +235,7 @@ public class TabbedPages extends Flow implements
     }
   }
 
-  private static final String DEFAULT_STYLE_PREFIX = StyleUtils.CLASS_NAME_PREFIX + "TabbedPages-";
+  private static final String DEFAULT_STYLE_PREFIX = BeeConst.CSS_CLASS_PREFIX + "TabbedPages-";
   private static final String CONTENT_STYLE_SUFFIX = "content";
 
   private final String stylePrefix;

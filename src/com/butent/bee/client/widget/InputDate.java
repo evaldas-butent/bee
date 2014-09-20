@@ -37,10 +37,10 @@ public class InputDate extends InputText implements HasDateTimeFormat, HasIntSte
   protected static final JustDate DEFAULT_MIN_DATE = new JustDate(2000, 1, 1);
   protected static final JustDate DEFAULT_MAX_DATE = TimeUtils.endOfYear(TimeUtils.year(), 10);
 
-  private static final String STYLE_INPUT = "bee-InputDate";
+  private static final String STYLE_INPUT = BeeConst.CSS_CLASS_PREFIX + "InputDate";
   private static final String STYLE_ACTIVE = STYLE_INPUT + "-active";
 
-  private static final String STYLE_POPUP = "bee-DateBox-popup";
+  private static final String STYLE_POPUP = BeeConst.CSS_CLASS_PREFIX + "DateBox-popup";
 
   private DateTimeFormat format;
 

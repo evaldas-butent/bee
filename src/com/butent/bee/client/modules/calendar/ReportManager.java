@@ -31,6 +31,7 @@ import com.butent.bee.client.widget.InputDateTime;
 import com.butent.bee.client.widget.InputSpinner;
 import com.butent.bee.client.widget.InputText;
 import com.butent.bee.shared.Assert;
+import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.communication.ResponseObject;
 import com.butent.bee.shared.css.values.TextAlign;
 import com.butent.bee.shared.data.BeeRow;
@@ -57,7 +58,7 @@ import java.util.Map;
 
 class ReportManager {
 
-  private static final String STYLE_PREFIX = "bee-cal-ReportOptions-";
+  private static final String STYLE_PREFIX = BeeConst.CSS_CLASS_PREFIX + "cal-ReportOptions-";
 
   private static void addStyle(Widget widget, String styleName) {
     widget.addStyleName(STYLE_PREFIX + styleName);

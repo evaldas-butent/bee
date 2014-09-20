@@ -15,6 +15,7 @@ import com.butent.bee.client.timeboard.TimeBoardRowLayout;
 import com.butent.bee.client.ui.IdentifiableWidget;
 import com.butent.bee.client.view.ViewCallback;
 import com.butent.bee.client.widget.Label;
+import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.Size;
 import com.butent.bee.shared.communication.ResponseObject;
 import com.butent.bee.shared.data.BeeRow;
@@ -33,7 +34,7 @@ final class ShippingSchedule extends VehicleTimeBoard {
   static final String SUPPLIER_KEY = "shipping_schedule";
   private static final String DATA_SERVICE = SVC_GET_SS_DATA;
 
-  private static final String STYLE_PREFIX = "bee-tr-ss-";
+  private static final String STYLE_PREFIX = BeeConst.CSS_CLASS_PREFIX + "tr-ss-";
 
   private static final String STYLE_TRIP_GROUP_PREFIX = STYLE_PREFIX + "trip-Group-";
   private static final String STYLE_TRIP_GROUP_ROW_SEPARATOR = STYLE_TRIP_GROUP_PREFIX + "row-sep";

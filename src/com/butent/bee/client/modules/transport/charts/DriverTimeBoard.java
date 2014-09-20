@@ -143,7 +143,7 @@ final class DriverTimeBoard extends ChartBase {
   static final String SUPPLIER_KEY = "driver_time_board";
   private static final String DATA_SERVICE = SVC_GET_DTB_DATA;
 
-  private static final String STYLE_PREFIX = "bee-tr-dtb-";
+  private static final String STYLE_PREFIX = BeeConst.CSS_CLASS_PREFIX + "tr-dtb-";
 
   private static final String STYLE_DRIVER_PREFIX = STYLE_PREFIX + "Driver-";
   private static final String STYLE_DRIVER_ROW_SEPARATOR = STYLE_DRIVER_PREFIX + "row-sep";

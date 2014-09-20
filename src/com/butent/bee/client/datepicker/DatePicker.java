@@ -11,6 +11,7 @@ import com.google.gwt.user.client.ui.HasValue;
 import com.butent.bee.client.layout.Vertical;
 import com.butent.bee.client.style.StyleUtils;
 import com.butent.bee.shared.Assert;
+import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.time.JustDate;
 import com.butent.bee.shared.time.TimeUtils;
 import com.butent.bee.shared.time.YearMonth;
@@ -144,7 +145,8 @@ public class DatePicker extends Composite implements HasValue<JustDate>, HasKeyD
   }
 
   private static final CssClasses DEFAULT_CSS_CLASSES =
-      new CssClasses("bee-DatePicker", "bee-DatePicker-");
+      new CssClasses(BeeConst.CSS_CLASS_PREFIX + "DatePicker",
+          BeeConst.CSS_CLASS_PREFIX + "DatePicker-");
 
   private final DateStyler dateStyler = new DateStyler();
 

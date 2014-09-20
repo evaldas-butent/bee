@@ -36,7 +36,6 @@ import com.butent.bee.client.event.logical.CloseEvent;
 import com.butent.bee.client.event.logical.SummaryChangeEvent;
 import com.butent.bee.client.menu.MenuBar;
 import com.butent.bee.client.menu.MenuItem;
-import com.butent.bee.client.style.StyleUtils;
 import com.butent.bee.client.ui.FormWidget;
 import com.butent.bee.client.ui.UiHelper;
 import com.butent.bee.client.view.edit.EditChangeHandler;
@@ -509,7 +508,7 @@ public final class Autocomplete extends Composite implements Editor, HasVisibleL
   private static final String ITEM_PREV = String.valueOf('\u25b2');
   private static final String ITEM_NEXT = String.valueOf('\u25bc');
 
-  private static final String STYLE_SELECTOR = StyleUtils.CLASS_NAME_PREFIX + "DataSelector";
+  private static final String STYLE_SELECTOR = BeeConst.CSS_CLASS_PREFIX + "DataSelector";
 
   private static final String STYLE_EMBEDDED = STYLE_SELECTOR + "-embedded";
 

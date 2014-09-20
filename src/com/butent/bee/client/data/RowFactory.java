@@ -45,13 +45,15 @@ import java.util.List;
 
 public final class RowFactory {
 
-  public static final String DIALOG_STYLE = "bee-NewRow";
+  public static final String DIALOG_STYLE = BeeConst.CSS_CLASS_PREFIX + "NewRow";
 
-  public static final String STYLE_NEW_ROW_TABLE = "bee-NewRow-table";
-  public static final String STYLE_NEW_ROW_LABEL_CELL = "bee-NewRow-labelCell";
-  public static final String STYLE_NEW_ROW_LABEL = "bee-NewRow-label";
-  public static final String STYLE_NEW_ROW_INPUT_CELL = "bee-NewRow-inputCell";
-  public static final String STYLE_NEW_ROW_INPUT = "bee-NewRow-input";
+  public static final String STYLE_PREFIX = BeeConst.CSS_CLASS_PREFIX + "NewRow-";
+
+  public static final String STYLE_NEW_ROW_TABLE = STYLE_PREFIX + "table";
+  public static final String STYLE_NEW_ROW_LABEL_CELL = STYLE_PREFIX + "labelCell";
+  public static final String STYLE_NEW_ROW_LABEL = STYLE_PREFIX + "label";
+  public static final String STYLE_NEW_ROW_INPUT_CELL = STYLE_PREFIX + "inputCell";
+  public static final String STYLE_NEW_ROW_INPUT = STYLE_PREFIX + "input";
 
   public static final int GENERATED_FORM_WIDTH = 360;
   public static final int GENERATED_HEADER_HEIGHT = 30;

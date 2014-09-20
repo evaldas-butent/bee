@@ -59,7 +59,7 @@ import java.util.Set;
 
 public abstract class ChartBase extends TimeBoard {
 
-  private static final String STYLE_PREFIX = "bee-tr-chart-";
+  private static final String STYLE_PREFIX = BeeConst.CSS_CLASS_PREFIX + "tr-chart-";
 
   private static final String STYLE_SHIPMENT_DAY_PREFIX = STYLE_PREFIX + "shipment-day-";
   private static final String STYLE_SHIPMENT_DAY_PANEL = STYLE_SHIPMENT_DAY_PREFIX + "panel";

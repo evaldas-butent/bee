@@ -15,6 +15,7 @@ import com.butent.bee.client.style.StyleUtils;
 import com.butent.bee.client.utils.LayoutEngine;
 import com.butent.bee.client.widget.Frame;
 import com.butent.bee.shared.Assert;
+import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogUtils;
 import com.butent.bee.shared.utils.BeeUtils;
@@ -150,8 +151,8 @@ public final class Printer {
       targetBody.addClassName(className);
     }
 
-    targetBody.addClassName(StyleUtils.CLASS_NAME_PREFIX + "Print");
-    targetBody.addClassName(StyleUtils.CLASS_NAME_PREFIX + "Print-"
+    targetBody.addClassName(BeeConst.CSS_CLASS_PREFIX + "Print");
+    targetBody.addClassName(BeeConst.CSS_CLASS_PREFIX + "Print-"
         + (useFrame ? "Frame" : "Window"));
   }
 

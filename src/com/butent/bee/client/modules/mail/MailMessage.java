@@ -45,6 +45,7 @@ import com.butent.bee.client.widget.DateTimeLabel;
 import com.butent.bee.client.widget.FaLabel;
 import com.butent.bee.client.widget.InlineLabel;
 import com.butent.bee.client.widget.Link;
+import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.Consumer;
 import com.butent.bee.shared.Pair;
 import com.butent.bee.shared.communication.ResponseObject;
@@ -262,7 +263,8 @@ public class MailMessage extends AbstractFormInterceptor {
           @Override
           public void onClick(ClickEvent event) {
             event.stopPropagation();
-            final Popup popup = new Popup(OutsideClick.CLOSE, "bee-mail-RecipientsPopup");
+            final Popup popup =
+                new Popup(OutsideClick.CLOSE, BeeConst.CSS_CLASS_PREFIX + "mail-RecipientsPopup");
             HtmlTable ft = new HtmlTable();
             ft.setBorderSpacing(5);
             LocalizableConstants loc = Localized.getConstants();
@@ -274,24 +276,25 @@ public class MailMessage extends AbstractFormInterceptor {
 
               if (recipients.containsKey(type)) {
                 int c = ft.getRowCount();
-                ft.getCellFormatter().setStyleName(c, 0, "bee-mail-RecipientsType");
+                ft.getCellFormatter().setStyleName(c, 0,
+                    BeeConst.CSS_CLASS_PREFIX + "mail-RecipientsType");
                 ft.setHtml(c, 0, entry.getValue() + ":");
                 FlowPanel fp = new FlowPanel();
 
                 for (Pair<String, String> address : recipients.get(type)) {
                   FlowPanel adr = new FlowPanel();
-                  adr.setStyleName("bee-mail-Recipient");
+                  adr.setStyleName(BeeConst.CSS_CLASS_PREFIX + "mail-Recipient");
 
                   String email = address.getA();
                   String label = address.getB();
 
                   if (!BeeUtils.isEmpty(label)) {
                     InlineLabel nm = new InlineLabel(label);
-                    nm.setStyleName("bee-mail-RecipientLabel");
+                    nm.setStyleName(BeeConst.CSS_CLASS_PREFIX + "mail-RecipientLabel");
                     adr.add(nm);
                   }
                   InlineLabel nm = new InlineLabel(email);
-                  nm.setStyleName("bee-mail-RecipientEmail");
+                  nm.setStyleName(BeeConst.CSS_CLASS_PREFIX + "mail-RecipientEmail");
                   adr.add(nm);
 
                   fp.add(adr);
@@ -313,8 +316,12 @@ public class MailMessage extends AbstractFormInterceptor {
               FileInfo file = attachments.get(0);
               BrowsingContext.open(FileUtils.getUrl(file.getName(), file.getId()));
             } else {
-              final Popup popup = new Popup(OutsideClick.CLOSE, "bee-mail-AttachmentsPopup");
-              TabBar bar = new TabBar("bee-mail-AttachmentsMenu-", Orientation.VERTICAL);
+              final Popup popup =
+                  new Popup(OutsideClick.CLOSE, BeeConst.CSS_CLASS_PREFIX
+                      + "mail-AttachmentsPopup");
+              TabBar bar =
+                  new TabBar(BeeConst.CSS_CLASS_PREFIX + "mail-AttachmentsMenu-",
+                      Orientation.VERTICAL);
 
               for (FileInfo file : attachments) {
                 Link link = new Link(BeeUtils.joinWords(file.getName(),
@@ -468,7 +475,7 @@ public class MailMessage extends AbstractFormInterceptor {
         }
         String content = null;
         Element sep = Document.get().createHRElement();
-        sep.setClassName("bee-mail-PartSeparator");
+        sep.setClassName(BeeConst.CSS_CLASS_PREFIX + "mail-PartSeparator");
 
         for (SimpleRow part : packet.get(TBL_PARTS)) {
           txt = part.getValue(COL_HTML_CONTENT);

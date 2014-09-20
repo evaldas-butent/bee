@@ -37,6 +37,7 @@ import com.butent.bee.client.widget.Image;
 import com.butent.bee.client.widget.InputText;
 import com.butent.bee.client.widget.Label;
 import com.butent.bee.shared.Assert;
+import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.BiConsumer;
 import com.butent.bee.shared.Consumer;
 import com.butent.bee.shared.HasHtml;
@@ -136,23 +137,25 @@ public class InputBoxes {
   }
 
   public static final String SILENT_ERROR = "-";
-  private static final String STYLE_INPUT_PANEL = "bee-InputPanel";
-  private static final String STYLE_INPUT_PROMPT = "bee-InputPrompt";
-  private static final String STYLE_INPUT_STRING = "bee-InputString";
-  private static final String STYLE_INPUT_WIDGET = "bee-InputWidget";
-  private static final String STYLE_INPUT_ERROR = "bee-InputError";
-  private static final String STYLE_INPUT_COMMAND_GROUP = "bee-InputCommandGroup";
-  private static final String STYLE_INPUT_COMMAND = "bee-InputCommand";
 
-  private static final String STYLE_INPUT_CONFIRM = "bee-InputConfirm";
-  private static final String STYLE_INPUT_CANCEL = "bee-InputCancel";
-  private static final String STYLE_INPUT_ADD = "bee-InputAdd";
-  private static final String STYLE_INPUT_DELETE = "bee-InputDelete";
-  private static final String STYLE_INPUT_PRINT = "bee-InputPrint";
+  private static final String STYLE_INPUT_PANEL = BeeConst.CSS_CLASS_PREFIX + "InputPanel";
+  private static final String STYLE_INPUT_PROMPT = BeeConst.CSS_CLASS_PREFIX + "InputPrompt";
+  private static final String STYLE_INPUT_STRING = BeeConst.CSS_CLASS_PREFIX + "InputString";
+  private static final String STYLE_INPUT_WIDGET = BeeConst.CSS_CLASS_PREFIX + "InputWidget";
+  private static final String STYLE_INPUT_ERROR = BeeConst.CSS_CLASS_PREFIX + "InputError";
+  private static final String STYLE_INPUT_COMMAND_GROUP = BeeConst.CSS_CLASS_PREFIX
+      + "InputCommandGroup";
+  private static final String STYLE_INPUT_COMMAND = BeeConst.CSS_CLASS_PREFIX + "InputCommand";
 
-  private static final String STYLE_INPUT_SAVE = "bee-InputSave";
+  private static final String STYLE_INPUT_CONFIRM = BeeConst.CSS_CLASS_PREFIX + "InputConfirm";
+  private static final String STYLE_INPUT_CANCEL = BeeConst.CSS_CLASS_PREFIX + "InputCancel";
+  private static final String STYLE_INPUT_ADD = BeeConst.CSS_CLASS_PREFIX + "InputAdd";
+  private static final String STYLE_INPUT_DELETE = BeeConst.CSS_CLASS_PREFIX + "InputDelete";
+  private static final String STYLE_INPUT_PRINT = BeeConst.CSS_CLASS_PREFIX + "InputPrint";
 
-  private static final String STYLE_INPUT_CLOSE = "bee-InputClose";
+  private static final String STYLE_INPUT_SAVE = BeeConst.CSS_CLASS_PREFIX + "InputSave";
+
+  private static final String STYLE_INPUT_CLOSE = BeeConst.CSS_CLASS_PREFIX + "InputClose";
 
   public void inputCollection(String caption, String valueCaption, final boolean unique,
       Collection<String> defaultCollection, final Consumer<Collection<String>> consumer,

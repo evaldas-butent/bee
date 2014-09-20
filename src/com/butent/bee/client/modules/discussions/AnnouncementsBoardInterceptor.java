@@ -61,7 +61,8 @@ import java.util.Collection;
 class AnnouncementsBoardInterceptor extends AbstractFormInterceptor implements
     RowInsertEvent.Handler, HandlesUpdateEvents, DataChangeEvent.Handler {
   private static final String WIDGET_ADS_CONTENT = "AdsContent";
-  private static final String STYLE_PREFIX = "bee-discuss-adsFormContent-";
+  private static final String STYLE_PREFIX = BeeConst.CSS_CLASS_PREFIX
+      + "discuss-adsFormContent-";
   private static final String STYLE_HAPPY_DAY = "-happyDay";
   private static final String STYLE_BIRTH_LIST = "-birthList";
   private static final String STYLE_ACTION = "action";

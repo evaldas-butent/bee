@@ -35,6 +35,7 @@ import com.butent.bee.client.widget.CustomDiv;
 import com.butent.bee.client.widget.InputColor;
 import com.butent.bee.client.widget.SimpleCheckBox;
 import com.butent.bee.shared.Assert;
+import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.HasHtml;
 import com.butent.bee.shared.State;
 import com.butent.bee.shared.data.BeeRow;
@@ -147,7 +148,7 @@ class CalendarController extends Flow implements HandlesStateChange, HasCaption,
     }
   }
 
-  private static final String STYLE_CONTAINER = "bee-cal-Controller";
+  private static final String STYLE_CONTAINER = BeeConst.CSS_CLASS_PREFIX + "cal-Controller";
   private static final String STYLE_PREFIX = STYLE_CONTAINER + "-";
 
   private static final String STYLE_DISCLOSURE = STYLE_PREFIX + "disclosure";

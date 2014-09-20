@@ -505,7 +505,7 @@ public final class AutocompleteProvider implements HandlesAllDataEvents {
 
   private AutocompleteProvider() {
     this.dataContainer = Document.get().createDivElement();
-    dataContainer.addClassName("bee-AutocompleteData");
+    dataContainer.addClassName(BeeConst.CSS_CLASS_PREFIX + "AutocompleteData");
 
     BodyPanel.get().getElement().appendChild(dataContainer);
 

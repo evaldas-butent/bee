@@ -350,7 +350,7 @@ public class FileCollector extends HtmlTable implements DragOverHandler, DropHan
 
   private static final Collection<FileInfo> FILE_STACK = new ArrayList<>();
 
-  private static final String STYLE_PREFIX = "bee-FileCollector-";
+  private static final String STYLE_PREFIX = BeeConst.CSS_CLASS_PREFIX + "FileCollector-";
 
   private static final String STYLE_FACE = "face";
 

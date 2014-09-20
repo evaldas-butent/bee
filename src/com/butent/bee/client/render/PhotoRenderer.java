@@ -4,6 +4,7 @@ import com.google.gwt.dom.client.Document;
 import com.google.gwt.dom.client.ImageElement;
 
 import com.butent.bee.shared.Assert;
+import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.data.CellSource;
 import com.butent.bee.shared.data.IsRow;
 import com.butent.bee.shared.export.XCell;
@@ -17,7 +18,7 @@ import java.util.Map;
 
 public class PhotoRenderer extends AbstractCellRenderer {
 
-  public static final String STYLE_EMBEDDED = "bee-Photo-embedded";
+  public static final String STYLE_EMBEDDED = BeeConst.CSS_CLASS_PREFIX + "Photo-embedded";
 
   private static final ImageElement imageElement;
 

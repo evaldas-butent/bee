@@ -24,7 +24,6 @@ import com.butent.bee.client.i18n.Format;
 import com.butent.bee.client.output.Exporter;
 import com.butent.bee.client.output.Report;
 import com.butent.bee.client.output.ReportParameters;
-import com.butent.bee.client.style.StyleUtils;
 import com.butent.bee.client.ui.HasIndexedWidgets;
 import com.butent.bee.client.view.form.FormView;
 import com.butent.bee.client.view.form.interceptor.FormInterceptor;
@@ -122,7 +121,7 @@ public class CompanyTypeReport extends ReportInterceptor {
 
   private static final String NAME_TYPES = "Types";
 
-  private static final String STYLE_PREFIX = StyleUtils.CLASS_NAME_PREFIX + "co-ctr-";
+  private static final String STYLE_PREFIX = BeeConst.CSS_CLASS_PREFIX + "co-ctr-";
 
   private static final String STYLE_TABLE = STYLE_PREFIX + "table";
   private static final String STYLE_HEADER = STYLE_PREFIX + "header";

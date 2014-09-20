@@ -58,7 +58,7 @@ import java.util.Set;
 
 abstract class VehicleTimeBoard extends ChartBase {
 
-  private static final String STYLE_PREFIX = "bee-tr-vtb-";
+  private static final String STYLE_PREFIX = BeeConst.CSS_CLASS_PREFIX + "tr-vtb-";
 
   private static final String STYLE_VEHICLE_PREFIX = STYLE_PREFIX + "Vehicle-";
   private static final String STYLE_VEHICLE_ROW_SEPARATOR = STYLE_VEHICLE_PREFIX + "row-sep";

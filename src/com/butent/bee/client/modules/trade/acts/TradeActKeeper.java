@@ -19,7 +19,6 @@ import com.butent.bee.client.grid.GridFactory.GridOptions;
 import com.butent.bee.client.presenter.PresenterCallback;
 import com.butent.bee.client.style.ColorStyleProvider;
 import com.butent.bee.client.style.ConditionalStyle;
-import com.butent.bee.client.style.StyleUtils;
 import com.butent.bee.client.ui.EnablableWidget;
 import com.butent.bee.client.ui.FormFactory;
 import com.butent.bee.client.ui.UiOption;
@@ -60,7 +59,7 @@ import java.util.TreeMap;
 
 public final class TradeActKeeper {
 
-  static final String STYLE_PREFIX = StyleUtils.CLASS_NAME_PREFIX + "ta-";
+  static final String STYLE_PREFIX = BeeConst.CSS_CLASS_PREFIX + "ta-";
 
   private static final String STYLE_COMMAND_PREFIX = STYLE_PREFIX + "command-";
   private static final String STYLE_COMMAND_DISABLED = STYLE_COMMAND_PREFIX + "disabled";

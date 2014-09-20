@@ -347,7 +347,7 @@ public class FileGroup extends HtmlTable implements HasOptions {
     }
   }
 
-  private static final String STYLE_PREFIX = "bee-FileGroup-";
+  private static final String STYLE_PREFIX = BeeConst.CSS_CLASS_PREFIX + "FileGroup-";
 
   private static final String STYLE_CELL = "Cell";
 
