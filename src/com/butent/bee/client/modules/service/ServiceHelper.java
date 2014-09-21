@@ -13,7 +13,6 @@ import com.butent.bee.client.grid.HtmlTable;
 import com.butent.bee.client.i18n.Format;
 import com.butent.bee.client.layout.Flow;
 import com.butent.bee.client.layout.Simple;
-import com.butent.bee.client.modules.trade.TotalRenderer;
 import com.butent.bee.client.widget.Button;
 import com.butent.bee.client.widget.Label;
 import com.butent.bee.client.widget.SimpleCheckBox;
@@ -23,6 +22,7 @@ import com.butent.bee.shared.data.BeeRowSet;
 import com.butent.bee.shared.data.IsRow;
 import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.modules.administration.AdministrationConstants;
+import com.butent.bee.shared.modules.trade.Totalizer;
 import com.butent.bee.shared.modules.trade.TradeConstants;
 import com.butent.bee.shared.time.DateTime;
 import com.butent.bee.shared.ui.HasCheckedness;
@@ -46,7 +46,7 @@ final class ServiceHelper {
     int priceIndex = data.getColumnIndex(TradeConstants.COL_TRADE_ITEM_PRICE);
     int currencyNameIndex = data.getColumnIndex(AdministrationConstants.ALS_CURRENCY_NAME);
 
-    TotalRenderer totalRenderer = new TotalRenderer(data.getColumns());
+    Totalizer totalizer = new Totalizer(data.getColumns());
 
     NumberFormat priceFormat = Format.getDefaultCurrencyFormat();
     NumberFormat amountFormat = Format.getDefaultCurrencyFormat();
@@ -89,7 +89,7 @@ final class ServiceHelper {
 
       Label amountLabel = new Label();
       if (quantity != null && price != null) {
-        Double amount = totalRenderer.getTotal(row);
+        Double amount = totalizer.getTotal(row);
         if (amount != null) {
           amountLabel.setText(amountFormat.format(amount));
         }

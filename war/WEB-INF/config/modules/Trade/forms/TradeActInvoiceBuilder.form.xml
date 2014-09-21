@@ -1,30 +1,46 @@
 <?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE Form[
+  <!ENTITY br '<div style="height: 15px;" />'>
+]>
 <f:Form xmlns="http://www.butent.com/widget"
   xmlns:f="http://www.butent.com/form"
   
   name="TradeActInvoiceBuilder" caption="=taInvoiceBuilder"
+  enabledActions="refresh"
   >
-  <FlowPanel>
-    <br/>
+  <FlowPanel class="flexBox-vertical">
+    &br;
     <Table>
       <col index="0" kind="label" />
       <col index="2" kind="label" />
       <col index="4" kind="label" />
       
       <row>
-        <Label text="=client" class="bee-required" />
-        <UnboundSelector name="Company" viewName="Companies" renderColumns="Name" 
-          style="width: 200px;" required="true" />
-
         <Label text="=dateFrom" class="bee-required" />
         <InputDate name="DateFrom" style="width: 100px;" required="true" />
     
         <Label text="=dateTo" class="bee-required" />
         <InputDate name="DateTo" style="width: 100px;" required="true" />
+
+        <Label text="=client" class="bee-required" />
+        <UnboundSelector name="Company" viewName="Companies" renderColumns="Name" 
+          style="width: 200px;" required="true" newRowEnabled="false" />
+      </row>
+      
+      <row>
+        <Label text="=trdInvoicePrefix" />
+        <InputText name="InvoicePrefix" upperCase="true" maxLength="10" style="width: 100px;" />
+
+        <Label text="=currency" />
+        <UnboundSelector name="Currency" viewName="Currencies" renderColumns="Name" 
+          style="width: 60px;" newRowEnabled="false" />
       </row>
     </Table>
     
-    <br/>
-    <ChildGrid name="InvoiceBuilderTradeActs" relColumn="Company" style="height: 50%;" />
+    &br;
+    <FlowPanel name="TradeActs" class="flexible" style="overflow: auto;" />
+    &br;
+    <FlowPanel name="TradeActServices" class="flexible" style="overflow: auto;" />
+    &br;
   </FlowPanel>
 </f:Form>

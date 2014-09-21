@@ -1,6 +1,7 @@
 package com.butent.bee.shared.modules.trade.acts;
 
 import com.butent.bee.shared.BeeConst;
+import com.butent.bee.shared.data.filter.CompoundFilter;
 import com.butent.bee.shared.data.filter.Filter;
 import com.butent.bee.shared.i18n.LocalizableConstants;
 import com.butent.bee.shared.i18n.Localized;
@@ -69,6 +70,17 @@ public enum TradeActKind implements HasLocalizedCaption {
       return constants.taKindReserve();
     }
   };
+
+  public static Filter getFilterForInvoiceBuilder() {
+    CompoundFilter filter = Filter.or();
+
+    for (TradeActKind kind : values()) {
+      if (kind.enableInvoices()) {
+        filter.add(kind.getFilter());
+      }
+    }
+    return filter;
+  }
 
   private final boolean copy;
   private final boolean template;

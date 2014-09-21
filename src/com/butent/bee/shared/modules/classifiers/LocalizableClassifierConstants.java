@@ -70,6 +70,8 @@ public interface LocalizableClassifierConstants {
 
   String unit();
 
+  String unitShort();
+
   String updateExchangeRatesDateHigh();
 
   String updateExchangeRatesDateLow();

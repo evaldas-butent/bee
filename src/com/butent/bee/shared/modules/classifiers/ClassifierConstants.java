@@ -163,6 +163,8 @@ public final class ClassifierConstants {
 
   public static final String COL_COMPANY_TYPE_NAME = "Name";
 
+  public static final String COL_COMPANY_OBJECT_NAME = "ObjectName";
+
   public static final String COL_BANK_NAME = "Name";
   public static final String COL_BANK_CODE = "BankCode";
   public static final String COL_SWIFT_CODE = "SWIFTCode";
