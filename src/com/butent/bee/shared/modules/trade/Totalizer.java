@@ -6,6 +6,8 @@ import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.IsColumn;
 import com.butent.bee.shared.data.IsRow;
+import com.butent.bee.shared.data.RowPredicate;
+import com.butent.bee.shared.data.RowToDouble;
 import com.butent.bee.shared.utils.BeeUtils;
 
 import java.util.HashMap;
@@ -14,25 +16,36 @@ import java.util.Map;
 
 public class Totalizer {
 
-  private static final String[] COL_NAMES = new String[] {
+  private static final String[] DOUBLE_COLUMNS = new String[] {
       COL_TRADE_AMOUNT, COL_TRADE_ITEM_QUANTITY, COL_TRADE_ITEM_PRICE,
-      COL_TRADE_VAT_PLUS, COL_TRADE_VAT, COL_TRADE_VAT_PERC,
-      COL_TRADE_DISCOUNT};
+      COL_TRADE_VAT, COL_TRADE_DISCOUNT};
 
-  private final Map<String, Integer> indexes = new HashMap<>();
+  private static final String[] BOOLEAN_COLUMNS = new String[] {
+      COL_TRADE_VAT_PLUS, COL_TRADE_VAT_PERC};
+
+  private final Map<String, RowToDouble> functions = new HashMap<>();
+  private final Map<String, RowPredicate> predicates = new HashMap<>();
 
   public Totalizer(List<? extends IsColumn> columns) {
-    for (String colName : COL_NAMES) {
+    for (String colName : DOUBLE_COLUMNS) {
       int idx = DataUtils.getColumnIndex(colName, columns);
 
       if (!BeeConst.isUndef(idx)) {
-        indexes.put(colName, idx);
+        functions.put(colName, RowToDouble.at(idx));
+      }
+    }
+
+    for (String colName : BOOLEAN_COLUMNS) {
+      int idx = DataUtils.getColumnIndex(colName, columns);
+
+      if (!BeeConst.isUndef(idx)) {
+        predicates.put(colName, RowPredicate.isTrue(idx));
       }
     }
   }
 
   public boolean dependsOnSource(String source) {
-    return !BeeUtils.isEmpty(source) && indexes.containsKey(source);
+    return functions.containsKey(source) || predicates.containsKey(source);
   }
 
   public Double getDiscount(IsRow row) {
@@ -58,9 +71,7 @@ public class Totalizer {
       amount -= discount;
     }
 
-    if (indexes.containsKey(COL_TRADE_VAT_PLUS)
-        && BeeUtils.isTrue(row.getBoolean(indexes.get(COL_TRADE_VAT_PLUS)))) {
-
+    if (isTrue(COL_TRADE_VAT_PLUS, row)) {
       Double vat = getVat(row, amount);
       if (BeeUtils.isDouble(vat)) {
         amount += vat;
@@ -91,18 +102,46 @@ public class Totalizer {
     }
   }
 
+  public void setAmountFuction(RowToDouble function) {
+    setFunction(COL_TRADE_AMOUNT, function);
+  }
+
+  public void setDiscountFuction(RowToDouble function) {
+    setFunction(COL_TRADE_DISCOUNT, function);
+  }
+
+  public void setPriceFuction(RowToDouble function) {
+    setFunction(COL_TRADE_ITEM_PRICE, function);
+  }
+
+  public void setQuantityFuction(RowToDouble function) {
+    setFunction(COL_TRADE_ITEM_QUANTITY, function);
+  }
+
+  public void setVatFuction(RowToDouble function) {
+    setFunction(COL_TRADE_VAT, function);
+  }
+
+  public void setVatPercentPredicate(RowPredicate predicate) {
+    setPredicate(COL_TRADE_VAT_PERC, predicate);
+  }
+
+  public void setVatPlusPredicate(RowPredicate predicate) {
+    setPredicate(COL_TRADE_VAT_PLUS, predicate);
+  }
+
   private Double getAmount(IsRow row) {
     if (row == null) {
       return null;
 
-    } else if (indexes.containsKey(COL_TRADE_AMOUNT)) {
-      return row.getDouble(indexes.get(COL_TRADE_AMOUNT));
+    } else if (functions.containsKey(COL_TRADE_AMOUNT)) {
+      return getNumber(COL_TRADE_AMOUNT, row);
 
-    } else if (indexes.containsKey(COL_TRADE_ITEM_PRICE)) {
-      Double price = row.getDouble(indexes.get(COL_TRADE_ITEM_PRICE));
+    } else if (functions.containsKey(COL_TRADE_ITEM_PRICE)) {
+      Double price = getNumber(COL_TRADE_ITEM_PRICE, row);
 
-      if (indexes.containsKey(COL_TRADE_ITEM_QUANTITY) && price != null) {
-        Double qty = row.getDouble(indexes.get(COL_TRADE_ITEM_QUANTITY));
+      if (functions.containsKey(COL_TRADE_ITEM_QUANTITY) && price != null) {
+        Double qty = getNumber(COL_TRADE_ITEM_QUANTITY, row);
         return (qty == null) ? null : (price * qty);
       } else {
         return price;
@@ -114,22 +153,24 @@ public class Totalizer {
   }
 
   private Double getDiscount(IsRow row, Double base) {
-    if (base != null && indexes.containsKey(COL_TRADE_DISCOUNT)) {
-      return BeeUtils.percent(base, row.getDouble(indexes.get(COL_TRADE_DISCOUNT)));
+    if (base != null && functions.containsKey(COL_TRADE_DISCOUNT)) {
+      return BeeUtils.percent(base, getNumber(COL_TRADE_DISCOUNT, row));
     } else {
       return null;
     }
   }
 
+  private Double getNumber(String key, IsRow row) {
+    RowToDouble function = functions.get(key);
+    return (function == null) ? null : function.apply(row);
+  }
+
   private Double getVat(IsRow row, Double base) {
-    if (base != null && indexes.containsKey(COL_TRADE_VAT)) {
-      Double vat = row.getDouble(indexes.get(COL_TRADE_VAT));
+    if (base != null && functions.containsKey(COL_TRADE_VAT)) {
+      Double vat = getNumber(COL_TRADE_VAT, row);
 
-      if (vat != null && indexes.containsKey(COL_TRADE_VAT_PERC)
-          && BeeUtils.isTrue(row.getBoolean(indexes.get(COL_TRADE_VAT_PERC)))) {
-
-        if (indexes.containsKey(COL_TRADE_VAT_PLUS)
-            && !BeeUtils.isTrue(row.getBoolean(indexes.get(COL_TRADE_VAT_PLUS)))) {
+      if (vat != null && isTrue(COL_TRADE_VAT_PERC, row)) {
+        if (isFalse(COL_TRADE_VAT_PLUS, row)) {
           return BeeUtils.percentInclusive(base, vat);
         } else {
           return BeeUtils.percent(base, vat);
@@ -141,6 +182,32 @@ public class Totalizer {
 
     } else {
       return null;
+    }
+  }
+
+  private boolean isFalse(String key, IsRow row) {
+    RowPredicate predicate = predicates.get(key);
+    return predicate != null && !predicate.apply(row);
+  }
+
+  private boolean isTrue(String key, IsRow row) {
+    RowPredicate predicate = predicates.get(key);
+    return predicate != null && predicate.apply(row);
+  }
+
+  private void setFunction(String key, RowToDouble function) {
+    if (function == null) {
+      functions.remove(key);
+    } else {
+      functions.put(key, function);
+    }
+  }
+
+  private void setPredicate(String key, RowPredicate predicate) {
+    if (predicate == null) {
+      predicates.remove(key);
+    } else {
+      predicates.put(key, predicate);
     }
   }
 }
