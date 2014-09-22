@@ -323,7 +323,7 @@ public class TradeActInvoiceBuilder extends AbstractFormInterceptor implements
     BeeRow invoice = RowFactory.createEmptyRow(dataInfo, true);
 
     if (!BeeUtils.isEmpty(invoicePrefix)) {
-      Data.squeezeValue(VIEW_SALES, invoice, COL_TRADE_INVOICE_PREFIX, invoicePrefix);
+      Data.squeezeValue(VIEW_SALES, invoice, COL_TRADE_INVOICE_PREFIX, invoicePrefix.trim());
     }
 
     invoice.setValue(dataInfo.getColumnIndex(COL_TRADE_CUSTOMER), company);
@@ -331,6 +331,8 @@ public class TradeActInvoiceBuilder extends AbstractFormInterceptor implements
     if (DataUtils.isId(currency)) {
       invoice.setValue(dataInfo.getColumnIndex(COL_TRADE_CURRENCY), currency);
     }
+
+    invoice.setValue(dataInfo.getColumnIndex(COL_TRADE_MANAGER), BeeKeeper.getUser().getUserId());
 
     Queries.insert(VIEW_SALES, dataInfo.getColumns(), invoice, new RowCallback() {
       @Override

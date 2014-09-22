@@ -6,6 +6,7 @@ import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.data.BeeColumn;
 import com.butent.bee.shared.data.BeeRow;
 import com.butent.bee.shared.data.BeeRowSet;
+import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.value.Value;
 import com.butent.bee.shared.utils.BeeUtils;
 
@@ -100,6 +101,10 @@ public abstract class DataEvent {
 
     public BeeRowSet getRowset() {
       return rowset;
+    }
+
+    public boolean hasData() {
+      return !DataUtils.isEmpty(rowset);
     }
 
     void setRowset(BeeRowSet rowset) {

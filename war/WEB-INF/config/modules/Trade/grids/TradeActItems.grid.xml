@@ -10,6 +10,17 @@
   <xi:include href="columns/TradeActItem.columns.xml" />
 
   <xi:include href="columns/TradeActQuantity.columns.xml" />
+
+  <g:columns>
+    <PropColumn name="returned_qty" type="double" label="=taQuantityReturned" visible="true">
+      <style>
+        <bodyStyle><ui:inline>color: red;</ui:inline></bodyStyle>
+        <footerStyle><ui:inline>color: red;</ui:inline></footerStyle>
+      </style>
+      <footer aggregate="sum" />
+    </PropColumn>
+  </g:columns>
+
   <xi:include href="columns/TradeActWeight.columns.xml" />
   <xi:include href="columns/TradeActPrice.columns.xml" />
 

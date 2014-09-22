@@ -407,7 +407,7 @@ public class AssessmentTurnoverReport extends ReportInterceptor {
     }
 
     ParameterList params = TransportHandler.createArgs(SVC_GET_ASSESSMENT_TURNOVER_REPORT);
-    final List<String> headers = Lists.newArrayList(BeeUtils.joinWords(getCaption(),
+    final List<String> headers = Lists.newArrayList(BeeUtils.joinWords(getReportCaption(),
         getFilterLabel(NAME_CURRENCY)));
 
     if (start != null) {
@@ -543,13 +543,13 @@ public class AssessmentTurnoverReport extends ReportInterceptor {
   @Override
   protected void export() {
     if (!sheet.isEmpty()) {
-      Exporter.maybeExport(sheet, getCaption());
+      Exporter.maybeExport(sheet, getReportCaption());
     }
   }
 
   @Override
   protected String getBookmarkLabel() {
-    List<String> labels = Lists.newArrayList(getCaption(),
+    List<String> labels = Lists.newArrayList(getReportCaption(),
         Format.renderPeriod(getDateTime(NAME_START_DATE), getDateTime(NAME_END_DATE)),
         getFilterLabel(NAME_CURRENCY),
         getFilterLabel(NAME_DEPARTMENTS),

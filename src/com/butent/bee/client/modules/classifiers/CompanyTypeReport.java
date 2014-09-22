@@ -2,7 +2,7 @@ package com.butent.bee.client.modules.classifiers;
 
 import com.google.common.collect.HashBasedTable;
 import com.google.common.collect.Lists;
-//import com.google.common.collect.Lists;
+// import com.google.common.collect.Lists;
 import com.google.common.collect.Table;
 import com.google.gwt.dom.client.TableCellElement;
 import com.google.gwt.dom.client.TableRowElement;
@@ -302,7 +302,7 @@ public class CompanyTypeReport extends ReportInterceptor {
           SimpleRowSet data = SimpleRowSet.restore(response.getResponseAsString());
           renderData(transformData(data), start, end, types, typesLabel);
 
-          List<String> headers = Lists.newArrayList(getCaption());
+          List<String> headers = Lists.newArrayList(getReportCaption());
           if (start != null || end != null) {
             headers.add(Format.renderPeriod(start, end));
           }
@@ -330,13 +330,13 @@ public class CompanyTypeReport extends ReportInterceptor {
   @Override
   protected void export() {
     if (!sheet.isEmpty()) {
-      Exporter.maybeExport(sheet, getCaption());
+      Exporter.maybeExport(sheet, getReportCaption());
     }
   }
 
   @Override
   protected String getBookmarkLabel() {
-    return BeeUtils.joinWords(getCaption(),
+    return BeeUtils.joinWords(getReportCaption(),
         Format.renderPeriod(getDateTime(NAME_START_DATE), getDateTime(NAME_END_DATE)),
         getFilterLabel(NAME_TYPES));
   }

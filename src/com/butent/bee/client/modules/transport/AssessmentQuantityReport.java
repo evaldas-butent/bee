@@ -185,7 +185,7 @@ public class AssessmentQuantityReport extends ReportInterceptor {
     }
 
     ParameterList params = TransportHandler.createArgs(SVC_GET_ASSESSMENT_QUANTITY_REPORT);
-    final List<String> headers = Lists.newArrayList(getCaption());
+    final List<String> headers = Lists.newArrayList(getReportCaption());
 
     if (start != null) {
       params.addDataItem(Service.VAR_FROM, start.getTime());
@@ -277,13 +277,13 @@ public class AssessmentQuantityReport extends ReportInterceptor {
   @Override
   protected void export() {
     if (!sheet.isEmpty()) {
-      Exporter.maybeExport(sheet, getCaption());
+      Exporter.maybeExport(sheet, getReportCaption());
     }
   }
 
   @Override
   protected String getBookmarkLabel() {
-    List<String> labels = Lists.newArrayList(getCaption(),
+    List<String> labels = Lists.newArrayList(getReportCaption(),
         Format.renderPeriod(getDateTime(NAME_START_DATE), getDateTime(NAME_END_DATE)),
         getFilterLabel(NAME_DEPARTMENTS), getFilterLabel(NAME_MANAGERS));
 

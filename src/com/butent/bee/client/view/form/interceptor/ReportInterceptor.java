@@ -146,11 +146,6 @@ public abstract class ReportInterceptor extends AbstractFormInterceptor implemen
   }
 
   @Override
-  public String getCaption() {
-    return getFormView().getCaption();
-  }
-
-  @Override
   public Element getPrintElement() {
     if (hasReport()) {
       return getDataContainer().getWidget(0).getElement();
@@ -297,6 +292,10 @@ public abstract class ReportInterceptor extends AbstractFormInterceptor implemen
 
   protected abstract Report getReport();
 
+  protected String getReportCaption() {
+    return getFormView().getCaption();
+  }
+
   protected abstract ReportParameters getReportParameters();
 
   protected Integer getSelectedIndex(String name) {
@@ -370,7 +369,7 @@ public abstract class ReportInterceptor extends AbstractFormInterceptor implemen
     ReportParameters parameters = getReportParameters();
 
     if (parameters != null && validateParameters(parameters)) {
-      String caption = BeeUtils.notEmpty(getBookmarkLabel(), getCaption());
+      String caption = BeeUtils.notEmpty(getBookmarkLabel(), getReportCaption());
       Global.getReportSettings().bookmark(getReport(), caption, getReportParameters());
     }
   }

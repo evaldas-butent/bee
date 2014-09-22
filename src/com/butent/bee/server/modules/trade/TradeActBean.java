@@ -16,6 +16,7 @@ import com.butent.bee.server.data.QueryServiceBean;
 import com.butent.bee.server.data.SystemBean;
 import com.butent.bee.server.data.UserServiceBean;
 import com.butent.bee.server.data.DataEvent.ViewInsertEvent;
+import com.butent.bee.server.data.DataEvent.ViewQueryEvent;
 import com.butent.bee.server.http.RequestInfo;
 import com.butent.bee.server.sql.IsCondition;
 import com.butent.bee.server.sql.SqlInsert;
@@ -144,6 +145,39 @@ public class TradeActBean {
           }
         }
       }
+
+      @Subscribe
+      public void maybeSetReturnedQty(ViewQueryEvent event) {
+        if (event.isAfter() && event.isTarget(VIEW_TRADE_ACT_ITEMS) && event.hasData()) {
+          BeeRowSet rowSet = event.getRowset();
+          List<Long> actIds = DataUtils.getDistinct(rowSet, COL_TRADE_ACT);
+
+          int actIndex = rowSet.getColumnIndex(COL_TRADE_ACT);
+          int itemIndex = rowSet.getColumnIndex(COL_TA_ITEM);
+
+          int qtyScale = rowSet.getColumn(COL_TRADE_ITEM_QUANTITY).getScale();
+
+          for (Long actId : actIds) {
+            TradeActKind kind = getActKind(actId);
+
+            if (kind != null && kind.enableReturn()) {
+              Map<Long, Double> returnedItems = getReturnedItems(actId);
+
+              if (!returnedItems.isEmpty()) {
+                for (BeeRow row : rowSet) {
+                  if (actId.equals(row.getLong(actIndex))) {
+                    Double qty = returnedItems.get(row.getLong(itemIndex));
+
+                    if (BeeUtils.isPositive(qty)) {
+                      row.setProperty(PRP_RETURNED_QTY, BeeUtils.toString(qty, qtyScale));
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
     });
   }
 
@@ -193,6 +227,20 @@ public class TradeActBean {
 
     } else {
       return BeeConst.EMPTY_IMMUTABLE_LONG_SET;
+    }
+  }
+
+  private TradeActKind getActKind(Long actId) {
+    if (DataUtils.isId(actId)) {
+      Integer value = qs.getInt(new SqlSelect()
+          .addFields(TBL_TRADE_ACTS, COL_TA_KIND)
+          .addFrom(TBL_TRADE_ACTS)
+          .setWhere(sys.idEquals(TBL_TRADE_ACTS, actId)));
+
+      return EnumUtils.getEnumByIndex(TradeActKind.class, value);
+
+    } else {
+      return null;
     }
   }
 

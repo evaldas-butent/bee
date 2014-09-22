@@ -79,6 +79,7 @@ public final class TradeActConstants {
   public static final String PRP_ITEM_TOTAL = "item_total";
   public static final String PRP_RETURNED_TOTAL = "returned_total";
   public static final String PRP_LATEST_INVOICE = "latest_invoice";
+  public static final String PRP_RETURNED_QTY = "returned_qty";
 
   public static final String PRM_IMPORT_TA_ITEM_RX = "ImportActItemRegEx";
   public static final String RX_IMPORT_ACT_ITEM = "^(.+);(.*);(\\d+\\.*\\d*)$";
