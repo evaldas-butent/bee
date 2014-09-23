@@ -37,11 +37,6 @@
     </Table>    
   </row>
 
-  <row for="DaysAsBuyer">
-    <Label text="=daysAsBuyer" style="&lbl1;" />
-    <InputDecimal source="DaysAsBuyer" style="width: 60px;" summarize="true" />
-  </row>
-
   <row for="DaysAsSupplier">
     <Label text="=daysAsSupplier" style="&lbl1;" />
     <InputDecimal source="DaysAsSupplier" style="width: 60px;" summarize="true" />
