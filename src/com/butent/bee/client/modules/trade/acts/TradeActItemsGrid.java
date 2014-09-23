@@ -21,9 +21,9 @@ import com.butent.bee.client.data.Queries;
 import com.butent.bee.client.i18n.Money;
 import com.butent.bee.client.modules.trade.acts.TradeActItemImporter.ImportEntry;
 import com.butent.bee.client.presenter.GridPresenter;
-import com.butent.bee.client.ui.UiHelper;
 import com.butent.bee.client.utils.FileUtils;
 import com.butent.bee.client.utils.NewFileInfo;
+import com.butent.bee.client.view.ViewHelper;
 import com.butent.bee.client.view.grid.interceptor.AbstractGridInterceptor;
 import com.butent.bee.client.view.grid.interceptor.GridInterceptor;
 import com.butent.bee.client.widget.Button;
@@ -31,6 +31,7 @@ import com.butent.bee.shared.Consumer;
 import com.butent.bee.shared.Latch;
 import com.butent.bee.shared.communication.CommUtils;
 import com.butent.bee.shared.communication.ResponseObject;
+import com.butent.bee.shared.data.BeeColumn;
 import com.butent.bee.shared.data.BeeRow;
 import com.butent.bee.shared.data.BeeRowSet;
 import com.butent.bee.shared.data.DataUtils;
@@ -44,14 +45,19 @@ import com.butent.bee.shared.utils.BeeUtils;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 import elemental.html.File;
 
 public class TradeActItemsGrid extends AbstractGridInterceptor implements
     SelectionHandler<BeeRowSet> {
+
+  private static final String STYLE_COMMAND_IMPORT = TradeActKeeper.STYLE_PREFIX
+      + "command-import-items";
 
   private TradeActItemPicker picker;
   private FileCollector collector;
@@ -62,6 +68,8 @@ public class TradeActItemsGrid extends AbstractGridInterceptor implements
   @Override
   public void afterCreatePresenter(GridPresenter presenter) {
     Button command = new Button(Localized.getConstants().actionImport());
+    command.addStyleName(STYLE_COMMAND_IMPORT);
+
     command.addClickHandler(new ClickHandler() {
       @Override
       public void onClick(ClickEvent event) {
@@ -76,7 +84,7 @@ public class TradeActItemsGrid extends AbstractGridInterceptor implements
 
   @Override
   public boolean beforeAddRow(GridPresenter presenter, boolean copy) {
-    IsRow parentRow = UiHelper.getFormRow(presenter.getMainView());
+    IsRow parentRow = ViewHelper.getFormRow(presenter.getMainView());
 
     if (parentRow != null) {
       final TradeActKind kind = TradeActKeeper.getKind(VIEW_TRADE_ACTS, parentRow);
@@ -92,12 +100,16 @@ public class TradeActItemsGrid extends AbstractGridInterceptor implements
             if (response.hasResponse(BeeRowSet.class)) {
               BeeRowSet parentItems = BeeRowSet.restore(response.getResponseAsString());
 
-              TradeActItemReturn.show(kind.getCaption(), parentItems, new Consumer<BeeRowSet>() {
-                @Override
-                public void accept(BeeRowSet items) {
-                  addItems(items);
-                }
-              });
+              String pa = parentItems.getTableProperty(PRP_PARENT_ACT);
+              final BeeRow parentAct = BeeUtils.isEmpty(pa) ? null : BeeRow.restore(pa);
+
+              TradeActItemReturn.show(kind.getCaption(), parentAct, parentItems,
+                  new Consumer<BeeRowSet>() {
+                    @Override
+                    public void accept(BeeRowSet actItems) {
+                      addActItems(parentAct, actItems);
+                    }
+                  });
 
             } else {
               getGridView().notifyWarning(Localized.getConstants().noData());
@@ -123,12 +135,79 @@ public class TradeActItemsGrid extends AbstractGridInterceptor implements
     addItems(event.getSelectedItem());
   }
 
+  private void addActItems(final BeeRow act, final BeeRowSet actItems) {
+    if (!DataUtils.isEmpty(actItems) && getViewName().equals(actItems.getViewName())) {
+      getGridView().ensureRelId(new IdCallback() {
+        @Override
+        public void onSuccess(Long result) {
+          IsRow parentRow = ViewHelper.getFormRow(getGridView());
+
+          if (DataUtils.idEquals(parentRow, result)) {
+            Long sourceCurrency =
+                (act == null) ? null : Data.getLong(VIEW_TRADE_ACTS, act, COL_TA_CURRENCY);
+
+            DateTime date = Data.getDateTime(VIEW_TRADE_ACTS, parentRow, COL_TA_DATE);
+            Long targetCurrency = Data.getLong(VIEW_TRADE_ACTS, parentRow, COL_TA_CURRENCY);
+
+            addActItems(result, date, sourceCurrency, targetCurrency, actItems);
+          }
+        }
+      });
+    }
+  }
+
+  private void addActItems(long targetId, DateTime date, Long sourceCurrency,
+      Long targetCurrency, BeeRowSet sourceItems) {
+
+    List<BeeColumn> columns = new ArrayList<>();
+    Map<Integer, Integer> indexes = new HashMap<>();
+
+    for (int i = 0; i < sourceItems.getNumberOfColumns(); i++) {
+      BeeColumn column = sourceItems.getColumn(i);
+
+      if (COL_TRADE_ACT.equals(column.getId())) {
+        columns.add(column);
+
+      } else if (column.isEditable()) {
+        indexes.put(i, columns.size());
+        columns.add(column);
+      }
+    }
+
+    BeeRowSet rowSet = new BeeRowSet(getViewName(), columns);
+
+    int actIndex = rowSet.getColumnIndex(COL_TRADE_ACT);
+    int priceIndex = rowSet.getColumnIndex(COL_TRADE_ITEM_PRICE);
+
+    for (BeeRow sourceItem : sourceItems) {
+      BeeRow row = DataUtils.createEmptyRow(columns.size());
+      row.setValue(actIndex, targetId);
+
+      for (Map.Entry<Integer, Integer> indexEntry : indexes.entrySet()) {
+        if (!sourceItem.isNull(indexEntry.getKey())) {
+          row.setValue(indexEntry.getValue(), sourceItem.getString(indexEntry.getKey()));
+        }
+      }
+
+      Double price = row.getDouble(priceIndex);
+
+      if (BeeUtils.nonZero(price) && DataUtils.isId(sourceCurrency)
+          && DataUtils.isId(targetCurrency) && !sourceCurrency.equals(targetCurrency)) {
+        row.setValue(priceIndex, Money.exchange(sourceCurrency, targetCurrency, price, date));
+      }
+
+      rowSet.addRow(row);
+    }
+
+    Queries.insertRows(rowSet);
+  }
+
   private void addItems(final BeeRowSet rowSet) {
     if (!DataUtils.isEmpty(rowSet) && VIEW_ITEMS.equals(rowSet.getViewName())) {
       getGridView().ensureRelId(new IdCallback() {
         @Override
         public void onSuccess(Long result) {
-          IsRow parentRow = UiHelper.getFormRow(getGridView());
+          IsRow parentRow = ViewHelper.getFormRow(getGridView());
 
           if (DataUtils.idEquals(parentRow, result)) {
             ItemPrice itemPrice = TradeActKeeper.getItemPrice(VIEW_TRADE_ACTS, parentRow);
@@ -196,7 +275,7 @@ public class TradeActItemsGrid extends AbstractGridInterceptor implements
   }
 
   private IsRow getParentRow() {
-    return UiHelper.getFormRow(getGridView());
+    return ViewHelper.getFormRow(getGridView());
   }
 
   private FileCollector ensureCollector() {

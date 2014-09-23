@@ -40,6 +40,7 @@ import com.butent.bee.client.event.Modifiers;
 import com.butent.bee.client.event.logical.ActiveRowChangeEvent;
 import com.butent.bee.client.event.logical.DataRequestEvent;
 import com.butent.bee.client.event.logical.RenderingEvent;
+import com.butent.bee.client.event.logical.RowCountChangeEvent;
 import com.butent.bee.client.event.logical.ScopeChangeEvent;
 import com.butent.bee.client.event.logical.SelectionCountChangeEvent;
 import com.butent.bee.client.event.logical.SortEvent;
@@ -619,7 +620,7 @@ public class CellGrid extends Widget implements IdentifiableWidget, HasDataTable
   private static final int PAGE_SIZE_CALCULATION_RESERVE = 3;
   private static final int LINE_WIDTH_RESERVE = 1;
 
-  private static final String STYLE_GRID = StyleUtils.CLASS_NAME_PREFIX + "CellGrid";
+  private static final String STYLE_GRID = BeeConst.CSS_CLASS_PREFIX + "CellGrid";
 
   public static final String STYLE_EVEN_ROW = STYLE_GRID + "EvenRow";
   public static final String STYLE_ODD_ROW = STYLE_GRID + "OddRow";
@@ -1001,6 +1002,11 @@ public class CellGrid extends Widget implements IdentifiableWidget, HasDataTable
   @Override
   public HandlerRegistration addRenderingHandler(RenderingEvent.Handler handler) {
     return addHandler(handler, RenderingEvent.getType());
+  }
+
+  @Override
+  public HandlerRegistration addRowCountChangeHandler(RowCountChangeEvent.Handler handler) {
+    return addHandler(handler, RowCountChangeEvent.getType());
   }
 
   @Override
@@ -2253,6 +2259,8 @@ public class CellGrid extends Widget implements IdentifiableWidget, HasDataTable
     } else if (fireScopeChange) {
       fireScopeChange(NavigationOrigin.SYSTEM);
     }
+
+    fireEvent(new RowCountChangeEvent(count));
   }
 
   @Override

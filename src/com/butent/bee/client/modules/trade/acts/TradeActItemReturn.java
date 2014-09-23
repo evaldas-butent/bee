@@ -1,12 +1,14 @@
 package com.butent.bee.client.modules.trade.acts;
 
-import com.google.common.collect.Lists;
 import com.google.gwt.dom.client.Element;
+import com.google.gwt.dom.client.InputElement;
+import com.google.gwt.dom.client.TableCellElement;
 import com.google.gwt.dom.client.TableRowElement;
 import com.google.gwt.event.dom.client.ChangeEvent;
 import com.google.gwt.event.dom.client.ChangeHandler;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
+import com.google.gwt.i18n.client.NumberFormat;
 import com.google.gwt.user.client.ui.Widget;
 
 import static com.butent.bee.shared.modules.classifiers.ClassifierConstants.*;
@@ -14,13 +16,18 @@ import static com.butent.bee.shared.modules.trade.TradeConstants.*;
 import static com.butent.bee.shared.modules.trade.acts.TradeActConstants.*;
 
 import com.butent.bee.client.Global;
+import com.butent.bee.client.data.Data;
 import com.butent.bee.client.dialog.DecisionCallback;
 import com.butent.bee.client.dialog.DialogBox;
 import com.butent.bee.client.dialog.DialogConstants;
 import com.butent.bee.client.dom.DomUtils;
+import com.butent.bee.client.dom.Selectors;
+import com.butent.bee.client.event.EventUtils;
 import com.butent.bee.client.grid.HtmlTable;
+import com.butent.bee.client.i18n.Format;
 import com.butent.bee.client.layout.Simple;
 import com.butent.bee.client.ui.UiHelper;
+import com.butent.bee.client.widget.Button;
 import com.butent.bee.client.widget.Image;
 import com.butent.bee.client.widget.InputNumber;
 import com.butent.bee.shared.BeeConst;
@@ -29,12 +36,18 @@ import com.butent.bee.shared.data.BeeColumn;
 import com.butent.bee.shared.data.BeeRow;
 import com.butent.bee.shared.data.BeeRowSet;
 import com.butent.bee.shared.data.DataUtils;
+import com.butent.bee.shared.html.builder.elements.Div;
+import com.butent.bee.shared.html.builder.elements.Span;
 import com.butent.bee.shared.i18n.Localized;
+import com.butent.bee.shared.modules.administration.AdministrationConstants;
+import com.butent.bee.shared.modules.trade.acts.TradeActKind;
 import com.butent.bee.shared.ui.Action;
 import com.butent.bee.shared.utils.BeeUtils;
 
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 final class TradeActItemReturn {
@@ -42,6 +55,8 @@ final class TradeActItemReturn {
   private static final String STYLE_PREFIX = TradeActKeeper.STYLE_PREFIX + "return-items-";
 
   private static final String STYLE_DIALOG = STYLE_PREFIX + "dialog";
+  private static final String STYLE_ALL = STYLE_PREFIX + "all";
+  private static final String STYLE_CLEAR = STYLE_PREFIX + "clear";
   private static final String STYLE_SAVE = STYLE_PREFIX + "save";
   private static final String STYLE_CLOSE = STYLE_PREFIX + "close";
 
@@ -55,7 +70,11 @@ final class TradeActItemReturn {
   private static final String STYLE_ID_PREFIX = STYLE_PREFIX + "id-";
   private static final String STYLE_NAME_PREFIX = STYLE_PREFIX + "name-";
   private static final String STYLE_ARTICLE_PREFIX = STYLE_PREFIX + "article-";
+
   private static final String STYLE_PRICE_PREFIX = STYLE_PREFIX + "price-";
+  private static final String STYLE_PRICE_WRAPPER = STYLE_PRICE_PREFIX + "wrapper";
+  private static final String STYLE_PRICE_VALUE = STYLE_PRICE_PREFIX + "value";
+  private static final String STYLE_PRICE_CURRENCY = STYLE_PRICE_PREFIX + "currency";
 
   private static final String STYLE_QTY_PREFIX = STYLE_PREFIX + "qty-";
 
@@ -65,10 +84,27 @@ final class TradeActItemReturn {
   private static final String STYLE_HEADER_CELL_SUFFIX = "label";
   private static final String STYLE_CELL_SUFFIX = "cell";
 
-  static void show(String caption, final BeeRowSet parentItems,
+  private static NumberFormat priceFormat;
+
+  static void show(String caption, BeeRow parentAct, final BeeRowSet parentItems,
       final Consumer<BeeRowSet> consumer) {
 
+    String currencyName = (parentAct == null) ? null : Data.getString(VIEW_TRADE_ACTS, parentAct,
+        AdministrationConstants.ALS_CURRENCY_NAME);
+
     final HtmlTable table = new HtmlTable(STYLE_TABLE);
+
+    table.addClickHandler(new ClickHandler() {
+      @Override
+      public void onClick(ClickEvent event) {
+        Element target = EventUtils.getEventTargetElement(event);
+        TableCellElement cell = DomUtils.getParentCell(target, true);
+
+        if (isQuantityCell(cell)) {
+          selectQuantity(cell);
+        }
+      }
+    });
 
     int r = 0;
     int c = 0;
@@ -108,9 +144,13 @@ final class TradeActItemReturn {
       table.setText(r, c++, p.getString(nameIndex), STYLE_NAME_PREFIX + STYLE_CELL_SUFFIX);
       table.setText(r, c++, p.getString(articleIndex), STYLE_ARTICLE_PREFIX + STYLE_CELL_SUFFIX);
 
-      table.setText(r, c++, p.getString(priceIndex), STYLE_PRICE_PREFIX + STYLE_CELL_SUFFIX);
-      table.setText(r, c++, p.getString(qtyIndex), STYLE_QTY_PREFIX + STYLE_CELL_SUFFIX);
+      String priceHtml = renderPrice(p.getDouble(priceIndex), currencyName);
+      if (!BeeUtils.isEmpty(priceHtml)) {
+        table.setHtml(r, c, priceHtml, STYLE_PRICE_PREFIX + STYLE_CELL_SUFFIX);
+      }
+      c++;
 
+      table.setText(r, c++, p.getString(qtyIndex), STYLE_QTY_PREFIX + STYLE_CELL_SUFFIX);
       table.setWidget(r, c++, renderInput(qtyColumn), STYLE_INPUT_PREFIX + STYLE_CELL_SUFFIX);
 
       table.getRowFormatter().addStyleName(r, STYLE_ITEM_ROW);
@@ -120,6 +160,30 @@ final class TradeActItemReturn {
     }
 
     final DialogBox dialog = DialogBox.withoutCloseBox(caption, STYLE_DIALOG);
+
+    Button all = new Button(Localized.getConstants().selectAll());
+    all.addStyleName(STYLE_ALL);
+
+    all.addClickHandler(new ClickHandler() {
+      @Override
+      public void onClick(ClickEvent event) {
+        selectAllQuantities(table);
+      }
+    });
+
+    dialog.addCommand(all);
+
+    Button clear = new Button(Localized.getConstants().clear());
+    clear.addStyleName(STYLE_CLEAR);
+
+    clear.addClickHandler(new ClickHandler() {
+      @Override
+      public void onClick(ClickEvent event) {
+        clearQuantities(table);
+      }
+    });
+
+    dialog.addCommand(clear);
 
     Image save = new Image(Global.getImages().silverSave());
     save.addStyleName(STYLE_SAVE);
@@ -150,8 +214,8 @@ final class TradeActItemReturn {
           dialog.close();
 
         } else {
-          Global.decide(Localized.getConstants().goods(),
-              Lists.newArrayList(Localized.getConstants().taSaveSelectedItems()),
+          Global.decide(TradeActKind.RETURN.getCaption(),
+              Collections.singletonList(Localized.getConstants().taSaveSelectedItems()),
               new DecisionCallback() {
                 @Override
                 public void onConfirm() {
@@ -177,6 +241,29 @@ final class TradeActItemReturn {
     dialog.center();
   }
 
+  private static void clearQuantities(Widget parent) {
+    Collection<InputNumber> inputs = UiHelper.getChildren(parent, InputNumber.class);
+
+    for (InputNumber input : inputs) {
+      if (BeeUtils.isPositive(input.getNumber())) {
+        input.clearValue();
+        onQuantityChange(input.getElement(), null);
+      }
+    }
+  }
+
+  private static NumberFormat ensurePriceFormat() {
+    if (priceFormat == null) {
+      Integer scale = Data.getColumnScale(VIEW_TRADE_ACT_ITEMS, COL_TRADE_ITEM_PRICE);
+      if (scale == null || scale <= 2) {
+        priceFormat = Format.getDefaultCurrencyFormat();
+      } else {
+        priceFormat = Format.getDecimalFormat(2, scale);
+      }
+    }
+    return priceFormat;
+  }
+
   private static Map<Long, Double> getQuantities(Widget parent) {
     Map<Long, Double> result = new HashMap<>();
 
@@ -194,6 +281,10 @@ final class TradeActItemReturn {
     }
 
     return result;
+  }
+
+  private static boolean isQuantityCell(Element cell) {
+    return cell != null && cell.hasClassName(STYLE_QTY_PREFIX + STYLE_CELL_SUFFIX);
   }
 
   private static void onQuantityChange(Element source, Double qty) {
@@ -233,6 +324,39 @@ final class TradeActItemReturn {
     return input;
   }
 
+  private static String renderPrice(Double price, String currency) {
+    if (BeeUtils.isDouble(price)) {
+      Div div = new Div().addClass(STYLE_PRICE_WRAPPER);
+      div.append(new Span().addClass(STYLE_PRICE_VALUE).text(ensurePriceFormat().format(price)));
+
+      if (!BeeUtils.isEmpty(currency)) {
+        div.append(new Span().addClass(STYLE_PRICE_CURRENCY).text(currency));
+      }
+
+      return div.build();
+
+    } else {
+      return BeeConst.STRING_EMPTY;
+    }
+  }
+
+  private static void selectAllQuantities(HtmlTable table) {
+    for (int r = 0; r < table.getRowCount(); r++) {
+      Element rowEl = table.getRow(r);
+
+      if (rowEl.hasClassName(STYLE_ITEM_ROW) && !rowEl.hasClassName(STYLE_SELECTED_ROW)) {
+        List<TableCellElement> cells = table.getRowCells(r);
+
+        for (TableCellElement cell : cells) {
+          if (isQuantityCell(cell)) {
+            selectQuantity(cell);
+            break;
+          }
+        }
+      }
+    }
+  }
+
   private static void selectItems(BeeRowSet input, Map<Long, Double> quantities,
       Consumer<BeeRowSet> consumer) {
 
@@ -250,6 +374,24 @@ final class TradeActItemReturn {
 
     if (!selection.isEmpty()) {
       consumer.accept(selection);
+    }
+  }
+
+  private static void selectQuantity(Element qtyCell) {
+    String text = qtyCell.getInnerText();
+    Double qty = BeeUtils.toDoubleOrNull(text);
+
+    if (BeeUtils.isPositive(qty)) {
+      Element target = Selectors.getElement(DomUtils.getParentRow(qtyCell, false),
+          Selectors.classSelector(STYLE_INPUT_WIDGET));
+
+      if (InputElement.is(target)) {
+        InputElement input = InputElement.as(target);
+        if (!BeeUtils.isPositiveDouble(input.getValue())) {
+          input.setValue(text);
+          onQuantityChange(input, qty);
+        }
+      }
     }
   }
 

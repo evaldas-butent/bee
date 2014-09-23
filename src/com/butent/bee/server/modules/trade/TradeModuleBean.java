@@ -1,6 +1,6 @@
 package com.butent.bee.server.modules.trade;
 
-import com.google.common.collect.Maps;
+import com.google.common.collect.Sets;
 import com.google.common.eventbus.Subscribe;
 
 import static com.butent.bee.shared.modules.administration.AdministrationConstants.*;
@@ -41,6 +41,7 @@ import com.butent.bee.shared.modules.BeeParameter;
 import com.butent.bee.shared.modules.trade.TradeDocumentData;
 import com.butent.bee.shared.modules.transport.TransportConstants;
 import com.butent.bee.shared.rights.Module;
+import com.butent.bee.shared.rights.ModuleAndSub;
 import com.butent.bee.shared.rights.SubModule;
 import com.butent.bee.shared.time.TimeUtils;
 import com.butent.bee.shared.utils.BeeUtils;
@@ -49,6 +50,7 @@ import com.butent.webservice.ButentWS;
 import com.butent.webservice.WSDocument;
 import com.butent.webservice.WSDocument.WSDocumentItem;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -96,7 +98,19 @@ public class TradeModuleBean implements BeeModule {
 
   @Override
   public List<SearchResult> doSearch(String query) {
-    return null;
+    List<SearchResult> result = new ArrayList<>();
+
+    Set<String> columns = Sets.newHashSet(COL_TRADE_NUMBER, COL_TRADE_INVOICE_NO,
+        ALS_CUSTOMER_NAME);
+    result.addAll(qs.getSearchResults(VIEW_SALES, Filter.anyContains(columns, query)));
+
+    if (usr.isModuleVisible(ModuleAndSub.of(getModule(), SubModule.ACTS))) {
+      List<SearchResult> actSr = act.doSearch(query);
+      if (!BeeUtils.isEmpty(actSr)) {
+        result.addAll(actSr);
+      }
+    }
+    return result;
   }
 
   @Override
@@ -394,7 +408,7 @@ public class TradeModuleBean implements BeeModule {
 
     SimpleRowSet invoices = qs.getData(query.addField(trade, sys.getIdName(trade), itemsRelation));
 
-    Map<Long, String> companies = Maps.newHashMap();
+    Map<Long, String> companies = new HashMap<>();
     ResponseObject response = ResponseObject.emptyResponse();
 
     for (SimpleRow invoice : invoices) {

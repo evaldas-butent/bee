@@ -133,6 +133,10 @@ public final class Selectors {
     return ArrayUtils.join(BeeConst.STRING_SPACE, selectors);
   }
 
+  public static boolean contains(Element root, String selectors) {
+    return getElement(root, selectors) != null;
+  }
+
   public static String generalSiblingCombinator(String... selectors) {
     Assert.notNull(selectors);
     Assert.parameterCount(selectors.length, 2);

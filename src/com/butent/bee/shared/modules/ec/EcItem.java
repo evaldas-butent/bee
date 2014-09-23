@@ -1,8 +1,6 @@
 package com.butent.bee.shared.modules.ec;
 
 import com.google.common.base.Splitter;
-import com.google.common.collect.Lists;
-import com.google.common.collect.Sets;
 import com.google.common.primitives.Longs;
 
 import com.butent.bee.shared.Assert;
@@ -13,7 +11,9 @@ import com.butent.bee.shared.ui.HasCaption;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.Codec;
 
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
@@ -48,14 +48,14 @@ public class EcItem implements BeeSerializable, HasCaption {
   private String name;
 
   private String categories;
-  private final Collection<ArticleSupplier> suppliers = Lists.newArrayList();
+  private final Collection<ArticleSupplier> suppliers = new ArrayList<>();
 
   private int clientPrice;
   private int featuredPrice;
   private int listPrice;
 
   private String description;
-  private final List<ArticleCriteria> criteria = Lists.newArrayList();
+  private final List<ArticleCriteria> criteria = new ArrayList<>();
 
   private boolean novelty;
   private boolean featured;
@@ -105,7 +105,7 @@ public class EcItem implements BeeSerializable, HasCaption {
           break;
 
         case SUPPLIERS:
-          Collection<ArticleSupplier> sups = Lists.newArrayList();
+          Collection<ArticleSupplier> sups = new ArrayList<>();
 
           String[] suppArr = Codec.beeDeserializeCollection(value);
           if (suppArr != null) {
@@ -200,7 +200,7 @@ public class EcItem implements BeeSerializable, HasCaption {
   }
 
   public Set<Long> getCategorySet() {
-    Set<Long> result = Sets.newHashSet();
+    Set<Long> result = new HashSet<>();
 
     if (getCategories() != null) {
       for (String s : CATEGORY_SPLITTER.split(getCategories())) {

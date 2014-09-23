@@ -1,9 +1,7 @@
 package com.butent.bee.server.modules.transport;
 
-import com.google.common.base.Objects;
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.Lists;
-import com.google.common.collect.Maps;
 import com.google.common.collect.Multimap;
 import com.google.common.collect.Sets;
 import com.google.common.eventbus.Subscribe;
@@ -13,8 +11,8 @@ import static com.butent.bee.shared.modules.classifiers.ClassifierConstants.*;
 import static com.butent.bee.shared.modules.trade.TradeConstants.*;
 import static com.butent.bee.shared.modules.transport.TransportConstants.*;
 
-import com.butent.bee.server.Config;
-import com.butent.bee.server.Invocation;
+import com.butent.bee.server.concurrency.ConcurrencyBean;
+import com.butent.bee.server.concurrency.ConcurrencyBean.HasTimerService;
 import com.butent.bee.server.data.BeeView;
 import com.butent.bee.server.data.BeeView.ConditionProvider;
 import com.butent.bee.server.data.DataEditorBean;
@@ -29,8 +27,6 @@ import com.butent.bee.server.data.UserServiceBean;
 import com.butent.bee.server.http.RequestInfo;
 import com.butent.bee.server.modules.BeeModule;
 import com.butent.bee.server.modules.ParamHolderBean;
-import com.butent.bee.server.modules.ParameterEvent;
-import com.butent.bee.server.modules.ParameterEventHandler;
 import com.butent.bee.server.modules.administration.ExchangeUtils;
 import com.butent.bee.server.modules.administration.ExtensionIcons;
 import com.butent.bee.server.modules.trade.TradeModuleBean;
@@ -97,9 +93,12 @@ import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
 import java.net.HttpURLConnection;
 import java.net.URL;
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 
 import javax.annotation.Resource;
@@ -108,13 +107,12 @@ import javax.ejb.LocalBean;
 import javax.ejb.Stateless;
 import javax.ejb.Timeout;
 import javax.ejb.Timer;
-import javax.ejb.TimerConfig;
 import javax.ejb.TimerService;
 import javax.servlet.http.HttpServletResponse;
 
 @Stateless
 @LocalBean
-public class TransportModuleBean implements BeeModule {
+public class TransportModuleBean implements BeeModule, HasTimerService {
 
   private static BeeLogger logger = LogUtils.getLogger(TransportModuleBean.class);
 
@@ -153,42 +151,39 @@ public class TransportModuleBean implements BeeModule {
   @EJB
   ParamHolderBean prm;
   @EJB
-  TransportImports imp;
-  @EJB
   TradeModuleBean trd;
-
   @EJB
   NewsBean news;
+  @EJB
+  ConcurrencyBean cb;
 
   @Resource
   TimerService timerService;
 
   @Override
   public List<SearchResult> doSearch(String query) {
-    List<SearchResult> result = Lists.newArrayList();
+    List<SearchResult> result = new ArrayList<>();
 
-    if (usr.isModuleVisible(ModuleAndSub.of(Module.TRANSPORT))) {
-      List<SearchResult> vehiclesResult = qs.getSearchResults(VIEW_VEHICLES,
-          Filter.anyContains(Sets.newHashSet(COL_NUMBER, COL_PARENT_MODEL_NAME, COL_MODEL_NAME,
-              COL_OWNER_NAME), query));
+    List<SearchResult> vehiclesResult = qs.getSearchResults(VIEW_VEHICLES,
+        Filter.anyContains(Sets.newHashSet(COL_NUMBER, COL_PARENT_MODEL_NAME, COL_MODEL_NAME,
+            COL_OWNER_NAME), query));
 
-      List<SearchResult> orderCargoResult = qs.getSearchResults(VIEW_ORDER_CARGO,
-          Filter.anyContains(Sets.newHashSet(COL_CARGO_DESCRIPTION,
-              COL_NUMBER, COL_CARGO_CMR, COL_CARGO_NOTES, COL_CARGO_DIRECTIONS,
-              ALS_LOADING_NUMBER, ALS_LOADING_CONTACT, ALS_LOADING_COMPANY, ALS_LOADING_ADDRESS,
-              ALS_LOADING_POST_INDEX, ALS_LOADING_CITY_NAME, ALS_LOADING_COUNTRY_NAME,
-              ALS_LOADING_COUNTRY_CODE, ALS_UNLOADING_NUMBER, ALS_UNLOADING_CONTACT,
-              ALS_UNLOADING_COMPANY, ALS_UNLOADING_ADDRESS, ALS_UNLOADING_POST_INDEX,
-              ALS_UNLOADING_CITY_NAME, ALS_UNLOADING_COUNTRY_NAME, ALS_UNLOADING_COUNTRY_CODE),
-              query));
+    List<SearchResult> orderCargoResult = qs.getSearchResults(VIEW_ORDER_CARGO,
+        Filter.anyContains(Sets.newHashSet(COL_CARGO_DESCRIPTION,
+            COL_NUMBER, COL_CARGO_CMR, COL_CARGO_NOTES, COL_CARGO_DIRECTIONS,
+            ALS_LOADING_NUMBER, ALS_LOADING_CONTACT, ALS_LOADING_COMPANY, ALS_LOADING_ADDRESS,
+            ALS_LOADING_POST_INDEX, ALS_LOADING_CITY_NAME, ALS_LOADING_COUNTRY_NAME,
+            ALS_LOADING_COUNTRY_CODE, ALS_UNLOADING_NUMBER, ALS_UNLOADING_CONTACT,
+            ALS_UNLOADING_COMPANY, ALS_UNLOADING_ADDRESS, ALS_UNLOADING_POST_INDEX,
+            ALS_UNLOADING_CITY_NAME, ALS_UNLOADING_COUNTRY_NAME, ALS_UNLOADING_COUNTRY_CODE),
+            query));
 
-      result.addAll(vehiclesResult);
-      result.addAll(orderCargoResult);
+    result.addAll(vehiclesResult);
+    result.addAll(orderCargoResult);
 
-      if (usr.isModuleVisible(ModuleAndSub.of(Module.TRANSPORT, SubModule.LOGISTICS))) {
-        result.addAll(qs.getSearchResults(VIEW_ASSESSMENTS,
-            Filter.compareId(BeeUtils.toLong(query))));
-      }
+    if (usr.isModuleVisible(ModuleAndSub.of(Module.TRANSPORT, SubModule.LOGISTICS))) {
+      result.addAll(qs.getSearchResults(VIEW_ASSESSMENTS,
+          Filter.compareId(BeeUtils.toLong(query))));
     }
 
     return result;
@@ -282,9 +277,6 @@ public class TransportModuleBean implements BeeModule {
       response = sendMessage(reqInfo.getParameter(COL_DESCRIPTION),
           Codec.beeDeserializeCollection(reqInfo.getParameter(COL_MOBILE)));
 
-    } else if (BeeUtils.same(svc, SVC_DO_IMPORT)) {
-      response = imp.doImport(reqInfo);
-
     } else if (BeeUtils.same(svc, SVC_GET_CREDIT_INFO)) {
       response = getCreditInfo(reqInfo);
 
@@ -327,21 +319,13 @@ public class TransportModuleBean implements BeeModule {
   }
 
   @Override
+  public TimerService getTimerService() {
+    return timerService;
+  }
+
+  @Override
   public void init() {
-    initTimer();
-
-    prm.registerParameterEventHandler(new ParameterEventHandler() {
-      @Subscribe
-      public void initTimers(ParameterEvent event) {
-        if (BeeUtils.same(event.getParameter(), PRM_ERP_REFRESH_INTERVAL)) {
-          TransportModuleBean bean = Invocation.locateRemoteBean(TransportModuleBean.class);
-
-          if (bean != null) {
-            bean.initTimer();
-          }
-        }
-      }
-    });
+    cb.createIntervalTimer(this.getClass(), PRM_ERP_REFRESH_INTERVAL);
 
     BeeView.registerConditionProvider(TBL_IMPORT_MAPPINGS, new ConditionProvider() {
       @Override
@@ -903,33 +887,6 @@ public class TransportModuleBean implements BeeModule {
         return select;
       }
     });
-  }
-
-  public void initTimer() {
-    Timer erpTimer = null;
-
-    for (Timer timer : timerService.getTimers()) {
-      if (Objects.equal(timer.getInfo(), PRM_ERP_REFRESH_INTERVAL)) {
-        erpTimer = timer;
-        break;
-      }
-    }
-    if (erpTimer != null) {
-      erpTimer.cancel();
-    }
-    Integer minutes = prm.getInteger(PRM_ERP_REFRESH_INTERVAL);
-
-    if (BeeUtils.isPositive(minutes)) {
-      erpTimer = timerService.createIntervalTimer(minutes * TimeUtils.MILLIS_PER_MINUTE,
-          minutes * TimeUtils.MILLIS_PER_MINUTE, new TimerConfig(PRM_ERP_REFRESH_INTERVAL, false));
-
-      logger.info("Created ERP refresh timer every", minutes, "minutes starting at",
-          erpTimer.getNextTimeout());
-    } else {
-      if (erpTimer != null) {
-        logger.info("Removed ERP timer");
-      }
-    }
   }
 
   private ResponseObject createCreditInvoiceItems(Long purchaseId, Long currency, Set<Long> idList,
@@ -1835,7 +1792,7 @@ public class TransportModuleBean implements BeeModule {
         company = BeeUtils.nvl(row.getLong(COL_PAYER), row.getLong(COL_CUSTOMER));
       }
     }
-    Map<String, Object> resp = Maps.newHashMap();
+    Map<String, Object> resp = new HashMap<>();
 
     if (DataUtils.isId(company)) {
       ResponseObject response = trd.getCreditInfo(company);
@@ -2237,7 +2194,7 @@ public class TransportModuleBean implements BeeModule {
   }
 
   private List<Color> getThemeColors(Long theme) {
-    List<Color> result = Lists.newArrayList();
+    List<Color> result = new ArrayList<>();
 
     BeeRowSet rowSet;
     if (theme != null) {
@@ -2751,8 +2708,8 @@ public class TransportModuleBean implements BeeModule {
   }
 
   @Timeout
-  private void importERPPayments() {
-    if (!Config.isInitialized()) {
+  private void importERPPayments(Timer timer) {
+    if (!cb.isTimerEvent(timer, PRM_ERP_REFRESH_INTERVAL)) {
       return;
     }
     SimpleRowSet debts = qs.getData(new SqlSelect()
@@ -2788,7 +2745,7 @@ public class TransportModuleBean implements BeeModule {
               new String[] {"id", "data", "suma"});
 
       for (SimpleRow payment : payments) {
-        if (!Objects.equal(payment.getDouble("suma"),
+        if (!Objects.equals(payment.getDouble("suma"),
             BeeUtils.toDoubleOrNull(debts.getValueByKey(COL_SALE, payment.getValue("id"),
                 COL_TRADE_PAID)))) {
 

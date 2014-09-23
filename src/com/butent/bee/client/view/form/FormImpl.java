@@ -31,6 +31,7 @@ import com.butent.bee.client.event.logical.ActiveWidgetChangeEvent;
 import com.butent.bee.client.event.logical.DataRequestEvent;
 import com.butent.bee.client.event.logical.ParentRowEvent;
 import com.butent.bee.client.event.logical.ReadyEvent;
+import com.butent.bee.client.event.logical.RowCountChangeEvent;
 import com.butent.bee.client.event.logical.ScopeChangeEvent;
 import com.butent.bee.client.event.logical.SelectionCountChangeEvent;
 import com.butent.bee.client.event.logical.SortEvent;
@@ -324,8 +325,8 @@ public class FormImpl extends Absolute implements FormView, PreviewHandler, Tabu
 
   private static final BeeLogger logger = LogUtils.getLogger(FormImpl.class);
 
-  private static final String STYLE_FORM = StyleUtils.CLASS_NAME_PREFIX + "Form";
-  private static final String STYLE_FORM_DISABLED = StyleUtils.CLASS_NAME_PREFIX + "Form-"
+  private static final String STYLE_FORM = BeeConst.CSS_CLASS_PREFIX + "Form";
+  private static final String STYLE_FORM_DISABLED = BeeConst.CSS_CLASS_PREFIX + "Form-"
       + StyleUtils.SUFFIX_DISABLED;
 
   private static final String NEW_ROW_CAPTION = "Create New";
@@ -399,7 +400,7 @@ public class FormImpl extends Absolute implements FormView, PreviewHandler, Tabu
     this.formName = formName;
 
     if (!BeeUtils.isEmpty(formName)) {
-      addStyleName(StyleUtils.CLASS_NAME_PREFIX + "form-" + formName.trim());
+      addStyleName(BeeConst.CSS_CLASS_PREFIX + "form-" + formName.trim());
     }
   }
 
@@ -471,6 +472,11 @@ public class FormImpl extends Absolute implements FormView, PreviewHandler, Tabu
   public HandlerRegistration addReadyHandler(ReadyEvent.Handler handler) {
     setHasReadyDelegates(ReadyEvent.maybeDelegate(this));
     return addHandler(handler, ReadyEvent.getType());
+  }
+
+  @Override
+  public HandlerRegistration addRowCountChangeHandler(RowCountChangeEvent.Handler handler) {
+    return addHandler(handler, RowCountChangeEvent.getType());
   }
 
   @Override
@@ -1558,6 +1564,8 @@ public class FormImpl extends Absolute implements FormView, PreviewHandler, Tabu
     } else if (fireScopeChange) {
       fireScopeChange(NavigationOrigin.SYSTEM);
     }
+
+    fireEvent(new RowCountChangeEvent(count));
   }
 
   @Override

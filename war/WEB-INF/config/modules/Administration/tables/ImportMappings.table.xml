@@ -5,11 +5,11 @@
   idName="MappingID"
   >
   <Fields>
-    <Relation name="Property" notNull="true" relation="ImportProperties" cascade="DELETE" label="=trImportProperty" />
-    <String name="Value" precision="30" notNull="true" label="=trImportValue" />
+    <Relation name="Option" notNull="true" relation="ImportOptions" cascade="DELETE" label="=trImportOption" />
+    <Text name="Value" label="=trImportValue" />
     <Long name="Mapping" notNull="true" label="=trImportMapping" />
   </Fields>
   <Constraints>
-    <Unique fields="Property Value" />
+    <Unique fields="Option Value" />
   </Constraints>
 </Table>

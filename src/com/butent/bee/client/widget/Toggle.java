@@ -15,14 +15,17 @@ import com.google.gwt.user.client.Event;
 
 import com.butent.bee.client.dom.DomUtils;
 import com.butent.bee.client.event.EventUtils;
+import com.butent.bee.client.event.logical.SummaryChangeEvent;
 import com.butent.bee.client.style.StyleUtils;
 import com.butent.bee.client.ui.FormWidget;
 import com.butent.bee.client.view.edit.EditChangeHandler;
 import com.butent.bee.client.view.edit.EditStopEvent;
 import com.butent.bee.client.view.edit.EditStopEvent.Handler;
 import com.butent.bee.client.view.edit.Editor;
+import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.State;
 import com.butent.bee.shared.data.value.BooleanValue;
+import com.butent.bee.shared.data.value.Value;
 import com.butent.bee.shared.font.FontAwesome;
 import com.butent.bee.shared.ui.EditorAction;
 import com.butent.bee.shared.ui.HasCheckedness;
@@ -57,6 +60,8 @@ public class Toggle extends CustomWidget implements Editor, HasValueChangeHandle
 
   private boolean handlesTabulation;
 
+  private boolean summarize;
+
   public Toggle() {
     this(BALLOT, HEAVY_CHECK_MARK);
   }
@@ -72,7 +77,7 @@ public class Toggle extends CustomWidget implements Editor, HasValueChangeHandle
   public Toggle(Element element, String upFace, String downFace, String styleName,
       boolean checked) {
 
-    super(element, BeeUtils.notEmpty(styleName, "bee-Toggle"));
+    super(element, BeeUtils.notEmpty(styleName, BeeConst.CSS_CLASS_PREFIX + "Toggle"));
     addStyleDependentName(checked ? STYLE_SUFFIX_CHECKED : STYLE_SUFFIX_UNCHECKED);
 
     this.upFace = upFace;
@@ -115,6 +120,11 @@ public class Toggle extends CustomWidget implements Editor, HasValueChangeHandle
   }
 
   @Override
+  public HandlerRegistration addSummaryChangeHandler(SummaryChangeEvent.Handler handler) {
+    return addHandler(handler, SummaryChangeEvent.getType());
+  }
+
+  @Override
   public HandlerRegistration addValueChangeHandler(ValueChangeHandler<String> handler) {
     return addHandler(handler, ValueChangeEvent.getType());
   }
@@ -151,6 +161,11 @@ public class Toggle extends CustomWidget implements Editor, HasValueChangeHandle
   @Override
   public String getOptions() {
     return options;
+  }
+
+  @Override
+  public Value getSummary() {
+    return BooleanValue.of(isChecked());
   }
 
   @Override
@@ -289,6 +304,11 @@ public class Toggle extends CustomWidget implements Editor, HasValueChangeHandle
   }
 
   @Override
+  public void setSummarize(boolean summarize) {
+    this.summarize = summarize;
+  }
+
+  @Override
   public void setTabIndex(int index) {
     getElement().setTabIndex(index);
   }
@@ -302,6 +322,11 @@ public class Toggle extends CustomWidget implements Editor, HasValueChangeHandle
   public void startEdit(String oldValue, char charCode, EditorAction onEntry,
       Element sourceElement) {
     setValue(oldValue);
+  }
+
+  @Override
+  public boolean summarize() {
+    return summarize;
   }
 
   @Override

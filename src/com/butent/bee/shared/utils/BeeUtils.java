@@ -14,6 +14,7 @@ import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.HasRange;
 
 import java.math.BigDecimal;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashSet;
@@ -536,6 +537,24 @@ public final class BeeUtils {
     return cnt;
   }
 
+  public static int countLines(String src) {
+    if (src == null) {
+      return 0;
+    }
+
+    String s = src.trim();
+    if (s.isEmpty()) {
+      return 0;
+    }
+
+    int cnt = count(s, BeeConst.CHAR_EOL);
+    if (cnt <= 0) {
+      cnt = count(s, BeeConst.CHAR_CR);
+    }
+
+    return cnt + 1;
+  }
+
   /**
    * Deletes a part of a String from specified {@code start} to {@code end}.
    * 
@@ -632,7 +651,7 @@ public final class BeeUtils {
    * @return a new list with elements that contain {@code ctxt} in {@code src} collection.
    */
   public static List<String> filterContext(Collection<String> src, String ctxt) {
-    List<String> result = Lists.newArrayList();
+    List<String> result = new ArrayList<>();
     if (src == null) {
       return result;
     }
@@ -2664,7 +2683,7 @@ public final class BeeUtils {
   }
 
   public static List<Integer> toInts(String input) {
-    List<Integer> result = Lists.newArrayList();
+    List<Integer> result = new ArrayList<>();
 
     if (!isEmpty(input)) {
       for (String s : NUMBER_SPLITTER.split(input)) {
@@ -2748,7 +2767,7 @@ public final class BeeUtils {
   }
 
   public static List<Long> toLongs(String input) {
-    List<Long> result = Lists.newArrayList();
+    List<Long> result = new ArrayList<>();
 
     if (!isEmpty(input)) {
       for (String s : NUMBER_SPLITTER.split(input)) {

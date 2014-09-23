@@ -8,6 +8,7 @@ import com.google.gwt.resources.client.ImageResource;
 import com.google.gwt.user.client.ui.Focusable;
 import com.google.gwt.user.client.ui.HasOneWidget;
 import com.google.gwt.user.client.ui.HasWidgets;
+import com.google.gwt.user.client.ui.Widget;
 import com.google.gwt.xml.client.Element;
 
 import com.butent.bee.client.BeeKeeper;
@@ -31,6 +32,8 @@ import com.butent.bee.client.dom.DomUtils;
 import com.butent.bee.client.dom.Edges;
 import com.butent.bee.client.dom.Features;
 import com.butent.bee.client.event.EventUtils;
+import com.butent.bee.client.event.logical.HasSummaryChangeHandlers;
+import com.butent.bee.client.event.logical.SummaryChangeEvent;
 import com.butent.bee.client.grid.CellKind;
 import com.butent.bee.client.grid.ChildGrid;
 import com.butent.bee.client.grid.GridFactory;
@@ -265,16 +268,20 @@ public enum FormWidget {
   DATA_TREE(UiConstants.TAG_DATA_TREE, EnumSet.of(Type.FOCUSABLE));
 
   private final class HeaderAndContent {
+
     private final String headerTag;
     private final String headerString;
     private final IdentifiableWidget headerWidget;
+
     private final IdentifiableWidget content;
 
     private HeaderAndContent(String headerTag, String headerString,
         IdentifiableWidget headerWidget, IdentifiableWidget content) {
+
       this.headerTag = headerTag;
       this.headerString = headerString;
       this.headerWidget = headerWidget;
+
       this.content = content;
     }
 
@@ -436,7 +443,7 @@ public enum FormWidget {
 
   private static IdentifiableWidget createIfWidget(String formName, Element element,
       String viewName, List<BeeColumn> columns,
-      WidgetDescriptionCallback widgetDescriptionCallback, WidgetInterceptor widgetCallback) {
+      WidgetDescriptionCallback widgetDescriptionCallback, WidgetInterceptor widgetInterceptor) {
 
     if (element == null) {
       return null;
@@ -446,12 +453,12 @@ public enum FormWidget {
       return null;
     }
     return fw.create(formName, element, viewName, columns, widgetDescriptionCallback,
-        widgetCallback);
+        widgetInterceptor);
   }
 
   private static IdentifiableWidget createIfWidgetOrHtmlOrText(String formName, Element element,
       String viewName, List<BeeColumn> columns, WidgetDescriptionCallback wdcb,
-      WidgetInterceptor widgetCallback) {
+      WidgetInterceptor widgetInterceptor) {
 
     if (element == null) {
       return null;
@@ -472,7 +479,7 @@ public enum FormWidget {
       }
 
     } else {
-      widget = createIfWidget(formName, element, viewName, columns, wdcb, widgetCallback);
+      widget = createIfWidget(formName, element, viewName, columns, wdcb, widgetInterceptor);
     }
     return widget;
   }
@@ -521,11 +528,11 @@ public enum FormWidget {
 
   private static IdentifiableWidget createOneChild(String formName, Element parent,
       String viewName, List<BeeColumn> columns,
-      WidgetDescriptionCallback widgetDescriptionCallback, WidgetInterceptor widgetCallback) {
+      WidgetDescriptionCallback widgetDescriptionCallback, WidgetInterceptor widgetInterceptor) {
 
     for (Element child : XmlUtils.getChildrenElements(parent)) {
       IdentifiableWidget widget = createIfWidget(formName, child, viewName, columns,
-          widgetDescriptionCallback, widgetCallback);
+          widgetDescriptionCallback, widgetInterceptor);
       if (widget != null) {
         return widget;
       }
@@ -535,7 +542,7 @@ public enum FormWidget {
 
   private static boolean createTableCell(HtmlTable table, String formName, Element element,
       int row, int col, String viewName, List<BeeColumn> columns, WidgetDescriptionCallback wdcb,
-      WidgetInterceptor widgetCallback) {
+      WidgetInterceptor widgetInterceptor) {
 
     boolean ok = false;
     String tag = XmlUtils.getLocalName(element);
@@ -552,7 +559,7 @@ public enum FormWidget {
 
     } else {
       IdentifiableWidget widget = createIfWidget(formName, element, viewName, columns, wdcb,
-          widgetCallback);
+          widgetInterceptor);
       ok = widget != null;
       if (ok) {
         table.setWidget(row, col, widget.asWidget());
@@ -766,6 +773,11 @@ public enum FormWidget {
       } else if (BeeUtils.same(name, HasCapsLock.ATTR_UPPER_CASE)) {
         if (widget instanceof HasCapsLock && BeeConst.isTrue(value)) {
           ((HasCapsLock) widget).setUpperCase(true);
+        }
+
+      } else if (BeeUtils.same(name, ATTR_SUMMARIZE)) {
+        if (widget instanceof HasSummaryChangeHandlers) {
+          ((HasSummaryChangeHandlers) widget).setSummarize(BeeUtils.toBoolean(value));
         }
       }
     }
@@ -999,8 +1011,9 @@ public enum FormWidget {
   private static final String ATTR_DOWN_FACE = "downFace";
 
   private static final String ATTR_CHILD = "child";
-
   private static final String ATTR_KIND = "kind";
+
+  private static final String ATTR_SUMMARIZE = "summarize";
 
   private static final String TAG_CSS = "css";
 
@@ -1049,7 +1062,7 @@ public enum FormWidget {
 
   public IdentifiableWidget create(String formName, Element element, String viewName,
       List<BeeColumn> columns, WidgetDescriptionCallback widgetDescriptionCallback,
-      WidgetInterceptor widgetCallback) {
+      WidgetInterceptor widgetInterceptor) {
 
     Assert.notNull(element);
 
@@ -1057,7 +1070,7 @@ public enum FormWidget {
     if (formName != null && !BeeUtils.isEmpty(name) && FormFactory.isHidden(formName, name)) {
       return null;
     }
-    if (widgetCallback != null && !widgetCallback.beforeCreateWidget(name, element)) {
+    if (widgetInterceptor != null && !widgetInterceptor.beforeCreateWidget(name, element)) {
       return null;
     }
 
@@ -1128,15 +1141,17 @@ public enum FormWidget {
 
         if (!BeeUtils.isEmpty(gridName) && !BeeUtils.isEmpty(relColumn)
             && !BeeConst.isUndef(sourceIndex)) {
-          widget = new ChildGrid(gridName, sourceIndex, relColumn,
-              GridFactory.getGridOptions(attributes),
-              !BeeConst.isFalse(attributes.get(ATTR_DISABLABLE)));
+          widget = new ChildGrid(gridName, GridFactory.getGridOptions(attributes),
+              sourceIndex, relColumn, !BeeConst.isFalse(attributes.get(ATTR_DISABLABLE)));
         }
         break;
 
       case CHILD_SELECTOR:
         relation = createRelation(null, attributes, children, Relation.RenderMode.SOURCE);
         if (relation != null) {
+          if (widgetInterceptor != null) {
+            widgetInterceptor.configureRelation(name, relation);
+          }
           widget = ChildSelector.create(viewName, relation, attributes);
         }
         break;
@@ -1158,14 +1173,17 @@ public enum FormWidget {
       case CUSTOM_DISPLAY:
       case CUSTOM_EDITABLE:
       case CUSTOM_FOCUSABLE:
-        if (widgetCallback != null) {
-          widget = widgetCallback.createCustomWidget(name, element);
+        if (widgetInterceptor != null) {
+          widget = widgetInterceptor.createCustomWidget(name, element);
         }
         break;
 
       case DATA_SELECTOR:
         relation = createRelation(viewName, attributes, children, Relation.RenderMode.TARGET);
         if (relation != null) {
+          if (widgetInterceptor != null) {
+            widgetInterceptor.configureRelation(name, relation);
+          }
           widget = new DataSelector(relation, true);
         }
         break;
@@ -1536,6 +1554,10 @@ public enum FormWidget {
       case MULTI_SELECTOR:
         relation = createRelation(null, attributes, children, Relation.RenderMode.SOURCE);
         if (relation != null) {
+          if (widgetInterceptor != null) {
+            widgetInterceptor.configureRelation(name, relation);
+          }
+
           String property = attributes.get(UiConstants.ATTR_PROPERTY);
 
           CellSource cellSource = null;
@@ -1587,8 +1609,15 @@ public enum FormWidget {
 
         for (Element child : children) {
           if (BeeUtils.same(XmlUtils.getLocalName(child), "Relation")) {
-            relations.add(createRelation(null, XmlUtils.getAttributes(child),
-                XmlUtils.getChildrenElements(child), Relation.RenderMode.SOURCE));
+            relation = createRelation(null, XmlUtils.getAttributes(child),
+                XmlUtils.getChildrenElements(child), Relation.RenderMode.SOURCE);
+
+            if (relation != null) {
+              if (widgetInterceptor != null) {
+                widgetInterceptor.configureRelation(name, relation);
+              }
+              relations.add(relation);
+            }
           }
         }
         widget = new Relations(attributes.get(ATTR_REL_COLUMN),
@@ -1711,6 +1740,9 @@ public enum FormWidget {
       case UNBOUND_SELECTOR:
         relation = createRelation(null, attributes, children, Relation.RenderMode.SOURCE);
         if (relation != null) {
+          if (widgetInterceptor != null) {
+            widgetInterceptor.configureRelation(name, relation);
+          }
           widget = UnboundSelector.create(relation);
         }
         break;
@@ -1778,7 +1810,7 @@ public enum FormWidget {
         String id = attributes.get(ATTR_ID);
         if (!BeeUtils.isEmpty(id) && children.size() == 1) {
           IdentifiableWidget child = createIfWidget(formName, children.get(0), viewName, columns,
-              widgetDescriptionCallback, widgetCallback);
+              widgetDescriptionCallback, widgetInterceptor);
           if (child != null) {
             widget = TuningFactory.decorate(id, element, child,
                 widgetDescriptionCallback.getLastWidgetDescription());
@@ -1913,7 +1945,7 @@ public enum FormWidget {
 
         } else {
           processChild(formName, widget, child, viewName, columns, widgetDescriptionCallback,
-              widgetCallback);
+              widgetInterceptor);
         }
       }
     }
@@ -1947,8 +1979,8 @@ public enum FormWidget {
       }
     }
 
-    if (widgetCallback != null) {
-      widgetCallback.afterCreateWidget(name, widget, widgetDescriptionCallback);
+    if (widgetInterceptor != null) {
+      widgetInterceptor.afterCreateWidget(name, widget, widgetDescriptionCallback);
     }
     if (widget instanceof Launchable) {
       ((Launchable) widget).launch();
@@ -1998,11 +2030,13 @@ public enum FormWidget {
   }
 
   private HeaderAndContent createHeaderAndContent(String formName, Element parent, String viewName,
-      List<BeeColumn> columns, WidgetDescriptionCallback wdcb, WidgetInterceptor widgetCallback) {
+      List<BeeColumn> columns, WidgetDescriptionCallback wdcb,
+      WidgetInterceptor widgetInterceptor) {
 
     String headerTag = null;
     String headerString = null;
     IdentifiableWidget headerWidget = null;
+
     IdentifiableWidget content = null;
 
     for (Element child : XmlUtils.getChildrenElements(parent)) {
@@ -2027,7 +2061,7 @@ public enum FormWidget {
       }
 
       IdentifiableWidget w = createIfWidget(formName, child, viewName, columns, wdcb,
-          widgetCallback);
+          widgetInterceptor);
       if (w == null) {
         continue;
       }
@@ -2039,6 +2073,7 @@ public enum FormWidget {
         break;
       }
     }
+
     return new HeaderAndContent(headerTag, headerString, headerWidget, content);
   }
 
@@ -2079,14 +2114,14 @@ public enum FormWidget {
 
   private void processChild(String formName, IdentifiableWidget parent, Element child,
       String viewName, List<BeeColumn> columns,
-      WidgetDescriptionCallback wdcb, WidgetInterceptor widgetCallback) {
+      WidgetDescriptionCallback wdcb, WidgetInterceptor widgetInterceptor) {
 
     String childTag = XmlUtils.getLocalName(child);
 
     if (hasLayers()) {
       if (BeeUtils.same(childTag, TAG_LAYER) && parent instanceof HasWidgets) {
         IdentifiableWidget w = createOneChild(formName, child, viewName, columns, wdcb,
-            widgetCallback);
+            widgetInterceptor);
 
         if (w != null) {
           ((HasWidgets) parent).add(w.asWidget());
@@ -2160,14 +2195,14 @@ public enum FormWidget {
           if (XmlUtils.tagIs(cell, UiConstants.TAG_CELL)) {
             for (Element cellContent : XmlUtils.getChildrenElements(cell)) {
               if (createTableCell(table, formName, cellContent, r, c, viewName, columns, wdcb,
-                  widgetCallback)) {
+                  widgetInterceptor)) {
                 break;
               }
             }
             setTableCellAttributes(table, cell, r, c);
             c++;
           } else if (createTableCell(table, formName, cell, r, c, viewName, columns, wdcb,
-              widgetCallback)) {
+              widgetInterceptor)) {
             c++;
           }
         }
@@ -2178,7 +2213,7 @@ public enum FormWidget {
 
       } else {
         createTableCell(table, formName, child, table.getRowCount(), 0, viewName, columns, wdcb,
-            widgetCallback);
+            widgetInterceptor);
       }
 
     } else if (isCellVector() && parent instanceof HasWidgets) {
@@ -2187,13 +2222,13 @@ public enum FormWidget {
       if (BeeUtils.same(childTag, UiConstants.TAG_CELL)) {
         for (Element cellContent : XmlUtils.getChildrenElements(child)) {
           w = createIfWidgetOrHtmlOrText(formName, cellContent, viewName, columns, wdcb,
-              widgetCallback);
+              widgetInterceptor);
           if (w != null) {
             break;
           }
         }
       } else {
-        w = createIfWidgetOrHtmlOrText(formName, child, viewName, columns, wdcb, widgetCallback);
+        w = createIfWidgetOrHtmlOrText(formName, child, viewName, columns, wdcb, widgetInterceptor);
       }
 
       if (w != null) {
@@ -2205,21 +2240,21 @@ public enum FormWidget {
 
     } else if (hasOneChild()) {
       IdentifiableWidget w = createIfWidget(formName, child, viewName, columns, wdcb,
-          widgetCallback);
+          widgetInterceptor);
       if (w != null && parent instanceof HasOneWidget) {
         ((HasOneWidget) parent).setWidget(w);
       }
 
     } else if (hasChildren()) {
       IdentifiableWidget w = createIfWidget(formName, child, viewName, columns, wdcb,
-          widgetCallback);
+          widgetInterceptor);
       if (w != null && parent instanceof HasWidgets) {
         ((HasWidgets) parent).add(w.asWidget());
       }
 
     } else if (this == SPLIT_PANEL) {
       IdentifiableWidget w = createOneChild(formName, child, viewName, columns, wdcb,
-          widgetCallback);
+          widgetInterceptor);
       if (w != null && parent instanceof Split) {
         Direction direction = EnumUtils.getEnumByName(Direction.class, childTag);
 
@@ -2239,7 +2274,7 @@ public enum FormWidget {
     } else if (this == STACK_PANEL && BeeUtils.same(childTag, TAG_STACK)) {
       Integer headerSize = XmlUtils.getAttributeInteger(child, ATTR_HEADER_SIZE);
       HeaderAndContent hc = createHeaderAndContent(formName, child, viewName, columns, wdcb,
-          widgetCallback);
+          widgetInterceptor);
 
       if (BeeUtils.isPositive(headerSize) && hc != null && hc.isValid()
           && parent instanceof Stack) {
@@ -2261,16 +2296,18 @@ public enum FormWidget {
 
     } else if (this == TABBED_PAGES && BeeUtils.same(childTag, TAG_PAGE)) {
       HeaderAndContent hc = createHeaderAndContent(formName, child, viewName, columns, wdcb,
-          widgetCallback);
+          widgetInterceptor);
 
       if (hc != null && hc.isValid() && parent instanceof TabbedPages) {
         IdentifiableWidget tab;
 
+        Widget content = hc.getContent().asWidget();
+        Collection<HasSummaryChangeHandlers> sources = SummaryChangeEvent.findSources(content);
+
         if (hc.isHeaderText() || hc.isHeaderHtml()) {
-          tab = ((TabbedPages) parent).add(hc.getContent().asWidget(), hc.getHeaderString());
+          tab = ((TabbedPages) parent).add(content, hc.getHeaderString(), null, sources);
         } else {
-          tab = ((TabbedPages) parent).add(hc.getContent().asWidget(),
-              hc.getHeaderWidget().asWidget());
+          tab = ((TabbedPages) parent).add(content, hc.getHeaderWidget().asWidget(), null, sources);
         }
 
         StyleUtils.updateAppearance(tab.getElement(), child.getAttribute(UiConstants.ATTR_CLASS),
@@ -2291,7 +2328,7 @@ public enum FormWidget {
 
     } else if (this == HEADER_CONTENT_FOOTER) {
       IdentifiableWidget w = createOneChild(formName, child, viewName, columns, wdcb,
-          widgetCallback);
+          widgetInterceptor);
       if (w != null && parent instanceof HeaderContentFooter) {
         if (BeeUtils.same(childTag, TAG_HEADER)) {
           ((HeaderContentFooter) parent).setHeaderWidget(w.asWidget());
@@ -2324,7 +2361,7 @@ public enum FormWidget {
         }
 
         IdentifiableWidget w = createIfWidget(formName, tabContent, viewName, columns, wdcb,
-            widgetCallback);
+            widgetInterceptor);
         if (w != null) {
           ((TabBar) parent).addItem(w.asWidget());
           break;

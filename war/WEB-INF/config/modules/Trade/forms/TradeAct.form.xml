@@ -28,7 +28,7 @@
         <Label for="Parent">
           &forparent;
         </Label>
-        <LongLabel source="Parent" inline="true" class="bee-output">
+        <LongLabel source="Parent" class="bee-output" style="width: 120px;">
           &forparent;
         </LongLabel>
       </row>
@@ -63,8 +63,10 @@
         <Label for="Company" visible="true" />
         <DataSelector source="Company" style="&inpw;" visible="true" />
 
-        <Label for="ServiceObject" />
-        <DataSelector source="ServiceObject" style="&inpw;" />
+        <Label for="Object" />
+        <DataSelector source="Object" renderColumns="ObjectName" 
+          choiceColumns="CompanyName ObjectName ObjectAddress" newRowEnabled="false"
+          style="&inpw;" />
       </row>
 
       <row>
@@ -101,6 +103,11 @@
         <ChildGrid name="TradeActServices" relColumn="TradeAct" />
       </page>
 
+      <page class="bee-ta-invoices-tab">
+        <text>=trdInvoices</text>
+        <ChildGrid name="TradeActInvoices" relColumn="TradeAct" />
+      </page>
+
       <page>
         <text>=notes</text>
         <FlowPanel class="flexBox-vertical">
@@ -115,7 +122,7 @@
 
           <br/>
           <SimplePanel class="flexible" style="position: relative;">
-            <InputArea source="Notes" class="occupy-1" />
+            <InputArea source="Notes" class="occupy-1" summarize="true" />
           </SimplePanel>
         </FlowPanel>
       </page>

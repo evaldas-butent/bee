@@ -15,8 +15,8 @@ import com.butent.bee.client.dialog.ConfirmationCallback;
 import com.butent.bee.client.dialog.Icon;
 import com.butent.bee.client.event.logical.SelectorEvent;
 import com.butent.bee.client.i18n.Money;
-import com.butent.bee.client.ui.UiHelper;
 import com.butent.bee.client.view.DataView;
+import com.butent.bee.client.view.ViewHelper;
 import com.butent.bee.client.view.form.FormView;
 import com.butent.bee.client.view.grid.GridView;
 import com.butent.bee.shared.BeeConst;
@@ -180,7 +180,8 @@ class TradeActSelectorHandler implements SelectorEvent.Handler {
           upd = false;
 
         } else if (COL_TA_UNTIL.equals(colName)) {
-          upd = !templRow.isNull(i) && targetRow.isNull(targetIndex)
+          upd = actKind != null && actKind.enableServices()
+              && !templRow.isNull(i) && targetRow.isNull(targetIndex)
               && TimeUtils.monthDiff(TimeUtils.today(), templRow.getDateTime(i)) > 0;
 
         } else if (colName.contains(COL_TA_SERIES)) {
@@ -266,7 +267,7 @@ class TradeActSelectorHandler implements SelectorEvent.Handler {
           }
 
           if (!data.isEmpty()) {
-            GridView gridView = UiHelper.getChildGrid(form, GRID_TRADE_ACT_ITEMS);
+            GridView gridView = ViewHelper.getChildGrid(form, GRID_TRADE_ACT_ITEMS);
 
             if (gridView != null) {
               gridView.ensureRelId(new IdCallback() {
@@ -293,7 +294,7 @@ class TradeActSelectorHandler implements SelectorEvent.Handler {
   }
 
   private static TradeActKind getKind(SelectorEvent event) {
-    DataView dataView = UiHelper.getDataView(event.getSelector());
+    DataView dataView = ViewHelper.getDataView(event.getSelector());
 
     if (dataView != null && VIEW_TRADE_ACTS.equals(dataView.getViewName())
         && dataView.getActiveRow() != null) {
@@ -306,7 +307,7 @@ class TradeActSelectorHandler implements SelectorEvent.Handler {
   }
 
   private static Long getSeries(SelectorEvent event) {
-    DataView dataView = UiHelper.getDataView(event.getSelector());
+    DataView dataView = ViewHelper.getDataView(event.getSelector());
 
     if (dataView != null && VIEW_TRADE_ACTS.equals(dataView.getViewName())
         && dataView.getActiveRow() != null) {
@@ -320,6 +321,11 @@ class TradeActSelectorHandler implements SelectorEvent.Handler {
   private static Long getTemplateLong(IsRow row, String colName) {
     int index = Data.getColumnIndex(VIEW_TRADE_ACT_TEMPLATES, colName);
     return BeeConst.isUndef(index) ? null : row.getLong(index);
+  }
+
+  private static boolean isActOrTemplate(FormView form) {
+    return form != null
+        && BeeUtils.inListSame(form.getViewName(), VIEW_TRADE_ACTS, VIEW_TRADE_ACT_TEMPLATES);
   }
 
   private static boolean isTemplatable(IsRow actRow, IsRow templRow, String colName) {
@@ -336,7 +342,7 @@ class TradeActSelectorHandler implements SelectorEvent.Handler {
     final List<IsRow> actItems = new ArrayList<>();
     final List<IsRow> actServices = new ArrayList<>();
 
-    GridView itemGrid = UiHelper.getChildGrid(actForm, GRID_TRADE_ACT_ITEMS);
+    GridView itemGrid = ViewHelper.getChildGrid(actForm, GRID_TRADE_ACT_ITEMS);
 
     if (itemGrid != null && !itemGrid.isEmpty()) {
       int index = itemGrid.getDataIndex(COL_TRADE_ITEM_PRICE);
@@ -350,7 +356,7 @@ class TradeActSelectorHandler implements SelectorEvent.Handler {
 
     TradeActKind kind = TradeActKeeper.getKind(actForm.getViewName(), actForm.getActiveRow());
     if (kind != null && kind.enableServices()) {
-      GridView serviceGrid = UiHelper.getChildGrid(actForm, GRID_TRADE_ACT_SERVICES);
+      GridView serviceGrid = ViewHelper.getChildGrid(actForm, GRID_TRADE_ACT_SERVICES);
 
       if (serviceGrid != null && !serviceGrid.isEmpty()) {
         int index = serviceGrid.getDataIndex(COL_TRADE_ITEM_PRICE);
@@ -422,7 +428,7 @@ class TradeActSelectorHandler implements SelectorEvent.Handler {
 
       case VIEW_TRADE_SERIES:
         if (event.isOpened()) {
-          DataView dataView = UiHelper.getDataView(event.getSelector());
+          DataView dataView = ViewHelper.getDataView(event.getSelector());
 
           if (dataView != null && BeeUtils.inList(dataView.getViewName(),
               VIEW_TRADE_ACTS, VIEW_TRADE_ACT_TEMPLATES)) {
@@ -459,7 +465,7 @@ class TradeActSelectorHandler implements SelectorEvent.Handler {
           String notes = (relatedRow == null)
               ? null : Data.getString(relatedViewName, relatedRow, COL_TRADE_NOTES);
 
-          FormView form = UiHelper.getForm(event.getSelector());
+          FormView form = ViewHelper.getForm(event.getSelector());
 
           if (!BeeUtils.isEmpty(notes) && form != null
               && VIEW_TRADE_ACTS.equals(form.getViewName())) {
@@ -500,7 +506,7 @@ class TradeActSelectorHandler implements SelectorEvent.Handler {
 
         } else if (event.isChanged()) {
           IsRow relatedRow = event.getRelatedRow();
-          FormView form = UiHelper.getForm(event.getSelector());
+          FormView form = ViewHelper.getForm(event.getSelector());
 
           if (relatedRow != null && form != null) {
             applyActTemplate(relatedRow, form);
@@ -510,7 +516,7 @@ class TradeActSelectorHandler implements SelectorEvent.Handler {
 
       case AdministrationConstants.VIEW_CURRENCIES:
         if (event.isChanged() && event.getRelatedRow() != null) {
-          FormView form = UiHelper.getForm(event.getSelector());
+          FormView form = ViewHelper.getForm(event.getSelector());
 
           if (form != null && VIEW_TRADE_ACTS.equals(form.getViewName())
               && DataUtils.hasId(form.getActiveRow())) {
@@ -531,6 +537,35 @@ class TradeActSelectorHandler implements SelectorEvent.Handler {
             }
           }
         }
+        break;
+
+      case VIEW_COMPANY_OBJECTS:
+        if (event.isOpened()) {
+          FormView form = ViewHelper.getForm(event.getSelector());
+
+          if (isActOrTemplate(form)) {
+            Long company = form.getLongValue(COL_TA_COMPANY);
+            Filter filter = DataUtils.isId(company) ? Filter.equals(COL_COMPANY, company) : null;
+
+            event.getSelector().setAdditionalFilter(filter);
+          }
+
+        } else if (event.isChanged() && event.getRelatedRow() != null) {
+          FormView form = ViewHelper.getForm(event.getSelector());
+
+          if (isActOrTemplate(form) && form.getActiveRow() != null
+              && !DataUtils.isId(form.getLongValue(COL_TA_COMPANY))) {
+
+            Long company = Data.getLong(relatedViewName, event.getRelatedRow(), COL_COMPANY);
+            form.getActiveRow().setValue(form.getDataIndex(COL_TA_COMPANY), company);
+
+            String name = Data.getString(relatedViewName, event.getRelatedRow(), ALS_COMPANY_NAME);
+            form.getActiveRow().setValue(form.getDataIndex(ALS_COMPANY_NAME), name);
+
+            form.refreshBySource(COL_TA_COMPANY);
+          }
+        }
+
         break;
     }
   }

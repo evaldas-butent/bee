@@ -138,6 +138,7 @@
         <xs:attribute name="required" type="xs:boolean" />
         <xs:attribute name="updateMode" type="ui:refreshType" />
         <xs:attribute name="value" type="xs:normalizedString" />
+        <xs:attribute name="summarize" type="xs:boolean" />
       </xs:extension>
     </xs:complexContent>
   </xs:complexType>
@@ -533,6 +534,7 @@
         <xs:attribute name="caption" type="xs:string" />
         <xs:attribute name="filter" type="xs:normalizedString" />
         <xs:attribute name="currentUserFilter" type="type:nameType" />
+        <xs:attribute name="summarize" type="xs:boolean" />
       </xs:extension>
     </xs:complexContent>
   </xs:complexType>
@@ -955,7 +957,7 @@
   <xs:element name="OrderedList" type="htmlList" substitutionGroup="widget" />
   <xs:element name="UnorderedList" type="htmlList" substitutionGroup="widget" />
 
-  <xs:element name="RichTextEditor" type="display" substitutionGroup="widget" />
+  <xs:element name="RichTextEditor" type="editableWidget" substitutionGroup="widget" />
 
   <xs:element name="Flag" substitutionGroup="widget">
     <xs:complexType>
@@ -1038,6 +1040,7 @@
           <xs:attribute name="blockedRelations">
             <xs:simpleType><xs:list itemType="type:dataView" /></xs:simpleType>
           </xs:attribute>
+          <xs:attribute name="summarize" type="xs:boolean" />
         </xs:extension>
       </xs:complexContent>
     </xs:complexType>

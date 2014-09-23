@@ -15,12 +15,12 @@ import com.butent.bee.client.event.logical.ReadyEvent;
 import com.butent.bee.client.layout.Flow;
 import com.butent.bee.client.layout.Horizontal;
 import com.butent.bee.client.presenter.Presenter;
-import com.butent.bee.client.style.StyleUtils;
 import com.butent.bee.client.ui.IdentifiableWidget;
 import com.butent.bee.client.ui.UiOption;
 import com.butent.bee.client.widget.FaLabel;
 import com.butent.bee.client.widget.Label;
 import com.butent.bee.shared.Assert;
+import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.font.FontAwesome;
 import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.logging.BeeLogger;
@@ -75,7 +75,7 @@ public class HeaderImpl extends Flow implements HeaderView {
 
   private static final int DEFAULT_HEIGHT = 30;
 
-  private static final String STYLE_PREFIX = StyleUtils.CLASS_NAME_PREFIX + "Header-";
+  private static final String STYLE_PREFIX = BeeConst.CSS_CLASS_PREFIX + "Header-";
 
   private static final String STYLE_CONTAINER = STYLE_PREFIX + "container";
 

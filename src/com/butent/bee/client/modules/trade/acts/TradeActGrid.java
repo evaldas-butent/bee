@@ -159,10 +159,10 @@ public class TradeActGrid extends AbstractGridInterceptor {
     TradeActKind k = TradeActKeeper.getKind(event.getRowValue(), getDataIndex(COL_TA_KIND));
 
     if (supplementCommand != null) {
-      TradeActKeeper.setCommandEnabled(supplementCommand, k == TradeActKind.SALE);
+      TradeActKeeper.setCommandEnabled(supplementCommand, k != null && k.enableSupplement());
     }
     if (returnCommand != null) {
-      TradeActKeeper.setCommandEnabled(returnCommand, k == TradeActKind.SALE);
+      TradeActKeeper.setCommandEnabled(returnCommand, k != null && k.enableReturn());
     }
 
     if (copyCommand != null) {

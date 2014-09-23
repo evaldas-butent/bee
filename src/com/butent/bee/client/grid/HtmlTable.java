@@ -279,6 +279,8 @@ public class HtmlTable extends Panel implements IdentifiableWidget, IsHtmlTable,
     //@formatter:on
   }
 
+  private static final String STYLE_NAME = BeeConst.CSS_CLASS_PREFIX + "HtmlTable";
+
   private static final String STYLE_SUFFIX_COL = "-col";
   private static final String STYLE_SUFFIX_CELL = "-cell";
 
@@ -313,7 +315,7 @@ public class HtmlTable extends Panel implements IdentifiableWidget, IsHtmlTable,
     this.rowFormatter = new RowFormatter();
     this.columnFormatter = new ColumnFormatter();
 
-    setStyleName("bee-HtmlTable");
+    setStyleName(STYLE_NAME);
 
     init();
   }

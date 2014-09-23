@@ -1,6 +1,5 @@
 package com.butent.bee.client.event;
 
-import com.google.common.collect.Maps;
 import com.google.gwt.core.client.JavaScriptObject;
 import com.google.gwt.dom.client.Document;
 import com.google.gwt.dom.client.Element;
@@ -92,9 +91,9 @@ import com.google.web.bindery.event.shared.HandlerRegistration;
 
 import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.dom.DomUtils;
-import com.butent.bee.client.ui.UiHelper;
 import com.butent.bee.client.utils.JsFunction;
 import com.butent.bee.client.utils.JsUtils;
+import com.butent.bee.client.view.ViewHelper;
 import com.butent.bee.client.view.form.FormView;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
@@ -108,6 +107,7 @@ import com.butent.bee.shared.utils.Property;
 import com.butent.bee.shared.utils.PropertyUtils;
 
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -188,7 +188,7 @@ public final class EventUtils {
 
   public static final String DEFAULT_DND_DATA_FORMAT = "text/plain";
 
-  private static final Map<String, JsFunction> domHandlers = Maps.newHashMap();
+  private static final Map<String, JsFunction> domHandlers = new HashMap<>();
 
   public static void addClassName(HasNativeEvent ev, String className) {
     Assert.notNull(ev);
@@ -1194,7 +1194,7 @@ public final class EventUtils {
     double rowId;
     double rowVersion;
 
-    FormView form = UiHelper.getForm(widget);
+    FormView form = ViewHelper.getForm(widget);
     IsRow data = (form == null) ? null : form.getActiveRow();
 
     if (data == null) {

@@ -19,9 +19,10 @@ import com.butent.bee.client.layout.Horizontal;
 import com.butent.bee.client.layout.Simple;
 import com.butent.bee.client.layout.Vertical;
 import com.butent.bee.client.style.StyleUtils;
-import com.butent.bee.client.ui.UiHelper;
+import com.butent.bee.client.view.ViewHelper;
 import com.butent.bee.client.widget.Image;
 import com.butent.bee.shared.Assert;
+import com.butent.bee.shared.BeeConst;
 
 public class Disclosure extends Vertical implements HasOpenHandlers<Disclosure>,
     HasCloseHandlers<Disclosure> {
@@ -44,7 +45,7 @@ public class Disclosure extends Vertical implements HasOpenHandlers<Disclosure>,
           panel.getContentWidget().setVisible(true);
         }
 
-        UiHelper.maybeResizeForm(panel);
+        ViewHelper.maybeResizeForm(panel);
       }
     }
 
@@ -57,7 +58,7 @@ public class Disclosure extends Vertical implements HasOpenHandlers<Disclosure>,
       }
       StyleUtils.autoHeight(curPanel.contentWrapper);
 
-      UiHelper.maybeResizeForm(curPanel);
+      ViewHelper.maybeResizeForm(curPanel);
       curPanel = null;
     }
 
@@ -176,7 +177,7 @@ public class Disclosure extends Vertical implements HasOpenHandlers<Disclosure>,
 
   private static final int DEFAULT_ANIMATION_DURATION = 350;
 
-  private static final String STYLENAME_CONTAINER = "bee-Disclosure";
+  private static final String STYLENAME_CONTAINER = BeeConst.CSS_CLASS_PREFIX + "Disclosure";
 
   private static final String STYLENAME_HEADER = STYLENAME_CONTAINER + "-header";
   private static final String STYLENAME_CONTENT = STYLENAME_CONTAINER + "-content";

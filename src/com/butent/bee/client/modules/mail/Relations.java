@@ -30,6 +30,7 @@ import com.butent.bee.client.dialog.DialogConstants;
 import com.butent.bee.client.dialog.InputCallback;
 import com.butent.bee.client.event.logical.ParentRowEvent;
 import com.butent.bee.client.event.logical.SelectorEvent;
+import com.butent.bee.client.event.logical.SummaryChangeEvent;
 import com.butent.bee.client.grid.HtmlTable;
 import com.butent.bee.client.layout.Flow;
 import com.butent.bee.client.render.RendererFactory;
@@ -52,6 +53,8 @@ import com.butent.bee.shared.data.BeeRowSet;
 import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.RowChildren;
 import com.butent.bee.shared.data.filter.Filter;
+import com.butent.bee.shared.data.value.IntegerValue;
+import com.butent.bee.shared.data.value.Value;
 import com.butent.bee.shared.data.view.DataInfo;
 import com.butent.bee.shared.font.FontAwesome;
 import com.butent.bee.shared.i18n.Localized;
@@ -65,6 +68,7 @@ import com.butent.bee.shared.utils.BeeUtils;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
@@ -73,7 +77,8 @@ import java.util.Map;
 import java.util.Map.Entry;
 
 public class Relations extends Flow implements Editor, ClickHandler, SelectorEvent.Handler,
-    ParentRowEvent.Handler, HasFosterParent, HasRowChildren, HandlesValueChange {
+    ParentRowEvent.Handler, HasFosterParent, HasRowChildren, HandlesValueChange,
+    SummaryChangeEvent.Handler {
 
   private static final String STORAGE = TBL_RELATIONS;
 
@@ -86,6 +91,8 @@ public class Relations extends Flow implements Editor, ClickHandler, SelectorEve
   private boolean enabled = true;
   private String options;
   private boolean handlesTabulation;
+
+  private boolean summarize;
 
   private com.google.web.bindery.event.shared.HandlerRegistration parentRowReg;
   private String parentId;
@@ -180,6 +187,11 @@ public class Relations extends Flow implements Editor, ClickHandler, SelectorEve
   }
 
   @Override
+  public HandlerRegistration addSummaryChangeHandler(SummaryChangeEvent.Handler eh) {
+    return addHandler(eh, SummaryChangeEvent.getType());
+  }
+
+  @Override
   public void clearValue() {
   }
 
@@ -242,6 +254,19 @@ public class Relations extends Flow implements Editor, ClickHandler, SelectorEve
       }
     }
     return relations;
+  }
+
+  @Override
+  public Value getSummary() {
+    int count = 0;
+
+    for (MultiSelector multi : widgetMap.values()) {
+      if (multi != null) {
+        count += multi.getChoices().size();
+      }
+    }
+
+    return new IntegerValue(count);
   }
 
   @Override
@@ -365,6 +390,11 @@ public class Relations extends Flow implements Editor, ClickHandler, SelectorEve
     requery(event.getRowId());
   }
 
+  @Override
+  public void onSummaryChange(SummaryChangeEvent event) {
+    SummaryChangeEvent.maybeFire(this);
+  }
+
   public void refresh() {
     for (String col : widgetMap.keySet()) {
       MultiSelector multi = widgetMap.get(col);
@@ -411,7 +441,7 @@ public class Relations extends Flow implements Editor, ClickHandler, SelectorEve
           }
         }
         if (ids.containsKey(COL_RELATION)) {
-          Queries.getRowSet(STORAGE, Lists.newArrayList(column),
+          Queries.getRowSet(STORAGE, Collections.singletonList(column),
               Filter.idIn(ids.get(COL_RELATION)), new RowSetCallback() {
                 @Override
                 public void onSuccess(BeeRowSet res) {
@@ -510,6 +540,17 @@ public class Relations extends Flow implements Editor, ClickHandler, SelectorEve
   }
 
   @Override
+  public void setSummarize(boolean summarize) {
+    this.summarize = summarize;
+
+    for (MultiSelector multi : widgetMap.values()) {
+      if (multi != null) {
+        multi.setSummarize(summarize);
+      }
+    }
+  }
+
+  @Override
   public void setTabIndex(int index) {
     getElement().setTabIndex(index);
   }
@@ -520,6 +561,11 @@ public class Relations extends Flow implements Editor, ClickHandler, SelectorEve
 
   @Override
   public void startEdit(String oldValue, char charCode, EditorAction onEntry, Element source) {
+  }
+
+  @Override
+  public boolean summarize() {
+    return summarize;
   }
 
   @Override
@@ -610,6 +656,9 @@ public class Relations extends Flow implements Editor, ClickHandler, SelectorEve
     multi.addSelectorHandler(this);
     registerSelectorHandler(multi);
     multi.setWidth("100%");
+
+    multi.setSummarize(summarize());
+    multi.addSummaryChangeHandler(this);
 
     int c = inline ? table.insertRow(table.getRowCount() - 1) : table.getRowCount();
 

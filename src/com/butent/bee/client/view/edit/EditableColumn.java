@@ -65,7 +65,7 @@ import java.util.List;
 public class EditableColumn implements BlurHandler, EditChangeHandler, EditStopEvent.Handler,
     HasCellValidationHandlers, HasViewName, EditEndEvent.HasEditEndHandler, HasCaption {
 
-  public static final String STYLE_EDITOR = "bee-CellGridEditor";
+  public static final String STYLE_EDITOR = BeeConst.CSS_CLASS_PREFIX + "CellGridEditor";
 
   private final String viewName;
 

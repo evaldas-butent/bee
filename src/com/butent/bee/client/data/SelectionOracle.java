@@ -385,13 +385,16 @@ public class SelectionOracle implements HandlesAllDataEvents, HasViewName {
     processRequest(request, callback);
   }
 
-  public void setAdditionalFilter(Filter additionalFilter) {
-    if (Objects.equals(additionalFilter, this.additionalFilter)) {
-      return;
-    }
-    this.additionalFilter = additionalFilter;
+  public boolean setAdditionalFilter(Filter filter, boolean force) {
+    if (force || !Objects.equals(filter, this.additionalFilter)) {
+      this.additionalFilter = filter;
+      clearData();
 
-    clearData();
+      return true;
+
+    } else {
+      return false;
+    }
   }
 
   public void setExclusions(Collection<Long> rowIds) {

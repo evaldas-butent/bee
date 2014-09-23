@@ -8,7 +8,7 @@
     <item>=itemGroup</item>
     <item>=item</item>
     <item>=client</item>
-    <item>=svcObject</item>
+    <item>=object</item>
     <item>=manager</item>
     <item>=warehouse</item>">
 ]>
@@ -49,9 +49,9 @@
             newRowEnabled="false" style="&multi;" />
         </row>
         <row>
-          <Label text="=svcObjects" />
-          <MultiSelector name="ServiceObjects" viewName="ServiceObjects" 
-            renderColumns="Address" choiceColumns="Address CustomerName"
+          <Label text="=objects" />
+          <MultiSelector name="CompanyObjects" viewName="CompanyObjects" 
+            renderColumns="ObjectName" choiceColumns="CompanyName ObjectName ObjectAddress"
             newRowEnabled="false" editPopup="true" style="&multi;" />
         </row>
     

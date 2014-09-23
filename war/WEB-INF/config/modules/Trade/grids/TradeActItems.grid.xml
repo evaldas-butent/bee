@@ -10,6 +10,24 @@
   <xi:include href="columns/TradeActItem.columns.xml" />
 
   <xi:include href="columns/TradeActQuantity.columns.xml" />
+
+  <g:columns>
+    <PropColumn name="returned_qty" type="double" label="=taQuantityReturned" visible="true">
+      <style>
+        <bodyStyle><ui:inline>color: red;</ui:inline></bodyStyle>
+        <footerStyle><ui:inline>color: red;</ui:inline></footerStyle>
+      </style>
+      <footer aggregate="sum" />
+    </PropColumn>
+    
+    <CalcColumn name="remaining_qty" type="double" label="=taQuantityRemained">
+      <render>
+        <ui:expression>row.Quantity - Number(row.returned_qty)</ui:expression>
+      </render>
+      <footer aggregate="sum" />
+    </CalcColumn>
+  </g:columns>
+
   <xi:include href="columns/TradeActWeight.columns.xml" />
   <xi:include href="columns/TradeActPrice.columns.xml" />
 

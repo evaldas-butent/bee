@@ -1,7 +1,6 @@
 package com.butent.bee.client.modules.documents;
 
 import com.google.common.collect.Lists;
-import com.google.common.collect.Sets;
 import com.google.gwt.core.client.Scheduler.ScheduledCommand;
 import com.google.gwt.event.shared.HasHandlers;
 
@@ -29,8 +28,8 @@ import com.butent.bee.client.ui.FormFactory;
 import com.butent.bee.client.ui.FormFactory.WidgetDescriptionCallback;
 import com.butent.bee.client.ui.IdentifiableWidget;
 import com.butent.bee.client.ui.Opener;
-import com.butent.bee.client.ui.UiHelper;
 import com.butent.bee.client.utils.FileUtils;
+import com.butent.bee.client.view.ViewHelper;
 import com.butent.bee.client.view.add.ReadyForInsertEvent;
 import com.butent.bee.client.view.edit.EditStartEvent;
 import com.butent.bee.client.view.form.FormView;
@@ -62,7 +61,9 @@ import com.butent.bee.shared.ui.ColumnDescription;
 import com.butent.bee.shared.utils.ArrayUtils;
 import com.butent.bee.shared.utils.BeeUtils;
 
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
@@ -170,7 +171,7 @@ public final class DocumentsHandler {
     private static Collection<FileInfo> sanitize(GridView gridView,
         Collection<? extends FileInfo> input) {
 
-      Collection<FileInfo> result = Lists.newArrayList();
+      Collection<FileInfo> result = new ArrayList<>();
       if (BeeUtils.isEmpty(input)) {
         return result;
       }
@@ -186,13 +187,13 @@ public final class DocumentsHandler {
       int sizeIndex = gridView.getDataIndex(AdministrationConstants.ALS_FILE_SIZE);
       int typeIndex = gridView.getDataIndex(AdministrationConstants.ALS_FILE_TYPE);
 
-      Set<FileInfo> oldFiles = Sets.newHashSet();
+      Set<FileInfo> oldFiles = new HashSet<>();
       for (IsRow row : data) {
         oldFiles.add(new FileInfo(row.getLong(fileIndex), row.getString(nameIndex),
             row.getLong(sizeIndex), row.getString(typeIndex)));
       }
 
-      List<String> messages = Lists.newArrayList();
+      List<String> messages = new ArrayList<>();
 
       for (FileInfo fi : input) {
         if (oldFiles.contains(fi)) {
@@ -278,7 +279,7 @@ public final class DocumentsHandler {
 
         gridView.add(collector);
 
-        FormView form = UiHelper.getForm(gridView.asWidget());
+        FormView form = ViewHelper.getForm(gridView.asWidget());
         if (form != null) {
           collector.bindDnd(form);
         }

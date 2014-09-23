@@ -185,7 +185,7 @@ class TilePanel extends Split implements HasCaption, SelectionHandler<String> {
     @Override
     protected void init() {
       super.init();
-      addStyleName("bee-Tile");
+      addStyleName(BeeConst.CSS_CLASS_PREFIX + "Tile");
     }
 
     @Override
@@ -277,7 +277,7 @@ class TilePanel extends Split implements HasCaption, SelectionHandler<String> {
     }
 
     private void setActiveStyle(boolean add) {
-      setStyleName("bee-Tile-active", add);
+      setStyleName(BeeConst.CSS_CLASS_PREFIX + "Tile-active", add);
     }
 
     private void setContentIndex(int contentIndex) {
@@ -574,7 +574,7 @@ class TilePanel extends Split implements HasCaption, SelectionHandler<String> {
 
   TilePanel(Workspace workspace) {
     super(5);
-    addStyleName("bee-TilePanel");
+    addStyleName(BeeConst.CSS_CLASS_PREFIX + "TilePanel");
 
     init(workspace);
   }

@@ -7,7 +7,7 @@
   <row>
     <Label text="=creditLimit" for="CreditLimit" style="&lbl1;" />
     <FlowPanel>
-      <InputInteger source="CreditLimit" style="text-align: right" />
+      <InputInteger source="CreditLimit" style="text-align: right" summarize="true" />
       <DataSelector source="LimitCurrency" editEnabled="false"
         placeholder="=currencyShort" style="width:40px; margin-left:5px; display:inline-block;"
         for="CreditLimit" />
@@ -19,19 +19,19 @@
 
   <row for="CreditTolerance">
     <Label text="=creditTolerance" style="&lbl1;" />
-    <InputInteger source="CreditTolerance" style="width: 60px;" />
+    <InputInteger source="CreditTolerance" style="width: 60px;" summarize="true" />
   </row>
 
   <row for="CreditDays">
     <Label text="=creditDays" style="&lbl1;" />
-    <InputDecimal source="CreditDays" style="width: 60px;" />
+    <InputDecimal source="CreditDays" style="width: 60px;" summarize="true" />
   </row>
 
   <row for="FinancialState">
     <Label text="=financialState" style="&lbl1;" />
     <Table>
       <row>
-        <DataSelector source="FinancialState" renderColumns="FinancialStateName" />
+        <DataSelector source="FinancialState" renderColumns="FinancialStateName" summarize="true" />
         <FaLabel name="FinancialStateAudit" char="history" style="font-size: larger;"/>
       </row>
     </Table>    
@@ -39,15 +39,15 @@
 
   <row for="DaysAsBuyer">
     <Label text="=daysAsBuyer" style="&lbl1;" />
-    <InputDecimal source="DaysAsBuyer" style="width: 60px;" />
+    <InputDecimal source="DaysAsBuyer" style="width: 60px;" summarize="true" />
   </row>
 
   <row for="DaysAsSupplier">
     <Label text="=daysAsSupplier" style="&lbl1;" />
-    <InputDecimal source="DaysAsSupplier" style="width: 60px;" />
+    <InputDecimal source="DaysAsSupplier" style="width: 60px;" summarize="true" />
   </row>
   <row for="PercentInterst">
     <Label text="=percentInterest" style="&lbl1;" />
-    <InputDecimal source="PercentInterest" style="width: 60px;" />
+    <InputDecimal source="PercentInterest" style="width: 60px;" summarize="true" />
   </row>
 </Table>  

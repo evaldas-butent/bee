@@ -68,6 +68,7 @@ public final class ClassifierConstants {
   public static final String VIEW_COMPANY_CONTACTS = "CompanyContacts";
   public static final String VIEW_COMPANY_DEPARTMENTS = "CompanyDepartments";
   public static final String VIEW_COMPANY_USERS = "CompanyUsers";
+  public static final String VIEW_COMPANY_OBJECTS = "CompanyObjects";
 
   public static final String GRID_PERSONS = "Persons";
   public static final String GRID_COMPANIES = "Companies";
@@ -166,6 +167,8 @@ public final class ClassifierConstants {
   public static final String COL_ACTIVITY = "Activity";
 
   public static final String COL_COMPANY_TYPE_NAME = "Name";
+
+  public static final String COL_COMPANY_OBJECT_NAME = "ObjectName";
 
   public static final String COL_BANK_NAME = "Name";
   public static final String COL_BANK_CODE = "BankCode";

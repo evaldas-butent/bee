@@ -56,7 +56,7 @@
         <Label  text="=companyActivities" style="&lbl1;" />          
         <ChildSelector viewName="CompanyActivities" childTable="CompActStore"
           targetRelColumn="Company" sourceRelColumn="Activity"
-          label="=companyActivities" style="&inp1;" />
+          label="=companyActivities" style="&inp1;" summarize="true"/>
       </row>
     </Table>
 
@@ -101,13 +101,13 @@
           <Table>
             <row>
               <Label style="&lbl1;" for="CompanySize" />
-              <DataSelector source="CompanySize" style="width: 100px;" />
+              <DataSelector source="CompanySize" style="width: 100px;" summarize="true" />
               <Label style="margin-left: 8px; margin-right: 8px;" for="InformationSource" />
-              <DataSelector source="InformationSource" style="width: 100px;" />
+              <DataSelector source="InformationSource" style="width: 100px;" summarize="true" />
             </row>
             <row for="Rating">
               <Label text="=rating" style="&lbl1;"/>
-              <InputText source="Rating" style="width:100px;" />
+              <InputText source="Rating" style="width: 100px;" summarize="true" />
             </row>
           </Table>
         </FlowPanel>
@@ -118,10 +118,19 @@
         <ChildGrid name="RelatedDocuments" relColumn="Company" />
       </page>
 
+      <page>
+        <text>=objects</text>
+        <ChildGrid name="CompanyObjects" relColumn="Company" module="Trade.Acts" />
+      </page>
+      <page>
+        <text>=tradeActs</text>
+        <ChildGrid name="CompanyTradeActs" relColumn="Company" module="Trade.Acts" />
+      </page>
+
       <page for="Notes">
         <text>=notes</text>
         <SimplePanel>
-          <InputArea source="Notes" class="occupy-1" />
+          <InputArea source="Notes" class="occupy-1" summarize="true" />
         </SimplePanel>
       </page>  
 

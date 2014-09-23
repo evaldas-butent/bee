@@ -1,7 +1,6 @@
 package com.butent.bee.server.modules.documents;
 
 import com.google.common.collect.Lists;
-import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
 import com.google.common.eventbus.Subscribe;
 
@@ -38,7 +37,6 @@ import com.butent.bee.shared.logging.LogUtils;
 import com.butent.bee.shared.modules.BeeParameter;
 import com.butent.bee.shared.modules.administration.AdministrationConstants;
 import com.butent.bee.shared.rights.Module;
-import com.butent.bee.shared.rights.ModuleAndSub;
 import com.butent.bee.shared.rights.RegulatedWidget;
 import com.butent.bee.shared.rights.RightsState;
 import com.butent.bee.shared.utils.BeeUtils;
@@ -47,6 +45,7 @@ import com.butent.bee.shared.utils.EnumUtils;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -73,16 +72,12 @@ public class DocumentsModuleBean implements BeeModule {
 
   @Override
   public List<SearchResult> doSearch(String query) {
-    List<SearchResult> result = Lists.newArrayList();
+    List<SearchResult> docsSr = qs.getSearchResults(VIEW_DOCUMENTS,
+        Filter.anyContains(Sets.newHashSet(COL_NUMBER, COL_REGISTRATION_NUMBER,
+            COL_DOCUMENT_NAME, ALS_CATEGORY_NAME, ALS_TYPE_NAME,
+            ALS_PLACE_NAME, ALS_STATUS_NAME), query));
 
-    if (usr.isModuleVisible(ModuleAndSub.of(Module.DOCUMENTS))) {
-      List<SearchResult> docsSr = qs.getSearchResults(VIEW_DOCUMENTS,
-          Filter.anyContains(Sets.newHashSet(COL_NUMBER, COL_REGISTRATION_NUMBER,
-              COL_DOCUMENT_NAME, ALS_CATEGORY_NAME, ALS_TYPE_NAME,
-              ALS_PLACE_NAME, ALS_STATUS_NAME), query));
-      result.addAll(docsSr);
-    }
-    return result;
+    return docsSr;
   }
 
   @Override
@@ -135,7 +130,7 @@ public class DocumentsModuleBean implements BeeModule {
               AdministrationConstants.PROP_ICON);
 
         } else if (BeeUtils.same(event.getTargetName(), VIEW_DOCUMENT_TEMPLATES)) {
-          Map<Long, IsRow> indexedRows = Maps.newHashMap();
+          Map<Long, IsRow> indexedRows = new HashMap<>();
           BeeRowSet rowSet = event.getRowset();
           int idx = rowSet.getColumnIndex(COL_DOCUMENT_DATA);
 
@@ -294,7 +289,7 @@ public class DocumentsModuleBean implements BeeModule {
             sys.joinTables(TBL_CRITERIA_GROUPS, TBL_CRITERIA, COL_CRITERIA_GROUP))
         .setWhere(SqlUtils.equals(TBL_CRITERIA_GROUPS, COL_DOCUMENT_DATA, data)));
 
-    Map<Long, Long> groups = Maps.newHashMap();
+    Map<Long, Long> groups = new HashMap<>();
 
     for (SimpleRow row : rs) {
       long groupId = row.getLong(COL_CRITERIA_GROUP);

@@ -1,6 +1,5 @@
 package com.butent.bee.client.screen;
 
-import com.google.common.base.Objects;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.event.logical.shared.CloseEvent;
@@ -30,13 +29,15 @@ import com.butent.bee.shared.logging.LogUtils;
 import com.butent.bee.shared.rights.RegulatedWidget;
 import com.butent.bee.shared.utils.BeeUtils;
 
+import java.util.Objects;
+
 class CentralScrutinizer extends Stack implements CloseHandler<IdentifiableWidget>,
     ActiveWidgetChangeEvent.Handler {
 
   private static final class Appliance extends Flow implements
       HasCloseHandlers<IdentifiableWidget>, HasDomain {
 
-    private static final String STYLE_NAME = "bee-Appliance";
+    private static final String STYLE_NAME = BeeConst.CSS_CLASS_PREFIX + "Appliance";
 
     private final Domain domain;
     private final Long key;
@@ -95,7 +96,7 @@ class CentralScrutinizer extends Stack implements CloseHandler<IdentifiableWidge
     }
 
     private boolean is(Domain otherDomain, Long otherKey) {
-      return getDomain().equals(otherDomain) && Objects.equal(getKey(), otherKey);
+      return getDomain().equals(otherDomain) && Objects.equals(getKey(), otherKey);
     }
   }
 
@@ -114,7 +115,7 @@ class CentralScrutinizer extends Stack implements CloseHandler<IdentifiableWidge
 
   CentralScrutinizer() {
     super();
-    addStyleName("bee-CentralScrutinizer");
+    addStyleName(BeeConst.CSS_CLASS_PREFIX + "CentralScrutinizer");
   }
 
   public Flow getDomainHeader(Domain domain, Long key) {
@@ -239,7 +240,7 @@ class CentralScrutinizer extends Stack implements CloseHandler<IdentifiableWidge
     }
 
     if (BeeKeeper.getUser().isWidgetVisible(RegulatedWidget.ADMIN)) {
-      Shell shell = new Shell("bee-Shell");
+      Shell shell = new Shell(BeeConst.CSS_CLASS_PREFIX + "Shell");
       shell.restore();
 
       Simple wrapper = new Simple(shell);

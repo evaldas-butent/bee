@@ -14,10 +14,10 @@ import com.butent.bee.client.presenter.Presenter;
 import com.butent.bee.client.style.StyleUtils;
 import com.butent.bee.client.ui.FormFactory.WidgetDescriptionCallback;
 import com.butent.bee.client.ui.IdentifiableWidget;
-import com.butent.bee.client.ui.UiHelper;
 import com.butent.bee.client.validation.CellValidateEvent;
 import com.butent.bee.client.validation.CellValidateEvent.Handler;
 import com.butent.bee.client.view.HeaderView;
+import com.butent.bee.client.view.ViewHelper;
 import com.butent.bee.client.view.form.FormView;
 import com.butent.bee.client.view.form.interceptor.AbstractFormInterceptor;
 import com.butent.bee.client.view.form.interceptor.FormInterceptor;
@@ -139,7 +139,7 @@ final class CompanyActionForm extends AbstractFormInterceptor {
     createValidationEvents(form, newRow);
 
     if (parentGrid != null) {
-      parentForm = UiHelper.getForm(parentGrid.asWidget());
+      parentForm = ViewHelper.getForm(parentGrid.asWidget());
     }
 
     if (parentForm != null) {

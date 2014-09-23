@@ -1,12 +1,11 @@
 package com.butent.webservice;
 
-import com.google.common.collect.Lists;
-
 import com.butent.bee.server.utils.XmlUtils;
 import com.butent.bee.shared.time.DateTime;
 import com.butent.bee.shared.time.JustDate;
 import com.butent.bee.shared.utils.BeeUtils;
 
+import java.util.ArrayList;
 import java.util.List;
 
 public class WSDocument {
@@ -59,7 +58,7 @@ public class WSDocument {
   private String payer;
   private String currency;
 
-  private final List<WSDocumentItem> items = Lists.newArrayList();
+  private final List<WSDocumentItem> items = new ArrayList<>();
 
   public WSDocument(String documentId, DateTime date, String operation, String company,
       String warehouse) {

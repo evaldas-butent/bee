@@ -1,6 +1,5 @@
 package com.butent.bee.client.event;
 
-import com.google.common.collect.Lists;
 import com.google.common.primitives.Ints;
 import com.google.gwt.dom.client.Element;
 import com.google.gwt.dom.client.EventTarget;
@@ -23,6 +22,7 @@ import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.NameUtils;
 import com.butent.bee.shared.utils.Property;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
@@ -132,9 +132,9 @@ public final class Previewer implements NativePreviewHandler, HasInfo {
     return false;
   }
 
-  private final List<PreviewHandler> handlers = Lists.newArrayList();
+  private final List<PreviewHandler> handlers = new ArrayList<>();
 
-  private final List<PreviewHandler> mouseDownPriorHandlers = Lists.newArrayList();
+  private final List<PreviewHandler> mouseDownPriorHandlers = new ArrayList<>();
 
   private int modalCount;
 
@@ -146,7 +146,7 @@ public final class Previewer implements NativePreviewHandler, HasInfo {
 
   @Override
   public List<Property> getInfo() {
-    List<Property> info = Lists.newArrayList();
+    List<Property> info = new ArrayList<>();
     info.add(new Property("Modal Count", BeeUtils.toString(modalCount)));
 
     info.add(new Property("Handlers", BeeUtils.toString(handlers.size())));
@@ -264,7 +264,7 @@ public final class Previewer implements NativePreviewHandler, HasInfo {
       return;
     }
 
-    List<ComparableHandler> comparableHandlers = Lists.newArrayList();
+    List<ComparableHandler> comparableHandlers = new ArrayList<>();
     for (int i = 0; i < handlers.size(); i++) {
       comparableHandlers.add(new ComparableHandler(i, handlers.get(i)));
     }

@@ -168,6 +168,8 @@ public final class BeeConst {
   public static final String YEAR = "Year";
   public static final String MONTH = "Month";
 
+  public static final String CSS_CLASS_PREFIX = "bee-";
+
   public static final Set<String> EMPTY_IMMUTABLE_STRING_SET = Collections.emptySet();
   public static final List<String> EMPTY_IMMUTABLE_STRING_LIST = Collections.emptyList();
 

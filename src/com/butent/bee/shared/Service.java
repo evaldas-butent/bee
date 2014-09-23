@@ -77,8 +77,6 @@ public final class Service {
   public static final String GET_RELATED_VALUES = DATA_SERVICE_PREFIX + "get_related_values";
   public static final String UPDATE_RELATED_VALUES = DATA_SERVICE_PREFIX + "update_related_values";
 
-  public static final String IMPORT_CSV_COMPANIES = DATA_SERVICE_PREFIX + "import_csv_companies";
-
   public static final String GET_DSNS = DATA_SERVICE_PREFIX + "get_dsns";
   public static final String SWITCH_DSN = DATA_SERVICE_PREFIX + "switch_dsn";
 
