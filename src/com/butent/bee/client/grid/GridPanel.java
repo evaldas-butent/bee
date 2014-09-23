@@ -3,15 +3,15 @@ package com.butent.bee.client.grid;
 import com.butent.bee.client.presenter.GridPresenter;
 import com.butent.bee.client.presenter.Presenter;
 import com.butent.bee.client.presenter.PresenterCallback;
-import com.butent.bee.client.style.StyleUtils;
 import com.butent.bee.client.ui.UiOption;
 import com.butent.bee.client.view.grid.interceptor.GridInterceptor;
+import com.butent.bee.shared.BeeConst;
 
 import java.util.EnumSet;
 
 public class GridPanel extends EmbeddedGrid {
 
-  private static final String STYLE_NAME = StyleUtils.CLASS_NAME_PREFIX + "GridPanel";
+  private static final String STYLE_NAME = BeeConst.CSS_CLASS_PREFIX + "GridPanel";
 
   private final boolean child;
 

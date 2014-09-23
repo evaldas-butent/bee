@@ -303,9 +303,9 @@ public class Rooms implements HasInfo {
 
   private static final BeeLogger logger = LogUtils.getLogger(Rooms.class);
 
-  private static final String STYLE_ROOMS_PREFIX = StyleUtils.CLASS_NAME_PREFIX + "Rooms-";
+  private static final String STYLE_ROOMS_PREFIX = BeeConst.CSS_CLASS_PREFIX + "Rooms-";
 
-  private static final String STYLE_ROOM_PREFIX = StyleUtils.CLASS_NAME_PREFIX + "Room-";
+  private static final String STYLE_ROOM_PREFIX = BeeConst.CSS_CLASS_PREFIX + "Room-";
   private static final String STYLE_GUEST = STYLE_ROOM_PREFIX + "guest";
   private static final String STYLE_USER = STYLE_ROOM_PREFIX + "user";
   private static final String STYLE_ROOM_UPDATED = STYLE_ROOM_PREFIX + "updated";

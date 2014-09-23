@@ -534,6 +534,7 @@
         <xs:attribute name="caption" type="xs:string" />
         <xs:attribute name="filter" type="xs:normalizedString" />
         <xs:attribute name="currentUserFilter" type="type:nameType" />
+        <xs:attribute name="summarize" type="xs:boolean" />
       </xs:extension>
     </xs:complexContent>
   </xs:complexType>
@@ -544,7 +545,6 @@
         <xs:extension base="gridType">
           <xs:attribute name="relColumn" type="type:nameType" use="required" />
           <xs:attribute name="source" type="type:nameType" />
-          <xs:attribute name="summarize" type="xs:boolean" />
         </xs:extension>
       </xs:complexContent>
     </xs:complexType>
@@ -555,7 +555,6 @@
       <xs:complexContent>
         <xs:extension base="gridType">
           <xs:attribute name="child" type="xs:boolean" />
-          <xs:attribute name="summarize" type="xs:boolean" />
         </xs:extension>
       </xs:complexContent>
     </xs:complexType>

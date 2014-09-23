@@ -75,7 +75,8 @@ class MessageDispatcher {
 
   private static BeeLogger logger = LogUtils.getLogger(MessageDispatcher.class);
 
-  private static final String CONVERSATION_STYLE_PREFIX = "bee-Conversation-";
+  private static final String CONVERSATION_STYLE_PREFIX = BeeConst.CSS_CLASS_PREFIX
+      + "Conversation-";
   private static final String CONVERSATION_MESSAGE_STYLE_PREFIX = CONVERSATION_STYLE_PREFIX
       + "message-";
 

@@ -22,6 +22,7 @@ import com.butent.bee.client.style.StyleUtils;
 import com.butent.bee.client.view.ViewHelper;
 import com.butent.bee.client.widget.Image;
 import com.butent.bee.shared.Assert;
+import com.butent.bee.shared.BeeConst;
 
 public class Disclosure extends Vertical implements HasOpenHandlers<Disclosure>,
     HasCloseHandlers<Disclosure> {
@@ -176,7 +177,7 @@ public class Disclosure extends Vertical implements HasOpenHandlers<Disclosure>,
 
   private static final int DEFAULT_ANIMATION_DURATION = 350;
 
-  private static final String STYLENAME_CONTAINER = "bee-Disclosure";
+  private static final String STYLENAME_CONTAINER = BeeConst.CSS_CLASS_PREFIX + "Disclosure";
 
   private static final String STYLENAME_HEADER = STYLENAME_CONTAINER + "-header";
   private static final String STYLENAME_CONTENT = STYLENAME_CONTAINER + "-content";

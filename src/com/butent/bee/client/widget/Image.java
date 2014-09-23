@@ -23,6 +23,7 @@ import com.google.gwt.user.client.Event;
 import com.butent.bee.client.event.EventUtils;
 import com.butent.bee.client.ui.EnablableWidget;
 import com.butent.bee.client.utils.HasCommand;
+import com.butent.bee.shared.BeeConst;
 
 /**
  * Implements an image holding user interface component, that displays the image at a given URL.
@@ -165,7 +166,7 @@ public class Image extends CustomWidget implements EnablableWidget, HasCommand,
   @Override
   protected void init() {
     super.init();
-    addStyleName("bee-Image");
+    addStyleName(BeeConst.CSS_CLASS_PREFIX + "Image");
   }
 
   private ImageElement getImageElement() {

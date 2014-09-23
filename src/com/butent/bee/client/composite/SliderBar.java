@@ -31,6 +31,7 @@ import com.butent.bee.client.view.edit.EditStopEvent;
 import com.butent.bee.client.view.edit.EditStopEvent.Handler;
 import com.butent.bee.client.view.edit.Editor;
 import com.butent.bee.client.widget.Image;
+import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.css.values.FontSize;
 import com.butent.bee.shared.data.value.BooleanValue;
 import com.butent.bee.shared.data.value.Value;
@@ -81,11 +82,11 @@ public class SliderBar extends Focus implements RequiresResize, Editor,
     }
   }
 
-  private static final String STYLE_SHELL = StyleUtils.CLASS_NAME_PREFIX + "SliderBar-shell";
-  private static final String STYLE_LINE = StyleUtils.CLASS_NAME_PREFIX + "SliderBar-line";
-  private static final String STYLE_KNOB = StyleUtils.CLASS_NAME_PREFIX + "SliderBar-knob";
-  private static final String STYLE_LABEL = StyleUtils.CLASS_NAME_PREFIX + "SliderBar-label";
-  private static final String STYLE_TICK = StyleUtils.CLASS_NAME_PREFIX + "SliderBar-tick";
+  private static final String STYLE_SHELL = BeeConst.CSS_CLASS_PREFIX + "SliderBar-shell";
+  private static final String STYLE_LINE = BeeConst.CSS_CLASS_PREFIX + "SliderBar-line";
+  private static final String STYLE_KNOB = BeeConst.CSS_CLASS_PREFIX + "SliderBar-knob";
+  private static final String STYLE_LABEL = BeeConst.CSS_CLASS_PREFIX + "SliderBar-label";
+  private static final String STYLE_TICK = BeeConst.CSS_CLASS_PREFIX + "SliderBar-tick";
 
   private static final String STYLE_SLIDING = "sliding";
 

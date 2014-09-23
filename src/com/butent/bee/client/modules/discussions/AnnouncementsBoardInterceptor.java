@@ -1,6 +1,5 @@
 package com.butent.bee.client.modules.discussions;
 
-import com.google.common.collect.Lists;
 import com.google.gwt.core.client.Scheduler.ScheduledCommand;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
@@ -56,18 +55,20 @@ import com.butent.bee.shared.time.JustDate;
 import com.butent.bee.shared.ui.Action;
 import com.butent.bee.shared.utils.BeeUtils;
 
+import java.util.ArrayList;
 import java.util.Collection;
 
 class AnnouncementsBoardInterceptor extends AbstractFormInterceptor implements
     RowInsertEvent.Handler, HandlesUpdateEvents, DataChangeEvent.Handler {
   private static final String WIDGET_ADS_CONTENT = "AdsContent";
-  private static final String STYLE_PREFIX = "bee-discuss-adsFormContent-";
+  private static final String STYLE_PREFIX = BeeConst.CSS_CLASS_PREFIX
+      + "discuss-adsFormContent-";
   private static final String STYLE_HAPPY_DAY = "-happyDay";
   private static final String STYLE_BIRTH_LIST = "-birthList";
   private static final String STYLE_ACTION = "action";
   private static final String STYLE_CHAT_BALLOON = "chatBalloon";
 
-  private final Collection<HandlerRegistration> registry = Lists.newArrayList();
+  private final Collection<HandlerRegistration> registry = new ArrayList<>();
 
   @Override
   public FormInterceptor getInstance() {

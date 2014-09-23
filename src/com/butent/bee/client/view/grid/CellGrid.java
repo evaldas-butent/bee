@@ -620,7 +620,7 @@ public class CellGrid extends Widget implements IdentifiableWidget, HasDataTable
   private static final int PAGE_SIZE_CALCULATION_RESERVE = 3;
   private static final int LINE_WIDTH_RESERVE = 1;
 
-  private static final String STYLE_GRID = StyleUtils.CLASS_NAME_PREFIX + "CellGrid";
+  private static final String STYLE_GRID = BeeConst.CSS_CLASS_PREFIX + "CellGrid";
 
   public static final String STYLE_EVEN_ROW = STYLE_GRID + "EvenRow";
   public static final String STYLE_ODD_ROW = STYLE_GRID + "OddRow";

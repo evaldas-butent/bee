@@ -1,12 +1,11 @@
 package com.butent.bee.shared.websocket.messages;
 
-import com.google.common.collect.Lists;
-
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.State;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.Codec;
 
+import java.util.ArrayList;
 import java.util.List;
 
 public class ProgressMessage extends Message {
@@ -122,7 +121,7 @@ public class ProgressMessage extends Message {
 
   @Override
   protected String serialize() {
-    List<Object> values = Lists.newArrayList();
+    List<Object> values = new ArrayList<>();
 
     values.add(getProgressId());
     values.add(Codec.pack(getState()));

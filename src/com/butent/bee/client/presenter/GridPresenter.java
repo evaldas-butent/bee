@@ -1,7 +1,6 @@
 package com.butent.bee.client.presenter;
 
 import com.google.common.collect.Lists;
-import com.google.common.collect.Sets;
 import com.google.gwt.dom.client.Element;
 
 import com.butent.bee.client.BeeKeeper;
@@ -84,6 +83,8 @@ import com.butent.bee.shared.utils.NameUtils;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -275,7 +276,7 @@ public class GridPresenter extends AbstractPresenter implements ReadyForInsertEv
 
   public void deleteRows(final IsRow activeRow, final Collection<RowInfo> selectedRows) {
     int size = selectedRows.size();
-    List<String> options = Lists.newArrayList();
+    List<String> options = new ArrayList<>();
 
     Pair<String, String> defMsg = AbstractGridInterceptor.deleteRowsMessage(size);
     Pair<String, String> message =
@@ -294,7 +295,7 @@ public class GridPresenter extends AbstractPresenter implements ReadyForInsertEv
       options.add(Localized.getConstants().cancel());
 
       Global.getMsgBoxen().display(getCaption(), Icon.ALARM,
-          Lists.newArrayList(Localized.getConstants().deleteQuestion()), options, 2,
+          Collections.singletonList(Localized.getConstants().deleteQuestion()), options, 2,
           new ChoiceCallback() {
             @Override
             public void onSuccess(int value) {
@@ -412,7 +413,7 @@ public class GridPresenter extends AbstractPresenter implements ReadyForInsertEv
         if (BeeUtils.isEmpty(getGridView().getViewName())) {
           return;
         }
-        Set<Long> ids = Sets.newHashSet();
+        Set<Long> ids = new HashSet<>();
 
         for (RowInfo row : getGridView().getSelectedRows(SelectedRows.ALL)) {
           ids.add(row.getId());

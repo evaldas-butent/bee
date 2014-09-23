@@ -42,6 +42,7 @@ import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.ui.Action;
 import com.butent.bee.shared.ui.ColumnDescription;
 import com.butent.bee.shared.ui.GridDescription;
+import com.butent.bee.shared.ui.Relation;
 
 import java.util.Collection;
 import java.util.List;
@@ -168,6 +169,10 @@ public abstract class AbstractGridInterceptor implements GridInterceptor {
 
   @Override
   public void beforeRender(GridView gridView, RenderingEvent event) {
+  }
+
+  @Override
+  public void configureRelation(String name, Relation relation) {
   }
 
   @Override

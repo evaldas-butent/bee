@@ -1,5 +1,6 @@
 package com.butent.bee.shared.modules.tasks;
 
+import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.Service;
 import com.butent.bee.shared.i18n.LocalizableConstants;
 import com.butent.bee.shared.i18n.Localized;
@@ -396,7 +397,7 @@ public final class TaskConstants {
   public static final String FORM_NEW_REQUEST = "NewRequest";
   public static final String FORM_REQUEST = "Request";
 
-  public static final String CRM_STYLE_PREFIX = "bee-crm-";
+  public static final String CRM_STYLE_PREFIX = BeeConst.CSS_CLASS_PREFIX + "crm-";
 
   public static final String FILTER_TASKS_NEW = "tasks_new";
   public static final String FILTER_TASKS_UPDATED = "tasks_updated";

@@ -3,7 +3,6 @@ package com.butent.bee.client;
 import com.google.common.base.CharMatcher;
 import com.google.common.base.Function;
 import com.google.common.collect.Lists;
-import com.google.common.collect.Maps;
 import com.google.common.collect.Range;
 import com.google.gwt.dom.client.Element;
 import com.google.gwt.dom.client.StyleInjector;
@@ -61,7 +60,9 @@ import com.butent.bee.shared.time.TimeUtils;
 import com.butent.bee.shared.ui.Action;
 import com.butent.bee.shared.utils.BeeUtils;
 
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -81,7 +82,7 @@ public final class Global {
 
   private static final Images.Resources images = Images.createResources();
 
-  private static final Map<String, String> styleSheets = Maps.newHashMap();
+  private static final Map<String, String> styleSheets = new HashMap<>();
 
   private static final Favorites favorites = new Favorites();
   private static final Spaces spaces = new Spaces();
@@ -449,7 +450,7 @@ public final class Global {
   }
 
   public static void showError(String message) {
-    List<String> messages = Lists.newArrayList();
+    List<String> messages = new ArrayList<>();
     if (!BeeUtils.isEmpty(message)) {
       messages.add(message);
     }
@@ -475,7 +476,7 @@ public final class Global {
   }
 
   public static void showInfo(String message) {
-    List<String> messages = Lists.newArrayList();
+    List<String> messages = new ArrayList<>();
     if (!BeeUtils.isEmpty(message)) {
       messages.add(message);
     }

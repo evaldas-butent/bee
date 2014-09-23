@@ -190,7 +190,7 @@ public class MultiSelector extends DataSelector implements HandlesRendering, Han
 
   public static final String ATTR_SEPARATORS = "separators";
 
-  private static final String STYLE_PREFIX = StyleUtils.CLASS_NAME_PREFIX + "MultiSelector-";
+  private static final String STYLE_PREFIX = BeeConst.CSS_CLASS_PREFIX + "MultiSelector-";
   private static final String STYLE_CONTAINER = STYLE_PREFIX + "container";
   private static final String STYLE_CONTAINER_ACTIVE = STYLE_CONTAINER + "-active";
 

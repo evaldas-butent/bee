@@ -2,7 +2,6 @@ package com.butent.bee.server.modules.administration;
 
 import com.google.common.base.Function;
 import com.google.common.collect.Lists;
-import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
 
 import static com.butent.bee.shared.modules.administration.AdministrationConstants.*;
@@ -104,7 +103,7 @@ public class ImportBean {
     private final int prpObject = 3;
 
     private final String viewName;
-    private final Map<String, Object[]> props = Maps.newHashMap();
+    private final Map<String, Object[]> props = new HashMap<>();
 
     public ImportObject(SimpleRowSet rs, SystemBean sys) {
       Assert.notNull(rs);
@@ -286,7 +285,7 @@ public class ImportBean {
   }
 
   private List<ExtendedProperty> checkMappings(ImportObject imp, String prfx, String tmp) {
-    List<ExtendedProperty> info = Lists.newArrayList();
+    List<ExtendedProperty> info = new ArrayList<>();
     PropertyUtils.addExtended(info, "NEŽINOMIEJI", null, ":");
 
     for (ImportProperty prop : imp.getProperties()) {
@@ -742,7 +741,8 @@ public class ImportBean {
       Pair<Integer, BeeRowSet> pair = null;
 
       if (!BeeUtils.isEmpty(progress)) {
-        Endpoint.updateProgress(progress, Localized.maybeTranslate(view.getCaption()), 0);
+        Endpoint.updateProgress(progress,
+            Localized.maybeTranslate(view.getCaption(), usr.getLocalizableDictionary()), 0);
       }
       for (SimpleRow row : newRows) {
         if (!BeeUtils.isEmpty(progress)
@@ -814,8 +814,8 @@ public class ImportBean {
       IsCondition wh = SqlUtils.equals(data, parentName, BeeUtils.toString(BeeConst.UNDEF));
 
       BeeRowSet newRs = (BeeRowSet) qs.doSql(new SqlSelect()
-          .addConstant(Localized.maybeTranslate(view.getCaption()),
-              Localized.getConstants().reason())
+          .addConstant(Localized.maybeTranslate(view.getCaption(), usr.getLocalizableDictionary()),
+              usr.getLocalizableConstants().reason())
           .addAllFields(data)
           .addFrom(data)
           .setWhere(wh)
@@ -875,11 +875,11 @@ public class ImportBean {
           .setWhere(SqlUtils.equals(TBL_IMPORT_MAPPINGS, COL_IMPORT_PROPERTY, mappingId)));
     }
     if (ArrayUtils.isEmpty(objects)) {
-      return ResponseObject.error(Localized.getConstants().noData());
+      return ResponseObject.error(usr.getLocalizableConstants().noData());
     }
     String prfx = "_";
 
-    List<String> cols = Lists.newArrayList();
+    List<String> cols = new ArrayList<>();
 
     for (BeeField fld : sys.getTableFields(TBL_VEHICLE_TRACKING)) {
       if (!(fld instanceof BeeRelation)) {
@@ -1025,7 +1025,7 @@ public class ImportBean {
     File file = new File(fileName);
 
     if (!file.isFile() || !file.canRead()) {
-      return ResponseObject.error(Localized.getMessages().fileNotFound(fileName));
+      return ResponseObject.error(usr.getLocalizableMesssages().fileNotFound(fileName));
     }
     Sheet shit;
 
@@ -1054,7 +1054,7 @@ public class ImportBean {
     }
     qs.updateData(create.addInteger(REC_NO, true));
     String target = create.getTarget();
-    Map<String, String> values = Maps.newHashMap();
+    Map<String, String> values = new HashMap<>();
     int recNo = 0;
 
     for (int i = startRow; i <= shit.getLastRowNum(); i++) {

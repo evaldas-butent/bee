@@ -2,7 +2,6 @@ package com.butent.bee.server.modules.ec;
 
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
-import com.google.common.collect.Maps;
 
 import static com.butent.bee.shared.modules.administration.AdministrationConstants.*;
 import static com.butent.bee.shared.modules.classifiers.ClassifierConstants.*;
@@ -50,7 +49,9 @@ import java.awt.image.BufferedImage;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -126,8 +127,8 @@ public class TecDocBean implements HasTimerService {
   private class TcdData {
     private final SqlCreate base;
     private final SqlSelect baseSource;
-    private final List<String[]> baseIndexes = Lists.newArrayList();
-    private final List<IsSql> preparations = Lists.newArrayList();
+    private final List<String[]> baseIndexes = new ArrayList<>();
+    private final List<IsSql> preparations = new ArrayList<>();
 
     public TcdData(SqlCreate base, SqlSelect baseSource) {
       this.base = base;
@@ -440,7 +441,7 @@ public class TecDocBean implements HasTimerService {
               sys.joinTables(TBL_TCD_BRANDS, TBL_TCD_BRANDS_MAPPING, COL_TCD_BRAND))
           .setWhere(SqlUtils.equals(TBL_TCD_BRANDS_MAPPING, COL_TCD_SUPPLIER, supplier.ordinal())));
 
-      Map<String, String> mappings = Maps.newHashMap();
+      Map<String, String> mappings = new HashMap<>();
 
       for (SimpleRow row : rs) {
         mappings.put(row.getValue(COL_TCD_SUPPLIER_BRAND), row.getValue(COL_TCD_BRAND_NAME));
@@ -486,7 +487,7 @@ public class TecDocBean implements HasTimerService {
 
   @Asynchronous
   public void suckTecdoc() {
-    List<IsSql> init = Lists.newArrayList();
+    List<IsSql> init = new ArrayList<>();
 
     init.add(new SqlCreate("_country_designations", false)
         .setDataSource(new SqlSelect()
@@ -524,7 +525,7 @@ public class TecDocBean implements HasTimerService {
     init.add(SqlUtils.createIndex("_designations", SqlUtils.uniqueName(),
         Lists.newArrayList("des_id"), false));
 
-    List<TcdData> builds = Lists.newArrayList();
+    List<TcdData> builds = new ArrayList<>();
 
     TcdData data = new TcdData(new SqlCreate(TBL_TCD_MODELS, false)
         .addInteger(TCD_MODEL_ID, true)

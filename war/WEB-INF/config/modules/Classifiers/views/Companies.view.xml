@@ -6,6 +6,7 @@
   <Relation renderColumns="Name" />
   <Columns>
     <SimpleColumn name="Name" />
+    <SimpleColumn name="Name2" />
     <SimpleColumn name="Code" />
     <SimpleColumn name="VATCode" />
 
@@ -35,6 +36,7 @@
       </SimpleJoin>
 
       <SimpleColumn name="Address" />
+      <SimpleColumn name="Address2" />
       <SimpleColumn name="PostIndex" />
       <SimpleColumn name="Website" />
 

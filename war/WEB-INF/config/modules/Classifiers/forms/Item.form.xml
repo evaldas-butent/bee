@@ -127,7 +127,13 @@
                 summarize="true" />
             </cell>
           </row>
-
+          <row>
+            <Label for="Name3" />
+            <cell colSpan="3">
+              <InputText source="Name3" autocomplete="true" visible="true" style="width: 100%;"
+                summarize="true" />
+            </cell>
+          </row>
           <row>
             <Label for="Article2" />
             <InputText source="Article2" summarize="true" />

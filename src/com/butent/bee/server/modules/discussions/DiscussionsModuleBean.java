@@ -1,9 +1,7 @@
 package com.butent.bee.server.modules.discussions;
 
-import com.google.common.base.Objects;
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.Lists;
-import com.google.common.collect.Maps;
 import com.google.common.collect.Multimap;
 import com.google.common.collect.Sets;
 import com.google.common.eventbus.Subscribe;
@@ -83,8 +81,10 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 
 import javax.annotation.Resource;
@@ -221,7 +221,7 @@ public class DiscussionsModuleBean implements BeeModule {
           BeeRowSet rowSet = event.getRowset();
 
           if (!rowSet.isEmpty()) {
-            Set<Long> discussionsIds = Sets.newHashSet();
+            Set<Long> discussionsIds = new HashSet<>();
 
             if (rowSet.getNumberOfRows() < MAX_NUMBERS_OF_ROWS) {
               for (BeeRow row : rowSet.getRows()) {
@@ -363,7 +363,7 @@ public class DiscussionsModuleBean implements BeeModule {
     Timer discussTimer = null;
 
     for (Timer timer : timerService.getTimers()) {
-      if (Objects.equal(timer.getInfo(), PRM_DISCUSS_INACTIVE_TIME_IN_DAYS)) {
+      if (Objects.equals(timer.getInfo(), PRM_DISCUSS_INACTIVE_TIME_IN_DAYS)) {
         discussTimer = timer;
         break;
       }
@@ -432,7 +432,7 @@ public class DiscussionsModuleBean implements BeeModule {
 
     Collection<BeeParameter> discussModuleParams = prm.getModuleParameters(getModule().getName());
     if (!discussModuleParams.isEmpty()) {
-      Map<String, String> paramsMap = Maps.newHashMap();
+      Map<String, String> paramsMap = new HashMap<>();
 
       for (BeeParameter p : discussModuleParams) {
         paramsMap.put(p.getName(), p.getValue());
@@ -451,7 +451,7 @@ public class DiscussionsModuleBean implements BeeModule {
     }
 
     ResponseObject response = new ResponseObject();
-    List<RowChildren> children = Lists.newArrayList();
+    List<RowChildren> children = new ArrayList<>();
 
     for (Map.Entry<String, String> entry : properties.entrySet()) {
       String relation = DiscussionsUtils.translateDiscussionPropertyToRelation(entry.getKey());
@@ -531,7 +531,7 @@ public class DiscussionsModuleBean implements BeeModule {
         updateDiscussionUsers(row.getId(), oldUsers, newUsers);
       }
     } else {
-      newUsers = Lists.newArrayList(oldUsers);
+      newUsers = new ArrayList<>(oldUsers);
     }
 
     if (!BeeUtils.isEmpty(updatedRelations)) {
@@ -540,9 +540,9 @@ public class DiscussionsModuleBean implements BeeModule {
 
     Map<Integer, String> shadow = row.getShadow();
     if (shadow != null && !shadow.isEmpty()) {
-      List<BeeColumn> columns = Lists.newArrayList();
-      List<String> oldValues = Lists.newArrayList();
-      List<String> newValues = Lists.newArrayList();
+      List<BeeColumn> columns = new ArrayList<>();
+      List<String> oldValues = new ArrayList<>();
+      List<String> newValues = new ArrayList<>();
 
       for (Map.Entry<Integer, String> entry : shadow.entrySet()) {
         columns.add(data.getColumn(entry.getKey()));
@@ -636,7 +636,7 @@ public class DiscussionsModuleBean implements BeeModule {
         }
 
         List<Long> members = DataUtils.parseIdList(properties.get(PROP_MEMBERS));
-        List<Long> discussions = Lists.newArrayList();
+        List<Long> discussions = new ArrayList<>();
 
         BeeRow newRow = DataUtils.cloneRow(discussRow);
         DiscussionStatus status = DiscussionStatus.ACTIVE;
@@ -1079,7 +1079,7 @@ public class DiscussionsModuleBean implements BeeModule {
   }
 
   private List<FileInfo> getDiscussionFiles(long discussionId) {
-    List<FileInfo> result = Lists.newArrayList();
+    List<FileInfo> result = new ArrayList<>();
 
     BeeRowSet rowSet =
         qs.getViewData(VIEW_DISCUSSIONS_FILES, Filter.equals(COL_DISCUSSION, discussionId));
@@ -1120,7 +1120,7 @@ public class DiscussionsModuleBean implements BeeModule {
 
   private List<Long> getDiscussionMarks(long discussionId) {
     if (!DataUtils.isId(discussionId)) {
-      return Lists.newArrayList();
+      return new ArrayList<>();
     }
 
     SqlSelect query = new SqlSelect()
@@ -1132,7 +1132,7 @@ public class DiscussionsModuleBean implements BeeModule {
             TBL_DISCUSSIONS_COMMENTS_MARKS, sys.getIdName(TBL_DISCUSSIONS_COMMENTS_MARKS));
 
     Long[] result = qs.getLongColumn(query);
-    List<Long> markList = Lists.newArrayList();
+    List<Long> markList = new ArrayList<>();
 
     if (BeeUtils.isPositive(result.length)) {
       markList = Lists.newArrayList(result);
@@ -1142,7 +1142,7 @@ public class DiscussionsModuleBean implements BeeModule {
   }
 
   private Map<Long, String> getDisscussionsLastComment(Set<Long> discussionIds) {
-    Map<Long, String> ls = Maps.newHashMap();
+    Map<Long, String> ls = new HashMap<>();
 
     SqlSelect select =
         new SqlSelect()
@@ -1227,7 +1227,7 @@ public class DiscussionsModuleBean implements BeeModule {
         .addGroup(TBL_DISCUSSIONS_COMMENTS_MARKS, COL_DISCUSSION);
 
     SimpleRowSet rs = qs.getData(select);
-    Map<Long, Integer> ls = Maps.newHashMap();
+    Map<Long, Integer> ls = new HashMap<>();
 
     for (String[] row : rs.getRows()) {
       ls.put(BeeUtils.toLong(row[rs.getColumnIndex(COL_DISCUSSION)]),
@@ -1280,7 +1280,7 @@ public class DiscussionsModuleBean implements BeeModule {
 
   private List<Long> getDiscussionMembers(long discussionId) {
     if (!DataUtils.isId(discussionId)) {
-      return Lists.newArrayList();
+      return new ArrayList<>();
     }
 
     SqlSelect query = new SqlSelect()
@@ -1565,7 +1565,7 @@ public class DiscussionsModuleBean implements BeeModule {
   private ResponseObject updateDiscussionRelations(long discussionId, Set<String> updatedRelations,
       BeeRow row) {
     ResponseObject response = new ResponseObject();
-    List<RowChildren> children = Lists.newArrayList();
+    List<RowChildren> children = new ArrayList<>();
 
     for (String property : updatedRelations) {
       String relation = DiscussionsUtils.translateDiscussionPropertyToRelation(property);
@@ -1587,10 +1587,10 @@ public class DiscussionsModuleBean implements BeeModule {
 
   private void updateDiscussionUsers(long discussionId, Collection<Long> oldUsers,
       Collection<Long> newUsers) {
-    List<Long> insert = Lists.newArrayList(newUsers);
+    List<Long> insert = new ArrayList<>(newUsers);
     insert.removeAll(oldUsers);
 
-    List<Long> delete = Lists.newArrayList(oldUsers);
+    List<Long> delete = new ArrayList<>(oldUsers);
     delete.removeAll(newUsers);
 
     for (Long user : insert) {

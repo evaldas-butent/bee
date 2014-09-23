@@ -1,10 +1,7 @@
 package com.butent.bee.server.modules.mail;
 
-import com.google.common.base.Objects;
 import com.google.common.collect.LinkedListMultimap;
-import com.google.common.collect.Lists;
 import com.google.common.collect.Multimap;
-import com.google.common.collect.Sets;
 import com.google.common.io.CharStreams;
 
 import static com.butent.bee.shared.modules.classifiers.ClassifierConstants.*;
@@ -44,10 +41,12 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Objects;
 import java.util.Set;
 
 import javax.annotation.Resource;
@@ -292,7 +291,7 @@ public class MailStorageBean {
           .addConstant(COL_RAW_CONTENT, fileId)
           .setWhere(sys.idEquals(TBL_MESSAGES, messageId)));
 
-      Set<Long> allAddresses = Sets.newHashSet();
+      Set<Long> allAddresses = new HashSet<>();
 
       for (Entry<AddressType, InternetAddress> entry : envelope.getRecipients().entries()) {
         try {
@@ -342,7 +341,7 @@ public class MailStorageBean {
     long lastUid = BeeUtils.unbox(data.getLong(0, COL_MESSAGE_UID));
 
     if (data.getNumberOfRows() > 0) {
-      Set<Long> syncedMsgs = Sets.newHashSet();
+      Set<Long> syncedMsgs = new HashSet<>();
 
       Message[] msgs = ((UIDFolder) remoteFolder).getMessagesByUID(BeeUtils
           .unbox(data.getLong(data.getNumberOfRows() - 1, COL_MESSAGE_UID)), lastUid);
@@ -373,7 +372,7 @@ public class MailStorageBean {
           }
         }
       }
-      List<Long> deletedMsgs = Lists.newArrayList();
+      List<Long> deletedMsgs = new ArrayList<>();
 
       for (int i = 0; i < data.getNumberOfRows(); i++) {
         Long id = data.getLong(i, COL_UNIQUE_ID);
@@ -393,7 +392,7 @@ public class MailStorageBean {
   public void validateFolder(MailFolder folder, Long uidValidity) {
     Assert.notNull(folder);
 
-    if (!Objects.equal(uidValidity, folder.getUidValidity())) {
+    if (!Objects.equals(uidValidity, folder.getUidValidity())) {
       qs.updateData(new SqlDelete(TBL_PLACES)
           .setWhere(SqlUtils.equals(TBL_PLACES, COL_FOLDER, folder.getId())));
 

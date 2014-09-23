@@ -22,7 +22,6 @@ import com.google.gwt.user.client.Event;
 import com.butent.bee.client.dom.DomUtils;
 import com.butent.bee.client.event.EventUtils;
 import com.butent.bee.client.event.logical.SummaryChangeEvent;
-import com.butent.bee.client.style.StyleUtils;
 import com.butent.bee.client.ui.AcceptsCaptions;
 import com.butent.bee.client.ui.FormWidget;
 import com.butent.bee.client.view.edit.EditChangeHandler;
@@ -528,7 +527,7 @@ public class ListBox extends CustomWidget implements Editor, HasItems, HasValueS
   @Override
   protected void init() {
     super.init();
-    addStyleName(StyleUtils.CLASS_NAME_PREFIX + "ListBox");
+    addStyleName(BeeConst.CSS_CLASS_PREFIX + "ListBox");
     sinkEvents(Event.ONCHANGE | Event.ONMOUSEDOWN | Event.ONMOUSEUP | Event.ONKEYDOWN);
   }
 

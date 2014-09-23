@@ -49,12 +49,12 @@ import elemental.js.dom.JsElement;
 public class RichTextEditor extends Flow implements Editor, AdjustmentListener, PreviewHandler,
     HasKeyDownHandlers {
 
-  private static final String STYLE_CONTAINER = StyleUtils.CLASS_NAME_PREFIX + "RichTextEditor";
-  private static final String STYLE_CONTAINER_EMBEDDED = StyleUtils.CLASS_NAME_PREFIX
+  private static final String STYLE_CONTAINER = BeeConst.CSS_CLASS_PREFIX + "RichTextEditor";
+  private static final String STYLE_CONTAINER_EMBEDDED = BeeConst.CSS_CLASS_PREFIX
       + "RichTextEditor-embedded";
-  private static final String STYLE_TOOLBAR = StyleUtils.CLASS_NAME_PREFIX + "RichTextToolbar";
-  private static final String STYLE_PANEL = StyleUtils.CLASS_NAME_PREFIX + "RichTextPanel";
-  private static final String STYLE_AREA = StyleUtils.CLASS_NAME_PREFIX + "RichTextArea";
+  private static final String STYLE_TOOLBAR = BeeConst.CSS_CLASS_PREFIX + "RichTextToolbar";
+  private static final String STYLE_PANEL = BeeConst.CSS_CLASS_PREFIX + "RichTextPanel";
+  private static final String STYLE_AREA = BeeConst.CSS_CLASS_PREFIX + "RichTextArea";
 
   private final RichTextToolbar toolbar;
   private final RichTextArea area;

@@ -1,0 +1,281 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE Form [
+  <!ENTITY section "margin-top: 5px;">
+  <!ENTITY bold "font-weight:bold;">
+  <!ENTITY form "PrintLogisticsInvoice">
+]>
+<f:Form xmlns="http://www.butent.com/widget"
+  xmlns:f="http://www.butent.com/form"
+  xmlns:ui="http://www.butent.com/ui" 
+  
+  name="&form;" caption="Sąskaita LT/EN" disabledActions="save"
+  width="70" widthUnit="%" height="90" heightUnit="%" viewName="&form;"
+  >
+  <FlowPanel style="padding: 10px; background-color: white;">
+    <HorizontalPanel>
+      <Image  url="images/logo.png" />
+      <cell width="100" widthUnit="%">
+        <TextLabel source="InvoiceNo" style="text-align:center; &bold;">
+          <renderToken source="InvoicePrefix" prefix="PVM Sąskaita-faktūra Nr. / Invoice No.: " suffix=" " />
+          <renderToken source="InvoiceNo" />
+        </TextLabel>
+      </cell>
+    </HorizontalPanel>
+
+    <FlowPanel style="&section;">
+      <Table style="width:100%;">
+        <row>
+          <cell>
+            <Label html="Ekspeditorius / Forwarding agent:" />
+          </cell>
+          <cell>
+            <Label html="Užsakovas / Client:" />
+          </cell>
+        </row>
+        <row>
+          <cell style="vertical-align:top; width:50%;">
+            <FlowPanel>
+              <TextLabel source="SupplierName" style="&bold;">
+                <renderToken source="SupplierName" />
+              </TextLabel>
+              <TextLabel source="SupplierCode">
+                <renderToken source="SupplierCode" prefix="Įm.kodas / Company code: " />
+              </TextLabel>
+              <TextLabel source="SupplierVatCode">
+                <renderToken source="SupplierVatCode" prefix="PVM kodas / VAT code: " />
+              </TextLabel>
+              <TextLabel source="SupplierAddress">
+                <renderToken source="SupplierAddress" prefix="Adresas / Address: " />
+                <renderToken source="SupplierPostIndex" prefix=", " />
+                <renderToken source="SupplierCityName" prefix=", " />
+                <renderToken source="SupplierCountryName" prefix=", " />
+              </TextLabel>
+              <TextLabel source="SupplierPhone">
+                <renderToken source="SupplierPhone" prefix="Telefonas / Phone: " />
+              </TextLabel>
+              <TextLabel source="SupplierFax">
+                <renderToken source="SupplierFax" prefix="Faksas / Fax: " />
+              </TextLabel>
+              <TextLabel source="SupplierBankAccount">
+                <renderToken source="SupplierBankAccount" prefix="a.s. / a.n.: " />
+                <renderToken source="SupplierBankName" prefix=", " />
+                <renderToken source="SupplierBankCode" prefix=", kodas / code: " />
+                <renderToken source="SupplierBankSWIFTCode" prefix=", SWIFT: " />
+              </TextLabel>
+            </FlowPanel>
+          </cell>
+          <cell style="vertical-align:top; width:50%;">
+            <FlowPanel>
+              <TextLabel source="CustomerName" style="&bold;">
+                <renderToken source="CustomerName" />
+                <renderToken source="CustomerName2" prefix=" / " />
+              </TextLabel>
+              <TextLabel source="CustomerCode">
+                <renderToken source="CustomerCode" prefix="Įm.kodas / Company code: " />
+              </TextLabel>
+              <TextLabel source="CustomerVatCode">
+                <renderToken source="CustomerVatCode" prefix="PVM kodas / VAT code: " />
+              </TextLabel>
+              <TextLabel source="CustomerAddress">
+                <renderToken source="CustomerAddress" prefix="Adresas / Address: " />
+                <renderToken source="CustomerAddress2" prefix=" / " />
+                <renderToken source="CustomerPostIndex" prefix=", " />
+                <renderToken source="CustomerCityName" prefix=", " />
+                <renderToken source="CustomerCountryName" prefix=", " />
+              </TextLabel>
+              <TextLabel source="CustomerPhone">
+                <renderToken source="CustomerPhone" prefix="Telefonas / Phone: " />
+              </TextLabel>
+              <TextLabel source="CustomerFax">
+                <renderToken source="CustomerFax" prefix="Faksas / Fax: " />
+              </TextLabel>
+            </FlowPanel>
+          </cell>
+        </row>
+      </Table>
+    </FlowPanel>
+
+    <HorizontalPanel style="float:right;">
+      <Label html="Data / date:" />
+      <DateTimeLabel source="Date" format="DATE_SHORT" />
+    </HorizontalPanel>
+ 
+    <Table name="InvoiceDetails" style="&section; width:100%">
+      <properties rateCurrency="EUR" />
+      <row>
+        <cell rowSpan="2">
+          <Label text="Nr. / No.">
+            <properties name="Ordinal" />
+          </Label>
+        </cell>
+        <cell rowSpan="2">
+          <FlowPanel>
+            <InlineLabel text="Paslauga">
+              <properties name="Name" />
+            </InlineLabel>
+            <InlineLabel text=" / " />
+            <InlineLabel text="Service">
+              <properties name="Name2" />
+            </InlineLabel>
+          </FlowPanel>
+        </cell>
+        <cell rowSpan="2">
+          <Label text="Maršrutas / Route">
+            <properties name="Notes" />
+          </Label>
+        </cell>
+        <cell rowSpan="2">
+          <Label text="Ref Nr. / Ref No.">
+            <properties name="Number" />
+          </Label>
+        </cell>
+        <Label text="Pakrovimas / Loading">
+          <properties name="LoadingPlace" />
+        </Label>
+        <cell rowSpan="2">
+          <Label text="Transporto valst.Nr. / Vehicle, semitrailer No.">
+            <properties name="Vehicle" />
+          </Label>
+        </cell>
+        <cell rowSpan="2">
+          <Label text="Suma / Amount">
+            <properties name="Amount" />
+          </Label>
+        </cell>
+        <cell rowSpan="2">
+          <Label text="Kursas / Rate">
+            <properties name="Rate" />
+          </Label>
+        </cell>
+        <cell rowSpan="2">
+          <Label text="Suma pagal kursą / Amount by rate">
+            <properties name="RateAmount" />
+          </Label>
+        </cell>
+        <cell rowSpan="2">
+          <Label text="PVM / VAT">
+            <properties name="Vat" />
+          </Label>
+        </cell>
+      </row>
+      <row>
+        <Label text="Iškrovimas / Unloading">
+          <properties name="UnloadingPlace" />
+        </Label>
+      </row>
+      <row>
+        <cell colSpan="6">
+          <FlowPanel style="text-align:right;">
+            <Label text="Suma / Amount:" />
+            <Label text="PVM / VAT:" />
+            <Label text="Bendra suma / Total amount:" />
+          </FlowPanel>
+        </cell>
+        <FlowPanel>
+          <Label>
+            <properties name="AmountTotal" />
+          </Label>
+          <Label>
+            <properties name="VatTotal" />
+          </Label>
+          <Label>
+            <properties name="Total" />
+          </Label>
+         </FlowPanel>
+        <FlowPanel>
+          <Label>
+            <properties name="Currency" />
+          </Label>
+          <Label>
+            <properties name="Currency" />
+          </Label>
+          <Label>
+            <properties name="Currency" />
+          </Label>
+        </FlowPanel>
+        <FlowPanel>
+          <Label>
+            <properties name="RateAmountTotal" />
+          </Label>
+          <Label>
+            <properties name="RateVatTotal" />
+          </Label>
+          <Label>
+            <properties name="RateTotal" />
+          </Label>
+        </FlowPanel>
+        <FlowPanel>
+          <Label>
+            <properties name="RateCurrency" />
+          </Label>
+          <Label>
+            <properties name="RateCurrency" />
+          </Label>
+          <Label>
+            <properties name="RateCurrency" />
+          </Label>
+        </FlowPanel>
+      </row>
+    </Table>
+
+    <HorizontalPanel style="&section;">
+      <InlineLabel html="Prašome šią sąskaitą faktūrą apmokėti" />
+      <TextLabel source="CurrencyName" />
+      <InlineLabel html="valiuta / Please pay this invoice in" />
+      <TextLabel source="CurrencyName" />
+      <InlineLabel html="currency" />
+    </HorizontalPanel>
+
+    <TextLabel source="Term" style="&section; &bold; white-space:pre-wrap;">
+      <renderToken source="Term" prefix="Sąskaitą apmokėti iki / Pay due date: " />
+    </TextLabel>
+
+    <HorizontalPanel style="&section;">
+      <Label html="Suma žodžiais:" />
+      <Label name="TotalInWords" />
+    </HorizontalPanel>
+    <HorizontalPanel style="&section;">
+      <Label html="Total in words:" />
+      <Label name="TotalInWordsEN">
+        <properties bee_locale="en" />
+      </Label>
+    </HorizontalPanel>
+
+    <HtmlPanel style="&section;">
+      <span style="font-size:smaller; &bold; display:block; white-space:pre-wrap;">
+Pastaba:
+Šios nuorodos negalioja sąskaitoms su 21 % PVM 
+0 % PVM tarifas: pagal PVM 1 sr. 45 str.
+Be PVM: Pagal PVM įst. 13 (1) str.
+Without VAT: "Reverse charge" - according Directive 2006/112/EB
+      </span>
+      <span style="font-size:smaller; display:block; white-space:pre-wrap;">
+Pasibaigus mokėjimo terminui, už kiekvieną uždelstą dieną bus skaičiuojami 0.2% dydžio delspinigiai. /
+After the due period of payment the fine of 0.2% will be calculated for each day.
+Padarę apmokėjimą prašome raštu atsiųsti pavedimo kopiją./Please fax the copy of your banking
+documents after the transaction will be made.
+      </span>
+    </HtmlPanel>
+
+    <TextLabel source="Notes" style="&section; &bold; white-space:pre-wrap;">
+      <renderToken source="Notes" prefix="Kiti dokumentai, pastabos/Other documents, notes, remarks: " />
+    </TextLabel>
+
+    <Table style="width:100%; margin-top:10px;">
+      <row style="&bold;">
+        <Label html="Išdavė / Dispenser:" />
+        <Label html="Gavėjas / Receiver:" />
+      </row>
+      <row style="font-size:xx-small;">
+        <Label html="(vardas, pavardė, pareigos ir parašas / name, lastname, position and signature)" />
+        <Label html="(vardas, pavardė, pareigos ir parašas / name, lastname, position and signature)" />
+      </row>
+      <row>
+        <TextLabel source="Manager" style="margin-top:5px;">
+          <renderToken source="ManagerFirstName" />
+          <renderToken source="ManagerLastName" />
+        </TextLabel>
+      </row>
+    </Table>
+  </FlowPanel>
+</f:Form>

@@ -14,6 +14,7 @@ import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.Codec;
 import com.butent.bee.shared.utils.EnumUtils;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -419,7 +420,7 @@ public final class BeeParameter implements BeeSerializable {
         if (entries != null) {
           val = Lists.newArrayList(entries);
         } else {
-          val = Lists.newArrayList();
+          val = new ArrayList<>();
         }
         break;
 

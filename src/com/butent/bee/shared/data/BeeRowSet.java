@@ -1,7 +1,5 @@
 package com.butent.bee.shared.data;
 
-import com.google.common.collect.Lists;
-
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.BeeSerializable;
@@ -10,6 +8,7 @@ import com.butent.bee.shared.utils.ArrayUtils;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.Codec;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
@@ -135,7 +134,7 @@ public class BeeRowSet extends RowList<BeeRow, BeeColumn> implements BeeSerializ
           String[] cArr = Codec.beeDeserializeCollection(value);
 
           if (!ArrayUtils.isEmpty(cArr)) {
-            List<BeeColumn> columns = Lists.newArrayList();
+            List<BeeColumn> columns = new ArrayList<>();
 
             for (String col : cArr) {
               columns.add(BeeColumn.restore(col));

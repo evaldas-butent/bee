@@ -1,6 +1,7 @@
 package com.butent.bee.shared.ui;
 
 import com.butent.bee.shared.Assert;
+import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.BeeSerializable;
 import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.utils.BeeUtils;
@@ -77,7 +78,7 @@ public enum Action implements BeeSerializable, HasCaption {
   }
 
   public String getStyleName() {
-    return "bee-Action-" + styleSuffix;
+    return BeeConst.CSS_CLASS_PREFIX + "Action-" + styleSuffix;
   }
 
   @Override

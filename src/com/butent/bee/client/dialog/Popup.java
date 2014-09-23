@@ -230,7 +230,7 @@ public class Popup extends Simple implements HasAnimation, CloseEvent.HasCloseHa
     }
   }
 
-  private static final String STYLE_POPUP = "bee-Popup";
+  private static final String STYLE_POPUP = BeeConst.CSS_CLASS_PREFIX + "Popup";
 
   private static final int ANIMATION_DURATION = 250;
 

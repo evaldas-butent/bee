@@ -1,6 +1,5 @@
 package com.butent.bee.client.modules.service;
 
-import com.google.common.collect.Lists;
 import com.google.gwt.event.shared.HasHandlers;
 
 import static com.butent.bee.shared.modules.service.ServiceConstants.*;
@@ -38,6 +37,7 @@ import com.butent.bee.shared.modules.trade.TradeConstants;
 import com.butent.bee.shared.time.TimeUtils;
 import com.butent.bee.shared.utils.BeeUtils;
 
+import java.util.ArrayList;
 import java.util.List;
 
 final class InvoiceBuilder {
@@ -175,7 +175,7 @@ final class InvoiceBuilder {
                   params.addQueryItem(PROP_MAIN_ITEM, interceptor.getMainItem());
                 }
 
-                List<Long> ids = Lists.newArrayList();
+                List<Long> ids = new ArrayList<>();
                 for (IsRow item : items) {
                   ids.add(item.getId());
                 }

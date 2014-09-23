@@ -8,6 +8,7 @@ import com.google.gwt.safehtml.shared.SafeHtmlUtils;
 
 import com.butent.bee.client.dom.DomUtils;
 import com.butent.bee.client.grid.CellContext;
+import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.utils.BeeUtils;
 
 public class SelectionCell extends AbstractCell<Boolean> {
@@ -16,7 +17,7 @@ public class SelectionCell extends AbstractCell<Boolean> {
 
   static {
     INPUT = Document.get().createCheckInputElement();
-    INPUT.addClassName("bee-SelectionCell");
+    INPUT.addClassName(BeeConst.CSS_CLASS_PREFIX + "SelectionCell");
   }
 
   public SelectionCell() {

@@ -11,6 +11,7 @@ import com.butent.bee.shared.utils.ArrayUtils;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.RangeOptions;
 
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
@@ -94,6 +95,7 @@ public final class TimeUtils {
 
   /**
    * Adds an amount of field type data to the date.
+   * 
    * @param date the initial date to add to
    * @param field the field type to add
    * @param amount the amount to add
@@ -209,6 +211,7 @@ public final class TimeUtils {
 
   /**
    * Gets the difference between {@code start} and {@code end}.
+   * 
    * @param start the start time
    * @param end the end time
    * @return the difference between {@code start} and {@code end} in days.
@@ -241,6 +244,10 @@ public final class TimeUtils {
     return padTwo(dom);
   }
 
+  public static long daysToTime(int days) {
+    return new JustDate(days).getDateTime().getTime();
+  }
+
   public static int dom() {
     return today().getDom();
   }
@@ -251,6 +258,7 @@ public final class TimeUtils {
 
   /**
    * Returns the elapsed time in seconds.
+   * 
    * @param start the start time
    * @return the elapsed time in seconds from the specified start in brackets.
    */
@@ -299,6 +307,7 @@ public final class TimeUtils {
 
   /**
    * Gets the specified field's difference between {@code start} and {@code end}.
+   * 
    * @param start the start time
    * @param end the end time
    * @param field the used field. E.g 1(years),2(months),5(days) etc.
@@ -437,6 +446,7 @@ public final class TimeUtils {
 
   /**
    * Checks if {@code x} is and instance of HasDateValue or Date.
+   * 
    * @param x the Object to check
    * @return true if {@code x} is an instance of any of these types, false otherwise.
    */
@@ -613,6 +623,7 @@ public final class TimeUtils {
 
   /**
    * Left pads and integer {@code number} by adding "0" to size of two.
+   * 
    * @param number the value to pad
    * @return a String representation of the padded value {@code number} if
    *         {@code number >=0 and number < 10}, otherwise a non-padded value String.
@@ -686,7 +697,7 @@ public final class TimeUtils {
   }
 
   public static List<Integer> parseFields(String input) {
-    List<Integer> result = Lists.newArrayList();
+    List<Integer> result = new ArrayList<>();
     if (BeeUtils.isEmpty(input)) {
       return result;
     }
@@ -750,6 +761,7 @@ public final class TimeUtils {
 
   /**
    * Generates a random JustDate between {@code min} and {@code max}.
+   * 
    * @param min the minimum JustDate
    * @param max the maximum JustDate
    * @return a JustDate between specified {@code min} and {@code max}.
@@ -762,6 +774,7 @@ public final class TimeUtils {
 
   /**
    * Generates a random DateTime between {@code min} and {@code max}.
+   * 
    * @param min the minimum DateTime
    * @param max the maximum DateTime
    * @return a DateTime between specified {@code min} and {@code max}.
@@ -851,6 +864,22 @@ public final class TimeUtils {
     } else {
       return renderCompact(start, dropCurrentYear) + PERIOD_SEPARATOR
           + renderCompact(end, dropCurrentYear);
+    }
+  }
+
+  public static String renderPeriod(JustDate start, JustDate end) {
+    if (start == null) {
+      if (end == null) {
+        return BeeConst.STRING_EMPTY;
+      } else {
+        return PERIOD_SEPARATOR + end.toString();
+      }
+
+    } else if (end == null) {
+      return start.toString() + PERIOD_SEPARATOR;
+
+    } else {
+      return start.toString() + PERIOD_SEPARATOR + end.toString();
     }
   }
 
@@ -1026,6 +1055,7 @@ public final class TimeUtils {
 
   /**
    * Converts {@code x} to a JustDate format.
+   * 
    * @param x the Object to convert
    * @return a JustDate type date.
    */
@@ -1062,6 +1092,7 @@ public final class TimeUtils {
 
   /**
    * Converts {@code x} to a DateTime format.
+   * 
    * @param x the Object to convert
    * @return a DateTime type date.
    */
@@ -1118,6 +1149,7 @@ public final class TimeUtils {
 
   /**
    * Converts {@code x} to a Date format.
+   * 
    * @param x the Object to convert
    * @return a Date type date.
    */
@@ -1135,6 +1167,7 @@ public final class TimeUtils {
 
   /**
    * Converts milliseconds {@code millis} to seconds. E.g 6010 is converted to 6.010.
+   * 
    * @param millis value to convert
    * @return seconds.
    */
@@ -1337,7 +1370,7 @@ public final class TimeUtils {
   }
 
   private static List<Integer> parseDigits(String input, List<Integer> slices) {
-    List<Integer> result = Lists.newArrayList();
+    List<Integer> result = new ArrayList<>();
     if (BeeUtils.isEmpty(input) || slices.isEmpty()) {
       return result;
     }

@@ -4,6 +4,7 @@ import com.butent.bee.client.dom.Dimensions;
 import com.butent.bee.client.presenter.Presenter;
 import com.butent.bee.client.presenter.PresenterCallback;
 import com.butent.bee.client.ui.HasDimensions;
+import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.css.CssUnit;
 
 public class ModalGrid extends ModalView {
@@ -32,7 +33,7 @@ public class ModalGrid extends ModalView {
   }
 
   public ModalGrid(Presenter presenter, HasDimensions dimensions) {
-    super(presenter, "bee-ModalGrid", dimensions);
+    super(presenter, BeeConst.CSS_CLASS_PREFIX + "ModalGrid", dimensions);
   }
 
   @Override

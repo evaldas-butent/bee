@@ -15,8 +15,8 @@
 
     <RelColumn name="Company" />
     <RelColumn name="Object" renderColumns="ObjectName" />
-    <RelColumn name="Manager" renderColumns="ManagerFirstName ManagerLastName" />
 
+    <RelColumn name="Manager" renderColumns="ManagerFirstName ManagerLastName" />
     <RelColumn name="Currency" renderColumns="CurrencyName" />
 
     <RelColumn name="Vehicle" renderColumns="VehicleParentModel VehicleModel VehicleNumber" />

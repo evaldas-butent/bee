@@ -1,6 +1,5 @@
 package com.butent.bee.client.view.form.interceptor;
 
-import com.google.common.collect.Lists;
 import com.google.gwt.dom.client.Element;
 import com.google.gwt.i18n.client.NumberFormat;
 import com.google.gwt.user.client.ui.Widget;
@@ -39,6 +38,7 @@ import com.butent.bee.shared.ui.HasStringValue;
 import com.butent.bee.shared.ui.UserInterface.Component;
 import com.butent.bee.shared.utils.BeeUtils;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
@@ -143,11 +143,6 @@ public abstract class ReportInterceptor extends AbstractFormInterceptor implemen
       default:
         return super.beforeAction(action, presenter);
     }
-  }
-
-  @Override
-  public String getCaption() {
-    return getFormView().getCaption();
   }
 
   @Override
@@ -278,7 +273,7 @@ public abstract class ReportInterceptor extends AbstractFormInterceptor implemen
       if (ids.isEmpty()) {
         return null;
       } else {
-        List<String> labels = Lists.newArrayList();
+        List<String> labels = new ArrayList<>();
         for (Long id : ids) {
           labels.add(selector.getRowLabel(id));
         }
@@ -296,6 +291,10 @@ public abstract class ReportInterceptor extends AbstractFormInterceptor implemen
   }
 
   protected abstract Report getReport();
+
+  protected String getReportCaption() {
+    return getFormView().getCaption();
+  }
 
   protected abstract ReportParameters getReportParameters();
 
@@ -370,7 +369,7 @@ public abstract class ReportInterceptor extends AbstractFormInterceptor implemen
     ReportParameters parameters = getReportParameters();
 
     if (parameters != null && validateParameters(parameters)) {
-      String caption = BeeUtils.notEmpty(getBookmarkLabel(), getCaption());
+      String caption = BeeUtils.notEmpty(getBookmarkLabel(), getReportCaption());
       Global.getReportSettings().bookmark(getReport(), caption, getReportParameters());
     }
   }

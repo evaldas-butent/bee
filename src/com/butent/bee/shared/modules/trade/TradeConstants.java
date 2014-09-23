@@ -76,6 +76,7 @@ public final class TradeConstants {
   public static final String COL_OPERATION_WAREHOUSE_TO = "WarehouseTo";
 
   public static final String COL_STATUS_NAME = "StatusName";
+  public static final String COL_STATUS_ACTIVE = "StatusActive";
 
   public static final String ALS_CUSTOMER_NAME = "CustomerName";
   public static final String ALS_SUPPLIER_NAME = "SupplierName";

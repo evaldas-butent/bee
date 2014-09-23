@@ -2,6 +2,7 @@ package com.butent.bee.client.widget;
 
 import com.butent.bee.client.dom.DomUtils;
 import com.butent.bee.client.style.StyleUtils;
+import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.font.FontAwesome;
 import com.butent.bee.shared.utils.BeeUtils;
 
@@ -39,7 +40,7 @@ public class FaLabel extends Label {
 
   @Override
   protected String getDefaultStyleName() {
-    return "bee-fa-label";
+    return BeeConst.CSS_CLASS_PREFIX + "fa-label";
   }
 
   @Override

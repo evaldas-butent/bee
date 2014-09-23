@@ -17,7 +17,6 @@ import com.butent.bee.client.event.EventUtils;
 import com.butent.bee.client.grid.HtmlTable;
 import com.butent.bee.client.presenter.GridPresenter;
 import com.butent.bee.client.rights.Roles;
-import com.butent.bee.client.style.StyleUtils;
 import com.butent.bee.client.ui.UiHelper;
 import com.butent.bee.client.ui.UiOption;
 import com.butent.bee.client.view.grid.GridView.SelectedRows;
@@ -357,7 +356,7 @@ public class GridMenu {
   public static final List<RightsState> ALL_STATES =
       Lists.newArrayList(RightsState.VIEW, RightsState.EDIT, RightsState.DELETE);
 
-  private static final String STYLE_PREFIX = StyleUtils.CLASS_NAME_PREFIX + "GridMenu-";
+  private static final String STYLE_PREFIX = BeeConst.CSS_CLASS_PREFIX + "GridMenu-";
 
   private static final String STYLE_POPUP = STYLE_PREFIX + "popup";
   private static final String STYLE_TABLE = STYLE_PREFIX + "table";

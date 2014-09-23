@@ -2,6 +2,7 @@ package com.butent.bee.client.widget;
 
 import com.butent.bee.client.dom.DomUtils;
 import com.butent.bee.client.ui.FormWidget;
+import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.html.builder.elements.Input;
 import com.butent.bee.shared.ui.EditorAction;
 
@@ -40,6 +41,6 @@ public class InputSpinner extends InputInteger {
 
   @Override
   protected String getDefaultStyleName() {
-    return "bee-InputSpinner";
+    return BeeConst.CSS_CLASS_PREFIX + "InputSpinner";
   }
 }

@@ -1,6 +1,5 @@
 package com.butent.bee.server.modules.trade;
 
-import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
 import com.google.common.eventbus.Subscribe;
 
@@ -288,7 +287,7 @@ public class TradeModuleBean implements BeeModule {
       return ResponseObject.error("View source not supported:", trade);
     }
     SqlSelect query = new SqlSelect()
-        .addFields(TBL_ITEMS, COL_ITEM_NAME)
+        .addFields(TBL_ITEMS, COL_ITEM_NAME, COL_ITEM_NAME + "2", COL_ITEM_NAME + "3")
         .addField(TBL_UNITS, COL_UNIT_NAME, COL_UNIT)
         .addFields(tradeItems, COL_ITEM_ARTICLE, COL_TRADE_ITEM_QUANTITY,
             COL_TRADE_ITEM_PRICE, COL_TRADE_VAT_PLUS, COL_TRADE_VAT, COL_TRADE_VAT_PERC,
@@ -409,7 +408,7 @@ public class TradeModuleBean implements BeeModule {
 
     SimpleRowSet invoices = qs.getData(query.addField(trade, sys.getIdName(trade), itemsRelation));
 
-    Map<Long, String> companies = Maps.newHashMap();
+    Map<Long, String> companies = new HashMap<>();
     ResponseObject response = ResponseObject.emptyResponse();
 
     for (SimpleRow invoice : invoices) {

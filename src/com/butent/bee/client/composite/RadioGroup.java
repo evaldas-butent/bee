@@ -425,7 +425,7 @@ public class RadioGroup extends Span implements Editor, ValueChangeHandler<Boole
 
   @Override
   protected String getDefaultStyleName() {
-    return StyleUtils.CLASS_NAME_PREFIX + "RadioGroup";
+    return BeeConst.CSS_CLASS_PREFIX + "RadioGroup";
   }
 
   private void addButtons(List<String> opt) {

@@ -43,7 +43,7 @@ public final class GridSettings {
 
   private static final BeeLogger logger = LogUtils.getLogger(GridSettings.class);
 
-  private static final String STYLE_PREFIX = "bee-GridSettings-";
+  private static final String STYLE_PREFIX = BeeConst.CSS_CLASS_PREFIX + "GridSettings-";
   private static final String STYLE_DIALOG = STYLE_PREFIX + "dialog";
   private static final String STYLE_WRAPPER = STYLE_PREFIX + "wrapper";
   private static final String STYLE_TABLE = STYLE_PREFIX + "table";

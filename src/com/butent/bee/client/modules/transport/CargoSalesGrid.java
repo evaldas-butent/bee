@@ -1,9 +1,6 @@
 package com.butent.bee.client.modules.transport;
 
-import com.google.common.base.Objects;
 import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.Maps;
-import com.google.common.collect.Sets;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.user.client.ui.Widget;
@@ -51,8 +48,11 @@ import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.time.TimeUtils;
 import com.butent.bee.shared.utils.BeeUtils;
 
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Objects;
 import java.util.Set;
 
 public class CargoSalesGrid extends AbstractGridInterceptor implements ClickHandler {
@@ -79,7 +79,7 @@ public class CargoSalesGrid extends AbstractGridInterceptor implements ClickHand
   @Override
   public void onClick(ClickEvent event) {
     final GridPresenter presenter = getGridPresenter();
-    final Set<Long> ids = Sets.newHashSet();
+    final Set<Long> ids = new HashSet<>();
 
     for (RowInfo row : presenter.getGridView().getSelectedRows(SelectedRows.ALL)) {
       ids.add(row.getId());
@@ -91,13 +91,13 @@ public class CargoSalesGrid extends AbstractGridInterceptor implements ClickHand
     Queries.getRowSet(VIEW_CARGO_SALES, null, Filter.idIn(ids), new RowSetCallback() {
       @Override
       public void onSuccess(BeeRowSet result) {
-        Set<String> orders = Sets.newHashSet();
-        Set<String> vehicles = Sets.newHashSet();
-        Set<String> drivers = Sets.newHashSet();
+        Set<String> orders = new HashSet<>();
+        Set<String> vehicles = new HashSet<>();
+        Set<String> drivers = new HashSet<>();
 
-        Map<Long, Pair<String, Integer>> payers = Maps.newHashMap();
-        Map<Long, String> customers = Maps.newHashMap();
-        Map<Long, String> currencies = Maps.newHashMap();
+        Map<Long, Pair<String, Integer>> payers = new HashMap<>();
+        Map<Long, String> customers = new HashMap<>();
+        Map<Long, String> currencies = new HashMap<>();
 
         boolean itemEmpty = false;
         DataInfo info = Data.getDataInfo(VIEW_CARGO_SALES);
@@ -167,7 +167,7 @@ public class CargoSalesGrid extends AbstractGridInterceptor implements ClickHand
         }
         if (payers.size() == 1) {
           for (Entry<Long, Pair<String, Integer>> entry : payers.entrySet()) {
-            if (!Objects.equal(entry.getKey(),
+            if (!Objects.equals(entry.getKey(),
                 newRow.getLong(saleInfo.getColumnIndex(COL_CUSTOMER)))) {
 
               newRow.setValue(saleInfo.getColumnIndex(COL_PAYER), entry.getKey());

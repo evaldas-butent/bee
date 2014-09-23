@@ -196,7 +196,11 @@ public interface LocalizableConstants extends Constants, LocalizableClassifierCo
 
   String dateFormat();
 
+  String dateFrom();
+
   String dateFromShort();
+
+  String dateTo();
 
   String dateToShort();
 
