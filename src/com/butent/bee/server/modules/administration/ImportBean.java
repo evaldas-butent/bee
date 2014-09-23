@@ -741,7 +741,8 @@ public class ImportBean {
       Pair<Integer, BeeRowSet> pair = null;
 
       if (!BeeUtils.isEmpty(progress)) {
-        Endpoint.updateProgress(progress, Localized.maybeTranslate(view.getCaption()), 0);
+        Endpoint.updateProgress(progress,
+            Localized.maybeTranslate(view.getCaption(), usr.getLocalizableDictionary()), 0);
       }
       for (SimpleRow row : newRows) {
         if (!BeeUtils.isEmpty(progress)
@@ -813,8 +814,8 @@ public class ImportBean {
       IsCondition wh = SqlUtils.equals(data, parentName, BeeUtils.toString(BeeConst.UNDEF));
 
       BeeRowSet newRs = (BeeRowSet) qs.doSql(new SqlSelect()
-          .addConstant(Localized.maybeTranslate(view.getCaption()),
-              Localized.getConstants().reason())
+          .addConstant(Localized.maybeTranslate(view.getCaption(), usr.getLocalizableDictionary()),
+              usr.getLocalizableConstants().reason())
           .addAllFields(data)
           .addFrom(data)
           .setWhere(wh)
@@ -874,7 +875,7 @@ public class ImportBean {
           .setWhere(SqlUtils.equals(TBL_IMPORT_MAPPINGS, COL_IMPORT_PROPERTY, mappingId)));
     }
     if (ArrayUtils.isEmpty(objects)) {
-      return ResponseObject.error(Localized.getConstants().noData());
+      return ResponseObject.error(usr.getLocalizableConstants().noData());
     }
     String prfx = "_";
 
@@ -1024,7 +1025,7 @@ public class ImportBean {
     File file = new File(fileName);
 
     if (!file.isFile() || !file.canRead()) {
-      return ResponseObject.error(Localized.getMessages().fileNotFound(fileName));
+      return ResponseObject.error(usr.getLocalizableMesssages().fileNotFound(fileName));
     }
     Sheet shit;
 

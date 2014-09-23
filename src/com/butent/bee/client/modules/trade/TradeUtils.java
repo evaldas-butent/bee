@@ -83,7 +83,7 @@ public final class TradeUtils {
         }
         if (table.getRowCount() == 0) {
           Map<String, String> cols = new LinkedHashMap<>();
-          // cols.put(COL_ORDINAL, Localized.getConstants().ordinal());
+          cols.put(COL_ORDINAL, Localized.getConstants().ordinal());
           cols.put(COL_NAME, Localized.getConstants().item());
           cols.put(ClassifierConstants.COL_ITEM_ARTICLE, Localized.getConstants().article());
           cols.put(COL_TRADE_ITEM_QUANTITY, Localized.getConstants().trdQuantity());
@@ -168,7 +168,6 @@ public final class TradeUtils {
         int ordinal = 0;
 
         for (SimpleRow row : rs) {
-
           ordinal++;
           if (BeeUtils.isEmpty(currency)) {
             currency = row.getValue(COL_CURRENCY);
@@ -237,6 +236,9 @@ public final class TradeUtils {
 
                 } else if (BeeUtils.same(fld, COL_ORDINAL)) {
                   value = BeeUtils.toString(ordinal);
+
+                } else if (BeeUtils.same(fld, COL_CURRENCY_RATE)) {
+                  value = BeeUtils.toString(BeeUtils.round(row.getDouble(COL_CURRENCY_RATE), 7));
 
                 } else if (!rs.hasColumn(fld)) {
                   if (xml == null) {
@@ -340,7 +342,7 @@ public final class TradeUtils {
       return;
     }
     long number = BeeUtils.toLong(Math.floor(amount));
-    final int fraction = BeeUtils.toInt((amount - number) * 100);
+    final int fraction = BeeUtils.round((amount - number) * 100);
 
     ParameterList args = AdministrationKeeper.createArgs(SVC_NUMBER_TO_WORDS);
     args.addDataItem(VAR_AMOUNT, number);
