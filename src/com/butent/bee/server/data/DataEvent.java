@@ -95,6 +95,10 @@ public abstract class DataEvent {
       this.query = query;
     }
 
+    public int getColumnCount() {
+      return (rowset == null) ? 0 : rowset.getNumberOfColumns();
+    }
+
     public SqlSelect getQuery() {
       return query;
     }

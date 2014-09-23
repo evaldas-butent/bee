@@ -129,6 +129,12 @@ public final class Font implements HasInfo {
   private static final RangeMap<Double, CssUnit> DEFAULT_UNITS =
       RangeMap.create(Range.lessThan(4.0), CssUnit.EM, Range.atLeast(4.0), CssUnit.PX);
 
+  public static Font bold() {
+    Font font = new Font();
+    font.setWeight(FontWeight.BOLD);
+    return font;
+  }
+
   public static Font getComputed(Element el) {
     Map<String, String> styles = ComputedStyles.getNormalized(el);
     Font font = new Font();

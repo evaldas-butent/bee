@@ -18,15 +18,23 @@ import com.butent.bee.client.composite.FileCollector;
 import com.butent.bee.client.data.Data;
 import com.butent.bee.client.data.IdCallback;
 import com.butent.bee.client.data.Queries;
+import com.butent.bee.client.grid.ColumnFooter;
+import com.butent.bee.client.grid.ColumnHeader;
+import com.butent.bee.client.grid.column.AbstractColumn;
+import com.butent.bee.client.grid.column.CalculatedColumn;
 import com.butent.bee.client.i18n.Money;
+import com.butent.bee.client.modules.trade.TotalRenderer;
 import com.butent.bee.client.modules.trade.acts.TradeActItemImporter.ImportEntry;
 import com.butent.bee.client.presenter.GridPresenter;
+import com.butent.bee.client.render.AbstractCellRenderer;
 import com.butent.bee.client.utils.FileUtils;
 import com.butent.bee.client.utils.NewFileInfo;
 import com.butent.bee.client.view.ViewHelper;
+import com.butent.bee.client.view.edit.EditableColumn;
 import com.butent.bee.client.view.grid.interceptor.AbstractGridInterceptor;
 import com.butent.bee.client.view.grid.interceptor.GridInterceptor;
 import com.butent.bee.client.widget.Button;
+import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.Consumer;
 import com.butent.bee.shared.Latch;
 import com.butent.bee.shared.communication.CommUtils;
@@ -35,7 +43,9 @@ import com.butent.bee.shared.data.BeeColumn;
 import com.butent.bee.shared.data.BeeRow;
 import com.butent.bee.shared.data.BeeRowSet;
 import com.butent.bee.shared.data.DataUtils;
+import com.butent.bee.shared.data.IsColumn;
 import com.butent.bee.shared.data.IsRow;
+import com.butent.bee.shared.data.RowToDouble;
 import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.io.FileInfo;
 import com.butent.bee.shared.modules.classifiers.ItemPrice;
@@ -56,6 +66,39 @@ import elemental.html.File;
 public class TradeActItemsGrid extends AbstractGridInterceptor implements
     SelectionHandler<BeeRowSet> {
 
+  private static final class QuantityReader extends RowToDouble {
+    private final int index;
+
+    private QuantityReader(int index) {
+      this.index = index;
+    }
+
+    @Override
+    public Double apply(IsRow input) {
+      if (input == null) {
+        return null;
+      }
+
+      Double qty = input.getDouble(index);
+      if (BeeUtils.isPositive(qty)) {
+        qty -= BeeUtils.toDouble(input.getProperty(PRP_RETURNED_QTY));
+      } else {
+        return BeeConst.DOUBLE_ZERO;
+      }
+
+      return qty;
+    }
+  }
+
+  private static void configureRenderer(List<? extends IsColumn> dataColumns,
+      TotalRenderer renderer) {
+
+    int index = DataUtils.getColumnIndex(COL_TRADE_ITEM_QUANTITY, dataColumns);
+    QuantityReader quantityReader = new QuantityReader(index);
+
+    renderer.getTotalizer().setQuantityFuction(quantityReader);
+  }
+
   private static final String STYLE_COMMAND_IMPORT = TradeActKeeper.STYLE_PREFIX
       + "command-import-items";
 
@@ -63,6 +106,25 @@ public class TradeActItemsGrid extends AbstractGridInterceptor implements
   private FileCollector collector;
 
   TradeActItemsGrid() {
+  }
+
+  @Override
+  public boolean afterCreateColumn(String columnName, List<? extends IsColumn> dataColumns,
+      AbstractColumn<?> column, ColumnHeader header, ColumnFooter footer,
+      EditableColumn editableColumn) {
+
+    if (column instanceof CalculatedColumn) {
+      AbstractCellRenderer renderer = ((CalculatedColumn) column).getRenderer();
+      if (renderer instanceof TotalRenderer) {
+        configureRenderer(dataColumns, (TotalRenderer) renderer);
+      }
+    }
+
+    if (footer != null && footer.getRowEvaluator() instanceof TotalRenderer) {
+      configureRenderer(dataColumns, (TotalRenderer) footer.getRowEvaluator());
+    }
+
+    return super.afterCreateColumn(columnName, dataColumns, column, header, footer, editableColumn);
   }
 
   @Override
@@ -384,15 +446,6 @@ public class TradeActItemsGrid extends AbstractGridInterceptor implements
     }
   }
 
-  private TradeActItemPicker ensurePicker() {
-    if (picker == null) {
-      picker = new TradeActItemPicker();
-      picker.addSelectionHandler(this);
-    }
-
-    return picker;
-  }
-
   private Double getDefaultDiscount() {
     IsRow row = getGridView().getActiveRow();
     if (row == null) {
@@ -400,5 +453,14 @@ public class TradeActItemsGrid extends AbstractGridInterceptor implements
     }
 
     return (row == null) ? null : row.getDouble(getDataIndex(COL_TRADE_DISCOUNT));
+  }
+
+  private TradeActItemPicker ensurePicker() {
+    if (picker == null) {
+      picker = new TradeActItemPicker();
+      picker.addSelectionHandler(this);
+    }
+
+    return picker;
   }
 }
