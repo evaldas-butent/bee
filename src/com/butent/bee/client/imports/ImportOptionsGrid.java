@@ -105,34 +105,26 @@ public class ImportOptionsGrid extends AbstractGridInterceptor implements ClickH
           StyleUtils.className(FontWeight.BOLD));
       table.setText(r, 2, Localized.getConstants().errors(), StyleUtils.className(FontWeight.BOLD));
 
-      for (int i = 0; i < 2; i++) {
-        for (String viewName : data.keySet()) {
-          if (i == 0 && BeeUtils.isEmpty(viewName) || i == 1 && !BeeUtils.isEmpty(viewName)) {
-            continue;
-          }
-          final String cap = BeeUtils.isEmpty(viewName)
-              ? Localized.getConstants().data() : Data.getViewCaption(viewName);
-          Pair<String, String> pair = Pair.restore(data.get(viewName));
+      for (final String viewName : data.keySet()) {
+        Pair<String, String> pair = Pair.restore(data.get(viewName));
 
-          table.setText(++r, 0, cap,
-              BeeUtils.isEmpty(viewName) ? null : StyleUtils.className(FontWeight.BOLD));
-          table.setText(r, 1, pair.getA());
+        table.setText(++r, 0, Data.getViewCaption(viewName));
+        table.setText(r, 1, pair.getA());
 
-          InternalLink lbl = null;
+        InternalLink lbl = null;
 
-          if (pair.getB() != null) {
-            final BeeRowSet rs = BeeRowSet.restore(pair.getB());
-            lbl = new InternalLink(BeeUtils.toString(rs.getNumberOfRows()));
+        if (pair.getB() != null) {
+          final BeeRowSet rs = BeeRowSet.restore(pair.getB());
+          lbl = new InternalLink(BeeUtils.toString(rs.getNumberOfRows()));
 
-            lbl.addClickHandler(new ClickHandler() {
-              @Override
-              public void onClick(ClickEvent arg0) {
-                Global.showModalGrid(cap, rs);
-              }
-            });
-          }
-          table.setWidget(r, 2, lbl);
+          lbl.addClickHandler(new ClickHandler() {
+            @Override
+            public void onClick(ClickEvent arg0) {
+              Global.showModalGrid(Data.getViewCaption(viewName), rs);
+            }
+          });
         }
+        table.setWidget(r, 2, lbl);
       }
       Global.showModalWidget(table);
     }
