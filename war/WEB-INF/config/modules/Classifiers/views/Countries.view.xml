@@ -8,6 +8,8 @@
   >
   <Columns>
     <SimpleColumn name="Name" />
+    <SimpleColumn name="Name2" />
+    <SimpleColumn name="Name3" />
     <SimpleColumn name="Code" />
     <SimpleColumn name="EUMember" />
   </Columns>

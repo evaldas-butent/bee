@@ -159,6 +159,11 @@ public class CargoSalesGrid extends AbstractGridInterceptor implements ClickHand
         newRow.setValue(saleInfo.getColumnIndex(COL_TRADE_MANAGER + COL_LAST_NAME),
             BeeKeeper.getUser().getLastName());
 
+        newRow.setValue(saleInfo.getColumnIndex(COL_TRADE_SUPPLIER),
+            BeeKeeper.getUser().getCompany());
+        newRow.setValue(saleInfo.getColumnIndex(COL_TRADE_SUPPLIER + "Name"),
+            BeeKeeper.getUser().getUserData().getCompanyName());
+
         if (customers.size() == 1) {
           for (Entry<Long, String> entry : customers.entrySet()) {
             newRow.setValue(saleInfo.getColumnIndex(COL_CUSTOMER), entry.getKey());

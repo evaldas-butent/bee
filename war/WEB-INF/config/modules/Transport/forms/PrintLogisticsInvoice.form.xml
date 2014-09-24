@@ -15,7 +15,7 @@
     <HorizontalPanel>
       <Image  url="images/logo.png" />
       <cell width="100" widthUnit="%">
-        <TextLabel source="InvoiceNo" style="text-align:center; &bold;">
+        <TextLabel source="InvoiceNo" style="text-align:center; &bold; font-size:medium;">
           <renderToken source="InvoicePrefix" prefix="PVM Sąskaita-faktūra Nr. / Invoice No.: " suffix=" " />
           <renderToken source="InvoiceNo" />
         </TextLabel>
@@ -37,6 +37,7 @@
             <FlowPanel>
               <TextLabel source="SupplierName" style="&bold;">
                 <renderToken source="SupplierName" />
+                <renderToken source="SupplierType" prefix=", " />
               </TextLabel>
               <TextLabel source="SupplierCode">
                 <renderToken source="SupplierCode" prefix="Įm.kodas / Company code: " />
@@ -68,6 +69,7 @@
             <FlowPanel>
               <TextLabel source="CustomerName" style="&bold;">
                 <renderToken source="CustomerName" />
+                <renderToken source="CustomerType" prefix=", " />
                 <renderToken source="CustomerName2" prefix=" / " />
               </TextLabel>
               <TextLabel source="CustomerCode">
@@ -95,7 +97,7 @@
       </Table>
     </FlowPanel>
 
-    <HorizontalPanel style="float:right;">
+    <HorizontalPanel style="float:right; &bold;">
       <Label html="Data / date:" />
       <DateTimeLabel source="Date" format="DATE_SHORT" />
     </HorizontalPanel>
@@ -124,16 +126,14 @@
             <properties name="Notes" />
           </Label>
         </cell>
-        <cell rowSpan="2">
-          <Label text="Ref Nr. / Ref No.">
-            <properties name="Number" />
-          </Label>
-        </cell>
+        <Label text="Užsakymo Nr. / Order No.">
+          <properties name="Assessment" />
+        </Label>
         <Label text="Pakrovimas / Loading">
           <properties name="LoadingPlace" />
         </Label>
         <cell rowSpan="2">
-          <Label text="Transporto valst.Nr. / Vehicle, semitrailer No.">
+          <Label text="Transporto valst.Nr. / Vehicle State No.">
             <properties name="Vehicle" />
           </Label>
         </cell>
@@ -159,6 +159,9 @@
         </cell>
       </row>
       <row>
+        <Label text="Ref Nr. / Ref No.">
+          <properties name="Number" />
+        </Label>
         <Label text="Iškrovimas / Unloading">
           <properties name="UnloadingPlace" />
         </Label>
@@ -168,7 +171,7 @@
           <FlowPanel style="text-align:right;">
             <Label text="Suma / Amount:" />
             <Label text="PVM / VAT:" />
-            <Label text="Bendra suma / Total amount:" />
+            <Label text="Bendra suma / Total amount:" style="&bold;" />
           </FlowPanel>
         </cell>
         <FlowPanel>
@@ -178,7 +181,7 @@
           <Label>
             <properties name="VatTotal" />
           </Label>
-          <Label>
+          <Label style="&bold;">
             <properties name="Total" />
           </Label>
          </FlowPanel>
@@ -189,7 +192,7 @@
           <Label>
             <properties name="Currency" />
           </Label>
-          <Label>
+          <Label style="&bold;">
             <properties name="Currency" />
           </Label>
         </FlowPanel>
@@ -257,10 +260,9 @@ documents after the transaction will be made.
       </span>
     </HtmlPanel>
 
-    <TextLabel source="Notes" style="&section; &bold; white-space:pre-wrap;">
-      <renderToken source="Notes" prefix="Kiti dokumentai, pastabos/Other documents, notes, remarks: " />
-    </TextLabel>
-
+    <Label html="Kiti dokumentai, pastabos/Other documents, notes, remarks:" style="&section; &bold;" />
+    <TextLabel source="Notes" style="white-space:pre-wrap;" />
+    
     <Table style="width:100%; margin-top:10px;">
       <row style="&bold;">
         <Label html="Išdavė / Dispenser:" />
@@ -274,6 +276,7 @@ documents after the transaction will be made.
         <TextLabel source="Manager" style="margin-top:5px;">
           <renderToken source="ManagerFirstName" />
           <renderToken source="ManagerLastName" />
+          <renderToken source="ManagerPosition" prefix=", " />
         </TextLabel>
       </row>
     </Table>

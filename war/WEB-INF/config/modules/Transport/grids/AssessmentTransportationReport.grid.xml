@@ -28,7 +28,7 @@
     <DataColumn name="Weight" />
     <DataColumn name="WeightUnitName" />
     <DataColumn name="Volume" />
-    <DataColumn name="VolumetUnitName" />
+    <DataColumn name="VolumeUnitName" />
     <DataColumn name="Quantity" />
     <DataColumn name="QuantityUnitName" />
 

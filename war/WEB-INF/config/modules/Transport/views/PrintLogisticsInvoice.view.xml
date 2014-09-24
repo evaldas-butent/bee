@@ -24,22 +24,12 @@
       <SimpleColumn name="MinorName" />
     </SimpleJoin>
     
-    <SimpleColumn name="PaymentTime" />
-    <SimpleColumn name="Paid" />
-    
-    <SimpleColumn name="Debt">
-      <x:minus>
-        <x:number>"Amount"</x:number>
-        <x:nvl type="DECIMAL">
-          <x:number>"Paid"</x:number>
-          <x:number>0</x:number>
-        </x:nvl>
-      </x:minus>
-    </SimpleColumn>
-
     <SimpleColumn name="Supplier" />
     <SimpleJoin joinType="LEFT" name="Supplier">
       <SimpleColumn name="Name" alias="SupplierName" />
+      <SimpleJoin name="CompanyType" joinType="LEFT">
+        <SimpleColumn name="Name" alias="SupplierType" />
+      </SimpleJoin>
       <SimpleColumn name="Code" alias="SupplierCode" />
       <SimpleColumn name="VatCode" alias="SupplierVatCode" />
       <SimpleJoin name="Contact" joinType="LEFT">
@@ -68,6 +58,9 @@
     <SimpleJoin joinType="LEFT" name="Customer">
       <SimpleColumn name="Name" alias="CustomerName" />
       <SimpleColumn name="Name2" alias="CustomerName2" />
+      <SimpleJoin name="CompanyType" joinType="LEFT">
+        <SimpleColumn name="Name" alias="CustomerType" />
+      </SimpleJoin>
       <SimpleColumn name="Code" alias="CustomerCode" />
       <SimpleColumn name="VatCode" alias="CustomerVatCode" />
       <SimpleJoin name="Contact" joinType="LEFT">
@@ -75,9 +68,13 @@
         <SimpleColumn name="Address2" alias="CustomerAddress2" />
         <SimpleJoin name="City" joinType="LEFT">
           <SimpleColumn name="Name" alias="CustomerCityName" />
+          <SimpleColumn name="Name2" alias="CustomerCityName2" />
+          <SimpleColumn name="Name3" alias="CustomerCityName3" />
         </SimpleJoin>
         <SimpleJoin name="Country" joinType="LEFT">
           <SimpleColumn name="Name" alias="CustomerCountryName" />
+          <SimpleColumn name="Name2" alias="CustomerCountryName2" />
+          <SimpleColumn name="Name3" alias="CustomerCountryName3" />
         </SimpleJoin>
         <SimpleColumn name="PostIndex" alias="CustomerPostIndex" />
         <SimpleColumn name="Phone" alias="CustomerPhone" />
@@ -85,27 +82,21 @@
       </SimpleJoin>
     </SimpleJoin>
     
-    <SimpleColumn name="Payer" />
-    <SimpleJoin joinType="LEFT" name="Payer">
-      <SimpleColumn name="Name" alias="PayerName" />
-    </SimpleJoin>
-    
     <SimpleColumn name="Manager" />
+
     <SimpleJoin name="Manager" joinType="LEFT">
       <SimpleColumn name="CompanyPerson" alias="ManagerPerson" />
+
       <SimpleJoin name="CompanyPerson" joinType="LEFT">
         <SimpleJoin name="Person" joinType="LEFT">
           <SimpleColumn name="FirstName" alias="ManagerFirstName" />
           <SimpleColumn name="LastName" alias="ManagerLastName" />
         </SimpleJoin>
+
+        <SimpleJoin name="Position" joinType="LEFT">
+          <SimpleColumn name="Name" alias="ManagerPosition" />
+        </SimpleJoin>
       </SimpleJoin>
     </SimpleJoin>
-    
-    <ExternalJoin name="Sale" source="CargoIncomes" joinType="LEFT">
-      <AggregateColumn name="Sale" aggregate="MAX" />
-    </ExternalJoin>
   </Columns>
-  <Order>
-    <OrderBy column="Date" descending="true" />
-  </Order>
 </View>

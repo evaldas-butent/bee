@@ -9,7 +9,7 @@
   <g:columns>
     <DataColumn name="Date" caption="=date" />
 
-    <RelColumn name="Service" caption="=trServiceName" />
+    <RelColumn name="Service" caption="=trServiceName" choiceColumns="Name ItemName ItemArticle" />
     <DataColumn name="Amount" format="0.00" />
     <RelColumn name="Currency" caption="=currencyShort" flexGrow="0" />
     <DataColumn name="VatPlus" width="20" sortable="false" horizontalAlignment="center" caption="+">

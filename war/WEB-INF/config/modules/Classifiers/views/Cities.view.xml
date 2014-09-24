@@ -6,6 +6,8 @@
   >
   <Columns>
     <SimpleColumn name="Name" />
+    <SimpleColumn name="Name2" />
+    <SimpleColumn name="Name3" />
     <SimpleColumn name="Country" />
     <SimpleJoin name="Country" joinType="LEFT">
       <SimpleColumn alias="CountryName" name="Name" />

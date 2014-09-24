@@ -7,6 +7,8 @@
   >
   <Fields>
     <String name="Name" precision="30" notNull="true" label="=city" />
+    <String name="Name2" precision="30" label="Miestas EN" />
+    <String name="Name3" precision="30" label="Miestas RU" />
     <Relation name="Country" relation="Countries" notNull="true" label="=country" />
   </Fields>
 
