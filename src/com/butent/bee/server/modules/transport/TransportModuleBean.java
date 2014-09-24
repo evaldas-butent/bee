@@ -1000,6 +1000,7 @@ public class TransportModuleBean implements BeeModule, HasTimerService {
         .addField(unloadCity, COL_CITY_NAME, unloadCity)
         .addField(loadCountry, COL_COUNTRY_CODE, loadCountry)
         .addField(unloadCountry, COL_COUNTRY_CODE, unloadCountry)
+        .addField(TBL_ASSESSMENTS, sys.getIdName(TBL_ASSESSMENTS), COL_ASSESSMENT)
         .addFrom(TBL_CARGO_INCOMES)
         .addFromInner(TBL_SERVICES,
             sys.joinTables(TBL_SERVICES, TBL_CARGO_INCOMES, COL_SERVICE))
@@ -1019,6 +1020,8 @@ public class TransportModuleBean implements BeeModule, HasTimerService {
             sys.joinTables(TBL_CITIES, unloadCity, unloadPlace, COL_CITY))
         .addFromLeft(TBL_COUNTRIES, unloadCountry,
             sys.joinTables(TBL_COUNTRIES, unloadCountry, unloadPlace, COL_COUNTRY))
+        .addFromLeft(TBL_ASSESSMENTS,
+            sys.joinTables(TBL_ORDER_CARGO, TBL_ASSESSMENTS, COL_CARGO))
         .setWhere(wh)
         .addGroup(TBL_ORDERS, COL_ORDER_NO, COL_ORDER_NOTES)
         .addGroup(TBL_ORDER_CARGO, COL_CARGO_CMR, COL_NUMBER, COL_CARGO_WEIGHT)
@@ -1029,7 +1032,8 @@ public class TransportModuleBean implements BeeModule, HasTimerService {
         .addGroup(loadCity, COL_CITY_NAME)
         .addGroup(unloadCity, COL_CITY_NAME)
         .addGroup(loadCountry, COL_COUNTRY_CODE)
-        .addGroup(unloadCountry, COL_COUNTRY_CODE);
+        .addGroup(unloadCountry, COL_COUNTRY_CODE)
+        .addGroup(TBL_ASSESSMENTS, sys.getIdName(TBL_ASSESSMENTS));
 
     if (DataUtils.isId(mainItem)) {
       ss.addConstant(mainItem, COL_ITEM)
@@ -1110,25 +1114,23 @@ public class TransportModuleBean implements BeeModule, HasTimerService {
       }
     }
     for (SimpleRow row : rs) {
-      String xml = XmlUtils.createString("CargoInfo",
-          COL_ORDER_NO, row.getValue(COL_ORDER_NO),
-          COL_ORDER_NOTES, row.getValue(COL_ORDER_NOTES),
-          COL_LOADING_PLACE,
-          BeeUtils.joinWords(JustDate.get(row.getDateTime(COL_LOADING_PLACE)),
-              row.getValue(loadCountry),
-              BeeUtils.parenthesize(BeeUtils.joinItems(row.getValue(loadPlace),
-                  row.getValue(loadCity)))),
-          COL_UNLOADING_PLACE,
-          BeeUtils.joinWords(JustDate.get(row.getDateTime(COL_UNLOADING_PLACE)),
-              row.getValue(unloadCountry),
-              BeeUtils.parenthesize(BeeUtils.joinItems(row.getValue(unloadPlace),
-                  row.getValue(unloadCity)))),
-          COL_CARGO_CMR, row.getValue(COL_CARGO_CMR),
-          COL_NUMBER, row.getValue(COL_NUMBER),
-          COL_CARGO_WEIGHT, row.getValue(COL_CARGO_WEIGHT),
-          COL_DRIVER, BeeUtils.joinItems(drivers.get(row.getLong(COL_CARGO))),
-          COL_VEHICLE, BeeUtils.joinItems(vehicles.get(row.getLong(COL_CARGO))));
+      List<String> nodes = Lists.newArrayList(COL_ORDER_NO, row.getValue(COL_ORDER_NO),
+          COL_ASSESSMENT, row.getValue(COL_ASSESSMENT), COL_CARGO_CMR, row.getValue(COL_CARGO_CMR),
+          COL_NUMBER, row.getValue(COL_NUMBER), COL_ORDER_NOTES, row.getValue(COL_ORDER_NOTES));
 
+      if (BeeUtils.unbox(row.getBoolean(COL_TRANSPORTATION))) {
+        nodes.addAll(Lists.newArrayList(COL_LOADING_PLACE,
+            BeeUtils.joinWords(JustDate.get(row.getDateTime(COL_LOADING_PLACE)),
+                row.getValue(loadCountry), BeeUtils.parenthesize(BeeUtils
+                    .joinItems(row.getValue(loadPlace), row.getValue(loadCity)))),
+            COL_UNLOADING_PLACE,
+            BeeUtils.joinWords(JustDate.get(row.getDateTime(COL_UNLOADING_PLACE)),
+                row.getValue(unloadCountry),
+                BeeUtils.parenthesize(BeeUtils.joinItems(row.getValue(unloadPlace),
+                    row.getValue(unloadCity)))), COL_CARGO_WEIGHT, row.getValue(COL_CARGO_WEIGHT),
+            COL_DRIVER, BeeUtils.joinItems(drivers.get(row.getLong(COL_CARGO))),
+            COL_VEHICLE, BeeUtils.joinItems(vehicles.get(row.getLong(COL_CARGO)))));
+      }
       SqlInsert insert = new SqlInsert(TBL_SALE_ITEMS)
           .addConstant(COL_SALE, saleId)
           .addConstant(COL_ITEM, row.getLong(COL_ITEM))
@@ -1138,7 +1140,7 @@ public class TransportModuleBean implements BeeModule, HasTimerService {
           .addConstant(COL_TRADE_VAT, row.getDouble(COL_TRADE_VAT))
           .addConstant(COL_TRADE_VAT_PERC, row.getBoolean(COL_TRADE_VAT_PERC))
           .addConstant(COL_TRADE_ITEM_NOTE,
-              BeeUtils.unbox(row.getBoolean(COL_TRANSPORTATION)) ? xml : null);
+              XmlUtils.createString("CargoInfo", nodes.toArray(new String[0])));
 
       qs.insertData(insert);
     }
