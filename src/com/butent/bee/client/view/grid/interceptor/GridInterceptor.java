@@ -69,7 +69,8 @@ public interface GridInterceptor extends WidgetInterceptor, ActiveRowChangeEvent
 
   void afterRender(GridView gridView, RenderingEvent event);
 
-  void afterUpdateCell(IsColumn column, IsRow result, boolean rowMode);
+  void afterUpdateCell(IsColumn column, String oldValue, String newValue, IsRow result,
+      boolean rowMode);
 
   void afterUpdateRow(IsRow result);
 

@@ -36,6 +36,7 @@ import com.butent.bee.shared.data.filter.CompoundFilter;
 import com.butent.bee.shared.data.filter.Filter;
 import com.butent.bee.shared.data.value.LongValue;
 import com.butent.bee.shared.data.value.TextValue;
+import com.butent.bee.shared.data.view.RowInfo;
 import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogUtils;
 import com.butent.bee.shared.modules.BeeParameter;
@@ -99,6 +100,9 @@ public class TradeActBean {
 
     } else if (BeeUtils.same(svc, SVC_GET_ACTS_FOR_INVOICE)) {
       response = getActsForInvoice(reqInfo);
+
+    } else if (BeeUtils.same(svc, SVC_CREATE_ACT_INVOICE)) {
+      response = createInvoice(reqInfo);
 
     } else {
       String msg = BeeUtils.joinWords("service not recognized:", svc);
@@ -215,6 +219,71 @@ public class TradeActBean {
 
       qs.copyData(TBL_TRADE_ACT_ITEMS, COL_TRADE_ACT, actId, newId);
       qs.copyData(TBL_TRADE_ACT_SERVICES, COL_TRADE_ACT, actId, newId);
+    }
+
+    return response;
+  }
+
+  private ResponseObject createInvoice(RequestInfo reqInfo) {
+    String serialized = reqInfo.getParameter(VIEW_SALES);
+    if (BeeUtils.isEmpty(serialized)) {
+      return ResponseObject.parameterNotFound(reqInfo.getService(), VIEW_SALES);
+    }
+
+    BeeRowSet sales = BeeRowSet.restore(serialized);
+    if (DataUtils.isEmpty(sales)) {
+      return ResponseObject.error(reqInfo.getService(), sales.getViewName(), "is empty");
+    }
+
+    serialized = reqInfo.getParameter(VIEW_SALE_ITEMS);
+    if (BeeUtils.isEmpty(serialized)) {
+      return ResponseObject.parameterNotFound(reqInfo.getService(), VIEW_SALE_ITEMS);
+    }
+
+    BeeRowSet saleItems = BeeRowSet.restore(serialized);
+    if (DataUtils.isEmpty(saleItems)) {
+      return ResponseObject.error(reqInfo.getService(), saleItems.getViewName(), "is empty");
+    }
+
+    serialized = reqInfo.getParameter(VIEW_TRADE_ACT_INVOICES);
+    if (BeeUtils.isEmpty(serialized)) {
+      return ResponseObject.parameterNotFound(reqInfo.getService(), VIEW_TRADE_ACT_INVOICES);
+    }
+
+    BeeRowSet relations = BeeRowSet.restore(serialized);
+    if (DataUtils.isEmpty(relations)) {
+      return ResponseObject.error(reqInfo.getService(), relations.getViewName(), "is empty");
+    }
+
+    ResponseObject response = deb.commitRow(sales);
+    if (response.hasErrors() || !response.hasResponse(BeeRow.class)) {
+      return response;
+    }
+
+    long invoiceId = ((BeeRow) response.getResponse()).getId();
+
+    int colIndex = saleItems.getColumnIndex(COL_SALE);
+
+    for (int i = 0; i < saleItems.getNumberOfRows(); i++) {
+      saleItems.setValue(i, colIndex, invoiceId);
+
+      ResponseObject insResponse = deb.commitRow(saleItems, i, RowInfo.class);
+      if (insResponse.hasErrors()) {
+        response.addMessagesFrom(insResponse);
+        break;
+      }
+    }
+
+    colIndex = relations.getColumnIndex(COL_SALE);
+
+    for (int i = 0; i < relations.getNumberOfRows(); i++) {
+      relations.setValue(i, colIndex, invoiceId);
+
+      ResponseObject insResponse = deb.commitRow(relations, i, RowInfo.class);
+      if (insResponse.hasErrors()) {
+        response.addMessagesFrom(insResponse);
+        break;
+      }
     }
 
     return response;

@@ -1544,6 +1544,15 @@ public class CellGrid extends Widget implements IdentifiableWidget, HasDataTable
     return info.isColReadOnly();
   }
 
+  public boolean isColumnVisible(String columnId) {
+    for (int i = 0; i < getColumnCount(); i++) {
+      if (getColumnInfo(i).is(columnId)) {
+        return true;
+      }
+    }
+    return false;
+  }
+
   @Override
   public boolean isEditing() {
     return editing;
@@ -1888,6 +1897,13 @@ public class CellGrid extends Widget implements IdentifiableWidget, HasDataTable
         }
       }
     }
+  }
+
+  public void overwriteVisibleColumns(List<Integer> indexes) {
+    Assert.notEmpty(indexes);
+
+    visibleColumns.clear();
+    visibleColumns.addAll(indexes);
   }
 
   public void preliminaryUpdate(long rowId, String source, String value) {

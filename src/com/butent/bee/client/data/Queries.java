@@ -13,10 +13,12 @@ import com.butent.bee.shared.communication.ResponseObject;
 import com.butent.bee.shared.data.BeeColumn;
 import com.butent.bee.shared.data.BeeRow;
 import com.butent.bee.shared.data.BeeRowSet;
+import com.butent.bee.shared.data.CellSource;
 import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.IsRow;
 import com.butent.bee.shared.data.RowChildren;
 import com.butent.bee.shared.data.cache.CachingPolicy;
+import com.butent.bee.shared.data.event.CellUpdateEvent;
 import com.butent.bee.shared.data.filter.Filter;
 import com.butent.bee.shared.data.value.Value;
 import com.butent.bee.shared.data.view.Order;
@@ -669,6 +671,37 @@ public final class Queries {
 
   public static void updateCell(BeeRowSet rowSet, RowCallback callback) {
     doRow(Service.UPDATE_CELL, rowSet, callback);
+  }
+
+  public static void updateCellAndFire(final String viewName, long rowId, long version,
+      final String colName, String oldValue, String newValue) {
+
+    Assert.notEmpty(viewName);
+    Assert.isTrue(DataUtils.isId(rowId));
+    Assert.notEmpty(colName);
+
+    final int colIndex = Data.getColumnIndex(viewName, colName);
+    Assert.nonNegative(colIndex);
+
+    if (!BeeUtils.equalsTrimRight(oldValue, newValue)) {
+      final BeeColumn column = Data.getColumns(viewName).get(colIndex);
+      BeeRowSet rowSet = new BeeRowSet(viewName, Collections.singletonList(column));
+
+      BeeRow row = new BeeRow(rowId, version, Collections.singletonList(oldValue));
+      row.preliminaryUpdate(0, newValue);
+
+      rowSet.addRow(row);
+
+      RowCallback callback = new RowCallback() {
+        @Override
+        public void onSuccess(BeeRow result) {
+          CellUpdateEvent.fire(BeeKeeper.getBus(), viewName, result.getId(), result.getVersion(),
+              CellSource.forColumn(column, colIndex), result.getString(0));
+        }
+      };
+
+      updateCell(rowSet, callback);
+    }
   }
 
   public static void updateChildren(final String viewName, long rowId,

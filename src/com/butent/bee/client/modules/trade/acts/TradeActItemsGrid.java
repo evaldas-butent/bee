@@ -18,6 +18,7 @@ import com.butent.bee.client.composite.FileCollector;
 import com.butent.bee.client.data.Data;
 import com.butent.bee.client.data.IdCallback;
 import com.butent.bee.client.data.Queries;
+import com.butent.bee.client.event.logical.RenderingEvent;
 import com.butent.bee.client.grid.ColumnFooter;
 import com.butent.bee.client.grid.ColumnHeader;
 import com.butent.bee.client.grid.column.AbstractColumn;
@@ -31,6 +32,8 @@ import com.butent.bee.client.utils.FileUtils;
 import com.butent.bee.client.utils.NewFileInfo;
 import com.butent.bee.client.view.ViewHelper;
 import com.butent.bee.client.view.edit.EditableColumn;
+import com.butent.bee.client.view.grid.ColumnInfo;
+import com.butent.bee.client.view.grid.GridView;
 import com.butent.bee.client.view.grid.interceptor.AbstractGridInterceptor;
 import com.butent.bee.client.view.grid.interceptor.GridInterceptor;
 import com.butent.bee.client.widget.Button;
@@ -45,7 +48,6 @@ import com.butent.bee.shared.data.BeeRowSet;
 import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.IsColumn;
 import com.butent.bee.shared.data.IsRow;
-import com.butent.bee.shared.data.RowToDouble;
 import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.io.FileInfo;
 import com.butent.bee.shared.modules.classifiers.ItemPrice;
@@ -66,30 +68,6 @@ import elemental.html.File;
 public class TradeActItemsGrid extends AbstractGridInterceptor implements
     SelectionHandler<BeeRowSet> {
 
-  private static final class QuantityReader extends RowToDouble {
-    private final int index;
-
-    private QuantityReader(int index) {
-      this.index = index;
-    }
-
-    @Override
-    public Double apply(IsRow input) {
-      if (input == null) {
-        return null;
-      }
-
-      Double qty = input.getDouble(index);
-      if (BeeUtils.isPositive(qty)) {
-        qty -= BeeUtils.toDouble(input.getProperty(PRP_RETURNED_QTY));
-      } else {
-        return BeeConst.DOUBLE_ZERO;
-      }
-
-      return qty;
-    }
-  }
-
   private static void configureRenderer(List<? extends IsColumn> dataColumns,
       TotalRenderer renderer) {
 
@@ -101,6 +79,9 @@ public class TradeActItemsGrid extends AbstractGridInterceptor implements
 
   private static final String STYLE_COMMAND_IMPORT = TradeActKeeper.STYLE_PREFIX
       + "command-import-items";
+
+  private static final String COLUMN_RETURNED_QTY = PRP_RETURNED_QTY;
+  private static final String COLUMN_REMAINING_QTY = "remaining_qty";
 
   private TradeActItemPicker picker;
   private FileCollector collector;
@@ -185,6 +166,71 @@ public class TradeActItemsGrid extends AbstractGridInterceptor implements
     }
 
     return false;
+  }
+
+  @Override
+  public void beforeRender(GridView gridView, RenderingEvent event) {
+    IsRow parentRow = ViewHelper.getFormRow(gridView);
+    TradeActKind kind = TradeActKeeper.getKind(VIEW_TRADE_ACTS, parentRow);
+
+    boolean showReturn = kind != null && kind.enableReturn();
+    boolean returnVisible = gridView.getGrid().isColumnVisible(COLUMN_RETURNED_QTY);
+
+    if (showReturn != returnVisible) {
+      List<ColumnInfo> predefinedColumns = gridView.getGrid().getPredefinedColumns();
+      List<Integer> visibleColumns = gridView.getGrid().getVisibleColumns();
+
+      List<Integer> showColumns = new ArrayList<>();
+
+      if (showReturn) {
+        int qtyPosition = BeeConst.UNDEF;
+        int unitPosition = BeeConst.UNDEF;
+
+        for (int i = 0; i < visibleColumns.size(); i++) {
+          ColumnInfo columnInfo = predefinedColumns.get(visibleColumns.get(i));
+
+          if (columnInfo.is(COL_TRADE_ITEM_QUANTITY)) {
+            qtyPosition = i;
+          } else if (columnInfo.is(ALS_UNIT_NAME)) {
+            unitPosition = i;
+          }
+        }
+
+        int retIndex = BeeConst.UNDEF;
+        int remIndex = BeeConst.UNDEF;
+
+        for (int i = 0; i < predefinedColumns.size(); i++) {
+          ColumnInfo columnInfo = predefinedColumns.get(i);
+
+          if (columnInfo.is(COLUMN_RETURNED_QTY)) {
+            retIndex = i;
+          } else if (columnInfo.is(COLUMN_REMAINING_QTY)) {
+            remIndex = i;
+          }
+        }
+
+        showColumns.addAll(visibleColumns);
+
+        int pos = (unitPosition == qtyPosition + 1) ? unitPosition : qtyPosition;
+        if (!BeeConst.isUndef(retIndex) && !showColumns.contains(retIndex)) {
+          showColumns.add(pos + 1, retIndex);
+        }
+        if (!BeeConst.isUndef(retIndex) && !showColumns.contains(remIndex)) {
+          showColumns.add(pos + 2, remIndex);
+        }
+
+      } else {
+        for (int index : visibleColumns) {
+          if (!predefinedColumns.get(index).is(COLUMN_RETURNED_QTY)
+              && !predefinedColumns.get(index).is(COLUMN_REMAINING_QTY)) {
+            showColumns.add(index);
+          }
+        }
+      }
+
+      gridView.getGrid().overwriteVisibleColumns(showColumns);
+      event.setDataChanged();
+    }
   }
 
   @Override

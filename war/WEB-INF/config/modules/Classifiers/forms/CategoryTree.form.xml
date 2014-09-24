@@ -18,16 +18,17 @@
           <InputText source="Name" style="width: 300px;" />
         </row>
 
-        <row>
+        <row data="Departments">
           <Label for="Department" />
           <DataSelector source="Department" />
         </row>
-        <row>
+
+        <row data="ActivityTypes">
           <Label for="ActivityType" />
           <DataSelector source="ActivityType" />
         </row>
 
-        <row>
+        <row data="CostCenters">
           <Label for="CostCenter" />
           <DataSelector source="CostCenter" />
         </row>

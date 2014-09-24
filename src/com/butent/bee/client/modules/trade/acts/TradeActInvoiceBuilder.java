@@ -22,7 +22,6 @@ import com.butent.bee.client.communication.ResponseCallback;
 import com.butent.bee.client.composite.DataSelector;
 import com.butent.bee.client.data.Data;
 import com.butent.bee.client.data.Queries;
-import com.butent.bee.client.data.RowCallback;
 import com.butent.bee.client.data.RowEditor;
 import com.butent.bee.client.data.RowFactory;
 import com.butent.bee.client.dom.DomUtils;
@@ -285,7 +284,7 @@ public class TradeActInvoiceBuilder extends AbstractFormInterceptor implements
   }
 
   private void doSave() {
-    final Range<JustDate> range = getRange();
+    Range<JustDate> range = getRange();
     if (range == null) {
       return;
     }
@@ -303,8 +302,8 @@ public class TradeActInvoiceBuilder extends AbstractFormInterceptor implements
       return;
     }
 
-    final BeeRowSet selectedServices = new BeeRowSet(services.getViewName(), services.getColumns());
-    final Set<Long> actIds = new HashSet<>();
+    BeeRowSet selectedServices = new BeeRowSet(services.getViewName(), services.getColumns());
+    Set<Long> actIds = new HashSet<>();
 
     int actIndex = services.getColumnIndex(COL_TRADE_ACT);
 
@@ -334,42 +333,35 @@ public class TradeActInvoiceBuilder extends AbstractFormInterceptor implements
 
     invoice.setValue(dataInfo.getColumnIndex(COL_TRADE_MANAGER), BeeKeeper.getUser().getUserId());
 
-    Queries.insert(VIEW_SALES, dataInfo.getColumns(), invoice, new RowCallback() {
+    BeeRowSet sales = DataUtils.createRowSetForInsert(dataInfo.getViewName(),
+        dataInfo.getColumns(), invoice);
+
+    BeeRowSet saleItems = createInvoiceItems(selectedServices);
+    BeeRowSet relations = createRelations(actIds, range.lowerEndpoint(), range.upperEndpoint());
+
+    ParameterList params = TradeActKeeper.createArgs(SVC_CREATE_ACT_INVOICE);
+
+    params.addDataItem(sales.getViewName(), sales.serialize());
+    params.addDataItem(saleItems.getViewName(), saleItems.serialize());
+    params.addDataItem(relations.getViewName(), relations.serialize());
+
+    BeeKeeper.getRpc().makeRequest(params, new ResponseCallback() {
       @Override
-      public void onSuccess(BeeRow inserted) {
-        final long invoiceId = inserted.getId();
+      public void onResponse(ResponseObject response) {
+        if (response.hasResponse(BeeRow.class)) {
+          BeeRow result = BeeRow.restore(response.getResponseAsString());
 
-        createInvoiceItems(invoiceId, selectedServices, new Queries.IntCallback() {
-          @Override
-          public void onSuccess(Integer itemCount) {
+          RowInsertEvent.fire(BeeKeeper.getBus(), VIEW_SALES, result, null);
+          DataChangeEvent.fireRefresh(BeeKeeper.getBus(), VIEW_TRADE_ACT_INVOICES);
 
-            Queries.getRow(VIEW_SALES, invoiceId, new RowCallback() {
-              @Override
-              public void onSuccess(BeeRow updated) {
-
-                RowInsertEvent.fire(BeeKeeper.getBus(), VIEW_SALES, updated, null);
-                RowEditor.open(VIEW_SALES, updated, Opener.MODAL);
-              }
-            });
-          }
-        });
-
-        createRelations(invoiceId, actIds, range.lowerEndpoint(), range.upperEndpoint(),
-            new Queries.IntCallback() {
-              @Override
-              public void onSuccess(Integer relCount) {
-
-                DataChangeEvent.fireRefresh(BeeKeeper.getBus(), VIEW_TRADE_ACT_INVOICES);
-                refresh(false);
-              }
-            });
+          refresh(false);
+          RowEditor.open(VIEW_SALES, result, Opener.MODAL);
+        }
       }
     });
   }
 
-  private static void createRelations(long invoiceId, Collection<Long> actIds,
-      JustDate start, JustDate end, Queries.IntCallback callback) {
-
+  private static BeeRowSet createRelations(Collection<Long> actIds, JustDate start, JustDate end) {
     List<String> colNames = Lists.newArrayList(COL_TRADE_ACT, COL_SALE,
         COL_TA_INVOICE_FROM, COL_TA_INVOICE_TO);
 
@@ -377,7 +369,6 @@ public class TradeActInvoiceBuilder extends AbstractFormInterceptor implements
     BeeRowSet relations = new BeeRowSet(VIEW_TRADE_ACT_INVOICES, columns);
 
     int actIndex = relations.getColumnIndex(COL_TRADE_ACT);
-    int saleIndex = relations.getColumnIndex(COL_SALE);
 
     int fromIndex = relations.getColumnIndex(COL_TA_INVOICE_FROM);
     int toIndex = relations.getColumnIndex(COL_TA_INVOICE_TO);
@@ -386,7 +377,6 @@ public class TradeActInvoiceBuilder extends AbstractFormInterceptor implements
       BeeRow row = DataUtils.createEmptyRow(relations.getNumberOfColumns());
 
       row.setValue(actIndex, actId);
-      row.setValue(saleIndex, invoiceId);
 
       row.setValue(fromIndex, start);
       row.setValue(toIndex, end);
@@ -394,12 +384,10 @@ public class TradeActInvoiceBuilder extends AbstractFormInterceptor implements
       relations.addRow(row);
     }
 
-    Queries.insertRows(relations, callback);
+    return relations;
   }
 
-  private static void createInvoiceItems(long invoiceId, BeeRowSet selectedServices,
-      Queries.IntCallback callback) {
-
+  private static BeeRowSet createInvoiceItems(BeeRowSet selectedServices) {
     List<String> colNames = Lists.newArrayList(COL_SALE, COL_ITEM, COL_TRADE_ITEM_ARTICLE,
         COL_TRADE_ITEM_QUANTITY, COL_TRADE_ITEM_PRICE,
         COL_TRADE_VAT_PLUS, COL_TRADE_VAT, COL_TRADE_VAT_PERC,
@@ -422,12 +410,10 @@ public class TradeActInvoiceBuilder extends AbstractFormInterceptor implements
 
     BeeRowSet invoiceItems = new BeeRowSet(VIEW_SALE_ITEMS, columns);
 
-    int saleIndex = invoiceItems.getColumnIndex(COL_SALE);
     int qtyIndex = invoiceItems.getColumnIndex(COL_TRADE_ITEM_QUANTITY);
 
     for (BeeRow svc : selectedServices) {
       BeeRow inv = DataUtils.createEmptyRow(invoiceItems.getNumberOfColumns());
-      inv.setValue(saleIndex, invoiceId);
 
       for (Map.Entry<Integer, Integer> entry : indexes.entrySet()) {
         if (!svc.isNull(entry.getKey())) {
@@ -442,7 +428,7 @@ public class TradeActInvoiceBuilder extends AbstractFormInterceptor implements
       invoiceItems.addRow(inv);
     }
 
-    Queries.insertRows(invoiceItems, callback);
+    return invoiceItems;
   }
 
   private JustDate getDateByWidgetName(String name) {

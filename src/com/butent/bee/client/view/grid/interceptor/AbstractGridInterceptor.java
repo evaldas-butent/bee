@@ -110,7 +110,8 @@ public abstract class AbstractGridInterceptor implements GridInterceptor {
   }
 
   @Override
-  public void afterUpdateCell(IsColumn column, IsRow result, boolean rowMode) {
+  public void afterUpdateCell(IsColumn column, String oldValue, String newValue, IsRow result,
+      boolean rowMode) {
   }
 
   @Override

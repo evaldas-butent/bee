@@ -10,6 +10,7 @@ public final class TradeActConstants {
   public static final String SVC_GET_TEMPLATE_ITEMS_AND_SERVICES = "GetTemplateItemsAndServices";
   public static final String SVC_GET_ITEMS_FOR_RETURN = "GetItemsForReturn";
   public static final String SVC_GET_ACTS_FOR_INVOICE = "GetActsForInvoice";
+  public static final String SVC_CREATE_ACT_INVOICE = "CreateActInvoice";
 
   public static final String TBL_TRADE_ACTS = "TradeActs";
   public static final String TBL_TRADE_ACT_ITEMS = "TradeActItems";
