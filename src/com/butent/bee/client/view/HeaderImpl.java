@@ -282,8 +282,13 @@ public class HeaderImpl extends Flow implements HeaderView {
     }
 
     Widget child = DomUtils.getChildQuietly(this, id);
-    if (child instanceof HasEnabled) {
-      return DomUtils.isVisible(child) && ((HasEnabled) child).isEnabled();
+    if (DomUtils.isVisible(child)) {
+      if (child instanceof HasEnabled) {
+        return ((HasEnabled) child).isEnabled();
+      } else {
+        return true;
+      }
+
     } else {
       return false;
     }

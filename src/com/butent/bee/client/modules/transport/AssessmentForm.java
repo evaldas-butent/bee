@@ -361,7 +361,8 @@ public class AssessmentForm extends PrintFormInterceptor implements SelectorEven
     }
 
     @Override
-    public void afterUpdateCell(IsColumn column, IsRow result, boolean rowMode) {
+    public void afterUpdateCell(IsColumn column, String oldValue, String newValue, IsRow result,
+        boolean rowMode) {
       if (BeeUtils.inListSame(column.getId(), COL_DATE, COL_AMOUNT, COL_CURRENCY,
           COL_TRADE_VAT_PLUS, COL_TRADE_VAT, COL_TRADE_VAT_PERC)) {
         refresh();

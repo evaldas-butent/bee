@@ -64,6 +64,10 @@ public class TotalRenderer extends AbstractCellRenderer implements HasRowValue {
     return totalizer.getTotal(row);
   }
 
+  public Totalizer getTotalizer() {
+    return totalizer;
+  }
+
   @Override
   public ValueType getValueType() {
     return ValueType.DECIMAL;

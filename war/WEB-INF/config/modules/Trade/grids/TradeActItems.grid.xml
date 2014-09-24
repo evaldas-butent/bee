@@ -1,4 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE Grid[
+  <!ENTITY qty "(row.Quantity - (row.returned_qty ? Number(row.returned_qty) : 0))">
+]>
 <g:Grid xmlns="http://www.butent.com/column" xmlns:g="http://www.butent.com/grid"
   xmlns:ui="http://www.butent.com/ui"
   xmlns:xi="http://www.w3.org/2001/XInclude"
@@ -20,16 +23,21 @@
       <footer aggregate="sum" />
     </PropColumn>
     
-    <CalcColumn name="remaining_qty" type="double" label="=taQuantityRemained">
+    <CalcColumn name="remaining_qty" type="double" label="=taQuantityRemained" visible="true">
       <render>
-        <ui:expression>row.Quantity - Number(row.returned_qty)</ui:expression>
+        <ui:expression>&qty;</ui:expression>
       </render>
       <footer aggregate="sum" />
     </CalcColumn>
-  </g:columns>
+    
+    <DataColumn name="Weight">
+      <footer expression="&qty; * row.Weight" />
+    </DataColumn>
 
-  <xi:include href="columns/TradeActWeight.columns.xml" />
-  <xi:include href="columns/TradeActPrice.columns.xml" />
+    <DataColumn name="Price" visible="true">
+      <footer expression="&qty; * row.Price" />
+    </DataColumn>
+  </g:columns>
 
   <xi:include href="columns/TradeActDiscount.columns.xml" />
   <xi:include href="columns/TradeActVat.columns.xml" />

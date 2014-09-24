@@ -53,6 +53,7 @@ public final class TradeUtils {
   private static final String COL_RATE_AMOUNT = COL_CURRENCY_RATE + COL_TRADE_AMOUNT;
   private static final String COL_RATE_VAT = COL_CURRENCY_RATE + COL_TRADE_VAT;
   private static final String COL_RATE_TOTAL = COL_CURRENCY_RATE + COL_TOTAL;
+  private static final String COL_RATE_CURRENCY = COL_CURRENCY_RATE + COL_CURRENCY;
 
   private static ProvidesGridColumnRenderer totalRenderer;
 
@@ -66,8 +67,7 @@ public final class TradeUtils {
     args.addDataItem("view_name", viewName);
     args.addDataItem("id", tradeId);
 
-    final String currencyTo = DomUtils.getDataProperty(table.getElement(),
-        COL_CURRENCY_RATE + COL_CURRENCY);
+    final String currencyTo = DomUtils.getDataProperty(table.getElement(), COL_RATE_CURRENCY);
     final boolean rateExists = !BeeUtils.isEmpty(currencyTo);
 
     if (rateExists) {
@@ -82,73 +82,7 @@ public final class TradeUtils {
           return;
         }
         if (table.getRowCount() == 0) {
-          Map<String, String> cols = new LinkedHashMap<>();
-          cols.put(COL_ORDINAL, Localized.getConstants().ordinal());
-          cols.put(COL_NAME, Localized.getConstants().item());
-          cols.put(ClassifierConstants.COL_ITEM_ARTICLE, Localized.getConstants().article());
-          cols.put(COL_TRADE_ITEM_QUANTITY, Localized.getConstants().trdQuantity());
-          cols.put(ClassifierConstants.COL_UNIT, Localized.getConstants().unit());
-          cols.put(COL_TRADE_ITEM_PRICE, Localized.getConstants().trdPrice());
-          cols.put(COL_TRADE_AMOUNT, Localized.getConstants().trdAmountWoVat());
-          cols.put(COL_TRADE_VAT, Localized.getConstants().vat());
-
-          if (rateExists) {
-            cols.put(COL_RATE_AMOUNT,
-                BeeUtils.joinWords(Localized.getConstants().trdAmount(), currencyTo));
-          }
-          int j = 0;
-
-          for (String col : cols.keySet()) {
-            Element cell = DomUtils.createDiv(cols.get(col));
-            DomUtils.setDataProperty(cell, COL_NAME, col);
-            table.setHtml(0, j++, cell.getString());
-          }
-          Widget cell = new CustomDiv();
-          DomUtils.setDataProperty(cell.getElement(),
-              COL_NAME, COL_TRADE_ITEM_QUANTITY + COL_TOTAL);
-
-          table.getCellFormatter().setColSpan(1, 0, 3);
-          table.getCellFormatter().setVerticalAlignment(1, 0, VerticalAlign.TOP);
-          table.setWidget(1, 0, cell);
-
-          FlowPanel cap = new FlowPanel();
-          FlowPanel val = new FlowPanel();
-          FlowPanel curr = new FlowPanel();
-
-          for (Entry<String, String> row : ImmutableMap.of(
-              COL_TRADE_AMOUNT + COL_TOTAL, Localized.getConstants().trdAmount(),
-              COL_TRADE_VAT + COL_TOTAL, Localized.getConstants().vat(),
-              COL_TOTAL, Localized.getConstants().trdTotal()).entrySet()) {
-
-            cell = new CustomDiv(STYLE_ITEMS + row.getKey() + "-caption");
-            cell.getElement().setInnerText(row.getValue());
-            cap.add(cell);
-
-            cell = new CustomDiv();
-            DomUtils.setDataProperty(cell.getElement(), COL_NAME, row.getKey());
-            val.add(cell);
-
-            cell = new CustomDiv();
-            DomUtils.setDataProperty(cell.getElement(), COL_NAME, COL_CURRENCY);
-            curr.add(cell);
-          }
-          table.getCellFormatter().setColSpan(1, 1, 2);
-          table.setWidget(1, 1, cap);
-          table.setWidget(1, 2, val);
-          table.setWidget(1, 3, curr);
-
-          if (rateExists) {
-            FlowPanel flow = new FlowPanel();
-
-            for (String name : new String[] {COL_RATE_AMOUNT + COL_TOTAL,
-                COL_RATE_VAT + COL_TOTAL, COL_RATE_TOTAL}) {
-
-              cell = new CustomDiv();
-              DomUtils.setDataProperty(cell.getElement(), COL_NAME, name);
-              flow.add(cell);
-            }
-            table.setWidget(1, 4, flow);
-          }
+          buildDefaultTable(table, currencyTo);
         }
         int headerRowCount = Math.max(table.getRowCount() - 1, 1);
         boolean footer = table.getRowCount() > 1;
@@ -161,6 +95,7 @@ public final class TradeUtils {
         double vatTotal = 0;
         double sumTotal = 0;
         String rateCurrency = null;
+        double rate = 0;
         double currVatTotal = 0;
         double currSumTotal = 0;
 
@@ -195,9 +130,9 @@ public final class TradeUtils {
 
           if (rateExists) {
             if (BeeUtils.isEmpty(rateCurrency)) {
-              rateCurrency = row.getValue(COL_CURRENCY_RATE + COL_CURRENCY);
+              rateCurrency = row.getValue(COL_RATE_CURRENCY);
+              rate = BeeUtils.round(BeeUtils.unbox(row.getDouble(COL_CURRENCY_RATE)), 7);
             }
-            double rate = BeeUtils.unbox(row.getDouble(COL_CURRENCY_RATE));
             currSum = BeeUtils.round(sum * rate, 2);
             currSumTotal += currSum;
             currVatTotal += vat * rate;
@@ -237,8 +172,14 @@ public final class TradeUtils {
                 } else if (BeeUtils.same(fld, COL_ORDINAL)) {
                   value = BeeUtils.toString(ordinal);
 
+                } else if (BeeUtils.same(fld, COL_CURRENCY)) {
+                  value = currency;
+
+                } else if (BeeUtils.same(fld, COL_RATE_CURRENCY)) {
+                  value = rateCurrency;
+
                 } else if (BeeUtils.same(fld, COL_CURRENCY_RATE)) {
-                  value = BeeUtils.toString(BeeUtils.round(row.getDouble(COL_CURRENCY_RATE), 7));
+                  value = BeeUtils.toString(rate);
 
                 } else if (!rs.hasColumn(fld)) {
                   if (xml == null) {
@@ -315,8 +256,11 @@ public final class TradeUtils {
               } else if (BeeUtils.same(fld, COL_RATE_TOTAL)) {
                 value = formater.format(currSumTotal + currVatTotal);
 
-              } else if (BeeUtils.same(fld, COL_CURRENCY_RATE + COL_CURRENCY)) {
+              } else if (BeeUtils.same(fld, COL_RATE_CURRENCY)) {
                 value = rateCurrency;
+
+              } else if (BeeUtils.same(fld, COL_CURRENCY_RATE)) {
+                value = BeeUtils.toString(rate);
 
               } else {
                 value = null;
@@ -372,6 +316,78 @@ public final class TradeUtils {
   }
 
   private TradeUtils() {
+  }
+
+  private static void buildDefaultTable(HtmlTable table, String currencyTo) {
+    boolean rateExists = !BeeUtils.isEmpty(currencyTo);
+
+    Map<String, String> cols = new LinkedHashMap<>();
+    cols.put(COL_ORDINAL, Localized.getConstants().ordinal());
+    cols.put(COL_NAME, Localized.getConstants().item());
+    cols.put(ClassifierConstants.COL_ITEM_ARTICLE, Localized.getConstants().article());
+    cols.put(COL_TRADE_ITEM_QUANTITY, Localized.getConstants().trdQuantity());
+    cols.put(ClassifierConstants.COL_UNIT, Localized.getConstants().unit());
+    cols.put(COL_TRADE_ITEM_PRICE, Localized.getConstants().trdPrice());
+    cols.put(COL_TRADE_AMOUNT, Localized.getConstants().trdAmountWoVat());
+    cols.put(COL_TRADE_VAT, Localized.getConstants().vat());
+
+    if (rateExists) {
+      cols.put(COL_RATE_AMOUNT,
+          BeeUtils.joinWords(Localized.getConstants().trdAmount(), currencyTo));
+    }
+    int j = 0;
+
+    for (String col : cols.keySet()) {
+      Element cell = DomUtils.createDiv(cols.get(col));
+      DomUtils.setDataProperty(cell, COL_NAME, col);
+      table.setHtml(0, j++, cell.getString());
+    }
+    Widget cell = new CustomDiv();
+    DomUtils.setDataProperty(cell.getElement(),
+        COL_NAME, COL_TRADE_ITEM_QUANTITY + COL_TOTAL);
+
+    table.getCellFormatter().setColSpan(1, 0, 4);
+    table.getCellFormatter().setVerticalAlignment(1, 0, VerticalAlign.TOP);
+    table.setWidget(1, 0, cell);
+
+    FlowPanel cap = new FlowPanel();
+    FlowPanel val = new FlowPanel();
+    FlowPanel curr = new FlowPanel();
+
+    for (Entry<String, String> row : ImmutableMap.of(
+        COL_TRADE_AMOUNT + COL_TOTAL, Localized.getConstants().trdAmount(),
+        COL_TRADE_VAT + COL_TOTAL, Localized.getConstants().vat(),
+        COL_TOTAL, Localized.getConstants().trdTotal()).entrySet()) {
+
+      cell = new CustomDiv(STYLE_ITEMS + row.getKey() + "-caption");
+      cell.getElement().setInnerText(row.getValue());
+      cap.add(cell);
+
+      cell = new CustomDiv();
+      DomUtils.setDataProperty(cell.getElement(), COL_NAME, row.getKey());
+      val.add(cell);
+
+      cell = new CustomDiv();
+      DomUtils.setDataProperty(cell.getElement(), COL_NAME, COL_CURRENCY);
+      curr.add(cell);
+    }
+    table.getCellFormatter().setColSpan(1, 1, 2);
+    table.setWidget(1, 1, cap);
+    table.setWidget(1, 2, val);
+    table.setWidget(1, 3, curr);
+
+    if (rateExists) {
+      FlowPanel flow = new FlowPanel();
+
+      for (String name : new String[] {COL_RATE_AMOUNT + COL_TOTAL,
+          COL_RATE_VAT + COL_TOTAL, COL_RATE_TOTAL}) {
+
+        cell = new CustomDiv();
+        DomUtils.setDataProperty(cell.getElement(), COL_NAME, name);
+        flow.add(cell);
+      }
+      table.setWidget(1, 4, flow);
+    }
   }
 
   private static Multimap<String, Element> getNamedElements(Element element) {

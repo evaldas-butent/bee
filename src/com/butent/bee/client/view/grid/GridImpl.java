@@ -2854,7 +2854,7 @@ public class GridImpl extends Absolute implements GridView, EditEndEvent.Handler
   }
 
   private void updateCell(final IsRow rowValue, final IsColumn dataColumn,
-      String oldValue, String newValue, final boolean rowMode) {
+      final String oldValue, final String newValue, final boolean rowMode) {
 
     getGrid().preliminaryUpdate(rowValue.getId(), dataColumn.getId(), newValue);
 
@@ -2868,7 +2868,7 @@ public class GridImpl extends Absolute implements GridView, EditEndEvent.Handler
       @Override
       public void onSuccess(BeeRow result) {
         if (getGridInterceptor() != null) {
-          getGridInterceptor().afterUpdateCell(dataColumn, result, rowMode);
+          getGridInterceptor().afterUpdateCell(dataColumn, oldValue, newValue, result, rowMode);
         }
       }
     };

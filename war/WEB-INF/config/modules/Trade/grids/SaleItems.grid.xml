@@ -22,7 +22,9 @@
     </DataColumn>
 
     <DataColumn name="VatPlus" width="20" sortable="false" caption="+" format="+" carry="true" />
-    <DataColumn name="Vat" carry="true" />
+    <DataColumn name="Vat" carry="true">
+      <footer evaluator="vat" />
+    </DataColumn>
     <DataColumn name="VatPercent" width="20" sortable="false" caption="%" format="%" carry="true" />
 
     <CalcColumn name="VatSum" type="decimal" caption="=vatSum" format="0.00" visible="false">

@@ -1049,8 +1049,18 @@ public class CellGrid extends Widget implements IdentifiableWidget, HasDataTable
     ColumnInfo columnInfo = getColumnInfo(col);
 
     int oldWidth = columnInfo.getWidth();
+    int newWidth = estimateColumnWidth(col);
 
-    int newWidth = Math.min(estimateColumnWidth(col), columnInfo.getUpperWidthBound());
+    if (columnInfo.getFooter() != null) {
+      Element footerCell = getFooterCellElement(col);
+      String footerContent = (footerCell == null) ? null : footerCell.getInnerHTML();
+
+      if (!BeeUtils.isEmpty(footerContent)) {
+        newWidth = Math.max(newWidth, Rulers.getLineWidth(Font.bold(), footerContent, true));
+      }
+    }
+
+    newWidth = Math.min(newWidth, columnInfo.getUpperWidthBound());
     if (fitHeader) {
       newWidth = Math.max(newWidth, columnInfo.getHeaderWidth());
     }
@@ -1534,6 +1544,15 @@ public class CellGrid extends Widget implements IdentifiableWidget, HasDataTable
     return info.isColReadOnly();
   }
 
+  public boolean isColumnVisible(String columnId) {
+    for (int i = 0; i < getColumnCount(); i++) {
+      if (getColumnInfo(i).is(columnId)) {
+        return true;
+      }
+    }
+    return false;
+  }
+
   @Override
   public boolean isEditing() {
     return editing;
@@ -1878,6 +1897,13 @@ public class CellGrid extends Widget implements IdentifiableWidget, HasDataTable
         }
       }
     }
+  }
+
+  public void overwriteVisibleColumns(List<Integer> indexes) {
+    Assert.notEmpty(indexes);
+
+    visibleColumns.clear();
+    visibleColumns.addAll(indexes);
   }
 
   public void preliminaryUpdate(long rowId, String source, String value) {
@@ -4083,7 +4109,9 @@ public class CellGrid extends Widget implements IdentifiableWidget, HasDataTable
       ColumnInfo columnInfo = getColumnInfo(i);
 
       SafeHtmlBuilder cellBuilder = new SafeHtmlBuilder();
+
       TextAlign hAlign = null;
+      WhiteSpace whiteSpace = null;
 
       if (isHeader) {
         if (columnInfo.getHeader() != null) {
@@ -4094,7 +4122,9 @@ public class CellGrid extends Widget implements IdentifiableWidget, HasDataTable
       } else if (columnInfo.getFooter() != null) {
         CellContext context = new CellContext(this, i);
         columnInfo.getFooter().render(context, cellBuilder);
+
         hAlign = columnInfo.getFooter().getTextAlign();
+        whiteSpace = columnInfo.getFooter().getWhiteSpace();
       }
 
       int width = columnInfo.getWidth();
@@ -4114,7 +4144,7 @@ public class CellGrid extends Widget implements IdentifiableWidget, HasDataTable
 
       SafeHtml contents = renderCell(rowIdx, i, cellClasses, left, top,
           width + xIncr - widthIncr, cellHeight, styles, extraStylesBuilder.toSafeStyles(),
-          hAlign, null, cellBuilder.toSafeHtml(), false).render();
+          hAlign, whiteSpace, cellBuilder.toSafeHtml(), false).render();
       sb.append(contents);
 
       left += width + xIncr;
