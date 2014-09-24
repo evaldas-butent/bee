@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<g:Grid xmlns="http://www.butent.com/column" xmlns:g="http://www.butent.com/grid"
+	xmlns:xi="http://www.w3.org/2001/XInclude"
+	xmlns:ui="http://www.butent.com/ui" 
+	name="Debts" viewName="Debts" 
+	disabledActions="add delete edit">
+	<g:columns xmlns="http://www.butent.com/column" xmlns:g="http://www.butent.com/grid">
+		<DataColumn name="CustomerCode" />
+		<DataColumn name="CustomerName" caption="=company" label="=company" />
+		<DataColumn name="FinancialStateName" caption="=financialState" label="=financialState" />
+		<DataColumn name="InvoicePrefix" />
+		<DataColumn name="InvoiceNo" />
+		<RelColumn name="Manager" />
+		<DataColumn name="Date" />
+		<DataColumn name="PaymentTime" />
+		<CalcColumn name="DaysForPayment" type="integer" caption="=trdDaysForPayment" label="=trdDaysForPayment" >
+		<!--  TODO:  -->
+		  <render>
+		    <ui:function>
+		      return row.PaymentDate - row.Date;
+		    </ui:function>
+		  </render>
+		</CalcColumn>
+		<CalcColumn name="DelayTime" type="integer" caption="=trdInvoiceOverdue" label="=trdInvoiceOverdue"> 
+		<!--  TODO:  -->
+		  <render>
+		    <ui:function>
+		      return row.PaymentDate - Date.now();
+		    </ui:function>		    
+		  </render>
+		</CalcColumn>
+		<CalcColumn name="AverageDelay"  type="integer"/>
+		<DataColumn name="Amount" />
+		<DataColumn name="CurrencyName" />
+		<!-- todo
+		<DataColumn name="LastPaymentTime" />
+		<DataColumn name="Paid" />
+		<DataColumn name="LastPaid" />
+		-->
+		<DataColumn name="Debt" />
+		<DataColumn name="BankruptcyRiskName" caption="=clientBankruptcyRisk" label="=clientBankruptcyRisk"/>
+		<DataColumn name="DelayedPaymentRiskName" caption="=clientDelayedPaymentRisk" label="=clientDelayedPaymentRisk"/>
+		<!-- todo
+		<DataColumn name="ActionCount" />
+		<DataColumn name="LastAction" />
+		 -->
+	</g:columns>
+</g:Grid>
