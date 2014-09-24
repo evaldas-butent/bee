@@ -339,6 +339,7 @@ public final class TransportConstants {
   public static final String COL_EXPEDITION = "Expedition";
   public static final String COL_FORWARDER = "Forwarder";
   public static final String COL_FORWARDER_VEHICLE = "ForwarderVehicle";
+  public static final String COL_FORWARDER_DRIVER = "ForwarderDriver";
 
   public static final String COL_CARGO = "Cargo";
   public static final String COL_CARGO_DESCRIPTION = "Description";
@@ -395,6 +396,7 @@ public final class TransportConstants {
   public static final String COL_ORDER = "Order";
   public static final String COL_ORDER_ID = "OrderID";
   public static final String COL_ORDER_NO = "OrderNo";
+  public static final String COL_ORDER_NOTES = "Notes";
   public static final String COL_ORDER_DATE = "Date";
   public static final String COL_ORDER_MANAGER = "Manager";
   public static final String COL_CUSTOMER = "Customer";

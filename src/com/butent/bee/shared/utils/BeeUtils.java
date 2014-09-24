@@ -2619,16 +2619,7 @@ public final class BeeUtils {
   }
 
   public static int toInt(Double d) {
-    if (!isDouble(d)) {
-      return 0;
-    }
-    if (d <= Integer.MIN_VALUE) {
-      return Integer.MIN_VALUE;
-    }
-    if (d >= Integer.MAX_VALUE) {
-      return Integer.MAX_VALUE;
-    }
-    return d.intValue();
+    return isDouble(d) ? round(d) : 0;
   }
 
   public static int toInt(long x) {
@@ -2715,14 +2706,13 @@ public final class BeeUtils {
   public static long toLong(Double d) {
     if (!isDouble(d)) {
       return 0L;
-    }
-    if (d <= Long.MIN_VALUE) {
+    } else if (d <= Long.MIN_VALUE) {
       return Long.MIN_VALUE;
-    }
-    if (d >= Long.MAX_VALUE) {
+    } else if (d >= Long.MAX_VALUE) {
       return Long.MAX_VALUE;
+    } else {
+      return Math.round(d);
     }
-    return d.longValue();
   }
 
   /**

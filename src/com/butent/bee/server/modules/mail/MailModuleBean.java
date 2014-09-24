@@ -472,7 +472,7 @@ public class MailModuleBean implements BeeModule, HasTimerService {
           int idx = BeeConst.UNDEF;
 
           if (!DataUtils.isEmpty(rowSet)) {
-            idx = rowSet.getColumnIndex(COL_MESSAGE);
+            idx = DataUtils.getColumnIndex(COL_MESSAGE, rowSet.getColumns(), false);
 
             if (idx != BeeConst.UNDEF) {
               for (BeeRow row : rowSet) {

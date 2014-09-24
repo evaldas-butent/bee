@@ -195,20 +195,27 @@ public final class UiHelper {
     }
 
     TextAlign align;
+
     switch (type) {
       case BOOLEAN:
         align = TextAlign.CENTER;
         break;
+
       case DECIMAL:
       case INTEGER:
       case LONG:
       case NUMBER:
         align = TextAlign.END;
         break;
+
       default:
         align = null;
     }
     return align;
+  }
+
+  public static WhiteSpace getDefaultWhiteSpace(ValueType type) {
+    return ValueType.isNumeric(type) ? WhiteSpace.NOWRAP : null;
   }
 
   public static List<Focusable> getFocusableChildren(Widget parent) {
@@ -567,6 +574,14 @@ public final class UiHelper {
     TextAlign align = getDefaultHorizontalAlignment(type);
     if (align != null) {
       obj.setTextAlign(align);
+    }
+  }
+
+  public static void setDefaultWhiteSpace(HasWhiteSpace obj, ValueType type) {
+    Assert.notNull(obj);
+    WhiteSpace whiteSpace = getDefaultWhiteSpace(type);
+    if (whiteSpace != null) {
+      obj.setWhiteSpace(whiteSpace);
     }
   }
 

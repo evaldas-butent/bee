@@ -148,7 +148,9 @@ public class TradeActBean {
 
       @Subscribe
       public void maybeSetReturnedQty(ViewQueryEvent event) {
-        if (event.isAfter() && event.isTarget(VIEW_TRADE_ACT_ITEMS) && event.hasData()) {
+        if (event.isAfter() && event.isTarget(VIEW_TRADE_ACT_ITEMS) && event.hasData()
+            && event.getColumnCount() >= sys.getView(event.getTargetName()).getColumnCount()) {
+
           BeeRowSet rowSet = event.getRowset();
           List<Long> actIds = DataUtils.getDistinct(rowSet, COL_TRADE_ACT);
 
