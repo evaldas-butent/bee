@@ -64,7 +64,7 @@ public enum TradeActKind implements HasLocalizedCaption {
       return "write-off";
     }
   },
-  RESERVE(false, false, false, true, true, false) {
+  RESERVE(false, false, false, true, false, false) {
     @Override
     public String getCaption(LocalizableConstants constants) {
       return constants.taKindReserve();

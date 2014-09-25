@@ -98,6 +98,7 @@ public class TradeActInvoiceBuilder extends AbstractFormInterceptor implements
   private static final String STYLE_ACT_TOGGLE_WIDGET = STYLE_ACT_PREFIX + "toggle";
 
   private static final String STYLE_ACT_ID_PREFIX = STYLE_ACT_PREFIX + "id-";
+  private static final String STYLE_ACT_NAME_PREFIX = STYLE_ACT_PREFIX + "name-";
   private static final String STYLE_ACT_DATE_PREFIX = STYLE_ACT_PREFIX + "date-";
   private static final String STYLE_ACT_UNTIL_PREFIX = STYLE_ACT_PREFIX + "until-";
   private static final String STYLE_ACT_SERIES_PREFIX = STYLE_ACT_PREFIX + "series-";
@@ -588,6 +589,8 @@ public class TradeActInvoiceBuilder extends AbstractFormInterceptor implements
   }
 
   private void renderActs(BeeRowSet acts) {
+    int nameIndex = acts.getColumnIndex(COL_TA_NAME);
+
     int dateIndex = acts.getColumnIndex(COL_TA_DATE);
     int untilIndex = acts.getColumnIndex(COL_TA_UNTIL);
 
@@ -630,6 +633,8 @@ public class TradeActInvoiceBuilder extends AbstractFormInterceptor implements
 
     table.setText(r, c++, Localized.getConstants().captionId(),
         STYLE_ACT_ID_PREFIX + STYLE_HEADER_CELL_SUFFIX);
+    table.setText(r, c++, Localized.getLabel(acts.getColumn(nameIndex)),
+        STYLE_ACT_NAME_PREFIX + STYLE_HEADER_CELL_SUFFIX);
 
     table.setText(r, c++, Localized.getLabel(acts.getColumn(dateIndex)),
         STYLE_ACT_DATE_PREFIX + STYLE_HEADER_CELL_SUFFIX);
@@ -680,6 +685,8 @@ public class TradeActInvoiceBuilder extends AbstractFormInterceptor implements
 
       table.setText(r, c++, BeeUtils.toString(act.getId()),
           STYLE_ACT_ID_PREFIX + STYLE_CELL_SUFFIX);
+      table.setText(r, c++, act.getString(nameIndex),
+          STYLE_ACT_NAME_PREFIX + STYLE_CELL_SUFFIX);
 
       table.setText(r, c++, TimeUtils.renderCompact(act.getDateTime(dateIndex)),
           STYLE_ACT_DATE_PREFIX + STYLE_CELL_SUFFIX);

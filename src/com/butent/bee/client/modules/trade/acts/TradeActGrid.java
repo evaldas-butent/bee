@@ -29,7 +29,6 @@ import com.butent.bee.client.view.grid.interceptor.AbstractGridInterceptor;
 import com.butent.bee.client.view.grid.interceptor.GridInterceptor;
 import com.butent.bee.client.view.search.ListFilterSupplier;
 import com.butent.bee.client.widget.Button;
-import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.communication.ResponseObject;
 import com.butent.bee.shared.data.BeeRow;
 import com.butent.bee.shared.data.BeeRowSet;
@@ -46,6 +45,7 @@ import com.butent.bee.shared.modules.trade.TradeConstants;
 import com.butent.bee.shared.modules.trade.acts.TradeActKind;
 import com.butent.bee.shared.time.TimeUtils;
 import com.butent.bee.shared.utils.BeeUtils;
+import com.butent.bee.shared.utils.StringList;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -188,17 +188,22 @@ public class TradeActGrid extends AbstractGridInterceptor {
             @Override
             public void onClick(ClickEvent event) {
               final IsRow row = getGridView().getActiveRow();
+              TradeActKind tak = TradeActKeeper.getKind(getViewName(), row);
 
-              if (row != null) {
-                List<String> colNames = Lists.newArrayList(COL_TA_KIND,
-                    TradeConstants.COL_SERIES_NAME, COL_TA_NUMBER);
-                String caption = DataUtils.join(Data.getDataInfo(getViewName()), row, colNames,
-                    BeeConst.STRING_SPACE);
+              if (tak != null) {
+                List<String> messages = new StringList();
 
-                List<String> messages =
-                    Lists.newArrayList(Localized.getConstants().tradeActCopyQuestion());
+                messages.add(row.getString(getDataIndex(COL_TA_NAME)));
 
-                Global.confirm(caption, Icon.QUESTION, messages,
+                String number = row.getString(getDataIndex(COL_TA_NUMBER));
+                if (!BeeUtils.isEmpty(number)) {
+                  messages.add(BeeUtils.joinWords(
+                      row.getString(getDataIndex(TradeConstants.COL_SERIES_NAME)), number));
+                }
+
+                messages.add(Localized.getConstants().tradeActCopyQuestion());
+
+                Global.confirm(tak.getCaption(), Icon.QUESTION, messages,
                     Localized.getConstants().actionCopy(), Localized.getConstants().actionCancel(),
                     new ConfirmationCallback() {
                       @Override

@@ -6,6 +6,8 @@
   editForm="TradeAct" newRowForm="TradeAct"
   >
   <Columns>
+    <SimpleColumn name="ActName" />
+
     <SimpleColumn name="Date" />
     <SimpleColumn name="Until" />
 

@@ -75,8 +75,8 @@ public class TradeActBean {
   DataEditorBean deb;
 
   public List<SearchResult> doSearch(String query) {
-    Set<String> columns = Sets.newHashSet(COL_TA_NUMBER, COL_OPERATION_NAME, COL_STATUS_NAME,
-        ALS_COMPANY_NAME);
+    Set<String> columns = Sets.newHashSet(COL_TA_NAME, COL_TA_NUMBER, COL_OPERATION_NAME,
+        COL_STATUS_NAME, ALS_COMPANY_NAME, COL_COMPANY_OBJECT_NAME);
     return qs.getSearchResults(VIEW_TRADE_ACTS, Filter.anyContains(columns, query));
   }
 

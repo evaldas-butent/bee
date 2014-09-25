@@ -38,6 +38,7 @@ public final class TradeActConstants {
   public static final String COL_TA_DATE = "Date";
   public static final String COL_TA_UNTIL = "Until";
   public static final String COL_TA_SERIES = "Series";
+  public static final String COL_TA_NAME = "ActName";
   public static final String COL_TA_NUMBER = "Number";
   public static final String COL_TA_KIND = "Kind";
   public static final String COL_TA_OPERATION = "Operation";
