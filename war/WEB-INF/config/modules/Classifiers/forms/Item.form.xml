@@ -143,19 +143,19 @@
           </row>
 
           <row>
-            <Label for="Department" />
-            <DataSelector source="Department" summarize="true" />
+            <Label for="Department" data="Departments" />
+            <DataSelector source="Department" data="Departments" summarize="true" />
 
             <Label for="ExternalCode" />
             <InputText source="ExternalCode" summarize="true" />
           </row>
 
           <row>
-            <Label for="ActivityType" />
-            <DataSelector source="ActivityType" summarize="true" />
+            <Label for="ActivityType" data="ActivityTypes" />
+            <DataSelector source="ActivityType" data="ActivityTypes" summarize="true" />
 
-            <Label for="CostCenter" />
-            <DataSelector source="CostCenter" summarize="true" />
+            <Label for="CostCenter" data="CostCenters" />
+            <DataSelector source="CostCenter" data="CostCenters" summarize="true" />
           </row>
         </Table>
       </page>  

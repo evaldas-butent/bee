@@ -94,6 +94,7 @@ public class CargoSalesGrid extends AbstractGridInterceptor implements ClickHand
         Set<String> orders = new HashSet<>();
         Set<String> vehicles = new HashSet<>();
         Set<String> drivers = new HashSet<>();
+        Set<String> cargoNotes = new HashSet<>();
 
         Map<Long, Pair<String, Integer>> payers = new HashMap<>();
         Map<Long, String> customers = new HashMap<>();
@@ -106,19 +107,23 @@ public class CargoSalesGrid extends AbstractGridInterceptor implements ClickHand
         int order = info.getColumnIndex(COL_ORDER_NO);
         int vehicle = info.getColumnIndex(COL_VEHICLE);
         int trailer = info.getColumnIndex(COL_TRAILER);
+        int forwarderVehicle = info.getColumnIndex(COL_FORWARDER_VEHICLE);
         int driver = info.getColumnIndex(COL_DRIVER);
+        int forwarderDriver = info.getColumnIndex(COL_FORWARDER_DRIVER);
         int custId = info.getColumnIndex(COL_CUSTOMER);
         int custName = info.getColumnIndex(COL_CUSTOMER_NAME);
         int currId = info.getColumnIndex(COL_CURRENCY);
         int currName = info.getColumnIndex(COL_CURRENCY + COL_CURRENCY_NAME);
+        int notes = info.getColumnIndex(COL_CARGO_NOTES);
 
         for (BeeRow row : result.getRows()) {
           if (!itemEmpty) {
             itemEmpty = row.getLong(item) == null;
           }
           orders.add(row.getString(order));
-          vehicles.add(BeeUtils.join("/", row.getString(vehicle), row.getString(trailer)));
-          drivers.add(row.getString(driver));
+          vehicles.add(BeeUtils.notEmpty(BeeUtils.join("/", row.getString(vehicle),
+              row.getString(trailer)), row.getString(forwarderVehicle)));
+          drivers.add(BeeUtils.notEmpty(row.getString(driver), row.getString(forwarderDriver)));
 
           String name = null;
           Long id = null;
@@ -142,6 +147,7 @@ public class CargoSalesGrid extends AbstractGridInterceptor implements ClickHand
           if (DataUtils.isId(id)) {
             currencies.put(id, row.getString(currName));
           }
+          cargoNotes.add(row.getString(notes));
         }
         final boolean mainRequired = itemEmpty;
         final DataInfo saleInfo = Data.getDataInfo(VIEW_CARGO_INVOICES);
@@ -151,6 +157,7 @@ public class CargoSalesGrid extends AbstractGridInterceptor implements ClickHand
         newRow.setValue(saleInfo.getColumnIndex(COL_NUMBER), BeeUtils.joinItems(orders));
         newRow.setValue(saleInfo.getColumnIndex(COL_VEHICLE), BeeUtils.joinItems(vehicles));
         newRow.setValue(saleInfo.getColumnIndex(COL_DRIVER), BeeUtils.joinItems(drivers));
+        newRow.setValue(saleInfo.getColumnIndex(COL_CARGO_NOTES), BeeUtils.joinItems(cargoNotes));
 
         newRow.setValue(saleInfo.getColumnIndex(COL_TRADE_MANAGER),
             BeeKeeper.getUser().getUserId());
