@@ -82,6 +82,10 @@ public class ColumnDescription implements BeeSerializable, HasInfo, HasOptions, 
     EXPORTABLE, EXPORT_WIDTH_FACTOR
   }
 
+  public static final String VIEW_COLUMN_SETTINGS = "GridColumnSettings";
+
+  private static boolean omniView;
+
   public static ColumnDescription restore(String s) {
     if (BeeUtils.isEmpty(s)) {
       return null;
@@ -91,7 +95,10 @@ public class ColumnDescription implements BeeSerializable, HasInfo, HasOptions, 
     return column;
   }
 
-  public static final String VIEW_COLUMN_SETTINGS = "GridColumnSettings";
+  public static boolean toggleOmniView() {
+    omniView = !omniView;
+    return omniView;
+  }
 
   private ColType colType;
 
@@ -675,7 +682,7 @@ public class ColumnDescription implements BeeSerializable, HasInfo, HasOptions, 
   }
 
   public Boolean getVisible() {
-    return visible;
+    return omniView ? null : visible;
   }
 
   public String getWhiteSpace() {

@@ -58,6 +58,8 @@ public interface LocalizableClassifierConstants {
 
   String price2();
 
+  String price3();
+
   String references();
 
   String service();

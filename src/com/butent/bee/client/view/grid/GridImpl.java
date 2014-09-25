@@ -45,6 +45,7 @@ import com.butent.bee.client.grid.column.RowIdColumn;
 import com.butent.bee.client.grid.column.RowVersionColumn;
 import com.butent.bee.client.grid.column.SelectionColumn;
 import com.butent.bee.client.i18n.Format;
+import com.butent.bee.client.i18n.HasNumberFormat;
 import com.butent.bee.client.layout.Absolute;
 import com.butent.bee.client.presenter.GridFormPresenter;
 import com.butent.bee.client.presenter.GridPresenter;
@@ -547,9 +548,6 @@ public class GridImpl extends Absolute implements GridView, EditEndEvent.Handler
         }
         if (cd.getScale() != null) {
           calcColumn.setScale(cd.getScale());
-          if (ValueType.DECIMAL.equals(cd.getValueType())) {
-            calcColumn.setNumberFormat(Format.getDecimalFormat(cd.getScale()));
-          }
         }
         column = calcColumn;
         break;
@@ -610,6 +608,8 @@ public class GridImpl extends Absolute implements GridView, EditEndEvent.Handler
       } else {
         Format.setFormat(column, column.getValueType(), cd.getFormat());
       }
+    } else if (BeeUtils.isNonNegative(cd.getScale()) && (column instanceof HasNumberFormat)) {
+      ((HasNumberFormat) column).setNumberFormat(Format.getDecimalFormat(cd.getScale()));
     }
 
     if (!BeeUtils.isEmpty(cd.getHorAlign())) {

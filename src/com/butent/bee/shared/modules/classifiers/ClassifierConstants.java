@@ -114,6 +114,8 @@ public final class ClassifierConstants {
   public static final String COL_ITEM_CURRENCY_1 = "Currency1";
   public static final String COL_ITEM_PRICE_2 = "Price2";
   public static final String COL_ITEM_CURRENCY_2 = "Currency2";
+  public static final String COL_ITEM_PRICE_3 = "Price3";
+  public static final String COL_ITEM_CURRENCY_3 = "Currency3";
   public static final String COL_ITEM_TYPE = "Type";
   public static final String COL_ITEM_GROUP = "Group";
   public static final String COL_ITEM_WEIGHT = "Weight";

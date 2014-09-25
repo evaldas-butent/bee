@@ -28,6 +28,8 @@
     <Relation name="Currency1" relation="Currencies" label="=currency1" />
     <Numeric name="Price2" precision="15" scale="5" label="=price2" />
     <Relation name="Currency2" relation="Currencies" label="=currency2" />
+    <Numeric name="Price3" precision="15" scale="5" label="=price3" />
+    <Relation name="Currency3" relation="Currencies" label="=currency3" />
 
     <Boolean name="Vat" label="=vat" />
     <Numeric name="VatPercent" precision="3" label="=vatPercent" />

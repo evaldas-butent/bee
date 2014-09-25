@@ -3,7 +3,8 @@
   xmlns:f="http://www.butent.com/form"
   xmlns:ui="http://www.butent.com/ui"
   
-  name="TcdCategories" caption="=ecItemCategories">
+  name="TcdCategories" caption="=ecItemCategories" data="TcdCategories">
+
   <DataTree caption="=ecItemCategories" viewName="TcdCategories" parentColumn="Parent">
     <calc>
       <ui:expression>row.CategoryName + (row.MarginPercent ? ' (' + row.MarginPercent + '%)' : '')</ui:expression>
