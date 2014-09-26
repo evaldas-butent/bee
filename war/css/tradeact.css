@@ -73,7 +73,7 @@
   font-weight: bold;
 }
 .bee-ta-picker-price-label,
-.bee-ta-picker-def-price-label {
+.bee-ta-picker-sel-price-label {
   max-width: 80px;
 }
 .bee-ta-return-items-header,
@@ -116,7 +116,7 @@
 
 .bee-ta-picker-id-cell,
 .bee-ta-picker-price-cell,
-.bee-ta-picker-def-price-cell,
+.bee-ta-picker-sel-price-cell,
 .bee-ta-picker-stock-cell,
 .bee-ta-picker-from-cell,
 .bee-ta-return-items-price-cell,
@@ -130,6 +130,7 @@
 .bee-ta-invoice-service-act-cell,
 .bee-ta-invoice-service-item-cell {
   text-align: right;
+  white-space: nowrap;
 }
 
 .bee-ta-picker-type-cell,
@@ -143,19 +144,30 @@
   font-size: x-small;
 }
 
-.bee-ta-picker-def-price-label,
-.bee-ta-picker-def-price-cell:not(:empty) {
+.bee-ta-picker-price-label:hover,
+.bee-ta-picker-price-cell:hover {
+  cursor: pointer;
+  background-color: white;
+  outline: blue solid 1px;
+  outline-offset: -1px;
+}
+.bee-ta-picker-sel-price-label,
+.bee-ta-picker-sel-price-cell.bee-ta-picker-sel-price-cell {
   background-color: honeydew;
 }
+
 .bee-ta-picker-from-label,
-.bee-ta-picker-from-cell,
+.bee-ta-picker-from-cell.bee-ta-picker-from-cell,
 .bee-ta-import-items-from-label,
 .bee-ta-import-items-from-cell {
   background-color: azure;
 }
-.bee-ta-return-items-qty-cell,
-.bee-ta-picker-from-cell .bee-ta-picker-stock-positive {
+.bee-ta-return-items-qty-cell:hover,
+.bee-ta-picker-from-cell:hover {
   cursor: pointer;
+  background-color: white;
+  outline: green solid 1px;
+  outline-offset: -1px;
 }
 
 .bee-ta-return-items-input-cell,

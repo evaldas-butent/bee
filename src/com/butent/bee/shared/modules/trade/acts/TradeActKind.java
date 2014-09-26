@@ -113,7 +113,7 @@ public enum TradeActKind implements HasLocalizedCaption {
   }
 
   public boolean enableReturn() {
-    return this == SALE;
+    return invoices;
   }
 
   public boolean enableServices() {

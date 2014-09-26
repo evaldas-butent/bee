@@ -76,6 +76,7 @@ public final class TradeActConstants {
   public static final String FORM_INVOICE_BUILDER = "TradeActInvoiceBuilder";
 
   public static final String PRP_QUANTITY = "qty";
+  public static final String PRP_ITEM_PRICE = "item_price";
   public static final String PRP_WAREHOUSE_PREFIX = "w-";
   public static final String PRP_PARENT_ACT = "parent_act";
   public static final String PRP_ITEM_TOTAL = "item_total";
