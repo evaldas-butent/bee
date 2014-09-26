@@ -2,23 +2,32 @@
 <!DOCTYPE Form [
   <!ENTITY section "margin-top: 5px;">
   <!ENTITY bold "font-weight:bold;">
-  <!ENTITY form "PrintLogisticsInvoice">
+  <!ENTITY form "PrintLogisticsInvoiceEN">
 ]>
 <f:Form xmlns="http://www.butent.com/widget"
   xmlns:f="http://www.butent.com/form"
   xmlns:ui="http://www.butent.com/ui" 
   
   name="&form;" caption="Sąskaita LT/EN" disabledActions="save"
-  width="70" widthUnit="%" height="90" heightUnit="%" viewName="&form;"
+  width="70" widthUnit="%" height="90" heightUnit="%" viewName="PrintLogisticsInvoice"
   >
   <FlowPanel style="padding: 10px; background-color: white;">
     <HorizontalPanel>
       <Image  url="images/logo.png" />
-      <cell width="100" widthUnit="%">
-        <TextLabel source="InvoiceNo" style="text-align:center; &bold; font-size:medium;">
-          <renderToken source="InvoicePrefix" prefix="PVM Sąskaita-faktūra Nr. / Invoice No.: " suffix=" " />
-          <renderToken source="InvoiceNo" />
-        </TextLabel>
+      <cell width="100" widthUnit="%" style="text-align:center; &bold; font-size:medium;">
+        <FlowPanel>
+          <TextLabel>
+            <render>
+              <ui:expression>row.Proforma 
+                ? 'Sąskaita išankstiniam apmokėjimui Nr. / Proforma invoice No.' 
+                : 'PVM Sąskaita-faktūra Nr. / Invoice No.'</ui:expression>
+            </render>
+          </TextLabel>
+          <TextLabel source="InvoiceNo">
+            <renderToken source="InvoicePrefix" suffix=" " />
+            <renderToken source="InvoiceNo" />
+          </TextLabel>
+        </FlowPanel>
       </cell>
     </HorizontalPanel>
 
@@ -80,10 +89,13 @@
               </TextLabel>
               <TextLabel source="CustomerAddress">
                 <renderToken source="CustomerAddress" prefix="Adresas / Address: " />
-                <renderToken source="CustomerAddress2" prefix=" / " />
                 <renderToken source="CustomerPostIndex" prefix=", " />
                 <renderToken source="CustomerCityName" prefix=", " />
                 <renderToken source="CustomerCountryName" prefix=", " />
+                <renderToken source="CustomerAddress2" prefix=" / " />
+                <renderToken source="CustomerPostIndex" prefix=", " />
+                <renderToken source="CustomerCityName2" prefix=", " />
+                <renderToken source="CustomerCountryName2" prefix=", " />
               </TextLabel>
               <TextLabel source="CustomerPhone">
                 <renderToken source="CustomerPhone" prefix="Telefonas / Phone: " />
@@ -174,50 +186,58 @@
             <Label text="Bendra suma / Total amount:" style="&bold;" />
           </FlowPanel>
         </cell>
-        <FlowPanel>
-          <Label>
-            <properties name="AmountTotal" />
-          </Label>
-          <Label>
-            <properties name="VatTotal" />
-          </Label>
-          <Label style="&bold;">
-            <properties name="Total" />
-          </Label>
-         </FlowPanel>
-        <FlowPanel>
-          <Label>
-            <properties name="Currency" />
-          </Label>
-          <Label>
-            <properties name="Currency" />
-          </Label>
-          <Label style="&bold;">
-            <properties name="Currency" />
-          </Label>
-        </FlowPanel>
-        <FlowPanel>
-          <Label>
-            <properties name="RateAmountTotal" />
-          </Label>
-          <Label>
-            <properties name="RateVatTotal" />
-          </Label>
-          <Label>
-            <properties name="RateTotal" />
-          </Label>
-        </FlowPanel>
-        <FlowPanel>
-          <Label>
-            <properties name="RateCurrency" />
-          </Label>
-          <Label>
-            <properties name="RateCurrency" />
-          </Label>
-          <Label>
-            <properties name="RateCurrency" />
-          </Label>
-        </FlowPanel>
+        <cell style="border-bottom: 1px solid silver; border-left: 1px solid silver;">
+          <FlowPanel>
+            <Label>
+              <properties name="AmountTotal" />
+            </Label>
+            <Label>
+              <properties name="VatTotal" />
+            </Label>
+            <Label style="&bold;">
+              <properties name="Total" />
+            </Label>
+          </FlowPanel>
+        </cell>
+        <cell style="border-bottom: 1px solid silver;">
+          <FlowPanel>
+            <Label>
+              <properties name="Currency" />
+            </Label>
+            <Label>
+              <properties name="Currency" />
+            </Label>
+            <Label style="&bold;">
+              <properties name="Currency" />
+            </Label>
+          </FlowPanel>
+        </cell>
+        <cell style="border-bottom: 1px solid silver;">
+          <FlowPanel>
+            <Label>
+              <properties name="RateAmountTotal" />
+            </Label>
+            <Label>
+              <properties name="RateVatTotal" />
+            </Label>
+            <Label>
+              <properties name="RateTotal" />
+            </Label>
+          </FlowPanel>
+        </cell>
+        <cell style="border-bottom: 1px solid silver; border-right: 1px solid silver;">
+          <FlowPanel>
+            <Label>
+              <properties name="RateCurrency" />
+            </Label>
+            <Label>
+              <properties name="RateCurrency" />
+            </Label>
+            <Label>
+              <properties name="RateCurrency" />
+            </Label>
+          </FlowPanel>
+        </cell>
       </row>
     </Table>
 

@@ -11,7 +11,7 @@
     <RelColumn name="Assessment" label="=trAssessment" editEnabled="true"
       editViewName="Assessments" editSource="Assessment" module="Transport.Logistics"/>
     <DataColumn name="OrderDate" />
-    <RelColumn name="OrderNo" editEnabled="true" editSource="Order" />
+    <RelColumn name="OrderNo" editEnabled="true" editSource="Order" visible="false" />
     <DataColumn name="Status" />    
     <DataColumn name="CustomerName" />
     <DataColumn name="Payer">
@@ -29,7 +29,7 @@
       <renderer type="flag" />
     </CalcColumn>
     <DataColumn name="UnloadingDate" />
-    <DataColumn name="Cmr" />
+    <DataColumn name="Cmr" visible="false" />
 
     <DataColumn name="ServiceName" />
     <DataColumn name="Amount" format="0.00" />
@@ -47,8 +47,8 @@
 
     <DataColumn name="Note" />
 
-    <DataColumn name="Vehicle" />
-    <DataColumn name="Trailer" />
-    <DataColumn name="Driver" searchBy="FirstName LastName" />
+    <DataColumn name="Vehicle" visible="false" />
+    <DataColumn name="Trailer" visible="false" />
+    <DataColumn name="Driver" visible="false" searchBy="FirstName LastName" />
   </g:columns>
 </g:Grid>

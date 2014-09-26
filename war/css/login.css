@@ -2,14 +2,14 @@ body {
   font-family: Arial, sans-serif;
   font-size: 13px;
 /*  background-color: WhiteSmoke;  */
-background: url('/Devlog/images/Hlogo.png') no-repeat;
+background: url('/Hoplog/images/Hlogo.png') no-repeat;
 background-size:55%;
 
   color: #222;
   overflow: hidden;
 }
 
-.bee-SignIn-Panel {a
+.bee-SignIn-Panel {
   position: absolute;
   left: 64%;
  /* top: 5%;*/
@@ -21,7 +21,7 @@ background-size:55%;
 }
 .bee-ready .bee-SignIn-Panel {
   visibility: visible;
-background: url('/Devlog/images/Hlogo2.png') no-repeat;
+background: url('/Hoplog/images/Hlogo2.png') no-repeat;
 background-size: 78%;
 background-position: right bottom;
 }

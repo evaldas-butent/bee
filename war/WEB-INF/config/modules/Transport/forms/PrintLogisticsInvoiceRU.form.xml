@@ -1,0 +1,304 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE Form [
+  <!ENTITY section "margin-top: 5px;">
+  <!ENTITY bold "font-weight:bold;">
+  <!ENTITY form "PrintLogisticsInvoiceRU">
+]>
+<f:Form xmlns="http://www.butent.com/widget"
+  xmlns:f="http://www.butent.com/form"
+  xmlns:ui="http://www.butent.com/ui" 
+  
+  name="&form;" caption="Sąskaita LT/RU" disabledActions="save"
+  width="70" widthUnit="%" height="90" heightUnit="%" viewName="PrintLogisticsInvoice"
+  >
+  <FlowPanel style="padding: 10px; background-color: white;">
+    <HorizontalPanel>
+      <Image  url="images/logo.png" />
+      <cell width="100" widthUnit="%" style="text-align:center; &bold; font-size:medium;">
+        <FlowPanel>
+          <TextLabel>
+            <render>
+              <ui:expression>row.Proforma 
+                ? 'Sąskaita išankstiniam apmokėjimui Nr. / Проформа №' 
+                : 'PVM Sąskaita-faktūra Nr. / Счет №'</ui:expression>
+            </render>
+          </TextLabel>
+          <TextLabel source="InvoiceNo">
+            <renderToken source="InvoicePrefix" suffix=" " />
+            <renderToken source="InvoiceNo" />
+          </TextLabel>
+        </FlowPanel>
+      </cell>
+    </HorizontalPanel>
+
+    <FlowPanel style="&section;">
+      <Table style="width:100%;">
+        <row>
+          <cell>
+            <Label html="Ekspeditorius / Экспедитор:" />
+          </cell>
+          <cell>
+            <Label html="Užsakovas / Заказчик:" />
+          </cell>
+        </row>
+        <row>
+          <cell style="vertical-align:top; width:50%;">
+            <FlowPanel>
+              <TextLabel source="SupplierName" style="&bold;">
+                <renderToken source="SupplierName" />
+                <renderToken source="SupplierType" prefix=", " />
+              </TextLabel>
+              <TextLabel source="SupplierCode">
+                <renderToken source="SupplierCode" prefix="Įm.kodas / КПП: " />
+              </TextLabel>
+              <TextLabel source="SupplierVatCode">
+                <renderToken source="SupplierVatCode" prefix="PVM kodas / ИНН: " />
+              </TextLabel>
+              <TextLabel source="SupplierAddress">
+                <renderToken source="SupplierAddress" prefix="Adresas / Адрес: " />
+                <renderToken source="SupplierPostIndex" prefix=", " />
+                <renderToken source="SupplierCityName" prefix=", " />
+                <renderToken source="SupplierCountryName" prefix=", " />
+              </TextLabel>
+              <TextLabel source="SupplierPhone">
+                <renderToken source="SupplierPhone" prefix="Telefonas / Телефон: " />
+              </TextLabel>
+              <TextLabel source="SupplierFax">
+                <renderToken source="SupplierFax" prefix="Faksas / Факс: " />
+              </TextLabel>
+              <TextLabel source="SupplierBankAccount">
+                <renderToken source="SupplierBankAccount" prefix="a.s. / р.с.: " />
+                <renderToken source="SupplierBankName" prefix=", " />
+                <renderToken source="SupplierBankCode" prefix=", kodas / код банка: " />
+                <renderToken source="SupplierBankSWIFTCode" prefix=", SWIFT: " />
+              </TextLabel>
+            </FlowPanel>
+          </cell>
+          <cell style="vertical-align:top; width:50%;">
+            <FlowPanel>
+              <TextLabel source="CustomerName" style="&bold;">
+                <renderToken source="CustomerName" />
+                <renderToken source="CustomerType" prefix=", " />
+                <renderToken source="CustomerName2" prefix=" / " />
+              </TextLabel>
+              <TextLabel source="CustomerCode">
+                <renderToken source="CustomerCode" prefix="Įm.kodas / КПП: " />
+              </TextLabel>
+              <TextLabel source="CustomerVatCode">
+                <renderToken source="CustomerVatCode" prefix="PVM kodas / ИНН: " />
+              </TextLabel>
+              <TextLabel source="CustomerAddress">
+                <renderToken source="CustomerAddress" prefix="Adresas / Адрес: " />
+                <renderToken source="CustomerPostIndex" prefix=", " />
+                <renderToken source="CustomerCityName" prefix=", " />
+                <renderToken source="CustomerCountryName" prefix=", " />
+                <renderToken source="CustomerAddress2" prefix=" / " />
+                <renderToken source="CustomerPostIndex" prefix=", " />
+                <renderToken source="CustomerCityName3" prefix=", " />
+                <renderToken source="CustomerCountryName3" prefix=", " />
+              </TextLabel>
+              <TextLabel source="CustomerPhone">
+                <renderToken source="CustomerPhone" prefix="Telefonas / Телефон: " />
+              </TextLabel>
+              <TextLabel source="CustomerFax">
+                <renderToken source="CustomerFax" prefix="Faksas / Факс: " />
+              </TextLabel>
+            </FlowPanel>
+          </cell>
+        </row>
+      </Table>
+    </FlowPanel>
+
+    <HorizontalPanel style="float:right; &bold;">
+      <Label html="Data / Дата:" />
+      <DateTimeLabel source="Date" format="DATE_SHORT" />
+    </HorizontalPanel>
+ 
+    <Table name="InvoiceDetails" style="&section; width:100%">
+      <properties rateCurrency="EUR" />
+      <row>
+        <cell rowSpan="2">
+          <Label text="Nr. / №">
+            <properties name="Ordinal" />
+          </Label>
+        </cell>
+        <cell rowSpan="2">
+          <FlowPanel>
+            <InlineLabel text="Paslauga">
+              <properties name="Name" />
+            </InlineLabel>
+            <InlineLabel text=" / " />
+            <InlineLabel text="Услуга">
+              <properties name="Name3" />
+            </InlineLabel>
+          </FlowPanel>
+        </cell>
+        <cell rowSpan="2">
+          <Label text="Maršrutas / Маршрут">
+            <properties name="Notes" />
+          </Label>
+        </cell>
+        <Label text="Užsakymo Nr. / Заказ №">
+          <properties name="Assessment" />
+        </Label>
+        <Label text="Pakrovimas / /Погрузка">
+          <properties name="LoadingPlace" />
+        </Label>
+        <cell rowSpan="2">
+          <Label text="Transporto valst.Nr. / Aвто., трейлер №">
+            <properties name="Vehicle" />
+          </Label>
+        </cell>
+        <cell rowSpan="2">
+          <Label text="Suma / Сумма">
+            <properties name="Amount" />
+          </Label>
+        </cell>
+        <cell rowSpan="2">
+          <Label text="Kursas / Курс">
+            <properties name="Rate" />
+          </Label>
+        </cell>
+        <cell rowSpan="2">
+          <Label text="Suma pagal kursą / Сумма по курсу">
+            <properties name="RateAmount" />
+          </Label>
+        </cell>
+        <cell rowSpan="2">
+          <Label text="PVM / НДС">
+            <properties name="Vat" />
+          </Label>
+        </cell>
+      </row>
+      <row>
+        <Label text="Ref Nr. / Реф.№">
+          <properties name="Number" />
+        </Label>
+        <Label text="Iškrovimas / Pазгрузка">
+          <properties name="UnloadingPlace" />
+        </Label>
+      </row>
+      <row>
+        <cell colSpan="6">
+          <FlowPanel style="text-align:right;">
+            <Label text="Suma / Итого:" />
+            <Label text="PVM / НДС:" />
+            <Label text="Bendra suma / Сумма итого:" style="&bold;" />
+          </FlowPanel>
+        </cell>
+        <cell style="border-bottom: 1px solid silver; border-left: 1px solid silver;">
+          <FlowPanel>
+            <Label>
+              <properties name="AmountTotal" />
+            </Label>
+            <Label>
+              <properties name="VatTotal" />
+            </Label>
+            <Label style="&bold;">
+              <properties name="Total" />
+            </Label>
+          </FlowPanel>
+        </cell>
+        <cell style="border-bottom: 1px solid silver;">
+          <FlowPanel>
+            <Label>
+              <properties name="Currency" />
+            </Label>
+            <Label>
+              <properties name="Currency" />
+            </Label>
+            <Label style="&bold;">
+              <properties name="Currency" />
+            </Label>
+          </FlowPanel>
+        </cell>
+        <cell style="border-bottom: 1px solid silver;">
+          <FlowPanel>
+            <Label>
+              <properties name="RateAmountTotal" />
+            </Label>
+            <Label>
+              <properties name="RateVatTotal" />
+            </Label>
+            <Label>
+              <properties name="RateTotal" />
+            </Label>
+          </FlowPanel>
+        </cell>
+        <cell style="border-bottom: 1px solid silver; border-right: 1px solid silver;">
+          <FlowPanel>
+            <Label>
+              <properties name="RateCurrency" />
+            </Label>
+            <Label>
+              <properties name="RateCurrency" />
+            </Label>
+            <Label>
+              <properties name="RateCurrency" />
+            </Label>
+          </FlowPanel>
+        </cell>
+      </row>
+    </Table>
+
+    <HorizontalPanel style="&section;">
+      <InlineLabel html="Prašome šią sąskaitą faktūrą apmokėti" />
+      <TextLabel source="CurrencyName" />
+      <InlineLabel html="valiuta / Пожалуйста oплатите этот счет" />
+      <TextLabel source="CurrencyName" />
+      <InlineLabel html="валютой" />
+    </HorizontalPanel>
+
+    <TextLabel source="Term" style="&section; &bold; white-space:pre-wrap;">
+      <renderToken source="Term" prefix="Sąskaitą apmokėti iki / Cчет заплатить до: " />
+    </TextLabel>
+
+    <HorizontalPanel style="&section;">
+      <Label html="Suma žodžiais:" />
+      <Label name="TotalInWords" />
+    </HorizontalPanel>
+    <HorizontalPanel style="&section;">
+      <Label html="Сумма в прописью:" />
+      <Label name="TotalInWordsRU">
+        <properties bee_locale="ru" />
+      </Label>
+    </HorizontalPanel>
+
+    <HtmlPanel style="&section;">
+      <span style="font-size:smaller; &bold; display:block; white-space:pre-wrap;">
+Pastaba:
+Šios nuorodos negalioja sąskaitoms su 21 % PVM 
+0 % PVM tarifas: pagal PVM 1 sr. 45 str.
+Be PVM: Pagal PVM įst. 13 (1) str.
+Без НДС: “Обратный налог” – по директиве 2006/112/EB
+      </span>
+      <span style="font-size:smaller; display:block; white-space:pre-wrap;">
+Pasibaigus mokėjimo terminui, už kiekvieną uždelstą dieną bus skaičiuojami 0.2% dydžio delspinigiai. /
+После периода оплаты за каждый просроченный день будет расти 0,2% пени.
+Padarę apmokėjimą prašome raštu atsiųsti pavedimo kopiją. /
+Пожалуйста, отправьте нам копию денежного перевода когда сделаете оплату.
+      </span>
+    </HtmlPanel>
+
+    <Label html="Kiti dokumentai, pastabos / Другие документы, примечания:" style="&section; &bold;" />
+    <TextLabel source="Notes" style="white-space:pre-wrap;" />
+    
+    <Table style="width:100%; margin-top:10px;">
+      <row style="&bold;">
+        <Label html="Išdavė / Выдан:" />
+        <Label html="Gavėjas / Получатель:" />
+      </row>
+      <row style="font-size:xx-small;">
+        <Label html="(vardas, pavardė, pareigos ir parašas / Имя, фамилия, должность и подпись)" />
+        <Label html="(vardas, pavardė, pareigos ir parašas / Имя, фамилия, должность и подпись)" />
+      </row>
+      <row>
+        <TextLabel source="Manager" style="margin-top:5px;">
+          <renderToken source="ManagerFirstName" />
+          <renderToken source="ManagerLastName" />
+          <renderToken source="ManagerPosition" prefix=", " />
+        </TextLabel>
+      </row>
+    </Table>
+  </FlowPanel>
+</f:Form>

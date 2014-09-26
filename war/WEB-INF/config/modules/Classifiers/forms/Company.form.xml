@@ -7,6 +7,7 @@
   xmlns:f="http://www.butent.com/form"
   xmlns:xi="http://www.w3.org/2001/XInclude"
   xmlns:d="http://www.butent.com/decorator"
+  xmlns:ui="http://www.butent.com/ui"
 
   name="Company"
   viewName="Companies"
@@ -50,7 +51,71 @@
       open="true">
        <Label text="=contactInfo" style="text-transform: uppercase; " />
         <FlowPanel class="flexible">
-         <xi:include href="widgets/ContactDetails.widget.xml" />     
+          <Table>
+            <row>
+              <Label text="=phones" style="&lbl1;" for="Phone" class="bee-required" />
+              <InputText source="Phone" required="true" />
+              <Label text="=mobile" style="&lbl1;" for="Mobile" class="bee-required" />
+              <InputText source="Mobile" required="true" />
+              <Label text="=fax" style="&lbl1;" for="Fax" />
+              <InputText source="Fax" />
+            </row>
+          
+            <row>
+              <Label for="EmailId" style="&lbl1;" class="bee-required" />
+              <cell colSpan="2" for="EmailId" >
+                <DataSelector source="EmailId" style="width: 100%;" required="true" />
+              </cell>
+          
+              <Label text="=website" style="&lbl1;" for="Website" />
+              <cell colSpan="2" for="Website" >
+                <InputText source="Website" style="width: 100%" />
+              </cell>
+            </row>
+            
+            <row for="Address">
+              <Label text="=address" style="&lbl1;" />
+              <cell colSpan="5">
+                <InputText source="Address" style="width: 100%;" />
+              </cell>
+            </row>
+            
+            <row>
+              <Label text="=city" style="&lbl1;" for="City" />
+              <DataSelector source="City">
+                <selectorColumn source="Name" />
+                <selectorColumn source="CountryName" />
+                <selectorColumn source="CountryCode">
+                  <ui:renderer type="flag" />
+                </selectorColumn>
+              </DataSelector>
+          
+              <Label text="=country" style="&lbl1;" for="Country" />
+              <Table for="Country">
+                <row>
+                  <DataSelector source="Country" style="width: 120px;">
+                    <renderToken source="CountryName" />
+                    <renderToken source="CountryCode" prefix=" (" suffix=")" />
+                    <selectorColumn source="Name" />
+                    <selectorColumn source="Code">
+                      <ui:renderer type="flag" />
+                    </selectorColumn>
+                  </DataSelector>
+                  <Flag source="CountryCode" style="width: 22px;" />
+                </row>
+              </Table>
+          
+              <Label text="=postIndex" style="&lbl1;" for="PostIndex" />
+              <InputText source="PostIndex" />
+            </row>
+            
+            <row for="SocialContacts">
+              <Label text="=socialContacts" style="&lbl1;" />
+              <cell colSpan="5">
+                <InputText source="SocialContacts" style="width: 100%;" />
+              </cell>
+            </row>
+          </Table>
          <ChildGrid name="CompanyContacts" relColumn="Company" style="min-height: 150px" />
        </FlowPanel>
     </Disclosure>
