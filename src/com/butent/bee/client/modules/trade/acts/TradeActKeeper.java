@@ -210,12 +210,19 @@ public final class TradeActKeeper {
 
     int nameIndex = rowSet.getColumnIndex(COL_OPERATION_NAME);
     int kindIndex = rowSet.getColumnIndex(COL_OPERATION_KIND);
+    int defIndex = rowSet.getColumnIndex(COL_OPERATION_DEFAULT);
 
     for (BeeRow row : rowSet) {
       if (getKind(row, kindIndex) == kind) {
-        if (DataUtils.isId(id)) {
+        if (BeeUtils.isTrue(row.getBoolean(defIndex))) {
+          id = row.getId();
+          name = row.getString(nameIndex);
+          break;
+
+        } else if (DataUtils.isId(id)) {
           id = null;
           break;
+
         } else {
           id = row.getId();
           name = row.getString(nameIndex);
@@ -266,7 +273,7 @@ public final class TradeActKeeper {
     }
   }
 
-  static BeeRowSet getUserSeries() {
+  static BeeRowSet getUserSeries(boolean checkDefaults) {
     Long userId = BeeKeeper.getUser().getUserId();
     if (!DataUtils.isId(userId)) {
       return null;
@@ -279,10 +286,17 @@ public final class TradeActKeeper {
 
     int seriesIndex = seriesManagers.getColumnIndex(COL_SERIES);
     int managerIndex = seriesManagers.getColumnIndex(COL_SERIES_MANAGER);
+    int defIndex = seriesManagers.getColumnIndex(COL_SERIES_DEFAULT);
 
     Set<Long> ms = new HashSet<>();
     for (BeeRow row : seriesManagers) {
       if (userId.equals(row.getLong(managerIndex))) {
+        if (checkDefaults && BeeUtils.isTrue(row.getBoolean(defIndex))) {
+          ms.clear();
+          ms.add(row.getLong(seriesIndex));
+          break;
+        }
+
         ms.add(row.getLong(seriesIndex));
       }
     }
@@ -385,7 +399,7 @@ public final class TradeActKeeper {
       setDefaultOperation(row, kind);
     }
 
-    BeeRowSet userSeries = getUserSeries();
+    BeeRowSet userSeries = getUserSeries(true);
     if (userSeries != null && userSeries.getNumberOfRows() == 1) {
       Data.setValue(VIEW_TRADE_ACTS, row, COL_TA_SERIES, userSeries.getRow(0).getId());
       Data.setValue(VIEW_TRADE_ACTS, row, COL_SERIES_NAME,

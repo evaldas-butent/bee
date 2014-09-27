@@ -111,17 +111,23 @@ public class TradeActItemsGrid extends AbstractGridInterceptor implements
 
   @Override
   public void afterCreatePresenter(GridPresenter presenter) {
-    Button command = new Button(Localized.getConstants().actionImport());
-    command.addStyleName(STYLE_COMMAND_IMPORT);
+    GridView gridView = presenter.getGridView();
 
-    command.addClickHandler(new ClickHandler() {
-      @Override
-      public void onClick(ClickEvent event) {
-        ensureCollector().clickInput();
-      }
-    });
+    if (gridView != null && !gridView.isReadOnly()
+        && BeeKeeper.getUser().canCreateData(gridView.getViewName())) {
 
-    presenter.getHeader().addCommandItem(command);
+      Button command = new Button(Localized.getConstants().actionImport());
+      command.addStyleName(STYLE_COMMAND_IMPORT);
+
+      command.addClickHandler(new ClickHandler() {
+        @Override
+        public void onClick(ClickEvent event) {
+          ensureCollector().clickInput();
+        }
+      });
+
+      presenter.getHeader().addCommandItem(command);
+    }
 
     super.afterCreatePresenter(presenter);
   }

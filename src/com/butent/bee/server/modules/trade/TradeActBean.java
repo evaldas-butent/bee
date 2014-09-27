@@ -104,6 +104,9 @@ public class TradeActBean {
     } else if (BeeUtils.same(svc, SVC_CREATE_ACT_INVOICE)) {
       response = createInvoice(reqInfo);
 
+    } else if (BeeUtils.same(svc, SVC_CONVERT_ACT_TO_SALE)) {
+      response = convertToSale(reqInfo);
+
     } else {
       String msg = BeeUtils.joinWords("service not recognized:", svc);
       logger.warning(msg);
@@ -185,6 +188,43 @@ public class TradeActBean {
         }
       }
     });
+  }
+
+  private ResponseObject convertToSale(RequestInfo reqInfo) {
+    Long actId = reqInfo.getParameterLong(COL_TRADE_ACT);
+    if (!DataUtils.isId(actId)) {
+      return ResponseObject.parameterNotFound(reqInfo.getService(), COL_TRADE_ACT);
+    }
+
+    BeeRowSet rowSet = qs.getViewData(VIEW_TRADE_ACTS, Filter.compareId(actId));
+    if (DataUtils.isEmpty(rowSet)) {
+      return ResponseObject.error(reqInfo.getService(), VIEW_TRADE_ACTS, actId, "not available");
+    }
+
+    BeeRow oldRow = rowSet.getRow(0);
+    BeeRow newRow = DataUtils.cloneRow(oldRow);
+
+    newRow.setValue(rowSet.getColumnIndex(COL_TA_KIND), TradeActKind.SALE.ordinal());
+
+    Long series = oldRow.getLong(rowSet.getColumnIndex(COL_TA_SERIES));
+    int numberIndex = rowSet.getColumnIndex(COL_TA_NUMBER);
+
+    if (DataUtils.isId(series) && oldRow.isNull(numberIndex)) {
+      String number = getNextActNumber(series);
+
+      if (!BeeUtils.isEmpty(number)
+          && number.length() <= rowSet.getColumn(numberIndex).getPrecision()) {
+        newRow.setValue(numberIndex, number);
+      }
+    }
+
+    Long operation = getDefaultOperation(TradeActKind.SALE);
+    newRow.setValue(rowSet.getColumnIndex(COL_TA_OPERATION), operation);
+
+    BeeRowSet updated = DataUtils.getUpdated(rowSet.getViewName(), rowSet.getColumns(),
+        oldRow, newRow, null);
+
+    return deb.commitRow(updated);
   }
 
   private ResponseObject copyAct(RequestInfo reqInfo) {
@@ -325,6 +365,26 @@ public class TradeActBean {
     } else {
       return BeeConst.EMPTY_IMMUTABLE_LONG_SET;
     }
+  }
+
+  private Long getDefaultOperation(TradeActKind kind) {
+    IsCondition where = SqlUtils.equals(TBL_TRADE_OPERATIONS, COL_OPERATION_KIND, kind.ordinal());
+
+    SqlSelect query = new SqlSelect()
+        .addFields(TBL_TRADE_OPERATIONS, sys.getIdName(TBL_TRADE_OPERATIONS))
+        .addFrom(TBL_TRADE_OPERATIONS)
+        .setWhere(SqlUtils.and(where,
+            SqlUtils.notNull(TBL_TRADE_OPERATIONS, COL_OPERATION_DEFAULT)));
+
+    List<Long> operations = qs.getLongList(query);
+    if (operations.size() == 1) {
+      return operations.get(0);
+    }
+
+    query.setWhere(where);
+    operations = qs.getLongList(query);
+
+    return (operations.size() == 1) ? operations.get(0) : null;
   }
 
   private String getNextActNumber(long series) {

@@ -1,5 +1,5 @@
 .bee-ta-command-disabled {
-  visibility: hidden;
+  display: none;
 }
 
 .bee-GridFormContainer-edit .bee-ta-template-selection,

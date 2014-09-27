@@ -36,6 +36,7 @@ import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.IsRow;
 import com.butent.bee.shared.data.event.DataChangeEvent;
 import com.butent.bee.shared.data.event.RowInsertEvent;
+import com.butent.bee.shared.data.event.RowUpdateEvent;
 import com.butent.bee.shared.data.filter.FilterComponent;
 import com.butent.bee.shared.data.view.DataInfo;
 import com.butent.bee.shared.i18n.Localized;
@@ -58,6 +59,7 @@ public class TradeActGrid extends AbstractGridInterceptor {
 
   private Button supplementCommand;
   private Button returnCommand;
+  private Button saleCommand;
   private Button copyCommand;
   private Button templateCommand;
 
@@ -69,19 +71,29 @@ public class TradeActGrid extends AbstractGridInterceptor {
 
   @Override
   public void afterCreatePresenter(GridPresenter presenter) {
-    if ((kind == null || kind == TradeActKind.SALE)
-        && BeeKeeper.getUser().canCreateData(VIEW_TRADE_ACTS)) {
-      presenter.getHeader().addCommandItem(ensureSupplementCommand());
-      presenter.getHeader().addCommandItem(ensureReturnCommand());
-    }
+    GridView gridView = presenter.getGridView();
 
-    if ((kind == null || kind.enableCopy())
-        && BeeKeeper.getUser().canCreateData(VIEW_TRADE_ACTS)) {
-      presenter.getHeader().addCommandItem(ensureCopyCommand());
-    }
-    if ((kind == null || kind.enableTemplate())
-        && BeeKeeper.getUser().canCreateData(VIEW_TRADE_ACT_TEMPLATES)) {
-      presenter.getHeader().addCommandItem(ensureTemplateCommand());
+    if (gridView != null && !gridView.isReadOnly()) {
+      boolean canCreateActs = BeeKeeper.getUser().canCreateData(VIEW_TRADE_ACTS);
+
+      if ((kind == null || kind.enableSupplement()) && canCreateActs) {
+        presenter.getHeader().addCommandItem(ensureSupplementCommand());
+      }
+      if ((kind == null || kind.enableReturn()) && canCreateActs) {
+        presenter.getHeader().addCommandItem(ensureReturnCommand());
+      }
+
+      if (kind == null || kind.enableSale()) {
+        presenter.getHeader().addCommandItem(ensureSaleCommand());
+      }
+
+      if ((kind == null || kind.enableCopy()) && canCreateActs) {
+        presenter.getHeader().addCommandItem(ensureCopyCommand());
+      }
+      if ((kind == null || kind.enableTemplate())
+          && BeeKeeper.getUser().canCreateData(VIEW_TRADE_ACT_TEMPLATES)) {
+        presenter.getHeader().addCommandItem(ensureTemplateCommand());
+      }
     }
 
     super.afterCreatePresenter(presenter);
@@ -127,7 +139,7 @@ public class TradeActGrid extends AbstractGridInterceptor {
       }
     }
 
-    BeeRowSet series = TradeActKeeper.getUserSeries();
+    BeeRowSet series = TradeActKeeper.getUserSeries(false);
     if (DataUtils.isEmpty(series)) {
       return super.getInitialUserFilters(defaultFilters);
     }
@@ -156,22 +168,7 @@ public class TradeActGrid extends AbstractGridInterceptor {
 
   @Override
   public void onActiveRowChange(ActiveRowChangeEvent event) {
-    TradeActKind k = TradeActKeeper.getKind(event.getRowValue(), getDataIndex(COL_TA_KIND));
-
-    if (supplementCommand != null) {
-      TradeActKeeper.setCommandEnabled(supplementCommand, k != null && k.enableSupplement());
-    }
-    if (returnCommand != null) {
-      TradeActKeeper.setCommandEnabled(returnCommand, k != null && k.enableReturn());
-    }
-
-    if (copyCommand != null) {
-      TradeActKeeper.setCommandEnabled(copyCommand, k != null && k.enableCopy());
-    }
-    if (templateCommand != null) {
-      TradeActKeeper.setCommandEnabled(templateCommand, k != null && k.enableTemplate());
-    }
-
+    refreshCommands(event.getRowValue());
     super.onActiveRowChange(event);
   }
 
@@ -236,11 +233,7 @@ public class TradeActGrid extends AbstractGridInterceptor {
 
           if (gridView != null && gridView.asWidget().isAttached()) {
             gridView.ensureRow(row, true);
-
-            if (DomUtils.isVisible(gridView.getGrid())) {
-              gridView.onEditStart(new EditStartEvent(row, null, null,
-                  EditStartEvent.CLICK, gridView.isReadOnly()));
-            }
+            maybeOpenAct(gridView, row);
           }
 
           RowInsertEvent.fire(BeeKeeper.getBus(), getViewName(), row,
@@ -267,6 +260,71 @@ public class TradeActGrid extends AbstractGridInterceptor {
       TradeActKeeper.setCommandEnabled(returnCommand, false);
     }
     return returnCommand;
+  }
+
+  private Button ensureSaleCommand() {
+    if (saleCommand == null) {
+      saleCommand = new Button(Localized.getConstants().taChangeIntoSale(),
+          new ClickHandler() {
+            @Override
+            public void onClick(ClickEvent event) {
+              IsRow row = getGridView().getActiveRow();
+              if (row != null) {
+                convertIntoSale(row);
+              }
+            }
+          });
+
+      TradeActKeeper.addCommandStyle(saleCommand, "sale");
+      TradeActKeeper.setCommandEnabled(saleCommand, false);
+    }
+    return saleCommand;
+  }
+
+  private void convertIntoSale(IsRow row) {
+    TradeActKind tak = TradeActKeeper.getKind(getViewName(), row);
+
+    if (tak != null && tak.enableSale()) {
+      List<String> messages = new StringList();
+
+      messages.add(row.getString(getDataIndex(COL_TA_NAME)));
+      messages.add(Localized.getConstants().taChangeIntoSale());
+
+      final long actId = row.getId();
+
+      Global.confirm(tak.getCaption(), Icon.QUESTION, messages,
+          Localized.getConstants().actionChange(), Localized.getConstants().actionCancel(),
+          new ConfirmationCallback() {
+
+            @Override
+            public void onConfirm() {
+              if (DataUtils.idEquals(getGridView().getActiveRow(), actId)) {
+                ParameterList params = TradeActKeeper.createArgs(SVC_CONVERT_ACT_TO_SALE);
+                params.addQueryItem(COL_TRADE_ACT, actId);
+
+                BeeKeeper.getRpc().makeRequest(params, new ResponseCallback() {
+
+                  @Override
+                  public void onResponse(ResponseObject response) {
+                    if (response.hasResponse(BeeRow.class)) {
+                      BeeRow updated = BeeRow.restore(response.getResponseAsString());
+                      RowUpdateEvent.fire(BeeKeeper.getBus(), getViewName(), updated);
+
+                      GridView gridView = getGridView();
+
+                      if (gridView != null && gridView.asWidget().isAttached()) {
+                        if (DataUtils.idEquals(gridView.getActiveRow(), actId)) {
+                          refreshCommands(updated);
+                        }
+                        maybeOpenAct(gridView, updated);
+                      }
+                    }
+                  }
+                });
+              }
+            }
+          });
+    }
   }
 
   private void createReturn(IsRow parent) {
@@ -395,6 +453,35 @@ public class TradeActGrid extends AbstractGridInterceptor {
       TradeActKeeper.setCommandEnabled(templateCommand, false);
     }
     return templateCommand;
+  }
+
+  private static void maybeOpenAct(GridView gridView, IsRow row) {
+    if (DomUtils.isVisible(gridView.getGrid())) {
+      gridView.onEditStart(new EditStartEvent(row, null, null,
+          EditStartEvent.CLICK, gridView.isReadOnly()));
+    }
+  }
+
+  private void refreshCommands(IsRow row) {
+    TradeActKind k = TradeActKeeper.getKind(row, getDataIndex(COL_TA_KIND));
+
+    if (supplementCommand != null) {
+      TradeActKeeper.setCommandEnabled(supplementCommand, k != null && k.enableSupplement());
+    }
+    if (returnCommand != null) {
+      TradeActKeeper.setCommandEnabled(returnCommand, k != null && k.enableReturn());
+    }
+
+    if (saleCommand != null) {
+      TradeActKeeper.setCommandEnabled(saleCommand, k != null && k.enableSale());
+    }
+
+    if (copyCommand != null) {
+      TradeActKeeper.setCommandEnabled(copyCommand, k != null && k.enableCopy());
+    }
+    if (templateCommand != null) {
+      TradeActKeeper.setCommandEnabled(templateCommand, k != null && k.enableTemplate());
+    }
   }
 
   private void saveAsTemplate(String name) {
