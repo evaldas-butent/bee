@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE Form[
-  <!ENTITY br '<div style="height: 15px;" />'>
+  <!ENTITY br '<div style="height: 2&#37;;" />'>
 ]>
 <f:Form xmlns="http://www.butent.com/widget"
   xmlns:f="http://www.butent.com/form"
@@ -38,7 +38,7 @@
     </Table>
     
     &br;
-    <FlowPanel name="TradeActs" class="flexible" style="overflow: auto;" />
+    <FlowPanel name="TradeActs" style="overflow: auto; min-height: 10%; max-height: 30%;" />
     &br;
     <FlowPanel name="TradeActServices" class="flexible" style="overflow: auto;" />
     &br;

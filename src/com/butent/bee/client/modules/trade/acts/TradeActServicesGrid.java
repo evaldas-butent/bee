@@ -19,6 +19,7 @@ import com.butent.bee.shared.data.IsColumn;
 import com.butent.bee.shared.data.IsRow;
 import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.modules.trade.Totalizer;
+import com.butent.bee.shared.modules.trade.acts.TradeActUtils;
 import com.butent.bee.shared.utils.BeeUtils;
 
 import java.util.Objects;
@@ -101,7 +102,8 @@ public class TradeActServicesGrid extends AbstractGridInterceptor {
   }
 
   private Double calculatePrice(Double itemTotal, Double tariff) {
-    return Data.round(getViewName(), COL_TRADE_ITEM_PRICE, BeeUtils.percent(itemTotal, tariff));
+    Integer scale = Data.getColumnScale(getViewName(), COL_TRADE_ITEM_PRICE);
+    return TradeActUtils.calculateServicePrice(itemTotal, tariff, scale);
   }
 
   private void maybeRecalculatePrices() {

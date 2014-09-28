@@ -128,7 +128,10 @@
 .bee-ta-invoice-act-id-cell,
 .bee-ta-invoice-act-total-cell,
 .bee-ta-invoice-service-act-cell,
-.bee-ta-invoice-service-item-cell {
+.bee-ta-invoice-service-item-cell,
+.bee-ta-invoice-service-qty-cell,
+.bee-ta-invoice-service-price-cell,
+.bee-ta-invoice-service-amount-cell {
   text-align: right;
   white-space: nowrap;
 }
@@ -218,4 +221,13 @@
 .bee-ta-invoice-service-item-cell:hover {
   cursor: pointer;
   text-decoration: underline;
+}
+
+.bee-ta-invoice-service-factor-cell,
+.bee-ta-invoice-service-minterm-cell,
+.bee-ta-invoice-service-discount-cell {
+  text-align: center;
+}
+.bee-ta-invoice-service-factor-input.bee-ta-invoice-service-factor-input {
+  width: 50px;
 }

@@ -349,7 +349,7 @@ public class TradeActGrid extends AbstractGridInterceptor {
         default:
           if (!parent.isNull(i) && !colId.startsWith(COL_TA_STATUS)
               && !colId.startsWith(COL_TA_OPERATION)) {
-            newRow.setValue(i, parent.getValue(i));
+            newRow.setValue(i, parent.getString(i));
           }
       }
     }
@@ -403,13 +403,19 @@ public class TradeActGrid extends AbstractGridInterceptor {
           newRow.setValue(i, parent.getId());
           break;
 
+        case COL_TA_NUMBER:
+          if (!parent.isNull(i)) {
+            newRow.setValue(i, BeeUtils.trim(parent.getString(i)) + "-1");
+          }
+          break;
+
         case COL_TA_UNTIL:
         case COL_TA_NOTES:
           break;
 
         default:
           if (!parent.isNull(i) && !colId.startsWith(COL_TA_STATUS)) {
-            newRow.setValue(i, parent.getValue(i));
+            newRow.setValue(i, parent.getString(i));
           }
       }
     }

@@ -1851,6 +1851,10 @@ public final class BeeUtils {
     return (x > 0) ? x : positive(y, def);
   }
 
+  public static Double positive(Double x, Double def) {
+    return isPositive(x) ? x : def;
+  }
+
   /**
    * Shows how much of the progress is done, separated by the default progress separator.
    * <p>
