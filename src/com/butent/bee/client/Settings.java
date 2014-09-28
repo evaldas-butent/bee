@@ -25,10 +25,6 @@ public final class Settings {
   private static JSONObject settings;
   private static boolean initialized;
 
-  public static int getActionSensitivityMillis() {
-    return getInt("actionSensitivityMillis");
-  }
-
   public static int getApplianceHeaderHeight() {
     return getInt("applianceHeaderHeight");
   }
@@ -45,6 +41,14 @@ public final class Settings {
     } else {
       return false;
     }
+  }
+
+  public static int getClickSensitivityDistance() {
+    return getInt("clickSensitivityDistance");
+  }
+
+  public static int getClickSensitivityMillis() {
+    return getInt("clickSensitivityMillis");
   }
 
   public static Double getDouble(String key) {

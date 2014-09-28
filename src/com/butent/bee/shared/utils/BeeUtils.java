@@ -588,6 +588,13 @@ public final class BeeUtils {
     return src.substring(0, start) + src.substring(end);
   }
 
+  public static double distance(double x1, double y1, double x2, double y2) {
+    double dx = x2 - x1;
+    double dy = y2 - y1;
+
+    return Math.sqrt(dx * dx + dy * dy);
+  }
+
   public static double div(int x, int y) {
     return x / (double) y;
   }

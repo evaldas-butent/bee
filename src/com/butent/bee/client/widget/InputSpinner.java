@@ -1,6 +1,7 @@
 package com.butent.bee.client.widget;
 
 import com.butent.bee.client.dom.DomUtils;
+import com.butent.bee.client.event.EventUtils;
 import com.butent.bee.client.ui.FormWidget;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.html.builder.elements.Input;
@@ -18,6 +19,8 @@ public class InputSpinner extends InputInteger {
   public InputSpinner() {
     super();
     DomUtils.setInputType(this, inputType);
+
+    EventUtils.preventClickDebouncer(this);
   }
 
   public InputSpinner(int min, int max) {

@@ -76,22 +76,17 @@ public class TradeActGrid extends AbstractGridInterceptor {
     if (gridView != null && !gridView.isReadOnly()) {
       boolean canCreateActs = BeeKeeper.getUser().canCreateData(VIEW_TRADE_ACTS);
 
-      if ((kind == null || kind.enableSupplement()) && canCreateActs) {
+      if (canCreateActs) {
         presenter.getHeader().addCommandItem(ensureSupplementCommand());
-      }
-      if ((kind == null || kind.enableReturn()) && canCreateActs) {
         presenter.getHeader().addCommandItem(ensureReturnCommand());
       }
 
-      if (kind == null || kind.enableSale()) {
-        presenter.getHeader().addCommandItem(ensureSaleCommand());
-      }
+      presenter.getHeader().addCommandItem(ensureSaleCommand());
 
-      if ((kind == null || kind.enableCopy()) && canCreateActs) {
+      if (canCreateActs) {
         presenter.getHeader().addCommandItem(ensureCopyCommand());
       }
-      if ((kind == null || kind.enableTemplate())
-          && BeeKeeper.getUser().canCreateData(VIEW_TRADE_ACT_TEMPLATES)) {
+      if (BeeKeeper.getUser().canCreateData(VIEW_TRADE_ACT_TEMPLATES)) {
         presenter.getHeader().addCommandItem(ensureTemplateCommand());
       }
     }

@@ -43,6 +43,9 @@ public class UserInfo implements HasInfo {
   private int applianceHeaderHeight;
   private int viewHeaderHeight;
 
+  private int clickSensitivityMillis;
+  private int clickSensitivityDistance;
+
   private String styleId;
 
   public boolean canCreateData(String object) {
@@ -63,6 +66,14 @@ public class UserInfo implements HasInfo {
 
   public int getApplianceHeaderHeight() {
     return applianceHeaderHeight;
+  }
+
+  public int getClickSensitivityDistance() {
+    return clickSensitivityDistance;
+  }
+
+  public int getClickSensitivityMillis() {
+    return clickSensitivityMillis;
   }
 
   public Long getCompany() {
@@ -210,10 +221,7 @@ public class UserInfo implements HasInfo {
     if (!BeeUtils.isEmpty(serialized)) {
       settings = BeeRowSet.restore(serialized);
 
-      setOpenInNewTab(getBooleanSetting(COL_OPEN_IN_NEW_TAB));
-
-      setApplianceHeaderHeight(getIntSetting(COL_APPLIANCE_HEADER_HEIGHT));
-      setViewHeaderHeight(getIntSetting(COL_VIEW_HEADER_HEIGHT));
+      updateFields();
 
       String css = getStyle();
       if (!BeeUtils.isEmpty(css)) {
@@ -242,10 +250,7 @@ public class UserInfo implements HasInfo {
 
       settings.addRow(row);
 
-      setOpenInNewTab(getBooleanSetting(COL_OPEN_IN_NEW_TAB));
-
-      setApplianceHeaderHeight(getIntSetting(COL_APPLIANCE_HEADER_HEIGHT));
-      setViewHeaderHeight(getIntSetting(COL_VIEW_HEADER_HEIGHT));
+      updateFields();
 
       String css = getStyle();
 
@@ -337,6 +342,14 @@ public class UserInfo implements HasInfo {
     this.applianceHeaderHeight = applianceHeaderHeight;
   }
 
+  private void setClickSensitivityDistance(int clickSensitivityDistance) {
+    this.clickSensitivityDistance = clickSensitivityDistance;
+  }
+
+  private void setClickSensitivityMillis(int clickSensitivityMillis) {
+    this.clickSensitivityMillis = clickSensitivityMillis;
+  }
+
   private void setOpenInNewTab(boolean openInNewTab) {
     this.openInNewTab = openInNewTab;
   }
@@ -347,6 +360,16 @@ public class UserInfo implements HasInfo {
 
   private void setViewHeaderHeight(int viewHeaderHeight) {
     this.viewHeaderHeight = viewHeaderHeight;
+  }
+
+  private void updateFields() {
+    setOpenInNewTab(getBooleanSetting(COL_OPEN_IN_NEW_TAB));
+
+    setApplianceHeaderHeight(getIntSetting(COL_APPLIANCE_HEADER_HEIGHT));
+    setViewHeaderHeight(getIntSetting(COL_VIEW_HEADER_HEIGHT));
+
+    setClickSensitivityMillis(getIntSetting(COL_CLICK_SENSITIVITY_MILLIS));
+    setClickSensitivityDistance(getIntSetting(COL_CLICK_SENSITIVITY_DISTANCE));
   }
 
   private void updateStyle(String css) {

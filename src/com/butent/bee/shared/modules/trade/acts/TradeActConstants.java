@@ -88,6 +88,8 @@ public final class TradeActConstants {
   public static final String PRM_IMPORT_TA_ITEM_RX = "ImportActItemRegEx";
   public static final String RX_IMPORT_ACT_ITEM = "^(.+);(.*);(\\d+\\.*\\d*)$";
 
+  public static final String PRM_TA_NUMBER_LENGTH = "ActNumberLength";
+
   public static void register() {
     EnumUtils.register(TradeActKind.class);
     EnumUtils.register(TradeActTimeUnit.class);

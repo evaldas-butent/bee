@@ -205,7 +205,7 @@ public final class UiHelper {
       case INTEGER:
       case LONG:
       case NUMBER:
-        align = TextAlign.END;
+        align = TextAlign.RIGHT;
         break;
 
       default:
