@@ -1,5 +1,7 @@
 package com.butent.bee.server.modules.trade;
 
+import com.google.common.collect.Lists;
+import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
 import com.google.common.eventbus.Subscribe;
 
@@ -9,6 +11,7 @@ import static com.butent.bee.shared.modules.trade.TradeConstants.*;
 
 import com.butent.bee.server.data.DataEvent.ViewInsertEvent;
 import com.butent.bee.server.data.DataEvent.ViewModifyEvent;
+import com.butent.bee.server.data.DataEvent.ViewQueryEvent;
 import com.butent.bee.server.data.DataEvent.ViewUpdateEvent;
 import com.butent.bee.server.data.DataEventHandler;
 import com.butent.bee.server.data.QueryServiceBean;
@@ -26,6 +29,7 @@ import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.Service;
 import com.butent.bee.shared.communication.ResponseObject;
 import com.butent.bee.shared.data.BeeColumn;
+import com.butent.bee.shared.data.BeeRow;
 import com.butent.bee.shared.data.BeeRowSet;
 import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.IsRow;
@@ -43,6 +47,7 @@ import com.butent.bee.shared.modules.transport.TransportConstants;
 import com.butent.bee.shared.rights.Module;
 import com.butent.bee.shared.rights.ModuleAndSub;
 import com.butent.bee.shared.rights.SubModule;
+import com.butent.bee.shared.time.JustDate;
 import com.butent.bee.shared.time.TimeUtils;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.Codec;
@@ -261,6 +266,68 @@ public class TradeModuleBean implements BeeModule {
           }
         }
       }
+
+      @Subscribe
+      public void fillOverdueAverageProp(ViewQueryEvent event) {
+        if (event.isBefore()) {
+          return;
+        }
+
+        if (BeeUtils.same(event.getTargetName(), VIEW_DEBTS)) {
+          BeeRowSet rowSet = event.getRowset();
+
+          if (rowSet.isEmpty()) {
+            return;
+          }
+
+          List<Long> companiesId = Lists.newArrayList();
+
+          for (BeeRow row : rowSet) {
+            Long customerId = row.getLong(rowSet.getColumnIndex(COL_TRADE_CUSTOMER));
+
+            if (DataUtils.isId(customerId) && !companiesId.contains(customerId)) {
+              companiesId.add(customerId);
+            }
+          }
+
+          SimpleRowSet overdueResult = getDebtsOverdueCount(companiesId);
+          Map<Long, String[]> overdueData = Maps.newHashMap();
+
+          for (String[] row : overdueResult.getRows()) {
+            overdueData.put(BeeUtils.toLong(row[overdueResult.getColumnIndex(COL_TRADE_CUSTOMER)]),
+                row);
+          }
+
+          SimpleRowSet salesCountResult = getSalesCount(companiesId);
+          Map<Long, String[]> salesCountData = Maps.newHashMap();
+
+          for (String[] row : salesCountResult.getRows()) {
+            salesCountData.put(BeeUtils.toLong(row[salesCountResult
+                .getColumnIndex(COL_TRADE_CUSTOMER)]),
+                row);
+          }
+
+          for (BeeRow row : rowSet) {
+            String [] od = overdueData.get(row.getLong(rowSet.getColumnIndex(COL_TRADE_CUSTOMER)));
+            Long odc =
+                od != null ? BeeUtils.toLong(od[overdueResult.getColumnIndex(ALS_OVERDUE_COUNT)])
+                    : 0L;
+            Long odds =
+                od != null ? BeeUtils.toLong(od[overdueResult.getColumnIndex(ALS_OVERDUE_SUM)])
+                    / 86400000L : 0L;
+
+            String [] scd = salesCountData.get(rowSet.getColumnIndex(COL_TRADE_CUSTOMER));
+            Long sc =
+                scd != null ? BeeUtils.toLong(scd[salesCountResult
+                    .getColumnIndex(ALS_SALES_COUNT)])
+            : 0L;
+
+            row.setProperty(PROP_AVERAGE_OVERDUE, odc + "|" + odds + "|" + sc
+                );
+          }
+
+        }
+      }
     });
 
     act.init();
@@ -319,6 +386,39 @@ public class TradeModuleBean implements BeeModule {
           .addField(currAlias, COL_CURRENCY_NAME, COL_CURRENCY_RATE + COL_CURRENCY);
     }
     return ResponseObject.response(qs.getData(query));
+  }
+
+  private SimpleRowSet getDebtsOverdueCount(List<Long> companyIds) {
+    SqlSelect select = new SqlSelect().addFields(TBL_SALES, COL_TRADE_CUSTOMER);
+    select.addCount(ALS_OVERDUE_COUNT);
+    select.addSum(SqlUtils.minus(SqlUtils.field(TBL_SALES, COL_TRADE_PAYMENT_TIME),
+        new JustDate()), ALS_OVERDUE_SUM);
+    select.setDistinctMode(true);
+    select.addFrom(TBL_SALES);
+    select.setWhere(SqlUtils.and(SqlUtils.inList(TBL_SALES, COL_TRADE_CUSTOMER, companyIds),
+        SqlUtils.or(SqlUtils.less(TBL_SALES, COL_TRADE_PAYMENT_TIME, new JustDate()), SqlUtils
+            .isNull(TBL_SALES, COL_TRADE_PAYMENT_TIME)),
+        SqlUtils.less(SqlUtils.minus(SqlUtils.nvl(SqlUtils.field(TBL_SALES, COL_TRADE_PAID), 0),
+            SqlUtils.field(TBL_SALES, COL_TRADE_AMOUNT)), 0)
+        ));
+
+    select.addGroup(SqlUtils.field(TBL_SALES, COL_TRADE_CUSTOMER));
+
+    return qs.getData(select);
+  }
+
+  private SimpleRowSet getSalesCount(List<Long> companyIds) {
+    SqlSelect select = new SqlSelect().addFields(TBL_SALES, COL_TRADE_CUSTOMER);
+    select.addCount(ALS_SALES_COUNT);
+    select.setDistinctMode(true);
+    select.addFrom(TBL_SALES);
+    select.setWhere(SqlUtils.and(SqlUtils.inList(TBL_SALES, COL_TRADE_CUSTOMER, companyIds),
+        SqlUtils.equals(TBL_SALES, COL_TRADE_PAID, SqlUtils.field(TBL_SALES, COL_TRADE_AMOUNT)),
+        SqlUtils.notNull(TBL_SALES, COL_TRADE_PAYMENT_TIME)));
+    select.addGroup(SqlUtils.field(TBL_SALES, COL_TRADE_CUSTOMER));
+
+    logger.warning(select.getQuery());
+    return qs.getData(select);
   }
 
   private ResponseObject getTradeDocumentData(RequestInfo reqInfo) {

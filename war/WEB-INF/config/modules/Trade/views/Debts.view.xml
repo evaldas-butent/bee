@@ -33,21 +33,45 @@
       </x:minus>
     </SimpleColumn>
     
+    <SimpleColumn name="DaysForPayment" label="=trdDaysForPayment">
+      <x:cast type="LONG">
+        <x:divide>
+		      <x:minus>
+		        <x:nvl type="LONG">
+		          <x:number>"Term"</x:number>
+		          <x:number>"Date"</x:number>
+		        </x:nvl>
+		        <x:number>"Date"</x:number>
+		      </x:minus>
+		      <x:number>86400000</x:number>
+	     </x:divide>
+      </x:cast>
+    </SimpleColumn>   
+        
+                
     <SimpleColumn name="Customer" />
     <SimpleJoin joinType="LEFT" name="Customer">
       <SimpleColumn name="Name" alias="CustomerName" />
       <SimpleColumn name="Code" alias="CustomerCode" />
+      <SimpleColumn name="FinancialState" />
       <SimpleJoin name="FinancialState" joinType="LEFT">
         <SimpleColumn name="Name" alias="FinancialStateName" /> 
       </SimpleJoin>
+      <SimpleColumn name="BankruptcyRisk" />
       <SimpleJoin name="BankruptcyRisk" joinType="LEFT">
         <SimpleColumn name="Name" alias="BankruptcyRiskName" />
       </SimpleJoin>
+      <SimpleColumn name="DelayedPaymentRisk" />
       <SimpleJoin name="DelayedPaymentRisk" joinType="LEFT">
         <SimpleColumn name="Name" alias="DelayedPaymentRiskName" />
       </SimpleJoin>
+      
+      <ExternalJoin name="Company" source="Appointments" joinType="LEFT">
+        <AggregateColumn name="Company" alias="AppointmentsCount" aggregate="COUNT" />
+        <AggregateColumn name="Created" alias="LastAppointment" aggregate="MAX" />
+      </ExternalJoin>
     </SimpleJoin>
-    
+        
     <SimpleColumn name="Manager" />
     <SimpleJoin name="Manager" joinType="LEFT">
       <SimpleColumn name="CompanyPerson" alias="ManagerPerson" />

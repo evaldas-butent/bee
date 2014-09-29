@@ -18,6 +18,7 @@ public final class TradeConstants {
   public static final String VAR_VIEW_NAME = "view_name";
   public static final String VAR_ID_LIST = "IdList";
 
+  public static final String VIEW_DEBTS = "Debts";
   public static final String VIEW_PURCHASES = "Purchases";
   public static final String VIEW_PURCHASE_ITEMS = "PurchaseItems";
   public static final String VIEW_SALES = "Sales";
@@ -85,6 +86,13 @@ public final class TradeConstants {
   public static final String ALS_OPERATION_FOREGROUND = "OperationForeground";
   public static final String ALS_STATUS_BACKGROUND = "StatusBackground";
   public static final String ALS_STATUS_FOREGROUND = "StatusForeground";
+
+  public static final String ALS_OVERDUE_COUNT = "OverdueCount";
+  public static final String ALS_OVERDUE_SUM = "OverdueSum";
+  public static final String ALS_SALES_COUNT = "SalesCount";
+  public static final String ALS_SALES_SUM = "SalesSum";
+
+  public static final String PROP_AVERAGE_OVERDUE = "AverageOverdue";
 
   public static final String VAR_TOTAL = "Total";
   public static final String VAR_DEBT = "Debt";

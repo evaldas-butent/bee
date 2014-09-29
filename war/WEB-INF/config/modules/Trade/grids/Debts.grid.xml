@@ -3,46 +3,66 @@
 	xmlns:xi="http://www.w3.org/2001/XInclude"
 	xmlns:ui="http://www.butent.com/ui" 
 	name="Debts" viewName="Debts" 
-	disabledActions="add delete edit">
+	disabledActions="add delete"
+	filter = "Debt > 0"
+	caption="=trdDebts"
+	>
+
 	<g:columns xmlns="http://www.butent.com/column" xmlns:g="http://www.butent.com/grid">
-		<DataColumn name="CustomerCode" />
-		<DataColumn name="CustomerName" caption="=company" label="=company" />
-		<DataColumn name="FinancialStateName" caption="=financialState" label="=financialState" />
+		<RelColumn name="CustomerCode" caption="=companyCode" label="=companyCode" />
+		<RelColumn name="Customer" renderColumns="CustomerName" caption="=company" label="=company" />
+		<RelColumn name="FinancialState" renderColumns="FinancialStateName" caption="=financialState" label="=financialState" />
 		<DataColumn name="InvoicePrefix" />
 		<DataColumn name="InvoiceNo" />
 		<RelColumn name="Manager" />
 		<DataColumn name="Date" />
-		<DataColumn name="PaymentTime" />
-		<CalcColumn name="DaysForPayment" type="integer" caption="=trdDaysForPayment" label="=trdDaysForPayment" >
-		<!--  TODO:  -->
-		  <render>
+		<DataColumn name="Term" caption="=trdTerm" label="=trdTerm"/>
+		<DataColumn name="DaysForPayment" caption="=trdDaysForPayment"
+		  label="=trdDaysForPayment" autoFit="true" >
+		  <renderToken source="DaysForPayment" suffix=" d."/>
+		</DataColumn>
+		<CalcColumn name="Overdue" type="string" caption="=trdInvoiceOverdue" label="=trdInvoiceOverdue"
+		 autoFit="true"> 
+		   <render>
 		    <ui:function>
-		      return row.PaymentDate - row.Date;
-		    </ui:function>
-		  </render>
-		</CalcColumn>
-		<CalcColumn name="DelayTime" type="integer" caption="=trdInvoiceOverdue" label="=trdInvoiceOverdue"> 
-		<!--  TODO:  -->
-		  <render>
-		    <ui:function>
-		      return row.PaymentDate - Date.now();
+		       var diff = 0,
+		        start = 0;
+		        end = new Date();
+            days = 0,
+            text = '';
+
+          if (row.Term != null) {
+            start = row.Term;
+          } else if (row.Date != null) {
+            start = row.Date;
+          } else {
+            return null;
+          }
+
+          diff = start - end.getTime();
+
+          days = parseInt(diff / 1000 / 60 / 60 / 24, 10);
+          
+          text = days + ' ' + $wnd.Bee_maybeTranslate('=dayShort');
+          return text;
 		    </ui:function>		    
 		  </render>
 		</CalcColumn>
-		<CalcColumn name="AverageDelay"  type="integer"/>
+		
+		<PropColumn name="AverageOverdue" type="string" caption="=trdInvoiceAverageOverdue" label="=trdInvoiceAverageOverdue" />
+		
 		<DataColumn name="Amount" />
 		<DataColumn name="CurrencyName" />
-		<!-- todo
-		<DataColumn name="LastPaymentTime" />
+		<DataColumn name="PaymentTime" /> 
 		<DataColumn name="Paid" />
-		<DataColumn name="LastPaid" />
+		<!--
+		TODO:
+		<DataColumn name="LastPaidAmount" />
 		-->
 		<DataColumn name="Debt" />
-		<DataColumn name="BankruptcyRiskName" caption="=clientBankruptcyRisk" label="=clientBankruptcyRisk"/>
-		<DataColumn name="DelayedPaymentRiskName" caption="=clientDelayedPaymentRisk" label="=clientDelayedPaymentRisk"/>
-		<!-- todo
-		<DataColumn name="ActionCount" />
-		<DataColumn name="LastAction" />
-		 -->
+		<RelColumn name="BankruptcyRisk" renderColumns="BankruptcyRiskName" caption="=clientBankruptcyRisk" label="=clientBankruptcyRisk"/>
+		<RelColumn name="DelayedPaymentRisk" renderColumns="DelayedPaymentRiskName" caption="=clientDelayedPaymentRisk" label="=clientDelayedPaymentRisk"/>
+		<DataColumn name="AppointmentsCount"  caption="=calListOfActions" label="=calListOfActions" />
+		<DataColumn name="LastAppointment"  caption ="=calLastActionDate" label="=calLastActionDate"/>
 	</g:columns>
 </g:Grid>
