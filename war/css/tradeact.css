@@ -110,7 +110,8 @@
 .bee-ta-return-items-item td,
 .bee-ta-import-items-item td,
 .bee-ta-invoice-act-row td,
-.bee-ta-invoice-service-row td {
+.bee-ta-invoice-service-row td,
+.bee-ta-invoice-service-footer td {
   padding: 2px 5px;
 }
 
@@ -230,4 +231,10 @@
 }
 .bee-ta-invoice-service-factor-input.bee-ta-invoice-service-factor-input {
   width: 50px;
+}
+
+.bee-ta-invoice-service-total-label,
+.bee-ta-invoice-service-total-cell {
+  text-align: right;
+  font-weight: bold;
 }

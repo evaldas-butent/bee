@@ -975,6 +975,10 @@ public final class TimeUtils {
     }
   }
 
+  public static DateTime startOfNextDay(HasDateValue ref) {
+    return startOfDay(ref, 1);
+  }
+
   public static JustDate startOfNextMonth(HasYearMonth ref) {
     return startOfMonth(ref, 1);
   }

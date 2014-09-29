@@ -194,6 +194,9 @@ public final class ClassifierConstants {
   public static final String ALS_BANK_NAME = "BankName";
 
   public static final String ALS_ITEM_NAME = "ItemName";
+  public static final String ALS_ITEM_VAT = "ItemVat";
+  public static final String ALS_ITEM_VAT_PERCENT = "ItemVatPercent";
+
   public static final String ALS_UNIT_NAME = "UnitName";
 
   public static final String ALS_PARENT_TYPE_NAME = "ParentTypeName";

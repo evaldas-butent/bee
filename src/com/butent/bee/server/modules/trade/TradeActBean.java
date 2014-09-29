@@ -41,6 +41,7 @@ import com.butent.bee.shared.data.view.RowInfo;
 import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogUtils;
 import com.butent.bee.shared.modules.BeeParameter;
+import com.butent.bee.shared.modules.administration.AdministrationConstants;
 import com.butent.bee.shared.modules.trade.Totalizer;
 import com.butent.bee.shared.modules.trade.acts.TradeActKind;
 import com.butent.bee.shared.time.JustDate;
@@ -532,6 +533,11 @@ public class TradeActBean {
       if (latest != null) {
         act.setProperty(PRP_LATEST_INVOICE, latest.toString());
       }
+    }
+
+    Double vatPercent = prm.getDouble(AdministrationConstants.PRM_VAT_PERCENT);
+    if (BeeUtils.isPositive(vatPercent)) {
+      acts.setTableProperty(AdministrationConstants.PRM_VAT_PERCENT, vatPercent.toString());
     }
 
     return ResponseObject.response(acts);
