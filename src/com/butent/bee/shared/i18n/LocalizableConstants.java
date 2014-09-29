@@ -206,6 +206,8 @@ public interface LocalizableConstants extends Constants, LocalizableClassifierCo
 
   String dateToShort();
 
+  String dayShort();
+
   String delete();
 
   String deleteActiveRow();

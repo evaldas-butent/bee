@@ -817,6 +817,14 @@ public final class TimeUtils {
     }
   }
 
+  public static String renderDate(HasDateValue dt) {
+    if (dt == null) {
+      return BeeConst.STRING_EMPTY;
+    } else {
+      return dt.getDate().toString();
+    }
+  }
+
   public static String renderDateTime(long time) {
     return renderDateTime(time, false);
   }
