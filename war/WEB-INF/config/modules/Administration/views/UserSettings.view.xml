@@ -41,6 +41,9 @@
     <SimpleColumn name="ApplianceHeaderHeight" />
     <SimpleColumn name="ViewHeaderHeight" />
 
+    <SimpleColumn name="ClickSensitivityMillis" />
+    <SimpleColumn name="ClickSensitivityDistance" />
+
     <SimpleColumn name="Style" />
   </Columns>
   

@@ -290,17 +290,14 @@ public class TradeModuleBean implements BeeModule {
         .addFields(TBL_ITEMS,
             COL_ITEM_NAME, COL_ITEM_NAME + "2", COL_ITEM_NAME + "3", COL_ITEM_BARCODE)
         .addField(TBL_UNITS, COL_UNIT_NAME, COL_UNIT)
-        .addFields(tradeItems, COL_ITEM_ARTICLE, COL_TRADE_ITEM_QUANTITY,
-            COL_TRADE_ITEM_PRICE, COL_TRADE_VAT_PLUS, COL_TRADE_VAT, COL_TRADE_VAT_PERC,
-            COL_TRADE_ITEM_NOTE)
-        .addField(TBL_CURRENCIES, COL_CURRENCY_NAME,
-            COL_CURRENCY)
+        .addFields(tradeItems, COL_ITEM_ARTICLE, COL_TRADE_ITEM_QUANTITY, COL_TRADE_ITEM_PRICE,
+            COL_TRADE_VAT_PLUS, COL_TRADE_VAT, COL_TRADE_VAT_PERC, COL_TRADE_ITEM_NOTE)
+        .addField(TBL_CURRENCIES, COL_CURRENCY_NAME, COL_CURRENCY)
         .addFrom(tradeItems)
         .addFromInner(trade, sys.joinTables(trade, tradeItems, itemsRelation))
         .addFromInner(TBL_ITEMS, sys.joinTables(TBL_ITEMS, tradeItems, COL_ITEM))
         .addFromInner(TBL_UNITS, sys.joinTables(TBL_UNITS, TBL_ITEMS, COL_UNIT))
-        .addFromInner(TBL_CURRENCIES,
-            sys.joinTables(TBL_CURRENCIES, trade, COL_CURRENCY))
+        .addFromInner(TBL_CURRENCIES, sys.joinTables(TBL_CURRENCIES, trade, COL_CURRENCY))
         .setWhere(SqlUtils.equals(tradeItems, itemsRelation, id))
         .addOrder(tradeItems, sys.getIdName(tradeItems));
 

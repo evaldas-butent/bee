@@ -10,6 +10,8 @@ import com.google.gwt.user.client.Event;
 import com.google.gwt.user.client.Event.NativePreviewEvent;
 import com.google.gwt.user.client.Event.NativePreviewHandler;
 
+import com.butent.bee.client.BeeKeeper;
+import com.butent.bee.client.Settings;
 import com.butent.bee.client.dom.DomUtils;
 import com.butent.bee.client.view.View;
 import com.butent.bee.client.view.ViewHelper;
@@ -17,6 +19,8 @@ import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.Consumer;
 import com.butent.bee.shared.HasInfo;
+import com.butent.bee.shared.logging.BeeLogger;
+import com.butent.bee.shared.logging.LogUtils;
 import com.butent.bee.shared.ui.Action;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.NameUtils;
@@ -32,11 +36,11 @@ public final class Previewer implements NativePreviewHandler, HasInfo {
   }
 
   private static final class ComparableHandler implements Comparable<ComparableHandler> {
+
     private final int index;
     private final PreviewHandler handler;
 
     private ComparableHandler(int index, PreviewHandler handler) {
-      super();
       this.index = index;
       this.handler = handler;
     }
@@ -62,7 +66,27 @@ public final class Previewer implements NativePreviewHandler, HasInfo {
     }
   }
 
+  private static final class EventInfo {
+
+    private final long time;
+
+    private final double x;
+    private final double y;
+
+    private EventInfo(NativePreviewEvent event) {
+      this.time = System.currentTimeMillis();
+
+      this.x = event.getNativeEvent().getScreenX();
+      this.y = event.getNativeEvent().getScreenY();
+    }
+  }
+
   private static final Previewer INSTANCE = new Previewer();
+
+  private static final BeeLogger logger = LogUtils.getLogger(Previewer.class);
+
+  private static final int DEFAULT_CLICK_SENSITIVITY_MILLIS = 300;
+  private static final int DEFAULT_CLICK_SENSITIVITY_DISTANCE = 10;
 
   public static void ensureRegistered(PreviewHandler handler) {
     Assert.notNull(handler);
@@ -118,6 +142,24 @@ public final class Previewer implements NativePreviewHandler, HasInfo {
     INSTANCE.mouseDownPriorHandlers.remove(handler);
   }
 
+  private static int getClickSensitivityDistance() {
+    int distance = BeeKeeper.getUser().getClickSensitivityDistance();
+    if (distance <= 0) {
+      distance = Settings.getClickSensitivityDistance();
+    }
+
+    return (distance > 0) ? distance : DEFAULT_CLICK_SENSITIVITY_DISTANCE;
+  }
+
+  private static int getClickSensitivityMillis() {
+    int millis = BeeKeeper.getUser().getClickSensitivityMillis();
+    if (millis <= 0) {
+      millis = Settings.getClickSensitivityMillis();
+    }
+
+    return (millis > 0) ? millis : DEFAULT_CLICK_SENSITIVITY_MILLIS;
+  }
+
   private static boolean isExternalElement(Element element) {
     if (element == null) {
       return false;
@@ -139,6 +181,8 @@ public final class Previewer implements NativePreviewHandler, HasInfo {
   private int modalCount;
 
   private Node targetNode;
+
+  private EventInfo lastClick;
 
   private Previewer() {
     Event.addNativePreviewHandler(this);
@@ -189,6 +233,13 @@ public final class Previewer implements NativePreviewHandler, HasInfo {
           tryAction(event, action);
           break;
       }
+
+      if (event.isCanceled() || event.isConsumed()) {
+        return;
+      }
+
+    } else if (EventUtils.EVENT_TYPE_CLICK.equals(type)) {
+      previewClick(event);
 
       if (event.isCanceled() || event.isConsumed()) {
         return;
@@ -280,6 +331,50 @@ public final class Previewer implements NativePreviewHandler, HasInfo {
     handlers.remove(indexOf(handler));
     if (handler.isModal()) {
       modalCount--;
+    }
+  }
+
+  private void previewClick(NativePreviewEvent event) {
+    EventInfo eventInfo = new EventInfo(event);
+
+    Node node = getTargetNode(event);
+    Element element = Element.is(node) ? Element.as(node) : null;
+
+    int sensitivityMillis;
+
+    if (element != null) {
+      Integer millis = EventUtils.getClickSensitivityMillis(element);
+
+      if (millis != null) {
+        sensitivityMillis = millis;
+      } else {
+        sensitivityMillis = getClickSensitivityMillis();
+      }
+
+    } else {
+      sensitivityMillis = getClickSensitivityMillis();
+    }
+
+    if (sensitivityMillis > 0 && lastClick != null
+        && eventInfo.time - lastClick.time < sensitivityMillis) {
+
+      int sensitivityDistance = getClickSensitivityDistance();
+
+      if (sensitivityDistance > 0) {
+        double distance = BeeUtils.distance(lastClick.x, lastClick.y, eventInfo.x, eventInfo.y);
+
+        if (distance < sensitivityDistance) {
+          String id = (element == null) ? null : element.getId();
+          logger.debug("ignored click", id, "at", lastClick.x, lastClick.y,
+              "millis", eventInfo.time - lastClick.time, "distance", distance);
+
+          event.cancel();
+        }
+      }
+    }
+
+    if (!event.isCanceled()) {
+      lastClick = eventInfo;
     }
   }
 

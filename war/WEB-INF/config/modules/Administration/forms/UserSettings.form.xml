@@ -72,12 +72,23 @@
             <row>
               <Label for="ApplianceHeaderHeight" />
               <InputSpinner source="ApplianceHeaderHeight" minValue="0" maxValue="99"
-                style="width: 40px;" summarize="true" />
+                style="width: 60px;" summarize="true" />
             </row>
             <row>
               <Label for="ViewHeaderHeight" />
               <InputSpinner source="ViewHeaderHeight" minValue="0" maxValue="99"
-                style="width: 40px;" summarize="true" />
+                style="width: 60px;" summarize="true" />
+            </row>
+
+            <row>
+              <Label for="ClickSensitivityMillis" />
+              <InputSpinner source="ClickSensitivityMillis" minValue="0" maxValue="1000" step="50"
+                style="width: 60px;" summarize="true" />
+            </row>
+            <row>
+              <Label for="ClickSensitivityDistance" />
+              <InputSpinner source="ClickSensitivityDistance" minValue="0" maxValue="99"
+                style="width: 60px;" summarize="true" />
             </row>
           </Table>
         </FlowPanel>

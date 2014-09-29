@@ -190,6 +190,8 @@ public final class EventUtils {
 
   private static final Map<String, JsFunction> domHandlers = new HashMap<>();
 
+  private static final String DATA_KEY_CLICK_SENSITIVITY_MILLIS = "click-sens-ms";
+
   public static void addClassName(HasNativeEvent ev, String className) {
     Assert.notNull(ev);
     addClassName(ev.getNativeEvent(), className);
@@ -648,6 +650,10 @@ public final class EventUtils {
     fireKeyUp(Element.as(target), keyCode);
   }
 
+  public static Integer getClickSensitivityMillis(Element element) {
+    return DomUtils.getDataPropertyInt(element, DATA_KEY_CLICK_SENSITIVITY_MILLIS);
+  }
+
   public static String getCurrentTargetId(NativeEvent ev) {
     Assert.notNull(ev);
     EventTarget target = ev.getCurrentEventTarget();
@@ -994,6 +1000,14 @@ public final class EventUtils {
     return true;
   }
 
+  public static void preventClickDebouncer(Element element) {
+    setClickSensitivityMillis(element, 0);
+  }
+
+  public static void preventClickDebouncer(UIObject obj) {
+    setClickSensitivityMillis(obj, 0);
+  }
+
   public static void removeClassName(HasNativeEvent ev, String className) {
     Assert.notNull(ev);
     removeClassName(ev.getNativeEvent(), className);
@@ -1017,6 +1031,15 @@ public final class EventUtils {
 
   public static void selectDropNone(DragOverEvent event) {
     setDropEffect(event, EFFECT_NONE);
+  }
+
+  public static void setClickSensitivityMillis(Element element, int millis) {
+    DomUtils.setDataProperty(element, DATA_KEY_CLICK_SENSITIVITY_MILLIS, millis);
+  }
+
+  public static void setClickSensitivityMillis(UIObject obj, int millis) {
+    Assert.notNull(obj);
+    setClickSensitivityMillis(obj.getElement(), millis);
   }
 
   public static void setDndData(DragStartEvent event, Long id) {

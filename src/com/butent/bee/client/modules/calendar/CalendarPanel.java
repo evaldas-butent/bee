@@ -27,6 +27,7 @@ import com.butent.bee.client.datepicker.DatePicker;
 import com.butent.bee.client.dialog.Popup;
 import com.butent.bee.client.dialog.Popup.OutsideClick;
 import com.butent.bee.client.dom.DomUtils;
+import com.butent.bee.client.event.EventUtils;
 import com.butent.bee.client.event.logical.ReadyEvent;
 import com.butent.bee.client.event.logical.VisibilityChangeEvent;
 import com.butent.bee.client.grid.GridFactory;
@@ -154,6 +155,7 @@ public class CalendarPanel extends Split implements AppointmentEvent.Handler, Pr
 
   public CalendarPanel(long calendarId, String caption, CalendarSettings settings,
       BeeRowSet ucAttendees) {
+
     super(BeeConst.UNDEF);
     addStyleName(STYLE_PANEL);
 
@@ -265,6 +267,8 @@ public class CalendarPanel extends Split implements AppointmentEvent.Handler, Pr
       }
     });
 
+    EventUtils.setClickSensitivityMillis(prev, 100);
+
     Label next = new Label();
     next.getElement().setInnerText(">");
 
@@ -277,6 +281,8 @@ public class CalendarPanel extends Split implements AppointmentEvent.Handler, Pr
         navigate(true);
       }
     });
+
+    EventUtils.setClickSensitivityMillis(next, 100);
 
     Flow controls = new Flow();
     controls.addStyleName(STYLE_CONTROLS);

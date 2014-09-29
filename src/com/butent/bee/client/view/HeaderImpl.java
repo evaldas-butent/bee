@@ -10,7 +10,6 @@ import com.google.gwt.user.client.ui.Widget;
 import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.Settings;
 import com.butent.bee.client.dom.DomUtils;
-import com.butent.bee.client.event.Binder;
 import com.butent.bee.client.event.logical.ReadyEvent;
 import com.butent.bee.client.layout.Flow;
 import com.butent.bee.client.layout.Horizontal;
@@ -40,37 +39,6 @@ import java.util.Set;
 
 public class HeaderImpl extends Flow implements HeaderView {
 
-  private final class ActionListener implements ClickHandler {
-    private final Action action;
-    private long lastTime;
-
-    private ActionListener(Action action) {
-      super();
-      this.action = action;
-    }
-
-    @Override
-    public void onClick(ClickEvent event) {
-      if (getViewPresenter() != null) {
-        long now = System.currentTimeMillis();
-        long last = getLastTime();
-        setLastTime(now);
-
-        if (now - last >= HeaderImpl.ACTION_SENSITIVITY_MILLIS) {
-          getViewPresenter().handleAction(action);
-        }
-      }
-    }
-
-    private long getLastTime() {
-      return lastTime;
-    }
-
-    private void setLastTime(long lastTime) {
-      this.lastTime = lastTime;
-    }
-  }
-
   private static final BeeLogger logger = LogUtils.getLogger(HeaderImpl.class);
 
   private static final int DEFAULT_HEIGHT = 30;
@@ -88,9 +56,6 @@ public class HeaderImpl extends Flow implements HeaderView {
   private static final String STYLE_CONTROL_HIDDEN = STYLE_CONTROL + "-hidden";
 
   private static final String STYLE_DISABLED = STYLE_PREFIX + "disabled";
-
-  private static final int ACTION_SENSITIVITY_MILLIS =
-      BeeUtils.positive(Settings.getActionSensitivityMillis(), 300);
 
   private static boolean hasAction(Action action, boolean def,
       Set<Action> enabledActions, Set<Action> disabledActions) {
@@ -415,9 +380,7 @@ public class HeaderImpl extends Flow implements HeaderView {
     return commandPanel;
   }
 
-  private void initControl(IdentifiableWidget control, Action action, Set<Action> hiddenActions) {
-    Binder.addClickHandler(control.asWidget(), new ActionListener(action));
-
+  private void initControl(FaLabel control, final Action action, Set<Action> hiddenActions) {
     control.addStyleName(STYLE_CONTROL);
     control.addStyleName(action.getStyleName());
 
@@ -426,6 +389,15 @@ public class HeaderImpl extends Flow implements HeaderView {
     if (hiddenActions != null && hiddenActions.contains(action)) {
       control.getElement().addClassName(STYLE_CONTROL_HIDDEN);
     }
+
+    control.addClickHandler(new ClickHandler() {
+      @Override
+      public void onClick(ClickEvent event) {
+        if (getViewPresenter() != null) {
+          getViewPresenter().handleAction(action);
+        }
+      }
+    });
 
     getActionControls().put(action, control.getId());
   }

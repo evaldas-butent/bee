@@ -54,6 +54,7 @@ import com.butent.bee.shared.modules.classifiers.ItemPrice;
 import com.butent.bee.shared.modules.trade.acts.TradeActKind;
 import com.butent.bee.shared.time.DateTime;
 import com.butent.bee.shared.utils.BeeUtils;
+import com.butent.bee.shared.utils.EnumUtils;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -110,17 +111,23 @@ public class TradeActItemsGrid extends AbstractGridInterceptor implements
 
   @Override
   public void afterCreatePresenter(GridPresenter presenter) {
-    Button command = new Button(Localized.getConstants().actionImport());
-    command.addStyleName(STYLE_COMMAND_IMPORT);
+    GridView gridView = presenter.getGridView();
 
-    command.addClickHandler(new ClickHandler() {
-      @Override
-      public void onClick(ClickEvent event) {
-        ensureCollector().clickInput();
-      }
-    });
+    if (gridView != null && !gridView.isReadOnly()
+        && BeeKeeper.getUser().canCreateData(gridView.getViewName())) {
 
-    presenter.getHeader().addCommandItem(command);
+      Button command = new Button(Localized.getConstants().actionImport());
+      command.addStyleName(STYLE_COMMAND_IMPORT);
+
+      command.addClickHandler(new ClickHandler() {
+        @Override
+        public void onClick(ClickEvent event) {
+          ensureCollector().clickInput();
+        }
+      });
+
+      presenter.getHeader().addCommandItem(command);
+    }
 
     super.afterCreatePresenter(presenter);
   }
@@ -320,6 +327,11 @@ public class TradeActItemsGrid extends AbstractGridInterceptor implements
           if (DataUtils.idEquals(parentRow, result)) {
             ItemPrice itemPrice = TradeActKeeper.getItemPrice(VIEW_TRADE_ACTS, parentRow);
 
+            String ip = rowSet.getTableProperty(PRP_ITEM_PRICE);
+            if (BeeUtils.isDigit(ip)) {
+              itemPrice = EnumUtils.getEnumByIndex(ItemPrice.class, ip);
+            }
+
             DateTime date = Data.getDateTime(VIEW_TRADE_ACTS, parentRow, COL_TA_DATE);
             Long currency = Data.getLong(VIEW_TRADE_ACTS, parentRow, COL_TA_CURRENCY);
 
@@ -330,7 +342,7 @@ public class TradeActItemsGrid extends AbstractGridInterceptor implements
     }
   }
 
-  private void addItems(IsRow parentRow, DateTime date, Long currency, ItemPrice itemPrice,
+  private void addItems(IsRow parentRow, DateTime date, Long currency, ItemPrice defPrice,
       Double discount, BeeRowSet items) {
 
     List<String> colNames = Lists.newArrayList(COL_TRADE_ACT, COL_TA_ITEM,
@@ -353,6 +365,13 @@ public class TradeActItemsGrid extends AbstractGridInterceptor implements
         row.setValue(itemIndex, item.getId());
 
         row.setValue(qtyIndex, qty);
+
+        ItemPrice itemPrice = defPrice;
+
+        String ip = item.getProperty(PRP_ITEM_PRICE);
+        if (BeeUtils.isDigit(ip)) {
+          itemPrice = EnumUtils.getEnumByIndex(ItemPrice.class, ip);
+        }
 
         if (itemPrice != null) {
           Double price = item.getDouble(items.getColumnIndex(itemPrice.getPriceColumn()));

@@ -5,6 +5,8 @@
   idName="TradeActID"
   >
   <Fields>
+    <String name="ActName" precision="100" label="=tradeActName" />
+
     <DateTime name="Date" notNull="true" defExpr="CURRENT_TIME" label="=taDate" />
     <DateTime name="Until" label="=taUntil" />
 

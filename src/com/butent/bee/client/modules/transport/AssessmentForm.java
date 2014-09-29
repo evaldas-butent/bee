@@ -689,7 +689,8 @@ public class AssessmentForm extends PrintFormInterceptor implements SelectorEven
   private ChildGrid childExpenses;
   private DataSelector manager;
   private final Long userPerson = BeeKeeper.getUser().getUserData().getCompanyPerson();
-  private final Map<Long, Long> departments = new HashMap<>();
+  private final Multimap<Long, Long> departmentHeads = HashMultimap.create();
+  private final Map<Long, String> departments = new HashMap<>();
   private final Multimap<Long, Long> employees = HashMultimap.create();
 
   @Override
@@ -834,7 +835,7 @@ public class AssessmentForm extends PrintFormInterceptor implements SelectorEven
     if (childAssessments != null && !primary) {
       childAssessments.setEnabled(false);
     }
-    if (manager != null && manager.isEnabled() && !departments.containsValue(userPerson)) {
+    if (manager != null && manager.isEnabled() && !departmentHeads.containsKey(userPerson)) {
       manager.setEnabled(false);
     }
     onValueChange(null);
@@ -904,59 +905,55 @@ public class AssessmentForm extends PrintFormInterceptor implements SelectorEven
         manager.setAdditionalFilter(Filter.any(COL_DEPARTMENT, employees.get(userPerson)));
 
       } else if (event.isChanged()) {
-        for (String field : new String[] {COL_DEPARTMENT, COL_DEPARTMENT_NAME}) {
-          form.getActiveRow().setValue(form.getDataIndex(field),
-              Data.getString(event.getRelatedViewName(), event.getRelatedRow(), field));
-        }
-        form.refreshBySource(COL_DEPARTMENT_NAME);
+        updateDepartment(form, form.getActiveRow(),
+            Data.getLong(event.getRelatedViewName(), event.getRelatedRow(), COL_DEPARTMENT));
       }
     }
   }
 
   @Override
   public void onLoad(final FormView formView) {
-    Queries.getRowSet(TBL_DEPARTMENT_EMPLOYEES,
-        Lists.newArrayList(COL_DEPARTMENT, COL_COMPANY_PERSON, COL_DEPARTMENT_HEAD), null,
-        new RowSetCallback() {
-          @Override
-          public void onSuccess(BeeRowSet result) {
-            for (BeeRow row : result) {
-              Long department = row.getLong(0);
-              Long employer = row.getLong(1);
-              employees.put(employer, department);
+    Queries.getRowSet(TBL_DEPARTMENT_EMPLOYEES, Lists.newArrayList(COL_DEPARTMENT,
+        COL_COMPANY_PERSON, COL_DEPARTMENT_HEAD, COL_DEPARTMENT_NAME), null, new RowSetCallback() {
+      @Override
+      public void onSuccess(BeeRowSet result) {
+        for (BeeRow row : result) {
+          Long department = row.getLong(0);
+          Long employer = row.getLong(1);
+          Long headDepartment = row.getLong(2);
+          String departmentName = row.getString(3);
 
-              if (departments.get(department) == null) {
-                departments.put(department, row.getLong(2) != null ? employer : null);
-              }
-            }
-            form = formView;
-            afterRefresh(form, form.getActiveRow());
+          employees.put(employer, department);
+          departments.put(department, departmentName);
+
+          if (DataUtils.isId(headDepartment)) {
+            departmentHeads.put(employer, headDepartment);
           }
-        });
+        }
+        form = formView;
+        updateDepartment(form, form.getActiveRow(), null);
+        afterRefresh(form, form.getActiveRow());
+      }
+    });
   }
 
   @Override
   public void onReadyForInsert(HasHandlers listener, ReadyForInsertEvent event) {
     for (int i = 0; i < event.getColumns().size(); i++) {
       if (BeeUtils.same(event.getColumns().get(i).getId(), COL_DEPARTMENT)) {
+        super.onReadyForInsert(listener, event);
         return;
       }
     }
-    if (!employees.containsKey(userPerson)) {
-      form.notifySevere(loc.department(), loc.valueRequired());
-      event.consume();
-      return;
-    }
-    event.getColumns().add(DataUtils.getColumn(COL_DEPARTMENT, form.getDataColumns()));
-    event.getValues().add(BeeUtils.toString(employees.get(userPerson).iterator().next()));
-
-    super.onReadyForInsert(listener, event);
+    form.notifySevere(loc.department(), loc.valueRequired());
+    event.consume();
   }
 
   @Override
   public void onStartNewRow(FormView formView, IsRow oldRow, IsRow newRow) {
     newRow.setValue(formView.getDataIndex(COL_ASSESSMENT_STATUS), AssessmentStatus.NEW.ordinal());
     newRow.setValue(formView.getDataIndex(ALS_ORDER_STATUS), OrderStatus.REQUEST.ordinal());
+    updateDepartment(formView, newRow, null);
   }
 
   @Override
@@ -1014,7 +1011,7 @@ public class AssessmentForm extends PrintFormInterceptor implements SelectorEven
 
   private boolean isExecutor() {
     return Objects.equals(form.getLongValue(COL_COMPANY_PERSON), userPerson)
-        || Objects.equals(departments.get(form.getLongValue(COL_DEPARTMENT)), userPerson);
+        || departmentHeads.get(userPerson).contains(form.getLongValue(COL_DEPARTMENT));
   }
 
   private boolean isPrimary() {
@@ -1142,5 +1139,23 @@ public class AssessmentForm extends PrintFormInterceptor implements SelectorEven
                 });
           }
         });
+  }
+
+  private void updateDepartment(FormView formView, IsRow row, Long department) {
+    Long dept = department != null
+        ? department : row.getLong(formView.getDataIndex(COL_DEPARTMENT));
+
+    if (!DataUtils.isId(dept)) {
+      Long person = row.getLong(formView.getDataIndex(COL_COMPANY_PERSON));
+
+      if (employees.containsKey(person)) {
+        dept = employees.get(person).iterator().next();
+      }
+    }
+    if (DataUtils.isId(dept)) {
+      row.setValue(formView.getDataIndex(COL_DEPARTMENT), dept);
+      row.setValue(formView.getDataIndex(COL_DEPARTMENT_NAME), departments.get(dept));
+      formView.refreshBySource(COL_DEPARTMENT_NAME);
+    }
   }
 }

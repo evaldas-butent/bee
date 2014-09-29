@@ -1,5 +1,5 @@
 .bee-ta-command-disabled {
-  visibility: hidden;
+  display: none;
 }
 
 .bee-GridFormContainer-edit .bee-ta-template-selection,
@@ -73,7 +73,7 @@
   font-weight: bold;
 }
 .bee-ta-picker-price-label,
-.bee-ta-picker-def-price-label {
+.bee-ta-picker-sel-price-label {
   max-width: 80px;
 }
 .bee-ta-return-items-header,
@@ -116,7 +116,7 @@
 
 .bee-ta-picker-id-cell,
 .bee-ta-picker-price-cell,
-.bee-ta-picker-def-price-cell,
+.bee-ta-picker-sel-price-cell,
 .bee-ta-picker-stock-cell,
 .bee-ta-picker-from-cell,
 .bee-ta-return-items-price-cell,
@@ -128,8 +128,12 @@
 .bee-ta-invoice-act-id-cell,
 .bee-ta-invoice-act-total-cell,
 .bee-ta-invoice-service-act-cell,
-.bee-ta-invoice-service-item-cell {
+.bee-ta-invoice-service-item-cell,
+.bee-ta-invoice-service-qty-cell,
+.bee-ta-invoice-service-price-cell,
+.bee-ta-invoice-service-amount-cell {
   text-align: right;
+  white-space: nowrap;
 }
 
 .bee-ta-picker-type-cell,
@@ -143,19 +147,30 @@
   font-size: x-small;
 }
 
-.bee-ta-picker-def-price-label,
-.bee-ta-picker-def-price-cell:not(:empty) {
+.bee-ta-picker-price-label:hover,
+.bee-ta-picker-price-cell:hover {
+  cursor: pointer;
+  background-color: white;
+  outline: blue solid 1px;
+  outline-offset: -1px;
+}
+.bee-ta-picker-sel-price-label,
+.bee-ta-picker-sel-price-cell.bee-ta-picker-sel-price-cell {
   background-color: honeydew;
 }
+
 .bee-ta-picker-from-label,
-.bee-ta-picker-from-cell,
+.bee-ta-picker-from-cell.bee-ta-picker-from-cell,
 .bee-ta-import-items-from-label,
 .bee-ta-import-items-from-cell {
   background-color: azure;
 }
-.bee-ta-return-items-qty-cell,
-.bee-ta-picker-from-cell .bee-ta-picker-stock-positive {
+.bee-ta-return-items-qty-cell:hover,
+.bee-ta-picker-from-cell:hover {
   cursor: pointer;
+  background-color: white;
+  outline: green solid 1px;
+  outline-offset: -1px;
 }
 
 .bee-ta-return-items-input-cell,
@@ -206,4 +221,13 @@
 .bee-ta-invoice-service-item-cell:hover {
   cursor: pointer;
   text-decoration: underline;
+}
+
+.bee-ta-invoice-service-factor-cell,
+.bee-ta-invoice-service-minterm-cell,
+.bee-ta-invoice-service-discount-cell {
+  text-align: center;
+}
+.bee-ta-invoice-service-factor-input.bee-ta-invoice-service-factor-input {
+  width: 50px;
 }

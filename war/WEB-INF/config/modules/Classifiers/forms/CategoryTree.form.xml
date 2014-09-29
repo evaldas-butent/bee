@@ -3,7 +3,8 @@
   xmlns:f="http://www.butent.com/form"
   xmlns:ui="http://www.butent.com/ui"
   
-  name="CategoryTree" caption="=itemCategoryTree">
+  name="CategoryTree" caption="=itemCategoryTree" data="CategoryTree">
+  
   <DataTree caption="=itemCategories" viewName="CategoryTree" parentColumn="Parent">
     <calc>
       <ui:expression>row.Name</ui:expression>

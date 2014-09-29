@@ -44,6 +44,11 @@
     <SimpleJoin joinType="LEFT" name="Currency2">
       <SimpleColumn name="Name" alias="Currency2Name" />
     </SimpleJoin>
+    <SimpleColumn name="Price3" />
+    <SimpleColumn name="Currency3" />
+    <SimpleJoin joinType="LEFT" name="Currency3">
+      <SimpleColumn name="Name" alias="Currency3Name" />
+    </SimpleJoin>
 
     <SimpleColumn name="Vat" />
     <SimpleColumn name="VatPercent" />

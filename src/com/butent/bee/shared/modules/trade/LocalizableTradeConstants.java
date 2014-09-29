@@ -42,6 +42,8 @@ public interface LocalizableTradeConstants {
 
   String salePrice();
 
+  String salePriceShort();
+
   String trade();
 
   String trdAmount();

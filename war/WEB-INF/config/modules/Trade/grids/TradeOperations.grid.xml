@@ -13,6 +13,8 @@
     <RelColumn name="WarehouseFrom" />
     <RelColumn name="WarehouseTo" />
 
+    <DataColumn name="IsDefault" />
+
     <DataColumn name="Background" updateMode="row">
       <editor type="color" />
     </DataColumn>

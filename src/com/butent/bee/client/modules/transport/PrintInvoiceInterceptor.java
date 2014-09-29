@@ -55,7 +55,8 @@ public class PrintInvoiceInterceptor extends AbstractFormInterceptor {
       ClassifierUtils.getCompanyInfo(id, companies.get(name));
     }
     if (invoiceDetails != null) {
-      TradeUtils.getDocumentItems(getViewName(), row.getId(), invoiceDetails);
+      TradeUtils.getDocumentItems(getViewName(), row.getId(),
+          form.getStringValue(AdministrationConstants.ALS_CURRENCY_NAME), invoiceDetails);
     }
     for (Widget total : totals) {
       TradeUtils.getTotalInWords(form.getDoubleValue(COL_TRADE_AMOUNT),

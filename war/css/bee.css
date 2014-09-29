@@ -522,12 +522,14 @@
   color: black;
 }
 
-.bee-Header-control {
+.bee-Header-control,
+.bee-TreeView-action {
   margin-right: 10px;
   font-size: large;
   color: #888;
 }
-.bee-Header-control:hover {
+.bee-Header-control:hover,
+.bee-TreeView-action:hover {
   color: black;
 }
 
@@ -1040,7 +1042,16 @@
 }
 
 .bee-TreeView-actions {
-  text-align: right;
+  height: 30px;
+  display: flex;
+  display: -webkit-flex;
+  display: -ms-flexbox;
+  justify-content: flex-end;
+  -webkit-justify-content: flex-end;
+  -ms-flex-pack: end;
+  align-items: center;
+  -webkit-align-items: center;
+  -ms-flex-align: center;
 }
 
 .bee-DatePicker {
@@ -2000,11 +2011,6 @@
 }
 .bee-ActionCellLink:hover {
   color: #00e;
-}
-
-.bee-TreeView-actions img {
-  margin-top: 2px;
-  margin-right: 5px;
 }
 
 .bee-FontSize-xx-small {

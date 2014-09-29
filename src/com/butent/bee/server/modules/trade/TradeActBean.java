@@ -18,6 +18,7 @@ import com.butent.bee.server.data.UserServiceBean;
 import com.butent.bee.server.data.DataEvent.ViewInsertEvent;
 import com.butent.bee.server.data.DataEvent.ViewQueryEvent;
 import com.butent.bee.server.http.RequestInfo;
+import com.butent.bee.server.modules.ParamHolderBean;
 import com.butent.bee.server.sql.IsCondition;
 import com.butent.bee.server.sql.SqlInsert;
 import com.butent.bee.server.sql.SqlSelect;
@@ -73,10 +74,12 @@ public class TradeActBean {
   UserServiceBean usr;
   @EJB
   DataEditorBean deb;
+  @EJB
+  ParamHolderBean prm;
 
   public List<SearchResult> doSearch(String query) {
-    Set<String> columns = Sets.newHashSet(COL_TA_NUMBER, COL_OPERATION_NAME, COL_STATUS_NAME,
-        ALS_COMPANY_NAME);
+    Set<String> columns = Sets.newHashSet(COL_TA_NAME, COL_TA_NUMBER, COL_OPERATION_NAME,
+        COL_STATUS_NAME, ALS_COMPANY_NAME, COL_COMPANY_OBJECT_NAME);
     return qs.getSearchResults(VIEW_TRADE_ACTS, Filter.anyContains(columns, query));
   }
 
@@ -104,6 +107,9 @@ public class TradeActBean {
     } else if (BeeUtils.same(svc, SVC_CREATE_ACT_INVOICE)) {
       response = createInvoice(reqInfo);
 
+    } else if (BeeUtils.same(svc, SVC_CONVERT_ACT_TO_SALE)) {
+      response = convertToSale(reqInfo);
+
     } else {
       String msg = BeeUtils.joinWords("service not recognized:", svc);
       logger.warning(msg);
@@ -115,7 +121,8 @@ public class TradeActBean {
 
   public Collection<BeeParameter> getDefaultParameters(String module) {
     return Lists.newArrayList(
-        BeeParameter.createText(module, PRM_IMPORT_TA_ITEM_RX, false, RX_IMPORT_ACT_ITEM));
+        BeeParameter.createText(module, PRM_IMPORT_TA_ITEM_RX, false, RX_IMPORT_ACT_ITEM),
+        BeeParameter.createNumber(module, PRM_TA_NUMBER_LENGTH, false, 6));
   }
 
   public void init() {
@@ -140,10 +147,10 @@ public class TradeActBean {
           }
 
           if (kind != null && kind.autoNumber() && DataUtils.isId(series)) {
-            String number = getNextActNumber(series);
             BeeColumn column = sys.getView(VIEW_TRADE_ACTS).getBeeColumn(COL_TA_NUMBER);
+            String number = getNextActNumber(series, column.getPrecision());
 
-            if (!BeeUtils.isEmpty(number) && number.length() <= column.getPrecision()) {
+            if (!BeeUtils.isEmpty(number)) {
               event.addValue(column, new TextValue(number));
             }
           }
@@ -185,6 +192,42 @@ public class TradeActBean {
         }
       }
     });
+  }
+
+  private ResponseObject convertToSale(RequestInfo reqInfo) {
+    Long actId = reqInfo.getParameterLong(COL_TRADE_ACT);
+    if (!DataUtils.isId(actId)) {
+      return ResponseObject.parameterNotFound(reqInfo.getService(), COL_TRADE_ACT);
+    }
+
+    BeeRowSet rowSet = qs.getViewData(VIEW_TRADE_ACTS, Filter.compareId(actId));
+    if (DataUtils.isEmpty(rowSet)) {
+      return ResponseObject.error(reqInfo.getService(), VIEW_TRADE_ACTS, actId, "not available");
+    }
+
+    BeeRow oldRow = rowSet.getRow(0);
+    BeeRow newRow = DataUtils.cloneRow(oldRow);
+
+    newRow.setValue(rowSet.getColumnIndex(COL_TA_KIND), TradeActKind.SALE.ordinal());
+
+    Long series = oldRow.getLong(rowSet.getColumnIndex(COL_TA_SERIES));
+    int numberIndex = rowSet.getColumnIndex(COL_TA_NUMBER);
+
+    if (DataUtils.isId(series) && oldRow.isNull(numberIndex)) {
+      String number = getNextActNumber(series, rowSet.getColumn(numberIndex).getPrecision());
+
+      if (!BeeUtils.isEmpty(number)) {
+        newRow.setValue(numberIndex, number);
+      }
+    }
+
+    Long operation = getDefaultOperation(TradeActKind.SALE);
+    newRow.setValue(rowSet.getColumnIndex(COL_TA_OPERATION), operation);
+
+    BeeRowSet updated = DataUtils.getUpdated(rowSet.getViewName(), rowSet.getColumns(),
+        oldRow, newRow, null);
+
+    return deb.commitRow(updated);
   }
 
   private ResponseObject copyAct(RequestInfo reqInfo) {
@@ -327,7 +370,27 @@ public class TradeActBean {
     }
   }
 
-  private String getNextActNumber(long series) {
+  private Long getDefaultOperation(TradeActKind kind) {
+    IsCondition where = SqlUtils.equals(TBL_TRADE_OPERATIONS, COL_OPERATION_KIND, kind.ordinal());
+
+    SqlSelect query = new SqlSelect()
+        .addFields(TBL_TRADE_OPERATIONS, sys.getIdName(TBL_TRADE_OPERATIONS))
+        .addFrom(TBL_TRADE_OPERATIONS)
+        .setWhere(SqlUtils.and(where,
+            SqlUtils.notNull(TBL_TRADE_OPERATIONS, COL_OPERATION_DEFAULT)));
+
+    List<Long> operations = qs.getLongList(query);
+    if (operations.size() == 1) {
+      return operations.get(0);
+    }
+
+    query.setWhere(where);
+    operations = qs.getLongList(query);
+
+    return (operations.size() == 1) ? operations.get(0) : null;
+  }
+
+  private String getNextActNumber(long series, int maxLength) {
     IsCondition where = SqlUtils.and(SqlUtils.equals(TBL_TRADE_ACTS, COL_TA_SERIES, series),
         SqlUtils.notNull(TBL_TRADE_ACTS, COL_TA_NUMBER));
 
@@ -363,7 +426,18 @@ public class TradeActBean {
       big = big.max(bigMax);
     }
 
-    return big.add(BigInteger.ONE).toString();
+    String number = big.add(BigInteger.ONE).toString();
+
+    Integer length = prm.getInteger(PRM_TA_NUMBER_LENGTH);
+    if (BeeUtils.isPositive(length) && length > number.length()) {
+      number = BeeUtils.padLeft(number, length, BeeConst.CHAR_ZERO);
+    }
+
+    if (maxLength > 0 && number.length() > maxLength) {
+      number = number.substring(number.length() - maxLength);
+    }
+
+    return number;
   }
 
   private ResponseObject getActsForInvoice(RequestInfo reqInfo) {

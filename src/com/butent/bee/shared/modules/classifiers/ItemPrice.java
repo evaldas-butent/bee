@@ -71,6 +71,23 @@ public enum ItemPrice implements HasLocalizedCaption {
     public String getPriceColumn() {
       return ClassifierConstants.COL_ITEM_PRICE_2;
     }
+  },
+
+  PRICE_3 {
+    @Override
+    public String getCaption(LocalizableConstants constants) {
+      return constants.price3();
+    }
+
+    @Override
+    public String getCurrencyColumn() {
+      return ClassifierConstants.COL_ITEM_CURRENCY_3;
+    }
+
+    @Override
+    public String getPriceColumn() {
+      return ClassifierConstants.COL_ITEM_PRICE_3;
+    }
   };
 
   @Override
