@@ -541,8 +541,8 @@ public class ImportBean {
     return ResponseObject.response(res);
   }
 
-  private void commitData(ImportObject io, String data, String parentName, String progress,
-      Map<String, Pair<Integer, BeeRowSet>> status, boolean readOnly) {
+  private void commitData(ImportObject io, String data, String parentName, String parentCap,
+      String progress, Map<String, Pair<Integer, BeeRowSet>> status, boolean readOnly) {
 
     String idName = SqlUtils.uniqueName();
     HasConditions clause = SqlUtils.or();
@@ -559,6 +559,8 @@ public class ImportBean {
     BeeView view = sys.getView(io.getViewName());
     Map<String, BeeField> cols = new LinkedHashMap<>();
     String tmp = SqlUtils.temporaryName();
+    String progressCap = BeeUtils.join("->", parentCap,
+        Localized.maybeTranslate(view.getCaption(), usr.getLocalizableDictionary()));
 
     for (ImportProperty prop : io.getProperties()) {
       String col = prop.getName();
@@ -584,7 +586,7 @@ public class ImportBean {
       ImportObject ro = io.getRelationObject(col);
 
       if (ro != null) {
-        commitData(ro, data, realCol, progress, status, readOnly || io.isLocked(col)
+        commitData(ro, data, realCol, progressCap, progress, status, readOnly || io.isLocked(col)
             || !usr.canCreateData(ro.getViewName()));
       }
       updateClause.add(SqlUtils.or(SqlUtils.and(SqlUtils.isNull(tmp, col),
@@ -757,8 +759,7 @@ public class ImportBean {
       Pair<Integer, BeeRowSet> pair = null;
 
       if (!BeeUtils.isEmpty(progress)) {
-        Endpoint.updateProgress(progress,
-            Localized.maybeTranslate(view.getCaption(), usr.getLocalizableDictionary()), 0);
+        Endpoint.updateProgress(progress, progressCap, 0);
       }
       for (SimpleRow row : newRows) {
         if (!BeeUtils.isEmpty(progress)
@@ -853,7 +854,7 @@ public class ImportBean {
     }
     Map<String, Pair<Integer, BeeRowSet>> status = new LinkedHashMap<>();
 
-    commitData(io, tmp, null, progress, status, !usr.canCreateData(io.getViewName()));
+    commitData(io, tmp, null, null, progress, status, !usr.canCreateData(io.getViewName()));
 
     qs.sqlDropTemp(tmp);
 

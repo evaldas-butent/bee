@@ -37,7 +37,7 @@
         <InputText source="Article" />
 
         <Label for="Unit" text="=unitShort" />
-        <DataSelector source="Unit" visible="true" newRowEnabled="false" style="width: 80px;" />
+        <DataSelector source="Unit" visible="true" editEnabled="false" style="width: 80px;" />
 
         <CheckBox source="Vat" text="=vat" />
         <cell style="padding-left: 6px;">

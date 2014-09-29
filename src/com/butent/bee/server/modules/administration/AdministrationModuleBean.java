@@ -153,7 +153,6 @@ public class AdministrationModuleBean implements BeeModule {
     String module = getModule().getName();
 
     List<BeeParameter> params = Lists.newArrayList(
-        BeeParameter.createText(module, "ProgramTitle", false, UserInterface.TITLE),
         BeeParameter.createRelation(module, PRM_COMPANY, false, TBL_COMPANIES, COL_COMPANY_NAME),
         BeeParameter.createRelation(module, PRM_CURRENCY, false, TBL_CURRENCIES,
             COL_CURRENCY_NAME),

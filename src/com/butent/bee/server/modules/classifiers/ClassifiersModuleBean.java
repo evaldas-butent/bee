@@ -771,11 +771,17 @@ public class ClassifiersModuleBean implements BeeModule {
         .addFields(TBL_EMAILS, COL_EMAIL_ADDRESS)
         .addField(TBL_CITIES, COL_CITY_NAME, COL_CITY)
         .addField(TBL_COUNTRIES, COL_COUNTRY_NAME, COL_COUNTRY)
+        .addFields(TBL_COMPANY_BANK_ACCOUNTS, COL_BANK_ACCOUNT)
+        .addField(TBL_BANKS, COL_BANK_NAME, COL_BANK)
+        .addFields(TBL_BANKS, COL_BANK_CODE, COL_SWIFT_CODE)
         .addFrom(TBL_COMPANIES)
         .addFromLeft(TBL_CONTACTS, sys.joinTables(TBL_CONTACTS, TBL_COMPANIES, COL_CONTACT))
         .addFromLeft(TBL_EMAILS, sys.joinTables(TBL_EMAILS, TBL_CONTACTS, COL_EMAIL))
         .addFromLeft(TBL_CITIES, sys.joinTables(TBL_CITIES, TBL_CONTACTS, COL_CITY))
         .addFromLeft(TBL_COUNTRIES, sys.joinTables(TBL_COUNTRIES, TBL_CONTACTS, COL_COUNTRY))
+        .addFromLeft(TBL_COMPANY_BANK_ACCOUNTS,
+            sys.joinTables(TBL_COMPANY_BANK_ACCOUNTS, TBL_COMPANIES, COL_DEFAULT_BANK_ACCOUNT))
+        .addFromLeft(TBL_BANKS, sys.joinTables(TBL_BANKS, TBL_COMPANY_BANK_ACCOUNTS, COL_BANK))
         .setWhere(sys.idEquals(TBL_COMPANIES, companyId)));
 
     Locale loc = I18nUtils.toLocale(locale);
@@ -794,6 +800,10 @@ public class ClassifiersModuleBean implements BeeModule {
     translations.put(COL_EMAIL_ADDRESS, constants.email());
     translations.put(COL_CITY, constants.city());
     translations.put(COL_COUNTRY, constants.country());
+    translations.put(COL_BANK, constants.bank());
+    translations.put(COL_BANK_CODE, constants.printBankCode());
+    translations.put(COL_SWIFT_CODE, constants.printBankSwift());
+    translations.put(COL_BANK_ACCOUNT, constants.printBankAccount());
 
     Map<String, Pair<String, String>> info = new HashMap<>();
 

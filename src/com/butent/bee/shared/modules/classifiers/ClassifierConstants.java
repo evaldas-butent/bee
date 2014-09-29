@@ -32,6 +32,9 @@ public final class ClassifierConstants {
   public static final String TBL_CITIES = "Cities";
   public static final String TBL_COUNTRIES = "Countries";
 
+  public static final String TBL_BANKS = "Banks";
+  public static final String TBL_COMPANY_BANK_ACCOUNTS = "CompanyBankAccounts";
+
   public static final String TBL_BRANCHES = "Branches";
   public static final String TBL_WAREHOUSES = "Warehouses";
 
@@ -167,6 +170,7 @@ public final class ClassifierConstants {
 
   public static final String COL_COMPANY_OBJECT_NAME = "ObjectName";
 
+  public static final String COL_BANK = "Bank";
   public static final String COL_BANK_NAME = "Name";
   public static final String COL_BANK_CODE = "BankCode";
   public static final String COL_SWIFT_CODE = "SWIFTCode";

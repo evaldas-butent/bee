@@ -27,10 +27,7 @@
 .bee-trade-itemsInfo-Total,
 .bee-trade-itemsInfo-RateAmountTotal,
 .bee-trade-itemsInfo-RateVatTotal,
-.bee-trade-itemsInfo-RateTotal,
-.bee-trade-itemsInfo-AmountTotal-caption,
-.bee-trade-itemsInfo-VatTotal-caption,
-.bee-trade-itemsInfo-Total-caption {
+.bee-trade-itemsInfo-RateTotal {
   text-align: right;
 }
 
@@ -46,17 +43,8 @@
 .bee-trade-itemsInfo-data .bee-trade-itemsInfo-Total,
 .bee-trade-itemsInfo-data .bee-trade-itemsInfo-RateAmountTotal,
 .bee-trade-itemsInfo-data .bee-trade-itemsInfo-RateVatTotal,
-.bee-trade-itemsInfo-data .bee-trade-itemsInfo-RateTotal,
-.bee-trade-itemsInfo-AmountTotal-caption,
-.bee-trade-itemsInfo-VatTotal-caption,
-.bee-trade-itemsInfo-Total-caption {
+.bee-trade-itemsInfo-data .bee-trade-itemsInfo-RateTotal {
   white-space: nowrap;
-}
-
-.bee-trade-itemsInfo-AmountTotal-caption:after,
-.bee-trade-itemsInfo-VatTotal-caption:after,
-.bee-trade-itemsInfo-Total-caption:after {
-  content: ":";
 }
 
 .bee-trade-print-document-title {
