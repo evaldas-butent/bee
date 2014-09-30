@@ -13,6 +13,8 @@
 
     <Relation name="WarehouseFrom" relation="Warehouses" label="=trdWarehouseFrom" />
     <Relation name="WarehouseTo" relation="Warehouses" label="=trdWarehouseTo" />
+    
+    <Boolean name="IsDefault" label="=trdOperationDefault" />
 
     <String name="Background" precision="100" label="=backgroundColor" />
     <String name="Foreground" precision="100" label="=foregroundColor" />

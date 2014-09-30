@@ -433,7 +433,7 @@ class TradeActSelectorHandler implements SelectorEvent.Handler {
           if (dataView != null && BeeUtils.inList(dataView.getViewName(),
               VIEW_TRADE_ACTS, VIEW_TRADE_ACT_TEMPLATES)) {
 
-            BeeRowSet series = TradeActKeeper.getUserSeries();
+            BeeRowSet series = TradeActKeeper.getUserSeries(false);
             Filter filter;
 
             if (DataUtils.isEmpty(series)) {
@@ -492,7 +492,7 @@ class TradeActSelectorHandler implements SelectorEvent.Handler {
                 Filter.isNull(COL_TA_OPERATION)));
           }
 
-          BeeRowSet series = TradeActKeeper.getUserSeries();
+          BeeRowSet series = TradeActKeeper.getUserSeries(false);
           if (!DataUtils.isEmpty(series)) {
             filter.add(Filter.or(Filter.any(COL_TA_SERIES, series.getRowIds()),
                 Filter.isNull(COL_TA_SERIES)));

@@ -98,6 +98,17 @@ public final class DomUtils {
     preventSelection(obj.getElement());
   }
 
+  public static List<Element> asList(NodeList<Element> nodeList) {
+    List<Element> elements = new ArrayList<>();
+
+    if (nodeList != null) {
+      for (int i = 0; i < nodeList.getLength(); i++) {
+        elements.add(nodeList.getItem(i));
+      }
+    }
+    return elements;
+  }
+
   public static void clear(Node nd) {
     Assert.notNull(nd);
     while (nd.getFirstChild() != null) {

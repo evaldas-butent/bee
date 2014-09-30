@@ -299,6 +299,9 @@ public final class AdministrationConstants {
 
   public static final String COL_APPLIANCE_HEADER_HEIGHT = "ApplianceHeaderHeight";
   public static final String COL_VIEW_HEADER_HEIGHT = "ViewHeaderHeight";
+  public static final String COL_CLICK_SENSITIVITY_MILLIS = "ClickSensitivityMillis";
+  public static final String COL_CLICK_SENSITIVITY_DISTANCE = "ClickSensitivityDistance";
+
   public static final String COL_USER_STYLE = "Style";
 
   public static final String COL_IMPORT_OPTION = "Option";

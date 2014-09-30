@@ -25,6 +25,9 @@
       </row>
 
       <row>
+        <Label for="ActName" visible="true" />
+        <InputText source="ActName" style="&inpw;" visible="true" />
+
         <Label for="Parent">
           &forparent;
         </Label>

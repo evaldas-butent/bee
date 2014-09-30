@@ -2,6 +2,8 @@
 <!DOCTYPE Form[
   <!ENTITY foritem "<dynStyle><ui:inline>display: none;</ui:inline><ui:expression>row.IsService</ui:expression></dynStyle>">
   <!ENTITY forservice "<dynStyle><ui:inline>display: none;</ui:inline><ui:expression>!row.IsService</ui:expression></dynStyle>">
+  <!ENTITY pricescale "2">
+  <!ENTITY costscale "2">
 ]>
 <f:Form xmlns="http://www.butent.com/widget"
   xmlns:f="http://www.butent.com/form"
@@ -35,7 +37,7 @@
         <InputText source="Article" />
 
         <Label for="Unit" text="=unitShort" />
-        <DataSelector source="Unit" visible="true" newRowEnabled="false" style="width: 80px;" />
+        <DataSelector source="Unit" visible="true" editEnabled="false" style="width: 80px;" />
 
         <CheckBox source="Vat" text="=vat" />
         <cell style="padding-left: 6px;">
@@ -89,26 +91,41 @@
 
           <row>
             <Label for="Price" />
-            <InputDecimal source="Price" currencySource="Currency" summarize="true" />
+            <InputDecimal source="Price" currencySource="Currency" scale="&pricescale;"
+              summarize="true" />
             <DataSelector source="Currency" for="Price" newRowEnabled="false" editEnabled="false"
               style="width: 50px;" />
           </row>
+
           <row>
             <Label for="Cost" />
-            <InputDecimal source="Cost" currencySource="CostCurrency" summarize="true" />
+            <InputDecimal source="Cost" currencySource="CostCurrency" scale="&costscale;"
+              summarize="true" />
             <DataSelector source="CostCurrency" for="Cost" newRowEnabled="false" editEnabled="false"
               style="width: 50px;" />
           </row>
+
           <row>
             <Label for="Price1" />
-            <InputDecimal source="Price1" currencySource="Currency1" summarize="true" />
+            <InputDecimal source="Price1" currencySource="Currency1" scale="&pricescale;"
+              summarize="true" />
             <DataSelector source="Currency1" for="Price1" newRowEnabled="false" editEnabled="false"
               style="width: 50px;" />
           </row>
+
           <row>
             <Label for="Price2" />
-            <InputDecimal source="Price2" currencySource="Currency2" summarize="true" />
+            <InputDecimal source="Price2" currencySource="Currency2" scale="&pricescale;"
+              summarize="true" />
             <DataSelector source="Currency2" for="Price2" newRowEnabled="false" editEnabled="false"
+              style="width: 50px;" />
+          </row>
+
+          <row>
+            <Label for="Price3" />
+            <InputDecimal source="Price3" currencySource="Currency3" scale="&pricescale;"
+              summarize="true" />
+            <DataSelector source="Currency3" for="Price3" newRowEnabled="false" editEnabled="false"
               style="width: 50px;" />
           </row>
         </Table>

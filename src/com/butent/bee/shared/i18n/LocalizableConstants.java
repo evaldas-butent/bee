@@ -34,6 +34,8 @@ public interface LocalizableConstants extends Constants, LocalizableClassifierCo
 
   String actionCanNotBeExecuted();
 
+  String actionChange();
+
   String actionClose();
 
   String actionConfigure();
@@ -203,6 +205,8 @@ public interface LocalizableConstants extends Constants, LocalizableClassifierCo
   String dateTo();
 
   String dateToShort();
+
+  String dayShort();
 
   String delete();
 

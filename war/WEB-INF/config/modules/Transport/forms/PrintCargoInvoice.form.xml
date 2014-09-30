@@ -15,8 +15,12 @@
     <HorizontalPanel>
       <Image  url="images/logo.png" />
       <cell width="100" widthUnit="%">
-        <FlowPanel style="text-align:center;">
-          <Label html="PVM Sąskaita-faktūra" style="&bold;" />
+        <FlowPanel style="text-align:center; font-size:medium;">
+          <TextLabel style="&bold;">
+            <render>
+              <ui:expression>row.Proforma ? 'Sąskaita išankstiniam apmokėjimui' : 'PVM Sąskaita-faktūra'</ui:expression>
+            </render>
+          </TextLabel>
           <TextLabel source="InvoiceNo">
             <renderToken source="InvoicePrefix" prefix="Serija " suffix=" " />
             <renderToken source="InvoiceNo" prefix="Nr. " />
@@ -88,16 +92,19 @@
           </Label>
         </cell>
         <cell rowSpan="2">
-          <Label text="=trdVat" horizontalAlignment="right">
-            <properties name="Vat" />
+          <Label text="=currencyRate">
+            <properties name="Rate" />
           </Label>
         </cell>
         <cell rowSpan="2">
-          <FlowPanel>
+          <Label text="=trdAmountByRate">
             <properties name="RateAmount" />
-            <InlineLabel text="=trdAmount" />
-            <InlineLabel html="EUR" style="padding-left:3px;" />
-          </FlowPanel>
+          </Label>
+        </cell>
+        <cell rowSpan="2">
+          <Label text="=trdVat" horizontalAlignment="right">
+            <properties name="Vat" />
+          </Label>
         </cell>
       </row>
       <row>
@@ -113,7 +120,7 @@
           <FlowPanel style="text-align:right;">
             <Label text="Bendra suma:" />
             <Label text="PVM suma:" />
-            <Label text="VISO:" />
+            <Label text="VISO:" style="&bold;" />
           </FlowPanel>
         </cell>
         <FlowPanel>
@@ -123,7 +130,7 @@
           <Label>
             <properties name="VatTotal" />
           </Label>
-          <Label>
+          <Label style="&bold;">
             <properties name="Total" />
           </Label>
          </FlowPanel>
@@ -134,7 +141,7 @@
           <Label>
             <properties name="Currency" />
           </Label>
-          <Label>
+          <Label style="&bold;">
             <properties name="Currency" />
           </Label>
         </FlowPanel>
@@ -147,6 +154,17 @@
           </Label>
           <Label>
             <properties name="RateTotal" />
+          </Label>
+        </FlowPanel>
+        <FlowPanel>
+          <Label>
+            <properties name="RateCurrency" />
+          </Label>
+          <Label>
+            <properties name="RateCurrency" />
+          </Label>
+          <Label>
+            <properties name="RateCurrency" />
           </Label>
         </FlowPanel>
       </row>

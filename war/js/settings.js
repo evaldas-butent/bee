@@ -1,6 +1,6 @@
 var BeeSettings = {
   "appName": "B-NOVO",
-  "version": "1.25",
+  "version": "1.26",
   "logoImage": "images/logo.png",
   "logoOpen": "http://www.butent.com",
   "providerSensitivityMillis": 300,
@@ -8,10 +8,11 @@ var BeeSettings = {
   "providerMinPrefetchSteps": 1,
   "providerMaxPrefetchSteps": 100,
   "logCapacity": 10000,
-  "actionSensitivityMillis": 300,
   "minimizeNumberOfConcurrentRequests": true,
   "showUserPhoto": true,
   "onStartup": {"content": "form_AnnouncementsBoard"},
   "applianceHeaderHeight": 25,
-  "viewHeaderHeight": 30
+  "viewHeaderHeight": 30,
+  "clickSensitivityMillis": 300,
+  "clickSensitivityDistance": 10  
 };

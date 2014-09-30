@@ -8,6 +8,7 @@
   <Columns>
     <SimpleColumn name="Template" />
 
+    <SimpleColumn name="ActName" />
     <SimpleColumn name="Until" />
 
     <SimpleColumn name="Series" />

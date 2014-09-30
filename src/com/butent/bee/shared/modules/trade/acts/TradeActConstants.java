@@ -11,6 +11,7 @@ public final class TradeActConstants {
   public static final String SVC_GET_ITEMS_FOR_RETURN = "GetItemsForReturn";
   public static final String SVC_GET_ACTS_FOR_INVOICE = "GetActsForInvoice";
   public static final String SVC_CREATE_ACT_INVOICE = "CreateActInvoice";
+  public static final String SVC_CONVERT_ACT_TO_SALE = "ConvertActToSale";
 
   public static final String TBL_TRADE_ACTS = "TradeActs";
   public static final String TBL_TRADE_ACT_ITEMS = "TradeActItems";
@@ -38,6 +39,7 @@ public final class TradeActConstants {
   public static final String COL_TA_DATE = "Date";
   public static final String COL_TA_UNTIL = "Until";
   public static final String COL_TA_SERIES = "Series";
+  public static final String COL_TA_NAME = "ActName";
   public static final String COL_TA_NUMBER = "Number";
   public static final String COL_TA_KIND = "Kind";
   public static final String COL_TA_OPERATION = "Operation";
@@ -75,15 +77,17 @@ public final class TradeActConstants {
   public static final String FORM_INVOICE_BUILDER = "TradeActInvoiceBuilder";
 
   public static final String PRP_QUANTITY = "qty";
+  public static final String PRP_ITEM_PRICE = "item_price";
   public static final String PRP_WAREHOUSE_PREFIX = "w-";
   public static final String PRP_PARENT_ACT = "parent_act";
   public static final String PRP_ITEM_TOTAL = "item_total";
   public static final String PRP_RETURNED_TOTAL = "returned_total";
-  public static final String PRP_LATEST_INVOICE = "latest_invoice";
   public static final String PRP_RETURNED_QTY = "returned_qty";
 
   public static final String PRM_IMPORT_TA_ITEM_RX = "ImportActItemRegEx";
   public static final String RX_IMPORT_ACT_ITEM = "^(.+);(.*);(\\d+\\.*\\d*)$";
+
+  public static final String PRM_TA_NUMBER_LENGTH = "ActNumberLength";
 
   public static void register() {
     EnumUtils.register(TradeActKind.class);

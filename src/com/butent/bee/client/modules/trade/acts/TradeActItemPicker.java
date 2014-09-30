@@ -67,6 +67,7 @@ import com.butent.bee.shared.modules.trade.TradeConstants;
 import com.butent.bee.shared.modules.trade.acts.TradeActKind;
 import com.butent.bee.shared.ui.Action;
 import com.butent.bee.shared.utils.BeeUtils;
+import com.butent.bee.shared.utils.EnumUtils;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -97,6 +98,9 @@ class TradeActItemPicker extends Flow implements HasSelectionHandlers<BeeRowSet>
   private static final String STYLE_ITEM_ROW = STYLE_PREFIX + "item";
   private static final String STYLE_SELECTED_ROW = STYLE_PREFIX + "item-selected";
 
+  private static final String STYLE_HEADER_CELL_SUFFIX = "label";
+  private static final String STYLE_CELL_SUFFIX = "cell";
+
   private static final String STYLE_ID_PREFIX = STYLE_PREFIX + "id-";
 
   private static final String STYLE_TYPE_PREFIX = STYLE_PREFIX + "type-";
@@ -109,7 +113,15 @@ class TradeActItemPicker extends Flow implements HasSelectionHandlers<BeeRowSet>
   private static final String STYLE_PRICE_VALUE = STYLE_PRICE_PREFIX + "value";
   private static final String STYLE_PRICE_CURRENCY = STYLE_PRICE_PREFIX + "currency";
 
-  private static final String STYLE_DEF_PRICE_PREFIX = STYLE_PREFIX + "def-price-";
+  private static final String STYLE_PRICE_HEADER_CELL = STYLE_PRICE_PREFIX
+      + STYLE_HEADER_CELL_SUFFIX;
+  private static final String STYLE_PRICE_CELL = STYLE_PRICE_PREFIX + STYLE_CELL_SUFFIX;
+
+  private static final String STYLE_SELECTED_PRICE_PREFIX = STYLE_PREFIX + "sel-price-";
+  private static final String STYLE_SELECTED_PRICE_HEADER_CELL = STYLE_SELECTED_PRICE_PREFIX
+      + STYLE_HEADER_CELL_SUFFIX;
+  private static final String STYLE_SELECTED_PRICE_CELL = STYLE_SELECTED_PRICE_PREFIX
+      + STYLE_CELL_SUFFIX;
 
   private static final String STYLE_STOCK_PREFIX = STYLE_PREFIX + "stock-";
   private static final String STYLE_STOCK_POSITIVE = STYLE_STOCK_PREFIX + "positive";
@@ -119,9 +131,6 @@ class TradeActItemPicker extends Flow implements HasSelectionHandlers<BeeRowSet>
 
   private static final String STYLE_QTY_PREFIX = STYLE_PREFIX + "qty-";
   private static final String STYLE_QTY_INPUT = STYLE_QTY_PREFIX + "input";
-
-  private static final String STYLE_HEADER_CELL_SUFFIX = "label";
-  private static final String STYLE_CELL_SUFFIX = "cell";
 
   private static final List<String> SEARCH_COLUMNS = Lists.newArrayList(COL_ITEM_NAME,
       COL_ITEM_ARTICLE, COL_ITEM_TYPE, COL_ITEM_GROUP);
@@ -188,28 +197,6 @@ class TradeActItemPicker extends Flow implements HasSelectionHandlers<BeeRowSet>
     return Filter.compareWithValue(column, operator, new TextValue(value));
   }
 
-  private static void onItemClick(Element source) {
-    TableCellElement cell = DomUtils.getParentCell(source, true);
-
-    if (cell != null && cell.hasClassName(STYLE_FROM_PREFIX + STYLE_CELL_SUFFIX)) {
-      String text = cell.getInnerText();
-      Double stock = BeeUtils.toDoubleOrNull(text);
-
-      if (BeeUtils.isPositive(stock)) {
-        Element target = Selectors.getElement(cell.getParentElement(),
-            Selectors.classSelector(STYLE_QTY_INPUT));
-
-        if (InputElement.is(target)) {
-          InputElement input = InputElement.as(target);
-          if (!BeeUtils.isPositiveDouble(input.getValue())) {
-            input.setValue(text);
-            onQuantityChange(input, stock);
-          }
-        }
-      }
-    }
-  }
-
   private static void onQuantityChange(Element source, Double qty) {
     TableRowElement row = DomUtils.getParentRow(source, true);
 
@@ -229,6 +216,8 @@ class TradeActItemPicker extends Flow implements HasSelectionHandlers<BeeRowSet>
 
   private BeeRowSet items;
 
+  private final Map<Long, ItemPrice> selectedPrices = new HashMap<>();
+
   private final Flow itemPanel = new Flow(STYLE_ITEM_PANEL);
 
   private NumberFormat priceFormat;
@@ -246,7 +235,7 @@ class TradeActItemPicker extends Flow implements HasSelectionHandlers<BeeRowSet>
       public void onClick(ClickEvent event) {
         Element target = EventUtils.getEventTargetElement(event);
         if (target != null) {
-          onItemClick(target);
+          onCellClick(target);
         }
       }
     });
@@ -264,6 +253,10 @@ class TradeActItemPicker extends Flow implements HasSelectionHandlers<BeeRowSet>
     itemPrice = TradeActKeeper.getItemPrice(VIEW_TRADE_ACTS, taRow);
 
     items = null;
+
+    if (!selectedPrices.isEmpty()) {
+      selectedPrices.clear();
+    }
 
     if (!itemPanel.isEmpty()) {
       itemPanel.clear();
@@ -468,6 +461,94 @@ class TradeActItemPicker extends Flow implements HasSelectionHandlers<BeeRowSet>
     return warehouseFrom != null && warehouseFrom.equals(warehouse);
   }
 
+  private void onCellClick(Element source) {
+    TableCellElement cell = DomUtils.getParentCell(source, true);
+    if (cell == null) {
+      return;
+    }
+
+    if (cell.hasClassName(STYLE_FROM_PREFIX + STYLE_CELL_SUFFIX)) {
+      String text = cell.getInnerText();
+      Double stock = BeeUtils.toDoubleOrNull(text);
+
+      if (BeeUtils.isPositive(stock)) {
+        Element target = Selectors.getElementByClassName(cell.getParentElement(), STYLE_QTY_INPUT);
+
+        if (InputElement.is(target)) {
+          InputElement input = InputElement.as(target);
+          if (!BeeUtils.isPositiveDouble(input.getValue())) {
+            input.setValue(text);
+            onQuantityChange(input, stock);
+          }
+        }
+      }
+
+    } else if (cell.hasClassName(STYLE_PRICE_HEADER_CELL)) {
+      ItemPrice ip = EnumUtils.getEnumByIndex(ItemPrice.class, DomUtils.getDataColumnInt(cell));
+
+      if (ip != null && itemPrice != ip) {
+        if (itemPrice != null) {
+          TableRowElement row = DomUtils.getParentRow(cell, false);
+          Element el = Selectors.getElementByClassName(row, STYLE_SELECTED_PRICE_HEADER_CELL);
+
+          if (el != null) {
+            el.removeClassName(STYLE_SELECTED_PRICE_HEADER_CELL);
+            el.addClassName(STYLE_PRICE_HEADER_CELL);
+          }
+        }
+
+        cell.removeClassName(STYLE_PRICE_HEADER_CELL);
+        cell.addClassName(STYLE_SELECTED_PRICE_HEADER_CELL);
+
+        List<Element> rows = Selectors.getElementsByClassName(DomUtils.getParentTable(cell, false),
+            STYLE_ITEM_ROW);
+
+        String priceSelector = Selectors.conjunction(Selectors.classSelector(STYLE_PRICE_CELL),
+            Selectors.attributeEquals(DomUtils.ATTRIBUTE_DATA_COLUMN, ip.ordinal()));
+
+        for (Element row : rows) {
+          if (!selectedPrices.containsKey(DomUtils.getDataIndexLong(row))) {
+            if (itemPrice != null) {
+              deselectPrice(row);
+            }
+
+            Element el = Selectors.getElement(row, priceSelector);
+            if (el != null) {
+              el.removeClassName(STYLE_PRICE_CELL);
+              el.addClassName(STYLE_SELECTED_PRICE_CELL);
+            }
+          }
+        }
+
+        itemPrice = ip;
+      }
+
+    } else if (cell.hasClassName(STYLE_PRICE_CELL)) {
+      ItemPrice ip = EnumUtils.getEnumByIndex(ItemPrice.class, DomUtils.getDataColumnInt(cell));
+
+      TableRowElement row = DomUtils.getParentRow(cell, false);
+      long item = DomUtils.getDataIndexLong(row);
+
+      if (ip != null && DataUtils.isId(item)) {
+        deselectPrice(row);
+
+        cell.removeClassName(STYLE_PRICE_CELL);
+        cell.addClassName(STYLE_SELECTED_PRICE_CELL);
+
+        selectedPrices.put(item, ip);
+      }
+    }
+  }
+
+  private static void deselectPrice(Element row) {
+    Element cell = Selectors.getElementByClassName(row, STYLE_SELECTED_PRICE_CELL);
+
+    if (cell != null) {
+      cell.removeClassName(STYLE_SELECTED_PRICE_CELL);
+      cell.addClassName(STYLE_PRICE_CELL);
+    }
+  }
+
   private void openDialog(Element target) {
     final DialogBox dialog = DialogBox.withoutCloseBox(Localized.getConstants().goods(),
         STYLE_DIALOG);
@@ -565,8 +646,11 @@ class TradeActItemPicker extends Flow implements HasSelectionHandlers<BeeRowSet>
         STYLE_ARTICLE_PREFIX + STYLE_HEADER_CELL_SUFFIX);
 
     for (ItemPrice ip : ItemPrice.values()) {
-      pfx = (ip == itemPrice) ? STYLE_DEF_PRICE_PREFIX : STYLE_PRICE_PREFIX;
-      table.setText(r, c++, ip.getCaption(), pfx + STYLE_HEADER_CELL_SUFFIX);
+      table.setText(r, c, ip.getCaption(),
+          (ip == itemPrice) ? STYLE_SELECTED_PRICE_HEADER_CELL : STYLE_PRICE_HEADER_CELL);
+
+      DomUtils.setDataColumn(table.getCellFormatter().getElement(r, c), ip.ordinal());
+      c++;
     }
 
     for (Long w : warehouseIds) {
@@ -615,11 +699,18 @@ class TradeActItemPicker extends Flow implements HasSelectionHandlers<BeeRowSet>
       table.setText(r, c++, item.getString(articleIndex),
           STYLE_ARTICLE_PREFIX + STYLE_CELL_SUFFIX);
 
+      ItemPrice defPrice = selectedPrices.containsKey(item.getId())
+          ? selectedPrices.get(item.getId()) : itemPrice;
+
       for (ItemPrice ip : ItemPrice.values()) {
         String html = renderPrice(item, priceIndexes.get(ip), currencyIndexes.get(ip));
-        if (html != null) {
-          pfx = (ip == itemPrice) ? STYLE_DEF_PRICE_PREFIX : STYLE_PRICE_PREFIX;
-          table.setHtml(r, c, html, pfx + STYLE_CELL_SUFFIX);
+
+        if (html == null) {
+          table.setText(r, c, BeeConst.STRING_EMPTY);
+        } else {
+          table.setHtml(r, c, html,
+              (ip == defPrice) ? STYLE_SELECTED_PRICE_CELL : STYLE_PRICE_CELL);
+          DomUtils.setDataColumn(table.getCellFormatter().getElement(r, c), ip.ordinal());
         }
         c++;
       }
@@ -631,9 +722,12 @@ class TradeActItemPicker extends Flow implements HasSelectionHandlers<BeeRowSet>
                 PRP_WAREHOUSE_PREFIX));
 
             if (DataUtils.isId(w) && warehouseIds.contains(w)) {
-              pfx = isFrom(w) ? STYLE_FROM_PREFIX : STYLE_STOCK_PREFIX;
-              table.setHtml(r, c + warehouseIds.indexOf(w), renderStock(w, entry.getValue()),
-                  pfx + STYLE_CELL_SUFFIX);
+              Double stock = BeeUtils.toDouble(entry.getValue());
+              pfx = (isFrom(w) && BeeUtils.isPositive(stock))
+                  ? STYLE_FROM_PREFIX : STYLE_STOCK_PREFIX;
+
+              table.setHtml(r, c + warehouseIds.indexOf(w),
+                  renderStock(w, entry.getValue(), stock), pfx + STYLE_CELL_SUFFIX);
             }
           }
         }
@@ -672,7 +766,7 @@ class TradeActItemPicker extends Flow implements HasSelectionHandlers<BeeRowSet>
       return div.build();
 
     } else {
-      return BeeConst.STRING_EMPTY;
+      return null;
     }
   }
 
@@ -698,10 +792,8 @@ class TradeActItemPicker extends Flow implements HasSelectionHandlers<BeeRowSet>
     return input;
   }
 
-  private String renderStock(Long warehouse, String value) {
-    Div div = new Div().text(value);
-
-    Double stock = BeeUtils.toDouble(value);
+  private String renderStock(Long warehouse, String text, Double stock) {
+    Div div = new Div().text(text);
 
     if (BeeUtils.isPositive(stock)) {
       div.addClass(STYLE_STOCK_POSITIVE);
@@ -724,8 +816,17 @@ class TradeActItemPicker extends Flow implements HasSelectionHandlers<BeeRowSet>
         BeeRow row = DataUtils.cloneRow(item);
         row.setProperty(PRP_QUANTITY, BeeUtils.toString(quantities.get(item.getId())));
 
+        ItemPrice ip = selectedPrices.get(item.getId());
+        if (ip != null && ip != itemPrice) {
+          row.setProperty(PRP_ITEM_PRICE, BeeUtils.toString(ip.ordinal()));
+        }
+
         selection.addRow(row);
       }
+    }
+
+    if (itemPrice != null) {
+      selection.setTableProperty(PRP_ITEM_PRICE, BeeUtils.toString(itemPrice.ordinal()));
     }
 
     SelectionEvent.fire(this, selection);

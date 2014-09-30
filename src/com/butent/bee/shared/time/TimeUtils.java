@@ -817,6 +817,14 @@ public final class TimeUtils {
     }
   }
 
+  public static String renderDate(HasDateValue dt) {
+    if (dt == null) {
+      return BeeConst.STRING_EMPTY;
+    } else {
+      return dt.getDate().toString();
+    }
+  }
+
   public static String renderDateTime(long time) {
     return renderDateTime(time, false);
   }
@@ -973,6 +981,10 @@ public final class TimeUtils {
     } else {
       return YearMonth.get(ref).shiftMonth(increment).getDate();
     }
+  }
+
+  public static DateTime startOfNextDay(HasDateValue ref) {
+    return startOfDay(ref, 1);
   }
 
   public static JustDate startOfNextMonth(HasYearMonth ref) {

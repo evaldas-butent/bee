@@ -62,6 +62,11 @@
         <ChildGrid name="SaleItems" relColumn="Sale" />
       </page>
 
+      <page >
+        <text>=tradeActs</text>
+        <ChildGrid name="InvoiceTradeActs" relColumn="Sale" module="Trade.Acts" />
+      </page>
+
       <page>
         <text>=trdNotes</text>
         <SimplePanel>

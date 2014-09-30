@@ -36,7 +36,7 @@ public final class ClassifierUtils {
 
   private static final String[] COMPANY_INFO_COLS = new String[] {
       COL_COMPANY_NAME, COL_COMPANY_CODE, COL_COMPANY_VAT_CODE,
-      COL_ADDRESS, COL_PHONE, COL_EMAIL_ADDRESS};
+      COL_ADDRESS, COL_PHONE, COL_EMAIL_ADDRESS, COL_BANK_ACCOUNT};
 
   public static void createCompany(final Map<String, String> parameters,
       final NotificationListener notificationListener, final IdCallback callback) {
@@ -72,37 +72,33 @@ public final class ClassifierUtils {
     if (!DataUtils.isId(companyId)) {
       return;
     }
-
     ParameterList args = ClassifierKeeper.createArgs(SVC_COMPANY_INFO);
     args.addDataItem(COL_COMPANY, companyId);
-
     String locale = DomUtils.getDataProperty(target.getElement(), KEY_LOCALE);
+
     if (BeeUtils.isEmpty(locale)) {
       locale = Localized.getConstants().languageTag();
     }
-
     if (!BeeUtils.isEmpty(locale)) {
       args.addDataItem(AdministrationConstants.VAR_LOCALE, locale);
     }
-
     BeeKeeper.getRpc().makeRequest(args, new ResponseCallback() {
       @Override
       public void onResponse(ResponseObject response) {
         response.notify(BeeKeeper.getScreen());
+
         if (response.hasErrors()) {
           return;
         }
-
         Map<String, String> entries = Codec.deserializeMap(response.getResponseAsString());
+
         if (BeeUtils.isEmpty(entries)) {
           return;
         }
-
         Map<String, Pair<String, String>> info = new HashMap<>();
         for (Map.Entry<String, String> entry : entries.entrySet()) {
           info.put(entry.getKey(), Pair.restore(entry.getValue()));
         }
-
         Flow flow = new Flow(STYLE_COMPANY);
 
         for (String col : COMPANY_INFO_COLS) {
@@ -146,6 +142,34 @@ public final class ClassifierUtils {
               }
               break;
 
+            case COL_BANK_ACCOUNT:
+              value = info.get(COL_BANK_ACCOUNT).getB();
+
+              if (!BeeUtils.isEmpty(value)) {
+                Flow bank = new Flow();
+
+                Widget widget = new Label(info.get(col).getA());
+                widget.setStyleName(STYLE_COMPANY_LABEL);
+                bank.add(widget);
+
+                widget = new Label(BeeUtils.joinItems(value,
+                    info.get(COL_BANK).getB(), info.get(COL_BANK_CODE).getB()));
+                widget.setStyleName(STYLE_COMPANY_ITEM);
+                bank.add(widget);
+
+                if (!BeeUtils.isEmpty(info.get(COL_SWIFT_CODE).getB())) {
+                  widget = new Label(info.get(COL_SWIFT_CODE).getA());
+                  widget.setStyleName(STYLE_COMPANY_LABEL);
+                  bank.add(widget);
+
+                  widget = new Label(info.get(COL_SWIFT_CODE).getB());
+                  widget.setStyleName(STYLE_COMPANY_ITEM);
+                  bank.add(widget);
+                }
+                record.add(bank);
+              }
+              break;
+
             default:
               Pair<String, String> pair = info.get(col);
 
@@ -159,7 +183,6 @@ public final class ClassifierUtils {
                 record.add(widget);
               }
           }
-
           if (!record.isEmpty()) {
             flow.add(record);
           }

@@ -32,6 +32,9 @@ public final class ClassifierConstants {
   public static final String TBL_CITIES = "Cities";
   public static final String TBL_COUNTRIES = "Countries";
 
+  public static final String TBL_BANKS = "Banks";
+  public static final String TBL_COMPANY_BANK_ACCOUNTS = "CompanyBankAccounts";
+
   public static final String TBL_BRANCHES = "Branches";
   public static final String TBL_WAREHOUSES = "Warehouses";
 
@@ -119,6 +122,8 @@ public final class ClassifierConstants {
   public static final String COL_ITEM_CURRENCY_1 = "Currency1";
   public static final String COL_ITEM_PRICE_2 = "Price2";
   public static final String COL_ITEM_CURRENCY_2 = "Currency2";
+  public static final String COL_ITEM_PRICE_3 = "Price3";
+  public static final String COL_ITEM_CURRENCY_3 = "Currency3";
   public static final String COL_ITEM_TYPE = "Type";
   public static final String COL_ITEM_GROUP = "Group";
   public static final String COL_ITEM_WEIGHT = "Weight";
@@ -172,6 +177,7 @@ public final class ClassifierConstants {
 
   public static final String COL_COMPANY_OBJECT_NAME = "ObjectName";
 
+  public static final String COL_BANK = "Bank";
   public static final String COL_BANK_NAME = "Name";
   public static final String COL_BANK_CODE = "BankCode";
   public static final String COL_SWIFT_CODE = "SWIFTCode";
@@ -195,6 +201,9 @@ public final class ClassifierConstants {
   public static final String ALS_BANK_NAME = "BankName";
 
   public static final String ALS_ITEM_NAME = "ItemName";
+  public static final String ALS_ITEM_VAT = "ItemVat";
+  public static final String ALS_ITEM_VAT_PERCENT = "ItemVatPercent";
+
   public static final String ALS_UNIT_NAME = "UnitName";
 
   public static final String ALS_PARENT_TYPE_NAME = "ParentTypeName";
