@@ -361,3 +361,16 @@
   font-size: medium;
   padding: 2px 5px;
 }
+
+.bee-tr-Invoice-Print,
+.bee-tr-Transportation-Print,
+.bee-tr-Order-Print,
+.bee-tr-Contract-Print {
+  font-family: Arial, sans-serif;
+  font-size: small;
+  color: black;
+  overflow: hidden;
+  white-space: pre-wrap;
+  line-height: normal;
+  box-shadow: none;
+}

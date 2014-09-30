@@ -11,7 +11,7 @@
   name="&form;" caption="Sąskaita LT/EN" disabledActions="save"
   width="70" widthUnit="%" height="90" heightUnit="%" viewName="PrintLogisticsInvoice"
   >
-  <FlowPanel class="bee-PrintableForm">
+  <FlowPanel class="bee-PrintableForm bee-tr-Invoice-Print">
     <VerticalPanel>
       <cell style="text-align:center;">
         <Image url="images/HL_logo.jpg" style="width:50%;" />

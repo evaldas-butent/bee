@@ -23,7 +23,7 @@
 
       <row>         
         <Label text="=dateOfBirth" horizontalAlignment="right" />
-        <InputDate source="DateOfBirth" style="width: 80px;" minValue="1900" maxValue="2000" />
+        <InputDate source="DateOfBirth" style="width: 90px;" minValue="1900" maxValue="2000" />
       </row>         
  
       <row>
@@ -44,7 +44,7 @@
       </row>
     </Table>
  
-    <xi:include href="widgets/ContactInfoOpen.widget.xml" />
+    <xi:include href="widgets/ContactInfoClosed.widget.xml" />
 
     <TabbedPages class="flexible" style="margin-top: 1ex;" >
       <page data="CompaniesAndPersons">
@@ -59,4 +59,4 @@
     </TabbedPages>
 
   </FlowPanel>
-</f:Form>  
+</f:Form>

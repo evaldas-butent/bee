@@ -8,7 +8,7 @@
   <SplitPanel splitterSize="1" style="margin:5px;">
     <west size="300">
       <FlowPanel class="flexBox-vertical">
-        <InputText name="Search" placeholder="=search" style="width: 295px" />
+        <InputText name="Search" placeholder="=search" style="width: auto" />
         <GridPanel name="Places" class="bee-mail-Headers flexible" />
       </FlowPanel>
     </west>

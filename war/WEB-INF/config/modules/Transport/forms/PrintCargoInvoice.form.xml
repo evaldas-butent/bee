@@ -11,7 +11,7 @@
   name="&form;" caption="=trdInvoice" disabledActions="save"
   width="70" widthUnit="%" height="90" heightUnit="%"
   >
-  <FlowPanel style="padding: 10px; background-color: white;">
+  <FlowPanel class="bee-PrintableForm bee-tr-Invoice-Print" style="padding: 10px; background-color: white;">
     <HorizontalPanel>
       <Image  url="images/logo.png" />
       <cell width="100" widthUnit="%">

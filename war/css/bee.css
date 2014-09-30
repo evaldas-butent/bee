@@ -15,10 +15,10 @@
 }
 
 .bee-Body {
-  font-family: Arial, sans-serif;
-  font-size: small;
+  font: 12px/21px "Lucida Grande",Verdana,Arial,sans-serif;
   color: black;
   overflow: hidden;
+  white-space: nowrap;
 }
 
 [draggable] {
@@ -127,23 +127,25 @@
 }
 
 .bee-Screen {
-  background-color: #fbfbfb;  
+  background-color: #f4f6fa;
+  color: #404040;
 }
 
 .bee-Logo {
   position: absolute;
   left: 1ex;
   top: 3ex;
-  max-width: 100px;
+  max-width: 150px;
   height: auto;
 }
 
 .bee-NorthContainer > div {
   position: absolute;
+  white-space: nowrap;
 }
 
 .bee-MainSearchContainer {
-  left: 120px;
+  left: 170px;
   top: 20px;
   width: 300px;
 }
@@ -224,15 +226,15 @@
 .bee-UserContainer {
   position: absolute;
   right: 10px;
-  top: 35px;
+  top: 5px;
   border-collapse: collapse;
 }
 .bee-UserPhotoContainer {
   margin-right: 1em;
 }
 .bee-UserPhoto {
-  max-width: 30px;
-  max-height: 30px;
+  max-width: 45px;
+  max-height: 45px;
   cursor: default;
 }
 .bee-UserSignature {
@@ -242,12 +244,12 @@
   margin-left: 1em;
 }
 .bee-UserExit {
-  font-size: large;
+  font-size: 22px;
   cursor: pointer;
   color: #888;
 }
 .bee-UserExit:hover {
-  color: black;
+  color: orangered;
 }
 
 .bee-MainNotificationContainer {
@@ -290,7 +292,7 @@
 
 .bee-MenuRoot-flow.bee-MenuRoot-horizontal .bee-MenuItem-label:hover,
 .bee-MenuRoot-flow.bee-MenuRoot-horizontal .bee-MenuItem-selected {
-  border-bottom: 5px solid #5a6ba3;
+  border-bottom: 3px solid #01B04C;
 }
 
 .bee-MenuPopup {
@@ -387,7 +389,7 @@
 }
 
 .bee-ProgressBar-bar {
-  background-color: SpringGreen;
+  background-color: orangered;
 }
 
 .bee-SliderBar-shell {
@@ -439,7 +441,6 @@
   right: 0;
   top: 0;
   height: 30px;
-  background-color: #EFF0F0;  
   display: flex;
   display: -webkit-flex;
   display: -ms-flexbox;
@@ -448,6 +449,20 @@
   -ms-flex-align: center;
   overflow-x: auto;
   overflow-y: hidden;
+  padding: 0 10px;
+  line-height: 30px;
+  font-size: 13px;
+  text-shadow: 0 1px rgba(255,255,255,0.8);
+  background-color: #eee
+  border: 1px solid;
+  border-color: #ccc #c5c5c5 #c5c5c5 #bbb;
+  border-radius: 3px 3px 0 0;
+  box-shadow: inset 0 1px #fcfcfc,0 1px 1px rgba(0,0,0,0.05);
+  background-image: -webkit-linear-gradient(top, #f9f9f9,#e4e4e4);
+  background-image: -moz-linear-gradient(top, #f9f9f9,#e4e4e4);
+  background-image: -o-linear-gradient(top, #f9f9f9,#e4e4e4);
+  background-image: linear-gradient(to bottom, #f9f9f9,#e4e4e4);
+  -webkit-box-shadow: inset 0 1px #fcfcfc,0 1px 1px rgba(0,0,0,0.05);
 }
 
 .bee-Header-container .bee-auto-fit {
@@ -510,8 +525,7 @@
 .bee-Header-commandPanel .bee-fa-label, .bee-Dialog-header .bee-fa-label {
   margin-left: 4px;
   margin-right: 4px;
-  font-size: large;
-  color: #888;
+  font-size: 22px;
 }
 
 .bee-Header-commandPanel .bee-fa-label:active {
@@ -528,18 +542,28 @@
   font-size: large;
   color: #888;
 }
+
+.bee-Header-control.bee-fa-label {
+  font-size: 22px;
+  color: #888;
+}
+
 .bee-Header-control:hover,
-.bee-TreeView-action:hover {
+.bee-fa-label:hover {
+  color: black;
+}
+
+.bee-Header-control.bee-fa-label:hover {
   color: black;
 }
 
 .bee-Header-control.bee-Action-removeFilter {
   margin-right: 0;
-  font-size: 12px;
-  color: red;
+  font-size: 10px;
+  color: orangered;
   position: relative;
-  top: -8px;
-  left: -8px;
+  top: -10px;
+  left: -10px;
 }
 
 .bee-Header-disabled .bee-Header-control {
@@ -553,7 +577,7 @@
   position: absolute;
   left: 0;
   right: 0;
-  top: 0;
+  top: 1px;
   bottom: 0;
   overflow: auto;
 }
@@ -564,11 +588,21 @@
 }
 
 .bee-CellGridHeader {
-  background-color: #f5f5f5;
+  background-color: #eee;
   display: flex;
   display: -webkit-flex;
   display: -ms-flexbox;
   overflow: hidden;
+  text-shadow: 0 1px rgba(255,255,255,0.5);
+  background: #eee;
+  border: 1px solid;
+  border-color: #ccc #c5c5c5 #c5c5c5 #bbb;
+  background-image: -webkit-linear-gradient(top, #f9f9f9,#e4e4e4);
+  background-image: -moz-linear-gradient(top, #f9f9f9,#e4e4e4);
+  background-image: -o-linear-gradient(top, #f9f9f9,#e4e4e4);
+  background-image: linear-gradient(to bottom, #f9f9f9,#e4e4e4);
+  -webkit-box-shadow: inset 0 1px #fcfcfc,0 1px 1px rgba(0,0,0,0.05);
+  box-shadow: inset 0 1px #fcfcfc,0 1px 1px rgba(0,0,0,0.05);
 }
 
 .bee-HeaderCellCaption {
@@ -579,7 +613,6 @@
   -webkit-align-self: center;
   -ms-flex-item-align: center;
   text-align: center;
-  font-weight: bold;
   line-height: 12px;
   cursor: pointer;
 }
@@ -687,6 +720,7 @@
   position: absolute;
   background-color: white;
   box-sizing: content-box !important;
+  -moz-box-sizing: content-box !important;
 }
 
 .bee-SelectionHeader {
@@ -713,6 +747,7 @@
   border: 1px solid #b4b4b4;
   border-radius: 2px;
   background-color: WhiteSmoke;
+  box-shadow: inset 0 3px 6px rgba(0,0,0,0.1);
 }
 
 .bee-Dialog-header {
@@ -730,7 +765,7 @@
 .bee-Body > div.bee-DialogBox:last-of-type .bee-Dialog-header,
 .bee-Body > div.bee-ModalForm:last-of-type > .bee-ModalForm-content > .bee-Header-container,
 .bee-Body > div.bee-ModalGrid:last-of-type > .bee-ModalGrid-content > .bee-Header-container {
-  background-image: linear-gradient(to bottom, #feffff, #d2ebf9);
+  background-color: #EFF0F0;
 }
 
 .bee-Dialog-caption {
@@ -757,14 +792,14 @@
 
 .bee-NotificationContainer {
   position: absolute;
-  top: 0;
-  right: 0;
+  top: 5px;
+  right: 5px;
   height: 0;
-  border: 3px ridge #eee;
-  border-top-width: 0;
-  background-color: #cfc;
   text-align: center;
   overflow: hidden;
+  border-radius: 4px;
+  background-color: #4EA64E;
+  color: white;
 }
 
 .bee-NotificationMessages {
@@ -776,7 +811,8 @@
 }
 
 .bee-Notification-warning {
-  background-color: yellow;
+  background-color: #c53c36;
+  border: 1px solid #B92C28;
 }
 
 .bee-Toggle {
@@ -858,7 +894,10 @@
   border: 1px solid rgba(0, 0, 0, 0.2);
 }
 .bee-DataSelector-strict.bee-DataSelector-notFound {
-  text-decoration: line-through;
+  color: orangered !important;
+  outline: solid 2px red !important;
+  border: solid 2px red !important;
+  border-radius: 3px;
 }
 .bee-DataSelector-empty {
   background-color: #ebebe4;
@@ -894,9 +933,14 @@
 .bee-DataSelector-editableContainer .bee-DataSelector-editableInput {
   width: calc(100% - 16px);
   border: none !important;
+  box-shadow: 0 0 0 rgba(0,0,0,0) !important;
+  background: transparent !important;
 }
 .bee-DataSelector-editableInput:focus {
   outline: none !important; 
+  box-shadow: inset 0 0 0 rgba(0,0,0,0) !important;
+  border: none !important;
+  background: transparent !important;
 }
 
 .bee-DataSelector-drill {
@@ -904,7 +948,7 @@
   color: #999;
 }
 .bee-DataSelector-drill:hover {
-  color: #00e;
+  color: #5ea2da;
 }
 .bee-DataSelector-drill-disabled {
   display: none;
@@ -929,10 +973,11 @@
   position: absolute;
   left: 0;
   right: 0;
-  top: 0;
+  top: 1px;
   bottom: 0;
   overflow: auto;
-  background-color: WhiteSmoke;
+  background-color: #E5E5E5;
+  box-shadow: inset 0 3px 6px rgba(0,0,0,0.1);
 }
 
 .bee-required:after {
@@ -954,6 +999,10 @@
 .bee-InputPanel {
   position: relative;
   min-height: 50px;
+}
+
+.bee-InputPanel>.bee-ListBox {
+  height: auto;
 }
 
 .bee-InputString {
@@ -1121,6 +1170,7 @@
 .bee-TimePicker {
   padding-left: 6px;
   padding-right: 6px;
+  height : auto !Important;
 }
 .bee-TimePicker:focus {
   outline: none !important;
@@ -1159,23 +1209,48 @@
 
 .bee-TabbedPages-tab {
   display: inline-block;
-  height: 25px;
-  border: 1px solid #e4e4e4;
-  padding: 0 10px;
+  height: 30px;
+  border: 1px solid;
+  padding: 0 12px;
   cursor: pointer;
-  margin-left: 3px;
-  background-color: white;
+  background-color: #f1f1f1;
+  vertical-align: top;
+  font-size: 12px;
+  color: #555;
+  text-align: center;
+  text-shadow: 0 1px rgba(255,255,255,0.8);
+  background-clip: padding-box;
+  border-color: #ccc #c5c5c5 #bbb;
+  box-sizing: border-box;  
+  background-image: linear-gradient(to bottom, rgba(255,255,255,0.4),rgba(255,255,255,0) 50%,rgba(0,0,0,0) 51%,rgba(0,0,0,0.05));
+  box-shadow: inset 0 1px #fcfcfc,0 1px 1px rgba(0,0,0,0.05);
 }
+
 .bee-TabbedPages-tab:hover {
-  background-color : whitesmoke;
+
 }
 
 .bee-TabbedPages-tabSelected {
-  border-top: 2px solid #5a6ba3;
-  background-color: #f2f2f2;
-  border-bottom-color: transparent;
+  border-top: 1px solid #2980B9;
+  background-color: rgb(107, 107, 107);
+  border-bottom-color: rgb(119, 119, 119);
   z-index: 1;
-  cursor: default;
+  border-bottom-style: none;
+  color: #fafafa;
+  text-shadow: 0 -1px rgba(0,0,0,0.5);
+  background-image: linear-gradient(to bottom, #717171,#9a9a9a);
+  background-position-x: initial;
+  background-position-y: initial;
+  background-size: initial;
+  background-repeat-x: initial;
+  background-repeat-y: initial;
+  background-attachment: initial;
+  background-origin: initial;
+  background-clip: initial;
+  border-top-color: rgb(56, 56, 56);
+  border-right-color: rgb(89, 89, 89);
+  border-bottom-color: rgb(119, 119, 119);
+  box-shadow: inset 0 1px 2px rgba(0,0,0,0.15),0 1px rgba(255,255,255,0.8);
 }
 
 .bee-TabbedPages-tabCaption {
@@ -1199,14 +1274,16 @@
 }
 .bee-StackContent {
   overflow: auto;
+  background: whitesmoke;
 }
 
 .bee-StackHeader {
   cursor: pointer;
-  background-color: #EFF0F0;
+  background-color: #EFEFF4;
+  border: 1px solid #f5f5f5;
 }
 .bee-StackHeader:hover {
-  background-color: #f2f2f2;
+  background-color: #D3D3D3;
 }
 
 .bee-ChoicePanel {
@@ -1253,6 +1330,7 @@
 .bee-FavoritesDisplay {
   border-collapse: collapse;
   width: 100%;
+  background: white;
 }
 .bee-FavoritesDisplay td {
   border-bottom: 1px solid #ddd;
@@ -1269,19 +1347,17 @@
 }
 .bee-FavoritesEdit,
 .bee-FavoritesDelete {
-  font-size: large;
+  font-size: 18px;
   padding: 3px;
   cursor: pointer;
   color: #555;
   visibility: hidden;
 }
 .bee-FavoritesEdit:hover {
-  color: white;
-  background-color: #80c4f9;
+  color: #35a5e5;
 }
 .bee-FavoritesDelete:hover {
   color: white;
-  background-color: red;
 }
 .bee-FavoritesDisplay tr:hover .bee-FavoritesEdit,
 .bee-FavoritesDisplay tr:hover .bee-FavoritesDelete {
@@ -1357,18 +1433,64 @@
 }
 
 .bee-Workspace-tab {
-  height: 25px;
-  background-color: white;
-  border: 1px solid #e4e4e4;
+  height: 30px;
+  background-color: #f1f1f1;
+  border: 1px solid;
   cursor: pointer;
+  display: inline-block;
+  vertical-align: top;
+  line-height: 1;
+  padding: 0 12px;
+  font-size: 12px;
+  text-align: center;
+  text-shadow: 0 1px rgba(255,255,255,0.8);
+  background-clip: padding-box;
+  border-color: #ccc #c5c5c5 #bbb;
+  box-sizing: border-box;
+  background-image: linear-gradient(to bottom, rgba(255,255,255,0.4),rgba(255,255,255,0) 50%,rgba(0,0,0,0) 51%,rgba(0,0,0,0.05));
+  box-shadow: inset 0 1px #fcfcfc,0 1px 1px rgba(0,0,0,0.05);
 }
 .bee-Workspace-tabSelected {
-  border-top: 2px solid #5a6ba3;;
+  border-top: 1px solid #2980B9;
   border-bottom-style: none;
+  color: #fafafa;
+  text-shadow: 0 -1px rgba(0,0,0,0.5);
+  background-image: linear-gradient(to bottom, #717171,#9a9a9a);
+  background-position-x: initial;
+  background-position-y: initial;
+  background-size: initial;
+  background-repeat-x: initial;
+  background-repeat-y: initial;
+  background-attachment: initial;
+  background-origin: initial;
+  background-clip: initial;
+  background-color: rgb(107, 107, 107);
+  border-top-color: rgb(56, 56, 56);
+  border-right-color: rgb(89, 89, 89);
+  border-bottom-color: rgb(119, 119, 119);
+  border-left-color: rgb(89, 89, 89);
+  background-image: linear-gradient(to bottom, #717171,#9a9a9a);
+  box-shadow: inset 0 1px 2px rgba(0,0,0,0.15),0 1px rgba(255,255,255,0.8);
 }
 .bee-Workspace-tabPanel > div:only-of-type {
   border-top: 1px solid #e4e4e4;
   border-bottom-style: solid;
+  
+  display: inline-block;
+  vertical-align: top;
+  padding: 0; 
+  font-size: 12px;
+  color: #555;
+  text-align: center;
+  text-shadow: 0 1px rgba(255,255,255,0.8);
+  background: #f1f1f1;
+  background-clip: padding-box;
+  border: 1px solid;
+  border-color: #ccc #c5c5c5 #bbb;
+  cursor: pointer;
+  box-sizing: border-box;
+  background-image: linear-gradient(to bottom, rgba(255,255,255,0.4),rgba(255,255,255,0) 50%,rgba(0,0,0,0) 51%,rgba(0,0,0,0.05));
+  box-shadow: inset 0 1px #fcfcfc,0 1px 1px rgba(0,0,0,0.05);
 }
 .bee-Workspace-tabSelected .bee-Workspace-tab-caption {
   cursor: default;
@@ -1379,12 +1501,13 @@
   text-overflow: ellipsis;
   overflow: hidden;
   white-space: nowrap;
+  margin: 3px;
 }
 
 .bee-Workspace-new-tab {
   margin-left: 1px;
-  width: 25px;
-  height: 25px;
+  width: 29px;
+  height: 29px;
   text-align: center;
   font-size: 24px;
   line-height: 25px;
@@ -1417,7 +1540,6 @@
   cursor: pointer;
 }
 .bee-Workspace-expander > div:hover {
-  background-color: white;
   color: black;
 }
 
@@ -1506,6 +1628,7 @@
 .bee-MultiSelector-container {
   position: relative;
   width: 300px;
+  white-space: normal;
 }
 
 .bee-MultiSelector-choice {
@@ -1535,10 +1658,13 @@
 .bee-MultiSelector-container .bee-MultiSelector-input {
   background: transparent;
   border: none;
-  margin-right: 20px;
+  box-shadow: inset 0 0 0 rgba(0,0,0,0);
 }
 .bee-MultiSelector-container .bee-MultiSelector-input:focus {
   outline: none;
+  box-shadow: inset 0 0 0 rgba(0,0,0,0);
+  background: transparent;
+  border: none;
 }
 
 .bee-MultiSelector-plus {
@@ -1551,8 +1677,7 @@
   cursor: pointer;
 }
 .bee-MultiSelector-plus:hover {
-  background-color: #5a6ba3;
-  color: white;
+  color: #35a5e5;
 }
 
 .bee-SimplePager-container {
@@ -1654,8 +1779,7 @@
 }
 
 .bee-EditableRelation:hover {
-  text-decoration: underline;
-  color: #00e;
+  color: #5ea2da;
   cursor: pointer;
 }
 .bee-CellGridActiveCell.bee-EditableRelation {
@@ -1663,33 +1787,42 @@
 }
 
 .bee-CentralScrutinizer {
-  width: calc(100% - 12px);
+  width: calc(100% - 8px);
   height: calc(100% - 24px);
-  background-color: white;
+  background-color: #D6DDE5;
+  box-shadow: inset 0 3px 6px rgba(0,0,0,0.1);
+  border: 1px solid #C5C5C5;
+  border-top-color: #f4f6fa;
+  text-shadow: 0 1px rgba(255,255,255,0.8);
 }
 
 .bee-CentralScrutinizer > .bee-StackHeader:hover {
-  background-color: #e4e4e4;
+  background-color: #C5C5C5;
 }
 .bee-CentralScrutinizer > .bee-StackHeader-selected {
-  color: white;
-  text-shadow: 1px -1px 2px rgba(22,84,122,0.75);
-  background-image: linear-gradient(#3995cd 0%,#3995cd 17%,#3792ca 31%,#318bc1 55%,#2278ac 100%);
+  color: #404040;
+  text-shadow: 0 1px 1px rgba(255,255,255,.9);
+  background-color: #C5C5C5;
+  border: 1px solid #1D94B7;
+  text-decoration: none;
+  font-weight: bold;
 }
 
 .bee-CentralScrutinizer > .bee-StackContent {
-  border: 1px solid WhiteSmoke;
+
 }
 
 .bee-Appliance-icon {
   position: absolute;
   top: 4px;
   left: 15px;
+  visibility: hidden;
 }
 .bee-Appliance-label {
   position: absolute;
   top: 4px;
-  left: 50px;
+  left: 20px;
+  font-size:14px;
 }
 .bee-Appliance-close {
   position: absolute;
@@ -1943,8 +2076,7 @@
   font-weight: bold;
 }
 .bee-Filters-label:hover {
-  color: #00e;
-  text-decoration: underline;
+  color: #5ea2da;
 }
 .bee-Filters-row:hover .bee-Filters-label {
   background-color: #f2f2f2;
@@ -1998,11 +2130,10 @@
 }
 
 .bee-InternalLink {
-  text-decoration: underline;
   cursor: pointer;
 }
 .bee-InternalLink:hover {
-  color: #00e;
+  color: #5ea2da;
 }
 
 .bee-ActionCellLink {
@@ -2010,7 +2141,7 @@
   cursor: pointer;
 }
 .bee-ActionCellLink:hover {
-  color: #00e;
+  color: #5ea2da;
 }
 
 .bee-FontSize-xx-small {
@@ -2062,14 +2193,18 @@
 .bee-MultiSelector-container {
   box-sizing: border-box;
   margin: 0;
-  background-color: white;
+  background-color: #fcfcfc;
   color: inherit;
-  border: 1px solid silver;
+  border: 1px solid #C5C5C5;
+  height: 29px;
+  padding: 0 7px;
+  box-shadow: inset 0 3px 6px rgba(0,0,0,0.1);
+  border-top-color: #AAAAAA;
+  border-radius: 3px;
 }
 
 .bee-TextBox,
 .bee-InputArea {
-  padding: 1px 2px;
   font-family: inherit;
   font-size: inherit;
 }
@@ -2097,7 +2232,10 @@
 .bee-MultiSelector-container-active,
 .bee-InputDate-active,
 .bee-InputTime-active {
-  outline: #80c4f9 solid 1px;
+  outline: #35a5e5 1px solid;
+  color: #404040;
+  background: white;
+  box-shadow: 0 0 5px rgba(81, 203, 238, 1);
 }
 
 .bee-TreeView-tree, .bee-TabbedPages-contentPanel, .bee-Workspace-contentPanel {
@@ -2381,7 +2519,8 @@
   display: inline-block;
   font-weight: bold;
   color: white;
-  background-image: linear-gradient(to bottom, #858a90, #CCCED1);
+  text-shadow: 0 -1px rgba(0,0,0,0.5);
+  background: #01b04c;
 }
 
 .bee-Online-item,
@@ -2402,7 +2541,8 @@
 }
 
 .bee-Online-item {
-  border-bottom: 1px solid #ccc;
+  border-bottom: 1px solid #11A1CC;
+  background: white;
 }
 
 .bee-Online-name {
@@ -2414,13 +2554,12 @@
   cursor: pointer;
 }
 .bee-Online-name:hover {
-  text-decoration: underline;
-  color: black;
+  color: #11A1CC;
 }
 
 .bee-Online-tweet,
 .bee-Online-home {
-  font-size: large;
+  font-size: 18px;
   padding: 3px;
   cursor: pointer;
   color: #555;
@@ -2428,8 +2567,8 @@
 }
 .bee-Online-tweet:hover,
 .bee-Online-home:hover {
-  color: white;
-  background-color: #80c4f9;
+  color: #1D94B7;
+  text-shadow: 0 1px 0 rgba(255,255,255, 1);
 }
 
 .bee-Room-container {
@@ -2461,7 +2600,7 @@
 .bee-Room-infoCommand,
 .bee-Room-settingsCommand,
 .bee-Room-deleteCommand {
-  font-size: large;
+  font-size: 18px;
   padding: 3px;
   cursor: pointer;
   color: #888;
@@ -2520,7 +2659,7 @@
 .bee-Room-settingsCommand:hover,
 .bee-Rooms-plus:hover:hover {
   color: white;
-  background-color: #80c4f9;
+  background-color: #1990db;
 }
 .bee-Room-deleteCommand:hover {
   color: white;
@@ -2627,7 +2766,7 @@
   cursor: pointer;
 }
 .bee-Chat-submit:hover {
-  background-color: #80c4f9;
+  background-color: #1990db;
   color: white;
 }
 
@@ -2712,8 +2851,8 @@
   visibility: hidden;
 }
 .bee-Badge-updated {
-  animation: rotate 1s;
-  -webkit-animation: rotate 1s;
+  animation: pulse 1s;
+  -webkit-animation: pulse 1s;
 }
 
 .bee-MapContainer .bee-Map {
@@ -2736,14 +2875,14 @@
   position: absolute;
   top: 5px;
   color: #888;
-  font-size: large;
+  font-size: 18px;
   padding: 1px 3px;
   cursor: pointer;
 }
 .bee-News-disclosure:hover,
 .bee-News-refresh:hover,
 .bee-News-settings:hover {
-  color: white;
+  color: #35a5e5;
   background-color: #80c4f9;
 }
 
@@ -2769,8 +2908,8 @@
   top: 5px;
   left: 45%;
   font-size: 20px;
-  animation: rotate 1s linear infinite;
-  -webkit-animation: rotate 1s linear infinite;
+  animation: pulse 1s infinite linear;
+ -webkit-animation: pulse 1s infinite linear;
 }
 .bee-News-not-loading {
   display: none;
@@ -2788,7 +2927,8 @@
 .bee-News-subscription-panel {
   padding-top: 3px;
   padding-bottom: 5px;
-  border-bottom: 1px solid #ccc;
+  border-bottom: 1px solid #11A1CC;
+  background: white;
 }
 
 .bee-News-subscription-header {
@@ -2821,8 +2961,7 @@
 }
 .bee-News-subscription-disclosure:hover,
 .bee-News-subscription-filter:hover {
-  color: white;
-  background-color: #80c4f9;
+  color:#11A1CC;
 }
 
 .bee-News-subscription-disclosure {
@@ -2831,7 +2970,7 @@
   margin-right: 2px;
 }
 .bee-News-subscription-filter {
-  font-size: large;
+  font-size: 18px;
   margin-left: 4px;
   margin-right: 2px;
   border-radius: 4px;
@@ -2842,14 +2981,19 @@
   margin-left: 2px;
   border: 2px green;
   color: #888;
-  border-radius: 4px;
+  border-radius: 2px;
 }
 .bee-News-subscription-new-size {
-  background-color: #aaa;
+  background-color: #01b04c;
   color: white ! important;
+  text-shadow: 0 -1px rgba(0,0,0,0.5);
+  border: 1px solid #009540;
 }
 .bee-News-subscription-upd-size {
-  background-color: yellow;
+  background-color: #f99e1c;
+  border: 1px solid #E38D13;
+  text-shadow: 0 -1px rgba(0,0,0,0.5);
+  color: white;
 }
 .bee-News-subscription-new-size.bee-Badge-empty,
 .bee-News-subscription-upd-size.bee-Badge-empty {
@@ -2880,16 +3024,16 @@
   width: 10px;
   height: 10px;
   border: 2px green;
-  border-radius: 50%;
+  border-radius: 2px
   display: inline-block;
   margin-left: 1em;
   margin-right: 4px;
 }
 .bee-News-headline-new {
-  background-color: #aaa;
+  background-color: #01B04C;
 }
 .bee-News-headline-upd {
-  background-color: yellow;
+  background-color: #f99e1c;
 }
 
 .bee-News-headline-caption {
@@ -2897,11 +3041,10 @@
   -webkit-flex: 1;
   -ms-flex: 1;
   max-height: 60px;
-  overflow: auto;
   cursor: pointer;
 }
 .bee-News-headline-caption:hover {
-  text-decoration: underline;
+  color: #1D94B7;
 }
 
 .bee-News-headline-dismiss {
@@ -2957,7 +3100,7 @@
 
 .bee-Rights-role-orientation,
 .bee-Rights-column-label-orientation {
-  font-size: large;
+  font-size: 18px;
   width: 20px;
   padding: 2px;
   cursor: pointer;
@@ -3119,13 +3262,12 @@
   cursor: pointer;
 }
 .bee-report-settings-label:hover {
-  text-decoration: underline;
-  color: #00e;
+  color: #5ea2da;
 }
 
 .bee-report-settings-edit,
 .bee-report-settings-delete {
-  font-size: large;
+  font-size: 18px;
   padding: 3px;
   cursor: pointer;
   color: #555;
@@ -3185,7 +3327,7 @@
   padding: 4px 10px;
 }
 .bee-GridMenu-popup .bee-fa-label {
-  font-size: large;
+  font-size: 18px;
   color: #888;
 }
 .bee-GridMenu-table tr:hover .bee-fa-label {
@@ -3243,14 +3385,13 @@
   cursor: pointer;
 }
 .bee-spaces-label:hover {
-  text-decoration: underline;
-  color: #00e;
+  color: #5ea2da;
 }
 
 .bee-spaces-startup,
 .bee-spaces-edit,
 .bee-spaces-delete {
-  font-size: large;
+  font-size: 18px;
   padding: 3px;
   color: #555;
 }
@@ -3263,12 +3404,10 @@
 }
 .bee-spaces-startup:hover,
 .bee-spaces-edit:hover {
-  color: white;
-  background-color: #80c4f9;
+  color: #35A5E5;
 }
 .bee-spaces-delete:hover {
-  color: white;
-  background-color: red;
+  color: orangered;
 }
 
 input[type="text"],

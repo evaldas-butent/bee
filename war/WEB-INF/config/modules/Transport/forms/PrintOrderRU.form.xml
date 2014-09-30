@@ -13,7 +13,7 @@
   width="70" widthUnit="%" height="90" heightUnit="%"
   >
 
-  <FlowPanel style="padding: 10px; background-color: white;">
+  <FlowPanel class="bee-PrintableForm bee-tr-Order-Print" style="padding: 10px; background-color: white;">
     <css id="&form;">
       .&form;-table {border-collapse:collapse; width:100%;}
       .&form;-table td {border:1px solid black; padding:2px;}

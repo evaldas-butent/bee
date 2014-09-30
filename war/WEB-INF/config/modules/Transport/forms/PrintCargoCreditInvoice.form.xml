@@ -12,7 +12,7 @@
   width="70" widthUnit="%" height="90" heightUnit="%"
   >
 
-  <FlowPanel style="padding: 10px; background-color: white;">
+  <FlowPanel class="bee-PrintableForm bee-tr-Invoice-Print" style="padding: 10px; background-color: white;">
     <css id="&form;">
       .&form; .itemsInfo-data .itemsInfo-Amount:before,
       .&form; .itemsInfo-AmountTotal:before,

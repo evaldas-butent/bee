@@ -13,7 +13,7 @@
   width="70" widthUnit="%" height="90" heightUnit="%"
   >
 
-  <FlowPanel style="padding: 10px; background-color: white;">
+  <FlowPanel class="bee-PrintableForm bee-tr-Transportation-Print" style="padding: 10px; background-color: white;">
     <css id="&form;">
       .&form; table {border-collapse:collapse; width:100%}
       .&form; tr:first-child {text-align:center; font-weight:bold;}
