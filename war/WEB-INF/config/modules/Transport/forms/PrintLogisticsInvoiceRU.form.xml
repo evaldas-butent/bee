@@ -11,25 +11,27 @@
   name="&form;" caption="Sąskaita LT/RU" disabledActions="save"
   width="70" widthUnit="%" height="90" heightUnit="%" viewName="PrintLogisticsInvoice"
   >
-  <FlowPanel style="padding: 10px; background-color: white;">
-    <HorizontalPanel>
-      <Image  url="images/logo.png" />
+  <FlowPanel class="bee-PrintableForm">
+    <VerticalPanel>
+      <cell style="text-align:center;">
+        <Image url="images/HL_logo.jpg" style="width:50%;" />
+      </cell>
       <cell width="100" widthUnit="%" style="text-align:center; &bold; font-size:medium;">
         <FlowPanel>
-          <TextLabel>
+          <TextLabel inline="true">
             <render>
               <ui:expression>row.Proforma 
                 ? 'Sąskaita išankstiniam apmokėjimui Nr. / Проформа №' 
-                : 'PVM Sąskaita-faktūra Nr. / Счет №'</ui:expression>
+                : 'PVM Sąskaita faktūra Nr. / Счет №'</ui:expression>
             </render>
           </TextLabel>
-          <TextLabel source="InvoiceNo">
+          <TextLabel source="InvoiceNo" inline="true">
             <renderToken source="InvoicePrefix" suffix=" " />
             <renderToken source="InvoiceNo" />
           </TextLabel>
         </FlowPanel>
       </cell>
-    </HorizontalPanel>
+    </VerticalPanel>
 
     <FlowPanel style="&section;">
       <Table style="width:100%;">
@@ -71,6 +73,11 @@
                 <renderToken source="SupplierBankName" prefix=", " />
                 <renderToken source="SupplierBankCode" prefix=", kodas / код банка: " />
                 <renderToken source="SupplierBankSWIFTCode" prefix=", SWIFT: " />
+              </TextLabel>
+              <TextLabel source="SupplierCorrBankName">
+                <renderToken source="SupplierCorrBankCurrencyName" suffix=" bank correspondent:" />
+                <renderToken source="SupplierCorrBankName" prefix=" " />
+                <renderToken source="SupplierCorrBankSWIFTCode" prefix=", SWIFT: " />
               </TextLabel>
             </FlowPanel>
           </cell>
@@ -154,12 +161,7 @@
             <properties name="Amount" />
           </Label>
         </cell>
-        <cell rowSpan="2">
-          <Label text="Kursas / Курс">
-            <properties name="Rate" />
-          </Label>
-        </cell>
-        <cell rowSpan="2">
+        <cell rowSpan="2" colSpan="2">
           <Label text="Suma pagal kursą / Сумма по курсу">
             <properties name="RateAmount" />
           </Label>
@@ -179,7 +181,15 @@
         </Label>
       </row>
       <row>
-        <cell colSpan="6">
+        <cell colSpan="3">
+          <FlowPanel>
+            <InlineLabel text="Kursas / Курс: " />
+            <InlineLabel>
+              <properties name="Rate" />
+            </InlineLabel>
+          </FlowPanel>
+        </cell>
+        <cell colSpan="3">
           <FlowPanel style="text-align:right;">
             <Label text="Suma / Итого:" />
             <Label text="PVM / НДС:" />

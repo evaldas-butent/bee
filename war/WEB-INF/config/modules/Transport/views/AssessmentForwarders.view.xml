@@ -18,6 +18,7 @@
         <SimpleColumn name="Forwarder" editable="true" />
         <SimpleJoin joinType="LEFT" name="Forwarder">
           <SimpleColumn name="Name" alias="ForwarderName" label="=carrier" />
+          <SimpleColumn name="DaysAsSupplier" />
         </SimpleJoin>
   
         <SimpleColumn name="ForwarderVehicle" editable="true" />

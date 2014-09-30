@@ -9,7 +9,7 @@
     <String name="Name2" precision="100" label="=itemName2" />
     <String name="Name3" precision="100" label="=itemName3" />
 
-    <String name="Article" precision="30" unique="true" label="=article" />
+    <String name="Article" precision="30" label="=article" />
     <String name="Article2" precision="30" label="=article2" />
     <String name="Barcode" precision="30" unique="true" label="=itemBarcode" />
 

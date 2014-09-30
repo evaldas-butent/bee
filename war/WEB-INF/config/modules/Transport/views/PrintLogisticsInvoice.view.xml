@@ -52,6 +52,17 @@
           <SimpleColumn name="SWIFTCode" alias="SupplierBankSWIFTCode" />
         </SimpleJoin>
       </SimpleJoin>
+      <ExternalJoin name="Company" source="CompanyBankAccounts" joinType="LEFT"
+        filter="SupplierCorrBankCurrency=Currency">
+        <HiddenColumn name="Currency" alias="SupplierCorrBankCurrency" />
+        <SimpleJoin name="Currency" joinType="LEFT">
+          <SimpleColumn name="Name" alias="SupplierCorrBankCurrencyName" />
+        </SimpleJoin>
+        <SimpleJoin name="Bank" joinType="LEFT">
+          <SimpleColumn name="Name" alias="SupplierCorrBankName" />
+          <SimpleColumn name="SWIFTCode" alias="SupplierCorrBankSWIFTCode" />
+        </SimpleJoin>
+      </ExternalJoin>
     </SimpleJoin>
     
     <SimpleColumn name="Customer" />

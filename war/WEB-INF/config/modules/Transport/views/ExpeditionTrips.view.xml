@@ -23,6 +23,7 @@
     <SimpleColumn name="DateFrom" />
     <SimpleColumn name="DateTo" />
     <SimpleColumn name="Notes" />
+    <SimpleColumn name="PaymentDays" />
   </Columns>
   <Order>
     <OrderBy column="Date" />

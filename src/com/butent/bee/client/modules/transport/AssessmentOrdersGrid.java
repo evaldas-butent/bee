@@ -23,7 +23,6 @@ import com.butent.bee.client.view.grid.interceptor.AbstractGridInterceptor;
 import com.butent.bee.client.view.grid.interceptor.GridInterceptor;
 import com.butent.bee.client.widget.Button;
 import com.butent.bee.shared.Holder;
-import com.butent.bee.shared.Pair;
 import com.butent.bee.shared.data.BeeRow;
 import com.butent.bee.shared.data.BeeRowSet;
 import com.butent.bee.shared.data.event.DataChangeEvent;
@@ -70,7 +69,7 @@ public class AssessmentOrdersGrid extends AbstractGridInterceptor implements Cli
     }
     Queries.getRowSet(TBL_ASSESSMENT_FORWARDERS,
         Lists.newArrayList(COL_CARGO, COL_FORWARDER, COL_EXPEDITION, COL_FORWARDER + "Name",
-            COL_FORWARDER + COL_VEHICLE),
+            COL_FORWARDER + COL_VEHICLE, "DaysAsSupplier"),
         Filter.any(COL_ASSESSMENT, ids), new RowSetCallback() {
           @Override
           public void onSuccess(final BeeRowSet result) {
@@ -79,15 +78,17 @@ public class AssessmentOrdersGrid extends AbstractGridInterceptor implements Cli
             int expCol = result.getColumnIndex(COL_EXPEDITION);
             int nameCol = result.getColumnIndex(COL_FORWARDER + "Name");
             int vehicleCol = result.getColumnIndex(COL_FORWARDER + COL_VEHICLE);
+            int daysCol = result.getColumnIndex("DaysAsSupplier");
 
             final Multimap<String, String> cargo = HashMultimap.create();
-            final Map<String, Pair<String, String>> forwarders = new LinkedHashMap<>();
+            final Map<String, String[]> forwarders = new LinkedHashMap<>();
             final Multimap<String, String> vehicles = HashMultimap.create();
 
             for (BeeRow row : result.getRows()) {
               String id = row.getString(idCol);
               cargo.put(id, row.getString(cargoCol));
-              forwarders.put(id, Pair.of(row.getString(nameCol), row.getString(expCol)));
+              forwarders.put(id, new String[] {row.getString(nameCol), row.getString(expCol),
+                  row.getString(daysCol)});
               vehicles.put(id, row.getString(vehicleCol));
             }
             if (forwarders.isEmpty()) {
@@ -95,8 +96,8 @@ public class AssessmentOrdersGrid extends AbstractGridInterceptor implements Cli
             } else {
               List<String> fwd = new ArrayList<>();
 
-              for (Pair<String, String> forwarder : forwarders.values()) {
-                fwd.add(forwarder.getA());
+              for (String[] forwarder : forwarders.values()) {
+                fwd.add(forwarder[0]);
               }
               Global.choice(Localized.getConstants().trChooseForwarder(), null, fwd,
                   new ChoiceCallback() {
@@ -105,9 +106,9 @@ public class AssessmentOrdersGrid extends AbstractGridInterceptor implements Cli
                       final String id = forwarders.keySet().toArray(new String[0])[value];
 
                       Queries.insert(VIEW_EXPEDITION_TRIPS, Data.getColumns(VIEW_EXPEDITION_TRIPS,
-                          Lists.newArrayList(COL_FORWARDER, COL_EXPEDITION,
+                          Lists.newArrayList(COL_FORWARDER, COL_EXPEDITION, "PaymentDays",
                               COL_FORWARDER + COL_VEHICLE)),
-                          Lists.newArrayList(id, forwarders.get(id).getB(),
+                          Lists.newArrayList(id, forwarders.get(id)[1], forwarders.get(id)[2],
                               BeeUtils.joinItems(vehicles.get(id))), null, new RowCallback() {
                             @Override
                             public void onSuccess(BeeRow trip) {

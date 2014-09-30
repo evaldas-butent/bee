@@ -2,7 +2,7 @@ body {
   font-family: Arial, sans-serif;
   font-size: 13px;
 /*  background-color: WhiteSmoke;  */
-background: url('/Hoplog/images/Hlogo.png') no-repeat;
+background: url('../images/Hlogo.png') no-repeat;
 background-size:55%;
 
   color: #222;
@@ -21,7 +21,7 @@ background-size:55%;
 }
 .bee-ready .bee-SignIn-Panel {
   visibility: visible;
-background: url('/Hoplog/images/Hlogo2.png') no-repeat;
+background: url('../images/Hlogo2.png') no-repeat;
 background-size: 78%;
 background-position: right bottom;
 }
