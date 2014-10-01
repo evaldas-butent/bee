@@ -1,8 +1,5 @@
 package com.butent.bee.client.modules.mail;
 
-import com.google.common.base.Function;
-import com.google.common.collect.BiMap;
-import com.google.common.collect.HashBiMap;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
 import com.google.gwt.core.client.Scheduler.ScheduledCommand;
@@ -53,7 +50,6 @@ import com.butent.bee.client.ui.FormFactory.WidgetDescriptionCallback;
 import com.butent.bee.client.ui.IdentifiableWidget;
 import com.butent.bee.client.view.HeaderView;
 import com.butent.bee.client.view.edit.EditStartEvent;
-import com.butent.bee.client.view.form.FormView;
 import com.butent.bee.client.view.form.interceptor.AbstractFormInterceptor;
 import com.butent.bee.client.view.form.interceptor.FormInterceptor;
 import com.butent.bee.client.view.grid.GridView;
@@ -99,7 +95,6 @@ import com.butent.bee.shared.ui.ColumnDescription;
 import com.butent.bee.shared.ui.GridDescription;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.Codec;
-import com.butent.bee.shared.websocket.messages.ProgressMessage;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -380,7 +375,6 @@ public class MailPanel extends AbstractFormInterceptor {
   private final MailMessage message = new MailMessage(this);
 
   private final List<AccountInfo> accounts;
-  private final BiMap<String, Long> progresses = HashBiMap.create();
 
   private Widget messageWidget;
   private Widget emptySelectionWidget;
@@ -461,6 +455,16 @@ public class MailPanel extends AbstractFormInterceptor {
     initAccounts(accountsWidget);
     header.addCommandItem(accountsWidget);
 
+    FaLabel refreshWidget = new FaLabel(FontAwesome.REFRESH);
+
+    refreshWidget.addClickHandler(new ClickHandler() {
+      @Override
+      public void onClick(ClickEvent arg0) {
+        checkFolderRecursively(getCurrentAccount().getRootFolder());
+      }
+    });
+    header.addCommandItem(refreshWidget);
+
     message.setFormView(getFormView());
   }
 
@@ -472,14 +476,6 @@ public class MailPanel extends AbstractFormInterceptor {
     } else if (State.REMOVED.equals(state)) {
       MailKeeper.removeMailPanel(this);
     }
-  }
-
-  @Override
-  public void onUnload(FormView form) {
-    for (String progressId : progresses.keySet()) {
-      Endpoint.cancelProgress(progressId);
-    }
-    super.onUnload(form);
   }
 
   void checkFolder(final Long folderId) {
@@ -513,7 +509,6 @@ public class MailPanel extends AbstractFormInterceptor {
         close.addClickHandler(new ClickHandler() {
           @Override
           public void onClick(ClickEvent event) {
-            progresses.remove(progressId);
             Endpoint.cancelProgress(progressId);
           }
         });
@@ -534,19 +529,7 @@ public class MailPanel extends AbstractFormInterceptor {
         @Override
         public void accept(String input) {
           if (!BeeUtils.isEmpty(input)) {
-            progresses.put(progressId, folderId);
             params.addDataItem(Service.VAR_PROGRESS, input);
-
-            Endpoint.registerProgressHandler(progressId,
-                new Function<ProgressMessage, Boolean>() {
-                  @Override
-                  public Boolean apply(ProgressMessage pm) {
-                    if (pm.isClosed()) {
-                      progresses.remove(progressId);
-                    }
-                    return null;
-                  }
-                });
           } else {
             Endpoint.cancelProgress(progressId);
           }
@@ -569,9 +552,7 @@ public class MailPanel extends AbstractFormInterceptor {
   }
 
   void refreshFolder(Long folderId) {
-    if (Objects.equals(folderId, getCurrentFolderId())
-        && !progresses.inverse().containsKey(folderId)) {
-
+    if (Objects.equals(folderId, getCurrentFolderId())) {
       checkFolder(folderId);
     } else {
       currentFolder = folderId;
@@ -645,6 +626,15 @@ public class MailPanel extends AbstractFormInterceptor {
         refreshFolder(getCurrentAccount().getInboxId());
       }
     });
+  }
+
+  private void checkFolderRecursively(MailFolder folder) {
+    if (DataUtils.isId(folder.getId())) {
+      checkFolder(folder.getId());
+    }
+    for (MailFolder subFolder : folder.getSubFolders()) {
+      checkFolderRecursively(subFolder);
+    }
   }
 
   private void createMessage() {

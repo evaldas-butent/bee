@@ -19,6 +19,7 @@ import com.butent.bee.client.composite.DataSelector;
 import com.butent.bee.client.composite.Disclosure;
 import com.butent.bee.client.composite.FileCollector;
 import com.butent.bee.client.composite.FileGroup;
+import com.butent.bee.client.composite.Gallery;
 import com.butent.bee.client.composite.MultiSelector;
 import com.butent.bee.client.composite.RadioGroup;
 import com.butent.bee.client.composite.SliderBar;
@@ -204,6 +205,7 @@ public enum FormWidget {
   FLAG("Flag", EnumSet.of(Type.DISPLAY)),
   FLOW_PANEL("FlowPanel", EnumSet.of(Type.HAS_CHILDREN)),
   FRAME("Frame", EnumSet.of(Type.DISPLAY)),
+  GALLERY("Gallery", EnumSet.of(Type.IS_CHILD)),
   GRID_PANEL(UiConstants.TAG_GRID_PANEL, EnumSet.of(Type.IS_GRID)),
   HEADER_CONTENT_FOOTER("HeaderContentFooter", EnumSet.of(Type.PANEL)),
   HEADING("Heading", null),
@@ -989,7 +991,6 @@ public enum FormWidget {
   private static final String ATTR_PRELOAD = "preload";
   private static final String ATTR_VOLUME = "volume";
 
-  private static final String ATTR_REL_COLUMN = "relColumn";
   private static final String ATTR_ANIMATE = "animate";
   private static final String ATTR_OPEN = "open";
   private static final String ATTR_EVENT = "event";
@@ -1134,7 +1135,7 @@ public enum FormWidget {
       case CHILD_GRID:
         String gridName = BeeUtils.notEmpty(attributes.get(UiConstants.ATTR_GRID_NAME), name);
 
-        String relColumn = attributes.get(ATTR_REL_COLUMN);
+        String relColumn = attributes.get(UiConstants.ATTR_REL_COLUMN);
         String source = attributes.get(UiConstants.ATTR_SOURCE);
         int sourceIndex = BeeUtils.isEmpty(source)
             ? DataUtils.ID_INDEX : DataUtils.getColumnIndex(source, columns);
@@ -1144,6 +1145,10 @@ public enum FormWidget {
           widget = new ChildGrid(gridName, GridFactory.getGridOptions(attributes),
               sourceIndex, relColumn, !BeeConst.isFalse(attributes.get(ATTR_DISABLABLE)));
         }
+        break;
+
+      case GALLERY:
+        widget = Gallery.create(attributes);
         break;
 
       case CHILD_SELECTOR:
@@ -1620,7 +1625,7 @@ public enum FormWidget {
             }
           }
         }
-        widget = new Relations(attributes.get(ATTR_REL_COLUMN),
+        widget = new Relations(attributes.get(UiConstants.ATTR_REL_COLUMN),
             BeeUtils.toBoolean(attributes.get(ATTR_INLINE)), relations,
             NameUtils.toList(attributes.get("defaultRelations")),
             NameUtils.toList(attributes.get("blockedRelations")));

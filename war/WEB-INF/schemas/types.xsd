@@ -124,8 +124,8 @@
     </xs:union>
   </xs:simpleType>
   
-  <xs:simpleType name="nameList">
-    <xs:list itemType="nameType" />
+  <xs:simpleType name="fieldNames">
+    <xs:list itemType="fieldNameType" />
   </xs:simpleType>
   
   <xs:simpleType name="replacementPolicy">
@@ -354,6 +354,7 @@
       <xs:enumeration value="InvoiceTransferTypes" />
       <xs:enumeration value="IpFilters" />
       <xs:enumeration value="ItemCategories" />
+      <xs:enumeration value="ItemGraphics" />
       <xs:enumeration value="Items" />
       <xs:enumeration value="Maintenance" />
       <xs:enumeration value="Messages" />

@@ -38,9 +38,9 @@
     <xs:attribute name="whiteSpace" type="ui:whiteSpaceType" />
     <xs:attribute name="cellType" type="ui:cellType" />
     <xs:attribute name="cellResizable" type="xs:boolean" />
-    <xs:attribute name="renderColumns" type="type:nameList" />
-    <xs:attribute name="sortBy" type="type:nameList" />
-    <xs:attribute name="searchBy" type="type:nameList" />
+    <xs:attribute name="renderColumns" type="type:fieldNames" />
+    <xs:attribute name="sortBy" type="type:fieldNames" />
+    <xs:attribute name="searchBy" type="type:fieldNames" />
     <xs:attribute name="filterSupplier" type="type:filterSupplier" />
     <xs:attribute name="filterOptions" type="xs:normalizedString" />
     <xs:attribute name="options" type="xs:normalizedString" />
@@ -65,7 +65,7 @@
           <xs:element name="validation" type="ui:calcType" minOccurs="0" />
           <xs:element name="carry" type="ui:calcType" minOccurs="0" />
         </xs:sequence>
-        <xs:attribute name="source" type="type:nameType" />
+        <xs:attribute name="source" type="type:fieldNameType" />
         <xs:attribute name="required" type="xs:boolean" />
         <xs:attribute name="enumKey" type="xs:normalizedString" />
         <xs:attribute name="updateMode" type="ui:refreshType" />
@@ -119,7 +119,7 @@
       <xs:extension base="columnType">
         <xs:attribute name="type" type="type:valueType" use="required" />
         <xs:attribute name="precision" type="xs:positiveInteger" />
-        <xs:attribute name="source" type="type:nameType" />
+        <xs:attribute name="source" type="type:fieldNameType" />
         <xs:attribute name="dynamic" type="xs:boolean" />
       </xs:extension>
     </xs:complexContent>
@@ -130,7 +130,7 @@
   <xs:complexType name="actionColumn">
     <xs:complexContent>
       <xs:extension base="columnType">
-        <xs:attribute name="source" type="type:nameType" />
+        <xs:attribute name="source" type="type:fieldNameType" />
         <xs:attribute name="element" type="ui:elementType" use="required" />
         <xs:attribute name="dynamic" type="xs:boolean" />
       </xs:extension>
