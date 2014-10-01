@@ -177,6 +177,12 @@
         </Table>
       </page>  
 
+      <page>
+        <text>=pictures</text>
+        <Gallery viewName="ItemGraphics" relColumn="Item" pictureColumn="Picture"
+          orderColumn="Ordinal" />
+      </page>
+
       <page for="Description">
         <text>=description</text>
         <SimplePanel>

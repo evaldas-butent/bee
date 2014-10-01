@@ -212,6 +212,8 @@ public interface LocalizableConstants extends Constants, LocalizableClassifierCo
 
   String deleteActiveRow();
 
+  String deletePictureQuestion();
+
   String deleteQuestion();
 
   String deleteRecordQuestion();

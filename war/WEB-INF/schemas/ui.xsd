@@ -406,7 +406,7 @@
   </xs:simpleType>
   
   <xs:complexType name="renderableToken">
-    <xs:attribute name="source" type="type:nameType" use="required" />
+    <xs:attribute name="source" type="type:fieldNameType" use="required" />
     <xs:attribute name="prefix" type="xs:string" />
     <xs:attribute name="suffix" type="xs:string" />
     <xs:attribute name="addPrefixWhenEmpty" type="xs:boolean" />
@@ -429,11 +429,11 @@
       <xs:element name="render" type="calcType" />
       <xs:element name="renderToken" type="renderableToken" maxOccurs="unbounded" />
     </xs:choice>
-    <xs:attribute name="source" type="type:nameType" use="required" />
+    <xs:attribute name="source" type="type:fieldNameType" use="required" />
     <xs:attributeGroup ref="appearance" />
     <xs:attributeGroup ref="alignment" />
     <xs:attribute name="enumKey" type="xs:normalizedString" />
-    <xs:attribute name="renderColumns" type="type:nameList" />
+    <xs:attribute name="renderColumns" type="type:fieldNames" />
   </xs:complexType>
 
   <xs:simpleType name="relationCaching">
@@ -446,10 +446,10 @@
   </xs:simpleType>
   
   <xs:attributeGroup name="relation">
-    <xs:attribute name="choiceColumns" type="type:nameList" />
-    <xs:attribute name="searchableColumns" type="type:nameList" />
+    <xs:attribute name="choiceColumns" type="type:fieldNames" />
+    <xs:attribute name="searchableColumns" type="type:fieldNames" />
     <xs:attribute name="filter" type="xs:normalizedString" />
-    <xs:attribute name="currentUserFilter" type="type:nameType" />
+    <xs:attribute name="currentUserFilter" type="type:fieldNameType" />
     <xs:attribute name="order" type="xs:normalizedString" />
     <xs:attribute name="caching" type="relationCaching" />
     <xs:attribute name="operator" type="type:operatorType" />
@@ -459,16 +459,16 @@
     <xs:attribute name="minQueryLength" type="xs:positiveInteger" />
     <xs:attribute name="instant" type="xs:boolean" />
     <xs:attribute name="newRowForm" type="type:nameType" />
-    <xs:attribute name="newRowColumns" type="type:nameList" />
+    <xs:attribute name="newRowColumns" type="type:fieldNames" />
     <xs:attribute name="newRowCaption" type="xs:string" />
     <xs:attribute name="newRowEnabled" type="xs:boolean" />
     <xs:attribute name="editForm" type="type:nameType" />
     <xs:attribute name="editPopup" type="xs:boolean" />
     <xs:attribute name="editEnabled" type="xs:boolean" />
     <xs:attribute name="editKey" type="xs:int" />
-    <xs:attribute name="editSource" type="type:nameType" />
+    <xs:attribute name="editSource" type="type:fieldNameType" />
     <xs:attribute name="editViewName" type="type:dataView" />
-    <xs:attribute name="valueSource" type="type:nameType" />
+    <xs:attribute name="valueSource" type="type:fieldNameType" />
     <xs:attribute name="strict" type="xs:boolean" />
   </xs:attributeGroup>
   
