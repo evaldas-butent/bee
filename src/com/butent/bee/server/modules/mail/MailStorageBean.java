@@ -49,10 +49,8 @@ import java.util.Map.Entry;
 import java.util.Objects;
 import java.util.Set;
 
-import javax.annotation.Resource;
 import javax.ejb.EJB;
 import javax.ejb.LocalBean;
-import javax.ejb.SessionContext;
 import javax.ejb.Stateless;
 import javax.ejb.TransactionAttribute;
 import javax.ejb.TransactionAttributeType;
@@ -100,8 +98,12 @@ public class MailStorageBean {
   FileStorageBean fs;
   @EJB
   ConcurrencyBean cb;
-  @Resource
-  SessionContext ctx;
+
+  public void attachMessages(Long folderId, Map<Long, Integer> messages) {
+    for (Entry<Long, Integer> message : messages.entrySet()) {
+      storePlace(message.getKey(), folderId, message.getValue(), null);
+    }
+  }
 
   public void connectFolder(MailFolder folder) {
     validateFolder(folder, null);
@@ -121,6 +123,10 @@ public class MailStorageBean {
       disconnectFolder(folder);
     }
     return folder;
+  }
+
+  public void detachMessages(IsCondition clause) {
+    qs.updateData(new SqlDelete(TBL_PLACES).setWhere(clause));
   }
 
   public void disconnectFolder(MailFolder folder) {
@@ -219,6 +225,19 @@ public class MailStorageBean {
         .setWhere(sys.idEquals(TBL_FOLDERS, folder.getId())));
   }
 
+  public void setFlags(Long placeId, int flags) {
+    qs.updateData(new SqlUpdate(TBL_PLACES)
+        .addConstant(COL_FLAGS, flags)
+        .setWhere(sys.idEquals(TBL_PLACES, placeId)));
+  }
+
+  public void setFolder(Long folderId, IsCondition clause) {
+    qs.updateData(new SqlUpdate(TBL_PLACES)
+        .addConstant(COL_FOLDER, folderId)
+        .addConstant(COL_MESSAGE_UID, null)
+        .setWhere(clause));
+  }
+
   public Long storeMail(Long userId, Message message, Long folderId, Long messageUID)
       throws MessagingException {
 
@@ -315,11 +334,7 @@ public class MailStorageBean {
       }
     }
     if (!DataUtils.isId(placeId)) {
-      placeId = qs.insertData(new SqlInsert(TBL_PLACES)
-          .addConstant(COL_MESSAGE, messageId)
-          .addConstant(COL_FOLDER, folderId)
-          .addConstant(COL_FLAGS, envelope.getFlagMask())
-          .addConstant(COL_MESSAGE_UID, messageUID));
+      placeId = storePlace(messageId, folderId, envelope.getFlagMask(), messageUID);
     } else {
       placeId = null;
     }
@@ -595,6 +610,14 @@ public class MailStorageBean {
         }
       }
     }
+  }
+
+  private long storePlace(long messageId, Long folderId, Integer flags, Long messageUID) {
+    return qs.insertData(new SqlInsert(TBL_PLACES)
+        .addConstant(COL_MESSAGE, messageId)
+        .addConstant(COL_FOLDER, folderId)
+        .addNotNull(COL_FLAGS, flags)
+        .addNotNull(COL_MESSAGE_UID, messageUID));
   }
 
   private void savePart(Long messageId, String text, String html) {

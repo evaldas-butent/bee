@@ -909,11 +909,11 @@ public class UiServiceBean {
       response = ResponseObject.info("TecDoc SUCKS NOW...");
 
     } else if (BeeUtils.same(cmd, "motonet")) {
-      tcd.suckMotonet();
+      tcd.suckMotonet(true);
       response = ResponseObject.info("Motonet...");
 
     } else if (BeeUtils.same(cmd, "butent")) {
-      tcd.suckButent();
+      tcd.suckButent(true);
       response = ResponseObject.info("Butent...");
 
     } else if (!BeeUtils.isEmpty(cmd)) {

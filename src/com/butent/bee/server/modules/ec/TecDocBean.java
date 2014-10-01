@@ -7,7 +7,9 @@ import static com.butent.bee.shared.modules.administration.AdministrationConstan
 import static com.butent.bee.shared.modules.classifiers.ClassifierConstants.*;
 import static com.butent.bee.shared.modules.ec.EcConstants.*;
 
+import com.butent.bee.server.Invocation;
 import com.butent.bee.server.concurrency.ConcurrencyBean;
+import com.butent.bee.server.concurrency.ConcurrencyBean.AsynchronousRunnable;
 import com.butent.bee.server.concurrency.ConcurrencyBean.HasTimerService;
 import com.butent.bee.server.data.IdGeneratorBean;
 import com.butent.bee.server.data.QueryServiceBean;
@@ -26,6 +28,7 @@ import com.butent.bee.server.sql.SqlSelect;
 import com.butent.bee.server.sql.SqlUpdate;
 import com.butent.bee.server.sql.SqlUtils;
 import com.butent.bee.server.websocket.Endpoint;
+import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst.SqlEngine;
 import com.butent.bee.shared.data.BeeRow;
 import com.butent.bee.shared.data.BeeRowSet;
@@ -40,6 +43,7 @@ import com.butent.bee.shared.modules.BeeParameter;
 import com.butent.bee.shared.modules.ec.EcConstants.EcSupplier;
 import com.butent.bee.shared.modules.ec.EcUtils;
 import com.butent.bee.shared.rights.Module;
+import com.butent.bee.shared.time.TimeUtils;
 import com.butent.bee.shared.utils.ArrayUtils;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.Codec;
@@ -360,8 +364,22 @@ public class TecDocBean implements HasTimerService {
     cb.createCalendarTimer(this.getClass(), PRM_MOTONET_HOURS);
   }
 
-  @Asynchronous
-  public void suckButent() {
+  public void suckButent(boolean async) {
+    if (async) {
+      cb.asynchronousCall(new AsynchronousRunnable() {
+        @Override
+        public String getId() {
+          return BeeUtils.joinWords(TecDocBean.class.getName(), PRM_BUTENT_INTERVAL);
+        }
+
+        @Override
+        public void run() {
+          TecDocBean bean = Assert.notNull(Invocation.locateRemoteBean(TecDocBean.class));
+          bean.suckButent(false);
+        }
+      });
+      return;
+    }
     EcSupplier supplier = EcSupplier.EOLTAS;
     String remoteNamespace = prm.getText(PRM_ERP_NAMESPACE);
     String remoteAddress = prm.getText(PRM_ERP_ADDRESS);
@@ -413,8 +431,27 @@ public class TecDocBean implements HasTimerService {
     }
   }
 
-  @Asynchronous
-  public void suckMotonet() {
+  public void suckMotonet(boolean async) {
+    if (async) {
+      cb.asynchronousCall(new AsynchronousRunnable() {
+        @Override
+        public String getId() {
+          return BeeUtils.joinWords(TecDocBean.class.getName(), PRM_MOTONET_HOURS);
+        }
+
+        @Override
+        public long getTimeout() {
+          return TimeUtils.MILLIS_PER_DAY * 2;
+        }
+
+        @Override
+        public void run() {
+          TecDocBean bean = Assert.notNull(Invocation.locateRemoteBean(TecDocBean.class));
+          bean.suckMotonet(false);
+        }
+      });
+      return;
+    }
     EcSupplier supplier = EcSupplier.MOTOPROFIL;
     logger.info(supplier, "Waiting for data...");
 
@@ -889,10 +926,10 @@ public class TecDocBean implements HasTimerService {
 
   @Timeout
   private void doTimerEvent(Timer timer) {
-    if (cb.isTimerEvent(timer, PRM_BUTENT_INTERVAL)) {
-      suckButent();
-    } else if (cb.isTimerEvent(timer, PRM_MOTONET_HOURS)) {
-      suckMotonet();
+    if (cb.isParameterTimer(timer, PRM_BUTENT_INTERVAL)) {
+      suckButent(true);
+    } else if (cb.isParameterTimer(timer, PRM_MOTONET_HOURS)) {
+      suckMotonet(true);
     }
   }
 
