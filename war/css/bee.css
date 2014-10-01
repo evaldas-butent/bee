@@ -979,7 +979,7 @@
   top: 1px;
   bottom: 0;
   overflow: auto;
-  background-color: #E5E5E5;
+  background-color:background-color: rgba(229, 229, 229, 0.4);
   box-shadow: inset 0 3px 6px rgba(0,0,0,0.1);
 }
 
@@ -1554,7 +1554,13 @@
 
 .bee-Workspace-tab-drop-down {
   color: #01b04c;
+  visibility: hidden;
 }
+
+.bee-Workspace-tab:hover .bee-Workspace-tab-drop-down {
+  visibility: visible;
+}
+
 .bee-Workspace-tab-drop-down,
 .bee-Workspace-tab-caption {
   line-height: 25px;
@@ -1563,16 +1569,20 @@
 .bee-Workspace-tab-close {
   width: 14px;
   height: 14px;
-  font-size: 18px;
+  font-size: 19px;
   line-height: 14px;
   text-align: center;
   color: #777;
+  visibility: hidden;
 }
 .bee-Workspace-tab-close:hover {
-  color: white;
-  background-color: #800;
-  opacity: 0.4;
-  border-radius: 50%;
+  visibility: visible !important;
+  color: red;
+}
+
+.bee-Workspace-tab:hover .bee-Workspace-tab-close {
+  color: red;
+  visibility: visible;
 }
 
 .bee-Workspace-tabPanel > div:only-of-type .bee-Workspace-tab-drop-down {
@@ -2242,7 +2252,9 @@
 }
 
 .bee-TreeView-tree, .bee-TabbedPages-contentPanel, .bee-Workspace-contentPanel {
-  border-top : 1px solid #edede1;
+  box-shadow: inset 0 3px 6px rgba(0,0,0,0.1);
+  background: rgba(214, 221, 229, 0.7);
+  border: 1px solid #C5C5C5;
 }
 
 .bee-GridSettings-dialog {
