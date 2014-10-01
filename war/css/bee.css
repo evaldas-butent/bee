@@ -129,6 +129,8 @@
 .bee-Screen {
   background-color: #f4f6fa;
   color: #404040;
+  background: url('../images/Hlogobcg.png') no-repeat;
+  background-size: contain;
 }
 
 .bee-Logo {
@@ -807,12 +809,13 @@
 }
 
 .bee-Notification-error {
-  background-color: #ffcccc;
+  background-color: #c53c36;
+  border: 1px solid #B92C28;
 }
 
 .bee-Notification-warning {
-  background-color: #c53c36;
-  border: 1px solid #B92C28;
+  background-color: #f99e1c;
+  border: 1px solid #E38D13;
 }
 
 .bee-Toggle {
@@ -1550,7 +1553,7 @@
 }
 
 .bee-Workspace-tab-drop-down {
-  color: #a1bff5;
+  color: #01b04c;
 }
 .bee-Workspace-tab-drop-down,
 .bee-Workspace-tab-caption {
@@ -1789,7 +1792,7 @@
 .bee-CentralScrutinizer {
   width: calc(100% - 8px);
   height: calc(100% - 24px);
-  background-color: #D6DDE5;
+  background-color: rgba(214, 221, 229, 0.7);
   box-shadow: inset 0 3px 6px rgba(0,0,0,0.1);
   border: 1px solid #C5C5C5;
   border-top-color: #f4f6fa;
@@ -1837,14 +1840,14 @@
 
 .bee-Shell {
   width: 100%;
-  height: calc(100% - 3px);
+  height: calc(100% - 6px);
 }
 
 .bee-Tile {
   outline: WhiteSmoke solid 1px;
 }
 .bee-Tile-active {
-  background-color: white;
+  background-color: rgba(255, 255, 255, 0.1);
   outline: #5897fb solid 2px;
 }
 
@@ -2196,7 +2199,7 @@
   background-color: #fcfcfc;
   color: inherit;
   border: 1px solid #C5C5C5;
-  height: 29px;
+  min-height: 29px;
   padding: 0 7px;
   box-shadow: inset 0 3px 6px rgba(0,0,0,0.1);
   border-top-color: #AAAAAA;

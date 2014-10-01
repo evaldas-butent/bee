@@ -370,6 +370,7 @@
   font-size: small;
   color: black;
   overflow: hidden;
+  overflow-y: auto;
   white-space: pre-wrap;
   line-height: normal;
   box-shadow: none;

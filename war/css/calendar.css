@@ -598,10 +598,10 @@
   position: absolute;
   left: 10px;
   right: 5px;
-  top: 160px;
+  top: 190px;
   bottom: 40px;
   overflow: auto;
-  transition: top 200ms;
+  transition: top 100ms;
 }
 
 .bee-cal-Controller-table {
@@ -646,7 +646,6 @@
 
 .bee-cal-Controller-up:hover,
 .bee-cal-Controller-down:hover {
-  background-color: green;
   color: white;
 }
 .bee-cal-Controller-remove:hover {
