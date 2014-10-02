@@ -346,6 +346,10 @@ public class MailMessage extends AbstractFormInterceptor {
     if (widget instanceof Relations) {
       this.relations = (Relations) widget;
       relations.setSelectorHandler(new RelationsHandler());
+
+      if (!BeeKeeper.getUser().isAdministrator()) {
+        relations.blockRelation(TBL_COMPANIES);
+      }
     }
   }
 
