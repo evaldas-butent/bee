@@ -87,13 +87,14 @@ class FinancialStateHistoryHandler extends HistoryHandler {
   public void beforeCreate(List<? extends IsColumn> dataColumns, GridDescription gridDescription) {
     loadFinancialStateClassifierData();
 
-    ColumnDescription newCol = new ColumnDescription(ColType.CALCULATED, AUDIT_FLD_PARSED_VALUE);
-    newCol.setCaption(Localized.getConstants().value());
-    newCol.setSource(AdministrationConstants.AUDIT_FLD_VALUE);
-    gridDescription.addColumn(newCol);
+    if (!gridDescription.hasColumn(AUDIT_FLD_PARSED_VALUE)) {
+      ColumnDescription newCol = new ColumnDescription(ColType.CALCULATED, AUDIT_FLD_PARSED_VALUE);
+      newCol.setCaption(Localized.getConstants().value());
+      gridDescription.addColumn(newCol);
 
-    gridDescription.getColumn(AdministrationConstants.AUDIT_FLD_VALUE).setVisible(false);
-    gridDescription.setFilter(getFilter());
+      gridDescription.getColumn(AdministrationConstants.AUDIT_FLD_VALUE).setVisible(false);
+      gridDescription.setFilter(getFilter());
+    }
     super.beforeCreate(dataColumns, gridDescription);
   }
 
@@ -106,6 +107,19 @@ class FinancialStateHistoryHandler extends HistoryHandler {
   public boolean initDescription(GridDescription gridDescription) {
     gridDescription.setFilter(getFilter());
     return true;
+  }
+
+
+  @Override
+  public boolean onClose(GridPresenter presenter) {
+    GridDescription gridDescription = presenter.getGridView().getGridDescription();
+
+    if (gridDescription.hasColumn(AUDIT_FLD_PARSED_VALUE)) {
+      gridDescription.getColumns().remove(
+          gridDescription.getColumn(AUDIT_FLD_PARSED_VALUE));
+      gridDescription.getColumn(AdministrationConstants.AUDIT_FLD_VALUE).setVisible(true);
+    }
+    return super.onClose(presenter);
   }
 
   private AbstractCellRenderer getAuditFieldValueRenderer(final List<? extends IsColumn> columns) {
