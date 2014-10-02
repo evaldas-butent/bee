@@ -274,16 +274,16 @@ public class TradeModuleBean implements BeeModule {
         }
 
         if (BeeUtils.same(event.getTargetName(), VIEW_DEBTS)) {
-          BeeRowSet rowSet = event.getRowset();
+          BeeRowSet gridRowset = event.getRowset();
 
-          if (rowSet.isEmpty()) {
+          if (gridRowset.isEmpty()) {
             return;
           }
 
           List<Long> companiesId = Lists.newArrayList();
 
-          for (BeeRow row : rowSet) {
-            Long customerId = row.getLong(rowSet.getColumnIndex(COL_TRADE_CUSTOMER));
+          for (BeeRow gridRow : gridRowset) {
+            Long customerId = gridRow.getLong(gridRowset.getColumnIndex(COL_TRADE_CUSTOMER));
 
             if (DataUtils.isId(customerId) && !companiesId.contains(customerId)) {
               companiesId.add(customerId);
@@ -307,23 +307,55 @@ public class TradeModuleBean implements BeeModule {
                 row);
           }
 
-          for (BeeRow row : rowSet) {
-            String [] od = overdueData.get(row.getLong(rowSet.getColumnIndex(COL_TRADE_CUSTOMER)));
-            Long odc =
-                od != null ? BeeUtils.toLong(od[overdueResult.getColumnIndex(ALS_OVERDUE_COUNT)])
+          SimpleRowSet salesSumResult = getSalesOverdueSum(companiesId);
+          Map<Long, String[]> salesSumData = Maps.newHashMap();
+
+          for (String[] row : salesSumResult.getRows()) {
+            salesSumData.put(BeeUtils.toLong(row[salesSumResult
+                .getColumnIndex(COL_TRADE_CUSTOMER)]),
+                row);
+          }
+
+
+          for (BeeRow gridRow : gridRowset) {
+            String[] overdueRow =
+                overdueData.get(gridRow.getLong(gridRowset.getColumnIndex(COL_TRADE_CUSTOMER)));
+            Long oCount =
+                overdueRow != null
+                    ? BeeUtils.toLong(overdueRow[overdueResult.getColumnIndex(ALS_OVERDUE_COUNT)])
                     : 0L;
-            Long odds =
-                od != null ? BeeUtils.toLong(od[overdueResult.getColumnIndex(ALS_OVERDUE_SUM)])
+            Long oSumDays =
+                overdueRow != null
+                    ? BeeUtils.toLong(overdueRow[overdueResult.getColumnIndex(ALS_OVERDUE_SUM)])
                     / 86400000L : 0L;
 
-            String [] scd = salesCountData.get(rowSet.getColumnIndex(COL_TRADE_CUSTOMER));
-            Long sc =
-                scd != null ? BeeUtils.toLong(scd[salesCountResult
-                    .getColumnIndex(ALS_SALES_COUNT)])
-            : 0L;
+            String[] salesRow = salesCountData.get(gridRow.getLong(
+                gridRowset.getColumnIndex(COL_TRADE_CUSTOMER)));
 
-            row.setProperty(PROP_AVERAGE_OVERDUE, odc + "|" + odds + "|" + sc
-                );
+            Long sCount =
+                salesRow != null
+                    ? BeeUtils.toLong(salesRow[salesCountResult.getColumnIndex(ALS_SALES_COUNT)])
+                    : 0L;
+
+            salesRow = salesSumData.get(gridRow.getLong(
+                gridRowset.getColumnIndex(COL_TRADE_CUSTOMER)));
+
+            Long sSumDays =
+                salesRow != null
+                ? BeeUtils.toLong(salesRow[salesSumResult.getColumnIndex(ALS_SALES_SUM)])
+                    / 86400000L : 0L;
+
+            Long sum = oCount + sCount;
+
+            if (sum.compareTo(Long.valueOf(0)) == 0) {
+              continue;
+            }
+
+            Long days = oSumDays + sSumDays;
+
+            Long avg = days / sum;
+
+            gridRow.setProperty(PROP_AVERAGE_OVERDUE, BeeUtils.toString(avg));
           }
 
         }
@@ -388,13 +420,17 @@ public class TradeModuleBean implements BeeModule {
   private SimpleRowSet getDebtsOverdueCount(List<Long> companyIds) {
     SqlSelect select = new SqlSelect().addFields(TBL_SALES, COL_TRADE_CUSTOMER);
     select.addCount(ALS_OVERDUE_COUNT);
-    select.addSum(SqlUtils.minus(SqlUtils.field(TBL_SALES, COL_TRADE_PAYMENT_TIME),
-        new JustDate()), ALS_OVERDUE_SUM);
+    select.addSum(SqlUtils.minus(SqlUtils.field(TBL_SALES, COL_TRADE_TERM),
+        new JustDate().getTime()), ALS_OVERDUE_SUM);
     select.setDistinctMode(true);
     select.addFrom(TBL_SALES);
-    select.setWhere(SqlUtils.and(SqlUtils.inList(TBL_SALES, COL_TRADE_CUSTOMER, companyIds),
-        SqlUtils.or(SqlUtils.less(TBL_SALES, COL_TRADE_PAYMENT_TIME, new JustDate()), SqlUtils
-            .isNull(TBL_SALES, COL_TRADE_PAYMENT_TIME)),
+    select.setWhere(SqlUtils.and(
+        SqlUtils.or(SqlUtils.inList(TBL_SALES, COL_SALE_PAYER, companyIds),
+            SqlUtils.and(SqlUtils.isNull(TBL_SALES, COL_SALE_PAYER),
+                SqlUtils.inList(TBL_SALES, COL_TRADE_CUSTOMER, companyIds)
+                )),
+        SqlUtils.or(SqlUtils.less(TBL_SALES, COL_TRADE_TERM, (new JustDate()).getTime()), SqlUtils
+            .isNull(TBL_SALES, COL_TRADE_TERM)),
         SqlUtils.less(SqlUtils.minus(SqlUtils.nvl(SqlUtils.field(TBL_SALES, COL_TRADE_PAID), 0),
             SqlUtils.field(TBL_SALES, COL_TRADE_AMOUNT)), 0)
         ));
@@ -409,12 +445,38 @@ public class TradeModuleBean implements BeeModule {
     select.addCount(ALS_SALES_COUNT);
     select.setDistinctMode(true);
     select.addFrom(TBL_SALES);
-    select.setWhere(SqlUtils.and(SqlUtils.inList(TBL_SALES, COL_TRADE_CUSTOMER, companyIds),
+    select.setWhere(SqlUtils.and(
+        SqlUtils.or(SqlUtils.inList(TBL_SALES, COL_SALE_PAYER, companyIds),
+            SqlUtils.and(SqlUtils.isNull(TBL_SALES, COL_SALE_PAYER),
+                SqlUtils.inList(TBL_SALES, COL_TRADE_CUSTOMER, companyIds)
+                )),
         SqlUtils.equals(TBL_SALES, COL_TRADE_PAID, SqlUtils.field(TBL_SALES, COL_TRADE_AMOUNT)),
+        SqlUtils.notNull(TBL_SALES, COL_TRADE_TERM),
         SqlUtils.notNull(TBL_SALES, COL_TRADE_PAYMENT_TIME)));
     select.addGroup(SqlUtils.field(TBL_SALES, COL_TRADE_CUSTOMER));
 
-    logger.warning(select.getQuery());
+    return qs.getData(select);
+  }
+
+  private SimpleRowSet getSalesOverdueSum(List<Long> companyIds) {
+
+    SqlSelect select = new SqlSelect().addFields(TBL_SALES, COL_TRADE_CUSTOMER);
+    select.addSum(SqlUtils.minus(SqlUtils.field(TBL_SALES, COL_TRADE_TERM),
+        SqlUtils.field(TBL_SALES, COL_TRADE_PAYMENT_TIME)), ALS_SALES_SUM);
+    select.setDistinctMode(true);
+    select.addFrom(TBL_SALES);
+    select.setWhere(SqlUtils.and(
+        SqlUtils.or(SqlUtils.inList(TBL_SALES, COL_SALE_PAYER, companyIds),
+            SqlUtils.and(SqlUtils.isNull(TBL_SALES, COL_SALE_PAYER),
+                SqlUtils.inList(TBL_SALES, COL_TRADE_CUSTOMER, companyIds)
+                )),
+        SqlUtils.less(SqlUtils.field(TBL_SALES, COL_TRADE_TERM), SqlUtils
+            .field(TBL_SALES, COL_TRADE_PAYMENT_TIME)),
+        SqlUtils.equals(TBL_SALES, COL_TRADE_AMOUNT, SqlUtils.field(TBL_SALES, COL_TRADE_PAID)),
+        SqlUtils.notNull(TBL_SALES, COL_TRADE_PAYMENT_TIME),
+        SqlUtils.notNull(TBL_SALES, COL_TRADE_TERM)));
+    select.addGroup(SqlUtils.field(TBL_SALES, COL_TRADE_CUSTOMER));
+
     return qs.getData(select);
   }
 
