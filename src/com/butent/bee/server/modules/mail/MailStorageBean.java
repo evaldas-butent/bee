@@ -4,6 +4,7 @@ import com.google.common.collect.LinkedListMultimap;
 import com.google.common.collect.Multimap;
 import com.google.common.io.CharStreams;
 
+import static com.butent.bee.shared.modules.administration.AdministrationConstants.*;
 import static com.butent.bee.shared.modules.classifiers.ClassifierConstants.*;
 import static com.butent.bee.shared.modules.mail.MailConstants.*;
 
@@ -49,10 +50,8 @@ import java.util.Map.Entry;
 import java.util.Objects;
 import java.util.Set;
 
-import javax.annotation.Resource;
 import javax.ejb.EJB;
 import javax.ejb.LocalBean;
-import javax.ejb.SessionContext;
 import javax.ejb.Stateless;
 import javax.ejb.TransactionAttribute;
 import javax.ejb.TransactionAttributeType;
@@ -100,8 +99,12 @@ public class MailStorageBean {
   FileStorageBean fs;
   @EJB
   ConcurrencyBean cb;
-  @Resource
-  SessionContext ctx;
+
+  public void attachMessages(Long folderId, Map<Long, Integer> messages) {
+    for (Entry<Long, Integer> message : messages.entrySet()) {
+      storePlace(message.getKey(), folderId, message.getValue(), null);
+    }
+  }
 
   public void connectFolder(MailFolder folder) {
     validateFolder(folder, null);
@@ -121,6 +124,10 @@ public class MailStorageBean {
       disconnectFolder(folder);
     }
     return folder;
+  }
+
+  public void detachMessages(IsCondition clause) {
+    qs.updateData(new SqlDelete(TBL_PLACES).setWhere(clause));
   }
 
   public void disconnectFolder(MailFolder folder) {
@@ -219,6 +226,19 @@ public class MailStorageBean {
         .setWhere(sys.idEquals(TBL_FOLDERS, folder.getId())));
   }
 
+  public void setFlags(Long placeId, int flags) {
+    qs.updateData(new SqlUpdate(TBL_PLACES)
+        .addConstant(COL_FLAGS, flags)
+        .setWhere(sys.idEquals(TBL_PLACES, placeId)));
+  }
+
+  public void setFolder(Long folderId, IsCondition clause) {
+    qs.updateData(new SqlUpdate(TBL_PLACES)
+        .addConstant(COL_FOLDER, folderId)
+        .addConstant(COL_MESSAGE_UID, null)
+        .setWhere(clause));
+  }
+
   public Long storeMail(Long userId, Message message, Long folderId, Long messageUID)
       throws MessagingException {
 
@@ -313,13 +333,13 @@ public class MailStorageBean {
       } catch (MessagingException | IOException e) {
         logger.error(e);
       }
+      if (DataUtils.isId(senderId)) {
+        allAddresses.add(senderId);
+      }
+      setRelations(userId, messageId, allAddresses);
     }
     if (!DataUtils.isId(placeId)) {
-      placeId = qs.insertData(new SqlInsert(TBL_PLACES)
-          .addConstant(COL_MESSAGE, messageId)
-          .addConstant(COL_FOLDER, folderId)
-          .addConstant(COL_FLAGS, envelope.getFlagMask())
-          .addConstant(COL_MESSAGE_UID, messageUID));
+      placeId = storePlace(messageId, folderId, envelope.getFlagMask(), messageUID);
     } else {
       placeId = null;
     }
@@ -422,6 +442,60 @@ public class MailStorageBean {
     return folder;
   }
 
+  private void setRelations(Long userId, Long messageId, Set<Long> addresses) {
+    Long[] adr = null;
+
+    if (!BeeUtils.isEmpty(addresses)) {
+      adr = qs.getLongColumn(new SqlSelect()
+          .addField(TBL_EMAILS, sys.getIdName(TBL_EMAILS), COL_EMAIL)
+          .addFrom(TBL_EMAILS)
+          .addFromLeft(TBL_ACCOUNTS,
+              sys.joinTables(TBL_EMAILS, TBL_ACCOUNTS, MailConstants.COL_ADDRESS))
+          .setWhere(SqlUtils.and(sys.idInList(TBL_EMAILS, addresses),
+              SqlUtils.isNull(TBL_ACCOUNTS, COL_ACCOUNT_PRIVATE))));
+    }
+    if (ArrayUtils.isEmpty(adr)) {
+      return;
+    }
+    IsCondition clause = SqlUtils.inList(TBL_CONTACTS, COL_EMAIL, (Object[]) adr);
+
+    Long[] companies = qs.getLongColumn(new SqlSelect().setUnionAllMode(false)
+        .addField(TBL_COMPANIES, sys.getIdName(TBL_COMPANIES), COL_COMPANY)
+        .addFrom(TBL_COMPANIES)
+        .addFromInner(TBL_CONTACTS, SqlUtils.and(clause,
+            sys.joinTables(TBL_CONTACTS, TBL_COMPANIES, COL_CONTACT)))
+        .addUnion(new SqlSelect()
+            .addFields(TBL_COMPANY_CONTACTS, COL_COMPANY)
+            .addFrom(TBL_COMPANY_CONTACTS)
+            .addFromInner(TBL_CONTACTS, SqlUtils.and(clause,
+                sys.joinTables(TBL_CONTACTS, TBL_COMPANY_CONTACTS, COL_CONTACT))))
+        .addUnion(new SqlSelect()
+            .addFields(TBL_COMPANY_PERSONS, COL_COMPANY)
+            .addFrom(TBL_COMPANY_PERSONS)
+            .addFromInner(TBL_CONTACTS, SqlUtils.and(clause,
+                sys.joinTables(TBL_CONTACTS, TBL_COMPANY_PERSONS, COL_CONTACT)))));
+
+    if (!ArrayUtils.isEmpty(companies)) {
+      Long userCompany = qs.getLong(new SqlSelect()
+          .addFields(TBL_COMPANY_PERSONS, COL_COMPANY)
+          .addFrom(TBL_USERS)
+          .addFromInner(TBL_COMPANY_PERSONS,
+              sys.joinTables(TBL_COMPANY_PERSONS, TBL_USERS, COL_COMPANY_PERSON))
+          .setWhere(sys.idEquals(TBL_USERS, userId)));
+
+      if (ArrayUtils.contains(companies, userCompany)) {
+        for (Long company : companies) {
+          if (Objects.equals(company, userCompany)) {
+            continue;
+          }
+          qs.insertData(new SqlInsert(TBL_RELATIONS)
+              .addConstant(COL_MESSAGE, messageId)
+              .addConstant(COL_COMPANY, company));
+        }
+      }
+    }
+  }
+
   private Long storeAddress(Long userId, InternetAddress address) throws AddressException {
     Assert.notNull(address);
     String email;
@@ -445,7 +519,7 @@ public class MailStorageBean {
         .addFrom(TBL_EMAILS)
         .addFromLeft(TBL_ADDRESSBOOK,
             SqlUtils.and(sys.joinTables(TBL_EMAILS, TBL_ADDRESSBOOK, COL_EMAIL),
-                SqlUtils.equals(TBL_ADDRESSBOOK, COL_USER, userId)))
+                SqlUtils.equals(TBL_ADDRESSBOOK, MailConstants.COL_USER, userId)))
         .setWhere(SqlUtils.equals(TBL_EMAILS, COL_EMAIL_ADDRESS, email)));
 
     if (row != null) {
@@ -459,7 +533,7 @@ public class MailStorageBean {
     }
     if (!DataUtils.isId(bookId)) {
       qs.insertData(new SqlInsert(TBL_ADDRESSBOOK)
-          .addConstant(COL_USER, userId)
+          .addConstant(MailConstants.COL_USER, userId)
           .addConstant(COL_EMAIL, id)
           .addConstant(COL_EMAIL_LABEL, label));
 
@@ -595,6 +669,14 @@ public class MailStorageBean {
         }
       }
     }
+  }
+
+  private long storePlace(long messageId, Long folderId, Integer flags, Long messageUID) {
+    return qs.insertData(new SqlInsert(TBL_PLACES)
+        .addConstant(COL_MESSAGE, messageId)
+        .addConstant(COL_FOLDER, folderId)
+        .addNotNull(COL_FLAGS, flags)
+        .addNotNull(COL_MESSAGE_UID, messageUID));
   }
 
   private void savePart(Long messageId, String text, String html) {

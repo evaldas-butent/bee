@@ -20,6 +20,7 @@ public final class ClassifierConstants {
   public static final String TBL_COMPANY_USERS = "CompanyUsers";
   public static final String TBL_COMPANIES = "Companies";
   public static final String TBL_COMPANY_TYPES = "CompanyTypes";
+  public static final String TBL_COMPANY_CONTACTS = "CompanyContacts";
 
   public static final String TBL_COMPANY_RELATION_TYPES = "CompanyRelationTypes";
   public static final String TBL_COMPANY_RELATION_TYPE_STORE = "CompRelTypeStore";
@@ -194,6 +195,9 @@ public final class ClassifierConstants {
   public static final String ALS_BANK_NAME = "BankName";
 
   public static final String ALS_ITEM_NAME = "ItemName";
+  public static final String ALS_ITEM_VAT = "ItemVat";
+  public static final String ALS_ITEM_VAT_PERCENT = "ItemVatPercent";
+
   public static final String ALS_UNIT_NAME = "UnitName";
 
   public static final String ALS_PARENT_TYPE_NAME = "ParentTypeName";

@@ -7,16 +7,16 @@ import com.google.common.collect.Table;
 import com.google.common.eventbus.Subscribe;
 
 import static com.butent.bee.shared.modules.classifiers.ClassifierConstants.*;
-import static com.butent.bee.shared.modules.trade.acts.TradeActConstants.*;
 import static com.butent.bee.shared.modules.trade.TradeConstants.*;
+import static com.butent.bee.shared.modules.trade.acts.TradeActConstants.*;
 
 import com.butent.bee.server.data.DataEditorBean;
+import com.butent.bee.server.data.DataEvent.ViewInsertEvent;
+import com.butent.bee.server.data.DataEvent.ViewQueryEvent;
 import com.butent.bee.server.data.DataEventHandler;
 import com.butent.bee.server.data.QueryServiceBean;
 import com.butent.bee.server.data.SystemBean;
 import com.butent.bee.server.data.UserServiceBean;
-import com.butent.bee.server.data.DataEvent.ViewInsertEvent;
-import com.butent.bee.server.data.DataEvent.ViewQueryEvent;
 import com.butent.bee.server.http.RequestInfo;
 import com.butent.bee.server.modules.ParamHolderBean;
 import com.butent.bee.server.sql.IsCondition;
@@ -41,9 +41,9 @@ import com.butent.bee.shared.data.view.RowInfo;
 import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogUtils;
 import com.butent.bee.shared.modules.BeeParameter;
+import com.butent.bee.shared.modules.administration.AdministrationConstants;
 import com.butent.bee.shared.modules.trade.Totalizer;
 import com.butent.bee.shared.modules.trade.acts.TradeActKind;
-import com.butent.bee.shared.time.JustDate;
 import com.butent.bee.shared.time.TimeUtils;
 import com.butent.bee.shared.utils.ArrayUtils;
 import com.butent.bee.shared.utils.BeeUtils;
@@ -479,9 +479,13 @@ public class TradeActBean {
 
     Totalizer itemTotalizer = null;
 
-    SqlSelect lastInvoiceQuery = new SqlSelect()
-        .addMax(TBL_TRADE_ACT_INVOICES, COL_TA_INVOICE_TO)
+    SqlSelect rangeQuery = new SqlSelect()
+        .addFields(TBL_TRADE_ACT_INVOICES, COL_TA_INVOICE_FROM, COL_TA_INVOICE_TO)
         .addFrom(TBL_TRADE_ACT_INVOICES);
+
+    IsCondition rangeCondition = SqlUtils.and(
+        SqlUtils.notNull(TBL_TRADE_ACT_INVOICES, COL_TA_INVOICE_FROM),
+        SqlUtils.notNull(TBL_TRADE_ACT_INVOICES, COL_TA_INVOICE_TO));
 
     for (BeeRow act : acts) {
       long actId = act.getId();
@@ -527,11 +531,18 @@ public class TradeActBean {
         }
       }
 
-      lastInvoiceQuery.setWhere(SqlUtils.equals(TBL_TRADE_ACT_INVOICES, COL_TRADE_ACT, actId));
-      JustDate latest = qs.getDate(lastInvoiceQuery);
-      if (latest != null) {
-        act.setProperty(PRP_LATEST_INVOICE, latest.toString());
+      rangeQuery.setWhere(SqlUtils.and(rangeCondition,
+          SqlUtils.equals(TBL_TRADE_ACT_INVOICES, COL_TRADE_ACT, actId)));
+
+      SimpleRowSet rangeData = qs.getData(rangeQuery);
+      if (!DataUtils.isEmpty(rangeData)) {
+        act.setProperty(TBL_TRADE_ACT_INVOICES, rangeData.serialize());
       }
+    }
+
+    Double vatPercent = prm.getDouble(AdministrationConstants.PRM_VAT_PERCENT);
+    if (BeeUtils.isPositive(vatPercent)) {
+      acts.setTableProperty(AdministrationConstants.PRM_VAT_PERCENT, vatPercent.toString());
     }
 
     return ResponseObject.response(acts);

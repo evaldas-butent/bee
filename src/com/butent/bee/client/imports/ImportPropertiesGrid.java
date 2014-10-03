@@ -5,11 +5,11 @@ import com.google.gwt.dom.client.OptionElement;
 
 import static com.butent.bee.shared.modules.administration.AdministrationConstants.*;
 
+import com.butent.bee.client.Callback;
 import com.butent.bee.client.Global;
 import com.butent.bee.client.data.Data;
 import com.butent.bee.client.data.IdCallback;
 import com.butent.bee.client.data.Queries;
-import com.butent.bee.client.data.Queries.IntCallback;
 import com.butent.bee.client.data.RowCallback;
 import com.butent.bee.client.data.RowEditor;
 import com.butent.bee.client.data.RowUpdateCallback;
@@ -33,6 +33,7 @@ import com.butent.bee.shared.data.CellSource;
 import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.IsColumn;
 import com.butent.bee.shared.data.IsRow;
+import com.butent.bee.shared.data.view.RowInfoList;
 import com.butent.bee.shared.font.FontAwesome;
 import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.imports.ImportProperty;
@@ -199,9 +200,9 @@ public class ImportPropertiesGrid extends AbstractGridInterceptor {
                         rowSet.addRow(DataUtils.NEW_ROW_ID, DataUtils.NEW_ROW_VERSION,
                             Queries.asList(id, entry.getKey(), entry.getValue()));
                       }
-                      Queries.insertRows(rowSet, new IntCallback() {
+                      Queries.insertRows(rowSet, new Callback<RowInfoList>() {
                         @Override
-                        public void onSuccess(Integer result) {
+                        public void onSuccess(RowInfoList result) {
                           getGridPresenter().refresh(false);
                         }
                       });

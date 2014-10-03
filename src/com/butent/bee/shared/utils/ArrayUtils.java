@@ -126,7 +126,7 @@ public final class ArrayUtils {
     return obj instanceof Object[] || isPrimitiveArray(obj);
   }
 
-  public static boolean isEmpty(String[] arr) {
+  public static boolean isEmpty(Object[] arr) {
     return arr == null || arr.length == 0;
   }
 

@@ -47,6 +47,11 @@ public final class Money implements HandlesAllDataEvents {
 
   private static final Money INSTANCE = new Money();
 
+  public static boolean canExchange(Long from, Long to) {
+    return DataUtils.isId(from) && DataUtils.isId(to) && !Objects.equals(from, to)
+        && INSTANCE.containsCurrency(from) && INSTANCE.containsCurrency(to);
+  }
+
   public static double exchange(long from, long to, double v, DateTime dt) {
     if (from == to) {
       return v;
@@ -182,6 +187,10 @@ public final class Money implements HandlesAllDataEvents {
   @Override
   public void onRowUpdate(RowUpdateEvent event) {
     onDataEvent(event);
+  }
+
+  private boolean containsCurrency(Long currency) {
+    return rates.containsKey(currency);
   }
 
   private double getRate(long currency, long time) {

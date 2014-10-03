@@ -19,7 +19,7 @@
       .&form;-forwarder .bee-co-companyInfo-name .bee-co-companyInfo-item:before {content: "Vežėjas: "; font-weight:normal;}
       .&form;-customer .bee-co-companyInfo-name .bee-co-companyInfo-item:before {content: "Užsakovas: "; font-weight:normal;}
     </css>
-    <Image url="images/logo.png" style="display:block; margin:auto;" />
+    <Image url="images/logo1.gif" style="display:block; margin:auto;" />
     <TextLabel style="text-align:center; &bold;">
       <render><ui:expression>'Krovinio pervežimo sutartis Nr. ' + rowId + (row.Number ? '-' + row.Number : '')</ui:expression></render>
     </TextLabel>

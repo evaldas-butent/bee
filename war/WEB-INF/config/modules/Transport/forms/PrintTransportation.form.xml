@@ -21,7 +21,7 @@
     </css>
     <Table style="width: 100%">
       <row style="vertical-align: middle">
-        <Image url="images/logo.png" style="display:block; max-height: 100px; max-width: 25%;" />
+        <Image url="images/logo1.gif" style="display:block; max-height: 100px; max-width: 25%;" />
         <cell style="text-align: right;">
           <FlowPanel class=".flexBox-vertical" style="display: inline-block; text-align:left;" >
             <DateTimeLabel source="Date" format="DATE_SHORT"  />

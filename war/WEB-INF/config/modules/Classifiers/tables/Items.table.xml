@@ -31,7 +31,7 @@
     <Numeric name="Price3" precision="15" scale="5" label="=price3" />
     <Relation name="Currency3" relation="Currencies" label="=currency3" />
 
-    <Boolean name="Vat" label="=vat" />
+    <Boolean name="Vat" label="=vat" defValue="true" />
     <Numeric name="VatPercent" precision="3" label="=vatPercent" />
 
     <Boolean name="IsService" label="=service" />

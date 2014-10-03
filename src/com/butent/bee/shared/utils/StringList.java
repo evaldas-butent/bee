@@ -42,6 +42,18 @@ public class StringList implements List<String> {
     return new StringList(predicate, true, false);
   }
 
+  public static StringList of(String... values) {
+    StringList result = new StringList();
+
+    if (values != null) {
+      for (String s : values) {
+        result.add(s);
+      }
+    }
+
+    return result;
+  }
+
   public static StringList uniqueCaseSensitive() {
     return uniqueCaseSensitive(DEFAULT_PREDICATE);
   }

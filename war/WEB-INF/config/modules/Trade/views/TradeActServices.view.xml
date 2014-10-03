@@ -18,6 +18,9 @@
       <SimpleColumn name="TimeUnit" />
 
       <SimpleColumn name="IsService" />
+
+      <SimpleColumn name="Vat" alias="ItemVat" />
+      <SimpleColumn name="VatPercent" alias="ItemVatPercent" />
     </SimpleJoin>
 
     <SimpleColumn name="DateFrom" />

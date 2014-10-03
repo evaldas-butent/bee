@@ -148,7 +148,7 @@
         <Label text="Užsakymo Nr. / Заказ №">
           <properties name="Assessment" />
         </Label>
-        <Label text="Pakrovimas / /Погрузка">
+        <Label text="Pakrovimas / Погрузка">
           <properties name="LoadingPlace" />
         </Label>
         <cell rowSpan="2">

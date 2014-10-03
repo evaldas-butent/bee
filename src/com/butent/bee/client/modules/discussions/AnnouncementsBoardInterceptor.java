@@ -323,7 +323,7 @@ class AnnouncementsBoardInterceptor extends AbstractFormInterceptor implements
         STYLE_PREFIX + COL_SUBJECT);
 
     row++;
-    Image img = new Image("images/logo.png");
+    Image img = new Image("images/logo1.gif");
     StyleUtils.setMaxHeight(img, 90);
     adsTable.setWidget(row, 0, img, STYLE_PREFIX + COL_OWNER);
 

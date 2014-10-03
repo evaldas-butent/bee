@@ -2739,7 +2739,7 @@ public class TransportModuleBean implements BeeModule, HasTimerService {
 
   @Timeout
   private void importERPPayments(Timer timer) {
-    if (!cb.isTimerEvent(timer, PRM_ERP_REFRESH_INTERVAL)) {
+    if (!cb.isParameterTimer(timer, PRM_ERP_REFRESH_INTERVAL)) {
       return;
     }
     SimpleRowSet debts = qs.getData(new SqlSelect()

@@ -952,7 +952,7 @@ public class AssessmentTurnoverReport extends ReportInterceptor {
             col++;
           }
 
-          text = Localized.getConstants().margin();
+          text = Localized.getConstants().marginPercent();
           table.setText(row + 1, c2, text, STYLE_HEADER_2, STYLE_MARGIN, partStyle);
           xr2.add(new XCell(col, text, styleRef));
 

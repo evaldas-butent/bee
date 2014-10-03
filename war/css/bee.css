@@ -539,7 +539,8 @@
 }
 
 .bee-Header-control,
-.bee-TreeView-action {
+.bee-TreeView-action,
+.bee-Gallery-command {
   margin-right: 10px;
   font-size: large;
   color: #888;
@@ -551,11 +552,8 @@
 }
 
 .bee-Header-control:hover,
-.bee-fa-label:hover {
-  color: black;
-}
-
-.bee-Header-control.bee-fa-label:hover {
+.bee-TreeView-action:hover,
+.bee-Gallery-command:hover {
   color: black;
 }
 
@@ -3473,4 +3471,44 @@ textarea,
   vertical-align: top;
   padding-left: 10px;
   padding-right: 6px;
+}
+
+.bee-Gallery {
+  min-height: 100px;
+  overflow: auto;
+}
+.bee-Gallery-command-panel {
+  height: 30px;
+  display: flex;
+  display: -webkit-flex;
+  display: -ms-flexbox;
+  justify-content: flex-end;
+  -webkit-justify-content: flex-end;
+  -ms-flex-pack: end;
+  align-items: center;
+  -webkit-align-items: center;
+  -ms-flex-align: center;
+}
+.bee-Gallery-picture-panel {
+  display: flex;
+  display: -webkit-flex;
+  display: -ms-flexbox;
+  align-items: flex-start;
+  -webkit-align-items: flex-start;
+  -ms-flex-align: start;
+  overflow: auto;
+}
+
+.bee-Gallery-picture {
+  margin-left: 1em;
+}
+.bee-Gallery-image {
+  max-width: 100px;
+  max-height: 100px;
+}
+.bee-Gallery-picture-controls {
+  height: 30px;
+  display: flex;
+  display: -webkit-flex;
+  display: -ms-flexbox;
 }

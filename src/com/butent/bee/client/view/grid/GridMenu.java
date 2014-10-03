@@ -60,11 +60,6 @@ public class GridMenu {
       }
 
       @Override
-      Widget renderIcon(GridPresenter presenter) {
-        return new FaLabel(FontAwesome.BOOKMARK_O);
-      }
-
-      @Override
       void select(GridPresenter presenter) {
         presenter.handleAction(Action.BOOKMARK);
       }
@@ -80,11 +75,6 @@ public class GridMenu {
       @Override
       boolean isVisible(GridPresenter presenter) {
         return presenter.getMainView().isEnabled() && presenter.getActiveRow() != null;
-      }
-
-      @Override
-      Widget renderIcon(GridPresenter presenter) {
-        return new FaLabel(FontAwesome.COPY);
       }
 
       @Override
@@ -105,11 +95,6 @@ public class GridMenu {
       }
 
       @Override
-      Widget renderIcon(GridPresenter presenter) {
-        return new FaLabel(FontAwesome.FILE_EXCEL_O);
-      }
-
-      @Override
       void select(GridPresenter presenter) {
         presenter.handleAction(Action.EXPORT);
       }
@@ -124,11 +109,6 @@ public class GridMenu {
       @Override
       boolean isVisible(GridPresenter presenter) {
         return !presenter.getGridView().getRowData().isEmpty();
-      }
-
-      @Override
-      Widget renderIcon(GridPresenter presenter) {
-        return new FaLabel(FontAwesome.COG);
       }
 
       @Override
@@ -151,11 +131,6 @@ public class GridMenu {
       }
 
       @Override
-      Widget renderIcon(GridPresenter presenter) {
-        return new FaLabel(FontAwesome.HISTORY);
-      }
-
-      @Override
       void select(GridPresenter presenter) {
         presenter.handleAction(Action.AUDIT);
       }
@@ -170,11 +145,6 @@ public class GridMenu {
       @Override
       boolean isVisible(GridPresenter presenter) {
         return !presenter.getGridView().getRowData().isEmpty();
-      }
-
-      @Override
-      Widget renderIcon(GridPresenter presenter) {
-        return new FaLabel(FontAwesome.PRINT);
       }
 
       @Override
@@ -334,7 +304,12 @@ public class GridMenu {
 
     abstract boolean isVisible(GridPresenter presenter);
 
-    abstract Widget renderIcon(GridPresenter presenter);
+    /**
+     * @param presenter 
+     */
+    Widget renderIcon(GridPresenter presenter) {
+      return new FaLabel(action.getIcon());
+    }
 
     abstract void select(GridPresenter presenter);
 
