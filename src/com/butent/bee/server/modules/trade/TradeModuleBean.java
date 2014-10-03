@@ -21,6 +21,7 @@ import com.butent.bee.server.http.RequestInfo;
 import com.butent.bee.server.modules.BeeModule;
 import com.butent.bee.server.modules.ParamHolderBean;
 import com.butent.bee.server.modules.administration.ExchangeUtils;
+import com.butent.bee.server.modules.classifiers.ClassifiersModuleBean;
 import com.butent.bee.server.sql.IsExpression;
 import com.butent.bee.server.sql.SqlSelect;
 import com.butent.bee.server.sql.SqlUpdate;
@@ -100,6 +101,9 @@ public class TradeModuleBean implements BeeModule {
   ParamHolderBean prm;
   @EJB
   TradeActBean act;
+
+  @EJB
+  ClassifiersModuleBean cls;
 
   @Override
   public List<SearchResult> doSearch(String query) {
@@ -356,6 +360,45 @@ public class TradeModuleBean implements BeeModule {
             Long avg = days / sum;
 
             gridRow.setProperty(PROP_AVERAGE_OVERDUE, BeeUtils.toString(avg));
+          }
+
+        }
+      }
+
+      @Subscribe
+      public void fillDebtReportsProperties(ViewQueryEvent event) {
+        if (event.isBefore()) {
+          return;
+        }
+
+        if (BeeUtils.same(event.getTargetName(), VIEW_DEBT_REPORTS)) {
+          BeeRowSet gridRowset = event.getRowset();
+
+          if (gridRowset.isEmpty()) {
+            return;
+          }
+
+          List<Long> companiesId = Lists.newArrayList();
+
+          for (IsRow gridRow : gridRowset) {
+            companiesId.add(gridRow.getId());
+          }
+
+          Map<Long, Map<Long, String>> reminderEmails =
+              cls.getCompaniesRemindEmailAddresses(companiesId);
+
+          for (IsRow gridRow : gridRowset) {
+            Map<Long, String> emailsData = reminderEmails.get(gridRow.getId());
+
+            if (emailsData.isEmpty()) {
+              continue;
+            }
+
+            String emails = BeeUtils.join(BeeConst.DEFAULT_LIST_SEPARATOR, emailsData.values());
+
+            if (!BeeUtils.isEmpty(emails)) {
+              gridRow.setProperty(PROP_REMIND_EMAIL, emails);
+            }
           }
 
         }

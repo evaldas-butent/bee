@@ -19,6 +19,7 @@ public final class TradeConstants {
   public static final String VAR_ID_LIST = "IdList";
 
   public static final String VIEW_DEBTS = "Debts";
+  public static final String VIEW_DEBT_REPORTS = "DebtReports";
   public static final String VIEW_PURCHASES = "Purchases";
   public static final String VIEW_PURCHASE_ITEMS = "PurchaseItems";
   public static final String VIEW_SALES = "Sales";
@@ -95,6 +96,7 @@ public final class TradeConstants {
   public static final String ALS_SALES_SUM = "SalesSum";
 
   public static final String PROP_AVERAGE_OVERDUE = "AverageOverdue";
+  public static final String PROP_REMIND_EMAIL = "RemindEmail";
 
   public static final String VAR_TOTAL = "Total";
   public static final String VAR_DEBT = "Debt";

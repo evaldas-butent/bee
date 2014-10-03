@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<g:Grid xmlns="http://www.butent.com/column" xmlns:g="http://www.butent.com/grid"
+	xmlns:xi="http://www.w3.org/2001/XInclude"
+	xmlns:ui="http://www.butent.com/ui" 
+	name="DebtReports" viewName="DebtReports"
+	disabledActions="add delete"
+	caption="=trdDebtReports"
+	>
+
+	<g:columns xmlns="http://www.butent.com/column" xmlns:g="http://www.butent.com/grid">
+		<DataColumn name="Name" caption="=company" label="=company" />
+		<PropColumn name="RemindEmail" type="string" caption="=email" label="=email"/>
+		<DataColumn name="DebtCount" /> 
+		<DataColumn name="DebtAmount" />
+		<PropColumn name="Advance" type="decimal"  caption="=trdAdvance" label="=trdAdvance" />
+		<RelColumn name="BankruptcyRisk" renderColumns="BankruptcyRiskName" caption="=clientBankruptcyRisk" label="=clientBankruptcyRisk" readOnly="true" />
+    <RelColumn name="DelayedPaymentRisk" renderColumns="DelayedPaymentRiskName" caption="=clientDelayedPaymentRisk" label="=clientDelayedPaymentRisk" readOnly="true" />
+	</g:columns>
+</g:Grid>
