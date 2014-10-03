@@ -167,7 +167,7 @@ public class Relations extends Flow implements Editor, ClickHandler, SelectorEve
         }
       }
     }
-    blockRelation(MailConstants.TBL_MESSAGES);
+    blockRelation(MailConstants.TBL_MESSAGES, true);
   }
 
   @Override
@@ -195,8 +195,12 @@ public class Relations extends Flow implements Editor, ClickHandler, SelectorEve
     return addHandler(eh, SummaryChangeEvent.getType());
   }
 
-  public void blockRelation(String viewName) {
-    blockedRelations.add(viewName);
+  public void blockRelation(String viewName, boolean block) {
+    if (block) {
+      blockedRelations.add(viewName);
+    } else {
+      blockedRelations.remove(viewName);
+    }
     setEnabled(isEnabled());
   }
 

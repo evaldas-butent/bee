@@ -217,7 +217,7 @@ public class MailModuleBean implements BeeModule, HasTimerService {
         response = ResponseObject.response(qs.getData(new SqlSelect()
             .addField(TBL_ACCOUNTS, sys.getIdName(TBL_ACCOUNTS), COL_ACCOUNT)
             .addFields(TBL_ACCOUNTS, MailConstants.COL_ADDRESS, COL_USER, COL_ACCOUNT_DESCRIPTION,
-                COL_ACCOUNT_DEFAULT, COL_SIGNATURE,
+                COL_ACCOUNT_DEFAULT, COL_SIGNATURE, COL_ACCOUNT_PRIVATE,
                 SystemFolder.Inbox.name() + COL_FOLDER,
                 SystemFolder.Drafts.name() + COL_FOLDER,
                 SystemFolder.Sent.name() + COL_FOLDER,

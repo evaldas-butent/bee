@@ -346,10 +346,6 @@ public class MailMessage extends AbstractFormInterceptor {
     if (widget instanceof Relations) {
       this.relations = (Relations) widget;
       relations.setSelectorHandler(new RelationsHandler());
-
-      if (!BeeKeeper.getUser().isAdministrator()) {
-        relations.blockRelation(TBL_COMPANIES);
-      }
     }
   }
 
@@ -418,6 +414,10 @@ public class MailMessage extends AbstractFormInterceptor {
         SimpleRow row = packet.get(TBL_MESSAGES).getRow(0);
 
         if (relations != null) {
+          relations.blockRelation(TBL_COMPANIES,
+              !BeeKeeper.getUser().isAdministrator()
+                  && (mailPanel == null || !mailPanel.getCurrentAccount().isPrivate()));
+
           relations.requery(row.getLong(COL_MESSAGE));
         }
         draftId = row.getLong(SystemFolder.Drafts.name());
