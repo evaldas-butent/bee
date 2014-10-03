@@ -61,6 +61,7 @@ import com.butent.bee.shared.data.filter.Filter;
 import com.butent.bee.shared.data.view.DataInfo;
 import com.butent.bee.shared.data.view.Order;
 import com.butent.bee.shared.data.view.RowInfo;
+import com.butent.bee.shared.data.view.RowInfoList;
 import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogUtils;
 import com.butent.bee.shared.rights.RightsObjectType;
@@ -820,18 +821,20 @@ public class UiServiceBean {
       return ResponseObject.error(reqInfo.getService(), "row set is empty");
     }
 
-    int count = 0;
+    RowInfoList result = new RowInfoList(rowSet.getNumberOfRows());
 
     for (int i = 0; i < rowSet.getNumberOfRows(); i++) {
       ResponseObject response = deb.commitRow(rowSet, i, RowInfo.class);
+
       if (response.hasErrors()) {
         return response;
-      }
 
-      count++;
+      } else if (response.hasResponse(RowInfo.class)) {
+        result.add((RowInfo) response.getResponse());
+      }
     }
 
-    return ResponseObject.response(count);
+    return ResponseObject.response(result);
   }
 
   private ResponseObject insertRowSilently(RequestInfo reqInfo) {
@@ -1137,17 +1140,19 @@ public class UiServiceBean {
       return ResponseObject.error(reqInfo.getService(), "row set is empty");
     }
 
-    int count = 0;
+    RowInfoList result = new RowInfoList(rowSet.getNumberOfRows());
 
     for (int i = 0; i < rowSet.getNumberOfRows(); i++) {
       ResponseObject response = deb.commitRow(rowSet, i, RowInfo.class);
+
       if (response.hasErrors()) {
         return response;
-      }
 
-      count++;
+      } else if (response.hasResponse(RowInfo.class)) {
+        result.add((RowInfo) response.getResponse());
+      }
     }
 
-    return ResponseObject.response(count);
+    return ResponseObject.response(result);
   }
 }

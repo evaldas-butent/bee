@@ -2,7 +2,6 @@ package com.butent.bee.client.widget;
 
 import com.google.gwt.core.client.Scheduler.ScheduledCommand;
 import com.google.gwt.dom.client.Document;
-import com.google.gwt.dom.client.ImageElement;
 import com.google.gwt.event.dom.client.HasAllMouseHandlers;
 import com.google.gwt.event.dom.client.MouseDownEvent;
 import com.google.gwt.event.dom.client.MouseDownHandler;
@@ -24,6 +23,9 @@ import com.butent.bee.client.event.EventUtils;
 import com.butent.bee.client.ui.EnablableWidget;
 import com.butent.bee.client.utils.HasCommand;
 import com.butent.bee.shared.BeeConst;
+
+import elemental.html.ImageElement;
+import elemental.js.html.JsImageElement;
 
 /**
  * Implements an image holding user interface component, that displays the image at a given URL.
@@ -104,6 +106,14 @@ public class Image extends CustomWidget implements EnablableWidget, HasCommand,
     return "img";
   }
 
+  public int getNaturalHeight() {
+    return getImageElement().getNaturalHeight();
+  }
+
+  public int getNaturalWidth() {
+    return getImageElement().getNaturalWidth();
+  }
+
   public String getUrl() {
     return getImageElement().getSrc();
   }
@@ -170,6 +180,6 @@ public class Image extends CustomWidget implements EnablableWidget, HasCommand,
   }
 
   private ImageElement getImageElement() {
-    return ImageElement.as(getElement());
+    return (JsImageElement) getElement().cast();
   }
 }

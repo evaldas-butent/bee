@@ -77,8 +77,11 @@ public class BeeRowSet extends RowList<BeeRow, BeeColumn> implements BeeSerializ
     setRows(rows);
   }
 
-  public void addEmptyRow() {
-    addRow(new BeeRow(DataUtils.NEW_ROW_ID, new String[getNumberOfColumns()]));
+  public BeeRow addEmptyRow() {
+    BeeRow row = new BeeRow(DataUtils.NEW_ROW_ID, DataUtils.NEW_ROW_VERSION,
+        new String[getNumberOfColumns()]);
+    addRow(row);
+    return row;
   }
 
   public void addRow(long id, String[] data) {

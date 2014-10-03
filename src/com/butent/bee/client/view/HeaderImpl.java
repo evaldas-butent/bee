@@ -20,7 +20,6 @@ import com.butent.bee.client.widget.FaLabel;
 import com.butent.bee.client.widget.Label;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
-import com.butent.bee.shared.font.FontAwesome;
 import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogUtils;
@@ -129,63 +128,63 @@ public class HeaderImpl extends Flow implements HeaderView {
     add(commandPanel);
 
     if (hasAction(Action.REFRESH, hasData, enabledActions, disabledActions)) {
-      add(createFa(FontAwesome.REFRESH, Action.REFRESH, hiddenActions));
+      add(createFa(Action.REFRESH, hiddenActions));
     }
 
     if (hasAction(Action.FILTER, false, enabledActions, disabledActions)) {
-      add(createFa(FontAwesome.FILTER, Action.FILTER, hiddenActions));
+      add(createFa(Action.FILTER, hiddenActions));
     }
     if (hasAction(Action.REMOVE_FILTER, false, enabledActions, disabledActions)) {
-      add(createFa(FontAwesome.REMOVE, Action.REMOVE_FILTER, hiddenActions));
+      add(createFa(Action.REMOVE_FILTER, hiddenActions));
     }
 
     boolean canAdd = hasData && !readOnly && BeeKeeper.getUser().canCreateData(viewName);
     if (hasAction(Action.ADD, canAdd, enabledActions, disabledActions)) {
-      add(createFa(FontAwesome.PLUS, Action.ADD, hiddenActions));
+      add(createFa(Action.ADD, hiddenActions));
     }
 
     if (hasAction(Action.COPY, false, enabledActions, disabledActions)) {
-      add(createFa(FontAwesome.COPY, Action.COPY, hiddenActions));
+      add(createFa(Action.COPY, hiddenActions));
     }
 
     boolean canDelete = hasData && !readOnly && BeeKeeper.getUser().canDeleteData(viewName);
     if (hasAction(Action.DELETE, canDelete, enabledActions, disabledActions)) {
-      add(createFa(FontAwesome.TRASH_O, Action.DELETE, hiddenActions));
+      add(createFa(Action.DELETE, hiddenActions));
     }
 
     if (hasAction(Action.BOOKMARK, false, enabledActions, disabledActions)) {
-      add(createFa(FontAwesome.BOOKMARK_O, Action.BOOKMARK, hiddenActions));
+      add(createFa(Action.BOOKMARK, hiddenActions));
     }
 
     if (hasAction(Action.EDIT, false, enabledActions, disabledActions)) {
-      add(createFa(FontAwesome.EDIT, Action.EDIT, hiddenActions));
+      add(createFa(Action.EDIT, hiddenActions));
     }
     if (hasAction(Action.SAVE, false, enabledActions, disabledActions)) {
-      add(createFa(FontAwesome.SAVE, Action.SAVE, hiddenActions));
+      add(createFa(Action.SAVE, hiddenActions));
     }
 
     if (hasAction(Action.EXPORT, false, enabledActions, disabledActions)) {
-      add(createFa(FontAwesome.FILE_EXCEL_O, Action.EXPORT, hiddenActions));
+      add(createFa(Action.EXPORT, hiddenActions));
     }
 
     if (hasAction(Action.CONFIGURE, false, enabledActions, disabledActions)) {
-      add(createFa(FontAwesome.COG, Action.CONFIGURE, hiddenActions));
+      add(createFa(Action.CONFIGURE, hiddenActions));
     }
 
     if (hasAction(Action.AUDIT, false, enabledActions, disabledActions)) {
-      add(createFa(FontAwesome.HISTORY, Action.AUDIT, hiddenActions));
+      add(createFa(Action.AUDIT, hiddenActions));
     }
 
     if (hasAction(Action.PRINT, false, enabledActions, disabledActions)) {
-      add(createFa(FontAwesome.PRINT, Action.PRINT, hiddenActions));
+      add(createFa(Action.PRINT, hiddenActions));
     }
 
     if (hasAction(Action.MENU, false, enabledActions, disabledActions)) {
-      add(createFa(FontAwesome.NAVICON, Action.MENU, hiddenActions));
+      add(createFa(Action.MENU, hiddenActions));
     }
 
     if (hasAction(Action.CLOSE, UiOption.isWindow(options), enabledActions, disabledActions)) {
-      add(createFa(FontAwesome.CLOSE, Action.CLOSE, hiddenActions));
+      add(createFa(Action.CLOSE, hiddenActions));
     }
   }
 
@@ -366,8 +365,8 @@ public class HeaderImpl extends Flow implements HeaderView {
     ReadyEvent.fire(this);
   }
 
-  private Widget createFa(FontAwesome fa, Action action, Set<Action> hiddenActions) {
-    FaLabel control = new FaLabel(fa);
+  private Widget createFa(Action action, Set<Action> hiddenActions) {
+    FaLabel control = new FaLabel(action.getIcon());
     initControl(control, action, hiddenActions);
     return control;
   }
@@ -384,7 +383,7 @@ public class HeaderImpl extends Flow implements HeaderView {
     control.addStyleName(STYLE_CONTROL);
     control.addStyleName(action.getStyleName());
 
-    control.getElement().setTitle(action.getCaption());
+    control.setTitle(action.getCaption());
 
     if (hiddenActions != null && hiddenActions.contains(action)) {
       control.getElement().addClassName(STYLE_CONTROL_HIDDEN);
