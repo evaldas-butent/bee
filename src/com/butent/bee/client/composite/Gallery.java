@@ -2,6 +2,8 @@ package com.butent.bee.client.composite;
 
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
+import com.google.gwt.event.dom.client.LoadEvent;
+import com.google.gwt.event.dom.client.LoadHandler;
 import com.google.gwt.user.client.ui.Widget;
 import com.google.web.bindery.event.shared.HandlerRegistration;
 
@@ -39,6 +41,7 @@ import com.butent.bee.shared.data.BeeRowSet;
 import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.HasViewName;
 import com.butent.bee.shared.data.IsRow;
+import com.butent.bee.shared.data.cache.CachingPolicy;
 import com.butent.bee.shared.data.event.RowDeleteEvent;
 import com.butent.bee.shared.data.filter.Filter;
 import com.butent.bee.shared.data.value.IntegerValue;
@@ -72,82 +75,107 @@ public class Gallery extends Flow implements HasViewName, HasFosterParent, Paren
   private final class Picture extends Flow {
 
     private final RowInfo rowInfo;
-    private Integer order;
+    private Integer ordinal;
 
-    private Picture(RowInfo rowInfo, Integer order, String url) {
+    private Picture(RowInfo rowInfo, Integer ordinal, String url) {
       super(STYLE_PICTURE);
 
       this.rowInfo = rowInfo;
-      this.order = order;
-
-      Image image = new Image(url);
-      image.addStyleName(STYLE_IMAGE);
-
-      add(image);
+      this.ordinal = ordinal;
 
       if (rowInfo.isEditable()) {
-        Flow controls = new Flow(STYLE_PICTURE_CONTROLS);
-
-        if (order != null) {
-          FaLabel left = new FaLabel(FontAwesome.CHEVRON_LEFT, STYLE_PICTURE_CONTROL);
-          left.addStyleName(STYLE_MOVE_LEFT);
-
-          left.addClickHandler(new ClickHandler() {
-            @Override
-            public void onClick(ClickEvent event) {
-              move(getRowId(), Direction.WEST);
-            }
-          });
-
-          controls.add(left);
-
-          FaLabel right = new FaLabel(FontAwesome.CHEVRON_RIGHT, STYLE_PICTURE_CONTROL);
-          right.addStyleName(STYLE_MOVE_RIGHT);
-
-          right.addClickHandler(new ClickHandler() {
-            @Override
-            public void onClick(ClickEvent event) {
-              move(getRowId(), Direction.EAST);
-            }
-          });
-
-          controls.add(right);
-        }
-
-        if (rowInfo.isRemovable()) {
-          FaLabel delete = new FaLabel(Action.DELETE.getIcon(), STYLE_PICTURE_CONTROL);
-          delete.addStyleName(STYLE_DELETE);
-
-          delete.setTitle(Action.DELETE.getCaption());
-
-          delete.addClickHandler(new ClickHandler() {
-            @Override
-            public void onClick(ClickEvent event) {
-              delete(Picture.this.rowInfo);
-            }
-          });
-
-          controls.add(delete);
-        }
-
-        add(controls);
+        add(createControls());
       }
+      add(createImage(url));
     }
 
-    @Override
-    protected void onLoad() {
-      super.onLoad();
+    private Widget createControls() {
+      Flow controls = new Flow(STYLE_PICTURE_CONTROLS);
 
-      for (Widget widget : this) {
-        if (widget instanceof Image) {
-          Image image = (Image) widget;
-          logger.debug(image.getId(), image.getNaturalWidth(), image.getNaturalHeight());
-        }
+      if (ordinal != null) {
+        FaLabel left = new FaLabel(FontAwesome.CHEVRON_LEFT, STYLE_PICTURE_CONTROL);
+        left.addStyleName(STYLE_MOVE_LEFT);
+
+        left.addClickHandler(new ClickHandler() {
+          @Override
+          public void onClick(ClickEvent event) {
+            move(getRowId(), Direction.WEST);
+          }
+        });
+
+        controls.add(left);
+
+        FaLabel right = new FaLabel(FontAwesome.CHEVRON_RIGHT, STYLE_PICTURE_CONTROL);
+        right.addStyleName(STYLE_MOVE_RIGHT);
+
+        right.addClickHandler(new ClickHandler() {
+          @Override
+          public void onClick(ClickEvent event) {
+            move(getRowId(), Direction.EAST);
+          }
+        });
+
+        controls.add(right);
       }
+
+      if (rowInfo.isRemovable()) {
+        FaLabel delete = new FaLabel(Action.DELETE.getIcon(), STYLE_PICTURE_CONTROL);
+        delete.addStyleName(STYLE_DELETE);
+
+        delete.setTitle(Action.DELETE.getCaption());
+
+        delete.addClickHandler(new ClickHandler() {
+          @Override
+          public void onClick(ClickEvent event) {
+            delete(Picture.this.rowInfo);
+          }
+        });
+
+        controls.add(delete);
+      }
+
+      return controls;
     }
 
-    private Integer getOrder() {
-      return order;
+    private Widget createImage(String url) {
+      Image image = new Image();
+      image.addStyleName(STYLE_IMAGE);
+
+      image.addLoadHandler(new LoadHandler() {
+        @Override
+        public void onLoad(LoadEvent event) {
+          if (event.getSource() instanceof Image) {
+            Image source = (Image) event.getSource();
+
+            int width = source.getNaturalWidth();
+            int height = source.getNaturalHeight();
+
+            if (width > 0 && height > 0) {
+              source.setTitle(BeeUtils.joinWords(width, BeeConst.CHAR_TIMES, height));
+            }
+          }
+        }
+      });
+
+      image.addClickHandler(new ClickHandler() {
+        @Override
+        public void onClick(ClickEvent event) {
+          if (event.getSource() instanceof Image) {
+            Image source = (Image) event.getSource();
+            Image copy = new Image(source.getUrl());
+
+            Global.showModalWidget(source.getTitle(), copy);
+          }
+        }
+      });
+
+      image.setUrl(url);
+
+      return image;
+    }
+
+    private Integer getOrdinal() {
+      return ordinal;
     }
 
     private long getRowId() {
@@ -158,8 +186,8 @@ public class Gallery extends Flow implements HasViewName, HasFosterParent, Paren
       return rowInfo.getVersion();
     }
 
-    private void setOrder(Integer order) {
-      this.order = order;
+    private void setOrdinal(Integer ordinal) {
+      this.ordinal = ordinal;
     }
 
     private void setVersion(long version) {
@@ -172,6 +200,7 @@ public class Gallery extends Flow implements HasViewName, HasFosterParent, Paren
   private static final String ATTR_PICTURE_COLUMN = "pictureColumn";
   private static final String ATTR_ORDER_COLUMN = "orderColumn";
   private static final String ATTR_PARENT_REL_COLUMN = "parentRelColumn";
+  private static final String ATTR_CACHE = "cache";
 
   private static final String STYLE_NAME = BeeConst.CSS_CLASS_PREFIX + "Gallery";
   private static final String STYLE_PREFIX = STYLE_NAME + "-";
@@ -205,8 +234,11 @@ public class Gallery extends Flow implements HasViewName, HasFosterParent, Paren
 
       boolean readOnly = BeeConst.isTrue(attributes.get(UiConstants.ATTR_READ_ONLY));
 
+      CachingPolicy cachingPolicy = BeeConst.isTrue(attributes.get(ATTR_CACHE))
+          ? CachingPolicy.FULL : CachingPolicy.NONE;
+
       return new Gallery(viewName, relColumn, pictureColumn, orderColumn, parentRelColumn,
-          readOnly);
+          readOnly, cachingPolicy);
 
     } else {
       return null;
@@ -228,7 +260,9 @@ public class Gallery extends Flow implements HasViewName, HasFosterParent, Paren
 
   private final String relColumn;
   private final String pictureColumn;
+
   private final String orderColumn;
+  private final Order order;
 
   private final String parentRelColumn;
   private int parentIndex = BeeConst.UNDEF;
@@ -239,22 +273,16 @@ public class Gallery extends Flow implements HasViewName, HasFosterParent, Paren
   private HandlerRegistration parentRowReg;
 
   private final boolean readOnly;
+  private final CachingPolicy cachingPolicy;
+
   private boolean summarize = true;
 
   private final Flow picturePanel;
 
-  private FileCollector collector;
-
-  public Gallery(String viewName, String relColumn, String pictureColumn) {
-    this(viewName, relColumn, pictureColumn, null, null, false);
-  }
-
-  public Gallery(String viewName, String relColumn, String pictureColumn, String orderColumn) {
-    this(viewName, relColumn, pictureColumn, orderColumn, null, false);
-  }
+  private final FileCollector collector;
 
   public Gallery(String viewName, String relColumn, String pictureColumn, String orderColumn,
-      String parentRelColumn, boolean readOnly) {
+      String parentRelColumn, boolean readOnly, CachingPolicy cachingPolicy) {
 
     super(STYLE_NAME);
 
@@ -262,7 +290,9 @@ public class Gallery extends Flow implements HasViewName, HasFosterParent, Paren
 
     this.relColumn = relColumn;
     this.pictureColumn = pictureColumn;
+
     this.orderColumn = orderColumn;
+    this.order = BeeUtils.isEmpty(orderColumn) ? null : Order.ascending(orderColumn);
 
     this.parentRelColumn = parentRelColumn;
 
@@ -270,6 +300,8 @@ public class Gallery extends Flow implements HasViewName, HasFosterParent, Paren
     if (this.readOnly) {
       addStyleName(STYLE_READ_ONLY);
     }
+
+    this.cachingPolicy = cachingPolicy;
 
     List<Action> actions = new ArrayList<>();
     actions.add(Action.REFRESH);
@@ -282,6 +314,9 @@ public class Gallery extends Flow implements HasViewName, HasFosterParent, Paren
 
     this.picturePanel = new Flow(STYLE_PICTURE_PANEL);
     add(picturePanel);
+
+    this.collector = createCollector();
+    add(collector);
   }
 
   @Override
@@ -313,10 +348,11 @@ public class Gallery extends Flow implements HasViewName, HasFosterParent, Paren
   public void handleAction(Action action) {
     switch (action) {
       case ADD:
-        ensureCollector().clickInput();
+        collector.clickInput();
         break;
 
       case REFRESH:
+        invalidateCache();
         refresh();
         break;
 
@@ -356,9 +392,7 @@ public class Gallery extends Flow implements HasViewName, HasFosterParent, Paren
   @Override
   protected void onLoad() {
     super.onLoad();
-
     register();
-    ensureCollector();
   }
 
   @Override
@@ -372,6 +406,40 @@ public class Gallery extends Flow implements HasViewName, HasFosterParent, Paren
       picturePanel.clear();
       SummaryChangeEvent.maybeFire(this);
     }
+  }
+
+  private FileCollector createCollector() {
+    FileCollector fc = FileCollector.headless(new Consumer<Collection<? extends FileInfo>>() {
+      @Override
+      public void accept(Collection<? extends FileInfo> input) {
+        NotificationListener notificationListener = ViewHelper.getForm(Gallery.this);
+        if (notificationListener == null) {
+          notificationListener = BeeKeeper.getScreen();
+        }
+
+        Collection<FileInfo> files = Images.sanitizeInput(input, notificationListener);
+        if (!files.isEmpty()) {
+          read(files, new Callback<List<String>>() {
+
+            @Override
+            public void onSuccess(final List<String> pictures) {
+              ensureRelId(new IdCallback() {
+
+                @Override
+                public void onSuccess(Long relValue) {
+                  upload(relValue, pictures);
+                }
+              });
+            }
+          });
+        }
+      }
+    });
+
+    fc.setAccept(Keywords.ACCEPT_IMAGE);
+    fc.bindDnd(this);
+
+    return fc;
   }
 
   private Widget createCommandPanel(Collection<Action> actions) {
@@ -409,44 +477,6 @@ public class Gallery extends Flow implements HasViewName, HasFosterParent, Paren
                 });
           }
         });
-  }
-
-  private FileCollector ensureCollector() {
-    if (collector == null) {
-      collector = FileCollector.headless(new Consumer<Collection<? extends FileInfo>>() {
-
-        @Override
-        public void accept(Collection<? extends FileInfo> input) {
-          NotificationListener notificationListener = ViewHelper.getForm(Gallery.this);
-          if (notificationListener == null) {
-            notificationListener = BeeKeeper.getScreen();
-          }
-
-          Collection<FileInfo> files = Images.sanitizeInput(input, notificationListener);
-          if (!files.isEmpty()) {
-            read(files, new Callback<List<String>>() {
-
-              @Override
-              public void onSuccess(final List<String> pictures) {
-                ensureRelId(new IdCallback() {
-
-                  @Override
-                  public void onSuccess(Long relValue) {
-                    upload(relValue, pictures);
-                  }
-                });
-              }
-            });
-          }
-        }
-      });
-
-      collector.setAccept(Keywords.ACCEPT_IMAGE);
-
-      add(collector);
-      collector.bindDnd(this);
-    }
-    return collector;
   }
 
   private void ensureParentIndex(String parentViewName) {
@@ -489,15 +519,19 @@ public class Gallery extends Flow implements HasViewName, HasFosterParent, Paren
     }
   }
 
-  private int getMaxOrder() {
+  private Filter getFilter() {
+    return Filter.equals(relColumn, relId);
+  }
+
+  private int getMaxOrdinal() {
     int max = -1;
 
     if (!BeeUtils.isEmpty(orderColumn) && !picturePanel.isEmpty()) {
       for (Widget widget : picturePanel) {
         if (widget instanceof Picture) {
-          Integer order = ((Picture) widget).order;
-          if (order != null) {
-            max = Math.max(max, order);
+          Integer ordinal = ((Picture) widget).getOrdinal();
+          if (ordinal != null) {
+            max = Math.max(max, ordinal);
           }
         }
       }
@@ -553,6 +587,12 @@ public class Gallery extends Flow implements HasViewName, HasFosterParent, Paren
     });
   }
 
+  private void invalidateCache() {
+    if (cachingPolicy != null && cachingPolicy != CachingPolicy.NONE && DataUtils.isId(relId)) {
+      Global.getCache().invalidateQuery(viewName, getFilter(), order);
+    }
+  }
+
   private void move(long rowId, Direction direction) {
     final int srcIndex = getPictureIndex(rowId);
     final int dstIndex = (direction == Direction.WEST) ? srcIndex - 1 : srcIndex + 1;
@@ -561,31 +601,31 @@ public class Gallery extends Flow implements HasViewName, HasFosterParent, Paren
     final Picture dstPicture = getPicture(dstIndex);
 
     if (srcPicture != null && dstPicture != null
-        && srcPicture.getOrder() != null && dstPicture.getOrder() != null
-        && !Objects.equals(srcPicture.getOrder(), dstPicture.getOrder())) {
+        && srcPicture.getOrdinal() != null && dstPicture.getOrdinal() != null
+        && !Objects.equals(srcPicture.getOrdinal(), dstPicture.getOrdinal())) {
 
       BeeRowSet rowSet = new BeeRowSet(viewName,
           Collections.singletonList(Data.getColumn(viewName, orderColumn)));
 
       String[] data = new String[1];
 
-      data[0] = BeeUtils.toString(dstPicture.getOrder());
+      data[0] = BeeUtils.toString(dstPicture.getOrdinal());
       rowSet.addRow(srcPicture.getRowId(), srcPicture.getVersion(), data);
 
-      data[0] = BeeUtils.toString(srcPicture.getOrder());
+      data[0] = BeeUtils.toString(srcPicture.getOrdinal());
       rowSet.addRow(dstPicture.getRowId(), dstPicture.getVersion(), data);
 
       Queries.updateRows(rowSet, new Callback<RowInfoList>() {
         @Override
         public void onSuccess(RowInfoList result) {
           if (result.size() == 2) {
-            Integer srcOrder = srcPicture.getOrder();
+            Integer srcOrdinal = srcPicture.getOrdinal();
 
             srcPicture.setVersion(result.get(0).getVersion());
-            srcPicture.setOrder(dstPicture.getOrder());
+            srcPicture.setOrdinal(dstPicture.getOrdinal());
 
             dstPicture.setVersion(result.get(1).getVersion());
-            dstPicture.setOrder(srcOrder);
+            dstPicture.setOrdinal(srcOrdinal);
 
             if (srcIndex < dstIndex) {
               picturePanel.insert(dstPicture, srcIndex);
@@ -593,6 +633,8 @@ public class Gallery extends Flow implements HasViewName, HasFosterParent, Paren
               picturePanel.insert(srcPicture, dstIndex);
             }
           }
+
+          invalidateCache();
         }
       });
     }
@@ -630,23 +672,21 @@ public class Gallery extends Flow implements HasViewName, HasFosterParent, Paren
     clearPictures();
 
     if (DataUtils.isId(relId)) {
-      Filter filter = Filter.equals(relColumn, relId);
-      Order order = BeeUtils.isEmpty(orderColumn) ? null : Order.ascending(orderColumn);
-
-      Queries.getRowSet(viewName, null, filter, order, new Queries.RowSetCallback() {
-        @Override
-        public void onSuccess(BeeRowSet result) {
-          if (!result.isEmpty()) {
-            render(result);
-            SummaryChangeEvent.maybeFire(Gallery.this);
-          }
-        }
-      });
+      Queries.getRowSet(viewName, null, getFilter(), order, cachingPolicy,
+          new Queries.RowSetCallback() {
+            @Override
+            public void onSuccess(BeeRowSet result) {
+              if (!result.isEmpty()) {
+                render(result);
+                SummaryChangeEvent.maybeFire(Gallery.this);
+              }
+            }
+          });
     }
   }
 
   private void render(BeeRowSet data) {
-    int orderIndex =
+    int ordinalIndex =
         BeeUtils.isEmpty(orderColumn) ? BeeConst.UNDEF : data.getColumnIndex(orderColumn);
     int pictureIndex = data.getColumnIndex(pictureColumn);
 
@@ -656,10 +696,10 @@ public class Gallery extends Flow implements HasViewName, HasFosterParent, Paren
       RowInfo rowInfo = new RowInfo(row, row.isEditable() && !readOnly);
       rowInfo.setRemovable(removable && row.isRemovable());
 
-      Integer order =
-          BeeConst.isUndef(orderIndex) ? null : BeeUtils.unbox(row.getInteger(orderIndex));
+      Integer ordinal =
+          BeeConst.isUndef(ordinalIndex) ? null : BeeUtils.unbox(row.getInteger(ordinalIndex));
 
-      Picture picture = new Picture(rowInfo, order, row.getString(pictureIndex));
+      Picture picture = new Picture(rowInfo, ordinal, row.getString(pictureIndex));
       picturePanel.add(picture);
     }
   }
@@ -692,15 +732,15 @@ public class Gallery extends Flow implements HasViewName, HasFosterParent, Paren
     int relIndex = rowSet.getColumnIndex(relColumn);
     int pictureIndex = rowSet.getColumnIndex(pictureColumn);
 
-    int orderIndex;
-    int maxOrder;
+    int ordinalIndex;
+    int maxOrdinal;
 
     if (BeeUtils.isEmpty(orderColumn)) {
-      orderIndex = BeeConst.UNDEF;
-      maxOrder = BeeConst.UNDEF;
+      ordinalIndex = BeeConst.UNDEF;
+      maxOrdinal = BeeConst.UNDEF;
     } else {
-      orderIndex = rowSet.getColumnIndex(orderColumn);
-      maxOrder = getMaxOrder();
+      ordinalIndex = rowSet.getColumnIndex(orderColumn);
+      maxOrdinal = getMaxOrdinal();
     }
 
     for (String picture : pictures) {
@@ -709,8 +749,8 @@ public class Gallery extends Flow implements HasViewName, HasFosterParent, Paren
       row.setValue(relIndex, relValue);
       row.setValue(pictureIndex, picture);
 
-      if (!BeeConst.isUndef(pictureIndex)) {
-        row.setValue(orderIndex, ++maxOrder);
+      if (!BeeConst.isUndef(ordinalIndex)) {
+        row.setValue(ordinalIndex, ++maxOrdinal);
       }
     }
 
@@ -732,6 +772,8 @@ public class Gallery extends Flow implements HasViewName, HasFosterParent, Paren
           render(rowSet);
           SummaryChangeEvent.maybeFire(Gallery.this);
         }
+
+        invalidateCache();
       }
     });
   }
