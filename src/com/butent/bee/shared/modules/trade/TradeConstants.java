@@ -38,6 +38,7 @@ public final class TradeConstants {
   public static final String COL_SALE = "Sale";
   public static final String COL_SALE_PROFORMA = "Proforma";
   public static final String COL_SALE_PAYER = "Payer";
+  public static final String COL_SALE_LASTEST_PAYMENT = "LastestPayment";
 
   public static final String COL_TRADE_DATE = "Date";
   public static final String COL_TRADE_NUMBER = "Number";
@@ -55,6 +56,7 @@ public final class TradeConstants {
   public static final String COL_TRADE_NOTES = "Notes";
   public static final String COL_TRADE_EXPORTED = "Exported";
   public static final String COL_TRADE_KIND = "Kind";
+  public static final String COL_TRADE_DEBT = "Debt";
 
   public static final String COL_TRADE_VAT_PLUS = "VatPlus";
   public static final String COL_TRADE_VAT = "Vat";
@@ -95,6 +97,7 @@ public final class TradeConstants {
   public static final String ALS_SALES_COUNT = "SalesCount";
   public static final String ALS_SALES_SUM = "SalesSum";
 
+
   public static final String PROP_AVERAGE_OVERDUE = "AverageOverdue";
   public static final String PROP_REMIND_EMAIL = "RemindEmail";
 
@@ -106,6 +109,8 @@ public final class TradeConstants {
   public static final String GRID_TRADE_STATUSES = "TradeStatuses";
 
   public static final String GRID_SERIES_MANAGERS = "SeriesManagers";
+  public static final String GRID_DEBTS = "Debts";
+  public static final String GRID_SALES = "Sales";
 
   private TradeConstants() {
   }

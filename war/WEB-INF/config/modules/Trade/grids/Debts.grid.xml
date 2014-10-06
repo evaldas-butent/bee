@@ -49,7 +49,12 @@
 		  </render>
 		</CalcColumn>
 		
-		<PropColumn name="AverageOverdue" type="string" caption="=trdInvoiceAverageOverdue" label="=trdInvoiceAverageOverdue" />
+		<PropColumn name="AverageOverdue" type="string" caption="=trdInvoiceAverageOverdue" cellType="html" 
+		label="=trdInvoiceAverageOverdue">
+		  <style>
+		    <bodyStyle><ui:class>bee-ActionCellLink</ui:class></bodyStyle>
+		  </style>
+		</PropColumn>
 		
 		<DataColumn name="Amount" />
 		<DataColumn name="CurrencyName" />
@@ -64,5 +69,6 @@
 		<RelColumn name="DelayedPaymentRisk" renderColumns="DelayedPaymentRiskName" caption="=clientDelayedPaymentRisk" label="=clientDelayedPaymentRisk"/>
 		<DataColumn name="AppointmentsCount"  caption="=calListOfActions" label="=calListOfActions" />
 		<DataColumn name="LastAppointment"  caption ="=calLastActionDate" label="=calLastActionDate"/>
+		<DataColumn name="LastestPayment" label="=trdNoPaymentPeriod" caption="=trdLatestSalePayment" visible="false" />
 	</g:columns>
 </g:Grid>
