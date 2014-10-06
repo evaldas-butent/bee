@@ -371,6 +371,7 @@ public class TradeModuleBean implements BeeModule {
     String trade = sys.getView(viewName).getSourceName();
     String tradeItems;
     String itemsRelation;
+    String sign = "";
 
     SqlSelect query = new SqlSelect()
         .addFields(trade, COL_TRADE_DATE, COL_TRADE_INVOICE_PREFIX, COL_TRADE_INVOICE_NO,
@@ -396,6 +397,7 @@ public class TradeModuleBean implements BeeModule {
           .addFromLeft(TBL_WAREHOUSES, COL_PURCHASE_WAREHOUSE_TO,
               sys.joinTables(TBL_WAREHOUSES, COL_PURCHASE_WAREHOUSE_TO, trade,
                   COL_PURCHASE_WAREHOUSE_TO));
+      sign = "-";
     } else {
       return ResponseObject.error("View source not supported:", trade);
     }
@@ -456,7 +458,7 @@ public class TradeModuleBean implements BeeModule {
         warehouse = prm.getText("ERPWarehouse");
         client = companies.get(invoice.getLong(COL_TRADE_CUSTOMER));
       }
-      WSDocument doc = new WSDocument(invoice.getValue(itemsRelation),
+      WSDocument doc = new WSDocument(sign + invoice.getValue(itemsRelation),
           invoice.getDateTime(COL_TRADE_DATE), operation, client, warehouse);
 
       if (invoices.hasColumn(COL_SALE_PAYER)) {
