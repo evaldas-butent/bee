@@ -341,6 +341,7 @@ public final class AdministrationConstants {
   public static final String PRM_COMPANY = "CompanyName";
   public static final String PRM_CURRENCY = "MainCurrency";
   public static final String PRM_VAT_PERCENT = "VATPercent";
+  public static final String PRM_REFRESH_CURRENCY_HOURS = "CurrencyRefreshHours";
 
   public static final String PRM_ERP_NAMESPACE = "ERPNamespace";
   public static final String PRM_ERP_ADDRESS = "ERPAddress";

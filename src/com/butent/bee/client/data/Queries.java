@@ -23,6 +23,7 @@ import com.butent.bee.shared.data.filter.Filter;
 import com.butent.bee.shared.data.value.Value;
 import com.butent.bee.shared.data.view.Order;
 import com.butent.bee.shared.data.view.RowInfo;
+import com.butent.bee.shared.data.view.RowInfoList;
 import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogUtils;
 import com.butent.bee.shared.time.DateTime;
@@ -160,7 +161,7 @@ public final class Queries {
   }
 
   public static void deleteRow(String viewName, long rowId, long version, IntCallback callback) {
-    deleteRows(viewName, Collections.singleton(new RowInfo(rowId, version, true, true)), callback);
+    deleteRows(viewName, Collections.singleton(new RowInfo(rowId, version)), callback);
   }
 
   public static void deleteRows(String viewName, Collection<RowInfo> rows) {
@@ -566,27 +567,27 @@ public final class Queries {
     }
   }
 
-  public static void insertRows(BeeRowSet rowSet, final IntCallback callback) {
-    if (!checkRowSet(Service.INSERT_ROWS, rowSet, callback)) {
+  public static void insertRows(BeeRowSet rowSet, final Callback<RowInfoList> callback) {
+    final String svc = Service.INSERT_ROWS;
+    if (!checkRowSet(svc, rowSet, callback)) {
       return;
     }
 
     final String viewName = rowSet.getViewName();
 
-    BeeKeeper.getRpc().sendText(Service.INSERT_ROWS, Codec.beeSerialize(rowSet),
-        new ResponseCallback() {
-          @Override
-          public void onResponse(ResponseObject response) {
-            if (checkResponse(Service.INSERT_ROWS, viewName, response, Integer.class, callback)) {
-              int count = BeeUtils.toInt(response.getResponseAsString());
-              logger.info(viewName, "inserted", count, "rows");
+    BeeKeeper.getRpc().sendText(svc, Codec.beeSerialize(rowSet), new ResponseCallback() {
+      @Override
+      public void onResponse(ResponseObject response) {
+        if (checkResponse(svc, viewName, response, RowInfoList.class, callback)) {
+          RowInfoList result = RowInfoList.restore(response.getResponseAsString());
+          logger.info(viewName, "inserted", result.size(), "rows");
 
-              if (callback != null) {
-                callback.onSuccess(count);
-              }
-            }
+          if (callback != null) {
+            callback.onSuccess(result);
           }
-        });
+        }
+      }
+    });
   }
 
   public static boolean isResponseFromCache(int id) {
@@ -742,27 +743,27 @@ public final class Queries {
     }
   }
 
-  public static void updateRows(BeeRowSet rowSet, final IntCallback callback) {
-    if (!checkRowSet(Service.UPDATE_ROWS, rowSet, callback)) {
+  public static void updateRows(BeeRowSet rowSet, final Callback<RowInfoList> callback) {
+    final String svc = Service.UPDATE_ROWS;
+    if (!checkRowSet(svc, rowSet, callback)) {
       return;
     }
 
     final String viewName = rowSet.getViewName();
 
-    BeeKeeper.getRpc().sendText(Service.UPDATE_ROWS, Codec.beeSerialize(rowSet),
-        new ResponseCallback() {
-          @Override
-          public void onResponse(ResponseObject response) {
-            if (checkResponse(Service.UPDATE_ROWS, viewName, response, Integer.class, callback)) {
-              int count = BeeUtils.toInt(response.getResponseAsString());
-              logger.info(viewName, "updated", count, "rows");
+    BeeKeeper.getRpc().sendText(svc, Codec.beeSerialize(rowSet), new ResponseCallback() {
+      @Override
+      public void onResponse(ResponseObject response) {
+        if (checkResponse(svc, viewName, response, RowInfoList.class, callback)) {
+          RowInfoList result = RowInfoList.restore(response.getResponseAsString());
+          logger.info(viewName, "updated", result.size(), "rows");
 
-              if (callback != null) {
-                callback.onSuccess(count);
-              }
-            }
+          if (callback != null) {
+            callback.onSuccess(result);
           }
-        });
+        }
+      }
+    });
   }
 
   private static boolean checkRowSet(String service, BeeRowSet rowSet, Callback<?> callback) {

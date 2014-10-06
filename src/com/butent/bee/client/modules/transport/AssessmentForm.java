@@ -984,7 +984,7 @@ public class AssessmentForm extends PrintFormInterceptor implements SelectorEven
   }
 
   private void sendMail() {
-    final String cellStyle = "border:1px solid black;padding:3px;";
+    final String cellStyle = "border:1px solid black;padding:3px; white-space:pre-wrap;";
 
     final HtmlTable table = new HtmlTable();
     table.getElement().getStyle().setProperty("border-collapse", "collapse");

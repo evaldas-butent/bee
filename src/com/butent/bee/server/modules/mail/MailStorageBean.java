@@ -4,6 +4,7 @@ import com.google.common.collect.LinkedListMultimap;
 import com.google.common.collect.Multimap;
 import com.google.common.io.CharStreams;
 
+import static com.butent.bee.shared.modules.administration.AdministrationConstants.*;
 import static com.butent.bee.shared.modules.classifiers.ClassifierConstants.*;
 import static com.butent.bee.shared.modules.mail.MailConstants.*;
 
@@ -332,6 +333,10 @@ public class MailStorageBean {
       } catch (MessagingException | IOException e) {
         logger.error(e);
       }
+      if (DataUtils.isId(senderId)) {
+        allAddresses.add(senderId);
+      }
+      setRelations(userId, messageId, allAddresses);
     }
     if (!DataUtils.isId(placeId)) {
       placeId = storePlace(messageId, folderId, envelope.getFlagMask(), messageUID);
@@ -437,6 +442,60 @@ public class MailStorageBean {
     return folder;
   }
 
+  private void setRelations(Long userId, Long messageId, Set<Long> addresses) {
+    Long[] adr = null;
+
+    if (!BeeUtils.isEmpty(addresses)) {
+      adr = qs.getLongColumn(new SqlSelect()
+          .addField(TBL_EMAILS, sys.getIdName(TBL_EMAILS), COL_EMAIL)
+          .addFrom(TBL_EMAILS)
+          .addFromLeft(TBL_ACCOUNTS,
+              sys.joinTables(TBL_EMAILS, TBL_ACCOUNTS, MailConstants.COL_ADDRESS))
+          .setWhere(SqlUtils.and(sys.idInList(TBL_EMAILS, addresses),
+              SqlUtils.isNull(TBL_ACCOUNTS, COL_ACCOUNT_PRIVATE))));
+    }
+    if (ArrayUtils.isEmpty(adr)) {
+      return;
+    }
+    IsCondition clause = SqlUtils.inList(TBL_CONTACTS, COL_EMAIL, (Object[]) adr);
+
+    Long[] companies = qs.getLongColumn(new SqlSelect().setUnionAllMode(false)
+        .addField(TBL_COMPANIES, sys.getIdName(TBL_COMPANIES), COL_COMPANY)
+        .addFrom(TBL_COMPANIES)
+        .addFromInner(TBL_CONTACTS, SqlUtils.and(clause,
+            sys.joinTables(TBL_CONTACTS, TBL_COMPANIES, COL_CONTACT)))
+        .addUnion(new SqlSelect()
+            .addFields(TBL_COMPANY_CONTACTS, COL_COMPANY)
+            .addFrom(TBL_COMPANY_CONTACTS)
+            .addFromInner(TBL_CONTACTS, SqlUtils.and(clause,
+                sys.joinTables(TBL_CONTACTS, TBL_COMPANY_CONTACTS, COL_CONTACT))))
+        .addUnion(new SqlSelect()
+            .addFields(TBL_COMPANY_PERSONS, COL_COMPANY)
+            .addFrom(TBL_COMPANY_PERSONS)
+            .addFromInner(TBL_CONTACTS, SqlUtils.and(clause,
+                sys.joinTables(TBL_CONTACTS, TBL_COMPANY_PERSONS, COL_CONTACT)))));
+
+    if (!ArrayUtils.isEmpty(companies)) {
+      Long userCompany = qs.getLong(new SqlSelect()
+          .addFields(TBL_COMPANY_PERSONS, COL_COMPANY)
+          .addFrom(TBL_USERS)
+          .addFromInner(TBL_COMPANY_PERSONS,
+              sys.joinTables(TBL_COMPANY_PERSONS, TBL_USERS, COL_COMPANY_PERSON))
+          .setWhere(sys.idEquals(TBL_USERS, userId)));
+
+      if (ArrayUtils.contains(companies, userCompany)) {
+        for (Long company : companies) {
+          if (Objects.equals(company, userCompany)) {
+            continue;
+          }
+          qs.insertData(new SqlInsert(TBL_RELATIONS)
+              .addConstant(COL_MESSAGE, messageId)
+              .addConstant(COL_COMPANY, company));
+        }
+      }
+    }
+  }
+
   private Long storeAddress(Long userId, InternetAddress address) throws AddressException {
     Assert.notNull(address);
     String email;
@@ -460,7 +519,7 @@ public class MailStorageBean {
         .addFrom(TBL_EMAILS)
         .addFromLeft(TBL_ADDRESSBOOK,
             SqlUtils.and(sys.joinTables(TBL_EMAILS, TBL_ADDRESSBOOK, COL_EMAIL),
-                SqlUtils.equals(TBL_ADDRESSBOOK, COL_USER, userId)))
+                SqlUtils.equals(TBL_ADDRESSBOOK, MailConstants.COL_USER, userId)))
         .setWhere(SqlUtils.equals(TBL_EMAILS, COL_EMAIL_ADDRESS, email)));
 
     if (row != null) {
@@ -474,7 +533,7 @@ public class MailStorageBean {
     }
     if (!DataUtils.isId(bookId)) {
       qs.insertData(new SqlInsert(TBL_ADDRESSBOOK)
-          .addConstant(COL_USER, userId)
+          .addConstant(MailConstants.COL_USER, userId)
           .addConstant(COL_EMAIL, id)
           .addConstant(COL_EMAIL_LABEL, label));
 

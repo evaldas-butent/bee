@@ -25,7 +25,6 @@ import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.State;
 import com.butent.bee.shared.data.IsRow;
-import com.butent.bee.shared.font.FontAwesome;
 import com.butent.bee.shared.ui.Action;
 import com.butent.bee.shared.ui.UserInterface.Component;
 import com.butent.bee.shared.utils.BeeUtils;
@@ -89,28 +88,28 @@ public class TreeContainer extends Flow implements TreeView, SelectionHandler<Tr
           && BeeKeeper.getScreen().getUserInterface().hasComponent(Component.FAVORITES);
 
       if (editable && BeeKeeper.getUser().canCreateData(viewName)) {
-        hdr.add(createActionWidget(Action.ADD, FontAwesome.PLUS));
+        hdr.add(createActionWidget(Action.ADD));
         enabledActions.add(Action.ADD);
       }
 
       if (editable && BeeKeeper.getUser().canDeleteData(viewName)) {
-        hdr.add(createActionWidget(Action.DELETE, FontAwesome.TRASH_O));
+        hdr.add(createActionWidget(Action.DELETE));
         enabledActions.add(Action.DELETE);
       }
 
       if (bookmarkable) {
         setFavorite(NameUtils.toList(favorite));
 
-        hdr.add(createActionWidget(Action.BOOKMARK, FontAwesome.BOOKMARK_O));
+        hdr.add(createActionWidget(Action.BOOKMARK));
         enabledActions.add(Action.BOOKMARK);
       }
 
       if (editable) {
-        hdr.add(createActionWidget(Action.EDIT, FontAwesome.EDIT));
+        hdr.add(createActionWidget(Action.EDIT));
         enabledActions.add(Action.EDIT);
       }
 
-      hdr.add(createActionWidget(Action.REFRESH, FontAwesome.REFRESH));
+      hdr.add(createActionWidget(Action.REFRESH));
       enabledActions.add(Action.REFRESH);
 
       add(hdr);
@@ -408,8 +407,8 @@ public class TreeContainer extends Flow implements TreeView, SelectionHandler<Tr
     }
   }
 
-  private Widget createActionWidget(Action action, FontAwesome fa) {
-    FaLabel widget = new FaLabel(fa);
+  private Widget createActionWidget(Action action) {
+    FaLabel widget = new FaLabel(action.getIcon());
 
     widget.addStyleName(STYLE_NAME + "-action");
     widget.addStyleName(action.getStyleName());

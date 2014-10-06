@@ -71,10 +71,12 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.EnumSet;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Set;
 
 public class Relations extends Flow implements Editor, ClickHandler, SelectorEvent.Handler,
     ParentRowEvent.Handler, HasFosterParent, HasRowChildren, HandlesValueChange,
@@ -97,9 +99,10 @@ public class Relations extends Flow implements Editor, ClickHandler, SelectorEve
   private com.google.web.bindery.event.shared.HandlerRegistration parentRowReg;
   private String parentId;
 
-  final Multimap<String, Long> ids = HashMultimap.create();
-  final Map<String, MultiSelector> widgetMap = new LinkedHashMap<>();
-  final Map<MultiSelector, HandlerRegistration> registry = new HashMap<>();
+  private final Multimap<String, Long> ids = HashMultimap.create();
+  private final Map<String, MultiSelector> widgetMap = new LinkedHashMap<>();
+  private final Map<MultiSelector, HandlerRegistration> registry = new HashMap<>();
+  private final Set<String> blockedRelations = new HashSet<>();
 
   private Long id;
   private SelectorEvent.Handler handler;
@@ -164,6 +167,7 @@ public class Relations extends Flow implements Editor, ClickHandler, SelectorEve
         }
       }
     }
+    blockRelation(MailConstants.TBL_MESSAGES, true);
   }
 
   @Override
@@ -189,6 +193,15 @@ public class Relations extends Flow implements Editor, ClickHandler, SelectorEve
   @Override
   public HandlerRegistration addSummaryChangeHandler(SummaryChangeEvent.Handler eh) {
     return addHandler(eh, SummaryChangeEvent.getType());
+  }
+
+  public void blockRelation(String viewName, boolean block) {
+    if (block) {
+      blockedRelations.add(viewName);
+    } else {
+      blockedRelations.remove(viewName);
+    }
+    setEnabled(isEnabled());
   }
 
   @Override
@@ -491,7 +504,7 @@ public class Relations extends Flow implements Editor, ClickHandler, SelectorEve
     for (MultiSelector multi : widgetMap.values()) {
       if (multi != null) {
         UiHelper.enableAndStyle(multi, enabled
-            && !BeeUtils.same(multi.getOracle().getViewName(), MailConstants.TBL_MESSAGES));
+            && !blockedRelations.contains(multi.getOracle().getViewName()));
       }
     }
     this.enabled = enabled;

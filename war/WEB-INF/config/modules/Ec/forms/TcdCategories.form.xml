@@ -11,16 +11,18 @@
     </calc>
     <form>
       <Table>
+        <col index="0" kind="label" />
+
         <row>
-          <Label text="=ecItemCategory" class="bee-required" horizontalAlignment="right" />
+          <Label for="CategoryName" />
           <InputText source="CategoryName" style="width: 300px;" />
         </row>
         <row>
-          <Label text="=ecMarginPercent" horizontalAlignment="right" />
+          <Label for="MarginPercent" />
           <InputDecimal source="MarginPercent" style="width: 60px;" />
         </row>
         <row>
-          <Label text="=ecItemCategoryNote" horizontalAlignment="right" />
+          <Label for="Note" />
           <InputArea source="Note" visibleLines="3" style="width: 300px;" />
         </row>
       </Table>

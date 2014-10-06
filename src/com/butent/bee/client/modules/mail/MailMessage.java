@@ -414,6 +414,10 @@ public class MailMessage extends AbstractFormInterceptor {
         SimpleRow row = packet.get(TBL_MESSAGES).getRow(0);
 
         if (relations != null) {
+          relations.blockRelation(TBL_COMPANIES,
+              !BeeKeeper.getUser().isAdministrator()
+                  && (mailPanel == null || !mailPanel.getCurrentAccount().isPrivate()));
+
           relations.requery(row.getLong(COL_MESSAGE));
         }
         draftId = row.getLong(SystemFolder.Drafts.name());

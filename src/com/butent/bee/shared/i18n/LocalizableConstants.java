@@ -422,6 +422,8 @@ public interface LocalizableConstants extends Constants, LocalizableClassifierCo
 
   String margin();
 
+  String marginPercent();
+
   String maxValue();
 
   String menu();
