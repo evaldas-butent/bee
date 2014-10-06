@@ -256,6 +256,19 @@ public class CacheManager implements HandlesAllDataEvents {
       }
     }
 
+    private boolean invalidateQuery(Filter filter, Order order) {
+      CachedQuery query = getQuery(filter, order);
+
+      if (query == null) {
+        return false;
+
+      } else {
+        query.invalidate();
+        queries.remove(query);
+        return true;
+      }
+    }
+
     private void setRowCount(Filter filter, Order order, int rowCount) {
       boolean found = false;
 
@@ -401,6 +414,13 @@ public class CacheManager implements HandlesAllDataEvents {
       return null;
     }
     return entry.getRowSet(filter, order, offset, limit);
+  }
+
+  public boolean invalidateQuery(String viewName, Filter filter, Order order) {
+    Assert.notEmpty(viewName);
+    Entry entry = get(viewName);
+
+    return (entry == null) ? false : entry.invalidateQuery(filter, order);
   }
 
   @Override

@@ -155,6 +155,31 @@ public final class UiHelper {
     return result;
   }
 
+  @SuppressWarnings("unchecked")
+  public static <T extends Widget> T getChild(Widget parent, Class<T> clazz) {
+    if (parent == null || clazz == null) {
+      return null;
+
+    } else if (parent.getClass().equals(clazz)) {
+      return (T) parent;
+
+    } else if (parent instanceof HasOneWidget) {
+      return getChild(((HasOneWidget) parent).getWidget(), clazz);
+
+    } else if (parent instanceof HasWidgets) {
+      for (Widget widget : (HasWidgets) parent) {
+        T child = getChild(widget, clazz);
+        if (child != null) {
+          return child;
+        }
+      }
+      return null;
+
+    } else {
+      return null;
+    }
+  }
+
   public static Widget getChildByStyleName(Widget parent, String styleName) {
     Collection<Widget> children = getChildrenByStyleName(parent, Sets.newHashSet(styleName));
 

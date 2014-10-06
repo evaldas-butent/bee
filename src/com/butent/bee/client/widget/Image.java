@@ -3,6 +3,9 @@ package com.butent.bee.client.widget;
 import com.google.gwt.core.client.Scheduler.ScheduledCommand;
 import com.google.gwt.dom.client.Document;
 import com.google.gwt.event.dom.client.HasAllMouseHandlers;
+import com.google.gwt.event.dom.client.HasLoadHandlers;
+import com.google.gwt.event.dom.client.LoadEvent;
+import com.google.gwt.event.dom.client.LoadHandler;
 import com.google.gwt.event.dom.client.MouseDownEvent;
 import com.google.gwt.event.dom.client.MouseDownHandler;
 import com.google.gwt.event.dom.client.MouseMoveEvent;
@@ -31,7 +34,7 @@ import elemental.js.html.JsImageElement;
  * Implements an image holding user interface component, that displays the image at a given URL.
  */
 public class Image extends CustomWidget implements EnablableWidget, HasCommand,
-    HasAllMouseHandlers {
+    HasAllMouseHandlers, HasLoadHandlers {
 
   private ScheduledCommand command;
 
@@ -60,6 +63,11 @@ public class Image extends CustomWidget implements EnablableWidget, HasCommand,
   public Image(String url) {
     this();
     setUrl(url);
+  }
+
+  @Override
+  public HandlerRegistration addLoadHandler(LoadHandler handler) {
+    return addDomHandler(handler, LoadEvent.getType());
   }
 
   @Override

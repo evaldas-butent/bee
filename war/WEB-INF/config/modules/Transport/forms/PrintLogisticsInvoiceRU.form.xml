@@ -26,7 +26,7 @@
             </render>
           </TextLabel>
           <TextLabel source="InvoiceNo" inline="true">
-            <renderToken source="InvoicePrefix" suffix=" " />
+            <renderToken source="InvoicePrefix" suffix="-" />
             <renderToken source="InvoiceNo" />
           </TextLabel>
         </FlowPanel>

@@ -209,7 +209,7 @@ public class AdministrationModuleBean implements BeeModule, HasTimerService {
 
       @Subscribe
       public void refreshUsersCache(TableModifyEvent event) {
-        if ((usr.isRoleTable(event.getTargetName()) || usr.isUserTable(event.getTargetName()))
+        if (BeeUtils.inList(event.getTargetName(), TBL_USERS, TBL_ROLES, TBL_USER_ROLES)
             && event.isAfter()) {
           usr.initUsers();
           Endpoint.updateUserData(usr.getAllUserData());
