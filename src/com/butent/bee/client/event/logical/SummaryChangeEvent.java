@@ -7,10 +7,14 @@ import com.google.gwt.user.client.ui.HasWidgets;
 import com.google.gwt.user.client.ui.Widget;
 
 import com.butent.bee.shared.Assert;
+import com.butent.bee.shared.BeeConst;
+import com.butent.bee.shared.data.value.BooleanValue;
 import com.butent.bee.shared.data.value.Value;
+import com.butent.bee.shared.utils.BeeUtils;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.List;
 
 public final class SummaryChangeEvent extends GwtEvent<SummaryChangeEvent.Handler> {
 
@@ -45,14 +49,57 @@ public final class SummaryChangeEvent extends GwtEvent<SummaryChangeEvent.Handle
     source.fireEvent(new SummaryChangeEvent(source.getId(), source.getSummary()));
   }
 
+  public static Type<Handler> getType() {
+    return TYPE;
+  }
+
   public static void maybeFire(HasSummaryChangeHandlers source) {
     if (source != null && source.summarize()) {
       fire(source);
     }
   }
 
-  public static Type<Handler> getType() {
-    return TYPE;
+  public static String renderSummary(Collection<Value> values) {
+    if (BeeUtils.isEmpty(values)) {
+      return BeeConst.STRING_EMPTY;
+    }
+
+    List<String> messages = new ArrayList<>();
+    int size = 0;
+
+    for (Value value : values) {
+      if (value != null && !value.isEmpty()) {
+        switch (value.getType()) {
+          case BOOLEAN:
+            if (BooleanValue.TRUE.equals(value)) {
+              size++;
+            }
+            break;
+
+          case INTEGER:
+            size += value.getInteger();
+            break;
+
+          default:
+            messages.add(value.toString());
+        }
+      }
+    }
+
+    if (size > 0) {
+      if (messages.isEmpty()) {
+        return BeeUtils.toString(size);
+      }
+      messages.add(BeeUtils.toString(size));
+    }
+
+    if (messages.isEmpty()) {
+      return BeeConst.STRING_EMPTY;
+    } else if (messages.size() == 1) {
+      return messages.get(0);
+    } else {
+      return BeeUtils.joinWords(messages);
+    }
   }
 
   private final String sourceId;

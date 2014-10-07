@@ -298,9 +298,12 @@ public class DataSelector extends Composite implements Editor, HasVisibleLines, 
           consume();
           if (getSelector().isShowing()) {
             event.stopPropagation();
-          }
-          if (getSelector().isItemSelected()) {
-            getSelector().cancelSelection();
+            if (getSelector().isItemSelected()) {
+              getSelector().cancelSelection();
+            } else {
+              getSelector().hide();
+            }
+
           } else {
             exit(true, State.CANCELED);
           }
