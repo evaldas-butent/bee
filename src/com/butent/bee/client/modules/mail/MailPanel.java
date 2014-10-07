@@ -29,6 +29,7 @@ import com.butent.bee.client.communication.ParameterList;
 import com.butent.bee.client.communication.ResponseCallback;
 import com.butent.bee.client.composite.Thermometer;
 import com.butent.bee.client.data.Data;
+import com.butent.bee.client.data.RowEditor;
 import com.butent.bee.client.dialog.ChoiceCallback;
 import com.butent.bee.client.dialog.Icon;
 import com.butent.bee.client.dom.DomUtils;
@@ -48,6 +49,7 @@ import com.butent.bee.client.screen.Domain;
 import com.butent.bee.client.style.StyleUtils;
 import com.butent.bee.client.ui.FormFactory.WidgetDescriptionCallback;
 import com.butent.bee.client.ui.IdentifiableWidget;
+import com.butent.bee.client.ui.Opener;
 import com.butent.bee.client.view.HeaderView;
 import com.butent.bee.client.view.edit.EditStartEvent;
 import com.butent.bee.client.view.form.interceptor.AbstractFormInterceptor;
@@ -78,6 +80,7 @@ import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.IsColumn;
 import com.butent.bee.shared.data.IsRow;
 import com.butent.bee.shared.data.filter.Filter;
+import com.butent.bee.shared.data.view.DataInfo;
 import com.butent.bee.shared.data.view.RowInfo;
 import com.butent.bee.shared.font.FontAwesome;
 import com.butent.bee.shared.i18n.LocalizableMessages;
@@ -465,6 +468,19 @@ public class MailPanel extends AbstractFormInterceptor {
     });
     header.addCommandItem(refreshWidget);
 
+    FaLabel accountSettings = new FaLabel(FontAwesome.MAGIC);
+
+    accountSettings.setTitle(Localized.getConstants().mailAccount());
+    accountSettings.addClickHandler(new ClickHandler() {
+      @Override
+      public void onClick(ClickEvent arg0) {
+        DataInfo dataInfo = Data.getDataInfo(VIEW_ACCOUNTS);
+        long rowId = getCurrentAccount().getAccountId();
+        RowEditor.openForm(FORM_ACCOUNT, dataInfo, rowId, Opener.MODAL);
+      }
+    });
+
+    header.addCommandItem(accountSettings);
     message.setFormView(getFormView());
   }
 
