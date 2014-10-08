@@ -11,6 +11,8 @@ public final class ClassifierConstants {
 
   public static final String TBL_ITEMS = "Items";
   public static final String TBL_UNITS = "Units";
+
+  public static final String TBL_ITEM_CATEGORY_TREE = "CategoryTree";
   public static final String TBL_ITEM_CATEGORIES = "ItemCategories";
 
   public static final String TBL_CONTACTS = "Contacts";
@@ -21,6 +23,7 @@ public final class ClassifierConstants {
   public static final String TBL_COMPANIES = "Companies";
   public static final String TBL_COMPANY_TYPES = "CompanyTypes";
   public static final String TBL_COMPANY_CONTACTS = "CompanyContacts";
+  public static final String TBL_COMPANY_OBJECTS = "CompanyObjects";
 
   public static final String TBL_COMPANY_RELATION_TYPES = "CompanyRelationTypes";
   public static final String TBL_COMPANY_RELATION_TYPE_STORE = "CompRelTypeStore";
@@ -47,7 +50,7 @@ public final class ClassifierConstants {
   public static final String VIEW_PERSONS = "Persons";
 
   public static final String VIEW_ITEMS = "Items";
-  public static final String VIEW_CATEGY_TREE = "CategoryTree";
+  public static final String VIEW_ITEM_CATEGORY_TREE = "CategoryTree";
   public static final String VIEW_ITEM_CATEGORIES = "ItemCategories";
 
   public static final String VIEW_COUNTRIES = "Countries";
@@ -200,10 +203,15 @@ public final class ClassifierConstants {
 
   public static final String ALS_UNIT_NAME = "UnitName";
 
+  public static final String ALS_WAREHOUSE_CODE = "WarehouseCode";
+
   public static final String ALS_PARENT_TYPE_NAME = "ParentTypeName";
   public static final String ALS_ITEM_TYPE_NAME = "ItemTypeName";
   public static final String ALS_PARENT_GROUP_NAME = "ParentGroupName";
   public static final String ALS_ITEM_GROUP_NAME = "ItemGroupName";
+
+  public static final String ALS_ITEM_TYPES = "ItemTypes";
+  public static final String ALS_ITEM_GROUPS = "ItemGroups";
 
   public static final String PROP_COMPANY_NAMES = "CompanyNames";
   public static final String PROP_COMPANY_IDS = "CompanyIds";

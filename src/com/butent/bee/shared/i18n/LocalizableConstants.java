@@ -474,6 +474,8 @@ public interface LocalizableConstants extends Constants, LocalizableClassifierCo
 
   String number();
 
+  String object();
+
   String objectData();
 
   String objectField();
@@ -481,6 +483,8 @@ public interface LocalizableConstants extends Constants, LocalizableClassifierCo
   String objectMenu();
 
   String objectModule();
+
+  String objects();
 
   String objectWidget();
 
@@ -697,6 +701,8 @@ public interface LocalizableConstants extends Constants, LocalizableClassifierCo
   String volume();
 
   String warehouse();
+
+  String warehouses();
 
   String weight();
 
