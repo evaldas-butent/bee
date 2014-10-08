@@ -4,10 +4,7 @@ import com.google.common.collect.BiMap;
 import com.google.common.collect.HashBasedTable;
 import com.google.common.collect.HashBiMap;
 import com.google.common.collect.HashMultimap;
-import com.google.common.collect.Lists;
-import com.google.common.collect.Maps;
 import com.google.common.collect.Multimap;
-import com.google.common.collect.Sets;
 import com.google.common.collect.Table;
 import com.google.common.primitives.Longs;
 
@@ -53,6 +50,8 @@ import com.butent.bee.shared.utils.Wildcards;
 import java.security.Principal;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
@@ -104,7 +103,7 @@ public class UserServiceBean {
     private DateTime blockAfter;
     private DateTime blockBefore;
 
-    private final Set<Long> sessions = Sets.newHashSet();
+    private final Set<Long> sessions = new HashSet<>();
 
     private UserInfo(UserData userData, String password) {
       this.userData = userData;
@@ -198,11 +197,11 @@ public class UserServiceBean {
   @EJB
   QueryServiceBean qs;
 
-  private final Map<Long, String> roleCache = Maps.newHashMap();
+  private final Map<Long, String> roleCache = new HashMap<>();
   private final BiMap<Long, String> userCache = HashBiMap.create();
-  private Map<String, UserInfo> infoCache = Maps.newHashMap();
+  private Map<String, UserInfo> infoCache = new HashMap<>();
 
-  private final List<IpFilter> ipFilters = Lists.newArrayList();
+  private final List<IpFilter> ipFilters = new ArrayList<>();
 
   private final Table<RightsObjectType, String, Multimap<RightsState, Long>> rightsCache =
       HashBasedTable.create();
@@ -355,7 +354,7 @@ public class UserServiceBean {
       return ResponseObject.emptyResponse();
 
     } else {
-      Map<String, String> result = Maps.newHashMap();
+      Map<String, String> result = new HashMap<>();
 
       for (String object : objectStates.keySet()) {
         result.put(object, EnumUtils.buildIndexList(objectStates.get(object)));
@@ -389,7 +388,7 @@ public class UserServiceBean {
       return ResponseObject.emptyResponse();
 
     } else {
-      Map<String, String> result = Maps.newHashMap();
+      Map<String, String> result = new HashMap<>();
 
       for (String object : objectRoles.keySet()) {
         result.put(object, DataUtils.buildIdList(objectRoles.get(object)));
@@ -514,7 +513,7 @@ public class UserServiceBean {
 
   @Lock(LockType.WRITE)
   public void initIpFilters() {
-    List<IpFilter> filters = Lists.newArrayList();
+    List<IpFilter> filters = new ArrayList<>();
 
     SimpleRowSet data = qs.getData(new SqlSelect()
         .addFields(TBL_IP_FILTERS, COL_IP_FILTER_HOST,
@@ -551,7 +550,7 @@ public class UserServiceBean {
       if (BeeUtils.isEmpty(type.getRegisteredStates())) {
         continue;
       }
-      List<Integer> stateIds = Lists.newArrayList();
+      List<Integer> stateIds = new ArrayList<>();
 
       for (RightsState state : type.getRegisteredStates()) {
         stateIds.add(state.ordinal());
@@ -581,7 +580,7 @@ public class UserServiceBean {
     roleCache.clear();
     userCache.clear();
     Map<String, UserInfo> expiredCache = infoCache;
-    infoCache = Maps.newHashMap();
+    infoCache = new HashMap<>();
 
     SimpleRowSet rs = qs.getData(new SqlSelect()
         .addField(TBL_ROLES, sys.getIdName(TBL_ROLES), COL_ROLE)
@@ -684,16 +683,8 @@ public class UserServiceBean {
     return (info == null) ? false : info.getUserData().isModuleVisible(moduleAndSub);
   }
 
-  public boolean isRoleTable(String tblName) {
-    return BeeUtils.inList(tblName, TBL_ROLES, TBL_USER_ROLES);
-  }
-
   public boolean isUser(String user) {
     return !BeeUtils.isEmpty(user) && userCache.inverse().containsKey(key(user));
-  }
-
-  public boolean isUserTable(String tblName) {
-    return BeeUtils.same(tblName, TBL_USERS);
   }
 
   public boolean isWidgetVisible(RegulatedWidget widget) {
@@ -701,7 +692,6 @@ public class UserServiceBean {
     return (info == null) ? false : info.getUserData().isWidgetVisible(widget);
   }
 
-  @Lock(LockType.WRITE)
   public ResponseObject login(String host, String agent) {
     ResponseObject response = new ResponseObject();
     String user = getCurrentUser();
@@ -735,7 +725,6 @@ public class UserServiceBean {
     return response;
   }
 
-  @Lock(LockType.WRITE)
   public void logout(long userId, long historyId) {
     UserInfo info = getUserInfo(userId);
 
@@ -973,7 +962,7 @@ public class UserServiceBean {
             Set<String> objects = rights.get(state, type);
 
             if (objects == null) {
-              objects = Sets.newHashSet();
+              objects = new HashSet<>();
               rights.put(state, type, objects);
             }
             objects.add(object);

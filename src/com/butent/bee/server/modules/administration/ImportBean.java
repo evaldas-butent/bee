@@ -2,7 +2,6 @@ package com.butent.bee.server.modules.administration;
 
 import com.google.common.base.Function;
 import com.google.common.collect.Lists;
-import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
 
 import static com.butent.bee.shared.modules.administration.AdministrationConstants.*;
@@ -104,7 +103,7 @@ public class ImportBean {
     private final int prpObject = 3;
 
     private final String viewName;
-    private final Map<String, Object[]> props = Maps.newHashMap();
+    private final Map<String, Object[]> props = new HashMap<>();
 
     public ImportObject(SimpleRowSet rs, SystemBean sys) {
       Assert.notNull(rs);
@@ -236,7 +235,8 @@ public class ImportBean {
     }
   }
 
-  private static final String REC_NO = "_RecNo";
+  private static final String COL_REC_NO = "_RecNo_";
+  private static final String COL_REASON = "_Reason_";
 
   @EJB
   SystemBean sys;
@@ -286,7 +286,7 @@ public class ImportBean {
   }
 
   private List<ExtendedProperty> checkMappings(ImportObject imp, String prfx, String tmp) {
-    List<ExtendedProperty> info = Lists.newArrayList();
+    List<ExtendedProperty> info = new ArrayList<>();
     PropertyUtils.addExtended(info, "NEŽINOMIEJI", null, ":");
 
     for (ImportProperty prop : imp.getProperties()) {
@@ -541,8 +541,8 @@ public class ImportBean {
     return ResponseObject.response(res);
   }
 
-  private void commitData(ImportObject io, String data, String parentName, String progress,
-      Map<String, Pair<Integer, BeeRowSet>> status, boolean readOnly) {
+  private void commitData(ImportObject io, String data, String parentName, String parentCap,
+      String progress, Map<String, Pair<Integer, BeeRowSet>> status, boolean readOnly) {
 
     String idName = SqlUtils.uniqueName();
     HasConditions clause = SqlUtils.or();
@@ -550,7 +550,8 @@ public class ImportBean {
 
     // PREPARE VIEW DATA
     SqlSelect query = new SqlSelect()
-        .addMax(data, REC_NO)
+        .addMax(data, COL_REC_NO)
+        .addEmptyText(COL_REASON)
         .addEmptyLong(idName)
         .addFrom(data)
         .setWhere(clause);
@@ -558,6 +559,8 @@ public class ImportBean {
     BeeView view = sys.getView(io.getViewName());
     Map<String, BeeField> cols = new LinkedHashMap<>();
     String tmp = SqlUtils.temporaryName();
+    String progressCap = BeeUtils.join("->", parentCap,
+        Localized.maybeTranslate(view.getCaption(), usr.getLocalizableDictionary()));
 
     for (ImportProperty prop : io.getProperties()) {
       String col = prop.getName();
@@ -583,7 +586,7 @@ public class ImportBean {
       ImportObject ro = io.getRelationObject(col);
 
       if (ro != null) {
-        commitData(ro, data, realCol, progress, status, readOnly || io.isLocked(col)
+        commitData(ro, data, realCol, progressCap, progress, status, readOnly || io.isLocked(col)
             || !usr.canCreateData(ro.getViewName()));
       }
       updateClause.add(SqlUtils.or(SqlUtils.and(SqlUtils.isNull(tmp, col),
@@ -695,11 +698,14 @@ public class ImportBean {
               .addFrom(tmp)
               .setWhere(SqlUtils.isNull(tmp, idName))));
 
+      // CHECK UNIQUE FIELDS
       for (Set<String> key : uniqueKeys) {
         HasConditions condition = SqlUtils.and();
+        Set<String> flds = new HashSet<>();
 
         for (String col : key) {
           condition.add(SqlUtils.notNull(ins, col));
+          flds.add(BeeUtils.join("_", parentName, col));
         }
         SimpleRowSet rs = qs.getData(new SqlSelect()
             .addFields(ins, key.toArray(new String[0]))
@@ -719,6 +725,11 @@ public class ImportBean {
             }
             condition.add(wh);
           }
+          qs.updateData(new SqlUpdate(tmp)
+              .addConstant(COL_REASON, "Dublicate " + BeeUtils.join("+", flds))
+              .setFrom(ins, SqlUtils.joinUsing(tmp, ins, COL_REC_NO))
+              .setWhere(condition));
+
           qs.updateData(new SqlDelete(ins)
               .setWhere(condition));
         }
@@ -729,7 +740,13 @@ public class ImportBean {
         String col = entry.getKey();
         BeeField field = entry.getValue();
 
+        // CHECK REQUIRED FIELDS
         if (field.isNotNull()) {
+          qs.updateData(new SqlUpdate(tmp)
+              .addConstant(COL_REASON, "Empty " + BeeUtils.join("_", parentName, col))
+              .setFrom(ins, SqlUtils.joinUsing(tmp, ins, COL_REC_NO))
+              .setWhere(SqlUtils.isNull(ins, col)));
+
           qs.updateData(new SqlDelete(ins)
               .setWhere(SqlUtils.isNull(ins, col)));
         }
@@ -742,7 +759,7 @@ public class ImportBean {
       Pair<Integer, BeeRowSet> pair = null;
 
       if (!BeeUtils.isEmpty(progress)) {
-        Endpoint.updateProgress(progress, Localized.maybeTranslate(view.getCaption()), 0);
+        Endpoint.updateProgress(progress, progressCap, 0);
       }
       for (SimpleRow row : newRows) {
         if (!BeeUtils.isEmpty(progress)
@@ -761,7 +778,7 @@ public class ImportBean {
         if (!response.hasErrors()) {
           qs.updateData(new SqlUpdate(tmp)
               .addConstant(idName, ((RowInfo) response.getResponse()).getId())
-              .setWhere(SqlUtils.equals(tmp, REC_NO, row.getLong(REC_NO))));
+              .setWhere(SqlUtils.equals(tmp, COL_REC_NO, row.getLong(COL_REC_NO))));
 
           if (pair == null) {
             String viewName = view.getName();
@@ -779,28 +796,33 @@ public class ImportBean {
       }
       qs.sqlDropTemp(ins);
     }
-    // CHECK FOR UNRECOGNIZED RECORDS
+    // PROCESS UNRECOGNIZED RECORDS
+    qs.updateData(new SqlUpdate(tmp)
+        .addConstant(COL_REASON, "No rights")
+        .setWhere(SqlUtils.and(SqlUtils.isNull(tmp, idName), SqlUtils.isNull(tmp, COL_REASON))));
+
     int c = qs.updateData(new SqlUpdate(tmp)
         .addConstant(idName, BeeConst.UNDEF)
         .setWhere(SqlUtils.isNull(tmp, idName)));
 
     if (c > 0) {
+      BeeRowSet newRs = (BeeRowSet) qs.doSql(new SqlSelect()
+          .setDistinctMode(true)
+          .addFields(tmp, COL_REASON)
+          .addFields(data, io.getDataProperties(parentName).keySet().toArray(new String[0]))
+          .addFrom(data)
+          .addFromInner(tmp, updateClause)
+          .setWhere(SqlUtils.equals(tmp, idName, BeeUtils.toString(BeeConst.UNDEF)))
+          .addOrder(tmp, COL_REASON)
+          .getQuery());
+
       String viewName = view.getName();
 
       if (!status.containsKey(viewName)) {
         status.put(viewName, Pair.of(0, null));
       }
-      BeeRowSet newRs = (BeeRowSet) qs.doSql(new SqlSelect()
-          .setDistinctMode(true)
-          .addFields(data, io.getDataProperties(parentName).keySet().toArray(new String[0]))
-          .addFrom(data)
-          .addFromInner(tmp, updateClause)
-          .setWhere(SqlUtils.equals(tmp, idName, BeeConst.UNDEF))
-          .getQuery());
-      BeeRowSet rs = status.get(viewName).getB();
-
-      if (rs != null) {
-        rs.addRows(newRs.getRows());
+      if (status.get(viewName).getB() != null) {
+        status.get(viewName).getB().addRows(newRs.getRows());
       } else {
         status.get(viewName).setB(newRs);
       }
@@ -811,29 +833,9 @@ public class ImportBean {
           .addExpression(parentName, SqlUtils.field(tmp, idName))
           .setFrom(tmp, updateClause));
 
-      IsCondition wh = SqlUtils.equals(data, parentName, BeeUtils.toString(BeeConst.UNDEF));
-
-      BeeRowSet newRs = (BeeRowSet) qs.doSql(new SqlSelect()
-          .addConstant(Localized.maybeTranslate(view.getCaption()),
-              Localized.getConstants().reason())
-          .addAllFields(data)
-          .addFrom(data)
-          .setWhere(wh)
-          .getQuery());
-
-      if (newRs.getNumberOfRows() > 0) {
-        qs.updateData(new SqlDelete(data).setWhere(wh));
-
-        if (!status.containsKey(null)) {
-          status.put(null, Pair.of(0, null));
-        }
-        Pair<Integer, BeeRowSet> pair = status.get(null);
-
-        if (pair.getB() != null) {
-          pair.getB().addRows(newRs.getRows());
-        } else {
-          pair.setB(newRs);
-        }
+      if (c > 0) {
+        qs.updateData(new SqlDelete(data)
+            .setWhere(SqlUtils.equals(data, parentName, BeeUtils.toString(BeeConst.UNDEF))));
       }
     }
     qs.sqlDropTemp(tmp);
@@ -852,7 +854,7 @@ public class ImportBean {
     }
     Map<String, Pair<Integer, BeeRowSet>> status = new LinkedHashMap<>();
 
-    commitData(io, tmp, null, progress, status, !usr.canCreateData(io.getViewName()));
+    commitData(io, tmp, null, null, progress, status, !usr.canCreateData(io.getViewName()));
 
     qs.sqlDropTemp(tmp);
 
@@ -875,11 +877,11 @@ public class ImportBean {
           .setWhere(SqlUtils.equals(TBL_IMPORT_MAPPINGS, COL_IMPORT_PROPERTY, mappingId)));
     }
     if (ArrayUtils.isEmpty(objects)) {
-      return ResponseObject.error(Localized.getConstants().noData());
+      return ResponseObject.error(usr.getLocalizableConstants().noData());
     }
     String prfx = "_";
 
-    List<String> cols = Lists.newArrayList();
+    List<String> cols = new ArrayList<>();
 
     for (BeeField fld : sys.getTableFields(TBL_VEHICLE_TRACKING)) {
       if (!(fld instanceof BeeRelation)) {
@@ -1025,7 +1027,7 @@ public class ImportBean {
     File file = new File(fileName);
 
     if (!file.isFile() || !file.canRead()) {
-      return ResponseObject.error(Localized.getMessages().fileNotFound(fileName));
+      return ResponseObject.error(usr.getLocalizableMesssages().fileNotFound(fileName));
     }
     Sheet shit;
 
@@ -1052,9 +1054,9 @@ public class ImportBean {
       }
       create.addText(prop, false);
     }
-    qs.updateData(create.addInteger(REC_NO, true));
+    qs.updateData(create.addInteger(COL_REC_NO, true));
     String target = create.getTarget();
-    Map<String, String> values = Maps.newHashMap();
+    Map<String, String> values = new HashMap<>();
     int recNo = 0;
 
     for (int i = startRow; i <= shit.getLastRowNum(); i++) {
@@ -1098,7 +1100,7 @@ public class ImportBean {
             }
           }
         }
-        values.put(prop, value);
+        values.put(prop, value != null ? value.trim() : value);
       }
       if (rowValidator != null && BeeUtils.isFalse(rowValidator.apply(values))) {
         continue;
@@ -1110,7 +1112,7 @@ public class ImportBean {
       }
       if (!insert.isEmpty()) {
         boolean isDebugEnabled = qs.debugOff();
-        qs.updateData(insert.addConstant(REC_NO, ++recNo));
+        qs.updateData(insert.addConstant(COL_REC_NO, ++recNo));
         qs.debugOn(isDebugEnabled);
       }
     }

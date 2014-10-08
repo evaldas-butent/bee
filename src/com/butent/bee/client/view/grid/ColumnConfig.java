@@ -1,7 +1,5 @@
 package com.butent.bee.client.view.grid;
 
-import com.google.common.collect.Lists;
-
 import com.butent.bee.client.data.Data;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.data.BeeColumn;
@@ -12,11 +10,12 @@ import com.butent.bee.shared.ui.Flexibility;
 import com.butent.bee.shared.ui.StyleDeclaration;
 import com.butent.bee.shared.utils.BeeUtils;
 
+import java.util.ArrayList;
 import java.util.List;
 
 class ColumnConfig {
 
-  private static final List<BeeColumn> dataColumns = Lists.newArrayList();
+  private static final List<BeeColumn> dataColumns = new ArrayList<>();
 
   private static int gridIndex;
   private static int nameIndex;

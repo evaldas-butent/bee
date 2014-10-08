@@ -4,6 +4,8 @@ public interface LocalizableClassifierConstants {
 
   String article();
 
+  String bank();
+
   String branch();
 
   String category();
@@ -34,6 +36,8 @@ public interface LocalizableClassifierConstants {
 
   String currencyRates();
 
+  String currencyShort();
+
   String defaultColor();
 
   String department();
@@ -60,6 +64,12 @@ public interface LocalizableClassifierConstants {
 
   String price2();
 
+  String price3();
+
+  String printBankAccount();
+
+  String printBankCode();
+
   String references();
 
   String service();
@@ -71,6 +81,8 @@ public interface LocalizableClassifierConstants {
   String types();
 
   String unit();
+
+  String unitShort();
 
   String updateExchangeRatesDateHigh();
 

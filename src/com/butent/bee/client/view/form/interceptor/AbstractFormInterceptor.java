@@ -27,6 +27,7 @@ import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.time.DateTime;
 import com.butent.bee.shared.time.JustDate;
 import com.butent.bee.shared.ui.Action;
+import com.butent.bee.shared.ui.Relation;
 
 import java.util.List;
 
@@ -83,6 +84,10 @@ public abstract class AbstractFormInterceptor implements FormInterceptor {
 
   @Override
   public void beforeStateChange(State state, boolean modal) {
+  }
+
+  @Override
+  public void configureRelation(String name, Relation relation) {
   }
 
   @Override

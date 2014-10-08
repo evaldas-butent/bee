@@ -4,6 +4,8 @@ public interface LocalizableMailConstants {
 
   String mail();
 
+  String mailAccount();
+
   String mailActionMoveToTrash();
 
   String mails();

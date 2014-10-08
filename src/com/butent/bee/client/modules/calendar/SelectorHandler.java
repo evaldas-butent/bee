@@ -1,7 +1,5 @@
 package com.butent.bee.client.modules.calendar;
 
-import com.google.common.collect.Lists;
-
 import static com.butent.bee.shared.modules.calendar.CalendarConstants.*;
 import static com.butent.bee.shared.modules.classifiers.ClassifierConstants.*;
 
@@ -31,6 +29,7 @@ import com.butent.bee.shared.modules.classifiers.ClassifierConstants;
 import com.butent.bee.shared.modules.transport.TransportConstants;
 import com.butent.bee.shared.utils.BeeUtils;
 
+import java.util.ArrayList;
 import java.util.List;
 
 class SelectorHandler implements SelectorEvent.Handler {
@@ -78,7 +77,7 @@ class SelectorHandler implements SelectorEvent.Handler {
   private static void chooseVehicle(final DataView dataView, final BeeRowSet rowSet,
       String companyName, final IsRow owner) {
 
-    List<String> options = Lists.newArrayList();
+    List<String> options = new ArrayList<>();
 
     int numberIndex = rowSet.getColumnIndex(TransportConstants.COL_NUMBER);
     int parentModelIndex = rowSet.getColumnIndex(TransportConstants.COL_PARENT_MODEL_NAME);

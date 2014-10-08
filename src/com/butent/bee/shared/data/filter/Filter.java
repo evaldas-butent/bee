@@ -117,7 +117,7 @@ public abstract class Filter implements BeeSerializable, RowFilter {
     Assert.notNull(clazz);
     Assert.notEmpty(value);
 
-    List<Filter> filters = Lists.newArrayList();
+    List<Filter> filters = new ArrayList<>();
 
     String item;
     for (Enum<?> constant : clazz.getEnumConstants()) {

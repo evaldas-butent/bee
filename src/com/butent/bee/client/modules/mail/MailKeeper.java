@@ -1,7 +1,5 @@
 package com.butent.bee.client.modules.mail;
 
-import com.google.common.collect.Lists;
-import com.google.common.collect.Sets;
 import com.google.gwt.core.client.Scheduler.ScheduledCommand;
 
 import static com.butent.bee.shared.modules.mail.MailConstants.*;
@@ -39,6 +37,8 @@ import com.butent.bee.shared.rights.Module;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.Codec;
 
+import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Objects;
 import java.util.Set;
@@ -47,7 +47,7 @@ public final class MailKeeper {
 
   private static MailController controller;
   private static MailPanel activePanel;
-  private static final Set<MailPanel> mailPanels = Sets.newHashSet();
+  private static final Set<MailPanel> mailPanels = new HashSet<>();
 
   public static void refreshActivePanel(boolean refreshFolders, final Long folderId) {
     if (activePanel != null) {
@@ -252,7 +252,7 @@ public final class MailKeeper {
           return;
         }
         SimpleRowSet rs = SimpleRowSet.restore(response.getResponseAsString());
-        List<AccountInfo> availableAccounts = Lists.newArrayList();
+        List<AccountInfo> availableAccounts = new ArrayList<>();
         AccountInfo defaultAccount = null;
 
         for (SimpleRow row : rs) {

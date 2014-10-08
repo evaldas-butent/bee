@@ -21,6 +21,7 @@ import com.butent.bee.shared.data.IsRow;
 import com.butent.bee.shared.data.RelationUtils;
 import com.butent.bee.shared.data.filter.Filter;
 import com.butent.bee.shared.data.view.DataInfo;
+import com.butent.bee.shared.time.TimeUtils;
 import com.butent.bee.shared.utils.BeeUtils;
 
 import java.util.ArrayList;
@@ -70,7 +71,9 @@ public class ClassifierSelector implements SelectorEvent.Handler {
         DataView dataView = ViewHelper.getDataView(event.getSelector());
 
         if (dataView != null && VIEW_COMPANY_OBJECTS.equals(dataView.getViewName())) {
-          filterPersonsByCompany(event, dataView);
+          if (TimeUtils.year() < 0) { // never
+            filterPersonsByCompany(event, dataView);
+          }
         }
       }
     }

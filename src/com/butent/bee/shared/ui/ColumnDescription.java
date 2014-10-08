@@ -16,6 +16,7 @@ import com.butent.bee.shared.utils.NameUtils;
 import com.butent.bee.shared.utils.Property;
 import com.butent.bee.shared.utils.PropertyUtils;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
@@ -81,6 +82,10 @@ public class ColumnDescription implements BeeSerializable, HasInfo, HasOptions, 
     EXPORTABLE, EXPORT_WIDTH_FACTOR
   }
 
+  public static final String VIEW_COLUMN_SETTINGS = "GridColumnSettings";
+
+  private static boolean omniView;
+
   public static ColumnDescription restore(String s) {
     if (BeeUtils.isEmpty(s)) {
       return null;
@@ -90,7 +95,10 @@ public class ColumnDescription implements BeeSerializable, HasInfo, HasOptions, 
     return column;
   }
 
-  public static final String VIEW_COLUMN_SETTINGS = "GridColumnSettings";
+  public static boolean toggleOmniView() {
+    omniView = !omniView;
+    return omniView;
+  }
 
   private ColType colType;
 
@@ -301,7 +309,7 @@ public class ColumnDescription implements BeeSerializable, HasInfo, HasOptions, 
           if (ArrayUtils.isEmpty(scs)) {
             setDynStyles(null);
           } else {
-            List<ConditionalStyleDeclaration> lst = Lists.newArrayList();
+            List<ConditionalStyleDeclaration> lst = new ArrayList<>();
             for (String z : scs) {
               lst.add(ConditionalStyleDeclaration.restore(z));
             }
@@ -674,7 +682,7 @@ public class ColumnDescription implements BeeSerializable, HasInfo, HasOptions, 
   }
 
   public Boolean getVisible() {
-    return visible;
+    return omniView ? null : visible;
   }
 
   public String getWhiteSpace() {

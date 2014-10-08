@@ -18,15 +18,26 @@ import com.butent.bee.client.composite.FileCollector;
 import com.butent.bee.client.data.Data;
 import com.butent.bee.client.data.IdCallback;
 import com.butent.bee.client.data.Queries;
+import com.butent.bee.client.event.logical.RenderingEvent;
+import com.butent.bee.client.grid.ColumnFooter;
+import com.butent.bee.client.grid.ColumnHeader;
+import com.butent.bee.client.grid.column.AbstractColumn;
+import com.butent.bee.client.grid.column.CalculatedColumn;
 import com.butent.bee.client.i18n.Money;
+import com.butent.bee.client.modules.trade.TotalRenderer;
 import com.butent.bee.client.modules.trade.acts.TradeActItemImporter.ImportEntry;
 import com.butent.bee.client.presenter.GridPresenter;
+import com.butent.bee.client.render.AbstractCellRenderer;
 import com.butent.bee.client.utils.FileUtils;
 import com.butent.bee.client.utils.NewFileInfo;
 import com.butent.bee.client.view.ViewHelper;
+import com.butent.bee.client.view.edit.EditableColumn;
+import com.butent.bee.client.view.grid.ColumnInfo;
+import com.butent.bee.client.view.grid.GridView;
 import com.butent.bee.client.view.grid.interceptor.AbstractGridInterceptor;
 import com.butent.bee.client.view.grid.interceptor.GridInterceptor;
 import com.butent.bee.client.widget.Button;
+import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.Consumer;
 import com.butent.bee.shared.Latch;
 import com.butent.bee.shared.communication.CommUtils;
@@ -35,6 +46,7 @@ import com.butent.bee.shared.data.BeeColumn;
 import com.butent.bee.shared.data.BeeRow;
 import com.butent.bee.shared.data.BeeRowSet;
 import com.butent.bee.shared.data.DataUtils;
+import com.butent.bee.shared.data.IsColumn;
 import com.butent.bee.shared.data.IsRow;
 import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.io.FileInfo;
@@ -42,6 +54,7 @@ import com.butent.bee.shared.modules.classifiers.ItemPrice;
 import com.butent.bee.shared.modules.trade.acts.TradeActKind;
 import com.butent.bee.shared.time.DateTime;
 import com.butent.bee.shared.utils.BeeUtils;
+import com.butent.bee.shared.utils.EnumUtils;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -56,8 +69,20 @@ import elemental.html.File;
 public class TradeActItemsGrid extends AbstractGridInterceptor implements
     SelectionHandler<BeeRowSet> {
 
+  private static void configureRenderer(List<? extends IsColumn> dataColumns,
+      TotalRenderer renderer) {
+
+    int index = DataUtils.getColumnIndex(COL_TRADE_ITEM_QUANTITY, dataColumns);
+    QuantityReader quantityReader = new QuantityReader(index);
+
+    renderer.getTotalizer().setQuantityFuction(quantityReader);
+  }
+
   private static final String STYLE_COMMAND_IMPORT = TradeActKeeper.STYLE_PREFIX
       + "command-import-items";
+
+  private static final String COLUMN_RETURNED_QTY = PRP_RETURNED_QTY;
+  private static final String COLUMN_REMAINING_QTY = "remaining_qty";
 
   private TradeActItemPicker picker;
   private FileCollector collector;
@@ -66,18 +91,43 @@ public class TradeActItemsGrid extends AbstractGridInterceptor implements
   }
 
   @Override
-  public void afterCreatePresenter(GridPresenter presenter) {
-    Button command = new Button(Localized.getConstants().actionImport());
-    command.addStyleName(STYLE_COMMAND_IMPORT);
+  public boolean afterCreateColumn(String columnName, List<? extends IsColumn> dataColumns,
+      AbstractColumn<?> column, ColumnHeader header, ColumnFooter footer,
+      EditableColumn editableColumn) {
 
-    command.addClickHandler(new ClickHandler() {
-      @Override
-      public void onClick(ClickEvent event) {
-        ensureCollector().clickInput();
+    if (column instanceof CalculatedColumn) {
+      AbstractCellRenderer renderer = ((CalculatedColumn) column).getRenderer();
+      if (renderer instanceof TotalRenderer) {
+        configureRenderer(dataColumns, (TotalRenderer) renderer);
       }
-    });
+    }
 
-    presenter.getHeader().addCommandItem(command);
+    if (footer != null && footer.getRowEvaluator() instanceof TotalRenderer) {
+      configureRenderer(dataColumns, (TotalRenderer) footer.getRowEvaluator());
+    }
+
+    return super.afterCreateColumn(columnName, dataColumns, column, header, footer, editableColumn);
+  }
+
+  @Override
+  public void afterCreatePresenter(GridPresenter presenter) {
+    GridView gridView = presenter.getGridView();
+
+    if (gridView != null && !gridView.isReadOnly()
+        && BeeKeeper.getUser().canCreateData(gridView.getViewName())) {
+
+      Button command = new Button(Localized.getConstants().actionImport());
+      command.addStyleName(STYLE_COMMAND_IMPORT);
+
+      command.addClickHandler(new ClickHandler() {
+        @Override
+        public void onClick(ClickEvent event) {
+          ensureCollector().clickInput();
+        }
+      });
+
+      presenter.getHeader().addCommandItem(command);
+    }
 
     super.afterCreatePresenter(presenter);
   }
@@ -123,6 +173,71 @@ public class TradeActItemsGrid extends AbstractGridInterceptor implements
     }
 
     return false;
+  }
+
+  @Override
+  public void beforeRender(GridView gridView, RenderingEvent event) {
+    IsRow parentRow = ViewHelper.getFormRow(gridView);
+    TradeActKind kind = TradeActKeeper.getKind(VIEW_TRADE_ACTS, parentRow);
+
+    boolean showReturn = kind != null && kind.enableReturn();
+    boolean returnVisible = gridView.getGrid().isColumnVisible(COLUMN_RETURNED_QTY);
+
+    if (showReturn != returnVisible) {
+      List<ColumnInfo> predefinedColumns = gridView.getGrid().getPredefinedColumns();
+      List<Integer> visibleColumns = gridView.getGrid().getVisibleColumns();
+
+      List<Integer> showColumns = new ArrayList<>();
+
+      if (showReturn) {
+        int qtyPosition = BeeConst.UNDEF;
+        int unitPosition = BeeConst.UNDEF;
+
+        for (int i = 0; i < visibleColumns.size(); i++) {
+          ColumnInfo columnInfo = predefinedColumns.get(visibleColumns.get(i));
+
+          if (columnInfo.is(COL_TRADE_ITEM_QUANTITY)) {
+            qtyPosition = i;
+          } else if (columnInfo.is(ALS_UNIT_NAME)) {
+            unitPosition = i;
+          }
+        }
+
+        int retIndex = BeeConst.UNDEF;
+        int remIndex = BeeConst.UNDEF;
+
+        for (int i = 0; i < predefinedColumns.size(); i++) {
+          ColumnInfo columnInfo = predefinedColumns.get(i);
+
+          if (columnInfo.is(COLUMN_RETURNED_QTY)) {
+            retIndex = i;
+          } else if (columnInfo.is(COLUMN_REMAINING_QTY)) {
+            remIndex = i;
+          }
+        }
+
+        showColumns.addAll(visibleColumns);
+
+        int pos = (unitPosition == qtyPosition + 1) ? unitPosition : qtyPosition;
+        if (!BeeConst.isUndef(retIndex) && !showColumns.contains(retIndex)) {
+          showColumns.add(pos + 1, retIndex);
+        }
+        if (!BeeConst.isUndef(retIndex) && !showColumns.contains(remIndex)) {
+          showColumns.add(pos + 2, remIndex);
+        }
+
+      } else {
+        for (int index : visibleColumns) {
+          if (!predefinedColumns.get(index).is(COLUMN_RETURNED_QTY)
+              && !predefinedColumns.get(index).is(COLUMN_REMAINING_QTY)) {
+            showColumns.add(index);
+          }
+        }
+      }
+
+      gridView.getGrid().overwriteVisibleColumns(showColumns);
+      event.setDataChanged();
+    }
   }
 
   @Override
@@ -212,6 +327,11 @@ public class TradeActItemsGrid extends AbstractGridInterceptor implements
           if (DataUtils.idEquals(parentRow, result)) {
             ItemPrice itemPrice = TradeActKeeper.getItemPrice(VIEW_TRADE_ACTS, parentRow);
 
+            String ip = rowSet.getTableProperty(PRP_ITEM_PRICE);
+            if (BeeUtils.isDigit(ip)) {
+              itemPrice = EnumUtils.getEnumByIndex(ItemPrice.class, ip);
+            }
+
             DateTime date = Data.getDateTime(VIEW_TRADE_ACTS, parentRow, COL_TA_DATE);
             Long currency = Data.getLong(VIEW_TRADE_ACTS, parentRow, COL_TA_CURRENCY);
 
@@ -222,7 +342,7 @@ public class TradeActItemsGrid extends AbstractGridInterceptor implements
     }
   }
 
-  private void addItems(IsRow parentRow, DateTime date, Long currency, ItemPrice itemPrice,
+  private void addItems(IsRow parentRow, DateTime date, Long currency, ItemPrice defPrice,
       Double discount, BeeRowSet items) {
 
     List<String> colNames = Lists.newArrayList(COL_TRADE_ACT, COL_TA_ITEM,
@@ -245,6 +365,13 @@ public class TradeActItemsGrid extends AbstractGridInterceptor implements
         row.setValue(itemIndex, item.getId());
 
         row.setValue(qtyIndex, qty);
+
+        ItemPrice itemPrice = defPrice;
+
+        String ip = item.getProperty(PRP_ITEM_PRICE);
+        if (BeeUtils.isDigit(ip)) {
+          itemPrice = EnumUtils.getEnumByIndex(ItemPrice.class, ip);
+        }
 
         if (itemPrice != null) {
           Double price = item.getDouble(items.getColumnIndex(itemPrice.getPriceColumn()));
@@ -384,15 +511,6 @@ public class TradeActItemsGrid extends AbstractGridInterceptor implements
     }
   }
 
-  private TradeActItemPicker ensurePicker() {
-    if (picker == null) {
-      picker = new TradeActItemPicker();
-      picker.addSelectionHandler(this);
-    }
-
-    return picker;
-  }
-
   private Double getDefaultDiscount() {
     IsRow row = getGridView().getActiveRow();
     if (row == null) {
@@ -400,5 +518,14 @@ public class TradeActItemsGrid extends AbstractGridInterceptor implements
     }
 
     return (row == null) ? null : row.getDouble(getDataIndex(COL_TRADE_DISCOUNT));
+  }
+
+  private TradeActItemPicker ensurePicker() {
+    if (picker == null) {
+      picker = new TradeActItemPicker();
+      picker.addSelectionHandler(this);
+    }
+
+    return picker;
   }
 }

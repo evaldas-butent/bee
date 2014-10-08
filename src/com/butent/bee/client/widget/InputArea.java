@@ -21,7 +21,6 @@ import com.butent.bee.client.event.Binder;
 import com.butent.bee.client.event.HasInputHandlers;
 import com.butent.bee.client.event.InputHandler;
 import com.butent.bee.client.event.logical.SummaryChangeEvent;
-import com.butent.bee.client.style.StyleUtils;
 import com.butent.bee.client.ui.FormWidget;
 import com.butent.bee.client.ui.HandlesAfterSave;
 import com.butent.bee.client.ui.UiHelper;
@@ -58,7 +57,7 @@ public class InputArea extends CustomWidget implements Editor, TextBox, HandlesA
     HasTextDimensions, HasInputHandlers, HasTextBox, HasMaxLength, HasAutocomplete,
     HasKeyDownHandlers {
 
-  private static final String STYLE_NAME = StyleUtils.CLASS_NAME_PREFIX + "InputArea";
+  private static final String STYLE_NAME = BeeConst.CSS_CLASS_PREFIX + "InputArea";
 
   private Resource resource;
 

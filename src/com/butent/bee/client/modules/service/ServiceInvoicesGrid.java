@@ -1,7 +1,6 @@
 package com.butent.bee.client.modules.service;
 
 import com.google.common.collect.Maps;
-import com.google.common.collect.Sets;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.event.logical.shared.ValueChangeEvent;
@@ -34,6 +33,7 @@ import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.modules.trade.TradeConstants;
 import com.butent.bee.shared.ui.Action;
 
+import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
@@ -102,7 +102,7 @@ public class ServiceInvoicesGrid extends AbstractGridInterceptor implements Clic
   @Override
   public void onClick(ClickEvent event) {
     final GridPresenter presenter = getGridPresenter();
-    final Set<Long> ids = Sets.newHashSet();
+    final Set<Long> ids = new HashSet<>();
 
     for (RowInfo row : presenter.getGridView().getSelectedRows(SelectedRows.ALL)) {
       ids.add(row.getId());

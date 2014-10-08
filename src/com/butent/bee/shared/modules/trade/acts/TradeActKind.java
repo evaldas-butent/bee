@@ -1,13 +1,17 @@
 package com.butent.bee.shared.modules.trade.acts;
 
 import com.butent.bee.shared.BeeConst;
+import com.butent.bee.shared.data.filter.CompoundFilter;
 import com.butent.bee.shared.data.filter.Filter;
 import com.butent.bee.shared.i18n.LocalizableConstants;
 import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.ui.HasLocalizedCaption;
 
+import java.util.EnumSet;
+
 public enum TradeActKind implements HasLocalizedCaption {
-  SALE(true, true, true, true, true) {
+  SALE(Option.AUTO_NUMBER, Option.BUILD_INVOICES, Option.ENABLE_COPY, Option.ENABLE_RETURN,
+      Option.ENABLE_SUPPLEMENT, Option.HAS_SERVICES, Option.SAVE_AS_TEMPLATE, Option.SHOW_STOCK) {
     @Override
     public String getCaption(LocalizableConstants constants) {
       return constants.taKindSale();
@@ -18,7 +22,8 @@ public enum TradeActKind implements HasLocalizedCaption {
       return Filter.or(super.getFilter(), SUPPLEMENT.getFilter(), RETURN.getFilter());
     }
   },
-  SUPPLEMENT(false, false, true, true, false) {
+
+  SUPPLEMENT(Option.BUILD_INVOICES, Option.ENABLE_RETURN, Option.HAS_SERVICES, Option.SHOW_STOCK) {
     @Override
     public String getCaption(LocalizableConstants constants) {
       return constants.taKindSupplement();
@@ -29,7 +34,8 @@ public enum TradeActKind implements HasLocalizedCaption {
       return null;
     }
   },
-  RETURN(false, false, false, false, false) {
+
+  RETURN(EnumSet.noneOf(Option.class)) {
     @Override
     public String getCaption(LocalizableConstants constants) {
       return constants.taKindReturn();
@@ -40,19 +46,23 @@ public enum TradeActKind implements HasLocalizedCaption {
       return null;
     }
   },
-  TENDER(true, true, true, true, false) {
+
+  TENDER(Option.CONVERT_TO_SALE, Option.ENABLE_COPY, Option.HAS_SERVICES,
+      Option.SAVE_AS_TEMPLATE, Option.SHOW_STOCK) {
     @Override
     public String getCaption(LocalizableConstants constants) {
       return constants.taKindTender();
     }
   },
-  PURCHASE(true, true, false, false, true) {
+
+  PURCHASE(Option.AUTO_NUMBER, Option.ENABLE_COPY, Option.SAVE_AS_TEMPLATE) {
     @Override
     public String getCaption(LocalizableConstants constants) {
       return constants.taKindPurchase();
     }
   },
-  WRITE_OFF(false, false, false, true, true) {
+
+  WRITE_OFF(Option.AUTO_NUMBER, Option.SHOW_STOCK) {
     @Override
     public String getCaption(LocalizableConstants constants) {
       return constants.taKindWriteOff();
@@ -63,43 +73,81 @@ public enum TradeActKind implements HasLocalizedCaption {
       return "write-off";
     }
   },
-  RESERVE(false, false, false, true, true) {
+
+  RESERVE(Option.CONVERT_TO_SALE, Option.SHOW_STOCK) {
     @Override
     public String getCaption(LocalizableConstants constants) {
       return constants.taKindReserve();
     }
   };
 
-  private final boolean copy;
-  private final boolean template;
-  private final boolean services;
-  private final boolean showStock;
-  private final boolean number;
+  private enum Option {
+    AUTO_NUMBER,
+    BUILD_INVOICES,
+    CONVERT_TO_SALE,
+    ENABLE_COPY,
+    ENABLE_RETURN,
+    ENABLE_SUPPLEMENT,
+    HAS_SERVICES,
+    SAVE_AS_TEMPLATE,
+    SHOW_STOCK
+  }
 
-  private TradeActKind(boolean copy, boolean template, boolean services, boolean showStock,
-      boolean number) {
+  public static Filter getFilterForInvoiceBuilder() {
+    CompoundFilter filter = Filter.or();
 
-    this.copy = copy;
-    this.template = template;
-    this.services = services;
-    this.showStock = showStock;
-    this.number = number;
+    for (TradeActKind kind : values()) {
+      if (kind.enableInvoices()) {
+        filter.add(kind.getFilter());
+      }
+    }
+    return filter;
+  }
+
+  private final EnumSet<Option> options;
+
+  private TradeActKind(EnumSet<Option> options) {
+    this.options = options;
+  }
+
+  private TradeActKind(Option first, Option... rest) {
+    if (rest == null) {
+      this.options = EnumSet.of(first);
+    } else {
+      this.options = EnumSet.of(first, rest);
+    }
   }
 
   public boolean autoNumber() {
-    return number;
+    return options.contains(Option.AUTO_NUMBER);
   }
 
   public boolean enableCopy() {
-    return copy;
+    return options.contains(Option.ENABLE_COPY);
+  }
+
+  public boolean enableInvoices() {
+    return options.contains(Option.BUILD_INVOICES);
+  }
+
+  public boolean enableReturn() {
+    return options.contains(Option.ENABLE_RETURN);
+  }
+
+  public boolean enableSale() {
+    return options.contains(Option.CONVERT_TO_SALE);
   }
 
   public boolean enableServices() {
-    return services;
+    return options.contains(Option.HAS_SERVICES);
+  }
+
+  public boolean enableSupplement() {
+    return options.contains(Option.ENABLE_SUPPLEMENT);
   }
 
   public boolean enableTemplate() {
-    return template;
+    return options.contains(Option.SAVE_AS_TEMPLATE);
   }
 
   @Override
@@ -120,6 +168,6 @@ public enum TradeActKind implements HasLocalizedCaption {
   }
 
   public boolean showStock() {
-    return showStock;
+    return options.contains(Option.SHOW_STOCK);
   }
 }

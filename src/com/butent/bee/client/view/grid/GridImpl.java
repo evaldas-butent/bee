@@ -45,6 +45,7 @@ import com.butent.bee.client.grid.column.RowIdColumn;
 import com.butent.bee.client.grid.column.RowVersionColumn;
 import com.butent.bee.client.grid.column.SelectionColumn;
 import com.butent.bee.client.i18n.Format;
+import com.butent.bee.client.i18n.HasNumberFormat;
 import com.butent.bee.client.layout.Absolute;
 import com.butent.bee.client.presenter.GridFormPresenter;
 import com.butent.bee.client.presenter.GridPresenter;
@@ -182,7 +183,7 @@ public class GridImpl extends Absolute implements GridView, EditEndEvent.Handler
 
   private static final BeeLogger logger = LogUtils.getLogger(GridImpl.class);
 
-  private static final String STYLE_NAME = "bee-GridView";
+  private static final String STYLE_NAME = BeeConst.CSS_CLASS_PREFIX + "GridView";
 
   private static void amendGeneratedSize(final ModalForm popup, final FormView form) {
     popup.attachAmendDetach(new ScheduledCommand() {
@@ -394,6 +395,10 @@ public class GridImpl extends Absolute implements GridView, EditEndEvent.Handler
         cd.setRelationInitialized(true);
       }
 
+      if (gridInterceptor != null) {
+        gridInterceptor.configureRelation(columnId, cd.getRelation());
+      }
+
       originalSource = cd.getRelation().getOriginalTarget();
       relationEditable = cd.getRelation().isEditEnabled(false)
           && Data.isViewVisible(cd.getRelation().getViewName());
@@ -543,9 +548,6 @@ public class GridImpl extends Absolute implements GridView, EditEndEvent.Handler
         }
         if (cd.getScale() != null) {
           calcColumn.setScale(cd.getScale());
-          if (ValueType.DECIMAL.equals(cd.getValueType())) {
-            calcColumn.setNumberFormat(Format.getDecimalFormat(cd.getScale()));
-          }
         }
         column = calcColumn;
         break;
@@ -606,6 +608,8 @@ public class GridImpl extends Absolute implements GridView, EditEndEvent.Handler
       } else {
         Format.setFormat(column, column.getValueType(), cd.getFormat());
       }
+    } else if (BeeUtils.isNonNegative(cd.getScale()) && (column instanceof HasNumberFormat)) {
+      ((HasNumberFormat) column).setNumberFormat(Format.getDecimalFormat(cd.getScale()));
     }
 
     if (!BeeUtils.isEmpty(cd.getHorAlign())) {
@@ -2850,7 +2854,7 @@ public class GridImpl extends Absolute implements GridView, EditEndEvent.Handler
   }
 
   private void updateCell(final IsRow rowValue, final IsColumn dataColumn,
-      String oldValue, String newValue, final boolean rowMode) {
+      final String oldValue, final String newValue, final boolean rowMode) {
 
     getGrid().preliminaryUpdate(rowValue.getId(), dataColumn.getId(), newValue);
 
@@ -2864,7 +2868,7 @@ public class GridImpl extends Absolute implements GridView, EditEndEvent.Handler
       @Override
       public void onSuccess(BeeRow result) {
         if (getGridInterceptor() != null) {
-          getGridInterceptor().afterUpdateCell(dataColumn, result, rowMode);
+          getGridInterceptor().afterUpdateCell(dataColumn, oldValue, newValue, result, rowMode);
         }
       }
     };

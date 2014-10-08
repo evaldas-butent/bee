@@ -2,6 +2,8 @@
 <!DOCTYPE Form[
   <!ENTITY foritem "<dynStyle><ui:inline>display: none;</ui:inline><ui:expression>row.IsService</ui:expression></dynStyle>">
   <!ENTITY forservice "<dynStyle><ui:inline>display: none;</ui:inline><ui:expression>!row.IsService</ui:expression></dynStyle>">
+  <!ENTITY pricescale "2">
+  <!ENTITY costscale "2">
 ]>
 <f:Form xmlns="http://www.butent.com/widget"
   xmlns:f="http://www.butent.com/form"
@@ -35,7 +37,7 @@
         <InputText source="Article" />
 
         <Label for="Unit" text="=unitShort" />
-        <DataSelector source="Unit" visible="true" newRowEnabled="false" style="width: 80px;" />
+        <DataSelector source="Unit" visible="true" editEnabled="false" style="width: 80px;" />
 
         <CheckBox source="Vat" text="=vat" />
         <cell style="padding-left: 6px;">
@@ -89,26 +91,41 @@
 
           <row>
             <Label for="Price" />
-            <InputDecimal source="Price" currencySource="Currency" summarize="true" />
+            <InputDecimal source="Price" currencySource="Currency" scale="&pricescale;"
+              summarize="true" />
             <DataSelector source="Currency" for="Price" newRowEnabled="false" editEnabled="false"
               style="width: 50px;" />
           </row>
+
           <row>
             <Label for="Cost" />
-            <InputDecimal source="Cost" currencySource="CostCurrency" summarize="true" />
+            <InputDecimal source="Cost" currencySource="CostCurrency" scale="&costscale;"
+              summarize="true" />
             <DataSelector source="CostCurrency" for="Cost" newRowEnabled="false" editEnabled="false"
               style="width: 50px;" />
           </row>
+
           <row>
             <Label for="Price1" />
-            <InputDecimal source="Price1" currencySource="Currency1" summarize="true" />
+            <InputDecimal source="Price1" currencySource="Currency1" scale="&pricescale;"
+              summarize="true" />
             <DataSelector source="Currency1" for="Price1" newRowEnabled="false" editEnabled="false"
               style="width: 50px;" />
           </row>
+
           <row>
             <Label for="Price2" />
-            <InputDecimal source="Price2" currencySource="Currency2" summarize="true" />
+            <InputDecimal source="Price2" currencySource="Currency2" scale="&pricescale;"
+              summarize="true" />
             <DataSelector source="Currency2" for="Price2" newRowEnabled="false" editEnabled="false"
+              style="width: 50px;" />
+          </row>
+
+          <row>
+            <Label for="Price3" />
+            <InputDecimal source="Price3" currencySource="Currency3" scale="&pricescale;"
+              summarize="true" />
+            <DataSelector source="Currency3" for="Price3" newRowEnabled="false" editEnabled="false"
               style="width: 50px;" />
           </row>
         </Table>
@@ -127,7 +144,13 @@
                 summarize="true" />
             </cell>
           </row>
-
+          <row>
+            <Label for="Name3" />
+            <cell colSpan="3">
+              <InputText source="Name3" autocomplete="true" visible="true" style="width: 100%;"
+                summarize="true" />
+            </cell>
+          </row>
           <row>
             <Label for="Article2" />
             <InputText source="Article2" summarize="true" />
@@ -137,22 +160,28 @@
           </row>
 
           <row>
-            <Label for="Department" />
-            <DataSelector source="Department" summarize="true" />
+            <Label for="Department" data="Departments" />
+            <DataSelector source="Department" data="Departments" summarize="true" />
 
             <Label for="ExternalCode" />
             <InputText source="ExternalCode" summarize="true" />
           </row>
 
           <row>
-            <Label for="ActivityType" />
-            <DataSelector source="ActivityType" summarize="true" />
+            <Label for="ActivityType" data="ActivityTypes" />
+            <DataSelector source="ActivityType" data="ActivityTypes" summarize="true" />
 
-            <Label for="CostCenter" />
-            <DataSelector source="CostCenter" summarize="true" />
+            <Label for="CostCenter" data="CostCenters" />
+            <DataSelector source="CostCenter" data="CostCenters" summarize="true" />
           </row>
         </Table>
       </page>  
+
+      <page>
+        <text>=pictures</text>
+        <Gallery viewName="ItemGraphics" relColumn="Item" pictureColumn="Picture"
+          orderColumn="Ordinal" />
+      </page>
 
       <page for="Description">
         <text>=description</text>

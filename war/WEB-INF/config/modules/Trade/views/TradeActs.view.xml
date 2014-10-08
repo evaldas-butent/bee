@@ -6,6 +6,8 @@
   editForm="TradeAct" newRowForm="TradeAct"
   >
   <Columns>
+    <SimpleColumn name="ActName" />
+
     <SimpleColumn name="Date" />
     <SimpleColumn name="Until" />
 
@@ -28,6 +30,7 @@
     <SimpleColumn name="Status" />
     <SimpleJoin joinType="LEFT" name="Status">
       <SimpleColumn name="StatusName" />
+      <SimpleColumn name="StatusActive" />
       <SimpleColumn name="Background" alias="StatusBackground" />
       <SimpleColumn name="Foreground" alias="StatusForeground" />
     </SimpleJoin>

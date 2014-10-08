@@ -1,7 +1,5 @@
 package com.butent.bee.server.modules.administration;
 
-import com.google.common.collect.Lists;
-
 import static com.butent.bee.shared.modules.administration.AdministrationConstants.*;
 
 import com.butent.bee.server.Config;
@@ -37,6 +35,7 @@ import java.security.DigestInputStream;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.sql.SQLException;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
@@ -145,7 +144,7 @@ public class FileStorageBean {
   }
 
   public List<FileInfo> getFiles() {
-    List<FileInfo> files = Lists.newArrayList();
+    List<FileInfo> files = new ArrayList<>();
 
     String idName = sys.getIdName(TBL_FILES);
     String versionName = sys.getVersionName(TBL_FILES);

@@ -27,7 +27,7 @@
 
     <Disclosure open="true">
       <Label text="=filters" />
-      <Table style="margin-left: 0;">
+      <Table>
         <col index="0" kind="label" />
 
         <row>

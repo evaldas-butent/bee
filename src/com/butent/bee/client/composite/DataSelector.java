@@ -298,9 +298,12 @@ public class DataSelector extends Composite implements Editor, HasVisibleLines, 
           consume();
           if (getSelector().isShowing()) {
             event.stopPropagation();
-          }
-          if (getSelector().isItemSelected()) {
-            getSelector().cancelSelection();
+            if (getSelector().isItemSelected()) {
+              getSelector().cancelSelection();
+            } else {
+              getSelector().hide();
+            }
+
           } else {
             exit(true, State.CANCELED);
           }
@@ -585,7 +588,7 @@ public class DataSelector extends Composite implements Editor, HasVisibleLines, 
   private static final String ITEM_PREV = String.valueOf('\u25b2');
   private static final String ITEM_NEXT = String.valueOf('\u25bc');
 
-  private static final String STYLE_SELECTOR = StyleUtils.CLASS_NAME_PREFIX + "DataSelector";
+  private static final String STYLE_SELECTOR = BeeConst.CSS_CLASS_PREFIX + "DataSelector";
 
   private static final String STYLE_EMBEDDED = STYLE_SELECTOR + "-embedded";
   private static final String STYLE_STRICT = STYLE_SELECTOR + "-strict";

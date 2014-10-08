@@ -1,5 +1,5 @@
 .bee-co-companyInfo-label, .bee-co-companyInfo-item {
-  display: inline-block;
+  display: inline;
   margin-right: 4px;
 }
 .bee-co-companyInfo-label:after {

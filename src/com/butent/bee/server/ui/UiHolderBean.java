@@ -156,6 +156,10 @@ public class UiHolderBean {
     Element formElement = doc.getDocumentElement();
 
     String viewName = formElement.getAttribute(UiConstants.ATTR_VIEW_NAME);
+    if (BeeUtils.isEmpty(viewName)) {
+      viewName = formElement.getAttribute(UiConstants.ATTR_DATA);
+    }
+
     BeeView view = sys.isView(viewName) ? sys.getView(viewName) : null;
 
     checkWidgetChildrenVisibility(formElement, view);
@@ -345,6 +349,9 @@ public class UiHolderBean {
       Document doc = XmlUtils.getXmlResource(resource, UiObject.FORM.getSchemaPath());
       if (doc != null) {
         viewName = doc.getDocumentElement().getAttribute(UiConstants.ATTR_VIEW_NAME);
+        if (BeeUtils.isEmpty(viewName)) {
+          viewName = doc.getDocumentElement().getAttribute(UiConstants.ATTR_DATA);
+        }
       }
     }
 

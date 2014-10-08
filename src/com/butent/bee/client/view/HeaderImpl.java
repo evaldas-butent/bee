@@ -10,18 +10,16 @@ import com.google.gwt.user.client.ui.Widget;
 import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.Settings;
 import com.butent.bee.client.dom.DomUtils;
-import com.butent.bee.client.event.Binder;
 import com.butent.bee.client.event.logical.ReadyEvent;
 import com.butent.bee.client.layout.Flow;
 import com.butent.bee.client.layout.Horizontal;
 import com.butent.bee.client.presenter.Presenter;
-import com.butent.bee.client.style.StyleUtils;
 import com.butent.bee.client.ui.IdentifiableWidget;
 import com.butent.bee.client.ui.UiOption;
 import com.butent.bee.client.widget.FaLabel;
 import com.butent.bee.client.widget.Label;
 import com.butent.bee.shared.Assert;
-import com.butent.bee.shared.font.FontAwesome;
+import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogUtils;
@@ -40,42 +38,11 @@ import java.util.Set;
 
 public class HeaderImpl extends Flow implements HeaderView {
 
-  private final class ActionListener implements ClickHandler {
-    private final Action action;
-    private long lastTime;
-
-    private ActionListener(Action action) {
-      super();
-      this.action = action;
-    }
-
-    @Override
-    public void onClick(ClickEvent event) {
-      if (getViewPresenter() != null) {
-        long now = System.currentTimeMillis();
-        long last = getLastTime();
-        setLastTime(now);
-
-        if (now - last >= HeaderImpl.ACTION_SENSITIVITY_MILLIS) {
-          getViewPresenter().handleAction(action);
-        }
-      }
-    }
-
-    private long getLastTime() {
-      return lastTime;
-    }
-
-    private void setLastTime(long lastTime) {
-      this.lastTime = lastTime;
-    }
-  }
-
   private static final BeeLogger logger = LogUtils.getLogger(HeaderImpl.class);
 
   private static final int DEFAULT_HEIGHT = 30;
 
-  private static final String STYLE_PREFIX = StyleUtils.CLASS_NAME_PREFIX + "Header-";
+  private static final String STYLE_PREFIX = BeeConst.CSS_CLASS_PREFIX + "Header-";
 
   private static final String STYLE_CONTAINER = STYLE_PREFIX + "container";
 
@@ -88,9 +55,6 @@ public class HeaderImpl extends Flow implements HeaderView {
   private static final String STYLE_CONTROL_HIDDEN = STYLE_CONTROL + "-hidden";
 
   private static final String STYLE_DISABLED = STYLE_PREFIX + "disabled";
-
-  private static final int ACTION_SENSITIVITY_MILLIS =
-      BeeUtils.positive(Settings.getActionSensitivityMillis(), 300);
 
   private static boolean hasAction(Action action, boolean def,
       Set<Action> enabledActions, Set<Action> disabledActions) {
@@ -164,63 +128,63 @@ public class HeaderImpl extends Flow implements HeaderView {
     add(commandPanel);
 
     if (hasAction(Action.REFRESH, hasData, enabledActions, disabledActions)) {
-      add(createFa(FontAwesome.REFRESH, Action.REFRESH, hiddenActions));
+      add(createFa(Action.REFRESH, hiddenActions));
     }
 
     if (hasAction(Action.FILTER, false, enabledActions, disabledActions)) {
-      add(createFa(FontAwesome.FILTER, Action.FILTER, hiddenActions));
+      add(createFa(Action.FILTER, hiddenActions));
     }
     if (hasAction(Action.REMOVE_FILTER, false, enabledActions, disabledActions)) {
-      add(createFa(FontAwesome.REMOVE, Action.REMOVE_FILTER, hiddenActions));
+      add(createFa(Action.REMOVE_FILTER, hiddenActions));
     }
 
     boolean canAdd = hasData && !readOnly && BeeKeeper.getUser().canCreateData(viewName);
     if (hasAction(Action.ADD, canAdd, enabledActions, disabledActions)) {
-      add(createFa(FontAwesome.PLUS, Action.ADD, hiddenActions));
+      add(createFa(Action.ADD, hiddenActions));
     }
 
     if (hasAction(Action.COPY, false, enabledActions, disabledActions)) {
-      add(createFa(FontAwesome.COPY, Action.COPY, hiddenActions));
+      add(createFa(Action.COPY, hiddenActions));
     }
 
     boolean canDelete = hasData && !readOnly && BeeKeeper.getUser().canDeleteData(viewName);
     if (hasAction(Action.DELETE, canDelete, enabledActions, disabledActions)) {
-      add(createFa(FontAwesome.TRASH_O, Action.DELETE, hiddenActions));
+      add(createFa(Action.DELETE, hiddenActions));
     }
 
     if (hasAction(Action.BOOKMARK, false, enabledActions, disabledActions)) {
-      add(createFa(FontAwesome.BOOKMARK_O, Action.BOOKMARK, hiddenActions));
+      add(createFa(Action.BOOKMARK, hiddenActions));
     }
 
     if (hasAction(Action.EDIT, false, enabledActions, disabledActions)) {
-      add(createFa(FontAwesome.EDIT, Action.EDIT, hiddenActions));
+      add(createFa(Action.EDIT, hiddenActions));
     }
     if (hasAction(Action.SAVE, false, enabledActions, disabledActions)) {
-      add(createFa(FontAwesome.SAVE, Action.SAVE, hiddenActions));
+      add(createFa(Action.SAVE, hiddenActions));
     }
 
     if (hasAction(Action.EXPORT, false, enabledActions, disabledActions)) {
-      add(createFa(FontAwesome.FILE_EXCEL_O, Action.EXPORT, hiddenActions));
+      add(createFa(Action.EXPORT, hiddenActions));
     }
 
     if (hasAction(Action.CONFIGURE, false, enabledActions, disabledActions)) {
-      add(createFa(FontAwesome.COG, Action.CONFIGURE, hiddenActions));
+      add(createFa(Action.CONFIGURE, hiddenActions));
     }
 
     if (hasAction(Action.AUDIT, false, enabledActions, disabledActions)) {
-      add(createFa(FontAwesome.HISTORY, Action.AUDIT, hiddenActions));
+      add(createFa(Action.AUDIT, hiddenActions));
     }
 
     if (hasAction(Action.PRINT, false, enabledActions, disabledActions)) {
-      add(createFa(FontAwesome.PRINT, Action.PRINT, hiddenActions));
+      add(createFa(Action.PRINT, hiddenActions));
     }
 
     if (hasAction(Action.MENU, false, enabledActions, disabledActions)) {
-      add(createFa(FontAwesome.NAVICON, Action.MENU, hiddenActions));
+      add(createFa(Action.MENU, hiddenActions));
     }
 
     if (hasAction(Action.CLOSE, UiOption.isWindow(options), enabledActions, disabledActions)) {
-      add(createFa(FontAwesome.CLOSE, Action.CLOSE, hiddenActions));
+      add(createFa(Action.CLOSE, hiddenActions));
     }
   }
 
@@ -282,8 +246,13 @@ public class HeaderImpl extends Flow implements HeaderView {
     }
 
     Widget child = DomUtils.getChildQuietly(this, id);
-    if (child instanceof HasEnabled) {
-      return DomUtils.isVisible(child) && ((HasEnabled) child).isEnabled();
+    if (DomUtils.isVisible(child)) {
+      if (child instanceof HasEnabled) {
+        return ((HasEnabled) child).isEnabled();
+      } else {
+        return true;
+      }
+
     } else {
       return false;
     }
@@ -396,8 +365,8 @@ public class HeaderImpl extends Flow implements HeaderView {
     ReadyEvent.fire(this);
   }
 
-  private Widget createFa(FontAwesome fa, Action action, Set<Action> hiddenActions) {
-    FaLabel control = new FaLabel(fa);
+  private Widget createFa(Action action, Set<Action> hiddenActions) {
+    FaLabel control = new FaLabel(action.getIcon());
     initControl(control, action, hiddenActions);
     return control;
   }
@@ -410,17 +379,24 @@ public class HeaderImpl extends Flow implements HeaderView {
     return commandPanel;
   }
 
-  private void initControl(IdentifiableWidget control, Action action, Set<Action> hiddenActions) {
-    Binder.addClickHandler(control.asWidget(), new ActionListener(action));
-
+  private void initControl(FaLabel control, final Action action, Set<Action> hiddenActions) {
     control.addStyleName(STYLE_CONTROL);
     control.addStyleName(action.getStyleName());
 
-    control.getElement().setTitle(action.getCaption());
+    control.setTitle(action.getCaption());
 
     if (hiddenActions != null && hiddenActions.contains(action)) {
       control.getElement().addClassName(STYLE_CONTROL_HIDDEN);
     }
+
+    control.addClickHandler(new ClickHandler() {
+      @Override
+      public void onClick(ClickEvent event) {
+        if (getViewPresenter() != null) {
+          getViewPresenter().handleAction(action);
+        }
+      }
+    });
 
     getActionControls().put(action, control.getId());
   }

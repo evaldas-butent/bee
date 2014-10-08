@@ -1,7 +1,5 @@
 package com.butent.bee.client.modules.ec.view;
 
-import com.google.common.collect.Lists;
-import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
 import com.google.gwt.dom.client.Element;
 import com.google.gwt.event.dom.client.ClickEvent;
@@ -40,7 +38,9 @@ import com.butent.bee.shared.ui.HasCaption;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.Codec;
 
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -124,10 +124,10 @@ class SearchByGroup extends EcView implements HasCaption {
 
   private final boolean moto;
 
-  private final List<EcGroup> groups = Lists.newArrayList();
+  private final List<EcGroup> groups = new ArrayList<>();
 
   private int groupIndex = BeeConst.UNDEF;
-  private final Map<Long, EcGroupFilters> filters = Maps.newHashMap();
+  private final Map<Long, EcGroupFilters> filters = new HashMap<>();
 
   private final FieldSet groupPanel;
 

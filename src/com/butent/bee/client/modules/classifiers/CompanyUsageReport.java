@@ -326,7 +326,7 @@ public class CompanyUsageReport extends ReportInterceptor {
 
   @Override
   protected String getBookmarkLabel() {
-    List<String> labels = Lists.newArrayList(getCaption());
+    List<String> labels = Lists.newArrayList(getReportCaption());
 
     String relationIndex = getEditorValue(NAME_RELATION);
 

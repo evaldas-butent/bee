@@ -90,7 +90,7 @@ public abstract class TimeBoard extends Flow implements Presenter, View, Printab
     START_SLIDER, END_SLIDER, MOVER
   }
 
-  static final String STYLE_PREFIX = StyleUtils.CLASS_NAME_PREFIX + "timeboard-";
+  static final String STYLE_PREFIX = BeeConst.CSS_CLASS_PREFIX + "timeboard-";
 
   private static final BeeLogger logger = LogUtils.getLogger(TimeBoard.class);
 

@@ -264,7 +264,7 @@ public class InputNumber extends InputText implements HasBounds, HasIntStep,
 
   @Override
   protected String getDefaultStyleName() {
-    return "bee-InputNumber";
+    return BeeConst.CSS_CLASS_PREFIX + "InputNumber";
   }
 
   protected String sanitize(String v) {

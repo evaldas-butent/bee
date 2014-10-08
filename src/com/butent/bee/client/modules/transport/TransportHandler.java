@@ -1,8 +1,6 @@
 package com.butent.bee.client.modules.transport;
 
-import com.google.common.base.Objects;
 import com.google.common.collect.Lists;
-import com.google.common.collect.Sets;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.event.logical.shared.SelectionEvent;
@@ -77,8 +75,11 @@ import com.butent.bee.shared.ui.GridDescription;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.Codec;
 
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Objects;
 import java.util.Set;
 
 public final class TransportHandler {
@@ -124,7 +125,7 @@ public final class TransportHandler {
 
           } else if (response.hasArrayResponse(String.class)) {
             String[] arr = Codec.beeDeserializeCollection(response.getResponseAsString());
-            List<String> messages = Lists.newArrayList();
+            List<String> messages = new ArrayList<>();
 
             if (arr != null && arr.length % 2 == 0) {
               for (int i = 0; i < arr.length; i += 2) {
@@ -260,12 +261,12 @@ public final class TransportHandler {
               Double updValue;
               double newVal = BeeUtils.toDouble(cv.getNewValue());
 
-              if (Objects.equal(columnId, "Kilometers")) {
+              if (Objects.equals(columnId, "Kilometers")) {
                 updValue = row.getDouble(speedFromIndex);
                 updColumn = speedToColumn;
                 updIndex = speedToIndex;
               } else {
-                if (Objects.equal(columnId, "SpeedometerFrom")) {
+                if (Objects.equals(columnId, "SpeedometerFrom")) {
                   newVal = 0 - newVal;
                   updValue = row.getDouble(speedToIndex);
                 } else {
@@ -546,7 +547,7 @@ public final class TransportHandler {
             Filter.notNull(COL_DEPARTMENT_HEAD)), new RowSetCallback() {
           @Override
           public void onSuccess(BeeRowSet result) {
-            Set<Long> departments = Sets.newHashSet();
+            Set<Long> departments = new HashSet<>();
             Long user = BeeKeeper.getUser().getUserId();
 
             for (BeeRow row : result) {

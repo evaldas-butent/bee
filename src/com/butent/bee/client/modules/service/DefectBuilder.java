@@ -1,7 +1,5 @@
 package com.butent.bee.client.modules.service;
 
-import com.google.common.collect.Lists;
-
 import static com.butent.bee.shared.modules.service.ServiceConstants.*;
 
 import com.butent.bee.client.BeeKeeper;
@@ -30,6 +28,7 @@ import com.butent.bee.shared.data.view.DataInfo;
 import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.modules.administration.AdministrationConstants;
 
+import java.util.ArrayList;
 import java.util.List;
 
 final class DefectBuilder {
@@ -128,7 +127,7 @@ final class DefectBuilder {
               params.addQueryItem(AdministrationConstants.COL_CURRENCY, currency);
             }
 
-            List<Long> ids = Lists.newArrayList();
+            List<Long> ids = new ArrayList<>();
             for (IsRow item : items) {
               ids.add(item.getId());
             }

@@ -299,6 +299,9 @@ public final class AdministrationConstants {
 
   public static final String COL_APPLIANCE_HEADER_HEIGHT = "ApplianceHeaderHeight";
   public static final String COL_VIEW_HEADER_HEIGHT = "ViewHeaderHeight";
+  public static final String COL_CLICK_SENSITIVITY_MILLIS = "ClickSensitivityMillis";
+  public static final String COL_CLICK_SENSITIVITY_DISTANCE = "ClickSensitivityDistance";
+
   public static final String COL_USER_STYLE = "Style";
 
   public static final String COL_IMPORT_OPTION = "Option";
@@ -338,6 +341,7 @@ public final class AdministrationConstants {
   public static final String PRM_COMPANY = "CompanyName";
   public static final String PRM_CURRENCY = "MainCurrency";
   public static final String PRM_VAT_PERCENT = "VATPercent";
+  public static final String PRM_REFRESH_CURRENCY_HOURS = "CurrencyRefreshHours";
 
   public static final String PRM_ERP_NAMESPACE = "ERPNamespace";
   public static final String PRM_ERP_ADDRESS = "ERPAddress";

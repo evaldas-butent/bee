@@ -1,7 +1,5 @@
 package com.butent.bee.shared.modules.ec;
 
-import com.google.common.collect.Maps;
-
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeSerializable;
 import com.butent.bee.shared.modules.ec.EcConstants.EcSupplier;
@@ -10,6 +8,7 @@ import com.butent.bee.shared.utils.Codec;
 import com.butent.bee.shared.utils.EnumUtils;
 
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.Map;
 
 public class ArticleSupplier implements BeeSerializable {
@@ -30,7 +29,7 @@ public class ArticleSupplier implements BeeSerializable {
   private int cost;
   private int price;
 
-  private final Map<String, String> remainders = Maps.newHashMap();
+  private final Map<String, String> remainders = new HashMap<>();
 
   public ArticleSupplier(EcSupplier supplier, String supplierId, Double cost, Double price) {
     this.supplier = supplier;

@@ -1364,7 +1364,7 @@ public class TasksModuleBean implements BeeModule {
 
   private List<Long> getTaskUsers(long taskId) {
     if (!DataUtils.isId(taskId)) {
-      return Lists.newArrayList();
+      return new ArrayList<>();
     }
 
     SqlSelect query = new SqlSelect()

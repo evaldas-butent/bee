@@ -2,13 +2,14 @@ package com.butent.bee.server.modules.ec;
 
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
-import com.google.common.collect.Maps;
 
 import static com.butent.bee.shared.modules.administration.AdministrationConstants.*;
 import static com.butent.bee.shared.modules.classifiers.ClassifierConstants.*;
 import static com.butent.bee.shared.modules.ec.EcConstants.*;
 
+import com.butent.bee.server.Invocation;
 import com.butent.bee.server.concurrency.ConcurrencyBean;
+import com.butent.bee.server.concurrency.ConcurrencyBean.AsynchronousRunnable;
 import com.butent.bee.server.concurrency.ConcurrencyBean.HasTimerService;
 import com.butent.bee.server.data.IdGeneratorBean;
 import com.butent.bee.server.data.QueryServiceBean;
@@ -27,6 +28,7 @@ import com.butent.bee.server.sql.SqlSelect;
 import com.butent.bee.server.sql.SqlUpdate;
 import com.butent.bee.server.sql.SqlUtils;
 import com.butent.bee.server.websocket.Endpoint;
+import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst.SqlEngine;
 import com.butent.bee.shared.data.BeeRow;
 import com.butent.bee.shared.data.BeeRowSet;
@@ -41,6 +43,7 @@ import com.butent.bee.shared.modules.BeeParameter;
 import com.butent.bee.shared.modules.ec.EcConstants.EcSupplier;
 import com.butent.bee.shared.modules.ec.EcUtils;
 import com.butent.bee.shared.rights.Module;
+import com.butent.bee.shared.time.TimeUtils;
 import com.butent.bee.shared.utils.ArrayUtils;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.Codec;
@@ -50,7 +53,9 @@ import java.awt.image.BufferedImage;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -126,8 +131,8 @@ public class TecDocBean implements HasTimerService {
   private class TcdData {
     private final SqlCreate base;
     private final SqlSelect baseSource;
-    private final List<String[]> baseIndexes = Lists.newArrayList();
-    private final List<IsSql> preparations = Lists.newArrayList();
+    private final List<String[]> baseIndexes = new ArrayList<>();
+    private final List<IsSql> preparations = new ArrayList<>();
 
     public TcdData(SqlCreate base, SqlSelect baseSource) {
       this.base = base;
@@ -359,8 +364,22 @@ public class TecDocBean implements HasTimerService {
     cb.createCalendarTimer(this.getClass(), PRM_MOTONET_HOURS);
   }
 
-  @Asynchronous
-  public void suckButent() {
+  public void suckButent(boolean async) {
+    if (async) {
+      cb.asynchronousCall(new AsynchronousRunnable() {
+        @Override
+        public String getId() {
+          return BeeUtils.joinWords(TecDocBean.class.getName(), PRM_BUTENT_INTERVAL);
+        }
+
+        @Override
+        public void run() {
+          TecDocBean bean = Assert.notNull(Invocation.locateRemoteBean(TecDocBean.class));
+          bean.suckButent(false);
+        }
+      });
+      return;
+    }
     EcSupplier supplier = EcSupplier.EOLTAS;
     String remoteNamespace = prm.getText(PRM_ERP_NAMESPACE);
     String remoteAddress = prm.getText(PRM_ERP_ADDRESS);
@@ -412,8 +431,27 @@ public class TecDocBean implements HasTimerService {
     }
   }
 
-  @Asynchronous
-  public void suckMotonet() {
+  public void suckMotonet(boolean async) {
+    if (async) {
+      cb.asynchronousCall(new AsynchronousRunnable() {
+        @Override
+        public String getId() {
+          return BeeUtils.joinWords(TecDocBean.class.getName(), PRM_MOTONET_HOURS);
+        }
+
+        @Override
+        public long getTimeout() {
+          return TimeUtils.MILLIS_PER_DAY * 2;
+        }
+
+        @Override
+        public void run() {
+          TecDocBean bean = Assert.notNull(Invocation.locateRemoteBean(TecDocBean.class));
+          bean.suckMotonet(false);
+        }
+      });
+      return;
+    }
     EcSupplier supplier = EcSupplier.MOTOPROFIL;
     logger.info(supplier, "Waiting for data...");
 
@@ -427,8 +465,8 @@ public class TecDocBean implements HasTimerService {
     }
     if (info != null && info.getString().size() > 1) {
       int size = info.getString().size();
-      List<RemoteItem> items = Lists.newArrayListWithCapacity(size);
-      List<RemoteRemainder> remainders = Lists.newArrayListWithCapacity(size);
+      List<RemoteItem> items = new ArrayList<>(size);
+      List<RemoteRemainder> remainders = new ArrayList<>(size);
 
       logger.info(supplier, "Received", size, "records. Updating data...");
 
@@ -440,7 +478,7 @@ public class TecDocBean implements HasTimerService {
               sys.joinTables(TBL_TCD_BRANDS, TBL_TCD_BRANDS_MAPPING, COL_TCD_BRAND))
           .setWhere(SqlUtils.equals(TBL_TCD_BRANDS_MAPPING, COL_TCD_SUPPLIER, supplier.ordinal())));
 
-      Map<String, String> mappings = Maps.newHashMap();
+      Map<String, String> mappings = new HashMap<>();
 
       for (SimpleRow row : rs) {
         mappings.put(row.getValue(COL_TCD_SUPPLIER_BRAND), row.getValue(COL_TCD_BRAND_NAME));
@@ -486,7 +524,7 @@ public class TecDocBean implements HasTimerService {
 
   @Asynchronous
   public void suckTecdoc() {
-    List<IsSql> init = Lists.newArrayList();
+    List<IsSql> init = new ArrayList<>();
 
     init.add(new SqlCreate("_country_designations", false)
         .setDataSource(new SqlSelect()
@@ -524,7 +562,7 @@ public class TecDocBean implements HasTimerService {
     init.add(SqlUtils.createIndex("_designations", SqlUtils.uniqueName(),
         Lists.newArrayList("des_id"), false));
 
-    List<TcdData> builds = Lists.newArrayList();
+    List<TcdData> builds = new ArrayList<>();
 
     TcdData data = new TcdData(new SqlCreate(TBL_TCD_MODELS, false)
         .addInteger(TCD_MODEL_ID, true)
@@ -888,10 +926,10 @@ public class TecDocBean implements HasTimerService {
 
   @Timeout
   private void doTimerEvent(Timer timer) {
-    if (cb.isTimerEvent(timer, PRM_BUTENT_INTERVAL)) {
-      suckButent();
-    } else if (cb.isTimerEvent(timer, PRM_MOTONET_HOURS)) {
-      suckMotonet();
+    if (cb.isParameterTimer(timer, PRM_BUTENT_INTERVAL)) {
+      suckButent(true);
+    } else if (cb.isParameterTimer(timer, PRM_MOTONET_HOURS)) {
+      suckMotonet(true);
     }
   }
 

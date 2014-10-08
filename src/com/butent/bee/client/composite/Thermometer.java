@@ -7,11 +7,12 @@ import com.butent.bee.client.ui.IdentifiableWidget;
 import com.butent.bee.client.widget.DoubleLabel;
 import com.butent.bee.client.widget.InlineLabel;
 import com.butent.bee.client.widget.Progress;
+import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.utils.BeeUtils;
 
 public class Thermometer extends Flow implements HasProgress {
 
-  private static final String STYLE_PREFIX = "bee-Thermometer-";
+  private static final String STYLE_PREFIX = BeeConst.CSS_CLASS_PREFIX + "Thermometer-";
 
   private static final String STYLE_CONTAINER = STYLE_PREFIX + "container";
   private static final String STYLE_LABEL = STYLE_PREFIX + "label";

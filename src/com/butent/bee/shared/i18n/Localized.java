@@ -1,11 +1,10 @@
 package com.butent.bee.shared.i18n;
 
-import com.google.common.collect.Lists;
-
 import com.butent.bee.shared.data.IsColumn;
 import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogUtils;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
@@ -33,7 +32,7 @@ public final class Localized {
   }
 
   public static List<String> getLabels(List<? extends IsColumn> columns) {
-    List<String> labels = Lists.newArrayList();
+    List<String> labels = new ArrayList<>();
     for (IsColumn column : columns) {
       labels.add(getLabel(column));
     }

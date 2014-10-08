@@ -1,6 +1,7 @@
 package com.butent.bee.server.modules.service;
 
 import com.google.common.collect.ArrayListMultimap;
+import com.google.common.collect.Lists;
 import com.google.common.collect.Multimap;
 import com.google.common.collect.Sets;
 import com.google.common.eventbus.Subscribe;
@@ -62,8 +63,6 @@ import java.util.Set;
 
 import javax.ejb.EJB;
 import javax.ejb.Stateless;
-
-import jersey.repackaged.com.google.common.collect.Lists;
 
 @Stateless
 public class ServiceModuleBean implements BeeModule {
@@ -553,13 +552,6 @@ public class ServiceModuleBean implements BeeModule {
       settings.setTableProperty(TBL_SERVICE_DATES, datesData.serialize());
     }
 
-    SimpleRowSet relationData = getCalendarRelations();
-    if (DataUtils.isEmpty(relationData)) {
-      return ResponseObject.response(settings);
-    }
-
-    settings.setTableProperty(TBL_RELATIONS, relationData.serialize());
-
     Set<Long> taskTypes = DataUtils.parseIdSet(
         settings.getString(0, COL_SERVICE_CALENDAR_TASK_TYPES));
 
@@ -762,6 +754,7 @@ public class ServiceModuleBean implements BeeModule {
         .addField(TBL_TASK_TYPES, COL_BACKGROUND, ALS_TASK_TYPE_BACKGROUND)
         .addField(TBL_TASK_TYPES, COL_FOREGROUND, ALS_TASK_TYPE_FOREGROUND)
         .addFields(spawnAlias, ALS_LAST_SPAWN)
+        .addEmptyText(COL_RELATION)
         .addFrom(TBL_RECURRING_TASKS)
         .addFromLeft(TBL_TASK_TYPES,
             sys.joinTables(TBL_TASK_TYPES, TBL_RECURRING_TASKS, COL_TASK_TYPE))
@@ -770,20 +763,47 @@ public class ServiceModuleBean implements BeeModule {
         .setWhere(where)
         .addOrder(TBL_RECURRING_TASKS, COL_RT_SCHEDULE_FROM, idName);
 
-    return qs.getData(query);
+    SimpleRowSet rs = qs.getData(query);
+    List<Long> taskIds = DataUtils.parseIdList(
+        BeeUtils.joinItems(
+            Lists.newArrayList(rs.getColumn(sys.getIdName(TBL_RECURRING_TASKS)))));
+
+    Multimap<Long, Long> relMap =
+        getCalendarRelations(COL_RECURRING_TASK, taskIds);
+
+    for (int i = 0; i < rs.getNumberOfRows(); i++) {
+      String idData =
+          DataUtils.buildIdList(relMap.get(rs.getLong(i, sys.getIdName(TBL_RECURRING_TASKS))));
+      rs.setValue(i, COL_RELATION, idData);
+    }
+
+    return rs;
   }
 
-  private SimpleRowSet getCalendarRelations() {
+  private Multimap<Long, Long> getCalendarRelations(String field, List<Long> ids) {
     SqlSelect query = new SqlSelect()
         .addFields(TBL_RELATIONS, COL_SERVICE_OBJECT, COL_TASK, COL_RECURRING_TASK)
         .addFrom(TBL_RELATIONS)
         .setWhere(SqlUtils.and(
             SqlUtils.notNull(TBL_RELATIONS, COL_SERVICE_OBJECT),
-            SqlUtils.or(
-                SqlUtils.notNull(TBL_RELATIONS, COL_TASK),
-                SqlUtils.notNull(TBL_RELATIONS, COL_RECURRING_TASK))));
+            SqlUtils.notNull(TBL_RELATIONS, field),
+            SqlUtils.inList(TBL_RELATIONS, field, ids)));
 
-    return qs.getData(query);
+    SimpleRowSet rs = qs.getData(query);
+
+    Multimap<Long, Long> relMap = ArrayListMultimap.create();
+
+    if (rs.isEmpty()) {
+      return relMap;
+    }
+
+    for (int i = 0; i < rs.getNumberOfRows(); i++) {
+      Long fieldId = rs.getLong(i, field);
+      Long objectId = rs.getLong(i, COL_SERVICE_OBJECT);
+      relMap.put(fieldId, objectId);
+    }
+
+    return relMap;
   }
 
   private SimpleRowSet getCalendarTasks(Set<Long> taskTypes, Long minTime, Long maxTime) {
@@ -809,6 +829,7 @@ public class ServiceModuleBean implements BeeModule {
         .addField(TBL_TASK_TYPES, COL_BACKGROUND, ALS_TASK_TYPE_BACKGROUND)
         .addField(TBL_TASK_TYPES, COL_FOREGROUND, ALS_TASK_TYPE_FOREGROUND)
         .addFields(TBL_TASK_USERS, COL_STAR)
+        .addEmptyText(COL_RELATION)
         .addFrom(TBL_TASKS)
         .addFromLeft(TBL_TASK_TYPES,
             sys.joinTables(TBL_TASK_TYPES, TBL_TASKS, COL_TASK_TYPE))
@@ -819,7 +840,21 @@ public class ServiceModuleBean implements BeeModule {
         .setWhere(where)
         .addOrder(TBL_TASKS, COL_FINISH_TIME, idName);
 
-    return qs.getData(query);
+    SimpleRowSet rs = qs.getData(query);
+    List<Long> taskIds = DataUtils.parseIdList(
+        BeeUtils.joinItems(
+            Lists.newArrayList(rs.getColumn(sys.getIdName(TBL_TASKS)))));
+
+    Multimap<Long, Long> relMap =
+        getCalendarRelations(COL_TASK, taskIds);
+
+
+    for (int i = 0; i < rs.getNumberOfRows(); i++) {
+      String idData = DataUtils.buildIdList(relMap.get(rs.getLong(i, sys.getIdName(TBL_TASKS))));
+      rs.setValue(i, COL_RELATION, idData);
+    }
+
+    return rs;
   }
 
   private BeeRowSet getSettings() {

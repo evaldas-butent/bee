@@ -7,6 +7,7 @@
     <IdColumn name="Id" />
     <DataColumn name="Parent" />
 
+    <DataColumn name="ActName" visible="true" />
     <DataColumn name="Kind" visible="true" />
 
     <DataColumn name="Date" visible="true" />
@@ -20,8 +21,8 @@
 
     <RelColumn name="Company" visible="true" />
     <RelColumn name="Object" renderColumns="ObjectName" />
-    <RelColumn name="Manager" renderColumns="ManagerFirstName ManagerLastName" />
 
+    <RelColumn name="Manager" renderColumns="ManagerFirstName ManagerLastName" />
     <RelColumn name="Currency" renderColumns="CurrencyName" />
 
     <RelColumn name="Vehicle" renderColumns="VehicleParentModel VehicleModel VehicleNumber" />

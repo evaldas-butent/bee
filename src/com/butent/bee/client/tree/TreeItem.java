@@ -105,7 +105,7 @@ public class TreeItem extends UIObject implements HasTreeItems, HasIdentity {
 
   private static final TreeItemAnimation itemAnimation = new TreeItemAnimation();
 
-  private static final String STYLE_PREFIX = "bee-TreeItem-";
+  private static final String STYLE_PREFIX = BeeConst.CSS_CLASS_PREFIX + "TreeItem-";
   private static final String STYLE_BRANCH_CONTAINER = STYLE_PREFIX + "branchContainer";
   private static final String STYLE_LEAF_CONTAINER = STYLE_PREFIX + "leafContainer";
 

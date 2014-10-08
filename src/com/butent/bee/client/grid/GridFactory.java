@@ -290,6 +290,7 @@ public final class GridFactory {
 
     if (preloader == null) {
       loadDescription(name, callback);
+
     } else {
       preloader.accept(new ScheduledCommand() {
         @Override
@@ -297,6 +298,8 @@ public final class GridFactory {
           loadDescription(name, callback);
         }
       });
+
+      gridPreloaders.remove(name);
     }
   }
 

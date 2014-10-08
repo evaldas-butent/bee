@@ -47,8 +47,8 @@ public class MenuBar extends Widget implements IdentifiableWidget, CloseEvent.Ha
 
   private static AbstractImagePrototype subMenuIcon;
 
-  private static final String STYLENAME_DEFAULT = "bee-MenuBar";
-  private static final String STYLENAME_ROOT = "bee-MenuRoot";
+  private static final String STYLENAME_DEFAULT = BeeConst.CSS_CLASS_PREFIX + "MenuBar";
+  private static final String STYLENAME_ROOT = BeeConst.CSS_CLASS_PREFIX + "MenuRoot";
 
   static {
     Resources resources = GWT.create(Resources.class);

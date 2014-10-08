@@ -27,7 +27,6 @@ import com.butent.bee.client.event.PreviewHandler;
 import com.butent.bee.client.event.Previewer;
 import com.butent.bee.client.event.logical.SummaryChangeEvent;
 import com.butent.bee.client.layout.Flow;
-import com.butent.bee.client.style.StyleUtils;
 import com.butent.bee.client.ui.FormWidget;
 import com.butent.bee.client.view.edit.EditChangeHandler;
 import com.butent.bee.client.view.edit.EditStopEvent;
@@ -52,7 +51,7 @@ import java.util.List;
 public class ColorEditor extends Flow implements Editor, HasTextBox, HasKeyDownHandlers,
     PreviewHandler {
 
-  private static final String STYLE_PREFIX = StyleUtils.CLASS_NAME_PREFIX + "ColorEditor-";
+  private static final String STYLE_PREFIX = BeeConst.CSS_CLASS_PREFIX + "ColorEditor-";
 
   private static final String STYLE_CONTAINER = STYLE_PREFIX + "container";
   private static final String STYLE_TEXT_BOX = STYLE_PREFIX + "textBox";

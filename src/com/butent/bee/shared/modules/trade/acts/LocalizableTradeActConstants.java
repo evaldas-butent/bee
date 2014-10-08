@@ -2,6 +2,16 @@ package com.butent.bee.shared.modules.trade.acts;
 
 public interface LocalizableTradeActConstants {
 
+  String taChangeIntoSale();
+
+  String taDaysPerWeekShort();
+
+  String taFactorShort();
+
+  String taInvoiceCompose();
+
+  String taInvoiceSave();
+
   String taKindPurchase();
 
   String taKindReserve();
@@ -16,7 +26,11 @@ public interface LocalizableTradeActConstants {
 
   String taKindWriteOff();
 
+  String taMinTermShort();
+
   String taQuantityReturn();
+
+  String taRecalculatePrices();
 
   String taSaveSelectedItems();
 

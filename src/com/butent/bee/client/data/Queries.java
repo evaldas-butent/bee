@@ -13,14 +13,17 @@ import com.butent.bee.shared.communication.ResponseObject;
 import com.butent.bee.shared.data.BeeColumn;
 import com.butent.bee.shared.data.BeeRow;
 import com.butent.bee.shared.data.BeeRowSet;
+import com.butent.bee.shared.data.CellSource;
 import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.IsRow;
 import com.butent.bee.shared.data.RowChildren;
 import com.butent.bee.shared.data.cache.CachingPolicy;
+import com.butent.bee.shared.data.event.CellUpdateEvent;
 import com.butent.bee.shared.data.filter.Filter;
 import com.butent.bee.shared.data.value.Value;
 import com.butent.bee.shared.data.view.Order;
 import com.butent.bee.shared.data.view.RowInfo;
+import com.butent.bee.shared.data.view.RowInfoList;
 import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogUtils;
 import com.butent.bee.shared.time.DateTime;
@@ -158,7 +161,7 @@ public final class Queries {
   }
 
   public static void deleteRow(String viewName, long rowId, long version, IntCallback callback) {
-    deleteRows(viewName, Collections.singleton(new RowInfo(rowId, version, true, true)), callback);
+    deleteRows(viewName, Collections.singleton(new RowInfo(rowId, version)), callback);
   }
 
   public static void deleteRows(String viewName, Collection<RowInfo> rows) {
@@ -564,27 +567,27 @@ public final class Queries {
     }
   }
 
-  public static void insertRows(BeeRowSet rowSet, final IntCallback callback) {
-    if (!checkRowSet(Service.INSERT_ROWS, rowSet, callback)) {
+  public static void insertRows(BeeRowSet rowSet, final Callback<RowInfoList> callback) {
+    final String svc = Service.INSERT_ROWS;
+    if (!checkRowSet(svc, rowSet, callback)) {
       return;
     }
 
     final String viewName = rowSet.getViewName();
 
-    BeeKeeper.getRpc().sendText(Service.INSERT_ROWS, Codec.beeSerialize(rowSet),
-        new ResponseCallback() {
-          @Override
-          public void onResponse(ResponseObject response) {
-            if (checkResponse(Service.INSERT_ROWS, viewName, response, Integer.class, callback)) {
-              int count = BeeUtils.toInt(response.getResponseAsString());
-              logger.info(viewName, "inserted", count, "rows");
+    BeeKeeper.getRpc().sendText(svc, Codec.beeSerialize(rowSet), new ResponseCallback() {
+      @Override
+      public void onResponse(ResponseObject response) {
+        if (checkResponse(svc, viewName, response, RowInfoList.class, callback)) {
+          RowInfoList result = RowInfoList.restore(response.getResponseAsString());
+          logger.info(viewName, "inserted", result.size(), "rows");
 
-              if (callback != null) {
-                callback.onSuccess(count);
-              }
-            }
+          if (callback != null) {
+            callback.onSuccess(result);
           }
-        });
+        }
+      }
+    });
   }
 
   public static boolean isResponseFromCache(int id) {
@@ -671,6 +674,37 @@ public final class Queries {
     doRow(Service.UPDATE_CELL, rowSet, callback);
   }
 
+  public static void updateCellAndFire(final String viewName, long rowId, long version,
+      final String colName, String oldValue, String newValue) {
+
+    Assert.notEmpty(viewName);
+    Assert.isTrue(DataUtils.isId(rowId));
+    Assert.notEmpty(colName);
+
+    final int colIndex = Data.getColumnIndex(viewName, colName);
+    Assert.nonNegative(colIndex);
+
+    if (!BeeUtils.equalsTrimRight(oldValue, newValue)) {
+      final BeeColumn column = Data.getColumns(viewName).get(colIndex);
+      BeeRowSet rowSet = new BeeRowSet(viewName, Collections.singletonList(column));
+
+      BeeRow row = new BeeRow(rowId, version, Collections.singletonList(oldValue));
+      row.preliminaryUpdate(0, newValue);
+
+      rowSet.addRow(row);
+
+      RowCallback callback = new RowCallback() {
+        @Override
+        public void onSuccess(BeeRow result) {
+          CellUpdateEvent.fire(BeeKeeper.getBus(), viewName, result.getId(), result.getVersion(),
+              CellSource.forColumn(column, colIndex), result.getString(0));
+        }
+      };
+
+      updateCell(rowSet, callback);
+    }
+  }
+
   public static void updateChildren(final String viewName, long rowId,
       Collection<RowChildren> children, final RowCallback callback) {
 
@@ -709,27 +743,27 @@ public final class Queries {
     }
   }
 
-  public static void updateRows(BeeRowSet rowSet, final IntCallback callback) {
-    if (!checkRowSet(Service.UPDATE_ROWS, rowSet, callback)) {
+  public static void updateRows(BeeRowSet rowSet, final Callback<RowInfoList> callback) {
+    final String svc = Service.UPDATE_ROWS;
+    if (!checkRowSet(svc, rowSet, callback)) {
       return;
     }
 
     final String viewName = rowSet.getViewName();
 
-    BeeKeeper.getRpc().sendText(Service.UPDATE_ROWS, Codec.beeSerialize(rowSet),
-        new ResponseCallback() {
-          @Override
-          public void onResponse(ResponseObject response) {
-            if (checkResponse(Service.UPDATE_ROWS, viewName, response, Integer.class, callback)) {
-              int count = BeeUtils.toInt(response.getResponseAsString());
-              logger.info(viewName, "updated", count, "rows");
+    BeeKeeper.getRpc().sendText(svc, Codec.beeSerialize(rowSet), new ResponseCallback() {
+      @Override
+      public void onResponse(ResponseObject response) {
+        if (checkResponse(svc, viewName, response, RowInfoList.class, callback)) {
+          RowInfoList result = RowInfoList.restore(response.getResponseAsString());
+          logger.info(viewName, "updated", result.size(), "rows");
 
-              if (callback != null) {
-                callback.onSuccess(count);
-              }
-            }
+          if (callback != null) {
+            callback.onSuccess(result);
           }
-        });
+        }
+      }
+    });
   }
 
   private static boolean checkRowSet(String service, BeeRowSet rowSet, Callback<?> callback) {

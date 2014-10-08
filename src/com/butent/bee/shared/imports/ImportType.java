@@ -1,7 +1,5 @@
 package com.butent.bee.shared.imports;
 
-import com.google.common.collect.Maps;
-
 import static com.butent.bee.shared.modules.administration.AdministrationConstants.*;
 import static com.butent.bee.shared.modules.classifiers.ClassifierConstants.*;
 
@@ -14,6 +12,7 @@ import com.butent.bee.shared.ui.HasLocalizedCaption;
 
 import java.util.Collection;
 import java.util.Collections;
+import java.util.LinkedHashMap;
 import java.util.Map;
 
 public enum ImportType implements HasLocalizedCaption {
@@ -71,7 +70,7 @@ public enum ImportType implements HasLocalizedCaption {
     }
   };
 
-  private final Map<String, ImportProperty> properties = Maps.newLinkedHashMap();
+  private final Map<String, ImportProperty> properties = new LinkedHashMap<>();
 
   private ImportType(boolean xls) {
     if (xls) {

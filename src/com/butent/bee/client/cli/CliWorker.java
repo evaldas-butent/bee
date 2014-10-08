@@ -174,6 +174,7 @@ import com.butent.bee.shared.time.DateTime;
 import com.butent.bee.shared.time.JustDate;
 import com.butent.bee.shared.time.TimeUtils;
 import com.butent.bee.shared.ui.Color;
+import com.butent.bee.shared.ui.ColumnDescription;
 import com.butent.bee.shared.ui.Orientation;
 import com.butent.bee.shared.utils.ArrayUtils;
 import com.butent.bee.shared.utils.BeeUtils;
@@ -456,6 +457,9 @@ public final class CliWorker {
 
     } else if ("notify".equals(z) && arr.length >= 2) {
       showNotes(args);
+
+    } else if (z.startsWith("omni")) {
+      logger.debug(z, ColumnDescription.toggleOmniView());
 
     } else if (BeeUtils.inList(z, "p", "prop")) {
       showProperties(v, arr, errorPopup);
@@ -4025,7 +4029,7 @@ public final class CliWorker {
       logger.info("view suppliers not registered");
 
     } else {
-      HtmlTable table = new HtmlTable(StyleUtils.CLASS_NAME_PREFIX + "info-table");
+      HtmlTable table = new HtmlTable(BeeConst.CSS_CLASS_PREFIX + "info-table");
       table.setCaption("Suppliers");
 
       int row = 0;

@@ -19,7 +19,6 @@ import com.butent.bee.client.grid.GridFactory.GridOptions;
 import com.butent.bee.client.presenter.PresenterCallback;
 import com.butent.bee.client.style.ColorStyleProvider;
 import com.butent.bee.client.style.ConditionalStyle;
-import com.butent.bee.client.style.StyleUtils;
 import com.butent.bee.client.ui.EnablableWidget;
 import com.butent.bee.client.ui.FormFactory;
 import com.butent.bee.client.ui.UiOption;
@@ -60,7 +59,7 @@ import java.util.TreeMap;
 
 public final class TradeActKeeper {
 
-  static final String STYLE_PREFIX = StyleUtils.CLASS_NAME_PREFIX + "ta-";
+  static final String STYLE_PREFIX = BeeConst.CSS_CLASS_PREFIX + "ta-";
 
   private static final String STYLE_COMMAND_PREFIX = STYLE_PREFIX + "command-";
   private static final String STYLE_COMMAND_DISABLED = STYLE_COMMAND_PREFIX + "disabled";
@@ -141,18 +140,22 @@ public final class TradeActKeeper {
             ALS_STATUS_BACKGROUND, ALS_STATUS_FOREGROUND));
 
     FormFactory.registerFormInterceptor(FORM_TRADE_ACT, new TradeActForm());
+    FormFactory.registerFormInterceptor(FORM_INVOICE_BUILDER, new TradeActInvoiceBuilder());
+
+    GridFactory.registerGridInterceptor(GRID_TRADE_ACT_ITEMS, new TradeActItemsGrid());
+    GridFactory.registerGridInterceptor(GRID_TRADE_ACT_SERVICES, new TradeActServicesGrid());
 
     SelectorEvent.register(new TradeActSelectorHandler());
 
-    GridFactory.registerPreloader(GRID_TRADE_ACT_TEMPLATES, new Consumer<ScheduledCommand>() {
+    Consumer<ScheduledCommand> cacheLoader = new Consumer<ScheduledCommand>() {
       @Override
       public void accept(ScheduledCommand input) {
         ensureChache(input);
       }
-    });
+    };
 
-    GridFactory.registerGridInterceptor(GRID_TRADE_ACT_ITEMS, new TradeActItemsGrid());
-    GridFactory.registerGridInterceptor(GRID_TRADE_ACT_SERVICES, new TradeActServicesGrid());
+    FormFactory.registerPreloader(FORM_TRADE_ACT, cacheLoader);
+    GridFactory.registerPreloader(GRID_TRADE_ACT_TEMPLATES, cacheLoader);
   }
 
   static void addCommandStyle(Widget command, String suffix) {
@@ -207,12 +210,19 @@ public final class TradeActKeeper {
 
     int nameIndex = rowSet.getColumnIndex(COL_OPERATION_NAME);
     int kindIndex = rowSet.getColumnIndex(COL_OPERATION_KIND);
+    int defIndex = rowSet.getColumnIndex(COL_OPERATION_DEFAULT);
 
     for (BeeRow row : rowSet) {
       if (getKind(row, kindIndex) == kind) {
-        if (DataUtils.isId(id)) {
+        if (BeeUtils.isTrue(row.getBoolean(defIndex))) {
+          id = row.getId();
+          name = row.getString(nameIndex);
+          break;
+
+        } else if (DataUtils.isId(id)) {
           id = null;
           break;
+
         } else {
           id = row.getId();
           name = row.getString(nameIndex);
@@ -263,7 +273,7 @@ public final class TradeActKeeper {
     }
   }
 
-  static BeeRowSet getUserSeries() {
+  static BeeRowSet getUserSeries(boolean checkDefaults) {
     Long userId = BeeKeeper.getUser().getUserId();
     if (!DataUtils.isId(userId)) {
       return null;
@@ -276,10 +286,17 @@ public final class TradeActKeeper {
 
     int seriesIndex = seriesManagers.getColumnIndex(COL_SERIES);
     int managerIndex = seriesManagers.getColumnIndex(COL_SERIES_MANAGER);
+    int defIndex = seriesManagers.getColumnIndex(COL_SERIES_DEFAULT);
 
     Set<Long> ms = new HashSet<>();
     for (BeeRow row : seriesManagers) {
       if (userId.equals(row.getLong(managerIndex))) {
+        if (checkDefaults && BeeUtils.isTrue(row.getBoolean(defIndex))) {
+          ms.clear();
+          ms.add(row.getLong(seriesIndex));
+          break;
+        }
+
         ms.add(row.getLong(seriesIndex));
       }
     }
@@ -382,7 +399,7 @@ public final class TradeActKeeper {
       setDefaultOperation(row, kind);
     }
 
-    BeeRowSet userSeries = getUserSeries();
+    BeeRowSet userSeries = getUserSeries(true);
     if (userSeries != null && userSeries.getNumberOfRows() == 1) {
       Data.setValue(VIEW_TRADE_ACTS, row, COL_TA_SERIES, userSeries.getRow(0).getId());
       Data.setValue(VIEW_TRADE_ACTS, row, COL_SERIES_NAME,
@@ -401,6 +418,15 @@ public final class TradeActKeeper {
       Data.setValue(VIEW_TRADE_ACTS, row, COL_TA_OPERATION, operation.getA());
       Data.setValue(VIEW_TRADE_ACTS, row, COL_OPERATION_NAME, operation.getB());
     }
+  }
+
+  private static ViewSupplier createActViewSupplier(final TradeActKind kind) {
+    return new ViewSupplier() {
+      @Override
+      public void create(ViewCallback callback) {
+        openActGrid(kind, ViewFactory.getPresenterCallback(callback));
+      }
+    };
   }
 
   private static void ensureChache(final ScheduledCommand command) {
@@ -422,15 +448,6 @@ public final class TradeActKeeper {
         }
       });
     }
-  }
-
-  private static ViewSupplier createActViewSupplier(final TradeActKind kind) {
-    return new ViewSupplier() {
-      @Override
-      public void create(ViewCallback callback) {
-        openActGrid(kind, ViewFactory.getPresenterCallback(callback));
-      }
-    };
   }
 
   private static void openActGrid(final TradeActKind kind, final PresenterCallback callback) {

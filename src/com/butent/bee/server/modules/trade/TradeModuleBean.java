@@ -1,6 +1,5 @@
 package com.butent.bee.server.modules.trade;
 
-import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
 import com.google.common.eventbus.Subscribe;
 
@@ -289,19 +288,17 @@ public class TradeModuleBean implements BeeModule {
       return ResponseObject.error("View source not supported:", trade);
     }
     SqlSelect query = new SqlSelect()
-        .addFields(TBL_ITEMS, COL_ITEM_NAME)
+        .addFields(TBL_ITEMS,
+            COL_ITEM_NAME, COL_ITEM_NAME + "2", COL_ITEM_NAME + "3", COL_ITEM_BARCODE)
         .addField(TBL_UNITS, COL_UNIT_NAME, COL_UNIT)
-        .addFields(tradeItems, COL_ITEM_ARTICLE, COL_TRADE_ITEM_QUANTITY,
-            COL_TRADE_ITEM_PRICE, COL_TRADE_VAT_PLUS, COL_TRADE_VAT, COL_TRADE_VAT_PERC,
-            COL_TRADE_ITEM_NOTE)
-        .addField(TBL_CURRENCIES, COL_CURRENCY_NAME,
-            COL_CURRENCY)
+        .addFields(tradeItems, COL_ITEM_ARTICLE, COL_TRADE_ITEM_QUANTITY, COL_TRADE_ITEM_PRICE,
+            COL_TRADE_VAT_PLUS, COL_TRADE_VAT, COL_TRADE_VAT_PERC, COL_TRADE_ITEM_NOTE)
+        .addField(TBL_CURRENCIES, COL_CURRENCY_NAME, COL_CURRENCY)
         .addFrom(tradeItems)
         .addFromInner(trade, sys.joinTables(trade, tradeItems, itemsRelation))
         .addFromInner(TBL_ITEMS, sys.joinTables(TBL_ITEMS, tradeItems, COL_ITEM))
         .addFromInner(TBL_UNITS, sys.joinTables(TBL_UNITS, TBL_ITEMS, COL_UNIT))
-        .addFromInner(TBL_CURRENCIES,
-            sys.joinTables(TBL_CURRENCIES, trade, COL_CURRENCY))
+        .addFromInner(TBL_CURRENCIES, sys.joinTables(TBL_CURRENCIES, trade, COL_CURRENCY))
         .setWhere(SqlUtils.equals(tradeItems, itemsRelation, id))
         .addOrder(tradeItems, sys.getIdName(tradeItems));
 
@@ -375,6 +372,7 @@ public class TradeModuleBean implements BeeModule {
     String trade = sys.getView(viewName).getSourceName();
     String tradeItems;
     String itemsRelation;
+    String sign = "";
 
     SqlSelect query = new SqlSelect()
         .addFields(trade, COL_TRADE_DATE, COL_TRADE_INVOICE_PREFIX, COL_TRADE_INVOICE_NO,
@@ -400,6 +398,7 @@ public class TradeModuleBean implements BeeModule {
           .addFromLeft(TBL_WAREHOUSES, COL_PURCHASE_WAREHOUSE_TO,
               sys.joinTables(TBL_WAREHOUSES, COL_PURCHASE_WAREHOUSE_TO, trade,
                   COL_PURCHASE_WAREHOUSE_TO));
+      sign = "-";
     } else {
       return ResponseObject.error("View source not supported:", trade);
     }
@@ -410,7 +409,7 @@ public class TradeModuleBean implements BeeModule {
 
     SimpleRowSet invoices = qs.getData(query.addField(trade, sys.getIdName(trade), itemsRelation));
 
-    Map<Long, String> companies = Maps.newHashMap();
+    Map<Long, String> companies = new HashMap<>();
     ResponseObject response = ResponseObject.emptyResponse();
 
     for (SimpleRow invoice : invoices) {
@@ -479,7 +478,7 @@ public class TradeModuleBean implements BeeModule {
         warehouse = prm.getText("ERPWarehouse");
         client = companies.get(invoice.getLong(COL_TRADE_CUSTOMER));
       }
-      WSDocument doc = new WSDocument(invoice.getValue(itemsRelation),
+      WSDocument doc = new WSDocument(sign + invoice.getValue(itemsRelation),
           invoice.getDateTime(COL_TRADE_DATE), operation, client, warehouse);
 
       if (invoices.hasColumn(COL_SALE_PAYER)) {

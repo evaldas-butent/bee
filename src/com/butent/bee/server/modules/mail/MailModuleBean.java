@@ -1,14 +1,14 @@
 package com.butent.bee.server.modules.mail;
 
 import com.google.common.collect.Lists;
-import com.google.common.collect.Maps;
-import com.google.common.collect.Sets;
 import com.google.common.eventbus.Subscribe;
 
 import static com.butent.bee.shared.modules.classifiers.ClassifierConstants.*;
 import static com.butent.bee.shared.modules.mail.MailConstants.*;
 
+import com.butent.bee.server.Invocation;
 import com.butent.bee.server.concurrency.ConcurrencyBean;
+import com.butent.bee.server.concurrency.ConcurrencyBean.AsynchronousRunnable;
 import com.butent.bee.server.concurrency.ConcurrencyBean.HasTimerService;
 import com.butent.bee.server.data.BeeView;
 import com.butent.bee.server.data.BeeView.ConditionProvider;
@@ -26,15 +26,11 @@ import com.butent.bee.server.modules.mail.proxy.MailProxy;
 import com.butent.bee.server.news.NewsBean;
 import com.butent.bee.server.news.UsageQueryProvider;
 import com.butent.bee.server.sql.IsCondition;
-import com.butent.bee.server.sql.SqlDelete;
-import com.butent.bee.server.sql.SqlInsert;
 import com.butent.bee.server.sql.SqlSelect;
-import com.butent.bee.server.sql.SqlUpdate;
 import com.butent.bee.server.sql.SqlUtils;
 import com.butent.bee.server.websocket.Endpoint;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
-import com.butent.bee.shared.Pair;
 import com.butent.bee.shared.Service;
 import com.butent.bee.shared.communication.ResponseObject;
 import com.butent.bee.shared.data.BeeRow;
@@ -85,11 +81,8 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.concurrent.Future;
 
 import javax.annotation.Resource;
-import javax.ejb.AsyncResult;
-import javax.ejb.Asynchronous;
 import javax.ejb.EJB;
 import javax.ejb.LocalBean;
 import javax.ejb.SessionContext;
@@ -121,8 +114,6 @@ public class MailModuleBean implements BeeModule, HasTimerService {
 
   private static final BeeLogger logger = LogUtils.getLogger(MailModuleBean.class);
 
-  private static final Map<Long, Pair<Future<Long>, Long>> asyncThreads = new HashMap<>();
-
   @EJB
   MailProxy proxy;
   @EJB
@@ -147,9 +138,33 @@ public class MailModuleBean implements BeeModule, HasTimerService {
   @Resource
   TimerService timerService;
 
-  @Asynchronous
-  public Future<Long> checkMail(MailAccount account, MailFolder localFolder, String progressId) {
+  public void checkMail(boolean async, MailAccount account, MailFolder localFolder,
+      String progressId) {
+
     Assert.noNulls(account, localFolder);
+
+    if (async) {
+      cb.asynchronousCall(new AsynchronousRunnable() {
+        @Override
+        public String getId() {
+          return BeeUtils.joinWords(MailModuleBean.class.getName(), localFolder.getId());
+        }
+
+        @Override
+        public void onError() {
+          if (!BeeUtils.isEmpty(progressId)) {
+            Endpoint.closeProgress(progressId);
+          }
+        }
+
+        @Override
+        public void run() {
+          MailModuleBean bean = Assert.notNull(Invocation.locateRemoteBean(MailModuleBean.class));
+          bean.checkMail(false, account, localFolder, progressId);
+        }
+      });
+      return;
+    }
     Store store = null;
     int c = 0;
     int f = 0;
@@ -167,7 +182,6 @@ public class MailModuleBean implements BeeModule, HasTimerService {
             progressId);
 
       } catch (Exception e) {
-        ctx.setRollbackOnly();
         logger.error(e, "LOGIN:", account.getStoreLogin());
         error = BeeUtils.joinWords(account.getStoreLogin(), e.getMessage());
       } finally {
@@ -183,8 +197,6 @@ public class MailModuleBean implements BeeModule, HasTimerService {
     mailMessage.setFoldersUpdated(f > 0);
     mailMessage.setError(error);
     Endpoint.sendToUser(account.getUserId(), mailMessage);
-
-    return new AsyncResult<>(localFolder.getId());
   }
 
   @Override
@@ -205,7 +217,7 @@ public class MailModuleBean implements BeeModule, HasTimerService {
         response = ResponseObject.response(qs.getData(new SqlSelect()
             .addField(TBL_ACCOUNTS, sys.getIdName(TBL_ACCOUNTS), COL_ACCOUNT)
             .addFields(TBL_ACCOUNTS, MailConstants.COL_ADDRESS, COL_USER, COL_ACCOUNT_DESCRIPTION,
-                COL_ACCOUNT_DEFAULT, COL_SIGNATURE,
+                COL_ACCOUNT_DEFAULT, COL_SIGNATURE, COL_ACCOUNT_PRIVATE,
                 SystemFolder.Inbox.name() + COL_FOLDER,
                 SystemFolder.Drafts.name() + COL_FOLDER,
                 SystemFolder.Sent.name() + COL_FOLDER,
@@ -330,7 +342,7 @@ public class MailModuleBean implements BeeModule, HasTimerService {
         if (folder == null) {
           response = ResponseObject.error("Folder does not exist: ID =", folderId);
         } else {
-          check(account, folder, reqInfo.getParameter(Service.VAR_PROGRESS));
+          checkMail(true, account, folder, reqInfo.getParameter(Service.VAR_PROGRESS));
           response = ResponseObject.emptyResponse();
         }
       } else if (BeeUtils.same(svc, SVC_SEND_MAIL)) {
@@ -354,7 +366,7 @@ public class MailModuleBean implements BeeModule, HasTimerService {
           processMessages(account, account.getDraftsFolder(), null,
               new String[] {BeeUtils.toString(draftId)}, true);
         }
-        List<FileInfo> attachments = Lists.newArrayList();
+        List<FileInfo> attachments = new ArrayList<>();
 
         for (Long fileId : DataUtils.parseIdSet(reqInfo.getParameter("Attachments"))) {
           try {
@@ -474,7 +486,7 @@ public class MailModuleBean implements BeeModule, HasTimerService {
           int idx = BeeConst.UNDEF;
 
           if (!DataUtils.isEmpty(rowSet)) {
-            idx = rowSet.getColumnIndex(COL_MESSAGE);
+            idx = DataUtils.getColumnIndex(COL_MESSAGE, rowSet.getColumns(), false);
 
             if (idx != BeeConst.UNDEF) {
               for (BeeRow row : rowSet) {
@@ -788,7 +800,7 @@ public class MailModuleBean implements BeeModule, HasTimerService {
         case FORWARD:
           logger.debug(log, row.getValue(COL_RULE_ACTION_OPTIONS));
 
-          List<FileInfo> attachments = Lists.newArrayList();
+          List<FileInfo> attachments = new ArrayList<>();
 
           SimpleRowSet rs = qs.getData(new SqlSelect()
               .addFields(TBL_ATTACHMENTS, AdministrationConstants.COL_FILE, COL_ATTACHMENT_NAME)
@@ -962,26 +974,6 @@ public class MailModuleBean implements BeeModule, HasTimerService {
     return message;
   }
 
-  private void check(MailAccount account, MailFolder localFolder, String progressId) {
-    Assert.notNull(localFolder);
-    Pair<Future<Long>, Long> pair = asyncThreads.get(localFolder.getId());
-
-    if (pair != null) {
-      Future<Long> future = pair.getA();
-      boolean timeout = BeeUtils.isMore(System.currentTimeMillis() - pair.getB(),
-          TimeUtils.MILLIS_PER_HOUR);
-
-      if (!future.isDone() && (!timeout || !future.cancel(true))) {
-        if (!BeeUtils.isEmpty(progressId)) {
-          Endpoint.closeProgress(progressId);
-        }
-        return;
-      }
-    }
-    asyncThreads.put(localFolder.getId(), Pair.of(ctx.getBusinessObject(this.getClass())
-        .checkMail(account, localFolder, progressId), System.currentTimeMillis()));
-  }
-
   private int checkFolder(MailAccount account, Folder remoteFolder, MailFolder localFolder,
       String progressId) throws MessagingException {
     Assert.noNulls(remoteFolder, localFolder);
@@ -1056,7 +1048,7 @@ public class MailModuleBean implements BeeModule, HasTimerService {
       }
       for (MailFolder mailFolder : changedFolders) {
         if (!account.isInbox(mailFolder)) {
-          check(account, mailFolder, null);
+          checkMail(true, account, mailFolder, null);
         }
       }
     }
@@ -1074,7 +1066,7 @@ public class MailModuleBean implements BeeModule, HasTimerService {
   private ResponseObject getMessage(Long messageId, Long placeId, boolean showBcc) {
     Assert.isTrue(BeeUtils.anyNotNull(messageId, placeId));
 
-    Map<String, SimpleRowSet> packet = Maps.newHashMap();
+    Map<String, SimpleRowSet> packet = new HashMap<>();
     String drafts = SystemFolder.Drafts.name();
 
     SqlSelect query = new SqlSelect()
@@ -1163,7 +1155,7 @@ public class MailModuleBean implements BeeModule, HasTimerService {
 
   @Timeout
   private void mailChecker(Timer timer) {
-    if (!cb.isTimerEvent(timer, PRM_MAIL_CHECK_INTERVAL)) {
+    if (!cb.isParameterTimer(timer, PRM_MAIL_CHECK_INTERVAL)) {
       return;
     }
     for (String accountId : qs.getColumn(new SqlSelect()
@@ -1172,7 +1164,7 @@ public class MailModuleBean implements BeeModule, HasTimerService {
         .setWhere(SqlUtils.notNull(TBL_ACCOUNTS, COL_STORE_SERVER)))) {
 
       MailAccount account = mail.getAccount(BeeUtils.toLongOrNull(accountId));
-      check(account, account.getInboxFolder(), null);
+      checkMail(true, account, account.getInboxFolder(), null);
     }
   }
 
@@ -1180,7 +1172,7 @@ public class MailModuleBean implements BeeModule, HasTimerService {
       String[] places, boolean move) throws MessagingException {
     Assert.state(!ArrayUtils.isEmpty(places), "Empty message list");
 
-    List<Long> lst = Lists.newArrayList();
+    List<Long> lst = new ArrayList<>();
 
     for (String id : places) {
       lst.add(BeeUtils.toLong(id));
@@ -1206,9 +1198,6 @@ public class MailModuleBean implements BeeModule, HasTimerService {
     for (int i = 0; i < lst.size(); i++) {
       uids[i] = lst.get(i);
     }
-    ResponseObject response = null;
-    boolean delete = move;
-
     account.processMessages(uids, source, target, move);
 
     if (target != null) {
@@ -1247,31 +1236,23 @@ public class MailModuleBean implements BeeModule, HasTimerService {
             }
           }
         }
-        if (!delete) {
-          response = ResponseObject.response(data.getNumberOfRows());
+        if (move) {
+          mail.detachMessages(wh);
         }
       } else {
         if (move) {
-          response = qs.updateDataWithResponse(new SqlUpdate(TBL_PLACES)
-              .addConstant(COL_FOLDER, target.getId())
-              .addConstant(COL_MESSAGE_UID, null)
-              .setWhere(wh));
+          mail.setFolder(target.getId(), wh);
         } else {
+          Map<Long, Integer> messages = new HashMap<>();
+
           for (SimpleRow row : data) {
-            qs.insertData(new SqlInsert(TBL_PLACES)
-                .addConstant(COL_FOLDER, target.getId())
-                .addConstant(COL_MESSAGE, row.getLong(COL_MESSAGE))
-                .addConstant(COL_FLAGS, row.getInt(COL_FLAGS)));
+            messages.put(row.getLong(COL_MESSAGE), row.getInt(COL_FLAGS));
           }
-          response = ResponseObject.response(data.getNumberOfRows());
+          mail.attachMessages(target.getId(), messages);
         }
-        delete = false;
       }
     }
-    if (delete) {
-      response = qs.updateDataWithResponse(new SqlDelete(TBL_PLACES).setWhere(wh));
-    }
-    return response;
+    return ResponseObject.response(data.getNumberOfRows());
   }
 
   private int setMessageFlag(Long placeId, MessageFlag flag, boolean on)
@@ -1302,9 +1283,7 @@ public class MailModuleBean implements BeeModule, HasTimerService {
     account.setFlag(folder, new long[] {BeeUtils.unbox(row.getLong(COL_MESSAGE_UID))},
         MailEnvelope.getFlag(flag), on);
 
-    qs.updateData(new SqlUpdate(TBL_PLACES)
-        .addConstant(COL_FLAGS, value)
-        .setWhere(sys.idEquals(TBL_PLACES, placeId)));
+    mail.setFlags(placeId, value);
 
     MailMessage mailMessage = new MailMessage(folder.getId());
     mailMessage.setFlag(flag);
@@ -1316,7 +1295,7 @@ public class MailModuleBean implements BeeModule, HasTimerService {
   private int syncFolders(MailAccount account, Folder remoteFolder, MailFolder localFolder)
       throws MessagingException {
     int c = 0;
-    Set<String> visitedFolders = Sets.newHashSet();
+    Set<String> visitedFolders = new HashSet<>();
 
     if (account.holdsFolders(remoteFolder)) {
       for (Folder subFolder : remoteFolder.list()) {

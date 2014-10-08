@@ -4,7 +4,6 @@ import com.google.common.base.Function;
 import com.google.common.base.Splitter;
 import com.google.common.collect.LinkedListMultimap;
 import com.google.common.collect.Lists;
-import com.google.common.collect.Maps;
 import com.google.common.collect.Multimap;
 import com.google.gwt.core.client.JavaScriptObject;
 import com.google.gwt.core.client.JsArrayMixed;
@@ -81,8 +80,10 @@ import com.butent.bee.shared.ui.Action;
 import com.butent.bee.shared.ui.Relation;
 import com.butent.bee.shared.utils.BeeUtils;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -230,7 +231,7 @@ public class DocumentDataForm extends AbstractFormInterceptor
 
       template = JavaScriptObject.createObject();
       JsUtils.setProperty(template, "title", loc.company());
-      List<String> descr = Lists.newArrayList();
+      List<String> descr = new ArrayList<>();
 
       for (BeeColumn col : Data.getColumns(ClassifierConstants.TBL_COMPANIES)) {
         descr.add("{" + ClassifierConstants.COL_COMPANY + col.getId() + "}");
@@ -399,9 +400,9 @@ public class DocumentDataForm extends AbstractFormInterceptor
 
   private HasWidgets panel;
   private Long groupId;
-  private final Map<String, String> criteriaHistory = Maps.newLinkedHashMap();
-  private final Map<String, Editor> criteria = Maps.newLinkedHashMap();
-  private final Map<String, Long> ids = Maps.newHashMap();
+  private final Map<String, String> criteriaHistory = new LinkedHashMap<>();
+  private final Map<String, Editor> criteria = new LinkedHashMap<>();
+  private final Map<String, Long> ids = new HashMap<>();
 
   private ChildGrid groupsGrid;
   private ChildGrid criteriaGrid;
@@ -515,7 +516,7 @@ public class DocumentDataForm extends AbstractFormInterceptor
         criteria.keySet(), new Consumer<Collection<String>>() {
           @Override
           public void accept(Collection<String> collection) {
-            Map<String, Editor> oldCriteria = Maps.newHashMap(criteria);
+            Map<String, Editor> oldCriteria = new HashMap<>(criteria);
             criteria.clear();
 
             for (String crit : collection) {
@@ -541,7 +542,7 @@ public class DocumentDataForm extends AbstractFormInterceptor
   @Override
   public void onClose(List<String> messages, IsRow oldRow, IsRow newRow) {
     LocalizableConstants loc = Localized.getConstants();
-    List<String> warnings = Lists.newArrayList();
+    List<String> warnings = new ArrayList<>();
 
     if (save(null)) {
       warnings.add(loc.mainCriteria());
@@ -801,8 +802,8 @@ public class DocumentDataForm extends AbstractFormInterceptor
   }
 
   private boolean save(final IsRow row) {
-    final Map<String, String> newValues = Maps.newLinkedHashMap();
-    Map<Long, String> changedValues = Maps.newHashMap();
+    final Map<String, String> newValues = new LinkedHashMap<>();
+    Map<Long, String> changedValues = new HashMap<>();
     CompoundFilter flt = Filter.or();
     final Holder<Integer> holder = Holder.of(0);
 

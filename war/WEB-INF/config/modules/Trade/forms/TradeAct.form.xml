@@ -25,6 +25,9 @@
       </row>
 
       <row>
+        <Label for="ActName" visible="true" />
+        <InputText source="ActName" style="&inpw;" visible="true" />
+
         <Label for="Parent">
           &forparent;
         </Label>
@@ -101,6 +104,11 @@
       <page class="bee-ta-services-tab">
         <text>=services</text>
         <ChildGrid name="TradeActServices" relColumn="TradeAct" />
+      </page>
+
+      <page class="bee-ta-invoices-tab">
+        <text>=trdInvoices</text>
+        <ChildGrid name="TradeActInvoices" relColumn="TradeAct" />
       </page>
 
       <page>

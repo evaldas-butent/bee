@@ -46,10 +46,9 @@
       </row>
     </Table>
 
-    <Disclosure xmlns="http://www.butent.com/widget" xmlns:xi="http://www.w3.org/2001/XInclude"
-      open="true">
+    <Disclosure open="true">
        <Label text="=contactInfo" style="text-transform: uppercase; " />
-        <FlowPanel class="flexible">
+       <FlowPanel>
          <xi:include href="widgets/ContactDetails.widget.xml" />     
          <ChildGrid name="CompanyContacts" relColumn="Company" style="min-height: 150px" />
        </FlowPanel>
@@ -145,6 +144,10 @@
       <page>
         <text>=objects</text>
         <ChildGrid name="CompanyObjects" relColumn="Company" module="Trade.Acts" />
+      </page>
+      <page>
+        <text>=tradeActs</text>
+        <ChildGrid name="CompanyTradeActs" relColumn="Company" module="Trade.Acts" />
       </page>
 
       <page for="Notes">

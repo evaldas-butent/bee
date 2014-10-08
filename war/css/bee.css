@@ -522,12 +522,16 @@
   color: black;
 }
 
-.bee-Header-control {
+.bee-Header-control,
+.bee-TreeView-action,
+.bee-Gallery-command {
   margin-right: 10px;
   font-size: large;
   color: #888;
 }
-.bee-Header-control:hover {
+.bee-Header-control:hover,
+.bee-TreeView-action:hover,
+.bee-Gallery-command:hover {
   color: black;
 }
 
@@ -940,15 +944,6 @@
   font-weight: bold;
 }
 
-.bee-Disclosure-header {
-  cursor: pointer;
-  border-spacing: 3px;
-}
-
-.bee-Disclosure-content {
-  margin-left: 12px;
-}
-
 .bee-InputPanel {
   position: relative;
   min-height: 50px;
@@ -1040,7 +1035,16 @@
 }
 
 .bee-TreeView-actions {
-  text-align: right;
+  height: 30px;
+  display: flex;
+  display: -webkit-flex;
+  display: -ms-flexbox;
+  justify-content: flex-end;
+  -webkit-justify-content: flex-end;
+  -ms-flex-pack: end;
+  align-items: center;
+  -webkit-align-items: center;
+  -ms-flex-align: center;
 }
 
 .bee-DatePicker {
@@ -2000,11 +2004,6 @@
 }
 .bee-ActionCellLink:hover {
   color: #00e;
-}
-
-.bee-TreeView-actions img {
-  margin-top: 2px;
-  margin-right: 5px;
 }
 
 .bee-FontSize-xx-small {
@@ -3301,8 +3300,7 @@ textarea,
 }
 
 .bee-Form .bee-HtmlTable,
-.bee-Form .bee-Horizontal,
-.bee-Form .bee-Disclosure {
+.bee-Form .bee-Horizontal {
   border-collapse: collapse;
 }
 .bee-Form .bee-HtmlTable td {
@@ -3313,4 +3311,118 @@ textarea,
   vertical-align: top;
   padding-left: 10px;
   padding-right: 6px;
+}
+
+.bee-Gallery {
+  min-height: 120px;
+  position: relative;
+}
+.bee-Gallery-command-panel {
+  height: 30px;
+  display: flex;
+  display: -webkit-flex;
+  display: -ms-flexbox;
+  justify-content: flex-end;
+  -webkit-justify-content: flex-end;
+  -ms-flex-pack: end;
+  align-items: center;
+  -webkit-align-items: center;
+  -ms-flex-align: center;
+}
+.bee-Gallery-picture-panel {
+  height: calc(100% - 30px);
+  overflow: auto;
+  display: flex;
+  display: -webkit-flex;
+  display: -ms-flexbox;
+  flex-wrap: wrap;
+  -webkit-flex-wrap: wrap;
+  -ms-flex-wrap: wrap;
+}
+.bee-Gallery .bee-FileCollector-headless {
+  position: absolute;
+  left: 0;
+  top: -100px;
+}
+
+.bee-Gallery-picture {
+  margin-left: 1em;
+}
+.bee-Gallery-picture:hover .bee-Gallery-picture-controls {
+  visibility: visible;
+}
+
+.bee-Gallery-picture-controls {
+  width: 100px;
+  height: 30px;
+  display: flex;
+  display: -webkit-flex;
+  display: -ms-flexbox;
+  align-items: center;
+  -webkit-align-items: center;
+  -ms-flex-align: center;
+  visibility: hidden;
+}
+.bee-Gallery-picture-control {
+  margin-right: 10px;
+  font-size: large;
+  color: #888;
+}
+.bee-Gallery-picture-control:hover {
+  color: black;
+}
+.bee-Gallery-picture-panel div:first-child .bee-Gallery-picture-controls .bee-Gallery-picture-move-left,
+.bee-Gallery-picture-panel div:last-child .bee-Gallery-picture-controls .bee-Gallery-picture-move-right {
+  display: none;
+}
+
+.bee-Gallery-image {
+  width: auto;
+  height: auto;
+  max-width: 300px;
+  max-height: 150px;
+}
+
+.bee-Disclosure-header {
+  display: flex;
+  display: -webkit-flex;
+  display: -ms-flexbox;
+  flex-direction: row;
+  -webkit-flex-direction: row;
+  -ms-flex-direction: row;
+  align-items: center;
+  -webkit-align-items: center;
+  -ms-flex-align: center;
+}
+.bee-Disclosure-header > div {
+  margin-left: 10px;
+}
+.bee-Disclosure-toggle {
+  font-size: x-large;
+  color: #555;
+  cursor: pointer;
+}
+.bee-Disclosure-toggle:hover {
+  color: black;
+}
+.bee-Disclosure-label {
+  cursor: pointer;
+}
+.bee-Disclosure-summary {
+  font-size: 12px;
+  align-self: flex-start;
+  -webkit-align-self: flex-start;
+  -ms-flex-item-align: start;
+}
+
+.bee-Disclosure-open .bee-Disclosure-content {
+  max-height: 100vh;
+  opacity: 1;
+  transition: max-height 200ms linear, opacity 200ms linear;
+}
+.bee-Disclosure-closed .bee-Disclosure-content {
+  max-height: 0;
+  opacity: 0;
+  transition: max-height 200ms linear, opacity 200ms linear;
+  pointer-events: none;
 }

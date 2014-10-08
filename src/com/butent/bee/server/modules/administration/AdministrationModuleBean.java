@@ -3,7 +3,6 @@ package com.butent.bee.server.modules.administration;
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
-import com.google.common.collect.Maps;
 import com.google.common.collect.Multimap;
 import com.google.common.collect.Sets;
 import com.google.common.eventbus.Subscribe;
@@ -11,6 +10,8 @@ import com.google.common.eventbus.Subscribe;
 import static com.butent.bee.shared.modules.administration.AdministrationConstants.*;
 import static com.butent.bee.shared.modules.classifiers.ClassifierConstants.*;
 
+import com.butent.bee.server.concurrency.ConcurrencyBean;
+import com.butent.bee.server.concurrency.ConcurrencyBean.HasTimerService;
 import com.butent.bee.server.data.BeeTable;
 import com.butent.bee.server.data.BeeView;
 import com.butent.bee.server.data.DataEditorBean;
@@ -57,7 +58,9 @@ import com.butent.bee.shared.utils.EnumUtils;
 import com.ibm.icu.text.RuleBasedNumberFormat;
 
 import java.math.BigDecimal;
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
@@ -68,12 +71,15 @@ import javax.ejb.EJB;
 import javax.ejb.EJBContext;
 import javax.ejb.LocalBean;
 import javax.ejb.Stateless;
+import javax.ejb.Timeout;
+import javax.ejb.Timer;
+import javax.ejb.TimerService;
 
 import lt.lb.webservices.exchangerates.ExchangeRatesWS;
 
 @Stateless
 @LocalBean
-public class AdministrationModuleBean implements BeeModule {
+public class AdministrationModuleBean implements BeeModule, HasTimerService {
 
   private static BeeLogger logger = LogUtils.getLogger(AdministrationModuleBean.class);
 
@@ -89,9 +95,13 @@ public class AdministrationModuleBean implements BeeModule {
   ParamHolderBean prm;
   @EJB
   ImportBean imp;
+  @EJB
+  ConcurrencyBean cb;
 
   @Resource
   EJBContext ctx;
+  @Resource
+  TimerService timerService;
 
   @Override
   public List<SearchResult> doSearch(String query) {
@@ -112,7 +122,8 @@ public class AdministrationModuleBean implements BeeModule {
           DataUtils.parseIdSet(reqInfo.getParameter(VAR_HISTORY_IDS)));
 
     } else if (BeeUtils.same(svc, SVC_UPDATE_EXCHANGE_RATES)) {
-      response = updateExchangeRates(reqInfo);
+      response = updateExchangeRates(reqInfo.getParameter(VAR_DATE_LOW),
+          reqInfo.getParameter(VAR_DATE_HIGH));
 
     } else if (BeeUtils.same(svc, SVC_GET_LIST_OF_CURRENCIES)) {
       response = getListOfCurrencies();
@@ -152,11 +163,11 @@ public class AdministrationModuleBean implements BeeModule {
     String module = getModule().getName();
 
     List<BeeParameter> params = Lists.newArrayList(
-        BeeParameter.createText(module, "ProgramTitle", false, UserInterface.TITLE),
         BeeParameter.createRelation(module, PRM_COMPANY, false, TBL_COMPANIES, COL_COMPANY_NAME),
         BeeParameter.createRelation(module, PRM_CURRENCY, false, TBL_CURRENCIES,
             COL_CURRENCY_NAME),
         BeeParameter.createNumber(module, PRM_VAT_PERCENT, false, 21),
+        BeeParameter.createText(module, PRM_REFRESH_CURRENCY_HOURS, false, null),
         BeeParameter.createText(module, PRM_ERP_NAMESPACE, false, null),
         BeeParameter.createText(module, PRM_ERP_ADDRESS, false, null),
         BeeParameter.createText(module, PRM_ERP_LOGIN, false, null),
@@ -185,7 +196,14 @@ public class AdministrationModuleBean implements BeeModule {
   }
 
   @Override
+  public TimerService getTimerService() {
+    return timerService;
+  }
+
+  @Override
   public void init() {
+    cb.createCalendarTimer(this.getClass(), PRM_REFRESH_CURRENCY_HOURS);
+
     sys.registerDataEventHandler(new DataEventHandler() {
       @Subscribe
       public void refreshIpFilterCache(TableModifyEvent event) {
@@ -196,7 +214,7 @@ public class AdministrationModuleBean implements BeeModule {
 
       @Subscribe
       public void refreshUsersCache(TableModifyEvent event) {
-        if ((usr.isRoleTable(event.getTargetName()) || usr.isUserTable(event.getTargetName()))
+        if (BeeUtils.inList(event.getTargetName(), TBL_USERS, TBL_ROLES, TBL_USER_ROLES)
             && event.isAfter()) {
           usr.initUsers();
           Endpoint.updateUserData(usr.getAllUserData());
@@ -503,7 +521,7 @@ public class AdministrationModuleBean implements BeeModule {
         .resetFields().resetOrder();
 
     Multimap<String, ViewColumn> columnMap = HashMultimap.create();
-    Map<String, Pair<String, String>> idMap = Maps.newHashMap();
+    Map<String, Pair<String, String>> idMap = new HashMap<>();
 
     for (ViewColumn col : view.getViewColumns()) {
       if (!col.isHidden() && !col.isReadOnly()
@@ -546,8 +564,8 @@ public class AdministrationModuleBean implements BeeModule {
       String src = sys.getAuditSource(table.getName());
       SqlSelect subq = new SqlSelect();
 
-      List<String> fields = Lists.newArrayList();
-      List<Object> pairs = Lists.newArrayList();
+      List<String> fields = new ArrayList<>();
+      List<Object> pairs = new ArrayList<>();
 
       for (ViewColumn col : columnMap.get(als)) {
         fields.add(col.getField());
@@ -661,7 +679,7 @@ public class AdministrationModuleBean implements BeeModule {
   }
 
   private Collection<? extends BeeParameter> getSqlEngineParameters() {
-    List<BeeParameter> params = Lists.newArrayList();
+    List<BeeParameter> params = new ArrayList<>();
 
     for (SqlEngine engine : SqlEngine.values()) {
       Map<String, String> value = null;
@@ -685,14 +703,21 @@ public class AdministrationModuleBean implements BeeModule {
     return params;
   }
 
-  private ResponseObject updateExchangeRates(RequestInfo reqInfo) {
-    String low = reqInfo.getParameter(VAR_DATE_LOW);
+  @Timeout
+  private void refreshCurrencyRates(Timer timer) {
+    if (!cb.isParameterTimer(timer, PRM_REFRESH_CURRENCY_HOURS)) {
+      return;
+    }
+    String daysOfToday = BeeUtils.toString(TimeUtils.today().getDays());
+    updateExchangeRates(daysOfToday, daysOfToday);
+  }
+
+  private ResponseObject updateExchangeRates(String low, String high) {
     if (!BeeUtils.isPositiveInt(low)) {
       return ResponseObject.parameterNotFound(SVC_UPDATE_EXCHANGE_RATES, VAR_DATE_LOW);
     }
     JustDate dateLow = new JustDate(BeeUtils.toInt(low));
 
-    String high = reqInfo.getParameter(VAR_DATE_HIGH);
     if (!BeeUtils.isPositiveInt(high)) {
       return ResponseObject.parameterNotFound(SVC_UPDATE_EXCHANGE_RATES, VAR_DATE_HIGH);
     }

@@ -12,6 +12,8 @@
       </ExternalJoin>
 
       <SimpleColumn name="Cmr" />
+      <SimpleColumn name="Notes" />
+
       <SimpleColumn name="Order" />
       <SimpleJoin name="Order" joinType="INNER">
         <SimpleColumn name="Status" />
@@ -44,6 +46,9 @@
 
       <ExternalJoin source="CargoTrips" name="Cargo" joinType="LEFT">
         <SimpleJoin name="Trip" joinType="LEFT">
+          <AggregateColumn name="ForwarderVehicle" aggregate="MAX" />
+          <AggregateColumn name="ForwarderDriver" aggregate="MAX" />
+
           <SimpleJoin name="Vehicle" joinType="LEFT">
             <AggregateColumn name="Number" alias="Vehicle" aggregate="MAX" label="=trTruck" />
           </SimpleJoin>

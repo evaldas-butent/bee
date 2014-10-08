@@ -155,6 +155,31 @@ public final class UiHelper {
     return result;
   }
 
+  @SuppressWarnings("unchecked")
+  public static <T extends Widget> T getChild(Widget parent, Class<T> clazz) {
+    if (parent == null || clazz == null) {
+      return null;
+
+    } else if (parent.getClass().equals(clazz)) {
+      return (T) parent;
+
+    } else if (parent instanceof HasOneWidget) {
+      return getChild(((HasOneWidget) parent).getWidget(), clazz);
+
+    } else if (parent instanceof HasWidgets) {
+      for (Widget widget : (HasWidgets) parent) {
+        T child = getChild(widget, clazz);
+        if (child != null) {
+          return child;
+        }
+      }
+      return null;
+
+    } else {
+      return null;
+    }
+  }
+
   public static Widget getChildByStyleName(Widget parent, String styleName) {
     Collection<Widget> children = getChildrenByStyleName(parent, Sets.newHashSet(styleName));
 
@@ -195,20 +220,27 @@ public final class UiHelper {
     }
 
     TextAlign align;
+
     switch (type) {
       case BOOLEAN:
         align = TextAlign.CENTER;
         break;
+
       case DECIMAL:
       case INTEGER:
       case LONG:
       case NUMBER:
-        align = TextAlign.END;
+        align = TextAlign.RIGHT;
         break;
+
       default:
         align = null;
     }
     return align;
+  }
+
+  public static WhiteSpace getDefaultWhiteSpace(ValueType type) {
+    return ValueType.isNumeric(type) ? WhiteSpace.NOWRAP : null;
   }
 
   public static List<Focusable> getFocusableChildren(Widget parent) {
@@ -567,6 +599,14 @@ public final class UiHelper {
     TextAlign align = getDefaultHorizontalAlignment(type);
     if (align != null) {
       obj.setTextAlign(align);
+    }
+  }
+
+  public static void setDefaultWhiteSpace(HasWhiteSpace obj, ValueType type) {
+    Assert.notNull(obj);
+    WhiteSpace whiteSpace = getDefaultWhiteSpace(type);
+    if (whiteSpace != null) {
+      obj.setWhiteSpace(whiteSpace);
     }
   }
 
