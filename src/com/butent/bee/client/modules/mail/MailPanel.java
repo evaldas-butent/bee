@@ -91,6 +91,7 @@ import com.butent.bee.shared.modules.mail.AccountInfo;
 import com.butent.bee.shared.modules.mail.MailConstants.MessageFlag;
 import com.butent.bee.shared.modules.mail.MailConstants.SystemFolder;
 import com.butent.bee.shared.modules.mail.MailFolder;
+import com.butent.bee.shared.rights.RightsState;
 import com.butent.bee.shared.time.DateTime;
 import com.butent.bee.shared.time.TimeUtils;
 import com.butent.bee.shared.ui.Action;
@@ -468,19 +469,24 @@ public class MailPanel extends AbstractFormInterceptor {
     });
     header.addCommandItem(refreshWidget);
 
-    FaLabel accountSettings = new FaLabel(FontAwesome.MAGIC);
+    boolean canAccess =
+        BeeKeeper.getUser().getUserData().hasDataRight(VIEW_ACCOUNTS, RightsState.VIEW);
 
-    accountSettings.setTitle(Localized.getConstants().mailAccount());
-    accountSettings.addClickHandler(new ClickHandler() {
-      @Override
-      public void onClick(ClickEvent arg0) {
-        DataInfo dataInfo = Data.getDataInfo(VIEW_ACCOUNTS);
-        long rowId = getCurrentAccount().getAccountId();
-        RowEditor.openForm(FORM_ACCOUNT, dataInfo, rowId, Opener.MODAL);
-      }
-    });
+    if (canAccess) {
+      FaLabel accountSettings = new FaLabel(FontAwesome.MAGIC);
 
-    header.addCommandItem(accountSettings);
+      accountSettings.setTitle(Localized.getConstants().mailAccount());
+      accountSettings.addClickHandler(new ClickHandler() {
+        @Override
+        public void onClick(ClickEvent arg0) {
+          DataInfo dataInfo = Data.getDataInfo(VIEW_ACCOUNTS);
+          long rowId = getCurrentAccount().getAccountId();
+          RowEditor.openForm(FORM_ACCOUNT, dataInfo, rowId, Opener.MODAL);
+        }
+      });
+
+      header.addCommandItem(accountSettings);
+    }
     message.setFormView(getFormView());
   }
 
