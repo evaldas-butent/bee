@@ -336,7 +336,7 @@ public class MailStorageBean {
       if (DataUtils.isId(senderId)) {
         allAddresses.add(senderId);
       }
-      setRelations(userId, messageId, allAddresses);
+      setRelations(messageId, allAddresses);
     }
     if (!DataUtils.isId(placeId)) {
       placeId = storePlace(messageId, folderId, envelope.getFlagMask(), messageUID);
@@ -442,7 +442,7 @@ public class MailStorageBean {
     return folder;
   }
 
-  private void setRelations(Long userId, Long messageId, Set<Long> addresses) {
+  private void setRelations(Long messageId, Set<Long> addresses) {
     Long[] adr = null;
 
     if (!BeeUtils.isEmpty(addresses)) {
@@ -476,18 +476,24 @@ public class MailStorageBean {
                 sys.joinTables(TBL_CONTACTS, TBL_COMPANY_PERSONS, COL_CONTACT)))));
 
     if (!ArrayUtils.isEmpty(companies)) {
-      Long userCompany = qs.getLong(new SqlSelect()
+      Long[] sysCompanies = qs.getLongColumn(new SqlSelect().setDistinctMode(true)
           .addFields(TBL_COMPANY_PERSONS, COL_COMPANY)
           .addFrom(TBL_USERS)
           .addFromInner(TBL_COMPANY_PERSONS,
-              sys.joinTables(TBL_COMPANY_PERSONS, TBL_USERS, COL_COMPANY_PERSON))
-          .setWhere(sys.idEquals(TBL_USERS, userId)));
+              sys.joinTables(TBL_COMPANY_PERSONS, TBL_USERS, COL_COMPANY_PERSON)));
 
-      if (ArrayUtils.contains(companies, userCompany)) {
-        for (Long company : companies) {
-          if (Objects.equals(company, userCompany)) {
-            continue;
-          }
+      List<Long> otherCompanies = new ArrayList<>();
+      boolean ok = false;
+
+      for (Long company : companies) {
+        if (ArrayUtils.contains(sysCompanies, company)) {
+          ok = true;
+        } else {
+          otherCompanies.add(company);
+        }
+      }
+      if (ok) {
+        for (Long company : otherCompanies) {
           qs.insertData(new SqlInsert(TBL_RELATIONS)
               .addConstant(COL_MESSAGE, messageId)
               .addConstant(COL_COMPANY, company));

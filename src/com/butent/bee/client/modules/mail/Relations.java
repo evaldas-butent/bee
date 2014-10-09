@@ -130,6 +130,7 @@ public class Relations extends Flow implements Editor, ClickHandler, SelectorEve
 
     } else {
       FaLabel face = new FaLabel(FontAwesome.CHAIN);
+      face.setTitle(Localized.getConstants().relations());
       face.addClickHandler(this);
       add(face);
       table.setWidth("600px");
