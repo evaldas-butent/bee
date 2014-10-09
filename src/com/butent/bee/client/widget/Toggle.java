@@ -78,7 +78,9 @@ public class Toggle extends CustomWidget implements Editor, HasValueChangeHandle
       boolean checked) {
 
     super(element, BeeUtils.notEmpty(styleName, BeeConst.CSS_CLASS_PREFIX + "Toggle"));
+
     addStyleDependentName(checked ? STYLE_SUFFIX_CHECKED : STYLE_SUFFIX_UNCHECKED);
+    DomUtils.preventSelection(this);
 
     this.upFace = upFace;
     this.downFace = downFace;

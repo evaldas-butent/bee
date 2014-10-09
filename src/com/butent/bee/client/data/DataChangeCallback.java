@@ -27,7 +27,7 @@ public class DataChangeCallback extends Callback<RowInfoList> {
 
   @Override
   public void onSuccess(RowInfoList result) {
-    if (BeeUtils.isEmpty(result)) {
+    if (!BeeUtils.isEmpty(result)) {
       DataChangeEvent.fire(BeeKeeper.getBus(), viewName, effects);
     }
   }

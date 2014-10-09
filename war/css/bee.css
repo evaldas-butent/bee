@@ -944,15 +944,6 @@
   font-weight: bold;
 }
 
-.bee-Disclosure-header {
-  cursor: pointer;
-  border-spacing: 3px;
-}
-
-.bee-Disclosure-content {
-  margin-left: 12px;
-}
-
 .bee-InputPanel {
   position: relative;
   min-height: 50px;
@@ -3309,8 +3300,7 @@ textarea,
 }
 
 .bee-Form .bee-HtmlTable,
-.bee-Form .bee-Horizontal,
-.bee-Form .bee-Disclosure {
+.bee-Form .bee-Horizontal {
   border-collapse: collapse;
 }
 .bee-Form .bee-HtmlTable td {
@@ -3324,7 +3314,8 @@ textarea,
 }
 
 .bee-Gallery {
-  min-height: 100px;
+  min-height: 120px;
+  position: relative;
 }
 .bee-Gallery-command-panel {
   height: 30px;
@@ -3339,23 +3330,30 @@ textarea,
   -ms-flex-align: center;
 }
 .bee-Gallery-picture-panel {
+  height: calc(100% - 30px);
+  overflow: auto;
+  display: flex;
+  display: -webkit-flex;
+  display: -ms-flexbox;
+  flex-wrap: wrap;
+  -webkit-flex-wrap: wrap;
+  -ms-flex-wrap: wrap;
+}
+.bee-Gallery .bee-FileCollector-headless {
   position: absolute;
   left: 0;
-  right: 0;
-  top: 30px;
-  bottom: 0;
-  overflow: auto;
+  top: -100px;
 }
 
 .bee-Gallery-picture {
-  float: left;
   margin-left: 1em;
-  min-width: 100px;
-  height: 100%;
-  position: relative;
+}
+.bee-Gallery-picture:hover .bee-Gallery-picture-controls {
+  visibility: visible;
 }
 
 .bee-Gallery-picture-controls {
+  width: 100px;
   height: 30px;
   display: flex;
   display: -webkit-flex;
@@ -3363,6 +3361,7 @@ textarea,
   align-items: center;
   -webkit-align-items: center;
   -ms-flex-align: center;
+  visibility: hidden;
 }
 .bee-Gallery-picture-control {
   margin-right: 10px;
@@ -3379,5 +3378,51 @@ textarea,
 
 .bee-Gallery-image {
   width: auto;
-  max-height: calc(100% - 50px);
+  height: auto;
+  max-width: 300px;
+  max-height: 150px;
+}
+
+.bee-Disclosure-header {
+  display: flex;
+  display: -webkit-flex;
+  display: -ms-flexbox;
+  flex-direction: row;
+  -webkit-flex-direction: row;
+  -ms-flex-direction: row;
+  align-items: center;
+  -webkit-align-items: center;
+  -ms-flex-align: center;
+}
+.bee-Disclosure-header > div {
+  margin-left: 10px;
+}
+.bee-Disclosure-toggle {
+  font-size: x-large;
+  color: #555;
+  cursor: pointer;
+}
+.bee-Disclosure-toggle:hover {
+  color: black;
+}
+.bee-Disclosure-label {
+  cursor: pointer;
+}
+.bee-Disclosure-summary {
+  font-size: 12px;
+  align-self: flex-start;
+  -webkit-align-self: flex-start;
+  -ms-flex-item-align: start;
+}
+
+.bee-Disclosure-open .bee-Disclosure-content {
+  max-height: 100vh;
+  opacity: 1;
+  transition: max-height 200ms linear, opacity 200ms linear;
+}
+.bee-Disclosure-closed .bee-Disclosure-content {
+  max-height: 0;
+  opacity: 0;
+  transition: max-height 200ms linear, opacity 200ms linear;
+  pointer-events: none;
 }

@@ -465,8 +465,8 @@ public class TecDocBean implements HasTimerService {
     }
     if (info != null && info.getString().size() > 1) {
       int size = info.getString().size();
-      List<RemoteItem> items = Lists.newArrayListWithCapacity(size);
-      List<RemoteRemainder> remainders = Lists.newArrayListWithCapacity(size);
+      List<RemoteItem> items = new ArrayList<>(size);
+      List<RemoteRemainder> remainders = new ArrayList<>(size);
 
       logger.info(supplier, "Received", size, "records. Updating data...");
 

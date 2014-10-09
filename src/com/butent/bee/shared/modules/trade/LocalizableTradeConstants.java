@@ -58,11 +58,21 @@ public interface LocalizableTradeConstants {
 
   String trdNoPaymentPeriod();
 
+  String trdOperation();
+
+  String trdOperationsShort();
+
   String trdOverdue();
 
   String trdPrice();
 
   String trdQuantity();
+
+  String trdSeries();
+
+  String trdSeriesPlural();
+
+  String trdStatuses();
 
   String trdTotal();
 }

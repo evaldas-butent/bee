@@ -683,16 +683,8 @@ public class UserServiceBean {
     return (info == null) ? false : info.getUserData().isModuleVisible(moduleAndSub);
   }
 
-  public boolean isRoleTable(String tblName) {
-    return BeeUtils.inList(tblName, TBL_ROLES, TBL_USER_ROLES);
-  }
-
   public boolean isUser(String user) {
     return !BeeUtils.isEmpty(user) && userCache.inverse().containsKey(key(user));
-  }
-
-  public boolean isUserTable(String tblName) {
-    return BeeUtils.same(tblName, TBL_USERS);
   }
 
   public boolean isWidgetVisible(RegulatedWidget widget) {
@@ -700,7 +692,6 @@ public class UserServiceBean {
     return (info == null) ? false : info.getUserData().isWidgetVisible(widget);
   }
 
-  @Lock(LockType.WRITE)
   public ResponseObject login(String host, String agent) {
     ResponseObject response = new ResponseObject();
     String user = getCurrentUser();
@@ -734,7 +725,6 @@ public class UserServiceBean {
     return response;
   }
 
-  @Lock(LockType.WRITE)
   public void logout(long userId, long historyId) {
     UserInfo info = getUserInfo(userId);
 

@@ -305,7 +305,8 @@ public class DiscussionsModuleBean implements BeeModule {
               row.setProperty(PROP_LAST_COMMENT_DATA, lastCommentVal);
 
               String filesCountVal = "";
-              if (BeeUtils.isPositive(rowSet.getColumnIndex(ALS_FILES_COUNT))) {
+              if (BeeUtils.isPositive(DataUtils.getColumnIndex(ALS_FILES_COUNT,
+                  rowSet.getColumns(), false))) {
                 filesCountVal = row.getString(rowSet.getColumnIndex(ALS_FILES_COUNT));
               }
 
@@ -313,7 +314,8 @@ public class DiscussionsModuleBean implements BeeModule {
 
               String relValue = "";
 
-              if (BeeUtils.isPositive(rowSet.getColumnIndex(ALS_RELATIONS_COUNT))) {
+              if (BeeUtils.isPositive(DataUtils.getColumnIndex(ALS_RELATIONS_COUNT, rowSet
+                  .getColumns(), false))) {
                 int rc =
                     BeeUtils.unbox(row.getInteger(rowSet.getColumnIndex(ALS_RELATIONS_COUNT)));
 

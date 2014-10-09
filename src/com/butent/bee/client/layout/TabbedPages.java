@@ -27,16 +27,13 @@ import com.butent.bee.client.widget.Label;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.Pair;
-import com.butent.bee.shared.data.value.BooleanValue;
 import com.butent.bee.shared.data.value.Value;
 import com.butent.bee.shared.ui.Orientation;
 import com.butent.bee.shared.utils.BeeUtils;
 
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
@@ -187,46 +184,7 @@ public class TabbedPages extends Flow implements
 
       if (!Objects.equals(event.getValue(), oldValue)) {
         summaryValues.put(event.getSourceId(), event.getValue());
-        summaryWidget.setHtml(renderSummary());
-      }
-    }
-
-    private String renderSummary() {
-      List<String> messages = new ArrayList<>();
-      int size = 0;
-
-      for (Value value : summaryValues.values()) {
-        if (value != null && !value.isEmpty()) {
-          switch (value.getType()) {
-            case BOOLEAN:
-              if (BooleanValue.TRUE.equals(value)) {
-                size++;
-              }
-              break;
-
-            case INTEGER:
-              size += value.getInteger();
-              break;
-
-            default:
-              messages.add(value.toString());
-          }
-        }
-      }
-
-      if (size > 0) {
-        if (messages.isEmpty()) {
-          return BeeUtils.toString(size);
-        }
-        messages.add(BeeUtils.toString(size));
-      }
-
-      if (messages.isEmpty()) {
-        return BeeConst.STRING_EMPTY;
-      } else if (messages.size() == 1) {
-        return messages.get(0);
-      } else {
-        return BeeUtils.joinWords(messages);
+        summaryWidget.setHtml(SummaryChangeEvent.renderSummary(summaryValues.values()));
       }
     }
 
