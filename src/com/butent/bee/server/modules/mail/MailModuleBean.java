@@ -395,7 +395,7 @@ public class MailModuleBean implements BeeModule, HasTimerService {
           message.setFlag(Flag.SEEN, true);
 
           if (!account.addMessageToRemoteFolder(message, folder)) {
-            mail.storeMail(account.getUserId(), message, folder.getId(), null);
+            mail.storeMail(account, message, folder.getId(), null);
           }
           response.addInfo(usr.getLocalizableConstants().mailMessageIsSavedInDraft());
         }
@@ -648,7 +648,7 @@ public class MailModuleBean implements BeeModule, HasTimerService {
         message.setFlag(Flag.SEEN, true);
 
         if (!account.addMessageToRemoteFolder(message, folder)) {
-          mail.storeMail(account.getUserId(), message, folder.getId(), null);
+          mail.storeMail(account, message, folder.getId(), null);
         }
       }
     } finally {
@@ -709,7 +709,7 @@ public class MailModuleBean implements BeeModule, HasTimerService {
     }
     if (account != null) {
       try {
-        mail.storeMail(account.getUserId(), message, account.getInboxFolder().getId(), null);
+        mail.storeMail(account, message, account.getInboxFolder().getId(), null);
       } catch (MessagingException e) {
         throw new BeeRuntimeException(e);
       }
@@ -994,7 +994,7 @@ public class MailModuleBean implements BeeModule, HasTimerService {
         Long lastUid;
 
         if (uidMode) {
-          lastUid = mail.syncFolder(account.getUserId(), localFolder, remoteFolder);
+          lastUid = mail.syncFolder(account, localFolder, remoteFolder);
           newMessages = ((UIDFolder) remoteFolder).getMessagesByUID(lastUid + 1, UIDFolder.LASTUID);
         } else {
           lastUid = null;
@@ -1011,8 +1011,7 @@ public class MailModuleBean implements BeeModule, HasTimerService {
           Long currentUid = uidMode ? ((UIDFolder) remoteFolder).getUID(message) : null;
 
           if (currentUid == null || currentUid > lastUid) {
-            Long placeId = mail.storeMail(account.getUserId(), message, localFolder.getId(),
-                currentUid);
+            Long placeId = mail.storeMail(account, message, localFolder.getId(), currentUid);
 
             if (DataUtils.isId(placeId)) {
               if (isInbox) {

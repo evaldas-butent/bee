@@ -23,6 +23,7 @@ import com.butent.bee.client.view.form.interceptor.FormInterceptor;
 import com.butent.bee.client.widget.InputArea;
 import com.butent.bee.client.widget.InputText;
 import com.butent.bee.client.widget.ListBox;
+import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.IsRow;
 import com.butent.bee.shared.data.filter.Filter;
 import com.butent.bee.shared.modules.mail.MailConstants.RuleAction;
@@ -156,8 +157,16 @@ public class RuleForm extends AbstractFormInterceptor implements SelectorEvent.H
   @Override
   public void onDataSelector(SelectorEvent event) {
     if (event.isOpened()) {
-      event.getSelector().setAdditionalFilter(Filter.equals(COL_ACCOUNT,
-          ViewHelper.getFormRowId(getGridView())));
+      Long account = getLongValue(COL_ACCOUNT);
+
+      if (!DataUtils.isId(account)) {
+        account = ViewHelper.getFormRowId(getGridView());
+      }
+      if (DataUtils.isId(account)) {
+        event.getSelector().setAdditionalFilter(Filter.equals(COL_ACCOUNT, account));
+      } else {
+        event.consume();
+      }
     }
   }
 
