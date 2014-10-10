@@ -5,13 +5,25 @@
 	name="DebtReports" viewName="DebtReports"
 	disabledActions="add delete"
 	caption="=trdDebtReports"
-	>
+>
 
 	<g:columns xmlns="http://www.butent.com/column" xmlns:g="http://www.butent.com/grid">
+	  <SelectionColumn name="Select" width="20" />
 		<DataColumn name="Name" caption="=company" label="=company" />
 		<PropColumn name="RemindEmail" type="string" caption="=email" label="=email"/>
-		<DataColumn name="DebtCount" /> 
-		<DataColumn name="DebtAmount" />
+		<DataColumn name="DebtCount" >
+		  <style>
+        <bodyStyle><ui:class>bee-ActionCellLink</ui:class></bodyStyle>
+      </style> 
+		</DataColumn> 
+		<CalcColumn name="DebtAmount" type="decimal" format="0.00" label="=trdDebt" caption="=trdDebt">
+		  <render>
+        <ui:function>
+          return row.AmountSum - row.PaidSum;
+        </ui:function>
+      </render>
+		</CalcColumn>
+		<DataColumn name="CurrencyName"/>
 		<PropColumn name="Advance" type="decimal"  caption="=trdAdvance" label="=trdAdvance" />
 		<RelColumn name="BankruptcyRisk" renderColumns="BankruptcyRiskName" caption="=clientBankruptcyRisk" label="=clientBankruptcyRisk" readOnly="true" />
     <RelColumn name="DelayedPaymentRisk" renderColumns="DelayedPaymentRiskName" caption="=clientDelayedPaymentRisk" label="=clientDelayedPaymentRisk" readOnly="true" />

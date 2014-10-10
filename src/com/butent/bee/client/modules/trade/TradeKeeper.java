@@ -32,6 +32,7 @@ public final class TradeKeeper {
         UniqueChildInterceptor.forUsers(Localized.getConstants().managers(),
             COL_SERIES, COL_TRADE_MANAGER));
     GridFactory.registerGridInterceptor(GRID_DEBTS, new DebtsGrid());
+    GridFactory.registerGridInterceptor(GRID_DEBT_REPORTS, new DebtReportsGrid());
 
     ColorStyleProvider csp = ColorStyleProvider.createDefault(VIEW_TRADE_OPERATIONS);
     ConditionalStyle.registerGridColumnStyleProvider(GRID_TRADE_OPERATIONS, COL_BACKGROUND, csp);

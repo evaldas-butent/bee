@@ -18,17 +18,12 @@
       <AggregateColumn name="Customer" aggregate="COUNT" alias="DebtCount" label="=trInvoices" />
       <AggregateColumn name="Amount" aggregate="SUM" alias="AmountSum" />
       <AggregateColumn name="Paid" aggregate="SUM" alias="PaidSum" />
-      <SimpleColumn name="DebtAmount" label="=trdDebt">
-        <x:minus>
-        <x:number>"AmountSum"</x:number>
-        <x:nvl type="DECIMAL">
-          <x:number>"PaidSum"</x:number>
-          <x:number>0</x:number>
-        </x:nvl>
-      </x:minus>
-      </SimpleColumn>
+      <SimpleColumn name="Currency" />
+      <SimpleJoin name="Currency" joinType="LEFT">
+        <SimpleColumn name="Name" alias="CurrencyName"/>
+      </SimpleJoin>
     </ExternalJoin>
-    
+     
     <SimpleColumn name="BankruptcyRisk"/>
     <SimpleJoin joinType="LEFT" name="BankruptcyRisk">
       <SimpleColumn alias="BankruptcyRiskName" name="Name" />

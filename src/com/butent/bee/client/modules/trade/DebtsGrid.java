@@ -2,6 +2,7 @@ package com.butent.bee.client.modules.trade;
 
 import com.butent.bee.client.data.Data;
 import com.butent.bee.client.grid.GridFactory;
+import com.butent.bee.client.grid.GridFactory.GridOptions;
 import com.butent.bee.client.presenter.PresenterCallback;
 import com.butent.bee.client.view.edit.EditStartEvent;
 import com.butent.bee.client.view.grid.interceptor.AbstractGridInterceptor;
@@ -9,13 +10,14 @@ import com.butent.bee.client.view.grid.interceptor.GridInterceptor;
 import com.butent.bee.client.view.search.AbstractFilterSupplier;
 import com.butent.bee.shared.data.BeeColumn;
 import com.butent.bee.shared.data.IsRow;
+import com.butent.bee.shared.data.filter.Filter;
 import com.butent.bee.shared.i18n.LocalizableConstants;
 import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.modules.trade.TradeConstants;
 import com.butent.bee.shared.ui.ColumnDescription;
 import com.butent.bee.shared.utils.BeeUtils;
 
-public class DebtsGrid extends AbstractGridInterceptor {
+class DebtsGrid extends AbstractGridInterceptor {
 
   private static final LocalizableConstants localizedConstants = Localized.getConstants();
 
@@ -47,14 +49,14 @@ public class DebtsGrid extends AbstractGridInterceptor {
     }
 
     if (TradeConstants.PROP_AVERAGE_OVERDUE.equals(event.getColumnId())) {
+      int idxCostumer = getDataIndex(TradeConstants.COL_TRADE_CUSTOMER);
+      GridOptions options = GridOptions.forFilter(Filter.equals(
+          TradeConstants.COL_TRADE_CUSTOMER, activeRow.getLong(idxCostumer)));
+
       GridFactory.openGrid(TradeConstants.GRID_SALES,
           GridFactory.getGridInterceptor(TradeConstants.GRID_SALES),
-          /*
-           * GridOptions.forFilter(Filter.compareWithValue(TradeConstants.COL_TRADE_CUSTOMER,
-           * Operator.EQ, Value.getValue(activeRow.getId())))
-           */null, PresenterCallback.SHOW_IN_NEW_TAB);
+          options, PresenterCallback.SHOW_IN_NEW_TAB);
     }
-
   }
 
 }

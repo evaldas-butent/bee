@@ -59,6 +59,7 @@ public final class TradeConstants {
   public static final String COL_TRADE_EXPORTED = "Exported";
   public static final String COL_TRADE_KIND = "Kind";
   public static final String COL_TRADE_DEBT = "Debt";
+  public static final String COL_TRADE_DEBT_COUNT = "DebtCount";
 
   public static final String COL_TRADE_VAT_PLUS = "VatPlus";
   public static final String COL_TRADE_VAT = "Vat";
@@ -112,7 +113,10 @@ public final class TradeConstants {
 
   public static final String GRID_SERIES_MANAGERS = "SeriesManagers";
   public static final String GRID_DEBTS = "Debts";
+  public static final String GRID_DEBT_REPORTS = "DebtReports";
   public static final String GRID_SALES = "Sales";
+
+  public static final String FORM_DEBT_REPORT_TEMPLATE = "DebtReportTemplate";
 
   private TradeConstants() {
   }
