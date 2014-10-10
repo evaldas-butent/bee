@@ -224,7 +224,7 @@ public class DataInfo implements BeeSerializable, Comparable<DataInfo>, HasExten
 
   public BeeColumn getColumn(String columnId) {
     int index = getColumnIndex(columnId);
-    return BeeConst.isUndef(index) ? null : getColumns().get(index);
+    return (index >= 0) ? getColumns().get(index) : null;
   }
 
   public int getColumnCount() {
@@ -309,8 +309,7 @@ public class DataInfo implements BeeSerializable, Comparable<DataInfo>, HasExten
   }
 
   public ValueType getColumnType(String columnId) {
-    BeeColumn column = getColumn(columnId);
-    return (column == null) ? null : column.getType();
+    return getColumnType(getColumnIndex(columnId));
   }
 
   public Collection<ViewColumn> getDescendants(String colName, boolean includeHidden) {

@@ -84,13 +84,15 @@
 .bee-ta-return-items-item:nth-child(odd),
 .bee-ta-picker-item:nth-child(odd),
 .bee-ta-invoice-act-row:nth-child(odd),
-.bee-ta-invoice-service-row:nth-child(odd) {
+.bee-ta-invoice-service-row:nth-child(odd),
+.bee-ta-report-ibc-body:nth-child(odd) {
   background-color: #f5f5f5;
 }
 .bee-ta-return-items-item:nth-child(even),
 .bee-ta-picker-item:nth-child(even),
 .bee-ta-invoice-act-row:nth-child(even),
-.bee-ta-invoice-service-row:nth-child(even) {
+.bee-ta-invoice-service-row:nth-child(even),
+.bee-ta-report-ibc-body:nth-child(even) {
   background-color: #ebebeb;
 }
 .bee-ta-picker-item:hover,
@@ -236,5 +238,15 @@
 .bee-ta-invoice-service-total-label,
 .bee-ta-invoice-service-total-cell {
   text-align: right;
+  font-weight: bold;
+}
+
+.bee-ta-report-ibc-table td {
+  padding: 3px 5px;
+  border: 1px solid #ddd;
+  white-space: nowrap;
+}
+.bee-ta-report-ibc-header,
+.bee-ta-report-ibc-footer {
   font-weight: bold;
 }

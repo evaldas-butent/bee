@@ -489,7 +489,7 @@ public class TradeActInvoiceBuilder extends AbstractFormInterceptor implements
 
   private static String renderAmount(Double amount) {
     if (BeeUtils.isDouble(amount)) {
-      return Format.getDefaultCurrencyFormat().format(amount);
+      return Format.getDefaultMoneyFormat().format(amount);
     } else {
       return BeeConst.STRING_EMPTY;
     }

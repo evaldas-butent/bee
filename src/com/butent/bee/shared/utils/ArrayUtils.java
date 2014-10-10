@@ -258,6 +258,28 @@ public final class ArrayUtils {
     return len;
   }
 
+  public static String[] remove(String[] arr, int index) {
+    if (arr == null || index < 0 || arr.length <= index) {
+      return arr;
+    }
+
+    String[] result = new String[arr.length - 1];
+
+    if (index > 0) {
+      for (int i = 0; i < index; i++) {
+        result[i] = arr[i];
+      }
+    }
+
+    if (index < arr.length - 1) {
+      for (int i = index + 1; i < arr.length; i++) {
+        result[i - 1] = arr[i];
+      }
+    }
+
+    return result;
+  }
+
   /**
    * Copies the specified range of the {@code source} array into a new array. Implements JavaScript
    * array.slice method. Null-safe.

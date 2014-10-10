@@ -1,36 +1,48 @@
 package com.butent.bee.client.modules.trade.acts;
 
+import com.google.gwt.i18n.client.NumberFormat;
+
 import static com.butent.bee.shared.modules.classifiers.ClassifierConstants.*;
+import static com.butent.bee.shared.modules.trade.TradeConstants.*;
 import static com.butent.bee.shared.modules.trade.acts.TradeActConstants.*;
 
 import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.communication.ParameterList;
 import com.butent.bee.client.communication.ResponseCallback;
+import com.butent.bee.client.data.ClientDefaults;
 import com.butent.bee.client.grid.HtmlTable;
 import com.butent.bee.client.i18n.Format;
 import com.butent.bee.client.output.Exporter;
 import com.butent.bee.client.output.Report;
 import com.butent.bee.client.output.ReportParameters;
+import com.butent.bee.client.style.StyleUtils;
 import com.butent.bee.client.ui.HasIndexedWidgets;
 import com.butent.bee.client.view.form.FormView;
 import com.butent.bee.client.view.form.interceptor.FormInterceptor;
 import com.butent.bee.client.view.form.interceptor.ReportInterceptor;
+import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.Service;
 import com.butent.bee.shared.communication.ResponseObject;
+import com.butent.bee.shared.css.values.TextAlign;
 import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.SimpleRowSet;
+import com.butent.bee.shared.data.value.ValueType;
 import com.butent.bee.shared.export.XSheet;
 import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogUtils;
-import com.butent.bee.shared.modules.trade.acts.TradeActUtils;
 import com.butent.bee.shared.time.DateTime;
+import com.butent.bee.shared.time.TimeUtils;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.NameUtils;
 import com.butent.bee.shared.utils.StringList;
 
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 public class TradeActItemsByCompanyReport extends ReportInterceptor {
 
@@ -50,10 +62,20 @@ public class TradeActItemsByCompanyReport extends ReportInterceptor {
   private static final List<String> GROUP_VALUES = Arrays.asList(COL_ITEM_TYPE, COL_ITEM_GROUP,
       COL_TA_ITEM, COL_TA_COMPANY, COL_TA_OBJECT, COL_TA_MANAGER, COL_WAREHOUSE);
 
+  private static final List<String> TOTAL_COLUMNS = Arrays.asList(COL_TRADE_ITEM_QUANTITY,
+      ALS_RETURNED_QTY, ALS_REMAINING_QTY, ALS_BASE_AMOUNT, ALS_DISCOUNT_AMOUNT,
+      ALS_TOTAL_AMOUNT);
+
+  private static final List<String> MONEY_COLUMNS = Arrays.asList(COL_TRADE_ITEM_PRICE,
+      ALS_BASE_AMOUNT, ALS_DISCOUNT_AMOUNT, ALS_TOTAL_AMOUNT);
+
   private static final String STYLE_PREFIX = TradeActKeeper.STYLE_PREFIX + "report-ibc-";
 
   private static final String STYLE_TABLE = STYLE_PREFIX + "table";
+
   private static final String STYLE_HEADER = STYLE_PREFIX + "header";
+  private static final String STYLE_BODY = STYLE_PREFIX + "body";
+  private static final String STYLE_FOOTER = STYLE_PREFIX + "footer";
 
   private final XSheet sheet = new XSheet();
 
@@ -126,6 +148,16 @@ public class TradeActItemsByCompanyReport extends ReportInterceptor {
       headers.add(Format.renderPeriod(start, end));
     }
 
+    String currency = getEditorValue(NAME_CURRENCY);
+    final String currencyName;
+
+    if (DataUtils.isId(currency)) {
+      params.addDataItem(COL_TA_CURRENCY, currency);
+      currencyName = getFilterLabel(NAME_CURRENCY);
+    } else {
+      currencyName = ClientDefaults.getCurrencyName();
+    }
+
     for (String name : FILTER_NAMES) {
       String ids = getEditorValue(name);
 
@@ -133,7 +165,7 @@ public class TradeActItemsByCompanyReport extends ReportInterceptor {
         params.addDataItem(name, ids);
 
         boolean plural = DataUtils.parseIdSet(ids).size() > 1;
-        String label = TradeActUtils.getLabel(name, plural);
+        String label = TradeActHelper.getLabel(name, plural);
         if (BeeUtils.isEmpty(label)) {
           logger.warning(name, "has no label");
         }
@@ -155,7 +187,7 @@ public class TradeActItemsByCompanyReport extends ReportInterceptor {
         }
 
         if (response.hasResponse(SimpleRowSet.class)) {
-          renderData(SimpleRowSet.restore(response.getResponseAsString()));
+          renderData(SimpleRowSet.restore(response.getResponseAsString()), currencyName);
 
           sheet.addHeaders(headers);
           sheet.autoSizeAll();
@@ -217,7 +249,7 @@ public class TradeActItemsByCompanyReport extends ReportInterceptor {
     return checkRange(start, end);
   }
 
-  private void renderData(SimpleRowSet data) {
+  private void renderData(SimpleRowSet data, String currencyName) {
     HasIndexedWidgets container = getDataContainer();
     if (container == null) {
       return;
@@ -229,25 +261,99 @@ public class TradeActItemsByCompanyReport extends ReportInterceptor {
       container.clear();
     }
 
+    List<ValueType> types =
+        TradeActHelper.getTypes(Arrays.asList(VIEW_TRADE_ACTS, VIEW_TRADE_ACT_ITEMS), data);
+
+    Map<Integer, Double> totals = new HashMap<>();
+
     HtmlTable table = new HtmlTable(STYLE_TABLE);
     int r = 0;
     int c = 0;
 
+    String text;
+
     for (int j = 0; j < data.getNumberOfColumns(); j++) {
       String colName = data.getColumnName(j);
-      table.setText(r, c++, colName, STYLE_HEADER);
+
+      if (MONEY_COLUMNS.contains(colName)) {
+        text = BeeUtils.joinWords(TradeActHelper.getLabel(colName), currencyName);
+      } else {
+        text = TradeActHelper.getLabel(colName);
+      }
+
+      table.setText(r, c++, text, STYLE_PREFIX + colName);
+
+      if (TOTAL_COLUMNS.contains(colName)) {
+        totals.put(j, BeeConst.DOUBLE_ZERO);
+      }
     }
 
+    table.getRowFormatter().addStyleName(r, STYLE_HEADER);
     r++;
+
+    String styleName;
+    String styleRightAlign = StyleUtils.className(TextAlign.RIGHT);
 
     for (int i = 0; i < data.getNumberOfRows(); i++) {
       c = 0;
 
       for (int j = 0; j < data.getNumberOfColumns(); j++) {
-        table.setText(r, c++, data.getValue(i, j));
+        String colName = data.getColumnName(j);
+        ValueType type = types.get(j);
+
+        text = null;
+        styleName = null;
+
+        if (ValueType.isNumeric(type)) {
+          Double value = data.getDouble(i, j);
+          NumberFormat format = TradeActHelper.getNumberFormat(colName);
+
+          if (BeeUtils.isDouble(value)) {
+            text = (format == null) ? data.getValue(i, j) : format.format(value);
+            styleName = styleRightAlign;
+
+            if (totals.containsKey(j)) {
+              totals.put(j, totals.get(j) + value);
+            }
+          }
+
+        } else if (ValueType.DATE_TIME == type) {
+          text = TimeUtils.renderCompact(data.getDateTime(i, j));
+
+        } else if (ValueType.DATE == type) {
+          text = TimeUtils.renderDate(data.getDate(i, j));
+
+        } else {
+          text = data.getValue(i, j);
+        }
+
+        table.setText(r, c++, text, STYLE_PREFIX + colName, styleName);
       }
 
+      table.getRowFormatter().addStyleName(r, STYLE_BODY);
       r++;
+    }
+
+    if (data.getNumberOfRows() > 1 && !totals.isEmpty()) {
+      List<Integer> indexes = new ArrayList<>(totals.keySet());
+      Collections.sort(indexes);
+
+      Integer first = indexes.get(0);
+      if (BeeUtils.isPositive(first)) {
+        table.setText(r, first - 1, Localized.getConstants().totalOf());
+      }
+
+      for (int index : indexes) {
+        String colName = data.getColumnName(index);
+        Double value = totals.get(index);
+
+        NumberFormat format = TradeActHelper.getNumberFormat(colName);
+        text = (format == null) ? BeeUtils.toString(value) : format.format(value);
+
+        table.setText(r, index, text, STYLE_PREFIX + colName, styleRightAlign);
+      }
+
+      table.getRowFormatter().addStyleName(r, STYLE_FOOTER);
     }
 
     container.add(table);
