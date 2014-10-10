@@ -266,14 +266,14 @@ public class EcModuleBean implements BeeModule {
 
       try {
         rows = ButentWS.connect(remoteNamespace, remoteAddress, remoteLogin, remotePassword)
-            .getSQLData("SELECT preke AS pr, prekes.grupe AS gr, savikaina AS sv, pard_kaina AS kn"
+            .getSQLData("SELECT preke AS pr, prekes.grupe AS gr, savikaina AS sv"
                 + " FROM prekes"
                 + " INNER JOIN grupes"
                 + " ON prekes.grupe = grupes.grupe"
                 + " WHERE prekes.gam_art IS NOT NULL AND prekes.gam_art != ''"
                 + " AND prekes.gamintojas IS NOT NULL AND prekes.gamintojas != ''"
                 + " AND grupes.pos_mode = 'E'",
-                new String[] {"pr", "gr", "sv", "kn"});
+                new String[] {"pr", "gr", "sv"});
 
         ok = !rows.isEmpty();
 
@@ -320,8 +320,7 @@ public class EcModuleBean implements BeeModule {
               .addConstant(COL_TCD_ARTICLE, newArt)
               .addConstant(COL_TCD_SUPPLIER, supplier.ordinal())
               .addConstant(COL_TCD_SUPPLIER_ID, supplierId)
-              .addConstant(COL_TCD_COST, rows.getValueByKey("pr", supplierId, "sv"))
-              .addConstant(COL_TCD_PRICE, rows.getValueByKey("pr", supplierId, "kn")));
+              .addConstant(COL_TCD_COST, rows.getValueByKey("pr", supplierId, "sv")));
 
           qs.insertData(new SqlInsert(TBL_TCD_ARTICLE_CATEGORIES)
               .addConstant(COL_TCD_ARTICLE, newArt)
@@ -534,7 +533,9 @@ public class EcModuleBean implements BeeModule {
 
     List<BeeParameter> parameters = Lists.newArrayList(
         BeeParameter.createBoolean(module, PRM_PROMO_FEATURED, false, true),
-        BeeParameter.createBoolean(module, PRM_PROMO_NOVELTY, false, true));
+        BeeParameter.createBoolean(module, PRM_PROMO_NOVELTY, false, true),
+        BeeParameter.createRelation(module, PRM_DEFAULT_PRICELIST, TBL_TCD_PRICELISTS,
+            COL_TCD_PRICELIST_NAME));
     parameters.addAll(tcd.getDefaultParameters());
 
     return parameters;
@@ -1070,7 +1071,7 @@ public class EcModuleBean implements BeeModule {
 
     SqlSelect query = new SqlSelect()
         .addFields(TBL_TCD_ARTICLE_SUPPLIERS, idName, COL_TCD_ARTICLE, COL_TCD_SUPPLIER,
-            COL_TCD_SUPPLIER_ID, COL_TCD_COST, COL_TCD_PRICE)
+            COL_TCD_SUPPLIER_ID, COL_TCD_COST)
         .addFields(TBL_WAREHOUSES, COL_WAREHOUSE_CODE)
         .addFields(TBL_TCD_REMAINDERS, COL_TCD_REMAINDER)
         .addFrom(TBL_TCD_ARTICLE_SUPPLIERS);
@@ -1104,7 +1105,7 @@ public class EcModuleBean implements BeeModule {
       if (!BeeUtils.same(id, lastId)) {
         supplier = new ArticleSupplier(EnumUtils.getEnumByIndex(EcSupplier.class,
             row.getInt(COL_TCD_SUPPLIER)), row.getValue(COL_TCD_SUPPLIER_ID),
-            row.getDouble(COL_TCD_COST), row.getDouble(COL_TCD_PRICE));
+            row.getDouble(COL_TCD_COST), null);
 
         suppliers.put(row.getLong(COL_TCD_ARTICLE), supplier);
         lastId = id;

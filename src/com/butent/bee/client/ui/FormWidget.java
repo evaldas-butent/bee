@@ -991,7 +991,6 @@ public enum FormWidget {
   private static final String ATTR_PRELOAD = "preload";
   private static final String ATTR_VOLUME = "volume";
 
-  private static final String ATTR_ANIMATE = "animate";
   private static final String ATTR_OPEN = "open";
   private static final String ATTR_EVENT = "event";
 
@@ -1228,18 +1227,11 @@ public enum FormWidget {
         break;
 
       case DISCLOSURE:
+        boolean open = BeeConst.isTrue(attributes.get(ATTR_OPEN));
         if (BeeUtils.isEmpty(html)) {
-          widget = new Disclosure();
+          widget = new Disclosure(open);
         } else {
-          widget = new Disclosure(new Label(html));
-        }
-
-        String animate = attributes.get(ATTR_ANIMATE);
-        if (BeeUtils.isInt(animate)) {
-          ((Disclosure) widget).setAnimationDuration(BeeUtils.toInt(animate));
-        }
-        if (BeeConst.isTrue(attributes.get(ATTR_OPEN))) {
-          ((Disclosure) widget).setOpen(true);
+          widget = new Disclosure(open, new Label(html));
         }
         break;
 

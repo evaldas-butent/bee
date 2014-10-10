@@ -6,6 +6,7 @@ import com.google.common.collect.Sets;
 import com.google.common.collect.Table;
 import com.google.common.eventbus.Subscribe;
 
+import static com.butent.bee.shared.modules.administration.AdministrationConstants.*;
 import static com.butent.bee.shared.modules.classifiers.ClassifierConstants.*;
 import static com.butent.bee.shared.modules.trade.TradeConstants.*;
 import static com.butent.bee.shared.modules.trade.acts.TradeActConstants.*;
@@ -19,6 +20,7 @@ import com.butent.bee.server.data.SystemBean;
 import com.butent.bee.server.data.UserServiceBean;
 import com.butent.bee.server.http.RequestInfo;
 import com.butent.bee.server.modules.ParamHolderBean;
+import com.butent.bee.server.sql.HasConditions;
 import com.butent.bee.server.sql.IsCondition;
 import com.butent.bee.server.sql.SqlInsert;
 import com.butent.bee.server.sql.SqlSelect;
@@ -48,6 +50,7 @@ import com.butent.bee.shared.time.TimeUtils;
 import com.butent.bee.shared.utils.ArrayUtils;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.EnumUtils;
+import com.butent.bee.shared.utils.NameUtils;
 
 import java.math.BigInteger;
 import java.util.ArrayList;
@@ -109,6 +112,9 @@ public class TradeActBean {
 
     } else if (BeeUtils.same(svc, SVC_CONVERT_ACT_TO_SALE)) {
       response = convertToSale(reqInfo);
+
+    } else if (BeeUtils.same(svc, SVC_ITEMS_BY_COMPANY_REPORT)) {
+      response = getItemsByCompanyReport(reqInfo);
 
     } else {
       String msg = BeeUtils.joinWords("service not recognized:", svc);
@@ -546,6 +552,192 @@ public class TradeActBean {
     }
 
     return ResponseObject.response(acts);
+  }
+
+  private ResponseObject getItemsByCompanyReport(RequestInfo reqInfo) {
+    Long startDate = reqInfo.getParameterLong(Service.VAR_FROM);
+    Long endDate = reqInfo.getParameterLong(Service.VAR_TO);
+
+    // Long currency = reqInfo.getParameterLong(COL_TA_CURRENCY);
+
+    Set<Long> companies = DataUtils.parseIdSet(reqInfo.getParameter(COL_TA_COMPANY));
+    Set<Long> objects = DataUtils.parseIdSet(reqInfo.getParameter(COL_TA_OBJECT));
+
+    Set<Long> operations = DataUtils.parseIdSet(reqInfo.getParameter(COL_TA_OPERATION));
+    Set<Long> statuses = DataUtils.parseIdSet(reqInfo.getParameter(COL_TA_STATUS));
+
+    Set<Long> series = DataUtils.parseIdSet(reqInfo.getParameter(COL_TA_SERIES));
+    Set<Long> managers = DataUtils.parseIdSet(reqInfo.getParameter(COL_TA_MANAGER));
+
+    Set<Long> warehouses = DataUtils.parseIdSet(reqInfo.getParameter(COL_WAREHOUSE));
+
+    Set<Long> categories = DataUtils.parseIdSet(reqInfo.getParameter(COL_CATEGORY));
+    Set<Long> items = DataUtils.parseIdSet(reqInfo.getParameter(COL_TA_ITEM));
+
+    List<String> groupBy = NameUtils.toList(reqInfo.getParameter(Service.VAR_GROUP_BY));
+
+    HasConditions where = SqlUtils.and();
+    where.add(SqlUtils.or(
+        SqlUtils.equals(TBL_TRADE_ACTS, COL_TA_KIND, TradeActKind.SALE.ordinal()),
+        SqlUtils.equals(TBL_TRADE_ACTS, COL_TA_KIND, TradeActKind.SUPPLEMENT.ordinal())));
+
+    if (startDate != null) {
+      where.add(SqlUtils.moreEqual(TBL_TRADE_ACTS, COL_TA_DATE, startDate));
+    }
+    if (endDate != null) {
+      where.add(SqlUtils.less(TBL_TRADE_ACTS, COL_TA_DATE, endDate));
+    }
+
+    if (!companies.isEmpty()) {
+      where.add(SqlUtils.inList(TBL_TRADE_ACTS, COL_TA_COMPANY, companies));
+    }
+    if (!objects.isEmpty()) {
+      where.add(SqlUtils.inList(TBL_TRADE_ACTS, COL_TA_OBJECT, objects));
+    }
+
+    if (!operations.isEmpty()) {
+      where.add(SqlUtils.inList(TBL_TRADE_ACTS, COL_TA_OPERATION, operations));
+    }
+    if (!statuses.isEmpty()) {
+      where.add(SqlUtils.inList(TBL_TRADE_ACTS, COL_TA_STATUS, statuses));
+    }
+
+    if (!series.isEmpty()) {
+      where.add(SqlUtils.inList(TBL_TRADE_ACTS, COL_TA_SERIES, series));
+    }
+    if (!managers.isEmpty()) {
+      where.add(SqlUtils.inList(TBL_TRADE_ACTS, COL_TA_MANAGER, managers));
+    }
+
+    if (warehouses.isEmpty()) {
+      where.add(SqlUtils.notNull(TBL_TRADE_OPERATIONS, COL_OPERATION_WAREHOUSE_TO));
+    } else {
+      where.add(SqlUtils.inList(TBL_TRADE_OPERATIONS, COL_OPERATION_WAREHOUSE_TO, warehouses));
+    }
+
+    if (!categories.isEmpty()) {
+      where.add(SqlUtils.in(TBL_TRADE_ACT_ITEMS, COL_TA_ITEM, TBL_ITEM_CATEGORIES, COL_ITEM,
+          SqlUtils.inList(TBL_ITEM_CATEGORIES, COL_CATEGORY, categories)));
+    }
+    if (!items.isEmpty()) {
+      where.add(SqlUtils.inList(TBL_TRADE_ACT_ITEMS, COL_TA_ITEM, items));
+    }
+
+    SqlSelect query = new SqlSelect();
+
+    if (groupBy.isEmpty()) {
+      query.addFields(TBL_TRADE_ACT_ITEMS, COL_TRADE_ACT);
+      query.addFields(TBL_TRADE_ACTS, COL_TA_NAME, COL_TA_DATE);
+      query.addFields(TBL_TRADE_SERIES, COL_SERIES_NAME);
+      query.addFields(TBL_TRADE_ACTS, COL_TA_NUMBER);
+      query.addFields(TBL_TRADE_OPERATIONS, COL_OPERATION_NAME);
+      query.addFields(TBL_TRADE_STATUSES, COL_STATUS_NAME);
+    }
+
+    if (groupBy.isEmpty() || groupBy.contains(COL_TA_COMPANY)) {
+      query.addField(TBL_COMPANIES, COL_COMPANY_NAME, ALS_COMPANY_NAME);
+    }
+    if (groupBy.isEmpty() || groupBy.contains(COL_TA_OBJECT)) {
+      query.addFields(TBL_COMPANY_OBJECTS, COL_COMPANY_OBJECT_NAME);
+    }
+
+    if (groupBy.isEmpty() || groupBy.contains(COL_TA_MANAGER)) {
+      query.addFields(TBL_PERSONS, COL_FIRST_NAME, COL_LAST_NAME);
+    }
+
+    if (groupBy.isEmpty() || groupBy.contains(COL_WAREHOUSE)) {
+      query.addField(TBL_WAREHOUSES, COL_WAREHOUSE_CODE, ALS_WAREHOUSE_CODE);
+    }
+
+    if (groupBy.isEmpty()) {
+      query.addField(TBL_CURRENCIES, COL_CURRENCY_NAME, ALS_CURRENCY_NAME);
+    }
+
+    if (groupBy.contains(COL_ITEM_TYPE)) {
+      query.addField(ALS_ITEM_TYPES, COL_CATEGORY_NAME, ALS_ITEM_TYPE_NAME);
+    }
+    if (groupBy.contains(COL_ITEM_GROUP)) {
+      query.addField(ALS_ITEM_GROUPS, COL_CATEGORY_NAME, ALS_ITEM_GROUPS);
+    }
+
+    if (groupBy.isEmpty() || groupBy.contains(COL_TA_ITEM)) {
+      query.addField(TBL_ITEMS, COL_ITEM_NAME, ALS_ITEM_NAME);
+      query.addFields(TBL_ITEMS, COL_ITEM_ARTICLE);
+      query.addField(TBL_UNITS, COL_UNIT_NAME, ALS_UNIT_NAME);
+    }
+
+    if (groupBy.isEmpty()) {
+      query.addFields(TBL_TRADE_ACT_ITEMS, COL_TRADE_ITEM_QUANTITY, COL_TRADE_ITEM_PRICE,
+          COL_TRADE_DISCOUNT);
+    }
+
+    query.addFrom(TBL_TRADE_ACTS);
+    query.addFromLeft(TBL_TRADE_OPERATIONS,
+        sys.joinTables(TBL_TRADE_OPERATIONS, TBL_TRADE_ACTS, COL_TA_OPERATION));
+    query.addFromLeft(TBL_TRADE_ACT_ITEMS,
+        sys.joinTables(TBL_TRADE_ACTS, TBL_TRADE_ACT_ITEMS, COL_TRADE_ACT));
+
+    if (groupBy.isEmpty()) {
+      query.addFromLeft(TBL_TRADE_SERIES,
+          sys.joinTables(TBL_TRADE_SERIES, TBL_TRADE_ACTS, COL_TA_SERIES));
+      query.addFromLeft(TBL_TRADE_STATUSES,
+          sys.joinTables(TBL_TRADE_STATUSES, TBL_TRADE_ACTS, COL_TA_STATUS));
+      query.addFromLeft(TBL_CURRENCIES,
+          sys.joinTables(TBL_CURRENCIES, TBL_TRADE_ACTS, COL_CURRENCY));
+    }
+
+    if (groupBy.isEmpty() || groupBy.contains(COL_TA_COMPANY)) {
+      query.addFromLeft(TBL_COMPANIES,
+          sys.joinTables(TBL_COMPANIES, TBL_TRADE_ACTS, COL_TA_COMPANY));
+    }
+    if (groupBy.isEmpty() || groupBy.contains(COL_TA_OBJECT)) {
+      query.addFromLeft(TBL_COMPANY_OBJECTS,
+          sys.joinTables(TBL_COMPANY_OBJECTS, TBL_TRADE_ACTS, COL_TA_OBJECT));
+    }
+
+    if (groupBy.isEmpty() || groupBy.contains(COL_TA_MANAGER)) {
+      query.addFromLeft(TBL_USERS,
+          sys.joinTables(TBL_USERS, TBL_TRADE_ACTS, COL_TA_MANAGER));
+      query.addFromLeft(TBL_COMPANY_PERSONS,
+          sys.joinTables(TBL_COMPANY_PERSONS, TBL_USERS, COL_COMPANY_PERSON));
+      query.addFromLeft(TBL_PERSONS,
+          sys.joinTables(TBL_PERSONS, TBL_COMPANY_PERSONS, COL_PERSON));
+    }
+
+    if (groupBy.isEmpty() || groupBy.contains(COL_WAREHOUSE)) {
+      query.addFromLeft(TBL_WAREHOUSES,
+          sys.joinTables(TBL_WAREHOUSES, TBL_TRADE_OPERATIONS, COL_OPERATION_WAREHOUSE_TO));
+    }
+
+    if (groupBy.isEmpty() || groupBy.contains(COL_TA_ITEM)
+        || groupBy.contains(COL_ITEM_TYPE) || groupBy.contains(COL_ITEM_GROUP)) {
+      query.addFromLeft(TBL_ITEMS,
+          sys.joinTables(TBL_ITEMS, TBL_TRADE_ACT_ITEMS, COL_TA_ITEM));
+
+      if (groupBy.contains(COL_ITEM_TYPE)) {
+        query.addFromLeft(TBL_ITEM_CATEGORY_TREE, ALS_ITEM_TYPES,
+            sys.joinTables(TBL_ITEM_CATEGORY_TREE, ALS_ITEM_TYPES, TBL_ITEMS, COL_ITEM_TYPE));
+      }
+      if (groupBy.contains(COL_ITEM_GROUP)) {
+        query.addFromLeft(TBL_ITEM_CATEGORY_TREE, ALS_ITEM_GROUPS,
+            sys.joinTables(TBL_ITEM_CATEGORY_TREE, ALS_ITEM_GROUPS, TBL_ITEMS, COL_ITEM_GROUP));
+      }
+    }
+
+    if (groupBy.isEmpty() || groupBy.contains(COL_TA_ITEM)) {
+      query.addFromLeft(TBL_UNITS,
+          sys.joinTables(TBL_UNITS, TBL_ITEMS, COL_UNIT));
+    }
+
+    query.setWhere(where);
+
+    SimpleRowSet data = qs.getData(query);
+
+    if (DataUtils.isEmpty(data)) {
+      return ResponseObject.emptyResponse();
+    } else {
+      return ResponseObject.response(data);
+    }
   }
 
   private ResponseObject getItemsForReturn(RequestInfo reqInfo) {

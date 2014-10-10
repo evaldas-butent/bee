@@ -47,8 +47,7 @@
       </row>
     </Table>
 
-    <Disclosure xmlns="http://www.butent.com/widget" xmlns:xi="http://www.w3.org/2001/XInclude"
-      open="false">
+    <Disclosure open="false">
        <Label text="=contactInfo" style="text-transform: uppercase; " />
         <FlowPanel class="flexible">
           <Table>

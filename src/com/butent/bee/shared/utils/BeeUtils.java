@@ -914,7 +914,6 @@ public final class BeeUtils {
     if (rest == null) {
       return false;
     }
-
     for (int y : rest) {
       if (x == y) {
         return true;

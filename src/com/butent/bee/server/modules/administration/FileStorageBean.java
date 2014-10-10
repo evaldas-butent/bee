@@ -3,6 +3,8 @@ package com.butent.bee.server.modules.administration;
 import static com.butent.bee.shared.modules.administration.AdministrationConstants.*;
 
 import com.butent.bee.server.Config;
+import com.butent.bee.server.Invocation;
+import com.butent.bee.server.concurrency.ConcurrencyBean;
 import com.butent.bee.server.data.QueryServiceBean;
 import com.butent.bee.server.data.SystemBean;
 import com.butent.bee.server.io.FileUtils;
@@ -11,7 +13,7 @@ import com.butent.bee.server.sql.SqlSelect;
 import com.butent.bee.server.sql.SqlUpdate;
 import com.butent.bee.server.sql.SqlUtils;
 import com.butent.bee.shared.Assert;
-import com.butent.bee.shared.data.DataUtils;
+import com.butent.bee.shared.Holder;
 import com.butent.bee.shared.data.SimpleRowSet;
 import com.butent.bee.shared.data.SimpleRowSet.SimpleRow;
 import com.butent.bee.shared.exceptions.BeeRuntimeException;
@@ -59,6 +61,8 @@ public class FileStorageBean {
   QueryServiceBean qs;
   @EJB
   SystemBean sys;
+  @EJB
+  ConcurrencyBean cb;
 
   private File repositoryDir;
 
@@ -180,8 +184,9 @@ public class FileStorageBean {
   }
 
   public Long storeFile(InputStream is, String fileName, String mimeType) throws IOException {
-    String name = sys.clampValue(TBL_FILES, COL_FILE_NAME, BeeUtils.notEmpty(fileName, "unknown"));
     boolean storeAsFile = repositoryDir != null;
+    String name = sys.clampValue(TBL_FILES, COL_FILE_NAME, BeeUtils.notEmpty(fileName, "unknown"));
+    String type = sys.clampValue(TBL_FILES, COL_FILE_TYPE, mimeType);
     MessageDigest md = null;
 
     try {
@@ -209,12 +214,12 @@ public class FileStorageBean {
 
     byte[] buffer = new byte[BUFFER_SIZE];
     int bytesRead;
-    long size = 0;
+    Holder<Long> size = Holder.of(0L);
 
     try {
       while ((bytesRead = in.read(buffer)) > 0) {
         out.write(buffer, 0, bytesRead);
-        size += bytesRead;
+        size.set(size.get() + bytesRead);
       }
       if (!storeAsFile) {
         ((ZipOutputStream) out).closeEntry();
@@ -224,30 +229,56 @@ public class FileStorageBean {
       out.close();
       in.close();
     }
-    Long id = null;
-
-    String hash = Codec.toHex(md.digest());
     String idName = sys.getIdName(TBL_FILES);
+    String hash = Codec.toHex(md.digest());
+    Holder<Long> id = Holder.absent();
+    Holder<Boolean> exists = Holder.of(false);
 
-    SimpleRow data = qs.getRow(new SqlSelect()
-        .addFields(TBL_FILES, COL_FILE_REPO, idName)
-        .addFrom(TBL_FILES)
-        .setWhere(SqlUtils.equals(TBL_FILES, COL_FILE_HASH, hash)));
+    cb.synchronizedCall(new Runnable() {
+      @Override
+      public void run() {
+        QueryServiceBean queryBean = Invocation.locateRemoteBean(QueryServiceBean.class);
 
-    boolean exists = data != null;
+        id.set(queryBean.getLong(new SqlSelect()
+            .addFields(TBL_FILES, idName)
+            .addFrom(TBL_FILES)
+            .setWhere(SqlUtils.equals(TBL_FILES, COL_FILE_HASH, hash))));
 
-    if (exists) {
-      id = data.getLong(idName);
-      exists = BeeUtils.isEmpty(data.getValue(COL_FILE_REPO));
+        if (id.isNull()) {
+          id.set(queryBean.insertData(new SqlInsert(TBL_FILES)
+              .addConstant(COL_FILE_HASH, hash)
+              .addConstant(COL_FILE_NAME, name)
+              .addConstant(COL_FILE_SIZE, size.get())
+              .addConstant(COL_FILE_TYPE, type)));
+        } else {
+          exists.set(true);
+        }
+      }
+    });
+    if (!exists.get() && !storeAsFile) {
+      buffer = new byte[0x100000];
+      in = new FileInputStream(tmp);
 
-      if (!exists) {
-        exists = new File(data.getValue(COL_FILE_REPO)).exists();
+      try {
+        while ((bytesRead = in.read(buffer)) > 0) {
+          long recId = qs.insertData(new SqlInsert(TBL_FILE_PARTS)
+              .addConstant(COL_FILE, id.get()));
+
+          qs.updateBlob(TBL_FILE_PARTS, recId, COL_FILE_PART, new ByteArrayInputStream(buffer));
+        }
+      } catch (SQLException e) {
+        throw new RuntimeException(e);
+      } finally {
+        in.close();
       }
     }
-    if (!exists) {
-      String repo = null;
+    if (storeAsFile) {
+      String repo = qs.getValue(new SqlSelect()
+          .addFields(TBL_FILES, COL_FILE_REPO)
+          .addFrom(TBL_FILES)
+          .setWhere(SqlUtils.equals(TBL_FILES, idName, id.get())));
 
-      if (storeAsFile) {
+      if (BeeUtils.isEmpty(repo) || !FileUtils.isFile(repo)) {
         File target = new File(tmp.getParentFile(), hash);
         repo = target.getPath();
 
@@ -259,41 +290,15 @@ public class FileStorageBean {
           throw new BeeRuntimeException(BeeUtils.joinWords("Error renaming file:",
               tmp.getPath(), "to:", repo));
         }
-      }
-      if (DataUtils.isId(id)) {
         qs.updateData(new SqlUpdate(TBL_FILES)
             .addConstant(COL_FILE_REPO, repo)
-            .setWhere(SqlUtils.equals(TBL_FILES, idName, id)));
-      } else {
-        id = qs.insertData(new SqlInsert(TBL_FILES)
-            .addConstant(COL_FILE_HASH, hash)
-            .addConstant(COL_FILE_REPO, repo)
-            .addConstant(COL_FILE_NAME, name)
-            .addConstant(COL_FILE_SIZE, size)
-            .addConstant(COL_FILE_TYPE, sys.clampValue(TBL_FILES, COL_FILE_TYPE, mimeType)));
-      }
-      if (!storeAsFile) {
-        buffer = new byte[0x100000];
-        in = new FileInputStream(tmp);
-
-        try {
-          while ((bytesRead = in.read(buffer)) > 0) {
-            long recId = qs.insertData(new SqlInsert(TBL_FILE_PARTS)
-                .addConstant(COL_FILE, id));
-
-            qs.updateBlob(TBL_FILE_PARTS, recId, COL_FILE_PART, new ByteArrayInputStream(buffer));
-          }
-        } catch (SQLException e) {
-          throw new RuntimeException(e);
-        } finally {
-          in.close();
-        }
+            .setWhere(SqlUtils.equals(TBL_FILES, idName, id.get())));
       }
     }
     if (tmp.exists()) {
       tmp.delete();
     }
-    return id;
+    return id.get();
   }
 
   public boolean storePhoto(InputStream is, String fileName) {

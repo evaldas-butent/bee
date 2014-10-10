@@ -784,7 +784,6 @@
           <xs:choice minOccurs="0" maxOccurs="2">
             <xs:group ref="widgetOrDecorator" />
           </xs:choice>
-          <xs:attribute name="animate" type="xs:int" />
           <xs:attribute name="open" type="xs:boolean" />
         </xs:extension>
       </xs:complexContent>

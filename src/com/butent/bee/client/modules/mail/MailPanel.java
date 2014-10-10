@@ -29,6 +29,7 @@ import com.butent.bee.client.communication.ParameterList;
 import com.butent.bee.client.communication.ResponseCallback;
 import com.butent.bee.client.composite.Thermometer;
 import com.butent.bee.client.data.Data;
+import com.butent.bee.client.data.RowFactory;
 import com.butent.bee.client.dialog.ChoiceCallback;
 import com.butent.bee.client.dialog.Icon;
 import com.butent.bee.client.dom.DomUtils;
@@ -72,12 +73,14 @@ import com.butent.bee.shared.State;
 import com.butent.bee.shared.communication.ResponseObject;
 import com.butent.bee.shared.css.CssProperties;
 import com.butent.bee.shared.css.values.Cursor;
+import com.butent.bee.shared.data.BeeRow;
 import com.butent.bee.shared.data.BeeRowSet;
 import com.butent.bee.shared.data.CellSource;
 import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.IsColumn;
 import com.butent.bee.shared.data.IsRow;
 import com.butent.bee.shared.data.filter.Filter;
+import com.butent.bee.shared.data.view.DataInfo;
 import com.butent.bee.shared.data.view.RowInfo;
 import com.butent.bee.shared.font.FontAwesome;
 import com.butent.bee.shared.i18n.LocalizableMessages;
@@ -455,8 +458,26 @@ public class MailPanel extends AbstractFormInterceptor {
     initAccounts(accountsWidget);
     header.addCommandItem(accountsWidget);
 
+    if (BeeKeeper.getUser().isDataVisible(TBL_ACCOUNTS)
+        && BeeKeeper.getUser().canCreateData(TBL_RULES)) {
+      FaLabel accountSettings = new FaLabel(FontAwesome.MAGIC);
+
+      accountSettings.setTitle(Localized.getConstants().mailAccount());
+      accountSettings.addClickHandler(new ClickHandler() {
+        @Override
+        public void onClick(ClickEvent arg0) {
+          DataInfo dataInfo = Data.getDataInfo(TBL_RULES);
+          BeeRow newRow = RowFactory.createEmptyRow(dataInfo, true);
+          Data.setValue(TBL_RULES, newRow, COL_ACCOUNT, getCurrentAccount().getAccountId());
+
+          RowFactory.createRow(dataInfo, newRow);
+        }
+      });
+      header.addCommandItem(accountSettings);
+    }
     FaLabel refreshWidget = new FaLabel(FontAwesome.REFRESH);
 
+    refreshWidget.setTitle(Localized.getConstants().actionRefresh());
     refreshWidget.addClickHandler(new ClickHandler() {
       @Override
       public void onClick(ClickEvent arg0) {

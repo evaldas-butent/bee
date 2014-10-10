@@ -283,6 +283,9 @@ public final class EcConstants {
 
   public static final String TBL_TCD_ARTICLES = "TcdArticles";
   public static final String TBL_TCD_ARTICLE_CODES = "TcdArticleCodes";
+  public static final String TBL_TCD_ARTICLE_PRICES = "TcdArticlePrices";
+
+  public static final String TBL_TCD_PRICELISTS = "TcdPriceLists";
 
   public static final String TBL_TCD_CATEGORIES = "TcdCategories";
   public static final String TBL_TCD_TECDOC_CATEGORIES = "TcdTecDocCategories";
@@ -516,6 +519,9 @@ public final class EcConstants {
 
   public static final String COL_TCD_REMAINDER = "Remainder";
 
+  public static final String COL_TCD_PRICELIST = "PriceList";
+  public static final String COL_TCD_PRICELIST_NAME = "PriceListName";
+
   public static final String COL_TCD_PRICE = "Price";
   public static final String COL_TCD_COST = "Cost";
   public static final String COL_TCD_UPDATED_COST = "UpdatedCost";
@@ -540,10 +546,11 @@ public final class EcConstants {
   public static final String COL_CW_WAREHOUSE = "Warehouse";
 
   public static final String PRM_BUTENT_INTERVAL = "ButentIntervalInMinutes";
-  public static final String PRM_BUTENT_PRICE = "ButentPrice";
+  public static final String PRM_BUTENT_PRICES = "ButentPrices";
   public static final String PRM_MOTONET_HOURS = "MotoprofilRefreshHours";
   public static final String PRM_PROMO_FEATURED = "PromoFeatured";
   public static final String PRM_PROMO_NOVELTY = "PromoNovelty";
+  public static final String PRM_DEFAULT_PRICELIST = "DefaultPriceList";
 
   public static final String GRID_DISCOUNTS = "EcDiscounts";
   public static final String GRID_ARTICLE_CATEGORIES = "TcdArticleCategories";

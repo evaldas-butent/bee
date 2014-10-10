@@ -1033,8 +1033,7 @@ public class QueryServiceBean {
   }
 
   public boolean sqlExists(String source, IsCondition where) {
-    return sqlCount(new SqlSelect()
-        .addConstant(null, "dummy").addFrom(source).setWhere(where)) > 0;
+    return sqlCount(new SqlSelect().addFrom(source).setWhere(where)) > 0;
   }
 
   public boolean sqlExists(String source, String field, Object value) {
@@ -1169,7 +1168,7 @@ public class QueryServiceBean {
     if (!BeeUtils.isEmpty(sources)) {
       for (String source : sources) {
         if (sys.isTable(source) && !sys.getTable(source).isActive()) {
-          sys.activateTable(source);
+          sys.rebuildTable(source);
         }
       }
     }

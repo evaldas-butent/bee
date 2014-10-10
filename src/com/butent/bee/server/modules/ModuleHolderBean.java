@@ -37,7 +37,7 @@ import javax.ejb.Singleton;
 public class ModuleHolderBean {
 
   private enum TABLE_ACTIVATION_MODE {
-    DELAYED, FORCED
+    NEW, ACTIVE, ALL
   }
 
   private static BeeLogger logger = LogUtils.getLogger(ModuleHolderBean.class);
@@ -99,20 +99,19 @@ public class ModuleHolderBean {
     TABLE_ACTIVATION_MODE mode = EnumUtils.getEnumByName(TABLE_ACTIVATION_MODE.class,
         Config.getProperty("TableActivationMode"));
 
-    if (mode != TABLE_ACTIVATION_MODE.DELAYED) {
-      for (String tblName : sys.getTableNames()) {
-        if (mode == TABLE_ACTIVATION_MODE.FORCED) {
-          sys.rebuildTable(tblName);
-        } else {
-          sys.activateTable(tblName);
-        }
-      }
-    }
-
-    List<String> etf = Config.getList("EnsureTableFields");
-    if (!BeeUtils.isEmpty(etf)) {
-      for (String tblName : etf) {
-        sys.ensureFields(tblName);
+    if (mode != null) {
+      switch (mode) {
+        case NEW:
+          sys.ensureTables();
+          break;
+        case ACTIVE:
+          sys.rebuildActiveTables();
+          break;
+        case ALL:
+          for (String tblName : sys.getTableNames()) {
+            sys.rebuildTable(tblName);
+          }
+          break;
       }
     }
 
