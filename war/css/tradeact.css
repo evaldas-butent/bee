@@ -99,7 +99,8 @@
 .bee-ta-return-items-item:hover,
 .bee-ta-import-items-item:hover,
 .bee-ta-invoice-act-row-item:hover,
-.bee-ta-invoice-service-row-item:hover {
+.bee-ta-invoice-service-row-item:hover,
+.bee-ta-report-ibc-body:hover {
   background-color: blanchedalmond;
 }
 .bee-ta-return-items-selected td,
@@ -249,4 +250,14 @@
 .bee-ta-report-ibc-header,
 .bee-ta-report-ibc-footer {
   font-weight: bold;
+}
+.bee-ta-report-ibc-header td {
+  text-align: center;
+}
+
+.bee-ta-report-ibc-body .bee-ta-report-ibc-TradeAct:hover,
+.bee-ta-report-ibc-body .bee-ta-report-ibc-ActName:hover,
+.bee-ta-report-ibc-body .bee-ta-report-ibc-Number:hover {
+  cursor: pointer;
+  text-decoration: underline;
 }

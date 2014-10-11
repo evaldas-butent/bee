@@ -370,7 +370,8 @@ public class TradeActBean {
       for (String column : columns) {
         SqlUpdate update = new SqlUpdate(target)
             .addExpression(column, SqlUtils.multiply(SqlUtils.field(target, column), rate))
-            .setWhere(SqlUtils.notNull(target, column));
+            .setWhere(SqlUtils.and(SqlUtils.equals(target, fromCol, from),
+                SqlUtils.notNull(target, column)));
 
         int count = qs.updateData(update);
         if (count > 0) {

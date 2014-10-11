@@ -16,7 +16,6 @@
   xmlns:f="http://www.butent.com/form"
   
   name="TradeActItemsByCompanyReport" caption="=taReportItemsByCompany"
-  enabledActions="refresh filter remove_filter bookmark export"
   >
   <FlowPanel>
     <br/>
