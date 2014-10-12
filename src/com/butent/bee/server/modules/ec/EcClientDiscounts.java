@@ -129,7 +129,7 @@ public class EcClientDiscounts {
     return result;
   }
 
-  private static double getClientPrice(double listPrice, List<Discount> discounts) {
+  private static double getClientPrice(double base, List<Discount> discounts) {
     Double bestPrice = null;
     Integer minDepth = null;
 
@@ -143,8 +143,8 @@ public class EcClientDiscounts {
         Double price;
         if (discount.getPrice() != null) {
           price = discount.getPrice();
-        } else if (discount.getPercent() != null && listPrice > BeeConst.DOUBLE_ZERO) {
-          price = BeeUtils.minusPercent(listPrice, discount.getPercent());
+        } else if (discount.getPercent() != null && base > BeeConst.DOUBLE_ZERO) {
+          price = BeeUtils.minusPercent(base, discount.getPercent());
         } else {
           price = null;
         }
@@ -159,7 +159,7 @@ public class EcClientDiscounts {
       }
     }
 
-    return (bestPrice == null) ? listPrice : bestPrice;
+    return (bestPrice == null) ? base : bestPrice;
   }
 
   private static Range<Long> getTimeRange(Long lower, Long upper) {
@@ -255,13 +255,10 @@ public class EcClientDiscounts {
     }
 
     if (!discounts.isEmpty()) {
-      ecItem.setClientPrice(getClientPrice(ecItem.getRealListPrice(), discounts));
+      ecItem.setClientPrice(getClientPrice(ecItem.getRealClientPrice(), discounts));
 
     } else if (defPercent != null) {
-      ecItem.setClientPrice(BeeUtils.minusPercent(ecItem.getRealListPrice(), defPercent));
-
-    } else {
-      ecItem.setClientPrice(ecItem.getListPrice());
+      ecItem.setClientPrice(BeeUtils.minusPercent(ecItem.getRealClientPrice(), defPercent));
     }
   }
 

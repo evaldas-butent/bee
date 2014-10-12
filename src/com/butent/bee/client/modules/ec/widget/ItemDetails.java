@@ -324,6 +324,9 @@ public class ItemDetails extends Flow {
     table.setHtml(row, col++, Localized.getConstants().ecItemCost());
 
     table.setColumnCellClasses(col, StyleUtils.className(TextAlign.RIGHT));
+    table.setHtml(row, col++, Localized.getConstants().ecListPriceShort());
+
+    table.setColumnCellClasses(col, StyleUtils.className(TextAlign.RIGHT));
     table.setHtml(row, col++, Localized.getConstants().ecItemPrice());
 
     row++;
@@ -336,6 +339,7 @@ public class ItemDetails extends Flow {
       table.setHtml(row, col++, as.getSupplierId());
 
       table.setHtml(row, col++, EcUtils.formatCents(as.getCost()));
+      table.setHtml(row, col++, EcUtils.formatCents(as.getListPrice()));
       table.setHtml(row, col++, EcUtils.formatCents(as.getPrice()));
 
       row++;

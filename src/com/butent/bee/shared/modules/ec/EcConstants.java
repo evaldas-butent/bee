@@ -155,9 +155,25 @@ public final class EcConstants {
       this.shortName = shortName;
     }
 
+    public String getBasePriceListColumnName() {
+      return "BasePriceList" + ordinal();
+    }
+
+    public String getBasePriceListParameterName() {
+      return "BasePriceList" + shortName;
+    }
+
     @Override
     public String getCaption() {
       return name();
+    }
+
+    public String getClientPriceListColumnName() {
+      return "ClientPriceList" + ordinal();
+    }
+
+    public String getClientPriceListParameterName() {
+      return "ClientPriceList" + shortName;
     }
 
     public String getShortName() {
@@ -550,7 +566,6 @@ public final class EcConstants {
   public static final String PRM_MOTONET_HOURS = "MotoprofilRefreshHours";
   public static final String PRM_PROMO_FEATURED = "PromoFeatured";
   public static final String PRM_PROMO_NOVELTY = "PromoNovelty";
-  public static final String PRM_DEFAULT_PRICELIST = "DefaultPriceList";
 
   public static final String GRID_DISCOUNTS = "EcDiscounts";
   public static final String GRID_ARTICLE_CATEGORIES = "TcdArticleCategories";
@@ -578,8 +593,6 @@ public final class EcConstants {
   public static final String PICTURE_PREFIX = "data:image/";
 
   public static final String CLIENT_STYLE_SHEET = "ec";
-
-  public static final String PRP_SUPPLIER_PRICE = "SupplPrice";
 
   public static final String NAME_PREFIX = "ec-";
 
