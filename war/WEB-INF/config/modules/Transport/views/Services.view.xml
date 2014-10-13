@@ -12,7 +12,6 @@
     <SimpleColumn name="Item"/>
     <SimpleJoin joinType="LEFT" name="Item">
       <SimpleColumn name="Name" alias="ItemName" />
-      <SimpleColumn name="Article" alias="ItemArticle" />
     </SimpleJoin>
   </Columns>
   <Order>

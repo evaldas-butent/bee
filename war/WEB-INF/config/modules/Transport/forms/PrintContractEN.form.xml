@@ -18,8 +18,9 @@
       .&form;-table td {border:1px solid black; padding:2px;}
       .&form;-forwarder .bee-co-companyInfo-name .bee-co-companyInfo-item:before {content: "Carrier: "; font-weight:normal;}
       .&form;-customer .bee-co-companyInfo-name .bee-co-companyInfo-item:before {content: "Customer: "; font-weight:normal;}
+      .&form;-customer .bee-co-companyInfo-phone {display:none;}
     </css>
-    <Image url="images/logo1.gif" style="display:block; margin:auto;" />
+    <Image url="images/HL_logo.jpg" style="width:50%; display:block; margin:auto;" />
     <TextLabel style="text-align:center; &bold;">
       <render><ui:expression>'Freight transportation contract No. ' + rowId + (row.Number ? '-' + row.Number : '')</ui:expression></render>
     </TextLabel>
@@ -51,7 +52,10 @@
       </row>
       <row>
         <Label html="Loading place" />
-        <TextLabel source="LoadingAddress" />
+        <TextLabel source="LoadingAddress">
+          <renderToken source="LoadingAddress" />
+          <renderToken source="LoadingContact" prefix=", " />
+        </TextLabel>
       </row>
       <row>
         <Label html="Loading date" />
@@ -59,7 +63,10 @@
       </row>
       <row>
         <Label html="Delivery place" />
-        <TextLabel source="UnloadingAddress" />
+        <TextLabel source="UnloadingAddress">
+          <renderToken source="UnloadingAddress" />
+          <renderToken source="UnloadingContact" prefix=", " />
+        </TextLabel>
       </row>
       <row>
         <Label html="Delivery Date" />
@@ -76,8 +83,11 @@
             <renderToken source="Amount" suffix=" " format="#.00" />
             <renderToken source="CurrencyName" />
           </TextLabel>
-          <TextLabel source="Note" />
         </FlowPanel>
+      </row>
+      <row>
+        <Label html="Terms of payment" />
+        <TextLabel source="Note" />
       </row>
       <row>
         <cell colSpan="2">
@@ -90,7 +100,7 @@
       <row>
         <cell colSpan="2">
           <HtmlPanel style="&section;">
-            <span style="white-space:pre-wrap;">
+            <span style="white-space:pre-wrap; font-size:xx-small;">
 1. Carriage is performed under conditions of CMR Convention. During performance of this Carriage Contract the Carrier must have a valid carrier’s CMR insurance policy, licenses and permits, necessary for the legal performance of above carriage.
 2. The Customer undertakes to organize loading and customs clearance (if needed) within 24 hours (CIS countries 48 hours) from the moment of vehicle arrival at the loading place, including cargo fixing and sealing works. This condition applies to a car on arrival at the loading location until 10:00 local time.
 3. The Customer undertakes to perform unloading and customs formalities (if needed) within 24 hours (CIS countries 48 hours) from the moment of vehicle arrival at customs destination place or delivery place. The time runs when the truck arrive to custom / unloading place until 10:00 local time. 

@@ -17,7 +17,7 @@
 
     <String name="Number" precision="20" label="=number" />
     <Relation name="Supplier" relation="Companies" label="=trSupplier" />
-    <String name="Note" precision="50" label="=note" />
+    <String name="Note" precision="100" label="=note" />
 
     <Relation name="Purchase" relation="Purchases" cascade="SET_NULL" label="=trdPurchaseId" />
   </Fields>

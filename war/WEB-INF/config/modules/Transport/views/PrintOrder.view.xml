@@ -45,6 +45,7 @@
       <SimpleJoin name="LoadingPlace" joinType="LEFT">
         <SimpleColumn name="Contact" alias="Shipper" />
         <SimpleColumn name="Date" alias="LoadingDate" />
+        <SimpleColumn name="Address" alias="LoadingAddress" />
 
         <SimpleJoin joinType="LEFT" name="Country">
           <SimpleColumn name="Name" alias="LoadingCountryName" />
@@ -53,6 +54,7 @@
       </SimpleJoin>
       <SimpleJoin name="UnloadingPlace" joinType="LEFT">
         <SimpleColumn name="Date" alias="UnloadingDate" />
+        <SimpleColumn name="Address" alias="UnloadingAddress" />
 
         <SimpleJoin joinType="LEFT" name="Country">
           <SimpleColumn name="Name" alias="UnloadingCountryName" />

@@ -18,8 +18,9 @@
       .&form;-table td {border:1px solid black; padding:2px;}
       .&form;-forwarder .bee-co-companyInfo-name .bee-co-companyInfo-item:before {content: "Перевозчик: "; font-weight:normal;}
       .&form;-customer .bee-co-companyInfo-name .bee-co-companyInfo-item:before {content: "Заказчик: "; font-weight:normal;}
+      .&form;-customer .bee-co-companyInfo-phone {display:none;}
     </css>
-    <Image url="images/logo1.gif" style="display:block; margin:auto;" />
+    <Image url="images/HL_logo.jpg" style="width:50%; display:block; margin:auto;" />
     <TextLabel style="text-align:center; &bold;">
       <render><ui:expression>'Договор перевозки Но. ' + rowId + (row.Number ? '-' + row.Number : '')</ui:expression></render>
     </TextLabel>
@@ -51,7 +52,10 @@
       </row>
       <row>
         <Label html="Место погрузки" />
-        <TextLabel source="LoadingAddress" />
+        <TextLabel source="LoadingAddress">
+          <renderToken source="LoadingAddress" />
+          <renderToken source="LoadingContact" prefix=", " />
+        </TextLabel>
       </row>
       <row>
         <Label html="Дата погрузки" />
@@ -59,7 +63,10 @@
       </row>
       <row>
         <Label html="Место поставки" />
-        <TextLabel source="UnloadingAddress" />
+        <TextLabel source="UnloadingAddress">
+          <renderToken source="UnloadingAddress" />
+          <renderToken source="UnloadingContact" prefix=", " />
+        </TextLabel>
       </row>
       <row>
         <Label html="Дата поставки" />
@@ -76,8 +83,11 @@
             <renderToken source="Amount" suffix=" " format="#.00" />
             <renderToken source="CurrencyName" />
           </TextLabel>
-          <TextLabel source="Note" />
         </FlowPanel>
+      </row>
+      <row>
+        <Label html="Условия оплаты" />
+        <TextLabel source="Note" />
       </row>
       <row>
         <cell colSpan="2">
@@ -90,7 +100,7 @@
       <row>
         <cell colSpan="2">
           <HtmlPanel style="&section;">
-            <span style="white-space:pre-wrap;">Обязательства и ответственность Клиента:
+            <span style="white-space:pre-wrap; font-size:xx-small;">Обязательства и ответственность Клиента:
 1. Перевозка осуществляется на условиях Конвенции CMR. Перевозчик во время выполнения данного Договора обязан иметь действующий полис страхования ответственности перевозчика, лицензии и необходимые разрешения для законного выполнения вышеуказанной перевозки. 
 2. Заказчик обязывается организовать погрузку и таможенное оформление (при необходимости) в течение  24 часов (НВС 48 часов) с момента прибытия а/м на место погрузки, включая работы по креплению и пломбированию. Это условие действительно если авомобиль приехал на место погрузки/разгрузки до 10:00 по местному времени
 3. Заказчик обязывается осуществить выгрузку и таможенную очистку груза (при необходимости) в течение 24 часов (НВС 48 часов) с момента прибытия а/м на таможенный пост места назначения или на место доставки. Время считается от момента приезда автомобиля в таможню/место разгрузки до 10:00 по местому времени.

@@ -29,7 +29,7 @@
       <Label for="Date" class="bee-required" style="&labelLeft;" />
       <InputDate source="Date" required="true" style="&input;" />
       <Label for="Service" style="&labelRight;" />
-      <DataSelector source="Service" style="&input; width:190px;" choiceColumns="Name ItemName ItemArticle" />
+      <DataSelector source="Service" style="&input; width:190px;" />
     </FlowPanel>
 
     <FlowPanel style="&section;">

@@ -53,13 +53,15 @@
       </SimpleJoin>
   
       <SimpleJoin name="LoadingPlace" joinType="LEFT">
-        <SimpleColumn name="Date" alias="LoadingDate" />    
+        <SimpleColumn name="Date" alias="LoadingDate" />
         <SimpleColumn name="Address" alias="LoadingAddress" />
+        <SimpleColumn name="Contact" alias="LoadingContact" />
       </SimpleJoin>
   
       <SimpleJoin name="UnloadingPlace" joinType="LEFT">
         <SimpleColumn name="Date" alias="UnloadingDate" />
         <SimpleColumn name="Address" alias="UnloadingAddress" />
+        <SimpleColumn name="Contact" alias="UnloadingContact" />
       </SimpleJoin>
     </SimpleJoin>
 

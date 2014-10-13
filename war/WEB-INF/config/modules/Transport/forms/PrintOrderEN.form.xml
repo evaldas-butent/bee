@@ -18,25 +18,26 @@
       .&form;-table {border-collapse:collapse; width:100%;}
       .&form;-table td {border:1px solid black; padding:2px;}
       .&form;-forwarder .bee-co-companyInfo-name .bee-co-companyInfo-item:before {content: "Forwarder: "; font-weight:normal;}
+      .&form;-forwarder .bee-co-companyInfo-phone {display:none;}
     </css>
     <HorizontalPanel>
-      <Table>
+      <Table style="white-space:nowrap;">
         <row>
-          <Label html="Order No.:" style="text-align:right; &bold;" />
+          <Label html="Order No.:" style="&bold;" />
           <TextLabel>
             <render><ui:expression>rowId</ui:expression></render>
           </TextLabel>
         </row>
         <row>
-          <Label html="Ref number:" style="text-align:right; &bold;" />
+          <Label html="Ref number:" style="&bold;" />
           <TextLabel source="Number" />
         </row>
         <row>
-          <Label html="Date:" style="text-align:right; &bold;" />
+          <Label html="Date:" style="&bold;" />
           <DateTimeLabel source="Date" format="DATE_SHORT" />
         </row>
       </Table>
-      <Image  url="images/logo1.gif" />
+      <Image url="images/HL_logo.jpg" style="width:50%;" />
     </HorizontalPanel>
 
     <FlowPanel style="&section;">
@@ -86,12 +87,18 @@
         
         <FlowPanel>
           <FlowPanel>
-            <Label html="Date load:" style="&inline; width:100px; text-align:right;" />
-            <DateTimeLabel source="LoadingDate" style="&inline; margin-left:5px;" />
+            <Label html="Load:" style="&inline; width:100px; text-align:right;" />
+            <TextLabel source="LoadingAddress" style="&inline; margin-left:5px;">
+              <renderToken source="LoadingDate" />
+              <renderToken source="LoadingAddress" prefix=", " />
+            </TextLabel>
           </FlowPanel>
           <FlowPanel>
-            <Label html="Date offload:" style="&inline; width:100px; text-align:right;" />
-            <DateTimeLabel source="UnloadingDate" style="&inline; margin-left:5px;" />
+            <Label html="Offload:" style="&inline; width:100px; text-align:right;" />
+            <TextLabel source="UnloadingAddress" style="&inline; margin-left:5px;">
+              <renderToken source="UnloadingDate" />
+              <renderToken source="UnloadingAddress" prefix=", " />
+            </TextLabel>
           </FlowPanel>
         </FlowPanel>
       </HorizontalPanel>
