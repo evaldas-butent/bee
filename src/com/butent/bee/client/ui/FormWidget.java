@@ -498,9 +498,9 @@ public enum FormWidget {
       scale = BeeUtils.toInt(s);
     } else if (column != null && !BeeConst.isUndef(column.getScale())) {
       scale = money
-          ? Math.min(column.getScale(), Format.getDefaultCurrencyScale()) : column.getScale();
+          ? Math.min(column.getScale(), Format.getDefaultMoneyScale()) : column.getScale();
     } else {
-      scale = money ? Format.getDefaultCurrencyScale() : BeeConst.UNDEF;
+      scale = money ? Format.getDefaultMoneyScale() : BeeConst.UNDEF;
     }
 
     widget.setScale(scale);
@@ -509,8 +509,8 @@ public enum FormWidget {
     NumberFormat format;
 
     if (BeeUtils.isEmpty(pattern)) {
-      if (money && scale == Format.getDefaultCurrencyScale()) {
-        format = Format.getDefaultCurrencyFormat();
+      if (money && scale == Format.getDefaultMoneyScale()) {
+        format = Format.getDefaultMoneyFormat();
       } else {
         format = Format.getDecimalFormat(scale);
       }
@@ -1542,7 +1542,7 @@ public enum FormWidget {
         format = attributes.get(UiConstants.ATTR_FORMAT);
         inline = BeeUtils.toBoolean(attributes.get(ATTR_INLINE));
         if (BeeUtils.isEmpty(format)) {
-          widget = new DecimalLabel(Format.getDefaultCurrencyFormat(), inline);
+          widget = new DecimalLabel(Format.getDefaultMoneyFormat(), inline);
         } else {
           widget = new DecimalLabel(format, inline);
         }

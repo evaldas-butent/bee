@@ -14,7 +14,6 @@
   xmlns:f="http://www.butent.com/form"
   
   name="TradeActServicesReport" caption="=taReportServices"
-  enabledActions="filter bookmark export"
   >
   <FlowPanel>
     <br/>

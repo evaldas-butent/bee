@@ -52,6 +52,8 @@ public interface LocalizableClassifierConstants {
 
   String item();
 
+  String itemName();
+
   String itemOrService();
 
   String newDepartmentEmployees();

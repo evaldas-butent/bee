@@ -9,7 +9,6 @@
   xmlns:f="http://www.butent.com/form"
   
   name="TradeActStockReport" caption="=taReportStock"
-  enabledActions="filter bookmark export"
   >
   <FlowPanel>
     <br/>

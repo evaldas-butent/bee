@@ -1,6 +1,8 @@
 package com.butent.bee.client.view.form.interceptor;
 
 import com.google.gwt.dom.client.Element;
+import com.google.gwt.event.dom.client.ClickEvent;
+import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.i18n.client.NumberFormat;
 import com.google.gwt.user.client.ui.Widget;
 
@@ -22,6 +24,7 @@ import com.butent.bee.client.ui.HasIndexedWidgets;
 import com.butent.bee.client.view.HeaderView;
 import com.butent.bee.client.view.edit.Editor;
 import com.butent.bee.client.view.form.FormView;
+import com.butent.bee.client.widget.Button;
 import com.butent.bee.client.widget.InputDateTime;
 import com.butent.bee.client.widget.ListBox;
 import com.butent.bee.shared.BeeConst;
@@ -41,8 +44,10 @@ import com.butent.bee.shared.utils.StringList;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.EnumSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 public abstract class ReportInterceptor extends AbstractFormInterceptor implements Printable {
 
@@ -152,6 +157,18 @@ public abstract class ReportInterceptor extends AbstractFormInterceptor implemen
   }
 
   @Override
+  public Set<Action> getEnabledActions(Set<Action> defaultActions) {
+    EnumSet<Action> actions =
+        EnumSet.of(Action.REFRESH, Action.FILTER, Action.EXPORT, Action.PRINT);
+
+    if (BeeKeeper.getScreen().getUserInterface().hasComponent(Component.REPORTS)) {
+      actions.add(Action.BOOKMARK);
+    }
+
+    return actions;
+  }
+
+  @Override
   public Element getPrintElement() {
     if (hasReport()) {
       return getDataContainer().getWidget(0).getElement();
@@ -171,12 +188,19 @@ public abstract class ReportInterceptor extends AbstractFormInterceptor implemen
       doReport();
     }
 
-    if (!BeeKeeper.getScreen().getUserInterface().hasComponent(Component.REPORTS)) {
-      HeaderView header = form.getViewPresenter().getHeader();
+    HeaderView header = form.getViewPresenter().getHeader();
+    if (header != null && header.hasAction(Action.FILTER)
+        && !header.hasAction(Action.REMOVE_FILTER)) {
 
-      if (header != null && header.hasAction(Action.BOOKMARK)) {
-        header.showAction(Action.BOOKMARK, false);
-      }
+      Button clearFilter = new Button(Localized.getConstants().clearFilter());
+      clearFilter.addClickHandler(new ClickHandler() {
+        @Override
+        public void onClick(ClickEvent event) {
+          clearFilter();
+        }
+      });
+
+      header.addCommandItem(clearFilter);
     }
   }
 

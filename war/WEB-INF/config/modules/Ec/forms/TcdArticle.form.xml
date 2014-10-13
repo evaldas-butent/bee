@@ -72,6 +72,11 @@
       </page>
 
       <page>
+        <text>=prices</text>
+        <ChildGrid name="TcdArticlePrices" relColumn="Article" />
+      </page>
+
+      <page>
         <text>=ecItemAnalogs</text>
         <ChildGrid name="TcdArticleCodes" relColumn="Article" />
       </page>

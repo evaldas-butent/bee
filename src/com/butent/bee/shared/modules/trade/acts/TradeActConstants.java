@@ -70,6 +70,13 @@ public final class TradeActConstants {
   public static final String COL_TA_INVOICE_FROM = "DateFrom";
   public static final String COL_TA_INVOICE_TO = "DateTo";
 
+  public static final String ALS_RETURNED_QTY = "ReturnedQty";
+  public static final String ALS_REMAINING_QTY = "RemainingQty";
+
+  public static final String ALS_BASE_AMOUNT = "BaseAmount";
+  public static final String ALS_DISCOUNT_AMOUNT = "DiscountAmount";
+  public static final String ALS_TOTAL_AMOUNT = "TotalAmount";
+
   public static final String GRID_TRADE_ACTS = "TradeActs";
   public static final String GRID_TRADE_ACT_TEMPLATES = "TradeActTemplates";
 

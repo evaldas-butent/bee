@@ -304,44 +304,43 @@ public class AssessmentTurnoverReport extends ReportInterceptor {
   @Override
   public void onLoad(FormView form) {
     ReportParameters parameters = readParameters();
-    if (parameters == null) {
-      return;
-    }
 
-    Widget widget = form.getWidgetByName(NAME_START_DATE);
-    DateTime dateTime = parameters.getDateTime(NAME_START_DATE);
-    if (widget instanceof InputDateTime && dateTime != null) {
-      ((InputDateTime) widget).setDateTime(dateTime);
-    }
-
-    widget = form.getWidgetByName(NAME_END_DATE);
-    dateTime = parameters.getDateTime(NAME_END_DATE);
-    if (widget instanceof InputDateTime && dateTime != null) {
-      ((InputDateTime) widget).setDateTime(dateTime);
-    }
-
-    widget = form.getWidgetByName(NAME_CURRENCY);
-    Long currency = parameters.getLong(NAME_CURRENCY);
-    if (widget instanceof UnboundSelector && DataUtils.isId(currency)) {
-      ((UnboundSelector) widget).setValue(currency, false);
-    }
-
-    List<String> selectorNames = Lists.newArrayList(NAME_DEPARTMENTS, NAME_MANAGERS,
-        NAME_CUSTOMERS);
-
-    for (String selectorName : selectorNames) {
-      widget = form.getWidgetByName(selectorName);
-      String idList = parameters.get(selectorName);
-      if (widget instanceof MultiSelector && !BeeUtils.isEmpty(idList)) {
-        ((MultiSelector) widget).setIds(idList);
+    if (parameters != null) {
+      Widget widget = form.getWidgetByName(NAME_START_DATE);
+      DateTime dateTime = parameters.getDateTime(NAME_START_DATE);
+      if (widget instanceof InputDateTime && dateTime != null) {
+        ((InputDateTime) widget).setDateTime(dateTime);
       }
-    }
 
-    for (String groupName : NAME_GROUP_BY) {
-      widget = form.getWidgetByName(groupName);
-      Integer index = parameters.getInteger(groupName);
-      if (widget instanceof ListBox && BeeUtils.isPositive(index)) {
-        ((ListBox) widget).setSelectedIndex(index);
+      widget = form.getWidgetByName(NAME_END_DATE);
+      dateTime = parameters.getDateTime(NAME_END_DATE);
+      if (widget instanceof InputDateTime && dateTime != null) {
+        ((InputDateTime) widget).setDateTime(dateTime);
+      }
+
+      widget = form.getWidgetByName(NAME_CURRENCY);
+      Long currency = parameters.getLong(NAME_CURRENCY);
+      if (widget instanceof UnboundSelector && DataUtils.isId(currency)) {
+        ((UnboundSelector) widget).setValue(currency, false);
+      }
+
+      List<String> selectorNames = Lists.newArrayList(NAME_DEPARTMENTS, NAME_MANAGERS,
+          NAME_CUSTOMERS);
+
+      for (String selectorName : selectorNames) {
+        widget = form.getWidgetByName(selectorName);
+        String idList = parameters.get(selectorName);
+        if (widget instanceof MultiSelector && !BeeUtils.isEmpty(idList)) {
+          ((MultiSelector) widget).setIds(idList);
+        }
+      }
+
+      for (String groupName : NAME_GROUP_BY) {
+        widget = form.getWidgetByName(groupName);
+        Integer index = parameters.getInteger(groupName);
+        if (widget instanceof ListBox && BeeUtils.isPositive(index)) {
+          ((ListBox) widget).setSelectedIndex(index);
+        }
       }
     }
 

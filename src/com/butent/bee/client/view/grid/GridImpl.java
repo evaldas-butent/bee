@@ -1965,6 +1965,8 @@ public class GridImpl extends Absolute implements GridView, EditEndEvent.Handler
           }
         });
 
+    form.setCaption(Localized.getConstants().actionNew());
+
     double initialWidth = RowFactory.GENERATED_FORM_WIDTH;
     double initialHeight = RowFactory.GENERATED_HEADER_HEIGHT + RowFactory.GENERATED_HEIGHT_MARGIN
         + columnNames.size() * RowFactory.GENERATED_ROW_HEIGHT;

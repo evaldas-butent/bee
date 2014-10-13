@@ -429,6 +429,7 @@
       <xs:enumeration value="TcdArticleCriteria" />
       <xs:enumeration value="TcdArticleGraphics" />
       <xs:enumeration value="TcdArticles" />
+      <xs:enumeration value="TcdArticlePrices" />
       <xs:enumeration value="TcdArticleSuppliers" />
       <xs:enumeration value="TcdBrands" />
       <xs:enumeration value="TcdBrandsMapping" />
@@ -437,6 +438,7 @@
       <xs:enumeration value="TcdManufacturers" />
       <xs:enumeration value="TcdModels" />
       <xs:enumeration value="TcdOrphans" />
+      <xs:enumeration value="TcdPriceLists" />
       <xs:enumeration value="TcdRemainders" />
       <xs:enumeration value="TcdTypeArticles" />
       <xs:enumeration value="TcdTypes" />
