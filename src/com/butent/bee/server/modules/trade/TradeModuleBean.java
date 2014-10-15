@@ -5,10 +5,12 @@ import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
 import com.google.common.eventbus.Subscribe;
 
+import static com.butent.bee.shared.html.builder.Factory.*;
 import static com.butent.bee.shared.modules.administration.AdministrationConstants.*;
 import static com.butent.bee.shared.modules.classifiers.ClassifierConstants.*;
 import static com.butent.bee.shared.modules.trade.TradeConstants.*;
 
+import com.butent.bee.client.Global;
 import com.butent.bee.server.data.DataEvent.ViewInsertEvent;
 import com.butent.bee.server.data.DataEvent.ViewModifyEvent;
 import com.butent.bee.server.data.DataEvent.ViewQueryEvent;
@@ -22,6 +24,8 @@ import com.butent.bee.server.modules.BeeModule;
 import com.butent.bee.server.modules.ParamHolderBean;
 import com.butent.bee.server.modules.administration.ExchangeUtils;
 import com.butent.bee.server.modules.classifiers.ClassifiersModuleBean;
+import com.butent.bee.server.modules.mail.MailModuleBean;
+import com.butent.bee.server.modules.mail.MailStorageBean;
 import com.butent.bee.server.sql.IsExpression;
 import com.butent.bee.server.sql.SqlSelect;
 import com.butent.bee.server.sql.SqlUpdate;
@@ -38,8 +42,11 @@ import com.butent.bee.shared.data.SearchResult;
 import com.butent.bee.shared.data.SimpleRowSet;
 import com.butent.bee.shared.data.SimpleRowSet.SimpleRow;
 import com.butent.bee.shared.data.filter.Filter;
+import com.butent.bee.shared.data.filter.Operator;
 import com.butent.bee.shared.data.value.Value;
 import com.butent.bee.shared.exceptions.BeeException;
+import com.butent.bee.shared.html.builder.Document;
+import com.butent.bee.shared.html.builder.elements.Span;
 import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogUtils;
 import com.butent.bee.shared.modules.BeeParameter;
@@ -50,6 +57,7 @@ import com.butent.bee.shared.rights.ModuleAndSub;
 import com.butent.bee.shared.rights.SubModule;
 import com.butent.bee.shared.time.JustDate;
 import com.butent.bee.shared.time.TimeUtils;
+import com.butent.bee.shared.utils.ArrayUtils;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.Codec;
 import com.butent.webservice.ButentWS;
@@ -67,6 +75,7 @@ import java.util.Set;
 import javax.ejb.EJB;
 import javax.ejb.LocalBean;
 import javax.ejb.Stateless;
+import javax.mail.MessagingException;
 
 @Stateless
 @LocalBean
@@ -101,6 +110,10 @@ public class TradeModuleBean implements BeeModule {
   ParamHolderBean prm;
   @EJB
   TradeActBean act;
+  @EJB
+  MailModuleBean mail;
+  @EJB
+  MailStorageBean mailStore;
 
   @EJB
   ClassifiersModuleBean cls;
@@ -145,6 +158,9 @@ public class TradeModuleBean implements BeeModule {
     } else if (BeeUtils.same(svc, SVC_SEND_TO_ERP)) {
       response = sendToERP(reqInfo.getParameter(VAR_VIEW_NAME),
           DataUtils.parseIdSet(reqInfo.getParameter(VAR_ID_LIST)));
+
+    } else if (BeeUtils.same(svc, SVC_REMIND_DEBTS_EMAIL)) {
+      response = sendDebtsRemindEmail(reqInfo);
 
     } else {
       String msg = BeeUtils.joinWords("Trade service not recognized:", svc);
@@ -567,6 +583,103 @@ public class TradeModuleBean implements BeeModule {
 
     TradeDocumentData tdd = new TradeDocumentData(companies, bankAccounts, items, null, null);
     return ResponseObject.response(tdd);
+  }
+
+  private Document renderCompanyDebtMail(String subject, String p1,
+      String p2, Long companyId) {
+    Document doc = new Document();
+    doc.getHead().append(meta().encodingDeclarationUtf8(), title().text(subject));
+
+    String first = BeeUtils.replace(p1, BeeConst.STRING_EOL, br().build());
+    first = BeeUtils.replace(first, BeeUtils.toString(BeeConst.CHAR_CR), br().build());
+
+    String last = BeeUtils.replace(p2, BeeConst.STRING_EOL, br().build());
+    last = BeeUtils.replace(last, BeeUtils.toString(BeeConst.CHAR_CR), br().build());
+
+    Filter filter = Filter.and(
+        Filter.isEqual(COL_TRADE_CUSTOMER, Value.getValue(companyId)),
+        Filter.compareWithValue(COL_TRADE_DEBT, Operator.LT, Value.getValue(0)));
+
+    BeeRowSet rs = qs.getViewData(VIEW_SALES, filter, null,
+        Lists.newArrayList(COL_TRADE_INVOICE_PREFIX, COL_TRADE_INVOICE_NO, COL_TRADE_DATE,
+            COL_TRADE_TERM, COL_TRADE_AMOUNT, ALS_CURRENCY_NAME, COL_TRADE_DEBT));
+
+    Span span = span();
+    String htmlTable = Global.renderTable(null, rs).toString();
+    span.appendText(htmlTable);
+
+
+    doc.getBody().append(p().text(first));
+    doc.getBody().append(span);
+    doc.getBody().append(p().text(last));
+    return doc;
+  }
+
+  private ResponseObject sendDebtsRemindEmail(RequestInfo req) {
+    Long senderMailAccountId = mail.getSenderAccountId(SVC_REMIND_DEBTS_EMAIL);
+    ResponseObject resp = ResponseObject.emptyResponse();
+
+    if (DataUtils.isId(senderMailAccountId)) {
+      return ResponseObject.error(usr.getLocalizableConstants().mailAccountNotFound());
+    }
+
+    String subject = req.getParameter(VAR_SUBJECT);
+    String p1 = req.getParameter(VAR_HEADER);
+    String p2 = req.getParameter(VAR_FOOTER);
+    List<Long> ids = DataUtils.parseIdList(req.getParameter(VAR_ID_LIST));
+
+    Map<Long, Map<Long, String>> emails = cls.getCompaniesRemindEmailAddresses(ids);
+    Map<Long, String> errorMails = Maps.newHashMap();
+    Set<Long> sentEmailCompanyIds = Sets.newHashSet();
+
+    for (Long companyId : emails.keySet()) {
+      if (BeeUtils.isEmpty(emails.get(companyId).values())) {
+        errorMails.put(companyId, usr.getLocalizableConstants().mailRecipientAddressNotFound());
+        continue;
+      }
+
+      Document mailDocument = renderCompanyDebtMail(subject, p1, p2, companyId);
+
+      try {
+      mail.sendMail(mailStore.getAccount(senderMailAccountId),
+          ArrayUtils.toArray(
+              Lists.newArrayList(emails.get(companyId).values()
+                  )), null, null, subject, mailDocument
+              .buildLines(),
+          null, true);
+        sentEmailCompanyIds.add(companyId);
+      } catch (MessagingException ex) {
+        logger.error(ex);
+        errorMails.put(companyId, ex.getMessage());
+      }
+    }
+
+    String message = BeeUtils.joinWords(usr.getLocalizableConstants().mailMessageSentCount(),
+        sentEmailCompanyIds.size(), br().build());
+
+    if (!BeeUtils.isEmpty(errorMails.keySet())) {
+      message = BeeUtils.joinWords(message, usr.getLocalizableConstants().errors(), br().build());
+
+      Filter filter = Filter.idIn(errorMails.keySet());
+      BeeRowSet rs =
+          qs.getViewData(VIEW_COMPANIES, filter, null, Lists.newArrayList(COL_COMPANY_NAME));
+      int i = 0;
+      for (Long id : errorMails.keySet()) {
+
+        message = BeeUtils.joinWords(message,
+            rs.getRowById(id).getString(rs.getColumnIndex(COL_COMPANY_NAME)), errorMails.get(id)
+            , br().build());
+
+        if (i > 5) {
+          break;
+        }
+        i++;
+      }
+    }
+
+    resp.setResponse(message);
+
+    return resp;
   }
 
   private ResponseObject sendToERP(String viewName, Set<Long> ids) {

@@ -6,6 +6,8 @@ public interface LocalizableMailConstants {
 
   String mailAccount();
 
+  String mailAccountNotFound();
+
   String mailActionMoveToTrash();
 
   String mails();
@@ -42,6 +44,8 @@ public interface LocalizableMailConstants {
 
   String mailMessageBodyIsEmpty();
 
+  String mailMessageSentCount();
+
   String mailMessageWasNotSent();
 
   String mailNewAccountPassword();
@@ -49,6 +53,8 @@ public interface LocalizableMailConstants {
   String mailNoAccountsFound();
 
   String mailQuestionSaveToDraft();
+
+  String mailRecipientAddressNotFound();
 
   String mailReplayPrefix();
 
