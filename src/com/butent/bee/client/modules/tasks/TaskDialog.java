@@ -1,7 +1,6 @@
 package com.butent.bee.client.modules.tasks;
 
 import com.google.common.collect.Lists;
-import com.google.common.collect.Maps;
 import com.google.gwt.core.client.Scheduler.ScheduledCommand;
 import com.google.gwt.user.client.ui.Widget;
 
@@ -17,7 +16,6 @@ import com.butent.bee.client.event.DndTarget;
 import com.butent.bee.client.grid.HtmlTable;
 import com.butent.bee.client.style.StyleUtils;
 import com.butent.bee.client.ui.UiHelper;
-import com.butent.bee.client.utils.NewFileInfo;
 import com.butent.bee.client.view.edit.SimpleEditorHandler;
 import com.butent.bee.client.widget.Button;
 import com.butent.bee.client.widget.Image;
@@ -27,11 +25,14 @@ import com.butent.bee.client.widget.InputTime;
 import com.butent.bee.client.widget.Label;
 import com.butent.bee.shared.css.values.TextAlign;
 import com.butent.bee.shared.i18n.Localized;
+import com.butent.bee.shared.io.FileInfo;
 import com.butent.bee.shared.time.DateTime;
 import com.butent.bee.shared.time.TimeUtils;
 import com.butent.bee.shared.utils.BeeUtils;
 
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -127,12 +128,11 @@ class TaskDialog extends DialogBox {
   }
 
   Map<String, String> addDuration() {
-    Map<String, String> result = Maps.newHashMap();
+    Map<String, String> result = new HashMap<>();
 
     result.put(COL_DURATION, addTime(Localized.getConstants().crmSpentTime()));
     result.put(COL_DURATION_TYPE, addSelector(Localized.getConstants().crmDurationType(),
-        VIEW_DURATION_TYPES,
-        Lists.newArrayList(COL_NAME), false, null));
+        VIEW_DURATION_TYPES, Lists.newArrayList(COL_DURATION_TYPE_NAME), false, null));
     result.put(COL_DURATION_DATE, addDateTime(Localized.getConstants().crmTaskFinishDate(),
         false, TimeUtils.nowMinutes()));
 
@@ -226,12 +226,12 @@ class TaskDialog extends DialogBox {
     }
   }
 
-  List<NewFileInfo> getFiles(String id) {
+  List<FileInfo> getFiles(String id) {
     Widget child = getChild(id);
     if (child instanceof FileCollector) {
       return ((FileCollector) child).getFiles();
     } else {
-      return Lists.newArrayList();
+      return new ArrayList<>();
     }
   }
 

@@ -2,8 +2,10 @@ package com.butent.bee.client.widget;
 
 import com.google.gwt.core.client.Scheduler.ScheduledCommand;
 import com.google.gwt.dom.client.Document;
-import com.google.gwt.dom.client.ImageElement;
 import com.google.gwt.event.dom.client.HasAllMouseHandlers;
+import com.google.gwt.event.dom.client.HasLoadHandlers;
+import com.google.gwt.event.dom.client.LoadEvent;
+import com.google.gwt.event.dom.client.LoadHandler;
 import com.google.gwt.event.dom.client.MouseDownEvent;
 import com.google.gwt.event.dom.client.MouseDownHandler;
 import com.google.gwt.event.dom.client.MouseMoveEvent;
@@ -19,15 +21,20 @@ import com.google.gwt.event.dom.client.MouseWheelHandler;
 import com.google.gwt.event.shared.HandlerRegistration;
 import com.google.gwt.resources.client.ImageResource;
 import com.google.gwt.user.client.Event;
-import com.google.gwt.user.client.ui.HasEnabled;
 
 import com.butent.bee.client.event.EventUtils;
+import com.butent.bee.client.ui.EnablableWidget;
 import com.butent.bee.client.utils.HasCommand;
+import com.butent.bee.shared.BeeConst;
+
+import elemental.html.ImageElement;
+import elemental.js.html.JsImageElement;
 
 /**
  * Implements an image holding user interface component, that displays the image at a given URL.
  */
-public class Image extends CustomWidget implements HasEnabled, HasCommand, HasAllMouseHandlers {
+public class Image extends CustomWidget implements EnablableWidget, HasCommand,
+    HasAllMouseHandlers, HasLoadHandlers {
 
   private ScheduledCommand command;
 
@@ -47,27 +54,32 @@ public class Image extends CustomWidget implements HasEnabled, HasCommand, HasAl
     this(resource);
     setCommand(cmnd);
   }
-  
+
   public Image(ImageResource resource, ScheduledCommand cmnd, String styleDisabled) {
     this(resource, cmnd);
     this.styleDisabled = styleDisabled;
   }
-  
+
   public Image(String url) {
     this();
     setUrl(url);
   }
 
   @Override
+  public HandlerRegistration addLoadHandler(LoadHandler handler) {
+    return addDomHandler(handler, LoadEvent.getType());
+  }
+
+  @Override
   public HandlerRegistration addMouseDownHandler(MouseDownHandler handler) {
     return addDomHandler(handler, MouseDownEvent.getType());
   }
-  
+
   @Override
   public HandlerRegistration addMouseMoveHandler(MouseMoveHandler handler) {
     return addDomHandler(handler, MouseMoveEvent.getType());
   }
-  
+
   @Override
   public HandlerRegistration addMouseOutHandler(MouseOutHandler handler) {
     return addDomHandler(handler, MouseOutEvent.getType());
@@ -77,7 +89,7 @@ public class Image extends CustomWidget implements HasEnabled, HasCommand, HasAl
   public HandlerRegistration addMouseOverHandler(MouseOverHandler handler) {
     return addDomHandler(handler, MouseOverEvent.getType());
   }
-  
+
   @Override
   public HandlerRegistration addMouseUpHandler(MouseUpHandler handler) {
     return addDomHandler(handler, MouseUpEvent.getType());
@@ -92,7 +104,7 @@ public class Image extends CustomWidget implements HasEnabled, HasCommand, HasAl
   public ScheduledCommand getCommand() {
     return command;
   }
-  
+
   public int getHeight() {
     return getImageElement().getHeight();
   }
@@ -102,10 +114,18 @@ public class Image extends CustomWidget implements HasEnabled, HasCommand, HasAl
     return "img";
   }
 
+  public int getNaturalHeight() {
+    return getImageElement().getNaturalHeight();
+  }
+
+  public int getNaturalWidth() {
+    return getImageElement().getNaturalWidth();
+  }
+
   public String getUrl() {
     return getImageElement().getSrc();
   }
-  
+
   public int getWidth() {
     return getImageElement().getWidth();
   }
@@ -156,18 +176,18 @@ public class Image extends CustomWidget implements HasEnabled, HasCommand, HasAl
   public void setResource(ImageResource resource) {
     getImageElement().setSrc(resource.getSafeUri().asString());
   }
-  
+
   public void setUrl(String url) {
     getImageElement().setSrc(url);
   }
-  
+
   @Override
   protected void init() {
     super.init();
-    addStyleName("bee-Image");
+    addStyleName(BeeConst.CSS_CLASS_PREFIX + "Image");
   }
 
   private ImageElement getImageElement() {
-    return ImageElement.as(getElement());
+    return (JsImageElement) getElement().cast();
   }
 }

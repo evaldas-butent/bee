@@ -9,6 +9,9 @@ import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.communication.ParameterList;
 import com.butent.bee.client.data.Data;
 import com.butent.bee.client.grid.GridFactory;
+import com.butent.bee.client.grid.GridFactory.GridOptions;
+import com.butent.bee.client.imports.ImportOptionForm;
+import com.butent.bee.client.imports.ImportOptionsGrid;
 import com.butent.bee.client.rights.RightsForm;
 import com.butent.bee.client.style.ColorStyleProvider;
 import com.butent.bee.client.style.ConditionalStyle;
@@ -36,10 +39,14 @@ public final class AdministrationKeeper {
     }
   }
 
-  public static ParameterList createArgs(String name) {
-    ParameterList args = BeeKeeper.getRpc().createParameters(Module.ADMINISTRATION.getName());
-    args.addQueryItem(METHOD, name);
-    return args;
+  private static Long company;
+
+  public static ParameterList createArgs(String method) {
+    return BeeKeeper.getRpc().createParameters(Module.ADMINISTRATION, method);
+  }
+
+  public static Long getCompany() {
+    return company;
   }
 
   public static void register() {
@@ -51,9 +58,19 @@ public final class AdministrationKeeper {
     });
 
     FormFactory.registerFormInterceptor(FORM_USER, new UserForm());
+    FormFactory.registerFormInterceptor(FORM_USER_SETTINGS, new UserSettingsForm());
     FormFactory.registerFormInterceptor(FORM_DEPARTMENT, new DepartmentForm());
+    FormFactory.registerFormInterceptor(FORM_NEW_ROLE, new NewRoleForm());
+    FormFactory.registerFormInterceptor(FORM_IMPORT_OPTION, new ImportOptionForm());
 
+    GridFactory.registerGridInterceptor(TBL_IMPORT_OPTIONS, new ImportOptionsGrid());
     GridFactory.registerGridInterceptor(NewsConstants.GRID_USER_FEEDS, new UserFeedsInterceptor());
+
+    GridFactory.registerGridSupplier(
+        GridFactory.getSupplierKey(NewsConstants.GRID_USER_FEEDS, null),
+        NewsConstants.GRID_USER_FEEDS,
+        new UserFeedsInterceptor(BeeKeeper.getUser().getUserId()),
+        GridOptions.forCurrentUserFilter(NewsConstants.COL_UF_USER));
 
     GridFactory.registerGridInterceptor(GRID_USER_GROUP_MEMBERS,
         UniqueChildInterceptor.forUsers(Localized.getConstants().userGroupAddMembers(),
@@ -83,6 +100,10 @@ public final class AdministrationKeeper {
     BeeKeeper.getBus().registerRowTransformHandler(new RowTransformHandler(), false);
 
     RightsForm.register();
+  }
+
+  public static void setCompany(Long company) {
+    AdministrationKeeper.company = company;
   }
 
   private AdministrationKeeper() {

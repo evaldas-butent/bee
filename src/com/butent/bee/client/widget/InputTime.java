@@ -1,7 +1,6 @@
 package com.butent.bee.client.widget;
 
 import com.google.common.base.CharMatcher;
-import com.google.common.collect.Lists;
 import com.google.gwt.dom.client.Document;
 import com.google.gwt.dom.client.Element;
 import com.google.gwt.event.dom.client.ClickEvent;
@@ -20,8 +19,8 @@ import com.butent.bee.client.ui.FormWidget;
 import com.butent.bee.client.validation.ValidationHelper;
 import com.butent.bee.client.view.edit.EditStopEvent;
 import com.butent.bee.shared.BeeConst;
-import com.butent.bee.shared.HasIntStep;
 import com.butent.bee.shared.HasBounds;
+import com.butent.bee.shared.HasIntStep;
 import com.butent.bee.shared.State;
 import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.time.DateTime;
@@ -29,15 +28,16 @@ import com.butent.bee.shared.time.TimeUtils;
 import com.butent.bee.shared.ui.EditorAction;
 import com.butent.bee.shared.utils.BeeUtils;
 
+import java.util.ArrayList;
 import java.util.List;
 
 public class InputTime extends InputText implements HasBounds, HasIntStep {
 
-  private static final String STYLE_INPUT = "bee-InputTime";
+  private static final String STYLE_INPUT = BeeConst.CSS_CLASS_PREFIX + "InputTime";
   private static final String STYLE_ACTIVE = STYLE_INPUT + "-active";
 
-  private static final String STYLE_POPUP = "bee-TimeBox-popup";
-  private static final String STYLE_TIME_PICKER = "bee-TimePicker";
+  private static final String STYLE_POPUP = BeeConst.CSS_CLASS_PREFIX + "TimeBox-popup";
+  private static final String STYLE_TIME_PICKER = BeeConst.CSS_CLASS_PREFIX + "TimePicker";
 
   private static final int DEFAULT_PICKER_SIZE = 10;
 
@@ -52,7 +52,7 @@ public class InputTime extends InputText implements HasBounds, HasIntStep {
 
   public InputTime() {
     super();
-    
+
     setMaxLength(getDefaultMaxLength());
     sinkEvents(Event.ONCLICK | Event.ONKEYPRESS | Event.ONFOCUS | Event.ONBLUR);
   }
@@ -208,7 +208,7 @@ public class InputTime extends InputText implements HasBounds, HasIntStep {
 
   @Override
   public List<String> validate(boolean checkForNull) {
-    List<String> messages = Lists.newArrayList();
+    List<String> messages = new ArrayList<>();
     messages.addAll(super.validate(checkForNull));
     if (!messages.isEmpty()) {
       return messages;
@@ -226,14 +226,14 @@ public class InputTime extends InputText implements HasBounds, HasIntStep {
       messages.add(BeeUtils.joinWords(Localized.getConstants().invalidTime(), v));
       return messages;
     }
-    
+
     messages.addAll(validateBounds(getMillis()));
     return messages;
   }
-  
+
   @Override
   public List<String> validate(String normalizedValue, boolean checkForNull) {
-    List<String> messages = Lists.newArrayList();
+    List<String> messages = new ArrayList<>();
     messages.addAll(super.validate(normalizedValue, checkForNull));
     if (!messages.isEmpty()) {
       return messages;
@@ -256,11 +256,11 @@ public class InputTime extends InputText implements HasBounds, HasIntStep {
         .or(CharMatcher.is(TimeUtils.TIME_FIELD_SEPARATOR))
         .or(CharMatcher.is(TimeUtils.MILLIS_SEPARATOR));
   }
-  
+
   protected int getDefaultMaxLength() {
     return 8;
   }
-  
+
   protected long getDefaultMaxMillis() {
     return TimeUtils.MILLIS_PER_HOUR * 999;
   }
@@ -319,7 +319,7 @@ public class InputTime extends InputText implements HasBounds, HasIntStep {
     }
     return true;
   }
-  
+
   protected void pickTime() {
     Integer minutes = getMinutes();
 
@@ -390,7 +390,7 @@ public class InputTime extends InputText implements HasBounds, HasIntStep {
             setPickerState(State.CLOSED);
             DomEvent.fireNativeEvent(Document.get().createBlurEvent(), InputTime.this);
           }
-        
+
         } else if (event.keyboardEvent()) {
           setPickerState(State.CLOSING);
           setFocus(true);
@@ -399,14 +399,14 @@ public class InputTime extends InputText implements HasBounds, HasIntStep {
         } else {
           setPickerState(State.CLOSED);
         }
-        
+
         InputTime.this.removeStyleName(STYLE_ACTIVE);
       }
     });
 
     setPickerState(State.OPEN);
     addStyleName(STYLE_ACTIVE);
-    
+
     popup.setWidget(widget);
     popup.showRelativeTo(getElement());
 
@@ -492,13 +492,13 @@ public class InputTime extends InputText implements HasBounds, HasIntStep {
   private boolean isPickerOpen() {
     return State.OPEN.equals(getPickerState());
   }
-  
+
   private void onPick(Popup popup, ListBox widget) {
     if (widget.getSelectedIndex() >= 0) {
       String text = widget.getItemText(widget.getSelectedIndex());
       popup.close();
       setValue(text);
-      
+
       fireEvent(new EditStopEvent(State.CHANGED));
     }
   }
@@ -506,7 +506,7 @@ public class InputTime extends InputText implements HasBounds, HasIntStep {
   private static String renderMinutes(int minutes) {
     return TimeUtils.renderMinutes(minutes, true);
   }
-  
+
   private void setPickerState(State pickerState) {
     this.pickerState = pickerState;
   }
@@ -514,9 +514,9 @@ public class InputTime extends InputText implements HasBounds, HasIntStep {
   private static Integer toMinutes(Long millis) {
     return (millis == null) ? null : (int) (millis / TimeUtils.MILLIS_PER_MINUTE);
   }
-  
+
   private List<String> validateBounds(Long millis) {
-    List<String> result = Lists.newArrayList();
+    List<String> result = new ArrayList<>();
 
     if (millis != null && !checkBounds(millis)) {
       result.add(TimeUtils.renderTime(millis, true));

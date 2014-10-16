@@ -1,8 +1,5 @@
 package com.butent.bee.shared.communication;
 
-import com.google.common.base.Objects;
-import com.google.common.collect.Lists;
-
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeSerializable;
 import com.butent.bee.shared.NotificationListener;
@@ -13,8 +10,10 @@ import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.Codec;
 import com.butent.bee.shared.utils.NameUtils;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.Objects;
 
 /**
  * Used to transport data with messages between various layers.
@@ -26,7 +25,7 @@ public class ResponseObject implements BeeSerializable {
    */
 
   private enum Serial {
-    MESSAGES, RESPONSE_TYPE, ARRAY_TYPE, RESPONSE
+    MESSAGES, RESPONSE_TYPE, ARRAY_TYPE, RESPONSE, SIZE
   }
 
   public static <T> ResponseObject collection(Collection<T> response, Class<T> clazz) {
@@ -64,7 +63,7 @@ public class ResponseObject implements BeeSerializable {
   public static ResponseObject response(Object response, Class<?> clazz) {
     return new ResponseObject().setResponse(response).setType(clazz);
   }
-  
+
   public static ResponseObject restore(String s) {
     ResponseObject response = new ResponseObject();
     response.deserialize(s);
@@ -75,11 +74,11 @@ public class ResponseObject implements BeeSerializable {
     return new ResponseObject().addWarning(obj);
   }
 
-  private final Collection<ResponseMessage> messages = Lists.newArrayList();
+  private final Collection<ResponseMessage> messages = new ArrayList<>();
   private Object response;
   private String type;
   private boolean isArrayType;
-  
+
   private int size;
 
   public ResponseObject addDebug(Object... obj) {
@@ -132,7 +131,7 @@ public class ResponseObject implements BeeSerializable {
     messages.add(new ResponseMessage(LogLevel.WARNING, ArrayUtils.joinWords(obj)));
     return this;
   }
-  
+
   public ResponseObject clearMessages() {
     messages.clear();
     return this;
@@ -171,10 +170,14 @@ public class ResponseObject implements BeeSerializable {
         case RESPONSE:
           this.response = value;
           break;
+
+        case SIZE:
+          this.size = BeeUtils.toInt(value);
+          break;
       }
     }
   }
-  
+
   public String[] getErrors() {
     return getMessageArray(LogLevel.ERROR);
   }
@@ -227,7 +230,7 @@ public class ResponseObject implements BeeSerializable {
   public int getSize() {
     return size;
   }
-  
+
   public String getType() {
     return type;
   }
@@ -300,15 +303,15 @@ public class ResponseObject implements BeeSerializable {
   public void notify(NotificationListener notificator) {
     if (notificator != null && hasMessages()) {
       LogLevel level = null;
-      List<String> list = Lists.newArrayList();
-      
+      List<String> list = new ArrayList<>();
+
       for (ResponseMessage message : getMessages()) {
         if (!BeeUtils.isEmpty(message.getMessage())) {
           level = BeeUtils.max(level, message.getLevel());
           list.add(message.getMessage());
         }
       }
-      
+
       if (!list.isEmpty()) {
         if (level == LogLevel.ERROR) {
           notificator.notifySevere(ArrayUtils.toArray(list));
@@ -344,6 +347,10 @@ public class ResponseObject implements BeeSerializable {
         case RESPONSE:
           arr[i++] = response;
           break;
+
+        case SIZE:
+          arr[i++] = size;
+          break;
       }
     }
     return Codec.beeSerialize(arr);
@@ -358,7 +365,7 @@ public class ResponseObject implements BeeSerializable {
 
     return this;
   }
-  
+
   public ResponseObject setResponse(Object rsp) {
     if (rsp != null) {
       setType(rsp.getClass());
@@ -373,10 +380,10 @@ public class ResponseObject implements BeeSerializable {
   }
 
   private String[] getMessageArray(LogLevel lvl) {
-    List<String> msgs = Lists.newArrayList();
+    List<String> msgs = new ArrayList<>();
 
     for (ResponseMessage message : messages) {
-      if (Objects.equal(message.getLevel(), lvl)) {
+      if (Objects.equals(message.getLevel(), lvl)) {
         msgs.add(message.getMessage());
       }
     }
@@ -385,7 +392,7 @@ public class ResponseObject implements BeeSerializable {
 
   private boolean hasMessages(LogLevel lvl) {
     for (ResponseMessage message : messages) {
-      if (lvl == null || Objects.equal(message.getLevel(), lvl)) {
+      if (lvl == null || Objects.equals(message.getLevel(), lvl)) {
         return true;
       }
     }

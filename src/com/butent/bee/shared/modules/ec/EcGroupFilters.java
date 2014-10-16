@@ -1,34 +1,34 @@
 package com.butent.bee.shared.modules.ec;
 
 import com.google.common.collect.ArrayListMultimap;
-import com.google.common.collect.Lists;
 import com.google.common.collect.Multimap;
-import com.google.common.collect.Sets;
 
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeSerializable;
 import com.butent.bee.shared.SelectableValue;
 import com.butent.bee.shared.utils.Codec;
 
+import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
 public class EcGroupFilters implements BeeSerializable {
-  
+
   public static EcGroupFilters restore(String s) {
     EcGroupFilters groupFilters = new EcGroupFilters();
     groupFilters.deserialize(s);
     return groupFilters;
   }
-  
-  private final List<EcBrand> brands = Lists.newArrayList();
 
-  private final List<EcCriterion> criteria = Lists.newArrayList();
+  private final List<EcBrand> brands = new ArrayList<>();
+
+  private final List<EcCriterion> criteria = new ArrayList<>();
 
   public EcGroupFilters() {
     super();
   }
-  
+
   public boolean clearSelection() {
     boolean changed = false;
 
@@ -36,22 +36,22 @@ public class EcGroupFilters implements BeeSerializable {
       changed |= brand.isSelected();
       brand.setSelected(false);
     }
-    
+
     for (EcCriterion criterion : criteria) {
       changed |= criterion.clearSelection();
     }
-    
+
     return changed;
   }
-  
+
   @Override
   public void deserialize(String s) {
     String[] arr = Codec.beeDeserializeCollection(s);
     Assert.lengthEquals(arr, 2);
-    
+
     brands.clear();
     criteria.clear();
-    
+
     String[] values = Codec.beeDeserializeCollection(arr[0]);
     if (values != null) {
       for (String v : values) {
@@ -74,19 +74,19 @@ public class EcGroupFilters implements BeeSerializable {
   public List<EcCriterion> getCriteria() {
     return criteria;
   }
-  
+
   public Set<Long> getSelectedBrands() {
-    Set<Long> selectedBrands = Sets.newHashSet();
+    Set<Long> selectedBrands = new HashSet<>();
 
     for (EcBrand brand : brands) {
       if (brand.isSelected()) {
         selectedBrands.add(brand.getId());
       }
     }
-    
+
     return selectedBrands;
   }
-  
+
   public Multimap<Long, String> getSelectedCriteria() {
     Multimap<Long, String> selectedCriteria = ArrayListMultimap.create();
 
@@ -97,7 +97,7 @@ public class EcGroupFilters implements BeeSerializable {
         }
       }
     }
-    
+
     return selectedCriteria;
   }
 
@@ -108,7 +108,7 @@ public class EcGroupFilters implements BeeSerializable {
     }
     return size;
   }
-  
+
   public boolean isEmpty() {
     return brands.isEmpty() && criteria.isEmpty();
   }

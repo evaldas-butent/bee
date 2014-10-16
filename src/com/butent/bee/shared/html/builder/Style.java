@@ -6,6 +6,7 @@ import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.css.HasCssName;
 import com.butent.bee.shared.utils.BeeUtils;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
@@ -19,17 +20,17 @@ public class Style {
     if (BeeUtils.isEmpty(values)) {
       return null;
     }
-    
-    List<String> names = Lists.newArrayList();
+
+    List<String> names = new ArrayList<>();
     for (HasCssName value : values) {
       if (value != null && !names.contains(value.getCssName())) {
         names.add(value.getCssName());
       }
     }
-    
+
     return names.isEmpty() ? null : BeeUtils.join(separator, names);
   }
-  
+
   private final String name;
   private String value;
 

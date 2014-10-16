@@ -1,10 +1,7 @@
 package com.butent.bee.client.data;
 
-import com.google.common.base.Objects;
 import com.google.common.collect.HashMultimap;
-import com.google.common.collect.Lists;
 import com.google.common.collect.Multimap;
-import com.google.common.collect.Sets;
 
 import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.shared.Assert;
@@ -23,9 +20,12 @@ import com.butent.bee.shared.time.JustDate;
 import com.butent.bee.shared.utils.BeeUtils;
 
 import java.math.BigDecimal;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.EnumSet;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Objects;
 import java.util.Set;
 
 public final class Data {
@@ -33,12 +33,12 @@ public final class Data {
   private static final DataInfoProvider DATA_INFO_PROVIDER = new DataInfoProvider();
 
   private static final ColumnMapper COLUMN_MAPPER = new ColumnMapper(DATA_INFO_PROVIDER);
-  
-  private static final Set<String> visibleViews = Sets.newHashSet();
-  private static final Set<String> hiddenViews = Sets.newHashSet();
 
-  private static final Set<String> editableViews = Sets.newHashSet();
-  private static final Set<String> readOnlyViews = Sets.newHashSet();
+  private static final Set<String> visibleViews = new HashSet<>();
+  private static final Set<String> hiddenViews = new HashSet<>();
+
+  private static final Set<String> editableViews = new HashSet<>();
+  private static final Set<String> readOnlyViews = new HashSet<>();
 
   private static final Multimap<String, String> readOnlyColumns = HashMultimap.create();
 
@@ -61,12 +61,17 @@ public final class Data {
     COLUMN_MAPPER.clearCell(viewName, row, colName);
   }
 
+  public static boolean containsColumn(String viewName, String colName) {
+    DataInfo dataInfo = getDataInfo(viewName);
+    return (dataInfo == null) ? false : dataInfo.containsColumn(colName);
+  }
+
   public static BeeRowSet createRowSet(String viewName) {
     return new BeeRowSet(viewName, getColumns(viewName));
   }
 
   public static boolean equals(String viewName, IsRow row, String colName, Long value) {
-    return Objects.equal(getLong(viewName, row, colName), value);
+    return Objects.equals(getLong(viewName, row, colName), value);
   }
 
   public static Boolean getBoolean(String viewName, IsRow row, String colName) {
@@ -86,7 +91,7 @@ public final class Data {
   }
 
   public static List<String> getColumnLabels(String viewName, List<String> colNames) {
-    List<String> result = Lists.newArrayList();
+    List<String> result = new ArrayList<>();
 
     for (BeeColumn column : getColumns(viewName, colNames)) {
       result.add(Localized.getLabel(column));
@@ -103,12 +108,16 @@ public final class Data {
     return getDataInfo(viewName).getColumnPrecision(colName);
   }
 
+  public static String getColumnRelation(String viewName, String colName) {
+    return getDataInfo(viewName).getRelation(colName);
+  }
+
   public static List<BeeColumn> getColumns(String viewName) {
     return getDataInfo(viewName).getColumns();
   }
 
   public static List<BeeColumn> getColumns(String viewName, List<String> colNames) {
-    List<BeeColumn> result = Lists.newArrayList();
+    List<BeeColumn> result = new ArrayList<>();
     DataInfo dataInfo = getDataInfo(viewName);
 
     for (String colName : colNames) {
@@ -120,6 +129,10 @@ public final class Data {
       }
     }
     return result;
+  }
+
+  public static Integer getColumnScale(String viewName, String colName) {
+    return getDataInfo(viewName).getColumnScale(colName);
   }
 
   public static ValueType getColumnType(String viewName, String colName) {
@@ -184,7 +197,7 @@ public final class Data {
     return column.isReadOnly() || readOnlyColumns.containsEntry(viewName, column.getId())
         || !BeeKeeper.getUser().canEditColumn(viewName, column.getId());
   }
-  
+
   public static boolean isNull(String viewName, IsRow row, String colName) {
     return COLUMN_MAPPER.isNull(viewName, row, colName);
   }
@@ -224,6 +237,16 @@ public final class Data {
     onTableChange(getDataInfo(viewName).getTableName(), effects);
   }
 
+  public static Double round(String viewName, String colName, Double value) {
+    if (BeeUtils.nonZero(value)) {
+      Integer scale = getColumnScale(viewName, colName);
+      if (BeeUtils.isNonNegative(scale)) {
+        return BeeUtils.round(value, scale);
+      }
+    }
+    return value;
+  }
+
   public static boolean sameTable(String v1, String v2) {
     String t1 = getViewTable(v1);
     if (BeeUtils.isEmpty(t1)) {
@@ -236,10 +259,10 @@ public final class Data {
   public static void setColumnReadOnly(String viewName, String colName) {
     Assert.notEmpty(viewName);
     Assert.notEmpty(colName);
-    
+
     readOnlyColumns.put(viewName, colName);
   }
-  
+
   public static void setEditableViews(Collection<String> views) {
     BeeUtils.overwrite(editableViews, views);
   }

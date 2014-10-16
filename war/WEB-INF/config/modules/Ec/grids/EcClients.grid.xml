@@ -21,9 +21,7 @@
     <DataColumn name="Phone" />
     <DataColumn name="Mobile" />
     <DataColumn name="Fax" caption="=fax" visible="false" />
-    <RelColumn name="EmailId" renderColumns="Label Email">
-      <renderer type="mail" />
-    </RelColumn>
+    <RelColumn name="EmailId" />
 
     <DataColumn name="Address" />
     <DataColumn name="PostIndex" visible="false" />
@@ -36,6 +34,20 @@
       <renderer type="flag" />
     </CalcColumn>
 
+    <DataColumn name="DiscountPercent" />
+    <RelColumn name="DiscountParent">
+      <renderToken source="ParentFirstName" />
+      <renderToken source="ParentLastName" />
+      <renderToken source="ParentCompanyName" prefix=", " />
+    </RelColumn>
+
+    <DataColumn name="DisplayedPrice" />
+
+    <RelColumn name="BasePriceList0" />
+    <RelColumn name="ClientPriceList0" />
+    <RelColumn name="BasePriceList1" visible="false" />
+    <RelColumn name="ClientPriceList1" visible="false" />
+
     <DataColumn name="CreditLimitWarning" visible="false" />
     <DataColumn name="Registered" visible="false" />
     <DataColumn name="PersonCode" visible="false" />
@@ -44,6 +56,8 @@
     <DataColumn name="ToggleListPrice" visible="false" />
     <DataColumn name="TogglePrice" visible="false" />
     <DataColumn name="ToggleStockLimit" visible="false" />
+
+    <DataColumn name="CarTypeHistorySize" visible="false" />
 
     <DataColumn name="Notes" visible="false" />
   </g:columns>

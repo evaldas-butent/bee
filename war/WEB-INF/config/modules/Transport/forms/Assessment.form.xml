@@ -28,7 +28,8 @@
         <InputDateTime source="Date" style="&input;" />
         <Label for="CustomerPerson" style="&labelRight; width:120px;" />
         <DataSelector source="CustomerPerson" style="&input; width:200px;" 
-          choiceColumns="FirstName LastName CompanyName" options="Customer" />
+          choiceColumns="FirstName LastName CompanyName" renderColumns="PersonFirstName PersonLastName"
+          options="Customer" />
       </FlowPanel>
     
       <FlowPanel style="&section;">
@@ -100,16 +101,16 @@
           <Label text="=income" style="&inline;" />
           <FlowPanel name="Income" style="&inline;" />
         </FlowPanel>
-        <ChildGrid name="CargoIncomes" relColumn="Cargo" source="Cargo" />
+        <ChildGrid name="CargoIncomes" relColumn="Cargo" source="Cargo" summarize="false" />
       </page>
       <page data="CargoExpenses">
         <FlowPanel>
-          <CheckBox name="ExpensesRegistered" source="ExpensesRegistered"
+          <CheckBox name="ExpensesRegistered" source="ExpensesRegistered" html="-"
             title="=trExpensesRegistered" style="&inline; margin:0 5px 0 0; position:relative; top:4px;" />
           <Label text="=trExpenses" style="&inline;" />
           <FlowPanel name="Expense" style="&inline;" />
         </FlowPanel>
-        <ChildGrid name="CargoExpenses" relColumn="Cargo" source="Cargo" />
+        <ChildGrid name="CargoExpenses" relColumn="Cargo" source="Cargo" summarize="false" />
       </page>
       <page data="ChildAssessments">
         <text>=assessments</text>

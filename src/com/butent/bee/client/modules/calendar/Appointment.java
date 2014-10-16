@@ -1,8 +1,5 @@
 package com.butent.bee.client.modules.calendar;
 
-import com.google.common.collect.Lists;
-import com.google.common.collect.Maps;
-
 import static com.butent.bee.shared.modules.calendar.CalendarConstants.*;
 import static com.butent.bee.shared.modules.calendar.CalendarHelper.*;
 import static com.butent.bee.shared.modules.classifiers.ClassifierConstants.*;
@@ -14,12 +11,16 @@ import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.UserData;
 import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.modules.administration.AdministrationConstants;
+import com.butent.bee.shared.modules.calendar.CalendarConstants.CalendarVisibility;
 import com.butent.bee.shared.modules.calendar.CalendarConstants.ItemType;
 import com.butent.bee.shared.modules.calendar.CalendarItem;
 import com.butent.bee.shared.time.DateTime;
 import com.butent.bee.shared.time.TimeUtils;
 import com.butent.bee.shared.utils.BeeUtils;
+import com.butent.bee.shared.utils.EnumUtils;
 
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -50,6 +51,8 @@ public class Appointment extends CalendarItem {
       COL_VEHICLE_NUMBER);
   private static final int VEHICLE_PARENT_MODEL_INDEX = Data.getColumnIndex(VIEW_APPOINTMENTS,
       COL_VEHICLE_PARENT_MODEL);
+  private static final int VISIBILITY_INDEX = Data.getColumnIndex(VIEW_APPOINTMENTS,
+      COL_VISIBILITY);
 
   private static final String SIMPLE_HEADER_TEMPLATE;
   private static final String SIMPLE_BODY_TEMPLATE;
@@ -108,10 +111,10 @@ public class Appointment extends CalendarItem {
 
   private final BeeRow row;
 
-  private final List<Long> attendees = Lists.newArrayList();
-  private final List<Long> owners = Lists.newArrayList();
-  private final List<Long> properties = Lists.newArrayList();
-  private final List<Long> reminders = Lists.newArrayList();
+  private final List<Long> attendees = new ArrayList<>();
+  private final List<Long> owners = new ArrayList<>();
+  private final List<Long> properties = new ArrayList<>();
+  private final List<Long> reminders = new ArrayList<>();
 
   private final Long separatedAttendee;
 
@@ -261,7 +264,7 @@ public class Appointment extends CalendarItem {
   public Map<String, String> getSubstitutes(long calendarId, Map<Long, UserData> users,
       boolean addLabels) {
 
-    Map<String, String> result = Maps.newHashMap();
+    Map<String, String> result = new HashMap<>();
 
     List<BeeColumn> columns = CalendarKeeper.getAppointmentViewColumns();
 
@@ -273,10 +276,10 @@ public class Appointment extends CalendarItem {
       result.put(wrap(key), build(Localized.getLabel(column), value, addLabels));
     }
 
-    List<String> attNames = Lists.newArrayList();
-    List<String> ownerNames = Lists.newArrayList();
-    List<String> propNames = Lists.newArrayList();
-    List<String> remindNames = Lists.newArrayList();
+    List<String> attNames = new ArrayList<>();
+    List<String> ownerNames = new ArrayList<>();
+    List<String> propNames = new ArrayList<>();
+    List<String> remindNames = new ArrayList<>();
 
     if (!getAttendees().isEmpty()) {
       for (Long id : getAttendees()) {
@@ -345,13 +348,37 @@ public class Appointment extends CalendarItem {
   }
 
   @Override
+  public boolean isEditable(Long userId) {
+    return isOwner(userId) && row.isEditable() && Data.isViewEditable(VIEW_APPOINTMENTS);
+  }
+
+  @Override
   public boolean isMovable(Long userId) {
-    return isWhole();
+    return isWhole() && isEditable(userId);
+  }
+
+  @Override
+  public boolean isRemovable(Long userId) {
+    return isEditable(userId) && row.isRemovable();
   }
 
   @Override
   public boolean isResizable(Long userId) {
-    return isWhole();
+    return isWhole() && isEditable(userId);
+  }
+
+  @Override
+  public boolean isVisible(Long userId) {
+    if (userId == null) {
+      return false;
+
+    } else if (isOwner(userId)) {
+      return true;
+
+    } else {
+      CalendarVisibility visibility = getVisibility();
+      return visibility == null || visibility == CalendarVisibility.PUBLIC;
+    }
   }
 
   public void setEnd(DateTime end) {
@@ -378,5 +405,13 @@ public class Appointment extends CalendarItem {
   @Override
   protected DateTime getStart() {
     return row.getDateTime(START_DATE_TIME_INDEX);
+  }
+
+  private CalendarVisibility getVisibility() {
+    return EnumUtils.getEnumByIndex(CalendarVisibility.class, row.getInteger(VISIBILITY_INDEX));
+  }
+
+  private boolean isOwner(Long userId) {
+    return userId != null && (owners.contains(userId) || userId.equals(getCreator()));
   }
 }

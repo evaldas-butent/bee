@@ -1,7 +1,5 @@
 package com.butent.bee.server.news;
 
-import com.google.common.collect.Lists;
-
 import com.butent.bee.server.sql.HasConditions;
 import com.butent.bee.server.sql.IsCondition;
 import com.butent.bee.server.sql.SqlSelect;
@@ -20,6 +18,7 @@ import com.butent.bee.shared.news.NewsConstants;
 import com.butent.bee.shared.time.DateTime;
 import com.butent.bee.shared.utils.BeeUtils;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
@@ -36,27 +35,27 @@ public final class NewsHelper {
       new ConcurrentHashMap<>();
   private static final Map<Feed, HeadlineProducer> registeredHeadlineProducers =
       new ConcurrentHashMap<>();
-      
+
   public static List<IsCondition> buildConditions(IsCondition... conditions) {
     Assert.notNull(conditions);
-    
-    List<IsCondition> result = Lists.newArrayList();
+
+    List<IsCondition> result = new ArrayList<>();
     for (IsCondition condition : conditions) {
       if (condition != null) {
         result.add(condition);
       }
     }
-    
+
     return result;
   }
 
   public static List<Pair<String, IsCondition>> buildJoin(String source, IsCondition condition) {
     Assert.notEmpty(source);
     Assert.notNull(condition);
-    
-    List<Pair<String, IsCondition>> result = Lists.newArrayList();
+
+    List<Pair<String, IsCondition>> result = new ArrayList<>();
     result.add(Pair.of(source, condition));
-    
+
     return result;
   }
 
@@ -66,14 +65,14 @@ public final class NewsHelper {
     Assert.notNull(c1);
     Assert.notEmpty(s2);
     Assert.notNull(c2);
-    
-    List<Pair<String, IsCondition>> result = Lists.newArrayList();
+
+    List<Pair<String, IsCondition>> result = new ArrayList<>();
     result.add(Pair.of(s1, c1));
     result.add(Pair.of(s2, c2));
-    
+
     return result;
   }
-  
+
   public static SqlSelect getAccessQuery(String idTable, String idColumn,
       List<Pair<String, IsCondition>> joins, Collection<IsCondition> conditions, long userId) {
     return getAccessQuery(idTable, idColumn, idTable, idTable, joins, conditions, userId);
@@ -135,7 +134,7 @@ public final class NewsHelper {
     return getUpdatesQuery(idTable, idColumn, idTable, idTable, joins, conditions,
         userId, startDate);
   }
-  
+
   public static SqlSelect getUpdatesQuery(String idTable, String idColumn, String usageTable,
       List<Pair<String, IsCondition>> joins, Collection<IsCondition> conditions,
       long userId, DateTime startDate) {

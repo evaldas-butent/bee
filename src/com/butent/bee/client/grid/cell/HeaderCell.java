@@ -30,8 +30,8 @@ public class HeaderCell extends AbstractCell<String> implements HasCaption {
    */
 
   interface Template extends SafeHtmlTemplates {
-    @Template("<div id=\"{0}\" class=\"bee-HeaderCellCaption\">{1}</div>")
-    SafeHtml caption(String id, SafeHtml label);
+    @Template("<div id=\"{0}\" class=\"{1}\">{2}</div>")
+    SafeHtml caption(String id, String classes, SafeHtml label);
 
     @Template("<div id=\"{0}\" class=\"{1}\"></div>")
     SafeHtml sortable(String id, String classes);
@@ -42,10 +42,11 @@ public class HeaderCell extends AbstractCell<String> implements HasCaption {
 
   public static final int SORT_INFO_WIDTH = 15;
 
-  private static final String STYLE_SORT_INFO = "bee-HeaderCellSortInfo";
-  private static final String STYLE_SORTABLE = "bee-HeaderCellSortable";
-  private static final String STYLE_ASCENDING = "bee-HeaderCellAscending";
-  private static final String STYLE_DESCENDING = "bee-HeaderCellDescending";
+  private static final String STYLE_CAPTION = BeeConst.CSS_CLASS_PREFIX + "HeaderCellCaption";
+  private static final String STYLE_SORT_INFO = BeeConst.CSS_CLASS_PREFIX + "HeaderCellSortInfo";
+  private static final String STYLE_SORTABLE = BeeConst.CSS_CLASS_PREFIX + "HeaderCellSortable";
+  private static final String STYLE_ASCENDING = BeeConst.CSS_CLASS_PREFIX + "HeaderCellAscending";
+  private static final String STYLE_DESCENDING = BeeConst.CSS_CLASS_PREFIX + "HeaderCellDescending";
 
   private static Template template;
 
@@ -81,21 +82,8 @@ public class HeaderCell extends AbstractCell<String> implements HasCaption {
 
       if (EventUtils.isTargetId(event.getEventTarget(), sortInfoId)) {
         context.getGrid().updateOrder(col, event);
-
-      } else if (parent != null && EventUtils.hasModifierKey(event)) {
-        int headerWidth = context.getGrid().estimateHeaderWidth(col, false);
-
-        Element sortElement = DomUtils.getChildById(parent, sortInfoId);
-        if (sortElement != null) {
-          headerWidth += Math.max(sortElement.getOffsetWidth(), SORT_INFO_WIDTH);
-        }
-
-        if (headerWidth > context.getGrid().getColumnWidth(col)) {
-          context.getGrid().resizeColumn(col, headerWidth);
-        }
-
       } else {
-        context.getGrid().autoFitColumn(col);
+        context.getGrid().autoFitColumn(col, !EventUtils.hasModifierKey(event));
       }
 
       state = EventState.CONSUMED;
@@ -111,7 +99,8 @@ public class HeaderCell extends AbstractCell<String> implements HasCaption {
 
   public void renderHeader(CellContext context, String columnId, SafeHtmlBuilder sb) {
     if (!BeeUtils.isEmpty(caption)) {
-      sb.append(template.caption(captionId, SafeHtmlUtils.fromTrustedString(caption)));
+      sb.append(template.caption(captionId, STYLE_CAPTION,
+          SafeHtmlUtils.fromTrustedString(caption)));
     }
 
     CellGrid grid = context.getGrid();

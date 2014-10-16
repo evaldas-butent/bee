@@ -5,7 +5,7 @@
   flexGrow="1" minColumnWidth="60"
   >
   <g:columns>
-    <RelColumn name="ArticleName" caching="none" newRowEnabled="false"
+    <RelColumn name="ArticleName" caching="none" instant="false" newRowEnabled="false"
         renderColumns="ArticleName" searchableColumns="ArticleName ArticleNr"
         choiceColumns="ArticleName BrandName ArticleNr" editEnabled="true" visible="true" />
     <DataColumn name="BrandName" />
@@ -45,9 +45,6 @@
         <ui:expression>Number(row.Cost) >= row.Price</ui:expression>
       </dynStyle>
     </PropColumn>
-
-    <PropColumn name="SupplPrice" type="decimal" scale="2" caption="=ecItemPrice" dynamic="true"
-      flexGrow="0" />
 
     <PropColumn name="SupplierID" type="string" caption="=code" dynamic="true" flexGrow="0" />
   </g:columns>

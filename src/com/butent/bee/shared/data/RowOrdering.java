@@ -1,7 +1,5 @@
 package com.butent.bee.shared.data;
 
-import com.google.common.collect.Lists;
-
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.Pair;
@@ -9,17 +7,18 @@ import com.butent.bee.shared.data.value.ValueType;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.NullOrdering;
 
+import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 
 public class RowOrdering<R extends IsRow> implements Comparator<R> {
-  
+
   public static final NullOrdering NULL_ORDERING = NullOrdering.DEFAULT;
 
-  private final List<Integer> indexes = Lists.newArrayList();
-  private final List<Boolean> ascending = Lists.newArrayList();
-  private final List<ValueType> types = Lists.newArrayList();
-  
+  private final List<Integer> indexes = new ArrayList<>();
+  private final List<Boolean> ascending = new ArrayList<>();
+  private final List<ValueType> types = new ArrayList<>();
+
   private final Comparator<String> collator;
 
   public RowOrdering(List<? extends IsColumn> columns, List<Pair<Integer, Boolean>> sortInfo,
@@ -56,7 +55,7 @@ public class RowOrdering<R extends IsRow> implements Comparator<R> {
       ascending.add(BeeUtils.unbox(sortInfo.get(i).getB()));
       types.add(type);
     }
-    
+
     this.collator = collator;
   }
 
@@ -107,7 +106,7 @@ public class RowOrdering<R extends IsRow> implements Comparator<R> {
             case DECIMAL:
               z = BeeUtils.compare(row1.getDecimal(index), row2.getDecimal(index), NULL_ORDERING);
               break;
- 
+
             default:
               if (collator == null) {
                 z = BeeUtils.compare(row1.getString(index), row2.getString(index), NULL_ORDERING);

@@ -18,6 +18,14 @@ public class DecimalValue extends Value {
     return NULL_VALUE;
   }
 
+  public static DecimalValue of(Double value) {
+    if (value == null) {
+      return NULL_VALUE;
+    } else {
+      return new DecimalValue(BigDecimal.valueOf(value));
+    }
+  }
+
   private final BigDecimal value;
 
   public DecimalValue(BigDecimal value) {
@@ -117,9 +125,9 @@ public class DecimalValue extends Value {
 
   @Override
   public boolean isEmpty() {
-    return isNull() || BigDecimal.ZERO.equals(value); 
+    return isNull() || BigDecimal.ZERO.equals(value);
   }
-  
+
   @Override
   public boolean isNull() {
     return this == NULL_VALUE || getDecimal() == null;

@@ -3,8 +3,6 @@ package com.butent.bee.server.modules.ec;
 import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ListMultimap;
-import com.google.common.collect.Lists;
-import com.google.common.collect.Maps;
 import com.google.common.collect.Range;
 
 import com.butent.bee.shared.BeeConst;
@@ -15,7 +13,9 @@ import com.butent.bee.shared.modules.ec.EcConstants;
 import com.butent.bee.shared.modules.ec.EcItem;
 import com.butent.bee.shared.utils.BeeUtils;
 
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -56,7 +56,7 @@ public class EcClientDiscounts {
   }
 
   private static List<Discount> filterDiscounts(List<Discount> input) {
-    List<Discount> result = Lists.newArrayList();
+    List<Discount> result = new ArrayList<>();
 
     long time = System.currentTimeMillis();
     for (Discount discount : input) {
@@ -71,12 +71,12 @@ public class EcClientDiscounts {
   private static List<Discount> getCategoryDiscounts(ListMultimap<Long, Discount> input,
       Collection<Long> categories, Map<Long, Long> categoryParents) {
 
-    List<Discount> result = Lists.newArrayList();
+    List<Discount> result = new ArrayList<>();
     if (input == null || input.isEmpty() || BeeUtils.isEmpty(categories)) {
       return result;
     }
 
-    Map<Long, List<Discount>> discountsByCategory = Maps.newHashMap();
+    Map<Long, List<Discount>> discountsByCategory = new HashMap<>();
 
     for (Long category : categories) {
       if (discountsByCategory.containsKey(category)) {
@@ -129,7 +129,7 @@ public class EcClientDiscounts {
     return result;
   }
 
-  private static double getPrice(double listPrice, List<Discount> discounts) {
+  private static double getClientPrice(double base, List<Discount> discounts) {
     Double bestPrice = null;
     Integer minDepth = null;
 
@@ -143,8 +143,8 @@ public class EcClientDiscounts {
         Double price;
         if (discount.getPrice() != null) {
           price = discount.getPrice();
-        } else if (discount.getPercent() != null && listPrice > BeeConst.DOUBLE_ZERO) {
-          price = BeeUtils.minusPercent(listPrice, discount.getPercent());
+        } else if (discount.getPercent() != null && base > BeeConst.DOUBLE_ZERO) {
+          price = BeeUtils.minusPercent(base, discount.getPercent());
         } else {
           price = null;
         }
@@ -159,7 +159,7 @@ public class EcClientDiscounts {
       }
     }
 
-    return (bestPrice == null) ? listPrice : bestPrice;
+    return (bestPrice == null) ? base : bestPrice;
   }
 
   private static Range<Long> getTimeRange(Long lower, Long upper) {
@@ -186,14 +186,13 @@ public class EcClientDiscounts {
 
   private final ListMultimap<Long, Discount> itemDiscounts = ArrayListMultimap.create();
 
-  private final Map<Long, ListMultimap<Long, Discount>> brandAndCategoryDiscounts =
-      Maps.newHashMap();
+  private final Map<Long, ListMultimap<Long, Discount>> brandAndCategoryDiscounts = new HashMap<>();
 
   private final ListMultimap<Long, Discount> brandDiscounts = ArrayListMultimap.create();
 
   private final ListMultimap<Long, Discount> categoryDiscounts = ArrayListMultimap.create();
 
-  private final List<Discount> globalDiscounts = Lists.newArrayList();
+  private final List<Discount> globalDiscounts = new ArrayList<>();
 
   public EcClientDiscounts(Double defPercent, List<SimpleRowSet> discounts) {
     super();
@@ -211,7 +210,7 @@ public class EcClientDiscounts {
   }
 
   public void applyTo(EcItem ecItem, Map<Long, Long> categoryParents) {
-    List<Discount> discounts = Lists.newArrayList();
+    List<Discount> discounts = new ArrayList<>();
 
     long id = ecItem.getArticleId();
     if (itemDiscounts.containsKey(id)) {
@@ -256,13 +255,10 @@ public class EcClientDiscounts {
     }
 
     if (!discounts.isEmpty()) {
-      ecItem.setPrice(getPrice(ecItem.getRealListPrice(), discounts));
+      ecItem.setClientPrice(getClientPrice(ecItem.getRealClientPrice(), discounts));
 
     } else if (defPercent != null) {
-      ecItem.setPrice(BeeUtils.minusPercent(ecItem.getRealListPrice(), defPercent));
-
-    } else {
-      ecItem.setPrice(ecItem.getListPrice());
+      ecItem.setClientPrice(BeeUtils.minusPercent(ecItem.getRealClientPrice(), defPercent));
     }
   }
 

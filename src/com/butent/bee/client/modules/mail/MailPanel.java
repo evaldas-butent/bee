@@ -1,11 +1,7 @@
 package com.butent.bee.client.modules.mail;
 
-import com.google.common.base.Function;
-import com.google.common.collect.BiMap;
-import com.google.common.collect.HashBiMap;
+import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
-import com.google.common.collect.Maps;
-import com.google.common.collect.Sets;
 import com.google.gwt.core.client.Scheduler.ScheduledCommand;
 import com.google.gwt.dom.client.Element;
 import com.google.gwt.dom.client.EventTarget;
@@ -18,6 +14,11 @@ import com.google.gwt.event.dom.client.DragEndEvent;
 import com.google.gwt.event.dom.client.DragEndHandler;
 import com.google.gwt.event.dom.client.DragStartEvent;
 import com.google.gwt.event.dom.client.DragStartHandler;
+import com.google.gwt.event.dom.client.KeyCodes;
+import com.google.gwt.event.dom.client.KeyDownEvent;
+import com.google.gwt.event.dom.client.KeyDownHandler;
+import com.google.gwt.event.logical.shared.ValueChangeEvent;
+import com.google.gwt.event.logical.shared.ValueChangeHandler;
 import com.google.gwt.user.client.ui.Widget;
 
 import static com.butent.bee.shared.modules.mail.MailConstants.*;
@@ -40,29 +41,27 @@ import com.butent.bee.client.grid.GridPanel;
 import com.butent.bee.client.images.star.Stars;
 import com.butent.bee.client.layout.Flow;
 import com.butent.bee.client.layout.Horizontal;
-import com.butent.bee.client.modules.tasks.RequestBuilder;
 import com.butent.bee.client.presenter.GridPresenter;
 import com.butent.bee.client.presenter.Presenter;
 import com.butent.bee.client.render.AbstractCellRenderer;
 import com.butent.bee.client.screen.BodyPanel;
 import com.butent.bee.client.screen.Domain;
-import com.butent.bee.client.ui.FormFactory;
+import com.butent.bee.client.style.StyleUtils;
 import com.butent.bee.client.ui.FormFactory.WidgetDescriptionCallback;
 import com.butent.bee.client.ui.IdentifiableWidget;
-import com.butent.bee.client.utils.NewFileInfo;
 import com.butent.bee.client.view.HeaderView;
 import com.butent.bee.client.view.edit.EditStartEvent;
-import com.butent.bee.client.view.form.FormView;
 import com.butent.bee.client.view.form.interceptor.AbstractFormInterceptor;
 import com.butent.bee.client.view.form.interceptor.FormInterceptor;
 import com.butent.bee.client.view.grid.GridView;
 import com.butent.bee.client.view.grid.GridView.SelectedRows;
 import com.butent.bee.client.view.grid.interceptor.AbstractGridInterceptor;
+import com.butent.bee.client.view.grid.interceptor.GridInterceptor;
 import com.butent.bee.client.websocket.Endpoint;
-import com.butent.bee.client.widget.Button;
 import com.butent.bee.client.widget.DateTimeLabel;
-import com.butent.bee.client.widget.Image;
+import com.butent.bee.client.widget.FaLabel;
 import com.butent.bee.client.widget.InlineLabel;
+import com.butent.bee.client.widget.InputText;
 import com.butent.bee.client.widget.Label;
 import com.butent.bee.client.widget.ListBox;
 import com.butent.bee.client.widget.TextLabel;
@@ -72,27 +71,26 @@ import com.butent.bee.shared.Consumer;
 import com.butent.bee.shared.Service;
 import com.butent.bee.shared.State;
 import com.butent.bee.shared.communication.ResponseObject;
+import com.butent.bee.shared.css.CssProperties;
+import com.butent.bee.shared.css.values.Cursor;
 import com.butent.bee.shared.data.BeeRow;
 import com.butent.bee.shared.data.BeeRowSet;
 import com.butent.bee.shared.data.CellSource;
 import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.IsColumn;
 import com.butent.bee.shared.data.IsRow;
-import com.butent.bee.shared.data.SimpleRowSet;
-import com.butent.bee.shared.data.SimpleRowSet.SimpleRow;
 import com.butent.bee.shared.data.filter.Filter;
 import com.butent.bee.shared.data.view.DataInfo;
 import com.butent.bee.shared.data.view.RowInfo;
+import com.butent.bee.shared.font.FontAwesome;
 import com.butent.bee.shared.i18n.LocalizableMessages;
 import com.butent.bee.shared.i18n.Localized;
-import com.butent.bee.shared.logging.LogUtils;
 import com.butent.bee.shared.modules.administration.AdministrationConstants;
 import com.butent.bee.shared.modules.classifiers.ClassifierConstants;
 import com.butent.bee.shared.modules.mail.AccountInfo;
 import com.butent.bee.shared.modules.mail.MailConstants.MessageFlag;
 import com.butent.bee.shared.modules.mail.MailConstants.SystemFolder;
 import com.butent.bee.shared.modules.mail.MailFolder;
-import com.butent.bee.shared.modules.tasks.TaskConstants;
 import com.butent.bee.shared.time.DateTime;
 import com.butent.bee.shared.time.TimeUtils;
 import com.butent.bee.shared.ui.Action;
@@ -100,12 +98,11 @@ import com.butent.bee.shared.ui.ColumnDescription;
 import com.butent.bee.shared.ui.GridDescription;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.Codec;
-import com.butent.bee.shared.websocket.messages.ProgressMessage;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashSet;
 import java.util.List;
-import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 
@@ -124,7 +121,7 @@ public class MailPanel extends AbstractFormInterceptor {
       showMessage(currentMessage != null);
 
       if (currentMessage != null) {
-        message.requery(currentMessage.getId(),
+        message.requery(COL_PLACE, currentMessage.getId(),
             Objects.equals(currentMessage.getLong(sender), getCurrentAccount().getAddressId()));
       }
     }
@@ -141,9 +138,6 @@ public class MailPanel extends AbstractFormInterceptor {
   private class EnvelopeRenderer extends AbstractCellRenderer {
     private final int senderEmail;
     private final int senderLabel;
-    private final int recipientEmail;
-    private final int recipientLabel;
-    private final int recipientCount;
     private final int dateIdx;
     private final int subjectIdx;
     private final int flagsIdx;
@@ -154,9 +148,6 @@ public class MailPanel extends AbstractFormInterceptor {
 
       senderEmail = DataUtils.getColumnIndex("SenderEmail", dataColumns);
       senderLabel = DataUtils.getColumnIndex("SenderLabel", dataColumns);
-      recipientEmail = DataUtils.getColumnIndex("RecipientEmail", dataColumns);
-      recipientLabel = DataUtils.getColumnIndex("RecipientLabel", dataColumns);
-      recipientCount = DataUtils.getColumnIndex("RecipientCount", dataColumns);
       dateIdx = DataUtils.getColumnIndex(COL_DATE, dataColumns);
       subjectIdx = DataUtils.getColumnIndex(COL_SUBJECT, dataColumns);
       flagsIdx = DataUtils.getColumnIndex(COL_FLAGS, dataColumns);
@@ -166,21 +157,22 @@ public class MailPanel extends AbstractFormInterceptor {
     @Override
     public String render(final IsRow row) {
       Flow fp = new Flow();
-      fp.setStyleName("bee-mail-Header");
+      fp.setStyleName(BeeConst.CSS_CLASS_PREFIX + "mail-Header");
 
       DomUtils.setDraggable(fp);
 
       if (!MessageFlag.SEEN.isSet(row.getInteger(flagsIdx))) {
-        fp.addStyleName("bee-mail-HeaderUnread");
+        fp.addStyleName(BeeConst.CSS_CLASS_PREFIX + "mail-HeaderUnread");
       }
       TextLabel sender = new TextLabel(false);
-      sender.setStyleName("bee-mail-HeaderAddress");
+      sender.setStyleName(BeeConst.CSS_CLASS_PREFIX + "mail-HeaderAddress");
       String address;
 
-      if (getCurrentAccount().isDraftsFolder(getCurrentFolderId())
-          || getCurrentAccount().isSentFolder(getCurrentFolderId())) {
-        address = BeeUtils.notEmpty(row.getString(recipientLabel), row.getString(recipientEmail));
-        int cnt = BeeUtils.unbox(row.getInteger(recipientCount)) - 1;
+      if (isSenderFolder(getCurrentFolderId())) {
+        address = BeeUtils.notEmpty(row.getProperty(COL_EMAIL_LABEL),
+            row.getProperty(ClassifierConstants.COL_EMAIL_ADDRESS));
+
+        int cnt = BeeUtils.toInt(row.getProperty(COL_ADDRESS)) - 1;
 
         if (cnt > 0) {
           address += " (" + cnt + "+)";
@@ -194,13 +186,13 @@ public class MailPanel extends AbstractFormInterceptor {
       Integer att = row.getInteger(attachmentCount);
 
       if (BeeUtils.isPositive(att)) {
-        Widget image = new Image(Global.getImages().attachment());
-        image.setStyleName("bee-mail-AttachmentImage");
+        Widget image = new FaLabel(FontAwesome.PAPERCLIP);
+        image.setStyleName(BeeConst.CSS_CLASS_PREFIX + "mail-AttachmentImage");
         fp.add(image);
 
         if (att > 1) {
           TextLabel attachments = new TextLabel(false);
-          attachments.setStyleName("bee-mail-AttachmentCount");
+          attachments.setStyleName(BeeConst.CSS_CLASS_PREFIX + "mail-AttachmentCount");
           attachments.setHtml(BeeUtils.toString(att));
           fp.add(attachments);
         }
@@ -208,12 +200,12 @@ public class MailPanel extends AbstractFormInterceptor {
       DateTime date = row.getDateTime(dateIdx);
       DateTimeLabel dt = TimeUtils.isToday(date)
           ? new DateTimeLabel("TIME_SHORT", false) : new DateTimeLabel("DATE_SHORT", false);
-      dt.setStyleName("bee-mail-HeaderDate");
+      dt.setStyleName(BeeConst.CSS_CLASS_PREFIX + "mail-HeaderDate");
       dt.setValue(date);
       fp.add(dt);
 
       TextLabel subject = new TextLabel(false);
-      subject.setStyleName("bee-mail-HeaderSubject");
+      subject.setStyleName(BeeConst.CSS_CLASS_PREFIX + "mail-HeaderSubject");
       subject.setHtml(row.getString(subjectIdx));
       fp.add(subject);
 
@@ -247,7 +239,7 @@ public class MailPanel extends AbstractFormInterceptor {
 
           Collection<RowInfo> rows =
               getGridPresenter().getGridView().getSelectedRows(SelectedRows.ALL);
-          Set<Long> ids = Sets.newHashSet();
+          Set<Long> ids = new HashSet<>();
 
           if (!BeeUtils.isEmpty(rows)) {
             for (RowInfo info : rows) {
@@ -292,12 +284,17 @@ public class MailPanel extends AbstractFormInterceptor {
     public void afterCreatePresenter(GridPresenter presenter) {
       GridView grid = presenter.getGridView();
       grid.getGrid().addActiveRowChangeHandler(new ContentHandler(grid.getDataIndex(COL_SENDER)));
-      initAccount(currentAccount);
+      activateAccount(getCurrentAccount());
     }
 
     @Override
     public BeeRowSet getInitialRowSet(GridDescription gridDescription) {
       return Data.createRowSet(gridDescription.getViewName());
+    }
+
+    @Override
+    public GridInterceptor getInstance() {
+      return new MessagesGrid();
     }
 
     @Override
@@ -310,7 +307,7 @@ public class MailPanel extends AbstractFormInterceptor {
       } else if (BeeUtils.same(columnName, "Envelope")) {
         return new EnvelopeRenderer(dataColumns);
       }
-      return null;
+      return super.getRenderer(columnName, dataColumns, columnDescription, cellSource);
     }
 
     @Override
@@ -322,14 +319,16 @@ public class MailPanel extends AbstractFormInterceptor {
           return;
         }
         final int flagIdx = Data.getColumnIndex(getGridPresenter().getViewName(), COL_FLAGS);
-        event.getSourceElement()
-            .setInnerHTML(StarRenderer.render(!MessageFlag.FLAGGED.isSet(row.getInteger(flagIdx))));
+        event.getSourceElement().setInnerHTML(StarRenderer
+            .render(!MessageFlag.FLAGGED.isSet(row.getInteger(flagIdx)),
+                row.getProperty(AdministrationConstants.COL_RELATION)));
 
         flagMessage(row, flagIdx, MessageFlag.FLAGGED, new ScheduledCommand() {
           @Override
           public void execute() {
             event.getSourceElement().setInnerHTML(StarRenderer
-                .render(MessageFlag.FLAGGED.isSet(row.getInteger(flagIdx))));
+                .render(MessageFlag.FLAGGED.isSet(row.getInteger(flagIdx)),
+                    row.getProperty(AdministrationConstants.COL_RELATION)));
           }
         });
       }
@@ -338,8 +337,20 @@ public class MailPanel extends AbstractFormInterceptor {
 
   private static class StarRenderer extends AbstractCellRenderer {
 
-    public static String render(boolean flagged) {
-      return flagged ? Stars.getHtml(0) : Stars.getDefaultHeader();
+    private static final FaLabel CHAIN = new FaLabel(FontAwesome.CHAIN);
+
+    static {
+      StyleUtils.setProperty(CHAIN, CssProperties.CURSOR, Cursor.DEFAULT);
+    }
+
+    public static String render(boolean flagged, String chained) {
+      String star = flagged ? Stars.getHtml(0) : Stars.getDefaultHeader();
+
+      if (!BeeUtils.isEmpty(chained)) {
+        CHAIN.setTitle(chained);
+        star += CHAIN.getElement().getString();
+      }
+      return star;
     }
 
     private final int flags;
@@ -351,65 +362,62 @@ public class MailPanel extends AbstractFormInterceptor {
 
     @Override
     public String render(IsRow row) {
-      return render(MessageFlag.FLAGGED.isSet(row.getInteger(flags)));
+      return render(MessageFlag.FLAGGED.isSet(row.getInteger(flags)),
+          row.getProperty(AdministrationConstants.COL_RELATION));
     }
   }
 
   private static final String MESSAGES_FILTER = "MessagesFilter";
 
-  private Integer currentAccount;
+  private AccountInfo currentAccount;
   private Long currentFolder;
 
   private IsRow currentMessage;
 
   private final MessagesGrid messages = new MessagesGrid();
-  private final MailMessage message = new MailMessage();
+  private final MailMessage message = new MailMessage(this);
 
-  private final List<AccountInfo> accounts = new ArrayList<>();
-  private final BiMap<String, Long> progresses = HashBiMap.create();
+  private final List<AccountInfo> accounts;
 
   private Widget messageWidget;
   private Widget emptySelectionWidget;
+  private InputText searchWidget;
+  private String searchValue;
 
-  public MailPanel() {
-    ParameterList params = MailKeeper.createArgs(SVC_GET_ACCOUNTS);
-    params.addDataItem(COL_USER, BeeKeeper.getUser().getUserId());
-
-    BeeKeeper.getRpc().makePostRequest(params, new ResponseCallback() {
-      @Override
-      public void onResponse(ResponseObject response) {
-        Assert.isTrue(response.hasResponse(SimpleRowSet.class));
-        SimpleRowSet rs = SimpleRowSet.restore(response.getResponseAsString());
-
-        for (int i = 0; i < rs.getNumberOfRows(); i++) {
-          SimpleRow row = rs.getRow(i);
-
-          if (currentAccount == null || BeeUtils.unbox(row.getBoolean(COL_ACCOUNT_DEFAULT))) {
-            currentAccount = i;
-          }
-          accounts.add(new AccountInfo(row));
-        }
-        if (!BeeUtils.isEmpty(accounts)) {
-          FormFactory.openForm(FORM_MAIL, MailPanel.this);
-        } else {
-          BeeKeeper.getScreen().notifyWarning("No accounts found");
-          MailKeeper.removeMailPanel(MailPanel.this);
-        }
-      }
-    });
+  MailPanel(List<AccountInfo> availableAccounts, AccountInfo defaultAccount) {
+    this.accounts = availableAccounts;
+    this.currentAccount = defaultAccount;
   }
 
   @Override
   public void afterCreateWidget(String name, IdentifiableWidget widget,
       WidgetDescriptionCallback callback) {
-    if (widget instanceof GridPanel && BeeUtils.same(name, "Messages")) {
+    if (widget instanceof GridPanel && BeeUtils.same(name, TBL_PLACES)) {
       ((GridPanel) widget).setGridInterceptor(messages);
 
-    } else if (BeeUtils.same(name, "Message")) {
+    } else if (BeeUtils.same(name, COL_MESSAGE)) {
       messageWidget = widget.asWidget();
 
     } else if (BeeUtils.same(name, "EmptySelection")) {
       emptySelectionWidget = widget.asWidget();
+
+    } else if (widget instanceof InputText && BeeUtils.same(name, "Search")) {
+      searchWidget = (InputText) widget;
+      searchWidget.addValueChangeHandler(new ValueChangeHandler<String>() {
+        @Override
+        public void onValueChange(ValueChangeEvent<String> search) {
+          doSearch();
+        }
+      });
+      searchWidget.addKeyDownHandler(new KeyDownHandler() {
+        @Override
+        public void onKeyDown(KeyDownEvent ev) {
+          if (ev.getNativeKeyCode() == KeyCodes.KEY_ENTER) {
+            doSearch();
+          }
+        }
+      });
+      DomUtils.setSearch(searchWidget);
     }
     message.afterCreateWidget(name, widget, callback);
   }
@@ -450,14 +458,34 @@ public class MailPanel extends AbstractFormInterceptor {
     initAccounts(accountsWidget);
     header.addCommandItem(accountsWidget);
 
-    header.addCommandItem(new Button(Localized.getConstants().crmRequest(), new ClickHandler() {
+    if (BeeKeeper.getUser().isDataVisible(TBL_ACCOUNTS)
+        && BeeKeeper.getUser().canCreateData(TBL_RULES)) {
+      FaLabel accountSettings = new FaLabel(FontAwesome.MAGIC);
+
+      accountSettings.setTitle(Localized.getConstants().mailAccount());
+      accountSettings.addClickHandler(new ClickHandler() {
+        @Override
+        public void onClick(ClickEvent arg0) {
+          DataInfo dataInfo = Data.getDataInfo(TBL_RULES);
+          BeeRow newRow = RowFactory.createEmptyRow(dataInfo, true);
+          Data.setValue(TBL_RULES, newRow, COL_ACCOUNT, getCurrentAccount().getAccountId());
+
+          RowFactory.createRow(dataInfo, newRow);
+        }
+      });
+      header.addCommandItem(accountSettings);
+    }
+    FaLabel refreshWidget = new FaLabel(FontAwesome.REFRESH);
+
+    refreshWidget.setTitle(Localized.getConstants().actionRefresh());
+    refreshWidget.addClickHandler(new ClickHandler() {
       @Override
-      public void onClick(ClickEvent event) {
-        createRequest(currentMessage != null
-            ? currentMessage.getLong(DataUtils.getColumnIndex(COL_MESSAGE,
-                messages.getGridPresenter().getDataColumns())) : null);
+      public void onClick(ClickEvent arg0) {
+        checkFolderRecursively(getCurrentAccount().getRootFolder());
       }
-    }));
+    });
+    header.addCommandItem(refreshWidget);
+
     message.setFormView(getFormView());
   }
 
@@ -469,15 +497,6 @@ public class MailPanel extends AbstractFormInterceptor {
     } else if (State.REMOVED.equals(state)) {
       MailKeeper.removeMailPanel(this);
     }
-    LogUtils.getRootLogger().debug("MailPanel", state);
-  }
-
-  @Override
-  public void onUnload(FormView form) {
-    for (String progressId : progresses.keySet()) {
-      Endpoint.cancelProgress(progressId);
-    }
-    super.onUnload(form);
   }
 
   void checkFolder(final Long folderId) {
@@ -511,7 +530,6 @@ public class MailPanel extends AbstractFormInterceptor {
         close.addClickHandler(new ClickHandler() {
           @Override
           public void onClick(ClickEvent event) {
-            progresses.remove(progressId);
             Endpoint.cancelProgress(progressId);
           }
         });
@@ -532,19 +550,7 @@ public class MailPanel extends AbstractFormInterceptor {
         @Override
         public void accept(String input) {
           if (!BeeUtils.isEmpty(input)) {
-            progresses.put(progressId, folderId);
             params.addDataItem(Service.VAR_PROGRESS, input);
-
-            Endpoint.registerProgressHandler(progressId,
-                new Function<ProgressMessage, Boolean>() {
-                  @Override
-                  public Boolean apply(ProgressMessage pm) {
-                    if (pm.isClosed()) {
-                      progresses.remove(progressId);
-                    }
-                    return null;
-                  }
-                });
           } else {
             Endpoint.cancelProgress(progressId);
           }
@@ -554,20 +560,55 @@ public class MailPanel extends AbstractFormInterceptor {
     }
   }
 
+  List<AccountInfo> getAccounts() {
+    return accounts;
+  }
+
   AccountInfo getCurrentAccount() {
-    Assert.isIndex(accounts, currentAccount);
-    return accounts.get(currentAccount);
+    return currentAccount;
   }
 
   Long getCurrentFolderId() {
     return currentFolder;
   }
 
-  void initFolders() {
-    initFolders(null);
+  void refreshFolder(Long folderId) {
+    if (Objects.equals(folderId, getCurrentFolderId())) {
+      checkFolder(folderId);
+    } else {
+      currentFolder = folderId;
+      MailKeeper.refreshController();
+      refreshMessages();
+    }
   }
 
-  void initFolders(final ScheduledCommand update) {
+  void refreshMessages() {
+    GridPresenter presenter = messages.getGridPresenter();
+
+    if (presenter != null) {
+      Long folderId = getCurrentFolderId();
+
+      if (!BeeUtils.isEmpty(searchWidget.getValue())) {
+        presenter.getDataProvider().setUserFilter(Filter.custom(TBL_PLACES,
+            Codec.beeSerialize(ImmutableMap.of(COL_FOLDER, folderId,
+                COL_CONTENT, searchWidget.getValue(),
+                SystemFolder.Sent.name(), isSenderFolder(folderId)))));
+      } else {
+        presenter.getDataProvider().setUserFilter(null);
+      }
+      presenter.getDataProvider().setParentFilter(MESSAGES_FILTER,
+          Filter.equals(COL_FOLDER, folderId));
+
+      presenter.getGridView().getGrid().reset();
+      presenter.refresh(false);
+    }
+  }
+
+  void requeryFolders() {
+    requeryFolders(null);
+  }
+
+  void requeryFolders(final ScheduledCommand afterRequery) {
     final AccountInfo account = getCurrentAccount();
 
     ParameterList params = MailKeeper.createArgs(SVC_GET_FOLDERS);
@@ -584,117 +625,63 @@ public class MailPanel extends AbstractFormInterceptor {
         if (account == getCurrentAccount()) {
           MailKeeper.rebuildController();
 
-          if (update != null) {
-            update.execute();
+          if (afterRequery != null) {
+            afterRequery.execute();
           }
         }
       }
     });
   }
 
-  void refresh(Long folderId) {
-    if (Objects.equals(folderId, getCurrentFolderId())
-        && !progresses.inverse().containsKey(folderId)) {
-      checkFolder(folderId);
-    } else {
-      currentFolder = folderId;
-      MailKeeper.refreshController();
-      refreshMessages();
-    }
+  private void activateAccount(AccountInfo selectedAccount) {
+    currentAccount = selectedAccount;
+
+    requeryFolders(new ScheduledCommand() {
+      @Override
+      public void execute() {
+        if (searchWidget != null) {
+          searchWidget.clearValue();
+          searchValue = null;
+        }
+        currentFolder = null;
+        refreshFolder(getCurrentAccount().getInboxId());
+      }
+    });
   }
 
-  void refreshMessages() {
-    GridPresenter presenter = messages.getGridPresenter();
-
-    if (presenter != null) {
-      presenter.getGridView().getGrid().reset();
-      presenter.getDataProvider().setParentFilter(MESSAGES_FILTER,
-          Filter.equals(COL_FOLDER, getCurrentFolderId()));
-      presenter.refresh(false);
+  private void checkFolderRecursively(MailFolder folder) {
+    if (DataUtils.isId(folder.getId())) {
+      checkFolder(folder.getId());
+    }
+    for (MailFolder subFolder : folder.getSubFolders()) {
+      checkFolderRecursively(subFolder);
     }
   }
 
   private void createMessage() {
-    if (getCurrentAccount() == null) {
-      return;
-    }
-    Long draftId = null;
-    Set<Long> to = null;
-    Set<Long> cc = null;
-    Set<Long> bcc = null;
-    String subject = null;
-    String content = null;
-    Map<Long, NewFileInfo> attachments = null;
+    NewMailMessage newMessage = NewMailMessage.create(accounts, getCurrentAccount(), null, null,
+        null, null, null, null, null);
 
-    if (getCurrentAccount().isDraftsFolder(getCurrentFolderId()) && currentMessage != null) {
-      draftId = currentMessage.getId();
-      to = message.getTo();
-      cc = message.getCc();
-      bcc = message.getBcc();
-      subject = message.getSubject();
-      content = message.getContent();
-      attachments = message.getAttachments();
-    }
-    NewMailMessage newMessage = NewMailMessage.create(getCurrentAccount().getAddressId(),
-        DataUtils.isId(draftId) ? Lists.newArrayList(getCurrentAccount()) : accounts,
-        to, cc, bcc, subject, content, attachments, draftId);
-
-    newMessage.setScheduled(new ScheduledCommand() {
+    newMessage.setScheduled(new Consumer<Boolean>() {
       @Override
-      public void execute() {
-        if (getCurrentAccount().isDraftsFolder(getCurrentFolderId())) {
-          refreshMessages();
+      public void accept(Boolean save) {
+        if (BeeUtils.isFalse(save)) {
+          checkFolder(getCurrentAccount().getSystemFolder(SystemFolder.Sent));
         }
-        checkFolder(getCurrentAccount().getSystemFolder(SystemFolder.Sent));
+        checkFolder(getCurrentAccount().getSystemFolder(SystemFolder.Drafts));
       }
     });
   }
 
-  private void createRequest(Long messageId) {
-    if (!DataUtils.isId(messageId)) {
-      return;
-    }
-    ParameterList params = MailKeeper.createArgs(SVC_GET_USABLE_CONTENT);
-    params.addDataItem(COL_MESSAGE, messageId);
+  private void doSearch() {
+    if (searchWidget != null) {
+      String value = searchWidget.getValue();
 
-    BeeKeeper.getRpc().makePostRequest(params, new ResponseCallback() {
-      @Override
-      public void onResponse(ResponseObject response) {
-        response.notify(getFormView());
-
-        if (response.hasErrors()) {
-          return;
-        }
-        Map<String, String> packet = Codec.deserializeMap(response.getResponseAsString());
-
-        DataInfo dataInfo = Data.getDataInfo(TaskConstants.TBL_REQUESTS);
-        BeeRow row = RowFactory.createEmptyRow(dataInfo, true);
-
-        row.setValue(dataInfo.getColumnIndex("Customer"),
-            BeeUtils.toLongOrNull(packet.get(ClassifierConstants.COL_COMPANY)));
-        row.setValue(dataInfo.getColumnIndex("CustomerName"),
-            packet.get(ClassifierConstants.COL_COMPANY + ClassifierConstants.COL_COMPANY_NAME));
-        row.setValue(dataInfo.getColumnIndex("CustomerPerson"),
-            BeeUtils.toLongOrNull(packet.get(ClassifierConstants.COL_PERSON)));
-        row.setValue(dataInfo.getColumnIndex("PersonFirstName"),
-            packet.get(ClassifierConstants.COL_FIRST_NAME));
-        row.setValue(dataInfo.getColumnIndex("PersonLastName"),
-            packet.get(ClassifierConstants.COL_LAST_NAME));
-        row.setValue(dataInfo.getColumnIndex(COL_CONTENT), packet.get(COL_CONTENT));
-
-        Map<Long, NewFileInfo> files = Maps.newHashMap();
-        SimpleRowSet rs = SimpleRowSet.restore(packet.get(TBL_ATTACHMENTS));
-
-        for (SimpleRow attach : rs) {
-          files.put(attach.getLong(AdministrationConstants.COL_FILE),
-              new NewFileInfo(BeeUtils.notEmpty(attach.getValue(COL_ATTACHMENT_NAME),
-                  attach.getValue(AdministrationConstants.COL_FILE_NAME)),
-                  attach.getLong(AdministrationConstants.COL_FILE_SIZE), null));
-        }
-        RowFactory.createRow(dataInfo.getNewRowForm(), null, dataInfo, row, null,
-            new RequestBuilder(files), null);
+      if (!BeeUtils.same(value, searchValue)) {
+        searchValue = value;
+        refreshMessages();
       }
-    });
+    }
   }
 
   private void flagMessage(final IsRow row, final int flagIdx, MessageFlag flag,
@@ -722,37 +709,33 @@ public class MailPanel extends AbstractFormInterceptor {
     });
   }
 
-  private void initAccount(int selectedAccount) {
-    currentAccount = selectedAccount;
-    message.setAccountInfo(getCurrentAccount().getAddressId(), accounts);
+  private void initAccounts(final ListBox accountsWidget) {
+    accountsWidget.clear();
 
-    initFolders(new ScheduledCommand() {
+    for (int i = 0; i < accounts.size(); i++) {
+      AccountInfo accountInfo = accounts.get(i);
+      accountsWidget.addItem(accountInfo.getDescription() + " <" + accountInfo.getAddress() + ">");
+
+      if (Objects.equals(accountInfo, currentAccount)) {
+        accountsWidget.setSelectedIndex(i);
+      }
+    }
+    accountsWidget.setEnabled(accountsWidget.getItemCount() > 1);
+    accountsWidget.addChangeHandler(new ChangeHandler() {
       @Override
-      public void execute() {
-        currentFolder = null;
-        refresh(getCurrentAccount().getInboxId());
+      public void onChange(ChangeEvent event) {
+        AccountInfo selectedAccount = accounts.get(accountsWidget.getSelectedIndex());
+
+        if (!Objects.equals(selectedAccount, currentAccount)) {
+          activateAccount(selectedAccount);
+        }
       }
     });
   }
 
-  private void initAccounts(final ListBox accountsWidget) {
-    accountsWidget.clear();
-
-    for (AccountInfo account : accounts) {
-      accountsWidget.addItem(account.getDescription());
-    }
-    accountsWidget.setEnabled(accountsWidget.getItemCount() > 1);
-    accountsWidget.setSelectedIndex(currentAccount);
-    accountsWidget.addChangeHandler(new ChangeHandler() {
-      @Override
-      public void onChange(ChangeEvent event) {
-        int selectedAccount = accountsWidget.getSelectedIndex();
-
-        if (selectedAccount != currentAccount) {
-          initAccount(selectedAccount);
-        }
-      }
-    });
+  private boolean isSenderFolder(Long folderId) {
+    return getCurrentAccount().isSentFolder(folderId)
+        || getCurrentAccount().isDraftsFolder(folderId);
   }
 
   private void removeMessages() {
@@ -766,62 +749,59 @@ public class MailPanel extends AbstractFormInterceptor {
     if (!BeeUtils.isEmpty(rows)) {
       options.add(Localized.getMessages().mailSelectedMessages(rows.size()));
     }
-    final AccountInfo account = getCurrentAccount();
     final Long folderId = getCurrentFolderId();
-    final boolean purge = account.isTrashFolder(folderId);
+    final boolean purge = getCurrentAccount().isTrashFolder(folderId);
 
     options.add(Localized.getConstants().cancel());
     Icon icon = purge ? Icon.ALARM : Icon.WARNING;
 
     Global.messageBox(purge ? Localized.getConstants().actionDelete() : Localized.getConstants()
-        .mailActionMoveToTrash(),
-        icon, null, options,
-        options.size() - 1, new ChoiceCallback() {
+        .mailActionMoveToTrash(), icon, null, options, options.size() - 1, new ChoiceCallback() {
+      @Override
+      public void onSuccess(int value) {
+        if (value == options.size() - 1) {
+          return;
+        }
+        List<Long> ids = null;
+
+        if (value == 0) {
+          ids = Lists.newArrayList(currentMessage.getId());
+        } else if (value == 1) {
+          ids = new ArrayList<>();
+
+          for (RowInfo info : rows) {
+            ids.add(info.getId());
+          }
+        }
+        ParameterList params = MailKeeper.createArgs(SVC_REMOVE_MESSAGES);
+        params.addDataItem(COL_ACCOUNT, getCurrentAccount().getAccountId());
+        params.addDataItem(COL_FOLDER, getCurrentFolderId());
+        params.addDataItem(COL_PLACE, Codec.beeSerialize(ids));
+        params.addDataItem("Purge", Codec.pack(purge));
+
+        BeeKeeper.getRpc().makePostRequest(params, new ResponseCallback() {
           @Override
-          public void onSuccess(int value) {
-            if (value == options.size() - 1) {
-              return;
-            }
-            List<Long> ids = null;
+          public void onResponse(ResponseObject response) {
+            response.notify(getFormView());
 
-            if (value == 0) {
-              ids = Lists.newArrayList(currentMessage.getId());
-            } else if (value == 1) {
-              ids = Lists.newArrayList();
+            if (!response.hasErrors()) {
+              String msg = response.getResponseAsString();
+              LocalizableMessages loc = Localized.getMessages();
 
-              for (RowInfo info : rows) {
-                ids.add(info.getId());
+              getFormView().notifyInfo(purge
+                  ? loc.mailDeletedMessages(msg)
+                  : loc.mailMovedMessagesToTrash(msg));
+
+              if (Objects.equals(folderId, getCurrentFolderId())) {
+                refreshMessages();
+              }
+              if (!purge) {
+                checkFolder(getCurrentAccount().getSystemFolder(SystemFolder.Trash));
               }
             }
-            ParameterList params = MailKeeper.createArgs(SVC_REMOVE_MESSAGES);
-            params.addDataItem(COL_ACCOUNT, getCurrentAccount().getAccountId());
-            params.addDataItem(COL_FOLDER, getCurrentFolderId());
-            params.addDataItem(COL_PLACE, Codec.beeSerialize(ids));
-            params.addDataItem("Purge", Codec.pack(purge));
-
-            BeeKeeper.getRpc().makePostRequest(params, new ResponseCallback() {
-              @Override
-              public void onResponse(ResponseObject response) {
-                response.notify(getFormView());
-
-                if (!response.hasErrors()) {
-                  String msg = response.getResponseAsString();
-                  LocalizableMessages loc = Localized.getMessages();
-
-                  getFormView().notifyInfo(purge
-                      ? loc.mailDeletedMessages(msg)
-                      : loc.mailMovedMessagesToTrash(msg));
-
-                  if (Objects.equals(folderId, getCurrentFolderId())) {
-                    refreshMessages();
-                  }
-                  if (!purge) {
-                    checkFolder(getCurrentAccount().getSystemFolder(SystemFolder.Trash));
-                  }
-                }
-              }
-            });
           }
         });
+      }
+    });
   }
 }

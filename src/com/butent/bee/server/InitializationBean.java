@@ -43,7 +43,10 @@ public class InitializationBean {
     moduleBean.initModules();
 
     usr.initRights();
+    usr.initUsers();
     usr.initIpFilters();
+
+    Config.setInitialized(true);
   }
 
   @PreDestroy

@@ -1,23 +1,24 @@
 package com.butent.bee.client.widget;
 
+import com.google.common.net.MediaType;
 import com.google.gwt.dom.client.Document;
 import com.google.gwt.event.dom.client.ChangeEvent;
 import com.google.gwt.event.dom.client.ChangeHandler;
 import com.google.gwt.event.dom.client.HasChangeHandlers;
 import com.google.gwt.event.shared.HandlerRegistration;
-import com.google.gwt.user.client.ui.HasEnabled;
 import com.google.gwt.user.client.ui.Widget;
 
 import com.butent.bee.client.dom.DomUtils;
+import com.butent.bee.client.ui.EnablableWidget;
 import com.butent.bee.client.ui.IdentifiableWidget;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.HasName;
 
-import elemental.html.InputElement;
 import elemental.html.FileList;
+import elemental.html.InputElement;
 import elemental.js.html.JsInputElement;
 
-public class InputFile extends Widget implements HasName, HasChangeHandlers, HasEnabled,
+public class InputFile extends Widget implements HasName, HasChangeHandlers, EnablableWidget,
     IdentifiableWidget {
 
   public InputFile() {
@@ -76,10 +77,16 @@ public class InputFile extends Widget implements HasName, HasChangeHandlers, Has
     return !getInputElement().isDisabled();
   }
 
+  public void setAccept(MediaType mediaType) {
+    if (mediaType != null) {
+      setAccept(mediaType.toString());
+    }
+  }
+
   public void setAccept(String accept) {
     getInputElement().setAccept(accept);
   }
-  
+
   @Override
   public void setEnabled(boolean enabled) {
     getInputElement().setDisabled(!enabled);
@@ -97,7 +104,7 @@ public class InputFile extends Widget implements HasName, HasChangeHandlers, Has
 
   protected void init() {
     DomUtils.createId(this, getIdPrefix());
-    setStyleName("bee-InputFile");
+    setStyleName(BeeConst.CSS_CLASS_PREFIX + "InputFile");
   }
 
   private InputElement getInputElement() {

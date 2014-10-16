@@ -8,7 +8,7 @@ import com.butent.bee.shared.utils.BeeUtils;
 import java.math.BigDecimal;
 
 /**
- * The {@code TextValue} class represents character strings. 
+ * The {@code TextValue} class represents character strings.
  */
 public class TextValue extends Value {
 
@@ -16,6 +16,10 @@ public class TextValue extends Value {
 
   public static TextValue getNullValue() {
     return NULL_VALUE;
+  }
+
+  public static TextValue of(String value) {
+    return (value == null) ? NULL_VALUE : new TextValue(value);
   }
 
   private final String value;
@@ -48,7 +52,7 @@ public class TextValue extends Value {
     }
     return new JustDate(BeeUtils.toInt(value));
   }
-  
+
   @Override
   public DateTime getDateTime() {
     if (isNull() || !BeeUtils.isLong(value)) {
@@ -118,7 +122,7 @@ public class TextValue extends Value {
   public boolean isEmpty() {
     return BeeUtils.isEmpty(value);
   }
-  
+
   @Override
   public boolean isNull() {
     return this == NULL_VALUE || getString() == null;

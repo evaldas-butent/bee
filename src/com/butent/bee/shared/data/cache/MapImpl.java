@@ -1,14 +1,14 @@
 package com.butent.bee.shared.data.cache;
 
-import com.google.common.collect.Maps;
 import com.google.common.collect.Multimap;
 
+import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Map.Entry;
 
 class MapImpl<K, V> extends AbstractCache<K, V> {
-  
+
   @SuppressWarnings("serial")
   private class LimitedMap<L, U> extends LinkedHashMap<L, U> {
     private static final int DEFAULT_INITIAL_CAPACITY = 16;
@@ -28,11 +28,11 @@ class MapImpl<K, V> extends AbstractCache<K, V> {
 
   MapImpl(int maxSize, ReplacementPolicy replacementPolicy) {
     super(maxSize, replacementPolicy);
-    
+
     if (maxSize > 0) {
-      this.map = new LimitedMap<K, V>(replacementPolicy.isAccessOrder());
+      this.map = new LimitedMap<>(replacementPolicy.isAccessOrder());
     } else {
-      this.map = Maps.newHashMap();
+      this.map = new HashMap<>();
     }
   }
 
@@ -65,7 +65,7 @@ class MapImpl<K, V> extends AbstractCache<K, V> {
         break;
       }
     }
-    
+
     if (key != null) {
       map.remove(key);
     }

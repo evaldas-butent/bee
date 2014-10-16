@@ -5,21 +5,20 @@ import com.google.common.collect.Lists;
 import com.butent.bee.shared.Service;
 import com.butent.bee.shared.data.BeeColumn;
 import com.butent.bee.shared.data.value.ValueType;
-import com.butent.bee.shared.i18n.LocalizableConstants;
 import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.i18n.SupportedLocale;
+import com.butent.bee.shared.imports.ImportType;
 import com.butent.bee.shared.modules.ParameterType;
 import com.butent.bee.shared.news.Feed;
+import com.butent.bee.shared.rights.RightsObjectType;
+import com.butent.bee.shared.rights.RightsState;
 import com.butent.bee.shared.time.ScheduleDateMode;
 import com.butent.bee.shared.time.WorkdayTransition;
 import com.butent.bee.shared.ui.HasCaption;
-import com.butent.bee.shared.ui.HasLocalizedCaption;
 import com.butent.bee.shared.ui.UserInterface;
 import com.butent.bee.shared.utils.EnumUtils;
 
-import java.util.EnumSet;
 import java.util.List;
-import java.util.Set;
 
 public final class AdministrationConstants {
 
@@ -33,96 +32,6 @@ public final class AdministrationConstants {
       new BeeColumn(ValueType.TEXT, AdministrationConstants.AUDIT_FLD_FIELD, false),
       new BeeColumn(ValueType.TEXT, AdministrationConstants.AUDIT_FLD_VALUE, true),
       new BeeColumn(ValueType.TEXT, AdministrationConstants.COL_RELATION, true));
-
-  public enum RightsObjectType implements HasLocalizedCaption {
-    FIELD(EnumSet.of(RightsState.VIEW, RightsState.EDIT)) {
-      @Override
-      public String getCaption(LocalizableConstants constants) {
-        return constants.objectField();
-      }
-    },
-    WIDGET(EnumSet.of(RightsState.VIEW)) {
-      @Override
-      public String getCaption(LocalizableConstants constants) {
-        return constants.objectWidget();
-      }
-    },
-    DATA(EnumSet.allOf(RightsState.class)) {
-      @Override
-      public String getCaption(LocalizableConstants constants) {
-        return constants.objectData();
-      }
-    },
-    MENU(EnumSet.of(RightsState.VIEW)) {
-      @Override
-      public String getCaption(LocalizableConstants constants) {
-        return constants.objectMenu();
-      }
-    },
-    MODULE(EnumSet.of(RightsState.VIEW)) {
-      @Override
-      public String getCaption(LocalizableConstants constants) {
-        return constants.objectModule();
-      }
-    };
-
-    private final Set<RightsState> registeredStates;
-
-    private RightsObjectType(Set<RightsState> states) {
-      this.registeredStates = states;
-    }
-
-    @Override
-    public String getCaption() {
-      return getCaption(Localized.getConstants());
-    }
-
-    public Set<RightsState> getRegisteredStates() {
-      return registeredStates;
-    }
-  }
-
-  public enum RightsState implements HasLocalizedCaption {
-    VIEW(true) {
-      @Override
-      public String getCaption(LocalizableConstants constants) {
-        return constants.rightStateView();
-      }
-    },
-    CREATE(true) {
-      @Override
-      public String getCaption(LocalizableConstants constants) {
-        return constants.rightStateCreate();
-      }
-    },
-    EDIT(true) {
-      @Override
-      public String getCaption(LocalizableConstants constants) {
-        return constants.rightStateEdit();
-      }
-    },
-    DELETE(true) {
-      @Override
-      public String getCaption(LocalizableConstants constants) {
-        return constants.rightStateDelete();
-      }
-    };
-
-    private final boolean checked;
-
-    private RightsState(boolean checked) {
-      this.checked = checked;
-    }
-
-    @Override
-    public String getCaption() {
-      return getCaption(Localized.getConstants());
-    }
-
-    public boolean isChecked() {
-      return checked;
-    }
-  }
 
   public enum ReminderMethod implements HasCaption {
     EMAIL, SMS;
@@ -161,9 +70,9 @@ public final class AdministrationConstants {
 
     EnumUtils.register(ScheduleDateMode.class);
     EnumUtils.register(WorkdayTransition.class);
-  }
 
-  public static final String METHOD = "Service";
+    EnumUtils.register(ImportType.class);
+  }
 
   public static final String PARAMETERS_PREFIX = "parameters_";
 
@@ -171,6 +80,8 @@ public final class AdministrationConstants {
   public static final String SVC_GET_PARAMETERS = PARAMETERS_PREFIX + "get";
   public static final String SVC_RESET_PARAMETER = PARAMETERS_PREFIX + "reset";
   public static final String SVC_SET_PARAMETER = PARAMETERS_PREFIX + "set";
+
+  public static final String SVC_DO_IMPORT = "DoImport";
 
   public static final String SVC_NUMBER_TO_WORDS = "GetNumberInWords";
 
@@ -188,6 +99,8 @@ public final class AdministrationConstants {
   public static final String VAR_DATE_LOW = Service.RPC_VAR_PREFIX + "date_low";
   public static final String VAR_DATE_HIGH = Service.RPC_VAR_PREFIX + "date_high";
 
+  public static final String VAR_BASE_ROLE = Service.RPC_VAR_PREFIX + "base_role";
+
   public static final String SVC_GET_CURRENT_EXCHANGE_RATE = "get_current_exchange_rate";
   public static final String SVC_GET_EXCHANGE_RATE = "get_exchange_rate";
   public static final String SVC_GET_LIST_OF_CURRENCIES = "get_list_of_currencies";
@@ -198,6 +111,18 @@ public final class AdministrationConstants {
 
   public static final String SVC_BLOCK_HOST = "block_host";
   public static final String SVC_CREATE_USER = "create_user";
+  public static final String SVC_COPY_RIGHTS = "copy_rights";
+
+  public static final String VAR_IMPORT_TEST = "Test";
+  public static final String VAR_MAPPING_TABLE = "MappingTable";
+  public static final String VAR_MAPPING_FIELD = "MappingField";
+  public static final String VAR_IMPORT_FILE = "File";
+  public static final String VAR_IMPORT_SHEET = "Sheet";
+  public static final String VAR_IMPORT_START_ROW = "Row";
+  public static final String VAR_IMPORT_DATE_FORMAT = "DateFormat";
+
+  public static final String VAR_IMPORT_LOGIN = "Login";
+  public static final String VAR_IMPORT_PASSWORD = "Password";
 
   public static final String AUDIT_SUFFIX = "AUDIT";
   public static final String AUDIT_USER = "bee.user";
@@ -210,6 +135,7 @@ public final class AdministrationConstants {
   public static final String AUDIT_FLD_VALUE = "Value";
 
   public static final String TBL_USERS = "Users";
+  public static final String TBL_USER_SETTINGS = "UserSettings";
   public static final String TBL_ROLES = "Roles";
   public static final String TBL_USER_ROLES = "UserRoles";
   public static final String TBL_OBJECTS = "Objects";
@@ -234,7 +160,12 @@ public final class AdministrationConstants {
 
   public static final String TBL_AUTOCOMPLETE = "Autocomplete";
 
+  public static final String TBL_IMPORT_OPTIONS = "ImportOptions";
+  public static final String TBL_IMPORT_PROPERTIES = "ImportProperties";
+  public static final String TBL_IMPORT_MAPPINGS = "ImportMappings";
+
   public static final String VIEW_USERS = "Users";
+  public static final String VIEW_USER_SETTINGS = "UserSettings";
   public static final String VIEW_USER_GROUP_SETTINGS = "UserGroupSettings";
   public static final String VIEW_USER_GROUP_MEMBERS = "UserGroupMembers";
 
@@ -247,6 +178,8 @@ public final class AdministrationConstants {
   public static final String VIEW_CURRENCIES = "Currencies";
   public static final String VIEW_CURRENCY_RATES = "CurrencyRates";
 
+  public static final String VIEW_RELATIONS = "Relations";
+
   public static final String VIEW_IP_FILTERS = "IpFilters";
 
   public static final String VIEW_AUTOCOMPLETE = "Autocomplete";
@@ -255,12 +188,10 @@ public final class AdministrationConstants {
   public static final String VIEW_RIGHTS = "Rights";
   public static final String VIEW_USER_ROLES = "UserRoles";
 
-  public static final String VIEW_PARAMETERS = "Parameters";
-  public static final String VIEW_USER_PARAMETERS = "UserParameters";
-
   public static final String VIEW_FILTERS = "Filters";
 
   public static final String VIEW_FAVORITES = "Favorites";
+  public static final String VIEW_WORKSPACES = "Workspaces";
   public static final String VIEW_REPORT_SETTINGS = "ReportSettings";
 
   public static final String GRID_HISTORY = "History";
@@ -276,7 +207,6 @@ public final class AdministrationConstants {
 
   public static final String COL_LOGIN = "Login";
   public static final String COL_PASSWORD = "Password";
-  public static final String COL_USER_PROPERTIES = "Properties";
   public static final String COL_USER_LOCALE = "Locale";
   public static final String COL_USER_INTERFACE = "Interface";
   public static final String COL_USER_BLOCK_AFTER = "BlockAfter";
@@ -328,6 +258,7 @@ public final class AdministrationConstants {
 
   public static final String COL_CURRENCY = "Currency";
   public static final String COL_CURRENCY_NAME = "Name";
+  public static final String COL_CURRENCY_MINOR_NAME = "MinorName";
   public static final String COL_CURRENCY_UPDATE_TAG = "UpdateTag";
 
   public static final String COL_CURRENCY_RATE_CURRENCY = "Currency";
@@ -359,6 +290,26 @@ public final class AdministrationConstants {
   public static final String COL_RS_CAPTION = "Caption";
   public static final String COL_RS_PARAMETERS = "Parameters";
 
+  public static final String COL_OPEN_IN_NEW_TAB = "OpenInNewTab";
+  public static final String COL_WORKSPACE_CONTINUE = "WorkspaceContinue";
+  public static final String COL_LAST_WORKSPACE = "LastWorkspace";
+
+  public static final String COL_APPLIANCE_HEADER_HEIGHT = "ApplianceHeaderHeight";
+  public static final String COL_VIEW_HEADER_HEIGHT = "ViewHeaderHeight";
+  public static final String COL_CLICK_SENSITIVITY_MILLIS = "ClickSensitivityMillis";
+  public static final String COL_CLICK_SENSITIVITY_DISTANCE = "ClickSensitivityDistance";
+
+  public static final String COL_USER_STYLE = "Style";
+
+  public static final String COL_IMPORT_OPTION = "Option";
+  public static final String COL_IMPORT_TYPE = "Type";
+  public static final String COL_IMPORT_DATA = "Data";
+  public static final String COL_IMPORT_DESCRIPTION = "Description";
+  public static final String COL_IMPORT_PROPERTY = "Property";
+  public static final String COL_IMPORT_VALUE = "Value";
+  public static final String COL_IMPORT_RELATION_OPTION = "RelationOption";
+  public static final String COL_IMPORT_MAPPING = "Mapping";
+
   public static final String ALS_FILE_NAME = "FileName";
   public static final String ALS_FILE_SIZE = "FileSize";
   public static final String ALS_FILE_TYPE = "FileType";
@@ -373,15 +324,23 @@ public final class AdministrationConstants {
 
   public static final String ALS_CURRENCY_NAME = "CurrencyName";
 
+  public static final String ALS_ROLE_NAME = "RoleName";
+
   public static final String FORM_USER = "User";
+  public static final String FORM_USER_SETTINGS = "UserSettings";
   public static final String FORM_DEPARTMENT = "Department";
+  public static final String FORM_NEW_ROLE = "NewRole";
+
+  public static final String FORM_IMPORT_OPTION = "ImportOption";
 
   public static final String PRM_SQL_MESSAGES = "SQLMessages";
 
   public static final String PRM_COMPANY = "CompanyName";
   public static final String PRM_CURRENCY = "MainCurrency";
   public static final String PRM_VAT_PERCENT = "VATPercent";
+  public static final String PRM_REFRESH_CURRENCY_HOURS = "CurrencyRefreshHours";
 
+  public static final String PRM_ERP_NAMESPACE = "ERPNamespace";
   public static final String PRM_ERP_ADDRESS = "ERPAddress";
   public static final String PRM_ERP_LOGIN = "ERPLogin";
   public static final String PRM_ERP_PASSWORD = "ERPPassword";
@@ -391,8 +350,6 @@ public final class AdministrationConstants {
   public static final String PRM_URL = "Url";
 
   public static final String PROP_ICON = "Icon";
-
-  public static final String STYLE_SHEET = "commons";
 
   private AdministrationConstants() {
   }

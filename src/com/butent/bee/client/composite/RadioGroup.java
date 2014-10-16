@@ -15,10 +15,12 @@ import com.google.gwt.event.shared.HandlerRegistration;
 import com.google.gwt.user.client.ui.Widget;
 
 import com.butent.bee.client.dom.DomUtils;
+import com.butent.bee.client.event.logical.SummaryChangeEvent;
 import com.butent.bee.client.layout.Span;
 import com.butent.bee.client.style.StyleUtils;
 import com.butent.bee.client.ui.AcceptsCaptions;
 import com.butent.bee.client.ui.FormWidget;
+import com.butent.bee.client.ui.UiHelper;
 import com.butent.bee.client.view.edit.EditChangeHandler;
 import com.butent.bee.client.view.edit.EditStopEvent;
 import com.butent.bee.client.view.edit.EditStopEvent.Handler;
@@ -26,6 +28,8 @@ import com.butent.bee.client.view.edit.Editor;
 import com.butent.bee.client.widget.RadioButton;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
+import com.butent.bee.shared.data.value.BooleanValue;
+import com.butent.bee.shared.data.value.Value;
 import com.butent.bee.shared.ui.EditorAction;
 import com.butent.bee.shared.ui.HasValueStartIndex;
 import com.butent.bee.shared.ui.Orientation;
@@ -82,6 +86,8 @@ public class RadioGroup extends Span implements Editor, ValueChangeHandler<Boole
 
   private boolean handlesTabulation;
 
+  private boolean summarize;
+
   public RadioGroup(Orientation orientation) {
     this(NameUtils.createUniqueName("optiongroup"), orientation);
   }
@@ -128,7 +134,7 @@ public class RadioGroup extends Span implements Editor, ValueChangeHandler<Boole
   public HandlerRegistration addEditChangeHandler(EditChangeHandler handler) {
     return addValueChangeHandler(handler);
   }
-  
+
   @Override
   public HandlerRegistration addEditStopHandler(Handler handler) {
     return addHandler(handler, EditStopEvent.getType());
@@ -151,13 +157,19 @@ public class RadioGroup extends Span implements Editor, ValueChangeHandler<Boole
     add(rb);
 
     rb.setFormValue(BeeUtils.toString(index));
-    rb.addStyleDependentName(isVertical() ? StyleUtils.NAME_VERTICAL : StyleUtils.NAME_HORIZONTAL);
+    rb.addStyleDependentName(isVertical()
+        ? StyleUtils.SUFFIX_VERTICAL : StyleUtils.SUFFIX_HORIZONTAL);
     if (selected) {
       rb.setValue(true);
     }
     rb.addValueChangeHandler(this);
 
     setOptionCount(index + 1);
+  }
+
+  @Override
+  public HandlerRegistration addSummaryChangeHandler(SummaryChangeEvent.Handler handler) {
+    return addHandler(handler, SummaryChangeEvent.getType());
   }
 
   @Override
@@ -208,6 +220,11 @@ public class RadioGroup extends Span implements Editor, ValueChangeHandler<Boole
       }
     }
     return BeeConst.UNDEF;
+  }
+
+  @Override
+  public Value getSummary() {
+    return BooleanValue.of(!BeeUtils.isEmpty(getValue()));
   }
 
   @Override
@@ -288,6 +305,11 @@ public class RadioGroup extends Span implements Editor, ValueChangeHandler<Boole
   }
 
   @Override
+  public void render(String value) {
+    setValue(value);
+  }
+
+  @Override
   public void setAccessKey(char key) {
   }
 
@@ -313,7 +335,7 @@ public class RadioGroup extends Span implements Editor, ValueChangeHandler<Boole
 
   @Override
   public void setEnabled(boolean enabled) {
-    DomUtils.enableChildren(this, enabled);
+    UiHelper.enableChildren(this, enabled);
   }
 
   @Override
@@ -344,6 +366,11 @@ public class RadioGroup extends Span implements Editor, ValueChangeHandler<Boole
         getOption(oldIndex).setValue(false);
       }
     }
+  }
+
+  @Override
+  public void setSummarize(boolean summarize) {
+    this.summarize = summarize;
   }
 
   @Override
@@ -382,6 +409,11 @@ public class RadioGroup extends Span implements Editor, ValueChangeHandler<Boole
   }
 
   @Override
+  public boolean summarize() {
+    return summarize;
+  }
+
+  @Override
   public List<String> validate(boolean checkForNull) {
     return Collections.emptyList();
   }
@@ -393,7 +425,7 @@ public class RadioGroup extends Span implements Editor, ValueChangeHandler<Boole
 
   @Override
   protected String getDefaultStyleName() {
-    return "bee-RadioGroup";
+    return BeeConst.CSS_CLASS_PREFIX + "RadioGroup";
   }
 
   private void addButtons(List<String> opt) {

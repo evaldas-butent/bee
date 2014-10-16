@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<g:Grid xmlns="http://www.butent.com/column" xmlns:g="http://www.butent.com/grid"
+  
+  name="TradeOperations" viewName="TradeOperations" caption="=trdOperations"
+  minColumnWidth="100"
+  >
+  <g:columns>
+    <DataColumn name="OperationName" visible="true" />
+    
+    <DataColumn name="Kind" module="Trade.Acts" />
+    <DataColumn name="Price" />
+    
+    <RelColumn name="WarehouseFrom" />
+    <RelColumn name="WarehouseTo" />
+
+    <DataColumn name="IsDefault" />
+
+    <DataColumn name="Background" updateMode="row">
+      <editor type="color" />
+    </DataColumn>
+    <DataColumn name="Foreground" updateMode="row">
+      <editor type="color" />
+    </DataColumn>
+    
+    <DataColumn name="Description" visible="false" />
+  </g:columns>
+</g:Grid>

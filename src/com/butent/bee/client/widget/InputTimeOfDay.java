@@ -31,9 +31,9 @@ public class InputTimeOfDay extends InputTime {
   protected long getDefaultMaxMillis() {
     return TimeUtils.MILLIS_PER_DAY - TimeUtils.MILLIS_PER_MINUTE;
   }
-  
+
   @Override
   protected String getDefaultStyleName() {
-    return "bee-InputTimeOfDay";
+    return BeeConst.CSS_CLASS_PREFIX + "InputTimeOfDay";
   }
 }

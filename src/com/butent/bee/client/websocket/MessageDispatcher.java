@@ -1,6 +1,5 @@
 package com.butent.bee.client.websocket;
 
-import com.google.common.base.Objects;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.event.dom.client.KeyCodes;
@@ -41,6 +40,7 @@ import com.butent.bee.shared.data.event.ModificationEvent;
 import com.butent.bee.shared.font.FontAwesome;
 import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogUtils;
+import com.butent.bee.shared.modules.mail.MailConstants.MessageFlag;
 import com.butent.bee.shared.news.Feed;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.EnumUtils;
@@ -49,6 +49,7 @@ import com.butent.bee.shared.websocket.SessionUser;
 import com.butent.bee.shared.websocket.WsUtils;
 import com.butent.bee.shared.websocket.messages.AdminMessage;
 import com.butent.bee.shared.websocket.messages.ChatMessage;
+import com.butent.bee.shared.websocket.messages.ConfigMessage;
 import com.butent.bee.shared.websocket.messages.EchoMessage;
 import com.butent.bee.shared.websocket.messages.InfoMessage;
 import com.butent.bee.shared.websocket.messages.LocationMessage;
@@ -68,12 +69,14 @@ import com.butent.bee.shared.websocket.messages.ShowMessage.Subject;
 import com.butent.bee.shared.websocket.messages.UsersMessage;
 
 import java.util.List;
+import java.util.Objects;
 
 class MessageDispatcher {
 
   private static BeeLogger logger = LogUtils.getLogger(MessageDispatcher.class);
 
-  private static final String CONVERSATION_STYLE_PREFIX = "bee-Conversation-";
+  private static final String CONVERSATION_STYLE_PREFIX = BeeConst.CSS_CLASS_PREFIX
+      + "Conversation-";
   private static final String CONVERSATION_MESSAGE_STYLE_PREFIX = CONVERSATION_STYLE_PREFIX
       + "message-";
 
@@ -292,6 +295,16 @@ class MessageDispatcher {
         }
         break;
 
+      case CONFIG:
+        ConfigMessage configMessage = (ConfigMessage) message;
+
+        if (configMessage.isValid()) {
+          logger.info(configMessage);
+        } else {
+          WsUtils.onEmptyMessage(message);
+        }
+        break;
+
       case ECHO:
         BeeKeeper.getScreen().notifyInfo(((EchoMessage) message).getText());
         break;
@@ -303,7 +316,7 @@ class MessageDispatcher {
         if (BeeUtils.isEmpty(info)) {
           WsUtils.onEmptyMessage(message);
         } else {
-          Global.showGrid(caption, new PropertiesData(info));
+          Global.showTable(caption, new PropertiesData(info));
         }
         break;
 
@@ -358,13 +371,18 @@ class MessageDispatcher {
         MailMessage mailMessage = (MailMessage) message;
 
         if (mailMessage.isValid()) {
-          if (Global.getNewsAggregator().hasSubscription(Feed.MAIL)) {
+          boolean updated = mailMessage.messagesUpdated() || mailMessage.foldersUpdated();
+          boolean refreshFolders = updated
+              || Objects.equals(mailMessage.getFlag(), MessageFlag.SEEN);
+
+          if (Global.getNewsAggregator().hasSubscription(Feed.MAIL) && refreshFolders) {
             Global.getNewsAggregator().refresh();
           }
-          MailKeeper.refreshActivePanel(mailMessage.isNewMail());
+          MailKeeper.refreshActivePanel(refreshFolders, updated ? mailMessage.getFolderId() : null);
 
         } else {
-          WsUtils.onEmptyMessage(message);
+          logger.severe(mailMessage.getError());
+          BeeKeeper.getScreen().notifySevere(mailMessage.getError());
         }
         break;
 
@@ -393,7 +411,9 @@ class MessageDispatcher {
         break;
 
       case ONLINE:
-        List<SessionUser> sessionUsers = ((OnlineMessage) message).getSessionUsers();
+        OnlineMessage om = (OnlineMessage) message;
+
+        List<SessionUser> sessionUsers = om.getSessionUsers();
         if (sessionUsers.size() > 1) {
           for (int i = 0; i < sessionUsers.size() - 1; i++) {
             SessionUser sessionUser = sessionUsers.get(i);
@@ -403,8 +423,15 @@ class MessageDispatcher {
 
         if (sessionUsers.isEmpty()) {
           WsUtils.onEmptyMessage(message);
+
         } else {
           Endpoint.setSessionId(sessionUsers.get(sessionUsers.size() - 1).getSessionId());
+
+          if (!om.getChatRooms().isEmpty()) {
+            Global.getRooms().setRoomData(om.getChatRooms());
+          }
+
+          Endpoint.online();
         }
         break;
 
@@ -424,7 +451,7 @@ class MessageDispatcher {
               logger.warning("cannot start progress", progressId);
             }
           } else if (pm.isUpdate()) {
-            BeeKeeper.getScreen().updateProgress(progressId, pm.getValue());
+            BeeKeeper.getScreen().updateProgress(progressId, pm.getLabel(), pm.getValue());
 
           } else if (pm.isCanceled() || pm.isClosed()) {
             Endpoint.removeProgress(progressId);
@@ -475,7 +502,7 @@ class MessageDispatcher {
       case SHOW:
         Subject subject = ((ShowMessage) message).getSubject();
         if (subject == Subject.SESSION) {
-          Global.showGrid(subject.getCaption(), new PropertiesData(Endpoint.getInfo()));
+          Global.showTable(subject.getCaption(), new PropertiesData(Endpoint.getInfo()));
         } else {
           WsUtils.onInvalidState(message);
         }
@@ -491,7 +518,7 @@ class MessageDispatcher {
           Global.getUsers().updateUserData(users);
 
           for (UserData userData : users) {
-            if (Objects.equal(BeeKeeper.getUser().getUserId(), userData.getUserId())) {
+            if (Objects.equals(BeeKeeper.getUser().getUserId(), userData.getUserId())) {
               BeeKeeper.getUser().setUserData(userData);
               BeeKeeper.getScreen().updateUserData(userData);
               break;

@@ -10,12 +10,12 @@ import com.butent.bee.client.data.Data;
 import com.butent.bee.client.event.logical.SelectorEvent;
 import com.butent.bee.client.grid.GridFactory;
 import com.butent.bee.client.ui.FormFactory;
+import com.butent.bee.client.view.ViewFactory;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.event.RowTransformEvent;
 import com.butent.bee.shared.menu.MenuHandler;
 import com.butent.bee.shared.menu.MenuService;
-import com.butent.bee.shared.modules.administration.AdministrationConstants;
 import com.butent.bee.shared.rights.Module;
 import com.butent.bee.shared.utils.BeeUtils;
 
@@ -38,16 +38,20 @@ public final class ClassifierKeeper {
   }
 
   static ParameterList createArgs(String method) {
-    ParameterList args = BeeKeeper.getRpc().createParameters(Module.CLASSIFIERS.getName());
-    args.addQueryItem(AdministrationConstants.METHOD, method);
-    return args;
+    return BeeKeeper.getRpc().createParameters(Module.CLASSIFIERS, method);
   }
 
   public static void register() {
+    GridFactory.registerGridSupplier(ItemsGrid.getSupplierKey(false), GRID_ITEMS,
+        new ItemsGrid(false));
+    GridFactory.registerGridSupplier(ItemsGrid.getSupplierKey(true), GRID_ITEMS,
+        new ItemsGrid(true));
+
     MenuService.ITEMS.setHandler(new MenuHandler() {
       @Override
       public void onSelection(String parameters) {
-        GridFactory.openGrid(TBL_ITEMS, new ItemsGrid(BeeUtils.startsSame(parameters, "s")));
+        String key = ItemsGrid.getSupplierKey(BeeUtils.startsSame(parameters, "s"));
+        ViewFactory.createAndShow(key);
       }
     });
 

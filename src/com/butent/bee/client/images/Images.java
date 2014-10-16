@@ -1,22 +1,18 @@
 package com.butent.bee.client.images;
 
-import com.google.common.collect.Lists;
-import com.google.common.collect.Maps;
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.dom.client.Document;
 import com.google.gwt.dom.client.ImageElement;
 import com.google.gwt.resources.client.ClientBundle;
 import com.google.gwt.resources.client.ImageResource;
 
-import com.butent.bee.client.utils.NewFileInfo;
+import com.butent.bee.client.utils.FileUtils;
 import com.butent.bee.shared.Assert;
-import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.NotificationListener;
-import com.butent.bee.shared.i18n.Localized;
-import com.butent.bee.shared.utils.ArrayUtils;
-import com.butent.bee.shared.utils.BeeUtils;
+import com.butent.bee.shared.io.FileInfo;
 
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -127,7 +123,7 @@ public final class Images {
     @Source("error.png")
     ImageResource error();
 
-    @Source("excel.gif")
+    @Source("silver/excel_17x18.png")
     ImageResource excel();
 
     @Source("feed.png")
@@ -229,8 +225,14 @@ public final class Images {
     @Source("silver/bar_chart_24x24.png")
     ImageResource silverBarChart();
 
+    @Source("silver/bookmark_24x24.png")
+    ImageResource silverBookmark();
+
     @Source("silver/bookmark_add_21x19.png")
     ImageResource silverBookmarkAdd();
+
+    @Source("silver/calendar_24x24.png")
+    ImageResource silverCalendar();
 
     @Source("silver/chat_icon_16x21.gif")
     ImageResource silverChatIcon();
@@ -238,8 +240,14 @@ public final class Images {
     @Source("silver/close_17x18.png")
     ImageResource silverClose();
 
+    @Source("silver/comments_24x24.png")
+    ImageResource silverComments();
+
     @Source("silver/configure_17x18.png")
     ImageResource silverConfigure();
+
+    @Source("silver/configure_24x24.png")
+    ImageResource silverConfigure24();
 
     @Source("silver/delete_17x18.png")
     ImageResource silverDelete();
@@ -256,6 +264,9 @@ public final class Images {
     @Source("silver/edit_17x18.png")
     ImageResource silverEdit();
 
+    @Source("silver/feed_24x24.png")
+    ImageResource silverFeed();
+
     @Source("silver/filter_17x14.png")
     ImageResource silverFilter();
 
@@ -267,6 +278,9 @@ public final class Images {
 
     @Source("silver/mail_17x18.png")
     ImageResource silverMail();
+
+    @Source("silver/mail_24x24.png")
+    ImageResource silverMail24();
 
     @Source("silver/minus_button_17x18.png")
     ImageResource silverMinus();
@@ -289,6 +303,9 @@ public final class Images {
     @Source("silver/save_17x18.png")
     ImageResource silverSave();
 
+    @Source("silver/save_24x24.png")
+    ImageResource silverSave24();
+
     @Source("silver/smile_24x24.png")
     ImageResource silverSmile();
 
@@ -300,6 +317,9 @@ public final class Images {
 
     @Source("silver/truck_17x18.png")
     ImageResource silverTruck();
+
+    @Source("silver/user_24x24.png")
+    ImageResource silverUser();
 
     @Source("slider.gif")
     ImageResource slider();
@@ -319,6 +339,9 @@ public final class Images {
     @Source("warning.png")
     ImageResource warning();
 
+    @Source("workspace.png")
+    ImageResource workspace();
+
     @Source("yellow.gif")
     ImageResource yellow();
 
@@ -328,7 +351,7 @@ public final class Images {
 
   public static final long MAX_SIZE_FOR_DATA_URL = 1258292L; /* ~1.2 MB */
 
-  private static final Map<String, ImageResource> map = Maps.newHashMap();
+  private static final Map<String, ImageResource> map = new HashMap<>();
 
   private static final ImageElement imageElement = Document.get().createImageElement();
 
@@ -483,6 +506,8 @@ public final class Images {
 
     map.put(key("warning"), resources.warning());
 
+    map.put(key("workspace"), resources.workspace());
+
     map.put(key("yellow"), resources.yellow());
     map.put(key("yellowSmall"), resources.yellowSmall());
 
@@ -514,33 +539,9 @@ public final class Images {
     map.put(key("silverTruck"), resources.silverTruck());
   }
 
-  public static List<NewFileInfo> sanitizeInput(Collection<NewFileInfo> input,
+  public static List<FileInfo> sanitizeInput(Collection<? extends FileInfo> input,
       NotificationListener notificationListener) {
-
-    List<NewFileInfo> result = Lists.newArrayList();
-    if (BeeUtils.isEmpty(input)) {
-      return result;
-    }
-
-    List<String> errors = Lists.newArrayList();
-
-    for (NewFileInfo nfi : input) {
-      long size = nfi.getSize();
-
-      if (size > MAX_SIZE_FOR_DATA_URL) {
-        errors.add(BeeUtils.join(BeeConst.STRING_COLON + BeeConst.STRING_SPACE, nfi.getName(),
-            Localized.getMessages().fileSizeExceeded(size, MAX_SIZE_FOR_DATA_URL)));
-      } else {
-        result.add(nfi);
-      }
-    }
-
-    if (!errors.isEmpty() && notificationListener != null) {
-      result.clear();
-      notificationListener.notifyWarning(ArrayUtils.toArray(errors));
-    }
-
-    return result;
+    return FileUtils.validateFileSize(input, MAX_SIZE_FOR_DATA_URL, notificationListener);
   }
 
   private static String key(String name) {

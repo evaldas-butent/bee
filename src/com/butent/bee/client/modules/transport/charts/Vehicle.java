@@ -1,6 +1,5 @@
 package com.butent.bee.client.modules.transport.charts;
 
-import com.google.common.base.Objects;
 import com.google.common.base.Predicate;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Range;
@@ -12,6 +11,7 @@ import com.butent.bee.client.data.Data;
 import com.butent.bee.client.data.IdCallback;
 import com.butent.bee.client.event.DndHelper;
 import com.butent.bee.client.event.DndTarget;
+import com.butent.bee.client.timeboard.TimeBoardHelper;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.BiConsumer;
 import com.butent.bee.shared.data.BeeRow;
@@ -19,6 +19,7 @@ import com.butent.bee.shared.time.HasDateRange;
 import com.butent.bee.shared.time.JustDate;
 import com.butent.bee.shared.utils.BeeUtils;
 
+import java.util.Objects;
 import java.util.Set;
 
 class Vehicle extends Filterable implements HasDateRange, HasItemName {
@@ -65,7 +66,7 @@ class Vehicle extends Filterable implements HasDateRange, HasItemName {
         row.getString(modelNameIndex));
     this.type = BeeUtils.trim(row.getString(typeNameIndex));
 
-    this.range = ChartHelper.getActivity(row.getDate(startIndex), row.getDate(endIndex));
+    this.range = TimeBoardHelper.getActivity(row.getDate(startIndex), row.getDate(endIndex));
 
     this.itemName = BeeUtils.joinWords(number, model);
   }
@@ -90,11 +91,11 @@ class Vehicle extends Filterable implements HasDateRange, HasItemName {
 
     } else if (inactivity.hasUpperBound() && getRange().hasLowerBound()
         && BeeUtils.isLess(inactivity.upperEndpoint(), getRange().lowerEndpoint())) {
-      return ChartHelper.buildTitle(startLabel, getRange().lowerEndpoint());
+      return TimeBoardHelper.buildTitle(startLabel, getRange().lowerEndpoint());
 
     } else if (inactivity.hasLowerBound() && getRange().hasUpperBound()
         && BeeUtils.isMore(inactivity.lowerEndpoint(), getRange().upperEndpoint())) {
-      return ChartHelper.buildTitle(endLabel, getRange().upperEndpoint());
+      return TimeBoardHelper.buildTitle(endLabel, getRange().upperEndpoint());
 
     } else {
       return BeeConst.STRING_EMPTY;
@@ -106,7 +107,7 @@ class Vehicle extends Filterable implements HasDateRange, HasItemName {
   }
 
   String getMessage(String caption) {
-    return ChartHelper.buildTitle(caption, getNumber(), modelLabel, getModel(),
+    return TimeBoardHelper.buildTitle(caption, getNumber(), modelLabel, getModel(),
         notesLabel, getNotes());
   }
 
@@ -176,11 +177,11 @@ class Vehicle extends Filterable implements HasDateRange, HasItemName {
 
   private boolean isTarget(VehicleType vehicleType, Object data) {
     if (DndHelper.isDataType(DATA_TYPE_TRIP) && data instanceof Trip) {
-      return !Objects.equal(getId(), ((Trip) data).getVehicleId(vehicleType));
+      return !Objects.equals(getId(), ((Trip) data).getVehicleId(vehicleType));
 
     } else if (DndHelper.isDataType(DATA_TYPE_FREIGHT) && data instanceof Freight) {
       return vehicleType == VehicleType.TRUCK
-          && !Objects.equal(getId(), ((Freight) data).getVehicleId(vehicleType));
+          && !Objects.equals(getId(), ((Freight) data).getVehicleId(vehicleType));
 
     } else if (DndHelper.isDataType(DATA_TYPE_ORDER_CARGO) && data instanceof OrderCargo) {
       return vehicleType == VehicleType.TRUCK;

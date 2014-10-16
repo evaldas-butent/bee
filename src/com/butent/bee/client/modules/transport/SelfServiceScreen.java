@@ -1,6 +1,5 @@
 package com.butent.bee.client.modules.transport;
 
-import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
 import com.google.gwt.dom.client.NativeEvent;
 import com.google.gwt.event.dom.client.ClickEvent;
@@ -31,6 +30,7 @@ import com.butent.bee.client.ui.FormFactory;
 import com.butent.bee.client.ui.IdentifiableWidget;
 import com.butent.bee.client.view.grid.interceptor.GridInterceptor;
 import com.butent.bee.client.widget.Button;
+import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.Pair;
 import com.butent.bee.shared.data.UserData;
 import com.butent.bee.shared.data.filter.Filter;
@@ -41,6 +41,7 @@ import com.butent.bee.shared.modules.documents.DocumentConstants;
 import com.butent.bee.shared.modules.trade.TradeConstants;
 import com.butent.bee.shared.ui.UserInterface;
 
+import java.util.HashMap;
 import java.util.Map;
 
 public class SelfServiceScreen extends ScreenImpl {
@@ -61,17 +62,23 @@ public class SelfServiceScreen extends ScreenImpl {
         }
       }
 
-      activeViews.put(viewKey, presenter.getWidget().getId());
-      showWidget(presenter.getWidget(), true);
+      activeViews.put(viewKey, presenter.getMainView().getId());
+      showInNewPlace(presenter.getMainView());
     }
   }
 
-  private static final String STYLE_PREFIX = "bee-tr-SelfService-";
+  private static final String STYLE_PREFIX = BeeConst.CSS_CLASS_PREFIX + "tr-SelfService-";
 
-  private final Map<String, String> activeViews = Maps.newHashMap();
+  private final Map<String, String> activeViews = new HashMap<>();
 
   public SelfServiceScreen() {
     super();
+  }
+
+  @Override
+  public void closeAll() {
+    super.closeAll();
+    activeViews.clear();
   }
 
   @Override
@@ -164,6 +171,10 @@ public class SelfServiceScreen extends ScreenImpl {
   }
 
   @Override
+  protected void createExpanders() {
+  }
+
+  @Override
   protected Panel createMenuPanel() {
     return null;
   }
@@ -204,7 +215,7 @@ public class SelfServiceScreen extends ScreenImpl {
   }
 
   @Override
-  protected void onUserSignatureClick(long userId) {
+  protected void onUserSignatureClick() {
     PasswordService.change();
   }
 
@@ -215,8 +226,8 @@ public class SelfServiceScreen extends ScreenImpl {
 
   private void openGrid(String gridName, boolean intercept, GridOptions gridOptions) {
     GridInterceptor gridInterceptor = intercept ? GridFactory.getGridInterceptor(gridName) : null;
-    ActivationCallback callback = new ActivationCallback(GridFactory.getSupplierKey(gridName,
-        gridInterceptor));
+    ActivationCallback callback =
+        new ActivationCallback(GridFactory.getSupplierKey(gridName, gridInterceptor));
 
     GridFactory.openGrid(gridName, gridInterceptor, gridOptions, callback);
   }

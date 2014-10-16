@@ -5,6 +5,7 @@
   editForm="Person" rowCaption="FirstName LastName"
   newRowForm="Person" newRowCaption="=newPerson"
   >
+  <Relation renderColumns="FirstName LastName" />
   <Columns>
     <SimpleColumn name="FirstName" />
     <SimpleColumn name="LastName" />
@@ -18,7 +19,6 @@
       <SimpleColumn name="Email" alias="EmailId" />
       <SimpleJoin name="Email" joinType="LEFT">
         <SimpleColumn name="Email" />
-        <SimpleColumn name="Label" />
       </SimpleJoin>
 
       <SimpleColumn name="Address" />

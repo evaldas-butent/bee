@@ -40,10 +40,12 @@ public class CalculatedColumn extends AbstractColumn<String> implements HasDateT
   public CalculatedColumn(AbstractCell<String> cell, ValueType valueType,
       AbstractCellRenderer renderer) {
     super(cell);
+
     this.valueType = valueType;
     this.renderer = renderer;
 
     UiHelper.setDefaultHorizontalAlignment(this, valueType);
+    UiHelper.setDefaultWhiteSpace(this, valueType);
   }
 
   public CalculatedColumn(ValueType valueType, AbstractCellRenderer renderer) {
@@ -81,11 +83,11 @@ public class CalculatedColumn extends AbstractColumn<String> implements HasDateT
   }
 
   @Override
-  public String getString(CellContext context, IsRow row) {
-    if (row == null || getRenderer() == null) {
+  public String getString(CellContext context) {
+    if (context.getRow() == null || getRenderer() == null) {
       return null;
     } else {
-      return getRenderer().render(row);
+      return getRenderer().render(context.getRow());
     }
   }
 
@@ -105,8 +107,8 @@ public class CalculatedColumn extends AbstractColumn<String> implements HasDateT
   }
 
   @Override
-  public void render(CellContext context, IsRow rowValue, SafeHtmlBuilder sb) {
-    String value = getString(context, rowValue);
+  public void render(CellContext context, SafeHtmlBuilder sb) {
+    String value = getString(context);
     if (!BeeUtils.isEmpty(value)) {
       getCell().render(context, Format.render(value, getValueType(), getDateTimeFormat(),
           getNumberFormat(), getScale()), sb);

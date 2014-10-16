@@ -2,7 +2,6 @@ package com.butent.bee.shared.news;
 
 import com.google.common.base.Splitter;
 import com.google.common.collect.Lists;
-import com.google.common.collect.Sets;
 
 import static com.butent.bee.shared.modules.classifiers.ClassifierConstants.*;
 
@@ -25,7 +24,9 @@ import com.butent.bee.shared.ui.HasLocalizedCaption;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.EnumUtils;
 
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
@@ -98,7 +99,7 @@ public enum Feed implements HasLocalizedCaption {
   },
 
   DOCUMENTS(ModuleAndSub.of(Module.DOCUMENTS), DocumentConstants.TBL_DOCUMENTS,
-      DocumentConstants.TBL_DOCUMENTS, DocumentConstants.COL_DOCUMENT_NAME) {
+      DocumentConstants.VIEW_DOCUMENTS, DocumentConstants.COL_DOCUMENT_NAME) {
     @Override
     public String getCaption(LocalizableConstants constants) {
       return constants.feedDocuments();
@@ -279,8 +280,9 @@ public enum Feed implements HasLocalizedCaption {
 
   ASSESSMENT_REQUESTS_ALL(ModuleAndSub.of(Module.TRANSPORT, SubModule.LOGISTICS),
       TransportConstants.TBL_ASSESSMENTS, TransportConstants.VIEW_ASSESSMENTS,
-      Lists.newArrayList(DataUtils.ID_TAG, TransportConstants.ALS_ORDER_NOTES,
-          TransportConstants.ALS_CUSTOMER_NAME)) {
+      Lists.newArrayList(TransportConstants.COL_ASSESSMENT, DataUtils.ID_TAG,
+          TransportConstants.COL_STATUS,
+          TransportConstants.ALS_ORDER_NOTES, TransportConstants.ALS_CUSTOMER_NAME)) {
 
     @Override
     public String getCaption(LocalizableConstants constants) {
@@ -291,8 +293,9 @@ public enum Feed implements HasLocalizedCaption {
 
   ASSESSMENT_REQUESTS_MY(ModuleAndSub.of(Module.TRANSPORT, SubModule.LOGISTICS),
       TransportConstants.TBL_ASSESSMENTS, TransportConstants.VIEW_ASSESSMENTS,
-      Lists.newArrayList(DataUtils.ID_TAG, TransportConstants.ALS_ORDER_NOTES,
-          TransportConstants.ALS_CUSTOMER_NAME)) {
+      Lists.newArrayList(TransportConstants.COL_ASSESSMENT, DataUtils.ID_TAG,
+          TransportConstants.COL_STATUS,
+          TransportConstants.ALS_ORDER_NOTES, TransportConstants.ALS_CUSTOMER_NAME)) {
 
     @Override
     public String getCaption(LocalizableConstants constants) {
@@ -303,8 +306,9 @@ public enum Feed implements HasLocalizedCaption {
 
   ASSESSMENT_ORDERS_ALL(ModuleAndSub.of(Module.TRANSPORT, SubModule.LOGISTICS),
       TransportConstants.TBL_ASSESSMENTS, TransportConstants.VIEW_ASSESSMENTS,
-      Lists.newArrayList(DataUtils.ID_TAG, TransportConstants.ALS_ORDER_NOTES,
-          TransportConstants.ALS_CUSTOMER_NAME)) {
+      Lists.newArrayList(TransportConstants.COL_ASSESSMENT, DataUtils.ID_TAG,
+          TransportConstants.ALS_ORDER_NOTES,
+          TransportConstants.COL_STATUS, TransportConstants.ALS_CUSTOMER_NAME)) {
 
     @Override
     public String getCaption(LocalizableConstants constants) {
@@ -315,8 +319,9 @@ public enum Feed implements HasLocalizedCaption {
 
   ASSESSMENT_ORDERS_MY(ModuleAndSub.of(Module.TRANSPORT, SubModule.LOGISTICS),
       TransportConstants.TBL_ASSESSMENTS, TransportConstants.VIEW_ASSESSMENTS,
-      Lists.newArrayList(DataUtils.ID_TAG, TransportConstants.ALS_ORDER_NOTES,
-          TransportConstants.ALS_CUSTOMER_NAME)) {
+      Lists.newArrayList(TransportConstants.COL_ASSESSMENT, DataUtils.ID_TAG,
+          TransportConstants.ALS_ORDER_NOTES, TransportConstants.ALS_CUSTOMER_NAME,
+          TransportConstants.COL_STATUS)) {
 
     @Override
     public String getCaption(LocalizableConstants constants) {
@@ -444,7 +449,7 @@ public enum Feed implements HasLocalizedCaption {
       return BeeConst.STRING_EMPTY;
     }
 
-    Set<Integer> ordinals = Sets.newHashSet();
+    Set<Integer> ordinals = new HashSet<>();
     for (Feed feed : feeds) {
       if (feed != null) {
         ordinals.add(feed.ordinal());
@@ -455,7 +460,7 @@ public enum Feed implements HasLocalizedCaption {
   }
 
   public static List<Feed> split(String input) {
-    List<Feed> feeds = Lists.newArrayList();
+    List<Feed> feeds = new ArrayList<>();
     if (BeeUtils.isEmpty(input)) {
       return feeds;
     }

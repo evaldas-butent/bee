@@ -27,6 +27,8 @@ import com.butent.bee.client.datepicker.DatePicker;
 import com.butent.bee.client.dialog.Popup;
 import com.butent.bee.client.dialog.Popup.OutsideClick;
 import com.butent.bee.client.dom.DomUtils;
+import com.butent.bee.client.event.EventUtils;
+import com.butent.bee.client.event.logical.ReadyEvent;
 import com.butent.bee.client.event.logical.VisibilityChangeEvent;
 import com.butent.bee.client.grid.GridFactory;
 import com.butent.bee.client.i18n.DateTimeFormat;
@@ -49,8 +51,7 @@ import com.butent.bee.client.screen.Domain;
 import com.butent.bee.client.screen.HandlesStateChange;
 import com.butent.bee.client.screen.HasDomain;
 import com.butent.bee.client.style.StyleUtils;
-import com.butent.bee.client.ui.HasWidgetSupplier;
-import com.butent.bee.client.ui.IdentifiableWidget;
+import com.butent.bee.client.ui.Opener;
 import com.butent.bee.client.ui.UiOption;
 import com.butent.bee.client.view.HeaderImpl;
 import com.butent.bee.client.view.HeaderView;
@@ -86,10 +87,13 @@ import com.butent.bee.shared.time.DateTime;
 import com.butent.bee.shared.time.JustDate;
 import com.butent.bee.shared.time.TimeUtils;
 import com.butent.bee.shared.ui.Action;
+import com.butent.bee.shared.ui.HasWidgetSupplier;
 import com.butent.bee.shared.ui.Orientation;
 import com.butent.bee.shared.utils.BeeUtils;
+import com.butent.bee.shared.utils.EnumUtils;
 import com.butent.bee.shared.utils.NameUtils;
 
+import java.util.ArrayList;
 import java.util.EnumSet;
 import java.util.List;
 import java.util.Objects;
@@ -100,7 +104,7 @@ public class CalendarPanel extends Split implements AppointmentEvent.Handler, Pr
 
   private static final BeeLogger logger = LogUtils.getLogger(CalendarPanel.class);
 
-  private static final String STYLE_PANEL = "bee-cal-Panel";
+  private static final String STYLE_PANEL = BeeConst.CSS_CLASS_PREFIX + "cal-Panel";
   private static final String STYLE_PREFIX = STYLE_PANEL + "-";
 
   private static final String STYLE_CONTROLS = STYLE_PREFIX + "controls";
@@ -141,16 +145,17 @@ public class CalendarPanel extends Split implements AppointmentEvent.Handler, Pr
 
   private final Flow todoContainer;
 
-  private final List<ViewType> views = Lists.newArrayList();
+  private final List<ViewType> views = new ArrayList<>();
 
   private final Timer timer;
 
-  private final List<HandlerRegistration> registry = Lists.newArrayList();
+  private final List<HandlerRegistration> registry = new ArrayList<>();
 
   private boolean enabled = true;
 
   public CalendarPanel(long calendarId, String caption, CalendarSettings settings,
       BeeRowSet ucAttendees) {
+
     super(BeeConst.UNDEF);
     addStyleName(STYLE_PANEL);
 
@@ -168,7 +173,7 @@ public class CalendarPanel extends Split implements AppointmentEvent.Handler, Pr
             CalendarKeeper.openAppointment((Appointment) item, getCalendarId());
             break;
           case TASK:
-            RowEditor.openRow(TaskConstants.VIEW_TASKS, item.getId(), true, null);
+            RowEditor.open(TaskConstants.VIEW_TASKS, item.getId(), Opener.MODAL);
             break;
         }
       }
@@ -193,7 +198,8 @@ public class CalendarPanel extends Split implements AppointmentEvent.Handler, Pr
 
     this.header = new HeaderImpl();
     header.create(caption, false, true, null, EnumSet.of(UiOption.ROOT),
-        EnumSet.of(Action.REFRESH, Action.CONFIGURE), Action.NO_ACTIONS, Action.NO_ACTIONS);
+        EnumSet.of(Action.REFRESH, Action.CONFIGURE, Action.PRINT), Action.NO_ACTIONS,
+        Action.NO_ACTIONS);
     header.setViewPresenter(this);
 
     Button todoListCommand = new Button(Localized.getConstants().crmTodoList());
@@ -261,6 +267,8 @@ public class CalendarPanel extends Split implements AppointmentEvent.Handler, Pr
       }
     });
 
+    EventUtils.setClickSensitivityMillis(prev, 100);
+
     Label next = new Label();
     next.getElement().setInnerText(">");
 
@@ -273,6 +281,8 @@ public class CalendarPanel extends Split implements AppointmentEvent.Handler, Pr
         navigate(true);
       }
     });
+
+    EventUtils.setClickSensitivityMillis(next, 100);
 
     Flow controls = new Flow();
     controls.addStyleName(STYLE_CONTROLS);
@@ -309,6 +319,13 @@ public class CalendarPanel extends Split implements AppointmentEvent.Handler, Pr
 
     int viewIndex = updateViews(settings);
     activateView(views.get(viewIndex));
+  }
+
+  @Override
+  public com.google.gwt.event.shared.HandlerRegistration addReadyHandler(
+      ReadyEvent.Handler handler) {
+    ReadyEvent.maybeDelegate(this);
+    return addHandler(handler, ReadyEvent.getType());
   }
 
   public long getCalendarId() {
@@ -352,11 +369,6 @@ public class CalendarPanel extends Split implements AppointmentEvent.Handler, Pr
 
   @Override
   public Presenter getViewPresenter() {
-    return this;
-  }
-
-  @Override
-  public IdentifiableWidget getWidget() {
     return this;
   }
 
@@ -540,6 +552,12 @@ public class CalendarPanel extends Split implements AppointmentEvent.Handler, Pr
   }
 
   @Override
+  public boolean reactsTo(Action action) {
+    return EnumUtils.in(action,
+        Action.REFRESH, Action.CONFIGURE, Action.CANCEL, Action.CLOSE, Action.PRINT);
+  }
+
+  @Override
   public void setEnabled(boolean enabled) {
     this.enabled = enabled;
   }
@@ -593,7 +611,7 @@ public class CalendarPanel extends Split implements AppointmentEvent.Handler, Pr
   }
 
   void updateUcAttendees(BeeRowSet ucAttendees, boolean refresh) {
-    List<Long> attIds = Lists.newArrayList();
+    List<Long> attIds = new ArrayList<>();
     if (!DataUtils.isEmpty(ucAttendees)) {
       for (BeeRow row : ucAttendees.getRows()) {
         if (BeeUtils.isTrue(DataUtils.getBoolean(ucAttendees, row, COL_ENABLED))) {
@@ -801,10 +819,10 @@ public class CalendarPanel extends Split implements AppointmentEvent.Handler, Pr
               if (!todoContainer.isEmpty()) {
                 todoContainer.clear();
               }
-             
+
               int size = Math.min(getOffsetWidth() / 3, 320);
               setWidgetSize(todoContainer, size);
-              todoContainer.add(presenter.getWidget());
+              todoContainer.add(presenter.getMainView());
 
               removeStyleName(STYLE_TODO_HIDDEN);
             }
@@ -830,7 +848,7 @@ public class CalendarPanel extends Split implements AppointmentEvent.Handler, Pr
       long oldAttendee = calendar.getAttendees().get(oldColumnIndex);
       long newAttendee = calendar.getAttendees().get(newColumnIndex);
 
-      List<Long> attendees = Lists.newArrayList(appointment.getAttendees());
+      List<Long> attendees = new ArrayList<>(appointment.getAttendees());
 
       boolean add = !attendees.contains(newAttendee);
 

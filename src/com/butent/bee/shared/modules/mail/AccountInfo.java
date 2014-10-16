@@ -2,8 +2,11 @@ package com.butent.bee.shared.modules.mail;
 
 import static com.butent.bee.shared.modules.mail.MailConstants.*;
 
+import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.SimpleRowSet.SimpleRow;
+import com.butent.bee.shared.modules.classifiers.ClassifierConstants;
 import com.butent.bee.shared.modules.mail.MailConstants.SystemFolder;
+import com.butent.bee.shared.utils.BeeUtils;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -12,16 +15,22 @@ import java.util.Objects;
 public class AccountInfo {
   private final long accountId;
   private final long addressId;
+  private final String address;
   private final long userId;
+  private final boolean isPrivate;
   private final String description;
+  private final Long signatureId;
   private final Map<SystemFolder, Long> sysFolders = new HashMap<>();
   private MailFolder rootFolder = new MailFolder();
 
   public AccountInfo(SimpleRow row) {
     this.accountId = row.getLong(COL_ACCOUNT);
     this.addressId = row.getLong(COL_ADDRESS);
+    this.address = row.getValue(ClassifierConstants.COL_EMAIL_ADDRESS);
     this.userId = row.getLong(COL_USER);
+    this.isPrivate = BeeUtils.unbox(row.getBoolean(COL_ACCOUNT_PRIVATE));
     this.description = row.getValue(COL_ACCOUNT_DESCRIPTION);
+    this.signatureId = row.getLong(COL_SIGNATURE);
 
     for (SystemFolder sysFolder : SystemFolder.values()) {
       sysFolders.put(sysFolder, row.getLong(sysFolder.name() + COL_FOLDER));
@@ -29,11 +38,18 @@ public class AccountInfo {
   }
 
   public MailFolder findFolder(Long folderId) {
-    return getRootFolder().findFolder(folderId);
+    if (DataUtils.isId(folderId)) {
+      return getRootFolder().findFolder(folderId);
+    }
+    return null;
   }
 
   public long getAccountId() {
     return accountId;
+  }
+
+  public String getAddress() {
+    return address;
   }
 
   public long getAddressId() {
@@ -50,6 +66,10 @@ public class AccountInfo {
 
   public MailFolder getRootFolder() {
     return rootFolder;
+  }
+
+  public Long getSignatureId() {
+    return signatureId;
   }
 
   public Long getSystemFolder(SystemFolder sysFolder) {
@@ -74,6 +94,10 @@ public class AccountInfo {
 
   public boolean isSystemFolder(Long folderId) {
     return sysFolders.containsValue(folderId);
+  }
+
+  public boolean isPrivate() {
+    return isPrivate;
   }
 
   public boolean isTrashFolder(Long folderId) {

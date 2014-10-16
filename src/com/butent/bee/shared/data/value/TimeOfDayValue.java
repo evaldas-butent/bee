@@ -1,6 +1,5 @@
 package com.butent.bee.shared.data.value;
 
-import com.google.common.base.Objects;
 import com.google.common.collect.ComparisonChain;
 
 import com.butent.bee.shared.Assert;
@@ -12,6 +11,7 @@ import com.butent.bee.shared.utils.BeeUtils;
 
 import java.math.BigDecimal;
 import java.util.List;
+import java.util.Objects;
 
 /**
  * The {@code DateTimeValue} class represents time values. It allows the interpretation of time as
@@ -91,7 +91,7 @@ public class TimeOfDayValue extends Value {
       TimeOfDayValue other = (TimeOfDayValue) o;
       diff = ComparisonChain.start().compare(getHours(), other.getHours()).compare(getMinutes(),
           other.getMinutes()).compare(getSeconds(), other.getSeconds()).compare(getMilliseconds(),
-              other.getMilliseconds()).result();
+          other.getMilliseconds()).result();
     }
     return diff;
   }
@@ -201,14 +201,14 @@ public class TimeOfDayValue extends Value {
     if (isNull()) {
       return -1;
     }
-    return Objects.hashCode(getHours(), getMinutes(), getSeconds(), getMilliseconds());
+    return Objects.hash(getHours(), getMinutes(), getSeconds(), getMilliseconds());
   }
 
   @Override
   public boolean isEmpty() {
     return isNull() || BeeConst.isUndef(getHours());
   }
-  
+
   @Override
   public boolean isNull() {
     return this == NULL_VALUE;

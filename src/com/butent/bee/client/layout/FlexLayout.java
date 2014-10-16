@@ -1,8 +1,5 @@
 package com.butent.bee.client.layout;
 
-import com.google.common.collect.Lists;
-import com.google.common.collect.Sets;
-
 import com.butent.bee.client.dom.Rulers;
 import com.butent.bee.client.style.Font;
 import com.butent.bee.shared.BeeConst;
@@ -12,7 +9,9 @@ import com.butent.bee.shared.ui.Flexible;
 import com.butent.bee.shared.ui.Orientation;
 import com.butent.bee.shared.utils.BeeUtils;
 
+import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
@@ -84,7 +83,7 @@ public final class FlexLayout {
       this.unclampedSize = unclampedSize;
     }
   }
-  
+
   public static boolean doLayout(int containerSize, Font font, Orientation orientation,
       List<? extends Flexible> items, Flexibility defaultFlexibility) {
     Set<Integer> frozen = Collections.emptySet();
@@ -98,8 +97,8 @@ public final class FlexLayout {
     if (containerSize <= 0 || items.isEmpty()) {
       return changed;
     }
-    
-    List<Adapter> adapters = Lists.newArrayList();
+
+    List<Adapter> adapters = new ArrayList<>();
     int totHypothetical = 0;
     int totUsed = 0;
 
@@ -256,7 +255,7 @@ public final class FlexLayout {
 
       totViolation += adapter.getViolation();
     }
-    
+
     if (count == 1 || totViolation == 0) {
       for (Adapter adapter : adapters) {
         if (adapter.getFactor() > 0 && adapter.getClampedSize() > 0) {
@@ -269,7 +268,7 @@ public final class FlexLayout {
       return changed;
     }
 
-    Set<Integer> freeze = Sets.newHashSet();
+    Set<Integer> freeze = new HashSet<>();
     if (!BeeUtils.isEmpty(frozen)) {
       freeze.addAll(frozen);
     }
@@ -293,7 +292,7 @@ public final class FlexLayout {
     }
     return changed;
   }
-  
+
   private static int getDefiniteSize(Flexibility flexibility, int containerSize, Font font) {
     if (flexibility.getBasisWidth() < 0) {
       return BeeConst.UNDEF;
@@ -306,7 +305,7 @@ public final class FlexLayout {
           containerSize);
     }
   }
-  
+
   private FlexLayout() {
   }
 }

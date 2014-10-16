@@ -1,12 +1,13 @@
 package com.butent.bee.client.view;
 
-import com.google.common.collect.Lists;
-import com.google.common.collect.Sets;
 import com.google.gwt.core.client.Scheduler;
 import com.google.gwt.core.client.Scheduler.ScheduledCommand;
 import com.google.gwt.dom.client.Element;
 import com.google.gwt.dom.client.EventTarget;
 import com.google.gwt.dom.client.Node;
+import com.google.gwt.event.dom.client.ClickEvent;
+import com.google.gwt.event.dom.client.ClickHandler;
+import com.google.gwt.event.shared.HandlerRegistration;
 import com.google.gwt.user.client.Event;
 import com.google.gwt.user.client.ui.Widget;
 
@@ -19,10 +20,13 @@ import com.butent.bee.client.event.EventUtils;
 import com.butent.bee.client.event.logical.ActiveRowChangeEvent;
 import com.butent.bee.client.event.logical.DataRequestEvent;
 import com.butent.bee.client.event.logical.ParentRowEvent;
+import com.butent.bee.client.event.logical.ReadyEvent;
+import com.butent.bee.client.event.logical.RenderingEvent;
 import com.butent.bee.client.grid.GridFactory;
 import com.butent.bee.client.layout.Split;
 import com.butent.bee.client.presenter.Presenter;
 import com.butent.bee.client.style.StyleUtils;
+import com.butent.bee.client.ui.UiHelper;
 import com.butent.bee.client.ui.UiOption;
 import com.butent.bee.client.ui.WidgetCreationCallback;
 import com.butent.bee.client.utils.Evaluator;
@@ -37,18 +41,22 @@ import com.butent.bee.client.view.grid.interceptor.GridInterceptor;
 import com.butent.bee.client.view.navigation.PagerView;
 import com.butent.bee.client.view.navigation.ScrollPager;
 import com.butent.bee.client.view.search.SearchView;
+import com.butent.bee.client.widget.FaLabel;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.IsRow;
 import com.butent.bee.shared.data.filter.Filter;
-import com.butent.bee.shared.rights.RegulatedWidget;
+import com.butent.bee.shared.font.FontAwesome;
+import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.ui.Action;
 import com.butent.bee.shared.ui.GridDescription;
 import com.butent.bee.shared.ui.NavigationOrigin;
 import com.butent.bee.shared.utils.BeeUtils;
-import com.butent.bee.shared.utils.NameUtils;
 
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.EnumSet;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
@@ -58,9 +66,22 @@ import java.util.Set;
 
 public class GridContainerImpl extends Split implements GridContainerView, HasNavigation,
     HasSearch, ActiveRowChangeEvent.Handler, AddStartEvent.Handler, AddEndEvent.Handler,
-    EditFormEvent.Handler, HasEditState {
+    EditFormEvent.Handler, HasEditState, RenderingEvent.Handler {
 
-  private static final String STYLE_NAME = "bee-GridContainer";
+  private static final String STYLE_NAME = BeeConst.CSS_CLASS_PREFIX + "GridContainer";
+
+  private static final String STYLE_HAS_DATA = STYLE_NAME + "-has-data";
+  private static final String STYLE_NO_DATA = STYLE_NAME + "-no-data";
+
+  private static final String STYLE_SCROLLABLE = STYLE_NAME + "-scrollable";
+
+  private static final String STYLE_AUTO_FIT = BeeConst.CSS_CLASS_PREFIX + "auto-fit";
+
+  private static final Set<Action> HEADER_ACTIONS =
+      EnumSet.of(Action.REFRESH, Action.FILTER, Action.REMOVE_FILTER, Action.ADD, Action.DELETE,
+          Action.MENU, Action.CLOSE);
+
+  private final String supplierKey;
 
   private Presenter viewPresenter;
 
@@ -78,19 +99,29 @@ public class GridContainerImpl extends Split implements GridContainerView, HasNa
   private boolean editing;
   private boolean enabled = true;
 
-  private final List<ExtWidget> extWidgets = Lists.newArrayList();
+  private final List<ExtWidget> extWidgets = new ArrayList<>();
   private WidgetCreationCallback extCreation;
 
   private IsRow lastRow;
   private boolean lastEnabled;
 
-  private final List<String> favorite = Lists.newArrayList();
-
   private boolean resizeSuspended;
 
-  public GridContainerImpl() {
+  public GridContainerImpl(String gridName, String supplierKey) {
     super(-1);
+
     addStyleName(STYLE_NAME);
+    if (!BeeUtils.isEmpty(gridName)) {
+      addStyleName(BeeConst.CSS_CLASS_PREFIX + "grid-" + gridName.trim());
+    }
+
+    this.supplierKey = supplierKey;
+  }
+
+  @Override
+  public HandlerRegistration addReadyHandler(ReadyEvent.Handler handler) {
+    ReadyEvent.maybeDelegate(this);
+    return addHandler(handler, ReadyEvent.getType());
   }
 
   @Override
@@ -100,6 +131,7 @@ public class GridContainerImpl extends Split implements GridContainerView, HasNa
     }
 
     getGridView().getGrid().addActiveRowChangeHandler(this);
+    getGridView().getGrid().addRenderingHandler(this);
 
     getGridView().addAddStartHandler(this);
     getGridView().addAddEndHandler(this);
@@ -113,7 +145,8 @@ public class GridContainerImpl extends Split implements GridContainerView, HasNa
       GridFactory.GridOptions gridOptions) {
 
     setHasPaging(UiOption.hasPaging(uiOptions));
-    setHasSearch(UiOption.hasSearch(uiOptions));
+    setHasSearch(UiOption.hasSearch(uiOptions)
+        || gridDescription.getEnabledActions().contains(Action.FILTER));
 
     boolean hasData = !BeeUtils.isEmpty(gridDescription.getViewName());
     boolean readOnly = BeeUtils.isTrue(gridDescription.isReadOnly())
@@ -121,8 +154,6 @@ public class GridContainerImpl extends Split implements GridContainerView, HasNa
 
     HeaderView header;
     if (gridDescription.hasGridHeader()) {
-      header = new HeaderImpl();
-
       String caption = (gridInterceptor == null) ? null : gridInterceptor.getCaption();
       if (caption == null) {
         caption = (gridOptions == null) ? null : gridOptions.getCaption();
@@ -131,9 +162,13 @@ public class GridContainerImpl extends Split implements GridContainerView, HasNa
         caption = gridDescription.getCaption();
       }
 
-      Set<Action> enabledActions = Sets.newHashSet(gridDescription.getEnabledActions());
-      Set<Action> disabledActions = Sets.newHashSet(gridDescription.getDisabledActions());
-      Set<Action> hiddenActions = Sets.newHashSet();
+      Set<Action> enabledActions = new HashSet<>(gridDescription.getEnabledActions());
+      if (!enabledActions.isEmpty()) {
+        enabledActions.retainAll(HEADER_ACTIONS);
+      }
+
+      Set<Action> disabledActions = new HashSet<>(gridDescription.getDisabledActions());
+      Set<Action> hiddenActions = new HashSet<>();
 
       if (hasSearch()) {
         if (!disabledActions.contains(Action.FILTER)) {
@@ -148,19 +183,6 @@ public class GridContainerImpl extends Split implements GridContainerView, HasNa
         }
       }
 
-      boolean fav = !BeeUtils.isEmpty(gridDescription.getFavorite());
-      if (fav) {
-        setFavorite(NameUtils.toList(gridDescription.getFavorite()));
-      }
-
-      if (enabledActions.contains(Action.BOOKMARK) != fav) {
-        if (fav) {
-          enabledActions.add(Action.BOOKMARK);
-        } else {
-          enabledActions.remove(Action.BOOKMARK);
-        }
-      }
-
       int min = BeeUtils.unbox(gridDescription.getMinNumberOfRows());
       if (min > 0 && rowCount <= min) {
         disabledActions.add(Action.DELETE);
@@ -170,26 +192,24 @@ public class GridContainerImpl extends Split implements GridContainerView, HasNa
         disabledActions.add(Action.ADD);
       }
 
-      if (!readOnly && !BeeUtils.isEmpty(gridDescription.getEnableCopy())
-          && !disabledActions.contains(Action.COPY)
-          && BeeKeeper.getUser().canCreateData(gridDescription.getViewName())) {
-        enabledActions.add(Action.COPY);
+      if (!disabledActions.contains(Action.MENU)) {
+        enabledActions.add(Action.MENU);
       }
 
-      if (!disabledActions.contains(Action.EXPORT)) {
-        enabledActions.add(Action.EXPORT);
-      }
+      FaLabel autoFit = new FaLabel(FontAwesome.ARROWS_H, STYLE_AUTO_FIT);
+      autoFit.setTitle(Localized.getConstants().autoFit());
 
-      if (UiOption.hasSettings(uiOptions) && !disabledActions.contains(Action.CONFIGURE)) {
-        enabledActions.add(Action.CONFIGURE);
-      }
-      if (BeeKeeper.getUser().isWidgetVisible(RegulatedWidget.AUDIT)
-          && UiOption.hasSettings(uiOptions) && !disabledActions.contains(Action.AUDIT)) {
-        enabledActions.add(Action.AUDIT);
-      }
+      autoFit.addClickHandler(new ClickHandler() {
+        @Override
+        public void onClick(ClickEvent event) {
+          getGridView().getGrid().autoFit(!EventUtils.hasModifierKey(event.getNativeEvent()));
+        }
+      });
 
+      header = new HeaderImpl(autoFit);
       header.create(caption, hasData, readOnly, gridDescription.getViewName(), uiOptions,
           enabledActions, disabledActions, hiddenActions);
+
     } else {
       header = null;
     }
@@ -242,7 +262,7 @@ public class GridContainerImpl extends Split implements GridContainerView, HasNa
       addEast(scroller, getScrollerWidth());
       setScrollerId(scroller.getWidgetId());
 
-      addStyleName(STYLE_NAME + "-scrollable");
+      addStyleName(STYLE_SCROLLABLE);
       sinkEvents(Event.ONMOUSEWHEEL);
     }
 
@@ -265,11 +285,6 @@ public class GridContainerImpl extends Split implements GridContainerView, HasNa
   }
 
   @Override
-  public List<String> getFavorite() {
-    return favorite;
-  }
-
-  @Override
   public FooterView getFooter() {
     if (BeeUtils.isEmpty(getFooterId())) {
       return null;
@@ -285,10 +300,11 @@ public class GridContainerImpl extends Split implements GridContainerView, HasNa
 
   @Override
   public GridView getGridView() {
-    if (getCenter() == null) {
+    if (getCenter() instanceof GridView) {
+      return (GridView) getCenter();
+    } else {
       return null;
     }
-    return (GridView) getCenter();
   }
 
   @Override
@@ -315,7 +331,7 @@ public class GridContainerImpl extends Split implements GridContainerView, HasNa
     if (hasPaging()) {
       return ViewHelper.getPagers(this);
     } else {
-      return Sets.newHashSet();
+      return new HashSet<>();
     }
   }
 
@@ -329,13 +345,13 @@ public class GridContainerImpl extends Split implements GridContainerView, HasNa
     if (hasSearch()) {
       return ViewHelper.getSearchers(this);
     } else {
-      return Sets.newHashSet();
+      return new HashSet<>();
     }
   }
 
   @Override
   public String getSupplierKey() {
-    return getGridView().getGridKey();
+    return supplierKey;
   }
 
   @Override
@@ -387,6 +403,10 @@ public class GridContainerImpl extends Split implements GridContainerView, HasNa
       if (hasHeader()) {
         getHeader().setMessage(message);
       }
+    }
+
+    if (gridView.getGridInterceptor() != null) {
+      gridView.getGridInterceptor().onActiveRowChange(event);
     }
 
     String eventSource = BeeUtils.notEmpty(getViewPresenter().getEventSource(), getId());
@@ -523,10 +543,26 @@ public class GridContainerImpl extends Split implements GridContainerView, HasNa
   }
 
   @Override
+  public void onRender(RenderingEvent event) {
+    if (event != null && event.isAfter()) {
+      boolean empty = getGridView().isEmpty();
+
+      setStyleName(STYLE_HAS_DATA, !empty);
+      setStyleName(STYLE_NO_DATA, empty);
+    }
+  }
+
+  @Override
   public void onResize() {
     if (isAttached() && !isResizeSuspended()) {
       super.onResize();
     }
+  }
+
+  @Override
+  public boolean reactsTo(Action action) {
+    GridView gridView = getGridView();
+    return gridView != null && gridView.reactsTo(action);
   }
 
   @Override
@@ -540,11 +576,7 @@ public class GridContainerImpl extends Split implements GridContainerView, HasNa
       return;
     }
     this.enabled = enabled;
-    DomUtils.enableChildren(this, enabled);
-  }
-
-  public void setFavorite(List<String> favorite) {
-    BeeUtils.overwrite(this.favorite, favorite);
+    UiHelper.enableChildren(this, enabled);
   }
 
   @Override
@@ -569,27 +601,28 @@ public class GridContainerImpl extends Split implements GridContainerView, HasNa
         }
 
         CellGrid grid = getGridView().getGrid();
-        if (!hasPaging()) {
-          grid.refresh();
-          return;
-        }
 
-        Collection<PagerView> pagers = getPagers();
-        if (pagers != null) {
-          for (PagerView pager : pagers) {
-            pager.start(grid);
+        if (hasPaging()) {
+          Collection<PagerView> pagers = getPagers();
+          if (pagers != null) {
+            for (PagerView pager : pagers) {
+              pager.start(grid);
+            }
           }
-        }
 
-        int ps = estimatePageSize();
-        grid.setPageSize(ps, true);
+          int ps = estimatePageSize();
+          grid.setPageSize(ps, true);
 
-        int ds = grid.getDataSize();
-        if (ps > 0 && ps < ds) {
-          grid.getRowData().subList(ps, ds).clear();
-          grid.refresh();
-        } else if (ps > 0 && ps > ds && ds < grid.getRowCount()) {
-          DataRequestEvent.fire(grid, NavigationOrigin.SYSTEM);
+          int ds = grid.getDataSize();
+          if (ps > 0 && ps < ds) {
+            grid.getRowData().subList(ps, ds).clear();
+            grid.refresh();
+          } else if (ps > 0 && ps > ds && ds < grid.getRowCount()) {
+            DataRequestEvent.fire(grid, NavigationOrigin.SYSTEM);
+          } else {
+            grid.refresh();
+          }
+
         } else {
           grid.refresh();
         }

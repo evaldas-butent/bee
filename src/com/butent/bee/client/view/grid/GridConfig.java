@@ -1,8 +1,5 @@
 package com.butent.bee.client.view.grid;
 
-import com.google.common.collect.Lists;
-import com.google.common.collect.Maps;
-
 import com.butent.bee.client.data.Data;
 import com.butent.bee.client.data.Queries;
 import com.butent.bee.client.data.RowCallback;
@@ -24,14 +21,16 @@ import com.butent.bee.shared.ui.StyleDeclaration;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.NameUtils;
 
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
 class GridConfig {
 
   private static final BeeLogger logger = LogUtils.getLogger(GridConfig.class);
-  
-  private static final List<BeeColumn> dataColumns = Lists.newArrayList();
+
+  private static final List<BeeColumn> dataColumns = new ArrayList<>();
 
   private static int userIndex;
   private static int keyIndex;
@@ -152,7 +151,7 @@ class GridConfig {
     ensureFields();
     return rowHeightIndex;
   }
-  
+
   static int getUserIndex() {
     ensureFields();
     return userIndex;
@@ -200,12 +199,12 @@ class GridConfig {
 
   final BeeRow row;
 
-  final Map<String, ColumnConfig> columnSettings = Maps.newHashMap();
+  final Map<String, ColumnConfig> columnSettings = new HashMap<>();
 
   GridConfig(BeeRow row) {
     this.row = row;
   }
-  
+
   void applyTo(GridDescription gridDescription) {
     String caption = getCaption();
     if (!BeeUtils.isEmpty(caption)) {
@@ -256,7 +255,7 @@ class GridConfig {
     List<String> visibleColumnNames = getColumns();
 
     if (!visibleColumnNames.isEmpty() || !columnSettings.isEmpty()) {
-      List<String> names = Lists.newArrayList();
+      List<String> names = new ArrayList<>();
       for (ColumnDescription columnDescription : gridDescription.getColumns()) {
         names.add(columnDescription.getId());
       }
@@ -271,7 +270,7 @@ class GridConfig {
       }
 
       if (!visibleColumnNames.isEmpty()) {
-        List<Integer> indexes = Lists.newArrayList();
+        List<Integer> indexes = new ArrayList<>();
 
         for (String name : visibleColumnNames) {
           int index = names.indexOf(name);
@@ -284,7 +283,7 @@ class GridConfig {
         }
 
         if (!indexes.isEmpty()) {
-          List<ColumnDescription> columnDescriptions = Lists.newArrayList();
+          List<ColumnDescription> columnDescriptions = new ArrayList<>();
 
           for (int index : indexes) {
             ColumnDescription columnDescription = gridDescription.getColumns().get(index);
@@ -323,11 +322,11 @@ class GridConfig {
       }
     }
   }
-  
+
   boolean hasVisibleColumns() {
     return !BeeUtils.isEmpty(row.getString(columnsIndex));
   }
-  
+
   boolean isEmpty() {
     if (!columnSettings.isEmpty()) {
       for (ColumnConfig columnConfig : columnSettings.values()) {
@@ -357,16 +356,16 @@ class GridConfig {
   void saveColumnSetting(String name, int index, String value) {
     Assert.notEmpty(name);
     Assert.isIndex(ColumnConfig.getDataColumns(), index);
-    
+
     final String columnName = name.trim();
     final BeeColumn dataColumn = ColumnConfig.getDataColumns().get(index);
     final String newValue = GridUtils.normalizeValue(value);
-    
+
     ColumnConfig columnConfig = columnSettings.get(columnName);
 
     if (columnConfig == null) {
       if (newValue != null) {
-        List<BeeColumn> columns = Lists.newArrayList();
+        List<BeeColumn> columns = new ArrayList<>();
         columns.add(ColumnConfig.getDataColumns().get(ColumnConfig.getGridIndex()));
         columns.add(ColumnConfig.getDataColumns().get(ColumnConfig.getNameIndex()));
         columns.add(dataColumn);

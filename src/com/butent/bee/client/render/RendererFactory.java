@@ -1,11 +1,12 @@
 package com.butent.bee.client.render;
 
 import com.google.common.collect.HashBasedTable;
-import com.google.common.collect.Lists;
 import com.google.common.collect.Table;
 
 import com.butent.bee.client.data.Data;
+import com.butent.bee.client.modules.trade.DiscountRenderer;
 import com.butent.bee.client.modules.trade.TotalRenderer;
+import com.butent.bee.client.modules.trade.VatRenderer;
 import com.butent.bee.client.utils.Evaluator;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
@@ -27,6 +28,7 @@ import com.butent.bee.shared.ui.RendererDescription;
 import com.butent.bee.shared.ui.RendererType;
 import com.butent.bee.shared.utils.BeeUtils;
 
+import java.util.ArrayList;
 import java.util.List;
 
 public final class RendererFactory {
@@ -72,8 +74,7 @@ public final class RendererFactory {
       if (renderColumns.size() == 1) {
         int index = DataUtils.getColumnIndex(renderColumns.get(0), dataColumns);
         if (BeeConst.isUndef(index)) {
-          logger.severe("render column not found", renderColumns);
-          return null;
+          return new SimpleRenderer(CellSource.forProperty(renderColumns.get(0), ValueType.TEXT));
         } else {
           return new SimpleRenderer(CellSource.forColumn(dataColumns.get(index), index));
         }
@@ -138,7 +139,7 @@ public final class RendererFactory {
       return null;
     }
 
-    List<ColumnToken> columnTokens = Lists.newArrayList();
+    List<ColumnToken> columnTokens = new ArrayList<>();
     for (RenderableToken token : tokens) {
       String source = token.getSource();
       if (BeeUtils.isEmpty(source)) {
@@ -249,9 +250,17 @@ public final class RendererFactory {
       case URL:
         renderer = new UrlRenderer(source);
         break;
-        
+
       case TOTAL:
         renderer = new TotalRenderer(dataColumns);
+        break;
+
+      case VAT:
+        renderer = new VatRenderer(dataColumns);
+        break;
+
+      case DISCOUNT:
+        renderer = new DiscountRenderer(dataColumns);
         break;
 
       case TOKEN:

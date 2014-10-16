@@ -1,7 +1,5 @@
 package com.butent.bee.client.validation;
 
-import com.google.common.collect.Lists;
-
 import com.butent.bee.client.utils.Evaluator;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
@@ -12,6 +10,7 @@ import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.utils.ArrayUtils;
 import com.butent.bee.shared.utils.BeeUtils;
 
+import java.util.ArrayList;
 import java.util.List;
 
 public final class ValidationHelper {
@@ -26,14 +25,14 @@ public final class ValidationHelper {
 
   public static List<String> getBounds(HasBounds obj) {
     if (obj == null) {
-      return Lists.newArrayList();
+      return new ArrayList<>();
     } else {
       return getBounds(obj.getMinValue(), obj.getMaxValue());
     }
   }
 
   public static List<String> getBounds(String minValue, String maxValue) {
-    List<String> result = Lists.newArrayList();
+    List<String> result = new ArrayList<>();
 
     if (!BeeUtils.isEmpty(minValue)) {
       result.add(BeeUtils.joinWords(Localized.getConstants().minValue(), minValue));
@@ -41,24 +40,24 @@ public final class ValidationHelper {
     if (!BeeUtils.isEmpty(maxValue)) {
       result.add(BeeUtils.joinWords(Localized.getConstants().maxValue(), maxValue));
     }
-    
+
     return result;
   }
 
   public static void showError(NotificationListener notificationListener, String caption,
       List<String> messages) {
     Assert.notNull(notificationListener);
-    
+
     if (BeeUtils.isEmpty(messages)) {
       notificationListener.notifySevere(caption);
-    
+
     } else if (BeeUtils.isEmpty(caption) || messages.contains(caption)) {
       notificationListener.notifySevere(ArrayUtils.toArray(messages));
 
     } else {
       String[] arr = new String[messages.size() + 1];
       arr[0] = caption;
-      
+
       for (int i = 0; i < messages.size(); i++) {
         arr[i + 1] = messages.get(i);
       }
@@ -109,9 +108,9 @@ public final class ValidationHelper {
       return false;
     }
   }
-  
+
   private static boolean validateCell(CellValidation cv) {
-    List<String> messages = Lists.newArrayList();
+    List<String> messages = new ArrayList<>();
 
     boolean checkForNull = !cv.isAdding() || !cv.hasDefaults();
 
@@ -136,7 +135,7 @@ public final class ValidationHelper {
       cv.getEvaluator().update(cv.getRow(), BeeConst.UNDEF, cv.getColIndex(), cv.getType(),
           cv.getOldValue(), cv.getNewValue());
       String msg = cv.getEvaluator().evaluate();
-      
+
       if (!BeeUtils.isEmpty(msg)) {
         messages.add(msg);
       }

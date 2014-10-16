@@ -1,6 +1,5 @@
 package com.butent.bee.client.rights;
 
-import com.google.common.base.Objects;
 import com.google.common.collect.Lists;
 import com.google.gwt.dom.client.Element;
 import com.google.gwt.dom.client.NodeList;
@@ -36,21 +35,23 @@ import com.butent.bee.shared.html.Attributes;
 import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogUtils;
-import com.butent.bee.shared.modules.administration.AdministrationConstants.RightsObjectType;
 import com.butent.bee.shared.rights.ModuleAndSub;
+import com.butent.bee.shared.rights.RightsObjectType;
 import com.butent.bee.shared.ui.Action;
 import com.butent.bee.shared.utils.BeeUtils;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
+import java.util.Objects;
 import java.util.Set;
 
 public abstract class RightsForm extends AbstractFormInterceptor {
 
   private static BeeLogger logger = LogUtils.getLogger(RightsForm.class);
 
-  protected static final String STYLE_PREFIX = "bee-Rights-";
+  protected static final String STYLE_PREFIX = BeeConst.CSS_CLASS_PREFIX + "Rights-";
   protected static final String STYLE_SUFFIX_CELL = "-cell";
 
   private static final String STYLE_PANEL = STYLE_PREFIX + "panel";
@@ -99,15 +100,8 @@ public abstract class RightsForm extends AbstractFormInterceptor {
     FormFactory.registerFormInterceptor("WidgetRights", new WidgetRightsHandler());
   }
 
-  protected static Toggle createToggle(FontAwesome up, FontAwesome down, String styleName) {
-    Toggle toggle = new Toggle(String.valueOf(up.getCode()), String.valueOf(down.getCode()),
-        styleName);
-    StyleUtils.setFontFamily(toggle, FontAwesome.FAMILY);
-    return toggle;
-  }
-
   protected static Toggle createValueToggle(String objectName) {
-    Toggle toggle = createToggle(FontAwesome.TIMES, FontAwesome.CHECK, STYLE_VALUE_TOGGLE);
+    Toggle toggle = new Toggle(FontAwesome.TIMES, FontAwesome.CHECK, STYLE_VALUE_TOGGLE, false);
 
     DomUtils.setDataProperty(toggle.getElement(), DATA_KEY_TYPE, DATA_TYPE_VALUE);
     DomUtils.setDataProperty(toggle.getElement(), DATA_KEY_OBJECT, objectName);
@@ -121,6 +115,22 @@ public abstract class RightsForm extends AbstractFormInterceptor {
 
   protected static void enableValueWidet(Widget widget, boolean enabled) {
     widget.setStyleName(STYLE_VALUE_DISABLED, !enabled);
+  }
+
+  protected static ModuleAndSub getFirstVisibleModule(String input) {
+    if (BeeUtils.isEmpty(input)) {
+      return null;
+
+    } else {
+      List<ModuleAndSub> list = ModuleAndSub.parseList(input);
+
+      for (ModuleAndSub ms : list) {
+        if (BeeKeeper.getUser().isModuleVisible(ms)) {
+          return ms;
+        }
+      }
+      return null;
+    }
   }
 
   protected static String getObjectName(Widget widget) {
@@ -169,7 +179,7 @@ public abstract class RightsForm extends AbstractFormInterceptor {
     }
   }
 
-  private final List<RightsObject> objects = Lists.newArrayList();
+  private final List<RightsObject> objects = new ArrayList<>();
 
   private HtmlTable table;
 
@@ -287,10 +297,10 @@ public abstract class RightsForm extends AbstractFormInterceptor {
   }
 
   protected List<RightsObject> filterByModule(ModuleAndSub moduleAndSub) {
-    List<RightsObject> result = Lists.newArrayList();
+    List<RightsObject> result = new ArrayList<>();
 
     for (RightsObject object : objects) {
-      if (Objects.equal(object.getModuleAndSub(), moduleAndSub)) {
+      if (Objects.equals(object.getModuleAndSub(), moduleAndSub)) {
         result.add(object);
       }
     }
@@ -299,10 +309,10 @@ public abstract class RightsForm extends AbstractFormInterceptor {
   }
 
   protected List<RightsObject> filterByParent(String parent) {
-    List<RightsObject> result = Lists.newArrayList();
+    List<RightsObject> result = new ArrayList<>();
 
     for (RightsObject object : objects) {
-      if (Objects.equal(object.getParent(), parent)) {
+      if (Objects.equals(object.getParent(), parent)) {
         result.add(object);
       }
     }
@@ -330,7 +340,7 @@ public abstract class RightsForm extends AbstractFormInterceptor {
   }
 
   protected List<ModuleAndSub> getModules() {
-    List<ModuleAndSub> modules = Lists.newArrayList();
+    List<ModuleAndSub> modules = new ArrayList<>();
 
     for (RightsObject object : objects) {
       if (object.getModuleAndSub() != null && !modules.contains(object.getModuleAndSub())) {
@@ -345,7 +355,7 @@ public abstract class RightsForm extends AbstractFormInterceptor {
   }
 
   protected List<TableCellElement> getObjectCells(String objectName) {
-    List<TableCellElement> cells = Lists.newArrayList();
+    List<TableCellElement> cells = new ArrayList<>();
 
     NodeList<Element> nodes = Selectors.getNodes(table,
         Selectors.attributeEquals(Attributes.DATA_PREFIX + DATA_KEY_OBJECT, objectName));
@@ -383,7 +393,7 @@ public abstract class RightsForm extends AbstractFormInterceptor {
   }
 
   protected List<Toggle> getObjectToggles() {
-    List<Toggle> toggles = Lists.newArrayList();
+    List<Toggle> toggles = new ArrayList<>();
 
     for (Widget widget : table) {
       if (widget instanceof Toggle
@@ -474,7 +484,7 @@ public abstract class RightsForm extends AbstractFormInterceptor {
         BeeUtils.bracket(changedNames.size()));
     List<String> messages = Lists.newArrayList(message);
 
-    List<RightsObject> changedObjects = Lists.newArrayList();
+    List<RightsObject> changedObjects = new ArrayList<>();
     for (RightsObject object : objects) {
       if (changedNames.contains(object.getName())) {
         changedObjects.add(object);
@@ -570,12 +580,8 @@ public abstract class RightsForm extends AbstractFormInterceptor {
   }
 
   private Widget createObjectToggle(String objectName) {
-    Toggle toggle = createToggle(FontAwesome.SQUARE_O, FontAwesome.CHECK_SQUARE_O,
-        STYLE_OBJECT_TOGGLE);
-
-    if (isObjectChecked(objectName)) {
-      toggle.setChecked(true);
-    }
+    Toggle toggle = new Toggle(FontAwesome.SQUARE_O, FontAwesome.CHECK_SQUARE_O,
+        STYLE_OBJECT_TOGGLE, isObjectChecked(objectName));
 
     DomUtils.setDataProperty(toggle.getElement(), DATA_KEY_TYPE, DATA_TYPE_OBJECT_TOGGLE);
     DomUtils.setDataProperty(toggle.getElement(), DATA_KEY_OBJECT, objectName);

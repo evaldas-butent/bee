@@ -119,7 +119,9 @@ public class BeeServlet extends LoginServlet {
       }
 
     } else if (doLogout) {
+      dispatcher.beforeLogout(reqInfo);
       logout(req, session);
+
       try {
         req.getRequestDispatcher(req.getRequestURI()).forward(req, resp);
       } catch (ServletException | IOException ex) {
@@ -142,7 +144,7 @@ public class BeeServlet extends LoginServlet {
     resp.setHeader(HttpHeaders.EXPIRES, "Thu, 01 Dec 1994 16:00:00 GMT");
 
     ContentType ctp = CommUtils.DEFAULT_RESPONSE_CONTENT_TYPE;
-    
+
     resp.setContentType(CommUtils.getMediaType(ctp));
     resp.setCharacterEncoding(CommUtils.getCharacterEncoding(ctp));
     resp.setHeader(Service.RPC_VAR_CTP, ctp.name());

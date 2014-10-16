@@ -1,7 +1,5 @@
 package com.butent.bee.shared.data;
 
-import com.google.common.collect.Lists;
-
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.BeeSerializable;
@@ -10,6 +8,7 @@ import com.butent.bee.shared.utils.ArrayUtils;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.Codec;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
@@ -27,7 +26,7 @@ public class BeeRowSet extends RowList<BeeRow, BeeColumn> implements BeeSerializ
   private enum Serial {
     VIEW, COLUMNS, ROWS, PROPERTIES
   }
-  
+
   public static BeeRowSet getIfPresent(Map<String, String> map, String key) {
     if (BeeUtils.containsKey(map, key)) {
       String serialized = map.get(key);
@@ -36,6 +35,14 @@ public class BeeRowSet extends RowList<BeeRow, BeeColumn> implements BeeSerializ
       }
     }
     return null;
+  }
+
+  public static BeeRowSet maybeRestore(String s) {
+    if (BeeUtils.isEmpty(s)) {
+      return null;
+    } else {
+      return restore(s);
+    }
   }
 
   public static BeeRowSet restore(String s) {
@@ -70,21 +77,23 @@ public class BeeRowSet extends RowList<BeeRow, BeeColumn> implements BeeSerializ
     setRows(rows);
   }
 
-  public int addEmptyRow() {
-    return addRow(new BeeRow(DataUtils.NEW_ROW_ID, new String[getNumberOfColumns()]));
+  public BeeRow addEmptyRow() {
+    BeeRow row = new BeeRow(DataUtils.NEW_ROW_ID, DataUtils.NEW_ROW_VERSION,
+        new String[getNumberOfColumns()]);
+    addRow(row);
+    return row;
   }
 
-  public int addRow(long id, String[] data) {
-    int idx = addRow(id, 0, data);
-    return idx;
+  public void addRow(long id, String[] data) {
+    addRow(id, 0, data);
   }
 
-  public int addRow(long id, long version, String[] data) {
-    return addRow(new BeeRow(id, version, data));
+  public void addRow(long id, long version, String[] data) {
+    addRow(new BeeRow(id, version, data));
   }
 
-  public int addRow(long id, long version, List<String> data) {
-    return addRow(new BeeRow(id, version, data));
+  public void addRow(long id, long version, List<String> data) {
+    addRow(new BeeRow(id, version, data));
   }
 
   @Override
@@ -128,7 +137,7 @@ public class BeeRowSet extends RowList<BeeRow, BeeColumn> implements BeeSerializ
           String[] cArr = Codec.beeDeserializeCollection(value);
 
           if (!ArrayUtils.isEmpty(cArr)) {
-            List<BeeColumn> columns = Lists.newArrayList();
+            List<BeeColumn> columns = new ArrayList<>();
 
             for (String col : cArr) {
               columns.add(BeeColumn.restore(col));
@@ -162,10 +171,6 @@ public class BeeRowSet extends RowList<BeeRow, BeeColumn> implements BeeSerializ
 
   public String getShadowString(int rowIdx, String columnId) {
     return getShadowString(rowIdx, getColumnIndex(columnId));
-  }
-
-  public String getString(int rowIdx, String columnId) {
-    return getString(rowIdx, getColumnIndex(columnId));
   }
 
   public String getStringByRowId(long rowId, String columnId) {

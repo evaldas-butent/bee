@@ -1,6 +1,7 @@
 package com.butent.bee.client.widget;
 
 import com.butent.bee.client.dom.DomUtils;
+import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.html.Tags;
 
 import elemental.html.ProgressElement;
@@ -44,7 +45,7 @@ public class Progress extends CustomWidget {
   public double getValue() {
     return getProgressElement().getValue();
   }
-  
+
   public void setMax(double max) {
     getProgressElement().setMax(max);
   }
@@ -56,9 +57,9 @@ public class Progress extends CustomWidget {
   @Override
   protected void init() {
     super.init();
-    addStyleName("bee-Progress");
+    addStyleName(BeeConst.CSS_CLASS_PREFIX + "Progress");
   }
-  
+
   private ProgressElement getProgressElement() {
     return (JsProgressElement) getElement().cast();
   }

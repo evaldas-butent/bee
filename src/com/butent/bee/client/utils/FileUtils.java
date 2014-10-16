@@ -1,7 +1,7 @@
 package com.butent.bee.client.utils;
 
-import com.google.common.collect.Lists;
-import com.google.common.collect.Maps;
+import com.google.common.base.CharMatcher;
+import com.google.common.base.Splitter;
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.dom.client.DataTransfer;
 import com.google.gwt.dom.client.NativeEvent;
@@ -19,6 +19,7 @@ import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.Consumer;
 import com.butent.bee.shared.Holder;
+import com.butent.bee.shared.NotificationListener;
 import com.butent.bee.shared.Service;
 import com.butent.bee.shared.communication.CommUtils;
 import com.butent.bee.shared.communication.ResponseObject;
@@ -26,13 +27,19 @@ import com.butent.bee.shared.data.BeeColumn;
 import com.butent.bee.shared.data.BeeRow;
 import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.event.DataChangeEvent;
+import com.butent.bee.shared.i18n.Localized;
+import com.butent.bee.shared.io.FileInfo;
 import com.butent.bee.shared.io.FileNameUtils;
 import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogUtils;
 import com.butent.bee.shared.time.TimeUtils;
+import com.butent.bee.shared.utils.ArrayUtils;
 import com.butent.bee.shared.utils.BeeUtils;
+import com.butent.bee.shared.utils.NameUtils;
 
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -54,8 +61,8 @@ public final class FileUtils {
   private static final String UPLOAD_URL = "upload";
 
   private static final long MIN_FILE_SIZE_FOR_PROGRESS = 100000;
-  
-  public static void commitFiles(Collection<NewFileInfo> files, final String viewName,
+
+  public static void commitFiles(Collection<? extends FileInfo> files, final String viewName,
       final String parentColumn, final Long parentId, final String fileColumn,
       final String captionColumn) {
 
@@ -69,7 +76,7 @@ public final class FileUtils {
 
     final Holder<Integer> latch = Holder.of(files.size());
 
-    for (final NewFileInfo fileInfo : files) {
+    for (final FileInfo fileInfo : files) {
       uploadFile(fileInfo, new Callback<Long>() {
         @Override
         public void onSuccess(Long result) {
@@ -170,7 +177,7 @@ public final class FileUtils {
   }
 
   public static List<NewFileInfo> getNewFileInfos(FileList fileList) {
-    List<NewFileInfo> result = Lists.newArrayList();
+    List<NewFileInfo> result = new ArrayList<>();
     if (fileList == null) {
       return result;
     }
@@ -182,7 +189,7 @@ public final class FileUtils {
   }
 
   public static String getUrl(String fileName, Long fileId) {
-    Map<String, String> parameters = Maps.newHashMap();
+    Map<String, String> parameters = new HashMap<>();
     parameters.put(Service.VAR_FILE_ID, BeeUtils.toString(fileId));
     parameters.put(Service.VAR_FILE_NAME, fileName);
 
@@ -191,6 +198,9 @@ public final class FileUtils {
   }
 
   public static void readAsDataURL(File file, final Consumer<String> consumer) {
+    Assert.notNull(file);
+    Assert.notNull(consumer);
+
     final FileReader reader = Browser.getWindow().newFileReader();
 
     reader.setOnload(new EventListener() {
@@ -201,6 +211,38 @@ public final class FileUtils {
     });
 
     reader.readAsDataURL(file);
+  }
+
+  public static void readLines(File file, final Consumer<List<String>> consumer) {
+    CharMatcher cm = CharMatcher.is(BeeConst.CHAR_EOL).or(CharMatcher.is(BeeConst.CHAR_CR));
+    Splitter splitter = Splitter.on(cm).omitEmptyStrings().trimResults();
+
+    readLines(file, splitter, consumer);
+  }
+
+  public static void readLines(File file, final Splitter lineSplitter,
+      final Consumer<List<String>> consumer) {
+
+    Assert.notNull(file);
+    Assert.notNull(lineSplitter);
+    Assert.notNull(consumer);
+
+    final FileReader reader = Browser.getWindow().newFileReader();
+
+    reader.setOnload(new EventListener() {
+      @Override
+      public void handleEvent(Event evt) {
+        String text = (String) reader.getResult();
+
+        if (BeeUtils.isEmpty(text)) {
+          consumer.accept(BeeConst.EMPTY_IMMUTABLE_STRING_LIST);
+        } else {
+          consumer.accept(lineSplitter.splitToList(text));
+        }
+      }
+    });
+
+    reader.readAsText(file);
   }
 
   public static String sizeToText(Long size) {
@@ -221,37 +263,45 @@ public final class FileUtils {
     return Math.round(sz * 10d / c) / 10d + prfx;
   }
 
-  public static void uploadFile(NewFileInfo fileInfo, final Callback<Long> callback) {
-    final String fileName = BeeUtils.notEmpty(fileInfo.getCaption(), fileInfo.getName());
-    final String fileType = fileInfo.getType();
-    final long fileSize = fileInfo.getSize();
+  public static void uploadFile(FileInfo fileInfo, final Callback<Long> callback) {
+    if (DataUtils.isId(fileInfo.getId())) {
+      callback.onSuccess(fileInfo.getId());
 
-    final long start = System.currentTimeMillis();
+    } else if (!(fileInfo instanceof NewFileInfo)) {
+      callback.onFailure("File is not an instance of " + NameUtils.getClassName(NewFileInfo.class));
 
-    upload(Service.UPLOAD_FILE, fileInfo, new Callback<String>() {
-      @Override
-      public void onSuccess(String response) {
-        if (BeeUtils.isLong(response)) {
-          long fileId = BeeUtils.toLong(response);
+    } else {
+      final String fileName = BeeUtils.notEmpty(fileInfo.getCaption(), fileInfo.getName());
+      final String fileType = fileInfo.getType();
+      final long fileSize = fileInfo.getSize();
 
-          logger.info(TimeUtils.elapsedSeconds(start), "uploaded", fileName);
-          logger.info("type:", fileType, "size:", fileSize, "id:", fileId);
-          logger.addSeparator();
+      final long start = System.currentTimeMillis();
 
-          callback.onSuccess(fileId);
+      upload(Service.UPLOAD_FILE, (NewFileInfo) fileInfo, new Callback<String>() {
+        @Override
+        public void onSuccess(String response) {
+          if (BeeUtils.isLong(response)) {
+            long fileId = BeeUtils.toLong(response);
 
-        } else {
-          String msg = BeeUtils.joinWords("upload", fileName, "response:", response);
-          logger.warning(msg);
-          callback.onFailure(msg);
+            logger.info(TimeUtils.elapsedSeconds(start), "uploaded", fileName);
+            logger.info("type:", fileType, "size:", fileSize, "id:", fileId);
+            logger.addSeparator();
+
+            callback.onSuccess(fileId);
+
+          } else {
+            String msg = BeeUtils.joinWords("upload", fileName, "response:", response);
+            logger.warning(msg);
+            callback.onFailure(msg);
+          }
         }
-      }
 
-      @Override
-      public void onFailure(String... reason) {
-        callback.onFailure(reason);
-      }
-    });
+        @Override
+        public void onFailure(String... reason) {
+          callback.onFailure(reason);
+        }
+      });
+    }
   }
 
   public static void uploadPhoto(NewFileInfo fileInfo, final String photoFileName, String oldPhoto,
@@ -340,23 +390,25 @@ public final class FileUtils {
     });
   }
 
+//@formatter:off
   static native double getLastModifiedMillis(File file) /*-{
     return file.lastModifiedDate.getTime();
   }-*/;
+//@formatter:on
 
   private static void addProgressListener(XMLHttpRequest xhr, final String progressId) {
     if (progressId != null) {
       xhr.getUpload().setOnprogress(new EventListener() {
         @Override
         public void handleEvent(Event evt) {
-          BeeKeeper.getScreen().updateProgress(progressId, ((ProgressEvent) evt).getLoaded());
+          BeeKeeper.getScreen().updateProgress(progressId, null, ((ProgressEvent) evt).getLoaded());
         }
       });
     }
   }
 
   private static Map<String, String> createParameters(String service, String fileName) {
-    Map<String, String> parameters = Maps.newHashMap();
+    Map<String, String> parameters = new HashMap<>();
 
     parameters.put(Service.RPC_VAR_SVC, service);
     parameters.put(Service.VAR_FILE_NAME, fileName);
@@ -424,6 +476,35 @@ public final class FileUtils {
     });
     addProgressListener(xhr, progressId);
     xhr.send(fileInfo.getFile());
+  }
+
+  public static List<FileInfo> validateFileSize(Collection<? extends FileInfo> input,
+      long maxSize, NotificationListener notificationListener) {
+
+    List<FileInfo> result = new ArrayList<>();
+    if (BeeUtils.isEmpty(input)) {
+      return result;
+    }
+
+    List<String> errors = new ArrayList<>();
+
+    for (FileInfo fileInfo : input) {
+      long size = fileInfo.getSize();
+
+      if (size > maxSize) {
+        errors.add(BeeUtils.join(BeeConst.STRING_COLON + BeeConst.STRING_SPACE, fileInfo.getName(),
+            Localized.getMessages().fileSizeExceeded(size, maxSize)));
+      } else {
+        result.add(fileInfo);
+      }
+    }
+
+    if (!errors.isEmpty() && notificationListener != null) {
+      result.clear();
+      notificationListener.notifyWarning(ArrayUtils.toArray(errors));
+    }
+
+    return result;
   }
 
   private FileUtils() {

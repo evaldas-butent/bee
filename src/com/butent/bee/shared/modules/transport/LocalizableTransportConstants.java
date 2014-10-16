@@ -132,32 +132,32 @@ public interface LocalizableTransportConstants {
 
   String trAssessmentAskRequest();
 
+  String trAssessmentReason();
+
   String trAssessmentRejection();
 
-  String trAssessmentRejectionReason();
-  
   String trAssessmentReportAllOrders();
 
   String trAssessmentReportAnswered();
-  
+
   String trAssessmentReportApproved();
-  
+
   String trAssessmentReportApprovedToReceived();
-  
+
   String trAssessmentReportApprovedToAnswered();
-  
+
   String trAssessmentReportGrowth();
 
   String trAssessmentReportLost();
-  
+
   String trAssessmentReportPercent();
-  
+
   String trAssessmentReportQuantity();
-  
+
   String trAssessmentReportReceived();
-  
+
   String trAssessmentReportSecondary();
-  
+
   String trAssessmentRequest();
 
   String trAssessmentRequests();
@@ -211,10 +211,8 @@ public interface LocalizableTransportConstants {
   String trDriverStartingDate();
 
   String trEmptyKilometers();
-  
-  String trExpenses();
 
-  String trImport();
+  String trExpenses();
 
   String trImportCosts();
 

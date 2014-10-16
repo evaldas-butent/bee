@@ -15,6 +15,7 @@ import com.butent.bee.client.style.StyleUtils;
 import com.butent.bee.client.widget.CustomDiv;
 import com.butent.bee.client.widget.Image;
 import com.butent.bee.shared.Assert;
+import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.ui.Action;
 import com.butent.bee.shared.utils.BeeUtils;
@@ -23,15 +24,15 @@ public class DialogBox extends Popup implements Printable {
 
   public static final int HEADER_HEIGHT = 31;
 
-  private static final String STYLE_DIALOG = "bee-DialogBox";
+  private static final String STYLE_DIALOG = BeeConst.CSS_CLASS_PREFIX + "DialogBox";
 
-  private static final String STYLE_HEADER = "bee-Dialog-header";
-  private static final String STYLE_CAPTION = "bee-Dialog-caption";
+  private static final String STYLE_HEADER = BeeConst.CSS_CLASS_PREFIX + "Dialog-header";
+  private static final String STYLE_CAPTION = BeeConst.CSS_CLASS_PREFIX + "Dialog-caption";
 
-  private static final String STYLE_ACTION = "bee-Dialog-action";
-  private static final String STYLE_CLOSE = "bee-Dialog-close";
+  private static final String STYLE_ACTION = BeeConst.CSS_CLASS_PREFIX + "Dialog-action";
+  private static final String STYLE_CLOSE = BeeConst.CSS_CLASS_PREFIX + "Dialog-close";
 
-  private static final String STYLE_CONTENT = "bee-Dialog-content";
+  private static final String STYLE_CONTENT = BeeConst.CSS_CLASS_PREFIX + "Dialog-content";
 
   public static DialogBox create(String caption) {
     return create(caption, null);
@@ -81,13 +82,15 @@ public class DialogBox extends Popup implements Printable {
 
   public void addAction(Action action, Widget widget) {
     if (widget != null) {
-      widget.addStyleName(STYLE_ACTION);
       if (action != null && BeeUtils.isEmpty(widget.getTitle())) {
         widget.setTitle(action.getCaption());
       }
-
-      header.add(widget);
+      insertAction(BeeConst.UNDEF, widget);
     }
+  }
+
+  public void addCommand(Widget widget) {
+    addAction(null, widget);
   }
 
   public void addDefaultCloseBox() {
@@ -116,6 +119,18 @@ public class DialogBox extends Popup implements Printable {
   @Override
   public Element getPrintElement() {
     return container.getElement();
+  }
+
+  public void insertAction(int beforeIndex, Widget widget) {
+    if (widget != null) {
+      widget.addStyleName(STYLE_ACTION);
+
+      if (beforeIndex >= 0 && beforeIndex < header.getWidgetCount()) {
+        header.insert(widget, beforeIndex);
+      } else {
+        header.add(widget);
+      }
+    }
   }
 
   @Override

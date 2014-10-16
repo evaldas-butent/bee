@@ -1,6 +1,5 @@
 package com.butent.bee.client.modules.calendar;
 
-import com.google.common.collect.Lists;
 import com.google.common.collect.Range;
 
 import static com.butent.bee.shared.modules.calendar.CalendarConstants.*;
@@ -25,6 +24,7 @@ import com.butent.bee.shared.utils.Codec;
 import com.butent.bee.shared.utils.EnumUtils;
 import com.butent.bee.shared.utils.NameUtils;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
@@ -48,32 +48,32 @@ public class CalendarDataManager {
   private static List<CalendarItem> split(CalendarItem item, MultidayLayout mdl,
       int whStart, int whEnd) {
 
-    List<CalendarItem> result = Lists.newArrayList();
-    
+    List<CalendarItem> result = new ArrayList<>();
+
     DateTime start = item.getStartTime();
     DateTime end = item.getEndTime();
-    
+
     DateTime tmp = DateTime.copyOf(start);
-    
+
     DateTime from;
     DateTime until;
-    
+
     switch (mdl) {
       case VERTICAL:
         while (tmp.getTime() < end.getTime()) {
           until = min(end, TimeUtils.startOfDay(tmp, 1));
           result.add(item.split(tmp, until));
-          
+
           tmp.setTime(until.getTime());
         }
         break;
-      
+
       case WORKING_HOURS:
         while (tmp.getTime() < end.getTime()) {
           from = (TimeUtils.sameDate(tmp, start) && TimeUtils.minutesSinceDayStarted(start) > 0)
               ? start : hour(tmp, whStart);
           until = TimeUtils.sameDate(tmp, end) ? end : hour(tmp, whEnd);
-          
+
           if (until.getTime() <= from.getTime()) {
             if (TimeUtils.sameDate(from, start)) {
               until = TimeUtils.startOfDay(from, 1);
@@ -83,7 +83,7 @@ public class CalendarDataManager {
           }
 
           result.add(item.split(from, until));
-          
+
           tmp = TimeUtils.startOfDay(tmp, 1);
         }
         break;
@@ -92,7 +92,7 @@ public class CalendarDataManager {
         if (TimeUtils.minutesSinceDayStarted(end) > 0) {
           from = max(start, TimeUtils.startOfDay(end));
           until = end;
-          
+
           if (validateWorkingHours(whStart, whEnd)) {
             tmp = hour(end, whStart);
             if (tmp.getTime() > from.getTime() && tmp.getTime() < end.getTime()) {
@@ -107,19 +107,19 @@ public class CalendarDataManager {
           if (until.getTime() <= from.getTime()) {
             until = end;
           }
-          
+
         } else {
           from = max(start, TimeUtils.startOfDay(end, -1));
           until = end;
         }
-        
+
         result.add(item.split(from, until));
         break;
 
       default:
         result.add(item);
     }
-    
+
     return result;
   }
 
@@ -127,7 +127,7 @@ public class CalendarDataManager {
     return whStart >= 0 && whEnd > whStart && whEnd <= TimeUtils.HOURS_PER_DAY;
   }
 
-  private final List<CalendarItem> items = Lists.newArrayList();
+  private final List<CalendarItem> items = new ArrayList<>();
 
   private Range<DateTime> range;
 
@@ -152,14 +152,14 @@ public class CalendarDataManager {
           mdl = settings.getMultidayTaskLayout();
           break;
       }
-      
+
       if (mdl == null || mdl == MultidayLayout.HORIZONTAL) {
         items.add(item);
 
       } else {
         int whStart = settings.getWorkingHourStart();
         int whEnd = settings.getWorkingHourEnd();
-        
+
         if (mdl == MultidayLayout.WORKING_HOURS && !validateWorkingHours(whStart, whEnd)) {
           mdl = MultidayLayout.VERTICAL;
         }
@@ -187,7 +187,7 @@ public class CalendarDataManager {
       return;
     }
 
-    ParameterList params = CalendarKeeper.createRequestParameters(SVC_GET_CALENDAR_ITEMS);
+    ParameterList params = CalendarKeeper.createArgs(SVC_GET_CALENDAR_ITEMS);
     params.addQueryItem(PARAM_CALENDAR_ID, calendarId);
 
     if (visibleRange != null) {
@@ -256,7 +256,7 @@ public class CalendarDataManager {
       Collections.sort(items);
     }
   }
-  
+
   private int getItemIndex(ItemType type, long id) {
     for (int i = 0; i < items.size(); i++) {
       if (items.get(i).getItemType() == type && items.get(i).getId() == id) {
@@ -269,11 +269,11 @@ public class CalendarDataManager {
   private Range<DateTime> getRange() {
     return range;
   }
-  
+
   private int getSize() {
     return items.size();
   }
-  
+
   private void setRange(Range<DateTime> range) {
     this.range = range;
   }

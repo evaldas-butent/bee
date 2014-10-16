@@ -10,6 +10,7 @@ import com.butent.bee.client.dialog.ChoiceCallback;
 import com.butent.bee.client.presenter.Presenter;
 import com.butent.bee.client.ui.FormDescription;
 import com.butent.bee.client.ui.FormFactory;
+import com.butent.bee.client.ui.Opener;
 import com.butent.bee.client.view.form.interceptor.AbstractFormInterceptor;
 import com.butent.bee.client.view.form.interceptor.FormInterceptor;
 import com.butent.bee.shared.BeeConst;
@@ -20,6 +21,7 @@ import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.ui.Action;
 import com.butent.bee.shared.utils.BeeUtils;
 
+import java.util.ArrayList;
 import java.util.List;
 
 public abstract class PrintFormInterceptor extends AbstractFormInterceptor {
@@ -48,11 +50,11 @@ public abstract class PrintFormInterceptor extends AbstractFormInterceptor {
             if (BeeUtils.isEmpty(viewName)
                 || BeeUtils.same(viewName, getFormView().getViewName())) {
 
-              RowEditor.openRow(form.getName(), Data.getDataInfo(getFormView().getViewName()),
-                  row, true, null, null, null, getPrintFormInterceptor());
+              RowEditor.openForm(form.getName(), Data.getDataInfo(getFormView().getViewName()),
+                  row, Opener.MODAL, null, getPrintFormInterceptor());
             } else {
-              RowEditor.openRow(form.getName(), Data.getDataInfo(viewName), row.getId(), true,
-                  null, null, getPrintFormInterceptor());
+              RowEditor.openForm(form.getName(), Data.getDataInfo(viewName), row.getId(),
+                  Opener.MODAL, null, getPrintFormInterceptor());
             }
           }
         };
@@ -77,8 +79,8 @@ public abstract class PrintFormInterceptor extends AbstractFormInterceptor {
               counter.set(counter.get() + 1);
 
               if (counter.get() == forms.size()) {
-                List<String> captions = Lists.newArrayList();
-                List<FormDescription> descriptions = Lists.newArrayList();
+                List<String> captions = new ArrayList<>();
+                List<FormDescription> descriptions = new ArrayList<>();
 
                 for (FormDescription dscr : forms) {
                   if (dscr != null) {

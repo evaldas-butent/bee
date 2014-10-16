@@ -1,12 +1,11 @@
 package com.butent.bee.shared.modules.ec;
 
-import com.google.common.collect.Lists;
-
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeSerializable;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.Codec;
 
+import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
@@ -27,7 +26,7 @@ public class Cart implements BeeSerializable {
 
   private String comment;
 
-  private final List<CartItem> items = Lists.newArrayList();
+  private final List<CartItem> items = new ArrayList<>();
 
   public Cart() {
     super();
@@ -100,6 +99,11 @@ public class Cart implements BeeSerializable {
 
   public List<CartItem> getItems() {
     return items;
+  }
+
+  public int getQuantity(long articleId) {
+    CartItem item = getItem(articleId);
+    return (item == null) ? 0 : item.getQuantity();
   }
 
   public boolean isEmpty() {

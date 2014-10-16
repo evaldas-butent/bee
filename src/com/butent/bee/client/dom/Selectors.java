@@ -85,9 +85,7 @@ public final class Selectors {
   }
 
   public static String buildSelectors(Collection<String> selectors) {
-    Assert.notNull(selectors);
-    Assert.isTrue(!selectors.isEmpty());
-
+    Assert.notEmpty(selectors);
     return BeeUtils.join(SELECTOR_SEPARATOR, selectors);
   }
 
@@ -115,8 +113,7 @@ public final class Selectors {
   }
 
   public static String conjunction(List<String> selectors) {
-    Assert.notNull(selectors);
-    Assert.isTrue(!selectors.isEmpty());
+    Assert.notEmpty(selectors);
 
     StringBuilder sb = new StringBuilder();
     for (String selector : selectors) {
@@ -131,6 +128,10 @@ public final class Selectors {
     Assert.notNull(selectors);
     Assert.parameterCount(selectors.length, 2);
     return ArrayUtils.join(BeeConst.STRING_SPACE, selectors);
+  }
+
+  public static boolean contains(Element root, String selectors) {
+    return getElement(root, selectors) != null;
   }
 
   public static String generalSiblingCombinator(String... selectors) {
@@ -167,6 +168,19 @@ public final class Selectors {
   public static Element getElement(UIObject root, String selectors) {
     Assert.notNull(root);
     return getElement(root.getElement(), selectors);
+  }
+
+  public static Element getElementByClassName(Element root, String className) {
+    return getElement(root, classSelector(className));
+  }
+
+  public static Element getElementByDataIndex(UIObject root, long idx) {
+    return getElement(root, attributeEquals(DomUtils.ATTRIBUTE_DATA_INDEX, idx));
+  }
+
+  public static List<Element> getElementsByClassName(Element root, String className) {
+    NodeList<Element> nodes = getNodes(root, classSelector(className));
+    return DomUtils.asList(nodes);
   }
 
   public static NodeList<Element> getNodes(Collection<String> selectors) {
@@ -245,6 +259,7 @@ public final class Selectors {
         + ATTRIBUTE_SELECTOR_SUFFIX;
   }
 
+//@formatter:off
   private static native Element querySelector(Element root, String selectors) /*-{
     return root.querySelector(selectors);
   }-*/;
@@ -260,6 +275,7 @@ public final class Selectors {
   private static native NodeList<Element> querySelectorAll(String selectors) /*-{
     return $doc.querySelectorAll(selectors);
   }-*/;
+//@formatter:on
 
   private static String transformAttributeValue(String value) {
     Assert.notNull(value);

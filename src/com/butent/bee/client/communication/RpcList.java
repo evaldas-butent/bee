@@ -1,7 +1,5 @@
 package com.butent.bee.client.communication;
 
-import com.google.common.collect.Lists;
-
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.State;
@@ -10,6 +8,7 @@ import com.butent.bee.shared.logging.LogUtils;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.Codec;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -22,14 +21,14 @@ import java.util.Map.Entry;
 public class RpcList extends LinkedHashMap<Integer, RpcInfo> {
 
   private static final BeeLogger logger = LogUtils.getLogger(RpcList.class);
-  
+
   public static final String[] DEFAULT_INFO_COLUMNS = new String[] {
       RpcInfo.COL_ID, RpcInfo.COL_SERVICE, RpcInfo.COL_METHOD,
       RpcInfo.COL_STATE, RpcInfo.COL_START, RpcInfo.COL_TIMEOUT,
       RpcInfo.COL_EXPIRES, RpcInfo.COL_END, RpcInfo.COL_COMPLETED,
       RpcInfo.COL_REQ_PARAMS, RpcInfo.COL_REQ_TYPE, RpcInfo.COL_REQ_DATA,
       RpcInfo.COL_REQ_ROWS, RpcInfo.COL_REQ_COLS, RpcInfo.COL_REQ_SIZE,
-      RpcInfo.COL_RESP_TYPE, RpcInfo.COL_RESP_DATA,  RpcInfo.COL_RESP_SIZE,
+      RpcInfo.COL_RESP_TYPE, RpcInfo.COL_RESP_DATA, RpcInfo.COL_RESP_SIZE,
       RpcInfo.COL_RESP_MSG_CNT, RpcInfo.COL_RESP_MESSAGES,
       RpcInfo.COL_RESP_INFO, RpcInfo.COL_ERR_MSG};
 
@@ -62,8 +61,8 @@ public class RpcList extends LinkedHashMap<Integer, RpcInfo> {
     Assert.notNull(cols);
     int c = cols.length;
     Assert.parameterCount(c + 1, 2);
-    
-    List<String[]> result = Lists.newArrayList();
+
+    List<String[]> result = new ArrayList<>();
     if (isEmpty()) {
       return result;
     }
@@ -126,7 +125,7 @@ public class RpcList extends LinkedHashMap<Integer, RpcInfo> {
         } else if (BeeUtils.same(cols[i], RpcInfo.COL_RESP_MSG_CNT)) {
           s = el.getSizeString(el.getRespMsgCnt());
         } else if (BeeUtils.same(cols[i], RpcInfo.COL_RESP_MESSAGES)) {
-          s = (el.getRespMessages() == null) 
+          s = (el.getRespMessages() == null)
               ? null : Codec.escapeUnicode(el.getRespMessages().toString());
 
         } else if (BeeUtils.same(cols[i], RpcInfo.COL_RESP_INFO)) {
@@ -150,7 +149,7 @@ public class RpcList extends LinkedHashMap<Integer, RpcInfo> {
     }
     return result;
   }
-  
+
   public int getMaxSize() {
     return maxSize;
   }

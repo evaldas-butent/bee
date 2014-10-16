@@ -4,7 +4,9 @@
   name="Documents" source="Documents"
   caption="=documents" newRowCaption="=documentNew"
   editForm="Document" newRowForm="NewDocument"
+  rowCaption="Name Number"
   >
+  <Relation renderColumns="Name" />
   <Columns>
     <SimpleColumn name="Name" />
 
@@ -15,7 +17,7 @@
     <SimpleColumn name="RegistrationNumber" />
 
     <SimpleColumn name="Category" />
-    <SimpleJoin joinType="LEFT" name="Category">
+    <SimpleJoin joinType="INNER" name="Category">
       <SimpleColumn alias="CategoryName" name="Name" />
     </SimpleJoin>
 

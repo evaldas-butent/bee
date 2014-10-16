@@ -1,6 +1,5 @@
 package com.butent.bee.client.modules.classifiers;
 
-import com.google.common.base.Objects;
 import com.google.gwt.core.client.Scheduler.ScheduledCommand;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
@@ -28,8 +27,11 @@ import com.butent.bee.client.widget.Image;
 import com.butent.bee.shared.data.IsRow;
 import com.butent.bee.shared.data.UserData;
 import com.butent.bee.shared.i18n.Localized;
+import com.butent.bee.shared.io.FileInfo;
 import com.butent.bee.shared.modules.classifiers.ClassifierConstants;
 import com.butent.bee.shared.utils.BeeUtils;
+
+import java.util.Objects;
 
 import elemental.client.Browser;
 import elemental.events.Event;
@@ -45,7 +47,6 @@ class PersonForm extends AbstractFormInterceptor {
 
   private static final String DEFAULT_PHOTO_IMAGE = "images/silver/person_profile.png";
 
-
   private Image photoImageWidget;
   private NewFileInfo photoImageAttachment;
 
@@ -59,10 +60,13 @@ class PersonForm extends AbstractFormInterceptor {
 
     if (BeeUtils.same(name, PHOTO_FILE_WIDGET_NAME) && widget instanceof FileCollector) {
       final FileCollector fc = (FileCollector) widget;
-      fc.addSelectionHandler(new SelectionHandler<NewFileInfo>() {
+      fc.addSelectionHandler(new SelectionHandler<FileInfo>() {
         @Override
-        public void onSelection(SelectionEvent<NewFileInfo> event) {
-          NewFileInfo fileInfo = event.getSelectedItem();
+        public void onSelection(SelectionEvent<FileInfo> event) {
+          if (!(event.getSelectedItem() instanceof NewFileInfo)) {
+            return;
+          }
+          NewFileInfo fileInfo = (NewFileInfo) event.getSelectedItem();
           fc.clear();
 
           if (photoImageWidget != null && fileInfo != null) {
@@ -198,7 +202,7 @@ class PersonForm extends AbstractFormInterceptor {
       return row.getString(form.getDataIndex(ClassifierConstants.COL_PHOTO));
     }
   }
-  
+
   private static void setPhotoFileName(FormView form, IsRow row, String value) {
     if (form != null && row != null) {
       row.setValue(form.getDataIndex(ClassifierConstants.COL_PHOTO), value);
@@ -249,7 +253,7 @@ class PersonForm extends AbstractFormInterceptor {
     UserData userData = BeeKeeper.getUser().getUserData();
 
     if (form != null && row != null && userData != null
-        && Objects.equal(userData.getPerson(), row.getId())) {
+        && Objects.equals(userData.getPerson(), row.getId())) {
 
       userData.setFirstName(row.getString(form.getDataIndex(ClassifierConstants.COL_FIRST_NAME)));
       userData.setLastName(row.getString(form.getDataIndex(ClassifierConstants.COL_LAST_NAME)));

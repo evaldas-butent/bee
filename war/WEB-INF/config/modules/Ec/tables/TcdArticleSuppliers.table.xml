@@ -8,7 +8,6 @@
   >
   <Fields>
     <Relation name="Article" relation="TcdArticles" notNull="true" cascade="DELETE" label="=ecItem" />
-    <Numeric name="Price" precision="10" scale="2" label="=ecItemPrice" />
     <Numeric name="Cost" precision="10" scale="2" label="=ecItemCost" />
     <Numeric name="UpdatedCost" precision="10" scale="2" label="=ecUpdatedCost" />
     <DateTime name="UpdateTime" label="=ecUpdateTime" />
@@ -16,10 +15,9 @@
     <String name="SupplierID" precision="50" notNull="true" label="=ecItemSupplierCode" />
   </Fields>
   <Constraints>
-    <Unique fields="Supplier SupplierID" />
+    <Unique fields="SupplierID Supplier Article" />
   </Constraints>
   <Indexes>
     <Index fields="Supplier" />
-    <Index fields="SupplierID" />
   </Indexes>
 </Table>

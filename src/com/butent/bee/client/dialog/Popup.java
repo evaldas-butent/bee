@@ -1,6 +1,5 @@
 package com.butent.bee.client.dialog;
 
-import com.google.gwt.animation.client.Animation;
 import com.google.gwt.core.client.Scheduler.ScheduledCommand;
 import com.google.gwt.dom.client.Element;
 import com.google.gwt.dom.client.NativeEvent;
@@ -24,6 +23,7 @@ import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.ui.HasAnimation;
 import com.google.gwt.user.client.ui.Widget;
 
+import com.butent.bee.client.animation.Animation;
 import com.butent.bee.client.dom.DomUtils;
 import com.butent.bee.client.dom.Edges;
 import com.butent.bee.client.dom.Stacking;
@@ -40,6 +40,10 @@ import com.butent.bee.client.ui.UiHelper;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.utils.BeeUtils;
+
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
 
 public class Popup extends Simple implements HasAnimation, CloseEvent.HasCloseHandlers,
     OpenEvent.HasOpenHandlers, PreviewHandler {
@@ -122,7 +126,7 @@ public class Popup extends Simple implements HasAnimation, CloseEvent.HasCloseHa
         }
       }
       StyleUtils.clearClip(curPanel);
-      curPanel.getElement().getStyle().setOverflow(Overflow.VISIBLE);
+      curPanel.getElement().getStyle().clearOverflow();
     }
 
     @Override
@@ -178,7 +182,7 @@ public class Popup extends Simple implements HasAnimation, CloseEvent.HasCloseHa
           BodyPanel.get().remove(curPanel);
         }
       }
-      curPanel.getElement().getStyle().setOverflow(Overflow.VISIBLE);
+      curPanel.getElement().getStyle().clearOverflow();
     }
 
     private void setState(boolean sh, boolean unl) {
@@ -226,19 +230,33 @@ public class Popup extends Simple implements HasAnimation, CloseEvent.HasCloseHa
     }
   }
 
-  private static final String STYLE_POPUP = "bee-Popup";
+  private static final String STYLE_POPUP = BeeConst.CSS_CLASS_PREFIX + "Popup";
 
   private static final int ANIMATION_DURATION = 250;
 
   public static Popup getActivePopup() {
     int widgetCount = BodyPanel.get().getWidgetCount();
+
     for (int i = widgetCount - 1; i >= 0; i--) {
       Widget child = BodyPanel.get().getWidget(i);
       if (child instanceof Popup && ((Popup) child).isShowing()) {
         return (Popup) child;
       }
     }
+
     return null;
+  }
+
+  public static Collection<Popup> getVisiblePopups() {
+    List<Popup> popups = new ArrayList<>();
+
+    for (Widget child : BodyPanel.get()) {
+      if (child instanceof Popup && ((Popup) child).isShowing()) {
+        popups.add((Popup) child);
+      }
+    }
+
+    return popups;
   }
 
   private static int clampLeft(int left, int width) {
@@ -292,7 +310,7 @@ public class Popup extends Simple implements HasAnimation, CloseEvent.HasCloseHa
 
     setPopupPosition(0, 0);
     DomUtils.createId(this, getIdPrefix());
-    
+
     if (styleName != null) {
       setStyleName(styleName);
     }
@@ -480,7 +498,7 @@ public class Popup extends Simple implements HasAnimation, CloseEvent.HasCloseHa
           }
 
         } else if (nativeEvent.getKeyCode() == KeyCodes.KEY_TAB) {
-          if (!eventTargetsPopup 
+          if (!eventTargetsPopup
               || Element.is(targetNode) && handleTabulation(Element.as(targetNode))) {
             event.cancel();
             UiHelper.moveFocus(getWidget(), !EventUtils.hasModifierKey(nativeEvent));
@@ -489,7 +507,7 @@ public class Popup extends Simple implements HasAnimation, CloseEvent.HasCloseHa
       }
 
       if (!event.isCanceled()) {
-        if (eventTargetsPopup || getKeyboardPartner() != null && targetNode != null 
+        if (eventTargetsPopup || getKeyboardPartner() != null && targetNode != null
             && getKeyboardPartner().isOrHasChild(targetNode)) {
           event.consume();
 
@@ -503,6 +521,16 @@ public class Popup extends Simple implements HasAnimation, CloseEvent.HasCloseHa
     } else {
       event.cancel();
     }
+  }
+
+  @Override
+  public void onResize() {
+    int x = Math.min(getAbsoluteLeft(), DomUtils.getClientWidth() - getOffsetWidth());
+    int y = Math.min(getAbsoluteTop(), DomUtils.getClientHeight() - getOffsetHeight());
+
+    setPopupPosition(Math.max(x, 0), Math.max(y, 0));
+
+    super.onResize();
   }
 
   @Override
@@ -674,7 +702,6 @@ public class Popup extends Simple implements HasAnimation, CloseEvent.HasCloseHa
     }
   }
 
-
   private String getDesiredHeight() {
     return desiredHeight;
   }
@@ -744,7 +771,7 @@ public class Popup extends Simple implements HasAnimation, CloseEvent.HasCloseHa
 
     int objectWidth = relativeElement.getOffsetWidth();
     int objectHeight = relativeElement.getOffsetHeight();
-    
+
     if (margins != null) {
       left -= margins.getIntLeft();
       top -= margins.getIntTop();
@@ -813,7 +840,7 @@ public class Popup extends Simple implements HasAnimation, CloseEvent.HasCloseHa
   private void setTopPosition(int topPosition) {
     this.topPosition = topPosition;
   }
-  
+
   private void show() {
     if (isShowing()) {
       return;

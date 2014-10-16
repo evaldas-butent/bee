@@ -10,31 +10,27 @@ import java.math.BigDecimal;
 import java.util.Collection;
 import java.util.Comparator;
 import java.util.List;
+import java.util.Set;
 
 /**
  * Determines method requirements for table structure implementing classes.
  */
 
-public interface IsTable<RowType extends IsRow, ColType extends IsColumn> extends IsData,
-    Iterable<RowType> {
+public interface IsTable<R extends IsRow, C extends IsColumn> extends Iterable<R> {
 
-  int addColumn(ColType column);
+  void addColumn(C column);
 
-  int addColumn(ValueType type);
+  void addColumn(ValueType type);
 
-  int addColumn(ValueType type, String label);
+  void addColumn(ValueType type, String label);
 
-  int addColumn(ValueType type, String label, String id);
+  void addColumn(ValueType type, String label, String id);
 
-  int addColumns(Collection<ColType> columnsToAdd);
+  void addColumns(Collection<C> columnsToAdd);
 
-  int addRow();
+  void addRow(R row);
 
-  int addRow(RowType row);
-
-  int addRows(Collection<RowType> rowsToAdd);
-
-  int addRows(int rowCount);
+  void addRows(Collection<R> rowsToAdd);
 
   void addWarning(DataWarning warning);
 
@@ -50,35 +46,101 @@ public interface IsTable<RowType extends IsRow, ColType extends IsColumn> extend
 
   boolean containsRow(long rowId);
 
-  IsTable<RowType, ColType> copy();
+  IsTable<R, C> copy();
 
-  IsTable<RowType, ColType> create();
+  IsTable<R, C> create();
 
-  ColType createColumn(ValueType type, String label, String id);
+  C createColumn(ValueType type, String label, String id);
 
-  RowType createRow(long id);
+  R createRow(long id);
+
+  R findRow(RowFilter filter);
+
+  R findRow(int colIndex, String value);
+
+  R findRow(int colIndex, Long value);
+
+  Boolean getBoolean(int rowIndex, int colIndex);
 
   IsCell getCell(int rowIndex, int colIndex);
 
-  ColType getColumn(int colIndex);
+  C getColumn(int colIndex);
 
-  ColType getColumn(String columnId);
+  C getColumn(String columnId);
 
-  List<ColType> getColumns();
+  String getColumnId(int colIndex);
 
-  RowType getRow(int rowIndex);
+  int getColumnIndex(String columnId);
 
-  RowType getRowById(long rowId);
-  
+  String getColumnLabel(int colIndex);
+
+  String getColumnLabel(String columnId);
+
+  String getColumnPattern(int colIndex);
+
+  CustomProperties getColumnProperties(int colIndex);
+
+  String getColumnProperty(int colIndex, String name);
+
+  Range getColumnRange(int colIndex);
+
+  List<C> getColumns();
+
+  ValueType getColumnType(int colIndex);
+
+  JustDate getDate(int rowIndex, int colIndex);
+
+  DateTime getDateTime(int rowIndex, int colIndex);
+
+  BigDecimal getDecimal(int rowIndex, int colIndex);
+
+  Set<Long> getDistinctLongs(int colIndex);
+
+  Set<String> getDistinctStrings(int colIndex);
+
+  Double getDouble(int rowIndex, int colIndex);
+
+  String getFormattedValue(int rowIndex, int colIndex);
+
+  Integer getInteger(int rowIndex, int colIndex);
+
+  Long getLong(int rowIndex, int colIndex);
+
+  int getNumberOfColumns();
+
+  int getNumberOfRows();
+
+  CustomProperties getProperties(int rowIndex, int colIndex);
+
+  String getProperty(int rowIndex, int colIndex, String name);
+
+  R getRow(int rowIndex);
+
+  R getRowById(long rowId);
+
   List<Long> getRowIds();
 
   int getRowIndex(long rowId);
 
-  List<RowType> getRows();
+  CustomProperties getRowProperties(int rowIndex);
+
+  String getRowProperty(int rowIndex, String name);
+
+  List<R> getRows();
+
+  int[] getSortedRows(List<Pair<Integer, Boolean>> sortInfo, Comparator<String> collator);
+
+  String getString(int rowIndex, int colIndex);
+
+  CustomProperties getTableProperties();
+
+  String getTableProperty(String key);
+
+  Value getValue(int rowIndex, int colIndex);
 
   List<DataWarning> getWarnings();
 
-  void insertColumn(int colIndex, ColType column);
+  void insertColumn(int colIndex, C column);
 
   void insertColumn(int colIndex, ValueType type);
 
@@ -86,7 +148,7 @@ public interface IsTable<RowType extends IsRow, ColType extends IsColumn> extend
 
   void insertColumn(int colIndex, ValueType type, String label, String id);
 
-  void insertRows(int rowIndex, Collection<RowType> rowsToAdd);
+  void insertRows(int rowIndex, Collection<R> rowsToAdd);
 
   void insertRows(int rowIndex, int rowCount);
 
@@ -115,7 +177,7 @@ public interface IsTable<RowType extends IsRow, ColType extends IsColumn> extend
 
   void setColumnProperty(int colIndex, String name, String value);
 
-  void setColumns(List<ColType> columns);
+  void setColumns(List<C> columns);
 
   void setFormattedValue(int rowIndex, int colIndex, String formattedValue);
 
@@ -127,27 +189,27 @@ public interface IsTable<RowType extends IsRow, ColType extends IsColumn> extend
 
   void setRowProperty(int rowIndex, String name, String value);
 
-  void setRows(Collection<RowType> rows);
+  void setRows(Collection<R> rows);
 
   void setTableProperties(CustomProperties properterties);
 
   void setTableProperty(String propertyKey, String propertyValue);
 
+  void setValue(int rowIndex, int colIndex, BigDecimal value);
+
   void setValue(int rowIndex, int colIndex, Boolean value);
+
+  void setValue(int rowIndex, int colIndex, DateTime value);
 
   void setValue(int rowIndex, int colIndex, Double value);
 
-  void setValue(int rowIndex, int colIndex, String value);
-
   void setValue(int rowIndex, int colIndex, Integer value);
-
-  void setValue(int rowIndex, int colIndex, Long value);
-
-  void setValue(int rowIndex, int colIndex, BigDecimal value);
 
   void setValue(int rowIndex, int colIndex, JustDate value);
 
-  void setValue(int rowIndex, int colIndex, DateTime value);
+  void setValue(int rowIndex, int colIndex, Long value);
+
+  void setValue(int rowIndex, int colIndex, String value);
 
   void setValue(int rowIndex, int colIndex, Value value);
 
@@ -155,5 +217,5 @@ public interface IsTable<RowType extends IsRow, ColType extends IsColumn> extend
 
   void sortByRowId(boolean ascending);
 
-  boolean updateRow(RowType row);
+  boolean updateRow(R row);
 }

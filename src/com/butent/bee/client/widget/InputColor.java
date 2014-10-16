@@ -10,7 +10,6 @@ import com.google.gwt.event.logical.shared.HasValueChangeHandlers;
 import com.google.gwt.event.logical.shared.ValueChangeEvent;
 import com.google.gwt.event.logical.shared.ValueChangeHandler;
 import com.google.gwt.event.shared.HandlerRegistration;
-import com.google.gwt.user.client.ui.HasEnabled;
 import com.google.gwt.user.client.ui.Widget;
 
 import com.butent.bee.client.Global;
@@ -21,8 +20,10 @@ import com.butent.bee.client.event.Binder;
 import com.butent.bee.client.event.HasInputHandlers;
 import com.butent.bee.client.event.InputEvent;
 import com.butent.bee.client.event.InputHandler;
+import com.butent.bee.client.ui.EnablableWidget;
 import com.butent.bee.client.ui.IdentifiableWidget;
 import com.butent.bee.shared.Assert;
+import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.ui.Color;
 import com.butent.bee.shared.utils.BeeUtils;
@@ -30,8 +31,8 @@ import com.butent.bee.shared.utils.BeeUtils;
 import elemental.client.Browser;
 import elemental.html.InputElement;
 
-public class InputColor extends Widget implements HasEnabled, IdentifiableWidget, HasInputHandlers,
-    HasMouseDownHandlers, HasClickHandlers, HasValueChangeHandlers<String> {
+public class InputColor extends Widget implements EnablableWidget, IdentifiableWidget,
+    HasInputHandlers, HasMouseDownHandlers, HasClickHandlers, HasValueChangeHandlers<String> {
 
   public InputColor() {
     super();
@@ -49,7 +50,7 @@ public class InputColor extends Widget implements HasEnabled, IdentifiableWidget
   public HandlerRegistration addClickHandler(ClickHandler handler) {
     return Binder.addClickHandler(this, handler);
   }
-  
+
   public HandlerRegistration addColorChangeHandler(final Scheduler.ScheduledCommand command) {
     Assert.notNull(command);
 
@@ -101,7 +102,7 @@ public class InputColor extends Widget implements HasEnabled, IdentifiableWidget
           String newValue = Color.normalize(value);
           if (!BeeUtils.equalsTrim(newValue, getValue())) {
             setValue(newValue);
-            ValueChangeEvent.fire(InputColor.this, newValue);            
+            ValueChangeEvent.fire(InputColor.this, newValue);
           }
         }
 
@@ -152,7 +153,7 @@ public class InputColor extends Widget implements HasEnabled, IdentifiableWidget
 
   protected void init() {
     DomUtils.createId(this, getIdPrefix());
-    setStyleName("bee-InputColor");
+    setStyleName(BeeConst.CSS_CLASS_PREFIX + "InputColor");
   }
 
   private InputElement getInputElement() {

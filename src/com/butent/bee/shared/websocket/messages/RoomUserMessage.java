@@ -1,16 +1,15 @@
 package com.butent.bee.shared.websocket.messages;
 
-import com.google.common.collect.Lists;
-
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.Codec;
 
+import java.util.ArrayList;
 import java.util.List;
 
 public class RoomUserMessage extends Message {
-  
+
   public static RoomUserMessage enter(Long roomId, Long userId) {
     if (DataUtils.isId(roomId) && DataUtils.isId(userId)) {
       return new RoomUserMessage(roomId, userId, true);
@@ -29,7 +28,7 @@ public class RoomUserMessage extends Message {
 
   private long roomId;
   private long userId;
-  
+
   private boolean join;
 
   private RoomUserMessage(long roomId, long userId, boolean join) {
@@ -48,7 +47,7 @@ public class RoomUserMessage extends Message {
   public String brief() {
     return BeeUtils.joinWords(getRoomId(), getUserId(), join());
   }
-  
+
   public long getRoomId() {
     return roomId;
   }
@@ -61,7 +60,7 @@ public class RoomUserMessage extends Message {
   public boolean isValid() {
     return getRoomId() > 0 && DataUtils.isId(getUserId());
   }
-  
+
   public boolean join() {
     return join;
   }
@@ -84,7 +83,7 @@ public class RoomUserMessage extends Message {
   protected void deserialize(String s) {
     String[] arr = Codec.beeDeserializeCollection(s);
     Assert.lengthEquals(arr, 3);
-    
+
     setRoomId(BeeUtils.toLong(arr[0]));
     setUserId(BeeUtils.toLong(arr[1]));
     setJoin(Codec.unpack(arr[2]));
@@ -92,12 +91,12 @@ public class RoomUserMessage extends Message {
 
   @Override
   protected String serialize() {
-    List<Object> values = Lists.newArrayList();
-    
+    List<Object> values = new ArrayList<>();
+
     values.add(getRoomId());
     values.add(getUserId());
     values.add(Codec.pack(join()));
-    
+
     return Codec.beeSerialize(values);
   }
 

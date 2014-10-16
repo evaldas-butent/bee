@@ -1,7 +1,5 @@
 package com.butent.bee.client.data;
 
-import com.google.common.collect.Lists;
-import com.google.common.collect.Sets;
 import com.google.gwt.core.client.Scheduler.ScheduledCommand;
 
 import com.butent.bee.client.data.Queries.RowSetCallback;
@@ -16,6 +14,7 @@ import com.butent.bee.shared.data.BeeColumn;
 import com.butent.bee.shared.data.BeeRow;
 import com.butent.bee.shared.data.BeeRowSet;
 import com.butent.bee.shared.data.DataUtils;
+import com.butent.bee.shared.data.cache.CachingPolicy;
 import com.butent.bee.shared.data.event.CellUpdateEvent;
 import com.butent.bee.shared.data.event.MultiDeleteEvent;
 import com.butent.bee.shared.data.event.RowDeleteEvent;
@@ -29,6 +28,8 @@ import com.butent.bee.shared.logging.LogUtils;
 import com.butent.bee.shared.ui.HandlesActions;
 import com.butent.bee.shared.utils.BeeUtils;
 
+import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -45,8 +46,8 @@ public class CachedProvider extends Provider {
   private BeeRowSet table;
   private boolean complete;
 
-  private final Set<Long> filteredRowIds = Sets.newHashSet();
-  private final List<BeeRow> viewRows = Lists.newArrayList();
+  private final Set<Long> filteredRowIds = new HashSet<>();
+  private final List<BeeRow> viewRows = new ArrayList<>();
 
   public CachedProvider(HasDataTable display, HandlesActions actionHandler,
       NotificationListener notificationListener,
@@ -182,7 +183,7 @@ public class CachedProvider extends Provider {
     if (order == null || order.isEmpty()) {
       getTable().sortByRowId(true);
     } else {
-      List<Pair<Integer, Boolean>> sortList = Lists.newArrayList();
+      List<Pair<Integer, Boolean>> sortList = new ArrayList<>();
       int index;
 
       for (Order.Column sortInfo : order.getColumns()) {
@@ -213,8 +214,8 @@ public class CachedProvider extends Provider {
   }
 
   @Override
-  public void refresh(boolean updateActiveRow) {
-    refresh(updateActiveRow, null);
+  public void refresh(boolean preserveActiveRow) {
+    refresh(preserveActiveRow, null);
   }
 
   @Override
@@ -232,7 +233,7 @@ public class CachedProvider extends Provider {
       if (callback != null) {
         callback.accept(true);
       }
-      
+
     } else if (isComplete()) {
       tryNotEmptyFilter(newFilter, callback, notify);
 
@@ -247,26 +248,26 @@ public class CachedProvider extends Provider {
   }
 
   @Override
-  protected void onRequest(boolean updateActiveRow) {
-    updateDisplay(updateActiveRow);
+  protected void onRequest(boolean preserveActiveRow) {
+    updateDisplay(preserveActiveRow);
   }
 
-  protected void updateDisplay(boolean updateActiveRow) {
+  protected void updateDisplay(boolean preserveActiveRow) {
     int start = getPageStart();
     int length = getPageSize();
     int rowCount = getRowCount();
 
     List<BeeRow> rowValues;
     if (rowCount <= 0) {
-      rowValues = Lists.newArrayList();
+      rowValues = new ArrayList<>();
     } else if (length <= 0 || length >= rowCount) {
       rowValues = getRowList();
     } else {
       rowValues = getRowList().subList(start, Math.min(start + length, rowCount));
     }
 
-    if (updateActiveRow) {
-      getDisplay().updateActiveRow(rowValues);
+    if (preserveActiveRow) {
+      getDisplay().preserveActiveRow(rowValues);
     }
     getDisplay().setRowData(rowValues, true);
   }
@@ -334,36 +335,38 @@ public class CachedProvider extends Provider {
     return complete;
   }
 
-  private void refresh(final boolean updateActiveRow, final ScheduledCommand callback) {
+  private void refresh(final boolean preserveActiveRow, final ScheduledCommand callback) {
     final int oldPageSize = getPageSize();
     final int oldTableSize = getTable().getNumberOfRows();
 
-    Queries.getRowSet(getViewName(), null, getQueryFilter(null), getOrder(), new RowSetCallback() {
-      @Override
-      public void onSuccess(BeeRowSet rowSet) {
-        Assert.notNull(rowSet);
-        setTable(rowSet);
-        setComplete(true);
+    Queries.getRowSet(getViewName(), null, getQueryFilter(null), getOrder(),
+        BeeConst.UNDEF, BeeConst.UNDEF, CachingPolicy.NONE, getQueryOptions(),
+        new RowSetCallback() {
+          @Override
+          public void onSuccess(BeeRowSet rowSet) {
+            Assert.notNull(rowSet);
+            setTable(rowSet);
+            setComplete(true);
 
-        applyFilter(getUserFilter());
+            applyFilter(getUserFilter());
 
-        int newTableSize = rowSet.getNumberOfRows();
+            int newTableSize = rowSet.getNumberOfRows();
 
-        int oldRc = getDisplay().getRowCount();
-        int newRc = getRowCount();
+            int oldRc = getDisplay().getRowCount();
+            int newRc = getRowCount();
 
-        if (newTableSize != oldTableSize && oldPageSize >= oldTableSize) {
-          getDisplay().setPageSize(newTableSize, oldRc == newRc);
-        }
-        getDisplay().setRowCount(newRc, true);
+            if (newTableSize != oldTableSize && oldPageSize >= oldTableSize) {
+              getDisplay().setPageSize(newTableSize, oldRc == newRc);
+            }
+            getDisplay().setRowCount(newRc, true);
 
-        updateDisplay(updateActiveRow);
+            updateDisplay(preserveActiveRow);
 
-        if (callback != null) {
-          callback.execute();
-        }
-      }
-    });
+            if (callback != null) {
+              callback.execute();
+            }
+          }
+        });
   }
 
   private void setComplete(boolean complete) {

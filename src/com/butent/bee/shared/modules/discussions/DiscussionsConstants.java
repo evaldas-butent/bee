@@ -1,5 +1,6 @@
 package com.butent.bee.shared.modules.discussions;
 
+import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.Service;
 import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.time.TimeUtils;
@@ -10,6 +11,7 @@ public final class DiscussionsConstants {
 
   public enum DiscussionEvent implements HasCaption {
     CREATE(Localized.getConstants().discussEventCreated(), null, null),
+    CREATE_MAIL(Localized.getConstants().mailNotify(), null, null),
     VISIT(Localized.getConstants().discussEventVisited(), null, null),
     ACTIVATE(Localized.getConstants().discussEventActivated(), Localized.getConstants()
         .discussActionActivate(), "silverDiscussActivate"),
@@ -95,8 +97,7 @@ public final class DiscussionsConstants {
   }
 
   public static final String DISCUSSIONS_PREFIX = "discuss_";
-  public static final String DISCUSSIONS_STYLE_PREFIX = "bee-discuss-";
-  public static final String STYLE_SHEET = "discuss";
+  public static final String DISCUSSIONS_STYLE_PREFIX = BeeConst.CSS_CLASS_PREFIX + "discuss-";
 
   public static final String ALS_BIRTHDAY = "Birthday";
   public static final String ALS_BIRTHDAY_VALID = "BirthdayValid";
@@ -121,10 +122,11 @@ public final class DiscussionsConstants {
   public static final String COL_IMPORTANT = "Important";
   public static final String COL_MARK_NAME = "Name";
   public static final String COL_MARK_RESOURCE = "ImageResourceName";
-  public static final String COL_FILE_NAME = "FileName";
-  public static final String COL_FILE_SIZE = "FileSize";
-  public static final String COL_FILE_TYPE = "FileType";
   public static final String COL_LAST_ACCESS = "LastAccess";
+
+  public static final String COL_MAIL_NEW_ANNOUNCEMENTS = "MailNewAnnouncements";
+  public static final String COL_MAIL_NEW_DISCUSSIONS = "MailNewDiscussions";
+
   public static final String COL_MARK = "Mark";
   public static final String COL_MEMBER = "Member";
   public static final String COL_NAME = "Name";
@@ -151,6 +153,7 @@ public final class DiscussionsConstants {
   public static final String FORM_ANNOUNCEMENTS_BOARD = "AnnouncementsBoard";
 
   public static final String GRID_DISCUSSIONS = "Discussions";
+  public static final String GRID_DISCUSSION_FILES = "DiscussionFiles";
 
   public static final String PROP_COMMENTS = "Comments";
   public static final String PROP_DESCRIPTION = "Description";
@@ -164,6 +167,7 @@ public final class DiscussionsConstants {
   public static final String PROP_USER = "User";
   public static final String PROP_ATTACHMENT = "Attachment";
   public static final String PROP_MARKS = "Marks";
+  public static final String PROP_MAIL = "Mail";
 
   public static final String PROP_COMPANIES = "Companies";
   public static final String PROP_PERSONS = "Persons";

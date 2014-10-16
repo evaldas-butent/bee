@@ -1,8 +1,6 @@
 package com.butent.bee.client.modules.calendar;
 
 import com.google.common.collect.Lists;
-import com.google.common.collect.Maps;
-import com.google.common.collect.Sets;
 import com.google.gwt.core.client.Scheduler;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
@@ -13,8 +11,10 @@ import com.google.gwt.user.client.ui.Widget;
 
 import static com.butent.bee.shared.modules.calendar.CalendarConstants.*;
 
+import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.Global;
 import com.butent.bee.client.composite.DataSelector;
+import com.butent.bee.client.data.Data;
 import com.butent.bee.client.data.Queries;
 import com.butent.bee.client.data.RowCallback;
 import com.butent.bee.client.datepicker.DatePicker;
@@ -35,6 +35,7 @@ import com.butent.bee.client.widget.CustomDiv;
 import com.butent.bee.client.widget.InputColor;
 import com.butent.bee.client.widget.SimpleCheckBox;
 import com.butent.bee.shared.Assert;
+import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.HasHtml;
 import com.butent.bee.shared.State;
 import com.butent.bee.shared.data.BeeRow;
@@ -54,6 +55,9 @@ import com.butent.bee.shared.ui.HasCaption;
 import com.butent.bee.shared.ui.Relation;
 import com.butent.bee.shared.utils.BeeUtils;
 
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -86,30 +90,48 @@ class CalendarController extends Flow implements HandlesStateChange, HasCaption,
     UP("up") {
       @Override
       Widget create(BeeRow row) {
-        return new FaLabel(FontAwesome.ARROW_UP);
+        if (Data.isViewEditable(VIEW_USER_CAL_ATTENDEES)) {
+          return new FaLabel(FontAwesome.ARROW_UP);
+        } else {
+          return null;
+        }
       }
     },
 
     DOWN("down") {
       @Override
       Widget create(BeeRow row) {
-        return new FaLabel(FontAwesome.ARROW_DOWN);
+        if (Data.isViewEditable(VIEW_USER_CAL_ATTENDEES)) {
+          return new FaLabel(FontAwesome.ARROW_DOWN);
+        } else {
+          return null;
+        }
       }
     },
 
     ENABLE("enable") {
       @Override
       Widget create(BeeRow row) {
-        return new SimpleCheckBox();
+        if (Data.isViewEditable(VIEW_USER_CAL_ATTENDEES)) {
+          return new SimpleCheckBox();
+        } else {
+          return null;
+        }
       }
     },
 
     REMOVE("remove") {
       @Override
-      Widget create(final BeeRow row) {
-        FaLabel widget = new FaLabel(FontAwesome.TRASH_O);
-        widget.setTitle(Localized.getConstants().actionRemove());
-        return widget;
+      Widget create(BeeRow row) {
+        if (Data.isViewEditable(VIEW_USER_CAL_ATTENDEES)
+            && BeeKeeper.getUser().canDeleteData(VIEW_USER_CAL_ATTENDEES)) {
+          FaLabel widget = new FaLabel(FontAwesome.TRASH_O);
+          widget.setTitle(Localized.getConstants().actionRemove());
+          return widget;
+
+        } else {
+          return null;
+        }
       }
     };
 
@@ -126,7 +148,7 @@ class CalendarController extends Flow implements HandlesStateChange, HasCaption,
     }
   }
 
-  private static final String STYLE_CONTAINER = "bee-cal-Controller";
+  private static final String STYLE_CONTAINER = BeeConst.CSS_CLASS_PREFIX + "cal-Controller";
   private static final String STYLE_PREFIX = STYLE_CONTAINER + "-";
 
   private static final String STYLE_DISCLOSURE = STYLE_PREFIX + "disclosure";
@@ -187,7 +209,7 @@ class CalendarController extends Flow implements HandlesStateChange, HasCaption,
   private final DatePicker datePicker = new DatePicker(TimeUtils.today(), MIN_DATE, MAX_DATE);
 
   private final HtmlTable table = new HtmlTable();
-  private final List<Long> ucaIds = Lists.newArrayList();
+  private final List<Long> ucaIds = new ArrayList<>();
 
   private final InputColor colorPicker = new InputColor();
 
@@ -247,7 +269,7 @@ class CalendarController extends Flow implements HandlesStateChange, HasCaption,
   }
 
   Map<Long, String> getAttendeeColors() {
-    Map<Long, String> colors = Maps.newHashMap();
+    Map<Long, String> colors = new HashMap<>();
     for (BeeRow row : ucAttendees.getRows()) {
       String color = getColor(row);
       if (!BeeUtils.isEmpty(color)) {
@@ -258,7 +280,7 @@ class CalendarController extends Flow implements HandlesStateChange, HasCaption,
   }
 
   List<Long> getAttendees() {
-    List<Long> result = Lists.newArrayList();
+    List<Long> result = new ArrayList<>();
     if (ucAttendees.isEmpty()) {
       return result;
     }
@@ -321,72 +343,79 @@ class CalendarController extends Flow implements HandlesStateChange, HasCaption,
     for (UcaColumn column : UcaColumn.values()) {
       Widget widget = column.create(row);
 
-      switch (column) {
-        case COLOR:
-          Binder.addClickHandler(widget, new ClickHandler() {
-            @Override
-            public void onClick(ClickEvent event) {
-              setActiveRowId(rowId);
-              colorPicker.setColor(getColor(getRow(rowId)));
-              colorPicker.click();
+      if (widget != null) {
+        switch (column) {
+          case COLOR:
+            if (Data.isViewEditable(VIEW_USER_CAL_ATTENDEES)) {
+              Binder.addClickHandler(widget, new ClickHandler() {
+                @Override
+                public void onClick(ClickEvent event) {
+                  setActiveRowId(rowId);
+                  colorPicker.setColor(getColor(getRow(rowId)));
+                  colorPicker.click();
+                }
+              });
             }
-          });
-          break;
+            break;
 
-        case CAPTION:
-          ((HasClickHandlers) widget).addClickHandler(new ClickHandler() {
-            @Override
-            public void onClick(ClickEvent event) {
-              changeCaption(rowId);
+          case CAPTION:
+            if (Data.isViewEditable(VIEW_USER_CAL_ATTENDEES)) {
+              ((HasClickHandlers) widget).addClickHandler(new ClickHandler() {
+                @Override
+                public void onClick(ClickEvent event) {
+                  changeCaption(rowId);
+                }
+              });
             }
-          });
-          break;
+            break;
 
-        case UP:
-          ((HasClickHandlers) widget).addClickHandler(new ClickHandler() {
-            @Override
-            public void onClick(ClickEvent event) {
-              move(rowId, true);
-            }
-          });
-          break;
-
-        case DOWN:
-          ((HasClickHandlers) widget).addClickHandler(new ClickHandler() {
-            @Override
-            public void onClick(ClickEvent event) {
-              move(rowId, false);
-            }
-          });
-          break;
-
-        case ENABLE:
-          if (widget instanceof SimpleCheckBox) {
-            final SimpleCheckBox cb = (SimpleCheckBox) widget;
-            if (enabled) {
-              cb.setValue(true);
-            }
-
-            cb.addClickHandler(new ClickHandler() {
+          case UP:
+            ((HasClickHandlers) widget).addClickHandler(new ClickHandler() {
               @Override
               public void onClick(ClickEvent event) {
-                setEnabled(rowId, cb.getValue());
+                move(rowId, true);
               }
             });
-          }
-          break;
+            break;
 
-        case REMOVE:
-          ((HasClickHandlers) widget).addClickHandler(new ClickHandler() {
-            @Override
-            public void onClick(ClickEvent event) {
-              delete(rowId);
+          case DOWN:
+            ((HasClickHandlers) widget).addClickHandler(new ClickHandler() {
+              @Override
+              public void onClick(ClickEvent event) {
+                move(rowId, false);
+              }
+            });
+            break;
+
+          case ENABLE:
+            if (widget instanceof SimpleCheckBox) {
+              final SimpleCheckBox cb = (SimpleCheckBox) widget;
+              if (enabled) {
+                cb.setValue(true);
+              }
+
+              cb.addClickHandler(new ClickHandler() {
+                @Override
+                public void onClick(ClickEvent event) {
+                  setEnabled(rowId, cb.getValue());
+                }
+              });
             }
-          });
-          break;
+            break;
+
+          case REMOVE:
+            ((HasClickHandlers) widget).addClickHandler(new ClickHandler() {
+              @Override
+              public void onClick(ClickEvent event) {
+                delete(rowId);
+              }
+            });
+            break;
+        }
+
+        table.setWidgetAndStyle(r, c, widget, STYLE_PREFIX + column.getLabel());
       }
 
-      table.setWidgetAndStyle(r, c, widget, STYLE_PREFIX + column.getLabel());
       c++;
     }
   }
@@ -424,15 +453,24 @@ class CalendarController extends Flow implements HandlesStateChange, HasCaption,
   }
 
   private static DataSelector createSelector() {
-    Relation relation = Relation.create(VIEW_ATTENDEES,
-        Lists.newArrayList(COL_ATTENDEE_NAME, ALS_ATTENDEE_TYPE_NAME));
-    relation.disableEdit();
+    if (Data.isViewEditable(VIEW_USER_CAL_ATTENDEES)
+        && BeeKeeper.getUser().canCreateData(VIEW_USER_CAL_ATTENDEES)) {
 
-    DataSelector dataSelector = new DataSelector(relation, true);
-    dataSelector.setEditing(true);
-    DomUtils.setPlaceholder(dataSelector, Localized.getConstants().actionAppend());
+      Relation relation = Relation.create(VIEW_ATTENDEES,
+          Lists.newArrayList(COL_ATTENDEE_NAME, ALS_ATTENDEE_TYPE_NAME));
 
-    return dataSelector;
+      relation.disableEdit();
+      relation.disableNewRow();
+
+      DataSelector dataSelector = new DataSelector(relation, true);
+      dataSelector.setEditing(true);
+      DomUtils.setPlaceholder(dataSelector, Localized.getConstants().actionAppend());
+
+      return dataSelector;
+
+    } else {
+      return null;
+    }
   }
 
   private void createUi() {
@@ -475,17 +513,19 @@ class CalendarController extends Flow implements HandlesStateChange, HasCaption,
     panel.add(table);
     add(panel);
 
-    attSelector.addStyleName(STYLE_SELECTOR);
-    attSelector.addEditStopHandler(new EditStopEvent.Handler() {
-      @Override
-      public void onEditStop(EditStopEvent event) {
-        if (event.isChanged() && attSelector.getRelatedRow() != null) {
-          addAttendee(attSelector.getRelatedRow());
-          attSelector.clearValue();
+    if (attSelector != null) {
+      attSelector.addStyleName(STYLE_SELECTOR);
+      attSelector.addEditStopHandler(new EditStopEvent.Handler() {
+        @Override
+        public void onEditStop(EditStopEvent event) {
+          if (event.isChanged() && attSelector.getRelatedRow() != null) {
+            addAttendee(attSelector.getRelatedRow());
+            attSelector.clearValue();
+          }
         }
-      }
-    });
-    add(attSelector);
+      });
+      add(attSelector);
+    }
 
     colorPicker.addStyleName(STYLE_COLOR_PICKER);
     colorPicker.addColorChangeHandler(new Scheduler.ScheduledCommand() {
@@ -569,7 +609,7 @@ class CalendarController extends Flow implements HandlesStateChange, HasCaption,
 
     int dstIdx = srcIdx + (up ? -1 : 1);
 
-    List<BeeRow> rows = Lists.newArrayList(ucAttendees.getRows());
+    List<BeeRow> rows = new ArrayList<>(ucAttendees.getRows());
 
     int srcOrd = rows.get(srcIdx).getInteger(ordinalIndex);
     int dstOrd = rows.get(dstIdx).getInteger(ordinalIndex);
@@ -619,7 +659,7 @@ class CalendarController extends Flow implements HandlesStateChange, HasCaption,
     int index = ucaIds.indexOf(rowId);
 
     if (index >= 0) {
-      updateCell(rowId, COL_ENABLED, new BooleanValue(enabled));
+      updateCell(rowId, COL_ENABLED, BooleanValue.of(enabled));
       getRow(rowId).setValue(enabledIndex, enabled);
 
       table.getRowFormatter().removeStyleName(index, STYLE_CONTAINER
@@ -632,11 +672,14 @@ class CalendarController extends Flow implements HandlesStateChange, HasCaption,
   }
 
   private void setExclusions() {
-    Set<Long> attIds = Sets.newHashSet();
-    for (BeeRow row : ucAttendees.getRows()) {
-      attIds.add(row.getLong(attIndex));
+    if (attSelector != null) {
+      Set<Long> attIds = new HashSet<>();
+      for (BeeRow row : ucAttendees.getRows()) {
+        attIds.add(row.getLong(attIndex));
+      }
+
+      attSelector.getOracle().setExclusions(attIds);
     }
-    attSelector.getOracle().setExclusions(attIds);
   }
 
   private static void updateCell(long rowId, String columnId, Value value) {

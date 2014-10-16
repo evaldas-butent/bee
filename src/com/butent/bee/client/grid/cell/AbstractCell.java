@@ -1,6 +1,5 @@
 package com.butent.bee.client.grid.cell;
 
-import com.google.common.collect.Sets;
 import com.google.gwt.dom.client.Element;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
@@ -25,11 +24,12 @@ import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.EventState;
 import com.butent.bee.shared.utils.BeeUtils;
 
+import java.util.HashSet;
 import java.util.Set;
 
 public abstract class AbstractCell<C> implements HasClickHandlers, HasAllKeyHandlers {
 
-  private Set<String> consumedEvents = Sets.newHashSet();
+  private Set<String> consumedEvents = new HashSet<>();
   private HandlerManager handlerManager;
 
   private CellContext eventContext;
@@ -93,7 +93,7 @@ public abstract class AbstractCell<C> implements HasClickHandlers, HasAllKeyHand
       handlerManager.fireEvent(event);
     }
   }
-  
+
   public Set<String> getConsumedEvents() {
     return consumedEvents;
   }
@@ -114,14 +114,14 @@ public abstract class AbstractCell<C> implements HasClickHandlers, HasAllKeyHand
     if (consumesEvent(event.getType()) && handlerManager != null) {
       setEventContext(context);
       setEventValue(value);
-      
+
       setEventCanceled(false);
 
       DomEvent.fireNativeEvent(event, handlerManager, parent);
 
       setEventContext(null);
       setEventValue(null);
-      
+
       boolean canceled = isEventCanceled();
       if (canceled) {
         setEventCanceled(false);

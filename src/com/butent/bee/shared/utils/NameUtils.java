@@ -3,13 +3,13 @@ package com.butent.bee.shared.utils;
 import com.google.common.base.CharMatcher;
 import com.google.common.base.Function;
 import com.google.common.base.Splitter;
-import com.google.common.collect.Lists;
-import com.google.common.collect.Sets;
 
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
 
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
@@ -34,7 +34,7 @@ public final class NameUtils {
   public static String addName(String nm, int v) {
     return addName(nm, String.valueOf(v));
   }
-  
+
   public static String addName(String nm, String v) {
     if (BeeUtils.isEmpty(v)) {
       return BeeConst.STRING_EMPTY;
@@ -71,7 +71,6 @@ public final class NameUtils {
 
   /**
    * Creates a unique name.
-   * 
    * @return a unique name.
    */
   public static String createUniqueName() {
@@ -80,7 +79,6 @@ public final class NameUtils {
 
   /**
    * Created a unique name with a specified prefix.
-   * 
    * @param pfx prefix used for generating a unique name
    * @return String which contains unique value with a specified prefix.
    */
@@ -158,7 +156,6 @@ public final class NameUtils {
   /**
    * Checks if a string is a correct identifier. Identifier cannot start with a number, and can only
    * contain "_", digits and letters.
-   * 
    * @param name the name to check
    * @return true if the String is a correct identifier, false otherwise.
    */
@@ -183,7 +180,7 @@ public final class NameUtils {
   public static boolean isIdentifierPart(char c) {
     return c == BeeConst.CHAR_UNDER || Character.isLetterOrDigit(c);
   }
-  
+
   public static String join(Collection<String> names) {
     return BeeUtils.join(DEFAULT_NAME_SEPARATOR, names);
   }
@@ -191,16 +188,16 @@ public final class NameUtils {
   public static String normalizeEnumName(String input) {
     return CharMatcher.JAVA_LETTER_OR_DIGIT.retainFrom(input).toLowerCase();
   }
-  
+
   public static List<String> rename(List<String> names, String oldName, String newName) {
-    List<String> result = Lists.newArrayList();
+    List<String> result = new ArrayList<>();
     if (!BeeUtils.isEmpty(names)) {
       return result;
     }
 
     if (!BeeUtils.isEmpty(oldName) && !BeeUtils.isEmpty(newName)
         && !oldName.trim().equals(newName.trim())) {
-      
+
       for (int i = 0; i < names.size(); i++) {
         String name = names.get(i);
 
@@ -210,11 +207,11 @@ public final class NameUtils {
           result.add(name);
         }
       }
-      
+
     } else {
       result.addAll(names);
     }
-    
+
     return result;
   }
 
@@ -226,7 +223,7 @@ public final class NameUtils {
       return input;
     }
   }
-  
+
   public static String replaceName(String input, String search, String replacement) {
     if (BeeUtils.isEmpty(input) || BeeUtils.isEmpty(search) || replacement == null) {
       return input;
@@ -245,18 +242,18 @@ public final class NameUtils {
       if (pos > start) {
         sb.append(input.substring(start, pos));
       }
-      
+
       boolean ok = pos == 0 || !isIdentifierPart(input.charAt(pos - 1));
       if (ok && pos + len < input.length()) {
         ok = !isIdentifierPart(input.charAt(pos + len));
       }
-      
+
       if (ok) {
         sb.append(replacement);
       } else {
         sb.append(search);
       }
-      
+
       start = pos + len;
       pos = input.indexOf(search, start);
     }
@@ -268,24 +265,23 @@ public final class NameUtils {
 
   public static List<String> toList(String s) {
     if (BeeUtils.isEmpty(s)) {
-      return Lists.newArrayList();
+      return new ArrayList<>();
     } else {
-      return Lists.newArrayList(NAME_SPLITTER.split(s));
+      return NAME_SPLITTER.splitToList(s);
     }
   }
 
   public static Set<String> toSet(String s) {
     if (BeeUtils.isEmpty(s)) {
-      return Sets.newHashSet();
+      return new HashSet<>();
     } else {
-      return Sets.newHashSet(NAME_SPLITTER.split(s));
+      return new HashSet<>(NAME_SPLITTER.splitToList(s));
     }
   }
 
   /**
    * Transforms an Object {@code obj} to a String representation. In general, this method returns a
    * string that "textually represents" a class(class name).
-   * 
    * @param obj value to transform
    * @return Object's class name
    */

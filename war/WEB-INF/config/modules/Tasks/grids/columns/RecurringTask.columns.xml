@@ -1,18 +1,15 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <g:columns xmlns="http://www.butent.com/column" xmlns:g="http://www.butent.com/grid">
 
-  <IdColumn name="Id" caption="=captionId" />
-
+  <RelColumn name="Type" renderColumns="TypeName" />
   <DataColumn name="Priority" />
+
   <DataColumn name="Summary" visible="true" />
   <DataColumn name="Description" visible="false" />
 
   <RelColumn name="Company" />
   <RelColumn name="Contact" renderColumns="ContactFirstName ContactLastName"
     sortBy="ContactLastName ContactFirstName" visible="false" />
-
-  <RelColumn name="Owner" renderColumns="OwnerFirstName OwnerLastName"
-    sortBy="OwnerLastName OwnerFirstName" visible="false" />
 
   <DataColumn name="ScheduleFrom" />
   <DataColumn name="ScheduleUntil" />

@@ -1,8 +1,6 @@
 package com.butent.bee.shared.modules.ec;
 
 import com.google.common.base.Splitter;
-import com.google.common.collect.Lists;
-import com.google.common.collect.Sets;
 import com.google.common.primitives.Longs;
 
 import com.butent.bee.shared.Assert;
@@ -13,14 +11,16 @@ import com.butent.bee.shared.ui.HasCaption;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.Codec;
 
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
 public class EcItem implements BeeSerializable, HasCaption {
 
   private enum Serial {
-    ARTICLE_ID, BRAND, CODE, NAME, SUPPLIERS, CATEGORIES, PRICE, LIST_PRICE,
+    ARTICLE_ID, BRAND, CODE, NAME, SUPPLIERS, CATEGORIES, CLIENT_PRICE, FEATURED_PRICE, LIST_PRICE,
     DESCRIPTION, CRITERIA, NOVELTY, FEATURED, UNIT, PRIMARY_STOCK, SECONDARY_STOCK, ANALOG_COUNT
   }
 
@@ -48,13 +48,14 @@ public class EcItem implements BeeSerializable, HasCaption {
   private String name;
 
   private String categories;
-  private final Collection<ArticleSupplier> suppliers = Lists.newArrayList();
+  private final Collection<ArticleSupplier> suppliers = new ArrayList<>();
 
-  private int price;
+  private int clientPrice;
+  private int featuredPrice;
   private int listPrice;
 
   private String description;
-  private final List<ArticleCriteria> criteria = Lists.newArrayList();
+  private final List<ArticleCriteria> criteria = new ArrayList<>();
 
   private boolean novelty;
   private boolean featured;
@@ -71,10 +72,6 @@ public class EcItem implements BeeSerializable, HasCaption {
   }
 
   private EcItem() {
-  }
-
-  public void clearListPrice() {
-    this.listPrice = 0;
   }
 
   @Override
@@ -108,7 +105,7 @@ public class EcItem implements BeeSerializable, HasCaption {
           break;
 
         case SUPPLIERS:
-          Collection<ArticleSupplier> sups = Lists.newArrayList();
+          Collection<ArticleSupplier> sups = new ArrayList<>();
 
           String[] suppArr = Codec.beeDeserializeCollection(value);
           if (suppArr != null) {
@@ -124,8 +121,12 @@ public class EcItem implements BeeSerializable, HasCaption {
           setCategories(value);
           break;
 
-        case PRICE:
-          setPrice(BeeUtils.toInt(value));
+        case CLIENT_PRICE:
+          setClientPrice(BeeUtils.toInt(value));
+          break;
+
+        case FEATURED_PRICE:
+          setFeaturedPrice(BeeUtils.toInt(value));
           break;
 
         case LIST_PRICE:
@@ -199,7 +200,7 @@ public class EcItem implements BeeSerializable, HasCaption {
   }
 
   public Set<Long> getCategorySet() {
-    Set<Long> result = Sets.newHashSet();
+    Set<Long> result = new HashSet<>();
 
     if (getCategories() != null) {
       for (String s : CATEGORY_SPLITTER.split(getCategories())) {
@@ -208,6 +209,10 @@ public class EcItem implements BeeSerializable, HasCaption {
     }
 
     return result;
+  }
+
+  public int getClientPrice() {
+    return clientPrice;
   }
 
   public String getCode() {
@@ -222,6 +227,10 @@ public class EcItem implements BeeSerializable, HasCaption {
     return description;
   }
 
+  public int getFeaturedPrice() {
+    return featuredPrice;
+  }
+
   public int getListPrice() {
     return listPrice;
   }
@@ -231,11 +240,19 @@ public class EcItem implements BeeSerializable, HasCaption {
   }
 
   public int getPrice() {
-    return price;
+    if (isFeatured() && getFeaturedPrice() > 0 && getFeaturedPrice() < getClientPrice()) {
+      return getFeaturedPrice();
+    } else {
+      return getClientPrice();
+    }
   }
 
   public int getPrimaryStock() {
     return primaryStock;
+  }
+
+  public double getRealClientPrice() {
+    return clientPrice / 100d;
   }
 
   public double getRealListPrice() {
@@ -243,21 +260,22 @@ public class EcItem implements BeeSerializable, HasCaption {
   }
 
   public double getRealPrice() {
-    return price / 100d;
+    return getPrice() / 100d;
   }
 
   public int getSecondaryStock() {
     return secondaryStock;
   }
 
-  public int getSupplierPrice(EcDisplayedPrice displayedPrice, Double marginPercent) {
+  public int getSupplierPrice(EcDisplayedPrice displayedPrice, boolean base, Double marginPercent) {
     EcSupplier displayedSupplier = EcDisplayedPrice.getSupplier(displayedPrice);
 
     int result = 0;
     int aggregate = 0;
 
     for (ArticleSupplier articleSupplier : getSuppliers()) {
-      int supplierPrice = articleSupplier.getListPrice(marginPercent);
+      int supplierPrice =
+          base ? articleSupplier.getListPrice(marginPercent) : articleSupplier.getPrice();
 
       if (supplierPrice > 0) {
         if (displayedSupplier != null && articleSupplier.getSupplier() == displayedSupplier) {
@@ -354,8 +372,12 @@ public class EcItem implements BeeSerializable, HasCaption {
           arr[i++] = categories;
           break;
 
-        case PRICE:
-          arr[i++] = price;
+        case CLIENT_PRICE:
+          arr[i++] = clientPrice;
+          break;
+
+        case FEATURED_PRICE:
+          arr[i++] = featuredPrice;
           break;
 
         case LIST_PRICE:
@@ -410,6 +432,14 @@ public class EcItem implements BeeSerializable, HasCaption {
     this.categories = categories;
   }
 
+  public void setClientPrice(Double price) {
+    this.clientPrice = BeeUtils.isDouble(price) ? BeeUtils.round(price * 100) : 0;
+  }
+
+  public void setClientPrice(int clientPrice) {
+    this.clientPrice = clientPrice;
+  }
+
   public void setCode(String code) {
     this.code = code;
   }
@@ -426,8 +456,12 @@ public class EcItem implements BeeSerializable, HasCaption {
     this.featured = featured;
   }
 
-  public void setListPrice(Double listPrice) {
-    this.listPrice = BeeUtils.isDouble(listPrice) ? BeeUtils.round(listPrice * 100) : 0;
+  public void setFeaturedPrice(Double price) {
+    this.featuredPrice = BeeUtils.isDouble(price) ? BeeUtils.round(price * 100) : 0;
+  }
+
+  public void setFeaturedPrice(int featuredPrice) {
+    this.featuredPrice = featuredPrice;
   }
 
   public void setListPrice(int listPrice) {
@@ -440,14 +474,6 @@ public class EcItem implements BeeSerializable, HasCaption {
 
   public void setNovelty(boolean novelty) {
     this.novelty = novelty;
-  }
-
-  public void setPrice(Double price) {
-    this.price = BeeUtils.isDouble(price) ? BeeUtils.round(price * 100) : 0;
-  }
-
-  public void setPrice(int price) {
-    this.price = price;
   }
 
   public void setPrimaryStock(int primaryStock) {

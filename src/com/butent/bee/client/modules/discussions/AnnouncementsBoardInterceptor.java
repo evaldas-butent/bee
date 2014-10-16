@@ -1,7 +1,9 @@
 package com.butent.bee.client.modules.discussions;
 
-import com.google.common.collect.Lists;
 import com.google.gwt.core.client.Scheduler.ScheduledCommand;
+import com.google.gwt.event.dom.client.ClickEvent;
+import com.google.gwt.event.dom.client.ClickHandler;
+import com.google.gwt.user.client.ui.HorizontalPanel;
 import com.google.gwt.user.client.ui.Widget;
 import com.google.web.bindery.event.shared.HandlerRegistration;
 
@@ -13,6 +15,10 @@ import com.butent.bee.client.Global;
 import com.butent.bee.client.communication.ParameterList;
 import com.butent.bee.client.communication.ResponseCallback;
 import com.butent.bee.client.data.RowEditor;
+import com.butent.bee.client.data.RowFactory;
+import com.butent.bee.client.dialog.DialogBox;
+import com.butent.bee.client.grid.GridFactory.GridOptions;
+import com.butent.bee.client.grid.GridPanel;
 import com.butent.bee.client.grid.HtmlTable;
 import com.butent.bee.client.i18n.DateTimeFormat;
 import com.butent.bee.client.i18n.DateTimeFormat.PredefinedFormat;
@@ -20,6 +26,7 @@ import com.butent.bee.client.layout.Flow;
 import com.butent.bee.client.presenter.Presenter;
 import com.butent.bee.client.render.PhotoRenderer;
 import com.butent.bee.client.style.StyleUtils;
+import com.butent.bee.client.ui.Opener;
 import com.butent.bee.client.view.form.FormView;
 import com.butent.bee.client.view.form.interceptor.AbstractFormInterceptor;
 import com.butent.bee.client.view.form.interceptor.FormInterceptor;
@@ -38,6 +45,8 @@ import com.butent.bee.shared.data.event.DataChangeEvent;
 import com.butent.bee.shared.data.event.HandlesUpdateEvents;
 import com.butent.bee.shared.data.event.RowInsertEvent;
 import com.butent.bee.shared.data.event.RowUpdateEvent;
+import com.butent.bee.shared.data.filter.Filter;
+import com.butent.bee.shared.data.value.Value;
 import com.butent.bee.shared.font.FontAwesome;
 import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.modules.administration.AdministrationConstants;
@@ -46,18 +55,20 @@ import com.butent.bee.shared.time.JustDate;
 import com.butent.bee.shared.ui.Action;
 import com.butent.bee.shared.utils.BeeUtils;
 
+import java.util.ArrayList;
 import java.util.Collection;
 
 class AnnouncementsBoardInterceptor extends AbstractFormInterceptor implements
     RowInsertEvent.Handler, HandlesUpdateEvents, DataChangeEvent.Handler {
   private static final String WIDGET_ADS_CONTENT = "AdsContent";
-  private static final String STYLE_PREFIX = "bee-discuss-adsFormContent-";
+  private static final String STYLE_PREFIX = BeeConst.CSS_CLASS_PREFIX
+      + "discuss-adsFormContent-";
   private static final String STYLE_HAPPY_DAY = "-happyDay";
   private static final String STYLE_BIRTH_LIST = "-birthList";
   private static final String STYLE_ACTION = "action";
   private static final String STYLE_CHAT_BALLOON = "chatBalloon";
 
-  private final Collection<HandlerRegistration> registry = Lists.newArrayList();
+  private final Collection<HandlerRegistration> registry = new ArrayList<>();
 
   @Override
   public FormInterceptor getInstance() {
@@ -141,14 +152,14 @@ class AnnouncementsBoardInterceptor extends AbstractFormInterceptor implements
       @Override
       public void onResponse(ResponseObject response) {
         Assert.notNull(response);
-
+        adsTable.clear();
         if (response.isEmpty()) {
-          BeeKeeper.getScreen().notifyInfo(Localized.getConstants().noData());
+          renderWelcomeSection(adsTable);
           return;
         }
 
         if (!response.hasResponse(SimpleRowSet.class)) {
-          BeeKeeper.getScreen().notifyInfo(Localized.getConstants().noData());
+          renderWelcomeSection(adsTable);
           return;
         }
 
@@ -174,6 +185,8 @@ class AnnouncementsBoardInterceptor extends AbstractFormInterceptor implements
   protected static void renderAnnoucementsSection(String[] rsRow, SimpleRowSet rs,
       HtmlTable adsTable) {
     int row = adsTable.getRowCount();
+    final Long rowId = BeeUtils.toLongOrNull(rsRow[rs.getColumnIndex(COL_DISCUSSION)]);
+
     adsTable.setHtml(row, 0, rsRow[rs.getColumnIndex(ALS_TOPIC_NAME)]);
     adsTable.getCellFormatter().setColSpan(row, 0, 2);
     adsTable.getRow(row).addClassName(STYLE_PREFIX + ALS_TOPIC_NAME);
@@ -185,22 +198,35 @@ class AnnouncementsBoardInterceptor extends AbstractFormInterceptor implements
     adsTable.setHtml(row, 0, renderDateTime(rsRow[rs.getColumnIndex(COL_CREATED)]),
         STYLE_PREFIX + COL_CREATED);
 
-    String attachment = "";
+    Image attachment = null;
 
     if (rs.hasColumn(AdministrationConstants.COL_FILE)) {
       if (!BeeUtils.isEmpty(rsRow[rs.getColumnIndex(AdministrationConstants.COL_FILE)])) {
         int fileCount = BeeUtils.toInt(rsRow[rs.getColumnIndex(AdministrationConstants.COL_FILE)]);
 
         if (BeeUtils.isPositive(fileCount)) {
-          attachment = (new Image(Global.getImages().attachment())).toString();
+          attachment = new Image(Global.getImages().attachment());
+
+          if (DataUtils.isId(rowId)) {
+            openFileList(attachment, rowId);
+          }
         }
       }
     }
 
-    CustomDiv div = new CustomDiv(STYLE_PREFIX + STYLE_CHAT_BALLOON);
-
+    Flow balloonDiv = new Flow(STYLE_PREFIX + STYLE_CHAT_BALLOON);
     int subjectRow = row;
-    adsTable.setHtml(row, 1, div.toString() + attachment + rsRow[rs.getColumnIndex(COL_SUBJECT)],
+
+    CustomDiv subjectDiv = new CustomDiv();
+    subjectDiv.setHtml(rsRow[rs.getColumnIndex(COL_SUBJECT)]);
+
+    HorizontalPanel subjectContent = new HorizontalPanel();
+    subjectContent.add(balloonDiv);
+    if (attachment != null) {
+      subjectContent.add(attachment);
+    }
+    subjectContent.add(subjectDiv);
+    adsTable.setWidget(row, 1, subjectContent,
         STYLE_PREFIX + COL_SUBJECT);
 
     row++;
@@ -217,19 +243,18 @@ class AnnouncementsBoardInterceptor extends AbstractFormInterceptor implements
       if (isNew) {
         adsTable.getCellFormatter().addStyleName(row, 1, STYLE_PREFIX + ALS_NEW_ANNOUCEMENT);
         adsTable.getCellFormatter().addStyleName(subjectRow, 1, STYLE_PREFIX + ALS_NEW_ANNOUCEMENT);
+        balloonDiv.addStyleName(STYLE_PREFIX + ALS_NEW_ANNOUCEMENT);
       }
     }
 
     row++;
-
-    final Long rowId = BeeUtils.toLongOrNull(rsRow[rs.getColumnIndex(COL_DISCUSSION)]);
 
     if (DataUtils.isId(rowId)) {
       ScheduledCommand command = new ScheduledCommand() {
 
         @Override
         public void execute() {
-          RowEditor.openRow(VIEW_DISCUSSIONS, rowId, false, null);
+          RowEditor.open(VIEW_DISCUSSIONS, rowId, Opener.NEW_TAB);
         }
       };
       String btnCaption = BeeUtils.joinWords(
@@ -283,6 +308,88 @@ class AnnouncementsBoardInterceptor extends AbstractFormInterceptor implements
     renderBirthdaysList(startRow, contentRow, finishRow, adsTable);
   }
 
+  protected static void renderWelcomeSection(HtmlTable adsTable) {
+
+    int row = adsTable.getRowCount();
+    adsTable.setHtml(row, 0, Localized.getConstants().welcome());
+    adsTable.getCellFormatter().setColSpan(row, 0, 2);
+    adsTable.getRow(row).addClassName(STYLE_PREFIX + ALS_TOPIC_NAME);
+
+    row++;
+    adsTable.setHtml(row, 0, BeeConst.STRING_EMPTY,
+        STYLE_PREFIX + COL_CREATED);
+
+    adsTable.setHtml(row, 1, BeeConst.STRING_EMPTY,
+        STYLE_PREFIX + COL_SUBJECT);
+
+    row++;
+    Image img = new Image("images/logo.png");
+    StyleUtils.setMaxHeight(img, 90);
+    adsTable.setWidget(row, 0, img, STYLE_PREFIX + COL_OWNER);
+
+    adsTable.setHtml(row, 1, Localized.getConstants().welcomeMessage(), STYLE_PREFIX
+        + COL_DESCRIPTION);
+
+    row++;
+
+    ScheduledCommand command = new ScheduledCommand() {
+
+      @Override
+      public void execute() {
+        RowFactory.createRow(VIEW_DISCUSSIONS);
+      }
+    };
+
+    String btnCaption = BeeUtils.joinWords(
+        new FaLabel(FontAwesome.SQUARE_O).toString(),
+        new FaLabel(FontAwesome.SQUARE_O).toString(),
+        new FaLabel(FontAwesome.SQUARE_O).toString());
+
+    Button moreButton = new Button(btnCaption, command);
+    moreButton.setTitle(Localized.getConstants().more());
+    moreButton.addStyleName(STYLE_PREFIX + STYLE_ACTION + COL_DISCUSSION);
+    adsTable.setText(row, 0, BeeConst.STRING_EMPTY);
+    // adsTable.setWidget(row, 1, moreButton);
+    adsTable.setHtml(row, 1, BeeConst.STRING_EMPTY);
+
+    adsTable.getRow(row).addClassName(STYLE_PREFIX + STYLE_ACTION);
+
+    row++;
+
+  }
+
+  private static Widget createCell(String style, String value) {
+    Widget widget = new CustomDiv(style);
+    if (!BeeUtils.isEmpty(value)) {
+      widget.getElement().setInnerHTML(value);
+    }
+
+    return widget;
+  }
+
+  private static void openFileList(final Image link, final long discussId) {
+    Assert.notNull(link);
+
+    link.addClickHandler(new ClickHandler() {
+
+      @Override
+      public void onClick(ClickEvent event) {
+        Filter filter = Filter.isEqual(COL_DISCUSSION, Value.getValue(discussId));
+        filter = Filter.and(filter, Filter.isNull(COL_COMMENT));
+        GridPanel grid = new GridPanel(GRID_DISCUSSION_FILES, GridOptions.forFilter(filter), false);
+        grid.setGridInterceptor(new DiscussionFilesGrid());
+        StyleUtils.setSize(grid, 600, 400);
+
+        DialogBox dialog = DialogBox.create(null);
+        dialog.setWidget(grid);
+        dialog.setAnimationEnabled(true);
+        dialog.setHideOnEscape(true);
+        dialog.center();
+      }
+
+    });
+  }
+
   private static void renderBirthdaysList(final int startRow, final int contentRow,
       final int finishRow, final HtmlTable adsTable) {
     ParameterList params = DiscussionsKeeper.createArgs(SVC_GET_BIRTHDAYS);
@@ -293,6 +400,7 @@ class AnnouncementsBoardInterceptor extends AbstractFormInterceptor implements
       public void onResponse(ResponseObject response) {
         if (response.isEmpty()) {
           adsTable.setHtml(contentRow, 0, Localized.getConstants().noData());
+          return;
         }
 
         if (!response.hasResponse(SimpleRowSet.class)) {
@@ -374,15 +482,6 @@ class AnnouncementsBoardInterceptor extends AbstractFormInterceptor implements
       image.addStyleName(stylePref + COL_PHOTO);
       container.add(image);
     }
-  }
-
-  private static Widget createCell(String style, String value) {
-    Widget widget = new CustomDiv(style);
-    if (!BeeUtils.isEmpty(value)) {
-      widget.getElement().setInnerHTML(value);
-    }
-
-    return widget;
   }
 
 }

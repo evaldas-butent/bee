@@ -1,6 +1,5 @@
 package com.butent.bee.client;
 
-import com.google.common.collect.Lists;
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.http.client.Request;
 import com.google.gwt.http.client.RequestBuilder;
@@ -19,15 +18,16 @@ import com.butent.bee.shared.communication.CommUtils;
 import com.butent.bee.shared.communication.ContentType;
 import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogUtils;
+import com.butent.bee.shared.rights.Module;
+import com.butent.bee.shared.rights.SubModule;
 import com.butent.bee.shared.utils.BeeUtils;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 
 /**
  * enables to generate and manage remote procedure calls, GET and POST statements.
- * 
- * 
  */
 
 public class RpcFactory {
@@ -64,10 +64,30 @@ public class RpcFactory {
 
     return ok;
   }
-  
+
   public ParameterList createParameters(String svc) {
     Assert.notEmpty(svc);
     return new ParameterList(svc);
+  }
+
+  public ParameterList createParameters(Module module, String method) {
+    Assert.notNull(module);
+    Assert.notEmpty(method);
+
+    ParameterList params = createParameters(module.getName());
+    params.addQueryItem(Service.VAR_METHOD, method);
+
+    return params;
+  }
+
+  public ParameterList createParameters(Module module, SubModule subModule, String method) {
+    ParameterList params = createParameters(module, method);
+
+    if (subModule != null) {
+      params.addQueryItem(Service.VAR_SUB_MODULE, subModule.getName());
+    }
+
+    return params;
   }
 
   public String getOptions() {
@@ -77,10 +97,10 @@ public class RpcFactory {
       return BeeConst.STRING_EMPTY;
     }
   }
-  
+
   public List<RpcInfo> getPendingRequests() {
-    List<RpcInfo> result = Lists.newArrayList();
-    
+    List<RpcInfo> result = new ArrayList<>();
+
     for (RpcInfo info : rpcList.values()) {
       if (info != null && info.isPending()) {
         result.add(info);
@@ -118,7 +138,7 @@ public class RpcFactory {
     Assert.notEmpty(method);
 
     ParameterList params = createParameters(Service.INVOKE);
-    params.addQueryItem(Service.RPC_VAR_METH, method);
+    params.addQueryItem(Service.VAR_METHOD, method);
 
     if (data == null) {
       return makeGetRequest(params, callback);
@@ -128,7 +148,7 @@ public class RpcFactory {
   }
 
   public int invoke(String method, String data, ResponseCallback callback) {
-    return invoke(method, null, data, callback);
+    return invoke(method, ContentType.TEXT, data, callback);
   }
 
   public int makeGetRequest(ParameterList params) {
@@ -222,10 +242,10 @@ public class RpcFactory {
   }
 
   public int makeRequest(ParameterList params, ResponseCallback callback) {
-    RequestBuilder.Method meth = params.hasData() ? RequestBuilder.POST : RequestBuilder.GET; 
+    RequestBuilder.Method meth = params.hasData() ? RequestBuilder.POST : RequestBuilder.GET;
     return makeRequest(meth, params, null, null, callback, BeeConst.UNDEF);
   }
-  
+
   public int sendText(ParameterList params, String data, ResponseCallback callback) {
     return makePostRequest(params, ContentType.TEXT, data, callback);
   }

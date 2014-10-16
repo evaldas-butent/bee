@@ -14,6 +14,7 @@ import com.butent.bee.client.style.HasVerticalAlign;
 import com.butent.bee.client.style.StyleUtils;
 import com.butent.bee.client.ui.IdentifiableWidget;
 import com.butent.bee.client.ui.HasIndexedWidgets;
+import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.css.CssUnit;
 import com.butent.bee.shared.css.values.TextAlign;
 import com.butent.bee.shared.css.values.VerticalAlign;
@@ -41,14 +42,14 @@ public abstract class CellVector extends ComplexPanel implements IdentifiableWid
 
     DomUtils.createId(table, getIdPrefix());
 
-    table.setClassName("bee-CellVector");
+    table.setClassName(BeeConst.CSS_CLASS_PREFIX + "CellVector");
   }
 
   @Override
   public HandlerRegistration addClickHandler(ClickHandler handler) {
     return addDomHandler(handler, ClickEvent.getType());
   }
-  
+
   public void addStyleToCell(Widget w, String styleName) {
     Element td = getWidgetTd(w);
     if (td != null) {
@@ -175,13 +176,6 @@ public abstract class CellVector extends ComplexPanel implements IdentifiableWid
     return table;
   }
 
-  protected Element getWidgetTd(Widget w) {
-    if (w.getParent() != this) {
-      return null;
-    }
-    return DOM.getParent(w.getElement());
-  }
-
   protected void setCellHorizontalAlignment(Element td, TextAlign align) {
     if (align != null) {
       StyleUtils.setTextAlign(td, align);
@@ -200,5 +194,13 @@ public abstract class CellVector extends ComplexPanel implements IdentifiableWid
 
   private String getDefaultCellStyles() {
     return defaultCellStyles;
+  }
+
+  private Element getWidgetTd(Widget w) {
+    if (w.getParent() == this) {
+      return w.getElement().getParentElement();
+    } else {
+      return null;
+    }
   }
 }

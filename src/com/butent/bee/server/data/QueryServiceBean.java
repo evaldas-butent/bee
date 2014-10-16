@@ -42,7 +42,7 @@ import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogLevel;
 import com.butent.bee.shared.logging.LogUtils;
 import com.butent.bee.shared.modules.administration.AdministrationConstants;
-import com.butent.bee.shared.modules.administration.AdministrationConstants.RightsState;
+import com.butent.bee.shared.rights.RightsState;
 import com.butent.bee.shared.time.DateTime;
 import com.butent.bee.shared.time.JustDate;
 import com.butent.bee.shared.time.TimeUtils;
@@ -57,9 +57,14 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.EnumSet;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 
 import javax.ejb.EJB;
 import javax.ejb.LocalBean;
@@ -75,6 +80,12 @@ import javax.sql.DataSource;
 @Stateless
 @LocalBean
 public class QueryServiceBean {
+
+  public interface ViewDataProvider {
+    BeeRowSet getViewData(BeeView view, SqlSelect query, Filter filter);
+
+    int getViewSize(BeeView view, SqlSelect query, Filter filter);
+  }
 
   /**
    * Is a private interface for SQL processing.
@@ -112,9 +123,141 @@ public class QueryServiceBean {
     public abstract T processUpdateCount(int updateCount);
   }
 
-  private static final String EDITABLE_STATE_COLUMN = RightsState.EDIT.name();
+  private static final Map<String, ViewDataProvider> viewDataProviders = new ConcurrentHashMap<>();
+
+  public static void registerViewDataProvider(String viewName, ViewDataProvider provider) {
+    Assert.notEmpty(viewName);
+    Assert.state(!viewDataProviders.containsKey(viewName),
+        "View data provider for view \"" + viewName + "\" already registered");
+    viewDataProviders.put(viewName, Assert.notNull(provider));
+  }
 
   private static BeeLogger logger = LogUtils.getLogger(QueryServiceBean.class);
+
+  private static BeeRowSet rsToBeeRowSet(ResultSet rs, BeeView view) throws SQLException {
+    List<BeeColumn> rsCols = JdbcUtils.getColumns(rs);
+
+    int idIndex = BeeConst.UNDEF;
+    int versionIndex = BeeConst.UNDEF;
+    int editableIndex = BeeConst.UNDEF;
+    int removableIndex = BeeConst.UNDEF;
+
+    BeeRowSet result;
+    List<Integer> indexes = Lists.newArrayListWithCapacity(rsCols.size());
+
+    if (view == null) {
+      result = new BeeRowSet(rsCols);
+      for (int i = 0; i < rsCols.size(); i++) {
+        indexes.add(i + 1);
+      }
+
+    } else {
+      result = new BeeRowSet();
+
+      for (int i = 0; i < rsCols.size(); i++) {
+        BeeColumn column = rsCols.get(i);
+        String colName = column.getId();
+        int colIndex = i + 1;
+
+        if (view.hasColumn(colName)) {
+          view.initColumn(colName, column);
+          result.addColumn(column);
+          indexes.add(colIndex);
+
+        } else if (BeeUtils.same(colName, view.getSourceIdName())) {
+          idIndex = colIndex;
+
+        } else if (BeeUtils.same(colName, view.getSourceVersionName())) {
+          versionIndex = colIndex;
+
+        } else if (BeeUtils.same(colName, RightsState.EDIT.name())) {
+          editableIndex = colIndex;
+
+        } else if (BeeUtils.same(colName, RightsState.DELETE.name())) {
+          removableIndex = colIndex;
+        }
+      }
+    }
+
+    long rowId = 0;
+    boolean editable = RightsState.EDIT.isChecked();
+    boolean removable = RightsState.DELETE.isChecked();
+
+    int cc = result.getNumberOfColumns();
+
+    while (rs.next()) {
+      String[] values = new String[cc];
+
+      for (int i = 0; i < cc; i++) {
+        BeeColumn column = result.getColumn(i);
+        int colIndex = indexes.get(i);
+
+        switch (column.getType()) {
+          case BOOLEAN:
+            values[i] = BooleanValue.pack(rs.getBoolean(colIndex));
+            if (rs.wasNull()) {
+              values[i] = null;
+            }
+            break;
+
+          case DATE:
+            Long time = BeeUtils.toLongOrNull(rs.getString(colIndex));
+            values[i] = (time == null) ? null : BeeUtils.toString(time / TimeUtils.MILLIS_PER_DAY);
+            break;
+
+          case NUMBER:
+          case DECIMAL:
+            Double d = rs.getDouble(colIndex);
+            if (rs.wasNull() || !BeeUtils.isDouble(d)) {
+              values[i] = null;
+            } else if (column.getScale() >= 0) {
+              values[i] = BeeUtils.toString(d, column.getScale());
+            } else {
+              values[i] = BeeUtils.toString(d, NumberValue.MAX_SCALE);
+            }
+            break;
+
+          case BLOB:
+            byte[] bytes = rs.getBytes(i + 1);
+            values[i] = bytes != null ? Codec.toBase64(bytes) : null;
+            break;
+
+          default:
+            values[i] = rs.getString(colIndex);
+        }
+      }
+
+      if (idIndex > 0) {
+        rowId = rs.getLong(idIndex);
+      } else {
+        rowId++;
+      }
+
+      BeeRow row;
+      if (versionIndex > 0) {
+        row = new BeeRow(rowId, rs.getLong(versionIndex), values);
+      } else {
+        row = new BeeRow(rowId, values);
+      }
+
+      if (editableIndex > 0) {
+        editable = BeeUtils.toBoolean(rs.getString(editableIndex));
+      }
+      if (removableIndex > 0) {
+        removable = BeeUtils.toBoolean(rs.getString(removableIndex));
+      }
+      row.setEditable(editable);
+      row.setRemovable(removable);
+
+      result.addRow(row);
+    }
+
+    if (idIndex > 0) {
+      result.setViewName(view.getName());
+    }
+    logger.debug("cols:", cc, "rows:", result.getNumberOfRows());
+    return result;
+  }
 
   private static SimpleRowSet rsToSimpleRowSet(ResultSet rs) throws SQLException {
     List<BeeColumn> rsCols = JdbcUtils.getColumns(rs);
@@ -299,6 +442,21 @@ public class QueryServiceBean {
     return getData(SqlUtils.dbTriggers(dbName, dbSchema, table));
   }
 
+  public boolean debugOff() {
+    boolean isDebugEnabled = logger.isDebugEnabled();
+
+    if (isDebugEnabled) {
+      logger.setLevel(LogLevel.INFO);
+    }
+    return isDebugEnabled;
+  }
+
+  public void debugOn(boolean isDebugEnabled) {
+    if (isDebugEnabled) {
+      logger.setLevel(LogLevel.DEBUG);
+    }
+  }
+
   @TransactionAttribute(TransactionAttributeType.MANDATORY)
   public Object doSql(String sql) {
     BeeDataSource bds = dsb.locateDs(SqlBuilderFactory.getDsn());
@@ -345,7 +503,7 @@ public class QueryServiceBean {
     return getData(null, query, new ResultSetProcessor<List<byte[]>>() {
       @Override
       public List<byte[]> processResultSet(ResultSet rs) throws SQLException {
-        List<byte[]> data = Lists.newArrayList();
+        List<byte[]> data = new ArrayList<>();
 
         while (rs.next()) {
           data.add(rs.getBytes(1));
@@ -430,7 +588,7 @@ public class QueryServiceBean {
       List<String> order) {
 
     BeeView view = sys.getView(viewName);
-    SqlSelect viewQuery = view.getQuery(filter, null, columns, sys.getViewFinder());
+    SqlSelect viewQuery = view.getQuery(usr.getCurrentUserId(), filter, null, columns);
 
     String queryAlias = "Hist_" + SqlUtils.uniqueName();
     String countAlias = "Count_" + SqlUtils.uniqueName();
@@ -497,7 +655,20 @@ public class QueryServiceBean {
   }
 
   public List<Long> getLongList(IsQuery query) {
-    List<Long> result = Lists.newArrayList();
+    List<Long> result = new ArrayList<>();
+
+    Long[] arr = getLongColumn(query);
+    if (arr != null && arr.length > 0) {
+      for (Long value : arr) {
+        result.add(value);
+      }
+    }
+
+    return result;
+  }
+
+  public Set<Long> getLongSet(IsQuery query) {
+    Set<Long> result = new HashSet<>();
 
     Long[] arr = getLongColumn(query);
     if (arr != null && arr.length > 0) {
@@ -576,8 +747,19 @@ public class QueryServiceBean {
     return res.getRow(0);
   }
 
+  public SimpleRow getRow(String tblName, long id) {
+    Assert.notEmpty(tblName);
+
+    SqlSelect query = new SqlSelect()
+        .addAllFields(tblName)
+        .addFrom(tblName)
+        .setWhere(sys.idEquals(tblName, id));
+
+    return getRow(query);
+  }
+
   public List<SearchResult> getSearchResults(String viewName, Filter filter) {
-    List<SearchResult> results = Lists.newArrayList();
+    List<SearchResult> results = new ArrayList<>();
 
     BeeRowSet rowSet = getViewData(viewName, filter);
     if (rowSet != null) {
@@ -612,34 +794,48 @@ public class QueryServiceBean {
       List<String> columns) {
 
     BeeView view = sys.getView(viewName);
-    SqlSelect ss = view.getQuery(filter, order, columns, sys.getViewFinder());
+    SqlSelect query = view.getQuery(usr.getCurrentUserId(), filter, order, columns);
 
     if (limit > 0) {
-      ss.setLimit(limit);
+      query.setLimit(limit);
     }
     if (offset > 0) {
-      ss.setOffset(offset);
+      query.setOffset(offset);
     }
-    return getViewData(ss, view);
+    if (!usr.isAdministrator()) {
+      String tableName = view.getSourceName();
+      String tableAlias = view.getSourceAlias();
+
+      sys.filterVisibleState(query, tableName, tableAlias);
+
+      BeeTable table = sys.getTable(tableName);
+
+      for (RightsState state : EnumSet.of(RightsState.EDIT, RightsState.DELETE)) {
+        String stateAlias = table.joinState(query, tableAlias, state);
+
+        if (!BeeUtils.isEmpty(stateAlias)) {
+          IsExpression xpr = SqlUtils.sqlIf(table.checkState(stateAlias, state,
+              usr.getUserRoles()), true, false);
+
+          if (!BeeUtils.isEmpty(query.getGroupBy())) {
+            query.addMax(xpr, state.name());
+          } else {
+            query.addExpr(xpr, state.name());
+          }
+        }
+      }
+    }
+    ViewDataProvider provider = viewDataProviders.get(viewName);
+
+    if (provider != null) {
+      return provider.getViewData(view, query, filter);
+    }
+    return getViewData(query, view);
   }
 
   public BeeRowSet getViewData(final SqlSelect query, final BeeView view) {
-    Assert.notNull(query);
+    Assert.noNulls(query, view);
     Assert.state(!query.isEmpty());
-
-    String tableName = view.getSourceName();
-    String tableAlias = view.getSourceAlias();
-
-    sys.filterVisibleState(query, tableName, tableAlias);
-
-    BeeTable table = sys.getTable(tableName);
-    String stateAlias = table.joinState(query, tableAlias, RightsState.EDIT);
-
-    if (!BeeUtils.isEmpty(stateAlias)) {
-      query.addExpr(SqlUtils.sqlIf(table.checkState(stateAlias, RightsState.EDIT,
-          table.areRecordsEditable(), usr.getUserRoles(usr.getCurrentUserId())), 1, 0),
-          EDITABLE_STATE_COLUMN);
-    }
 
     activateTables(query);
 
@@ -662,7 +858,18 @@ public class QueryServiceBean {
   }
 
   public int getViewSize(String viewName, Filter filter) {
-    return sqlCount(sys.getView(viewName).getQuery(filter, sys.getViewFinder()));
+    BeeView view = sys.getView(viewName);
+    SqlSelect query = view.getQuery(usr.getCurrentUserId(), filter);
+
+    if (!usr.isAdministrator()) {
+      sys.filterVisibleState(query, view.getSourceName(), view.getSourceAlias());
+    }
+    ViewDataProvider provider = viewDataProviders.get(viewName);
+
+    if (provider != null) {
+      return provider.getViewSize(view, query, filter);
+    }
+    return sqlCount(query);
   }
 
   @TransactionAttribute(TransactionAttributeType.MANDATORY)
@@ -705,6 +912,54 @@ public class QueryServiceBean {
       response.setResponse(id);
     }
     return response;
+  }
+
+  @TransactionAttribute(TransactionAttributeType.MANDATORY)
+  public int loadData(String target, SqlSelect sourceQuery) {
+    Assert.state(sys.isTable(target));
+
+    int chunk = BeeUtils.toNonNegativeInt(sourceQuery.getLimit());
+    int offset = 0;
+    int tot = 0;
+
+    SimpleRowSet data = null;
+    SqlInsert insert = null;
+
+    do {
+      if (chunk > 0) {
+        sourceQuery.setOffset(offset);
+      }
+      data = getData(sourceQuery);
+
+      if (insert == null) {
+        insert = new SqlInsert(target)
+            .addFields(sys.getIdName(target), sys.getVersionName(target))
+            .addFields(data.getColumnNames());
+      }
+      boolean isDebugEnabled = debugOff();
+
+      for (String[] row : data.getRows()) {
+        Object[] values = new Object[row.length + 2];
+        values[0] = ig.getId(target);
+        values[1] = System.currentTimeMillis();
+        System.arraycopy(row, 0, values, 2, row.length);
+        insert.addValues(values);
+
+        if (++tot % 1e4 == 0) {
+          insertData(insert);
+          insert.resetValues();
+          logger.info("Inserted", tot, "records into table", target);
+        }
+      }
+      if (tot % 1e4 > 0) {
+        insertData(insert);
+        logger.info("Inserted", tot, "records into table", target);
+      }
+      debugOn(isDebugEnabled);
+      offset += chunk;
+    } while (chunk > 0 && data.getNumberOfRows() == chunk);
+
+    return tot;
   }
 
   public long setYearMonth(String target, String dtCol, String yearCol, String monthCol) {
@@ -778,8 +1033,7 @@ public class QueryServiceBean {
   }
 
   public boolean sqlExists(String source, IsCondition where) {
-    return sqlCount(new SqlSelect()
-        .addConstant(null, "dummy").addFrom(source).setWhere(where)) > 0;
+    return sqlCount(new SqlSelect().addFrom(source).setWhere(where)) > 0;
   }
 
   public boolean sqlExists(String source, String field, Object value) {
@@ -796,6 +1050,13 @@ public class QueryServiceBean {
         .addFields(source, field)
         .addFrom(source)
         .setWhere(sys.idEquals(source, id)));
+  }
+
+  public void tweakSql(boolean on) {
+    if (SqlEngine.POSTGRESQL != SqlBuilderFactory.getBuilder().getEngine()) {
+      return;
+    }
+    doSql("SET LOCAL enable_seqscan=" + (on ? "off" : "on"));
   }
 
   @TransactionAttribute(TransactionAttributeType.MANDATORY)
@@ -907,7 +1168,7 @@ public class QueryServiceBean {
     if (!BeeUtils.isEmpty(sources)) {
       for (String source : sources) {
         if (sys.isTable(source) && !sys.getTable(source).isActive()) {
-          sys.activateTable(source);
+          sys.rebuildTable(source);
         }
       }
     }
@@ -973,123 +1234,6 @@ public class QueryServiceBean {
       JdbcUtils.closeStatement(stmt);
       JdbcUtils.closeConnection(con);
     }
-    return result;
-  }
-
-  private BeeRowSet rsToBeeRowSet(ResultSet rs, BeeView view) throws SQLException {
-    List<BeeColumn> rsCols = JdbcUtils.getColumns(rs);
-
-    int idIndex = BeeConst.UNDEF;
-    int versionIndex = BeeConst.UNDEF;
-    int editableIndex = BeeConst.UNDEF;
-
-    BeeRowSet result;
-    List<Integer> indexes = Lists.newArrayListWithCapacity(rsCols.size());
-
-    if (view == null) {
-      result = new BeeRowSet(rsCols);
-      for (int i = 0; i < rsCols.size(); i++) {
-        indexes.add(i + 1);
-      }
-
-    } else {
-      result = new BeeRowSet();
-
-      for (int i = 0; i < rsCols.size(); i++) {
-        BeeColumn column = rsCols.get(i);
-        String colName = column.getId();
-        int colIndex = i + 1;
-
-        if (view.hasColumn(colName)) {
-          view.initColumn(colName, column);
-          result.addColumn(column);
-          indexes.add(colIndex);
-
-        } else if (BeeUtils.same(colName, view.getSourceIdName())) {
-          idIndex = colIndex;
-
-        } else if (BeeUtils.same(colName, view.getSourceVersionName())) {
-          versionIndex = colIndex;
-
-        } else if (BeeUtils.same(colName, EDITABLE_STATE_COLUMN)) {
-          editableIndex = colIndex;
-        }
-      }
-    }
-
-    long rowId = 0;
-    boolean editable = (view != null)
-        ? sys.getTable(view.getSourceName()).areRecordsEditable() : true;
-
-    int cc = result.getNumberOfColumns();
-
-    while (rs.next()) {
-      String[] values = new String[cc];
-
-      for (int i = 0; i < cc; i++) {
-        BeeColumn column = result.getColumn(i);
-        int colIndex = indexes.get(i);
-
-        switch (column.getType()) {
-          case BOOLEAN:
-            values[i] = BooleanValue.pack(rs.getBoolean(colIndex));
-            if (rs.wasNull()) {
-              values[i] = null;
-            }
-            break;
-
-          case DATE:
-            Long time = BeeUtils.toLongOrNull(rs.getString(colIndex));
-            values[i] = (time == null) ? null : BeeUtils.toString(time / TimeUtils.MILLIS_PER_DAY);
-            break;
-
-          case NUMBER:
-          case DECIMAL:
-            Double d = rs.getDouble(colIndex);
-            if (rs.wasNull() || !BeeUtils.isDouble(d)) {
-              values[i] = null;
-            } else if (column.getScale() >= 0) {
-              values[i] = BeeUtils.toString(d, column.getScale());
-            } else {
-              values[i] = BeeUtils.toString(d, NumberValue.MAX_SCALE);
-            }
-            break;
-
-          case BLOB:
-            byte[] bytes = rs.getBytes(i + 1);
-            values[i] = bytes != null ? Codec.toBase64(bytes) : null;
-            break;
-
-          default:
-            values[i] = rs.getString(colIndex);
-        }
-      }
-
-      if (idIndex > 0) {
-        rowId = rs.getLong(idIndex);
-      } else {
-        rowId++;
-      }
-
-      BeeRow row;
-      if (versionIndex > 0) {
-        row = new BeeRow(rowId, rs.getLong(versionIndex), values);
-      } else {
-        row = new BeeRow(rowId, values);
-      }
-
-      if (editableIndex > 0) {
-        editable = BeeUtils.toBoolean(rs.getString(editableIndex));
-      }
-      row.setEditable(editable);
-
-      result.addRow(row);
-    }
-
-    if (idIndex > 0) {
-      result.setViewName(view.getName());
-    }
-    logger.debug("cols:", cc, "rows:", result.getNumberOfRows());
     return result;
   }
 }

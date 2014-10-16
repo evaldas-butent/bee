@@ -7,6 +7,7 @@ import com.butent.bee.client.presenter.GridPresenter;
 import com.butent.bee.client.ui.IdentifiableWidget;
 import com.butent.bee.client.ui.FormFactory.WidgetDescriptionCallback;
 import com.butent.bee.client.view.grid.interceptor.AbstractGridInterceptor;
+import com.butent.bee.client.view.grid.interceptor.GridInterceptor;
 import com.butent.bee.client.widget.InputBoolean;
 import com.butent.bee.shared.data.filter.ColumnNotNullFilter;
 import com.butent.bee.shared.data.filter.Filter;
@@ -16,7 +17,7 @@ import com.butent.bee.shared.ui.Action;
 import com.butent.bee.shared.utils.BeeUtils;
 
 public class RequestsGridInterceptor extends AbstractGridInterceptor {
-  
+
   private static final String REGISTRED_WIDGET_NAME = "Registred";
   private static final String FINISHED_WIDGET_NAME = "Finished";
 
@@ -58,6 +59,11 @@ public class RequestsGridInterceptor extends AbstractGridInterceptor {
     presenter.getDataProvider().setParentFilter("CustomFilter", getFilter());
   }
 
+  @Override
+  public GridInterceptor getInstance() {
+    return new RequestsGridInterceptor();
+  }
+
   private Filter getFilter() {
     Filter filter = null;
 
@@ -66,7 +72,7 @@ public class RequestsGridInterceptor extends AbstractGridInterceptor {
     }
     if (finished == null || !BooleanValue.unpack(finished.getValue())) {
       filter = Filter.and(filter, Filter.isNull(TaskConstants.COL_REQUEST_FINISHED));
-    }    
+    }
     if (finished != null && BooleanValue.unpack(finished.getValue())) {
       filter = Filter.or(filter, Filter.isNot(Filter.isNull(TaskConstants.COL_REQUEST_FINISHED)));
     }

@@ -1,15 +1,16 @@
 package com.butent.bee.client.data;
 
 import com.butent.bee.client.BeeKeeper;
-import com.butent.bee.client.data.Queries.IntCallback;
+import com.butent.bee.client.Callback;
 import com.butent.bee.shared.data.event.DataChangeEvent;
 import com.butent.bee.shared.data.event.DataChangeEvent.Effect;
+import com.butent.bee.shared.data.view.RowInfoList;
 import com.butent.bee.shared.utils.BeeUtils;
 
 import java.util.EnumSet;
 
-public class DataChangeCallback extends IntCallback {
-  
+public class DataChangeCallback extends Callback<RowInfoList> {
+
   private final String viewName;
   private final EnumSet<Effect> effects;
 
@@ -19,14 +20,14 @@ public class DataChangeCallback extends IntCallback {
 
   public DataChangeCallback(String viewName, EnumSet<Effect> effects) {
     super();
-    
+
     this.viewName = viewName;
     this.effects = effects;
   }
 
   @Override
-  public void onSuccess(Integer result) {
-    if (BeeUtils.isPositive(result)) {
+  public void onSuccess(RowInfoList result) {
+    if (!BeeUtils.isEmpty(result)) {
       DataChangeEvent.fire(BeeKeeper.getBus(), viewName, effects);
     }
   }

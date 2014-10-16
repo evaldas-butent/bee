@@ -1,17 +1,22 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <View xmlns="http://www.butent.com/view"
 
-  name="Accounts" source="Accounts"
+  name="Accounts" source="Accounts" caption="=mailAccounts"
   >
   <Columns>
     <SimpleColumn name="User" />
     <SimpleColumn name="Description" />
     <SimpleColumn name="Main" />
+    <SimpleColumn name="Private" />
 
     <SimpleColumn name="Address" />
     <SimpleJoin name="Address" joinType="INNER">
       <SimpleColumn name="Email" />
-      <SimpleColumn name="Label" />
+    </SimpleJoin>
+
+    <SimpleColumn name="Signature" />
+    <SimpleJoin name="Signature" joinType="LEFT">
+      <SimpleColumn name="Description" alias="SignatureDescription" />
     </SimpleJoin>
 
     <SimpleColumn name="StoreType" />

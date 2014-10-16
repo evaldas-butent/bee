@@ -1,7 +1,5 @@
 package com.butent.bee.shared.data;
 
-import com.google.common.collect.Lists;
-
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.BeeSerializable;
@@ -9,6 +7,7 @@ import com.butent.bee.shared.utils.ArrayUtils;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.Codec;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
@@ -25,9 +24,9 @@ public class BeeRow extends StringRow implements BeeSerializable {
    * Contains a list of parameters for row serialization.
    */
   private enum Serial {
-    ID, VERSION, EDITABLE, VALUES, SHADOW, PROPERTIES
+    ID, VERSION, EDITABLE, REMOVABLE, VALUES, SHADOW, PROPERTIES
   }
-  
+
   private static final String PROPERTY_CHILDREN = "_row_children";
 
   public static BeeRow restore(String s) {
@@ -56,14 +55,6 @@ public class BeeRow extends StringRow implements BeeSerializable {
   }
 
   @Override
-  public BeeRow copy() {
-    BeeRow result = new BeeRow(getId(), getVersion(), getValues());
-    result.setEditable(isEditable());
-    copyProperties(result);
-    return result;
-  }
-
-  @Override
   public void deserialize(String s) {
     String[] arr = Codec.beeDeserializeCollection(s);
     Serial[] members = Serial.values();
@@ -84,6 +75,10 @@ public class BeeRow extends StringRow implements BeeSerializable {
 
         case EDITABLE:
           setEditable(Codec.unpack(value));
+          break;
+
+        case REMOVABLE:
+          setRemovable(Codec.unpack(value));
           break;
 
         case VALUES:
@@ -119,16 +114,16 @@ public class BeeRow extends StringRow implements BeeSerializable {
     if (BeeUtils.isEmpty(serialized)) {
       return Collections.emptyList();
     }
-    
-    Collection<RowChildren> children = Lists.newArrayList();
-    
+
+    Collection<RowChildren> children = new ArrayList<>();
+
     String[] arr = Codec.beeDeserializeCollection(serialized);
     if (!ArrayUtils.isEmpty(arr)) {
       for (String s : arr) {
         children.add(RowChildren.restore(s));
       }
     }
-    
+
     return children;
   }
 
@@ -156,6 +151,10 @@ public class BeeRow extends StringRow implements BeeSerializable {
           arr[i++] = Codec.pack(isEditable());
           break;
 
+        case REMOVABLE:
+          arr[i++] = Codec.pack(isRemovable());
+          break;
+
         case VALUES:
           arr[i++] = getValues();
           break;
@@ -171,7 +170,7 @@ public class BeeRow extends StringRow implements BeeSerializable {
     }
     return Codec.beeSerialize(arr);
   }
-  
+
   public void setChildren(Collection<RowChildren> children) {
     if (BeeUtils.isEmpty(children)) {
       clearProperty(PROPERTY_CHILDREN);

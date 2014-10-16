@@ -21,13 +21,22 @@
     <SimpleColumn name="CargoRequest" />
     <SimpleColumn name="Discussion" />
     <SimpleColumn name="ServiceObject" />
+    <SimpleColumn name="Message" />
   
     <SimpleJoin name="RecurringTask" joinType="INNER">
-      <SimpleColumn name="Summary" />
-      <SimpleColumn name="Description" />
-      <SimpleColumn name="Priority" />
+      <SimpleColumn name="Summary" editable="true" />
+      <SimpleColumn name="Description" editable="true" />
 
-      <SimpleColumn name="Owner" />
+      <SimpleColumn name="Priority" editable="true" />
+
+      <SimpleColumn name="Type" />
+      <SimpleJoin name="Type" joinType="LEFT">
+        <SimpleColumn name="Name" alias="TypeName" />
+        <SimpleColumn name="Background" alias="TypeBackground" />
+        <SimpleColumn name="Foreground" alias="TypeForeground" />
+      </SimpleJoin>
+
+      <SimpleColumn name="Owner" editable="true" />
       <SimpleJoin name="Owner" joinType="LEFT">
         <SimpleColumn name="CompanyPerson" alias="OwnerPerson" />
         <SimpleJoin name="CompanyPerson" joinType="LEFT">
@@ -38,12 +47,12 @@
         </SimpleJoin>
       </SimpleJoin>
 
-      <SimpleColumn name="Company" />
+      <SimpleColumn name="Company" editable="true" />
       <SimpleJoin name="Company" joinType="LEFT">
         <SimpleColumn alias="CompanyName" name="Name" />
       </SimpleJoin>
 
-      <SimpleColumn name="Contact" />
+      <SimpleColumn name="Contact" editable="true" />
       <SimpleJoin name="Contact" joinType="LEFT">
         <SimpleColumn alias="ContactPerson" name="Person" />
         <SimpleJoin name="Person" joinType="LEFT">
@@ -55,31 +64,31 @@
         </SimpleJoin>
       </SimpleJoin>
 
-      <SimpleColumn name="ScheduleFrom" />
-      <SimpleColumn name="ScheduleUntil" />
+      <SimpleColumn name="ScheduleFrom" editable="true" />
+      <SimpleColumn name="ScheduleUntil" editable="true" />
 
-      <SimpleColumn name="ScheduleDays" />
+      <SimpleColumn name="ScheduleDays" editable="true" />
 
-      <SimpleColumn name="WorkdayTransition" />
+      <SimpleColumn name="WorkdayTransition" editable="true" />
 
-      <SimpleColumn name="DayOfMonth" />
-      <SimpleColumn name="Month" />
-      <SimpleColumn name="DayOfWeek" />
-      <SimpleColumn name="Year" />
+      <SimpleColumn name="DayOfMonth" editable="true" />
+      <SimpleColumn name="Month" editable="true" />
+      <SimpleColumn name="DayOfWeek" editable="true" />
+      <SimpleColumn name="Year" editable="true" />
 
-      <SimpleColumn name="StartAt" />
-      <SimpleColumn name="DurationDays" />
-      <SimpleColumn name="DurationTime" />
+      <SimpleColumn name="StartAt" editable="true" />
+      <SimpleColumn name="DurationDays" editable="true" />
+      <SimpleColumn name="DurationTime" editable="true" />
 
-      <SimpleColumn name="Reminder" />
+      <SimpleColumn name="Reminder" editable="true" />
       <SimpleJoin name="Reminder" joinType="LEFT">
         <SimpleColumn alias="ReminderName" name="Name" />
       </SimpleJoin>
 
-      <SimpleColumn name="RemindBefore" />
-      <SimpleColumn name="RemindAt" />
+      <SimpleColumn name="RemindBefore" editable="true" />
+      <SimpleColumn name="RemindAt" editable="true" />
 
-      <SimpleColumn name="CopyByMail" />
+      <SimpleColumn name="CopyByMail" editable="true" />
     </SimpleJoin>
   </Columns>
 </View>

@@ -53,26 +53,28 @@ public class MessageBoxes {
 
   private static final BeeLogger logger = LogUtils.getLogger(MessageBoxes.class);
 
-  private static final String STYLE_CHOICE_DIALOG = "bee-ChoiceDialog";
-  private static final String STYLE_CHOICE_PANEL = "bee-ChoicePanel";
-  private static final String STYLE_CHOICE_PROMPT = "bee-ChoicePrompt";
-  private static final String STYLE_CHOICE_CONTAINER = "bee-ChoiceContainer";
-  private static final String STYLE_CHOICE_GROUP = "bee-ChoiceGroup-";
-  private static final String STYLE_CHOICE_DEFAULT = "bee-ChoiceDefault";
-  private static final String STYLE_CHOICE_CANCEL = "bee-ChoiceCancel";
+  private static final String STYLE_CHOICE_DIALOG = BeeConst.CSS_CLASS_PREFIX + "ChoiceDialog";
+  private static final String STYLE_CHOICE_PANEL = BeeConst.CSS_CLASS_PREFIX + "ChoicePanel";
+  private static final String STYLE_CHOICE_PROMPT = BeeConst.CSS_CLASS_PREFIX + "ChoicePrompt";
+  private static final String STYLE_CHOICE_CONTAINER = BeeConst.CSS_CLASS_PREFIX
+      + "ChoiceContainer";
+  private static final String STYLE_CHOICE_GROUP = BeeConst.CSS_CLASS_PREFIX + "ChoiceGroup-";
+  private static final String STYLE_CHOICE_DEFAULT = BeeConst.CSS_CLASS_PREFIX + "ChoiceDefault";
+  private static final String STYLE_CHOICE_CANCEL = BeeConst.CSS_CLASS_PREFIX + "ChoiceCancel";
 
-  private static final String STYLE_MESSAGE_BOX = "bee-MessageBox";
+  private static final String STYLE_MESSAGE_BOX = BeeConst.CSS_CLASS_PREFIX + "MessageBox";
   private static final String STYLE_MESSAGE_BOX_PANEL = STYLE_MESSAGE_BOX + "-panel";
   private static final String STYLE_MESSAGE_BOX_ICON = STYLE_MESSAGE_BOX + "-icon";
   private static final String STYLE_MESSAGE_BOX_MESSAGE = STYLE_MESSAGE_BOX + "-message";
   private static final String STYLE_MESSAGE_BOX_BUTTON_GROUP = STYLE_MESSAGE_BOX + "-buttonGroup";
   private static final String STYLE_MESSAGE_BOX_BUTTON = STYLE_MESSAGE_BOX + "-button";
 
-  private static final String STYLE_TABLE_CONTAINER = "bee-ModalTableContainer";
-  private static final String STYLE_TABLE = "bee-ModalTable";
+  private static final String STYLE_TABLE_CONTAINER = BeeConst.CSS_CLASS_PREFIX
+      + "ModalTableContainer";
+  private static final String STYLE_TABLE = BeeConst.CSS_CLASS_PREFIX + "ModalTable";
 
-  private static final String STYLE_STAR_PICKER = "bee-StarPicker";
-  private static final String STYLE_STAR_CLUSTER = "bee-StarCluster-";
+  private static final String STYLE_STAR_PICKER = BeeConst.CSS_CLASS_PREFIX + "StarPicker";
+  private static final String STYLE_STAR_CLUSTER = BeeConst.CSS_CLASS_PREFIX + "StarCluster-";
 
   private static final int CHOICE_MAX_HORIZONTAL_ITEMS = 10;
   private static final int CHOICE_MAX_HORIZONTAL_CHARS = 100;
@@ -135,7 +137,7 @@ public class MessageBoxes {
     Flow container = new Flow();
     container.addStyleName(STYLE_CHOICE_CONTAINER);
     container.addStyleName(STYLE_CHOICE_CONTAINER + BeeConst.STRING_MINUS
-        + (vertical ? StyleUtils.NAME_VERTICAL : StyleUtils.NAME_HORIZONTAL));
+        + (vertical ? StyleUtils.SUFFIX_VERTICAL : StyleUtils.SUFFIX_HORIZONTAL));
 
     UiHelper.add(container, group, initializer, DialogConstants.WIDGET_COMMAND_GROUP);
     panel.add(container);
@@ -373,7 +375,7 @@ public class MessageBoxes {
     UiHelper.setWidget(popup, table, initializer, DialogConstants.WIDGET_PANEL);
 
     popup.setAnimationEnabled(true);
-    
+
     if (target == null) {
       popup.center();
     } else {
@@ -449,7 +451,7 @@ public class MessageBoxes {
         }
       }
     });
-    
+
     popup.setWidget(cluster);
 
     popup.setAnimationEnabled(true);
@@ -567,7 +569,7 @@ public class MessageBoxes {
     } else {
       popup = DialogBox.create(caption);
     }
-    
+
     popup.setAnimationEnabled(true);
     popup.setHideOnEscape(true);
 

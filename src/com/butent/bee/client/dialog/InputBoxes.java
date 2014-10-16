@@ -1,15 +1,18 @@
 package com.butent.bee.client.dialog;
 
+import com.google.common.base.Function;
 import com.google.common.base.Supplier;
 import com.google.gwt.core.client.Scheduler.ScheduledCommand;
 import com.google.gwt.dom.client.Element;
+import com.google.gwt.dom.client.Style.Cursor;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.event.dom.client.KeyCodes;
 import com.google.gwt.event.dom.client.KeyDownEvent;
 import com.google.gwt.event.dom.client.KeyDownHandler;
-import com.google.gwt.user.client.Timer;
 import com.google.gwt.user.client.Event.NativePreviewEvent;
+import com.google.gwt.user.client.Timer;
+import com.google.gwt.user.client.ui.HasEnabled;
 import com.google.gwt.user.client.ui.HasWidgets;
 import com.google.gwt.user.client.ui.IsWidget;
 import com.google.gwt.user.client.ui.Panel;
@@ -19,26 +22,43 @@ import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.Global;
 import com.butent.bee.client.event.Previewer.PreviewConsumer;
 import com.butent.bee.client.event.logical.CloseEvent;
+import com.butent.bee.client.grid.HtmlTable;
 import com.butent.bee.client.layout.Flow;
 import com.butent.bee.client.output.Printer;
 import com.butent.bee.client.style.StyleUtils;
 import com.butent.bee.client.ui.UiHelper;
 import com.butent.bee.client.ui.WidgetInitializer;
+import com.butent.bee.client.view.edit.Editor;
 import com.butent.bee.client.view.edit.EditorAssistant;
 import com.butent.bee.client.view.form.CloseCallback;
 import com.butent.bee.client.widget.Button;
+import com.butent.bee.client.widget.FaLabel;
 import com.butent.bee.client.widget.Image;
-import com.butent.bee.client.widget.Label;
 import com.butent.bee.client.widget.InputText;
+import com.butent.bee.client.widget.Label;
 import com.butent.bee.shared.Assert;
+import com.butent.bee.shared.BeeConst;
+import com.butent.bee.shared.BiConsumer;
+import com.butent.bee.shared.Consumer;
 import com.butent.bee.shared.HasHtml;
 import com.butent.bee.shared.Holder;
 import com.butent.bee.shared.NotificationListener;
 import com.butent.bee.shared.State;
 import com.butent.bee.shared.css.CssUnit;
+import com.butent.bee.shared.css.values.TextAlign;
+import com.butent.bee.shared.font.FontAwesome;
+import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.ui.Action;
 import com.butent.bee.shared.utils.BeeUtils;
 
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.EnumSet;
+import java.util.HashSet;
+import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
+import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 
 /**
@@ -48,22 +68,290 @@ import java.util.Set;
 
 public class InputBoxes {
 
+  private static boolean addCommandGroup(final Popup dialog, HasWidgets panel, String confirmHtml,
+      String cancelHtml, WidgetInitializer initializer, final Holder<State> state,
+      final Holder<Widget> errorDisplay, final Supplier<String> errorSupplier) {
+
+    if (BeeUtils.allEmpty(confirmHtml, cancelHtml)) {
+      return false;
+    }
+
+    Panel commandGroup = new Flow();
+    commandGroup.addStyleName(STYLE_INPUT_COMMAND_GROUP);
+
+    if (!BeeUtils.isEmpty(confirmHtml)) {
+      Button confirm = new Button(confirmHtml);
+      confirm.addStyleName(STYLE_INPUT_COMMAND);
+      confirm.addStyleName(STYLE_INPUT_CONFIRM);
+
+      confirm.addClickHandler(new ClickHandler() {
+        @Override
+        public void onClick(ClickEvent event) {
+          String message = errorSupplier.get();
+          if (BeeUtils.isEmpty(message)) {
+            state.set(State.CONFIRMED);
+            dialog.close();
+          } else {
+            showError(errorDisplay.get(), message);
+          }
+        }
+      });
+
+      UiHelper.add(commandGroup, confirm, initializer, DialogConstants.WIDGET_CONFIRM);
+    }
+
+    if (!BeeUtils.isEmpty(cancelHtml)) {
+      Button cancel = new Button(cancelHtml);
+      cancel.addStyleName(STYLE_INPUT_COMMAND);
+      cancel.addStyleName(STYLE_INPUT_CANCEL);
+
+      cancel.addClickHandler(new ClickHandler() {
+        @Override
+        public void onClick(ClickEvent event) {
+          state.set(State.CANCELED);
+          dialog.close();
+        }
+      });
+
+      UiHelper.add(commandGroup, cancel, initializer, DialogConstants.WIDGET_CANCEL);
+    }
+
+    UiHelper.add(panel, commandGroup, initializer, DialogConstants.WIDGET_COMMAND_GROUP);
+    return true;
+  }
+
+  private static Holder<Widget> hold(Widget widget) {
+    return Holder.of(widget);
+  }
+
+  private static void showError(Widget widget, String message) {
+    if (!BeeUtils.isEmpty(message) && !SILENT_ERROR.equals(message)) {
+      if (widget instanceof HasHtml) {
+        ((HasHtml) widget).setHtml(message);
+      } else if (widget instanceof NotificationListener) {
+        ((NotificationListener) widget).notifySevere(message);
+      } else {
+        BeeKeeper.getScreen().notifySevere(message);
+      }
+    }
+  }
+
   public static final String SILENT_ERROR = "-";
 
-  private static final String STYLE_INPUT_PANEL = "bee-InputPanel";
-  private static final String STYLE_INPUT_PROMPT = "bee-InputPrompt";
-  private static final String STYLE_INPUT_STRING = "bee-InputString";
-  private static final String STYLE_INPUT_WIDGET = "bee-InputWidget";
-  private static final String STYLE_INPUT_ERROR = "bee-InputError";
-  private static final String STYLE_INPUT_COMMAND_GROUP = "bee-InputCommandGroup";
-  private static final String STYLE_INPUT_COMMAND = "bee-InputCommand";
-  private static final String STYLE_INPUT_CONFIRM = "bee-InputConfirm";
-  private static final String STYLE_INPUT_CANCEL = "bee-InputCancel";
+  private static final String STYLE_INPUT_PANEL = BeeConst.CSS_CLASS_PREFIX + "InputPanel";
+  private static final String STYLE_INPUT_PROMPT = BeeConst.CSS_CLASS_PREFIX + "InputPrompt";
+  private static final String STYLE_INPUT_STRING = BeeConst.CSS_CLASS_PREFIX + "InputString";
+  private static final String STYLE_INPUT_WIDGET = BeeConst.CSS_CLASS_PREFIX + "InputWidget";
+  private static final String STYLE_INPUT_ERROR = BeeConst.CSS_CLASS_PREFIX + "InputError";
+  private static final String STYLE_INPUT_COMMAND_GROUP = BeeConst.CSS_CLASS_PREFIX
+      + "InputCommandGroup";
+  private static final String STYLE_INPUT_COMMAND = BeeConst.CSS_CLASS_PREFIX + "InputCommand";
 
-  private static final String STYLE_INPUT_DELETE = "bee-InputDelete";
-  private static final String STYLE_INPUT_PRINT = "bee-InputPrint";
-  private static final String STYLE_INPUT_SAVE = "bee-InputSave";
-  private static final String STYLE_INPUT_CLOSE = "bee-InputClose";
+  private static final String STYLE_INPUT_CONFIRM = BeeConst.CSS_CLASS_PREFIX + "InputConfirm";
+  private static final String STYLE_INPUT_CANCEL = BeeConst.CSS_CLASS_PREFIX + "InputCancel";
+  private static final String STYLE_INPUT_ADD = BeeConst.CSS_CLASS_PREFIX + "InputAdd";
+  private static final String STYLE_INPUT_DELETE = BeeConst.CSS_CLASS_PREFIX + "InputDelete";
+  private static final String STYLE_INPUT_PRINT = BeeConst.CSS_CLASS_PREFIX + "InputPrint";
+
+  private static final String STYLE_INPUT_SAVE = BeeConst.CSS_CLASS_PREFIX + "InputSave";
+
+  private static final String STYLE_INPUT_CLOSE = BeeConst.CSS_CLASS_PREFIX + "InputClose";
+
+  public void inputCollection(String caption, String valueCaption, final boolean unique,
+      Collection<String> defaultCollection, final Consumer<Collection<String>> consumer,
+      final Function<String, Editor> editorSupplier) {
+
+    Assert.notNull(consumer);
+
+    final HtmlTable table = new HtmlTable();
+    table.setText(0, 0, valueCaption);
+    table.getCellFormatter().setHorizontalAlignment(0, 0, TextAlign.CENTER);
+    StyleUtils.setMinWidth(table.getCellFormatter().getElement(0, 0), 100);
+
+    final Consumer<String> rowCreator = new Consumer<String>() {
+      @Override
+      public void accept(String value) {
+        Editor input = null;
+
+        if (editorSupplier != null) {
+          input = editorSupplier.apply(value);
+        }
+        if (input == null) {
+          input = new InputText();
+
+          if (!BeeUtils.isEmpty(value)) {
+            input.setValue(value);
+          }
+        }
+        int row = table.getRowCount();
+        table.setWidget(row, 0, input.asWidget());
+
+        final FaLabel delete = new FaLabel(FontAwesome.TRASH_O);
+        delete.setTitle(Localized.getConstants().delete());
+        delete.getElement().getStyle().setCursor(Cursor.POINTER);
+
+        delete.addClickHandler(new ClickHandler() {
+          @Override
+          public void onClick(ClickEvent event) {
+            for (int i = 1; i < table.getRowCount(); i++) {
+              if (Objects.equals(delete, table.getWidget(i, 1))) {
+                table.removeRow(i);
+                break;
+              }
+            }
+          }
+        });
+        table.setWidget(row, 1, delete);
+      }
+    };
+    if (!BeeUtils.isEmpty(defaultCollection)) {
+      for (String value : defaultCollection) {
+        rowCreator.accept(value);
+      }
+    }
+    inputWidget(caption, table, new InputCallback() {
+      @Override
+      public String getErrorMessage() {
+        String error = super.getErrorMessage();
+
+        if (BeeUtils.isEmpty(error)) {
+          Set<String> values = new HashSet<>();
+
+          for (int i = 1; i < table.getRowCount(); i++) {
+            Editor input = (Editor) table.getWidget(i, 0);
+            String value = input.getNormalizedValue();
+
+            if (BeeUtils.isEmpty(value)) {
+              error = Localized.getConstants().valueRequired();
+            } else if (unique && values.contains(BeeUtils.normalize(value))) {
+              error = Localized.getMessages().valueExists(value);
+            } else {
+              values.add(BeeUtils.normalize(value));
+              continue;
+            }
+            UiHelper.focus(input.asWidget());
+            break;
+          }
+        }
+        return error;
+      }
+
+      @Override
+      public void onAdd() {
+        rowCreator.accept(null);
+        UiHelper.focus(table.getWidget(table.getRowCount() - 1, 0));
+      }
+
+      @Override
+      public void onSuccess() {
+        Collection<String> result;
+
+        if (unique) {
+          result = new LinkedHashSet<>();
+        } else {
+          result = new ArrayList<>();
+        }
+        for (int i = 1; i < table.getRowCount(); i++) {
+          result.add(((Editor) table.getWidget(i, 0)).getNormalizedValue());
+        }
+        consumer.accept(result);
+      }
+    }, null, null, EnumSet.of(Action.ADD), null);
+  }
+
+  public void inputMap(String caption, final String keyCaption, final String valueCaption,
+      Map<String, String> map, final Consumer<Map<String, String>> consumer) {
+
+    final HtmlTable table = new HtmlTable();
+    table.setText(0, 0, keyCaption);
+    table.getCellFormatter().setHorizontalAlignment(0, 0, TextAlign.CENTER);
+    StyleUtils.setMinWidth(table.getCellFormatter().getElement(0, 0), 100);
+
+    table.setText(0, 1, valueCaption);
+    table.getCellFormatter().setHorizontalAlignment(0, 1, TextAlign.CENTER);
+    StyleUtils.setMinWidth(table.getCellFormatter().getElement(0, 1), 100);
+
+    final BiConsumer<String, String> rowCreator = new BiConsumer<String, String>() {
+      @Override
+      public void accept(String key, String value) {
+        int row = table.getRowCount();
+        InputText input = new InputText();
+        table.setWidget(row, 0, input);
+
+        if (!BeeUtils.isEmpty(key)) {
+          input.setValue(key);
+        }
+        input = new InputText();
+        table.setWidget(row, 1, input);
+
+        if (!BeeUtils.isEmpty(value)) {
+          input.setValue(value);
+        }
+        final FaLabel delete = new FaLabel(FontAwesome.TRASH_O);
+        delete.setTitle(Localized.getConstants().delete());
+        delete.getElement().getStyle().setCursor(Cursor.POINTER);
+
+        delete.addClickHandler(new ClickHandler() {
+          @Override
+          public void onClick(ClickEvent event) {
+            for (int i = 1; i < table.getRowCount(); i++) {
+              if (Objects.equals(delete, table.getWidget(i, 2))) {
+                table.removeRow(i);
+                break;
+              }
+            }
+          }
+        });
+        table.setWidget(row, 2, delete);
+      }
+    };
+    for (String key : map.keySet()) {
+      rowCreator.accept(key, map.get(key));
+    }
+    inputWidget(caption, table, new InputCallback() {
+      @Override
+      public String getErrorMessage() {
+        String error = super.getErrorMessage();
+
+        if (BeeUtils.isEmpty(error)) {
+          Set<String> values = new HashSet<>();
+
+          for (int i = 1; i < table.getRowCount(); i++) {
+            InputText input = (InputText) table.getWidget(i, 0);
+
+            if (BeeUtils.isEmpty(input.getValue())) {
+              error = Localized.getConstants().valueRequired();
+            } else if (values.contains(BeeUtils.normalize(input.getValue()))) {
+              error = Localized.getMessages().valueExists(input.getValue());
+            } else {
+              values.add(BeeUtils.normalize(input.getValue()));
+              continue;
+            }
+            UiHelper.focus(input);
+            break;
+          }
+        }
+        return error;
+      }
+
+      @Override
+      public void onAdd() {
+        rowCreator.accept(null, null);
+        UiHelper.focus(table.getWidget(table.getRowCount() - 1, 0));
+      }
+
+      @Override
+      public void onSuccess() {
+        Map<String, String> result = new LinkedHashMap<>();
+
+        for (int i = 1; i < table.getRowCount(); i++) {
+          result.put(((InputText) table.getWidget(i, 0)).getValue(),
+              ((InputText) table.getWidget(i, 1)).getValue());
+        }
+        consumer.accept(result);
+      }
+    }, null, null, EnumSet.of(Action.ADD), null);
+  }
 
   public void inputString(String caption, String prompt, final StringCallback callback,
       String defaultValue, int maxLength, Element target, double width, CssUnit widthUnit,
@@ -92,7 +380,7 @@ public class InputBoxes {
     box.addStyleName(STYLE_INPUT_STRING);
 
     if (!BeeUtils.isEmpty(defaultValue)) {
-      String value = (maxLength > 0) 
+      String value = (maxLength > 0)
           ? BeeUtils.left(defaultValue.trim(), maxLength) : defaultValue.trim();
       box.setValue(value);
     }
@@ -103,13 +391,13 @@ public class InputBoxes {
       StyleUtils.setWidth(box, width, widthUnit);
     }
 
-    final Holder<Widget> input = new Holder<Widget>(box);
+    final Holder<Widget> input = hold(box);
 
     Label errorLabel = new Label();
     errorLabel.addStyleName(STYLE_INPUT_ERROR);
     errorLabel.addStyleName(StyleUtils.NAME_ERROR);
 
-    final Holder<Widget> errorDisplay = new Holder<Widget>(errorLabel);
+    final Holder<Widget> errorDisplay = hold(errorLabel);
 
     final Supplier<String> errorSupplier = new Supplier<String>() {
       @Override
@@ -185,8 +473,8 @@ public class InputBoxes {
     }
   }
 
-  public void inputWidget(String caption, IsWidget widget, final InputCallback callback,
-      String dialogStyle, Element target, Set<Action> enabledActions, 
+  public DialogBox inputWidget(String caption, IsWidget widget, final InputCallback callback,
+      String dialogStyle, Element target, Set<Action> enabledActions,
       WidgetInitializer initializer) {
 
     Assert.notNull(widget);
@@ -201,37 +489,104 @@ public class InputBoxes {
     widget.asWidget().addStyleName(STYLE_INPUT_WIDGET);
     UiHelper.add(panel, widget.asWidget(), initializer, DialogConstants.WIDGET_INPUT);
 
-    final Holder<Widget> errorDisplay = new Holder<Widget>(null);
-    if (widget instanceof NotificationListener) {
-      errorDisplay.set(widget.asWidget());
+    boolean enabled = (widget instanceof HasEnabled) ? ((HasEnabled) widget).isEnabled() : true;
+
+    final ScheduledCommand onClose;
+
+    if (enabled) {
+      final Holder<Widget> errorDisplay = new Holder<>(null);
+
+      if (widget instanceof NotificationListener) {
+        errorDisplay.set(widget.asWidget());
+      } else {
+        Label errorLabel = new Label();
+        errorLabel.addStyleName(STYLE_INPUT_ERROR);
+        errorLabel.addStyleName(StyleUtils.NAME_ERROR);
+        errorDisplay.set(errorLabel);
+        UiHelper.add(panel, errorDisplay, initializer, DialogConstants.WIDGET_ERROR);
+      }
+
+      final ScheduledCommand onSave = new ScheduledCommand() {
+        @Override
+        public void execute() {
+          String message = callback.getErrorMessage();
+          if (BeeUtils.isEmpty(message)) {
+            dialog.close();
+            callback.onSuccess();
+          } else {
+            showError(errorDisplay.get(), message);
+          }
+        }
+      };
+
+      Image save = new Image(Global.getImages().silverSave(), onSave);
+      save.addStyleName(STYLE_INPUT_SAVE);
+      UiHelper.initialize(save, initializer, DialogConstants.WIDGET_SAVE);
+      dialog.addAction(Action.SAVE, save);
+
+      dialog.setOnSave(new PreviewConsumer() {
+        @Override
+        public void accept(NativePreviewEvent input) {
+          if (input != null) {
+            input.cancel();
+          }
+          onSave.execute();
+        }
+      });
+
+      onClose = new ScheduledCommand() {
+        @Override
+        public void execute() {
+          callback.onClose(new CloseCallback() {
+            @Override
+            public void onClose() {
+              dialog.close();
+              callback.onCancel();
+            }
+
+            @Override
+            public void onSave() {
+              onSave.execute();
+            }
+          });
+        }
+      };
+
     } else {
-      Label errorLabel = new Label();
-      errorLabel.addStyleName(STYLE_INPUT_ERROR);
-      errorLabel.addStyleName(StyleUtils.NAME_ERROR);
-      errorDisplay.set(errorLabel);
-      UiHelper.add(panel, errorDisplay, initializer, DialogConstants.WIDGET_ERROR);
+      onClose = new ScheduledCommand() {
+        @Override
+        public void execute() {
+          callback.onClose(new CloseCallback() {
+            @Override
+            public void onClose() {
+              dialog.close();
+              callback.onCancel();
+            }
+
+            @Override
+            public void onSave() {
+              onClose();
+            }
+          });
+        }
+      };
     }
 
-    final ScheduledCommand onSave = new ScheduledCommand() {
-      @Override
-      public void execute() {
-        String message = callback.getErrorMessage();
-        if (BeeUtils.isEmpty(message)) {
-          dialog.close();
-          callback.onSuccess();
-        } else {
-          showError(errorDisplay.get(), message);
-        }
-      }
-    };
-
-    Image save = new Image(Global.getImages().silverSave(), onSave);
-    save.addStyleName(STYLE_INPUT_SAVE);
-    UiHelper.initialize(save, initializer, DialogConstants.WIDGET_SAVE);
-    dialog.addAction(Action.SAVE, save);
-    
     if (enabledActions != null) {
-      if (enabledActions.contains(Action.DELETE)) {
+      if (enabled && enabledActions.contains(Action.ADD)) {
+        Image add = new Image(Global.getImages().silverAdd(), new ScheduledCommand() {
+          @Override
+          public void execute() {
+            callback.onAdd();
+          }
+        });
+
+        add.addStyleName(STYLE_INPUT_ADD);
+        UiHelper.initialize(add, initializer, DialogConstants.WIDGET_ADD);
+        dialog.addAction(Action.ADD, add);
+      }
+
+      if (enabled && enabledActions.contains(Action.DELETE)) {
         Image delete = new Image(Global.getImages().silverDelete(), new ScheduledCommand() {
           @Override
           public void execute() {
@@ -258,38 +613,10 @@ public class InputBoxes {
       }
     }
 
-    final ScheduledCommand onClose = new ScheduledCommand() {
-      @Override
-      public void execute() {
-        callback.onClose(new CloseCallback() {
-          @Override
-          public void onClose() {
-            dialog.close();
-            callback.onCancel();
-          }
-
-          @Override
-          public void onSave() {
-            onSave.execute();
-          }
-        });
-      }
-    };
-
     Image close = new Image(Global.getImages().silverClose(), onClose);
     close.addStyleName(STYLE_INPUT_CLOSE);
     UiHelper.initialize(close, initializer, DialogConstants.WIDGET_CLOSE);
     dialog.addAction(Action.CLOSE, close);
-
-    dialog.setOnSave(new PreviewConsumer() {
-      @Override
-      public void accept(NativePreviewEvent input) {
-        if (input != null) {
-          input.cancel();
-        }
-        onSave.execute();
-      }
-    });
 
     dialog.setOnEscape(new PreviewConsumer() {
       @Override
@@ -307,69 +634,6 @@ public class InputBoxes {
     dialog.showRelativeTo(target);
 
     UiHelper.focus(widget.asWidget());
-  }
-
-  private static boolean addCommandGroup(final Popup dialog, HasWidgets panel, String confirmHtml,
-      String cancelHtml, WidgetInitializer initializer, final Holder<State> state,
-      final Holder<Widget> errorDisplay, final Supplier<String> errorSupplier) {
-
-    if (BeeUtils.allEmpty(confirmHtml, cancelHtml)) {
-      return false;
-    }
-
-    Panel commandGroup = new Flow();
-    commandGroup.addStyleName(STYLE_INPUT_COMMAND_GROUP);
-
-    if (!BeeUtils.isEmpty(confirmHtml)) {
-      Button confirm = new Button(confirmHtml);
-      confirm.addStyleName(STYLE_INPUT_COMMAND);
-      confirm.addStyleName(STYLE_INPUT_CONFIRM);
-
-      confirm.addClickHandler(new ClickHandler() {
-        @Override
-        public void onClick(ClickEvent event) {
-          String message = errorSupplier.get();
-          if (BeeUtils.isEmpty(message)) {
-            state.set(State.CONFIRMED);
-            dialog.close();
-          } else {
-            showError(errorDisplay.get(), message);
-          }
-        }
-      });
-
-      UiHelper.add(commandGroup, confirm, initializer, DialogConstants.WIDGET_CONFIRM);
-    }
-
-    if (!BeeUtils.isEmpty(cancelHtml)) {
-      Button cancel = new Button(cancelHtml);
-      cancel.addStyleName(STYLE_INPUT_COMMAND);
-      cancel.addStyleName(STYLE_INPUT_CANCEL);
-
-      cancel.addClickHandler(new ClickHandler() {
-        @Override
-        public void onClick(ClickEvent event) {
-          state.set(State.CANCELED);
-          dialog.close();
-        }
-      });
-
-      UiHelper.add(commandGroup, cancel, initializer, DialogConstants.WIDGET_CANCEL);
-    }
-
-    UiHelper.add(panel, commandGroup, initializer, DialogConstants.WIDGET_COMMAND_GROUP);
-    return true;
-  }
-
-  private static void showError(Widget widget, String message) {
-    if (!BeeUtils.isEmpty(message) && !SILENT_ERROR.equals(message)) {
-      if (widget instanceof HasHtml) {
-        ((HasHtml) widget).setHtml(message);
-      } else if (widget instanceof NotificationListener) {
-        ((NotificationListener) widget).notifySevere(message);
-      } else {
-        BeeKeeper.getScreen().notifySevere(message);
-      }
-    }
+    return dialog;
   }
 }

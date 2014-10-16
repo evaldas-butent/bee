@@ -1,7 +1,5 @@
 package com.butent.bee.client.view.grid;
 
-import com.google.common.collect.Lists;
-import com.google.common.collect.Maps;
 import com.google.gwt.core.client.Scheduler;
 import com.google.gwt.dom.client.Element;
 import com.google.gwt.dom.client.NodeList;
@@ -36,7 +34,9 @@ import com.butent.bee.shared.logging.LogUtils;
 import com.butent.bee.shared.ui.Action;
 import com.butent.bee.shared.utils.BeeUtils;
 
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -45,7 +45,7 @@ public class GridFilterManager {
 
   private static final BeeLogger logger = LogUtils.getLogger(GridFilterManager.class);
 
-  private static final String STYLE_PREFIX = "bee-GridFilter-";
+  private static final String STYLE_PREFIX = BeeConst.CSS_CLASS_PREFIX + "GridFilter-";
   private static final String STYLE_DIALOG = STYLE_PREFIX + "dialog";
 
   private static final String STYLE_CONTENT = STYLE_PREFIX + "content";
@@ -74,7 +74,7 @@ public class GridFilterManager {
       return null;
     }
 
-    List<Filter> filters = Lists.newArrayList();
+    List<Filter> filters = new ArrayList<>();
 
     for (FilterComponent component : components) {
       String columnId = component.getName();
@@ -103,7 +103,7 @@ public class GridFilterManager {
   }
 
   private static Collection<FilterComponent> asComponents(Map<String, FilterValue> values) {
-    List<FilterComponent> components = Lists.newArrayList();
+    List<FilterComponent> components = new ArrayList<>();
 
     if (!BeeUtils.isEmpty(values)) {
       for (Entry<String, FilterValue> entry : values.entrySet()) {
@@ -113,24 +113,26 @@ public class GridFilterManager {
 
     return components;
   }
+
   private static Map<String, FilterValue> asValues(Collection<FilterComponent> components) {
-    Map<String, FilterValue> values = Maps.newHashMap();
+    Map<String, FilterValue> values = new HashMap<>();
 
     if (!BeeUtils.isEmpty(components)) {
       for (FilterComponent component : components) {
         values.put(component.getName(), component.getFilterValue());
       }
     }
-    
+
     return values;
   }
+
   private final String gridKey;
 
   private final CellGrid grid;
 
   private final FilterConsumer filterConsumer;
 
-  private final Map<String, FilterValue> valuesByColumn = Maps.newHashMap();
+  private final Map<String, FilterValue> valuesByColumn = new HashMap<>();
 
   private final Flow contentPanel = new Flow(STYLE_CONTENT);
 
@@ -162,7 +164,7 @@ public class GridFilterManager {
       return null;
     }
 
-    List<String> labels = Lists.newArrayList();
+    List<String> labels = new ArrayList<>();
 
     List<ColumnInfo> columns = grid.getPredefinedColumns();
     for (ColumnInfo columnInfo : columns) {
@@ -242,7 +244,7 @@ public class GridFilterManager {
     supplierPanel.addStyleName(STYLE_SUPPLIER_PANEL);
     contentPanel.add(supplierPanel);
 
-    if (!valuesByColumn.isEmpty() 
+    if (!valuesByColumn.isEmpty()
         && !Global.getFilters().contains(gridKey, asComponents(valuesByColumn))) {
       Widget saveWidget = createSaveWidget();
       contentPanel.add(saveWidget);
@@ -383,7 +385,7 @@ public class GridFilterManager {
   }
 
   private Filter getFilter(Filter queryFilter, String excludeColumn) {
-    List<Filter> filters = Lists.newArrayList();
+    List<Filter> filters = new ArrayList<>();
     if (queryFilter != null) {
       filters.add(queryFilter);
     }
@@ -407,7 +409,7 @@ public class GridFilterManager {
   }
 
   private Map<String, FilterValue> getFilterValues() {
-    Map<String, FilterValue> values = Maps.newHashMap();
+    Map<String, FilterValue> values = new HashMap<>();
 
     List<ColumnInfo> columns = grid.getPredefinedColumns();
     for (ColumnInfo columnInfo : columns) {
@@ -455,7 +457,7 @@ public class GridFilterManager {
       }
     }, false);
   }
-  
+
   private void retainValues() {
     valuesByColumn.clear();
 

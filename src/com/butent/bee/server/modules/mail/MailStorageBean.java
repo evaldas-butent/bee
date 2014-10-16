@@ -1,14 +1,15 @@
 package com.butent.bee.server.modules.mail;
 
-import com.google.common.base.Objects;
 import com.google.common.collect.LinkedListMultimap;
-import com.google.common.collect.Lists;
 import com.google.common.collect.Multimap;
-import com.google.common.collect.Sets;
+import com.google.common.io.CharStreams;
 
+import static com.butent.bee.shared.modules.administration.AdministrationConstants.*;
 import static com.butent.bee.shared.modules.classifiers.ClassifierConstants.*;
 import static com.butent.bee.shared.modules.mail.MailConstants.*;
 
+import com.butent.bee.server.Invocation;
+import com.butent.bee.server.concurrency.ConcurrencyBean;
 import com.butent.bee.server.data.QueryServiceBean;
 import com.butent.bee.server.data.SystemBean;
 import com.butent.bee.server.modules.administration.FileStorageBean;
@@ -19,6 +20,8 @@ import com.butent.bee.server.sql.SqlSelect;
 import com.butent.bee.server.sql.SqlUpdate;
 import com.butent.bee.server.sql.SqlUtils;
 import com.butent.bee.shared.Assert;
+import com.butent.bee.shared.BeeConst;
+import com.butent.bee.shared.Holder;
 import com.butent.bee.shared.Pair;
 import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.SimpleRowSet;
@@ -31,24 +34,28 @@ import com.butent.bee.shared.modules.mail.MailConstants.AddressType;
 import com.butent.bee.shared.modules.mail.MailConstants.MessageFlag;
 import com.butent.bee.shared.modules.mail.MailConstants.SystemFolder;
 import com.butent.bee.shared.modules.mail.MailFolder;
+import com.butent.bee.shared.utils.ArrayUtils;
 import com.butent.bee.shared.utils.BeeUtils;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Objects;
 import java.util.Set;
 
-import javax.annotation.Resource;
 import javax.ejb.EJB;
 import javax.ejb.LocalBean;
-import javax.ejb.SessionContext;
 import javax.ejb.Stateless;
 import javax.ejb.TransactionAttribute;
 import javax.ejb.TransactionAttributeType;
-import javax.mail.Address;
 import javax.mail.FetchProfile;
 import javax.mail.Folder;
 import javax.mail.Message;
@@ -60,10 +67,12 @@ import javax.mail.internet.AddressException;
 import javax.mail.internet.ContentType;
 import javax.mail.internet.InternetAddress;
 import javax.mail.internet.MimeMessage;
+import javax.mail.internet.MimeUtility;
 import javax.mail.internet.ParseException;
 
 @Stateless
 @LocalBean
+@TransactionAttribute(TransactionAttributeType.REQUIRES_NEW)
 public class MailStorageBean {
 
   private static final BeeLogger logger = LogUtils.getLogger(MailStorageBean.class);
@@ -74,8 +83,14 @@ public class MailStorageBean {
   SystemBean sys;
   @EJB
   FileStorageBean fs;
-  @Resource
-  SessionContext ctx;
+  @EJB
+  ConcurrencyBean cb;
+
+  public void attachMessages(Long folderId, Map<Long, Integer> messages) {
+    for (Entry<Long, Integer> message : messages.entrySet()) {
+      storePlace(qs, message.getKey(), folderId, message.getValue(), null);
+    }
+  }
 
   public void connectFolder(MailFolder folder) {
     validateFolder(folder, null);
@@ -95,6 +110,10 @@ public class MailStorageBean {
       disconnectFolder(folder);
     }
     return folder;
+  }
+
+  public void detachMessages(IsCondition clause) {
+    qs.updateData(new SqlDelete(TBL_PLACES).setWhere(clause));
   }
 
   public void disconnectFolder(MailFolder folder) {
@@ -120,16 +139,13 @@ public class MailStorageBean {
         .setWhere(sys.idEquals(TBL_FOLDERS, folder.getId())));
   }
 
+  @TransactionAttribute(TransactionAttributeType.REQUIRED)
   public MailAccount getAccount(Long accountId) {
     Assert.state(DataUtils.isId(accountId));
     return getAccount(sys.idEquals(TBL_ACCOUNTS, accountId), false);
   }
 
-  public MailAccount getAccountByAddressId(Long addressId) {
-    Assert.state(DataUtils.isId(addressId));
-    return getAccount(SqlUtils.equals(TBL_ACCOUNTS, MailConstants.COL_ADDRESS, addressId), false);
-  }
-
+  @TransactionAttribute(TransactionAttributeType.REQUIRED)
   public MailAccount getAccount(IsCondition condition, boolean checkUnread) {
     MailAccount account = new MailAccount(qs.getRow(new SqlSelect()
         .addAllFields(TBL_ACCOUNTS)
@@ -151,9 +167,8 @@ public class MailStorageBean {
       query.addCount(TBL_PLACES, COL_MESSAGE)
           .addFromLeft(TBL_PLACES,
               SqlUtils.and(sys.joinTables(TBL_FOLDERS, TBL_PLACES, COL_FOLDER),
-                  SqlUtils.or(SqlUtils.isNull(TBL_PLACES, COL_FLAGS),
-                      SqlUtils.equals(SqlUtils.bitAnd(TBL_PLACES, COL_FLAGS,
-                          MessageFlag.SEEN.getMask()), 0))))
+                  SqlUtils.equals(SqlUtils.bitAnd(SqlUtils.nvl(
+                      SqlUtils.field(TBL_PLACES, COL_FLAGS), 0), MessageFlag.SEEN.getMask()), 0)))
           .addGroup(TBL_FOLDERS,
               COL_FOLDER_PARENT, COL_FOLDER_NAME, COL_FOLDER_UID, sys.getIdName(TBL_FOLDERS));
     } else {
@@ -169,6 +184,7 @@ public class MailStorageBean {
     return account;
   }
 
+  @TransactionAttribute(TransactionAttributeType.REQUIRED)
   public void initAccount(Long accountId) {
     MailAccount account = getAccount(accountId);
 
@@ -196,194 +212,186 @@ public class MailStorageBean {
         .setWhere(sys.idEquals(TBL_FOLDERS, folder.getId())));
   }
 
-  public Long storeAddress(Address address) throws AddressException {
-    Assert.notNull(address);
-    String email;
-    String label = null;
-
-    if (address instanceof InternetAddress) {
-      ((InternetAddress) address).validate();
-
-      label = ((InternetAddress) address).getPersonal();
-      email = BeeUtils.normalize(((InternetAddress) address).getAddress());
-    } else {
-      email = BeeUtils.normalize(address.toString());
-    }
-    Assert.notEmpty(email);
-
-    Long id = qs.getLong(new SqlSelect()
-        .addFields(TBL_EMAILS, sys.getIdName(TBL_EMAILS))
-        .addFrom(TBL_EMAILS)
-        .setWhere(SqlUtils.equals(TBL_EMAILS, COL_EMAIL_ADDRESS,
-            email)));
-
-    if (id == null) {
-      id = qs.insertData(new SqlInsert(TBL_EMAILS)
-          .addConstant(COL_EMAIL_ADDRESS, email)
-          .addConstant(COL_EMAIL_LABEL, label));
-    }
-    return id;
+  public void setFlags(Long placeId, int flags) {
+    qs.updateData(new SqlUpdate(TBL_PLACES)
+        .addConstant(COL_FLAGS, flags)
+        .setWhere(sys.idEquals(TBL_PLACES, placeId)));
   }
 
-  @TransactionAttribute(TransactionAttributeType.REQUIRES_NEW)
-  public boolean storeMail(Message message, Long folderId, Long messageUID)
+  public void setFolder(Long folderId, IsCondition clause) {
+    qs.updateData(new SqlUpdate(TBL_PLACES)
+        .addConstant(COL_FOLDER, folderId)
+        .addConstant(COL_MESSAGE_UID, null)
+        .setWhere(clause));
+  }
+
+  public Long storeMail(MailAccount account, Message message, Long folderId, Long messageUID)
       throws MessagingException {
 
     MailEnvelope envelope = new MailEnvelope(message);
-    Long messageId = null;
-    Long placeId = null;
+    Holder<Long> messageId = Holder.absent();
+    Holder<Long> placeId = Holder.absent();
 
-    SimpleRow data = qs.getRow(new SqlSelect()
-        .addField(TBL_MESSAGES, sys.getIdName(TBL_MESSAGES), COL_MESSAGE)
-        .addMax(TBL_PLACES, sys.getIdName(TBL_PLACES), COL_UNIQUE_ID)
-        .addFrom(TBL_MESSAGES)
-        .addFromLeft(TBL_PLACES,
-            SqlUtils.and(sys.joinTables(TBL_MESSAGES, TBL_PLACES, COL_MESSAGE),
-                SqlUtils.equals(TBL_PLACES, COL_FOLDER, folderId),
-                messageUID == null ? SqlUtils.isNull(TBL_PLACES, COL_MESSAGE_UID)
-                    : SqlUtils.equals(TBL_PLACES, COL_MESSAGE_UID, messageUID)))
-        .setWhere(SqlUtils.equals(TBL_MESSAGES, COL_UNIQUE_ID, envelope.getUniqueId()))
-        .addGroup(TBL_MESSAGES, sys.getIdName(TBL_MESSAGES)));
+    cb.synchronizedCall(new Runnable() {
+      @Override
+      public void run() {
+        QueryServiceBean queryBean = Invocation.locateRemoteBean(QueryServiceBean.class);
 
-    if (data != null) {
-      messageId = data.getLong(COL_MESSAGE);
-      placeId = data.getLong(COL_UNIQUE_ID);
-    }
-    if (!DataUtils.isId(messageId)) {
-      Address sender = envelope.getSender();
+        messageId.set(queryBean.getLong(new SqlSelect()
+            .addFields(TBL_MESSAGES, sys.getIdName(TBL_MESSAGES))
+            .addFrom(TBL_MESSAGES)
+            .setWhere(SqlUtils.equals(TBL_MESSAGES, COL_UNIQUE_ID, envelope.getUniqueId()))));
 
-      if (sender == null) {
-        logger.warning("Message does not have sender address");
-        return false;
+        if (messageId.isNull()) {
+          messageId.set(queryBean.insertData(new SqlInsert(TBL_MESSAGES)
+              .addConstant(COL_UNIQUE_ID, envelope.getUniqueId())
+              .addConstant(COL_DATE, envelope.getDate())
+              .addConstant(COL_SUBJECT,
+                  sys.clampValue(TBL_MESSAGES, COL_SUBJECT, envelope.getSubject()))));
+
+          placeId.set(storePlace(queryBean, messageId.get(), folderId, envelope.getFlagMask(),
+              messageUID));
+        }
       }
-      Long senderId = storeAddress(sender);
-      Long fileId;
-      InputStream is = null;
+    });
+    if (placeId.isNull()) {
+      if (!qs.sqlExists(TBL_PLACES, SqlUtils.and(messageUID == null
+          ? SqlUtils.isNull(TBL_PLACES, COL_MESSAGE_UID)
+          : SqlUtils.equals(TBL_PLACES, COL_MESSAGE_UID, messageUID),
+          SqlUtils.equals(TBL_PLACES, COL_MESSAGE, messageId.get(), COL_FOLDER, folderId)))) {
 
+        placeId.set(storePlace(qs, messageId.get(), folderId, envelope.getFlagMask(), messageUID));
+      }
+    } else {
+      Long fileId = null;
+      InputStream is = null;
+      Long senderId = null;
+      InternetAddress sender = envelope.getSender();
+
+      if (sender != null) {
+        try {
+          senderId = storeAddress(account.getUserId(), sender);
+        } catch (AddressException e) {
+          logger.warning("( MessageID =", messageId, ") Error storing address:", e);
+        }
+      }
       try {
         ByteArrayOutputStream bos = new ByteArrayOutputStream();
         message.writeTo(bos);
         is = new ByteArrayInputStream(bos.toByteArray());
         String contentType = message.getContentType();
 
-        fileId = fs.storeFile(is, envelope.getMessageId(), !BeeUtils.isEmpty(contentType)
+        fileId = fs.storeFile(is, "mail@" + envelope.getUniqueId(), !BeeUtils.isEmpty(contentType)
             ? new ContentType(message.getContentType()).getBaseType() : null);
       } catch (IOException e) {
-        throw new MessagingException(e.toString());
+        logger.error(e);
       }
-      messageId = qs.insertData(new SqlInsert(TBL_MESSAGES)
-          .addConstant(COL_UNIQUE_ID, envelope.getUniqueId())
-          .addConstant(COL_DATE, envelope.getDate())
+      qs.updateData(new SqlUpdate(TBL_MESSAGES)
           .addConstant(COL_SENDER, senderId)
-          .addConstant(COL_SUBJECT, envelope.getSubject())
-          .addConstant(COL_RAW_CONTENT, fileId));
+          .addConstant(COL_RAW_CONTENT, fileId)
+          .setWhere(sys.idEquals(TBL_MESSAGES, messageId.get())));
 
-      Set<Long> allAddresses = Sets.newHashSet();
+      Set<Long> allAddresses = new HashSet<>();
 
-      for (Entry<AddressType, Address> entry : envelope.getRecipients().entries()) {
-        Long adr = storeAddress(entry.getValue());
+      for (Entry<AddressType, InternetAddress> entry : envelope.getRecipients().entries()) {
+        try {
+          Long adr = storeAddress(account.getUserId(), entry.getValue());
 
-        if (allAddresses.add(adr)) {
-          qs.insertData(new SqlInsert(TBL_RECIPIENTS)
-              .addConstant(COL_MESSAGE, messageId)
-              .addConstant(MailConstants.COL_ADDRESS, adr)
-              .addConstant(COL_ADDRESS_TYPE, entry.getKey().name()));
+          if (allAddresses.add(adr)) {
+            qs.insertData(new SqlInsert(TBL_RECIPIENTS)
+                .addConstant(COL_MESSAGE, messageId.get())
+                .addConstant(MailConstants.COL_ADDRESS, adr)
+                .addConstant(COL_ADDRESS_TYPE, entry.getKey().name()));
+          }
+        } catch (AddressException e) {
+          logger.warning("( MessageID =", messageId, ") Error storing address:", e);
         }
       }
       try {
         is.reset();
-        storePart(messageId, new MimeMessage(null, is), null);
-      } catch (IOException e) {
-        throw new MessagingException(e.toString());
+        storePart(messageId.get(), new MimeMessage(null, is), null, null);
+      } catch (MessagingException | IOException e) {
+        logger.error(e);
+      }
+      if (!ArrayUtils.contains(new Long[] {account.getDraftsFolder().getId(),
+          account.getTrashFolder().getId()}, folderId)) {
+
+        if (DataUtils.isId(senderId)) {
+          allAddresses.add(senderId);
+        }
+        setRelations(messageId.get(), allAddresses);
       }
     }
-    if (!DataUtils.isId(placeId)) {
-      qs.insertData(new SqlInsert(TBL_PLACES)
-          .addConstant(COL_MESSAGE, messageId)
-          .addConstant(COL_FOLDER, folderId)
-          .addConstant(COL_FLAGS, envelope.getFlagMask())
-          .addConstant(COL_MESSAGE_UID, messageUID));
-    }
-    return !DataUtils.isId(placeId);
+    return placeId.get();
   }
 
-  public long syncFolder(MailFolder localFolder, Folder remoteFolder, boolean sync)
+  public long syncFolder(MailAccount account, MailFolder localFolder, Folder remoteFolder)
       throws MessagingException {
     Assert.noNulls(localFolder, remoteFolder);
 
-    long lastUid;
+    SimpleRowSet data = qs.getData(new SqlSelect()
+        .addFields(TBL_PLACES, COL_FLAGS, COL_MESSAGE_UID)
+        .addField(TBL_PLACES, sys.getIdName(TBL_PLACES), COL_UNIQUE_ID)
+        .addFrom(TBL_PLACES)
+        .setWhere(SqlUtils.equals(TBL_PLACES, COL_FOLDER, localFolder.getId()))
+        .addOrderDesc(TBL_PLACES, COL_MESSAGE_UID)
+        .setLimit(100));
 
-    if (sync) {
-      SimpleRowSet data = qs.getData(new SqlSelect()
-          .addFields(TBL_PLACES, COL_FLAGS, COL_MESSAGE_UID)
-          .addField(TBL_PLACES, sys.getIdName(TBL_PLACES), COL_UNIQUE_ID)
-          .addFrom(TBL_PLACES)
-          .setWhere(SqlUtils.equals(TBL_PLACES, COL_FOLDER, localFolder.getId()))
-          .addOrderDesc(TBL_PLACES, COL_MESSAGE_UID)
-          .setLimit(100));
+    long lastUid = BeeUtils.unbox(data.getLong(0, COL_MESSAGE_UID));
 
-      lastUid = BeeUtils.unbox(data.getLong(0, COL_MESSAGE_UID));
+    if (data.getNumberOfRows() > 0) {
+      Set<Long> syncedMsgs = new HashSet<>();
 
-      if (data.getNumberOfRows() > 0) {
-        Set<Long> syncedMsgs = Sets.newHashSet();
+      Message[] msgs = ((UIDFolder) remoteFolder).getMessagesByUID(BeeUtils
+          .unbox(data.getLong(data.getNumberOfRows() - 1, COL_MESSAGE_UID)), lastUid);
 
-        Message[] msgs = ((UIDFolder) remoteFolder).getMessagesByUID(BeeUtils
-            .unbox(data.getLong(data.getNumberOfRows() - 1, COL_MESSAGE_UID)), lastUid);
+      FetchProfile fp = new FetchProfile();
+      fp.add(FetchProfile.Item.FLAGS);
+      remoteFolder.fetch(msgs, fp);
 
-        FetchProfile fp = new FetchProfile();
-        fp.add(FetchProfile.Item.FLAGS);
-        remoteFolder.fetch(msgs, fp);
+      for (Message message : msgs) {
+        long uid = ((UIDFolder) remoteFolder).getUID(message);
+        SimpleRow row = data.getRowByKey(COL_MESSAGE_UID, BeeUtils.toString(uid));
 
-        for (Message message : msgs) {
-          long uid = ((UIDFolder) remoteFolder).getUID(message);
-          SimpleRow row = data.getRowByKey(COL_MESSAGE_UID, BeeUtils.toString(uid));
+        if (row != null) {
+          Integer flags = MailEnvelope.getFlagMask(message);
+          Long id = row.getLong(COL_UNIQUE_ID);
 
-          if (row != null) {
-            Integer flags = MailEnvelope.getFlagMask(message);
-            Long id = row.getLong(COL_UNIQUE_ID);
-
-            if (BeeUtils.unbox(row.getInt(COL_FLAGS)) != BeeUtils.unbox(flags)) {
-              qs.updateData(new SqlUpdate(TBL_PLACES)
-                  .addConstant(COL_FLAGS, flags)
-                  .setWhere(sys.idEquals(TBL_PLACES, id)));
-            }
-            syncedMsgs.add(id);
-          } else {
-            try {
-              ctx.getBusinessObject(this.getClass()).storeMail(message, localFolder.getId(), uid);
-            } catch (MessagingException e) {
-              logger.error(e);
-            }
+          if (BeeUtils.unbox(row.getInt(COL_FLAGS)) != BeeUtils.unbox(flags)) {
+            qs.updateData(new SqlUpdate(TBL_PLACES)
+                .addConstant(COL_FLAGS, flags)
+                .setWhere(sys.idEquals(TBL_PLACES, id)));
           }
-        }
-        List<Long> deletedMsgs = Lists.newArrayList();
-
-        for (int i = 0; i < data.getNumberOfRows(); i++) {
-          Long id = data.getLong(i, COL_UNIQUE_ID);
-
-          if (!syncedMsgs.contains(id)) {
-            deletedMsgs.add(id);
+          syncedMsgs.add(id);
+        } else {
+          try {
+            storeMail(account, message, localFolder.getId(), uid);
+          } catch (MessagingException e) {
+            logger.error(e);
           }
-        }
-        if (!deletedMsgs.isEmpty()) {
-          qs.updateData(new SqlDelete(TBL_PLACES)
-              .setWhere(SqlUtils.inList(TBL_PLACES, sys.getIdName(TBL_PLACES), deletedMsgs)));
         }
       }
-    } else {
-      lastUid = BeeUtils.unbox(qs.getLong(new SqlSelect()
-          .addMax(TBL_PLACES, COL_MESSAGE_UID)
-          .addFrom(TBL_PLACES)
-          .setWhere(SqlUtils.equals(TBL_PLACES, COL_FOLDER, localFolder.getId()))));
+      List<Long> deletedMsgs = new ArrayList<>();
+
+      for (int i = 0; i < data.getNumberOfRows(); i++) {
+        Long id = data.getLong(i, COL_UNIQUE_ID);
+
+        if (!syncedMsgs.contains(id)) {
+          deletedMsgs.add(id);
+        }
+      }
+      if (!deletedMsgs.isEmpty()) {
+        qs.updateData(new SqlDelete(TBL_PLACES)
+            .setWhere(SqlUtils.inList(TBL_PLACES, sys.getIdName(TBL_PLACES), deletedMsgs)));
+      }
     }
     return lastUid;
   }
 
-  @TransactionAttribute(TransactionAttributeType.REQUIRES_NEW)
   public void validateFolder(MailFolder folder, Long uidValidity) {
     Assert.notNull(folder);
 
-    if (!Objects.equal(uidValidity, folder.getUidValidity())) {
+    if (!Objects.equals(uidValidity, folder.getUidValidity())) {
       qs.updateData(new SqlDelete(TBL_PLACES)
           .setWhere(SqlUtils.equals(TBL_PLACES, COL_FOLDER, folder.getId())));
 
@@ -413,32 +421,189 @@ public class MailStorageBean {
     return folder;
   }
 
-  private void storePart(Long messageId, Part part, Pair<String, String> alternative)
-      throws MessagingException, IOException {
+  private static String getStringContent(Object enigma) throws IOException {
+    String content;
 
-    if (part.isMimeType("multipart/*")) {
+    if (enigma instanceof String) {
+      content = (String) enigma;
+
+    } else if (enigma instanceof InputStream) {
+      content = CharStreams.toString(new InputStreamReader((InputStream) enigma,
+          BeeConst.CHARSET_UTF8));
+    } else {
+      content = enigma.toString();
+    }
+    return content;
+  }
+
+  private void setRelations(Long messageId, Set<Long> addresses) {
+    Long[] adr = null;
+
+    if (!BeeUtils.isEmpty(addresses)) {
+      adr = qs.getLongColumn(new SqlSelect()
+          .addField(TBL_EMAILS, sys.getIdName(TBL_EMAILS), COL_EMAIL)
+          .addFrom(TBL_EMAILS)
+          .addFromLeft(TBL_ACCOUNTS,
+              sys.joinTables(TBL_EMAILS, TBL_ACCOUNTS, MailConstants.COL_ADDRESS))
+          .setWhere(SqlUtils.and(sys.idInList(TBL_EMAILS, addresses),
+              SqlUtils.isNull(TBL_ACCOUNTS, COL_ACCOUNT_PRIVATE))));
+    }
+    if (ArrayUtils.isEmpty(adr)) {
+      return;
+    }
+    IsCondition clause = SqlUtils.inList(TBL_CONTACTS, COL_EMAIL, (Object[]) adr);
+
+    Long[] companies = qs.getLongColumn(new SqlSelect().setUnionAllMode(false)
+        .addField(TBL_COMPANIES, sys.getIdName(TBL_COMPANIES), COL_COMPANY)
+        .addFrom(TBL_COMPANIES)
+        .addFromInner(TBL_CONTACTS, SqlUtils.and(clause,
+            sys.joinTables(TBL_CONTACTS, TBL_COMPANIES, COL_CONTACT)))
+        .addUnion(new SqlSelect()
+            .addFields(TBL_COMPANY_CONTACTS, COL_COMPANY)
+            .addFrom(TBL_COMPANY_CONTACTS)
+            .addFromInner(TBL_CONTACTS, SqlUtils.and(clause,
+                sys.joinTables(TBL_CONTACTS, TBL_COMPANY_CONTACTS, COL_CONTACT))))
+        .addUnion(new SqlSelect()
+            .addFields(TBL_COMPANY_PERSONS, COL_COMPANY)
+            .addFrom(TBL_COMPANY_PERSONS)
+            .addFromInner(TBL_CONTACTS, SqlUtils.and(clause,
+                sys.joinTables(TBL_CONTACTS, TBL_COMPANY_PERSONS, COL_CONTACT)))));
+
+    if (!ArrayUtils.isEmpty(companies)) {
+      Long[] sysCompanies = qs.getLongColumn(new SqlSelect().setDistinctMode(true)
+          .addFields(TBL_COMPANY_PERSONS, COL_COMPANY)
+          .addFrom(TBL_USERS)
+          .addFromInner(TBL_COMPANY_PERSONS,
+              sys.joinTables(TBL_COMPANY_PERSONS, TBL_USERS, COL_COMPANY_PERSON)));
+
+      List<Long> otherCompanies = new ArrayList<>();
+      boolean ok = false;
+
+      for (Long company : companies) {
+        if (ArrayUtils.contains(sysCompanies, company)) {
+          ok = true;
+        } else {
+          otherCompanies.add(company);
+        }
+      }
+      if (ok) {
+        for (Long company : otherCompanies) {
+          qs.insertData(new SqlInsert(TBL_RELATIONS)
+              .addConstant(COL_MESSAGE, messageId)
+              .addConstant(COL_COMPANY, company));
+        }
+      }
+    }
+  }
+
+  private Long storeAddress(Long userId, InternetAddress address) throws AddressException {
+    Assert.notNull(address);
+    String email;
+    String label = null;
+
+    address.validate();
+
+    label = address.getPersonal();
+    email = BeeUtils.normalize(address.getAddress());
+
+    Assert.notEmpty(email);
+
+    Long id = null;
+    Long bookId = null;
+    String bookLabel = null;
+    String bookIdName = sys.getIdName(TBL_ADDRESSBOOK);
+
+    SimpleRow row = qs.getRow(new SqlSelect()
+        .addField(TBL_EMAILS, sys.getIdName(TBL_EMAILS), COL_EMAIL)
+        .addFields(TBL_ADDRESSBOOK, bookIdName, COL_EMAIL_LABEL)
+        .addFrom(TBL_EMAILS)
+        .addFromLeft(TBL_ADDRESSBOOK,
+            SqlUtils.and(sys.joinTables(TBL_EMAILS, TBL_ADDRESSBOOK, COL_EMAIL),
+                SqlUtils.equals(TBL_ADDRESSBOOK, MailConstants.COL_USER, userId)))
+        .setWhere(SqlUtils.equals(TBL_EMAILS, COL_EMAIL_ADDRESS, email)));
+
+    if (row != null) {
+      id = row.getLong(COL_EMAIL);
+      bookId = row.getLong(bookIdName);
+      bookLabel = row.getValue(COL_EMAIL_LABEL);
+    }
+    if (!DataUtils.isId(id)) {
+      id = qs.insertData(new SqlInsert(TBL_EMAILS)
+          .addConstant(COL_EMAIL_ADDRESS, email));
+    }
+    if (!DataUtils.isId(bookId)) {
+      qs.insertData(new SqlInsert(TBL_ADDRESSBOOK)
+          .addConstant(MailConstants.COL_USER, userId)
+          .addConstant(COL_EMAIL, id)
+          .addConstant(COL_EMAIL_LABEL, label));
+
+    } else if (BeeUtils.isEmpty(bookLabel) && !BeeUtils.isEmpty(label)) {
+      qs.updateData(new SqlUpdate(TBL_ADDRESSBOOK)
+          .addConstant(COL_EMAIL_LABEL, label)
+          .setWhere(sys.idEquals(TBL_ADDRESSBOOK, bookId)));
+    }
+    return id;
+  }
+
+  private void storePart(Long messageId, Part part, List<Pair<String, String>> contents,
+      Map<String, Long> attachments) throws MessagingException, IOException {
+
+    if (part.isMimeType("multipart/alternative")) {
+      String text = null;
+      String html = null;
       Multipart multiPart = (Multipart) part.getContent();
-      boolean hasAlternative = alternative == null && part.isMimeType("multipart/alternative");
-      Pair<String, String> alt;
 
-      if (hasAlternative) {
-        alt = Pair.of(null, null);
+      for (int i = 0; i < multiPart.getCount(); i++) {
+        Part bodyPart = multiPart.getBodyPart(i);
+
+        if (bodyPart.isMimeType("text/plain")) {
+          text = getStringContent(bodyPart.getContent());
+
+        } else if (bodyPart.isMimeType("text/html")) {
+          html = getStringContent(bodyPart.getContent());
+
+        } else {
+          storePart(messageId, bodyPart, contents, attachments);
+        }
+      }
+      if (contents != null) {
+        contents.add(Pair.of(text, html));
       } else {
-        alt = alternative;
+        savePart(messageId, text, html);
+      }
+    } else if (part.isMimeType("multipart/*")) {
+      Multipart multiPart = (Multipart) part.getContent();
+      List<Pair<String, String>> cont = null;
+      Map<String, Long> attach = null;
+
+      boolean isRelated = part.isMimeType("multipart/related");
+
+      if (isRelated) {
+        cont = new ArrayList<>();
+        attach = new LinkedHashMap<>();
+      } else {
+        cont = contents;
+        attach = attachments;
       }
       for (int i = 0; i < multiPart.getCount(); i++) {
-        storePart(messageId, multiPart.getBodyPart(i), alt);
+        storePart(messageId, multiPart.getBodyPart(i), cont, attach);
       }
-      if (hasAlternative) {
-        qs.insertData(new SqlInsert(TBL_PARTS)
-            .addConstant(COL_MESSAGE, messageId)
-            .addConstant(COL_CONTENT_TYPE, alt.getB() != null ? "text/html" : "text/plain")
-            .addConstant(COL_CONTENT,
-                HtmlUtils.stripHtml(alt.getA() != null ? alt.getA() : alt.getB()))
-            .addConstant(COL_HTML_CONTENT, alt.getB()));
+      if (isRelated) {
+        for (Pair<String, String> pair : cont) {
+          if (!BeeUtils.isEmpty(pair.getB())) {
+            for (String id : attach.keySet()) {
+              pair.setB(pair.getB().replace("cid:" + id, "file/" + attach.get(id)));
+            }
+          }
+          if (contents != null) {
+            contents.add(pair);
+          } else {
+            savePart(messageId, pair.getA(), pair.getB());
+          }
+        }
       }
     } else if (part.isMimeType("message/rfc822")) {
-      storePart(messageId, (Message) part.getContent(), alternative);
+      storePart(messageId, (Message) part.getContent(), contents, attachments);
     } else {
       String contentType = null;
 
@@ -458,42 +623,87 @@ public class MailStorageBean {
 
       try {
         fileName = part.getFileName();
+
+        if (!BeeUtils.isEmpty(fileName)) {
+          fileName = MimeUtility.decodeText(fileName);
+        }
       } catch (ParseException e) {
         logger.warning("( MessageID =", messageId, ") Error getting part file name:", e);
       }
+      boolean isBase64 = BeeUtils.same("base64",
+          ArrayUtils.getQuietly(part.getHeader("Content-Transfer-Encoding"), 0));
+
       if (!part.isMimeType("text/*")
           || BeeUtils.same(disposition, Part.ATTACHMENT)
           || !BeeUtils.isEmpty(fileName)
-          || (alternative != null
-              && !part.isMimeType("text/plain") && !part.isMimeType("text/html"))) {
+          || isBase64) {
 
         Long fileId = fs.storeFile(part.getInputStream(), fileName, contentType);
 
+        if (attachments != null) {
+          String[] ids = part.getHeader("Content-ID");
+
+          if (ids != null) {
+            for (String id : ids) {
+              attachments.put(BeeUtils.removeSuffix(BeeUtils.removePrefix(id, '<'), '>'), fileId);
+            }
+          }
+        }
         qs.insertData(new SqlInsert(TBL_ATTACHMENTS)
             .addConstant(COL_MESSAGE, messageId)
             .addConstant(AdministrationConstants.COL_FILE, fileId)
-            .addConstant(COL_ATTACHMENT_NAME, fileName));
-
-      } else if (alternative != null) {
-        if (part.isMimeType("text/plain") && alternative.getA() == null) {
-          alternative.setA((String) part.getContent());
-        } else if (part.isMimeType("text/html") && alternative.getB() == null) {
-          alternative.setB((String) part.getContent());
-        }
+            .addConstant(COL_ATTACHMENT_NAME,
+                sys.clampValue(TBL_ATTACHMENTS, COL_ATTACHMENT_NAME, fileName)));
       } else {
-        String htmlContent = null;
-        String content = (String) part.getContent();
+        String text = getStringContent(part.getContent());
+        String html = null;
 
         if (part.isMimeType("text/html")) {
-          htmlContent = content;
-          content = HtmlUtils.stripHtml(content);
+          html = text;
+          text = HtmlUtils.stripHtml(html);
         }
-        qs.insertData(new SqlInsert(TBL_PARTS)
-            .addConstant(COL_MESSAGE, messageId)
-            .addConstant(COL_CONTENT_TYPE, contentType)
-            .addConstant(COL_CONTENT, content)
-            .addConstant(COL_HTML_CONTENT, htmlContent));
+        if (contents != null) {
+          contents.add(Pair.of(text, html));
+        } else {
+          savePart(messageId, text, html);
+        }
       }
+    }
+  }
+
+  private static long storePlace(QueryServiceBean queryBean, long messageId, Long folderId,
+      Integer flags, Long messageUID) {
+    return queryBean.insertData(new SqlInsert(TBL_PLACES)
+        .addConstant(COL_MESSAGE, messageId)
+        .addConstant(COL_FOLDER, folderId)
+        .addNotNull(COL_FLAGS, flags)
+        .addNotNull(COL_MESSAGE_UID, messageUID));
+  }
+
+  private void savePart(Long messageId, String text, String html) {
+    if (BeeUtils.anyNotEmpty(text, html)) {
+      String cleanHtml = html;
+
+      if (!BeeUtils.isEmpty(html)) {
+        int idx = html.indexOf(0);
+
+        switch (idx) {
+          case -1:
+            break;
+
+          case 0:
+            cleanHtml = null;
+            break;
+
+          default:
+            cleanHtml = html.substring(0, idx);
+            break;
+        }
+      }
+      qs.insertData(new SqlInsert(TBL_PARTS)
+          .addConstant(COL_MESSAGE, messageId)
+          .addConstant(COL_CONTENT, BeeUtils.isEmpty(text) ? HtmlUtils.stripHtml(cleanHtml) : text)
+          .addConstant(COL_HTML_CONTENT, cleanHtml));
     }
   }
 }

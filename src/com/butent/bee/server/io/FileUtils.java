@@ -125,7 +125,7 @@ public final class FileUtils {
     String stem = FileNameUtils.getBaseName(search);
     String ext = FileNameUtils.getExtension(search);
 
-    List<File> roots = Lists.newArrayList();
+    List<File> roots = new ArrayList<>();
 
     if (!BeeUtils.isEmpty(pfx)) {
       roots.addAll(Config.getDirectories(pfx));
@@ -139,7 +139,7 @@ public final class FileUtils {
       }
     }
 
-    List<Filter> filters = Lists.newArrayList();
+    List<Filter> filters = new ArrayList<>();
     if (requiredFilters != null) {
       filters.addAll(requiredFilters);
     }
@@ -162,7 +162,7 @@ public final class FileUtils {
   public static List<File> findFiles(Collection<File> directories,
       Collection<? extends Filter> filters, boolean recurse, boolean all) {
     Assert.notEmpty(directories);
-    List<File> files = Lists.newArrayList();
+    List<File> files = new ArrayList<>();
 
     for (File dir : directories) {
       files.addAll(findFiles(dir, filters, recurse));
@@ -181,7 +181,7 @@ public final class FileUtils {
       boolean recurse) {
     Assert.notNull(dir);
 
-    List<File> found = Lists.newArrayList();
+    List<File> found = new ArrayList<>();
     if (!dir.isDirectory() || !Config.isVisible(dir)) {
       return found;
     }
@@ -394,7 +394,7 @@ public final class FileUtils {
     Assert.notEmpty(child);
     return new File(parent, child).exists();
   }
-  
+
   public static boolean isInputFile(File fl) {
     if (fl == null) {
       return false;
@@ -470,16 +470,16 @@ public final class FileUtils {
     return prp;
   }
 
-  public static boolean saveToFile(String src, String dst) {
+  public static String saveToFile(String src, String dst) {
     return saveToFile(src, dst, defaultCharset);
   }
 
-  public static boolean saveToFile(String src, String dst, Charset cs) {
+  public static String saveToFile(String src, String dst, Charset cs) {
     Assert.notEmpty(src);
     Assert.notEmpty(dst);
 
     OutputStreamWriter fw = null;
-    boolean ok;
+    String path;
     File file = new File(dst);
 
     try {
@@ -489,14 +489,16 @@ public final class FileUtils {
       }
       fw = new OutputStreamWriter(new FileOutputStream(file), cs);
       fw.append(src);
-      ok = true;
+
+      path = file.getCanonicalPath();
+
     } catch (IOException ex) {
       logger.error(ex, dst);
-      ok = false;
+      path = null;
     }
 
     closeQuietly(fw);
-    return ok;
+    return path;
   }
 
   public static String streamToString(InputStream stream) {

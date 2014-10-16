@@ -1,7 +1,5 @@
 package com.butent.bee.client.rights;
 
-import com.google.common.collect.Lists;
-
 import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.communication.ResponseCallback;
 import com.butent.bee.client.view.form.interceptor.FormInterceptor;
@@ -11,11 +9,11 @@ import com.butent.bee.shared.communication.ResponseObject;
 import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.menu.Menu;
 import com.butent.bee.shared.menu.MenuEntry;
-import com.butent.bee.shared.modules.administration.AdministrationConstants.RightsObjectType;
-import com.butent.bee.shared.modules.administration.AdministrationConstants.RightsState;
-import com.butent.bee.shared.rights.ModuleAndSub;
+import com.butent.bee.shared.rights.RightsObjectType;
+import com.butent.bee.shared.rights.RightsState;
 import com.butent.bee.shared.utils.Codec;
 
+import java.util.ArrayList;
 import java.util.List;
 
 final class MenuRightsHandler extends MultiRoleForm {
@@ -49,7 +47,7 @@ final class MenuRightsHandler extends MultiRoleForm {
         } else if (response.hasResponse()) {
           String[] arr = Codec.beeDeserializeCollection(response.getResponseAsString());
 
-          List<RightsObject> result = Lists.newArrayList();
+          List<RightsObject> result = new ArrayList<>();
           if (arr != null) {
             for (String s : arr) {
               Menu menu = Menu.restore(s);
@@ -66,13 +64,12 @@ final class MenuRightsHandler extends MultiRoleForm {
   }
 
   private boolean addMenuObject(List<RightsObject> result, int level, String parent, Menu menu) {
-    ModuleAndSub ms = ModuleAndSub.parse(menu.getModule());
-    if (ms != null && !ms.isEnabled()) {
+    if (!BeeKeeper.getUser().isAnyModuleVisible(menu.getModule())) {
       return false;
     }
 
     RightsObject object = new RightsObject(menu.getName(),
-        Localized.maybeTranslate(menu.getLabel()), ms, level, parent);
+        Localized.maybeTranslate(menu.getLabel()), null, level, parent);
 
     result.add(object);
 

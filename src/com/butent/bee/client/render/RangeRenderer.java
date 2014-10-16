@@ -1,8 +1,6 @@
 package com.butent.bee.client.render;
 
 import com.google.common.base.Splitter;
-import com.google.common.collect.Lists;
-import com.google.common.collect.Maps;
 import com.google.common.collect.Range;
 
 import com.butent.bee.shared.Assert;
@@ -17,32 +15,34 @@ import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.NameUtils;
 import com.butent.bee.shared.utils.RangeOptions;
 
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
 public class RangeRenderer extends AbstractCellRenderer implements HasItems {
 
   private static final BeeLogger logger = LogUtils.getLogger(RangeRenderer.class);
-  
-  public static final String DEFAULT_SEPARATOR = ","; 
 
-  public static final boolean DEFAULT_LOWER_OPEN = false; 
-  public static final boolean DEFAULT_UPPER_OPEN = true; 
-  
-  private final Map<Range<Value>, String> map = Maps.newHashMap();
+  public static final String DEFAULT_SEPARATOR = ",";
+
+  public static final boolean DEFAULT_LOWER_OPEN = false;
+  public static final boolean DEFAULT_UPPER_OPEN = true;
+
+  private final Map<Range<Value>, String> map = new HashMap<>();
 
   private final String separator;
   private final Splitter splitter;
-  
+
   private final RangeOptions rangeOptions;
 
   public RangeRenderer(CellSource cellSource, String sep, String opt) {
     super(cellSource);
-    
+
     this.separator = BeeUtils.notEmpty(sep, DEFAULT_SEPARATOR).trim();
     this.splitter = Splitter.on(this.separator).trimResults().limit(3);
-    
+
     this.rangeOptions = new RangeOptions(RangeOptions.hasLowerOpen(opt, DEFAULT_LOWER_OPEN),
         RangeOptions.hasUpperOpen(opt, DEFAULT_UPPER_OPEN), false, false);
   }
@@ -70,7 +70,7 @@ public class RangeRenderer extends AbstractCellRenderer implements HasItems {
       }
       index++;
     }
-    
+
     if (low == null && upp == null) {
       logger.warning(NameUtils.getName(this), "cannot parse item:", item);
       return;
@@ -86,7 +86,7 @@ public class RangeRenderer extends AbstractCellRenderer implements HasItems {
         return;
       }
     }
-    
+
     Range<Value> range = rangeOptions.getRange(low, upp);
     if (range == null || range.isEmpty()) {
       logger.warning(NameUtils.getName(this), "range is empty:", item);
@@ -110,7 +110,7 @@ public class RangeRenderer extends AbstractCellRenderer implements HasItems {
 
   @Override
   public List<String> getItems() {
-    List<String> result = Lists.newArrayList();
+    List<String> result = new ArrayList<>();
     String low;
     String upp;
 
@@ -119,10 +119,10 @@ public class RangeRenderer extends AbstractCellRenderer implements HasItems {
       if (range == null || range.isEmpty()) {
         continue;
       }
-      
+
       low = range.hasLowerBound() ? range.lowerEndpoint().toString() : BeeConst.STRING_EMPTY;
       upp = range.hasUpperBound() ? range.upperEndpoint().toString() : BeeConst.STRING_EMPTY;
-      
+
       result.add(BeeUtils.join(separator, low + separator + upp, entry.getValue()));
     }
     return result;
@@ -132,19 +132,19 @@ public class RangeRenderer extends AbstractCellRenderer implements HasItems {
   public boolean isEmpty() {
     return getItemCount() <= 0;
   }
-  
+
   @Override
   public boolean isIndex(int index) {
     return index >= 0 && index < getItemCount();
   }
-  
+
   @Override
   public String render(IsRow row) {
     Value v = getValue(row);
     if (v == null) {
       return null;
     }
-    
+
     for (Map.Entry<Range<Value>, String> entry : map.entrySet()) {
       if (entry.getKey().contains(v)) {
         return entry.getValue();

@@ -6,6 +6,7 @@
   editForm="ServiceObject" newRowForm="ServiceObject"
   rowCaption="CategoryName Address CustomerName"
   >
+  <Relation renderColumns="Address" choiceColumns="Address CustomerName" />
   <Columns>
     <SimpleColumn name="Category" />
     <SimpleJoin joinType="LEFT" name="Category">
@@ -18,6 +19,11 @@
     <SimpleJoin joinType="LEFT" name="Customer">
       <SimpleColumn name="Name" alias="CustomerName" />
       <SimpleColumn name="CreditDays" />
+    </SimpleJoin>
+
+    <SimpleColumn name="Contractor" />
+    <SimpleJoin joinType="LEFT" name="Contractor">
+      <SimpleColumn name="Name" alias="ContractorName" />
     </SimpleJoin>
   </Columns>
 </View>

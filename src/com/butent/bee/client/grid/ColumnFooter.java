@@ -9,7 +9,13 @@ import com.butent.bee.client.i18n.DateTimeFormat;
 import com.butent.bee.client.i18n.Format;
 import com.butent.bee.client.i18n.HasDateTimeFormat;
 import com.butent.bee.client.i18n.HasNumberFormat;
+import com.butent.bee.client.modules.trade.DiscountRenderer;
+import com.butent.bee.client.modules.trade.TotalRenderer;
+import com.butent.bee.client.modules.trade.VatRenderer;
+import com.butent.bee.client.render.AbstractCellRenderer;
+import com.butent.bee.client.render.HasCellRenderer;
 import com.butent.bee.client.style.HasTextAlign;
+import com.butent.bee.client.style.HasWhiteSpace;
 import com.butent.bee.client.ui.UiHelper;
 import com.butent.bee.client.utils.Evaluator;
 import com.butent.bee.shared.Assert;
@@ -17,7 +23,9 @@ import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.HasOptions;
 import com.butent.bee.shared.HasScale;
 import com.butent.bee.shared.css.values.TextAlign;
+import com.butent.bee.shared.css.values.WhiteSpace;
 import com.butent.bee.shared.data.CellSource;
+import com.butent.bee.shared.data.HasRowValue;
 import com.butent.bee.shared.data.IsColumn;
 import com.butent.bee.shared.data.IsRow;
 import com.butent.bee.shared.data.value.DateTimeValue;
@@ -38,11 +46,34 @@ import com.butent.bee.shared.utils.EnumUtils;
 
 import java.util.List;
 
-public class ColumnFooter extends Header<String> implements HasTextAlign,
+public class ColumnFooter extends Header<String> implements HasTextAlign, HasWhiteSpace,
     HasDateTimeFormat, HasNumberFormat, HasScale, HasOptions, HasValueType {
 
   public enum Aggregate {
     SUM, COUNT, MIN, MAX, AVG
+  }
+
+  private enum EvaluatorType {
+    TOTAL {
+      @Override
+      HasRowValue getFunction(List<? extends IsColumn> columns) {
+        return new TotalRenderer(columns);
+      }
+    },
+    VAT {
+      @Override
+      HasRowValue getFunction(List<? extends IsColumn> columns) {
+        return new VatRenderer(columns);
+      }
+    },
+    DISCOUNT {
+      @Override
+      HasRowValue getFunction(List<? extends IsColumn> columns) {
+        return new DiscountRenderer(columns);
+      }
+    };
+
+    abstract HasRowValue getFunction(List<? extends IsColumn> columns);
   }
 
   private static final Aggregate DEFAULT_AGGREGATE = Aggregate.SUM;
@@ -51,10 +82,11 @@ public class ColumnFooter extends Header<String> implements HasTextAlign,
   private String html;
 
   private CellSource cellSource;
-  private Evaluator rowEvaluator;
+  private HasRowValue rowEvaluator;
   private ValueType valueType;
 
   private TextAlign horizontalAlignment;
+  private WhiteSpace whiteSpace;
 
   private DateTimeFormat dateTimeFormat;
   private NumberFormat numberFormat;
@@ -64,7 +96,7 @@ public class ColumnFooter extends Header<String> implements HasTextAlign,
   private String options;
 
   private Aggregate aggregate;
-  
+
   public ColumnFooter(CellSource cellSource, AbstractColumn<?> column,
       ColumnDescription columnDescription, List<? extends IsColumn> dataColumns) {
     this(cellSource);
@@ -82,14 +114,14 @@ public class ColumnFooter extends Header<String> implements HasTextAlign,
     } else if (getAggregate() == null) {
       return false;
     } else if (getRowEvaluator() != null) {
-      return BeeUtils.containsSame(getRowEvaluator().getExpression(), source);
+      return getRowEvaluator().dependsOnSource(source);
     } else if (getCellSource() != null) {
       return BeeUtils.same(getCellSource().getName(), source);
     } else {
       return false;
     }
   }
-  
+
   public Aggregate getAggregate() {
     return aggregate;
   }
@@ -117,7 +149,7 @@ public class ColumnFooter extends Header<String> implements HasTextAlign,
     return options;
   }
 
-  public Evaluator getRowEvaluator() {
+  public HasRowValue getRowEvaluator() {
     return rowEvaluator;
   }
 
@@ -142,25 +174,33 @@ public class ColumnFooter extends Header<String> implements HasTextAlign,
   }
 
   @Override
-  public void render(CellContext context, SafeHtmlBuilder sb) {
-    if (getAggregate() != null) {
-      List<IsRow> data = context.getGrid().getRowData();
+  public WhiteSpace getWhiteSpace() {
+    return whiteSpace;
+  }
 
-      if (!BeeUtils.isEmpty(data)) {
-        Value value = calculate(data);
-        if (value == null && BeeUtils.contains(getOptions(), BeeConst.CHAR_ZERO)) {
-          value = new NumberValue(BeeConst.DOUBLE_ZERO);
-        }
+  public String reduce(List<IsRow> data) {
+    if (getAggregate() != null && !BeeUtils.isEmpty(data)) {
+      Value value = calculate(data);
+      if (value == null && BeeUtils.contains(getOptions(), BeeConst.CHAR_ZERO)) {
+        value = new NumberValue(BeeConst.DOUBLE_ZERO);
+      }
 
-        if (value != null) {
-          getCell().render(context, Format.render(value.getString(), getValueType(),
-              getDateTimeFormat(), getNumberFormat(), getScale()), sb);
-          return;
-        }
+      if (value != null) {
+        return Format.render(value.getString(), getValueType(),
+            getDateTimeFormat(), getNumberFormat(), getScale());
       }
     }
 
-    super.render(context, sb);
+    return getValue();
+  }
+
+  @Override
+  public void render(CellContext context, SafeHtmlBuilder sb) {
+    String value = reduce(context.getGrid().getRowData());
+
+    if (value != null) {
+      getCell().render(context, value, sb);
+    }
   }
 
   public void setAggregate(Aggregate aggregate) {
@@ -190,7 +230,7 @@ public class ColumnFooter extends Header<String> implements HasTextAlign,
     this.options = options;
   }
 
-  public void setRowEvaluator(Evaluator rowEvaluator) {
+  public void setRowEvaluator(HasRowValue rowEvaluator) {
     this.rowEvaluator = rowEvaluator;
   }
 
@@ -206,6 +246,11 @@ public class ColumnFooter extends Header<String> implements HasTextAlign,
 
   public void setValueType(ValueType valueType) {
     this.valueType = valueType;
+  }
+
+  @Override
+  public void setWhiteSpace(WhiteSpace whiteSpace) {
+    this.whiteSpace = whiteSpace;
   }
 
   protected Value calculate(List<IsRow> data) {
@@ -276,9 +321,8 @@ public class ColumnFooter extends Header<String> implements HasTextAlign,
   protected Value getRowValue(IsRow row) {
     if (row == null) {
       return null;
-    } else if (getRowEvaluator() != null && getValueType() != null) {
-      getRowEvaluator().update(row);
-      return Value.parseValue(getValueType(), getRowEvaluator().evaluate(), false);
+    } else if (getRowEvaluator() != null) {
+      return getRowEvaluator().getRowValue(row);
     } else if (getCellSource() != null) {
       return getCellSource().getValue(row);
     } else {
@@ -307,6 +351,9 @@ public class ColumnFooter extends Header<String> implements HasTextAlign,
       if (!BeeUtils.isEmpty(footerDescription.getHorAlign())) {
         UiHelper.setHorizontalAlignment(this, footerDescription.getHorAlign());
       }
+      if (!BeeUtils.isEmpty(footerDescription.getWhiteSpace())) {
+        UiHelper.setWhiteSpace(this, footerDescription.getWhiteSpace());
+      }
 
       if (footerDescription.getScale() != null) {
         setScale(footerDescription.getScale());
@@ -320,21 +367,39 @@ public class ColumnFooter extends Header<String> implements HasTextAlign,
         setAggregate(EnumUtils.getEnumByName(Aggregate.class, footerDescription.getAggregate()));
       }
 
-      String expression = footerDescription.getExpression();
-      if (!BeeUtils.isEmpty(expression) && getAggregate() == null) {
-        setAggregate(DEFAULT_AGGREGATE);
-      }
+      EvaluatorType evaluatorType = EnumUtils.getEnumByName(EvaluatorType.class,
+          footerDescription.getEvaluator());
 
-      if (getAggregate() != null) {
-        Calculation calculation;
-        if (BeeUtils.isEmpty(expression)) {
-          calculation = columnDescription.getRender();
-        } else {
-          calculation = new Calculation(expression, null);
+      if (evaluatorType != null) {
+        if (getAggregate() == null) {
+          setAggregate(DEFAULT_AGGREGATE);
+        }
+        setRowEvaluator(evaluatorType.getFunction(dataColumns));
+
+      } else {
+        String expression = footerDescription.getExpression();
+        if (!BeeUtils.isEmpty(expression) && getAggregate() == null) {
+          setAggregate(DEFAULT_AGGREGATE);
         }
 
-        if (calculation != null) {
-          setRowEvaluator(Evaluator.create(calculation, null, dataColumns));
+        if (getAggregate() != null) {
+          Calculation calculation;
+
+          if (BeeUtils.isEmpty(expression)) {
+            calculation = columnDescription.getRender();
+          } else {
+            calculation = new Calculation(expression, null);
+          }
+
+          if (calculation != null) {
+            setRowEvaluator(Evaluator.create(calculation, null, dataColumns));
+
+          } else if (column instanceof HasCellRenderer) {
+            AbstractCellRenderer renderer = ((HasCellRenderer) column).getRenderer();
+            if (renderer instanceof HasRowValue) {
+              setRowEvaluator((HasRowValue) renderer);
+            }
+          }
         }
       }
     }
@@ -373,6 +438,16 @@ public class ColumnFooter extends Header<String> implements HasTextAlign,
       }
     }
 
+    if (getWhiteSpace() == null) {
+      if (getAggregate() == Aggregate.COUNT) {
+        setWhiteSpace(WhiteSpace.NOWRAP);
+      } else if (getAggregate() != null && getValueType() != null) {
+        UiHelper.setDefaultWhiteSpace(this, getValueType());
+      } else if (column.getWhiteSpace() != null && getValueType() == column.getValueType()) {
+        setWhiteSpace(column.getWhiteSpace());
+      }
+    }
+
     if (footerDescription != null && !BeeUtils.isEmpty(footerDescription.getFormat())
         && getValueType() != null) {
       Format.setFormat(this, getValueType(), footerDescription.getFormat());
@@ -382,7 +457,9 @@ public class ColumnFooter extends Header<String> implements HasTextAlign,
       if (getDateTimeFormat() == null && column instanceof HasDateTimeFormat) {
         setDateTimeFormat(((HasDateTimeFormat) column).getDateTimeFormat());
       }
-      if (getNumberFormat() == null && column instanceof HasNumberFormat) {
+
+      if (getNumberFormat() == null && column instanceof HasNumberFormat
+          && (footerDescription == null || footerDescription.getScale() == null)) {
         setNumberFormat(((HasNumberFormat) column).getNumberFormat());
       }
     }

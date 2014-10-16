@@ -15,6 +15,7 @@ import com.butent.bee.client.data.HasRelatedRow;
 import com.butent.bee.client.dom.DomUtils;
 import com.butent.bee.client.event.EventUtils;
 import com.butent.bee.client.event.logical.ActiveWidgetChangeEvent;
+import com.butent.bee.client.event.logical.SummaryChangeEvent;
 import com.butent.bee.client.ui.UiHelper;
 import com.butent.bee.client.ui.WidgetDescription;
 import com.butent.bee.client.utils.Evaluator;
@@ -30,6 +31,7 @@ import com.butent.bee.client.view.form.FormView;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.data.BeeColumn;
+import com.butent.bee.shared.data.HasRelatedCurrency;
 import com.butent.bee.shared.data.IsRow;
 import com.butent.bee.shared.data.RelationUtils;
 import com.butent.bee.shared.data.value.BooleanValue;
@@ -44,6 +46,8 @@ import com.butent.bee.shared.ui.RefreshType;
 import com.butent.bee.shared.ui.Relation;
 import com.butent.bee.shared.utils.BeeUtils;
 
+import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 
 public class EditableWidget implements EditChangeHandler, FocusHandler, BlurHandler,
@@ -333,15 +337,26 @@ public class EditableWidget implements EditChangeHandler, FocusHandler, BlurHand
     return readOnly;
   }
 
-  public boolean maybeUpdateRelation(String viewName, IsRow row, boolean updateColumn) {
-    boolean ok = false;
-    if (!BeeUtils.isEmpty(viewName) && row != null && getEditor() instanceof HasRelatedRow
-        && getRelation() != null && hasColumn()) {
-      ok = !RelationUtils.updateRow(Data.getDataInfo(viewName), getColumnId(), row,
-          Data.getDataInfo(getRelation().getViewName()),
-          ((HasRelatedRow) getEditor()).getRelatedRow(), updateColumn).isEmpty();
+  public Collection<String> maybeUpdateRelation(String viewName, IsRow row) {
+    if (!BeeUtils.isEmpty(viewName) && row != null) {
+
+      if (getEditor() instanceof HasRelatedRow && getRelation() != null && hasColumn()
+          && getRelation().renderTarget()) {
+
+        return RelationUtils.updateRow(Data.getDataInfo(viewName), getColumnId(), row,
+            Data.getDataInfo(getRelation().getViewName()),
+            ((HasRelatedRow) getEditor()).getRelatedRow(), false);
+
+      } else if (getEditor() instanceof HasRelatedCurrency) {
+        String currencySource = ((HasRelatedCurrency) getEditor()).getCurrencySource();
+
+        if (!BeeUtils.isEmpty(currencySource)) {
+          return RelationUtils.maybeUpdateCurrency(Data.getDataInfo(viewName), row, currencySource,
+              !BeeUtils.isEmpty(getEditor().getNormalizedValue()));
+        }
+      }
     }
-    return ok;
+    return Collections.emptySet();
   }
 
   @Override
@@ -367,9 +382,11 @@ public class EditableWidget implements EditChangeHandler, FocusHandler, BlurHand
       reset();
       end(event.getKeyCode(), event.hasModifiers());
 
-    } else if (event.isEdited()) {
-      if (getForm() != null
-          && maybeUpdateRelation(getForm().getViewName(), getForm().getActiveRow(), false)) {
+    } else if (event.isEdited() && getForm() != null) {
+      Collection<String> updated =
+          maybeUpdateRelation(getForm().getViewName(), getForm().getActiveRow());
+
+      if (!BeeUtils.isEmpty(updated)) {
         getForm().refresh(false, true);
       }
     }
@@ -440,12 +457,14 @@ public class EditableWidget implements EditChangeHandler, FocusHandler, BlurHand
         } else {
           value = BeeUtils.trimRight(row.getString(getDataIndex()));
         }
-        getEditor().setValue(value);
+        getEditor().render(value);
       }
 
       if (isDisplay()) {
         getDisplayWidget().refresh((Widget) getEditor(), row);
       }
+
+      maybeSummarize();
     }
 
     setDirty(false);
@@ -460,10 +479,15 @@ public class EditableWidget implements EditChangeHandler, FocusHandler, BlurHand
   }
 
   public boolean validate(ValidationOrigin origin) {
-    String oldValue = getOldValue();
-    String newValue = getEditor().getNormalizedValue();
+    if (isReadOnly()) {
+      return true;
 
-    return validate(oldValue, newValue, origin);
+    } else {
+      String oldValue = getOldValue();
+      String newValue = getEditor().getNormalizedValue();
+
+      return validate(oldValue, newValue, origin);
+    }
   }
 
   private void end(Integer keyCode, boolean hasModifiers) {
@@ -531,6 +555,12 @@ public class EditableWidget implements EditChangeHandler, FocusHandler, BlurHand
     return required;
   }
 
+  private void maybeSummarize() {
+    if (getEditor() != null && getEditor().summarize()) {
+      SummaryChangeEvent.fire(getEditor());
+    }
+  }
+
   private void reset() {
     if (hasColumn() || isDisplay()) {
       refresh(getRowValue());
@@ -567,7 +597,9 @@ public class EditableWidget implements EditChangeHandler, FocusHandler, BlurHand
       if (normalize) {
         getEditor().normalizeDisplay(newValue);
       }
+
       setDirty(true);
+      maybeSummarize();
 
     } else {
       if (normalize) {
@@ -575,6 +607,7 @@ public class EditableWidget implements EditChangeHandler, FocusHandler, BlurHand
           reset();
         } else {
           getEditor().clearValue();
+          maybeSummarize();
         }
       }
       return false;

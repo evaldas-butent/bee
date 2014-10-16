@@ -4,10 +4,7 @@ import com.google.common.collect.BiMap;
 import com.google.common.collect.HashBasedTable;
 import com.google.common.collect.HashBiMap;
 import com.google.common.collect.HashMultimap;
-import com.google.common.collect.Lists;
-import com.google.common.collect.Maps;
 import com.google.common.collect.Multimap;
-import com.google.common.collect.Sets;
 import com.google.common.collect.Table;
 import com.google.common.primitives.Longs;
 
@@ -17,6 +14,7 @@ import static com.butent.bee.shared.modules.classifiers.ClassifierConstants.*;
 import com.butent.bee.server.i18n.I18nUtils;
 import com.butent.bee.server.i18n.Localizations;
 import com.butent.bee.server.sql.HasConditions;
+import com.butent.bee.server.sql.IsCondition;
 import com.butent.bee.server.sql.SqlDelete;
 import com.butent.bee.server.sql.SqlInsert;
 import com.butent.bee.server.sql.SqlSelect;
@@ -26,6 +24,7 @@ import com.butent.bee.server.websocket.Endpoint;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.Service;
 import com.butent.bee.shared.communication.ResponseObject;
+import com.butent.bee.shared.data.BeeRowSet;
 import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.SimpleRowSet;
 import com.butent.bee.shared.data.SimpleRowSet.SimpleRow;
@@ -36,9 +35,11 @@ import com.butent.bee.shared.i18n.LocalizableMessages;
 import com.butent.bee.shared.i18n.SupportedLocale;
 import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogUtils;
-import com.butent.bee.shared.modules.administration.AdministrationConstants.RightsObjectType;
-import com.butent.bee.shared.modules.administration.AdministrationConstants.RightsState;
+import com.butent.bee.shared.rights.Module;
 import com.butent.bee.shared.rights.ModuleAndSub;
+import com.butent.bee.shared.rights.RegulatedWidget;
+import com.butent.bee.shared.rights.RightsObjectType;
+import com.butent.bee.shared.rights.RightsState;
 import com.butent.bee.shared.time.DateTime;
 import com.butent.bee.shared.time.TimeUtils;
 import com.butent.bee.shared.ui.UserInterface;
@@ -46,16 +47,16 @@ import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.EnumUtils;
 import com.butent.bee.shared.utils.Wildcards;
 
-import java.io.IOException;
-import java.io.StringReader;
 import java.security.Principal;
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Objects;
-import java.util.Properties;
 import java.util.Set;
 
 import javax.annotation.Resource;
@@ -74,19 +75,35 @@ import javax.servlet.http.HttpServletRequest;
 @Lock(LockType.READ)
 public class UserServiceBean {
 
+  private static final class IpFilter {
+    private final String host;
+    private final DateTime blockAfter;
+    private final DateTime blockBefore;
+
+    private IpFilter(String host, DateTime blockAfter, DateTime blockBefore) {
+      this.host = host;
+      this.blockAfter = blockAfter;
+      this.blockBefore = blockBefore;
+    }
+
+    private boolean isBlocked(String addr, DateTime dt) {
+      return Wildcards.isLike(addr, host)
+          && TimeUtils.isBetweenExclusiveNotRequired(dt, blockAfter, blockBefore);
+    }
+  }
+
   private static final class UserInfo {
 
     private final UserData userData;
     private final String password;
     private Collection<Long> userRoles;
 
-    private SupportedLocale userLocale = SupportedLocale.DEFAULT;
     private UserInterface userInterface;
 
     private DateTime blockAfter;
     private DateTime blockBefore;
 
-    private final Set<Long> sessions = Sets.newHashSet();
+    private final Set<Long> sessions = new HashSet<>();
 
     private UserInfo(UserData userData, String password) {
       this.userData = userData;
@@ -106,24 +123,8 @@ public class UserServiceBean {
       return blockBefore;
     }
 
-    private Long getCompany() {
-      return userData.getCompany();
-    }
-
-    private Long getCompanyPerson() {
-      return userData.getCompanyPerson();
-    }
-
-    private String getLanguage() {
-      return getUserLocale().getLanguage();
-    }
-
     private String getPassword() {
       return password;
-    }
-
-    private Long getPerson() {
-      return userData.getPerson();
     }
 
     private Collection<Long> getRoles() {
@@ -136,10 +137,6 @@ public class UserServiceBean {
 
     private UserInterface getUserInterface() {
       return userInterface;
-    }
-
-    private SupportedLocale getUserLocale() {
-      return userLocale;
     }
 
     private boolean isBlocked(long time) {
@@ -172,24 +169,8 @@ public class UserServiceBean {
       return this;
     }
 
-    private UserInfo setProperties(String properties) {
-      Map<String, String> props = null;
-
-      if (!BeeUtils.isEmpty(properties)) {
-        props = Maps.newHashMap();
-        Properties prp = new Properties();
-
-        try {
-          prp.load(new StringReader(properties));
-        } catch (IOException e) {
-          logger.error(e, properties);
-        }
-        for (String p : prp.stringPropertyNames()) {
-          props.put(p, prp.getProperty(p));
-        }
-      }
-      userData.setProperties(props);
-      return this;
+    private void setRights(Table<RightsState, RightsObjectType, Set<String>> userRights) {
+      userData.setRights(userRights);
     }
 
     private UserInfo setRoles(Collection<Long> roles) {
@@ -200,28 +181,6 @@ public class UserServiceBean {
     private UserInfo setUserInterface(UserInterface ui) {
       this.userInterface = ui;
       return this;
-    }
-
-    private UserInfo setUserLocale(SupportedLocale sl) {
-      this.userLocale = BeeUtils.nvl(sl, SupportedLocale.DEFAULT);
-      return this;
-    }
-  }
-
-  private static final class IpFilter {
-    private final String host;
-    private final DateTime blockAfter;
-    private final DateTime blockBefore;
-
-    private IpFilter(String host, DateTime blockAfter, DateTime blockBefore) {
-      this.host = host;
-      this.blockAfter = blockAfter;
-      this.blockBefore = blockBefore;
-    }
-
-    private boolean isBlocked(String addr, DateTime dt) {
-      return Wildcards.isLike(addr, host)
-          && TimeUtils.isBetweenExclusiveNotRequired(dt, blockAfter, blockBefore);
     }
   }
 
@@ -238,11 +197,11 @@ public class UserServiceBean {
   @EJB
   QueryServiceBean qs;
 
-  private final Map<Long, String> roleCache = Maps.newHashMap();
+  private final Map<Long, String> roleCache = new HashMap<>();
   private final BiMap<Long, String> userCache = HashBiMap.create();
-  private Map<String, UserInfo> infoCache = Maps.newHashMap();
+  private Map<String, UserInfo> infoCache = new HashMap<>();
 
-  private final List<IpFilter> ipFilters = Lists.newArrayList();
+  private final List<IpFilter> ipFilters = new ArrayList<>();
 
   private final Table<RightsObjectType, String, Multimap<RightsState, Long>> rightsCache =
       HashBasedTable.create();
@@ -269,33 +228,52 @@ public class UserServiceBean {
     return info != null && Objects.equals(password, info.getPassword());
   }
 
+  public boolean canCreateData(String viewName) {
+    UserInfo info = getCurrentUserInfo();
+    return (info == null) ? false : info.getUserData().canCreateData(viewName);
+  }
+
   public boolean canEditColumn(String viewName, String column) {
     UserInfo info = getCurrentUserInfo();
     return (info == null) ? false : info.getUserData().canEditColumn(viewName, column);
   }
 
-  public List<UserData> getAllUserData() {
-    List<UserData> data = Lists.newArrayList();
-    for (UserInfo userInfo : infoCache.values()) {
-      data.add(userInfo.getUserData());
+  public BeeRowSet ensureUserSettings() {
+    Long userId = getCurrentUserId();
+
+    if (DataUtils.isId(userId)) {
+      Filter filter = Filter.equals(COL_USER, userId);
+      BeeRowSet rowSet = qs.getViewData(VIEW_USER_SETTINGS, filter);
+
+      if (DataUtils.isEmpty(rowSet)) {
+        qs.insertData(new SqlInsert(TBL_USER_SETTINGS).addConstant(COL_USER, userId));
+        rowSet = qs.getViewData(VIEW_USER_SETTINGS, filter);
+
+        if (DataUtils.isEmpty(rowSet)) {
+          logger.severe("cannot create user settings for", userId);
+        }
+      }
+
+      return rowSet;
+
+    } else {
+      return null;
     }
-    return data;
+  }
+
+  public List<UserData> getAllUserData() {
+    return getUsersData(null);
   }
 
   public Long getCompanyPerson(Long userId) {
-    UserInfo userInfo = getUserInfo(userId);
-    return (userInfo == null) ? null : userInfo.getCompanyPerson();
+    UserData userData = getUserData(userId);
+    return (userData == null) ? null : userData.getCompanyPerson();
   }
 
   public String getCurrentUser() {
     Principal p = ctx.getCallerPrincipal();
     Assert.notNull(p);
     return p.getName().toLowerCase();
-  }
-
-  public UserData getCurrentUserData() {
-    UserInfo userInfo = getCurrentUserInfo();
-    return (userInfo == null) ? null : userInfo.getUserData();
   }
 
   public Filter getCurrentUserFilter(String column) {
@@ -306,52 +284,8 @@ public class UserServiceBean {
     return getUserId(getCurrentUser());
   }
 
-  public Long getEmailId(Long userId, boolean checkCompany) {
-    if (userId == null) {
-      return null;
-    }
-
-    UserInfo userInfo = getUserInfo(userId);
-    if (userInfo == null) {
-      return null;
-    }
-
-    if (DataUtils.isId(userInfo.getCompanyPerson())) {
-      Long id =
-          qs.getLong(new SqlSelect().addFields(TBL_CONTACTS, COL_EMAIL)
-              .addFrom(TBL_CONTACTS)
-              .addFromLeft(TBL_COMPANY_PERSONS,
-                  sys.joinTables(TBL_CONTACTS, TBL_COMPANY_PERSONS, COL_CONTACT))
-              .setWhere(sys.idEquals(TBL_COMPANY_PERSONS, userInfo.getCompanyPerson())));
-
-      if (DataUtils.isId(id)) {
-        return id;
-      }
-    }
-
-    if (DataUtils.isId(userInfo.getPerson())) {
-      Long id = qs.getLong(new SqlSelect().addFields(TBL_CONTACTS, COL_EMAIL)
-          .addFrom(TBL_CONTACTS)
-          .addFromLeft(TBL_PERSONS, sys.joinTables(TBL_CONTACTS, TBL_PERSONS, COL_CONTACT))
-          .setWhere(sys.idEquals(TBL_PERSONS, userInfo.getPerson())));
-
-      if (DataUtils.isId(id)) {
-        return id;
-      }
-    }
-
-    if (checkCompany && DataUtils.isId(userInfo.getCompany())) {
-      Long id = qs.getLong(new SqlSelect().addFields(TBL_CONTACTS, COL_EMAIL)
-          .addFrom(TBL_CONTACTS)
-          .addFromLeft(TBL_COMPANIES, sys.joinTables(TBL_CONTACTS, TBL_COMPANIES, COL_CONTACT))
-          .setWhere(sys.idEquals(TBL_COMPANIES, userInfo.getCompany())));
-
-      if (DataUtils.isId(id)) {
-        return id;
-      }
-    }
-
-    return null;
+  public String getCurrentUserSign() {
+    return getUserSign(getCurrentUserId());
   }
 
   public String getLanguage() {
@@ -359,8 +293,7 @@ public class UserServiceBean {
   }
 
   public String getLanguage(Long userId) {
-    UserInfo userInfo = (userId == null) ? null : getUserInfo(userId);
-    return (userInfo == null) ? SupportedLocale.DEFAULT.getLanguage() : userInfo.getLanguage();
+    return getUserLocale(userId).getLanguage();
   }
 
   public Locale getLocale() {
@@ -421,7 +354,7 @@ public class UserServiceBean {
       return ResponseObject.emptyResponse();
 
     } else {
-      Map<String, String> result = Maps.newHashMap();
+      Map<String, String> result = new HashMap<>();
 
       for (String object : objectStates.keySet()) {
         result.put(object, EnumUtils.buildIndexList(objectStates.get(object)));
@@ -455,7 +388,7 @@ public class UserServiceBean {
       return ResponseObject.emptyResponse();
 
     } else {
-      Map<String, String> result = Maps.newHashMap();
+      Map<String, String> result = new HashMap<>();
 
       for (String object : objectRoles.keySet()) {
         result.put(object, DataUtils.buildIdList(objectRoles.get(object)));
@@ -463,6 +396,55 @@ public class UserServiceBean {
 
       return ResponseObject.response(result);
     }
+  }
+
+  public String getUserEmail(Long userId, boolean checkCompany) {
+    if (userId == null) {
+      return null;
+    }
+    UserData userData = getUserData(userId);
+
+    if (userData == null) {
+      return null;
+    }
+    if (DataUtils.isId(userData.getCompanyPerson())) {
+      String email = qs.getValue(new SqlSelect()
+          .addFields(TBL_EMAILS, COL_EMAIL_ADDRESS)
+          .addFrom(TBL_COMPANY_PERSONS)
+          .addFromLeft(TBL_CONTACTS,
+              sys.joinTables(TBL_CONTACTS, TBL_COMPANY_PERSONS, COL_CONTACT))
+          .addFromLeft(TBL_EMAILS, sys.joinTables(TBL_EMAILS, TBL_CONTACTS, COL_EMAIL))
+          .setWhere(sys.idEquals(TBL_COMPANY_PERSONS, userData.getCompanyPerson())));
+
+      if (!BeeUtils.isEmpty(email)) {
+        return email;
+      }
+    }
+    if (DataUtils.isId(userData.getPerson())) {
+      String email = qs.getValue(new SqlSelect()
+          .addFields(TBL_EMAILS, COL_EMAIL_ADDRESS)
+          .addFrom(TBL_PERSONS)
+          .addFromLeft(TBL_CONTACTS, sys.joinTables(TBL_CONTACTS, TBL_PERSONS, COL_CONTACT))
+          .addFromLeft(TBL_EMAILS, sys.joinTables(TBL_EMAILS, TBL_CONTACTS, COL_EMAIL))
+          .setWhere(sys.idEquals(TBL_PERSONS, userData.getPerson())));
+
+      if (!BeeUtils.isEmpty(email)) {
+        return email;
+      }
+    }
+    if (checkCompany && DataUtils.isId(userData.getCompany())) {
+      String email = qs.getValue(new SqlSelect()
+          .addFields(TBL_EMAILS, COL_EMAIL_ADDRESS)
+          .addFrom(TBL_COMPANIES)
+          .addFromLeft(TBL_CONTACTS, sys.joinTables(TBL_CONTACTS, TBL_COMPANIES, COL_CONTACT))
+          .addFromLeft(TBL_EMAILS, sys.joinTables(TBL_EMAILS, TBL_CONTACTS, COL_EMAIL))
+          .setWhere(sys.idEquals(TBL_COMPANIES, userData.getCompany())));
+
+      if (!BeeUtils.isEmpty(email)) {
+        return email;
+      }
+    }
+    return null;
   }
 
   public Long getUserId(String user) {
@@ -478,13 +460,32 @@ public class UserServiceBean {
     return (userInfo == null) ? null : userInfo.getUserInterface();
   }
 
+  public SupportedLocale getUserLocale(Long userId) {
+    if (userId == null) {
+      return SupportedLocale.DEFAULT;
+    }
+
+    SqlSelect query = new SqlSelect()
+        .addFields(TBL_USER_SETTINGS, COL_USER_LOCALE)
+        .addFrom(TBL_USER_SETTINGS)
+        .setWhere(SqlUtils.equals(TBL_USER_SETTINGS, COL_USER, userId));
+
+    Integer value = qs.getInt(query);
+    SupportedLocale locale = EnumUtils.getEnumByIndex(SupportedLocale.class, value);
+
+    return (locale == null) ? SupportedLocale.DEFAULT : locale;
+  }
+
   public SupportedLocale getUserLocale(String user) {
-    UserInfo userInfo = getUserInfo(getUserId(user));
-    return (userInfo == null) ? null : userInfo.getUserLocale();
+    return getUserLocale(getUserId(user));
   }
 
   public String getUserName(Long userId) {
     return userCache.get(userId);
+  }
+
+  public long[] getUserRoles() {
+    return getUserRoles(getCurrentUserId());
   }
 
   public long[] getUserRoles(Long userId) {
@@ -501,22 +502,18 @@ public class UserServiceBean {
   }
 
   public String getUserSign(Long userId) {
-    UserInfo userInfo = getUserInfo(userId);
-
-    if (userInfo != null) {
-      return userInfo.getUserData().getUserSign();
-    }
-    return null;
+    UserData userData = getUserData(userId);
+    return (userData == null) ? null : userData.getUserSign();
   }
 
-  public boolean hasDataRight(String object, RightsState state) {
+  public boolean hasDataRight(String viewName, RightsState state) {
     UserInfo info = getCurrentUserInfo();
-    return (info == null) ? false : info.getUserData().hasDataRight(object, state);
+    return (info == null) ? false : info.getUserData().hasDataRight(viewName, state);
   }
 
   @Lock(LockType.WRITE)
   public void initIpFilters() {
-    List<IpFilter> filters = Lists.newArrayList();
+    List<IpFilter> filters = new ArrayList<>();
 
     SimpleRowSet data = qs.getData(new SqlSelect()
         .addFields(TBL_IP_FILTERS, COL_IP_FILTER_HOST,
@@ -553,7 +550,7 @@ public class UserServiceBean {
       if (BeeUtils.isEmpty(type.getRegisteredStates())) {
         continue;
       }
-      List<Integer> stateIds = Lists.newArrayList();
+      List<Integer> stateIds = new ArrayList<>();
 
       for (RightsState state : type.getRegisteredStates()) {
         stateIds.add(state.ordinal());
@@ -576,7 +573,6 @@ public class UserServiceBean {
         }
       }
     }
-    initUsers();
   }
 
   @Lock(LockType.WRITE)
@@ -584,17 +580,15 @@ public class UserServiceBean {
     roleCache.clear();
     userCache.clear();
     Map<String, UserInfo> expiredCache = infoCache;
-    infoCache = Maps.newHashMap();
-
-    String userIdName = sys.getIdName(TBL_USERS);
-    String roleIdName = sys.getIdName(TBL_ROLES);
+    infoCache = new HashMap<>();
 
     SimpleRowSet rs = qs.getData(new SqlSelect()
-        .addFields(TBL_ROLES, roleIdName, COL_ROLE_NAME)
+        .addField(TBL_ROLES, sys.getIdName(TBL_ROLES), COL_ROLE)
+        .addFields(TBL_ROLES, COL_ROLE_NAME)
         .addFrom(TBL_ROLES));
 
     for (int i = 0; i < rs.getNumberOfRows(); i++) {
-      roleCache.put(rs.getLong(i, roleIdName), rs.getValue(i, COL_ROLE_NAME));
+      roleCache.put(rs.getLong(i, COL_ROLE), rs.getValue(i, COL_ROLE_NAME));
     }
 
     rs = qs.getData(new SqlSelect()
@@ -608,46 +602,42 @@ public class UserServiceBean {
     }
 
     SqlSelect ss = new SqlSelect()
-        .addFields(TBL_USERS, userIdName, COL_LOGIN, COL_PASSWORD, COL_COMPANY_PERSON,
-            COL_USER_PROPERTIES, COL_USER_LOCALE, COL_USER_INTERFACE, COL_USER_BLOCK_AFTER,
-            COL_USER_BLOCK_BEFORE)
-        .addFields(TBL_COMPANY_PERSONS, COL_COMPANY, COL_PERSON)
-        .addFields(TBL_PERSONS, COL_FIRST_NAME, COL_LAST_NAME, COL_PHOTO)
-        .addField(TBL_COMPANIES, COL_COMPANY_NAME, ALS_COMPANY_NAME)
-        .addFrom(TBL_USERS)
-        .addFromLeft(TBL_COMPANY_PERSONS,
-            sys.joinTables(TBL_COMPANY_PERSONS, TBL_USERS, COL_COMPANY_PERSON))
-        .addFromLeft(TBL_PERSONS, sys.joinTables(TBL_PERSONS, TBL_COMPANY_PERSONS, COL_PERSON))
-        .addFromLeft(TBL_COMPANIES, sys.joinTables(TBL_COMPANIES, TBL_COMPANY_PERSONS,
-            COL_COMPANY));
+        .addField(TBL_USERS, sys.getIdName(TBL_USERS), COL_USER)
+        .addFields(TBL_USERS, COL_LOGIN, COL_PASSWORD, COL_USER_INTERFACE,
+            COL_USER_BLOCK_AFTER, COL_USER_BLOCK_BEFORE)
+        .addFrom(TBL_USERS);
 
     for (SimpleRow row : qs.getData(ss)) {
-      long userId = row.getLong(userIdName);
+      long userId = row.getLong(COL_USER);
       String login = key(row.getValue(COL_LOGIN));
 
       userCache.put(userId, login);
+      UserData userData = new UserData(userId, login);
 
-      UserData userData = new UserData(userId, login, row.getValue(COL_FIRST_NAME),
-          row.getValue(COL_LAST_NAME), row.getValue(COL_PHOTO), row.getValue(ALS_COMPANY_NAME),
-          row.getLong(COL_COMPANY_PERSON), row.getLong(COL_COMPANY), row.getLong(COL_PERSON));
-
-      UserInfo user = new UserInfo(userData, row.getValue(COL_PASSWORD))
+      UserInfo userInfo = new UserInfo(userData, row.getValue(COL_PASSWORD))
           .setRoles(userRoles.get(userId))
-          .setProperties(row.getValue(COL_USER_PROPERTIES))
-          .setUserLocale(EnumUtils.getEnumByIndex(SupportedLocale.class,
-              row.getInt(COL_USER_LOCALE)))
           .setUserInterface(EnumUtils.getEnumByIndex(UserInterface.class,
               row.getInt(COL_USER_INTERFACE)))
           .setBlockAfter(TimeUtils.toDateTimeOrNull(row.getLong(COL_USER_BLOCK_AFTER)))
           .setBlockBefore(TimeUtils.toDateTimeOrNull(row.getLong(COL_USER_BLOCK_BEFORE)));
 
       UserInfo oldInfo = expiredCache.get(login);
+
       if (oldInfo != null && oldInfo.isOnline()) {
-        user.sessions.addAll(oldInfo.sessions);
+        userInfo.sessions.addAll(oldInfo.sessions);
       }
-      infoCache.put(login, user);
+      infoCache.put(login, userInfo);
       userData.setRights(getUserRights(userId));
     }
+  }
+
+  public boolean isAdministrator() {
+    return isModuleVisible(ModuleAndSub.of(Module.ADMINISTRATION));
+  }
+
+  public boolean isAnyModuleVisible(String input) {
+    UserInfo info = getCurrentUserInfo();
+    return (info == null) ? false : info.getUserData().isAnyModuleVisible(input);
   }
 
   public Boolean isBlocked(String user) {
@@ -655,14 +645,32 @@ public class UserServiceBean {
     return (userInfo == null) ? null : userInfo.isBlocked(System.currentTimeMillis());
   }
 
-  public boolean isColumnVisible(String viewName, String column) {
+  public boolean isColumnVisible(BeeView view, String column) {
     UserInfo info = getCurrentUserInfo();
-    return (info == null) ? false : info.getUserData().isColumnVisible(viewName, column);
+
+    if (info == null) {
+      return false;
+
+    } else if (view == null || BeeUtils.isEmpty(column)) {
+      return true;
+
+    } else if (!info.getUserData().isColumnVisible(view.getName(), column)) {
+      return false;
+
+    } else {
+      String root = view.getRootField(column);
+
+      if (!BeeUtils.isEmpty(root) && !BeeUtils.same(column, root)) {
+        return info.getUserData().isColumnVisible(view.getName(), root);
+      } else {
+        return true;
+      }
+    }
   }
 
-  public boolean isDataVisible(String object) {
+  public boolean isDataVisible(String viewName) {
     UserInfo info = getCurrentUserInfo();
-    return (info == null) ? false : info.getUserData().isDataVisible(object);
+    return (info == null) ? false : info.getUserData().isDataVisible(viewName);
   }
 
   public boolean isMenuVisible(String object) {
@@ -675,24 +683,15 @@ public class UserServiceBean {
     return (info == null) ? false : info.getUserData().isModuleVisible(moduleAndSub);
   }
 
-  public boolean isModuleVisible(String module) {
-    UserInfo info = getCurrentUserInfo();
-    return (info == null) ? false : info.getUserData().isModuleVisible(module);
-  }
-
-  public boolean isRoleTable(String tblName) {
-    return BeeUtils.inList(tblName, TBL_ROLES, TBL_USER_ROLES);
-  }
-
   public boolean isUser(String user) {
     return !BeeUtils.isEmpty(user) && userCache.inverse().containsKey(key(user));
   }
 
-  public boolean isUserTable(String tblName) {
-    return BeeUtils.inList(tblName, TBL_USERS, TBL_COMPANY_PERSONS, TBL_PERSONS);
+  public boolean isWidgetVisible(RegulatedWidget widget) {
+    UserInfo info = getCurrentUserInfo();
+    return (info == null) ? false : info.getUserData().isWidgetVisible(widget);
   }
 
-  @Lock(LockType.WRITE)
   public ResponseObject login(String host, String agent) {
     ResponseObject response = new ResponseObject();
     String user = getCurrentUser();
@@ -709,11 +708,11 @@ public class UserServiceBean {
       UserInfo info = getUserInfo(userId);
       info.addSession(historyId);
 
-      UserData data = info.getUserData()
+      UserData userData = getUserData(userId)
           .setProperty(Service.VAR_FILE_ID, BeeUtils.toString(historyId));
 
-      response.setResponse(data);
-      logger.info("User logged in:", user, BeeUtils.parenthesize(data.getUserSign()));
+      response.setResponse(userData);
+      logger.info("User logged in:", user, BeeUtils.parenthesize(userData.getUserSign()));
 
     } else if (BeeUtils.isEmpty(getUsers())) {
       response.setResponse(new UserData(-1, user));
@@ -726,7 +725,6 @@ public class UserServiceBean {
     return response;
   }
 
-  @Lock(LockType.WRITE)
   public void logout(long userId, long historyId) {
     UserInfo info = getUserInfo(userId);
 
@@ -735,8 +733,10 @@ public class UserServiceBean {
           .addConstant(COL_LOGGED_OUT, System.currentTimeMillis())
           .setWhere(sys.idEquals(TBL_USER_HISTORY, historyId)));
 
-      String sign = info.getUserData().getLogin() + " "
-          + BeeUtils.parenthesize(info.getUserData().getUserSign());
+      UserData userData = getUserData(userId);
+
+      String sign = userData.getLogin() + " "
+          + BeeUtils.parenthesize(userData.getUserSign());
 
       if (info.removeSession(historyId)) {
         logger.info("User logged out:", sign);
@@ -748,6 +748,14 @@ public class UserServiceBean {
 
     } else {
       logger.severe("Logout attempt by an unauthorized user:", getCurrentUser());
+    }
+  }
+
+  public void saveWorkspace(Long userId, String workspace) {
+    if (DataUtils.isId(userId)) {
+      qs.updateData(new SqlUpdate(TBL_USER_SETTINGS)
+          .addConstant(COL_LAST_WORKSPACE, workspace)
+          .setWhere(SqlUtils.equals(TBL_USER_SETTINGS, COL_USER, userId)));
     }
   }
 
@@ -814,7 +822,6 @@ public class UserServiceBean {
     return saveRights(type, COL_STATE, state.ordinal(), COL_ROLE, plus, minus);
   }
 
-  @Lock(LockType.WRITE)
   public boolean updateUserLocale(String user, SupportedLocale locale) {
     if (!isUser(user) || locale == null) {
       return false;
@@ -825,19 +832,38 @@ public class UserServiceBean {
       return false;
     }
 
-    UserInfo userInfo = getUserInfo(userId);
-    if (userInfo == null || userInfo.getUserLocale() == locale) {
-      return false;
+    IsCondition where = SqlUtils.equals(TBL_USER_SETTINGS, COL_USER, userId);
+
+    SqlSelect query = new SqlSelect()
+        .addFields(TBL_USER_SETTINGS, COL_USER, COL_USER_LOCALE)
+        .addFrom(TBL_USER_SETTINGS)
+        .setWhere(where);
+
+    SimpleRowSet data = qs.getData(query);
+
+    if (DataUtils.isEmpty(data)) {
+      qs.insertData(new SqlInsert(TBL_USER_SETTINGS)
+          .addConstant(COL_USER, userId)
+          .addConstant(COL_USER_LOCALE, locale.ordinal()));
+
+      logger.info("created user setings for:", user, ", locale:", locale.getLanguage());
+      return true;
+
+    } else {
+      SupportedLocale oldValue = EnumUtils.getEnumByIndex(SupportedLocale.class,
+          data.getInt(0, COL_USER_LOCALE));
+
+      if (oldValue == locale) {
+        return false;
+      }
+
+      qs.updateData(new SqlUpdate(TBL_USER_SETTINGS)
+          .addConstant(COL_USER_LOCALE, locale.ordinal())
+          .setWhere(where));
+
+      logger.info("user", user, "updated locale:", locale.getLanguage());
+      return true;
     }
-
-    userInfo.setUserLocale(locale);
-
-    qs.updateData(new SqlUpdate(TBL_USERS)
-        .addConstant(COL_USER_LOCALE, locale.ordinal())
-        .setWhere(sys.idEquals(TBL_USERS, userId)));
-
-    logger.info("user", user, "updated locale:", locale.getLanguage());
-    return true;
   }
 
   public boolean validateHost(HttpServletRequest request) {
@@ -859,6 +885,54 @@ public class UserServiceBean {
 
   private UserInfo getCurrentUserInfo() {
     return getUserInfo(getCurrentUserId());
+  }
+
+  private UserData getUserData(Long userId) {
+    for (UserData userData : getUsersData(userId)) {
+      if (Objects.equals(userData.getUserId(), userId)) {
+        return userData;
+      }
+    }
+    return null;
+  }
+
+  private List<UserData> getUsersData(Long userId) {
+    SqlSelect query = new SqlSelect()
+        .addField(TBL_USERS, sys.getIdName(TBL_USERS), COL_USER)
+        .addFields(TBL_USERS, COL_COMPANY_PERSON)
+        .addFields(TBL_COMPANY_PERSONS, COL_COMPANY, COL_PERSON)
+        .addFields(TBL_PERSONS, COL_FIRST_NAME, COL_LAST_NAME, COL_PHOTO)
+        .addFields(TBL_COMPANIES, COL_COMPANY_NAME)
+        .addFrom(TBL_USERS)
+        .addFromInner(TBL_COMPANY_PERSONS,
+            sys.joinTables(TBL_COMPANY_PERSONS, TBL_USERS, COL_COMPANY_PERSON))
+        .addFromInner(TBL_PERSONS, sys.joinTables(TBL_PERSONS, TBL_COMPANY_PERSONS, COL_PERSON))
+        .addFromInner(TBL_COMPANIES,
+            sys.joinTables(TBL_COMPANIES, TBL_COMPANY_PERSONS, COL_COMPANY));
+
+    if (DataUtils.isId(userId)) {
+      query.setWhere(sys.idEquals(TBL_USERS, userId));
+    }
+    SimpleRowSet rs = qs.getData(query);
+    List<UserData> usersData = new ArrayList<>();
+
+    for (SimpleRow row : rs) {
+      UserInfo userInfo = getUserInfo(row.getLong(COL_USER));
+
+      if (userInfo != null) {
+        UserData userData = userInfo.getUserData();
+        usersData.add(userData);
+
+        userData.setFirstName(row.getValue(COL_FIRST_NAME));
+        userData.setLastName(row.getValue(COL_LAST_NAME));
+        userData.setPhotoFileName(row.getValue(COL_PHOTO));
+        userData.setCompanyName(row.getValue(COL_COMPANY_NAME));
+        userData.setCompanyPerson(row.getLong(COL_COMPANY_PERSON));
+        userData.setCompany(row.getLong(COL_COMPANY));
+        userData.setPerson(row.getLong(COL_PERSON));
+      }
+    }
+    return usersData;
   }
 
   private UserInfo getUserInfo(Long userId) {
@@ -888,7 +962,7 @@ public class UserServiceBean {
             Set<String> objects = rights.get(state, type);
 
             if (objects == null) {
-              objects = Sets.newHashSet();
+              objects = new HashSet<>();
               rights.put(state, type, objects);
             }
             objects.add(object);
@@ -943,8 +1017,7 @@ public class UserServiceBean {
     }
     if (cnt > 0) {
       for (Entry<String, UserInfo> entry : infoCache.entrySet()) {
-        entry.getValue().getUserData()
-            .setRights(getUserRights(userCache.inverse().get(entry.getKey())));
+        entry.getValue().setRights(getUserRights(userCache.inverse().get(entry.getKey())));
       }
       Endpoint.updateUserData(getAllUserData());
     }

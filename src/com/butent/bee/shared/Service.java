@@ -10,9 +10,9 @@ public final class Service {
 
   public static final String PROPERTY_AUDIT_OFF = "DisableAuditing";
   public static final String PROPERTY_MODULES = "Modules";
+  public static final String PROPERTY_VIEW_MODULES = "ViewModules";
 
   public static final String RPC_SERVICE_PREFIX = "rpc_";
-  public static final String UI_SERVICE_PREFIX = "ui_";
   public static final String COMPOSITE_SERVICE_PREFIX = "comp_";
   public static final String UPLOAD_SERVICE_PREFIX = "upl_";
   public static final String EXPORT_SERVICE_PREFIX = "exp_";
@@ -34,6 +34,7 @@ public final class Service {
   public static final String GET_DIGEST = SYS_SERVICE_PREFIX + "get_digest";
   public static final String GET_FILES = SYS_SERVICE_PREFIX + "get_files";
   public static final String GET_FLAGS = SYS_SERVICE_PREFIX + "get_flags";
+  public static final String RUN = SYS_SERVICE_PREFIX + "run";
 
   public static final String INVOKE = RPC_SERVICE_PREFIX + "invoke";
 
@@ -41,12 +42,9 @@ public final class Service {
   public static final String LOGOUT = RPC_SERVICE_PREFIX + "logout";
 
   public static final String GET_MENU = RPC_SERVICE_PREFIX + "get_menu";
+  public static final String GET_ROOM = RPC_SERVICE_PREFIX + "get_room";
 
   public static final String WHERE_AM_I = RPC_SERVICE_PREFIX + "where_am_i";
-
-  public static final String OPEN_FAVORITE = UI_SERVICE_PREFIX + "open_favorite";
-  public static final String EDIT_ROW = UI_SERVICE_PREFIX + "edit_row";
-  public static final String CELL_ACTION = UI_SERVICE_PREFIX + "cell_action";
 
   public static final String DATA_SERVICE_PREFIX = RPC_SERVICE_PREFIX + "data_";
 
@@ -69,6 +67,7 @@ public final class Service {
   public static final String DELETE_ROWS = DATA_SERVICE_PREFIX + "delete_rows";
   public static final String UPDATE_CELL = DATA_SERVICE_PREFIX + "update_cell";
   public static final String UPDATE_ROW = DATA_SERVICE_PREFIX + "update_row";
+  public static final String UPDATE_ROWS = DATA_SERVICE_PREFIX + "update_rows";
   public static final String UPDATE = DATA_SERVICE_PREFIX + "update";
   public static final String INSERT_ROW = DATA_SERVICE_PREFIX + "insert_row";
   public static final String INSERT_ROWS = DATA_SERVICE_PREFIX + "insert_rows";
@@ -77,8 +76,6 @@ public final class Service {
   public static final String HISTOGRAM = DATA_SERVICE_PREFIX + "histogram";
   public static final String GET_RELATED_VALUES = DATA_SERVICE_PREFIX + "get_related_values";
   public static final String UPDATE_RELATED_VALUES = DATA_SERVICE_PREFIX + "update_related_values";
-
-  public static final String IMPORT_CSV_COMPANIES = DATA_SERVICE_PREFIX + "import_csv_companies";
 
   public static final String GET_DSNS = DATA_SERVICE_PREFIX + "get_dsns";
   public static final String SWITCH_DSN = DATA_SERVICE_PREFIX + "switch_dsn";
@@ -94,6 +91,8 @@ public final class Service {
   public static final String GET_ROLE_RIGHTS = DATA_SERVICE_PREFIX + "get_role_rights";
   public static final String SET_STATE_RIGHTS = DATA_SERVICE_PREFIX + "set_state_rights";
   public static final String SET_ROLE_RIGHTS = DATA_SERVICE_PREFIX + "set_role_rights";
+
+  public static final String SET_ROW_RIGHTS = DATA_SERVICE_PREFIX + "set_row_rights";
 
   public static final String UPLOAD_FILE = UPLOAD_SERVICE_PREFIX + "file";
   public static final String UPLOAD_TEMP_FILE = UPLOAD_SERVICE_PREFIX + "temp_file";
@@ -118,12 +117,10 @@ public final class Service {
   public static final String RPC_VAR_PRM_CNT = RPC_VAR_SYS_PREFIX + "p_c";
   public static final String RPC_VAR_PRM = RPC_VAR_SYS_PREFIX + "prm";
 
-  public static final String RPC_VAR_METH = RPC_VAR_SYS_PREFIX + "meth";
+  public static final String VAR_SUB_MODULE = RPC_VAR_PREFIX + "sub_module";
+  public static final String VAR_METHOD = RPC_VAR_PREFIX + "method";
 
   public static final String VAR_USER = RPC_VAR_PREFIX + "user";
-
-  public static final String VAR_CLASS_NAME = RPC_VAR_PREFIX + "class_name";
-  public static final String VAR_PACKAGE_LIST = RPC_VAR_PREFIX + "package_list";
 
   public static final String VAR_JDBC_QUERY = RPC_VAR_PREFIX + "jdbc_query";
   public static final String VAR_CONNECTION_AUTO_COMMIT = RPC_VAR_PREFIX + "conn_auto_commit";
@@ -201,7 +198,7 @@ public final class Service {
 
   /**
    * Returns true if {@code svc} value starts with {@link #DATA_SERVICE_PREFIX}.
-   * 
+   *
    * @param svc name of service
    * @return true if name of service starts with {@link #DATA_SERVICE_PREFIX}
    */
@@ -212,7 +209,7 @@ public final class Service {
 
   /**
    * Returns true if {@code svc} value starts with {@link #DB_META_SERVICE_PREFIX}.
-   * 
+   *
    * @param svc name of service
    * @return true if name of service starts with {@link #DB_META_SERVICE_PREFIX}
    */
@@ -223,7 +220,7 @@ public final class Service {
 
   /**
    * Returns true if {@code svc} value starts with {@link #DB_SERVICE_PREFIX}.
-   * 
+   *
    * @param svc name of service;
    * @return true if name of service starts with {@link #DB_SERVICE_PREFIX}
    */
@@ -234,7 +231,7 @@ public final class Service {
 
   /**
    * Returns true if {@code svc} value has {@link #INVOKE}.
-   * 
+   *
    * @param svc name of service;
    * @return true if name of service starts {@link #INVOKE}
    */
@@ -244,7 +241,7 @@ public final class Service {
 
   /**
    * Returns true if {@code svc} value starts with {@link #SYS_SERVICE_PREFIX}.
-   * 
+   *
    * @param svc name of service
    * @return true if name of service starts with {@link #SYS_SERVICE_PREFIX};
    */

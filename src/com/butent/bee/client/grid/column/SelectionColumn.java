@@ -16,13 +16,13 @@ import com.butent.bee.shared.ui.ColumnDescription.ColType;
 import com.butent.bee.shared.utils.BeeUtils;
 
 public class SelectionColumn extends AbstractColumn<Boolean> {
-  
+
   private final CellGrid grid;
-  
+
   public SelectionColumn(CellGrid grid) {
     this(grid, new SelectionCell());
   }
-  
+
   private SelectionColumn(CellGrid grid, SelectionCell cell) {
     super(cell);
     this.grid = grid;
@@ -44,8 +44,8 @@ public class SelectionColumn extends AbstractColumn<Boolean> {
   }
 
   @Override
-  public String getString(CellContext context, IsRow row) {
-    Boolean value = getValue(row);
+  public String getString(CellContext context) {
+    Boolean value = getValue(context.getRow());
     return (value == null) ? null : BeeUtils.toString(value);
   }
 
@@ -53,7 +53,7 @@ public class SelectionColumn extends AbstractColumn<Boolean> {
   public String getStyleSuffix() {
     return "selection";
   }
-  
+
   @Override
   public Boolean getValue(IsRow row) {
     if (row != null && getGrid() != null) {
@@ -67,7 +67,7 @@ public class SelectionColumn extends AbstractColumn<Boolean> {
   public ValueType getValueType() {
     return ValueType.BOOLEAN;
   }
-  
+
   @Override
   public Integer initExport(XSheet sheet) {
     if (sheet == null) {

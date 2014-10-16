@@ -1,12 +1,11 @@
 package com.butent.bee.client.modules.mail;
 
-import com.google.common.base.Objects;
-import com.google.common.collect.Sets;
 import com.google.gwt.core.client.Scheduler.ScheduledCommand;
 
 import static com.butent.bee.shared.modules.mail.MailConstants.*;
 
 import com.butent.bee.client.BeeKeeper;
+import com.butent.bee.client.Callback;
 import com.butent.bee.client.Global;
 import com.butent.bee.client.NewsAggregator.HeadlineAccessor;
 import com.butent.bee.client.communication.ParameterList;
@@ -14,15 +13,23 @@ import com.butent.bee.client.communication.ResponseCallback;
 import com.butent.bee.client.dialog.StringCallback;
 import com.butent.bee.client.grid.GridFactory;
 import com.butent.bee.client.grid.GridFactory.GridOptions;
-import com.butent.bee.client.presenter.Presenter;
+import com.butent.bee.client.presenter.PresenterCallback;
 import com.butent.bee.client.screen.Domain;
+import com.butent.bee.client.ui.FormDescription;
 import com.butent.bee.client.ui.FormFactory;
-import com.butent.bee.shared.Consumer;
+import com.butent.bee.client.view.ViewCallback;
+import com.butent.bee.client.view.ViewFactory;
+import com.butent.bee.client.view.ViewHelper;
+import com.butent.bee.client.view.ViewSupplier;
+import com.butent.bee.client.view.form.FormView;
+import com.butent.bee.shared.BiConsumer;
 import com.butent.bee.shared.communication.ResponseObject;
+import com.butent.bee.shared.data.DataUtils;
+import com.butent.bee.shared.data.SimpleRowSet;
+import com.butent.bee.shared.data.SimpleRowSet.SimpleRow;
 import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.menu.MenuHandler;
 import com.butent.bee.shared.menu.MenuService;
-import com.butent.bee.shared.modules.administration.AdministrationConstants;
 import com.butent.bee.shared.modules.mail.AccountInfo;
 import com.butent.bee.shared.modules.mail.MailConstants.MessageFlag;
 import com.butent.bee.shared.news.Feed;
@@ -30,13 +37,40 @@ import com.butent.bee.shared.rights.Module;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.Codec;
 
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Objects;
 import java.util.Set;
 
 public final class MailKeeper {
 
   private static MailController controller;
   private static MailPanel activePanel;
-  private static final Set<MailPanel> mailPanels = Sets.newHashSet();
+  private static final Set<MailPanel> mailPanels = new HashSet<>();
+
+  public static void refreshActivePanel(boolean refreshFolders, final Long folderId) {
+    if (activePanel != null) {
+      ScheduledCommand refreshMessages = null;
+
+      if (DataUtils.isId(folderId)) {
+        refreshMessages = new ScheduledCommand() {
+          @Override
+          public void execute() {
+            if (activePanel != null && Objects.equals(activePanel.getCurrentFolderId(), folderId)) {
+              activePanel.refreshMessages();
+            }
+          }
+        };
+      }
+      if (refreshFolders) {
+        activePanel.requeryFolders(refreshMessages);
+
+      } else if (refreshMessages != null) {
+        refreshMessages.execute();
+      }
+    }
+  }
 
   public static void register() {
     MenuService.RESTART_PROXY.setHandler(new MenuHandler() {
@@ -49,32 +83,30 @@ public final class MailKeeper {
     MenuService.OPEN_MAIL.setHandler(new MenuHandler() {
       @Override
       public void onSelection(String parameters) {
-        mailPanels.add(new MailPanel());
+        openMail(ViewHelper.getPresenterCallback());
+      }
+    });
+
+    ViewFactory.registerSupplier(FormFactory.getSupplierKey(FORM_MAIL), new ViewSupplier() {
+      @Override
+      public void create(ViewCallback callback) {
+        openMail(ViewFactory.getPresenterCallback(callback));
       }
     });
 
     FormFactory.registerFormInterceptor(FORM_ACCOUNT, new AccountEditor());
     FormFactory.registerFormInterceptor(FORM_NEW_ACCOUNT, new AccountEditor());
+    FormFactory.registerFormInterceptor(FORM_MAIL_MESSAGE, new MailMessage());
+    FormFactory.registerFormInterceptor(FORM_RULE, new RuleForm());
 
     Global.getNewsAggregator().registerFilterHandler(Feed.MAIL,
-        new Consumer<GridFactory.GridOptions>() {
+        new BiConsumer<GridFactory.GridOptions, PresenterCallback>() {
           @Override
-          public void accept(GridOptions input) {
+          public void accept(GridOptions gridOptions, PresenterCallback callback) {
           }
         });
 
     Global.getNewsAggregator().registerAccessHandler(TBL_PLACES, new HeadlineAccessor() {
-      @Override
-      public boolean read(final Long id) {
-        FormFactory.openForm(FORM_MAIL_MESSAGE, new MailMessage() {
-          @Override
-          public void onShow(Presenter presenter) {
-            requery(id, false);
-          }
-        });
-        return true;
-      }
-
       @Override
       public void access(Long id) {
         ParameterList params = MailKeeper.createArgs(SVC_FLAG_MESSAGE);
@@ -84,26 +116,19 @@ public final class MailKeeper {
 
         BeeKeeper.getRpc().makePostRequest(params, (ResponseCallback) null);
       }
-    });
-  }
 
-  public static void refreshActivePanel(boolean refreshMessages) {
-    final MailPanel panel = activePanel;
-
-    if (panel != null) {
-      if (refreshMessages) {
-        panel.initFolders(new ScheduledCommand() {
+      @Override
+      public boolean read(final Long id) {
+        FormFactory.openForm(FORM_MAIL_MESSAGE, new MailMessage() {
           @Override
-          public void execute() {
-            if (panel == activePanel) {
-              panel.refreshMessages();
-            }
+          public void onLoad(FormView form) {
+            requery(COL_PLACE, id, false);
+            super.onLoad(form);
           }
         });
-      } else {
-        panel.initFolders();
+        return true;
       }
-    }
+    });
   }
 
   static void activateController(MailPanel mailPanel) {
@@ -123,7 +148,7 @@ public final class MailKeeper {
   }
 
   static void clickFolder(Long folderId) {
-    activePanel.refresh(folderId);
+    activePanel.refreshFolder(folderId);
   }
 
   static void copyMessage(final Long folderFrom, final Long folderTo, String[] places,
@@ -148,7 +173,7 @@ public final class MailKeeper {
                   .mailCopiedMessagesToFolder((String) response.getResponse()),
               BeeUtils.bracket(panel.getCurrentAccount().findFolder(folderTo).getName()));
 
-          if (Objects.equal(folderFrom, panel.getCurrentFolderId())) {
+          if (move && Objects.equals(folderFrom, panel.getCurrentFolderId())) {
             panel.refreshMessages();
           }
           panel.checkFolder(folderTo);
@@ -157,10 +182,8 @@ public final class MailKeeper {
     });
   }
 
-  static ParameterList createArgs(String name) {
-    ParameterList args = BeeKeeper.getRpc().createParameters(Module.MAIL.getName());
-    args.addQueryItem(AdministrationConstants.METHOD, name);
-    return args;
+  static ParameterList createArgs(String method) {
+    return BeeKeeper.getRpc().createParameters(Module.MAIL, method);
   }
 
   static void createFolder(String title) {
@@ -190,7 +213,7 @@ public final class MailKeeper {
             response.notify(panel.getFormView());
 
             if (!response.hasErrors()) {
-              panel.initFolders();
+              panel.requeryFolders();
             }
           }
         });
@@ -210,8 +233,37 @@ public final class MailKeeper {
         response.notify(panel.getFormView());
 
         if (!response.hasErrors()) {
-          panel.initFolders();
+          panel.requeryFolders();
         }
+      }
+    });
+  }
+
+  static void getAccounts(final BiConsumer<List<AccountInfo>, AccountInfo> consumer) {
+    ParameterList params = createArgs(SVC_GET_ACCOUNTS);
+    params.addDataItem(COL_USER, BeeKeeper.getUser().getUserId());
+
+    BeeKeeper.getRpc().makePostRequest(params, new ResponseCallback() {
+      @Override
+      public void onResponse(ResponseObject response) {
+        response.notify(BeeKeeper.getScreen());
+
+        if (response.hasErrors()) {
+          return;
+        }
+        SimpleRowSet rs = SimpleRowSet.restore(response.getResponseAsString());
+        List<AccountInfo> availableAccounts = new ArrayList<>();
+        AccountInfo defaultAccount = null;
+
+        for (SimpleRow row : rs) {
+          AccountInfo account = new AccountInfo(row);
+
+          if (defaultAccount == null || BeeUtils.unbox(row.getBoolean(COL_ACCOUNT_DEFAULT))) {
+            defaultAccount = account;
+          }
+          availableAccounts.add(account);
+        }
+        consumer.accept(availableAccounts, defaultAccount);
       }
     });
   }
@@ -237,11 +289,11 @@ public final class MailKeeper {
         response.notify(panel.getFormView());
 
         if (!response.hasErrors()) {
-          panel.initFolders(new ScheduledCommand() {
+          panel.requeryFolders(new ScheduledCommand() {
             @Override
             public void execute() {
-              if (Objects.equal(folderId, panel.getCurrentFolderId())) {
-                panel.refresh(account.getInboxId());
+              if (Objects.equals(folderId, panel.getCurrentFolderId())) {
+                panel.refreshFolder(account.getInboxId());
               }
             }
           });
@@ -287,12 +339,34 @@ public final class MailKeeper {
         response.notify(panel.getFormView());
 
         if (!response.hasErrors()) {
-          panel.initFolders(new ScheduledCommand() {
+          panel.requeryFolders(new ScheduledCommand() {
             @Override
             public void execute() {
               panel.checkFolder(folderId);
             }
           });
+        }
+      }
+    });
+  }
+
+  private static void openMail(final PresenterCallback callback) {
+    getAccounts(new BiConsumer<List<AccountInfo>, AccountInfo>() {
+      @Override
+      public void accept(List<AccountInfo> availableAccounts, AccountInfo defaultAccount) {
+        if (!BeeUtils.isEmpty(availableAccounts)) {
+          final MailPanel mailPanel = new MailPanel(availableAccounts, defaultAccount);
+          mailPanels.add(mailPanel);
+
+          FormFactory.getFormDescription(FORM_MAIL, new Callback<FormDescription>() {
+            @Override
+            public void onSuccess(FormDescription result) {
+              FormFactory.openForm(result, mailPanel, callback);
+            }
+          });
+
+        } else {
+          BeeKeeper.getScreen().notifyWarning("No accounts found");
         }
       }
     });

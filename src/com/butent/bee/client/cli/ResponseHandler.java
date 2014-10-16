@@ -1,7 +1,5 @@
 package com.butent.bee.client.cli;
 
-import com.google.common.collect.Maps;
-
 import com.butent.bee.client.Global;
 import com.butent.bee.client.communication.ResponseCallback;
 import com.butent.bee.shared.Assert;
@@ -20,6 +18,7 @@ import com.butent.bee.shared.utils.ExtendedProperty;
 import com.butent.bee.shared.utils.Property;
 import com.butent.bee.shared.utils.PropertyUtils;
 
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -47,7 +46,7 @@ final class ResponseHandler {
       if (BeeUtils.isEmpty(properties)) {
         onEmptyResponse(caption);
       } else {
-        Global.showGrid(caption, new PropertiesData(properties));
+        Global.showTable(caption, new PropertiesData(properties));
       }
 
     } else if (response.hasArrayResponse(ExtendedProperty.class)) {
@@ -56,7 +55,7 @@ final class ResponseHandler {
       if (BeeUtils.isEmpty(extProperties)) {
         onEmptyResponse(caption);
       } else {
-        Global.showGrid(caption, new ExtendedPropertiesData(extProperties, false));
+        Global.showTable(caption, new ExtendedPropertiesData(extProperties, false));
       }
 
     } else if (response.hasResponse(BeeRowSet.class)) {
@@ -65,7 +64,7 @@ final class ResponseHandler {
       if (DataUtils.isEmpty(rowSet)) {
         onEmptyResponse(caption);
       } else {
-        Global.showGrid(caption, rowSet);
+        Global.showTable(caption, rowSet);
       }
 
     } else if (response.hasResponse(String.class)) {
@@ -144,7 +143,7 @@ final class ResponseHandler {
 
     byte[] bytes = Codec.toBytes(input);
 
-    Map<String, String> clientData = Maps.newHashMap();
+    Map<String, String> clientData = new HashMap<>();
     clientData.put("adler32", Codec.adler32(bytes));
     clientData.put("crc16", Codec.crc16(bytes));
     clientData.put("crc32", Codec.crc32(bytes));

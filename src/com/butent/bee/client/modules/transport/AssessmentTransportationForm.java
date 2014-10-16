@@ -1,8 +1,6 @@
 package com.butent.bee.client.modules.transport;
 
-import com.google.common.base.Objects;
 import com.google.common.collect.Lists;
-import com.google.common.collect.Maps;
 import com.google.gwt.user.client.ui.Widget;
 
 import static com.butent.bee.shared.modules.transport.TransportConstants.*;
@@ -35,8 +33,10 @@ import com.butent.bee.shared.modules.classifiers.ClassifierConstants;
 import com.butent.bee.shared.time.DateTime;
 import com.butent.bee.shared.utils.BeeUtils;
 
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 
 public class AssessmentTransportationForm extends PrintFormInterceptor {
 
@@ -77,13 +77,13 @@ public class AssessmentTransportationForm extends PrintFormInterceptor {
           public void onSuccess(BeeRowSet result) {
             int colWeight = result.getColumnIndex("Weight");
             int colWeightUnit = result.getColumnIndex("WeightUnitName");
-            Map<String, Double> weight = Maps.newHashMap();
+            Map<String, Double> weight = new HashMap<>();
             int colQuantity = result.getColumnIndex("Quantity");
             int colQuantityUnit = result.getColumnIndex("QuantityUnitName");
-            Map<String, Double> quantity = Maps.newHashMap();
+            Map<String, Double> quantity = new HashMap<>();
             int colVolume = result.getColumnIndex("Volume");
             int colVolumeUnit = result.getColumnIndex("VolumeUnitName");
-            Map<String, Double> volume = Maps.newHashMap();
+            Map<String, Double> volume = new HashMap<>();
 
             int colLoadingCountry = result.getColumnIndex("LoadingCountryName");
             int colLoadingAddress = result.getColumnIndex("LoadingAddress");
@@ -95,7 +95,7 @@ public class AssessmentTransportationForm extends PrintFormInterceptor {
             int colUnloadingDate = result.getColumnIndex("UnloadingDate");
 
             LocalizableConstants loc = Localized.getConstants();
-            Map<Integer, Pair<Integer, String>> map = Maps.newHashMap();
+            Map<Integer, Pair<Integer, String>> map = new HashMap<>();
 
             map.put(colLoadingAddress, Pair.of(0, loc.trLoadingAddress()));
             map.put(colWeight, Pair.of(1, loc.weight()));
@@ -137,12 +137,12 @@ public class AssessmentTransportationForm extends PrintFormInterceptor {
                   cargoInfo.setHtml(c, map.get(idx).getA(),
                       dt == null ? null : dt.toCompactString());
 
-                } else if (Objects.equal(idx, colLoadingAddress)) {
+                } else if (Objects.equals(idx, colLoadingAddress)) {
                   cargoInfo.setHtml(c, map.get(idx).getA(),
                       BeeUtils.joinItems(r.getString(colLoadingCountry), r.getString(idx), r
                           .getString(colLoadingPostIndex)));
 
-                } else if (Objects.equal(idx, colUnloadingAddress)) {
+                } else if (Objects.equals(idx, colUnloadingAddress)) {
                   cargoInfo.setHtml(c, map.get(idx).getA(),
                       BeeUtils.joinItems(r.getString(colUnloadingCountry), r.getString(idx), r
                           .getString(colUnloadingPostIndex)));
@@ -233,7 +233,7 @@ public class AssessmentTransportationForm extends PrintFormInterceptor {
         BeeUtils.joinWords(info.getFirstName(), info.getLastName());
     long forwarderId = BeeUtils.unbox(row.getLong(form.getDataIndex(COL_FORWARDER)));
     Filter filter = Filter.idIn(Lists.newArrayList(info.getCompany(), forwarderId));
-    
+
     Queries.getRowSet(ClassifierConstants.VIEW_COMPANIES, viewInfo.getColumnNames(false),
         filter, new RowSetCallback() {
 
@@ -241,7 +241,7 @@ public class AssessmentTransportationForm extends PrintFormInterceptor {
           public void onSuccess(BeeRowSet result) {
             String customerCompanySignature = "";
             String forwarderCompanySignature = "";
-            
+
             for (IsRow resutlRow : result) {
               long id = resutlRow.getId();
 
@@ -257,19 +257,19 @@ public class AssessmentTransportationForm extends PrintFormInterceptor {
               }
 
             }
-            
+
             String pText = BeeUtils.joinWords(customerCompanySignature + BeeConst.STRING_COMMA,
                 BeeUtils.join(BeeConst.STRING_SPACE, PARAGRAPH_TEXT.subList(0, 1)),
                 customerPersonSignature + BeeConst.STRING_COMMA,
-                    BeeUtils.join(BeeConst.STRING_SPACE, PARAGRAPH_TEXT.subList(1, 2)),
+                BeeUtils.join(BeeConst.STRING_SPACE, PARAGRAPH_TEXT.subList(1, 2)),
                 forwarderCompanySignature + BeeConst.STRING_COMMA,
-                    BeeUtils.join(BeeConst.STRING_SPACE, PARAGRAPH_TEXT.subList(2, PARAGRAPH_TEXT
-                        .size()))
-              );
+                BeeUtils.join(BeeConst.STRING_SPACE, PARAGRAPH_TEXT.subList(2, PARAGRAPH_TEXT
+                    .size()))
+                );
 
             widget.getElement().setInnerText(pText);
           }
-    });
-    
+        });
+
   }
 }

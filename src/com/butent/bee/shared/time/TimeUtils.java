@@ -11,6 +11,7 @@ import com.butent.bee.shared.utils.ArrayUtils;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.RangeOptions;
 
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
@@ -72,9 +73,9 @@ public final class TimeUtils {
   public static final char DATE_TIME_SEPARATOR = ' ';
   public static final char TIME_FIELD_SEPARATOR = ':';
   public static final char MILLIS_SEPARATOR = '.';
-  
+
   public static final String PERIOD_SEPARATOR = "..";
-  
+
   private static final String[] FIELD_NAME = {
       "ERA", "YEAR", "MONTH", "WEEK_OF_YEAR", "WEEK_OF_MONTH",
       "DAY_OF_MONTH", "DAY_OF_YEAR", "DAY_OF_WEEK",
@@ -87,7 +88,7 @@ public final class TimeUtils {
   private static final Splitter FIELD_SPLITTER =
       Splitter.on(CharMatcher.inRange(BeeConst.CHAR_ZERO, BeeConst.CHAR_NINE).negate())
           .omitEmptyStrings().trimResults();
-  
+
   private static final int MINIMAL_DAYS_IN_FIRST_WEEK = 4;
 
   private static final String MS = "ms";
@@ -228,7 +229,7 @@ public final class TimeUtils {
   }
 
   public static String dateToString(int year, int month, int dom) {
-    return yearToString(year) + DATE_FIELD_SEPARATOR + monthToString(month) 
+    return yearToString(year) + DATE_FIELD_SEPARATOR + monthToString(month)
         + DATE_FIELD_SEPARATOR + dayOfMonthToString(dom);
   }
 
@@ -243,6 +244,10 @@ public final class TimeUtils {
     return padTwo(dom);
   }
 
+  public static long daysToTime(int days) {
+    return new JustDate(days).getDateTime().getTime();
+  }
+
   public static int dom() {
     return today().getDom();
   }
@@ -250,7 +255,7 @@ public final class TimeUtils {
   public static String elapsedMillis(long start) {
     return BeeUtils.bracket(System.currentTimeMillis() - start);
   }
-  
+
   /**
    * Returns the elapsed time in seconds.
    * 
@@ -393,14 +398,14 @@ public final class TimeUtils {
       return combine(goMonth(ref.getDate(), increment), ref);
     }
   }
-  
+
   public static boolean isBetween(HasDateValue dt, HasDateValue min, HasDateValue max,
       RangeOptions options) {
     Assert.notNull(options);
- 
+
     if (dt == null) {
       return !options.isLowerRequired() && min == null;
-    
+
     } else if (min == null && max == null) {
       return !options.isLowerRequired() && !options.isUpperRequired();
 
@@ -409,7 +414,7 @@ public final class TimeUtils {
 
     } else if (dt instanceof JustDate || min instanceof JustDate || max instanceof JustDate) {
       return options.contains(JustDate.get(min), JustDate.get(max), JustDate.get(dt));
-    
+
     } else {
       return false;
     }
@@ -448,7 +453,7 @@ public final class TimeUtils {
   public static boolean isDateOrDateTime(Object x) {
     return x instanceof HasDateValue || x instanceof Date;
   }
-  
+
   public static boolean isDow(int dow) {
     return dow >= 1 && dow <= DAYS_PER_WEEK;
   }
@@ -525,14 +530,14 @@ public final class TimeUtils {
   public static int month() {
     return today().getMonth();
   }
-  
+
   public static int monthDiff(HasYearMonth start, HasYearMonth end) {
     Assert.notNull(start);
     Assert.notNull(end);
 
     return end.getYear() * 12 + end.getMonth() - start.getYear() * 12 - start.getMonth();
   }
-  
+
   public static int monthLength(HasYearMonth ym) {
     Assert.notNull(ym);
     return Grego.monthLength(ym.getYear(), ym.getMonth());
@@ -630,7 +635,7 @@ public final class TimeUtils {
       return String.valueOf(number);
     }
   }
-  
+
   public static JustDate parseDate(String input) {
     if (BeeUtils.isEmpty(input)) {
       return null;
@@ -652,7 +657,7 @@ public final class TimeUtils {
     if (BeeUtils.isEmpty(input)) {
       return null;
     }
-    
+
     if (BeeUtils.isSuffix(input, MS)) {
       return new DateTime(BeeUtils.toLong(BeeUtils.removeSuffix(input, MS)));
     }
@@ -678,7 +683,7 @@ public final class TimeUtils {
         } else {
           return parseDateTime(splitDigits(digits, BeeConst.STRING_SPACE, 4, 2, 2, 2, 2, 2));
         }
-        
+
       case 2:
       case 3:
         return DateTime.get(parseDate(input, fields));
@@ -692,7 +697,7 @@ public final class TimeUtils {
   }
 
   public static List<Integer> parseFields(String input) {
-    List<Integer> result = Lists.newArrayList();
+    List<Integer> result = new ArrayList<>();
     if (BeeUtils.isEmpty(input)) {
       return result;
     }
@@ -728,7 +733,7 @@ public final class TimeUtils {
         case 3:
           slices = Lists.newArrayList(1, 2);
           break;
-        
+
         case 4:
           slices = Lists.newArrayList(2, 2);
           break;
@@ -766,7 +771,7 @@ public final class TimeUtils {
     Assert.notNull(max);
     return new JustDate(BeeUtils.randomInt(min.getDays(), max.getDays()));
   }
-  
+
   /**
    * Generates a random DateTime between {@code min} and {@code max}.
    * 
@@ -800,26 +805,34 @@ public final class TimeUtils {
       if (dropCurrentYear && isCurrentYear(dt)) {
         String ds = renderMonthDay(dt);
         String ts = ((DateTime) dt).toCompactTimeString();
-        return BeeUtils.isEmpty(ts) ? ds : (ds + DATE_TIME_SEPARATOR + ts); 
+        return BeeUtils.isEmpty(ts) ? ds : (ds + DATE_TIME_SEPARATOR + ts);
       } else {
         return ((DateTime) dt).toCompactString();
       }
-    
+
     } else if (dropCurrentYear && isCurrentYear(dt)) {
       return renderMonthDay(dt);
     } else {
       return dt.toString();
     }
   }
-  
+
+  public static String renderDate(HasDateValue dt) {
+    if (dt == null) {
+      return BeeConst.STRING_EMPTY;
+    } else {
+      return dt.getDate().toString();
+    }
+  }
+
   public static String renderDateTime(long time) {
     return renderDateTime(time, false);
   }
-  
+
   public static String renderDateTime(long time, boolean showMillis) {
     return new DateTime(showMillis ? time : (time - time % MILLIS_PER_SECOND)).toString();
   }
-  
+
   public static String renderMinutes(int minutes, boolean leadingZero) {
     int hours = minutes / MINUTES_PER_HOUR;
     return (leadingZero ? padTwo(hours) : BeeUtils.toString(hours)) + TIME_FIELD_SEPARATOR
@@ -839,9 +852,9 @@ public final class TimeUtils {
   }
 
   public static String renderPeriod(DateTime start, DateTime end) {
-    return renderPeriod(start, end, false); 
+    return renderPeriod(start, end, false);
   }
-  
+
   public static String renderPeriod(DateTime start, DateTime end, boolean dropCurrentYear) {
     if (start == null) {
       if (end == null) {
@@ -857,11 +870,27 @@ public final class TimeUtils {
       return renderCompact(start, dropCurrentYear) + PERIOD_SEPARATOR + end.toCompactTimeString();
 
     } else {
-      return renderCompact(start, dropCurrentYear) + PERIOD_SEPARATOR 
+      return renderCompact(start, dropCurrentYear) + PERIOD_SEPARATOR
           + renderCompact(end, dropCurrentYear);
     }
   }
-  
+
+  public static String renderPeriod(JustDate start, JustDate end) {
+    if (start == null) {
+      if (end == null) {
+        return BeeConst.STRING_EMPTY;
+      } else {
+        return PERIOD_SEPARATOR + end.toString();
+      }
+
+    } else if (end == null) {
+      return start.toString() + PERIOD_SEPARATOR;
+
+    } else {
+      return start.toString() + PERIOD_SEPARATOR + end.toString();
+    }
+  }
+
   public static String renderTime(int hour, int minute, int second, int millis,
       boolean leadingZero) {
     StringBuilder sb = new StringBuilder();
@@ -954,6 +983,10 @@ public final class TimeUtils {
     }
   }
 
+  public static DateTime startOfNextDay(HasDateValue ref) {
+    return startOfDay(ref, 1);
+  }
+
   public static JustDate startOfNextMonth(HasYearMonth ref) {
     return startOfMonth(ref, 1);
   }
@@ -1001,7 +1034,7 @@ public final class TimeUtils {
   public static JustDate startOfWeekYear(int year, int minimalDaysInFirstWeek) {
     JustDate date = new JustDate(year, 1, 1);
     int dow = date.getDow();
-    
+
     if (dow == 1) {
       return date;
     } else if (DAYS_PER_WEEK - dow + 1 < minimalDaysInFirstWeek) {
@@ -1018,7 +1051,7 @@ public final class TimeUtils {
   public static JustDate startOfYear(HasYearMonth ref) {
     return startOfYear(ref, 0);
   }
-  
+
   public static JustDate startOfYear(HasYearMonth ref, int increment) {
     Assert.notNull(ref);
     int year = ref.getYear();
@@ -1027,7 +1060,7 @@ public final class TimeUtils {
     }
     return new JustDate(year, 1, 1);
   }
-  
+
   public static JustDate startOfYear(int year) {
     return new JustDate(year, 1, 1);
   }
@@ -1165,7 +1198,7 @@ public final class TimeUtils {
 
   public static int weekOfYear(HasDateValue ref, int minimalDaysInFirstWeek) {
     Assert.notNull(ref);
-    
+
     JustDate start = startOfWeekYear(ref.getYear() + 1, minimalDaysInFirstWeek);
     if (isLess(ref, start)) {
       start = startOfWeekYear(ref.getYear(), minimalDaysInFirstWeek);
@@ -1173,7 +1206,7 @@ public final class TimeUtils {
     if (isLess(ref, start)) {
       start = startOfWeekYear(ref.getYear() - 1, minimalDaysInFirstWeek);
     }
-    
+
     return dayDiff(start, ref) / DAYS_PER_WEEK + 1;
   }
 
@@ -1268,7 +1301,7 @@ public final class TimeUtils {
     }
     return delta;
   }
-  
+
   private static JustDate parseDate(String input, List<Integer> fields) {
     int count = fields.size();
 
@@ -1349,7 +1382,7 @@ public final class TimeUtils {
   }
 
   private static List<Integer> parseDigits(String input, List<Integer> slices) {
-    List<Integer> result = Lists.newArrayList();
+    List<Integer> result = new ArrayList<>();
     if (BeeUtils.isEmpty(input) || slices.isEmpty()) {
       return result;
     }

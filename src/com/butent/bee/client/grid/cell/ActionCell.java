@@ -7,15 +7,14 @@ import com.google.gwt.safehtml.shared.SafeHtml;
 import com.google.gwt.safehtml.shared.SafeHtmlBuilder;
 import com.google.gwt.user.client.Event;
 
-import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.event.EventUtils;
+import com.butent.bee.client.event.logical.RowActionEvent;
 import com.butent.bee.client.grid.CellContext;
 import com.butent.bee.shared.Assert;
+import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.EventState;
 import com.butent.bee.shared.HasOptions;
-import com.butent.bee.shared.Service;
 import com.butent.bee.shared.data.HasViewName;
-import com.butent.bee.shared.data.event.RowActionEvent;
 import com.butent.bee.shared.ui.ColumnDescription;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.EnumUtils;
@@ -23,14 +22,24 @@ import com.butent.bee.shared.utils.EnumUtils;
 public class ActionCell extends AbstractCell<String> implements HasOptions, HasViewName {
 
   public enum Type {
-    LINK, BUTTON;
+    LINK("Link"), BUTTON("Button");
+
+    private final String styleSuffix;
+
+    private Type(String styleSuffix) {
+      this.styleSuffix = styleSuffix;
+    }
+
+    private String getStyleName() {
+      return BeeConst.CSS_CLASS_PREFIX + "ActionCell" + styleSuffix;
+    }
 
     private SafeHtml render(String value) {
       switch (this) {
         case LINK:
-          return TEMPLATE.link(value);
+          return TEMPLATE.link(getStyleName(), value);
         case BUTTON:
-          return TEMPLATE.button(value);
+          return TEMPLATE.button(getStyleName(), value);
         default:
           Assert.untouchable();
           return null;
@@ -39,11 +48,11 @@ public class ActionCell extends AbstractCell<String> implements HasOptions, HasV
   }
 
   interface Template extends SafeHtmlTemplates {
-    @Template("<button class=\"bee-ActionCellButton\">{0}</button>")
-    SafeHtml button(String option);
+    @Template("<button class=\"{0}\">{1}</button>")
+    SafeHtml button(String styleName, String option);
 
-    @Template("<div class=\"bee-ActionCellLink\">{0}</div>")
-    SafeHtml link(String option);
+    @Template("<div class=\"{0}\">{1}</div>")
+    SafeHtml link(String styleName, String option);
   }
 
   private static final Template TEMPLATE = GWT.create(Template.class);
@@ -74,13 +83,13 @@ public class ActionCell extends AbstractCell<String> implements HasOptions, HasV
     super(EventUtils.EVENT_TYPE_CLICK);
     this.type = (type == null) ? DEFAULT_TYPE : type;
   }
-  
+
   public ActionCell copy() {
     ActionCell copy = new ActionCell(type);
-    
+
     copy.setViewName(getViewName());
     copy.setOptions(getOptions());
-    
+
     return copy;
   }
 
@@ -99,12 +108,11 @@ public class ActionCell extends AbstractCell<String> implements HasOptions, HasV
     EventState state = super.onBrowserEvent(context, parent, value, event);
 
     if (state.proceed() && EventUtils.isClick(event)) {
-      BeeKeeper.getBus().fireEvent(new RowActionEvent(getViewName(), context.getRow(),
-          Service.CELL_ACTION, getOptions()));
+      RowActionEvent.fireCellClick(getViewName(), context.getRow(), getOptions());
       state = EventState.CONSUMED;
     }
 
-    return state; 
+    return state;
   }
 
   @Override

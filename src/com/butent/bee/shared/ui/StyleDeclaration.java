@@ -1,7 +1,5 @@
 package com.butent.bee.shared.ui;
 
-import com.google.common.collect.Lists;
-
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeSerializable;
 import com.butent.bee.shared.HasInfo;
@@ -10,6 +8,7 @@ import com.butent.bee.shared.utils.Codec;
 import com.butent.bee.shared.utils.Property;
 import com.butent.bee.shared.utils.PropertyUtils;
 
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -21,7 +20,7 @@ public class StyleDeclaration implements BeeSerializable, HasInfo {
   public static final String TAG_CLASS = "class";
   public static final String TAG_INLINE = "inline";
   public static final String TAG_FONT = "font";
-  
+
   public static StyleDeclaration fuse(StyleDeclaration styleDeclaration,
       String className, String inline, String fontDeclaration) {
 
@@ -30,7 +29,7 @@ public class StyleDeclaration implements BeeSerializable, HasInfo {
 
     } else if (styleDeclaration == null) {
       return new StyleDeclaration(className, inline, fontDeclaration);
-    
+
     } else {
       StyleDeclaration result = styleDeclaration.copy();
 
@@ -43,7 +42,7 @@ public class StyleDeclaration implements BeeSerializable, HasInfo {
       if (!BeeUtils.isEmpty(fontDeclaration)) {
         result.setFontDeclaration(fontDeclaration);
       }
-      
+
       return result;
     }
   }
@@ -77,7 +76,7 @@ public class StyleDeclaration implements BeeSerializable, HasInfo {
   public StyleDeclaration copy() {
     return new StyleDeclaration(getClassName(), getInline(), getFontDeclaration());
   }
-  
+
   @Override
   public void deserialize(String s) {
     String[] arr = Codec.beeDeserializeCollection(s);
@@ -98,7 +97,7 @@ public class StyleDeclaration implements BeeSerializable, HasInfo {
 
   @Override
   public List<Property> getInfo() {
-    List<Property> info = Lists.newArrayList();
+    List<Property> info = new ArrayList<>();
 
     if (isEmpty()) {
       PropertyUtils.addWhenEmpty(info, getClass());
@@ -124,7 +123,7 @@ public class StyleDeclaration implements BeeSerializable, HasInfo {
   public boolean isEmpty() {
     return BeeUtils.allEmpty(getClassName(), getInline(), getFontDeclaration());
   }
-  
+
   @Override
   public String serialize() {
     return Codec.beeSerialize(new Object[] {getClassName(), getInline(), getFontDeclaration()});

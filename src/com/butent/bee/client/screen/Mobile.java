@@ -1,7 +1,5 @@
 package com.butent.bee.client.screen;
 
-import com.google.common.base.Objects;
-import com.google.common.collect.Lists;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.event.logical.shared.ValueChangeEvent;
@@ -28,12 +26,16 @@ import com.butent.bee.client.widget.CustomDiv;
 import com.butent.bee.client.widget.Image;
 import com.butent.bee.client.widget.Label;
 import com.butent.bee.shared.Assert;
+import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.Pair;
 import com.butent.bee.shared.css.CssUnit;
 import com.butent.bee.shared.ui.UserInterface;
 import com.butent.bee.shared.utils.BeeUtils;
+import com.butent.bee.shared.utils.ExtendedProperty;
 
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 /**
  * Handles mobile phone size screen implementation.
@@ -49,15 +51,21 @@ public class Mobile extends ScreenImpl {
   public boolean activateDomainEntry(Domain domain, Long key) {
     return false;
   }
-  
+
   @Override
   public void activateWidget(IdentifiableWidget widget) {
-    notifyWarning("The white zone is for loading and unloading only");
   }
 
   @Override
   public void addDomainEntry(Domain domain, IdentifiableWidget widget, Long key, String caption) {
-    notifyWarning("The white zone is for loading and unloading only");
+  }
+
+  @Override
+  public void closeAll() {
+    IdentifiableWidget widget = getActiveWidget();
+    if (widget != null) {
+      getScreenPanel().remove(widget);
+    }
   }
 
   @Override
@@ -66,13 +74,13 @@ public class Mobile extends ScreenImpl {
 
     if (UiHelper.isModal(widget.asWidget())) {
       UiHelper.closeDialog(widget.asWidget());
-    } else if (Objects.equal(widget, getActiveWidget())) {
+    } else if (Objects.equals(widget, getActiveWidget())) {
       getScreenPanel().remove(widget);
     } else {
       notifyWarning("closeWidget: widget not found");
     }
   }
-  
+
   @Override
   public boolean containsDomainEntry(Domain domain, Long key) {
     return false;
@@ -87,21 +95,31 @@ public class Mobile extends ScreenImpl {
   public int getActivePanelWidth() {
     return getScreenPanel().getCenterWidth();
   }
-  
+
   @Override
   public IdentifiableWidget getActiveWidget() {
     return getScreenPanel().getCenter();
   }
 
   @Override
+  public List<ExtendedProperty> getExtendedInfo() {
+    List<ExtendedProperty> info = new ArrayList<>();
+
+    info.add(new ExtendedProperty("Center Width", BeeUtils.toString(getActivePanelWidth())));
+    info.add(new ExtendedProperty("Center Height", BeeUtils.toString(getActivePanelHeight())));
+
+    return info;
+  }
+
+  @Override
   public List<IdentifiableWidget> getOpenWidgets() {
-    List<IdentifiableWidget> result = Lists.newArrayList();
+    List<IdentifiableWidget> result = new ArrayList<>();
     if (getActiveWidget() != null) {
       result.add(getActiveWidget());
     }
     return result;
   }
-  
+
   @Override
   public UserInterface getUserInterface() {
     return UserInterface.MOBILE;
@@ -110,26 +128,20 @@ public class Mobile extends ScreenImpl {
   @Override
   public void onWidgetChange(IdentifiableWidget widget) {
   }
-  
+
   @Override
   public boolean removeDomainEntry(Domain domain, Long key) {
     return false;
   }
 
   @Override
-  public void showInfo() {
-    Global.showInfo(Lists.newArrayList(String.valueOf(getActivePanelWidth()),
-        String.valueOf(getActivePanelHeight())));
-  }
-
-  @Override
-  public void showWidget(IdentifiableWidget widget, boolean newPlace) {
-    getScreenPanel().updateCenter(widget);
+  public void showInNewPlace(IdentifiableWidget widget) {
+    updateActivePanel(widget);
   }
 
   @Override
   public void updateActivePanel(IdentifiableWidget widget) {
-    showWidget(widget, false);
+    getScreenPanel().updateCenter(widget);
   }
 
   protected int addLogToggle(LayoutPanel panel) {
@@ -156,19 +168,19 @@ public class Mobile extends ScreenImpl {
   protected IdentifiableWidget initCenter() {
     return new CustomDiv();
   }
-  
+
   @Override
   protected Pair<? extends IdentifiableWidget, Integer> initNorth() {
     Complex panel = new Complex();
-    panel.addStyleName("bee-NorthContainer");
-    
+    panel.addStyleName(BeeConst.CSS_CLASS_PREFIX + "NorthContainer");
+
     panel.addLeftTop(Global.getSearchWidget(), 40, 2);
-    
+
     Flow menuContainer = new Flow();
-    menuContainer.addStyleName("bee-MainMenu");
+    menuContainer.addStyleName(BeeConst.CSS_CLASS_PREFIX + "MainMenu");
     panel.addLeftTop(menuContainer, 10, 30);
     setMenuPanel(menuContainer);
-    
+
     setNotification(new Notification());
     panel.addRightTop(getNotification(), 1, 1);
 

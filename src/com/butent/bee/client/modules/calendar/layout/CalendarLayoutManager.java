@@ -1,7 +1,6 @@
 package com.butent.bee.client.modules.calendar.layout;
 
 import com.google.common.collect.HashBasedTable;
-import com.google.common.collect.Lists;
 import com.google.common.collect.Range;
 import com.google.common.collect.Table;
 import com.google.gwt.user.client.ui.HasWidgets;
@@ -20,12 +19,13 @@ import com.butent.bee.shared.time.JustDate;
 import com.butent.bee.shared.time.TimeUtils;
 import com.butent.bee.shared.utils.BeeUtils;
 
+import java.util.ArrayList;
 import java.util.List;
 
 public final class CalendarLayoutManager {
 
   private static final BeeLogger logger = LogUtils.getLogger(CalendarLayoutManager.class);
-  
+
   private static final double SIMPLE_MARGIN_LEFT = 0.3;
   private static final double SIMPLE_MARGIN_RIGHT = 0.3;
 
@@ -85,7 +85,7 @@ public final class CalendarLayoutManager {
       timeBlocks[i] = timeBlock;
     }
 
-    List<ItemAdapter> adapters = Lists.newArrayList();
+    List<ItemAdapter> adapters = new ArrayList<>();
 
     int groupMaxColumn = 0;
     int groupStartIndex = -1;
@@ -208,7 +208,7 @@ public final class CalendarLayoutManager {
       return BeeConst.UNDEF;
     }
   }
-  
+
   public static int getTodayWidth(int columnCount, int todayStartColumn, int todayEndColumn) {
     if (BeeUtils.betweenExclusive(todayStartColumn, 0, columnCount)) {
       int endColumn = BeeUtils.clamp(todayEndColumn, todayStartColumn, columnCount - 1);
@@ -227,7 +227,7 @@ public final class CalendarLayoutManager {
 
     Table<Integer, Integer, Range<DateTime>> slots = HashBasedTable.create();
 
-    List<Range<DateTime>> dateRanges = Lists.newArrayList();
+    List<Range<DateTime>> dateRanges = new ArrayList<>();
     for (int i = 0; i < days; i++) {
       dateRanges.add(Range.closedOpen(TimeUtils.startOfDay(date, i),
           TimeUtils.startOfDay(date, i + 1)));

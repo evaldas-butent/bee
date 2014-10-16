@@ -1,7 +1,6 @@
 package com.butent.bee.client.decorator;
 
 import com.google.common.collect.Lists;
-import com.google.common.collect.Maps;
 import com.google.gwt.xml.client.Attr;
 import com.google.gwt.xml.client.Document;
 import com.google.gwt.xml.client.Element;
@@ -23,7 +22,9 @@ import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.ExtendedProperty;
 import com.butent.bee.shared.utils.PropertyUtils;
 
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -31,7 +32,7 @@ public final class TuningFactory {
 
   private static final BeeLogger logger = LogUtils.getLogger(TuningFactory.class);
 
-  private static final Map<String, Decorator> decorators = Maps.newHashMap();
+  private static final Map<String, Decorator> decorators = new HashMap<>();
 
   private static boolean enabled = true;
 
@@ -69,7 +70,7 @@ public final class TuningFactory {
   }
 
   public static List<ExtendedProperty> getExtendedInfo() {
-    List<ExtendedProperty> result = Lists.newArrayList();
+    List<ExtendedProperty> result = new ArrayList<>();
     PropertyUtils.addExtended(result, DecoratorConstants.TAG_DECORATORS,
         BeeUtils.bracket(decorators.size()));
 
@@ -86,7 +87,7 @@ public final class TuningFactory {
   }
 
   public static Map<String, String> getOptions(Element element, WidgetDescription wd) {
-    Map<String, String> result = Maps.newHashMap();
+    Map<String, String> result = new HashMap<>();
 
     if (element != null) {
       NamedNodeMap attributes = element.getAttributes();
@@ -106,17 +107,17 @@ public final class TuningFactory {
       if (!BeeUtils.isEmpty(caption) && !result.containsKey(DecoratorConstants.OPTION_CAPTION)) {
         result.put(DecoratorConstants.OPTION_CAPTION, caption);
       }
-      
-      if ((BeeUtils.isTrue(wd.getRequired()) || BeeUtils.isFalse(wd.getNullable())) 
+
+      if ((BeeUtils.isTrue(wd.getRequired()) || BeeUtils.isFalse(wd.getNullable()))
           && !result.containsKey(DecoratorConstants.OPTION_VALUE_REQUIRED)) {
         result.put(DecoratorConstants.OPTION_VALUE_REQUIRED, BeeConst.STRING_TRUE);
       }
-      if (BeeUtils.isTrue(wd.getHasDefaults()) 
+      if (BeeUtils.isTrue(wd.getHasDefaults())
           && !result.containsKey(DecoratorConstants.OPTION_HAS_DEFAULTS)) {
         result.put(DecoratorConstants.OPTION_HAS_DEFAULTS, BeeConst.STRING_TRUE);
       }
     }
-    
+
     return result;
   }
 
@@ -152,11 +153,11 @@ public final class TuningFactory {
     String id;
     String ext;
 
-    List<Parameter> params = Lists.newArrayList();
-    Map<String, String> constants = Maps.newHashMap();
-    Map<String, String> css = Maps.newHashMap();
+    List<Parameter> params = new ArrayList<>();
+    Map<String, String> constants = new HashMap<>();
+    Map<String, String> css = new HashMap<>();
     Lifecycle lc;
-    List<Handler> handlers = Lists.newArrayList();
+    List<Handler> handlers = new ArrayList<>();
 
     Template template;
 

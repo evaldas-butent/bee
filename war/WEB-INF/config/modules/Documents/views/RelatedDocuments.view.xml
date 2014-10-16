@@ -19,6 +19,7 @@
     <SimpleColumn name="CargoRequest" />
     <SimpleColumn name="Discussion" />
     <SimpleColumn name="ServiceObject" />
+    <SimpleColumn name="Message" />
 
     <SimpleJoin name="Document" joinType="INNER">
 
@@ -31,7 +32,7 @@
       <SimpleColumn name="RegistrationNumber" />
 
       <SimpleColumn name="Category" />
-      <SimpleJoin joinType="LEFT" name="Category">
+      <SimpleJoin joinType="INNER" name="Category">
         <SimpleColumn alias="CategoryName" name="Name" />
       </SimpleJoin>
 

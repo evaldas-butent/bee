@@ -1,8 +1,6 @@
 package com.butent.bee.client.presenter;
 
-import com.google.common.base.Objects;
 import com.google.common.collect.Lists;
-import com.google.common.collect.Maps;
 import com.google.gwt.event.shared.HandlerRegistration;
 import com.google.gwt.xml.client.Element;
 
@@ -17,7 +15,6 @@ import com.butent.bee.client.dialog.Icon;
 import com.butent.bee.client.dialog.InputCallback;
 import com.butent.bee.client.event.logical.CatchEvent;
 import com.butent.bee.client.ui.FormDescription;
-import com.butent.bee.client.ui.IdentifiableWidget;
 import com.butent.bee.client.utils.Evaluator;
 import com.butent.bee.client.view.HeaderView;
 import com.butent.bee.client.view.TreeView;
@@ -30,7 +27,9 @@ import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.data.BeeColumn;
 import com.butent.bee.shared.data.BeeRow;
 import com.butent.bee.shared.data.BeeRowSet;
+import com.butent.bee.shared.data.CustomProperties;
 import com.butent.bee.shared.data.DataUtils;
+import com.butent.bee.shared.data.HasViewName;
 import com.butent.bee.shared.data.IsRow;
 import com.butent.bee.shared.data.event.RowDeleteEvent;
 import com.butent.bee.shared.data.event.RowInsertEvent;
@@ -46,10 +45,15 @@ import com.butent.bee.shared.ui.Calculation;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.NameUtils;
 
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 
-public class TreePresenter extends AbstractPresenter implements CatchEvent.CatchHandler<IsRow> {
+public class TreePresenter extends AbstractPresenter implements CatchEvent.CatchHandler<IsRow>,
+    HasViewName {
 
   private class CommitCallback extends RowCallback {
     private final boolean createMode;
@@ -85,6 +89,7 @@ public class TreePresenter extends AbstractPresenter implements CatchEvent.Catch
   private Long relationId;
   private final Calculation calculation;
   private List<BeeColumn> dataColumns;
+  private CustomProperties properties;
   private Evaluator evaluator;
   private final Element editor;
   private FormView formView;
@@ -145,13 +150,22 @@ public class TreePresenter extends AbstractPresenter implements CatchEvent.Catch
     return getView();
   }
 
-  public String getViewName() {
-    return viewName;
+  public CustomProperties getProperties() {
+    return properties;
+  }
+
+  public String getProperty(String key) {
+    Assert.notEmpty(key);
+
+    if (properties == null) {
+      return null;
+    }
+    return properties.get(key);
   }
 
   @Override
-  public IdentifiableWidget getWidget() {
-    return getView();
+  public String getViewName() {
+    return viewName;
   }
 
   @Override
@@ -163,6 +177,10 @@ public class TreePresenter extends AbstractPresenter implements CatchEvent.Catch
         if (getView().isEnabled()) {
           addItem();
         }
+        break;
+
+      case BOOKMARK:
+        createBookmark();
         break;
 
       case DELETE:
@@ -245,6 +263,12 @@ public class TreePresenter extends AbstractPresenter implements CatchEvent.Catch
     return ok;
   }
 
+  private void createBookmark() {
+    IsRow activeRow = getView().getSelectedItem();
+    Global.getFavorites().bookmark(getViewName(), activeRow, getDataColumns(),
+        treeView.getFavorite(), BeeConst.STRING_GT);
+  }
+
   private void edit(final IsRow item) {
     final boolean addMode = item == null;
     final IsRow row;
@@ -256,7 +280,7 @@ public class TreePresenter extends AbstractPresenter implements CatchEvent.Catch
     }
     if (formView == null) {
       formView = new FormImpl(FormDescription.getName(editor));
-      formView.create(new FormDescription(editor), null, getDataColumns(), false, null);
+      formView.create(new FormDescription(editor), getViewName(), getDataColumns(), false, null);
       formView.setEditing(true);
       formView.start(null);
     }
@@ -269,9 +293,9 @@ public class TreePresenter extends AbstractPresenter implements CatchEvent.Catch
       caption = evaluate(getView().getParentItem(item));
     }
     Global.inputWidget(caption, formView, new InputCallback() {
-      final List<BeeColumn> columns = Lists.newArrayList();
-      final List<String> oldValues = Lists.newArrayList();
-      final List<String> values = Lists.newArrayList();
+      final List<BeeColumn> columns = new ArrayList<>();
+      final List<String> oldValues = new ArrayList<>();
+      final List<String> values = new ArrayList<>();
 
       @Override
       public String getErrorMessage() {
@@ -280,19 +304,26 @@ public class TreePresenter extends AbstractPresenter implements CatchEvent.Catch
         values.clear();
 
         for (int i = 0; i < getDataColumns().size(); i++) {
-          if (addMode) {
-            if (!BeeUtils.isEmpty(row.getString(i))) {
-              columns.add(getDataColumns().get(i));
-              values.add(row.getString(i));
-            }
-          } else {
-            if (!Objects.equal(item.getString(i), row.getString(i))) {
-              columns.add(getDataColumns().get(i));
-              oldValues.add(item.getString(i));
-              values.add(row.getString(i));
+          BeeColumn column = getDataColumns().get(i);
+
+          if (column.isEditable()) {
+            String value = row.getString(i);
+            if (addMode) {
+              if (!BeeUtils.isEmpty(value)) {
+                columns.add(column);
+                values.add(value);
+              }
+
+            } else {
+              if (!Objects.equals(item.getString(i), value)) {
+                columns.add(column);
+                oldValues.add(item.getString(i));
+                values.add(value);
+              }
             }
           }
         }
+
         if (BeeUtils.isEmpty(columns)) {
           return Localized.getConstants().noChanges();
         }
@@ -367,6 +398,7 @@ public class TreePresenter extends AbstractPresenter implements CatchEvent.Catch
       flt = Filter.compareWithValue(relationColumnName, Operator.EQ,
           new LongValue(relationId == null ? BeeConst.UNDEF : relationId));
     }
+
     Queries.getRowSet(getViewName(), null, flt, null, new RowSetCallback() {
       @Override
       public void onSuccess(BeeRowSet result) {
@@ -374,26 +406,29 @@ public class TreePresenter extends AbstractPresenter implements CatchEvent.Catch
           dataColumns = result.getColumns();
           evaluator = Evaluator.create(calculation, null, getDataColumns());
         }
+        properties = result.getTableProperties();
         getView().removeItems();
 
         if (result.isEmpty()) {
+          getView().afterRequery();
           return;
         }
         int parentIndex = result.getColumnIndex(parentColumnName);
 
-        if (Objects.equal(parentIndex, BeeConst.UNDEF)) {
+        if (Objects.equals(parentIndex, BeeConst.UNDEF)) {
           BeeKeeper.getScreen().notifySevere("Parent column not found", parentColumnName);
+          getView().afterRequery();
           return;
         }
-        Map<Long, List<Long>> hierarchy = Maps.newLinkedHashMap();
-        Map<Long, IsRow> items = Maps.newHashMap();
+        Map<Long, List<Long>> hierarchy = new LinkedHashMap<>();
+        Map<Long, IsRow> items = new HashMap<>();
 
         for (IsRow row : result.getRows()) {
           Long parent = row.getLong(parentIndex);
           List<Long> childs = hierarchy.get(parent);
 
           if (childs == null) {
-            childs = Lists.newArrayList();
+            childs = new ArrayList<>();
             hierarchy.put(parent, childs);
           }
           childs.add(row.getId());
@@ -404,6 +439,8 @@ public class TreePresenter extends AbstractPresenter implements CatchEvent.Catch
             addBranch(parent, hierarchy, items);
           }
         }
+
+        getView().afterRequery();
       }
     });
   }

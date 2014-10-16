@@ -26,6 +26,7 @@ import com.butent.bee.client.view.form.interceptor.AbstractFormInterceptor;
 import com.butent.bee.client.view.form.interceptor.FormInterceptor;
 import com.butent.bee.client.view.grid.GridView;
 import com.butent.bee.client.view.grid.interceptor.AbstractGridInterceptor;
+import com.butent.bee.client.view.grid.interceptor.GridInterceptor;
 import com.butent.bee.client.widget.FaLabel;
 import com.butent.bee.shared.communication.ResponseObject;
 import com.butent.bee.shared.data.DataUtils;
@@ -80,6 +81,11 @@ public class CompanyForm extends AbstractFormInterceptor {
         @Override
         public void afterInsertRow(IsRow accountsRow) {
           setAsPrimaryAccount(accountsRow.getId(), true);
+        }
+
+        @Override
+        public GridInterceptor getInstance() {
+          return null;
         }
 
         private void setAsPrimaryAccount(Long companyBankAccount) {

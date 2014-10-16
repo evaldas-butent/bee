@@ -29,6 +29,8 @@ import com.butent.bee.client.event.Binder;
 import com.butent.bee.client.event.EventUtils;
 import com.butent.bee.client.event.HasInputHandlers;
 import com.butent.bee.client.event.InputHandler;
+import com.butent.bee.client.event.logical.SummaryChangeEvent;
+import com.butent.bee.client.style.StyleUtils;
 import com.butent.bee.client.ui.FormWidget;
 import com.butent.bee.client.ui.UiHelper;
 import com.butent.bee.client.view.edit.EditChangeHandler;
@@ -39,6 +41,8 @@ import com.butent.bee.client.view.edit.HasCharacterFilter;
 import com.butent.bee.client.view.edit.HasTextBox;
 import com.butent.bee.client.view.edit.TextBox;
 import com.butent.bee.shared.BeeConst;
+import com.butent.bee.shared.data.value.BooleanValue;
+import com.butent.bee.shared.data.value.Value;
 import com.butent.bee.shared.html.Autocomplete;
 import com.butent.bee.shared.ui.EditorAction;
 import com.butent.bee.shared.ui.HasAutocomplete;
@@ -74,9 +78,11 @@ public class InputText extends CustomWidget implements Editor, TextBox, HasChara
   private boolean handlesTabulation;
 
   private boolean valueChangeHandlerInitialized;
-  
+
   private String suggestionSource;
-  
+
+  private boolean summarize;
+
   public InputText() {
     super(Document.get().createTextInputElement());
   }
@@ -103,7 +109,7 @@ public class InputText extends CustomWidget implements Editor, TextBox, HasChara
   public HandlerRegistration addChangeHandler(ChangeHandler handler) {
     return addDomHandler(handler, ChangeEvent.getType());
   }
-  
+
   @Override
   public HandlerRegistration addEditChangeHandler(EditChangeHandler handler) {
     return addKeyDownHandler(handler);
@@ -135,6 +141,11 @@ public class InputText extends CustomWidget implements Editor, TextBox, HasChara
   }
 
   @Override
+  public HandlerRegistration addSummaryChangeHandler(SummaryChangeEvent.Handler handler) {
+    return addHandler(handler, SummaryChangeEvent.getType());
+  }
+
+  @Override
   public HandlerRegistration addValueChangeHandler(ValueChangeHandler<String> handler) {
     if (!valueChangeHandlerInitialized) {
       valueChangeHandlerInitialized = true;
@@ -146,10 +157,10 @@ public class InputText extends CustomWidget implements Editor, TextBox, HasChara
         }
       });
     }
-    
+
     return addHandler(handler, ValueChangeEvent.getType());
   }
-  
+
   @Override
   public void clearValue() {
     setValue(BeeConst.STRING_EMPTY);
@@ -228,6 +239,11 @@ public class InputText extends CustomWidget implements Editor, TextBox, HasChara
   }
 
   @Override
+  public Value getSummary() {
+    return BooleanValue.of(!BeeUtils.isEmpty(getValue()));
+  }
+
+  @Override
   public int getTabIndex() {
     return getInputElement().getTabIndex();
   }
@@ -288,7 +304,7 @@ public class InputText extends CustomWidget implements Editor, TextBox, HasChara
   public boolean isEnabled() {
     return !getInputElement().isDisabled();
   }
-  
+
   @Override
   public boolean isMultiline() {
     return false;
@@ -331,6 +347,11 @@ public class InputText extends CustomWidget implements Editor, TextBox, HasChara
     }
 
     super.onBrowserEvent(event);
+  }
+
+  @Override
+  public void render(String value) {
+    setValue(value);
   }
 
   @Override
@@ -392,7 +413,7 @@ public class InputText extends CustomWidget implements Editor, TextBox, HasChara
   public void setId(String id) {
     DomUtils.setId(this, id);
   }
-  
+
   @Override
   public void setMaxLength(int maxLength) {
     getInputElement().setMaxLength(maxLength);
@@ -416,6 +437,11 @@ public class InputText extends CustomWidget implements Editor, TextBox, HasChara
   @Override
   public void setSuggestionSource(String suggestionSource) {
     this.suggestionSource = suggestionSource;
+  }
+
+  @Override
+  public void setSummarize(boolean summarize) {
+    this.summarize = summarize;
   }
 
   @Override
@@ -451,6 +477,11 @@ public class InputText extends CustomWidget implements Editor, TextBox, HasChara
   }
 
   @Override
+  public boolean summarize() {
+    return summarize;
+  }
+
+  @Override
   public List<String> validate(boolean checkForNull) {
     return Collections.emptyList();
   }
@@ -469,7 +500,7 @@ public class InputText extends CustomWidget implements Editor, TextBox, HasChara
   }
 
   protected String getDefaultStyleName() {
-    return "bee-InputText";
+    return BeeConst.CSS_CLASS_PREFIX + "InputText";
   }
 
   @Override
@@ -477,7 +508,7 @@ public class InputText extends CustomWidget implements Editor, TextBox, HasChara
     super.init();
 
     if (isTextBox()) {
-      addStyleName("bee-TextBox");
+      addStyleName(StyleUtils.NAME_TEXT_BOX);
     }
     addStyleName(getDefaultStyleName());
 

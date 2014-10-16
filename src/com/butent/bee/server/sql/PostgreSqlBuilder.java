@@ -10,9 +10,12 @@ import com.butent.bee.shared.data.SqlConstants.SqlDataType;
 import com.butent.bee.shared.data.SqlConstants.SqlFunction;
 import com.butent.bee.shared.data.SqlConstants.SqlKeyword;
 import com.butent.bee.shared.data.SqlConstants.SqlTriggerEvent;
+import com.butent.bee.shared.data.filter.Operator;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.Codec;
+import com.butent.bee.shared.utils.NameUtils;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.EnumSet;
 import java.util.List;
@@ -144,6 +147,23 @@ class PostgreSqlBuilder extends SqlBuilder {
       }
     }
     return query.toString();
+  }
+
+  @Override
+  protected String sqlCondition(Operator operator, Map<String, String> params) {
+    switch (operator) {
+      case FULL_TEXT:
+        String expression = params.get("expression");
+        List<String> values = new ArrayList<>(NameUtils.toList(params.get("value" + 0)));
+
+        for (int i = 0; i < values.size(); i++) {
+          values.set(i, values.get(i).replace("'", "''").replace(":", " ") + ":*");
+        }
+        return expression + " @@ to_tsquery('simple', '" + BeeUtils.join("&", values) + "')";
+
+      default:
+        return super.sqlCondition(operator, params);
+    }
   }
 
   @Override

@@ -2,15 +2,17 @@ package com.butent.bee.client.modules.documents;
 
 import com.google.common.base.Splitter;
 import com.google.common.collect.Lists;
-import com.google.common.collect.Maps;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
+import com.google.gwt.user.client.ui.HasEnabled;
+import com.google.gwt.user.client.ui.Widget;
 
 import static com.butent.bee.shared.modules.documents.DocumentConstants.*;
 import static com.butent.bee.shared.modules.trade.TradeConstants.*;
 
 import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.Global;
+import com.butent.bee.client.UserInfo;
 import com.butent.bee.client.composite.Autocomplete;
 import com.butent.bee.client.composite.ChildSelector;
 import com.butent.bee.client.composite.DataSelector;
@@ -32,12 +34,14 @@ import com.butent.bee.client.grid.ChildGrid;
 import com.butent.bee.client.grid.HtmlTable;
 import com.butent.bee.client.ui.FormFactory.WidgetDescriptionCallback;
 import com.butent.bee.client.ui.IdentifiableWidget;
+import com.butent.bee.client.ui.Opener;
 import com.butent.bee.client.view.edit.EditStartEvent;
 import com.butent.bee.client.view.edit.Editor;
 import com.butent.bee.client.view.form.FormView;
 import com.butent.bee.client.view.form.interceptor.FormInterceptor;
 import com.butent.bee.client.view.grid.GridView;
 import com.butent.bee.client.view.grid.interceptor.AbstractGridInterceptor;
+import com.butent.bee.client.view.grid.interceptor.GridInterceptor;
 import com.butent.bee.client.widget.Button;
 import com.butent.bee.shared.BiConsumer;
 import com.butent.bee.shared.Consumer;
@@ -54,6 +58,7 @@ import com.butent.bee.shared.data.value.Value;
 import com.butent.bee.shared.i18n.LocalizableConstants;
 import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.modules.classifiers.ClassifierConstants;
+import com.butent.bee.shared.modules.service.ServiceConstants;
 import com.butent.bee.shared.modules.tasks.TaskConstants;
 import com.butent.bee.shared.rights.Module;
 import com.butent.bee.shared.rights.ModuleAndSub;
@@ -62,6 +67,8 @@ import com.butent.bee.shared.ui.Relation;
 import com.butent.bee.shared.ui.Relation.Caching;
 import com.butent.bee.shared.utils.BeeUtils;
 
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -76,7 +83,7 @@ public class DocumentForm extends DocumentDataForm implements SelectorEvent.Hand
   });
   private ChildGrid itemsGrid;
 
-  private final Map<String, ChildSelector> childSelectors = Maps.newHashMap();
+  private final Map<String, ChildSelector> childSelectors = new HashMap<>();
 
   @Override
   public void afterCreateWidget(String name, IdentifiableWidget widget,
@@ -90,9 +97,11 @@ public class DocumentForm extends DocumentDataForm implements SelectorEvent.Hand
       }
       if (((ChildSelector) widget).hasRelatedView(TaskConstants.VIEW_TASKS)) {
         ((ChildSelector) widget).addSelectorHandler(this);
+      } else if (((ChildSelector) widget).hasRelatedView(ServiceConstants.VIEW_SERVICE_OBJECTS)) {
+        ((ChildSelector) widget).addSelectorHandler(this);
       }
 
-    } else if (BeeUtils.same(name, TBL_DOCUMENT_ITEMS) && widget instanceof ChildGrid) {
+    } else if (BeeUtils.same(name, VIEW_DOCUMENT_ITEMS) && widget instanceof ChildGrid) {
       itemsGrid = (ChildGrid) widget;
 
       itemsGrid.setGridInterceptor(new AbstractGridInterceptor() {
@@ -114,6 +123,11 @@ public class DocumentForm extends DocumentDataForm implements SelectorEvent.Hand
         }
 
         @Override
+        public GridInterceptor getInstance() {
+          return null;
+        }
+
+        @Override
         public void onEditStart(final EditStartEvent event) {
           if (!BeeUtils.same(event.getColumnId(), COL_DOCUMENT_DATA)) {
             if (event.isReadOnly()) {
@@ -126,8 +140,8 @@ public class DocumentForm extends DocumentDataForm implements SelectorEvent.Hand
           if (!DataUtils.isId(dataId)) {
             event.consume();
 
-            Relation relation = Relation.create(TBL_DOCUMENT_TEMPLATES,
-                Lists.newArrayList(COL_DOCUMENT_CATEGORY_NAME, COL_DOCUMENT_TEMPLATE_NAME));
+            Relation relation = Relation.create(VIEW_DOCUMENT_TEMPLATES,
+                Lists.newArrayList(ALS_CATEGORY_NAME, COL_DOCUMENT_TEMPLATE_NAME));
             relation.disableNewRow();
             relation.setCaching(Caching.QUERY);
 
@@ -167,18 +181,18 @@ public class DocumentForm extends DocumentDataForm implements SelectorEvent.Hand
                     Long data = null;
 
                     if (selector.getRelatedRow() != null) {
-                      data = Data.getLong(TBL_DOCUMENT_TEMPLATES, selector.getRelatedRow(),
+                      data = Data.getLong(VIEW_DOCUMENT_TEMPLATES, selector.getRelatedRow(),
                           COL_DOCUMENT_DATA);
                     }
                     if (DataUtils.isId(data)) {
-                      DocumentHandler.copyDocumentData(data, new IdCallback() {
+                      DocumentsHandler.copyDocumentData(data, new IdCallback() {
                         @Override
                         public void onSuccess(Long result) {
                           executor.accept(result);
                         }
                       });
                     } else {
-                      Queries.insert(TBL_DOCUMENT_DATA, Data.getColumns(TBL_DOCUMENT_DATA,
+                      Queries.insert(VIEW_DOCUMENT_DATA, Data.getColumns(VIEW_DOCUMENT_DATA,
                           Lists.newArrayList(COL_DOCUMENT_CONTENT)),
                           Lists.newArrayList((String) null), null, new RowCallback() {
                             @Override
@@ -197,14 +211,23 @@ public class DocumentForm extends DocumentDataForm implements SelectorEvent.Hand
   }
 
   @Override
-  public void beforeRefresh(FormView form, IsRow row) {
+  public void afterRefresh(FormView form, IsRow row) {
+    UserInfo user = BeeKeeper.getUser();
+    boolean newRow = DataUtils.isNewRow(row);
+
+    if (!user.isAdministrator()) {
+      Widget category = form.getWidgetBySource(COL_DOCUMENT_CATEGORY);
+
+      if (category instanceof HasEnabled) {
+        ((HasEnabled) category).setEnabled(newRow);
+      }
+    }
     if (getHeaderView() == null) {
       return;
     }
     getHeaderView().clearCommandPanel();
 
-    if (!DataUtils.isNewRow(row) && BeeKeeper.getUser()
-        .isModuleVisible(ModuleAndSub.of(Module.DOCUMENTS, SubModule.TEMPLATES))) {
+    if (!newRow && user.isModuleVisible(ModuleAndSub.of(Module.DOCUMENTS, SubModule.TEMPLATES))) {
       getHeaderView().addCommandItem(newTemplateButton);
     }
   }
@@ -217,126 +240,24 @@ public class DocumentForm extends DocumentDataForm implements SelectorEvent.Hand
   @Override
   public void onDataSelector(SelectorEvent event) {
     if (event.isNewRow() && TaskConstants.VIEW_TASKS.equals(event.getRelatedViewName())) {
-      final BeeRow row = event.getNewRow();
-
-      String summary = BeeUtils.notEmpty(event.getDefValue(), getStringValue(COL_DOCUMENT_NAME));
-      if (!BeeUtils.isEmpty(summary)) {
-        Data.squeezeValue(TaskConstants.VIEW_TASKS, row, TaskConstants.COL_SUMMARY,
-            BeeUtils.trim(summary));
-      }
-
-      event.setDefValue(null);
-
-      String description = getStringValue(COL_DESCRIPTION);
-      if (!BeeUtils.isEmpty(description)) {
-        Data.setValue(TaskConstants.VIEW_TASKS, row, TaskConstants.COL_DESCRIPTION,
-            BeeUtils.trim(description));
-      }
-
-      final List<Long> companies = Lists.newArrayList();
-      final List<Long> persons = Lists.newArrayList();
-
-      for (ChildSelector selector : childSelectors.values()) {
-        if (selector.hasRelatedView(ClassifierConstants.VIEW_COMPANIES)) {
-          if (!BeeUtils.isEmpty(selector.getValue())) {
-            companies.addAll(DataUtils.parseIdList(selector.getValue()));
-          }
-
-        } else if (selector.hasRelatedView(ClassifierConstants.VIEW_PERSONS)) {
-          if (!BeeUtils.isEmpty(selector.getValue())) {
-            persons.addAll(DataUtils.parseIdList(selector.getValue()));
-          }
-        }
-      }
-
-      if (!companies.isEmpty() || !persons.isEmpty()) {
-        event.consume();
-
-        final String formName = event.getNewRowFormName();
-        final DataSelector selector = event.getSelector();
-
-        int count = (companies.isEmpty() ? 0 : 1) + (persons.isEmpty() ? 0 : 1);
-        final Holder<Integer> latch = Holder.of(count);
-
-        if (!companies.isEmpty()) {
-          if (companies.size() > 1) {
-            row.setProperty(TaskConstants.PROP_COMPANIES,
-                DataUtils.buildIdList(companies.subList(1, companies.size())));
-          }
-
-          Queries.getRow(ClassifierConstants.VIEW_COMPANIES, companies.get(0), new RowCallback() {
-            @Override
-            public void onSuccess(BeeRow result) {
-              RelationUtils.updateRow(Data.getDataInfo(TaskConstants.VIEW_TASKS),
-                  ClassifierConstants.COL_COMPANY, row,
-                  Data.getDataInfo(ClassifierConstants.VIEW_COMPANIES), result, true);
-
-              latch.set(latch.get() - 1);
-              if (latch.get() <= 0) {
-                RowFactory.createRelatedRow(formName, row, selector);
-              }
-            }
-          });
-        }
-
-        if (!persons.isEmpty()) {
-          Queries.getRowSet(ClassifierConstants.VIEW_COMPANY_PERSONS, null,
-              Filter.equals(ClassifierConstants.COL_PERSON, persons.get(0)), new RowSetCallback() {
-                @Override
-                public void onSuccess(BeeRowSet result) {
-                  BeeRow contact = null;
-
-                  int size = result.getNumberOfRows();
-                  if (size == 1) {
-                    contact = result.getRow(0);
-
-                  } else if (size > 1 && !companies.isEmpty()) {
-                    Long company = companies.get(0);
-                    int index = result.getColumnIndex(ClassifierConstants.COL_COMPANY);
-
-                    for (BeeRow r : result) {
-                      if (company.equals(r.getLong(index))) {
-                        contact = r;
-                        break;
-                      }
-                    }
-                  }
-
-                  if (contact == null) {
-                    row.setProperty(TaskConstants.PROP_PERSONS, DataUtils.buildIdList(persons));
-                  } else {
-                    RelationUtils.updateRow(Data.getDataInfo(TaskConstants.VIEW_TASKS),
-                        ClassifierConstants.COL_CONTACT, row,
-                        Data.getDataInfo(ClassifierConstants.VIEW_COMPANY_PERSONS), contact, true);
-
-                    if (persons.size() > 1) {
-                      row.setProperty(TaskConstants.PROP_PERSONS,
-                          DataUtils.buildIdList(persons.subList(1, persons.size())));
-                    }
-                  }
-
-                  latch.set(latch.get() - 1);
-                  if (latch.get() <= 0) {
-                    RowFactory.createRelatedRow(formName, row, selector);
-                  }
-                }
-              });
-        }
-      }
+      createNewTaskRelation(event);
+    } else if (event.isNewRow()
+        && ServiceConstants.VIEW_SERVICE_OBJECTS.equals(event.getRelatedViewName())) {
+      createNewServiceObjectRelation(event);
     }
   }
 
   @Override
-  protected void parseContent(String content, long dataId, final Consumer<String> consumer) {
+  protected void parseContent(String content, Long dataId, final Consumer<String> consumer) {
     super.parseContent(content, dataId, new Consumer<String>() {
       @Override
       public void accept(String input) {
-        final Map<String, BeeRowSet> relations = Maps.newHashMap();
+        final Map<String, BeeRowSet> relations = new HashMap<>();
 
         final List<String> parts = Lists.newArrayList(Splitter
-            .on("<!--{" + TBL_DOCUMENT_ITEMS + "}-->").split(input));
+            .on("<!--{" + VIEW_DOCUMENT_ITEMS + "}-->").split(input));
 
-        final Map<String, Double> globals = Maps.newHashMap();
+        final Map<String, Double> globals = new HashMap<>();
         final Holder<Integer> holder = Holder.of(childSelectors.size() + parts.size());
 
         final BiConsumer<Integer, String> executor = new BiConsumer<Integer, String>() {
@@ -404,6 +325,149 @@ public class DocumentForm extends DocumentDataForm implements SelectorEvent.Hand
     });
   }
 
+  private void createNewServiceObjectRelation(SelectorEvent event) {
+    final BeeRow row = event.getNewRow();
+    final List<Long> companies = new ArrayList<>();
+
+    for (ChildSelector selector : childSelectors.values()) {
+      if (selector.hasRelatedView(ClassifierConstants.VIEW_COMPANIES)) {
+        if (!BeeUtils.isEmpty(selector.getValue())) {
+          companies.addAll(DataUtils.parseIdList(selector.getValue()));
+        }
+
+      }
+    }
+
+    if (!companies.isEmpty()) {
+      event.consume();
+
+      final String formName = event.getNewRowFormName();
+      final DataSelector selector = event.getSelector();
+
+      Queries.getRow(ClassifierConstants.VIEW_COMPANIES, companies.get(0), new RowCallback() {
+        @Override
+        public void onSuccess(BeeRow result) {
+          RelationUtils.updateRow(Data.getDataInfo(ServiceConstants.VIEW_SERVICE_OBJECTS),
+              ServiceConstants.COL_SERVICE_CUSTOMER, row,
+              Data.getDataInfo(ClassifierConstants.VIEW_COMPANIES), result, true);
+
+          RowFactory.createRelatedRow(formName, row, selector);
+        }
+      });
+    }
+  }
+
+  private void createNewTaskRelation(final SelectorEvent event) {
+    final BeeRow row = event.getNewRow();
+
+    String summary = BeeUtils.notEmpty(event.getDefValue(), getStringValue(COL_DOCUMENT_NAME));
+    if (!BeeUtils.isEmpty(summary)) {
+      Data.squeezeValue(TaskConstants.VIEW_TASKS, row, TaskConstants.COL_SUMMARY,
+          BeeUtils.trim(summary));
+    }
+
+    event.setDefValue(null);
+
+    String description = getStringValue(COL_DESCRIPTION);
+    if (!BeeUtils.isEmpty(description)) {
+      Data.setValue(TaskConstants.VIEW_TASKS, row, TaskConstants.COL_DESCRIPTION,
+          BeeUtils.trim(description));
+    }
+
+    final List<Long> companies = new ArrayList<>();
+    final List<Long> persons = new ArrayList<>();
+
+    for (ChildSelector selector : childSelectors.values()) {
+      if (selector.hasRelatedView(ClassifierConstants.VIEW_COMPANIES)) {
+        if (!BeeUtils.isEmpty(selector.getValue())) {
+          companies.addAll(DataUtils.parseIdList(selector.getValue()));
+        }
+
+      } else if (selector.hasRelatedView(ClassifierConstants.VIEW_PERSONS)) {
+        if (!BeeUtils.isEmpty(selector.getValue())) {
+          persons.addAll(DataUtils.parseIdList(selector.getValue()));
+        }
+      }
+    }
+
+    if (!companies.isEmpty() || !persons.isEmpty()) {
+      event.consume();
+
+      final String formName = event.getNewRowFormName();
+      final DataSelector selector = event.getSelector();
+
+      int count = (companies.isEmpty() ? 0 : 1) + (persons.isEmpty() ? 0 : 1);
+      final Holder<Integer> latch = Holder.of(count);
+
+      if (!companies.isEmpty()) {
+        if (companies.size() > 1) {
+          row.setProperty(TaskConstants.PROP_COMPANIES,
+              DataUtils.buildIdList(companies.subList(1, companies.size())));
+        }
+
+        Queries.getRow(ClassifierConstants.VIEW_COMPANIES, companies.get(0), new RowCallback() {
+          @Override
+          public void onSuccess(BeeRow result) {
+            RelationUtils.updateRow(Data.getDataInfo(TaskConstants.VIEW_TASKS),
+                ClassifierConstants.COL_COMPANY, row,
+                Data.getDataInfo(ClassifierConstants.VIEW_COMPANIES), result, true);
+
+            latch.set(latch.get() - 1);
+            if (latch.get() <= 0) {
+              RowFactory.createRelatedRow(formName, row, selector);
+            }
+          }
+        });
+      }
+
+      if (!persons.isEmpty()) {
+        Queries.getRowSet(ClassifierConstants.VIEW_COMPANY_PERSONS, null,
+            Filter.equals(ClassifierConstants.COL_PERSON, persons.get(0)), new RowSetCallback() {
+              @Override
+              public void onSuccess(BeeRowSet result) {
+                BeeRow contact = null;
+
+                int size = result.getNumberOfRows();
+                if (size == 1) {
+                  contact = result.getRow(0);
+
+                } else if (size > 1 && !companies.isEmpty()) {
+                  Long company = companies.get(0);
+                  int index = result.getColumnIndex(ClassifierConstants.COL_COMPANY);
+
+                  for (BeeRow r : result) {
+                    if (company.equals(r.getLong(index))) {
+                      contact = r;
+                      break;
+                    }
+                  }
+                }
+
+                if (contact == null) {
+                  row.setProperty(TaskConstants.PROP_PERSONS, DataUtils.buildIdList(persons));
+                } else {
+                  RelationUtils.updateRow(Data.getDataInfo(TaskConstants.VIEW_TASKS),
+                      ClassifierConstants.COL_CONTACT, row,
+                      Data.getDataInfo(ClassifierConstants.VIEW_COMPANY_PERSONS), contact, true);
+
+                  if (persons.size() > 1) {
+                    row.setProperty(TaskConstants.PROP_PERSONS,
+                        DataUtils.buildIdList(persons.subList(1, persons.size())));
+                  }
+                }
+
+                latch.set(latch.get() - 1);
+                if (latch.get() <= 0) {
+                  RowFactory.createRelatedRow(formName, row, selector);
+                }
+              }
+            });
+      }
+    }
+  }
+
+
+
   private void createTemplate() {
     LocalizableConstants loc = Localized.getConstants();
 
@@ -411,21 +475,21 @@ public class DocumentForm extends DocumentDataForm implements SelectorEvent.Hand
         new StringCallback() {
           @Override
           public void onSuccess(final String value) {
-            DocumentHandler.copyDocumentData(getLongValue(COL_DOCUMENT_DATA),
+            DocumentsHandler.copyDocumentData(getLongValue(COL_DOCUMENT_DATA),
                 new IdCallback() {
                   @Override
                   public void onSuccess(Long dataId) {
-                    Queries.insert(TBL_DOCUMENT_TEMPLATES,
-                        Data.getColumns(TBL_DOCUMENT_TEMPLATES,
+                    Queries.insert(VIEW_DOCUMENT_TEMPLATES,
+                        Data.getColumns(VIEW_DOCUMENT_TEMPLATES,
                             Lists.newArrayList(COL_DOCUMENT_CATEGORY, COL_DOCUMENT_TEMPLATE_NAME,
                                 COL_DOCUMENT_DATA)),
                         Lists.newArrayList(getStringValue(COL_DOCUMENT_CATEGORY), value,
                             DataUtils.isId(dataId) ? BeeUtils.toString(dataId) : null),
-                        null, new RowInsertCallback(TBL_DOCUMENT_TEMPLATES, null) {
+                        null, new RowInsertCallback(VIEW_DOCUMENT_TEMPLATES, null) {
                           @Override
                           public void onSuccess(BeeRow result) {
                             super.onSuccess(result);
-                            RowEditor.openRow(TBL_DOCUMENT_TEMPLATES, result, true);
+                            RowEditor.open(VIEW_DOCUMENT_TEMPLATES, result, Opener.MODAL);
                           }
                         });
                   }

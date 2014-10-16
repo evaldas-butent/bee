@@ -1,16 +1,17 @@
 package com.butent.bee.server.modules.discussions;
 
-import com.google.common.base.Objects;
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.Lists;
-import com.google.common.collect.Maps;
 import com.google.common.collect.Multimap;
 import com.google.common.collect.Sets;
 import com.google.common.eventbus.Subscribe;
 
+import static com.butent.bee.shared.html.builder.Factory.*;
+import static com.butent.bee.shared.modules.administration.AdministrationConstants.*;
 import static com.butent.bee.shared.modules.classifiers.ClassifierConstants.*;
 import static com.butent.bee.shared.modules.discussions.DiscussionsConstants.*;
 
+import com.butent.bee.server.Config;
 import com.butent.bee.server.Invocation;
 import com.butent.bee.server.data.DataEditorBean;
 import com.butent.bee.server.data.DataEvent.ViewQueryEvent;
@@ -24,7 +25,9 @@ import com.butent.bee.server.modules.ParamHolderBean;
 import com.butent.bee.server.modules.ParameterEvent;
 import com.butent.bee.server.modules.ParameterEventHandler;
 import com.butent.bee.server.modules.administration.ExtensionIcons;
+import com.butent.bee.server.modules.mail.MailModuleBean;
 import com.butent.bee.server.news.NewsBean;
+import com.butent.bee.server.sql.HasConditions;
 import com.butent.bee.server.sql.IsCondition;
 import com.butent.bee.server.sql.SqlInsert;
 import com.butent.bee.server.sql.SqlSelect;
@@ -32,6 +35,10 @@ import com.butent.bee.server.sql.SqlUpdate;
 import com.butent.bee.server.sql.SqlUtils;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.communication.ResponseObject;
+import com.butent.bee.shared.css.Colors;
+import com.butent.bee.shared.css.CssUnit;
+import com.butent.bee.shared.css.values.FontWeight;
+import com.butent.bee.shared.css.values.VerticalAlign;
 import com.butent.bee.shared.data.BeeColumn;
 import com.butent.bee.shared.data.BeeRow;
 import com.butent.bee.shared.data.BeeRowSet;
@@ -43,11 +50,19 @@ import com.butent.bee.shared.data.SimpleRowSet.SimpleRow;
 import com.butent.bee.shared.data.SqlConstants.SqlDataType;
 import com.butent.bee.shared.data.UserData;
 import com.butent.bee.shared.data.filter.Filter;
-import com.butent.bee.shared.io.StoredFile;
+import com.butent.bee.shared.html.Tags;
+import com.butent.bee.shared.html.builder.Document;
+import com.butent.bee.shared.html.builder.Element;
+import com.butent.bee.shared.html.builder.elements.Div;
+import com.butent.bee.shared.html.builder.elements.H2;
+import com.butent.bee.shared.html.builder.elements.Tbody;
+import com.butent.bee.shared.i18n.LocalizableConstants;
+import com.butent.bee.shared.io.FileInfo;
 import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogUtils;
 import com.butent.bee.shared.modules.BeeParameter;
 import com.butent.bee.shared.modules.administration.AdministrationConstants;
+import com.butent.bee.shared.modules.discussions.DiscussionsConstants;
 import com.butent.bee.shared.modules.discussions.DiscussionsConstants.DiscussionEvent;
 import com.butent.bee.shared.modules.discussions.DiscussionsConstants.DiscussionStatus;
 import com.butent.bee.shared.modules.discussions.DiscussionsUtils;
@@ -64,9 +79,12 @@ import com.butent.bee.shared.utils.NameUtils;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 
 import javax.annotation.Resource;
@@ -86,6 +104,18 @@ public class DiscussionsModuleBean implements BeeModule {
   private static final int MAX_NUMBERS_OF_ROWS = 100;
   private static final String IMG_LINK = "link";
 
+  private static final String LOG_CREATE_DISCUSSION_LABEL =
+      "Create discussion: ";
+
+  private static final String LOG_CREATE_ANNOUNCEMENT_LABEL =
+      "Create annoucement: ";
+
+  private static final String LOG_MAIL_NEW_DISCUSSION_LABEL =
+      "Mail new discussion";
+
+  private static final String LOG_MAIL_NEW_ANNOUNCEMENT_LABEL =
+      "Mail new announcment";
+
   private static BeeLogger logger = LogUtils.getLogger(DiscussionsModuleBean.class);
 
   @EJB
@@ -100,6 +130,8 @@ public class DiscussionsModuleBean implements BeeModule {
   ParamHolderBean prm;
   @EJB
   NewsBean news;
+  @EJB
+  MailModuleBean mail;
 
   @Resource
   EJBContext ctx;
@@ -108,15 +140,9 @@ public class DiscussionsModuleBean implements BeeModule {
 
   @Override
   public List<SearchResult> doSearch(String query) {
-    List<SearchResult> result = Lists.newArrayList();
-
-    if (usr.isModuleVisible(Module.DISCUSSIONS.getName())) {
-      result.addAll(qs.getSearchResults(VIEW_DISCUSSIONS,
-          Filter.anyContains(Sets.newHashSet(COL_SUBJECT, COL_DESCRIPTION, ALS_OWNER_FIRST_NAME,
-              ALS_OWNER_LAST_NAME), query)));
-    }
-
-    return result;
+    return qs.getSearchResults(VIEW_DISCUSSIONS,
+        Filter.anyContains(Sets.newHashSet(COL_SUBJECT, COL_DESCRIPTION, ALS_OWNER_FIRST_NAME,
+            ALS_OWNER_LAST_NAME), query));
   }
 
   @Override
@@ -195,7 +221,7 @@ public class DiscussionsModuleBean implements BeeModule {
           BeeRowSet rowSet = event.getRowset();
 
           if (!rowSet.isEmpty()) {
-            Set<Long> discussionsIds = Sets.newHashSet();
+            Set<Long> discussionsIds = new HashSet<>();
 
             if (rowSet.getNumberOfRows() < MAX_NUMBERS_OF_ROWS) {
               for (BeeRow row : rowSet.getRows()) {
@@ -279,7 +305,8 @@ public class DiscussionsModuleBean implements BeeModule {
               row.setProperty(PROP_LAST_COMMENT_DATA, lastCommentVal);
 
               String filesCountVal = "";
-              if (BeeUtils.isPositive(rowSet.getColumnIndex(ALS_FILES_COUNT))) {
+              if (BeeUtils.isPositive(DataUtils.getColumnIndex(ALS_FILES_COUNT,
+                  rowSet.getColumns(), false))) {
                 filesCountVal = row.getString(rowSet.getColumnIndex(ALS_FILES_COUNT));
               }
 
@@ -287,7 +314,8 @@ public class DiscussionsModuleBean implements BeeModule {
 
               String relValue = "";
 
-              if (BeeUtils.isPositive(rowSet.getColumnIndex(ALS_RELATIONS_COUNT))) {
+              if (BeeUtils.isPositive(DataUtils.getColumnIndex(ALS_RELATIONS_COUNT, rowSet
+                  .getColumns(), false))) {
                 int rc =
                     BeeUtils.unbox(row.getInteger(rowSet.getColumnIndex(ALS_RELATIONS_COUNT)));
 
@@ -337,7 +365,7 @@ public class DiscussionsModuleBean implements BeeModule {
     Timer discussTimer = null;
 
     for (Timer timer : timerService.getTimers()) {
-      if (Objects.equal(timer.getInfo(), PRM_DISCUSS_INACTIVE_TIME_IN_DAYS)) {
+      if (Objects.equals(timer.getInfo(), PRM_DISCUSS_INACTIVE_TIME_IN_DAYS)) {
         discussTimer = timer;
         break;
       }
@@ -384,7 +412,7 @@ public class DiscussionsModuleBean implements BeeModule {
       row.setProperty(property, DataUtils.buildIdList(discussionRelations.get(property)));
     }
 
-    List<StoredFile> files = getDiscussionFiles(discussionId);
+    List<FileInfo> files = getDiscussionFiles(discussionId);
     if (!files.isEmpty()) {
       row.setProperty(PROP_FILES, Codec.beeSerialize(files));
     }
@@ -406,7 +434,7 @@ public class DiscussionsModuleBean implements BeeModule {
 
     Collection<BeeParameter> discussModuleParams = prm.getModuleParameters(getModule().getName());
     if (!discussModuleParams.isEmpty()) {
-      Map<String, String> paramsMap = Maps.newHashMap();
+      Map<String, String> paramsMap = new HashMap<>();
 
       for (BeeParameter p : discussModuleParams) {
         paramsMap.put(p.getName(), p.getValue());
@@ -425,7 +453,7 @@ public class DiscussionsModuleBean implements BeeModule {
     }
 
     ResponseObject response = new ResponseObject();
-    List<RowChildren> children = Lists.newArrayList();
+    List<RowChildren> children = new ArrayList<>();
 
     for (Map.Entry<String, String> entry : properties.entrySet()) {
       String relation = DiscussionsUtils.translateDiscussionPropertyToRelation(entry.getKey());
@@ -505,7 +533,7 @@ public class DiscussionsModuleBean implements BeeModule {
         updateDiscussionUsers(row.getId(), oldUsers, newUsers);
       }
     } else {
-      newUsers = Lists.newArrayList(oldUsers);
+      newUsers = new ArrayList<>(oldUsers);
     }
 
     if (!BeeUtils.isEmpty(updatedRelations)) {
@@ -514,9 +542,9 @@ public class DiscussionsModuleBean implements BeeModule {
 
     Map<Integer, String> shadow = row.getShadow();
     if (shadow != null && !shadow.isEmpty()) {
-      List<BeeColumn> columns = Lists.newArrayList();
-      List<String> oldValues = Lists.newArrayList();
-      List<String> newValues = Lists.newArrayList();
+      List<BeeColumn> columns = new ArrayList<>();
+      List<String> oldValues = new ArrayList<>();
+      List<String> newValues = new ArrayList<>();
 
       for (Map.Entry<Integer, String> entry : shadow.entrySet()) {
         columns.add(data.getColumn(entry.getKey()));
@@ -547,11 +575,9 @@ public class DiscussionsModuleBean implements BeeModule {
 
   private ResponseObject deleteDiscussionComment(long discussionId, long commentId) {
 
-    String reasonText =
-        BeeUtils.joinWords("<i style=\"font-size: smaller; color:red\">(", usr
-            .getLocalizableConstants().discussEventCommentDeleted()
-            + " )</i>:", new DateTime().toString() + ",",
-            usr.getCurrentUserData().getFirstName(), usr.getCurrentUserData().getLastName());
+    String reasonText = BeeUtils.joinWords("<i style=\"font-size: smaller; color:red\">(", usr
+        .getLocalizableConstants().discussEventCommentDeleted()
+        + " )</i>:", new DateTime().toString() + ",", usr.getCurrentUserSign());
 
     SqlUpdate update =
         new SqlUpdate(TBL_DISCUSSIONS_COMMENTS)
@@ -612,7 +638,7 @@ public class DiscussionsModuleBean implements BeeModule {
         }
 
         List<Long> members = DataUtils.parseIdList(properties.get(PROP_MEMBERS));
-        List<Long> discussions = Lists.newArrayList();
+        List<Long> discussions = new ArrayList<>();
 
         BeeRow newRow = DataUtils.cloneRow(discussRow);
         DiscussionStatus status = DiscussionStatus.ACTIVE;
@@ -669,6 +695,41 @@ public class DiscussionsModuleBean implements BeeModule {
         }
         break;
 
+      case CREATE_MAIL:
+        String discussIdData = reqInfo.getParameter(VAR_DISCUSSION_ID);
+
+        if (DataUtils.isId(BeeUtils.toLongOrNull(discussIdData))) {
+          discussionId = BeeUtils.toLong(discussIdData);
+        } else {
+          return ResponseObject.error("Incorrect discussion id:", discussIdData);
+        }
+
+        boolean notifyEmail = BeeConst.isTrue(discussRow.getProperty(PROP_MAIL));
+        boolean announcement = false;
+        String announcementTopic = "";
+
+        if (!(discussData.getColumnIndex(COL_TOPIC) < 0)) {
+          announcement =
+              DataUtils.isId(discussRow.getLong(discussData.getColumnIndex(COL_TOPIC)));
+        }
+
+        if (announcement) {
+          BeeRowSet topics =
+              qs.getViewData(VIEW_ADS_TOPICS, Filter.compareId(discussRow.getLong(discussData
+                  .getColumnIndex(COL_TOPIC))));
+
+          announcementTopic = topics.getRow(0).getString(topics.getColumnIndex(COL_NAME));
+        }
+
+        boolean sendAll =
+            BeeUtils
+                .unbox(discussRow.getBoolean(discussData.getColumnIndex(COL_ACCESSIBILITY)));
+
+        ResponseObject mailResponse =
+            sendNewDiscussionMail(discussionId, announcement, announcementTopic, notifyEmail,
+                sendAll);
+        response = ResponseObject.emptyResponse().addMessagesFrom(mailResponse);
+        break;
       case DEACTIVATE:
         break;
       case VISIT:
@@ -727,6 +788,9 @@ public class DiscussionsModuleBean implements BeeModule {
 
   @Timeout
   private void doInactiveDiscussions() {
+    if (!Config.isInitialized()) {
+      return;
+    }
     Long days = prm.getLong(PRM_DISCUSS_INACTIVE_TIME_IN_DAYS);
 
     if (!BeeUtils.isPositive(days)) {
@@ -902,23 +966,29 @@ public class DiscussionsModuleBean implements BeeModule {
             tRow.getInteger(topicRows.getColumnIndex(COL_ORDINAL));
 
         String[] topicData = new String[rs.getNumberOfColumns()];
+
         topicData[rs.getColumnIndex(ALS_TOPIC_NAME)] =
             tRow.getString(topicRows.getColumnIndex(COL_NAME));
         topicData[rs.getColumnIndex(COL_ORDINAL)] =
             tRow.getString(topicRows.getColumnIndex(COL_ORDINAL));
         topicData[rs.getColumnIndex(ALS_BIRTHDAY)] = BeeUtils.toString(true);
 
-        int placeId = rs.getNumberOfColumns() - 1;
+        int placeId = rs.getNumberOfRows() - 1;
         for (int i = 0; i < rs.getNumberOfRows(); i++) {
           Integer ord = BeeUtils.toIntOrNull(rs.getValue(i, rs.getColumnIndex(COL_ORDINAL)));
+
           if (BeeUtils.compareNullsLast(ord, ordinal) >= 0) {
-            if (i <= placeId) {
+            if (placeId > i) {
               placeId = i;
             }
           }
         }
 
-        rs.getRows().add(placeId, topicData);
+        if (placeId >= 0) {
+          rs.getRows().add(placeId, topicData);
+        } else {
+          rs.getRows().add(topicData);
+        }
       }
     }
 
@@ -966,7 +1036,7 @@ public class DiscussionsModuleBean implements BeeModule {
 
     SimpleRowSet up = qs.getData(select);
     SimpleRowSet birthdays =
-        new SimpleRowSet(new String[] {COL_NAME, COL_DATE_OF_BIRTH});
+        new SimpleRowSet(new String[] {COL_NAME, COL_DATE_OF_BIRTH, COL_ORDINAL});
 
     for (String[] upRow : up.getRows()) {
       if (!BeeUtils.isLong(upRow[up.getColumnIndex(COL_DATE_OF_BIRTH)])) {
@@ -978,17 +1048,19 @@ public class DiscussionsModuleBean implements BeeModule {
               .toLong(upRow[up.getColumnIndex(COL_DATE_OF_BIRTH)]));
 
       if (availableDays.contains(Integer.valueOf(date.getDoy()))) {
-        birthdays.addRow(new String[] {
+        String[] birthdaysRow = new String[] {
             BeeUtils.joinWords(upRow[up.getColumnIndex(COL_FIRST_NAME)],
                 upRow[up.getColumnIndex(COL_LAST_NAME)]),
-            upRow[up.getColumnIndex(COL_DATE_OF_BIRTH)]
-        });
+            upRow[up.getColumnIndex(COL_DATE_OF_BIRTH)],
+            BeeUtils.toString(date.getDoy())
+        };
+        birthdays.addRow(birthdaysRow);
       }
 
     }
 
     if (!birthdays.isEmpty()) {
-      return ResponseObject.response(birthdays);
+      return ResponseObject.response(sortBirhdaysList(birthdays));
     }
 
     return ResponseObject.emptyResponse();
@@ -1008,8 +1080,8 @@ public class DiscussionsModuleBean implements BeeModule {
     return ResponseObject.response(data);
   }
 
-  private List<StoredFile> getDiscussionFiles(long discussionId) {
-    List<StoredFile> result = Lists.newArrayList();
+  private List<FileInfo> getDiscussionFiles(long discussionId) {
+    List<FileInfo> result = new ArrayList<>();
 
     BeeRowSet rowSet =
         qs.getViewData(VIEW_DISCUSSIONS_FILES, Filter.equals(COL_DISCUSSION, discussionId));
@@ -1019,11 +1091,11 @@ public class DiscussionsModuleBean implements BeeModule {
     }
 
     for (BeeRow row : rowSet.getRows()) {
-      StoredFile sf =
-          new StoredFile(DataUtils.getLong(rowSet, row, AdministrationConstants.COL_FILE),
-              DataUtils.getString(rowSet, row, COL_FILE_NAME),
-              DataUtils.getLong(rowSet, row, COL_FILE_SIZE),
-              DataUtils.getString(rowSet, row, COL_FILE_TYPE));
+      FileInfo sf =
+          new FileInfo(DataUtils.getLong(rowSet, row, AdministrationConstants.COL_FILE),
+              DataUtils.getString(rowSet, row, ALS_FILE_NAME),
+              DataUtils.getLong(rowSet, row, ALS_FILE_SIZE),
+              DataUtils.getString(rowSet, row, ALS_FILE_TYPE));
 
       Long commentId = DataUtils.getLong(rowSet, row, COL_COMMENT);
 
@@ -1050,7 +1122,7 @@ public class DiscussionsModuleBean implements BeeModule {
 
   private List<Long> getDiscussionMarks(long discussionId) {
     if (!DataUtils.isId(discussionId)) {
-      return Lists.newArrayList();
+      return new ArrayList<>();
     }
 
     SqlSelect query = new SqlSelect()
@@ -1062,7 +1134,7 @@ public class DiscussionsModuleBean implements BeeModule {
             TBL_DISCUSSIONS_COMMENTS_MARKS, sys.getIdName(TBL_DISCUSSIONS_COMMENTS_MARKS));
 
     Long[] result = qs.getLongColumn(query);
-    List<Long> markList = Lists.newArrayList();
+    List<Long> markList = new ArrayList<>();
 
     if (BeeUtils.isPositive(result.length)) {
       markList = Lists.newArrayList(result);
@@ -1072,7 +1144,7 @@ public class DiscussionsModuleBean implements BeeModule {
   }
 
   private Map<Long, String> getDisscussionsLastComment(Set<Long> discussionIds) {
-    Map<Long, String> ls = Maps.newHashMap();
+    Map<Long, String> ls = new HashMap<>();
 
     SqlSelect select =
         new SqlSelect()
@@ -1157,7 +1229,7 @@ public class DiscussionsModuleBean implements BeeModule {
         .addGroup(TBL_DISCUSSIONS_COMMENTS_MARKS, COL_DISCUSSION);
 
     SimpleRowSet rs = qs.getData(select);
-    Map<Long, Integer> ls = Maps.newHashMap();
+    Map<Long, Integer> ls = new HashMap<>();
 
     for (String[] row : rs.getRows()) {
       ls.put(BeeUtils.toLong(row[rs.getColumnIndex(COL_DISCUSSION)]),
@@ -1210,7 +1282,7 @@ public class DiscussionsModuleBean implements BeeModule {
 
   private List<Long> getDiscussionMembers(long discussionId) {
     if (!DataUtils.isId(discussionId)) {
-      return Lists.newArrayList();
+      return new ArrayList<>();
     }
 
     SqlSelect query = new SqlSelect()
@@ -1243,6 +1315,87 @@ public class DiscussionsModuleBean implements BeeModule {
     return res;
   }
 
+  private Document renderDiscussionDocument(long discussionId, boolean typeAnnoucement,
+      String anouncmentTopic, SimpleRow discussMailRow, LocalizableConstants constants,
+      boolean isPublic) {
+
+    String discussSubject = BeeUtils.joinWords(
+        (typeAnnoucement ? constants.announcement()
+            : constants.discussion()) + BeeConst.STRING_COLON, discussMailRow
+            .getValue(COL_SUBJECT));
+
+    Document doc = new Document();
+    doc.getHead().append(meta().encodingDeclarationUtf8(), title().text(discussSubject));
+
+    Div panel = div();
+    doc.getBody().append(panel);
+
+    boolean important = BeeUtils.unbox(discussMailRow.getBoolean(COL_IMPORTANT));
+    String subjectColor = important ? Colors.RED : Colors.BLACK;
+
+    H2 subjectElement = h2().text(discussSubject);
+    subjectElement.setColor(subjectColor);
+    panel.append(subjectElement);
+
+    Tbody tableFields = tbody().append(
+        tr().append(td().text(constants.date()),
+            td().text(TimeUtils.renderCompact(discussMailRow.getDate(COL_CREATED)))));
+
+    if (typeAnnoucement) {
+      tableFields.append(
+          tr().append(td().text(constants.adTopic()),
+              td().text(anouncmentTopic))
+          );
+    }
+
+    Div discussDescriptionContent = div().text(discussMailRow.getValue(COL_DESCRIPTION));
+    // discussDescriptionContent.setMaxHeight(4, CssUnit.EM);
+    // discussDescriptionContent.setOverflow(Overflow.HIDDEN);
+
+    tableFields.append(
+        tr().append(td().text(constants.discussOwner()),
+            td().text(usr.getUserSign(discussMailRow.getLong(COL_OWNER)))),
+        tr().append(td().text(constants.discussDescription()),
+            td().append(discussDescriptionContent))
+        );
+
+    if (isPublic && !typeAnnoucement) {
+      tableFields.append(
+          tr().append(td().text(constants.discussMembers()),
+              td().text(constants.systemAllUsers()))
+          );
+    } else if (!isPublic) {
+
+      List<Long> discussMemberIds = getDiscussionMembers(discussionId);
+
+      String memberList = "";
+
+      for (Long userId : discussMemberIds) {
+
+        memberList = BeeUtils.joinNoDuplicates(BeeConst.STRING_COMMA + BeeConst.STRING_SPACE,
+            memberList, usr.getUserSign(userId));
+      }
+
+      tableFields.append(
+          tr().append(td().text(constants.discussMembers()),
+              td().text(memberList))
+          );
+    }
+
+    List<Element> cells = tableFields.queryTag(Tags.TD);
+    for (Element cell : cells) {
+      if (cell.index() == 0) {
+        cell.setPaddingRight(1, CssUnit.EM);
+        cell.setFontWeight(FontWeight.BOLDER);
+        cell.setVerticalAlign(VerticalAlign.TEXT_TOP);
+      }
+    }
+
+    panel.append(table().append(tableFields));
+
+    return doc;
+  }
+
   private ResponseObject registerDiscussionVisit(long discussionId, long userId, long mills) {
     IsCondition where =
         SqlUtils.and(
@@ -1255,10 +1408,166 @@ public class DiscussionsModuleBean implements BeeModule {
         .setWhere(where));
   }
 
+  private static SimpleRowSet sortBirhdaysList(SimpleRowSet birthdays) {
+    List<Integer> ordinals = Lists.newArrayList(birthdays.getIntColumn(COL_ORDINAL));
+    Collections.sort(ordinals);
+    SimpleRowSet sorted = new SimpleRowSet(birthdays.getColumnNames());
+
+    for (Integer ordinal : ordinals) {
+      for (String[] row : birthdays.getRows()) {
+        Integer doy = BeeUtils.toIntOrNull(row[birthdays.getColumnIndex(COL_ORDINAL)]);
+
+        if (doy.compareTo(ordinal) == 0) {
+          sorted.addRow(row);
+          birthdays.getRows().remove(row);
+          break;
+        }
+      }
+    }
+
+    return sorted;
+  }
+
+  private ResponseObject sendNewDiscussionMail(long discussionId, boolean typeAnnoucement,
+      String annoucementTopic, boolean notifyEmailPreference, boolean sendAll) {
+
+    Long senderAccountId = mail.getSenderAccountId(typeAnnoucement
+        ? LOG_CREATE_ANNOUNCEMENT_LABEL
+        : LOG_CREATE_DISCUSSION_LABEL);
+
+    ResponseObject response = ResponseObject.emptyResponse();
+    String label = typeAnnoucement ? LOG_MAIL_NEW_ANNOUNCEMENT_LABEL
+        : LOG_MAIL_NEW_DISCUSSION_LABEL;
+
+    if (senderAccountId == null) {
+      return response;
+    }
+
+    SqlSelect discussMailList =
+        new SqlSelect()
+            .addFields(TBL_DISCUSSIONS, COL_SUBJECT, COL_DESCRIPTION, COL_OWNER,
+                COL_CREATED, COL_TOPIC, COL_IMPORTANT)
+            .addFrom(TBL_DISCUSSIONS)
+            .setDistinctMode(true);
+
+    HasConditions where =
+        SqlUtils.and(SqlUtils.equals(TBL_DISCUSSIONS, COL_DISCUSSION_ID, discussionId));
+
+    if (notifyEmailPreference && sendAll) {
+      discussMailList.addField(TBL_USERS, sys.getIdName(TBL_USERS), DiscussionsConstants.COL_USER);
+
+      /* Using Cartesian product force sending all mails */
+      discussMailList.addFrom(TBL_USERS);
+
+      where.add(SqlUtils.notEqual(TBL_DISCUSSIONS, COL_OWNER,
+          SqlUtils.field(TBL_USERS, sys.getIdName(TBL_USERS))));
+
+    } else if (!notifyEmailPreference && sendAll) {
+      discussMailList.addField(TBL_USER_SETTINGS, AdministrationConstants.COL_USER,
+          DiscussionsConstants.COL_USER);
+
+      /* Using Cartesian product for sending all mails by settings */
+      discussMailList.addFrom(TBL_USER_SETTINGS);
+
+      where.add(SqlUtils.notEqual(TBL_DISCUSSIONS, COL_OWNER,
+          SqlUtils.field(TBL_USER_SETTINGS, AdministrationConstants.COL_USER)));
+
+      where.add(typeAnnoucement ? SqlUtils.notNull(TBL_USER_SETTINGS, COL_MAIL_NEW_ANNOUNCEMENTS)
+          : SqlUtils.notNull(TBL_USER_SETTINGS, COL_MAIL_NEW_DISCUSSIONS));
+
+    } else if (notifyEmailPreference && !sendAll) {
+      discussMailList.addField(TBL_USERS, sys.getIdName(TBL_USERS), DiscussionsConstants.COL_USER);
+
+      discussMailList
+          .addFromInner(TBL_DISCUSSIONS_USERS,
+              sys.joinTables(TBL_DISCUSSIONS, TBL_DISCUSSIONS_USERS, COL_DISCUSSION))
+          .addFromInner(TBL_USERS,
+              sys.joinTables(TBL_USERS, TBL_DISCUSSIONS_USERS, DiscussionsConstants.COL_USER));
+
+      where.add(SqlUtils.notEqual(TBL_DISCUSSIONS, COL_OWNER,
+          SqlUtils.field(TBL_DISCUSSIONS_USERS, DiscussionsConstants.COL_USER)));
+
+    } else if (!notifyEmailPreference && !sendAll) {
+      discussMailList.addField(TBL_USERS, sys.getIdName(TBL_USERS), DiscussionsConstants.COL_USER);
+
+      discussMailList
+          .addFromInner(TBL_DISCUSSIONS_USERS,
+              sys.joinTables(TBL_DISCUSSIONS, TBL_DISCUSSIONS_USERS, COL_DISCUSSION))
+          .addFromInner(TBL_USERS,
+              sys.joinTables(TBL_USERS, TBL_DISCUSSIONS_USERS, DiscussionsConstants.COL_USER))
+          .addFromInner(TBL_USER_SETTINGS,
+              sys.joinTables(TBL_USERS, TBL_USER_SETTINGS,
+                  AdministrationConstants.COL_USER));
+
+      where.add(SqlUtils.notEqual(TBL_DISCUSSIONS, COL_OWNER,
+          SqlUtils.field(TBL_DISCUSSIONS_USERS, DiscussionsConstants.COL_USER)));
+
+      where.add(typeAnnoucement ? SqlUtils.notNull(TBL_USER_SETTINGS, COL_MAIL_NEW_ANNOUNCEMENTS)
+          : SqlUtils.notNull(TBL_USER_SETTINGS, COL_MAIL_NEW_DISCUSSIONS));
+
+    }
+
+    discussMailList.setWhere(where);
+
+    logger.warning(typeAnnoucement ? LOG_CREATE_ANNOUNCEMENT_LABEL : LOG_CREATE_DISCUSSION_LABEL,
+        "query:",
+        discussMailList.getQuery());
+
+    SimpleRowSet discussMailListRowSet = qs.getData(discussMailList);
+
+    if (DataUtils.isEmpty(discussMailListRowSet)) {
+      return response;
+    }
+
+    for (SimpleRow discussMailRow : discussMailListRowSet) {
+      Long member = discussMailRow.getLong(DiscussionsConstants.COL_USER);
+
+      if (usr.isBlocked(usr.getUserName(member))) {
+        logger.warning(label, discussionId, "member", member, "is blocked");
+        continue;
+      }
+
+      String memberEmail = usr.getUserEmail(member, false);
+
+      if (BeeUtils.isEmpty(memberEmail)) {
+        logger.warning(label, discussionId, "member", member, "email not available");
+        continue;
+      }
+
+      LocalizableConstants constants = usr.getLocalizableConstants(member);
+
+      if (constants == null) {
+        logger.warning(label, discussionId, "member", member, "localization not available");
+        continue;
+      }
+
+      Document discussMailDocument =
+          renderDiscussionDocument(discussionId, typeAnnoucement, annoucementTopic, discussMailRow,
+              constants, sendAll);
+
+      String htmlDiscussMailContent = discussMailDocument.buildLines();
+
+      logger.info(label, discussionId, "mail to", member, memberEmail);
+
+      String subject = typeAnnoucement ? constants.discussMailNewAnnouncementSubject()
+          : constants.discussMailNewDiscussionSubject();
+
+      ResponseObject mailResponse = mail.sendMail(senderAccountId, memberEmail, subject,
+          htmlDiscussMailContent);
+
+      if (mailResponse.hasErrors()) {
+        response.addWarning("Send mail failed");
+      }
+
+    }
+
+    return response;
+  }
+
   private ResponseObject updateDiscussionRelations(long discussionId, Set<String> updatedRelations,
       BeeRow row) {
     ResponseObject response = new ResponseObject();
-    List<RowChildren> children = Lists.newArrayList();
+    List<RowChildren> children = new ArrayList<>();
 
     for (String property : updatedRelations) {
       String relation = DiscussionsUtils.translateDiscussionPropertyToRelation(property);
@@ -1280,10 +1589,10 @@ public class DiscussionsModuleBean implements BeeModule {
 
   private void updateDiscussionUsers(long discussionId, Collection<Long> oldUsers,
       Collection<Long> newUsers) {
-    List<Long> insert = Lists.newArrayList(newUsers);
+    List<Long> insert = new ArrayList<>(newUsers);
     insert.removeAll(oldUsers);
 
-    List<Long> delete = Lists.newArrayList(oldUsers);
+    List<Long> delete = new ArrayList<>(oldUsers);
     delete.removeAll(newUsers);
 
     for (Long user : insert) {

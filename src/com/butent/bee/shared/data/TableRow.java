@@ -1,9 +1,9 @@
 package com.butent.bee.shared.data;
 
-import com.google.common.collect.Lists;
-
 import com.butent.bee.shared.Assert;
+import com.butent.bee.shared.data.value.Value;
 
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -12,7 +12,7 @@ import java.util.List;
 
 public class TableRow extends AbstractRow {
 
-  private List<IsCell> cells = Lists.newArrayList();
+  private List<IsCell> cells = new ArrayList<>();
 
   public TableRow(long id) {
     super(id);
@@ -24,20 +24,14 @@ public class TableRow extends AbstractRow {
   }
 
   @Override
-  public void clearCell(int index) {
-    assertIndex(index);
-    cells.set(index, null);
+  public void addValue(Value value) {
+    addCell(new TableCell(value));
   }
 
   @Override
-  public IsRow copy() {
-    TableRow result = new TableRow(getId());
-    result.setVersion(getVersion());
-    for (IsCell cell : getCells()) {
-      result.addCell(cell.copy());
-    }
-    copyProperties(result);
-    return result;
+  public void clearCell(int index) {
+    assertIndex(index);
+    cells.set(index, null);
   }
 
   @Override

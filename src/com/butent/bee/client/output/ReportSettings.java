@@ -17,11 +17,11 @@ import com.butent.bee.client.dialog.StringCallback;
 import com.butent.bee.client.dom.DomUtils;
 import com.butent.bee.client.layout.Flow;
 import com.butent.bee.client.screen.Domain;
-import com.butent.bee.client.style.StyleUtils;
 import com.butent.bee.client.ui.IdentifiableWidget;
 import com.butent.bee.client.widget.CustomDiv;
 import com.butent.bee.client.widget.FaLabel;
 import com.butent.bee.shared.Assert;
+import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.css.CssUnit;
 import com.butent.bee.shared.data.BeeColumn;
 import com.butent.bee.shared.data.BeeRow;
@@ -34,6 +34,7 @@ import com.butent.bee.shared.ui.HasCaption;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.Codec;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
@@ -89,12 +90,14 @@ public class ReportSettings {
       CustomDiv label = new CustomDiv(STYLE_LABEL);
       label.setText(item.getCaption());
 
-      List<String> params = Lists.newArrayList();
-      for (Map.Entry<String, String> entry : item.getParameters().entrySet()) {
-        params.add(BeeUtils.joinWords(entry.getKey(), entry.getValue()));
-      }
-      if (!params.isEmpty()) {
-        label.setTitle(BeeUtils.buildLines(params));
+      if (Global.isDebug()) {
+        List<String> params = new ArrayList<>();
+        for (Map.Entry<String, String> entry : item.getParameters().entrySet()) {
+          params.add(BeeUtils.joinWords(entry.getKey(), entry.getValue()));
+        }
+        if (!params.isEmpty()) {
+          label.setTitle(BeeUtils.buildLines(params));
+        }
       }
 
       label.addClickHandler(new ClickHandler() {
@@ -166,7 +169,7 @@ public class ReportSettings {
     }
   }
 
-  private static final String STYLE_PREFIX = StyleUtils.CLASS_NAME_PREFIX + "report-settings-";
+  private static final String STYLE_PREFIX = BeeConst.CSS_CLASS_PREFIX + "report-settings-";
 
   private static final String STYLE_ITEM = STYLE_PREFIX + "item";
   private static final String STYLE_LABEL = STYLE_PREFIX + "label";
@@ -191,8 +194,8 @@ public class ReportSettings {
     }
 
     final SettingsWidget settingsWidget = find(report, parameters);
-    
-    String defValue = (settingsWidget == null) ? caption : settingsWidget.getItem().getCaption(); 
+
+    String defValue = (settingsWidget == null) ? caption : settingsWidget.getItem().getCaption();
     int maxLength = Data.getColumnPrecision(VIEW_REPORT_SETTINGS, COL_RS_CAPTION);
 
     Global.inputString(Localized.getConstants().bookmarkName(), null, new StringCallback() {

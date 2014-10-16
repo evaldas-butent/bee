@@ -1,7 +1,5 @@
 package com.butent.bee.client.decorator;
 
-import com.google.common.collect.Lists;
-import com.google.common.collect.Maps;
 import com.google.gwt.dom.client.DivElement;
 import com.google.gwt.dom.client.Document;
 import com.google.gwt.dom.client.Element;
@@ -28,6 +26,8 @@ import com.butent.bee.shared.utils.ExtendedProperty;
 import com.butent.bee.shared.utils.PropertyUtils;
 import com.butent.bee.shared.utils.XmlHelper;
 
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -35,11 +35,11 @@ class Decorator implements HasEnabled, HasExtendedInfo {
 
   private final class Fields implements HasExtendedInfo {
 
-    private final List<Parameter> params = Lists.newArrayList();
-    private final Map<String, String> constants = Maps.newHashMap();
-    private final Map<String, String> css = Maps.newHashMap();
+    private final List<Parameter> params = new ArrayList<>();
+    private final Map<String, String> constants = new HashMap<>();
+    private final Map<String, String> css = new HashMap<>();
     private Lifecycle lifecycle;
-    private final List<Handler> handlers = Lists.newArrayList();
+    private final List<Handler> handlers = new ArrayList<>();
     private Template template;
 
     private String eventTarget;
@@ -76,7 +76,7 @@ class Decorator implements HasEnabled, HasExtendedInfo {
 
     @Override
     public List<ExtendedProperty> getExtendedInfo() {
-      List<ExtendedProperty> result = Lists.newArrayList();
+      List<ExtendedProperty> result = new ArrayList<>();
 
       int idx;
       if (!params.isEmpty()) {
@@ -225,7 +225,7 @@ class Decorator implements HasEnabled, HasExtendedInfo {
   }
 
   private static final BeeLogger logger = LogUtils.getLogger(Decorator.class);
-  
+
   private final boolean isAbstract;
 
   private final String id;
@@ -254,7 +254,7 @@ class Decorator implements HasEnabled, HasExtendedInfo {
 
   @Override
   public List<ExtendedProperty> getExtendedInfo() {
-    List<ExtendedProperty> result = Lists.newArrayList();
+    List<ExtendedProperty> result = new ArrayList<>();
     PropertyUtils.addProperties(result, false,
         DecoratorConstants.ATTR_ID, getId(),
         DecoratorConstants.ATTR_EXTENDS, getParent(),
@@ -343,14 +343,14 @@ class Decorator implements HasEnabled, HasExtendedInfo {
       StyleUtils.updateClasses(widgetElement, classes);
     }
     widgetElement.addClassName(getId() + "-content");
-    
+
     addAppearance(root, widgetElement, options);
 
     if (getCounter() <= 0) {
       addStyleSheets(substitutes);
     }
 
-    JsFunction onCreated = null;    
+    JsFunction onCreated = null;
     JsFunction onInserted = null;
     JsFunction onRemoved = null;
 
@@ -363,13 +363,13 @@ class Decorator implements HasEnabled, HasExtendedInfo {
 
     DecoratedWidget decoratedWidget = new DecoratedWidget(widget.asWidget(), root, onInserted,
         onRemoved);
-    
+
     addHandlers(decoratedWidget.asWidget(), widget.asWidget(), substitutes);
 
     if (onCreated != null) {
       onCreated.call(root);
     }
-    
+
     setCounter(getCounter() + 1);
     return decoratedWidget;
   }
@@ -453,12 +453,12 @@ class Decorator implements HasEnabled, HasExtendedInfo {
   void setInitialized(boolean initialized) {
     this.initialized = initialized;
   }
-  
+
   private void addAppearance(Element root, Element content, Map<String, String> options) {
     if (options == null || options.isEmpty()) {
       return;
     }
-    
+
     String classes = options.get(DecoratorConstants.OPTION_ROOT_CLASS);
     String styles = options.get(DecoratorConstants.OPTION_ROOT_STYLE);
     StyleUtils.updateAppearance(root, classes, styles);
@@ -475,12 +475,12 @@ class Decorator implements HasEnabled, HasExtendedInfo {
     if (!BeeUtils.isEmpty(styles)) {
       TuningHelper.updateRoleStyles(root, styles);
     }
-    
+
     String role = getFields().getAppearanceTarget();
     if (BeeUtils.isEmpty(role)) {
       return;
     }
-    
+
     classes = options.get(DecoratorConstants.OPTION_CLASS);
     styles = options.get(DecoratorConstants.OPTION_STYLE);
     if (BeeUtils.allEmpty(classes, styles)) {
@@ -495,7 +495,7 @@ class Decorator implements HasEnabled, HasExtendedInfo {
       StyleUtils.updateAppearance(content, classes, styles);
       return;
     }
-    
+
     Element cutoff = getFields().isAppearanceDeep() ? null : content;
     List<Element> targets = TuningHelper.getActors(root, role, null, cutoff);
     if (targets.isEmpty()) {
@@ -530,7 +530,7 @@ class Decorator implements HasEnabled, HasExtendedInfo {
         EventUtils.addDomHandler(content, type, body);
         continue;
       }
-      
+
       Element cutoff = handler.isDeep() ? null : contentElement;
       List<Element> targets = TuningHelper.getActors(rootElement, role, null, cutoff);
       if (targets.isEmpty()) {
@@ -567,12 +567,12 @@ class Decorator implements HasEnabled, HasExtendedInfo {
       Global.addStyleSheet(substitute(name, substitutes), substitute(text, substitutes));
     }
   }
-  
+
   private boolean checkRequiredParameters(Map<String, String> options) {
     if (getFields().params.isEmpty()) {
       return true;
     }
-    
+
     boolean ok = true;
     for (Parameter param : getFields().params) {
       if (!param.isRequired()) {
@@ -590,17 +590,17 @@ class Decorator implements HasEnabled, HasExtendedInfo {
     DivElement tmpDiv = Document.get().createDivElement();
     tmpDiv.setInnerHTML(substitute(getFields().getTemplate().getMarkup(), substitutes));
     Element element = tmpDiv.getFirstChildElement();
-    
+
     if (element == null) {
       return element;
     }
-    
+
     List<Element> children = DomUtils.getElementsByAttributeValue(element, XmlHelper.ATTR_XMLNS,
         DecoratorConstants.NAMESPACE, content, content);
     for (Element child : children) {
       child.removeAttribute(XmlHelper.ATTR_XMLNS);
     }
-    
+
     return element;
   }
 
@@ -619,7 +619,7 @@ class Decorator implements HasEnabled, HasExtendedInfo {
   }
 
   private Map<String, String> getSubstitutes(Map<String, String> options) {
-    Map<String, String> result = Maps.newHashMap();
+    Map<String, String> result = new HashMap<>();
     for (Parameter param : getFields().params) {
       result.put(wrapSubstitute(param.getName()), param.getValue(options));
     }

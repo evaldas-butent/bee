@@ -1,6 +1,5 @@
 package com.butent.bee.client.i18n;
 
-import com.google.common.collect.Lists;
 import com.google.gwt.i18n.client.LocaleInfo;
 import com.google.gwt.i18n.client.LocalizedNames;
 import com.google.gwt.i18n.client.constants.NumberConstants;
@@ -13,6 +12,7 @@ import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.ExtendedProperty;
 import com.butent.bee.shared.utils.PropertyUtils;
 
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -25,14 +25,14 @@ public final class LocaleUtils {
   private static final String LOCALE_SEPARATOR = "_";
 
   private static final String LOCALE_NAME_LT = "lt";
-  
+
   private static final String[] LT_MONTHS_FULL = {
       "sausio", "vasario", "kovo", "balandžio", "gegužės", "birželio",
       "liepos", "rugpjūčio", "rugsėjo", "spalio", "lapkričio", "gruodžio"};
 
   private static final String LT_FORMAT_MONTH_ABBREV_DAY = "MMM d";
   private static final String LT_FORMAT_MONTH_FULL_DAY = "MMMM d";
-  
+
   public static boolean copyDateTimeFormat(Object src, Object dst) {
     if (src instanceof HasDateTimeFormat && dst instanceof HasDateTimeFormat && src != dst) {
       ((HasDateTimeFormat) dst).setDateTimeFormat(((HasDateTimeFormat) src).getDateTimeFormat());
@@ -52,7 +52,7 @@ public final class LocaleUtils {
   }
 
   public static List<ExtendedProperty> getInfo() {
-    List<ExtendedProperty> lst = Lists.newArrayList();
+    List<ExtendedProperty> lst = new ArrayList<>();
 
     String[] names = LocaleInfo.getAvailableLocaleNames();
     PropertyUtils.addExtended(lst, "Available Locale Names", ArrayUtils.length(names));
@@ -172,7 +172,7 @@ public final class LocaleUtils {
     }
     return lst;
   }
-  
+
   public static String getLanguageCode(LocaleInfo locale) {
     if (locale == null) {
       return BeeConst.STRING_EMPTY;
@@ -215,7 +215,7 @@ public final class LocaleUtils {
       return localeInfo.getDateTimeFormatInfo().monthsFull();
     }
   }
-  
+
   private static boolean isLt(LocaleInfo localeInfo) {
     return localeInfo != null && BeeUtils.same(localeInfo.getLocaleName(), LOCALE_NAME_LT);
   }

@@ -1,9 +1,7 @@
 package com.butent.bee.client.presenter;
 
-import com.google.common.base.Objects;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Lists;
-import com.google.common.collect.Sets;
 import com.google.gwt.event.shared.HandlerRegistration;
 
 import com.butent.bee.client.BeeKeeper;
@@ -22,7 +20,6 @@ import com.butent.bee.client.dialog.Icon;
 import com.butent.bee.client.dialog.StringCallback;
 import com.butent.bee.client.output.Printer;
 import com.butent.bee.client.ui.FormDescription;
-import com.butent.bee.client.ui.IdentifiableWidget;
 import com.butent.bee.client.view.FormContainerImpl;
 import com.butent.bee.client.view.FormContainerView;
 import com.butent.bee.client.view.HasSearch;
@@ -59,7 +56,10 @@ import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.NameUtils;
 
 import java.util.Collection;
+import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Objects;
 import java.util.Set;
 
 public class FormPresenter extends AbstractPresenter implements ReadyForInsertEvent.Handler,
@@ -95,7 +95,7 @@ public class FormPresenter extends AbstractPresenter implements ReadyForInsertEv
   private final FormContainerView formContainer;
   private final Provider dataProvider;
 
-  private final Set<HandlerRegistration> filterChangeHandlers = Sets.newHashSet();
+  private final Set<HandlerRegistration> filterChangeHandlers = new HashSet<>();
   private Filter lastFilter;
 
   public FormPresenter(FormDescription formDescription, String viewName, int rowCount,
@@ -113,7 +113,7 @@ public class FormPresenter extends AbstractPresenter implements ReadyForInsertEv
 
   @Override
   public IsRow getActiveRow() {
-    return formContainer.getContent().getActiveRow();
+    return getFormView().getActiveRow();
   }
 
   @Override
@@ -141,7 +141,7 @@ public class FormPresenter extends AbstractPresenter implements ReadyForInsertEv
   }
 
   public NotificationListener getNotificationListener() {
-    return formContainer.getContent();
+    return getFormView();
   }
 
   @Override
@@ -151,7 +151,7 @@ public class FormPresenter extends AbstractPresenter implements ReadyForInsertEv
     if (getMainView() instanceof HasSearch) {
       searchers = ((HasSearch) getMainView()).getSearchers();
     } else {
-      searchers = Sets.newHashSet();
+      searchers = new HashSet<>();
     }
     return searchers;
   }
@@ -162,11 +162,6 @@ public class FormPresenter extends AbstractPresenter implements ReadyForInsertEv
       return null;
     }
     return getDataProvider().getViewName();
-  }
-
-  @Override
-  public IdentifiableWidget getWidget() {
-    return getMainView();
   }
 
   @Override
@@ -187,14 +182,14 @@ public class FormPresenter extends AbstractPresenter implements ReadyForInsertEv
         Global.inputString("Options", new StringCallback() {
           @Override
           public void onSuccess(String value) {
-            formContainer.getContent().applyOptions(value);
+            getFormView().applyOptions(value);
           }
         });
         break;
 
       case DELETE:
-        if (hasData() && formContainer.getContent().isRowEditable(true)) {
-          IsRow row = formContainer.getContent().getActiveRow();
+        IsRow row = getFormView().getActiveRow();
+        if (hasData() && getFormView().isRowEnabled(row)) {
           deleteRow(row.getId(), row.getVersion());
         }
         break;
@@ -207,12 +202,12 @@ public class FormPresenter extends AbstractPresenter implements ReadyForInsertEv
 
       case ADD:
         if (hasData()) {
-          formContainer.getContent().startNewRow(false);
+          getFormView().startNewRow(false);
         }
         break;
 
       case PRINT:
-        FormView form = formContainer.getContent();
+        FormView form = getFormView();
         if (form.printHeader() || form.printFooter()) {
           Printer.print(formContainer);
         } else {
@@ -338,8 +333,8 @@ public class FormPresenter extends AbstractPresenter implements ReadyForInsertEv
         }
       }
 
-      view.getContent().addReadyForUpdateHandler(this);
-      view.getContent().addReadyForInsertHandler(this);
+      view.getForm().addReadyForUpdateHandler(this);
+      view.getForm().addReadyForInsertHandler(this);
     }
   }
 
@@ -350,8 +345,8 @@ public class FormPresenter extends AbstractPresenter implements ReadyForInsertEv
       return null;
     }
 
-    HasDataTable display = view.getContent().getDisplay();
-    NotificationListener notificationListener = view.getContent();
+    HasDataTable display = view.getForm().getDisplay();
+    NotificationListener notificationListener = view.getForm();
     Provider provider;
 
     switch (providerType) {
@@ -384,12 +379,16 @@ public class FormPresenter extends AbstractPresenter implements ReadyForInsertEv
 
   private void deleteRow(long rowId, long version) {
     Global.confirmDelete(getCaption(), Icon.WARNING,
-        Lists.newArrayList(Localized.getConstants().deleteRecordQuestion()),
+        Collections.singletonList(Localized.getConstants().deleteRecordQuestion()),
         new DeleteCallback(rowId, version));
   }
 
   private FormInterceptor getFormInterceptor() {
-    return formContainer.getContent().getFormInterceptor();
+    return getFormView().getFormInterceptor();
+  }
+
+  private FormView getFormView() {
+    return formContainer.getForm();
   }
 
   private boolean hasData() {
@@ -406,7 +405,7 @@ public class FormPresenter extends AbstractPresenter implements ReadyForInsertEv
 
   private void updateFilter() {
     Filter filter = ViewHelper.getFilter(this, getDataProvider());
-    if (Objects.equal(filter, getLastFilter())) {
+    if (Objects.equals(filter, getLastFilter())) {
       logger.info("filter not changed", filter);
     } else {
       lastFilter = filter;

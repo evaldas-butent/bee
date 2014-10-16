@@ -6,8 +6,6 @@ import com.google.common.base.Splitter;
 import com.google.common.collect.BiMap;
 import com.google.common.collect.HashBiMap;
 import com.google.common.collect.Iterables;
-import com.google.common.collect.Lists;
-import com.google.common.collect.Sets;
 
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.i18n.LocalizableConstants;
@@ -16,21 +14,27 @@ import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogUtils;
 import com.butent.bee.shared.modules.administration.AdministrationConstants;
 import com.butent.bee.shared.modules.calendar.CalendarConstants;
+import com.butent.bee.shared.modules.classifiers.ClassifierConstants;
 import com.butent.bee.shared.modules.discussions.DiscussionsConstants;
 import com.butent.bee.shared.modules.ec.EcConstants;
+import com.butent.bee.shared.modules.mail.MailConstants;
+import com.butent.bee.shared.modules.service.ServiceConstants;
 import com.butent.bee.shared.modules.tasks.TaskConstants;
+import com.butent.bee.shared.modules.trade.acts.TradeActConstants;
 import com.butent.bee.shared.modules.transport.TransportConstants;
 import com.butent.bee.shared.ui.HasCaption;
 import com.butent.bee.shared.ui.HasLocalizedCaption;
 
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
 public final class EnumUtils {
 
   public static final String ATTR_ENUM_KEY = "enumKey";
-  
+
   private static final BeeLogger logger = LogUtils.getLogger(EnumUtils.class);
 
   private static final BiMap<String, Class<? extends Enum<?>>> CLASSES = HashBiMap.create();
@@ -40,23 +44,27 @@ public final class EnumUtils {
   private static final Joiner joiner = Joiner.on(LIST_SEPARATOR).skipNulls();
   private static final Splitter splitter =
       Splitter.on(LIST_SEPARATOR).omitEmptyStrings().trimResults();
-  
+
   private static final Function<Enum<?>, Integer> indexFunction = new Function<Enum<?>, Integer>() {
     @Override
     public Integer apply(Enum<?> input) {
       return (input == null) ? null : input.ordinal();
     }
-  }; 
-  
+  };
+
   static {
-    CalendarConstants.register();
     AdministrationConstants.register();
+    ClassifierConstants.register();
+    CalendarConstants.register();
     TaskConstants.register();
     DiscussionsConstants.register();
     EcConstants.register();
     TransportConstants.register();
+    ServiceConstants.register();
+    MailConstants.register();
+    TradeActConstants.register();
   }
-  
+
   public static String buildIndexList(Collection<? extends Enum<?>> values) {
     if (values == null) {
       return null;
@@ -72,7 +80,7 @@ public final class EnumUtils {
   public static String getCaption(String key, Integer index) {
     return getLocalizedCaption(key, index, Localized.getConstants());
   }
-  
+
   public static List<String> getCaptions(Class<? extends Enum<?>> clazz) {
     return getLocalizedCaptions(clazz, Localized.getConstants());
   }
@@ -165,7 +173,7 @@ public final class EnumUtils {
       return list.get(index);
     }
   }
-  
+
   public static String getLocalizedCaption(String key, Integer index,
       LocalizableConstants constants) {
 
@@ -192,7 +200,7 @@ public final class EnumUtils {
     Assert.notNull(clazz);
     Assert.notNull(constants);
 
-    List<String> result = Lists.newArrayList();
+    List<String> result = new ArrayList<>();
 
     for (Enum<?> constant : clazz.getEnumConstants()) {
       if (constant instanceof HasLocalizedCaption) {
@@ -231,39 +239,76 @@ public final class EnumUtils {
     return key;
   }
 
+  @SafeVarargs
+  public static <E extends Enum<?>> boolean in(E x, E first, E second, E... rest) {
+    if (x == null) {
+      return false;
+
+    } else if (x == first || x == second) {
+      return true;
+
+    } else if (rest == null) {
+      return false;
+
+    } else {
+      for (E y : rest) {
+        if (x == y) {
+          return true;
+        }
+      }
+      return false;
+    }
+  }
+
   public static boolean isRegistered(String key) {
     return CLASSES.containsKey(BeeUtils.normalize(key));
   }
 
   public static <E extends Enum<?>> List<E> parseIndexList(Class<E> clazz, String input) {
-    List<E> result = Lists.newArrayList();
+    List<E> result = new ArrayList<>();
     if (clazz == null || BeeUtils.isEmpty(input)) {
       return result;
     }
-    
+
     for (String s : splitter.split(input)) {
       E e = getEnumByIndex(clazz, s);
       if (e != null) {
         result.add(e);
       }
     }
-    
+
+    return result;
+  }
+
+  public static <E extends Enum<?>> List<E> parseNameList(Class<E> clazz, String input) {
+    List<E> result = new ArrayList<>();
+    if (clazz == null || BeeUtils.isEmpty(input)) {
+      return result;
+    }
+
+    for (String s : splitter.split(input)) {
+      E e = getEnumByName(clazz, s);
+      if (e != null) {
+        result.add(e);
+      }
+    }
+
     return result;
   }
 
   public static <E extends Enum<?>> Set<E> parseIndexSet(Class<E> clazz, String input) {
-    Set<E> result = Sets.newHashSet();
+    Set<E> result = new HashSet<>();
     if (clazz == null || BeeUtils.isEmpty(input)) {
       return result;
     }
-    
+
     for (String s : splitter.split(input)) {
       E e = getEnumByIndex(clazz, s);
       if (e != null) {
         result.add(e);
       }
     }
-    
+
     return result;
   }
 
