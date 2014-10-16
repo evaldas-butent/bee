@@ -617,6 +617,7 @@ public class DataSelector extends Composite implements Editor, HasVisibleLines, 
   private static final String STYLE_DRILL = STYLE_SELECTOR + "-drill";
   private static final String STYLE_DRILL_DISABBLED = STYLE_DRILL + "-disabled";
 
+  private static final int DEFAULT_MAX_INPUT_LENGTH = 30;
   private static final int DEFAULT_VISIBLE_LINES = 10;
 
   private static final Operator DEFAULT_SEARCH_TYPE = Operator.CONTAINS;
@@ -886,10 +887,21 @@ public class DataSelector extends Composite implements Editor, HasVisibleLines, 
 
     Binder.addMouseWheelHandler(selector.getPopup(), inputEvents);
 
-    if (dataColumn != null && ValueType.isString(dataColumn.getType())
-        && dataColumn.getPrecision() > 0) {
-      input.setMaxLength(dataColumn.getPrecision());
+    int maxLen = 0;
+
+    if (dataColumn != null && dataColumn.isCharacter()) {
+      maxLen = dataColumn.getPrecision();
+
+    } else if (size > 1) {
+      for (String colName : choiceColumns) {
+        BeeColumn column = dataInfo.getColumn(colName);
+        if (column != null && column.isCharacter()) {
+          maxLen = Math.max(maxLen, column.getPrecision());
+        }
+      }
     }
+
+    input.setMaxLength(BeeUtils.positive(maxLen, DEFAULT_MAX_INPUT_LENGTH));
 
     init(input, embedded);
 

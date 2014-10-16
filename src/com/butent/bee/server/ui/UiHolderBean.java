@@ -109,7 +109,7 @@ public class UiHolderBean {
     if (object != null) {
       if (cache.containsKey(key(objectName))) {
         logger.warning(BeeUtils.parenthesize(moduleName),
-            "Dublicate", clazz, "name:", BeeUtils.bracket(objectName));
+            "Duplicate", clazz, "name:", BeeUtils.bracket(objectName));
       } else {
         cache.put(key(objectName), object);
       }

@@ -430,6 +430,9 @@ public class GridLoaderBean {
         } else if (BeeUtils.same(key, ATTR_CARRY)) {
           dst.setCarryOn(BeeUtils.toBooleanOrNull(value));
 
+        } else if (BeeUtils.same(key, ATTR_EDIT_IN_PLACE)) {
+          dst.setEditInPlace(BeeUtils.toBooleanOrNull(value));
+
         } else if (Flexibility.isAttributeRelevant(key)) {
           hasFlexibility = true;
         }
@@ -893,10 +896,6 @@ public class GridLoaderBean {
     Boolean editShowId = XmlUtils.getAttributeBoolean(src, ATTR_EDIT_SHOW_ID);
     if (editShowId != null) {
       dst.setEditShowId(editShowId);
-    }
-    String editInPlace = src.getAttribute(ATTR_EDIT_IN_PLACE);
-    if (!BeeUtils.isEmpty(editInPlace)) {
-      dst.setEditInPlace(editInPlace.trim());
     }
     Boolean editPopup = XmlUtils.getAttributeBoolean(src, UiConstants.ATTR_EDIT_POPUP);
     if (editPopup != null) {

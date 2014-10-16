@@ -934,7 +934,7 @@ public class BeeView implements BeeObject, HasExtendedInfo {
     Assert.state(!BeeUtils.inListSame(colName, getSourceIdName(), getSourceVersionName()),
         BeeUtils.joinWords("Reserved column name:", getName(), colName));
     Assert.state(!hasColumn(colName),
-        BeeUtils.joinWords("Dublicate column name:", getName(), colName));
+        BeeUtils.joinWords("Duplicate column name:", getName(), colName));
 
     String ownerAlias = null;
     String newAlias = alias;

@@ -86,6 +86,7 @@ public abstract class AbstractPager extends Composite implements PagerView {
     return false;
   }
 
+  @Override
   public void setDisplay(HasDataTable display) {
     if (changeHandler != null) {
       changeHandler.removeHandler();

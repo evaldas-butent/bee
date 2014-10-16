@@ -142,7 +142,7 @@ public class ModuleHolderBean {
     }
     for (String moduleName : mods) {
       if (hasModule(moduleName)) {
-        logger.severe("Dublicate module name:", BeeUtils.bracket(moduleName));
+        logger.severe("Duplicate module name:", BeeUtils.bracket(moduleName));
       } else {
         try {
           Class<BeeModule> clazz = (Class<BeeModule>) Class.forName(BeeUtils.join(".",

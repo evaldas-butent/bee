@@ -80,7 +80,7 @@ class GridConfig {
       List<String> names = DataUtils.getColumnNames(columns);
 
       userIndex = GridUtils.getIndex(names, GridDescription.COL_GRID_SETTING_USER);
-      keyIndex = GridUtils.getIndex(names, "Key");
+      keyIndex = GridUtils.getIndex(names, GridDescription.COL_GRID_SETTING_KEY);
       captionIndex = GridUtils.getIndex(names, "Caption");
       columnsIndex = GridUtils.getIndex(names, "Columns");
       orderIndex = GridUtils.getIndex(names, "Order");
@@ -197,7 +197,7 @@ class GridConfig {
     return result;
   }
 
-  final BeeRow row;
+  private BeeRow row;
 
   final Map<String, ColumnConfig> columnSettings = new HashMap<>();
 
@@ -323,6 +323,23 @@ class GridConfig {
     }
   }
 
+  ColumnConfig findColumnConfig(long id) {
+    for (ColumnConfig columnConfig : columnSettings.values()) {
+      if (columnConfig.getRowId() == id) {
+        return columnConfig;
+      }
+    }
+    return null;
+  }
+
+  BeeRow getRow() {
+    return row;
+  }
+
+  long getRowId() {
+    return row.getId();
+  }
+
   boolean hasVisibleColumns() {
     return !BeeUtils.isEmpty(row.getString(columnsIndex));
   }
@@ -351,6 +368,17 @@ class GridConfig {
         && getMinColumnWidth() == null && getMaxColumnWidth() == null
         && getFlexGrow() == null && getFlexShrink() == null
         && getFlexBasis() == null && getFlexBasisUnit() == null;
+  }
+
+  boolean maybeRemoveColumn(long id) {
+    String key = findColumnKey(id);
+
+    if (key == null) {
+      return false;
+    } else {
+      columnSettings.remove(key);
+      return true;
+    }
   }
 
   void saveColumnSetting(String name, int index, String value) {
@@ -382,11 +410,10 @@ class GridConfig {
             });
       }
 
-    } else if (!BeeUtils.equalsTrim(columnConfig.row.getString(index), newValue)) {
-      columnConfig.row.setValue(index, newValue);
+    } else if (columnConfig.setValue(index, newValue)) {
 
       Queries.update(ColumnDescription.VIEW_COLUMN_SETTINGS,
-          Filter.compareId(columnConfig.row.getId()), dataColumn.getId(),
+          Filter.compareId(columnConfig.getRowId()), dataColumn.getId(),
           new TextValue(newValue), new Queries.IntCallback() {
             @Override
             public void onSuccess(Integer result) {
@@ -399,6 +426,28 @@ class GridConfig {
             }
           });
     }
+  }
+
+  void setRow(BeeRow row) {
+    this.row = row;
+  }
+
+  boolean setValue(int index, String value) {
+    if (!BeeUtils.equalsTrim(row.getString(index), value)) {
+      row.setValue(index, value);
+      return true;
+    } else {
+      return false;
+    }
+  }
+
+  private String findColumnKey(long id) {
+    for (Map.Entry<String, ColumnConfig> entry : columnSettings.entrySet()) {
+      if (entry.getValue().getRowId() == id) {
+        return entry.getKey();
+      }
+    }
+    return null;
   }
 
   private Boolean getAutoFit() {

@@ -726,7 +726,7 @@ public class ImportBean {
             condition.add(wh);
           }
           qs.updateData(new SqlUpdate(tmp)
-              .addConstant(COL_REASON, "Dublicate " + BeeUtils.join("+", flds))
+              .addConstant(COL_REASON, "Duplicate " + BeeUtils.join("+", flds))
               .setFrom(ins, SqlUtils.joinUsing(tmp, ins, COL_REC_NO))
               .setWhere(condition));
 
