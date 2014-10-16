@@ -30,6 +30,7 @@ import com.butent.bee.server.sql.IsExpression;
 import com.butent.bee.server.sql.SqlSelect;
 import com.butent.bee.server.sql.SqlUpdate;
 import com.butent.bee.server.sql.SqlUtils;
+import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.Service;
 import com.butent.bee.shared.communication.ResponseObject;
@@ -45,6 +46,7 @@ import com.butent.bee.shared.data.filter.Filter;
 import com.butent.bee.shared.data.filter.Operator;
 import com.butent.bee.shared.data.value.Value;
 import com.butent.bee.shared.exceptions.BeeException;
+import com.butent.bee.shared.exceptions.BeeRuntimeException;
 import com.butent.bee.shared.html.builder.Document;
 import com.butent.bee.shared.html.builder.elements.Span;
 import com.butent.bee.shared.logging.BeeLogger;
@@ -118,6 +120,25 @@ public class TradeModuleBean implements BeeModule {
   @EJB
   ClassifiersModuleBean cls;
 
+  public static String decodeId(String trade, Long id) {
+    Assert.notEmpty(trade);
+    Long normalizedId;
+
+    switch (trade) {
+      case TBL_PURCHASES:
+        normalizedId = id / 2;
+        break;
+
+      case TBL_SALES:
+        normalizedId = (id - 1) / 2;
+        break;
+
+      default:
+        throw new BeeRuntimeException("View source not supported: " + trade);
+    }
+    return BeeUtils.toString(normalizedId);
+  }
+
   @Override
   public List<SearchResult> doSearch(String query) {
     List<SearchResult> result = new ArrayList<>();
@@ -169,6 +190,25 @@ public class TradeModuleBean implements BeeModule {
     }
 
     return response;
+  }
+
+  public static String encodeId(String trade, Long id) {
+    Assert.notEmpty(trade);
+    Long normalizedId;
+
+    switch (trade) {
+      case TBL_PURCHASES:
+        normalizedId = id * 2;
+        break;
+
+      case TBL_SALES:
+        normalizedId = id * 2 + 1;
+        break;
+
+      default:
+        throw new BeeRuntimeException("View source not supported: " + trade);
+    }
+    return BeeUtils.toString(normalizedId);
   }
 
   public ResponseObject getCreditInfo(Long companyId) {
@@ -689,7 +729,6 @@ public class TradeModuleBean implements BeeModule {
     String trade = sys.getView(viewName).getSourceName();
     String tradeItems;
     String itemsRelation;
-    String sign = "";
 
     SqlSelect query = new SqlSelect()
         .addFields(trade, COL_TRADE_DATE, COL_TRADE_INVOICE_PREFIX, COL_TRADE_INVOICE_NO,
@@ -715,7 +754,6 @@ public class TradeModuleBean implements BeeModule {
           .addFromLeft(TBL_WAREHOUSES, COL_PURCHASE_WAREHOUSE_TO,
               sys.joinTables(TBL_WAREHOUSES, COL_PURCHASE_WAREHOUSE_TO, trade,
                   COL_PURCHASE_WAREHOUSE_TO));
-      sign = "-";
     } else {
       return ResponseObject.error("View source not supported:", trade);
     }
@@ -776,7 +814,7 @@ public class TradeModuleBean implements BeeModule {
         warehouse = prm.getText("ERPWarehouse");
         client = companies.get(invoice.getLong(COL_TRADE_CUSTOMER));
       }
-      WSDocument doc = new WSDocument(sign + invoice.getValue(itemsRelation),
+      WSDocument doc = new WSDocument(encodeId(trade, invoice.getLong(itemsRelation)),
           invoice.getDateTime(COL_TRADE_DATE), operation, client, warehouse);
 
       if (invoices.hasColumn(COL_SALE_PAYER)) {
