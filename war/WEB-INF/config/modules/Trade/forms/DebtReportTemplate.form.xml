@@ -15,8 +15,8 @@
         renderColumns="Name Subject" style="width: 350px;" />
       </row>
       <row>
-        <Label for="Subject" text="=mailSubject" />
-        <InputText name="Subject" style="width: 350px;" />
+        <Label for="Subject" text="=mailSubject" class="bee-required" />
+        <InputText name="Subject" style="width: 350px;" required="true" />
       </row>
       
       <row>

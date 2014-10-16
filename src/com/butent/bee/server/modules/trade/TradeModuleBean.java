@@ -659,7 +659,7 @@ public class TradeModuleBean implements BeeModule {
     Long senderMailAccountId = mail.getSenderAccountId(SVC_REMIND_DEBTS_EMAIL);
     ResponseObject resp = ResponseObject.emptyResponse();
 
-    if (DataUtils.isId(senderMailAccountId)) {
+    if (!DataUtils.isId(senderMailAccountId)) {
       return ResponseObject.error(usr.getLocalizableConstants().mailAccountNotFound());
     }
 

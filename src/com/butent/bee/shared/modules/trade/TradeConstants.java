@@ -26,6 +26,7 @@ public final class TradeConstants {
 
   public static final String VIEW_DEBTS = "Debts";
   public static final String VIEW_DEBT_REPORTS = "DebtReports";
+  public static final String VIEW_DEBT_REMINDER_TEMPLATE = "DebtReminderTemplates";
   public static final String VIEW_PURCHASES = "Purchases";
   public static final String VIEW_PURCHASE_ITEMS = "PurchaseItems";
   public static final String VIEW_SALES = "Sales";
@@ -90,6 +91,11 @@ public final class TradeConstants {
 
   public static final String COL_STATUS_NAME = "StatusName";
   public static final String COL_STATUS_ACTIVE = "StatusActive";
+
+  public static final String COL_TEMPLATE_NAME = "Name";
+  public static final String COL_TEMPLATE_SUBJECT = "Subject";
+  public static final String COL_TEMPLATE_FIRST_PARAGRAPH = "FirstParagraph";
+  public static final String COL_TEMPLATE_LAST_PARAGRAPH = "LastParagraph";
 
   public static final String ALS_CUSTOMER_NAME = "CustomerName";
   public static final String ALS_SUPPLIER_NAME = "SupplierName";

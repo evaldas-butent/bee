@@ -8,6 +8,7 @@ import com.butent.bee.client.Global;
 import com.butent.bee.client.communication.ParameterList;
 import com.butent.bee.client.communication.ResponseCallback;
 import com.butent.bee.client.composite.UnboundSelector;
+import com.butent.bee.client.data.Data;
 import com.butent.bee.client.dialog.Popup;
 import com.butent.bee.client.event.logical.SelectorEvent;
 import com.butent.bee.client.grid.GridFactory;
@@ -30,9 +31,11 @@ import com.butent.bee.client.widget.InputArea;
 import com.butent.bee.client.widget.InputText;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.communication.ResponseObject;
+import com.butent.bee.shared.data.BeeRow;
 import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.IsRow;
 import com.butent.bee.shared.data.filter.Filter;
+import com.butent.bee.shared.data.view.DataInfo;
 import com.butent.bee.shared.data.view.RowInfo;
 import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.modules.administration.AdministrationConstants;
@@ -50,14 +53,14 @@ class DebtReportsGrid extends AbstractGridInterceptor implements ClickHandler {
     private static final String NAME_SEND = "Send";
     private static final String NAME_SUBJECT = "Subject";
     private static final String NAME_FIRST_PARAGRAPHAR = "FirstParagraph";
-    private static final String NAME_LAST_PARAGRAPHAR = "FirstParagraph";
+    private static final String NAME_LAST_PARAGRAPHAR = "LastParagraph";
 
     private final Set<Long> ids;
 
-    UnboundSelector template;
-    InputText subject;
-    InputArea firstParagraph;
-    InputArea lastParagraph;
+    private UnboundSelector template;
+    private InputText subject;
+    private InputArea firstParagraph;
+    private InputArea lastParagraph;
 
     public DebtReportTemplateForm(Set<Long> ids) {
       this.ids = ids;
@@ -73,7 +76,28 @@ class DebtReportsGrid extends AbstractGridInterceptor implements ClickHandler {
         template.addSelectorHandler(new SelectorEvent.Handler() {
           @Override
           public void onDataSelector(SelectorEvent event) {
-            event.getSelector().getValue();
+            BeeRow row = event.getSelector().getRelatedRow();
+
+            if (row == null) {
+              return;
+            }
+
+            DataInfo info = Data.getDataInfo(TradeConstants.VIEW_DEBT_REMINDER_TEMPLATE);
+
+            if (getSubject() != null) {
+              getSubject().setText(row.getString(info
+                  .getColumnIndex(TradeConstants.COL_TEMPLATE_SUBJECT)));
+            }
+
+            if (getFirstParagraph() != null) {
+              getFirstParagraph().setText(row.getString(info
+                  .getColumnIndex(TradeConstants.COL_TEMPLATE_FIRST_PARAGRAPH)));
+            }
+
+            if (getLastParagraph() != null) {
+              getLastParagraph().setText(row.getString(info
+                  .getColumnIndex(TradeConstants.COL_TEMPLATE_LAST_PARAGRAPH)));
+            }
           }
         });
       }
@@ -96,9 +120,12 @@ class DebtReportsGrid extends AbstractGridInterceptor implements ClickHandler {
 
           @Override
           public void onClick(ClickEvent arg0) {
-            String subjectText = subject != null ? subject.getValue() : BeeConst.STRING_EMPTY;
-            String p1 = firstParagraph != null ? firstParagraph.getValue() : BeeConst.STRING_EMPTY;
-            String p2 = lastParagraph != null ? lastParagraph.getValue() : BeeConst.STRING_EMPTY;
+            String subjectText =
+                getSubject() != null ? getSubject().getText() : BeeConst.STRING_EMPTY;
+            String p1 =
+                getFirstParagraph() != null ? getFirstParagraph().getText() : BeeConst.STRING_EMPTY;
+            String p2 =
+                getLastParagraph() != null ? getLastParagraph().getText() : BeeConst.STRING_EMPTY;
             sendMail(subjectText, p1, p2, ids);
           }
         });
@@ -109,6 +136,19 @@ class DebtReportsGrid extends AbstractGridInterceptor implements ClickHandler {
     public FormInterceptor getInstance() {
       return new DebtReportTemplateForm(ids);
     }
+
+    private InputText getSubject() {
+      return subject;
+    }
+
+    private InputArea getFirstParagraph() {
+      return firstParagraph;
+    }
+
+    private InputArea getLastParagraph() {
+      return lastParagraph;
+    }
+
   }
 
   private final Button action = new Button(Localized.getConstants().sendReminder(), this);
@@ -164,6 +204,9 @@ class DebtReportsGrid extends AbstractGridInterceptor implements ClickHandler {
 
   private void openForm(final Set<Long> ids) {
 
+    // FormFactory.openForm(TradeConstants.FORM_DEBT_REPORT_TEMPLATE, new
+    // DebtReportTemplateForm(ids));
+
     FormFactory.createFormView(TradeConstants.FORM_DEBT_REPORT_TEMPLATE, null,
         null, false,
         new DebtReportTemplateForm(ids), new FormFactory.FormViewCallback() {
@@ -194,7 +237,14 @@ class DebtReportsGrid extends AbstractGridInterceptor implements ClickHandler {
           return;
         }
 
-        Popup.getActivePopup().close();
+        if (response.hasResponse() && response.getResponse() instanceof String) {
+          getGridPresenter().getGridView().notifyInfo(
+              new String[] {(String) response.getResponse()});
+        }
+
+        if (Popup.getActivePopup() != null) {
+          Popup.getActivePopup().close();
+        }
       }
     });
 
