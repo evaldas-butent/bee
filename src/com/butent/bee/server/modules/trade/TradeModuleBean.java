@@ -1,7 +1,9 @@
 package com.butent.bee.server.modules.trade;
 
+import com.google.common.base.CharMatcher;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
+import com.google.common.collect.Range;
 import com.google.common.collect.Sets;
 import com.google.common.eventbus.Subscribe;
 
@@ -10,7 +12,6 @@ import static com.butent.bee.shared.modules.administration.AdministrationConstan
 import static com.butent.bee.shared.modules.classifiers.ClassifierConstants.*;
 import static com.butent.bee.shared.modules.trade.TradeConstants.*;
 
-import com.butent.bee.client.Global;
 import com.butent.bee.server.data.DataEvent.ViewInsertEvent;
 import com.butent.bee.server.data.DataEvent.ViewModifyEvent;
 import com.butent.bee.server.data.DataEvent.ViewQueryEvent;
@@ -34,6 +35,8 @@ import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.Service;
 import com.butent.bee.shared.communication.ResponseObject;
+import com.butent.bee.shared.css.values.BorderStyle;
+import com.butent.bee.shared.css.values.TextAlign;
 import com.butent.bee.shared.data.BeeColumn;
 import com.butent.bee.shared.data.BeeRow;
 import com.butent.bee.shared.data.BeeRowSet;
@@ -45,10 +48,15 @@ import com.butent.bee.shared.data.SimpleRowSet.SimpleRow;
 import com.butent.bee.shared.data.filter.Filter;
 import com.butent.bee.shared.data.filter.Operator;
 import com.butent.bee.shared.data.value.Value;
+import com.butent.bee.shared.data.value.ValueType;
 import com.butent.bee.shared.exceptions.BeeException;
 import com.butent.bee.shared.exceptions.BeeRuntimeException;
 import com.butent.bee.shared.html.builder.Document;
-import com.butent.bee.shared.html.builder.elements.Span;
+import com.butent.bee.shared.html.builder.elements.Table;
+import com.butent.bee.shared.html.builder.elements.Td;
+import com.butent.bee.shared.html.builder.elements.Th;
+import com.butent.bee.shared.html.builder.elements.Tr;
+import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogUtils;
 import com.butent.bee.shared.modules.BeeParameter;
@@ -57,6 +65,7 @@ import com.butent.bee.shared.modules.transport.TransportConstants;
 import com.butent.bee.shared.rights.Module;
 import com.butent.bee.shared.rights.ModuleAndSub;
 import com.butent.bee.shared.rights.SubModule;
+import com.butent.bee.shared.time.DateTime;
 import com.butent.bee.shared.time.JustDate;
 import com.butent.bee.shared.time.TimeUtils;
 import com.butent.bee.shared.utils.ArrayUtils;
@@ -638,19 +647,73 @@ public class TradeModuleBean implements BeeModule {
 
     Filter filter = Filter.and(
         Filter.isEqual(COL_TRADE_CUSTOMER, Value.getValue(companyId)),
-        Filter.compareWithValue(COL_TRADE_DEBT, Operator.LT, Value.getValue(0)));
+        Filter.compareWithValue(COL_TRADE_DEBT, Operator.GT, Value.getValue(0)));
 
     BeeRowSet rs = qs.getViewData(VIEW_SALES, filter, null,
         Lists.newArrayList(COL_TRADE_INVOICE_PREFIX, COL_TRADE_INVOICE_NO, COL_TRADE_DATE,
             COL_TRADE_TERM, COL_TRADE_AMOUNT, ALS_CURRENCY_NAME, COL_TRADE_DEBT));
 
-    Span span = span();
-    String htmlTable = Global.renderTable(null, rs).toString();
-    span.appendText(htmlTable);
+    if (rs.isEmpty()) {
+      return null;
+    }
 
+
+    Table table = table();
+    Tr trHead = tr();
+
+    for (int i = 0; i < rs.getNumberOfColumns(); i++) {
+      String label = Localized.maybeTranslate(rs.getColumnLabel(i), usr.getLocalizableDictionary());
+      Th th = th().text(label);
+      th.setBorderWidth("1px");
+      trHead.append(th);
+    }
+
+    table.append(trHead);
+
+    Range<Long> maybeTime = Range.closed(
+        TimeUtils.startOfYear(TimeUtils.today(), -10).getTime(),
+        TimeUtils.startOfYear(TimeUtils.today(), 100).getTime());
+
+    for (IsRow row : rs) {
+      Tr tr = tr();
+
+      for (int i = 0; i < rs.getNumberOfColumns(); i++) {
+        if (row.isNull(i)) {
+          tr.append(td());
+          continue;
+        }
+
+        ValueType type = rs.getColumnType(i);
+        String value = DataUtils.render(rs.getColumn(i), row, i);
+
+        if (type == ValueType.LONG) {
+          Long x = row.getLong(i);
+          if (x != null && maybeTime.contains(x)) {
+            type = ValueType.DATE_TIME;
+            value = new DateTime(x).toCompactString();
+          }
+        }
+
+        Td td = td();
+        tr.append(td);
+        td.text(value);
+
+        if (ValueType.isNumeric(type) || ValueType.TEXT == type
+            && CharMatcher.DIGIT.matchesAnyOf(value) && BeeUtils.isDouble(value)) {
+          td.setTextAlign(TextAlign.RIGHT);
+        }
+
+      }
+      table.append(tr);
+    }
+
+
+    table.setBorderWidth("1px");
+    table.setBorderStyle(BorderStyle.SOLID);
+    table.setBorderSpacing("0px");
 
     doc.getBody().append(p().text(first));
-    doc.getBody().append(span);
+    doc.getBody().append(table);
     doc.getBody().append(p().text(last));
     return doc;
   }
@@ -680,6 +743,11 @@ public class TradeModuleBean implements BeeModule {
 
       Document mailDocument = renderCompanyDebtMail(subject, p1, p2, companyId);
 
+      if (mailDocument == null) {
+        errorMails.put(companyId, usr.getLocalizableConstants().noData());
+        continue;
+      }
+
       try {
       mail.sendMail(mailStore.getAccount(senderMailAccountId),
           ArrayUtils.toArray(
@@ -688,7 +756,7 @@ public class TradeModuleBean implements BeeModule {
               .buildLines(),
           null, true);
         sentEmailCompanyIds.add(companyId);
-      } catch (MessagingException ex) {
+      } catch (MessagingException | BeeRuntimeException ex) {
         logger.error(ex);
         errorMails.put(companyId, ex.getMessage());
       }
@@ -711,6 +779,8 @@ public class TradeModuleBean implements BeeModule {
             , br().build());
 
         if (i > 5) {
+          message = BeeUtils.joinWords(message, br().build()
+              , BeeUtils.bracket(BeeConst.ELLIPSIS), errorMails.keySet().size() - i);
           break;
         }
         i++;
