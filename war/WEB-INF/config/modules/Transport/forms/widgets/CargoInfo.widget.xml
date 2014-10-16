@@ -91,7 +91,7 @@
     
   <FlowPanel style="&section;">
     <Label text="=quantity" style="&labelLeft;" />
-    <InputInteger source="Quantity" style="&input;" />
+    <InputDecimal source="Quantity" format="#.00" style="&input;" />
     <DataSelector source="QuantityUnit" style="&inline; width:40px; margin-left:5px;" editEnabled="false" />
     <Label text="=weight" style="&labelRight;" />
     <InputDecimal source="Weight" format="#.000" style="&input;" />

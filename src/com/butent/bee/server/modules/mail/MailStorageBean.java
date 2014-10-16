@@ -272,7 +272,7 @@ public class MailStorageBean {
         try {
           senderId = storeAddress(account.getUserId(), sender);
         } catch (AddressException e) {
-          logger.warning("( MessageID =", messageId, ") Error storing address:", e);
+          logger.warning("( MessageID =", messageId.get(), ") Error storing address:", e);
         }
       }
       try {
@@ -282,9 +282,16 @@ public class MailStorageBean {
         String contentType = message.getContentType();
 
         fileId = fs.storeFile(is, "mail@" + envelope.getUniqueId(), !BeeUtils.isEmpty(contentType)
-            ? new ContentType(message.getContentType()).getBaseType() : null);
-      } catch (IOException e) {
+            ? new ContentType(contentType).getBaseType() : null);
+      } catch (MessagingException | IOException e) {
+        qs.updateData(new SqlDelete(TBL_PLACES)
+            .setWhere(SqlUtils.equals(TBL_MESSAGES, COL_MESSAGE, messageId.get())));
+
+        qs.updateData(new SqlDelete(TBL_MESSAGES)
+            .setWhere(sys.idEquals(TBL_MESSAGES, messageId.get())));
+
         logger.error(e);
+        return null;
       }
       qs.updateData(new SqlUpdate(TBL_MESSAGES)
           .addConstant(COL_SENDER, senderId)
@@ -304,7 +311,7 @@ public class MailStorageBean {
                 .addConstant(COL_ADDRESS_TYPE, entry.getKey().name()));
           }
         } catch (AddressException e) {
-          logger.warning("( MessageID =", messageId, ") Error storing address:", e);
+          logger.warning("( MessageID =", messageId.get(), ") Error storing address:", e);
         }
       }
       try {
@@ -498,51 +505,60 @@ public class MailStorageBean {
 
   private Long storeAddress(Long userId, InternetAddress address) throws AddressException {
     Assert.notNull(address);
-    String email;
-    String label = null;
 
     address.validate();
 
-    label = address.getPersonal();
-    email = BeeUtils.normalize(address.getAddress());
+    String label = address.getPersonal();
+    String email = BeeUtils.normalize(address.getAddress());
 
     Assert.notEmpty(email);
 
-    Long id = null;
-    Long bookId = null;
-    String bookLabel = null;
-    String bookIdName = sys.getIdName(TBL_ADDRESSBOOK);
+    Holder<Long> emailId = Holder.absent();
+    Holder<Long> bookId = Holder.absent();
 
-    SimpleRow row = qs.getRow(new SqlSelect()
-        .addField(TBL_EMAILS, sys.getIdName(TBL_EMAILS), COL_EMAIL)
-        .addFields(TBL_ADDRESSBOOK, bookIdName, COL_EMAIL_LABEL)
-        .addFrom(TBL_EMAILS)
-        .addFromLeft(TBL_ADDRESSBOOK,
-            SqlUtils.and(sys.joinTables(TBL_EMAILS, TBL_ADDRESSBOOK, COL_EMAIL),
-                SqlUtils.equals(TBL_ADDRESSBOOK, MailConstants.COL_USER, userId)))
-        .setWhere(SqlUtils.equals(TBL_EMAILS, COL_EMAIL_ADDRESS, email)));
+    cb.synchronizedCall(new Runnable() {
+      @Override
+      public void run() {
+        QueryServiceBean queryBean = Invocation.locateRemoteBean(QueryServiceBean.class);
 
-    if (row != null) {
-      id = row.getLong(COL_EMAIL);
-      bookId = row.getLong(bookIdName);
-      bookLabel = row.getValue(COL_EMAIL_LABEL);
-    }
-    if (!DataUtils.isId(id)) {
-      id = qs.insertData(new SqlInsert(TBL_EMAILS)
-          .addConstant(COL_EMAIL_ADDRESS, email));
-    }
-    if (!DataUtils.isId(bookId)) {
-      qs.insertData(new SqlInsert(TBL_ADDRESSBOOK)
-          .addConstant(MailConstants.COL_USER, userId)
-          .addConstant(COL_EMAIL, id)
-          .addConstant(COL_EMAIL_LABEL, label));
+        emailId.set(queryBean.getLong(new SqlSelect()
+            .addFields(TBL_EMAILS, sys.getIdName(TBL_EMAILS))
+            .addFrom(TBL_EMAILS)
+            .setWhere(SqlUtils.equals(TBL_EMAILS, COL_EMAIL_ADDRESS, email))));
 
-    } else if (BeeUtils.isEmpty(bookLabel) && !BeeUtils.isEmpty(label)) {
-      qs.updateData(new SqlUpdate(TBL_ADDRESSBOOK)
-          .addConstant(COL_EMAIL_LABEL, label)
-          .setWhere(sys.idEquals(TBL_ADDRESSBOOK, bookId)));
+        if (emailId.isNull()) {
+          emailId.set(queryBean.insertData(new SqlInsert(TBL_EMAILS)
+              .addConstant(COL_EMAIL_ADDRESS, email)));
+
+          bookId.set(queryBean.insertData(new SqlInsert(TBL_ADDRESSBOOK)
+              .addConstant(MailConstants.COL_USER, userId)
+              .addConstant(COL_EMAIL, emailId.get())
+              .addNotEmpty(COL_EMAIL_LABEL, label)));
+        }
+      }
+    });
+    if (bookId.isNull()) {
+      String bookIdName = sys.getIdName(TBL_ADDRESSBOOK);
+
+      SimpleRow row = qs.getRow(new SqlSelect()
+          .addFields(TBL_ADDRESSBOOK, bookIdName, COL_EMAIL_LABEL)
+          .addFrom(TBL_ADDRESSBOOK)
+          .setWhere(SqlUtils.equals(TBL_ADDRESSBOOK, MailConstants.COL_USER, userId,
+              COL_EMAIL, emailId.get())));
+
+      if (row == null) {
+        qs.insertData(new SqlInsert(TBL_ADDRESSBOOK)
+            .addConstant(MailConstants.COL_USER, userId)
+            .addConstant(COL_EMAIL, emailId.get())
+            .addNotEmpty(COL_EMAIL_LABEL, label));
+
+      } else if (BeeUtils.isEmpty(row.getValue(COL_EMAIL_LABEL)) && !BeeUtils.isEmpty(label)) {
+        qs.updateData(new SqlUpdate(TBL_ADDRESSBOOK)
+            .addConstant(COL_EMAIL_LABEL, label)
+            .setWhere(sys.idEquals(TBL_ADDRESSBOOK, row.getLong(bookIdName))));
+      }
     }
-    return id;
+    return emailId.get();
   }
 
   private void storePart(Long messageId, Part part, List<Pair<String, String>> contents,

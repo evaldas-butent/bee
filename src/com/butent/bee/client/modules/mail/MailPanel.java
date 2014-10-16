@@ -89,6 +89,7 @@ import com.butent.bee.shared.modules.administration.AdministrationConstants;
 import com.butent.bee.shared.modules.classifiers.ClassifierConstants;
 import com.butent.bee.shared.modules.mail.AccountInfo;
 import com.butent.bee.shared.modules.mail.MailConstants.MessageFlag;
+import com.butent.bee.shared.modules.mail.MailConstants.RuleCondition;
 import com.butent.bee.shared.modules.mail.MailConstants.SystemFolder;
 import com.butent.bee.shared.modules.mail.MailFolder;
 import com.butent.bee.shared.time.DateTime;
@@ -470,6 +471,18 @@ public class MailPanel extends AbstractFormInterceptor {
           BeeRow newRow = RowFactory.createEmptyRow(dataInfo, true);
           Data.setValue(TBL_RULES, newRow, COL_ACCOUNT, getCurrentAccount().getAccountId());
 
+          if (currentMessage != null) {
+            if (isSenderFolder(getCurrentFolderId())) {
+              Data.setValue(TBL_RULES, newRow, COL_RULE_CONDITION,
+                  RuleCondition.RECIPIENTS.ordinal());
+              Data.setValue(TBL_RULES, newRow, COL_RULE_CONDITION_OPTIONS,
+                  currentMessage.getProperty(ClassifierConstants.COL_EMAIL_ADDRESS));
+            } else {
+              Data.setValue(TBL_RULES, newRow, COL_RULE_CONDITION, RuleCondition.SENDER.ordinal());
+              Data.setValue(TBL_RULES, newRow, COL_RULE_CONDITION_OPTIONS,
+                  Data.getString(TBL_PLACES, currentMessage, "SenderEmail"));
+            }
+          }
           RowFactory.createRow(dataInfo, newRow);
         }
       });
