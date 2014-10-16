@@ -34,6 +34,20 @@
       <renderer type="flag" />
     </CalcColumn>
 
+    <DataColumn name="DiscountPercent" />
+    <RelColumn name="DiscountParent">
+      <renderToken source="ParentFirstName" />
+      <renderToken source="ParentLastName" />
+      <renderToken source="ParentCompanyName" prefix=", " />
+    </RelColumn>
+
+    <DataColumn name="DisplayedPrice" />
+
+    <RelColumn name="BasePriceList0" />
+    <RelColumn name="ClientPriceList0" />
+    <RelColumn name="BasePriceList1" visible="false" />
+    <RelColumn name="ClientPriceList1" visible="false" />
+
     <DataColumn name="CreditLimitWarning" visible="false" />
     <DataColumn name="Registered" visible="false" />
     <DataColumn name="PersonCode" visible="false" />

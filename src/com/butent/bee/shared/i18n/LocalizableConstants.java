@@ -152,6 +152,8 @@ public interface LocalizableConstants extends Constants, LocalizableClassifierCo
 
   String clear();
 
+  String clearFilter();
+
   String client();
 
   String clients();
@@ -368,6 +370,8 @@ public interface LocalizableConstants extends Constants, LocalizableClassifierCo
 
   String filterRemove();
 
+  String firstName();
+
   String height();
 
   String imported();
@@ -395,6 +399,8 @@ public interface LocalizableConstants extends Constants, LocalizableClassifierCo
   String ipBlocked();
 
   String languageTag();
+
+  String lastName();
 
   String length();
 
@@ -549,8 +555,6 @@ public interface LocalizableConstants extends Constants, LocalizableClassifierCo
   String relatedTo();
 
   String relations();
-
-  String removeFilter();
 
   String repeatNewPassword();
 

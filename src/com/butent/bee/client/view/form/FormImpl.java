@@ -329,8 +329,6 @@ public class FormImpl extends Absolute implements FormView, PreviewHandler, Tabu
   private static final String STYLE_FORM_DISABLED = BeeConst.CSS_CLASS_PREFIX + "Form-"
       + StyleUtils.SUFFIX_DISABLED;
 
-  private static final String NEW_ROW_CAPTION = "Create New";
-
   private final String formName;
 
   private Presenter viewPresenter;
@@ -1499,6 +1497,11 @@ public class FormImpl extends Absolute implements FormView, PreviewHandler, Tabu
   }
 
   @Override
+  public void setCaption(String caption) {
+    this.caption = caption;
+  }
+
+  @Override
   public void setEditing(boolean editing) {
     this.editing = editing;
   }
@@ -1660,7 +1663,7 @@ public class FormImpl extends Absolute implements FormView, PreviewHandler, Tabu
   @Override
   public void startNewRow(boolean copy) {
     setAdding(true);
-    fireEvent(new AddStartEvent(NEW_ROW_CAPTION, false));
+    fireEvent(new AddStartEvent(Localized.getConstants().actionNew(), false));
 
     IsRow row = getActiveRow();
     setRowBuffer(row);
@@ -2162,10 +2165,6 @@ public class FormImpl extends Absolute implements FormView, PreviewHandler, Tabu
 
   private void setAdding(boolean adding) {
     this.adding = adding;
-  }
-
-  private void setCaption(String caption) {
-    this.caption = caption;
   }
 
   private void setDataColumns(List<BeeColumn> dataColumns) {

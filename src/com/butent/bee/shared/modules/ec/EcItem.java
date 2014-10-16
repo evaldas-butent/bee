@@ -267,14 +267,15 @@ public class EcItem implements BeeSerializable, HasCaption {
     return secondaryStock;
   }
 
-  public int getSupplierPrice(EcDisplayedPrice displayedPrice, Double marginPercent) {
+  public int getSupplierPrice(EcDisplayedPrice displayedPrice, boolean base, Double marginPercent) {
     EcSupplier displayedSupplier = EcDisplayedPrice.getSupplier(displayedPrice);
 
     int result = 0;
     int aggregate = 0;
 
     for (ArticleSupplier articleSupplier : getSuppliers()) {
-      int supplierPrice = articleSupplier.getListPrice(marginPercent);
+      int supplierPrice =
+          base ? articleSupplier.getListPrice(marginPercent) : articleSupplier.getPrice();
 
       if (supplierPrice > 0) {
         if (displayedSupplier != null && articleSupplier.getSupplier() == displayedSupplier) {

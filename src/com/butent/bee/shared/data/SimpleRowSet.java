@@ -490,6 +490,28 @@ public class SimpleRowSet implements Iterable<SimpleRow>, BeeSerializable {
     return new RowSetIterator();
   }
 
+  public boolean removeColumn(String colName) {
+    if (BeeUtils.isEmpty(colName)) {
+      return false;
+    }
+
+    String key = colName.toLowerCase();
+    if (!columns.containsKey(key)) {
+      return false;
+    }
+
+    int index = columns.remove(key);
+    columnNames = ArrayUtils.remove(columnNames, index);
+
+    for (int i = 0; i < rows.size(); i++) {
+      rows.set(i, ArrayUtils.remove(rows.get(i), index));
+    }
+
+    indexes = null;
+
+    return true;
+  }
+
   @Override
   public String serialize() {
     Serial[] members = Serial.values();

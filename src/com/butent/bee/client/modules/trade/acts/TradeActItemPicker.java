@@ -380,7 +380,7 @@ class TradeActItemPicker extends Flow implements HasSelectionHandlers<BeeRowSet>
     if (priceFormat == null) {
       Integer scale = Data.getColumnScale(VIEW_ITEMS, COL_ITEM_PRICE);
       if (scale == null || scale <= 2) {
-        priceFormat = Format.getDefaultCurrencyFormat();
+        priceFormat = Format.getDefaultMoneyFormat();
       } else {
         priceFormat = Format.getDecimalFormat(2, scale);
       }

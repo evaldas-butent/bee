@@ -38,6 +38,7 @@
 
       <xi:include href="../../Classifiers/forms/widgets/ContactInfoClosed.widget.xml" />  
       &separator;
+      &separator;
 
       <FlowPanel class="flexBox-horizontal">
         <Label for="Manager" style="&lbl;" />
@@ -75,6 +76,37 @@
 
     <TabbedPages class="flexible">
       <page>
+        <text>=prices</text>
+        <FlowPanel>
+          &separator;
+          <Table>
+            <col index="0" kind="label" />
+            <col index="2" kind="label" />
+
+            <row>
+              <Label for="DisplayedPrice" />
+              <ListBox source="DisplayedPrice" summarize="true" />
+            </row>
+            &separator;
+    
+            <row>
+              <Label for="BasePriceList0" />
+              <DataSelector source="BasePriceList0" summarize="true" />
+              <Label for="BasePriceList1" />
+              <DataSelector source="BasePriceList1" summarize="true" />
+            </row>
+    
+            <row>
+              <Label for="ClientPriceList0" />
+              <DataSelector source="ClientPriceList0" summarize="true" />
+              <Label for="ClientPriceList1" />
+              <DataSelector source="ClientPriceList1" summarize="true" />
+            </row>
+          </Table>
+        </FlowPanel>
+      </page>
+
+      <page>
         <text>=ecDiscounts</text>
         <FlowPanel class="flexBox-vertical">
           &separator;
@@ -90,8 +122,6 @@
               <renderToken source="ParentCompanyName" prefix=", " />
             </DataSelector>
 
-            <Label for="DisplayedPrice" style="margin-left: 2em; margin-right: 10px;" />
-            <ListBox source="DisplayedPrice" style="margin-right: 2em;" />
           </FlowPanel>
           &separator;
 
@@ -126,7 +156,7 @@
           <FlowPanel class="flexBox-horizontal" style="margin-left: 2em; margin-top: 2ex;">
             <Label for="CarTypeHistorySize" style="margin-right: 10px;" />
             <InputSpinner source="CarTypeHistorySize" style="width: 50px;" 
-              minValue="-1" maxValue="100" />
+              minValue="-1" maxValue="100" summarize="true" />
           </FlowPanel>
         </FlowPanel>
       </page>

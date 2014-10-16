@@ -4,6 +4,10 @@ public interface LocalizableTradeConstants {
 
   String cost();
 
+  String discount();
+
+  String discountPercent();
+
   String printBankAccount();
 
   String printBankCode();

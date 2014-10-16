@@ -112,39 +112,38 @@ public class AssessmentQuantityReport extends ReportInterceptor {
   @Override
   public void onLoad(FormView form) {
     ReportParameters parameters = readParameters();
-    if (parameters == null) {
-      return;
-    }
 
-    Widget widget = form.getWidgetByName(NAME_START_DATE);
-    DateTime dateTime = parameters.getDateTime(NAME_START_DATE);
-    if (widget instanceof InputDateTime && dateTime != null) {
-      ((InputDateTime) widget).setDateTime(dateTime);
-    }
+    if (parameters != null) {
+      Widget widget = form.getWidgetByName(NAME_START_DATE);
+      DateTime dateTime = parameters.getDateTime(NAME_START_DATE);
+      if (widget instanceof InputDateTime && dateTime != null) {
+        ((InputDateTime) widget).setDateTime(dateTime);
+      }
 
-    widget = form.getWidgetByName(NAME_END_DATE);
-    dateTime = parameters.getDateTime(NAME_END_DATE);
-    if (widget instanceof InputDateTime && dateTime != null) {
-      ((InputDateTime) widget).setDateTime(dateTime);
-    }
+      widget = form.getWidgetByName(NAME_END_DATE);
+      dateTime = parameters.getDateTime(NAME_END_DATE);
+      if (widget instanceof InputDateTime && dateTime != null) {
+        ((InputDateTime) widget).setDateTime(dateTime);
+      }
 
-    widget = form.getWidgetByName(NAME_DEPARTMENTS);
-    String idList = parameters.get(NAME_DEPARTMENTS);
-    if (widget instanceof MultiSelector && !BeeUtils.isEmpty(idList)) {
-      ((MultiSelector) widget).setIds(idList);
-    }
+      widget = form.getWidgetByName(NAME_DEPARTMENTS);
+      String idList = parameters.get(NAME_DEPARTMENTS);
+      if (widget instanceof MultiSelector && !BeeUtils.isEmpty(idList)) {
+        ((MultiSelector) widget).setIds(idList);
+      }
 
-    widget = form.getWidgetByName(NAME_MANAGERS);
-    idList = parameters.get(NAME_MANAGERS);
-    if (widget instanceof MultiSelector && !BeeUtils.isEmpty(idList)) {
-      ((MultiSelector) widget).setIds(idList);
-    }
+      widget = form.getWidgetByName(NAME_MANAGERS);
+      idList = parameters.get(NAME_MANAGERS);
+      if (widget instanceof MultiSelector && !BeeUtils.isEmpty(idList)) {
+        ((MultiSelector) widget).setIds(idList);
+      }
 
-    for (String groupName : NAME_GROUP_BY) {
-      widget = form.getWidgetByName(groupName);
-      Integer index = parameters.getInteger(groupName);
-      if (widget instanceof ListBox && BeeUtils.isPositive(index)) {
-        ((ListBox) widget).setSelectedIndex(index);
+      for (String groupName : NAME_GROUP_BY) {
+        widget = form.getWidgetByName(groupName);
+        Integer index = parameters.getInteger(groupName);
+        if (widget instanceof ListBox && BeeUtils.isPositive(index)) {
+          ((ListBox) widget).setSelectedIndex(index);
+        }
       }
     }
 

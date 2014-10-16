@@ -117,6 +117,18 @@ public class FormContainerImpl extends Split implements FormContainerView, HasNa
       enabledActions.add(Action.PRINT);
     }
 
+    if (interceptor != null) {
+      Set<Action> actions = interceptor.getEnabledActions(enabledActions);
+      if (!enabledActions.equals(actions)) {
+        BeeUtils.overwrite(enabledActions, actions);
+      }
+
+      actions = interceptor.getDisabledActions(disabledActions);
+      if (!disabledActions.equals(actions)) {
+        BeeUtils.overwrite(disabledActions, actions);
+      }
+    }
+
     HeaderView header = new HeaderImpl();
     header.create(formDescription.getCaption(), hasData(), formDescription.isReadOnly(),
         formDescription.getViewName(), EnumSet.of(UiOption.ROOT),

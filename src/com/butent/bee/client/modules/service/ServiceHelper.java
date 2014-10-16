@@ -48,8 +48,8 @@ final class ServiceHelper {
 
     Totalizer totalizer = new Totalizer(data.getColumns());
 
-    NumberFormat priceFormat = Format.getDefaultCurrencyFormat();
-    NumberFormat amountFormat = Format.getDefaultCurrencyFormat();
+    NumberFormat priceFormat = Format.getDefaultMoneyFormat();
+    NumberFormat amountFormat = Format.getDefaultMoneyFormat();
 
     for (IsRow row : data) {
       DateTime date = row.getDateTime(dateIndex);
