@@ -13,7 +13,7 @@
     
     <Relation name="Category" relation="TcdCategories" label="=ecItemCategory" />
     <Relation name="Brand" relation="TcdBrands" label="=ecItemBrand" />
-    <Enum name="Supplier" key="EcSupplier" notNull="true" label="=ecItemSupplier" />
+    <Enum name="Supplier" key="EcSupplier" label="=ecItemSupplier" />
 
     <Relation name="Article" relation="TcdArticles" label="=ecItem" />
 

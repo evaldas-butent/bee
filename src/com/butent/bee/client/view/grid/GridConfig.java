@@ -341,6 +341,7 @@ class GridConfig {
   }
 
   boolean hasVisibleColumns() {
+    ensureFields();
     return !BeeUtils.isEmpty(row.getString(columnsIndex));
   }
 
@@ -451,114 +452,142 @@ class GridConfig {
   }
 
   private Boolean getAutoFit() {
+    ensureFields();
     return row.getBoolean(autoFitIndex);
   }
 
   private String getBodyBorderWidth() {
+    ensureFields();
     return row.getString(bodyBorderIndex);
   }
 
   private String getBodyFont() {
+    ensureFields();
     return row.getString(bodyFontIndex);
   }
 
   private String getBodyMargin() {
+    ensureFields();
     return row.getString(bodyMarginIndex);
   }
 
   private String getBodyPadding() {
+    ensureFields();
     return row.getString(bodyPaddingIndex);
   }
 
   private String getBodyStyle() {
+    ensureFields();
     return row.getString(bodyStyleIndex);
   }
 
   private String getCaption() {
+    ensureFields();
     return row.getString(captionIndex);
   }
 
   private List<String> getColumns() {
+    ensureFields();
     return NameUtils.toList(row.getString(columnsIndex));
   }
 
   private Integer getFlexBasis() {
+    ensureFields();
     return row.getInteger(flexBasisIndex);
   }
 
   private String getFlexBasisUnit() {
+    ensureFields();
     return row.getString(flexUnitIndex);
   }
 
   private Integer getFlexGrow() {
+    ensureFields();
     return row.getInteger(flexGrowIndex);
   }
 
   private Integer getFlexShrink() {
+    ensureFields();
     return row.getInteger(flexShrinkIndex);
   }
 
   private String getFooterBorderWidth() {
+    ensureFields();
     return row.getString(footerBorderIndex);
   }
 
   private String getFooterFont() {
+    ensureFields();
     return row.getString(footerFontIndex);
   }
 
   private Integer getFooterHeight() {
+    ensureFields();
     return row.getInteger(footerHeightIndex);
   }
 
   private String getFooterMargin() {
+    ensureFields();
     return row.getString(footerMarginIndex);
   }
 
   private String getFooterPadding() {
+    ensureFields();
     return row.getString(footerPaddingIndex);
   }
 
   private String getFooterStyle() {
+    ensureFields();
     return row.getString(footerStyleIndex);
   }
 
   private String getHeaderBorderWidth() {
+    ensureFields();
     return row.getString(headerBorderIndex);
   }
 
   private String getHeaderFont() {
+    ensureFields();
     return row.getString(headerFontIndex);
   }
 
   private Integer getHeaderHeight() {
+    ensureFields();
     return row.getInteger(headerHeightIndex);
   }
 
   private String getHeaderMargin() {
+    ensureFields();
     return row.getString(headerMarginIndex);
   }
 
   private String getHeaderPadding() {
+    ensureFields();
     return row.getString(headerPaddingIndex);
   }
 
   private String getHeaderStyle() {
+    ensureFields();
     return row.getString(headerStyleIndex);
   }
 
   private Integer getMaxColumnWidth() {
+    ensureFields();
     return row.getInteger(maxColumnWidthIndex);
   }
 
   private Integer getMinColumnWidth() {
+    ensureFields();
     return row.getInteger(minColumnWidthIndex);
   }
 
   private String getOrder() {
+    ensureFields();
     return row.getString(orderIndex);
   }
 
   private Integer getRowHeight() {
+    ensureFields();
     return row.getInteger(rowHeightIndex);
   }
 }
