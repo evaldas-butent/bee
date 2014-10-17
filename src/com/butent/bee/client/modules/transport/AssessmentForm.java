@@ -339,6 +339,15 @@ public class AssessmentForm extends PrintFormInterceptor implements SelectorEven
       }
     }
 
+    @Override
+    public boolean onStartNewRow(GridView gridView, IsRow oldRow, IsRow newRow) {
+      for (String col : new String[] {"LoadingDate", "LoadingAddress",
+          "UnloadingDate", "UnloadingAddress"}) {
+        newRow.setValue(gridView.getDataIndex(col), form.getStringValue(col));
+      }
+      return super.onStartNewRow(gridView, oldRow, newRow);
+    }
+
     private void refresh() {
       DataChangeEvent.fireRefresh(BeeKeeper.getBus(), TBL_CARGO_EXPENSES);
       refreshTotals();
@@ -835,7 +844,8 @@ public class AssessmentForm extends PrintFormInterceptor implements SelectorEven
     if (childAssessments != null && !primary) {
       childAssessments.setEnabled(false);
     }
-    if (manager != null && manager.isEnabled() && !departmentHeads.containsKey(userPerson)) {
+    if (manager != null && manager.isEnabled()
+        && !BeeKeeper.getUser().isAdministrator() && !departmentHeads.containsKey(userPerson)) {
       manager.setEnabled(false);
     }
     onValueChange(null);
@@ -1011,7 +1021,8 @@ public class AssessmentForm extends PrintFormInterceptor implements SelectorEven
 
   private boolean isExecutor() {
     return Objects.equals(form.getLongValue(COL_COMPANY_PERSON), userPerson)
-        || departmentHeads.get(userPerson).contains(form.getLongValue(COL_DEPARTMENT));
+        || departmentHeads.get(userPerson).contains(form.getLongValue(COL_DEPARTMENT))
+        || BeeKeeper.getUser().isAdministrator();
   }
 
   private boolean isPrimary() {

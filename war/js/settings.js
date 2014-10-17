@@ -10,9 +10,8 @@ var BeeSettings = {
   "logCapacity": 10000,
   "minimizeNumberOfConcurrentRequests": true,
   "showUserPhoto": true,
-  "onStartup": {"content": "form_AnnouncementsBoard"},
+  "onStartup": {"content": "grid_AssessmentRequests"},
   "applianceHeaderHeight": 25,
   "viewHeaderHeight": 30,
-  "clickSensitivityMillis": 300,
   "clickSensitivityDistance": 10  
 };

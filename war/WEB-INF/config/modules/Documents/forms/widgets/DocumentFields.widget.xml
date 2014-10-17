@@ -56,7 +56,7 @@
   <row>
     <Label for="Description" />
     <cell colSpan="3">
-      <InputArea source="Description" style="width: 100%; height: 60px;" />
+      <InputArea source="Description" visibleLines="10" style="width: 100%;" />
     </cell>
   </row>
 </Table>

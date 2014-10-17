@@ -553,12 +553,15 @@ public final class TransportHandler {
             for (BeeRow row : result) {
               departments.add(row.getLong(0));
             }
-            GridFactory.openGrid(gridName, interceptor,
-                GridOptions.forFilter(Filter.or(Lists.newArrayList(
-                    Filter.equals(COL_COMPANY_PERSON, userPerson),
-                    Filter.any(COL_DEPARTMENT, departments),
-                    Filter.equals(COL_USER, user), Filter.equals(COL_GROUP, user)))),
-                callback);
+            GridOptions options = null;
+
+            if (!BeeKeeper.getUser().isAdministrator()) {
+              options = GridOptions.forFilter(Filter.or(Lists.newArrayList(
+                  Filter.equals(COL_COMPANY_PERSON, userPerson),
+                  Filter.any(COL_DEPARTMENT, departments),
+                  Filter.equals(COL_USER, user), Filter.equals(COL_GROUP, user))));
+            }
+            GridFactory.openGrid(gridName, interceptor, options, callback);
           }
         });
   }

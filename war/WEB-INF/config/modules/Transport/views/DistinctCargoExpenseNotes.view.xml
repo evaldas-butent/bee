@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<View xmlns="http://www.butent.com/view"
+
+  name="DistinctCargoExpenseNotes" source="CargoExpenses"
+  filter="Note"
+  >
+  <Columns>
+    <SimpleColumn name="Note" />
+  </Columns>
+  <GroupBy columns="Note" />
+  <Order>
+    <OrderBy column="Note" />
+  </Order>
+</View>

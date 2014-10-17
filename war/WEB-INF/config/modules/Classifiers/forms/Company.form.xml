@@ -22,8 +22,8 @@
         <InputText source="Name" style="&inp1;" visible="true" />
         <Label style="&lbl1;" for="CompanyType" class="bee-required" />
         <DataSelector source="CompanyType" style="&inp1;" required="true"  />
-        <Label style="&lbl1;" for="CompanyGroup" />
-        <DataSelector source="CompanyGroup" style="&inp1;"  />
+        <Label style="&lbl1;" for="CompanyGroup" class="bee-required" />
+        <DataSelector source="CompanyGroup" style="&inp1;" required="true"  />
       </row>
 
       <row>
@@ -54,8 +54,8 @@
             <row>
               <Label text="=phones" style="&lbl1;" for="Phone" class="bee-required" />
               <InputText source="Phone" required="true" />
-              <Label text="=mobile" style="&lbl1;" for="Mobile" class="bee-required" />
-              <InputText source="Mobile" required="true" />
+              <Label text="=mobile" style="&lbl1;" for="Mobile" />
+              <InputText source="Mobile" />
               <Label text="=fax" style="&lbl1;" for="Fax" />
               <InputText source="Fax" />
             </row>
