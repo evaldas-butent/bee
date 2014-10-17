@@ -13,6 +13,6 @@ var BeeSettings = {
   "onStartup": {"content": "form_AnnouncementsBoard"},
   "applianceHeaderHeight": 25,
   "viewHeaderHeight": 30,
-  "clickSensitivityMillis": 300,
+  "clickSensitivityMillis": 100,
   "clickSensitivityDistance": 10  
 };

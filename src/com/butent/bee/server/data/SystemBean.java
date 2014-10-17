@@ -1533,7 +1533,7 @@ public class SystemBean {
       T existingObject = cache.get(BeeUtils.normalize(objectName));
 
       if (existingObject != null) {
-        logger.warning(moduleName, "Dublicate", name, "name:",
+        logger.warning(moduleName, "Duplicate", name, "name:",
             BeeUtils.bracket(objectName), BeeUtils.parenthesize(existingObject.getModule()));
       } else {
         cache.put(BeeUtils.normalize(objectName), object);

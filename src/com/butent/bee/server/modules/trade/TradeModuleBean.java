@@ -707,7 +707,6 @@ public class TradeModuleBean implements BeeModule {
       table.append(tr);
     }
 
-
     table.setBorderWidth("1px");
     table.setBorderStyle(BorderStyle.SOLID);
     table.setBorderSpacing("0px");

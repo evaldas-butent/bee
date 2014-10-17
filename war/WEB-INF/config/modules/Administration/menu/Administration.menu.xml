@@ -25,4 +25,7 @@ name="Administration" label="=administration" order="1000" module="Administratio
 
   <Item name="ImportOptions" label="=dataImport" service="grid" parameters="ImportOptions" 
     separator="true" />
+
+  <Item name="GridSettings" label="=gridSettings" service="grid" parameters="GridSettings" 
+    separator="true" />
 </Entry>

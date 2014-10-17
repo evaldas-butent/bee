@@ -84,7 +84,8 @@
     &separator;
     <FlowPanel for="ForwarderVehicle" style="&section;">
       <Label for="ForwarderVehicle" style="&labelLeft; width:140px;" />
-      <InputText source="ForwarderVehicle" style="&input; width:200px;" />
+      <DataSelector source="ForwarderVehicle" viewName="DistinctForwarderVehicles"
+        valueSource="ForwarderVehicle" strict="false" caching="local" style="&input; width:200px;" />
     </FlowPanel>
     <FlowPanel for="Notes" style="&section;">
       <Label for="Notes" style="&labelLeft; vertical-align:top; width:140px;" />

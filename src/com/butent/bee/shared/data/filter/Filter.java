@@ -240,6 +240,10 @@ public abstract class Filter implements BeeSerializable, RowFilter {
     return compareWithValue(column, Operator.EQ, new LongValue(value));
   }
 
+  public static Filter equals(String column, String value) {
+    return compareWithValue(column, Operator.EQ, new TextValue(value));
+  }
+
   public static Filter equals(String column, Enum<?> value) {
     if (value == null) {
       return isNull(column);

@@ -31,6 +31,8 @@ public enum Action implements BeeSerializable, HasCaption {
   PRINT(FontAwesome.PRINT, Localized.getConstants().actionPrint(), "print"),
   REFRESH(FontAwesome.REFRESH, Localized.getConstants().actionRefresh(), "refresh"),
   REMOVE_FILTER(FontAwesome.REMOVE, Localized.getConstants().actionRemoveFilter(), "removeFilter"),
+  RESET_SETTINGS(FontAwesome.TIMES_CIRCLE_O, Localized.getConstants().actionResetSettings(),
+      "resetSettings"),
   RIGHTS(FontAwesome.EYE, Localized.getConstants().rights(), "rights"),
   SAVE(FontAwesome.SAVE, Localized.getConstants().actionSave(), "save");
 

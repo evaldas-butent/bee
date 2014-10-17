@@ -4,6 +4,7 @@ import com.google.common.collect.Lists;
 import com.google.gwt.dom.client.Element;
 
 import com.butent.bee.client.BeeKeeper;
+import com.butent.bee.client.Callback;
 import com.butent.bee.client.Global;
 import com.butent.bee.client.data.AsyncProvider;
 import com.butent.bee.client.data.CachedProvider;
@@ -43,6 +44,7 @@ import com.butent.bee.client.view.grid.GridView;
 import com.butent.bee.client.view.grid.GridView.SelectedRows;
 import com.butent.bee.client.view.grid.interceptor.AbstractGridInterceptor;
 import com.butent.bee.client.view.grid.interceptor.GridInterceptor;
+import com.butent.bee.client.view.navigation.PagerView;
 import com.butent.bee.client.view.search.FilterConsumer;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
@@ -442,8 +444,7 @@ public class GridPresenter extends AbstractPresenter implements ReadyForInsertEv
         break;
 
       case CONFIGURE:
-        GridSettings.handle(getGridView().getGridKey(), getGridView().getGrid(),
-            getHeaderElement());
+        GridSettings.handle(getGridView().getGridKey(), getGridView(), getHeaderElement());
         break;
 
       case COPY:
@@ -504,6 +505,12 @@ public class GridPresenter extends AbstractPresenter implements ReadyForInsertEv
         if (filterManager != null) {
           filterManager.clearFilter();
           tryFilter(null, null, true);
+        }
+        break;
+
+      case RESET_SETTINGS:
+        if (GridSettings.reset(getGridView().getGridKey())) {
+          reset();
         }
         break;
 
@@ -848,6 +855,25 @@ public class GridPresenter extends AbstractPresenter implements ReadyForInsertEv
   private Element getHeaderElement() {
     HeaderView header = getHeader();
     return (header == null) ? null : header.getElement();
+  }
+
+  private void reset() {
+    GridFactory.getGridDescription(getGridView().getGridName(), new Callback<GridDescription>() {
+      @Override
+      public void onSuccess(GridDescription result) {
+        getGridView().reset(result);
+
+        CellGrid display = getGridView().getGrid();
+        getDataProvider().setDisplay(display);
+
+        Collection<PagerView> pagers = gridContainer.getPagers();
+        if (pagers != null) {
+          for (PagerView pager : pagers) {
+            pager.setDisplay(display);
+          }
+        }
+      }
+    });
   }
 
   private void showFailure(String activity, String... reasons) {

@@ -1352,7 +1352,7 @@ public class BeeTable implements BeeObject, HasExtFields, HasStates, HasTranslat
 
     Assert.state(!hasField(fieldName)
         && !BeeUtils.inListSame(fieldName, getIdName(), getVersionName()),
-        BeeUtils.joinWords("Dublicate field name:", getName(), fieldName));
+        BeeUtils.joinWords("Duplicate field name:", getName(), fieldName));
 
     fields.put(BeeUtils.normalize(fieldName), field);
   }

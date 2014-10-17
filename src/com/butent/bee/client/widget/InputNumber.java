@@ -82,7 +82,7 @@ public class InputNumber extends InputText implements HasBounds, HasIntStep,
   @Override
   public String getNormalizedValue() {
     String v = BeeUtils.trim(getValue());
-    if (BeeUtils.isEmpty(v) && isNullable()) {
+    if (v.isEmpty()) {
       return null;
     }
 
