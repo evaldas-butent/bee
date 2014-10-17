@@ -118,6 +118,14 @@ public class ArticleSupplier implements BeeSerializable {
     return price;
   }
 
+  public int getPrice(Double marginPercent) {
+    if (getPrice() > 0) {
+      return getPrice();
+    } else {
+      return getListPrice(marginPercent);
+    }
+  }
+
   public double getRealCost() {
     return cost / 100d;
   }

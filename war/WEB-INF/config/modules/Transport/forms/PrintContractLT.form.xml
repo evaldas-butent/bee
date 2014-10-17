@@ -49,7 +49,9 @@
       <row>
         <Label html="Pasikrovimo vieta" />
         <TextLabel source="LoadingAddress">
-          <renderToken source="LoadingAddress" />
+          <renderToken source="LoadingCompany" />
+          <renderToken source="LoadingAddress" prefix=", " />
+          <renderToken source="LoadingPostIndex" prefix=" " />
           <renderToken source="LoadingContact" prefix=", " />
         </TextLabel>
       </row>
@@ -60,7 +62,9 @@
       <row>
         <Label html="Pristatymo vieta" />
         <TextLabel source="UnloadingAddress">
-          <renderToken source="UnloadingAddress" />
+          <renderToken source="UnloadingCompany" />
+          <renderToken source="UnloadingAddress" prefix=", " />
+          <renderToken source="UnloadingPostIndex" prefix=" " />
           <renderToken source="UnloadingContact" prefix=", " />
         </TextLabel>
       </row>

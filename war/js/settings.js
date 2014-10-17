@@ -13,5 +13,6 @@ var BeeSettings = {
   "onStartup": {"content": "grid_AssessmentRequests"},
   "applianceHeaderHeight": 25,
   "viewHeaderHeight": 30,
+  "clickSensitivityMillis": 100,
   "clickSensitivityDistance": 10  
 };

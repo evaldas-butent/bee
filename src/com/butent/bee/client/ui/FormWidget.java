@@ -1855,7 +1855,8 @@ public enum FormWidget {
           widgetDescription.setReadOnly(true);
         }
 
-        if (widget instanceof HasMaxLength && !attributes.containsKey(ATTR_MAX_LENGTH)) {
+        if (isInput() && widget instanceof HasMaxLength
+            && !attributes.containsKey(ATTR_MAX_LENGTH)) {
           int maxLength = UiHelper.getMaxLength(column);
           if (maxLength > 0) {
             int defMaxLength = ((HasMaxLength) widget).getMaxLength();
@@ -2024,6 +2025,10 @@ public enum FormWidget {
 
   public boolean isGrid() {
     return hasType(Type.IS_GRID);
+  }
+
+  public boolean isInput() {
+    return hasType(Type.INPUT);
   }
 
   private HeaderAndContent createHeaderAndContent(String formName, Element parent, String viewName,

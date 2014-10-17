@@ -43,7 +43,6 @@
       </SimpleJoin>
 
       <SimpleJoin name="LoadingPlace" joinType="LEFT">
-        <SimpleColumn name="Contact" alias="Shipper" />
         <SimpleColumn name="Date" alias="LoadingDate" />
         <SimpleColumn name="Address" alias="LoadingAddress" />
 
@@ -65,6 +64,7 @@
       <SimpleColumn name="Description" />
       <SimpleColumn name="Notes" alias="CargoNotes" />
       <SimpleColumn name="Number" />
+      <SimpleColumn name="Directions" alias="Shipper" />
 
       <SimpleColumn name="Weight" />
       <SimpleJoin joinType="LEFT" name="WeightUnit">
