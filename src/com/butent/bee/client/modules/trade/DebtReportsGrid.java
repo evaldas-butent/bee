@@ -204,9 +204,6 @@ class DebtReportsGrid extends AbstractGridInterceptor implements ClickHandler {
 
   private void openForm(final Set<Long> ids) {
 
-    // FormFactory.openForm(TradeConstants.FORM_DEBT_REPORT_TEMPLATE, new
-    // DebtReportTemplateForm(ids));
-
     FormFactory.createFormView(TradeConstants.FORM_DEBT_REPORT_TEMPLATE, null,
         null, false,
         new DebtReportTemplateForm(ids), new FormFactory.FormViewCallback() {
@@ -214,6 +211,7 @@ class DebtReportsGrid extends AbstractGridInterceptor implements ClickHandler {
           @Override
           public void onSuccess(FormDescription formDescription, FormView result) {
             if (result != null) {
+              result.start(null);
               Global.showModalWidget(result.getCaption(), result.asWidget());
             }
           }

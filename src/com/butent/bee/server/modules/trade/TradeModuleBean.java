@@ -634,6 +634,7 @@ public class TradeModuleBean implements BeeModule {
     return ResponseObject.response(tdd);
   }
 
+  @SuppressWarnings("unchecked")
   private Document renderCompanyDebtMail(String subject, String p1,
       String p2, Long companyId) {
     Document doc = new Document();
@@ -651,20 +652,39 @@ public class TradeModuleBean implements BeeModule {
 
     BeeRowSet rs = qs.getViewData(VIEW_SALES, filter, null,
         Lists.newArrayList(COL_TRADE_INVOICE_PREFIX, COL_TRADE_INVOICE_NO, COL_TRADE_DATE,
-            COL_TRADE_TERM, COL_TRADE_AMOUNT, ALS_CURRENCY_NAME, COL_TRADE_DEBT));
+            COL_TRADE_TERM, COL_TRADE_AMOUNT, ALS_CURRENCY_NAME, COL_TRADE_DEBT
+            , ALS_CUSTOMER_NAME));
 
     if (rs.isEmpty()) {
       return null;
     }
 
 
+    Map<String, Object> creditInfo = Maps.newHashMap();
+    ResponseObject resp = getCreditInfo(companyId);
+    Double debt = null;
+
+    if (resp.getResponse() instanceof Map) {
+      creditInfo = (Map<String, Object>) resp.getResponse();
+      if (creditInfo.get(VAR_DEBT) instanceof Double) {
+        debt = (Double) creditInfo.get(VAR_DEBT);
+      }
+    }
+
+    int ignoreLast = 1;
+
+
     Table table = table();
+    table.append(caption()
+        .text(rs.getRows().get(0).getString(rs.getColumnIndex(ALS_CUSTOMER_NAME))));
     Tr trHead = tr();
 
-    for (int i = 0; i < rs.getNumberOfColumns(); i++) {
+    for (int i = 0; i < rs.getNumberOfColumns() - ignoreLast; i++) {
       String label = Localized.maybeTranslate(rs.getColumnLabel(i), usr.getLocalizableDictionary());
       Th th = th().text(label);
       th.setBorderWidth("1px");
+      th.setBorderStyle(BorderStyle.SOLID);
+      th.setBorderColor("black");
       trHead.append(th);
     }
 
@@ -677,7 +697,7 @@ public class TradeModuleBean implements BeeModule {
     for (IsRow row : rs) {
       Tr tr = tr();
 
-      for (int i = 0; i < rs.getNumberOfColumns(); i++) {
+      for (int i = 0; i < rs.getNumberOfColumns() - ignoreLast; i++) {
         if (row.isNull(i)) {
           tr.append(td());
           continue;
@@ -707,9 +727,18 @@ public class TradeModuleBean implements BeeModule {
       table.append(tr);
     }
 
-    table.setBorderWidth("1px");
+    Tr footer = tr();
+    for (int i = 0; i < rs.getNumberOfColumns() - ignoreLast - 2; i++) {
+      footer.append(td());
+    }
+
+    footer.append(td().append(b().text(usr.getLocalizableConstants().total())));
+    footer.append(td().text(BeeUtils.notEmpty(BeeUtils.toString(debt), BeeConst.STRING_EMPTY)));
+    table.append(footer);
+
+    table.setBorderWidth("1px;");
     table.setBorderStyle(BorderStyle.SOLID);
-    table.setBorderSpacing("0px");
+    table.setBorderSpacing("0px;");
 
     doc.getBody().append(p().text(first));
     doc.getBody().append(table);

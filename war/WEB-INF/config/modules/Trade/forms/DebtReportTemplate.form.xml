@@ -20,12 +20,12 @@
       </row>
       
       <row>
-        <Label for="FirstParagraph" text="=header" />
+        <Label for="FirstParagraph" text="=trdRemindTemplateFirstParagraph" />
         <InputArea name="FirstParagraph" visibleLines="3" style="width: 350px;" />
       </row>
       
       <row>
-        <Label for="LastParagraph" text="=footer" />
+        <Label for="LastParagraph" text="=trdRemindTemplateLastParagraph" />
         <InputArea name="LastParagraph"  visibleLines="3" style="width: 350px;" />
       </row>
       <row>
