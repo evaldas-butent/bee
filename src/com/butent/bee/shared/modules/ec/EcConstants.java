@@ -387,6 +387,7 @@ public final class EcConstants {
   public static final String COL_DISCOUNT_DATE_TO = "DateTo";
   public static final String COL_DISCOUNT_CATEGORY = "Category";
   public static final String COL_DISCOUNT_BRAND = "Brand";
+  public static final String COL_DISCOUNT_SUPPLIER = "Supplier";
   public static final String COL_DISCOUNT_ARTICLE = "Article";
   public static final String COL_DISCOUNT_PERCENT = "Percent";
   public static final String COL_DISCOUNT_PRICE = "Price";

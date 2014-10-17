@@ -1492,7 +1492,7 @@ public class EcModuleBean implements BeeModule {
 
     SqlSelect discountQuery = new SqlSelect();
     discountQuery.addFields(TBL_DISCOUNTS, COL_DISCOUNT_DATE_FROM, COL_DISCOUNT_DATE_TO,
-        COL_DISCOUNT_CATEGORY, COL_DISCOUNT_BRAND, COL_DISCOUNT_ARTICLE,
+        COL_DISCOUNT_CATEGORY, COL_DISCOUNT_BRAND, COL_DISCOUNT_SUPPLIER, COL_DISCOUNT_ARTICLE,
         COL_DISCOUNT_PERCENT, COL_DISCOUNT_PRICE);
     discountQuery.addFrom(TBL_DISCOUNTS);
 
@@ -3394,16 +3394,27 @@ public class EcModuleBean implements BeeModule {
         marginPercent = defMargin;
       }
 
-      int listPrice = item.getSupplierPrice(displayedPrice, true, marginPercent);
-      int clientPrice = item.getSupplierPrice(displayedPrice, false, null);
+      Pair<EcSupplier, Integer> supplierListPrice =
+          item.getSupplierPrice(displayedPrice, true, marginPercent);
+      Pair<EcSupplier, Integer> supplierClientPrice =
+          item.getSupplierPrice(displayedPrice, false, marginPercent);
+
+      int listPrice = (supplierListPrice == null) ? 0 : supplierListPrice.getB();
+
+      EcSupplier priceSupplier = (supplierClientPrice == null) ? null : supplierClientPrice.getA();
+      int clientPrice = (supplierClientPrice == null) ? 0 : supplierClientPrice.getB();
 
       if (listPrice <= 0) {
         listPrice = clientPrice;
-      } else if (clientPrice <= 0) {
+
+      } else if (clientPrice <= 0 && supplierListPrice != null) {
+        priceSupplier = supplierListPrice.getA();
         clientPrice = listPrice;
       }
 
       item.setListPrice(listPrice);
+
+      item.setPriceSupplier(priceSupplier);
       item.setClientPrice(clientPrice);
     }
 
