@@ -450,6 +450,18 @@ public final class Format {
     }
   }
 
+  public static String renderDateLong(HasDateValue date) {
+    if (date == null) {
+      return null;
+
+    } else {
+      PredefinedFormat predefinedFormat = TimeUtils.hasTimePart(date)
+          ? PredefinedFormat.DATE_TIME_LONG : PredefinedFormat.DATE_LONG;
+
+      return DateTimeFormat.getFormat(predefinedFormat).format(date);
+    }
+  }
+
   public static String renderDayOfWeek(HasDateValue date) {
     return (date == null) ? null : renderDayOfWeek(date.getDow());
   }

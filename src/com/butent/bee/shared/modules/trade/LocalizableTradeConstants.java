@@ -58,6 +58,8 @@ public interface LocalizableTradeConstants {
 
   String trdInvoice();
 
+  String trdMovementOfGoods();
+
   String trdNewInvoice();
 
   String trdOperation();
@@ -69,6 +71,8 @@ public interface LocalizableTradeConstants {
   String trdPrice();
 
   String trdQuantity();
+
+  String trdRemainders();
 
   String trdSeries();
 

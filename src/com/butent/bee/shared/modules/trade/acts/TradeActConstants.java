@@ -15,6 +15,7 @@ public final class TradeActConstants {
   public static final String SVC_CREATE_ACT_INVOICE = "CreateActInvoice";
 
   public static final String SVC_ITEMS_BY_COMPANY_REPORT = "GetItemsByCompanyReport";
+  public static final String SVC_STOCK_REPORT = "GetStockReport";
 
   public static final String TBL_TRADE_ACTS = "TradeActs";
   public static final String TBL_TRADE_ACT_ITEMS = "TradeActItems";
@@ -98,6 +99,13 @@ public final class TradeActConstants {
   public static final String RX_IMPORT_ACT_ITEM = "^(.+);(.*);(\\d+\\.*\\d*)$";
 
   public static final String PRM_TA_NUMBER_LENGTH = "ActNumberLength";
+
+  public static final String PFX_START_STOCK = "StartStock_";
+  public static final String PFX_MOVEMENT = "Movement_";
+  public static final String PFX_END_STOCK = "EndStock_";
+
+  public static final String SFX_QUANTITY = "_qty";
+  public static final String SFX_WEIGHT = "_wgt";
 
   public static void register() {
     EnumUtils.register(TradeActKind.class);

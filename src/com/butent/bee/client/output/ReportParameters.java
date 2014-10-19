@@ -32,6 +32,12 @@ public class ReportParameters extends LinkedHashMap<String, String> implements B
     super(m);
   }
 
+  public void add(String key, Boolean value) {
+    if (BeeUtils.isTrue(value)) {
+      put(key, Codec.pack(value));
+    }
+  }
+
   public void add(String key, DateTime value) {
     if (value != null) {
       put(key, value.serialize());
@@ -64,6 +70,10 @@ public class ReportParameters extends LinkedHashMap<String, String> implements B
         put(arr[i], arr[i + 1]);
       }
     }
+  }
+
+  public boolean getBoolean(String key) {
+    return Codec.unpack(get(key));
   }
 
   public DateTime getDateTime(String key) {
