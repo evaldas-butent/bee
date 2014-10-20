@@ -166,6 +166,27 @@ public final class TradeActKeeper {
     return BeeKeeper.getRpc().createParameters(Module.TRADE, SubModule.ACTS, method);
   }
 
+  static void ensureChache(final ScheduledCommand command) {
+    if (cacheLoaded) {
+      command.execute();
+
+    } else {
+      List<String> viewNames = Lists.newArrayList(VIEW_TRADE_OPERATIONS, VIEW_TRADE_SERIES,
+          VIEW_SERIES_MANAGERS, VIEW_WAREHOUSES);
+      final long start = System.currentTimeMillis();
+
+      cache.getData(viewNames, new DataCache.MultiCallback() {
+        @Override
+        public void onSuccess(Integer result) {
+          cacheLoaded = true;
+          logger.debug("trade act cache loaded", result, TimeUtils.elapsedMillis(start));
+
+          command.execute();
+        }
+      });
+    }
+  }
+
   static Collection<Long> extractWarehouses(BeeRowSet rowSet) {
     if (DataUtils.isEmpty(rowSet)) {
       return new HashSet<>();
@@ -273,6 +294,14 @@ public final class TradeActKeeper {
     }
   }
 
+  static String getOperationName(Long operation) {
+    if (DataUtils.isId(operation)) {
+      return cache.getString(VIEW_TRADE_OPERATIONS, operation, COL_OPERATION_NAME);
+    } else {
+      return null;
+    }
+  }
+
   static BeeRowSet getUserSeries(boolean checkDefaults) {
     Long userId = BeeKeeper.getUser().getUserId();
     if (!DataUtils.isId(userId)) {
@@ -367,6 +396,14 @@ public final class TradeActKeeper {
     }
   }
 
+  static String getWarehouseCode(Long warehouse) {
+    if (DataUtils.isId(warehouse)) {
+      return cache.getString(VIEW_WAREHOUSES, warehouse, COL_WAREHOUSE_CODE);
+    } else {
+      return null;
+    }
+  }
+
   static boolean isUserSeries(Long series) {
     if (!DataUtils.isId(series)) {
       return false;
@@ -427,27 +464,6 @@ public final class TradeActKeeper {
         openActGrid(kind, ViewFactory.getPresenterCallback(callback));
       }
     };
-  }
-
-  private static void ensureChache(final ScheduledCommand command) {
-    if (cacheLoaded) {
-      command.execute();
-
-    } else {
-      List<String> viewNames = Lists.newArrayList(VIEW_TRADE_OPERATIONS, VIEW_TRADE_SERIES,
-          VIEW_SERIES_MANAGERS, VIEW_WAREHOUSES);
-      final long start = System.currentTimeMillis();
-
-      cache.getData(viewNames, new DataCache.MultiCallback() {
-        @Override
-        public void onSuccess(Integer result) {
-          cacheLoaded = true;
-          logger.debug("trade act cache loaded", result, TimeUtils.elapsedMillis(start));
-
-          command.execute();
-        }
-      });
-    }
   }
 
   private static void openActGrid(final TradeActKind kind, final PresenterCallback callback) {

@@ -280,11 +280,7 @@ public class FormImpl extends Absolute implements FormView, PreviewHandler, Tabu
     }
 
     private void stop() {
-      for (com.google.web.bindery.event.shared.HandlerRegistration entry : registry) {
-        if (entry != null) {
-          entry.removeHandler();
-        }
-      }
+      EventUtils.clearRegistry(registry);
     }
   }
 

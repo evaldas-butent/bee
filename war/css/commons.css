@@ -13,6 +13,10 @@
   font-weight: bold;
 }
 
+.bee-co-companyInfo-phone, .bee-co-companyInfo-mobile, .bee-co-companyInfo-fax {
+  display: inline;
+}
+
 .bee-co-updateRates-panel {
   margin: 2ex 1em 1ex;
 }

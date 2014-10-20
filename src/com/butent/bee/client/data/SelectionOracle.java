@@ -3,6 +3,7 @@ package com.butent.bee.client.data;
 import com.google.web.bindery.event.shared.HandlerRegistration;
 
 import com.butent.bee.client.BeeKeeper;
+import com.butent.bee.client.event.EventUtils;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.Consumer;
@@ -358,11 +359,7 @@ public class SelectionOracle implements HandlesAllDataEvents, HasViewName {
   }
 
   public void onUnload() {
-    for (HandlerRegistration entry : handlerRegistry) {
-      if (entry != null) {
-        entry.removeHandler();
-      }
-    }
+    EventUtils.clearRegistry(handlerRegistry);
 
     rowCountChangeHandlers.clear();
     dataReceivedHandlers.clear();

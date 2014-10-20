@@ -8,6 +8,8 @@
     <String name="OperationName" precision="100" notNull="true" unique="true"
       label="=trdOperation" />
 
+    <Integer name="Ordinal" label="=ordinal" />
+
     <Enum name="Kind" key="TradeActKind" label="=taKind" />
     <Enum name="Price" key="ItemPrice" label="=price" />
 

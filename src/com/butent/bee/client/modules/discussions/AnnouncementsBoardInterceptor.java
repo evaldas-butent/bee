@@ -17,6 +17,7 @@ import com.butent.bee.client.communication.ResponseCallback;
 import com.butent.bee.client.data.RowEditor;
 import com.butent.bee.client.data.RowFactory;
 import com.butent.bee.client.dialog.DialogBox;
+import com.butent.bee.client.event.EventUtils;
 import com.butent.bee.client.grid.GridFactory.GridOptions;
 import com.butent.bee.client.grid.GridPanel;
 import com.butent.bee.client.grid.HtmlTable;
@@ -128,11 +129,7 @@ class AnnouncementsBoardInterceptor extends AbstractFormInterceptor implements
 
   @Override
   public void onUnload(FormView form) {
-    for (HandlerRegistration entry : registry) {
-      if (entry != null) {
-        entry.removeHandler();
-      }
-    }
+    EventUtils.clearRegistry(registry);
     super.onUnload(form);
   }
 

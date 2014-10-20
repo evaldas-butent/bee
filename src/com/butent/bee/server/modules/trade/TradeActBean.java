@@ -23,6 +23,8 @@ import com.butent.bee.server.modules.ParamHolderBean;
 import com.butent.bee.server.modules.administration.AdministrationModuleBean;
 import com.butent.bee.server.sql.HasConditions;
 import com.butent.bee.server.sql.IsCondition;
+import com.butent.bee.server.sql.IsExpression;
+import com.butent.bee.server.sql.SqlDelete;
 import com.butent.bee.server.sql.SqlInsert;
 import com.butent.bee.server.sql.SqlSelect;
 import com.butent.bee.server.sql.SqlUpdate;
@@ -37,6 +39,7 @@ import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.SearchResult;
 import com.butent.bee.shared.data.SimpleRowSet;
 import com.butent.bee.shared.data.SimpleRowSet.SimpleRow;
+import com.butent.bee.shared.data.SqlConstants.SqlDataType;
 import com.butent.bee.shared.data.filter.CompoundFilter;
 import com.butent.bee.shared.data.filter.Filter;
 import com.butent.bee.shared.data.value.LongValue;
@@ -90,40 +93,55 @@ public class TradeActBean {
     return qs.getSearchResults(VIEW_TRADE_ACTS, Filter.anyContains(columns, query));
   }
 
-  public ResponseObject doService(String svc, RequestInfo reqInfo) {
+  public ResponseObject doService(String service, RequestInfo reqInfo) {
     ResponseObject response;
 
-    if (BeeUtils.same(svc, SVC_GET_ITEMS_FOR_SELECTION)) {
-      response = getItemsForSelection(reqInfo);
+    String svc = BeeUtils.trim(service);
+    switch (svc) {
+      case SVC_GET_ITEMS_FOR_SELECTION:
+        response = getItemsForSelection(reqInfo);
+        break;
 
-    } else if (BeeUtils.same(svc, SVC_COPY_ACT)) {
-      response = copyAct(reqInfo);
+      case SVC_COPY_ACT:
+        response = copyAct(reqInfo);
+        break;
 
-    } else if (BeeUtils.same(svc, SVC_SAVE_ACT_AS_TEMPLATE)) {
-      response = saveActAsTemplate(reqInfo);
+      case SVC_SAVE_ACT_AS_TEMPLATE:
+        response = saveActAsTemplate(reqInfo);
+        break;
 
-    } else if (BeeUtils.same(svc, SVC_GET_TEMPLATE_ITEMS_AND_SERVICES)) {
-      response = getTemplateItemsAndServices(reqInfo);
+      case SVC_GET_TEMPLATE_ITEMS_AND_SERVICES:
+        response = getTemplateItemsAndServices(reqInfo);
+        break;
 
-    } else if (BeeUtils.same(svc, SVC_GET_ITEMS_FOR_RETURN)) {
-      response = getItemsForReturn(reqInfo);
+      case SVC_GET_ITEMS_FOR_RETURN:
+        response = getItemsForReturn(reqInfo);
+        break;
 
-    } else if (BeeUtils.same(svc, SVC_GET_ACTS_FOR_INVOICE)) {
-      response = getActsForInvoice(reqInfo);
+      case SVC_GET_ACTS_FOR_INVOICE:
+        response = getActsForInvoice(reqInfo);
+        break;
 
-    } else if (BeeUtils.same(svc, SVC_CREATE_ACT_INVOICE)) {
-      response = createInvoice(reqInfo);
+      case SVC_CREATE_ACT_INVOICE:
+        response = createInvoice(reqInfo);
+        break;
 
-    } else if (BeeUtils.same(svc, SVC_CONVERT_ACT_TO_SALE)) {
-      response = convertToSale(reqInfo);
+      case SVC_CONVERT_ACT_TO_SALE:
+        response = convertToSale(reqInfo);
+        break;
 
-    } else if (BeeUtils.same(svc, SVC_ITEMS_BY_COMPANY_REPORT)) {
-      response = getItemsByCompanyReport(reqInfo);
+      case SVC_ITEMS_BY_COMPANY_REPORT:
+        response = getItemsByCompanyReport(reqInfo);
+        break;
 
-    } else {
-      String msg = BeeUtils.joinWords("service not recognized:", svc);
-      logger.warning(msg);
-      response = ResponseObject.error(msg);
+      case SVC_STOCK_REPORT:
+        response = getStockReport(reqInfo);
+        break;
+
+      default:
+        String msg = BeeUtils.joinWords("service not recognized:", svc);
+        logger.warning(msg);
+        response = ResponseObject.error(msg);
     }
 
     return response;
@@ -926,6 +944,8 @@ public class TradeActBean {
 
     SimpleRowSet data = qs.getData(query);
 
+    qs.sqlDropTemp(tmp);
+
     if (DataUtils.isEmpty(data)) {
       return ResponseObject.emptyResponse();
 
@@ -1145,6 +1165,210 @@ public class TradeActBean {
     return result;
   }
 
+  private String getStock(IsCondition actCondition, IsCondition itemCondition, Long time,
+      Collection<Long> warehouses, String colPrefix) {
+
+    SqlSelect query = new SqlSelect()
+        .addFields(TBL_TRADE_ACT_ITEMS, COL_TA_ITEM)
+        .addFields(TBL_TRADE_OPERATIONS, COL_OPERATION_WAREHOUSE_FROM, COL_OPERATION_WAREHOUSE_TO)
+        .addSum(TBL_TRADE_ACT_ITEMS, COL_TRADE_ITEM_QUANTITY)
+        .addFrom(TBL_TRADE_ACT_ITEMS)
+        .addFromInner(TBL_TRADE_ACTS,
+            sys.joinTables(TBL_TRADE_ACTS, TBL_TRADE_ACT_ITEMS, COL_TRADE_ACT))
+        .addFromInner(TBL_TRADE_OPERATIONS,
+            sys.joinTables(TBL_TRADE_OPERATIONS, TBL_TRADE_ACTS, COL_TA_OPERATION));
+
+    HasConditions where = SqlUtils.and();
+
+    if (actCondition != null) {
+      where.add(actCondition);
+    }
+    if (itemCondition != null) {
+      query.addFromInner(TBL_ITEMS,
+          sys.joinTables(TBL_ITEMS, TBL_TRADE_ACT_ITEMS, COL_TA_ITEM));
+      where.add(itemCondition);
+    }
+
+    if (time != null) {
+      where.add(SqlUtils.less(TBL_TRADE_ACTS, COL_TA_DATE, time));
+    }
+
+    if (BeeUtils.isEmpty(warehouses)) {
+      where.add(SqlUtils.or(
+          SqlUtils.notNull(TBL_TRADE_OPERATIONS, COL_OPERATION_WAREHOUSE_FROM),
+          SqlUtils.notNull(TBL_TRADE_OPERATIONS, COL_OPERATION_WAREHOUSE_TO)));
+    } else {
+      where.add(SqlUtils.or(
+          SqlUtils.inList(TBL_TRADE_OPERATIONS, COL_OPERATION_WAREHOUSE_FROM, warehouses),
+          SqlUtils.inList(TBL_TRADE_OPERATIONS, COL_OPERATION_WAREHOUSE_TO, warehouses)));
+    }
+
+    query.setWhere(where);
+
+    query.addGroup(TBL_TRADE_ACT_ITEMS, COL_TA_ITEM);
+    query.addGroup(TBL_TRADE_OPERATIONS, COL_OPERATION_WAREHOUSE_FROM, COL_OPERATION_WAREHOUSE_TO);
+
+    String tmp = qs.sqlCreateTemp(query);
+
+    Set<Long> ids = qs.getNotNullLongSet(tmp, COL_OPERATION_WAREHOUSE_FROM);
+    ids.addAll(qs.getNotNullLongSet(tmp, COL_OPERATION_WAREHOUSE_TO));
+
+    if (!BeeUtils.isEmpty(warehouses)) {
+      ids.retainAll(warehouses);
+    }
+
+    if (ids.isEmpty()) {
+      qs.sqlDropTemp(tmp);
+      return null;
+    }
+
+    query = new SqlSelect()
+        .addFields(tmp, COL_TA_ITEM);
+
+    int precision = sys.getFieldPrecision(TBL_TRADE_ACT_ITEMS, COL_TRADE_ITEM_QUANTITY);
+    int scale = sys.getFieldScale(TBL_TRADE_ACT_ITEMS, COL_TRADE_ITEM_QUANTITY);
+
+    IsExpression zero = SqlUtils.cast(SqlUtils.constant(SqlDataType.DECIMAL.getEmptyValue()),
+        SqlDataType.DECIMAL, precision, scale);
+
+    List<String> aliases = new ArrayList<>();
+
+    for (Long id : ids) {
+      String alias = colPrefix + id;
+      aliases.add(alias);
+
+      IsExpression plus = SqlUtils.sqlIf(SqlUtils.equals(tmp, COL_OPERATION_WAREHOUSE_TO, id),
+          SqlUtils.field(tmp, COL_TRADE_ITEM_QUANTITY), zero);
+      IsExpression minus = SqlUtils.sqlIf(SqlUtils.equals(tmp, COL_OPERATION_WAREHOUSE_FROM, id),
+          SqlUtils.field(tmp, COL_TRADE_ITEM_QUANTITY), zero);
+
+      query.addSum(SqlUtils.minus(plus, minus), alias);
+    }
+
+    query.addFrom(tmp);
+    query.addGroup(tmp, COL_TA_ITEM);
+
+    String stock = qs.sqlCreateTemp(query);
+    qs.sqlDropTemp(tmp);
+
+    where = SqlUtils.and();
+    for (String alias : aliases) {
+      where.add(SqlUtils.or(SqlUtils.isNull(stock, alias), SqlUtils.equals(stock, alias, 0)));
+    }
+
+    SqlDelete delete = new SqlDelete(stock).setWhere(where);
+    qs.updateData(delete);
+
+    List<String> colNames = new ArrayList<>();
+    for (String alias : aliases) {
+      HasConditions hasValue = SqlUtils.and(
+          SqlUtils.notNull(stock, alias),
+          SqlUtils.notEqual(stock, alias, 0));
+
+      if (qs.sqlExists(stock, hasValue)) {
+        colNames.add(alias);
+      }
+    }
+
+    if (colNames.isEmpty()) {
+      qs.sqlDropTemp(stock);
+      return null;
+
+    } else if (colNames.size() == aliases.size()) {
+      return stock;
+
+    } else {
+      query = new SqlSelect()
+          .addFields(stock, COL_TA_ITEM)
+          .addFields(stock, colNames)
+          .addFrom(stock);
+
+      String section = qs.sqlCreateTemp(query);
+      qs.sqlDropTemp(stock);
+
+      return section;
+    }
+  }
+
+  private String getMovement(IsCondition actCondition, IsCondition itemCondition,
+      Long startTime, Long endTime, Collection<Long> warehouses) {
+
+    SqlSelect query = new SqlSelect()
+        .addFields(TBL_TRADE_ACT_ITEMS, COL_TA_ITEM)
+        .addFields(TBL_TRADE_ACTS, COL_TA_OPERATION)
+        .addSum(TBL_TRADE_ACT_ITEMS, COL_TRADE_ITEM_QUANTITY)
+        .addFrom(TBL_TRADE_ACT_ITEMS)
+        .addFromInner(TBL_TRADE_ACTS,
+            sys.joinTables(TBL_TRADE_ACTS, TBL_TRADE_ACT_ITEMS, COL_TRADE_ACT))
+        .addFromInner(TBL_TRADE_OPERATIONS,
+            sys.joinTables(TBL_TRADE_OPERATIONS, TBL_TRADE_ACTS, COL_TA_OPERATION));
+
+    HasConditions where = SqlUtils.and();
+
+    if (actCondition != null) {
+      where.add(actCondition);
+    }
+    if (itemCondition != null) {
+      query.addFromInner(TBL_ITEMS,
+          sys.joinTables(TBL_ITEMS, TBL_TRADE_ACT_ITEMS, COL_TA_ITEM));
+      where.add(itemCondition);
+    }
+
+    if (startTime != null) {
+      where.add(SqlUtils.moreEqual(TBL_TRADE_ACTS, COL_TA_DATE, startTime));
+    }
+    if (endTime != null) {
+      where.add(SqlUtils.less(TBL_TRADE_ACTS, COL_TA_DATE, endTime));
+    }
+
+    if (BeeUtils.isEmpty(warehouses)) {
+      where.add(SqlUtils.or(
+          SqlUtils.notNull(TBL_TRADE_OPERATIONS, COL_OPERATION_WAREHOUSE_FROM),
+          SqlUtils.notNull(TBL_TRADE_OPERATIONS, COL_OPERATION_WAREHOUSE_TO)));
+    } else {
+      where.add(SqlUtils.or(
+          SqlUtils.inList(TBL_TRADE_OPERATIONS, COL_OPERATION_WAREHOUSE_FROM, warehouses),
+          SqlUtils.inList(TBL_TRADE_OPERATIONS, COL_OPERATION_WAREHOUSE_TO, warehouses)));
+    }
+
+    query.setWhere(where);
+
+    query.addGroup(TBL_TRADE_ACT_ITEMS, COL_TA_ITEM);
+    query.addGroup(TBL_TRADE_ACTS, COL_TA_OPERATION);
+
+    String tmp = qs.sqlCreateTemp(query);
+
+    Set<Long> ids = qs.getNotNullLongSet(tmp, COL_TA_OPERATION);
+    if (ids.isEmpty()) {
+      qs.sqlDropTemp(tmp);
+      return null;
+    }
+
+    query = new SqlSelect()
+        .addFields(tmp, COL_TA_ITEM);
+
+    int precision = sys.getFieldPrecision(TBL_TRADE_ACT_ITEMS, COL_TRADE_ITEM_QUANTITY);
+    int scale = sys.getFieldScale(TBL_TRADE_ACT_ITEMS, COL_TRADE_ITEM_QUANTITY);
+
+    IsExpression zero = SqlUtils.cast(SqlUtils.constant(SqlDataType.DECIMAL.getEmptyValue()),
+        SqlDataType.DECIMAL, precision, scale);
+
+    for (Long id : ids) {
+      IsExpression expr = SqlUtils.sqlIf(SqlUtils.equals(tmp, COL_TA_OPERATION, id),
+          SqlUtils.field(tmp, COL_TRADE_ITEM_QUANTITY), zero);
+
+      query.addSum(expr, PFX_MOVEMENT + id);
+    }
+
+    query.addFrom(tmp);
+    query.addGroup(tmp, COL_TA_ITEM);
+
+    String movement = qs.sqlCreateTemp(query);
+    qs.sqlDropTemp(tmp);
+
+    return movement;
+  }
+
   private SqlSelect getStockQuery(IsCondition condition, boolean plus) {
     String colWarehouse = plus ? COL_OPERATION_WAREHOUSE_TO : COL_OPERATION_WAREHOUSE_FROM;
 
@@ -1160,6 +1384,254 @@ public class TradeActBean {
         .setWhere(SqlUtils.and(SqlUtils.notNull(TBL_TRADE_OPERATIONS, colWarehouse), condition))
         .addGroup(TBL_TRADE_ACT_ITEMS, COL_TA_ITEM)
         .addGroup(TBL_TRADE_OPERATIONS, colWarehouse);
+  }
+
+  private ResponseObject getStockReport(RequestInfo reqInfo) {
+    Long startDate = reqInfo.getParameterLong(Service.VAR_FROM);
+    Long endDate = reqInfo.getParameterLong(Service.VAR_TO);
+
+    boolean showQuantity = reqInfo.hasParameter(COL_TRADE_ITEM_QUANTITY);
+    boolean showWeight = reqInfo.hasParameter(COL_ITEM_WEIGHT);
+
+    if (!showQuantity && !showWeight) {
+      showQuantity = true;
+    }
+
+    Set<Long> companies = DataUtils.parseIdSet(reqInfo.getParameter(COL_TA_COMPANY));
+    Set<Long> objects = DataUtils.parseIdSet(reqInfo.getParameter(COL_TA_OBJECT));
+
+    Set<Long> warehouses = DataUtils.parseIdSet(reqInfo.getParameter(COL_WAREHOUSE));
+
+    Set<Long> categories = DataUtils.parseIdSet(reqInfo.getParameter(COL_CATEGORY));
+    Set<Long> items = DataUtils.parseIdSet(reqInfo.getParameter(COL_TA_ITEM));
+
+    List<String> groupBy = NameUtils.toList(reqInfo.getParameter(Service.VAR_GROUP_BY));
+
+    HasConditions actCondition = SqlUtils.and();
+
+    if (!companies.isEmpty()) {
+      actCondition.add(SqlUtils.inList(TBL_TRADE_ACTS, COL_TA_COMPANY, companies));
+    }
+    if (!objects.isEmpty()) {
+      actCondition.add(SqlUtils.inList(TBL_TRADE_ACTS, COL_TA_OBJECT, objects));
+    }
+
+    if (!categories.isEmpty()) {
+      actCondition.add(SqlUtils.in(TBL_TRADE_ACT_ITEMS, COL_TA_ITEM, TBL_ITEM_CATEGORIES, COL_ITEM,
+          SqlUtils.inList(TBL_ITEM_CATEGORIES, COL_CATEGORY, categories)));
+    }
+    if (!items.isEmpty()) {
+      actCondition.add(SqlUtils.inList(TBL_TRADE_ACT_ITEMS, COL_TA_ITEM, items));
+    }
+
+    IsCondition itemCondition;
+    if (!showQuantity && showWeight) {
+      itemCondition = SqlUtils.positive(TBL_ITEMS, COL_ITEM_WEIGHT);
+    } else {
+      itemCondition = null;
+    }
+
+    String startStock = null;
+    String movement = null;
+    String endStock = null;
+
+    if (startDate == null && endDate == null) {
+      endStock = getStock(actCondition, itemCondition, null, warehouses, PFX_END_STOCK);
+
+    } else if (startDate == null) {
+      endStock = getStock(actCondition, itemCondition, endDate, warehouses, PFX_END_STOCK);
+
+    } else if (endDate == null) {
+      startStock = getStock(actCondition, itemCondition, startDate, warehouses, PFX_START_STOCK);
+
+    } else {
+      startStock = getStock(actCondition, itemCondition, startDate, warehouses, PFX_START_STOCK);
+      movement = getMovement(actCondition, itemCondition, startDate, endDate, warehouses);
+      endStock = getStock(actCondition, itemCondition, endDate, warehouses, PFX_END_STOCK);
+    }
+
+    if (BeeUtils.allEmpty(startStock, movement, endStock)) {
+      return ResponseObject.emptyResponse();
+    }
+
+    boolean sum = groupBy.contains(COL_ITEM_TYPE) || groupBy.contains(COL_ITEM_GROUP);
+    String itemIdName = sys.getIdName(TBL_ITEMS);
+
+    SqlSelect query = new SqlSelect();
+    query.addFrom(TBL_ITEMS);
+
+    if (sum) {
+      for (String group : groupBy) {
+        switch (group) {
+          case COL_ITEM_TYPE:
+            query.addFromLeft(TBL_ITEM_CATEGORY_TREE, ALS_ITEM_TYPES,
+                sys.joinTables(TBL_ITEM_CATEGORY_TREE, ALS_ITEM_TYPES, TBL_ITEMS, COL_ITEM_TYPE));
+
+            query.addField(ALS_ITEM_TYPES, COL_CATEGORY_NAME, ALS_ITEM_TYPE_NAME);
+
+            query.addGroup(ALS_ITEM_TYPES, COL_CATEGORY_NAME);
+            query.addOrder(null, ALS_ITEM_TYPE_NAME);
+            break;
+
+          case COL_ITEM_GROUP:
+            query.addFromLeft(TBL_ITEM_CATEGORY_TREE, ALS_ITEM_GROUPS,
+                sys.joinTables(TBL_ITEM_CATEGORY_TREE, ALS_ITEM_GROUPS, TBL_ITEMS, COL_ITEM_GROUP));
+
+            query.addField(ALS_ITEM_GROUPS, COL_CATEGORY_NAME, ALS_ITEM_GROUP_NAME);
+
+            query.addGroup(ALS_ITEM_GROUPS, COL_CATEGORY_NAME);
+            query.addOrder(null, ALS_ITEM_GROUP_NAME);
+            break;
+        }
+      }
+
+    } else {
+      query.addFromLeft(TBL_ITEM_CATEGORY_TREE, ALS_ITEM_TYPES,
+          sys.joinTables(TBL_ITEM_CATEGORY_TREE, ALS_ITEM_TYPES, TBL_ITEMS, COL_ITEM_TYPE));
+      query.addFromLeft(TBL_ITEM_CATEGORY_TREE, ALS_ITEM_GROUPS,
+          sys.joinTables(TBL_ITEM_CATEGORY_TREE, ALS_ITEM_GROUPS, TBL_ITEMS, COL_ITEM_GROUP));
+
+      query.addFromLeft(TBL_UNITS,
+          sys.joinTables(TBL_UNITS, TBL_ITEMS, COL_UNIT));
+
+      query.addField(ALS_ITEM_TYPES, COL_CATEGORY_NAME, ALS_ITEM_TYPE_NAME);
+      query.addField(ALS_ITEM_GROUPS, COL_CATEGORY_NAME, ALS_ITEM_GROUP_NAME);
+
+      query.addField(TBL_ITEMS, itemIdName, COL_TA_ITEM);
+      query.addField(TBL_ITEMS, COL_ITEM_NAME, ALS_ITEM_NAME);
+      query.addFields(TBL_ITEMS, COL_ITEM_ARTICLE, COL_ITEM_WEIGHT);
+
+      query.addField(TBL_UNITS, COL_UNIT_NAME, ALS_UNIT_NAME);
+
+      query.addOrder(TBL_ITEMS, COL_ITEM_ORDINAL);
+      query.addOrder(null, ALS_ITEM_TYPE_NAME);
+      query.addOrder(null, ALS_ITEM_GROUP_NAME);
+      query.addOrder(null, ALS_ITEM_NAME);
+      query.addOrder(TBL_ITEMS, COL_ITEM_ARTICLE);
+    }
+
+    HasConditions where = SqlUtils.or();
+
+    if (!BeeUtils.isEmpty(startStock)) {
+      addStockColumns(query, startStock, PFX_START_STOCK, showQuantity, showWeight, sum);
+
+      qs.sqlIndex(startStock, COL_TA_ITEM);
+      query.addFromLeft(startStock,
+          SqlUtils.join(TBL_ITEMS, itemIdName, startStock, COL_TA_ITEM));
+
+      where.add(SqlUtils.notNull(startStock, COL_TA_ITEM));
+    }
+
+    if (!BeeUtils.isEmpty(movement)) {
+      addMovementColumns(query, movement, showQuantity, showWeight, sum);
+
+      qs.sqlIndex(movement, COL_TA_ITEM);
+      query.addFromLeft(movement,
+          SqlUtils.join(TBL_ITEMS, itemIdName, movement, COL_TA_ITEM));
+
+      where.add(SqlUtils.notNull(movement, COL_TA_ITEM));
+    }
+
+    if (!BeeUtils.isEmpty(endStock)) {
+      addStockColumns(query, endStock, PFX_END_STOCK, showQuantity, showWeight, sum);
+
+      qs.sqlIndex(endStock, COL_TA_ITEM);
+      query.addFromLeft(endStock,
+          SqlUtils.join(TBL_ITEMS, itemIdName, endStock, COL_TA_ITEM));
+
+      where.add(SqlUtils.notNull(endStock, COL_TA_ITEM));
+    }
+
+    query.setWhere(where);
+    SimpleRowSet data = qs.getData(query);
+
+    if (!BeeUtils.isEmpty(startStock)) {
+      qs.sqlDropTemp(startStock);
+    }
+    if (!BeeUtils.isEmpty(movement)) {
+      qs.sqlDropTemp(movement);
+    }
+    if (!BeeUtils.isEmpty(endStock)) {
+      qs.sqlDropTemp(endStock);
+    }
+
+    if (DataUtils.isEmpty(data)) {
+      return ResponseObject.emptyResponse();
+    } else {
+      return ResponseObject.response(data);
+    }
+  }
+
+  private void addStockColumns(SqlSelect query, String tmp, String prefix,
+      boolean quantity, boolean weight, boolean sum) {
+
+    List<String> input = qs.sqlColumns(tmp);
+    List<String> columns = new ArrayList<>();
+
+    BeeRowSet warehouses = qs.getViewData(VIEW_WAREHOUSES);
+    for (long id : warehouses.getRowIds()) {
+      String name = prefix + id;
+      if (input.contains(name)) {
+        columns.add(name);
+      }
+    }
+
+    for (String column : columns) {
+      if (quantity) {
+        if (sum) {
+          query.addSum(tmp, column, column + SFX_QUANTITY);
+        } else {
+          query.addField(tmp, column, column + SFX_QUANTITY);
+        }
+      }
+
+      if (weight) {
+        IsExpression expr = SqlUtils.multiply(SqlUtils.field(tmp, column),
+            SqlUtils.field(TBL_ITEMS, COL_ITEM_WEIGHT));
+
+        if (sum) {
+          query.addSum(expr, column + SFX_WEIGHT);
+        } else {
+          query.addExpr(expr, column + SFX_WEIGHT);
+        }
+      }
+    }
+  }
+
+  private void addMovementColumns(SqlSelect query, String tmp, boolean quantity, boolean weight,
+      boolean sum) {
+
+    List<String> input = qs.sqlColumns(tmp);
+    List<String> columns = new ArrayList<>();
+
+    BeeRowSet operations = qs.getViewData(VIEW_TRADE_OPERATIONS);
+    for (long id : operations.getRowIds()) {
+      String name = PFX_MOVEMENT + id;
+      if (input.contains(name)) {
+        columns.add(name);
+      }
+    }
+
+    for (String column : columns) {
+      if (quantity) {
+        if (sum) {
+          query.addSum(tmp, column, column + SFX_QUANTITY);
+        } else {
+          query.addField(tmp, column, column + SFX_QUANTITY);
+        }
+      }
+
+      if (weight) {
+        IsExpression expr = SqlUtils.multiply(SqlUtils.field(tmp, column),
+            SqlUtils.field(TBL_ITEMS, COL_ITEM_WEIGHT));
+
+        if (sum) {
+          query.addSum(expr, column + SFX_WEIGHT);
+        } else {
+          query.addExpr(expr, column + SFX_WEIGHT);
+        }
+      }
+    }
   }
 
   private static Filter getTemplateChildrenFilter(Long templateId, Collection<Long> excludeItems) {

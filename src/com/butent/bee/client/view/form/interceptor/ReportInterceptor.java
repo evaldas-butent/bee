@@ -37,6 +37,7 @@ import com.butent.bee.shared.logging.LogUtils;
 import com.butent.bee.shared.time.DateTime;
 import com.butent.bee.shared.time.TimeUtils;
 import com.butent.bee.shared.ui.Action;
+import com.butent.bee.shared.ui.HasCheckedness;
 import com.butent.bee.shared.ui.HasStringValue;
 import com.butent.bee.shared.ui.UserInterface.Component;
 import com.butent.bee.shared.utils.BeeUtils;
@@ -213,6 +214,13 @@ public abstract class ReportInterceptor extends AbstractFormInterceptor implemen
     this.initialParameters = initialParameters;
   }
 
+  protected ReportParameters addBooleanValues(ReportParameters parameters, String... names) {
+    for (String name : names) {
+      parameters.add(name, getBoolean(name));
+    }
+    return parameters;
+  }
+
   protected ReportParameters addDateTimeValues(ReportParameters parameters, String... names) {
     for (String name : names) {
       parameters.add(name, getDateTime(name));
@@ -245,7 +253,7 @@ public abstract class ReportInterceptor extends AbstractFormInterceptor implemen
   }
 
   protected boolean checkRange(DateTime start, DateTime end) {
-    if (start != null && end != null && TimeUtils.isMore(start, end)) {
+    if (start != null && end != null && TimeUtils.isMeq(start, end)) {
       getFormView().notifyWarning(Localized.getConstants().invalidRange(),
           TimeUtils.renderPeriod(start, end));
       return false;
@@ -272,6 +280,16 @@ public abstract class ReportInterceptor extends AbstractFormInterceptor implemen
   }
 
   protected abstract String getBookmarkLabel();
+
+  protected boolean getBoolean(String name) {
+    Widget widget = getFormView().getWidgetByName(name);
+    if (widget instanceof HasCheckedness) {
+      return ((HasCheckedness) widget).isChecked();
+    } else {
+      widgetNotFound(name);
+      return false;
+    }
+  }
 
   protected HasIndexedWidgets getDataContainer() {
     Widget widget = getFormView().getWidgetByName(NAME_DATA_CONTAINER);
@@ -370,6 +388,19 @@ public abstract class ReportInterceptor extends AbstractFormInterceptor implemen
     }
   }
 
+  protected void loadBoolean(ReportParameters parameters, String name, FormView form) {
+    Boolean value = parameters.getBoolean(name);
+    if (BeeUtils.isTrue(value)) {
+      Widget widget = form.getWidgetByName(name);
+
+      if (widget instanceof HasCheckedness) {
+        ((HasCheckedness) widget).setChecked(value);
+      } else {
+        widgetIsNot(name, HasCheckedness.class);
+      }
+    }
+  }
+
   protected void loadDateTime(ReportParameters parameters, String name, FormView form) {
     DateTime dateTime = parameters.getDateTime(name);
     if (dateTime != null) {
@@ -452,6 +483,15 @@ public abstract class ReportInterceptor extends AbstractFormInterceptor implemen
       return null;
     } else {
       return new ReportParameters(map);
+    }
+  }
+
+  protected void storeBooleanValues(String... names) {
+    Long user = BeeKeeper.getUser().getUserId();
+    if (DataUtils.isId(user)) {
+      for (String name : names) {
+        BeeKeeper.getStorage().set(storageKey(user, name), getBoolean(name));
+      }
     }
   }
 

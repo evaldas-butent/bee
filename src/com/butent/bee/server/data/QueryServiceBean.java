@@ -715,6 +715,16 @@ public class QueryServiceBean {
     return BeeUtils.join(BeeConst.STRING_EMPTY, BeeUtils.isEmpty(prefixFld) ? prefix : null, value);
   }
 
+  public Set<Long> getNotNullLongSet(String source, String field) {
+    SqlSelect query = new SqlSelect()
+        .setDistinctMode(true)
+        .addFields(source, field)
+        .addFrom(source)
+        .setWhere(SqlUtils.notNull(source, field));
+
+    return getLongSet(query);
+  }
+
   public Long[] getRelatedValues(String tableName, String filterColumn, long filterValue,
       String resultColumn) {
 
@@ -1000,6 +1010,18 @@ public class QueryServiceBean {
       lower = DateTime.copyOf(upper);
     }
     return result;
+  }
+
+  public List<String> sqlColumns(String tmp) {
+    SqlSelect ss = new SqlSelect().addAllFields(tmp).addFrom(tmp).setWhere(SqlUtils.sqlFalse());
+    SimpleRowSet data = getData(ss);
+
+    List<String> columns = new ArrayList<>();
+    for (String colName : data.getColumnNames()) {
+      columns.add(colName);
+    }
+
+    return columns;
   }
 
   public int sqlCount(SqlSelect query) {
