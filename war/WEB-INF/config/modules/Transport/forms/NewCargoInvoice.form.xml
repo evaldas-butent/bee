@@ -26,7 +26,7 @@
         <Label text="=trdDate" class="bee-required" style="&lbl2; width:143px;" />
         <InputDateTime source="Date" style="width:110px;" />
 
-        <Label text="=trInvoiceId" style="&lbl2;" />
+        <Label text="Užsakymų ID" style="&lbl2;" />
         <InputText source="Number" />
       </row>
       <row>
