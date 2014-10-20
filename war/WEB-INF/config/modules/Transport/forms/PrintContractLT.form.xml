@@ -18,7 +18,7 @@
       .&form;-table td {border:1px solid black; padding:2px;}
       .&form;-forwarder .bee-co-companyInfo-name .bee-co-companyInfo-item:before {content: "Vežėjas: "; font-weight:normal;}
       .&form;-customer .bee-co-companyInfo-name .bee-co-companyInfo-item:before {content: "Užsakovas: "; font-weight:normal;}
-      .&form;-customer .bee-co-companyInfo-phone {display:none;}
+      .&form;-customer .bee-co-companyInfo-mobile {display:none;}
     </css>
     <Image url="images/HL_logo.jpg" style="width:50%; display:block; margin:auto;" />
     <TextLabel style="text-align:center; &bold;">

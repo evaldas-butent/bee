@@ -17,6 +17,7 @@
     <SimpleColumn name="LogCount" />
     <SimpleColumn name="Finished" />
     <SimpleColumn name="FinishedCount" />
+    <SimpleColumn name="ShowAdditionalRoute" />
     <SimpleColumn name="ExpensesRegistered" />
 
     <SimpleColumn name="Department" />

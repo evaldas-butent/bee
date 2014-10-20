@@ -8,7 +8,7 @@
   xmlns:f="http://www.butent.com/form"
   
   name="NewCargoInvoice" viewName="CargoInvoices" caption="=trNewCargoInvoice"
-  width="710" height="280"
+  width="710" height="320"
   >
   <FlowPanel style="padding: 1px 1px 1px 1px;">
     <Table  style="border-spacing: 5px;">
@@ -26,17 +26,17 @@
         <Label text="=trdDate" class="bee-required" style="&lbl2; width:143px;" />
         <InputDateTime source="Date" style="width:110px;" />
 
-        <Label text="Užsakymų ID" style="&lbl2;" />
+        <Label text="=trInvoiceId" style="&lbl2;" />
         <InputText source="Number" />
       </row>
       <row>
         <Label text="=currency" class="bee-required" style="&lbl2; width:143px; margin-right: 5px;" />
-        <DataSelector source="CurrencyName" style="width:40px;" editEnabled="false" />        
+        <DataSelector source="CurrencyName" style="width:45px;" editEnabled="false" />        
 	    <cell colSpan="2">
 	      <Table style="border-spacing: 0px;">
             <row>              
-              <Label text="=trdInvoicePrefix" style="&lbl2; width: 42px; "/>
-              <InputText source="InvoicePrefix" upperCase="true" style="width:50px; margin-right: 4px;"/>
+              <Label text="=trdInvoicePrefix" style="&lbl2;"/>
+              <InputText source="InvoicePrefix" upperCase="true" style="width:80px; margin-right: 4px;"/>
               <InlineLabel text="=trdInvoiceNo" style="&lbl2; margin-right: 5px;" />
               <InputText source="InvoiceNo" />
 		    </row>
@@ -49,7 +49,7 @@
 		    <row> -->
   	 	      <Label text="=trdTerm" style="&lbl2; width:143px; text-align:right; margin-right: 5px;"/>
   		      <InputDate source="Term" style="width:75px;" />
-  		      <Label name="MainItemCaption" text="=transportMainItemCaption" style="&lbl2; width:185px; margin-right: 5px;"/>
+  		      <Label name="MainItemCaption" text="=transportMainItemCaption" style="&lbl2; width:210px; margin-right: 5px;"/>
               <UnboundSelector name="MainItem" viewName="Items" renderColumns="Name" />
 		    <!--</row>
 		  </Table> -->

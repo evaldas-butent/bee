@@ -18,7 +18,7 @@
       .&form;-table {border-collapse:collapse; width:100%;}
       .&form;-table td {border:1px solid black; padding:2px;}
       .&form;-forwarder .bee-co-companyInfo-name .bee-co-companyInfo-item:before {content: "Ekspeditorius: "; font-weight:normal;}
-      .&form;-forwarder .bee-co-companyInfo-phone {display:none;}
+      .&form;-forwarder .bee-co-companyInfo-mobile {display:none;}
     </css>
     <HorizontalPanel>
       <Table style="white-space:nowrap;">
@@ -77,20 +77,24 @@
       <Label html="Maršrutas" style="&bold;" />
 
       <HorizontalPanel class="&form;-table">
-        <TextLabel source="OrderNotes" style="white-space:pre-wrap;" />
+        <TextLabel source="OrderNotes" style="white-space:pre-wrap;">
+          <render><ui:expression>(row.ShowAdditionalRoute
+            ? row.LoadingCountryName + ' (' + row.LoadingCountryCode + ') - '
+             + row.UnloadingCountryName + ' (' + row.UnloadingCountryCode + ')\n' : '') + row.OrderNotes</ui:expression></render>
+        </TextLabel>
         
         <FlowPanel>
           <FlowPanel>
             <Label html="Pakrovimas:" style="&inline; width:100px; text-align:right;" />
             <TextLabel source="LoadingAddress" style="&inline; margin-left:5px;">
-              <renderToken source="LoadingDate" />
+              <renderToken source="LoadingDate" format="DATE_SHORT" />
               <renderToken source="LoadingAddress" prefix=", " />
             </TextLabel>
           </FlowPanel>
           <FlowPanel>
             <Label html="Iškrovimas:" style="&inline; width:100px; text-align:right;" />
             <TextLabel source="UnloadingAddress" style="&inline; margin-left:5px;">
-              <renderToken source="UnloadingDate" />
+              <renderToken source="UnloadingDate" format="DATE_SHORT" />
               <renderToken source="UnloadingAddress" prefix=", " />
             </TextLabel>
           </FlowPanel>
