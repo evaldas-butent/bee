@@ -294,8 +294,15 @@ public abstract class Provider implements SortEvent.Handler, HandlesAllDataEvent
       EventUtils.clearRegistry(displayRegistry);
     }
 
-    displayRegistry.add(d.addDataRequestHandler(this));
-    displayRegistry.add(d.addSortHandler(this));
+    HandlerRegistration hr = d.addDataRequestHandler(this);
+    if (hr != null) {
+      displayRegistry.add(hr);
+    }
+
+    hr = d.addSortHandler(this);
+    if (hr != null) {
+      displayRegistry.add(hr);
+    }
   }
 
   private Map<String, Filter> getParentFilters() {

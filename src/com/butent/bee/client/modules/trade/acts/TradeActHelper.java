@@ -24,10 +24,11 @@ final class TradeActHelper {
 
   private static final BeeLogger logger = LogUtils.getLogger(TradeActHelper.class);
 
-  private static NumberFormat quantityFormat;
+  private static NumberFormat amountFormat;
   private static NumberFormat discountPercentFormat;
   private static NumberFormat priceFormat;
-  private static NumberFormat amountFormat;
+  private static NumberFormat quantityFormat;
+  private static NumberFormat weightFormat;
 
   private TradeActHelper() {
   }
@@ -93,6 +94,8 @@ final class TradeActHelper {
         return Localized.getConstants().itemName();
       case COL_ITEM_ARTICLE:
         return Localized.getConstants().article();
+      case COL_ITEM_WEIGHT:
+        return Localized.getConstants().weight();
 
       case COL_UNIT:
       case ALS_UNIT_NAME:
@@ -120,7 +123,7 @@ final class TradeActHelper {
 
       default:
         logger.warning(NameUtils.getClassName(TradeActHelper.class), name, "label not defined");
-        return null;
+        return name;
     }
   }
 
@@ -159,13 +162,14 @@ final class TradeActHelper {
       default:
         logger.warning(NameUtils.getClassName(TradeActHelper.class), name, plural,
             "label not defined");
-        return null;
+        return name;
     }
   }
 
   static NumberFormat getNumberFormat(String name) {
     switch (name) {
       case COL_TRADE_ACT:
+      case COL_TA_ITEM:
         return Format.getDefaultLongFormat();
 
       case COL_TRADE_ITEM_QUANTITY:
@@ -183,6 +187,9 @@ final class TradeActHelper {
       case ALS_DISCOUNT_AMOUNT:
       case ALS_TOTAL_AMOUNT:
         return getAmountFormat();
+
+      case COL_ITEM_WEIGHT:
+        return getWeightFormat();
 
       default:
         logger.warning(NameUtils.getClassName(TradeActHelper.class), name, "format not defined");
@@ -220,6 +227,14 @@ final class TradeActHelper {
     return amountFormat;
   }
 
+  static NumberFormat getWeightFormat() {
+    if (weightFormat == null) {
+      Integer scale = Data.getColumnScale(VIEW_ITEMS, COL_ITEM_WEIGHT);
+      weightFormat = Format.getDecimalFormat(BeeUtils.unbox(scale));
+    }
+    return weightFormat;
+  }
+
   static ValueType getType(Collection<String> viewNames, String colName) {
     switch (colName) {
       case ALS_RETURNED_QTY:
@@ -234,6 +249,12 @@ final class TradeActHelper {
       case ALS_ITEM_TYPE_NAME:
       case ALS_ITEM_GROUP_NAME:
         return ValueType.TEXT;
+    }
+
+    if (colName.startsWith(PFX_START_STOCK)
+        || colName.startsWith(PFX_MOVEMENT)
+        || colName.startsWith(PFX_END_STOCK)) {
+      return ValueType.NUMBER;
     }
 
     for (String viewName : viewNames) {
