@@ -1,6 +1,5 @@
 package com.butent.bee.client.modules.ec.view;
 
-import com.google.common.collect.Lists;
 import com.google.gwt.core.client.Scheduler;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
@@ -27,6 +26,7 @@ import com.butent.bee.shared.modules.ec.EcConstants;
 import com.butent.bee.shared.modules.ec.EcItem;
 import com.butent.bee.shared.utils.BeeUtils;
 
+import java.util.ArrayList;
 import java.util.List;
 
 class SearchByBrand extends EcView {
@@ -35,13 +35,13 @@ class SearchByBrand extends EcView {
   private static final String STYLE_BRAND = STYLE_PREFIX + "brand-";
 
   private static final Edges selectorMargins = new Edges(0, 0, 3, 0);
-  
+
   private final Button brandWidget;
   private final IndexSelector brandSelector;
 
   private final ItemPanel itemPanel;
 
-  private final List<EcBrand> brands = Lists.newArrayList();
+  private final List<EcBrand> brands = new ArrayList<>();
   private int brandIndex = BeeConst.UNDEF;
 
   SearchByBrand() {
@@ -101,10 +101,10 @@ class SearchByBrand extends EcView {
 
       EcBrand brand = brands.get(index);
       String name = brand.getName();
-      
+
       brandWidget.setHtml(name);
       brandWidget.addStyleName(STYLE_BRAND + "selected");
-      
+
       brandSelector.retainValue(name);
 
       itemPanel.clear();
@@ -137,7 +137,7 @@ class SearchByBrand extends EcView {
           });
         }
 
-        List<String> names = Lists.newArrayList();
+        List<String> names = new ArrayList<>();
         for (EcBrand brand : brands) {
           names.add(brand.getName());
         }

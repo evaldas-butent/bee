@@ -87,10 +87,6 @@ public class MenuManager {
     }
   }
 
-  private static void noService(Menu item) {
-    logger.warning("service not available for menu item", item.getParent(), item.getName());
-  }
-
   private static IdentifiableWidget createWidget(String layout, int level) {
     IdentifiableWidget w = null;
 
@@ -129,8 +125,34 @@ public class MenuManager {
     return w;
   }
 
+  private static MenuItem findItem(Menu menu, String name) {
+    if (menu instanceof MenuItem) {
+      if (BeeUtils.same(menu.getName(), name)) {
+        return (MenuItem) menu;
+      } else {
+        return null;
+      }
+
+    } else if (menu instanceof MenuEntry) {
+      for (Menu child : ((MenuEntry) menu).getItems()) {
+        MenuItem item = findItem(child, name);
+        if (item != null) {
+          return item;
+        }
+      }
+      return null;
+
+    } else {
+      return null;
+    }
+  }
+
   private static BAR_TYPE getBarType(boolean table) {
     return table ? BAR_TYPE.TABLE : BAR_TYPE.FLOW;
+  }
+
+  private static void noService(Menu item) {
+    logger.warning("service not available for menu item", item.getParent(), item.getName());
   }
 
   private static void prepareWidget(IdentifiableWidget w) {
@@ -163,21 +185,21 @@ public class MenuManager {
     }
     return ok;
   }
-  
+
   public boolean executeItem(String name) {
     if (BeeUtils.isEmpty(name)) {
       return false;
     }
-    
+
     MenuItem item = null;
-    
+
     for (Menu menu : roots) {
       item = findItem(menu, name);
       if (item != null) {
         break;
       }
     }
-    
+
     if (item == null) {
       logger.warning("menu item", name, "not found");
       return false;
@@ -185,12 +207,22 @@ public class MenuManager {
     } else if (item.getService() == null) {
       noService(item);
       return false;
-      
+
     } else {
       MenuCommand command = new MenuCommand(item.getService(), item.getParameters());
       command.execute();
       return true;
     }
+  }
+
+  public List<MenuCommand> getCommands() {
+    List<MenuCommand> commands = new ArrayList<>();
+
+    for (Menu menu : roots) {
+      commands.addAll(getCommands(menu));
+    }
+
+    return commands;
   }
 
   public List<String> getLayouts() {
@@ -252,33 +284,12 @@ public class MenuManager {
     Tree tree = new Tree();
 
     for (Menu menu : roots) {
-      TreeItem item = new TreeItem(menu.getLabel());
+      TreeItem item = new TreeItem(Localized.maybeTranslate(menu.getLabel()));
       collectMenuInfo(item, menu);
       tree.addItem(item);
     }
-    BeeKeeper.getScreen().updateActivePanel(tree);
-  }
 
-  private static MenuItem findItem(Menu menu, String name) {
-    if (menu instanceof MenuItem) {
-      if (BeeUtils.same(menu.getName(), name)) {
-        return (MenuItem) menu;
-      } else {
-        return null;
-      }
-
-    } else if (menu instanceof MenuEntry) {
-      for (Menu child : ((MenuEntry) menu).getItems()) {
-        MenuItem item = findItem(child, name);
-        if (item != null) {
-          return item;
-        }
-      }
-      return null;
-
-    } else {
-      return null;
-    }
+    BeeKeeper.getScreen().show(tree);
   }
 
   private void collectMenuInfo(TreeItem treeItem, Menu menu) {
@@ -301,7 +312,7 @@ public class MenuManager {
       TreeItem cc = new TreeItem("Items");
 
       for (Menu item : ((MenuEntry) menu).getItems()) {
-        TreeItem itm = new TreeItem(item.getLabel());
+        TreeItem itm = new TreeItem(Localized.maybeTranslate(item.getLabel()));
         collectMenuInfo(itm, item);
         cc.addItem(itm);
       }
@@ -343,6 +354,22 @@ public class MenuManager {
 
     prepareWidget(rw);
     return rw;
+  }
+
+  private List<MenuCommand> getCommands(Menu menu) {
+    List<MenuCommand> commands = new ArrayList<>();
+
+    if (menu instanceof MenuItem) {
+      MenuItem item = (MenuItem) menu;
+      commands.add(new MenuCommand(item.getService(), item.getParameters()));
+
+    } else if (menu instanceof MenuEntry) {
+      for (Menu child : ((MenuEntry) menu).getItems()) {
+        commands.addAll(getCommands(child));
+      }
+    }
+
+    return commands;
   }
 
   private String getLayout(int idx) {

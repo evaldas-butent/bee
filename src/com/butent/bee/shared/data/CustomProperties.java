@@ -1,7 +1,5 @@
 package com.butent.bee.shared.data;
 
-import com.google.common.collect.Lists;
-
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeSerializable;
 import com.butent.bee.shared.HasInfo;
@@ -11,6 +9,7 @@ import com.butent.bee.shared.utils.Codec;
 import com.butent.bee.shared.utils.Property;
 import com.butent.bee.shared.utils.PropertyUtils;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -23,16 +22,16 @@ import java.util.Map;
 public class CustomProperties extends HashMap<String, String> implements HasInfo, BeeSerializable {
 
   public static final String TAG_PROPERTIES = "properties";
-  
+
   public static CustomProperties create() {
     return new CustomProperties();
   }
-  
+
   public static CustomProperties restore(String s) {
     if (BeeUtils.isEmpty(s)) {
       return null;
     }
-    
+
     CustomProperties customProperties = new CustomProperties();
     customProperties.deserialize(s);
 
@@ -53,11 +52,11 @@ public class CustomProperties extends HashMap<String, String> implements HasInfo
     if (BeeUtils.isEmpty(s)) {
       return;
     }
-    
+
     String[] arr = Codec.beeDeserializeCollection(s);
     int c = ArrayUtils.length(arr);
     Assert.isEven(c);
-    
+
     for (int i = 0; i < c; i += 2) {
       put(arr[i], arr[i + 1]);
     }
@@ -65,7 +64,7 @@ public class CustomProperties extends HashMap<String, String> implements HasInfo
 
   @Override
   public List<Property> getInfo() {
-    List<Property> lst = Lists.newArrayList();
+    List<Property> lst = new ArrayList<>();
     if (isEmpty()) {
       return lst;
     }

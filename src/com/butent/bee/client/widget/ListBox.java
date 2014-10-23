@@ -1,6 +1,5 @@
 package com.butent.bee.client.widget;
 
-import com.google.common.collect.Lists;
 import com.google.gwt.dom.client.Document;
 import com.google.gwt.dom.client.Element;
 import com.google.gwt.dom.client.Node;
@@ -22,6 +21,7 @@ import com.google.gwt.user.client.Event;
 
 import com.butent.bee.client.dom.DomUtils;
 import com.butent.bee.client.event.EventUtils;
+import com.butent.bee.client.event.logical.SummaryChangeEvent;
 import com.butent.bee.client.ui.AcceptsCaptions;
 import com.butent.bee.client.ui.FormWidget;
 import com.butent.bee.client.view.edit.EditChangeHandler;
@@ -31,11 +31,14 @@ import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.HasItems;
 import com.butent.bee.shared.State;
+import com.butent.bee.shared.data.value.BooleanValue;
+import com.butent.bee.shared.data.value.Value;
 import com.butent.bee.shared.ui.EditorAction;
 import com.butent.bee.shared.ui.HasValueStartIndex;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.EnumUtils;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
@@ -66,6 +69,8 @@ public class ListBox extends CustomWidget implements Editor, HasItems, HasValueS
 
   private boolean handlesTabulation;
 
+  private boolean summarize;
+
   public ListBox() {
     this(false);
   }
@@ -89,7 +94,7 @@ public class ListBox extends CustomWidget implements Editor, HasItems, HasValueS
   public HandlerRegistration addEditChangeHandler(EditChangeHandler handler) {
     return addKeyDownHandler(handler);
   }
-  
+
   @Override
   public HandlerRegistration addEditStopHandler(EditStopEvent.Handler handler) {
     return addHandler(handler, EditStopEvent.getType());
@@ -104,12 +109,12 @@ public class ListBox extends CustomWidget implements Editor, HasItems, HasValueS
   public void addItem(String item) {
     addItem(item, item);
   }
-  
+
   public void addItem(String item, String value) {
     OptionElement option = Document.get().createOptionElement();
     option.setText(item);
     option.setValue(value);
-    
+
     getSelectElement().add(option, null);
     updateSize();
   }
@@ -125,6 +130,11 @@ public class ListBox extends CustomWidget implements Editor, HasItems, HasValueS
   @Override
   public HandlerRegistration addKeyDownHandler(KeyDownHandler handler) {
     return addDomHandler(handler, KeyDownEvent.getType());
+  }
+
+  @Override
+  public HandlerRegistration addSummaryChangeHandler(SummaryChangeEvent.Handler handler) {
+    return addHandler(handler, SummaryChangeEvent.getType());
   }
 
   public void clear() {
@@ -150,7 +160,7 @@ public class ListBox extends CustomWidget implements Editor, HasItems, HasValueS
   public String getIdPrefix() {
     return "list";
   }
-  
+
   public int getIndex(String text) {
     int index = BeeConst.UNDEF;
     if (BeeUtils.isEmpty(text)) {
@@ -182,7 +192,7 @@ public class ListBox extends CustomWidget implements Editor, HasItems, HasValueS
 
   @Override
   public List<String> getItems() {
-    List<String> items = Lists.newArrayList();
+    List<String> items = new ArrayList<>();
     for (int i = 0; i < getItemCount(); i++) {
       items.add(getItemText(i));
     }
@@ -211,7 +221,7 @@ public class ListBox extends CustomWidget implements Editor, HasItems, HasValueS
       return BeeUtils.trimRight(v);
     }
   }
-  
+
   public OptionElement getOptionElement(int index) {
     if (isIndex(index)) {
       return getSelectElement().getOptions().getItem(index);
@@ -219,7 +229,7 @@ public class ListBox extends CustomWidget implements Editor, HasItems, HasValueS
       return null;
     }
   }
-  
+
   @Override
   public String getOptions() {
     return options;
@@ -228,7 +238,12 @@ public class ListBox extends CustomWidget implements Editor, HasItems, HasValueS
   public int getSelectedIndex() {
     return getSelectElement().getSelectedIndex();
   }
-  
+
+  @Override
+  public Value getSummary() {
+    return BooleanValue.of(!BeeUtils.isEmpty(getValue()));
+  }
+
   @Override
   public int getTabIndex() {
     return getElement().getTabIndex();
@@ -245,7 +260,7 @@ public class ListBox extends CustomWidget implements Editor, HasItems, HasValueS
       return getValue(index);
     }
   }
-  
+
   public String getValue(int index) {
     checkIndex(index);
     return getSelectElement().getOptions().getItem(index).getValue();
@@ -308,7 +323,7 @@ public class ListBox extends CustomWidget implements Editor, HasItems, HasValueS
   public boolean isValueNumeric() {
     return valueNumeric;
   }
-  
+
   @Override
   public void normalizeDisplay(String normalizedValue) {
   }
@@ -327,7 +342,7 @@ public class ListBox extends CustomWidget implements Editor, HasItems, HasValueS
         setChangePending(false);
         fireEvent(new EditStopEvent(State.CHANGED));
       }
-    
+
     } else if (EventUtils.isKeyDown(type)) {
       if (isNullable() && event.getKeyCode() == KeyCodes.KEY_DELETE) {
         clearValue();
@@ -344,8 +359,13 @@ public class ListBox extends CustomWidget implements Editor, HasItems, HasValueS
   }
 
   @Override
+  public void render(String value) {
+    setValue(value);
+  }
+
+  @Override
   public void setAccessKey(char key) {
-    ((JsElement) getElement().cast()).setAccessKey(String.valueOf(key)); 
+    ((JsElement) getElement().cast()).setAccessKey(String.valueOf(key));
   }
 
   public void setAllVisible() {
@@ -427,12 +447,17 @@ public class ListBox extends CustomWidget implements Editor, HasItems, HasValueS
   public void setOptions(String options) {
     this.options = options;
   }
-  
+
   public void setSelectedIndex(int index) {
     getSelectElement().setSelectedIndex(index);
     if (!isAttached()) {
       setDeselectPending(BeeConst.isUndef(index));
     }
+  }
+
+  @Override
+  public void setSummarize(boolean summarize) {
+    this.summarize = summarize;
   }
 
   @Override
@@ -472,6 +497,11 @@ public class ListBox extends CustomWidget implements Editor, HasItems, HasValueS
     setSelectedIndex(Math.max(getIndex(oldValue), 0));
   }
 
+  @Override
+  public boolean summarize() {
+    return summarize;
+  }
+
   public void updateSize() {
     int size = Math.max(getMinSize(), 1);
     if (getMaxSize() > 0) {
@@ -497,7 +527,7 @@ public class ListBox extends CustomWidget implements Editor, HasItems, HasValueS
   @Override
   protected void init() {
     super.init();
-    addStyleName("bee-ListBox");
+    addStyleName(BeeConst.CSS_CLASS_PREFIX + "ListBox");
     sinkEvents(Event.ONCHANGE | Event.ONMOUSEDOWN | Event.ONMOUSEUP | Event.ONKEYDOWN);
   }
 

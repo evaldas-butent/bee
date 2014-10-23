@@ -1,7 +1,5 @@
 package com.butent.bee.shared.ui;
 
-import com.google.common.collect.Lists;
-
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeSerializable;
 import com.butent.bee.shared.HasInfo;
@@ -10,6 +8,7 @@ import com.butent.bee.shared.utils.Codec;
 import com.butent.bee.shared.utils.Property;
 import com.butent.bee.shared.utils.PropertyUtils;
 
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -19,7 +18,7 @@ import java.util.List;
 public class ConditionalStyleDeclaration implements BeeSerializable, HasInfo {
 
   public static final String TAG_DYN_STYLE = "dynStyle";
-  
+
   public static ConditionalStyleDeclaration restore(String s) {
     if (BeeUtils.isEmpty(s)) {
       return null;
@@ -39,7 +38,7 @@ public class ConditionalStyleDeclaration implements BeeSerializable, HasInfo {
 
   private ConditionalStyleDeclaration() {
   }
-  
+
   public ConditionalStyleDeclaration copy() {
     ConditionalStyleDeclaration copy = new ConditionalStyleDeclaration();
 
@@ -49,10 +48,10 @@ public class ConditionalStyleDeclaration implements BeeSerializable, HasInfo {
     if (getCondition() != null) {
       copy.setCondition(getCondition().copy());
     }
-    
+
     return copy;
   }
-  
+
   @Override
   public void deserialize(String s) {
     String[] arr = Codec.beeDeserializeCollection(s);
@@ -68,7 +67,7 @@ public class ConditionalStyleDeclaration implements BeeSerializable, HasInfo {
 
   @Override
   public List<Property> getInfo() {
-    List<Property> info = Lists.newArrayList();
+    List<Property> info = new ArrayList<>();
 
     if (getStyle() != null) {
       info.addAll(getStyle().getInfo());
@@ -94,7 +93,7 @@ public class ConditionalStyleDeclaration implements BeeSerializable, HasInfo {
       getCondition().replaceColumn(oldId, newId);
     }
   }
-  
+
   @Override
   public String serialize() {
     return Codec.beeSerialize(new Object[] {getStyle(), getCondition()});

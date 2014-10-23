@@ -1,12 +1,11 @@
 package com.butent.bee.shared.utils;
 
-import com.google.common.base.Objects;
-
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
 
 import java.util.Arrays;
 import java.util.List;
+import java.util.Objects;
 
 /**
  * Contains methods for processing arrays.
@@ -27,7 +26,7 @@ public final class ArrayUtils {
     if (arr == null) {
       return false;
     }
-    
+
     for (String s : arr) {
       if (BeeUtils.same(s, value)) {
         return true;
@@ -35,7 +34,7 @@ public final class ArrayUtils {
     }
     return false;
   }
-  
+
   public static String[] copyOf(String[] original) {
     if (original == null) {
       return null;
@@ -109,7 +108,7 @@ public final class ArrayUtils {
     }
 
     for (int i = 0; i < len; i++) {
-      if (Objects.equal(value, arr[i])) {
+      if (Objects.equals(value, arr[i])) {
         idx = i;
         break;
       }
@@ -127,7 +126,7 @@ public final class ArrayUtils {
     return obj instanceof Object[] || isPrimitiveArray(obj);
   }
 
-  public static boolean isEmpty(String[] arr) {
+  public static boolean isEmpty(Object[] arr) {
     return arr == null || arr.length == 0;
   }
 
@@ -221,6 +220,10 @@ public final class ArrayUtils {
     return join(BeeConst.STRING_SPACE, arr);
   }
 
+  public static String joinWords(String[] arr) {
+    return join(BeeConst.STRING_SPACE, arr);
+  }
+
   /**
    * Gets the length of the specified Object {@code arr}.
    * 
@@ -253,6 +256,28 @@ public final class ArrayUtils {
       len = 0;
     }
     return len;
+  }
+
+  public static String[] remove(String[] arr, int index) {
+    if (arr == null || index < 0 || arr.length <= index) {
+      return arr;
+    }
+
+    String[] result = new String[arr.length - 1];
+
+    if (index > 0) {
+      for (int i = 0; i < index; i++) {
+        result[i] = arr[i];
+      }
+    }
+
+    if (index < arr.length - 1) {
+      for (int i = index + 1; i < arr.length; i++) {
+        result[i - 1] = arr[i];
+      }
+    }
+
+    return result;
   }
 
   /**
@@ -305,7 +330,7 @@ public final class ArrayUtils {
     }
     return arr;
   }
-  
+
   public static int sum(int[] arr) {
     int result = 0;
     for (int v : arr) {
@@ -313,7 +338,7 @@ public final class ArrayUtils {
     }
     return result;
   }
-  
+
   public static String[] toArray(List<String> list) {
     if (list == null) {
       return null;
@@ -342,12 +367,12 @@ public final class ArrayUtils {
     } else if (arr instanceof double[]) {
       return Arrays.toString((double[]) arr);
     } else if (arr == null) {
-      return BeeConst.STRING_EMPTY; 
+      return BeeConst.STRING_EMPTY;
     } else {
       return arr.toString();
     }
   }
-  
+
   private ArrayUtils() {
   }
 }

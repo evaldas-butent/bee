@@ -23,7 +23,6 @@ import com.butent.bee.client.i18n.Format;
 import com.butent.bee.client.output.Exporter;
 import com.butent.bee.client.output.Report;
 import com.butent.bee.client.output.ReportParameters;
-import com.butent.bee.client.style.StyleUtils;
 import com.butent.bee.client.ui.HasIndexedWidgets;
 import com.butent.bee.client.view.form.FormView;
 import com.butent.bee.client.view.form.interceptor.FormInterceptor;
@@ -50,6 +49,7 @@ import com.butent.bee.shared.time.TimeUtils;
 import com.butent.bee.shared.time.YearMonth;
 import com.butent.bee.shared.utils.BeeUtils;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
@@ -120,7 +120,7 @@ public class CompanyTypeReport extends ReportInterceptor {
 
   private static final String NAME_TYPES = "Types";
 
-  private static final String STYLE_PREFIX = StyleUtils.CLASS_NAME_PREFIX + "co-ctr-";
+  private static final String STYLE_PREFIX = BeeConst.CSS_CLASS_PREFIX + "co-ctr-";
 
   private static final String STYLE_TABLE = STYLE_PREFIX + "table";
   private static final String STYLE_HEADER = STYLE_PREFIX + "header";
@@ -144,23 +144,23 @@ public class CompanyTypeReport extends ReportInterceptor {
 
   private static final String DATA_KEY_YEAR = "year";
   private static final String DATA_KEY_MONTH = "month";
-  
+
   private static void showDetails(YearMonth ym, Column column, DateTime start, DateTime end,
-      String types, String typesLabel, boolean modal) {
-    
+      String types, String typesLabel) {
+
     List<String> labels = Lists.newArrayList(Localized.getConstants().clients());
-    List<String> filterArgs = Lists.newArrayList();
-    
+    List<String> filterArgs = new ArrayList<>();
+
     DateTime lower = (ym == null) ? start : BeeUtils.max(ym.getDate().getDateTime(), start);
     DateTime upper = (ym == null) ? end : BeeUtils.min(ym.nextMonth().getDate().getDateTime(), end);
-    
+
     if (lower != null || upper != null) {
       labels.add(TimeUtils.renderPeriod(lower, upper));
     }
-    
+
     filterArgs.add((lower == null) ? null : lower.serialize());
     filterArgs.add((upper == null) ? null : upper.serialize());
-    
+
     if (column.total) {
       if (!BeeUtils.isEmpty(typesLabel)) {
         labels.add(typesLabel);
@@ -171,9 +171,9 @@ public class CompanyTypeReport extends ReportInterceptor {
       labels.add(column.getLabel());
       filterArgs.add((column.typeId == null) ? BeeConst.STRING_ZERO : column.typeId.toString());
     }
-    
+
     drillDown(GRID_COMPANIES, BeeUtils.join(BeeConst.STRING_SPACE, labels),
-        Filter.custom(FILTER_COMPANY_CREATION_AND_TYPE, filterArgs), modal);
+        Filter.custom(FILTER_COMPANY_CREATION_AND_TYPE, filterArgs));
   }
 
   private static Table<YearMonth, Column, Integer> transformData(SimpleRowSet data) {
@@ -209,7 +209,7 @@ public class CompanyTypeReport extends ReportInterceptor {
 
     return table;
   }
-  
+
   private final XSheet sheet = new XSheet();
 
   public CompanyTypeReport() {
@@ -223,28 +223,27 @@ public class CompanyTypeReport extends ReportInterceptor {
   @Override
   public void onLoad(FormView form) {
     ReportParameters parameters = readParameters();
-    if (parameters == null) {
-      return;
+
+    if (parameters != null) {
+      Widget widget = form.getWidgetByName(NAME_START_DATE);
+      DateTime dateTime = parameters.getDateTime(NAME_START_DATE);
+      if (widget instanceof InputDateTime && dateTime != null) {
+        ((InputDateTime) widget).setDateTime(dateTime);
+      }
+
+      widget = form.getWidgetByName(NAME_END_DATE);
+      dateTime = parameters.getDateTime(NAME_END_DATE);
+      if (widget instanceof InputDateTime && dateTime != null) {
+        ((InputDateTime) widget).setDateTime(dateTime);
+      }
+
+      widget = form.getWidgetByName(NAME_TYPES);
+      String idList = parameters.get(NAME_TYPES);
+      if (widget instanceof MultiSelector && !BeeUtils.isEmpty(idList)) {
+        ((MultiSelector) widget).setIds(idList);
+      }
     }
 
-    Widget widget = form.getWidgetByName(NAME_START_DATE);
-    DateTime dateTime = parameters.getDateTime(NAME_START_DATE);
-    if (widget instanceof InputDateTime && dateTime != null) {
-      ((InputDateTime) widget).setDateTime(dateTime);
-    }
-
-    widget = form.getWidgetByName(NAME_END_DATE);
-    dateTime = parameters.getDateTime(NAME_END_DATE);
-    if (widget instanceof InputDateTime && dateTime != null) {
-      ((InputDateTime) widget).setDateTime(dateTime);
-    }
-
-    widget = form.getWidgetByName(NAME_TYPES);
-    String idList = parameters.get(NAME_TYPES);
-    if (widget instanceof MultiSelector && !BeeUtils.isEmpty(idList)) {
-      ((MultiSelector) widget).render(idList);
-    }
-    
     super.onLoad(form);
   }
 
@@ -289,7 +288,7 @@ public class CompanyTypeReport extends ReportInterceptor {
       params.addDataItem(COL_RELATION_TYPE, types);
       typesLabel = getFilterLabel(NAME_TYPES);
     }
-    
+
     BeeKeeper.getRpc().makeRequest(params, new ResponseCallback() {
       @Override
       public void onResponse(ResponseObject response) {
@@ -300,8 +299,8 @@ public class CompanyTypeReport extends ReportInterceptor {
         if (response.hasResponse(SimpleRowSet.class)) {
           SimpleRowSet data = SimpleRowSet.restore(response.getResponseAsString());
           renderData(transformData(data), start, end, types, typesLabel);
-          
-          List<String> headers = Lists.newArrayList(getCaption());
+
+          List<String> headers = Lists.newArrayList(getReportCaption());
           if (start != null || end != null) {
             headers.add(Format.renderPeriod(start, end));
           }
@@ -312,13 +311,13 @@ public class CompanyTypeReport extends ReportInterceptor {
             } else {
               label = Localized.getConstants().type();
             }
-            
+
             headers.add(BeeUtils.joinWords(label, typesLabel));
           }
-          
+
           sheet.addHeaders(headers);
           sheet.autoSizeAll();
-          
+
         } else {
           getFormView().notifyWarning(Localized.getConstants().nothingFound());
         }
@@ -329,13 +328,13 @@ public class CompanyTypeReport extends ReportInterceptor {
   @Override
   protected void export() {
     if (!sheet.isEmpty()) {
-      Exporter.maybeExport(sheet, getCaption());
+      Exporter.maybeExport(sheet, getReportCaption());
     }
   }
-  
+
   @Override
   protected String getBookmarkLabel() {
-    return BeeUtils.joinWords(getCaption(),
+    return BeeUtils.joinWords(getReportCaption(),
         Format.renderPeriod(getDateTime(NAME_START_DATE), getDateTime(NAME_END_DATE)),
         getFilterLabel(NAME_TYPES));
   }
@@ -354,7 +353,7 @@ public class CompanyTypeReport extends ReportInterceptor {
 
     return parameters;
   }
-  
+
   @Override
   protected boolean validateParameters(ReportParameters parameters) {
     DateTime start = parameters.getDateTime(NAME_START_DATE);
@@ -362,27 +361,27 @@ public class CompanyTypeReport extends ReportInterceptor {
 
     return checkRange(start, end);
   }
-  
-  private void renderData(Table<YearMonth, Column, Integer> data, 
+
+  private void renderData(Table<YearMonth, Column, Integer> data,
       final DateTime start, final DateTime end, final String types, final String typesLabel) {
 
     HasIndexedWidgets container = getDataContainer();
     if (container == null) {
       return;
     }
-    
+
     sheet.clear();
 
     if (!container.isEmpty()) {
       container.clear();
     }
 
-    List<YearMonth> yms = Lists.newArrayList(data.rowKeySet());
+    List<YearMonth> yms = new ArrayList<>(data.rowKeySet());
     if (yms.size() > 1) {
       Collections.sort(yms);
     }
 
-    final List<Column> columns = Lists.newArrayList(data.columnKeySet());
+    final List<Column> columns = new ArrayList<>(data.columnKeySet());
     if (columns.size() > 1) {
       Collections.sort(columns);
     }
@@ -395,7 +394,7 @@ public class CompanyTypeReport extends ReportInterceptor {
 
     XRow xr = new XRow(row);
     xr.setHeightFactor(1.2);
-    
+
     Integer boldRef = sheet.registerFont(XFont.bold());
 
     XStyle xs = XStyle.center();
@@ -422,10 +421,10 @@ public class CompanyTypeReport extends ReportInterceptor {
         table.getCellFormatter().addStyleName(row, col, STYLE_ROW_TOTAL);
       }
     }
-    
+
     sheet.add(xr);
     row++;
-    
+
     int csValue = sheet.registerStyle(XStyle.right());
 
     xs = XStyle.right();
@@ -434,12 +433,12 @@ public class CompanyTypeReport extends ReportInterceptor {
 
     for (YearMonth ym : yms) {
       xr = new XRow(row);
-      
+
       String m = Format.renderMonthFullStandalone(ym.getMonth());
 
       table.setValue(row, YEAR_COL, ym.getYear(), STYLE_YEAR);
       table.setText(row, MONTH_COL, m, STYLE_MONTH);
-      
+
       xr.add(new XCell(YEAR_COL, ym.getYear()));
       xr.add(new XCell(MONTH_COL, m));
 
@@ -454,11 +453,11 @@ public class CompanyTypeReport extends ReportInterceptor {
           if (column.total) {
             table.getCellFormatter().addStyleName(row, col, STYLE_ROW_TOTAL);
           }
-          
+
           XCell xc = new XCell(col, value);
           xc.setStyleRef(column.total ? csRowTot : csValue);
           xr.add(xc);
-          
+
           DomUtils.setDataColumn(table.getCellFormatter().getElement(row, col), j);
 
           colTotals[j] += value;
@@ -469,10 +468,10 @@ public class CompanyTypeReport extends ReportInterceptor {
       }
 
       table.getRowFormatter().addStyleName(row, STYLE_DETAILS);
-      
+
       DomUtils.setDataProperty(table.getRow(row), DATA_KEY_YEAR, ym.getYear());
       DomUtils.setDataProperty(table.getRow(row), DATA_KEY_MONTH, ym.getMonth());
-      
+
       sheet.add(xr);
       row++;
     }
@@ -527,10 +526,9 @@ public class CompanyTypeReport extends ReportInterceptor {
               ym = new YearMonth(year, month);
             }
           }
-          
+
           if (BeeUtils.isIndex(columns, index)) {
-            boolean modal = drillModal(event.getNativeEvent());
-            showDetails(ym, columns.get(index), start, end, types, typesLabel, modal);
+            showDetails(ym, columns.get(index), start, end, types, typesLabel);
           }
         }
       }

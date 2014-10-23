@@ -1,6 +1,5 @@
 package com.butent.bee.client.modules.transport.charts;
 
-import com.google.common.base.Objects;
 import com.google.common.base.Predicate;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Lists;
@@ -30,6 +29,7 @@ import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.EnumUtils;
 
 import java.util.List;
+import java.util.Objects;
 import java.util.Set;
 
 final class Freight extends OrderCargo {
@@ -41,13 +41,13 @@ final class Freight extends OrderCargo {
     @Override
     public boolean willItBlend(HasDateRange x, HasDateRange y) {
       if (x instanceof Freight && y instanceof Freight) {
-        return Objects.equal(((Freight) x).getTripId(), ((Freight) y).getTripId());
+        return Objects.equals(((Freight) x).getTripId(), ((Freight) y).getTripId());
       } else {
         return false;
       }
     }
   };
-  
+
   static Freight create(SimpleRow row, JustDate minLoad, JustDate maxUnload) {
     return new Freight(row.getLong(COL_ORDER),
         EnumUtils.getEnumByIndex(OrderStatus.class, row.getInt(COL_STATUS)),
@@ -64,7 +64,7 @@ final class Freight extends OrderCargo {
         BeeUtils.nvl(row.getValue(ALS_LOADING_POST_INDEX),
             row.getValue(defaultLoadingColumnAlias(COL_PLACE_POST_INDEX))),
         BeeUtils.nvl(row.getLong(loadingColumnAlias(COL_PLACE_CITY)),
-                row.getLong(defaultLoadingColumnAlias(COL_PLACE_CITY))),
+            row.getLong(defaultLoadingColumnAlias(COL_PLACE_CITY))),
         BeeUtils.nvl(row.getValue(loadingColumnAlias(COL_PLACE_NUMBER)),
             row.getValue(defaultLoadingColumnAlias(COL_PLACE_NUMBER))),
         BeeUtils.nvl(Places.getUnloadingDate(row, unloadingColumnAlias(COL_PLACE_DATE)),
@@ -103,7 +103,7 @@ final class Freight extends OrderCargo {
       Long customerId, String customerName, Long cargoId, String cargoDescription, String notes,
       JustDate loadingDate, Long loadingCountry, String loadingPlace, String loadingPostIndex,
       Long loadingCity, String loadingNumber,
-      JustDate unloadingDate, Long unloadingCountry, String unloadingPlace, 
+      JustDate unloadingDate, Long unloadingCountry, String unloadingPlace,
       String unloadingPostIndex, Long unloadingCity,
       String unloadingNumber, Long tripId, Long truckId, Long trailerId, Long cargoTripId,
       Long cargoTripVersion) {
@@ -199,7 +199,7 @@ final class Freight extends OrderCargo {
   }
 
   void updateTrip(Long newTripId, boolean fire) {
-    if (!DataUtils.isId(newTripId) || Objects.equal(getTripId(), newTripId)) {
+    if (!DataUtils.isId(newTripId) || Objects.equals(getTripId(), newTripId)) {
       return;
     }
 
@@ -239,7 +239,7 @@ final class Freight extends OrderCargo {
 
   private boolean isTarget(Object data) {
     if (DndHelper.isDataType(DATA_TYPE_FREIGHT) && data instanceof Freight) {
-      return !Objects.equal(getTripId(), ((Freight) data).getTripId());
+      return !Objects.equals(getTripId(), ((Freight) data).getTripId());
     } else {
       return DndHelper.isDataType(DATA_TYPE_ORDER_CARGO) && data instanceof OrderCargo;
     }

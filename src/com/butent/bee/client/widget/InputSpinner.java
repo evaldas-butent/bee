@@ -1,7 +1,9 @@
 package com.butent.bee.client.widget;
 
 import com.butent.bee.client.dom.DomUtils;
+import com.butent.bee.client.event.EventUtils;
 import com.butent.bee.client.ui.FormWidget;
+import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.html.builder.elements.Input;
 import com.butent.bee.shared.ui.EditorAction;
 
@@ -13,10 +15,12 @@ import com.butent.bee.shared.ui.EditorAction;
 public class InputSpinner extends InputInteger {
 
   private static Input.Type inputType = Input.Type.NUMBER;
-  
+
   public InputSpinner() {
     super();
     DomUtils.setInputType(this, inputType);
+
+    EventUtils.preventClickDebouncer(this);
   }
 
   public InputSpinner(int min, int max) {
@@ -27,7 +31,7 @@ public class InputSpinner extends InputInteger {
   public EditorAction getDefaultFocusAction() {
     return null;
   }
-  
+
   @Override
   public String getIdPrefix() {
     return "spin";
@@ -39,7 +43,12 @@ public class InputSpinner extends InputInteger {
   }
 
   @Override
+  protected EditorAction getDefaultEntryAction() {
+    return null;
+  }
+
+  @Override
   protected String getDefaultStyleName() {
-    return "bee-InputSpinner";
+    return BeeConst.CSS_CLASS_PREFIX + "InputSpinner";
   }
 }

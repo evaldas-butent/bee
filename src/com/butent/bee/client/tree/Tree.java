@@ -58,7 +58,6 @@ import com.google.gwt.user.client.ui.AbstractImagePrototype;
 import com.google.gwt.user.client.ui.AbstractImagePrototype.ImagePrototypeElement;
 import com.google.gwt.user.client.ui.Focusable;
 import com.google.gwt.user.client.ui.HasAnimation;
-import com.google.gwt.user.client.ui.HasEnabled;
 import com.google.gwt.user.client.ui.Panel;
 import com.google.gwt.user.client.ui.Widget;
 import com.google.gwt.user.client.ui.WidgetCollection;
@@ -68,10 +67,12 @@ import com.butent.bee.client.dom.DomUtils;
 import com.butent.bee.client.event.EventUtils;
 import com.butent.bee.client.event.logical.CatchEvent;
 import com.butent.bee.client.style.StyleUtils;
+import com.butent.bee.client.ui.EnablableWidget;
 import com.butent.bee.client.ui.IdentifiableWidget;
 import com.butent.bee.client.utils.JsUtils;
 import com.butent.bee.client.widget.InlineLabel;
 import com.butent.bee.shared.Assert;
+import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.html.Tags;
 import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.utils.BeeUtils;
@@ -86,7 +87,7 @@ import java.util.Map;
 public class Tree extends Panel implements HasTreeItems, Focusable, HasAnimation,
     HasAllKeyHandlers, HasAllFocusHandlers, HasSelectionHandlers<TreeItem>,
     CatchEvent.HasCatchHandlers<TreeItem>, HasOpenHandlers<TreeItem>, HasCloseHandlers<TreeItem>,
-    HasAllMouseHandlers, HasEnabled, IdentifiableWidget {
+    HasAllMouseHandlers, EnablableWidget, IdentifiableWidget {
 
   public interface Resources extends ClientBundle {
     @Source("silver/treeClosed_17_18.png")
@@ -314,13 +315,13 @@ public class Tree extends Panel implements HasTreeItems, Focusable, HasAnimation
 
     if (!BeeUtils.isEmpty(caption)) {
       this.caption = new InlineLabel(Localized.maybeTranslate(caption));
-      this.caption.setStyleName("bee-Tree-caption");
+      this.caption.setStyleName(BeeConst.CSS_CLASS_PREFIX + "Tree-caption");
       getElement().appendChild(this.caption.getElement());
     } else {
       this.caption = null;
     }
 
-    setStyleName("bee-Tree");
+    setStyleName(BeeConst.CSS_CLASS_PREFIX + "Tree");
     DomUtils.createId(this, getIdPrefix());
   }
 

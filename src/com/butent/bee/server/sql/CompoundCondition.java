@@ -1,10 +1,9 @@
 package com.butent.bee.server.sql;
 
-import com.google.common.collect.Lists;
-
 import com.butent.bee.shared.data.filter.CompoundType;
 import com.butent.bee.shared.utils.BeeUtils;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
@@ -24,7 +23,7 @@ final class CompoundCondition implements HasConditions {
   }
 
   private final CompoundType joinType;
-  private final List<IsCondition> subConditions = Lists.newArrayList();
+  private final List<IsCondition> subConditions = new ArrayList<>();
 
   private CompoundCondition(CompoundType joinType, IsCondition... conditions) {
     this.joinType = joinType;
@@ -41,6 +40,22 @@ final class CompoundCondition implements HasConditions {
       }
     }
     return this;
+  }
+
+  @Override
+  public void clear() {
+    subConditions.clear();
+  }
+
+  @Override
+  public HasConditions copyOf() {
+    int c = subConditions.size();
+    IsCondition[] subs = new IsCondition[c];
+
+    for (int i = 0; i < c; i++) {
+      subs[i] = subConditions.get(i).copyOf();
+    }
+    return new CompoundCondition(joinType, subs);
   }
 
   @Override

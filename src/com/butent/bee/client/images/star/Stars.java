@@ -1,6 +1,5 @@
 package com.butent.bee.client.images.star;
 
-import com.google.common.collect.Lists;
 import com.google.gwt.core.shared.GWT;
 import com.google.gwt.resources.client.ClientBundle;
 import com.google.gwt.resources.client.ImageResource;
@@ -9,15 +8,16 @@ import com.butent.bee.client.images.Images;
 import com.butent.bee.shared.export.XPicture;
 import com.butent.bee.shared.export.XSheet;
 
+import java.util.ArrayList;
 import java.util.List;
 
 public final class Stars {
-  
+
   public interface Resources extends ClientBundle {
 
     @Source("bang_red.png")
     ImageResource bangRed();
-    
+
     @Source("bang_yellow.png")
     ImageResource bangYellow();
 
@@ -47,14 +47,14 @@ public final class Stars {
 
     @Source("star_red.png")
     ImageResource starRed();
-    
+
     @Source("star_yellow.png")
     ImageResource starYellow();
   }
-  
+
   private static final Resources resources = GWT.create(Resources.class);
-  
-  private static final List<ImageResource> list = Lists.newArrayList();
+
+  private static final List<ImageResource> list = new ArrayList<>();
 
   static {
     list.add(resources.starGreen());
@@ -69,11 +69,11 @@ public final class Stars {
     list.add(resources.infoBlue());
     list.add(resources.questionPurple());
   }
-  
+
   public static int count() {
     return list.size();
   }
-  
+
   public static Integer export(int index, XSheet sheet) {
     ImageResource resource = get(index);
     if (resource == null || sheet == null) {
@@ -87,7 +87,7 @@ public final class Stars {
 
     return sheet.registerPicture(picture);
   }
-  
+
   public static ImageResource get(int index) {
     if (index >= 0 && index < list.size()) {
       return list.get(index);
@@ -95,7 +95,7 @@ public final class Stars {
       return null;
     }
   }
-  
+
   public static String getDefaultHeader() {
     return Images.asString(resources.starColorless());
   }
@@ -107,7 +107,7 @@ public final class Stars {
   public static String getHtml(int index) {
     return Images.asString(get(index));
   }
-  
+
   private Stars() {
   }
 }

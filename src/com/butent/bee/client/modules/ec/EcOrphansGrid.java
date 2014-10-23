@@ -31,6 +31,7 @@ import com.butent.bee.client.grid.column.AbstractColumn;
 import com.butent.bee.client.layout.Flow;
 import com.butent.bee.client.presenter.GridPresenter;
 import com.butent.bee.client.style.StyleUtils;
+import com.butent.bee.client.ui.Opener;
 import com.butent.bee.client.view.edit.EditableColumn;
 import com.butent.bee.client.view.grid.interceptor.AbstractGridInterceptor;
 import com.butent.bee.client.view.grid.interceptor.GridInterceptor;
@@ -58,6 +59,7 @@ import com.butent.bee.shared.ui.Relation.Caching;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.websocket.messages.ProgressMessage;
 
+import java.util.ArrayList;
 import java.util.List;
 
 public class EcOrphansGrid extends AbstractGridInterceptor implements ClickHandler {
@@ -239,7 +241,7 @@ public class EcOrphansGrid extends AbstractGridInterceptor implements ClickHandl
               RowDeleteEvent.fire(BeeKeeper.getBus(), getViewName(), orphan.getId());
             }
           });
-          RowEditor.openRow(TBL_TCD_ARTICLES, response.getResponseAsLong(), false, null);
+          RowEditor.open(TBL_TCD_ARTICLES, response.getResponseAsLong(), Opener.NEW_TAB);
         }
       }
     });
@@ -251,7 +253,7 @@ public class EcOrphansGrid extends AbstractGridInterceptor implements ClickHandl
     List<BeeColumn> columns = Data.getColumns(orphans, Lists.newArrayList(COL_TCD_ARTICLE_NR,
         COL_TCD_ARTICLE_NAME, COL_TCD_ARTICLE_DESCRIPTION, COL_TCD_BRAND));
 
-    List<String> values = Lists.newArrayList();
+    List<String> values = new ArrayList<>();
 
     for (BeeColumn col : columns) {
       if (BeeUtils.same(col.getId(), COL_TCD_ARTICLE_NAME)) {
@@ -266,7 +268,7 @@ public class EcOrphansGrid extends AbstractGridInterceptor implements ClickHandl
         List<BeeColumn> cols = Data.getColumns(TBL_TCD_ARTICLE_SUPPLIERS,
             Lists.newArrayList(COL_TCD_ARTICLE, COL_TCD_SUPPLIER, COL_TCD_SUPPLIER_ID));
 
-        List<String> vals = Lists.newArrayList();
+        List<String> vals = new ArrayList<>();
 
         for (BeeColumn col : cols) {
           if (BeeUtils.same(col.getId(), COL_TCD_ARTICLE)) {
@@ -288,7 +290,7 @@ public class EcOrphansGrid extends AbstractGridInterceptor implements ClickHandl
         Queries.insert(TBL_TCD_ARTICLE_CODES, cols, vals, null, new RowCallback() {
           @Override
           public void onSuccess(BeeRow result) {
-            RowEditor.openRow(TBL_TCD_ARTICLES, row, false);
+            RowEditor.open(TBL_TCD_ARTICLES, row, Opener.NEW_TAB);
           }
         });
         Queries.deleteRow(orphans, orphan.getId(), new IntCallback() {

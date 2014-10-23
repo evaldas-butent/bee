@@ -45,6 +45,7 @@ import com.butent.bee.shared.utils.NameUtils;
 import com.butent.bee.shared.utils.Property;
 import com.butent.bee.shared.utils.PropertyUtils;
 
+import java.util.ArrayList;
 import java.util.List;
 
 public abstract class AbstractFilterSupplier implements HasViewName, HasOptions,
@@ -76,7 +77,8 @@ public abstract class AbstractFilterSupplier implements HasViewName, HasOptions,
   protected static final String NOT_NULL_VALUE_LABEL =
       Localized.getConstants().filterNotNullLabel();
 
-  protected static final String DEFAULT_STYLE_PREFIX = "bee-FilterSupplier-";
+  protected static final String DEFAULT_STYLE_PREFIX = BeeConst.CSS_CLASS_PREFIX
+      + "FilterSupplier-";
 
   private static final String BIN_SIZE_CELL_STYLE_SUFFIX = "binSizeCell";
 
@@ -96,7 +98,7 @@ public abstract class AbstractFilterSupplier implements HasViewName, HasOptions,
 
   private int counterValue;
 
-  private final List<Integer> selectedItems = Lists.newArrayList();
+  private final List<Integer> selectedItems = new ArrayList<>();
 
   private String displayId;
 
@@ -114,7 +116,7 @@ public abstract class AbstractFilterSupplier implements HasViewName, HasOptions,
   public void clearNotifications() {
     getNotificationDelegate().clearNotifications();
   }
-  
+
   public void ensureData() {
   }
 
@@ -176,7 +178,7 @@ public abstract class AbstractFilterSupplier implements HasViewName, HasOptions,
   public abstract void onRequest(Element target, Scheduler.ScheduledCommand onChange);
 
   public abstract Filter parse(FilterValue input);
-  
+
   public boolean retainInput() {
     return AutocompleteProvider.retainValues(getAutocompletableWidgets());
   }
@@ -295,11 +297,11 @@ public abstract class AbstractFilterSupplier implements HasViewName, HasOptions,
   }
 
   protected List<SupplierAction> getActions() {
-    return Lists.newArrayList();
+    return new ArrayList<>();
   }
-  
+
   protected List<? extends IdentifiableWidget> getAutocompletableWidgets() {
-    return Lists.newArrayList();
+    return new ArrayList<>();
   }
 
   protected BeeColumn getColumn() {
@@ -471,7 +473,7 @@ public abstract class AbstractFilterSupplier implements HasViewName, HasOptions,
   protected boolean isColumnNullable() {
     return (getColumn() == null) ? false : getColumn().isNullable();
   }
-  
+
   protected boolean isSelected(Integer item) {
     return selectedItems.contains(item);
   }
@@ -487,7 +489,7 @@ public abstract class AbstractFilterSupplier implements HasViewName, HasOptions,
   protected String messageOneValue(String value, String count) {
     return Localized.getMessages().allValuesIdentical(getColumnLabel(), value, count);
   }
-  
+
   protected void onDialogCancel() {
   }
 
@@ -583,11 +585,11 @@ public abstract class AbstractFilterSupplier implements HasViewName, HasOptions,
   private String getStyleSelected() {
     return getStylePrefix() + "selected";
   }
-  
+
   private void setCounterId(String counterId) {
     this.counterId = counterId;
   }
-  
+
   private void setCounterValue(int counterValue) {
     this.counterValue = counterValue;
   }
@@ -595,7 +597,7 @@ public abstract class AbstractFilterSupplier implements HasViewName, HasOptions,
   private void setDialog(Popup dialog) {
     this.dialog = dialog;
   }
-  
+
   private void setFilterChanged(boolean filterChanged) {
     this.filterChanged = filterChanged;
   }

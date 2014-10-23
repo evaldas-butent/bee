@@ -1,8 +1,5 @@
 package com.butent.bee.shared.data;
 
-import com.google.common.collect.Lists;
-import com.google.common.collect.Sets;
-
 import com.butent.bee.client.data.ClientDefaults;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.data.view.DataInfo;
@@ -13,20 +10,20 @@ import com.butent.bee.shared.modules.administration.AdministrationConstants;
 import com.butent.bee.shared.modules.classifiers.ClassifierConstants;
 import com.butent.bee.shared.utils.BeeUtils;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Objects;
 import java.util.Set;
 
 public final class RelationUtils {
 
-  private static final BeeLogger logger = LogUtils.getLogger(RelationUtils.class);
-
   public static Collection<String> copyWithDescendants(DataInfo sourceInfo, String sourceColumn,
       IsRow sourceRow, DataInfo targetInfo, String targetColumn, IsRow targetRow) {
 
-    List<String> result = Lists.newArrayList();
+    List<String> result = new ArrayList<>();
     if (BeeUtils.anyNull(sourceInfo, sourceRow, targetInfo, targetRow)
         || BeeUtils.anyEmpty(sourceColumn, targetColumn)) {
       return result;
@@ -102,7 +99,7 @@ public final class RelationUtils {
   }
 
   public static List<String> getRenderColumns(DataInfo dataInfo, String colName) {
-    List<String> result = Lists.newArrayList();
+    List<String> result = new ArrayList<>();
     if (dataInfo == null || BeeUtils.isEmpty(colName)) {
       return result;
     }
@@ -110,7 +107,7 @@ public final class RelationUtils {
     Collection<ViewColumn> descendants = dataInfo.getDescendants(colName, false);
 
     if (!descendants.isEmpty()) {
-      List<Integer> columnIndexes = Lists.newArrayList();
+      List<Integer> columnIndexes = new ArrayList<>();
       for (ViewColumn vc : descendants) {
         if (BeeUtils.isEmpty(vc.getRelation())) {
           int index = dataInfo.getColumnIndex(vc.getName());
@@ -132,6 +129,7 @@ public final class RelationUtils {
 
   public static int setDefaults(DataInfo dataInfo, IsRow row, Collection<String> colNames,
       List<BeeColumn> columns, UserData userData) {
+
     int result = 0;
     if (row == null || BeeUtils.isEmpty(colNames) || BeeUtils.isEmpty(columns)) {
       return result;
@@ -147,8 +145,12 @@ public final class RelationUtils {
         result += setUserFields(dataInfo, row, colName, userData);
       }
 
-      if (Defaults.DefaultExpression.MAIN_CURRENCY.equals(column.getDefaults().getA())) {
-        result += setCurrencyFields(dataInfo, row, colName);
+      if (Defaults.DefaultExpression.MAIN_CURRENCY.equals(column.getDefaults().getA())
+          && !BeeUtils.isEmpty(ClientDefaults.getCurrencyName())) {
+        if (!BeeUtils.isEmpty(setCurrencyName(dataInfo, row, colName,
+            ClientDefaults.getCurrencyName()))) {
+          result++;
+        }
       }
     }
     return result;
@@ -156,6 +158,7 @@ public final class RelationUtils {
 
   public static int setRelatedValues(DataInfo dataInfo, String colName, IsRow targetRow,
       IsRow sourceRow) {
+
     int result = 0;
     if (dataInfo == null || BeeUtils.isEmpty(colName) || targetRow == null
         || sourceRow == null) {
@@ -177,33 +180,9 @@ public final class RelationUtils {
     return result;
   }
 
-  public static int setCurrencyFields(DataInfo dataInfo, IsRow row, String currencyColumn) {
-    int result = 0;
-    if (dataInfo == null || row == null || BeeUtils.isEmpty(currencyColumn)) {
-      return result;
-    }
-
-    Collection<ViewColumn> descendants = dataInfo.getDescendants(currencyColumn, false);
-    if (descendants.isEmpty()) {
-      return result;
-    }
-
-    for (ViewColumn vc : descendants) {
-      int index = dataInfo.getColumnIndex(vc.getName());
-      if (BeeConst.isUndef(index)) {
-        continue;
-      }
-      if (BeeUtils.same(vc.getField(), AdministrationConstants.COL_CURRENCY_NAME)) {
-        row.setValue(index, ClientDefaults.getCurrencyName());
-        result++;
-        break;
-      }
-    }
-    return result;
-  }
-
   public static int setUserFields(DataInfo dataInfo, IsRow row, String userColumn,
       UserData userData) {
+
     int result = 0;
     if (dataInfo == null || row == null || BeeUtils.isEmpty(userColumn) || userData == null) {
       return result;
@@ -243,10 +222,45 @@ public final class RelationUtils {
     return result;
   }
 
+  public static Collection<String> maybeUpdateCurrency(DataInfo dataInfo, IsRow row,
+      String currencyColumn, boolean set) {
+
+    Collection<String> result = new HashSet<>();
+    if (dataInfo == null || row == null || BeeUtils.isEmpty(currencyColumn)) {
+      return result;
+    }
+
+    Long currency;
+    String currencyName;
+
+    if (set) {
+      currency = ClientDefaults.getCurrency();
+      currencyName = ClientDefaults.getCurrencyName();
+    } else {
+      currency = null;
+      currencyName = null;
+    }
+
+    int index = dataInfo.getColumnIndex(currencyColumn);
+    if (BeeConst.isUndef(index) || (row.isNull(index) == (currency == null))) {
+      return result;
+    }
+
+    row.setValue(index, currency);
+    result.add(currencyColumn);
+
+    String nameColumn = setCurrencyName(dataInfo, row, currencyColumn, currencyName);
+    if (!BeeUtils.isEmpty(nameColumn)) {
+      result.add(nameColumn);
+    }
+
+    return result;
+  }
+
   public static Collection<String> updateRow(DataInfo targetInfo, String targetColumn,
       IsRow targetRow, DataInfo sourceInfo, IsRow sourceRow, boolean updateRelationColumn) {
 
-    Set<String> result = Sets.newHashSet();
+    Set<String> result = new HashSet<>();
     if (targetInfo == null || sourceInfo == null || BeeUtils.isEmpty(targetColumn)
         || targetRow == null) {
       return result;
@@ -302,6 +316,32 @@ public final class RelationUtils {
     }
     return result;
   }
+
+  private static String setCurrencyName(DataInfo dataInfo, IsRow row, String currencyColumn,
+      String currencyName) {
+
+    if (dataInfo == null || row == null || BeeUtils.isEmpty(currencyColumn)) {
+      return null;
+    }
+
+    Collection<ViewColumn> descendants = dataInfo.getDescendants(currencyColumn, false);
+    if (descendants.isEmpty()) {
+      return null;
+    }
+
+    for (ViewColumn vc : descendants) {
+      if (BeeUtils.same(vc.getField(), AdministrationConstants.COL_CURRENCY_NAME)) {
+        int index = dataInfo.getColumnIndex(vc.getName());
+        if (!BeeConst.isUndef(index)) {
+          row.setValue(index, currencyName);
+          return vc.getName();
+        }
+      }
+    }
+    return null;
+  }
+
+  private static final BeeLogger logger = LogUtils.getLogger(RelationUtils.class);
 
   private RelationUtils() {
   }

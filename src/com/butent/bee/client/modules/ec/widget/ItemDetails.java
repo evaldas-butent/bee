@@ -71,7 +71,7 @@ public class ItemDetails extends Flow {
       table.setText(row, colLabel, Localized.getConstants().ecListPrice(), pfx + STYLE_LABEL);
       table.setText(row, colValue, EcUtils.formatCents(listPrice), pfx + STYLE_VALUE);
       table.setText(row, colCurrency, EcConstants.CURRENCY, pfx + STYLE_CURRENCY);
-      
+
       EcStyles.markListPrice(table.getRow(row));
       row++;
     }
@@ -88,10 +88,10 @@ public class ItemDetails extends Flow {
         row++;
 
         pfx = stylePrefix + "featured-price-";
-        
+
         table.setText(row, colValue, EcUtils.formatCents(price), pfx + STYLE_VALUE);
         table.setText(row, colCurrency, EcConstants.CURRENCY, pfx + STYLE_CURRENCY);
-        
+
         EcStyles.markPrice(table.getRow(row));
         row++;
 
@@ -106,7 +106,7 @@ public class ItemDetails extends Flow {
         row++;
       }
     }
-    
+
     container.add(table);
 
     return container;
@@ -324,6 +324,9 @@ public class ItemDetails extends Flow {
     table.setHtml(row, col++, Localized.getConstants().ecItemCost());
 
     table.setColumnCellClasses(col, StyleUtils.className(TextAlign.RIGHT));
+    table.setHtml(row, col++, Localized.getConstants().ecListPriceShort());
+
+    table.setColumnCellClasses(col, StyleUtils.className(TextAlign.RIGHT));
     table.setHtml(row, col++, Localized.getConstants().ecItemPrice());
 
     row++;
@@ -336,6 +339,7 @@ public class ItemDetails extends Flow {
       table.setHtml(row, col++, as.getSupplierId());
 
       table.setHtml(row, col++, EcUtils.formatCents(as.getCost()));
+      table.setHtml(row, col++, EcUtils.formatCents(as.getListPrice()));
       table.setHtml(row, col++, EcUtils.formatCents(as.getPrice()));
 
       row++;
@@ -355,32 +359,43 @@ public class ItemDetails extends Flow {
     }
 
     TabbedPages widget = new TabbedPages();
+    String summary;
 
     Widget remainders = renderRemainders(item);
     if (remainders != null) {
-      widget.add(remainders, Localized.getConstants().ecItemDetailsRemainders());
+      int count = 0;
+      for (ArticleSupplier as : item.getSuppliers()) {
+        count += as.getRemainders().size();
+      }
+
+      summary = BeeUtils.toString(count);
+      widget.add(remainders, Localized.getConstants().ecItemDetailsRemainders(), summary, null);
     }
 
     Widget oeNumbers = renderOeNumbers(info);
     if (oeNumbers != null) {
-      widget.add(oeNumbers, Localized.getConstants().ecItemDetailsOeNumbers());
+      summary = BeeUtils.toString(info.getOeNumbers().size());
+      widget.add(oeNumbers, Localized.getConstants().ecItemDetailsOeNumbers(), summary, null);
     }
 
     if (EcKeeper.showItemSuppliers()) {
       Widget suppliers = renderSuppliers(item);
       if (suppliers != null) {
-        widget.add(suppliers, Localized.getConstants().ecItemDetailsSuppliers());
+        summary = BeeUtils.toString(item.getSuppliers().size());
+        widget.add(suppliers, Localized.getConstants().ecItemDetailsSuppliers(), summary, null);
       }
     }
 
     Widget carTypes = renderCarTypes(info);
     if (carTypes != null) {
-      widget.add(carTypes, Localized.getConstants().ecItemDetailsCarTypes());
+      summary = BeeUtils.toString(info.getCarTypes().size());
+      widget.add(carTypes, Localized.getConstants().ecItemDetailsCarTypes(), summary, null);
     }
-    Widget analogs = renderAnalogs(item);
 
+    Widget analogs = renderAnalogs(item);
     if (analogs != null) {
-      widget.add(analogs, Localized.getConstants().ecItemAnalogs());
+      summary = BeeUtils.toString(item.getAnalogCount());
+      widget.add(analogs, Localized.getConstants().ecItemAnalogs(), summary, null);
     }
 
     return widget;

@@ -13,13 +13,13 @@ import java.util.Map;
 
 @SuppressWarnings("serial")
 public class ReportParameters extends LinkedHashMap<String, String> implements BeeSerializable {
-  
+
   public static ReportParameters restore(String s) {
     ReportParameters rp = new ReportParameters();
     rp.deserialize(s);
     return rp;
   }
-  
+
   public ReportParameters() {
     super();
   }
@@ -27,9 +27,15 @@ public class ReportParameters extends LinkedHashMap<String, String> implements B
   public ReportParameters(int initialCapacity) {
     super(initialCapacity);
   }
-  
+
   public ReportParameters(Map<? extends String, ? extends String> m) {
     super(m);
+  }
+
+  public void add(String key, Boolean value) {
+    if (BeeUtils.isTrue(value)) {
+      put(key, Codec.pack(value));
+    }
   }
 
   public void add(String key, DateTime value) {
@@ -66,6 +72,10 @@ public class ReportParameters extends LinkedHashMap<String, String> implements B
     }
   }
 
+  public boolean getBoolean(String key) {
+    return Codec.unpack(get(key));
+  }
+
   public DateTime getDateTime(String key) {
     return TimeUtils.toDateTimeOrNull(get(key));
   }
@@ -73,11 +83,11 @@ public class ReportParameters extends LinkedHashMap<String, String> implements B
   public Integer getInteger(String key) {
     return BeeUtils.toIntOrNull(get(key));
   }
-  
+
   public Long getLong(String key) {
     return BeeUtils.toLongOrNull(get(key));
   }
-  
+
   @Override
   public String serialize() {
     List<String> list = new ArrayList<>();

@@ -5,6 +5,7 @@ import com.google.gwt.event.shared.HandlerRegistration;
 import com.butent.bee.client.dom.DomUtils;
 import com.butent.bee.client.ui.FormWidget;
 import com.butent.bee.client.view.edit.EditChangeHandler;
+import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.html.builder.elements.Input;
 import com.butent.bee.shared.ui.EditorAction;
 import com.butent.bee.shared.utils.BeeUtils;
@@ -35,12 +36,12 @@ public class InputRange extends InputInteger {
   public HandlerRegistration addEditChangeHandler(EditChangeHandler handler) {
     return addValueChangeHandler(handler);
   }
-  
+
   @Override
   public EditorAction getDefaultFocusAction() {
     return null;
   }
-  
+
   @Override
   public String getIdPrefix() {
     return "slid";
@@ -50,7 +51,7 @@ public class InputRange extends InputInteger {
   public FormWidget getWidgetType() {
     return FormWidget.INPUT_RANGE;
   }
-  
+
   @Override
   public void setValue(String value) {
     if (BeeUtils.isEmpty(value) && BeeUtils.isInt(getMinValue())) {
@@ -62,7 +63,7 @@ public class InputRange extends InputInteger {
 
   @Override
   protected String getDefaultStyleName() {
-    return "bee-InputRange";
+    return BeeConst.CSS_CLASS_PREFIX + "InputRange";
   }
 
   @Override

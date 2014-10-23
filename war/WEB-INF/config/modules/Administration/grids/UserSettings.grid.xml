@@ -2,7 +2,7 @@
 <g:Grid xmlns="http://www.butent.com/column" xmlns:g="http://www.butent.com/grid"
   
   name="UserSettings" viewName="UserSettings" caption="=userSettings"
-  newRowPopup="true"
+  disabledActions="add delete"
   >
   <g:columns>
     <DataColumn name="User" visible="false" />
@@ -23,6 +23,12 @@
     <DataColumn name="WorkspaceContinue" />
 
     <DataColumn name="LastWorkspace" visible="false" />
+
+    <DataColumn name="ApplianceHeaderHeight" visible="false" />
+    <DataColumn name="ViewHeaderHeight" visible="false" />
+
+    <DataColumn name="ClickSensitivityMillis" visible="false" />
+    <DataColumn name="ClickSensitivityDistance" visible="false" />
 
     <DataColumn name="Style" visible="false" />
   </g:columns>

@@ -22,7 +22,7 @@ import com.butent.bee.client.grid.HtmlTable;
 import com.butent.bee.client.layout.Flow;
 import com.butent.bee.client.modules.ec.view.SearchByCar;
 import com.butent.bee.client.presenter.GridPresenter;
-import com.butent.bee.client.ui.UiHelper;
+import com.butent.bee.client.view.ViewHelper;
 import com.butent.bee.client.view.form.FormView;
 import com.butent.bee.client.view.grid.GridView;
 import com.butent.bee.client.view.grid.interceptor.AbstractGridInterceptor;
@@ -62,7 +62,7 @@ class ArticleCarsGridInterceptor extends AbstractGridInterceptor implements
   private static final String STYLE_SELECTION_REMOVE = STYLE_SELECTION_PREFIX + "remove";
 
   private static String getDialogCaption(GridView grid) {
-    FormView form = UiHelper.getForm(grid.asWidget());
+    FormView form = ViewHelper.getForm(grid.asWidget());
     IsRow itemRow = (form == null) ? null : form.getActiveRow();
 
     if (itemRow == null) {
@@ -73,6 +73,7 @@ class ArticleCarsGridInterceptor extends AbstractGridInterceptor implements
           Localized.getConstants().ecItemDetailsCarTypes());
     }
   }
+
   private final List<Long> selectedCarTypes = new ArrayList<>();
 
   private Flow selectionPanel;
@@ -134,17 +135,17 @@ class ArticleCarsGridInterceptor extends AbstractGridInterceptor implements
         } else {
           Global.decide(Localized.getConstants().tcdTypes(),
               Lists.newArrayList(Localized.getConstants().saveChanges()), new DecisionCallback() {
-            @Override
-            public void onConfirm() {
-              saveSelectedCars();
-              dialog.close();
-            }
+                @Override
+                public void onConfirm() {
+                  saveSelectedCars();
+                  dialog.close();
+                }
 
-            @Override
-            public void onDeny() {
-              dialog.close();
-            }
-          }, DialogConstants.DECISION_YES);
+                @Override
+                public void onDeny() {
+                  dialog.close();
+                }
+              }, DialogConstants.DECISION_YES);
         }
       }
     });
@@ -166,7 +167,7 @@ class ArticleCarsGridInterceptor extends AbstractGridInterceptor implements
   public void onBeforeSelection(BeforeSelectionEvent<EcCarType> event) {
     if (event.getItem() != null) {
       addSelection(event.getItem());
-      
+
       if (getSelectionPanel() != null) {
         DomUtils.scrollToBottom(getSelectionPanel());
       }
@@ -180,11 +181,11 @@ class ArticleCarsGridInterceptor extends AbstractGridInterceptor implements
     if (selectedCarTypes.contains(typeId) || getSelectionPanel() == null) {
       return;
     }
-    
+
     selectedCarTypes.add(typeId);
 
     final HtmlTable table = ensureSelectionTable();
-    
+
     int row = table.getRowCount();
     int col = 0;
 
@@ -204,7 +205,7 @@ class ArticleCarsGridInterceptor extends AbstractGridInterceptor implements
     table.setText(row, col++, carType.getFuel());
     table.setText(row, col++, carType.getBody());
     table.setText(row, col++, carType.getAxle());
-    
+
     FaLabel remove = new FaLabel(FontAwesome.TRASH_O, STYLE_SELECTION_REMOVE);
     remove.setTitle(Localized.getConstants().actionRemove());
 
@@ -212,12 +213,12 @@ class ArticleCarsGridInterceptor extends AbstractGridInterceptor implements
       @Override
       public void onClick(ClickEvent event) {
         selectedCarTypes.remove(typeId);
-        
+
         Integer index = table.getEventRow(event, false);
         if (index != null) {
           table.removeRow(index);
         }
-        
+
         Widget view = getSearchByCar();
         if (view instanceof SearchByCar) {
           ((SearchByCar) view).includeType(typeId);
@@ -227,7 +228,7 @@ class ArticleCarsGridInterceptor extends AbstractGridInterceptor implements
 
     table.setWidget(row, col++, remove);
   }
-  
+
   private SearchByCar getSearchByCar() {
     for (Widget parent = selectionPanel.getParent(); parent != null; parent = parent.getParent()) {
       if (parent instanceof SearchByCar) {

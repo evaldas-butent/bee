@@ -1,9 +1,8 @@
 package com.butent.bee.server;
 
-import com.google.common.collect.Maps;
-
 import static com.butent.bee.shared.modules.administration.AdministrationConstants.*;
 
+import com.butent.bee.server.communication.Rooms;
 import com.butent.bee.server.data.DataServiceBean;
 import com.butent.bee.server.data.QueryServiceBean;
 import com.butent.bee.server.data.SystemBean;
@@ -18,7 +17,6 @@ import com.butent.bee.server.ui.UiHolderBean;
 import com.butent.bee.server.ui.UiServiceBean;
 import com.butent.bee.server.utils.Reflection;
 import com.butent.bee.shared.BeeConst;
-import com.butent.bee.shared.Pair;
 import com.butent.bee.shared.Service;
 import com.butent.bee.shared.communication.ResponseObject;
 import com.butent.bee.shared.data.BeeRowSet;
@@ -26,12 +24,14 @@ import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogUtils;
 import com.butent.bee.shared.rights.Module;
+import com.butent.bee.shared.rights.RightsUtils;
 import com.butent.bee.shared.time.TimeUtils;
 import com.butent.bee.shared.ui.UserInterface;
 import com.butent.bee.shared.ui.UserInterface.Component;
 import com.butent.bee.shared.utils.BeeUtils;
 
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.Map;
 
 import javax.ejb.EJB;
@@ -70,9 +70,17 @@ public class DispatcherBean {
   @EJB
   QueryServiceBean qs;
 
+  public void beforeLogout(RequestInfo reqInfo) {
+    String workspace = reqInfo.getParameter(COL_LAST_WORKSPACE);
+
+    if (!BeeUtils.isEmpty(workspace)) {
+      userService.saveWorkspace(userService.getCurrentUserId(), workspace);
+    }
+  }
+
   public ResponseObject doLogin(RequestInfo reqInfo) {
     ResponseObject response = new ResponseObject();
-    Map<String, Object> data = Maps.newHashMap();
+    Map<String, Object> data = new HashMap<>();
 
     ResponseObject userData = userService.login(reqInfo.getRemoteAddr(), reqInfo.getUserAgent());
     response.addMessagesFrom(userData);
@@ -81,15 +89,20 @@ public class DispatcherBean {
     }
     data.put(Service.VAR_USER, userData.getResponse());
     data.put(Service.PROPERTY_MODULES, Module.getEnabledModulesAsString());
+    data.put(Service.PROPERTY_VIEW_MODULES, RightsUtils.getViewModulesAsString());
 
     Long currency = prm.getRelation(PRM_CURRENCY);
-
     if (DataUtils.isId(currency)) {
       data.put(COL_CURRENCY, currency);
       data.put(ALS_CURRENCY_NAME, qs.getValue(new SqlSelect()
           .addFields(TBL_CURRENCIES, COL_CURRENCY_NAME)
           .addFrom(TBL_CURRENCIES)
           .setWhere(sys.idEquals(TBL_CURRENCIES, currency))));
+    }
+
+    Long company = prm.getRelation(PRM_COMPANY);
+    if (DataUtils.isId(company)) {
+      data.put(PRM_COMPANY, company);
     }
 
     UserInterface userInterface = null;
@@ -166,9 +179,9 @@ public class DispatcherBean {
             break;
 
           case GRIDS:
-            Pair<BeeRowSet, BeeRowSet> settings = uiService.getGridAndColumnSettings();
-            if (settings != null && !settings.isNull()) {
-              data.put(component.key(), settings);
+            ResponseObject settingsData = uiService.getGridAndColumnSettings();
+            if (settingsData != null && settingsData.hasResponse()) {
+              data.put(component.key(), settingsData.getResponse());
             }
             break;
 
@@ -179,6 +192,13 @@ public class DispatcherBean {
               if (!menuData.hasErrors() && menuData.hasResponse()) {
                 data.put(component.key(), menuData.getResponse());
               }
+            }
+            break;
+
+          case MONEY:
+            BeeRowSet rates = qs.getViewData(VIEW_CURRENCY_RATES);
+            if (!DataUtils.isEmpty(rates)) {
+              data.put(component.key(), rates);
             }
             break;
 
@@ -198,18 +218,18 @@ public class DispatcherBean {
               data.put(component.key(), reportSettings);
             }
             break;
-          
+
           case SETTINGS:
             BeeRowSet userSettings = userService.ensureUserSettings();
             if (!DataUtils.isEmpty(userSettings)) {
               data.put(component.key(), userSettings);
             }
             break;
-            
+
           case USERS:
             data.put(component.key(), userService.getAllUserData());
             break;
-            
+
           case WORKSPACES:
             BeeRowSet workspaces = uiService.getWorkspaces();
             if (!DataUtils.isEmpty(workspaces)) {
@@ -233,7 +253,7 @@ public class DispatcherBean {
     ResponseObject response;
 
     if (moduleHolder.hasModule(svc)) {
-      response = moduleHolder.doModule(reqInfo);
+      response = moduleHolder.doModule(svc, reqInfo);
 
     } else if (Service.isDataService(svc)) {
       response = uiService.doService(reqInfo);
@@ -247,11 +267,14 @@ public class DispatcherBean {
     } else if (BeeUtils.same(svc, Service.GET_MENU)) {
       response = uiHolder.getMenu(reqInfo.hasParameter(Service.VAR_RIGHTS));
 
+    } else if (BeeUtils.same(svc, Service.GET_ROOM)) {
+      response = Rooms.getRoom(reqInfo);
+
     } else if (BeeUtils.same(svc, Service.WHERE_AM_I)) {
       response = ResponseObject.info(System.currentTimeMillis(), BeeConst.whereAmI());
 
     } else if (BeeUtils.same(svc, Service.INVOKE)) {
-      response = Reflection.invoke(invocation, reqInfo.getParameter(Service.RPC_VAR_METH), reqInfo);
+      response = Reflection.invoke(invocation, reqInfo.getParameter(Service.VAR_METHOD), reqInfo);
 
     } else {
       String msg = BeeUtils.joinWords(svc, "service not recognized");

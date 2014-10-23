@@ -57,10 +57,14 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.EnumSet;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 
 import javax.ejb.EJB;
 import javax.ejb.LocalBean;
@@ -76,6 +80,12 @@ import javax.sql.DataSource;
 @Stateless
 @LocalBean
 public class QueryServiceBean {
+
+  public interface ViewDataProvider {
+    BeeRowSet getViewData(BeeView view, SqlSelect query, Filter filter);
+
+    int getViewSize(BeeView view, SqlSelect query, Filter filter);
+  }
 
   /**
    * Is a private interface for SQL processing.
@@ -111,6 +121,15 @@ public class QueryServiceBean {
     }
 
     public abstract T processUpdateCount(int updateCount);
+  }
+
+  private static final Map<String, ViewDataProvider> viewDataProviders = new ConcurrentHashMap<>();
+
+  public static void registerViewDataProvider(String viewName, ViewDataProvider provider) {
+    Assert.notEmpty(viewName);
+    Assert.state(!viewDataProviders.containsKey(viewName),
+        "View data provider for view \"" + viewName + "\" already registered");
+    viewDataProviders.put(viewName, Assert.notNull(provider));
   }
 
   private static BeeLogger logger = LogUtils.getLogger(QueryServiceBean.class);
@@ -423,6 +442,21 @@ public class QueryServiceBean {
     return getData(SqlUtils.dbTriggers(dbName, dbSchema, table));
   }
 
+  public boolean debugOff() {
+    boolean isDebugEnabled = logger.isDebugEnabled();
+
+    if (isDebugEnabled) {
+      logger.setLevel(LogLevel.INFO);
+    }
+    return isDebugEnabled;
+  }
+
+  public void debugOn(boolean isDebugEnabled) {
+    if (isDebugEnabled) {
+      logger.setLevel(LogLevel.DEBUG);
+    }
+  }
+
   @TransactionAttribute(TransactionAttributeType.MANDATORY)
   public Object doSql(String sql) {
     BeeDataSource bds = dsb.locateDs(SqlBuilderFactory.getDsn());
@@ -469,7 +503,7 @@ public class QueryServiceBean {
     return getData(null, query, new ResultSetProcessor<List<byte[]>>() {
       @Override
       public List<byte[]> processResultSet(ResultSet rs) throws SQLException {
-        List<byte[]> data = Lists.newArrayList();
+        List<byte[]> data = new ArrayList<>();
 
         while (rs.next()) {
           data.add(rs.getBytes(1));
@@ -554,7 +588,7 @@ public class QueryServiceBean {
       List<String> order) {
 
     BeeView view = sys.getView(viewName);
-    SqlSelect viewQuery = view.getQuery(filter, null, columns, sys.getViewFinder());
+    SqlSelect viewQuery = view.getQuery(usr.getCurrentUserId(), filter, null, columns);
 
     String queryAlias = "Hist_" + SqlUtils.uniqueName();
     String countAlias = "Count_" + SqlUtils.uniqueName();
@@ -621,7 +655,20 @@ public class QueryServiceBean {
   }
 
   public List<Long> getLongList(IsQuery query) {
-    List<Long> result = Lists.newArrayList();
+    List<Long> result = new ArrayList<>();
+
+    Long[] arr = getLongColumn(query);
+    if (arr != null && arr.length > 0) {
+      for (Long value : arr) {
+        result.add(value);
+      }
+    }
+
+    return result;
+  }
+
+  public Set<Long> getLongSet(IsQuery query) {
+    Set<Long> result = new HashSet<>();
 
     Long[] arr = getLongColumn(query);
     if (arr != null && arr.length > 0) {
@@ -668,6 +715,16 @@ public class QueryServiceBean {
     return BeeUtils.join(BeeConst.STRING_EMPTY, BeeUtils.isEmpty(prefixFld) ? prefix : null, value);
   }
 
+  public Set<Long> getNotNullLongSet(String source, String field) {
+    SqlSelect query = new SqlSelect()
+        .setDistinctMode(true)
+        .addFields(source, field)
+        .addFrom(source)
+        .setWhere(SqlUtils.notNull(source, field));
+
+    return getLongSet(query);
+  }
+
   public Long[] getRelatedValues(String tableName, String filterColumn, long filterValue,
       String resultColumn) {
 
@@ -700,8 +757,19 @@ public class QueryServiceBean {
     return res.getRow(0);
   }
 
+  public SimpleRow getRow(String tblName, long id) {
+    Assert.notEmpty(tblName);
+
+    SqlSelect query = new SqlSelect()
+        .addAllFields(tblName)
+        .addFrom(tblName)
+        .setWhere(sys.idEquals(tblName, id));
+
+    return getRow(query);
+  }
+
   public List<SearchResult> getSearchResults(String viewName, Filter filter) {
-    List<SearchResult> results = Lists.newArrayList();
+    List<SearchResult> results = new ArrayList<>();
 
     BeeRowSet rowSet = getViewData(viewName, filter);
     if (rowSet != null) {
@@ -736,25 +804,18 @@ public class QueryServiceBean {
       List<String> columns) {
 
     BeeView view = sys.getView(viewName);
-    SqlSelect ss = view.getQuery(filter, order, columns, sys.getViewFinder());
+    SqlSelect query = view.getQuery(usr.getCurrentUserId(), filter, order, columns);
 
     if (limit > 0) {
-      ss.setLimit(limit);
+      query.setLimit(limit);
     }
     if (offset > 0) {
-      ss.setOffset(offset);
+      query.setOffset(offset);
     }
-    return getViewData(ss, view);
-  }
-
-  public BeeRowSet getViewData(final SqlSelect query, final BeeView view) {
-    Assert.notNull(query);
-    Assert.state(!query.isEmpty());
-
-    String tableName = view.getSourceName();
-    String tableAlias = view.getSourceAlias();
-
     if (!usr.isAdministrator()) {
+      String tableName = view.getSourceName();
+      String tableAlias = view.getSourceAlias();
+
       sys.filterVisibleState(query, tableName, tableAlias);
 
       BeeTable table = sys.getTable(tableName);
@@ -774,6 +835,18 @@ public class QueryServiceBean {
         }
       }
     }
+    ViewDataProvider provider = viewDataProviders.get(viewName);
+
+    if (provider != null) {
+      return provider.getViewData(view, query, filter);
+    }
+    return getViewData(query, view);
+  }
+
+  public BeeRowSet getViewData(final SqlSelect query, final BeeView view) {
+    Assert.noNulls(query, view);
+    Assert.state(!query.isEmpty());
+
     activateTables(query);
 
     final ViewQueryEvent event = new ViewQueryEvent(view.getName(), query);
@@ -796,12 +869,16 @@ public class QueryServiceBean {
 
   public int getViewSize(String viewName, Filter filter) {
     BeeView view = sys.getView(viewName);
-    SqlSelect query = view.getQuery(filter, sys.getViewFinder());
+    SqlSelect query = view.getQuery(usr.getCurrentUserId(), filter);
 
     if (!usr.isAdministrator()) {
       sys.filterVisibleState(query, view.getSourceName(), view.getSourceAlias());
     }
-    
+    ViewDataProvider provider = viewDataProviders.get(viewName);
+
+    if (provider != null) {
+      return provider.getViewSize(view, query, filter);
+    }
     return sqlCount(query);
   }
 
@@ -850,7 +927,6 @@ public class QueryServiceBean {
   @TransactionAttribute(TransactionAttributeType.MANDATORY)
   public int loadData(String target, SqlSelect sourceQuery) {
     Assert.state(sys.isTable(target));
-    boolean isDebugEnabled = logger.isDebugEnabled();
 
     int chunk = BeeUtils.toNonNegativeInt(sourceQuery.getLimit());
     int offset = 0;
@@ -870,9 +946,8 @@ public class QueryServiceBean {
             .addFields(sys.getIdName(target), sys.getVersionName(target))
             .addFields(data.getColumnNames());
       }
-      if (isDebugEnabled) {
-        logger.setLevel(LogLevel.INFO);
-      }
+      boolean isDebugEnabled = debugOff();
+
       for (String[] row : data.getRows()) {
         Object[] values = new Object[row.length + 2];
         values[0] = ig.getId(target);
@@ -890,9 +965,7 @@ public class QueryServiceBean {
         insertData(insert);
         logger.info("Inserted", tot, "records into table", target);
       }
-      if (isDebugEnabled) {
-        logger.setLevel(LogLevel.DEBUG);
-      }
+      debugOn(isDebugEnabled);
       offset += chunk;
     } while (chunk > 0 && data.getNumberOfRows() == chunk);
 
@@ -939,6 +1012,18 @@ public class QueryServiceBean {
     return result;
   }
 
+  public List<String> sqlColumns(String tmp) {
+    SqlSelect ss = new SqlSelect().addAllFields(tmp).addFrom(tmp).setWhere(SqlUtils.sqlFalse());
+    SimpleRowSet data = getData(ss);
+
+    List<String> columns = new ArrayList<>();
+    for (String colName : data.getColumnNames()) {
+      columns.add(colName);
+    }
+
+    return columns;
+  }
+
   public int sqlCount(SqlSelect query) {
     SimpleRowSet res;
     SqlSelect ss = query.copyOf().resetOrder();
@@ -970,8 +1055,7 @@ public class QueryServiceBean {
   }
 
   public boolean sqlExists(String source, IsCondition where) {
-    return sqlCount(new SqlSelect()
-        .addConstant(null, "dummy").addFrom(source).setWhere(where)) > 0;
+    return sqlCount(new SqlSelect().addFrom(source).setWhere(where)) > 0;
   }
 
   public boolean sqlExists(String source, String field, Object value) {
@@ -988,6 +1072,13 @@ public class QueryServiceBean {
         .addFields(source, field)
         .addFrom(source)
         .setWhere(sys.idEquals(source, id)));
+  }
+
+  public void tweakSql(boolean on) {
+    if (SqlEngine.POSTGRESQL != SqlBuilderFactory.getBuilder().getEngine()) {
+      return;
+    }
+    doSql("SET LOCAL enable_seqscan=" + (on ? "off" : "on"));
   }
 
   @TransactionAttribute(TransactionAttributeType.MANDATORY)
@@ -1099,7 +1190,7 @@ public class QueryServiceBean {
     if (!BeeUtils.isEmpty(sources)) {
       for (String source : sources) {
         if (sys.isTable(source) && !sys.getTable(source).isActive()) {
-          sys.activateTable(source);
+          sys.rebuildTable(source);
         }
       }
     }

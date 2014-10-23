@@ -1,6 +1,5 @@
 package com.butent.bee.client.composite;
 
-import com.google.common.collect.Lists;
 import com.google.gwt.event.dom.client.BlurEvent;
 import com.google.gwt.event.dom.client.BlurHandler;
 import com.google.gwt.event.dom.client.FocusEvent;
@@ -19,10 +18,12 @@ import com.butent.bee.shared.Launchable;
 import com.butent.bee.shared.data.BeeRow;
 import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.IsRow;
+import com.butent.bee.shared.data.value.Value;
 import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.ui.Relation;
 import com.butent.bee.shared.utils.BeeUtils;
 
+import java.util.ArrayList;
 import java.util.List;
 
 public final class UnboundSelector extends DataSelector implements HandlesRendering, Launchable {
@@ -109,27 +110,32 @@ public final class UnboundSelector extends DataSelector implements HandlesRender
   }
 
   @Override
-  public void setSelection(BeeRow row, boolean fire) {
-    super.setSelection(row, fire);
-    render(row);
+  public void setSelection(BeeRow row, Value value, boolean fire) {
+    super.setSelection(row, value, fire);
+
+    if (value == null) {
+      render(row);
+    } else {
+      setRenderedValue(value.getString());
+    }
   }
-  
+
   public void setValue(Long id, final boolean fire) {
     if (DataUtils.isId(id)) {
       Queries.getRow(getOracle().getViewName(), id, new RowCallback() {
         @Override
         public void onSuccess(BeeRow result) {
-          setSelection(result, fire);
+          setSelection(result, null, fire);
           updateDisplay(getRenderedValue());
         }
       });
-      
+
     } else {
-      setSelection(null, fire);
+      setSelection(null, null, fire);
       updateDisplay(getRenderedValue());
     }
   }
-  
+
   @Override
   public List<String> validate(boolean checkForNull) {
     return validate(getNormalizedValue(), checkForNull);
@@ -137,7 +143,7 @@ public final class UnboundSelector extends DataSelector implements HandlesRender
 
   @Override
   public List<String> validate(String normalizedValue, boolean checkForNull) {
-    List<String> messages = Lists.newArrayList();
+    List<String> messages = new ArrayList<>();
     messages.addAll(super.validate(normalizedValue, checkForNull));
     if (!messages.isEmpty()) {
       return messages;
@@ -168,7 +174,9 @@ public final class UnboundSelector extends DataSelector implements HandlesRender
     addBlurHandler(new BlurHandler() {
       @Override
       public void onBlur(BlurEvent event) {
-        updateDisplay(getRenderedValue());
+        if (isStrict()) {
+          updateDisplay(getRenderedValue());
+        }
         if (!isHandledByForm()) {
           setEditing(false);
         }
@@ -179,10 +187,12 @@ public final class UnboundSelector extends DataSelector implements HandlesRender
       @Override
       public void onEditStop(EditStopEvent event) {
         if (getRenderer() != null) {
-          if (event.isChanged()) {
-            render(getRelatedRow());
+          if (getRelatedRow() != null || isStrict()) {
+            if (event.isChanged()) {
+              render(getRelatedRow());
+            }
+            updateDisplay(getRenderedValue());
           }
-          updateDisplay(getRenderedValue());
 
           if (!isHandledByForm()) {
             UiHelper.moveFocus(getParent(), getElement(), true);

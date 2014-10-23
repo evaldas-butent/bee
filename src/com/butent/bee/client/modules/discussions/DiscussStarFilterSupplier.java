@@ -13,6 +13,7 @@ import com.butent.bee.client.data.Data;
 import com.butent.bee.client.layout.Flow;
 import com.butent.bee.client.view.search.AbstractFilterSupplier;
 import com.butent.bee.client.widget.Button;
+import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.data.filter.Filter;
 import com.butent.bee.shared.data.filter.FilterValue;
 import com.butent.bee.shared.i18n.Localized;
@@ -20,7 +21,7 @@ import com.butent.bee.shared.modules.administration.AdministrationConstants;
 import com.butent.bee.shared.utils.BeeUtils;
 
 final class DiscussStarFilterSupplier extends AbstractFilterSupplier {
-  
+
   private boolean starred;
 
   public DiscussStarFilterSupplier(String options) {
@@ -45,7 +46,7 @@ final class DiscussStarFilterSupplier extends AbstractFilterSupplier {
   @Override
   public Filter parse(FilterValue input) {
     if (input != null && BeeUtils.isFalse(input.getEmptyValues())) {
-      return Filter.in(Data.getIdColumn(VIEW_DISCUSSIONS), VIEW_DISCUSSIONS_USERS, COL_DISCUSSION, 
+      return Filter.in(Data.getIdColumn(VIEW_DISCUSSIONS), VIEW_DISCUSSIONS_USERS, COL_DISCUSSION,
           Filter.and(BeeKeeper.getUser().getFilter(AdministrationConstants.COL_USER), Filter
               .notNull(COL_STAR)));
     } else {
@@ -60,7 +61,7 @@ final class DiscussStarFilterSupplier extends AbstractFilterSupplier {
 
   @Override
   protected String getStylePrefix() {
-    return "bee-discuss-FilterSupplier-Star-";
+    return BeeConst.CSS_CLASS_PREFIX + "discuss-FilterSupplier-Star-";
   }
 
   private Widget createWidget() {

@@ -2,16 +2,13 @@ package com.butent.bee.client.modules.mail;
 
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.Lists;
-import com.google.common.collect.Maps;
 import com.google.common.collect.Multimap;
-import com.google.common.collect.Sets;
 import com.google.gwt.event.dom.client.ChangeEvent;
 import com.google.gwt.event.dom.client.ChangeHandler;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.event.logical.shared.SelectionEvent;
 import com.google.gwt.event.logical.shared.SelectionHandler;
-import com.google.gwt.user.client.ui.HasWidgets;
 
 import static com.butent.bee.shared.modules.mail.MailConstants.*;
 
@@ -20,8 +17,8 @@ import com.butent.bee.client.Callback;
 import com.butent.bee.client.Global;
 import com.butent.bee.client.communication.ParameterList;
 import com.butent.bee.client.communication.ResponseCallback;
-import com.butent.bee.client.composite.Autocomplete;
 import com.butent.bee.client.composite.FileCollector;
+import com.butent.bee.client.composite.MultiSelector;
 import com.butent.bee.client.data.Queries;
 import com.butent.bee.client.data.Queries.RowSetCallback;
 import com.butent.bee.client.data.RowFactory;
@@ -38,7 +35,6 @@ import com.butent.bee.client.ui.FormFactory.WidgetDescriptionCallback;
 import com.butent.bee.client.ui.IdentifiableWidget;
 import com.butent.bee.client.ui.UiHelper;
 import com.butent.bee.client.utils.FileUtils;
-import com.butent.bee.client.utils.NewFileInfo;
 import com.butent.bee.client.view.edit.Editor;
 import com.butent.bee.client.view.form.CloseCallback;
 import com.butent.bee.client.view.form.FormView;
@@ -57,9 +53,9 @@ import com.butent.bee.shared.data.filter.Filter;
 import com.butent.bee.shared.font.FontAwesome;
 import com.butent.bee.shared.html.builder.elements.Div;
 import com.butent.bee.shared.i18n.Localized;
+import com.butent.bee.shared.io.FileInfo;
 import com.butent.bee.shared.modules.mail.AccountInfo;
 import com.butent.bee.shared.modules.mail.MailConstants.AddressType;
-import com.butent.bee.shared.ui.Relation;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.Codec;
 import com.butent.bee.shared.utils.EnumUtils;
@@ -74,7 +70,7 @@ import java.util.Objects;
 import java.util.Set;
 
 public final class NewMailMessage extends AbstractFormInterceptor
-    implements ClickHandler, SelectionHandler<NewFileInfo> {
+    implements ClickHandler, SelectionHandler<FileInfo> {
 
   private class DialogCallback extends InputCallback {
     @Override
@@ -119,19 +115,18 @@ public final class NewMailMessage extends AbstractFormInterceptor
     }
   }
 
-  private static final String SIGNATURE_SEPARATOR = "<br><br><br>";
-
   public static void create(final Set<String> to, final Set<String> cc, final Set<String> bcc,
-      final String subject, final String content, final Map<Long, NewFileInfo> attach,
+      final String subject, final String content, final Collection<FileInfo> attachments,
       final Long draftId) {
 
     MailKeeper.getAccounts(new BiConsumer<List<AccountInfo>, AccountInfo>() {
       @Override
       public void accept(List<AccountInfo> availableAccounts, AccountInfo defaultAccount) {
         if (!BeeUtils.isEmpty(availableAccounts)) {
-          create(availableAccounts, defaultAccount, to, cc, bcc, subject, content, attach, draftId);
+          create(availableAccounts, defaultAccount, to, cc, bcc, subject, content, attachments,
+              draftId);
         } else {
-          BeeKeeper.getScreen().notifyWarning("No accounts found");
+          BeeKeeper.getScreen().notifyWarning(Localized.getConstants().mailNoAccountsFound());
         }
       }
     });
@@ -139,10 +134,10 @@ public final class NewMailMessage extends AbstractFormInterceptor
 
   public static NewMailMessage create(List<AccountInfo> availableAccounts,
       AccountInfo defaultAccount, Set<String> to, Set<String> cc, Set<String> bcc, String subject,
-      String content, Map<Long, NewFileInfo> attach, Long draftId) {
+      String content, Collection<FileInfo> attachments, Long draftId) {
 
     final NewMailMessage newMessage = new NewMailMessage(availableAccounts, defaultAccount,
-        to, cc, bcc, subject, content, attach, draftId);
+        to, cc, bcc, subject, content, attachments, draftId);
 
     FormFactory.createFormView(FORM_NEW_MAIL_MESSAGE, null, null, false, newMessage,
         new FormViewCallback() {
@@ -170,50 +165,29 @@ public final class NewMailMessage extends AbstractFormInterceptor
   private final Multimap<String, String> recipients = HashMultimap.create();
   private final String subject;
   private final String content;
-  private final Map<Long, NewFileInfo> defaultAttachments;
+  private final Collection<FileInfo> defaultAttachments;
 
-  private final Map<String, Autocomplete> recipientWidgets = Maps.newHashMap();
+  private final Map<String, MultiSelector> recipientWidgets = new HashMap<>();
   private Editor subjectWidget;
   private Editor contentWidget;
   private final ListBox signaturesWidget = new ListBox();
-  private final Map<String, Long> attachments = Maps.newLinkedHashMap();
+  private FileCollector attachmentsWidget;
 
   private Consumer<Boolean> scheduled;
 
   private NewMailMessage(List<AccountInfo> availableAccounts, AccountInfo defaultAccount,
       Set<String> to, Set<String> cc, Set<String> bcc, String subject, String content,
-      Map<Long, NewFileInfo> attach, Long draftId) {
+      Collection<FileInfo> attachments, Long draftId) {
 
-    Assert.notNull(defaultAccount);
-
-    this.account = defaultAccount;
+    this.account = Assert.notNull(defaultAccount);
     this.accounts.addAll(availableAccounts);
     this.draftId = draftId;
 
     this.subject = subject;
     this.content = content;
 
-    if (!BeeUtils.isEmpty(attach)) {
-      this.defaultAttachments = attach;
-    } else {
-      this.defaultAttachments = Maps.newHashMap();
-    }
-    for (Long id : defaultAttachments.keySet()) {
-      attachments.put(defaultAttachments.get(id).getName(), id);
-    }
-    if (!DataUtils.isId(draftId)) {
-      Long addressId = defaultAccount.getAddressId();
+    this.defaultAttachments = attachments;
 
-      if (to != null) {
-        to.remove(addressId);
-      }
-      if (cc != null) {
-        cc.remove(addressId);
-      }
-      if (bcc != null) {
-        bcc.remove(addressId);
-      }
-    }
     Map<AddressType, Set<String>> recs = new HashMap<>();
     recs.put(AddressType.TO, to);
     recs.put(AddressType.CC, cc);
@@ -222,6 +196,9 @@ public final class NewMailMessage extends AbstractFormInterceptor
     for (AddressType type : recs.keySet()) {
       Set<String> emails = recs.get(type);
 
+      if (!DataUtils.isId(draftId) && emails != null) {
+        emails.remove(defaultAccount.getAddress());
+      }
       if (!BeeUtils.isEmpty(emails)) {
         recipients.putAll(type.name(), emails);
       }
@@ -234,19 +211,12 @@ public final class NewMailMessage extends AbstractFormInterceptor
 
     AddressType type = EnumUtils.getEnumByName(AddressType.class, name);
 
-    if (widget instanceof HasWidgets && type != null) {
-      HasWidgets panel = (HasWidgets) widget;
-      panel.clear();
-
-      Autocomplete input = Autocomplete.create(Relation.create("UserEmails",
-          Lists.newArrayList("Email")), true);
-
-      panel.add(input);
+    if (widget instanceof MultiSelector && type != null) {
+      MultiSelector input = (MultiSelector) widget;
 
       Collection<String> lst = recipients.get(type.name());
-
       if (!BeeUtils.isEmpty(lst)) {
-        input.setValue(lst.iterator().next());
+        input.setValues(lst);
       }
       recipientWidgets.put(type.name(), input);
 
@@ -259,16 +229,16 @@ public final class NewMailMessage extends AbstractFormInterceptor
       contentWidget.setValue(content);
 
     } else if (widget instanceof FileCollector && BeeUtils.same(name, TBL_ATTACHMENTS)) {
-      if (!BeeUtils.isEmpty(defaultAttachments)) {
-        ((FileCollector) widget).addFiles(defaultAttachments.values());
-      }
-      ((FileCollector) widget).bindDnd(getFormView());
-      ((FileCollector) widget).addSelectionHandler(this);
+      attachmentsWidget = (FileCollector) widget;
+      attachmentsWidget.addFiles(defaultAttachments);
+      attachmentsWidget.bindDnd(getFormView());
+      attachmentsWidget.addSelectionHandler(this);
     }
   }
 
   @Override
   public FormInterceptor getInstance() {
+    Assert.unsupported();
     return null;
   }
 
@@ -284,28 +254,19 @@ public final class NewMailMessage extends AbstractFormInterceptor
   }
 
   @Override
-  public void onSelection(SelectionEvent<NewFileInfo> event) {
-    final String fileName = event.getSelectedItem().getName();
+  public void onSelection(SelectionEvent<FileInfo> event) {
+    final FileInfo file = event.getSelectedItem();
 
-    if (attachments.containsKey(fileName)) {
-      attachments.remove(fileName);
-    } else {
-      attachments.put(fileName, 0L);
-
-      FileUtils.uploadFile(event.getSelectedItem(), new Callback<Long>() {
+    if (attachmentsWidget.getFiles().contains(file)) {
+      FileUtils.uploadFile(file, new Callback<Long>() {
         @Override
         public void onFailure(String... reason) {
-          if (attachments.containsKey(fileName)) {
-            attachments.put(fileName, -1L);
-            super.onFailure(reason);
-          }
+          super.onFailure(reason);
         }
 
         @Override
         public void onSuccess(Long id) {
-          if (attachments.containsKey(fileName)) {
-            attachments.put(fileName, id);
-          }
+          file.setFileId(id);
         }
       });
     }
@@ -328,7 +289,13 @@ public final class NewMailMessage extends AbstractFormInterceptor
       if (currentContent.contains(oldSignature)) {
         currentContent = currentContent.replace(oldSignature, newSignature);
       } else {
-        currentContent = SIGNATURE_SEPARATOR + newSignature + currentContent;
+        if (BeeUtils.startsWith(subject, Localized.getConstants().mailReplayPrefix())
+            || BeeUtils.startsWith(subject, Localized.getConstants().mailForwardedPrefix())) {
+
+          currentContent = SIGNATURE_SEPARATOR + newSignature + currentContent;
+        } else {
+          currentContent = currentContent + SIGNATURE_SEPARATOR + newSignature;
+        }
       }
       contentWidget.setValue(currentContent);
 
@@ -339,13 +306,8 @@ public final class NewMailMessage extends AbstractFormInterceptor
 
   private boolean hasChanges() {
     for (String type : recipientWidgets.keySet()) {
-      Set<String> recs = new HashSet<>();
-      String recipient = recipientWidgets.get(type).getValue();
-
-      if (!BeeUtils.isEmpty(recipient)) {
-        recs.add(recipient);
-      }
-      if (!BeeUtils.sameElements(recipients.get(type), recs)) {
+      Set<String> values = new HashSet<>(recipientWidgets.get(type).getValues());
+      if (!BeeUtils.sameElements(recipients.get(type), values)) {
         return true;
       }
     }
@@ -356,8 +318,7 @@ public final class NewMailMessage extends AbstractFormInterceptor
         contentWidget.getValue().replace(SIGNATURE_SEPARATOR + signature.toString(), ""))) {
       return true;
     }
-    if (!BeeUtils.same(DataUtils.buildIdList(defaultAttachments.keySet()),
-        DataUtils.buildIdList(attachments.values()))) {
+    if (!BeeUtils.sameElements(defaultAttachments, attachmentsWidget.getFiles())) {
       return true;
     }
     return false;
@@ -365,6 +326,7 @@ public final class NewMailMessage extends AbstractFormInterceptor
 
   private void initHeader(DialogBox dialog) {
     FaLabel send = new FaLabel(FontAwesome.PAPER_PLANE);
+    send.setTitle(Localized.getConstants().send());
     send.addClickHandler(this);
 
     dialog.insertAction(1, send);
@@ -428,12 +390,12 @@ public final class NewMailMessage extends AbstractFormInterceptor
     params.addDataItem(COL_ACCOUNT, account.getAccountId());
 
     for (String type : recipientWidgets.keySet()) {
-      String recipient = recipientWidgets.get(type).getValue();
-
-      if (!BeeUtils.isEmpty(recipient)) {
-        params.addDataItem(type, Codec.beeSerialize(Sets.newHashSet(recipient)));
+      Set<String> values = new HashSet<>(recipientWidgets.get(type).getValues());
+      if (!BeeUtils.isEmpty(values)) {
+        params.addDataItem(type, Codec.beeSerialize(values));
       }
     }
+
     if (draftId != null) {
       params.addDataItem("DraftId", draftId);
     }
@@ -441,10 +403,15 @@ public final class NewMailMessage extends AbstractFormInterceptor
     params.addDataItem(COL_SUBJECT, subjectWidget.getValue());
     params.addDataItem(COL_CONTENT, contentWidget.getValue());
 
-    String ids = DataUtils.buildIdList(attachments.values());
+    List<Long> ids = new ArrayList<>();
 
+    for (FileInfo file : attachmentsWidget.getFiles()) {
+      if (DataUtils.isId(file.getId())) {
+        ids.add(file.getId());
+      }
+    }
     if (!BeeUtils.isEmpty(ids)) {
-      params.addDataItem(TBL_ATTACHMENTS, ids);
+      params.addDataItem(TBL_ATTACHMENTS, DataUtils.buildIdList(ids));
     }
     BeeKeeper.getRpc().makePostRequest(params, new ResponseCallback() {
       @Override
@@ -462,8 +429,8 @@ public final class NewMailMessage extends AbstractFormInterceptor
     boolean hasRecipients = false;
     String error = null;
 
-    for (Autocomplete r : recipientWidgets.values()) {
-      if (!BeeUtils.isEmpty(r.getValue())) {
+    for (MultiSelector r : recipientWidgets.values()) {
+      if (!BeeUtils.isEmpty(r.getValues())) {
         hasRecipients = true;
         break;
       }
@@ -477,8 +444,13 @@ public final class NewMailMessage extends AbstractFormInterceptor
     } else if (contentWidget == null || BeeUtils.isEmpty(contentWidget.getValue())) {
       error = Localized.getConstants().mailMessageBodyIsEmpty();
 
-    } else if (attachments.values().contains(0L)) {
-      error = Localized.getConstants().mailThereIsStackOfUnfinishedAttachments();
+    } else {
+      for (FileInfo file : attachmentsWidget.getFiles()) {
+        if (!DataUtils.isId(file.getId())) {
+          error = Localized.getConstants().mailThereIsStackOfUnfinishedAttachments();
+          break;
+        }
+      }
     }
     if (!BeeUtils.isEmpty(error)) {
       getFormView().notifySevere(error);

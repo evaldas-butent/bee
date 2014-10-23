@@ -1,7 +1,6 @@
 package com.butent.bee.server.sql;
 
 import com.google.common.collect.Lists;
-import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
 
 import com.butent.bee.shared.Assert;
@@ -19,7 +18,7 @@ import java.util.List;
 public class SqlInsert extends SqlQuery<SqlInsert> implements HasTarget {
 
   private final String target;
-  private final LinkedHashMap<String, Integer> fieldList = Maps.newLinkedHashMap();
+  private final LinkedHashMap<String, Integer> fieldList = new LinkedHashMap<>();
   private List<IsExpression[]> data;
   private SqlSelect dataSource;
 
@@ -103,7 +102,7 @@ public class SqlInsert extends SqlQuery<SqlInsert> implements HasTarget {
       return addConstant(field, value);
     }
   }
-  
+
   public SqlInsert addValues(Object... values) {
     Assert.notNull(values);
     Assert.state(getFieldCount() == values.length);
@@ -116,7 +115,7 @@ public class SqlInsert extends SqlQuery<SqlInsert> implements HasTarget {
           : SqlUtils.constant(values[i]);
     }
     if (data == null) {
-      data = Lists.newArrayList();
+      data = new ArrayList<>();
     }
     data.add(row);
 
@@ -248,9 +247,20 @@ public class SqlInsert extends SqlQuery<SqlInsert> implements HasTarget {
     return getReference();
   }
 
+  public SqlInsert updExpression(String field, IsExpression value) {
+    Assert.notEmpty(field);
+    Assert.state(hasField(field), "Field " + field + " does not exist");
+    Assert.notEmpty(data);
+    Assert.state(!isMultipleInsert());
+
+    data.get(0)[fieldList.get(field)] = value;
+
+    return getReference();
+  }
+
   private void addField(String field) {
     Assert.notEmpty(field);
-    Assert.state(!hasField(field), "Field " + field + " already exist");
+    Assert.state(!hasField(field), "Field " + field + " already exists");
     fieldList.put(field, getFieldCount());
   }
 }

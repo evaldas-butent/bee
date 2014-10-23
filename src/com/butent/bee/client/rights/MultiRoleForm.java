@@ -4,9 +4,7 @@ import com.google.common.collect.BiMap;
 import com.google.common.collect.HashBiMap;
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.Lists;
-import com.google.common.collect.Maps;
 import com.google.common.collect.Multimap;
-import com.google.common.collect.Sets;
 import com.google.gwt.dom.client.Element;
 import com.google.gwt.dom.client.NodeList;
 import com.google.gwt.dom.client.TableCellElement;
@@ -30,6 +28,7 @@ import com.butent.bee.client.dom.DomUtils;
 import com.butent.bee.client.dom.Selectors;
 import com.butent.bee.client.event.logical.SelectorEvent;
 import com.butent.bee.client.presenter.Presenter;
+import com.butent.bee.client.ui.Opener;
 import com.butent.bee.client.view.HeaderView;
 import com.butent.bee.client.widget.Button;
 import com.butent.bee.client.widget.CustomDiv;
@@ -55,6 +54,8 @@ import com.butent.bee.shared.utils.Codec;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -257,11 +258,11 @@ abstract class MultiRoleForm extends RightsForm {
                 Map<String, String> rights = Codec.deserializeMap(response.getResponseAsString());
 
                 if (getRightsState().isChecked()) {
-                  Set<Long> ids = Sets.newHashSet(roles.keySet());
+                  Set<Long> ids = new HashSet<>(roles.keySet());
 
                   for (RightsObject object : getObjects()) {
                     if (rights.containsKey(object.getName())) {
-                      Set<Long> values = Sets.newHashSet(ids);
+                      Set<Long> values = new HashSet<>(ids);
                       values.removeAll(DataUtils.parseIdSet(rights.get(object.getName())));
 
                       if (!values.isEmpty()) {
@@ -280,7 +281,7 @@ abstract class MultiRoleForm extends RightsForm {
                 }
 
               } else if (getRightsState().isChecked()) {
-                Set<Long> ids = Sets.newHashSet(roles.keySet());
+                Set<Long> ids = new HashSet<>(roles.keySet());
 
                 for (RightsObject object : getObjects()) {
                   initialValues.putAll(object.getName(), ids);
@@ -418,7 +419,7 @@ abstract class MultiRoleForm extends RightsForm {
       params.addQueryItem(COL_OBJECT_TYPE, getObjectType().ordinal());
       params.addQueryItem(COL_STATE, getRightsState().ordinal());
 
-      Map<String, String> diff = Maps.newHashMap();
+      Map<String, String> diff = new HashMap<>();
       for (String objectName : changes.keySet()) {
         diff.put(objectName, DataUtils.buildIdList(changes.get(objectName)));
       }
@@ -515,7 +516,7 @@ abstract class MultiRoleForm extends RightsForm {
   }
 
   private void checkUserRights() {
-    Queries.getRowSet(VIEW_USER_ROLES, Lists.newArrayList(COL_ROLE),
+    Queries.getRowSet(VIEW_USER_ROLES, Collections.singletonList(COL_ROLE),
         Filter.equals(COL_USER, getUserId()), new Queries.RowSetCallback() {
           @Override
           public void onSuccess(BeeRowSet result) {
@@ -525,7 +526,7 @@ abstract class MultiRoleForm extends RightsForm {
             } else {
               int index = result.getColumnIndex(COL_ROLE);
 
-              Set<Long> userRoles = Sets.newHashSet();
+              Set<Long> userRoles = new HashSet<>();
               for (BeeRow row : result) {
                 userRoles.add(row.getLong(index));
               }
@@ -546,7 +547,7 @@ abstract class MultiRoleForm extends RightsForm {
     widget.addClickHandler(new ClickHandler() {
       @Override
       public void onClick(ClickEvent event) {
-        RowEditor.openRow(VIEW_ROLES, roleId, true, new RowCallback() {
+        RowEditor.open(VIEW_ROLES, roleId, Opener.MODAL, new RowCallback() {
           @Override
           public void onSuccess(BeeRow result) {
             String name = Data.getString(VIEW_ROLES, result, COL_ROLE_NAME);
@@ -645,7 +646,7 @@ abstract class MultiRoleForm extends RightsForm {
   }
 
   private void enableChildren(RightsObject object, Long roleId, boolean enabled) {
-    List<RightsObject> children = Lists.newArrayList();
+    List<RightsObject> children = new ArrayList<>();
 
     for (RightsObject ro : getObjects()) {
       if (object.getName().equals(ro.getParent())) {
@@ -683,7 +684,7 @@ abstract class MultiRoleForm extends RightsForm {
   }
 
   private List<TableCellElement> getRoleCells(Long roleId) {
-    List<TableCellElement> cells = Lists.newArrayList();
+    List<TableCellElement> cells = new ArrayList<>();
 
     NodeList<Element> nodes = Selectors.getNodes(getTable(),
         Selectors.attributeEquals(Attributes.DATA_PREFIX + DATA_KEY_ROLE, roleId));
@@ -724,7 +725,7 @@ abstract class MultiRoleForm extends RightsForm {
   }
 
   private List<Toggle> getRoleToggles() {
-    List<Toggle> toggles = Lists.newArrayList();
+    List<Toggle> toggles = new ArrayList<>();
 
     for (Widget widget : getTable()) {
       if (widget instanceof Toggle && isDataType(widget, DATA_TYPE_ROLE_TOGGLE)) {

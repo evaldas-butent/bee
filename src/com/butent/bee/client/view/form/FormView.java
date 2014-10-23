@@ -10,6 +10,7 @@ import com.butent.bee.client.data.HasDataTable;
 import com.butent.bee.client.event.DndWidget;
 import com.butent.bee.client.event.logical.ActiveWidgetChangeEvent;
 import com.butent.bee.client.output.Printable;
+import com.butent.bee.client.style.ConditionalStyle;
 import com.butent.bee.client.ui.FormDescription;
 import com.butent.bee.client.ui.HasDimensions;
 import com.butent.bee.client.ui.IdentifiableWidget;
@@ -25,6 +26,7 @@ import com.butent.bee.client.view.form.interceptor.FormInterceptor;
 import com.butent.bee.shared.HasState;
 import com.butent.bee.shared.NotificationListener;
 import com.butent.bee.shared.data.BeeColumn;
+import com.butent.bee.shared.data.CellSource;
 import com.butent.bee.shared.data.IsRow;
 import com.butent.bee.shared.data.RowChildren;
 import com.butent.bee.shared.time.DateTime;
@@ -32,6 +34,7 @@ import com.butent.bee.shared.time.JustDate;
 
 import java.util.Collection;
 import java.util.List;
+import java.util.Map;
 
 /**
  * Contains necessary methods for form implementing classes.
@@ -41,6 +44,8 @@ public interface FormView extends DataView, HasDataTable, ActiveWidgetChangeEven
     HasAddStartHandlers, HasAddEndHandlers, HasReadyForInsertHandlers, HasReadyForUpdateHandlers,
     HasDimensions, HasState, DndWidget, EditEndEvent.Handler, RequiresResize, Printable,
     HasSaveChangesHandlers {
+
+  void addDynamicStyle(String widgetId, CellSource cellSource, ConditionalStyle conditionalStyle);
 
   void applyOptions(String options);
 
@@ -55,15 +60,13 @@ public interface FormView extends DataView, HasDataTable, ActiveWidgetChangeEven
 
   boolean focus(String source);
 
+  int flush();
+
   long getActiveRowId();
 
   Collection<RowChildren> getChildrenForInsert();
 
   Collection<RowChildren> getChildrenForUpdate();
-
-  List<BeeColumn> getDataColumns();
-
-  int getDataIndex(String source);
 
   DateTime getDateTimeValue(String source);
 
@@ -83,6 +86,8 @@ public interface FormView extends DataView, HasDataTable, ActiveWidgetChangeEven
 
   Long getLongValue(String source);
 
+  Map<String, Widget> getNamedWidgets();
+
   IsRow getOldRow();
 
   IdentifiableWidget getRootWidget();
@@ -100,7 +105,7 @@ public interface FormView extends DataView, HasDataTable, ActiveWidgetChangeEven
   boolean isRowEditable(IsRow rowValue, boolean warn);
 
   boolean isRowEnabled(IsRow rowValue);
-  
+
   void observeData();
 
   boolean observesData();
@@ -114,6 +119,8 @@ public interface FormView extends DataView, HasDataTable, ActiveWidgetChangeEven
   boolean printHeader();
 
   void refreshChildWidgets(IsRow row);
+
+  void setCaption(String caption);
 
   void start(Integer rowCount);
 

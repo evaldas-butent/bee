@@ -17,6 +17,7 @@ import com.butent.bee.client.dialog.StringCallback;
 import com.butent.bee.client.event.logical.BookmarkEvent;
 import com.butent.bee.client.event.logical.RowActionEvent;
 import com.butent.bee.client.grid.HtmlTable;
+import com.butent.bee.client.ui.Opener;
 import com.butent.bee.client.widget.FaLabel;
 import com.butent.bee.client.widget.InternalLink;
 import com.butent.bee.shared.Assert;
@@ -80,7 +81,7 @@ public class Favorites implements HandlesDeleteEvents {
           return;
         }
 
-        RowEditor.openRow(formName, dataInfo, id);
+        RowEditor.openForm(formName, dataInfo, id, Opener.modeless());
       }
     };
 
@@ -224,14 +225,17 @@ public class Favorites implements HandlesDeleteEvents {
 
   private static final BeeLogger logger = LogUtils.getLogger(Favorites.class);
 
-  private static final String DISPLAY_STYLE = "bee-FavoritesDisplay";
-  private static final String ITEM_COLUMN_STYLE = "bee-FavoritesItemColumn";
-  private static final String EDIT_COLUMN_STYLE = "bee-FavoritesEditColumn";
-  private static final String DELETE_COLUMN_STYLE = "bee-FavoritesDeleteColumn";
+  private static final String DISPLAY_STYLE = BeeConst.CSS_CLASS_PREFIX + "FavoritesDisplay";
+  private static final String ITEM_COLUMN_STYLE = BeeConst.CSS_CLASS_PREFIX
+      + "FavoritesItemColumn";
+  private static final String EDIT_COLUMN_STYLE = BeeConst.CSS_CLASS_PREFIX
+      + "FavoritesEditColumn";
+  private static final String DELETE_COLUMN_STYLE = BeeConst.CSS_CLASS_PREFIX
+      + "FavoritesDeleteColumn";
 
-  private static final String ITEM_STYLE = "bee-FavoritesItem";
-  private static final String EDIT_STYLE = "bee-FavoritesEdit";
-  private static final String DELETE_STYLE = "bee-FavoritesDelete";
+  private static final String ITEM_STYLE = BeeConst.CSS_CLASS_PREFIX + "FavoritesItem";
+  private static final String EDIT_STYLE = BeeConst.CSS_CLASS_PREFIX + "FavoritesEdit";
+  private static final String DELETE_STYLE = BeeConst.CSS_CLASS_PREFIX + "FavoritesDelete";
 
   private static final int ITEM_COLUMN = 0;
   private static final int EDIT_COLUMN = 1;
@@ -286,6 +290,7 @@ public class Favorites implements HandlesDeleteEvents {
 
     display.setWidget(row, DELETE_COLUMN, delete);
   }
+
   private static HtmlTable createDisplay() {
     HtmlTable display = new HtmlTable();
     display.addStyleName(DISPLAY_STYLE);
@@ -296,6 +301,7 @@ public class Favorites implements HandlesDeleteEvents {
 
     return display;
   }
+
   private static boolean removeItem(Group group, String key, long id) {
     Item item = group.find(key, id);
     if (item == null) {
@@ -311,6 +317,7 @@ public class Favorites implements HandlesDeleteEvents {
     Queries.delete(VIEW_FAVORITES, filter, null);
     return group.remove(key, item);
   }
+
   private static boolean updateItem(Group group, String key, long id, String html) {
     Item item = group.find(key, id);
     if (item == null || BeeUtils.equalsTrim(item.getHtml(), html)) {
@@ -402,7 +409,7 @@ public class Favorites implements HandlesDeleteEvents {
     return !BeeUtils.isEmpty(viewName) && DataUtils.hasId(row)
         && Group.ROW.find(viewName, row.getId()) != null;
   }
-  
+
   public void load(String serialized) {
     Assert.notEmpty(serialized);
 
@@ -493,7 +500,7 @@ public class Favorites implements HandlesDeleteEvents {
     }
 
     for (Group group : Group.values()) {
-      Set<String> keys = new TreeSet<String>(group.displays.keySet());
+      Set<String> keys = new TreeSet<>(group.displays.keySet());
       for (String key : keys) {
         group.registerDomainEntry(key);
       }

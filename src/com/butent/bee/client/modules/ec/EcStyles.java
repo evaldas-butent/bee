@@ -5,19 +5,19 @@ import com.google.gwt.dom.client.NodeList;
 import com.google.gwt.user.client.ui.Widget;
 
 import com.butent.bee.client.dom.Selectors;
-import com.butent.bee.client.style.StyleUtils;
+import com.butent.bee.shared.BeeConst;
 
 public final class EcStyles {
-  
+
   private static final String SEPARATOR = "-";
-  private static final String PREFIX = StyleUtils.CLASS_NAME_PREFIX + "ec-";
+  private static final String PREFIX = BeeConst.CSS_CLASS_PREFIX + "ec-";
 
   private static final String LIST_PRICE = PREFIX + "List-Price";
   private static final String PRICE = PREFIX + "Price";
   private static final String STOCK = PREFIX + "Stock";
 
   private static final String HIDDEN = PREFIX + "Hidden";
-  
+
   public static void add(Widget widget, String style) {
     widget.addStyleName(name(style));
   }
@@ -25,7 +25,7 @@ public final class EcStyles {
   public static void add(Widget widget, String primary, String secondary) {
     add(widget, primary + SEPARATOR + secondary);
   }
-  
+
   public static String getListPriceSelector() {
     return Selectors.classSelector(LIST_PRICE);
   }
@@ -33,15 +33,15 @@ public final class EcStyles {
   public static String getPriceSelector() {
     return Selectors.classSelector(PRICE);
   }
-  
+
   public static String getStockSelector() {
     return Selectors.classSelector(STOCK);
   }
-  
+
   public static String name(String style) {
     return PREFIX + style;
   }
-  
+
   public static void markListPrice(Element element) {
     element.addClassName(LIST_PRICE);
     if (!EcKeeper.isListPriceVisible()) {
@@ -63,7 +63,7 @@ public final class EcStyles {
   public static String name(String primary, String secondary) {
     return name(primary + SEPARATOR + secondary);
   }
-  
+
   public static void remove(Widget widget, String style) {
     widget.removeStyleName(name(style));
   }

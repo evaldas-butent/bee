@@ -1,7 +1,6 @@
 package com.butent.bee.client.modules.ec.widget;
 
 import com.google.common.collect.ArrayListMultimap;
-import com.google.common.collect.Lists;
 import com.google.common.collect.Multimap;
 import com.google.gwt.core.client.Scheduler;
 import com.google.gwt.event.dom.client.ClickEvent;
@@ -38,6 +37,7 @@ import com.butent.bee.shared.modules.ec.EcItem;
 import com.butent.bee.shared.modules.ec.EcUtils;
 import com.butent.bee.shared.utils.BeeUtils;
 
+import java.util.ArrayList;
 import java.util.List;
 
 public class ItemList extends Flow implements KeyDownHandler {
@@ -87,7 +87,7 @@ public class ItemList extends Flow implements KeyDownHandler {
 
   private static Widget renderClientAndFeaturedPrice(int clientPrice, int featuredPrice) {
     Flow panel = new Flow(STYLE_CLIENT_AND_FEATURED_PRICE_PANEL);
-    
+
     Flow clientPanel = new Flow(STYLE_CLIENT_PRICE_PREFIX + "panel");
 
     InlineLabel clientValue = new InlineLabel(EcUtils.formatCents(clientPrice));
@@ -97,19 +97,19 @@ public class ItemList extends Flow implements KeyDownHandler {
     InlineLabel clientCurrency = new InlineLabel(EcConstants.CURRENCY);
     clientCurrency.addStyleName(STYLE_CLIENT_PRICE_PREFIX + "currency");
     clientPanel.add(clientCurrency);
-    
+
     panel.add(clientPanel);
 
     Flow featuredPanel = new Flow(STYLE_FEATURED_PRICE_PREFIX + "panel");
-    
+
     InlineLabel featuredValue = new InlineLabel(EcUtils.formatCents(featuredPrice));
     featuredValue.addStyleName(STYLE_FEATURED_PRICE_PREFIX + "value");
     featuredPanel.add(featuredValue);
-    
+
     InlineLabel featuredCurrency = new InlineLabel(EcConstants.CURRENCY);
     featuredCurrency.addStyleName(STYLE_FEATURED_PRICE_PREFIX + "currency");
     featuredPanel.add(featuredCurrency);
-    
+
     panel.add(featuredPanel);
 
     return panel;
@@ -278,7 +278,7 @@ public class ItemList extends Flow implements KeyDownHandler {
   private final HtmlTable table;
   private final Button moreWidget;
 
-  private final List<EcItem> data = Lists.newArrayList();
+  private final List<EcItem> data = new ArrayList<>();
 
   private final String primaryStockLabel;
   private final String secondaryStockLabel;
@@ -329,7 +329,7 @@ public class ItemList extends Flow implements KeyDownHandler {
       int max = table.getRowCount() - 1;
 
       int oldRow = BeeUtils.clamp(eventRow, min, max);
-      if (oldRow == max && moreWidget.isVisible()
+      if (oldRow == max && DomUtils.isVisible(moreWidget)
           && BeeUtils.inList(keyCode, KeyCodes.KEY_DOWN, KeyCodes.KEY_PAGEDOWN)) {
         moreWidget.click();
         return;

@@ -6,6 +6,7 @@ import com.butent.bee.shared.time.DateTime;
 import com.butent.bee.shared.time.JustDate;
 import com.butent.bee.shared.time.TimeUtils;
 import com.butent.bee.shared.utils.BeeUtils;
+import com.butent.bee.shared.utils.Codec;
 import com.butent.bee.shared.utils.Property;
 
 import java.util.ArrayList;
@@ -16,12 +17,10 @@ import java.util.Map;
 
 /**
  * enables to store information on client side using Local Storage element from HTML5.
- * 
- * 
  */
 
 public class Storage {
-  
+
   private final Map<String, String> items = new LinkedHashMap<>();
   private final boolean localStorage;
 
@@ -36,7 +35,7 @@ public class Storage {
       items.clear();
     }
   }
-  
+
   public String get(String key) {
     Assert.notEmpty(key);
 
@@ -59,7 +58,11 @@ public class Storage {
 
     return lst;
   }
-  
+
+  public boolean getBoolean(String key) {
+    return Codec.unpack(get(key));
+  }
+
   public JustDate getDate(String key) {
     return TimeUtils.toDateOrNull(get(key));
   }
@@ -87,7 +90,7 @@ public class Storage {
         result.put(BeeUtils.removePrefix(key, prefix), get(key));
       }
     }
-    
+
     return result;
   }
 
@@ -136,6 +139,14 @@ public class Storage {
     }
   }
 
+  public void set(String key, Boolean value) {
+    if (BeeUtils.isTrue(value)) {
+      set(key, Codec.pack(value));
+    } else {
+      remove(key);
+    }
+  }
+
   public void set(String key, DateTime value) {
     if (value == null) {
       remove(key);
@@ -180,6 +191,7 @@ public class Storage {
     }
   }
 
+//@formatter:off
   private native void lsClear() /*-{
     $wnd.localStorage.clear();
   }-*/;
@@ -203,6 +215,7 @@ public class Storage {
   private native void lsSetItem(String key, String value) /*-{
     $wnd.localStorage.setItem(key, value);
   }-*/;
+//@formatter:on
 
   private boolean validIndex(int index) {
     return index >= 0 && index < length();

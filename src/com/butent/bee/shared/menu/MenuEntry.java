@@ -1,10 +1,9 @@
 package com.butent.bee.shared.menu;
 
-import com.google.common.collect.Lists;
-
 import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.utils.Codec;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import javax.xml.bind.annotation.XmlElementRef;
@@ -20,7 +19,7 @@ public class MenuEntry extends Menu {
     String[] itms = Codec.beeDeserializeCollection(s);
 
     if (itms != null) {
-      items = Lists.newArrayList();
+      items = new ArrayList<>();
 
       for (String item : itms) {
         items.add(restore(item));
@@ -35,13 +34,13 @@ public class MenuEntry extends Menu {
   @Override
   public int getSize() {
     int size = 1;
-    
+
     if (items != null) {
       for (Menu menu : items) {
         size += menu.getSize();
       }
     }
-    
+
     return size;
   }
 

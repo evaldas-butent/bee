@@ -4,6 +4,7 @@ public final class Tags {
 
   public static final String ASIDE = "aside";
   public static final String AUDIO = "audio";
+  public static final String BODY = "body";
   public static final String BUTTON = "button";
   public static final String CANVAS = "canvas";
   public static final String DATA_LIST = "datalist";
@@ -26,7 +27,7 @@ public final class Tags {
   public static final String TH = "th";
   public static final String TR = "tr";
   public static final String VIDEO = "video";
-  
+
   private Tags() {
   }
 }

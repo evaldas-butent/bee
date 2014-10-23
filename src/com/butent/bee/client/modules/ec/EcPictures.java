@@ -3,9 +3,7 @@ package com.butent.bee.client.modules.ec;
 import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
 import com.google.common.collect.ImmutableList;
-import com.google.common.collect.Lists;
 import com.google.common.collect.Multimap;
-import com.google.common.collect.Sets;
 import com.google.gwt.dom.client.Element;
 import com.google.gwt.dom.client.ImageElement;
 import com.google.gwt.event.dom.client.ClickEvent;
@@ -34,7 +32,9 @@ import com.butent.bee.shared.modules.ec.EcConstants;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.Codec;
 
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
@@ -61,9 +61,10 @@ class EcPictures {
     }
   }
 
-  private final Cache<Long, ImmutableList<String>> cache = 
+  private final Cache<Long, ImmutableList<String>> cache =
       CacheBuilder.newBuilder().maximumSize(2000).build();
-  private final Set<Long> noPicture = Sets.newHashSet();
+
+  private final Set<Long> noPicture = new HashSet<>();
 
   private BeeRowSet banners;
 
@@ -93,7 +94,7 @@ class EcPictures {
   }
 
   List<RowInfo> getCachedBannerInfo() {
-    List<RowInfo> result = Lists.newArrayList();
+    List<RowInfo> result = new ArrayList<>();
 
     if (!DataUtils.isEmpty(getBanners())) {
       for (BeeRow row : getBanners().getRows()) {
@@ -128,7 +129,7 @@ class EcPictures {
   }
 
   void setBackground(final Multimap<Long, ItemPicture> articleWidgets) {
-    final Set<Long> articles = Sets.newHashSet();
+    final Set<Long> articles = new HashSet<>();
 
     for (Long article : articleWidgets.keySet()) {
       if (noPicture.contains(article)) {
@@ -142,7 +143,7 @@ class EcPictures {
         setPictures(articleWidgets.get(article), pictures);
       }
     }
-    
+
     if (!articles.isEmpty()) {
       ParameterList params = EcKeeper.createArgs(EcConstants.SVC_GET_PICTURES);
       params.addDataItem(EcConstants.COL_TCD_ARTICLE, DataUtils.buildIdList(articles));
@@ -157,8 +158,8 @@ class EcPictures {
 
             if (arr != null) {
               Long lastArticle = null;
-              List<String> pictures = Lists.newArrayList();
-    
+              List<String> pictures = new ArrayList<>();
+
               for (int i = 0; i < arr.length - 1; i += 2) {
                 Long article = BeeUtils.toLongOrNull(arr[i]);
                 String picture = arr[i + 1];
@@ -170,12 +171,12 @@ class EcPictures {
 
                   } else if (article.equals(lastArticle)) {
                     pictures.add(picture);
-                    
+
                   } else {
                     if (articleWidgets.containsKey(lastArticle)) {
                       setPictures(articleWidgets.get(lastArticle), pictures);
                     }
-                    
+
                     cache.put(lastArticle, ImmutableList.copyOf(pictures));
                     articles.remove(lastArticle);
 
@@ -185,12 +186,12 @@ class EcPictures {
                   }
                 }
               }
-              
+
               if (lastArticle != null && !pictures.isEmpty()) {
                 if (articleWidgets.containsKey(lastArticle)) {
                   setPictures(articleWidgets.get(lastArticle), pictures);
                 }
-                
+
                 cache.put(lastArticle, ImmutableList.copyOf(pictures));
                 articles.remove(lastArticle);
               }

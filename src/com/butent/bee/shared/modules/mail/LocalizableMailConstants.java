@@ -4,11 +4,13 @@ public interface LocalizableMailConstants {
 
   String mail();
 
+  String mailAccount();
+
+  String mailActionMoveToTrash();
+
   String mails();
 
   String mailSignature();
-
-  String mailActionMoveToTrash();
 
   String mailBcc();
 
@@ -19,12 +21,6 @@ public interface LocalizableMailConstants {
   String mailCurrentMessage();
 
   String mailInFolder();
-
-  String mailMessageBodyIsEmpty();
-
-  String mailMessageWasNotSent();
-
-  String mailNewAccountPassword();
 
   String mailFolderContentsWillBeRemovedFromTheMailServer();
 
@@ -44,9 +40,41 @@ public interface LocalizableMailConstants {
 
   String mailFrom();
 
+  String mailMessageBodyIsEmpty();
+
+  String mailMessageWasNotSent();
+
+  String mailNewAccountPassword();
+
+  String mailNoAccountsFound();
+
   String mailQuestionSaveToDraft();
 
   String mailReplayPrefix();
+
+  String mailRule();
+
+  String mailRuleActionCopy();
+
+  String mailRuleActionDelete();
+
+  String mailRuleActionFlag();
+
+  String mailRuleActionForward();
+
+  String mailRuleActionMove();
+
+  String mailRuleActionRead();
+
+  String mailRuleActionReply();
+
+  String mailRuleConditionAll();
+
+  String mailRuleConditionRecipients();
+
+  String mailRuleConditionSender();
+
+  String mailRuleConditionSubject();
 
   String mailMessageIsSavedInDraft();
 

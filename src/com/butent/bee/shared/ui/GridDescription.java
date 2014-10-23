@@ -37,7 +37,7 @@ public class GridDescription implements BeeSerializable, HasExtendedInfo, HasVie
     HEADER_MODE, FOOTER_MODE, DATA_PROVIDER, INITIAL_ROW_SET_SIZE, READONLY,
     NEW_ROW_FORM, NEW_ROW_COLUMNS, NEW_ROW_DEFAULTS, NEW_ROW_CAPTION, NEW_ROW_POPUP,
     NEW_ROW_FORM_IMMEDIATE,
-    EDIT_FORM, EDIT_MODE, EDIT_SAVE, EDIT_MESSAGE, EDIT_SHOW_ID, EDIT_IN_PLACE, EDIT_POPUP,
+    EDIT_FORM, EDIT_MODE, EDIT_SAVE, EDIT_MESSAGE, EDIT_SHOW_ID, EDIT_POPUP,
     EDIT_FORM_IMMEDIATE,
     ENABLED_ACTIONS, DISABLED_ACTIONS, STYLE_SHEETS, HEADER, BODY, FOOTER,
     ROW_STYLES, ROW_MESSAGE, ROW_EDITABLE, ROW_VALIDATION, MIN_COLUMN_WIDTH, MAX_COLUMN_WIDTH,
@@ -46,7 +46,10 @@ public class GridDescription implements BeeSerializable, HasExtendedInfo, HasVie
     PREDEFINED_FILTERS, OPTIONS, PROPERTIES
   }
 
+  public static final String TBL_GRID_SETTINGS = "GridSettings";
   public static final String VIEW_GRID_SETTINGS = "GridSettings";
+
+  public static final String COL_GRID_SETTING_KEY = "Key";
   public static final String COL_GRID_SETTING_USER = "User";
 
   public static final String HEADER_MODE_ALL = "all";
@@ -100,7 +103,6 @@ public class GridDescription implements BeeSerializable, HasExtendedInfo, HasVie
   private Boolean editSave;
   private Calculation editMessage;
   private Boolean editShowId;
-  private String editInPlace;
   private Boolean editPopup;
   private Boolean editFormImmediate;
 
@@ -141,8 +143,8 @@ public class GridDescription implements BeeSerializable, HasExtendedInfo, HasVie
   private final List<FilterDescription> predefinedFilters = new ArrayList<>();
 
   private String options;
-  private final Map<String, String> properties = new HashMap<>();  
-  
+  private final Map<String, String> properties = new HashMap<>();
+
   public GridDescription(String name) {
     this(name, null, null, null);
   }
@@ -162,7 +164,7 @@ public class GridDescription implements BeeSerializable, HasExtendedInfo, HasVie
   public void addColumn(ColumnDescription column) {
     Assert.notNull(column);
     Assert.state(!hasColumn(column.getId()),
-        BeeUtils.joinWords("Dublicate column id:", getName(), column.getId()));
+        BeeUtils.joinWords("Duplicate column id:", getName(), column.getId()));
 
     getColumns().add(column);
   }
@@ -283,9 +285,6 @@ public class GridDescription implements BeeSerializable, HasExtendedInfo, HasVie
         case EDIT_SHOW_ID:
           setEditShowId(BeeUtils.toBooleanOrNull(value));
           break;
-        case EDIT_IN_PLACE:
-          setEditInPlace(value);
-          break;
         case INITIAL_ROW_SET_SIZE:
           setInitialRowSetSize(BeeUtils.toIntOrNull(value));
           break;
@@ -400,7 +399,7 @@ public class GridDescription implements BeeSerializable, HasExtendedInfo, HasVie
         case PREDEFINED_FILTERS:
           setPredefinedFilters(FilterDescription.restoreList(value));
           break;
-          
+
         case OPTIONS:
           setOptions(value);
           break;
@@ -430,7 +429,7 @@ public class GridDescription implements BeeSerializable, HasExtendedInfo, HasVie
   public String getCaption() {
     return caption;
   }
-  
+
   public ColumnDescription getColumn(String id) {
     for (ColumnDescription column : getColumns()) {
       if (column.is(id)) {
@@ -466,10 +465,6 @@ public class GridDescription implements BeeSerializable, HasExtendedInfo, HasVie
 
   public Boolean getEditFormImmediate() {
     return editFormImmediate;
-  }
-
-  public String getEditInPlace() {
-    return editInPlace;
   }
 
   public Calculation getEditMessage() {
@@ -531,7 +526,6 @@ public class GridDescription implements BeeSerializable, HasExtendedInfo, HasVie
         "Edit Mode", getEditMode(),
         "Edit Save", getEditSave(),
         "Edit Show Id", getEditShowId(),
-        "Edit In Place", getEditInPlace(),
         "Edit Popup", getEditPopup(),
         "Edit Form Immediate", getEditFormImmediate(),
         "Enabled Actions", getEnabledActions(),
@@ -897,9 +891,6 @@ public class GridDescription implements BeeSerializable, HasExtendedInfo, HasVie
         case EDIT_SHOW_ID:
           arr[i++] = getEditShowId();
           break;
-        case EDIT_IN_PLACE:
-          arr[i++] = getEditInPlace();
-          break;
         case INITIAL_ROW_SET_SIZE:
           arr[i++] = getInitialRowSetSize();
           break;
@@ -1034,10 +1025,6 @@ public class GridDescription implements BeeSerializable, HasExtendedInfo, HasVie
     this.editFormImmediate = editFormImmediate;
   }
 
-  public void setEditInPlace(String editInPlace) {
-    this.editInPlace = editInPlace;
-  }
-
   public void setEditMessage(Calculation editMessage) {
     this.editMessage = editMessage;
   }
@@ -1121,7 +1108,7 @@ public class GridDescription implements BeeSerializable, HasExtendedInfo, HasVie
   public void setNewRowColumns(String newRowColumns) {
     this.newRowColumns = newRowColumns;
   }
-  
+
   public void setNewRowDefaults(String newRowDefaults) {
     this.newRowDefaults = newRowDefaults;
   }
@@ -1177,7 +1164,7 @@ public class GridDescription implements BeeSerializable, HasExtendedInfo, HasVie
   public void setRowMessage(Calculation rowMessage) {
     this.rowMessage = rowMessage;
   }
-  
+
   public void setRowStyles(Collection<ConditionalStyleDeclaration> rowStyles) {
     this.rowStyles = rowStyles;
   }

@@ -21,16 +21,20 @@ import com.google.gwt.user.client.ui.RequiresResize;
 import com.butent.bee.client.Global;
 import com.butent.bee.client.dom.DomUtils;
 import com.butent.bee.client.dom.Rulers;
+import com.butent.bee.client.event.logical.SummaryChangeEvent;
 import com.butent.bee.client.layout.Focus;
 import com.butent.bee.client.style.Font;
 import com.butent.bee.client.style.StyleUtils;
 import com.butent.bee.client.ui.FormWidget;
-import com.butent.bee.client.view.edit.EditStopEvent.Handler;
 import com.butent.bee.client.view.edit.EditChangeHandler;
 import com.butent.bee.client.view.edit.EditStopEvent;
+import com.butent.bee.client.view.edit.EditStopEvent.Handler;
 import com.butent.bee.client.view.edit.Editor;
 import com.butent.bee.client.widget.Image;
+import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.css.values.FontSize;
+import com.butent.bee.shared.data.value.BooleanValue;
+import com.butent.bee.shared.data.value.Value;
 import com.butent.bee.shared.ui.EditorAction;
 import com.butent.bee.shared.utils.BeeUtils;
 
@@ -78,11 +82,11 @@ public class SliderBar extends Focus implements RequiresResize, Editor,
     }
   }
 
-  private static final String STYLE_SHELL = "bee-SliderBar-shell";
-  private static final String STYLE_LINE = "bee-SliderBar-line";
-  private static final String STYLE_KNOB = "bee-SliderBar-knob";
-  private static final String STYLE_LABEL = "bee-SliderBar-label";
-  private static final String STYLE_TICK = "bee-SliderBar-tick";
+  private static final String STYLE_SHELL = BeeConst.CSS_CLASS_PREFIX + "SliderBar-shell";
+  private static final String STYLE_LINE = BeeConst.CSS_CLASS_PREFIX + "SliderBar-line";
+  private static final String STYLE_KNOB = BeeConst.CSS_CLASS_PREFIX + "SliderBar-knob";
+  private static final String STYLE_LABEL = BeeConst.CSS_CLASS_PREFIX + "SliderBar-label";
+  private static final String STYLE_TICK = BeeConst.CSS_CLASS_PREFIX + "SliderBar-tick";
 
   private static final String STYLE_SLIDING = "sliding";
 
@@ -117,6 +121,8 @@ public class SliderBar extends Focus implements RequiresResize, Editor,
   private String options;
 
   private boolean handlesTabulation;
+
+  private boolean summarize;
 
   public SliderBar(double value, double min, double max, double step) {
     this(value, min, max, step, 0, 0);
@@ -159,6 +165,11 @@ public class SliderBar extends Focus implements RequiresResize, Editor,
   @Override
   public HandlerRegistration addEditStopHandler(Handler handler) {
     return addHandler(handler, EditStopEvent.getType());
+  }
+
+  @Override
+  public HandlerRegistration addSummaryChangeHandler(SummaryChangeEvent.Handler handler) {
+    return addHandler(handler, SummaryChangeEvent.getType());
   }
 
   @Override
@@ -225,6 +236,11 @@ public class SliderBar extends Focus implements RequiresResize, Editor,
     } else {
       return maxValue - minValue;
     }
+  }
+
+  @Override
+  public Value getSummary() {
+    return BooleanValue.of(BeeUtils.isMore(getCurrentValue(), getMinValue()));
   }
 
   @Override
@@ -409,6 +425,11 @@ public class SliderBar extends Focus implements RequiresResize, Editor,
     }
   }
 
+  @Override
+  public void render(String value) {
+    setValue(value);
+  }
+
   public void setCurrentValue(double cv, boolean fireEvents) {
     this.curValue = Math.max(minValue, Math.min(maxValue, cv));
     double remainder = (this.curValue - minValue) % stepSize;
@@ -435,10 +456,10 @@ public class SliderBar extends Focus implements RequiresResize, Editor,
     this.enabled = enabled;
     if (enabled) {
       knobImage.setResource(knobDefault());
-      StyleUtils.removeStyleDependentName(lineElement, StyleUtils.NAME_DISABLED);
+      StyleUtils.removeStyleDependentName(lineElement, StyleUtils.SUFFIX_DISABLED);
     } else {
       knobImage.setResource(knobDisabled());
-      StyleUtils.addStyleDependentName(lineElement, StyleUtils.NAME_DISABLED);
+      StyleUtils.addStyleDependentName(lineElement, StyleUtils.SUFFIX_DISABLED);
     }
     redraw(false);
   }
@@ -488,6 +509,11 @@ public class SliderBar extends Focus implements RequiresResize, Editor,
   }
 
   @Override
+  public void setSummarize(boolean summarize) {
+    this.summarize = summarize;
+  }
+
+  @Override
   public void setValue(String value) {
     if (BeeUtils.toDouble(value) != getCurrentValue()) {
       setCurrentValue(BeeUtils.toDouble(value), false);
@@ -497,6 +523,11 @@ public class SliderBar extends Focus implements RequiresResize, Editor,
   @Override
   public void startEdit(String oldValue, char charCode, EditorAction onEntry,
       Element sourceElement) {
+  }
+
+  @Override
+  public boolean summarize() {
+    return summarize;
   }
 
   @Override
@@ -569,7 +600,7 @@ public class SliderBar extends Focus implements RequiresResize, Editor,
           label.getStyle().setDisplay(Display.NONE);
           label.setClassName(STYLE_LABEL);
           if (!enabled) {
-            StyleUtils.addStyleDependentName(label, StyleUtils.NAME_DISABLED);
+            StyleUtils.addStyleDependentName(label, StyleUtils.SUFFIX_DISABLED);
           }
           getElement().appendChild(label);
           labelElements.add(label);
@@ -626,7 +657,7 @@ public class SliderBar extends Focus implements RequiresResize, Editor,
           tickElements.add(tick);
         }
         if (!enabled) {
-          StyleUtils.addStyleDependentName(tick, StyleUtils.NAME_DISABLED);
+          StyleUtils.addStyleDependentName(tick, StyleUtils.SUFFIX_DISABLED);
         }
 
         tick.getStyle().setVisibility(Visibility.HIDDEN);
@@ -677,7 +708,7 @@ public class SliderBar extends Focus implements RequiresResize, Editor,
   }
 
   private void highlight() {
-    addStyleDependentName(StyleUtils.NAME_FOCUSED);
+    addStyleDependentName(StyleUtils.SUFFIX_FOCUSED);
   }
 
   private boolean isReady() {
@@ -723,6 +754,6 @@ public class SliderBar extends Focus implements RequiresResize, Editor,
   }
 
   private void unhighlight() {
-    removeStyleDependentName(StyleUtils.NAME_FOCUSED);
+    removeStyleDependentName(StyleUtils.SUFFIX_FOCUSED);
   }
 }

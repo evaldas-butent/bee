@@ -2,7 +2,6 @@ package com.butent.bee.client.composite;
 
 import com.google.common.base.Strings;
 import com.google.common.collect.Lists;
-import com.google.common.collect.Sets;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.event.dom.client.HasClickHandlers;
@@ -23,15 +22,17 @@ import com.butent.bee.client.widget.Link;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.HasOptions;
 import com.butent.bee.shared.i18n.Localized;
-import com.butent.bee.shared.io.StoredFile;
+import com.butent.bee.shared.io.FileInfo;
 import com.butent.bee.shared.time.DateTime;
 import com.butent.bee.shared.time.TimeUtils;
 import com.butent.bee.shared.ui.HasCaption;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.NameUtils;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
@@ -45,20 +46,20 @@ public class FileGroup extends HtmlTable implements HasOptions {
       }
 
       @Override
-      Widget createEditor(StoredFile sf) {
+      Widget createEditor(FileInfo sf) {
         return null;
       }
 
       @Override
-      void refresh(Widget widget, StoredFile sf) {
+      void refresh(Widget widget, FileInfo sf) {
         if (widget instanceof Image && !BeeUtils.isEmpty(sf.getIcon())) {
-          String url = StoredFile.getIconUrl(sf.getIcon());
+          String url = FileInfo.getIconUrl(sf.getIcon());
           ((Image) widget).setUrl(url);
         }
       }
 
       @Override
-      boolean update(Widget widget, StoredFile sf) {
+      boolean update(Widget widget, FileInfo sf) {
         return false;
       }
     },
@@ -70,21 +71,21 @@ public class FileGroup extends HtmlTable implements HasOptions {
       }
 
       @Override
-      Widget createEditor(StoredFile sf) {
+      Widget createEditor(FileInfo sf) {
         InputDateTime editor = new InputDateTime();
         editor.setDateTime(sf.getFileDate());
         return editor;
       }
 
       @Override
-      void refresh(Widget widget, StoredFile sf) {
+      void refresh(Widget widget, FileInfo sf) {
         if (widget instanceof DateTimeLabel) {
           ((DateTimeLabel) widget).setValue(sf.getFileDate());
         }
       }
 
       @Override
-      boolean update(Widget widget, StoredFile sf) {
+      boolean update(Widget widget, FileInfo sf) {
         boolean changed = false;
         if (widget instanceof InputDateTime) {
           DateTime dt = ((InputDateTime) widget).getDateTime();
@@ -105,21 +106,21 @@ public class FileGroup extends HtmlTable implements HasOptions {
       }
 
       @Override
-      Widget createEditor(StoredFile sf) {
+      Widget createEditor(FileInfo sf) {
         InputText editor = new InputText();
         editor.setValue(sf.getFileVersion());
         return editor;
       }
 
       @Override
-      void refresh(Widget widget, StoredFile sf) {
+      void refresh(Widget widget, FileInfo sf) {
         if (widget instanceof Label) {
           ((Label) widget).setHtml(BeeUtils.trim(sf.getFileVersion()));
         }
       }
 
       @Override
-      boolean update(Widget widget, StoredFile sf) {
+      boolean update(Widget widget, FileInfo sf) {
         if (widget instanceof InputText) {
           String value = ((InputText) widget).getValue();
           if (!BeeUtils.equalsTrim(sf.getFileVersion(), value)) {
@@ -138,23 +139,23 @@ public class FileGroup extends HtmlTable implements HasOptions {
       }
 
       @Override
-      Widget createEditor(StoredFile sf) {
+      Widget createEditor(FileInfo sf) {
         InputText editor = new InputText();
         editor.setValue(BeeUtils.notEmpty(sf.getCaption(), sf.getName()));
         return editor;
       }
 
       @Override
-      void refresh(Widget widget, StoredFile sf) {
+      void refresh(Widget widget, FileInfo sf) {
         if (widget instanceof Link) {
           ((Link) widget).setHref(FileUtils.getUrl(BeeUtils.notEmpty(sf.getCaption(),
-              sf.getName()), sf.getFileId()));
+              sf.getName()), sf.getId()));
           ((Link) widget).setHtml(BeeUtils.notEmpty(sf.getCaption(), sf.getName()));
         }
       }
 
       @Override
-      boolean update(Widget widget, StoredFile sf) {
+      boolean update(Widget widget, FileInfo sf) {
         boolean changed = false;
         if (widget instanceof InputText) {
           String value = BeeUtils.trim(((InputText) widget).getValue());
@@ -178,21 +179,21 @@ public class FileGroup extends HtmlTable implements HasOptions {
       }
 
       @Override
-      Widget createEditor(StoredFile sf) {
+      Widget createEditor(FileInfo sf) {
         InputArea editor = new InputArea();
         editor.setValue(BeeUtils.trim(sf.getDescription()));
         return editor;
       }
 
       @Override
-      void refresh(Widget widget, StoredFile sf) {
+      void refresh(Widget widget, FileInfo sf) {
         if (widget instanceof Label) {
           ((Label) widget).setHtml(BeeUtils.trim(sf.getDescription()));
         }
       }
 
       @Override
-      boolean update(Widget widget, StoredFile sf) {
+      boolean update(Widget widget, FileInfo sf) {
         if (widget instanceof InputArea) {
           String value = ((InputArea) widget).getValue();
           if (!BeeUtils.equalsTrim(sf.getDescription(), value)) {
@@ -211,19 +212,19 @@ public class FileGroup extends HtmlTable implements HasOptions {
       }
 
       @Override
-      Widget createEditor(StoredFile sf) {
+      Widget createEditor(FileInfo sf) {
         return null;
       }
 
       @Override
-      void refresh(Widget widget, StoredFile sf) {
+      void refresh(Widget widget, FileInfo sf) {
         if (widget instanceof Label) {
           ((Label) widget).setHtml(FileUtils.sizeToText(sf.getSize()));
         }
       }
 
       @Override
-      boolean update(Widget widget, StoredFile sf) {
+      boolean update(Widget widget, FileInfo sf) {
         return false;
       }
     },
@@ -235,21 +236,21 @@ public class FileGroup extends HtmlTable implements HasOptions {
       }
 
       @Override
-      Widget createEditor(StoredFile sf) {
+      Widget createEditor(FileInfo sf) {
         InputText editor = new InputText();
         editor.setValue(sf.getType());
         return editor;
       }
 
       @Override
-      void refresh(Widget widget, StoredFile sf) {
+      void refresh(Widget widget, FileInfo sf) {
         if (widget instanceof Label) {
           ((Label) widget).setHtml(BeeUtils.trim(sf.getType()));
         }
       }
 
       @Override
-      boolean update(Widget widget, StoredFile sf) {
+      boolean update(Widget widget, FileInfo sf) {
         if (widget instanceof InputText) {
           String value = ((InputText) widget).getValue();
           if (!BeeUtils.equalsTrim(sf.getType(), value)) {
@@ -270,16 +271,16 @@ public class FileGroup extends HtmlTable implements HasOptions {
       }
 
       @Override
-      Widget createEditor(StoredFile sf) {
+      Widget createEditor(FileInfo sf) {
         return null;
       }
 
       @Override
-      void refresh(Widget widget, StoredFile sf) {
+      void refresh(Widget widget, FileInfo sf) {
       }
 
       @Override
-      boolean update(Widget widget, StoredFile sf) {
+      boolean update(Widget widget, FileInfo sf) {
         return false;
       }
     },
@@ -293,16 +294,16 @@ public class FileGroup extends HtmlTable implements HasOptions {
       }
 
       @Override
-      Widget createEditor(StoredFile sf) {
+      Widget createEditor(FileInfo sf) {
         return null;
       }
 
       @Override
-      void refresh(Widget widget, StoredFile sf) {
+      void refresh(Widget widget, FileInfo sf) {
       }
 
       @Override
-      boolean update(Widget widget, StoredFile sf) {
+      boolean update(Widget widget, FileInfo sf) {
         return false;
       }
     };
@@ -327,11 +328,11 @@ public class FileGroup extends HtmlTable implements HasOptions {
 
     abstract Widget createDisplay();
 
-    abstract Widget createEditor(StoredFile sf);
+    abstract Widget createEditor(FileInfo sf);
 
-    abstract void refresh(Widget widget, StoredFile sf);
+    abstract void refresh(Widget widget, FileInfo sf);
 
-    abstract boolean update(Widget widget, StoredFile sf);
+    abstract boolean update(Widget widget, FileInfo sf);
 
     private String getLabel() {
       return label;
@@ -346,7 +347,7 @@ public class FileGroup extends HtmlTable implements HasOptions {
     }
   }
 
-  private static final String STYLE_PREFIX = "bee-FileGroup-";
+  private static final String STYLE_PREFIX = BeeConst.CSS_CLASS_PREFIX + "FileGroup-";
 
   private static final String STYLE_CELL = "Cell";
 
@@ -361,14 +362,14 @@ public class FileGroup extends HtmlTable implements HasOptions {
 
   private static final List<Column> DEFAULT_VISIBLE_COLUMNS =
       Lists.newArrayList(Column.ICON, Column.NAME, Column.SIZE);
-  private static final List<Column> DEFAULT_EDITABLE_COLUMNS = Lists.newArrayList();
+  private static final List<Column> DEFAULT_EDITABLE_COLUMNS = new ArrayList<>();
 
   public static Widget getDefaultFace() {
     return new Button(Localized.getConstants().chooseFiles());
   }
 
   public static List<Column> parseColumns(String input) {
-    List<Column> columns = Lists.newArrayList();
+    List<Column> columns = new ArrayList<>();
     if (BeeUtils.isEmpty(input) || BeeUtils.same(input, BeeConst.NONE)) {
       return columns;
     }
@@ -391,12 +392,12 @@ public class FileGroup extends HtmlTable implements HasOptions {
     return columns;
   }
 
-  private final List<StoredFile> files = Lists.newArrayList();
+  private final List<FileInfo> files = new ArrayList<>();
 
   private String options;
 
-  private final List<Column> columns = Lists.newArrayList();
-  private final List<Column> editable = Lists.newArrayList();
+  private final List<Column> columns = new ArrayList<>();
+  private final List<Column> editable = new ArrayList<>();
 
   public FileGroup() {
     this(DEFAULT_VISIBLE_COLUMNS);
@@ -412,7 +413,7 @@ public class FileGroup extends HtmlTable implements HasOptions {
     initColumns(visibleColumns, editableColumns);
   }
 
-  public void addFile(final StoredFile sf) {
+  public void addFile(final FileInfo sf) {
     if (sf == null || contains(sf)) {
       return;
     }
@@ -434,7 +435,7 @@ public class FileGroup extends HtmlTable implements HasOptions {
           ((HasClickHandlers) widget).addClickHandler(new ClickHandler() {
             @Override
             public void onClick(ClickEvent event) {
-              int index = getIndex(sf.getFileId());
+              int index = getIndex(sf.getId());
               if (index >= 0 && !editable.isEmpty()) {
                 edit(index);
               }
@@ -446,7 +447,7 @@ public class FileGroup extends HtmlTable implements HasOptions {
           ((HasClickHandlers) widget).addClickHandler(new ClickHandler() {
             @Override
             public void onClick(ClickEvent event) {
-              int index = getIndex(sf.getFileId());
+              int index = getIndex(sf.getId());
               if (index >= 0) {
                 getFiles().remove(index);
                 removeRow(index);
@@ -466,9 +467,9 @@ public class FileGroup extends HtmlTable implements HasOptions {
     }
   }
 
-  public void addFiles(List<StoredFile> storedFiles) {
+  public void addFiles(List<FileInfo> storedFiles) {
     if (storedFiles != null) {
-      for (StoredFile sf : storedFiles) {
+      for (FileInfo sf : storedFiles) {
         addFile(sf);
       }
     }
@@ -480,7 +481,7 @@ public class FileGroup extends HtmlTable implements HasOptions {
     super.clear();
   }
 
-  public List<StoredFile> getFiles() {
+  public List<FileInfo> getFiles() {
     return files;
   }
 
@@ -503,7 +504,7 @@ public class FileGroup extends HtmlTable implements HasOptions {
     if (!isEmpty()) {
       clear();
     }
-    addFiles(StoredFile.restoreCollection(serialized));
+    addFiles(FileInfo.restoreCollection(serialized));
   }
 
   @Override
@@ -511,14 +512,14 @@ public class FileGroup extends HtmlTable implements HasOptions {
     this.options = options;
   }
 
-  private boolean contains(StoredFile sf) {
-    return getIndex(sf.getFileId()) >= 0;
+  private boolean contains(FileInfo sf) {
+    return getIndex(sf.getId()) >= 0;
   }
 
   private void edit(final int index) {
     getRowFormatter().addStyleName(index, STYLE_PREFIX + STYLE_EDITING);
 
-    final StoredFile sf = getFiles().get(index);
+    final FileInfo sf = getFiles().get(index);
 
     String pfx = STYLE_PREFIX + STYLE_EDITOR;
 
@@ -557,7 +558,7 @@ public class FileGroup extends HtmlTable implements HasOptions {
       public void onSuccess() {
         getRowFormatter().removeStyleName(index, STYLE_PREFIX + STYLE_EDITING);
 
-        Set<Column> changedColumns = Sets.newHashSet();
+        Set<Column> changedColumns = new HashSet<>();
         for (int i = 0; i < editable.size(); i++) {
           Column column = editable.get(i);
           if (column.update(panel.getWidget(i, colInput), sf)) {
@@ -574,7 +575,7 @@ public class FileGroup extends HtmlTable implements HasOptions {
 
   private int getIndex(long fileId) {
     for (int i = 0; i < getFiles().size(); i++) {
-      if (getFiles().get(i).getFileId() == fileId) {
+      if (getFiles().get(i).getId() == fileId) {
         return i;
       }
     }
@@ -590,7 +591,7 @@ public class FileGroup extends HtmlTable implements HasOptions {
       }
     }
 
-    List<Column> vc = Lists.newArrayList();
+    List<Column> vc = new ArrayList<>();
     if (BeeUtils.isEmpty(visibleColumns)) {
       vc.addAll(DEFAULT_VISIBLE_COLUMNS);
     } else {
@@ -624,7 +625,7 @@ public class FileGroup extends HtmlTable implements HasOptions {
   }
 
   private void refresh(int row, Collection<Column> changedColumns) {
-    StoredFile sf = getFiles().get(row);
+    FileInfo sf = getFiles().get(row);
 
     for (int col = 0; col < columns.size(); col++) {
       Column column = columns.get(col);

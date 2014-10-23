@@ -4,6 +4,7 @@ import com.google.web.bindery.event.shared.HandlerRegistration;
 
 import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.Global;
+import com.butent.bee.client.event.EventUtils;
 import com.butent.bee.client.event.logical.DataRequestEvent;
 import com.butent.bee.client.event.logical.SortEvent;
 import com.butent.bee.client.view.search.FilterConsumer;
@@ -43,7 +44,7 @@ import java.util.Set;
 public abstract class Provider implements SortEvent.Handler, HandlesAllDataEvents, HasViewName,
     DataRequestEvent.Handler, FilterConsumer, HandlesActions {
 
-  private final HasDataTable display;
+  private HasDataTable display;
   private final HandlesActions actionHandler;
   private final NotificationListener notificationListener;
 
@@ -53,14 +54,15 @@ public abstract class Provider implements SortEvent.Handler, HandlesAllDataEvent
   private final String idColumnName;
   private final String versionColumnName;
 
-  private final List<HandlerRegistration> handlerRegistry = new ArrayList<>();
+  private final List<HandlerRegistration> displayRegistry = new ArrayList<>();
+  private final List<HandlerRegistration> dataRegistry = new ArrayList<>();
 
   private final Filter immutableFilter;
   private final Map<String, Filter> parentFilters = new HashMap<>();
   private Filter userFilter;
 
   private Order order;
-  
+
   private final Set<RightsState> rightsStates = new HashSet<>();
 
   protected Provider(HasDataTable display, HandlesActions actionHandler,
@@ -79,7 +81,7 @@ public abstract class Provider implements SortEvent.Handler, HandlesAllDataEvent
     this.versionColumnName = versionColumnName;
 
     this.immutableFilter = immutableFilter;
-    
+
     if (parentFilters != null) {
       for (Map.Entry<String, Filter> entry : parentFilters.entrySet()) {
         String key = entry.getKey();
@@ -89,13 +91,12 @@ public abstract class Provider implements SortEvent.Handler, HandlesAllDataEvent
         }
       }
     }
-    
+
     this.userFilter = userFilter;
 
-    this.handlerRegistry.add(display.addDataRequestHandler(this));
+    this.dataRegistry.addAll(BeeKeeper.getBus().registerDataHandler(this, false));
 
-    this.handlerRegistry.add(display.addSortHandler(this));
-    this.handlerRegistry.addAll(BeeKeeper.getBus().registerDataHandler(this, false));
+    bindDisplay(display);
   }
 
   public void clear() {
@@ -128,7 +129,7 @@ public abstract class Provider implements SortEvent.Handler, HandlesAllDataEvent
   public Order getOrder() {
     return order;
   }
-  
+
   public Filter getQueryFilter(Filter filter) {
     List<Filter> lst = new ArrayList<>();
 
@@ -160,7 +161,7 @@ public abstract class Provider implements SortEvent.Handler, HandlesAllDataEvent
   public String getVersionColumnName() {
     return versionColumnName;
   }
-  
+
   @Override
   public String getViewName() {
     return viewName;
@@ -209,14 +210,16 @@ public abstract class Provider implements SortEvent.Handler, HandlesAllDataEvent
   }
 
   public void onUnload() {
-    for (HandlerRegistration entry : handlerRegistry) {
-      if (entry != null) {
-        entry.removeHandler();
-      }
-    }
+    EventUtils.clearRegistry(displayRegistry);
+    EventUtils.clearRegistry(dataRegistry);
   }
 
   public abstract void refresh(boolean preserveActiveRow);
+
+  public void setDisplay(HasDataTable display) {
+    this.display = display;
+    bindDisplay(display);
+  }
 
   public void setOrder(Order order) {
     this.order = order;
@@ -244,7 +247,7 @@ public abstract class Provider implements SortEvent.Handler, HandlesAllDataEvent
       rightsStates.add(rightsState);
     }
   }
-  
+
   protected HasDataTable getDisplay() {
     return display;
   }
@@ -256,7 +259,7 @@ public abstract class Provider implements SortEvent.Handler, HandlesAllDataEvent
   protected int getPageStart() {
     return getDisplay().getPageStart();
   }
-  
+
   protected Collection<Property> getQueryOptions() {
     Collection<Property> result = new HashSet<>();
     if (!rightsStates.isEmpty()) {
@@ -283,6 +286,22 @@ public abstract class Provider implements SortEvent.Handler, HandlesAllDataEvent
       } else {
         notificationListener.notifyWarning(Localized.getConstants().nothingFound());
       }
+    }
+  }
+
+  private void bindDisplay(HasDataTable d) {
+    if (!displayRegistry.isEmpty()) {
+      EventUtils.clearRegistry(displayRegistry);
+    }
+
+    HandlerRegistration hr = d.addDataRequestHandler(this);
+    if (hr != null) {
+      displayRegistry.add(hr);
+    }
+
+    hr = d.addSortHandler(this);
+    if (hr != null) {
+      displayRegistry.add(hr);
     }
   }
 

@@ -6,13 +6,14 @@ import com.google.gwt.user.client.ui.ComplexPanel;
 import com.google.gwt.user.client.ui.Widget;
 
 import com.butent.bee.client.style.StyleUtils;
+import com.butent.bee.shared.BeeConst;
 
 import elemental.js.dom.JsElement;
 
 public final class BodyPanel extends ComplexPanel {
-  
+
   private static BodyPanel singleton;
-  
+
   public static void conceal(Element el) {
     get().concealment.appendChild(el);
   }
@@ -27,22 +28,22 @@ public final class BodyPanel extends ComplexPanel {
     }
     return singleton;
   }
-  
+
   private final Element concealment;
-  
+
   private BodyPanel() {
     super();
     setElement(Document.get().getBody());
-    addStyleName("bee-Body");
-    
+    addStyleName(BeeConst.CSS_CLASS_PREFIX + "Body");
+
     this.concealment = Document.get().createDivElement();
     StyleUtils.makeAbsolute(concealment);
     StyleUtils.setTop(concealment, -2000);
     StyleUtils.fullWidth(concealment);
-    concealment.addClassName("bee-Concealment");
-    
+    concealment.addClassName(BeeConst.CSS_CLASS_PREFIX + "Concealment");
+
     getElement().appendChild(concealment);
-    
+
     onAttach();
   }
 

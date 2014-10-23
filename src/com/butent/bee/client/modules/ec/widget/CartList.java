@@ -1,7 +1,6 @@
 package com.butent.bee.client.modules.ec.widget;
 
 import com.google.common.collect.EnumHashBiMap;
-import com.google.common.collect.Maps;
 import com.google.gwt.core.client.Scheduler;
 import com.google.gwt.dom.client.Element;
 import com.google.gwt.event.dom.client.ClickEvent;
@@ -56,6 +55,7 @@ public class CartList extends HtmlTable implements ValueChangeHandler<Boolean> {
   private static String renderInfo(Cart cart) {
     return BeeUtils.parenthesize(cart.totalQuantity());
   }
+
   private static String renderTitle(Cart cart) {
     if (cart == null || cart.isEmpty()) {
       return BeeConst.STRING_EMPTY;
@@ -81,7 +81,7 @@ public class CartList extends HtmlTable implements ValueChangeHandler<Boolean> {
     }
   }
 
-  private final EnumMap<CartType, Cart> carts = Maps.newEnumMap(CartType.class);
+  private final EnumMap<CartType, Cart> carts = new EnumMap<>(CartType.class);
 
   private final EnumHashBiMap<CartType, Integer> typesToRows = EnumHashBiMap.create(CartType.class);
 
@@ -244,7 +244,7 @@ public class CartList extends HtmlTable implements ValueChangeHandler<Boolean> {
 
     Collection<CartAccumulator> accumulators =
         UiHelper.getChildren(BodyPanel.get(), CartAccumulator.class);
-    
+
     if (!BeeUtils.isEmpty(accumulators)) {
       for (CartAccumulator accumulator : accumulators) {
         long id = accumulator.getArticleId();

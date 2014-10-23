@@ -15,13 +15,15 @@ import java.util.Map;
 public class FooterDescription implements BeeSerializable, HasInfo, HasOptions {
 
   private enum Serial {
-    AGGREGATE, EXPRESSION, TYPE, TEXT, HTML, FORMAT, HOR_ALIGN, SCALE, OPTIONS
+    AGGREGATE, EXPRESSION, EVALUATOR, TYPE, TEXT, HTML,
+    FORMAT, HOR_ALIGN, WHITE_SPACE, SCALE, OPTIONS
   }
 
   private static final String ATTR_AGGREGATE = "aggregate";
   private static final String ATTR_EXPRESSION = "expression";
+  private static final String ATTR_EVALUATOR = "evaluator";
   private static final String ATTR_TYPE = "type";
-  
+
   public static FooterDescription restore(String s) {
     if (BeeUtils.isEmpty(s)) {
       return null;
@@ -33,6 +35,7 @@ public class FooterDescription implements BeeSerializable, HasInfo, HasOptions {
 
   private String aggregate;
   private String expression;
+  private String evaluator;
   private String type;
 
   private String text;
@@ -40,6 +43,7 @@ public class FooterDescription implements BeeSerializable, HasInfo, HasOptions {
 
   private String format;
   private String horAlign;
+  private String whiteSpace;
 
   private Integer scale;
 
@@ -51,11 +55,11 @@ public class FooterDescription implements BeeSerializable, HasInfo, HasOptions {
 
   private FooterDescription() {
   }
-  
+
   public FooterDescription copy() {
     return restore(serialize());
   }
-  
+
   @Override
   public void deserialize(String s) {
     String[] arr = Codec.beeDeserializeCollection(s);
@@ -76,6 +80,9 @@ public class FooterDescription implements BeeSerializable, HasInfo, HasOptions {
         case EXPRESSION:
           setExpression(value);
           break;
+        case EVALUATOR:
+          setEvaluator(value);
+          break;
         case TYPE:
           setType(value);
           break;
@@ -91,6 +98,9 @@ public class FooterDescription implements BeeSerializable, HasInfo, HasOptions {
         case HOR_ALIGN:
           setHorAlign(value);
           break;
+        case WHITE_SPACE:
+          setWhiteSpace(value);
+          break;
         case SCALE:
           setScale(BeeUtils.toIntOrNull(value));
           break;
@@ -103,6 +113,10 @@ public class FooterDescription implements BeeSerializable, HasInfo, HasOptions {
 
   public String getAggregate() {
     return aggregate;
+  }
+
+  public String getEvaluator() {
+    return evaluator;
   }
 
   public String getExpression() {
@@ -126,14 +140,16 @@ public class FooterDescription implements BeeSerializable, HasInfo, HasOptions {
     List<Property> info = PropertyUtils.createProperties(
         "Aggregate", getAggregate(),
         "Expression", getExpression(),
+        "Evaluator", getEvaluator(),
         "Type", getType(),
         "Text", getText(),
         "Html", getHtml(),
         "Format", getFormat(),
         "Horizontal Alignment", getHorAlign(),
+        "White Space", getWhiteSpace(),
         "Scale", getScale(),
         "Options", getOptions());
-    
+
     PropertyUtils.addWhenEmpty(info, getClass());
     return info;
   }
@@ -155,12 +171,16 @@ public class FooterDescription implements BeeSerializable, HasInfo, HasOptions {
     return type;
   }
 
+  public String getWhiteSpace() {
+    return whiteSpace;
+  }
+
   public void replaceColumn(String oldId, String newId) {
     if (BeeUtils.containsSame(getExpression(), oldId)) {
       setExpression(Calculation.renameColumn(getExpression(), oldId, newId));
     }
   }
-  
+
   @Override
   public String serialize() {
     Serial[] members = Serial.values();
@@ -174,6 +194,9 @@ public class FooterDescription implements BeeSerializable, HasInfo, HasOptions {
           break;
         case EXPRESSION:
           arr[i++] = getExpression();
+          break;
+        case EVALUATOR:
+          arr[i++] = getEvaluator();
           break;
         case TYPE:
           arr[i++] = getType();
@@ -189,6 +212,9 @@ public class FooterDescription implements BeeSerializable, HasInfo, HasOptions {
           break;
         case HOR_ALIGN:
           arr[i++] = getHorAlign();
+          break;
+        case WHITE_SPACE:
+          arr[i++] = getWhiteSpace();
           break;
         case SCALE:
           arr[i++] = getScale();
@@ -221,6 +247,8 @@ public class FooterDescription implements BeeSerializable, HasInfo, HasOptions {
         setAggregate(value);
       } else if (BeeUtils.same(key, ATTR_EXPRESSION)) {
         setExpression(value);
+      } else if (BeeUtils.same(key, ATTR_EVALUATOR)) {
+        setEvaluator(value);
       } else if (BeeUtils.same(key, ATTR_TYPE)) {
         setType(value);
 
@@ -228,7 +256,7 @@ public class FooterDescription implements BeeSerializable, HasInfo, HasOptions {
         setText(value);
       } else if (BeeUtils.same(key, UiConstants.ATTR_HTML)) {
         setHtml(value);
-      
+
       } else if (BeeUtils.same(key, UiConstants.ATTR_FORMAT)) {
         setFormat(value);
       } else if (BeeUtils.same(key, UiConstants.ATTR_HORIZONTAL_ALIGNMENT)) {
@@ -239,6 +267,10 @@ public class FooterDescription implements BeeSerializable, HasInfo, HasOptions {
         setOptions(value);
       }
     }
+  }
+
+  public void setEvaluator(String evaluator) {
+    this.evaluator = evaluator;
   }
 
   public void setExpression(String expression) {
@@ -272,5 +304,9 @@ public class FooterDescription implements BeeSerializable, HasInfo, HasOptions {
 
   public void setType(String type) {
     this.type = type;
+  }
+
+  public void setWhiteSpace(String whiteSpace) {
+    this.whiteSpace = whiteSpace;
   }
 }

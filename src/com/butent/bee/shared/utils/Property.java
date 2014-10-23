@@ -1,10 +1,10 @@
 package com.butent.bee.shared.utils;
 
-import com.google.common.base.Objects;
-
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.BeeSerializable;
+
+import java.util.Objects;
 
 /**
  * Used for creating Properties.
@@ -28,7 +28,6 @@ public class Property implements Comparable<Property>, BeeSerializable {
 
   /**
    * Creates a Property with specified {@code name} and {@code value} values.
-   * 
    * @param name the {@code name} to set for the Property
    * @param value the {@code value} to set for the Property
    */
@@ -46,7 +45,6 @@ public class Property implements Comparable<Property>, BeeSerializable {
 
   /**
    * Compares {@code oth} with the current Property. Only names are compared.
-   * 
    * @return 0 if values are equal, -1 if {@code oth} name value is greater, 1 if the current
    *         Property name value is greater than {@code oth} name value.
    */
@@ -74,8 +72,8 @@ public class Property implements Comparable<Property>, BeeSerializable {
     } else if (this == obj) {
       return true;
     } else {
-      return Objects.equal(getName(), ((Property) obj).getName())
-          && Objects.equal(getValue(), ((Property) obj).getValue());
+      return Objects.equals(getName(), ((Property) obj).getName())
+          && Objects.equals(getValue(), ((Property) obj).getValue());
     }
   }
 
@@ -95,7 +93,7 @@ public class Property implements Comparable<Property>, BeeSerializable {
 
   @Override
   public int hashCode() {
-    return Objects.hashCode(getName(), getValue());
+    return Objects.hash(getName(), getValue());
   }
 
   @Override
@@ -105,7 +103,6 @@ public class Property implements Comparable<Property>, BeeSerializable {
 
   /**
    * Sets the name.
-   * 
    * @param name the value to set name to.
    */
   public void setName(String name) {
@@ -114,7 +111,6 @@ public class Property implements Comparable<Property>, BeeSerializable {
 
   /**
    * Sets the value.
-   * 
    * @param value the value to set.
    */
   public void setValue(String value) {

@@ -1,7 +1,6 @@
 package com.butent.bee.client.modules.calendar;
 
 import com.google.common.collect.Lists;
-import com.google.common.collect.Maps;
 import com.google.gwt.user.client.ui.Widget;
 
 import static com.butent.bee.shared.modules.calendar.CalendarConstants.*;
@@ -24,6 +23,7 @@ import com.butent.bee.client.ui.UiOption;
 import com.butent.bee.client.utils.Command;
 import com.butent.bee.client.view.edit.Editor;
 import com.butent.bee.client.view.grid.GridView;
+import com.butent.bee.client.view.grid.interceptor.GridInterceptor;
 import com.butent.bee.client.widget.Button;
 import com.butent.bee.client.widget.Label;
 import com.butent.bee.client.widget.InputDate;
@@ -31,6 +31,7 @@ import com.butent.bee.client.widget.InputDateTime;
 import com.butent.bee.client.widget.InputSpinner;
 import com.butent.bee.client.widget.InputText;
 import com.butent.bee.shared.Assert;
+import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.communication.ResponseObject;
 import com.butent.bee.shared.css.values.TextAlign;
 import com.butent.bee.shared.data.BeeRow;
@@ -52,11 +53,12 @@ import com.butent.bee.shared.utils.Codec;
 
 import java.util.Collection;
 import java.util.EnumSet;
+import java.util.HashMap;
 import java.util.Map;
 
 class ReportManager {
 
-  private static final String STYLE_PREFIX = "bee-cal-ReportOptions-";
+  private static final String STYLE_PREFIX = BeeConst.CSS_CLASS_PREFIX + "cal-ReportOptions-";
 
   private static void addStyle(Widget widget, String styleName) {
     widget.addStyleName(STYLE_PREFIX + styleName);
@@ -71,7 +73,7 @@ class ReportManager {
   }
 
   private static void doReport(final Report report, final BeeRow row) {
-    ParameterList params = CalendarKeeper.createRequestParameters(SVC_DO_REPORT);
+    ParameterList params = CalendarKeeper.createArgs(SVC_DO_REPORT);
     params.addQueryItem(PARAM_REPORT, report.ordinal());
 
     BeeRowSet rowSet = new BeeRowSet(VIEW_REPORT_OPTIONS, Data.getColumns(VIEW_REPORT_OPTIONS));
@@ -149,18 +151,22 @@ class ReportManager {
     }
 
     Collection<UiOption> uiOptions = EnumSet.of(UiOption.REPORT);
-    
+
+    GridInterceptor gridInterceptor = GridFactory.getGridInterceptor(gridName);
+
     GridView gridView = GridFactory.createGridView(gridDescription,
-        GridFactory.getSupplierKey(gridName), rowSet.getColumns());
+        GridFactory.getSupplierKey(gridName, gridInterceptor), rowSet.getColumns(), null,
+        gridInterceptor, null);
+
     gridView.initData(rowSet.getNumberOfRows(), rowSet);
-    
+
     GridPresenter presenter = new GridPresenter(gridDescription, gridView,
         rowSet.getNumberOfRows(), rowSet, ProviderType.LOCAL, CachingPolicy.NONE, uiOptions);
 
-    BeeKeeper.getScreen().updateActivePanel(presenter.getWidget());
+    BeeKeeper.getScreen().show(presenter.getMainView());
   }
 
-  private final Map<Report, BeeRow> reportOptions = Maps.newHashMap();
+  private final Map<Report, BeeRow> reportOptions = new HashMap<>();
 
   ReportManager() {
     super();
@@ -175,7 +181,7 @@ class ReportManager {
       return;
     }
 
-    ParameterList params = CalendarKeeper.createRequestParameters(SVC_GET_REPORT_OPTIONS);
+    ParameterList params = CalendarKeeper.createArgs(SVC_GET_REPORT_OPTIONS);
     params.addQueryItem(PARAM_REPORT, report.ordinal());
 
     BeeKeeper.getRpc().makeGetRequest(params, new ResponseCallback() {
@@ -216,29 +222,29 @@ class ReportManager {
     }
     addStyle(caption, "caption");
     AutocompleteProvider.enableAutocomplete(caption, viewName, COL_CAPTION);
-    
+
     container.add(caption);
 
     Label ldLabel = new Label(Localized.getConstants().calReportLowerDate());
     addStyle(ldLabel, "ldLabel");
-    
+
     container.add(ldLabel);
 
     final Editor lowerDate = createDateEditor(Data.getColumnType(viewName, COL_LOWER_DATE));
     lowerDate.setValue(Data.getString(viewName, options, COL_LOWER_DATE));
     addStyle(lowerDate.asWidget(), "lowerDate");
-    
+
     container.add(lowerDate);
 
     Label udLabel = new Label(Localized.getConstants().calReportUpperDate());
     addStyle(udLabel, "udLabel");
-    
+
     container.add(udLabel);
 
     final Editor upperDate = createDateEditor(Data.getColumnType(viewName, COL_UPPER_DATE));
     upperDate.setValue(Data.getString(viewName, options, COL_UPPER_DATE));
     addStyle(upperDate.asWidget(), "upperDate");
-    
+
     container.add(upperDate);
 
     final InputSpinner lowerHour;
@@ -247,18 +253,18 @@ class ReportManager {
     if (EnumSet.of(Report.BUSY_HOURS, Report.CANCEL_HOURS).contains(report)) {
       Label lhLabel = new Label(Localized.getConstants().calReportLowerHour());
       addStyle(lhLabel, "lhLabel");
-    
+
       container.add(lhLabel);
 
       lowerHour = new InputSpinner(0, TimeUtils.HOURS_PER_DAY - 1);
       lowerHour.setValue(BeeUtils.unbox(Data.getInteger(viewName, options, COL_LOWER_HOUR)));
       addStyle(lowerHour, "lowerHour");
-      
+
       container.add(lowerHour);
 
       Label uhLabel = new Label(Localized.getConstants().calReportUpperHour());
       addStyle(uhLabel, "uhLabel");
-      
+
       container.add(uhLabel);
 
       upperHour = new InputSpinner(0, TimeUtils.HOURS_PER_DAY);
@@ -266,7 +272,7 @@ class ReportManager {
           COL_UPPER_HOUR)), TimeUtils.HOURS_PER_DAY);
       upperHour.setValue(value);
       addStyle(upperHour, "upperHour");
-      
+
       container.add(upperHour);
 
     } else {
@@ -276,7 +282,7 @@ class ReportManager {
 
     Label atpLabel = new Label(Localized.getConstants().calAttendeeTypes());
     addStyle(atpLabel, "atpLabel");
-    
+
     container.add(atpLabel);
 
     Relation atpRel = Relation.create(VIEW_ATTENDEE_TYPES,
@@ -286,14 +292,14 @@ class ReportManager {
         RendererFactory.createRenderer(VIEW_ATTENDEE_TYPES,
             Lists.newArrayList(COL_APPOINTMENT_TYPE_NAME)));
 
-    atpSelector.render(Data.getString(viewName, options, COL_ATTENDEE_TYPES));
+    atpSelector.setIds(Data.getString(viewName, options, COL_ATTENDEE_TYPES));
     addStyle(atpSelector, "attendeeTypes");
-    
+
     container.add(atpSelector);
 
     Label attLabel = new Label(Localized.getConstants().calAttendees());
     addStyle(attLabel, "attLabel");
-    
+
     container.add(attLabel);
 
     Relation attRel = Relation.create(VIEW_ATTENDEES,
@@ -303,9 +309,9 @@ class ReportManager {
     final MultiSelector attSelector = MultiSelector.autonomous(attRel,
         RendererFactory.createRenderer(VIEW_ATTENDEES, Lists.newArrayList(COL_ATTENDEE_NAME)));
 
-    attSelector.render(Data.getString(viewName, options, COL_ATTENDEES));
+    attSelector.setIds(Data.getString(viewName, options, COL_ATTENDEES));
     addStyle(attSelector, "attendees");
-    
+
     container.add(attSelector);
 
     final Button tableCommand = new Button(Localized.getConstants().calTable(), new Command() {
@@ -353,7 +359,7 @@ class ReportManager {
       }
     });
     addStyle(tableCommand, "tableCommand");
-    
+
     container.add(tableCommand);
 
     DialogBox dialog = DialogBox.create(report.getCaption(), DialogConstants.STYLE_REPORT_OPTIONS);

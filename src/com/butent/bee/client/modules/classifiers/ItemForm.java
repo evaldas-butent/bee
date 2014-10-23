@@ -10,24 +10,46 @@ import com.butent.bee.client.view.form.interceptor.FormInterceptor;
 import com.butent.bee.client.view.grid.interceptor.GridInterceptor;
 import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.IsRow;
+import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.modules.classifiers.ClassifierConstants;
-import com.butent.bee.shared.utils.BeeUtils;
+
+import java.util.ArrayList;
+import java.util.List;
 
 class ItemForm extends AbstractFormInterceptor {
 
   @Override
   public void afterRefresh(FormView form, IsRow row) {
+    int index = form.getDataIndex(ClassifierConstants.COL_ITEM_IS_SERVICE);
+    boolean isService = (row == null) ? false : !row.isNull(index);
+
+    String caption;
+
     if (DataUtils.isNewRow(row)) {
-      ItemsGrid gridHandler = getItemGridHandler(form);
+      Widget categoryWidget = form.getWidgetByName("Categories");
 
-      if (gridHandler != null && gridHandler.getSelectedCategory() != null) {
-        Widget categoryWidget = form.getWidgetByName("Categories");
+      if (categoryWidget instanceof MultiSelector) {
+        List<Long> categories = new ArrayList<>();
+        ItemsGrid gridHandler = getItemGridHandler(form);
 
-        if (categoryWidget instanceof MultiSelector) {
-          long categoryId = gridHandler.getSelectedCategory().getId();
-          ((MultiSelector) categoryWidget).render(BeeUtils.toString(categoryId));
+        if (gridHandler != null && gridHandler.getSelectedCategory() != null) {
+          categories.add(gridHandler.getSelectedCategory().getId());
         }
+
+        ((MultiSelector) categoryWidget).setIds(categories);
       }
+
+      caption = isService
+          ? Localized.getConstants().newService() : Localized.getConstants().newItem();
+
+    } else {
+      caption = isService
+          ? Localized.getConstants().service() : Localized.getConstants().item();
+
+    }
+
+    if (form.getViewPresenter() != null && form.getViewPresenter().getHeader() != null) {
+      form.getViewPresenter().getHeader().setCaption(caption);
     }
 
     super.afterRefresh(form, row);

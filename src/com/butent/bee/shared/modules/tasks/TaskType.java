@@ -9,9 +9,10 @@ import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.modules.administration.AdministrationConstants;
 import com.butent.bee.shared.news.Feed;
 import com.butent.bee.shared.ui.HasCaption;
+import com.butent.bee.shared.ui.HasWidgetSupplier;
 import com.butent.bee.shared.utils.BeeUtils;
 
-public enum TaskType implements HasCaption {
+public enum TaskType implements HasCaption, HasWidgetSupplier {
   ASSIGNED(Localized.getConstants().crmTasksAssignedTasks(), Feed.TASKS_ASSIGNED) {
     @Override
     public Filter getFilter(LongValue userValue) {
@@ -87,7 +88,8 @@ public enum TaskType implements HasCaption {
   }
 
   public abstract Filter getFilter(LongValue userValue);
-  
+
+  @Override
   public String getSupplierKey() {
     return GRID_TASKS + BeeConst.STRING_UNDER + name().toLowerCase();
   }

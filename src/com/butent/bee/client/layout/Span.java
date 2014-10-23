@@ -8,6 +8,7 @@ import com.google.gwt.user.client.ui.Widget;
 import com.butent.bee.client.dom.DomUtils;
 import com.butent.bee.client.ui.HasIndexedWidgets;
 import com.butent.bee.client.ui.IdentifiableWidget;
+import com.butent.bee.shared.BeeConst;
 
 /**
  * Enables to manage span elements from Document Object Model.
@@ -45,13 +46,13 @@ public class Span extends ComplexPanel implements HasIndexedWidgets, Identifiabl
   public boolean isEmpty() {
     return getWidgetCount() <= 0;
   }
-  
+
   @Override
   public void setId(String id) {
     DomUtils.setId(this, id);
   }
 
   protected String getDefaultStyleName() {
-    return "bee-Span";
+    return BeeConst.CSS_CLASS_PREFIX + "Span";
   }
 }

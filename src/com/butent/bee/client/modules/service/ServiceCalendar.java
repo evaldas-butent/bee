@@ -16,7 +16,6 @@ import static com.butent.bee.shared.modules.service.ServiceConstants.*;
 import static com.butent.bee.shared.modules.tasks.TaskConstants.*;
 
 import com.butent.bee.client.BeeKeeper;
-import com.butent.bee.client.Callback;
 import com.butent.bee.client.communication.ResponseCallback;
 import com.butent.bee.client.data.Queries;
 import com.butent.bee.client.data.RowCallback;
@@ -36,6 +35,8 @@ import com.butent.bee.client.timeboard.TimeBoardHelper;
 import com.butent.bee.client.timeboard.TimeBoardRowLayout;
 import com.butent.bee.client.timeboard.TimeBoardRowLayout.RowData;
 import com.butent.bee.client.ui.IdentifiableWidget;
+import com.butent.bee.client.ui.Opener;
+import com.butent.bee.client.view.ViewCallback;
 import com.butent.bee.client.widget.CustomDiv;
 import com.butent.bee.client.widget.Mover;
 import com.butent.bee.shared.Assert;
@@ -59,6 +60,8 @@ import com.butent.bee.shared.export.XRow;
 import com.butent.bee.shared.export.XSheet;
 import com.butent.bee.shared.export.XStyle;
 import com.butent.bee.shared.i18n.Localized;
+import com.butent.bee.shared.logging.BeeLogger;
+import com.butent.bee.shared.logging.LogUtils;
 import com.butent.bee.shared.modules.administration.AdministrationConstants;
 import com.butent.bee.shared.modules.classifiers.ClassifierConstants;
 import com.butent.bee.shared.modules.service.ServiceConstants.ServiceCompanyKind;
@@ -89,6 +92,8 @@ final class ServiceCalendar extends TimeBoard {
 
   static final String SUPPLIER_KEY = "service_calendar";
 
+  private static final BeeLogger logger = LogUtils.getLogger(ServiceCalendar.class);
+
   private static final String COL_COMPANY_KIND = "CalendarCompanyKind";
 
   private static final String COL_PIXELS_PER_COMPANY = "CalendarPixelsPerCompany";
@@ -101,6 +106,8 @@ final class ServiceCalendar extends TimeBoard {
 
   private static final String COL_HEADER_HEIGHT = "CalendarHeaderHeight";
   private static final String COL_FOOTER_HEIGHT = "CalendarFooterHeight";
+
+  private static final String COL_FOOTER_MAP = "CalendarFooterMap";
 
   private static final String COL_ITEM_OPACITY = "CalendarItemOpacity";
   private static final String COL_STRIP_OPACITY = "CalendarStripOpacity";
@@ -144,7 +151,7 @@ final class ServiceCalendar extends TimeBoard {
   private static final Set<String> relevantDataViews = Sets.newHashSet(VIEW_SERVICE_OBJECTS,
       VIEW_SERVICE_DATES, VIEW_TASKS, VIEW_RECURRING_TASKS, VIEW_RT_DATES, VIEW_TASK_TYPES);
 
-  static void open(final Callback<IdentifiableWidget> callback) {
+  static void open(final ViewCallback callback) {
     BeeKeeper.getRpc().makeRequest(ServiceKeeper.createArgs(SVC_GET_CALENDAR_DATA),
         new ResponseCallback() {
           @Override
@@ -306,19 +313,15 @@ final class ServiceCalendar extends TimeBoard {
     final BeeRow oldRow = getSettingsRow();
     Assert.notNull(oldRow);
 
-    RowEditor.openRow(FORM_SETTINGS, getSettings().getViewName(), oldRow, true,
+    RowEditor.openForm(FORM_SETTINGS, getSettings().getViewName(), oldRow, Opener.MODAL,
         new RowCallback() {
           @Override
           public void onSuccess(BeeRow result) {
             if (updateSetting(result)) {
-              int typesIndex = getSettings().getColumnIndex(COL_SERVICE_CALENDAR_TASK_TYPES);
-              int kindIndex = getSettings().getColumnIndex(COL_COMPANY_KIND);
-
-              if (Objects.equals(oldRow.getString(typesIndex), result.getString(typesIndex))
-                  && Objects.equals(oldRow.getInteger(kindIndex), result.getInteger(kindIndex))) {
-                render(false);
-              } else {
+              if (requiresRefresh(oldRow, result)) {
                 refresh();
+              } else {
+                render(false);
               }
             }
           }
@@ -327,7 +330,7 @@ final class ServiceCalendar extends TimeBoard {
 
   @Override
   protected Collection<? extends HasDateRange> getChartItems() {
-    List<HasDateRange> items = Lists.newArrayList();
+    List<HasDateRange> items = new ArrayList<>();
 
     items.addAll(tasks.values());
     items.addAll(recurringTasks.values());
@@ -345,6 +348,15 @@ final class ServiceCalendar extends TimeBoard {
   @Override
   protected String getFooterHeightColumnName() {
     return COL_FOOTER_HEIGHT;
+  }
+
+  @Override
+  protected Collection<? extends HasDateRange> getFooterItems() {
+    if (TimeBoardHelper.getBoolean(getSettings(), COL_FOOTER_MAP)) {
+      return super.getFooterItems();
+    } else {
+      return Collections.emptySet();
+    }
   }
 
   @Override
@@ -558,8 +570,19 @@ final class ServiceCalendar extends TimeBoard {
 
     ServiceCompanyKind companyKind = getCompanyKind(rowSet);
 
-    initData(companyKind, rowSet.getTableProperties());
+    JustDate minDate = TimeBoardHelper.getDate(rowSet, COL_SERVICE_CALENDAR_MIN_DATE);
+    JustDate maxDate = TimeBoardHelper.getDate(rowSet, COL_SERVICE_CALENDAR_MAX_DATE);
+
+    if (minDate != null && maxDate != null && BeeUtils.isLess(maxDate, minDate)) {
+      maxDate = JustDate.copyOf(minDate);
+    }
+
+    initData(companyKind, minDate, maxDate, rowSet.getTableProperties());
+
     updateMaxRange();
+    if (minDate != null || maxDate != null) {
+      clampMaxRange(minDate, maxDate);
+    }
 
     return true;
   }
@@ -795,7 +818,7 @@ final class ServiceCalendar extends TimeBoard {
   }
 
   private List<TimeBoardRowLayout> doLayout() {
-    List<TimeBoardRowLayout> result = Lists.newArrayList();
+    List<TimeBoardRowLayout> result = new ArrayList<>();
     Range<JustDate> range = getVisibleRange();
 
     List<HasDateRange> items;
@@ -1053,7 +1076,9 @@ final class ServiceCalendar extends TimeBoard {
     return color;
   }
 
-  private void initData(ServiceCompanyKind companyKind, Map<String, String> properties) {
+  private void initData(ServiceCompanyKind companyKind, JustDate minDate, JustDate maxDate,
+      Map<String, String> properties) {
+
     companies.clear();
     objects.clear();
 
@@ -1072,9 +1097,6 @@ final class ServiceCalendar extends TimeBoard {
     }
 
     SimpleRowSet objectDatesData = SimpleRowSet.getIfPresent(properties, TBL_SERVICE_DATES);
-
-    SimpleRowSet relationData = SimpleRowSet.getIfPresent(properties,
-        AdministrationConstants.TBL_RELATIONS);
 
     SimpleRowSet taskData = SimpleRowSet.getIfPresent(properties, TBL_TASKS);
     SimpleRowSet rtData = SimpleRowSet.getIfPresent(properties, TBL_RECURRING_TASKS);
@@ -1108,25 +1130,24 @@ final class ServiceCalendar extends TimeBoard {
       }
     }
 
-    if (!DataUtils.isEmpty(taskData) && !DataUtils.isEmpty(relationData)) {
+    if (!DataUtils.isEmpty(taskData)) {
       for (SimpleRow taskRow : taskData) {
         TaskWrapper wrapper = new TaskWrapper(taskRow);
-        Long taskId = wrapper.getId();
 
-        if (DataUtils.isId(taskId)) {
-          for (SimpleRow relationRow : relationData) {
-            if (taskId.equals(relationRow.getLong(COL_TASK))) {
-              Long objId = relationRow.getLong(COL_SERVICE_OBJECT);
+        if (!BeeUtils.isEmpty(taskRow.getValue(AdministrationConstants.COL_RELATION))) {
+          for (Long objId : DataUtils.parseIdList(taskRow
+              .getValue(AdministrationConstants.COL_RELATION))) {
               if (DataUtils.isId(objId)) {
                 tasks.put(objId, wrapper);
               }
-            }
           }
         }
       }
     }
 
-    if (!DataUtils.isEmpty(rtData) && !DataUtils.isEmpty(relationData)) {
+    if (!DataUtils.isEmpty(rtData)) {
+      long startMillis = System.currentTimeMillis();
+
       BeeRowSet rtDates = BeeRowSet.getIfPresent(properties, VIEW_RT_DATES);
       Multimap<Long, ScheduleDateRange> sdRanges = TaskUtils.getScheduleDateRangesByTask(rtDates);
 
@@ -1137,20 +1158,25 @@ final class ServiceCalendar extends TimeBoard {
           Collection<ScheduleDateRange> sdrs =
               sdRanges.containsKey(rtId) ? sdRanges.get(rtId) : null;
 
-          List<RecurringTaskWrapper> rts = RecurringTaskWrapper.spawn(rtRow, sdrs);
+          List<RecurringTaskWrapper> rts = RecurringTaskWrapper.spawn(rtRow, sdrs,
+              minDate, maxDate);
 
-          if (!rts.isEmpty()) {
-            for (SimpleRow relationRow : relationData) {
-              if (rtId.equals(relationRow.getLong(COL_RECURRING_TASK))) {
-                Long objId = relationRow.getLong(COL_SERVICE_OBJECT);
+          if (!rts.isEmpty()
+              && !BeeUtils.isEmpty(rtRow.getValue(AdministrationConstants.COL_RELATION))) {
+            for (Long objId : DataUtils.parseIdList(rtRow
+                .getValue(AdministrationConstants.COL_RELATION))) {
 
                 if (DataUtils.isId(objId)) {
                   recurringTasks.putAll(objId, rts);
-                }
               }
             }
           }
         }
+      }
+
+      if (!recurringTasks.isEmpty()) {
+        logger.debug("spawned", recurringTasks.size(), "recurring tasks in",
+            System.currentTimeMillis() - startMillis);
       }
     }
   }
@@ -1251,6 +1277,19 @@ final class ServiceCalendar extends TimeBoard {
         lastObject = currentObject;
       }
     }
+  }
+
+  private boolean requiresRefresh(BeeRow oldSettings, BeeRow newSettings) {
+    Set<String> colNames = Sets.newHashSet(COL_SERVICE_CALENDAR_TASK_TYPES, COL_COMPANY_KIND,
+        COL_SERVICE_CALENDAR_MIN_DATE, COL_SERVICE_CALENDAR_MAX_DATE);
+
+    for (String colName : colNames) {
+      int index = getSettings().getColumnIndex(colName);
+      if (!Objects.equals(oldSettings.getString(index), newSettings.getString(index))) {
+        return true;
+      }
+    }
+    return false;
   }
 
   private boolean separateObjects() {

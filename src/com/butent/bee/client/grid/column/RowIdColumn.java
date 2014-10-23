@@ -7,6 +7,7 @@ import com.butent.bee.client.grid.cell.NumberCell;
 import com.butent.bee.client.i18n.Format;
 import com.butent.bee.client.i18n.HasNumberFormat;
 import com.butent.bee.shared.css.values.TextAlign;
+import com.butent.bee.shared.css.values.WhiteSpace;
 import com.butent.bee.shared.data.IsRow;
 import com.butent.bee.shared.data.value.ValueType;
 import com.butent.bee.shared.ui.ColumnDescription.ColType;
@@ -17,21 +18,23 @@ import com.butent.bee.shared.utils.BeeUtils;
  */
 
 public class RowIdColumn extends AbstractColumn<Long> implements HasNumberFormat {
-  
+
   public RowIdColumn() {
     this(Format.getDefaultLongFormat());
   }
 
   public RowIdColumn(NumberFormat format) {
     super(new NumberCell<Long>(format));
+
     setTextAlign(TextAlign.RIGHT);
+    setWhiteSpace(WhiteSpace.NOWRAP);
   }
-  
+
   @Override
   public ColType getColType() {
     return ColType.ID;
   }
-  
+
   @Override
   public NumberFormat getNumberFormat() {
     if (getCell() instanceof HasNumberFormat) {
@@ -52,7 +55,7 @@ public class RowIdColumn extends AbstractColumn<Long> implements HasNumberFormat
   public String getStyleSuffix() {
     return "id";
   }
-  
+
   @Override
   public Long getValue(IsRow row) {
     if (row == null) {

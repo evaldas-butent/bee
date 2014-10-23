@@ -1,6 +1,5 @@
 package com.butent.bee.client.composite;
 
-import com.google.common.base.Objects;
 import com.google.gwt.core.client.Scheduler;
 import com.google.gwt.dom.client.Element;
 import com.google.gwt.dom.client.Node;
@@ -34,6 +33,7 @@ import com.butent.bee.client.event.Binder;
 import com.butent.bee.client.event.EventUtils;
 import com.butent.bee.client.event.logical.AutocompleteEvent;
 import com.butent.bee.client.event.logical.CloseEvent;
+import com.butent.bee.client.event.logical.SummaryChangeEvent;
 import com.butent.bee.client.menu.MenuBar;
 import com.butent.bee.client.menu.MenuItem;
 import com.butent.bee.client.ui.FormWidget;
@@ -55,6 +55,8 @@ import com.butent.bee.shared.data.BeeRowSet;
 import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.filter.Filter;
 import com.butent.bee.shared.data.filter.Operator;
+import com.butent.bee.shared.data.value.BooleanValue;
+import com.butent.bee.shared.data.value.Value;
 import com.butent.bee.shared.data.view.DataInfo;
 import com.butent.bee.shared.menu.MenuConstants;
 import com.butent.bee.shared.menu.MenuConstants.ITEM_TYPE;
@@ -506,7 +508,7 @@ public final class Autocomplete extends Composite implements Editor, HasVisibleL
   private static final String ITEM_PREV = String.valueOf('\u25b2');
   private static final String ITEM_NEXT = String.valueOf('\u25bc');
 
-  private static final String STYLE_SELECTOR = "bee-DataSelector";
+  private static final String STYLE_SELECTOR = BeeConst.CSS_CLASS_PREFIX + "DataSelector";
 
   private static final String STYLE_EMBEDDED = STYLE_SELECTOR + "-embedded";
 
@@ -573,6 +575,8 @@ public final class Autocomplete extends Composite implements Editor, HasVisibleL
 
   private boolean handledByForm;
 
+  private boolean summarize;
+
   private Autocomplete(Relation relation, boolean embedded) {
     super();
 
@@ -610,6 +614,10 @@ public final class Autocomplete extends Composite implements Editor, HasVisibleL
     init(input, embedded);
   }
 
+  public HandlerRegistration addAutocompleteHandler(AutocompleteEvent.Handler handler) {
+    return addHandler(handler, AutocompleteEvent.getType());
+  }
+
   @Override
   public HandlerRegistration addBlurHandler(BlurHandler handler) {
     return getInput().addDomHandler(handler, BlurEvent.getType());
@@ -635,8 +643,9 @@ public final class Autocomplete extends Composite implements Editor, HasVisibleL
     return getInput().addDomHandler(handler, KeyDownEvent.getType());
   }
 
-  public HandlerRegistration addAutocompleteHandler(AutocompleteEvent.Handler handler) {
-    return addHandler(handler, AutocompleteEvent.getType());
+  @Override
+  public HandlerRegistration addSummaryChangeHandler(SummaryChangeEvent.Handler handler) {
+    return addHandler(handler, SummaryChangeEvent.getType());
   }
 
   @Override
@@ -671,6 +680,11 @@ public final class Autocomplete extends Composite implements Editor, HasVisibleL
 
   public SelectionOracle getOracle() {
     return oracle;
+  }
+
+  @Override
+  public Value getSummary() {
+    return BooleanValue.of(!BeeUtils.isEmpty(getValue()));
   }
 
   @Override
@@ -743,16 +757,19 @@ public final class Autocomplete extends Composite implements Editor, HasVisibleL
   }
 
   @Override
+  public void render(String value) {
+    setValue(value);
+  }
+
+  @Override
   public void setAccessKey(char key) {
     getInput().setAccessKey(key);
   }
 
   public void setAdditionalFilter(Filter additionalFilter) {
-    if (Objects.equal(additionalFilter, getOracle().getAdditionalFilter())) {
-      return;
+    if (getOracle().setAdditionalFilter(additionalFilter, false)) {
+      setAlive(true);
     }
-    getOracle().setAdditionalFilter(additionalFilter);
-    setAlive(true);
   }
 
   @Override
@@ -798,6 +815,11 @@ public final class Autocomplete extends Composite implements Editor, HasVisibleL
 
     fireEvent(new EditStopEvent(State.CHANGED, KeyCodes.KEY_TAB, false));
     AutocompleteEvent.fire(this, State.CHANGED);
+  }
+
+  @Override
+  public void setSummarize(boolean summarize) {
+    this.summarize = summarize;
   }
 
   @Override
@@ -854,6 +876,11 @@ public final class Autocomplete extends Composite implements Editor, HasVisibleL
     }
     inputEvents.consume();
     setActive(true);
+  }
+
+  @Override
+  public boolean summarize() {
+    return summarize;
   }
 
   @Override

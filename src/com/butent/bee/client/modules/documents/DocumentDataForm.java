@@ -4,7 +4,6 @@ import com.google.common.base.Function;
 import com.google.common.base.Splitter;
 import com.google.common.collect.LinkedListMultimap;
 import com.google.common.collect.Lists;
-import com.google.common.collect.Maps;
 import com.google.common.collect.Multimap;
 import com.google.gwt.core.client.JavaScriptObject;
 import com.google.gwt.core.client.JsArrayMixed;
@@ -33,6 +32,7 @@ import com.butent.bee.client.data.Queries.IntCallback;
 import com.butent.bee.client.data.Queries.RowSetCallback;
 import com.butent.bee.client.data.RowCallback;
 import com.butent.bee.client.data.RowUpdateCallback;
+import com.butent.bee.client.dialog.StringCallback;
 import com.butent.bee.client.dom.DomUtils;
 import com.butent.bee.client.event.logical.AutocompleteEvent;
 import com.butent.bee.client.grid.ChildGrid;
@@ -43,6 +43,8 @@ import com.butent.bee.client.presenter.Presenter;
 import com.butent.bee.client.style.StyleUtils;
 import com.butent.bee.client.ui.FormFactory.WidgetDescriptionCallback;
 import com.butent.bee.client.ui.IdentifiableWidget;
+import com.butent.bee.client.ui.UiHelper;
+import com.butent.bee.client.utils.JsFunction;
 import com.butent.bee.client.utils.JsUtils;
 import com.butent.bee.client.view.add.ReadyForInsertEvent;
 import com.butent.bee.client.view.edit.Editor;
@@ -78,7 +80,10 @@ import com.butent.bee.shared.ui.Action;
 import com.butent.bee.shared.ui.Relation;
 import com.butent.bee.shared.utils.BeeUtils;
 
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -88,6 +93,8 @@ public class DocumentDataForm extends AbstractFormInterceptor
     implements ClickHandler, SelectionHandler<Pair<Integer, SelectionOrigin>> {
 
   private class TinyEditor {
+
+    private static final String ORIGIN = "DOCUMENTS";
 
     private JavaScriptObject tiny;
     private String deferedContent;
@@ -110,7 +117,24 @@ public class DocumentDataForm extends AbstractFormInterceptor
       return null;
     }
 
-    public void init(String editorId) {
+    public void initTemplates(final String editorId) {
+      Queries.getRowSet(TBL_EDITOR_TEMPLATES, null,
+          Filter.isEqual(COL_EDITOR_TEMPLATE_ORIGIN, Value.getValue(ORIGIN)), new RowSetCallback() {
+            @Override
+            public void onSuccess(BeeRowSet result) {
+              Map<String, String> templates = new HashMap<>();
+
+              for (BeeRow beeRow : result) {
+                templates.put(DataUtils.getString(result, beeRow, COL_EDITOR_TEMPLATE_NAME),
+                    DataUtils.getString(result, beeRow, COL_EDITOR_TEMPLATE_CONTENT));
+              }
+
+              init(editorId, templates);
+            }
+          });
+    }
+
+    public void init(String editorId, Map<String, String> templates) {
       Assert.state(!isActive());
       Assert.notEmpty(editorId);
 
@@ -129,6 +153,13 @@ public class DocumentDataForm extends AbstractFormInterceptor
       JsUtils.setProperty(jso, "paste_data_images", true);
       JsUtils.setProperty(jso, "pagebreak_separator",
           "<div style=\"page-break-before:always;\"></div>");
+
+      JsFunction jsf = JsFunction.create("editor",
+          "editor.addMenuItem('saveTemplate', {text: '" + loc.saveAsEditorTemplate() + "', "
+              + "context: 'tools', "
+              + "onclick: function() {editor.execCommand('savetemplate', false);}});");
+
+      JsUtils.setProperty(jso, "setup", jsf);
 
       BiFunction<String, String, String> td = new BiFunction<String, String, String>() {
         @Override
@@ -200,7 +231,7 @@ public class DocumentDataForm extends AbstractFormInterceptor
 
       template = JavaScriptObject.createObject();
       JsUtils.setProperty(template, "title", loc.company());
-      List<String> descr = Lists.newArrayList();
+      List<String> descr = new ArrayList<>();
 
       for (BeeColumn col : Data.getColumns(ClassifierConstants.TBL_COMPANIES)) {
         descr.add("{" + ClassifierConstants.COL_COMPANY + col.getId() + "}");
@@ -236,6 +267,12 @@ public class DocumentDataForm extends AbstractFormInterceptor
 
       templateArray.push(template);
 
+      for (Entry<String, String> entry : templates.entrySet()) {
+        template = JavaScriptObject.createObject();
+        JsUtils.setProperty(template, "title", entry.getKey());
+        JsUtils.setProperty(template, "content", entry.getValue());
+        templateArray.push(template);
+      }
       JsUtils.setProperty(jso, "templates", templateArray);
 
       initEditor(jso, this);
@@ -252,6 +289,25 @@ public class DocumentDataForm extends AbstractFormInterceptor
       return false;
     }
 
+    public void saveTemplate() {
+      final String content = getContent();
+      LocalizableConstants loc = Localized.getConstants();
+
+      if (BeeUtils.isEmpty(content)) {
+        Global.showError(loc.noData());
+        return;
+      }
+      Global.inputString(loc.newEditorTemplate(), loc.documentTemplateName(),
+          new StringCallback() {
+            @Override
+            public void onSuccess(String value) {
+              Queries.insert(TBL_EDITOR_TEMPLATES, Data.getColumns(TBL_EDITOR_TEMPLATES,
+                  Lists.newArrayList(COL_EDITOR_TEMPLATE_ORIGIN, COL_EDITOR_TEMPLATE_NAME,
+                      COL_EDITOR_TEMPLATE_CONTENT)), Lists.newArrayList(ORIGIN, value, content));
+            }
+          });
+    }
+
     public void setContent(String content) {
       if (isActive()) {
         setContent(tiny, BeeUtils.nvl(content, ""));
@@ -260,6 +316,7 @@ public class DocumentDataForm extends AbstractFormInterceptor
       }
     }
 
+    //@formatter:off
     private native void destroy(JavaScriptObject editor, boolean automatic) /*-{
       editor.destroy(automatic);
     }-*/;
@@ -270,6 +327,9 @@ public class DocumentDataForm extends AbstractFormInterceptor
 
     private native void initEditor(JavaScriptObject object, TinyEditor ed) /*-{
       object.init_instance_callback = function(editor) {
+        editor.addCommand('savetemplate', function(ui, v) {
+          ed.@com.butent.bee.client.modules.documents.DocumentDataForm.TinyEditor::saveTemplate()();
+        });
         ed.@com.butent.bee.client.modules.documents.DocumentDataForm.TinyEditor::tiny = editor;
         ed.@com.butent.bee.client.modules.documents.DocumentDataForm.TinyEditor::doDefered()();
       };
@@ -284,6 +344,7 @@ public class DocumentDataForm extends AbstractFormInterceptor
       editor.setContent(content);
       editor.isNotDirty = 1;
     }-*/;
+    //@formatter:on
   }
 
   private final class AutocompleteFilter implements AutocompleteEvent.Handler {
@@ -325,9 +386,11 @@ public class DocumentDataForm extends AbstractFormInterceptor
                     .getGridView().getDataIndex(COL_CRITERIA_GROUP_NAME))));
           }
           if (BeeUtils.same(source, COL_CRITERION_VALUE) && criteriaGrid != null) {
-            flt.add(Filter.isEqual(COL_CRITERION_NAME,
-                criteriaGrid.getPresenter().getActiveRow().getValue(criteriaGrid.getPresenter()
-                    .getGridView().getDataIndex(COL_CRITERION_NAME))));
+            String val = criteriaGrid.getPresenter().getActiveRow().getString(criteriaGrid
+                .getPresenter().getGridView().getDataIndex(COL_CRITERION_NAME));
+
+            flt.add(BeeUtils.isEmpty(val) ? Filter.isNull(COL_CRITERION_NAME)
+                : Filter.isEqual(COL_CRITERION_NAME, Value.getValue(val)));
           }
         }
         event.getSelector().setAdditionalFilter(flt);
@@ -337,9 +400,9 @@ public class DocumentDataForm extends AbstractFormInterceptor
 
   private HasWidgets panel;
   private Long groupId;
-  private final Map<String, String> criteriaHistory = Maps.newLinkedHashMap();
-  private final Map<String, Editor> criteria = Maps.newLinkedHashMap();
-  private final Map<String, Long> ids = Maps.newHashMap();
+  private final Map<String, String> criteriaHistory = new LinkedHashMap<>();
+  private final Map<String, Editor> criteria = new LinkedHashMap<>();
+  private final Map<String, Long> ids = new HashMap<>();
 
   private ChildGrid groupsGrid;
   private ChildGrid criteriaGrid;
@@ -453,7 +516,7 @@ public class DocumentDataForm extends AbstractFormInterceptor
         criteria.keySet(), new Consumer<Collection<String>>() {
           @Override
           public void accept(Collection<String> collection) {
-            Map<String, Editor> oldCriteria = Maps.newHashMap(criteria);
+            Map<String, Editor> oldCriteria = new HashMap<>(criteria);
             criteria.clear();
 
             for (String crit : collection) {
@@ -479,7 +542,7 @@ public class DocumentDataForm extends AbstractFormInterceptor
   @Override
   public void onClose(List<String> messages, IsRow oldRow, IsRow newRow) {
     LocalizableConstants loc = Localized.getConstants();
-    List<String> warnings = Lists.newArrayList();
+    List<String> warnings = new ArrayList<>();
 
     if (save(null)) {
       warnings.add(loc.mainCriteria());
@@ -515,7 +578,7 @@ public class DocumentDataForm extends AbstractFormInterceptor
 
       if (Objects.equals(tabbedPages.getSelectedWidget(), content)) {
         if (content instanceof HasOneWidget) {
-          tinyEditor.init(DomUtils.getId(((HasOneWidget) content).getWidget()));
+          tinyEditor.initTemplates(DomUtils.getId(((HasOneWidget) content).getWidget()));
         }
       }
     }
@@ -574,12 +637,10 @@ public class DocumentDataForm extends AbstractFormInterceptor
 
                     if (j % 2 > 0 && j < criteriaBlocks.size() - 1) {
                       for (Pair<String, String> pair : data.get(group)) {
-                        if (!BeeUtils.isEmpty(pair.getA())) {
-                          sb.append(criteriaBlock.replace("{" + COL_CRITERION_NAME + "}",
-                              pair.getA())
-                              .replace("{" + COL_CRITERION_VALUE + "}",
-                                  BeeUtils.nvl(pair.getB(), "")));
-                        }
+                        sb.append(criteriaBlock.replace("{" + COL_CRITERION_NAME + "}",
+                            BeeUtils.nvl(pair.getA(), ""))
+                            .replace("{" + COL_CRITERION_VALUE + "}",
+                                BeeUtils.nvl(pair.getB(), "")));
                       }
                     } else {
                       sb.append(criteriaBlock);
@@ -726,8 +787,7 @@ public class DocumentDataForm extends AbstractFormInterceptor
                   Autocomplete box = createAutocomplete("DistinctCriterionValues",
                       COL_CRITERION_VALUE, name);
 
-                  box.setEnabled(row.isEditable());
-                  box.setStyleName("bee-disabled", !row.isEditable());
+                  UiHelper.enableAndStyle(box, row.isEditable());
                   box.setValue(value);
 
                   criteriaHistory.put(name, value);
@@ -742,8 +802,8 @@ public class DocumentDataForm extends AbstractFormInterceptor
   }
 
   private boolean save(final IsRow row) {
-    final Map<String, String> newValues = Maps.newLinkedHashMap();
-    Map<Long, String> changedValues = Maps.newHashMap();
+    final Map<String, String> newValues = new LinkedHashMap<>();
+    Map<Long, String> changedValues = new HashMap<>();
     CompoundFilter flt = Filter.or();
     final Holder<Integer> holder = Holder.of(0);
 

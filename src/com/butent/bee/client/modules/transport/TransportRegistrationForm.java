@@ -1,6 +1,5 @@
 package com.butent.bee.client.modules.transport;
 
-import com.google.common.collect.Maps;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
 
@@ -26,6 +25,7 @@ import com.butent.bee.shared.ui.UserInterface;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.EnumUtils;
 
+import java.util.HashMap;
 import java.util.Map;
 
 class TransportRegistrationForm extends AbstractFormInterceptor {
@@ -80,7 +80,7 @@ class TransportRegistrationForm extends AbstractFormInterceptor {
 
     String login = BeeUtils.notEmpty(BeeUtils.getPrefix(email, BeeConst.CHAR_AT), email);
 
-    Map<String, String> parameters = Maps.newHashMap();
+    Map<String, String> parameters = new HashMap<>();
     parameters.put(ClassifierConstants.COL_EMAIL, email);
 
     putUserField(parameters, COL_REGISTRATION_COMPANY_NAME, ClassifierConstants.ALS_COMPANY_NAME);
@@ -157,7 +157,7 @@ class TransportRegistrationForm extends AbstractFormInterceptor {
         header.addCommandItem(this.registerCommand);
       }
 
-      if (!BeeUtils.isEmpty(getStringValue(COL_REGISTRATION_HOST)) 
+      if (!BeeUtils.isEmpty(getStringValue(COL_REGISTRATION_HOST))
           && Data.isViewEditable(AdministrationConstants.VIEW_IP_FILTERS)) {
         if (this.blockCommand == null) {
           this.blockCommand =

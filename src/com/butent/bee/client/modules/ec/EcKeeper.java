@@ -1,10 +1,8 @@
 package com.butent.bee.client.modules.ec;
 
-import com.google.common.base.Objects;
 import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Multimap;
-import com.google.common.collect.Sets;
 import com.google.gwt.dom.client.Element;
 import com.google.gwt.dom.client.NodeList;
 import com.google.gwt.event.dom.client.ClickEvent;
@@ -40,6 +38,9 @@ import com.butent.bee.client.ui.AutocompleteProvider;
 import com.butent.bee.client.ui.FormFactory;
 import com.butent.bee.client.ui.IdentifiableWidget;
 import com.butent.bee.client.view.HtmlEditor;
+import com.butent.bee.client.view.ViewCallback;
+import com.butent.bee.client.view.ViewFactory;
+import com.butent.bee.client.view.ViewSupplier;
 import com.butent.bee.client.widget.Image;
 import com.butent.bee.client.widget.InputText;
 import com.butent.bee.shared.Assert;
@@ -57,7 +58,6 @@ import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogUtils;
 import com.butent.bee.shared.menu.MenuHandler;
 import com.butent.bee.shared.menu.MenuService;
-import com.butent.bee.shared.modules.administration.AdministrationConstants;
 import com.butent.bee.shared.modules.ec.Cart;
 import com.butent.bee.shared.modules.ec.CartItem;
 import com.butent.bee.shared.modules.ec.DeliveryMethod;
@@ -74,9 +74,12 @@ import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.Codec;
 import com.butent.bee.shared.utils.EnumUtils;
 
+import java.util.ArrayList;
 import java.util.EnumSet;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 
 public final class EcKeeper {
@@ -92,11 +95,15 @@ public final class EcKeeper {
 
   private static final EcEventHandler eventHandler = new EcEventHandler();
 
+  private static final String KEY_EC_CONTACTS = MenuService.EDIT_EC_CONTACTS.name().toLowerCase();
+  private static final String KEY_TERMS_OF_DELIVERY =
+      MenuService.EDIT_TERMS_OF_DELIVERY.name().toLowerCase();
+
   private static EcCommandWidget activeCommand;
 
   private static boolean debug;
 
-  private static Set<EcRequest> pendingRequests = Sets.newHashSet();
+  private static Set<EcRequest> pendingRequests = new HashSet<>();
 
   private static boolean listPriceVisible = true;
   private static boolean priceVisible = true;
@@ -162,9 +169,7 @@ public final class EcKeeper {
   }
 
   public static ParameterList createArgs(String method) {
-    ParameterList args = BeeKeeper.getRpc().createParameters(Module.ECOMMERCE.getName());
-    args.addQueryItem(AdministrationConstants.METHOD, method);
-    return args;
+    return BeeKeeper.getRpc().createParameters(Module.ECOMMERCE, method);
   }
 
   public static void dispatchMessages(ResponseObject response) {
@@ -172,7 +177,7 @@ public final class EcKeeper {
       response.notify(BeeKeeper.getScreen());
     }
   }
-  
+
   public static void doGlobalSearch(String query, final IdentifiableWidget inputWidget) {
     if (!checkSearchQuery(query)) {
       return;
@@ -188,7 +193,7 @@ public final class EcKeeper {
         resetActiveCommand();
 
         ItemPanel widget = new ItemPanel();
-        BeeKeeper.getScreen().updateActivePanel(widget);
+        BeeKeeper.getScreen().show(widget);
         renderItems(widget, items);
       }
     });
@@ -307,7 +312,7 @@ public final class EcKeeper {
 
   public static List<EcItem> getResponseItems(ResponseObject response) {
     if (response == null) {
-      return Lists.newArrayList();
+      return new ArrayList<>();
     } else {
       return deserializeItems(response.getResponseAsString());
     }
@@ -387,7 +392,7 @@ public final class EcKeeper {
             resetActiveCommand();
             searchBox.clearValue();
 
-            BeeKeeper.getScreen().updateActivePanel(widget);
+            BeeKeeper.getScreen().show(widget);
           }
         });
       }
@@ -402,7 +407,7 @@ public final class EcKeeper {
     ensureBrands(new Consumer<Boolean>() {
       @Override
       public void accept(Boolean input) {
-        if (!Objects.equal(activeViewId, getActiveViewId())) {
+        if (!Objects.equals(activeViewId, getActiveViewId())) {
           return;
         }
 
@@ -415,7 +420,7 @@ public final class EcKeeper {
           public void onResponse(ResponseObject response) {
             dispatchMessages(response);
 
-            if (Objects.equal(activeViewId, getActiveViewId())
+            if (Objects.equals(activeViewId, getActiveViewId())
                 && response.hasResponse(EcItemInfo.class)) {
               EcItemInfo ecItemInfo = EcItemInfo.restore(response.getResponseAsString());
               ItemDetails widget = new ItemDetails(item, ecItemInfo, allowAddToCart);
@@ -462,16 +467,26 @@ public final class EcKeeper {
     MenuService.EDIT_TERMS_OF_DELIVERY.setHandler(new MenuHandler() {
       @Override
       public void onSelection(String parameters) {
-        editConfigurationHtml(Localized.getConstants().ecTermsOfDelivery(), COL_CONFIG_TOD_URL,
-            COL_CONFIG_TOD_HTML);
+        editTermsOfDelivery(null);
       }
     });
-
     MenuService.EDIT_EC_CONTACTS.setHandler(new MenuHandler() {
       @Override
       public void onSelection(String parameters) {
-        editConfigurationHtml(Localized.getConstants().ecContacts(), COL_CONFIG_CONTACTS_URL,
-            COL_CONFIG_CONTACTS_HTML);
+        editEcContacts(null);
+      }
+    });
+
+    ViewFactory.registerSupplier(KEY_TERMS_OF_DELIVERY, new ViewSupplier() {
+      @Override
+      public void create(ViewCallback callback) {
+        editTermsOfDelivery(callback);
+      }
+    });
+    ViewFactory.registerSupplier(KEY_EC_CONTACTS, new ViewSupplier() {
+      @Override
+      public void create(ViewCallback callback) {
+        editEcContacts(callback);
       }
     });
 
@@ -630,11 +645,11 @@ public final class EcKeeper {
   }
 
   public static boolean showGlobalSearch() {
-    return Settings.getPropertyBoolean("showGlobalSearch");
+    return Settings.getBoolean("showGlobalSearch");
   }
 
   public static boolean showItemSuppliers() {
-    return Settings.getPropertyBoolean("showItemSuppliers");
+    return Settings.getBoolean("showItemSuppliers");
   }
 
   public static void showPromo(final boolean checkView) {
@@ -673,11 +688,11 @@ public final class EcKeeper {
         resetActiveCommand();
 
         if (items == null) {
-          items = Lists.newArrayList();
+          items = new ArrayList<>();
         }
         Promo widget = new Promo(pictures.getBanners(), items);
 
-        BeeKeeper.getScreen().updateActivePanel(widget);
+        BeeKeeper.getScreen().show(widget);
       }
     });
   }
@@ -716,7 +731,7 @@ public final class EcKeeper {
     EcView ecView = EcView.create(commandWidget.getService());
     if (ecView != null) {
       searchBox.clearValue();
-      BeeKeeper.getScreen().updateActivePanel(ecView);
+      BeeKeeper.getScreen().show(ecView);
     }
 
     if (activeCommand == null || !activeCommand.getService().equals(commandWidget.getService())) {
@@ -732,7 +747,7 @@ public final class EcKeeper {
   static void ensureClientStyleSheet() {
     if (!clientStyleSheetInjected) {
       clientStyleSheetInjected = true;
-     
+
       UserInterface ui = BeeKeeper.getScreen().getUserInterface();
       if (!ui.getStyleSheets().contains(CLIENT_STYLE_SHEET)) {
         DomUtils.injectStyleSheet(Paths.getStyleSheetUrl(CLIENT_STYLE_SHEET,
@@ -765,7 +780,7 @@ public final class EcKeeper {
   }
 
   private static List<EcItem> deserializeItems(String serialized) {
-    List<EcItem> items = Lists.newArrayList();
+    List<EcItem> items = new ArrayList<>();
 
     if (serialized != null) {
       long millis = System.currentTimeMillis();
@@ -785,8 +800,8 @@ public final class EcKeeper {
     return items;
   }
 
-  private static void editConfigurationHtml(final String caption, final String urlColumn,
-      final String htmlColumn) {
+  private static void editConfigurationHtml(final String supplierKey, final String caption,
+      final String urlColumn, final String htmlColumn, final ViewCallback callback) {
 
     data.getConfiguration(new Consumer<Map<String, String>>() {
       @Override
@@ -794,21 +809,36 @@ public final class EcKeeper {
         final String url = input.get(urlColumn);
         final String html = input.get(htmlColumn);
 
-        HtmlEditor editor = new HtmlEditor(caption, url, html, new BiConsumer<String, String>() {
-          @Override
-          public void accept(String newUrl, String newHtml) {
-            if (!BeeUtils.equalsTrim(url, newUrl)) {
-              data.saveConfiguration(urlColumn, newUrl);
-            }
-            if (!BeeUtils.equalsTrim(html, newHtml)) {
-              data.saveConfiguration(htmlColumn, newHtml);
-            }
-          }
-        });
+        HtmlEditor editor =
+            new HtmlEditor(supplierKey, caption, url, html, new BiConsumer<String, String>() {
+              @Override
+              public void accept(String newUrl, String newHtml) {
+                if (!BeeUtils.equalsTrim(url, newUrl)) {
+                  data.saveConfiguration(urlColumn, newUrl);
+                }
+                if (!BeeUtils.equalsTrim(html, newHtml)) {
+                  data.saveConfiguration(htmlColumn, newHtml);
+                }
+              }
+            });
 
-        BeeKeeper.getScreen().updateActivePanel(editor);
+        if (callback == null) {
+          BeeKeeper.getScreen().show(editor);
+        } else {
+          callback.onSuccess(editor);
+        }
       }
     });
+  }
+
+  private static void editEcContacts(ViewCallback callback) {
+    editConfigurationHtml(KEY_EC_CONTACTS, Localized.getConstants().ecContacts(),
+        COL_CONFIG_CONTACTS_URL, COL_CONFIG_CONTACTS_HTML, callback);
+  }
+
+  private static void editTermsOfDelivery(ViewCallback callback) {
+    editConfigurationHtml(KEY_TERMS_OF_DELIVERY, Localized.getConstants().ecTermsOfDelivery(),
+        COL_CONFIG_TOD_URL, COL_CONFIG_TOD_HTML, callback);
   }
 
   private static String getActiveViewId() {

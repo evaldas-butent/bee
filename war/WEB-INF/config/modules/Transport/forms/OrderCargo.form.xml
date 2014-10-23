@@ -97,8 +97,8 @@
                     <InputText source="Cmr" />
                     <Label text="=cargoValue" horizontalAlignment="right" style="&lbl1;"/>
                     <FlowPanel>
-                       <InputCurrency source="Value" style="width:70px" />
-                      <DataSelector source="ValueCurrency" editEnabled="false" style="width:40px; display:inline-block; margin-left:5px;"/>
+                       <InputMoney source="Value" style="width:70px" />
+                       <DataSelector source="ValueCurrency" editEnabled="false" style="width:40px; display:inline-block; margin-left:5px;"/>
                     </FlowPanel>
                     <Label text="=notes" />        
                     <Label text="=trDirections" />        
@@ -108,7 +108,7 @@
                     <InputText source="Number" />
                     <Label text="=quantity" horizontalAlignment="right" style="&lbl1;"/>
                     <FlowPanel>
-                      <InputInteger source="Quantity" style="width:70px" />
+                      <InputDecimal source="Quantity" format="0.00" style="width:70px" />
                       <DataSelector source="QuantityUnit" style="display:inline-block; width:40px; margin-left:5px;" />
                     </FlowPanel>
                     <cell rowSpan="2">

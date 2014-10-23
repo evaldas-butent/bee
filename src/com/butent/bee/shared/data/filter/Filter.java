@@ -75,11 +75,28 @@ public abstract class Filter implements BeeSerializable, RowFilter {
     if (values.isEmpty()) {
       return null;
     }
-    List<Value> vals = new ArrayList<>();
 
+    List<Value> vals = new ArrayList<>();
     for (Long value : values) {
       vals.add(new LongValue(value));
     }
+
+    return new ColumnValueFilter(column, vals);
+  }
+
+  public static Filter anyString(String column, Collection<String> values) {
+    Assert.notEmpty(column);
+    Assert.notNull(values);
+
+    if (values.isEmpty()) {
+      return null;
+    }
+
+    List<Value> vals = new ArrayList<>();
+    for (String value : values) {
+      vals.add(new TextValue(value));
+    }
+
     return new ColumnValueFilter(column, vals);
   }
 
@@ -100,7 +117,7 @@ public abstract class Filter implements BeeSerializable, RowFilter {
     Assert.notNull(clazz);
     Assert.notEmpty(value);
 
-    List<Filter> filters = Lists.newArrayList();
+    List<Filter> filters = new ArrayList<>();
 
     String item;
     for (Enum<?> constant : clazz.getEnumConstants()) {
@@ -223,6 +240,23 @@ public abstract class Filter implements BeeSerializable, RowFilter {
     return compareWithValue(column, Operator.EQ, new LongValue(value));
   }
 
+  public static Filter equals(String column, String value) {
+    return compareWithValue(column, Operator.EQ, new TextValue(value));
+  }
+
+  public static Filter equals(String column, Enum<?> value) {
+    if (value == null) {
+      return isNull(column);
+    } else {
+      return compareWithValue(column, Operator.EQ, new IntegerValue(value.ordinal()));
+    }
+  }
+
+  public static Filter exclude(String column, Collection<Long> values) {
+    Filter flt = any(column, values);
+    return (flt == null) ? null : isNot(flt);
+  }
+
   public static Filter idIn(Collection<Long> values) {
     Assert.notNull(values);
 
@@ -234,11 +268,7 @@ public abstract class Filter implements BeeSerializable, RowFilter {
 
   public static Filter idNotIn(Collection<Long> values) {
     Filter flt = idIn(values);
-
-    if (flt != null) {
-      flt = isNot(flt);
-    }
-    return flt;
+    return (flt == null) ? null : isNot(flt);
   }
 
   public static Filter in(String column, String inView, String inColumn) {
@@ -291,6 +321,10 @@ public abstract class Filter implements BeeSerializable, RowFilter {
     return new ColumnIsNullFilter(column);
   }
 
+  public static Filter isPositive(String column) {
+    return isMore(column, new IntegerValue(0));
+  }
+
   public static Filter isTrue() {
     return new IsTrueFilter();
   }
@@ -334,6 +368,10 @@ public abstract class Filter implements BeeSerializable, RowFilter {
     } else {
       return new CompoundFilter(CompoundType.OR, f1, f2);
     }
+  }
+
+  public static Filter or(Filter f1, Filter f2, Filter f3) {
+    return or(or(f1, f2), f3);
   }
 
   public static Filter restore(String s) {

@@ -2,9 +2,7 @@ package com.butent.bee.client.modules.tasks;
 
 import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.Lists;
-import com.google.common.collect.Maps;
 import com.google.common.collect.Multimap;
-import com.google.common.collect.Sets;
 import com.google.gwt.dom.client.Element;
 import com.google.gwt.dom.client.TableRowElement;
 import com.google.gwt.event.dom.client.ClickEvent;
@@ -37,6 +35,7 @@ import com.butent.bee.client.layout.Flow;
 import com.butent.bee.client.style.StyleUtils;
 import com.butent.bee.client.ui.FormFactory.WidgetDescriptionCallback;
 import com.butent.bee.client.ui.IdentifiableWidget;
+import com.butent.bee.client.ui.Opener;
 import com.butent.bee.client.ui.UiHelper;
 import com.butent.bee.client.validation.CellValidateEvent;
 import com.butent.bee.client.view.HeaderView;
@@ -86,8 +85,12 @@ import com.butent.bee.shared.utils.Codec;
 import com.butent.bee.shared.utils.EnumUtils;
 import com.butent.bee.shared.utils.Property;
 
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.EnumMap;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -143,7 +146,7 @@ class RecurringTaskHandler extends AbstractFormInterceptor implements CellValida
 
     private final boolean scheduled;
 
-    private final List<String> styleNames = Lists.newArrayList();
+    private final List<String> styleNames = new ArrayList<>();
 
     private DayOfMonth(JustDate date, boolean scheduled) {
       this.dom = date.getDom();
@@ -256,10 +259,10 @@ class RecurringTaskHandler extends AbstractFormInterceptor implements CellValida
   private final Multimap<Integer, BeeRow> offspring = ArrayListMultimap.create();
 
   private BeeRowSet executors;
-  private final Map<Integer, String> dayElementIds = Maps.newHashMap();
+  private final Map<Integer, String> dayElementIds = new HashMap<>();
 
-  private final EnumMap<Cron, Flow> toggleContainers = Maps.newEnumMap(Cron.class);
-  private final EnumMap<Cron, HasHtml> errorLabels = Maps.newEnumMap(Cron.class);
+  private final EnumMap<Cron, Flow> toggleContainers = new EnumMap<>(Cron.class);
+  private final EnumMap<Cron, HasHtml> errorLabels = new EnumMap<>(Cron.class);
 
   RecurringTaskHandler() {
   }
@@ -374,7 +377,7 @@ class RecurringTaskHandler extends AbstractFormInterceptor implements CellValida
             }
 
           } else {
-            List<ScheduleDateRange> scheduleDateRanges = Lists.newArrayList();
+            List<ScheduleDateRange> scheduleDateRanges = new ArrayList<>();
             timeCube(scheduleDateRanges, false);
           }
         }
@@ -382,12 +385,11 @@ class RecurringTaskHandler extends AbstractFormInterceptor implements CellValida
 
       header.addCommandItem(schedule);
     }
-    
 
     for (Cron cron : Cron.values()) {
-      refreshValues(cron, row.getString(form.getDataIndex(cron.source)));
+      refreshValues(row.getId(), cron, row.getString(form.getDataIndex(cron.source)));
     }
-    
+
     enableToggles(form.isRowEnabled(row));
   }
 
@@ -419,7 +421,7 @@ class RecurringTaskHandler extends AbstractFormInterceptor implements CellValida
         clearErrors(cron);
 
       } else {
-        refreshValues(cron, event.getNewValue());
+        refreshValues(event.getRowId(), cron, event.getNewValue());
       }
     }
 
@@ -620,7 +622,7 @@ class RecurringTaskHandler extends AbstractFormInterceptor implements CellValida
       case EDIT:
         dataRow = getOffspring(dataId);
         if (dataRow != null) {
-          RowEditor.openRow(VIEW_TASKS, dataRow, true);
+          RowEditor.open(VIEW_TASKS, dataRow, Opener.MODAL);
         }
         break;
 
@@ -637,7 +639,7 @@ class RecurringTaskHandler extends AbstractFormInterceptor implements CellValida
 
       case DELETE:
         Global.confirmDelete(getOffspringLabel(dataId), Icon.WARNING,
-            Lists.newArrayList(Localized.getConstants().crmTaskDeleteQuestion()),
+            Collections.singletonList(Localized.getConstants().crmTaskDeleteQuestion()),
             new ConfirmationCallback() {
               @Override
               public void onConfirm() {
@@ -664,7 +666,7 @@ class RecurringTaskHandler extends AbstractFormInterceptor implements CellValida
       @Override
       public void onClick(ClickEvent event) {
         String updated = updateCronValue(cron.source, value, toggle.isChecked());
-        refreshErrors(cron, updated);
+        refreshErrors(getActiveRowId(), cron, updated);
       }
     });
   }
@@ -685,7 +687,7 @@ class RecurringTaskHandler extends AbstractFormInterceptor implements CellValida
       final Runnable callback) {
     String caption = Format.renderDateFull(new JustDate(dayNumber));
 
-    List<String> messages = Lists.newArrayList();
+    List<String> messages = new ArrayList<>();
 
     List<Integer> indexes = Lists.newArrayList(
         getExecutors().getColumnIndex(ClassifierConstants.COL_FIRST_NAME),
@@ -784,11 +786,12 @@ class RecurringTaskHandler extends AbstractFormInterceptor implements CellValida
     }
   }
 
-  private void refreshErrors(Cron cron, String input) {
+  private void refreshErrors(long id, Cron cron, String input) {
     if (BeeUtils.isEmpty(input)) {
       clearErrors(cron);
     } else {
-      CronExpression.parseSimpleValues(cron.field, input, getFailureHandler(cron, input));
+      CronExpression.parseSimpleValues(BeeUtils.toString(id), cron.field, input,
+          getFailureHandler(cron, input));
     }
   }
 
@@ -799,9 +802,9 @@ class RecurringTaskHandler extends AbstractFormInterceptor implements CellValida
     }
   }
 
-  private void refreshValues(Cron cron, String input) {
-    Set<Integer> values = CronExpression.parseSimpleValues(cron.field, input,
-        getFailureHandler(cron, input));
+  private void refreshValues(long id, Cron cron, String input) {
+    Set<Integer> values = CronExpression.parseSimpleValues(BeeUtils.toString(id),
+        cron.field, input, getFailureHandler(cron, input));
     setValues(cron, values);
   }
 
@@ -888,7 +891,7 @@ class RecurringTaskHandler extends AbstractFormInterceptor implements CellValida
       table.clear();
     }
 
-    Set<Long> taskExecutors = Sets.newHashSet();
+    Set<Long> taskExecutors = new HashSet<>();
     int r = 0;
 
     Collection<BeeRow> taskData = offspring.get(dayNumber);
@@ -1004,7 +1007,7 @@ class RecurringTaskHandler extends AbstractFormInterceptor implements CellValida
       ((Toggle) widget).setChecked(selected);
     }
   }
-  
+
   private void setValues(Cron cron, Set<Integer> values) {
     if (toggleContainers.containsKey(cron)) {
       for (int i = 0; i < toggleContainers.get(cron).getWidgetCount(); i++) {
@@ -1036,7 +1039,7 @@ class RecurringTaskHandler extends AbstractFormInterceptor implements CellValida
         clearOffspring();
         setExecutors(null);
 
-        List<ScheduleDateRange> scheduleDateRanges = Lists.newArrayList();
+        List<ScheduleDateRange> scheduleDateRanges = new ArrayList<>();
 
         if (response.hasResponse()) {
           Map<String, String> data = Codec.deserializeMap(response.getResponseAsString());
@@ -1071,6 +1074,7 @@ class RecurringTaskHandler extends AbstractFormInterceptor implements CellValida
     JustDate until = getDateValue(COL_RT_SCHEDULE_UNTIL);
 
     CronExpression.Builder builder = new CronExpression.Builder(from, until)
+        .id(BeeUtils.toString(getActiveRowId()))
         .dayOfMonth(getStringValue(COL_RT_DAY_OF_MONTH))
         .month(getStringValue(COL_RT_MONTH))
         .dayOfWeek(getStringValue(COL_RT_DAY_OF_WEEK))
@@ -1120,7 +1124,8 @@ class RecurringTaskHandler extends AbstractFormInterceptor implements CellValida
       int domMin = (i == 0) ? min.getDom() : 1;
       int domMax = (i == monthCount) ? max.getDom() : TimeUtils.monthLength(ym);
 
-      List<DayOfMonth> days = Lists.newArrayList();
+      List<DayOfMonth> days = new ArrayList<>();
+
       for (int dom = domMin; dom <= domMax; dom++) {
         JustDate date = new JustDate(ym.getYear(), ym.getMonth(), dom);
         ScheduleDateMode mode = cron.getDateMode(date);

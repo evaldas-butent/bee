@@ -5,10 +5,13 @@ import com.google.gwt.i18n.client.Messages;
 import com.butent.bee.shared.modules.ec.LocalizableEcMessages;
 import com.butent.bee.shared.modules.mail.LocalizableMailMessages;
 import com.butent.bee.shared.modules.tasks.LocalizableTaskMessages;
+import com.butent.bee.shared.modules.trade.LocalizableTradeMessages;
+import com.butent.bee.shared.modules.trade.acts.LocalizableTradeActMessages;
 import com.butent.bee.shared.modules.transport.LocalizableTransportMessages;
 
 public interface LocalizableMessages extends Messages, LocalizableTaskMessages,
-    LocalizableEcMessages, LocalizableMailMessages, LocalizableTransportMessages {
+    LocalizableEcMessages, LocalizableMailMessages, LocalizableTransportMessages,
+    LocalizableTradeMessages, LocalizableTradeActMessages {
 
   String allValuesEmpty(String label, String count);
 
@@ -23,6 +26,8 @@ public interface LocalizableMessages extends Messages, LocalizableTaskMessages,
   String deleteSelectedRows(int count);
 
   String endSession(String appName);
+
+  String exchangeFromTo(String from, String to);
 
   String fileNotFound(String file);
 

@@ -2,6 +2,7 @@ package com.butent.bee.client.grid;
 
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.Multimap;
+import com.google.gwt.core.client.Scheduler.ScheduledCommand;
 
 import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.Callback;
@@ -30,10 +31,11 @@ import com.butent.bee.client.presenter.PresenterCallback;
 import com.butent.bee.client.render.AbstractCellRenderer;
 import com.butent.bee.client.render.RenderableCell;
 import com.butent.bee.client.render.RenderableColumn;
-import com.butent.bee.client.ui.IdentifiableWidget;
 import com.butent.bee.client.ui.UiOption;
-import com.butent.bee.client.ui.WidgetFactory;
-import com.butent.bee.client.ui.WidgetSupplier;
+import com.butent.bee.client.view.ViewCallback;
+import com.butent.bee.client.view.ViewFactory;
+import com.butent.bee.client.view.ViewHelper;
+import com.butent.bee.client.view.ViewSupplier;
 import com.butent.bee.client.view.grid.CellGrid;
 import com.butent.bee.client.view.grid.ColumnInfo;
 import com.butent.bee.client.view.grid.GridFilterManager;
@@ -43,6 +45,7 @@ import com.butent.bee.client.view.grid.GridView;
 import com.butent.bee.client.view.grid.interceptor.GridInterceptor;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
+import com.butent.bee.shared.Consumer;
 import com.butent.bee.shared.Service;
 import com.butent.bee.shared.communication.ResponseObject;
 import com.butent.bee.shared.data.BeeColumn;
@@ -63,6 +66,7 @@ import com.butent.bee.shared.data.view.Order;
 import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogUtils;
+import com.butent.bee.shared.news.Feed;
 import com.butent.bee.shared.ui.CellType;
 import com.butent.bee.shared.ui.Flexibility;
 import com.butent.bee.shared.ui.GridDescription;
@@ -84,15 +88,21 @@ public final class GridFactory {
   public static final class GridOptions implements HasCaption {
 
     public static GridOptions forCaptionAndFilter(String cap, Filter flt) {
-      return (BeeUtils.isEmpty(cap) && flt == null) ? null : new GridOptions(cap, null, flt, null);
+      return (BeeUtils.isEmpty(cap) && flt == null)
+          ? null : new GridOptions(cap, null, flt, null, null);
     }
 
     public static GridOptions forCurrentUserFilter(String column) {
-      return BeeUtils.isEmpty(column) ? null : new GridOptions(null, null, null, column);
+      return BeeUtils.isEmpty(column) ? null : new GridOptions(null, null, null, column, null);
+    }
+
+    public static GridOptions forFeed(Feed feed, String cap, Filter flt) {
+      return (feed == null)
+          ? forCaptionAndFilter(cap, flt) : new GridOptions(cap, null, flt, null, feed);
     }
 
     public static GridOptions forFilter(Filter flt) {
-      return (flt == null) ? null : new GridOptions(null, null, flt, null);
+      return (flt == null) ? null : new GridOptions(null, null, flt, null, null);
     }
 
     private final String caption;
@@ -102,17 +112,24 @@ public final class GridFactory {
 
     private final String currentUserFilter;
 
+    private final Feed feed;
+
     private GridOptions(String caption, String filterDescription, Filter filter,
-        String currentUserFilter) {
+        String currentUserFilter, Feed feed) {
       this.caption = caption;
       this.filterDescription = filterDescription;
       this.filter = filter;
       this.currentUserFilter = currentUserFilter;
+      this.feed = feed;
     }
 
     @Override
     public String getCaption() {
       return caption;
+    }
+
+    public Feed getFeed() {
+      return feed;
     }
 
     private Filter buildFilter(String viewName) {
@@ -141,6 +158,8 @@ public final class GridFactory {
 
   private static final Map<String, GridDescription> descriptionCache = new HashMap<>();
   private static final Map<String, GridInterceptor> gridInterceptors = new HashMap<>();
+
+  private static final Map<String, Consumer<ScheduledCommand>> gridPreloaders = new HashMap<>();
 
   private static final Multimap<String, String> hiddenColumns = HashMultimap.create();
 
@@ -246,12 +265,6 @@ public final class GridFactory {
   }
 
   public static GridView createGridView(GridDescription gridDescription, String supplierKey,
-      List<BeeColumn> dataColumns) {
-    return createGridView(gridDescription, supplierKey, dataColumns, null,
-        getGridInterceptor(gridDescription.getName()), null);
-  }
-
-  public static GridView createGridView(GridDescription gridDescription, String supplierKey,
       List<BeeColumn> dataColumns, String relColumn, GridInterceptor gridInterceptor, Order order) {
 
     GridView gridView = new GridImpl(gridDescription, supplierKey, dataColumns, relColumn,
@@ -267,39 +280,27 @@ public final class GridFactory {
     return new RenderableColumn(cell, cellSource, renderer);
   }
 
-  public static void getGridDescription(String name, Callback<GridDescription> callback) {
-    getGridDescription(name, callback, false);
-  }
-
   public static void getGridDescription(final String name,
-      final Callback<GridDescription> callback, boolean reload) {
+      final Callback<GridDescription> callback) {
 
     Assert.notEmpty(name);
     Assert.notNull(callback);
 
-    if (!reload && isGridDescriptionCached(name)) {
-      callback.onSuccess(descriptionCache.get(gridDescriptionKey(name)));
-      return;
-    }
+    Consumer<ScheduledCommand> preloader = gridPreloaders.get(name);
 
-    BeeKeeper.getRpc().sendText(Service.GET_GRID, name, new ResponseCallback() {
-      @Override
-      public void onResponse(ResponseObject response) {
-        Assert.notNull(response);
+    if (preloader == null) {
+      loadDescription(name, callback);
 
-        if (response.hasResponse(GridDescription.class)) {
-          GridDescription gridDescription =
-              GridDescription.restore((String) response.getResponse());
-          callback.onSuccess(gridDescription);
-          if (!BeeUtils.isFalse(gridDescription.getCacheDescription())) {
-            descriptionCache.put(gridDescriptionKey(name), gridDescription);
-          }
-        } else {
-          callback.onFailure(response.getErrors());
-          descriptionCache.put(gridDescriptionKey(name), null);
+    } else {
+      preloader.accept(new ScheduledCommand() {
+        @Override
+        public void execute() {
+          loadDescription(name, callback);
         }
-      }
-    });
+      });
+
+      gridPreloaders.remove(name);
+    }
   }
 
   public static GridInterceptor getGridInterceptor(String gridName) {
@@ -321,7 +322,7 @@ public final class GridFactory {
       return null;
     } else {
       return new GridOptions(Localized.maybeTranslate(caption), filterDescription, null,
-          currentUserFilter);
+          currentUserFilter, null);
     }
   }
 
@@ -374,9 +375,15 @@ public final class GridFactory {
     }
   }
 
-  public static String getSupplierKey(String gridName) {
+  public static String getSupplierKey(String gridName, GridInterceptor gridInterceptor) {
     Assert.notEmpty(gridName);
-    return WidgetFactory.SupplierKind.GRID.getKey(gridName);
+
+    String key = (gridInterceptor == null) ? null : gridInterceptor.getSupplierKey();
+    if (BeeUtils.isEmpty(key)) {
+      return ViewFactory.SupplierKind.GRID.getKey(gridName);
+    } else {
+      return key;
+    }
   }
 
   public static void hideColumn(String gridName, String columnName) {
@@ -391,33 +398,16 @@ public final class GridFactory {
   }
 
   public static void openGrid(String gridName) {
-    openGrid(gridName, getGridInterceptor(gridName));
-  }
-
-  public static void openGrid(String gridName, GridInterceptor gridInterceptor) {
-    openGrid(gridName, gridInterceptor, null);
-  }
-
-  public static void openGrid(String gridName, GridInterceptor gridInterceptor,
-      GridOptions gridOptions) {
-    openGrid(gridName, gridInterceptor, gridOptions, PresenterCallback.SHOW_IN_ACTIVE_PANEL);
+    openGrid(gridName, getGridInterceptor(gridName), null, ViewHelper.getPresenterCallback());
   }
 
   public static void openGrid(String gridName, GridInterceptor gridInterceptor,
       GridOptions gridOptions, PresenterCallback presenterCallback) {
 
-    String supplierKey = getSupplierKey(gridName);
+    String supplierKey = getSupplierKey(gridName, gridInterceptor);
     Collection<UiOption> uiOptions = EnumSet.of(UiOption.ROOT);
 
-    if (!WidgetFactory.hasSupplier(supplierKey)) {
-      registerGridSupplier(supplierKey, gridName, gridInterceptor, uiOptions, gridOptions);
-    }
-
     createGrid(gridName, supplierKey, gridInterceptor, uiOptions, gridOptions, presenterCallback);
-  }
-
-  public static void openGrid(String gridName, GridOptions gridOptions) {
-    openGrid(gridName, getGridInterceptor(gridName), gridOptions);
   }
 
   public static void registerGridInterceptor(String gridName, GridInterceptor interceptor) {
@@ -425,11 +415,16 @@ public final class GridFactory {
     gridInterceptors.put(BeeUtils.normalize(gridName), interceptor);
   }
 
-  public static WidgetSupplier registerGridSupplier(String key, String gridName,
+  public static ViewSupplier registerGridSupplier(String key, String gridName,
       GridInterceptor interceptor) {
     return registerGridSupplier(key, gridName, interceptor, EnumSet.of(UiOption.ROOT), null);
   }
-  
+
+  public static ViewSupplier registerGridSupplier(String key, String gridName,
+      GridInterceptor interceptor, GridOptions gridOptions) {
+    return registerGridSupplier(key, gridName, interceptor, EnumSet.of(UiOption.ROOT), gridOptions);
+  }
+
   private static GridInterceptor getInterceptorInstance(GridInterceptor interceptor) {
     if (interceptor == null) {
       return null;
@@ -443,28 +438,34 @@ public final class GridFactory {
     }
   }
 
-  public static WidgetSupplier registerGridSupplier(final String key, final String gridName,
+  public static ViewSupplier registerGridSupplier(final String key, final String gridName,
       final GridInterceptor interceptor, final Collection<UiOption> uiOptions,
       final GridOptions gridOptions) {
 
     Assert.notEmpty(key);
     Assert.notEmpty(gridName);
 
-    WidgetSupplier supplier = new WidgetSupplier() {
+    ViewSupplier supplier = new ViewSupplier() {
       @Override
-      public void create(final Callback<IdentifiableWidget> callback) {
+      public void create(final ViewCallback callback) {
         createGrid(gridName, key, getInterceptorInstance(interceptor), uiOptions, gridOptions,
             new PresenterCallback() {
-          @Override
-          public void onCreate(Presenter presenter) {
-            callback.onSuccess(presenter.getWidget());
-          }
-        });
+              @Override
+              public void onCreate(Presenter presenter) {
+                callback.onSuccess(presenter.getMainView());
+              }
+            });
       }
     };
 
-    WidgetFactory.registerSupplier(key, supplier);
+    ViewFactory.registerSupplier(key, supplier);
     return supplier;
+  }
+
+  public static void registerPreloader(String gridName, Consumer<ScheduledCommand> preloader) {
+    Assert.notEmpty(gridName);
+    Assert.notNull(preloader);
+    gridPreloaders.put(gridName, preloader);
   }
 
   public static void showGridInfo(String name) {
@@ -558,8 +559,13 @@ public final class GridFactory {
         getPredefinedFilters(gridDescription, gridInterceptor);
     Global.getFilters().ensurePredefinedFilters(supplierKey, predefinedFilters);
 
-    final List<FilterComponent> initialUserFilterValues =
-        Global.getFilters().getInitialValues(supplierKey);
+    final List<FilterComponent> initialUserFilterValues;
+    if (gridInterceptor == null) {
+      initialUserFilterValues = Global.getFilters().getInitialValues(supplierKey);
+    } else {
+      initialUserFilterValues =
+          gridInterceptor.getInitialUserFilters(Global.getFilters().getInitialValues(supplierKey));
+    }
 
     final Order order = gridDescription.getOrder();
 
@@ -677,6 +683,32 @@ public final class GridFactory {
       return false;
     }
     return descriptionCache.containsKey(gridDescriptionKey(name));
+  }
+
+  private static void loadDescription(final String name, final Callback<GridDescription> callback) {
+    if (isGridDescriptionCached(name)) {
+      callback.onSuccess(descriptionCache.get(gridDescriptionKey(name)));
+      return;
+    }
+
+    BeeKeeper.getRpc().sendText(Service.GET_GRID, name, new ResponseCallback() {
+      @Override
+      public void onResponse(ResponseObject response) {
+        Assert.notNull(response);
+
+        if (response.hasResponse(GridDescription.class)) {
+          GridDescription gridDescription =
+              GridDescription.restore((String) response.getResponse());
+          callback.onSuccess(gridDescription);
+          if (!BeeUtils.isFalse(gridDescription.getCacheDescription())) {
+            descriptionCache.put(gridDescriptionKey(name), gridDescription);
+          }
+        } else {
+          callback.onFailure(response.getErrors());
+          descriptionCache.put(gridDescriptionKey(name), null);
+        }
+      }
+    });
   }
 
   private GridFactory() {

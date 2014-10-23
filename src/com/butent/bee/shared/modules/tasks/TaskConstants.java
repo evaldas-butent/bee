@@ -1,5 +1,6 @@
 package com.butent.bee.shared.modules.tasks;
 
+import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.Service;
 import com.butent.bee.shared.i18n.LocalizableConstants;
 import com.butent.bee.shared.i18n.Localized;
@@ -225,7 +226,7 @@ public final class TaskConstants {
 
   public static final String VIEW_RELATED_TASKS = "RelatedTasks";
   public static final String VIEW_RELATED_RECURRING_TASKS = "RelatedRecurringTasks";
-  
+
   public static final String COL_START_TIME = "StartTime";
   public static final String COL_FINISH_TIME = "FinishTime";
 
@@ -241,7 +242,7 @@ public final class TaskConstants {
 
   public static final String COL_TASK_TEMPLATE_NAME = "Name";
   public static final String COL_TASK_TYPE_NAME = "Name";
-  
+
   public static final String COL_SUMMARY = "Summary";
   public static final String COL_DESCRIPTION = "Description";
   public static final String COL_CAPTION = "Caption";
@@ -344,7 +345,7 @@ public final class TaskConstants {
   public static final String ALS_TASK_TYPE_FOREGROUND = "TypeForeground";
 
   public static final String ALS_LAST_SPAWN = "LastSpawn";
-  
+
   public static final String PROP_EXECUTORS = "Executors";
   public static final String PROP_EXECUTOR_GROUPS = "ExecutorGroups";
   public static final String PROP_OBSERVERS = "Observers";
@@ -385,7 +386,7 @@ public final class TaskConstants {
 
   public static final String GRID_TASK_TYPES = "TaskTypes";
   public static final String GRID_TASK_TEMPLATES = "TaskTemplates";
-  
+
   public static final String FORM_NEW_TASK = "NewTask";
   public static final String FORM_TASK = "Task";
 
@@ -396,9 +397,7 @@ public final class TaskConstants {
   public static final String FORM_NEW_REQUEST = "NewRequest";
   public static final String FORM_REQUEST = "Request";
 
-  public static final String CRM_STYLE_PREFIX = "bee-crm-";
-
-  public static final String STYLE_SHEET = "crm";
+  public static final String CRM_STYLE_PREFIX = BeeConst.CSS_CLASS_PREFIX + "crm-";
 
   public static final String FILTER_TASKS_NEW = "tasks_new";
   public static final String FILTER_TASKS_UPDATED = "tasks_updated";

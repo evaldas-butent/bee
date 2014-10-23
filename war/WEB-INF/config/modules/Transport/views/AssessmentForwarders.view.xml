@@ -26,14 +26,18 @@
   
       <SimpleJoin name="LoadingPlace" joinType="LEFT">
         <SimpleColumn name="Date" alias="LoadingDate" editable="true" label="=trLoadingDate" />
+        <SimpleColumn name="Company" alias="LoadingCompany" editable="true" label="=trLoadingCompany" />
         <SimpleColumn name="Contact" alias="LoadingContact" editable="true" label="=trLoadingContact" />
         <SimpleColumn name="Address" alias="LoadingAddress" editable="true" label="=trLoadingAddress" />
+        <SimpleColumn name="PostIndex" alias="LoadingPostIndex" editable="true" label="=trLoadingPostIndex" />
       </SimpleJoin>
   
       <SimpleJoin name="UnloadingPlace" joinType="LEFT">
         <SimpleColumn name="Date" alias="UnloadingDate" editable="true" label="=trUnloadingDate" />
+        <SimpleColumn name="Company" alias="UnloadingCompany" editable="true" label="=trUnloadingCompany" />
         <SimpleColumn name="Contact" alias="UnloadingContact" editable="true" label="=trUnloadingContact" />
         <SimpleColumn name="Address" alias="UnloadingAddress" editable="true" label="=trUnloadingAddress" />
+        <SimpleColumn name="PostIndex" alias="UnloadingPostIndex" editable="true" label="=trUnloadingPostIndex" />
       </SimpleJoin>
     </SimpleJoin>
 

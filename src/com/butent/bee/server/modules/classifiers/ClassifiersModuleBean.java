@@ -1,7 +1,8 @@
 package com.butent.bee.server.modules.classifiers;
 
+import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.Lists;
-import com.google.common.collect.Maps;
+import com.google.common.collect.Multimap;
 import com.google.common.collect.Sets;
 import com.google.common.eventbus.Subscribe;
 
@@ -11,10 +12,8 @@ import static com.butent.bee.shared.modules.classifiers.ClassifierConstants.*;
 import com.butent.bee.server.data.BeeTable;
 import com.butent.bee.server.data.BeeView;
 import com.butent.bee.server.data.DataEditorBean;
-import com.butent.bee.server.data.DataEvent.ViewDeleteEvent;
-import com.butent.bee.server.data.DataEvent.ViewInsertEvent;
-import com.butent.bee.server.data.DataEvent.ViewModifyEvent;
-import com.butent.bee.server.data.DataEvent.ViewUpdateEvent;
+import com.butent.bee.server.data.DataEvent.TableModifyEvent;
+import com.butent.bee.server.data.DataEvent.ViewQueryEvent;
 import com.butent.bee.server.data.DataEventHandler;
 import com.butent.bee.server.data.QueryServiceBean;
 import com.butent.bee.server.data.SystemBean;
@@ -29,8 +28,10 @@ import com.butent.bee.server.news.UsageQueryProvider;
 import com.butent.bee.server.sql.HasConditions;
 import com.butent.bee.server.sql.IsCondition;
 import com.butent.bee.server.sql.IsExpression;
+import com.butent.bee.server.sql.IsQuery;
 import com.butent.bee.server.sql.SqlInsert;
 import com.butent.bee.server.sql.SqlSelect;
+import com.butent.bee.server.sql.SqlUpdate;
 import com.butent.bee.server.sql.SqlUtils;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.Pair;
@@ -46,6 +47,7 @@ import com.butent.bee.shared.data.SimpleRowSet.SimpleRow;
 import com.butent.bee.shared.data.SqlConstants.SqlFunction;
 import com.butent.bee.shared.data.filter.Filter;
 import com.butent.bee.shared.data.filter.Operator;
+import com.butent.bee.shared.data.value.Value;
 import com.butent.bee.shared.i18n.LocalizableConstants;
 import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.logging.BeeLogger;
@@ -65,7 +67,9 @@ import com.butent.bee.shared.rights.SubModule;
 import com.butent.bee.shared.time.DateTime;
 import com.butent.bee.shared.utils.BeeUtils;
 
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
@@ -96,7 +100,7 @@ public class ClassifiersModuleBean implements BeeModule {
 
   @Override
   public List<SearchResult> doSearch(String query) {
-    List<SearchResult> search = Lists.newArrayList();
+    List<SearchResult> search = new ArrayList<>();
 
     if (usr.isModuleVisible(ModuleAndSub.of(getModule(), SubModule.CONTACTS))) {
       List<SearchResult> companiesSr = qs.getSearchResults(VIEW_COMPANIES,
@@ -110,7 +114,7 @@ public class ClassifiersModuleBean implements BeeModule {
       search.addAll(personsSr);
     }
 
-    if (usr.isModuleVisible(Module.TRADE.getName())) {
+    if (usr.isModuleVisible(ModuleAndSub.of(Module.TRADE))) {
       List<SearchResult> itemsSr = qs.getSearchResults(VIEW_ITEMS,
           Filter.anyContains(Sets.newHashSet(COL_ITEM_NAME, COL_ITEM_ARTICLE, COL_ITEM_BARCODE),
               query));
@@ -160,30 +164,83 @@ public class ClassifiersModuleBean implements BeeModule {
   public void init() {
     sys.registerDataEventHandler(new DataEventHandler() {
       @Subscribe
-      public void storeEmail(ViewModifyEvent event) {
-        if (BeeUtils.same(event.getTargetName(), TBL_EMAILS) && event.isBefore()
-            && !(event instanceof ViewDeleteEvent)) {
+      public void setPersonCompanies(ViewQueryEvent event) {
+        if (event.isAfter() && event.isTarget(VIEW_PERSONS)
+            && !DataUtils.isEmpty(event.getRowset())) {
 
-          List<BeeColumn> cols;
-          BeeRow row;
+          SqlSelect query = new SqlSelect()
+              .addFields(TBL_COMPANY_PERSONS, COL_PERSON, COL_COMPANY)
+              .addFields(TBL_COMPANIES, COL_COMPANY_NAME)
+              .addFrom(TBL_COMPANY_PERSONS)
+              .addFromInner(TBL_COMPANIES,
+                  sys.joinTables(TBL_COMPANIES, TBL_COMPANY_PERSONS, COL_COMPANY))
+              .addOrder(TBL_COMPANY_PERSONS, COL_PERSON)
+              .addOrder(TBL_COMPANIES, COL_COMPANY_NAME);
 
-          if (event instanceof ViewInsertEvent) {
-            cols = ((ViewInsertEvent) event).getColumns();
-            row = ((ViewInsertEvent) event).getRow();
-          } else {
-            cols = ((ViewUpdateEvent) event).getColumns();
-            row = ((ViewUpdateEvent) event).getRow();
+          if (event.getRowset().getNumberOfRows() < 100) {
+            query.setWhere(SqlUtils.inList(TBL_COMPANY_PERSONS, COL_PERSON,
+                event.getRowset().getRowIds()));
           }
-          int idx = DataUtils.getColumnIndex(COL_EMAIL_ADDRESS, cols);
 
-          if (idx != BeeConst.UNDEF) {
-            String email = BeeUtils.normalize(row.getString(idx));
+          SimpleRowSet data = qs.getData(query);
+          if (!DataUtils.isEmpty(data)) {
+            Multimap<Long, Long> companyIds = ArrayListMultimap.create();
+            Multimap<Long, String> companyNames = ArrayListMultimap.create();
+
+            for (SimpleRow row : data) {
+              Long person = row.getLong(COL_PERSON);
+
+              companyIds.put(person, row.getLong(COL_COMPANY));
+              companyNames.put(person, row.getValue(COL_COMPANY_NAME));
+            }
+
+            for (BeeRow row : event.getRowset()) {
+              if (companyIds.containsKey(row.getId())) {
+                row.setProperty(PROP_COMPANY_IDS,
+                    DataUtils.buildIdList(companyIds.get(row.getId())));
+                row.setProperty(PROP_COMPANY_NAMES,
+                    BeeUtils.joinItems(companyNames.get(row.getId())));
+              }
+            }
+          }
+        }
+      }
+
+      @Subscribe
+      public void storeEmail(TableModifyEvent event) {
+        if (BeeUtils.same(event.getTargetName(), TBL_EMAILS) && event.isBefore()
+            && (event.getQuery() instanceof SqlInsert || event.getQuery() instanceof SqlUpdate)) {
+
+          IsQuery query = event.getQuery();
+          Object expr = null;
+
+          if (query instanceof SqlInsert) {
+            if (!((SqlInsert) query).isMultipleInsert()
+                && ((SqlInsert) query).hasField(COL_EMAIL_ADDRESS)) {
+
+              expr = ((SqlInsert) query).getValue(COL_EMAIL_ADDRESS).getValue();
+            }
+          } else if (((SqlUpdate) query).hasField(COL_EMAIL_ADDRESS)) {
+            expr = ((SqlUpdate) query).getValue(COL_EMAIL_ADDRESS);
+
+            if (expr instanceof IsExpression) {
+              expr = ((IsExpression) expr).getValue();
+            }
+          }
+          if (expr instanceof Value) {
+            String email = BeeUtils.normalize(((Value) expr).getString());
 
             try {
               new InternetAddress(email, true).validate();
-              row.setValue(idx, email);
+
+              if (query instanceof SqlInsert) {
+                ((SqlInsert) query).updExpression(COL_EMAIL_ADDRESS, SqlUtils.constant(email));
+              } else {
+                ((SqlUpdate) query).updExpression(COL_EMAIL_ADDRESS, SqlUtils.constant(email));
+              }
             } catch (AddressException ex) {
-              event.addErrorMessage(BeeUtils.joinWords("Wrong address:", ex.getMessage()));
+              event.addErrorMessage(BeeUtils.joinWords("Wrong address ", email, ": ",
+                  ex.getMessage()));
             }
           }
         }
@@ -714,18 +771,24 @@ public class ClassifiersModuleBean implements BeeModule {
         .addFields(TBL_EMAILS, COL_EMAIL_ADDRESS)
         .addField(TBL_CITIES, COL_CITY_NAME, COL_CITY)
         .addField(TBL_COUNTRIES, COL_COUNTRY_NAME, COL_COUNTRY)
+        .addFields(TBL_COMPANY_BANK_ACCOUNTS, COL_BANK_ACCOUNT)
+        .addField(TBL_BANKS, COL_BANK_NAME, COL_BANK)
+        .addFields(TBL_BANKS, COL_BANK_CODE, COL_SWIFT_CODE)
         .addFrom(TBL_COMPANIES)
         .addFromLeft(TBL_CONTACTS, sys.joinTables(TBL_CONTACTS, TBL_COMPANIES, COL_CONTACT))
         .addFromLeft(TBL_EMAILS, sys.joinTables(TBL_EMAILS, TBL_CONTACTS, COL_EMAIL))
         .addFromLeft(TBL_CITIES, sys.joinTables(TBL_CITIES, TBL_CONTACTS, COL_CITY))
         .addFromLeft(TBL_COUNTRIES, sys.joinTables(TBL_COUNTRIES, TBL_CONTACTS, COL_COUNTRY))
+        .addFromLeft(TBL_COMPANY_BANK_ACCOUNTS,
+            sys.joinTables(TBL_COMPANY_BANK_ACCOUNTS, TBL_COMPANIES, COL_DEFAULT_BANK_ACCOUNT))
+        .addFromLeft(TBL_BANKS, sys.joinTables(TBL_BANKS, TBL_COMPANY_BANK_ACCOUNTS, COL_BANK))
         .setWhere(sys.idEquals(TBL_COMPANIES, companyId)));
 
     Locale loc = I18nUtils.toLocale(locale);
     LocalizableConstants constants = (loc == null)
         ? Localized.getConstants() : Localizations.getConstants(loc);
 
-    Map<String, String> translations = Maps.newHashMap();
+    Map<String, String> translations = new HashMap<>();
     translations.put(COL_COMPANY_NAME, constants.company());
     translations.put(COL_COMPANY_CODE, constants.companyCode());
     translations.put(COL_COMPANY_VAT_CODE, constants.companyVATCode());
@@ -737,8 +800,12 @@ public class ClassifiersModuleBean implements BeeModule {
     translations.put(COL_EMAIL_ADDRESS, constants.email());
     translations.put(COL_CITY, constants.city());
     translations.put(COL_COUNTRY, constants.country());
+    translations.put(COL_BANK, constants.bank());
+    translations.put(COL_BANK_CODE, constants.printBankCode());
+    translations.put(COL_SWIFT_CODE, constants.printBankSwift());
+    translations.put(COL_BANK_ACCOUNT, constants.printBankAccount());
 
-    Map<String, Pair<String, String>> info = Maps.newHashMap();
+    Map<String, Pair<String, String>> info = new HashMap<>();
 
     for (String col : translations.keySet()) {
       info.put(col, Pair.of(translations.get(col), row.getValue(col)));

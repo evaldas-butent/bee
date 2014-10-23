@@ -4,10 +4,10 @@ import com.butent.bee.client.output.Printable;
 import com.butent.bee.client.screen.HandlesStateChange;
 import com.butent.bee.client.screen.HasDomain;
 import com.butent.bee.client.ui.FormDescription;
-import com.butent.bee.client.ui.HasWidgetSupplier;
 import com.butent.bee.client.view.form.FormView;
 import com.butent.bee.client.view.form.interceptor.FormInterceptor;
 import com.butent.bee.shared.data.BeeColumn;
+import com.butent.bee.shared.ui.HasWidgetSupplier;
 
 import java.util.List;
 
@@ -23,7 +23,7 @@ public interface FormContainerView extends View, Printable, HasWidgetSupplier, H
   void create(FormDescription formDescription, List<BeeColumn> dataColumns, int rowCount,
       FormInterceptor interceptor);
 
-  FormView getContent();
+  FormView getForm();
 
   HeaderView getHeader();
 }

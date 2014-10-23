@@ -1,6 +1,7 @@
 package com.butent.bee.client.widget;
 
 import com.butent.bee.client.dom.DomUtils;
+import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.html.Tags;
 
 public class Summary extends CustomHasHtml {
@@ -13,16 +14,15 @@ public class Summary extends CustomHasHtml {
     this();
     setHtml(text);
   }
-  
+
   @Override
   public String getIdPrefix() {
     return "summary";
   }
-  
+
   @Override
   protected void init() {
     super.init();
-    addStyleName("bee-Summary");
+    addStyleName(BeeConst.CSS_CLASS_PREFIX + "Summary");
   }
 }
-

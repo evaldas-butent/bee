@@ -1,7 +1,5 @@
 package com.butent.bee.client.style;
 
-import com.google.common.collect.Lists;
-import com.google.common.collect.Maps;
 import com.google.gwt.core.client.JsArrayString;
 import com.google.gwt.dom.client.Element;
 import com.google.gwt.user.client.ui.UIObject;
@@ -15,6 +13,8 @@ import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.NameUtils;
 import com.butent.bee.shared.utils.Property;
 
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -27,18 +27,17 @@ public class ComputedStyles implements HasLength, HasInfo {
     Assert.notNull(el);
     Assert.notEmpty(p);
 
-    return getComputedStyle(el, NameUtils.decamelize(p, NAME_SEPARATOR),
-        NameUtils.camelize(p, NAME_SEPARATOR));
+    return getStyleImpl(el, NameUtils.decamelize(p, NAME_SEPARATOR));
   }
 
   public static String get(UIObject obj, String p) {
     Assert.notNull(obj);
     return get(obj.getElement(), p);
   }
-  
+
   public static Map<String, String> getNormalized(Element el) {
     Assert.notNull(el);
-    Map<String, String> result = Maps.newHashMap();
+    Map<String, String> result = new HashMap<>();
 
     ComputedStyles cs = new ComputedStyles(el);
     for (int i = 0; i < cs.getLength(); i++) {
@@ -63,71 +62,63 @@ public class ComputedStyles implements HasLength, HasInfo {
 
     } else if (BeeUtils.isInt(value)) {
       return BeeUtils.toInt(value);
-    
+
     } else if (BeeUtils.isDouble(value)) {
       return BeeUtils.toInt(BeeUtils.toDouble(value));
-    
+
     } else {
       return DEFAULT_PIXEL_VALUE;
     }
   }
-  
+
   public static String normalize(String s) {
     if (s == null) {
       return null;
     }
     return BeeUtils.remove(s, NAME_SEPARATOR).trim().toLowerCase();
   }
-  
-  private static native String getComputedStyle(Element el, String p, String c) /*-{
-    if ("getComputedStyle" in $wnd) {
-      return $wnd.getComputedStyle(el, null).getPropertyValue(p);
-    } else if ("currentStyle" in el) {
-      return el.currentStyle[c];
-    } else {
-      return null;
-    }
-  }-*/; 
 
-  private static native JsArrayString getComputedStyles(Element el) /*-{
+//@formatter:off
+  public static native String getStyleImpl(Element el, String p) /*-{
+    return $wnd.getComputedStyle(el, null).getPropertyValue(p);
+  }-*/;
+
+  private static native JsArrayString getStylesImpl(Element el) /*-{
     var arr = [];
 
-    if ("getComputedStyle" in $wnd) {
-      var cs = $wnd.getComputedStyle(el, null);
-      if (cs.length) {
-        for ( var i = 0; i < cs.length; i++) {
-          arr.push(cs.item(i), cs.getPropertyValue(cs.item(i)));
-        }
-      } else {
-        for ( var p in cs) {
-          if (cs.hasOwnProperty(p)) {
-            arr.push(p, cs[p]);
-          }
-        }
+    var cs = $wnd.getComputedStyle(el, null);
+    if (cs.length) {
+      for (var i = 0; i < cs.length; i++) {
+        arr.push(cs.item(i), cs.getPropertyValue(cs.item(i)));
       }
-
-    } else if ("currentStyle" in el) {
-      var cs = el.currentStyle;
-      for ( var p in cs) {
-        arr.push(p, cs[p]);
+    } else {
+      for (var p in cs) {
+        if (cs.hasOwnProperty(p)) {
+          arr.push(p, cs[p]);
+        }
       }
     }
 
     return arr;
   }-*/;
+//@formatter:on
 
   private final JsArrayString styles;
-  
+
   public ComputedStyles(Element el) {
     Assert.notNull(el);
-    styles = getComputedStyles(el);
+    styles = getStylesImpl(el);
   }
 
   @Override
   public List<Property> getInfo() {
-    List<Property> info = Lists.newArrayList();
+    List<Property> info = new ArrayList<>();
     for (int i = 0; i < getLength(); i++) {
-      info.add(new Property(getItem(i), getValue(i)));
+      String value = getValue(i);
+
+      if (!BeeUtils.isEmpty(value)) {
+        info.add(new Property(getItem(i), value));
+      }
     }
     return info;
   }
