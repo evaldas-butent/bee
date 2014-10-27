@@ -13,6 +13,8 @@ import com.butent.bee.shared.data.IsRow;
 import com.butent.bee.shared.data.filter.Filter;
 import com.butent.bee.shared.i18n.LocalizableConstants;
 import com.butent.bee.shared.i18n.Localized;
+import com.butent.bee.shared.modules.calendar.CalendarConstants;
+import com.butent.bee.shared.modules.classifiers.ClassifierConstants;
 import com.butent.bee.shared.modules.trade.TradeConstants;
 import com.butent.bee.shared.ui.ColumnDescription;
 import com.butent.bee.shared.utils.BeeUtils;
@@ -47,14 +49,23 @@ class DebtsGrid extends AbstractGridInterceptor {
     if (activeRow == null) {
       return;
     }
+    int idxCustomer = getDataIndex(TradeConstants.COL_TRADE_CUSTOMER);
 
     if (TradeConstants.PROP_AVERAGE_OVERDUE.equals(event.getColumnId())) {
-      int idxCostumer = getDataIndex(TradeConstants.COL_TRADE_CUSTOMER);
       GridOptions options = GridOptions.forFilter(Filter.equals(
-          TradeConstants.COL_TRADE_CUSTOMER, activeRow.getLong(idxCostumer)));
+          TradeConstants.COL_TRADE_CUSTOMER, activeRow.getLong(idxCustomer)));
 
       GridFactory.openGrid(TradeConstants.GRID_SALES,
           GridFactory.getGridInterceptor(TradeConstants.GRID_SALES),
+          options, PresenterCallback.SHOW_IN_NEW_TAB);
+    }
+
+    if (CalendarConstants.COL_APPOINTMENTS_COUNT.equals(event.getColumnId())) {
+      GridOptions options = GridOptions.forFilter(Filter.equals(
+          ClassifierConstants.COL_COMPANY, activeRow.getLong(idxCustomer)));
+
+      GridFactory.openGrid(CalendarConstants.GRID_APPOINTMENTS,
+          GridFactory.getGridInterceptor(CalendarConstants.GRID_APPOINTMENTS),
           options, PresenterCallback.SHOW_IN_NEW_TAB);
     }
   }

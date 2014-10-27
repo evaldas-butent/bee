@@ -4,12 +4,13 @@
 	xmlns:ui="http://www.butent.com/ui" 
 	name="Debts" viewName="Debts" 
 	disabledActions="add delete"
+	readOnly="true"
 	filter = "Debt > 0"
 	caption="=trdDebts"
 	>
 
 	<g:columns xmlns="http://www.butent.com/column" xmlns:g="http://www.butent.com/grid">
-		<RelColumn name="CustomerCode" caption="=companyCode" label="=companyCode" />
+		<RelColumn name="CustomerCode" caption="=companyCode" label="=companyCode"  />
 		<RelColumn name="Customer" renderColumns="CustomerName" caption="=company" label="=company" />
 		<RelColumn name="FinancialState" renderColumns="FinancialStateName" caption="=financialState" label="=financialState" />
 		<DataColumn name="InvoicePrefix" />
@@ -67,7 +68,16 @@
 		<DataColumn name="Debt" />
 		<RelColumn name="BankruptcyRisk" renderColumns="BankruptcyRiskName" caption="=clientBankruptcyRisk" label="=clientBankruptcyRisk"/>
 		<RelColumn name="DelayedPaymentRisk" renderColumns="DelayedPaymentRiskName" caption="=clientDelayedPaymentRisk" label="=clientDelayedPaymentRisk"/>
-		<DataColumn name="AppointmentsCount"  caption="=calListOfActions" label="=calListOfActions" />
+		<CalcColumn name="AppointmentsCount" type="integer" sortBy="AppointmentsCount"  caption="=calListOfActions" label="=calListOfActions">
+		  <style>
+        <bodyStyle><ui:class>bee-ActionCellLink</ui:class></bodyStyle>
+      </style>
+      <render>
+        <ui:function>         
+          return row.AppointmentsCount;
+        </ui:function>        
+      </render>
+		</CalcColumn>
 		<DataColumn name="LastAppointment"  caption ="=calLastActionDate" label="=calLastActionDate"/>
 		<DataColumn name="LastestPayment" label="=trdNoPaymentPeriod" caption="=trdLatestSalePayment" visible="false" />
 	</g:columns>

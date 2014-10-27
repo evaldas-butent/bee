@@ -388,6 +388,7 @@ public final class CalendarConstants {
   public static final String COL_ATTENDEE_TYPES = "AttendeeTypes";
   public static final String COL_ATTENDEES = "Attendees";
 
+  public static final String COL_APPOINTMENTS_COUNT = "AppointmentsCount";
   public static final String COL_APPOINTMENT_CREATOR = "AppointmentCreator";
   public static final String COL_APPOINTMENT_EDITOR = "AppointmentEditor";
 
