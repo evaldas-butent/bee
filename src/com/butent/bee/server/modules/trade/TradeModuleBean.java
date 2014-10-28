@@ -634,7 +634,6 @@ public class TradeModuleBean implements BeeModule {
     return ResponseObject.response(tdd);
   }
 
-  @SuppressWarnings("unchecked")
   private Document renderCompanyDebtMail(String subject, String p1,
       String p2, Long companyId) {
     Document doc = new Document();
@@ -665,7 +664,7 @@ public class TradeModuleBean implements BeeModule {
     Double debt = null;
 
     if (resp.getResponse() instanceof Map) {
-      creditInfo = (Map<String, Object>) resp.getResponse();
+      creditInfo = resp.getResponse(creditInfo, logger);
       if (creditInfo.get(VAR_DEBT) instanceof Double) {
         debt = (Double) creditInfo.get(VAR_DEBT);
       }
