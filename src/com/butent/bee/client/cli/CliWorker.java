@@ -1382,6 +1382,8 @@ public final class CliWorker {
           }
           logger.addSeparator();
 
+          inform(z, (logger.getLevel() == null) ? BeeConst.NULL : logger.getLevel().name());
+
         } else {
           logger.setLevel(level);
           logger.log(level, "level", level);

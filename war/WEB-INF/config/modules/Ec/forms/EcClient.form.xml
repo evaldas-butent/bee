@@ -17,7 +17,7 @@
     <FlowPanel style="margin-top: 2ex; margin-bottom: 2ex; min-height: 140px;">
       <FlowPanel class="flexBox-horizontal">
         <Label for="User" style="&lbl;" />
-        <DataSelector source="User" editSource="CompanyPerson" newRowEnabled="false"
+        <DataSelector source="User" editSource="CompanyPerson"
           style="width: 550px;" visible="true">
           <renderToken source="FirstName" />
           <renderToken source="LastName" />

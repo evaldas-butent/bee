@@ -84,6 +84,8 @@ public final class TradeActConstants {
   public static final String GRID_TRADE_ACT_ITEMS = "TradeActItems";
   public static final String GRID_TRADE_ACT_SERVICES = "TradeActServices";
 
+  public static final String GRID_TRADE_ACTS_AND_ITEMS = "TradeActsAndItems";
+
   public static final String FORM_TRADE_ACT = "TradeAct";
   public static final String FORM_INVOICE_BUILDER = "TradeActInvoiceBuilder";
 
