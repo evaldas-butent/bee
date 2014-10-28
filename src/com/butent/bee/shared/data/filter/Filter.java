@@ -322,7 +322,7 @@ public abstract class Filter implements BeeSerializable, RowFilter {
   }
 
   public static Filter isPositive(String column) {
-    return isMore(column, new IntegerValue(0));
+    return isMore(column, IntegerValue.ZERO);
   }
 
   public static Filter isTrue() {

@@ -269,7 +269,9 @@
 .bee-ta-report-ibc-body .bee-ta-report-ibc-Number:hover,
 .bee-ta-report-stock-body .bee-ta-report-stock-Item:hover,
 .bee-ta-report-stock-body .bee-ta-report-stock-ItemName:hover,
-.bee-ta-report-stock-body .bee-ta-report-stock-Article:hover {
+.bee-ta-report-stock-body .bee-ta-report-stock-Article:hover,
+.bee-ta-report-stock-body .bee-ta-report-stock-movement:hover,
+.bee-ta-report-stock-footer .bee-ta-report-stock-movement:hover {
   cursor: pointer;
   text-decoration: underline;
 }
