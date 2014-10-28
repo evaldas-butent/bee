@@ -14,10 +14,12 @@
       </SimpleJoin>
     </SimpleJoin>
         
-    <ExternalJoin name="Customer" source="Sales" joinType="INNER" >      
-      <AggregateColumn name="Customer" aggregate="COUNT" alias="DebtCount" label="=trInvoices" />
+    <ExternalJoin name="Customer" source="Sales" joinType="INNER" filter="(Amount > Paid OR !(Paid))" >
+      <AggregateColumn name="Customer" aggregate="COUNT" alias="DebtCount"  label="=trInvoices" />
       <AggregateColumn name="Amount" aggregate="SUM" alias="AmountSum" />
       <AggregateColumn name="Paid" aggregate="SUM" alias="PaidSum" />
+      <HiddenColumn name="Paid" />
+      <HiddenColumn name="Amount" />
       <SimpleColumn name="Currency" />
       <SimpleJoin name="Currency" joinType="LEFT">
         <SimpleColumn name="Name" alias="CurrencyName"/>

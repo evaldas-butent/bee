@@ -194,7 +194,8 @@ class DebtReportsGrid extends AbstractGridInterceptor implements ClickHandler {
       int idxCurrency = getDataIndex(AdministrationConstants.COL_CURRENCY);
       GridOptions options = GridOptions.forFilter(Filter.and(Filter.equals(
           TradeConstants.COL_TRADE_CUSTOMER, activeRow.getId()),
-          Filter.equals(AdministrationConstants.COL_CURRENCY, activeRow.getLong(idxCurrency))));
+          Filter.equals(AdministrationConstants.COL_CURRENCY, activeRow.getLong(idxCurrency)),
+          Filter.isPositive(TradeConstants.COL_TRADE_DEBT)));
 
       GridFactory.openGrid(TradeConstants.GRID_SALES,
           GridFactory.getGridInterceptor(TradeConstants.GRID_SALES),
