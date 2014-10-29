@@ -924,6 +924,10 @@ public class QueryServiceBean {
     return response;
   }
 
+  public boolean isEmpty(String source) {
+    return BeeUtils.isEmpty(source) || sqlCount(new SqlSelect().addFrom(source)) <= 0;
+  }
+
   @TransactionAttribute(TransactionAttributeType.MANDATORY)
   public int loadData(String target, SqlSelect sourceQuery) {
     Assert.state(sys.isTable(target));

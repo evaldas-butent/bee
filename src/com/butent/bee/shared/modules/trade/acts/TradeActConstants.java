@@ -16,6 +16,7 @@ public final class TradeActConstants {
 
   public static final String SVC_ITEMS_BY_COMPANY_REPORT = "GetItemsByCompanyReport";
   public static final String SVC_STOCK_REPORT = "GetStockReport";
+  public static final String SVC_SERVICES_REPORT = "GetServicesReport";
 
   public static final String TBL_TRADE_ACTS = "TradeActs";
   public static final String TBL_TRADE_ACT_ITEMS = "TradeActItems";
@@ -76,6 +77,8 @@ public final class TradeActConstants {
 
   public static final String ALS_BASE_AMOUNT = "BaseAmount";
   public static final String ALS_DISCOUNT_AMOUNT = "DiscountAmount";
+  public static final String ALS_WITHOUT_VAT = "WithoutVat";
+  public static final String ALS_VAT_AMOUNT = "VatAmount";
   public static final String ALS_TOTAL_AMOUNT = "TotalAmount";
 
   public static final String GRID_TRADE_ACTS = "TradeActs";
