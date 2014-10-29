@@ -1,9 +1,12 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE Form [
-  <!ENTITY section "margin-top: 5px;">
+  <!ENTITY section "margin-top: 5px; ">
   <!ENTITY inline "display:inline-block;">
-  <!ENTITY bold "font-weight:bold;">
+  <!ENTITY bold "font-weight:bold; font-family: Tahoma;font-size: 8.5pt;">
   <!ENTITY form "PrintOrderLT">
+  <!ENTITY orderData "font-family: Tahoma; font-size: 8.5pt; line-height: 0.5;" >
+  <!ENTITY termCondition "font-family: Tahoma; font-size: 8.5pt; line-height: 1;" >
+  <!ENTITY singnatureLine "width: 250px; text-align: left; margin: 0 auto 0 0;" >
 ]>
 <f:Form xmlns="http://www.butent.com/widget"
   xmlns:f="http://www.butent.com/form"
@@ -15,13 +18,12 @@
 
   <FlowPanel class="bee-PrintableForm bee-tr-Order-Print" style="padding: 10px; background-color: white;">
     <css id="&form;">
-      .&form;-table {border-collapse:collapse; width:100%;}
-      .&form;-table td {border:1px solid black; padding:2px;}
-      .&form;-forwarder .bee-co-companyInfo-name .bee-co-companyInfo-item:before {content: "Ekspeditorius: "; font-weight:normal;}
+      .&form;-table {border-collapse:collapse; width:100%; font-family: Tahoma; font-size: 8.5pt; line-height: 1;}
+      .&form;-table td {border:1px solid black; padding:2px; min-width: 100px;}
       .&form;-forwarder .bee-co-companyInfo-mobile {display:none;}
     </css>
     <HorizontalPanel>
-      <Table style="white-space:nowrap;">
+      <Table style="white-space:nowrap; &orderData;">
         <row>
           <Label html="Užsakymo Nr.:" style="&bold;" />
           <TextLabel>
@@ -37,18 +39,20 @@
           <DateTimeLabel source="Date" format="DATE_SHORT" />
         </row>
       </Table>
-      <Image url="images/HL_logo.jpg" style="width:50%;" />
+      <Image url="images/HL_logo.jpg" style="width:50%; margin-left: 50px;" />
     </HorizontalPanel>
 
     <FlowPanel style="&section;">
-      <Label html="Kliento informacija" style="&bold;" />
-
       <HorizontalPanel class="&form;-table">
         <cell style="vertical-align:top;">
-          <FlowPanel name="Customer" />
+          <FlowPanel>
+	          <Label html="Kliento informacija:" />
+	          <FlowPanel name="Customer" />
+          </FlowPanel>
         </cell>
         
         <FlowPanel>
+          
           <FlowPanel name="Forwarder" class="&form;-forwarder" />
           <br />
           <Label html="Ekspeditoriaus atstovas" style="&bold;" />
@@ -68,7 +72,7 @@
     <FlowPanel style="&section;">
       <Label html="Siuntėjas" style="&bold;" />
 
-      <HorizontalPanel class="&form;-table">
+      <HorizontalPanel class="&form;-table" style="min-height: 3ex;">
         <TextLabel source="Shipper" />
       </HorizontalPanel>
     </FlowPanel>
@@ -84,18 +88,24 @@
         </TextLabel>
         
         <FlowPanel>
-          <FlowPanel>
-            <Label html="Pakrovimas:" style="&inline; width:100px; text-align:right;" />
+          <FlowPanel>                        
+            <!--  Label html="Pakrovimas:" style="&inline; width:100px; text-align:right;" / -->
             <TextLabel source="LoadingAddress" style="&inline; margin-left:5px;">
-              <renderToken source="LoadingDate" format="DATE_SHORT" />
+              <renderToken source="LoadingDate" format="DATE_SHORT" prefix="Pakrovimo data: " addPrefixWhenEmpty="true" />
+              <renderToken source="LoadingCountryName" prefix=" &lt;br /&gt; Pakrovimo vieta: " addPrefixWhenEmpty="true" />
+              <renderToken source="LoadingCityName" prefix=", " />
               <renderToken source="LoadingAddress" prefix=", " />
+              <renderToken source="LoadingPostIndex" prefix=", " />
             </TextLabel>
           </FlowPanel>
           <FlowPanel>
-            <Label html="Iškrovimas:" style="&inline; width:100px; text-align:right;" />
+            <!--  Label html="Iškrovimas:" style="&inline; width:100px; text-align:right;"  -->
             <TextLabel source="UnloadingAddress" style="&inline; margin-left:5px;">
-              <renderToken source="UnloadingDate" format="DATE_SHORT" />
+              <renderToken source="UnloadingDate" format="DATE_SHORT" prefix="Iškrovimo data: " addPrefixWhenEmpty="true" />
+              <renderToken source="UnloadingCountryName" prefix=" &lt;br /&gt; Iškrovimo vieta: " addPrefixWhenEmpty="true" />
+              <renderToken source="UnLoadingCityName" prefix=", " />
               <renderToken source="UnloadingAddress" prefix=", " />
+              <renderToken source="UnLoadingPostIndex" prefix=", " />
             </TextLabel>
           </FlowPanel>
         </FlowPanel>
@@ -156,7 +166,7 @@
       </TextLabel>
     </HorizontalPanel>
 
-    <HtmlPanel style="&section;">
+    <HtmlPanel style="&section; &termCondition;">
       <span style="white-space:pre-wrap; font-size:xx-small;">Bendrosios sąlygos: 
 1. Ekspeditoriaus įsipareigojimai ir teisės: 
 1.1. Ekspeditorius įsipareigoja nuvežti jam patikėtą krovinį į šiame užsakyme nustatytą paskirties punktą ir išduoti jį gavėjui kartu su krovinio dokumentais pagal visus nustatytus norminius teisės aktus. 
@@ -183,13 +193,12 @@
 5. Ginčų sprendimas
 Visi ginčai, susiję su netinkamu ar nepilnu vienos ar abiejų šalių įsipareigojimų nevykdymu pagal šį užsakymą, sprendžiami tarpusavio derybų tvarka geranoriškai, o taip nesusitarus – Lietuvos Respublikos įstatymų nustatyta tvarka Kauno miesto teisme.
       </span>
-      <span style="font-size:smaller; &bold; display:block;">
-Ši sutartis, Kliento pateikta Ekspeditoriui, bei abiejų pusių patvirtinta faksu ar elektroniniu būdu turi tokią pačią juridinę galią kaip ir 
-originalas.
+      <span style="font-size:smaller; font-weight:bold; display:block;">
+Ši sutartis, Kliento pateikta Ekspeditoriui, bei abiejų pusių patvirtinta faksu ar elektroniniu būdu turi tokią pačią juridinę galią kaip ir originalas.
       </span>
     </HtmlPanel>
 
-    <Table style="width:100%; margin-top:10px;">
+    <Table style="width:100%; margin-top:10px; &orderData;">
       <row style="&bold;">
         <Label html="Kliento atstovas" />
         <Label html="Ekspeditoriaus atstovas" />
@@ -205,6 +214,10 @@ originalas.
           <renderToken source="LastName" />
           <renderToken source="Position" prefix=", " />
         </TextLabel>
+      </row>
+      <row>
+       <hr style="&singnatureLine;" />
+       <hr style="&singnatureLine;" />
       </row>
     </Table>
   </FlowPanel>

@@ -2,8 +2,11 @@
 <!DOCTYPE Form [
   <!ENTITY section "margin-top: 5px;">
   <!ENTITY inline "display:inline-block;">
-  <!ENTITY bold "font-weight:bold;">
+  <!ENTITY bold "font-weight:bold; font-family: Tahoma;font-size: 8.5pt;">
   <!ENTITY form "PrintOrderRU">
+  <!ENTITY orderData "font-family: Tahoma; font-size: 8.5pt; line-height: 0.5;" >
+  <!ENTITY termCondition "font-family: Tahoma; font-size: 8.5pt; line-height: 1;" >
+  <!ENTITY singnatureLine "width: 250px; text-align: left; margin: 0 auto 0 0;" >
 ]>
 <f:Form xmlns="http://www.butent.com/widget"
   xmlns:f="http://www.butent.com/form"
@@ -15,13 +18,12 @@
 
   <FlowPanel class="bee-PrintableForm bee-tr-Order-Print" style="padding: 10px; background-color: white;">
     <css id="&form;">
-      .&form;-table {border-collapse:collapse; width:100%;}
-      .&form;-table td {border:1px solid black; padding:2px;}
-      .&form;-forwarder .bee-co-companyInfo-name .bee-co-companyInfo-item:before {content: "Экспедитор: "; font-weight:normal;}
+      .&form;-table {border-collapse:collapse; width:100%; font-family: Tahoma; font-size: 8.5pt; line-height: 1;}
+      .&form;-table td {border:1px solid black; padding:2px; min-width: 100px;}
       .&form;-forwarder .bee-co-companyInfo-mobile {display:none;}
     </css>
     <HorizontalPanel>
-      <Table style="white-space:nowrap;">
+      <Table style="white-space:nowrap; &orderData;">
         <row>
           <Label html="Заказ №:" style="&bold;" />
           <TextLabel>
@@ -37,20 +39,22 @@
           <DateTimeLabel source="Date" format="DATE_SHORT" />
         </row>
       </Table>
-      <Image url="images/HL_logo.jpg" style="width:50%;" />
+      <Image url="images/HL_logo.jpg" style="width:50%; margin-left: 50px;" />
     </HorizontalPanel>
 
     <FlowPanel style="&section;">
-      <Label html="Информация о клиенте" style="&bold;" />
-
       <HorizontalPanel class="&form;-table">
         <cell style="vertical-align:top;">
-          <FlowPanel name="Customer">
-            <properties locale="ru" />
+          <FlowPanel>
+            <Label html="Информация о клиенте:" />
+	          <FlowPanel name="Customer">
+	            <properties locale="ru" />
+	          </FlowPanel>
           </FlowPanel>
         </cell>        
         
         <FlowPanel>
+          <Label html="Экспедитор: " />
           <FlowPanel name="Forwarder" class="&form;-forwarder">
             <properties locale="ru" />
           </FlowPanel>
@@ -72,7 +76,7 @@
     <FlowPanel style="&section;">
       <Label html="Грузоотправитель" style="&bold;" />
 
-      <HorizontalPanel class="&form;-table">
+      <HorizontalPanel class="&form;-table" style="min-height: 3ex;">
         <TextLabel source="Shipper" />
       </HorizontalPanel>
     </FlowPanel>
@@ -89,17 +93,23 @@
         
         <FlowPanel>
           <FlowPanel>
-            <Label html="Загрузка:" style="&inline; width:100px; text-align:right;" />
+            <!--  Label html="Загрузка:" style="&inline; width:100px; text-align:right;" /-->
             <TextLabel source="LoadingAddress" style="&inline; margin-left:5px;">
-              <renderToken source="LoadingDate" format="DATE_SHORT" />
+              <renderToken source="LoadingDate" format="DATE_SHORT" prefix="Дата загрузки: " addPrefixWhenEmpty="true" />
+              <renderToken source="LoadingCountryNameRU" prefix=" &lt;br /&gt; Место загрузки: " addPrefixWhenEmpty="true" />
+              <renderToken source="LoadingCityNameRU" prefix=", " />
               <renderToken source="LoadingAddress" prefix=", " />
+              <renderToken source="LoadingPostIndex" prefix=", " />
             </TextLabel>
           </FlowPanel>
           <FlowPanel>
-            <Label html="Выгруска:" style="&inline; width:100px; text-align:right;" />
+            <!--   Label html="Выгруска:" style="&inline; width:100px; text-align:right;" / -->
             <TextLabel source="UnloadingAddress" style="&inline; margin-left:5px;">
-              <renderToken source="UnloadingDate" format="DATE_SHORT" />
+              <renderToken source="UnloadingDate" format="DATE_SHORT" prefix="Дата поставки: " addPrefixWhenEmpty="true" />
+              <renderToken source="UnloadingCountryNameRU" prefix=" &lt;br /&gt; Место поставки: " addPrefixWhenEmpty="true" />
+              <renderToken source="UnLoadingCityNameRU" prefix=", " />
               <renderToken source="UnloadingAddress" prefix=", " />
+              <renderToken source="UnLoadingPostIndex" prefix=", " />
             </TextLabel>
           </FlowPanel>
         </FlowPanel>
@@ -160,7 +170,7 @@
       </TextLabel>
     </HorizontalPanel>
 
-    <HtmlPanel style="&section;">
+    <HtmlPanel style="&section; &termCondition;">
       <span style="white-space:pre-wrap; font-size:xx-small;">Oбщих условиях 
 1. Экспедитор в праве 
 1.1. предоставить Услуги Заказчику согласно этому Договора и 
@@ -189,12 +199,12 @@
 5. Арбитраж (Суд)
 5.1.Все разногласия связанные с исполнением настоящего Договора или конкретному договору-заявке решаются путем переговоров. Если согласия сторон не будет достигнуто, то споры сторон решаются по порядку законадательства Республики Литвы.
       </span>
-      <span style="font-size:smaller; &bold; display:block;">
+      <span style="font-size:smaller; font-weight:bold; display:block;">
 Этот заказ направлен экспедитора и подтверждена обеими сторонами по факсу или в электронном виде, имеет все юридические полномочия.
       </span>
     </HtmlPanel>
 
-    <Table style="width:100%; margin-top:10px;">
+    <Table style="width:100%; margin-top:10px; &orderData;">
       <row style="&bold;">
         <Label html="Представитель заказчика" />
         <Label html="Представитель экспедитора" />
@@ -209,6 +219,10 @@
           <renderToken source="FirstName" />
           <renderToken source="LastName" />
         </TextLabel>
+      </row>
+      <row>
+       <hr style="&singnatureLine;" />
+       <hr style="&singnatureLine;" />
       </row>
     </Table>
   </FlowPanel>
