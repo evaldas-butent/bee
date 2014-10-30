@@ -8,7 +8,7 @@
   >
   <g:columns>
     <SelectionColumn name="Select" width="20" />
-    <RelColumn name="Assessment" label="ID" editEnabled="true"
+    <RelColumn name="Assessment" label="ID" editEnabled="true" filterSupplier="value"
       editViewName="Assessments" editSource="Assessment" module="Transport.Logistics"/>
     <DataColumn name="OrderDate" />
     <RelColumn name="OrderNo" editEnabled="true" editSource="Order" visible="false" />
