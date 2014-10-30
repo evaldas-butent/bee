@@ -59,7 +59,7 @@ import com.butent.bee.shared.data.value.BooleanValue;
 import com.butent.bee.shared.data.value.Value;
 import com.butent.bee.shared.data.view.DataInfo;
 import com.butent.bee.shared.menu.MenuConstants;
-import com.butent.bee.shared.menu.MenuConstants.ITEM_TYPE;
+import com.butent.bee.shared.menu.MenuConstants.ItemType;
 import com.butent.bee.shared.ui.EditorAction;
 import com.butent.bee.shared.ui.HasCapsLock;
 import com.butent.bee.shared.ui.HasVisibleLines;
@@ -347,7 +347,7 @@ public final class Autocomplete extends Composite implements Editor, HasVisibleL
         };
       }
 
-      MenuItem item = new MenuItem(menu, next ? ITEM_NEXT : ITEM_PREV, ITEM_TYPE.LABEL, command);
+      MenuItem item = new MenuItem(menu, next ? ITEM_NEXT : ITEM_PREV, ItemType.LABEL, command);
       item.addStyleName(STYLE_NAVIGATION);
 
       return item;

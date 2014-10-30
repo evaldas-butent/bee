@@ -702,6 +702,8 @@ public interface LocalizableConstants extends Constants, LocalizableClassifierCo
 
   String vat();
 
+  String vatAmount();
+
   String vatPercent();
 
   String vatPlus();
