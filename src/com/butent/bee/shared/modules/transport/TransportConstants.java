@@ -372,6 +372,9 @@ public final class TransportConstants {
   public static final String COL_ASSESSMENT_LOG = "Log";
   public static final String COL_ASSESSMENT_EXPENSES = "ExpensesRegistered";
 
+  public static final String COL_SHOW_ADDITIONAL_ROUTE = "ShowAdditionalRoute";
+  public static final String COL_ADDITIONAL_ROUTE = "AdditionalRoute";
+
   public static final String COL_STATUS = "Status";
   public static final String COL_OWNER = "Owner";
   public static final String COL_OWNER_NAME = "OwnerName";

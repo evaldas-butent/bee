@@ -37,5 +37,8 @@
       <SimpleColumn name="InvoicePrefix" alias="PurchasePrefix" />
       <SimpleColumn name="InvoiceNo" alias="PurchaseNo" />
     </SimpleJoin>
+
+    <SimpleColumn name="AdditionalRoute" />
+    <SimpleColumn name="ShowAdditionalRoute" />    
   </Columns>
 </View>

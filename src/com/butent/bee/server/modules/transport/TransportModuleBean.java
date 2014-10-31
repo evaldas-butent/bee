@@ -986,12 +986,16 @@ public class TransportModuleBean implements BeeModule, HasTimerService {
     String unloadCountry = SqlUtils.uniqueName();
     String loadCity = SqlUtils.uniqueName();
     String unloadCity = SqlUtils.uniqueName();
+    String showIncomeAdditionalRoute = SqlUtils.uniqueName();
+    String incomeAdditionalRoute = SqlUtils.uniqueName();
 
     SqlSelect ss = new SqlSelect()
         .addFields(TBL_ORDERS, COL_ORDER_NO, COL_ORDER_NOTES)
         .addFields(TBL_ORDER_CARGO, COL_CARGO_CMR, COL_NUMBER, COL_CARGO_WEIGHT)
         .addFields(TBL_CARGO_INCOMES,
             COL_CARGO, COL_TRADE_VAT_PLUS, COL_TRADE_VAT, COL_TRADE_VAT_PERC)
+        .addField(TBL_CARGO_INCOMES, COL_SHOW_ADDITIONAL_ROUTE, showIncomeAdditionalRoute)
+        .addField(TBL_CARGO_INCOMES, COL_ADDITIONAL_ROUTE, incomeAdditionalRoute)
         .addField(loadPlace, COL_DATE, COL_LOADING_PLACE)
         .addField(unloadPlace, COL_DATE, COL_UNLOADING_PLACE)
         .addField(loadPlace, COL_POST_INDEX, loadPlace)
@@ -1003,7 +1007,7 @@ public class TransportModuleBean implements BeeModule, HasTimerService {
         .addField(unloadCountry, COL_COUNTRY_CODE, unloadCountry)
         .addField(unloadCountry, COL_COUNTRY_NAME, unloadCountry + "Name")
         .addField(TBL_ASSESSMENTS, sys.getIdName(TBL_ASSESSMENTS), COL_ASSESSMENT)
-        .addFields(TBL_ASSESSMENTS, "ShowAdditionalRoute")
+        .addFields(TBL_ASSESSMENTS, COL_SHOW_ADDITIONAL_ROUTE)
         .addFrom(TBL_CARGO_INCOMES)
         .addFromInner(TBL_SERVICES,
             sys.joinTables(TBL_SERVICES, TBL_CARGO_INCOMES, COL_SERVICE))
@@ -1029,14 +1033,15 @@ public class TransportModuleBean implements BeeModule, HasTimerService {
         .addGroup(TBL_ORDERS, COL_ORDER_NO, COL_ORDER_NOTES)
         .addGroup(TBL_ORDER_CARGO, COL_CARGO_CMR, COL_NUMBER, COL_CARGO_WEIGHT)
         .addGroup(TBL_CARGO_INCOMES,
-            COL_CARGO, COL_TRADE_VAT_PLUS, COL_TRADE_VAT, COL_TRADE_VAT_PERC)
+            COL_CARGO, COL_TRADE_VAT_PLUS, COL_TRADE_VAT, COL_TRADE_VAT_PERC,
+            COL_SHOW_ADDITIONAL_ROUTE, COL_ADDITIONAL_ROUTE)
         .addGroup(loadPlace, COL_DATE, COL_POST_INDEX)
         .addGroup(unloadPlace, COL_DATE, COL_POST_INDEX)
         .addGroup(loadCity, COL_CITY_NAME)
         .addGroup(unloadCity, COL_CITY_NAME)
         .addGroup(loadCountry, COL_COUNTRY_CODE, COL_COUNTRY_NAME)
         .addGroup(unloadCountry, COL_COUNTRY_CODE, COL_COUNTRY_NAME)
-        .addGroup(TBL_ASSESSMENTS, sys.getIdName(TBL_ASSESSMENTS), "ShowAdditionalRoute");
+        .addGroup(TBL_ASSESSMENTS, sys.getIdName(TBL_ASSESSMENTS), COL_SHOW_ADDITIONAL_ROUTE);
 
     if (DataUtils.isId(mainItem)) {
       ss.addConstant(mainItem, COL_ITEM)
@@ -1117,14 +1122,23 @@ public class TransportModuleBean implements BeeModule, HasTimerService {
       }
     }
     for (SimpleRow row : rs) {
+      // String route = BeeUtils.join("\n",
+      // BeeUtils.unbox(row.getBoolean(COL_SHOW_ADDITIONAL_ROUTE))
+      // ? BeeUtils.join("-",
+      // row.getValue(loadCountry) + " (" + row.getValue(loadCountry + "Name") + ")",
+      // row.getValue(unloadCountry) + " (" + row.getValue(unloadCountry + "Name") + ")")
+      // : null, row.getValue(COL_ORDER_NOTES));
+
+      String route = BeeUtils.join("\n", BeeUtils.join("-",
+          row.getValue(loadCountry) + " (" + row.getValue(loadCountry + "Name") + ")",
+          row.getValue(unloadCountry) + " (" + row.getValue(unloadCountry + "Name") + ")"),
+          BeeUtils.unbox(row.getBoolean(showIncomeAdditionalRoute))
+              ? row.getValue(incomeAdditionalRoute) : null);
+
       List<String> nodes = Lists.newArrayList(COL_ORDER_NO, row.getValue(COL_ORDER_NO),
           COL_ASSESSMENT, row.getValue(COL_ASSESSMENT), COL_CARGO_CMR, row.getValue(COL_CARGO_CMR),
-          COL_NUMBER, row.getValue(COL_NUMBER), COL_ORDER_NOTES,
-          BeeUtils.join("\n", BeeUtils.unbox(row.getBoolean("ShowAdditionalRoute"))
-              ? BeeUtils.join("-",
-                  row.getValue(loadCountry) + " (" + row.getValue(loadCountry + "Name") + ")",
-                  row.getValue(unloadCountry) + " (" + row.getValue(unloadCountry + "Name") + ")")
-              : null, row.getValue(COL_ORDER_NOTES)));
+          COL_NUMBER, row.getValue(COL_NUMBER), COL_ORDER_NOTES, route
+          );
 
       if (BeeUtils.unbox(row.getBoolean(COL_TRANSPORTATION))) {
         nodes.addAll(Lists.newArrayList(COL_LOADING_PLACE,
