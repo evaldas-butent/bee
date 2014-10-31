@@ -58,9 +58,9 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-public class TradeActServicesReport extends ReportInterceptor {
+public class TradeActTransferReport extends ReportInterceptor {
 
-  private static BeeLogger logger = LogUtils.getLogger(TradeActServicesReport.class);
+  private static BeeLogger logger = LogUtils.getLogger(TradeActTransferReport.class);
 
   private static final String NAME_START_DATE = "StartDate";
   private static final String NAME_END_DATE = "EndDate";
@@ -81,7 +81,7 @@ public class TradeActServicesReport extends ReportInterceptor {
   private static final List<String> MONEY_COLUMNS = Arrays.asList(COL_TRADE_ITEM_PRICE,
       ALS_WITHOUT_VAT, ALS_VAT_AMOUNT, ALS_TOTAL_AMOUNT);
 
-  private static final String STYLE_PREFIX = TradeActKeeper.STYLE_PREFIX + "report-svc-";
+  private static final String STYLE_PREFIX = TradeActKeeper.STYLE_PREFIX + "report-trf-";
 
   private static final String STYLE_TABLE = STYLE_PREFIX + "table";
 
@@ -95,12 +95,12 @@ public class TradeActServicesReport extends ReportInterceptor {
 
   private final XSheet sheet = new XSheet();
 
-  public TradeActServicesReport() {
+  public TradeActTransferReport() {
   }
 
   @Override
   public FormInterceptor getInstance() {
-    return new TradeActServicesReport();
+    return new TradeActTransferReport();
   }
 
   @Override
@@ -150,7 +150,7 @@ public class TradeActServicesReport extends ReportInterceptor {
       return;
     }
 
-    ParameterList params = TradeActKeeper.createArgs(SVC_SERVICES_REPORT);
+    ParameterList params = TradeActKeeper.createArgs(SVC_TRANSFER_REPORT);
     final List<String> headers = StringList.of(getReportCaption());
 
     if (start != null) {
@@ -240,7 +240,7 @@ public class TradeActServicesReport extends ReportInterceptor {
 
   @Override
   protected Report getReport() {
-    return Report.TRADE_ACT_SERVICES;
+    return Report.TRADE_ACT_TRANSFER;
   }
 
   @Override
@@ -276,12 +276,12 @@ public class TradeActServicesReport extends ReportInterceptor {
       container.clear();
     }
 
-    List<String> viewNames = Arrays.asList(VIEW_SALES, VIEW_SALE_ITEMS, VIEW_TRADE_ACT_INVOICES);
+    List<String> viewNames = Arrays.asList(VIEW_TRADE_ACTS, VIEW_TRADE_ACT_SERVICES);
     List<ValueType> types = TradeActHelper.getTypes(viewNames, data);
 
     Map<Integer, Double> totals = new HashMap<>();
 
-    boolean hasInvoice = data.hasColumn(COL_SALE);
+    boolean hasAct = data.hasColumn(COL_TRADE_ACT);
 
     int boldRef = sheet.registerFont(XFont.bold());
     String text;
@@ -382,8 +382,8 @@ public class TradeActServicesReport extends ReportInterceptor {
       }
 
       table.getRowFormatter().addStyleName(r, STYLE_BODY);
-      if (hasInvoice) {
-        DomUtils.setDataIndex(table.getRow(r), data.getLong(i, COL_SALE));
+      if (hasAct) {
+        DomUtils.setDataIndex(table.getRow(r), data.getLong(i, COL_TRADE_ACT));
       }
 
       sheet.add(xr);
@@ -429,9 +429,9 @@ public class TradeActServicesReport extends ReportInterceptor {
       sheet.add(xr);
     }
 
-    if (hasInvoice) {
-      final List<String> invClasses = Arrays.asList(getColumnStyle(COL_SALE),
-          getColumnStyle(COL_TRADE_NUMBER), getColumnStyle(COL_TRADE_INVOICE_NO));
+    if (hasAct) {
+      final List<String> actClasses = Arrays.asList(getColumnStyle(COL_TRADE_ACT),
+          getColumnStyle(COL_TA_NAME), getColumnStyle(COL_TA_NUMBER));
 
       table.addClickHandler(new ClickHandler() {
         @Override
@@ -439,12 +439,12 @@ public class TradeActServicesReport extends ReportInterceptor {
           Element target = EventUtils.getEventTargetElement(event);
           TableCellElement cell = DomUtils.getParentCell(target, true);
 
-          if (StyleUtils.hasAnyClass(cell, invClasses)) {
+          if (StyleUtils.hasAnyClass(cell, actClasses)) {
             TableRowElement row = DomUtils.getParentRow(cell, false);
-            long invId = DomUtils.getDataIndexLong(row);
+            long actId = DomUtils.getDataIndexLong(row);
 
-            if (DataUtils.isId(invId)) {
-              RowEditor.open(VIEW_SALES, invId, Opener.MODAL);
+            if (DataUtils.isId(actId)) {
+              RowEditor.open(VIEW_TRADE_ACTS, actId, Opener.MODAL);
             }
           }
         }
