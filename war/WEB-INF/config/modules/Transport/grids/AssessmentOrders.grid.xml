@@ -89,7 +89,7 @@
       &amp;&amp; new Date(row.UnloadingDate).setHours(0,0,0,0) == new Date().setHours(0,0,0,0)</ui:expression>
   </g:rowStyle>
   <g:rowStyle>
-    <ui:inline>="color:gold"</ui:inline>
+    <ui:inline>="color:purple"</ui:inline>
     <ui:expression>row.OrderStatus == 3 &amp;&amp; row.ExpensesCount &amp;&amp; !row.ExpensesCommited</ui:expression>
   </g:rowStyle>
   <g:rowStyle>
