@@ -16,6 +16,17 @@
         <SimpleColumn name="Status" />
         <SimpleColumn name="Date" alias="OrderDate" label="=orderDate" />
         <SimpleColumn name="OrderNo" />
+
+        <SimpleColumn name="Manager" editable="true" />
+        <SimpleJoin name="Manager" joinType="INNER">
+          <SimpleColumn name="CompanyPerson" />
+          <SimpleJoin name="CompanyPerson" joinType="LEFT">
+            <SimpleJoin name="Person" joinType="LEFT">
+              <SimpleColumn name="FirstName" />
+              <SimpleColumn name="LastName" />
+            </SimpleJoin>
+          </SimpleJoin>
+        </SimpleJoin>
       </SimpleJoin>
       <SimpleJoin name="LoadingPlace" joinType="LEFT">
         <SimpleJoin joinType="LEFT" name="Country">

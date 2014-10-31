@@ -31,6 +31,17 @@
           <SimpleColumn name="Name" alias="PayerName" />
           <SimpleColumn name="CreditDays" alias="PayerCreditDays" />
         </SimpleJoin>
+
+        <SimpleColumn name="Manager" editable="true" />
+        <SimpleJoin name="Manager" joinType="INNER">
+         <SimpleColumn name="CompanyPerson" />
+         <SimpleJoin name="CompanyPerson" joinType="LEFT">
+           <SimpleJoin name="Person" joinType="LEFT">
+             <SimpleColumn name="FirstName" alias="ManagerFirstName"/>
+             <SimpleColumn name="LastName" alias="ManagerLastName"/>
+           </SimpleJoin>
+         </SimpleJoin>
+      </SimpleJoin>
       </SimpleJoin>
       <SimpleJoin name="LoadingPlace" joinType="LEFT">
         <SimpleJoin joinType="LEFT" name="Country">
@@ -43,7 +54,6 @@
         </SimpleJoin>
         <SimpleColumn name="Date" alias="UnloadingDate" label="=unloading" />
       </SimpleJoin>
-
       <ExternalJoin source="CargoTrips" name="Cargo" joinType="LEFT">
         <SimpleJoin name="Trip" joinType="LEFT">
           <AggregateColumn name="ForwarderVehicle" aggregate="MAX" />

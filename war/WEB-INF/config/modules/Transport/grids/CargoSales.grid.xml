@@ -44,6 +44,7 @@
         <bodyStyle><ui:font>bold</ui:font></bodyStyle>
       </style>
     </CalcColumn>
+    <RelColumn name="Manager"  />
 
     <DataColumn name="Note" />
 
