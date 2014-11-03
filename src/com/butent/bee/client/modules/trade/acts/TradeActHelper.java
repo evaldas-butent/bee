@@ -111,15 +111,34 @@ final class TradeActHelper {
       case COL_TRADE_ITEM_PRICE:
         return Localized.getConstants().price();
 
+      case ALS_BASE_AMOUNT:
+        return Localized.getConstants().amount();
+
       case COL_TRADE_DISCOUNT:
         return Localized.getConstants().discountPercent();
       case ALS_DISCOUNT_AMOUNT:
         return Localized.getConstants().discount();
 
-      case ALS_BASE_AMOUNT:
-        return Localized.getConstants().amount();
+      case ALS_WITHOUT_VAT:
+        return Localized.getConstants().trdAmountWoVat();
+      case ALS_VAT_AMOUNT:
+        return Localized.getConstants().vatAmount();
+
       case ALS_TOTAL_AMOUNT:
         return Localized.getConstants().total();
+
+      case COL_SALE:
+        return Localized.getConstants().trdInvoiceId();
+
+      case COL_TRADE_INVOICE_PREFIX:
+        return Localized.getConstants().trdInvoicePrefix();
+      case COL_TRADE_INVOICE_NO:
+        return Localized.getConstants().trdInvoiceNo();
+
+      case COL_TA_INVOICE_FROM:
+        return Localized.getConstants().dateFrom();
+      case COL_TA_INVOICE_TO:
+        return Localized.getConstants().dateTo();
 
       default:
         logger.warning(NameUtils.getClassName(TradeActHelper.class), name, "label not defined");
@@ -170,6 +189,7 @@ final class TradeActHelper {
     switch (name) {
       case COL_TRADE_ACT:
       case COL_TA_ITEM:
+      case COL_SALE:
         return Format.getDefaultLongFormat();
 
       case COL_TRADE_ITEM_QUANTITY:
@@ -185,6 +205,8 @@ final class TradeActHelper {
 
       case ALS_BASE_AMOUNT:
       case ALS_DISCOUNT_AMOUNT:
+      case ALS_WITHOUT_VAT:
+      case ALS_VAT_AMOUNT:
       case ALS_TOTAL_AMOUNT:
         return getAmountFormat();
 
@@ -242,12 +264,17 @@ final class TradeActHelper {
 
       case ALS_BASE_AMOUNT:
       case ALS_DISCOUNT_AMOUNT:
+      case ALS_WITHOUT_VAT:
+      case ALS_VAT_AMOUNT:
       case ALS_TOTAL_AMOUNT:
         return ValueType.NUMBER;
 
       case ALS_WAREHOUSE_CODE:
       case ALS_ITEM_TYPE_NAME:
       case ALS_ITEM_GROUP_NAME:
+      case ALS_COMPANY_NAME:
+      case COL_FIRST_NAME:
+      case COL_LAST_NAME:
         return ValueType.TEXT;
     }
 

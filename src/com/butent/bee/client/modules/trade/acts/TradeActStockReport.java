@@ -1,9 +1,11 @@
 package com.butent.bee.client.modules.trade.acts;
 
+import com.google.common.base.Strings;
 import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.Multimap;
 import com.google.gwt.core.client.Scheduler;
 import com.google.gwt.dom.client.Element;
+import com.google.gwt.dom.client.NodeList;
 import com.google.gwt.dom.client.TableCellElement;
 import com.google.gwt.dom.client.TableRowElement;
 import com.google.gwt.event.dom.client.ClickEvent;
@@ -38,6 +40,9 @@ import com.butent.bee.shared.css.Colors;
 import com.butent.bee.shared.css.values.TextAlign;
 import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.SimpleRowSet;
+import com.butent.bee.shared.data.filter.CompoundFilter;
+import com.butent.bee.shared.data.filter.Filter;
+import com.butent.bee.shared.data.value.DateTimeValue;
 import com.butent.bee.shared.data.value.ValueType;
 import com.butent.bee.shared.export.XCell;
 import com.butent.bee.shared.export.XFont;
@@ -60,6 +65,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 public class TradeActStockReport extends ReportInterceptor {
 
@@ -89,6 +95,8 @@ public class TradeActStockReport extends ReportInterceptor {
   private static final String STYLE_START = STYLE_PREFIX + "start";
   private static final String STYLE_MOVEMENT = STYLE_PREFIX + "movement";
   private static final String STYLE_END = STYLE_PREFIX + "end";
+
+  private static final String KEY_COL_NAME = "cn";
 
   private static String dropSuffix(String colName) {
     if (isQuantityColumn(colName)) {
@@ -208,6 +216,8 @@ public class TradeActStockReport extends ReportInterceptor {
     return name.endsWith(SFX_WEIGHT);
   }
 
+  private final Map<String, Filter> filters = new HashMap<>();
+
   private final XSheet sheet = new XSheet();
 
   public TradeActStockReport() {
@@ -273,12 +283,15 @@ public class TradeActStockReport extends ReportInterceptor {
     headers.addAll(getCaptions(start, end, qty, weight));
 
     ParameterList params = TradeActKeeper.createArgs(SVC_STOCK_REPORT);
+    filters.clear();
 
     if (start != null) {
       params.addDataItem(Service.VAR_FROM, start.getTime());
+      filters.put(NAME_START_DATE, Filter.isMoreEqual(COL_TA_DATE, new DateTimeValue(start)));
     }
     if (end != null) {
       params.addDataItem(Service.VAR_TO, end.getTime());
+      filters.put(NAME_END_DATE, Filter.isLess(COL_TA_DATE, new DateTimeValue(end)));
     }
 
     if (qty) {
@@ -287,6 +300,8 @@ public class TradeActStockReport extends ReportInterceptor {
     if (weight) {
       params.addDataItem(COL_ITEM_WEIGHT, Codec.pack(weight));
     }
+
+    Filter filter;
 
     for (String name : FILTER_NAMES) {
       String ids = getEditorValue(name);
@@ -301,6 +316,25 @@ public class TradeActStockReport extends ReportInterceptor {
         }
 
         headers.add(BeeUtils.joinWords(label, getFilterLabel(name)));
+
+        Set<Long> values = DataUtils.parseIdSet(ids);
+
+        switch (name) {
+          case COL_WAREHOUSE:
+            filter = Filter.or(Filter.any(COL_OPERATION_WAREHOUSE_FROM, values),
+                Filter.any(COL_OPERATION_WAREHOUSE_TO, values));
+            break;
+
+          case COL_CATEGORY:
+            filter = Filter.in(COL_TA_ITEM, VIEW_ITEM_CATEGORIES, COL_ITEM,
+                Filter.any(COL_CATEGORY, values));
+            break;
+
+          default:
+            filter = Filter.any(name, values);
+        }
+
+        filters.put(name, filter);
       }
     }
 
@@ -623,6 +657,8 @@ public class TradeActStockReport extends ReportInterceptor {
         }
 
         table.setText(r, j, text, columnStyles.get(j));
+        DomUtils.setDataProperty(table.getCellFormatter().getElement(r, j), KEY_COL_NAME, colName);
+
         if (export) {
           xr.add(new XCell(j, text));
         }
@@ -676,6 +712,9 @@ public class TradeActStockReport extends ReportInterceptor {
         text = (format == null) ? BeeUtils.toString(value) : format.format(value);
 
         table.setText(r, index, text, columnStyles.get(index));
+        DomUtils.setDataProperty(table.getCellFormatter().getElement(r, index),
+            KEY_COL_NAME, colName);
+
         xr.add(new XCell(index, text, footerStyleRef));
       }
 
@@ -683,20 +722,31 @@ public class TradeActStockReport extends ReportInterceptor {
       sheet.add(xr);
     }
 
-    if (hasItem) {
+    if (hasItem || !movementColumns.isEmpty()) {
       final List<String> itemClasses = Arrays.asList(getColumnStyle(COL_TA_ITEM),
           getColumnStyle(ALS_ITEM_NAME), getColumnStyle(COL_ITEM_ARTICLE));
+      final List<String> movementRowClasses = Arrays.asList(STYLE_BODY, STYLE_FOOTER);
+
+      final String period = Format.renderPeriod(start, end);
 
       table.addClickHandler(new ClickHandler() {
         @Override
         public void onClick(ClickEvent event) {
           Element target = EventUtils.getEventTargetElement(event);
+
           TableCellElement cell = DomUtils.getParentCell(target, true);
+          TableRowElement row = DomUtils.getParentRow(cell, false);
 
-          if (StyleUtils.hasAnyClass(cell, itemClasses)) {
-            TableRowElement row = DomUtils.getParentRow(cell, false);
+          if (StyleUtils.hasClassName(cell, STYLE_MOVEMENT)
+              && StyleUtils.hasAnyClass(row, movementRowClasses)) {
+
+            String colName = DomUtils.getDataProperty(cell, KEY_COL_NAME);
+            if (BeeUtils.allNotEmpty(colName, cell.getInnerText())) {
+              showMovement(period, row, colName);
+            }
+
+          } else if (StyleUtils.hasAnyClass(cell, itemClasses)) {
             long id = DomUtils.getDataIndexLong(row);
-
             if (DataUtils.isId(id)) {
               RowEditor.open(VIEW_ITEMS, id, Opener.MODAL);
             }
@@ -706,5 +756,94 @@ public class TradeActStockReport extends ReportInterceptor {
     }
 
     container.add(table);
+  }
+
+  private void showMovement(String period, TableRowElement row, String colName) {
+    Long operation = BeeUtils.toLongOrNull(dropSuffix(BeeUtils.removePrefix(colName,
+        PFX_MOVEMENT)));
+    if (!DataUtils.isId(operation)) {
+      logger.warning("cannot parse operation", colName);
+      return;
+    }
+
+    List<String> captions = new ArrayList<>();
+    CompoundFilter filter = Filter.and();
+
+    filter.add(Filter.equals(COL_TA_OPERATION, operation));
+
+    captions.add(TradeActKeeper.getOperationName(operation));
+    captions.add(period);
+
+    Long item = null;
+    String type = null;
+    String group = null;
+
+    if (StyleUtils.hasClassName(row, STYLE_BODY)) {
+      NodeList<TableCellElement> cells = row.getCells();
+      for (int i = 0; i < cells.getLength(); i++) {
+        TableCellElement cell = cells.getItem(i);
+        String name = DomUtils.getDataProperty(cell, KEY_COL_NAME);
+
+        if (!BeeUtils.isEmpty(name)) {
+          switch (name) {
+            case COL_TA_ITEM:
+              item = BeeUtils.toLongOrNull(cell.getInnerText());
+              if (DataUtils.isId(item)) {
+                filter.add(Filter.equals(COL_TA_ITEM, item));
+              }
+              break;
+
+            case ALS_ITEM_TYPE_NAME:
+              type = Strings.nullToEmpty(cell.getInnerText());
+              break;
+
+            case ALS_ITEM_GROUP_NAME:
+              group = Strings.nullToEmpty(cell.getInnerText());
+              break;
+
+            case ALS_ITEM_NAME:
+            case COL_ITEM_ARTICLE:
+              String text = cell.getInnerText();
+              if (!BeeUtils.isEmpty(text)) {
+                captions.add(text);
+              }
+              break;
+          }
+        }
+      }
+    }
+
+    for (Map.Entry<String, Filter> entry : filters.entrySet()) {
+      if (!COL_WAREHOUSE.equals(entry.getKey())
+          && (item == null || !BeeUtils.inList(entry.getKey(), COL_CATEGORY, COL_TA_ITEM))) {
+        filter.add(entry.getValue());
+      }
+    }
+
+    if (item == null) {
+      if (type != null) {
+        if (type.isEmpty()) {
+          filter.add(Filter.isNull(ALS_ITEM_TYPE_NAME));
+        } else {
+          filter.add(Filter.equals(ALS_ITEM_TYPE_NAME, type));
+          captions.add(type);
+        }
+      }
+
+      if (group != null) {
+        if (group.isEmpty()) {
+          filter.add(Filter.isNull(ALS_ITEM_GROUP_NAME));
+        } else {
+          filter.add(Filter.equals(ALS_ITEM_GROUP_NAME, group));
+          captions.add(group);
+        }
+      }
+
+      if (isWeightColumn(colName)) {
+        filter.add(Filter.isPositive(COL_ITEM_WEIGHT));
+      }
+    }
+
+    drillDown(GRID_TRADE_ACTS_AND_ITEMS, BeeUtils.joinWords(captions), filter);
   }
 }

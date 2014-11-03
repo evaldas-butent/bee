@@ -6,6 +6,7 @@ import com.butent.bee.client.modules.classifiers.CompanyUsageReport;
 import com.butent.bee.client.modules.trade.acts.TradeActItemsByCompanyReport;
 import com.butent.bee.client.modules.trade.acts.TradeActServicesReport;
 import com.butent.bee.client.modules.trade.acts.TradeActStockReport;
+import com.butent.bee.client.modules.trade.acts.TradeActTransferReport;
 import com.butent.bee.client.modules.transport.AssessmentQuantityReport;
 import com.butent.bee.client.modules.transport.AssessmentTurnoverReport;
 import com.butent.bee.client.ui.FormDescription;
@@ -62,6 +63,12 @@ public enum Report implements HasWidgetSupplier {
     @Override
     protected ReportInterceptor getInterceptor() {
       return new TradeActServicesReport();
+    }
+  },
+  TRADE_ACT_TRANSFER("TradeActTransfer", "TradeActTransferReport") {
+    @Override
+    protected ReportInterceptor getInterceptor() {
+      return new TradeActTransferReport();
     }
   };
 
