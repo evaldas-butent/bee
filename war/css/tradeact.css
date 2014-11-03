@@ -87,6 +87,7 @@
 .bee-ta-invoice-service-row:nth-child(odd),
 .bee-ta-report-ibc-body:nth-child(odd),
 .bee-ta-report-svc-body:nth-child(odd),
+.bee-ta-report-trf-body:nth-child(odd),
 .bee-ta-report-stock-body:nth-child(odd) {
   background-color: #f5f5f5;
 }
@@ -96,6 +97,7 @@
 .bee-ta-invoice-service-row:nth-child(even),
 .bee-ta-report-ibc-body:nth-child(even),
 .bee-ta-report-svc-body:nth-child(even),
+.bee-ta-report-trf-body:nth-child(even),
 .bee-ta-report-stock-body:nth-child(even) {
   background-color: #ebebeb;
 }
@@ -108,6 +110,8 @@
 .bee-ta-report-ibc-footer:hover,
 .bee-ta-report-svc-body:hover,
 .bee-ta-report-svc-footer:hover,
+.bee-ta-report-trf-body:hover,
+.bee-ta-report-trf-footer:hover,
 .bee-ta-report-stock-body:hover,
 .bee-ta-report-stock-footer:hover {
   background-color: blanchedalmond;
@@ -253,6 +257,7 @@
 
 .bee-ta-report-ibc-table td,
 .bee-ta-report-svc-table td,
+.bee-ta-report-trf-table td,
 .bee-ta-report-stock-table td {
   padding: 3px 5px;
   border: 1px solid #ddd;
@@ -262,12 +267,15 @@
 .bee-ta-report-ibc-footer,
 .bee-ta-report-svc-header,
 .bee-ta-report-svc-footer,
+.bee-ta-report-trf-header,
+.bee-ta-report-trf-footer,
 .bee-ta-report-stock-header,
 .bee-ta-report-stock-footer {
   font-weight: bold;
 }
 .bee-ta-report-ibc-header td,
 .bee-ta-report-svc-header td,
+.bee-ta-report-trf-header td,
 .bee-ta-report-stock-header td {
   text-align: center;
 }
@@ -277,6 +285,9 @@
 .bee-ta-report-ibc-body .bee-ta-report-ibc-Number:hover,
 .bee-ta-report-svc-body .bee-ta-report-svc-Sale:hover,
 .bee-ta-report-svc-body .bee-ta-report-svc-InvoiceNo:hover,
+.bee-ta-report-trf-body .bee-ta-report-trf-TradeAct:hover,
+.bee-ta-report-trf-body .bee-ta-report-trf-ActName:hover,
+.bee-ta-report-trf-body .bee-ta-report-trf-Number:hover,
 .bee-ta-report-stock-body .bee-ta-report-stock-Item:hover,
 .bee-ta-report-stock-body .bee-ta-report-stock-ItemName:hover,
 .bee-ta-report-stock-body .bee-ta-report-stock-Article:hover,

@@ -142,6 +142,10 @@ public class TradeActBean {
         response = getServicesReport(reqInfo);
         break;
 
+      case SVC_TRANSFER_REPORT:
+        response = getTransferReport(reqInfo);
+        break;
+
       default:
         String msg = BeeUtils.joinWords("service not recognized:", svc);
         logger.warning(msg);
@@ -1843,6 +1847,384 @@ public class TradeActBean {
     if (DataUtils.isEmpty(data)) {
       return ResponseObject.emptyResponse();
     } else {
+      return ResponseObject.response(data);
+    }
+  }
+
+  private ResponseObject getTransferReport(RequestInfo reqInfo) {
+    Long startDate = reqInfo.getParameterLong(Service.VAR_FROM);
+    Long endDate = reqInfo.getParameterLong(Service.VAR_TO);
+
+    Long currency = reqInfo.getParameterLong(COL_TA_CURRENCY);
+
+    Set<Long> companies = DataUtils.parseIdSet(reqInfo.getParameter(COL_TA_COMPANY));
+    Set<Long> managers = DataUtils.parseIdSet(reqInfo.getParameter(COL_TA_MANAGER));
+
+    Set<Long> categories = DataUtils.parseIdSet(reqInfo.getParameter(COL_CATEGORY));
+    Set<Long> services = DataUtils.parseIdSet(reqInfo.getParameter(COL_TA_ITEM));
+
+    List<String> groupBy = NameUtils.toList(reqInfo.getParameter(Service.VAR_GROUP_BY));
+
+    SqlSelect rangeQuery = new SqlSelect()
+        .addFields(TBL_TRADE_ACT_INVOICES, COL_TRADE_ACT)
+        .addMin(TBL_TRADE_ACT_INVOICES, COL_TA_INVOICE_FROM)
+        .addMax(TBL_TRADE_ACT_INVOICES, COL_TA_INVOICE_TO)
+        .addFrom(TBL_TRADE_ACT_INVOICES)
+        .addGroup(TBL_TRADE_ACT_INVOICES, COL_TRADE_ACT);
+
+    String rangeAlias = "rng_" + SqlUtils.uniqueName();
+
+    HasConditions actConditions = SqlUtils.and();
+    HasConditions serviceConditions = SqlUtils.and();
+
+    HasConditions kindConditions = SqlUtils.or();
+    for (TradeActKind kind : TradeActKind.values()) {
+      if (kind.enableInvoices()) {
+        kindConditions.add(SqlUtils.equals(TBL_TRADE_ACTS, COL_TA_KIND, kind.ordinal()));
+      }
+    }
+    actConditions.add(kindConditions);
+
+    actConditions.add(
+        SqlUtils.or(
+            SqlUtils.isNull(TBL_TRADE_ACTS, COL_TA_STATUS),
+            SqlUtils.notNull(TBL_TRADE_STATUSES, COL_STATUS_ACTIVE)));
+
+    if (startDate != null) {
+      actConditions.add(
+          SqlUtils.or(
+              SqlUtils.isNull(TBL_TRADE_ACTS, COL_TA_UNTIL),
+              SqlUtils.more(TBL_TRADE_ACTS, COL_TA_UNTIL, startDate)));
+    }
+    if (endDate != null) {
+      actConditions.add(SqlUtils.less(TBL_TRADE_ACTS, COL_TA_DATE, endDate));
+    }
+
+    if (!companies.isEmpty()) {
+      actConditions.add(SqlUtils.inList(TBL_TRADE_ACTS, COL_TA_COMPANY, companies));
+    }
+    if (!managers.isEmpty()) {
+      actConditions.add(SqlUtils.inList(TBL_TRADE_ACTS, COL_TA_MANAGER, managers));
+    }
+
+    if (!categories.isEmpty()) {
+      serviceConditions.add(SqlUtils.in(TBL_TRADE_ACT_SERVICES, COL_TA_ITEM,
+          TBL_ITEM_CATEGORIES, COL_ITEM,
+          SqlUtils.inList(TBL_ITEM_CATEGORIES, COL_CATEGORY, categories)));
+    }
+    if (!services.isEmpty()) {
+      serviceConditions.add(SqlUtils.inList(TBL_TRADE_ACT_SERVICES, COL_TA_ITEM, services));
+    }
+
+    String actIdName = sys.getIdName(TBL_TRADE_ACTS);
+
+    int amountPrecision = 15;
+    int amountScale = 2;
+
+    SqlSelect actQuery = new SqlSelect()
+        .addFields(TBL_TRADE_ACTS, actIdName, COL_TA_NAME, COL_TA_DATE, COL_TA_UNTIL,
+            COL_TA_SERIES, COL_TA_NUMBER, COL_TA_CURRENCY)
+        .addFields(rangeAlias, COL_TA_INVOICE_FROM, COL_TA_INVOICE_TO)
+        .addFields(TBL_TRADE_OPERATIONS, COL_OPERATION_NAME)
+        .addFields(TBL_TRADE_STATUSES, COL_STATUS_NAME)
+        .addField(TBL_COMPANIES, COL_COMPANY_NAME, ALS_COMPANY_NAME)
+        .addFields(TBL_COMPANY_OBJECTS, COL_COMPANY_OBJECT_NAME)
+        .addFields(TBL_PERSONS, COL_FIRST_NAME, COL_LAST_NAME);
+
+    actQuery.addEmptyNumeric(ALS_ITEM_TOTAL, amountPrecision, amountScale);
+
+    actQuery.addFrom(TBL_TRADE_ACTS)
+        .addFromLeft(rangeQuery, rangeAlias,
+            SqlUtils.join(TBL_TRADE_ACTS, actIdName, rangeAlias, COL_TRADE_ACT))
+        .addFromLeft(TBL_TRADE_OPERATIONS,
+            sys.joinTables(TBL_TRADE_OPERATIONS, TBL_TRADE_ACTS, COL_TA_OPERATION))
+        .addFromLeft(TBL_TRADE_STATUSES,
+            sys.joinTables(TBL_TRADE_STATUSES, TBL_TRADE_ACTS, COL_TA_STATUS))
+        .addFromLeft(TBL_COMPANIES,
+            sys.joinTables(TBL_COMPANIES, TBL_TRADE_ACTS, COL_TA_COMPANY))
+        .addFromLeft(TBL_COMPANY_OBJECTS,
+            sys.joinTables(TBL_COMPANY_OBJECTS, TBL_TRADE_ACTS, COL_TA_OBJECT))
+        .addFromLeft(TBL_USERS,
+            sys.joinTables(TBL_USERS, TBL_TRADE_ACTS, COL_TA_MANAGER))
+        .addFromLeft(TBL_COMPANY_PERSONS,
+            sys.joinTables(TBL_COMPANY_PERSONS, TBL_USERS, COL_COMPANY_PERSON))
+        .addFromLeft(TBL_PERSONS,
+            sys.joinTables(TBL_PERSONS, TBL_COMPANY_PERSONS, COL_PERSON));
+
+    actQuery.setWhere(SqlUtils.and(actConditions,
+        SqlUtils.in(TBL_TRADE_ACTS, actIdName, TBL_TRADE_ACT_SERVICES, COL_TRADE_ACT,
+            serviceConditions)));
+
+    String acts = qs.sqlCreateTemp(actQuery);
+
+    Set<Long> actIds = qs.getLongSet(new SqlSelect().addFields(acts, actIdName).addFrom(acts));
+    if (actIds.isEmpty()) {
+      qs.sqlDropTemp(acts);
+      return ResponseObject.emptyResponse();
+    }
+
+    Filter itemFilter = Filter.and(Filter.isPositive(COL_TRADE_ITEM_QUANTITY),
+        Filter.isPositive(COL_TRADE_ITEM_PRICE));
+
+    Totalizer itemTotalizer = null;
+    SqlUpdate update;
+
+    for (Long actId : actIds) {
+      BeeRowSet items = qs.getViewData(VIEW_TRADE_ACT_ITEMS,
+          Filter.and(Filter.equals(COL_TRADE_ACT, actId), itemFilter));
+
+      if (!DataUtils.isEmpty(items)) {
+        Map<Long, Double> returnedItems = getReturnedItems(actId);
+
+        if (itemTotalizer == null) {
+          itemTotalizer = new Totalizer(items.getColumns());
+        }
+
+        double itemTotal = BeeConst.DOUBLE_ZERO;
+
+        for (BeeRow item : items) {
+          Double total = itemTotalizer.getTotal(item);
+          if (BeeUtils.isPositive(total)) {
+            itemTotal += total;
+          }
+
+          if (!returnedItems.isEmpty()) {
+            Double qty = returnedItems.get(DataUtils.getLong(items, item, COL_TA_ITEM));
+
+            if (BeeUtils.isPositive(qty)) {
+              item.setValue(items.getColumnIndex(COL_TRADE_ITEM_QUANTITY), qty);
+              Double returned = itemTotalizer.getTotal(item);
+
+              if (BeeUtils.isPositive(returned)) {
+                itemTotal -= returned;
+              }
+            }
+          }
+        }
+
+        if (BeeUtils.isPositive(itemTotal)) {
+          update = new SqlUpdate(acts)
+              .addConstant(ALS_ITEM_TOTAL, BeeUtils.round(itemTotal, amountScale))
+              .setWhere(SqlUtils.equals(acts, actIdName, actId));
+          qs.updateData(update);
+        }
+      }
+    }
+
+    if (TimeUtils.nowMinutes() != null) {
+      return ResponseObject.response(qs.getData(new SqlSelect().addAllFields(acts).addFrom(acts)));
+    }
+
+    SqlSelect query = new SqlSelect();
+
+    if (groupBy.isEmpty()) {
+      query.addFields(TBL_TRADE_ACT_SERVICES, COL_TRADE_ACT);
+      query.addFields(acts, COL_TA_NAME, COL_TA_DATE, COL_TA_UNTIL, COL_TA_SERIES, COL_TA_NUMBER,
+          COL_TA_INVOICE_FROM, COL_TA_INVOICE_TO);
+    }
+
+    if (groupBy.isEmpty() || groupBy.contains(COL_TA_COMPANY)) {
+      query.addFields(acts, ALS_COMPANY_NAME);
+    }
+
+    if (groupBy.isEmpty() || groupBy.contains(COL_TA_MANAGER)) {
+      query.addFields(acts, COL_FIRST_NAME, COL_LAST_NAME);
+    }
+
+    if (groupBy.isEmpty() || groupBy.contains(COL_TA_ITEM)
+        || groupBy.contains(COL_ITEM_TYPE) || groupBy.contains(COL_ITEM_GROUP)) {
+
+      query.addFromLeft(TBL_ITEMS,
+          sys.joinTables(TBL_ITEMS, TBL_TRADE_ACT_SERVICES, COL_TA_ITEM));
+    }
+
+    if (groupBy.contains(COL_ITEM_TYPE)) {
+      query.addFromLeft(TBL_ITEM_CATEGORY_TREE, ALS_ITEM_TYPES,
+          sys.joinTables(TBL_ITEM_CATEGORY_TREE, ALS_ITEM_TYPES, TBL_ITEMS, COL_ITEM_TYPE));
+
+      query.addField(ALS_ITEM_TYPES, COL_CATEGORY_NAME, ALS_ITEM_TYPE_NAME);
+    }
+
+    if (groupBy.contains(COL_ITEM_GROUP)) {
+      query.addFromLeft(TBL_ITEM_CATEGORY_TREE, ALS_ITEM_GROUPS,
+          sys.joinTables(TBL_ITEM_CATEGORY_TREE, ALS_ITEM_GROUPS, TBL_ITEMS, COL_ITEM_GROUP));
+
+      query.addField(ALS_ITEM_GROUPS, COL_CATEGORY_NAME, ALS_ITEM_GROUP_NAME);
+    }
+
+    if (groupBy.isEmpty() || groupBy.contains(COL_TA_ITEM)) {
+      query.addFromLeft(TBL_UNITS,
+          sys.joinTables(TBL_UNITS, TBL_ITEMS, COL_UNIT));
+
+      query.addField(TBL_ITEMS, COL_ITEM_NAME, ALS_ITEM_NAME);
+      query.addFields(TBL_TRADE_ACT_SERVICES, COL_TRADE_ITEM_ARTICLE);
+      query.addField(TBL_UNITS, COL_UNIT_NAME, ALS_UNIT_NAME);
+    }
+
+    query.addFields(TBL_TRADE_ACT_SERVICES, COL_TRADE_ITEM_QUANTITY, COL_TRADE_ITEM_PRICE);
+    query.addFields(acts, COL_TRADE_CURRENCY);
+
+    query.addFields(TBL_TRADE_ACT_SERVICES, COL_TRADE_VAT_PLUS, COL_TRADE_VAT, COL_TRADE_VAT_PERC);
+
+    query.addEmptyNumeric(ALS_WITHOUT_VAT, amountPrecision, amountScale);
+    query.addEmptyNumeric(ALS_VAT_AMOUNT, amountPrecision, amountScale);
+    query.addEmptyNumeric(ALS_TOTAL_AMOUNT, amountPrecision, amountScale);
+
+    String itemIdName = sys.getIdName(TBL_TRADE_ACT_SERVICES);
+    if (groupBy.isEmpty()) {
+      query.addFields(TBL_TRADE_ACT_SERVICES, itemIdName);
+    }
+
+    // query.setWhere(where);
+
+    String tmp = qs.sqlCreateTemp(query);
+    if (qs.isEmpty(tmp)) {
+      qs.sqlDropTemp(tmp);
+      return ResponseObject.emptyResponse();
+    }
+
+    update = new SqlUpdate(tmp)
+        .addExpression(ALS_WITHOUT_VAT,
+            SqlUtils.multiply(SqlUtils.field(tmp, COL_TRADE_ITEM_QUANTITY),
+                SqlUtils.field(tmp, COL_TRADE_ITEM_PRICE)))
+        .setWhere(SqlUtils.and(SqlUtils.positive(tmp, COL_TRADE_ITEM_QUANTITY),
+            SqlUtils.positive(tmp, COL_TRADE_ITEM_PRICE)));
+    qs.updateData(update);
+
+    update = new SqlUpdate(tmp)
+        .addExpression(ALS_VAT_AMOUNT,
+            SqlUtils.divide(SqlUtils.multiply(SqlUtils.field(tmp, ALS_WITHOUT_VAT),
+                SqlUtils.field(tmp, COL_TRADE_VAT)), 100))
+        .setWhere(SqlUtils.and(SqlUtils.positive(tmp, ALS_WITHOUT_VAT),
+            SqlUtils.notNull(tmp, COL_TRADE_VAT), SqlUtils.notNull(tmp, COL_TRADE_VAT_PERC),
+            SqlUtils.notNull(tmp, COL_TRADE_VAT_PLUS)));
+    qs.updateData(update);
+
+    update = new SqlUpdate(tmp)
+        .addExpression(ALS_VAT_AMOUNT,
+            SqlUtils.divide(
+                SqlUtils.multiply(SqlUtils.field(tmp, ALS_WITHOUT_VAT),
+                    SqlUtils.field(tmp, COL_TRADE_VAT)),
+                SqlUtils.plus(SqlUtils.field(tmp, COL_TRADE_VAT), 100)))
+        .setWhere(SqlUtils.and(SqlUtils.positive(tmp, ALS_WITHOUT_VAT),
+            SqlUtils.notNull(tmp, COL_TRADE_VAT), SqlUtils.notNull(tmp, COL_TRADE_VAT_PERC),
+            SqlUtils.isNull(tmp, COL_TRADE_VAT_PLUS)));
+    qs.updateData(update);
+
+    update = new SqlUpdate(tmp)
+        .addExpression(ALS_VAT_AMOUNT, SqlUtils.field(tmp, COL_TRADE_VAT))
+        .setWhere(SqlUtils.and(SqlUtils.notNull(tmp, COL_TRADE_VAT),
+            SqlUtils.isNull(tmp, COL_TRADE_VAT_PERC)));
+    qs.updateData(update);
+
+    if (!DataUtils.isId(currency)) {
+      currency = prm.getRelation(PRM_CURRENCY);
+    }
+    if (DataUtils.isId(currency)) {
+      exchange(tmp, COL_TA_CURRENCY, currency, System.currentTimeMillis(),
+          COL_TRADE_ITEM_PRICE, ALS_WITHOUT_VAT, ALS_VAT_AMOUNT);
+    }
+
+    update = new SqlUpdate(tmp)
+        .addExpression(ALS_TOTAL_AMOUNT,
+            SqlUtils.plus(SqlUtils.field(tmp, ALS_WITHOUT_VAT),
+                SqlUtils.field(tmp, ALS_VAT_AMOUNT)))
+        .setWhere(SqlUtils.and(SqlUtils.notNull(tmp, ALS_VAT_AMOUNT),
+            SqlUtils.notNull(tmp, COL_TRADE_VAT_PLUS)));
+    qs.updateData(update);
+
+    update = new SqlUpdate(tmp)
+        .addExpression(ALS_TOTAL_AMOUNT, SqlUtils.field(tmp, ALS_WITHOUT_VAT))
+        .setWhere(SqlUtils.or(SqlUtils.isNull(tmp, ALS_VAT_AMOUNT),
+            SqlUtils.isNull(tmp, COL_TRADE_VAT_PLUS)));
+    qs.updateData(update);
+
+    update = new SqlUpdate(tmp)
+        .addExpression(ALS_WITHOUT_VAT,
+            SqlUtils.minus(SqlUtils.field(tmp, ALS_TOTAL_AMOUNT),
+                SqlUtils.field(tmp, ALS_VAT_AMOUNT)))
+        .setWhere(SqlUtils.and(SqlUtils.notNull(tmp, ALS_VAT_AMOUNT),
+            SqlUtils.isNull(tmp, COL_TRADE_VAT_PLUS)));
+    qs.updateData(update);
+
+    query = new SqlSelect();
+
+    if (groupBy.isEmpty()) {
+      query.addFields(tmp, COL_TRADE_ACT,
+          COL_TA_NAME, COL_TA_DATE, COL_TA_UNTIL, COL_TA_SERIES, COL_TA_NUMBER,
+          COL_TA_INVOICE_FROM, COL_TA_INVOICE_TO,
+          itemIdName, ALS_ITEM_NAME, COL_ITEM_ARTICLE,
+          COL_TRADE_ITEM_QUANTITY, ALS_UNIT_NAME, COL_TRADE_ITEM_PRICE,
+          ALS_WITHOUT_VAT, ALS_VAT_AMOUNT, ALS_TOTAL_AMOUNT);
+
+      query.addOrder(tmp, COL_TA_DATE, COL_TRADE_ACT, itemIdName);
+
+    } else {
+      for (String group : groupBy) {
+        List<String> fields = new ArrayList<>();
+        List<String> order = new ArrayList<>();
+
+        switch (group) {
+          case COL_ITEM_TYPE:
+            fields.add(ALS_ITEM_TYPE_NAME);
+            break;
+
+          case COL_ITEM_GROUP:
+            fields.add(ALS_ITEM_GROUP_NAME);
+            break;
+
+          case COL_TA_ITEM:
+            fields.add(ALS_ITEM_NAME);
+            fields.add(COL_TRADE_ITEM_ARTICLE);
+            fields.add(ALS_UNIT_NAME);
+            break;
+
+          case COL_TA_COMPANY:
+            fields.add(ALS_COMPANY_NAME);
+            break;
+
+          case COL_TA_MANAGER:
+            fields.add(COL_FIRST_NAME);
+            fields.add(COL_LAST_NAME);
+
+            order.add(COL_LAST_NAME);
+            order.add(COL_FIRST_NAME);
+            break;
+        }
+
+        for (String field : fields) {
+          query.addFields(tmp, field);
+        }
+
+        if (order.isEmpty()) {
+          order.addAll(fields);
+        }
+        for (String field : order) {
+          query.addGroup(tmp, field);
+          query.addOrder(tmp, field);
+        }
+      }
+
+      query.addSum(tmp, COL_TRADE_ITEM_QUANTITY);
+      query.addSum(tmp, ALS_WITHOUT_VAT);
+      query.addSum(tmp, ALS_VAT_AMOUNT);
+      query.addSum(tmp, ALS_TOTAL_AMOUNT);
+    }
+
+    query.addFrom(tmp);
+
+    SimpleRowSet data = qs.getData(query);
+
+    qs.sqlDropTemp(tmp);
+
+    if (DataUtils.isEmpty(data)) {
+      return ResponseObject.emptyResponse();
+
+    } else {
+      if (groupBy.isEmpty()) {
+        data.removeColumn(itemIdName);
+      }
+
       return ResponseObject.response(data);
     }
   }

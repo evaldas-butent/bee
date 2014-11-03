@@ -430,7 +430,7 @@ public class TradeActServicesReport extends ReportInterceptor {
     }
 
     if (hasInvoice) {
-      final List<String> actClasses = Arrays.asList(getColumnStyle(COL_SALE),
+      final List<String> invClasses = Arrays.asList(getColumnStyle(COL_SALE),
           getColumnStyle(COL_TRADE_NUMBER), getColumnStyle(COL_TRADE_INVOICE_NO));
 
       table.addClickHandler(new ClickHandler() {
@@ -439,7 +439,7 @@ public class TradeActServicesReport extends ReportInterceptor {
           Element target = EventUtils.getEventTargetElement(event);
           TableCellElement cell = DomUtils.getParentCell(target, true);
 
-          if (StyleUtils.hasAnyClass(cell, actClasses)) {
+          if (StyleUtils.hasAnyClass(cell, invClasses)) {
             TableRowElement row = DomUtils.getParentRow(cell, false);
             long invId = DomUtils.getDataIndexLong(row);
 

@@ -706,7 +706,7 @@ public class TradeActInvoiceBuilder extends AbstractFormInterceptor implements
         int itemVatPercentIndex = result.getColumnIndex(ALS_ITEM_VAT_PERCENT);
 
         int vatIndex = result.getColumnIndex(COL_TRADE_VAT);
-        int vatIsPercenIndex = result.getColumnIndex(COL_TRADE_VAT_PERC);
+        int vatIsPercentIndex = result.getColumnIndex(COL_TRADE_VAT_PERC);
 
         Act act = null;
 
@@ -780,7 +780,7 @@ public class TradeActInvoiceBuilder extends AbstractFormInterceptor implements
           svc.discount = row.getDouble(discountIndex);
 
           Double vat = row.getDouble(vatIndex);
-          if (BeeUtils.isPositive(vat) && !row.isNull(vatIsPercenIndex)) {
+          if (BeeUtils.isPositive(vat) && !row.isNull(vatIsPercentIndex)) {
             svc.vatPercent = vat;
           } else if (!row.isNull(itemVatIndex)) {
             svc.vatPercent = BeeUtils.positive(row.getDouble(itemVatPercentIndex), defVatPercent);
