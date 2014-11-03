@@ -302,8 +302,6 @@ public class TradeActTransferReport extends ReportInterceptor {
 
       if (MONEY_COLUMNS.contains(colName)) {
         text = BeeUtils.joinWords(TradeActHelper.getLabel(colName), currencyName);
-      } else if (COL_TRADE_DATE.equals(colName)) {
-        text = Localized.getConstants().date();
       } else {
         text = TradeActHelper.getLabel(colName);
       }
