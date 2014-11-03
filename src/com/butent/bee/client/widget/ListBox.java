@@ -75,8 +75,11 @@ public class ListBox extends CustomWidget implements Editor, HasItems, HasValueS
     this(false);
   }
 
-  public ListBox(boolean isMultipleSelect) {
-    super(Document.get().createSelectElement(isMultipleSelect));
+  public ListBox(boolean multiple) {
+    super(Document.get().createSelectElement());
+    if (multiple) {
+      getSelectElement().setMultiple(multiple);
+    }
     init();
   }
 

@@ -316,11 +316,7 @@ public class Search {
 
     @Override
     protected void onUnload() {
-      for (HandlerRegistration entry : handlerRegistry) {
-        if (entry != null) {
-          entry.removeHandler();
-        }
-      }
+      EventUtils.clearRegistry(handlerRegistry);
       super.onUnload();
     }
 

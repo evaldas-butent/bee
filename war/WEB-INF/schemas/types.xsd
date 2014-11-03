@@ -301,6 +301,7 @@
       <xs:enumeration value="DistinctCriteriaGroups" />
       <xs:enumeration value="DistinctCriterionValues" />
       <xs:enumeration value="DistinctDocumentItems" />
+      <xs:enumeration value="DistinctForwarderVehicles" />
       <xs:enumeration value="DocumentData" />
       <xs:enumeration value="DocumentFiles" />
       <xs:enumeration value="DocumentItems" />
@@ -424,6 +425,7 @@
       <xs:enumeration value="TcdArticleCriteria" />
       <xs:enumeration value="TcdArticleGraphics" />
       <xs:enumeration value="TcdArticles" />
+      <xs:enumeration value="TcdArticlePrices" />
       <xs:enumeration value="TcdArticleSuppliers" />
       <xs:enumeration value="TcdBrands" />
       <xs:enumeration value="TcdBrandsMapping" />
@@ -432,6 +434,7 @@
       <xs:enumeration value="TcdManufacturers" />
       <xs:enumeration value="TcdModels" />
       <xs:enumeration value="TcdOrphans" />
+      <xs:enumeration value="TcdPriceLists" />
       <xs:enumeration value="TcdRemainders" />
       <xs:enumeration value="TcdTypeArticles" />
       <xs:enumeration value="TcdTypes" />
@@ -442,6 +445,7 @@
       <xs:enumeration value="TradeActInvoices" />
       <xs:enumeration value="TradeActItems" />
       <xs:enumeration value="TradeActs" />
+      <xs:enumeration value="TradeActsAndItems" />
       <xs:enumeration value="TradeActServices" />
       <xs:enumeration value="TradeActTemplates" />
       <xs:enumeration value="TradeActTmplItems" />

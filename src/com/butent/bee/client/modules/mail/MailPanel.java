@@ -29,7 +29,7 @@ import com.butent.bee.client.communication.ParameterList;
 import com.butent.bee.client.communication.ResponseCallback;
 import com.butent.bee.client.composite.Thermometer;
 import com.butent.bee.client.data.Data;
-import com.butent.bee.client.data.RowEditor;
+import com.butent.bee.client.data.RowFactory;
 import com.butent.bee.client.dialog.ChoiceCallback;
 import com.butent.bee.client.dialog.Icon;
 import com.butent.bee.client.dom.DomUtils;
@@ -49,7 +49,6 @@ import com.butent.bee.client.screen.Domain;
 import com.butent.bee.client.style.StyleUtils;
 import com.butent.bee.client.ui.FormFactory.WidgetDescriptionCallback;
 import com.butent.bee.client.ui.IdentifiableWidget;
-import com.butent.bee.client.ui.Opener;
 import com.butent.bee.client.view.HeaderView;
 import com.butent.bee.client.view.edit.EditStartEvent;
 import com.butent.bee.client.view.form.interceptor.AbstractFormInterceptor;
@@ -74,6 +73,7 @@ import com.butent.bee.shared.State;
 import com.butent.bee.shared.communication.ResponseObject;
 import com.butent.bee.shared.css.CssProperties;
 import com.butent.bee.shared.css.values.Cursor;
+import com.butent.bee.shared.data.BeeRow;
 import com.butent.bee.shared.data.BeeRowSet;
 import com.butent.bee.shared.data.CellSource;
 import com.butent.bee.shared.data.DataUtils;
@@ -89,9 +89,9 @@ import com.butent.bee.shared.modules.administration.AdministrationConstants;
 import com.butent.bee.shared.modules.classifiers.ClassifierConstants;
 import com.butent.bee.shared.modules.mail.AccountInfo;
 import com.butent.bee.shared.modules.mail.MailConstants.MessageFlag;
+import com.butent.bee.shared.modules.mail.MailConstants.RuleCondition;
 import com.butent.bee.shared.modules.mail.MailConstants.SystemFolder;
 import com.butent.bee.shared.modules.mail.MailFolder;
-import com.butent.bee.shared.rights.RightsState;
 import com.butent.bee.shared.time.DateTime;
 import com.butent.bee.shared.time.TimeUtils;
 import com.butent.bee.shared.ui.Action;
@@ -459,8 +459,38 @@ public class MailPanel extends AbstractFormInterceptor {
     initAccounts(accountsWidget);
     header.addCommandItem(accountsWidget);
 
+    if (BeeKeeper.getUser().isDataVisible(TBL_ACCOUNTS)
+        && BeeKeeper.getUser().canCreateData(TBL_RULES)) {
+      FaLabel accountSettings = new FaLabel(FontAwesome.MAGIC);
+
+      accountSettings.setTitle(Localized.getConstants().mailAccount());
+      accountSettings.addClickHandler(new ClickHandler() {
+        @Override
+        public void onClick(ClickEvent arg0) {
+          DataInfo dataInfo = Data.getDataInfo(TBL_RULES);
+          BeeRow newRow = RowFactory.createEmptyRow(dataInfo, true);
+          Data.setValue(TBL_RULES, newRow, COL_ACCOUNT, getCurrentAccount().getAccountId());
+
+          if (currentMessage != null) {
+            if (isSenderFolder(getCurrentFolderId())) {
+              Data.setValue(TBL_RULES, newRow, COL_RULE_CONDITION,
+                  RuleCondition.RECIPIENTS.ordinal());
+              Data.setValue(TBL_RULES, newRow, COL_RULE_CONDITION_OPTIONS,
+                  currentMessage.getProperty(ClassifierConstants.COL_EMAIL_ADDRESS));
+            } else {
+              Data.setValue(TBL_RULES, newRow, COL_RULE_CONDITION, RuleCondition.SENDER.ordinal());
+              Data.setValue(TBL_RULES, newRow, COL_RULE_CONDITION_OPTIONS,
+                  Data.getString(TBL_PLACES, currentMessage, "SenderEmail"));
+            }
+          }
+          RowFactory.createRow(dataInfo, newRow);
+        }
+      });
+      header.addCommandItem(accountSettings);
+    }
     FaLabel refreshWidget = new FaLabel(FontAwesome.REFRESH);
 
+    refreshWidget.setTitle(Localized.getConstants().actionRefresh());
     refreshWidget.addClickHandler(new ClickHandler() {
       @Override
       public void onClick(ClickEvent arg0) {
@@ -469,24 +499,6 @@ public class MailPanel extends AbstractFormInterceptor {
     });
     header.addCommandItem(refreshWidget);
 
-    boolean canAccess =
-        BeeKeeper.getUser().getUserData().hasDataRight(VIEW_ACCOUNTS, RightsState.VIEW);
-
-    if (canAccess) {
-      FaLabel accountSettings = new FaLabel(FontAwesome.MAGIC);
-
-      accountSettings.setTitle(Localized.getConstants().mailAccount());
-      accountSettings.addClickHandler(new ClickHandler() {
-        @Override
-        public void onClick(ClickEvent arg0) {
-          DataInfo dataInfo = Data.getDataInfo(VIEW_ACCOUNTS);
-          long rowId = getCurrentAccount().getAccountId();
-          RowEditor.openForm(FORM_ACCOUNT, dataInfo, rowId, Opener.MODAL);
-        }
-      });
-
-      header.addCommandItem(accountSettings);
-    }
     message.setFormView(getFormView());
   }
 

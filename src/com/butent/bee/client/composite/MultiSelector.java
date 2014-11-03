@@ -202,7 +202,6 @@ public class MultiSelector extends DataSelector implements HandlesRendering, Han
   private static final String STYLE_PLUS = STYLE_PREFIX + "plus";
 
   private static final int MIN_INPUT_WIDTH = 25;
-  private static final int MAX_INPUT_LENGTH = 30;
 
   public static MultiSelector autonomous(Relation relation, AbstractCellRenderer renderer) {
     Assert.notNull(relation);
@@ -603,7 +602,6 @@ public class MultiSelector extends DataSelector implements HandlesRendering, Han
   protected void init(final InputWidget inputWidget, boolean embed) {
     final Flow container = new Flow(STYLE_CONTAINER);
 
-    inputWidget.setMaxLength(MAX_INPUT_LENGTH);
     inputWidget.addStyleName(STYLE_INPUT);
 
     container.add(inputWidget);

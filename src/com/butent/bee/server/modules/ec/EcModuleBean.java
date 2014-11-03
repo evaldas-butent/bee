@@ -121,6 +121,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.EnumMap;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -266,14 +267,14 @@ public class EcModuleBean implements BeeModule {
 
       try {
         rows = ButentWS.connect(remoteNamespace, remoteAddress, remoteLogin, remotePassword)
-            .getSQLData("SELECT preke AS pr, prekes.grupe AS gr, savikaina AS sv, pard_kaina AS kn"
+            .getSQLData("SELECT preke AS pr, prekes.grupe AS gr, savikaina AS sv"
                 + " FROM prekes"
                 + " INNER JOIN grupes"
                 + " ON prekes.grupe = grupes.grupe"
                 + " WHERE prekes.gam_art IS NOT NULL AND prekes.gam_art != ''"
                 + " AND prekes.gamintojas IS NOT NULL AND prekes.gamintojas != ''"
                 + " AND grupes.pos_mode = 'E'",
-                new String[] {"pr", "gr", "sv", "kn"});
+                new String[] {"pr", "gr", "sv"});
 
         ok = !rows.isEmpty();
 
@@ -320,8 +321,7 @@ public class EcModuleBean implements BeeModule {
               .addConstant(COL_TCD_ARTICLE, newArt)
               .addConstant(COL_TCD_SUPPLIER, supplier.ordinal())
               .addConstant(COL_TCD_SUPPLIER_ID, supplierId)
-              .addConstant(COL_TCD_COST, rows.getValueByKey("pr", supplierId, "sv"))
-              .addConstant(COL_TCD_PRICE, rows.getValueByKey("pr", supplierId, "kn")));
+              .addConstant(COL_TCD_COST, rows.getValueByKey("pr", supplierId, "sv")));
 
           qs.insertData(new SqlInsert(TBL_TCD_ARTICLE_CATEGORIES)
               .addConstant(COL_TCD_ARTICLE, newArt)
@@ -535,6 +535,21 @@ public class EcModuleBean implements BeeModule {
     List<BeeParameter> parameters = Lists.newArrayList(
         BeeParameter.createBoolean(module, PRM_PROMO_FEATURED, false, true),
         BeeParameter.createBoolean(module, PRM_PROMO_NOVELTY, false, true));
+
+    for (EcSupplier supplier : EcSupplier.values()) {
+      String name = supplier.getBasePriceListParameterName();
+      if (!BeeUtils.isEmpty(name)) {
+        parameters.add(BeeParameter.createRelation(module, name,
+            TBL_TCD_PRICELISTS, COL_TCD_PRICELIST_NAME));
+      }
+
+      name = supplier.getClientPriceListParameterName();
+      if (!BeeUtils.isEmpty(name)) {
+        parameters.add(BeeParameter.createRelation(module, name,
+            TBL_TCD_PRICELISTS, COL_TCD_PRICELIST_NAME));
+      }
+    }
+
     parameters.addAll(tcd.getDefaultParameters());
 
     return parameters;
@@ -674,7 +689,9 @@ public class EcModuleBean implements BeeModule {
             return;
           }
 
-          Multimap<Long, ArticleSupplier> articleSuppliers = getArticleSuppliers(null, articleIds);
+          Multimap<Long, ArticleSupplier> articleSuppliers =
+              getArticleSuppliers(null, articleIds, null, null);
+
           if (articleSuppliers.isEmpty()) {
             return;
           }
@@ -694,11 +711,6 @@ public class EcModuleBean implements BeeModule {
                 double cost = articleSupplier.getRealCost();
                 if (BeeUtils.isPositive(cost)) {
                   row.setProperty(COL_TCD_COST + supplierSuffix, BeeUtils.toString(cost));
-                }
-
-                double price = articleSupplier.getRealPrice();
-                if (BeeUtils.isPositive(price)) {
-                  row.setProperty(PRP_SUPPLIER_PRICE + supplierSuffix, BeeUtils.toString(price));
                 }
 
                 Map<String, String> remainders = articleSupplier.getRemainders();
@@ -1064,13 +1076,14 @@ public class EcModuleBean implements BeeModule {
   }
 
   private Multimap<Long, ArticleSupplier> getArticleSuppliers(String tempArticleIds,
-      Collection<Long> articleIds) {
+      Collection<Long> articleIds, Map<EcSupplier, Long> basePriceLists,
+      Map<EcSupplier, Long> clientPriceLists) {
 
     String idName = sys.getIdName(TBL_TCD_ARTICLE_SUPPLIERS);
 
     SqlSelect query = new SqlSelect()
         .addFields(TBL_TCD_ARTICLE_SUPPLIERS, idName, COL_TCD_ARTICLE, COL_TCD_SUPPLIER,
-            COL_TCD_SUPPLIER_ID, COL_TCD_COST, COL_TCD_PRICE)
+            COL_TCD_SUPPLIER_ID, COL_TCD_COST)
         .addFields(TBL_WAREHOUSES, COL_WAREHOUSE_CODE)
         .addFields(TBL_TCD_REMAINDERS, COL_TCD_REMAINDER)
         .addFrom(TBL_TCD_ARTICLE_SUPPLIERS);
@@ -1080,11 +1093,40 @@ public class EcModuleBean implements BeeModule {
           SqlUtils.joinUsing(TBL_TCD_ARTICLE_SUPPLIERS, tempArticleIds, COL_TCD_ARTICLE));
     }
 
+    if (!BeeUtils.isEmpty(basePriceLists)) {
+      for (Map.Entry<EcSupplier, Long> entry : basePriceLists.entrySet()) {
+        String priceListAlias = "Bpl_" + SqlUtils.uniqueName();
+
+        String priceAlias = entry.getKey().getBasePriceListColumnName();
+        query.addField(priceListAlias, COL_TCD_PRICE, priceAlias);
+
+        query.addFromLeft(TBL_TCD_ARTICLE_PRICES, priceListAlias,
+            SqlUtils.and(
+                SqlUtils.joinUsing(TBL_TCD_ARTICLE_SUPPLIERS, priceListAlias, COL_TCD_ARTICLE),
+                SqlUtils.equals(priceListAlias, COL_TCD_PRICELIST, entry.getValue())));
+
+      }
+    }
+
+    if (!BeeUtils.isEmpty(clientPriceLists)) {
+      for (Map.Entry<EcSupplier, Long> entry : clientPriceLists.entrySet()) {
+        String priceListAlias = "Cpl_" + SqlUtils.uniqueName();
+
+        String priceAlias = entry.getKey().getClientPriceListColumnName();
+        query.addField(priceListAlias, COL_TCD_PRICE, priceAlias);
+
+        query.addFromLeft(TBL_TCD_ARTICLE_PRICES, priceListAlias,
+            SqlUtils.and(
+                SqlUtils.joinUsing(TBL_TCD_ARTICLE_SUPPLIERS, priceListAlias, COL_TCD_ARTICLE),
+                SqlUtils.equals(priceListAlias, COL_TCD_PRICELIST, entry.getValue())));
+
+      }
+    }
+
     query.addFromLeft(TBL_TCD_REMAINDERS,
         sys.joinTables(TBL_TCD_ARTICLE_SUPPLIERS, TBL_TCD_REMAINDERS, COL_TCD_ARTICLE_SUPPLIER));
     query.addFromLeft(TBL_WAREHOUSES,
-        sys.joinTables(TBL_WAREHOUSES, TBL_TCD_REMAINDERS,
-            COL_WAREHOUSE));
+        sys.joinTables(TBL_WAREHOUSES, TBL_TCD_REMAINDERS, COL_WAREHOUSE));
 
     if (!BeeUtils.isEmpty(articleIds)) {
       query.setWhere(SqlUtils.inList(TBL_TCD_ARTICLE_SUPPLIERS, COL_TCD_ARTICLE, articleIds));
@@ -1095,22 +1137,39 @@ public class EcModuleBean implements BeeModule {
     SimpleRowSet data = qs.getData(query);
 
     Multimap<Long, ArticleSupplier> suppliers = HashMultimap.create();
+
     String lastId = null;
     ArticleSupplier supplier = null;
+
+    Double listPrice;
+    Double price;
 
     for (SimpleRow row : data) {
       String id = row.getValue(idName);
 
       if (!BeeUtils.same(id, lastId)) {
-        supplier = new ArticleSupplier(EnumUtils.getEnumByIndex(EcSupplier.class,
-            row.getInt(COL_TCD_SUPPLIER)), row.getValue(COL_TCD_SUPPLIER_ID),
-            row.getDouble(COL_TCD_COST), row.getDouble(COL_TCD_PRICE));
+        EcSupplier ecs = EnumUtils.getEnumByIndex(EcSupplier.class, row.getInt(COL_TCD_SUPPLIER));
+
+        if (basePriceLists != null && basePriceLists.containsKey(ecs)) {
+          listPrice = row.getDouble(ecs.getBasePriceListColumnName());
+        } else {
+          listPrice = null;
+        }
+
+        if (clientPriceLists != null && clientPriceLists.containsKey(ecs)) {
+          price = row.getDouble(ecs.getClientPriceListColumnName());
+        } else {
+          price = null;
+        }
+
+        supplier = new ArticleSupplier(ecs, row.getValue(COL_TCD_SUPPLIER_ID),
+            row.getDouble(COL_TCD_COST), listPrice, price);
 
         suppliers.put(row.getLong(COL_TCD_ARTICLE), supplier);
         lastId = id;
       }
-      supplier.addRemainder(row.getValue(COL_WAREHOUSE_CODE),
-          row.getDouble(COL_TCD_REMAINDER));
+
+      supplier.addRemainder(row.getValue(COL_WAREHOUSE_CODE), row.getDouble(COL_TCD_REMAINDER));
     }
     return suppliers;
   }
@@ -1433,7 +1492,7 @@ public class EcModuleBean implements BeeModule {
 
     SqlSelect discountQuery = new SqlSelect();
     discountQuery.addFields(TBL_DISCOUNTS, COL_DISCOUNT_DATE_FROM, COL_DISCOUNT_DATE_TO,
-        COL_DISCOUNT_CATEGORY, COL_DISCOUNT_BRAND, COL_DISCOUNT_ARTICLE,
+        COL_DISCOUNT_CATEGORY, COL_DISCOUNT_BRAND, COL_DISCOUNT_SUPPLIER, COL_DISCOUNT_ARTICLE,
         COL_DISCOUNT_PERCENT, COL_DISCOUNT_PRICE);
     discountQuery.addFrom(TBL_DISCOUNTS);
 
@@ -1494,6 +1553,56 @@ public class EcModuleBean implements BeeModule {
     }
 
     return ResponseObject.response(result);
+  }
+
+  private Pair<Map<EcSupplier, Long>, Map<EcSupplier, Long>> getClientPriceLists() {
+    Map<EcSupplier, Long> basePriceLists = new EnumMap<>(EcSupplier.class);
+    Map<EcSupplier, Long> clientPriceLists = new EnumMap<>(EcSupplier.class);
+
+    SimpleRow row = getCurrentClientRow();
+
+    Long priceList;
+    String name;
+
+    for (EcSupplier supplier : EcSupplier.values()) {
+      name = supplier.getBasePriceListColumnName();
+      if (row != null && row.getRowSet().hasColumn(name)) {
+        priceList = row.getLong(name);
+      } else {
+        priceList = null;
+      }
+
+      if (!DataUtils.isId(priceList)) {
+        name = supplier.getBasePriceListParameterName();
+        if (!BeeUtils.isEmpty(name)) {
+          priceList = prm.getRelation(name);
+        }
+      }
+
+      if (DataUtils.isId(priceList)) {
+        basePriceLists.put(supplier, priceList);
+      }
+
+      name = supplier.getClientPriceListColumnName();
+      if (row != null && row.getRowSet().hasColumn(name)) {
+        priceList = row.getLong(name);
+      } else {
+        priceList = null;
+      }
+
+      if (!DataUtils.isId(priceList)) {
+        name = supplier.getClientPriceListParameterName();
+        if (!BeeUtils.isEmpty(name)) {
+          priceList = prm.getRelation(name);
+        }
+      }
+
+      if (DataUtils.isId(priceList)) {
+        clientPriceLists.put(supplier, priceList);
+      }
+    }
+
+    return Pair.of(basePriceLists, clientPriceLists);
   }
 
   private ResponseObject getClientStockLabels() {
@@ -1629,6 +1738,11 @@ public class EcModuleBean implements BeeModule {
 
   private SimpleRow getCurrentClientInfo(String... fields) {
     return qs.getRow(new SqlSelect().addFrom(TBL_CLIENTS).addFields(TBL_CLIENTS, fields)
+        .setWhere(SqlUtils.equals(TBL_CLIENTS, COL_CLIENT_USER, usr.getCurrentUserId())));
+  }
+
+  private SimpleRow getCurrentClientRow() {
+    return qs.getRow(new SqlSelect().addFrom(TBL_CLIENTS).addAllFields(TBL_CLIENTS)
         .setWhere(SqlUtils.equals(TBL_CLIENTS, COL_CLIENT_USER, usr.getCurrentUserId())));
   }
 
@@ -2267,7 +2381,10 @@ public class EcModuleBean implements BeeModule {
     if (!items.isEmpty()) {
       Map<Long, String> articleCategories = getArticleCategories(tempArticleIds);
       ListMultimap<Long, ArticleCriteria> articleCriteria = getArticleCriteria(tempArticleIds);
-      Multimap<Long, ArticleSupplier> articleSuppliers = getArticleSuppliers(tempArticleIds, null);
+
+      Pair<Map<EcSupplier, Long>, Map<EcSupplier, Long>> priceLists = getClientPriceLists();
+      Multimap<Long, ArticleSupplier> articleSuppliers =
+          getArticleSuppliers(tempArticleIds, null, priceLists.getA(), priceLists.getB());
 
       Pair<Set<String>, Set<String>> clientWarehouses = getClientWarehouses();
       Set<String> primaryWarehouses = clientWarehouses.getA();
@@ -2308,8 +2425,8 @@ public class EcModuleBean implements BeeModule {
         }
       }
 
-      setListPrice(items);
-      setClientPrice(items);
+      setSupplierPrices(items);
+      setClientDiscounts(items);
 
       if (!featuredDiscountPercents.isEmpty()) {
         for (EcItem item : items) {
@@ -3185,18 +3302,13 @@ public class EcModuleBean implements BeeModule {
     return response;
   }
 
-  private void setClientPrice(List<EcItem> items) {
+  private void setClientDiscounts(List<EcItem> items) {
     long start = System.currentTimeMillis();
     EcClientDiscounts clientDiscounts = getClientDiscounts();
 
     long watch = System.currentTimeMillis();
 
-    if (clientDiscounts == null || clientDiscounts.isEmpty()) {
-      for (EcItem item : items) {
-        item.setClientPrice(item.getListPrice());
-      }
-
-    } else {
+    if (clientDiscounts != null && !clientDiscounts.isEmpty()) {
       Map<Long, Long> categoryParents;
       if (clientDiscounts.hasCategories()) {
         categoryParents = getCategoryParents();
@@ -3213,7 +3325,7 @@ public class EcModuleBean implements BeeModule {
     logger.debug("price", watch - start, "+", end - watch, "=", end - start);
   }
 
-  private void setListPrice(List<EcItem> items) {
+  private void setSupplierPrices(List<EcItem> items) {
     long start = System.currentTimeMillis();
 
     SqlSelect defQuery = new SqlSelect();
@@ -3282,10 +3394,32 @@ public class EcModuleBean implements BeeModule {
         marginPercent = defMargin;
       }
 
-      item.setListPrice(item.getSupplierPrice(displayedPrice, marginPercent));
+      Pair<EcSupplier, Integer> supplierListPrice =
+          item.getSupplierPrice(displayedPrice, true, marginPercent);
+      Pair<EcSupplier, Integer> supplierClientPrice =
+          item.getSupplierPrice(displayedPrice, false, marginPercent);
+
+      int listPrice = (supplierListPrice == null) ? 0 : supplierListPrice.getB();
+
+      EcSupplier priceSupplier = (supplierClientPrice == null) ? null : supplierClientPrice.getA();
+      int clientPrice = (supplierClientPrice == null) ? 0 : supplierClientPrice.getB();
+
+      if (listPrice <= 0) {
+        listPrice = clientPrice;
+
+      } else if (clientPrice <= 0 && supplierListPrice != null) {
+        priceSupplier = supplierListPrice.getA();
+        clientPrice = listPrice;
+      }
+
+      item.setListPrice(listPrice);
+
+      item.setPriceSupplier(priceSupplier);
+      item.setClientPrice(clientPrice);
     }
 
-    logger.debug("list price", items.size(), catMargins.size(), TimeUtils.elapsedMillis(start));
+    logger.debug("supplier prices", items.size(), catMargins.size(),
+        TimeUtils.elapsedMillis(start));
   }
 
   private ResponseObject submitOrder(RequestInfo reqInfo) {

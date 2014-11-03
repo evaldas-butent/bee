@@ -227,8 +227,6 @@ public final class MailConstants {
   public static final String PRM_DEFAULT_ACCOUNT = "DefaultAccount";
   public static final String PRM_MAIL_CHECK_INTERVAL = "MailCheckIntervalInMinutes";
 
-  public static final String VIEW_ACCOUNTS = "Accounts";
-
   public static void register() {
     EnumUtils.register(RuleCondition.class);
     EnumUtils.register(RuleAction.class);

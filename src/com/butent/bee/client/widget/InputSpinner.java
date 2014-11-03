@@ -43,6 +43,11 @@ public class InputSpinner extends InputInteger {
   }
 
   @Override
+  protected EditorAction getDefaultEntryAction() {
+    return null;
+  }
+
+  @Override
   protected String getDefaultStyleName() {
     return BeeConst.CSS_CLASS_PREFIX + "InputSpinner";
   }

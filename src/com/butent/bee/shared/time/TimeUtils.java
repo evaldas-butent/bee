@@ -399,6 +399,14 @@ public final class TimeUtils {
     }
   }
 
+  public static boolean hasTimePart(HasDateValue dt) {
+    if (dt instanceof DateTime) {
+      return dt.getHour() > 0 || dt.getMinute() > 0 || dt.getSecond() > 0 || dt.getMillis() > 0;
+    } else {
+      return false;
+    }
+  }
+
   public static boolean isBetween(HasDateValue dt, HasDateValue min, HasDateValue max,
       RangeOptions options) {
     Assert.notNull(options);

@@ -2760,7 +2760,8 @@ public class TransportModuleBean implements BeeModule, HasTimerService {
       if (ids.length() > 0) {
         ids.append(",");
       }
-      ids.append("'").append(row.getValue(COL_SALE)).append("'");
+      ids.append("'").append(TradeModuleBean.encodeId(TBL_SALES, row.getLong(COL_SALE)))
+          .append("'");
     }
     String remoteNamespace = prm.getText(PRM_ERP_NAMESPACE);
     String remoteAddress = prm.getText(PRM_ERP_ADDRESS);
@@ -2775,15 +2776,17 @@ public class TransportModuleBean implements BeeModule, HasTimerService {
               new String[] {"id", "data", "suma"});
 
       for (SimpleRow payment : payments) {
-        if (!Objects.equals(payment.getDouble("suma"),
-            BeeUtils.toDoubleOrNull(debts.getValueByKey(COL_SALE, payment.getValue("id"),
-                COL_TRADE_PAID)))) {
+        String id = TradeModuleBean.decodeId(TBL_SALES, payment.getLong("id"));
+        Double paid = payment.getDouble("suma");
+
+        if (!Objects.equals(paid,
+            BeeUtils.toDoubleOrNull(debts.getValueByKey(COL_SALE, id, COL_TRADE_PAID)))) {
 
           qs.updateData(new SqlUpdate(TBL_SALES)
-              .addConstant(COL_TRADE_PAID, payment.getDouble("suma"))
+              .addConstant(COL_TRADE_PAID, paid)
               .addConstant(COL_TRADE_PAYMENT_TIME,
                   TimeUtils.parseDateTime(payment.getValue("data")))
-              .setWhere(sys.idEquals(TBL_SALES, payment.getLong("id"))));
+              .setWhere(sys.idEquals(TBL_SALES, BeeUtils.toLong(id))));
         }
       }
     } catch (BeeException e) {

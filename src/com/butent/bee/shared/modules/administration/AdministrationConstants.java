@@ -188,9 +188,6 @@ public final class AdministrationConstants {
   public static final String VIEW_RIGHTS = "Rights";
   public static final String VIEW_USER_ROLES = "UserRoles";
 
-  public static final String VIEW_PARAMETERS = "Parameters";
-  public static final String VIEW_USER_PARAMETERS = "UserParameters";
-
   public static final String VIEW_FILTERS = "Filters";
 
   public static final String VIEW_FAVORITES = "Favorites";

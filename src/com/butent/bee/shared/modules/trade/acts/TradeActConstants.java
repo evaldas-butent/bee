@@ -9,9 +9,15 @@ public final class TradeActConstants {
   public static final String SVC_SAVE_ACT_AS_TEMPLATE = "SaveActAsTemplate";
   public static final String SVC_GET_TEMPLATE_ITEMS_AND_SERVICES = "GetTemplateItemsAndServices";
   public static final String SVC_GET_ITEMS_FOR_RETURN = "GetItemsForReturn";
+  public static final String SVC_CONVERT_ACT_TO_SALE = "ConvertActToSale";
+
   public static final String SVC_GET_ACTS_FOR_INVOICE = "GetActsForInvoice";
   public static final String SVC_CREATE_ACT_INVOICE = "CreateActInvoice";
-  public static final String SVC_CONVERT_ACT_TO_SALE = "ConvertActToSale";
+
+  public static final String SVC_ITEMS_BY_COMPANY_REPORT = "GetItemsByCompanyReport";
+  public static final String SVC_STOCK_REPORT = "GetStockReport";
+  public static final String SVC_SERVICES_REPORT = "GetServicesReport";
+  public static final String SVC_TRANSFER_REPORT = "GetTransferReport";
 
   public static final String TBL_TRADE_ACTS = "TradeActs";
   public static final String TBL_TRADE_ACT_ITEMS = "TradeActItems";
@@ -67,11 +73,23 @@ public final class TradeActConstants {
   public static final String COL_TA_INVOICE_FROM = "DateFrom";
   public static final String COL_TA_INVOICE_TO = "DateTo";
 
+  public static final String ALS_RETURNED_QTY = "ReturnedQty";
+  public static final String ALS_REMAINING_QTY = "RemainingQty";
+
+  public static final String ALS_BASE_AMOUNT = "BaseAmount";
+  public static final String ALS_DISCOUNT_AMOUNT = "DiscountAmount";
+  public static final String ALS_WITHOUT_VAT = "WithoutVat";
+  public static final String ALS_VAT_AMOUNT = "VatAmount";
+  public static final String ALS_TOTAL_AMOUNT = "TotalAmount";
+  public static final String ALS_ITEM_TOTAL = "ItemTotal";
+
   public static final String GRID_TRADE_ACTS = "TradeActs";
   public static final String GRID_TRADE_ACT_TEMPLATES = "TradeActTemplates";
 
   public static final String GRID_TRADE_ACT_ITEMS = "TradeActItems";
   public static final String GRID_TRADE_ACT_SERVICES = "TradeActServices";
+
+  public static final String GRID_TRADE_ACTS_AND_ITEMS = "TradeActsAndItems";
 
   public static final String FORM_TRADE_ACT = "TradeAct";
   public static final String FORM_INVOICE_BUILDER = "TradeActInvoiceBuilder";
@@ -88,6 +106,13 @@ public final class TradeActConstants {
   public static final String RX_IMPORT_ACT_ITEM = "^(.+);(.*);(\\d+\\.*\\d*)$";
 
   public static final String PRM_TA_NUMBER_LENGTH = "ActNumberLength";
+
+  public static final String PFX_START_STOCK = "StartStock_";
+  public static final String PFX_MOVEMENT = "Movement_";
+  public static final String PFX_END_STOCK = "EndStock_";
+
+  public static final String SFX_QUANTITY = "_qty";
+  public static final String SFX_WEIGHT = "_wgt";
 
   public static void register() {
     EnumUtils.register(TradeActKind.class);

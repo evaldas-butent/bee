@@ -350,6 +350,7 @@
       <xs:enumeration value="print" />
       <xs:enumeration value="refresh" />
       <xs:enumeration value="remove_filter" />
+      <xs:enumeration value="reset_settings" />
       <xs:enumeration value="rights" />
       <xs:enumeration value="save" />
     </xs:restriction>

@@ -11,6 +11,7 @@
   xmlns:f="http://www.butent.com/form"
   
   name="AssessmentForwarder" viewName="AssessmentForwarders" caption="=carrier"
+  height="600"
   >
   <f:properties reports="PrintContractLT, PrintContractEN, PrintContractRU" />
 
@@ -61,6 +62,14 @@
       <Label for="LoadingAddress" text="=address" style="&labelLeft;" />
       <InputText source="LoadingAddress" style="&input; width:310px;" />
     </FlowPanel>
+    <FlowPanel for="LoadingPostIndex" style="&section;">
+      <Label for="LoadingPostIndex" text="=postIndex" style="&labelLeft;" />
+      <InputText source="LoadingPostIndex" style="&input; width:90px;" />
+    </FlowPanel>
+    <FlowPanel for="LoadingCompany" style="&section;">
+      <Label for="LoadingCompany" text="=company" style="&labelLeft;" />
+      <InputText source="LoadingCompany" style="&input; width:310px;" />
+    </FlowPanel>
     <FlowPanel for="LoadingContact" style="&section;">
       <Label for="LoadingContact" text="=contact" style="&labelLeft;" />
       <InputText source="LoadingContact" style="&input; width:310px;" />
@@ -76,6 +85,14 @@
       <Label for="UnloadingAddress" text="=address" style="&labelLeft;" />
       <InputText source="UnloadingAddress" style="&input; width:310px;" />
     </FlowPanel>
+    <FlowPanel for="UnloadingPostIndex" style="&section;">
+      <Label for="UnloadingPostIndex" text="=postIndex" style="&labelLeft;" />
+      <InputText source="UnloadingPostIndex" style="&input; width:90px;" />
+    </FlowPanel>
+    <FlowPanel for="UnloadingCompany" style="&section;">
+      <Label for="UnloadingCompany" text="=company" style="&labelLeft;" />
+      <InputText source="UnloadingCompany" style="&input; width:310px;" />
+    </FlowPanel>
     <FlowPanel for="UnloadingContact" style="&section;">
       <Label for="UnloadingContact" text="=contact" style="&labelLeft;" />
       <InputText source="UnloadingContact" style="&input; width:310px;" />
@@ -84,7 +101,8 @@
     &separator;
     <FlowPanel for="ForwarderVehicle" style="&section;">
       <Label for="ForwarderVehicle" style="&labelLeft; width:140px;" />
-      <InputText source="ForwarderVehicle" style="&input; width:200px;" />
+      <DataSelector source="ForwarderVehicle" viewName="DistinctForwarderVehicles"
+        valueSource="ForwarderVehicle" strict="false" caching="local" style="&input; width:200px;" />
     </FlowPanel>
     <FlowPanel for="Notes" style="&section;">
       <Label for="Notes" style="&labelLeft; vertical-align:top; width:140px;" />

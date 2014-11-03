@@ -8,6 +8,8 @@ public interface LocalizableClassifierConstants {
 
   String branch();
 
+  String categories();
+
   String category();
 
   String chief();
@@ -49,6 +51,8 @@ public interface LocalizableClassifierConstants {
   String group();
 
   String item();
+
+  String itemName();
 
   String itemOrService();
 

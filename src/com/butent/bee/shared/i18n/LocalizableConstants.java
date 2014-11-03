@@ -76,6 +76,8 @@ public interface LocalizableConstants extends Constants, LocalizableClassifierCo
 
   String actionRenameFilter();
 
+  String actionResetSettings();
+
   String actionSave();
 
   String actionSelect();
@@ -151,6 +153,8 @@ public interface LocalizableConstants extends Constants, LocalizableClassifierCo
   String classifiers();
 
   String clear();
+
+  String clearFilter();
 
   String client();
 
@@ -368,6 +372,8 @@ public interface LocalizableConstants extends Constants, LocalizableClassifierCo
 
   String filterRemove();
 
+  String firstName();
+
   String height();
 
   String imported();
@@ -394,7 +400,11 @@ public interface LocalizableConstants extends Constants, LocalizableClassifierCo
 
   String ipBlocked();
 
+  String kilogramShort();
+
   String languageTag();
+
+  String lastName();
 
   String length();
 
@@ -474,6 +484,8 @@ public interface LocalizableConstants extends Constants, LocalizableClassifierCo
 
   String number();
 
+  String object();
+
   String objectData();
 
   String objectField();
@@ -481,6 +493,8 @@ public interface LocalizableConstants extends Constants, LocalizableClassifierCo
   String objectMenu();
 
   String objectModule();
+
+  String objects();
 
   String objectWidget();
 
@@ -545,8 +559,6 @@ public interface LocalizableConstants extends Constants, LocalizableClassifierCo
   String relatedTo();
 
   String relations();
-
-  String removeFilter();
 
   String repeatNewPassword();
 
@@ -690,6 +702,8 @@ public interface LocalizableConstants extends Constants, LocalizableClassifierCo
 
   String vat();
 
+  String vatAmount();
+
   String vatPercent();
 
   String vatPlus();
@@ -697,6 +711,8 @@ public interface LocalizableConstants extends Constants, LocalizableClassifierCo
   String volume();
 
   String warehouse();
+
+  String warehouses();
 
   String weight();
 

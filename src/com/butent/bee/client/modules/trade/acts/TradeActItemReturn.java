@@ -256,7 +256,7 @@ final class TradeActItemReturn {
     if (priceFormat == null) {
       Integer scale = Data.getColumnScale(VIEW_TRADE_ACT_ITEMS, COL_TRADE_ITEM_PRICE);
       if (scale == null || scale <= 2) {
-        priceFormat = Format.getDefaultCurrencyFormat();
+        priceFormat = Format.getDefaultMoneyFormat();
       } else {
         priceFormat = Format.getDecimalFormat(2, scale);
       }

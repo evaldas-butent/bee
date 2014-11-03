@@ -82,8 +82,8 @@ import com.butent.bee.shared.data.view.DataInfo;
 import com.butent.bee.shared.data.view.ViewColumn;
 import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.menu.MenuConstants;
-import com.butent.bee.shared.menu.MenuConstants.BAR_TYPE;
-import com.butent.bee.shared.menu.MenuConstants.ITEM_TYPE;
+import com.butent.bee.shared.menu.MenuConstants.BarType;
+import com.butent.bee.shared.menu.MenuConstants.ItemType;
 import com.butent.bee.shared.ui.EditorAction;
 import com.butent.bee.shared.ui.HasCapsLock;
 import com.butent.bee.shared.ui.HasMaxLength;
@@ -382,8 +382,8 @@ public class DataSelector extends Composite implements Editor, HasVisibleLines, 
 
     private Boolean pendingSelection;
 
-    private Selector(ITEM_TYPE itemType, Element partner, String selectorClass) {
-      this.menu = new MenuBar(MenuConstants.ROOT_MENU_INDEX, true, BAR_TYPE.TABLE, itemType);
+    private Selector(ItemType itemType, Element partner, String selectorClass) {
+      this.menu = new MenuBar(MenuConstants.ROOT_MENU_INDEX, true, BarType.TABLE, itemType);
 
       menu.addStyleName(STYLE_MENU);
 
@@ -429,7 +429,7 @@ public class DataSelector extends Composite implements Editor, HasVisibleLines, 
         };
       }
 
-      MenuItem item = new MenuItem(menu, next ? ITEM_NEXT : ITEM_PREV, ITEM_TYPE.LABEL, command);
+      MenuItem item = new MenuItem(menu, next ? ITEM_NEXT : ITEM_PREV, ItemType.LABEL, command);
       item.addStyleName(STYLE_NAVIGATION);
 
       return item;
@@ -617,6 +617,7 @@ public class DataSelector extends Composite implements Editor, HasVisibleLines, 
   private static final String STYLE_DRILL = STYLE_SELECTOR + "-drill";
   private static final String STYLE_DRILL_DISABBLED = STYLE_DRILL + "-disabled";
 
+  private static final int DEFAULT_MAX_INPUT_LENGTH = 30;
   private static final int DEFAULT_VISIBLE_LINES = 10;
 
   private static final Operator DEFAULT_SEARCH_TYPE = Operator.CONTAINS;
@@ -731,7 +732,7 @@ public class DataSelector extends Composite implements Editor, HasVisibleLines, 
       this.instant = relation.getInstant();
     }
 
-    ITEM_TYPE itemType = relation.getItemType();
+    ItemType itemType = relation.getItemType();
 
     this.input = new InputWidget();
     this.selector = new Selector(itemType, this.input.getElement(), relation.getSelectorClass());
@@ -745,7 +746,7 @@ public class DataSelector extends Composite implements Editor, HasVisibleLines, 
     }
     int size = choiceColumns.size();
 
-    this.tableMode = ITEM_TYPE.ROW.equals(itemType) || !selectorColumns.isEmpty()
+    this.tableMode = ItemType.ROW.equals(itemType) || !selectorColumns.isEmpty()
         || itemType == null && size > 1 && !relation.hasRowRenderer();
 
     int dataIndex = (size == 1) ? dataInfo.getColumnIndex(choiceColumns.get(0)) : BeeConst.UNDEF;
@@ -886,10 +887,21 @@ public class DataSelector extends Composite implements Editor, HasVisibleLines, 
 
     Binder.addMouseWheelHandler(selector.getPopup(), inputEvents);
 
-    if (dataColumn != null && ValueType.isString(dataColumn.getType())
-        && dataColumn.getPrecision() > 0) {
-      input.setMaxLength(dataColumn.getPrecision());
+    int maxLen = 0;
+
+    if (dataColumn != null && dataColumn.isCharacter()) {
+      maxLen = dataColumn.getPrecision();
+
+    } else if (size > 1) {
+      for (String colName : choiceColumns) {
+        BeeColumn column = dataInfo.getColumn(colName);
+        if (column != null && column.isCharacter()) {
+          maxLen = Math.max(maxLen, column.getPrecision());
+        }
+      }
     }
+
+    input.setMaxLength(BeeUtils.positive(maxLen, DEFAULT_MAX_INPUT_LENGTH));
 
     init(input, embedded);
 
@@ -1489,7 +1501,7 @@ public class DataSelector extends Composite implements Editor, HasVisibleLines, 
 
     MenuItem item;
     if (isTableMode()) {
-      item = new MenuItem(menu, null, ITEM_TYPE.ROW, menuCommand);
+      item = new MenuItem(menu, null, ItemType.ROW, menuCommand);
       addCells(item.getElement(), row);
     } else {
       item = new MenuItem(menu, renderItem(row), menuCommand);

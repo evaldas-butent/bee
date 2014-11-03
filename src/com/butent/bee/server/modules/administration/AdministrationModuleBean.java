@@ -190,6 +190,33 @@ public class AdministrationModuleBean implements BeeModule, HasTimerService {
     return Module.ADMINISTRATION;
   }
 
+  public double getRate(long currency, long time) {
+    SqlSelect query = new SqlSelect()
+        .addFields(TBL_CURRENCY_RATES,
+            COL_CURRENCY_RATE_DATE, COL_CURRENCY_RATE_QUANTITY, COL_CURRENCY_RATE)
+        .addFrom(TBL_CURRENCY_RATES)
+        .setWhere(SqlUtils.and(
+            SqlUtils.equals(TBL_CURRENCY_RATES, COL_CURRENCY_RATE_CURRENCY, currency),
+            SqlUtils.lessEqual(TBL_CURRENCY_RATES, COL_CURRENCY_RATE_DATE, time)))
+        .addOrderDesc(TBL_CURRENCY_RATES, COL_CURRENCY_RATE_DATE)
+        .setLimit(1);
+
+    SimpleRowSet data = qs.getData(query);
+    if (DataUtils.isEmpty(data)) {
+      return BeeConst.DOUBLE_ONE;
+
+    } else {
+      double rate = data.getDouble(0, COL_CURRENCY_RATE);
+
+      Integer quantity = data.getInt(0, COL_CURRENCY_RATE_QUANTITY);
+      if (quantity != null && quantity > 1) {
+        rate /= quantity;
+      }
+
+      return rate;
+    }
+  }
+
   @Override
   public String getResourcePath() {
     return getModule().getName();

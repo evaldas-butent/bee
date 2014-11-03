@@ -715,6 +715,16 @@ public class QueryServiceBean {
     return BeeUtils.join(BeeConst.STRING_EMPTY, BeeUtils.isEmpty(prefixFld) ? prefix : null, value);
   }
 
+  public Set<Long> getNotNullLongSet(String source, String field) {
+    SqlSelect query = new SqlSelect()
+        .setDistinctMode(true)
+        .addFields(source, field)
+        .addFrom(source)
+        .setWhere(SqlUtils.notNull(source, field));
+
+    return getLongSet(query);
+  }
+
   public Long[] getRelatedValues(String tableName, String filterColumn, long filterValue,
       String resultColumn) {
 
@@ -914,6 +924,10 @@ public class QueryServiceBean {
     return response;
   }
 
+  public boolean isEmpty(String source) {
+    return BeeUtils.isEmpty(source) || sqlCount(new SqlSelect().addFrom(source)) <= 0;
+  }
+
   @TransactionAttribute(TransactionAttributeType.MANDATORY)
   public int loadData(String target, SqlSelect sourceQuery) {
     Assert.state(sys.isTable(target));
@@ -1002,6 +1016,18 @@ public class QueryServiceBean {
     return result;
   }
 
+  public List<String> sqlColumns(String tmp) {
+    SqlSelect ss = new SqlSelect().addAllFields(tmp).addFrom(tmp).setWhere(SqlUtils.sqlFalse());
+    SimpleRowSet data = getData(ss);
+
+    List<String> columns = new ArrayList<>();
+    for (String colName : data.getColumnNames()) {
+      columns.add(colName);
+    }
+
+    return columns;
+  }
+
   public int sqlCount(SqlSelect query) {
     SimpleRowSet res;
     SqlSelect ss = query.copyOf().resetOrder();
@@ -1033,8 +1059,7 @@ public class QueryServiceBean {
   }
 
   public boolean sqlExists(String source, IsCondition where) {
-    return sqlCount(new SqlSelect()
-        .addConstant(null, "dummy").addFrom(source).setWhere(where)) > 0;
+    return sqlCount(new SqlSelect().addFrom(source).setWhere(where)) > 0;
   }
 
   public boolean sqlExists(String source, String field, Object value) {
@@ -1169,7 +1194,7 @@ public class QueryServiceBean {
     if (!BeeUtils.isEmpty(sources)) {
       for (String source : sources) {
         if (sys.isTable(source) && !sys.getTable(source).isActive()) {
-          sys.activateTable(source);
+          sys.rebuildTable(source);
         }
       }
     }

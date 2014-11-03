@@ -85,8 +85,8 @@ public final class Previewer implements NativePreviewHandler, HasInfo {
 
   private static final BeeLogger logger = LogUtils.getLogger(Previewer.class);
 
-  private static final int DEFAULT_CLICK_SENSITIVITY_MILLIS = 300;
-  private static final int DEFAULT_CLICK_SENSITIVITY_DISTANCE = 10;
+  private static final int DEFAULT_CLICK_SENSITIVITY_MILLIS = 0;
+  private static final int DEFAULT_CLICK_SENSITIVITY_DISTANCE = 1;
 
   public static void ensureRegistered(PreviewHandler handler) {
     Assert.notNull(handler);

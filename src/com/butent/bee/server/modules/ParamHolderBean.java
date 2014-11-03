@@ -393,7 +393,7 @@ public class ParamHolderBean {
     if (hasParameter(name)) {
       BeeParameter oldParam = getParameter(name);
       Assert.state(BeeUtils.same(oldParam.getModule(), parameter.getModule()),
-          "Dublicate parameter name: " + name
+          "Duplicate parameter name: " + name
               + " (modules: " + oldParam.getModule() + ", " + parameter.getModule() + ")");
     }
     parameters.put(name, parameter.getType() == ParameterType.RELATION

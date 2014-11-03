@@ -4,6 +4,10 @@ public interface LocalizableTradeConstants {
 
   String cost();
 
+  String discount();
+
+  String discountPercent();
+
   String printBankAccount();
 
   String printBankCode();
@@ -54,13 +58,33 @@ public interface LocalizableTradeConstants {
 
   String trdInvoice();
 
+  String trdInvoiceId();
+
+  String trdInvoiceNo();
+
+  String trdInvoicePrefix();
+
+  String trdMovementOfGoods();
+
   String trdNewInvoice();
+
+  String trdOperation();
+
+  String trdOperationsShort();
 
   String trdOverdue();
 
   String trdPrice();
 
   String trdQuantity();
+
+  String trdRemainders();
+
+  String trdSeries();
+
+  String trdSeriesPlural();
+
+  String trdStatuses();
 
   String trdTotal();
 }
