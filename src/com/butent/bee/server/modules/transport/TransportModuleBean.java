@@ -1129,11 +1129,13 @@ public class TransportModuleBean implements BeeModule, HasTimerService {
       // row.getValue(unloadCountry) + " (" + row.getValue(unloadCountry + "Name") + ")")
       // : null, row.getValue(COL_ORDER_NOTES));
 
-      String route = BeeUtils.join("\n", BeeUtils.join("-",
+      String assessmentRouteCounties = BeeUtils.join("-",
           row.getValue(loadCountry) + " (" + row.getValue(loadCountry + "Name") + ")",
-          row.getValue(unloadCountry) + " (" + row.getValue(unloadCountry + "Name") + ")"),
+          row.getValue(unloadCountry) + " (" + row.getValue(unloadCountry + "Name") + ")");
+
+      String route = BeeUtils.join("\n", row.getValue(incomeAdditionalRoute),
           BeeUtils.unbox(row.getBoolean(showIncomeAdditionalRoute))
-              ? row.getValue(incomeAdditionalRoute) : null);
+              ? assessmentRouteCounties : null);
 
       List<String> nodes = Lists.newArrayList(COL_ORDER_NO, row.getValue(COL_ORDER_NO),
           COL_ASSESSMENT, row.getValue(COL_ASSESSMENT), COL_CARGO_CMR, row.getValue(COL_CARGO_CMR),

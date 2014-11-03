@@ -342,8 +342,9 @@ public class AssessmentForm extends PrintFormInterceptor implements SelectorEven
     @Override
     public boolean onStartNewRow(GridView gridView, IsRow oldRow, IsRow newRow) {
       for (String col : new String[] {"LoadingDate", "LoadingAddress", "LoadingPostIndex",
-          "LoadingCompany", "LoadingContact", "UnloadingDate", "UnloadingAddress",
-          "UnloadingPostIndex", "UnloadingCompany", "UnloadingContact"}) {
+          "LoadingCompany", "LoadingContact", "LoadingCity", "LoadingCityName", "UnloadingDate",
+          "UnloadingAddress", "UnloadingPostIndex", "UnloadingCompany", "UnloadingContact",
+          "UnloadingCity", "UnloadingCityName"}) {
         newRow.setValue(gridView.getDataIndex(col), form.getStringValue(col));
       }
       return super.onStartNewRow(gridView, oldRow, newRow);

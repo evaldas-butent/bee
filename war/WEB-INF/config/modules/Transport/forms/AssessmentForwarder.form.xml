@@ -59,6 +59,10 @@
       <Label for="LoadingDate" text="=date" style="&labelRight;" />
       <InputDateTime source="LoadingDate" style="&input;" />
     </FlowPanel>
+    <FlowPanel for="LoadingCity" style="&section;">
+      <Label for="LoadingCity" text="=city" style="&labelLeft;" />
+      <DataSelector source="LoadingCity" valueSource="Name" style="&input; width:310px;" />
+    </FlowPanel>
     <FlowPanel for="LoadingAddress" style="&section;">
       <Label for="LoadingAddress" text="=address" style="&labelLeft;" />
       <InputText source="LoadingAddress" style="&input; width:310px;" />
@@ -81,6 +85,10 @@
       <Label text="=unloading" style="&labelLeft; font-weight:bold; width:190px; text-align:center;" />
       <Label for="UnloadingDate" text="=date" style="&labelRight;" />
       <InputDateTime source="UnloadingDate" style="&input;" />
+    </FlowPanel>
+    <FlowPanel for="UnloadingCity" style="&section;">
+      <Label for="UnloadingCity" text="=city" style="&labelLeft;" />
+      <DataSelector source="UnloadingCity" valueSource="Name" style="&input; width:310px;" />
     </FlowPanel>
     <FlowPanel for="UnloadingAddress" style="&section;">
       <Label for="UnloadingAddress" text="=address" style="&labelLeft;" />

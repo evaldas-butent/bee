@@ -60,6 +60,7 @@
           <SimpleColumn name="Name2" alias="LoadingCityNameEN" />
           <SimpleColumn name="Name3" alias="LoadingCityNameRU" />
         </SimpleJoin>
+        <SimpleColumn name="Contact" alias="LoadingContact" />
       </SimpleJoin>
       <SimpleJoin name="UnloadingPlace" joinType="LEFT">
         <SimpleColumn name="Date" alias="UnloadingDate" />
@@ -78,8 +79,9 @@
           <SimpleColumn name="Name2" alias="UnloadingCityNameEN" />
           <SimpleColumn name="Name3" alias="UnloadingCityNameRU" />
         </SimpleJoin>
+        <SimpleColumn name="Contact" alias="UnloadingContact" />
       </SimpleJoin>
-
+      
       <SimpleColumn name="Description" />
       <SimpleColumn name="Notes" alias="CargoNotes" />
       <SimpleColumn name="Number" />

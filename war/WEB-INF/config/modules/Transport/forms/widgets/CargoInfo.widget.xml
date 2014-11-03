@@ -32,6 +32,13 @@
     <Label text="=date" class="bee-required" style="&labelRight;" />
     <InputDateTime source="UnloadingDate" style="&inline; width:110px;" required="true" />
   </FlowPanel>
+  
+  <FlowPanel style="&section;">
+    <Label text="=company" style="&labelLeft;" />
+    <InputText source="LoadingCompany" style="&inline; width:170px; margin-right:20px;" />
+    <Label text="=company" style="&labelRight;" />
+    <InputText source="UnloadingCompany" style="&inline; width:170px;" />
+  </FlowPanel>
 
   <FlowPanel style="&section;">
     <Label text="=country" class="bee-required" style="&labelLeft;" />
@@ -59,6 +66,13 @@
       <Flag source="UnloadingCountryCode" style="&inline; padding-left:2px;" />
     </FlowPanel>
   </FlowPanel>
+  
+  <FlowPanel style="&section;">
+    <Label text="=city" style="&labelLeft;" />
+    <DataSelector source="LoadingCity" style="&inline; width:170px; margin-right:20px;" />
+    <Label text="=city" style="&labelRight;" />
+    <DataSelector source="UnloadingCity" style="&inline; width:170px;" />
+  </FlowPanel>
 
   <FlowPanel style="&section;">
     <Label text="=address" style="&labelLeft;" />
@@ -72,13 +86,6 @@
     <InputText source="LoadingPostIndex" style="&inline; width:90px; margin-right:60px;" />
     <Label text="=postIndex" style="&labelRight; width:100px" />
     <InputText source="UnloadingPostIndex" style="&inline; width:90px;" />
-  </FlowPanel>
-
-  <FlowPanel style="&section;">
-    <Label text="=company" style="&labelLeft;" />
-    <InputText source="LoadingCompany" style="&inline; width:170px; margin-right:20px;" />
-    <Label text="=company" style="&labelRight;" />
-    <InputText source="UnloadingCompany" style="&inline; width:170px;" />
   </FlowPanel>
 
   <FlowPanel style="&section;">

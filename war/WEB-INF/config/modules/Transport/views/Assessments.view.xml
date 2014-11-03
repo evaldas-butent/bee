@@ -84,8 +84,13 @@
         <SimpleJoin joinType="LEFT" name="Country">
           <SimpleColumn name="Name" alias="LoadingCountryName" />
           <SimpleColumn name="Code" alias="LoadingCountryCode" label="=from" />
-        </SimpleJoin>
+        </SimpleJoin>        
+        <SimpleColumn name="City" alias="LoadingCity" editable="true" label="=trLoadingCity" />
+        <SimpleJoin joinType="LEFT" name="City">
+          <SimpleColumn name="Name" alias="LoadingCityName" />
+        </SimpleJoin>               
       </SimpleJoin>
+      
       <SimpleJoin name="UnloadingPlace" joinType="LEFT">
         <SimpleColumn name="Date" alias="UnloadingDate" editable="true" label="=trUnloadingDate" />
         <SimpleColumn name="Company" alias="UnloadingCompany" editable="true" label="=trUnloadingCompany" />
@@ -97,6 +102,10 @@
           <SimpleColumn name="Name" alias="UnloadingCountryName" />
           <SimpleColumn name="Code" alias="UnloadingCountryCode" label="=to" />
         </SimpleJoin>
+        <SimpleColumn name="City" alias="UnloadingCity" editable="true" label="=trUnloadingCity" />
+        <SimpleJoin joinType="LEFT" name="City">
+          <SimpleColumn name="Name" alias="UnloadingCityName" />
+        </SimpleJoin>               
       </SimpleJoin>
 
       <SimpleColumn name="Weight" editable="true" />

@@ -99,6 +99,7 @@
               <renderToken source="LoadingCityNameEN" prefix=", " />
               <renderToken source="LoadingAddress" prefix=", " />
               <renderToken source="LoadingPostIndex" prefix=", " />
+              <renderToken source="LoadingContact" prefix=", " />
             </TextLabel>
           </FlowPanel>
           <FlowPanel>
@@ -109,6 +110,7 @@
               <renderToken source="UnLoadingCityNameEN" prefix=", " />
               <renderToken source="UnloadingAddress" prefix=", " />
               <renderToken source="UnLoadingPostIndex" prefix=", " />
+              <renderToken source="UnloadingContact" prefix=", " />
             </TextLabel>
           </FlowPanel>
         </FlowPanel>

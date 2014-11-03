@@ -96,6 +96,7 @@
               <renderToken source="LoadingCityName" prefix=", " />
               <renderToken source="LoadingAddress" prefix=", " />
               <renderToken source="LoadingPostIndex" prefix=", " />
+              <renderToken source="LoadingContact" prefix=", " />
             </TextLabel>
           </FlowPanel>
           <FlowPanel>
@@ -105,7 +106,8 @@
               <renderToken source="UnloadingCountryName" prefix=" &lt;br /&gt; Iškrovimo vieta: " addPrefixWhenEmpty="true" />
               <renderToken source="UnLoadingCityName" prefix=", " />
               <renderToken source="UnloadingAddress" prefix=", " />
-              <renderToken source="UnLoadingPostIndex" prefix=", " />
+              <renderToken source="UnloadingPostIndex" prefix=", " />
+              <renderToken source="UnloadingContact" prefix=", " />
             </TextLabel>
           </FlowPanel>
         </FlowPanel>
