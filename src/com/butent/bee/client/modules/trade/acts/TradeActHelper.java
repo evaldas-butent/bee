@@ -43,6 +43,8 @@ final class TradeActHelper {
 
       case COL_TA_DATE:
         return Localized.getConstants().taDate();
+      case COL_TA_UNTIL:
+        return Localized.getConstants().taUntil();
 
       case COL_TA_SERIES:
       case COL_SERIES_NAME:
@@ -100,6 +102,8 @@ final class TradeActHelper {
       case COL_UNIT:
       case ALS_UNIT_NAME:
         return Localized.getConstants().unitShort();
+      case COL_TIME_UNIT:
+        return Localized.getConstants().taTimeUnit();
 
       case COL_TRADE_ITEM_QUANTITY:
         return Localized.getConstants().quantity();
@@ -139,6 +143,18 @@ final class TradeActHelper {
         return Localized.getConstants().dateFrom();
       case COL_TA_INVOICE_TO:
         return Localized.getConstants().dateTo();
+
+      case ALS_ITEM_TOTAL:
+        return Localized.getConstants().goods();
+      case COL_TA_SERVICE_TARIFF:
+        return Localized.getConstants().taTariff();
+
+      case COL_TA_SERVICE_FACTOR:
+        return Localized.getConstants().taFactorShort();
+      case COL_TA_SERVICE_DAYS:
+        return Localized.getConstants().taDaysPerWeekShort();
+      case COL_TA_SERVICE_MIN:
+        return Localized.getConstants().taMinTermShort();
 
       default:
         logger.warning(NameUtils.getClassName(TradeActHelper.class), name, "label not defined");
@@ -267,6 +283,7 @@ final class TradeActHelper {
       case ALS_WITHOUT_VAT:
       case ALS_VAT_AMOUNT:
       case ALS_TOTAL_AMOUNT:
+      case ALS_ITEM_TOTAL:
         return ValueType.NUMBER;
 
       case ALS_WAREHOUSE_CODE:
