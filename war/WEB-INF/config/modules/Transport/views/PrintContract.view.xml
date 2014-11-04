@@ -58,6 +58,9 @@
         <SimpleColumn name="Contact" alias="LoadingContact" />
         <SimpleColumn name="Address" alias="LoadingAddress" />
         <SimpleColumn name="PostIndex" alias="LoadingPostIndex" />
+        <SimpleJoin name="City" joinType="LEFT">
+           <SimpleColumn name="Name" alias="LoadingCity" />
+        </SimpleJoin>
       </SimpleJoin>
   
       <SimpleJoin name="UnloadingPlace" joinType="LEFT">
@@ -66,6 +69,9 @@
         <SimpleColumn name="Contact" alias="UnloadingContact" />
         <SimpleColumn name="Address" alias="UnloadingAddress" />
         <SimpleColumn name="PostIndex" alias="UnloadingPostIndex" />
+        <SimpleJoin name="City" joinType="LEFT">
+           <SimpleColumn name="Name" alias="UnloadingCity" />
+        </SimpleJoin>
       </SimpleJoin>
     </SimpleJoin>
 

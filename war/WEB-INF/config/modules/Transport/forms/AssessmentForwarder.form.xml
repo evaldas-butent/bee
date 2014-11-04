@@ -61,7 +61,7 @@
     </FlowPanel>
     <FlowPanel for="LoadingCity" style="&section;">
       <Label for="LoadingCity" text="=city" style="&labelLeft;" />
-      <DataSelector source="LoadingCity" valueSource="Name" style="&input; width:310px;" />
+      <DataSelector source="LoadingCity" style="&input; width:310px;" />
     </FlowPanel>
     <FlowPanel for="LoadingAddress" style="&section;">
       <Label for="LoadingAddress" text="=address" style="&labelLeft;" />
@@ -88,7 +88,7 @@
     </FlowPanel>
     <FlowPanel for="UnloadingCity" style="&section;">
       <Label for="UnloadingCity" text="=city" style="&labelLeft;" />
-      <DataSelector source="UnloadingCity" valueSource="Name" style="&input; width:310px;" />
+      <DataSelector source="UnloadingCity" style="&input; width:310px;" />
     </FlowPanel>
     <FlowPanel for="UnloadingAddress" style="&section;">
       <Label for="UnloadingAddress" text="=address" style="&labelLeft;" />
