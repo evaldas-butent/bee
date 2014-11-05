@@ -7,6 +7,7 @@
   enableCopy="- Assessment Cargo *Status *Date Number Manager ExpensesRegistered, Log*, Finished*"
   filter="Status"
   >
+  <g:properties paging="false" />
   <g:columns>
     <IdColumn name="ID" width="40">
         <footer text="=totalOf" horizontalAlignment="right" />

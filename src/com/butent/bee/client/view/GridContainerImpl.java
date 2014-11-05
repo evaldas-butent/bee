@@ -58,6 +58,7 @@ import java.util.Collection;
 import java.util.EnumSet;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 /**
@@ -80,6 +81,8 @@ public class GridContainerImpl extends Split implements GridContainerView,
   private static final Set<Action> HEADER_ACTIONS =
       EnumSet.of(Action.REFRESH, Action.FILTER, Action.REMOVE_FILTER, Action.ADD, Action.DELETE,
           Action.MENU, Action.CLOSE);
+
+  private static final String PROP_PAGING = "paging";
 
   private final String supplierKey;
 
@@ -144,7 +147,15 @@ public class GridContainerImpl extends Split implements GridContainerView,
       Filter userFilter, GridInterceptor gridInterceptor, Collection<UiOption> uiOptions,
       GridFactory.GridOptions gridOptions) {
 
-    setHasPaging(UiOption.hasPaging(uiOptions));
+    Map<String, String> properties = gridDescription.getProperties();
+
+    boolean disablePage = false;
+
+    if (!BeeUtils.isEmpty(properties.get(PROP_PAGING))) {
+      disablePage = !BeeUtils.toBoolean(properties.get(PROP_PAGING));
+    }
+
+    setHasPaging(UiOption.hasPaging(uiOptions) && !disablePage);
     setHasSearch(UiOption.hasSearch(uiOptions)
         || gridDescription.getEnabledActions().contains(Action.FILTER));
 

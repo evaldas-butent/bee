@@ -6,6 +6,7 @@
   flexGrow="1" order="AssessmentID desc" disabledActions="add delete"
   filter="OrderStatus!=0"
   >
+  <g:properties paging="false" />
   <g:columns>
     <SelectionColumn name="Select" width="20" />
     <IdColumn name="ID" width="40">
