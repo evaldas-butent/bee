@@ -646,13 +646,9 @@ public class MailStorageBean {
       } catch (ParseException e) {
         logger.warning("( MessageID =", messageId, ") Error getting part file name:", e);
       }
-      boolean isBase64 = BeeUtils.same("base64",
-          ArrayUtils.getQuietly(part.getHeader("Content-Transfer-Encoding"), 0));
-
       if (!part.isMimeType("text/*")
           || BeeUtils.same(disposition, Part.ATTACHMENT)
-          || !BeeUtils.isEmpty(fileName)
-          || isBase64) {
+          || !BeeUtils.isEmpty(fileName)) {
 
         Long fileId = fs.storeFile(part.getInputStream(), fileName, contentType);
 

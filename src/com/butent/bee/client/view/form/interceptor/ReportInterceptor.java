@@ -23,6 +23,7 @@ import com.butent.bee.client.presenter.PresenterCallback;
 import com.butent.bee.client.ui.HasIndexedWidgets;
 import com.butent.bee.client.view.HeaderView;
 import com.butent.bee.client.view.edit.Editor;
+import com.butent.bee.client.view.edit.TextBox;
 import com.butent.bee.client.view.form.FormView;
 import com.butent.bee.client.widget.Button;
 import com.butent.bee.client.widget.InputDateTime;
@@ -462,6 +463,19 @@ public abstract class ReportInterceptor extends AbstractFormInterceptor implemen
   protected void loadMulti(ReportParameters parameters, Collection<String> names, FormView form) {
     for (String name : names) {
       loadIds(parameters, name, form);
+    }
+  }
+
+  protected void loadText(ReportParameters parameters, String name, FormView form) {
+    String text = parameters.getText(name);
+    if (!BeeUtils.isEmpty(text)) {
+      Widget widget = form.getWidgetByName(name);
+
+      if (widget instanceof TextBox) {
+        ((TextBox) widget).setText(text);
+      } else {
+        widgetIsNot(name, TextBox.class);
+      }
     }
   }
 
