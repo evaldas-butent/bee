@@ -12,6 +12,7 @@ import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.HasBounds;
 import com.butent.bee.shared.HasItems;
 import com.butent.bee.shared.HasOptions;
+import com.butent.bee.shared.data.CustomProperties;
 import com.butent.bee.shared.data.ProviderType;
 import com.butent.bee.shared.data.filter.FilterComponent;
 import com.butent.bee.shared.data.filter.FilterDescription;
@@ -513,7 +514,6 @@ public class GridLoaderBean {
 
   @EJB
   SystemBean sys;
-
   @EJB
   UiHolderBean ui;
   @EJB
@@ -1008,6 +1008,25 @@ public class GridLoaderBean {
 
       if (!predefinedFilters.isEmpty()) {
         dst.setPredefinedFilters(predefinedFilters);
+      }
+    }
+
+    String options = src.getAttribute(HasOptions.ATTR_OPTIONS);
+    if (!BeeUtils.isEmpty(options)) {
+      dst.setOptions(options);
+    }
+
+    List<Element> propElements = XmlUtils.getElementsByLocalName(src,
+        CustomProperties.TAG_PROPERTIES);
+    if (!propElements.isEmpty()) {
+      Map<String, String> properties = new HashMap<>();
+
+      for (Element propElement : propElements) {
+        properties.putAll(XmlUtils.getAttributes(propElement));
+      }
+
+      if (!properties.isEmpty()) {
+        dst.setProperties(properties);
       }
     }
   }
