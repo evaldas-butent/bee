@@ -59,6 +59,12 @@ public final class SummaryChangeEvent extends GwtEvent<SummaryChangeEvent.Handle
     }
   }
 
+  public static void maybeSummarize(Widget widget) {
+    if (widget instanceof HasSummaryChangeHandlers) {
+      maybeFire((HasSummaryChangeHandlers) widget);
+    }
+  }
+
   public static String renderSummary(Collection<Value> values) {
     if (BeeUtils.isEmpty(values)) {
       return BeeConst.STRING_EMPTY;

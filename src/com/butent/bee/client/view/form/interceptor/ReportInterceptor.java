@@ -11,6 +11,7 @@ import com.butent.bee.client.Global;
 import com.butent.bee.client.composite.MultiSelector;
 import com.butent.bee.client.composite.UnboundSelector;
 import com.butent.bee.client.dialog.ModalGrid;
+import com.butent.bee.client.event.logical.SummaryChangeEvent;
 import com.butent.bee.client.grid.GridFactory;
 import com.butent.bee.client.grid.GridFactory.GridOptions;
 import com.butent.bee.client.i18n.Format;
@@ -267,6 +268,7 @@ public abstract class ReportInterceptor extends AbstractFormInterceptor implemen
     Widget widget = getFormView().getWidgetByName(name);
     if (widget instanceof Editor) {
       ((Editor) widget).clearValue();
+      SummaryChangeEvent.maybeFire((Editor) widget);
     } else {
       widgetNotFound(name);
     }
@@ -396,6 +398,7 @@ public abstract class ReportInterceptor extends AbstractFormInterceptor implemen
 
       if (widget instanceof HasCheckedness) {
         ((HasCheckedness) widget).setChecked(value);
+        SummaryChangeEvent.maybeSummarize(widget);
       } else {
         widgetIsNot(name, HasCheckedness.class);
       }
@@ -409,8 +412,23 @@ public abstract class ReportInterceptor extends AbstractFormInterceptor implemen
 
       if (widget instanceof InputDateTime) {
         ((InputDateTime) widget).setDateTime(dateTime);
+        SummaryChangeEvent.maybeSummarize(widget);
       } else {
         widgetIsNot(name, InputDateTime.class);
+      }
+    }
+  }
+
+  protected void loadEditor(ReportParameters parameters, String name, FormView form) {
+    String value = parameters.get(name);
+    if (!BeeUtils.isEmpty(value)) {
+      Widget widget = form.getWidgetByName(name);
+
+      if (widget instanceof HasStringValue) {
+        ((HasStringValue) widget).setValue(value);
+        SummaryChangeEvent.maybeSummarize(widget);
+      } else {
+        widgetIsNot(name, HasStringValue.class);
       }
     }
   }
@@ -422,6 +440,7 @@ public abstract class ReportInterceptor extends AbstractFormInterceptor implemen
 
       if (widget instanceof ListBox) {
         ((ListBox) widget).setSelectedIndex(index);
+        SummaryChangeEvent.maybeSummarize(widget);
       } else {
         widgetIsNot(name, ListBox.class);
       }
@@ -441,6 +460,7 @@ public abstract class ReportInterceptor extends AbstractFormInterceptor implemen
 
       if (widget instanceof UnboundSelector) {
         ((UnboundSelector) widget).setValue(id, false);
+        SummaryChangeEvent.maybeSummarize(widget);
       } else {
         widgetIsNot(name, UnboundSelector.class);
       }
@@ -473,6 +493,7 @@ public abstract class ReportInterceptor extends AbstractFormInterceptor implemen
 
       if (widget instanceof TextBox) {
         ((TextBox) widget).setText(text);
+        SummaryChangeEvent.maybeSummarize(widget);
       } else {
         widgetIsNot(name, TextBox.class);
       }
