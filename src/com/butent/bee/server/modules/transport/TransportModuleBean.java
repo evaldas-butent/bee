@@ -1131,7 +1131,8 @@ public class TransportModuleBean implements BeeModule, HasTimerService {
             BeeUtils.joinWords(JustDate.get(row.getDateTime(COL_UNLOADING_PLACE)),
                 row.getValue(unloadCountry),
                 BeeUtils.parenthesize(BeeUtils.joinItems(row.getValue(unloadPlace),
-                    row.getValue(unloadCity)))), COL_CARGO_WEIGHT, row.getValue(COL_CARGO_WEIGHT),
+                    row.getValue(unloadCity)))),
+            COL_CARGO_WEIGHT, row.getValue(COL_CARGO_WEIGHT),
             COL_DRIVER, BeeUtils.joinItems(drivers.get(row.getLong(COL_CARGO))),
             COL_VEHICLE, BeeUtils.joinItems(vehicles.get(row.getLong(COL_CARGO)))));
       }
