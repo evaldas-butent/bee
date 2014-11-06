@@ -63,8 +63,6 @@
 			</row>
 
 			<row>
-				<Label for="Created" />
-				<InputDateTime source="Created" style="&inp1;" />
 				<Label for="Creator" />
 				<DataSelector source="Creator" editSource="CreatorCompanyPerson"
 					renderColumns="CreatorFirstName CreatorLastName" style="&inp1;" />
