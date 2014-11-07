@@ -284,6 +284,8 @@
       <xs:enumeration value="Configuration" />
       <xs:enumeration value="CostCenters" />
       <xs:enumeration value="Countries" />
+      <xs:enumeration value="CountryDailyCosts" />
+      <xs:enumeration value="CountryNorms" />
       <xs:enumeration value="Criteria" />
       <xs:enumeration value="CriteriaGroups" />
       <xs:enumeration value="Currencies" />

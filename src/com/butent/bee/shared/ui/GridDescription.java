@@ -541,14 +541,17 @@ public class GridDescription implements BeeSerializable, HasExtendedInfo, HasVie
         "Row Change Sensitivity Millis", getRowChangeSensitivityMillis(),
         "Options", getOptions());
 
+    int cnt;
+    int i;
+
     if (getFlexibility() != null) {
       PropertyUtils.appendChildrenToExtended(info, "Flexibility", getFlexibility().getInfo());
     }
 
     if (!getProperties().isEmpty()) {
-      int cnt = getProperties().size();
+      cnt = getProperties().size();
       PropertyUtils.addExtended(info, "Properties", BeeUtils.bracket(cnt));
-      int i = 0;
+      i = 0;
       for (Map.Entry<String, String> entry : getProperties().entrySet()) {
         i++;
         PropertyUtils.addExtended(info, "Property " + BeeUtils.progress(i, cnt),
@@ -557,9 +560,9 @@ public class GridDescription implements BeeSerializable, HasExtendedInfo, HasVie
     }
 
     if (getStyleSheets() != null && !getStyleSheets().isEmpty()) {
-      int cnt = getStyleSheets().size();
+      cnt = getStyleSheets().size();
       PropertyUtils.addExtended(info, "Style Sheets", BeeUtils.bracket(cnt));
-      int i = 0;
+      i = 0;
       for (Map.Entry<String, String> entry : getStyleSheets().entrySet()) {
         i++;
         PropertyUtils.addExtended(info, "Style Sheet " + BeeUtils.progress(i, cnt),
@@ -568,9 +571,9 @@ public class GridDescription implements BeeSerializable, HasExtendedInfo, HasVie
     }
 
     if (getWidgets() != null && !getWidgets().isEmpty()) {
-      int cnt = getWidgets().size();
+      cnt = getWidgets().size();
       PropertyUtils.addExtended(info, "Widgets", BeeUtils.bracket(cnt));
-      int i = 0;
+      i = 0;
       for (String w : getWidgets()) {
         PropertyUtils.addExtended(info, "Widget", BeeUtils.progress(++i, cnt), w);
       }
@@ -587,9 +590,9 @@ public class GridDescription implements BeeSerializable, HasExtendedInfo, HasVie
     }
 
     if (getRowStyles() != null && !getRowStyles().isEmpty()) {
-      int cnt = getRowStyles().size();
+      cnt = getRowStyles().size();
       PropertyUtils.addExtended(info, "Row Styles", BeeUtils.bracket(cnt));
-      int i = 0;
+      i = 0;
       for (ConditionalStyleDeclaration cs : getRowStyles()) {
         i++;
         if (cs != null) {
@@ -616,18 +619,18 @@ public class GridDescription implements BeeSerializable, HasExtendedInfo, HasVie
     int cc = getColumnCount();
     PropertyUtils.addExtended(info, "Column Count", BeeUtils.bracket(cc));
 
+    i = 0;
     for (ColumnDescription column : getColumns()) {
-      int i = 0;
       PropertyUtils.appendChildrenToExtended(info,
           BeeUtils.joinWords("Column", BeeUtils.progress(++i, cc), column.getId()),
           column.getInfo());
     }
 
     if (!getPredefinedFilters().isEmpty()) {
-      int cnt = getPredefinedFilters().size();
+      cnt = getPredefinedFilters().size();
       PropertyUtils.addExtended(info, "Predefined Filters", BeeUtils.bracket(cnt));
 
-      int i = 0;
+      i = 0;
       for (FilterDescription filterDescription : getPredefinedFilters()) {
         PropertyUtils.appendChildrenToExtended(info, "Filter " + BeeUtils.progress(++i, cnt),
             filterDescription.getInfo());

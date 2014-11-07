@@ -88,6 +88,10 @@ public class ReportParameters extends LinkedHashMap<String, String> implements B
     return BeeUtils.toLongOrNull(get(key));
   }
 
+  public String getText(String key) {
+    return get(key);
+  }
+
   @Override
   public String serialize() {
     List<String> list = new ArrayList<>();

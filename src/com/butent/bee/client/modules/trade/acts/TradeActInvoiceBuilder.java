@@ -1,6 +1,5 @@
 package com.butent.bee.client.modules.trade.acts;
 
-import com.google.common.collect.BoundType;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Range;
 import com.google.gwt.dom.client.Element;
@@ -74,7 +73,6 @@ import com.butent.bee.shared.modules.trade.acts.TradeActKind;
 import com.butent.bee.shared.modules.trade.acts.TradeActTimeUnit;
 import com.butent.bee.shared.modules.trade.acts.TradeActUtils;
 import com.butent.bee.shared.time.DateTime;
-import com.butent.bee.shared.time.HasDateValue;
 import com.butent.bee.shared.time.JustDate;
 import com.butent.bee.shared.time.TimeUtils;
 import com.butent.bee.shared.ui.Action;
@@ -338,109 +336,11 @@ public class TradeActInvoiceBuilder extends AbstractFormInterceptor implements
   private static final int DPW_MIN = 5;
   private static final int DPW_MAX = 7;
 
-  private static Range<DateTime> convertRange(Range<JustDate> range) {
-    if (range == null) {
-      return null;
-    }
-
-    DateTime start;
-
-    if (range.hasLowerBound()) {
-      if (range.lowerBoundType() == BoundType.OPEN) {
-        start = TimeUtils.startOfNextDay(range.lowerEndpoint());
-      } else {
-        start = TimeUtils.startOfDay(range.lowerEndpoint());
-      }
-    } else {
-      start = null;
-    }
-
-    DateTime end;
-
-    if (range.hasUpperBound()) {
-      if (range.upperBoundType() == BoundType.OPEN) {
-        end = TimeUtils.startOfDay(range.upperEndpoint());
-      } else {
-        end = TimeUtils.startOfNextDay(range.upperEndpoint());
-      }
-    } else {
-      end = null;
-    }
-
-    return createRange(start, end);
-  }
-
   private static int countDays(Range<DateTime> range) {
     if (range != null && range.hasLowerBound() && range.hasUpperBound()) {
       return Math.max(TimeUtils.dayDiff(range.lowerEndpoint(), range.upperEndpoint()), 1);
     } else {
       return 0;
-    }
-  }
-
-  private static Range<DateTime> createRange(HasDateValue start, HasDateValue end) {
-    if (start == null) {
-      return (end == null) ? null : Range.lessThan(end.getDateTime());
-
-    } else if (end == null) {
-      return Range.atLeast(start.getDateTime());
-
-    } else {
-      DateTime lower = start.getDateTime();
-      DateTime upper = end.getDateTime();
-
-      if (lower.getTime() < upper.getTime()) {
-        return Range.closedOpen(lower, upper);
-      } else {
-        return Range.singleton(lower);
-      }
-    }
-  }
-
-  private static Range<DateTime> createServiceRange(JustDate serviceFrom, JustDate serviceTo,
-      TradeActTimeUnit timeUnit, Range<DateTime> builderRange, Range<DateTime> actRange) {
-
-    if (timeUnit == null) {
-      DateTime date;
-
-      if (serviceFrom != null) {
-        date = serviceFrom.getDateTime();
-      } else if (serviceTo != null) {
-        date = serviceTo.getDateTime();
-      } else {
-        date = actRange.lowerEndpoint();
-      }
-
-      if (builderRange.contains(date)) {
-        return Range.singleton(date);
-      } else {
-        return null;
-      }
-
-    } else {
-      DateTime start;
-      if (serviceFrom != null) {
-        start = TimeUtils.startOfDay(serviceFrom);
-      } else {
-        start = actRange.lowerEndpoint();
-      }
-
-      DateTime end;
-      if (serviceTo != null) {
-        end = TimeUtils.startOfDay(serviceTo);
-      } else if (actRange.hasUpperBound()) {
-        end = actRange.upperEndpoint();
-      } else {
-        end = null;
-      }
-
-      Range<DateTime> serviceRange = createRange(start, end);
-
-      if (BeeUtils.intersects(serviceRange, builderRange)) {
-        return serviceRange.intersection(builderRange);
-      } else {
-        return null;
-      }
     }
   }
 
@@ -667,7 +567,7 @@ public class TradeActInvoiceBuilder extends AbstractFormInterceptor implements
       return;
     }
 
-    final Range<DateTime> builderRange = convertRange(range);
+    final Range<DateTime> builderRange = TradeActUtils.convertRange(range);
     final int builderDays = countDays(builderRange);
 
     Collection<Long> actIds = getSelectedIds(STYLE_ACT_SELECTED);
@@ -724,8 +624,8 @@ public class TradeActInvoiceBuilder extends AbstractFormInterceptor implements
           TradeActTimeUnit tu = EnumUtils.getEnumByIndex(TradeActTimeUnit.class,
               row.getInteger(timeUnitIndex));
 
-          Range<DateTime> serviceRange = createServiceRange(row.getDate(dateFromIndex),
-              row.getDate(dateToIndex), tu, builderRange, act.range);
+          Range<DateTime> serviceRange = TradeActUtils.createServiceRange(
+              row.getDate(dateFromIndex), row.getDate(dateToIndex), tu, builderRange, act.range);
 
           if (serviceRange == null) {
             continue;
@@ -1175,7 +1075,7 @@ public class TradeActInvoiceBuilder extends AbstractFormInterceptor implements
 
           acts.clear();
           for (BeeRow row : rowSet) {
-            Range<DateTime> range = createRange(row.getDateTime(dateIndex),
+            Range<DateTime> range = TradeActUtils.createRange(row.getDateTime(dateIndex),
                 row.getDateTime(untilIndex));
 
             Long currency = row.getLong(currencyIndex);

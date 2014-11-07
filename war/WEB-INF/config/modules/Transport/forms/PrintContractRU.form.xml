@@ -52,10 +52,10 @@
       <row>
         <Label html="Место погрузки" />
         <TextLabel source="LoadingAddress">
-          <renderToken source="LoadingCompany" />
-          <renderToken source="LoadingAddress" prefix=", " />
+          <renderToken source="LoadingAddress" />
           <renderToken source="LoadingPostIndex" prefix=" " />
-          <renderToken source="LoadingContact" prefix=", " />
+          <renderToken source="LoadingCityName" prefix=", " />
+          <renderToken source="LoadingCountryName" prefix=", " />
         </TextLabel>
       </row>
       <row>
@@ -65,10 +65,10 @@
       <row>
         <Label html="Место поставки" />
         <TextLabel source="UnloadingAddress">
-          <renderToken source="UnloadingCompany" />
-          <renderToken source="UnloadingAddress" prefix=", " />
+          <renderToken source="UnloadingAddress" />
           <renderToken source="UnloadingPostIndex" prefix=" " />
-          <renderToken source="UnloadingContact" prefix=", " />
+          <renderToken source="UnloadingCityName" prefix=", " />
+          <renderToken source="UnloadingCountryName" prefix=", " />
         </TextLabel>
       </row>
       <row>
