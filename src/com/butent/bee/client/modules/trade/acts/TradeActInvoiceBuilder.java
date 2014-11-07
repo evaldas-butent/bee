@@ -205,27 +205,8 @@ public class TradeActInvoiceBuilder extends AbstractFormInterceptor implements
       this.timeUnit = timeUnit;
     }
 
-    private Double amount() {
-      if (BeeUtils.isPositive(quantity) && BeeUtils.isPositive(price)) {
-        double p = price;
-        if (BeeUtils.nonZero(discount)) {
-          p = BeeUtils.minusPercent(p, discount);
-        }
-
-        double amount = roundAmount(roundPrice(p) * quantity);
-        if (timeUnit != null && BeeUtils.isPositive(factor)) {
-          amount = roundAmount(amount * factor);
-        }
-
-        return amount;
-
-      } else {
-        return null;
-      }
-    }
-
     private Double amount(Long toCurrency, DateTime date) {
-      Double amount = amount();
+      Double amount = TradeActUtils.serviceAmount(quantity, price, discount, timeUnit, factor);
 
       if (BeeUtils.nonZero(amount) && Money.canExchange(currency, toCurrency)) {
         return Money.exchange(currency, toCurrency, amount, date);
@@ -333,32 +314,6 @@ public class TradeActInvoiceBuilder extends AbstractFormInterceptor implements
 
   private static final String STORAGE_KEY_SEPARATOR = "-";
 
-  private static final int DPW_MIN = 5;
-  private static final int DPW_MAX = 7;
-
-  private static int countDays(Range<DateTime> range) {
-    if (range != null && range.hasLowerBound() && range.hasUpperBound()) {
-      return Math.max(TimeUtils.dayDiff(range.lowerEndpoint(), range.upperEndpoint()), 1);
-    } else {
-      return 0;
-    }
-  }
-
-  private static double dpwToFactor(Integer dpw, int days, Integer minTerm) {
-    if (validDpw(dpw) && days > 0) {
-      int df = BeeUtils.round(BeeUtils.div(days, TimeUtils.DAYS_PER_WEEK) * dpw);
-
-      if (BeeUtils.isPositive(minTerm)) {
-        return Math.max(df, minTerm);
-      } else {
-        return df;
-      }
-
-    } else {
-      return BeeConst.DOUBLE_ZERO;
-    }
-  }
-
   private static void onToggle(Toggle toggle, String styleSelected) {
     TableRowElement rowElement = DomUtils.getParentRow(toggle.getElement(), false);
 
@@ -397,22 +352,6 @@ public class TradeActInvoiceBuilder extends AbstractFormInterceptor implements
 
   private static String renderPrice(Double price) {
     return renderAmount(price);
-  }
-
-  private static double roundAmount(Double amount) {
-    if (BeeUtils.nonZero(amount)) {
-      return BeeUtils.round(amount, 2);
-    } else {
-      return BeeConst.DOUBLE_ZERO;
-    }
-  }
-
-  private static double roundPrice(Double price) {
-    return roundAmount(price);
-  }
-
-  private static boolean validDpw(Integer dpw) {
-    return dpw != null && dpw >= DPW_MIN && dpw <= DPW_MAX;
   }
 
   private IdentifiableWidget commandCompose;
@@ -568,7 +507,7 @@ public class TradeActInvoiceBuilder extends AbstractFormInterceptor implements
     }
 
     final Range<DateTime> builderRange = TradeActUtils.convertRange(range);
-    final int builderDays = countDays(builderRange);
+    final int builderDays = TradeActUtils.countServiceDays(builderRange);
 
     Collection<Long> actIds = getSelectedIds(STYLE_ACT_SELECTED);
     if (actIds.isEmpty()) {
@@ -652,12 +591,12 @@ public class TradeActInvoiceBuilder extends AbstractFormInterceptor implements
           svc.minTerm = row.getInteger(minTermIndex);
 
           if (tu != null) {
-            int days = countDays(serviceRange);
+            int days = TradeActUtils.countServiceDays(serviceRange);
 
             switch (tu) {
               case DAY:
-                if (validDpw(svc.dpw) && !BeeUtils.isPositive(svc.factor)) {
-                  double df = dpwToFactor(svc.dpw, days, svc.minTerm);
+                if (TradeActUtils.validDpw(svc.dpw) && !BeeUtils.isPositive(svc.factor)) {
+                  double df = TradeActUtils.dpwToFactor(svc.dpw, days, svc.minTerm);
                   if (BeeUtils.isPositive(df)) {
                     svc.factor = df;
                   }
@@ -1573,7 +1512,7 @@ public class TradeActInvoiceBuilder extends AbstractFormInterceptor implements
       widget.addItem(BeeUtils.joinWords(i, Localized.getConstants().dayShort()));
     }
 
-    if (validDpw(svc.dpw)) {
+    if (TradeActUtils.validDpw(svc.dpw)) {
       widget.setSelectedIndex(svc.dpw - DPW_MIN);
     } else {
       widget.deselect();
@@ -1597,7 +1536,8 @@ public class TradeActInvoiceBuilder extends AbstractFormInterceptor implements
             return;
           }
 
-          double df = dpwToFactor(DPW_MIN + index, countDays(service.range), service.minTerm);
+          double df = TradeActUtils.dpwToFactor(DPW_MIN + index,
+              TradeActUtils.countServiceDays(service.range), service.minTerm);
           if (Objects.equals(service.factor, df)) {
             return;
           }

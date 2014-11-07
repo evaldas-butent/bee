@@ -33,6 +33,11 @@ final class TradeActHelper {
   private TradeActHelper() {
   }
 
+  static NumberFormat getDecimalFormat(String viewName, String colName) {
+    Integer scale = Data.getColumnScale(viewName, colName);
+    return Format.getDecimalFormat(0, BeeUtils.unbox(scale));
+  }
+
   static String getLabel(String name) {
     switch (name) {
       case COL_TRADE_ACT:
@@ -224,10 +229,19 @@ final class TradeActHelper {
       case ALS_WITHOUT_VAT:
       case ALS_VAT_AMOUNT:
       case ALS_TOTAL_AMOUNT:
+      case ALS_ITEM_TOTAL:
         return getAmountFormat();
 
       case COL_ITEM_WEIGHT:
         return getWeightFormat();
+
+      case COL_TA_SERVICE_DAYS:
+      case COL_TA_SERVICE_MIN:
+        return Format.getDefaultIntegerFormat();
+
+      case COL_TA_SERVICE_TARIFF:
+      case COL_TA_SERVICE_FACTOR:
+        return getDecimalFormat(VIEW_TRADE_ACT_SERVICES, name);
 
       default:
         logger.warning(NameUtils.getClassName(TradeActHelper.class), name, "format not defined");

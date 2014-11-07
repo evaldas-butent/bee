@@ -45,9 +45,11 @@ import com.butent.bee.shared.export.XStyle;
 import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogUtils;
+import com.butent.bee.shared.modules.trade.acts.TradeActTimeUnit;
 import com.butent.bee.shared.time.DateTime;
 import com.butent.bee.shared.time.TimeUtils;
 import com.butent.bee.shared.utils.BeeUtils;
+import com.butent.bee.shared.utils.EnumUtils;
 import com.butent.bee.shared.utils.NameUtils;
 import com.butent.bee.shared.utils.StringList;
 
@@ -76,10 +78,10 @@ public class TradeActTransferReport extends ReportInterceptor {
       COL_ITEM_TYPE, COL_ITEM_GROUP, COL_TA_ITEM);
 
   private static final List<String> TOTAL_COLUMNS = Arrays.asList(COL_TRADE_ITEM_QUANTITY,
-      ALS_WITHOUT_VAT, ALS_VAT_AMOUNT, ALS_TOTAL_AMOUNT);
+      ALS_BASE_AMOUNT);
 
   private static final List<String> MONEY_COLUMNS = Arrays.asList(COL_TRADE_ITEM_PRICE,
-      ALS_WITHOUT_VAT, ALS_VAT_AMOUNT, ALS_TOTAL_AMOUNT);
+      ALS_BASE_AMOUNT);
 
   private static final String STYLE_PREFIX = TradeActKeeper.STYLE_PREFIX + "report-trf-";
 
@@ -146,6 +148,19 @@ public class TradeActTransferReport extends ReportInterceptor {
     DateTime start = getDateTime(NAME_START_DATE);
     DateTime end = getDateTime(NAME_END_DATE);
 
+    if (start == null) {
+      getFormView().notifyWarning(Localized.getConstants().dateFrom(),
+          Localized.getConstants().valueRequired());
+      getFormView().focus(NAME_START_DATE);
+      return;
+    }
+    if (end == null) {
+      getFormView().notifyWarning(Localized.getConstants().dateTo(),
+          Localized.getConstants().valueRequired());
+      getFormView().focus(NAME_END_DATE);
+      return;
+    }
+
     if (!checkRange(start, end)) {
       return;
     }
@@ -153,15 +168,10 @@ public class TradeActTransferReport extends ReportInterceptor {
     ParameterList params = TradeActKeeper.createArgs(SVC_TRANSFER_REPORT);
     final List<String> headers = StringList.of(getReportCaption());
 
-    if (start != null) {
-      params.addDataItem(Service.VAR_FROM, start.getTime());
-    }
-    if (end != null) {
-      params.addDataItem(Service.VAR_TO, end.getTime());
-    }
-    if (start != null || end != null) {
-      headers.add(Format.renderPeriod(start, end));
-    }
+    params.addDataItem(Service.VAR_FROM, start.getTime());
+    params.addDataItem(Service.VAR_TO, end.getTime());
+
+    headers.add(Format.renderPeriod(start, end));
 
     String currency = getEditorValue(NAME_CURRENCY);
     final String currencyName;
@@ -341,7 +351,13 @@ public class TradeActTransferReport extends ReportInterceptor {
         text = null;
         styleName = null;
 
-        if (ValueType.isNumeric(type)) {
+        if (COL_TIME_UNIT.equals(colName)) {
+          TradeActTimeUnit tu = EnumUtils.getEnumByIndex(TradeActTimeUnit.class, data.getInt(i, j));
+
+          text = (tu == null) ? null : tu.getCaption();
+          export = tu != null;
+
+        } else if (ValueType.isNumeric(type)) {
           Double value = data.getDouble(i, j);
           NumberFormat format = TradeActHelper.getNumberFormat(colName);
 
@@ -360,7 +376,8 @@ public class TradeActTransferReport extends ReportInterceptor {
           export = false;
 
         } else {
-          if (ValueType.DATE_TIME == type) {
+          if (ValueType.DATE_TIME == type
+              || COL_TA_SERVICE_FROM.equals(colName) || COL_TA_SERVICE_TO.equals(colName)) {
             text = TimeUtils.renderCompact(data.getDateTime(i, j));
 
           } else if (ValueType.DATE == type) {
