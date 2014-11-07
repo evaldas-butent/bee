@@ -1536,6 +1536,10 @@ public class CalendarModuleBean implements BeeModule {
 
   @Timeout
   private void notifyEvent(Timer timer) {
+    if (BeeUtils.same((String) timer.getInfo(), TIMER_REMIND_COMPANY_ACTIONS)) {
+      return;
+    }
+
     long reminderId = (Long) timer.getInfo();
     logger.debug("Fired timer:", reminderId);
 

@@ -1,5 +1,6 @@
 package com.butent.bee.shared.modules.classifiers;
 
+import com.butent.bee.shared.time.TimeUtils;
 import com.butent.bee.shared.utils.EnumUtils;
 
 public final class ClassifierConstants {
@@ -8,6 +9,7 @@ public final class ClassifierConstants {
   public static final String SVC_COMPANY_INFO = "GetCompanyInfo";
 
   public static final String SVC_GET_COMPANY_TYPE_REPORT = "get_company_type_report";
+  public static final String TIMER_REMIND_COMPANY_ACTIONS = "timer_remind_company_actions";
 
   public static final String TBL_ITEMS = "Items";
   public static final String TBL_UNITS = "Units";
@@ -148,6 +150,8 @@ public final class ClassifierConstants {
   public static final String COL_POST_INDEX = "PostIndex";
   public static final String COL_WEBSITE = "Website";
   public static final String COL_REMIND_EMAIL = "RemindEmail";
+  public static final String COL_REMIND_ACTIONS = "MailCompanyActions";
+  public static final String COL_REMIND_ACTION_BEFORE = "CompanyActionRemindBefore";
 
   public static final String COL_CITY = "City";
   public static final String COL_CITY_NAME = "Name";
@@ -226,6 +230,8 @@ public final class ClassifierConstants {
 
   public static final String FILTER_COMPANY_CREATION_AND_TYPE = "company_creation_and_type";
   public static final String FILTER_COMPANY_USAGE = "company_usage";
+
+  public static final long DEFAULT_REMIND_ACTIONS_TIMER_TIMEOUT = TimeUtils.MILLIS_PER_HOUR;
 
   public static void register() {
     EnumUtils.register(ItemPrice.class);

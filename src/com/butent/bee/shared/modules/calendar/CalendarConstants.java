@@ -345,6 +345,7 @@ public final class CalendarConstants {
   public static final String COL_SUMMARY = "Summary";
   public static final String COL_DESCRIPTION = "Description";
   public static final String COL_ACTION_RESULT = "ActionResult";
+  public static final String COL_ACTION_REMINDED = "ActionReminded";
 
   public static final String COL_REMINDER_TYPE = "ReminderType";
 

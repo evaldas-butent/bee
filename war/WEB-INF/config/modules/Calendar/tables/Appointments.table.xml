@@ -11,6 +11,7 @@
     <String name="Summary" precision="100" label="=summary" />
     <Text name="Description" label="=description" />
     <Text name="ActionResult" label="=calActionResult" />
+    <Boolean name="ActionReminded" label="=crmReminderSent"/>
 
     <String name="Location" precision="100" label="=location" />
 

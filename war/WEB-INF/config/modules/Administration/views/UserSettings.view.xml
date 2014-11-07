@@ -32,6 +32,7 @@
     <SimpleColumn name="MailAssignedTasks" />
     <SimpleColumn name="MailNewDiscussions" />
     <SimpleColumn name="MailNewAnnouncements" />
+    <SimpleColumn name="MailCompanyActions" />
 
     <SimpleColumn name="OpenInNewTab" />
 
@@ -43,6 +44,8 @@
 
     <SimpleColumn name="ClickSensitivityMillis" />
     <SimpleColumn name="ClickSensitivityDistance" />
+    
+    <SimpleColumn name="CompanyActionRemindBefore" />
 
     <SimpleColumn name="Style" />
   </Columns>

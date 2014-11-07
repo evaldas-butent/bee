@@ -14,6 +14,7 @@
     <SimpleColumn name="Summary" />
     <SimpleColumn name="Description" />
     <SimpleColumn name="ActionResult" />
+    <SimpleColumn name="ActionReminded" />
 
     <SimpleColumn name="Location" />
 
