@@ -21,8 +21,8 @@
           <TextLabel inline="true">
             <render>
               <ui:expression>row.Proforma 
-                ? 'Sąskaita išankstiniam apmokėjimui Nr. / Proforma invoice No.' 
-                : 'PVM Sąskaita faktūra Nr. / Invoice No.'</ui:expression>
+                ? 'Sąskaita išankstiniam apmokėjimui Nr. / Proforma invoice No.: ' 
+                : 'PVM Sąskaita faktūra Nr. / Invoice No.: '</ui:expression>
             </render>
           </TextLabel>
           <TextLabel source="InvoiceNo" inline="true">
@@ -116,8 +116,8 @@
       </Table>
     </FlowPanel>
 
-    <HorizontalPanel style="float:right; &bold;">
-      <Label html="Data / date:" />
+    <HorizontalPanel style="float:right;">
+      <Label html="Data / date:" style="&bold;" />
       <DateTimeLabel source="Date" format="DATE_SHORT" />
     </HorizontalPanel>
  
@@ -146,16 +146,8 @@
           </Label>
         </cell>
         <Label text="Užsakymo Nr. / Order No.">
-          <properties name="Assessment" />
+          <properties name="AssessmentID" />
         </Label>
-        <Label text="Pakrovimas / Loading">
-          <properties name="LoadingPlace" />
-        </Label>
-        <cell rowSpan="2">
-          <Label text="Transporto valst.Nr. / Vehicle State No.">
-            <properties name="Vehicle" />
-          </Label>
-        </cell>
         <cell rowSpan="2">
           <Label text="Suma / Amount">
             <properties name="Amount" />
@@ -176,12 +168,9 @@
         <Label text="Ref Nr. / Ref No.">
           <properties name="Number" />
         </Label>
-        <Label text="Iškrovimas / Unloading">
-          <properties name="UnloadingPlace" />
-        </Label>
       </row>
       <row>
-        <cell colSpan="3">
+        <cell colSpan="2">
           <FlowPanel>
             <InlineLabel text="Kursas / Rate: " />
             <InlineLabel>
@@ -189,7 +178,7 @@
             </InlineLabel>
           </FlowPanel>
         </cell>
-        <cell colSpan="3">
+        <cell colSpan="2">
           <FlowPanel style="text-align:right;">
             <Label text="Suma / Amount:" />
             <Label text="PVM / VAT:" />
@@ -308,6 +297,10 @@ documents after the transaction will be made.
           <renderToken source="ManagerLastName" />
           <renderToken source="ManagerPosition" prefix=", " />
         </TextLabel>
+      </row>
+      <row style="font-size:xx-small;">
+        <hr />
+        <hr />
       </row>
     </Table>
   </FlowPanel>

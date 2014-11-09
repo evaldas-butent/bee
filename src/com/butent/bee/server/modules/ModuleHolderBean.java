@@ -99,6 +99,9 @@ public class ModuleHolderBean {
     TableActivationMode mode = EnumUtils.getEnumByName(TableActivationMode.class,
         Config.getProperty("TableActivationMode"));
 
+    for (String mod : getModules()) {
+      prm.refreshModuleParameters(mod);
+    }
     if (mode != null) {
       switch (mode) {
         case NEW:
@@ -114,9 +117,7 @@ public class ModuleHolderBean {
           break;
       }
     }
-
     for (String mod : getModules()) {
-      prm.refreshModuleParameters(mod);
       getModule(mod).init();
     }
   }

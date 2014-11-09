@@ -75,6 +75,13 @@
   </FlowPanel>
 
   <FlowPanel style="&section;">
+    <Label text="=city" style="&labelLeft;" />
+    <DataSelector source="LoadingCity" style="&inline; width:170px; margin-right:20px;" />
+    <Label text="=city" style="&labelRight;" />
+    <DataSelector source="UnloadingCity" style="&inline; width:170px;" />
+  </FlowPanel>
+
+  <FlowPanel style="&section;">
     <Label text="=address" style="&labelLeft;" />
     <InputText source="LoadingAddress" style="&inline; width:170px; margin-right:20px;" />
     <Label text="=address" style="&labelRight;" />

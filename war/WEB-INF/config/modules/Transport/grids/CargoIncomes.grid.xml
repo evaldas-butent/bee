@@ -7,7 +7,16 @@
   newRowCaption="=trNewService"
   >
   <g:columns>
-    <DataColumn name="Date" caption="=date" />
+    <DataColumn name="Date" caption="=date">
+      <validation>
+        <ui:function>
+if (cell.newValue &lt;= new Date()) {
+  return null;
+}
+return $wnd.Bee_maybeTranslate("=invalidDate");
+        </ui:function>
+      </validation>
+    </DataColumn>
     <RelColumn name="Service" caption="=trServiceName" />
     <DataColumn name="Amount" format="0.00" />
     <RelColumn name="Currency" caption="=currencyShort" flexGrow="0" />
@@ -36,4 +45,8 @@
     <RelColumn name="Purchase" caption="=trCreditIdShort" readOnly="true"
       editEnabled="true" editForm="CargoPurchaseInvoice" editViewName="CargoPurchaseInvoices" />
   </g:columns>
+
+  <g:rowEditable>
+    <ui:expression>!row.Sale &amp;&amp; !row.Purchase</ui:expression>
+  </g:rowEditable>
 </g:Grid>

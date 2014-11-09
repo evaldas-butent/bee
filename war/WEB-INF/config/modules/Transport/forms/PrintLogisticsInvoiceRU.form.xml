@@ -21,8 +21,8 @@
           <TextLabel inline="true">
             <render>
               <ui:expression>row.Proforma 
-                ? 'Sąskaita išankstiniam apmokėjimui Nr. / Проформа №' 
-                : 'PVM Sąskaita faktūra Nr. / Счет №'</ui:expression>
+                ? 'Sąskaita išankstiniam apmokėjimui Nr. / Проформа №: ' 
+                : 'PVM Sąskaita faktūra Nr. / Счет №: '</ui:expression>
             </render>
           </TextLabel>
           <TextLabel source="InvoiceNo" inline="true">
@@ -75,7 +75,7 @@
                 <renderToken source="SupplierBankSWIFTCode" prefix=", SWIFT: " />
               </TextLabel>
               <TextLabel source="SupplierCorrBankName">
-                <renderToken source="SupplierCorrBankCurrencyName" suffix=" bank correspondent:" />
+                <renderToken source="SupplierCorrBankCurrencyName" suffix=" корреспондент банк:" />
                 <renderToken source="SupplierCorrBankName" prefix=" " />
                 <renderToken source="SupplierCorrBankSWIFTCode" prefix=", SWIFT: " />
               </TextLabel>
@@ -116,8 +116,8 @@
       </Table>
     </FlowPanel>
 
-    <HorizontalPanel style="float:right; &bold;">
-      <Label html="Data / Дата:" />
+    <HorizontalPanel style="float:right;">
+      <Label html="Data / Дата:" style="&bold;" />
       <DateTimeLabel source="Date" format="DATE_SHORT" />
     </HorizontalPanel>
  
@@ -146,16 +146,8 @@
           </Label>
         </cell>
         <Label text="Užsakymo Nr. / Заказ №">
-          <properties name="Assessment" />
+          <properties name="AssessmentID" />
         </Label>
-        <Label text="Pakrovimas / Погрузка">
-          <properties name="LoadingPlace" />
-        </Label>
-        <cell rowSpan="2">
-          <Label text="Transporto valst.Nr. / Aвто., трейлер №">
-            <properties name="Vehicle" />
-          </Label>
-        </cell>
         <cell rowSpan="2">
           <Label text="Suma / Сумма">
             <properties name="Amount" />
@@ -176,12 +168,9 @@
         <Label text="Ref Nr. / Реф.№">
           <properties name="Number" />
         </Label>
-        <Label text="Iškrovimas / Pазгрузка">
-          <properties name="UnloadingPlace" />
-        </Label>
       </row>
       <row>
-        <cell colSpan="3">
+        <cell colSpan="2">
           <FlowPanel>
             <InlineLabel text="Kursas / Курс: " />
             <InlineLabel>
@@ -189,7 +178,7 @@
             </InlineLabel>
           </FlowPanel>
         </cell>
-        <cell colSpan="3">
+        <cell colSpan="2">
           <FlowPanel style="text-align:right;">
             <Label text="Suma / Итого:" />
             <Label text="PVM / НДС:" />
@@ -260,7 +249,7 @@
     </HorizontalPanel>
 
     <TextLabel source="Term" style="&section; &bold; white-space:pre-wrap;">
-      <renderToken source="Term" prefix="Sąskaitą apmokėti iki / Cчет заплатить до: " />
+      <renderToken source="Term" prefix="Sąskaitą apmokėti iki / Cчет оплатить до: " />
     </TextLabel>
 
     <HorizontalPanel style="&section;">
@@ -308,6 +297,10 @@ Padarę apmokėjimą prašome raštu atsiųsti pavedimo kopiją. /
           <renderToken source="ManagerLastName" />
           <renderToken source="ManagerPosition" prefix=", " />
         </TextLabel>
+      </row>
+      <row style="font-size:xx-small;">
+        <hr />
+        <hr />
       </row>
     </Table>
   </FlowPanel>

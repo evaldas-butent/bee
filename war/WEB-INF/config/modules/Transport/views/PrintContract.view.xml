@@ -58,8 +58,11 @@
         <SimpleColumn name="Contact" alias="LoadingContact" />
         <SimpleColumn name="Address" alias="LoadingAddress" />
         <SimpleColumn name="PostIndex" alias="LoadingPostIndex" />
-        <SimpleJoin name="City" joinType="LEFT">
-           <SimpleColumn name="Name" alias="LoadingCity" />
+        <SimpleJoin joinType="LEFT" name="City">
+          <SimpleColumn name="Name" alias="LoadingCityName" />
+        </SimpleJoin>
+        <SimpleJoin joinType="LEFT" name="Country">
+          <SimpleColumn name="Name" alias="LoadingCountryName" />
         </SimpleJoin>
       </SimpleJoin>
   
@@ -69,8 +72,11 @@
         <SimpleColumn name="Contact" alias="UnloadingContact" />
         <SimpleColumn name="Address" alias="UnloadingAddress" />
         <SimpleColumn name="PostIndex" alias="UnloadingPostIndex" />
-        <SimpleJoin name="City" joinType="LEFT">
-           <SimpleColumn name="Name" alias="UnloadingCity" />
+        <SimpleJoin joinType="LEFT" name="City">
+          <SimpleColumn name="Name" alias="UnloadingCityName" />
+        </SimpleJoin>
+        <SimpleJoin joinType="LEFT" name="Country">
+          <SimpleColumn name="Name" alias="UnloadingCountryName" />
         </SimpleJoin>
       </SimpleJoin>
     </SimpleJoin>

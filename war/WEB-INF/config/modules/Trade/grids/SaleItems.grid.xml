@@ -4,10 +4,10 @@
 
   name="SaleItems" viewName="SaleItems"
   flexGrow="1"
-  newRowCaption="=newItem"
+  newRowCaption="=newItem" readOnly="true"
   >
   <g:columns>
-    <RelColumn name="Item" renderColumns="ItemName" visible="true">
+    <RelColumn name="Item" renderColumns="ItemName" choiceColumns="Name Article" visible="true">
       <footer text="=totalOf" horizontalAlignment="right" />
     </RelColumn>
     <DataColumn name="Article" />

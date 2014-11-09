@@ -4,10 +4,10 @@
 
   name="PurchaseItems" viewName="PurchaseItems"
   flexGrow="1"
-  newRowCaption="=newItem"
+  newRowCaption="=newItem" readOnly="true"
   >
   <g:columns>
-    <RelColumn name="Item" renderColumns="ItemName" />
+    <RelColumn name="Item" renderColumns="ItemName" choiceColumns="Name Article" visible="true" />
     <DataColumn name="Article" />
     <DataColumn name="Quantity" />
     <DataColumn name="UnitName" flexGrow="0" />
