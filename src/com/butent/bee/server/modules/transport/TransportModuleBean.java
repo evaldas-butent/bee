@@ -990,7 +990,7 @@ public class TransportModuleBean implements BeeModule, HasTimerService {
     String unloadCountry = SqlUtils.uniqueName();
 
     SqlSelect ss = new SqlSelect()
-        .addFields(TBL_ORDERS, COL_ORDER_NOTES)
+        .addFields(TBL_ORDERS, COL_ORDER_NO, COL_ORDER_NOTES)
         .addFields(TBL_ORDER_CARGO, COL_CARGO_CMR, COL_NUMBER)
         .addFields(TBL_CARGO_INCOMES,
             COL_CARGO, COL_TRADE_VAT_PLUS, COL_TRADE_VAT, COL_TRADE_VAT_PERC,
@@ -1001,7 +1001,8 @@ public class TransportModuleBean implements BeeModule, HasTimerService {
         .addField(loadCountry, COL_COUNTRY_NAME, loadCountry + "Name")
         .addField(unloadCountry, COL_COUNTRY_CODE, unloadCountry)
         .addField(unloadCountry, COL_COUNTRY_NAME, unloadCountry + "Name")
-        .addFields(TBL_ASSESSMENTS, COL_ASSESSMENT_ID, COL_ASSESSMENT)
+        .addField(TBL_ASSESSMENTS, sys.getIdName(TBL_ASSESSMENTS), COL_ASSESSMENT)
+        .addField(TBL_ASSESSMENTS, COL_ASSESSMENT, "Parent")
         .addFrom(TBL_CARGO_INCOMES)
         .addFromInner(TBL_SERVICES,
             sys.joinTables(TBL_SERVICES, TBL_CARGO_INCOMES, COL_SERVICE))
@@ -1022,9 +1023,10 @@ public class TransportModuleBean implements BeeModule, HasTimerService {
         .setWhere(wh);
 
     if (DataUtils.isId(mainItem)) {
-      ss.addConstant(mainItem, COL_ITEM);
+      ss.addConstant(mainItem, COL_ITEM)
+          .addConstant(true, COL_TRANSPORTATION);
     } else {
-      ss.addFields(TBL_SERVICES, COL_ITEM);
+      ss.addFields(TBL_SERVICES, COL_ITEM, COL_TRANSPORTATION);
     }
     IsExpression xpr = ExchangeUtils.exchangeFieldTo(ss,
         SqlUtils.field(TBL_CARGO_INCOMES, COL_AMOUNT),
@@ -1122,8 +1124,8 @@ public class TransportModuleBean implements BeeModule, HasTimerService {
           valueMap.put(fld, value);
         }
       }
-      if (!DataUtils.isId(mainItem) || !DataUtils.isId(row.getLong(COL_ASSESSMENT))) {
-        for (String fld : new String[] {COL_ASSESSMENT_ID, COL_CARGO_CMR, COL_NUMBER}) {
+      if (!DataUtils.isId(mainItem) || !DataUtils.isId(row.getLong("Parent"))) {
+        for (String fld : new String[] {COL_ORDER_NO, COL_ASSESSMENT, COL_CARGO_CMR, COL_NUMBER}) {
           String value = row.getValue(fld);
 
           if (!BeeUtils.isEmpty(value)) {

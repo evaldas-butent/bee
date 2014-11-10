@@ -875,7 +875,8 @@ public final class TimeUtils {
       return renderCompact(start, dropCurrentYear) + PERIOD_SEPARATOR;
 
     } else if (sameDate(start, end)) {
-      return renderCompact(start, dropCurrentYear) + PERIOD_SEPARATOR + end.toCompactTimeString();
+      return renderCompact(start, dropCurrentYear) + PERIOD_SEPARATOR
+          + (hasTimePart(end) ? end.toCompactTimeString() : renderCompact(end, dropCurrentYear));
 
     } else {
       return renderCompact(start, dropCurrentYear) + PERIOD_SEPARATOR

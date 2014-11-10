@@ -642,6 +642,10 @@ public class FormImpl extends Absolute implements FormView, PreviewHandler, Tabu
     }
 
     Widget widget = getWidgetBySource(source);
+    if (widget == null) {
+      widget = getWidgetByName(source);
+    }
+
     return UiHelper.focus(widget);
   }
 

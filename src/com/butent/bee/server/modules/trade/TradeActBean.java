@@ -2,6 +2,7 @@ package com.butent.bee.server.modules.trade;
 
 import com.google.common.collect.HashBasedTable;
 import com.google.common.collect.Lists;
+import com.google.common.collect.Range;
 import com.google.common.collect.Sets;
 import com.google.common.collect.Table;
 import com.google.common.eventbus.Subscribe;
@@ -51,6 +52,9 @@ import com.butent.bee.shared.modules.BeeParameter;
 import com.butent.bee.shared.modules.administration.AdministrationConstants;
 import com.butent.bee.shared.modules.trade.Totalizer;
 import com.butent.bee.shared.modules.trade.acts.TradeActKind;
+import com.butent.bee.shared.modules.trade.acts.TradeActTimeUnit;
+import com.butent.bee.shared.modules.trade.acts.TradeActUtils;
+import com.butent.bee.shared.time.DateTime;
 import com.butent.bee.shared.time.TimeUtils;
 import com.butent.bee.shared.utils.ArrayUtils;
 import com.butent.bee.shared.utils.BeeUtils;
@@ -1853,9 +1857,16 @@ public class TradeActBean {
 
   private ResponseObject getTransferReport(RequestInfo reqInfo) {
     Long startDate = reqInfo.getParameterLong(Service.VAR_FROM);
-    Long endDate = reqInfo.getParameterLong(Service.VAR_TO);
+    if (startDate == null) {
+      return ResponseObject.parameterNotFound(reqInfo.getService(), Service.VAR_FROM);
+    }
 
-    // Long currency = reqInfo.getParameterLong(COL_TA_CURRENCY);
+    Long endDate = reqInfo.getParameterLong(Service.VAR_TO);
+    if (endDate == null) {
+      return ResponseObject.parameterNotFound(reqInfo.getService(), Service.VAR_TO);
+    }
+
+    Long currency = reqInfo.getParameterLong(COL_TA_CURRENCY);
 
     Set<Long> companies = DataUtils.parseIdSet(reqInfo.getParameter(COL_TA_COMPANY));
     Set<Long> managers = DataUtils.parseIdSet(reqInfo.getParameter(COL_TA_MANAGER));
@@ -1881,26 +1892,20 @@ public class TradeActBean {
             SqlUtils.isNull(TBL_TRADE_ACTS, COL_TA_STATUS),
             SqlUtils.notNull(TBL_TRADE_STATUSES, COL_STATUS_ACTIVE)));
 
-    if (startDate != null) {
-      actConditions.add(
-          SqlUtils.or(
-              SqlUtils.isNull(TBL_TRADE_ACTS, COL_TA_UNTIL),
-              SqlUtils.more(TBL_TRADE_ACTS, COL_TA_UNTIL, startDate)));
+    actConditions.add(
+        SqlUtils.or(
+            SqlUtils.isNull(TBL_TRADE_ACTS, COL_TA_UNTIL),
+            SqlUtils.more(TBL_TRADE_ACTS, COL_TA_UNTIL, startDate)));
+    serviceConditions.add(
+        SqlUtils.or(
+            SqlUtils.isNull(TBL_TRADE_ACT_SERVICES, COL_TA_SERVICE_TO),
+            SqlUtils.more(TBL_TRADE_ACT_SERVICES, COL_TA_SERVICE_TO, startDate)));
 
-      serviceConditions.add(
-          SqlUtils.or(
-              SqlUtils.isNull(TBL_TRADE_ACT_SERVICES, COL_TA_SERVICE_TO),
-              SqlUtils.more(TBL_TRADE_ACT_SERVICES, COL_TA_SERVICE_TO, startDate)));
-    }
-
-    if (endDate != null) {
-      actConditions.add(SqlUtils.less(TBL_TRADE_ACTS, COL_TA_DATE, endDate));
-
-      serviceConditions.add(
-          SqlUtils.or(
-              SqlUtils.isNull(TBL_TRADE_ACT_SERVICES, COL_TA_SERVICE_FROM),
-              SqlUtils.less(TBL_TRADE_ACT_SERVICES, COL_TA_SERVICE_FROM, endDate)));
-    }
+    actConditions.add(SqlUtils.less(TBL_TRADE_ACTS, COL_TA_DATE, endDate));
+    serviceConditions.add(
+        SqlUtils.or(
+            SqlUtils.isNull(TBL_TRADE_ACT_SERVICES, COL_TA_SERVICE_FROM),
+            SqlUtils.less(TBL_TRADE_ACT_SERVICES, COL_TA_SERVICE_FROM, endDate)));
 
     if (!companies.isEmpty()) {
       actConditions.add(SqlUtils.inList(TBL_TRADE_ACTS, COL_TA_COMPANY, companies));
@@ -2029,7 +2034,7 @@ public class TradeActBean {
     }
 
     SqlSelect serviceQuery = new SqlSelect()
-        .addFields(acts, COL_TA_DATE, COL_TA_UNTIL, COL_CURRENCY, ALS_ITEM_TOTAL);
+        .addFields(acts, COL_TA_DATE, COL_TA_UNTIL, COL_TA_CURRENCY, ALS_ITEM_TOTAL);
 
     if (groupBy.isEmpty()) {
       serviceQuery.addFields(acts, COL_TA_NAME, COL_SERIES_NAME, COL_TA_NUMBER,
@@ -2043,7 +2048,9 @@ public class TradeActBean {
       serviceQuery.addFields(acts, COL_FIRST_NAME, COL_LAST_NAME);
     }
 
-    serviceQuery.addFields(TBL_TRADE_ACT_SERVICES,
+    String serviceIdName = sys.getIdName(TBL_TRADE_ACT_SERVICES);
+
+    serviceQuery.addFields(TBL_TRADE_ACT_SERVICES, serviceIdName,
         COL_TRADE_ACT, COL_TA_SERVICE_FROM, COL_TA_SERVICE_TO,
         COL_TRADE_ITEM_QUANTITY, COL_TA_SERVICE_TARIFF, COL_TRADE_ITEM_PRICE,
         COL_TA_SERVICE_FACTOR, COL_TA_SERVICE_DAYS, COL_TA_SERVICE_MIN, COL_TRADE_DISCOUNT);
@@ -2080,6 +2087,8 @@ public class TradeActBean {
       serviceQuery.addField(TBL_UNITS, COL_UNIT_NAME, ALS_UNIT_NAME);
     }
 
+    serviceQuery.addEmptyNumeric(ALS_BASE_AMOUNT, amountPrecision, amountScale);
+
     if (!serviceConditions.isEmpty()) {
       serviceQuery.setWhere(serviceConditions);
     }
@@ -2090,6 +2099,16 @@ public class TradeActBean {
     if (qs.isEmpty(tmp)) {
       qs.sqlDropTemp(tmp);
       return ResponseObject.emptyResponse();
+    }
+
+    prepareTransferReport(tmp, startDate, endDate, serviceIdName);
+
+    if (!DataUtils.isId(currency)) {
+      currency = prm.getRelation(PRM_CURRENCY);
+    }
+    if (DataUtils.isId(currency)) {
+      exchange(tmp, COL_TA_CURRENCY, currency, System.currentTimeMillis(),
+          COL_TRADE_ITEM_PRICE, ALS_BASE_AMOUNT);
     }
 
     SqlSelect query = new SqlSelect();
@@ -2107,7 +2126,8 @@ public class TradeActBean {
           COL_TA_SERVICE_FROM, COL_TA_SERVICE_TO,
           COL_TA_ITEM, ALS_ITEM_NAME, COL_ITEM_ARTICLE, COL_TIME_UNIT,
           COL_TRADE_ITEM_QUANTITY, ALS_UNIT_NAME, COL_TRADE_ITEM_PRICE,
-          COL_TA_SERVICE_FACTOR, COL_TA_SERVICE_DAYS, COL_TA_SERVICE_MIN, COL_TRADE_DISCOUNT);
+          COL_TA_SERVICE_FACTOR, COL_TA_SERVICE_DAYS, COL_TA_SERVICE_MIN,
+          COL_TRADE_DISCOUNT, ALS_BASE_AMOUNT);
 
       query.addOrder(tmp, COL_TA_DATE, COL_TRADE_ACT, ALS_ITEM_NAME, COL_ITEM_ARTICLE, COL_TA_ITEM);
 
@@ -2162,9 +2182,11 @@ public class TradeActBean {
       }
 
       query.addSum(tmp, COL_TRADE_ITEM_QUANTITY);
+      query.addSum(tmp, ALS_BASE_AMOUNT);
     }
 
     query.addFrom(tmp);
+    query.setWhere(SqlUtils.positive(tmp, ALS_BASE_AMOUNT));
 
     SimpleRowSet data = qs.getData(query);
     qs.sqlDropTemp(tmp);
@@ -2173,6 +2195,99 @@ public class TradeActBean {
       return ResponseObject.emptyResponse();
     } else {
       return ResponseObject.response(data);
+    }
+  }
+
+  private void prepareTransferReport(String tmp, Long startDate, Long endDate, String idName) {
+    SqlSelect query = new SqlSelect()
+        .addFields(tmp, idName, COL_TA_DATE, COL_TA_UNTIL, COL_TA_SERVICE_FROM, COL_TA_SERVICE_TO,
+            COL_TIME_UNIT, COL_TRADE_ITEM_QUANTITY, ALS_ITEM_TOTAL, COL_TA_SERVICE_TARIFF,
+            COL_TRADE_ITEM_PRICE, COL_TA_SERVICE_FACTOR, COL_TA_SERVICE_DAYS, COL_TA_SERVICE_MIN,
+            COL_TRADE_DISCOUNT)
+        .addFrom(tmp);
+
+    SimpleRowSet data = qs.getData(query);
+
+    Range<DateTime> reportRange = TradeActUtils.createRange(new DateTime(startDate),
+        new DateTime(endDate));
+    int reportDays = TradeActUtils.countServiceDays(reportRange);
+
+    int priceScale = sys.getFieldScale(TBL_TRADE_ACT_SERVICES, COL_TRADE_ITEM_PRICE);
+    int factorScale = sys.getFieldScale(TBL_TRADE_ACT_SERVICES, COL_TA_SERVICE_FACTOR);
+
+    for (SimpleRow row : data) {
+      TradeActTimeUnit tu = EnumUtils.getEnumByIndex(TradeActTimeUnit.class,
+          row.getInt(COL_TIME_UNIT));
+
+      Range<DateTime> actRange = TradeActUtils.createRange(row.getDateTime(COL_TA_DATE),
+          row.getDateTime(COL_TA_UNTIL));
+
+      Range<DateTime> serviceRange = TradeActUtils.createServiceRange(
+          row.getDate(COL_TA_SERVICE_FROM), row.getDate(COL_TA_SERVICE_TO), tu,
+          reportRange, actRange);
+
+      if (serviceRange != null) {
+        SqlUpdate update = new SqlUpdate(tmp)
+            .addConstant(COL_TA_SERVICE_FROM, serviceRange.lowerEndpoint().getTime())
+            .addConstant(COL_TA_SERVICE_TO, serviceRange.upperEndpoint().getTime());
+
+        Double quantity = row.getDouble(COL_TRADE_ITEM_QUANTITY);
+        Double tariff = row.getDouble(COL_TA_SERVICE_TARIFF);
+        Double price = row.getDouble(COL_TRADE_ITEM_PRICE);
+        Double discount = row.getDouble(COL_TRADE_DISCOUNT);
+
+        if (BeeUtils.isPositive(tariff)) {
+          Double p = TradeActUtils.calculateServicePrice(row.getDouble(ALS_ITEM_TOTAL), tariff,
+              priceScale);
+
+          if (BeeUtils.isPositive(p) && !p.equals(price)) {
+            price = p;
+            update.addConstant(COL_TRADE_ITEM_PRICE, p);
+          }
+        }
+
+        Double factor = row.getDouble(COL_TA_SERVICE_FACTOR);
+
+        if (tu != null) {
+          int days = TradeActUtils.countServiceDays(serviceRange);
+
+          switch (tu) {
+            case DAY:
+              if (!BeeUtils.isPositive(factor)) {
+                Integer dpw = row.getInt(COL_TA_SERVICE_DAYS);
+                if (TradeActUtils.validDpw(dpw)) {
+                  double df = TradeActUtils.dpwToFactor(dpw, days, row.getInt(COL_TA_SERVICE_MIN));
+
+                  if (BeeUtils.isPositive(df)) {
+                    factor = df;
+                    update.addConstant(COL_TA_SERVICE_FACTOR, df);
+                  }
+                }
+              }
+              break;
+
+            case MONTH:
+              if (days < reportDays) {
+                double df = BeeUtils.div(days, reportDays);
+                if (BeeUtils.isPositive(factor)) {
+                  df *= factor;
+                }
+
+                factor = BeeUtils.round(df, factorScale);
+                update.addConstant(COL_TA_SERVICE_FACTOR, factor);
+              }
+              break;
+          }
+        }
+
+        Double amount = TradeActUtils.serviceAmount(quantity, price, discount, tu, factor);
+        if (BeeUtils.isPositive(amount)) {
+          update.addConstant(ALS_BASE_AMOUNT, amount);
+        }
+
+        update.setWhere(SqlUtils.equals(tmp, idName, row.getLong(idName)));
+        qs.updateData(update);
+      }
     }
   }
 

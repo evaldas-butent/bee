@@ -3,6 +3,9 @@ package com.butent.bee.shared.modules.trade.acts;
 import com.google.common.collect.BoundType;
 import com.google.common.collect.Range;
 
+import static com.butent.bee.shared.modules.trade.acts.TradeActConstants.*;
+
+import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.time.DateTime;
 import com.butent.bee.shared.time.HasDateValue;
 import com.butent.bee.shared.time.JustDate;
@@ -51,6 +54,14 @@ public final class TradeActUtils {
     }
 
     return createRange(start, end);
+  }
+
+  public static int countServiceDays(Range<DateTime> range) {
+    if (range != null && range.hasLowerBound() && range.hasUpperBound()) {
+      return Math.max(TimeUtils.dayDiff(range.lowerEndpoint(), range.upperEndpoint()), 1);
+    } else {
+      return 0;
+    }
   }
 
   public static Range<DateTime> createRange(HasDateValue start, HasDateValue end) {
@@ -117,6 +128,58 @@ public final class TradeActUtils {
         return null;
       }
     }
+  }
+
+  public static double dpwToFactor(Integer dpw, int days, Integer minTerm) {
+    if (validDpw(dpw) && days > 0) {
+      int df = BeeUtils.round(BeeUtils.div(days, TimeUtils.DAYS_PER_WEEK) * dpw);
+
+      if (BeeUtils.isPositive(minTerm)) {
+        return Math.max(df, minTerm);
+      } else {
+        return df;
+      }
+
+    } else {
+      return BeeConst.DOUBLE_ZERO;
+    }
+  }
+
+  public static double roundAmount(Double amount) {
+    if (BeeUtils.nonZero(amount)) {
+      return BeeUtils.round(amount, 2);
+    } else {
+      return BeeConst.DOUBLE_ZERO;
+    }
+  }
+
+  public static double roundPrice(Double price) {
+    return roundAmount(price);
+  }
+
+  public static Double serviceAmount(Double quantity, Double price, Double discount,
+      TradeActTimeUnit timeUnit, Double factor) {
+
+    if (BeeUtils.isPositive(quantity) && BeeUtils.isPositive(price)) {
+      double p = price;
+      if (BeeUtils.nonZero(discount)) {
+        p = BeeUtils.minusPercent(p, discount);
+      }
+
+      double amount = roundAmount(roundPrice(p) * quantity);
+      if (timeUnit != null && BeeUtils.isPositive(factor)) {
+        amount = roundAmount(amount * factor);
+      }
+
+      return amount;
+
+    } else {
+      return null;
+    }
+  }
+
+  public static boolean validDpw(Integer dpw) {
+    return dpw != null && dpw >= DPW_MIN && dpw <= DPW_MAX;
   }
 
   private TradeActUtils() {
