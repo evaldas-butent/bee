@@ -91,6 +91,9 @@ public class TradeActTransferReport extends ReportInterceptor {
   private static final String STYLE_BODY = STYLE_PREFIX + "body";
   private static final String STYLE_FOOTER = STYLE_PREFIX + "footer";
 
+  private static final String KEY_ACT = "act";
+  private static final String KEY_SERVICE = "svc";
+
   private static String getColumnStyle(String colName) {
     return STYLE_PREFIX + colName;
   }
@@ -291,7 +294,8 @@ public class TradeActTransferReport extends ReportInterceptor {
 
     Map<Integer, Double> totals = new HashMap<>();
 
-    boolean hasAct = data.hasColumn(COL_TRADE_ACT);
+    final boolean hasAct = data.hasColumn(COL_TRADE_ACT);
+    final boolean hasService = data.hasColumn(COL_TA_ITEM);
 
     int boldRef = sheet.registerFont(XFont.bold());
     String text;
@@ -310,7 +314,9 @@ public class TradeActTransferReport extends ReportInterceptor {
     for (int j = 0; j < data.getNumberOfColumns(); j++) {
       String colName = data.getColumnName(j);
 
-      if (MONEY_COLUMNS.contains(colName)) {
+      if (COL_TA_ITEM.equals(colName)) {
+        text = Localized.getConstants().service();
+      } else if (MONEY_COLUMNS.contains(colName)) {
         text = BeeUtils.joinWords(TradeActHelper.getLabel(colName), currencyName);
       } else {
         text = TradeActHelper.getLabel(colName);
@@ -397,8 +403,12 @@ public class TradeActTransferReport extends ReportInterceptor {
       }
 
       table.getRowFormatter().addStyleName(r, STYLE_BODY);
+
       if (hasAct) {
-        DomUtils.setDataIndex(table.getRow(r), data.getLong(i, COL_TRADE_ACT));
+        DomUtils.setDataProperty(table.getRow(r), KEY_ACT, data.getLong(i, COL_TRADE_ACT));
+      }
+      if (hasService) {
+        DomUtils.setDataProperty(table.getRow(r), KEY_SERVICE, data.getLong(i, COL_TA_ITEM));
       }
 
       sheet.add(xr);
@@ -444,22 +454,30 @@ public class TradeActTransferReport extends ReportInterceptor {
       sheet.add(xr);
     }
 
-    if (hasAct) {
+    if (hasAct || hasService) {
       final List<String> actClasses = Arrays.asList(getColumnStyle(COL_TRADE_ACT),
           getColumnStyle(COL_TA_NAME), getColumnStyle(COL_TA_NUMBER));
+      final List<String> serviceClasses = Arrays.asList(getColumnStyle(COL_TA_ITEM),
+          getColumnStyle(ALS_ITEM_NAME), getColumnStyle(COL_ITEM_ARTICLE));
 
       table.addClickHandler(new ClickHandler() {
         @Override
         public void onClick(ClickEvent event) {
           Element target = EventUtils.getEventTargetElement(event);
+
           TableCellElement cell = DomUtils.getParentCell(target, true);
+          TableRowElement row = DomUtils.getParentRow(cell, false);
 
-          if (StyleUtils.hasAnyClass(cell, actClasses)) {
-            TableRowElement row = DomUtils.getParentRow(cell, false);
-            long actId = DomUtils.getDataIndexLong(row);
-
+          if (hasAct && StyleUtils.hasAnyClass(cell, actClasses)) {
+            long actId = DomUtils.getDataPropertyLong(row, KEY_ACT);
             if (DataUtils.isId(actId)) {
               RowEditor.open(VIEW_TRADE_ACTS, actId, Opener.MODAL);
+            }
+
+          } else if (hasService && StyleUtils.hasAnyClass(cell, serviceClasses)) {
+            long itemId = DomUtils.getDataPropertyLong(row, KEY_SERVICE);
+            if (DataUtils.isId(itemId)) {
+              RowEditor.open(VIEW_ITEMS, itemId, Opener.MODAL);
             }
           }
         }
