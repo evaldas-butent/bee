@@ -370,7 +370,7 @@ public class Rooms implements HasInfo {
 
     ChatRoom room = findRoom(chatMessage.getRoomId());
     if (room != null && chatMessage.isValid()) {
-      room.incrementMassageCount();
+      room.incrementMessageCount();
       room.updateMaxTime(chatMessage.getTextMessage().getMillis());
 
       RoomWidget roomWidget = roomsPanel.findRoomWidget(room.getId());
@@ -821,6 +821,12 @@ public class Rooms implements HasInfo {
     HtmlTable table = new HtmlTable(STYLE_ROOM_PREFIX + "details");
     int row = 0;
 
+    table.setText(row, 0, Localized.getConstants().captionId());
+    if (room.getType() != null) {
+      table.setText(row, 2, BeeUtils.toString(roomId));
+    }
+
+    row++;
     table.setText(row, 0, Localized.getConstants().type());
     if (room.getType() != null) {
       table.setText(row, 2, room.getType().getCaption());

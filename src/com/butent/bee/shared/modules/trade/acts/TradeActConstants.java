@@ -114,6 +114,9 @@ public final class TradeActConstants {
   public static final String SFX_QUANTITY = "_qty";
   public static final String SFX_WEIGHT = "_wgt";
 
+  public static final int DPW_MIN = 5;
+  public static final int DPW_MAX = 7;
+
   public static void register() {
     EnumUtils.register(TradeActKind.class);
     EnumUtils.register(TradeActTimeUnit.class);
