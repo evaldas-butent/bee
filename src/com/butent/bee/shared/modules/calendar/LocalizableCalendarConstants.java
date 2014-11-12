@@ -69,6 +69,10 @@ public interface LocalizableCalendarConstants {
 
   String calInvalidHoursInterval();
 
+  String calMailPlannedActionSubject();
+
+  String calMailPlannedActionText();
+
   String calMonthView();
 
   String calMultidayLayoutHorizontal();

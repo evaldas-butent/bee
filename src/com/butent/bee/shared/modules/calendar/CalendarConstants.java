@@ -318,6 +318,9 @@ public final class CalendarConstants {
   public static final String COL_PROPERTY_NAME = "Name";
   public static final String COL_PROPERTY_GROUP = "PropertyGroup";
   public static final String COL_DEFAULT_PROPERTY = "DefaultProperty";
+
+  public static final String ALS_PERSON_FIRST_NAME = "PersonFirstName";
+  public static final String ALS_PERSON_LAST_NAME = "PersonLastName";
   public static final String ALS_PROPERTY_NAME = "PropertyName";
   public static final String ALS_PROPERTY_GROUP_NAME = "GroupName";
 
@@ -378,6 +381,7 @@ public final class CalendarConstants {
   public static final String ALS_TYPE_TRANSPARENCY = "TypeTransparency";
 
   public static final String COL_VISIBILITY = "Visibility";
+  public static final String COL_CREATED = "Created";
   public static final String COL_CREATOR = "Creator";
 
   public static final String COL_REPORT = "Report";

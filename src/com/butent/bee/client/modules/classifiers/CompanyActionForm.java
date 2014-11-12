@@ -8,6 +8,7 @@ import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.event.logical.shared.ValueChangeEvent;
 import com.google.gwt.event.logical.shared.ValueChangeHandler;
 
+import com.butent.bee.client.composite.DataSelector;
 import com.butent.bee.client.data.Queries;
 import com.butent.bee.client.data.Queries.RowSetCallback;
 import com.butent.bee.client.presenter.Presenter;
@@ -26,7 +27,6 @@ import com.butent.bee.client.widget.Button;
 import com.butent.bee.client.widget.InputArea;
 import com.butent.bee.client.widget.InputBoolean;
 import com.butent.bee.client.widget.Label;
-import com.butent.bee.client.widget.ListBox;
 import com.butent.bee.shared.css.values.Display;
 import com.butent.bee.shared.data.BeeRowSet;
 import com.butent.bee.shared.data.DataUtils;
@@ -49,7 +49,7 @@ final class CompanyActionForm extends AbstractFormInterceptor {
 
   private static final String WIDGET_REGISTER_RESULT = "RegisterResult";
   private static final String WIDGET_ACTION_RESULT_LABEL = "ActionResultLabel";
-  private static final String WIDGET_STATUS = "Status";
+  private static final String WIDGET_COMPANY = "Company";
 
   private final Map<Long, IsRow> plannedDurations = Maps.newHashMap();
   private int planedDurationColumnIndex = -1;
@@ -59,7 +59,7 @@ final class CompanyActionForm extends AbstractFormInterceptor {
   private InputBoolean registerResult;
   private InputArea actionResult;
   private Label actionResultLabel;
-  private ListBox statusWidget;
+  private DataSelector companyWidget;
 
   @Override
   public void afterCreateWidget(String name, IdentifiableWidget widget,
@@ -77,8 +77,8 @@ final class CompanyActionForm extends AbstractFormInterceptor {
       actionResultLabel = (Label) widget;
     }
 
-    if (BeeUtils.same(WIDGET_STATUS, name) && widget instanceof ListBox) {
-      statusWidget = (ListBox) widget;
+    if (BeeUtils.same(WIDGET_COMPANY, name) && widget instanceof DataSelector) {
+      companyWidget = (DataSelector) widget;
     }
   }
 
@@ -174,6 +174,10 @@ final class CompanyActionForm extends AbstractFormInterceptor {
 
       if (idxCompanyName > -1 && idxParentCompanyName > -1) {
         newRow.setValue(idxCompanyName, parentRow.getValue(idxParentCompanyName));
+        form.refreshBySource(ClassifierConstants.COL_COMPANY);
+        if (companyWidget != null) {
+          companyWidget.setEnabled(false);
+        }
       }
     }
 
@@ -357,6 +361,8 @@ final class CompanyActionForm extends AbstractFormInterceptor {
             registerResult.setChecked(false);
           }
         }
+        row.setValue(form.getDataIndex(CalendarConstants.COL_STATUS), newValue);
+        form.refreshBySource(CalendarConstants.COL_STATUS);
         return Boolean.TRUE;
       }
     };
@@ -374,9 +380,9 @@ final class CompanyActionForm extends AbstractFormInterceptor {
       if (idxStatus > -1) {
         row.setValue(idxStatus, AppointmentStatus.TENTATIVE.ordinal());
 
-        if (statusWidget != null) {
-          statusWidget.setEnabled(true);
-        }
+        // if (statusWidget != null) {
+        // statusWidget.setEnabled(true);
+        // }
 
         form.refreshBySource(CalendarConstants.COL_STATUS);
       }
@@ -516,9 +522,9 @@ final class CompanyActionForm extends AbstractFormInterceptor {
       if (idxStatus > -1) {
         row.setValue(idxStatus, AppointmentStatus.COMPLETED.ordinal());
 
-        if (statusWidget != null) {
-          statusWidget.setEnabled(false);
-        }
+        // if (statusWidget != null) {
+        // statusWidget.setEnabled(false);
+        // }
 
         form.refreshBySource(CalendarConstants.COL_STATUS);
       }
