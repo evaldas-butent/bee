@@ -28,6 +28,7 @@ import com.butent.bee.client.modules.trade.TotalRenderer;
 import com.butent.bee.client.modules.trade.acts.TradeActItemImporter.ImportEntry;
 import com.butent.bee.client.presenter.GridPresenter;
 import com.butent.bee.client.render.AbstractCellRenderer;
+import com.butent.bee.client.render.HasCellRenderer;
 import com.butent.bee.client.utils.FileUtils;
 import com.butent.bee.client.utils.NewFileInfo;
 import com.butent.bee.client.view.ViewHelper;
@@ -45,6 +46,7 @@ import com.butent.bee.shared.communication.ResponseObject;
 import com.butent.bee.shared.data.BeeColumn;
 import com.butent.bee.shared.data.BeeRow;
 import com.butent.bee.shared.data.BeeRowSet;
+import com.butent.bee.shared.data.CellSource;
 import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.IsColumn;
 import com.butent.bee.shared.data.IsRow;
@@ -96,9 +98,17 @@ public class TradeActItemsGrid extends AbstractGridInterceptor implements
       EditableColumn editableColumn) {
 
     if (column instanceof CalculatedColumn) {
-      AbstractCellRenderer renderer = ((CalculatedColumn) column).getRenderer();
-      if (renderer instanceof TotalRenderer) {
-        configureRenderer(dataColumns, (TotalRenderer) renderer);
+      if ("ItemPrices".equals(columnName)) {
+        int index = DataUtils.getColumnIndex(COL_TRADE_ITEM_PRICE, dataColumns);
+        CellSource cellSource = CellSource.forColumn(dataColumns.get(index), index);
+
+        ((HasCellRenderer) column).setRenderer(new ItemPricePicker(cellSource, dataColumns));
+
+      } else {
+        AbstractCellRenderer renderer = ((CalculatedColumn) column).getRenderer();
+        if (renderer instanceof TotalRenderer) {
+          configureRenderer(dataColumns, (TotalRenderer) renderer);
+        }
       }
     }
 
