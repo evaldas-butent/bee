@@ -24,12 +24,12 @@ public enum SupportedLocale implements HasCaption {
   EN {
     @Override
     public String getCaption() {
-      return "English";
+      return "English/US";
     }
 
     @Override
     public String getIconName() {
-      return "english";
+      return "us";
     }
 
     @Override

@@ -10,7 +10,6 @@
     <DataColumn name="DateTo" caption="=trDateTo" />
     <DataColumn name="Summer" caption="=trFuelConsumptionsSummer" format="#.00"  />
     <DataColumn name="Winter" caption="=trFuelConsumptionsWinter" format="#.00"  />
-    <DataColumn name="TonneKilometer" caption="=trTonneKilometer" format="#.0000"  />
     <DataColumn name="MotoHour" caption="=trMotoHour" format="#.00"  />
   </g:columns>
 </g:Grid>
