@@ -133,7 +133,10 @@ public final class ClassifierConstants {
   public static final String COL_ITEM_TYPE = "Type";
   public static final String COL_ITEM_GROUP = "Group";
   public static final String COL_ITEM_WEIGHT = "Weight";
+  public static final String COL_ITEM_AREA = "Area";
   public static final String COL_ITEM_ORDINAL = "Ordinal";
+  public static final String COL_ITEM_DPW = "DaysPerWeek";
+  public static final String COL_ITEM_MIN_TERM = "MinTerm";
 
   public static final String COL_UNIT = "Unit";
   public static final String COL_UNIT_NAME = "Name";

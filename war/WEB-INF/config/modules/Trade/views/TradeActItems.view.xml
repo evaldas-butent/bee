@@ -17,6 +17,7 @@
       </SimpleJoin>
   
       <SimpleColumn name="Weight" />
+      <SimpleColumn name="Area" />
     </SimpleJoin>
 
     <SimpleColumn name="Quantity" />

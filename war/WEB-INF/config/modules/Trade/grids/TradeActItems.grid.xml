@@ -33,6 +33,9 @@
     <DataColumn name="Weight">
       <footer expression="&qty; * row.Weight" />
     </DataColumn>
+    <DataColumn name="Area">
+      <footer expression="&qty; * row.Area" />
+    </DataColumn>
 
     <DataColumn name="Price" visible="true">
       <footer expression="&qty; * row.Price" />
