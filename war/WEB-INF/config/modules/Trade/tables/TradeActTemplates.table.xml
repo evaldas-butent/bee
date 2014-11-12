@@ -16,6 +16,7 @@
     <Relation name="Status" relation="TradeStatuses" label="=status" />
 
     <Relation name="Company" relation="Companies" label="=client" />
+    <Relation name="Contact" relation="CompanyPersons" label="=contact" />
     <Relation name="Object" relation="CompanyObjects" label="=object" />
     <Relation name="Manager" relation="Users" label="=manager" />
 

@@ -51,6 +51,7 @@ public final class TradeActConstants {
   public static final String COL_TA_OPERATION = "Operation";
   public static final String COL_TA_STATUS = "Status";
   public static final String COL_TA_COMPANY = "Company";
+  public static final String COL_TA_CONTACT = "Contact";
   public static final String COL_TA_OBJECT = "Object";
   public static final String COL_TA_MANAGER = "Manager";
   public static final String COL_TA_CURRENCY = "Currency";
