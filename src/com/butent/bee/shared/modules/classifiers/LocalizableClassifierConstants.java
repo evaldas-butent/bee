@@ -66,9 +66,15 @@ public interface LocalizableClassifierConstants {
 
   String price1();
 
+  String price1Label();
+
   String price2();
 
+  String price2Label();
+
   String price3();
+
+  String price3Label();
 
   String printBankAccount();
 

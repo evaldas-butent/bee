@@ -4,6 +4,8 @@ public interface LocalizableTradeConstants {
 
   String cost();
 
+  String costLabel();
+
   String discount();
 
   String discountPercent();
@@ -45,6 +47,8 @@ public interface LocalizableTradeConstants {
   String printItemUom();
 
   String salePrice();
+
+  String salePriceLabel();
 
   String salePriceShort();
 
