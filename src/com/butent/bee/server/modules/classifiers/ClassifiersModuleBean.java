@@ -1232,7 +1232,12 @@ public class ClassifiersModuleBean implements BeeModule {
     for (long id : notRemindIds) {
       appointments.removeRowById(id);
     }
-    createActionRemindMail(user, appointments);
+
+    if (appointments.getNumberOfRows() > 0) {
+      createActionRemindMail(user, appointments);
+    } else {
+      logger.info("no actions remin fo user", user);
+    }
   }
 
   public void setRemindedAppointments(BeeRowSet appointments) {
