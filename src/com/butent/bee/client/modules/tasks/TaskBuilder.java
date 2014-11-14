@@ -1,6 +1,7 @@
 package com.butent.bee.client.modules.tasks;
 
 import com.google.common.collect.Lists;
+import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
 import com.google.gwt.event.dom.client.KeyDownEvent;
 import com.google.gwt.event.dom.client.KeyDownHandler;
@@ -28,6 +29,7 @@ import com.butent.bee.client.view.add.ReadyForInsertEvent;
 import com.butent.bee.client.view.edit.EditChangeHandler;
 import com.butent.bee.client.view.edit.EditableWidget;
 import com.butent.bee.client.view.edit.Editor;
+import com.butent.bee.client.view.form.FormView;
 import com.butent.bee.client.view.form.interceptor.AbstractFormInterceptor;
 import com.butent.bee.client.view.form.interceptor.FormInterceptor;
 import com.butent.bee.client.widget.InputDate;
@@ -56,6 +58,7 @@ import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.Codec;
 
 import java.util.List;
+import java.util.Map;
 
 class TaskBuilder extends AbstractFormInterceptor {
 
@@ -78,8 +81,23 @@ class TaskBuilder extends AbstractFormInterceptor {
   private Label endDateInputLabel;
   private Label executorsLabel;
 
+  private final Map<Long, FileInfo> filesToUpload = Maps.newHashMap();
+  private Long executor;
+  private boolean taskIdsCallback;
+
   TaskBuilder() {
     super();
+  }
+
+  public TaskBuilder(Map<Long, FileInfo> files, Long executor, boolean taskIdsCallback) {
+    this();
+
+    if (files != null) {
+      filesToUpload.putAll(files);
+    }
+
+    this.executor = executor;
+    this.taskIdsCallback = taskIdsCallback;
   }
 
   @Override
@@ -183,6 +201,11 @@ class TaskBuilder extends AbstractFormInterceptor {
         }
       });
     }
+
+    if (widget instanceof FileCollector) {
+      ((FileCollector) widget).bindDnd(getFormView());
+      ((FileCollector) widget).addFiles(filesToUpload.values());
+    }
   }
 
   @Override
@@ -195,6 +218,14 @@ class TaskBuilder extends AbstractFormInterceptor {
   @Override
   public FormInterceptor getInstance() {
     return new TaskBuilder();
+  }
+
+  @Override
+  public void onStartNewRow(FormView form, IsRow oldRow, IsRow newRow) {
+    if (executor != null) {
+      newRow.setProperty(PROP_EXECUTORS, DataUtils.buildIdList(new Long[] {executor}));
+
+    }
   }
 
   @Override
@@ -297,12 +328,19 @@ class TaskBuilder extends AbstractFormInterceptor {
 
           createFiles(tasks.getRowIds());
 
-          event.getCallback().onSuccess(null);
+          if (!taskIdsCallback) {
+            event.getCallback().onSuccess(null);
+          } else {
+            BeeRow row = new BeeRow(0, new String[] {DataUtils.buildIdList(tasks)});
+            event.getCallback().onSuccess(row);
+          }
 
           String message = Localized.getMessages().crmCreatedNewTasks(tasks.getNumberOfRows());
           BeeKeeper.getScreen().notifyInfo(message);
 
-          event.getCallback().onSuccess(tasks.getRow(0));
+          if (!taskIdsCallback) {
+            event.getCallback().onSuccess(tasks.getRow(0));
+          }
 
           DataChangeEvent.fireRefresh(BeeKeeper.getBus(), VIEW_TASKS);
 
