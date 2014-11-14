@@ -65,6 +65,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.function.Function;
 
 import javax.ejb.EJB;
 import javax.ejb.LocalBean;
@@ -889,6 +890,12 @@ public class QueryServiceBean {
 
   @TransactionAttribute(TransactionAttributeType.MANDATORY)
   public ResponseObject insertDataWithResponse(SqlInsert si) {
+    return insertDataWithResponse(si, null);
+  }
+
+  @TransactionAttribute(TransactionAttributeType.MANDATORY)
+  public ResponseObject insertDataWithResponse(SqlInsert si,
+      Function<SQLException, ResponseObject> errorHandler) {
     Assert.notNull(si);
 
     String target = si.getTarget();
@@ -916,7 +923,7 @@ public class QueryServiceBean {
         si.addConstant(idFld, id);
       }
     }
-    ResponseObject response = updateDataWithResponse(si);
+    ResponseObject response = updateDataWithResponse(si, errorHandler);
 
     if (!response.hasErrors()) {
       response.setResponse(id);
@@ -1132,6 +1139,13 @@ public class QueryServiceBean {
 
   @TransactionAttribute(TransactionAttributeType.MANDATORY)
   public ResponseObject updateDataWithResponse(IsQuery query) {
+    return updateDataWithResponse(query, null);
+  }
+
+  @TransactionAttribute(TransactionAttributeType.MANDATORY)
+  public ResponseObject updateDataWithResponse(IsQuery query,
+      Function<SQLException, ResponseObject> errorHandler) {
+
     Assert.notNull(query);
     Assert.state(!query.isEmpty());
 
@@ -1166,6 +1180,18 @@ public class QueryServiceBean {
       event = null;
     }
     ResponseObject res = processSql(null, query.getQuery(), new SqlHandler<ResponseObject>() {
+      @Override
+      public ResponseObject processError(SQLException ex) {
+        if (errorHandler != null) {
+          ResponseObject response = errorHandler.apply(ex);
+
+          if (response != null) {
+            return response;
+          }
+        }
+        return super.processError(ex);
+      }
+
       @Override
       public ResponseObject processResultSet(ResultSet rs) throws SQLException {
         throw new BeeRuntimeException("Data modification query must not return a ResultSet");

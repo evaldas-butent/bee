@@ -33,6 +33,8 @@ import com.butent.bee.client.dialog.Popup;
 import com.butent.bee.client.dialog.Popup.OutsideClick;
 import com.butent.bee.client.event.logical.SelectorEvent;
 import com.butent.bee.client.grid.HtmlTable;
+import com.butent.bee.client.output.Printer;
+import com.butent.bee.client.presenter.Presenter;
 import com.butent.bee.client.ui.FormFactory.WidgetDescriptionCallback;
 import com.butent.bee.client.ui.IdentifiableWidget;
 import com.butent.bee.client.utils.BrowsingContext;
@@ -66,6 +68,7 @@ import com.butent.bee.shared.modules.mail.AccountInfo;
 import com.butent.bee.shared.modules.mail.MailConstants.AddressType;
 import com.butent.bee.shared.modules.mail.MailConstants.SystemFolder;
 import com.butent.bee.shared.modules.transport.TransportConstants;
+import com.butent.bee.shared.ui.Action;
 import com.butent.bee.shared.ui.Orientation;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.Codec;
@@ -347,6 +350,15 @@ public class MailMessage extends AbstractFormInterceptor {
       this.relations = (Relations) widget;
       relations.setSelectorHandler(new RelationsHandler());
     }
+  }
+
+  @Override
+  public boolean beforeAction(Action action, Presenter presenter) {
+    if (action == Action.PRINT) {
+      Printer.print(widgets.get(CONTAINER).getElement().getString(), null);
+      return false;
+    }
+    return super.beforeAction(action, presenter);
   }
 
   @Override

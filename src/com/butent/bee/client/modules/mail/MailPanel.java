@@ -434,6 +434,10 @@ public class MailPanel extends AbstractFormInterceptor {
         removeMessages();
         break;
 
+      case PRINT:
+        message.beforeAction(action, presenter);
+        break;
+
       default:
         return true;
     }

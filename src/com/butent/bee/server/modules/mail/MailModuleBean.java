@@ -81,6 +81,8 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import javax.annotation.Resource;
 import javax.ejb.EJB;
@@ -398,12 +400,6 @@ public class MailModuleBean implements BeeModule, HasTimerService {
             mail.storeMail(account, message, folder.getId(), null);
           }
           response.addInfo(usr.getLocalizableConstants().mailMessageIsSavedInDraft());
-        }
-        for (FileInfo fileInfo : attachments) {
-          if (fileInfo.isTemporary()) {
-            logger.debug("File deleted:", fileInfo.getPath(),
-                new File(fileInfo.getPath()).delete());
-          }
         }
       } else if (BeeUtils.same(svc, SVC_STRIP_HTML)) {
         response = ResponseObject
@@ -851,13 +847,6 @@ public class MailModuleBean implements BeeModule, HasTimerService {
           }
           sendMail(account, new String[] {row.getValue(COL_RULE_ACTION_OPTIONS)}, null, null,
               envelope.getSubject(), content, attachments, false);
-
-          for (FileInfo fileInfo : attachments) {
-            if (fileInfo.isTemporary()) {
-              logger.debug("File deleted:", fileInfo.getPath(),
-                  new File(fileInfo.getPath()).delete());
-            }
-          }
           break;
 
         case REPLY:
@@ -884,9 +873,8 @@ public class MailModuleBean implements BeeModule, HasTimerService {
     return changedFolders;
   }
 
-  private static MimeMessage buildMessage(MailAccount account, String[] to, String[] cc,
-      String[] bcc, String subject, String content, List<FileInfo> attachments)
-      throws MessagingException {
+  private MimeMessage buildMessage(MailAccount account, String[] to, String[] cc, String[] bcc,
+      String subject, String content, List<FileInfo> attachments) throws MessagingException {
 
     MimeMessage message = new MimeMessage((Session) null);
 
@@ -920,6 +908,7 @@ public class MailModuleBean implements BeeModule, HasTimerService {
     message.setSubject(subject, BeeConst.CHARSET_UTF8);
 
     MimeMultipart multi = null;
+    List<FileInfo> files = new ArrayList<>();
 
     if (!BeeUtils.isEmpty(attachments)) {
       multi = new MimeMultipart();
@@ -939,39 +928,90 @@ public class MailModuleBean implements BeeModule, HasTimerService {
         if (p != null) {
           multi.addBodyPart(p);
         }
+        files.add(fileInfo);
       }
     }
     if (HtmlUtils.hasHtml(content)) {
-      MimeMultipart mp = new MimeMultipart("alternative");
+      MimeMultipart alternative = new MimeMultipart("alternative");
 
       MimeBodyPart p = new MimeBodyPart();
       p.setText(HtmlUtils.stripHtml(content), BeeConst.CHARSET_UTF8);
-      mp.addBodyPart(p);
+      alternative.addBodyPart(p);
 
+      MimeMultipart related = new MimeMultipart("related");
+
+      Pattern pattern = Pattern.compile("src=\"(file/(\\d+))\"");
+      Matcher matcher = pattern.matcher(content);
+      Map<String, String> relatedFiles = new HashMap<>();
+      String parsedContent = content;
+
+      while (matcher.find()) {
+        relatedFiles.put(matcher.group(2), matcher.group(1));
+      }
+      for (String fileId : relatedFiles.keySet()) {
+        try {
+          FileInfo fileInfo = fs.getFile(BeeUtils.toLong(fileId));
+
+          if (fileInfo != null) {
+            p = new MimeBodyPart();
+            File file = new File(fileInfo.getPath());
+            String cid = BeeUtils.randomString(10);
+
+            try {
+              p.attachFile(file, fileInfo.getType(), null);
+              p.addHeader("Content-ID", "<" + cid + ">");
+              p.setFileName(MimeUtility.encodeText(fileInfo.getName(), BeeConst.CHARSET_UTF8,
+                  null));
+            } catch (IOException ex) {
+              logger.error(ex);
+              p = null;
+            }
+            if (p != null) {
+              parsedContent = parsedContent.replace(relatedFiles.get(fileId), "cid:" + cid);
+              related.addBodyPart(p);
+            }
+            files.add(fileInfo);
+          }
+        } catch (IOException e) {
+          logger.error(e);
+        }
+      }
       p = new MimeBodyPart();
-      p.setText(content, BeeConst.CHARSET_UTF8, "html");
-      mp.addBodyPart(p);
+      p.setText(parsedContent, BeeConst.CHARSET_UTF8, "html");
 
-      if (multi != null) {
+      if (related.getCount() > 0) {
+        related.addBodyPart(p, 0);
         p = new MimeBodyPart();
-        p.setContent(mp);
+        p.setContent(related);
+      }
+      alternative.addBodyPart(p);
+
+      if (multi != null && multi.getCount() > 0) {
+        p = new MimeBodyPart();
+        p.setContent(alternative);
         multi.addBodyPart(p, 0);
       } else {
-        multi = mp;
+        multi = alternative;
       }
-    } else if (multi != null) {
+    } else if (multi != null && multi.getCount() > 0) {
       MimeBodyPart p = new MimeBodyPart();
       p.setText(content, BeeConst.CHARSET_UTF8);
       multi.addBodyPart(p, 0);
     }
-    if (multi != null) {
+    if (multi != null && multi.getCount() > 0) {
       message.setContent(multi);
     } else {
       message.setText(content, BeeConst.CHARSET_UTF8);
     }
     message.saveChanges();
+    MimeMessage msg = new MimeMessage(message);
 
-    return message;
+    for (FileInfo fileInfo : files) {
+      if (fileInfo.isTemporary()) {
+        logger.debug("File deleted:", fileInfo.getPath(), new File(fileInfo.getPath()).delete());
+      }
+    }
+    return msg;
   }
 
   private int checkFolder(MailAccount account, Folder remoteFolder, MailFolder localFolder,
