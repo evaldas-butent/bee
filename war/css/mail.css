@@ -27,6 +27,7 @@
 
 .bee-mail-Sender {
   font-weight: bold;
+  cursor: pointer;
 }
 
 .bee-mail-Recipients {

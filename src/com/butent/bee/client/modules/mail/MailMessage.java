@@ -64,6 +64,7 @@ import com.butent.bee.shared.i18n.LocalizableConstants;
 import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.io.FileInfo;
 import com.butent.bee.shared.modules.administration.AdministrationConstants;
+import com.butent.bee.shared.modules.documents.DocumentConstants;
 import com.butent.bee.shared.modules.mail.AccountInfo;
 import com.butent.bee.shared.modules.mail.MailConstants.AddressType;
 import com.butent.bee.shared.modules.mail.MailConstants.SystemFolder;
@@ -95,6 +96,7 @@ public class MailMessage extends AbstractFormInterceptor {
           case TBL_REQUESTS:
           case TBL_TASKS:
           case TransportConstants.TBL_ASSESSMENTS:
+          case DocumentConstants.TBL_DOCUMENTS:
             event.consume();
             final String formName = event.getNewRowFormName();
             final DataSelector selector = event.getSelector();
@@ -196,6 +198,11 @@ public class MailMessage extends AbstractFormInterceptor {
 
                     case TransportConstants.TBL_ASSESSMENTS:
                       Data.setValue(viewName, row, "OrderNotes", response.getResponseAsString());
+                      break;
+
+                    case DocumentConstants.TBL_DOCUMENTS:
+                      Data.setValue(viewName, row, DocumentConstants.COL_DOCUMENT_NAME,
+                          getSubject());
                       break;
                   }
                 }
@@ -306,7 +313,38 @@ public class MailMessage extends AbstractFormInterceptor {
               }
             }
             popup.setWidget(ft);
-            popup.showRelativeTo(widget.asWidget().getElement());
+            popup.showOnTop(widget.asWidget().getElement());
+          }
+        });
+      } else if (BeeUtils.same(name, SENDER)) {
+        clickWidget.addClickHandler(new ClickHandler() {
+          @Override
+          public void onClick(ClickEvent event) {
+            event.stopPropagation();
+            final Popup popup =
+                new Popup(OutsideClick.CLOSE, BeeConst.CSS_CLASS_PREFIX + "mail-RecipientsPopup");
+
+            HtmlTable ft = new HtmlTable();
+            ft.setBorderSpacing(5);
+
+            FlowPanel adr = new FlowPanel();
+            adr.setStyleName(BeeConst.CSS_CLASS_PREFIX + "mail-Recipient");
+
+            String email = sender.getA();
+            String label = sender.getB();
+
+            if (!BeeUtils.isEmpty(label)) {
+              InlineLabel nm = new InlineLabel(label);
+              nm.setStyleName(BeeConst.CSS_CLASS_PREFIX + "mail-RecipientLabel");
+              adr.add(nm);
+            }
+            InlineLabel nm = new InlineLabel(email);
+            nm.setStyleName(BeeConst.CSS_CLASS_PREFIX + "mail-RecipientEmail");
+            adr.add(nm);
+
+            ft.setWidget(0, 0, adr);
+            popup.setWidget(ft);
+            popup.showOnTop(widget.asWidget().getElement());
           }
         });
       } else if (BeeUtils.same(name, ATTACHMENTS)) {
@@ -439,9 +477,6 @@ public class MailMessage extends AbstractFormInterceptor {
         sender = Pair.of(mail, lbl);
         setWidgetText(SENDER, BeeUtils.notEmpty(lbl, mail));
 
-        if (widgets.get(SENDER) != null) {
-          widgets.get(SENDER).setTitle(BeeUtils.isEmpty(lbl) ? null : mail);
-        }
         ((DateTimeLabel) widgets.get(DATE)).setValue(row.getDateTime(COL_DATE));
         setWidgetText(SUBJECT, row.getValue(COL_SUBJECT));
 
