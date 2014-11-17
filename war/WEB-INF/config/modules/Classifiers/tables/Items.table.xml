@@ -17,6 +17,7 @@
     <Enum name="TimeUnit" key="TradeActTimeUnit" label="=taTimeUnit" />
 
     <Numeric name="Weight" precision="10" scale="3" label="=weight" />
+    <Numeric name="Area" precision="10" scale="3" label="=area" />
 
     <Numeric name="Price" precision="15" scale="5" label="=salePrice" />
     <Relation name="Currency" relation="Currencies" label="=currency" />
@@ -42,6 +43,9 @@
     <Relation name="Department" relation="Departments" label="=department" />
     <Relation name="ActivityType" relation="ActivityTypes" label="=activityType" />
     <Relation name="CostCenter" relation="CostCenters" label="=costCenter" />
+
+    <Numeric name="DaysPerWeek" precision="1" label="=taDaysPerWeek" />
+    <Numeric name="MinTerm" precision="3" label="=taMinTerm" />
 
     <Integer name="Ordinal" label="=ordinal" />
     <String name="ExternalCode" precision="10" label="=externalCode" />

@@ -47,6 +47,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 
 class TradeActSelectorHandler implements SelectorEvent.Handler {
@@ -201,6 +202,9 @@ class TradeActSelectorHandler implements SelectorEvent.Handler {
 
         } else if (colName.contains(COL_TA_COMPANY)) {
           upd = isTemplatable(actRow, templRow, COL_TA_COMPANY);
+
+        } else if (colName.contains(COL_TA_CONTACT)) {
+          upd = isTemplatable(actRow, templRow, COL_TA_CONTACT);
 
         } else if (colName.contains(COL_TA_OBJECT)) {
           upd = isTemplatable(actRow, templRow, COL_TA_OBJECT);
@@ -397,6 +401,20 @@ class TradeActSelectorHandler implements SelectorEvent.Handler {
     }
   }
 
+  private static void update(DataView dataView, IsRow row, String colName,
+      Integer oldValue, Integer newValue) {
+
+    if (dataView.isFlushable() || !DataUtils.hasId(row)) {
+      Data.setValue(dataView.getViewName(), row, colName, newValue);
+      dataView.refreshBySource(colName);
+
+    } else {
+      Queries.updateCellAndFire(dataView.getViewName(), row.getId(), row.getVersion(), colName,
+          (oldValue == null) ? null : oldValue.toString(),
+          (newValue == null) ? null : newValue.toString());
+    }
+  }
+
   TradeActSelectorHandler() {
   }
 
@@ -565,7 +583,35 @@ class TradeActSelectorHandler implements SelectorEvent.Handler {
             form.refreshBySource(COL_TA_COMPANY);
           }
         }
+        break;
 
+      case VIEW_ITEMS:
+        if (event.isChanged() && event.getRelatedRow() != null) {
+          DataView dataView = ViewHelper.getDataView(event.getSelector());
+
+          String viewName = (dataView == null) ? null : dataView.getViewName();
+          IsRow dst = (dataView == null) ? null : dataView.getActiveRow();
+
+          if (dataView.getActiveRow() != null
+              && (VIEW_TRADE_ACT_SERVICES.equals(viewName)
+              || VIEW_TRADE_ACT_TMPL_SERVICES.equals(viewName))) {
+
+            Integer oldDpw = Data.getInteger(viewName, dst, COL_TA_SERVICE_DAYS);
+            Integer newDpw = Data.getInteger(relatedViewName, event.getRelatedRow(), COL_ITEM_DPW);
+
+            if (!Objects.equals(oldDpw, newDpw)) {
+              update(dataView, dst, COL_TA_SERVICE_DAYS, oldDpw, newDpw);
+            }
+
+            Integer oldMin = Data.getInteger(viewName, dst, COL_TA_SERVICE_MIN);
+            Integer newMin = Data.getInteger(relatedViewName, event.getRelatedRow(),
+                COL_ITEM_MIN_TERM);
+
+            if (!Objects.equals(oldMin, newMin)) {
+              update(dataView, dst, COL_TA_SERVICE_MIN, oldMin, newMin);
+            }
+          }
+        }
         break;
     }
   }

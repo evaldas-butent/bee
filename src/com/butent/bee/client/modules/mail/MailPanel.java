@@ -111,9 +111,11 @@ public class MailPanel extends AbstractFormInterceptor {
 
   private class ContentHandler implements ActiveRowChangeEvent.Handler {
     private final int sender;
+    private final int flags;
 
-    public ContentHandler(int sender) {
+    public ContentHandler(int sender, int flags) {
       this.sender = sender;
+      this.flags = flags;
     }
 
     @Override
@@ -124,6 +126,10 @@ public class MailPanel extends AbstractFormInterceptor {
       if (currentMessage != null) {
         message.requery(COL_PLACE, currentMessage.getId(),
             Objects.equals(currentMessage.getLong(sender), getCurrentAccount().getAddressId()));
+
+        if (!MessageFlag.SEEN.isSet(currentMessage.getInteger(flags))) {
+          getMessagesPresenter().refresh(true);
+        }
       }
     }
 
@@ -284,7 +290,8 @@ public class MailPanel extends AbstractFormInterceptor {
     @Override
     public void afterCreatePresenter(GridPresenter presenter) {
       GridView grid = presenter.getGridView();
-      grid.getGrid().addActiveRowChangeHandler(new ContentHandler(grid.getDataIndex(COL_SENDER)));
+      grid.getGrid().addActiveRowChangeHandler(new ContentHandler(grid.getDataIndex(COL_SENDER),
+          grid.getDataIndex(COL_FLAGS)));
       activateAccount(getCurrentAccount());
     }
 
@@ -434,6 +441,10 @@ public class MailPanel extends AbstractFormInterceptor {
         removeMessages();
         break;
 
+      case PRINT:
+        message.beforeAction(action, presenter);
+        break;
+
       default:
         return true;
     }
@@ -573,6 +584,31 @@ public class MailPanel extends AbstractFormInterceptor {
     }
   }
 
+  void flagMessage(final IsRow row, final int flagIdx, MessageFlag flag,
+      final ScheduledCommand command) {
+
+    ParameterList params = MailKeeper.createArgs(SVC_FLAG_MESSAGE);
+    params.addDataItem(COL_PLACE, row.getId());
+    params.addDataItem(COL_FLAGS, flag.name());
+    params.addDataItem("on", Codec.pack(!flag.isSet(row.getInteger(flagIdx))));
+
+    BeeKeeper.getRpc().makePostRequest(params, new ResponseCallback() {
+      @Override
+      public void onResponse(ResponseObject response) {
+        response.notify(getFormView());
+
+        if (!response.hasErrors()) {
+          Integer flags = BeeUtils.toIntOrNull((String) response.getResponse());
+          row.setValue(flagIdx, flags);
+
+          if (command != null) {
+            command.execute();
+          }
+        }
+      }
+    });
+  }
+
   List<AccountInfo> getAccounts() {
     return accounts;
   }
@@ -583,6 +619,10 @@ public class MailPanel extends AbstractFormInterceptor {
 
   Long getCurrentFolderId() {
     return currentFolder;
+  }
+
+  GridPresenter getMessagesPresenter() {
+    return messages.getGridPresenter();
   }
 
   void refreshFolder(Long folderId) {
@@ -596,7 +636,7 @@ public class MailPanel extends AbstractFormInterceptor {
   }
 
   void refreshMessages() {
-    GridPresenter presenter = messages.getGridPresenter();
+    GridPresenter presenter = getMessagesPresenter();
 
     if (presenter != null) {
       Long folderId = getCurrentFolderId();
@@ -697,31 +737,6 @@ public class MailPanel extends AbstractFormInterceptor {
     }
   }
 
-  private void flagMessage(final IsRow row, final int flagIdx, MessageFlag flag,
-      final ScheduledCommand command) {
-
-    ParameterList params = MailKeeper.createArgs(SVC_FLAG_MESSAGE);
-    params.addDataItem(COL_PLACE, row.getId());
-    params.addDataItem(COL_FLAGS, flag.name());
-    params.addDataItem("on", Codec.pack(!flag.isSet(row.getInteger(flagIdx))));
-
-    BeeKeeper.getRpc().makePostRequest(params, new ResponseCallback() {
-      @Override
-      public void onResponse(ResponseObject response) {
-        response.notify(getFormView());
-
-        if (!response.hasErrors()) {
-          Integer flags = BeeUtils.toIntOrNull((String) response.getResponse());
-          row.setValue(flagIdx, flags);
-
-          if (command != null) {
-            command.execute();
-          }
-        }
-      }
-    });
-  }
-
   private void initAccounts(final ListBox accountsWidget) {
     accountsWidget.clear();
 
@@ -756,7 +771,7 @@ public class MailPanel extends AbstractFormInterceptor {
       return;
     }
     final List<String> options = Lists.newArrayList(Localized.getConstants().mailCurrentMessage());
-    final Collection<RowInfo> rows = messages.getGridPresenter().getGridView()
+    final Collection<RowInfo> rows = getMessagesPresenter().getGridView()
         .getSelectedRows(SelectedRows.ALL);
 
     if (!BeeUtils.isEmpty(rows)) {

@@ -57,8 +57,8 @@ public final class FileUtils {
 
   private static final BeeLogger logger = LogUtils.getLogger(FileUtils.class);
 
-  private static final String OPEN_URL = "file";
-  private static final String UPLOAD_URL = "upload";
+  public static final String OPEN_URL = "file";
+  public static final String UPLOAD_URL = "upload";
 
   private static final long MIN_FILE_SIZE_FOR_PROGRESS = 100000;
 

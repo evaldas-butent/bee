@@ -34,9 +34,14 @@
     <DataColumn name="Barcode" />
 
     <RelColumn name="Unit" caption="=unitShort" carry="true" />
+
     <DataColumn name="TimeUnit" module="Trade.Acts" />
+    <DataColumn name="DaysPerWeek" caption="=taDaysPerWeekShort" module="Trade.Acts"
+      visible="false" />
+    <DataColumn name="MinTerm" caption="=taMinTermShort" module="Trade.Acts" visible="false" />
 
     <DataColumn name="Weight" visible="false" />
+    <DataColumn name="Area" visible="false" />
 
     <DataColumn name="Price" caption="=salePriceShort" scale="&pricescale;" />
     <RelColumn name="Currency" caption="=currencyShort" />

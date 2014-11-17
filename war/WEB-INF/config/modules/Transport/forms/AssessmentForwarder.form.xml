@@ -61,7 +61,9 @@
       <InputDateTime source="LoadingDate" style="&input;" />
     </FlowPanel>
     <FlowPanel style="&section;">
-      <Label for="LoadingCountry" text="=country" style="&labelLeft;" />
+      <Label for="LoadingCompany" text="=company" style="&labelLeft;" />
+      <InputText source="LoadingCompany" style="&inline;" />
+      <Label for="LoadingCountry" text="=country" style="&labelRight;" />
       <DataSelector source="LoadingCountry" style="&inline;" >
         <renderToken source="LoadingCountryName" />
         <renderToken source="LoadingCountryCode" prefix=" (" suffix=")" />
@@ -70,18 +72,16 @@
           <ui:renderer type="flag" />
         </selectorColumn>
       </DataSelector>
-      <Label for="LoadingCity" text="=city" style="&labelRight;" />
-      <DataSelector source="LoadingCity" style="&inline;" />
     </FlowPanel>
     <FlowPanel for="LoadingAddress" style="&section;">
-      <Label for="LoadingAddress" text="=address" style="&labelLeft;" />
-      <InputText source="LoadingAddress" style="&input; width:210px;" />
+      <Label for="LoadingCity" text="=city" style="&labelLeft;" />
+      <DataSelector source="LoadingCity" style="&input; width:210px;" />
       <Label for="LoadingPostIndex" text="=postIndex" style="&labelRight;" />
       <InputText source="LoadingPostIndex" style="&input; width:90px;" />
     </FlowPanel>
-    <FlowPanel for="LoadingCompany" style="&section;">
-      <Label for="LoadingCompany" text="=company" style="&labelLeft;" />
-      <InputText source="LoadingCompany" style="&input; width:400px;" />
+    <FlowPanel for="LoadingAddress" style="&section;">
+      <Label for="LoadingAddress" text="=address" style="&labelLeft;" />
+      <InputText source="LoadingAddress" style="&input; width:400px;" />
     </FlowPanel>
     <FlowPanel for="LoadingContact" style="&section;">
       <Label for="LoadingContact" text="=contact" style="&labelLeft;" />
@@ -95,7 +95,9 @@
       <InputDateTime source="UnloadingDate" style="&input;" />
     </FlowPanel>
     <FlowPanel style="&section;">
-      <Label for="UnloadingCountry" text="=country" style="&labelLeft;" />
+      <Label for="UnloadingCompany" text="=company" style="&labelLeft;" />
+      <InputText source="UnloadingCompany" style="&inline;" />
+      <Label for="UnloadingCountry" text="=country" style="&labelRight;" />
       <DataSelector source="UnloadingCountry" style="&inline;" >
         <renderToken source="UnloadingCountryName" />
         <renderToken source="UnloadingCountryCode" prefix=" (" suffix=")" />
@@ -104,18 +106,16 @@
           <ui:renderer type="flag" />
         </selectorColumn>
       </DataSelector>
-      <Label for="UnloadingCity" text="=city" style="&labelRight;" />
-      <DataSelector source="UnloadingCity" style="&inline;" />
     </FlowPanel>
     <FlowPanel for="UnloadingAddress" style="&section;">
-      <Label for="UnloadingAddress" text="=address" style="&labelLeft;" />
-      <InputText source="UnloadingAddress" style="&input; width:210px;" />
+      <Label for="UnloadingCity" text="=city" style="&labelLeft;" />
+      <DataSelector source="UnloadingCity" style="&input; width:210px;" />
       <Label for="UnloadingPostIndex" text="=postIndex" style="&labelRight;" />
       <InputText source="UnloadingPostIndex" style="&input; width:90px;" />
     </FlowPanel>
-    <FlowPanel for="UnloadingCompany" style="&section;">
-      <Label for="UnloadingCompany" text="=company" style="&labelLeft;" />
-      <InputText source="UnloadingCompany" style="&input; width:400px;" />
+    <FlowPanel for="UnloadingAddress" style="&section;">
+      <Label for="UnloadingAddress" text="=address" style="&labelLeft;" />
+      <InputText source="UnloadingAddress" style="&input; width:400px;" />
     </FlowPanel>
     <FlowPanel for="UnloadingContact" style="&section;">
       <Label for="UnloadingContact" text="=contact" style="&labelLeft;" />

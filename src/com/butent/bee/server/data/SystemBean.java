@@ -211,13 +211,13 @@ public class SystemBean {
       if (!rebuild) {
         for (String fldName : getTableFieldNames(tblName)) {
           if (!flds.get(tblName).contains(fldName)) {
-            logger.info(tblName, fldName, "column not found, rebuilding");
+            logger.warning(tblName, fldName, "column not found, rebuilding");
             rebuild = true;
             break;
           }
         }
       } else {
-        logger.info(tblName, "table not found, rebuilding");
+        logger.warning(tblName, "table not found, rebuilding");
       }
       if (rebuild) {
         rebuildTable(tblName);

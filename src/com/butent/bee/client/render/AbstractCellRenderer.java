@@ -65,6 +65,14 @@ public abstract class AbstractCellRenderer extends AbstractRenderer<IsRow> imple
     return cellSource;
   }
 
+  protected Double getDouble(IsRow row) {
+    if (row == null || cellSource == null) {
+      return null;
+    } else {
+      return cellSource.getDouble(row);
+    }
+  }
+
   protected Integer getInteger(IsRow row) {
     if (row == null || cellSource == null) {
       return null;
