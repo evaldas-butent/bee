@@ -2,13 +2,13 @@
 <!DOCTYPE Form [
   <!ENTITY section "margin-top: 5px;">
   <!ENTITY bold "font-weight:bold;">
-  <!ENTITY form "PrintLogisticsInvoiceEN">
+  <!ENTITY form "PrintLogisticsShortEN">
 ]>
 <f:Form xmlns="http://www.butent.com/widget"
   xmlns:f="http://www.butent.com/form"
   xmlns:ui="http://www.butent.com/ui" 
   
-  name="&form;" caption="Sąskaita LT/EN" disabledActions="save"
+  name="&form;" caption="Trumpa LT/EN" disabledActions="save"
   width="70" widthUnit="%" height="90" heightUnit="%" viewName="PrintLogisticsInvoice"
   >
   <FlowPanel class="bee-PrintableForm bee-tr-Invoice-Print"
@@ -115,7 +115,7 @@
           </cell>
         </row>
         <row>
-          <cell  colSpan="2">
+          <cell style="vertical-align:top;">
             <FlowPanel>
               <FlowPanel>
                 <InlineLabel html="Transporto valst.nr./Vechicle State No.: " />
@@ -129,6 +129,18 @@
               <FlowPanel>
                 <InlineLabel html="Iškrovimo data/Date offload: " />
                 <InlineLabel name="UnloadingPlace" />
+              </FlowPanel>
+            </FlowPanel>
+          </cell>
+          <cell style="vertical-align:top;">
+            <FlowPanel>
+              <FlowPanel>
+                <InlineLabel html="Užsakymo Nr./Order No: " />
+                <InlineLabel name="Assessment" />
+              </FlowPanel>
+              <FlowPanel>
+                <InlineLabel html="Ref Nr./ Ref No.: " />
+                <InlineLabel name="Number" />
               </FlowPanel>
             </FlowPanel>
           </cell>
@@ -149,12 +161,12 @@
     <Table name="InvoiceDetails" style="&section; width:100%">
       <properties rateCurrency="EUR" />
       <row>
-        <cell rowSpan="2">
+        <cell rowSpan="1">
           <Label text="Nr. / No.">
             <properties name="Ordinal" />
           </Label>
         </cell>
-        <cell rowSpan="2">
+        <cell rowSpan="1">
           <FlowPanel>
             <InlineLabel text="Paslauga">
               <properties name="Name" />
@@ -165,34 +177,26 @@
             </InlineLabel>
           </FlowPanel>
         </cell>
-        <cell rowSpan="2">
+        <cell rowSpan="1">
           <Label text="Maršrutas / Route">
             <properties name="Notes" />
           </Label>
         </cell>
-        <Label text="Užsakymo Nr. / Order No.">
-          <properties name="Assessment" />
-        </Label>
-        <cell rowSpan="2">
+        <cell rowSpan="1">
           <Label text="Suma / Amount">
             <properties name="Amount" />
           </Label>
         </cell>
-        <cell rowSpan="2" colSpan="2">
+        <cell rowSpan="1" colSpan="2">
           <Label text="Suma pagal kursą / Amount by rate">
             <properties name="RateAmount" />
           </Label>
         </cell>
-        <cell rowSpan="2">
+        <cell rowSpan="1">
           <Label text="PVM / VAT">
             <properties name="Vat" />
           </Label>
         </cell>
-      </row>
-      <row>
-        <Label text="Ref Nr. / Ref No.">
-          <properties name="Number" />
-        </Label>
       </row>
       <row>
         <cell colSpan="2">
@@ -203,7 +207,7 @@
             </InlineLabel>
           </FlowPanel>
         </cell>
-        <cell colSpan="2">
+        <cell colSpan="1">
           <FlowPanel style="text-align:right;">
             <Label text="Suma / Amount:" />
             <Label text="PVM / VAT:" />

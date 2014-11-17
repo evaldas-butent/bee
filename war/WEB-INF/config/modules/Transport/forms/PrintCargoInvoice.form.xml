@@ -75,12 +75,17 @@
             <properties name="OrderNo" />
           </Label>
         </cell>
+        <cell rowSpan="2">
+          <Label text="CMR Nr.">
+            <properties name="Cmr" />
+          </Label>
+        </cell>
         <Label text="Pakrovimas">
           <properties name="LoadingPlace" />
         </Label>
         <cell rowSpan="2">
-          <Label text="CMR Nr.">
-            <properties name="Cmr" />
+          <Label text="Maršrutas">
+            <properties name="Notes" />
           </Label>
         </cell>
         <Label text="Vairuotojas">
@@ -116,7 +121,7 @@
         </Label>
       </row>
       <row>
-        <cell colSpan="5">
+        <cell colSpan="6">
           <FlowPanel style="text-align:right;">
             <Label text="Bendra suma:" />
             <Label text="PVM suma:" />

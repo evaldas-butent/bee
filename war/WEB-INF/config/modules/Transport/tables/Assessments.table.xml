@@ -18,6 +18,7 @@
     <Numeric name="FinishedCount" precision="2" label="Pajamų korekcijų sk." />
     <Boolean name="ShowAdditionalRoute" label="Šalys maršrute" />
     <Boolean name="ExpensesRegistered" label="=trExpensesRegistered" />
+    <Text name="Documents" label="Dokumentai" />
     
     <Relation name="Order" unique="true" relation="TransportationOrders" editable="true" />
   </Fields>

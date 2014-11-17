@@ -107,6 +107,11 @@
     <InputArea source="CargoNotes" style="width:400px;" />
   </FlowPanel>
 
+  <FlowPanel style="&section;">
+    <Label for="Documents" style="&labelLeft; vertical-align:top;" />
+    <InputArea source="Documents" style="width:400px;" />
+  </FlowPanel>
+
   &separator;
   <FlowPanel style="&section;">
     <Label text="=cargo" class="bee-hasDefaults bee-required" style="&labelLeft; vertical-align:top;" />

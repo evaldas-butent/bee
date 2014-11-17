@@ -19,6 +19,7 @@
     <SimpleColumn name="FinishedCount" />
     <SimpleColumn name="ShowAdditionalRoute" />
     <SimpleColumn name="ExpensesRegistered" />
+    <SimpleColumn name="Documents" />
 
     <SimpleColumn name="Department" />
     <SimpleJoin joinType="LEFT" name="Department">

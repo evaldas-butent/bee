@@ -155,8 +155,8 @@ public class CargoSalesGrid extends AbstractGridInterceptor implements ClickHand
         final BeeRow newRow = RowFactory.createEmptyRow(saleInfo, true);
 
         newRow.setValue(saleInfo.getColumnIndex(COL_NUMBER), BeeUtils.joinItems(orders));
-        newRow.setValue(saleInfo.getColumnIndex(COL_VEHICLE), BeeUtils.joinItems(vehicles));
-        newRow.setValue(saleInfo.getColumnIndex(COL_DRIVER), BeeUtils.joinItems(drivers));
+        // newRow.setValue(saleInfo.getColumnIndex(COL_VEHICLE), BeeUtils.joinItems(vehicles));
+        // newRow.setValue(saleInfo.getColumnIndex(COL_DRIVER), BeeUtils.joinItems(drivers));
         newRow.setValue(saleInfo.getColumnIndex(COL_CARGO_NOTES), BeeUtils.joinItems(cargoNotes));
 
         newRow.setValue(saleInfo.getColumnIndex(COL_TRADE_MANAGER),

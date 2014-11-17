@@ -1003,6 +1003,7 @@ public class TransportModuleBean implements BeeModule, HasTimerService {
         .addField(unloadCountry, COL_COUNTRY_NAME, unloadCountry + "Name")
         .addField(TBL_ASSESSMENTS, sys.getIdName(TBL_ASSESSMENTS), COL_ASSESSMENT)
         .addField(TBL_ASSESSMENTS, COL_ASSESSMENT, "Parent")
+        .addFields(TBL_ASSESSMENTS, "Documents")
         .addFrom(TBL_CARGO_INCOMES)
         .addFromInner(TBL_SERVICES,
             sys.joinTables(TBL_SERVICES, TBL_CARGO_INCOMES, COL_SERVICE))
@@ -1125,7 +1126,8 @@ public class TransportModuleBean implements BeeModule, HasTimerService {
         }
       }
       if (!DataUtils.isId(mainItem) || !DataUtils.isId(row.getLong("Parent"))) {
-        for (String fld : new String[] {COL_ORDER_NO, COL_ASSESSMENT, COL_CARGO_CMR, COL_NUMBER}) {
+        for (String fld : new String[] {COL_ORDER_NO, COL_ASSESSMENT, COL_CARGO_CMR, COL_NUMBER,
+            "Documents"}) {
           String value = row.getValue(fld);
 
           if (!BeeUtils.isEmpty(value)) {

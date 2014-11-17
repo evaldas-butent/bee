@@ -11,18 +11,19 @@
   name="&form;" caption="Sąskaita LT/RU" disabledActions="save"
   width="70" widthUnit="%" height="90" heightUnit="%" viewName="PrintLogisticsInvoice"
   >
-  <FlowPanel class="bee-PrintableForm bee-tr-Invoice-Print">
+  <FlowPanel class="bee-PrintableForm bee-tr-Invoice-Print"
+    style="font-family:Tahoma; font-size:8pt;">
     <VerticalPanel>
       <cell style="text-align:center;">
         <Image url="images/HL_logo.jpg" style="width:50%;" />
       </cell>
       <cell width="100" widthUnit="%" style="text-align:center; &bold; font-size:medium;">
         <FlowPanel>
-          <TextLabel inline="true">
+          <TextLabel inline="true" style="margin-right: 2px;">
             <render>
               <ui:expression>row.Proforma 
-                ? 'Sąskaita išankstiniam apmokėjimui Nr. / Проформа №: ' 
-                : 'PVM Sąskaita faktūra Nr. / Счет №: '</ui:expression>
+                ? 'Sąskaita išankstiniam apmokėjimui Nr. / Проформа №:' 
+                : 'PVM Sąskaita faktūra Nr. / Счет №:'</ui:expression>
             </render>
           </TextLabel>
           <TextLabel source="InvoiceNo" inline="true">
@@ -113,6 +114,30 @@
             </FlowPanel>
           </cell>
         </row>
+        <row>
+          <cell colSpan="2">
+            <FlowPanel>
+              <FlowPanel>
+                <InlineLabel html="Transporto valst.nr./Aвто. №: " />
+                <InlineLabel name="Vehicle" />
+                <TextLabel source="Vehicle" style="display:inline; margin-left:5px;" />
+              </FlowPanel>
+              <FlowPanel>
+                <InlineLabel html="Pakrovimo data/Дата погрузки: " />
+                <InlineLabel name="LoadingPlace" />
+              </FlowPanel>
+              <FlowPanel>
+                <InlineLabel html="Iškrovimo data/Дата разгрузки: " />
+                <InlineLabel name="UnloadingPlace" />
+              </FlowPanel>
+            </FlowPanel>
+          </cell>
+        </row>
+        <row>
+          <cell colSpan="2">
+            <TextLabel source="Notes" />
+          </cell>
+        </row>
       </Table>
     </FlowPanel>
 
@@ -146,7 +171,7 @@
           </Label>
         </cell>
         <Label text="Užsakymo Nr. / Заказ №">
-          <properties name="AssessmentID" />
+          <properties name="Assessment" />
         </Label>
         <cell rowSpan="2">
           <Label text="Suma / Сумма">
@@ -249,19 +274,30 @@
     </HorizontalPanel>
 
     <TextLabel source="Term" style="&section; &bold; white-space:pre-wrap;">
-      <renderToken source="Term" prefix="Sąskaitą apmokėti iki / Cчет оплатить до: " />
+      <render>
+        <ui:function>
+if (row.Term) {
+  var dt = new Date(row.Term);
+  
+  return "Sąskaitą apmokėti iki / Cчет оплатить до: " + dt.getFullYear() + "." + dt.getMonth() 
+  + "." + dt.getDate() + " (per/через " 
+  + Math.ceil((dt.getTime() - new Date().getTime()) / 86400000) + " dien./дней)";
+}
+return null;
+        </ui:function>
+      </render>
     </TextLabel>
 
-    <HorizontalPanel style="&section;">
-      <Label html="Suma žodžiais:" />
-      <Label name="TotalInWords" />
-    </HorizontalPanel>
-    <HorizontalPanel style="&section;">
-      <Label html="Сумма в прописью:" />
-      <Label name="TotalInWordsRU">
+    <FlowPanel style="&section;">
+      <InlineLabel html="Suma žodžiais: " />
+      <InlineLabel name="TotalInWords" />
+    </FlowPanel>
+    <FlowPanel style="&section;">
+      <InlineLabel html="Сумма в прописью: " />
+      <InlineLabel name="TotalInWordsRU">
         <properties bee_locale="ru" />
-      </Label>
-    </HorizontalPanel>
+      </InlineLabel>
+    </FlowPanel>
 
     <HtmlPanel style="&section;">
       <span style="font-size:smaller; &bold; display:block; white-space:pre-wrap;">
@@ -279,8 +315,8 @@ Padarę apmokėjimą prašome raštu atsiųsti pavedimo kopiją. /
       </span>
     </HtmlPanel>
 
-    <Label html="Kiti dokumentai, pastabos / Другие документы, примечания:" style="&section; &bold;" />
-    <TextLabel source="Notes" style="white-space:pre-wrap;" />
+    <Label html="Kiti dokumentai / Другие документы:" style="&section; &bold;" />
+    <TextLabel name="Documents" style="white-space:pre-wrap;" />
     
     <Table style="width:100%; margin-top:10px;">
       <row style="&bold;">
@@ -299,8 +335,8 @@ Padarę apmokėjimą prašome raštu atsiųsti pavedimo kopiją. /
         </TextLabel>
       </row>
       <row style="font-size:xx-small;">
-        <hr />
-        <hr />
+        <FlowPanel style="height:1px; background-color:black;" />
+        <FlowPanel style="height:1px; background-color:black;" />
       </row>
     </Table>
   </FlowPanel>
