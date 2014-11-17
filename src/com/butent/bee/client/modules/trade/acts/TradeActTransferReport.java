@@ -456,7 +456,7 @@ public class TradeActTransferReport extends ReportInterceptor {
 
     if (hasAct || hasService) {
       final List<String> actClasses = Arrays.asList(getColumnStyle(COL_TRADE_ACT),
-          getColumnStyle(COL_TA_NAME), getColumnStyle(COL_TA_NUMBER));
+          getColumnStyle(COL_TRADE_ACT_NAME), getColumnStyle(COL_TA_NUMBER));
       final List<String> serviceClasses = Arrays.asList(getColumnStyle(COL_TA_ITEM),
           getColumnStyle(ALS_ITEM_NAME), getColumnStyle(COL_ITEM_ARTICLE));
 

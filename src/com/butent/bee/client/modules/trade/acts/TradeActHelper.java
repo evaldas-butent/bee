@@ -44,6 +44,7 @@ final class TradeActHelper {
         return Localized.getConstants().tradeAct();
 
       case COL_TA_NAME:
+      case COL_TRADE_ACT_NAME:
         return Localized.getConstants().tradeActName();
 
       case COL_TA_DATE:

@@ -8,7 +8,11 @@
   <Columns>
     <SimpleColumn name="Template" />
 
-    <SimpleColumn name="ActName" />
+    <SimpleColumn name="Name" />
+    <SimpleJoin joinType="LEFT" name="Name">
+      <SimpleColumn name="ActName" />
+    </SimpleJoin>
+
     <SimpleColumn name="Until" />
 
     <SimpleColumn name="Series" />

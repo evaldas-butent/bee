@@ -185,7 +185,7 @@ public class TradeActGrid extends AbstractGridInterceptor {
               if (tak != null) {
                 List<String> messages = new StringList();
 
-                messages.add(row.getString(getDataIndex(COL_TA_NAME)));
+                messages.add(row.getString(getDataIndex(COL_TRADE_ACT_NAME)));
 
                 String number = row.getString(getDataIndex(COL_TA_NUMBER));
                 if (!BeeUtils.isEmpty(number)) {
@@ -282,7 +282,7 @@ public class TradeActGrid extends AbstractGridInterceptor {
     if (tak != null && tak.enableSale()) {
       List<String> messages = new StringList();
 
-      messages.add(row.getString(getDataIndex(COL_TA_NAME)));
+      messages.add(row.getString(getDataIndex(COL_TRADE_ACT_NAME)));
       messages.add(Localized.getConstants().taChangeIntoSale());
 
       final long actId = row.getId();
