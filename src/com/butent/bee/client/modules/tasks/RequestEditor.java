@@ -79,7 +79,7 @@ public class RequestEditor extends AbstractFormInterceptor {
     @Override
     public void onSuccess(BeeRow result) {
       super.onSuccess(result);
-      formView.updateRow(result, false);
+      formView.updateRow(result, true);
       formView.refresh();
       formView.setEnabled(false);
     }
@@ -95,6 +95,19 @@ public class RequestEditor extends AbstractFormInterceptor {
       resultProperties = (FlowPanel) widget;
     }
     super.afterCreateWidget(name, widget, callback);
+  }
+
+
+  @Override
+  public void afterRefresh(FormView form, IsRow row) {
+    boolean finished =
+        row.getDateTime(form.getDataIndex(TaskConstants.COL_REQUEST_FINISHED)) != null;
+
+    if (finished) {
+      HeaderView header = form.getViewPresenter().getHeader();
+      header.clearCommandPanel();
+      showResultProperties(form, row);
+    }
   }
 
   @Override
