@@ -360,3 +360,12 @@
 .bee-crm-task-alien {
   background-image: url(../images/checkered_background.png) !important;
 }
+
+.bee-crm-request-prop-caption{
+	margin-left: 3em;
+}
+
+.bee-crm-request-prop-data {
+	margin-left: 1ex;
+	font-weight: bolder;
+}
