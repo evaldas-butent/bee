@@ -281,10 +281,8 @@ public class MailStorageBean {
         ByteArrayOutputStream bos = new ByteArrayOutputStream();
         message.writeTo(bos);
         is = new ByteArrayInputStream(bos.toByteArray());
-        String contentType = message.getContentType();
 
-        fileId = fs.storeFile(is, "mail@" + envelope.getUniqueId(), !BeeUtils.isEmpty(contentType)
-            ? new ContentType(contentType).getBaseType() : null);
+        fileId = fs.storeFile(is, "mail@" + envelope.getUniqueId(), "text/plain");
       } catch (MessagingException | IOException e) {
         qs.updateData(new SqlDelete(TBL_PLACES)
             .setWhere(SqlUtils.equals(TBL_MESSAGES, COL_MESSAGE, messageId.get())));

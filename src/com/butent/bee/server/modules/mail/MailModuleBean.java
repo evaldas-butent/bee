@@ -1109,7 +1109,7 @@ public class MailModuleBean implements BeeModule, HasTimerService {
     String drafts = SystemFolder.Drafts.name();
 
     SqlSelect query = new SqlSelect()
-        .addFields(TBL_MESSAGES, COL_DATE, COL_SUBJECT)
+        .addFields(TBL_MESSAGES, COL_DATE, COL_SUBJECT, COL_RAW_CONTENT)
         .addFields(TBL_EMAILS, COL_EMAIL_ADDRESS)
         .addFields(TBL_ADDRESSBOOK, COL_EMAIL_LABEL)
         .addFrom(TBL_MESSAGES)
