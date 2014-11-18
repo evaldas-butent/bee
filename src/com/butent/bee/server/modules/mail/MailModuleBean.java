@@ -31,6 +31,7 @@ import com.butent.bee.server.sql.SqlUtils;
 import com.butent.bee.server.websocket.Endpoint;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
+import com.butent.bee.shared.Pair;
 import com.butent.bee.shared.Service;
 import com.butent.bee.shared.communication.ResponseObject;
 import com.butent.bee.shared.data.BeeRow;
@@ -1031,13 +1032,14 @@ public class MailModuleBean implements BeeModule, HasTimerService {
       try {
         remoteFolder.open(Folder.READ_ONLY);
         Message[] newMessages;
-        Long lastUid;
+        Long lastUid = null;
 
         if (uidMode) {
-          lastUid = mail.syncFolder(account, localFolder, remoteFolder);
+          Pair<Long, Integer> pair = mail.syncFolder(account, localFolder, remoteFolder);
+          lastUid = pair.getA();
+          c += pair.getB();
           newMessages = ((UIDFolder) remoteFolder).getMessagesByUID(lastUid + 1, UIDFolder.LASTUID);
         } else {
-          lastUid = null;
           newMessages = remoteFolder.getMessages();
         }
         FetchProfile fp = new FetchProfile();
@@ -1290,6 +1292,8 @@ public class MailModuleBean implements BeeModule, HasTimerService {
           mail.attachMessages(target.getId(), messages);
         }
       }
+    } else if (move) {
+      mail.detachMessages(wh);
     }
     return ResponseObject.response(data.getNumberOfRows());
   }

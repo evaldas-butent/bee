@@ -73,7 +73,6 @@ import com.butent.bee.shared.modules.administration.AdministrationConstants;
 import com.butent.bee.shared.modules.documents.DocumentConstants;
 import com.butent.bee.shared.modules.mail.AccountInfo;
 import com.butent.bee.shared.modules.mail.MailConstants.AddressType;
-import com.butent.bee.shared.modules.mail.MailConstants.MessageFlag;
 import com.butent.bee.shared.modules.mail.MailConstants.SystemFolder;
 import com.butent.bee.shared.modules.transport.TransportConstants;
 import com.butent.bee.shared.ui.Action;
@@ -325,11 +324,6 @@ public class MailMessage extends AbstractFormInterceptor {
             ft.setText(r, 1, Localized.getConstants().mailShowOriginal());
             DomUtils.setDataIndex(ft.getRow(r), r++);
 
-            if (mailPanel != null) {
-              ft.setWidget(r, 0, new FaLabel(FontAwesome.EYE_SLASH));
-              ft.setText(r, 1, Localized.getConstants().mailMarkAsUnread());
-              DomUtils.setDataIndex(ft.getRow(r), r++);
-            }
             ft.addClickHandler(new ClickHandler() {
               @Override
               public void onClick(ClickEvent ev) {
@@ -342,20 +336,6 @@ public class MailMessage extends AbstractFormInterceptor {
                   case 0:
                     BrowsingContext.open(GWT.getHostPageBaseURL() + FileUtils.OPEN_URL + "/"
                         + rawId);
-                    break;
-
-                  case 1:
-                    if (mailPanel != null) {
-                      mailPanel.flagMessage(mailPanel.getMessagesPresenter().getActiveRow(),
-                          DataUtils.getColumnIndex(COL_FLAGS,
-                              mailPanel.getMessagesPresenter().getDataColumns()),
-                          MessageFlag.SEEN, new ScheduledCommand() {
-                            @Override
-                            public void execute() {
-                              mailPanel.refreshMessages();
-                            }
-                          });
-                    }
                     break;
                 }
               }
@@ -615,6 +595,16 @@ public class MailMessage extends AbstractFormInterceptor {
     });
   }
 
+  public void setLoading(boolean isLoading) {
+    for (String name : new String[] {WAITING, CONTAINER}) {
+      Widget widget = widgets.get(name);
+
+      if (widget != null) {
+        widget.setVisible(name.equals(WAITING) ? isLoading : !isLoading);
+      }
+    }
+  }
+
   private Set<String> getBcc() {
     return getRecipients(AddressType.BCC.name());
   }
@@ -766,16 +756,6 @@ public class MailMessage extends AbstractFormInterceptor {
         }
       }
     });
-  }
-
-  private void setLoading(boolean isLoading) {
-    for (String name : new String[] {WAITING, CONTAINER}) {
-      Widget widget = widgets.get(name);
-
-      if (widget != null) {
-        widget.setVisible(name.equals(WAITING) ? isLoading : !isLoading);
-      }
-    }
   }
 
   private void setWidgetText(String name, String text) {
