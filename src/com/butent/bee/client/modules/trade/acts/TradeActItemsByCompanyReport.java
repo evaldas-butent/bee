@@ -431,7 +431,7 @@ public class TradeActItemsByCompanyReport extends ReportInterceptor {
 
     if (hasAct) {
       final List<String> actClasses = Arrays.asList(getColumnStyle(COL_TRADE_ACT),
-          getColumnStyle(COL_TA_NAME), getColumnStyle(COL_TA_NUMBER));
+          getColumnStyle(COL_TRADE_ACT_NAME), getColumnStyle(COL_TA_NUMBER));
 
       table.addClickHandler(new ClickHandler() {
         @Override

@@ -92,7 +92,7 @@ public class TradeActBean {
   AdministrationModuleBean adm;
 
   public List<SearchResult> doSearch(String query) {
-    Set<String> columns = Sets.newHashSet(COL_TA_NAME, COL_TA_NUMBER, COL_OPERATION_NAME,
+    Set<String> columns = Sets.newHashSet(COL_TRADE_ACT_NAME, COL_TA_NUMBER, COL_OPERATION_NAME,
         COL_STATUS_NAME, ALS_COMPANY_NAME, COL_COMPANY_OBJECT_NAME);
     return qs.getSearchResults(VIEW_TRADE_ACTS, Filter.anyContains(columns, query));
   }
@@ -723,13 +723,16 @@ public class TradeActBean {
         SqlUtils.join(TBL_TRADE_ACT_ITEMS, COL_TA_ITEM, returnAlias, COL_TA_ITEM)));
 
     if (groupBy.isEmpty()) {
+      query.addFromLeft(TBL_TRADE_ACT_NAMES,
+          sys.joinTables(TBL_TRADE_ACT_NAMES, TBL_TRADE_ACTS, COL_TA_NAME));
       query.addFromLeft(TBL_TRADE_SERIES,
           sys.joinTables(TBL_TRADE_SERIES, TBL_TRADE_ACTS, COL_TA_SERIES));
       query.addFromLeft(TBL_TRADE_STATUSES,
           sys.joinTables(TBL_TRADE_STATUSES, TBL_TRADE_ACTS, COL_TA_STATUS));
 
       query.addFields(TBL_TRADE_ACT_ITEMS, COL_TRADE_ACT);
-      query.addFields(TBL_TRADE_ACTS, COL_TA_NAME, COL_TA_DATE);
+      query.addFields(TBL_TRADE_ACT_NAMES, COL_TRADE_ACT_NAME);
+      query.addFields(TBL_TRADE_ACTS, COL_TA_DATE);
       query.addFields(TBL_TRADE_SERIES, COL_SERIES_NAME);
       query.addFields(TBL_TRADE_ACTS, COL_TA_NUMBER);
       query.addFields(TBL_TRADE_OPERATIONS, COL_OPERATION_NAME);
@@ -879,7 +882,7 @@ public class TradeActBean {
     query = new SqlSelect();
 
     if (groupBy.isEmpty()) {
-      query.addFields(tmp, COL_TRADE_ACT, COL_TA_NAME, COL_TA_DATE,
+      query.addFields(tmp, COL_TRADE_ACT, COL_TRADE_ACT_NAME, COL_TA_DATE,
           COL_SERIES_NAME, COL_TA_NUMBER, COL_OPERATION_NAME,
           ALS_COMPANY_NAME, COL_COMPANY_OBJECT_NAME,
           itemIdName, ALS_ITEM_NAME, COL_ITEM_ARTICLE,
@@ -1938,15 +1941,18 @@ public class TradeActBean {
             sys.joinTables(TBL_TRADE_STATUSES, TBL_TRADE_ACTS, COL_TA_STATUS));
 
     if (groupBy.isEmpty()) {
-      actQuery.addFields(TBL_TRADE_ACTS, COL_TA_NAME)
+      actQuery.addFields(TBL_TRADE_ACT_NAMES, COL_TRADE_ACT_NAME)
           .addFields(TBL_TRADE_SERIES, COL_SERIES_NAME)
           .addFields(TBL_TRADE_ACTS, COL_TA_NUMBER)
           .addFields(TBL_TRADE_OPERATIONS, COL_OPERATION_NAME)
           .addFields(TBL_TRADE_STATUSES, COL_STATUS_NAME)
           .addFields(TBL_COMPANY_OBJECTS, COL_COMPANY_OBJECT_NAME);
 
-      actQuery.addFromLeft(TBL_TRADE_OPERATIONS,
-          sys.joinTables(TBL_TRADE_OPERATIONS, TBL_TRADE_ACTS, COL_TA_OPERATION))
+      actQuery
+          .addFromLeft(TBL_TRADE_ACT_NAMES,
+              sys.joinTables(TBL_TRADE_ACT_NAMES, TBL_TRADE_ACTS, COL_TA_NAME))
+          .addFromLeft(TBL_TRADE_OPERATIONS,
+              sys.joinTables(TBL_TRADE_OPERATIONS, TBL_TRADE_ACTS, COL_TA_OPERATION))
           .addFromLeft(TBL_TRADE_SERIES,
               sys.joinTables(TBL_TRADE_SERIES, TBL_TRADE_ACTS, COL_TA_SERIES))
           .addFromLeft(TBL_COMPANY_OBJECTS,
@@ -2037,7 +2043,7 @@ public class TradeActBean {
         .addFields(acts, COL_TA_DATE, COL_TA_UNTIL, COL_TA_CURRENCY, ALS_ITEM_TOTAL);
 
     if (groupBy.isEmpty()) {
-      serviceQuery.addFields(acts, COL_TA_NAME, COL_SERIES_NAME, COL_TA_NUMBER,
+      serviceQuery.addFields(acts, COL_TRADE_ACT_NAME, COL_SERIES_NAME, COL_TA_NUMBER,
           COL_OPERATION_NAME, COL_STATUS_NAME, COL_COMPANY_OBJECT_NAME);
     }
 
@@ -2114,7 +2120,7 @@ public class TradeActBean {
     SqlSelect query = new SqlSelect();
 
     if (groupBy.isEmpty()) {
-      query.addFields(tmp, COL_TRADE_ACT, COL_TA_NAME, COL_TA_DATE, COL_TA_UNTIL,
+      query.addFields(tmp, COL_TRADE_ACT, COL_TRADE_ACT_NAME, COL_TA_DATE, COL_TA_UNTIL,
           COL_SERIES_NAME, COL_TA_NUMBER, COL_OPERATION_NAME, COL_STATUS_NAME,
           ALS_COMPANY_NAME, COL_COMPANY_OBJECT_NAME);
 

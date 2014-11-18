@@ -11,13 +11,13 @@
     <RelColumn name="TradeAct" renderColumns="TradeAct" label="=captionId" editEnabled="true" />
     <DataColumn name="Parent" visible="false" />
 
-    <DataColumn name="ActName" />
+    <RelColumn name="Name" renderColumns="ActName" />
     <DataColumn name="Kind" />
 
     <DataColumn name="Date" />
     <DataColumn name="Until" />
 
-    <RelColumn name="Series" />
+    <RelColumn name="Series" renderColumns="SeriesName" />
     <DataColumn name="Number" />
 
     <RelColumn name="Operation" renderColumns="OperationName" />

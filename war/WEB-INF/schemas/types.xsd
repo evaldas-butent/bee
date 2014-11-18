@@ -448,6 +448,7 @@
       <xs:enumeration value="TimeZones" />
       <xs:enumeration value="TradeActInvoices" />
       <xs:enumeration value="TradeActItems" />
+      <xs:enumeration value="TradeActNames" />
       <xs:enumeration value="TradeActs" />
       <xs:enumeration value="TradeActsAndItems" />
       <xs:enumeration value="TradeActServices" />

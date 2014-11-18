@@ -7,7 +7,7 @@
   xmlns:xi="http://www.w3.org/2001/XInclude"
 
   name="TradeActItems" viewName="TradeActItems"
-  flexGrow="1"
+  flexGrow="1" renderMode="full"
   newRowCaption="=newItem"
   >
   <xi:include href="columns/TradeActItem.columns.xml" />

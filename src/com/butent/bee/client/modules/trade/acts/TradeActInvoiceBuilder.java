@@ -1063,7 +1063,7 @@ public class TradeActInvoiceBuilder extends AbstractFormInterceptor implements
     DataInfo dataInfo = Data.getDataInfo(VIEW_TRADE_ACTS);
     List<BeeColumn> columns = dataInfo.getColumns();
 
-    int nameIndex = dataInfo.getColumnIndex(COL_TA_NAME);
+    int nameIndex = dataInfo.getColumnIndex(COL_TRADE_ACT_NAME);
 
     int dateIndex = dataInfo.getColumnIndex(COL_TA_DATE);
     int untilIndex = dataInfo.getColumnIndex(COL_TA_UNTIL);

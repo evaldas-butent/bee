@@ -66,13 +66,6 @@
       <Flag source="UnloadingCountryCode" style="&inline; padding-left:2px;" />
     </FlowPanel>
   </FlowPanel>
-  
-  <FlowPanel style="&section;">
-    <Label text="=city" style="&labelLeft;" />
-    <DataSelector source="LoadingCity" style="&inline; width:170px; margin-right:20px;" />
-    <Label text="=city" style="&labelRight;" />
-    <DataSelector source="UnloadingCity" style="&inline; width:170px;" />
-  </FlowPanel>
 
   <FlowPanel style="&section;">
     <Label text="=city" style="&labelLeft;" />

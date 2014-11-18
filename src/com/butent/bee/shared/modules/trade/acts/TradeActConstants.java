@@ -27,6 +27,8 @@ public final class TradeActConstants {
   public static final String TBL_TRADE_ACT_TMPL_ITEMS = "TradeActTmplItems";
   public static final String TBL_TRADE_ACT_TMPL_SERVICES = "TradeActTmplServices";
 
+  public static final String TBL_TRADE_ACT_NAMES = "TradeActNames";
+
   public static final String TBL_TRADE_ACT_INVOICES = "TradeActInvoices";
 
   public static final String VIEW_TRADE_ACTS = "TradeActs";
@@ -45,7 +47,7 @@ public final class TradeActConstants {
   public static final String COL_TA_DATE = "Date";
   public static final String COL_TA_UNTIL = "Until";
   public static final String COL_TA_SERIES = "Series";
-  public static final String COL_TA_NAME = "ActName";
+  public static final String COL_TA_NAME = "Name";
   public static final String COL_TA_NUMBER = "Number";
   public static final String COL_TA_KIND = "Kind";
   public static final String COL_TA_OPERATION = "Operation";
@@ -73,6 +75,8 @@ public final class TradeActConstants {
 
   public static final String COL_TA_INVOICE_FROM = "DateFrom";
   public static final String COL_TA_INVOICE_TO = "DateTo";
+
+  public static final String COL_TRADE_ACT_NAME = "ActName";
 
   public static final String ALS_RETURNED_QTY = "ReturnedQty";
   public static final String ALS_REMAINING_QTY = "RemainingQty";

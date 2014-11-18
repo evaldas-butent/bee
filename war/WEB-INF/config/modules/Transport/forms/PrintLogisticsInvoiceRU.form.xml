@@ -265,7 +265,7 @@
       </row>
     </Table>
 
-    <HorizontalPanel style="&section;">
+    <HorizontalPanel style="&section; &bold;">
       <InlineLabel html="Prašome šią sąskaitą faktūrą apmokėti" />
       <TextLabel source="CurrencyName" />
       <InlineLabel html="valiuta / Пожалуйста oплатите этот счет" />

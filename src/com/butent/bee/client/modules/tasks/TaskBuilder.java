@@ -34,6 +34,7 @@ import com.butent.bee.client.view.form.interceptor.AbstractFormInterceptor;
 import com.butent.bee.client.view.form.interceptor.FormInterceptor;
 import com.butent.bee.client.widget.InputDate;
 import com.butent.bee.client.widget.InputTime;
+import com.butent.bee.client.widget.InputTimeOfDay;
 import com.butent.bee.client.widget.Label;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.State;
@@ -145,6 +146,9 @@ class TaskBuilder extends AbstractFormInterceptor {
     if (BeeUtils.same(name, NAME_START_DATE) && (widget instanceof InputDate)) {
       InputDate startDate = (InputDate) widget;
       startDate.setDate(new JustDate());
+    } else if (BeeUtils.same(name, NAME_START_TIME) && (widget instanceof InputTimeOfDay)) {
+      InputTimeOfDay startTime = (InputTimeOfDay) widget;
+      startTime.setTime(new DateTime());
     } else if (BeeUtils.same(name, PROP_MAIL) && (widget instanceof HasCheckedness)) {
       mailToggle = (HasCheckedness) widget;
     } else if (BeeUtils.same(name, NAME_END_DATE_LABEL) && (widget instanceof Label)) {

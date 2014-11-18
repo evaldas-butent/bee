@@ -23,6 +23,7 @@ import com.butent.bee.server.sql.SqlUtils;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.Holder;
+import com.butent.bee.shared.Pair;
 import com.butent.bee.shared.communication.ResponseObject;
 import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.SimpleRowSet;
@@ -354,8 +355,8 @@ public class MailStorageBean {
     return placeId.get();
   }
 
-  public long syncFolder(MailAccount account, MailFolder localFolder, Folder remoteFolder)
-      throws MessagingException {
+  public Pair<Long, Integer> syncFolder(MailAccount account, MailFolder localFolder,
+      Folder remoteFolder) throws MessagingException {
     Assert.noNulls(localFolder, remoteFolder);
 
     SimpleRowSet data = qs.getData(new SqlSelect()
@@ -367,6 +368,7 @@ public class MailStorageBean {
         .setLimit(100));
 
     long lastUid = BeeUtils.unbox(data.getLong(0, COL_MESSAGE_UID));
+    int c = 0;
 
     if (data.getNumberOfRows() > 0) {
       Set<Long> syncedMsgs = new HashSet<>();
@@ -387,7 +389,7 @@ public class MailStorageBean {
           Long id = row.getLong(COL_UNIQUE_ID);
 
           if (BeeUtils.unbox(row.getInt(COL_FLAGS)) != BeeUtils.unbox(flags)) {
-            qs.updateData(new SqlUpdate(TBL_PLACES)
+            c += qs.updateData(new SqlUpdate(TBL_PLACES)
                 .addConstant(COL_FLAGS, flags)
                 .setWhere(sys.idEquals(TBL_PLACES, id)));
           }
@@ -395,6 +397,7 @@ public class MailStorageBean {
         } else {
           try {
             storeMail(account, message, localFolder.getId(), uid);
+            c++;
           } catch (MessagingException e) {
             logger.error(e);
           }
@@ -410,11 +413,11 @@ public class MailStorageBean {
         }
       }
       if (!deletedMsgs.isEmpty()) {
-        qs.updateData(new SqlDelete(TBL_PLACES)
+        c += qs.updateData(new SqlDelete(TBL_PLACES)
             .setWhere(SqlUtils.inList(TBL_PLACES, sys.getIdName(TBL_PLACES), deletedMsgs)));
       }
     }
-    return lastUid;
+    return Pair.of(lastUid, c);
   }
 
   public void validateFolder(MailFolder folder, Long uidValidity) {

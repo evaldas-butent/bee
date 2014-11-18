@@ -7,7 +7,10 @@
   <Columns>
     <SimpleColumn name="TradeAct" />
     <SimpleJoin joinType="LEFT" name="TradeAct">
-      <SimpleColumn name="ActName" />
+      <SimpleColumn name="Name" />
+      <SimpleJoin joinType="LEFT" name="Name">
+        <SimpleColumn name="ActName" />
+      </SimpleJoin>
 
       <SimpleColumn name="Date" />
       <SimpleColumn name="Until" />
@@ -26,8 +29,16 @@
         <SimpleColumn name="OperationName" />
         <SimpleColumn name="Background" alias="OperationBackground" />
         <SimpleColumn name="Foreground" alias="OperationForeground" />
+    
         <SimpleColumn name="WarehouseFrom" />
+        <SimpleJoin joinType="LEFT" name="WarehouseFrom">
+          <SimpleColumn alias="WarehouseFromCode" name="Code" />
+        </SimpleJoin>
+    
         <SimpleColumn name="WarehouseTo" />
+        <SimpleJoin joinType="LEFT" name="WarehouseTo">
+          <SimpleColumn alias="WarehouseToCode" name="Code" />
+        </SimpleJoin>
       </SimpleJoin>
 
       <SimpleColumn name="Status" />

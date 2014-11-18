@@ -20,17 +20,21 @@ import com.butent.bee.client.composite.FileGroup;
 import com.butent.bee.client.data.Data;
 import com.butent.bee.client.data.Queries;
 import com.butent.bee.client.data.RowCallback;
+import com.butent.bee.client.data.RowEditor;
 import com.butent.bee.client.data.RowFactory;
 import com.butent.bee.client.data.RowUpdateCallback;
 import com.butent.bee.client.dialog.StringCallback;
 import com.butent.bee.client.ui.FormFactory.WidgetDescriptionCallback;
 import com.butent.bee.client.ui.IdentifiableWidget;
+import com.butent.bee.client.ui.Opener;
 import com.butent.bee.client.view.HeaderView;
 import com.butent.bee.client.view.ViewFactory.SupplierKind;
 import com.butent.bee.client.view.form.FormView;
 import com.butent.bee.client.view.form.interceptor.AbstractFormInterceptor;
 import com.butent.bee.client.view.form.interceptor.FormInterceptor;
 import com.butent.bee.client.widget.Button;
+import com.butent.bee.client.widget.CustomDiv;
+import com.butent.bee.client.widget.InternalLink;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.communication.ResponseObject;
 import com.butent.bee.shared.css.CssUnit;
@@ -56,6 +60,10 @@ public class RequestEditor extends AbstractFormInterceptor {
   private static final String WIDGET_MANGAER_NAME = "Manager";
   private static final String WIDGET_FILES_NAME = "Files";
   private static final String WIDGET_RESULT_PROPERTIES = "ResultProperties";
+  private static final String STYLE_PREFIX = TaskConstants.CRM_STYLE_PREFIX + "request-";
+
+  private static final String STYLE_PROPERTY_CAPTION = STYLE_PREFIX + "prop-caption";
+  private static final String STYLE_PROPERTY_DATA = STYLE_PREFIX + "prop-data";
 
   private final UserInfo currentUser = BeeKeeper.getUser();
 
@@ -71,7 +79,8 @@ public class RequestEditor extends AbstractFormInterceptor {
     @Override
     public void onSuccess(BeeRow result) {
       super.onSuccess(result);
-      formView.updateRow(result, false);
+      formView.updateRow(result, true);
+      formView.refresh();
       formView.setEnabled(false);
     }
   }
@@ -86,6 +95,19 @@ public class RequestEditor extends AbstractFormInterceptor {
       resultProperties = (FlowPanel) widget;
     }
     super.afterCreateWidget(name, widget, callback);
+  }
+
+
+  @Override
+  public void afterRefresh(FormView form, IsRow row) {
+    boolean finished =
+        row.getDateTime(form.getDataIndex(TaskConstants.COL_REQUEST_FINISHED)) != null;
+
+    if (finished) {
+      HeaderView header = form.getViewPresenter().getHeader();
+      header.clearCommandPanel();
+      showResultProperties(form, row);
+    }
   }
 
   @Override
@@ -194,6 +216,17 @@ public class RequestEditor extends AbstractFormInterceptor {
     }, null, BeeConst.UNDEF, null, 300, CssUnit.PX);
   }
 
+  private static ClickHandler getTaskLinkClickHandler(final Long id) {
+    return new ClickHandler() {
+
+      @Override
+      public void onClick(ClickEvent arg0) {
+        DataInfo dataInfo = Data.getDataInfo(VIEW_TASKS);
+        RowEditor.openForm(FORM_TASK, dataInfo, id, Opener.NEW_TAB);
+      }
+    };
+  }
+
   private static void toTaskAndFinish(final FormView form, final IsRow reqRow) {
     boolean edited = (reqRow != null) && form.isEditing();
 
@@ -246,13 +279,10 @@ public class RequestEditor extends AbstractFormInterceptor {
             List<String> newValues = Lists.newArrayList();
             Map<String, String> propData = Maps.newHashMap();
 
-
             columns.add(DataUtils
                 .getColumn(TaskConstants.COL_REQUEST_FINISHED, form.getDataColumns()));
 
-
             oldValues.add(reqRow.getString(idxFinished));
-
 
             newValues.add(BeeUtils.toString(new DateTime().getTime()));
 
@@ -294,10 +324,33 @@ public class RequestEditor extends AbstractFormInterceptor {
       return;
     }
 
-    // Map<String, String> resultData = Codec.deserializeMap(data);
+    Map<String, String> resultData = Codec.deserializeMap(data);
 
-    // for (String key : resultData.keySet()) {
-    // // TODO: ViewFactory.
-    // }
+    for (String key : resultData.keySet()) {
+      List<Long> rowIds = DataUtils.parseIdList(resultData.get(key));
+
+      if (BeeUtils.isEmpty(rowIds)) {
+        continue;
+      }
+
+      if (BeeUtils.isSuffix(key, TaskConstants.FORM_TASK)) {
+        CustomDiv div = new CustomDiv(STYLE_PROPERTY_CAPTION);
+        div.setText(Localized.getMessages().crmCreatedNewTasks(rowIds.size()));
+        resultProperties.add(div);
+      }
+
+      for (Long id : rowIds) {
+        if (!DataUtils.isId(id)) {
+          continue;
+        }
+
+        InternalLink link = new InternalLink(BeeUtils.toString(id)
+            + BeeConst.DEFAULT_ROW_SEPARATOR);
+        link.addStyleName(STYLE_PROPERTY_DATA);
+        link.addClickHandler(getTaskLinkClickHandler(id));
+
+        resultProperties.add(link);
+      }
+    }
   }
 }
