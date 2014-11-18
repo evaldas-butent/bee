@@ -47,7 +47,8 @@ public class CompanyForm extends AbstractFormInterceptor {
   public void afterCreateWidget(String name, IdentifiableWidget widget,
       WidgetDescriptionCallback callback) {
 
-    if (widget instanceof ChildGrid && BeeUtils.same(name, GRID_COMPANY_BANK_ACCOUNTS)) {
+    if (widget instanceof ChildGrid && (BeeUtils.same(name, GRID_COMPANY_BANK_ACCOUNTS)
+        || BeeUtils.same(name, GRID_COMPANY_USERS))) {
       ChildGrid grid = (ChildGrid) widget;
 
       grid.setGridInterceptor(new AbstractGridInterceptor() {
@@ -70,7 +71,7 @@ public class CompanyForm extends AbstractFormInterceptor {
                 gridView.notifyWarning(Localized.getConstants().selectAtLeastOneRow());
                 return;
               } else {
-                setAsPrimaryAccount(selectedRow.getId());
+                setAsPrimary(selectedRow.getId());
               }
             }
           });
@@ -79,8 +80,8 @@ public class CompanyForm extends AbstractFormInterceptor {
         }
 
         @Override
-        public void afterInsertRow(IsRow accountsRow) {
-          setAsPrimaryAccount(accountsRow.getId(), true);
+        public void afterInsertRow(IsRow row) {
+          setAsPrimary(row.getId(), true);
         }
 
         @Override
@@ -88,8 +89,22 @@ public class CompanyForm extends AbstractFormInterceptor {
           return null;
         }
 
-        private void setAsPrimaryAccount(Long companyBankAccount) {
-          setAsPrimaryAccount(companyBankAccount, false);
+
+        private void setAsPrimary(Long gridRowId) {
+          setAsPrimary(gridRowId, false);
+        }
+
+        private void setAsPrimary(Long gridRowId, boolean checkDefault) {
+          GridView gridView = getGridPresenter().getGridView();
+          String gridName = gridView.getGridName();
+
+          if (BeeUtils.same(gridName, GRID_COMPANY_BANK_ACCOUNTS)) {
+            setAsPrimaryAccount(gridRowId, checkDefault);
+          }
+
+          if (BeeUtils.same(gridName, GRID_COMPANY_USERS)) {
+            setAsPrimaryCompanyUser(gridRowId, checkDefault);
+          }
         }
 
         private void setAsPrimaryAccount(final Long companyBankAccount, boolean checkDefault) {
@@ -111,6 +126,30 @@ public class CompanyForm extends AbstractFormInterceptor {
                   public void onSuccess(Integer result) {
                     companyRow.setValue(defBankAccFieldId, companyBankAccount);
                     companyRowOld.setValue(defBankAccFieldId, companyBankAccount);
+                    DataChangeEvent.fireRefresh(BeeKeeper.getBus(), getGridView().getViewName());
+                  }
+                });
+          }
+        }
+
+        private void setAsPrimaryCompanyUser(final Long companyUser, boolean checkDefault) {
+          final IsRow companyRow = getFormView().getActiveRow();
+          final IsRow companyRowOld = getFormView().getOldRow();
+          final int idxDefComanyUser = Data.getColumnIndex(VIEW_COMPANIES,
+              COL_DEFAULT_COMPANY_USER);
+
+          boolean hasDefault =
+              DataUtils.isId(companyRow.getLong(idxDefComanyUser));
+          boolean canChange = !hasDefault || !checkDefault;
+
+          if (canChange) {
+            Queries.update(getFormView().getViewName(), Filter.compareId(companyRow.getId()),
+                COL_DEFAULT_COMPANY_USER, Value.getValue(companyUser), new IntCallback() {
+
+                  @Override
+                  public void onSuccess(Integer result) {
+                    companyRow.setValue(idxDefComanyUser, companyUser);
+                    companyRowOld.setValue(idxDefComanyUser, companyUser);
                     DataChangeEvent.fireRefresh(BeeKeeper.getBus(), getGridView().getViewName());
                   }
                 });
