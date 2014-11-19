@@ -28,6 +28,7 @@ import com.butent.bee.client.modules.trade.TotalRenderer;
 import com.butent.bee.client.modules.trade.acts.TradeActItemImporter.ImportEntry;
 import com.butent.bee.client.presenter.GridPresenter;
 import com.butent.bee.client.render.AbstractCellRenderer;
+import com.butent.bee.client.render.HasCellRenderer;
 import com.butent.bee.client.utils.FileUtils;
 import com.butent.bee.client.utils.NewFileInfo;
 import com.butent.bee.client.view.ViewHelper;
@@ -45,9 +46,11 @@ import com.butent.bee.shared.communication.ResponseObject;
 import com.butent.bee.shared.data.BeeColumn;
 import com.butent.bee.shared.data.BeeRow;
 import com.butent.bee.shared.data.BeeRowSet;
+import com.butent.bee.shared.data.CellSource;
 import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.IsColumn;
 import com.butent.bee.shared.data.IsRow;
+import com.butent.bee.shared.data.RowFunction;
 import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.io.FileInfo;
 import com.butent.bee.shared.modules.classifiers.ItemPrice;
@@ -96,9 +99,30 @@ public class TradeActItemsGrid extends AbstractGridInterceptor implements
       EditableColumn editableColumn) {
 
     if (column instanceof CalculatedColumn) {
-      AbstractCellRenderer renderer = ((CalculatedColumn) column).getRenderer();
-      if (renderer instanceof TotalRenderer) {
-        configureRenderer(dataColumns, (TotalRenderer) renderer);
+      if ("ItemPrices".equals(columnName)) {
+        int index = DataUtils.getColumnIndex(COL_TRADE_ITEM_PRICE, dataColumns);
+        CellSource cellSource = CellSource.forColumn(dataColumns.get(index), index);
+
+        RowFunction<Long> currencyFunction = new RowFunction<Long>() {
+          @Override
+          public Long apply(IsRow input) {
+            if (getGridPresenter() == null) {
+              return null;
+            } else {
+              return ViewHelper.getParentValueLong(getGridPresenter().getMainView().asWidget(),
+                  VIEW_TRADE_ACTS, COL_TA_CURRENCY);
+            }
+          }
+        };
+
+        ItemPricePicker ipp = new ItemPricePicker(cellSource, dataColumns, currencyFunction);
+        ((HasCellRenderer) column).setRenderer(ipp);
+
+      } else {
+        AbstractCellRenderer renderer = ((CalculatedColumn) column).getRenderer();
+        if (renderer instanceof TotalRenderer) {
+          configureRenderer(dataColumns, (TotalRenderer) renderer);
+        }
       }
     }
 

@@ -19,8 +19,8 @@
         <Label for="Template" visible="true" />
         <InputText source="Template" visible="true" style="&inpw;" />
 
-        <Label for="ActName" />
-        <InputText source="ActName" visible="true" style="&inpw;" />
+        <Label for="Name" />
+        <DataSelector source="Name" newRowEnabled="false" visible="true" style="&inpw;" />
       </row>
 
       <row>

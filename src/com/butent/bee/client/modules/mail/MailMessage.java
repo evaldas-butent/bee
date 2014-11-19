@@ -6,14 +6,17 @@ import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Multimap;
 import com.google.common.collect.Sets;
+import com.google.gwt.core.client.GWT;
 import com.google.gwt.core.client.Scheduler.ScheduledCommand;
 import com.google.gwt.dom.client.Document;
 import com.google.gwt.dom.client.Element;
 import com.google.gwt.dom.client.Style.WhiteSpace;
+import com.google.gwt.dom.client.TableRowElement;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.event.dom.client.HasClickHandlers;
 import com.google.gwt.user.client.ui.FlowPanel;
+import com.google.gwt.user.client.ui.HasWidgets;
 import com.google.gwt.user.client.ui.Widget;
 
 import static com.butent.bee.shared.modules.classifiers.ClassifierConstants.*;
@@ -31,10 +34,15 @@ import com.butent.bee.client.data.Queries;
 import com.butent.bee.client.data.RowFactory;
 import com.butent.bee.client.dialog.Popup;
 import com.butent.bee.client.dialog.Popup.OutsideClick;
+import com.butent.bee.client.dom.DomUtils;
+import com.butent.bee.client.event.EventUtils;
 import com.butent.bee.client.event.logical.SelectorEvent;
 import com.butent.bee.client.grid.HtmlTable;
+import com.butent.bee.client.output.Printer;
+import com.butent.bee.client.presenter.Presenter;
 import com.butent.bee.client.ui.FormFactory.WidgetDescriptionCallback;
 import com.butent.bee.client.ui.IdentifiableWidget;
+import com.butent.bee.client.ui.UiHelper;
 import com.butent.bee.client.utils.BrowsingContext;
 import com.butent.bee.client.utils.FileUtils;
 import com.butent.bee.client.view.form.FormView;
@@ -62,10 +70,12 @@ import com.butent.bee.shared.i18n.LocalizableConstants;
 import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.io.FileInfo;
 import com.butent.bee.shared.modules.administration.AdministrationConstants;
+import com.butent.bee.shared.modules.documents.DocumentConstants;
 import com.butent.bee.shared.modules.mail.AccountInfo;
 import com.butent.bee.shared.modules.mail.MailConstants.AddressType;
 import com.butent.bee.shared.modules.mail.MailConstants.SystemFolder;
 import com.butent.bee.shared.modules.transport.TransportConstants;
+import com.butent.bee.shared.ui.Action;
 import com.butent.bee.shared.ui.Orientation;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.Codec;
@@ -92,6 +102,7 @@ public class MailMessage extends AbstractFormInterceptor {
           case TBL_REQUESTS:
           case TBL_TASKS:
           case TransportConstants.TBL_ASSESSMENTS:
+          case DocumentConstants.TBL_DOCUMENTS:
             event.consume();
             final String formName = event.getNewRowFormName();
             final DataSelector selector = event.getSelector();
@@ -194,6 +205,11 @@ public class MailMessage extends AbstractFormInterceptor {
                     case TransportConstants.TBL_ASSESSMENTS:
                       Data.setValue(viewName, row, "OrderNotes", response.getResponseAsString());
                       break;
+
+                    case DocumentConstants.TBL_DOCUMENTS:
+                      Data.setValue(viewName, row, DocumentConstants.COL_DOCUMENT_NAME,
+                          getSubject());
+                      break;
                   }
                 }
                 executor.execute();
@@ -209,6 +225,40 @@ public class MailMessage extends AbstractFormInterceptor {
     REPLY, REPLY_ALL, FORWARD
   }
 
+  private final ClickHandler attachmentsHandler = new ClickHandler() {
+    @Override
+    public void onClick(ClickEvent event) {
+      event.stopPropagation();
+
+      if (attachments.size() == 1) {
+        FileInfo file = attachments.get(0);
+        BrowsingContext.open(FileUtils.getUrl(file.getName(), file.getId()));
+      } else {
+        final Popup popup = new Popup(OutsideClick.CLOSE,
+            BeeConst.CSS_CLASS_PREFIX + "mail-AttachmentsPopup");
+        TabBar bar = new TabBar(BeeConst.CSS_CLASS_PREFIX + "mail-AttachmentsMenu-",
+            Orientation.VERTICAL);
+
+        for (FileInfo file : attachments) {
+          Link link = new Link(BeeUtils.joinWords(file.getName(),
+              BeeUtils.parenthesize(FileUtils.sizeToText(file.getSize()))),
+              FileUtils.getUrl(file.getName(), file.getId()));
+
+          link.addClickHandler(new ClickHandler() {
+            @Override
+            public void onClick(ClickEvent ev) {
+              popup.close();
+            }
+          });
+          bar.addItem(link);
+        }
+        popup.setWidget(bar);
+        popup.setHideOnEscape(true);
+        popup.showRelativeTo(widgets.get(ATTACHMENTS).asWidget().getElement());
+      }
+    }
+  };
+
   private static final String WAITING = "Waiting";
   private static final String CONTAINER = "Container";
   private static final String RECIPIENTS = "Recipients";
@@ -220,6 +270,7 @@ public class MailMessage extends AbstractFormInterceptor {
 
   private final MailPanel mailPanel;
   private Long draftId;
+  private Long rawId;
   private Pair<String, String> sender;
   private final Multimap<String, Pair<String, String>> recipients = HashMultimap.create();
   private final List<FileInfo> attachments = new ArrayList<>();
@@ -257,13 +308,49 @@ public class MailMessage extends AbstractFormInterceptor {
 
       if (mode != null) {
         initCreateAction(clickWidget, mode);
-      }
-      if (BeeUtils.same(name, RECIPIENTS)) {
+
+      } else if (BeeUtils.same(name, "Menu")) {
         clickWidget.addClickHandler(new ClickHandler() {
           @Override
           public void onClick(ClickEvent event) {
             event.stopPropagation();
-            final Popup popup =
+            Popup popup = new Popup(OutsideClick.CLOSE,
+                BeeConst.CSS_CLASS_PREFIX + "mail-MenuPopup");
+            final HtmlTable ft = new HtmlTable(BeeConst.CSS_CLASS_PREFIX + "mail-MenuTable");
+
+            int r = 0;
+
+            ft.setWidget(r, 0, new FaLabel(FontAwesome.FILE_TEXT_O));
+            ft.setText(r, 1, Localized.getConstants().mailShowOriginal());
+            DomUtils.setDataIndex(ft.getRow(r), r++);
+
+            ft.addClickHandler(new ClickHandler() {
+              @Override
+              public void onClick(ClickEvent ev) {
+                Element targetElement = EventUtils.getEventTargetElement(ev);
+                TableRowElement rowElement = DomUtils.getParentRow(targetElement, true);
+                int index = DomUtils.getDataIndexInt(rowElement);
+                UiHelper.closeDialog(ft);
+
+                switch (index) {
+                  case 0:
+                    BrowsingContext.open(GWT.getHostPageBaseURL() + FileUtils.OPEN_URL + "/"
+                        + rawId);
+                    break;
+                }
+              }
+            });
+            popup.setWidget(ft);
+            popup.setHideOnEscape(true);
+            popup.showRelativeTo(widget.getElement());
+          }
+        });
+      } else if (BeeUtils.same(name, RECIPIENTS)) {
+        clickWidget.addClickHandler(new ClickHandler() {
+          @Override
+          public void onClick(ClickEvent event) {
+            event.stopPropagation();
+            Popup popup =
                 new Popup(OutsideClick.CLOSE, BeeConst.CSS_CLASS_PREFIX + "mail-RecipientsPopup");
             HtmlTable ft = new HtmlTable();
             ft.setBorderSpacing(5);
@@ -303,42 +390,40 @@ public class MailMessage extends AbstractFormInterceptor {
               }
             }
             popup.setWidget(ft);
-            popup.showRelativeTo(widget.asWidget().getElement());
+            popup.setHideOnEscape(true);
+            popup.showOnTop(widget.asWidget().getElement());
           }
         });
-      } else if (BeeUtils.same(name, ATTACHMENTS)) {
+      } else if (BeeUtils.same(name, SENDER)) {
         clickWidget.addClickHandler(new ClickHandler() {
           @Override
           public void onClick(ClickEvent event) {
             event.stopPropagation();
+            Popup popup =
+                new Popup(OutsideClick.CLOSE, BeeConst.CSS_CLASS_PREFIX + "mail-RecipientsPopup");
 
-            if (attachments.size() == 1) {
-              FileInfo file = attachments.get(0);
-              BrowsingContext.open(FileUtils.getUrl(file.getName(), file.getId()));
-            } else {
-              final Popup popup =
-                  new Popup(OutsideClick.CLOSE, BeeConst.CSS_CLASS_PREFIX
-                      + "mail-AttachmentsPopup");
-              TabBar bar =
-                  new TabBar(BeeConst.CSS_CLASS_PREFIX + "mail-AttachmentsMenu-",
-                      Orientation.VERTICAL);
+            HtmlTable ft = new HtmlTable();
+            ft.setBorderSpacing(5);
 
-              for (FileInfo file : attachments) {
-                Link link = new Link(BeeUtils.joinWords(file.getName(),
-                    BeeUtils.parenthesize(FileUtils.sizeToText(file.getSize()))),
-                    FileUtils.getUrl(file.getName(), file.getId()));
+            FlowPanel adr = new FlowPanel();
+            adr.setStyleName(BeeConst.CSS_CLASS_PREFIX + "mail-Recipient");
 
-                link.addClickHandler(new ClickHandler() {
-                  @Override
-                  public void onClick(ClickEvent ev) {
-                    popup.close();
-                  }
-                });
-                bar.addItem(link);
-              }
-              popup.setWidget(bar);
-              popup.showRelativeTo(widget.asWidget().getElement());
+            String email = sender.getA();
+            String label = sender.getB();
+
+            if (!BeeUtils.isEmpty(label)) {
+              InlineLabel nm = new InlineLabel(label);
+              nm.setStyleName(BeeConst.CSS_CLASS_PREFIX + "mail-RecipientLabel");
+              adr.add(nm);
             }
+            InlineLabel nm = new InlineLabel(email);
+            nm.setStyleName(BeeConst.CSS_CLASS_PREFIX + "mail-RecipientEmail");
+            adr.add(nm);
+
+            ft.setWidget(0, 0, adr);
+            popup.setWidget(ft);
+            popup.setHideOnEscape(true);
+            popup.showOnTop(widget.asWidget().getElement());
           }
         });
       }
@@ -347,6 +432,15 @@ public class MailMessage extends AbstractFormInterceptor {
       this.relations = (Relations) widget;
       relations.setSelectorHandler(new RelationsHandler());
     }
+  }
+
+  @Override
+  public boolean beforeAction(Action action, Presenter presenter) {
+    if (action == Action.PRINT) {
+      Printer.print(widgets.get(CONTAINER).getElement().getString(), null);
+      return false;
+    }
+    return super.beforeAction(action, presenter);
   }
 
   @Override
@@ -362,6 +456,7 @@ public class MailMessage extends AbstractFormInterceptor {
     }
     sender = Pair.of(null, null);
     draftId = null;
+    rawId = null;
     recipients.clear();
     attachments.clear();
 
@@ -421,15 +516,13 @@ public class MailMessage extends AbstractFormInterceptor {
           relations.requery(row.getLong(COL_MESSAGE));
         }
         draftId = row.getLong(SystemFolder.Drafts.name());
+        rawId = row.getLong(COL_RAW_CONTENT);
         String lbl = row.getValue(COL_EMAIL_LABEL);
         String mail = row.getValue(COL_EMAIL_ADDRESS);
 
         sender = Pair.of(mail, lbl);
         setWidgetText(SENDER, BeeUtils.notEmpty(lbl, mail));
 
-        if (widgets.get(SENDER) != null) {
-          widgets.get(SENDER).setTitle(BeeUtils.isEmpty(lbl) ? null : mail);
-        }
         ((DateTimeLabel) widgets.get(DATE)).setValue(row.getDateTime(COL_DATE));
         setWidgetText(SUBJECT, row.getValue(COL_SUBJECT));
 
@@ -459,22 +552,26 @@ public class MailMessage extends AbstractFormInterceptor {
           size += BeeUtils.unbox(fileSize);
         }
         if (cnt > 0) {
-          HtmlTable table = new HtmlTable();
-          int c = 0;
-
-          if (cnt > 1) {
-            table.setText(0, c++, BeeUtils.toString(cnt));
-          } else {
-            table.setText(0, c + 1, attachments.get(0).getName());
-          }
-          table.setWidget(0, c, new FaLabel(FontAwesome.PAPERCLIP));
-          table.setText(0, table.getCellCount(0),
-              BeeUtils.parenthesize(FileUtils.sizeToText(size)));
-
           Widget widget = widgets.get(ATTACHMENTS);
 
-          if (widget != null) {
-            widget.getElement().setInnerHTML(table.getElement().getString());
+          if (widget != null && widget instanceof HasWidgets) {
+            ((HasWidgets) widget).clear();
+
+            HtmlTable table = new HtmlTable();
+
+            if (cnt > 1) {
+              table.setText(0, 0, BeeUtils.toString(cnt));
+              table.setWidget(0, 1, new FaLabel(FontAwesome.PAPERCLIP));
+              table.setText(0, 2, BeeUtils.parenthesize(FileUtils.sizeToText(size)));
+              table.addClickHandler(attachmentsHandler);
+            } else {
+              FileInfo file = attachments.get(0);
+              table.setWidget(0, 0, new FaLabel(FontAwesome.PAPERCLIP));
+              table.setWidget(0, 1, new Link(BeeUtils.joinWords(file.getName(),
+                  BeeUtils.parenthesize(FileUtils.sizeToText(file.getSize()))),
+                  FileUtils.getUrl(file.getName(), file.getId())));
+            }
+            ((HasWidgets) widget).add(table);
           }
         }
         String content = null;
@@ -496,6 +593,16 @@ public class MailMessage extends AbstractFormInterceptor {
         setLoading(false);
       }
     });
+  }
+
+  public void setLoading(boolean isLoading) {
+    for (String name : new String[] {WAITING, CONTAINER}) {
+      Widget widget = widgets.get(name);
+
+      if (widget != null) {
+        widget.setVisible(name.equals(WAITING) ? isLoading : !isLoading);
+      }
+    }
   }
 
   private Set<String> getBcc() {
@@ -649,16 +756,6 @@ public class MailMessage extends AbstractFormInterceptor {
         }
       }
     });
-  }
-
-  private void setLoading(boolean isLoading) {
-    for (String name : new String[] {WAITING, CONTAINER}) {
-      Widget widget = widgets.get(name);
-
-      if (widget != null) {
-        widget.setVisible(name.equals(WAITING) ? isLoading : !isLoading);
-      }
-    }
   }
 
   private void setWidgetText(String name, String text) {

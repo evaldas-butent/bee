@@ -40,6 +40,8 @@ public interface LocalizableMailConstants {
 
   String mailFrom();
 
+  String mailMarkAsUnread();
+
   String mailMessageBodyIsEmpty();
 
   String mailMessageWasNotSent();
@@ -79,6 +81,8 @@ public interface LocalizableMailConstants {
   String mailMessageIsSavedInDraft();
 
   String mailMessageSent();
+
+  String mailShowOriginal();
 
   String mailSpecifyRecipient();
 

@@ -12,22 +12,22 @@
       horizontalAlignment="right" />
     <DataColumn name="Parent" visible="false" />
 
-    <DataColumn name="ActName" />
+    <RelColumn name="Name" renderColumns="ActName" />
     <DataColumn name="Kind" visible="false" />
 
     <DataColumn name="Date" />
     <DataColumn name="Until" visible="false" />
 
-    <RelColumn name="Series" />
+    <RelColumn name="Series" renderColumns="SeriesName" />
     <DataColumn name="Number" />
 
     <RelColumn name="Operation" renderColumns="OperationName" visible="false" />
-    <DataColumn name="WarehouseFrom" visible="false" />
-    <DataColumn name="WarehouseTo" visible="false" />
+    <DataColumn name="WarehouseFromCode" label="=trdWarehouseFrom" visible="false" />
+    <DataColumn name="WarehouseToCode" label="=trdWarehouseTo" visible="false" />
 
     <RelColumn name="Status" renderColumns="StatusName" visible="false" />
 
-    <RelColumn name="Company" />
+    <RelColumn name="Company" renderColumns="CompanyName" />
     <RelColumn name="Object" renderColumns="ObjectName" />
 
     <RelColumn name="Manager" renderColumns="ManagerFirstName ManagerLastName"
