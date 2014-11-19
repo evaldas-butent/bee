@@ -7,7 +7,7 @@
     <IdColumn name="Id" />
     <DataColumn name="Parent" />
 
-    <DataColumn name="ActName" visible="true" />
+    <RelColumn name="Name" visible="true" />
     <DataColumn name="Kind" visible="true" />
 
     <DataColumn name="Date" visible="true" />

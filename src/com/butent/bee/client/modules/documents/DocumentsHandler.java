@@ -55,6 +55,7 @@ import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogUtils;
 import com.butent.bee.shared.modules.administration.AdministrationConstants;
 import com.butent.bee.shared.rights.Module;
+import com.butent.bee.shared.time.DateTime;
 import com.butent.bee.shared.time.TimeUtils;
 import com.butent.bee.shared.ui.Action;
 import com.butent.bee.shared.ui.ColumnDescription;
@@ -130,16 +131,13 @@ public final class DocumentsHandler {
             public void onSuccess(BeeRow result) {
               event.getCallback().onSuccess(result);
               sendFiles(result.getId(), getCollector().getFiles(), null);
+              getCollector().clear();
             }
           });
     }
 
     @Override
     public void onStartNewRow(final FormView form, IsRow oldRow, final IsRow newRow) {
-      if (getCollector() != null) {
-        getCollector().clear();
-      }
-
       if (oldRow != null) {
         copyValues(form, oldRow, newRow,
             Lists.newArrayList(COL_DOCUMENT_CATEGORY, ALS_CATEGORY_NAME,
@@ -413,7 +411,8 @@ public final class DocumentsHandler {
           Data.setValue(viewName, row, COL_DOCUMENT, docId);
           Data.setValue(viewName, row, AdministrationConstants.COL_FILE, result);
 
-          Data.setValue(viewName, row, COL_FILE_DATE, fileInfo.getFileDate());
+          Data.setValue(viewName, row, COL_FILE_DATE,
+              fileInfo.getFileDate() == null ? new DateTime() : fileInfo.getFileDate());
           Data.setValue(viewName, row, COL_FILE_VERSION, fileInfo.getFileVersion());
 
           Data.setValue(viewName, row, COL_FILE_CAPTION,

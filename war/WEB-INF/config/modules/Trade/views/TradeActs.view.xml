@@ -6,7 +6,10 @@
   editForm="TradeAct" newRowForm="TradeAct"
   >
   <Columns>
-    <SimpleColumn name="ActName" />
+    <SimpleColumn name="Name" />
+    <SimpleJoin joinType="LEFT" name="Name">
+      <SimpleColumn name="ActName" />
+    </SimpleJoin>
 
     <SimpleColumn name="Date" />
     <SimpleColumn name="Until" />

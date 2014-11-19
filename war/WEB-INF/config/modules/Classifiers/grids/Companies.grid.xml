@@ -37,6 +37,7 @@
 
 		<DataColumn name="FinancialStateName" visible="false"
 			label="=financialState" caption="=financialState" />
+		<RelColumn name="DefaultCompanyUser" visible="false" label="=companyResponsibleUser" />
 	</g:columns>
 	<g:rowStyle>
 		<ui:inline>="background-color: " + row.Background + "; color: " +

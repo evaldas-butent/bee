@@ -3,6 +3,7 @@ package com.butent.bee.client.render;
 import com.google.gwt.text.shared.AbstractRenderer;
 
 import com.butent.bee.client.ui.UiHelper;
+import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.css.values.TextAlign;
 import com.butent.bee.shared.data.CellSource;
 import com.butent.bee.shared.data.IsRow;
@@ -86,6 +87,14 @@ public abstract class AbstractCellRenderer extends AbstractRenderer<IsRow> imple
       return null;
     } else {
       return cellSource.getLong(row);
+    }
+  }
+
+  protected int getScale() {
+    if (cellSource == null) {
+      return BeeConst.UNDEF;
+    } else {
+      return cellSource.getScale();
     }
   }
 

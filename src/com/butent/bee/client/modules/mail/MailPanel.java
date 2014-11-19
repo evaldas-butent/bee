@@ -111,9 +111,11 @@ public class MailPanel extends AbstractFormInterceptor {
 
   private class ContentHandler implements ActiveRowChangeEvent.Handler {
     private final int sender;
+    private final int flags;
 
-    public ContentHandler(int sender) {
+    public ContentHandler(int sender, int flags) {
       this.sender = sender;
+      this.flags = flags;
     }
 
     @Override
@@ -122,8 +124,19 @@ public class MailPanel extends AbstractFormInterceptor {
       showMessage(currentMessage != null);
 
       if (currentMessage != null) {
-        message.requery(COL_PLACE, currentMessage.getId(),
-            Objects.equals(currentMessage.getLong(sender), getCurrentAccount().getAddressId()));
+        if (!MessageFlag.SEEN.isSet(currentMessage.getInteger(flags))) {
+          message.setLoading(true);
+
+          flagMessage(currentMessage, flags, MessageFlag.SEEN, new ScheduledCommand() {
+            @Override
+            public void execute() {
+              getMessagesPresenter().getGridView().getGrid().refresh();
+            }
+          });
+        } else {
+          message.requery(COL_PLACE, currentMessage.getId(),
+              Objects.equals(currentMessage.getLong(sender), getCurrentAccount().getAddressId()));
+        }
       }
     }
 
@@ -284,7 +297,8 @@ public class MailPanel extends AbstractFormInterceptor {
     @Override
     public void afterCreatePresenter(GridPresenter presenter) {
       GridView grid = presenter.getGridView();
-      grid.getGrid().addActiveRowChangeHandler(new ContentHandler(grid.getDataIndex(COL_SENDER)));
+      grid.getGrid().addActiveRowChangeHandler(new ContentHandler(grid.getDataIndex(COL_SENDER),
+          grid.getDataIndex(COL_FLAGS)));
       activateAccount(getCurrentAccount());
     }
 
@@ -434,6 +448,10 @@ public class MailPanel extends AbstractFormInterceptor {
         removeMessages();
         break;
 
+      case PRINT:
+        message.beforeAction(action, presenter);
+        break;
+
       default:
         return true;
     }
@@ -463,7 +481,7 @@ public class MailPanel extends AbstractFormInterceptor {
         && BeeKeeper.getUser().canCreateData(TBL_RULES)) {
       FaLabel accountSettings = new FaLabel(FontAwesome.MAGIC);
 
-      accountSettings.setTitle(Localized.getConstants().mailAccount());
+      accountSettings.setTitle(Localized.getConstants().mailRule());
       accountSettings.addClickHandler(new ClickHandler() {
         @Override
         public void onClick(ClickEvent arg0) {
@@ -498,6 +516,26 @@ public class MailPanel extends AbstractFormInterceptor {
       }
     });
     header.addCommandItem(refreshWidget);
+
+    FaLabel unseenWidget = new FaLabel(FontAwesome.EYE_SLASH);
+
+    unseenWidget.setTitle(Localized.getConstants().mailMarkAsUnread());
+    unseenWidget.addClickHandler(new ClickHandler() {
+      @Override
+      public void onClick(ClickEvent arg0) {
+        if (currentMessage != null) {
+          flagMessage(currentMessage,
+              DataUtils.getColumnIndex(COL_FLAGS, getMessagesPresenter().getDataColumns()),
+              MessageFlag.SEEN, new ScheduledCommand() {
+                @Override
+                public void execute() {
+                  refreshMessages();
+                }
+              });
+        }
+      }
+    });
+    header.addCommandItem(unseenWidget);
 
     message.setFormView(getFormView());
   }
@@ -596,7 +634,7 @@ public class MailPanel extends AbstractFormInterceptor {
   }
 
   void refreshMessages() {
-    GridPresenter presenter = messages.getGridPresenter();
+    GridPresenter presenter = getMessagesPresenter();
 
     if (presenter != null) {
       Long folderId = getCurrentFolderId();
@@ -722,6 +760,10 @@ public class MailPanel extends AbstractFormInterceptor {
     });
   }
 
+  private GridPresenter getMessagesPresenter() {
+    return messages.getGridPresenter();
+  }
+
   private void initAccounts(final ListBox accountsWidget) {
     accountsWidget.clear();
 
@@ -756,7 +798,7 @@ public class MailPanel extends AbstractFormInterceptor {
       return;
     }
     final List<String> options = Lists.newArrayList(Localized.getConstants().mailCurrentMessage());
-    final Collection<RowInfo> rows = messages.getGridPresenter().getGridView()
+    final Collection<RowInfo> rows = getMessagesPresenter().getGridView()
         .getSelectedRows(SelectedRows.ALL);
 
     if (!BeeUtils.isEmpty(rows)) {

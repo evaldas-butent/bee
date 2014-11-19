@@ -38,6 +38,7 @@
     <Relation name="InvoiceTransferType" relation="InvoiceTransferTypes" label="=invoiceTransferType" />
     
     <Relation name="DefaultBankAccount" relation="CompanyBankAccounts" unique="true" cascade="SET_NULL" label="=defaultBankAccount" />
+    <Relation name="DefaultCompanyUser" relation="CompanyUsers" unique="true" cascade="SET_NULL" label="=defaultCompanyUser" editable="true" />
     <Numeric name="DaysAsBuyer" precision="3" label="=daysAsBuyer" />
     <Numeric name="DaysAsSupplier" precision="3" label="=daysAsSupplier" />
     <Numeric name="PercentInterest" precision="6" scale="2" label="=percentInterest" />

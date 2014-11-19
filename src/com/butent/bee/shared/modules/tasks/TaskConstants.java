@@ -285,9 +285,15 @@ public final class TaskConstants {
   public static final String COL_APPROVED = "Approved";
 
   public static final String COL_REQUEST = "Request";
+  public static final String COL_REQUEST_CONTACTS = "Contacts";
+  public static final String COL_REQUEST_CONTENT = "Content";
+  public static final String COL_REQUEST_CUSTOMER = "Customer";
+  public static final String COL_REQUEST_CUSTOMER_NAME = "CustomerName";
+  public static final String COL_REQUEST_CUSTOMER_PERSON = "CustomerPerson";
   public static final String COL_REQUEST_DATE = "Date";
   public static final String COL_REQUEST_MANAGER = "Manager";
   public static final String COL_REQUEST_RESULT = "Result";
+  public static final String COL_REQUEST_RESULT_PROPERTIES = "ResultProperties";
   public static final String COL_REQUEST_FINISHED = "Finished";
 
   public static final String COL_RECURRING_TASK = "RecurringTask";
@@ -332,6 +338,9 @@ public final class TaskConstants {
 
   public static final String ALS_EXECUTOR_FIRST_NAME = "ExecutorFirstName";
   public static final String ALS_EXECUTOR_LAST_NAME = "ExecutorLastName";
+
+  public static final String ALS_OWNER_FIRST_NAME = "OwnerFirstName";
+  public static final String ALS_OWNER_LAST_NAME = "OwnerLastName";
 
   public static final String ALS_PUBLISHER_FIRST_NAME = "PublisherFirstName";
   public static final String ALS_PUBLISHER_LAST_NAME = "PublisherLastName";

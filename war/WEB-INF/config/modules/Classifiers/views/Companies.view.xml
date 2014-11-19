@@ -108,6 +108,17 @@
     </SimpleJoin>
     
     <SimpleColumn name="DefaultBankAccount" />
+    <SimpleColumn name="DefaultCompanyUser" />
+    <SimpleJoin name="DefaultCompanyUser" joinType="LEFT" >
+     <SimpleJoin name="User" joinType="LEFT">
+      <SimpleJoin name="CompanyPerson" joinType="LEFT">
+        <SimpleJoin name="Person" joinType="LEFT">
+          <SimpleColumn name="FirstName" alias="ResponsibleUserFirstName" />
+          <SimpleColumn name="LastName" alias="ResponsibleUserLastName" />
+        </SimpleJoin>
+      </SimpleJoin>
+     </SimpleJoin>
+    </SimpleJoin>
     <SimpleColumn name="DaysAsBuyer" />
     <SimpleColumn name="DaysAsSupplier" />
     <SimpleColumn name="PercentInterest" />

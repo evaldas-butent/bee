@@ -2231,9 +2231,22 @@ public class CellGrid extends Widget implements IdentifiableWidget, HasDataTable
   @Override
   public void setPageStart(int start, boolean fireScopeChange, boolean fireDataRequest,
       NavigationOrigin origin) {
+
     Assert.nonNegative(start);
     if (start == getPageStart()) {
       return;
+    }
+
+    if (origin != null && origin.shiftActiveRow()
+        && getActiveRowIndex() >= 0 && getActiveRowIndex() < getPageSize()) {
+
+      int idx = getActiveRowIndex() + getPageStart() - start;
+
+      if (idx < 0 || idx >= getPageSize()) {
+        deactivate();
+      } else {
+        setActiveRowIndex(idx);
+      }
     }
 
     this.pageStart = start;

@@ -141,7 +141,11 @@
       <page for="CompanyActList" module="Calendar">
       	<text>=calListOfActions</text>
       	<ChildGrid name="CompanyActList" relColumn="Company" />
-      </page>  
+      </page>
+      <page for="Tasks">
+        <text>=crmTasks</text>
+        <ChildGrid name="Tasks" relColumn="Company" />
+      </page>
     </TabbedPages>
 
   </FlowPanel>

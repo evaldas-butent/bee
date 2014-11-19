@@ -180,6 +180,9 @@ class TradeActSelectorHandler implements SelectorEvent.Handler {
         } else if (COL_TA_TEMPLATE_NAME.equals(colName)) {
           upd = false;
 
+        } else if (COL_TA_NAME.equals(colName) || COL_TRADE_ACT_TEMPLATE.equals(colName)) {
+          upd = isTemplatable(actRow, templRow, COL_TA_NAME);
+
         } else if (COL_TA_UNTIL.equals(colName)) {
           upd = actKind != null && actKind.enableServices()
               && !templRow.isNull(i) && targetRow.isNull(targetIndex)
@@ -346,7 +349,7 @@ class TradeActSelectorHandler implements SelectorEvent.Handler {
     final List<IsRow> actItems = new ArrayList<>();
     final List<IsRow> actServices = new ArrayList<>();
 
-    GridView itemGrid = ViewHelper.getChildGrid(actForm, GRID_TRADE_ACT_ITEMS);
+    final GridView itemGrid = ViewHelper.getChildGrid(actForm, GRID_TRADE_ACT_ITEMS);
 
     if (itemGrid != null && !itemGrid.isEmpty()) {
       int index = itemGrid.getDataIndex(COL_TRADE_ITEM_PRICE);
@@ -378,6 +381,13 @@ class TradeActSelectorHandler implements SelectorEvent.Handler {
           Collections.singletonList(Localized.getMessages().exchangeFromTo(fromName, toName)),
           Localized.getConstants().actionExchange(), Localized.getConstants().actionCancel(),
           new ConfirmationCallback() {
+            @Override
+            public void onCancel() {
+              if (!actItems.isEmpty()) {
+                itemGrid.refresh(false, false);
+              }
+            }
+
             @Override
             public void onConfirm() {
               DateTime date = actForm.getDateTimeValue(COL_TA_DATE);

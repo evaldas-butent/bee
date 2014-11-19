@@ -83,6 +83,7 @@ public final class ClassifierConstants {
   public static final String GRID_COMPANIES = "Companies";
   public static final String GRID_COMPANY_BANK_ACCOUNTS = "CompanyBankAccounts";
   public static final String GRID_COMPANY_CONTACTS = "CompanyContacts";
+  public static final String GRID_COMPANY_USERS = "CompanyUsers";
   public static final String GRID_ITEMS = "Items";
   public static final String GRID_FINANCIAL_STATES = "FinancialStates";
 
@@ -173,6 +174,7 @@ public final class ClassifierConstants {
   public static final String COL_BRANCH_PRIMARY_WAREHOUSE = "PrimaryWarehouse";
 
   public static final String COL_DEFAULT_BANK_ACCOUNT = "DefaultBankAccount";
+  public static final String COL_DEFAULT_COMPANY_USER = "DefaultCompanyUser";
 
   public static final String COL_WAREHOUSE = "Warehouse";
   public static final String COL_WAREHOUSE_CODE = "Code";
