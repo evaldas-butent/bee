@@ -115,11 +115,13 @@ class DebtReportsGrid extends AbstractGridInterceptor implements ClickHandler {
       }
 
       if (BeeUtils.same(name, NAME_SEND) && widget instanceof Button) {
-        Button button = (Button) widget;
+        final Button button = (Button) widget;
+        button.setEnabled(true);
         button.addClickHandler(new ClickHandler() {
 
           @Override
           public void onClick(ClickEvent arg0) {
+            button.setEnabled(false);
             String subjectText =
                 getSubject() != null ? getSubject().getText() : BeeConst.STRING_EMPTY;
             String p1 =

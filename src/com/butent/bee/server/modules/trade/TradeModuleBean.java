@@ -35,8 +35,10 @@ import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.Service;
 import com.butent.bee.shared.communication.ResponseObject;
+import com.butent.bee.shared.css.CssUnit;
 import com.butent.bee.shared.css.values.BorderStyle;
 import com.butent.bee.shared.css.values.TextAlign;
+import com.butent.bee.shared.css.values.WordWrap;
 import com.butent.bee.shared.data.BeeColumn;
 import com.butent.bee.shared.data.BeeRow;
 import com.butent.bee.shared.data.BeeRowSet;
@@ -52,6 +54,8 @@ import com.butent.bee.shared.data.value.ValueType;
 import com.butent.bee.shared.exceptions.BeeException;
 import com.butent.bee.shared.exceptions.BeeRuntimeException;
 import com.butent.bee.shared.html.builder.Document;
+import com.butent.bee.shared.html.builder.elements.Caption;
+import com.butent.bee.shared.html.builder.elements.Pre;
 import com.butent.bee.shared.html.builder.elements.Table;
 import com.butent.bee.shared.html.builder.elements.Td;
 import com.butent.bee.shared.html.builder.elements.Th;
@@ -65,7 +69,6 @@ import com.butent.bee.shared.modules.transport.TransportConstants;
 import com.butent.bee.shared.rights.Module;
 import com.butent.bee.shared.rights.ModuleAndSub;
 import com.butent.bee.shared.rights.SubModule;
-import com.butent.bee.shared.time.DateTime;
 import com.butent.bee.shared.time.JustDate;
 import com.butent.bee.shared.time.TimeUtils;
 import com.butent.bee.shared.utils.ArrayUtils;
@@ -352,10 +355,15 @@ public class TradeModuleBean implements BeeModule {
           List<Long> companiesId = Lists.newArrayList();
 
           for (BeeRow gridRow : gridRowset) {
-            Long customerId = gridRow.getLong(gridRowset.getColumnIndex(COL_TRADE_CUSTOMER));
+            int idxCustomer =
+                DataUtils.getColumnIndex(COL_TRADE_CUSTOMER, gridRowset.getColumns(), false);
 
-            if (DataUtils.isId(customerId) && !companiesId.contains(customerId)) {
-              companiesId.add(customerId);
+            if (idxCustomer > -1) {
+              Long customerId = gridRow.getLong(idxCustomer);
+
+              if (DataUtils.isId(customerId) && !companiesId.contains(customerId)) {
+                companiesId.add(customerId);
+              }
             }
           }
 
@@ -387,15 +395,23 @@ public class TradeModuleBean implements BeeModule {
 
 
           for (BeeRow gridRow : gridRowset) {
+            int idxCostumer =
+                DataUtils.getColumnIndex(COL_TRADE_CUSTOMER, gridRowset.getColumns(), false);
+            int idxOverdueCnt = overdueResult.getColumnIndex(ALS_OVERDUE_COUNT);
+            int idxOverdueSum = overdueResult.getColumnIndex(ALS_OVERDUE_SUM);
+
+            if (idxCostumer < 0) {
+              continue;
+            }
             String[] overdueRow =
-                overdueData.get(gridRow.getLong(gridRowset.getColumnIndex(COL_TRADE_CUSTOMER)));
+                overdueData.get(gridRow.getLong(idxCostumer));
             Long oCount =
                 overdueRow != null
-                    ? BeeUtils.toLong(overdueRow[overdueResult.getColumnIndex(ALS_OVERDUE_COUNT)])
+                    ? BeeUtils.toLong(overdueRow[idxOverdueCnt])
                     : 0L;
             Long oSumDays =
                 overdueRow != null
-                    ? BeeUtils.toLong(overdueRow[overdueResult.getColumnIndex(ALS_OVERDUE_SUM)])
+                    ? BeeUtils.toLong(overdueRow[idxOverdueSum])
                     / 86400000L : 0L;
 
             String[] salesRow = salesCountData.get(gridRow.getLong(
@@ -548,6 +564,40 @@ public class TradeModuleBean implements BeeModule {
     return qs.getData(select);
   }
 
+  private static Integer getOverdueInDays(BeeRowSet rs, IsRow row) {
+    Integer overdue = null;
+
+    if (rs == null || row == null) {
+      return overdue;
+    }
+
+    int idxDate = rs.getColumnIndex(COL_TRADE_DATE);
+    int idxTerm = rs.getColumnIndex(COL_TRADE_TERM);
+
+    if (idxDate < 0) {
+      return overdue;
+    }
+
+    if (idxTerm < 0) {
+      idxTerm = idxDate;
+    }
+
+    int start = 0;
+    int end = (new JustDate()).getDays();
+
+    if (row.getDate(idxTerm) != null) {
+      start = row.getDate(idxTerm).getDays();
+    } else if (row.getDateTime(idxDate) != null) {
+      start = row.getDateTime(idxDate).getDate().getDays();
+    } else {
+      return overdue;
+    }
+
+    overdue = Integer.valueOf(end - start);
+
+    return overdue;
+  }
+
   private SimpleRowSet getSalesCount(List<Long> companyIds) {
     SqlSelect select = new SqlSelect().addFields(TBL_SALES, COL_TRADE_CUSTOMER);
     select.addCount(ALS_SALES_COUNT);
@@ -638,21 +688,28 @@ public class TradeModuleBean implements BeeModule {
       String p2, Long companyId) {
     Document doc = new Document();
     doc.getHead().append(meta().encodingDeclarationUtf8(), title().text(subject));
+    doc.getBody().setColor("black");
 
-    String first = BeeUtils.replace(p1, BeeConst.STRING_EOL, br().build());
-    first = BeeUtils.replace(first, BeeUtils.toString(BeeConst.CHAR_CR), br().build());
+    Pre pre = pre().text(p1);
+    pre.setWordWrap(WordWrap.BREAK_WORD);
+    pre.setFontFamily("sans-serif");
+    pre.setFontSize(11, CssUnit.PT);
+    String first = pre.build();
 
-    String last = BeeUtils.replace(p2, BeeConst.STRING_EOL, br().build());
-    last = BeeUtils.replace(last, BeeUtils.toString(BeeConst.CHAR_CR), br().build());
+    pre = pre().text(p2);
+    pre.setWordWrap(WordWrap.BREAK_WORD);
+    pre.setFontFamily("sans-serif");
+    pre.setFontSize(11, CssUnit.PT);
+    String last = pre.build();
 
     Filter filter = Filter.and(
         Filter.isEqual(COL_TRADE_CUSTOMER, Value.getValue(companyId)),
         Filter.compareWithValue(COL_TRADE_DEBT, Operator.GT, Value.getValue(0)));
 
-    BeeRowSet rs = qs.getViewData(VIEW_SALES, filter, null,
-        Lists.newArrayList(COL_TRADE_INVOICE_PREFIX, COL_TRADE_INVOICE_NO, COL_TRADE_DATE,
-            COL_TRADE_TERM, COL_TRADE_AMOUNT, ALS_CURRENCY_NAME, COL_TRADE_DEBT
-            , ALS_CUSTOMER_NAME));
+    BeeRowSet rs = qs.getViewData(VIEW_DEBTS, filter, null,
+        Lists.newArrayList(COL_TRADE_INVOICE_NO, COL_TRADE_DATE,
+            COL_TRADE_TERM, COL_TRADE_AMOUNT, COL_TRADE_DEBT, ALS_CURRENCY_NAME
+            , ALS_CUSTOMER_NAME, COL_TRADE_INVOICE_PREFIX));
 
     if (rs.isEmpty()) {
       return null;
@@ -670,22 +727,39 @@ public class TradeModuleBean implements BeeModule {
       }
     }
 
-    int ignoreLast = 1;
+    int ignoreLast = 2;
 
 
     Table table = table();
-    table.append(caption()
-        .text(rs.getRows().get(0).getString(rs.getColumnIndex(ALS_CUSTOMER_NAME))));
+    Caption caption = caption()
+        .text(rs.getRows().get(0).getString(rs.getColumnIndex(ALS_CUSTOMER_NAME)));
+
+    caption.setTextAlign(TextAlign.LEFT);
+    table.append(caption);
     Tr trHead = tr();
 
     for (int i = 0; i < rs.getNumberOfColumns() - ignoreLast; i++) {
       String label = Localized.maybeTranslate(rs.getColumnLabel(i), usr.getLocalizableDictionary());
+
+      if (BeeUtils.same(rs.getColumnId(i), COL_TRADE_INVOICE_NO)) {
+        label = usr.getLocalizableConstants().trdInvoice();
+      }
+
+      if (BeeUtils.same(rs.getColumnId(i), COL_TRADE_AMOUNT)) {
+        label = usr.getLocalizableConstants().trdAmount();
+      }
       Th th = th().text(label);
       th.setBorderWidth("1px");
       th.setBorderStyle(BorderStyle.SOLID);
       th.setBorderColor("black");
       trHead.append(th);
     }
+
+    Th th = th().text(usr.getLocalizableConstants().trdOverdueInDays());
+    th.setBorderWidth("1px");
+    th.setBorderStyle(BorderStyle.SOLID);
+    th.setBorderColor("black");
+    trHead.insert(rs.getColumnIndex(COL_TRADE_TERM) + 1, th);
 
     table.append(trHead);
 
@@ -709,35 +783,66 @@ public class TradeModuleBean implements BeeModule {
           Long x = row.getLong(i);
           if (x != null && maybeTime.contains(x)) {
             type = ValueType.DATE_TIME;
-            value = new DateTime(x).toCompactString();
+            value = new JustDate(x).toString();
+          }
+        }
+
+        if (type == ValueType.DATE_TIME) {
+          value = new JustDate(row.getLong(i)).toString();
+        }
+
+        if (BeeUtils.same(rs.getColumnId(i), COL_TRADE_INVOICE_NO)) {
+          type = ValueType.TEXT;
+
+          int idxInvoicePref = rs.getColumnIndex(COL_TRADE_INVOICE_PREFIX);
+
+          if (idxInvoicePref > -1
+              && !BeeUtils.isEmpty(row.getString(idxInvoicePref))) {
+            value = BeeUtils.joinWords(row.getString(idxInvoicePref),
+                row.getString(i));
           }
         }
 
         Td td = td();
         tr.append(td);
         td.text(value);
+        td.setPadding("0 5px 0 5px");
 
         if (ValueType.isNumeric(type) || ValueType.TEXT == type
             && CharMatcher.DIGIT.matchesAnyOf(value) && BeeUtils.isDouble(value)) {
-          td.setTextAlign(TextAlign.RIGHT);
+          if (!BeeUtils.same(rs.getColumnId(i), COL_TRADE_INVOICE_NO)) {
+            td.setTextAlign(TextAlign.RIGHT);
+          }
         }
 
       }
+
+      Integer overdue = getOverdueInDays(rs, row);
+      Td td = td();
+      tr.insert(rs.getColumnIndex(COL_TRADE_TERM) + 1, td);
+      td.text(overdue == null ? BeeConst.STRING_EMPTY : BeeUtils.toString(overdue));
+      td.setPadding("0 5px 0 5px");
+      td.setTextAlign(TextAlign.RIGHT);
+
       table.append(tr);
     }
 
     Tr footer = tr();
-    for (int i = 0; i < rs.getNumberOfColumns() - ignoreLast - 2; i++) {
+    for (int i = 0; i < rs.getNumberOfColumns() - ignoreLast - 3; i++) {
       footer.append(td());
     }
+    footer.append(td());
 
     footer.append(td().append(b().text(usr.getLocalizableConstants().total())));
     footer.append(td().text(BeeUtils.notEmpty(BeeUtils.toString(debt), BeeConst.STRING_EMPTY)));
     table.append(footer);
+    footer.append(td());
 
     table.setBorderWidth("1px;");
-    table.setBorderStyle(BorderStyle.SOLID);
+    table.setBorderStyle(BorderStyle.NONE);
     table.setBorderSpacing("0px;");
+    table.setFontFamily("sans-serif");
+    table.setFontSize(10, CssUnit.PT);
 
     doc.getBody().append(p().text(first));
     doc.getBody().append(table);

@@ -80,6 +80,8 @@ public interface LocalizableTradeConstants {
 
   String trdOverdue();
 
+  String trdOverdueInDays();
+
   String trdPrice();
 
   String trdQuantity();
