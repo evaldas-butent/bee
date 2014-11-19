@@ -378,13 +378,11 @@ final class CompanyActionForm extends AbstractFormInterceptor {
       int idxStatus = form.getDataIndex(CalendarConstants.COL_STATUS);
 
       if (idxStatus > -1) {
-        row.setValue(idxStatus, AppointmentStatus.TENTATIVE.ordinal());
 
-        // if (statusWidget != null) {
-        // statusWidget.setEnabled(true);
-        // }
-
-        form.refreshBySource(CalendarConstants.COL_STATUS);
+        if (row.getInteger(idxStatus) == AppointmentStatus.COMPLETED.ordinal()) {
+          row.setValue(idxStatus, AppointmentStatus.TENTATIVE.ordinal());
+          form.refreshBySource(CalendarConstants.COL_STATUS);
+        }
       }
 
       int idxActionResult = form.getDataIndex(CalendarConstants.COL_ACTION_RESULT);
