@@ -4606,14 +4606,14 @@ public class CellGrid extends Widget implements IdentifiableWidget, HasDataTable
     onActivateCell(true);
   }
 
-  private void setActiveRowIndex(int activeRowIndex, boolean fire) {
-    if (this.activeRowIndex == activeRowIndex) {
+  private void setActiveRowIndex(int index, boolean fire) {
+    if (this.activeRowIndex == index) {
       return;
     }
     onActivateCell(false);
     onActivateRow(false, false);
 
-    this.activeRowIndex = activeRowIndex;
+    this.activeRowIndex = index;
 
     onActivateRow(true, fire);
     onActivateCell(true);

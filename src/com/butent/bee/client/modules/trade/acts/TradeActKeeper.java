@@ -9,6 +9,7 @@ import static com.butent.bee.shared.modules.trade.TradeConstants.*;
 import static com.butent.bee.shared.modules.trade.acts.TradeActConstants.*;
 
 import com.butent.bee.client.BeeKeeper;
+import com.butent.bee.client.Global;
 import com.butent.bee.client.communication.ParameterList;
 import com.butent.bee.client.data.Data;
 import com.butent.bee.client.data.DataCache;
@@ -71,6 +72,9 @@ public final class TradeActKeeper {
 
   private static final DataCache cache = new DataCache();
   private static boolean cacheLoaded;
+
+  private static Long returnedActStatus;
+  private static boolean parametersLoaded;
 
   public static void register() {
     BeeKeeper.getBus().registerDataHandler(cache, false);
@@ -172,7 +176,7 @@ public final class TradeActKeeper {
 
     } else {
       List<String> viewNames = Lists.newArrayList(VIEW_TRADE_OPERATIONS, VIEW_TRADE_SERIES,
-          VIEW_SERIES_MANAGERS, VIEW_WAREHOUSES);
+          VIEW_SERIES_MANAGERS, VIEW_WAREHOUSES, VIEW_TRADE_STATUSES);
       final long start = System.currentTimeMillis();
 
       cache.getData(viewNames, new DataCache.MultiCallback() {
@@ -180,6 +184,24 @@ public final class TradeActKeeper {
         public void onSuccess(Integer result) {
           cacheLoaded = true;
           logger.debug("trade act cache loaded", result, TimeUtils.elapsedMillis(start));
+
+          command.execute();
+        }
+      });
+    }
+  }
+
+  static void ensureParameters(final ScheduledCommand command) {
+    if (parametersLoaded) {
+      command.execute();
+
+    } else {
+      Global.getParameter(PRM_RETURNED_ACT_STATUS, new Consumer<String>() {
+        @Override
+        public void accept(String input) {
+          parametersLoaded = true;
+          returnedActStatus = DataUtils.isId(input) ? BeeUtils.toLongOrNull(input) : null;
+          logger.debug("trade act parameters loaded");
 
           command.execute();
         }
@@ -300,6 +322,14 @@ public final class TradeActKeeper {
     } else {
       return null;
     }
+  }
+
+  static Long getReturnedActStatus() {
+    return returnedActStatus;
+  }
+
+  static BeeRowSet getStatuses() {
+    return cache.getRowSet(VIEW_TRADE_STATUSES);
   }
 
   static BeeRowSet getUserSeries(boolean checkDefaults) {
@@ -467,25 +497,31 @@ public final class TradeActKeeper {
   }
 
   private static void openActGrid(final TradeActKind kind, final PresenterCallback callback) {
-    ensureChache(new ScheduledCommand() {
+    ensureParameters(new ScheduledCommand() {
       @Override
       public void execute() {
-        String supplierKey;
-        String caption;
-        Filter filter;
+        ensureChache(new ScheduledCommand() {
+          @Override
+          public void execute() {
+            String supplierKey;
+            String caption;
+            Filter filter;
 
-        if (kind == null) {
-          supplierKey = GRID_ALL_ACTS_KEY;
-          caption = Localized.getConstants().tradeActsAll();
-          filter = null;
-        } else {
-          supplierKey = kind.getGridSupplierKey();
-          caption = Localized.getConstants().tradeActs() + " - " + kind.getCaption();
-          filter = kind.getFilter();
-        }
+            if (kind == null) {
+              supplierKey = GRID_ALL_ACTS_KEY;
+              caption = Localized.getConstants().tradeActsAll();
+              filter = null;
+            } else {
+              supplierKey = kind.getGridSupplierKey();
+              caption = Localized.getConstants().tradeActs() + " - " + kind.getCaption();
+              filter = kind.getFilter();
+            }
 
-        GridFactory.createGrid(GRID_TRADE_ACTS, supplierKey, new TradeActGrid(kind),
-            EnumSet.of(UiOption.ROOT), GridOptions.forCaptionAndFilter(caption, filter), callback);
+            GridFactory.createGrid(GRID_TRADE_ACTS, supplierKey, new TradeActGrid(kind),
+                EnumSet.of(UiOption.ROOT), GridOptions.forCaptionAndFilter(caption, filter),
+                callback);
+          }
+        });
       }
     });
   }

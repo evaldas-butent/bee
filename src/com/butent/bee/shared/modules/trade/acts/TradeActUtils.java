@@ -3,14 +3,21 @@ package com.butent.bee.shared.modules.trade.acts;
 import com.google.common.collect.BoundType;
 import com.google.common.collect.Range;
 
+import static com.butent.bee.shared.modules.trade.TradeConstants.*;
 import static com.butent.bee.shared.modules.trade.acts.TradeActConstants.*;
 
 import com.butent.bee.shared.BeeConst;
+import com.butent.bee.shared.data.BeeRow;
+import com.butent.bee.shared.data.BeeRowSet;
+import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.time.DateTime;
 import com.butent.bee.shared.time.HasDateValue;
 import com.butent.bee.shared.time.JustDate;
 import com.butent.bee.shared.time.TimeUtils;
 import com.butent.bee.shared.utils.BeeUtils;
+
+import java.util.HashMap;
+import java.util.Map;
 
 public final class TradeActUtils {
 
@@ -143,6 +150,26 @@ public final class TradeActUtils {
     } else {
       return BeeConst.DOUBLE_ZERO;
     }
+  }
+
+  public static Map<Long, Double> getItemQuantities(BeeRowSet rowSet) {
+    Map<Long, Double> result = new HashMap<>();
+
+    if (!DataUtils.isEmpty(rowSet)) {
+      int itemIndex = rowSet.getColumnIndex(COL_TA_ITEM);
+      int qtyIndex = rowSet.getColumnIndex(COL_TRADE_ITEM_QUANTITY);
+
+      for (BeeRow row : rowSet) {
+        Long item = row.getLong(itemIndex);
+        Double qty = row.getDouble(qtyIndex);
+
+        if (DataUtils.isId(item) && BeeUtils.isPositive(qty)) {
+          result.put(item, qty);
+        }
+      }
+    }
+
+    return result;
   }
 
   public static double roundAmount(Double amount) {
