@@ -842,7 +842,7 @@ public class ClassifiersModuleBean implements BeeModule {
     mail.sendMail(accountId, to, subject, doc.buildLines());
     setRemindedAppointments(appointments);
     logger.info(TIMER_REMIND_COMPANY_ACTIONS, "mail send, user id", userId,
-        ", comapny action count", appointments.getRows().size());
+        ", company action count", appointments.getRows().size());
   }
 
   private ResponseObject createCompany(RequestInfo reqInfo) {
@@ -1236,7 +1236,7 @@ public class ClassifiersModuleBean implements BeeModule {
     if (appointments.getNumberOfRows() > 0) {
       createActionRemindMail(user, appointments);
     } else {
-      logger.info("no actions remin fo user", user);
+      logger.info("no actions remind for user", user);
     }
   }
 
