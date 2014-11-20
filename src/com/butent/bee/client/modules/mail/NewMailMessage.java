@@ -45,7 +45,6 @@ import com.butent.bee.client.widget.Label;
 import com.butent.bee.client.widget.ListBox;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BiConsumer;
-import com.butent.bee.shared.Consumer;
 import com.butent.bee.shared.communication.ResponseObject;
 import com.butent.bee.shared.data.BeeRowSet;
 import com.butent.bee.shared.data.DataUtils;
@@ -64,6 +63,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -173,8 +173,6 @@ public final class NewMailMessage extends AbstractFormInterceptor
   private final ListBox signaturesWidget = new ListBox();
   private FileCollector attachmentsWidget;
 
-  private Consumer<Boolean> scheduled;
-
   private NewMailMessage(List<AccountInfo> availableAccounts, AccountInfo defaultAccount,
       Set<String> to, Set<String> cc, Set<String> bcc, String subject, String content,
       Collection<FileInfo> attachments, Long draftId) {
@@ -270,10 +268,6 @@ public final class NewMailMessage extends AbstractFormInterceptor
         }
       });
     }
-  }
-
-  public void setScheduled(Consumer<Boolean> scheduled) {
-    this.scheduled = scheduled;
   }
 
   private void applySignature(Long signatureId) {
@@ -382,7 +376,7 @@ public final class NewMailMessage extends AbstractFormInterceptor
     dialog.insertAction(1, accountsWidget);
   }
 
-  private void save(final boolean saveMode) {
+  private void save(boolean saveMode) {
     if (saveMode && !hasChanges()) {
       return;
     }
@@ -403,24 +397,18 @@ public final class NewMailMessage extends AbstractFormInterceptor
     params.addDataItem(COL_SUBJECT, subjectWidget.getValue());
     params.addDataItem(COL_CONTENT, contentWidget.getValue());
 
-    List<Long> ids = new ArrayList<>();
+    Map<Long, String> attachments = new LinkedHashMap<>();
 
     for (FileInfo file : attachmentsWidget.getFiles()) {
-      if (DataUtils.isId(file.getId())) {
-        ids.add(file.getId());
-      }
+      attachments.put(file.getId(), file.getName());
     }
-    if (!BeeUtils.isEmpty(ids)) {
-      params.addDataItem(TBL_ATTACHMENTS, DataUtils.buildIdList(ids));
+    if (!BeeUtils.isEmpty(attachments)) {
+      params.addDataItem(TBL_ATTACHMENTS, Codec.beeSerialize(attachments));
     }
     BeeKeeper.getRpc().makePostRequest(params, new ResponseCallback() {
       @Override
       public void onResponse(ResponseObject response) {
         response.notify(BeeKeeper.getScreen());
-
-        if (scheduled != null) {
-          scheduled.accept(saveMode);
-        }
       }
     });
   }

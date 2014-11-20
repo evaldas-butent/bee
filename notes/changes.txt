@@ -42,3 +42,6 @@
 2014.05.20 fontawesome 4.1.0
 2014.08.29 guava-18
 2014.11.01 gwt-2.7.0-rc1
+2014.11.20 logback-core-1.1.2.jar (logback-classic, slf4j)
+2014.11.20 jsoup-1.8.1.jar
+2014.11.20 icu4j-54_1_1.jar
