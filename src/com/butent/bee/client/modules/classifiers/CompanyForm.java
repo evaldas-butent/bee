@@ -192,6 +192,13 @@ public class CompanyForm extends AbstractFormInterceptor {
         ((UIObject) widget).setTitle(Localized.getConstants().sendReminder());
       }
     }
+
+    if (widget instanceof InputBoolean && BeeUtils.same(name, COL_EMAIL_INVOICES)) {
+
+      if (widget instanceof UIObject) {
+        ((UIObject) widget).setTitle(Localized.getConstants().trdInvoiceShort());
+      }
+    }
   }
 
   @Override
@@ -233,6 +240,8 @@ public class CompanyForm extends AbstractFormInterceptor {
 
     form.addCellValidationHandler(ClassifierConstants.COL_REMIND_EMAIL,
         getRemindEmailValidationHandler(form, row));
+    form.addCellValidationHandler(ClassifierConstants.COL_EMAIL_INVOICES,
+        getRemindEmailValidationHandler(form, row));
     form.addCellValidationHandler(COL_EMAIL_ID, getEmailIdValidationHandler(form, row));
   }
 
@@ -246,13 +255,21 @@ public class CompanyForm extends AbstractFormInterceptor {
         }
 
         int idxRemindEmail = form.getDataIndex(COL_REMIND_EMAIL);
+        int idxEmailInvoices = form.getDataIndex(COL_EMAIL_INVOICES);
 
-        if (idxRemindEmail < 0) {
+        if (idxRemindEmail < 0 && idxEmailInvoices < 0) {
           return Boolean.TRUE;
         }
 
-        row.setValue(idxRemindEmail, (Boolean) null);
-        form.refreshBySource(COL_REMIND_EMAIL);
+        if (idxRemindEmail > -1) {
+          row.setValue(idxRemindEmail, (Boolean) null);
+          form.refreshBySource(COL_REMIND_EMAIL);
+        }
+
+        if (idxEmailInvoices > -1) {
+          row.setValue(idxEmailInvoices, (Boolean) null);
+          form.refreshBySource(COL_EMAIL_INVOICES);
+        }
         return Boolean.TRUE;
       }
     };

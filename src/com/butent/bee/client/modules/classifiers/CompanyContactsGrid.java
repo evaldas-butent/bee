@@ -42,54 +42,37 @@ public final class CompanyContactsGrid extends AbstractGridInterceptor {
       }
 
       final int idxRemindEmail = getDataIndex(COL_REMIND_EMAIL);
+      final int idxMailInvoices = getDataIndex(COL_EMAIL_INVOICES);
 
-      if (idxRemindEmail < 0) {
+      if (idxRemindEmail < 0 && idxMailInvoices < 0) {
         return;
       }
 
-      if (row.getBoolean(idxRemindEmail) == null) {
-        return;
+      if (row.getBoolean(idxRemindEmail) != null) {
+        Queries.update(getViewName(), Filter.compareId(row.getId()), COL_REMIND_EMAIL, Value
+            .getNullValueFromValueType(ValueType.BOOLEAN), new Queries.IntCallback() {
+
+          @Override
+          public void onSuccess(Integer result) {
+            CellUpdateEvent.fire(BeeKeeper.getBus(), getViewName(),
+                row.getId(), event.getRowValue().getVersion(),
+                CellSource.forColumn(getDataColumns().get(idxRemindEmail), idxRemindEmail), null);
+          }
+        });
       }
 
-      Queries.update(getViewName(), Filter.compareId(row.getId()), COL_REMIND_EMAIL, Value
-          .getNullValueFromValueType(ValueType.BOOLEAN), new Queries.IntCallback() {
+      if (row.getBoolean(idxMailInvoices) != null) {
+        Queries.update(getViewName(), Filter.compareId(row.getId()), COL_EMAIL_INVOICES, Value
+            .getNullValueFromValueType(ValueType.BOOLEAN), new Queries.IntCallback() {
 
-        @Override
-        public void onSuccess(Integer result) {
-          CellUpdateEvent.fire(BeeKeeper.getBus(), getViewName(),
-              row.getId(), event.getRowValue().getVersion(),
-              CellSource.forColumn(getDataColumns().get(idxRemindEmail), idxRemindEmail), null);
-        }
-      });
+          @Override
+          public void onSuccess(Integer result) {
+            CellUpdateEvent.fire(BeeKeeper.getBus(), getViewName(),
+                row.getId(), event.getRowValue().getVersion(),
+                CellSource.forColumn(getDataColumns().get(idxMailInvoices), idxMailInvoices), null);
+          }
+        });
+      }
     }
   }
-
-  // @Override
-  // public boolean onStartNewRow(GridView gridView, IsRow oldRow, IsRow newRow) {
-  //
-  // if (newRow == null) {
-  // return false;
-  // }
-  //
-  // int idxEmailId = gridView.getDataIndex(COL_EMAIL_ID);
-  //
-  // if (idxEmailId < 0) {
-  // return true;
-  // }
-  //
-  // if (DataUtils.isId(newRow.getLong(idxEmailId))) {
-  // return true;
-  // }
-  //
-  // int idxRemindEmail = gridView.getDataIndex(COL_REMIND_EMAIL);
-  //
-  // if (idxRemindEmail < 0) {
-  // return true;
-  // }
-  //
-  // newRow.setValue(idxRemindEmail, (Boolean) null);
-  //
-  // return true;
-  // }
-
 }

@@ -24,6 +24,7 @@ import com.butent.bee.client.view.form.FormView;
 import com.butent.bee.client.view.form.interceptor.AbstractFormInterceptor;
 import com.butent.bee.client.view.form.interceptor.FormInterceptor;
 import com.butent.bee.client.widget.Image;
+import com.butent.bee.client.widget.InputBoolean;
 import com.butent.bee.shared.data.IsRow;
 import com.butent.bee.shared.data.UserData;
 import com.butent.bee.shared.i18n.Localized;
@@ -106,6 +107,10 @@ class PersonForm extends AbstractFormInterceptor {
           clearPhoto();
         }
       });
+    } else if ((BeeUtils.same(name, ClassifierConstants.COL_REMIND_EMAIL)
+        || BeeUtils.same(name, ClassifierConstants.COL_EMAIL_INVOICES))
+        && widget instanceof InputBoolean) {
+      ((InputBoolean) widget).setVisible(false);
     }
   }
 

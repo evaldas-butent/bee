@@ -23,6 +23,7 @@
       <SimpleJoin name="Email" joinType="LEFT">
         <SimpleColumn name="Email" />
       </SimpleJoin>
+      <SimpleColumn name="EmailInvoices" />
 
       <SimpleColumn name="Address" />
       <SimpleColumn name="PostIndex" />

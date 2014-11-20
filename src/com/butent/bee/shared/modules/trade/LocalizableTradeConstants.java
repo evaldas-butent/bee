@@ -68,6 +68,8 @@ public interface LocalizableTradeConstants {
 
   String trdInvoicePrefix();
 
+  String trdInvoiceShort();
+
   String trdMovementOfGoods();
 
   String trdNewInvoice();

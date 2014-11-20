@@ -31,6 +31,7 @@
       <SimpleColumn name="Fax" />
 
       <SimpleColumn name="RemindEmail" />
+      <SimpleColumn name="EmailInvoices" />
       <SimpleColumn name="Email" alias="EmailId" />
       <SimpleJoin name="Email" joinType="LEFT">
         <SimpleColumn name="Email" />

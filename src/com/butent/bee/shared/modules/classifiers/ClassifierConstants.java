@@ -156,6 +156,7 @@ public final class ClassifierConstants {
   public static final String COL_REMIND_EMAIL = "RemindEmail";
   public static final String COL_REMIND_ACTIONS = "MailCompanyActions";
   public static final String COL_REMIND_ACTION_BEFORE = "CompanyActionRemindBefore";
+  public static final String COL_EMAIL_INVOICES = "EmailInvoices";
 
   public static final String COL_CITY = "City";
   public static final String COL_CITY_NAME = "Name";
