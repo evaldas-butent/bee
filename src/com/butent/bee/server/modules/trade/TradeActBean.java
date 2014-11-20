@@ -162,7 +162,9 @@ public class TradeActBean {
   public Collection<BeeParameter> getDefaultParameters(String module) {
     return Lists.newArrayList(
         BeeParameter.createText(module, PRM_IMPORT_TA_ITEM_RX, false, RX_IMPORT_ACT_ITEM),
-        BeeParameter.createNumber(module, PRM_TA_NUMBER_LENGTH, false, 6));
+        BeeParameter.createNumber(module, PRM_TA_NUMBER_LENGTH, false, 6),
+        BeeParameter.createRelation(module, PRM_RETURNED_ACT_STATUS,
+            TBL_TRADE_STATUSES, COL_STATUS_NAME));
   }
 
   public void init() {

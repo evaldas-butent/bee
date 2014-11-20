@@ -111,6 +111,7 @@ public final class TradeActConstants {
   public static final String RX_IMPORT_ACT_ITEM = "^(.+);(.*);(\\d+\\.*\\d*)$";
 
   public static final String PRM_TA_NUMBER_LENGTH = "ActNumberLength";
+  public static final String PRM_RETURNED_ACT_STATUS = "ReturnedActStatus";
 
   public static final String PFX_START_STOCK = "StartStock_";
   public static final String PFX_MOVEMENT = "Movement_";
