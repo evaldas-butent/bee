@@ -192,6 +192,9 @@ public final class ClassifierConstants {
   public static final String ALS_COMPANY_TYPE = "CompanyType";
   public static final String ALS_COMPANY_TYPE_NAME = "TypeName";
 
+  public static final String ALS_CONTACT_FIRST_NAME = "ContactFirstName";
+  public static final String ALS_CONTACT_LAST_NAME = "ContactLastName";
+
   public static final String ALS_CITY_NAME = "CityName";
   public static final String ALS_COUNTRY_NAME = "CountryName";
 
