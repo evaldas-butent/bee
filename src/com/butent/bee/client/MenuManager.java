@@ -22,6 +22,8 @@ import com.butent.bee.shared.menu.MenuConstants.ItemType;
 import com.butent.bee.shared.menu.MenuEntry;
 import com.butent.bee.shared.menu.MenuItem;
 import com.butent.bee.shared.menu.MenuService;
+import com.butent.bee.shared.rights.Module;
+import com.butent.bee.shared.rights.ModuleAndSub;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.Codec;
 
@@ -149,6 +151,22 @@ public class MenuManager {
 
   private static BarType getBarType(boolean table) {
     return table ? BarType.TABLE : BarType.FLOW;
+  }
+
+  /**
+   * Conditionally hides menu items.
+   * 
+   * @param item
+   */
+  private static boolean isVisible(Menu item) {
+    switch (item.getName()) {
+      case "RefVehicles":
+      case "RefVehicleTypes":
+        return !BeeKeeper.getUser().isModuleVisible(ModuleAndSub.of(Module.TRANSPORT));
+
+      default:
+        return true;
+    }
   }
 
   private static void noService(Menu item) {
@@ -340,16 +358,18 @@ public class MenuManager {
     boolean lastLevel = level >= MenuConstants.MAX_MENU_DEPTH - 1;
 
     for (Menu entry : entries) {
-      List<Menu> children = null;
-      IdentifiableWidget cw = null;
+      if (isVisible(entry)) {
+        List<Menu> children = null;
+        IdentifiableWidget cw = null;
 
-      if (!lastLevel && (entry instanceof MenuEntry)) {
-        children = ((MenuEntry) entry).getItems();
+        if (!lastLevel && (entry instanceof MenuEntry)) {
+          children = ((MenuEntry) entry).getItems();
+        }
+        if (!BeeUtils.isEmpty(children)) {
+          cw = createMenu(level + 1, children, rw);
+        }
+        addEntry(rw, entry, cw);
       }
-      if (!BeeUtils.isEmpty(children)) {
-        cw = createMenu(level + 1, children, rw);
-      }
-      addEntry(rw, entry, cw);
     }
 
     prepareWidget(rw);
