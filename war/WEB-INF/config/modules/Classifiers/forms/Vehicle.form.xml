@@ -10,7 +10,7 @@
     <xi:include href="widgets/VehicleDescription.widget.xml" />
 
     <TabbedPages class="flexible" style="margin-top: 1ex;">
-      <page>
+      <page module="Transport">
         <text>=additionalInfo</text>
         <AbsolutePanel>
           <layer top="1" topUnit="ex" width="240">
@@ -36,15 +36,15 @@
           </layer>
         </AbsolutePanel>
       </page>
-      <page>
+      <page module="Transport">
         <text>=vehicleRepairs</text>
         <ChildGrid name="Repairs" relColumn="Vehicle" />
       </page>
-      <page>
+      <page module="Transport">
         <text>=vehicleService</text>
         <ChildGrid name="VehicleServices" relColumn="Vehicle" />
       </page>
-      <page>
+      <page module="Transport">
         <text>=trips</text>
         <AbsolutePanel>
           <layer left="0" right="0" top="0" height="50" heightUnit="%">
@@ -55,11 +55,11 @@
           </layer>
         </AbsolutePanel>
       </page>
-      <page>
+      <page module="Documents">
         <text>=documents</text>
         <ChildGrid name="RelatedDocuments" relColumn="Vehicle" />
       </page>
-      <page>
+      <page module="Transport">
         <text>=trVehiclePartUsage</text>
         <ChildGrid name="VehiclePartUsage" relColumn="Vehicle" />
       </page>

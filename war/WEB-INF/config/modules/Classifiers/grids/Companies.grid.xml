@@ -26,6 +26,6 @@
       filterOptions="-" exportWidthFactor="0.5" visible="false">
       <renderer type="flag" />
     </CalcColumn>
-    <RelColumn name="DefaultCompanyUser" visible="false" label="=companyResponsibleUser" />
+    <RelColumn name="DefaultCompanyUser" visible="false" label="=companyResponsibleUser" filterSupplier="value"/>
   </g:columns>
 </g:Grid>

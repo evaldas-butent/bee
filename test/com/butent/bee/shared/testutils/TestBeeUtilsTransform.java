@@ -2,7 +2,6 @@ package com.butent.bee.shared.testutils;
 
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.State;
-import com.butent.bee.shared.html.builder.Factory;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.NameUtils;
 

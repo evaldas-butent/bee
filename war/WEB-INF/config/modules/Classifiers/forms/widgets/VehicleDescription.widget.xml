@@ -21,8 +21,8 @@
 		filter="parent" style="&inp1;"/>
 	  <Label text="=vehicleType" class="bee-required" horizontalAlignment="right" style="&lbl2;"/>
 	  <DataSelector source="Type" renderColumns="TypeName" class="flexible" decorator="flex-left" d:size="40" d:rootStyle="&MARGIN;" />
-	  <Label text="=groups" class="bee-required" horizontalAlignment="right" style="&lbl2;"/>
-	  <ChildSelector viewName="TransportGroups" childTable="VehicleGroups" class="flexible" required="true" label="=groups" style="width: 155px;" targetRelColumn="Vehicle" sourceRelColumn="Group" newRowEnabled="false"/>
+	  <Label module="Transport" for="Group" text="=groups" class="bee-required" horizontalAlignment="right" style="&lbl2;"/>
+	  <ChildSelector module="Transport" viewName="TransportGroups" childTable="VehicleGroups" class="flexible" required="true" label="=groups" style="width: 155px;" targetRelColumn="Vehicle" sourceRelColumn="Group" newRowEnabled="false"/>
 	</row>
 	<row>
 	  <Label text="=vehicleOwnerName" horizontalAlignment="right" style="&lbl1;"/>

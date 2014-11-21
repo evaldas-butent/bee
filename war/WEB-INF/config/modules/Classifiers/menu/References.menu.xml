@@ -27,7 +27,10 @@ name="References" label="=references" order="10" module="Classifiers"
   <Item name="ActivityTypes" label="=activityTypes" service="grid" parameters="ActivityTypes"
     separator="true" />
   <Item name="CostCenters" label="=costCenters" service="grid" parameters="CostCenters" />
-
+  
+  <Item name="Vehicles" label="=vehicles" service="grid" parameters="Vehicles" separator="true"/>
+  <Item name="VehicleTypes" label="=trVehicleTypes" service="grid" parameters="VehicleTypes" />
+    
   <Item name="Colors" label="=colors" service="grid" parameters="Colors" separator="true" />
   <Item name="Themes" label="=colorThemes" service="grid" parameters="Themes" />
 </Entry>
