@@ -48,6 +48,7 @@
           <SimpleColumn name="Date" alias="LoadingDate" label="=trLoadingDate" />
           <SimpleColumn name="PostIndex" alias="LoadingPostIndex" label="=trLoadingPostIndex" />
 
+          <SimpleColumn name="Country" alias="LoadingCountry" editable="true" label="=trLoadingCountry" />
           <SimpleJoin joinType="LEFT" name="Country">
             <SimpleColumn name="Name" alias="LoadingCountryName" />
             <SimpleColumn name="Code" alias="LoadingCountryCode" label="=from" />
@@ -57,6 +58,7 @@
           <SimpleColumn name="Date" alias="UnloadingDate" label="=trUnloadingDate" />
           <SimpleColumn name="PostIndex" alias="UnloadingPostIndex" label="=trUnloadingPostIndex" />
 
+          <SimpleColumn name="Country" alias="UnloadingCountry" editable="true" label="=trUnloadingCountry" />
           <SimpleJoin joinType="LEFT" name="Country">
             <SimpleColumn name="Name" alias="UnloadingCountryName" />
             <SimpleColumn name="Code" alias="UnloadingCountryCode" label="=to" />
