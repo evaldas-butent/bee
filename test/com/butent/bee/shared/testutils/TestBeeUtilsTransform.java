@@ -2,6 +2,7 @@ package com.butent.bee.shared.testutils;
 
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.State;
+import com.butent.bee.shared.html.builder.Factory;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.NameUtils;
 
@@ -541,6 +542,16 @@ public class TestBeeUtilsTransform extends TestCase implements ILogger {
     assertEquals("test", BeeUtils.replace("test", "s", null, 2));
     assertEquals("test", BeeUtils.replace("test", "s", "x", 0));
     assertEquals(null, BeeUtils.replace(null, null, null, 0));
+  }
+
+  @Test
+  public void testReplaceStr() {
+    String source = "Dear Customer,\nThank you fo using products of our company...";
+    String dest = "Dear Customer,<br/>\nThank you fo using products of our company...";
+    String test =
+        BeeUtils.replace(source, BeeConst.STRING_EOL, Factory.br().build() + BeeConst.STRING_EOL);
+
+    assertEquals(dest, test);
   }
 
   @Test
