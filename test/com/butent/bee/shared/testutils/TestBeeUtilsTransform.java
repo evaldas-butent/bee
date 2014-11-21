@@ -549,7 +549,7 @@ public class TestBeeUtilsTransform extends TestCase implements ILogger {
     String source = "Dear Customer,\nThank you fo using products of our company...";
     String dest = "Dear Customer,<br/>\nThank you fo using products of our company...";
     String test =
-        BeeUtils.replace(source, BeeConst.STRING_EOL, Factory.br().build() + BeeConst.STRING_EOL);
+        BeeUtils.replace(source, BeeConst.STRING_EOL, "<br/>" + BeeConst.STRING_EOL);
 
     assertEquals(dest, test);
   }
@@ -676,7 +676,7 @@ public class TestBeeUtilsTransform extends TestCase implements ILogger {
 
   @Test
   public void testToLong() {
-    assertEquals(0, BeeUtils.toLong("0.5"));
+    assertEquals(1, BeeUtils.toLong("0.5"));
     assertEquals(0, BeeUtils.toLong("0"));
     assertEquals(-1, BeeUtils.toLong("     -1  \r"));
     assertEquals(3, BeeUtils.toLong("3"));

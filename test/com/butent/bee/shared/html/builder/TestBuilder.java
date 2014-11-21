@@ -175,7 +175,7 @@ public class TestBuilder {
     }
 
     html.add("<div class=\"bee-SignIn-Caption\">");
-    html.add("<img class=\"bee-Copyright-logo\" src=\"images/butent.gif\" />");
+    html.add("<img class=\"bee-Copyright-logo\" src=\"images/butent_arrow.png\" />");
     html.add("<span>UAB \"Būtenta\" &copy; 2010 - " + TimeUtils.today().getYear() + "</span>");
     html.add("</div>");
     html.add("</div>");
