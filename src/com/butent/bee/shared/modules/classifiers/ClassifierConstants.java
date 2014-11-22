@@ -76,6 +76,8 @@ public final class ClassifierConstants {
   public static final String VIEW_COMPANY_USERS = "CompanyUsers";
   public static final String VIEW_COMPANY_OBJECTS = "CompanyObjects";
 
+  public static final String VIEW_HOLIDAYS = "Holidays";
+
   public static final String GRID_PERSONS = "Persons";
   public static final String GRID_COMPANIES = "Companies";
   public static final String GRID_COMPANY_BANK_ACCOUNTS = "CompanyBankAccounts";
@@ -186,6 +188,9 @@ public final class ClassifierConstants {
   public static final String COL_SWIFT_CODE = "SWIFTCode";
 
   public static final String COL_BANK_ACCOUNT = "BankAccount";
+
+  public static final String COL_HOLY_COUNTRY = "Country";
+  public static final String COL_HOLY_DAY = "Date";
 
   public static final String ALS_COMPANY_NAME = "CompanyName";
   public static final String ALS_COMPANY_CODE = "CompanyCode";

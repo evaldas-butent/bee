@@ -21,6 +21,9 @@ name="References" label="=references" order="10" module="Classifiers"
 
   <Item name="Cities" label="=cities" service="grid" parameters="Cities" separator="true" />
   <Item name="Countries" label="=countries" service="grid" parameters="Countries" />
+
+  <Item name="Holidays" label="=holidays" service="form" parameters="Holidays" separator="true"
+    module="Trade.Acts" />
   
   <Item name="Banks" label="=banks" service="grid" parameters="Banks" separator="true" />
 
