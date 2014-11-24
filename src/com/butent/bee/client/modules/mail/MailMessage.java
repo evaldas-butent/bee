@@ -54,7 +54,6 @@ import com.butent.bee.client.widget.FaLabel;
 import com.butent.bee.client.widget.InlineLabel;
 import com.butent.bee.client.widget.Link;
 import com.butent.bee.shared.BeeConst;
-import com.butent.bee.shared.Consumer;
 import com.butent.bee.shared.Pair;
 import com.butent.bee.shared.communication.ResponseObject;
 import com.butent.bee.shared.data.BeeRow;
@@ -71,7 +70,6 @@ import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.io.FileInfo;
 import com.butent.bee.shared.modules.administration.AdministrationConstants;
 import com.butent.bee.shared.modules.documents.DocumentConstants;
-import com.butent.bee.shared.modules.mail.AccountInfo;
 import com.butent.bee.shared.modules.mail.MailConstants.AddressType;
 import com.butent.bee.shared.modules.mail.MailConstants.SystemFolder;
 import com.butent.bee.shared.modules.transport.TransportConstants;
@@ -269,6 +267,7 @@ public class MailMessage extends AbstractFormInterceptor {
   private static final String SUBJECT = "Subject";
 
   private final MailPanel mailPanel;
+  private Long sentId;
   private Long draftId;
   private Long rawId;
   private Pair<String, String> sender;
@@ -437,7 +436,9 @@ public class MailMessage extends AbstractFormInterceptor {
   @Override
   public boolean beforeAction(Action action, Presenter presenter) {
     if (action == Action.PRINT) {
-      Printer.print(widgets.get(CONTAINER).getElement().getString(), null);
+      if (DataUtils.isId(rawId)) {
+        Printer.print(widgets.get(CONTAINER).getElement().getString(), null);
+      }
       return false;
     }
     return super.beforeAction(action, presenter);
@@ -455,6 +456,7 @@ public class MailMessage extends AbstractFormInterceptor {
       }
     }
     sender = Pair.of(null, null);
+    sentId = null;
     draftId = null;
     rawId = null;
     recipients.clear();
@@ -515,6 +517,7 @@ public class MailMessage extends AbstractFormInterceptor {
 
           relations.requery(row.getLong(COL_MESSAGE));
         }
+        sentId = row.getLong(SystemFolder.Sent.name());
         draftId = row.getLong(SystemFolder.Drafts.name());
         rawId = row.getLong(COL_RAW_CONTENT);
         String lbl = row.getValue(COL_EMAIL_LABEL);
@@ -692,12 +695,21 @@ public class MailMessage extends AbstractFormInterceptor {
         switch (mode) {
           case REPLY:
           case REPLY_ALL:
-            if (!BeeUtils.isEmpty(sender.getA())) {
-              to = Sets.newHashSet(sender.getA());
-            }
-            if (mode == NewMailMode.REPLY_ALL) {
-              cc = getTo();
-              cc.addAll(getCc());
+            if (DataUtils.isId(sentId) || DataUtils.isId(draftId)) {
+              to = getTo();
+
+              if (mode == NewMailMode.REPLY_ALL) {
+                cc = getCc();
+                bcc = getBcc();
+              }
+            } else {
+              if (!BeeUtils.isEmpty(sender.getA())) {
+                to = Sets.newHashSet(sender.getA());
+              }
+              if (mode == NewMailMode.REPLY_ALL) {
+                cc = getTo();
+                cc.addAll(getCc());
+              }
             }
             Element bq = Document.get().createBlockQuoteElement();
             bq.setAttribute("style",
@@ -737,20 +749,8 @@ public class MailMessage extends AbstractFormInterceptor {
             break;
         }
         if (mailPanel != null) {
-          final AccountInfo account = mailPanel.getCurrentAccount();
-
-          NewMailMessage newMessage = NewMailMessage.create(mailPanel.getAccounts(), account,
+          NewMailMessage.create(mailPanel.getAccounts(), mailPanel.getCurrentAccount(),
               to, cc, bcc, subject, content, attach, draft);
-
-          newMessage.setScheduled(new Consumer<Boolean>() {
-            @Override
-            public void accept(Boolean save) {
-              if (BeeUtils.isFalse(save)) {
-                mailPanel.checkFolder(account.getSystemFolder(SystemFolder.Sent));
-              }
-              mailPanel.checkFolder(account.getSystemFolder(SystemFolder.Drafts));
-            }
-          });
         } else {
           NewMailMessage.create(to, cc, bcc, subject, content, attach, draft);
         }

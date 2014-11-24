@@ -247,6 +247,13 @@ public class RequestEditor extends AbstractFormInterceptor {
     taskRow.setValue(taskDataInfo.getColumnIndex(ClassifierConstants.COL_CONTACT), reqRow
         .getLong(form.getDataIndex(COL_REQUEST_CUSTOMER_PERSON)));
 
+    taskRow.setValue(taskDataInfo.getColumnIndex(ClassifierConstants.ALS_CONTACT_FIRST_NAME),
+        reqRow
+            .getString(form.getDataIndex(ALS_PERSON_FIRST_NAME)));
+
+    taskRow.setValue(taskDataInfo.getColumnIndex(ClassifierConstants.ALS_CONTACT_LAST_NAME), reqRow
+        .getString(form.getDataIndex(ALS_PERSON_LAST_NAME)));
+
     taskRow.setValue(taskDataInfo.getColumnIndex(TaskConstants.ALS_OWNER_FIRST_NAME),
         reqRow.getString(form.getDataIndex(ClassifierConstants.COL_FIRST_NAME)));
 

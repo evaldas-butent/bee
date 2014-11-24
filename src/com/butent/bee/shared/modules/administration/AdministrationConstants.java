@@ -336,6 +336,7 @@ public final class AdministrationConstants {
   public static final String PRM_SQL_MESSAGES = "SQLMessages";
 
   public static final String PRM_COMPANY = "CompanyName";
+  public static final String PRM_COUNTRY = "Country";
   public static final String PRM_CURRENCY = "MainCurrency";
   public static final String PRM_VAT_PERCENT = "VATPercent";
   public static final String PRM_REFRESH_CURRENCY_HOURS = "CurrencyRefreshHours";

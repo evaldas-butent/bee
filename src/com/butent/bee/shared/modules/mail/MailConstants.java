@@ -132,7 +132,6 @@ public final class MailConstants {
 
   public static final String SIGNATURE_SEPARATOR = "<br><br><br>";
 
-  public static final String SVC_RESTART_PROXY = "restart_proxy";
   public static final String SVC_GET_ACCOUNTS = "get_accounts";
   public static final String SVC_GET_FOLDERS = "get_folders";
   public static final String SVC_CREATE_FOLDER = "create_folder";

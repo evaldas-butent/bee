@@ -11,6 +11,7 @@ import static com.butent.bee.shared.modules.trade.TradeConstants.*;
 import static com.butent.bee.shared.modules.trade.acts.TradeActConstants.*;
 
 import com.butent.bee.client.BeeKeeper;
+import com.butent.bee.client.Callback;
 import com.butent.bee.client.Global;
 import com.butent.bee.client.communication.ParameterList;
 import com.butent.bee.client.communication.ResponseCallback;
@@ -51,10 +52,12 @@ import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.IsColumn;
 import com.butent.bee.shared.data.IsRow;
 import com.butent.bee.shared.data.RowFunction;
+import com.butent.bee.shared.data.event.ModificationEvent;
 import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.io.FileInfo;
 import com.butent.bee.shared.modules.classifiers.ItemPrice;
 import com.butent.bee.shared.modules.trade.acts.TradeActKind;
+import com.butent.bee.shared.modules.trade.acts.TradeActUtils;
 import com.butent.bee.shared.time.DateTime;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.EnumUtils;
@@ -78,7 +81,27 @@ public class TradeActItemsGrid extends AbstractGridInterceptor implements
     int index = DataUtils.getColumnIndex(COL_TRADE_ITEM_QUANTITY, dataColumns);
     QuantityReader quantityReader = new QuantityReader(index);
 
-    renderer.getTotalizer().setQuantityFuction(quantityReader);
+    renderer.getTotalizer().setQuantityFunction(quantityReader);
+  }
+
+  private static void maybeMarkAsReturned(final long actId, final long actVersion) {
+    Global.getParameter(PRM_RETURNED_ACT_STATUS, new Consumer<String>() {
+      @Override
+      public void accept(final String newStatus) {
+        if (DataUtils.isId(newStatus)) {
+          Queries.getValue(VIEW_TRADE_ACTS, actId, COL_TA_STATUS, new Callback<String>() {
+
+            @Override
+            public void onSuccess(String oldStatus) {
+              if (!newStatus.equals(oldStatus)) {
+                Queries.updateAndFire(VIEW_TRADE_ACTS, actId, actVersion, COL_TA_STATUS,
+                    oldStatus, newStatus, ModificationEvent.Kind.UPDATE_ROW);
+              }
+            }
+          });
+        }
+      }
+    });
   }
 
   private static final String STYLE_COMMAND_IMPORT = TradeActKeeper.STYLE_PREFIX
@@ -177,11 +200,18 @@ public class TradeActItemsGrid extends AbstractGridInterceptor implements
               String pa = parentItems.getTableProperty(PRP_PARENT_ACT);
               final BeeRow parentAct = BeeUtils.isEmpty(pa) ? null : BeeRow.restore(pa);
 
+              final Map<Long, Double> quantities = TradeActUtils.getItemQuantities(parentItems);
+
               TradeActItemReturn.show(kind.getCaption(), parentAct, parentItems,
                   new Consumer<BeeRowSet>() {
                     @Override
                     public void accept(BeeRowSet actItems) {
                       addActItems(parentAct, actItems);
+
+                      if (parentAct != null
+                          && quantities.equals(TradeActUtils.getItemQuantities(actItems))) {
+                        maybeMarkAsReturned(parentAct.getId(), parentAct.getVersion());
+                      }
                     }
                   });
 
