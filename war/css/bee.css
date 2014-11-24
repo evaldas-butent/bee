@@ -1024,6 +1024,10 @@
   vertical-align: middle;
 }
 
+.bee-TreeItem-contentCell {
+  width:100%;
+}
+
 .bee-TreeItem-imageCell {
   background-image: url(../images/silver/tree_rt_plus.gif);
   background-repeat: no-repeat;
