@@ -76,9 +76,12 @@ public final class ClassifierConstants {
   public static final String VIEW_COMPANY_USERS = "CompanyUsers";
   public static final String VIEW_COMPANY_OBJECTS = "CompanyObjects";
 
+  public static final String VIEW_HOLIDAYS = "Holidays";
+
   public static final String GRID_PERSONS = "Persons";
   public static final String GRID_COMPANIES = "Companies";
   public static final String GRID_COMPANY_BANK_ACCOUNTS = "CompanyBankAccounts";
+  public static final String GRID_COMPANY_USERS = "CompanyUsers";
   public static final String GRID_ITEMS = "Items";
 
   public static final String COL_COMPANY = "Company";
@@ -162,6 +165,7 @@ public final class ClassifierConstants {
   public static final String COL_BRANCH_PRIMARY_WAREHOUSE = "PrimaryWarehouse";
 
   public static final String COL_DEFAULT_BANK_ACCOUNT = "DefaultBankAccount";
+  public static final String COL_DEFAULT_COMPANY_USER = "DefaultCompanyUser";
 
   public static final String COL_WAREHOUSE = "Warehouse";
   public static final String COL_WAREHOUSE_CODE = "Code";
@@ -185,10 +189,16 @@ public final class ClassifierConstants {
 
   public static final String COL_BANK_ACCOUNT = "BankAccount";
 
+  public static final String COL_HOLY_COUNTRY = "Country";
+  public static final String COL_HOLY_DAY = "Date";
+
   public static final String ALS_COMPANY_NAME = "CompanyName";
   public static final String ALS_COMPANY_CODE = "CompanyCode";
   public static final String ALS_COMPANY_TYPE = "CompanyType";
   public static final String ALS_COMPANY_TYPE_NAME = "TypeName";
+
+  public static final String ALS_CONTACT_FIRST_NAME = "ContactFirstName";
+  public static final String ALS_CONTACT_LAST_NAME = "ContactLastName";
 
   public static final String ALS_CITY_NAME = "CityName";
   public static final String ALS_COUNTRY_NAME = "CountryName";

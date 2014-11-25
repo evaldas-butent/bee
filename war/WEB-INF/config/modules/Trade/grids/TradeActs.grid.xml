@@ -13,11 +13,11 @@
     <DataColumn name="Date" visible="true" />
     <DataColumn name="Until" />
 
-    <RelColumn name="Series" />
+    <RelColumn name="Series" visible="true" />
     <DataColumn name="Number" visible="true" />
 
     <RelColumn name="Operation" renderColumns="OperationName" />
-    <RelColumn name="Status" renderColumns="StatusName" />
+    <RelColumn name="Status" renderColumns="StatusName" visible="true" />
 
     <RelColumn name="Company" visible="true" />
     <RelColumn name="Contact" renderColumns="ContactFirstName ContactLastName"

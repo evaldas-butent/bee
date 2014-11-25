@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE Form>
+<f:Form xmlns="http://www.butent.com/widget" xmlns:f="http://www.butent.com/form"
+
+  name="Holidays" caption="=holidays">
+
+  <FlowPanel class="flexBox-vertical">
+    <UnboundSelector viewName="Countries" renderColumns="Name" />
+    <FlowPanel name="Years" />
+    <FlowPanel name="Calendar" class="flexible" />
+  </FlowPanel>
+</f:Form>

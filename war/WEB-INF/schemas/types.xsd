@@ -348,6 +348,7 @@
       <xs:enumeration value="GridSettings" />
       <xs:enumeration value="GroupDrivers" />
       <xs:enumeration value="GroupVehicles" />
+      <xs:enumeration value="Holidays" />
       <xs:enumeration value="ImportMappings" />
       <xs:enumeration value="ImportOptions" />
       <xs:enumeration value="ImportProperties" />

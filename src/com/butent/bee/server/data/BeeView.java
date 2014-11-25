@@ -531,7 +531,11 @@ public class BeeView implements BeeObject, HasExtendedInfo {
   }
 
   public String getColumnField(String colName) {
-    return getColumnInfo(colName).getField();
+    if (getSourceIdName().equals(colName) || getSourceVersionName().equals(colName)) {
+      return colName;
+    } else {
+      return getColumnInfo(colName).getField();
+    }
   }
 
   public String getColumnLabel(String colName) {
@@ -586,7 +590,11 @@ public class BeeView implements BeeObject, HasExtendedInfo {
   }
 
   public String getColumnTable(String colName) {
-    return getColumnInfo(colName).getTable();
+    if (getSourceIdName().equals(colName) || getSourceVersionName().equals(colName)) {
+      return getSourceName();
+    } else {
+      return getColumnInfo(colName).getTable();
+    }
   }
 
   public SqlDataType getColumnType(String colName) {

@@ -168,44 +168,55 @@
 }
 
 .bee-mail-SysFolder, .bee-mail-Folder {
-  padding: 3px;
   cursor: pointer;
   color: #444;
   font-weight: normal;
 }
 
-.bee-mail-Folder-branch:before {
-  content: "\0025BE";
-  margin-right: 3px;
+.bee-mail-SysFolder, .bee-mail-FolderRow {
+  padding: 3px;
+}
+
+.bee-mail-FolderRow {
+  display: flex;
+  display: -webkit-flex;
+  display: -ms-flexbox;
+  flex-direction: row;
+  -webkit-flex-direction: row;
+  -ms-flex-direction: row;
+}
+
+.bee-mail-FolderCaption, .bee-mail-Folder {
+  flex: 1;
+  -webkit-flex: 1;
+  -ms-flex: 1;
 }
 
 .bee-mail-FolderCaption {
+  display: inline;
   color: silver;
   font-weight: bold;
 }
 
-.bee-mail-FolderRow {
-  border-collapse: collapse;
-}
-
-.bee-mail-FolderRow tr td:first-child {
-  width: 100%;
-}
-
-.bee-mail-SysFolder:hover, .bee-mail-FolderRow tr:hover {
+.bee-mail-SysFolder:hover, .bee-mail-FolderRow:hover {
   background-color: #f2f2f2;
 }
 
-.bee-mail-FolderAction {
-  margin: 0 3px 0 3px;
+.bee-mail-FolderActions {
   visibility: hidden;
 }
 
-.bee-mail-FolderRow tr:hover .bee-mail-FolderAction {
+.bee-mail-FolderAction {
+  margin-left: 3px;
+  display: inline;
+}
+
+.bee-mail-SysFolder:hover .bee-mail-FolderActions,
+.bee-mail-FolderRow:hover .bee-mail-FolderActions {
   visibility: visible;
 }
 
-.bee-mail-SysFolder-selected, .bee-mail-FolderRow-selected .bee-mail-Folder {
+.bee-mail-SysFolder-selected, .bee-TreeItem-selected .bee-mail-Folder {
   font-weight: bold;
   color: #FD6268;
 }
