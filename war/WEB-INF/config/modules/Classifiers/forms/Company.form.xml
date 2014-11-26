@@ -20,9 +20,9 @@
         <Label text="=name" style="&lbl1;" class="bee-required" />
         <InputText source="Name" style="&inp1;" visible="true" />
         <Label style="&lbl1;" for="CompanyType" />
-        <DataSelector source="CompanyType" style="&inp1;"  />
+        <DataSelector source="CompanyType" style="&inp1;" />
         <Label style="&lbl1;" for="CompanyGroup" />
-        <DataSelector source="CompanyGroup" style="&inp1;"  />
+        <DataSelector source="CompanyGroup" style="&inp1;" />
       </row>
 
       <row>
@@ -137,9 +137,9 @@
         <text>=mails</text>
         <ChildGrid name="RelatedMessages" relColumn="Company" />
       </page>
-      <page for="CompanyActList" module="Calendar">
+      <page for="CompActionList" module="Calendar">
       	<text>=calListOfActions</text>
-      	<ChildGrid name="CompanyActList" relColumn="Company" />
+      	<ChildGrid name="CompActionList" relColumn="Company" />
       </page>
       <page for="Tasks">
         <text>=crmTasks</text>
