@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <f:Form xmlns="http://www.butent.com/widget"
   xmlns:f="http://www.butent.com/form"
+  xmlns:ui="http://www.butent.com/ui"
   
   name="UserSettings" viewName="UserSettings" caption="=userSettings"
   width="700" height="80" heightUnit="%"
@@ -46,12 +47,40 @@
         <FlowPanel style="padding-left: 2em;">
           <br/>
           <CheckBox source="MailAssignedTasks" module="Tasks" summarize="true" />
-          <br/>
-          <br/>
+          <br module="Discussions"/>
+          <br module="Discussions"/>
           <CheckBox source="MailNewAnnouncements" module="Discussions" summarize="true" />
-          <br/>
-          <br/>
+          <br module="Discussions"/>
+          <br module="Discussions"/>
           <CheckBox source="MailNewDiscussions" module="Discussions" summarize="true" />
+          <br module="Calendar"/>
+          <br module="Calendar"/>
+          <Table module="Calendar">
+            <row>
+		          <CheckBox source="MailCompanyActions" module="Calendar" summarize="true" />
+	          </row>
+	          <row>
+	            <Label module="Calendar" text="=crmRTRemindBefore" style="text-align: right"/>
+	            <cell>
+	              <Table>
+	               <row>
+			             <InputInteger source="CompanyActionRemindBefore" module="Calendar" style="width:50px">
+			               <validation>
+			                 <ui:function>
+			                   if (cell.newValue > 0 || cell.newValue == null) {
+			                     return null;
+			                   } else {
+			                     return $wnd.Bee_maybeTranslate("=invalidTime") + cell.newValue;
+			                   }
+			                 </ui:function>
+			               </validation>
+			             </InputInteger> 
+			             <Label text="=unitHourShort" />
+			            </row>
+		            </Table>
+		          </cell>
+	          </row>
+          </Table>
         </FlowPanel>
       </page>
       

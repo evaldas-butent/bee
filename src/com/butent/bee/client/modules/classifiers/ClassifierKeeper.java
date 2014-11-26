@@ -59,6 +59,7 @@ public final class ClassifierKeeper {
     FormFactory.registerFormInterceptor(FORM_PERSON, new PersonForm());
     FormFactory.registerFormInterceptor(FORM_COMPANY, new CompanyForm());
     FormFactory.registerFormInterceptor("Holidays", new HolidaysForm());
+    FormFactory.registerFormInterceptor(FORM_COMPANY_ACTION, new CompanyActionForm());
 
     SelectorEvent.register(new ClassifierSelector());
 
