@@ -137,7 +137,6 @@
         <text>=mails</text>
         <ChildGrid name="RelatedMessages" relColumn="Company" />
       </page>
-      
       <page for="CompanyActList" module="Calendar">
       	<text>=calListOfActions</text>
       	<ChildGrid name="CompanyActList" relColumn="Company" />

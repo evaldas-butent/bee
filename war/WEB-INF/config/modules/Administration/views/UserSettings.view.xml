@@ -44,7 +44,6 @@
 
     <SimpleColumn name="ClickSensitivityMillis" />
     <SimpleColumn name="ClickSensitivityDistance" />
-    
     <SimpleColumn name="CompanyActionRemindBefore" />
 
     <SimpleColumn name="Style" />
