@@ -7,6 +7,7 @@ import com.google.gwt.core.client.Scheduler;
 import com.google.gwt.core.client.Scheduler.ScheduledCommand;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
+import com.google.gwt.event.dom.client.HasClickHandlers;
 import com.google.gwt.event.shared.HasHandlers;
 import com.google.gwt.user.client.ui.HasWidgets;
 import com.google.gwt.user.client.ui.Widget;
@@ -32,6 +33,7 @@ import com.butent.bee.client.i18n.Format;
 import com.butent.bee.client.layout.Flow;
 import com.butent.bee.client.layout.Simple;
 import com.butent.bee.client.render.PhotoRenderer;
+import com.butent.bee.client.ui.IdentifiableWidget;
 import com.butent.bee.client.utils.FileUtils;
 import com.butent.bee.client.view.HeaderView;
 import com.butent.bee.client.view.edit.SaveChangesEvent;
@@ -40,6 +42,7 @@ import com.butent.bee.client.view.form.interceptor.AbstractFormInterceptor;
 import com.butent.bee.client.view.form.interceptor.FormInterceptor;
 import com.butent.bee.client.widget.Button;
 import com.butent.bee.client.widget.CustomDiv;
+import com.butent.bee.client.widget.FaLabel;
 import com.butent.bee.client.widget.Image;
 import com.butent.bee.client.widget.Label;
 import com.butent.bee.shared.Assert;
@@ -55,6 +58,7 @@ import com.butent.bee.shared.data.RelationUtils;
 import com.butent.bee.shared.data.event.DataChangeEvent;
 import com.butent.bee.shared.data.event.RowUpdateEvent;
 import com.butent.bee.shared.data.view.DataInfo;
+import com.butent.bee.shared.font.FontAwesome;
 import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.io.FileInfo;
 import com.butent.bee.shared.modules.tasks.TaskConstants.TaskEvent;
@@ -555,14 +559,23 @@ class TaskEditor extends AbstractFormInterceptor {
 
     for (final TaskEvent event : TaskEvent.values()) {
       String label = event.getCommandLabel();
+      FontAwesome icon = event.getCommandIcon();
+
+      IdentifiableWidget button = icon != null ? new FaLabel(icon) : new Button(label);
+
+      ((HasClickHandlers) button).addClickHandler(new ClickHandler() {
+        @Override
+        public void onClick(ClickEvent e) {
+          doEvent(event);
+        }
+      });
+
+      if (button instanceof FaLabel) {
+        ((FaLabel) button).setTitle(label);
+      }
 
       if (!BeeUtils.isEmpty(label) && isEventEnabled(event, status, owner, executor)) {
-        header.addCommandItem(new Button(label, new ClickHandler() {
-          @Override
-          public void onClick(ClickEvent e) {
-            doEvent(event);
-          }
-        }));
+        header.addCommandItem(button);
       }
     }
   }
