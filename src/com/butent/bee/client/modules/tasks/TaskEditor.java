@@ -80,6 +80,7 @@ class TaskEditor extends AbstractFormInterceptor {
 
   private static final String STYLE_EVENT = CRM_STYLE_PREFIX + "taskEvent-";
   private static final String STYLE_EVENT_ROW = STYLE_EVENT + "row";
+  private static final String STYLE_EVENT_ROW_NEW = STYLE_EVENT_ROW + "-new";
   private static final String STYLE_EVENT_COL = STYLE_EVENT + "col-";
   private static final String STYLE_EVENT_FILES = STYLE_EVENT + "files";
 
@@ -340,7 +341,8 @@ class TaskEditor extends AbstractFormInterceptor {
   }
 
   private static void showEvent(Flow panel, BeeRow row, List<BeeColumn> columns,
-      List<FileInfo> files, Table<String, String, Long> durations, boolean renderPhoto) {
+      List<FileInfo> files, Table<String, String, Long> durations, boolean renderPhoto,
+      Long lastAccess) {
 
     Flow container = new Flow();
     container.addStyleName(STYLE_EVENT_ROW);
@@ -373,6 +375,16 @@ class TaskEditor extends AbstractFormInterceptor {
     if (publishTime != null) {
       col0.add(createEventCell(COL_PUBLISH_TIME,
           Format.getDefaultDateTimeFormat().format(publishTime)));
+    }
+
+    if (lastAccess != null && publishTime != null) {
+      if (BeeUtils.unbox(lastAccess) < publishTime.getTime()) {
+        container.addStyleName(STYLE_EVENT_ROW_NEW);
+      } else {
+        container.removeStyleName(STYLE_EVENT_ROW_NEW);
+      }
+    } else {
+      container.removeStyleName(STYLE_EVENT_ROW_NEW);
     }
 
     String publisher = BeeUtils.joinWords(
@@ -444,7 +456,7 @@ class TaskEditor extends AbstractFormInterceptor {
   }
 
   private static void showEventsAndDuration(FormView form, BeeRowSet rowSet,
-      List<FileInfo> files) {
+      List<FileInfo> files, Long lastAccess) {
 
     Widget widget = form.getWidgetByName(VIEW_TASK_EVENTS);
     if (!(widget instanceof Flow) || DataUtils.isEmpty(rowSet)) {
@@ -469,7 +481,7 @@ class TaskEditor extends AbstractFormInterceptor {
 
     for (BeeRow row : rowSet.getRows()) {
       showEvent(panel, row, rowSet.getColumns(), filterEventFiles(files, row.getId()), durations,
-          hasPhoto);
+          hasPhoto, lastAccess);
     }
 
     showExtensions(form, rowSet);
@@ -603,6 +615,7 @@ class TaskEditor extends AbstractFormInterceptor {
   @Override
   public boolean onStartEdit(final FormView form, final IsRow row, ScheduledCommand focusCommand) {
 
+    final Long lastAccess = BeeUtils.toLongOrNull(row.getProperty(PROP_LAST_ACCESS));
     Long owner = row.getLong(form.getDataIndex(COL_OWNER));
     Long executor = row.getLong(form.getDataIndex(COL_EXECUTOR));
 
@@ -678,7 +691,7 @@ class TaskEditor extends AbstractFormInterceptor {
 
         String events = data.getProperty(PROP_EVENTS);
         if (!BeeUtils.isEmpty(events)) {
-          showEventsAndDuration(form, BeeRowSet.restore(events), files);
+          showEventsAndDuration(form, BeeRowSet.restore(events), files, lastAccess);
         }
 
         form.updateRow(data, true);
@@ -1236,6 +1249,8 @@ class TaskEditor extends AbstractFormInterceptor {
     RowUpdateEvent.fire(BeeKeeper.getBus(), VIEW_TASKS, data);
 
     FormView form = getFormView();
+    Long lastAccess = BeeUtils.toLongOrNull(data.getProperty(PROP_LAST_ACCESS));
+
     if (hasRelations(form.getOldRow()) || hasRelations(data)) {
       DataChangeEvent.fireRefresh(BeeKeeper.getBus(), VIEW_RELATED_TASKS);
     }
@@ -1243,7 +1258,7 @@ class TaskEditor extends AbstractFormInterceptor {
     String events = data.getProperty(PROP_EVENTS);
     if (!BeeUtils.isEmpty(events)) {
       List<FileInfo> files = FileInfo.restoreCollection(data.getProperty(PROP_FILES));
-      showEventsAndDuration(form, BeeRowSet.restore(events), files);
+      showEventsAndDuration(form, BeeRowSet.restore(events), files, lastAccess);
     }
 
     form.updateRow(data, true);
