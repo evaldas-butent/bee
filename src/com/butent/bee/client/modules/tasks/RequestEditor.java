@@ -33,8 +33,8 @@ import com.butent.bee.client.view.ViewFactory.SupplierKind;
 import com.butent.bee.client.view.form.FormView;
 import com.butent.bee.client.view.form.interceptor.AbstractFormInterceptor;
 import com.butent.bee.client.view.form.interceptor.FormInterceptor;
-import com.butent.bee.client.widget.Button;
 import com.butent.bee.client.widget.CustomDiv;
+import com.butent.bee.client.widget.FaLabel;
 import com.butent.bee.client.widget.InternalLink;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.communication.ResponseObject;
@@ -44,6 +44,7 @@ import com.butent.bee.shared.data.BeeRow;
 import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.IsRow;
 import com.butent.bee.shared.data.view.DataInfo;
+import com.butent.bee.shared.font.FontAwesome;
 import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.io.FileInfo;
 import com.butent.bee.shared.logging.BeeLogger;
@@ -110,7 +111,8 @@ public class RequestEditor extends AbstractFormInterceptor {
         row.getDateTime(form.getDataIndex(TaskConstants.COL_REQUEST_FINISHED)) != null;
 
     if (!finished) {
-      Button btnFinish = new Button(Localized.getConstants().requestFinish());
+      FaLabel btnFinish = new FaLabel(FontAwesome.CHECK_CIRCLE_O);
+      btnFinish.setTitle(Localized.getConstants().requestFinish());
       btnFinish.addClickHandler(new ClickHandler() {
 
         @Override
@@ -124,7 +126,8 @@ public class RequestEditor extends AbstractFormInterceptor {
     }
 
     if (currentUser.canCreateData(TaskConstants.VIEW_TASKS) && !finished) {
-      Button btnFinishToTask = new Button(Localized.getConstants().requestFinishToTask());
+      FaLabel btnFinishToTask = new FaLabel(FontAwesome.LIST);
+      btnFinishToTask.setTitle(Localized.getConstants().requestFinishToTask());
       btnFinishToTask.addClickHandler(new ClickHandler() {
 
         @Override
@@ -194,7 +197,8 @@ public class RequestEditor extends AbstractFormInterceptor {
   }
 
   private static void createUpdateButton(final FormView form, final IsRow row, HeaderView header) {
-    Button updateRequestBtn = new Button(Localized.getConstants().actionUpdate());
+    FaLabel updateRequestBtn = new FaLabel(FontAwesome.RETWEET);
+    updateRequestBtn.setTitle(Localized.getConstants().actionUpdate());
     updateRequestBtn.addClickHandler(new ClickHandler() {
 
       @Override
