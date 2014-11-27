@@ -172,6 +172,8 @@ public interface LocalizableTaskConstants {
 
   String crmTaskMustBePerformed();
 
+  String crmTaskNotFound();
+
   String crmTaskObservers();
 
   String crmTaskPriority();
@@ -243,6 +245,8 @@ public interface LocalizableTaskConstants {
   String requestFinishing();
 
   String requestFinishToTask();
+
+  String requestUpdatingQuestion();
 
   String specifyResult();
 }
