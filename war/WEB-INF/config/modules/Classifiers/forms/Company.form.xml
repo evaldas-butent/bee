@@ -21,9 +21,9 @@
         <Label for="Name" style="&lbl1;" />
         <InputText source="Name" style="&inp1;" visible="true" />
         <Label style="&lbl1;" for="CompanyType" class="bee-required" />
-        <DataSelector source="CompanyType" style="&inp1;" required="true"  />
+        <DataSelector source="CompanyType" style="&inp1;" required="true" />
         <Label style="&lbl1;" for="CompanyGroup" class="bee-required" />
-        <DataSelector source="CompanyGroup" style="&inp1;" required="true"  />
+        <DataSelector source="CompanyGroup" style="&inp1;" required="true" />
       </row>
 
       <row>
@@ -237,6 +237,10 @@
       <page for="RelatedMessages">
         <text>=mails</text>
         <ChildGrid name="RelatedMessages" relColumn="Company" />
+      </page>
+      <page for="CompActionList" module="Calendar">
+      	<text>=calListOfActions</text>
+      	<ChildGrid name="CompActionList" relColumn="Company" />
       </page>
       <page for="Tasks">
         <text>=crmTasks</text>
