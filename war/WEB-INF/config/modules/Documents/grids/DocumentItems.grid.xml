@@ -6,10 +6,11 @@
   flexGrow="1" caption="=documentItems"
   >
   <g:columns>
-    <AutoColumn name="Description" viewName="DistinctDocumentItems" viewColumn="Description"
-        editInPlace="true">
+    <DataColumn name="Ordinal" editInPlace="true" />
+    <RelColumn name="Description" viewName="DistinctDocumentItems" valueSource="Description"
+               strict="false" editInPlace="true">
       <footer text="=totalOf" horizontalAlignment="right" />
-    </AutoColumn>
+    </RelColumn>
     <DataColumn name="Quantity" editInPlace="true">
       <footer aggregate="sum" />
     </DataColumn>

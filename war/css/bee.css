@@ -1360,7 +1360,7 @@
   cursor: pointer;
 }
 .bee-Workspace-tabSelected {
-  border-top: 2px solid #5a6ba3;;
+  border-top: 2px solid #5a6ba3;
   border-bottom-style: none;
 }
 .bee-Workspace-tabPanel > div:only-of-type {

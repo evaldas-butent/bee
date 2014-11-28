@@ -57,7 +57,6 @@ import com.butent.bee.client.view.grid.interceptor.AbstractGridInterceptor;
 import com.butent.bee.client.view.grid.interceptor.GridInterceptor;
 import com.butent.bee.client.widget.Label;
 import com.butent.bee.shared.Assert;
-import com.butent.bee.shared.BiFunction;
 import com.butent.bee.shared.Consumer;
 import com.butent.bee.shared.Holder;
 import com.butent.bee.shared.Pair;
@@ -75,13 +74,14 @@ import com.butent.bee.shared.data.value.TextValue;
 import com.butent.bee.shared.data.value.Value;
 import com.butent.bee.shared.i18n.LocalizableConstants;
 import com.butent.bee.shared.i18n.Localized;
-import com.butent.bee.shared.modules.classifiers.ClassifierConstants;
 import com.butent.bee.shared.ui.Action;
 import com.butent.bee.shared.ui.Relation;
 import com.butent.bee.shared.utils.BeeUtils;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -99,9 +99,9 @@ public class DocumentDataForm extends AbstractFormInterceptor
     private JavaScriptObject tiny;
     private String deferedContent;
 
-    public void destroy(boolean automatic) {
+    public void destroy() {
       if (isActive()) {
-        destroy(tiny, automatic);
+        destroy(tiny);
         tiny = null;
       }
     }
@@ -134,7 +134,7 @@ public class DocumentDataForm extends AbstractFormInterceptor
           });
     }
 
-    public void init(String editorId, Map<String, String> templates) {
+    public void init(String editorId, Map<String, String> customTemplates) {
       Assert.state(!isActive());
       Assert.notEmpty(editorId);
 
@@ -144,137 +144,66 @@ public class DocumentDataForm extends AbstractFormInterceptor
       JsUtils.setProperty(jso, "mode", "exact");
       JsUtils.setProperty(jso, "elements", editorId);
       JsUtils.setProperty(jso, "language", loc.languageTag());
-      JsUtils.setProperty(jso, "plugins", "advlist lists image charmap hr pagebreak searchreplace "
-          + "visualblocks visualchars code fullscreen table template paste textcolor");
+      JsUtils.setProperty(jso, "plugins", "advlist lists image charmap hr pagebreak searchreplace"
+          + " visualblocks visualchars code fullscreen table template paste textcolor colorpicker");
       JsUtils.setProperty(jso, "toolbar", "fullscreen | undo redo | styleselect "
           + "| bold italic underline | alignleft aligncenter alignright alignjustify "
           + "| forecolor backcolor | bullist numlist outdent indent | fontselect fontsizeselect");
       JsUtils.setProperty(jso, "image_advtab", true);
+      JsUtils.setProperty(jso, "table_advtab", true);
+      JsUtils.setProperty(jso, "table_row_advtab", true);
+      JsUtils.setProperty(jso, "table_cell_advtab", true);
       JsUtils.setProperty(jso, "paste_data_images", true);
       JsUtils.setProperty(jso, "pagebreak_separator",
           "<div style=\"page-break-before:always;\"></div>");
 
-      JsFunction jsf = JsFunction.create("editor",
-          "editor.addMenuItem('saveTemplate', {text: '" + loc.saveAsEditorTemplate() + "', "
-              + "context: 'tools', "
-              + "onclick: function() {editor.execCommand('savetemplate', false);}});");
+      StringBuilder body = new StringBuilder("editor.addMenuItem('saveTemplate', {")
+          .append("text: '" + loc.saveAsEditorTemplate() + "', ")
+          .append("context: 'tools', ")
+          .append("onclick: function() {editor.execCommand('savetemplate', false);}")
+          .append("});");
 
-      JsUtils.setProperty(jso, "setup", jsf);
+      Multimap<String, Pair<String, String>> objects = getInsertObjects();
 
-      BiFunction<String, String, String> td = new BiFunction<String, String, String>() {
-        @Override
-        public String apply(String input, String attributes) {
-          String stylePrefix = "style=\"";
+      if (objects != null && !objects.isEmpty()) {
+        body.append("editor.addMenuItem('insertObject', {")
+            .append("text: '" + loc.object() + "',")
+            .append("context: 'insert',")
+            .append("menu: [");
 
-          return "<td style=\"border:1px solid black;"
-              + (BeeUtils.startsWith(attributes, stylePrefix)
-                  ? attributes.substring(stylePrefix.length())
-                  : "\" " + BeeUtils.nvl(attributes, "")) + ">" + input + "</td>";
+        for (String object : objects.keySet()) {
+          body.append("{text: '" + object + "',")
+              .append("menu: [");
+
+          for (Pair<String, String> item : objects.get(object)) {
+            body.append("{text: '" + item.getA() + "',")
+                .append("onclick: function() {editor.insertContent('")
+                .append(item.getB())
+                .append("');}},");
+          }
+          body.setLength(body.length() - 1);
+          body.append("]},");
         }
-      };
+        body.setLength(body.length() - 1);
+        body.append("]});");
+      }
+      JsUtils.setProperty(jso, "setup", JsFunction.create("editor", body.toString()));
+
       JsArrayMixed templateArray = JavaScriptObject.createArray().cast();
 
-      JavaScriptObject template = JavaScriptObject.createObject();
-      JsUtils.setProperty(template, "title", loc.criteriaGroups());
-      JsUtils.setProperty(template, "content",
-          new StringBuilder("<p/><div><table style=\"border-collapse:collapse;\"><tbody>")
-              .append("<!--{CriteriaGroups}--><tr>")
-              .append(td.apply("{Name}", "colspan=\"3\""))
-              .append("</tr><!--{Criteria}--><tr>")
-              .append(td.apply("{Criterion}", null))
-              .append(td.apply("{Value}", null))
-              .append("</tr><!--{Criteria}-->")
-              .append("<!--{CriteriaGroups}--></tbody></table></div><p/>").toString());
-
-      templateArray.push(template);
-
-      template = JavaScriptObject.createObject();
-      JsUtils.setProperty(template, "title", loc.documentItems());
-      JsUtils.setProperty(template, "content",
-          new StringBuilder("<p/><div><table style=\"border-collapse:collapse;"
-              + " border:1px solid black;\"><tbody>")
-              .append("<tr style=\"text-align:center;\">")
-              .append(td.apply(loc.ordinal(), null))
-              .append(td.apply(loc.description(), null))
-              .append(td.apply(loc.quantity(), null))
-              .append(td.apply(loc.price(), null))
-              .append(td.apply(loc.amount(), null))
-              .append(td.apply(loc.vat(), null))
-              .append(td.apply(loc.total(), null))
-              .append("</tr><!--{DocumentItems}--><tr style=\"text-align:right;\">")
-              .append(td.apply("{Index}", null))
-              .append(td.apply("{Description}", "style=\"text-align:left;\""))
-              .append(td.apply("{Quantity}", null))
-              .append(td.apply("{Price}", null))
-              .append(td.apply("{Amount}", null))
-              .append(td.apply("{Vat}", null))
-              .append(td.apply("{VatPlusAmount}", null))
-              .append("</tr><!--{DocumentItems}--><tr style=\"text-align:right;\">")
-              .append("<td style=\"text-align:left;\" colspan=\"2\">" + loc.totalOf() + "</td>")
-              .append("<td>{QuantityAmount}</td>")
-              .append("<td colspan=\"2\">{TotalAmount}</td>")
-              .append("<td>{VatAmount}</td>")
-              .append("<td>{Total}</td>")
-              .append("</tr></tbody></table></div><p/>").toString());
-
-      templateArray.push(template);
-
-      template = JavaScriptObject.createObject();
-      JsUtils.setProperty(template, "title", loc.content());
-      JsUtils.setProperty(template, "content",
-          new StringBuilder("<p/><div><!--{DocumentItems}-->")
-              .append("<p><strong>{Index}. {Description}</strong></p>")
-              .append("<p>{Content}</p>")
-              .append("<!--{DocumentItems}--></div><p/>").toString());
-
-      templateArray.push(template);
-
-      template = JavaScriptObject.createObject();
-      JsUtils.setProperty(template, "title", loc.company());
-      List<String> descr = new ArrayList<>();
-
-      for (BeeColumn col : Data.getColumns(ClassifierConstants.TBL_COMPANIES)) {
-        descr.add("{" + ClassifierConstants.COL_COMPANY + col.getId() + "}");
+      for (Map<String, String> templates : Arrays.asList(getTemplates(), customTemplates)) {
+        if (!BeeUtils.isEmpty(templates)) {
+          for (Entry<String, String> entry : templates.entrySet()) {
+            JavaScriptObject template = JavaScriptObject.createObject();
+            JsUtils.setProperty(template, "title", entry.getKey());
+            JsUtils.setProperty(template, "content", entry.getValue());
+            templateArray.push(template);
+          }
+        }
       }
-      JsUtils.setProperty(template, "description", BeeUtils.joinItems(descr));
-      JsUtils.setProperty(template, "content",
-          new StringBuilder("<p/>")
-              .append("<p><strong>{CompanyName}</strong></p>")
-              .append("<p>").append(loc.companyCode()).append(": {CompanyCode}</p>")
-              .append("<p>").append(loc.address()).append(": {CompanyAddress}</p>")
-              .append("<p>").append(loc.phone()).append(": {CompanyPhone}</p>")
-              .append("<p>").append(loc.email()).append(": {CompanyEmail}</p>")
-              .append("<p>").append("{CompanyWebsite}</p>")
-              .append("<p/>").toString());
-
-      templateArray.push(template);
-
-      template = JavaScriptObject.createObject();
-      JsUtils.setProperty(template, "title", loc.person());
-      descr.clear();
-
-      for (BeeColumn col : Data.getColumns(ClassifierConstants.TBL_PERSONS)) {
-        descr.add("{" + ClassifierConstants.COL_PERSON + col.getId() + "}");
+      if (templateArray.length() > 0) {
+        JsUtils.setProperty(jso, "templates", templateArray);
       }
-      JsUtils.setProperty(template, "description", BeeUtils.joinItems(descr));
-      JsUtils.setProperty(template, "content",
-          new StringBuilder("<p/>")
-              .append("<p><strong>{PersonFirstName} {PersonLastName}</strong></p>")
-              .append("<p>").append(loc.phone()).append(": {PersonPhone}</p>")
-              .append("<p>").append(loc.mobile()).append(": {PersonMobile}</p>")
-              .append("<p>").append(loc.email()).append(": {PersonEmail}</p>")
-              .append("<p/>").toString());
-
-      templateArray.push(template);
-
-      for (Entry<String, String> entry : templates.entrySet()) {
-        template = JavaScriptObject.createObject();
-        JsUtils.setProperty(template, "title", entry.getKey());
-        JsUtils.setProperty(template, "content", entry.getValue());
-        templateArray.push(template);
-      }
-      JsUtils.setProperty(jso, "templates", templateArray);
-
       initEditor(jso, this);
     }
 
@@ -317,8 +246,8 @@ public class DocumentDataForm extends AbstractFormInterceptor
     }
 
     //@formatter:off
-    private native void destroy(JavaScriptObject editor, boolean automatic) /*-{
-      editor.destroy(automatic);
+    private native void destroy(JavaScriptObject editor) /*-{
+      editor.destroy(false);
     }-*/;
 
     private native String getContent(JavaScriptObject editor) /*-{
@@ -494,7 +423,7 @@ public class DocumentDataForm extends AbstractFormInterceptor
   @Override
   public void beforeStateChange(State state, boolean modal) {
     if (state == State.CLOSED && modal && tinyEditor.isActive()) {
-      tinyEditor.destroy(false);
+      tinyEditor.destroy();
     } else if (state == State.OPEN && modal && tabbedPages != null) {
       tabbedPages.selectPage(0, SelectionOrigin.SCRIPT);
     }
@@ -597,8 +526,29 @@ public class DocumentDataForm extends AbstractFormInterceptor
 
   @Override
   public void onUnload(FormView form) {
-    tinyEditor.destroy(false);
+    tinyEditor.destroy();
     super.onUnload(form);
+  }
+
+  protected Multimap<String, Pair<String, String>> getInsertObjects() {
+    return null;
+  }
+
+  protected Map<String, String> getTemplates() {
+    return Collections.singletonMap(Localized.getConstants().criteriaGroups(),
+        new StringBuilder("<table style=\"border-collapse:collapse;\"><tbody>")
+            .append("<!--{CriteriaGroups}-->")
+            .append("<tr>")
+            .append("<td style=\"border:1px solid black;\" colspan=\"3\">{Name}</td>")
+            .append("</tr>")
+            .append("<!--{Criteria}-->")
+            .append("<tr>")
+            .append("<td style=\"border:1px solid black;\">{Criterion}</td>")
+            .append("<td style=\"border:1px solid black;\">{Value}</td>")
+            .append("</tr>")
+            .append("<!--{Criteria}-->")
+            .append("<!--{CriteriaGroups}-->")
+            .append("</tbody></table>").toString());
   }
 
   protected void parseContent(final String content, Long dataId, final Consumer<String> consumer) {
