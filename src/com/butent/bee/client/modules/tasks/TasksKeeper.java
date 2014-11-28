@@ -202,6 +202,8 @@ public final class TasksKeeper {
     GridFactory.registerGridInterceptor(GRID_RELATED_RECURRING_TASKS,
         new RelatedRecurringTasksGrid());
 
+    GridFactory.registerGridInterceptor(GRID_CHILD_TASKS, new ChildTasksGrid());
+
     for (TaskType tt : TaskType.values()) {
       GridFactory.registerGridSupplier(tt.getSupplierKey(), GRID_TASKS,
           new TasksGrid(tt, tt.getCaption()));
