@@ -142,13 +142,13 @@ public class ArticleSupplier implements BeeSerializable {
     return remainders;
   }
 
-  public int getStock(Collection<String> warehouses) {
-    int stock = 0;
+  public double getStock(Collection<String> warehouses) {
+    double stock = 0;
 
     if (!remainders.isEmpty()) {
       for (Map.Entry<String, String> entry : remainders.entrySet()) {
         if (warehouses.contains(entry.getKey())) {
-          stock += BeeUtils.toInt(entry.getValue());
+          stock += BeeUtils.toDouble(entry.getValue());
         }
       }
     }
@@ -224,11 +224,11 @@ public class ArticleSupplier implements BeeSerializable {
     this.price = price;
   }
 
-  public int totalStock() {
-    int stock = 0;
+  public double totalStock() {
+    double stock = 0;
 
     for (String remainder : remainders.values()) {
-      stock += BeeUtils.toInt(remainder);
+      stock += BeeUtils.toDouble(remainder);
     }
 
     return stock;
