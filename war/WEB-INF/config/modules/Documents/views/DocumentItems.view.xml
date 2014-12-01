@@ -3,7 +3,7 @@
 
   name="DocumentItems" source="DocumentItems"
   caption="=documentItems" newRowCaption="=newDocumentItem"
-  editForm="DocumentItem"
+  newRowForm="DocumentItem" editForm="DocumentItem"
   >
   <Columns>
     <SimpleColumn name="Document" />

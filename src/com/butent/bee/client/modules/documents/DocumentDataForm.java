@@ -23,15 +23,20 @@ import com.google.gwt.user.client.ui.Widget;
 import static com.butent.bee.shared.modules.documents.DocumentConstants.*;
 
 import com.butent.bee.client.BeeKeeper;
+import com.butent.bee.client.Callback;
 import com.butent.bee.client.Global;
+import com.butent.bee.client.UserInfo;
 import com.butent.bee.client.composite.Autocomplete;
+import com.butent.bee.client.composite.UnboundSelector;
 import com.butent.bee.client.data.Data;
 import com.butent.bee.client.data.IdCallback;
+import com.butent.bee.client.data.ParentRowCreator;
 import com.butent.bee.client.data.Queries;
 import com.butent.bee.client.data.Queries.IntCallback;
 import com.butent.bee.client.data.Queries.RowSetCallback;
 import com.butent.bee.client.data.RowCallback;
 import com.butent.bee.client.data.RowUpdateCallback;
+import com.butent.bee.client.dialog.InputCallback;
 import com.butent.bee.client.dialog.StringCallback;
 import com.butent.bee.client.dom.DomUtils;
 import com.butent.bee.client.event.logical.AutocompleteEvent;
@@ -55,6 +60,7 @@ import com.butent.bee.client.view.form.interceptor.FormInterceptor;
 import com.butent.bee.client.view.grid.GridView;
 import com.butent.bee.client.view.grid.interceptor.AbstractGridInterceptor;
 import com.butent.bee.client.view.grid.interceptor.GridInterceptor;
+import com.butent.bee.client.widget.Button;
 import com.butent.bee.client.widget.Label;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.Consumer;
@@ -67,15 +73,18 @@ import com.butent.bee.shared.data.BeeRow;
 import com.butent.bee.shared.data.BeeRowSet;
 import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.IsRow;
-import com.butent.bee.shared.data.event.RowUpdateEvent;
 import com.butent.bee.shared.data.filter.CompoundFilter;
 import com.butent.bee.shared.data.filter.Filter;
 import com.butent.bee.shared.data.value.TextValue;
 import com.butent.bee.shared.data.value.Value;
 import com.butent.bee.shared.i18n.LocalizableConstants;
 import com.butent.bee.shared.i18n.Localized;
+import com.butent.bee.shared.rights.Module;
+import com.butent.bee.shared.rights.ModuleAndSub;
+import com.butent.bee.shared.rights.SubModule;
 import com.butent.bee.shared.ui.Action;
 import com.butent.bee.shared.ui.Relation;
+import com.butent.bee.shared.ui.Relation.Caching;
 import com.butent.bee.shared.utils.BeeUtils;
 
 import java.util.ArrayList;
@@ -514,6 +523,89 @@ public class DocumentDataForm extends AbstractFormInterceptor
   }
 
   @Override
+  public void onStart(final FormView form) {
+    if (getHeaderView() == null || getGridView() == null) {
+      return;
+    }
+    UserInfo user = BeeKeeper.getUser();
+
+    if (user.isModuleVisible(ModuleAndSub.of(Module.DOCUMENTS, SubModule.TEMPLATES))) {
+      getHeaderView().addCommandItem(new Button(Localized.getConstants().selectDocumentTemplate(),
+          new ClickHandler() {
+            @Override
+            public void onClick(ClickEvent event) {
+              if (!form.validate(form, true)) {
+                return;
+              }
+              Relation relation = Relation.create(VIEW_DOCUMENT_TEMPLATES,
+                  Lists.newArrayList(ALS_CATEGORY_NAME, COL_DOCUMENT_TEMPLATE_NAME));
+              relation.disableNewRow();
+              relation.setCaching(Caching.QUERY);
+
+              final UnboundSelector selector = UnboundSelector.create(relation);
+
+              Global.inputWidget(Localized.getConstants().documentTemplateName(), selector,
+                  new InputCallback() {
+                    @Override
+                    public String getErrorMessage() {
+                      if (selector.getRelatedRow() == null) {
+                        UiHelper.focus(selector);
+                        return Localized.getConstants().valueRequired();
+                      }
+                      return super.getErrorMessage();
+                    }
+
+                    @Override
+                    public void onSuccess() {
+                      final Long templateData = Data.getLong(VIEW_DOCUMENT_TEMPLATES,
+                          selector.getRelatedRow(), COL_DOCUMENT_DATA);
+
+                      if (!DataUtils.isId(templateData)) {
+                        return;
+                      }
+                      if (form.getViewPresenter() instanceof ParentRowCreator) {
+                        ((ParentRowCreator) form.getViewPresenter()).createParentRow(form,
+                            new Callback<IsRow>() {
+                              @Override
+                              public void onSuccess(final IsRow row) {
+                                DocumentsHandler.copyDocumentData(templateData, new IdCallback() {
+                                  @Override
+                                  public void onSuccess(Long newDataId) {
+                                    final Long oldDataId =
+                                        row.getLong(form.getDataIndex(COL_DOCUMENT_DATA));
+
+                                    Queries.update(form.getViewName(),
+                                        row.getId(), row.getVersion(),
+                                        DataUtils.getColumns(form.getDataColumns(),
+                                            Lists.newArrayList(COL_DOCUMENT_DATA)),
+                                        Arrays.asList(DataUtils.isId(oldDataId)
+                                            ? BeeUtils.toString(oldDataId)
+                                            : (String) null),
+                                        Arrays.asList(BeeUtils.toString(newDataId)),
+                                        null, new RowUpdateCallback(form.getViewName()) {
+                                          @Override
+                                          public void onSuccess(BeeRow result) {
+                                            if (DataUtils.isId(oldDataId)) {
+                                              Queries.deleteRow(VIEW_DOCUMENT_DATA, oldDataId);
+                                            }
+                                            super.onSuccess(result);
+                                            requery(result);
+                                            form.refresh();
+                                          }
+                                        });
+                                  }
+                                });
+                              }
+                            });
+                      }
+                    }
+                  });
+            }
+          }));
+    }
+  }
+
+  @Override
   public boolean onStartEdit(FormView form, IsRow row, ScheduledCommand focusCommand) {
     requery(row);
     return true;
@@ -635,17 +727,20 @@ public class DocumentDataForm extends AbstractFormInterceptor
           Lists.newArrayList(COL_DOCUMENT_CONTENT)), Lists.newArrayList((String) null), null,
           new RowCallback() {
             @Override
-            public void onSuccess(BeeRow result) {
-              long id = result.getId();
-              newRow.setValue(idx, id);
-
-              RowUpdateEvent.fire(BeeKeeper.getBus(), form.getViewName(), newRow);
-              form.refreshChildWidgets(newRow);
-
-              callback.onSuccess(id);
-
-              Queries.update(form.getViewName(), newRow.getId(), COL_DOCUMENT_DATA,
-                  Value.getValue(id));
+            public void onSuccess(final BeeRow dataRow) {
+              Queries.update(form.getViewName(), newRow.getId(), newRow.getVersion(),
+                  DataUtils.getColumns(form.getDataColumns(),
+                      Lists.newArrayList(COL_DOCUMENT_DATA)),
+                  Arrays.asList((String) null),
+                  Arrays.asList(BeeUtils.toString(dataRow.getId())), null,
+                  new RowUpdateCallback(form.getViewName()) {
+                    @Override
+                    public void onSuccess(BeeRow res) {
+                      super.onSuccess(res);
+                      form.refreshChildWidgets(res);
+                      callback.onSuccess(dataRow.getId());
+                    }
+                  });
             }
           });
     }

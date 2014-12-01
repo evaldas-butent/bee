@@ -6,23 +6,22 @@
   flexGrow="1" caption="=documentItems"
   >
   <g:columns>
-    <DataColumn name="Ordinal" editInPlace="true" />
+    <DataColumn name="Ordinal" width="30" sortable="false" />
     <RelColumn name="Description" viewName="DistinctDocumentItems" valueSource="Description"
-               strict="false" editInPlace="true">
+               strict="false">
       <footer text="=totalOf" horizontalAlignment="right" />
     </RelColumn>
-    <DataColumn name="Quantity" editInPlace="true">
+    <DataColumn name="Quantity">
       <footer aggregate="sum" />
     </DataColumn>
-    <DataColumn name="Price" editInPlace="true" />
+    <DataColumn name="Price" />
 
-    <DataColumn name="VatPlus" width="20" sortable="false" horizontalAlignment="center" caption="+"
-        editInPlace="true">
+    <DataColumn name="VatPlus" width="20" sortable="false" horizontalAlignment="center" caption="+">
       <render><ui:expression>row.VatPlus ? '+' : ''</ui:expression></render>
     </DataColumn>
-    <DataColumn name="Vat" editInPlace="true" />
+    <DataColumn name="Vat" />
     <DataColumn name="VatPercent" width="20" sortable="false" horizontalAlignment="center"
-        caption="%" editInPlace="true">
+        caption="%">
       <render><ui:expression>row.VatPercent ? '%' : ''</ui:expression></render>
     </DataColumn>
 
@@ -32,13 +31,5 @@
       </style>
       <footer aggregate="sum" />
     </CalcColumn>
-    <DataColumn name="Data" caption="&#xf044;" width="20" sortable="false" readOnly="true"
-        exportable="false">
-      <style>
-        <headerStyle><ui:class>bee-fa-label</ui:class></headerStyle>
-        <bodyStyle><ui:class>bee-fa-label</ui:class></bodyStyle>
-      </style>
-      <render><ui:expression>row.Data ? '\uf044' : ''</ui:expression></render>
-    </DataColumn>
   </g:columns>
 </g:Grid>
