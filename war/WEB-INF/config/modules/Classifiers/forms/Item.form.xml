@@ -52,23 +52,12 @@
         <Label for="Barcode" />
         <InputText source="Barcode" />
 
-        <FlowPanel>
-          <Label for="Weight">
-            &foritem;
-          </Label>
-          <Label for="TimeUnit" module="Trade.Acts">
-            &forservice;
-          </Label>
-        </FlowPanel>
-
-        <FlowPanel>
-          <InputDecimal source="Weight" style="width: 80px;">
-            &foritem;
-          </InputDecimal>
-          <ListBox source="TimeUnit" style="width: 80px;" module="Trade.Acts">
-            &forservice;
-          </ListBox>
-        </FlowPanel>
+        <Label for="TimeUnit" module="Trade.Acts">
+          &forservice;
+        </Label>
+        <ListBox source="TimeUnit" style="width: 80px;" module="Trade.Acts">
+          &forservice;
+        </ListBox>
       </row>
 
       <row data="ItemCategories">
@@ -156,7 +145,7 @@
             <InputText source="Article2" summarize="true" />
 
             <Label for="Ordinal" />
-            <InputInteger source="Ordinal" summarize="true" />
+            <InputInteger source="Ordinal" style="width: 80px;" summarize="true" />
           </row>
 
           <row>
@@ -173,6 +162,40 @@
 
             <Label for="CostCenter" data="CostCenters" />
             <DataSelector source="CostCenter" data="CostCenters" summarize="true" />
+          </row>
+
+          <row>
+            <Label for="Weight">
+              &foritem;
+            </Label>
+            <InputDecimal source="Weight" style="width: 80px;" summarize="true">
+              &foritem;
+            </InputDecimal>
+
+            <Label for="Area">
+              &foritem;
+            </Label>
+            <InputDecimal source="Area" style="width: 80px;" summarize="true">
+              &foritem;
+            </InputDecimal>
+          </row>
+
+          <row>
+            <Label for="DaysPerWeek" module="Trade.Acts">
+              &forservice;
+            </Label>
+            <InputInteger source="DaysPerWeek" maxValue="7" style="width: 20px;"
+              module="Trade.Acts" summarize="true">
+              &forservice;
+            </InputInteger>
+
+            <Label for="MinTerm" module="Trade.Acts">
+              &forservice;
+            </Label>
+            <InputInteger source="MinTerm" style="width: 40px;" module="Trade.Acts"
+              summarize="true">
+              &forservice;
+            </InputInteger>
           </row>
         </Table>
       </page>  

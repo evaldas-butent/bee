@@ -18,6 +18,7 @@ import com.butent.bee.client.data.RowCallback;
 import com.butent.bee.client.dialog.ConfirmationCallback;
 import com.butent.bee.client.dialog.Icon;
 import com.butent.bee.client.dialog.StringCallback;
+import com.butent.bee.client.event.EventUtils;
 import com.butent.bee.client.output.Printer;
 import com.butent.bee.client.ui.FormDescription;
 import com.butent.bee.client.view.FormContainerImpl;
@@ -294,10 +295,7 @@ public class FormPresenter extends AbstractPresenter implements ReadyForInsertEv
   public void onViewUnload() {
     getMainView().setViewPresenter(null);
 
-    for (HandlerRegistration hr : filterChangeHandlers) {
-      hr.removeHandler();
-    }
-    filterChangeHandlers.clear();
+    EventUtils.clearRegistry(filterChangeHandlers);
 
     if (getDataProvider() != null) {
       getDataProvider().onUnload();

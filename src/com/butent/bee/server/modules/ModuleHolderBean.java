@@ -36,8 +36,8 @@ import javax.ejb.Singleton;
 @Lock(LockType.READ)
 public class ModuleHolderBean {
 
-  private enum TABLE_ACTIVATION_MODE {
-    DELAYED, FORCED
+  private enum TableActivationMode {
+    NEW, ACTIVE, ALL
   }
 
   private static BeeLogger logger = LogUtils.getLogger(ModuleHolderBean.class);
@@ -96,28 +96,28 @@ public class ModuleHolderBean {
   }
 
   public void initModules() {
-    TABLE_ACTIVATION_MODE mode = EnumUtils.getEnumByName(TABLE_ACTIVATION_MODE.class,
+    TableActivationMode mode = EnumUtils.getEnumByName(TableActivationMode.class,
         Config.getProperty("TableActivationMode"));
-
-    if (mode != TABLE_ACTIVATION_MODE.DELAYED) {
-      for (String tblName : sys.getTableNames()) {
-        if (mode == TABLE_ACTIVATION_MODE.FORCED) {
-          sys.rebuildTable(tblName);
-        } else {
-          sys.activateTable(tblName);
-        }
-      }
-    }
-
-    List<String> etf = Config.getList("EnsureTableFields");
-    if (!BeeUtils.isEmpty(etf)) {
-      for (String tblName : etf) {
-        sys.ensureFields(tblName);
-      }
-    }
 
     for (String mod : getModules()) {
       prm.refreshModuleParameters(mod);
+    }
+    if (mode != null) {
+      switch (mode) {
+        case NEW:
+          sys.ensureTables();
+          break;
+        case ACTIVE:
+          sys.rebuildActiveTables();
+          break;
+        case ALL:
+          for (String tblName : sys.getTableNames()) {
+            sys.rebuildTable(tblName);
+          }
+          break;
+      }
+    }
+    for (String mod : getModules()) {
       getModule(mod).init();
     }
   }
@@ -143,7 +143,7 @@ public class ModuleHolderBean {
     }
     for (String moduleName : mods) {
       if (hasModule(moduleName)) {
-        logger.severe("Dublicate module name:", BeeUtils.bracket(moduleName));
+        logger.severe("Duplicate module name:", BeeUtils.bracket(moduleName));
       } else {
         try {
           Class<BeeModule> clazz = (Class<BeeModule>) Class.forName(BeeUtils.join(".",

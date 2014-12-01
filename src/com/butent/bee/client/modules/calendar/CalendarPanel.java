@@ -572,10 +572,7 @@ public class CalendarPanel extends Split implements AppointmentEvent.Handler, Pr
 
   @Override
   protected void onUnload() {
-    for (HandlerRegistration hr : registry) {
-      hr.removeHandler();
-    }
-    registry.clear();
+    EventUtils.clearRegistry(registry);
 
     CalendarKeeper.saveActiveView(getSettings());
     onViewUnload();

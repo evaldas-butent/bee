@@ -914,7 +914,6 @@ public final class BeeUtils {
     if (rest == null) {
       return false;
     }
-
     for (int y : rest) {
       if (x == y) {
         return true;
@@ -2193,7 +2192,7 @@ public final class BeeUtils {
    * @return a String with replaced phrases.
    */
   public static String replace(String text, String search, String replacement, int max) {
-    if (isEmpty(text) || isEmpty(search) || replacement == null || max == 0) {
+    if (!hasLength(text) || !hasLength(search) || replacement == null || max == 0) {
       return text;
     }
     int start = 0;

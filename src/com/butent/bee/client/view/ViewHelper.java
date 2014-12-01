@@ -9,6 +9,7 @@ import com.google.gwt.user.client.ui.IsWidget;
 import com.google.gwt.user.client.ui.Widget;
 
 import com.butent.bee.client.BeeKeeper;
+import com.butent.bee.client.data.Data;
 import com.butent.bee.client.data.Provider;
 import com.butent.bee.client.dialog.Popup;
 import com.butent.bee.client.dom.DomUtils;
@@ -329,6 +330,11 @@ public final class ViewHelper {
   public static Long getParentRowId(Widget widget, String viewName) {
     IsRow row = getParentRow(widget, viewName);
     return (row == null) ? null : row.getId();
+  }
+
+  public static Long getParentValueLong(Widget widget, String viewName, String colName) {
+    IsRow row = getParentRow(widget, viewName);
+    return (row == null) ? null : Data.getLong(viewName, row, colName);
   }
 
   public static PresenterCallback getPresenterCallback() {

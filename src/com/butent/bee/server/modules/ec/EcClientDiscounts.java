@@ -5,13 +5,16 @@ import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ListMultimap;
 import com.google.common.collect.Range;
 
+import static com.butent.bee.shared.modules.ec.EcConstants.*;
+
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.SimpleRowSet;
 import com.butent.bee.shared.data.SimpleRowSet.SimpleRow;
-import com.butent.bee.shared.modules.ec.EcConstants;
+import com.butent.bee.shared.modules.ec.EcConstants.EcSupplier;
 import com.butent.bee.shared.modules.ec.EcItem;
 import com.butent.bee.shared.utils.BeeUtils;
+import com.butent.bee.shared.utils.EnumUtils;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -27,13 +30,19 @@ public class EcClientDiscounts {
     private final int depth;
 
     private final Range<Long> timeRange;
+    private final EcSupplier supplier;
 
     private final Double percent;
     private final Double price;
 
-    private Discount(int depth, Range<Long> timeRange, Double percent, Double price) {
+    private Discount(int depth, Range<Long> timeRange, EcSupplier supplier,
+        Double percent, Double price) {
+
       this.depth = depth;
+
       this.timeRange = timeRange;
+      this.supplier = supplier;
+
       this.percent = percent;
       this.price = price;
     }
@@ -50,17 +59,18 @@ public class EcClientDiscounts {
       return price;
     }
 
-    private boolean isValid(long time) {
-      return timeRange == null || timeRange.contains(time);
+    private boolean isValid(long time, EcSupplier ecs) {
+      return (timeRange == null || timeRange.contains(time))
+          && (supplier == null || supplier == ecs);
     }
   }
 
-  private static List<Discount> filterDiscounts(List<Discount> input) {
+  private static List<Discount> filterDiscounts(List<Discount> input, EcSupplier supplier) {
     List<Discount> result = new ArrayList<>();
 
     long time = System.currentTimeMillis();
     for (Discount discount : input) {
-      if (discount.isValid(time)) {
+      if (discount.isValid(time, supplier)) {
         result.add(discount);
       }
     }
@@ -69,7 +79,7 @@ public class EcClientDiscounts {
   }
 
   private static List<Discount> getCategoryDiscounts(ListMultimap<Long, Discount> input,
-      Collection<Long> categories, Map<Long, Long> categoryParents) {
+      Collection<Long> categories, Map<Long, Long> categoryParents, EcSupplier supplier) {
 
     List<Discount> result = new ArrayList<>();
     if (input == null || input.isEmpty() || BeeUtils.isEmpty(categories)) {
@@ -84,7 +94,7 @@ public class EcClientDiscounts {
       }
 
       if (input.containsKey(category)) {
-        List<Discount> filtered = filterDiscounts(input.get(category));
+        List<Discount> filtered = filterDiscounts(input.get(category), supplier);
         if (!filtered.isEmpty()) {
           discountsByCategory.put(category, filtered);
         }
@@ -98,7 +108,7 @@ public class EcClientDiscounts {
           }
 
           if (input.containsKey(parent)) {
-            List<Discount> filtered = filterDiscounts(input.get(parent));
+            List<Discount> filtered = filterDiscounts(input.get(parent), supplier);
             if (!filtered.isEmpty()) {
               discountsByCategory.put(parent, filtered);
             }
@@ -129,7 +139,7 @@ public class EcClientDiscounts {
     return result;
   }
 
-  private static double getClientPrice(double listPrice, List<Discount> discounts) {
+  private static double getClientPrice(double base, List<Discount> discounts) {
     Double bestPrice = null;
     Integer minDepth = null;
 
@@ -143,8 +153,8 @@ public class EcClientDiscounts {
         Double price;
         if (discount.getPrice() != null) {
           price = discount.getPrice();
-        } else if (discount.getPercent() != null && listPrice > BeeConst.DOUBLE_ZERO) {
-          price = BeeUtils.minusPercent(listPrice, discount.getPercent());
+        } else if (discount.getPercent() != null && base > BeeConst.DOUBLE_ZERO) {
+          price = BeeUtils.minusPercent(base, discount.getPercent());
         } else {
           price = null;
         }
@@ -159,7 +169,7 @@ public class EcClientDiscounts {
       }
     }
 
-    return (bestPrice == null) ? listPrice : bestPrice;
+    return (bestPrice == null) ? base : bestPrice;
   }
 
   private static Range<Long> getTimeRange(Long lower, Long upper) {
@@ -213,8 +223,10 @@ public class EcClientDiscounts {
     List<Discount> discounts = new ArrayList<>();
 
     long id = ecItem.getArticleId();
+    EcSupplier supplier = ecItem.getPriceSupplier();
+
     if (itemDiscounts.containsKey(id)) {
-      List<Discount> filtered = filterDiscounts(itemDiscounts.get(id));
+      List<Discount> filtered = filterDiscounts(itemDiscounts.get(id), supplier);
       if (!filtered.isEmpty()) {
         discounts.addAll(filtered);
       }
@@ -226,7 +238,7 @@ public class EcClientDiscounts {
 
       if (brand != null && brandAndCategoryDiscounts.containsKey(brand) && !categories.isEmpty()) {
         List<Discount> filtered = getCategoryDiscounts(brandAndCategoryDiscounts.get(brand),
-            categories, categoryParents);
+            categories, categoryParents, supplier);
         if (!filtered.isEmpty()) {
           discounts.addAll(filtered);
         }
@@ -234,7 +246,7 @@ public class EcClientDiscounts {
 
       if (discounts.isEmpty()) {
         if (brand != null && brandDiscounts.containsKey(brand)) {
-          List<Discount> filtered = filterDiscounts(brandDiscounts.get(brand));
+          List<Discount> filtered = filterDiscounts(brandDiscounts.get(brand), supplier);
           if (!filtered.isEmpty()) {
             discounts.addAll(filtered);
           }
@@ -242,7 +254,7 @@ public class EcClientDiscounts {
 
         if (!categories.isEmpty() && !categoryDiscounts.isEmpty()) {
           List<Discount> filtered = getCategoryDiscounts(categoryDiscounts, categories,
-              categoryParents);
+              categoryParents, supplier);
           if (!filtered.isEmpty()) {
             discounts.addAll(filtered);
           }
@@ -251,17 +263,17 @@ public class EcClientDiscounts {
     }
 
     if (discounts.isEmpty() && !globalDiscounts.isEmpty()) {
-      discounts.addAll(globalDiscounts);
+      List<Discount> filtered = filterDiscounts(globalDiscounts, supplier);
+      if (!filtered.isEmpty()) {
+        discounts.addAll(filtered);
+      }
     }
 
     if (!discounts.isEmpty()) {
-      ecItem.setClientPrice(getClientPrice(ecItem.getRealListPrice(), discounts));
+      ecItem.setClientPrice(getClientPrice(ecItem.getRealClientPrice(), discounts));
 
     } else if (defPercent != null) {
-      ecItem.setClientPrice(BeeUtils.minusPercent(ecItem.getRealListPrice(), defPercent));
-
-    } else {
-      ecItem.setClientPrice(ecItem.getListPrice());
+      ecItem.setClientPrice(BeeUtils.minusPercent(ecItem.getRealClientPrice(), defPercent));
     }
   }
 
@@ -277,8 +289,8 @@ public class EcClientDiscounts {
 
   private void add(int depth, SimpleRowSet rowSet) {
     for (SimpleRow row : rowSet) {
-      Long timeFrom = row.getLong(EcConstants.COL_DISCOUNT_DATE_FROM);
-      Long timeTo = row.getLong(EcConstants.COL_DISCOUNT_DATE_TO);
+      Long timeFrom = row.getLong(COL_DISCOUNT_DATE_FROM);
+      Long timeTo = row.getLong(COL_DISCOUNT_DATE_TO);
 
       boolean ok;
 
@@ -292,16 +304,20 @@ public class EcClientDiscounts {
       }
 
       if (ok) {
-        Long brand = row.getLong(EcConstants.COL_DISCOUNT_BRAND);
-        Long category = row.getLong(EcConstants.COL_DISCOUNT_CATEGORY);
-        Long item = row.getLong(EcConstants.COL_DISCOUNT_ARTICLE);
+        Long brand = row.getLong(COL_DISCOUNT_BRAND);
+        Long category = row.getLong(COL_DISCOUNT_CATEGORY);
 
-        Double percent = row.getDouble(EcConstants.COL_DISCOUNT_PERCENT);
-        Double price = (item == null) ? null : row.getDouble(EcConstants.COL_DISCOUNT_PRICE);
+        EcSupplier supplier =
+            EnumUtils.getEnumByIndex(EcSupplier.class, row.getInt(COL_DISCOUNT_SUPPLIER));
+
+        Long item = row.getLong(COL_DISCOUNT_ARTICLE);
+
+        Double percent = row.getDouble(COL_DISCOUNT_PERCENT);
+        Double price = (item == null) ? null : row.getDouble(COL_DISCOUNT_PRICE);
 
         ok = percent != null || price != null;
         if (ok) {
-          Discount discount = new Discount(depth, getTimeRange(timeFrom, timeTo),
+          Discount discount = new Discount(depth, getTimeRange(timeFrom, timeTo), supplier,
               normalizePercent(percent), normalizePrice(price));
 
           if (item != null) {

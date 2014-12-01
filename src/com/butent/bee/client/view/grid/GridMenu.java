@@ -108,12 +108,30 @@ public class GridMenu {
 
       @Override
       boolean isVisible(GridPresenter presenter) {
-        return !presenter.getGridView().getRowData().isEmpty();
+        return !presenter.getGridView().isEmpty();
       }
 
       @Override
       void select(GridPresenter presenter) {
         presenter.handleAction(Action.CONFIGURE);
+      }
+    },
+
+    RESET(Action.RESET_SETTINGS) {
+      @Override
+      boolean isEnabled(GridDescription gridDescription, Collection<UiOption> uiOptions) {
+        return UiOption.hasSettings(uiOptions);
+      }
+
+      @Override
+      boolean isVisible(GridPresenter presenter) {
+        return !presenter.getGridView().isEmpty()
+            && GridSettings.contains(presenter.getGridView().getGridKey());
+      }
+
+      @Override
+      void select(GridPresenter presenter) {
+        presenter.handleAction(Action.RESET_SETTINGS);
       }
     },
 
@@ -144,7 +162,7 @@ public class GridMenu {
 
       @Override
       boolean isVisible(GridPresenter presenter) {
-        return !presenter.getGridView().getRowData().isEmpty();
+        return !presenter.getGridView().isEmpty();
       }
 
       @Override
@@ -161,7 +179,7 @@ public class GridMenu {
 
       @Override
       boolean isVisible(GridPresenter presenter) {
-        return !presenter.getGridView().getRowData().isEmpty();
+        return !presenter.getGridView().isEmpty();
       }
 
       @Override
@@ -187,7 +205,7 @@ public class GridMenu {
 
       @Override
       boolean isVisible(GridPresenter presenter) {
-        return !presenter.getGridView().getRowData().isEmpty();
+        return !presenter.getGridView().isEmpty();
       }
 
       @Override
@@ -213,7 +231,7 @@ public class GridMenu {
 
       @Override
       boolean isVisible(GridPresenter presenter) {
-        return !presenter.getGridView().getRowData().isEmpty();
+        return !presenter.getGridView().isEmpty();
       }
 
       @Override
@@ -239,7 +257,7 @@ public class GridMenu {
 
       @Override
       boolean isVisible(GridPresenter presenter) {
-        return !presenter.getGridView().getRowData().isEmpty();
+        return !presenter.getGridView().isEmpty();
       }
 
       @Override
@@ -305,7 +323,7 @@ public class GridMenu {
     abstract boolean isVisible(GridPresenter presenter);
 
     /**
-     * @param presenter 
+     * @param presenter
      */
     Widget renderIcon(GridPresenter presenter) {
       return new FaLabel(action.getIcon());

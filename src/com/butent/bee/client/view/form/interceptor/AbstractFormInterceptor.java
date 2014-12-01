@@ -30,6 +30,7 @@ import com.butent.bee.shared.ui.Action;
 import com.butent.bee.shared.ui.Relation;
 
 import java.util.List;
+import java.util.Set;
 
 public abstract class AbstractFormInterceptor implements FormInterceptor {
 
@@ -136,8 +137,18 @@ public abstract class AbstractFormInterceptor implements FormInterceptor {
   }
 
   @Override
+  public Set<Action> getDisabledActions(Set<Action> defaultActions) {
+    return defaultActions;
+  }
+
+  @Override
   public Domain getDomain() {
     return null;
+  }
+
+  @Override
+  public Set<Action> getEnabledActions(Set<Action> defaultActions) {
+    return defaultActions;
   }
 
   @Override

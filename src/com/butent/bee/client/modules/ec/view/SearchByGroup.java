@@ -242,7 +242,7 @@ class SearchByGroup extends EcView implements HasCaption {
 
     actionPanel.add(doFilter);
 
-    Button clearSelection = new Button(Localized.getConstants().removeFilter());
+    Button clearSelection = new Button(Localized.getConstants().actionRemoveFilter());
     EcStyles.add(clearSelection, STYLE_NAME, "clearSelection");
 
     clearSelection.addClickHandler(new ClickHandler() {

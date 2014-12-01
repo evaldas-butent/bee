@@ -218,6 +218,8 @@ public final class TransportConstants {
 
   public static final String SVC_SEND_MESSAGE = "SendMessage";
 
+  public static final String SVC_TRIP_PROFIT_REPORT = "TripProfitReport";
+
   public static final String PRM_ERP_REFRESH_INTERVAL = "ERPRefreshIntervalInMinutes";
   public static final String PRM_MESSAGE_TEMPLATE = "MessageTemplate";
   public static final String PRM_INVOICE_PREFIX = "InvoicePrefix";
@@ -270,6 +272,8 @@ public final class TransportConstants {
   public static final String TBL_REGISTRATIONS = "TranspRegistrations";
   public static final String TBL_SHIPMENT_REQUESTS = "ShipmentRequests";
   public static final String TBL_CARGO_REQUESTS = "CargoRequests";
+
+  public static final String TBL_COUNTRY_NORMS = "CountryNorms";
 
   public static final String VIEW_ORDERS = "TransportationOrders";
 
@@ -364,6 +368,9 @@ public final class TransportConstants {
   public static final String COL_CARGO_VALUE_CURRENCY = "ValueCurrency";
 
   public static final String COL_CARGO_HANDLING_NOTES = "Notes";
+
+  public static final String COL_DAILY_COSTS_ITEM = "DailyCostsItem";
+  public static final String COL_ROAD_COSTS_ITEM = "RoadCostsItem";
 
   public static final String COL_ASSESSMENT = "Assessment";
   public static final String COL_ASSESSMENT_ID = "AssessmentID";

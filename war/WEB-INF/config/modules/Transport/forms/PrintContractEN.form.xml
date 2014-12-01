@@ -51,7 +51,12 @@
       </row>
       <row>
         <Label html="Loading place" />
-        <TextLabel source="LoadingAddress" />
+        <TextLabel source="LoadingAddress">
+          <renderToken source="LoadingAddress" />
+          <renderToken source="LoadingPostIndex" prefix=" " />
+          <renderToken source="LoadingCityName" prefix=", " />
+          <renderToken source="LoadingCountryName" prefix=", " />
+        </TextLabel>
       </row>
       <row>
         <Label html="Loading date" />
@@ -59,7 +64,12 @@
       </row>
       <row>
         <Label html="Delivery place" />
-        <TextLabel source="UnloadingAddress" />
+        <TextLabel source="UnloadingAddress">
+          <renderToken source="UnloadingAddress" />
+          <renderToken source="UnloadingPostIndex" prefix=" " />
+          <renderToken source="UnloadingCityName" prefix=", " />
+          <renderToken source="UnloadingCountryName" prefix=", " />
+        </TextLabel>
       </row>
       <row>
         <Label html="Delivery Date" />

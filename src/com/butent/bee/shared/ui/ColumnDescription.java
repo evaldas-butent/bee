@@ -79,10 +79,12 @@ public class ColumnDescription implements BeeSerializable, HasInfo, HasOptions, 
     SEARCH_BY, FILTER_SUPPLIER, FILTER_OPTIONS, SORT_BY,
     HEADER_STYLE, BODY_STYLE, FOOTER_STYLE, DYN_STYLES, CELL_TYPE, CELL_RESIZABLE, UPDATE_MODE,
     AUTO_FIT, FLEXIBILITY, OPTIONS, ELEMENT_TYPE, FOOTER_DESCRIPTION, DYNAMIC,
-    EXPORTABLE, EXPORT_WIDTH_FACTOR
+    EXPORTABLE, EXPORT_WIDTH_FACTOR, EDIT_IN_PLACE
   }
 
+  public static final String TBL_COLUMN_SETTINGS = "GridColumnSettings";
   public static final String VIEW_COLUMN_SETTINGS = "GridColumnSettings";
+  public static final String COL_GRID_SETTING = "GridSetting";
 
   private static boolean omniView;
 
@@ -176,6 +178,8 @@ public class ColumnDescription implements BeeSerializable, HasInfo, HasOptions, 
 
   private Boolean exportable;
   private Double exportWidthFactor;
+
+  private Boolean editInPlace;
 
   private boolean relationInitialized;
 
@@ -375,6 +379,9 @@ public class ColumnDescription implements BeeSerializable, HasInfo, HasOptions, 
         case EXPORT_WIDTH_FACTOR:
           setExportWidthFactor(BeeUtils.toDoubleOrNull(value));
           break;
+        case EDIT_IN_PLACE:
+          setEditInPlace(BeeUtils.toBooleanOrNull(value));
+          break;
       }
     }
   }
@@ -421,6 +428,10 @@ public class ColumnDescription implements BeeSerializable, HasInfo, HasOptions, 
 
   public Calculation getEditable() {
     return editable;
+  }
+
+  public Boolean getEditInPlace() {
+    return editInPlace;
   }
 
   public EditorDescription getEditor() {
@@ -518,7 +529,8 @@ public class ColumnDescription implements BeeSerializable, HasInfo, HasOptions, 
         "Dynamic", getDynamic(),
         "Exportable", getExportable(),
         "Export Width Factor", getExportWidthFactor(),
-        "Carry On", getCarryOn());
+        "Carry On", getCarryOn(),
+        "Edit In Place", getEditInPlace());
 
     if (getFlexibility() != null) {
       info.addAll(getFlexibility().getInfo());
@@ -920,6 +932,9 @@ public class ColumnDescription implements BeeSerializable, HasInfo, HasOptions, 
         case EXPORT_WIDTH_FACTOR:
           arr[i++] = getExportWidthFactor();
           break;
+        case EDIT_IN_PLACE:
+          arr[i++] = getEditInPlace();
+          break;
       }
     }
     return Codec.beeSerialize(arr);
@@ -963,6 +978,10 @@ public class ColumnDescription implements BeeSerializable, HasInfo, HasOptions, 
 
   public void setEditable(Calculation editable) {
     this.editable = editable;
+  }
+
+  public void setEditInPlace(Boolean editInPlace) {
+    this.editInPlace = editInPlace;
   }
 
   public void setEditor(EditorDescription editor) {

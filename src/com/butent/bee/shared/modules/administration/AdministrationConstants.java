@@ -188,9 +188,6 @@ public final class AdministrationConstants {
   public static final String VIEW_RIGHTS = "Rights";
   public static final String VIEW_USER_ROLES = "UserRoles";
 
-  public static final String VIEW_PARAMETERS = "Parameters";
-  public static final String VIEW_USER_PARAMETERS = "UserParameters";
-
   public static final String VIEW_FILTERS = "Filters";
 
   public static final String VIEW_FAVORITES = "Favorites";
@@ -339,6 +336,7 @@ public final class AdministrationConstants {
   public static final String PRM_SQL_MESSAGES = "SQLMessages";
 
   public static final String PRM_COMPANY = "CompanyName";
+  public static final String PRM_COUNTRY = "Country";
   public static final String PRM_CURRENCY = "MainCurrency";
   public static final String PRM_VAT_PERCENT = "VATPercent";
   public static final String PRM_REFRESH_CURRENCY_HOURS = "CurrencyRefreshHours";

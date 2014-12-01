@@ -158,7 +158,10 @@ public class LoginServlet extends HttpServlet {
           : resource(contextPath, Paths.getScriptPath(script));
       doc.getHead().append(script().src(src));
     }
-    doc.getHead().append(script().src(resource(contextPath, "bee/bee.nocache.js")));
+
+    doc.getHead().append(script().src(
+        CommUtils.addTimeStamp(Paths.buildPath(contextPath, "bee/bee.nocache.js"),
+            new DateTime())));
 
     return doc.buildLines();
   }

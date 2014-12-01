@@ -4,6 +4,8 @@ public interface LocalizableTradeActConstants {
 
   String taChangeIntoSale();
 
+  String taDate();
+
   String taDaysPerWeekShort();
 
   String taFactorShort();
@@ -28,19 +30,31 @@ public interface LocalizableTradeActConstants {
 
   String taMinTermShort();
 
+  String taQuantityRemained();
+
   String taQuantityReturn();
+
+  String taQuantityReturned();
 
   String taRecalculatePrices();
 
   String taSaveSelectedItems();
 
+  String taTariff();
+
+  String taTimeUnit();
+
   String taTimeUnitDay();
 
   String taTimeUnitMonth();
 
+  String taUntil();
+
   String tradeAct();
 
   String tradeActCopyQuestion();
+
+  String tradeActName();
 
   String tradeActNew();
 

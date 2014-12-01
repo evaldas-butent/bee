@@ -589,6 +589,9 @@ public class EditableWidget implements EditChangeHandler, FocusHandler, BlurHand
       if (normalize) {
         reset();
       }
+      if (getRowValue() == null) {
+        maybeSummarize();
+      }
       if (keyCode == null) {
         return true;
       }

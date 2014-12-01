@@ -498,9 +498,9 @@ public enum FormWidget {
       scale = BeeUtils.toInt(s);
     } else if (column != null && !BeeConst.isUndef(column.getScale())) {
       scale = money
-          ? Math.min(column.getScale(), Format.getDefaultCurrencyScale()) : column.getScale();
+          ? Math.min(column.getScale(), Format.getDefaultMoneyScale()) : column.getScale();
     } else {
-      scale = money ? Format.getDefaultCurrencyScale() : BeeConst.UNDEF;
+      scale = money ? Format.getDefaultMoneyScale() : BeeConst.UNDEF;
     }
 
     widget.setScale(scale);
@@ -509,8 +509,8 @@ public enum FormWidget {
     NumberFormat format;
 
     if (BeeUtils.isEmpty(pattern)) {
-      if (money && scale == Format.getDefaultCurrencyScale()) {
-        format = Format.getDefaultCurrencyFormat();
+      if (money && scale == Format.getDefaultMoneyScale()) {
+        format = Format.getDefaultMoneyFormat();
       } else {
         format = Format.getDecimalFormat(scale);
       }
@@ -1542,7 +1542,7 @@ public enum FormWidget {
         format = attributes.get(UiConstants.ATTR_FORMAT);
         inline = BeeUtils.toBoolean(attributes.get(ATTR_INLINE));
         if (BeeUtils.isEmpty(format)) {
-          widget = new DecimalLabel(Format.getDefaultCurrencyFormat(), inline);
+          widget = new DecimalLabel(Format.getDefaultMoneyFormat(), inline);
         } else {
           widget = new DecimalLabel(format, inline);
         }
@@ -1793,14 +1793,16 @@ public enum FormWidget {
       case DATA_TREE:
         String treeViewName = attributes.get(UiConstants.ATTR_VIEW_NAME);
         String treeFavoriteName = attributes.get(UiConstants.ATTR_FAVORITE);
+        Element editForm = XmlUtils.getFirstChildElement(element, "form");
+
         widget = new TreeContainer(attributes.get(UiConstants.ATTR_CAPTION),
-            BeeUtils.toBoolean(attributes.get("hideActions")), treeViewName, treeFavoriteName);
+            editForm == null || BeeUtils.toBoolean(attributes.get("hideActions")),
+            treeViewName, treeFavoriteName);
 
         ((TreeView) widget).setViewPresenter(new TreePresenter((TreeView) widget,
             treeViewName, attributes.get("parentColumn"),
             attributes.get("orderColumn"), attributes.get("relationColumn"),
-            XmlUtils.getCalculation(element, TAG_CALC),
-            XmlUtils.getFirstChildElement(element, "form")));
+            XmlUtils.getCalculation(element, TAG_CALC), editForm));
         break;
 
       case DECORATOR:
@@ -1855,7 +1857,8 @@ public enum FormWidget {
           widgetDescription.setReadOnly(true);
         }
 
-        if (widget instanceof HasMaxLength && !attributes.containsKey(ATTR_MAX_LENGTH)) {
+        if (isInput() && widget instanceof HasMaxLength
+            && !attributes.containsKey(ATTR_MAX_LENGTH)) {
           int maxLength = UiHelper.getMaxLength(column);
           if (maxLength > 0) {
             int defMaxLength = ((HasMaxLength) widget).getMaxLength();
@@ -2024,6 +2027,10 @@ public enum FormWidget {
 
   public boolean isGrid() {
     return hasType(Type.IS_GRID);
+  }
+
+  public boolean isInput() {
+    return hasType(Type.INPUT);
   }
 
   private HeaderAndContent createHeaderAndContent(String formName, Element parent, String viewName,

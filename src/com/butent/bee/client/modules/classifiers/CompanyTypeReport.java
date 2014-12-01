@@ -2,7 +2,6 @@ package com.butent.bee.client.modules.classifiers;
 
 import com.google.common.collect.HashBasedTable;
 import com.google.common.collect.Lists;
-// import com.google.common.collect.Lists;
 import com.google.common.collect.Table;
 import com.google.gwt.dom.client.TableCellElement;
 import com.google.gwt.dom.client.TableRowElement;
@@ -224,26 +223,25 @@ public class CompanyTypeReport extends ReportInterceptor {
   @Override
   public void onLoad(FormView form) {
     ReportParameters parameters = readParameters();
-    if (parameters == null) {
-      return;
-    }
 
-    Widget widget = form.getWidgetByName(NAME_START_DATE);
-    DateTime dateTime = parameters.getDateTime(NAME_START_DATE);
-    if (widget instanceof InputDateTime && dateTime != null) {
-      ((InputDateTime) widget).setDateTime(dateTime);
-    }
+    if (parameters != null) {
+      Widget widget = form.getWidgetByName(NAME_START_DATE);
+      DateTime dateTime = parameters.getDateTime(NAME_START_DATE);
+      if (widget instanceof InputDateTime && dateTime != null) {
+        ((InputDateTime) widget).setDateTime(dateTime);
+      }
 
-    widget = form.getWidgetByName(NAME_END_DATE);
-    dateTime = parameters.getDateTime(NAME_END_DATE);
-    if (widget instanceof InputDateTime && dateTime != null) {
-      ((InputDateTime) widget).setDateTime(dateTime);
-    }
+      widget = form.getWidgetByName(NAME_END_DATE);
+      dateTime = parameters.getDateTime(NAME_END_DATE);
+      if (widget instanceof InputDateTime && dateTime != null) {
+        ((InputDateTime) widget).setDateTime(dateTime);
+      }
 
-    widget = form.getWidgetByName(NAME_TYPES);
-    String idList = parameters.get(NAME_TYPES);
-    if (widget instanceof MultiSelector && !BeeUtils.isEmpty(idList)) {
-      ((MultiSelector) widget).setIds(idList);
+      widget = form.getWidgetByName(NAME_TYPES);
+      String idList = parameters.get(NAME_TYPES);
+      if (widget instanceof MultiSelector && !BeeUtils.isEmpty(idList)) {
+        ((MultiSelector) widget).setIds(idList);
+      }
     }
 
     super.onLoad(form);

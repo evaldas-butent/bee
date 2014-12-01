@@ -133,7 +133,7 @@ class TradeActItemPicker extends Flow implements HasSelectionHandlers<BeeRowSet>
   private static final String STYLE_QTY_INPUT = STYLE_QTY_PREFIX + "input";
 
   private static final List<String> SEARCH_COLUMNS = Lists.newArrayList(COL_ITEM_NAME,
-      COL_ITEM_ARTICLE, COL_ITEM_TYPE, COL_ITEM_GROUP);
+      COL_ITEM_ARTICLE, COL_ITEM_TYPE, COL_ITEM_GROUP, COL_CATEGORY);
 
   private static Filter buildFilter(String by, String query) {
     Filter filter = null;
@@ -159,6 +159,11 @@ class TradeActItemPicker extends Flow implements HasSelectionHandlers<BeeRowSet>
           filter = Filter.or(condition(ALS_PARENT_GROUP_NAME, query),
               condition(ALS_ITEM_GROUP_NAME, query));
           break;
+
+        case COL_CATEGORY:
+          filter = Filter.in(Data.getIdColumn(VIEW_ITEMS), VIEW_ITEM_CATEGORIES, COL_ITEM,
+              Filter.in(COL_CATEGORY, VIEW_ITEM_CATEGORY_TREE,
+                  Data.getIdColumn(VIEW_ITEM_CATEGORY_TREE), condition(COL_CATEGORY_NAME, query)));
       }
 
     } else {
@@ -272,8 +277,16 @@ class TradeActItemPicker extends Flow implements HasSelectionHandlers<BeeRowSet>
     searchBy.addStyleName(STYLE_SEARCH_BY);
 
     searchBy.addItem(BeeConst.STRING_EMPTY, BeeConst.STRING_ASTERISK);
+    String label;
+
     for (String column : SEARCH_COLUMNS) {
-      searchBy.addItem(Data.getColumnLabel(VIEW_ITEMS, column), column);
+      if (COL_CATEGORY.equals(column)) {
+        label = Localized.getConstants().category();
+      } else {
+        label = Data.getColumnLabel(VIEW_ITEMS, column);
+      }
+
+      searchBy.addItem(label, column);
     }
     searchBy.addItem(Localized.getConstants().captionId(), COL_ITEM);
 
@@ -380,7 +393,7 @@ class TradeActItemPicker extends Flow implements HasSelectionHandlers<BeeRowSet>
     if (priceFormat == null) {
       Integer scale = Data.getColumnScale(VIEW_ITEMS, COL_ITEM_PRICE);
       if (scale == null || scale <= 2) {
-        priceFormat = Format.getDefaultCurrencyFormat();
+        priceFormat = Format.getDefaultMoneyFormat();
       } else {
         priceFormat = Format.getDecimalFormat(2, scale);
       }

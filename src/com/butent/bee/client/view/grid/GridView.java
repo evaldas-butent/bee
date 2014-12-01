@@ -30,6 +30,7 @@ import com.butent.bee.shared.ui.GridDescription;
 
 import java.util.Collection;
 import java.util.List;
+import java.util.Set;
 
 /**
  * Specifies necessary methods for grid view user interface component.
@@ -62,6 +63,10 @@ public interface GridView extends DataView, HasAddStartHandlers, HasAddEndHandle
   FormView getActiveForm();
 
   List<String> getDynamicColumnGroups();
+
+  String getEditFormName();
+
+  Set<String> getEditInPlace();
 
   FormView getForm(boolean edit);
 
@@ -96,6 +101,8 @@ public interface GridView extends DataView, HasAddStartHandlers, HasAddEndHandle
   boolean likeAMotherlessChild();
 
   int refreshCellContent(long rowId, String columnSource);
+
+  void reset(GridDescription gridDescription);
 
   void setRelId(Long relId);
 

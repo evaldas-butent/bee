@@ -14,6 +14,8 @@ public final class TradeConstants {
   public static final String TBL_SALE_ITEMS = "SaleItems";
 
   public static final String TBL_TRADE_OPERATIONS = "TradeOperations";
+  public static final String TBL_TRADE_SERIES = "TradeSeries";
+  public static final String TBL_TRADE_STATUSES = "TradeStatuses";
 
   public static final String VAR_VIEW_NAME = "view_name";
   public static final String VAR_ID_LIST = "IdList";
@@ -60,6 +62,7 @@ public final class TradeConstants {
 
   public static final String COL_TRADE_DISCOUNT = "Discount";
 
+  public static final String COL_TRADE_ITEM_ORDINAL = "Ordinal";
   public static final String COL_TRADE_ITEM_ARTICLE = "Article";
   public static final String COL_TRADE_ITEM_QUANTITY = "Quantity";
   public static final String COL_TRADE_ITEM_PRICE = "Price";

@@ -285,7 +285,7 @@ public class ItemDetails extends Flow {
             Label warehouseWidget = new Label(EcKeeper.getWarehouseLabel(warehouse));
             table.setWidgetAndStyle(row, 0, warehouseWidget, stylePrefix + "warehouse");
 
-            int remainder = BeeUtils.toInt(as.getRemainders().get(warehouse));
+            double remainder = BeeUtils.toDouble(as.getRemainders().get(warehouse));
             Widget stockWidget = EcWidgetFactory.createStockWidget(remainder);
             table.setWidgetAndStyle(row, 1, stockWidget, stylePrefix + "stock");
 
@@ -324,6 +324,9 @@ public class ItemDetails extends Flow {
     table.setHtml(row, col++, Localized.getConstants().ecItemCost());
 
     table.setColumnCellClasses(col, StyleUtils.className(TextAlign.RIGHT));
+    table.setHtml(row, col++, Localized.getConstants().ecListPriceShort());
+
+    table.setColumnCellClasses(col, StyleUtils.className(TextAlign.RIGHT));
     table.setHtml(row, col++, Localized.getConstants().ecItemPrice());
 
     row++;
@@ -336,6 +339,7 @@ public class ItemDetails extends Flow {
       table.setHtml(row, col++, as.getSupplierId());
 
       table.setHtml(row, col++, EcUtils.formatCents(as.getCost()));
+      table.setHtml(row, col++, EcUtils.formatCents(as.getListPrice()));
       table.setHtml(row, col++, EcUtils.formatCents(as.getPrice()));
 
       row++;

@@ -7,7 +7,7 @@
   <Columns>
     <SimpleColumn name="Parent" />
     <SimpleColumn name="Order" />
-    <SimpleColumn name="Name" />
+    <SimpleColumn name="Name" alias="CategoryName" />
     <SimpleJoin joinType="LEFT" name="Parent">
       <SimpleColumn alias="ParentOrder" name="Order" />
       <SimpleColumn alias="ParentName" name="Name" />

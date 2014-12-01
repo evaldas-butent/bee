@@ -39,6 +39,7 @@ import com.butent.bee.shared.ui.HasCaption;
 import com.butent.bee.shared.utils.BeeUtils;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
@@ -628,6 +629,15 @@ public class HtmlTable extends Panel implements IdentifiableWidget, IsHtmlTable,
   }
 
   public void setText(int row, int column, String text, String... cellStyles) {
+    setText(row, column, text);
+    if (cellStyles != null) {
+      for (String cellStyle : cellStyles) {
+        getCellFormatter().addStyleName(row, column, cellStyle);
+      }
+    }
+  }
+
+  public void setText(int row, int column, String text, Collection<String> cellStyles) {
     setText(row, column, text);
     if (cellStyles != null) {
       for (String cellStyle : cellStyles) {

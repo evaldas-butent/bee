@@ -36,7 +36,7 @@ public final class ClassifierUtils {
 
   private static final String[] COMPANY_INFO_COLS = new String[] {
       COL_COMPANY_NAME, COL_COMPANY_CODE, COL_COMPANY_VAT_CODE,
-      COL_ADDRESS, COL_PHONE, COL_EMAIL_ADDRESS, COL_BANK_ACCOUNT};
+      COL_ADDRESS, COL_PHONE, COL_MOBILE, COL_FAX, COL_EMAIL_ADDRESS, COL_BANK_ACCOUNT};
 
   public static void createCompany(final Map<String, String> parameters,
       final NotificationListener notificationListener, final IdCallback callback) {
@@ -118,27 +118,6 @@ public final class ClassifierUtils {
                 widget = new Label(value);
                 widget.setStyleName(STYLE_COMPANY_ITEM);
                 record.add(widget);
-              }
-              break;
-
-            case COL_PHONE:
-              Flow phone = new Flow();
-
-              for (String fld : new String[] {COL_PHONE, COL_MOBILE, COL_FAX}) {
-                Pair<String, String> pair = info.get(fld);
-
-                if (!BeeUtils.isEmpty(pair.getB())) {
-                  Widget label = new Label(pair.getA());
-                  label.setStyleName(STYLE_COMPANY_LABEL);
-                  phone.add(label);
-
-                  Widget item = new Label(pair.getB());
-                  item.setStyleName(STYLE_COMPANY_ITEM);
-                  phone.add(item);
-                }
-              }
-              if (!phone.isEmpty()) {
-                record.add(phone);
               }
               break;
 

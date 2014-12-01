@@ -8,6 +8,8 @@ public interface LocalizableClassifierConstants {
 
   String branch();
 
+  String categories();
+
   String category();
 
   String chief();
@@ -50,6 +52,8 @@ public interface LocalizableClassifierConstants {
 
   String item();
 
+  String itemName();
+
   String itemOrService();
 
   String newDepartmentEmployees();
@@ -62,9 +66,15 @@ public interface LocalizableClassifierConstants {
 
   String price1();
 
+  String price1Label();
+
   String price2();
 
+  String price2Label();
+
   String price3();
+
+  String price3Label();
 
   String printBankAccount();
 

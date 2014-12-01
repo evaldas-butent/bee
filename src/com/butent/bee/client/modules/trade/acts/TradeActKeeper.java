@@ -9,6 +9,7 @@ import static com.butent.bee.shared.modules.trade.TradeConstants.*;
 import static com.butent.bee.shared.modules.trade.acts.TradeActConstants.*;
 
 import com.butent.bee.client.BeeKeeper;
+import com.butent.bee.client.Global;
 import com.butent.bee.client.communication.ParameterList;
 import com.butent.bee.client.data.Data;
 import com.butent.bee.client.data.DataCache;
@@ -71,6 +72,9 @@ public final class TradeActKeeper {
 
   private static final DataCache cache = new DataCache();
   private static boolean cacheLoaded;
+
+  private static Long returnedActStatus;
+  private static boolean parametersLoaded;
 
   public static void register() {
     BeeKeeper.getBus().registerDataHandler(cache, false);
@@ -164,6 +168,45 @@ public final class TradeActKeeper {
 
   static ParameterList createArgs(String method) {
     return BeeKeeper.getRpc().createParameters(Module.TRADE, SubModule.ACTS, method);
+  }
+
+  static void ensureChache(final ScheduledCommand command) {
+    if (cacheLoaded) {
+      command.execute();
+
+    } else {
+      List<String> viewNames = Lists.newArrayList(VIEW_TRADE_OPERATIONS, VIEW_TRADE_SERIES,
+          VIEW_SERIES_MANAGERS, VIEW_WAREHOUSES, VIEW_TRADE_STATUSES);
+      final long start = System.currentTimeMillis();
+
+      cache.getData(viewNames, new DataCache.MultiCallback() {
+        @Override
+        public void onSuccess(Integer result) {
+          cacheLoaded = true;
+          logger.debug("trade act cache loaded", result, TimeUtils.elapsedMillis(start));
+
+          command.execute();
+        }
+      });
+    }
+  }
+
+  static void ensureParameters(final ScheduledCommand command) {
+    if (parametersLoaded) {
+      command.execute();
+
+    } else {
+      Global.getParameter(PRM_RETURNED_ACT_STATUS, new Consumer<String>() {
+        @Override
+        public void accept(String input) {
+          parametersLoaded = true;
+          returnedActStatus = DataUtils.isId(input) ? BeeUtils.toLongOrNull(input) : null;
+          logger.debug("trade act parameters loaded");
+
+          command.execute();
+        }
+      });
+    }
   }
 
   static Collection<Long> extractWarehouses(BeeRowSet rowSet) {
@@ -273,6 +316,22 @@ public final class TradeActKeeper {
     }
   }
 
+  static String getOperationName(Long operation) {
+    if (DataUtils.isId(operation)) {
+      return cache.getString(VIEW_TRADE_OPERATIONS, operation, COL_OPERATION_NAME);
+    } else {
+      return null;
+    }
+  }
+
+  static Long getReturnedActStatus() {
+    return returnedActStatus;
+  }
+
+  static BeeRowSet getStatuses() {
+    return cache.getRowSet(VIEW_TRADE_STATUSES);
+  }
+
   static BeeRowSet getUserSeries(boolean checkDefaults) {
     Long userId = BeeKeeper.getUser().getUserId();
     if (!DataUtils.isId(userId)) {
@@ -367,6 +426,14 @@ public final class TradeActKeeper {
     }
   }
 
+  static String getWarehouseCode(Long warehouse) {
+    if (DataUtils.isId(warehouse)) {
+      return cache.getString(VIEW_WAREHOUSES, warehouse, COL_WAREHOUSE_CODE);
+    } else {
+      return null;
+    }
+  }
+
   static boolean isUserSeries(Long series) {
     if (!DataUtils.isId(series)) {
       return false;
@@ -429,47 +496,32 @@ public final class TradeActKeeper {
     };
   }
 
-  private static void ensureChache(final ScheduledCommand command) {
-    if (cacheLoaded) {
-      command.execute();
-
-    } else {
-      List<String> viewNames = Lists.newArrayList(VIEW_TRADE_OPERATIONS, VIEW_TRADE_SERIES,
-          VIEW_SERIES_MANAGERS, VIEW_WAREHOUSES);
-      final long start = System.currentTimeMillis();
-
-      cache.getData(viewNames, new DataCache.MultiCallback() {
-        @Override
-        public void onSuccess(Integer result) {
-          cacheLoaded = true;
-          logger.debug("trade act cache loaded", result, TimeUtils.elapsedMillis(start));
-
-          command.execute();
-        }
-      });
-    }
-  }
-
   private static void openActGrid(final TradeActKind kind, final PresenterCallback callback) {
-    ensureChache(new ScheduledCommand() {
+    ensureParameters(new ScheduledCommand() {
       @Override
       public void execute() {
-        String supplierKey;
-        String caption;
-        Filter filter;
+        ensureChache(new ScheduledCommand() {
+          @Override
+          public void execute() {
+            String supplierKey;
+            String caption;
+            Filter filter;
 
-        if (kind == null) {
-          supplierKey = GRID_ALL_ACTS_KEY;
-          caption = Localized.getConstants().tradeActsAll();
-          filter = null;
-        } else {
-          supplierKey = kind.getGridSupplierKey();
-          caption = Localized.getConstants().tradeActs() + " - " + kind.getCaption();
-          filter = kind.getFilter();
-        }
+            if (kind == null) {
+              supplierKey = GRID_ALL_ACTS_KEY;
+              caption = Localized.getConstants().tradeActsAll();
+              filter = null;
+            } else {
+              supplierKey = kind.getGridSupplierKey();
+              caption = Localized.getConstants().tradeActs() + " - " + kind.getCaption();
+              filter = kind.getFilter();
+            }
 
-        GridFactory.createGrid(GRID_TRADE_ACTS, supplierKey, new TradeActGrid(kind),
-            EnumSet.of(UiOption.ROOT), GridOptions.forCaptionAndFilter(caption, filter), callback);
+            GridFactory.createGrid(GRID_TRADE_ACTS, supplierKey, new TradeActGrid(kind),
+                EnumSet.of(UiOption.ROOT), GridOptions.forCaptionAndFilter(caption, filter),
+                callback);
+          }
+        });
       }
     });
   }

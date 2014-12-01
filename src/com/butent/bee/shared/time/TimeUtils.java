@@ -399,6 +399,14 @@ public final class TimeUtils {
     }
   }
 
+  public static boolean hasTimePart(HasDateValue dt) {
+    if (dt instanceof DateTime) {
+      return dt.getHour() > 0 || dt.getMinute() > 0 || dt.getSecond() > 0 || dt.getMillis() > 0;
+    } else {
+      return false;
+    }
+  }
+
   public static boolean isBetween(HasDateValue dt, HasDateValue min, HasDateValue max,
       RangeOptions options) {
     Assert.notNull(options);
@@ -867,7 +875,8 @@ public final class TimeUtils {
       return renderCompact(start, dropCurrentYear) + PERIOD_SEPARATOR;
 
     } else if (sameDate(start, end)) {
-      return renderCompact(start, dropCurrentYear) + PERIOD_SEPARATOR + end.toCompactTimeString();
+      return renderCompact(start, dropCurrentYear) + PERIOD_SEPARATOR
+          + (hasTimePart(end) ? end.toCompactTimeString() : renderCompact(end, dropCurrentYear));
 
     } else {
       return renderCompact(start, dropCurrentYear) + PERIOD_SEPARATOR

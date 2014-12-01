@@ -170,6 +170,9 @@ public class HeaderImpl extends Flow implements HeaderView {
     if (hasAction(Action.CONFIGURE, false, enabledActions, disabledActions)) {
       add(createFa(Action.CONFIGURE, hiddenActions));
     }
+    if (hasAction(Action.RESET_SETTINGS, false, enabledActions, disabledActions)) {
+      add(createFa(Action.RESET_SETTINGS, hiddenActions));
+    }
 
     if (hasAction(Action.AUDIT, false, enabledActions, disabledActions)) {
       add(createFa(Action.AUDIT, hiddenActions));

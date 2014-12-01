@@ -338,6 +338,17 @@ public class AssessmentForm extends PrintFormInterceptor implements SelectorEven
       }
     }
 
+    @Override
+    public boolean onStartNewRow(GridView gridView, IsRow oldRow, IsRow newRow) {
+      for (String prefix : new String[] {"Loading", "Unloading"}) {
+        for (String col : new String[] {"Date", "Address", "PostIndex", "Company", "Contact",
+            "City", "CityName", "Country", "CountryName", "CountryCode"}) {
+          newRow.setValue(gridView.getDataIndex(prefix + col), form.getStringValue(prefix + col));
+        }
+      }
+      return super.onStartNewRow(gridView, oldRow, newRow);
+    }
+
     private void refresh() {
       DataChangeEvent.fireRefresh(BeeKeeper.getBus(), TBL_CARGO_EXPENSES);
       refreshTotals();

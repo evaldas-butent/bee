@@ -64,7 +64,7 @@ import java.util.Set;
  * Implements design content for a grid container component.
  */
 
-public class GridContainerImpl extends Split implements GridContainerView, HasNavigation,
+public class GridContainerImpl extends Split implements GridContainerView,
     HasSearch, ActiveRowChangeEvent.Handler, AddStartEvent.Handler, AddEndEvent.Handler,
     EditFormEvent.Handler, HasEditState, RenderingEvent.Handler {
 
