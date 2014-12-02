@@ -2851,6 +2851,9 @@ public class GridImpl extends Absolute implements GridView, EditEndEvent.Handler
 
       } else {
         if (!newRowFormState.contains(State.INITIALIZED)) {
+          if (isSingleFormInstance()) {
+            editFormState.add(State.INITIALIZED);
+          }
           newRowFormState.add(State.INITIALIZED);
           form.start(null);
         }

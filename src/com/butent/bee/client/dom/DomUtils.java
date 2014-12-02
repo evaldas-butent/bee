@@ -1655,6 +1655,10 @@ public final class DomUtils {
     }
   }
 
+  public static void setDataProperty(Element elem, String key, double value) {
+    setDataProperty(elem, key, Double.toString(value));
+  }
+
   public static void setDataProperty(Element elem, String key, int value) {
     setDataProperty(elem, key, Integer.toString(value));
   }

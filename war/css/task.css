@@ -10,6 +10,12 @@
   padding: 2px 5px 2px;
 }
 
+.bee-crm-taskEvent-row-new {
+	border-left-width: 5px; 
+  border-left-color: #a1bff5; 
+  border-left-style: solid; 
+}
+
 .bee-crm-taskEvent-col-0,
 .bee-crm-taskEvent-col-1,
 .bee-crm-taskEvent-col-2 {

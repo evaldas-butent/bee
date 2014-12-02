@@ -62,6 +62,7 @@ public final class TradeConstants {
 
   public static final String COL_TRADE_DISCOUNT = "Discount";
 
+  public static final String COL_TRADE_ITEM_ORDINAL = "Ordinal";
   public static final String COL_TRADE_ITEM_ARTICLE = "Article";
   public static final String COL_TRADE_ITEM_QUANTITY = "Quantity";
   public static final String COL_TRADE_ITEM_PRICE = "Price";

@@ -10,12 +10,12 @@
       <DataTree name="Tree" caption="=documentCategories" viewName="DocumentTree"
         parentColumn="Parent" orderColumn="Order">
         <calc>
-          <ui:expression>row.Name</ui:expression>
+          <ui:expression>row.CategoryName</ui:expression>
         </calc>
         <form name="EditCategory">
           <FlowPanel>
-            <Label for="Name" />
-            <InputText source="Name" />
+            <Label for="CategoryName" />
+            <InputText source="CategoryName" />
           </FlowPanel>
         </form>
       </DataTree>

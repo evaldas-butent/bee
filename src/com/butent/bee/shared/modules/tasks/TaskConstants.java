@@ -2,6 +2,7 @@ package com.butent.bee.shared.modules.tasks;
 
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.Service;
+import com.butent.bee.shared.font.FontAwesome;
 import com.butent.bee.shared.i18n.LocalizableConstants;
 import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.ui.HasCaption;
@@ -11,33 +12,36 @@ import com.butent.bee.shared.utils.EnumUtils;
 public final class TaskConstants {
 
   public enum TaskEvent implements HasCaption {
-    CREATE(Localized.getConstants().crmTaskEventCreated(), null),
-    VISIT(Localized.getConstants().crmTaskEventVisited(), null),
+    CREATE(Localized.getConstants().crmTaskEventCreated(), null, null),
+    VISIT(Localized.getConstants().crmTaskEventVisited(), null, null),
     ACTIVATE(Localized.getConstants().crmTaskForwardedForExecution(), Localized.getConstants()
-        .crmTaskForwardForExecution()),
-    COMMENT(Localized.getConstants().crmTaskComment(), Localized.getConstants().crmActionComment()),
+        .crmTaskForwardForExecution(), FontAwesome.ARROW_CIRCLE_RIGHT),
+    COMMENT(Localized.getConstants().crmTaskComment(), Localized.getConstants().crmActionComment(),
+        FontAwesome.COMMENT_O),
     EXTEND(Localized.getConstants().crmTaskEventExtended(), Localized.getConstants()
-        .crmTaskChangeTerm()),
+        .crmTaskChangeTerm(), FontAwesome.CLOCK_O),
     SUSPEND(Localized.getConstants().crmTaskStatusSuspended(), Localized.getConstants()
-        .crmActionSuspend()),
+        .crmActionSuspend(), FontAwesome.MINUS_CIRCLE),
     RENEW(Localized.getConstants().crmTaskEventRenewed(), Localized.getConstants()
-        .crmTaskReturnExecution()),
+        .crmTaskReturnExecution(), FontAwesome.ARROW_CIRCLE_RIGHT),
     FORWARD(Localized.getConstants().crmTaskEventForwarded(), Localized.getConstants()
-        .crmActionForward()),
+        .crmActionForward(), FontAwesome.ARROW_CIRCLE_O_RIGHT),
     CANCEL(Localized.getConstants().crmTaskStatusCanceled(), Localized.getConstants()
-        .crmTaskCancel()),
+        .crmTaskCancel(), FontAwesome.BAN),
     COMPLETE(Localized.getConstants().crmTaskStatusCompleted(), Localized.getConstants()
-        .crmActionFinish()),
+        .crmActionFinish(), FontAwesome.CHECK_CIRCLE_O),
     APPROVE(Localized.getConstants().crmTaskEventApproved(), Localized.getConstants()
-        .crmTaskConfirm()),
-    EDIT(Localized.getConstants().crmTaskEventEdited(), null);
+        .crmTaskConfirm(), FontAwesome.CHECK_SQUARE_O),
+    EDIT(Localized.getConstants().crmTaskEventEdited(), null, null);
 
     private final String caption;
     private final String commandLabel;
+    private final FontAwesome commandIcon;
 
-    private TaskEvent(String caption, String commandLabel) {
+    private TaskEvent(String caption, String commandLabel, FontAwesome commandIcon) {
       this.caption = caption;
       this.commandLabel = commandLabel;
+      this.commandIcon = commandIcon;
     }
 
     @Override
@@ -47,6 +51,10 @@ public final class TaskConstants {
 
     public String getCommandLabel() {
       return commandLabel;
+    }
+
+    public FontAwesome getCommandIcon() {
+      return commandIcon;
     }
   }
 
@@ -389,6 +397,7 @@ public final class TaskConstants {
   public static final String GRID_RT_FILES = "RTFiles";
 
   public static final String GRID_RELATED_TASKS = "RelatedTasks";
+  public static final String GRID_CHILD_TASKS = "ChildTasks";
   public static final String GRID_RELATED_RECURRING_TASKS = "RelatedRecurringTasks";
 
   public static final String GRID_REQUESTS = "Requests";

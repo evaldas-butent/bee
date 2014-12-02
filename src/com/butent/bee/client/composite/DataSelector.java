@@ -39,6 +39,8 @@ import com.butent.bee.client.dialog.Popup.OutsideClick;
 import com.butent.bee.client.dom.DomUtils;
 import com.butent.bee.client.event.Binder;
 import com.butent.bee.client.event.EventUtils;
+import com.butent.bee.client.event.InputEvent;
+import com.butent.bee.client.event.InputHandler;
 import com.butent.bee.client.event.logical.CloseEvent;
 import com.butent.bee.client.event.logical.SelectorEvent;
 import com.butent.bee.client.event.logical.SummaryChangeEvent;
@@ -87,6 +89,7 @@ import com.butent.bee.shared.menu.MenuConstants.ItemType;
 import com.butent.bee.shared.ui.EditorAction;
 import com.butent.bee.shared.ui.HasCapsLock;
 import com.butent.bee.shared.ui.HasMaxLength;
+import com.butent.bee.shared.ui.HasStringValue;
 import com.butent.bee.shared.ui.HasVisibleLines;
 import com.butent.bee.shared.ui.Relation;
 import com.butent.bee.shared.ui.SelectorColumn;
@@ -114,6 +117,7 @@ public class DataSelector extends Composite implements Editor, HasVisibleLines, 
     private InputWidget() {
       super();
 
+      addInputHandler(inputEvents);
       addMouseWheelHandler(inputEvents);
 
       sinkEvents(Event.ONBLUR | Event.ONCLICK | Event.KEYEVENTS);
@@ -214,7 +218,7 @@ public class DataSelector extends Composite implements Editor, HasVisibleLines, 
     }
   }
 
-  private class InputEvents implements MouseWheelHandler, Consumable {
+  private class InputEvents implements InputHandler, MouseWheelHandler, Consumable {
 
     private boolean consumed;
 
@@ -226,6 +230,21 @@ public class DataSelector extends Composite implements Editor, HasVisibleLines, 
     @Override
     public boolean isConsumed() {
       return consumed;
+    }
+
+    @Override
+    public void onInput(InputEvent event) {
+      if (!isConsumed() && isEmbedded() && !isActive()
+          && event.getSource() instanceof HasStringValue) {
+
+        String value = ((HasStringValue) event.getSource()).getValue();
+        if (!BeeUtils.isEmpty(value)) {
+          start(BeeConst.UNDEF);
+          if (isInstant() && isQueryValid()) {
+            askOracle();
+          }
+        }
+      }
     }
 
     @Override

@@ -506,7 +506,7 @@ public class Popup extends Simple implements HasAnimation, CloseEvent.HasCloseHa
         }
       }
 
-      if (!event.isCanceled()) {
+      if (!event.isCanceled() && !UiHelper.isCopy(nativeEvent)) {
         if (eventTargetsPopup || getKeyboardPartner() != null && targetNode != null
             && getKeyboardPartner().isOrHasChild(targetNode)) {
           event.consume();

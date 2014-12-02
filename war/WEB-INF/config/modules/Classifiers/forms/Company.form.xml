@@ -244,7 +244,7 @@
       </page>
       <page for="Tasks">
         <text>=crmTasks</text>
-        <ChildGrid name="Tasks" relColumn="Company" />
+        <ChildGrid name="ChildTasks" relColumn="Company" />
       </page>
     </TabbedPages>
 
