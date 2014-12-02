@@ -70,6 +70,7 @@ import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 
 public class DocumentForm extends DocumentDataForm implements SelectorEvent.Handler {
 
@@ -219,7 +220,7 @@ public class DocumentForm extends DocumentDataForm implements SelectorEvent.Hand
         .append("<tbody><tr style=\"text-align:center;\">");
 
     for (String cap : new String[] {loc.ordinal(), loc.description(), loc.quantity(), loc.price(),
-        loc.amount(), loc.vat(), loc.total()}) {
+        loc.amount(), "PVM 5%", "PVM 21%", loc.total()}) {
       sb.append("<td style=\"border:1px solid black;\">" + cap + "</td>");
     }
     sb.append("</tr>")
@@ -228,7 +229,7 @@ public class DocumentForm extends DocumentDataForm implements SelectorEvent.Hand
         .append("<td style=\"border:1px solid black;\">{Index}</td>")
         .append("<td style=\"border:1px solid black; text-align:left;\">{Description}</td>");
 
-    for (String col : new String[] {"{Quantity}", "{Price}", "{Amount}", "{Vat}",
+    for (String col : new String[] {"{Quantity}", "{Price}", "{Amount}", "{Vat5}", "{Vat21}",
         "{VatPlusAmount}"}) {
       sb.append("<td style=\"border:1px solid black;\">" + col + "</td>");
     }
@@ -238,7 +239,8 @@ public class DocumentForm extends DocumentDataForm implements SelectorEvent.Hand
         .append("<td style=\"text-align:left;\" colspan=\"2\">" + loc.totalOf() + "</td>")
         .append("<td>{QuantityAmount}</td>")
         .append("<td colspan=\"2\">{TotalAmount}</td>")
-        .append("<td>{VatAmount}</td>")
+        .append("<td>{Vat5Amount}</td>")
+        .append("<td>{Vat21Amount}</td>")
         .append("<td>{Total}</td>")
         .append("</tr></tbody></table>");
 
@@ -285,7 +287,8 @@ public class DocumentForm extends DocumentDataForm implements SelectorEvent.Hand
 
               for (String global : globals.keySet()) {
                 result = result.replace("{" + global + "}",
-                    BeeUtils.toString(globals.get(global), 2));
+                    BeeUtils.isPositive(globals.get(global))
+                        ? BeeUtils.toString(globals.get(global), 2) : "");
               }
               for (BeeColumn column : getFormView().getDataColumns()) {
                 result = result.replace("{" + COL_DOCUMENT + column.getId() + "}",
@@ -577,7 +580,8 @@ public class DocumentForm extends DocumentDataForm implements SelectorEvent.Hand
       }
     };
     double qtyAmount = 0;
-    double vatAmount = 0;
+    double vat5Amount = 0;
+    double vat21Amount = 0;
     double sumAmount = 0;
 
     for (int i = 0; i < c; i++) {
@@ -587,6 +591,7 @@ public class DocumentForm extends DocumentDataForm implements SelectorEvent.Hand
       final Holder<Double> sum = Holder.of(qty * BeeUtils.unbox(row.getDouble(prcIdx)));
       final Holder<Double> vat = Holder.of(BeeUtils.unbox(row.getDouble(vatIdx)));
 
+      final boolean vat5 = Objects.equals(vat.get(), 5d);
       boolean vatInPercents = BeeUtils.unbox(row.getBoolean(vatPrcIdx));
 
       if (BeeUtils.unbox(row.getBoolean(vatPlusIdx))) {
@@ -613,7 +618,9 @@ public class DocumentForm extends DocumentDataForm implements SelectorEvent.Hand
               .replace("{" + COL_TRADE_ITEM_QUANTITY + "}", BeeUtils.toString(qty))
               .replace("{" + COL_TRADE_ITEM_PRICE + "}", BeeUtils.toString(sum.get() / qty, 3))
               .replace("{" + COL_TRADE_AMOUNT + "}", BeeUtils.toString(sum.get(), 2))
-              .replace("{" + COL_TRADE_VAT + "}", BeeUtils.toString(vat.get(), 2))
+              .replace("{" + COL_TRADE_VAT + (vat5 ? "5" : "21") + "}",
+                  BeeUtils.isPositive(vat.get()) ? BeeUtils.toString(vat.get(), 2) : "")
+              .replace("{" + COL_TRADE_VAT + (vat5 ? "21" : "5") + "}", "")
               .replace("{" + COL_TRADE_VAT_PLUS + COL_TRADE_AMOUNT + "}",
                   BeeUtils.toString(vat.get() + sum.get(), 2)));
         }
@@ -625,7 +632,12 @@ public class DocumentForm extends DocumentDataForm implements SelectorEvent.Hand
       }
       qtyAmount += qty;
       sumAmount += sum.get();
-      vatAmount += vat.get();
+
+      if (vat5) {
+        vat5Amount += vat.get();
+      } else {
+        vat21Amount += vat.get();
+      }
     }
     if (!globals.containsKey(COL_TRADE_ITEM_QUANTITY + COL_TRADE_AMOUNT)) {
       globals.put(COL_TRADE_ITEM_QUANTITY + COL_TRADE_AMOUNT, qtyAmount);
@@ -633,11 +645,14 @@ public class DocumentForm extends DocumentDataForm implements SelectorEvent.Hand
     if (!globals.containsKey(VAR_TOTAL + COL_TRADE_AMOUNT)) {
       globals.put(VAR_TOTAL + COL_TRADE_AMOUNT, sumAmount);
     }
-    if (!globals.containsKey(COL_TRADE_VAT + COL_TRADE_AMOUNT)) {
-      globals.put(COL_TRADE_VAT + COL_TRADE_AMOUNT, vatAmount);
+    if (!globals.containsKey(COL_TRADE_VAT + "5" + COL_TRADE_AMOUNT)) {
+      globals.put(COL_TRADE_VAT + "5" + COL_TRADE_AMOUNT, vat5Amount);
+    }
+    if (!globals.containsKey(COL_TRADE_VAT + "21" + COL_TRADE_AMOUNT)) {
+      globals.put(COL_TRADE_VAT + "21" + COL_TRADE_AMOUNT, vat21Amount);
     }
     if (!globals.containsKey(VAR_TOTAL)) {
-      globals.put(VAR_TOTAL, sumAmount + vatAmount);
+      globals.put(VAR_TOTAL, sumAmount + vat5Amount + vat21Amount);
     }
   }
 }

@@ -32,7 +32,21 @@
         </row>
         <row>
           <Label for="Vat" />
-          <InputDecimal source="Vat" />
+          <ListBox source="Vat" valueNumeric="false">
+            <handler event="change">
+              var v = parseFloat(target.value);
+              if (v > 0) {
+                v = "1";
+              } else {
+                v = null;
+              }
+              $wnd.Bee_updateForm(target.id, "VatPercent", v);
+            </handler>
+
+            <item>0</item>
+            <item>5</item>
+            <item>21</item>
+          </ListBox>
         </row>
         <row>
           <Label for="VatPercent" />
