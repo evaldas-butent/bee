@@ -14,6 +14,7 @@ import com.butent.bee.shared.modules.mail.AccountInfo;
 import com.butent.bee.shared.modules.mail.MailConstants.Protocol;
 import com.butent.bee.shared.modules.mail.MailConstants.SystemFolder;
 import com.butent.bee.shared.modules.mail.MailFolder;
+import com.butent.bee.shared.utils.ArrayUtils;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.Codec;
 import com.butent.bee.shared.utils.EnumUtils;
@@ -446,16 +447,16 @@ public class MailAccount {
     return accountInfo.isSystemFolder(folder.getId());
   }
 
-  void processMessages(long[] uids, MailFolder source, MailFolder target, boolean move)
+  boolean processMessages(long[] uids, MailFolder source, MailFolder target, boolean move)
       throws MessagingException {
 
     if (!isStoredRemotedly(source)) {
-      return;
+      return false;
     }
     boolean isTarget = target != null && target.isConnected();
 
-    if (!move && !isTarget) {
-      return;
+    if (!move && !isTarget || ArrayUtils.length(uids) == 0) {
+      return true;
     }
     Store store = null;
     Folder remoteSource = null;
@@ -513,6 +514,7 @@ public class MailAccount {
       }
       disconnectFromStore(store);
     }
+    return true;
   }
 
   boolean renameRemoteFolder(MailFolder source, String name) throws MessagingException {

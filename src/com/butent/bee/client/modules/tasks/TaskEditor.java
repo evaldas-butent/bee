@@ -7,6 +7,7 @@ import com.google.gwt.core.client.Scheduler;
 import com.google.gwt.core.client.Scheduler.ScheduledCommand;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
+import com.google.gwt.event.dom.client.HasClickHandlers;
 import com.google.gwt.event.shared.HasHandlers;
 import com.google.gwt.user.client.ui.HasWidgets;
 import com.google.gwt.user.client.ui.Widget;
@@ -32,6 +33,7 @@ import com.butent.bee.client.i18n.Format;
 import com.butent.bee.client.layout.Flow;
 import com.butent.bee.client.layout.Simple;
 import com.butent.bee.client.render.PhotoRenderer;
+import com.butent.bee.client.ui.IdentifiableWidget;
 import com.butent.bee.client.utils.FileUtils;
 import com.butent.bee.client.view.HeaderView;
 import com.butent.bee.client.view.edit.SaveChangesEvent;
@@ -40,6 +42,7 @@ import com.butent.bee.client.view.form.interceptor.AbstractFormInterceptor;
 import com.butent.bee.client.view.form.interceptor.FormInterceptor;
 import com.butent.bee.client.widget.Button;
 import com.butent.bee.client.widget.CustomDiv;
+import com.butent.bee.client.widget.FaLabel;
 import com.butent.bee.client.widget.Image;
 import com.butent.bee.client.widget.Label;
 import com.butent.bee.shared.Assert;
@@ -55,6 +58,7 @@ import com.butent.bee.shared.data.RelationUtils;
 import com.butent.bee.shared.data.event.DataChangeEvent;
 import com.butent.bee.shared.data.event.RowUpdateEvent;
 import com.butent.bee.shared.data.view.DataInfo;
+import com.butent.bee.shared.font.FontAwesome;
 import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.io.FileInfo;
 import com.butent.bee.shared.modules.tasks.TaskConstants.TaskEvent;
@@ -80,6 +84,7 @@ class TaskEditor extends AbstractFormInterceptor {
 
   private static final String STYLE_EVENT = CRM_STYLE_PREFIX + "taskEvent-";
   private static final String STYLE_EVENT_ROW = STYLE_EVENT + "row";
+  private static final String STYLE_EVENT_ROW_NEW = STYLE_EVENT_ROW + "-new";
   private static final String STYLE_EVENT_COL = STYLE_EVENT + "col-";
   private static final String STYLE_EVENT_FILES = STYLE_EVENT + "files";
 
@@ -340,7 +345,8 @@ class TaskEditor extends AbstractFormInterceptor {
   }
 
   private static void showEvent(Flow panel, BeeRow row, List<BeeColumn> columns,
-      List<FileInfo> files, Table<String, String, Long> durations, boolean renderPhoto) {
+      List<FileInfo> files, Table<String, String, Long> durations, boolean renderPhoto,
+      Long lastAccess) {
 
     Flow container = new Flow();
     container.addStyleName(STYLE_EVENT_ROW);
@@ -373,6 +379,16 @@ class TaskEditor extends AbstractFormInterceptor {
     if (publishTime != null) {
       col0.add(createEventCell(COL_PUBLISH_TIME,
           Format.getDefaultDateTimeFormat().format(publishTime)));
+    }
+
+    if (lastAccess != null && publishTime != null) {
+      if (BeeUtils.unbox(lastAccess) < publishTime.getTime()) {
+        container.addStyleName(STYLE_EVENT_ROW_NEW);
+      } else {
+        container.removeStyleName(STYLE_EVENT_ROW_NEW);
+      }
+    } else {
+      container.removeStyleName(STYLE_EVENT_ROW_NEW);
     }
 
     String publisher = BeeUtils.joinWords(
@@ -444,7 +460,7 @@ class TaskEditor extends AbstractFormInterceptor {
   }
 
   private static void showEventsAndDuration(FormView form, BeeRowSet rowSet,
-      List<FileInfo> files) {
+      List<FileInfo> files, Long lastAccess) {
 
     Widget widget = form.getWidgetByName(VIEW_TASK_EVENTS);
     if (!(widget instanceof Flow) || DataUtils.isEmpty(rowSet)) {
@@ -469,7 +485,7 @@ class TaskEditor extends AbstractFormInterceptor {
 
     for (BeeRow row : rowSet.getRows()) {
       showEvent(panel, row, rowSet.getColumns(), filterEventFiles(files, row.getId()), durations,
-          hasPhoto);
+          hasPhoto, lastAccess);
     }
 
     showExtensions(form, rowSet);
@@ -543,14 +559,23 @@ class TaskEditor extends AbstractFormInterceptor {
 
     for (final TaskEvent event : TaskEvent.values()) {
       String label = event.getCommandLabel();
+      FontAwesome icon = event.getCommandIcon();
+
+      IdentifiableWidget button = icon != null ? new FaLabel(icon) : new Button(label);
+
+      ((HasClickHandlers) button).addClickHandler(new ClickHandler() {
+        @Override
+        public void onClick(ClickEvent e) {
+          doEvent(event);
+        }
+      });
+
+      if (button instanceof FaLabel) {
+        ((FaLabel) button).setTitle(label);
+      }
 
       if (!BeeUtils.isEmpty(label) && isEventEnabled(event, status, owner, executor)) {
-        header.addCommandItem(new Button(label, new ClickHandler() {
-          @Override
-          public void onClick(ClickEvent e) {
-            doEvent(event);
-          }
-        }));
+        header.addCommandItem(button);
       }
     }
   }
@@ -603,6 +628,7 @@ class TaskEditor extends AbstractFormInterceptor {
   @Override
   public boolean onStartEdit(final FormView form, final IsRow row, ScheduledCommand focusCommand) {
 
+    final Long lastAccess = BeeUtils.toLongOrNull(row.getProperty(PROP_LAST_ACCESS));
     Long owner = row.getLong(form.getDataIndex(COL_OWNER));
     Long executor = row.getLong(form.getDataIndex(COL_EXECUTOR));
 
@@ -678,7 +704,7 @@ class TaskEditor extends AbstractFormInterceptor {
 
         String events = data.getProperty(PROP_EVENTS);
         if (!BeeUtils.isEmpty(events)) {
-          showEventsAndDuration(form, BeeRowSet.restore(events), files);
+          showEventsAndDuration(form, BeeRowSet.restore(events), files, lastAccess);
         }
 
         form.updateRow(data, true);
@@ -1236,6 +1262,8 @@ class TaskEditor extends AbstractFormInterceptor {
     RowUpdateEvent.fire(BeeKeeper.getBus(), VIEW_TASKS, data);
 
     FormView form = getFormView();
+    Long lastAccess = BeeUtils.toLongOrNull(data.getProperty(PROP_LAST_ACCESS));
+
     if (hasRelations(form.getOldRow()) || hasRelations(data)) {
       DataChangeEvent.fireRefresh(BeeKeeper.getBus(), VIEW_RELATED_TASKS);
     }
@@ -1243,7 +1271,7 @@ class TaskEditor extends AbstractFormInterceptor {
     String events = data.getProperty(PROP_EVENTS);
     if (!BeeUtils.isEmpty(events)) {
       List<FileInfo> files = FileInfo.restoreCollection(data.getProperty(PROP_FILES));
-      showEventsAndDuration(form, BeeRowSet.restore(events), files);
+      showEventsAndDuration(form, BeeRowSet.restore(events), files, lastAccess);
     }
 
     form.updateRow(data, true);

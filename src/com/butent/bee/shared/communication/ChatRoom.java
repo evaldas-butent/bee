@@ -266,7 +266,7 @@ public class ChatRoom implements BeeSerializable, HasInfo {
     return users;
   }
 
-  public void incrementMassageCount() {
+  public void incrementMessageCount() {
     setMessageCount(getMessageCount() + 1);
   }
 
@@ -298,9 +298,12 @@ public class ChatRoom implements BeeSerializable, HasInfo {
   }
 
   public boolean join(Long userId) {
-    if (isVisible(userId) && !getUsers().contains(userId)) {
-      getUsers().add(userId);
+    if (isVisible(userId)) {
+      if (!getUsers().contains(userId)) {
+        getUsers().add(userId);
+      }
       return true;
+
     } else {
       return false;
     }

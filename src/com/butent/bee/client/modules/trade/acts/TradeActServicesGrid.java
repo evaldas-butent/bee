@@ -37,7 +37,7 @@ public class TradeActServicesGrid extends AbstractGridInterceptor {
       Totalizer totalizer = new Totalizer(items.getDataColumns());
 
       int qtyIndex = items.getDataIndex(COL_TRADE_ITEM_QUANTITY);
-      totalizer.setQuantityFuction(new QuantityReader(qtyIndex));
+      totalizer.setQuantityFunction(new QuantityReader(qtyIndex));
 
       for (IsRow row : items.getRowData()) {
         Double amount = totalizer.getTotal(row);

@@ -102,23 +102,23 @@ public class Totalizer {
     }
   }
 
-  public void setAmountFuction(RowToDouble function) {
+  public void setAmountFunction(RowToDouble function) {
     setFunction(COL_TRADE_AMOUNT, function);
   }
 
-  public void setDiscountFuction(RowToDouble function) {
+  public void setDiscountFunction(RowToDouble function) {
     setFunction(COL_TRADE_DISCOUNT, function);
   }
 
-  public void setPriceFuction(RowToDouble function) {
+  public void setPriceFunction(RowToDouble function) {
     setFunction(COL_TRADE_ITEM_PRICE, function);
   }
 
-  public void setQuantityFuction(RowToDouble function) {
+  public void setQuantityFunction(RowToDouble function) {
     setFunction(COL_TRADE_ITEM_QUANTITY, function);
   }
 
-  public void setVatFuction(RowToDouble function) {
+  public void setVatFunction(RowToDouble function) {
     setFunction(COL_TRADE_VAT, function);
   }
 

@@ -126,34 +126,78 @@ public class TradeActGrid extends AbstractGridInterceptor {
 
   @Override
   public List<FilterComponent> getInitialUserFilters(List<FilterComponent> defaultFilters) {
-    if (!BeeUtils.isEmpty(defaultFilters)) {
-      for (FilterComponent component : defaultFilters) {
-        if (component != null && BeeUtils.same(component.getName(), COL_TA_SERIES)) {
-          return super.getInitialUserFilters(defaultFilters);
-        }
-      }
-    }
+    FilterComponent seriesFilter = getInitialSeriesFilter();
+    FilterComponent statusFilter = getInitialStatusFilter();
 
-    BeeRowSet series = TradeActKeeper.getUserSeries(false);
-    if (DataUtils.isEmpty(series)) {
+    if (seriesFilter == null && statusFilter == null) {
       return super.getInitialUserFilters(defaultFilters);
     }
 
     List<FilterComponent> result = new ArrayList<>();
     if (!BeeUtils.isEmpty(defaultFilters)) {
-      result.addAll(defaultFilters);
+      for (FilterComponent component : defaultFilters) {
+        if (component != null) {
+          result.add(component);
+
+          if (BeeUtils.same(component.getName(), COL_TA_SERIES)) {
+            seriesFilter = null;
+          } else if (BeeUtils.same(component.getName(), COL_TA_STATUS)) {
+            statusFilter = null;
+          }
+        }
+      }
+    }
+
+    if (seriesFilter != null) {
+      result.add(seriesFilter);
+    }
+    if (statusFilter != null) {
+      result.add(statusFilter);
+    }
+
+    return result;
+  }
+
+  private static FilterComponent getInitialSeriesFilter() {
+    BeeRowSet series = TradeActKeeper.getUserSeries(false);
+
+    if (DataUtils.isEmpty(series)) {
+      return null;
+
+    } else {
+      List<String> items = new ArrayList<>();
+      for (BeeRow row : series) {
+        items.add(BeeUtils.toString(row.getId()));
+      }
+
+      return new FilterComponent(COL_TA_SERIES, ListFilterSupplier.buildValue(items));
+    }
+  }
+
+  private FilterComponent getInitialStatusFilter() {
+    if (kind != null && !kind.enableReturn()) {
+      return null;
+    }
+
+    Long returnedActStatus = TradeActKeeper.getReturnedActStatus();
+    if (!DataUtils.isId(returnedActStatus)) {
+      return null;
+    }
+
+    BeeRowSet statuses = TradeActKeeper.getStatuses();
+    if (DataUtils.isEmpty(statuses)) {
+      return null;
     }
 
     List<String> items = new ArrayList<>();
-    for (BeeRow row : series) {
-      items.add(BeeUtils.toString(row.getId()));
+    for (BeeRow row : statuses) {
+      if (!returnedActStatus.equals(row.getId())) {
+        items.add(BeeUtils.toString(row.getId()));
+      }
     }
 
-    FilterComponent component = new FilterComponent(COL_TA_SERIES,
-        ListFilterSupplier.buildValue(items));
-    result.add(component);
-
-    return result;
+    items.add(null);
+    return new FilterComponent(COL_TA_STATUS, ListFilterSupplier.buildValue(items));
   }
 
   @Override
@@ -185,7 +229,7 @@ public class TradeActGrid extends AbstractGridInterceptor {
               if (tak != null) {
                 List<String> messages = new StringList();
 
-                messages.add(row.getString(getDataIndex(COL_TA_NAME)));
+                messages.add(row.getString(getDataIndex(COL_TRADE_ACT_NAME)));
 
                 String number = row.getString(getDataIndex(COL_TA_NUMBER));
                 if (!BeeUtils.isEmpty(number)) {
@@ -282,7 +326,7 @@ public class TradeActGrid extends AbstractGridInterceptor {
     if (tak != null && tak.enableSale()) {
       List<String> messages = new StringList();
 
-      messages.add(row.getString(getDataIndex(COL_TA_NAME)));
+      messages.add(row.getString(getDataIndex(COL_TRADE_ACT_NAME)));
       messages.add(Localized.getConstants().taChangeIntoSale());
 
       final long actId = row.getId();

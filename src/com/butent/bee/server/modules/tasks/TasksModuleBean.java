@@ -52,7 +52,6 @@ import com.butent.bee.shared.data.SimpleRowSet;
 import com.butent.bee.shared.data.SimpleRowSet.SimpleRow;
 import com.butent.bee.shared.data.filter.Filter;
 import com.butent.bee.shared.data.value.DateValue;
-import com.butent.bee.shared.data.value.IntegerValue;
 import com.butent.bee.shared.data.view.DataInfo;
 import com.butent.bee.shared.data.view.Order;
 import com.butent.bee.shared.data.view.RowInfo;
@@ -1864,7 +1863,7 @@ public class TasksModuleBean implements BeeModule {
 
     Filter filter = Filter.and(
         Filter.or(Filter.isNull(COL_RT_SCHEDULE_DAYS),
-            Filter.isMoreEqual(COL_RT_SCHEDULE_DAYS, new IntegerValue(0))),
+            Filter.isPositive(COL_RT_SCHEDULE_DAYS)),
         Filter.or(Filter.isNull(COL_RT_SCHEDULE_UNTIL),
             Filter.isMoreEqual(COL_RT_SCHEDULE_UNTIL, new DateValue(defStart))));
 

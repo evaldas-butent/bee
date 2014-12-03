@@ -5,7 +5,7 @@
   idName="TradeActID"
   >
   <Fields>
-    <String name="ActName" precision="100" label="=tradeActName" />
+    <Relation name="Name" relation="TradeActNames" label="=tradeActName" />
 
     <DateTime name="Date" notNull="true" defExpr="CURRENT_TIME" label="=taDate" />
     <DateTime name="Until" label="=taUntil" />
@@ -19,6 +19,7 @@
     <Relation name="Status" relation="TradeStatuses" label="=status" />
 
     <Relation name="Company" relation="Companies" label="=client" />
+    <Relation name="Contact" relation="CompanyPersons" label="=contact" />
     <Relation name="Object" relation="CompanyObjects" label="=object" />
     <Relation name="Manager" relation="Users" label="=manager" defExpr="CURRENT_USER" />
 

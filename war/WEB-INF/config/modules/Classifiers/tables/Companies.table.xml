@@ -34,6 +34,7 @@
     
     <Relation name="FinancialState" relation="FinancialStates" label="=financialState" />
     <Relation name="DefaultBankAccount" relation="CompanyBankAccounts" unique="true" cascade="SET_NULL" label="=defaultBankAccount" />
+    <Relation name="DefaultCompanyUser" relation="CompanyUsers" unique="true" cascade="SET_NULL" label="=defaultCompanyUser" editable="true" />
     <Numeric name="DaysAsBuyer" precision="3" label="=daysAsBuyer" />
     <Numeric name="DaysAsSupplier" precision="3" label="=daysAsSupplier" />
 

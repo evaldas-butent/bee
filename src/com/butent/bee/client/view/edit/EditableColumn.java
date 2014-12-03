@@ -635,6 +635,8 @@ public class EditableColumn implements BlurHandler, EditChangeHandler, EditStopE
       if (!BeeUtils.isTrue(ok)) {
         if (ok == null) {
           closeEditor(keyCode, hasModifiers);
+        } else {
+          getEditor().setFocus(true);
         }
         return false;
       }

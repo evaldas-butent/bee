@@ -40,9 +40,15 @@ public interface LocalizableTradeActConstants {
 
   String taSaveSelectedItems();
 
+  String taTariff();
+
+  String taTimeUnit();
+
   String taTimeUnitDay();
 
   String taTimeUnitMonth();
+
+  String taUntil();
 
   String tradeAct();
 

@@ -4,6 +4,8 @@ public interface LocalizableTradeConstants {
 
   String cost();
 
+  String costLabel();
+
   String discount();
 
   String discountPercent();
@@ -46,6 +48,8 @@ public interface LocalizableTradeConstants {
 
   String salePrice();
 
+  String salePriceLabel();
+
   String salePriceShort();
 
   String trade();
@@ -57,6 +61,12 @@ public interface LocalizableTradeConstants {
   String trdDebt();
 
   String trdInvoice();
+
+  String trdInvoiceId();
+
+  String trdInvoiceNo();
+
+  String trdInvoicePrefix();
 
   String trdMovementOfGoods();
 

@@ -36,7 +36,7 @@ import javax.ejb.Singleton;
 @Lock(LockType.READ)
 public class ModuleHolderBean {
 
-  private enum TABLE_ACTIVATION_MODE {
+  private enum TableActivationMode {
     NEW, ACTIVE, ALL
   }
 
@@ -96,9 +96,12 @@ public class ModuleHolderBean {
   }
 
   public void initModules() {
-    TABLE_ACTIVATION_MODE mode = EnumUtils.getEnumByName(TABLE_ACTIVATION_MODE.class,
+    TableActivationMode mode = EnumUtils.getEnumByName(TableActivationMode.class,
         Config.getProperty("TableActivationMode"));
 
+    for (String mod : getModules()) {
+      prm.refreshModuleParameters(mod);
+    }
     if (mode != null) {
       switch (mode) {
         case NEW:
@@ -114,9 +117,7 @@ public class ModuleHolderBean {
           break;
       }
     }
-
     for (String mod : getModules()) {
-      prm.refreshModuleParameters(mod);
       getModule(mod).init();
     }
   }

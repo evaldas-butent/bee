@@ -283,6 +283,8 @@
       <xs:enumeration value="Configuration" />
       <xs:enumeration value="CostCenters" />
       <xs:enumeration value="Countries" />
+      <xs:enumeration value="CountryDailyCosts" />
+      <xs:enumeration value="CountryNorms" />
       <xs:enumeration value="Criteria" />
       <xs:enumeration value="CriteriaGroups" />
       <xs:enumeration value="Currencies" />
@@ -344,6 +346,7 @@
       <xs:enumeration value="GridSettings" />
       <xs:enumeration value="GroupDrivers" />
       <xs:enumeration value="GroupVehicles" />
+      <xs:enumeration value="Holidays" />
       <xs:enumeration value="ImportMappings" />
       <xs:enumeration value="ImportOptions" />
       <xs:enumeration value="ImportProperties" />
@@ -443,7 +446,9 @@
       <xs:enumeration value="TimeZones" />
       <xs:enumeration value="TradeActInvoices" />
       <xs:enumeration value="TradeActItems" />
+      <xs:enumeration value="TradeActNames" />
       <xs:enumeration value="TradeActs" />
+      <xs:enumeration value="TradeActsAndItems" />
       <xs:enumeration value="TradeActServices" />
       <xs:enumeration value="TradeActTemplates" />
       <xs:enumeration value="TradeActTmplItems" />

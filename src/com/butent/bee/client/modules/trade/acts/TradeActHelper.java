@@ -33,16 +33,24 @@ final class TradeActHelper {
   private TradeActHelper() {
   }
 
+  static NumberFormat getDecimalFormat(String viewName, String colName) {
+    Integer scale = Data.getColumnScale(viewName, colName);
+    return Format.getDecimalFormat(0, BeeUtils.unbox(scale));
+  }
+
   static String getLabel(String name) {
     switch (name) {
       case COL_TRADE_ACT:
         return Localized.getConstants().tradeAct();
 
       case COL_TA_NAME:
+      case COL_TRADE_ACT_NAME:
         return Localized.getConstants().tradeActName();
 
       case COL_TA_DATE:
         return Localized.getConstants().taDate();
+      case COL_TA_UNTIL:
+        return Localized.getConstants().taUntil();
 
       case COL_TA_SERIES:
       case COL_SERIES_NAME:
@@ -100,6 +108,8 @@ final class TradeActHelper {
       case COL_UNIT:
       case ALS_UNIT_NAME:
         return Localized.getConstants().unitShort();
+      case COL_TIME_UNIT:
+        return Localized.getConstants().taTimeUnit();
 
       case COL_TRADE_ITEM_QUANTITY:
         return Localized.getConstants().quantity();
@@ -111,15 +121,46 @@ final class TradeActHelper {
       case COL_TRADE_ITEM_PRICE:
         return Localized.getConstants().price();
 
+      case ALS_BASE_AMOUNT:
+        return Localized.getConstants().amount();
+
       case COL_TRADE_DISCOUNT:
         return Localized.getConstants().discountPercent();
       case ALS_DISCOUNT_AMOUNT:
         return Localized.getConstants().discount();
 
-      case ALS_BASE_AMOUNT:
-        return Localized.getConstants().amount();
+      case ALS_WITHOUT_VAT:
+        return Localized.getConstants().trdAmountWoVat();
+      case ALS_VAT_AMOUNT:
+        return Localized.getConstants().vatAmount();
+
       case ALS_TOTAL_AMOUNT:
         return Localized.getConstants().total();
+
+      case COL_SALE:
+        return Localized.getConstants().trdInvoiceId();
+
+      case COL_TRADE_INVOICE_PREFIX:
+        return Localized.getConstants().trdInvoicePrefix();
+      case COL_TRADE_INVOICE_NO:
+        return Localized.getConstants().trdInvoiceNo();
+
+      case COL_TA_INVOICE_FROM:
+        return Localized.getConstants().dateFrom();
+      case COL_TA_INVOICE_TO:
+        return Localized.getConstants().dateTo();
+
+      case ALS_ITEM_TOTAL:
+        return Localized.getConstants().goods();
+      case COL_TA_SERVICE_TARIFF:
+        return Localized.getConstants().taTariff();
+
+      case COL_TA_SERVICE_FACTOR:
+        return Localized.getConstants().taFactorShort();
+      case COL_TA_SERVICE_DAYS:
+        return Localized.getConstants().taDaysPerWeekShort();
+      case COL_TA_SERVICE_MIN:
+        return Localized.getConstants().taMinTermShort();
 
       default:
         logger.warning(NameUtils.getClassName(TradeActHelper.class), name, "label not defined");
@@ -170,6 +211,7 @@ final class TradeActHelper {
     switch (name) {
       case COL_TRADE_ACT:
       case COL_TA_ITEM:
+      case COL_SALE:
         return Format.getDefaultLongFormat();
 
       case COL_TRADE_ITEM_QUANTITY:
@@ -185,11 +227,22 @@ final class TradeActHelper {
 
       case ALS_BASE_AMOUNT:
       case ALS_DISCOUNT_AMOUNT:
+      case ALS_WITHOUT_VAT:
+      case ALS_VAT_AMOUNT:
       case ALS_TOTAL_AMOUNT:
+      case ALS_ITEM_TOTAL:
         return getAmountFormat();
 
       case COL_ITEM_WEIGHT:
         return getWeightFormat();
+
+      case COL_TA_SERVICE_DAYS:
+      case COL_TA_SERVICE_MIN:
+        return Format.getDefaultIntegerFormat();
+
+      case COL_TA_SERVICE_TARIFF:
+      case COL_TA_SERVICE_FACTOR:
+        return getDecimalFormat(VIEW_TRADE_ACT_SERVICES, name);
 
       default:
         logger.warning(NameUtils.getClassName(TradeActHelper.class), name, "format not defined");
@@ -242,12 +295,18 @@ final class TradeActHelper {
 
       case ALS_BASE_AMOUNT:
       case ALS_DISCOUNT_AMOUNT:
+      case ALS_WITHOUT_VAT:
+      case ALS_VAT_AMOUNT:
       case ALS_TOTAL_AMOUNT:
+      case ALS_ITEM_TOTAL:
         return ValueType.NUMBER;
 
       case ALS_WAREHOUSE_CODE:
       case ALS_ITEM_TYPE_NAME:
       case ALS_ITEM_GROUP_NAME:
+      case ALS_COMPANY_NAME:
+      case COL_FIRST_NAME:
+      case COL_LAST_NAME:
         return ValueType.TEXT;
     }
 

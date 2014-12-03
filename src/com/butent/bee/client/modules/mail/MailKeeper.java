@@ -27,6 +27,7 @@ import com.butent.bee.shared.communication.ResponseObject;
 import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.SimpleRowSet;
 import com.butent.bee.shared.data.SimpleRowSet.SimpleRow;
+import com.butent.bee.shared.i18n.LocalizableMessages;
 import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.menu.MenuHandler;
 import com.butent.bee.shared.menu.MenuService;
@@ -73,13 +74,6 @@ public final class MailKeeper {
   }
 
   public static void register() {
-    MenuService.RESTART_PROXY.setHandler(new MenuHandler() {
-      @Override
-      public void onSelection(String parameters) {
-        BeeKeeper.getRpc().makeGetRequest(createArgs(SVC_RESTART_PROXY));
-      }
-    });
-
     MenuService.OPEN_MAIL.setHandler(new MenuHandler() {
       @Override
       public void onSelection(String parameters) {
@@ -167,16 +161,12 @@ public final class MailKeeper {
         response.notify(panel.getFormView());
 
         if (!response.hasErrors()) {
-          panel.getFormView().notifyInfo(
-              move ? Localized.getMessages().mailMovedMessagesToFolder(
-                  (String) response.getResponse()) : Localized.getMessages()
-                  .mailCopiedMessagesToFolder((String) response.getResponse()),
-              BeeUtils.bracket(panel.getCurrentAccount().findFolder(folderTo).getName()));
+          LocalizableMessages loc = Localized.getMessages();
 
-          if (move && Objects.equals(folderFrom, panel.getCurrentFolderId())) {
-            panel.refreshMessages();
-          }
-          panel.checkFolder(folderTo);
+          panel.getFormView().notifyInfo(move
+              ? loc.mailMovedMessagesToFolder(response.getResponseAsString())
+              : loc.mailCopiedMessagesToFolder(response.getResponseAsString()),
+              BeeUtils.bracket(panel.getCurrentAccount().findFolder(folderTo).getName()));
         }
       }
     });

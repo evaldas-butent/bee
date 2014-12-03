@@ -20,9 +20,9 @@
         <Label text="=name" style="&lbl1;" class="bee-required" />
         <InputText source="Name" style="&inp1;" visible="true" />
         <Label style="&lbl1;" for="CompanyType" />
-        <DataSelector source="CompanyType" style="&inp1;"  />
+        <DataSelector source="CompanyType" style="&inp1;" />
         <Label style="&lbl1;" for="CompanyGroup" />
-        <DataSelector source="CompanyGroup" style="&inp1;"  />
+        <DataSelector source="CompanyGroup" style="&inp1;" />
       </row>
 
       <row>
@@ -49,7 +49,7 @@
     <Disclosure open="true">
        <Label text="=contactInfo" style="text-transform: uppercase; " />
        <FlowPanel>
-         <xi:include href="widgets/ContactDetails.widget.xml" />     
+         <xi:include href="widgets/ContactDetails.widget.xml" />
          <ChildGrid name="CompanyContacts" relColumn="Company" style="min-height: 150px" />
        </FlowPanel>
     </Disclosure>
@@ -160,7 +160,15 @@
       <page for="RelatedMessages">
         <text>=mails</text>
         <ChildGrid name="RelatedMessages" relColumn="Company" />
-      </page>  
+      </page>
+      <page for="CompActionList" module="Calendar">
+      	<text>=calListOfActions</text>
+      	<ChildGrid name="CompActionList" relColumn="Company" />
+      </page>
+      <page for="Tasks">
+        <text>=crmTasks</text>
+        <ChildGrid name="ChildTasks" relColumn="Company" />
+      </page>
     </TabbedPages>
 
   </FlowPanel>

@@ -39,6 +39,8 @@ import com.butent.bee.client.dialog.Popup.OutsideClick;
 import com.butent.bee.client.dom.DomUtils;
 import com.butent.bee.client.event.Binder;
 import com.butent.bee.client.event.EventUtils;
+import com.butent.bee.client.event.InputEvent;
+import com.butent.bee.client.event.InputHandler;
 import com.butent.bee.client.event.logical.CloseEvent;
 import com.butent.bee.client.event.logical.SelectorEvent;
 import com.butent.bee.client.event.logical.SummaryChangeEvent;
@@ -82,11 +84,12 @@ import com.butent.bee.shared.data.view.DataInfo;
 import com.butent.bee.shared.data.view.ViewColumn;
 import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.menu.MenuConstants;
-import com.butent.bee.shared.menu.MenuConstants.BAR_TYPE;
-import com.butent.bee.shared.menu.MenuConstants.ITEM_TYPE;
+import com.butent.bee.shared.menu.MenuConstants.BarType;
+import com.butent.bee.shared.menu.MenuConstants.ItemType;
 import com.butent.bee.shared.ui.EditorAction;
 import com.butent.bee.shared.ui.HasCapsLock;
 import com.butent.bee.shared.ui.HasMaxLength;
+import com.butent.bee.shared.ui.HasStringValue;
 import com.butent.bee.shared.ui.HasVisibleLines;
 import com.butent.bee.shared.ui.Relation;
 import com.butent.bee.shared.ui.SelectorColumn;
@@ -114,6 +117,7 @@ public class DataSelector extends Composite implements Editor, HasVisibleLines, 
     private InputWidget() {
       super();
 
+      addInputHandler(inputEvents);
       addMouseWheelHandler(inputEvents);
 
       sinkEvents(Event.ONBLUR | Event.ONCLICK | Event.KEYEVENTS);
@@ -214,7 +218,7 @@ public class DataSelector extends Composite implements Editor, HasVisibleLines, 
     }
   }
 
-  private class InputEvents implements MouseWheelHandler, Consumable {
+  private class InputEvents implements InputHandler, MouseWheelHandler, Consumable {
 
     private boolean consumed;
 
@@ -226,6 +230,21 @@ public class DataSelector extends Composite implements Editor, HasVisibleLines, 
     @Override
     public boolean isConsumed() {
       return consumed;
+    }
+
+    @Override
+    public void onInput(InputEvent event) {
+      if (!isConsumed() && isEmbedded() && !isActive()
+          && event.getSource() instanceof HasStringValue) {
+
+        String value = ((HasStringValue) event.getSource()).getValue();
+        if (!BeeUtils.isEmpty(value)) {
+          start(BeeConst.UNDEF);
+          if (isInstant() && isQueryValid()) {
+            askOracle();
+          }
+        }
+      }
     }
 
     @Override
@@ -382,8 +401,8 @@ public class DataSelector extends Composite implements Editor, HasVisibleLines, 
 
     private Boolean pendingSelection;
 
-    private Selector(ITEM_TYPE itemType, Element partner, String selectorClass) {
-      this.menu = new MenuBar(MenuConstants.ROOT_MENU_INDEX, true, BAR_TYPE.TABLE, itemType);
+    private Selector(ItemType itemType, Element partner, String selectorClass) {
+      this.menu = new MenuBar(MenuConstants.ROOT_MENU_INDEX, true, BarType.TABLE, itemType);
 
       menu.addStyleName(STYLE_MENU);
 
@@ -429,7 +448,7 @@ public class DataSelector extends Composite implements Editor, HasVisibleLines, 
         };
       }
 
-      MenuItem item = new MenuItem(menu, next ? ITEM_NEXT : ITEM_PREV, ITEM_TYPE.LABEL, command);
+      MenuItem item = new MenuItem(menu, next ? ITEM_NEXT : ITEM_PREV, ItemType.LABEL, command);
       item.addStyleName(STYLE_NAVIGATION);
 
       return item;
@@ -732,7 +751,7 @@ public class DataSelector extends Composite implements Editor, HasVisibleLines, 
       this.instant = relation.getInstant();
     }
 
-    ITEM_TYPE itemType = relation.getItemType();
+    ItemType itemType = relation.getItemType();
 
     this.input = new InputWidget();
     this.selector = new Selector(itemType, this.input.getElement(), relation.getSelectorClass());
@@ -746,7 +765,7 @@ public class DataSelector extends Composite implements Editor, HasVisibleLines, 
     }
     int size = choiceColumns.size();
 
-    this.tableMode = ITEM_TYPE.ROW.equals(itemType) || !selectorColumns.isEmpty()
+    this.tableMode = ItemType.ROW.equals(itemType) || !selectorColumns.isEmpty()
         || itemType == null && size > 1 && !relation.hasRowRenderer();
 
     int dataIndex = (size == 1) ? dataInfo.getColumnIndex(choiceColumns.get(0)) : BeeConst.UNDEF;
@@ -1501,7 +1520,7 @@ public class DataSelector extends Composite implements Editor, HasVisibleLines, 
 
     MenuItem item;
     if (isTableMode()) {
-      item = new MenuItem(menu, null, ITEM_TYPE.ROW, menuCommand);
+      item = new MenuItem(menu, null, ItemType.ROW, menuCommand);
       addCells(item.getElement(), row);
     } else {
       item = new MenuItem(menu, renderItem(row), menuCommand);

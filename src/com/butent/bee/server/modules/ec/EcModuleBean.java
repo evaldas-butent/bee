@@ -2403,8 +2403,8 @@ public class EcModuleBean implements BeeModule {
         if (!itemSuppliers.isEmpty()) {
           item.setSuppliers(itemSuppliers);
 
-          int primaryStock = 0;
-          int secondaryStock = 0;
+          double primaryStock = 0;
+          double secondaryStock = 0;
 
           for (ArticleSupplier itemSupplier : itemSuppliers) {
             if (!primaryWarehouses.isEmpty()) {

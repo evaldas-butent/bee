@@ -10,6 +10,12 @@
   padding: 2px 5px 2px;
 }
 
+.bee-crm-taskEvent-row-new {
+	border-left-width: 5px; 
+  border-left-color: #a1bff5; 
+  border-left-style: solid; 
+}
+
 .bee-crm-taskEvent-col-0,
 .bee-crm-taskEvent-col-1,
 .bee-crm-taskEvent-col-2 {
@@ -359,4 +365,13 @@
 
 .bee-crm-task-alien {
   background-image: url(../images/checkered_background.png) !important;
+}
+
+.bee-crm-request-prop-caption{
+	margin-left: 3em;
+}
+
+.bee-crm-request-prop-data {
+	margin-left: 1ex;
+	font-weight: bolder;
 }

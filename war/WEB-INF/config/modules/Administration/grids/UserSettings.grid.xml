@@ -18,6 +18,7 @@
     <DataColumn name="MailAssignedTasks" module="Tasks" />
     <DataColumn name="MailNewDiscussions" module="Discussions" />
     <DataColumn name="MailNewAnnouncements" module="Discussions" />
+    <DataColumn name="MailCompanyActions" module="Calendar" />
 
     <DataColumn name="OpenInNewTab" />
     <DataColumn name="WorkspaceContinue" />

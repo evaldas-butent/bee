@@ -19,6 +19,9 @@ import com.butent.bee.shared.data.IsRow;
 import com.butent.bee.shared.data.RowChildren;
 import com.butent.bee.shared.data.cache.CachingPolicy;
 import com.butent.bee.shared.data.event.CellUpdateEvent;
+import com.butent.bee.shared.data.event.DataChangeEvent;
+import com.butent.bee.shared.data.event.ModificationEvent;
+import com.butent.bee.shared.data.event.RowUpdateEvent;
 import com.butent.bee.shared.data.filter.Filter;
 import com.butent.bee.shared.data.value.Value;
 import com.butent.bee.shared.data.view.Order;
@@ -670,12 +673,9 @@ public final class Queries {
     }
   }
 
-  public static void updateCell(BeeRowSet rowSet, RowCallback callback) {
-    doRow(Service.UPDATE_CELL, rowSet, callback);
-  }
-
-  public static void updateCellAndFire(final String viewName, long rowId, long version,
-      final String colName, String oldValue, String newValue) {
+  public static void updateAndFire(final String viewName, long rowId, long version,
+      final String colName, String oldValue, String newValue,
+      final ModificationEvent.Kind eventKind) {
 
     Assert.notEmpty(viewName);
     Assert.isTrue(DataUtils.isId(rowId));
@@ -693,16 +693,42 @@ public final class Queries {
 
       rowSet.addRow(row);
 
-      RowCallback callback = new RowCallback() {
-        @Override
-        public void onSuccess(BeeRow result) {
-          CellUpdateEvent.fire(BeeKeeper.getBus(), viewName, result.getId(), result.getVersion(),
-              CellSource.forColumn(column, colIndex), result.getString(0));
-        }
-      };
+      if (eventKind == ModificationEvent.Kind.UPDATE_ROW) {
+        updateRow(rowSet, new RowCallback() {
+          @Override
+          public void onSuccess(BeeRow result) {
+            RowUpdateEvent.fire(BeeKeeper.getBus(), viewName, result);
+          }
+        });
 
-      updateCell(rowSet, callback);
+      } else if (eventKind == ModificationEvent.Kind.DATA_CHANGE) {
+        updateCell(rowSet, new RowCallback() {
+          @Override
+          public void onSuccess(BeeRow result) {
+            DataChangeEvent.fireRefresh(BeeKeeper.getBus(), viewName);
+          }
+        });
+
+      } else {
+        updateCell(rowSet, new RowCallback() {
+          @Override
+          public void onSuccess(BeeRow result) {
+            CellUpdateEvent.fire(BeeKeeper.getBus(), viewName, result.getId(), result.getVersion(),
+                CellSource.forColumn(column, colIndex), result.getString(0));
+          }
+        });
+      }
     }
+  }
+
+  public static void updateCell(BeeRowSet rowSet, RowCallback callback) {
+    doRow(Service.UPDATE_CELL, rowSet, callback);
+  }
+
+  public static void updateCellAndFire(String viewName, long rowId, long version,
+      String colName, String oldValue, String newValue) {
+    updateAndFire(viewName, rowId, version, colName, oldValue, newValue,
+        ModificationEvent.Kind.UPDATE_CELL);
   }
 
   public static void updateChildren(final String viewName, long rowId,

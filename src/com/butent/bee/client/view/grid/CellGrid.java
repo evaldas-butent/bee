@@ -94,6 +94,7 @@ import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 
 /**
@@ -538,6 +539,7 @@ public class CellGrid extends Widget implements IdentifiableWidget, HasDataTable
     private int sensitivityMillis;
 
     private long lastTime;
+    private RowInfo lastRowInfo;
 
     private RowChangeScheduler(int sensitivityMillis) {
       super();
@@ -546,11 +548,11 @@ public class CellGrid extends Widget implements IdentifiableWidget, HasDataTable
 
     @Override
     public void run() {
-      fireChangeEvent();
+      maybeFireChangeEvent();
     }
 
-    private void fireChangeEvent() {
-      CellGrid.this.fireEvent(new ActiveRowChangeEvent(CellGrid.this.getActiveRow()));
+    private RowInfo getLastRowInfo() {
+      return lastRowInfo;
     }
 
     private long getLastTime() {
@@ -561,9 +563,20 @@ public class CellGrid extends Widget implements IdentifiableWidget, HasDataTable
       return sensitivityMillis;
     }
 
+    private void maybeFireChangeEvent() {
+      IsRow row = CellGrid.this.getActiveRow();
+      RowInfo rowInfo = (row == null) ? null : new RowInfo(row);
+
+      if (!Objects.equals(getLastRowInfo(), rowInfo)) {
+        CellGrid.this.fireEvent(new ActiveRowChangeEvent(row));
+        setLastRowInfo(rowInfo);
+      }
+    }
+
     private void scheduleEvent() {
       if (getSensitivityMillis() <= 0) {
-        fireChangeEvent();
+        maybeFireChangeEvent();
+
       } else {
         long now = System.currentTimeMillis();
         long last = getLastTime();
@@ -577,10 +590,15 @@ public class CellGrid extends Widget implements IdentifiableWidget, HasDataTable
             delayMillis -= elapsed;
           }
           schedule(delayMillis);
+
         } else {
-          fireChangeEvent();
+          maybeFireChangeEvent();
         }
       }
+    }
+
+    private void setLastRowInfo(RowInfo lastRowInfo) {
+      this.lastRowInfo = lastRowInfo;
     }
 
     private void setLastTime(long lastTime) {
@@ -1093,7 +1111,7 @@ public class CellGrid extends Widget implements IdentifiableWidget, HasDataTable
   }
 
   public void deactivate() {
-    activateCell(BeeConst.UNDEF, BeeConst.UNDEF);
+    activateCell(BeeConst.UNDEF, BeeConst.UNDEF, true);
   }
 
   public boolean doFlexLayout() {
@@ -1708,13 +1726,13 @@ public class CellGrid extends Widget implements IdentifiableWidget, HasDataTable
           } else {
             toggleRowSelection(row, rowValue, true);
           }
-          activateCell(row, col);
+          activateCell(row, col, true);
 
         } else if (isCellActive(row, col)) {
           startEditing(rowValue, col, target, EditStartEvent.CLICK);
 
         } else {
-          activateCell(row, col);
+          activateCell(row, col, true);
           if (columnInfo.getColumn().instantKarma(rowValue)) {
             startEditing(rowValue, col, target, EditStartEvent.CLICK);
           }
@@ -2058,7 +2076,7 @@ public class CellGrid extends Widget implements IdentifiableWidget, HasDataTable
       fireSelectionCountChange();
     }
     onActivateCell(false);
-    onActivateRow(false);
+    onActivateRow(false, false);
 
     activeRowIndex = BeeConst.UNDEF;
     activeColumnIndex = BeeConst.UNDEF;
@@ -2231,9 +2249,22 @@ public class CellGrid extends Widget implements IdentifiableWidget, HasDataTable
   @Override
   public void setPageStart(int start, boolean fireScopeChange, boolean fireDataRequest,
       NavigationOrigin origin) {
+
     Assert.nonNegative(start);
     if (start == getPageStart()) {
       return;
+    }
+
+    if (origin != null && origin.shiftActiveRow()
+        && getActiveRowIndex() >= 0 && getActiveRowIndex() < getPageSize()) {
+
+      int idx = getActiveRowIndex() + getPageStart() - start;
+
+      if (idx < 0 || idx >= getPageSize()) {
+        deactivate();
+      } else {
+        setActiveRowIndex(idx, false);
+      }
     }
 
     this.pageStart = start;
@@ -2411,18 +2442,18 @@ public class CellGrid extends Widget implements IdentifiableWidget, HasDataTable
     this.resizerShowSensitivityMillis = resizerShowSensitivityMillis;
   }
 
-  private void activateCell(int row, int col) {
+  private void activateCell(int row, int col, boolean fire) {
     if (getActiveRowIndex() == row) {
       setActiveColumnIndex(col);
       return;
     }
     onActivateCell(false);
-    onActivateRow(false);
+    onActivateRow(false, false);
 
     this.activeRowIndex = row;
     this.activeColumnIndex = col;
 
-    onActivateRow(true);
+    onActivateRow(true, fire);
     onActivateCell(true);
   }
 
@@ -2432,7 +2463,7 @@ public class CellGrid extends Widget implements IdentifiableWidget, HasDataTable
       return;
     }
     if (rc <= 1) {
-      setActiveRowIndex(0);
+      setActiveRowIndex(0, true);
       return;
     }
 
@@ -2444,11 +2475,11 @@ public class CellGrid extends Widget implements IdentifiableWidget, HasDataTable
 
     int size = getPageSize();
     if (size <= 0 || size >= rc) {
-      setActiveRowIndex(absIndex);
+      setActiveRowIndex(absIndex, true);
       return;
     }
     if (size == 1) {
-      setActiveRowIndex(0);
+      setActiveRowIndex(0, true);
       setPageStart(absIndex, true, true, origin);
       return;
     }
@@ -2467,7 +2498,7 @@ public class CellGrid extends Widget implements IdentifiableWidget, HasDataTable
     }
     newPageStart = BeeUtils.clamp(newPageStart, 0, rc - size);
 
-    setActiveRowIndex(absIndex - newPageStart);
+    setActiveRowIndex(absIndex - newPageStart, true);
 
     if (newPageStart != oldPageStart) {
       setPageStart(newPageStart, true, true, origin);
@@ -3624,7 +3655,7 @@ public class CellGrid extends Widget implements IdentifiableWidget, HasDataTable
     }
   }
 
-  private void onActivateRow(boolean activate) {
+  private void onActivateRow(boolean activate, boolean fire) {
     if (getActiveRowIndex() >= 0) {
       NodeList<Element> rowElements = getActiveRowElements();
       if (rowElements != null && rowElements.getLength() > 0) {
@@ -3636,7 +3667,7 @@ public class CellGrid extends Widget implements IdentifiableWidget, HasDataTable
       }
     }
 
-    if (activate) {
+    if (fire) {
       rowChangeScheduler.scheduleEvent();
     }
   }
@@ -4575,16 +4606,16 @@ public class CellGrid extends Widget implements IdentifiableWidget, HasDataTable
     onActivateCell(true);
   }
 
-  private void setActiveRowIndex(int activeRowIndex) {
-    if (this.activeRowIndex == activeRowIndex) {
+  private void setActiveRowIndex(int index, boolean fire) {
+    if (this.activeRowIndex == index) {
       return;
     }
     onActivateCell(false);
-    onActivateRow(false);
+    onActivateRow(false, false);
 
-    this.activeRowIndex = activeRowIndex;
+    this.activeRowIndex = index;
 
-    onActivateRow(true);
+    onActivateRow(true, fire);
     onActivateCell(true);
   }
 
