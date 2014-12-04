@@ -3,5 +3,5 @@
 
 name="Projects" label="=prjMenu" order="40" module="Projects"
 >
-  <Item name="Projects" label="=projects" />
+  <Item name="Projects" label="=projects" service="grid" parameters="Projects" />
 </Entry>
