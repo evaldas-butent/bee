@@ -41,6 +41,7 @@ import java.util.Collection;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Set;
 
 import javax.ejb.EJB;
 import javax.ejb.Lock;
@@ -58,7 +59,6 @@ public class ParamHolderBean {
 
   private static final String TBL_PARAMS = "Parameters";
   private static final String TBL_USER_PARAMS = "UserParameters";
-  private static final String FLD_MODULE = "Module";
   private static final String FLD_USER = "User";
   private static final String FLD_NAME = "Name";
   private static final String FLD_VALUE = "Value";
@@ -285,30 +285,33 @@ public class ParamHolderBean {
     if (BeeUtils.isEmpty(defaults)) {
       return;
     }
+    Set<String> names = new HashSet<>();
+
     for (BeeParameter param : defaults) {
       putParameter(param);
+      names.add(param.getName());
     }
     SimpleRowSet data = qs.getData(new SqlSelect()
         .addFields(TBL_PARAMS, FLD_NAME, FLD_VALUE)
         .addField(TBL_PARAMS, sys.getIdName(TBL_PARAMS), FLD_PARAM)
         .addFrom(TBL_PARAMS)
-        .setWhere(SqlUtils.equals(TBL_PARAMS, FLD_MODULE, module)));
+        .setWhere(SqlUtils.inList(TBL_PARAMS, FLD_NAME, names)));
 
-    boolean hasUserParameters = false;
+    names.clear();
 
     for (BeeParameter param : defaults) {
-      if (!hasUserParameters) {
-        hasUserParameters = param.supportsUsers();
+      if (param.supportsUsers()) {
+        names.add(param.getName());
       }
       param.setValue(data.getValueByKey(FLD_NAME, param.getName(), FLD_VALUE));
       param.setId(BeeUtils.toLongOrNull(data.getValueByKey(FLD_NAME, param.getName(), FLD_PARAM)));
     }
-    if (hasUserParameters) {
+    if (!BeeUtils.isEmpty(names)) {
       data = qs.getData(new SqlSelect()
           .addFields(TBL_USER_PARAMS, FLD_PARAM, FLD_USER, FLD_VALUE)
           .addFrom(TBL_USER_PARAMS)
           .addFromInner(TBL_PARAMS, sys.joinTables(TBL_PARAMS, TBL_USER_PARAMS, FLD_PARAM))
-          .setWhere(SqlUtils.equals(TBL_PARAMS, FLD_MODULE, module)));
+          .setWhere(SqlUtils.inList(TBL_PARAMS, FLD_NAME, names)));
 
       for (BeeParameter param : defaults) {
         if (param.supportsUsers() && DataUtils.isId(param.getId())) {
@@ -346,7 +349,6 @@ public class ParamHolderBean {
 
     if (!DataUtils.isId(param.getId())) {
       param.setId(qs.insertData(new SqlInsert(TBL_PARAMS)
-          .addConstant(FLD_MODULE, param.getModule())
           .addConstant(FLD_NAME, param.getName())
           .addConstant(FLD_VALUE, param.getValue())));
     }
