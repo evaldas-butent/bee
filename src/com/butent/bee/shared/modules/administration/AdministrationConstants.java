@@ -77,6 +77,7 @@ public final class AdministrationConstants {
   public static final String PARAMETERS_PREFIX = "parameters_";
 
   public static final String SVC_GET_PARAMETER = PARAMETERS_PREFIX + "parameter";
+  public static final String SVC_GET_RELATION_PARAMETER = PARAMETERS_PREFIX + "relation_parameter";
   public static final String SVC_GET_PARAMETERS = PARAMETERS_PREFIX + "get";
   public static final String SVC_RESET_PARAMETER = PARAMETERS_PREFIX + "reset";
   public static final String SVC_SET_PARAMETER = PARAMETERS_PREFIX + "set";
@@ -345,6 +346,10 @@ public final class AdministrationConstants {
   public static final String PRM_ERP_ADDRESS = "ERPAddress";
   public static final String PRM_ERP_LOGIN = "ERPLogin";
   public static final String PRM_ERP_PASSWORD = "ERPPassword";
+
+  public static final String PRM_ERP_PURCHASE_OPERATION = "ERPPurchaseOperation";
+  public static final String PRM_ERP_OPERATION = "ERPOperation";
+  public static final String PRM_ERP_WAREHOUSE = "ERPWarehouse";
 
   public static final String PRM_WS_LB_EXCHANGE_RATES_ADDRESS = "WSLBExchangeRates";
 

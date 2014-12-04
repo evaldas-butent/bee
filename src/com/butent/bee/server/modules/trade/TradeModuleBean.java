@@ -489,16 +489,17 @@ public class TradeModuleBean implements BeeModule {
       String client;
 
       if (invoices.hasColumn(COL_PURCHASE_WAREHOUSE_TO)) {
-        operation = prm.getText("ERPCreditOperation");
+        operation = prm.getText(PRM_ERP_PURCHASE_OPERATION);
         warehouse = invoice.getValue(COL_PURCHASE_WAREHOUSE_TO);
         client = companies.get(invoice.getLong(COL_TRADE_SUPPLIER));
       } else {
-        operation = prm.getText("ERPOperation");
-        warehouse = prm.getText("ERPWarehouse");
+        operation = prm.getText(PRM_ERP_OPERATION);
+        warehouse = invoice.getValue(COL_TRADE_WAREHOUSE_FROM);
         client = companies.get(invoice.getLong(COL_TRADE_CUSTOMER));
       }
       WSDocument doc = new WSDocument(encodeId(trade, invoice.getLong(itemsRelation)),
-          invoice.getDateTime(COL_TRADE_DATE), operation, client, warehouse);
+          invoice.getDateTime(COL_TRADE_DATE), operation, client,
+          BeeUtils.notEmpty(warehouse, prm.getText(PRM_ERP_WAREHOUSE)));
 
       if (invoices.hasColumn(COL_SALE_PAYER)) {
         doc.setPayer(companies.get(invoice.getLong(COL_SALE_PAYER)));
