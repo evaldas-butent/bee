@@ -10,6 +10,7 @@ import static com.butent.bee.shared.modules.trade.TradeConstants.*;
 import static com.butent.bee.shared.modules.transport.TransportConstants.*;
 
 import com.butent.bee.client.BeeKeeper;
+import com.butent.bee.client.Global;
 import com.butent.bee.client.communication.ParameterList;
 import com.butent.bee.client.communication.ResponseCallback;
 import com.butent.bee.client.composite.UnboundSelector;
@@ -29,12 +30,14 @@ import com.butent.bee.client.view.grid.GridView.SelectedRows;
 import com.butent.bee.client.view.grid.interceptor.AbstractGridInterceptor;
 import com.butent.bee.client.view.grid.interceptor.GridInterceptor;
 import com.butent.bee.client.widget.Button;
+import com.butent.bee.shared.BiConsumer;
 import com.butent.bee.shared.Pair;
 import com.butent.bee.shared.Service;
 import com.butent.bee.shared.communication.ResponseObject;
 import com.butent.bee.shared.data.BeeRow;
 import com.butent.bee.shared.data.BeeRowSet;
 import com.butent.bee.shared.data.DataUtils;
+import com.butent.bee.shared.data.IsRow;
 import com.butent.bee.shared.data.event.DataChangeEvent;
 import com.butent.bee.shared.data.filter.Filter;
 import com.butent.bee.shared.data.view.DataInfo;
@@ -144,6 +147,7 @@ public class CargoPurchasesGrid extends AbstractGridInterceptor implements Click
             newRow.setValue(purchaseInfo.getColumnIndex(ALS_CURRENCY_NAME), entry.getValue());
           }
         }
+
         RowFactory.createRow(FORM_NEW_CARGO_PURCHASE_INVOICE, null, purchaseInfo, newRow, null,
             new AbstractFormInterceptor() {
               @Override
@@ -167,6 +171,18 @@ public class CargoPurchasesGrid extends AbstractGridInterceptor implements Click
                     }
                   }
                 }
+              }
+
+              @Override
+              public void onStartNewRow(final FormView form, IsRow oldRow, final IsRow row) {
+                Global.getRelationParameter(PRM_ERP_WAREHOUSE, new BiConsumer<Long, String>() {
+                  @Override
+                  public void accept(Long id, String name) {
+                    Data.setValue(form.getViewName(), row, COL_PURCHASE_WAREHOUSE_TO, id);
+                    Data.setValue(form.getViewName(), row, "WarehouseCode", name);
+                    form.refreshBySource(COL_PURCHASE_WAREHOUSE_TO);
+                  }
+                });
               }
             },
             new RowCallback() {

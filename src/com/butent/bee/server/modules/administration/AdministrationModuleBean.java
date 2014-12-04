@@ -174,7 +174,7 @@ public class AdministrationModuleBean implements BeeModule, HasTimerService {
         BeeParameter.createText(module, PRM_ERP_PASSWORD),
         BeeParameter.createText(module, PRM_ERP_PURCHASE_OPERATION),
         BeeParameter.createText(module, PRM_ERP_OPERATION),
-        BeeParameter.createText(module, PRM_ERP_WAREHOUSE),
+        BeeParameter.createRelation(module, PRM_ERP_WAREHOUSE, TBL_WAREHOUSES, COL_WAREHOUSE_CODE),
         BeeParameter.createText(module, PRM_URL));
 
     params.addAll(getSqlEngineParameters());

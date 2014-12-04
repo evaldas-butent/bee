@@ -11,7 +11,7 @@
     <String name="InvoiceNo" precision="20" label="=trdInvoiceNo" />
 
     <Relation name="WarehouseFrom" relation="Warehouses" label="=trdWarehouseFrom" />
-    <Relation name="WarehouseTo" relation="Warehouses" notNull="true" label="=trdWarehouseTo" defValue="1" />
+    <Relation name="WarehouseTo" relation="Warehouses" notNull="true" label="=trdWarehouseTo" />
 
     <Relation name="Supplier" relation="Companies" label="=trdSupplier" />
     <Relation name="Customer" relation="Companies" label="=trdCustomer" />

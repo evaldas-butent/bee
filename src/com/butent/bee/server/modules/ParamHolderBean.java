@@ -226,6 +226,25 @@ public class ParamHolderBean {
         ? parameter.getRelation(usr.getCurrentUserId()) : parameter.getRelation();
   }
 
+  public Pair<Long, String> getRelationInfo(String name) {
+    BeeParameter param = getParameter(name);
+    Assert.state(param.getType() == ParameterType.RELATION, "Not a relation parameter: " + name);
+
+    String display = null;
+    Long relation = param.supportsUsers()
+        ? param.getRelation(usr.getCurrentUserId()) : param.getRelation();
+
+    if (DataUtils.isId(relation)) {
+      Pair<String, String> relInfo = Pair.restore(param.getOptions());
+
+      display = qs.getValue(new SqlSelect()
+          .addFields(relInfo.getA(), relInfo.getB())
+          .addFrom(relInfo.getA())
+          .setWhere(sys.idEquals(relInfo.getA(), relation)));
+    }
+    return Pair.of(relation, display);
+  }
+
   public String getText(String name) {
     BeeParameter parameter = getParameter(name);
     return parameter.supportsUsers()
@@ -390,25 +409,6 @@ public class ParamHolderBean {
     Assert.state(hasParameter(name), "Unknown parameter: " + name);
 
     return BeeUtils.peek(parameters.row(BeeUtils.normalize(name)).values());
-  }
-
-  private Pair<Long, String> getRelationInfo(String name) {
-    BeeParameter param = getParameter(name);
-    Assert.state(param.getType() == ParameterType.RELATION, "Not a relation parameter: " + name);
-
-    String display = null;
-    Long relation = param.supportsUsers()
-        ? param.getRelation(usr.getCurrentUserId()) : param.getRelation();
-
-    if (DataUtils.isId(relation)) {
-      Pair<String, String> relInfo = Pair.restore(param.getOptions());
-
-      display = qs.getValue(new SqlSelect()
-          .addFields(relInfo.getA(), relInfo.getB())
-          .addFrom(relInfo.getA())
-          .setWhere(sys.idEquals(relInfo.getA(), relation)));
-    }
-    return Pair.of(relation, display);
   }
 
   private void putParameter(BeeParameter parameter) {
