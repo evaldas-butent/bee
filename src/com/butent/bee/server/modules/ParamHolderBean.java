@@ -86,6 +86,9 @@ public class ParamHolderBean {
     } else if (BeeUtils.same(svc, SVC_GET_PARAMETER)) {
       response = ResponseObject.response(getValue(reqInfo.getParameter(VAR_PARAMETER)));
 
+    } else if (BeeUtils.same(svc, SVC_GET_RELATION_PARAMETER)) {
+      response = ResponseObject.response(getRelationInfo(reqInfo.getParameter(VAR_PARAMETER)));
+
     } else if (BeeUtils.same(svc, SVC_SET_PARAMETER)) {
       setParameter(reqInfo.getParameter(VAR_PARAMETER), reqInfo.getParameter(VAR_PARAMETER_VALUE));
       response = ResponseObject.emptyResponse();
@@ -386,7 +389,26 @@ public class ParamHolderBean {
     Assert.notEmpty(name);
     Assert.state(hasParameter(name), "Unknown parameter: " + name);
 
-    return parameters.row(BeeUtils.normalize(name)).values().iterator().next();
+    return BeeUtils.peek(parameters.row(BeeUtils.normalize(name)).values());
+  }
+
+  private Pair<Long, String> getRelationInfo(String name) {
+    BeeParameter param = getParameter(name);
+    Assert.state(param.getType() == ParameterType.RELATION, "Not a relation parameter: " + name);
+
+    String display = null;
+    Long relation = param.supportsUsers()
+        ? param.getRelation(usr.getCurrentUserId()) : param.getRelation();
+
+    if (DataUtils.isId(relation)) {
+      Pair<String, String> relInfo = Pair.restore(param.getOptions());
+
+      display = qs.getValue(new SqlSelect()
+          .addFields(relInfo.getA(), relInfo.getB())
+          .addFrom(relInfo.getA())
+          .setWhere(sys.idEquals(relInfo.getA(), relation)));
+    }
+    return Pair.of(relation, display);
   }
 
   private void putParameter(BeeParameter parameter) {
