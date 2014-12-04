@@ -557,7 +557,8 @@ public class TradeModuleBean implements BeeModule {
             }
           }
           if (BeeUtils.isEmpty(article)) {
-            article = BeeUtils.joinItems(XmlUtils.getText(xml, "Parent"),
+            article = BeeUtils.joinItems(
+                XmlUtils.getText(xml, "Parent" + TransportConstants.COL_ASSESSMENT),
                 XmlUtils.getText(xml, TransportConstants.COL_ASSESSMENT));
           }
           wsItem.setArticle(article);

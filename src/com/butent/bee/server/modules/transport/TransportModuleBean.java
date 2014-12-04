@@ -1002,7 +1002,7 @@ public class TransportModuleBean implements BeeModule, HasTimerService {
         .addField(unloadCountry, COL_COUNTRY_CODE, unloadCountry)
         .addField(unloadCountry, COL_COUNTRY_NAME, unloadCountry + "Name")
         .addField(TBL_ASSESSMENTS, sys.getIdName(TBL_ASSESSMENTS), COL_ASSESSMENT)
-        .addField(TBL_ASSESSMENTS, COL_ASSESSMENT, "Parent")
+        .addField(TBL_ASSESSMENTS, COL_ASSESSMENT, "Parent" + COL_ASSESSMENT)
         .addFields(TBL_ASSESSMENTS, "Documents")
         .addFrom(TBL_CARGO_INCOMES)
         .addFromInner(TBL_SERVICES,
@@ -1100,7 +1100,7 @@ public class TransportModuleBean implements BeeModule, HasTimerService {
       }
     }
     String[] tableFields = new String[] {COL_ITEM, COL_TRADE_VAT_PLUS, COL_TRADE_VAT,
-        COL_TRADE_VAT_PERC, "Parent"};
+        COL_TRADE_VAT_PERC, "Parent" + COL_ASSESSMENT};
 
     String[] group = DataUtils.isId(mainItem) ? tableFields : rs.getColumnNames();
     Map<String, Multimap<String, String>> map = new HashMap<>();
@@ -1176,7 +1176,8 @@ public class TransportModuleBean implements BeeModule, HasTimerService {
       List<String> nodes = new ArrayList<>();
 
       for (String fld : values.keySet()) {
-        if (ArrayUtils.contains(tableFields, fld)) {
+        if (ArrayUtils.contains(tableFields, fld)
+            && !BeeUtils.same(fld, "Parent" + COL_ASSESSMENT)) {
           insert.addConstant(fld, BeeUtils.peek(values.get(fld)));
         } else {
           nodes.add(fld);
@@ -1209,7 +1210,7 @@ public class TransportModuleBean implements BeeModule, HasTimerService {
         .addFields(TBL_CARGO_EXPENSES, COL_TRADE_VAT_PLUS, COL_TRADE_VAT, COL_TRADE_VAT_PERC,
             "Income")
         .addField(TBL_ASSESSMENTS, sys.getIdName(TBL_ASSESSMENTS), COL_ASSESSMENT)
-        .addField(TBL_ASSESSMENTS, COL_ASSESSMENT, "Parent")
+        .addField(TBL_ASSESSMENTS, COL_ASSESSMENT, "Parent" + COL_ASSESSMENT)
         .addFrom(TBL_CARGO_EXPENSES)
         .addFromInner(TBL_SERVICES,
             sys.joinTables(TBL_SERVICES, TBL_CARGO_EXPENSES, COL_SERVICE))
@@ -1249,7 +1250,8 @@ public class TransportModuleBean implements BeeModule, HasTimerService {
 
       qs.insertData(insert.addConstant(COL_TRADE_ITEM_NOTE,
           XmlUtils.createString("CargoInfo", new String[] {"Income", row.getValue("Income"),
-              COL_ASSESSMENT, row.getValue(COL_ASSESSMENT), "Parent", row.getValue("Parent")})));
+              COL_ASSESSMENT, row.getValue(COL_ASSESSMENT),
+              "Parent" + COL_ASSESSMENT, row.getValue("Parent" + COL_ASSESSMENT)})));
     }
     return response.addErrorsFrom(qs.updateDataWithResponse(new SqlUpdate(TBL_CARGO_EXPENSES)
         .addConstant(COL_PURCHASE, purchaseId)

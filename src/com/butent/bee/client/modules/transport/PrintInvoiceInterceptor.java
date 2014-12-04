@@ -147,7 +147,8 @@ public class PrintInvoiceInterceptor extends AbstractFormInterceptor {
                                   }
                                   if (xml != null) {
                                     boolean primary = BeeUtils.isEmpty(XmlUtils
-                                        .getChildrenText(xml.getDocumentElement(), "Parent"));
+                                        .getChildrenText(xml.getDocumentElement(),
+                                            "Parent" + COL_ASSESSMENT));
 
                                     for (Element el : XmlUtils
                                         .getChildrenElements(xml.getDocumentElement())) {
