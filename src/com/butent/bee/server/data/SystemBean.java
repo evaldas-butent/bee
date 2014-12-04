@@ -209,12 +209,19 @@ public class SystemBean {
       boolean rebuild = !flds.containsKey(tblName);
 
       if (!rebuild) {
-        for (String fldName : getTableFieldNames(tblName)) {
-          if (!flds.get(tblName).contains(fldName)) {
+        Collection<String> activeFields = getTableFieldNames(tblName);
+        Set<String> existingFields = flds.get(tblName);
+
+        for (String fldName : activeFields) {
+          if (!existingFields.contains(fldName)) {
             logger.warning(tblName, fldName, "column not found, rebuilding");
             rebuild = true;
             break;
           }
+        }
+        if (!rebuild && activeFields.size() + 2 != existingFields.size()) {
+          logger.warning(tblName, "column count doesn't match, rebuilding");
+          rebuild = true;
         }
       } else {
         logger.warning(tblName, "table not found, rebuilding");
