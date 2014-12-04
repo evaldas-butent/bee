@@ -65,6 +65,7 @@ import com.butent.bee.client.ui.Opener;
 import com.butent.bee.client.view.HeaderView;
 import com.butent.bee.client.view.add.ReadyForInsertEvent;
 import com.butent.bee.client.view.edit.EditableColumn;
+import com.butent.bee.client.view.edit.Editor;
 import com.butent.bee.client.view.form.FormView;
 import com.butent.bee.client.view.form.interceptor.FormInterceptor;
 import com.butent.bee.client.view.grid.GridView;
@@ -357,6 +358,14 @@ public class AssessmentForm extends PrintFormInterceptor implements SelectorEven
   }
 
   private class ServicesGrid extends AbstractGridInterceptor {
+
+    @Override
+    public void afterCreateEditor(String source, Editor editor, boolean embedded) {
+      if (BeeUtils.same(source, "Income") && editor instanceof DataSelector) {
+        ((DataSelector) editor).addSelectorHandler(AssessmentForm.this);
+      }
+      super.afterCreateEditor(source, editor, embedded);
+    }
 
     @Override
     public void afterDeleteRow(long rowId) {
@@ -919,6 +928,10 @@ public class AssessmentForm extends PrintFormInterceptor implements SelectorEven
       } else if (event.isChanged()) {
         updateDepartment(form, form.getActiveRow(),
             Data.getLong(event.getRelatedViewName(), event.getRelatedRow(), COL_DEPARTMENT));
+      }
+    } else if (BeeUtils.same(event.getRelatedViewName(), TBL_CARGO_INCOMES)) {
+      if (event.isOpened()) {
+        event.getSelector().setAdditionalFilter(Filter.equals(COL_CARGO, getLongValue(COL_CARGO)));
       }
     }
   }

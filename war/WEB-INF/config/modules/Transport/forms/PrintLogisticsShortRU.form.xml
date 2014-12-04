@@ -339,8 +339,8 @@ Padarę apmokėjimą prašome raštu atsiųsti pavedimo kopiją. /
         </TextLabel>
       </row>
       <row style="font-size:xx-small;">
-        <FlowPanel style="height:1px; background-color:black;" />
-        <FlowPanel style="height:1px; background-color:black;" />
+        <FlowPanel style="height:1px; background-color:black; width:70%;" />
+        <FlowPanel style="height:1px; background-color:black; width:70%;" />
       </row>
     </Table>
   </FlowPanel>

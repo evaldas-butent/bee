@@ -30,6 +30,8 @@
     <DataColumn name="Note" />
     <RelColumn name="Purchase" caption="=trdPurchaseId" readOnly="true"
       editEnabled="true" editForm="CargoPurchaseInvoice" editViewName="CargoPurchaseInvoices" />
+
+    <RelColumn name="Income" required="true" choiceColumns="ServiceName Amount CurrencyName" />
   </g:columns>
 
   <g:rowEditable>

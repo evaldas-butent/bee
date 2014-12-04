@@ -79,6 +79,7 @@
       <SimpleColumn name="Date" editable="true" />
       <SimpleColumn name="Number" editable="true" />
       <SimpleColumn name="Note" label="=transportConditions" editable="true" />
+      <SimpleColumn name="Income" editable="true" />
     </SimpleJoin>
   </Columns>
 </View>
