@@ -18,9 +18,10 @@
     <Date name="EndDate" label="=crmFinishDate" />
     <Numeric name="ExpectedDuration" precision="10" label="=expectedDuration" />
     <Numeric name="Progress" precision="3" label="=progress" />
-    <Numeric name="Price" precision="15" scale="5" label="=salePrice" />
+    <Numeric name="Price" precision="15" scale="5" label="=prjPrice" />
     <Relation name="Currency" relation="Currencies" label="=currency" defExpr="MAIN_CURRENCY" />
     <Text name="Description" />
-    <Relation name="Contract" relation="Documents" label="=contract" />    
+    <Relation name="Contract" relation="Relations" label="=contract" />
+    <Numeric name="ContractPrice" precision="15" scale="5" label="=salePrice" />
   </Fields>
 </Table>

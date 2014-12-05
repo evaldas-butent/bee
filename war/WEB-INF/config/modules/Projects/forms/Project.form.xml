@@ -1,0 +1,77 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE Form[
+  <!ENTITY separator "<br/>">
+  <!ENTITY section "margin-top: 2px;">
+  <!ENTITY inline "display: inline-block;">
+  <!ENTITY lbl1 "&inline; width: 100px; padding-top: 1px; text-align:right; margin-right: 5px;">
+  <!ENTITY inp1 "&inline; width: 140px;"> 
+  <!ENTITY inp2 "&inline; width: 201px;">  
+]>
+
+<f:Form xmlns="http://www.butent.com/widget" xmlns:f="http://www.butent.com/form"
+	xmlns:xi="http://www.w3.org/2001/XInclude" name="Project" viewName="Projects"
+	caption="=project">
+	<FlowPanel>
+
+		<FlowPanel style="&section;">
+			<Label text="=name" style="&lbl1;" class="bee-required" />
+			<InputText source="Name" style="&inp1;" />
+
+			<Label text="=category" style="&lbl1;" />
+			<DataSelector source="Category" style="&inp1;" />
+
+			<Label text="=crmStartDate" style="&lbl1;" class="bee-required" />
+			<InputDate source="StartDate" style="&inp1;" />
+
+			<Label text="=crmFinishDate" style="&lbl1;" class="bee-required" />
+			<InputDate source="EndDate" style="&inp1;" />
+		</FlowPanel>
+         
+       &separator;
+		<FlowPanel style="&section;">
+			<Label text="=client" style="&lbl1;" />
+			<DataSelector source="Company" style="&inp1;" />
+
+			<Label text="=personContact" style="&lbl1;" />
+			<DataSelector source="ContactPerson" style="&inp1;" 
+			   renderColumns="ContactFirstName ContactLastName"
+         choiceColumns="FirstName LastName CompanyName" options="Company"
+         module="Classifiers.Contacts" 
+			/>
+
+			<Label text="=status" style="&lbl1;" />
+			<ListBox source="Status" style="&inp1;" />
+
+			<Label text="=type" style="&lbl1;" />
+			<DataSelector source="Type" style="&inp1;" />
+		</FlowPanel>
+       
+       &separator;
+		<Disclosure open="true">
+			<Label text="=relatedInformation" style="text-transform: uppercase; " />
+			<FlowPanel>
+				<FlowPanel style="&section;">
+					<Label text="=manager" style="&lbl1;" />
+					<DataSelector source="Owner" style="&inp1;" />
+
+					<Label text="=priority" style="&lbl1;" class="bee-required" />
+					<Radio source="Priority" style="&inp2;" />
+				</FlowPanel>
+			</FlowPanel>
+		</Disclosure>
+		<TabbedPages>
+      <page>
+        <text>=prjParticipants</text>
+        <ChildGrid name="ProjectUsers" relColumn="Project" />
+      </page>
+      <page>
+        <text>=prjStages</text>
+        <ChildGrid name="ProjectStages" relColumn="Project" />
+      </page> 
+      <page module="Documents">
+        <text>=documents</text>
+        <ChildGrid name="RelatedDocuments" relColumn="Project" />
+      </page>
+    </TabbedPages>
+	</FlowPanel>
+</f:Form> 

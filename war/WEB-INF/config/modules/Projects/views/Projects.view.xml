@@ -1,7 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <View xmlns="http://www.butent.com/view"
+  xmlns:x="http://www.butent.com/expression"
 
   name="Projects" source="Projects" caption="=projects"
+  editForm="Project" newRowForm="Project"
   >
   <Columns>
     <SimpleColumn name="Priority" />
@@ -52,8 +54,28 @@
     <SimpleColumn name="Progress" />
     <SimpleColumn name="Price" />
     <SimpleColumn name="Description" />
+    
+    <SimpleColumn name="ExpectedTasksDuration" label="=prjExpectedTaskDuration">
+      <x:string>'?0?'</x:string>
+    </SimpleColumn>
+    
+    <SimpleColumn name="ActualTasksDuration" label="=prjActualTaskDuration">
+      <x:string>'?0?'</x:string>
+    </SimpleColumn>
+    
+    <SimpleColumn name="Contract" />
+    <SimpleJoin name="Contract" joinType="LEFT" filter="Project AND Document">
+      <SimpleColumn name="Project" />
+      <SimpleColumn name="Document" />
+      <SimpleJoin name="Document" joinType="LEFT">
+        <SimpleColumn name="Number" alias="ContractNumber"/>
+      </SimpleJoin>
+    </SimpleJoin>
+    
+    <SimpleColumn name="ContractPrice" />
+    
   </Columns>
-  
+
   <Order>
     <OrderBy column="Status" />
     <OrderBy column="EndDate" />

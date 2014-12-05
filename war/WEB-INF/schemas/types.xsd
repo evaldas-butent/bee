@@ -368,8 +368,10 @@
       <xs:enumeration value="PrintContract" />
       <xs:enumeration value="PrintOrder" />
       <xs:enumeration value="Projects" />
+      <xs:enumeration value="ProjectStages" />
       <xs:enumeration value="ProjectTree"/>
       <xs:enumeration value="ProjectTypes" />
+      <xs:enumeration value="ProjectUsers" />
       <xs:enumeration value="PropertyGroups" />
       <xs:enumeration value="PurchaseItems" />
       <xs:enumeration value="Purchases" />
