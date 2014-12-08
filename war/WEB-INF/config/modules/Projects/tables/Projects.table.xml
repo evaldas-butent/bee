@@ -19,9 +19,11 @@
     <Numeric name="ExpectedDuration" precision="10" label="=expectedDuration" />
     <Numeric name="Progress" precision="3" label="=progress" />
     <Numeric name="Price" precision="15" scale="5" label="=prjPrice" />
+    <Numeric name="Expenses" precision="15" scale="5" label="=prjExpenses" />
     <Relation name="Currency" relation="Currencies" label="=currency" defExpr="MAIN_CURRENCY" />
     <Text name="Description" />
     <Relation name="Contract" relation="Relations" label="=contract" />
     <Numeric name="ContractPrice" precision="15" scale="5" label="=salePrice" />
+    <Date name="ContractSigned" label="=signDate"/>
   </Fields>
 </Table>

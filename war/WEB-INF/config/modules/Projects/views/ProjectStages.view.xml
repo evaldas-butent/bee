@@ -23,7 +23,7 @@
     <SimpleColumn name="Expenses" />
     <SimpleColumn name="Currency" />
     
-    <SimpleColumn name="ActualExpenses" label="=prjActualTaskDuration">
+    <SimpleColumn name="ActualExpenses" label="=prjActualExpenses">
       <x:string>'?0?'</x:string>
     </SimpleColumn> 
        

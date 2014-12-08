@@ -65,14 +65,16 @@
     
     <SimpleColumn name="Contract" />
     <SimpleJoin name="Contract" joinType="LEFT" filter="Project AND Document">
-      <SimpleColumn name="Project" />
+      <HiddenColumn name="Project" />
       <SimpleColumn name="Document" />
       <SimpleJoin name="Document" joinType="LEFT">
         <SimpleColumn name="Number" alias="ContractNumber"/>
+        <SimpleColumn name="Expires" alias="ContractExpires" />
       </SimpleJoin>
     </SimpleJoin>
     
     <SimpleColumn name="ContractPrice" />
+    <SimpleColumn name="ContractSigned" />
     
   </Columns>
 

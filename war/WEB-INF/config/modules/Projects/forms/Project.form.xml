@@ -72,6 +72,10 @@
         <text>=documents</text>
         <ChildGrid name="RelatedDocuments" relColumn="Project" />
       </page>
+      <page module="Tasks">
+        <text>=crmTasks</text>
+        <ChildGrid name="RelatedTasks" relColumn="Project" />
+      </page>
     </TabbedPages>
 	</FlowPanel>
 </f:Form> 
