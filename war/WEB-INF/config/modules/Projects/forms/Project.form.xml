@@ -1,81 +1,116 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE Form[
-  <!ENTITY separator "<br/>">
   <!ENTITY section "margin-top: 2px;">
+  <!ENTITY top1 "float: left; width: 100px; padding-top: 1px;">
   <!ENTITY inline "display: inline-block;">
-  <!ENTITY lbl1 "&inline; width: 100px; padding-top: 1px; text-align:right; margin-right: 5px;">
+  <!ENTITY lbl1 "margin-left: 1em; text-align: right; padding-right: 9px;">
+  <!ENTITY lbl2 "margin-left: 8em; text-align: right; padding-right: 9px;">
   <!ENTITY inp1 "&inline; width: 140px;"> 
-  <!ENTITY inp2 "&inline; width: 201px;">  
+  <!ENTITY inp2 "&inline; width: 201px;">
+  <!ENTITY inp3 "&inline; width: 70px;">
+  <!ENTITY inp4 "&inline; width: 100px;">
 ]>
 
 <f:Form xmlns="http://www.butent.com/widget" xmlns:f="http://www.butent.com/form"
 	xmlns:xi="http://www.w3.org/2001/XInclude" name="Project" viewName="Projects"
 	caption="=project">
-	<FlowPanel>
+	<FlowPanel class="flexBox-vertical">
+		<Table>
+			<row>
+				<Label text="=name" style="&lbl1;" class="bee-required" />
+				<InputText source="Name" style="&inp1;" />
 
-		<FlowPanel style="&section;">
-			<Label text="=name" style="&lbl1;" class="bee-required" />
-			<InputText source="Name" style="&inp1;" />
+				<Label text="=category" style="&lbl1;" />
+				<DataSelector source="Category" style="&inp1;" />
 
-			<Label text="=category" style="&lbl1;" />
-			<DataSelector source="Category" style="&inp1;" />
+				<Label text="=crmStartDate" style="&lbl1;" class="bee-required" />
+				<InputDate source="StartDate" style="&inp1;" />
 
-			<Label text="=crmStartDate" style="&lbl1;" class="bee-required" />
-			<InputDate source="StartDate" style="&inp1;" />
+				<Label text="=crmFinishDate" style="&lbl1;" class="bee-required" />
+				<InputDate source="EndDate" style="&inp1;" />
+			</row>
 
-			<Label text="=crmFinishDate" style="&lbl1;" class="bee-required" />
-			<InputDate source="EndDate" style="&inp1;" />
-		</FlowPanel>
-         
-       &separator;
-		<FlowPanel style="&section;">
-			<Label text="=client" style="&lbl1;" />
-			<DataSelector source="Company" style="&inp1;" />
+			<row>
+				<Label text="=client" style="&lbl1;" />
+				<DataSelector source="Company" style="&inp1;" />
 
-			<Label text="=personContact" style="&lbl1;" />
-			<DataSelector source="ContactPerson" style="&inp1;" 
-			   renderColumns="ContactFirstName ContactLastName"
-         choiceColumns="FirstName LastName CompanyName" options="Company"
-         module="Classifiers.Contacts" 
-			/>
+				<Label text="=personContact" style="&lbl1;" />
+				<DataSelector source="ContactPerson" style="&inp1;"
+					renderColumns="ContactFirstName ContactLastName" choiceColumns="FirstName LastName CompanyName"
+					options="Company" module="Classifiers.Contacts" />
 
-			<Label text="=status" style="&lbl1;" />
-			<ListBox source="Status" style="&inp1;" />
+				<Label text="=status" style="&lbl1;" />
+				<ListBox source="Status" style="&inp1;" />
 
-			<Label text="=type" style="&lbl1;" />
-			<DataSelector source="Type" style="&inp1;" />
-		</FlowPanel>
-       
-       &separator;
+				<Label text="=type" style="&lbl1;" />
+				<DataSelector source="Type" style="&inp1;" />
+			</row>
+		</Table>
+
 		<Disclosure open="true">
 			<Label text="=relatedInformation" style="text-transform: uppercase; " />
-			<FlowPanel>
-				<FlowPanel style="&section;">
-					<Label text="=manager" style="&lbl1;" />
-					<DataSelector source="Owner" style="&inp1;" />
+			<Table>
+				<Table>
+					<row>
+						<Label text="=manager" style="&lbl1;" class="bee-required" />
+						<DataSelector source="Owner" style="&inp1;" />
 
-					<Label text="=priority" style="&lbl1;" class="bee-required" />
-					<Radio source="Priority" style="&inp2;" />
-				</FlowPanel>
-			</FlowPanel>
+						<Label text="=priority" style="&lbl2;" class="bee-required" />
+						<Radio source="Priority" style="&inp2;" />
+					</row>
+				</Table>
+
+				<Table>
+					<row>
+						<Label text="=progress" style="&lbl1;" />
+						<InputText source="Progress" style="&inp3;" />
+
+						<Label text="=expectedDuration" style="&lbl1;" />
+						<InputText source="ExpectedDuration" style="&inp3;" />
+
+						<Label text="=contractNo" style="&lbl1;" />
+						<InputText source="ContractNumber" style="&inp4;" readOnly="true" />
+					</row>
+
+					<row>
+						<Label text="=prjExpectedTaskDuration" style="&lbl1;" />
+						<InputText source="ExpectedTasksDuration" style="&inp3;" />
+
+						<Label text="=prjActualTaskDuration" style="&lbl1;" />
+						<InputText source="ActualTasksDuration" style="&inp3;" />
+
+						<Label text="=prjPrice" style="&lbl1;" />
+						<InputText source="Price" style="&inp4;" />
+					</row>
+				</Table>
+
+				<Table>
+					<row>
+						<Label text="=description" style="&lbl1;" />
+						<InputArea source="Description" style="width:330px" />
+					</row>
+				</Table>
+			</Table>
 		</Disclosure>
+
 		<TabbedPages>
-      <page>
-        <text>=prjParticipants</text>
-        <ChildGrid name="ProjectUsers" relColumn="Project" />
-      </page>
-      <page>
-        <text>=prjStages</text>
-        <ChildGrid name="ProjectStages" relColumn="Project" />
-      </page> 
-      <page module="Documents">
-        <text>=documents</text>
-        <ChildGrid name="RelatedDocuments" relColumn="Project" />
-      </page>
-      <page module="Tasks">
-        <text>=crmTasks</text>
-        <ChildGrid name="RelatedTasks" relColumn="Project" />
-      </page>
-    </TabbedPages>
+			<page>
+				<text>=prjParticipants</text>
+				<ChildGrid name="ProjectUsers" relColumn="Project" />
+			</page>
+			<page>
+				<text>=prjStages</text>
+				<ChildGrid name="ProjectStages" relColumn="Project" />
+			</page>
+			<page module="Documents">
+				<text>=documents</text>
+				<ChildGrid name="RelatedDocuments" relColumn="Project" />
+			</page>
+			<page module="Tasks">
+				<text>=crmTasks</text>
+				<ChildGrid name="RelatedTasks" relColumn="Project" />
+			</page>
+		</TabbedPages>
+
 	</FlowPanel>
 </f:Form> 
