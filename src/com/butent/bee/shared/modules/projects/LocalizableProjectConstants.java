@@ -8,6 +8,8 @@ public interface LocalizableProjectConstants {
 
   String highPriority();
 
+  String project();
+
   String projects();
 
   String prjObserver();

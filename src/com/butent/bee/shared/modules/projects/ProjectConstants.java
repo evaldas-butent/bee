@@ -7,6 +7,10 @@ import com.butent.bee.shared.utils.EnumUtils;
  */
 public final class ProjectConstants {
 
+  public static final String COL_STATUS = "Status";
+
+  public static final String GRID_PROJECTS = "Projects";
+
   /**
    * Register module Enumerations.
    */
