@@ -53,6 +53,7 @@
     <SimpleColumn name="ExpectedDuration" />
     <SimpleColumn name="Progress" />
     <SimpleColumn name="Price" />
+    <SimpleColumn name="ContractPrice" />
     <SimpleColumn name="Description" />
     
     <SimpleColumn name="ExpectedTasksDuration" label="=prjExpectedTaskDuration">
@@ -64,10 +65,11 @@
     </SimpleColumn>
     
     <SimpleColumn name="Contract" />
-    <SimpleJoin name="Contract" joinType="LEFT" filter="Project AND Document">
+    <SimpleJoin name="Contract" joinType="LEFT">
       <HiddenColumn name="Project" />
       <SimpleColumn name="Document" />
       <SimpleJoin name="Document" joinType="LEFT">
+        <SimpleColumn name="Name" alias="ContractName"/>
         <SimpleColumn name="Number" alias="ContractNumber"/>
         <SimpleColumn name="Expires" alias="ContractExpires" />
       </SimpleJoin>

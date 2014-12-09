@@ -1,14 +1,18 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE Form[
-  <!ENTITY section "margin-top: 2px;">
-  <!ENTITY top1 "float: left; width: 100px; padding-top: 1px;">
   <!ENTITY inline "display: inline-block;">
-  <!ENTITY lbl1 "margin-left: 1em; text-align: right; padding-right: 9px;">
-  <!ENTITY lbl2 "margin-left: 8em; text-align: right; padding-right: 9px;">
-  <!ENTITY inp1 "&inline; width: 140px;"> 
-  <!ENTITY inp2 "&inline; width: 201px;">
-  <!ENTITY inp3 "&inline; width: 70px;">
-  <!ENTITY inp4 "&inline; width: 100px;">
+  <!ENTITY height "height: 25px">
+  <!ENTITY lbl "margin-left: 1em; margin-right: 1em; text-align: right">
+  <!ENTITY lbl2 "margin-left: 1em; margin-right: 1em; text-align: left">
+  <!ENTITY lbl3 "margin-left: 4em; margin-right: 1em; text-align: right">
+  <!ENTITY lbl4 "margin-left: 8em; margin-right: 1em; text-align: left">
+  <!ENTITY inp1 "&inline; width: 350px; &height;"> 
+  <!ENTITY inp2 "&inline; width: 200px; &height;">
+  <!ENTITY inp3 "&inline; width: 150px; &height;">
+  <!ENTITY inp4 "&inline; width: 100px; &height;">
+  <!ENTITY inp5 "&inline; width: 70px; &height;">
+  <!ENTITY inp6 "&inline; width: 110px; &height;">
+  <!ENTITY inp7 "&inline; width: 780px; height:100px;">
 ]>
 
 <f:Form xmlns="http://www.butent.com/widget" xmlns:f="http://www.butent.com/form"
@@ -17,33 +21,30 @@
 	<FlowPanel class="flexBox-vertical">
 		<Table>
 			<row>
-				<Label text="=name" style="&lbl1;" class="bee-required" />
+				<Label text="=name" style="&lbl;" class="bee-required" />
 				<InputText source="Name" style="&inp1;" />
 
-				<Label text="=category" style="&lbl1;" />
-				<DataSelector source="Category" style="&inp1;" />
+				<Label text="=crmStartDate" style="&lbl;" />
+				<InputDate source="StartDate" style="&inp4;" />
 
-				<Label text="=crmStartDate" style="&lbl1;" class="bee-required" />
-				<InputDate source="StartDate" style="&inp1;" />
-
-				<Label text="=crmFinishDate" style="&lbl1;" class="bee-required" />
-				<InputDate source="EndDate" style="&inp1;" />
+				<Label text="=prjTerm" style="&lbl3;" />
+				<InputDate source="EndDate" style="&inp4;" />
 			</row>
 
 			<row>
-				<Label text="=client" style="&lbl1;" />
-				<DataSelector source="Company" style="&inp1;" />
+				<Label text="=client" style="&lbl;" />
+				<DataSelector source="Company" style="&inp2;" />
 
-				<Label text="=personContact" style="&lbl1;" />
-				<DataSelector source="ContactPerson" style="&inp1;"
+				<Label text="=personContact"
+					style="margin-right: 1em; text-align: left; margin-left: -110px;" />
+				<DataSelector source="ContactPerson"
+					style="display: inline-block; width: 200px; margin-left: -100px; height: 25px;"
 					renderColumns="ContactFirstName ContactLastName" choiceColumns="FirstName LastName CompanyName"
 					options="Company" module="Classifiers.Contacts" />
 
-				<Label text="=status" style="&lbl1;" />
-				<ListBox source="Status" style="&inp1;" />
-
-				<Label text="=type" style="&lbl1;" />
-				<DataSelector source="Type" style="&inp1;" />
+				<Label text="=status" style="&lbl2;" />
+				<ListBox source="Status"
+					style="display: inline-block; width: 150px; margin-left: -50px; height: 25px;" />
 			</row>
 		</Table>
 
@@ -52,48 +53,61 @@
 			<Table>
 				<Table>
 					<row>
-						<Label text="=manager" style="&lbl1;" class="bee-required" />
-						<DataSelector source="Owner" style="&inp1;" />
+						<Label text="=prjManager" style="&lbl;" class="bee-required" />
+						<DataSelector source="Owner" style="&inp2;" />
 
-						<Label text="=priority" style="&lbl2;" class="bee-required" />
-						<Radio source="Priority" style="&inp2;" />
+						<Label text="=priority" style="&lbl4;" />
+						<Radio source="Priority" style="width: 201px" />
+					</row>
+
+					<row>
+						<Label text="=category" style="&lbl;" class="bee-required" />
+						<DataSelector source="Category" style="&inp2;" />
+
+						<Label text="=type" style="&lbl4;" />
+						<DataSelector source="Type" style="&inp2;" />
 					</row>
 				</Table>
 
 				<Table>
 					<row>
-						<Label text="=progress" style="&lbl1;" />
-						<InputText source="Progress" style="&inp3;" />
+						<Label text="=progress" style="&lbl;" />
+						<InputText source="Progress" style="&inp5;" />
 
-						<Label text="=expectedDuration" style="&lbl1;" />
-						<InputText source="ExpectedDuration" style="&inp3;" />
+						<Label text="=expectedDuration" style="&lbl;" />
+						<InputText source="ExpectedDuration" style="&inp5;" />
 
-						<Label text="=contractNo" style="&lbl1;" />
-						<InputText source="ContractNumber" style="&inp4;" readOnly="true" />
+						<Label text="=contractNo" style="&lbl;" />
+						<InputText source="ContractNumber" style="&inp6;"
+							readOnly="true" />
 					</row>
 
 					<row>
-						<Label text="=prjExpectedTaskDuration" style="&lbl1;" />
-						<InputText source="ExpectedTasksDuration" style="&inp3;" />
+						<Label text="=prjExpectedTaskDuration" style="&lbl;" />
+						<InputText source="ExpectedTasksDuration" style="&inp5;" />
 
-						<Label text="=prjActualTaskDuration" style="&lbl1;" />
-						<InputText source="ActualTasksDuration" style="&inp3;" />
+						<Label text="=prjActualTaskDuration" style="&lbl;" />
+						<InputText source="ActualTasksDuration" style="&inp5;" />
 
-						<Label text="=prjPrice" style="&lbl1;" />
-						<InputText source="Price" style="&inp4;" />
+						<Label text="=prjPrice" style="&lbl;" />
+						<InputText source="Price" style="&inp6;" />
+
+						<Label text="=salePrice" style="&lbl;" />
+						<InputText source="ContractPrice" style="&inp6;" />
 					</row>
 				</Table>
 
 				<Table>
 					<row>
-						<Label text="=description" style="&lbl1;" />
-						<InputArea source="Description" style="width:330px" />
+						<Label text="=description" style="&lbl;" />
+						<InputArea source="Description" style="&inp7;" />
 					</row>
 				</Table>
+
 			</Table>
 		</Disclosure>
 
-		<TabbedPages>
+		<TabbedPages class="flexible">
 			<page>
 				<text>=prjParticipants</text>
 				<ChildGrid name="ProjectUsers" relColumn="Project" />
@@ -104,13 +118,43 @@
 			</page>
 			<page module="Documents">
 				<text>=documents</text>
-				<ChildGrid name="RelatedDocuments" relColumn="Project" />
+				<FlowPanel>
+					<Table>
+						<row>
+							<Label text="=personContact" style="margin-right: 1em; text-align: left;" />
+							<DataSelector source="ContactPerson"
+								style="display: inline-block; width: 200px; height: 25px;"
+								renderColumns="ContactFirstName ContactLastName" choiceColumns="FirstName LastName CompanyName"
+								options="Company" module="Classifiers.Contacts" />
+
+							<Label text="=signDate" style="&lbl;" />
+							<InputDate source="ContractSigned" style="&inp4;" />
+
+							<Label text="=prjTerm" style="&lbl;" />
+							<InputDate source="EndDate" style="&inp4;" />
+						</row>
+
+						<row>
+							<Label text="=contract" style="margin-right: 1em; text-align: left;" />
+							<DataSelector source="Contract" renderColumns="ContractName ContractNumber" 
+							 choiceColumns="Document Project" filter="Document AND Project"  options="Project" module="Documents"
+							 style="&inp2;" />
+
+							<Label text="=salePrice" style="&lbl;" />
+							<InputText source="ContractPrice" style="&inp4;" />
+
+							<Label text="=prjOtherExpenses" style="&lbl;" />
+							<InputText style="&inp4;" />
+						</row>
+					</Table>
+					<ChildGrid name="RelatedDocuments" relColumn="Project"
+						class="flexible" />
+				</FlowPanel>
 			</page>
 			<page module="Tasks">
 				<text>=crmTasks</text>
 				<ChildGrid name="ChildTasks" relColumn="Project" />
 			</page>
 		</TabbedPages>
-
 	</FlowPanel>
 </f:Form> 
