@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <View xmlns="http://www.butent.com/view"
+   xmlns:x="http://www.butent.com/expression"
 
   name="Tasks" source="Tasks" caption="=crmTasks"
   newRowForm="NewTask" editForm="Task" rowCaption="Summary" 
@@ -76,6 +77,26 @@
 
     <SimpleColumn name="ReminderTime" />
     <SimpleColumn name="ReminderSent" />
+    
+    <SimpleColumn name="Project" />
+    <SimpleJoin name="Project" joinType="LEFT">
+      <SimpleColumn name="Name" alias="ProjectName"/>
+    </SimpleJoin>
+    
+    <SimpleColumn name="ProjectStage" />
+    <SimpleJoin name="ProjectStage" joinType="LEFT">
+      <SimpleColumn name="Name" alias="StageName"/>
+    </SimpleJoin>
+    
+    <SimpleColumn name="ExpectedExpenses" />
+      
+    <SimpleColumn name="ActualDuration" label="=prjActualTaskDuration">
+     <x:string>'?0?'</x:string>
+    </SimpleColumn>
+    
+    <SimpleColumn name="ActualExpenses" label="=prjActualExpenses">
+      <x:string>'?0?'</x:string>
+    </SimpleColumn>
   </Columns>
   
   <Order>

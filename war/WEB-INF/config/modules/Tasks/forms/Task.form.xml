@@ -154,6 +154,13 @@
           newRowEnabled="false" style="&inp2x;" disablable="true" />
       </FlowPanel>
 
+      <FlowPanel style="&section;" data="Relations" for="Project" module="Projects">
+        <Label text="=projects" style="&top1;" />
+        <DataSelector viewName="Projects" property="Projects"
+          renderColumns="Name" choiceColumns="Name"
+          newRowEnabled="false" style="&inp2x;" disablable="true" />
+      </FlowPanel >
+
       <FlowPanel style="&section;" data="Relations" for="Relation">
         <Label text="=crmTasks" style="&top1;" />
         <MultiSelector viewName="Tasks" property="Tasks" 

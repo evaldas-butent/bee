@@ -108,7 +108,7 @@
 			</page>
 			<page module="Tasks">
 				<text>=crmTasks</text>
-				<ChildGrid name="RelatedTasks" relColumn="Project" />
+				<ChildGrid name="ChildTasks" relColumn="Project" />
 			</page>
 		</TabbedPages>
 

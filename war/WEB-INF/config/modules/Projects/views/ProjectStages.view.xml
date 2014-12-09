@@ -10,8 +10,8 @@
     <SimpleColumn name="Name" />
     <SimpleColumn name="StartDate" />
     <SimpleColumn name="EndDate" />
-    <SimpleColumn name="ExpectedDuration" /> 
-    
+    <SimpleColumn name="ExpectedDuration" />
+        
     <SimpleColumn name="ExpectedTasksDuration" label="=prjExpectedTaskDuration">
       <x:string>'?0?'</x:string>
     </SimpleColumn>
@@ -26,6 +26,10 @@
     <SimpleColumn name="ActualExpenses" label="=prjActualExpenses">
       <x:string>'?0?'</x:string>
     </SimpleColumn> 
+    
+    <SimpleJoin name="Project" joinType="LEFT">
+      <SimpleColumn name="Name" alias="ProjectName" />
+    </SimpleJoin>
        
   </Columns>  
   <Order>

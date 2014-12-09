@@ -7,9 +7,19 @@ import com.butent.bee.shared.utils.EnumUtils;
  */
 public final class ProjectConstants {
 
-  public static final String COL_STATUS = "Status";
+  public static final String ALS_COMPANY_NAME = "CompanyName";
+
+  public static final String COL_PROJECT = "Project";
+  public static final String COL_PROJECT_STAGE = "ProjectStage";
+  public static final String COL_PROJECT_STATUS = "Status";
+
+  public static final String COL_USER_TYPE = "UserType";
+
+  public static final String FORM_PROJECT = "Project";
 
   public static final String GRID_PROJECTS = "Projects";
+
+  public static final String VIEW_PROJECT_USERS = "ProjectUsers";
 
   /**
    * Register module Enumerations.

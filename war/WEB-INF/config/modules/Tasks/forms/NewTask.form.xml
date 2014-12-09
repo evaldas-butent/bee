@@ -187,6 +187,13 @@
           newRowEnabled="false" editPopup="true" style="&inp2x;" />
       </row>
 
+      <row data="Relations" for="Projects" module="Projects">
+        <Label text="=projects" />
+        <MultiSelector viewName="Projects" property="Projects"
+          renderColumns="Name" choiceColumns="Name"
+          newRowEnabled="false" editPopup="true" style="&inp2x;" />
+      </row>
+
       <row data="Relations" for="Relation">
         <Label text="=crmTasks" />
         <MultiSelector viewName="Tasks" property="Tasks" 

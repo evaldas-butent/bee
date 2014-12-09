@@ -22,7 +22,7 @@ class ProjectsGrid extends AbstractGridInterceptor {
       Collection<RowInfo> selectedRows, DeleteMode defMode) {
     Provider provider = presenter.getDataProvider();
 
-    int idxStatus = provider.getColumnIndex(COL_STATUS);
+    int idxStatus = provider.getColumnIndex(COL_PROJECT_STATUS);
     int statusValue = BeeUtils.unbox(activeRow.getInteger(idxStatus));
     boolean active = EnumUtils.getEnumByIndex(ProjectStatus.class, statusValue)
         == ProjectStatus.ACTIVE;
