@@ -9,11 +9,15 @@ import com.butent.bee.client.view.ViewHelper;
 import com.butent.bee.client.view.form.FormView;
 import com.butent.bee.client.view.grid.interceptor.GridInterceptor;
 import com.butent.bee.shared.data.BeeRow;
+import com.butent.bee.shared.data.IsRow;
 import com.butent.bee.shared.data.RelationUtils;
 import com.butent.bee.shared.data.view.DataInfo;
+import com.butent.bee.shared.modules.classifiers.ClassifierConstants;
+import com.butent.bee.shared.modules.projects.ProjectConstants;
 import com.butent.bee.shared.modules.tasks.TaskType;
 import com.butent.bee.shared.ui.Action;
 import com.butent.bee.shared.ui.GridDescription;
+import com.butent.bee.shared.utils.BeeUtils;
 
 class ChildTasksGrid extends TasksGrid {
 
@@ -30,18 +34,25 @@ class ChildTasksGrid extends TasksGrid {
     presenter.getGridView().ensureRelId(new IdCallback() {
       @Override
       public void onSuccess(Long relId) {
-        DataInfo dataInfo = Data.getDataInfo(presenter.getViewName());
+        DataInfo childTaskDataInfo = Data.getDataInfo(presenter.getViewName());
 
-        BeeRow newRow = RowFactory.createEmptyRow(dataInfo, true);
+        BeeRow childTaskRow = RowFactory.createEmptyRow(childTaskDataInfo, true);
         String relColumn = presenter.getGridView().getRelColumn();
 
-        FormView form = ViewHelper.getForm(presenter.getMainView());
-        if (form != null) {
-          RelationUtils.updateRow(dataInfo, relColumn, newRow,
-              Data.getDataInfo(form.getViewName()), form.getActiveRow(), true);
+        FormView parentForm = ViewHelper.getForm(presenter.getMainView());
+        if (parentForm != null) {
+          DataInfo parentFormDataInfo = Data.getDataInfo(parentForm.getViewName());
+          IsRow parentFormRow = parentForm.getActiveRow();
+
+          RelationUtils.updateRow(childTaskDataInfo, relColumn, childTaskRow,
+              parentFormDataInfo, parentFormRow, true);
+
+          if (BeeUtils.same(parentForm.getViewName(), ProjectConstants.VIEW_PROJECTS)) {
+            fillProjectData(childTaskDataInfo, childTaskRow, parentFormDataInfo, parentFormRow);
+          }
         }
 
-        RowFactory.createRow(dataInfo, newRow, new RowCallback() {
+        RowFactory.createRow(childTaskDataInfo, childTaskRow, new RowCallback() {
           @Override
           public void onSuccess(BeeRow result) {
             presenter.handleAction(Action.REFRESH);
@@ -61,5 +72,29 @@ class ChildTasksGrid extends TasksGrid {
   @Override
   public boolean initDescription(GridDescription gridDescription) {
     return true;
+  }
+
+  private static void fillProjectData(DataInfo taskData, IsRow taskRow, DataInfo parentFormData,
+      IsRow parentRowData) {
+    if (taskData == null && taskRow == null && parentFormData == null && parentRowData == null) {
+      return;
+    }
+
+    /* Fill company info */
+    int idxTaskCompany = taskData.getColumnIndex(ClassifierConstants.COL_COMPANY);
+    int idxProjectCompany = parentFormData.getColumnIndex(ClassifierConstants.COL_COMPANY);
+
+    if (BeeUtils.isNegative(idxTaskCompany) && BeeUtils.isNegative(idxProjectCompany)) {
+      return;
+    }
+
+    taskRow.setValue(idxTaskCompany, parentRowData.getValue(idxProjectCompany));
+
+    int idxTaskCompanyName = taskData.getColumnIndex(ClassifierConstants.ALS_COMPANY_NAME);
+    int idxProjectCompanyName = parentFormData.getColumnIndex(ClassifierConstants.ALS_COMPANY_NAME);
+
+    if (!BeeUtils.isNegative(idxTaskCompanyName) && !BeeUtils.isNegative(idxProjectCompanyName)) {
+      taskRow.setValue(idxTaskCompanyName, parentRowData.getValue(idxProjectCompanyName));
+    }
   }
 }
