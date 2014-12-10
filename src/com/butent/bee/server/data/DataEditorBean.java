@@ -43,6 +43,7 @@ import com.butent.bee.shared.time.TimeUtils;
 import com.butent.bee.shared.utils.ArrayUtils;
 import com.butent.bee.shared.utils.BeeUtils;
 
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
@@ -52,6 +53,7 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Random;
 import java.util.Set;
+import java.util.function.Function;
 
 import javax.annotation.Resource;
 import javax.ejb.EJB;
@@ -174,6 +176,11 @@ public class DataEditorBean {
   }
 
   public ResponseObject commitRow(BeeRowSet rs, int rowIndex, Class<?> returnType) {
+    return commitRow(rs, rowIndex, returnType, null);
+  }
+
+  public ResponseObject commitRow(BeeRowSet rs, int rowIndex, Class<?> returnType,
+      Function<SQLException, ResponseObject> errorHandler) {
     Assert.notNull(rs);
     if (!BeeUtils.betweenExclusive(rowIndex, 0, rs.getNumberOfRows())) {
       return ResponseObject.error("commit row: row index", rowIndex, "row count",
@@ -257,7 +264,7 @@ public class DataEditorBean {
       }
 
       if (!response.hasErrors()) {
-        id = commitTable(tblInfo, updates, view, response);
+        id = commitTable(tblInfo, updates, view, response, errorHandler);
       }
       if (!response.hasErrors() && row.hasChildren()) {
         commitChildren(id, row.getChildren(), response);
@@ -698,7 +705,7 @@ public class DataEditorBean {
   }
 
   private Long commitTable(TableInfo tblInfo, Map<String, TableInfo> updates, BeeView view,
-      ResponseObject response) {
+      ResponseObject response, Function<SQLException, ResponseObject> errorHandler) {
 
     Assert.notNull(tblInfo);
     String tblName = tblInfo.tableName;
@@ -718,7 +725,7 @@ public class DataEditorBean {
             break;
           }
         }
-        Long id = commitTable(relInfo, updates, view, response);
+        Long id = commitTable(relInfo, updates, view, response, errorHandler);
 
         if (response.hasErrors()) {
           break;
@@ -775,15 +782,11 @@ public class DataEditorBean {
             }
           }
         }
-        ResponseObject resp = qs.insertDataWithResponse(si);
+        ResponseObject resp = qs.insertDataWithResponse(si, errorHandler);
         id = resp.getResponse(-1L, logger);
 
         if (id < 0) {
-          response.addError("Error inserting row");
-
-          for (String err : resp.getErrors()) {
-            response.addError(err);
-          }
+          response.addError("Error inserting row").addErrorsFrom(resp);
         } else {
           c++;
         }
@@ -796,11 +799,12 @@ public class DataEditorBean {
           su.addConstant(col.fieldName, col.newValue);
         }
         ResponseObject resp = qs.updateDataWithResponse(
-            su.setWhere(SqlUtils.and(wh, SqlUtils.equals(tblName, verName, tblInfo.version))));
+            su.setWhere(SqlUtils.and(wh, SqlUtils.equals(tblName, verName, tblInfo.version))),
+            errorHandler);
         int res = resp.getResponse(-1, logger);
 
         if (res == 0 && refreshUpdates(updates, view)) { // Optimistic lock exception
-          resp = qs.updateDataWithResponse(su.setWhere(wh));
+          resp = qs.updateDataWithResponse(su.setWhere(wh), errorHandler);
           res = resp.getResponse(-1, logger);
         }
         if (res > 0) {
@@ -809,9 +813,7 @@ public class DataEditorBean {
           response.addError("Error updating row:", id);
 
           if (res < 0) {
-            for (String err : resp.getErrors()) {
-              response.addError(err);
-            }
+            response.addErrorsFrom(resp);
           } else {
             response.addError("Optimistic lock exception");
           }

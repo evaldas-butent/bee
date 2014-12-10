@@ -4,6 +4,7 @@ import com.google.common.collect.HashMultimap;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
+import com.google.common.collect.Multimap;
 import com.google.common.collect.Sets;
 import com.google.common.eventbus.EventBus;
 
@@ -36,6 +37,7 @@ import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.Pair;
 import com.butent.bee.shared.Service;
 import com.butent.bee.shared.data.BeeColumn;
+import com.butent.bee.shared.data.BeeRowSet;
 import com.butent.bee.shared.data.Defaults.DefaultExpression;
 import com.butent.bee.shared.data.SimpleRowSet;
 import com.butent.bee.shared.data.SimpleRowSet.SimpleRow;
@@ -61,18 +63,19 @@ import com.butent.bee.shared.data.view.ViewColumn;
 import com.butent.bee.shared.io.FileNameUtils;
 import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogUtils;
+import com.butent.bee.shared.modules.administration.SysObject;
 import com.butent.bee.shared.rights.RightsState;
 import com.butent.bee.shared.rights.RightsUtils;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.Codec;
 import com.butent.bee.shared.utils.EnumUtils;
 import com.butent.bee.shared.utils.ExtendedProperty;
-import com.butent.bee.shared.utils.NameUtils;
 import com.butent.bee.shared.utils.Property;
 import com.butent.bee.shared.utils.PropertyUtils;
 
 import java.io.File;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.EnumSet;
 import java.util.HashMap;
@@ -99,39 +102,6 @@ import javax.ejb.Singleton;
 @Lock(LockType.READ)
 public class SystemBean {
 
-  /**
-   * Contains a list of system objects, like state or table.
-   */
-
-  public enum SysObject {
-    TABLE("tables"), VIEW("views");
-
-    private final String path;
-
-    private SysObject(String path) {
-      this.path = path;
-    }
-
-    public String getFileName(String objName) {
-      Assert.notEmpty(objName);
-      return BeeUtils.join(".", objName, name().toLowerCase(), XmlUtils.DEFAULT_XML_EXTENSION);
-    }
-
-    public String getPath() {
-      return path;
-    }
-
-    public String getSchemaPath() {
-      return Config.getSchemaPath(name().toLowerCase() + ".xsd");
-    }
-  }
-
-  private static void unregister(String objectName, Map<String, ? extends BeeObject> cache) {
-    if (!BeeUtils.isEmpty(objectName)) {
-      cache.remove(BeeUtils.normalize(objectName));
-    }
-  }
-
   @EJB
   DataSourceBean dsb;
   @EJB
@@ -144,8 +114,9 @@ public class SystemBean {
   @EJB
   ParamHolderBean prm;
 
-  private final BeeLogger logger = LogUtils.getLogger(getClass());
-  private boolean auditOff;
+  private static final BeeLogger logger = LogUtils.getLogger(SystemBean.class);
+  private static boolean auditOff;
+
   private String dbName;
   private String dbSchema;
   private String dbAuditSchema;
@@ -331,7 +302,7 @@ public class SystemBean {
 
     if (view == null) {
       view = getDefaultView(viewName);
-      register(view, viewCache);
+      SysObject.register(view, viewCache, true, logger);
     }
     return view;
   }
@@ -351,58 +322,6 @@ public class SystemBean {
 
   public String getViewSource(String viewName) {
     return getView(viewName).getSourceName();
-  }
-
-  public XmlTable getXmlTable(String moduleName, String tableName) {
-    Assert.notEmpty(tableName);
-
-    XmlTable xmlTable = getXmlTable(moduleName, tableName, false);
-    XmlTable userTable = getXmlTable(moduleName, tableName, true);
-
-    if (xmlTable == null) {
-      xmlTable = userTable;
-    } else {
-      xmlTable.protect().merge(userTable);
-    }
-    return xmlTable;
-  }
-
-  public XmlTable getXmlTable(String moduleName, String tableName, boolean userMode) {
-    Assert.notEmpty(tableName);
-    String resource = moduleBean.getResourcePath(moduleName,
-        SysObject.TABLE.getPath(), SysObject.TABLE.getFileName(tableName));
-
-    if (userMode) {
-      resource = Config.getLocalPath(resource);
-    } else {
-      resource = Config.getConfigPath(resource);
-    }
-    return loadXmlTable(resource);
-  }
-
-  public XmlView getXmlView(String moduleName, String viewName) {
-    Assert.notEmpty(viewName);
-
-    XmlView xmlView = getXmlView(moduleName, viewName, false);
-    XmlView userView = getXmlView(moduleName, viewName, true);
-
-    if (userView != null) {
-      xmlView = userView;
-    }
-    return xmlView;
-  }
-
-  public XmlView getXmlView(String moduleName, String viewName, boolean userMode) {
-    Assert.notEmpty(viewName);
-    String resource = moduleBean.getResourcePath(moduleName,
-        SysObject.VIEW.getPath(), SysObject.VIEW.getFileName(viewName));
-
-    if (userMode) {
-      resource = Config.getLocalPath(resource);
-    } else {
-      resource = Config.getConfigPath(resource);
-    }
-    return loadXmlView(resource);
   }
 
   public boolean hasField(String tblName, String fldName) {
@@ -425,6 +344,10 @@ public class SystemBean {
   @Lock(LockType.WRITE)
   public void initTables(String dsn) {
     Assert.state(SqlBuilderFactory.setDefaultBuilder(qs.dbEngine(dsn), dsn));
+    dbName = qs.dbName();
+    dbSchema = qs.dbSchema();
+    dbAuditSchema = BeeUtils.join("_", dbSchema, AUDIT_SUFFIX);
+
     initObjects(SysObject.TABLE);
 
     for (BeeTable table : getTables()) {
@@ -443,7 +366,7 @@ public class SystemBean {
         }
       }
     }
-    initDatabase();
+    initDbTables();
     initDbTriggers();
     initViews();
   }
@@ -510,14 +433,6 @@ public class SystemBean {
     BeeField field = table.getField(fldName);
 
     return table.joinTranslationField(query, tblAlias, field, locale);
-  }
-
-  public XmlTable loadXmlTable(String resource) {
-    return XmlUtils.unmarshal(XmlTable.class, resource, SysObject.TABLE.getSchemaPath());
-  }
-
-  public XmlView loadXmlView(String resource) {
-    return XmlUtils.unmarshal(XmlView.class, resource, SysObject.VIEW.getSchemaPath());
   }
 
   public void postDataEvent(DataEvent event) {
@@ -1059,11 +974,28 @@ public class SystemBean {
     initTables();
   }
 
-  private void initDatabase() {
-    dbName = qs.dbName();
-    dbSchema = qs.dbSchema();
-    dbAuditSchema = BeeUtils.join("_", dbSchema, AUDIT_SUFFIX);
+  private boolean initDataObject(SysObject obj, String moduleName, String objectName,
+      String resource, boolean initial) {
 
+    String schema = Config.getSchemaPath(obj.getSchemaName());
+
+    switch (obj) {
+      case TABLE:
+        BeeTable table = initTable(moduleName, objectName,
+            XmlUtils.unmarshal(XmlTable.class, resource, schema));
+
+        return SysObject.register(table, tableCache, initial, logger);
+      case VIEW:
+        BeeView view = initView(moduleName, objectName,
+            XmlUtils.unmarshal(XmlView.class, resource, schema));
+
+        return SysObject.register(view, viewCache, initial, logger);
+      default:
+        return false;
+    }
+  }
+
+  private void initDbTables() {
     String[] dbTables = qs.dbTables(dbName, dbSchema, null).getColumn(SqlConstants.TBL_NAME);
     Set<String> names = new HashSet<>();
     for (String name : dbTables) {
@@ -1147,66 +1079,58 @@ public class SystemBean {
       case VIEW:
         viewCache.clear();
         break;
+      default:
+        Assert.unsupported("Not a data object: " + obj.getName());
     }
     int cnt = 0;
-    Collection<File> roots = new ArrayList<>();
+    String ext = "." + obj.getFileExtension();
 
     for (String moduleName : moduleBean.getModules()) {
-      roots.clear();
-      String modulePath = moduleBean.getResourcePath(moduleName, obj.getPath());
-
-      File root = new File(Config.CONFIG_DIR, modulePath);
-      if (FileUtils.isDirectory(root)) {
-        roots.add(root);
-      }
-      root = new File(Config.LOCAL_DIR, modulePath);
-      if (FileUtils.isDirectory(root)) {
-        roots.add(root);
-      }
-      List<File> resources =
-          FileUtils.findFiles(obj.getFileName("*"), roots, null, null, false, true);
+      List<File> resources = FileUtils.findFiles("*" + ext,
+          Arrays.asList(new File(Config.CONFIG_DIR,
+              moduleBean.getResourcePath(moduleName, obj.getPath()))), null, null, false, true);
 
       if (!BeeUtils.isEmpty(resources)) {
-        Set<String> objects = new HashSet<>();
-
         for (File resource : resources) {
           String resourcePath = resource.getPath();
-          String objectName = FileNameUtils.getBaseName(resourcePath);
-          objectName = objectName.substring(0, objectName.length() - obj.name().length() - 1);
-          objects.add(objectName);
+          String objectName = BeeUtils.removeSuffix(FileNameUtils.getName(resourcePath), ext);
+          cnt += initDataObject(obj, moduleName, objectName, resourcePath, true) ? 1 : 0;
         }
-        for (String objectName : objects) {
-          boolean isOk = false;
+      }
+    }
+    if (!qs.dbTableExists(getDbName(), getDbSchema(), TBL_CUSTOM_CONFIG)) {
+      return;
+    }
+    Multimap<String, Pair<String, String>> custom = HashMultimap.create();
 
-          switch (obj) {
-            case TABLE:
-              isOk = initTable(moduleName, objectName);
-              break;
-            case VIEW:
-              isOk = initView(moduleName, objectName);
-              break;
-          }
-          if (isOk) {
-            cnt++;
-          }
-        }
+    BeeRowSet rs = (BeeRowSet) qs.doSql(new SqlSelect()
+        .addFields(TBL_CUSTOM_CONFIG, COL_CONFIG_OBJECT, COL_CONFIG_DATA)
+        .addFrom(TBL_CUSTOM_CONFIG)
+        .setWhere(SqlUtils.equals(TBL_CUSTOM_CONFIG, COL_CONFIG_TYPE, obj.ordinal())).getQuery());
+
+    for (int i = 0; i < rs.getNumberOfRows(); i++) {
+      custom.put(rs.getString(i, COL_CONFIG_MODULE),
+          Pair.of(rs.getString(i, COL_CONFIG_OBJECT), rs.getString(i, COL_CONFIG_DATA)));
+    }
+    for (String moduleName : moduleBean.getModules()) {
+      for (Pair<String, String> pair : custom.get(moduleName)) {
+        cnt += initDataObject(obj, moduleName, pair.getA(), pair.getB(), false) ? 1 : 0;
       }
     }
     if (cnt <= 0) {
-      logger.severe("No", obj.name(), "descriptions found");
+      logger.severe("No", obj.getName(), "descriptions found");
     } else {
-      logger.info("Loaded", cnt, obj.name(), "descriptions");
+      logger.info("Loaded", cnt, obj.getName(), "descriptions");
     }
   }
 
-  private boolean initTable(String moduleName, String tableName) {
+  private static BeeTable initTable(String moduleName, String tableName, XmlTable xmlTable) {
     Assert.notEmpty(tableName);
     BeeTable table = null;
-    XmlTable xmlTable = getXmlTable(moduleName, tableName);
 
     if (xmlTable != null) {
       if (!BeeUtils.same(xmlTable.name, tableName)) {
-        logger.warning("Table name doesn't match resource name:", xmlTable.name);
+        logger.warning("Table name doesn't match resource name:", xmlTable.name, "!=", tableName);
       } else {
         table = new BeeTable(moduleName, xmlTable, auditOff);
         String tbl = table.getName();
@@ -1351,22 +1275,16 @@ public class SystemBean {
         }
       }
     }
-    if (table != null) {
-      register(table, tableCache);
-    } else {
-      unregister(tableName, tableCache);
-    }
-    return table != null;
+    return table;
   }
 
-  private boolean initView(String moduleName, String viewName) {
+  private BeeView initView(String moduleName, String viewName, XmlView xmlView) {
     Assert.notEmpty(viewName);
     BeeView view = null;
-    XmlView xmlView = getXmlView(moduleName, viewName);
 
     if (xmlView != null) {
       if (!BeeUtils.same(xmlView.name, viewName)) {
-        logger.warning("View name doesn't match resource name:", xmlView.name);
+        logger.warning("View name doesn't match resource name:", xmlView.name, "!=", viewName);
       } else {
         String src = xmlView.source;
 
@@ -1382,12 +1300,7 @@ public class SystemBean {
         }
       }
     }
-    if (view != null) {
-      register(view, viewCache);
-    } else {
-      unregister(viewName, viewCache);
-    }
-    return view != null;
+    return view;
   }
 
   private void makeStructureChanges(IsQuery... queries) {
@@ -1530,21 +1443,5 @@ public class SystemBean {
     createAuditTables(table);
 
     table.setActive(true);
-  }
-
-  private <T extends BeeObject> void register(T object, Map<String, T> cache) {
-    if (object != null) {
-      String name = NameUtils.getClassName(object.getClass());
-      String objectName = object.getName();
-      String moduleName = BeeUtils.parenthesize(object.getModule());
-      T existingObject = cache.get(BeeUtils.normalize(objectName));
-
-      if (existingObject != null) {
-        logger.warning(moduleName, "Duplicate", name, "name:",
-            BeeUtils.bracket(objectName), BeeUtils.parenthesize(existingObject.getModule()));
-      } else {
-        cache.put(BeeUtils.normalize(objectName), object);
-      }
-    }
   }
 }

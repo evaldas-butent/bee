@@ -1,4 +1,4 @@
-package com.butent.bee.server.data;
+package com.butent.bee.shared.data;
 
 public interface BeeObject {
 
