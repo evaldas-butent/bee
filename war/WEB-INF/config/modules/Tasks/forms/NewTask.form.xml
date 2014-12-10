@@ -161,6 +161,11 @@
           editPopup="true" newRowEnabled="false" style="&inp2x;" />
       </row>
 
+      <row module="Projects">
+        <Label text="=crmTaskExpectedExpenses" />
+        <InputDecimal source="ExpectedExpenses" style="&inp2x;" />
+      </row>
+
       <row data="Relations" for="Document" module="Documents">
         <Label text="=documents" />
         <MultiSelector viewName="Documents" property="Documents" renderColumns="Name"

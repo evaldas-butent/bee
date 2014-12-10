@@ -134,6 +134,21 @@
           newRowEnabled="false" style="&inp2x;" disablable="true" />
       </FlowPanel>
 
+      <FlowPanel style="&section;" module="Projects" >
+        <Label text="=project" style="&top1;" />
+        <DataSelector source="Project" style="&inp2x;" disablable="true" readOnly="true"/>
+      </FlowPanel>
+       
+      <FlowPanel style="&section;" module="Projects">
+        <Label text="=prjStage" style="&top1;" />
+        <DataSelector source="ProjectStage" style="&inp2x;" disablable="true" readOnly="true" />
+      </FlowPanel>
+      
+      <FlowPanel style="&section;" module="Projects">
+        <Label text="=crmTaskExpectedExpenses" style="&top1;" />
+        <InputDecimal source="ExpectedExpenses" style="&inp2x;" disablable="true"/>
+      </FlowPanel>
+      
       <FlowPanel style="&section;" data="Relations" for="Appointment" module="Calendar">
         <Label text="=calAppointments" style="&top1;" />
         <MultiSelector viewName="Appointments" property="Appointments"

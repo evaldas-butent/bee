@@ -75,7 +75,7 @@
 						<InputText source="Progress" style="&inp5;" />
 
 						<Label text="=expectedDuration" style="&lbl;" />
-						<InputText source="ExpectedDuration" style="&inp5;" />
+						<InputDecimal source="ExpectedDuration" style="&inp5;" />
 
 						<Label text="=contractNo" style="&lbl;" />
 						<InputText source="ContractNumber" style="&inp6;"
@@ -90,10 +90,10 @@
 						<InputText source="ActualTasksDuration" style="&inp5;" />
 
 						<Label text="=prjPrice" style="&lbl;" />
-						<InputText source="Price" style="&inp6;" />
+						<InputDecimal source="Price" style="&inp6;" />
 
 						<Label text="=salePrice" style="&lbl;" />
-						<InputText source="ContractPrice" style="&inp6;" />
+						<InputDecimal source="ContractPrice" style="&inp6;" />
 					</row>
 				</Table>
 

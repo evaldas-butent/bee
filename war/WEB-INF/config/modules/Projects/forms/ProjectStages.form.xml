@@ -43,13 +43,13 @@
 			
 			<row>
 				<Label text="=prjExpenses" style="&lbl;" />
-				<InputText source="Expenses" style="&inp3;" />
+				<InputDecimal source="Expenses" style="&inp3;" />
 
 				<Label text="=prjExpectedTaskExpenses" style="&lbl3;" />
-				<InputText source="ExpectedTasksExpenses" style="&inp3;" />
+				<InputDecimal source="ExpectedTasksExpenses" style="&inp3;" />
 
 				<Label text="=prjActualExpenses" style="&lbl;" />
-				<InputText source="ActualExpenses" style="&inp2;" />
+				<InputDecimal source="ActualExpenses" style="&inp2;" />
 			</row>
 			
 			<row>

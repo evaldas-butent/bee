@@ -20,6 +20,7 @@ public final class ProjectConstants {
 
   public static final String VIEW_PROJECTS = "Projects";
   public static final String VIEW_PROJECT_USERS = "ProjectUsers";
+  public static final String VIEW_PROJECT_STAGES = "ProjectStages";
 
   /**
    * Register module Enumerations.
