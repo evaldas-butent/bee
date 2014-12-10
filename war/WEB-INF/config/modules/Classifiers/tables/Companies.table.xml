@@ -3,7 +3,6 @@
   
   name="Companies"
   idName="CompanyID"
-  x="752" y="484"
   >
   <Fields>
     <Relation name="Owner" relation="Companies" />

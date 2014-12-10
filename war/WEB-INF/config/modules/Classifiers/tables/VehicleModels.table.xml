@@ -3,7 +3,6 @@
 
   name="VehicleModels"
   idName="ModelID"
-  x="0" y="0"
   >
   <Fields>
     <String name="Name" precision="30" notNull="true" unique="true" label="=vehicleModel" />
