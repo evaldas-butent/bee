@@ -31,7 +31,7 @@
     <RelColumn name="Purchase" caption="=trdPurchaseId" readOnly="true"
       editEnabled="true" editForm="CargoPurchaseInvoice" editViewName="CargoPurchaseInvoices" />
 
-    <RelColumn name="Income" required="true" choiceColumns="ServiceName Amount CurrencyName" />
+    <RelColumn name="Income" required="true" />
   </g:columns>
 
   <g:rowEditable>

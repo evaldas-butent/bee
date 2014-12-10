@@ -44,5 +44,14 @@
     </SimpleJoin>
 
     <SimpleColumn name="Income" />
+    <SimpleJoin name="Income" joinType="LEFT">
+      <SimpleJoin joinType="LEFT" name="Service">
+        <SimpleColumn name="Name" alias="IncomeName" />
+      </SimpleJoin>
+      <SimpleColumn name="Amount" alias="IncomeAmount" />
+      <SimpleJoin joinType="LEFT" name="Currency">
+        <SimpleColumn name="Name" alias="IncomeCurrency" />
+      </SimpleJoin>
+    </SimpleJoin>
   </Columns>
 </View>

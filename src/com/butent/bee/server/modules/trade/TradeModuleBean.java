@@ -501,7 +501,7 @@ public class TradeModuleBean implements BeeModule {
         warehouse = prm.getRelationInfo(PRM_ERP_WAREHOUSE).getB();
       }
       WSDocument doc = new WSDocument(encodeId(trade, invoice.getLong(itemsRelation)),
-          invoice.getDateTime(COL_TRADE_DATE), operation, client, warehouse);
+          TimeUtils.startOfDay(invoice.getDateTime(COL_TRADE_DATE)), operation, client, warehouse);
 
       if (invoices.hasColumn(COL_SALE_PAYER)) {
         doc.setPayer(companies.get(invoice.getLong(COL_SALE_PAYER)));

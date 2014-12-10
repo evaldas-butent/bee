@@ -26,6 +26,7 @@
       filterOptions="-" exportWidthFactor="0.5" visible="false">
       <renderer type="flag" />
     </CalcColumn>
+    <RelColumn name="CompanyRelationTypeState" />
     <RelColumn name="DefaultCompanyUser" visible="false" filterSupplier="value" />
   </g:columns>
 </g:Grid>
