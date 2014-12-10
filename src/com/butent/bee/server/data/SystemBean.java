@@ -91,6 +91,8 @@ import javax.ejb.EJB;
 import javax.ejb.Lock;
 import javax.ejb.LockType;
 import javax.ejb.Singleton;
+import javax.ejb.TransactionAttribute;
+import javax.ejb.TransactionAttributeType;
 
 /**
  * Ensures core data management functionality containing: data structures for tables and views,
@@ -169,6 +171,7 @@ public class SystemBean {
     }
   }
 
+  @TransactionAttribute(TransactionAttributeType.REQUIRES_NEW)
   @Lock(LockType.WRITE)
   public void ensureTables() {
     HashMultimap<String, String> flds = HashMultimap.create();
@@ -439,6 +442,7 @@ public class SystemBean {
     dataEventBus.post(event);
   }
 
+  @TransactionAttribute(TransactionAttributeType.REQUIRES_NEW)
   @Lock(LockType.WRITE)
   public void rebuildActiveTables() {
     initTables();
