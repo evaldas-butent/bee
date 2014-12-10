@@ -36,9 +36,9 @@ return $wnd.Bee_maybeTranslate("=invalidDate");
     <DataColumn name="AdditionalRoute" />
     <DataColumn name="ShowAdditionalRoute" width="50"/>   
     
-    <RelColumn name="Customer" caption="=payer" />
-    <DataColumn name="Number" caption="=number" />
-    <DataColumn name="Note" caption="=note" />
+    <RelColumn name="Customer" />
+    <DataColumn name="Number" />
+    <DataColumn name="Note" />
 
     <RelColumn name="Sale" caption="=trInvoiceIdShort" readOnly="true"
       editEnabled="true" editForm="CargoInvoice" editViewName="CargoInvoices" />

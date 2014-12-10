@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<Table xmlns="http://www.butent.com/table"
+  
+  name="ProjectUsers"
+  idName="ProjectUserID"
+  >
+  <Fields>
+    <Relation name="Project" notNull="true" relation="Projects" cascade="DELETE" label="=project"/>
+    <Relation name="User" notNull="true" relation="Users" cascade="DELETE" label="=user"/>
+    
+    <Enum name="UserType" key="ProjectUserType" notNull="true" defValue="0" label="=role" />
+  </Fields>
+
+  <Constraints>
+    <Unique fields="Project User" />
+  </Constraints>
+</Table>

@@ -1,6 +1,5 @@
 package com.butent.bee.server.modules.administration;
 
-import com.google.common.base.Function;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 
@@ -69,6 +68,7 @@ import org.apache.poi.ss.usermodel.WorkbookFactory;
 import org.apache.poi.ss.util.CellReference;
 
 import java.io.File;
+import java.sql.SQLException;
 import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -80,6 +80,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
+import java.util.function.Function;
 
 import javax.annotation.Resource;
 import javax.ejb.EJB;
@@ -773,7 +774,13 @@ public class ImportBean {
           values.add(row.getValue(col));
         }
         rowSet.addRow(DataUtils.NEW_ROW_ID, DataUtils.NEW_ROW_VERSION, values);
-        ResponseObject response = deb.commitRow(rowSet, RowInfo.class);
+        ResponseObject response = deb.commitRow(rowSet, 0, RowInfo.class,
+            new Function<SQLException, ResponseObject>() {
+              @Override
+              public ResponseObject apply(SQLException ex) {
+                return ResponseObject.error(ex);
+              }
+            });
 
         if (!response.hasErrors()) {
           qs.updateData(new SqlUpdate(tmp)
@@ -791,7 +798,7 @@ public class ImportBean {
           pair.setA(pair.getA() + 1);
         } else {
           throw new BeeRuntimeException(BeeUtils.join("\n",
-              Lists.newArrayList(response.getErrors())));
+              Lists.newArrayList(response.getErrors())) + "\n" + rowSet.getRow(0));
         }
       }
       qs.sqlDropTemp(ins);

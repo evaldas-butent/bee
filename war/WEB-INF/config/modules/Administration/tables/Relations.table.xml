@@ -22,5 +22,6 @@
     <Relation name="ServiceObject" relation="ServiceObjects" label="=svcObject" cascade="DELETE" />
     <Relation name="Message" relation="Messages" label="=mailMessage" editable="true" />
     <Relation name="Assessment" relation="Assessments" label="=assessments" cascade="DELETE" />
+    <Relation name="Project" relation="Projects" label="=projects" cascade="DELETE" />
   </Fields>
 </Table>

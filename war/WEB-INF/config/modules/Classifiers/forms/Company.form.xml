@@ -31,7 +31,7 @@
         <InputText source="Code" style="&inp1;" required="true" />
         <Label style="&lbl1;" for="VATCode" class="bee-required" />
         <InputText source="VATCode" style="&inp1;" upperCase="true" required="true" />
-        <Label text="=code" style="&lbl1;" module="Transport" for="ExchangeCode" />
+        <Label style="&lbl1;" module="Transport" for="ExchangeCode" />
         <InputText source="ExchangeCode" style="&inp1;" module="Transport" />
       </row>
 
@@ -42,7 +42,7 @@
         <ChildSelector viewName="CompanyRelationTypes" childTable="CompRelTypeStore"
           targetRelColumn="Company" sourceRelColumn="RelationType" newRowEnabled="true"
           label="=companyRelationType" style="&inp1;" data="CompRelTypeStore" />
-        <Label text="=status" style="&lbl1;" for="CompanyRelationTypeState" />
+        <Label style="&lbl1;" for="CompanyRelationTypeState" />
         <DataSelector source="CompanyRelationTypeState" style="&inp1;" />
       </row>
     </Table>

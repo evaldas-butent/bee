@@ -72,6 +72,7 @@ public final class AdministrationConstants {
     EnumUtils.register(WorkdayTransition.class);
 
     EnumUtils.register(ImportType.class);
+    EnumUtils.register(SysObject.class);
   }
 
   public static final String PARAMETERS_PREFIX = "parameters_";
@@ -164,6 +165,8 @@ public final class AdministrationConstants {
   public static final String TBL_IMPORT_OPTIONS = "ImportOptions";
   public static final String TBL_IMPORT_PROPERTIES = "ImportProperties";
   public static final String TBL_IMPORT_MAPPINGS = "ImportMappings";
+
+  public static final String TBL_CUSTOM_CONFIG = "CustomConfig";
 
   public static final String VIEW_USERS = "Users";
   public static final String VIEW_USER_SETTINGS = "UserSettings";
@@ -310,6 +313,11 @@ public final class AdministrationConstants {
   public static final String COL_IMPORT_VALUE = "Value";
   public static final String COL_IMPORT_RELATION_OPTION = "RelationOption";
   public static final String COL_IMPORT_MAPPING = "Mapping";
+
+  public static final String COL_CONFIG_MODULE = "ObjectModule";
+  public static final String COL_CONFIG_TYPE = "ObjectType";
+  public static final String COL_CONFIG_OBJECT = "ObjectName";
+  public static final String COL_CONFIG_DATA = "ObjectData";
 
   public static final String ALS_FILE_NAME = "FileName";
   public static final String ALS_FILE_SIZE = "FileSize";

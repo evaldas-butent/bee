@@ -106,6 +106,7 @@ public final class XmlUtils {
   private static BeeLogger logger = LogUtils.getLogger(XmlUtils.class);
 
   public static final String DEFAULT_XML_EXTENSION = "xml";
+  public static final String DEFAULT_XSD_EXTENSION = "xsd";
   public static final String DEFAULT_XSL_EXTENSION = "xsl";
 
   private static final String ALL_NS = "*";
@@ -891,7 +892,7 @@ public final class XmlUtils {
   }
 
   public static synchronized Document getXmlResource(String resource, String resourceSchema) {
-    if (BeeUtils.isEmpty(resource) || !FileUtils.isInputFile(resource)) {
+    if (BeeUtils.isEmpty(resource)) {
       return null;
     }
     Document ret = null;
@@ -905,12 +906,16 @@ public final class XmlUtils {
       builderFactory.setSchema(schema);
       DocumentBuilder builder = builderFactory.newDocumentBuilder();
       builder.setErrorHandler(new SAXErrorHandler());
-      ret = builder.parse(new InputSource(resource));
+
+      if (FileUtils.isFile(resource)) {
+        ret = builder.parse(new InputSource(resource));
+      } else {
+        ret = builder.parse(new ByteArrayInputStream(resource.getBytes()));
+      }
     } catch (SAXException e) {
-      error = e.getMessage();
-    } catch (IOException e) {
-      error = e.getMessage();
-    } catch (ParserConfigurationException e) {
+      error = e.getException() == null ? e.getMessage() : e.getException().getMessage();
+
+    } catch (IOException | ParserConfigurationException e) {
       error = e.getMessage();
     }
     if (!BeeUtils.isEmpty(error)) {
@@ -1035,7 +1040,6 @@ public final class XmlUtils {
         } else {
           source = new ByteArrayInputStream(resource.getBytes());
         }
-
         if (BeeUtils.isEmpty(schemaPath)) {
           result = (T) unmarshaller.unmarshal(source);
         } else {
@@ -1053,10 +1057,7 @@ public final class XmlUtils {
       } catch (SAXException e) {
         throw new BeeRuntimeException(e.getException() == null ? e : e.getException());
 
-      } catch (ParserConfigurationException e) {
-        throw new BeeRuntimeException(e);
-
-      } catch (IOException e) {
+      } catch (ParserConfigurationException | IOException e) {
         throw new BeeRuntimeException(e);
       }
     }

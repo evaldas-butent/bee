@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<View xmlns="http://www.butent.com/view"
+
+  name="ProjectUsers" source="ProjectUsers" caption="=prjParticipants"
+  >
+  <Columns>
+    <SimpleColumn name="Project" />
+    <SimpleColumn name="User" />
+    <SimpleJoin name="User" joinType="LEFT">
+      <SimpleColumn name="CompanyPerson" alias="OwnerPerson" />
+      <SimpleJoin name="CompanyPerson" joinType="LEFT">
+        <SimpleJoin name="Person" joinType="LEFT">
+          <SimpleColumn alias="ParticipantFirstName" name="FirstName" />
+          <SimpleColumn alias="ParticipantLastName" name="LastName" />
+        </SimpleJoin>
+      </SimpleJoin>
+    </SimpleJoin>
+    
+    <SimpleColumn name="UserType" />
+  </Columns>  
+  <Order>
+	  <OrderBy column="User"/>
+	  <OrderBy column="UserType"/>
+  </Order>
+</View>
+ 

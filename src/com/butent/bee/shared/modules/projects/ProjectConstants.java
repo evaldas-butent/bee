@@ -1,0 +1,35 @@
+package com.butent.bee.shared.modules.projects;
+
+import com.butent.bee.shared.utils.EnumUtils;
+
+/**
+ * Constants of Projects module.
+ */
+public final class ProjectConstants {
+
+  public static final String COL_PROJECT = "Project";
+  public static final String COL_PROJECT_STAGE = "ProjectStage";
+  public static final String COL_PROJECT_STATUS = "Status";
+  public static final String COL_PROJECT_OWNER = "Owner";
+
+  public static final String COL_USER_TYPE = "UserType";
+
+  public static final String FORM_PROJECT = "Project";
+
+  public static final String GRID_PROJECTS = "Projects";
+
+  public static final String VIEW_PROJECTS = "Projects";
+  public static final String VIEW_PROJECT_USERS = "ProjectUsers";
+
+  /**
+   * Register module Enumerations.
+   */
+  public static void register() {
+    EnumUtils.register(ProjectPriority.class);
+    EnumUtils.register(ProjectStatus.class);
+    EnumUtils.register(ProjectUserType.class);
+  }
+
+  private ProjectConstants() {
+  }
+}

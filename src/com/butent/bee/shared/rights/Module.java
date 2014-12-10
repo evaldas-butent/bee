@@ -59,6 +59,18 @@ public enum Module implements HasLocalizedCaption {
     }
   },
 
+  PROJECTS {
+    @Override
+    public String getCaption(LocalizableConstants constants) {
+      return constants.projects();
+    }
+
+    @Override
+    public String getStyleSheet(SubModule subModule) {
+      return "project";
+    }
+  },
+
   DISCUSSIONS {
     @Override
     public String getCaption(LocalizableConstants constants) {
