@@ -3,7 +3,8 @@
   xmlns:x="http://www.butent.com/expression"
 
   name="ProjectStages" source="ProjectStages" caption="=prjStages"
-  
+  editForm="ProjectStages" newRowForm="ProjectStages"
+  newRowCaption="=prjNewStage"
   >
   <Columns>
     <SimpleColumn name="Project" />
@@ -13,6 +14,10 @@
     <SimpleColumn name="ExpectedDuration" />
         
     <SimpleColumn name="ExpectedTasksDuration" label="=prjExpectedTaskDuration">
+      <x:string>'?0?'</x:string>
+    </SimpleColumn>
+    
+    <SimpleColumn name="ExpectedTasksExpenses" label="=prjExpectedTaskExpenses">
       <x:string>'?0?'</x:string>
     </SimpleColumn>
     
