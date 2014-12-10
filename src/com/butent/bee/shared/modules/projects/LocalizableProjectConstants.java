@@ -12,6 +12,8 @@ public interface LocalizableProjectConstants {
 
   String projects();
 
+  String prjDeleteCanManager();
+
   String prjObserver();
 
   String prjParticipant();

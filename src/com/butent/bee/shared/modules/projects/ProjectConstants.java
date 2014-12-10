@@ -10,6 +10,7 @@ public final class ProjectConstants {
   public static final String COL_PROJECT = "Project";
   public static final String COL_PROJECT_STAGE = "ProjectStage";
   public static final String COL_PROJECT_STATUS = "Status";
+  public static final String COL_PROJECT_OWNER = "Owner";
 
   public static final String COL_USER_TYPE = "UserType";
 
