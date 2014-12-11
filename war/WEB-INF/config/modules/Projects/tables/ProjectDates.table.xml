@@ -11,7 +11,7 @@
     <DateTime name="StartDate" notNull="true" label="=dateFrom" />
     <DateTime name="EndDate" label="=dateTo" />
     
-    <Relation name="Color" relation="Colors" label="=color" />
+    <String name="Color" precision="100" label="=color" />
     <String name="Note" precision="100" label="=note" />
   </Fields>
 </Table>

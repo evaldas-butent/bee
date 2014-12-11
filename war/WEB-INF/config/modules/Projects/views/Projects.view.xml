@@ -6,6 +6,7 @@
   editForm="Project" newRowForm="Project"
   >
   <Columns>
+    <IdColumn name="ID"/>
     <SimpleColumn name="Priority" />
     <SimpleColumn name="Status" />
     <SimpleColumn name="Name" />
@@ -20,7 +21,7 @@
       <SimpleColumn alias="CompanyName" name="Name" />
     </SimpleJoin>
     
-     <SimpleColumn name="Contact" />
+    <SimpleColumn name="Contact" />
     <SimpleJoin name="Contact" joinType="LEFT">
       <SimpleColumn alias="ContactPerson" name="Person" />
       <SimpleJoin name="Person" joinType="LEFT">
@@ -66,7 +67,6 @@
     
     <SimpleColumn name="Contract" />
     <SimpleJoin name="Contract" joinType="LEFT">
-      <HiddenColumn name="Project" />
       <SimpleColumn name="Document" />
       <SimpleJoin name="Document" joinType="LEFT">
         <SimpleColumn name="Name" alias="ContractName"/>

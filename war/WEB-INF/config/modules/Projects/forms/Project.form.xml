@@ -17,7 +17,7 @@
 
 <f:Form xmlns="http://www.butent.com/widget" xmlns:f="http://www.butent.com/form"
 	xmlns:xi="http://www.w3.org/2001/XInclude" name="Project" viewName="Projects"
-	caption="=project">
+	caption="=project" showRowId="true" >
 	<FlowPanel class="flexBox-vertical">
 		<Table>
 			<row>
@@ -136,9 +136,11 @@
 
 						<row>
 							<Label text="=contract" style="margin-right: 1em; text-align: left;" />
-							<DataSelector source="Contract" renderColumns="ContractName ContractNumber" 
-							 choiceColumns="Document Project" filter="Document AND Project"  options="Project" module="Documents"
-							 style="&inp2;" />
+							<DataSelector name="Contract" source="Contract" 
+							renderColumns="ContractName ContractNumber" 
+							 choiceColumns="Name Number DocumentDate Expires" viewName="RelatedDocuments" 
+							 filter="Document AND Project" caching="none" module="Documents"
+							 newRowEnabled="false" style="&inp2;" />
 
 							<Label text="=salePrice" style="&lbl;" />
 							<InputText source="ContractPrice" style="&inp4;" />

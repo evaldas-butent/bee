@@ -7,11 +7,13 @@
 	<g:columns>
 		<DataColumn name="StartDate" />
 		<DataColumn name="EndDate" />
-		<RelColumn name="Color" >
-		  <dynStyle>   
-       <ui:inline>background-color: [row.Background]; color: [row.Foreground]; </ui:inline>     
+		<DataColumn name="Color" width="100" visible="true">
+      <dynStyle>
+        <ui:inline>background-color: [row.Color];</ui:inline>
+        <ui:expression>row.Color</ui:expression>
       </dynStyle>
-		</RelColumn>
+      <editor type="color" />
+    </DataColumn>
 		<DataColumn name="Note" />
 	</g:columns>
 	<g:rowStyle>

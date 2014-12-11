@@ -9,11 +9,6 @@
     <SimpleColumn name="StartDate" />
     <SimpleColumn name="EndDate" />
     <SimpleColumn name="Color" />
-    <SimpleJoin name="Color" joinType="LEFT">
-      <SimpleColumn name="Name" alias="ColorName" />
-      <SimpleColumn name="Background" />
-      <SimpleColumn name="Foreground" />
-    </SimpleJoin>
     <SimpleColumn name="Note" />
   </Columns>  
   <Order>
