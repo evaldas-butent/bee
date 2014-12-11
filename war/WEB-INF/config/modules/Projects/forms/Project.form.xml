@@ -12,12 +12,12 @@
   <!ENTITY inp4 "&inline; width: 100px; &height;">
   <!ENTITY inp5 "&inline; width: 70px; &height;">
   <!ENTITY inp6 "&inline; width: 110px; &height;">
-  <!ENTITY inp7 "&inline; width: 780px; height:100px;">
+  <!ENTITY inp7 "&inline; width: 795px; height:100px;">
 ]>
 
 <f:Form xmlns="http://www.butent.com/widget" xmlns:f="http://www.butent.com/form"
 	xmlns:xi="http://www.w3.org/2001/XInclude" name="Project" viewName="Projects"
-	caption="=project" showRowId="true" >
+	caption="=project">
 	<FlowPanel class="flexBox-vertical">
 		<Table>
 			<row>
@@ -71,23 +71,23 @@
 
 				<Table>
 					<row>
-						<Label text="=progress" style="&lbl;" />
-						<InputText source="Progress" style="&inp5;" />
+						<Label text="=prjExpectedTaskDuration" style="&lbl;" />
+						<InputText source="ExpectedTasksDuration" style="&inp5;" />
 
-						<Label text="=expectedDuration" style="&lbl;" />
-						<InputDecimal source="ExpectedDuration" style="&inp5;" />
-
+						<Label text="=prjActualTaskDuration" style="&lbl;" />
+						<InputText source="ActualTasksDuration" style="&inp5;" />
+						
 						<Label text="=contractNo" style="&lbl;" />
 						<InputText source="ContractNumber" style="&inp6;"
 							readOnly="true" />
 					</row>
 
 					<row>
-						<Label text="=prjExpectedTaskDuration" style="&lbl;" />
-						<InputText source="ExpectedTasksDuration" style="&inp5;" />
+						<Label text="=progress" style="&lbl;" />
+						<InputText source="Progress" style="&inp5;" />
 
-						<Label text="=prjActualTaskDuration" style="&lbl;" />
-						<InputText source="ActualTasksDuration" style="&inp5;" />
+						<Label text="=expectedDuration" style="&lbl;" />
+						<InputDecimal source="ExpectedDuration" style="&inp5;" />
 
 						<Label text="=prjPrice" style="&lbl;" />
 						<InputDecimal source="Price" style="&inp6;" />
@@ -158,9 +158,9 @@
 				<ChildGrid name="ChildTasks" relColumn="Project" />
 			</page>
 			<page>
-        <text>=prjDates</text>
-        <ChildGrid name="ProjectDates" relColumn="Project" />
-      </page>
+        	  <text>=prjDates</text>
+        	  <ChildGrid name="ProjectDates" relColumn="Project" />
+      		</page>
 		</TabbedPages>
 	</FlowPanel>
 </f:Form> 
