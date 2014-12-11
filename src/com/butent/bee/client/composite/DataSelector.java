@@ -149,16 +149,21 @@ public class DataSelector extends Composite implements Editor, HasVisibleLines, 
           break;
 
         case Event.ONKEYDOWN:
+          inputEvents.setConsumed(false);
+          inputEvents.setLastEventType(type);
+
           if (isEmbedded() && event.getKeyCode() == KeyCodes.KEY_DELETE && isNullable()
               && !BeeUtils.isEmpty(getDisplayValue())) {
-            setSelection(null, null, true);
+
             consumed = true;
+            setSelection(null, null, true);
 
           } else if (isEmbedded() && !isActive()) {
             if (event.getKeyCode() == KeyCodes.KEY_BACKSPACE && isInstant()
                 && !BeeUtils.isEmpty(getDisplayValue())) {
-              start(SHOW_SELECTOR);
+
               consumed = true;
+              start(SHOW_SELECTOR);
             }
 
           } else {
@@ -168,18 +173,22 @@ public class DataSelector extends Composite implements Editor, HasVisibleLines, 
           break;
 
         case Event.ONKEYPRESS:
+          inputEvents.setLastEventType(type);
+
           if (isEmbedded() && !isActive()) {
             int charCode = event.getCharCode();
             if (charCode > BeeConst.CHAR_SPACE
                 && Codec.isValidUnicodeChar(BeeUtils.toChar(charCode))) {
-              start(charCode);
+
               consumed = true;
+              start(charCode);
             }
 
           } else if (event.getCharCode() == CREATE_NEW && isNewRowEnabled()) {
             if (showing) {
               getSelector().hide();
             }
+
             consumed = true;
             RowFactory.createRelatedRow(DataSelector.this, getDisplayValue());
 
@@ -190,6 +199,8 @@ public class DataSelector extends Composite implements Editor, HasVisibleLines, 
           break;
 
         case Event.ONKEYUP:
+          inputEvents.setLastEventType(type);
+
           inputEvents.onKeyUp();
           consumed = inputEvents.isConsumed();
           break;
@@ -221,6 +232,7 @@ public class DataSelector extends Composite implements Editor, HasVisibleLines, 
   private class InputEvents implements InputHandler, MouseWheelHandler, Consumable {
 
     private boolean consumed;
+    private int lastEventType;
 
     @Override
     public void consume() {
@@ -234,12 +246,17 @@ public class DataSelector extends Composite implements Editor, HasVisibleLines, 
 
     @Override
     public void onInput(InputEvent event) {
-      if (!isConsumed() && isEmbedded() && !isActive()
+      if (isEnabled() && (!isConsumed() || !wasKeyPressed())
           && event.getSource() instanceof HasStringValue) {
 
         String value = ((HasStringValue) event.getSource()).getValue();
         if (!BeeUtils.isEmpty(value)) {
-          start(BeeConst.UNDEF);
+          consume();
+
+          if (!isActive()) {
+            start(BeeConst.UNDEF);
+          }
+
           if (isInstant() && isQueryValid()) {
             askOracle();
           }
@@ -384,6 +401,14 @@ public class DataSelector extends Composite implements Editor, HasVisibleLines, 
       if (!isConsumed() && changed && getSelector().isShowing()) {
         getSelector().hide();
       }
+    }
+
+    private void setLastEventType(int lastEventType) {
+      this.lastEventType = lastEventType;
+    }
+
+    private boolean wasKeyPressed() {
+      return lastEventType == Event.ONKEYDOWN || lastEventType == Event.ONKEYPRESS;
     }
   }
 
@@ -1443,6 +1468,8 @@ public class DataSelector extends Composite implements Editor, HasVisibleLines, 
     SelectorEvent.fire(this, State.UNLOADING);
 
     getOracle().onUnload();
+    reset();
+
     super.onUnload();
   }
 
@@ -1536,7 +1563,7 @@ public class DataSelector extends Composite implements Editor, HasVisibleLines, 
     }
   }
 
-  private boolean askOracle() {
+  private void askOracle() {
     String query = BeeUtils.trim(getDisplayValue());
     int start = getOffset();
     int size = getVisibleLines();
@@ -1547,16 +1574,12 @@ public class DataSelector extends Composite implements Editor, HasVisibleLines, 
     }
 
     Request request = new Request(query, getSearchType(), start, size);
-    if (request.equals(getLastRequest())) {
-      return false;
-    }
     setLastRequest(request);
 
     getInput().addStyleName(STYLE_WAITING);
     setWaiting(true);
 
     getOracle().requestSuggestions(request, getCallback());
-    return true;
   }
 
   private void editRow() {

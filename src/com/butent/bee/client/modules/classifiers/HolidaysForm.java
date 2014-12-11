@@ -22,10 +22,12 @@ import com.butent.bee.client.i18n.Format;
 import com.butent.bee.client.layout.Flow;
 import com.butent.bee.client.ui.FormFactory.WidgetDescriptionCallback;
 import com.butent.bee.client.ui.IdentifiableWidget;
+import com.butent.bee.client.ui.UiHelper;
 import com.butent.bee.client.view.form.FormView;
 import com.butent.bee.client.view.form.interceptor.AbstractFormInterceptor;
 import com.butent.bee.client.view.form.interceptor.FormInterceptor;
 import com.butent.bee.client.widget.Badge;
+import com.butent.bee.client.widget.FaLabel;
 import com.butent.bee.client.widget.Label;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.Consumer;
@@ -34,6 +36,7 @@ import com.butent.bee.shared.data.BeeRow;
 import com.butent.bee.shared.data.BeeRowSet;
 import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.filter.Filter;
+import com.butent.bee.shared.font.FontAwesome;
 import com.butent.bee.shared.modules.administration.AdministrationConstants;
 import com.butent.bee.shared.time.Grego;
 import com.butent.bee.shared.time.JustDate;
@@ -54,6 +57,9 @@ class HolidaysForm extends AbstractFormInterceptor implements SelectorEvent.Hand
   private static final String STYLE_YEAR_ACTIVE = STYLE_PREFIX + "year-active";
   private static final String STYLE_YEAR_LABEL = STYLE_PREFIX + "year-label";
   private static final String STYLE_YEAR_BADGE = STYLE_PREFIX + "year-badge";
+
+  private static final String STYLE_ADD_FIRST = STYLE_PREFIX + "add-first";
+  private static final String STYLE_ADD_LAST = STYLE_PREFIX + "add-last";
 
   private static final String STYLE_MONTH_PANEL = STYLE_PREFIX + "month-panel";
   private static final String STYLE_MONTH_LABEL = STYLE_PREFIX + "month-label";
@@ -160,6 +166,44 @@ class HolidaysForm extends AbstractFormInterceptor implements SelectorEvent.Hand
     }
   }
 
+  private void addFirst(Long country) {
+    for (int i = 1; i < yearPanel.getWidgetCount(); i++) {
+      int year = DomUtils.getDataIndexInt(yearPanel.getWidget(i).getElement());
+
+      if (year > 0) {
+        year--;
+
+        Widget widget = yearPanel.getWidget(0);
+        if (widget.getElement().hasClassName(STYLE_ADD_FIRST)) {
+          widget.setTitle(BeeUtils.toString(year - 1));
+        }
+
+        yearPanel.insert(renderYear(country, year), i);
+        selectYear(country, year);
+        break;
+      }
+    }
+  }
+
+  private void addLast(Long country) {
+    for (int i = yearPanel.getWidgetCount() - 1; i >= 0; i--) {
+      int year = DomUtils.getDataIndexInt(yearPanel.getWidget(i).getElement());
+
+      if (year > 0) {
+        year++;
+
+        Widget widget = yearPanel.getWidget(yearPanel.getWidgetCount() - 1);
+        if (widget.getElement().hasClassName(STYLE_ADD_LAST)) {
+          widget.setTitle(BeeUtils.toString(year + 1));
+        }
+
+        yearPanel.insert(renderYear(country, year), i + 1);
+        selectYear(country, year);
+        break;
+      }
+    }
+  }
+
   private int count(Long country, int year) {
     int result = 0;
 
@@ -255,11 +299,20 @@ class HolidaysForm extends AbstractFormInterceptor implements SelectorEvent.Hand
     Long country = countrySelector.getRelatedId();
 
     if (DataUtils.isId(country)) {
+      Widget yearWidget = findYearWidget(getYear(day));
+      Widget countWidget = UiHelper.getChildByStyleName(yearWidget, STYLE_YEAR_BADGE);
+
+      Badge badge = (countWidget instanceof Badge) ? (Badge) countWidget : null;
+
       if (data.containsEntry(country, day)) {
         data.remove(country, day);
 
         Queries.delete(VIEW_HOLIDAYS, Filter.and(Filter.equals(COL_HOLY_COUNTRY, country),
             Filter.equals(COL_HOLY_DAY, day)), null);
+
+        if (badge != null) {
+          badge.decrement();
+        }
 
       } else {
         data.put(country, day);
@@ -267,6 +320,10 @@ class HolidaysForm extends AbstractFormInterceptor implements SelectorEvent.Hand
         List<BeeColumn> columns = Data.getColumns(VIEW_HOLIDAYS,
             Arrays.asList(COL_HOLY_COUNTRY, COL_HOLY_DAY));
         Queries.insert(VIEW_HOLIDAYS, columns, Queries.asList(country, day));
+
+        if (badge != null) {
+          badge.increment();
+        }
       }
     }
   }
@@ -383,13 +440,41 @@ class HolidaysForm extends AbstractFormInterceptor implements SelectorEvent.Hand
     return panel;
   }
 
-  private void renderYears(Long country, List<Integer> years) {
+  private void renderYears(final Long country, List<Integer> years) {
     if (!yearPanel.isEmpty()) {
       yearPanel.clear();
     }
 
+    if (!years.isEmpty()) {
+      FaLabel addFirst = new FaLabel(FontAwesome.PLUS_SQUARE_O, STYLE_ADD_FIRST);
+      addFirst.setTitle(BeeUtils.toString(years.get(0) - 1));
+
+      addFirst.addClickHandler(new ClickHandler() {
+        @Override
+        public void onClick(ClickEvent event) {
+          addFirst(country);
+        }
+      });
+
+      yearPanel.add(addFirst);
+    }
+
     for (int year : years) {
       yearPanel.add(renderYear(country, year));
+    }
+
+    if (!years.isEmpty()) {
+      FaLabel addLast = new FaLabel(FontAwesome.PLUS_SQUARE_O, STYLE_ADD_LAST);
+      addLast.setTitle(BeeUtils.toString(years.get(years.size() - 1) + 1));
+
+      addLast.addClickHandler(new ClickHandler() {
+        @Override
+        public void onClick(ClickEvent event) {
+          addLast(country);
+        }
+      });
+
+      yearPanel.add(addLast);
     }
   }
 
