@@ -110,7 +110,7 @@ class ChildTasksGrid extends TasksGrid {
       return;
     }
 
-    /* Fill company info */
+    /* Fill project info */
     int idxTaskProject = taskData.getColumnIndex(ProjectConstants.COL_PROJECT);
     int idxStageProject = parentFormData.getColumnIndex(ProjectConstants.COL_PROJECT);
 

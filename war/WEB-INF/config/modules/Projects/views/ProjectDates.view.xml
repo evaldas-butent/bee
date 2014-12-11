@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<View xmlns="http://www.butent.com/view"
+  xmlns:x="http://www.butent.com/expression"
+
+  name="ProjectDates" source="ProjectDates" caption="=prjDates"
+  >
+  <Columns>
+    <SimpleColumn name="Project" />
+    <SimpleColumn name="StartDate" />
+    <SimpleColumn name="EndDate" />
+    <SimpleColumn name="Color" />
+    <SimpleJoin name="Color" joinType="LEFT">
+      <SimpleColumn name="Name" alias="ColorName" />
+      <SimpleColumn name="Background" />
+      <SimpleColumn name="Foreground" />
+    </SimpleJoin>
+    <SimpleColumn name="Note" />
+  </Columns>  
+  <Order>
+	  <OrderBy column="StartDate"/>
+  </Order>
+</View>
+ 

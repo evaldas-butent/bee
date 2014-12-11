@@ -155,6 +155,10 @@
 				<text>=crmTasks</text>
 				<ChildGrid name="ChildTasks" relColumn="Project" />
 			</page>
+			<page>
+        <text>=prjDates</text>
+        <ChildGrid name="ProjectDates" relColumn="Project" />
+      </page>
 		</TabbedPages>
 	</FlowPanel>
 </f:Form> 

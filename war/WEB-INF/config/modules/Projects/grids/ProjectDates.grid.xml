@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<g:Grid xmlns="http://www.butent.com/column" xmlns:g="http://www.butent.com/grid"
+	xmlns:ui="http://www.butent.com/ui" xmlns:w="http://www.butent.com/widget"
+
+	name="ProjectDates" viewName="ProjectDates" caption="=prjDates">
+		
+	<g:columns>
+		<DataColumn name="StartDate" />
+		<DataColumn name="EndDate" />
+		<RelColumn name="Color" >
+		  <dynStyle>   
+       <ui:inline>background-color: [row.Background]; color: [row.Foreground]; </ui:inline>     
+      </dynStyle>
+		</RelColumn>
+		<DataColumn name="Note" />
+	</g:columns>
+	<g:rowStyle>
+   
+  </g:rowStyle>	
+ 
+</g:Grid>
