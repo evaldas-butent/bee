@@ -6,7 +6,6 @@ import com.google.common.eventbus.Subscribe;
 
 import static com.butent.bee.shared.modules.documents.DocumentConstants.*;
 
-import com.butent.bee.server.Config;
 import com.butent.bee.server.data.BeeTable;
 import com.butent.bee.server.data.BeeView;
 import com.butent.bee.server.data.DataEditorBean;
@@ -43,14 +42,7 @@ import com.butent.bee.shared.rights.RightsState;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.Codec;
 import com.butent.bee.shared.utils.EnumUtils;
-import com.lowagie.text.pdf.BaseFont;
 
-import org.jsoup.Jsoup;
-import org.xhtmlrenderer.pdf.ITextFontResolver;
-import org.xhtmlrenderer.pdf.ITextRenderer;
-
-import java.io.File;
-import java.io.FileOutputStream;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
@@ -281,35 +273,37 @@ public class DocumentsModuleBean implements BeeModule {
   }
 
   private static ResponseObject createPdf(String content) {
-    File tmp = null;
-
-    try {
-      tmp = File.createTempFile("bee_", ".pdf");
-      tmp.deleteOnExit();
-
-      FileOutputStream os = new FileOutputStream(tmp);
-
-      ITextRenderer renderer = new ITextRenderer();
-      ITextFontResolver resolver = renderer.getFontResolver();
-      resolver.addFont(Config.getLocalPath("arialuni.ttf"), BaseFont.IDENTITY_H, BaseFont.EMBEDDED);
-
-      logger.severe(Jsoup.parse(content).body().outerHtml());
-
-      renderer.setDocumentFromString("<?xml version=\"1.0\" encoding=\"utf-8\"?>"
-          + "<!DOCTYPE html [<!ENTITY nbsp \"&#160;\">]>"
-          + "<html xmlns=\"http://www.w3.org/1999/xhtml\"><head>"
-          + "<meta http-equiv=\"Content-Type\" content=\"text/html; charset=UTF-8\"/>"
-          + "<style type=\"text/css\">@page {size: A4;}"
-          + "body {font-family:Arial Unicode MS;}</style></head>"
-          + "<body><br/>" + content + "</body></html>");
-
-      renderer.layout();
-      renderer.createPDF(os);
-      os.close();
-    } catch (Exception e) {
-      return ResponseObject.error(e);
-    }
-    return ResponseObject.response(tmp.getPath());
+    // File tmp = null;
+    //
+    // try {
+    // tmp = File.createTempFile("bee_", ".pdf");
+    // tmp.deleteOnExit();
+    //
+    // FileOutputStream os = new FileOutputStream(tmp);
+    //
+    // ITextRenderer renderer = new ITextRenderer();
+    // ITextFontResolver resolver = renderer.getFontResolver();
+    // resolver.addFont(Config.getLocalPath("arialuni.ttf"), BaseFont.IDENTITY_H,
+    // BaseFont.EMBEDDED);
+    //
+    // logger.severe(Jsoup.parse(content).body().outerHtml());
+    //
+    // renderer.setDocumentFromString("<?xml version=\"1.0\" encoding=\"utf-8\"?>"
+    // + "<!DOCTYPE html [<!ENTITY nbsp \"&#160;\">]>"
+    // + "<html xmlns=\"http://www.w3.org/1999/xhtml\"><head>"
+    // + "<meta http-equiv=\"Content-Type\" content=\"text/html; charset=UTF-8\"/>"
+    // + "<style type=\"text/css\">@page {size: A4;}"
+    // + "body {font-family:Arial Unicode MS;}</style></head>"
+    // + "<body><br/>" + content + "</body></html>");
+    //
+    // renderer.layout();
+    // renderer.createPDF(os);
+    // os.close();
+    // } catch (Exception e) {
+    // return ResponseObject.error(e);
+    // }
+    // return ResponseObject.response(tmp.getPath());
+    return null;
   }
 
   private ResponseObject copyDocumentData(Long data) {
