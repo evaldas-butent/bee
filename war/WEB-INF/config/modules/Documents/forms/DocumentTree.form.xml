@@ -8,15 +8,21 @@
   <SplitPanel>
     <west size="300" splitterSize="2">
       <DataTree name="Tree" caption="=documentCategories" viewName="DocumentTree"
-        parentColumn="Parent" orderColumn="Order">
+        parentColumn="Parent" orderColumn="Ordinal">
         <calc>
           <ui:expression>row.CategoryName</ui:expression>
         </calc>
         <form name="EditCategory">
-          <FlowPanel>
-            <Label for="CategoryName" />
-            <InputText source="CategoryName" />
-          </FlowPanel>
+          <Table>
+            <row>
+              <Label for="CategoryName" style="text-align:right;" />
+              <InputText source="CategoryName" />
+            </row>
+            <row>
+              <Label for="Ordinal" style="text-align:right;" />
+              <InputDecimal source="Ordinal" style="width:40px;" />
+            </row>
+          </Table>
         </form>
       </DataTree>
     </west>

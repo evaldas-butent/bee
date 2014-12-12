@@ -79,8 +79,18 @@ public class FileServlet extends LoginServlet {
         return;
       }
     } else if (!BeeUtils.isEmpty(fileName)) {
-      path = Config.getPath(fileName, false);
-      fileName = new File(fileName).getName();
+      if (FileUtils.isInputFile(fileName)) {
+        path = fileName;
+        fileName = new File(path).getName();
+
+        if (BeeUtils.isSuffix(fileName, ".pdf")) {
+          mimeType = "application/pdf";
+          isTemporary = true;
+        }
+      } else {
+        fileName = new File(fileName).getName();
+        path = Config.getPath(fileName, false);
+      }
     }
     if (path == null) {
       HttpUtils.sendError(resp, HttpServletResponse.SC_INTERNAL_SERVER_ERROR,

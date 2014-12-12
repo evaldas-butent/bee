@@ -421,6 +421,19 @@ public class DocumentDataForm extends AbstractFormInterceptor
           @Override
           public void accept(String input) {
             Printer.print(input, null);
+            // ParameterList args = DocumentsHandler.createArgs(SVC_CREATE_PDF_DOCUMENT);
+            // args.addDataItem(COL_DOCUMENT_CONTENT, input);
+            //
+            // BeeKeeper.getRpc().makePostRequest(args, new ResponseCallback() {
+            // @Override
+            // public void onResponse(ResponseObject response) {
+            // response.notify(getFormView());
+            //
+            // if (!response.hasErrors()) {
+            // BrowsingContext.open(FileUtils.getUrl(response.getResponseAsString(), null));
+            // }
+            // }
+            // });
           }
         });
       }

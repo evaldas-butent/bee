@@ -190,9 +190,11 @@ public final class FileUtils {
 
   public static String getUrl(String fileName, Long fileId) {
     Map<String, String> parameters = new HashMap<>();
-    parameters.put(Service.VAR_FILE_ID, BeeUtils.toString(fileId));
     parameters.put(Service.VAR_FILE_NAME, fileName);
 
+    if (DataUtils.isId(fileId)) {
+      parameters.put(Service.VAR_FILE_ID, BeeUtils.toString(fileId));
+    }
     return CommUtils.addQueryString(GWT.getHostPageBaseURL() + OPEN_URL,
         CommUtils.buildQueryString(parameters, true));
   }
