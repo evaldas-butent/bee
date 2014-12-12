@@ -22,10 +22,6 @@ public interface LocalizableProjectConstants {
 
   String prjStatusApproved();
 
-  String prjStatusCanceled();
-
-  String prjStatusCompleted();
-
   String prjStatusScheduled();
 
   String prjStatusSuspended();

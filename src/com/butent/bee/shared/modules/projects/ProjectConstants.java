@@ -16,6 +16,7 @@ public final class ProjectConstants {
 
   public static final String FORM_PROJECT = "Project";
 
+  public static final String GRID_ALL_PROJECTS = "AllProjects";
   public static final String GRID_PROJECTS = "Projects";
   public static final String GRID_PROJECT_USERS = "ProjectUsers";
 

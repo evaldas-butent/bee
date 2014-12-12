@@ -3,7 +3,7 @@
 	xmlns:ui="http://www.butent.com/ui" xmlns:w="http://www.butent.com/widget"
 	xmlns:xi="http://www.w3.org/2001/XInclude"
 
-	name="Projects" viewName="Projects" caption="=projects" favorite="Name"
+	name="AllProjects" viewName="Projects" caption="=projectsAll" favorite="Name"
 	order="ProjectID desc">
 	
 	<g:west size="200" splitterSize="2">
@@ -23,7 +23,7 @@
 	
 	<xi:include href="columns/Project.columns.xml" />
 	
-	<g:predefinedFilter name="projects_active" label="=prjFilterActive" initial="true">
+	<g:predefinedFilter name="projects_active" label="=prjFilterActive" >
 		<g:column name="Status" value="0" />
 	</g:predefinedFilter>
 	<g:predefinedFilter name="projects_all"	label="=prjFilterAll">
