@@ -17,6 +17,7 @@ public final class ProjectConstants {
   public static final String FORM_PROJECT = "Project";
 
   public static final String GRID_PROJECTS = "Projects";
+  public static final String GRID_PROJECT_USERS = "ProjectUsers";
 
   public static final String VIEW_PROJECTS = "Projects";
   public static final String VIEW_PROJECT_USERS = "ProjectUsers";
@@ -28,7 +29,6 @@ public final class ProjectConstants {
   public static void register() {
     EnumUtils.register(ProjectPriority.class);
     EnumUtils.register(ProjectStatus.class);
-    EnumUtils.register(ProjectUserType.class);
   }
 
   private ProjectConstants() {

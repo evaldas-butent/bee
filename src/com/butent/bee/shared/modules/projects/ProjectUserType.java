@@ -6,6 +6,7 @@ import com.butent.bee.shared.ui.HasCaption;
 /**
  * User types of project.
  */
+@Deprecated
 public enum ProjectUserType implements HasCaption {
   /**
    * The team members of project.

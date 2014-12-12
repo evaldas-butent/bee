@@ -109,7 +109,7 @@
 
 		<TabbedPages class="flexible">
 			<page>
-				<text>=prjParticipants</text>
+				<text>=prjTeam</text>
 				<ChildGrid name="ProjectUsers" relColumn="Project" />
 			</page>
 			<page>
@@ -158,9 +158,9 @@
 				<ChildGrid name="ChildTasks" relColumn="Project" />
 			</page>
 			<page>
-        	  <text>=prjDates</text>
-        	  <ChildGrid name="ProjectDates" relColumn="Project" />
-      		</page>
+     	  <text>=prjDates</text>
+     	  <ChildGrid name="ProjectDates" relColumn="Project" />
+   		</page>
 		</TabbedPages>
 	</FlowPanel>
 </f:Form> 

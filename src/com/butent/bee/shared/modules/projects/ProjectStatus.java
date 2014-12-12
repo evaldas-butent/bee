@@ -29,24 +29,10 @@ public enum ProjectStatus implements HasLocalizedCaption {
     }
   },
 
-  COMPLETED {
-    @Override
-    public String getCaption(LocalizableConstants constants) {
-      return constants.prjStatusCompleted();
-    }
-  },
-
   APPROVED {
     @Override
     public String getCaption(LocalizableConstants constants) {
       return constants.prjStatusApproved();
-    }
-  },
-
-  CANCELED {
-    @Override
-    public String getCaption(LocalizableConstants constants) {
-      return constants.prjStatusCanceled();
     }
   };
 

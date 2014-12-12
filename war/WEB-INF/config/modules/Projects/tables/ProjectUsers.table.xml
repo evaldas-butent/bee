@@ -6,9 +6,10 @@
   >
   <Fields>
     <Relation name="Project" notNull="true" relation="Projects" cascade="DELETE" label="=project"/>
-    <Relation name="User" notNull="true" relation="Users" cascade="DELETE" label="=user"/>
-    
-    <Enum name="UserType" key="ProjectUserType" notNull="true" defValue="0" label="=role" />
+    <Relation name="User" notNull="true" relation="Users" cascade="DELETE" label="=user" />
+    <Text name="Notes" label="=notes" />
+    <Numeric name="Rate" precision="15" scale="5" label="=prjPersonRate" />
+    <Relation name="Currency" relation="Currencies" label="=currency" />
   </Fields>
 
   <Constraints>
