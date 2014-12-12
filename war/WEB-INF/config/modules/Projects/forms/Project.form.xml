@@ -12,7 +12,7 @@
   <!ENTITY inp4 "&inline; width: 100px; &height;">
   <!ENTITY inp5 "&inline; width: 70px; &height;">
   <!ENTITY inp6 "&inline; width: 110px; &height;">
-  <!ENTITY inp7 "&inline; width: 795px; height:100px;">
+  <!ENTITY inp7 "&inline; width: 795px; height:100px; max-height: 200px; max-width: 795px;">
 ]>
 
 <f:Form xmlns="http://www.butent.com/widget" xmlns:f="http://www.butent.com/form"
@@ -90,17 +90,17 @@
 						<InputDecimal source="ExpectedDuration" style="&inp5;" />
 
 						<Label text="=prjPrice" style="&lbl;" />
-						<InputDecimal source="Price" style="&inp6;" />
+						<InputDecimal source="Price" scale="2" style="&inp6;" />
 
 						<Label text="=salePrice" style="&lbl;" />
-						<InputDecimal source="ContractPrice" style="&inp6;" />
+						<InputDecimal source="ContractPrice" scale="2" style="&inp6;" />
 					</row>
 				</Table>
 
 				<Table>
 					<row>
 						<Label text="=description" style="&lbl;" />
-						<InputArea source="Description" style="&inp7;" />
+						<InputArea source="Description" placeholder="=prjDescriptionContent" style="&inp7;" />
 					</row>
 				</Table>
 
@@ -119,7 +119,7 @@
 			<page module="Documents">
 				<text>=documents</text>
 				<FlowPanel>
-					<Table>
+					<Table style="margin-bottom: 5px;">
 						<row>
 							<Label text="=personContact" style="margin-right: 1em; text-align: left;" />
 							<DataSelector source="ContactPerson"
