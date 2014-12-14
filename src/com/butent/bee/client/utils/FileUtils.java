@@ -32,6 +32,7 @@ import com.butent.bee.shared.io.FileInfo;
 import com.butent.bee.shared.io.FileNameUtils;
 import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogUtils;
+import com.butent.bee.shared.modules.administration.AdministrationConstants;
 import com.butent.bee.shared.time.TimeUtils;
 import com.butent.bee.shared.utils.ArrayUtils;
 import com.butent.bee.shared.utils.BeeUtils;
@@ -57,7 +58,6 @@ public final class FileUtils {
 
   private static final BeeLogger logger = LogUtils.getLogger(FileUtils.class);
 
-  public static final String OPEN_URL = "file";
   public static final String UPLOAD_URL = "upload";
 
   private static final long MIN_FILE_SIZE_FOR_PROGRESS = 100000;
@@ -188,6 +188,12 @@ public final class FileUtils {
     return result;
   }
 
+  public static String getUrl(Long fileId) {
+    Assert.state(DataUtils.isId(fileId));
+    return GWT.getHostPageBaseURL() + AdministrationConstants.FILE_URL + "/"
+        + BeeUtils.toString(fileId);
+  }
+
   public static String getUrl(String fileName, Long fileId) {
     Map<String, String> parameters = new HashMap<>();
     parameters.put(Service.VAR_FILE_NAME, fileName);
@@ -195,7 +201,7 @@ public final class FileUtils {
     if (DataUtils.isId(fileId)) {
       parameters.put(Service.VAR_FILE_ID, BeeUtils.toString(fileId));
     }
-    return CommUtils.addQueryString(GWT.getHostPageBaseURL() + OPEN_URL,
+    return CommUtils.addQueryString(GWT.getHostPageBaseURL() + AdministrationConstants.FILE_URL,
         CommUtils.buildQueryString(parameters, true));
   }
 

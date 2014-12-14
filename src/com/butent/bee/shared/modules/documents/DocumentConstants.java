@@ -6,6 +6,11 @@ public final class DocumentConstants {
   public static final String SVC_SET_CATEGORY_STATE = "set_category_state";
   public static final String SVC_CREATE_PDF_DOCUMENT = "create_pdf_document";
 
+  public static final String PRM_PRINT_AS_PDF = "PrintAsPDF";
+  public static final String PRM_PRINT_HEADER = "PrintPageHeader";
+  public static final String PRM_PRINT_FOOTER = "PrintPageFooter";
+  public static final String PRM_PRINT_MARGINS = "PrintPageMargins";
+
   public static final String TBL_DOCUMENT_TREE = "DocumentTree";
   public static final String TBL_DOCUMENTS = "Documents";
   public static final String TBL_DOCUMENT_DATA = "DocumentData";
