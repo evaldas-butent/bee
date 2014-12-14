@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<g:Grid xmlns="http://www.butent.com/column" xmlns:g="http://www.butent.com/grid"
+	xmlns:ui="http://www.butent.com/ui" xmlns:w="http://www.butent.com/widget"
+
+	name="ProjectStages" viewName="ProjectStages" caption="=prjStages">
+		
+	<g:columns>
+		<DataColumn name="Name" />
+		<DataColumn name="StartDate" />
+		<DataColumn name="EndDate" />
+		<DataColumn name="ExpectedDuration" />
+		<DataColumn name="ExpectedTasksDuration" />
+		<DataColumn name="ActualTasksDuration" />
+		<DataColumn name="Expenses" scale="2" />
+		<DataColumn name="ActualExpenses" />
+	</g:columns>
+</g:Grid>

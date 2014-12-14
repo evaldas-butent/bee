@@ -6,6 +6,7 @@ import com.google.common.eventbus.Subscribe;
 
 import static com.butent.bee.shared.modules.documents.DocumentConstants.*;
 
+import com.butent.bee.server.Config;
 import com.butent.bee.server.data.BeeTable;
 import com.butent.bee.server.data.BeeView;
 import com.butent.bee.server.data.DataEditorBean;
@@ -16,12 +17,15 @@ import com.butent.bee.server.data.SystemBean;
 import com.butent.bee.server.data.UserServiceBean;
 import com.butent.bee.server.http.RequestInfo;
 import com.butent.bee.server.modules.BeeModule;
+import com.butent.bee.server.modules.ParamHolderBean;
 import com.butent.bee.server.modules.administration.ExtensionIcons;
+import com.butent.bee.server.modules.administration.FileStorageBean;
 import com.butent.bee.server.sql.IsExpression;
 import com.butent.bee.server.sql.IsFrom;
 import com.butent.bee.server.sql.SqlInsert;
 import com.butent.bee.server.sql.SqlSelect;
 import com.butent.bee.server.sql.SqlUtils;
+import com.butent.bee.server.utils.HtmlUtils;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.communication.ResponseObject;
 import com.butent.bee.shared.data.BeeRow;
@@ -33,6 +37,8 @@ import com.butent.bee.shared.data.SearchResult;
 import com.butent.bee.shared.data.SimpleRowSet;
 import com.butent.bee.shared.data.SimpleRowSet.SimpleRow;
 import com.butent.bee.shared.data.filter.Filter;
+import com.butent.bee.shared.io.FileInfo;
+import com.butent.bee.shared.io.Paths;
 import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogUtils;
 import com.butent.bee.shared.modules.BeeParameter;
@@ -43,8 +49,15 @@ import com.butent.bee.shared.rights.RightsState;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.Codec;
 import com.butent.bee.shared.utils.EnumUtils;
+import com.lowagie.text.DocumentException;
 
+import org.xhtmlrenderer.pdf.ITextRenderer;
+
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
@@ -70,6 +83,10 @@ public class DocumentsModuleBean implements BeeModule {
   QueryServiceBean qs;
   @EJB
   DataEditorBean deb;
+  @EJB
+  FileStorageBean fs;
+  @EJB
+  ParamHolderBean prm;
 
   @Override
   public List<SearchResult> doSearch(String query) {
@@ -87,6 +104,9 @@ public class DocumentsModuleBean implements BeeModule {
 
     if (BeeUtils.same(svc, SVC_COPY_DOCUMENT_DATA)) {
       response = copyDocumentData(BeeUtils.toLongOrNull(reqInfo.getParameter(COL_DOCUMENT_DATA)));
+
+    } else if (BeeUtils.same(svc, SVC_CREATE_PDF_DOCUMENT)) {
+      response = createPdf(reqInfo.getParameter(COL_DOCUMENT_CONTENT));
 
     } else if (BeeUtils.same(svc, "copy_document")) {
       response = copyDocument(reqInfo);
@@ -108,7 +128,14 @@ public class DocumentsModuleBean implements BeeModule {
 
   @Override
   public Collection<BeeParameter> getDefaultParameters() {
-    return null;
+    String module = getModule().getName();
+
+    return Arrays.asList(BeeParameter.createBoolean(module, PRM_PRINT_AS_PDF),
+        BeeParameter.createRelation(module, PRM_PRINT_HEADER, TBL_EDITOR_TEMPLATES,
+            COL_EDITOR_TEMPLATE_NAME),
+        BeeParameter.createRelation(module, PRM_PRINT_FOOTER, TBL_EDITOR_TEMPLATES,
+            COL_EDITOR_TEMPLATE_NAME),
+        BeeParameter.createText(module, PRM_PRINT_MARGINS));
   }
 
   @Override
@@ -271,6 +298,83 @@ public class DocumentsModuleBean implements BeeModule {
         }
       }
     });
+  }
+
+  private ResponseObject createPdf(String content) {
+    if (!BeeUtils.unbox(prm.getBoolean(PRM_PRINT_AS_PDF))) {
+      return ResponseObject.emptyResponse();
+    }
+    StringBuilder sb = new StringBuilder();
+
+    for (String name : new String[] {PRM_PRINT_HEADER, PRM_PRINT_FOOTER}) {
+      Long id = prm.getRelation(name);
+
+      if (DataUtils.isId(id)) {
+        String nameContent = qs.getValue(new SqlSelect()
+            .addFields(TBL_EDITOR_TEMPLATES, COL_EDITOR_TEMPLATE_CONTENT)
+            .addFrom(TBL_EDITOR_TEMPLATES)
+            .setWhere(sys.idEquals(TBL_EDITOR_TEMPLATES, id)));
+
+        if (!BeeUtils.isEmpty(nameContent)) {
+          sb.append("<div style=\"position:running(").append(name).append(")\">")
+              .append(nameContent)
+              .append("</div>");
+        }
+      }
+    }
+    String parsed = HtmlUtils.cleanXml(sb.append(content).toString());
+
+    Map<Long, String> files = HtmlUtils.getFileReferences(parsed);
+    List<File> tmpFiles = new ArrayList<>();
+
+    try {
+      for (Long fileId : files.keySet()) {
+        FileInfo fileInfo = fs.getFile(fileId);
+
+        if (fileInfo != null) {
+          File file = new File(fileInfo.getPath());
+
+          if (fileInfo.isTemporary()) {
+            tmpFiles.add(file);
+          }
+          parsed = parsed.replace(files.get(fileId), file.toURI().toString());
+        }
+      }
+      StringBuilder style = new StringBuilder();
+
+      if (!BeeUtils.isEmpty(prm.getText(PRM_PRINT_MARGINS))) {
+        style.append("@page {margin:" + prm.getText(PRM_PRINT_MARGINS) + "}");
+      }
+      ITextRenderer renderer = new ITextRenderer();
+
+      renderer.setDocumentFromString("<?xml version=\"1.0\" encoding=\"utf-8\"?>"
+          + "<!DOCTYPE html [<!ENTITY nbsp \"&#160;\">]>"
+          + "<html xmlns=\"http://www.w3.org/1999/xhtml\"><head>"
+          + "<meta http-equiv=\"Content-Type\" content=\"text/html; charset=UTF-8\"/>"
+          + "<link rel=\"stylesheet\" href=\""
+          + new File(Config.WAR_DIR, Paths.getStyleSheetPath("print")).getPath() + "\" />"
+          + "<style>" + style.toString() + "</style>"
+          + "</head><body>" + parsed + "</body></html>");
+
+      renderer.layout();
+
+      File tmp = File.createTempFile("bee_", ".pdf");
+      tmp.deleteOnExit();
+      FileOutputStream os = new FileOutputStream(tmp);
+
+      renderer.createPDF(os);
+      os.close();
+
+      return ResponseObject.response(tmp.getPath());
+
+    } catch (IOException | DocumentException e) {
+      return ResponseObject.error(e);
+
+    } finally {
+      for (File file : tmpFiles) {
+        logger.debug("File deleted:", file.getPath(), file.delete());
+      }
+    }
   }
 
   private ResponseObject copyDocument(RequestInfo reqInfo) {

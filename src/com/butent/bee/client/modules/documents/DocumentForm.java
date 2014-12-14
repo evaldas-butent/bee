@@ -287,7 +287,7 @@ public class DocumentForm extends DocumentDataForm implements SelectorEvent.Hand
 
               for (String global : globals.keySet()) {
                 result = result.replace("{" + global + "}",
-                    BeeUtils.isPositive(globals.get(global))
+                    BeeUtils.nonZero(globals.get(global))
                         ? BeeUtils.toString(globals.get(global), 2) : "");
               }
               for (BeeColumn column : getFormView().getDataColumns()) {
@@ -615,14 +615,18 @@ public class DocumentForm extends DocumentDataForm implements SelectorEvent.Hand
           executor.accept(index, content.replace("{" + COL_DOCUMENT_CONTENT + "}", input)
               .replace("{Index}", BeeUtils.nvl(ordinal, ""))
               .replace("{" + COL_DESCRIPTION + "}", descr)
-              .replace("{" + COL_TRADE_ITEM_QUANTITY + "}", BeeUtils.toString(qty))
-              .replace("{" + COL_TRADE_ITEM_PRICE + "}", BeeUtils.toString(sum.get() / qty, 3))
-              .replace("{" + COL_TRADE_AMOUNT + "}", BeeUtils.toString(sum.get(), 2))
+              .replace("{" + COL_TRADE_ITEM_QUANTITY + "}",
+                  BeeUtils.nonZero(qty) ? BeeUtils.toString(qty) : "")
+              .replace("{" + COL_TRADE_ITEM_PRICE + "}",
+                  BeeUtils.nonZero(sum.get()) ? BeeUtils.toString(sum.get() / qty, 3) : "")
+              .replace("{" + COL_TRADE_AMOUNT + "}",
+                  BeeUtils.nonZero(sum.get()) ? BeeUtils.toString(sum.get(), 2) : "")
               .replace("{" + COL_TRADE_VAT + (vat5 ? "5" : "21") + "}",
-                  BeeUtils.isPositive(vat.get()) ? BeeUtils.toString(vat.get(), 2) : "")
+                  BeeUtils.nonZero(vat.get()) ? BeeUtils.toString(vat.get(), 2) : "")
               .replace("{" + COL_TRADE_VAT + (vat5 ? "21" : "5") + "}", "")
               .replace("{" + COL_TRADE_VAT_PLUS + COL_TRADE_AMOUNT + "}",
-                  BeeUtils.toString(vat.get() + sum.get(), 2)));
+                  BeeUtils.nonZero(vat.get() + sum.get())
+                      ? BeeUtils.toString(vat.get() + sum.get(), 2) : ""));
         }
       };
       if (!BeeUtils.isEmpty(itemContent)) {

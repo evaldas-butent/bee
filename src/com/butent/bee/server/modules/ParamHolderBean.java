@@ -41,6 +41,7 @@ import java.util.Collection;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Set;
 
 import javax.ejb.EJB;
 import javax.ejb.Lock;
@@ -58,7 +59,6 @@ public class ParamHolderBean {
 
   private static final String TBL_PARAMS = "Parameters";
   private static final String TBL_USER_PARAMS = "UserParameters";
-  private static final String FLD_MODULE = "Module";
   private static final String FLD_USER = "User";
   private static final String FLD_NAME = "Name";
   private static final String FLD_VALUE = "Value";
@@ -85,6 +85,9 @@ public class ParamHolderBean {
 
     } else if (BeeUtils.same(svc, SVC_GET_PARAMETER)) {
       response = ResponseObject.response(getValue(reqInfo.getParameter(VAR_PARAMETER)));
+
+    } else if (BeeUtils.same(svc, SVC_GET_RELATION_PARAMETER)) {
+      response = ResponseObject.response(getRelationInfo(reqInfo.getParameter(VAR_PARAMETER)));
 
     } else if (BeeUtils.same(svc, SVC_SET_PARAMETER)) {
       setParameter(reqInfo.getParameter(VAR_PARAMETER), reqInfo.getParameter(VAR_PARAMETER_VALUE));
@@ -223,6 +226,25 @@ public class ParamHolderBean {
         ? parameter.getRelation(usr.getCurrentUserId()) : parameter.getRelation();
   }
 
+  public Pair<Long, String> getRelationInfo(String name) {
+    BeeParameter param = getParameter(name);
+    Assert.state(param.getType() == ParameterType.RELATION, "Not a relation parameter: " + name);
+
+    String display = null;
+    Long relation = param.supportsUsers()
+        ? param.getRelation(usr.getCurrentUserId()) : param.getRelation();
+
+    if (DataUtils.isId(relation)) {
+      Pair<String, String> relInfo = Pair.restore(param.getOptions());
+
+      display = qs.getValue(new SqlSelect()
+          .addFields(relInfo.getA(), relInfo.getB())
+          .addFrom(relInfo.getA())
+          .setWhere(sys.idEquals(relInfo.getA(), relation)));
+    }
+    return Pair.of(relation, display);
+  }
+
   public String getText(String name) {
     BeeParameter parameter = getParameter(name);
     return parameter.supportsUsers()
@@ -285,30 +307,33 @@ public class ParamHolderBean {
     if (BeeUtils.isEmpty(defaults)) {
       return;
     }
+    Set<String> names = new HashSet<>();
+
     for (BeeParameter param : defaults) {
       putParameter(param);
+      names.add(param.getName());
     }
     SimpleRowSet data = qs.getData(new SqlSelect()
         .addFields(TBL_PARAMS, FLD_NAME, FLD_VALUE)
         .addField(TBL_PARAMS, sys.getIdName(TBL_PARAMS), FLD_PARAM)
         .addFrom(TBL_PARAMS)
-        .setWhere(SqlUtils.equals(TBL_PARAMS, FLD_MODULE, module)));
+        .setWhere(SqlUtils.inList(TBL_PARAMS, FLD_NAME, names)));
 
-    boolean hasUserParameters = false;
+    names.clear();
 
     for (BeeParameter param : defaults) {
-      if (!hasUserParameters) {
-        hasUserParameters = param.supportsUsers();
+      if (param.supportsUsers()) {
+        names.add(param.getName());
       }
       param.setValue(data.getValueByKey(FLD_NAME, param.getName(), FLD_VALUE));
       param.setId(BeeUtils.toLongOrNull(data.getValueByKey(FLD_NAME, param.getName(), FLD_PARAM)));
     }
-    if (hasUserParameters) {
+    if (!BeeUtils.isEmpty(names)) {
       data = qs.getData(new SqlSelect()
           .addFields(TBL_USER_PARAMS, FLD_PARAM, FLD_USER, FLD_VALUE)
           .addFrom(TBL_USER_PARAMS)
           .addFromInner(TBL_PARAMS, sys.joinTables(TBL_PARAMS, TBL_USER_PARAMS, FLD_PARAM))
-          .setWhere(SqlUtils.equals(TBL_PARAMS, FLD_MODULE, module)));
+          .setWhere(SqlUtils.inList(TBL_PARAMS, FLD_NAME, names)));
 
       for (BeeParameter param : defaults) {
         if (param.supportsUsers() && DataUtils.isId(param.getId())) {
@@ -346,7 +371,6 @@ public class ParamHolderBean {
 
     if (!DataUtils.isId(param.getId())) {
       param.setId(qs.insertData(new SqlInsert(TBL_PARAMS)
-          .addConstant(FLD_MODULE, param.getModule())
           .addConstant(FLD_NAME, param.getName())
           .addConstant(FLD_VALUE, param.getValue())));
     }
@@ -384,7 +408,7 @@ public class ParamHolderBean {
     Assert.notEmpty(name);
     Assert.state(hasParameter(name), "Unknown parameter: " + name);
 
-    return parameters.row(BeeUtils.normalize(name)).values().iterator().next();
+    return BeeUtils.peek(parameters.row(BeeUtils.normalize(name)).values());
   }
 
   private void putParameter(BeeParameter parameter) {

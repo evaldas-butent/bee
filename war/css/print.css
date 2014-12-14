@@ -1,0 +1,25 @@
+@font-face {
+  font-family: "Arial Unicode MS";
+  src: url("../fonts/arialuni.ttf");
+  -fs-pdf-font-embed: embed;
+  -fs-pdf-font-encoding: Identity-H; 
+}
+body {
+  font-family: Arial Unicode MS;
+  line-height: 1.17;
+}
+@page {
+  size: A4;
+
+  @top-center {
+    content: element(PrintPageHeader);
+  }
+  @bottom-center {
+    content: element(PrintPageFooter);
+  }
+  @bottom-right-corner {
+    font-family: Arial Unicode MS;
+    white-space: nowrap;
+    content: counter(page) "/" counter(pages);
+  }
+}

@@ -6,7 +6,6 @@ import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Multimap;
 import com.google.common.collect.Sets;
-import com.google.gwt.core.client.GWT;
 import com.google.gwt.core.client.Scheduler.ScheduledCommand;
 import com.google.gwt.dom.client.Document;
 import com.google.gwt.dom.client.Element;
@@ -333,8 +332,7 @@ public class MailMessage extends AbstractFormInterceptor {
 
                 switch (index) {
                   case 0:
-                    BrowsingContext.open(GWT.getHostPageBaseURL() + FileUtils.OPEN_URL + "/"
-                        + rawId);
+                    BrowsingContext.open(FileUtils.getUrl(rawId));
                     break;
                 }
               }

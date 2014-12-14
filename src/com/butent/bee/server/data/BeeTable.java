@@ -28,6 +28,7 @@ import com.butent.bee.shared.data.SqlConstants.SqlTriggerEvent;
 import com.butent.bee.shared.data.SqlConstants.SqlTriggerScope;
 import com.butent.bee.shared.data.SqlConstants.SqlTriggerTiming;
 import com.butent.bee.shared.data.SqlConstants.SqlTriggerType;
+import com.butent.bee.shared.data.BeeObject;
 import com.butent.bee.shared.data.XmlTable;
 import com.butent.bee.shared.data.XmlTable.XmlEnum;
 import com.butent.bee.shared.data.XmlTable.XmlField;

@@ -19,6 +19,7 @@ import com.butent.bee.shared.BeeConst.SqlEngine;
 import com.butent.bee.shared.HasExtendedInfo;
 import com.butent.bee.shared.Pair;
 import com.butent.bee.shared.data.BeeColumn;
+import com.butent.bee.shared.data.BeeObject;
 import com.butent.bee.shared.data.Defaults.DefaultExpression;
 import com.butent.bee.shared.data.IsColumn;
 import com.butent.bee.shared.data.SqlConstants.SqlDataType;

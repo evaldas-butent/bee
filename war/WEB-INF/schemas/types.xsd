@@ -193,6 +193,7 @@
       <xs:enumeration value="Documents" />
       <xs:enumeration value="Documents.Templates" />
       <xs:enumeration value="Tasks" />
+      <xs:enumeration value="Projects" />
       <xs:enumeration value="Discussions" />
       <xs:enumeration value="Mail" />
       <xs:enumeration value="Mail.Administration" />
@@ -367,6 +368,12 @@
       <xs:enumeration value="Positions" />
       <xs:enumeration value="PrintContract" />
       <xs:enumeration value="PrintOrder" />
+      <xs:enumeration value="Projects" />
+      <xs:enumeration value="ProjectDates" />
+      <xs:enumeration value="ProjectStages" />
+      <xs:enumeration value="ProjectTree"/>
+      <xs:enumeration value="ProjectTypes" />
+      <xs:enumeration value="ProjectUsers" />
       <xs:enumeration value="PropertyGroups" />
       <xs:enumeration value="PurchaseItems" />
       <xs:enumeration value="Purchases" />

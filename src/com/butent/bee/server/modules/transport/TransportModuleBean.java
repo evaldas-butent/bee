@@ -99,6 +99,7 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Objects;
 import java.util.Set;
 
@@ -303,13 +304,12 @@ public class TransportModuleBean implements BeeModule, HasTimerService {
     return Lists.newArrayList(
         BeeParameter.createText(module, PRM_INVOICE_PREFIX, true, null),
         BeeParameter.createCollection(module, PRM_MESSAGE_TEMPLATE, true, null),
-        BeeParameter.createText(module, "ERPCreditOperation", false, null),
-        BeeParameter.createNumber(module, PRM_ERP_REFRESH_INTERVAL, false, null),
-        BeeParameter.createText(module, "SmsServiceAddress", false, null),
-        BeeParameter.createText(module, "SmsUserName", false, null),
-        BeeParameter.createText(module, "SmsPassword", false, null),
-        BeeParameter.createText(module, "SmsServiceId", false, null),
-        BeeParameter.createText(module, "SmsDisplayText", false, null));
+        BeeParameter.createNumber(module, PRM_ERP_REFRESH_INTERVAL),
+        BeeParameter.createText(module, "SmsServiceAddress"),
+        BeeParameter.createText(module, "SmsUserName"),
+        BeeParameter.createText(module, "SmsPassword"),
+        BeeParameter.createText(module, "SmsServiceId"),
+        BeeParameter.createText(module, "SmsDisplayText"));
   }
 
   @Override
@@ -1097,10 +1097,11 @@ public class TransportModuleBean implements BeeModule, HasTimerService {
       }
     }
     String[] tableFields = new String[] {COL_ITEM, COL_TRADE_VAT_PLUS, COL_TRADE_VAT,
-        COL_TRADE_VAT_PERC, COL_AMOUNT};
+        COL_TRADE_VAT_PERC};
 
     String[] group = DataUtils.isId(mainItem) ? tableFields : rs.getColumnNames();
     Map<String, Multimap<String, String>> map = new HashMap<>();
+    Map<String, Double> amounts = new HashMap<>();
 
     for (SimpleRow row : rs) {
       String key = "";
@@ -1155,27 +1156,23 @@ public class TransportModuleBean implements BeeModule, HasTimerService {
           valueMap.putAll(COL_VEHICLE, vehicles.get(cargo));
         }
       }
+      amounts.put(key, BeeUtils.unbox(amounts.get(key))
+          + BeeUtils.unbox(row.getDouble(COL_AMOUNT)));
     }
-    for (Multimap<String, String> values : map.values()) {
-      double price = BeeConst.DOUBLE_ZERO;
+    for (Entry<String, Multimap<String, String>> entry : map.entrySet()) {
+      Multimap<String, String> values = entry.getValue();
 
-      for (String amount : values.get(COL_AMOUNT)) {
-        price += BeeUtils.toDouble(amount);
-      }
       SqlInsert insert = new SqlInsert(TBL_SALE_ITEMS)
           .addConstant(COL_SALE, saleId)
           .addConstant(COL_TRADE_ITEM_QUANTITY, 1)
-          .addConstant(COL_TRADE_ITEM_PRICE, BeeUtils.round(price, 2));
+          .addConstant(COL_TRADE_ITEM_PRICE, BeeUtils.round(amounts.get(entry.getKey()), 2));
 
-      for (String fld : tableFields) {
-        if (!fld.equals(COL_AMOUNT) && values.containsKey(fld)) {
-          insert.addConstant(fld, values.get(fld).iterator().next());
-        }
-      }
       List<String> nodes = new ArrayList<>();
 
       for (String fld : values.keySet()) {
-        if (!ArrayUtils.contains(tableFields, fld)) {
+        if (ArrayUtils.contains(tableFields, fld)) {
+          insert.addConstant(fld, BeeUtils.peek(values.get(fld)));
+        } else {
           nodes.add(fld);
           nodes.add(BeeUtils.joinItems(values.get(fld)));
         }
