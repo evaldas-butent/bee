@@ -1,4 +1,4 @@
-package com.butent.bee.shared.io;
+package com.butent.bee.server.utils;
 
 import com.butent.bee.shared.modules.administration.AdministrationConstants;
 import com.butent.bee.shared.utils.BeeUtils;
