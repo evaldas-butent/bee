@@ -59,6 +59,7 @@ import com.butent.bee.shared.modules.classifiers.ItemPrice;
 import com.butent.bee.shared.modules.trade.acts.TradeActKind;
 import com.butent.bee.shared.modules.trade.acts.TradeActUtils;
 import com.butent.bee.shared.time.DateTime;
+import com.butent.bee.shared.ui.UserInterface;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.EnumUtils;
 
@@ -123,6 +124,10 @@ public class TradeActItemsGrid extends AbstractGridInterceptor implements
 
     if (column instanceof CalculatedColumn) {
       if ("ItemPrices".equals(columnName)) {
+        if (BeeKeeper.getScreen().getUserInterface() == UserInterface.TRADE_ACTS) {
+          return false;
+        }
+
         int index = DataUtils.getColumnIndex(COL_TRADE_ITEM_PRICE, dataColumns);
         CellSource cellSource = CellSource.forColumn(dataColumns.get(index), index);
 

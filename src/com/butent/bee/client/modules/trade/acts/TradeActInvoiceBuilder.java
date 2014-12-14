@@ -56,6 +56,7 @@ import com.butent.bee.client.widget.InputNumber;
 import com.butent.bee.client.widget.ListBox;
 import com.butent.bee.client.widget.Toggle;
 import com.butent.bee.shared.BeeConst;
+import com.butent.bee.shared.Consumer;
 import com.butent.bee.shared.communication.ResponseObject;
 import com.butent.bee.shared.data.BeeColumn;
 import com.butent.bee.shared.data.BeeRow;
@@ -303,6 +304,8 @@ public class TradeActInvoiceBuilder extends AbstractFormInterceptor implements
 
   private static final String STYLE_SVC_FACTOR_WIDGET = STYLE_SVC_FACTOR_PREFIX
       + STYLE_INPUT_SUFFIX;
+  private static final String STYLE_SVC_DISCOUNT_WIDGET = STYLE_SVC_DISCOUNT_PREFIX
+      + STYLE_INPUT_SUFFIX;
 
   private static final String STYLE_SVC_AMOUNT_PREFIX = STYLE_SVC_PREFIX + "amount-";
   private static final String STYLE_SVC_AMOUNT_LABEL = STYLE_SVC_AMOUNT_PREFIX
@@ -391,8 +394,20 @@ public class TradeActInvoiceBuilder extends AbstractFormInterceptor implements
   @Override
   public void configureRelation(String name, Relation relation) {
     if (COL_TA_COMPANY.equals(name)) {
+      Set<Long> activeStatuses = TradeActKeeper.getActiveStatuses();
+
+      Filter statusFilter;
+      if (activeStatuses.isEmpty()) {
+        statusFilter = Filter.isNull(COL_TA_STATUS);
+      } else {
+        statusFilter = Filter.or(Filter.isNull(COL_TA_STATUS),
+            Filter.any(COL_TA_STATUS, activeStatuses));
+      }
+
+      Filter actFilter = Filter.and(TradeActKind.getFilterForInvoiceBuilder(), statusFilter);
+
       relation.setFilter(Filter.in(Data.getIdColumn(VIEW_COMPANIES),
-          VIEW_TRADE_ACTS, COL_TA_COMPANY, TradeActKind.getFilterForInvoiceBuilder()));
+          VIEW_TRADE_ACTS, COL_TA_COMPANY, actFilter));
     }
   }
 
@@ -472,7 +487,12 @@ public class TradeActInvoiceBuilder extends AbstractFormInterceptor implements
             new Button(Localized.getConstants().taInvoiceCompose(), new ClickHandler() {
               @Override
               public void onClick(ClickEvent event) {
-                doCompose();
+                TradeActKeeper.getHolidays(new Consumer<Set<Integer>>() {
+                  @Override
+                  public void accept(Set<Integer> input) {
+                    doCompose(input);
+                  }
+                });
               }
             });
 
@@ -500,14 +520,14 @@ public class TradeActInvoiceBuilder extends AbstractFormInterceptor implements
     super.onShow(presenter);
   }
 
-  private void doCompose() {
+  private void doCompose(final Collection<Integer> holidays) {
     Range<JustDate> range = getRange();
     if (range == null) {
       return;
     }
 
     final Range<DateTime> builderRange = TradeActUtils.convertRange(range);
-    final int builderDays = TradeActUtils.countServiceDays(builderRange);
+    final int builderDays = TradeActUtils.countServiceDays(builderRange, holidays);
 
     Collection<Long> actIds = getSelectedIds(STYLE_ACT_SELECTED);
     if (actIds.isEmpty()) {
@@ -591,12 +611,12 @@ public class TradeActInvoiceBuilder extends AbstractFormInterceptor implements
           svc.minTerm = row.getInteger(minTermIndex);
 
           if (tu != null) {
-            int days = TradeActUtils.countServiceDays(serviceRange);
 
             switch (tu) {
               case DAY:
                 if (TradeActUtils.validDpw(svc.dpw) && !BeeUtils.isPositive(svc.factor)) {
-                  double df = TradeActUtils.dpwToFactor(svc.dpw, days, svc.minTerm);
+                  double df = TradeActUtils.dpwToFactor(svc.dpw, serviceRange, holidays,
+                      svc.minTerm);
                   if (BeeUtils.isPositive(df)) {
                     svc.factor = df;
                   }
@@ -604,6 +624,7 @@ public class TradeActInvoiceBuilder extends AbstractFormInterceptor implements
                 break;
 
               case MONTH:
+                int days = TradeActUtils.countServiceDays(serviceRange, holidays);
                 if (days < builderDays) {
                   double df = BeeUtils.div(days, builderDays);
                   if (BeeUtils.isPositive(svc.factor)) {
@@ -630,7 +651,7 @@ public class TradeActInvoiceBuilder extends AbstractFormInterceptor implements
           services.add(svc);
         }
 
-        renderServices();
+        renderServices(holidays);
       }
     });
   }
@@ -659,12 +680,30 @@ public class TradeActInvoiceBuilder extends AbstractFormInterceptor implements
     BeeRowSet selectedServices = new BeeRowSet(VIEW_TRADE_ACT_SERVICES, serviceColumns);
     Set<Long> actIds = new HashSet<>();
 
+    List<String> notes = new ArrayList<>();
+
     int actIndex = selectedServices.getColumnIndex(COL_TRADE_ACT);
+
+    int itemNameIndex = selectedServices.getColumnIndex(ALS_ITEM_NAME);
+    int objectNameIndex = Data.getColumnIndex(VIEW_TRADE_ACTS, COL_COMPANY_OBJECT_NAME);
+    int objectAddressIndex = Data.getColumnIndex(VIEW_TRADE_ACTS, COL_COMPANY_OBJECT_ADDRESS);
 
     for (Service svc : services) {
       if (svcIds.contains(svc.id())) {
         selectedServices.addRow(DataUtils.cloneRow(svc.row));
-        actIds.add(svc.row.getLong(actIndex));
+
+        Long actId = svc.row.getLong(actIndex);
+        actIds.add(actId);
+
+        String itemName = svc.row.getString(itemNameIndex);
+        String period = TimeUtils.renderPeriod(svc.dateFrom(), svc.dateTo());
+
+        Act act = findAct(actId);
+        String objectInfo = (act == null) ? null
+            : BeeUtils.joinWords(act.row.getString(objectNameIndex),
+                act.row.getString(objectAddressIndex));
+
+        notes.add(BeeUtils.joinItems(itemName, period, objectInfo));
       }
     }
 
@@ -692,6 +731,10 @@ public class TradeActInvoiceBuilder extends AbstractFormInterceptor implements
     }
 
     invoice.setValue(dataInfo.getColumnIndex(COL_TRADE_MANAGER), BeeKeeper.getUser().getUserId());
+
+    if (!notes.isEmpty()) {
+      invoice.setValue(dataInfo.getColumnIndex(COL_TRADE_NOTES), BeeUtils.buildLines(notes));
+    }
 
     BeeRowSet sales = DataUtils.createRowSetForInsert(dataInfo.getViewName(),
         dataInfo.getColumns(), invoice);
@@ -1241,7 +1284,7 @@ public class TradeActInvoiceBuilder extends AbstractFormInterceptor implements
     container.add(table);
   }
 
-  private void renderServices() {
+  private void renderServices(Collection<Integer> holidays) {
     DataInfo dataInfo = Data.getDataInfo(VIEW_TRADE_ACT_SERVICES);
 
     final int actIndex = dataInfo.getColumnIndex(COL_TRADE_ACT);
@@ -1252,8 +1295,6 @@ public class TradeActInvoiceBuilder extends AbstractFormInterceptor implements
 
     int qtyScale = dataInfo.getColumnScale(COL_TRADE_ITEM_QUANTITY);
     int unitNameIndex = dataInfo.getColumnIndex(ALS_UNIT_NAME);
-
-    int discountScale = dataInfo.getColumnScale(COL_TRADE_DISCOUNT);
 
     final HtmlTable table = new HtmlTable(STYLE_SVC_TABLE);
 
@@ -1400,7 +1441,8 @@ public class TradeActInvoiceBuilder extends AbstractFormInterceptor implements
       }
 
       if (svc.timeUnit == TradeActTimeUnit.DAY) {
-        table.setWidget(r, c++, createDpwWidget(svc), STYLE_SVC_DPW_PREFIX + STYLE_CELL_SUFFIX);
+        table.setWidget(r, c++, createDpwWidget(svc, holidays),
+            STYLE_SVC_DPW_PREFIX + STYLE_CELL_SUFFIX);
       } else {
         table.setText(r, c++, null, STYLE_SVC_DPW_PREFIX + STYLE_CELL_SUFFIX);
       }
@@ -1408,7 +1450,7 @@ public class TradeActInvoiceBuilder extends AbstractFormInterceptor implements
       table.setText(r, c++, render(svc.minTerm),
           STYLE_SVC_MIN_TERM_PREFIX + STYLE_CELL_SUFFIX);
 
-      table.setText(r, c++, render(svc.discount, discountScale),
+      table.setWidget(r, c++, createDiscountWidget(svc),
           STYLE_SVC_DISCOUNT_PREFIX + STYLE_CELL_SUFFIX);
 
       Double amount = svc.amount(currency, date);
@@ -1472,12 +1514,12 @@ public class TradeActInvoiceBuilder extends AbstractFormInterceptor implements
     container.add(table);
   }
 
-  private Widget createFactorWidget(Service svc) {
+  private Widget createDiscountWidget(Service svc) {
     InputNumber widget = new InputNumber();
-    widget.addStyleName(STYLE_SVC_FACTOR_WIDGET);
+    widget.addStyleName(STYLE_SVC_DISCOUNT_WIDGET);
 
-    if (svc.factor != null) {
-      widget.setValue(svc.factor);
+    if (svc.discount != null) {
+      widget.setValue(svc.discount);
     }
 
     widget.addValueChangeHandler(new ValueChangeHandler<String>() {
@@ -1491,8 +1533,8 @@ public class TradeActInvoiceBuilder extends AbstractFormInterceptor implements
           long svcId = DomUtils.getDataIndexLong(rowElement);
           Service service = findService(svcId);
 
-          if (service != null && !Objects.equals(service.factor, value)) {
-            service.factor = value;
+          if (service != null && !Objects.equals(service.discount, value)) {
+            service.discount = value;
 
             updateAmountCell(rowElement, service);
             refreshTotals();
@@ -1504,7 +1546,7 @@ public class TradeActInvoiceBuilder extends AbstractFormInterceptor implements
     return widget;
   }
 
-  private Widget createDpwWidget(Service svc) {
+  private Widget createDpwWidget(Service svc, final Collection<Integer> holidays) {
     ListBox widget = new ListBox();
     widget.addStyleName(STYLE_SVC_DPW_PREFIX + STYLE_INPUT_SUFFIX);
 
@@ -1536,8 +1578,8 @@ public class TradeActInvoiceBuilder extends AbstractFormInterceptor implements
             return;
           }
 
-          double df = TradeActUtils.dpwToFactor(DPW_MIN + index,
-              TradeActUtils.countServiceDays(service.range), service.minTerm);
+          double df = TradeActUtils.dpwToFactor(DPW_MIN + index, service.range, holidays,
+              service.minTerm);
           if (Objects.equals(service.factor, df)) {
             return;
           }
@@ -1551,6 +1593,38 @@ public class TradeActInvoiceBuilder extends AbstractFormInterceptor implements
 
           updateAmountCell(rowElement, service);
           refreshTotals();
+        }
+      }
+    });
+
+    return widget;
+  }
+
+  private Widget createFactorWidget(Service svc) {
+    InputNumber widget = new InputNumber();
+    widget.addStyleName(STYLE_SVC_FACTOR_WIDGET);
+
+    if (svc.factor != null) {
+      widget.setValue(svc.factor);
+    }
+
+    widget.addValueChangeHandler(new ValueChangeHandler<String>() {
+      @Override
+      public void onValueChange(ValueChangeEvent<String> event) {
+        if (event.getSource() instanceof InputNumber) {
+          InputNumber source = (InputNumber) event.getSource();
+          Double value = source.getNumber();
+
+          TableRowElement rowElement = DomUtils.getParentRow(source.getElement(), false);
+          long svcId = DomUtils.getDataIndexLong(rowElement);
+          Service service = findService(svcId);
+
+          if (service != null && !Objects.equals(service.factor, value)) {
+            service.factor = value;
+
+            updateAmountCell(rowElement, service);
+            refreshTotals();
+          }
         }
       }
     });

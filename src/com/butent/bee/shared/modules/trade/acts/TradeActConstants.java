@@ -40,6 +40,7 @@ public final class TradeActConstants {
   public static final String VIEW_TRADE_ACT_TMPL_SERVICES = "TradeActTmplServices";
 
   public static final String VIEW_TRADE_ACT_INVOICES = "TradeActInvoices";
+  public static final String VIEW_INVOICE_TRADE_ACTS = "InvoiceTradeActs";
 
   public static final String COL_TRADE_ACT = "TradeAct";
   public static final String COL_TRADE_ACT_TEMPLATE = "TradeActTemplate";

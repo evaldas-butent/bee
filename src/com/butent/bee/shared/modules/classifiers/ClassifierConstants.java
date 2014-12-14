@@ -44,6 +44,8 @@ public final class ClassifierConstants {
   public static final String TBL_BRANCHES = "Branches";
   public static final String TBL_WAREHOUSES = "Warehouses";
 
+  public static final String TBL_HOLIDAYS = "Holidays";
+
   public static final String FORM_COMPANY = "Company";
   public static final String FORM_COMPANY_ACTION = "CompanyAction";
   public static final String FORM_PERSON = "Person";
@@ -189,6 +191,7 @@ public final class ClassifierConstants {
   public static final String COL_COMPANY_TYPE_NAME = "Name";
 
   public static final String COL_COMPANY_OBJECT_NAME = "ObjectName";
+  public static final String COL_COMPANY_OBJECT_ADDRESS = "ObjectAddress";
 
   public static final String COL_BANK = "Bank";
   public static final String COL_BANK_NAME = "Name";

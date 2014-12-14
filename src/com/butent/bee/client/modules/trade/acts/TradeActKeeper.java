@@ -13,6 +13,7 @@ import com.butent.bee.client.Global;
 import com.butent.bee.client.communication.ParameterList;
 import com.butent.bee.client.data.Data;
 import com.butent.bee.client.data.DataCache;
+import com.butent.bee.client.data.Queries;
 import com.butent.bee.client.data.RowFactory;
 import com.butent.bee.client.event.logical.SelectorEvent;
 import com.butent.bee.client.grid.GridFactory;
@@ -40,6 +41,7 @@ import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogUtils;
 import com.butent.bee.shared.menu.MenuHandler;
 import com.butent.bee.shared.menu.MenuService;
+import com.butent.bee.shared.modules.administration.AdministrationConstants;
 import com.butent.bee.shared.modules.classifiers.ItemPrice;
 import com.butent.bee.shared.modules.trade.acts.TradeActKind;
 import com.butent.bee.shared.rights.Module;
@@ -50,6 +52,7 @@ import com.butent.bee.shared.utils.EnumUtils;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.EnumSet;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
@@ -159,6 +162,8 @@ public final class TradeActKeeper {
     };
 
     FormFactory.registerPreloader(FORM_TRADE_ACT, cacheLoader);
+    FormFactory.registerPreloader(FORM_INVOICE_BUILDER, cacheLoader);
+
     GridFactory.registerPreloader(GRID_TRADE_ACT_TEMPLATES, cacheLoader);
   }
 
@@ -239,6 +244,23 @@ public final class TradeActKeeper {
     return operations;
   }
 
+  static Set<Long> getActiveStatuses() {
+    Set<Long> result = new HashSet<>();
+
+    BeeRowSet rowSet = cache.getRowSet(VIEW_TRADE_STATUSES);
+    if (!DataUtils.isEmpty(rowSet)) {
+      int index = rowSet.getColumnIndex(COL_STATUS_ACTIVE);
+
+      for (BeeRow row : rowSet) {
+        if (!row.isNull(index)) {
+          result.add(row.getId());
+        }
+      }
+    }
+
+    return result;
+  }
+
   static Pair<Long, String> getDefaultOperation(TradeActKind kind) {
     if (kind == null) {
       return null;
@@ -280,6 +302,36 @@ public final class TradeActKeeper {
     } else {
       return null;
     }
+  }
+
+  static void getHolidays(final Consumer<Set<Integer>> consumer) {
+    Global.getParameter(AdministrationConstants.PRM_COUNTRY, new Consumer<String>() {
+      @Override
+      public void accept(String input) {
+        if (DataUtils.isId(input)) {
+          Queries.getRowSet(VIEW_HOLIDAYS, Collections.singletonList(COL_HOLY_DAY),
+              Filter.equals(COL_HOLY_COUNTRY, BeeUtils.toLong(input)),
+              new Queries.RowSetCallback() {
+                @Override
+                public void onSuccess(BeeRowSet result) {
+                  Set<Integer> holidays = new HashSet<>();
+
+                  if (!DataUtils.isEmpty(result)) {
+                    int index = result.getColumnIndex(COL_HOLY_DAY);
+                    for (BeeRow row : result) {
+                      holidays.add(row.getInteger(index));
+                    }
+                  }
+
+                  consumer.accept(holidays);
+                }
+              });
+
+        } else {
+          consumer.accept(BeeConst.EMPTY_IMMUTABLE_INT_SET);
+        }
+      }
+    });
   }
 
   static ItemPrice getItemPrice(Long operation) {

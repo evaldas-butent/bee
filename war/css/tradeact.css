@@ -245,7 +245,8 @@
 .bee-ta-invoice-service-discount-cell {
   text-align: center;
 }
-.bee-ta-invoice-service-factor-input.bee-ta-invoice-service-factor-input {
+.bee-ta-invoice-service-factor-input.bee-ta-invoice-service-factor-input,
+.bee-ta-invoice-service-discount-input.bee-ta-invoice-service-discount-input {
   width: 50px;
 }
 
