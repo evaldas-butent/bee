@@ -438,6 +438,17 @@ public class Split extends ComplexPanel implements RequiresResize, ProvidesResiz
     return x;
   }
 
+  public List<Widget> getDirectionChildren(Direction dir) {
+    List<Widget> lst = new ArrayList<>();
+
+    for (Widget w : getChildren()) {
+      if (getWidgetDirection(w) == dir) {
+        lst.add(w);
+      }
+    }
+    return lst;
+  }
+
   public List<ExtendedProperty> getDirectionInfo(Direction dir) {
     Assert.notNull(dir);
     List<ExtendedProperty> lst = new ArrayList<>();
@@ -867,17 +878,6 @@ public class Split extends ComplexPanel implements RequiresResize, ProvidesResiz
       data.setSize(z);
       layoutChildren();
     }
-  }
-
-  private List<Widget> getDirectionChildren(Direction dir) {
-    List<Widget> lst = new ArrayList<>();
-
-    for (Widget w : getChildren()) {
-      if (getWidgetDirection(w) == dir) {
-        lst.add(w);
-      }
-    }
-    return lst;
   }
 
   private boolean isHorizontal(Widget w) {

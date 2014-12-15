@@ -310,9 +310,13 @@
 .bee-ta-client-area .bee-grid-Sales > .bee-Header-container .bee-Action-close {
   display: none;
 }
-
 .bee-ta-client-area .bee-Workspace-tab-drop-down,
 .bee-ta-client-area .bee-Workspace-tab-close,
 .bee-ta-client-area .bee-Workspace-new-tab {
   visibility: hidden;
+}
+
+.bee-ta-shell {
+  width: calc(100% - 2px);
+  height: calc(100% - 3px);
 }
