@@ -68,6 +68,10 @@ public abstract class Filter implements BeeSerializable, RowFilter {
     return and(and(f1, f2), f3);
   }
 
+  public static Filter and(Filter f1, Filter f2, Filter f3, Filter f4) {
+    return and(and(f1, f2), and(f3, f4));
+  }
+
   public static Filter any(String column, Collection<Long> values) {
     Assert.notEmpty(column);
     Assert.notNull(values);

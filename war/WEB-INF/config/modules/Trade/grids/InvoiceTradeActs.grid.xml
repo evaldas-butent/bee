@@ -8,7 +8,8 @@
     <DataColumn name="DateFrom" visible="true" />
     <DataColumn name="DateTo" visible="true" />
 
-    <RelColumn name="TradeAct" renderColumns="TradeAct" label="=captionId" editEnabled="true" />
+    <RelColumn name="TradeAct" renderColumns="TradeAct" label="=captionId" editEnabled="true"
+      editPopup="true" />
     <DataColumn name="Parent" visible="false" />
 
     <RelColumn name="Name" renderColumns="ActName" />
@@ -23,7 +24,7 @@
     <RelColumn name="Operation" renderColumns="OperationName" />
     <RelColumn name="Status" renderColumns="StatusName" />
 
-    <RelColumn name="Company" />
+    <RelColumn name="Company" renderColumns="CompanyName" />
     <RelColumn name="Object" renderColumns="ObjectName" />
 
     <RelColumn name="Manager" renderColumns="ManagerFirstName ManagerLastName" />

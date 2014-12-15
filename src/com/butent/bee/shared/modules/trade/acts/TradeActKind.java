@@ -74,7 +74,7 @@ public enum TradeActKind implements HasLocalizedCaption {
     }
   },
 
-  RESERVE(Option.CONVERT_TO_SALE, Option.SHOW_STOCK) {
+  RESERVE(Option.CONVERT_TO_SALE, Option.HAS_SERVICES, Option.SHOW_STOCK) {
     @Override
     public String getCaption(LocalizableConstants constants) {
       return constants.taKindReserve();
@@ -98,7 +98,7 @@ public enum TradeActKind implements HasLocalizedCaption {
 
     for (TradeActKind kind : values()) {
       if (kind.enableInvoices()) {
-        filter.add(kind.getFilter());
+        filter.add(Filter.equals(TradeActConstants.COL_TA_KIND, kind));
       }
     }
     return filter;

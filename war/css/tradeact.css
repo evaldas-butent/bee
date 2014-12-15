@@ -245,7 +245,8 @@
 .bee-ta-invoice-service-discount-cell {
   text-align: center;
 }
-.bee-ta-invoice-service-factor-input.bee-ta-invoice-service-factor-input {
+.bee-ta-invoice-service-factor-input.bee-ta-invoice-service-factor-input,
+.bee-ta-invoice-service-discount-input.bee-ta-invoice-service-discount-input {
   width: 50px;
 }
 
@@ -303,4 +304,19 @@
 .bee-ta-report-stock-Weight,
 .bee-ta-report-stock-wgt {
   font-style: italic;
+}
+
+.bee-ta-client-area .bee-grid-TradeActs > .bee-Header-container .bee-Action-close,
+.bee-ta-client-area .bee-grid-Sales > .bee-Header-container .bee-Action-close {
+  display: none;
+}
+.bee-ta-client-area .bee-Workspace-tab-drop-down,
+.bee-ta-client-area .bee-Workspace-tab-close,
+.bee-ta-client-area .bee-Workspace-new-tab {
+  visibility: hidden;
+}
+
+.bee-ta-shell {
+  width: calc(100% - 2px);
+  height: calc(100% - 3px);
 }
