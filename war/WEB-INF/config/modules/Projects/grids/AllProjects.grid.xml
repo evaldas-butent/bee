@@ -22,12 +22,14 @@
 	</g:west>
 	
 	<xi:include href="columns/Project.columns.xml" />
-	
+	<!--  
 	<g:predefinedFilter name="projects_active" label="=prjFilterActive" >
 		<g:column name="Status" value="0" />
 	</g:predefinedFilter>
 	<g:predefinedFilter name="projects_all"	label="=prjFilterAll">
 		<g:column name="Status" emptyValues="false" />
 	</g:predefinedFilter>
+	
+	-->
 
 </g:Grid>
