@@ -23,32 +23,32 @@
 				<Label text="=name" style="&lbl;" class="bee-required" />
 				<InputText source="Name" style="&inp1;" />
 
-				<Label text="=crmStartDate" style="&lbl;" />
+				<Label for="StartDate" text="=crmStartDate" style="&lbl;" />
 				<InputDate source="StartDate" style="&inp3;" />
 
-				<Label text="=crmFinishDate" style="&lbl;" />
+				<Label for="EndDate" text="=crmFinishDate" style="&lbl;" />
 				<InputDate source="EndDate" style="&inp2;" />
 			</row>
 			
 			<row>
-				<Label text="=prjScope" style="&lbl;" />
+				<Label for="ExpectedDuration" text="=prjScope" style="&lbl;" />
 				<InputText source="ExpectedDuration" style="&inp3;" />
 
-				<Label text="=prjExpectedTaskDuration" style="&lbl2;" />
+				<Label for="ExpectedTasksDuration" text="=prjExpectedTaskDuration" style="&lbl2;" />
 				<InputText source="ExpectedTasksDuration" style="&inp3;" />
 
-				<Label text="=prjActualTaskDuration" style="&lbl2;" />
+				<Label for="ActualTasksDuration" text="=prjActualTaskDuration" style="&lbl2;" />
 				<InputText source="ActualTasksDuration" style="&inp2;" />
 			</row>
 			
 			<row>
-				<Label text="=prjExpenses" style="&lbl;" />
+				<Label for="Expenses" text="=prjExpenses" style="&lbl;" />
 				<InputDecimal source="Expenses" style="&inp3;" scale="2" />
 
-				<Label text="=prjExpectedTaskExpenses" style="&lbl3;" />
+				<Label for="ExpectedTasksExpenses" text="=prjExpectedTaskExpenses" style="&lbl3;" />
 				<InputDecimal source="ExpectedTasksExpenses" style="&inp3;" />
 
-				<Label text="=prjActualExpenses" style="&lbl;" />
+				<Label for="ActualExpenses" text="=prjActualExpenses" style="&lbl;" />
 				<InputDecimal source="ActualExpenses" style="&inp2;" />
 			</row>
 			
