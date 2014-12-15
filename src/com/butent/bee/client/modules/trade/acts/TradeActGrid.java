@@ -126,6 +126,10 @@ public class TradeActGrid extends AbstractGridInterceptor {
 
   @Override
   public List<FilterComponent> getInitialUserFilters(List<FilterComponent> defaultFilters) {
+    if (TradeActKeeper.isClientArea()) {
+      return super.getInitialUserFilters(defaultFilters);
+    }
+
     FilterComponent seriesFilter = getInitialSeriesFilter();
     FilterComponent statusFilter = getInitialStatusFilter();
 

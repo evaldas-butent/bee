@@ -47,6 +47,7 @@ import com.butent.bee.shared.modules.trade.acts.TradeActKind;
 import com.butent.bee.shared.rights.Module;
 import com.butent.bee.shared.rights.SubModule;
 import com.butent.bee.shared.time.TimeUtils;
+import com.butent.bee.shared.ui.UserInterface;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.EnumUtils;
 
@@ -165,6 +166,11 @@ public final class TradeActKeeper {
     FormFactory.registerPreloader(FORM_INVOICE_BUILDER, cacheLoader);
 
     GridFactory.registerPreloader(GRID_TRADE_ACT_TEMPLATES, cacheLoader);
+
+    if (isClientArea()) {
+      GridFactory.registerImmutableFilter(VIEW_SALES,
+          Filter.equals(COL_TRADE_CUSTOMER, BeeKeeper.getUser().getCompany()));
+    }
   }
 
   static void addCommandStyle(Widget command, String suffix) {
@@ -486,6 +492,10 @@ public final class TradeActKeeper {
     }
   }
 
+  static boolean isClientArea() {
+    return BeeKeeper.getScreen().getUserInterface() == UserInterface.TRADE_ACTS;
+  }
+
   static boolean isUserSeries(Long series) {
     if (!DataUtils.isId(series)) {
       return false;
@@ -561,10 +571,19 @@ public final class TradeActKeeper {
 
             if (kind == null) {
               supplierKey = GRID_ALL_ACTS_KEY;
-              caption = Localized.getConstants().tradeActsAll();
-              filter = null;
+
+              if (isClientArea()) {
+                caption = BeeUtils.join(" - ", Localized.getConstants().tradeActs(),
+                    BeeKeeper.getUser().getCompanyName());
+                filter = Filter.equals(COL_TA_COMPANY, BeeKeeper.getUser().getCompany());
+              } else {
+                caption = Localized.getConstants().tradeActsAll();
+                filter = null;
+              }
+
             } else {
               supplierKey = kind.getGridSupplierKey();
+
               caption = Localized.getConstants().tradeActs() + " - " + kind.getCaption();
               filter = kind.getFilter();
             }
