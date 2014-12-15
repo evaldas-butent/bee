@@ -126,12 +126,12 @@ public class DocumentsModuleBean implements BeeModule {
   public Collection<BeeParameter> getDefaultParameters() {
     String module = getModule().getName();
 
-    return Arrays.asList(BeeParameter.createBoolean(module, PRM_PRINT_AS_PDF),
-        BeeParameter.createRelation(module, PRM_PRINT_HEADER, TBL_EDITOR_TEMPLATES,
+    return Arrays.asList(BeeParameter.createBoolean(module, PRM_PRINT_AS_PDF, true, null),
+        BeeParameter.createRelation(module, PRM_PRINT_HEADER, true, TBL_EDITOR_TEMPLATES,
             COL_EDITOR_TEMPLATE_NAME),
-        BeeParameter.createRelation(module, PRM_PRINT_FOOTER, TBL_EDITOR_TEMPLATES,
+        BeeParameter.createRelation(module, PRM_PRINT_FOOTER, true, TBL_EDITOR_TEMPLATES,
             COL_EDITOR_TEMPLATE_NAME),
-        BeeParameter.createText(module, PRM_PRINT_MARGINS));
+        BeeParameter.createText(module, PRM_PRINT_MARGINS, true, null));
   }
 
   @Override
