@@ -396,6 +396,7 @@ public final class TaskConstants {
   public static final String GRID_TASKS_TYPE_HOURS_REPORT = "TasksTypeHoursReport";
 
   public static final String GRID_RECURRING_TASKS = "RecurringTasks";
+  public static final String GRID_CHILD_RECURRING_TASKS = "ChildRecurringTasks";
   public static final String GRID_RT_FILES = "RTFiles";
 
   public static final String GRID_RELATED_TASKS = "RelatedTasks";

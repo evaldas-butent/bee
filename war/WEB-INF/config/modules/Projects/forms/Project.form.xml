@@ -157,6 +157,10 @@
 				<text>=crmTasks</text>
 				<ChildGrid name="ChildTasks" relColumn="Project" />
 			</page>
+			<page module="Tasks">
+        <text>=crmRecurringTasks</text>
+        <ChildGrid name="ChildRecurringTasks" relColumn="Project" />
+      </page>
 			<page>
      	  <text>=prjDates</text>
      	  <ChildGrid name="ProjectDates" relColumn="Project" />

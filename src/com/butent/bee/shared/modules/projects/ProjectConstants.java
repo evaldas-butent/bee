@@ -7,8 +7,13 @@ import com.butent.bee.shared.utils.EnumUtils;
  */
 public final class ProjectConstants {
 
+  public static final String ALS_PROJECT_START_DATE = "ProjectStartDate";
+  public static final String ALS_PROJECT_END_DATE = "ProjectEndDate";
+
   public static final String COL_PROJECT = "Project";
+  public static final String COL_PROJECT_END_DATE = "EndDate";
   public static final String COL_PROJECT_STAGE = "ProjectStage";
+  public static final String COL_PROJECT_START_DATE = "StartDate";
   public static final String COL_PROJECT_STATUS = "Status";
   public static final String COL_PROJECT_OWNER = "Owner";
 
