@@ -1,13 +1,19 @@
 package com.butent.bee.server.modules.projects;
 
+import static com.butent.bee.shared.modules.projects.ProjectConstants.*;
+
 import com.butent.bee.server.data.QueryServiceBean;
 import com.butent.bee.server.data.SystemBean;
 import com.butent.bee.server.http.RequestInfo;
 import com.butent.bee.server.modules.BeeModule;
 import com.butent.bee.shared.communication.ResponseObject;
+import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.SearchResult;
+import com.butent.bee.shared.data.SimpleRowSet;
 import com.butent.bee.shared.modules.BeeParameter;
+import com.butent.bee.shared.modules.tasks.TaskConstants;
 import com.butent.bee.shared.rights.Module;
+import com.butent.bee.shared.utils.BeeUtils;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -41,6 +47,9 @@ public class ProjectsModuleBean implements BeeModule {
   public ResponseObject doService(String svc, RequestInfo reqInfo) {
     ResponseObject response = null;
 
+    if (BeeUtils.same(svc, SVC_GET_PROJECT_CHART_DATA)) {
+      response = getProjectChartData(reqInfo);
+    }
     return response;
   }
 
@@ -62,54 +71,21 @@ public class ProjectsModuleBean implements BeeModule {
   @Override
   public void init() {
 
-    // sys.registerDataEventHandler(new DataEventHandler() {
-    //
-    // @Subscribe
-    // public void fillProjectsViewProperties(ViewQueryEvent event) {
-    // if (event.isBefore()) {
-    // return;
-    // }
-    //
-    // if (!BeeUtils.same(event.getTargetName(), VIEW_PROJECTS)) {
-    // return;
-    // }
-    //
-    // BeeRowSet rowSet = event.getRowset();
-    //
-    // if (rowSet.isEmpty()) {
-    // return;
-    // }
-    //
-    // BeeRowSet users = getProjectUsers(rowSet.getRowIds());
-    // int idxProject = users.getColumnIndex(COL_PROJECT);
-    // int idxUser = users.getColumnIndex(AdministrationConstants.COL_USER);
-    //
-    // for (IsRow user : users) {
-    // IsRow row = rowSet.getRowById(BeeUtils.unbox(user.getLong(idxProject)));
-    //
-    // if (row == null) {
-    // continue;
-    // }
-    //
-    // if (!DataUtils.isId(user.getLong(idxUser))) {
-    // continue;
-    // }
-    //
-    // row.setProperty(PROP_USERS,
-    // BeeUtils.join(BeeConst.DEFAULT_LIST_SEPARATOR, row.getProperty(PROP_USERS),
-    // BeeUtils.toString(user.getLong(idxUser))));
-    // }
-    //
-    // }
-    // });
-
   }
 
-  // private BeeRowSet getProjectUsers(List<Long> projectIds) {
-  // Filter filter = Filter.any(COL_PROJECT, projectIds);
-  //
-  // BeeRowSet users = qs.getViewData(VIEW_PROJECT_USERS, filter);
-  //
-  // return users;
-  // }
+  @SuppressWarnings({"unused", "static-method"})
+  private ResponseObject getProjectChartData(RequestInfo req) {
+    Long projectId = BeeUtils.toLongOrNull(req.getParameter(VAR_PROJECT));
+
+    if (!DataUtils.isId(projectId)) {
+      return ResponseObject.error(projectId);
+    }
+
+    SimpleRowSet chartData = new SimpleRowSet(new String[] {COL_PROJECT_STAGE, ALS_STAGE_NAME,
+        ALS_PROJECT_START_DATE, ALS_PROJECT_END_DATE, ALS_STAGE_START, ALS_STAGE_END,
+        TaskConstants.COL_TASK, TaskConstants.ALS_TASK_SUBJECT,
+        TaskConstants.ALS_EXECUTOR_FIRST_NAME, TaskConstants.ALS_EXECUTOR_LAST_NAME});
+
+    return ResponseObject.emptyResponse();
+  }
 }

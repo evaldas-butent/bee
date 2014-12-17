@@ -357,6 +357,7 @@ public final class TaskConstants {
   public static final String ALS_PERSON_LAST_NAME = "PersonLastName";
   public static final String ALS_PERSON_COMPANY_NAME = "PersonCompanyName";
 
+  public static final String ALS_TASK_SUBJECT = "TaskSubject";
   public static final String ALS_TASK_TYPE_NAME = "TypeName";
   public static final String ALS_TASK_TYPE_BACKGROUND = "TypeBackground";
   public static final String ALS_TASK_TYPE_FOREGROUND = "TypeForeground";
