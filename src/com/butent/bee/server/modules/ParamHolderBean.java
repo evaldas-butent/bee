@@ -1,7 +1,5 @@
 package com.butent.bee.server.modules;
 
-import com.google.common.collect.HashMultimap;
-import com.google.common.collect.Multimap;
 import com.google.common.collect.Table;
 import com.google.common.collect.TreeBasedTable;
 import com.google.common.eventbus.EventBus;
@@ -9,9 +7,12 @@ import com.google.common.eventbus.Subscribe;
 
 import static com.butent.bee.shared.modules.administration.AdministrationConstants.*;
 
+import com.butent.bee.server.data.BeeView;
+import com.butent.bee.server.data.BeeView.ConditionProvider;
 import com.butent.bee.server.data.DataEvent.ViewDeleteEvent;
 import com.butent.bee.server.data.DataEventHandler;
 import com.butent.bee.server.data.QueryServiceBean;
+import com.butent.bee.server.data.QueryServiceBean.ViewDataProvider;
 import com.butent.bee.server.data.SystemBean;
 import com.butent.bee.server.data.UserServiceBean;
 import com.butent.bee.server.http.RequestInfo;
@@ -24,9 +25,15 @@ import com.butent.bee.server.sql.SqlUtils;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.Pair;
 import com.butent.bee.shared.communication.ResponseObject;
+import com.butent.bee.shared.data.BeeRow;
+import com.butent.bee.shared.data.BeeRowSet;
 import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.SimpleRowSet;
 import com.butent.bee.shared.data.SimpleRowSet.SimpleRow;
+import com.butent.bee.shared.data.filter.ColumnValueFilter;
+import com.butent.bee.shared.data.filter.CompoundFilter;
+import com.butent.bee.shared.data.filter.CustomFilter;
+import com.butent.bee.shared.data.filter.Filter;
 import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogUtils;
@@ -39,6 +46,7 @@ import com.butent.bee.shared.utils.BeeUtils;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
@@ -80,8 +88,8 @@ public class ParamHolderBean {
     ResponseObject response = null;
 
     if (BeeUtils.same(svc, SVC_GET_PARAMETERS)) {
-      response = ResponseObject.response(getModuleParameters(reqInfo
-          .getParameter(VAR_PARAMETERS_MODULE)));
+      response = ResponseObject
+          .response(getParameters(reqInfo.getParameter(VAR_PARAMETERS_MODULE)));
 
     } else if (BeeUtils.same(svc, SVC_GET_PARAMETER)) {
       response = ResponseObject.response(getValue(reqInfo.getParameter(VAR_PARAMETER)));
@@ -91,10 +99,6 @@ public class ParamHolderBean {
 
     } else if (BeeUtils.same(svc, SVC_SET_PARAMETER)) {
       setParameter(reqInfo.getParameter(VAR_PARAMETER), reqInfo.getParameter(VAR_PARAMETER_VALUE));
-      response = ResponseObject.emptyResponse();
-
-    } else if (BeeUtils.same(svc, SVC_RESET_PARAMETER)) {
-      resetParameter(reqInfo.getParameter(VAR_PARAMETER));
       response = ResponseObject.emptyResponse();
     }
     if (response == null) {
@@ -162,62 +166,22 @@ public class ParamHolderBean {
         ? parameter.getMap(usr.getCurrentUserId()) : parameter.getMap();
   }
 
-  public Collection<BeeParameter> getModuleParameters(String module) {
-    Assert.notEmpty(module);
-    Collection<BeeParameter> params = new ArrayList<>();
-    Multimap<String, BeeParameter> map = HashMultimap.create();
-
-    for (BeeParameter param : parameters.values()) {
-      if (BeeUtils.same(param.getModule(), module)) {
-        BeeParameter p = BeeParameter.restore(param.serialize());
-
-        if (param.getType() == ParameterType.RELATION && DataUtils.isId(param.getId())) {
-          map.put(p.getOptions(), p);
-        }
-        params.add(p);
-      }
-    }
-    for (String opt : map.keySet()) {
-      HashSet<Long> ids = new HashSet<>();
-
-      for (BeeParameter param : map.get(opt)) {
-        for (Long userId : param.getUsers()) {
-          Long id = BeeUtils.toLongOrNull(DataUtils.isId(userId)
-              ? param.getValue(userId) : param.getValue());
-
-          if (DataUtils.isId(id)) {
-            ids.add(id);
-          }
-        }
-      }
-      if (!BeeUtils.isEmpty(ids)) {
-        Pair<String, String> relation = Pair.restore(opt);
-        String idName = sys.getIdName(relation.getA());
-
-        SimpleRowSet rs = qs.getData(new SqlSelect()
-            .addFields(relation.getA(), idName, relation.getB())
-            .addFrom(relation.getA())
-            .setWhere(SqlUtils.inList(relation.getA(), idName, ids)));
-
-        for (BeeParameter param : map.get(opt)) {
-          for (Long userId : param.getUsers()) {
-            if (DataUtils.isId(userId)) {
-              param.setDisplayValue(userId,
-                  rs.getValueByKey(idName, param.getValue(userId), relation.getB()));
-            } else {
-              param.setDisplayValue(rs.getValueByKey(idName, param.getValue(), relation.getB()));
-            }
-          }
-        }
-      }
-    }
-    return params;
-  }
-
   public Number getNumber(String name) {
     BeeParameter parameter = getParameter(name);
     return parameter.supportsUsers()
         ? parameter.getNumber(usr.getCurrentUserId()) : parameter.getNumber();
+  }
+
+  public Collection<BeeParameter> getParameters(String module) {
+    Assert.notEmpty(module);
+    Collection<BeeParameter> params = new ArrayList<>();
+
+    for (BeeParameter param : parameters.values()) {
+      if (BeeUtils.same(param.getModule(), module)) {
+        params.add(BeeParameter.restore(param.serialize()));
+      }
+    }
+    return params;
   }
 
   public Long getRelation(String name) {
@@ -228,7 +192,6 @@ public class ParamHolderBean {
 
   public Pair<Long, String> getRelationInfo(String name) {
     BeeParameter param = getParameter(name);
-    Assert.state(param.getType() == ParameterType.RELATION, "Not a relation parameter: " + name);
 
     String display = null;
     Long relation = param.supportsUsers()
@@ -295,13 +258,101 @@ public class ParamHolderBean {
         }
       }
     });
+    BeeView.registerConditionProvider(TBL_PARAMS, new ConditionProvider() {
+      @Override
+      public IsCondition getCondition(BeeView view, List<String> args) {
+        return null;
+      }
+    });
+
+    QueryServiceBean.registerViewDataProvider(TBL_PARAMS, new ViewDataProvider() {
+      @Override
+      public BeeRowSet getViewData(BeeView view, SqlSelect query, Filter filter) {
+        BeeRowSet rs = new BeeRowSet(view.getName(), view.getRowSetColumns());
+
+        String module = getFilterValue(filter, TBL_PARAMS);
+
+        if (!BeeUtils.isEmpty(module)) {
+          String name = getFilterValue(filter, FLD_NAME);
+
+          if (!BeeUtils.isEmpty(name)) {
+            addRow(rs, getParameter(name));
+          } else {
+            for (BeeParameter prm : getParameters(module)) {
+              addRow(rs, prm);
+            }
+          }
+        }
+        return rs;
+      }
+
+      @Override
+      public int getViewSize(BeeView view, SqlSelect query, Filter filter) {
+        String module = getFilterValue(filter, TBL_PARAMS);
+
+        if (!BeeUtils.isEmpty(module)) {
+          if (!BeeUtils.isEmpty(getFilterValue(filter, FLD_NAME))) {
+            return 1;
+          }
+          return getParameters(module).size();
+        }
+        return 0;
+      }
+
+      private void addRow(BeeRowSet rs, BeeParameter prm) {
+        BeeRow newRow = rs.addEmptyRow();
+        newRow.setId(prm.getName().hashCode());
+        boolean hasValue;
+
+        if (prm.supportsUsers()) {
+          hasValue = prm.hasValue(usr.getCurrentUserId());
+          newRow.setProperty(FLD_USER, "1");
+        } else {
+          hasValue = prm.hasValue();
+        }
+        if (hasValue) {
+          newRow.setProperty("HasValue", "1");
+        }
+        if (prm.getType() == ParameterType.RELATION) {
+          newRow.setProperty(COL_RELATION, getRelationInfo(prm.getName()).getB());
+        }
+        newRow.setValue(rs.getColumnIndex(FLD_NAME), prm.getName());
+        newRow.setValue(rs.getColumnIndex(FLD_VALUE), prm.serialize());
+      }
+
+      private String getFilterValue(Filter filter, String column) {
+        String value = null;
+
+        if (filter != null) {
+          if (filter instanceof CompoundFilter) {
+            for (Filter subFilter : ((CompoundFilter) filter).getSubFilters()) {
+              value = getFilterValue(subFilter, column);
+
+              if (!BeeUtils.isEmpty(value)) {
+                break;
+              }
+            }
+          } else if (filter instanceof ColumnValueFilter
+              && ((ColumnValueFilter) filter).involvesColumn(column)) {
+
+            value = BeeUtils.peek(((ColumnValueFilter) filter).getValue()).getString();
+
+          } else if (filter instanceof CustomFilter
+              && BeeUtils.same(((CustomFilter) filter).getKey(), column)) {
+
+            value = BeeUtils.peek(((CustomFilter) filter).getArgs());
+          }
+        }
+        return value;
+      }
+    });
   }
 
   public void postParameterEvent(ParameterEvent event) {
     parameterEventBus.post(event);
   }
 
-  public void refreshModuleParameters(String module) {
+  public void refreshParameters(String module) {
     Collection<BeeParameter> defaults = moduleBean.getModuleDefaultParameters(module);
 
     if (BeeUtils.isEmpty(defaults)) {
@@ -324,8 +375,9 @@ public class ParamHolderBean {
     for (BeeParameter param : defaults) {
       if (param.supportsUsers()) {
         names.add(param.getName());
+      } else {
+        param.setValue(data.getValueByKey(FLD_NAME, param.getName(), FLD_VALUE));
       }
-      param.setValue(data.getValueByKey(FLD_NAME, param.getName(), FLD_VALUE));
       param.setId(BeeUtils.toLongOrNull(data.getValueByKey(FLD_NAME, param.getName(), FLD_PARAM)));
     }
     if (!BeeUtils.isEmpty(names)) {
@@ -353,26 +405,12 @@ public class ParamHolderBean {
   }
 
   @Lock(LockType.WRITE)
-  public void resetParameter(String name) {
-    BeeParameter param = getParameter(name);
-
-    if (DataUtils.isId(param.getId())) {
-      qs.updateData(new SqlDelete(TBL_PARAMS)
-          .setWhere(sys.idEquals(TBL_PARAMS, param.getId())));
-
-      param.reset();
-      postParameterEvent(new ParameterEvent(name));
-    }
-  }
-
-  @Lock(LockType.WRITE)
   public void setParameter(String name, String value) {
     BeeParameter param = getParameter(name);
 
     if (!DataUtils.isId(param.getId())) {
       param.setId(qs.insertData(new SqlInsert(TBL_PARAMS)
-          .addConstant(FLD_NAME, param.getName())
-          .addConstant(FLD_VALUE, param.getValue())));
+          .addConstant(FLD_NAME, param.getName())));
     }
     if (param.supportsUsers()) {
       Long userId = usr.getCurrentUserId();

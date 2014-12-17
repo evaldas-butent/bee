@@ -2,7 +2,7 @@
 <View xmlns="http://www.butent.com/view"
 
   name="Parameters" source="Parameters" module="Administration"
-  caption="=parameters"
+  caption="=parameters" readOnly="true"
   >
   <Columns>
     <SimpleColumn name="Name" />
