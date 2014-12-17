@@ -1506,12 +1506,12 @@ public class GridImpl extends Absolute implements GridView, EditEndEvent.Handler
   @Override
   public int refreshBySource(String source) {
     IsRow row = getGrid().getActiveRow();
-    return (row == null) ? 0 : refreshCellContent(row.getId(), source);
+    return (row == null) ? 0 : refreshCell(row.getId(), source);
   }
 
   @Override
-  public int refreshCellContent(long rowId, String columnSource) {
-    return getGrid().refreshCellContent(rowId, columnSource);
+  public int refreshCell(long rowId, String columnSource) {
+    return getGrid().refreshCell(rowId, columnSource);
   }
 
   @Override
@@ -2350,7 +2350,7 @@ public class GridImpl extends Absolute implements GridView, EditEndEvent.Handler
         public void onSuccess(BeeRow result) {
           if (!RelationUtils.updateRow(getDataInfo(), editSource, row, editDataInfo, result,
               false).isEmpty()) {
-            getGrid().refreshCellContent(row.getId(), editableColumn.getColumnId());
+            getGrid().refreshCell(row.getId(), editableColumn.getColumnId());
           }
 
           getGrid().refocus();
@@ -2907,7 +2907,7 @@ public class GridImpl extends Absolute implements GridView, EditEndEvent.Handler
     RowCallback callback = new RowCallback() {
       @Override
       public void onFailure(String... reason) {
-        refreshCellContent(rowValue.getId(), dataColumn.getId());
+        refreshCell(rowValue.getId(), dataColumn.getId());
         notifySevere(reason);
       }
 

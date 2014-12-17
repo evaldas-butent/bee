@@ -100,7 +100,7 @@ public interface GridView extends DataView, HasAddStartHandlers, HasAddEndHandle
 
   boolean likeAMotherlessChild();
 
-  int refreshCellContent(long rowId, String columnSource);
+  int refreshCell(long rowId, String columnSource);
 
   void reset(GridDescription gridDescription);
 
