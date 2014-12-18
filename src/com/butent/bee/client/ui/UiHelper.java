@@ -422,8 +422,17 @@ public final class UiHelper {
     return initializer.initialize(widget, name);
   }
 
+  public static boolean isCopy(NativeEvent event) {
+    return event != null && EventUtils.isKeyEvent(event.getType())
+        && event.getKeyCode() == KeyCodes.KEY_C && (event.getCtrlKey() || event.getMetaKey());
+  }
+
   public static boolean isModal(Widget widget) {
     return getParentPopup(widget) != null;
+  }
+
+  public static boolean isOrHasChild(Widget parent, Class<? extends Widget> clazz) {
+    return getChild(parent, clazz) != null;
   }
 
   public static boolean isSave(NativeEvent event) {

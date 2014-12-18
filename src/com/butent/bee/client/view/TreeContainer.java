@@ -66,7 +66,7 @@ public class TreeContainer extends Flow implements TreeView, SelectionHandler<Tr
   private final Map<Long, TreeItem> items = new HashMap<>();
 
   private final String caption;
-  private final boolean hasDnD;
+  private boolean hasDnD;
 
   private State state;
 
@@ -77,44 +77,36 @@ public class TreeContainer extends Flow implements TreeView, SelectionHandler<Tr
 
     this.caption = caption;
 
+    Flow hdr = new Flow();
+    hdr.addStyleName(STYLE_NAME + "-actions");
+
+    if (!BeeUtils.isEmpty(favorite)
+        && BeeKeeper.getScreen().getUserInterface().hasComponent(Component.FAVORITES)) {
+      setFavorite(NameUtils.toList(favorite));
+
+      hdr.add(createActionWidget(Action.BOOKMARK));
+      enabledActions.add(Action.BOOKMARK);
+    }
     if (!hideActions) {
-      boolean editable = BeeKeeper.getUser().canEditData(viewName);
-      this.hasDnD = editable;
+      if (BeeKeeper.getUser().canEditData(viewName)) {
+        this.hasDnD = true;
 
-      Flow hdr = new Flow();
-      hdr.addStyleName(STYLE_NAME + "-actions");
-
-      boolean bookmarkable = !BeeUtils.isEmpty(favorite)
-          && BeeKeeper.getScreen().getUserInterface().hasComponent(Component.FAVORITES);
-
-      if (editable && BeeKeeper.getUser().canCreateData(viewName)) {
-        hdr.add(createActionWidget(Action.ADD));
-        enabledActions.add(Action.ADD);
-      }
-
-      if (editable && BeeKeeper.getUser().canDeleteData(viewName)) {
-        hdr.add(createActionWidget(Action.DELETE));
-        enabledActions.add(Action.DELETE);
-      }
-
-      if (bookmarkable) {
-        setFavorite(NameUtils.toList(favorite));
-
-        hdr.add(createActionWidget(Action.BOOKMARK));
-        enabledActions.add(Action.BOOKMARK);
-      }
-
-      if (editable) {
+        if (BeeKeeper.getUser().canCreateData(viewName)) {
+          hdr.add(createActionWidget(Action.ADD));
+          enabledActions.add(Action.ADD);
+        }
+        if (BeeKeeper.getUser().canDeleteData(viewName)) {
+          hdr.add(createActionWidget(Action.DELETE));
+          enabledActions.add(Action.DELETE);
+        }
         hdr.add(createActionWidget(Action.EDIT));
         enabledActions.add(Action.EDIT);
       }
-
+    }
+    if (hdr.getWidgetCount() > 0) {
       hdr.add(createActionWidget(Action.REFRESH));
       enabledActions.add(Action.REFRESH);
-
       add(hdr);
-    } else {
-      this.hasDnD = false;
     }
     this.tree = new Tree(caption);
     add(tree);

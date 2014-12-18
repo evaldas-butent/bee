@@ -27,8 +27,6 @@ import com.google.gwt.geolocation.client.Position;
 import com.google.gwt.geolocation.client.Position.Coordinates;
 import com.google.gwt.i18n.client.NumberFormat;
 import com.google.gwt.resources.client.ImageResource;
-import com.google.gwt.storage.client.Storage;
-import com.google.gwt.storage.client.StorageEvent;
 import com.google.gwt.user.client.Timer;
 import com.google.gwt.user.client.ui.Widget;
 
@@ -83,8 +81,6 @@ import com.butent.bee.client.images.Images;
 import com.butent.bee.client.layout.Direction;
 import com.butent.bee.client.layout.Flow;
 import com.butent.bee.client.layout.Horizontal;
-import com.butent.bee.client.layout.Layout;
-import com.butent.bee.client.layout.LayoutPanel;
 import com.butent.bee.client.layout.Simple;
 import com.butent.bee.client.layout.Split;
 import com.butent.bee.client.logging.ClientLogManager;
@@ -115,17 +111,14 @@ import com.butent.bee.client.utils.JsUtils;
 import com.butent.bee.client.utils.NewFileInfo;
 import com.butent.bee.client.utils.XmlUtils;
 import com.butent.bee.client.view.ViewFactory;
-import com.butent.bee.client.view.ViewHelper;
 import com.butent.bee.client.websocket.Endpoint;
 import com.butent.bee.client.widget.BeeAudio;
 import com.butent.bee.client.widget.BeeVideo;
-import com.butent.bee.client.widget.Button;
 import com.butent.bee.client.widget.CustomDiv;
 import com.butent.bee.client.widget.CustomWidget;
 import com.butent.bee.client.widget.FaLabel;
 import com.butent.bee.client.widget.Image;
 import com.butent.bee.client.widget.InlineLabel;
-import com.butent.bee.client.widget.InputArea;
 import com.butent.bee.client.widget.InputFile;
 import com.butent.bee.client.widget.Label;
 import com.butent.bee.client.widget.Meter;
@@ -480,7 +473,7 @@ public final class CliWorker {
       showRates(args, errorPopup);
 
     } else if ("rebuild".equals(z)) {
-      rebuildSomething(args, errorPopup);
+      rebuildSomething(args);
 
     } else if (z.startsWith("rect") && arr.length >= 2) {
       showRectangle(arr[1], errorPopup);
@@ -1953,7 +1946,7 @@ public final class CliWorker {
     showTable("Selectors", new PropertiesData(info));
   }
 
-  private static void rebuildSomething(final String args, final boolean errorPopup) {
+  private static void rebuildSomething(final String args) {
     final String progressId;
 
     if (BeeUtils.same(args, "check") && Endpoint.isOpen()) {
@@ -1985,83 +1978,7 @@ public final class CliWorker {
           Endpoint.send(ProgressMessage.close(progressId));
         }
 
-        if (response.hasResponse(Resource.class)) {
-          final LayoutPanel p = new LayoutPanel();
-
-          final InputArea area = new InputArea(Resource.restore(response.getResponseAsString()));
-          p.add(area);
-          p.setWidgetTopBottom(area, 0, CssUnit.EM, 2, CssUnit.EM);
-
-          Button button = new Button("Save schema", new ClickHandler() {
-            @Override
-            public void onClick(ClickEvent event) {
-              if (area.isValueChanged()) {
-                BeeKeeper.getRpc().sendText(Service.REBUILD, "schema " + area.getValue(),
-                    new ResponseCallback() {
-                      @Override
-                      public void onResponse(ResponseObject resp) {
-                        Assert.notNull(resp);
-
-                        if (resp.hasResponse(Resource.class)) {
-                          p.getWidget(1).removeFromParent();
-                          InputArea res =
-                              new InputArea(Resource.restore(resp.getResponseAsString()));
-                          p.add(res);
-                          p.setWidgetLeftRight(res, 50, CssUnit.PCT, 0, CssUnit.EM);
-                          p.setWidgetTopBottom(area, 0, CssUnit.EM, 0, CssUnit.EM);
-                          p.setWidgetLeftRight(area, 0, CssUnit.EM, 50, CssUnit.PCT);
-                        } else {
-                          showError(errorPopup, "Wrong response received");
-                        }
-                      }
-                    });
-              } else {
-                inform("Value has not changed", area.getDigest());
-              }
-            }
-          });
-          p.add(button);
-          p.setWidgetVerticalPosition(button, Layout.Alignment.END);
-          p.setWidgetLeftWidth(button, 42, CssUnit.PCT, 16, CssUnit.PCT);
-
-          Storage stor = Storage.getSessionStorageIfSupported();
-
-          if (stor == null) {
-            BeeKeeper.getScreen().show(p);
-          } else {
-            final String tmpKey = BeeUtils.randomString(5, 5, 'a', 'z');
-            stor.setItem(tmpKey, area.getValue());
-
-            Storage.addStorageEventHandler(new StorageEvent.Handler() {
-              @Override
-              public void onStorageChange(StorageEvent event) {
-                if (BeeUtils.same(event.getKey(), tmpKey)) {
-                  BeeKeeper.getRpc().sendText(Service.REBUILD, "schema " + event.getNewValue(),
-                      new ResponseCallback() {
-                        @Override
-                        public void onResponse(ResponseObject resp) {
-                          Assert.notNull(resp);
-
-                          if (resp.hasResponse(Resource.class)) {
-                            InputArea res =
-                                new InputArea(Resource.restore(resp.getResponseAsString()));
-                            inform(res.getValue());
-                          } else {
-                            showError(errorPopup, "Wrong response received");
-                          }
-                        }
-                      });
-                  Storage.removeStorageEventHandler(this);
-                }
-              }
-            });
-            String url = GWT.getHostPageBaseURL() + "SqlDesigner/index.html?keyword=" + tmpKey;
-            String xml = "<Form><ResizePanel><Frame url=\"" + url + "\" /></ResizePanel></Form>";
-
-            FormFactory.openForm(FormFactory.parseFormDescription(xml), null,
-                ViewHelper.getPresenterCallback());
-          }
-        } else if (response.hasResponse()) {
+        if (response.hasResponse()) {
           showPropData(BeeUtils.joinWords("Rebuild", args),
               PropertyUtils.restoreProperties((String) response.getResponse()));
         }

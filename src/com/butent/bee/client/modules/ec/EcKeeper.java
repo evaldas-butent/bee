@@ -235,13 +235,13 @@ public final class EcKeeper {
     }
   }
 
-  public static String formatStock(int stock) {
+  public static String formatStock(double stock) {
     if (stock <= 0) {
       return Localized.getConstants().ecStockAsk();
     } else if (isStockLimited() && MAX_VISIBLE_STOCK > 0 && stock > MAX_VISIBLE_STOCK) {
       return BeeConst.STRING_GT + MAX_VISIBLE_STOCK;
     } else {
-      return BeeUtils.toString(stock);
+      return BeeUtils.toString(stock, 3);
     }
   }
 
@@ -719,7 +719,7 @@ public final class EcKeeper {
     if (nodes != null) {
       for (int i = 0; i < nodes.getLength(); i++) {
         Element element = nodes.getItem(i);
-        int stock = BeeUtils.toInt(DomUtils.getDataProperty(element, DATA_ATTRIBUTE_STOCK));
+        double stock = BeeUtils.toDouble(DomUtils.getDataProperty(element, DATA_ATTRIBUTE_STOCK));
         if (stock > MAX_VISIBLE_STOCK) {
           element.setInnerText(formatStock(stock));
         }

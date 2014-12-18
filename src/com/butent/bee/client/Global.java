@@ -39,7 +39,9 @@ import com.butent.bee.client.view.edit.Editor;
 import com.butent.bee.client.view.search.Filters;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
+import com.butent.bee.shared.BiConsumer;
 import com.butent.bee.shared.Consumer;
+import com.butent.bee.shared.Pair;
 import com.butent.bee.shared.communication.ResponseObject;
 import com.butent.bee.shared.css.CssProperties;
 import com.butent.bee.shared.css.CssUnit;
@@ -238,6 +240,26 @@ public final class Global {
 
         if (!response.hasErrors()) {
           prmConsumer.accept(response.getResponseAsString());
+        }
+      }
+    });
+  }
+
+  public static void getRelationParameter(String prm, final BiConsumer<Long, String> prmConsumer) {
+    Assert.notEmpty(prm);
+    Assert.notNull(prmConsumer);
+
+    ParameterList args = AdministrationKeeper.createArgs(SVC_GET_RELATION_PARAMETER);
+    args.addDataItem(VAR_PARAMETER, prm);
+
+    BeeKeeper.getRpc().makePostRequest(args, new ResponseCallback() {
+      @Override
+      public void onResponse(ResponseObject response) {
+        response.notify(BeeKeeper.getScreen());
+
+        if (!response.hasErrors()) {
+          Pair<String, String> pair = Pair.restore(response.getResponseAsString());
+          prmConsumer.accept(BeeUtils.toLongOrNull(pair.getA()), pair.getB());
         }
       }
     });
@@ -553,6 +575,7 @@ public final class Global {
     $wnd.Bee_debug = $entry(@com.butent.bee.client.Global::debug(Ljava/lang/String;));
     $wnd.Bee_updateActor = $entry(@com.butent.bee.client.decorator.TuningHelper::updateActor(Lcom/google/gwt/core/client/JavaScriptObject;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;));
     $wnd.Bee_maybeTranslate = $entry(@com.butent.bee.shared.i18n.Localized::maybeTranslate(Ljava/lang/String;));
+    $wnd.Bee_translate = $entry(@Localized::translate(Ljava/lang/String;));
   }-*/;
   // CHECKSTYLE:ON
 //@formatter:on

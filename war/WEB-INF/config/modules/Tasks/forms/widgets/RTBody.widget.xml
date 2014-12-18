@@ -29,7 +29,7 @@
     <row>
       <Label for="ScheduleFrom" />
       <InputDate source="ScheduleFrom" style="width: 100px;" />
-      <Label for="ScheduleUntil" />
+      <Label name="ScheduleUntil" for="ScheduleUntil" />
       <InputDate source="ScheduleUntil" style="width: 100px;" />
     </row>
 

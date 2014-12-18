@@ -50,10 +50,11 @@
 
     <FlowPanel style="&section;" class="flexBox-horizontal">
       <Label text="=createdOn" style="&inline; width:78px; padding-top:1px; padding-right: 8px; text-align: right;" />
-      <DateTimeLabel source="Created" style="&inline; width:110px;" />
-      <TextLabel style="&inline; margin-left:20px; font-weight:bold;">
-        <renderToken source="Finished" prefix="Baigtas " />
-      </TextLabel>
+      <DateTimeLabel source="Created" style="&inline; width:110px;" />      
+    </FlowPanel>
+    <FlowPanel>
+      <Label text="=crmRequestCompleted" style="&inline; width:78px; padding-top:1px; padding-right: 8px; text-align: right;" />
+      <DateTimeLabel source="Finished" format="date_time_short" style="&inline; width:110px;" />
     </FlowPanel>
     <FlowPanel style="&section;" class="flexBox-horizontal">
       <Label text="=result" style="&inline; width:78px; padding-top:1px; padding-right: 8px; text-align: right; vertical-align:top;" />

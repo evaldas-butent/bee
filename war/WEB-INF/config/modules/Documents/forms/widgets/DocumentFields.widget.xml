@@ -27,7 +27,7 @@
 
   <row>
     <Label for="Category" />
-    <DataSelector source="Category" caching="local" choiceColumns="ParentName Name" />
+    <DataSelector source="Category" caching="local" choiceColumns="ParentName CategoryName" />
     <Label for="Type" />
     <DataSelector source="Type" />
   </row>

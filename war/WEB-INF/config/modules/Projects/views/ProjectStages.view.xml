@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<View xmlns="http://www.butent.com/view"
+  xmlns:x="http://www.butent.com/expression"
+
+  name="ProjectStages" source="ProjectStages" caption="=prjStages"
+  editForm="ProjectStages" newRowForm="ProjectStages"
+  newRowCaption="=prjNewStage"
+  >
+  <Columns>
+    <SimpleColumn name="Project" />
+    <SimpleJoin name="Project" joinType="LEFT">
+      <SimpleColumn name="Company" />
+      <SimpleJoin name="Company" joinType="LEFT">
+        <SimpleColumn name="Name" alias="CompanyName" />
+      </SimpleJoin>
+    </SimpleJoin>
+    <SimpleColumn name="Name" />
+    <SimpleColumn name="StartDate" />
+    <SimpleColumn name="EndDate" />
+    <SimpleColumn name="ExpectedDuration" />
+        
+    <SimpleColumn name="ExpectedTasksDuration" label="=prjExpectedTaskDuration">
+      <x:string>'?0?'</x:string>
+    </SimpleColumn>
+    
+    <SimpleColumn name="ExpectedTasksExpenses" label="=prjExpectedTaskExpenses">
+      <x:string>'?0?'</x:string>
+    </SimpleColumn>
+    
+    <SimpleColumn name="ActualTasksDuration" label="=prjActualTaskDuration">
+      <x:string>'?0?'</x:string>
+    </SimpleColumn>
+    
+    <SimpleColumn name="Expenses" />
+    <SimpleColumn name="Currency" />
+    
+    <SimpleColumn name="ActualExpenses" label="=prjActualExpenses">
+      <x:string>'?0?'</x:string>
+    </SimpleColumn> 
+    
+    <SimpleJoin name="Project" joinType="LEFT">
+      <SimpleColumn name="Name" alias="ProjectName" />
+    </SimpleJoin>
+       
+  </Columns>  
+  <Order>
+	  <OrderBy column="StartDate"/>
+  </Order>
+</View>
+ 

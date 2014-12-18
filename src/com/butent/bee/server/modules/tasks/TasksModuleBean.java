@@ -67,6 +67,7 @@ import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogUtils;
 import com.butent.bee.shared.modules.BeeParameter;
 import com.butent.bee.shared.modules.administration.AdministrationConstants.ReminderMethod;
+import com.butent.bee.shared.modules.projects.ProjectConstants;
 import com.butent.bee.shared.modules.tasks.TaskConstants.TaskEvent;
 import com.butent.bee.shared.modules.tasks.TaskConstants.TaskStatus;
 import com.butent.bee.shared.modules.tasks.TaskUtils;
@@ -2196,6 +2197,12 @@ public class TasksModuleBean implements BeeModule {
     if (DataUtils.isId(contact)) {
       columns.add(DataUtils.getColumn(COL_CONTACT, taskColumns));
       values.add(contact.toString());
+    }
+
+    Long project = DataUtils.getLong(rtColumns, rtRow, ProjectConstants.COL_PROJECT);
+    if (DataUtils.isId(project)) {
+      columns.add(DataUtils.getColumn(ProjectConstants.COL_PROJECT, taskColumns));
+      values.add(project.toString());
     }
 
     Long reminder = DataUtils.getLong(rtColumns, rtRow, COL_RT_REMINDER);

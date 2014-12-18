@@ -34,7 +34,7 @@
 
     <DataColumn name="Note" visible="false" />
     
-    <PropColumn name="Remainder" type="integer" dynamic="true" minWidth="40" maxWidth="80">
+    <PropColumn name="Remainder" type="double" dynamic="true" minWidth="40" maxWidth="80">
       <footer aggregate="sum" />
     </PropColumn>
 

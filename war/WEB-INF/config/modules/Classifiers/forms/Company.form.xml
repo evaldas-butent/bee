@@ -30,7 +30,7 @@
         <InputText source="Code" style="&inp1;"/>
         <Label style="&lbl1;" for="VATCode" />
         <InputText source="VATCode" style="&inp1;" upperCase="true" />
-        <Label text="=code" style="&lbl1;" module="Transport" for="ExchangeCode" />
+        <Label style="&lbl1;" module="Transport" for="ExchangeCode" />
         <InputText source="ExchangeCode" style="&inp1;" module="Transport" />
       </row>
 
@@ -41,7 +41,7 @@
         <ChildSelector viewName="CompanyRelationTypes" childTable="CompRelTypeStore"
           targetRelColumn="Company" sourceRelColumn="RelationType" newRowEnabled="true"
           label="=companyRelationType" style="&inp1;" data="CompRelTypeStore" />
-        <Label text="=status" style="&lbl1;" for="CompanyRelationTypeState" />
+        <Label style="&lbl1;" for="CompanyRelationTypeState" />
         <DataSelector source="CompanyRelationTypeState" style="&inp1;" />
       </row>
       <row>
@@ -143,7 +143,7 @@
       </page>
       <page for="Tasks">
         <text>=crmTasks</text>
-        <ChildGrid name="Tasks" relColumn="Company" />
+        <ChildGrid name="ChildTasks" relColumn="Company" />
       </page>
     </TabbedPages>
 

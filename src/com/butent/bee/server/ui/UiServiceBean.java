@@ -1,6 +1,5 @@
 package com.butent.bee.server.ui;
 
-import com.google.common.base.Splitter;
 import com.google.common.base.Strings;
 import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.HashMultimap;
@@ -16,8 +15,6 @@ import com.butent.bee.server.Config;
 import com.butent.bee.server.DataSourceBean;
 import com.butent.bee.server.InitializationBean;
 import com.butent.bee.server.data.BeeTable;
-import com.butent.bee.server.data.BeeTable.BeeField;
-import com.butent.bee.server.data.BeeTable.BeeRelation;
 import com.butent.bee.server.data.BeeView;
 import com.butent.bee.server.data.DataEditorBean;
 import com.butent.bee.server.data.IdGeneratorBean;
@@ -38,13 +35,10 @@ import com.butent.bee.server.sql.SqlInsert;
 import com.butent.bee.server.sql.SqlSelect;
 import com.butent.bee.server.sql.SqlUpdate;
 import com.butent.bee.server.sql.SqlUtils;
-import com.butent.bee.server.ui.XmlSqlDesigner.DataType;
-import com.butent.bee.server.ui.XmlSqlDesigner.DataTypeGroup;
 import com.butent.bee.server.utils.XmlUtils;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.Pair;
-import com.butent.bee.shared.Resource;
 import com.butent.bee.shared.communication.ResponseObject;
 import com.butent.bee.shared.data.BeeColumn;
 import com.butent.bee.shared.data.BeeRow;
@@ -53,10 +47,6 @@ import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.RowChildren;
 import com.butent.bee.shared.data.SimpleRowSet;
 import com.butent.bee.shared.data.SimpleRowSet.SimpleRow;
-import com.butent.bee.shared.data.SqlConstants.SqlDataType;
-import com.butent.bee.shared.data.XmlTable;
-import com.butent.bee.shared.data.XmlTable.XmlField;
-import com.butent.bee.shared.data.XmlTable.XmlRelation;
 import com.butent.bee.shared.data.filter.Filter;
 import com.butent.bee.shared.data.view.DataInfo;
 import com.butent.bee.shared.data.view.Order;
@@ -412,95 +402,6 @@ public class UiServiceBean {
 
   public BeeRowSet getWorkspaces() {
     return qs.getViewData(VIEW_WORKSPACES, usr.getCurrentUserFilter(COL_USER));
-  }
-
-  private void buildDbList(String rootTable, Set<String> tables, boolean initial) {
-    boolean recurse = BeeUtils.isSuffix(rootTable, '*');
-    String root = BeeUtils.normalize(BeeUtils.removeSuffix(rootTable, '*'));
-
-    if (!initial && tables.contains(root) || !sys.isTable(root)) {
-      return;
-    }
-    tables.add(root);
-
-    for (String tbl : sys.getTableNames()) {
-      if (!tables.contains(BeeUtils.normalize(tbl))) {
-        for (BeeField field : sys.getTableFields(tbl)) {
-          if (field instanceof BeeRelation
-              && BeeUtils.same(((BeeRelation) field).getRelation(), root)) {
-            if (recurse) {
-              buildDbList(tbl + '*', tables, false);
-            } else {
-              tables.add(BeeUtils.normalize(tbl));
-            }
-          }
-        }
-      }
-    }
-  }
-
-  private ResponseObject buildDbSchema(Iterable<String> roots) {
-    XmlSqlDesigner designer = new XmlSqlDesigner();
-    designer.types = new ArrayList<>();
-    designer.tables = new ArrayList<>();
-
-    for (int i = 0; i < 2; i++) {
-      boolean extMode = i > 0;
-      DataTypeGroup typeGroup = new DataTypeGroup();
-      typeGroup.label = BeeUtils.joinWords("SQL", extMode ? "extended" : "", "types");
-      typeGroup.color = extMode ? "rgb(0,255,0)" : "rgb(255,255,255)";
-      typeGroup.types = new ArrayList<>();
-
-      for (SqlDataType type : SqlDataType.values()) {
-        String typeName = type.name();
-        DataType dataType = new DataType();
-        dataType.label = (extMode ? "Extended " : "") + typeName;
-        dataType.sql = typeName + (extMode ? XmlSqlDesigner.EXT : "");
-        typeGroup.types.add(dataType);
-      }
-      designer.types.add(typeGroup);
-    }
-    DataTypeGroup typeGroup = new DataTypeGroup();
-    typeGroup.label = "Table states";
-    typeGroup.color = "rgb(255,0,0)";
-
-    DataType dataType = new DataType();
-    dataType.label = "STATE";
-    dataType.sql = XmlSqlDesigner.STATE;
-    typeGroup.types = Lists.newArrayList(dataType);
-
-    designer.types.add(typeGroup);
-
-    Set<String> tables = new HashSet<>();
-    Iterable<String> r;
-
-    if (roots == null || !roots.iterator().hasNext()) {
-      r = sys.getTableNames();
-    } else {
-      r = roots;
-    }
-    for (String root : r) {
-      buildDbList(root, tables, true);
-    }
-    for (String tableName : tables) {
-      XmlTable xmlTable = sys.getXmlTable(sys.getTable(tableName).getModule(), tableName);
-
-      if (xmlTable != null) {
-        Collection<XmlField> fields = new ArrayList<>();
-
-        if (!BeeUtils.isEmpty(xmlTable.fields)) {
-          fields.addAll(xmlTable.fields);
-        }
-        for (XmlField xmlField : fields) {
-          if (xmlField instanceof XmlRelation) {
-            XmlRelation xmlRelation = (XmlRelation) xmlField;
-            xmlRelation.relationField = sys.getIdName(xmlRelation.relation);
-          }
-        }
-        designer.tables.add(xmlTable);
-      }
-    }
-    return ResponseObject.response(new Resource(null, XmlUtils.marshal(designer, null)));
   }
 
   private ResponseObject copyGridSettings(RequestInfo reqInfo) {
@@ -1050,12 +951,6 @@ public class UiServiceBean {
       } else {
         response.addError(err);
       }
-    } else if (BeeUtils.startsSame(cmd, "schema")) {
-      String schema = cmd.substring("schema".length()).trim();
-
-      response = buildDbSchema(Splitter.onPattern("[ ,]").trimResults().omitEmptyStrings()
-          .split(schema));
-
     } else if (BeeUtils.same(cmd, "tecdoc")) {
       tcd.suckTecdoc();
       response = ResponseObject.info("TecDoc SUCKS NOW...");

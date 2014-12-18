@@ -23,6 +23,7 @@ import com.butent.bee.client.data.RowCallback;
 import com.butent.bee.client.data.RowEditor;
 import com.butent.bee.client.data.RowFactory;
 import com.butent.bee.client.data.RowUpdateCallback;
+import com.butent.bee.client.dialog.ConfirmationCallback;
 import com.butent.bee.client.dialog.StringCallback;
 import com.butent.bee.client.ui.FormFactory.WidgetDescriptionCallback;
 import com.butent.bee.client.ui.IdentifiableWidget;
@@ -32,8 +33,8 @@ import com.butent.bee.client.view.ViewFactory.SupplierKind;
 import com.butent.bee.client.view.form.FormView;
 import com.butent.bee.client.view.form.interceptor.AbstractFormInterceptor;
 import com.butent.bee.client.view.form.interceptor.FormInterceptor;
-import com.butent.bee.client.widget.Button;
 import com.butent.bee.client.widget.CustomDiv;
+import com.butent.bee.client.widget.FaLabel;
 import com.butent.bee.client.widget.InternalLink;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.communication.ResponseObject;
@@ -43,8 +44,10 @@ import com.butent.bee.shared.data.BeeRow;
 import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.IsRow;
 import com.butent.bee.shared.data.view.DataInfo;
+import com.butent.bee.shared.font.FontAwesome;
 import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.io.FileInfo;
+import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogUtils;
 import com.butent.bee.shared.modules.classifiers.ClassifierConstants;
 import com.butent.bee.shared.modules.tasks.TaskConstants;
@@ -65,6 +68,8 @@ public class RequestEditor extends AbstractFormInterceptor {
   private static final String STYLE_PROPERTY_CAPTION = STYLE_PREFIX + "prop-caption";
   private static final String STYLE_PROPERTY_DATA = STYLE_PREFIX + "prop-data";
 
+  private static final BeeLogger logger = LogUtils.getLogger(RequestEditor.class);
+
   private final UserInfo currentUser = BeeKeeper.getUser();
 
   private static class FinishSaveCallback extends RowUpdateCallback {
@@ -81,7 +86,6 @@ public class RequestEditor extends AbstractFormInterceptor {
       super.onSuccess(result);
       formView.updateRow(result, true);
       formView.refresh();
-      formView.setEnabled(false);
     }
   }
 
@@ -99,15 +103,49 @@ public class RequestEditor extends AbstractFormInterceptor {
 
 
   @Override
-  public void afterRefresh(FormView form, IsRow row) {
+  public void afterRefresh(final FormView form, final IsRow row) {
+    HeaderView header = form.getViewPresenter().getHeader();
+    header.clearCommandPanel();
+
     boolean finished =
         row.getDateTime(form.getDataIndex(TaskConstants.COL_REQUEST_FINISHED)) != null;
 
-    if (finished) {
-      HeaderView header = form.getViewPresenter().getHeader();
-      header.clearCommandPanel();
-      showResultProperties(form, row);
+    if (!finished) {
+      FaLabel btnFinish = new FaLabel(FontAwesome.CHECK_CIRCLE_O);
+      btnFinish.setTitle(Localized.getConstants().requestFinish());
+      btnFinish.addClickHandler(new ClickHandler() {
+
+        @Override
+        public void onClick(ClickEvent event) {
+          finishRequest(form, row);
+        }
+      });
+
+      header.addCommandItem(btnFinish);
+      form.setEnabled(true);
     }
+
+    if (currentUser.canCreateData(TaskConstants.VIEW_TASKS) && !finished) {
+      FaLabel btnFinishToTask = new FaLabel(FontAwesome.LIST);
+      btnFinishToTask.setTitle(Localized.getConstants().requestFinishToTask());
+      btnFinishToTask.addClickHandler(new ClickHandler() {
+
+        @Override
+        public void onClick(ClickEvent event) {
+          toTaskAndFinish(form, row);
+        }
+      });
+
+      header.addCommandItem(btnFinishToTask);
+    }
+
+    if (finished) {
+      form.setEnabled(false);
+      createUpdateButton(form, row, header);
+    }
+
+    showResultProperties(form, row);
+
   }
 
   @Override
@@ -117,12 +155,6 @@ public class RequestEditor extends AbstractFormInterceptor {
 
   @Override
   public boolean onStartEdit(final FormView form, final IsRow row, ScheduledCommand focusCommand) {
-    HeaderView header = form.getViewPresenter().getHeader();
-    header.clearCommandPanel();
-
-    boolean finished =
-        row.getDateTime(form.getDataIndex(TaskConstants.COL_REQUEST_FINISHED)) != null;
-
     final Widget fileWidget = form.getWidgetByName(PROP_FILES);
 
     if (fileWidget instanceof FileGroup) {
@@ -149,48 +181,41 @@ public class RequestEditor extends AbstractFormInterceptor {
         }
       });
     }
-
-    if (!finished) {
-      Button btnFinish = new Button(Localized.getConstants().requestFinish());
-      btnFinish.addClickHandler(new ClickHandler() {
-
-        @Override
-        public void onClick(ClickEvent event) {
-          finishRequest(form, row);
-        }
-      });
-
-      header.addCommandItem(btnFinish);
-    }
-
-    if (currentUser.canCreateData(TaskConstants.VIEW_TASKS) && !finished) {
-      Button btnFinishToTask = new Button(Localized.getConstants().requestFinishToTask());
-      btnFinishToTask.addClickHandler(new ClickHandler() {
-
-        @Override
-        public void onClick(ClickEvent event) {
-          toTaskAndFinish(form, row);
-        }
-      });
-
-      header.addCommandItem(btnFinishToTask);
-    }
-
-    if (finished) {
-      form.setEnabled(false);
-    }
-
-    showResultProperties(form, row);
     return true;
   }
 
+  private static String appendIdsData(String ids, String oldIds) {
+    String result = ids;
+    if (!BeeUtils.isEmpty(oldIds)) {
+      List<Long> oldIdsList = DataUtils.parseIdList(oldIds);
+      List<Long> newIdsList = DataUtils.parseIdList(ids);
+
+      oldIdsList.addAll(newIdsList);
+      result = DataUtils.buildIdList(oldIdsList);
+    }
+    return result;
+  }
+
+  private static void createUpdateButton(final FormView form, final IsRow row, HeaderView header) {
+    FaLabel updateRequestBtn = new FaLabel(FontAwesome.RETWEET);
+    updateRequestBtn.setTitle(Localized.getConstants().actionUpdate());
+    updateRequestBtn.addClickHandler(new ClickHandler() {
+
+      @Override
+      public void onClick(ClickEvent arg0) {
+        updateRequest(form, row);
+      }
+    });
+
+    header.addCommandItem(updateRequestBtn);
+  }
+
   private static void finishRequest(final FormView form, final IsRow row) {
+    String oldValue = BeeConst.STRING_EMPTY;
+    int idxResult = form.getDataIndex(COL_REQUEST_RESULT);
 
-    boolean edited = (row != null) && form.isEditing();
-
-    if (!edited) {
-      Global.showError(Localized.getConstants().actionCanNotBeExecuted());
-      return;
+    if (idxResult > -1) {
+      oldValue = row.getString(idxResult);
     }
 
     Global.inputString(Localized.getConstants().requestFinishing(), Localized.getConstants()
@@ -213,18 +238,7 @@ public class RequestEditor extends AbstractFormInterceptor {
             columns, oldValues, newValues, form.getChildrenForUpdate(),
             new FinishSaveCallback(form));
       }
-    }, null, BeeConst.UNDEF, null, 300, CssUnit.PX);
-  }
-
-  private static ClickHandler getTaskLinkClickHandler(final Long id) {
-    return new ClickHandler() {
-
-      @Override
-      public void onClick(ClickEvent arg0) {
-        DataInfo dataInfo = Data.getDataInfo(VIEW_TASKS);
-        RowEditor.openForm(FORM_TASK, dataInfo, id, Opener.NEW_TAB);
-      }
-    };
+    }, oldValue, BeeConst.UNDEF, null, 300, CssUnit.PX);
   }
 
   private static void toTaskAndFinish(final FormView form, final IsRow reqRow) {
@@ -277,14 +291,18 @@ public class RequestEditor extends AbstractFormInterceptor {
 
           @Override
           public void onSuccess(BeeRow result) {
-            LogUtils.getRootLogger().debug("Created task", result, result == null);
-
             int idxFinished = form.getDataIndex(TaskConstants.COL_REQUEST_FINISHED);
             int idxProp = form.getDataIndex(TaskConstants.COL_REQUEST_RESULT_PROPERTIES);
             List<BeeColumn> columns = Lists.newArrayList();
             List<String> oldValues = Lists.newArrayList();
             List<String> newValues = Lists.newArrayList();
             Map<String, String> propData = Maps.newHashMap();
+
+            if (idxProp > -1) {
+              if (!BeeUtils.isEmpty(reqRow.getString(idxProp))) {
+                propData = Codec.deserializeMap(reqRow.getString(idxProp));
+              }
+            }
 
             columns.add(DataUtils
                 .getColumn(TaskConstants.COL_REQUEST_FINISHED, form.getDataColumns()));
@@ -300,7 +318,9 @@ public class RequestEditor extends AbstractFormInterceptor {
 
               String key = SupplierKind.FORM.getKey(TaskConstants.FORM_TASK);
               String ids = result.getString(0);
+              String oldIds = propData.get(key);
 
+              ids = appendIdsData(ids, oldIds);
               propData.put(key, ids);
               newValues.add(Codec.beeSerialize(propData));
             }
@@ -311,6 +331,49 @@ public class RequestEditor extends AbstractFormInterceptor {
 
           }
         });
+  }
+
+  private static void updateRequest(final FormView form, final IsRow row) {
+    Global.confirm(Localized.getConstants().requestUpdatingQuestion(), new ConfirmationCallback() {
+
+      @Override
+      public void onConfirm() {
+        List<BeeColumn> columns = Lists.newArrayList(DataUtils
+            .getColumn(TaskConstants.COL_REQUEST_FINISHED, form.getDataColumns()));
+        List<String> oldValues = Lists.newArrayList(row
+            .getString(form.getDataIndex(TaskConstants.COL_REQUEST_FINISHED)));
+
+        List<String> newValues = Lists.newArrayList(BeeUtils.toString(null));
+
+        Queries.update(form.getViewName(), row.getId(), row.getVersion(), columns, oldValues,
+            newValues, form.getChildrenForUpdate(), new FinishSaveCallback(form));
+      }
+    });
+
+  }
+
+  private ClickHandler getTaskLinkClickHandler(final Long id) {
+    return new ClickHandler() {
+
+      @Override
+      public void onClick(ClickEvent arg0) {
+        final DataInfo dataInfo = Data.getDataInfo(VIEW_TASKS);
+
+        Queries.getRow(VIEW_TASKS, id, new RowCallback() {
+          @Override
+          public void onSuccess(BeeRow result) {
+            RowEditor.openForm(FORM_TASK, dataInfo, result, Opener.NEW_TAB, null, null);
+          }
+
+          @Override
+          public void onFailure(String... reason) {
+            getFormView().notifySevere(Localized.getConstants().crmTaskNotFound());
+            logger.warning("Error open task:", reason);
+          }
+
+        });
+      }
+    };
   }
 
   private void showResultProperties(final FormView form, final IsRow row) {

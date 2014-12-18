@@ -62,8 +62,6 @@ import com.butent.bee.shared.data.IsColumn;
 import com.butent.bee.shared.data.IsRow;
 import com.butent.bee.shared.data.event.RowTransformEvent;
 import com.butent.bee.shared.data.filter.Filter;
-import com.butent.bee.shared.data.value.LongValue;
-import com.butent.bee.shared.data.value.Value;
 import com.butent.bee.shared.data.value.ValueType;
 import com.butent.bee.shared.data.view.RowInfo;
 import com.butent.bee.shared.i18n.Localized;
@@ -335,85 +333,6 @@ public final class TransportHandler {
     }
   }
 
-  private static class VehiclesGridHandler extends AbstractGridInterceptor
-      implements SelectionHandler<IsRow> {
-
-    private static final String FILTER_KEY = "f1";
-    private IsRow selectedModel;
-    private TreePresenter modelTree;
-
-    @Override
-    public void afterCreateWidget(String name, IdentifiableWidget widget,
-        WidgetDescriptionCallback callback) {
-      if (widget instanceof TreeView && BeeUtils.same(name, "VehicleModels")) {
-        ((TreeView) widget).addSelectionHandler(this);
-        modelTree = ((TreeView) widget).getTreePresenter();
-      }
-    }
-
-    @Override
-    public VehiclesGridHandler getInstance() {
-      return new VehiclesGridHandler();
-    }
-
-    @Override
-    public void onSelection(SelectionEvent<IsRow> event) {
-      if (event == null) {
-        return;
-      }
-      if (getGridPresenter() != null) {
-        Long model = null;
-        setSelectedModel(event.getSelectedItem());
-
-        if (getSelectedModel() != null) {
-          model = getSelectedModel().getId();
-        }
-        getGridPresenter().getDataProvider().setParentFilter(FILTER_KEY, getFilter(model));
-        getGridPresenter().refresh(true);
-      }
-    }
-
-    @Override
-    public boolean onStartNewRow(GridView gridView, IsRow oldRow, IsRow newRow) {
-      IsRow model = getSelectedModel();
-
-      if (model != null) {
-        List<BeeColumn> cols = getGridPresenter().getDataColumns();
-        newRow.setValue(DataUtils.getColumnIndex("Model", cols), model.getId());
-        newRow.setValue(DataUtils.getColumnIndex("ParentModelName", cols),
-            getModelValue(model, "ParentName"));
-        newRow.setValue(DataUtils.getColumnIndex("ModelName", cols),
-            getModelValue(model, "Name"));
-      }
-      return true;
-    }
-
-    private static Filter getFilter(Long model) {
-      if (model == null) {
-        return null;
-      } else {
-        Value value = new LongValue(model);
-
-        return Filter.or(Filter.isEqual("ParentModel", value),
-            Filter.isEqual("Model", value));
-      }
-    }
-
-    private String getModelValue(IsRow model, String colName) {
-      if (BeeUtils.allNotNull(model, modelTree, modelTree.getDataColumns())) {
-        return model.getString(DataUtils.getColumnIndex(colName, modelTree.getDataColumns()));
-      }
-      return null;
-    }
-
-    private IsRow getSelectedModel() {
-      return selectedModel;
-    }
-
-    private void setSelectedModel(IsRow selectedModel) {
-      this.selectedModel = selectedModel;
-    }
-  }
 
   public static ParameterList createArgs(String method) {
     return BeeKeeper.getRpc().createParameters(Module.TRANSPORT, method);
@@ -444,7 +363,6 @@ public final class TransportHandler {
 
     SelectorEvent.register(new TransportSelectorHandler());
 
-    GridFactory.registerGridInterceptor(VIEW_VEHICLES, new VehiclesGridHandler());
     GridFactory.registerGridInterceptor(VIEW_SPARE_PARTS, new SparePartsGridHandler());
     GridFactory.registerGridInterceptor(TBL_TRIP_ROUTES, new TripRoutesGridHandler());
     GridFactory.registerGridInterceptor(VIEW_CARGO_TRIPS, new CargoTripsGrid());

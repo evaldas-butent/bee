@@ -180,6 +180,13 @@ class CentralScrutinizer extends Stack implements CloseHandler<IdentifiableWidge
     }
   }
 
+  void activateShell() {
+    if (!activate(Domain.ADMIN, null)) {
+      addShell();
+      activate(Domain.ADMIN, null);
+    }
+  }
+
   void add(Domain domain, IdentifiableWidget widget) {
     add(domain, widget, null, null);
   }
@@ -240,12 +247,16 @@ class CentralScrutinizer extends Stack implements CloseHandler<IdentifiableWidge
     }
 
     if (BeeKeeper.getUser().isWidgetVisible(RegulatedWidget.ADMIN)) {
-      Shell shell = new Shell(BeeConst.CSS_CLASS_PREFIX + "Shell");
-      shell.restore();
-
-      Simple wrapper = new Simple(shell);
-      add(Domain.ADMIN, wrapper);
+      addShell();
     }
+  }
+
+  private void addShell() {
+    Shell shell = new Shell(BeeConst.CSS_CLASS_PREFIX + "Shell");
+    shell.restore();
+
+    Simple wrapper = new Simple(shell);
+    add(Domain.ADMIN, wrapper);
   }
 
   private int find(Domain domain, Long key) {

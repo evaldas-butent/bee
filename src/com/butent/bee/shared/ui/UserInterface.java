@@ -5,6 +5,7 @@ import com.google.common.collect.Lists;
 import com.butent.bee.shared.html.builder.elements.Meta;
 import com.butent.bee.shared.modules.ec.EcConstants;
 import com.butent.bee.shared.rights.Module;
+import com.butent.bee.shared.rights.SubModule;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.EnumUtils;
 
@@ -187,6 +188,44 @@ public enum UserInterface implements HasCaption {
     @Override
     public List<String> getStyleSheets() {
       return Lists.newArrayList(MAIN_STYLE_SHEET, Module.TRANSPORT.getStyleSheet(null));
+    }
+
+    @Override
+    public String getTitle() {
+      return TITLE;
+    }
+  },
+
+  TRADE_ACTS {
+    @Override
+    public String getCaption() {
+      return "Trade Acts";
+    }
+
+    @Override
+    public Collection<Component> getComponents() {
+      return EnumSet.of(Component.AUTOCOMPLETE, Component.DATA_INFO, Component.DECORATORS,
+          Component.DICTIONARY, Component.FILTERS, Component.GRIDS, Component.USERS);
+    }
+
+    @Override
+    public List<Meta> getMeta() {
+      return Lists.newArrayList(new Meta().name("gwt:property").content("screen=acts"));
+    }
+
+    @Override
+    public List<String> getScripts() {
+      return Lists.newArrayList("actsettings");
+    }
+
+    @Override
+    public String getShortName() {
+      return "acts";
+    }
+
+    @Override
+    public List<String> getStyleSheets() {
+      return Lists.newArrayList(MAIN_STYLE_SHEET, Module.TRADE.getStyleSheet(SubModule.ACTS));
     }
 
     @Override

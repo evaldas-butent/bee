@@ -123,6 +123,10 @@ public class TradeActItemsGrid extends AbstractGridInterceptor implements
 
     if (column instanceof CalculatedColumn) {
       if ("ItemPrices".equals(columnName)) {
+        if (TradeActKeeper.isClientArea()) {
+          return false;
+        }
+
         int index = DataUtils.getColumnIndex(COL_TRADE_ITEM_PRICE, dataColumns);
         CellSource cellSource = CellSource.forColumn(dataColumns.get(index), index);
 

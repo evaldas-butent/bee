@@ -15,12 +15,15 @@ import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.Global;
 import com.butent.bee.client.Screen;
 import com.butent.bee.client.Settings;
+import com.butent.bee.client.cli.Shell;
 import com.butent.bee.client.data.RowCallback;
 import com.butent.bee.client.data.RowEditor;
 import com.butent.bee.client.dialog.ConfirmationCallback;
 import com.butent.bee.client.dialog.Icon;
 import com.butent.bee.client.dialog.Notification;
 import com.butent.bee.client.dom.DomUtils;
+import com.butent.bee.client.event.Binder;
+import com.butent.bee.client.event.EventUtils;
 import com.butent.bee.client.event.Previewer;
 import com.butent.bee.client.layout.Complex;
 import com.butent.bee.client.layout.CustomComplex;
@@ -456,6 +459,35 @@ public class ScreenImpl implements Screen {
     }
   }
 
+  protected void activateShell() {
+    if (getCentralScrutinizer() != null) {
+      getCentralScrutinizer().activateShell();
+
+    } else if (getScreenPanel() != null && getScreenPanel().getDirectionSize(Direction.WEST) <= 0) {
+      List<Widget> children = getScreenPanel().getDirectionChildren(Direction.WEST);
+      for (Widget widget : children) {
+        if (UiHelper.isOrHasChild(widget, Shell.class)) {
+          getScreenPanel().setDirectionSize(Direction.WEST, getWidth() / 5, true);
+          break;
+        }
+      }
+    }
+  }
+
+  protected void bindShellActivation(IdentifiableWidget widget) {
+    final String id = widget.getId();
+
+    Binder.addClickHandler(widget.asWidget(), new ClickHandler() {
+      @Override
+      public void onClick(ClickEvent event) {
+        if (EventUtils.hasModifierKey(event.getNativeEvent())
+            && EventUtils.isTargetId(event, id)) {
+          activateShell();
+        }
+      }
+    });
+  }
+
   protected Panel createCommandPanel() {
     return new Flow(BeeConst.CSS_CLASS_PREFIX + "MainCommandPanel");
   }
@@ -612,6 +644,7 @@ public class ScreenImpl implements Screen {
     Pair<? extends IdentifiableWidget, Integer> north = initNorth();
     if (north != null) {
       p.addNorth(north.getA(), north.getB());
+      bindShellActivation(north.getA());
     }
 
     Pair<? extends IdentifiableWidget, Integer> south = initSouth();

@@ -22,6 +22,7 @@
     <SimpleColumn name="ServiceObject" />
     <SimpleColumn name="Message" />
     <SimpleColumn name="Assessment" />
+    <SimpleColumn name="Project" />
  </Columns>
 </View>
  

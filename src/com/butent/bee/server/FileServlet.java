@@ -9,6 +9,7 @@ import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.io.FileInfo;
 import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogUtils;
+import com.butent.bee.shared.modules.administration.AdministrationConstants;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.Codec;
 
@@ -30,7 +31,7 @@ import javax.servlet.http.HttpServletResponse;
  * Manages file transfers between client and server sides.
  */
 
-@WebServlet(urlPatterns = "/file/*")
+@WebServlet(urlPatterns = "/" + AdministrationConstants.FILE_URL + "/*")
 @SuppressWarnings("serial")
 public class FileServlet extends LoginServlet {
 
@@ -78,9 +79,10 @@ public class FileServlet extends LoginServlet {
         HttpUtils.sendError(resp, HttpServletResponse.SC_INTERNAL_SERVER_ERROR, e.getMessage());
         return;
       }
-    } else if (!BeeUtils.isEmpty(fileName)) {
-      path = Config.getPath(fileName, false);
-      fileName = new File(fileName).getName();
+    } else if (FileUtils.isInputFile(fileName)) {
+      path = fileName;
+      fileName = new File(path).getName();
+      isTemporary = true;
     }
     if (path == null) {
       HttpUtils.sendError(resp, HttpServletResponse.SC_INTERNAL_SERVER_ERROR,

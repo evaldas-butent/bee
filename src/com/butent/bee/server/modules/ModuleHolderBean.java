@@ -100,7 +100,7 @@ public class ModuleHolderBean {
         Config.getProperty("TableActivationMode"));
 
     for (String mod : getModules()) {
-      prm.refreshModuleParameters(mod);
+      prm.refreshParameters(mod);
     }
     if (mode != null) {
       switch (mode) {

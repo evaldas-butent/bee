@@ -72,13 +72,16 @@ public final class AdministrationConstants {
     EnumUtils.register(WorkdayTransition.class);
 
     EnumUtils.register(ImportType.class);
+    EnumUtils.register(SysObject.class);
   }
+
+  public static final String FILE_URL = "file";
 
   public static final String PARAMETERS_PREFIX = "parameters_";
 
   public static final String SVC_GET_PARAMETER = PARAMETERS_PREFIX + "parameter";
+  public static final String SVC_GET_RELATION_PARAMETER = PARAMETERS_PREFIX + "relation_parameter";
   public static final String SVC_GET_PARAMETERS = PARAMETERS_PREFIX + "get";
-  public static final String SVC_RESET_PARAMETER = PARAMETERS_PREFIX + "reset";
   public static final String SVC_SET_PARAMETER = PARAMETERS_PREFIX + "set";
 
   public static final String SVC_DO_IMPORT = "DoImport";
@@ -163,6 +166,8 @@ public final class AdministrationConstants {
   public static final String TBL_IMPORT_OPTIONS = "ImportOptions";
   public static final String TBL_IMPORT_PROPERTIES = "ImportProperties";
   public static final String TBL_IMPORT_MAPPINGS = "ImportMappings";
+
+  public static final String TBL_CUSTOM_CONFIG = "CustomConfig";
 
   public static final String VIEW_USERS = "Users";
   public static final String VIEW_USER_SETTINGS = "UserSettings";
@@ -310,6 +315,11 @@ public final class AdministrationConstants {
   public static final String COL_IMPORT_RELATION_OPTION = "RelationOption";
   public static final String COL_IMPORT_MAPPING = "Mapping";
 
+  public static final String COL_CONFIG_MODULE = "ObjectModule";
+  public static final String COL_CONFIG_TYPE = "ObjectType";
+  public static final String COL_CONFIG_OBJECT = "ObjectName";
+  public static final String COL_CONFIG_DATA = "ObjectData";
+
   public static final String ALS_FILE_NAME = "FileName";
   public static final String ALS_FILE_SIZE = "FileSize";
   public static final String ALS_FILE_TYPE = "FileType";
@@ -345,6 +355,10 @@ public final class AdministrationConstants {
   public static final String PRM_ERP_ADDRESS = "ERPAddress";
   public static final String PRM_ERP_LOGIN = "ERPLogin";
   public static final String PRM_ERP_PASSWORD = "ERPPassword";
+
+  public static final String PRM_ERP_PURCHASE_OPERATION = "ERPPurchaseOperation";
+  public static final String PRM_ERP_OPERATION = "ERPOperation";
+  public static final String PRM_ERP_WAREHOUSE = "ERPWarehouse";
 
   public static final String PRM_WS_LB_EXCHANGE_RATES_ADDRESS = "WSLBExchangeRates";
 

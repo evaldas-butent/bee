@@ -35,6 +35,11 @@
     <when-property-is name="screen" value="trss"/> 
   </replace-with>
 
+  <replace-with class="com.butent.bee.client.modules.trade.acts.TradeActClientArea">
+    <when-type-is class="com.butent.bee.client.Screen"/>
+    <when-property-is name="screen" value="acts"/> 
+  </replace-with>
+
   <replace-with class="com.butent.bee.client.screen.Mobile">
     <when-type-is class="com.butent.bee.client.Screen"/>
     <when-property-is name="screen" value="mobile"/> 

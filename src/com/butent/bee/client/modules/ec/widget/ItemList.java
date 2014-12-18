@@ -258,7 +258,7 @@ public class ItemList extends Flow implements KeyDownHandler {
     return panel;
   }
 
-  private static Widget renderStock(int stock, String unit) {
+  private static Widget renderStock(double stock, String unit) {
     Flow wrapper = new Flow(STYLE_STOCK_WRAPPER);
 
     Widget stockWidget = EcWidgetFactory.createStockWidget(stock);

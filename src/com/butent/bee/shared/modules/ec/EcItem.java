@@ -83,8 +83,8 @@ public class EcItem implements BeeSerializable, HasCaption {
 
   private String unit;
 
-  private int primaryStock;
-  private int secondaryStock;
+  private double primaryStock;
+  private double secondaryStock;
 
   private int analogCount;
 
@@ -188,11 +188,11 @@ public class EcItem implements BeeSerializable, HasCaption {
           break;
 
         case PRIMARY_STOCK:
-          setPrimaryStock(BeeUtils.toInt(value));
+          setPrimaryStock(BeeUtils.toDouble(value));
           break;
 
         case SECONDARY_STOCK:
-          setSecondaryStock(BeeUtils.toInt(value));
+          setSecondaryStock(BeeUtils.toDouble(value));
           break;
 
         case ANALOG_COUNT:
@@ -276,7 +276,7 @@ public class EcItem implements BeeSerializable, HasCaption {
     return priceSupplier;
   }
 
-  public int getPrimaryStock() {
+  public double getPrimaryStock() {
     return primaryStock;
   }
 
@@ -292,7 +292,7 @@ public class EcItem implements BeeSerializable, HasCaption {
     return getPrice() / 100d;
   }
 
-  public int getSecondaryStock() {
+  public double getSecondaryStock() {
     return secondaryStock;
   }
 
@@ -310,7 +310,7 @@ public class EcItem implements BeeSerializable, HasCaption {
 
       if (price > 0) {
         EcSupplier supplier = articleSupplier.getSupplier();
-        int stock = articleSupplier.totalStock();
+        double stock = articleSupplier.totalStock();
 
         if (supplier == displayedSupplier && stock > 0) {
           return Pair.of(supplier, price);
@@ -529,11 +529,11 @@ public class EcItem implements BeeSerializable, HasCaption {
     this.priceSupplier = priceSupplier;
   }
 
-  public void setPrimaryStock(int primaryStock) {
+  public void setPrimaryStock(double primaryStock) {
     this.primaryStock = primaryStock;
   }
 
-  public void setSecondaryStock(int secondaryStock) {
+  public void setSecondaryStock(double secondaryStock) {
     this.secondaryStock = secondaryStock;
   }
 
@@ -545,7 +545,7 @@ public class EcItem implements BeeSerializable, HasCaption {
     this.unit = unit;
   }
 
-  public int totalStock() {
+  public double totalStock() {
     return getPrimaryStock() + getSecondaryStock();
   }
 

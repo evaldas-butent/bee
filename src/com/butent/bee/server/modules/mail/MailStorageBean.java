@@ -20,6 +20,7 @@ import com.butent.bee.server.sql.SqlInsert;
 import com.butent.bee.server.sql.SqlSelect;
 import com.butent.bee.server.sql.SqlUpdate;
 import com.butent.bee.server.sql.SqlUtils;
+import com.butent.bee.server.utils.HtmlUtils;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.Holder;
@@ -483,11 +484,11 @@ public class MailStorageBean {
         if (part.isMimeType("multipart/alternative")) {
           if (parsed.containsKey(COL_HTML_CONTENT)) {
             parsedPart.clear();
-            parsedPart.put(COL_HTML_CONTENT, parsed.get(COL_HTML_CONTENT).iterator().next());
+            parsedPart.putAll(parsed);
             break;
 
           } else if (parsed.containsKey(COL_CONTENT) && !parsedPart.containsKey(COL_CONTENT)) {
-            parsedPart.put(COL_CONTENT, parsed.get(COL_CONTENT).iterator().next());
+            parsedPart.put(COL_CONTENT, BeeUtils.peek(parsed.get(COL_CONTENT)));
           }
         } else if (part.isMimeType("multipart/related")) {
           related.putAll(parsed);

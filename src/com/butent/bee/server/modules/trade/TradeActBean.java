@@ -2216,9 +2216,30 @@ public class TradeActBean {
 
     SimpleRowSet data = qs.getData(query);
 
+    Set<Integer> holidays = new HashSet<>();
+
+    Long country = prm.getRelation(PRM_COUNTRY);
+
+    if (DataUtils.isId(country)) {
+      SqlSelect holidayQuery = new SqlSelect()
+          .addFields(TBL_HOLIDAYS, COL_HOLY_DAY)
+          .addFrom(TBL_HOLIDAYS)
+          .setWhere(SqlUtils.equals(TBL_HOLIDAYS, COL_HOLY_COUNTRY, country));
+
+      Integer[] days = qs.getIntColumn(holidayQuery);
+      if (days != null) {
+        for (Integer day : days) {
+          if (BeeUtils.isPositive(day)) {
+            holidays.add(day);
+          }
+        }
+      }
+    }
+
     Range<DateTime> reportRange = TradeActUtils.createRange(new DateTime(startDate),
         new DateTime(endDate));
-    int reportDays = TradeActUtils.countServiceDays(reportRange);
+
+    int reportDays = TradeActUtils.countServiceDays(reportRange, holidays);
 
     int priceScale = sys.getFieldScale(TBL_TRADE_ACT_SERVICES, COL_TRADE_ITEM_PRICE);
     int factorScale = sys.getFieldScale(TBL_TRADE_ACT_SERVICES, COL_TA_SERVICE_FACTOR);
@@ -2257,14 +2278,13 @@ public class TradeActBean {
         Double factor = row.getDouble(COL_TA_SERVICE_FACTOR);
 
         if (tu != null) {
-          int days = TradeActUtils.countServiceDays(serviceRange);
-
           switch (tu) {
             case DAY:
               if (!BeeUtils.isPositive(factor)) {
                 Integer dpw = row.getInt(COL_TA_SERVICE_DAYS);
                 if (TradeActUtils.validDpw(dpw)) {
-                  double df = TradeActUtils.dpwToFactor(dpw, days, row.getInt(COL_TA_SERVICE_MIN));
+                  double df = TradeActUtils.dpwToFactor(dpw, serviceRange, holidays,
+                      row.getInt(COL_TA_SERVICE_MIN));
 
                   if (BeeUtils.isPositive(df)) {
                     factor = df;
@@ -2275,6 +2295,7 @@ public class TradeActBean {
               break;
 
             case MONTH:
+              int days = TradeActUtils.countServiceDays(serviceRange, holidays);
               if (days < reportDays) {
                 double df = BeeUtils.div(days, reportDays);
                 if (BeeUtils.isPositive(factor)) {

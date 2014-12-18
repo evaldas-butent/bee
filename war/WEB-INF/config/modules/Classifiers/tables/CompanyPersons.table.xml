@@ -3,7 +3,6 @@
   
   name="CompanyPersons"
   idName="CompanyPersonID"
-  x="501" y="339"
   >
   <Fields>
     <Relation name="Company" notNull="true" relation="Companies" cascade="DELETE" label="=company" />

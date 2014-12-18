@@ -16,6 +16,7 @@ import com.butent.bee.shared.time.JustDate;
 import com.butent.bee.shared.time.TimeUtils;
 import com.butent.bee.shared.utils.BeeUtils;
 
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -63,12 +64,39 @@ public final class TradeActUtils {
     return createRange(start, end);
   }
 
-  public static int countServiceDays(Range<DateTime> range) {
+  public static int countServiceDays(Range<DateTime> range, Collection<Integer> holidays) {
+    return countServiceDays(range, holidays, BeeConst.UNDEF);
+  }
+
+  private static int countServiceDays(Range<DateTime> range, Collection<Integer> holidays,
+      int dpw) {
+
+    int days = 0;
+
     if (range != null && range.hasLowerBound() && range.hasUpperBound()) {
-      return Math.max(TimeUtils.dayDiff(range.lowerEndpoint(), range.upperEndpoint()), 1);
-    } else {
-      return 0;
+      int lower = range.lowerEndpoint().getDate().getDays();
+      int upper = Math.max(range.upperEndpoint().getDate().getDays(), lower + 1);
+
+      if (dpw >= TimeUtils.DAYS_PER_WEEK) {
+        return upper - lower;
+      }
+
+      int dow = range.lowerEndpoint().getDow();
+
+      for (int d = lower; d < upper; d++) {
+        if ((dpw <= 0 || dow <= dpw) && (holidays == null || !holidays.contains(d))) {
+          days++;
+        }
+
+        dow++;
+        if (dow > TimeUtils.DAYS_PER_WEEK) {
+          dow = 1;
+        }
+      }
     }
+
+    return days;
+
   }
 
   public static Range<DateTime> createRange(HasDateValue start, HasDateValue end) {
@@ -137,19 +165,22 @@ public final class TradeActUtils {
     }
   }
 
-  public static double dpwToFactor(Integer dpw, int days, Integer minTerm) {
-    if (validDpw(dpw) && days > 0) {
-      int df = BeeUtils.round(BeeUtils.div(days, TimeUtils.DAYS_PER_WEEK) * dpw);
+  public static double dpwToFactor(Integer dpw, Range<DateTime> range,
+      Collection<Integer> holidays, Integer minTerm) {
 
-      if (BeeUtils.isPositive(minTerm)) {
-        return Math.max(df, minTerm);
-      } else {
-        return df;
+    if (validDpw(dpw)) {
+      int days = countServiceDays(range, holidays, dpw);
+
+      if (days > 0) {
+        if (BeeUtils.isPositive(minTerm)) {
+          return Math.max(days, minTerm);
+        } else {
+          return days;
+        }
       }
-
-    } else {
-      return BeeConst.DOUBLE_ZERO;
     }
+
+    return BeeConst.DOUBLE_ZERO;
   }
 
   public static Map<Long, Double> getItemQuantities(BeeRowSet rowSet) {
