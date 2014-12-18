@@ -33,6 +33,8 @@ name="References" label="=references" order="10" module="Classifiers"
   
   <Item name="RefVehicles" label="=vehicles" service="grid" parameters="Vehicles" separator="true"/>
   <Item name="RefVehicleTypes" label="=trVehicleTypes" service="grid" parameters="VehicleTypes" />
+  <Item name="RefDrivers" label="=drivers" service="grid" parameters="Drivers" />
+  <Item name="RefTransportGroups" label="=trTransportGroups" service="grid" parameters="TransportGroups" />
     
   <Item name="Colors" label="=colors" service="grid" parameters="Colors" separator="true" />
   <Item name="Themes" label="=colorThemes" service="grid" parameters="Themes" />

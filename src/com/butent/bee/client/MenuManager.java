@@ -162,6 +162,8 @@ public class MenuManager {
     switch (item.getName()) {
       case "RefVehicles":
       case "RefVehicleTypes":
+      case "RefDrivers":
+      case "RefTransportGroups":
         return !BeeKeeper.getUser().isModuleVisible(ModuleAndSub.of(Module.TRANSPORT));
 
       default:
