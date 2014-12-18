@@ -16,10 +16,6 @@
         <ui:inline>color:silver</ui:inline>
         <ui:expression>!row.HasValue</ui:expression>
       </dynStyle>
-      <dynStyle>
-        <ui:inline>color:black</ui:inline>
-        <ui:expression>row.HasValue</ui:expression>
-      </dynStyle>
     </DataColumn>
     <PropColumn type="string" name="Description" caption="=description">
       <render>
