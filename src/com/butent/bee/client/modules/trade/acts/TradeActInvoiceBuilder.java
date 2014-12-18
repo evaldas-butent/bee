@@ -419,7 +419,9 @@ public class TradeActInvoiceBuilder extends AbstractFormInterceptor implements
   @Override
   public void onDataSelector(SelectorEvent event) {
     if (event.hasRelatedView(VIEW_COMPANIES)) {
-      if (event.isChanged() && event.getRelatedRow() != null) {
+      if (event.isOpened()) {
+        event.getSelector().getOracle().clearData();
+      } else if (event.isChanged() && event.getRelatedRow() != null) {
         refresh(true);
       }
 
