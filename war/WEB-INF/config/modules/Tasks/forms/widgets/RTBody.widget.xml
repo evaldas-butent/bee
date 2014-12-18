@@ -88,6 +88,11 @@
         property="ObserverGroups" renderColumns="Name" editPopup="true" newRowEnabled="false"
         style="&inp2y;" label="=crmTaskObserverGroups" filter="Owner {u} or Visibility 1" />
     </row>
+    
+    <row>
+      <Label text="=project" />
+      <DataSelector source="Project" style="&inp2y;" disablable="true" readOnly="true"/>
+    </row>
   </Table>
   
   <br/>
