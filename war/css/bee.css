@@ -3458,7 +3458,6 @@ textarea,
 .bee-InputTime,
 .bee-InputDateTime,
 .bee-InputInteger,
-.bee-InputSpinner,
-.bee-InputArea{
+.bee-InputSpinner {
 	height: 25px;
 }

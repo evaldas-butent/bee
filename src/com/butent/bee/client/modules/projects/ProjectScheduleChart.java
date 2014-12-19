@@ -1,26 +1,43 @@
 package com.butent.bee.client.modules.projects;
 
+import com.google.common.collect.Lists;
+import com.google.common.collect.Range;
 import com.google.gwt.user.client.ui.ComplexPanel;
+import com.google.gwt.user.client.ui.HasWidgets;
 
 import static com.butent.bee.shared.modules.projects.ProjectConstants.*;
 
 import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.communication.ParameterList;
 import com.butent.bee.client.communication.ResponseCallback;
+import com.butent.bee.client.dom.Edges;
+import com.butent.bee.client.dom.Rectangle;
 import com.butent.bee.client.layout.Flow;
+import com.butent.bee.client.style.StyleUtils;
 import com.butent.bee.client.timeboard.TimeBoard;
+import com.butent.bee.client.timeboard.TimeBoardHelper;
+import com.butent.bee.client.timeboard.TimeBoardRowLayout;
+import com.butent.bee.client.ui.IdentifiableWidget;
 import com.butent.bee.client.view.View;
 import com.butent.bee.client.view.ViewCallback;
+import com.butent.bee.client.widget.CustomDiv;
+import com.butent.bee.client.widget.Mover;
+import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.Size;
 import com.butent.bee.shared.communication.ResponseObject;
+import com.butent.bee.shared.data.SimpleRowSet;
 import com.butent.bee.shared.data.event.DataEvent;
 import com.butent.bee.shared.i18n.Localized;
+import com.butent.bee.shared.logging.LogUtils;
 import com.butent.bee.shared.time.HasDateRange;
+import com.butent.bee.shared.time.JustDate;
 import com.butent.bee.shared.ui.Action;
 import com.butent.bee.shared.utils.BeeUtils;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.EnumSet;
+import java.util.List;
 import java.util.Set;
 
 final class ProjectScheduleChart extends TimeBoard {
@@ -33,6 +50,57 @@ final class ProjectScheduleChart extends TimeBoard {
 
     BeeKeeper.getRpc().makePostRequest(params, getResponseCallback(getViewCallback(widget)));
   }
+
+  private final class ChartItem implements HasDateRange {
+
+    private JustDate start;
+    private JustDate end;
+    private long stageId;
+    private String stageName;
+
+    @Override
+    public Range<JustDate> getRange() {
+      return TimeBoardHelper.getActivity(start, end);
+    }
+
+    public ChartItem(String viewName, long stageId, String stageName, JustDate prjStart,
+        JustDate prjEnd, JustDate stageStart, JustDate stageEnd, String color) {
+
+      this();
+
+      switch (viewName) {
+        case VIEW_PROJECT_STAGES:
+          this.start = stageStart;
+          this.end = stageEnd;
+          this.stageId = stageId;
+          this.stageName = stageName;
+          break;
+
+        default:
+          this.start = prjStart;
+          this.end = prjEnd;
+          this.stageId = stageId;
+          this.stageName = stageName;
+          break;
+      }
+
+      LogUtils.getRootLogger().debug("Chart data", viewName, stageId, stageName, color);
+    }
+
+    @SuppressWarnings("unused")
+    public long getStageId() {
+      return stageId;
+    }
+
+    public String getStageName() {
+      return stageName;
+    }
+
+    private ChartItem() {
+    }
+  }
+
+  private final List<ChartItem> chartItems = Lists.newArrayList();
 
   @Override
   public String getCaption() {
@@ -50,8 +118,7 @@ final class ProjectScheduleChart extends TimeBoard {
 
   @Override
   protected Collection<? extends HasDateRange> getChartItems() {
-    // TODO Auto-generated method stub
-    return null;
+    return chartItems;
   }
 
   @Override
@@ -99,8 +166,8 @@ final class ProjectScheduleChart extends TimeBoard {
 
   @Override
   protected void prepareChart(Size canvasSize) {
-    // TODO Auto-generated method stub
-
+    setChartWidth(canvasSize.getWidth() - getChartLeft() - getChartRight());
+    setDayColumnWidth(25);
   }
 
   @Override
@@ -111,20 +178,92 @@ final class ProjectScheduleChart extends TimeBoard {
 
   @Override
   protected void renderContent(ComplexPanel panel) {
-    // TODO Auto-generated method stub
+
+    List<TimeBoardRowLayout> boardLayout = createLayout();
+
+    int rc = TimeBoardRowLayout.countRows(boardLayout, 1);
+
+    initContent(panel, rc);
+
+    int rowIndex = 0;
+    int calendarWidth = getCalendarWidth();
+
+    for (TimeBoardRowLayout layout : boardLayout) {
+      int chartRowIndex = layout.getDataIndex();
+
+      int top = rowIndex * getRowHeight();
+      int size = layout.getSize(1);
+      int lastRow = rowIndex + size - 1;
+
+      if (rowIndex > 0) {
+        TimeBoardHelper.addRowSeparator(panel, top, 0, getChartLeft() + calendarWidth);
+      }
+
+      IdentifiableWidget chartRowWidget = createChartRowWidget(chartItems.get(chartRowIndex));
+      addChartRowWidget(panel, chartRowWidget, rowIndex, lastRow);
+
+      rowIndex += size;
+    }
 
   }
 
   @Override
   protected void renderMovers(ComplexPanel panel, int height) {
-    // TODO Auto-generated method stub
+    Mover mover = TimeBoardHelper.createHorizontalMover();
+    StyleUtils.setLeft(mover, getChartLeft() - TimeBoardHelper.DEFAULT_MOVER_WIDTH);
+    StyleUtils.setHeight(mover, height);
 
+    panel.add(mover);
   }
 
   @Override
   protected boolean setData(ResponseObject response) {
-    // TODO Auto-generated method stub
+    if (response.isEmpty()) {
+      return false;
+    }
+
+    if (!response.hasResponse(SimpleRowSet.class)) {
+      Assert.notImplemented();
+    }
+
+    SimpleRowSet rs = SimpleRowSet.restore(response.getResponseAsString());
+
+    int idxViewName = rs.getColumnIndex(ALS_VIEW_NAME);
+    int idxStage = rs.getColumnIndex(COL_PROJECT_STAGE);
+    int idxStageName = rs.getColumnIndex(ALS_STAGE_NAME);
+    int idxProjectStart = rs.getColumnIndex(ALS_PROJECT_START_DATE);
+    int idxProjectEnd = rs.getColumnIndex(ALS_PROJECT_END_DATE);
+    int idxStageStart = rs.getColumnIndex(ALS_STAGE_START);
+    int idxStageEnd = rs.getColumnIndex(ALS_STAGE_END);
+    int idxColor = rs.getColumnIndex(ALS_CHART_FLOW_COLOR);
+
+    for (String[] row : rs.getRows()) {
+      long stageId = BeeUtils.toLong(row[idxStage]);
+      JustDate prjStart = new JustDate(BeeUtils.toLong(row[idxProjectStart]));
+      JustDate prjEnd = new JustDate(BeeUtils.toLong(row[idxProjectEnd]));
+      JustDate stageStart = new JustDate(BeeUtils.toLong(row[idxStageStart]));
+      JustDate stageEnd = new JustDate(BeeUtils.toLong(row[idxStageEnd]));
+      ChartItem ci = new ChartItem(row[idxViewName], stageId, row[idxStageName], prjStart,
+          prjEnd, stageStart, stageEnd, row[idxColor]);
+
+      chartItems.add(ci);
+    }
+
+    updateMaxRange();
+
     return true;
+  }
+
+
+
+  private static IdentifiableWidget createChartRowWidget(ChartItem item) {
+    Flow panel = new Flow(); // TODO: ADD style name
+
+    CustomDiv label = new CustomDiv(); // TODO : Add style name
+    label.setText(item.getStageName());
+    panel.add(label);
+
+    return panel;
   }
 
   private static ResponseCallback getResponseCallback(final ViewCallback viewCallback) {
@@ -146,6 +285,37 @@ final class ProjectScheduleChart extends TimeBoard {
         widget.add(result);
       }
     };
+  }
+
+  private void addChartRowWidget(HasWidgets panel, IdentifiableWidget widget,
+      int firstRow, int lastRow) {
+    Rectangle rectangle = TimeBoardHelper.getRectangle(0, 150, firstRow, lastRow,
+        getRowHeight()); // TODO: default stage width
+
+    Edges margins = new Edges();
+    margins.setRight(TimeBoardHelper.DEFAULT_MOVER_WIDTH);
+    margins.setBottom(TimeBoardHelper.ROW_SEPARATOR_HEIGHT);
+
+    TimeBoardHelper.apply(widget.asWidget(), rectangle, margins);
+
+    panel.add(widget.asWidget());
+  }
+
+  private List<TimeBoardRowLayout> createLayout() {
+    List<TimeBoardRowLayout> result = new ArrayList<>();
+
+    Range<JustDate> range = getVisibleRange();
+    List<HasDateRange> items;
+
+    for (int i = 0; i < chartItems.size(); i++) {
+      TimeBoardRowLayout layout = new TimeBoardRowLayout(i);
+      items = TimeBoardHelper.getActiveItems(chartItems, range);
+      layout.addItems(Long.valueOf(chartItems.get(i).stageId), items, range);
+
+      result.add(layout);
+    }
+
+    return result;
   }
 
   private ProjectScheduleChart() {

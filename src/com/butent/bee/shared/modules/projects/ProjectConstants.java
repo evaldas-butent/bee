@@ -11,7 +11,9 @@ public final class ProjectConstants {
   public static final String ALS_PROJECT_END_DATE = "ProjectEndDate";
   public static final String ALS_STAGE_NAME = "StageName";
   public static final String ALS_STAGE_START = "StageStart";
-  public static final String ALS_STAGE_END = "StageStart";
+  public static final String ALS_STAGE_END = "StageEnd";
+  public static final String ALS_CHART_FLOW_COLOR = "ChartFlowColor";
+  public static final String ALS_VIEW_NAME = "ViewName";
 
 
   public static final String COL_PROJECT = "Project";
@@ -20,6 +22,10 @@ public final class ProjectConstants {
   public static final String COL_PROJECT_START_DATE = "StartDate";
   public static final String COL_PROJECT_STATUS = "Status";
   public static final String COL_PROJECT_OWNER = "Owner";
+
+  public static final String COL_STAGE_NAME = "Name";
+  public static final String COL_STAGE_START_DATE = "StartDate";
+  public static final String COL_STAGE_END_DATE = "EndDate";
 
   public static final String COL_USER_TYPE = "UserType";
 
