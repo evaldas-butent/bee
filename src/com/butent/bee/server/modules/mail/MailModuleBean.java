@@ -364,7 +364,7 @@ public class MailModuleBean implements BeeModule, HasTimerService {
 
         for (Entry<String, String> entry : Codec
             .deserializeMap(reqInfo.getParameter(TBL_ATTACHMENTS)).entrySet()) {
-          attachments.put(BeeUtils.toLong(entry.getKey()), Codec.decodeBase64(entry.getValue()));
+          attachments.put(BeeUtils.toLong(entry.getKey()), entry.getValue());
         }
         MailAccount account = mail.getAccount(accountId);
 

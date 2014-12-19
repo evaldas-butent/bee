@@ -400,7 +400,7 @@ public final class NewMailMessage extends AbstractFormInterceptor
     Map<Long, String> attachments = new LinkedHashMap<>();
 
     for (FileInfo file : attachmentsWidget.getFiles()) {
-      attachments.put(file.getId(), Codec.encodeBase64(file.getName()));
+      attachments.put(file.getId(), file.getName());
     }
     if (!BeeUtils.isEmpty(attachments)) {
       params.addDataItem(TBL_ATTACHMENTS, Codec.beeSerialize(attachments));
