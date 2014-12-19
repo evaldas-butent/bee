@@ -2240,6 +2240,9 @@ public class TradeActBean {
         new DateTime(endDate));
 
     int reportDays = TradeActUtils.countServiceDays(reportRange, holidays);
+    if (reportDays <= 0) {
+      return;
+    }
 
     int priceScale = sys.getFieldScale(TBL_TRADE_ACT_SERVICES, COL_TRADE_ITEM_PRICE);
     int factorScale = sys.getFieldScale(TBL_TRADE_ACT_SERVICES, COL_TA_SERVICE_FACTOR);
@@ -2278,6 +2281,8 @@ public class TradeActBean {
         Double factor = row.getDouble(COL_TA_SERVICE_FACTOR);
 
         if (tu != null) {
+          boolean ok = true;
+
           switch (tu) {
             case DAY:
               if (!BeeUtils.isPositive(factor)) {
@@ -2289,23 +2294,30 @@ public class TradeActBean {
                   if (BeeUtils.isPositive(df)) {
                     factor = df;
                     update.addConstant(COL_TA_SERVICE_FACTOR, df);
+                  } else {
+                    ok = false;
                   }
                 }
               }
               break;
 
             case MONTH:
-              int days = TradeActUtils.countServiceDays(serviceRange, holidays);
-              if (days < reportDays) {
-                double df = BeeUtils.div(days, reportDays);
-                if (BeeUtils.isPositive(factor)) {
-                  df *= factor;
-                }
+              double mf = TradeActUtils.getMonthFactor(serviceRange, holidays);
 
-                factor = BeeUtils.round(df, factorScale);
+              if (BeeUtils.isPositive(mf)) {
+                if (BeeUtils.isPositive(factor)) {
+                  mf *= factor;
+                }
+                factor = BeeUtils.round(mf, factorScale);
                 update.addConstant(COL_TA_SERVICE_FACTOR, factor);
+              } else {
+                ok = false;
               }
               break;
+          }
+
+          if (!ok) {
+            continue;
           }
         }
 

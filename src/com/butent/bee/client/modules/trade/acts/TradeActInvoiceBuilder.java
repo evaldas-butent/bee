@@ -530,6 +530,10 @@ public class TradeActInvoiceBuilder extends AbstractFormInterceptor implements
 
     final Range<DateTime> builderRange = TradeActUtils.convertRange(range);
     final int builderDays = TradeActUtils.countServiceDays(builderRange, holidays);
+    if (builderDays <= 0) {
+      getFormView().notifyWarning(Localized.getConstants().holidays());
+      return;
+    }
 
     Collection<Long> actIds = getSelectedIds(STYLE_ACT_SELECTED);
     if (actIds.isEmpty()) {
@@ -613,29 +617,38 @@ public class TradeActInvoiceBuilder extends AbstractFormInterceptor implements
           svc.minTerm = row.getInteger(minTermIndex);
 
           if (tu != null) {
+            boolean ok = true;
 
             switch (tu) {
               case DAY:
                 if (TradeActUtils.validDpw(svc.dpw) && !BeeUtils.isPositive(svc.factor)) {
                   double df = TradeActUtils.dpwToFactor(svc.dpw, serviceRange, holidays,
                       svc.minTerm);
+
                   if (BeeUtils.isPositive(df)) {
                     svc.factor = df;
+                  } else {
+                    ok = false;
                   }
                 }
                 break;
 
               case MONTH:
-                int days = TradeActUtils.countServiceDays(serviceRange, holidays);
-                if (days < builderDays) {
-                  double df = BeeUtils.div(days, builderDays);
-                  if (BeeUtils.isPositive(svc.factor)) {
-                    df *= svc.factor;
-                  }
+                double mf = TradeActUtils.getMonthFactor(serviceRange, holidays);
 
-                  svc.factor = BeeUtils.round(df, factorScale);
+                if (BeeUtils.isPositive(mf)) {
+                  if (BeeUtils.isPositive(svc.factor)) {
+                    mf *= svc.factor;
+                  }
+                  svc.factor = BeeUtils.round(mf, factorScale);
+                } else {
+                  ok = false;
                 }
                 break;
+            }
+
+            if (!ok) {
+              continue;
             }
           }
 

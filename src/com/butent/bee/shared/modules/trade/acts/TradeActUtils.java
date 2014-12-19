@@ -14,6 +14,7 @@ import com.butent.bee.shared.time.DateTime;
 import com.butent.bee.shared.time.HasDateValue;
 import com.butent.bee.shared.time.JustDate;
 import com.butent.bee.shared.time.TimeUtils;
+import com.butent.bee.shared.time.YearMonth;
 import com.butent.bee.shared.utils.BeeUtils;
 
 import java.util.Collection;
@@ -96,7 +97,6 @@ public final class TradeActUtils {
     }
 
     return days;
-
   }
 
   public static Range<DateTime> createRange(HasDateValue start, HasDateValue end) {
@@ -201,6 +201,45 @@ public final class TradeActUtils {
     }
 
     return result;
+  }
+
+  public static double getMonthFactor(Range<DateTime> range, Collection<Integer> holidays) {
+    double factor = BeeConst.DOUBLE_ZERO;
+
+    if (range != null && range.hasLowerBound() && range.hasUpperBound()) {
+      JustDate min = range.lowerEndpoint().getDate();
+
+      JustDate max = range.upperEndpoint().getDate();
+      if (BeeUtils.isMore(max, min)) {
+        max = TimeUtils.previousDay(max);
+      }
+
+      int minDay = min.getDays();
+      int maxDay = max.getDays();
+
+      for (YearMonth ym = YearMonth.of(min); BeeUtils.isLeq(ym, YearMonth.of(max)); ym =
+          ym.nextMonth()) {
+
+        int days = 0;
+        int size = 0;
+
+        for (int d = ym.getDate().getDays(); d <= ym.getLast().getDays(); d++) {
+          if (holidays == null || !holidays.contains(d)) {
+            if (d >= minDay && d <= maxDay) {
+              days++;
+            }
+
+            size++;
+          }
+        }
+
+        if (days > 0) {
+          factor += BeeUtils.div(days, size);
+        }
+      }
+    }
+
+    return factor;
   }
 
   public static double roundAmount(Double amount) {

@@ -276,7 +276,7 @@ public final class TimeUtils {
 
   public static JustDate endOfMonth(HasYearMonth ref, int increment) {
     Assert.notNull(ref);
-    return YearMonth.get(ref).shiftMonth(increment).getLast();
+    return YearMonth.of(ref).shiftMonth(increment).getLast();
   }
 
   public static JustDate endOfPreviousMonth(HasYearMonth ref) {
@@ -385,7 +385,7 @@ public final class TimeUtils {
     if (increment == 0) {
       return ref;
     } else {
-      YearMonth ym = YearMonth.get(ref).shiftMonth(increment);
+      YearMonth ym = YearMonth.of(ref).shiftMonth(increment);
       return new JustDate(ym.getYear(), ym.getMonth(), ref.getDom());
     }
   }
@@ -988,7 +988,7 @@ public final class TimeUtils {
     if (increment == 0) {
       return new JustDate(ref.getYear(), ref.getMonth(), 1);
     } else {
-      return YearMonth.get(ref).shiftMonth(increment).getDate();
+      return YearMonth.of(ref).shiftMonth(increment).getDate();
     }
   }
 

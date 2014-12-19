@@ -431,7 +431,7 @@ class MonthView extends Component implements HasKeyDownHandlers {
 
     if (newDate != null) {
       if (getDatePicker().isDateEnabled(newDate)) {
-        getDatePicker().setCurrentMonth(YearMonth.get(newDate));
+        getDatePicker().setCurrentMonth(YearMonth.of(newDate));
         cell = grid.getCell(TimeUtils.dayDiff(firstDisplayed, newDate));
       }
       ok = true;
