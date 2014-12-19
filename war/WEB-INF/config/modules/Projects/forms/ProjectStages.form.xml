@@ -1,14 +1,13 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE Form[
   <!ENTITY inline "display: inline-block;">
-  <!ENTITY height "height: 25px">
   <!ENTITY lbl "margin-left: 1em; margin-right: 1em; text-align: right">
   <!ENTITY lbl2 "margin-left: -6em; margin-right: 1em; text-align: right;">
   <!ENTITY lbl3 "margin-left: -7em; margin-right: 1em; text-align: right;">
   <!ENTITY lbl4 "margin-left: 8em; margin-right: 1em; text-align: left">
-  <!ENTITY inp1 "&inline; width: 240px; &height;"> 
-  <!ENTITY inp2 "&inline; width: 95px; margin-left: -5px; &height;">
-  <!ENTITY inp3 "&inline; width: 95px; &height;">
+  <!ENTITY inp1 "&inline; width: 240px;"> 
+  <!ENTITY inp2 "&inline; width: 95px; margin-left: -5px;">
+  <!ENTITY inp3 "&inline; width: 95px;">
 ]>
 
 <f:Form xmlns="http://www.butent.com/widget" 
