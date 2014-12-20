@@ -74,6 +74,8 @@ public final class TradeActConstants {
   public static final String COL_TA_SERVICE_DAYS = "DaysPerWeek";
   public static final String COL_TA_SERVICE_MIN = "MinTerm";
 
+  public static final String COL_TA_INVOICE_SERVICE = "TradeActService";
+  public static final String COL_TA_INVOICE_ITEM = "SaleItem";
   public static final String COL_TA_INVOICE_FROM = "DateFrom";
   public static final String COL_TA_INVOICE_TO = "DateTo";
 
@@ -107,6 +109,8 @@ public final class TradeActConstants {
   public static final String PRP_ITEM_TOTAL = "item_total";
   public static final String PRP_RETURNED_TOTAL = "returned_total";
   public static final String PRP_RETURNED_QTY = "returned_qty";
+  public static final String PRP_TA_SERVICE_FROM = "service_from";
+  public static final String PRP_TA_SERVICE_TO = "service_to";
 
   public static final String PRM_IMPORT_TA_ITEM_RX = "ImportActItemRegEx";
   public static final String RX_IMPORT_ACT_ITEM = "^(.+);(.*);(\\d+\\.*\\d*)$";

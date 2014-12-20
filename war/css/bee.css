@@ -3448,16 +3448,3 @@ textarea,
   transition: max-height 200ms linear, opacity 200ms linear;
   pointer-events: none;
 }
-
-.bee-InputText, 
-.bee-InputDate, 
-.bee-InputNumber, 
-.bee-DataSelector, 
-.bee-ListBox,
-.bee-InputTimeOfDay,
-.bee-InputTime,
-.bee-InputDateTime,
-.bee-InputInteger,
-.bee-InputSpinner {
-	height: 25px;
-}

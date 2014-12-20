@@ -414,10 +414,10 @@ public class SystemBean {
   /**
    * Creates SQL joins between tables.
    *
-   * @param tblName Source table with represented own column Id name, where called
+   * @param tblName First table with represented own column Id name, where called
    *          {@link SystemBean#getIdName(String)}
-   * @param dstTable Distance table with reference of source table
-   * @param dstField Reference field name of source table
+   * @param dstTable Second table
+   * @param dstField Reference field name of second table
    * @return
    */
   public IsCondition joinTables(String tblName, String dstTable, String dstField) {

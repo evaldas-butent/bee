@@ -2271,7 +2271,7 @@ public class GridImpl extends Absolute implements GridView, EditEndEvent.Handler
   }
 
   private boolean maybeOpenRelatedData(final EditableColumn editableColumn, final IsRow row,
-      int charCode) {
+      int charCode, boolean readOnly) {
 
     if (row == null || editableColumn == null || !editableColumn.hasRelation()
         || !editableColumn.getRelation().isEditEnabled(false)) {
@@ -2284,7 +2284,7 @@ public class GridImpl extends Absolute implements GridView, EditEndEvent.Handler
     } else {
       Integer editKey = editableColumn.getRelation().getEditKey();
       if (editKey == null) {
-        ok = !isEnabled() && EditStartEvent.isEnter(charCode);
+        ok = (!isEnabled() || readOnly) && EditStartEvent.isEnter(charCode);
       } else if (EditStartEvent.isEnter(editKey)) {
         ok = EditStartEvent.isEnter(charCode);
       } else {
@@ -2384,7 +2384,7 @@ public class GridImpl extends Absolute implements GridView, EditEndEvent.Handler
     String columnId = event.getColumnId();
     final EditableColumn editableColumn = getEditableColumn(columnId, false);
 
-    if (maybeOpenRelatedData(editableColumn, rowValue, event.getCharCode())) {
+    if (maybeOpenRelatedData(editableColumn, rowValue, event.getCharCode(), event.isReadOnly())) {
       return;
     }
 

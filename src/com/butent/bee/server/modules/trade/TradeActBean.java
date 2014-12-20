@@ -55,6 +55,7 @@ import com.butent.bee.shared.modules.trade.acts.TradeActKind;
 import com.butent.bee.shared.modules.trade.acts.TradeActTimeUnit;
 import com.butent.bee.shared.modules.trade.acts.TradeActUtils;
 import com.butent.bee.shared.time.DateTime;
+import com.butent.bee.shared.time.JustDate;
 import com.butent.bee.shared.time.TimeUtils;
 import com.butent.bee.shared.utils.ArrayUtils;
 import com.butent.bee.shared.utils.BeeUtils;
@@ -330,16 +331,6 @@ public class TradeActBean {
       return ResponseObject.error(reqInfo.getService(), saleItems.getViewName(), "is empty");
     }
 
-    serialized = reqInfo.getParameter(VIEW_TRADE_ACT_INVOICES);
-    if (BeeUtils.isEmpty(serialized)) {
-      return ResponseObject.parameterNotFound(reqInfo.getService(), VIEW_TRADE_ACT_INVOICES);
-    }
-
-    BeeRowSet relations = BeeRowSet.restore(serialized);
-    if (DataUtils.isEmpty(relations)) {
-      return ResponseObject.error(reqInfo.getService(), relations.getViewName(), "is empty");
-    }
-
     ResponseObject response = deb.commitRow(sales);
     if (response.hasErrors() || !response.hasResponse(BeeRow.class)) {
       return response;
@@ -350,24 +341,27 @@ public class TradeActBean {
     int colIndex = saleItems.getColumnIndex(COL_SALE);
 
     for (int i = 0; i < saleItems.getNumberOfRows(); i++) {
-      saleItems.setValue(i, colIndex, invoiceId);
+      BeeRow saleItem = saleItems.getRow(i);
+      saleItem.setValue(colIndex, invoiceId);
 
       ResponseObject insResponse = deb.commitRow(saleItems, i, RowInfo.class);
       if (insResponse.hasErrors()) {
         response.addMessagesFrom(insResponse);
         break;
       }
-    }
 
-    colIndex = relations.getColumnIndex(COL_SALE);
+      String svcId = saleItem.getProperty(COL_TA_INVOICE_SERVICE);
+      String from = saleItem.getProperty(PRP_TA_SERVICE_FROM);
+      String to = saleItem.getProperty(PRP_TA_SERVICE_TO);
 
-    for (int i = 0; i < relations.getNumberOfRows(); i++) {
-      relations.setValue(i, colIndex, invoiceId);
+      if (DataUtils.isId(svcId) && BeeUtils.isPositiveInt(from) && BeeUtils.isPositiveInt(to)) {
+        SqlInsert insert = new SqlInsert(TBL_TRADE_ACT_INVOICES)
+            .addConstant(COL_TA_INVOICE_SERVICE, svcId)
+            .addConstant(COL_TA_INVOICE_ITEM, ((RowInfo) insResponse.getResponse()).getId())
+            .addConstant(COL_TA_INVOICE_FROM, new JustDate(BeeUtils.toInt(from)))
+            .addConstant(COL_TA_INVOICE_TO, new JustDate(BeeUtils.toInt(to)));
 
-      ResponseObject insResponse = deb.commitRow(relations, i, RowInfo.class);
-      if (insResponse.hasErrors()) {
-        response.addMessagesFrom(insResponse);
-        break;
+        qs.insertData(insert);
       }
     }
 
@@ -562,14 +556,6 @@ public class TradeActBean {
 
     Totalizer itemTotalizer = null;
 
-    SqlSelect rangeQuery = new SqlSelect()
-        .addFields(TBL_TRADE_ACT_INVOICES, COL_TA_INVOICE_FROM, COL_TA_INVOICE_TO)
-        .addFrom(TBL_TRADE_ACT_INVOICES);
-
-    IsCondition rangeCondition = SqlUtils.and(
-        SqlUtils.notNull(TBL_TRADE_ACT_INVOICES, COL_TA_INVOICE_FROM),
-        SqlUtils.notNull(TBL_TRADE_ACT_INVOICES, COL_TA_INVOICE_TO));
-
     for (BeeRow act : acts) {
       long actId = act.getId();
 
@@ -612,14 +598,6 @@ public class TradeActBean {
         if (BeeUtils.isPositive(returnedTotal)) {
           act.setProperty(PRP_RETURNED_TOTAL, BeeUtils.toString(returnedTotal, 2));
         }
-      }
-
-      rangeQuery.setWhere(SqlUtils.and(rangeCondition,
-          SqlUtils.equals(TBL_TRADE_ACT_INVOICES, COL_TRADE_ACT, actId)));
-
-      SimpleRowSet rangeData = qs.getData(rangeQuery);
-      if (!DataUtils.isEmpty(rangeData)) {
-        act.setProperty(TBL_TRADE_ACT_INVOICES, rangeData.serialize());
       }
     }
 
@@ -1152,11 +1130,13 @@ public class TradeActBean {
     List<String> groupBy = NameUtils.toList(reqInfo.getParameter(Service.VAR_GROUP_BY));
 
     SqlSelect rangeQuery = new SqlSelect()
-        .addFields(TBL_TRADE_ACT_INVOICES, COL_SALE)
+        .addFields(TBL_SALE_ITEMS, COL_SALE)
         .addMin(TBL_TRADE_ACT_INVOICES, COL_TA_INVOICE_FROM)
         .addMax(TBL_TRADE_ACT_INVOICES, COL_TA_INVOICE_TO)
         .addFrom(TBL_TRADE_ACT_INVOICES)
-        .addGroup(TBL_TRADE_ACT_INVOICES, COL_SALE);
+        .addFromInner(TBL_SALE_ITEMS,
+            sys.joinTables(TBL_SALE_ITEMS, TBL_TRADE_ACT_INVOICES, COL_TA_INVOICE_ITEM))
+        .addGroup(TBL_SALE_ITEMS, COL_SALE);
 
     String rangeAlias = "rng_" + SqlUtils.uniqueName();
 
