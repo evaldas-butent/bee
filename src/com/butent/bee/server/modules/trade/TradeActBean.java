@@ -127,6 +127,10 @@ public class TradeActBean {
         response = getActsForInvoice(reqInfo);
         break;
 
+      case SVC_GET_SERVICES_FOR_INVOICE:
+        response = getServicesForInvoice(reqInfo);
+        break;
+
       case SVC_CREATE_ACT_INVOICE:
         response = createInvoice(reqInfo);
         break;
@@ -607,6 +611,53 @@ public class TradeActBean {
     }
 
     return ResponseObject.response(acts);
+  }
+
+  private ResponseObject getServicesForInvoice(RequestInfo reqInfo) {
+    Set<Long> actIds = DataUtils.parseIdSet(reqInfo.getParameter(COL_TRADE_ACT));
+    if (actIds.isEmpty()) {
+      return ResponseObject.parameterNotFound(reqInfo.getService(), COL_TRADE_ACT);
+    }
+
+    Filter filter = Filter.and(Filter.any(COL_TRADE_ACT, actIds),
+        Filter.isPositive(COL_TRADE_ITEM_QUANTITY));
+
+    BeeRowSet services = qs.getViewData(VIEW_TRADE_ACT_SERVICES, filter);
+    if (DataUtils.isEmpty(services)) {
+      return ResponseObject.emptyResponse();
+    }
+
+    SqlSelect invoiceQuery = new SqlSelect()
+        .addFields(TBL_TRADE_ACT_INVOICES, COL_TA_INVOICE_FROM, COL_TA_INVOICE_TO)
+        .addFrom(TBL_TRADE_ACT_INVOICES)
+        .addOrder(TBL_TRADE_ACT_INVOICES, COL_TA_INVOICE_FROM, COL_TA_INVOICE_TO);
+
+    for (BeeRow service : services) {
+      invoiceQuery.setWhere(SqlUtils.equals(TBL_TRADE_ACT_INVOICES, COL_TA_INVOICE_SERVICE,
+          service.getId()));
+
+      SimpleRowSet invoiceData = qs.getData(invoiceQuery);
+
+      if (!DataUtils.isEmpty(invoiceData)) {
+        List<Integer> invoiceRanges = new ArrayList<>();
+
+        for (SimpleRow row : invoiceData) {
+          JustDate from = row.getDate(COL_TA_INVOICE_FROM);
+          JustDate to = row.getDate(COL_TA_INVOICE_TO);
+
+          if (from != null && to != null && BeeUtils.isMeq(to, from)) {
+            invoiceRanges.add(from.getDays());
+            invoiceRanges.add(to.getDays());
+          }
+        }
+
+        if (!invoiceRanges.isEmpty()) {
+          service.setProperty(PRP_INVOICE_PERIODS, BeeUtils.joinInts(invoiceRanges));
+        }
+      }
+    }
+
+    return ResponseObject.response(services);
   }
 
   private ResponseObject getItemsByCompanyReport(RequestInfo reqInfo) {
@@ -1130,13 +1181,11 @@ public class TradeActBean {
     List<String> groupBy = NameUtils.toList(reqInfo.getParameter(Service.VAR_GROUP_BY));
 
     SqlSelect rangeQuery = new SqlSelect()
-        .addFields(TBL_SALE_ITEMS, COL_SALE)
+        .addFields(TBL_TRADE_ACT_INVOICES, COL_TA_INVOICE_ITEM)
         .addMin(TBL_TRADE_ACT_INVOICES, COL_TA_INVOICE_FROM)
         .addMax(TBL_TRADE_ACT_INVOICES, COL_TA_INVOICE_TO)
         .addFrom(TBL_TRADE_ACT_INVOICES)
-        .addFromInner(TBL_SALE_ITEMS,
-            sys.joinTables(TBL_SALE_ITEMS, TBL_TRADE_ACT_INVOICES, COL_TA_INVOICE_ITEM))
-        .addGroup(TBL_SALE_ITEMS, COL_SALE);
+        .addGroup(TBL_TRADE_ACT_INVOICES, COL_TA_INVOICE_ITEM);
 
     String rangeAlias = "rng_" + SqlUtils.uniqueName();
 
@@ -1168,10 +1217,11 @@ public class TradeActBean {
     SqlSelect query = new SqlSelect();
 
     query.addFrom(TBL_SALES);
-    query.addFromLeft(rangeQuery, rangeAlias,
-        SqlUtils.join(TBL_SALES, sys.getIdName(TBL_SALES), rangeAlias, COL_SALE));
     query.addFromLeft(TBL_SALE_ITEMS,
         sys.joinTables(TBL_SALES, TBL_SALE_ITEMS, COL_SALE));
+    query.addFromLeft(rangeQuery, rangeAlias,
+        SqlUtils.join(TBL_SALE_ITEMS, sys.getIdName(TBL_SALE_ITEMS),
+            rangeAlias, COL_TA_INVOICE_ITEM));
 
     if (groupBy.isEmpty()) {
       query.addFields(TBL_SALE_ITEMS, COL_SALE);
