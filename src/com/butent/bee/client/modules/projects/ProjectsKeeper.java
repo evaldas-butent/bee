@@ -13,6 +13,8 @@ import com.butent.bee.shared.rights.Module;
  */
 public final class ProjectsKeeper {
 
+  public static final String STYLE_PREFIX = "bee-prj-";
+
   /**
    * Creates rpc parameters of projects module.
    * 

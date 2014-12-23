@@ -15,6 +15,10 @@ public final class ProjectConstants {
   public static final String ALS_CHART_FLOW_COLOR = "ChartFlowColor";
   public static final String ALS_VIEW_NAME = "ViewName";
 
+  public static final String ALS_CHART_START = "ChartStart";
+  public static final String ALS_CHART_END = "ChartEnd";
+  public static final String ALS_CHART_CAPTION = "ChartCaption";
+  public static final String ALS_CHART_ID = "ChartID";
 
   public static final String COL_PROJECT = "Project";
   public static final String COL_PROJECT_END_DATE = "EndDate";
@@ -26,6 +30,11 @@ public final class ProjectConstants {
   public static final String COL_STAGE_NAME = "Name";
   public static final String COL_STAGE_START_DATE = "StartDate";
   public static final String COL_STAGE_END_DATE = "EndDate";
+
+  public static final String COL_DATES_START_DATE = "StartDate";
+  public static final String COL_DATES_END_DATE = "EndDate";
+  public static final String COL_DATES_COLOR = "Color";
+  public static final String COL_DATES_NOTE = "Note";
 
   public static final String COL_USER_TYPE = "UserType";
 
