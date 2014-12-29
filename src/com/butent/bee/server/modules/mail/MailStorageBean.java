@@ -20,6 +20,7 @@ import com.butent.bee.server.sql.SqlInsert;
 import com.butent.bee.server.sql.SqlSelect;
 import com.butent.bee.server.sql.SqlUpdate;
 import com.butent.bee.server.sql.SqlUtils;
+import com.butent.bee.server.utils.HtmlUtils;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.Holder;
@@ -496,16 +497,25 @@ public class MailStorageBean {
         }
       }
       if (!related.isEmpty()) {
+        List<String> orphans = new ArrayList<>();
+
+        if (related.containsKey(COL_FILE)) {
+          orphans.addAll(related.get(COL_FILE));
+        }
         if (related.containsKey(COL_HTML_CONTENT)) {
           for (String html : related.get(COL_HTML_CONTENT)) {
             String mergedHtml = html;
 
             if (related.containsKey(COL_FILE)) {
               for (String entry : related.get(COL_FILE)) {
+                String before = mergedHtml;
                 String[] arr = Codec.beeDeserializeCollection(entry);
 
                 for (int j = 2; j < arr.length; j++) {
                   mergedHtml = mergedHtml.replace("cid:" + arr[j], "file/" + arr[0]);
+                }
+                if (mergedHtml != before) {
+                  orphans.remove(entry);
                 }
               }
             }
@@ -514,6 +524,7 @@ public class MailStorageBean {
         } else if (related.containsKey(COL_CONTENT)) {
           parsedPart.putAll(COL_CONTENT, related.get(COL_CONTENT));
         }
+        parsedPart.putAll(COL_FILE, orphans);
       }
     } else if (part.isMimeType("message/rfc822")) {
       parsedPart.putAll(parsePart(messageId, (Message) part.getContent()));

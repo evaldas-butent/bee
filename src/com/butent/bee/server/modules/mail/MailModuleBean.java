@@ -27,6 +27,7 @@ import com.butent.bee.server.news.UsageQueryProvider;
 import com.butent.bee.server.sql.IsCondition;
 import com.butent.bee.server.sql.SqlSelect;
 import com.butent.bee.server.sql.SqlUtils;
+import com.butent.bee.server.utils.HtmlUtils;
 import com.butent.bee.server.websocket.Endpoint;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
@@ -79,8 +80,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 import javax.annotation.Resource;
 import javax.ejb.EJB;
@@ -863,17 +862,12 @@ public class MailModuleBean implements BeeModule, HasTimerService {
 
       MimeMultipart related = new MimeMultipart("related");
 
-      Pattern pattern = Pattern.compile("src=\"(file/(\\d+))\"");
-      Matcher matcher = pattern.matcher(content);
-      Map<String, String> relatedFiles = new HashMap<>();
+      Map<Long, String> relatedFiles = HtmlUtils.getFileReferences(content);
       String parsedContent = content;
 
-      while (matcher.find()) {
-        relatedFiles.put(matcher.group(2), matcher.group(1));
-      }
-      for (String fileId : relatedFiles.keySet()) {
+      for (Long fileId : relatedFiles.keySet()) {
         try {
-          FileInfo fileInfo = fs.getFile(BeeUtils.toLong(fileId));
+          FileInfo fileInfo = fs.getFile(fileId);
 
           if (fileInfo != null) {
             p = new MimeBodyPart();

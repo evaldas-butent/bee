@@ -12,6 +12,7 @@
   <!ENTITY inp2 "width: 150px;">
   <!ENTITY inp2x "width: 500px;">
   <!ENTITY inp2y "width: 500px;">
+  <!ENTITY inp3 "width: 70px;margin-left: -75px">
 
   <!ENTITY dateStyle "&inline; min-width: 90px; max-width: 90px;">
   <!ENTITY timeStyle "&inline; min-width: 50px; max-width: 50px; width: 50px; margin-left: 10px;">
@@ -51,6 +52,8 @@
         </FlowPanel>
         <Label for="ExpectedDuration" />
         <InputTime name="ExpectedDuration" source="ExpectedDuration" step="&timeStep;" style="width: 50px;" />
+        <Label text="=prjExpenses" style="margin-left:-140px;" />
+	    <InputDecimal source="ExpectedExpenses" style="&inp3;" disablable="true" scale="2"/>
       </row>
 
       <row>

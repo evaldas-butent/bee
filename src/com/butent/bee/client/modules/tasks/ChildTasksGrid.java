@@ -50,6 +50,12 @@ class ChildTasksGrid extends TasksGrid {
           if (BeeUtils.same(parentForm.getViewName(), ProjectConstants.VIEW_PROJECTS)) {
             fillProjectData(childTaskDataInfo, childTaskRow, parentFormDataInfo, parentFormRow);
           }
+
+          if (BeeUtils.same(parentForm.getViewName(), ProjectConstants.VIEW_PROJECT_STAGES)) {
+            fillProjectStageData(childTaskDataInfo, childTaskRow, parentFormDataInfo,
+                parentFormRow);
+            fillProjectData(childTaskDataInfo, childTaskRow, parentFormDataInfo, parentFormRow);
+          }
         }
 
         RowFactory.createRow(childTaskDataInfo, childTaskRow, new RowCallback() {
@@ -96,5 +102,22 @@ class ChildTasksGrid extends TasksGrid {
     if (!BeeUtils.isNegative(idxTaskCompanyName) && !BeeUtils.isNegative(idxProjectCompanyName)) {
       taskRow.setValue(idxTaskCompanyName, parentRowData.getValue(idxProjectCompanyName));
     }
+  }
+
+  private static void fillProjectStageData(DataInfo taskData, IsRow taskRow,
+      DataInfo parentFormData, IsRow parentRowData) {
+    if (taskData == null && taskRow == null && parentFormData == null && parentRowData == null) {
+      return;
+    }
+
+    /* Fill project info */
+    int idxTaskProject = taskData.getColumnIndex(ProjectConstants.COL_PROJECT);
+    int idxStageProject = parentFormData.getColumnIndex(ProjectConstants.COL_PROJECT);
+
+    if (BeeUtils.isNegative(idxTaskProject) && BeeUtils.isNegative(idxStageProject)) {
+      return;
+    }
+
+    taskRow.setValue(idxTaskProject, parentRowData.getValue(idxStageProject));
   }
 }

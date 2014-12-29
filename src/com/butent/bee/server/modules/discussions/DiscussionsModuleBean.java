@@ -432,7 +432,7 @@ public class DiscussionsModuleBean implements BeeModule {
       row.setProperty(PROP_MARK_TYPES, rs.serialize());
     }
 
-    Collection<BeeParameter> discussModuleParams = prm.getModuleParameters(getModule().getName());
+    Collection<BeeParameter> discussModuleParams = prm.getParameters(getModule().getName());
     if (!discussModuleParams.isEmpty()) {
       Map<String, String> paramsMap = new HashMap<>();
 

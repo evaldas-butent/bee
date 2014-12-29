@@ -431,6 +431,10 @@ public final class UiHelper {
     return getParentPopup(widget) != null;
   }
 
+  public static boolean isOrHasChild(Widget parent, Class<? extends Widget> clazz) {
+    return getChild(parent, clazz) != null;
+  }
+
   public static boolean isSave(NativeEvent event) {
     if (event == null) {
       return false;

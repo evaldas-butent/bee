@@ -371,6 +371,7 @@
       <xs:enumeration value="PrintLogisticsInvoice" />
       <xs:enumeration value="PrintOrder" />
       <xs:enumeration value="Projects" />
+      <xs:enumeration value="ProjectDates" />
       <xs:enumeration value="ProjectStages" />
       <xs:enumeration value="ProjectTree"/>
       <xs:enumeration value="ProjectTypes" />

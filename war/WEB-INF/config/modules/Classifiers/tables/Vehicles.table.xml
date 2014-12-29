@@ -3,7 +3,6 @@
 
   name="Vehicles"
   idName="VehicleID"
-  x="0" y="0"
   >
   <Fields>
     <Relation name="Type" notNull="true" relation="VehicleTypes" label="=vehicleType" />

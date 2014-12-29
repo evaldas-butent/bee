@@ -82,8 +82,6 @@ public interface IsTable<R extends IsRow, C extends IsColumn> extends Iterable<R
 
   String getColumnProperty(int colIndex, String name);
 
-  Range getColumnRange(int colIndex);
-
   List<C> getColumns();
 
   ValueType getColumnType(int colIndex);

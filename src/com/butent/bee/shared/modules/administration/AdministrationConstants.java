@@ -75,12 +75,13 @@ public final class AdministrationConstants {
     EnumUtils.register(SysObject.class);
   }
 
+  public static final String FILE_URL = "file";
+
   public static final String PARAMETERS_PREFIX = "parameters_";
 
   public static final String SVC_GET_PARAMETER = PARAMETERS_PREFIX + "parameter";
   public static final String SVC_GET_RELATION_PARAMETER = PARAMETERS_PREFIX + "relation_parameter";
   public static final String SVC_GET_PARAMETERS = PARAMETERS_PREFIX + "get";
-  public static final String SVC_RESET_PARAMETER = PARAMETERS_PREFIX + "reset";
   public static final String SVC_SET_PARAMETER = PARAMETERS_PREFIX + "set";
 
   public static final String SVC_DO_IMPORT = "DoImport";

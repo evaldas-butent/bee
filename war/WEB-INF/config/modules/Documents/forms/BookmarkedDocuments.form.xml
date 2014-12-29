@@ -13,7 +13,7 @@
     <Table style="width:100%;">
       <row>
         <Label style="&lblRight;" text="=name" />
-        <InputText style="&inpLeft;" source="Name" readOnly="true" />
+        <InputText style="&inpLeft;" source="CategoryName" readOnly="true" />
         <Label style="&lblRight;" text="=documentParentCategory" /> 
         <InputText style="&inpLeft;" source="ParentName" readOnly="true" />
         <Label style="&lblRight;" text="=documentCount" /> 

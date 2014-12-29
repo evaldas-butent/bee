@@ -377,6 +377,8 @@ public interface LocalizableConstants extends Constants, LocalizableClassifierCo
 
   String height();
 
+  String holidays();
+
   String imported();
 
   String imageUploadFailed();

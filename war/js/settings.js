@@ -1,6 +1,6 @@
 var BeeSettings = {
   "appName": "B-NOVO",
-  "version": "1.35",
+  "version": "1.37",
   "logoImage": "images/logo1.gif",
   "logoOpen": "http://www.butent.com",
   "providerSensitivityMillis": 300,

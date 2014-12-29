@@ -12,6 +12,7 @@ public final class TradeActConstants {
   public static final String SVC_CONVERT_ACT_TO_SALE = "ConvertActToSale";
 
   public static final String SVC_GET_ACTS_FOR_INVOICE = "GetActsForInvoice";
+  public static final String SVC_GET_SERVICES_FOR_INVOICE = "GetServicesForInvoice";
   public static final String SVC_CREATE_ACT_INVOICE = "CreateActInvoice";
 
   public static final String SVC_ITEMS_BY_COMPANY_REPORT = "GetItemsByCompanyReport";
@@ -40,6 +41,7 @@ public final class TradeActConstants {
   public static final String VIEW_TRADE_ACT_TMPL_SERVICES = "TradeActTmplServices";
 
   public static final String VIEW_TRADE_ACT_INVOICES = "TradeActInvoices";
+  public static final String VIEW_INVOICE_TRADE_ACTS = "InvoiceTradeActs";
 
   public static final String COL_TRADE_ACT = "TradeAct";
   public static final String COL_TRADE_ACT_TEMPLATE = "TradeActTemplate";
@@ -73,6 +75,8 @@ public final class TradeActConstants {
   public static final String COL_TA_SERVICE_DAYS = "DaysPerWeek";
   public static final String COL_TA_SERVICE_MIN = "MinTerm";
 
+  public static final String COL_TA_INVOICE_SERVICE = "TradeActService";
+  public static final String COL_TA_INVOICE_ITEM = "SaleItem";
   public static final String COL_TA_INVOICE_FROM = "DateFrom";
   public static final String COL_TA_INVOICE_TO = "DateTo";
 
@@ -106,6 +110,9 @@ public final class TradeActConstants {
   public static final String PRP_ITEM_TOTAL = "item_total";
   public static final String PRP_RETURNED_TOTAL = "returned_total";
   public static final String PRP_RETURNED_QTY = "returned_qty";
+  public static final String PRP_TA_SERVICE_FROM = "service_from";
+  public static final String PRP_TA_SERVICE_TO = "service_to";
+  public static final String PRP_INVOICE_PERIODS = "invoice_periods";
 
   public static final String PRM_IMPORT_TA_ITEM_RX = "ImportActItemRegEx";
   public static final String RX_IMPORT_ACT_ITEM = "^(.+);(.*);(\\d+\\.*\\d*)$";

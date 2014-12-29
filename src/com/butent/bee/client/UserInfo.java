@@ -80,6 +80,10 @@ public class UserInfo implements HasInfo {
     return isLoggedIn() ? userData.getCompany() : null;
   }
 
+  public String getCompanyName() {
+    return isLoggedIn() ? userData.getCompanyName() : null;
+  }
+
   public Filter getFilter(String column) {
     if (isLoggedIn() && !BeeUtils.isEmpty(column)) {
       return Filter.equals(column, getUserId());

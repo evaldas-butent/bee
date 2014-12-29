@@ -357,6 +357,7 @@ public final class TaskConstants {
   public static final String ALS_PERSON_LAST_NAME = "PersonLastName";
   public static final String ALS_PERSON_COMPANY_NAME = "PersonCompanyName";
 
+  public static final String ALS_TASK_SUBJECT = "TaskSubject";
   public static final String ALS_TASK_TYPE_NAME = "TypeName";
   public static final String ALS_TASK_TYPE_BACKGROUND = "TypeBackground";
   public static final String ALS_TASK_TYPE_FOREGROUND = "TypeForeground";
@@ -396,6 +397,7 @@ public final class TaskConstants {
   public static final String GRID_TASKS_TYPE_HOURS_REPORT = "TasksTypeHoursReport";
 
   public static final String GRID_RECURRING_TASKS = "RecurringTasks";
+  public static final String GRID_CHILD_RECURRING_TASKS = "ChildRecurringTasks";
   public static final String GRID_RT_FILES = "RTFiles";
 
   public static final String GRID_RELATED_TASKS = "RelatedTasks";

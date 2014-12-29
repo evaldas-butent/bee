@@ -176,6 +176,8 @@ public final class BeeConst {
   public static final Set<Long> EMPTY_IMMUTABLE_LONG_SET = Collections.emptySet();
   public static final List<Long> EMPTY_IMMUTABLE_LONG_LIST = Collections.emptyList();
 
+  public static final Set<Integer> EMPTY_IMMUTABLE_INT_SET = Collections.emptySet();
+
   private static String home = SERVER;
 
   /**

@@ -1996,7 +1996,7 @@ public class CellGrid extends Widget implements IdentifiableWidget, HasDataTable
     render(true);
   }
 
-  public int refreshCellContent(long rowId, String sourceName) {
+  public int refreshCell(long rowId, String sourceName) {
     int row = getRowIndex(rowId);
     if (!isRowWithinBounds(row)) {
       logger.warning("refreshCell: row id", rowId, "is not visible");
@@ -2004,9 +2004,26 @@ public class CellGrid extends Widget implements IdentifiableWidget, HasDataTable
     }
 
     List<Integer> colIndexes = getColumnIndexBySourceName(sourceName);
-    for (int col : colIndexes) {
-      updateCellContent(row, col);
+    if (colIndexes.isEmpty()) {
+      return 0;
     }
+
+    boolean hasDynStyles = false;
+    for (int col : colIndexes) {
+      if (getColumnInfo(col).getDynStyles() != null) {
+        hasDynStyles = true;
+        break;
+      }
+    }
+
+    if (hasDynStyles) {
+      refreshRow(row, colIndexes);
+    } else {
+      for (int col : colIndexes) {
+        updateCellContent(row, col);
+      }
+    }
+
     return colIndexes.size();
   }
 

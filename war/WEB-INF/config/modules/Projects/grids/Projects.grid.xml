@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <g:Grid xmlns="http://www.butent.com/column" xmlns:g="http://www.butent.com/grid"
 	xmlns:ui="http://www.butent.com/ui" xmlns:w="http://www.butent.com/widget"
+	xmlns:xi="http://www.w3.org/2001/XInclude"
 
 	name="Projects" viewName="Projects" caption="=projects" favorite="Name"
 	order="ProjectID desc">
@@ -20,24 +21,8 @@
     </w:DataTree>
 	</g:west>
 	
-	<g:columns>
-		<IdColumn name="Id" />
-		<DataColumn name="Priority" visible="true" minWidth="70"
-			autoFit="true" />
-
-		<DataColumn name="Status" visible="true" minWidth="70"
-			autoFit="true" />
-
-		<DataColumn name="Name" visible="true" />		
-		<RelColumn name="Type" />		
-		<RelColumn name="Company" label="=client"/>
-		<RelColumn name="Owner" />
-		<DataColumn name="StartDate" />
-		<DataColumn name="EndDate" />
-		<DataColumn name="Progress" label="%" autoFit="true"/>
-		<RelColumn name="Category" visible="false" />
-	</g:columns>
-
+	<xi:include href="columns/Project.columns.xml" />
+	
 	<g:predefinedFilter name="projects_active" label="=prjFilterActive" initial="true">
 		<g:column name="Status" value="0" />
 	</g:predefinedFilter>

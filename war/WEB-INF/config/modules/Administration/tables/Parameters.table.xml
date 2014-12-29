@@ -6,6 +6,6 @@
   >
   <Fields>
     <String name="Name" precision="30" notNull="true" unique="true" label="=parameter" />
-    <Text name="Value" label="=valueParameter" />
+    <Text name="Value" label="=value" />
   </Fields>
 </Table>

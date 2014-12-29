@@ -55,6 +55,7 @@ import com.butent.bee.shared.modules.trade.acts.TradeActKind;
 import com.butent.bee.shared.modules.trade.acts.TradeActTimeUnit;
 import com.butent.bee.shared.modules.trade.acts.TradeActUtils;
 import com.butent.bee.shared.time.DateTime;
+import com.butent.bee.shared.time.JustDate;
 import com.butent.bee.shared.time.TimeUtils;
 import com.butent.bee.shared.utils.ArrayUtils;
 import com.butent.bee.shared.utils.BeeUtils;
@@ -124,6 +125,10 @@ public class TradeActBean {
 
       case SVC_GET_ACTS_FOR_INVOICE:
         response = getActsForInvoice(reqInfo);
+        break;
+
+      case SVC_GET_SERVICES_FOR_INVOICE:
+        response = getServicesForInvoice(reqInfo);
         break;
 
       case SVC_CREATE_ACT_INVOICE:
@@ -330,16 +335,6 @@ public class TradeActBean {
       return ResponseObject.error(reqInfo.getService(), saleItems.getViewName(), "is empty");
     }
 
-    serialized = reqInfo.getParameter(VIEW_TRADE_ACT_INVOICES);
-    if (BeeUtils.isEmpty(serialized)) {
-      return ResponseObject.parameterNotFound(reqInfo.getService(), VIEW_TRADE_ACT_INVOICES);
-    }
-
-    BeeRowSet relations = BeeRowSet.restore(serialized);
-    if (DataUtils.isEmpty(relations)) {
-      return ResponseObject.error(reqInfo.getService(), relations.getViewName(), "is empty");
-    }
-
     ResponseObject response = deb.commitRow(sales);
     if (response.hasErrors() || !response.hasResponse(BeeRow.class)) {
       return response;
@@ -350,24 +345,27 @@ public class TradeActBean {
     int colIndex = saleItems.getColumnIndex(COL_SALE);
 
     for (int i = 0; i < saleItems.getNumberOfRows(); i++) {
-      saleItems.setValue(i, colIndex, invoiceId);
+      BeeRow saleItem = saleItems.getRow(i);
+      saleItem.setValue(colIndex, invoiceId);
 
       ResponseObject insResponse = deb.commitRow(saleItems, i, RowInfo.class);
       if (insResponse.hasErrors()) {
         response.addMessagesFrom(insResponse);
         break;
       }
-    }
 
-    colIndex = relations.getColumnIndex(COL_SALE);
+      String svcId = saleItem.getProperty(COL_TA_INVOICE_SERVICE);
+      String from = saleItem.getProperty(PRP_TA_SERVICE_FROM);
+      String to = saleItem.getProperty(PRP_TA_SERVICE_TO);
 
-    for (int i = 0; i < relations.getNumberOfRows(); i++) {
-      relations.setValue(i, colIndex, invoiceId);
+      if (DataUtils.isId(svcId) && BeeUtils.isPositiveInt(from) && BeeUtils.isPositiveInt(to)) {
+        SqlInsert insert = new SqlInsert(TBL_TRADE_ACT_INVOICES)
+            .addConstant(COL_TA_INVOICE_SERVICE, svcId)
+            .addConstant(COL_TA_INVOICE_ITEM, ((RowInfo) insResponse.getResponse()).getId())
+            .addConstant(COL_TA_INVOICE_FROM, new JustDate(BeeUtils.toInt(from)))
+            .addConstant(COL_TA_INVOICE_TO, new JustDate(BeeUtils.toInt(to)));
 
-      ResponseObject insResponse = deb.commitRow(relations, i, RowInfo.class);
-      if (insResponse.hasErrors()) {
-        response.addMessagesFrom(insResponse);
-        break;
+        qs.insertData(insert);
       }
     }
 
@@ -562,14 +560,6 @@ public class TradeActBean {
 
     Totalizer itemTotalizer = null;
 
-    SqlSelect rangeQuery = new SqlSelect()
-        .addFields(TBL_TRADE_ACT_INVOICES, COL_TA_INVOICE_FROM, COL_TA_INVOICE_TO)
-        .addFrom(TBL_TRADE_ACT_INVOICES);
-
-    IsCondition rangeCondition = SqlUtils.and(
-        SqlUtils.notNull(TBL_TRADE_ACT_INVOICES, COL_TA_INVOICE_FROM),
-        SqlUtils.notNull(TBL_TRADE_ACT_INVOICES, COL_TA_INVOICE_TO));
-
     for (BeeRow act : acts) {
       long actId = act.getId();
 
@@ -613,14 +603,6 @@ public class TradeActBean {
           act.setProperty(PRP_RETURNED_TOTAL, BeeUtils.toString(returnedTotal, 2));
         }
       }
-
-      rangeQuery.setWhere(SqlUtils.and(rangeCondition,
-          SqlUtils.equals(TBL_TRADE_ACT_INVOICES, COL_TRADE_ACT, actId)));
-
-      SimpleRowSet rangeData = qs.getData(rangeQuery);
-      if (!DataUtils.isEmpty(rangeData)) {
-        act.setProperty(TBL_TRADE_ACT_INVOICES, rangeData.serialize());
-      }
     }
 
     Double vatPercent = prm.getDouble(AdministrationConstants.PRM_VAT_PERCENT);
@@ -629,6 +611,53 @@ public class TradeActBean {
     }
 
     return ResponseObject.response(acts);
+  }
+
+  private ResponseObject getServicesForInvoice(RequestInfo reqInfo) {
+    Set<Long> actIds = DataUtils.parseIdSet(reqInfo.getParameter(COL_TRADE_ACT));
+    if (actIds.isEmpty()) {
+      return ResponseObject.parameterNotFound(reqInfo.getService(), COL_TRADE_ACT);
+    }
+
+    Filter filter = Filter.and(Filter.any(COL_TRADE_ACT, actIds),
+        Filter.isPositive(COL_TRADE_ITEM_QUANTITY));
+
+    BeeRowSet services = qs.getViewData(VIEW_TRADE_ACT_SERVICES, filter);
+    if (DataUtils.isEmpty(services)) {
+      return ResponseObject.emptyResponse();
+    }
+
+    SqlSelect invoiceQuery = new SqlSelect()
+        .addFields(TBL_TRADE_ACT_INVOICES, COL_TA_INVOICE_FROM, COL_TA_INVOICE_TO)
+        .addFrom(TBL_TRADE_ACT_INVOICES)
+        .addOrder(TBL_TRADE_ACT_INVOICES, COL_TA_INVOICE_FROM, COL_TA_INVOICE_TO);
+
+    for (BeeRow service : services) {
+      invoiceQuery.setWhere(SqlUtils.equals(TBL_TRADE_ACT_INVOICES, COL_TA_INVOICE_SERVICE,
+          service.getId()));
+
+      SimpleRowSet invoiceData = qs.getData(invoiceQuery);
+
+      if (!DataUtils.isEmpty(invoiceData)) {
+        List<Integer> invoiceRanges = new ArrayList<>();
+
+        for (SimpleRow row : invoiceData) {
+          JustDate from = row.getDate(COL_TA_INVOICE_FROM);
+          JustDate to = row.getDate(COL_TA_INVOICE_TO);
+
+          if (from != null && to != null && BeeUtils.isMeq(to, from)) {
+            invoiceRanges.add(from.getDays());
+            invoiceRanges.add(to.getDays());
+          }
+        }
+
+        if (!invoiceRanges.isEmpty()) {
+          service.setProperty(PRP_INVOICE_PERIODS, BeeUtils.joinInts(invoiceRanges));
+        }
+      }
+    }
+
+    return ResponseObject.response(services);
   }
 
   private ResponseObject getItemsByCompanyReport(RequestInfo reqInfo) {
@@ -1152,11 +1181,11 @@ public class TradeActBean {
     List<String> groupBy = NameUtils.toList(reqInfo.getParameter(Service.VAR_GROUP_BY));
 
     SqlSelect rangeQuery = new SqlSelect()
-        .addFields(TBL_TRADE_ACT_INVOICES, COL_SALE)
+        .addFields(TBL_TRADE_ACT_INVOICES, COL_TA_INVOICE_ITEM)
         .addMin(TBL_TRADE_ACT_INVOICES, COL_TA_INVOICE_FROM)
         .addMax(TBL_TRADE_ACT_INVOICES, COL_TA_INVOICE_TO)
         .addFrom(TBL_TRADE_ACT_INVOICES)
-        .addGroup(TBL_TRADE_ACT_INVOICES, COL_SALE);
+        .addGroup(TBL_TRADE_ACT_INVOICES, COL_TA_INVOICE_ITEM);
 
     String rangeAlias = "rng_" + SqlUtils.uniqueName();
 
@@ -1188,10 +1217,11 @@ public class TradeActBean {
     SqlSelect query = new SqlSelect();
 
     query.addFrom(TBL_SALES);
-    query.addFromLeft(rangeQuery, rangeAlias,
-        SqlUtils.join(TBL_SALES, sys.getIdName(TBL_SALES), rangeAlias, COL_SALE));
     query.addFromLeft(TBL_SALE_ITEMS,
         sys.joinTables(TBL_SALES, TBL_SALE_ITEMS, COL_SALE));
+    query.addFromLeft(rangeQuery, rangeAlias,
+        SqlUtils.join(TBL_SALE_ITEMS, sys.getIdName(TBL_SALE_ITEMS),
+            rangeAlias, COL_TA_INVOICE_ITEM));
 
     if (groupBy.isEmpty()) {
       query.addFields(TBL_SALE_ITEMS, COL_SALE);
@@ -2216,9 +2246,33 @@ public class TradeActBean {
 
     SimpleRowSet data = qs.getData(query);
 
+    Set<Integer> holidays = new HashSet<>();
+
+    Long country = prm.getRelation(PRM_COUNTRY);
+
+    if (DataUtils.isId(country)) {
+      SqlSelect holidayQuery = new SqlSelect()
+          .addFields(TBL_HOLIDAYS, COL_HOLY_DAY)
+          .addFrom(TBL_HOLIDAYS)
+          .setWhere(SqlUtils.equals(TBL_HOLIDAYS, COL_HOLY_COUNTRY, country));
+
+      Integer[] days = qs.getIntColumn(holidayQuery);
+      if (days != null) {
+        for (Integer day : days) {
+          if (BeeUtils.isPositive(day)) {
+            holidays.add(day);
+          }
+        }
+      }
+    }
+
     Range<DateTime> reportRange = TradeActUtils.createRange(new DateTime(startDate),
         new DateTime(endDate));
-    int reportDays = TradeActUtils.countServiceDays(reportRange);
+
+    int reportDays = TradeActUtils.countServiceDays(reportRange, holidays);
+    if (reportDays <= 0) {
+      return;
+    }
 
     int priceScale = sys.getFieldScale(TBL_TRADE_ACT_SERVICES, COL_TRADE_ITEM_PRICE);
     int factorScale = sys.getFieldScale(TBL_TRADE_ACT_SERVICES, COL_TA_SERVICE_FACTOR);
@@ -2257,34 +2311,43 @@ public class TradeActBean {
         Double factor = row.getDouble(COL_TA_SERVICE_FACTOR);
 
         if (tu != null) {
-          int days = TradeActUtils.countServiceDays(serviceRange);
+          boolean ok = true;
 
           switch (tu) {
             case DAY:
               if (!BeeUtils.isPositive(factor)) {
                 Integer dpw = row.getInt(COL_TA_SERVICE_DAYS);
                 if (TradeActUtils.validDpw(dpw)) {
-                  double df = TradeActUtils.dpwToFactor(dpw, days, row.getInt(COL_TA_SERVICE_MIN));
+                  double df = TradeActUtils.dpwToFactor(dpw, serviceRange, holidays,
+                      row.getInt(COL_TA_SERVICE_MIN));
 
                   if (BeeUtils.isPositive(df)) {
                     factor = df;
                     update.addConstant(COL_TA_SERVICE_FACTOR, df);
+                  } else {
+                    ok = false;
                   }
                 }
               }
               break;
 
             case MONTH:
-              if (days < reportDays) {
-                double df = BeeUtils.div(days, reportDays);
-                if (BeeUtils.isPositive(factor)) {
-                  df *= factor;
-                }
+              double mf = TradeActUtils.getMonthFactor(serviceRange, holidays);
 
-                factor = BeeUtils.round(df, factorScale);
+              if (BeeUtils.isPositive(mf)) {
+                if (BeeUtils.isPositive(factor)) {
+                  mf *= factor;
+                }
+                factor = BeeUtils.round(mf, factorScale);
                 update.addConstant(COL_TA_SERVICE_FACTOR, factor);
+              } else {
+                ok = false;
               }
               break;
+          }
+
+          if (!ok) {
+            continue;
           }
         }
 

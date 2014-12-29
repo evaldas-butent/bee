@@ -8,6 +8,14 @@
   >
   <Columns>
     <SimpleColumn name="Project" />
+    <SimpleJoin name="Project" joinType="LEFT">
+      <SimpleColumn name="Company" />
+      <SimpleJoin name="Company" joinType="LEFT">
+        <SimpleColumn name="Name" alias="CompanyName" />
+      </SimpleJoin>
+      <SimpleColumn name="StartDate" alias="ProjectStartDate" />
+      <SimpleColumn name="EndDate" alias="ProjectEndDate" />
+    </SimpleJoin>
     <SimpleColumn name="Name" />
     <SimpleColumn name="StartDate" />
     <SimpleColumn name="EndDate" />

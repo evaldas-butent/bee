@@ -5,8 +5,9 @@
   idName="TradeActInvoiceID"
   >
   <Fields>
-    <Relation name="TradeAct" notNull="true" relation="TradeActs" cascade="DELETE" label="=tradeAct" />
-    <Relation name="Sale" notNull="true" relation="Sales" cascade="DELETE" label="=trdInvoice" />
+    <Relation name="TradeActService" notNull="true" relation="TradeActServices" cascade="DELETE"
+      label="=service" />
+    <Relation name="SaleItem" notNull="true" relation="SaleItems" cascade="DELETE" label="=item" />
 
     <Date name="DateFrom" label="=dateFrom" />
     <Date name="DateTo" label="=dateTo" />

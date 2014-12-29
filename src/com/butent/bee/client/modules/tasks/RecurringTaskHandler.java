@@ -45,6 +45,7 @@ import com.butent.bee.client.view.form.interceptor.AbstractFormInterceptor;
 import com.butent.bee.client.view.form.interceptor.FormInterceptor;
 import com.butent.bee.client.widget.CustomDiv;
 import com.butent.bee.client.widget.FaLabel;
+import com.butent.bee.client.widget.InputDate;
 import com.butent.bee.client.widget.Label;
 import com.butent.bee.client.widget.Toggle;
 import com.butent.bee.shared.Assert;
@@ -68,11 +69,13 @@ import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogUtils;
 import com.butent.bee.shared.modules.administration.AdministrationConstants;
 import com.butent.bee.shared.modules.classifiers.ClassifierConstants;
-import com.butent.bee.shared.modules.tasks.TaskUtils;
+import com.butent.bee.shared.modules.projects.ProjectConstants;
 import com.butent.bee.shared.modules.tasks.TaskConstants.TaskStatus;
+import com.butent.bee.shared.modules.tasks.TaskUtils;
 import com.butent.bee.shared.time.CronExpression;
 import com.butent.bee.shared.time.CronExpression.Field;
 import com.butent.bee.shared.time.DateRange;
+import com.butent.bee.shared.time.HasDateValue;
 import com.butent.bee.shared.time.JustDate;
 import com.butent.bee.shared.time.ScheduleDateMode;
 import com.butent.bee.shared.time.ScheduleDateRange;
@@ -242,6 +245,34 @@ class RecurringTaskHandler extends AbstractFormInterceptor implements CellValida
     });
   }
 
+  private static void setProjectScheduleTimeLimit(FormView form, IsRow row) {
+    Widget wScheduleStart = form.getWidgetBySource(COL_RT_SCHEDULE_FROM);
+    Widget wScheduleUntil = form.getWidgetBySource(COL_RT_SCHEDULE_UNTIL);
+    Widget wScheduleUntilLabel = form.getWidgetByName(COL_RT_SCHEDULE_UNTIL);
+
+    HasDateValue projectStart =
+        row.getDate(form.getDataIndex(ProjectConstants.ALS_PROJECT_START_DATE));
+    HasDateValue projectEnd = row.getDate(form.getDataIndex(ProjectConstants.ALS_PROJECT_END_DATE));
+
+    if (wScheduleStart instanceof InputDate && projectStart != null) {
+      InputDate start = (InputDate) wScheduleStart;
+      start.setMinDate(projectStart);
+      start.setMaxDate(projectEnd);
+    }
+
+    if (wScheduleUntil instanceof InputDate && projectEnd != null) {
+      InputDate end = (InputDate) wScheduleUntil;
+      end.setMinDate(projectStart);
+      end.setMaxDate(projectEnd);
+      end.setNullable(false);
+    }
+
+    if (wScheduleUntilLabel != null && projectEnd != null) {
+      wScheduleUntilLabel.setStyleName(StyleUtils.NAME_REQUIRED);
+    }
+
+  }
+
   private static void showExamples(Element target, List<Property> examples) {
     HtmlTable table = new HtmlTable(STYLE_CRON_EXAMPLES);
 
@@ -385,6 +416,8 @@ class RecurringTaskHandler extends AbstractFormInterceptor implements CellValida
 
       header.addCommandItem(schedule);
     }
+
+    setProjectScheduleTimeLimit(form, row);
 
     for (Cron cron : Cron.values()) {
       refreshValues(row.getId(), cron, row.getString(form.getDataIndex(cron.source)));

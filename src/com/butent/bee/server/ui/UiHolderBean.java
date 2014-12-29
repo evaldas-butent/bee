@@ -72,18 +72,14 @@ public class UiHolderBean {
 
     private final String module;
     private final String name;
-    private final Document doc;
-    private final String viewName;
+    private final String resource;
+    private String viewName;
+    boolean viewSet;
 
-    public UiObjectInfo(String module, String name, Document doc, String viewName) {
+    public UiObjectInfo(String module, String name, String resource) {
       this.module = Assert.notEmpty(module);
       this.name = Assert.notEmpty(name);
-      this.doc = Assert.notNull(doc);
-      this.viewName = viewName;
-    }
-
-    public Document getDoc() {
-      return doc;
+      this.resource = Assert.notEmpty(resource);
     }
 
     @Override
@@ -96,10 +92,22 @@ public class UiHolderBean {
       return name;
     }
 
+    public String getResource() {
+      return resource;
+    }
+
     public String getViewName() {
       return viewName;
     }
 
+    public boolean isViewSet() {
+      return viewSet;
+    }
+
+    public void setViewName(String viewName) {
+      this.viewName = viewName;
+      this.viewSet = true;
+    }
   }
 
   private static BeeLogger logger = LogUtils.getLogger(UiHolderBean.class);
@@ -148,12 +156,23 @@ public class UiHolderBean {
     }
     UiObjectInfo formInfo = formCache.get(key(formName));
 
-    Document doc = XmlUtils.createDocument();
-    doc.appendChild(doc.importNode(formInfo.getDoc().getDocumentElement(), true));
+    String resource = formInfo.getResource();
+    Document doc = XmlUtils.getXmlResource(resource,
+        Config.getSchemaPath(SysObject.FORM.getSchemaName()));
 
-    BeeView view = sys.isView(formInfo.getViewName()) ? sys.getView(formInfo.getViewName()) : null;
+    if (doc == null) {
+      return ResponseObject.error("Cannot parse xml:", resource);
+    }
+    Element formElement = doc.getDocumentElement();
 
-    checkWidgetChildrenVisibility(doc.getDocumentElement(), view);
+    if (!BeeUtils.same(formElement.getAttribute(UiConstants.ATTR_NAME), formName)) {
+      return ResponseObject.error("From name doesn't match resource name:",
+          formElement.getAttribute(UiConstants.ATTR_NAME), "!=", formName);
+    }
+    String viewName = getFormViewName(formName);
+    BeeView view = sys.isView(viewName) ? sys.getView(viewName) : null;
+
+    checkWidgetChildrenVisibility(formElement, view);
 
     return ResponseObject.response(XmlUtils.toString(doc, false));
   }
@@ -176,8 +195,20 @@ public class UiHolderBean {
     if (!isGrid(gridName)) {
       return ResponseObject.error("Not a grid:", gridName);
     }
-    GridDescription grid = gridBean.getGridDescription(gridCache.get(key(gridName))
-        .getDoc().getDocumentElement());
+    String resource = gridCache.get(key(gridName)).getResource();
+    Document doc = XmlUtils.getXmlResource(resource,
+        Config.getSchemaPath(SysObject.GRID.getSchemaName()));
+
+    if (doc == null) {
+      return ResponseObject.error("Cannot parse xml:", resource);
+    }
+    Element gridElement = doc.getDocumentElement();
+
+    if (!BeeUtils.same(gridElement.getAttribute(UiConstants.ATTR_NAME), gridName)) {
+      return ResponseObject.error("Grid name doesn't match resource name:",
+          gridElement.getAttribute(UiConstants.ATTR_NAME), "!=", gridName);
+    }
+    GridDescription grid = gridBean.getGridDescription(gridElement);
 
     if (grid == null) {
       return ResponseObject.error("Cannot create grid description:", gridName);
@@ -319,17 +350,43 @@ public class UiHolderBean {
   }
 
   private String getFormViewName(String formName) {
-    if (isForm(formName)) {
-      return formCache.get(key(formName)).getViewName();
+    if (!isForm(formName)) {
+      return null;
     }
-    return null;
+    UiObjectInfo formInfo = formCache.get(key(formName));
+
+    if (!formInfo.isViewSet()) {
+      Document doc = XmlUtils.getXmlResource(formInfo.getResource(),
+          Config.getSchemaPath(SysObject.FORM.getSchemaName()));
+
+      if (doc != null) {
+        Element formElement = doc.getDocumentElement();
+        String viewName = formElement.getAttribute(UiConstants.ATTR_VIEW_NAME);
+
+        if (BeeUtils.isEmpty(viewName)) {
+          viewName = formElement.getAttribute(UiConstants.ATTR_DATA);
+        }
+        formInfo.setViewName(viewName);
+      }
+    }
+    return formInfo.getViewName();
   }
 
   private String getGridViewName(String gridName) {
-    if (isGrid(gridName)) {
-      return gridCache.get(key(gridName)).getViewName();
+    if (!isGrid(gridName)) {
+      return null;
     }
-    return null;
+    UiObjectInfo gridInfo = gridCache.get(key(gridName));
+
+    if (!gridInfo.isViewSet()) {
+      Document doc = XmlUtils.getXmlResource(gridInfo.getResource(),
+          Config.getSchemaPath(SysObject.GRID.getSchemaName()));
+
+      if (doc != null) {
+        gridInfo.setViewName(doc.getDocumentElement().getAttribute(UiConstants.ATTR_VIEW_NAME));
+      }
+    }
+    return gridInfo.getViewName();
   }
 
   private Menu getMenu(String parent, Menu entry, boolean checkRights) {
@@ -389,7 +446,6 @@ public class UiHolderBean {
         }
       }
     }
-
     return true;
   }
 
@@ -401,53 +457,6 @@ public class UiHolderBean {
 
     MenuService.GRID.setDataNameProvider(getGridDataNameProvider());
     MenuService.FORM.setDataNameProvider(getFormDataNameProvider());
-  }
-
-  private static UiObjectInfo initForm(String moduleName, String formName, Document doc) {
-    if (doc != null) {
-      Element element = doc.getDocumentElement();
-
-      if (!BeeUtils.same(element.getAttribute(UiConstants.ATTR_NAME), formName)) {
-        logger.warning("From name doesn't match resource name:",
-            element.getAttribute(UiConstants.ATTR_NAME), "!=", formName);
-      } else {
-        String viewName = element.getAttribute(UiConstants.ATTR_VIEW_NAME);
-
-        if (BeeUtils.isEmpty(viewName)) {
-          viewName = element.getAttribute(UiConstants.ATTR_DATA);
-        }
-        return new UiObjectInfo(moduleName, formName, doc, viewName);
-      }
-    }
-    return null;
-  }
-
-  private static UiObjectInfo initGrid(String moduleName, String gridName, Document doc) {
-    if (doc != null) {
-      Element element = doc.getDocumentElement();
-
-      if (!BeeUtils.same(element.getAttribute(UiConstants.ATTR_NAME), gridName)) {
-        logger.warning("Grid name doesn't match resource name:",
-            element.getAttribute(UiConstants.ATTR_NAME), "!=", gridName);
-      } else {
-        return new UiObjectInfo(moduleName, gridName, doc,
-            element.getAttribute(UiConstants.ATTR_VIEW_NAME));
-      }
-    }
-    return null;
-  }
-
-  private static Menu initMenu(String moduleName, String menuName, Menu menu) {
-    if (menu != null) {
-      if (!BeeUtils.same(menu.getName(), menuName)) {
-        logger.warning("Menu name doesn't match resource name:", menu.getName(), "!=", menuName);
-        return null;
-      }
-      if (BeeUtils.isEmpty(menu.getModule())) {
-        menu.setModuleName(moduleName);
-      }
-    }
-    return menu;
   }
 
   private void initObjects(SysObject obj) {
@@ -508,23 +517,27 @@ public class UiHolderBean {
   private boolean initUiObject(SysObject obj, String moduleName, String objectName,
       String resource, boolean initial) {
 
-    String schema = Config.getSchemaPath(obj.getSchemaName());
-
     switch (obj) {
       case GRID:
-        UiObjectInfo grid = initGrid(moduleName, objectName,
-            XmlUtils.getXmlResource(resource, schema));
-
+        UiObjectInfo grid = new UiObjectInfo(moduleName, objectName, resource);
         return SysObject.register(grid, gridCache, initial, logger);
       case FORM:
-        UiObjectInfo form = initForm(moduleName, objectName,
-            XmlUtils.getXmlResource(resource, schema));
-
+        UiObjectInfo form = new UiObjectInfo(moduleName, objectName, resource);
         return SysObject.register(form, formCache, initial, logger);
       case MENU:
-        Menu menu = initMenu(moduleName, objectName,
-            XmlUtils.unmarshal(Menu.class, resource, schema));
+        Menu menu = XmlUtils.unmarshal(Menu.class, resource,
+            Config.getSchemaPath(obj.getSchemaName()));
 
+        if (menu != null) {
+          if (!BeeUtils.same(menu.getName(), objectName)) {
+            logger.warning("Menu name doesn't match resource name:", menu.getName(), "!=",
+                objectName);
+            menu = null;
+
+          } else if (BeeUtils.isEmpty(menu.getModule())) {
+            menu.setModuleName(moduleName);
+          }
+        }
         return SysObject.register(menu, menuCache, initial, logger);
       default:
         return false;

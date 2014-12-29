@@ -18,13 +18,11 @@ public interface LocalizableProjectConstants {
 
   String prjParticipant();
 
+  String prjSchedule();
+
   String prjStatusActive();
 
   String prjStatusApproved();
-
-  String prjStatusCanceled();
-
-  String prjStatusCompleted();
 
   String prjStatusScheduled();
 
