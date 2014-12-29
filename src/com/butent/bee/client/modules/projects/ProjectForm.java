@@ -21,6 +21,7 @@ import com.butent.bee.shared.utils.BeeUtils;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.List;
 
 class ProjectForm extends AbstractFormInterceptor implements DataChangeEvent.Handler,
     RowInsertEvent.Handler {
@@ -57,6 +58,11 @@ class ProjectForm extends AbstractFormInterceptor implements DataChangeEvent.Han
   }
 
   @Override
+  public void onClose(List<String> messages, IsRow oldRow, IsRow newRow) {
+    chartData.clear();
+  }
+
+  @Override
   public void onDataChange(DataChangeEvent event) {
     if (event.hasView(VIEW_PROJECTS) || event.hasView(VIEW_PROJECT_USERS)
         || event.hasView(VIEW_PROJECT_STAGES) || event.hasView(VIEW_PROJECT_DATES)) {
@@ -86,6 +92,8 @@ class ProjectForm extends AbstractFormInterceptor implements DataChangeEvent.Han
     if (chartData == null && DataUtils.isId(row.getId())) {
       return;
     }
+
+    chartData.clear();
 
     ProjectScheduleChart.open(chartData, row.getId());
   }

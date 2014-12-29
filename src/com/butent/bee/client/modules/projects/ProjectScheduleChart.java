@@ -24,6 +24,7 @@ import com.butent.bee.client.view.ViewCallback;
 import com.butent.bee.client.widget.CustomDiv;
 import com.butent.bee.client.widget.Mover;
 import com.butent.bee.shared.Assert;
+import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.Size;
 import com.butent.bee.shared.communication.ResponseObject;
 import com.butent.bee.shared.data.SimpleRowSet;
@@ -60,9 +61,11 @@ final class ProjectScheduleChart extends TimeBoard {
   private static final String STYLE_STAGE_ROW = STYLE_PREFIX + "stage-row";
   private static final String STYLE_STAGE_FLOW = STYLE_PREFIX + "stage-flow";
   private static final String STYLE_STAGE_LABEL = STYLE_PREFIX + "stage-row-label";
+  private static final String STYLE_STAGE_ROW_SEPARATOR = STYLE_PREFIX + "stage-row-separator";
+  private static final String STYLE_DATA_ROW_SEPARATOR = STYLE_PREFIX + "data-row-separator";
   // private static final String STYLE_PROJECT_LABEL = STYLE_PREFIX + "project-row-label";
 
-  private static final int DEFAULT_CHART_LEFT = 150;
+  private static final int DEFAULT_CHART_LEFT = 250;
 
   private final class ChartItem implements HasDateRange {
 
@@ -228,14 +231,15 @@ final class ProjectScheduleChart extends TimeBoard {
       int top = rowIndex * getRowHeight();
 
       if (rowIndex == 0) {
-        stageWidget = createChartRowWidget(dataItem);
+        stageWidget = createChartRowWidget(dataItem, true);
         stageStartRow = rowIndex;
 
         lastStage = dataItem.getStageId();
 
         // second level widgets
-        flowWidget = createChartRowWidget(dataItem);
+        flowWidget = createChartRowWidget(dataItem, false);
         flowStartRow = rowIndex;
+
         lastFlow = BeeUtils.joinItems(dataItem.getViewName(), rowIndex);
 
       } else {
@@ -245,30 +249,47 @@ final class ProjectScheduleChart extends TimeBoard {
             BeeUtils.joinItems(dataItem.getViewName(), rowIndex));
 
         if (stageChanged) {
-          addChartRowWidget(panel, stageWidget, lastStage, stageStartRow, rowIndex - 1);
-          stageWidget = createChartRowWidget(dataItem);
+          addChartRowWidget(panel, stageWidget, lastStage, stageStartRow, rowIndex - 1, 0);
+          stageWidget = createChartRowWidget(dataItem, true);
           stageStartRow = rowIndex;
           lastStage = dataItem.getStageId();
         }
 
         // if second level change
         if (flowChanged) {
-          addChartRowWidget(panel, flowWidget, null, flowStartRow, rowIndex - 1);
-          flowWidget = createChartRowWidget(dataItem);
+          addChartRowWidget(panel, flowWidget, null, flowStartRow, rowIndex - 1, 1);
+          flowWidget = createChartRowWidget(dataItem, false);
           flowStartRow = rowIndex;
           lastFlow = BeeUtils.joinItems(dataItem.getViewName(), rowIndex);
         }
 
         if (stageChanged) {
-          TimeBoardHelper.addRowSeparator(panel, top, 0, getChartLeft() + calendarWidth);
+          TimeBoardHelper.addRowSeparator(panel, STYLE_STAGE_ROW_SEPARATOR, top, 0,
+              (2 * (getChartLeft() / 2)) + calendarWidth);
         } else if (flowChanged) {
-          TimeBoardHelper.addRowSeparator(panel, top, 0, (getChartLeft() * 2) + calendarWidth);
+          TimeBoardHelper.addRowSeparator(panel, STYLE_DATA_ROW_SEPARATOR, top, getChartLeft() / 2,
+              (getChartLeft() / 2) + calendarWidth);
         }
       }
 
       for (ChartItem item : chartItems) {
         // first level filter
-        if (item.getStageId() == dataItem.stageId) {
+        if (item.getStageId() == dataItem.stageId
+            && BeeUtils.same(VIEW_PROJECT_STAGES, item.getViewName())
+            && BeeUtils.same(item.getViewName(), dataItem.getViewName())) {
+          Widget itemWidget = createItemWidget(item);
+          Rectangle rectangle = getRectangle(item.getRange(), rowIndex);
+          TimeBoardHelper.apply(itemWidget, rectangle, margins);
+          styleItemWidget(item, itemWidget);
+
+          panel.add(itemWidget);
+        }
+
+        // second level filter
+        if (BeeUtils.same(dataItem.getViewName(), item.getViewName())
+            && BeeUtils.same(dataItem.getCaption(), item.getCaption())
+            && !BeeUtils.same(VIEW_PROJECT_STAGES, item.getViewName())) {
+
           Widget itemWidget = createItemWidget(item);
           Rectangle rectangle = getRectangle(item.getRange(), rowIndex);
           TimeBoardHelper.apply(itemWidget, rectangle, margins);
@@ -281,12 +302,12 @@ final class ProjectScheduleChart extends TimeBoard {
       int lastRow = boardLayout.size() - 1;
 
       if (stageWidget != null) {
-        addChartRowWidget(panel, stageWidget, lastStage, stageStartRow, lastRow);
+        addChartRowWidget(panel, stageWidget, lastStage, stageStartRow, lastRow, 0);
       }
 
       // second level
       if (flowWidget != null) {
-        addChartRowWidget(panel, flowWidget, null, flowStartRow, lastRow);
+        addChartRowWidget(panel, flowWidget, null, flowStartRow, lastRow, 1);
       }
 
       rowIndex++;
@@ -296,11 +317,19 @@ final class ProjectScheduleChart extends TimeBoard {
 
   @Override
   protected void renderMovers(ComplexPanel panel, int height) {
-    Mover mover = TimeBoardHelper.createHorizontalMover();
-    StyleUtils.setLeft(mover, getChartLeft() - TimeBoardHelper.DEFAULT_MOVER_WIDTH);
-    StyleUtils.setHeight(mover, height);
+    Mover stageMover = TimeBoardHelper.createHorizontalMover();
+    StyleUtils.setLeft(stageMover, (getChartLeft() / 2) - TimeBoardHelper.DEFAULT_MOVER_WIDTH);
+    StyleUtils.setHeight(stageMover, height);
 
-    panel.add(mover);
+    panel.add(stageMover);
+
+    Mover dataMover = TimeBoardHelper.createHorizontalMover();
+    StyleUtils.setLeft(dataMover, getChartLeft() - TimeBoardHelper.DEFAULT_MOVER_WIDTH);
+    StyleUtils.setHeight(dataMover, height);
+
+    panel.add(dataMover);
+
+    // TODO: Change Mover size with mouse
   }
 
   @Override
@@ -360,9 +389,11 @@ final class ProjectScheduleChart extends TimeBoard {
   }
 
   private void addChartRowWidget(HasWidgets panel, IdentifiableWidget widget,
-      Long stageId, int firstRow, int lastRow) {
-    Rectangle rectangle = TimeBoardHelper.getRectangle(0, getChartLeft(), firstRow, lastRow,
-        getRowHeight());
+      Long stageId, int firstRow, int lastRow, int level) {
+
+    Rectangle rectangle =
+        TimeBoardHelper.getRectangle(level * (getChartLeft() / 2), getChartLeft() / 2, firstRow,
+            lastRow, getRowHeight());
 
     Edges margins = new Edges();
     margins.setRight(TimeBoardHelper.DEFAULT_MOVER_WIDTH);
@@ -377,10 +408,19 @@ final class ProjectScheduleChart extends TimeBoard {
     }
   }
 
-  private static IdentifiableWidget createChartRowWidget(ChartItem item) {
+  private static IdentifiableWidget createChartRowWidget(ChartItem item, boolean firstLevel) {
     Flow panel = new Flow(STYLE_STAGE_ROW);
     CustomDiv label = new CustomDiv(STYLE_STAGE_LABEL);
-    label.setText(item.getCaption());
+
+    if (firstLevel && BeeUtils.same(VIEW_PROJECT_STAGES, item.getViewName())) {
+      label.setText(item.getCaption());
+    } else if (firstLevel) {
+      label.setText(Localized.getConstants().project());
+    } else if (!firstLevel && !BeeUtils.same(VIEW_PROJECT_STAGES, item.getViewName())) {
+      label.setText(item.getCaption());
+    } else {
+      label.setText(BeeConst.STRING_EMPTY);
+    }
     panel.add(label);
     return panel;
   }
@@ -405,7 +445,8 @@ final class ProjectScheduleChart extends TimeBoard {
     Flow panel = new Flow(STYLE_STAGE_ROW);
 
     panel.addStyleName(STYLE_STAGE_FLOW);
-    panel.setTitle(item.getCaption());
+    panel.addStyleName(STYLE_STAGE_FLOW + BeeConst.STRING_MINUS + item.getViewName());
+    panel.setTitle(item.getCaption() + BeeConst.STRING_EOL + item.getRange().toString());
 
     if (!BeeUtils.isEmpty(item.getColor())) {
       StyleUtils.setBackgroundColor(panel, item.getColor());

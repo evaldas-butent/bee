@@ -13,7 +13,8 @@
 }
 
 .bee-prj-chart-stage-row-label{
-	
+	 word-wrap: break-word;
+   min-width: 100%;
 }
 
 .bee-prj-chart-stage-row-label:hover {
@@ -24,6 +25,26 @@
 
 .bee-prj-chart-stage-flow {
 	position: absolute;
+  display: flex;
   cursor: pointer;
   background-color: #d8e8ed;
+  justify-content: center;
+  align-items: center;
+   overflow: hidden;
+}
+
+.bee-prj-chart-stage-row-separator,
+.bee-prj-chart-data-row-separator {
+	position: absolute;
+  height: 1px;
+  background-color: #ddd;
+
+}
+
+.bee-prj-chart-stage-row-separator {
+
+}
+
+.bee-prj-chart-data-row-separator {
+	
 }
