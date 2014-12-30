@@ -1,6 +1,7 @@
 package com.butent.bee.client.modules.trade.acts;
 
 import com.google.common.collect.Lists;
+import com.google.gwt.core.client.Scheduler;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.event.logical.shared.SelectionEvent;
@@ -52,7 +53,9 @@ import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.IsColumn;
 import com.butent.bee.shared.data.IsRow;
 import com.butent.bee.shared.data.RowFunction;
+import com.butent.bee.shared.data.event.DataChangeEvent;
 import com.butent.bee.shared.data.event.ModificationEvent;
+import com.butent.bee.shared.data.view.RowInfoList;
 import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.io.FileInfo;
 import com.butent.bee.shared.modules.classifiers.ItemPrice;
@@ -189,7 +192,8 @@ public class TradeActItemsGrid extends AbstractGridInterceptor implements
 
     if (parentRow != null) {
       final TradeActKind kind = TradeActKeeper.getKind(VIEW_TRADE_ACTS, parentRow);
-      Long parent = Data.getLong(VIEW_TRADE_ACTS, parentRow, COL_TA_PARENT);
+      final Long parent = Data.getLong(VIEW_TRADE_ACTS, parentRow, COL_TA_PARENT);
+      final DateTime date = Data.getDateTime(VIEW_TRADE_ACTS, parentRow, COL_TA_DATE);
 
       if (kind == TradeActKind.RETURN && DataUtils.isId(parent)) {
         ParameterList params = TradeActKeeper.createArgs(SVC_GET_ITEMS_FOR_RETURN);
@@ -210,7 +214,22 @@ public class TradeActItemsGrid extends AbstractGridInterceptor implements
                   new Consumer<BeeRowSet>() {
                     @Override
                     public void accept(BeeRowSet actItems) {
-                      addActItems(parentAct, actItems);
+                      addActItems(parentAct, actItems, new Scheduler.ScheduledCommand() {
+                        @Override
+                        public void execute() {
+                          ParameterList ps = TradeActKeeper.createArgs(SVC_SPLIT_ACT_SERVICES);
+                          ps.addQueryItem(COL_TRADE_ACT, parent);
+                          ps.addQueryItem(COL_TA_DATE, date.getTime());
+
+                          BeeKeeper.getRpc().makeRequest(ps, new ResponseCallback() {
+                            @Override
+                            public void onResponse(ResponseObject rsp) {
+                              DataChangeEvent.fireRefresh(BeeKeeper.getBus(),
+                                  VIEW_TRADE_ACT_SERVICES);
+                            }
+                          });
+                        }
+                      });
 
                       if (parentAct != null
                           && quantities.equals(TradeActUtils.getItemQuantities(actItems))) {
@@ -308,7 +327,9 @@ public class TradeActItemsGrid extends AbstractGridInterceptor implements
     addItems(event.getSelectedItem());
   }
 
-  private void addActItems(final BeeRow act, final BeeRowSet actItems) {
+  private void addActItems(final BeeRow act, final BeeRowSet actItems,
+      final Scheduler.ScheduledCommand command) {
+
     if (!DataUtils.isEmpty(actItems) && getViewName().equals(actItems.getViewName())) {
       getGridView().ensureRelId(new IdCallback() {
         @Override
@@ -322,7 +343,7 @@ public class TradeActItemsGrid extends AbstractGridInterceptor implements
             DateTime date = Data.getDateTime(VIEW_TRADE_ACTS, parentRow, COL_TA_DATE);
             Long targetCurrency = Data.getLong(VIEW_TRADE_ACTS, parentRow, COL_TA_CURRENCY);
 
-            addActItems(result, date, sourceCurrency, targetCurrency, actItems);
+            addActItems(result, date, sourceCurrency, targetCurrency, actItems, command);
           }
         }
       });
@@ -330,7 +351,7 @@ public class TradeActItemsGrid extends AbstractGridInterceptor implements
   }
 
   private void addActItems(long targetId, DateTime date, Long sourceCurrency,
-      Long targetCurrency, BeeRowSet sourceItems) {
+      Long targetCurrency, BeeRowSet sourceItems, final Scheduler.ScheduledCommand command) {
 
     List<BeeColumn> columns = new ArrayList<>();
     Map<Integer, Integer> indexes = new HashMap<>();
@@ -372,7 +393,15 @@ public class TradeActItemsGrid extends AbstractGridInterceptor implements
       rowSet.addRow(row);
     }
 
-    Queries.insertRows(rowSet);
+    Queries.insertRows(rowSet, new Callback<RowInfoList>() {
+      @Override
+      public void onSuccess(RowInfoList result) {
+        DataChangeEvent.fireRefresh(BeeKeeper.getBus(), getViewName());
+        if (command != null) {
+          command.execute();
+        }
+      }
+    });
   }
 
   private void addItems(final BeeRowSet rowSet) {

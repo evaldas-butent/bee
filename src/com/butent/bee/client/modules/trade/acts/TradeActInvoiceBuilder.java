@@ -130,21 +130,7 @@ public class TradeActInvoiceBuilder extends AbstractFormInterceptor implements
     }
 
     private Double itemTotal() {
-      String value = row.getProperty(PRP_ITEM_TOTAL);
-
-      if (BeeUtils.isEmpty(value)) {
-        return null;
-
-      } else {
-        double total = BeeUtils.toDouble(value);
-
-        String returned = row.getProperty(PRP_RETURNED_TOTAL);
-        if (!BeeUtils.isEmpty(returned)) {
-          total -= BeeUtils.toDouble(returned);
-        }
-
-        return total;
-      }
+      return BeeUtils.toDoubleOrNull(row.getProperty(PRP_ITEM_TOTAL));
     }
   }
 
