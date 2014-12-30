@@ -147,26 +147,6 @@ public class ProjectsModuleBean implements BeeModule {
       });
     }
 
-    // chartData.getRows().sort(new Comparator<String[]>() {
-    //
-    // @Override
-    // public int compare(String[] o1, String[] o2) {
-    // Long stage1 = BeeUtils.isEmpty(o1[chartData.getColumnIndex(ALS_CHART_ID)]) ? 0
-    // : Long.parseLong(o1[chartData.getColumnIndex(ALS_CHART_ID)]);
-    // Long stage2 = BeeUtils.isEmpty(o2[chartData.getColumnIndex(ALS_CHART_ID)]) ? 0
-    // : Long.parseLong(o2[chartData.getColumnIndex(ALS_CHART_ID)]);
-    //
-    // Integer start1 = BeeUtils.isEmpty(o1[chartData.getColumnIndex(ALS_CHART_START)])
-    // ? 0 : Integer.parseInt(o1[chartData.getColumnIndex(ALS_CHART_START)]);
-    // Integer start2 = BeeUtils.isEmpty(o2[chartData.getColumnIndex(ALS_CHART_START)])
-    // ? 0 : Integer.parseInt(o2[chartData.getColumnIndex(ALS_CHART_START)]);
-    //
-    // Integer comp1 = BeeUtils.compare(stage1, stage2, null);
-    // Integer comp2 = BeeUtils.compare(start1, start2, null);
-    //
-    // return BeeUtils.compare(comp1, comp2, null);
-    // }
-    // });
     return ResponseObject.response(chartData);
   }
 

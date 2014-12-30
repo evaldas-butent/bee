@@ -27,6 +27,11 @@ public final class ProjectConstants {
   public static final String COL_PROJECT_STATUS = "Status";
   public static final String COL_PROJECT_OWNER = "Owner";
 
+  public static final String COL_PSC_FOOTER_HEIGHT = "PSCFooterHeight";
+  public static final String COL_PSC_HEADER_HEIGHT = "PSCHeaderHeight";
+  public static final String COL_PSC_ROW_HEIGHT = "PSCRowHeight";
+  public static final String COL_PSC_STRIP_OPACITY = "PSCStripOpacity";
+
   public static final String COL_STAGE_NAME = "Name";
   public static final String COL_STAGE_START_DATE = "StartDate";
   public static final String COL_STAGE_END_DATE = "EndDate";
