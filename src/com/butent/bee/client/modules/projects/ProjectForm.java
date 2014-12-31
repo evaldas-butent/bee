@@ -89,11 +89,15 @@ class ProjectForm extends AbstractFormInterceptor implements DataChangeEvent.Han
       return;
     }
 
-    if (chartData == null && DataUtils.isId(row.getId())) {
+    if (chartData == null) {
       return;
     }
 
     chartData.clear();
+
+    if (!DataUtils.isId(row.getId())) {
+      return;
+    }
 
     ProjectScheduleChart.open(chartData, row.getId());
   }

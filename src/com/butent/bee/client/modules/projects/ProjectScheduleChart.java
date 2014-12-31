@@ -353,6 +353,7 @@ final class ProjectScheduleChart extends TimeBoard {
 
     if (!response.hasResponse(SimpleRowSet.class)) {
       Assert.notImplemented();
+      return false;
     }
 
     SimpleRowSet rs = SimpleRowSet.restore(response.getResponseAsString());
