@@ -58,13 +58,13 @@ import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.EnumUtils;
 import com.ibm.icu.text.RuleBasedNumberFormat;
 
-import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 
 import javax.annotation.Resource;
@@ -795,19 +795,19 @@ public class AdministrationModuleBean implements BeeModule, HasTimerService {
       for (SimpleRow rateRow : rates) {
         DateTime date = TimeUtils.parseDateTime(rateRow.getValue(ExchangeRatesWS.COL_DT));
 
-        BigDecimal rate = rateRow.getDecimal(ExchangeRatesWS.COL_AMT_2);
+        Double factor = rateRow.getDouble(ExchangeRatesWS.COL_AMT_2);
 
-        BigDecimal amt = rateRow.getDecimal(ExchangeRatesWS.COL_AMT_1);
-        if (BeeUtils.isPositive(amt) && amt.compareTo(BigDecimal.ONE) != BeeConst.COMPARE_EQUAL) {
-          rate = rate.divide(amt);
+        Double amt = rateRow.getDouble(ExchangeRatesWS.COL_AMT_1);
+        if (BeeUtils.isPositive(amt) && !Objects.equals(amt, BeeConst.DOUBLE_ONE)) {
+          factor = factor / amt;
         }
 
-        if (date != null && rate != null) {
+        if (date != null && BeeUtils.isPositive(factor)) {
           SqlInsert insert = new SqlInsert(TBL_CURRENCY_RATES)
               .addConstant(COL_CURRENCY_RATE_CURRENCY, currencyId)
               .addConstant(COL_CURRENCY_RATE_DATE, date.getTime())
               .addConstant(COL_CURRENCY_RATE_QUANTITY, 1)
-              .addConstant(COL_CURRENCY_RATE, rate);
+              .addConstant(COL_CURRENCY_RATE, 1 / factor);
 
           ResponseObject insertResponse = qs.insertDataWithResponse(insert);
           if (insertResponse.hasErrors()) {
