@@ -107,8 +107,8 @@ public final class AdministrationConstants {
   public static final String SVC_GET_CURRENT_EXCHANGE_RATE = "get_current_exchange_rate";
   public static final String SVC_GET_EXCHANGE_RATE = "get_exchange_rate";
   public static final String SVC_GET_LIST_OF_CURRENCIES = "get_list_of_currencies";
-  public static final String SVC_GET_EXCHANGE_RATES_BY_CURRENCY =
-      "get_exchange_rates_by_currency";
+  public static final String SVC_GET_EXCHANGE_RATES_FOR_CURRENCY =
+      "get_exchange_rates_for_currency";
 
   public static final String SVC_UPDATE_EXCHANGE_RATES = "update_exchange_rates";
 

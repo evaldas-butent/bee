@@ -214,7 +214,7 @@ public final class XmlUtils {
     return doc;
   }
 
-  public static List<Element> getAllDescendantElements(Element parent) {
+  public static List<Element> getAllDescendantElements(Node parent) {
     return getElementsByLocalName(parent, ALL_TAGS);
   }
 

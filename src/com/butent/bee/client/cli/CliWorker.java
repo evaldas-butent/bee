@@ -1731,11 +1731,13 @@ public final class CliWorker {
       @Override
       public void onResponse(ResponseObject response) {
         if (response.hasErrors()) {
-          Global.showError(Arrays.asList(response.getErrors()));
+          Global.showError(caption, Arrays.asList(response.getErrors()));
         } else if (response.hasResponse(SimpleRowSet.class)) {
           showSimpleRowSet(caption, SimpleRowSet.restore(response.getResponseAsString()));
+        } else if (response.hasWarnings()) {
+          Global.showError(caption, Arrays.asList(response.getWarnings()));
         } else {
-          Global.showError("response type " + response.getType());
+          Global.showError(caption, Arrays.asList("response type", response.getType()));
         }
       }
     });
@@ -2302,12 +2304,31 @@ public final class CliWorker {
     BeeKeeper.getScreen().show(table);
   }
 
-  private static void showCurrentExchangeRate(String currency) {
-    ParameterList params = AdministrationKeeper.createArgs(SVC_GET_CURRENT_EXCHANGE_RATE);
-    params.addQueryItem(COL_CURRENCY_NAME, currency);
+  private static void addRateTypeAndCurrency(ParameterList params, String args) {
+    String type = null;
+    String currency = null;
 
-    getSimpleRowSet(BeeUtils.joinWords(SVC_GET_CURRENT_EXCHANGE_RATE, currency),
-        params);
+    for (String arg : NameUtils.toList(args)) {
+      if (type == null && BeeUtils.inListSame(arg, "lt", "eu")) {
+        type = arg.toUpperCase();
+      } else {
+        currency = arg.toUpperCase();
+      }
+    }
+
+    if (!BeeUtils.isEmpty(type)) {
+      params.addQueryItem(Service.VAR_TYPE, type);
+    }
+    if (!BeeUtils.isEmpty(currency)) {
+      params.addQueryItem(COL_CURRENCY_NAME, currency);
+    }
+  }
+
+  private static void showCurrentExchangeRate(String args) {
+    ParameterList params = AdministrationKeeper.createArgs(SVC_GET_CURRENT_EXCHANGE_RATE);
+    addRateTypeAndCurrency(params, args);
+
+    getSimpleRowSet(BeeUtils.joinWords("Current rate", args), params);
   }
 
   private static void showDataInfo(String viewName, boolean errorPopup) {
@@ -2582,23 +2603,27 @@ public final class CliWorker {
   private static void showExchangeRate(String currency, String date) {
     ParameterList params = AdministrationKeeper.createArgs(SVC_GET_EXCHANGE_RATE);
 
-    params.addQueryItem(COL_CURRENCY_NAME, currency);
-    params.addQueryItem(COL_CURRENCY_RATE_DATE, date);
+    addRateTypeAndCurrency(params, currency);
+    if (!BeeUtils.isEmpty(date)) {
+      params.addQueryItem(COL_CURRENCY_RATE_DATE, date);
+    }
 
-    getSimpleRowSet(BeeUtils.joinWords(SVC_GET_EXCHANGE_RATE, currency, date),
-        params);
+    getSimpleRowSet(BeeUtils.joinWords("Exchange rate", currency, date), params);
   }
 
   private static void showExchangeRates(String currency, String dateLow, String dateHigh) {
-    ParameterList params =
-        AdministrationKeeper.createArgs(SVC_GET_EXCHANGE_RATES_BY_CURRENCY);
+    ParameterList params = AdministrationKeeper.createArgs(SVC_GET_EXCHANGE_RATES_FOR_CURRENCY);
 
-    params.addQueryItem(COL_CURRENCY_NAME, currency);
-    params.addQueryItem(VAR_DATE_LOW, dateLow);
-    params.addQueryItem(VAR_DATE_HIGH, dateHigh);
+    addRateTypeAndCurrency(params, currency);
 
-    getSimpleRowSet(BeeUtils.joinWords(SVC_GET_EXCHANGE_RATES_BY_CURRENCY,
-        currency, dateLow, dateHigh), params);
+    if (!BeeUtils.isEmpty(dateLow)) {
+      params.addQueryItem(VAR_DATE_LOW, dateLow);
+    }
+    if (!BeeUtils.isEmpty(dateHigh)) {
+      params.addQueryItem(VAR_DATE_HIGH, dateHigh);
+    }
+
+    getSimpleRowSet(BeeUtils.joinWords("Rates for currency", currency, dateLow, dateHigh), params);
   }
 
   private static void showExtData(String caption, List<ExtendedProperty> data) {

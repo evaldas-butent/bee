@@ -1361,6 +1361,10 @@ public final class BeeUtils {
     return idx < clazz.getEnumConstants().length;
   }
 
+  public static boolean isPositive(BigDecimal x) {
+    return (x == null) ? false : x.compareTo(BigDecimal.ZERO) > 0;
+  }
+
   public static boolean isPositive(Double d) {
     if (isDouble(d)) {
       return Double.compare(d, BeeConst.DOUBLE_ZERO) > 0;

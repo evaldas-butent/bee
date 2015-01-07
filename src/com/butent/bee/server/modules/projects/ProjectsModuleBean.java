@@ -15,7 +15,9 @@ import com.butent.bee.shared.data.SimpleRowSet;
 import com.butent.bee.shared.data.filter.Filter;
 import com.butent.bee.shared.data.view.Order;
 import com.butent.bee.shared.modules.BeeParameter;
+import com.butent.bee.shared.modules.tasks.TaskConstants;
 import com.butent.bee.shared.rights.Module;
+import com.butent.bee.shared.time.DateTime;
 import com.butent.bee.shared.utils.BeeUtils;
 
 import java.util.ArrayList;
@@ -83,7 +85,7 @@ public class ProjectsModuleBean implements BeeModule {
       return ResponseObject.error(projectId);
     }
 
-    SimpleRowSet chartData = new SimpleRowSet(new String[] {ALS_VIEW_NAME, ALS_CHART_ID,
+    final SimpleRowSet chartData = new SimpleRowSet(new String[] {ALS_VIEW_NAME, ALS_CHART_ID,
         ALS_CHART_CAPTION, ALS_CHART_START, ALS_CHART_END, ALS_CHART_FLOW_COLOR});
 
     BeeRowSet rs = qs.getViewData(VIEW_PROJECT_DATES, Filter.equals(COL_PROJECT, projectId),
@@ -94,11 +96,11 @@ public class ProjectsModuleBean implements BeeModule {
     int idxStartDate = rs.getColumnIndex(COL_DATES_START_DATE);
 
     for (IsRow rsRow : rs) {
-
+      DateTime startDate = rsRow.getDateTime(idxStartDate);
       chartData.addRow(new String[] {VIEW_PROJECT_DATES,
           null,
           rsRow.getString(idxCaption),
-          rsRow.getString(idxStartDate),
+          startDate == null ? null : BeeUtils.toString(startDate.getDate().getDays()),
           null,
           rsRow.getString(idxColor)});
     }
@@ -123,6 +125,44 @@ public class ProjectsModuleBean implements BeeModule {
       });
     }
 
+    rs = qs.getViewData(TaskConstants.VIEW_TASKS, Filter.equals(COL_PROJECT, projectId),
+        Order.ascending(sys.getIdName(TaskConstants.VIEW_TASKS), TaskConstants.COL_START_TIME));
+
+    int idxStage = rs.getColumnIndex(COL_PROJECT_STAGE);
+    int idxSummary = rs.getColumnIndex(TaskConstants.COL_SUMMARY);
+    int idxStartTime = rs.getColumnIndex(TaskConstants.COL_START_TIME);
+    int idxFinishTime = rs.getColumnIndex(TaskConstants.COL_FINISH_TIME);
+
+    for (IsRow rsRow : rs) {
+      String stage = rsRow.getString(idxStage);
+      String startTime = rsRow.getDateTime(idxStartTime) == null ? null
+          : BeeUtils.toString(rsRow.getDateTime(idxStartTime).getDate().getDays());
+      String finishTime = rsRow.getDateTime(idxFinishTime) == null ? null
+          : BeeUtils.toString(rsRow.getDateTime(idxFinishTime).getDate().getDays());
+
+      insertOrderedChartData(chartData, new String[] {
+          TaskConstants.VIEW_TASKS,
+          stage, rsRow.getString(idxSummary),
+          startTime, finishTime, null
+      });
+    }
+
     return ResponseObject.response(chartData);
+  }
+
+  private static void insertOrderedChartData(SimpleRowSet chartData, String[] data) {
+    long stage1 =
+        BeeUtils.unbox(BeeUtils.toLongOrNull(data[chartData.getColumnIndex(ALS_CHART_ID)]));
+
+    for (int i = 0; i < chartData.getNumberOfRows(); i++) {
+      long stage2 = BeeUtils.unbox(chartData.getLong(i, ALS_CHART_ID));
+
+      if (stage1 < stage2) {
+        chartData.getRows().add(i, data);
+        return;
+      }
+    }
+
+    chartData.getRows().add(data);
   }
 }

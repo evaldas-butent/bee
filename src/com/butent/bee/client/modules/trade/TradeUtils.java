@@ -138,7 +138,7 @@ public final class TradeUtils {
           if (rateExists) {
             if (BeeUtils.isEmpty(rateCurrency)) {
               rateCurrency = row.getValue(COL_RATE_CURRENCY);
-              rate = BeeUtils.round(BeeUtils.unbox(row.getDouble(COL_CURRENCY_RATE)), 7);
+              rate = BeeUtils.unbox(row.getDouble(COL_CURRENCY_RATE));
             }
             currSum = BeeUtils.round(sum * rate, 2);
             currSumTotal += currSum;
@@ -186,7 +186,7 @@ public final class TradeUtils {
                   value = rateCurrency;
 
                 } else if (BeeUtils.same(fld, COL_CURRENCY_RATE)) {
-                  value = BeeUtils.toString(rate);
+                  value = BeeUtils.toString(rate, 7);
 
                 } else if (!rs.hasColumn(fld)) {
                   if (xml == null) {
@@ -267,7 +267,7 @@ public final class TradeUtils {
                 value = rateCurrency;
 
               } else if (BeeUtils.same(fld, COL_CURRENCY_RATE)) {
-                value = BeeUtils.toString(rate);
+                value = BeeUtils.toString(rate, 7);
 
               } else {
                 value = null;
