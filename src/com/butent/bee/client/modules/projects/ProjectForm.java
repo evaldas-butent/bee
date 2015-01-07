@@ -17,6 +17,7 @@ import com.butent.bee.shared.data.IsRow;
 import com.butent.bee.shared.data.event.DataChangeEvent;
 import com.butent.bee.shared.data.event.RowInsertEvent;
 import com.butent.bee.shared.data.filter.Filter;
+import com.butent.bee.shared.modules.tasks.TaskConstants;
 import com.butent.bee.shared.utils.BeeUtils;
 
 import java.util.ArrayList;
@@ -65,7 +66,9 @@ class ProjectForm extends AbstractFormInterceptor implements DataChangeEvent.Han
   @Override
   public void onDataChange(DataChangeEvent event) {
     if (event.hasView(VIEW_PROJECTS) || event.hasView(VIEW_PROJECT_USERS)
-        || event.hasView(VIEW_PROJECT_STAGES) || event.hasView(VIEW_PROJECT_DATES)) {
+        || event.hasView(VIEW_PROJECT_STAGES) || event.hasView(VIEW_PROJECT_DATES)
+        || event.hasView(TaskConstants.VIEW_TASKS)) {
+
       getFormView().refresh();
     }
   }
@@ -78,10 +81,18 @@ class ProjectForm extends AbstractFormInterceptor implements DataChangeEvent.Han
 
   @Override
   public void onRowInsert(RowInsertEvent event) {
+
     if (event.hasView(VIEW_PROJECT_USERS)
-        || event.hasView(VIEW_PROJECT_STAGES) || event.hasView(VIEW_PROJECT_DATES)) {
+        || event.hasView(VIEW_PROJECT_STAGES) || event.hasView(VIEW_PROJECT_DATES)
+        || event.hasView(TaskConstants.VIEW_TASKS)) {
+
+      // if (event.hasView(TaskConstants.VIEW_TASKS)) {
+        // TODO: refresh tasks times
+      // }
+
       getFormView().refresh();
     }
+
   }
 
   private void drawChart(IsRow row) {

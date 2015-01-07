@@ -71,7 +71,7 @@
 				<Table>
 					<row>
 						<Label for="ExpectedTasksDuration" text="=prjExpectedTaskDuration" style="&lbl;" />
-						<InputText source="ExpectedTasksDuration" style="&inp5;" />
+						<InputDecimal source="ExpectedTasksDuration" scale="2" style="&inp5;" />
 
 						<Label for="ActualTasksDuration" text="=prjActualTaskDuration" style="&lbl;" />
 						<InputText source="ActualTasksDuration" style="&inp5;" />

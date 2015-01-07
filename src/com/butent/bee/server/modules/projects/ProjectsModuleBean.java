@@ -1,7 +1,12 @@
 package com.butent.bee.server.modules.projects;
 
+import com.google.common.collect.Lists;
+import com.google.common.eventbus.Subscribe;
+
 import static com.butent.bee.shared.modules.projects.ProjectConstants.*;
 
+import com.butent.bee.server.data.DataEvent.ViewQueryEvent;
+import com.butent.bee.server.data.DataEventHandler;
 import com.butent.bee.server.data.QueryServiceBean;
 import com.butent.bee.server.data.SystemBean;
 import com.butent.bee.server.http.RequestInfo;
@@ -18,11 +23,14 @@ import com.butent.bee.shared.modules.BeeParameter;
 import com.butent.bee.shared.modules.tasks.TaskConstants;
 import com.butent.bee.shared.rights.Module;
 import com.butent.bee.shared.time.DateTime;
+import com.butent.bee.shared.time.TimeUtils;
 import com.butent.bee.shared.utils.BeeUtils;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import javax.ejb.EJB;
 import javax.ejb.LocalBean;
@@ -75,7 +83,61 @@ public class ProjectsModuleBean implements BeeModule {
 
   @Override
   public void init() {
+    sys.registerDataEventHandler(new DataEventHandler() {
+      @Subscribe
+      public void fillProjectsTimeData(ViewQueryEvent event) {
+        if (event.isBefore()) {
+          return;
+        }
 
+        if (!BeeUtils.same(VIEW_PROJECTS, event.getTargetName())) {
+          return;
+        }
+
+        BeeRowSet projectsRowSet = event.getRowset();
+
+        if (projectsRowSet.isEmpty()) {
+          return;
+        }
+
+        int idxExpectedTasksDuration = DataUtils.getColumnIndex(COL_EXPECTED_TASKS_DURATION,
+            projectsRowSet.getColumns(), false);
+
+        List<Long> prjIds = projectsRowSet.getRowIds();
+        SimpleRowSet times = getProjectsTasksTimes(prjIds);
+
+        for (int i = 0; i < times.getNumberOfRows(); i++) {
+          Long projectId = times.getLong(i, COL_PROJECT);
+          Double expectedTaskDuration = times.getDouble(i, COL_EXPECTED_TASKS_DURATION);
+
+          if (!DataUtils.isId(projectId)) {
+            continue;
+          }
+
+          IsRow row = projectsRowSet.getRowById(projectId);
+
+          if (!BeeUtils.isNegative(idxExpectedTasksDuration)) {
+            row.setValue(idxExpectedTasksDuration, expectedTaskDuration);
+          }
+        }
+      }
+    });
+  }
+
+  private static void insertOrderedChartData(SimpleRowSet chartData, String[] data) {
+    long stage1 =
+        BeeUtils.unbox(BeeUtils.toLongOrNull(data[chartData.getColumnIndex(ALS_CHART_ID)]));
+
+    for (int i = 0; i < chartData.getNumberOfRows(); i++) {
+      long stage2 = BeeUtils.unbox(chartData.getLong(i, ALS_CHART_ID));
+
+      if (stage1 < stage2) {
+        chartData.getRows().add(i, data);
+        return;
+      }
+    }
+
+    chartData.getRows().add(data);
   }
 
   private ResponseObject getProjectChartData(RequestInfo req) {
@@ -150,19 +212,80 @@ public class ProjectsModuleBean implements BeeModule {
     return ResponseObject.response(chartData);
   }
 
-  private static void insertOrderedChartData(SimpleRowSet chartData, String[] data) {
-    long stage1 =
-        BeeUtils.unbox(BeeUtils.toLongOrNull(data[chartData.getColumnIndex(ALS_CHART_ID)]));
+  private SimpleRowSet getProjectsTasksTimes(List<Long> prjIds) {
+    SimpleRowSet taskExpectedTimes = getTasksExpectedTimes(prjIds);
 
-    for (int i = 0; i < chartData.getNumberOfRows(); i++) {
-      long stage2 = BeeUtils.unbox(chartData.getLong(i, ALS_CHART_ID));
+    SimpleRowSet result = new SimpleRowSet(new String[] {
+        COL_PROJECT, COL_EXPECTED_TASKS_DURATION
+    });
 
-      if (stage1 < stage2) {
-        chartData.getRows().add(i, data);
-        return;
+    Map<Long, Integer> projectTimesHash = new HashMap<>();
+
+    for (int i = 0; i < taskExpectedTimes.getNumberOfRows(); i++) {
+      Long projectId = taskExpectedTimes.getLong(i, COL_PROJECT);
+      Long time = taskExpectedTimes.getLong(i, COL_EXPECTED_TASKS_DURATION);
+
+      Integer index = projectTimesHash.get(projectId);
+
+      if (index == null) {
+        result.addEmptyRow();
+        index = result.getNumberOfRows() - 1;
       }
+
+      projectTimesHash.put(projectId, index);
+      result.setValue(index, COL_PROJECT, BeeUtils.toString(projectId));
+      double timeInHours =
+          Double.valueOf(time.doubleValue()) / Double.valueOf(TimeUtils.MILLIS_PER_HOUR);
+
+      result.setValue(index, COL_EXPECTED_TASKS_DURATION, BeeUtils.toString(timeInHours));
     }
 
-    chartData.getRows().add(data);
+    return result;
+  }
+
+  private SimpleRowSet getTasksExpectedTimes(List<Long> prjIds) {
+    Filter prjIdFilter = Filter.any(COL_PROJECT, prjIds);
+    Filter durationFilter = Filter.notNull(TaskConstants.COL_EXPECTED_DURATION);
+
+    BeeRowSet tasks =
+        qs.getViewData(TaskConstants.VIEW_TASKS, Filter.and(prjIdFilter, durationFilter), null,
+            Lists.newArrayList(COL_PROJECT, TaskConstants.COL_EXPECTED_DURATION));
+
+    SimpleRowSet result = new SimpleRowSet(new String[] {COL_PROJECT, COL_EXPECTED_TASKS_DURATION});
+
+    if (tasks.isEmpty()) {
+      return result;
+    }
+
+    Map<Long, Long> times = new HashMap<>();
+    int idxExpectedDuration = tasks.getColumnIndex(TaskConstants.COL_EXPECTED_DURATION);
+    int idxProject = tasks.getColumnIndex(COL_PROJECT);
+
+    if (BeeUtils.isNegative(idxExpectedDuration) || BeeUtils.isNegative(idxProject)) {
+      return result;
+    }
+
+    for (IsRow row : tasks) {
+      Long projectId = row.getLong(idxProject);
+      String newTime = row.getString(idxExpectedDuration);
+
+      Long newTimeMls = TimeUtils.parseTime(newTime);
+      Long currentTime = times.get(projectId);
+
+      if (currentTime == null) {
+        currentTime = Long.valueOf(0);
+      }
+
+      currentTime += newTimeMls;
+
+      times.put(projectId, currentTime);
+    }
+
+    for (Long projectId : times.keySet()) {
+      result.addRow(new String[] {
+          BeeUtils.toString(projectId), BeeUtils.toString(times.get(projectId))});
+    }
+
+    return result;
   }
 }
