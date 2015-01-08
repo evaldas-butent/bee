@@ -74,7 +74,7 @@
 						<InputDecimal source="ExpectedTasksDuration" scale="2" style="&inp5;" />
 
 						<Label for="ActualTasksDuration" text="=prjActualTaskDuration" style="&lbl;" />
-						<InputText source="ActualTasksDuration" style="&inp5;" />
+						<InputDecimal source="ActualTasksDuration" scale="2" style="&inp5;" />
 						
 						<Label for="ContractNumber" text="=contractNo" style="&lbl;" />
 						<InputText source="ContractNumber" style="&inp6;"

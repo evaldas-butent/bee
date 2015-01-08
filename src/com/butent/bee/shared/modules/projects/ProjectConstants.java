@@ -21,6 +21,7 @@ public final class ProjectConstants {
   public static final String ALS_CHART_ID = "ChartID";
 
   public static final String COL_EXPECTED_TASKS_DURATION = "ExpectedTasksDuration";
+  public static final String COL_ACTUAL_TASKS_DURATION = "ActualTasksDuration";
 
   public static final String COL_PROJECT = "Project";
   public static final String COL_PROJECT_END_DATE = "EndDate";
