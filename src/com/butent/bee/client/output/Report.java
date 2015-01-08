@@ -1,6 +1,7 @@
 package com.butent.bee.client.output;
 
 import com.butent.bee.client.Callback;
+import com.butent.bee.client.data.Data;
 import com.butent.bee.client.modules.classifiers.CompanyTypeReport;
 import com.butent.bee.client.modules.classifiers.CompanyUsageReport;
 import com.butent.bee.client.modules.trade.acts.TradeActItemsByCompanyReport;
@@ -16,10 +17,17 @@ import com.butent.bee.client.view.ViewCallback;
 import com.butent.bee.client.view.ViewFactory;
 import com.butent.bee.client.view.form.interceptor.ReportInterceptor;
 import com.butent.bee.shared.Assert;
+import com.butent.bee.shared.i18n.LocalizableConstants;
+import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogUtils;
+import com.butent.bee.shared.modules.transport.TransportConstants;
 import com.butent.bee.shared.ui.HasWidgetSupplier;
 import com.butent.bee.shared.utils.BeeUtils;
+
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 
 public enum Report implements HasWidgetSupplier {
   COMPANY_TYPES("CompanyTypes", "CompanyRelationTypeReport") {
@@ -78,6 +86,29 @@ public enum Report implements HasWidgetSupplier {
     protected ReportInterceptor getInterceptor() {
       return new TransportTripProfitReport();
     }
+
+    @Override
+    public List<ReportItem> getItems() {
+      LocalizableConstants loc = Localized.getConstants();
+
+      return Arrays.asList(
+          new ReportTextItem(TransportConstants.COL_TRIP,
+              Data.getColumnLabel(TransportConstants.TBL_TRIP_COSTS, TransportConstants.COL_TRIP)),
+          new ReportTextItem(TransportConstants.COL_TRIP_NO,
+              Data.getColumnLabel(TransportConstants.TBL_TRIPS, TransportConstants.COL_TRIP_NO)),
+          new ReportDateItem(TransportConstants.COL_TRIP_DATE_FROM, loc.dateFrom()),
+          new ReportDateTimeItem(TransportConstants.COL_TRIP_DATE_TO, loc.dateTo()),
+          new ReportTextItem(TransportConstants.COL_VEHICLE,
+              Data.getColumnLabel(TransportConstants.TBL_TRIPS, TransportConstants.COL_VEHICLE)),
+          new ReportTextItem(TransportConstants.COL_TRAILER,
+              Data.getColumnLabel(TransportConstants.TBL_TRIPS, TransportConstants.COL_TRAILER)),
+          new ReportNumericItem("Kilometers", null, 0),
+          new ReportNumericItem("FuelCosts", null, 2),
+          new ReportNumericItem("DailyCosts", null, 2),
+          new ReportNumericItem("RoadCosts", null, 2),
+          new ReportNumericItem("OtherCosts", null, 2),
+          new ReportNumericItem("Incomes", null, 2));
+    }
   };
 
   private static BeeLogger logger = LogUtils.getLogger(Report.class);
@@ -125,6 +156,10 @@ public enum Report implements HasWidgetSupplier {
 
   public String getFormName() {
     return formName;
+  }
+
+  public List<ReportItem> getItems() {
+    return new ArrayList<>();
   }
 
   public String getReportName() {
