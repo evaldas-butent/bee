@@ -1,6 +1,7 @@
-package com.butent.bee.client.modules.transport;
+package com.butent.bee.client.view.form.interceptor;
 
 import com.google.common.collect.HashBasedTable;
+import com.google.common.collect.Multimap;
 import com.google.common.collect.Table;
 import com.google.gwt.dom.client.OptionElement;
 import com.google.gwt.event.dom.client.ClickEvent;
@@ -28,14 +29,13 @@ import com.butent.bee.client.ui.FormFactory.WidgetDescriptionCallback;
 import com.butent.bee.client.ui.IdentifiableWidget;
 import com.butent.bee.client.view.edit.Editor;
 import com.butent.bee.client.view.form.FormView;
-import com.butent.bee.client.view.form.interceptor.FormInterceptor;
-import com.butent.bee.client.view.form.interceptor.ReportInterceptor;
 import com.butent.bee.client.widget.CustomDiv;
 import com.butent.bee.client.widget.FaLabel;
 import com.butent.bee.client.widget.InlineLabel;
 import com.butent.bee.client.widget.InputBoolean;
 import com.butent.bee.client.widget.InputText;
 import com.butent.bee.client.widget.ListBox;
+import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.Consumer;
 import com.butent.bee.shared.Service;
@@ -62,7 +62,7 @@ import java.util.Set;
 import java.util.TreeMap;
 import java.util.TreeSet;
 
-public class TransportTripProfitReport extends ReportInterceptor {
+public class ExtendedReportInterceptor extends ReportInterceptor {
 
   private static final String NAME_DETALIZATION_CONTAINER = "DetalizationContainer";
   private static final String NAME_DETALIZATION_ADD = "DetalizationAdd";
@@ -104,11 +104,17 @@ public class TransportTripProfitReport extends ReportInterceptor {
   private static final String STYLE_R_SUMMARY = STYLE_R_DATA + "-tot";
   private static final String STYLE_R_SUMMARY_HEADER = STYLE_R_SUMMARY + "-hdr";
 
+  private final Report report;
+
   private final List<ReportItem> rowItems = new ArrayList<>();
   private ReportItem rowGrouping;
 
   private final List<ReportItem> colItems = new ArrayList<>();
   private ReportItem colGrouping;
+
+  public ExtendedReportInterceptor(Report report) {
+    this.report = Assert.notNull(report);
+  }
 
   @Override
   public void afterCreateWidget(String name, IdentifiableWidget widget,
@@ -139,8 +145,13 @@ public class TransportTripProfitReport extends ReportInterceptor {
   }
 
   @Override
+  public String getCaption() {
+    return getReport().getReportName();
+  }
+
+  @Override
   public FormInterceptor getInstance() {
-    return new TransportTripProfitReport();
+    return new ExtendedReportInterceptor(getReport());
   }
 
   @Override
@@ -154,6 +165,14 @@ public class TransportTripProfitReport extends ReportInterceptor {
 
       loadIds(parameters, COL_VEHICLE, form);
       loadText(parameters, COL_TRIP_NO, form);
+    }
+    Multimap<String, ReportItem> defaults = getReport().getDefaults();
+
+    if (defaults != null) {
+      rowItems.addAll(defaults.get("ROWS"));
+      rowGrouping = BeeUtils.peek(defaults.get("ROW_GROUP"));
+      colItems.addAll(defaults.get("COLUMNS"));
+      colGrouping = BeeUtils.peek(defaults.get("COLUMN_GROUP"));
     }
     render(NAME_DETALIZATION_CONTAINER);
     render(NAME_CALCULATION_CONTAINER);
@@ -193,7 +212,8 @@ public class TransportTripProfitReport extends ReportInterceptor {
     if (!checkRange(start, end)) {
       return;
     }
-    ParameterList params = TransportHandler.createArgs(SVC_TRIP_PROFIT_REPORT);
+    ParameterList params = BeeKeeper.getRpc()
+        .createParameters(getReport().getModuleAndSub().getModule(), getReport().getReportName());
 
     if (start != null) {
       params.addDataItem(Service.VAR_FROM, start.getTime());
@@ -240,7 +260,7 @@ public class TransportTripProfitReport extends ReportInterceptor {
 
   @Override
   protected Report getReport() {
-    return Report.TRANSPORT_TRIP_PROFIT;
+    return report;
   }
 
   @Override

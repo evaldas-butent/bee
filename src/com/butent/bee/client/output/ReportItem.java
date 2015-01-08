@@ -149,25 +149,30 @@ public abstract class ReportItem {
     return getFunction() != null && rowSummary;
   }
 
-  public void setColSummary(boolean colSummary) {
-    this.colSummary = colSummary;
+  public ReportItem setColSummary(boolean isSummary) {
+    this.colSummary = isSummary;
+    return this;
   }
 
-  public void setExpression(String expression) {
-    this.expression = expression;
+  public ReportItem setExpression(String xpr) {
+    this.expression = xpr;
+    return this;
   }
 
-  public void setFunction(Function function) {
+  public ReportItem setFunction(Function fnc) {
     Assert.notNull(getFunction());
-    this.function = Assert.notNull(function);
+    this.function = Assert.notNull(fnc);
+    return this;
   }
 
-  public void setOptions(String options) {
-    this.options = options;
+  public ReportItem setOptions(String opt) {
+    this.options = opt;
+    return this;
   }
 
-  public void setRowSummary(boolean rowSummary) {
-    this.rowSummary = rowSummary;
+  public ReportItem setRowSummary(boolean isSummary) {
+    this.rowSummary = isSummary;
+    return this;
   }
 
   @SuppressWarnings("unchecked")
