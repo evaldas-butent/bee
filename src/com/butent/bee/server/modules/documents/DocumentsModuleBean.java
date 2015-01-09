@@ -282,7 +282,7 @@ public class DocumentsModuleBean implements BeeModule {
             }
             if (!BeeUtils.isEmpty(categories)) {
               BeeRowSet catRs = qs.getViewData(TBL_DOCUMENT_TREE, Filter.idIn(categories), null,
-                  Lists.newArrayList(COL_CATEGORY_NAME));
+                  Lists.newArrayList(COL_DOCUMENT_CATEGORY + COL_CATEGORY_NAME));
 
               for (BeeRow row : rs) {
                 IsRow catRow = catRs.getRowById(row.getLong(categoryIdx));

@@ -1305,15 +1305,23 @@ public class GridImpl extends Absolute implements GridView, EditEndEvent.Handler
     getGrid().setEditing(false);
     getGrid().refocus();
 
-    if (!BeeUtils.equalsTrimRight(event.getOldValue(), event.getNewValue())) {
-      updateCell(event.getRowValue(), event.getColumn(), event.getOldValue(), event.getNewValue(),
-          event.isRowMode());
+    if (getGridInterceptor() != null) {
+      getGridInterceptor().onEditEnd(event, source);
     }
 
-    if (event.getKeyCode() != null) {
-      int keyCode = BeeUtils.unbox(event.getKeyCode());
-      if (BeeUtils.inList(keyCode, KeyCodes.KEY_TAB, KeyCodes.KEY_UP, KeyCodes.KEY_DOWN)) {
-        getGrid().handleKeyboardNavigation(keyCode, event.hasModifiers());
+    if (!event.isConsumed()) {
+      String oldValue = event.getOldValue();
+      String newValue = event.getNewValue();
+
+      if (!BeeUtils.equalsTrimRight(oldValue, newValue)) {
+        updateCell(event.getRowValue(), event.getColumn(), oldValue, newValue, event.isRowMode());
+      }
+
+      if (event.getKeyCode() != null) {
+        int keyCode = BeeUtils.unbox(event.getKeyCode());
+        if (BeeUtils.inList(keyCode, KeyCodes.KEY_TAB, KeyCodes.KEY_UP, KeyCodes.KEY_DOWN)) {
+          getGrid().handleKeyboardNavigation(keyCode, event.hasModifiers());
+        }
       }
     }
   }

@@ -20,6 +20,7 @@ import com.butent.bee.shared.data.IsRow;
 import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.modules.trade.Totalizer;
 import com.butent.bee.shared.modules.trade.acts.TradeActUtils;
+import com.butent.bee.shared.time.JustDate;
 import com.butent.bee.shared.utils.BeeUtils;
 
 import java.util.Objects;
@@ -83,13 +84,16 @@ public class TradeActServicesGrid extends AbstractGridInterceptor {
       double total = getItemTotal(gridView);
 
       if (BeeUtils.isPositive(total)) {
-        Double price = calculatePrice(total, BeeUtils.toDouble(newValue));
+        IsRow row = gridView.getGrid().getRowById(result.getId());
+
+        String oldPrice = (row == null)
+            ? null : row.getString(getDataIndex(COL_TRADE_ITEM_PRICE));
+        JustDate dateTo = (row == null) ? null : row.getDate(getDataIndex(COL_TA_SERVICE_TO));
+
+        Double price = calculatePrice(BeeUtils.toDoubleOrNull(oldPrice), dateTo, total,
+            BeeUtils.toDouble(newValue));
 
         if (BeeUtils.isPositive(price)) {
-          IsRow row = gridView.getGrid().getRowById(result.getId());
-          String oldPrice = (row == null)
-              ? null : row.getString(getDataIndex(COL_TRADE_ITEM_PRICE));
-
           updatePrice(result.getId(), result.getVersion(), oldPrice, price);
         }
       }
@@ -101,9 +105,9 @@ public class TradeActServicesGrid extends AbstractGridInterceptor {
     return new TradeActServicesGrid();
   }
 
-  private Double calculatePrice(Double itemTotal, Double tariff) {
+  private Double calculatePrice(Double defPrice, JustDate dateTo, Double itemTotal, Double tariff) {
     Integer scale = Data.getColumnScale(getViewName(), COL_TRADE_ITEM_PRICE);
-    return TradeActUtils.calculateServicePrice(itemTotal, tariff, scale);
+    return TradeActUtils.calculateServicePrice(defPrice, dateTo, itemTotal, tariff, scale);
   }
 
   private void maybeRecalculatePrices() {
@@ -120,6 +124,7 @@ public class TradeActServicesGrid extends AbstractGridInterceptor {
       return;
     }
 
+    int toIndex = getDataIndex(COL_TA_SERVICE_TO);
     int tariffIndex = getDataIndex(COL_TA_SERVICE_TARIFF);
     int priceIndex = getDataIndex(COL_TRADE_ITEM_PRICE);
 
@@ -129,7 +134,8 @@ public class TradeActServicesGrid extends AbstractGridInterceptor {
       Double tariff = row.getDouble(tariffIndex);
 
       if (BeeUtils.isPositive(tariff)) {
-        Double price = calculatePrice(total, tariff);
+        Double price =
+            calculatePrice(row.getDouble(priceIndex), row.getDate(toIndex), total, tariff);
         updatePrice(row.getId(), row.getVersion(), row.getString(priceIndex), price);
 
         count++;

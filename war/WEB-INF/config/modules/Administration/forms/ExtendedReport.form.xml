@@ -1,0 +1,79 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<f:Form xmlns="http://www.butent.com/widget"
+  xmlns:f="http://www.butent.com/form"
+  
+  name="ExtendedReport"
+  >
+  <FlowPanel>
+    <br/>
+    <HorizontalPanel>
+      <cell kind="label">
+        <Label text="=dateFrom" style="width:120px;" />
+      </cell>
+      <InputDateTime name="StartDate" style="width:120px;" />
+
+      <cell kind="label">
+        <Label text="=dateTo" />
+      </cell>
+      <InputDateTime name="EndDate" style="width:120px;" />
+      
+      <cell kind="label">
+        <Label text="=currency" />
+      </cell>
+      <UnboundSelector name="Currency" viewName="Currencies" renderColumns="Name"
+        newRowEnabled="false" editPopup="true" style="width:80px;" />
+    </HorizontalPanel>
+
+    <Disclosure open="true">
+      <Label text="=filters" />
+      <Table>
+        <col index="0" kind="label" />
+
+        <row>
+          <Label text="=trTrucks" style="width:120px;" />
+          <MultiSelector name="Vehicle" viewName="Vehicles" renderColumns="Number"
+            newRowEnabled="false" editPopup="true" style="width:500px;" summarize="true" />
+        </row>
+        <row>
+          <Label text="=trTrips" style="width:120px;" />
+          <InputText name="TripNo" style="width:500px;" summarize="true" />
+        </row>
+      </Table>
+    </Disclosure>
+
+    <Disclosure open="false">
+      <Label text="Dizainas" />
+
+      <FlowPanel class="flexBox-horizontal">
+        <FlowPanel class="flexible">
+          <FieldSet>
+            <Legend text="Eilutės" />
+            <FlowPanel name="DetalizationContainer" style="max-height:150px; overflow:auto;" />
+            <HorizontalPanel style="white-space:nowrap;">
+              <cell style="width:100%">
+                <FaLabel name="DetalizationAdd" char="plus" style="display:inline-block;" />
+              </cell>
+              <FlowPanel name="DetalizationGroup" />
+            </HorizontalPanel>
+          </FieldSet>
+        </FlowPanel>
+        
+        <FlowPanel class="flexible">
+          <FieldSet>
+            <Legend text="Stulpeliai" />
+            <FlowPanel name="CalculationContainer" style="max-height:150px; overflow:auto;" />
+            <HorizontalPanel style="white-space:nowrap;">
+              <cell style="width:100%">
+                <FaLabel name="CalculationAdd" char="plus" style="display:inline-block;" />
+              </cell>
+              <FlowPanel name="CalculationGroup" />
+            </HorizontalPanel>
+          </FieldSet>
+        </FlowPanel>
+      </FlowPanel>
+    </Disclosure>
+
+    <br/>
+    <FlowPanel name="DataContainer" />
+  </FlowPanel>
+</f:Form>

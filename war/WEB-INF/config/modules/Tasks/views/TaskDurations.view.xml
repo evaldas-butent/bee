@@ -18,6 +18,8 @@
       <SimpleJoin name="Company" joinType="LEFT">
         <SimpleColumn alias="CompanyName" name="Name" />
       </SimpleJoin>
+      
+      <SimpleColumn name="Project" />
     </SimpleJoin>
 
     <SimpleColumn name="Publisher" />
