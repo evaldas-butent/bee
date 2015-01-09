@@ -179,7 +179,7 @@ public enum Report implements HasWidgetSupplier {
     return null;
   }
 
-  private final ModuleAndSub module;
+  private final ModuleAndSub moduleAndSub;
   private final String reportName;
   private final String formName;
 
@@ -187,8 +187,8 @@ public enum Report implements HasWidgetSupplier {
     this(module, reportName, "ExtendedReport");
   }
 
-  private Report(ModuleAndSub module, String reportName, String formName) {
-    this.module = Assert.notNull(module);
+  private Report(ModuleAndSub moduleAndSub, String reportName, String formName) {
+    this.moduleAndSub = Assert.notNull(moduleAndSub);
     this.reportName = reportName;
     this.formName = formName;
   }
@@ -206,7 +206,7 @@ public enum Report implements HasWidgetSupplier {
   }
 
   public ModuleAndSub getModuleAndSub() {
-    return module;
+    return moduleAndSub;
   }
 
   public String getReportName() {
