@@ -1118,6 +1118,10 @@ public class FormImpl extends Absolute implements FormView, PreviewHandler, Tabu
         }
 
         boolean editable = rowEnabled && editableWidget.isEditable(rowValue);
+        if (editable && getFormInterceptor() != null) {
+          editable = getFormInterceptor().isWidgetEditable(editableWidget, rowValue);
+        }
+
         if (editable != editor.isEnabled()) {
           UiHelper.enableAndStyle(editor, editable);
         }
@@ -2100,6 +2104,9 @@ public class FormImpl extends Absolute implements FormView, PreviewHandler, Tabu
 
         if (editable) {
           editable = editableWidget.isEditable(getActiveRow());
+        }
+        if (editable && getFormInterceptor() != null) {
+          editable = getFormInterceptor().isWidgetEditable(editableWidget, getActiveRow());
         }
       }
 

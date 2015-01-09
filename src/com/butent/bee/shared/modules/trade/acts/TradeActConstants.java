@@ -21,6 +21,8 @@ public final class TradeActConstants {
   public static final String SVC_SERVICES_REPORT = "GetServicesReport";
   public static final String SVC_TRANSFER_REPORT = "GetTransferReport";
 
+  public static final String SVC_HAS_INVOICES_OR_SECONDARY_ACTS = "HasInvoicesOrSecondaryActs";
+
   public static final String TBL_TRADE_ACTS = "TradeActs";
   public static final String TBL_TRADE_ACT_ITEMS = "TradeActItems";
   public static final String TBL_TRADE_ACT_SERVICES = "TradeActServices";

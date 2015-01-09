@@ -1,12 +1,20 @@
 package com.butent.bee.client.modules.trade.acts;
 
+import com.google.gwt.core.client.Scheduler.ScheduledCommand;
+
 import static com.butent.bee.shared.modules.trade.acts.TradeActConstants.*;
 
+import com.butent.bee.client.BeeKeeper;
+import com.butent.bee.client.communication.ParameterList;
+import com.butent.bee.client.communication.ResponseCallback;
 import com.butent.bee.client.composite.UnboundSelector;
 import com.butent.bee.client.ui.UiHelper;
+import com.butent.bee.client.view.edit.EditableWidget;
 import com.butent.bee.client.view.form.FormView;
 import com.butent.bee.client.view.form.interceptor.AbstractFormInterceptor;
 import com.butent.bee.client.view.form.interceptor.FormInterceptor;
+import com.butent.bee.shared.BeeConst;
+import com.butent.bee.shared.communication.ResponseObject;
 import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.IsRow;
 import com.butent.bee.shared.i18n.Localized;
@@ -29,6 +37,8 @@ public class TradeActForm extends AbstractFormInterceptor {
   private static final String STYLE_NO_INVOICES = STYLE_PREFIX + "no-invoices";
 
   private TradeActKind lastKind;
+
+  private boolean hasInvoicesOrSecondaryActs;
 
   TradeActForm() {
   }
@@ -91,5 +101,50 @@ public class TradeActForm extends AbstractFormInterceptor {
   @Override
   public FormInterceptor getInstance() {
     return new TradeActForm();
+  }
+
+  @Override
+  public boolean isWidgetEditable(EditableWidget editableWidget, IsRow row) {
+    if (editableWidget != null && editableWidget.hasSource(COL_TA_COMPANY) && DataUtils.hasId(row)
+        && !row.isNull(getDataIndex(COL_TA_COMPANY))) {
+
+      return !hasInvoicesOrSecondaryActs;
+
+    } else {
+      return super.isWidgetEditable(editableWidget, row);
+    }
+  }
+
+  @Override
+  public boolean onStartEdit(final FormView form, final IsRow row,
+      final ScheduledCommand focusCommand) {
+
+    hasInvoicesOrSecondaryActs = false;
+
+    if (form != null && DataUtils.hasId(row)) {
+      TradeActKind kind = TradeActKeeper.getKind(row, getDataIndex(COL_TA_KIND));
+
+      if (kind != null && kind.enableInvoices()) {
+        ParameterList params = TradeActKeeper.createArgs(SVC_HAS_INVOICES_OR_SECONDARY_ACTS);
+        params.addQueryItem(COL_TRADE_ACT, row.getId());
+
+        BeeKeeper.getRpc().makeRequest(params, new ResponseCallback() {
+          @Override
+          public void onResponse(ResponseObject response) {
+            hasInvoicesOrSecondaryActs = response.hasResponse()
+                && BeeConst.isTrue(response.getResponseAsString());
+
+            form.updateRow(row, true);
+            if (focusCommand != null) {
+              focusCommand.execute();
+            }
+          }
+        });
+
+        return false;
+      }
+    }
+
+    return super.onStartEdit(form, row, focusCommand);
   }
 }
