@@ -2210,9 +2210,9 @@ public class TradeActBean {
       Range<DateTime> actRange = TradeActUtils.createRange(row.getDateTime(COL_TA_DATE),
           row.getDateTime(COL_TA_UNTIL));
 
+      JustDate dateTo = row.getDate(COL_TA_SERVICE_TO);
       Range<DateTime> serviceRange = TradeActUtils.createServiceRange(
-          row.getDate(COL_TA_SERVICE_FROM), row.getDate(COL_TA_SERVICE_TO), tu,
-          reportRange, actRange);
+          row.getDate(COL_TA_SERVICE_FROM), dateTo, tu, reportRange, actRange);
 
       if (serviceRange != null) {
         SqlUpdate update = new SqlUpdate(tmp)
@@ -2225,8 +2225,8 @@ public class TradeActBean {
         Double discount = row.getDouble(COL_TRADE_DISCOUNT);
 
         if (BeeUtils.isPositive(tariff)) {
-          Double p = TradeActUtils.calculateServicePrice(row.getDouble(ALS_ITEM_TOTAL), tariff,
-              priceScale);
+          Double p = TradeActUtils.calculateServicePrice(price, dateTo,
+              row.getDouble(ALS_ITEM_TOTAL), tariff, priceScale);
 
           if (BeeUtils.isPositive(p) && !p.equals(price)) {
             price = p;
@@ -2516,7 +2516,7 @@ public class TradeActBean {
     int result = 0;
 
     List<String> fields = Arrays.asList(COL_TRADE_ACT, COL_TA_ITEM, COL_TA_SERVICE_TO,
-        COL_TA_SERVICE_TARIFF, COL_TA_SERVICE_FACTOR, COL_TA_SERVICE_DAYS, COL_TA_SERVICE_MIN,
+        COL_TA_SERVICE_TARIFF, COL_TA_SERVICE_FACTOR, COL_TA_SERVICE_DAYS,
         COL_TRADE_ITEM_QUANTITY, COL_TRADE_ITEM_PRICE,
         COL_TRADE_VAT_PLUS, COL_TRADE_VAT, COL_TRADE_VAT_PERC, COL_TRADE_DISCOUNT);
 
@@ -2551,7 +2551,7 @@ public class TradeActBean {
         Double tariff = row.getDouble(COL_TA_SERVICE_TARIFF);
         Double price;
         if (BeeUtils.isPositive(itemTotal) && BeeUtils.isPositive(tariff)) {
-          price = TradeActUtils.calculateServicePrice(itemTotal, tariff, priceScale);
+          price = TradeActUtils.calculateServicePrice(null, null, itemTotal, tariff, priceScale);
         } else {
           price = null;
         }

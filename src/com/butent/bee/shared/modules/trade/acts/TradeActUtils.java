@@ -23,7 +23,13 @@ import java.util.Map;
 
 public final class TradeActUtils {
 
-  public static Double calculateServicePrice(Double itemTotal, Double tariff, Integer scale) {
+  public static Double calculateServicePrice(Double defPrice, JustDate dateTo, Double itemTotal,
+      Double tariff, Integer scale) {
+
+    if (BeeUtils.isPositive(defPrice) && dateTo != null) {
+      return defPrice;
+    }
+
     Double price = BeeUtils.percent(itemTotal, tariff);
 
     if (BeeUtils.nonZero(price) && BeeUtils.isNonNegative(scale)) {

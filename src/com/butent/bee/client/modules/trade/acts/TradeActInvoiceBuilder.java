@@ -631,8 +631,9 @@ public class TradeActInvoiceBuilder extends AbstractFormInterceptor implements
             TradeActTimeUnit tu = EnumUtils.getEnumByIndex(TradeActTimeUnit.class,
                 row.getInteger(timeUnitIndex));
 
+            JustDate dateTo = row.getDate(dateToIndex);
             Range<DateTime> serviceRange = TradeActUtils.createServiceRange(
-                row.getDate(dateFromIndex), row.getDate(dateToIndex), tu, builderRange, act.range);
+                row.getDate(dateFromIndex), dateTo, tu, builderRange, act.range);
 
             if (serviceRange == null) {
               continue;
@@ -663,7 +664,7 @@ public class TradeActInvoiceBuilder extends AbstractFormInterceptor implements
             svc.price = row.getDouble(priceIndex);
 
             if (BeeUtils.isPositive(svc.tariff)) {
-              Double p = TradeActUtils.calculateServicePrice(act.itemTotal(),
+              Double p = TradeActUtils.calculateServicePrice(svc.price, dateTo, act.itemTotal(),
                   svc.tariff, priceScale);
               if (BeeUtils.isPositive(p)) {
                 svc.price = p;
