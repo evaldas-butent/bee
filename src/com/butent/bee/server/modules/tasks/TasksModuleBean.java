@@ -68,6 +68,7 @@ import com.butent.bee.shared.logging.LogUtils;
 import com.butent.bee.shared.modules.BeeParameter;
 import com.butent.bee.shared.modules.administration.AdministrationConstants.ReminderMethod;
 import com.butent.bee.shared.modules.projects.ProjectConstants;
+import com.butent.bee.shared.modules.tasks.TaskConstants;
 import com.butent.bee.shared.modules.tasks.TaskConstants.TaskEvent;
 import com.butent.bee.shared.modules.tasks.TaskConstants.TaskStatus;
 import com.butent.bee.shared.modules.tasks.TaskUtils;
@@ -313,6 +314,49 @@ public class TasksModuleBean implements BeeModule {
                 }
               }
             }
+          }
+        }
+      }
+
+      @Subscribe
+      public void fillTasksTimeData(ViewQueryEvent event) {
+        if (event.isBefore()) {
+          return;
+        }
+
+        if (!BeeUtils.same(VIEW_TASKS, event.getTargetName())) {
+          return;
+        }
+
+        BeeRowSet taskRows = event.getRowset();
+
+        if (taskRows.isEmpty()) {
+          return;
+        }
+
+        int idxActualDuration = DataUtils.getColumnIndex(COL_ACTUAL_DURATION,
+            taskRows.getColumns(), false);
+
+        List<Long> rowIds = taskRows.getRowIds();
+
+        SimpleRowSet times = getTaskActualTimes(rowIds);
+
+        for (int i = 0; i < times.getNumberOfRows(); i++) {
+          Long rowId = times.getLong(i, COL_TASK);
+          Double actualDuration = times.getDouble(i, COL_ACTUAL_DURATION);
+
+          if (!DataUtils.isId(rowId)) {
+            continue;
+          }
+
+          IsRow row = taskRows.getRowById(rowId);
+
+          if (row == null) {
+            continue;
+          }
+
+          if (!BeeUtils.isNegative(idxActualDuration)) {
+            row.setValue(idxActualDuration, actualDuration);
           }
         }
       }
@@ -1294,6 +1338,59 @@ public class TasksModuleBean implements BeeModule {
     }
 
     return dates;
+  }
+
+  private SimpleRowSet getTaskActualTimes(List<Long> ids) {
+    SimpleRowSet result = new SimpleRowSet(new String [] {
+        COL_TASK, COL_ACTUAL_DURATION
+    });
+
+    Filter idFilter = Filter.any(COL_TASK, ids);
+    Filter durationFilter = Filter.notNull(COL_DURATION);
+
+    BeeRowSet taskEvents =
+        qs.getViewData(TaskConstants.VIEW_TASK_DURATIONS, Filter.and(idFilter, durationFilter),
+            null, Lists.newArrayList(COL_TASK, COL_DURATION));
+
+    if (taskEvents.isEmpty()) {
+      return result;
+    }
+
+    Map<Long, Long> times = new HashMap<>();
+
+    int idxEventDuration =
+        DataUtils.getColumnIndex(COL_DURATION, taskEvents.getColumns(), false);
+    int idxId = DataUtils.getColumnIndex(COL_TASK, taskEvents.getColumns(), false);
+
+    if (BeeUtils.isNegative(idxEventDuration) || BeeUtils.isNegative(idxId)) {
+      return result;
+    }
+
+    for (IsRow row : taskEvents) {
+      Long id = row.getLong(idxId);
+      String newTime = row.getString(idxEventDuration);
+
+      Long newTimeMls = TimeUtils.parseTime(newTime);
+      Long currentTime = times.get(id);
+
+      if (currentTime == null) {
+        currentTime = Long.valueOf(0);
+      }
+
+      currentTime += newTimeMls;
+
+      times.put(id, currentTime);
+    }
+
+    for (Long id : times.keySet()) {
+      double timeInHours =
+          Double.valueOf(BeeUtils.toString(times.get(id)))
+              / Double.valueOf(TimeUtils.MILLIS_PER_HOUR);
+
+      result.addRow(new String[] {
+          BeeUtils.toString(id), BeeUtils.toString(timeInHours)});
+    }
+    return result;
   }
 
   private ResponseObject getTaskData(long taskId, Long eventId, Collection<String> propNames,

@@ -16,8 +16,8 @@
   <xi:include href="columns/Task.columns.xml" />
   
   <g:columns>
-    <DataColumn name="ExpectedExpenses" />
-    <DataColumn name="ActualDuration" />
-    <DataColumn name="ActualExpenses" />
+    <DataColumn name="ExpectedExpenses" scale="2" />
+    <DataColumn name="ActualDuration" scale="2"/>
+    <DataColumn name="ActualExpenses" scale="2" />
   </g:columns>
 </g:Grid>
