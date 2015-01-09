@@ -3,7 +3,7 @@
   xmlns:x="http://www.butent.com/expression"
 
   name="ProjectStages" source="ProjectStages" caption="=prjStages"
-  editForm="ProjectStages" newRowForm="ProjectStages"
+  editForm="ProjectStage" newRowForm="ProjectStage"
   newRowCaption="=prjNewStage"
   >
   <Columns>
@@ -30,9 +30,9 @@
       -->
     </SimpleColumn>
     
-    <SimpleColumn name="ExpectedTasksExpenses" label="=prjExpectedTaskExpenses">
-      <x:string>'?0?'</x:string>
-    </SimpleColumn>
+    <ExternalJoin source="Tasks" joinType="LEFT" name="ProjectStage" filter="ExpectedExpenses">    
+      <AggregateColumn alias="ExpectedTasksExpenses" name="ExpectedExpenses" aggregate="SUM" />
+    </ExternalJoin>
     
     <SimpleColumn name="ActualTasksDuration" label="=prjActualTaskDuration">
       <x:number>0</x:number> 

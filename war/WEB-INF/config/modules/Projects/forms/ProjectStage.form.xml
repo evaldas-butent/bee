@@ -14,7 +14,7 @@
 		xmlns:f="http://www.butent.com/form"
 		xmlns:xi="http://www.w3.org/2001/XInclude"   
 		xmlns:d="http://www.butent.com/decorator" 
-		name="ProjectStages" viewName="ProjectStages" caption="=prjStage" >
+		name="ProjectStage" viewName="ProjectStages" caption="=prjStage" >
 	
 	<FlowPanel class="flexBox-vertical">
 		<Table>
@@ -45,10 +45,10 @@
 				<InputDecimal source="Expenses" style="&inp3;" scale="2" />
 
 				<Label for="ExpectedTasksExpenses" text="=prjExpectedTaskExpenses" style="&lbl3;" />
-				<InputDecimal source="ExpectedTasksExpenses" style="&inp3;" />
+				<InputDecimal source="ExpectedTasksExpenses" style="&inp3;" scale="2" />
 
 				<Label for="ActualExpenses" text="=prjActualExpenses" style="&lbl;" />
-				<InputDecimal source="ActualExpenses" style="&inp2;" />
+				<InputDecimal source="ActualExpenses" style="&inp2;" scale="2" />
 			</row>
 			
 			<row>
