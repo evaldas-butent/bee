@@ -20,6 +20,7 @@
       </SimpleJoin>
       
       <SimpleColumn name="Project" />
+      <SimpleColumn name="ProjectStage" />
     </SimpleJoin>
 
     <SimpleColumn name="Publisher" />

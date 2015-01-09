@@ -19,6 +19,7 @@ public final class ProjectConstants {
   public static final String ALS_CHART_END = "ChartEnd";
   public static final String ALS_CHART_CAPTION = "ChartCaption";
   public static final String ALS_CHART_ID = "ChartID";
+  public static final String ALS_ROW_ID = "RowID";
 
   public static final String COL_EXPECTED_TASKS_DURATION = "ExpectedTasksDuration";
   public static final String COL_ACTUAL_TASKS_DURATION = "ActualTasksDuration";

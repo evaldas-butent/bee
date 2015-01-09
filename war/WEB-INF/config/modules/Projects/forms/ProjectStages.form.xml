@@ -34,10 +34,10 @@
 				<InputText source="ExpectedDuration" style="&inp3;" />
 
 				<Label for="ExpectedTasksDuration" text="=prjExpectedTaskDuration" style="&lbl2;" />
-				<InputText source="ExpectedTasksDuration" style="&inp3;" />
+				<InputDecimal scale="2" source="ExpectedTasksDuration" style="&inp3;" />
 
 				<Label for="ActualTasksDuration" text="=prjActualTaskDuration" style="&lbl2;" />
-				<InputText source="ActualTasksDuration" style="&inp2;" />
+				<InputDecimal scale="2" source="ActualTasksDuration" style="&inp2;" />
 			</row>
 			
 			<row>

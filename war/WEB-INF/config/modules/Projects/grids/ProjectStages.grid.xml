@@ -9,8 +9,8 @@
 		<DataColumn name="StartDate" />
 		<DataColumn name="EndDate" />
 		<DataColumn name="ExpectedDuration" />
-		<DataColumn name="ExpectedTasksDuration" />
-		<DataColumn name="ActualTasksDuration" />
+		<DataColumn name="ExpectedTasksDuration" scale="2"/>
+		<DataColumn name="ActualTasksDuration" scale="2"/>
 		<DataColumn name="Expenses" scale="2" />
 		<DataColumn name="ActualExpenses" />
 	</g:columns>
