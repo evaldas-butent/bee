@@ -69,7 +69,12 @@ public class ProjectsModuleBean implements BeeModule {
 
   @Override
   public Collection<BeeParameter> getDefaultParameters() {
-    return null;
+    String module = getModule().getName();
+
+    List<BeeParameter> params = Lists.newArrayList(
+        BeeParameter.createNumber(module, PRM_PROJECT_COMMON_RATE, false, BeeConst.DOUBLE_ZERO)
+        );
+    return params;
   }
 
   @Override

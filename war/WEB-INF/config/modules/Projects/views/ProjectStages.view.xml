@@ -30,7 +30,7 @@
       -->
     </SimpleColumn>
     
-    <ExternalJoin source="Tasks" joinType="LEFT" name="ProjectStage" filter="ExpectedExpenses">    
+    <ExternalJoin source="Tasks" joinType="LEFT" name="ProjectStage">    
       <AggregateColumn alias="ExpectedTasksExpenses" name="ExpectedExpenses" aggregate="SUM" />
     </ExternalJoin>
     

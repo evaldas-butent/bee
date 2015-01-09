@@ -46,6 +46,7 @@ public final class ProjectConstants {
   public static final String COL_DATES_NOTE = "Note";
 
   public static final String COL_USER_TYPE = "UserType";
+  public static final String COL_RATE = "Rate";
 
   public static final String FORM_PROJECT = "Project";
 
@@ -54,6 +55,8 @@ public final class ProjectConstants {
   public static final String GRID_PROJECT_USERS = "ProjectUsers";
 
   public static final String PROP_USERS = "Users";
+
+  public static final String PRM_PROJECT_COMMON_RATE = "ProjectCommonRate";
 
   public static final String SVC_PREFFIX = "svc_prj_";
   public static final String SVC_GET_PROJECT_CHART_DATA = SVC_PREFFIX + "GetChartData";
