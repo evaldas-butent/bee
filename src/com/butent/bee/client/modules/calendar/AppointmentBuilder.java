@@ -308,16 +308,22 @@ class AppointmentBuilder extends AbstractFormInterceptor implements SelectorEven
   private static final String STYLE_COLOR_BAR_PREFIX = BeeConst.CSS_CLASS_PREFIX
       + "cal-ColorBar-";
 
-  static BeeRow createEmptyRow(BeeRow typeRow, DateTime start) {
+  static BeeRow createEmptyRow(BeeRow typeRow, DateTime start, CalendarVisibility visibility) {
     BeeRow row = RowFactory.createEmptyRow(CalendarKeeper.getAppointmentViewInfo(), true);
 
     if (typeRow != null) {
       RelationUtils.updateRow(CalendarKeeper.getAppointmentViewInfo(), COL_APPOINTMENT_TYPE, row,
           Data.getDataInfo(VIEW_APPOINTMENT_TYPES), typeRow, true);
     }
+
     if (start != null) {
       Data.setValue(VIEW_APPOINTMENTS, row, COL_START_DATE_TIME, start);
     }
+    
+    if (visibility != null) {
+      Data.setValue(VIEW_APPOINTMENTS, row, COL_VISIBILITY, visibility.ordinal());
+    }
+    
     return row;
   }
 

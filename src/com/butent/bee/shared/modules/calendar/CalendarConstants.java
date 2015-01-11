@@ -121,7 +121,8 @@ public final class CalendarConstants {
 
   public enum CalendarVisibility implements HasCaption {
     PUBLIC(Localized.getConstants().calPublic()),
-    PRIVATE(Localized.getConstants().calPrivate());
+    PRIVATE(Localized.getConstants().calPrivate()),
+    EDITABLE(Localized.getConstants().calEditable());
 
     private final String caption;
 
@@ -383,6 +384,9 @@ public final class CalendarConstants {
   public static final String COL_VISIBILITY = "Visibility";
   public static final String COL_CREATED = "Created";
   public static final String COL_CREATOR = "Creator";
+  public static final String ALS_CREATOR_COMPANY_PERSON = "CreatorCompanyPerson";
+  public static final String ALS_CREATOR_FIRST_NAME = "CreatorFirstName";
+  public static final String ALS_CREATOR_LAST_NAME = "CreatorLastName";
 
   public static final String COL_REPORT = "Report";
   public static final String COL_CAPTION = "Caption";
