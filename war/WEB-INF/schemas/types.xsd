@@ -451,6 +451,7 @@
       <xs:enumeration value="ThemeColors" />
       <xs:enumeration value="Themes" />
       <xs:enumeration value="TimeZones" />
+      <xs:enumeration value="TodoList" />
       <xs:enumeration value="TradeActInvoices" />
       <xs:enumeration value="TradeActItems" />
       <xs:enumeration value="TradeActNames" />
