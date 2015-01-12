@@ -47,7 +47,12 @@
     <SimpleColumn name="Currency" />
     
     <SimpleColumn name="ActualExpenses" label="=prjActualExpenses">
-      <x:string>'?0?'</x:string>
+       <x:number>0</x:number> 
+      <!-- 
+      Data handling in system module bean  
+      com.butent.bee.server.modules.projects.ProjectsModuleBean.init().new DataEventHandler() 
+      {...}.fillProjectsTimeData(ViewQueryEvent event)
+      -->
     </SimpleColumn> 
     
     <SimpleJoin name="Project" joinType="LEFT">

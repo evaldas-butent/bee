@@ -1401,7 +1401,7 @@ public class TasksModuleBean implements BeeModule {
       }
 
       Double rate = row.getDouble(idxRate);
-      double currentTimeInHrs = Double.valueOf(currentTime)
+      double currentTimeInHrs = Double.valueOf(newTimeMls)
           / Double.valueOf(TimeUtils.MILLIS_PER_HOUR);
       Double currentExpense = expenses.get(id);
 

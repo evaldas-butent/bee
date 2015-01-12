@@ -11,6 +11,7 @@ import com.butent.bee.server.data.QueryServiceBean;
 import com.butent.bee.server.data.SystemBean;
 import com.butent.bee.server.http.RequestInfo;
 import com.butent.bee.server.modules.BeeModule;
+import com.butent.bee.server.modules.ParamHolderBean;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.communication.ResponseObject;
 import com.butent.bee.shared.data.BeeRowSet;
@@ -21,6 +22,7 @@ import com.butent.bee.shared.data.SimpleRowSet;
 import com.butent.bee.shared.data.filter.Filter;
 import com.butent.bee.shared.data.view.Order;
 import com.butent.bee.shared.modules.BeeParameter;
+import com.butent.bee.shared.modules.projects.ProjectConstants;
 import com.butent.bee.shared.modules.tasks.TaskConstants;
 import com.butent.bee.shared.rights.Module;
 import com.butent.bee.shared.time.DateTime;
@@ -49,6 +51,9 @@ public class ProjectsModuleBean implements BeeModule {
 
   @EJB
   QueryServiceBean qs;
+
+  @EJB
+  ParamHolderBean prm;
 
   @Override
   public List<SearchResult> doSearch(String query) {
@@ -112,14 +117,18 @@ public class ProjectsModuleBean implements BeeModule {
         int idxActualTasksDuration = DataUtils.getColumnIndex(COL_ACTUAL_TASKS_DURATION,
             viewRows.getColumns(), false);
 
+        int idxActualExpenses = DataUtils.getColumnIndex(TaskConstants.COL_ACTUAL_EXPENSES,
+            viewRows.getColumns(), false);
+
         List<Long> rowIds = viewRows.getRowIds();
 
-        SimpleRowSet times = getProjectsTasksTimes(rowIds, event.getTargetName());
+        SimpleRowSet times = getProjectsTasksTimesAndExpenses(rowIds, event.getTargetName());
 
         for (int i = 0; i < times.getNumberOfRows(); i++) {
           Long rowId = times.getLong(i, ALS_ROW_ID);
           Double expectedTaskDuration = times.getDouble(i, COL_EXPECTED_TASKS_DURATION);
           Double actualTaskDuration = times.getDouble(i, COL_ACTUAL_TASKS_DURATION);
+          Double actualExpenses = times.getDouble(i, TaskConstants.COL_ACTUAL_EXPENSES);
 
           if (!DataUtils.isId(rowId)) {
             continue;
@@ -137,6 +146,10 @@ public class ProjectsModuleBean implements BeeModule {
 
           if (!BeeUtils.isNegative(idxActualTasksDuration)) {
             row.setValue(idxActualTasksDuration, actualTaskDuration);
+          }
+
+          if (!BeeUtils.isNegative(idxActualExpenses)) {
+            row.setValue(idxActualExpenses, actualExpenses);
           }
         }
       }
@@ -231,12 +244,13 @@ public class ProjectsModuleBean implements BeeModule {
     return ResponseObject.response(chartData);
   }
 
-  private SimpleRowSet getProjectsTasksTimes(List<Long> ids, String viewName) {
+  private SimpleRowSet getProjectsTasksTimesAndExpenses(List<Long> ids, String viewName) {
     SimpleRowSet taskExpectedTimes = getTasksExpectedTimes(ids, viewName);
-    SimpleRowSet taskActualTimes = getTasksActualTimes(ids, viewName);
+    SimpleRowSet taskActualTimesAndExpenses = getTasksActualTimesAndExpenses(ids, viewName);
 
     SimpleRowSet result = new SimpleRowSet(new String[] {
-       ALS_ROW_ID, COL_EXPECTED_TASKS_DURATION, COL_ACTUAL_TASKS_DURATION
+       ALS_ROW_ID, COL_EXPECTED_TASKS_DURATION, COL_ACTUAL_TASKS_DURATION,
+       TaskConstants.COL_ACTUAL_EXPENSES
     });
 
     Map<Long, Integer> rowTimesHash = new HashMap<>();
@@ -260,9 +274,10 @@ public class ProjectsModuleBean implements BeeModule {
       result.setValue(index, COL_EXPECTED_TASKS_DURATION, BeeUtils.toString(timeInHours));
     }
 
-    for (int i = 0; i < taskActualTimes.getNumberOfRows(); i++) {
-      Long rowId = taskActualTimes.getLong(i, ALS_ROW_ID);
-      Long time = taskActualTimes.getLong(i, COL_ACTUAL_TASKS_DURATION);
+    for (int i = 0; i < taskActualTimesAndExpenses.getNumberOfRows(); i++) {
+      Long rowId = taskActualTimesAndExpenses.getLong(i, ALS_ROW_ID);
+      Long time = taskActualTimesAndExpenses.getLong(i, COL_ACTUAL_TASKS_DURATION);
+      Double expenses = taskActualTimesAndExpenses.getDouble(i, TaskConstants.COL_ACTUAL_EXPENSES);
 
       Integer index = rowTimesHash.get(rowId);
 
@@ -277,6 +292,8 @@ public class ProjectsModuleBean implements BeeModule {
       double timeInHours =
           Double.valueOf(time.doubleValue()) / Double.valueOf(TimeUtils.MILLIS_PER_HOUR);
       result.setValue(index, COL_ACTUAL_TASKS_DURATION, BeeUtils.toString(timeInHours));
+
+      result.setValue(index, TaskConstants.COL_ACTUAL_EXPENSES, BeeUtils.toString(expenses));
     }
 
     return result;
@@ -344,10 +361,10 @@ public class ProjectsModuleBean implements BeeModule {
     return result;
   }
 
-  private SimpleRowSet getTasksActualTimes(List<Long> ids, String viewName) {
+  private SimpleRowSet getTasksActualTimesAndExpenses(List<Long> ids, String viewName) {
     String filterColumn = BeeConst.EMPTY;
     SimpleRowSet result = new SimpleRowSet(new String[] {
-        ALS_ROW_ID, COL_ACTUAL_TASKS_DURATION
+        ALS_ROW_ID, COL_ACTUAL_TASKS_DURATION, TaskConstants.COL_ACTUAL_EXPENSES
     });
 
     switch (viewName) {
@@ -366,17 +383,22 @@ public class ProjectsModuleBean implements BeeModule {
 
     BeeRowSet taskEvents =
         qs.getViewData(TaskConstants.VIEW_TASK_DURATIONS, Filter.and(idFilter, durationFilter),
-            null, Lists.newArrayList(filterColumn, TaskConstants.COL_DURATION));
+            null, Lists.newArrayList(filterColumn, TaskConstants.COL_DURATION, COL_RATE));
 
     if (taskEvents.isEmpty()) {
       return result;
     }
 
+    Double defaultRate = prm.getDouble(ProjectConstants.PRM_PROJECT_COMMON_RATE);
+
     Map<Long, Long> times = new HashMap<>();
+    Map<Long, Double> expenses = new HashMap<>();
 
     int idxEventDuration =
         DataUtils.getColumnIndex(TaskConstants.COL_DURATION, taskEvents.getColumns(), false);
     int idxId = DataUtils.getColumnIndex(filterColumn, taskEvents.getColumns(), false);
+    int idxRate =
+        DataUtils.getColumnIndex(COL_RATE, taskEvents.getColumns(), false);
 
     if (BeeUtils.isNegative(idxEventDuration) || BeeUtils.isNegative(idxId)) {
       return result;
@@ -385,6 +407,10 @@ public class ProjectsModuleBean implements BeeModule {
     for (IsRow row : taskEvents) {
       Long id = row.getLong(idxId);
       String newTime = row.getString(idxEventDuration);
+
+      if (BeeUtils.isEmpty(newTime)) {
+        continue;
+      }
 
       Long newTimeMls = TimeUtils.parseTime(newTime);
       Long currentTime = times.get(id);
@@ -396,11 +422,50 @@ public class ProjectsModuleBean implements BeeModule {
       currentTime += newTimeMls;
 
       times.put(id, currentTime);
+
+      if (BeeUtils.isNegative(idxRate)) {
+        continue;
+      }
+
+      Double rate = row.getDouble(idxRate);
+      double currentTimeInHrs = Double.valueOf(newTimeMls)
+          / Double.valueOf(TimeUtils.MILLIS_PER_HOUR);
+      Double currentExpense = expenses.get(id);
+
+      if (!BeeUtils.isPositive(rate)) {
+        if (BeeUtils.isDouble(defaultRate)) {
+          rate = defaultRate;
+        } else {
+          rate = Double.valueOf(BeeConst.DOUBLE_ZERO);
+        }
+      }
+
+      if (currentExpense == null) {
+        currentExpense = Double.valueOf(BeeConst.DOUBLE_ZERO);
+      }
+
+      currentExpense += rate * currentTimeInHrs;
+      expenses.put(id, currentExpense);
+
     }
 
-    for (Long id : times.keySet()) {
+    for (Long id : ids) {
+      Long timeMills = 0L;
+      double expense = 0.0;
+
+      if (times.containsKey(id)) {
+        timeMills = times.get(id);
+      }
+
+      if (expenses.containsKey(id)) {
+        expense = expenses.get(id) == null ? 0.0 : expenses.get(id);
+      }
+
       result.addRow(new String[] {
-          BeeUtils.toString(id), BeeUtils.toString(times.get(id))});
+          BeeUtils.toString(id),
+          BeeUtils.toString(timeMills),
+          BeeUtils.toString(expense)
+      });
     }
     return result;
 
