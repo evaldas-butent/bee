@@ -31,7 +31,6 @@ import com.butent.bee.shared.communication.ResponseObject;
 import com.butent.bee.shared.data.SimpleRowSet;
 import com.butent.bee.shared.data.event.DataEvent;
 import com.butent.bee.shared.i18n.Localized;
-import com.butent.bee.shared.logging.LogUtils;
 import com.butent.bee.shared.modules.tasks.TaskConstants;
 import com.butent.bee.shared.time.HasDateRange;
 import com.butent.bee.shared.time.JustDate;
@@ -91,9 +90,6 @@ final class ProjectScheduleChart extends TimeBoard {
       this.caption = caption;
       this.color = color;
       this.stageId = stageId;
-
-      LogUtils.getRootLogger().debug("Chart data", viewName, stageId, caption, color, this.start,
-          this.end);
     }
 
     public Long getStageId() {

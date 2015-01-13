@@ -12,6 +12,6 @@
 		<DataColumn name="ExpectedTasksDuration" scale="2"/>
 		<DataColumn name="ActualTasksDuration" scale="2"/>
 		<DataColumn name="Expenses" scale="2" />
-		<DataColumn name="ActualExpenses" />
+		<DataColumn name="ActualExpenses"  scale="2" />
 	</g:columns>
 </g:Grid>
