@@ -4,8 +4,8 @@
 ]>
 <Table xmlns="http://www.butent.com/widget" xmlns:ui="http://www.butent.com/ui">
   <row>
-    <Label text="=phones" style="&lbl;" for="Phone" />
-    <InputText source="Phone" />
+    <Label text="=phones" style="&lbl;" for="Phone" class="bee-required" />
+    <InputText source="Phone" required="true" />
     <Label text="=mobile" style="&lbl;" for="Mobile" />
     <InputText source="Mobile" />
     <Label text="=fax" style="&lbl;" for="Fax" />
@@ -25,15 +25,15 @@
   </row>
   
   <row for="Address">
-    <Label text="=address" style="&lbl;" />
+    <Label text="=address" style="&lbl;" class="bee-required" />
     <cell colSpan="5">
-      <InputText source="Address" style="width: 100%;" />
+      <InputText source="Address" style="width: 100%;" required="true" />
     </cell>
   </row>
   
   <row>
-    <Label text="=city" style="&lbl;" for="City" />
-    <DataSelector source="City">
+    <Label text="=city" style="&lbl;" for="City" class="bee-required" />
+    <DataSelector source="City" required="true">
       <selectorColumn source="Name" />
       <selectorColumn source="CountryName" />
       <selectorColumn source="CountryCode">
@@ -56,8 +56,8 @@
       </row>
     </Table>
 
-    <Label text="=postIndex" style="&lbl;" for="PostIndex" />
-    <InputText source="PostIndex" />
+    <Label text="=postIndex" style="&lbl;" for="PostIndex" class="bee-required" />
+    <InputText source="PostIndex" required="true" />
   </row>
   
   <row for="SocialContacts">

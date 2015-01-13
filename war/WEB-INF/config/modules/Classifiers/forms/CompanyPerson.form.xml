@@ -15,8 +15,8 @@
       <row>
         <Label for="Person" />
         <DataSelector source="Person" style="width: 200px" />
-        <Label for="Position" />
-        <DataSelector source="Position" style="width: 200px" />
+        <Label for="Position" class="bee-required" />
+        <DataSelector source="Position" style="width: 200px" required="true" />
       </row>
       <row>
         <Label for="TabNo" />
@@ -34,4 +34,4 @@
 
     <xi:include href="widgets/ContactInfoOpen.widget.xml" />
   </FlowPanel>
-</f:Form>  
+</f:Form>

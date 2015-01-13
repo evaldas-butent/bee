@@ -17,8 +17,8 @@
       </row>
 
       <row>
-        <Label text="=lastName" horizontalAlignment="right"  />
-        <InputText style="width: 200px;" source="LastName" />
+        <Label text="=lastName" horizontalAlignment="right" class="bee-required"  />
+        <InputText style="width: 200px;" source="LastName" required="true" />
       </row>
 
       <row>         
@@ -59,4 +59,4 @@
     </TabbedPages>
 
   </FlowPanel>
-</f:Form>  
+</f:Form>

@@ -19,17 +19,17 @@
       <row>
         <Label text="=name" style="&lbl1;" class="bee-required" />
         <InputText source="Name" style="&inp1;" visible="true" />
-        <Label style="&lbl1;" for="CompanyType" />
-        <DataSelector source="CompanyType" style="&inp1;" />
+        <Label style="&lbl1;" for="CompanyType"  class="bee-required" />
+        <DataSelector source="CompanyType" style="&inp1;" required="true" />
         <Label style="&lbl1;" for="CompanyGroup" />
         <DataSelector source="CompanyGroup" style="&inp1;" />
       </row>
 
       <row>
-        <Label style="&lbl1;" for="Code" />
-        <InputText source="Code" style="&inp1;"/>
-        <Label style="&lbl1;" for="VATCode" />
-        <InputText source="VATCode" style="&inp1;" upperCase="true" />
+        <Label style="&lbl1;" for="Code"  class="bee-required" />
+        <InputText source="Code" style="&inp1;" required="true"/>
+        <Label style="&lbl1;" for="VATCode"  class="bee-required" />
+        <InputText source="VATCode" style="&inp1;" upperCase="true" required="true"/>
         <Label style="&lbl1;" module="Transport" for="ExchangeCode" />
         <InputText source="ExchangeCode" style="&inp1;" module="Transport" />
       </row>
@@ -37,12 +37,12 @@
       <row>
         <Label style="&lbl1;" for="CompanyPriority" />
         <DataSelector source="CompanyPriority" style="&inp1;" />
-        <Label text="=companyRelation" style="&lbl1;" data="CompRelTypeStore" />
+        <Label text="=companyRelation" style="&lbl1;" data="CompRelTypeStore" class="bee-required" />
         <ChildSelector viewName="CompanyRelationTypes" childTable="CompRelTypeStore"
-          targetRelColumn="Company" sourceRelColumn="RelationType" newRowEnabled="true"
+          targetRelColumn="Company" sourceRelColumn="RelationType" newRowEnabled="true" required="true"
           label="=companyRelationType" style="&inp1;" data="CompRelTypeStore" />
-        <Label style="&lbl1;" for="CompanyRelationTypeState" />
-        <DataSelector source="CompanyRelationTypeState" style="&inp1;" />
+        <Label style="&lbl1;" for="CompanyRelationTypeState" class="bee-required" />
+        <DataSelector source="CompanyRelationTypeState" style="&inp1;" required="true" />
       </row>
     </Table>
 
@@ -82,8 +82,8 @@
             </row>
   
             <row for="FinancialState">
-              <Label text="=financialState" style="&lbl1;" />
-              <DataSelector source="FinancialState" summarize="true" />
+              <Label text="=financialState" style="&lbl1;"  class="bee-required"/>
+              <DataSelector source="FinancialState" summarize="true" required="true"/>
             </row>
   
             <row for="DaysAsBuyer">
@@ -121,11 +121,11 @@
               <DataSelector source="InformationSource" style="width: 100px;" summarize="true" />
             </row>
             <row data="CompActStore">
-              <Label text="=companyActivities" style="&lbl1;" />
+              <Label text="=companyActivities" style="&lbl1;" class="bee-required" />
               <cell colSpan="3">
                 <ChildSelector viewName="CompanyActivities" childTable="CompActStore"
                   targetRelColumn="Company" sourceRelColumn="Activity"
-                  label="=companyActivities" style="width: 338px;" summarize="true" />
+                  label="=companyActivities" style="width: 338px;" summarize="true" required="true" />
               </cell>
             </row>
             <row for="Rating">
