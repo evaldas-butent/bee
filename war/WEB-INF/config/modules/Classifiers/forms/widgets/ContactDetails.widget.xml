@@ -15,7 +15,8 @@
   <row>
     <Label for="EmailId" style="&lbl;" />
     <cell colSpan="2" for="EmailId" >
-      <DataSelector source="EmailId" style="width: 100%;" maxLength="50" />
+      <DataSelector source="EmailId" style="width: 100%;" maxLength="50"
+        caching="none" instant="false" />
     </cell>
 
     <Label text="=website" style="&lbl;" for="Website" />

@@ -37,24 +37,39 @@
       <row>
         <Label html="Krovinys" />
         <TextLabel style="white-space:pre-wrap;" >
-          <renderToken source="Description" suffix="&lt;br&gt;"/>
-          <renderToken source="Quantity" prefix="Kiekis: " suffix=" " addPrefixWhenEmpty="false" addSuffixWhenEmpty="false" />
-          <renderToken source="QuantityUnit" suffix="&lt;br&gt;" addSuffixWhenEmpty="false" />
-          <renderToken source="Weight" prefix="Svoris: " suffix=" " addPrefixWhenEmpty="false" addSuffixWhenEmpty="false" />
-          <renderToken source="WeightUnit" suffix="&lt;br&gt;" addSuffixWhenEmpty="true" />
-          <renderToken source="Volume" prefix="Tūris: " suffix=" " addPrefixWhenEmpty="false" addSuffixWhenEmpty="false" />
-          <renderToken source="VolumeUnit" suffix=" " />
+          <render>
+            <ui:function>
+var descr = '';
+
+if (!row.CargoDescription) {
+  if (row.Description) {
+    descr = descr + row.Description + '\n';
+  }
+  if (row.Quantity) {
+    descr = descr + 'Kiekis: ' + row.Quantity + (row.QuantityUnit ? ' ' + row.QuantityUnit : '') + '\n';
+  }
+  if (row.Weight) {
+    descr = descr + 'Svoris: ' + row.Weight + (row.WeightUnit ? ' ' + row.WeightUnit : '') + '\n';
+  }
+  if (row.Volume) {
+    descr = descr + 'Tūris: ' + row.Volume + (row.VolumeUnit ? ' ' + row.VolumeUnit : '') + '\n';
+  }
+} else {
+  descr = row.CargoDescription;
+}
+return descr;
+            </ui:function>
+          </render>
         </TextLabel>
       </row>
       <row>
         <Label html="Pasikrovimo vieta" />
         <TextLabel source="LoadingAddress">
-          <renderToken source="LoadingAddress" />
+          <renderToken source="LoadingCompany" />
+          <renderToken source="LoadingAddress" prefix=", " />
           <renderToken source="LoadingPostIndex" prefix=" " />
           <renderToken source="LoadingCityName" prefix=", " />
           <renderToken source="LoadingCountryName" prefix=", " />
-          <renderToken source="LoadingCompany" prefix=", " />
-          <renderToken source="LoadingContact" prefix=", " />
         </TextLabel>
       </row>
       <row>
@@ -64,12 +79,11 @@
       <row>
         <Label html="Pristatymo vieta" />
         <TextLabel source="UnloadingAddress">
-          <renderToken source="UnloadingAddress" />
+          <renderToken source="UnloadingCompany" />
+          <renderToken source="UnloadingAddress" prefix=", " />
           <renderToken source="UnloadingPostIndex" prefix=" " />
           <renderToken source="UnloadingCityName" prefix=", " />
           <renderToken source="UnloadingCountryName" prefix=", " />
-          <renderToken source="UnloadingCompany" prefix=", " />
-          <renderToken source="UnloadingContact" prefix=", " />
         </TextLabel>
       </row>
       <row>

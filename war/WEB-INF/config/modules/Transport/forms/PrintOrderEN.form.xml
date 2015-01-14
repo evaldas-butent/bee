@@ -87,30 +87,29 @@
         <TextLabel source="OrderNotes" style="white-space:pre-wrap;">
           <render><ui:expression>(row.ShowAdditionalRoute
             ? row.LoadingCountryName + ' (' + row.LoadingCountryCode + ') - '
-             + row.UnloadingCountryName + ' (' + row.UnloadingCountryCode + ')\n' : '') + row.OrderNotes</ui:expression></render>
+             + row.UnloadingCountryName + ' (' + row.UnloadingCountryCode + ')\n' : '')
+             + (row.OrderNotes ? row.OrderNotes : '')</ui:expression></render>
         </TextLabel>
         
         <FlowPanel>
           <FlowPanel>
-            <!-- Label html="Load:" style="&inline; width:100px; text-align:right;" / -->
             <TextLabel source="LoadingAddress" style="&inline; margin-left:5px;">
               <renderToken source="LoadingDate" format="DATE_SHORT" prefix="Loading date: " addPrefixWhenEmpty="true" />
-              <renderToken source="LoadingCountryNameEN" prefix=" &lt;br /&gt; Loading place: " addPrefixWhenEmpty="true" />
-              <renderToken source="LoadingCityNameEN" prefix=", " />
+              <renderToken source="LoadingCompany" prefix="&lt;br /&gt;Loading place: " addPrefixWhenEmpty="true" />
               <renderToken source="LoadingAddress" prefix=", " />
               <renderToken source="LoadingPostIndex" prefix=", " />
-              <renderToken source="LoadingContact" prefix=", " />
+              <renderToken source="LoadingCityNameEN" prefix=", " />
+              <renderToken source="LoadingCountryNameEN" prefix=", " />
             </TextLabel>
           </FlowPanel>
           <FlowPanel>
-            <!--  Label html="Offload:" style="&inline; width:100px; text-align:right;" / -->
             <TextLabel source="UnloadingAddress" style="&inline; margin-left:5px;">
               <renderToken source="UnloadingDate" format="DATE_SHORT" prefix="Delivery date: " addPrefixWhenEmpty="true" />
-              <renderToken source="UnloadingCountryNameEN" prefix=" &lt;br /&gt; Place of delivery: " addPrefixWhenEmpty="true" />
-              <renderToken source="UnLoadingCityNameEN" prefix=", " />
+              <renderToken source="UnloadingCompany" prefix="&lt;br /&gt;Place of delivery: " addPrefixWhenEmpty="true" />
               <renderToken source="UnloadingAddress" prefix=", " />
-              <renderToken source="UnLoadingPostIndex" prefix=", " />
-              <renderToken source="UnloadingContact" prefix=", " />
+              <renderToken source="UnloadingPostIndex" prefix=", " />
+              <renderToken source="UnloadingCityNameEN" prefix=", " />
+              <renderToken source="UnloadingCountryNameEN" prefix=", " />
             </TextLabel>
           </FlowPanel>
         </FlowPanel>

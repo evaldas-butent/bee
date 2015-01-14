@@ -6,7 +6,7 @@
   xmlns:f="http://www.butent.com/form"
   
   name="CargoInvoice" viewName="CargoInvoices"
-  width="800" height="600"
+  width="800" height="600" readOnly="true"
   >
   <f:properties reports="PrintLogisticsInvoiceEN, PrintLogisticsInvoiceRU, PrintLogisticsShortEN, PrintLogisticsShortRU" />
 
@@ -50,7 +50,7 @@
         <cell colSpan="3">
           <Label text="=trdTerm" style="&lbl; text-align:right;" />
         </cell>
-        <InputDate source="Term" style="width:70px;" />
+        <InputDate source="Term" style="width:150px;" />
       </row>
       <row>
         <Label text="=trdVehicle" style="&lbl;" />

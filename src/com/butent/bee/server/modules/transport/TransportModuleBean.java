@@ -289,6 +289,9 @@ public class TransportModuleBean implements BeeModule, HasTimerService {
     } else if (BeeUtils.same(svc, SVC_TRIP_PROFIT_REPORT)) {
       response = getTripProfitReport(reqInfo);
 
+    } else if (BeeUtils.same(svc, SVC_INCOME_INVOICES_REPORT)) {
+      response = getIncomeInvoicesReport(reqInfo);
+
     } else {
       String msg = BeeUtils.joinWords("Transport service not recognized:", svc);
       logger.warning(msg);
@@ -409,7 +412,9 @@ public class TransportModuleBean implements BeeModule, HasTimerService {
                 .addGroup(TBL_ASSESSMENTS, sys.getIdName(TBL_ASSESSMENTS));
 
             IsExpression xpr = ExchangeUtils.exchangeFieldTo(query,
-                TradeModuleBean.getTotalExpression(tbl, SqlUtils.field(tbl, COL_AMOUNT)),
+                SqlUtils.minus(
+                    TradeModuleBean.getTotalExpression(tbl, SqlUtils.field(tbl, COL_AMOUNT)),
+                    TradeModuleBean.getVatExpression(tbl, SqlUtils.field(tbl, COL_AMOUNT))),
                 SqlUtils.field(tbl, COL_CURRENCY),
                 SqlUtils.nvl(SqlUtils.field(tbl, COL_DATE), SqlUtils.field(TBL_ORDERS, COL_DATE)),
                 SqlUtils.field(TBL_ORDER_CARGO, COL_CURRENCY));
@@ -1413,7 +1418,9 @@ public class TransportModuleBean implements BeeModule, HasTimerService {
           ss.setWhere(sys.idEquals(TBL_ASSESSMENTS, assessmentId));
         }
         IsExpression xpr = ExchangeUtils.exchangeFieldTo(ss,
-            TradeModuleBean.getTotalExpression(tbl, SqlUtils.field(tbl, COL_AMOUNT)),
+            SqlUtils.minus(
+                TradeModuleBean.getTotalExpression(tbl, SqlUtils.field(tbl, COL_AMOUNT)),
+                TradeModuleBean.getVatExpression(tbl, SqlUtils.field(tbl, COL_AMOUNT))),
             SqlUtils.field(tbl, COL_CURRENCY),
             SqlUtils.nvl(SqlUtils.field(tbl, COL_DATE), SqlUtils.field(TBL_ORDERS, COL_DATE)),
             SqlUtils.constant(currency));
@@ -2271,6 +2278,161 @@ public class TransportModuleBean implements BeeModule, HasTimerService {
     return ResponseObject.response(settings);
   }
 
+  private ResponseObject getIncomeInvoicesReport(RequestInfo reqInfo) {
+    Long startDate = reqInfo.getParameterLong(Service.VAR_FROM);
+    Long endDate = reqInfo.getParameterLong(Service.VAR_TO);
+
+    Long currency = reqInfo.getParameterLong(COL_CURRENCY);
+    boolean woVat = BeeUtils.toBoolean(reqInfo.getParameter(COL_TRADE_VAT));
+
+    HasConditions clause = SqlUtils.and();
+
+    if (startDate != null) {
+      clause.add(SqlUtils.moreEqual(TBL_SALES, COL_TRADE_DATE, startDate));
+    }
+    if (endDate != null) {
+      clause.add(SqlUtils.less(TBL_SALES, COL_TRADE_DATE, endDate));
+    }
+    String id = SqlUtils.uniqueName();
+    String saleUsers = SqlUtils.uniqueName();
+    String saleCompanyPersons = SqlUtils.uniqueName();
+    String salePersons = SqlUtils.uniqueName();
+
+    SqlSelect query = new SqlSelect()
+        .addField(TBL_CARGO_INCOMES, sys.getIdName(TBL_CARGO_INCOMES), id)
+        .addField(TBL_ASSESSMENTS, sys.getIdName(TBL_ASSESSMENTS), COL_ASSESSMENT)
+        .addFields(TBL_DEPARTMENTS, COL_DEPARTMENT_NAME)
+        .addExpr(SqlUtils.concat(SqlUtils.field(TBL_PERSONS, COL_FIRST_NAME), "' '",
+            SqlUtils.nvl(SqlUtils.field(TBL_PERSONS, COL_LAST_NAME), "''")), COL_ORDER_MANAGER)
+        .addField(TBL_SERVICES, "Name", COL_SERVICE_NAME)
+        .addFields(TBL_SALES, COL_TRADE_DATE)
+        .addExpr(SqlUtils.concat(SqlUtils.nvl(SqlUtils.field(TBL_SALES, COL_TRADE_INVOICE_PREFIX),
+            "''"), SqlUtils.nvl(SqlUtils.field(TBL_SALES, COL_TRADE_INVOICE_NO), "''")),
+            COL_TRADE_INVOICE_NO)
+        .addField(TBL_COMPANIES, COL_COMPANY_NAME, COL_TRADE_CUSTOMER)
+        .addExpr(SqlUtils.concat(SqlUtils.field(salePersons, COL_FIRST_NAME), "' '",
+            SqlUtils.nvl(SqlUtils.field(salePersons, COL_LAST_NAME), "''")),
+            COL_SALE + COL_ORDER_MANAGER)
+        .addFrom(TBL_CARGO_INCOMES)
+        .addFromInner(TBL_SERVICES,
+            sys.joinTables(TBL_SERVICES, TBL_CARGO_INCOMES, COL_SERVICE))
+        .addFromInner(TBL_SALES, sys.joinTables(TBL_SALES, TBL_CARGO_INCOMES, COL_SALE))
+        .addFromLeft(TBL_COMPANIES, sys.joinTables(TBL_COMPANIES, TBL_SALES, COL_TRADE_CUSTOMER))
+        .addFromInner(TBL_ASSESSMENTS,
+            SqlUtils.joinUsing(TBL_CARGO_INCOMES, TBL_ASSESSMENTS, COL_CARGO))
+        .addFromInner(TBL_DEPARTMENTS,
+            sys.joinTables(TBL_DEPARTMENTS, TBL_ASSESSMENTS, COL_DEPARTMENT))
+        .addFromInner(TBL_ORDER_CARGO,
+            sys.joinTables(TBL_ORDER_CARGO, TBL_ASSESSMENTS, COL_CARGO))
+        .addFromInner(TBL_ORDERS, sys.joinTables(TBL_ORDERS, TBL_ORDER_CARGO, COL_ORDER))
+        .addFromInner(TBL_USERS, sys.joinTables(TBL_USERS, TBL_ORDERS, COL_ORDER_MANAGER))
+        .addFromInner(TBL_COMPANY_PERSONS,
+            sys.joinTables(TBL_COMPANY_PERSONS, TBL_USERS, COL_COMPANY_PERSON))
+        .addFromInner(TBL_PERSONS, sys.joinTables(TBL_PERSONS, TBL_COMPANY_PERSONS, COL_PERSON))
+        .addFromLeft(TBL_USERS, saleUsers,
+            sys.joinTables(TBL_USERS, saleUsers, TBL_SALES, COL_ORDER_MANAGER))
+        .addFromLeft(TBL_COMPANY_PERSONS, saleCompanyPersons,
+            sys.joinTables(TBL_COMPANY_PERSONS, saleCompanyPersons, saleUsers, COL_COMPANY_PERSON))
+        .addFromLeft(TBL_PERSONS, salePersons,
+            sys.joinTables(TBL_PERSONS, salePersons, saleCompanyPersons, COL_PERSON))
+        .setWhere(clause);
+
+    IsExpression dateExpr = SqlUtils.nvl(SqlUtils.field(TBL_CARGO_INCOMES, COL_DATE),
+        SqlUtils.field(TBL_ORDERS, COL_DATE));
+
+    IsExpression expr = TradeModuleBean.getTotalExpression(TBL_CARGO_INCOMES,
+        SqlUtils.field(TBL_CARGO_INCOMES, COL_AMOUNT));
+
+    if (woVat) {
+      expr = SqlUtils.minus(expr, TradeModuleBean.getVatExpression(TBL_CARGO_INCOMES,
+          SqlUtils.field(TBL_CARGO_INCOMES, COL_AMOUNT)));
+    }
+    if (DataUtils.isId(currency)) {
+      expr = ExchangeUtils.exchangeFieldTo(query, expr,
+          SqlUtils.field(TBL_CARGO_INCOMES, COL_CURRENCY), dateExpr,
+          SqlUtils.constant(currency));
+    } else {
+      expr = ExchangeUtils.exchangeField(query, expr,
+          SqlUtils.field(TBL_CARGO_INCOMES, COL_CURRENCY), dateExpr);
+    }
+    query.addExpr(expr, VAR_INCOME);
+
+    String tmpIncomes = qs.sqlCreateTemp(query);
+
+    query = new SqlSelect()
+        .addField(TBL_CARGO_EXPENSES, VAR_INCOME, id)
+        .addEmptyInt("cnt")
+        .addField(TBL_SERVICES, "Name", VAR_EXPENSE + COL_SERVICE_NAME)
+        .addExpr(SqlUtils.concat(SqlUtils.nvl(SqlUtils.field(TBL_PURCHASES,
+            COL_TRADE_INVOICE_PREFIX), "''"),
+            SqlUtils.nvl(SqlUtils.field(TBL_PURCHASES, COL_TRADE_INVOICE_NO), "''")),
+            VAR_EXPENSE + COL_TRADE_INVOICE_NO)
+        .addFrom(TBL_CARGO_EXPENSES)
+        .addFromInner(tmpIncomes, SqlUtils.join(TBL_CARGO_EXPENSES, VAR_INCOME, tmpIncomes, id))
+        .addFromInner(TBL_ORDER_CARGO,
+            sys.joinTables(TBL_ORDER_CARGO, TBL_CARGO_EXPENSES, COL_CARGO))
+        .addFromInner(TBL_ORDERS, sys.joinTables(TBL_ORDERS, TBL_ORDER_CARGO, COL_ORDER))
+        .addFromInner(TBL_SERVICES, sys.joinTables(TBL_SERVICES, TBL_CARGO_EXPENSES, COL_SERVICE))
+        .addFromLeft(TBL_PURCHASES,
+            sys.joinTables(TBL_PURCHASES, TBL_CARGO_EXPENSES, COL_PURCHASE));
+
+    dateExpr = SqlUtils.nvl(SqlUtils.field(TBL_CARGO_EXPENSES, COL_DATE),
+        SqlUtils.field(TBL_ORDERS, COL_DATE));
+
+    expr = TradeModuleBean.getTotalExpression(TBL_CARGO_EXPENSES,
+        SqlUtils.field(TBL_CARGO_EXPENSES, COL_AMOUNT));
+
+    if (woVat) {
+      expr = SqlUtils.minus(expr, TradeModuleBean.getVatExpression(TBL_CARGO_INCOMES,
+          SqlUtils.field(TBL_CARGO_INCOMES, COL_AMOUNT)));
+    }
+    if (DataUtils.isId(currency)) {
+      expr = ExchangeUtils.exchangeFieldTo(query, expr,
+          SqlUtils.field(TBL_CARGO_EXPENSES, COL_CURRENCY), dateExpr,
+          SqlUtils.constant(currency));
+    } else {
+      expr = ExchangeUtils.exchangeField(query, expr,
+          SqlUtils.field(TBL_CARGO_EXPENSES, COL_CURRENCY), dateExpr);
+    }
+    query.addExpr(expr, VAR_EXPENSE);
+
+    String tmpExpenses = qs.sqlCreateTemp(query);
+
+    qs.updateData(new SqlUpdate(tmpExpenses)
+        .addExpression("cnt", SqlUtils.field("subq", "count"))
+        .setFrom(new SqlSelect()
+            .addFields(tmpExpenses, id)
+            .addCount("count")
+            .addFrom(tmpExpenses)
+            .addGroup(tmpExpenses, id), "subq", SqlUtils.joinUsing(tmpExpenses, "subq", id)));
+
+    String tmp = qs.sqlCreateTemp(new SqlSelect()
+        .addFields(tmpIncomes, COL_ASSESSMENT, COL_DEPARTMENT_NAME, COL_ORDER_MANAGER,
+            COL_SERVICE_NAME, COL_TRADE_DATE, COL_TRADE_INVOICE_NO, COL_TRADE_CUSTOMER,
+            COL_SALE + COL_ORDER_MANAGER)
+        .addFields(tmpExpenses, VAR_EXPENSE + COL_SERVICE_NAME, VAR_EXPENSE + COL_TRADE_INVOICE_NO,
+            VAR_EXPENSE)
+        .addExpr(SqlUtils.sqlIf(SqlUtils.isNull(tmpExpenses, "cnt"),
+            SqlUtils.field(tmpIncomes, VAR_INCOME),
+            SqlUtils.divide(SqlUtils.field(tmpIncomes, VAR_INCOME),
+                SqlUtils.field(tmpExpenses, "cnt"))), VAR_INCOME)
+        .addFrom(tmpIncomes)
+        .addFromLeft(tmpExpenses, SqlUtils.joinUsing(tmpIncomes, tmpExpenses, id)));
+
+    qs.sqlDropTemp(tmpIncomes);
+    qs.sqlDropTemp(tmpExpenses);
+
+    SimpleRowSet rs = qs.getData(new SqlSelect()
+        .addAllFields(tmp)
+        .addExpr(SqlUtils.minus(SqlUtils.nvl(SqlUtils.field(tmp, VAR_INCOME), 0),
+            SqlUtils.nvl(SqlUtils.field(tmp, VAR_EXPENSE), 0)), "Profit")
+        .addFrom(tmp));
+
+    qs.sqlDropTemp(tmp);
+
+    return ResponseObject.response(rs);
+  }
+
   private BeeRowSet getSettings() {
     long userId = usr.getCurrentUserId();
     Filter filter = Filter.equals(COL_USER, userId);
@@ -3086,5 +3248,4 @@ public class TransportModuleBean implements BeeModule, HasTimerService {
     }
     return response;
   }
-
 }

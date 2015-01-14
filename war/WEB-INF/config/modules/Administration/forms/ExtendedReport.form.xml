@@ -24,23 +24,6 @@
         newRowEnabled="false" editPopup="true" style="width:80px;" />
     </HorizontalPanel>
 
-    <Disclosure open="true">
-      <Label text="=filters" />
-      <Table>
-        <col index="0" kind="label" />
-
-        <row>
-          <Label text="=trTrucks" style="width:120px;" />
-          <MultiSelector name="Vehicle" viewName="Vehicles" renderColumns="Number"
-            newRowEnabled="false" editPopup="true" style="width:500px;" summarize="true" />
-        </row>
-        <row>
-          <Label text="=trTrips" style="width:120px;" />
-          <InputText name="TripNo" style="width:500px;" summarize="true" />
-        </row>
-      </Table>
-    </Disclosure>
-
     <Disclosure open="false">
       <Label text="Dizainas" />
 

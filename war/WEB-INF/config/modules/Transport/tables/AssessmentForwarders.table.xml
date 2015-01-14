@@ -9,5 +9,6 @@
     <Relation name="CargoTrip" unique="true" notNull="true" relation="CargoTrips" />
     <Relation name="CargoExpense" unique="true" notNull="true" relation="CargoExpenses" cascade="DELETE" editable="true" />
     <Relation name="Trip" unique="true" relation="Trips" editable="true" />
+    <Text name="CargoDescription" label="Krovinys" />
   </Fields>
 </Table>

@@ -48,9 +48,9 @@
 	     <!-- <Table style="border-spacing: 0px;"> 
 		    <row> -->
   	 	      <Label text="=trdTerm" style="&lbl2; width:143px; text-align:right; margin-right: 5px;"/>
-  		      <InputDate source="Term" style="width:75px;" />
+  		      <InputDate source="Term" style="width:150px;" />
   		      <Label name="MainItemCaption" text="=transportMainItemCaption" style="&lbl2; width:210px; margin-right: 5px;"/>
-              <UnboundSelector name="MainItem" viewName="Items" renderColumns="Name" />
+              <UnboundSelector name="MainItem" viewName="Items" renderColumns="Name" readOnly="true" />
 		    <!--</row>
 		  </Table> -->
 		<!-- </cell> -->

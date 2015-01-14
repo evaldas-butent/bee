@@ -3,6 +3,9 @@ package com.butent.bee.client.output;
 import com.google.common.collect.LinkedListMultimap;
 import com.google.common.collect.Multimap;
 
+import static com.butent.bee.shared.modules.trade.TradeConstants.*;
+import static com.butent.bee.shared.modules.transport.TransportConstants.*;
+
 import com.butent.bee.client.Callback;
 import com.butent.bee.client.data.Data;
 import com.butent.bee.client.modules.classifiers.CompanyTypeReport;
@@ -13,6 +16,7 @@ import com.butent.bee.client.modules.trade.acts.TradeActStockReport;
 import com.butent.bee.client.modules.trade.acts.TradeActTransferReport;
 import com.butent.bee.client.modules.transport.AssessmentQuantityReport;
 import com.butent.bee.client.modules.transport.AssessmentTurnoverReport;
+import com.butent.bee.client.output.ReportItem.Function;
 import com.butent.bee.client.ui.FormDescription;
 import com.butent.bee.client.ui.FormFactory;
 import com.butent.bee.client.view.ViewCallback;
@@ -24,6 +28,8 @@ import com.butent.bee.shared.i18n.LocalizableConstants;
 import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogUtils;
+import com.butent.bee.shared.modules.administration.AdministrationConstants;
+import com.butent.bee.shared.modules.trade.TradeConstants;
 import com.butent.bee.shared.modules.transport.TransportConstants;
 import com.butent.bee.shared.rights.Module;
 import com.butent.bee.shared.rights.ModuleAndSub;
@@ -141,6 +147,63 @@ public enum Report implements HasWidgetSupplier {
           new ReportNumericItem("RoadCosts", "Kelių išl.", 2),
           new ReportNumericItem("OtherCosts", "Kitos išl.", 2),
           new ReportNumericItem("Incomes", "Pajamos", 2));
+    }
+  },
+
+  INCOME_INVOICES_REPORT(ModuleAndSub.of(Module.TRANSPORT),
+      TransportConstants.SVC_INCOME_INVOICES_REPORT) {
+
+    @Override
+    public Multimap<String, ReportItem> getDefaults() {
+      Map<String, ReportItem> items = new HashMap<>();
+
+      for (ReportItem item : getItems()) {
+        items.put(item.getName(), item);
+      }
+      Multimap<String, ReportItem> map = LinkedListMultimap.create();
+
+      for (String item : new String[] {TransportConstants.COL_ASSESSMENT,
+          TransportConstants.COL_SERVICE_NAME, TransportConstants.COL_ORDER_MANAGER,
+          TradeConstants.COL_TRADE_INVOICE_NO, TradeConstants.COL_TRADE_CUSTOMER,
+          TradeConstants.COL_SALE + TransportConstants.COL_ORDER_MANAGER}) {
+        map.put("ROWS", items.get(item).create());
+      }
+      map.put("ROW_GROUP", items.get(AdministrationConstants.COL_DEPARTMENT_NAME).create());
+
+      for (String item : new String[] {VAR_EXPENSE + COL_SERVICE_NAME,
+          VAR_EXPENSE + COL_TRADE_INVOICE_NO}) {
+        map.put("COLUMNS", items.get(item).create().enableCalculation().setFunction(Function.LIST));
+      }
+      for (String item : new String[] {TransportConstants.VAR_INCOME,
+          TransportConstants.VAR_EXPENSE, "Profit"}) {
+        map.put("COLUMNS", items.get(item).create().enableCalculation());
+      }
+      return map;
+    }
+
+    @Override
+    public List<ReportItem> getItems() {
+      LocalizableConstants loc = Localized.getConstants();
+
+      return Arrays.asList(
+          new ReportTextItem(TransportConstants.COL_ASSESSMENT, "Užsakymo Nr."),
+          new ReportTextItem(AdministrationConstants.COL_DEPARTMENT_NAME,
+              Data.getColumnLabel(AdministrationConstants.TBL_DEPARTMENTS,
+                  AdministrationConstants.COL_DEPARTMENT_NAME)),
+          new ReportTextItem(TransportConstants.COL_SERVICE_NAME,
+              Data.getColumnLabel(TransportConstants.TBL_SERVICES, "Name")),
+          new ReportDateTimeItem(TradeConstants.COL_TRADE_DATE, loc.date()),
+          new ReportTextItem(TradeConstants.COL_SALE + TransportConstants.COL_ORDER_MANAGER,
+              "Sąskaitą išrašė"),
+          new ReportTextItem(TransportConstants.COL_ORDER_MANAGER, loc.manager()),
+          new ReportTextItem(TradeConstants.COL_TRADE_INVOICE_NO,
+              Data.getColumnLabel(TradeConstants.TBL_SALES, TradeConstants.COL_TRADE_INVOICE_NO)),
+          new ReportTextItem(TradeConstants.COL_TRADE_CUSTOMER, loc.customer()),
+          new ReportTextItem(VAR_EXPENSE + COL_SERVICE_NAME, "Sąnaudų paslauga"),
+          new ReportTextItem(VAR_EXPENSE + COL_TRADE_INVOICE_NO, "Sąnaudų sąskaitos Nr."),
+          new ReportNumericItem(TransportConstants.VAR_INCOME, loc.income(), 2),
+          new ReportNumericItem(TransportConstants.VAR_EXPENSE, "Sąnaudos", 2),
+          new ReportNumericItem("Profit", loc.profit(), 2));
     }
   };
 

@@ -219,6 +219,7 @@ public final class TransportConstants {
   public static final String SVC_SEND_MESSAGE = "SendMessage";
 
   public static final String SVC_TRIP_PROFIT_REPORT = "TripProfitReport";
+  public static final String SVC_INCOME_INVOICES_REPORT = "IncomeInvoicesReport";
 
   public static final String PRM_ERP_REFRESH_INTERVAL = "ERPRefreshIntervalInMinutes";
   public static final String PRM_MESSAGE_TEMPLATE = "MessageTemplate";

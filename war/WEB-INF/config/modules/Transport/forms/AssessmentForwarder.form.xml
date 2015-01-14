@@ -84,7 +84,7 @@
     </FlowPanel>
     <FlowPanel for="LoadingAddress" style="&section;">
       <Label for="LoadingAddress" text="=address" style="&labelLeft;" />
-      <InputText source="LoadingAddress" style="&input; width:400px;" />
+      <InputArea source="LoadingAddress" visibleLines="4" style="&input; width:400px;" />
     </FlowPanel>
     <FlowPanel for="LoadingContact" style="&section;">
       <Label for="LoadingContact" text="=contact" style="&labelLeft;" />
@@ -118,7 +118,7 @@
     </FlowPanel>
     <FlowPanel for="UnloadingAddress" style="&section;">
       <Label for="UnloadingAddress" text="=address" style="&labelLeft;" />
-      <InputText source="UnloadingAddress" style="&input; width:400px;" />
+      <InputArea source="UnloadingAddress" visibleLines="3" style="&input; width:400px;" />
     </FlowPanel>
     <FlowPanel for="UnloadingContact" style="&section;">
       <Label for="UnloadingContact" text="=contact" style="&labelLeft;" />
@@ -126,6 +126,10 @@
     </FlowPanel>
 
     &separator;
+    <FlowPanel for="CargoDescription" style="&section;">
+      <Label for="CargoDescription" style="&labelLeft; vertical-align:top; width:140px;" />
+      <InputArea source="CargoDescription" visibleLines="3" style="width:350px;" />
+    </FlowPanel>
     <FlowPanel for="ForwarderVehicle" style="&section;">
       <Label for="ForwarderVehicle" style="&labelLeft; width:140px;" />
       <DataSelector source="ForwarderVehicle" viewName="DistinctForwarderVehicles"

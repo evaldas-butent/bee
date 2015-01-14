@@ -5,4 +5,6 @@ name="TransportReports" label="=trReports" parent="Transport" order="30" separat
 >
   <Item name="TransportTripProfitReport" label="=trReportTripProfit" service="report"
     parameters="TripProfitReport" />
+  <Item name="IncomeInvoicesReport" label="Pajamų sąskaitos" service="report"
+    parameters="IncomeInvoicesReport" />
 </Entry>

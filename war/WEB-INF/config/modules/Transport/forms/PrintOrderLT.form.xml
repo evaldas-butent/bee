@@ -84,30 +84,29 @@
         <TextLabel source="OrderNotes" style="white-space:pre-wrap;">
           <render><ui:expression>(row.ShowAdditionalRoute
             ? row.LoadingCountryName + ' (' + row.LoadingCountryCode + ') - '
-             + row.UnloadingCountryName + ' (' + row.UnloadingCountryCode + ')\n' : '') + row.OrderNotes</ui:expression></render>
+             + row.UnloadingCountryName + ' (' + row.UnloadingCountryCode + ')\n' : '')
+             + (row.OrderNotes ? row.OrderNotes : '')</ui:expression></render>
         </TextLabel>
         
         <FlowPanel>
           <FlowPanel>                        
-            <!--  Label html="Pakrovimas:" style="&inline; width:100px; text-align:right;" / -->
             <TextLabel source="LoadingAddress" style="&inline; margin-left:5px;">
               <renderToken source="LoadingDate" format="DATE_SHORT" prefix="Pakrovimo data: " addPrefixWhenEmpty="true" />
-              <renderToken source="LoadingCountryName" prefix=" &lt;br /&gt; Pakrovimo vieta: " addPrefixWhenEmpty="true" />
-              <renderToken source="LoadingCityName" prefix=", " />
+              <renderToken source="LoadingCompany" prefix="&lt;br /&gt;Pakrovimo vieta: " addPrefixWhenEmpty="true" />
               <renderToken source="LoadingAddress" prefix=", " />
               <renderToken source="LoadingPostIndex" prefix=", " />
-              <renderToken source="LoadingContact" prefix=", " />
+              <renderToken source="LoadingCityName" prefix=", " />
+              <renderToken source="LoadingCountryName" prefix=", " />
             </TextLabel>
           </FlowPanel>
           <FlowPanel>
-            <!--  Label html="Iškrovimas:" style="&inline; width:100px; text-align:right;"  -->
             <TextLabel source="UnloadingAddress" style="&inline; margin-left:5px;">
               <renderToken source="UnloadingDate" format="DATE_SHORT" prefix="Iškrovimo data: " addPrefixWhenEmpty="true" />
-              <renderToken source="UnloadingCountryName" prefix=" &lt;br /&gt; Iškrovimo vieta: " addPrefixWhenEmpty="true" />
-              <renderToken source="UnLoadingCityName" prefix=", " />
+              <renderToken source="UnloadingCompany" prefix="&lt;br /&gt;Iškrovimo vieta: " addPrefixWhenEmpty="true" />
               <renderToken source="UnloadingAddress" prefix=", " />
               <renderToken source="UnloadingPostIndex" prefix=", " />
-              <renderToken source="UnloadingContact" prefix=", " />
+              <renderToken source="UnloadingCityName" prefix=", " />
+              <renderToken source="UnloadingCountryName" prefix=", " />
             </TextLabel>
           </FlowPanel>
         </FlowPanel>

@@ -100,7 +100,7 @@
                 <renderToken source="CustomerPostIndex" prefix=", " />
                 <renderToken source="CustomerCityName" prefix=", " />
                 <renderToken source="CustomerCountryName" prefix=", " />
-                <renderToken source="CustomerAddress2" prefix=" / " />
+                <renderToken source="CustomerAddress2" prefix=" / " addPrefixWhenEmpty="true" />
                 <renderToken source="CustomerPostIndex" prefix=", " />
                 <renderToken source="CustomerCityName2" prefix=", " />
                 <renderToken source="CustomerCountryName2" prefix=", " />
@@ -283,9 +283,10 @@
 if (row.Term) {
   var dt = new Date(row.Term);
   
-  return "Sąskaitą apmokėti iki / Pay due date: " + dt.getFullYear() + "." + dt.getMonth() 
+  return "Sąskaitą apmokėti iki / Pay due date: " + dt.getFullYear() + "."
+  + (dt.getMonth() &lt; 9 ? "0" : "") + (dt.getMonth() + 1)
   + "." + dt.getDate() + " (per/within " 
-  + Math.ceil((dt.getTime() - new Date().getTime()) / 86400000) + " dien./days)";
+  + Math.ceil((dt.getTime() - new Date(row.Date).getTime()) / 86400000) + " dien./days)";
 }
 return null;
         </ui:function>

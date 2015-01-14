@@ -5,6 +5,7 @@
   >
   <Columns>
     <SimpleColumn name="Assessment" />
+    <SimpleColumn name="CargoDescription" />
 
     <SimpleJoin name="CargoTrip" joinType="INNER">
       <SimpleColumn name="Cargo" />
