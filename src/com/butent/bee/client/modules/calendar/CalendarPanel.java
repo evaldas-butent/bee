@@ -182,7 +182,8 @@ public class CalendarPanel extends Split implements AppointmentEvent.Handler, Pr
     calendar.addTimeBlockClickHandler(new TimeBlockClickEvent.Handler() {
       @Override
       public void onTimeBlockClick(TimeBlockClickEvent event) {
-        CalendarKeeper.createAppointment(getCalendarId(), event.getStart(), event.getAttendeeId());
+        CalendarKeeper.createAppointment(getCalendarId(), event.getStart(), null,
+            event.getAttendeeId(), null, null);
       }
     });
 

@@ -108,6 +108,13 @@ class AppointmentBuilder extends AbstractFormInterceptor implements SelectorEven
   }
 
   private class ModalCallback extends InputCallback {
+
+    final RowCallback saveCallback;
+
+    private ModalCallback(RowCallback saveCallback) {
+      this.saveCallback = saveCallback;
+    }
+
     @Override
     public String getErrorMessage() {
       if (getFormView().checkOnSave(null) && AppointmentBuilder.this.validate()) {
@@ -277,7 +284,7 @@ class AppointmentBuilder extends AbstractFormInterceptor implements SelectorEven
 
     @Override
     public void onSuccess() {
-      AppointmentBuilder.this.save(null);
+      AppointmentBuilder.this.save(saveCallback);
     }
   }
 
@@ -319,11 +326,11 @@ class AppointmentBuilder extends AbstractFormInterceptor implements SelectorEven
     if (start != null) {
       Data.setValue(VIEW_APPOINTMENTS, row, COL_START_DATE_TIME, start);
     }
-    
+
     if (visibility != null) {
       Data.setValue(VIEW_APPOINTMENTS, row, COL_VISIBILITY, visibility.ordinal());
     }
-    
+
     return row;
   }
 
@@ -611,11 +618,16 @@ class AppointmentBuilder extends AbstractFormInterceptor implements SelectorEven
     form.setEditing(true);
   }
 
-  ModalCallback getModalCallback() {
-    if (this.modalCallback == null) {
-      setModalCallback(new ModalCallback());
+  ModalCallback getModalCallback(RowCallback saveCallback) {
+    if (saveCallback == null) {
+      if (modalCallback == null) {
+        setModalCallback(new ModalCallback(null));
+      }
+      return modalCallback;
+
+    } else {
+      return new ModalCallback(saveCallback);
     }
-    return modalCallback;
   }
 
   void initPeriod(DateTime start) {
@@ -646,6 +658,32 @@ class AppointmentBuilder extends AbstractFormInterceptor implements SelectorEven
   void setColor(Long color) {
     if (color != null && colors.contains(color)) {
       colorWidget.selectTab(colors.indexOf(color));
+    }
+  }
+
+  void setDuration(String duration) {
+    List<Integer> fields = TimeUtils.parseFields(duration);
+
+    if (fields.size() >= 1 && !BeeUtils.isEmpty(getHourWidgetId())) {
+      Integer hours = fields.get(0);
+
+      if (BeeUtils.isPositive(hours)) {
+        Widget widget = getWidget(getHourWidgetId());
+        if (widget instanceof Editor) {
+          ((Editor) widget).setValue(BeeUtils.toString(hours));
+        }
+      }
+    }
+
+    if (fields.size() >= 2 && !BeeUtils.isEmpty(getMinuteWidgetId())) {
+      Integer minutes = fields.get(1);
+
+      if (BeeUtils.isPositive(minutes)) {
+        Widget widget = getWidget(getMinuteWidgetId());
+        if (widget instanceof Editor) {
+          ((Editor) widget).setValue(BeeUtils.toString(minutes));
+        }
+      }
     }
   }
 
