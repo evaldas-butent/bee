@@ -58,7 +58,7 @@ public class RequestInfo implements HasExtendedInfo, HasOptions {
 
   private ContentType contentType;
 
-  public RequestInfo(HttpServletRequest req) {
+  public RequestInfo(HttpServletRequest req, boolean encoded) {
     super();
     counter++;
 
@@ -84,8 +84,12 @@ public class RequestInfo implements HasExtendedInfo, HasOptions {
 
     if (req.getContentLength() > 0) {
       this.contentTypeHeader = req.getContentType();
-      this.content = CommUtils.getContent(getContentType(),
-          Codec.fromBytes(Base64.getDecoder().decode(HttpUtils.readContent(req))));
+      if (encoded) {
+        this.content = CommUtils.getContent(getContentType(),
+            Codec.fromBytes(Base64.getDecoder().decode(HttpUtils.readContent(req))));
+      } else {
+        this.content = CommUtils.getContent(getContentType(), HttpUtils.readContent(req));
+      }
     } else {
       this.contentTypeHeader = null;
       this.content = null;

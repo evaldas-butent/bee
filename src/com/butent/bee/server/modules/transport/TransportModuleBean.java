@@ -2712,6 +2712,7 @@ public class TransportModuleBean implements BeeModule, HasTimerService {
     Long endDate = reqInfo.getParameterLong(Service.VAR_TO);
 
     Long currency = reqInfo.getParameterLong(COL_CURRENCY);
+    boolean woVat = BeeUtils.toBoolean(reqInfo.getParameter(COL_TRADE_VAT));
 
     Set<Long> trucks = DataUtils.parseIdSet(reqInfo.getParameter(COL_VEHICLE));
     List<String> trips = NameUtils.toList(reqInfo.getParameter(COL_TRIP_NO));

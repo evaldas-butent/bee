@@ -9,7 +9,8 @@
   >
   <g:columns>
     <IdColumn name="ID" width="40" />
-    <DataColumn name="Assessment" width="40" />
+    <RelColumn name="Assessment" width="40" editEnabled="true"
+      editViewName="Assessments" editSource="Assessment" module="Transport.Logistics"/>
     <DataColumn name="Date" width="110" />
     <RelColumn name="Manager" />
     <DataColumn name="Number" width="70" />

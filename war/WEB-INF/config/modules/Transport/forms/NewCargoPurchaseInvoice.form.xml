@@ -44,7 +44,7 @@
 		  <Table>
 		    <row>
 			  <Label text="=trdTerm" style="&lbl2; width:131px; text-align:right; margin-right: 5px;" />
-			  <InputDate source="Term" style="width:75px;" />
+			  <InputDate source="Term" style="width:150px;" />
 			  <Label name="MainItemCaption" text="=transportMainItemCaption" style="&lbl2; width:214px; margin-right: 5px;" />
 			  <UnboundSelector name="MainItem" viewName="Items" renderColumns="Name" />
 			</row>
