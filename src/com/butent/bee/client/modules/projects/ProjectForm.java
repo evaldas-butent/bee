@@ -17,6 +17,8 @@ import com.butent.bee.shared.data.IsRow;
 import com.butent.bee.shared.data.event.DataChangeEvent;
 import com.butent.bee.shared.data.event.RowInsertEvent;
 import com.butent.bee.shared.data.filter.Filter;
+import com.butent.bee.shared.logging.BeeLogger;
+import com.butent.bee.shared.logging.LogUtils;
 import com.butent.bee.shared.modules.tasks.TaskConstants;
 import com.butent.bee.shared.utils.BeeUtils;
 
@@ -29,11 +31,16 @@ class ProjectForm extends AbstractFormInterceptor implements DataChangeEvent.Han
 
   private static final String WIDGET_CONTRACT = "Contract";
   private static final String WIDGET_CHART_DATA = "ChartData";
+  private static final String WIDGET_PROJECT_COMMENTS = "ProjectComments";
+
+  private static final BeeLogger logger = LogUtils.getLogger(ProjectForm.class);
 
   private final Collection<HandlerRegistration> registry = new ArrayList<>();
+  private final ProjectEventsHandler eventsHandler = new ProjectEventsHandler();
 
   private DataSelector contractSelector;
   private Flow chartData;
+  private Flow projectCommnets;
 
   @Override
   public void afterCreateWidget(String name, IdentifiableWidget widget,
@@ -45,6 +52,10 @@ class ProjectForm extends AbstractFormInterceptor implements DataChangeEvent.Han
     if (widget instanceof Flow && BeeUtils.same(name, WIDGET_CHART_DATA)) {
       chartData = (Flow) widget;
     }
+
+    if (widget instanceof Flow && BeeUtils.same(name, WIDGET_PROJECT_COMMENTS)) {
+      projectCommnets = (Flow) widget;
+    }
   }
 
   @Override
@@ -55,6 +66,7 @@ class ProjectForm extends AbstractFormInterceptor implements DataChangeEvent.Han
   @Override
   public void afterRefresh(FormView form, IsRow row) {
     contractSelector.getOracle().setAdditionalFilter(Filter.equals(COL_PROJECT, row.getId()), true);
+    drawComments(form, row);
     drawChart(row);
   }
 
@@ -87,7 +99,7 @@ class ProjectForm extends AbstractFormInterceptor implements DataChangeEvent.Han
         || event.hasView(TaskConstants.VIEW_TASKS)) {
 
       // if (event.hasView(TaskConstants.VIEW_TASKS)) {
-        // TODO: refresh tasks times
+      // TODO: refresh tasks times
       // }
 
       getFormView().refresh();
@@ -101,6 +113,7 @@ class ProjectForm extends AbstractFormInterceptor implements DataChangeEvent.Han
     }
 
     if (chartData == null) {
+      logger.warning("Widget chart data not found");
       return;
     }
 
@@ -111,5 +124,27 @@ class ProjectForm extends AbstractFormInterceptor implements DataChangeEvent.Han
     }
 
     ProjectScheduleChart.open(chartData, row.getId());
+  }
+
+  private void drawComments(@SuppressWarnings("unused") FormView form, IsRow row) {
+    final Flow prjComments = getProjectComments();
+    if (prjComments == null) {
+      logger.warning("Widget of project comments not found");
+      return;
+    }
+
+    if (eventsHandler == null) {
+      logger.warning("Events handler not initialized");
+      return;
+    }
+
+    prjComments.clear();
+
+    eventsHandler.create(prjComments, row);
+
+  }
+
+  private Flow getProjectComments() {
+    return projectCommnets;
   }
 }

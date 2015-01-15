@@ -170,6 +170,11 @@ public class TradeModuleBean implements BeeModule {
     return BeeUtils.toString(normalizedId);
   }
 
+  public static IsExpression getAmountExpression(String tblName) {
+    return SqlUtils.multiply(SqlUtils.field(tblName, COL_TRADE_ITEM_QUANTITY),
+        SqlUtils.field(tblName, COL_TRADE_ITEM_PRICE));
+  }
+
   public ResponseObject getCreditInfo(Long companyId) {
     if (!DataUtils.isId(companyId)) {
       return ResponseObject.emptyResponse();
@@ -250,11 +255,6 @@ public class TradeModuleBean implements BeeModule {
   @Override
   public String getResourcePath() {
     return getModule().getName();
-  }
-
-  public static IsExpression getAmountExpression(String tblName) {
-    return SqlUtils.multiply(SqlUtils.field(tblName, COL_TRADE_ITEM_QUANTITY),
-        SqlUtils.field(tblName, COL_TRADE_ITEM_PRICE));
   }
 
   public static IsExpression getTotalExpression(String tblName) {

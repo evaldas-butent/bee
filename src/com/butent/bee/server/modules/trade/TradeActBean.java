@@ -160,6 +160,10 @@ public class TradeActBean {
         response = getTransferReport(reqInfo);
         break;
 
+      case SVC_HAS_INVOICES_OR_SECONDARY_ACTS:
+        response = hasInvoicesOrSecondaryActs(reqInfo);
+        break;
+
       default:
         String msg = BeeUtils.joinWords("service not recognized:", svc);
         logger.warning(msg);
@@ -2419,6 +2423,27 @@ public class TradeActBean {
     } else {
       return ResponseObject.response(result).setSize(result.size());
     }
+  }
+
+  private ResponseObject hasInvoicesOrSecondaryActs(RequestInfo reqInfo) {
+    Long actId = reqInfo.getParameterLong(COL_TRADE_ACT);
+    if (!DataUtils.isId(actId)) {
+      return ResponseObject.parameterNotFound(reqInfo.getService(), COL_TRADE_ACT);
+    }
+
+    boolean has = qs.sqlExists(TBL_TRADE_ACTS, COL_TA_PARENT, actId);
+
+    if (!has) {
+      SqlSelect query = new SqlSelect()
+          .addFrom(TBL_TRADE_ACT_INVOICES)
+          .addFromInner(TBL_TRADE_ACT_SERVICES, sys.joinTables(TBL_TRADE_ACT_SERVICES,
+              TBL_TRADE_ACT_INVOICES, COL_TA_INVOICE_SERVICE))
+          .setWhere(SqlUtils.equals(TBL_TRADE_ACT_SERVICES, COL_TRADE_ACT, actId));
+
+      has = qs.sqlCount(query) > 0;
+    }
+
+    return ResponseObject.response(has);
   }
 
   private ResponseObject saveActAsTemplate(RequestInfo reqInfo) {

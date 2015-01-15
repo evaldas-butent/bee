@@ -63,7 +63,8 @@
             <row>
               <Label for="EmailId" style="&lbl1;" class="bee-required" />
               <cell colSpan="2" for="EmailId" >
-                <DataSelector source="EmailId" style="width: 100%;" required="true" />
+                <DataSelector source="EmailId" style="width: 100%;" required="true"
+                  caching="none" instant="false" />
               </cell>
           
               <Label text="=website" style="&lbl1;" for="Website" />

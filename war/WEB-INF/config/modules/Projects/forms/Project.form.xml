@@ -107,6 +107,10 @@
 		</Disclosure>
 
 		 <TabbedPages class="flexible">
+		  <page>
+		    <text>=prjComments</text>
+		    <FlowPanel name="ProjectComments" class="flex-horizontal"/>
+		  </page>
 			<page>
 				<text>=prjTeam</text>
 				<ChildGrid name="ProjectUsers" relColumn="Project" />

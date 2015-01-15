@@ -26,11 +26,13 @@
         </ui:function>
       </render>
     </DataColumn>
-    <DataColumn name="CustomerName" caption="=trdCustomer" />
-    <DataColumn name="PayerName" caption="=trdPayer" />
+    <DataColumn name="CustomerName" />
+    <DataColumn name="PayerName" />
     <DataColumn name="Amount" />
     <DataColumn name="CurrencyName" />
     <DataColumn name="Term" />
+
+    <RelColumn name="Manager" renderColumns="ManagerFirstName ManagerLastName" />
     
     <DataColumn name="PaymentTime" />
     <DataColumn name="Paid" />

@@ -26,10 +26,13 @@
         </ui:function>
       </render>
     </DataColumn>
-    <DataColumn name="SupplierName" caption="=trdSupplier" />
+    <DataColumn name="SupplierName" />
     <DataColumn name="Amount" />
     <DataColumn name="CurrencyName" />
     <DataColumn name="Term" />
+
+    <RelColumn name="Manager" renderColumns="ManagerFirstName ManagerLastName" />
+
     <DataColumn name="Exported" />
   </g:columns>
 </g:Grid>

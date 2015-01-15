@@ -10,6 +10,7 @@
     <SelectionColumn name="Select" width="20" />
     <RelColumn name="Assessment" label="ID" editEnabled="true" filterSupplier="value"
       editViewName="Assessments" editSource="Assessment" module="Transport.Logistics"/>
+    <DataColumn name="Number" />
     <DataColumn name="OrderDate" />
     <RelColumn name="OrderNo" editEnabled="true" editSource="Order" visible="false" />
     <DataColumn name="Status" />    
@@ -25,6 +26,7 @@
       horizontalAlignment="center" searchBy="LoadingCountryName LoadingCountryCode">
       <renderer type="flag" />
     </CalcColumn>
+    <DataColumn name="LoadingDate" />
 
     <RelColumn name="UnloadingCountry" visible="false" readOnly="true" />
     <CalcColumn type="string" name="To" source="UnloadingCountryCode" cellType="html" width="20"

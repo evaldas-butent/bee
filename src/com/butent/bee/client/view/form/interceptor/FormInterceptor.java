@@ -85,6 +85,8 @@ public interface FormInterceptor extends WidgetInterceptor, HasGridView, Handles
 
   boolean isRowEditable(IsRow row);
 
+  boolean isWidgetEditable(EditableWidget editableWidget, IsRow row);
+
   void notifyRequired(String message);
 
   void onClose(List<String> messages, IsRow oldRow, IsRow newRow);

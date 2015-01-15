@@ -845,6 +845,22 @@ public class BeeView implements BeeObject, HasExtendedInfo {
     return result;
   }
 
+  public int getRowSetIndex(String colName) {
+    int index = 0;
+
+    for (ColumnInfo info : columns.values()) {
+      if (!info.isHidden()) {
+        if (BeeUtils.same(info.getName(), colName)) {
+          return index;
+        }
+        
+        index++;
+      }
+    }
+    
+    return BeeConst.UNDEF;
+  }
+
   public String getSourceAlias() {
     return sourceAlias;
   }

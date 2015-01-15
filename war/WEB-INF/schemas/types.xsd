@@ -372,6 +372,7 @@
       <xs:enumeration value="PrintOrder" />
       <xs:enumeration value="Projects" />
       <xs:enumeration value="ProjectDates" />
+      <xs:enumeration value="ProjectEvents" />
       <xs:enumeration value="ProjectStages" />
       <xs:enumeration value="ProjectTree"/>
       <xs:enumeration value="ProjectTypes" />
@@ -454,6 +455,7 @@
       <xs:enumeration value="ThemeColors" />
       <xs:enumeration value="Themes" />
       <xs:enumeration value="TimeZones" />
+      <xs:enumeration value="TodoList" />
       <xs:enumeration value="TradeActInvoices" />
       <xs:enumeration value="TradeActItems" />
       <xs:enumeration value="TradeActNames" />

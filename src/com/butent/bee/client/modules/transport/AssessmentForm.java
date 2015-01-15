@@ -617,7 +617,7 @@ public class AssessmentForm extends PrintFormInterceptor implements SelectorEven
         widget.getElement().setInnerText(null);
       }
     }
-    if (!ok || !DataUtils.isId(row.getId())) {
+    if (!ok || row == null || !DataUtils.isId(row.getId())) {
       return;
     }
     ParameterList args = TransportHandler.createArgs(SVC_GET_ASSESSMENT_TOTALS);
@@ -779,7 +779,7 @@ public class AssessmentForm extends PrintFormInterceptor implements SelectorEven
     boolean executor = isExecutor();
 
     Integer status = form.getIntegerValue(COL_ASSESSMENT_STATUS);
-    int orderStatus = form.getIntegerValue(ALS_ORDER_STATUS);
+    Integer orderStatus = form.getIntegerValue(ALS_ORDER_STATUS);
 
     String caption = request ? (primary ? loc.trAssessmentRequest() : loc.trAssessment())
         : (primary ? loc.trOrder() : loc.trChildOrder());
@@ -1168,6 +1168,9 @@ public class AssessmentForm extends PrintFormInterceptor implements SelectorEven
   }
 
   private void updateDepartment(FormView formView, IsRow row, Long department) {
+    if (row == null) {
+      return;
+    }
     Long dept = department != null
         ? department : row.getLong(formView.getDataIndex(COL_DEPARTMENT));
 

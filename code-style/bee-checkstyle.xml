@@ -11,6 +11,8 @@
 <module name="Checker">
   <property name="severity" value="warning"/>
   <module name="TreeWalker">
+    <property name="severity" value="ignore"/>
+    <metadata name="net.sf.eclipsecs.core.lastEnabledSeverity" value="inherit"/>
     <module name="FileContentsHolder"/>
     <module name="JavadocStyle"/>
     <module name="MissingOverride"/>
@@ -80,9 +82,7 @@
     <module name="NoFinalizer"/>
     <module name="PackageDeclaration"/>
     <module name="ParameterAssignment"/>
-    <module name="RedundantThrows">
-      <property name="suppressLoadErrors" value="true"/>
-    </module>
+    <module name="RedundantThrows"/>
     <module name="SimplifyBooleanExpression"/>
     <module name="SimplifyBooleanReturn"/>
     <module name="StringLiteralEquality"/>

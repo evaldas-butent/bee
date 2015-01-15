@@ -6,7 +6,7 @@
   xmlns:f="http://www.butent.com/form"
   
   name="CargoPurchaseInvoice" viewName="CargoPurchaseInvoices"
-  width="800" height="600"
+  width="800" height="600" readOnly="true"
   >
   <f:properties reports="PrintCargoInvoiceShort" />
 
@@ -62,7 +62,7 @@
       <page>
         <text>=trdNotes</text>
         <SimplePanel>
-          <InputArea source="Notes" class="occupy-1" summarize="true" />
+          <InputArea source="Notes" class="occupy-1" summarize="true" disablable="false" />
         </SimplePanel>
       </page>
       <page module="Transport">

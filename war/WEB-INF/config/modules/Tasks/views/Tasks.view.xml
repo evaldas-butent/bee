@@ -91,11 +91,21 @@
     <SimpleColumn name="ExpectedExpenses" />
       
     <SimpleColumn name="ActualDuration" label="=prjActualTaskDuration">
-     <x:string>'?0?'</x:string>
+       <x:number>0</x:number> 
+      <!-- 
+      Data handling in system module bean  
+      void com.butent.bee.server.modules.tasks.TasksModuleBean.init().new DataEventHandler()
+      {...}.fillTasksTimeData(ViewQueryEvent event)
+      -->
     </SimpleColumn>
     
     <SimpleColumn name="ActualExpenses" label="=prjActualExpenses">
-      <x:string>'?0?'</x:string>
+       <x:number>0</x:number> 
+      <!-- 
+      Data handling in system module bean  
+      void com.butent.bee.server.modules.tasks.TasksModuleBean.init().new DataEventHandler()
+      {...}.fillTasksTimeData(ViewQueryEvent event)
+      -->
     </SimpleColumn>
   </Columns>
   

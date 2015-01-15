@@ -83,8 +83,8 @@
       <InputText source="LoadingPostIndex" style="&input; width:90px;" />
     </FlowPanel>
     <FlowPanel for="LoadingAddress" style="&section;">
-      <Label for="LoadingAddress" text="=address" style="&labelLeft;" />
-      <InputArea source="LoadingAddress" visibleLines="4" style="&input; width:400px;" />
+      <Label for="LoadingAddress" text="=address" style="&labelLeft; vertical-align:top;" />
+      <InputArea source="LoadingAddress" visibleLines="3" style="&input; width:400px;" />
     </FlowPanel>
     <FlowPanel for="LoadingContact" style="&section;">
       <Label for="LoadingContact" text="=contact" style="&labelLeft;" />
@@ -117,7 +117,7 @@
       <InputText source="UnloadingPostIndex" style="&input; width:90px;" />
     </FlowPanel>
     <FlowPanel for="UnloadingAddress" style="&section;">
-      <Label for="UnloadingAddress" text="=address" style="&labelLeft;" />
+      <Label for="UnloadingAddress" text="=address" style="&labelLeft; vertical-align:top;" />
       <InputArea source="UnloadingAddress" visibleLines="3" style="&input; width:400px;" />
     </FlowPanel>
     <FlowPanel for="UnloadingContact" style="&section;">

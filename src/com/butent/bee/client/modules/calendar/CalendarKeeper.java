@@ -366,8 +366,9 @@ public final class CalendarKeeper {
                     }
                   }
                 }
-
-                BeeRow row = AppointmentBuilder.createEmptyRow(typeRow, start);
+                
+                BeeRow row = AppointmentBuilder.createEmptyRow(typeRow, start,
+                    getCalendarVisibility(calendarId));
                 if (att != null) {
                   row.setProperty(TBL_APPOINTMENT_ATTENDEES, BeeUtils.toString(att));
                 }
@@ -770,21 +771,17 @@ public final class CalendarKeeper {
     return panels;
   }
 
-  private static BeeRow getStyleRow(CalendarItem item, BeeRow typeRow) {
-    Long style = item.getStyle();
-    if (style == null && typeRow != null) {
-      style = Data.getLong(VIEW_APPOINTMENT_TYPES, typeRow, COL_STYLE);
-    }
-
-    if (style == null) {
-      return null;
-    } else {
-      return CACHE.getRow(VIEW_APPOINTMENT_STYLES, style);
-    }
-  }
-
   private static String getAttendeeName(long id) {
     return CACHE.getString(VIEW_ATTENDEES, id, COL_ATTENDEE_NAME);
+  }
+  
+  private static CalendarVisibility getCalendarVisibility(Long calendarId) {
+    if (DataUtils.isId(calendarId)) {
+      Integer value = CACHE.getInteger(VIEW_CALENDARS, calendarId, COL_VISIBILITY);
+      return EnumUtils.getEnumByIndex(CalendarVisibility.class, value);
+    } else {
+      return null;
+    }
   }
 
   private static CalendarController getController(long calendarId) {
@@ -803,6 +800,19 @@ public final class CalendarKeeper {
 
   private static FormView getSettingsForm() {
     return settingsForm;
+  }
+
+  private static BeeRow getStyleRow(CalendarItem item, BeeRow typeRow) {
+    Long style = item.getStyle();
+    if (style == null && typeRow != null) {
+      style = Data.getLong(VIEW_APPOINTMENT_TYPES, typeRow, COL_STYLE);
+    }
+
+    if (style == null) {
+      return null;
+    } else {
+      return CACHE.getRow(VIEW_APPOINTMENT_STYLES, style);
+    }
   }
 
   private static void getUserCalendar(long id, final Queries.RowSetCallback callback) {

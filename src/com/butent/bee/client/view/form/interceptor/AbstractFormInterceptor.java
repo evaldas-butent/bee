@@ -217,6 +217,11 @@ public abstract class AbstractFormInterceptor implements FormInterceptor {
   }
 
   @Override
+  public boolean isWidgetEditable(EditableWidget editableWidget, IsRow row) {
+    return true;
+  }
+
+  @Override
   public void notifyRequired(String message) {
     if (getFormView() != null) {
       getFormView().notifyWarning(message, Localized.getConstants().valueRequired());
