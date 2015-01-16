@@ -325,7 +325,7 @@ public abstract class AbstractGridInterceptor implements GridInterceptor {
   }
 
   @Override
-  public void onEditEnd(EditEndEvent event, EditEndEvent.HasEditEndHandler source) {
+  public void onEditEnd(EditEndEvent event, Object source) {
   }
 
   @Override

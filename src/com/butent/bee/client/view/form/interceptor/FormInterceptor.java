@@ -14,6 +14,7 @@ import com.butent.bee.client.ui.WidgetInterceptor;
 import com.butent.bee.client.view.HasGridView;
 import com.butent.bee.client.view.HeaderView;
 import com.butent.bee.client.view.add.ReadyForInsertEvent;
+import com.butent.bee.client.view.edit.EditEndEvent;
 import com.butent.bee.client.view.edit.EditableWidget;
 import com.butent.bee.client.view.edit.SaveChangesEvent;
 import com.butent.bee.client.view.form.FormView;
@@ -29,7 +30,7 @@ import java.util.List;
 import java.util.Set;
 
 public interface FormInterceptor extends WidgetInterceptor, HasGridView, HandlesStateChange,
-    HasDomain, HasActiveRow, HasViewName {
+    HasDomain, HasActiveRow, HasViewName, EditEndEvent.Handler {
 
   void afterAction(Action action, Presenter presenter);
 
