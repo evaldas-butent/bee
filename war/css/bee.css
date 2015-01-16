@@ -3452,10 +3452,10 @@ textarea,
 .bee-rep td {
   padding: 3px 5px;
   border: 1px solid #ddd;
-  white-space: nowrap;
 }
 .bee-rep-num {
   text-align: right;
+  white-space: nowrap;
 }
 .bee-rep-cgroup-hdr, .bee-rep-tot-hdr {
   text-align: right;

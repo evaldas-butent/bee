@@ -6,6 +6,7 @@ import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.user.client.ui.Widget;
 
 import static com.butent.bee.shared.modules.administration.AdministrationConstants.*;
+import static com.butent.bee.shared.modules.classifiers.ClassifierConstants.*;
 import static com.butent.bee.shared.modules.trade.TradeConstants.*;
 import static com.butent.bee.shared.modules.transport.TransportConstants.*;
 
@@ -22,6 +23,7 @@ import com.butent.bee.client.data.RowFactory;
 import com.butent.bee.client.presenter.GridPresenter;
 import com.butent.bee.client.style.StyleUtils;
 import com.butent.bee.client.ui.Opener;
+import com.butent.bee.client.view.edit.EditEndEvent;
 import com.butent.bee.client.view.form.FormView;
 import com.butent.bee.client.view.form.interceptor.AbstractFormInterceptor;
 import com.butent.bee.client.view.form.interceptor.FormInterceptor;
@@ -29,6 +31,7 @@ import com.butent.bee.client.view.grid.GridView.SelectedRows;
 import com.butent.bee.client.view.grid.interceptor.AbstractGridInterceptor;
 import com.butent.bee.client.view.grid.interceptor.GridInterceptor;
 import com.butent.bee.client.widget.Button;
+import com.butent.bee.shared.Holder;
 import com.butent.bee.shared.Pair;
 import com.butent.bee.shared.Service;
 import com.butent.bee.shared.communication.ResponseObject;
@@ -42,6 +45,7 @@ import com.butent.bee.shared.data.view.RowInfo;
 import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.modules.classifiers.ClassifierConstants;
 import com.butent.bee.shared.modules.trade.TradeConstants;
+import com.butent.bee.shared.time.DateTime;
 import com.butent.bee.shared.time.TimeUtils;
 import com.butent.bee.shared.utils.BeeUtils;
 
@@ -124,17 +128,26 @@ public class CargoPurchasesGrid extends AbstractGridInterceptor implements Click
 
         newRow.setValue(purchaseInfo.getColumnIndex(COL_TRADE_NUMBER), BeeUtils.joinItems(orders));
 
+        newRow.setValue(purchaseInfo.getColumnIndex(COL_TRADE_MANAGER),
+            BeeKeeper.getUser().getUserId());
+        newRow.setValue(purchaseInfo.getColumnIndex(COL_TRADE_MANAGER + COL_FIRST_NAME),
+            BeeKeeper.getUser().getFirstName());
+        newRow.setValue(purchaseInfo.getColumnIndex(COL_TRADE_MANAGER + COL_LAST_NAME),
+            BeeKeeper.getUser().getLastName());
+
+        final Holder<Integer> days = Holder.absent();
+
         if (suppliers.size() == 1) {
           for (Entry<Long, Pair<String, Integer>> entry : suppliers.entrySet()) {
             newRow.setValue(purchaseInfo.getColumnIndex(COL_TRADE_SUPPLIER), entry.getKey());
             newRow.setValue(purchaseInfo.getColumnIndex("SupplierName"), entry.getValue().getA());
 
-            Integer days = entry.getValue().getB();
+            days.set(entry.getValue().getB());
 
-            if (BeeUtils.isPositive(days)) {
+            if (BeeUtils.isPositive(days.get())) {
               newRow.setValue(purchaseInfo.getColumnIndex(COL_TRADE_TERM),
                   TimeUtils.nextDay(newRow.getDateTime(purchaseInfo.getColumnIndex(COL_DATE)),
-                      days));
+                      days.get()));
             }
           }
         }
@@ -149,6 +162,22 @@ public class CargoPurchasesGrid extends AbstractGridInterceptor implements Click
               @Override
               public FormInterceptor getInstance() {
                 return this;
+              }
+
+              @Override
+              public void onEditEnd(EditEndEvent ev, Object source) {
+                if (ev.getColumn() == null || !BeeUtils.same(ev.getColumn().getId(), COL_DATE)) {
+                  return;
+                }
+                if (BeeUtils.isPositive(days.get())) {
+                  DateTime dt = new DateTime(BeeUtils.toLong(ev.getNewValue()));
+
+                  getFormView().getActiveRow()
+                      .setValue(purchaseInfo.getColumnIndex(COL_TRADE_TERM),
+                          TimeUtils.nextDay(dt, days.get()));
+
+                  getFormView().refreshBySource(COL_TRADE_TERM);
+                }
               }
 
               @Override
