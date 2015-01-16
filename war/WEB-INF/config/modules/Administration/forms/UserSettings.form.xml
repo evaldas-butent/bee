@@ -53,33 +53,28 @@
           <br module="Discussions"/>
           <br module="Discussions"/>
           <CheckBox source="MailNewDiscussions" module="Discussions" summarize="true" />
+
           <br module="Calendar"/>
           <br module="Calendar"/>
-          <Table module="Calendar">
+          <Table cellStyle="padding-right: 5px;" module="Calendar">
             <row>
-		          <CheckBox source="MailCompanyActions" module="Calendar" summarize="true" />
-	          </row>
-	          <row>
-	            <Label module="Calendar" text="=crmRTRemindBefore" style="text-align: right"/>
-	            <cell>
-	              <Table>
-	               <row>
-			             <InputInteger source="CompanyActionRemindBefore" module="Calendar" style="width:50px">
-			               <validation>
-			                 <ui:function>
-			                   if (cell.newValue > 0 || cell.newValue == null) {
-			                     return null;
-			                   } else {
-			                     return $wnd.Bee_maybeTranslate("=invalidTime") + cell.newValue;
-			                   }
-			                 </ui:function>
-			               </validation>
-			             </InputInteger> 
-			             <Label text="=unitHourShort" />
-			            </row>
-		            </Table>
-		          </cell>
-	          </row>
+              <CheckBox source="MailCompanyActions" summarize="true" />
+            </row>
+            <row>
+              <Label text="=crmRTRemindBefore" style="text-align: right;" />
+              <InputInteger source="CompanyActionRemindBefore" style="width: 50px;">
+                <validation>
+                  <ui:function>
+                    if (cell.newValue > 0 || cell.newValue == null) {
+                      return null;
+                    } else {
+                      return $wnd.Bee_maybeTranslate("=invalidTime") + cell.newValue;
+                    }
+                  </ui:function>
+                </validation>
+              </InputInteger>
+              <Label text="=unitHourShort" />
+            </row>
           </Table>
         </FlowPanel>
       </page>

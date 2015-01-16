@@ -22,7 +22,7 @@
     <Numeric name="Value" precision="12" scale="2" label="=valuation" />
     <Relation name="ValueCurrency" relation="Currencies" label="=trCargoValueCurrency" />
 
-    <String name="Number" precision="20" label="=number" />
+    <String name="Number" precision="50" label="=number" />
     <String name="Cmr" precision="20" />
     <Integer name="LoadedKilometers" label="=trLoadedKilometers" />
     <Integer name="EmptyKilometers" label="=trEmptyKilometers" />

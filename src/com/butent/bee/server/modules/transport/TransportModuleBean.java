@@ -411,14 +411,20 @@ public class TransportModuleBean implements BeeModule, HasTimerService {
                 .setWhere(sys.idInList(TBL_ASSESSMENTS, event.getRowset().getRowIds()))
                 .addGroup(TBL_ASSESSMENTS, sys.getIdName(TBL_ASSESSMENTS));
 
-            IsExpression xpr = ExchangeUtils.exchangeFieldTo(query,
-                SqlUtils.minus(
-                    TradeModuleBean.getTotalExpression(tbl, SqlUtils.field(tbl, COL_AMOUNT)),
-                    TradeModuleBean.getVatExpression(tbl, SqlUtils.field(tbl, COL_AMOUNT))),
-                SqlUtils.field(tbl, COL_CURRENCY),
-                SqlUtils.nvl(SqlUtils.field(tbl, COL_DATE), SqlUtils.field(TBL_ORDERS, COL_DATE)),
-                SqlUtils.field(TBL_ORDER_CARGO, COL_CURRENCY));
+            IsExpression xpr = SqlUtils.minus(
+                TradeModuleBean.getTotalExpression(tbl, SqlUtils.field(tbl, COL_AMOUNT)),
+                TradeModuleBean.getVatExpression(tbl, SqlUtils.field(tbl, COL_AMOUNT)));
 
+            if (BeeUtils.same(event.getTargetName(), TBL_ASSESSMENTS)) {
+              xpr = ExchangeUtils.exchangeField(query, xpr,
+                  SqlUtils.field(tbl, COL_CURRENCY), SqlUtils.nvl(SqlUtils.field(tbl, COL_DATE),
+                      SqlUtils.field(TBL_ORDERS, COL_DATE)));
+            } else {
+              xpr = ExchangeUtils.exchangeFieldTo(query, xpr,
+                  SqlUtils.field(tbl, COL_CURRENCY), SqlUtils.nvl(SqlUtils.field(tbl, COL_DATE),
+                      SqlUtils.field(TBL_ORDERS, COL_DATE)),
+                  SqlUtils.field(TBL_ORDER_CARGO, COL_CURRENCY));
+            }
             SimpleRowSet rs = qs.getData(query.addSum(xpr, VAR_TOTAL));
 
             for (BeeRow row : event.getRowset().getRows()) {
