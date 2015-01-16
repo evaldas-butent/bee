@@ -2,7 +2,7 @@
 <View xmlns="http://www.butent.com/view"
 
   name="ProjectEvents" source="ProjectEvents"
-  caption="=prjComments"
+  caption="=prjComments" newRowForm="NewProjectComment"
   >
   <Columns>
     <SimpleColumn name="Project" />

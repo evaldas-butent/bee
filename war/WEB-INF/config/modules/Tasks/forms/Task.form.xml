@@ -39,7 +39,7 @@
 	      <FlowPanel style="&section;">
 	        <Label for="Status" style="&lbl1;" />
 	        <ListBox source="Status" style="&inp2;" readOnly="true" visible="true" />
-	        <Label text="=crmTaskExpectedExpenses" style="&lbl3;" />
+	        <Label for="ExpectedExpenses" text="=crmTaskExpectedExpenses" style="&lbl3;" />
 	        <InputDecimal source="ExpectedExpenses" style="&inp4;" disablable="true" scale="2"/>
 	      </FlowPanel>
 	

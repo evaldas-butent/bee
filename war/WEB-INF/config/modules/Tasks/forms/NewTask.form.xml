@@ -52,7 +52,7 @@
         </FlowPanel>
         <Label for="ExpectedDuration" />
         <InputTime name="ExpectedDuration" source="ExpectedDuration" step="&timeStep;" style="width: 50px;" />
-        <Label text="=prjExpenses" style="margin-left:-140px;" />
+        <Label for="ExpectedExpenses" text="=prjExpenses" style="margin-left:-140px;" />
 	    <InputDecimal source="ExpectedExpenses" style="&inp3;" disablable="true" scale="2"/>
       </row>
 

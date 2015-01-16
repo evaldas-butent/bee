@@ -66,7 +66,7 @@ class ProjectForm extends AbstractFormInterceptor implements DataChangeEvent.Han
   @Override
   public void afterRefresh(FormView form, IsRow row) {
     contractSelector.getOracle().setAdditionalFilter(Filter.equals(COL_PROJECT, row.getId()), true);
-    drawComments(form, row);
+    drawComments(row);
     drawChart(row);
   }
 
@@ -126,7 +126,7 @@ class ProjectForm extends AbstractFormInterceptor implements DataChangeEvent.Han
     ProjectScheduleChart.open(chartData, row.getId());
   }
 
-  private void drawComments(@SuppressWarnings("unused") FormView form, IsRow row) {
+  private void drawComments(IsRow row) {
     final Flow prjComments = getProjectComments();
     if (prjComments == null) {
       logger.warning("Widget of project comments not found");
@@ -140,7 +140,7 @@ class ProjectForm extends AbstractFormInterceptor implements DataChangeEvent.Han
 
     prjComments.clear();
 
-    eventsHandler.create(prjComments, row);
+    eventsHandler.create(prjComments, row.getId());
 
   }
 
