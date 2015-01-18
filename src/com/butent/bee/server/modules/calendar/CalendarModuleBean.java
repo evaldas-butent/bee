@@ -1103,7 +1103,7 @@ public class CalendarModuleBean implements BeeModule {
       return ResponseObject.response(result);
     }
   }
-  
+
   private void prepareAppointments(Collection<BeeRow> appointments) {
     Map<Long, String> personAttendees = new HashMap<>();
 
@@ -1111,7 +1111,7 @@ public class CalendarModuleBean implements BeeModule {
 
     if (!DataUtils.isEmpty(attendees)) {
       int cpIndex = attendees.getColumnIndex(COL_COMPANY_PERSON);
-      
+
       for (BeeRow row : attendees) {
         Long cp = row.getLong(cpIndex);
         if (DataUtils.isId(cp) && !personAttendees.containsKey(cp)) {
@@ -1119,7 +1119,7 @@ public class CalendarModuleBean implements BeeModule {
         }
       }
     }
-    
+
     if (!personAttendees.isEmpty()) {
       int cpIndex = sys.getView(VIEW_APPOINTMENTS).getRowSetIndex(ALS_CREATOR_COMPANY_PERSON);
 

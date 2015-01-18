@@ -47,7 +47,7 @@ public final class ButentWS {
 
     try {
       answer = butentWS.login(login, password);
-    } catch (Exception e) {
+    } catch (SOAPException e) {
       throw new BeeException(e);
     }
     if (BeeUtils.same(answer, "OK")) {
@@ -106,7 +106,7 @@ public final class ButentWS {
 
     try {
       logout();
-    } catch (Exception e) {
+    } catch (SOAPException e) {
       logger.error(e);
     }
   }
@@ -118,7 +118,7 @@ public final class ButentWS {
 
     try {
       answer = process("GetSQLData", "<query>" + query + "</query>");
-    } catch (Exception e) {
+    } catch (SOAPException e) {
       throw new BeeException(e);
     }
     SimpleRowSet data = new SimpleRowSet(columns);
@@ -162,7 +162,7 @@ public final class ButentWS {
 
     try {
       answer = process("ImportClient", sb.toString());
-    } catch (Exception e) {
+    } catch (SOAPException e) {
       throw new BeeException(e);
     }
     answer = getNode(answer).getTextContent();
@@ -179,7 +179,7 @@ public final class ButentWS {
 
     try {
       answer = process("ImportDoc", doc.getXml());
-    } catch (Exception e) {
+    } catch (SOAPException e) {
       throw new BeeException(e);
     }
     if (!BeeUtils.same(answer, "OK")) {
@@ -204,7 +204,7 @@ public final class ButentWS {
 
     try {
       answer = process("ImportItem", sb.toString());
-    } catch (Exception e) {
+    } catch (SOAPException e) {
       throw new BeeException(e);
     }
     answer = getNode(answer).getTextContent();

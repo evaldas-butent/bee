@@ -242,7 +242,7 @@ public abstract class EventsBoard extends Flow implements Presenter, RowInsertEv
 
   protected Flow createEventRowCell(Flow eventRow, String name, String styleName) {
     beforeCreateEventCell(eventRow, name);
-    
+
     Flow eventCell = new Flow();
     eventCell.addStyleName(STYLE_PREFIX + STYLE_CONTENT_COL);
 
@@ -252,7 +252,7 @@ public abstract class EventsBoard extends Flow implements Presenter, RowInsertEv
     if (!BeeUtils.isEmpty(styleName)) {
       eventCell.addStyleName(styleName);
     }
-    
+
     if (!BeeUtils.isEmpty(getStylePrefix()) && !BeeUtils.isEmpty(name)) {
       eventCell.addStyleName(getStylePrefix() + name);
     }
@@ -294,7 +294,7 @@ public abstract class EventsBoard extends Flow implements Presenter, RowInsertEv
 
   private void createChildEventRows(BeeRowSet rs, Multimap<Long, Long> data,
       long parent, HasWidgets widget, int rowLevel) {
-    
+
     if (data.containsKey(parent)) {
       for (long id : data.get(parent)) {
         BeeRow row = rs.getRowById(id);
@@ -328,9 +328,9 @@ public abstract class EventsBoard extends Flow implements Presenter, RowInsertEv
     if (!BeeUtils.isEmpty(getStylePrefix())) {
       contentRow.addStyleName(getStylePrefix() + STYLE_CONTENT_ROW);
     }
-    
+
     // TODO: max row level;
-    
+
     if (!BeeUtils.isEmpty(getPublisherPhotoColumnName())) {
       createPhotoCell(rs, row, contentRow);
     }
@@ -360,6 +360,7 @@ public abstract class EventsBoard extends Flow implements Presenter, RowInsertEv
 
     afterCreateEventNoteCell(rs, row, widget, cell);
   }
+
   private void createHeaderView() {
     headerView = new HeaderImpl();
     headerView.setViewPresenter(this);
@@ -397,21 +398,21 @@ public abstract class EventsBoard extends Flow implements Presenter, RowInsertEv
 
   private void createPhotoCell(BeeRowSet rs, BeeRow row, Flow widget) {
     Flow cell = createEventRowCell(widget, CONTENT_COL_PHOTO, null);
-    
+
     int idxPhoto = rs.getColumnIndex(getPublisherPhotoColumnName());
-    
+
     if (BeeUtils.isNegative(idxPhoto)) {
       logger.warning("column ", getPublisherPhotoColumnName(), "not found in view ",
           getEventsDataViewName());
       return;
     }
-    
+
     String photo = row.getString(idxPhoto);
-    
+
     if (BeeUtils.isEmpty(photo)) {
       return;
     }
-    
+
     Image image = new Image(PhotoRenderer.getUrl(photo));
     image.addStyleName(STYLE_PREFIX + STYLE_CONTENT_PHOTO);
 
@@ -427,7 +428,7 @@ public abstract class EventsBoard extends Flow implements Presenter, RowInsertEv
 
     if (!BeeUtils.isEmpty(getEventTypeColumnName())) {
       int idxEvent = rs.getColumnIndex(getEventTypeColumnName());
-      
+
       if (!BeeUtils.isNegative(idxEvent)) {
         String text =
             EnumUtils.getCaption(rs.getColumn(idxEvent).getEnumKey(), row.getInteger(idxEvent));
@@ -458,7 +459,7 @@ public abstract class EventsBoard extends Flow implements Presenter, RowInsertEv
 
     if (!BeeUtils.isEmpty(getPublisherFirstNameColumnName())
         || !BeeUtils.isEmpty(getPublisherFirstNameColumnName())) {
-     
+
       int idxFirst = rs.getColumnIndex(getPublisherFirstNameColumnName());
       int idxLast = rs.getColumnIndex(getPublisherLastNameColumnName());
       String fullName = BeeConst.STRING_EMPTY;

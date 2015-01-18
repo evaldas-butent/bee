@@ -101,6 +101,7 @@ public class TasksReportsInterceptor extends AbstractFormInterceptor {
       }
     }
   }
+
   private static final class ReportsFilter implements ClickHandler {
 
     private ReportType reportType;

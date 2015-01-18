@@ -107,7 +107,7 @@ class AppointmentBuilder extends AbstractFormInterceptor implements SelectorEven
     }
   }
 
-  private class ModalCallback extends InputCallback {
+  private final class ModalCallback extends InputCallback {
 
     final RowCallback saveCallback;
 

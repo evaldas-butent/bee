@@ -69,18 +69,18 @@ class NewProjectComment extends AbstractFormInterceptor {
     }
 
     String viewName = form.getViewName();
-    
+
     String comment = null;
 
     if (!BeeUtils.isNegative(form.getDataIndex(COL_COMMENT))) {
       comment = row.getString(form.getDataIndex(COL_COMMENT));
     }
-    
+
     DateTime time = new DateTime();
 
-    List<BeeColumn> columns = Data.getColumns(VIEW_PROJECT_EVENTS, 
+    List<BeeColumn> columns = Data.getColumns(VIEW_PROJECT_EVENTS,
         Lists.newArrayList(COL_PROJECT, COL_PUBLISHER, COL_PUBLISH_TIME, COL_COMMENT, COL_EVENT));
-    
+
     List<String> values = Lists.newArrayList(BeeUtils.toString(getProjectId()),
         BeeUtils.toString(currentUserId), BeeUtils.toString(time.getTime()), comment,
         BeeUtils.toString(ProjectEvent.COMMENT.ordinal()));
@@ -110,7 +110,7 @@ class NewProjectComment extends AbstractFormInterceptor {
   private void createFiles(final Long rowId) {
     final Widget widget = getFormView().getWidgetByName(WIDGET_FILES);
     if (widget instanceof FileCollector && !((FileCollector) widget).isEmpty()) {
-      
+
       final Holder<Integer> counter = Holder.of(0);
       final List<BeeColumn> columns =
           Data.getColumns(VIEW_PROJECT_FILES,
@@ -119,7 +119,7 @@ class NewProjectComment extends AbstractFormInterceptor {
 
       for (final FileInfo fileInfo : ((FileCollector) widget).getFiles()) {
         FileUtils.uploadFile(fileInfo, new Callback<Long>() {
-          
+
           @Override
           public void onSuccess(Long result) {
             List<String> values = Lists.newArrayList(BeeUtils.toString(getProjectId()),
