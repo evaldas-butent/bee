@@ -46,8 +46,6 @@ import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.IsRow;
 import com.butent.bee.shared.data.filter.Filter;
-import com.butent.bee.shared.font.FontAwesome;
-import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.ui.Action;
 import com.butent.bee.shared.ui.GridDescription;
 import com.butent.bee.shared.ui.NavigationOrigin;
@@ -74,8 +72,6 @@ public class GridContainerImpl extends Split implements GridContainerView,
   private static final String STYLE_NO_DATA = STYLE_NAME + "-no-data";
 
   private static final String STYLE_SCROLLABLE = STYLE_NAME + "-scrollable";
-
-  private static final String STYLE_AUTO_FIT = BeeConst.CSS_CLASS_PREFIX + "auto-fit";
 
   private static final Set<Action> HEADER_ACTIONS =
       EnumSet.of(Action.REFRESH, Action.FILTER, Action.REMOVE_FILTER, Action.ADD, Action.DELETE,
@@ -196,17 +192,24 @@ public class GridContainerImpl extends Split implements GridContainerView,
         enabledActions.add(Action.MENU);
       }
 
-      FaLabel autoFit = new FaLabel(FontAwesome.ARROWS_H, STYLE_AUTO_FIT);
-      autoFit.setTitle(Localized.getConstants().autoFit());
+      if (disabledActions.contains(Action.AUTO_FIT)) {
+        header = new HeaderImpl();
 
-      autoFit.addClickHandler(new ClickHandler() {
-        @Override
-        public void onClick(ClickEvent event) {
-          getGridView().getGrid().autoFit(!EventUtils.hasModifierKey(event.getNativeEvent()));
-        }
-      });
+      } else {
+        FaLabel autoFit = new FaLabel(Action.AUTO_FIT.getIcon(), BeeConst.CSS_CLASS_PREFIX
+            + Action.AUTO_FIT.getStyleSuffix());
+        autoFit.setTitle(Action.AUTO_FIT.getCaption());
 
-      header = new HeaderImpl(autoFit);
+        autoFit.addClickHandler(new ClickHandler() {
+          @Override
+          public void onClick(ClickEvent event) {
+            getGridView().getGrid().autoFit(!EventUtils.hasModifierKey(event.getNativeEvent()));
+          }
+        });
+
+        header = new HeaderImpl(autoFit);
+      }
+
       header.create(caption, hasData, readOnly, gridDescription.getViewName(), uiOptions,
           enabledActions, disabledActions, hiddenActions);
 

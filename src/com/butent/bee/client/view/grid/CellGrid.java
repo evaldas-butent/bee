@@ -3661,7 +3661,10 @@ public class CellGrid extends Widget implements IdentifiableWidget, HasDataTable
           activeCell.addClassName(StyleUtils.NAME_RESIZABLE);
         }
 
-        activeCell.focus();
+        Element activeElement = DomUtils.getActiveElement();
+        if (activeElement == null || !activeCell.isOrHasChild(activeElement)) {
+          activeCell.focus();
+        }
 
       } else {
         activeCell.removeClassName(STYLE_ACTIVE_CELL);
