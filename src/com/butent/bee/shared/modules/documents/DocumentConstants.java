@@ -55,7 +55,8 @@ public final class DocumentConstants {
   public static final String COL_EDITOR_TEMPLATE_NAME = "Name";
   public static final String COL_EDITOR_TEMPLATE_CONTENT = "Content";
 
-  public static final String COL_NUMBER = "Number";
+  public static final String COL_DOCUMENT_NUMBER = "Number";
+  public static final String COL_NUMBER_PREFIX = "NumberPrefix";
   public static final String COL_REGISTRATION_NUMBER = "RegistrationNumber";
   public static final String COL_DESCRIPTION = "Description";
 

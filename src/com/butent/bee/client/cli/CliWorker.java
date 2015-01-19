@@ -1699,17 +1699,10 @@ public final class CliWorker {
       Global.sayHuh(ArrayUtils.join(BeeConst.STRING_SPACE, arr));
       return;
     }
-
-    if (BeeUtils.same(arr[0], "download")) {
-      BrowsingContext.open(FileUtils.getUrl(arr[1], null));
-      return;
-    }
-
     ParameterList params = BeeKeeper.getRpc().createParameters(Service.GET_RESOURCE);
     for (String v : arr) {
       params.addPositionalData(v);
     }
-
     BeeKeeper.getRpc().makeRequest(params, new ResponseCallback() {
       @Override
       public void onResponse(ResponseObject response) {
