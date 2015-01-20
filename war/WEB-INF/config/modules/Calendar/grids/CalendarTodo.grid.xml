@@ -1,21 +1,12 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <g:Grid xmlns="http://www.butent.com/column" xmlns:g="http://www.butent.com/grid"
-  xmlns:ui="http://www.butent.com/ui"
   
   name="CalendarTodo" viewName="TodoList" caption="=crmTodoList"
   newRowPopup="true" editPopup="true" headerMode="grid"
   disabledActions="add delete filter export auto_fit"
   >
   <g:columns>
-    <CalcColumn name="Dnd" type="string" width="20" horizontalAlignment="center" visible="true">
-      <style><bodyStyle>
-        <ui:class>bee-fa-label</ui:class>
-        <ui:inline>font-size: 16px;</ui:inline>
-      </bodyStyle></style>
-      <render><ui:expression>'\uf0a8'</ui:expression></render>
-    </CalcColumn>
-
-    <DataColumn name="Summary" visible="true" flexGrow="1" />
+    <DataColumn name="Summary" visible="true" flexGrow="1" draggable="true" />
 
     <DataColumn name="Description" visible="false" />
 

@@ -17,7 +17,6 @@ import com.google.gwt.event.dom.client.DragStartEvent;
 import com.google.gwt.event.dom.client.DragStartHandler;
 import com.google.gwt.event.dom.client.DropEvent;
 import com.google.gwt.event.dom.client.DropHandler;
-import com.google.gwt.event.dom.client.HasAllDragAndDropHandlers;
 import com.google.gwt.event.shared.HandlerRegistration;
 import com.google.gwt.user.client.Event;
 import com.google.gwt.user.client.ui.ComplexPanel;
@@ -27,6 +26,7 @@ import com.google.gwt.user.client.ui.Widget;
 import com.google.gwt.user.client.ui.WidgetCollection;
 
 import com.butent.bee.client.dom.DomUtils;
+import com.butent.bee.client.event.DndWidget;
 import com.butent.bee.client.style.StyleUtils;
 import com.butent.bee.client.ui.IdentifiableWidget;
 import com.butent.bee.client.widget.CustomDiv;
@@ -34,6 +34,7 @@ import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.HasExtendedInfo;
 import com.butent.bee.shared.HasInfo;
+import com.butent.bee.shared.State;
 import com.butent.bee.shared.css.CssUnit;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.ExtendedProperty;
@@ -45,7 +46,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class Split extends ComplexPanel implements RequiresResize, ProvidesResize,
-    IdentifiableWidget, HasExtendedInfo, HasAllDragAndDropHandlers {
+    HasExtendedInfo, DndWidget {
 
   protected static final class LayoutData {
 
@@ -301,6 +302,8 @@ public class Split extends ComplexPanel implements RequiresResize, ProvidesResiz
 
   private IdentifiableWidget center;
 
+  private State targetState;
+
   public Split() {
     this(DEFAULT_SPLITTER_SIZE);
   }
@@ -518,6 +521,11 @@ public class Split extends ComplexPanel implements RequiresResize, ProvidesResiz
     return splitterSize;
   }
 
+  @Override
+  public State getTargetState() {
+    return targetState;
+  }
+
   public Direction getWidgetDirection(Widget child) {
     LayoutData data = getLayoutData(child);
     return (data == null) ? null : data.getDirection();
@@ -613,6 +621,11 @@ public class Split extends ComplexPanel implements RequiresResize, ProvidesResiz
   @Override
   public void setId(String id) {
     DomUtils.setId(this, id);
+  }
+
+  @Override
+  public void setTargetState(State targetState) {
+    this.targetState = targetState;
   }
 
   public void setWidgetMinSize(Widget child, int minSize) {

@@ -186,7 +186,7 @@ public final class EventUtils {
   public static final String EFFECT_MOVE = "move";
   public static final String EFFECT_COPY_MOVE = "copyMove";
 
-  public static final String DEFAULT_DND_DATA_FORMAT = "text/plain";
+  public static final String DEFAULT_DND_DATA_FORMAT = "text";
 
   private static final Map<String, JsFunction> domHandlers = new HashMap<>();
 

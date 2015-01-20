@@ -38,6 +38,7 @@ import com.butent.bee.client.layout.Horizontal;
 import com.butent.bee.client.layout.Simple;
 import com.butent.bee.client.layout.Split;
 import com.butent.bee.client.modules.calendar.CalendarView.Type;
+import com.butent.bee.client.modules.calendar.dnd.TodoMoveController;
 import com.butent.bee.client.modules.calendar.event.AppointmentEvent;
 import com.butent.bee.client.modules.calendar.event.TimeBlockClickEvent;
 import com.butent.bee.client.modules.calendar.event.UpdateEvent;
@@ -143,6 +144,7 @@ public class CalendarPanel extends Split implements AppointmentEvent.Handler, Pr
   private final TabBar viewTabs;
 
   private final Flow todoContainer;
+  private TodoMoveController todoMoveController;
 
   private final List<ViewType> views = new ArrayList<>();
 
@@ -828,6 +830,10 @@ public class CalendarPanel extends Split implements AppointmentEvent.Handler, Pr
               removeStyleName(STYLE_TODO_HIDDEN);
             }
           });
+
+      if (todoMoveController == null) {
+        todoMoveController = new TodoMoveController(todoContainer, this);
+      }
 
     } else {
       todoContainer.clear();

@@ -620,6 +620,10 @@ public class GridImpl extends Absolute implements GridView, EditEndEvent.Handler
       UiHelper.setWhiteSpace(column, cd.getWhiteSpace());
     }
 
+    if (BeeUtils.isTrue(cd.getDraggable())) {
+      column.setDraggable(true);
+    }
+
     if (!BeeUtils.isEmpty(cd.getOptions())) {
       column.setOptions(cd.getOptions());
     }

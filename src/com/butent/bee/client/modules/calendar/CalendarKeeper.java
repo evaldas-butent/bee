@@ -277,8 +277,6 @@ public final class CalendarKeeper {
         VIEW_EXTENDED_PROPERTIES, Lists.newArrayList(COL_PROPERTY_NAME),
         Lists.newArrayList(COL_PROPERTY_NAME, ALS_PROPERTY_GROUP_NAME)));
 
-    GridFactory.registerGridInterceptor(GRID_CALENDAR_TODO, new CalendarTodoGrid());
-
     ConditionalStyle.registerGridColumnStyleProvider(GRID_APPOINTMENTS,
         ALS_COLOR_NAME, ColorStyleProvider.createDefault(VIEW_APPOINTMENTS));
     ConditionalStyle.registerGridColumnStyleProvider(GRID_ATTENDEES,
