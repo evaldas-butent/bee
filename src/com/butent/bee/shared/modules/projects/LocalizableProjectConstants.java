@@ -29,5 +29,9 @@ public interface LocalizableProjectConstants {
   String prjStatusScheduled();
 
   String prjStatusSuspended();
+
+  String prjUserCanDeleteManager();
+
+  String prjUserHasSameTasks();
 }
 

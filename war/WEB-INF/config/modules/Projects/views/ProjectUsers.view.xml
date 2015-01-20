@@ -5,6 +5,12 @@
 		<SimpleColumn name="Project" />
 		<SimpleJoin name="Project" joinType="LEFT">
 		  <SimpleColumn name="Owner" />
+		  <ExternalJoin name="Project" source="Tasks" joinType="LEFT" filter="(User = TaskOwner) OR (User = TaskExecutor)">
+		    <HiddenColumn alias="TaskOwner" name="Owner"/>
+		    <HiddenColumn alias="TaskExecutor" name="Executor"/>
+		  
+		    <IdColumn  name="TaskCount" aggregate="COUNT"></IdColumn>
+		  </ExternalJoin>
 		</SimpleJoin>
 				
 		<SimpleColumn name="User" />

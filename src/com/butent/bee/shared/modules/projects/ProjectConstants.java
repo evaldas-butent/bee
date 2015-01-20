@@ -55,6 +55,7 @@ public final class ProjectConstants {
   public static final String ALS_PUBLISHER_LAST_NAME = "PublisherLastName";
 
   public static final String ALS_ROW_ID = "RowID";
+  public static final String ALS_TASK_COUNT = "TaskCount";
 
   public static final String COL_EXPECTED_TASKS_DURATION = "ExpectedTasksDuration";
   public static final String COL_ACTUAL_TASKS_DURATION = "ActualTasksDuration";

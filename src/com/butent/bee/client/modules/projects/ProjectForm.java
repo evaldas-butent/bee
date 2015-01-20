@@ -141,6 +141,11 @@ class ProjectForm extends AbstractFormInterceptor implements DataChangeEvent.Han
     }
 
     prjComments.clear();
+
+    if (!DataUtils.isId(row.getId())) {
+      return;
+    }
+
     EventFilesFilter filter = new EventFilesFilter(VIEW_PROJECT_FILES,
         COL_PROJECT_EVENT, AdministrationConstants.COL_FILE, AdministrationConstants.ALS_FILE_NAME,
         AdministrationConstants.ALS_FILE_SIZE, AdministrationConstants.ALS_FILE_TYPE, COL_CAPTION);
