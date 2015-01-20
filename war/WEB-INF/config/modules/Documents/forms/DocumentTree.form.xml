@@ -19,6 +19,10 @@
               <InputText source="CategoryName" />
             </row>
             <row>
+              <Label for="NumberPrefix" style="text-align:right;" />
+              <InputText source="NumberPrefix" />
+            </row>
+            <row>
               <Label for="Ordinal" style="text-align:right;" />
               <InputDecimal source="Ordinal" style="width:40px;" />
             </row>

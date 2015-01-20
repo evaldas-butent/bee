@@ -18,6 +18,7 @@ import java.util.Set;
 public enum Action implements BeeSerializable, HasCaption {
   ADD(FontAwesome.PLUS, Localized.getConstants().actionAdd(), "add"),
   AUDIT(FontAwesome.HISTORY, Localized.getConstants().actionAudit(), "audit"),
+  AUTO_FIT(FontAwesome.ARROWS_H, Localized.getConstants().autoFit(), "auto-fit"),
   BOOKMARK(FontAwesome.BOOKMARK_O, Localized.getConstants().actionBookmark(), "bookmark"),
   CANCEL(FontAwesome.CLOSE, Localized.getConstants().actionCancel(), "cancel"),
   CLOSE(FontAwesome.CLOSE, Localized.getConstants().actionClose(), "close"),
@@ -88,6 +89,10 @@ public enum Action implements BeeSerializable, HasCaption {
 
   public String getStyleName() {
     return BeeConst.CSS_CLASS_PREFIX + "Action-" + styleSuffix;
+  }
+
+  public String getStyleSuffix() {
+    return styleSuffix;
   }
 
   @Override

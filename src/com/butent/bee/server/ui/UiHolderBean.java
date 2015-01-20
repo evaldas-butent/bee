@@ -494,7 +494,7 @@ public class UiHolderBean {
     Multimap<String, Pair<String, String>> custom = HashMultimap.create();
 
     SimpleRowSet rs = qs.getData(new SqlSelect()
-        .addFields(TBL_CUSTOM_CONFIG, COL_CONFIG_OBJECT, COL_CONFIG_DATA)
+        .addFields(TBL_CUSTOM_CONFIG, COL_CONFIG_MODULE, COL_CONFIG_OBJECT, COL_CONFIG_DATA)
         .addFrom(TBL_CUSTOM_CONFIG)
         .setWhere(SqlUtils.equals(TBL_CUSTOM_CONFIG, COL_CONFIG_TYPE, obj.ordinal())));
 

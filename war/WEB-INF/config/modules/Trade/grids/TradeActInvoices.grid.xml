@@ -9,8 +9,13 @@
     <DataColumn name="DateFrom" visible="true" />
     <DataColumn name="DateTo" visible="true" />
 
-    <RelColumn name="Sale" renderColumns="Sale" label="=trdInvoiceId" editEnabled="true"
-      editPopup="true" />
+    <DataColumn name="Item" />
+    <DataColumn name="ItemName" visible="true" />
+    <DataColumn name="Article" />
+    <DataColumn name="TimeUnit" />
+
+    <RelColumn name="Sale" renderColumns="Sale" label="=trdInvoiceId"
+      editEnabled="true" editPopup="true" editViewName="Sales" editSource="Sale" readOnly="true" />
     <DataColumn name="Date" />
 
     <DataColumn name="InvoicePrefix" />

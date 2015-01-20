@@ -978,9 +978,9 @@ public class Tree extends Panel implements HasTreeItems, Focusable, HasAnimation
     Element holder = treeItem.getImageHolderElement();
     Element child = DOM.getFirstChild(holder);
     if (child == null) {
-      DOM.appendChild(holder, proto.createElement().<Element> cast());
+      DOM.appendChild(holder, proto.createElement());
     } else {
-      proto.applyTo(child.<ImagePrototypeElement> cast());
+      proto.applyTo((ImagePrototypeElement) child);
     }
   }
 }

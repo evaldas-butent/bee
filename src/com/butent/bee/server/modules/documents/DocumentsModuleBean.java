@@ -10,6 +10,7 @@ import com.butent.bee.server.Config;
 import com.butent.bee.server.data.BeeTable;
 import com.butent.bee.server.data.BeeView;
 import com.butent.bee.server.data.DataEditorBean;
+import com.butent.bee.server.data.DataEvent.ViewInsertEvent;
 import com.butent.bee.server.data.DataEvent.ViewQueryEvent;
 import com.butent.bee.server.data.DataEventHandler;
 import com.butent.bee.server.data.QueryServiceBean;
@@ -28,6 +29,7 @@ import com.butent.bee.server.sql.SqlUtils;
 import com.butent.bee.server.utils.HtmlUtils;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.communication.ResponseObject;
+import com.butent.bee.shared.data.BeeColumn;
 import com.butent.bee.shared.data.BeeRow;
 import com.butent.bee.shared.data.BeeRowSet;
 import com.butent.bee.shared.data.DataUtils;
@@ -36,6 +38,7 @@ import com.butent.bee.shared.data.SearchResult;
 import com.butent.bee.shared.data.SimpleRowSet;
 import com.butent.bee.shared.data.SimpleRowSet.SimpleRow;
 import com.butent.bee.shared.data.filter.Filter;
+import com.butent.bee.shared.data.value.Value;
 import com.butent.bee.shared.io.FileInfo;
 import com.butent.bee.shared.io.Paths;
 import com.butent.bee.shared.logging.BeeLogger;
@@ -90,7 +93,7 @@ public class DocumentsModuleBean implements BeeModule {
   @Override
   public List<SearchResult> doSearch(String query) {
     List<SearchResult> docsSr = qs.getSearchResults(VIEW_DOCUMENTS,
-        Filter.anyContains(Sets.newHashSet(COL_NUMBER, COL_REGISTRATION_NUMBER,
+        Filter.anyContains(Sets.newHashSet(COL_DOCUMENT_NUMBER, COL_REGISTRATION_NUMBER,
             COL_DOCUMENT_NAME, ALS_CATEGORY_NAME, ALS_TYPE_NAME,
             ALS_PLACE_NAME, ALS_STATUS_NAME), query));
 
@@ -147,6 +150,74 @@ public class DocumentsModuleBean implements BeeModule {
   @Override
   public void init() {
     sys.registerDataEventHandler(new DataEventHandler() {
+      @Subscribe
+      public void applyDocumentRights(ViewQueryEvent event) {
+        if (BeeUtils.inListSame(event.getTargetName(), TBL_DOCUMENTS, VIEW_RELATED_DOCUMENTS)
+            && !usr.isAdministrator()) {
+
+          if (event.isBefore()) {
+            SqlSelect query = event.getQuery();
+            String tableAlias = null;
+
+            for (IsFrom from : query.getFrom()) {
+              if (from.getSource() instanceof String
+                  && BeeUtils.same((String) from.getSource(), TBL_DOCUMENT_TREE)) {
+                tableAlias = BeeUtils.notEmpty(from.getAlias(), TBL_DOCUMENT_TREE);
+                break;
+              }
+            }
+            if (!BeeUtils.isEmpty(tableAlias)) {
+              sys.filterVisibleState(query, TBL_DOCUMENT_TREE, tableAlias);
+            }
+          } else {
+            BeeRowSet rs = event.getRowset();
+            int categoryIdx = rs.getColumnIndex(COL_DOCUMENT_CATEGORY);
+            List<Long> categories = new ArrayList<>();
+
+            if (BeeUtils.isNonNegative(categoryIdx)) {
+              for (Long category : rs.getDistinctLongs(categoryIdx)) {
+                categories.add(category);
+              }
+            }
+            if (!BeeUtils.isEmpty(categories)) {
+              BeeRowSet catRs = qs.getViewData(TBL_DOCUMENT_TREE, Filter.idIn(categories), null,
+                  Lists.newArrayList(COL_DOCUMENT_CATEGORY + COL_CATEGORY_NAME));
+
+              for (BeeRow row : rs) {
+                IsRow catRow = catRs.getRowById(row.getLong(categoryIdx));
+                row.setEditable(catRow.isEditable());
+                row.setRemovable(catRow.isRemovable());
+              }
+            }
+          }
+        }
+      }
+
+      @Subscribe
+      public void fillDocumentNumber(ViewInsertEvent event) {
+        if (BeeUtils.same(event.getTargetName(), TBL_DOCUMENTS) && event.isBefore()) {
+          List<BeeColumn> cols = event.getColumns();
+
+          if (DataUtils.contains(cols, COL_DOCUMENT_NUMBER)
+              || !DataUtils.contains(cols, COL_DOCUMENT_CATEGORY)) {
+            return;
+          }
+          IsRow row = event.getRow();
+
+          String prefix = qs.getValue(new SqlSelect()
+              .addFields(TBL_DOCUMENT_TREE, COL_NUMBER_PREFIX)
+              .addFrom(TBL_DOCUMENT_TREE)
+              .setWhere(sys.idEquals(TBL_DOCUMENT_TREE,
+                  row.getLong(DataUtils.getColumnIndex(COL_DOCUMENT_CATEGORY, cols)))));
+
+          if (!BeeUtils.isEmpty(prefix)) {
+            cols.add(new BeeColumn(COL_DOCUMENT_NUMBER));
+            row.addValue(Value.getValue(qs.getNextNumber(event.getTargetName(),
+                COL_DOCUMENT_NUMBER, prefix, null)));
+          }
+        }
+      }
+
       @Subscribe
       public void setRowProperties(ViewQueryEvent event) {
         if (event.isBefore()) {
@@ -248,49 +319,6 @@ public class DocumentsModuleBean implements BeeModule {
               Codec.beeSerialize(roles));
           event.getRowset().setTableProperty(AdministrationConstants.TBL_RIGHTS,
               Codec.beeSerialize(states.keySet()));
-        }
-      }
-
-      @Subscribe
-      public void applyDocumentRights(ViewQueryEvent event) {
-        if (BeeUtils.inListSame(event.getTargetName(), TBL_DOCUMENTS, VIEW_RELATED_DOCUMENTS)
-            && !usr.isAdministrator()) {
-
-          if (event.isBefore()) {
-            SqlSelect query = event.getQuery();
-            String tableAlias = null;
-
-            for (IsFrom from : query.getFrom()) {
-              if (from.getSource() instanceof String
-                  && BeeUtils.same((String) from.getSource(), TBL_DOCUMENT_TREE)) {
-                tableAlias = BeeUtils.notEmpty(from.getAlias(), TBL_DOCUMENT_TREE);
-                break;
-              }
-            }
-            if (!BeeUtils.isEmpty(tableAlias)) {
-              sys.filterVisibleState(query, TBL_DOCUMENT_TREE, tableAlias);
-            }
-          } else {
-            BeeRowSet rs = event.getRowset();
-            int categoryIdx = rs.getColumnIndex(COL_DOCUMENT_CATEGORY);
-            List<Long> categories = new ArrayList<>();
-
-            if (BeeUtils.isNonNegative(categoryIdx)) {
-              for (Long category : rs.getDistinctLongs(categoryIdx)) {
-                categories.add(category);
-              }
-            }
-            if (!BeeUtils.isEmpty(categories)) {
-              BeeRowSet catRs = qs.getViewData(TBL_DOCUMENT_TREE, Filter.idIn(categories), null,
-                  Lists.newArrayList(COL_CATEGORY_NAME));
-
-              for (BeeRow row : rs) {
-                IsRow catRow = catRs.getRowById(row.getLong(categoryIdx));
-                row.setEditable(catRow.isEditable());
-                row.setRemovable(catRow.isRemovable());
-              }
-            }
-          }
         }
       }
     });

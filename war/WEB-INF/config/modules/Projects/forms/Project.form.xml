@@ -1,17 +1,16 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE Form[
   <!ENTITY inline "display: inline-block;">
-  <!ENTITY height "height: 25px">
   <!ENTITY lbl "margin-left: 1em; margin-right: 1em; text-align: right">
   <!ENTITY lbl2 "margin-left: 1em; margin-right: 1em; text-align: left">
   <!ENTITY lbl3 "margin-left: 4em; margin-right: 1em; text-align: right">
   <!ENTITY lbl4 "margin-left: 8em; margin-right: 1em; text-align: left">
-  <!ENTITY inp1 "&inline; width: 350px; &height;"> 
-  <!ENTITY inp2 "&inline; width: 200px; &height;">
-  <!ENTITY inp3 "&inline; width: 150px; &height;">
-  <!ENTITY inp4 "&inline; width: 100px; &height;">
-  <!ENTITY inp5 "&inline; width: 70px; &height;">
-  <!ENTITY inp6 "&inline; width: 110px; &height;">
+  <!ENTITY inp1 "&inline; width: 350px;"> 
+  <!ENTITY inp2 "&inline; width: 200px;">
+  <!ENTITY inp3 "&inline; width: 150px;">
+  <!ENTITY inp4 "&inline; width: 100px;">
+  <!ENTITY inp5 "&inline; width: 70px; ">
+  <!ENTITY inp6 "&inline; width: 110px;">
   <!ENTITY inp7 "&inline; width: 795px; height:100px; max-height: 200px; max-width: 795px;">
 ]>
 
@@ -19,7 +18,7 @@
 	xmlns:xi="http://www.w3.org/2001/XInclude" name="Project" viewName="Projects"
 	caption="=project">
 	<FlowPanel class="flexBox-vertical">
-		<Table>
+		<Table class="bee-ProjectTable">
 			<row>
 				<Label for="Name" text="=name" style="&lbl;" class="bee-required" />
 				<InputText source="Name" style="&inp1;" />
@@ -38,13 +37,13 @@
 				<Label for="ContactPerson" text="=personContact"
 					style="margin-right: 1em; text-align: left; margin-left: -110px;" />
 				<DataSelector source="ContactPerson"
-					style="display: inline-block; width: 200px; margin-left: -100px; height: 25px;"
+					style="display: inline-block; width: 200px; margin-left: -100px;"
 					renderColumns="ContactFirstName ContactLastName" choiceColumns="FirstName LastName CompanyName"
 					options="Company" module="Classifiers.Contacts" />
 
 				<Label for="Status" text="=status" style="&lbl2;" />
 				<ListBox source="Status"
-					style="display: inline-block; width: 150px; margin-left: -50px; height: 25px;" />
+					style="display: inline-block; width: 150px; margin-left: -50px;" />
 			</row>
 		</Table>
 
@@ -72,10 +71,10 @@
 				<Table>
 					<row>
 						<Label for="ExpectedTasksDuration" text="=prjExpectedTaskDuration" style="&lbl;" />
-						<InputText source="ExpectedTasksDuration" style="&inp5;" />
+						<InputDecimal source="ExpectedTasksDuration" scale="2" style="&inp5;" />
 
 						<Label for="ActualTasksDuration" text="=prjActualTaskDuration" style="&lbl;" />
-						<InputText source="ActualTasksDuration" style="&inp5;" />
+						<InputDecimal source="ActualTasksDuration" scale="2" style="&inp5;" />
 						
 						<Label for="ContractNumber" text="=contractNo" style="&lbl;" />
 						<InputText source="ContractNumber" style="&inp6;"
@@ -107,7 +106,11 @@
 			</Table>
 		</Disclosure>
 
-		<TabbedPages class="flexible">
+		 <TabbedPages class="flexible">
+		  <page>
+		    <text>=prjComments</text>
+		    <FlowPanel name="ProjectComments" class="flex-horizontal"/>
+		  </page>
 			<page>
 				<text>=prjTeam</text>
 				<ChildGrid name="ProjectUsers" relColumn="Project" />
@@ -123,7 +126,7 @@
 						<row>
 							<Label text="=personContact" style="margin-right: 1em; text-align: left;" />
 							<DataSelector source="ContactPerson"
-								style="display: inline-block; width: 200px; height: 25px;"
+								style="display: inline-block; width: 200px;"
 								renderColumns="ContactFirstName ContactLastName" choiceColumns="FirstName LastName CompanyName"
 								options="Company" module="Classifiers.Contacts" />
 
@@ -161,14 +164,15 @@
         <text>=crmRecurringTasks</text>
         <ChildGrid name="ChildRecurringTasks" relColumn="Project" />
       </page>
-			<page>
+	  <page>
      	  <text>=prjDates</text>
      	  <ChildGrid name="ProjectDates" relColumn="Project" />
    		</page>
+
    		<page>
         <text>=prjSchedule</text>
         <FlowPanel name="ChartData" />
       </page>
-		</TabbedPages>
-	</FlowPanel>
+	 </TabbedPages>
+   </FlowPanel>
 </f:Form> 

@@ -86,7 +86,8 @@ public class UserData implements BeeSerializable, HasInfo {
   }
 
   public boolean canEditColumn(String viewName, String column) {
-    return BeeUtils.anyEmpty(viewName, column) || hasFieldRight(viewName, column, RightsState.EDIT);
+    return BeeUtils.anyEmpty(viewName, column)
+        || hasFieldRight(viewName, RightsState.EDIT, column, RightsState.EDIT);
   }
 
   public boolean canEditData(String viewName) {
@@ -274,7 +275,8 @@ public class UserData implements BeeSerializable, HasInfo {
   }
 
   public boolean isColumnVisible(String viewName, String column) {
-    return BeeUtils.anyEmpty(viewName, column) || hasFieldRight(viewName, column, RightsState.VIEW);
+    return BeeUtils.anyEmpty(viewName, column)
+        || hasFieldRight(viewName, null, column, RightsState.VIEW);
   }
 
   public boolean isDataVisible(String viewName) {
@@ -407,9 +409,11 @@ public class UserData implements BeeSerializable, HasInfo {
     this.rights = rights;
   }
 
-  private boolean hasFieldRight(String viewName, String column, RightsState state) {
-    return hasDataRight(viewName, state)
-        && hasRight(RightsObjectType.FIELD, RightsUtils.buildName(viewName, column), state);
+  private boolean hasFieldRight(String viewName, RightsState viewState,
+      String column, RightsState columnState) {
+
+    return (viewState == null || hasDataRight(viewName, viewState))
+        && hasRight(RightsObjectType.FIELD, RightsUtils.buildName(viewName, column), columnState);
   }
 
   private boolean hasRight(RightsObjectType type, String object, RightsState state) {

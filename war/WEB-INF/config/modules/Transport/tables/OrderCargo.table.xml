@@ -8,7 +8,7 @@
     <Relation name="Order" relation="TransportationOrders" cascade="DELETE" label="=trOrder" />
     <Text name="Description" notNull="true" label="=cargo" defValue="*" />
 
-    <Numeric name="Weight" precision="8" scale="3" label="=weight" />
+    <Numeric name="Weight" precision="10" scale="3" label="=weight" />
     <Relation name="WeightUnit" relation="Units" label="=weightUnit" />
     <Numeric name="Volume" precision="8" scale="3" label="=volume" />
     <Relation name="VolumeUnit" relation="Units" label="=volumeUnit" />

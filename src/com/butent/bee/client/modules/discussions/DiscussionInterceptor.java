@@ -398,8 +398,8 @@ class DiscussionInterceptor extends AbstractFormInterceptor {
     for (final DiscussionEvent event : DiscussionEvent.values()) {
       String label = event.getCommandLabel();
 
-      if (!BeeUtils.isEmpty(label) && isEventEnabled(form, row, event, status, owner
-          , discussParameters.get(PRM_DISCUSS_ADMIN))) {
+      if (!BeeUtils.isEmpty(label) && isEventEnabled(form, row, event, status, owner,
+          discussParameters.get(PRM_DISCUSS_ADMIN))) {
         header.addCommandItem((IdentifiableWidget) createEventButton(form, row, event,
             discussParameters
                 .get(PRM_DISCUSS_ADMIN)));

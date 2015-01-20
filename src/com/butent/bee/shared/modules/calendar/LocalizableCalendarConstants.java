@@ -49,6 +49,8 @@ public interface LocalizableCalendarConstants {
 
   String calDeleteAppointment();
 
+  String calEditable();
+
   String calendar();
 
   String calEnterAttendees();

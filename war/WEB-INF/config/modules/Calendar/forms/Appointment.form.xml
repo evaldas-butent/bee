@@ -10,19 +10,24 @@
        
       <col index="0" kind="label" />
       <col index="2" kind="label" />
+      <col index="4" kind="label" />
 
       <row>
         <Label for="Summary" visible="true" class="bee-required" />
         <InputText source="Summary" visible="true" />
         <Label for="Location" />
         <InputText source="Location" />
+        <Label text="=type" for="Type" visible="true" class="bee-required" />
+        <DataSelector source="AppointmentType" renderColumns="TypeName" visible="true"/>
       </row>
 
       <row>
         <Label for="Company" />
         <DataSelector source="Company" renderColumns="CompanyName" />
-        <Label text="=type" for="Type" visible="true" class="bee-required" />
-        <DataSelector source="AppointmentType" renderColumns="TypeName" visible="true"/>
+        <Label for="CompanyPerson" />
+        <DataSelector source="CompanyPerson"
+          renderColumns="PersonFirstName PersonLastName"
+          choiceColumns="FirstName LastName CompanyName" options="Company" />
       </row>
  
       <row>
@@ -35,8 +40,9 @@
       <row>
         <Label for="EndDateTime" visible="true" />
         <InputDateTime source="EndDateTime" visible="true" />
-        <cell><text/></cell>
-        <Radio source="Visibility" vertical="false" />
+        <cell colSpan="2">
+          <Radio source="Visibility" vertical="false" />
+        </cell>
       </row>
 
       <row>

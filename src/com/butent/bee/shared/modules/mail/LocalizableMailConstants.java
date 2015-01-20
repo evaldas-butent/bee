@@ -10,6 +10,8 @@ public interface LocalizableMailConstants {
 
   String mailActionMoveToTrash();
 
+  String mailAttachments();
+
   String mails();
 
   String mailSignature();
@@ -41,6 +43,8 @@ public interface LocalizableMailConstants {
   String mailForwardedPrefix();
 
   String mailFrom();
+
+  String mailGetAllAttachments();
 
   String mailMarkAsUnread();
 

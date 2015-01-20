@@ -38,6 +38,7 @@ public abstract class DataEvent {
       setAfter();
     }
   }
+
   public static class ViewDeleteEvent extends ViewModifyEvent {
     private final Set<Long> ids;
 
@@ -52,6 +53,7 @@ public abstract class DataEvent {
       return ids;
     }
   }
+
   public static class ViewInsertEvent extends ViewModifyEvent {
     private final List<BeeColumn> columns;
     private final BeeRow row;

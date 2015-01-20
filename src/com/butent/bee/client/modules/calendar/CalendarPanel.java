@@ -56,6 +56,7 @@ import com.butent.bee.client.ui.UiOption;
 import com.butent.bee.client.view.HeaderImpl;
 import com.butent.bee.client.view.HeaderView;
 import com.butent.bee.client.view.View;
+import com.butent.bee.client.view.grid.interceptor.GridInterceptor;
 import com.butent.bee.client.widget.Button;
 import com.butent.bee.client.widget.Label;
 import com.butent.bee.shared.BeeConst;
@@ -126,8 +127,6 @@ public class CalendarPanel extends Split implements AppointmentEvent.Handler, Pr
   private static final String STYLE_TODO_CONTAINER = STYLE_TODO_PREFIX + "container";
   private static final String STYLE_TODO_HIDDEN = STYLE_TODO_PREFIX + "hidden";
 
-  private static final String TODO_LIST_SUPPLIER_KEY = "grid_calendar_todo_list";
-
   private static final DateTimeFormat DATE_FORMAT =
       DateTimeFormat.getFormat(DateTimeFormat.PredefinedFormat.DATE_FULL);
 
@@ -182,7 +181,8 @@ public class CalendarPanel extends Split implements AppointmentEvent.Handler, Pr
     calendar.addTimeBlockClickHandler(new TimeBlockClickEvent.Handler() {
       @Override
       public void onTimeBlockClick(TimeBlockClickEvent event) {
-        CalendarKeeper.createAppointment(getCalendarId(), event.getStart(), event.getAttendeeId());
+        CalendarKeeper.createAppointment(getCalendarId(), event.getStart(), null,
+            event.getAttendeeId(), null, null);
       }
     });
 
@@ -202,14 +202,16 @@ public class CalendarPanel extends Split implements AppointmentEvent.Handler, Pr
         Action.NO_ACTIONS);
     header.setViewPresenter(this);
 
-    Button todoListCommand = new Button(Localized.getConstants().crmTodoList());
-    todoListCommand.addClickHandler(new ClickHandler() {
-      @Override
-      public void onClick(ClickEvent event) {
-        showTodoList();
-      }
-    });
-    header.addCommandItem(todoListCommand);
+    if (BeeKeeper.getUser().isDataVisible(TaskConstants.VIEW_TODO_LIST)) {
+      Button todoListCommand = new Button(Localized.getConstants().crmTodoList());
+      todoListCommand.addClickHandler(new ClickHandler() {
+        @Override
+        public void onClick(ClickEvent event) {
+          showTodoList();
+        }
+      });
+      header.addCommandItem(todoListCommand);
+    }
 
     this.dateBox = new Label();
     dateBox.addStyleName(STYLE_DATE);
@@ -808,8 +810,10 @@ public class CalendarPanel extends Split implements AppointmentEvent.Handler, Pr
         return;
       }
 
-      GridFactory.createGrid(TaskConstants.GRID_TODO_LIST, TODO_LIST_SUPPLIER_KEY,
-          GridFactory.getGridInterceptor(TaskConstants.GRID_TODO_LIST),
+      GridInterceptor interceptor = GridFactory.getGridInterceptor(GRID_CALENDAR_TODO);
+      String supplierKey = GridFactory.getSupplierKey(GRID_CALENDAR_TODO, interceptor);
+
+      GridFactory.createGrid(GRID_CALENDAR_TODO, supplierKey, interceptor,
           EnumSet.of(UiOption.EMBEDDED), null, new PresenterCallback() {
             @Override
             public void onCreate(Presenter presenter) {

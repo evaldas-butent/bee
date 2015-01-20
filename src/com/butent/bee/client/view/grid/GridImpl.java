@@ -1300,20 +1300,28 @@ public class GridImpl extends Absolute implements GridView, EditEndEvent.Handler
   }
 
   @Override
-  public void onEditEnd(EditEndEvent event, EditEndEvent.HasEditEndHandler source) {
+  public void onEditEnd(EditEndEvent event, Object source) {
     Assert.notNull(event);
     getGrid().setEditing(false);
     getGrid().refocus();
 
-    if (!BeeUtils.equalsTrimRight(event.getOldValue(), event.getNewValue())) {
-      updateCell(event.getRowValue(), event.getColumn(), event.getOldValue(), event.getNewValue(),
-          event.isRowMode());
+    if (getGridInterceptor() != null) {
+      getGridInterceptor().onEditEnd(event, source);
     }
 
-    if (event.getKeyCode() != null) {
-      int keyCode = BeeUtils.unbox(event.getKeyCode());
-      if (BeeUtils.inList(keyCode, KeyCodes.KEY_TAB, KeyCodes.KEY_UP, KeyCodes.KEY_DOWN)) {
-        getGrid().handleKeyboardNavigation(keyCode, event.hasModifiers());
+    if (!event.isConsumed()) {
+      String oldValue = event.getOldValue();
+      String newValue = event.getNewValue();
+
+      if (!BeeUtils.equalsTrimRight(oldValue, newValue)) {
+        updateCell(event.getRowValue(), event.getColumn(), oldValue, newValue, event.isRowMode());
+      }
+
+      if (event.getKeyCode() != null) {
+        int keyCode = BeeUtils.unbox(event.getKeyCode());
+        if (BeeUtils.inList(keyCode, KeyCodes.KEY_TAB, KeyCodes.KEY_UP, KeyCodes.KEY_DOWN)) {
+          getGrid().handleKeyboardNavigation(keyCode, event.hasModifiers());
+        }
       }
     }
   }
@@ -2271,7 +2279,7 @@ public class GridImpl extends Absolute implements GridView, EditEndEvent.Handler
   }
 
   private boolean maybeOpenRelatedData(final EditableColumn editableColumn, final IsRow row,
-      int charCode) {
+      int charCode, boolean readOnly) {
 
     if (row == null || editableColumn == null || !editableColumn.hasRelation()
         || !editableColumn.getRelation().isEditEnabled(false)) {
@@ -2284,7 +2292,7 @@ public class GridImpl extends Absolute implements GridView, EditEndEvent.Handler
     } else {
       Integer editKey = editableColumn.getRelation().getEditKey();
       if (editKey == null) {
-        ok = !isEnabled() && EditStartEvent.isEnter(charCode);
+        ok = (!isEnabled() || readOnly) && EditStartEvent.isEnter(charCode);
       } else if (EditStartEvent.isEnter(editKey)) {
         ok = EditStartEvent.isEnter(charCode);
       } else {
@@ -2384,7 +2392,7 @@ public class GridImpl extends Absolute implements GridView, EditEndEvent.Handler
     String columnId = event.getColumnId();
     final EditableColumn editableColumn = getEditableColumn(columnId, false);
 
-    if (maybeOpenRelatedData(editableColumn, rowValue, event.getCharCode())) {
+    if (maybeOpenRelatedData(editableColumn, rowValue, event.getCharCode(), event.isReadOnly())) {
       return;
     }
 

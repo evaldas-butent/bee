@@ -5,20 +5,16 @@
   name="Parameters" viewName="Parameters" disabledActions="add delete filter audit rights"
   >
   <g:columns>
-    <DataColumn name="Name">
+    <DataColumn name="Name" visible="true">
       <dynStyle>
         <ui:inline>font-weight:bold</ui:inline>
         <ui:expression>row.User</ui:expression>
       </dynStyle>
     </DataColumn>
-    <DataColumn name="Value">
+    <DataColumn name="Value" visible="true">
       <dynStyle>
         <ui:inline>color:silver</ui:inline>
         <ui:expression>!row.HasValue</ui:expression>
-      </dynStyle>
-      <dynStyle>
-        <ui:inline>color:black</ui:inline>
-        <ui:expression>row.HasValue</ui:expression>
       </dynStyle>
     </DataColumn>
     <PropColumn type="string" name="Description" caption="=description">

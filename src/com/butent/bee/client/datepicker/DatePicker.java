@@ -222,7 +222,7 @@ public class DatePicker extends Composite implements HasValue<JustDate>, HasKeyD
 
     if (!newValue.equals(value)) {
       setValue(newValue, fireEvents);
-      setCurrentMonth(YearMonth.get(newValue));
+      setCurrentMonth(YearMonth.of(newValue));
     }
   }
 

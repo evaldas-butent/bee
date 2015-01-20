@@ -17,6 +17,7 @@ import com.butent.bee.client.style.StyleProvider;
 import com.butent.bee.client.ui.FormFactory.WidgetDescriptionCallback;
 import com.butent.bee.client.ui.IdentifiableWidget;
 import com.butent.bee.client.view.add.ReadyForInsertEvent;
+import com.butent.bee.client.view.edit.EditEndEvent;
 import com.butent.bee.client.view.edit.EditStartEvent;
 import com.butent.bee.client.view.edit.EditableColumn;
 import com.butent.bee.client.view.edit.Editor;
@@ -321,6 +322,10 @@ public abstract class AbstractGridInterceptor implements GridInterceptor {
   @Override
   public boolean onClose(GridPresenter presenter) {
     return true;
+  }
+
+  @Override
+  public void onEditEnd(EditEndEvent event, Object source) {
   }
 
   @Override
