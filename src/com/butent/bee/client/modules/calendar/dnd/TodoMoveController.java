@@ -1,6 +1,5 @@
 package com.butent.bee.client.modules.calendar.dnd;
 
-import com.google.common.base.Predicate;
 import com.google.gwt.dom.client.Element;
 import com.google.gwt.event.dom.client.DragEndEvent;
 import com.google.gwt.event.dom.client.DragEndHandler;
@@ -56,6 +55,8 @@ public class TodoMoveController {
 
         if (CellGrid.isBodyRow(rowIndex)) {
           EventUtils.allowMove(event);
+          EventUtils.setDndData(event, rowIndex);
+
           DndHelper.fillContent(CONTENT_TYPE, null, null, rowIndex);
         }
       }
@@ -69,12 +70,7 @@ public class TodoMoveController {
     });
 
     DndHelper.makeTarget(calendarPanel, Collections.singleton(CONTENT_TYPE), null,
-        new Predicate<Object>() {
-          @Override
-          public boolean apply(Object input) {
-            return true;
-          }
-        },
+        DndHelper.ALWAYS_TARGET,
         new BiConsumer<DropEvent, Object>() {
           @Override
           public void accept(DropEvent t, Object u) {
