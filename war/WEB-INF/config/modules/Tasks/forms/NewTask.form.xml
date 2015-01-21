@@ -53,7 +53,7 @@
         <Label for="ExpectedDuration" />
         <InputTime name="ExpectedDuration" source="ExpectedDuration" step="&timeStep;" style="width: 50px;" />
         <Label for="ExpectedExpenses" text="=prjExpenses" style="margin-left:-140px;" />
-	    <InputDecimal source="ExpectedExpenses" style="&inp3;" disablable="true" scale="2"/>
+      <InputDecimal source="ExpectedExpenses" style="&inp3;" disablable="true" scale="2"/>
       </row>
 
       <row>
@@ -143,6 +143,16 @@
         <MultiSelector viewName="UserGroupSettings" property="ObserverGroups" renderColumns="Name"
           editPopup="true" newRowEnabled="false" style="&inp2y;" label="=crmTaskObserverGroups"
           filter="Owner {u} or Visibility 1" />
+      </row>
+      
+      <row module="Projects" data="Projects" >
+        <Label text="=project" name="ProjectLabel"/>
+        <DataSelector source="Project" style="&inp2x;" disablable="true" readOnly="true" 
+        editPopup="false" />
+      </row>         
+      <row  module="Projects" data="ProjectStages">
+        <Label text="=prjStage" name="ProjectStageLabel"/>
+        <DataSelector source="ProjectStage" style="&inp2x;" />
       </row>
     </Table>
 

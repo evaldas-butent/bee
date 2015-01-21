@@ -81,6 +81,7 @@
     <SimpleColumn name="Project" />
     <SimpleJoin name="Project" joinType="LEFT">
       <SimpleColumn name="Name" alias="ProjectName"/>
+      <SimpleColumn name="Owner" alias="ProjectOwner"></SimpleColumn>
     </SimpleJoin>
     
     <SimpleColumn name="ProjectStage" />

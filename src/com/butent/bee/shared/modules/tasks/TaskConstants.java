@@ -365,6 +365,7 @@ public final class TaskConstants {
   public static final String ALS_TASK_TYPE_NAME = "TypeName";
   public static final String ALS_TASK_TYPE_BACKGROUND = "TypeBackground";
   public static final String ALS_TASK_TYPE_FOREGROUND = "TypeForeground";
+  public static final String ALS_PROJECT_OWNER = "ProjectOwner";
 
   public static final String ALS_LAST_SPAWN = "LastSpawn";
 

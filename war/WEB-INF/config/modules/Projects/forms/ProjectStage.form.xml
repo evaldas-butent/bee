@@ -11,58 +11,58 @@
 ]>
 
 <f:Form xmlns="http://www.butent.com/widget" 
-		xmlns:f="http://www.butent.com/form"
-		xmlns:xi="http://www.w3.org/2001/XInclude"   
-		xmlns:d="http://www.butent.com/decorator" 
-		name="ProjectStage" viewName="ProjectStages" caption="=prjStage" >
-	
-	<FlowPanel class="flexBox-vertical">
-		<Table>
-			<row>
-				<Label text="=name" style="&lbl;" class="bee-required" />
-				<InputText source="Name" style="&inp1;" />
+    xmlns:f="http://www.butent.com/form"
+    xmlns:xi="http://www.w3.org/2001/XInclude"
+    xmlns:d="http://www.butent.com/decorator"
+    name="ProjectStage" viewName="ProjectStages" caption="=prjStage" >
+  
+  <FlowPanel class="flexBox-vertical">
+    <Table>
+      <row>
+        <Label text="=name" style="&lbl;" class="bee-required" />
+        <InputText source="Name" style="&inp1;" />
 
-				<Label for="StartDate" text="=crmStartDate" style="&lbl;" />
-				<InputDate source="StartDate" style="&inp3;" />
+        <Label for="StartDate" text="=crmStartDate" style="&lbl;" />
+        <InputDate source="StartDate" style="&inp3;" />
 
-				<Label for="EndDate" text="=crmFinishDate" style="&lbl;" />
-				<InputDate source="EndDate" style="&inp2;" />
-			</row>
-			
-			<row>
-				<Label for="ExpectedDuration" text="=prjScope" style="&lbl;" />
-				<InputText source="ExpectedDuration" style="&inp3;" />
+        <Label for="EndDate" text="=crmFinishDate" style="&lbl;" />
+        <InputDate source="EndDate" style="&inp2;" />
+      </row>
+      
+      <row>
+        <Label for="ExpectedDuration" text="=prjScope" style="&lbl;" />
+        <InputText source="ExpectedDuration" style="&inp3;" />
 
-				<Label for="ExpectedTasksDuration" text="=prjExpectedTaskDuration" style="&lbl2;" />
-				<InputDecimal scale="2" source="ExpectedTasksDuration" style="&inp3;" />
+        <Label for="ExpectedTasksDuration" text="=prjExpectedTaskDuration" style="&lbl2;" />
+        <InputDecimal scale="2" source="ExpectedTasksDuration" style="&inp3;" />
 
-				<Label for="ActualTasksDuration" text="=prjActualTaskDuration" style="&lbl2;" />
-				<InputDecimal scale="2" source="ActualTasksDuration" style="&inp2;" />
-			</row>
-			
-			<row>
-				<Label for="Expenses" text="=prjExpenses" style="&lbl;" />
-				<InputDecimal source="Expenses" style="&inp3;" scale="2" />
+        <Label for="ActualTasksDuration" text="=prjActualTaskDuration" style="&lbl2;" />
+        <InputDecimal scale="2" source="ActualTasksDuration" style="&inp2;" />
+      </row>
+      
+      <row>
+        <Label for="Expenses" text="=prjExpenses" style="&lbl;" />
+        <InputDecimal source="Expenses" style="&inp3;" scale="2" />
 
-				<Label for="ExpectedTasksExpenses" text="=prjExpectedTaskExpenses" style="&lbl3;" />
-				<InputDecimal source="ExpectedTasksExpenses" style="&inp3;" scale="2" />
+        <Label for="ExpectedTasksExpenses" text="=prjExpectedTaskExpenses" style="&lbl3;" />
+        <InputDecimal source="ExpectedTasksExpenses" style="&inp3;" scale="2" />
 
-				<Label for="ActualExpenses" text="=prjActualExpenses" style="&lbl;" />
-				<InputDecimal source="ActualExpenses" style="&inp2;" scale="2" />
-			</row>
-			
-			<row>
-				<Label text="=description" style="&lbl;" />
-				<cell colSpan="5">
-					<InputArea style="width: 100%; height: 100px; max-height: 200px; max-width: 679px;" />
-				</cell>				
-			</row>
-		</Table>
-		<TabbedPages class="flexible">
+        <Label for="ActualExpenses" text="=prjActualExpenses" style="&lbl;" />
+        <InputDecimal source="ActualExpenses" style="&inp2;" scale="2" />
+      </row>
+      
+      <row>
+        <Label text="=description" style="&lbl;" />
+        <cell colSpan="5">
+          <InputArea style="width: 100%; height: 100px; max-height: 200px; max-width: 679px;" />
+        </cell>        
+      </row>
+    </Table>
+    <TabbedPages class="flexible">
       <page module="Tasks">
         <text>=crmTasks</text>
         <ChildGrid name="ChildTasks" relColumn="ProjectStage" />
       </page>
     </TabbedPages>
-	</FlowPanel>
+  </FlowPanel>
 </f:Form> 
