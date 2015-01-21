@@ -85,8 +85,12 @@
       </SimpleJoin>
     </SimpleJoin>
     <SimpleColumn name="ContractSigned" />
+    
+    <ExternalJoin name="Project" source="ProjectUsers" joinType="LEFT" filter="FilteredProjectUser={u}">
+      <SimpleColumn name="User" alias="FilteredProjectUser" />
+    </ExternalJoin>
   </Columns>
-
+  
   <Order>
     <OrderBy column="Status" />
     <OrderBy column="EndDate" />

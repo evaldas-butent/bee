@@ -242,6 +242,14 @@ public abstract class EventsBoard extends Flow implements Presenter, RowInsertEv
   public void setEventSource(String eventSource) {
   }
 
+  public void add() {
+    DataInfo data = Data.getDataInfo(getEventsDataViewName());
+
+    BeeRow row = RowFactory.createEmptyRow(data, true);
+    RowFactory.createRow(data.getNewRowForm(), data.getCaption(), data, row, null,
+        getNewEventFormInterceptor(), null);
+  }
+
   public void create(HasWidgets widget, long relId) {
     create(widget, relId, null);
   }
@@ -265,13 +273,10 @@ public abstract class EventsBoard extends Flow implements Presenter, RowInsertEv
     return fileFilter;
   }
 
-  public void add() {
-    DataInfo data = Data.getDataInfo(getEventsDataViewName());
-
-    BeeRow row = RowFactory.createEmptyRow(data, true);
-    RowFactory.createRow(data.getNewRowForm(), data.getCaption(), data, row, null,
-        getNewEventFormInterceptor(), null);
+  public Set<Action> getDisabledActions() {
+    return Action.NO_ACTIONS;
   }
+
 
   public void refresh(boolean cleanCache) {
     if (content == null) {
@@ -532,7 +537,7 @@ public abstract class EventsBoard extends Flow implements Presenter, RowInsertEv
     }
 
     headerView.create(getCaption(), true, false, getEventsDataViewName(), null,
-        getEnabledActions(), Action.NO_ACTIONS, HIDDEN_ACTIONS);
+        getEnabledActions(), getDisabledActions(), HIDDEN_ACTIONS);
 
     if (!BeeUtils.isEmpty(getStylePrefix())) {
       headerView.addStyleName(getStylePrefix() + STYLE_HEADER);

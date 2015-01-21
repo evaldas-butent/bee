@@ -53,6 +53,7 @@ public final class ProjectConstants {
 
   public static final String ALS_PUBLISHER_FIRST_NAME = "PublisherFirstName";
   public static final String ALS_PUBLISHER_LAST_NAME = "PublisherLastName";
+  public static final String ALS_FILTERED_PROJECT_USER = "FilteredProjectUser";
 
   public static final String ALS_ROW_ID = "RowID";
   public static final String ALS_TASK_COUNT = "TaskCount";

@@ -22,11 +22,13 @@ import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogUtils;
 import com.butent.bee.shared.modules.administration.AdministrationConstants;
 import com.butent.bee.shared.modules.tasks.TaskConstants;
+import com.butent.bee.shared.ui.Action;
 import com.butent.bee.shared.utils.BeeUtils;
 
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.Set;
 
 class ProjectForm extends AbstractFormInterceptor implements DataChangeEvent.Handler,
     RowInsertEvent.Handler {
@@ -68,7 +70,7 @@ class ProjectForm extends AbstractFormInterceptor implements DataChangeEvent.Han
   @Override
   public void afterRefresh(FormView form, IsRow row) {
     contractSelector.getOracle().setAdditionalFilter(Filter.equals(COL_PROJECT, row.getId()), true);
-    drawComments(row);
+    drawComments(form, row);
     drawChart(row);
   }
 
@@ -128,7 +130,7 @@ class ProjectForm extends AbstractFormInterceptor implements DataChangeEvent.Han
     ProjectScheduleChart.open(chartData, row.getId());
   }
 
-  private void drawComments(IsRow row) {
+  private void drawComments(FormView form, IsRow row) {
     final Flow prjComments = getProjectComments();
     if (prjComments == null) {
       logger.warning("Widget of project comments not found");
@@ -149,6 +151,25 @@ class ProjectForm extends AbstractFormInterceptor implements DataChangeEvent.Han
     EventFilesFilter filter = new EventFilesFilter(VIEW_PROJECT_FILES,
         COL_PROJECT_EVENT, AdministrationConstants.COL_FILE, AdministrationConstants.ALS_FILE_NAME,
         AdministrationConstants.ALS_FILE_SIZE, AdministrationConstants.ALS_FILE_TYPE, COL_CAPTION);
+
+    Set<Action> eventActions = eventsHandler.getEnabledActions();
+    eventActions.clear();
+    eventActions.add(Action.REFRESH);
+    Set<Action> disabledActions = eventsHandler.getDisabledActions();
+    disabledActions.clear();
+
+    int idxProjectUser = form.getDataIndex(ALS_FILTERED_PROJECT_USER);
+
+    if (!BeeUtils.isNegative(idxProjectUser)) {
+      long currentUser = BeeUtils.unbox(BeeKeeper.getUser().getUserId());
+      long projectUser = BeeUtils.unbox(row.getLong(idxProjectUser));
+
+      if (currentUser == projectUser) {
+        eventActions.add(Action.ADD);
+      } else {
+        disabledActions.add(Action.ADD);
+      }
+    }
 
     eventsHandler.create(prjComments, row.getId(), filter);
   }

@@ -19,9 +19,9 @@ import java.util.Set;
 
 class ProjectEventsHandler extends EventsBoard {
   private static final LocalizableConstants LC = Localized.getConstants();
-  private static final Set<Action> ENABLED_ACTIONS = Sets.newHashSet(Action.REFRESH, Action.ADD);
-
   private static final String STYLE_PREFIX = ProjectsKeeper.STYLE_PREFIX + "Events-";
+
+  private final Set<Action> enabledActions = Sets.newHashSet(Action.REFRESH);
 
   @Override
   public String getCaption() {
@@ -45,7 +45,7 @@ class ProjectEventsHandler extends EventsBoard {
 
   @Override
   protected Set<Action> getEnabledActions() {
-    return ENABLED_ACTIONS;
+    return enabledActions;
   }
 
   @Override
