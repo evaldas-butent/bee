@@ -336,6 +336,10 @@ public class CalendarPanel extends Split implements AppointmentEvent.Handler, Pr
     return calendarId;
   }
 
+  public CalendarView getCalendarView() {
+    return calendar.getView();
+  }
+
   @Override
   public String getCaption() {
     return header.getCaption();
