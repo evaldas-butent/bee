@@ -197,7 +197,7 @@ public class TradeActBean implements HasTimerService {
         BeeParameter.createNumber(module, PRM_TA_NUMBER_LENGTH, false, 6),
         BeeParameter.createRelation(module, PRM_RETURNED_ACT_STATUS,
             TBL_TRADE_STATUSES, COL_STATUS_NAME),
-        BeeParameter.createNumber(module, PRM_SYNC_ERP_DATA));
+        BeeParameter.createText(module, PRM_SYNC_ERP_DATA));
   }
 
   @Override
@@ -206,7 +206,7 @@ public class TradeActBean implements HasTimerService {
   }
 
   public void init() {
-    cb.createIntervalTimer(this.getClass(), PRM_SYNC_ERP_DATA);
+    cb.createCalendarTimer(this.getClass(), PRM_SYNC_ERP_DATA);
 
     sys.registerDataEventHandler(new DataEventHandler() {
       @Subscribe
