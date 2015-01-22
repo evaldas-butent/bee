@@ -15,6 +15,7 @@ import com.butent.bee.client.ui.FormFactory.WidgetDescriptionCallback;
 import com.butent.bee.client.view.HasGridView;
 import com.butent.bee.client.view.HeaderView;
 import com.butent.bee.client.view.add.ReadyForInsertEvent;
+import com.butent.bee.client.view.edit.EditEndEvent;
 import com.butent.bee.client.view.edit.EditableWidget;
 import com.butent.bee.client.view.edit.SaveChangesEvent;
 import com.butent.bee.client.view.form.FormView;
@@ -217,6 +218,11 @@ public abstract class AbstractFormInterceptor implements FormInterceptor {
   }
 
   @Override
+  public boolean isWidgetEditable(EditableWidget editableWidget, IsRow row) {
+    return true;
+  }
+
+  @Override
   public void notifyRequired(String message) {
     if (getFormView() != null) {
       getFormView().notifyWarning(message, Localized.getConstants().valueRequired());
@@ -225,6 +231,10 @@ public abstract class AbstractFormInterceptor implements FormInterceptor {
 
   @Override
   public void onClose(List<String> messages, IsRow oldRow, IsRow newRow) {
+  }
+
+  @Override
+  public void onEditEnd(EditEndEvent event, Object source) {
   }
 
   @Override

@@ -58,7 +58,6 @@ import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogUtils;
 import com.butent.bee.shared.time.DateTime;
-import com.butent.bee.shared.time.TimeUtils;
 import com.butent.bee.shared.ui.Action;
 import com.butent.bee.shared.utils.BeeUtils;
 
@@ -398,9 +397,8 @@ public final class Global {
       StyleUtils.setProperty(cell, CssProperties.FONT_WEIGHT, FontWeight.BOLD);
     }
 
-    Range<Long> maybeTime = Range.closed(
-        TimeUtils.startOfYear(TimeUtils.today(), -10).getTime(),
-        TimeUtils.startOfYear(TimeUtils.today(), 100).getTime());
+    Range<Long> maybeTime = Range.closedOpen(new DateTime(2000, 1, 1).getTime(),
+        new DateTime(2100, 1, 1).getTime());
 
     for (IsRow row : data) {
       r++;
@@ -575,6 +573,7 @@ public final class Global {
     $wnd.Bee_debug = $entry(@com.butent.bee.client.Global::debug(Ljava/lang/String;));
     $wnd.Bee_updateActor = $entry(@com.butent.bee.client.decorator.TuningHelper::updateActor(Lcom/google/gwt/core/client/JavaScriptObject;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;));
     $wnd.Bee_maybeTranslate = $entry(@com.butent.bee.shared.i18n.Localized::maybeTranslate(Ljava/lang/String;));
+    $wnd.Bee_translate = $entry(@Localized::translate(Ljava/lang/String;));
   }-*/;
   // CHECKSTYLE:ON
 //@formatter:on

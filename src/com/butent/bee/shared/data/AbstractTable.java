@@ -256,38 +256,6 @@ public abstract class AbstractTable<R extends IsRow, C extends IsColumn> impleme
   }
 
   @Override
-  public Range getColumnRange(int colIndex) {
-    assertColumnIndex(colIndex);
-    ValueType type = getColumnType(colIndex);
-    Value min = Value.getNullValueFromValueType(type);
-    Value max = Value.getNullValueFromValueType(type);
-    Value value;
-    int cnt = 0;
-
-    for (int i = 0; i < getNumberOfRows(); i++) {
-      value = getValue(i, colIndex);
-      if (value == null || value.isNull()) {
-        continue;
-      }
-      if (cnt == 0) {
-        min = value;
-        max = value;
-        cnt++;
-        break;
-      }
-
-      if (value.compareTo(min) < 0) {
-        min = value;
-      } else if (value.compareTo(max) > 0) {
-        max = value;
-      }
-      cnt++;
-    }
-
-    return new Range(min, max);
-  }
-
-  @Override
   public List<C> getColumns() {
     return columns;
   }

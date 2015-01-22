@@ -580,7 +580,7 @@ public final class EcConstants {
   public static final String CATEGORY_ID_SEPARATOR = ",";
   public static final char CATEGORY_NAME_SEPARATOR = '\n';
 
-  public static final String CURRENCY = "Lt";
+  public static final String CURRENCY = "Eur";
 
   public static final String WEIGHT_UNIT = "kg";
   public static final int WEIGHT_SCALE = 3;

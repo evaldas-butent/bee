@@ -230,6 +230,10 @@ public interface LocalizableTaskConstants {
 
   String crmTermNotChanged();
 
+  String crmTodoCreateAppointment();
+
+  String crmTodoCreateTask();
+
   String crmTodoList();
 
   String hideZeroTimes();

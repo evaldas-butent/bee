@@ -9,15 +9,19 @@ public final class TradeActConstants {
   public static final String SVC_SAVE_ACT_AS_TEMPLATE = "SaveActAsTemplate";
   public static final String SVC_GET_TEMPLATE_ITEMS_AND_SERVICES = "GetTemplateItemsAndServices";
   public static final String SVC_GET_ITEMS_FOR_RETURN = "GetItemsForReturn";
+  public static final String SVC_SPLIT_ACT_SERVICES = "SplitActServices";
   public static final String SVC_CONVERT_ACT_TO_SALE = "ConvertActToSale";
 
   public static final String SVC_GET_ACTS_FOR_INVOICE = "GetActsForInvoice";
+  public static final String SVC_GET_SERVICES_FOR_INVOICE = "GetServicesForInvoice";
   public static final String SVC_CREATE_ACT_INVOICE = "CreateActInvoice";
 
   public static final String SVC_ITEMS_BY_COMPANY_REPORT = "GetItemsByCompanyReport";
   public static final String SVC_STOCK_REPORT = "GetStockReport";
   public static final String SVC_SERVICES_REPORT = "GetServicesReport";
   public static final String SVC_TRANSFER_REPORT = "GetTransferReport";
+
+  public static final String SVC_HAS_INVOICES_OR_SECONDARY_ACTS = "HasInvoicesOrSecondaryActs";
 
   public static final String TBL_TRADE_ACTS = "TradeActs";
   public static final String TBL_TRADE_ACT_ITEMS = "TradeActItems";
@@ -74,6 +78,8 @@ public final class TradeActConstants {
   public static final String COL_TA_SERVICE_DAYS = "DaysPerWeek";
   public static final String COL_TA_SERVICE_MIN = "MinTerm";
 
+  public static final String COL_TA_INVOICE_SERVICE = "TradeActService";
+  public static final String COL_TA_INVOICE_ITEM = "SaleItem";
   public static final String COL_TA_INVOICE_FROM = "DateFrom";
   public static final String COL_TA_INVOICE_TO = "DateTo";
 
@@ -105,8 +111,10 @@ public final class TradeActConstants {
   public static final String PRP_WAREHOUSE_PREFIX = "w-";
   public static final String PRP_PARENT_ACT = "parent_act";
   public static final String PRP_ITEM_TOTAL = "item_total";
-  public static final String PRP_RETURNED_TOTAL = "returned_total";
   public static final String PRP_RETURNED_QTY = "returned_qty";
+  public static final String PRP_TA_SERVICE_FROM = "service_from";
+  public static final String PRP_TA_SERVICE_TO = "service_to";
+  public static final String PRP_INVOICE_PERIODS = "invoice_periods";
 
   public static final String PRM_IMPORT_TA_ITEM_RX = "ImportActItemRegEx";
   public static final String RX_IMPORT_ACT_ITEM = "^(.+);(.*);(\\d+\\.*\\d*)$";

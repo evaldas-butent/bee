@@ -275,7 +275,9 @@ public final class DndHelper {
       @Override
       public void onDrop(DropEvent event) {
         if (widget.getTargetState() != null) {
+          event.preventDefault();
           event.stopPropagation();
+
           onDrop.accept(event, getData());
         }
       }

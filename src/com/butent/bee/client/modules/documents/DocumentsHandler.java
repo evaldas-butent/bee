@@ -312,7 +312,7 @@ public final class DocumentsHandler {
 
     FormFactory.registerFormInterceptor(TBL_DOCUMENT_TREE, new DocumentTreeForm());
 
-    FormFactory.registerFormInterceptor("DocumentTemplate", new DocumentDataForm());
+    FormFactory.registerFormInterceptor("DocumentTemplate", new DocumentTemplateForm());
     FormFactory.registerFormInterceptor(FORM_DOCUMENT, new DocumentForm());
     FormFactory.registerFormInterceptor("DocumentItem", new DocumentDataForm());
 

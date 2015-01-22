@@ -28,29 +28,40 @@ public class Appointment extends CalendarItem {
 
   private static final int BACKGROUND_INDEX = Data.getColumnIndex(VIEW_APPOINTMENTS,
       AdministrationConstants.COL_BACKGROUND);
-  private static final int COLOR_INDEX = Data.getColumnIndex(VIEW_APPOINTMENTS,
-      AdministrationConstants.COL_COLOR);
-  private static final int COMPANY_NAME_INDEX = Data.getColumnIndex(VIEW_APPOINTMENTS,
-      ALS_COMPANY_NAME);
-  private static final int CREATOR_INDEX = Data.getColumnIndex(VIEW_APPOINTMENTS, COL_CREATOR);
-  private static final int DESCRIPTION_INDEX = Data.getColumnIndex(VIEW_APPOINTMENTS,
-      COL_DESCRIPTION);
-  private static final int END_DATE_TIME_INDEX = Data.getColumnIndex(VIEW_APPOINTMENTS,
-      COL_END_DATE_TIME);
   private static final int FOREGROUND_INDEX = Data.getColumnIndex(VIEW_APPOINTMENTS,
       AdministrationConstants.COL_FOREGROUND);
+  private static final int COLOR_INDEX = Data.getColumnIndex(VIEW_APPOINTMENTS,
+      AdministrationConstants.COL_COLOR);
+
+  private static final int COMPANY_NAME_INDEX = Data.getColumnIndex(VIEW_APPOINTMENTS,
+      ALS_COMPANY_NAME);
+
+  private static final int CREATOR_INDEX = Data.getColumnIndex(VIEW_APPOINTMENTS, COL_CREATOR);
+  private static final int CREATOR_FIRST_NAME_INDEX = Data.getColumnIndex(VIEW_APPOINTMENTS,
+      ALS_CREATOR_FIRST_NAME);
+  private static final int CREATOR_LAST_NAME_INDEX = Data.getColumnIndex(VIEW_APPOINTMENTS,
+      ALS_CREATOR_LAST_NAME);
+
+  private static final int SUMMARY_INDEX = Data.getColumnIndex(VIEW_APPOINTMENTS, COL_SUMMARY);
+  private static final int DESCRIPTION_INDEX = Data.getColumnIndex(VIEW_APPOINTMENTS,
+      COL_DESCRIPTION);
+
   private static final int START_DATE_TIME_INDEX = Data.getColumnIndex(VIEW_APPOINTMENTS,
       COL_START_DATE_TIME);
-  private static final int STYLE_INDEX = Data.getColumnIndex(VIEW_APPOINTMENTS, COL_STYLE);
-  private static final int SUMMARY_INDEX = Data.getColumnIndex(VIEW_APPOINTMENTS, COL_SUMMARY);
+  private static final int END_DATE_TIME_INDEX = Data.getColumnIndex(VIEW_APPOINTMENTS,
+      COL_END_DATE_TIME);
+
   private static final int APPOINTMENT_TYPE_INDEX = Data.getColumnIndex(VIEW_APPOINTMENTS,
       COL_APPOINTMENT_TYPE);
+  private static final int STYLE_INDEX = Data.getColumnIndex(VIEW_APPOINTMENTS, COL_STYLE);
+
   private static final int VEHICLE_MODEL_INDEX = Data.getColumnIndex(VIEW_APPOINTMENTS,
       COL_VEHICLE_MODEL);
   private static final int VEHICLE_NUMBER_INDEX = Data.getColumnIndex(VIEW_APPOINTMENTS,
       COL_VEHICLE_NUMBER);
   private static final int VEHICLE_PARENT_MODEL_INDEX = Data.getColumnIndex(VIEW_APPOINTMENTS,
       COL_VEHICLE_PARENT_MODEL);
+
   private static final int VISIBILITY_INDEX = Data.getColumnIndex(VIEW_APPOINTMENTS,
       COL_VISIBILITY);
 
@@ -72,6 +83,8 @@ public class Appointment extends CalendarItem {
   private static final String KEY_OWNERS = "Owners";
   private static final String KEY_PROPERTIES = "Properties";
   private static final String KEY_REMINDERS = "Reminders";
+
+  private static final String KEY_CREATOR_NAME = "CreatorName";
 
   static {
     SIMPLE_HEADER_TEMPLATE = wrap(COL_SUMMARY);
@@ -99,7 +112,7 @@ public class Appointment extends CalendarItem {
         wrap(COL_APPOINTMENT_LOCATION), wrap(ALS_COMPANY_NAME),
         wrap(COL_VEHICLE_MODEL), wrap(COL_VEHICLE_NUMBER),
         wrap(KEY_PROPERTIES), wrap(KEY_RESOURCES), wrap(KEY_OWNERS), wrap(COL_DESCRIPTION),
-        wrap(KEY_REMINDERS));
+        wrap(KEY_REMINDERS), wrap(KEY_CREATOR_NAME));
 
     STRING_TEMPLATE = BeeUtils.buildLines(wrap(KEY_PERIOD), wrap(COL_STATUS),
         wrap(COL_SUMMARY), wrap(COL_APPOINTMENT_LOCATION), wrap(ALS_COMPANY_NAME),
@@ -177,6 +190,11 @@ public class Appointment extends CalendarItem {
 
   public Long getCreator() {
     return row.getLong(CREATOR_INDEX);
+  }
+
+  public String getCreatorName() {
+    return BeeUtils.joinWords(row.getString(CREATOR_FIRST_NAME_INDEX),
+        row.getString(CREATOR_LAST_NAME_INDEX));
   }
 
   @Override
@@ -318,6 +336,9 @@ public class Appointment extends CalendarItem {
     result.put(wrap(KEY_PERIOD), build(Localized.getConstants().period(),
         TimeUtils.renderPeriod(getStart(), getEnd(), !addLabels), addLabels));
 
+    result.put(wrap(KEY_CREATOR_NAME), build(Localized.getConstants().creator(), getCreatorName(),
+        addLabels));
+
     return result;
   }
 
@@ -349,7 +370,9 @@ public class Appointment extends CalendarItem {
 
   @Override
   public boolean isEditable(Long userId) {
-    return isOwner(userId) && row.isEditable() && Data.isViewEditable(VIEW_APPOINTMENTS);
+    CalendarVisibility visibility = getVisibility();
+    return (visibility == null || visibility == CalendarVisibility.EDITABLE || isOwner(userId))
+        && row.isEditable() && Data.isViewEditable(VIEW_APPOINTMENTS);
   }
 
   @Override
@@ -376,8 +399,7 @@ public class Appointment extends CalendarItem {
       return true;
 
     } else {
-      CalendarVisibility visibility = getVisibility();
-      return visibility == null || visibility == CalendarVisibility.PUBLIC;
+      return getVisibility() != CalendarVisibility.PRIVATE;
     }
   }
 

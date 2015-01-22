@@ -21,6 +21,7 @@ import com.butent.bee.shared.data.cache.CachingPolicy;
 import com.butent.bee.shared.data.event.CellUpdateEvent;
 import com.butent.bee.shared.data.event.DataChangeEvent;
 import com.butent.bee.shared.data.event.ModificationEvent;
+import com.butent.bee.shared.data.event.RowDeleteEvent;
 import com.butent.bee.shared.data.event.RowUpdateEvent;
 import com.butent.bee.shared.data.filter.Filter;
 import com.butent.bee.shared.data.value.Value;
@@ -165,6 +166,17 @@ public final class Queries {
 
   public static void deleteRow(String viewName, long rowId, long version, IntCallback callback) {
     deleteRows(viewName, Collections.singleton(new RowInfo(rowId, version)), callback);
+  }
+
+  public static void deleteRowAndFire(final String viewName, final long rowId) {
+    delete(viewName, Filter.compareId(rowId), new IntCallback() {
+      @Override
+      public void onSuccess(Integer result) {
+        if (BeeUtils.isPositive(result)) {
+          RowDeleteEvent.fire(BeeKeeper.getBus(), viewName, rowId);
+        }
+      }
+    });
   }
 
   public static void deleteRows(String viewName, Collection<RowInfo> rows) {

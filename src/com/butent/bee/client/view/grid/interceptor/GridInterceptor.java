@@ -15,6 +15,7 @@ import com.butent.bee.client.render.ProvidesGridColumnRenderer;
 import com.butent.bee.client.style.StyleProvider;
 import com.butent.bee.client.ui.WidgetInterceptor;
 import com.butent.bee.client.view.add.ReadyForInsertEvent;
+import com.butent.bee.client.view.edit.EditEndEvent;
 import com.butent.bee.client.view.edit.EditStartEvent;
 import com.butent.bee.client.view.edit.EditableColumn;
 import com.butent.bee.client.view.edit.EditorConsumer;
@@ -44,8 +45,9 @@ import java.util.List;
 import java.util.Map;
 
 public interface GridInterceptor extends WidgetInterceptor, ActiveRowChangeEvent.Handler,
-    ParentRowEvent.Handler, EditStartEvent.Handler, ProvidesGridColumnRenderer,
-    DynamicColumnEnumerator, HasViewName, EditorConsumer, RowUpdateEvent.Handler {
+    ParentRowEvent.Handler, EditStartEvent.Handler, EditEndEvent.Handler,
+    ProvidesGridColumnRenderer, DynamicColumnEnumerator, HasViewName, EditorConsumer,
+    RowUpdateEvent.Handler {
 
   public enum DeleteMode {
     CANCEL, DEFAULT, SILENT, CONFIRM, SINGLE, MULTI;

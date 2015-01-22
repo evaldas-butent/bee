@@ -176,6 +176,7 @@ public final class Service {
   public static final String VAR_CHILDREN = RPC_VAR_PREFIX + "children";
 
   public static final String VAR_FILE_ID = RPC_VAR_PREFIX + "file_id";
+  public static final String VAR_FILES = RPC_VAR_PREFIX + "files";
   public static final String VAR_FILE_NAME = RPC_VAR_PREFIX + "file_name";
   public static final String VAR_FILE_TYPE = RPC_VAR_PREFIX + "file_type";
   public static final String VAR_FILE_SIZE = RPC_VAR_PREFIX + "file_size";

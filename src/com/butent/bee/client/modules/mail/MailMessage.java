@@ -322,6 +322,11 @@ public class MailMessage extends AbstractFormInterceptor {
             ft.setText(r, 1, Localized.getConstants().mailShowOriginal());
             DomUtils.setDataIndex(ft.getRow(r), r++);
 
+            if (!BeeUtils.isEmpty(attachments)) {
+              ft.setWidget(r, 0, new FaLabel(FontAwesome.FILE_ZIP_O));
+              ft.setText(r, 1, Localized.getConstants().mailGetAllAttachments());
+              DomUtils.setDataIndex(ft.getRow(r), r++);
+            }
             ft.addClickHandler(new ClickHandler() {
               @Override
               public void onClick(ClickEvent ev) {
@@ -333,6 +338,16 @@ public class MailMessage extends AbstractFormInterceptor {
                 switch (index) {
                   case 0:
                     BrowsingContext.open(FileUtils.getUrl(rawId));
+                    break;
+
+                  case 1:
+                    Map<Long, String> files = new HashMap<>();
+
+                    for (FileInfo fileInfo : attachments) {
+                      files.put(fileInfo.getId(), fileInfo.getName());
+                    }
+                    BrowsingContext.open(FileUtils
+                        .getUrl(Localized.getConstants().mailAttachments() + ".zip", files));
                     break;
                 }
               }

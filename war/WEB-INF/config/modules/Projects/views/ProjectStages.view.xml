@@ -3,7 +3,7 @@
   xmlns:x="http://www.butent.com/expression"
 
   name="ProjectStages" source="ProjectStages" caption="=prjStages"
-  editForm="ProjectStages" newRowForm="ProjectStages"
+  editForm="ProjectStage" newRowForm="ProjectStage"
   newRowCaption="=prjNewStage"
   >
   <Columns>
@@ -13,6 +13,8 @@
       <SimpleJoin name="Company" joinType="LEFT">
         <SimpleColumn name="Name" alias="CompanyName" />
       </SimpleJoin>
+      <SimpleColumn name="StartDate" alias="ProjectStartDate" />
+      <SimpleColumn name="EndDate" alias="ProjectEndDate" />
     </SimpleJoin>
     <SimpleColumn name="Name" />
     <SimpleColumn name="StartDate" />
@@ -20,22 +22,37 @@
     <SimpleColumn name="ExpectedDuration" />
         
     <SimpleColumn name="ExpectedTasksDuration" label="=prjExpectedTaskDuration">
-      <x:string>'?0?'</x:string>
+       <x:number>0</x:number> 
+      <!-- 
+      Data handling in system module bean  
+      com.butent.bee.server.modules.projects.ProjectsModuleBean.init().new DataEventHandler() 
+      {...}.fillProjectsTimeData(ViewQueryEvent event)
+      -->
     </SimpleColumn>
     
-    <SimpleColumn name="ExpectedTasksExpenses" label="=prjExpectedTaskExpenses">
-      <x:string>'?0?'</x:string>
-    </SimpleColumn>
+    <ExternalJoin source="Tasks" joinType="LEFT" name="ProjectStage">    
+      <AggregateColumn alias="ExpectedTasksExpenses" name="ExpectedExpenses" aggregate="SUM" />
+    </ExternalJoin>
     
     <SimpleColumn name="ActualTasksDuration" label="=prjActualTaskDuration">
-      <x:string>'?0?'</x:string>
+      <x:number>0</x:number> 
+      <!-- 
+      Data handling in system module bean  
+      com.butent.bee.server.modules.projects.ProjectsModuleBean.init().new DataEventHandler() 
+      {...}.fillProjectsTimeData(ViewQueryEvent event)
+      -->
     </SimpleColumn>
     
     <SimpleColumn name="Expenses" />
     <SimpleColumn name="Currency" />
     
     <SimpleColumn name="ActualExpenses" label="=prjActualExpenses">
-      <x:string>'?0?'</x:string>
+       <x:number>0</x:number> 
+      <!-- 
+      Data handling in system module bean  
+      com.butent.bee.server.modules.projects.ProjectsModuleBean.init().new DataEventHandler() 
+      {...}.fillProjectsTimeData(ViewQueryEvent event)
+      -->
     </SimpleColumn> 
     
     <SimpleJoin name="Project" joinType="LEFT">

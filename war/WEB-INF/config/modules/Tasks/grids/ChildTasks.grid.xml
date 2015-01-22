@@ -3,12 +3,11 @@
   xmlns:xi="http://www.w3.org/2001/XInclude"
   
   name="ChildTasks" viewName="Tasks" enabledActions="copy"
-  order="Status, FinishTime, TaskID desc" maxColumnWidth="160"
+  order="Status, FinishTime, TaskID desc" maxColumnWidth="160" caption="=crmTasks"
   >
 
   <xi:include href="columns/TaskMode.column.xml" />
   <xi:include href="columns/TaskStar.column.xml" />
-
   <g:columns>
     <IdColumn name="Id" />
     <RelColumn name="ProjectStage" label="=prjStage" />
@@ -17,8 +16,8 @@
   <xi:include href="columns/Task.columns.xml" />
   
   <g:columns>
-    <DataColumn name="ExpectedExpenses" />
-    <DataColumn name="ActualDuration" />
-    <DataColumn name="ActualExpenses" />
+    <DataColumn name="ExpectedExpenses" scale="2" />
+    <DataColumn name="ActualDuration" scale="2"/>
+    <DataColumn name="ActualExpenses" scale="2" />
   </g:columns>
 </g:Grid>

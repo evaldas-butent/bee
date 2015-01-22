@@ -60,15 +60,15 @@
     </FlowPanel>
 
     <TabbedPages class="flexible">
-      <page>
+      <page module="Documents">
         <text>=documents</text>
         <ChildGrid name="RelatedDocuments" relColumn="Driver" />
       </page>
-      <page>
+      <page module="Transport">
         <text>=trips</text>
         <ChildGrid name="DriverTrips" relColumn="Driver" />
       </page>
-      <page>
+      <page module="Transport">
         <text>=driverAbsence</text>
         <ChildGrid name="DriverAbsence" relColumn="Driver" />
       </page>

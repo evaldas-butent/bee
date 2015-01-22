@@ -12,11 +12,15 @@ public interface LocalizableProjectConstants {
 
   String projects();
 
+  String prjComments();
+
   String prjDeleteCanManager();
 
   String prjObserver();
 
   String prjParticipant();
+
+  String prjSchedule();
 
   String prjStatusActive();
 
@@ -25,5 +29,9 @@ public interface LocalizableProjectConstants {
   String prjStatusScheduled();
 
   String prjStatusSuspended();
+
+  String prjUserCanDeleteManager();
+
+  String prjUserHasSameTasks();
 }
 

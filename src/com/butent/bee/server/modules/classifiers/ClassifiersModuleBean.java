@@ -1120,8 +1120,8 @@ public class ClassifiersModuleBean implements BeeModule {
       sendCompanyActionsReminder(user, userSettings.get(user));
     }
 
-    logger.info("Timer", TIMER_REMIND_COMPANY_ACTIONS, "ended, Next start time"
-        , timer.getNextTimeout());
+    logger.info("Timer", TIMER_REMIND_COMPANY_ACTIONS, "ended, Next start time",
+        timer.getNextTimeout());
   }
 
   private void sendCompanyActionsReminder(Long user, Integer remindBefore) {
@@ -1151,8 +1151,8 @@ public class ClassifiersModuleBean implements BeeModule {
         CalendarConstants.COL_END_DATE_TIME);
 
     BeeRowSet appointments = qs.getViewData(CalendarConstants.VIEW_APPOINTMENTS,
-        Filter.and(hasCompany, Filter.and(isActive, isOwner)
-            , Filter.and(notResult, notRemind, validEnd)), sortBy, cols);
+        Filter.and(hasCompany, Filter.and(isActive, isOwner),
+            Filter.and(notResult, notRemind, validEnd)), sortBy, cols);
 
     List<Long> notRemindIds = Lists.newArrayList();
     long nowInHours = now.getTime() / TimeUtils.MILLIS_PER_HOUR;

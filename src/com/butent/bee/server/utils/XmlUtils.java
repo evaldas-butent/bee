@@ -75,6 +75,7 @@ import javax.xml.transform.stream.StreamResult;
 import javax.xml.transform.stream.StreamSource;
 import javax.xml.validation.Schema;
 import javax.xml.validation.SchemaFactory;
+import javax.xml.validation.SchemaFactoryConfigurationError;
 
 /**
  * Manages XML configuration files used by the system.
@@ -161,7 +162,7 @@ public final class XmlUtils {
 
     try {
       sf = SchemaFactory.newInstance(XMLConstants.W3C_XML_SCHEMA_NS_URI);
-    } catch (Exception ex) {
+    } catch (IllegalArgumentException | SchemaFactoryConfigurationError ex) {
       logger.error(ex);
     }
     schemaFactory = sf;
@@ -214,7 +215,7 @@ public final class XmlUtils {
     return doc;
   }
 
-  public static List<Element> getAllDescendantElements(Element parent) {
+  public static List<Element> getAllDescendantElements(Node parent) {
     return getElementsByLocalName(parent, ALL_TAGS);
   }
 
@@ -341,7 +342,7 @@ public final class XmlUtils {
     return getCalculation(element);
   }
 
-  public static List<Property> getCDATAInfo(CDATASection cdata) {
+  public static List<Property> getCDataInfo(CDATASection cdata) {
     Assert.notNull(cdata);
     List<Property> lst = new ArrayList<>();
 
@@ -841,7 +842,7 @@ public final class XmlUtils {
         tpInf = getTextInfo((Text) nd);
         break;
       case Node.CDATA_SECTION_NODE:
-        tpInf = getCDATAInfo((CDATASection) nd);
+        tpInf = getCDataInfo((CDATASection) nd);
         break;
       case Node.ENTITY_REFERENCE_NODE:
         tpInf = getEntityReferenceInfo((EntityReference) nd);

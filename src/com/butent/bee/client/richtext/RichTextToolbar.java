@@ -183,7 +183,7 @@ public class RichTextToolbar extends Flow implements EnablableWidget {
         getInput("Html", null, new Consumer<String>() {
           @Override
           public void accept(String parameter) {
-            formatter.insertHTML(parameter);
+            formatter.insertHtml(parameter);
             area.setFocus(true);
           }
         });

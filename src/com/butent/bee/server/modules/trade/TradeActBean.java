@@ -55,6 +55,7 @@ import com.butent.bee.shared.modules.trade.acts.TradeActKind;
 import com.butent.bee.shared.modules.trade.acts.TradeActTimeUnit;
 import com.butent.bee.shared.modules.trade.acts.TradeActUtils;
 import com.butent.bee.shared.time.DateTime;
+import com.butent.bee.shared.time.JustDate;
 import com.butent.bee.shared.time.TimeUtils;
 import com.butent.bee.shared.utils.ArrayUtils;
 import com.butent.bee.shared.utils.BeeUtils;
@@ -63,6 +64,7 @@ import com.butent.bee.shared.utils.NameUtils;
 
 import java.math.BigInteger;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -122,8 +124,16 @@ public class TradeActBean {
         response = getItemsForReturn(reqInfo);
         break;
 
+      case SVC_SPLIT_ACT_SERVICES:
+        response = splitActServices(reqInfo);
+        break;
+
       case SVC_GET_ACTS_FOR_INVOICE:
         response = getActsForInvoice(reqInfo);
+        break;
+
+      case SVC_GET_SERVICES_FOR_INVOICE:
+        response = getServicesForInvoice(reqInfo);
         break;
 
       case SVC_CREATE_ACT_INVOICE:
@@ -148,6 +158,10 @@ public class TradeActBean {
 
       case SVC_TRANSFER_REPORT:
         response = getTransferReport(reqInfo);
+        break;
+
+      case SVC_HAS_INVOICES_OR_SECONDARY_ACTS:
+        response = hasInvoicesOrSecondaryActs(reqInfo);
         break;
 
       default:
@@ -330,16 +344,6 @@ public class TradeActBean {
       return ResponseObject.error(reqInfo.getService(), saleItems.getViewName(), "is empty");
     }
 
-    serialized = reqInfo.getParameter(VIEW_TRADE_ACT_INVOICES);
-    if (BeeUtils.isEmpty(serialized)) {
-      return ResponseObject.parameterNotFound(reqInfo.getService(), VIEW_TRADE_ACT_INVOICES);
-    }
-
-    BeeRowSet relations = BeeRowSet.restore(serialized);
-    if (DataUtils.isEmpty(relations)) {
-      return ResponseObject.error(reqInfo.getService(), relations.getViewName(), "is empty");
-    }
-
     ResponseObject response = deb.commitRow(sales);
     if (response.hasErrors() || !response.hasResponse(BeeRow.class)) {
       return response;
@@ -350,24 +354,27 @@ public class TradeActBean {
     int colIndex = saleItems.getColumnIndex(COL_SALE);
 
     for (int i = 0; i < saleItems.getNumberOfRows(); i++) {
-      saleItems.setValue(i, colIndex, invoiceId);
+      BeeRow saleItem = saleItems.getRow(i);
+      saleItem.setValue(colIndex, invoiceId);
 
       ResponseObject insResponse = deb.commitRow(saleItems, i, RowInfo.class);
       if (insResponse.hasErrors()) {
         response.addMessagesFrom(insResponse);
         break;
       }
-    }
 
-    colIndex = relations.getColumnIndex(COL_SALE);
+      String svcId = saleItem.getProperty(COL_TA_INVOICE_SERVICE);
+      String from = saleItem.getProperty(PRP_TA_SERVICE_FROM);
+      String to = saleItem.getProperty(PRP_TA_SERVICE_TO);
 
-    for (int i = 0; i < relations.getNumberOfRows(); i++) {
-      relations.setValue(i, colIndex, invoiceId);
+      if (DataUtils.isId(svcId) && BeeUtils.isPositiveInt(from) && BeeUtils.isPositiveInt(to)) {
+        SqlInsert insert = new SqlInsert(TBL_TRADE_ACT_INVOICES)
+            .addConstant(COL_TA_INVOICE_SERVICE, svcId)
+            .addConstant(COL_TA_INVOICE_ITEM, ((RowInfo) insResponse.getResponse()).getId())
+            .addConstant(COL_TA_INVOICE_FROM, new JustDate(BeeUtils.toInt(from)))
+            .addConstant(COL_TA_INVOICE_TO, new JustDate(BeeUtils.toInt(to)));
 
-      ResponseObject insResponse = deb.commitRow(relations, i, RowInfo.class);
-      if (insResponse.hasErrors()) {
-        response.addMessagesFrom(insResponse);
-        break;
+        qs.insertData(insert);
       }
     }
 
@@ -557,69 +564,11 @@ public class TradeActBean {
       return ResponseObject.emptyResponse();
     }
 
-    Filter itemFilter = Filter.and(Filter.isPositive(COL_TRADE_ITEM_QUANTITY),
-        Filter.isPositive(COL_TRADE_ITEM_PRICE));
-
-    Totalizer itemTotalizer = null;
-
-    SqlSelect rangeQuery = new SqlSelect()
-        .addFields(TBL_TRADE_ACT_INVOICES, COL_TA_INVOICE_FROM, COL_TA_INVOICE_TO)
-        .addFrom(TBL_TRADE_ACT_INVOICES);
-
-    IsCondition rangeCondition = SqlUtils.and(
-        SqlUtils.notNull(TBL_TRADE_ACT_INVOICES, COL_TA_INVOICE_FROM),
-        SqlUtils.notNull(TBL_TRADE_ACT_INVOICES, COL_TA_INVOICE_TO));
-
     for (BeeRow act : acts) {
-      long actId = act.getId();
+      double total = totalActItems(act.getId());
 
-      BeeRowSet items = qs.getViewData(VIEW_TRADE_ACT_ITEMS,
-          Filter.and(Filter.equals(COL_TRADE_ACT, actId), itemFilter));
-
-      if (!DataUtils.isEmpty(items)) {
-        Map<Long, Double> returnedItems = getReturnedItems(actId);
-
-        if (itemTotalizer == null) {
-          itemTotalizer = new Totalizer(items.getColumns());
-        }
-
-        double itemTotal = BeeConst.DOUBLE_ZERO;
-        double returnedTotal = BeeConst.DOUBLE_ZERO;
-
-        for (BeeRow item : items) {
-          Double total = itemTotalizer.getTotal(item);
-          if (BeeUtils.isPositive(total)) {
-            itemTotal += total;
-          }
-
-          if (!returnedItems.isEmpty()) {
-            Double qty = returnedItems.get(DataUtils.getLong(items, item, COL_TA_ITEM));
-
-            if (BeeUtils.isPositive(qty)) {
-              item.setValue(items.getColumnIndex(COL_TRADE_ITEM_QUANTITY), qty);
-              Double returned = itemTotalizer.getTotal(item);
-
-              if (BeeUtils.isPositive(returned)) {
-                returnedTotal += returned;
-              }
-            }
-          }
-        }
-
-        if (BeeUtils.isPositive(itemTotal)) {
-          act.setProperty(PRP_ITEM_TOTAL, BeeUtils.toString(itemTotal, 2));
-        }
-        if (BeeUtils.isPositive(returnedTotal)) {
-          act.setProperty(PRP_RETURNED_TOTAL, BeeUtils.toString(returnedTotal, 2));
-        }
-      }
-
-      rangeQuery.setWhere(SqlUtils.and(rangeCondition,
-          SqlUtils.equals(TBL_TRADE_ACT_INVOICES, COL_TRADE_ACT, actId)));
-
-      SimpleRowSet rangeData = qs.getData(rangeQuery);
-      if (!DataUtils.isEmpty(rangeData)) {
-        act.setProperty(TBL_TRADE_ACT_INVOICES, rangeData.serialize());
+      if (BeeUtils.isPositive(total)) {
+        act.setProperty(PRP_ITEM_TOTAL, BeeUtils.toString(total, 2));
       }
     }
 
@@ -629,6 +578,53 @@ public class TradeActBean {
     }
 
     return ResponseObject.response(acts);
+  }
+
+  private ResponseObject getServicesForInvoice(RequestInfo reqInfo) {
+    Set<Long> actIds = DataUtils.parseIdSet(reqInfo.getParameter(COL_TRADE_ACT));
+    if (actIds.isEmpty()) {
+      return ResponseObject.parameterNotFound(reqInfo.getService(), COL_TRADE_ACT);
+    }
+
+    Filter filter = Filter.and(Filter.any(COL_TRADE_ACT, actIds),
+        Filter.isPositive(COL_TRADE_ITEM_QUANTITY));
+
+    BeeRowSet services = qs.getViewData(VIEW_TRADE_ACT_SERVICES, filter);
+    if (DataUtils.isEmpty(services)) {
+      return ResponseObject.emptyResponse();
+    }
+
+    SqlSelect invoiceQuery = new SqlSelect()
+        .addFields(TBL_TRADE_ACT_INVOICES, COL_TA_INVOICE_FROM, COL_TA_INVOICE_TO)
+        .addFrom(TBL_TRADE_ACT_INVOICES)
+        .addOrder(TBL_TRADE_ACT_INVOICES, COL_TA_INVOICE_FROM, COL_TA_INVOICE_TO);
+
+    for (BeeRow service : services) {
+      invoiceQuery.setWhere(SqlUtils.equals(TBL_TRADE_ACT_INVOICES, COL_TA_INVOICE_SERVICE,
+          service.getId()));
+
+      SimpleRowSet invoiceData = qs.getData(invoiceQuery);
+
+      if (!DataUtils.isEmpty(invoiceData)) {
+        List<Integer> invoiceRanges = new ArrayList<>();
+
+        for (SimpleRow row : invoiceData) {
+          JustDate from = row.getDate(COL_TA_INVOICE_FROM);
+          JustDate to = row.getDate(COL_TA_INVOICE_TO);
+
+          if (from != null && to != null && BeeUtils.isMeq(to, from)) {
+            invoiceRanges.add(from.getDays());
+            invoiceRanges.add(to.getDays());
+          }
+        }
+
+        if (!invoiceRanges.isEmpty()) {
+          service.setProperty(PRP_INVOICE_PERIODS, BeeUtils.joinInts(invoiceRanges));
+        }
+      }
+    }
+
+    return ResponseObject.response(services);
   }
 
   private ResponseObject getItemsByCompanyReport(RequestInfo reqInfo) {
@@ -1152,11 +1148,11 @@ public class TradeActBean {
     List<String> groupBy = NameUtils.toList(reqInfo.getParameter(Service.VAR_GROUP_BY));
 
     SqlSelect rangeQuery = new SqlSelect()
-        .addFields(TBL_TRADE_ACT_INVOICES, COL_SALE)
+        .addFields(TBL_TRADE_ACT_INVOICES, COL_TA_INVOICE_ITEM)
         .addMin(TBL_TRADE_ACT_INVOICES, COL_TA_INVOICE_FROM)
         .addMax(TBL_TRADE_ACT_INVOICES, COL_TA_INVOICE_TO)
         .addFrom(TBL_TRADE_ACT_INVOICES)
-        .addGroup(TBL_TRADE_ACT_INVOICES, COL_SALE);
+        .addGroup(TBL_TRADE_ACT_INVOICES, COL_TA_INVOICE_ITEM);
 
     String rangeAlias = "rng_" + SqlUtils.uniqueName();
 
@@ -1188,10 +1184,11 @@ public class TradeActBean {
     SqlSelect query = new SqlSelect();
 
     query.addFrom(TBL_SALES);
-    query.addFromLeft(rangeQuery, rangeAlias,
-        SqlUtils.join(TBL_SALES, sys.getIdName(TBL_SALES), rangeAlias, COL_SALE));
     query.addFromLeft(TBL_SALE_ITEMS,
         sys.joinTables(TBL_SALES, TBL_SALE_ITEMS, COL_SALE));
+    query.addFromLeft(rangeQuery, rangeAlias,
+        SqlUtils.join(TBL_SALE_ITEMS, sys.getIdName(TBL_SALE_ITEMS),
+            rangeAlias, COL_TA_INVOICE_ITEM));
 
     if (groupBy.isEmpty()) {
       query.addFields(TBL_SALE_ITEMS, COL_SALE);
@@ -1993,51 +1990,14 @@ public class TradeActBean {
       return ResponseObject.emptyResponse();
     }
 
-    Filter itemFilter = Filter.and(Filter.isPositive(COL_TRADE_ITEM_QUANTITY),
-        Filter.isPositive(COL_TRADE_ITEM_PRICE));
-
-    Totalizer itemTotalizer = null;
-    SqlUpdate update;
-
     for (Long actId : actIds) {
-      BeeRowSet items = qs.getViewData(VIEW_TRADE_ACT_ITEMS,
-          Filter.and(Filter.equals(COL_TRADE_ACT, actId), itemFilter));
+      double total = totalActItems(actId);
 
-      if (!DataUtils.isEmpty(items)) {
-        Map<Long, Double> returnedItems = getReturnedItems(actId);
-
-        if (itemTotalizer == null) {
-          itemTotalizer = new Totalizer(items.getColumns());
-        }
-
-        double itemTotal = BeeConst.DOUBLE_ZERO;
-
-        for (BeeRow item : items) {
-          Double total = itemTotalizer.getTotal(item);
-          if (BeeUtils.isPositive(total)) {
-            itemTotal += total;
-          }
-
-          if (!returnedItems.isEmpty()) {
-            Double qty = returnedItems.get(DataUtils.getLong(items, item, COL_TA_ITEM));
-
-            if (BeeUtils.isPositive(qty)) {
-              item.setValue(items.getColumnIndex(COL_TRADE_ITEM_QUANTITY), qty);
-              Double returned = itemTotalizer.getTotal(item);
-
-              if (BeeUtils.isPositive(returned)) {
-                itemTotal -= returned;
-              }
-            }
-          }
-        }
-
-        if (BeeUtils.isPositive(itemTotal)) {
-          update = new SqlUpdate(acts)
-              .addConstant(ALS_ITEM_TOTAL, BeeUtils.round(itemTotal, amountScale))
-              .setWhere(SqlUtils.equals(acts, actIdName, actId));
-          qs.updateData(update);
-        }
+      if (BeeUtils.isPositive(total)) {
+        SqlUpdate update = new SqlUpdate(acts)
+            .addConstant(ALS_ITEM_TOTAL, BeeUtils.round(total, amountScale))
+            .setWhere(SqlUtils.equals(acts, actIdName, actId));
+        qs.updateData(update);
       }
     }
 
@@ -2240,6 +2200,9 @@ public class TradeActBean {
         new DateTime(endDate));
 
     int reportDays = TradeActUtils.countServiceDays(reportRange, holidays);
+    if (reportDays <= 0) {
+      return;
+    }
 
     int priceScale = sys.getFieldScale(TBL_TRADE_ACT_SERVICES, COL_TRADE_ITEM_PRICE);
     int factorScale = sys.getFieldScale(TBL_TRADE_ACT_SERVICES, COL_TA_SERVICE_FACTOR);
@@ -2251,9 +2214,9 @@ public class TradeActBean {
       Range<DateTime> actRange = TradeActUtils.createRange(row.getDateTime(COL_TA_DATE),
           row.getDateTime(COL_TA_UNTIL));
 
+      JustDate dateTo = row.getDate(COL_TA_SERVICE_TO);
       Range<DateTime> serviceRange = TradeActUtils.createServiceRange(
-          row.getDate(COL_TA_SERVICE_FROM), row.getDate(COL_TA_SERVICE_TO), tu,
-          reportRange, actRange);
+          row.getDate(COL_TA_SERVICE_FROM), dateTo, tu, reportRange, actRange);
 
       if (serviceRange != null) {
         SqlUpdate update = new SqlUpdate(tmp)
@@ -2266,8 +2229,8 @@ public class TradeActBean {
         Double discount = row.getDouble(COL_TRADE_DISCOUNT);
 
         if (BeeUtils.isPositive(tariff)) {
-          Double p = TradeActUtils.calculateServicePrice(row.getDouble(ALS_ITEM_TOTAL), tariff,
-              priceScale);
+          Double p = TradeActUtils.calculateServicePrice(price, dateTo,
+              row.getDouble(ALS_ITEM_TOTAL), tariff, priceScale);
 
           if (BeeUtils.isPositive(p) && !p.equals(price)) {
             price = p;
@@ -2278,6 +2241,8 @@ public class TradeActBean {
         Double factor = row.getDouble(COL_TA_SERVICE_FACTOR);
 
         if (tu != null) {
+          boolean ok = true;
+
           switch (tu) {
             case DAY:
               if (!BeeUtils.isPositive(factor)) {
@@ -2289,23 +2254,30 @@ public class TradeActBean {
                   if (BeeUtils.isPositive(df)) {
                     factor = df;
                     update.addConstant(COL_TA_SERVICE_FACTOR, df);
+                  } else {
+                    ok = false;
                   }
                 }
               }
               break;
 
             case MONTH:
-              int days = TradeActUtils.countServiceDays(serviceRange, holidays);
-              if (days < reportDays) {
-                double df = BeeUtils.div(days, reportDays);
-                if (BeeUtils.isPositive(factor)) {
-                  df *= factor;
-                }
+              double mf = TradeActUtils.getMonthFactor(serviceRange, holidays);
 
-                factor = BeeUtils.round(df, factorScale);
+              if (BeeUtils.isPositive(mf)) {
+                if (BeeUtils.isPositive(factor)) {
+                  mf *= factor;
+                }
+                factor = BeeUtils.round(mf, factorScale);
                 update.addConstant(COL_TA_SERVICE_FACTOR, factor);
+              } else {
+                ok = false;
               }
               break;
+          }
+
+          if (!ok) {
+            continue;
           }
         }
 
@@ -2453,6 +2425,27 @@ public class TradeActBean {
     }
   }
 
+  private ResponseObject hasInvoicesOrSecondaryActs(RequestInfo reqInfo) {
+    Long actId = reqInfo.getParameterLong(COL_TRADE_ACT);
+    if (!DataUtils.isId(actId)) {
+      return ResponseObject.parameterNotFound(reqInfo.getService(), COL_TRADE_ACT);
+    }
+
+    boolean has = qs.sqlExists(TBL_TRADE_ACTS, COL_TA_PARENT, actId);
+
+    if (!has) {
+      SqlSelect query = new SqlSelect()
+          .addFrom(TBL_TRADE_ACT_INVOICES)
+          .addFromInner(TBL_TRADE_ACT_SERVICES, sys.joinTables(TBL_TRADE_ACT_SERVICES,
+              TBL_TRADE_ACT_INVOICES, COL_TA_INVOICE_SERVICE))
+          .setWhere(SqlUtils.equals(TBL_TRADE_ACT_SERVICES, COL_TRADE_ACT, actId));
+
+      has = qs.sqlCount(query) > 0;
+    }
+
+    return ResponseObject.response(has);
+  }
+
   private ResponseObject saveActAsTemplate(RequestInfo reqInfo) {
     Long actId = reqInfo.getParameterLong(COL_TRADE_ACT);
     if (!DataUtils.isId(actId)) {
@@ -2528,5 +2521,129 @@ public class TradeActBean {
         }
       }
     }
+  }
+
+  private ResponseObject splitActServices(RequestInfo reqInfo) {
+    Long actId = reqInfo.getParameterLong(COL_TRADE_ACT);
+    if (!DataUtils.isId(actId)) {
+      return ResponseObject.parameterNotFound(reqInfo.getService(), COL_TRADE_ACT);
+    }
+
+    Long time = reqInfo.getParameterLong(COL_TA_DATE);
+    if (!BeeUtils.isPositive(time)) {
+      return ResponseObject.parameterNotFound(reqInfo.getService(), COL_TA_DATE);
+    }
+
+    JustDate date = new DateTime(time).getDate();
+
+    String idName = sys.getIdName(TBL_TRADE_ACT_SERVICES);
+
+    int result = 0;
+
+    List<String> fields = Arrays.asList(COL_TRADE_ACT, COL_TA_ITEM, COL_TA_SERVICE_TO,
+        COL_TA_SERVICE_TARIFF, COL_TA_SERVICE_FACTOR, COL_TA_SERVICE_DAYS,
+        COL_TRADE_ITEM_QUANTITY, COL_TRADE_ITEM_PRICE,
+        COL_TRADE_VAT_PLUS, COL_TRADE_VAT, COL_TRADE_VAT_PERC, COL_TRADE_DISCOUNT);
+
+    SqlSelect query = new SqlSelect()
+        .addFields(TBL_TRADE_ACT_SERVICES, idName)
+        .addFields(TBL_TRADE_ACT_SERVICES, fields)
+        .addFrom(TBL_TRADE_ACT_SERVICES)
+        .addFromLeft(TBL_ITEMS,
+            sys.joinTables(TBL_ITEMS, TBL_TRADE_ACT_SERVICES, COL_TA_ITEM))
+        .setWhere(
+            SqlUtils.and(
+                SqlUtils.notNull(TBL_ITEMS, COL_TIME_UNIT),
+                SqlUtils.positive(TBL_TRADE_ACT_SERVICES, COL_TRADE_ITEM_QUANTITY),
+                SqlUtils.or(
+                    SqlUtils.isNull(TBL_TRADE_ACT_SERVICES, COL_TA_SERVICE_FROM),
+                    SqlUtils.less(TBL_TRADE_ACT_SERVICES, COL_TA_SERVICE_FROM, date)),
+                SqlUtils.or(
+                    SqlUtils.isNull(TBL_TRADE_ACT_SERVICES, COL_TA_SERVICE_TO),
+                    SqlUtils.more(TBL_TRADE_ACT_SERVICES, COL_TA_SERVICE_TO, date))))
+        .addOrder(TBL_TRADE_ACT_SERVICES, idName);
+
+    SimpleRowSet data = qs.getData(query);
+
+    if (!DataUtils.isEmpty(data)) {
+      double itemTotal = totalActItems(actId);
+      int priceScale = sys.getFieldScale(TBL_TRADE_ACT_SERVICES, COL_TRADE_ITEM_PRICE);
+
+      for (SimpleRow row : data) {
+        SqlInsert insert = new SqlInsert(TBL_TRADE_ACT_SERVICES)
+            .addConstant(COL_TA_SERVICE_FROM, date);
+
+        Double tariff = row.getDouble(COL_TA_SERVICE_TARIFF);
+        Double price;
+        if (BeeUtils.isPositive(itemTotal) && BeeUtils.isPositive(tariff)) {
+          price = TradeActUtils.calculateServicePrice(null, null, itemTotal, tariff, priceScale);
+        } else {
+          price = null;
+        }
+
+        for (String field : fields) {
+          if (COL_TRADE_ITEM_PRICE.equals(field) && BeeUtils.isPositive(price)) {
+            insert.addConstant(field, price);
+          } else {
+            String value = row.getValue(field);
+            if (value != null) {
+              insert.addConstant(field, value);
+            }
+          }
+        }
+
+        ResponseObject response = qs.insertDataWithResponse(insert);
+        if (response.hasErrors()) {
+          return response;
+        }
+
+        SqlUpdate update = new SqlUpdate(TBL_TRADE_ACT_SERVICES)
+            .addConstant(COL_TA_SERVICE_TO, date)
+            .setWhere(SqlUtils.equals(TBL_TRADE_ACT_SERVICES, idName, row.getLong(idName)));
+
+        qs.updateData(update);
+
+        result++;
+      }
+    }
+
+    return ResponseObject.response(result);
+  }
+
+  private double totalActItems(Long actId) {
+    double result = BeeConst.DOUBLE_ZERO;
+
+    BeeRowSet items = qs.getViewData(VIEW_TRADE_ACT_ITEMS,
+        Filter.and(Filter.equals(COL_TRADE_ACT, actId),
+            Filter.isPositive(COL_TRADE_ITEM_QUANTITY),
+            Filter.isPositive(COL_TRADE_ITEM_PRICE)));
+
+    if (!DataUtils.isEmpty(items)) {
+      Map<Long, Double> returnedItems = getReturnedItems(actId);
+
+      Totalizer itemTotalizer = new Totalizer(items.getColumns());
+
+      for (BeeRow item : items) {
+        Double total = itemTotalizer.getTotal(item);
+        if (BeeUtils.isPositive(total)) {
+          result += total;
+        }
+
+        if (!returnedItems.isEmpty()) {
+          Double qty = returnedItems.get(DataUtils.getLong(items, item, COL_TA_ITEM));
+
+          if (BeeUtils.isPositive(qty)) {
+            item.setValue(items.getColumnIndex(COL_TRADE_ITEM_QUANTITY), qty);
+            Double returned = itemTotalizer.getTotal(item);
+
+            if (BeeUtils.isPositive(returned)) {
+              result -= returned;
+            }
+          }
+        }
+      }
+    }
+
+    return result;
   }
 }

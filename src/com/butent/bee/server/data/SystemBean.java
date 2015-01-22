@@ -414,10 +414,10 @@ public class SystemBean {
   /**
    * Creates SQL joins between tables.
    *
-   * @param tblName Source table with represented own column Id name, where called
+   * @param tblName First table with represented own column Id name, where called
    *          {@link SystemBean#getIdName(String)}
-   * @param dstTable Distance table with reference of source table
-   * @param dstField Reference field name of source table
+   * @param dstTable Second table
+   * @param dstField Reference field name of second table
    * @return
    */
   public IsCondition joinTables(String tblName, String dstTable, String dstField) {
@@ -1108,7 +1108,7 @@ public class SystemBean {
     Multimap<String, Pair<String, String>> custom = HashMultimap.create();
 
     BeeRowSet rs = (BeeRowSet) qs.doSql(new SqlSelect()
-        .addFields(TBL_CUSTOM_CONFIG, COL_CONFIG_OBJECT, COL_CONFIG_DATA)
+        .addFields(TBL_CUSTOM_CONFIG, COL_CONFIG_MODULE, COL_CONFIG_OBJECT, COL_CONFIG_DATA)
         .addFrom(TBL_CUSTOM_CONFIG)
         .setWhere(SqlUtils.equals(TBL_CUSTOM_CONFIG, COL_CONFIG_TYPE, obj.ordinal())).getQuery());
 

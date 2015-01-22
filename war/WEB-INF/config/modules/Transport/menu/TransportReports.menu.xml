@@ -4,5 +4,5 @@
 name="TransportReports" label="=trReports" parent="Transport" order="30" separator="true" 
 >
   <Item name="TransportTripProfitReport" label="=trReportTripProfit" service="report"
-    parameters="TransportTripProfit" />
+    parameters="TripProfitReport" />
 </Entry>

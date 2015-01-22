@@ -770,7 +770,7 @@ public class CalendarModuleBean implements BeeModule {
           Filter.in(sys.getIdName(TBL_APPOINTMENTS), VIEW_APPOINTMENT_OWNERS, COL_APPOINTMENT,
               Filter.equals(COL_APPOINTMENT_OWNER, userId)),
           Filter.isNull(COL_VISIBILITY),
-          Filter.isEqual(COL_VISIBILITY, IntegerValue.of(CalendarVisibility.PUBLIC)));
+          Filter.isNotEqual(COL_VISIBILITY, IntegerValue.of(CalendarVisibility.PRIVATE)));
 
       queryFilter = Filter.and(filter, visible);
 
@@ -1074,6 +1074,9 @@ public class CalendarModuleBean implements BeeModule {
     long millis = System.currentTimeMillis();
 
     List<BeeRow> appointments = getAppointments(appFilter, null, false);
+    if (!appointments.isEmpty()) {
+      prepareAppointments(appointments);
+    }
     long appDuration = System.currentTimeMillis() - millis;
 
     List<CalendarTask> tasks = getCalendarTasks(calendarId, startTime, endTime);
@@ -1098,6 +1101,36 @@ public class CalendarModuleBean implements BeeModule {
       return ResponseObject.emptyResponse();
     } else {
       return ResponseObject.response(result);
+    }
+  }
+
+  private void prepareAppointments(Collection<BeeRow> appointments) {
+    Map<Long, String> personAttendees = new HashMap<>();
+
+    BeeRowSet attendees = qs.getViewData(VIEW_ATTENDEES, Filter.notNull(COL_COMPANY_PERSON));
+
+    if (!DataUtils.isEmpty(attendees)) {
+      int cpIndex = attendees.getColumnIndex(COL_COMPANY_PERSON);
+
+      for (BeeRow row : attendees) {
+        Long cp = row.getLong(cpIndex);
+        if (DataUtils.isId(cp) && !personAttendees.containsKey(cp)) {
+          personAttendees.put(cp, BeeUtils.toString(row.getId()));
+        }
+      }
+    }
+
+    if (!personAttendees.isEmpty()) {
+      int cpIndex = sys.getView(VIEW_APPOINTMENTS).getRowSetIndex(ALS_CREATOR_COMPANY_PERSON);
+
+      for (BeeRow row : appointments) {
+        if (!row.isNull(cpIndex) && BeeUtils.isEmpty(row.getProperty(TBL_APPOINTMENT_ATTENDEES))) {
+          String att = personAttendees.get(row.getLong(cpIndex));
+          if (!BeeUtils.isEmpty(att)) {
+            row.setProperty(TBL_APPOINTMENT_ATTENDEES, att);
+          }
+        }
+      }
     }
   }
 

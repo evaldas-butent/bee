@@ -30,6 +30,8 @@ import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
 import java.net.URL;
 import java.nio.charset.Charset;
+import java.nio.charset.IllegalCharsetNameException;
+import java.nio.charset.UnsupportedCharsetException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -457,7 +459,7 @@ public final class FileUtils {
 
     try {
       cs = Charset.forName(name);
-    } catch (Exception ex) {
+    } catch (IllegalCharsetNameException | UnsupportedCharsetException ex) {
       logger.warning(ex, name);
       cs = null;
     }

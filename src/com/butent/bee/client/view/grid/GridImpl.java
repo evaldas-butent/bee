@@ -620,6 +620,10 @@ public class GridImpl extends Absolute implements GridView, EditEndEvent.Handler
       UiHelper.setWhiteSpace(column, cd.getWhiteSpace());
     }
 
+    if (BeeUtils.isTrue(cd.getDraggable())) {
+      column.setDraggable(true);
+    }
+
     if (!BeeUtils.isEmpty(cd.getOptions())) {
       column.setOptions(cd.getOptions());
     }
@@ -1300,20 +1304,28 @@ public class GridImpl extends Absolute implements GridView, EditEndEvent.Handler
   }
 
   @Override
-  public void onEditEnd(EditEndEvent event, EditEndEvent.HasEditEndHandler source) {
+  public void onEditEnd(EditEndEvent event, Object source) {
     Assert.notNull(event);
     getGrid().setEditing(false);
     getGrid().refocus();
 
-    if (!BeeUtils.equalsTrimRight(event.getOldValue(), event.getNewValue())) {
-      updateCell(event.getRowValue(), event.getColumn(), event.getOldValue(), event.getNewValue(),
-          event.isRowMode());
+    if (getGridInterceptor() != null) {
+      getGridInterceptor().onEditEnd(event, source);
     }
 
-    if (event.getKeyCode() != null) {
-      int keyCode = BeeUtils.unbox(event.getKeyCode());
-      if (BeeUtils.inList(keyCode, KeyCodes.KEY_TAB, KeyCodes.KEY_UP, KeyCodes.KEY_DOWN)) {
-        getGrid().handleKeyboardNavigation(keyCode, event.hasModifiers());
+    if (!event.isConsumed()) {
+      String oldValue = event.getOldValue();
+      String newValue = event.getNewValue();
+
+      if (!BeeUtils.equalsTrimRight(oldValue, newValue)) {
+        updateCell(event.getRowValue(), event.getColumn(), oldValue, newValue, event.isRowMode());
+      }
+
+      if (event.getKeyCode() != null) {
+        int keyCode = BeeUtils.unbox(event.getKeyCode());
+        if (BeeUtils.inList(keyCode, KeyCodes.KEY_TAB, KeyCodes.KEY_UP, KeyCodes.KEY_DOWN)) {
+          getGrid().handleKeyboardNavigation(keyCode, event.hasModifiers());
+        }
       }
     }
   }
@@ -1506,12 +1518,12 @@ public class GridImpl extends Absolute implements GridView, EditEndEvent.Handler
   @Override
   public int refreshBySource(String source) {
     IsRow row = getGrid().getActiveRow();
-    return (row == null) ? 0 : refreshCellContent(row.getId(), source);
+    return (row == null) ? 0 : refreshCell(row.getId(), source);
   }
 
   @Override
-  public int refreshCellContent(long rowId, String columnSource) {
-    return getGrid().refreshCellContent(rowId, columnSource);
+  public int refreshCell(long rowId, String columnSource) {
+    return getGrid().refreshCell(rowId, columnSource);
   }
 
   @Override
@@ -2271,7 +2283,7 @@ public class GridImpl extends Absolute implements GridView, EditEndEvent.Handler
   }
 
   private boolean maybeOpenRelatedData(final EditableColumn editableColumn, final IsRow row,
-      int charCode) {
+      int charCode, boolean readOnly) {
 
     if (row == null || editableColumn == null || !editableColumn.hasRelation()
         || !editableColumn.getRelation().isEditEnabled(false)) {
@@ -2284,7 +2296,7 @@ public class GridImpl extends Absolute implements GridView, EditEndEvent.Handler
     } else {
       Integer editKey = editableColumn.getRelation().getEditKey();
       if (editKey == null) {
-        ok = !isEnabled() && EditStartEvent.isEnter(charCode);
+        ok = (!isEnabled() || readOnly) && EditStartEvent.isEnter(charCode);
       } else if (EditStartEvent.isEnter(editKey)) {
         ok = EditStartEvent.isEnter(charCode);
       } else {
@@ -2350,7 +2362,7 @@ public class GridImpl extends Absolute implements GridView, EditEndEvent.Handler
         public void onSuccess(BeeRow result) {
           if (!RelationUtils.updateRow(getDataInfo(), editSource, row, editDataInfo, result,
               false).isEmpty()) {
-            getGrid().refreshCellContent(row.getId(), editableColumn.getColumnId());
+            getGrid().refreshCell(row.getId(), editableColumn.getColumnId());
           }
 
           getGrid().refocus();
@@ -2384,7 +2396,7 @@ public class GridImpl extends Absolute implements GridView, EditEndEvent.Handler
     String columnId = event.getColumnId();
     final EditableColumn editableColumn = getEditableColumn(columnId, false);
 
-    if (maybeOpenRelatedData(editableColumn, rowValue, event.getCharCode())) {
+    if (maybeOpenRelatedData(editableColumn, rowValue, event.getCharCode(), event.isReadOnly())) {
       return;
     }
 
@@ -2907,7 +2919,7 @@ public class GridImpl extends Absolute implements GridView, EditEndEvent.Handler
     RowCallback callback = new RowCallback() {
       @Override
       public void onFailure(String... reason) {
-        refreshCellContent(rowValue.getId(), dataColumn.getId());
+        refreshCell(rowValue.getId(), dataColumn.getId());
         notifySevere(reason);
       }
 

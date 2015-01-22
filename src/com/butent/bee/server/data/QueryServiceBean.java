@@ -213,8 +213,10 @@ public class QueryServiceBean {
               values[i] = null;
             } else if (column.getScale() >= 0) {
               values[i] = BeeUtils.toString(d, column.getScale());
-            } else {
+            } else if (column.getType() == ValueType.DECIMAL) {
               values[i] = BeeUtils.toString(d, NumberValue.MAX_SCALE);
+            } else {
+              values[i] = BeeUtils.toString(d);
             }
             break;
 

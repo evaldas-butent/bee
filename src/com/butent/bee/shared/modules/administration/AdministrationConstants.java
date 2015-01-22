@@ -82,7 +82,6 @@ public final class AdministrationConstants {
   public static final String SVC_GET_PARAMETER = PARAMETERS_PREFIX + "parameter";
   public static final String SVC_GET_RELATION_PARAMETER = PARAMETERS_PREFIX + "relation_parameter";
   public static final String SVC_GET_PARAMETERS = PARAMETERS_PREFIX + "get";
-  public static final String SVC_RESET_PARAMETER = PARAMETERS_PREFIX + "reset";
   public static final String SVC_SET_PARAMETER = PARAMETERS_PREFIX + "set";
 
   public static final String SVC_DO_IMPORT = "DoImport";
@@ -108,8 +107,8 @@ public final class AdministrationConstants {
   public static final String SVC_GET_CURRENT_EXCHANGE_RATE = "get_current_exchange_rate";
   public static final String SVC_GET_EXCHANGE_RATE = "get_exchange_rate";
   public static final String SVC_GET_LIST_OF_CURRENCIES = "get_list_of_currencies";
-  public static final String SVC_GET_EXCHANGE_RATES_BY_CURRENCY =
-      "get_exchange_rates_by_currency";
+  public static final String SVC_GET_EXCHANGE_RATES_FOR_CURRENCY =
+      "get_exchange_rates_for_currency";
 
   public static final String SVC_UPDATE_EXCHANGE_RATES = "update_exchange_rates";
 

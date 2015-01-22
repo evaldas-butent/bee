@@ -71,23 +71,6 @@ public class TradeModuleBean implements BeeModule {
 
   private static BeeLogger logger = LogUtils.getLogger(TradeModuleBean.class);
 
-  public static IsExpression getTotalExpression(String tblName) {
-    return getTotalExpression(tblName,
-        SqlUtils.multiply(SqlUtils.field(tblName, COL_TRADE_ITEM_QUANTITY),
-            SqlUtils.field(tblName, COL_TRADE_ITEM_PRICE)));
-  }
-
-  public static IsExpression getTotalExpression(String tblName, IsExpression amount) {
-    return SqlUtils.plus(amount,
-        SqlUtils.sqlCase(null,
-            SqlUtils.or(SqlUtils.isNull(tblName, COL_TRADE_VAT_PLUS),
-                SqlUtils.isNull(tblName, COL_TRADE_VAT)), 0,
-            SqlUtils.notNull(tblName, COL_TRADE_VAT_PERC),
-            SqlUtils.multiply(SqlUtils.divide(amount, 100),
-                SqlUtils.field(tblName, COL_TRADE_VAT)),
-            SqlUtils.field(tblName, COL_TRADE_VAT)));
-  }
-
   @EJB
   SystemBean sys;
   @EJB
@@ -187,6 +170,11 @@ public class TradeModuleBean implements BeeModule {
     return BeeUtils.toString(normalizedId);
   }
 
+  public static IsExpression getAmountExpression(String tblName) {
+    return SqlUtils.multiply(SqlUtils.field(tblName, COL_TRADE_ITEM_QUANTITY),
+        SqlUtils.field(tblName, COL_TRADE_ITEM_PRICE));
+  }
+
   public ResponseObject getCreditInfo(Long companyId) {
     if (!DataUtils.isId(companyId)) {
       return ResponseObject.emptyResponse();
@@ -267,6 +255,32 @@ public class TradeModuleBean implements BeeModule {
   @Override
   public String getResourcePath() {
     return getModule().getName();
+  }
+
+  public static IsExpression getTotalExpression(String tblName) {
+    return getTotalExpression(tblName, getAmountExpression(tblName));
+  }
+
+  public static IsExpression getTotalExpression(String tblName, IsExpression amount) {
+    return SqlUtils.plus(amount,
+        SqlUtils.sqlIf(SqlUtils.or(SqlUtils.isNull(tblName, COL_TRADE_VAT_PLUS),
+            SqlUtils.isNull(tblName, COL_TRADE_VAT)), 0,
+            getVatExpression(tblName, amount)));
+  }
+
+  public static IsExpression getVatExpression(String tblName) {
+    return getVatExpression(tblName, getAmountExpression(tblName));
+  }
+
+  public static IsExpression getVatExpression(String tblName, IsExpression amount) {
+    return SqlUtils.sqlCase(null,
+        SqlUtils.isNull(tblName, COL_TRADE_VAT), 0,
+        SqlUtils.isNull(tblName, COL_TRADE_VAT_PERC), SqlUtils.field(tblName, COL_TRADE_VAT),
+        SqlUtils.notNull(tblName, COL_TRADE_VAT_PLUS), SqlUtils.multiply(SqlUtils
+            .divide(amount, 100), SqlUtils.field(tblName, COL_TRADE_VAT)),
+        SqlUtils.multiply(SqlUtils.divide(amount,
+            SqlUtils.plus(100, SqlUtils.field(tblName, COL_TRADE_VAT))),
+            SqlUtils.field(tblName, COL_TRADE_VAT)));
   }
 
   @Override

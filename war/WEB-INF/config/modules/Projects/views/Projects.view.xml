@@ -58,11 +58,21 @@
     <SimpleColumn name="Description" />
     
     <SimpleColumn name="ExpectedTasksDuration" label="=prjExpectedTaskDuration">
-      <x:string>'?0?'</x:string>
+      <x:number>0</x:number> 
+      <!-- 
+      Data handling in system module bean  
+      com.butent.bee.server.modules.projects.ProjectsModuleBean.init().new DataEventHandler() 
+      {...}.fillProjectsTimeData(ViewQueryEvent event)
+      -->
     </SimpleColumn>
     
     <SimpleColumn name="ActualTasksDuration" label="=prjActualTaskDuration">
-      <x:string>'?0?'</x:string>
+      <x:number>0</x:number> 
+      <!-- 
+      Data handling in system module bean  
+      com.butent.bee.server.modules.projects.ProjectsModuleBean.init().new DataEventHandler() 
+      {...}.fillProjectsTimeData(ViewQueryEvent event)
+      -->
     </SimpleColumn>
     
     <SimpleColumn name="Contract" />
@@ -75,8 +85,12 @@
       </SimpleJoin>
     </SimpleJoin>
     <SimpleColumn name="ContractSigned" />
+    
+    <ExternalJoin name="Project" source="ProjectUsers" joinType="LEFT" filter="FilteredProjectUser={u}">
+      <SimpleColumn name="User" alias="FilteredProjectUser" />
+    </ExternalJoin>
   </Columns>
-
+  
   <Order>
     <OrderBy column="Status" />
     <OrderBy column="EndDate" />

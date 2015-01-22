@@ -21,7 +21,7 @@
     </css>
     <Image url="images/logo.png" style="display:block; margin:auto;" />
     <TextLabel style="text-align:center; &bold;">
-      <render><ui:expression>'Freight transportation contract No. ' + rowId + (row.Number ? '-' + row.Number : '')</ui:expression></render>
+      <render><ui:expression>'Freight transportation contract No. ' + row.Assessment + '-' + (row.Number ? row.Number : rowId)</ui:expression></render>
     </TextLabel>
     <DateLabel source="Date" style="text-align:center;" />
 
