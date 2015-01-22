@@ -1,6 +1,5 @@
 package com.butent.bee.client.modules.projects;
 
-import com.google.common.collect.Lists;
 import com.google.gwt.event.shared.HasHandlers;
 import com.google.gwt.user.client.ui.Widget;
 
@@ -9,26 +8,18 @@ import static com.butent.bee.shared.modules.projects.ProjectConstants.*;
 import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.Callback;
 import com.butent.bee.client.composite.FileCollector;
-import com.butent.bee.client.data.Data;
-import com.butent.bee.client.data.Queries;
-import com.butent.bee.client.data.RowCallback;
-import com.butent.bee.client.data.RowInsertCallback;
 import com.butent.bee.client.dialog.Popup;
 import com.butent.bee.client.ui.FormFactory.WidgetDescriptionCallback;
 import com.butent.bee.client.ui.IdentifiableWidget;
-import com.butent.bee.client.utils.FileUtils;
 import com.butent.bee.client.view.add.ReadyForInsertEvent;
 import com.butent.bee.client.view.form.FormView;
 import com.butent.bee.client.view.form.interceptor.AbstractFormInterceptor;
 import com.butent.bee.client.view.form.interceptor.FormInterceptor;
-import com.butent.bee.shared.Holder;
-import com.butent.bee.shared.data.BeeColumn;
 import com.butent.bee.shared.data.BeeRow;
 import com.butent.bee.shared.data.IsRow;
+import com.butent.bee.shared.data.event.RowInsertEvent;
 import com.butent.bee.shared.io.FileInfo;
-import com.butent.bee.shared.modules.administration.AdministrationConstants;
 import com.butent.bee.shared.modules.projects.ProjectConstants.ProjectEvent;
-import com.butent.bee.shared.time.DateTime;
 import com.butent.bee.shared.utils.BeeUtils;
 
 import java.util.List;
@@ -37,7 +28,6 @@ class NewProjectComment extends AbstractFormInterceptor {
   private static final String WIDGET_FILES = "Files";
 
   private Long projectId;
-  private Long currentUserId = BeeKeeper.getUser().getUserId();
 
   @Override
   public void afterCreateWidget(String name, IdentifiableWidget widget,
@@ -76,26 +66,16 @@ class NewProjectComment extends AbstractFormInterceptor {
       comment = row.getString(form.getDataIndex(COL_COMMENT));
     }
 
-    DateTime time = new DateTime();
+    List<FileInfo> files = null;
+    final Widget widget = getFormView().getWidgetByName(WIDGET_FILES);
 
-    List<BeeColumn> columns = Data.getColumns(VIEW_PROJECT_EVENTS,
-        Lists.newArrayList(COL_PROJECT, COL_PUBLISHER, COL_PUBLISH_TIME, COL_COMMENT, COL_EVENT));
+    if (widget instanceof FileCollector) {
+      files = ((FileCollector) widget).getFiles();
+    }
 
-    List<String> values = Lists.newArrayList(BeeUtils.toString(getProjectId()),
-        BeeUtils.toString(currentUserId), BeeUtils.toString(time.getTime()), comment,
-        BeeUtils.toString(ProjectEvent.COMMENT.ordinal()));
-
-    Queries.insert(viewName, columns, values, event.getChildren(),
-        new RowInsertCallback(viewName, event.getSourceId()) {
-
-          @Override
-          public void onSuccess(BeeRow result) {
-            super.onSuccess(result);
-            createFiles(result.getId());
-            Popup.getActivePopup().close();
-          }
-
-        });
+    ProjectUtils.registerProjectEvent(viewName, VIEW_PROJECT_FILES, ProjectEvent.COMMENT,
+        getProjectId(), comment, files, getEventsIdCallBack(viewName, event.getSourceId()),
+        getFilesUploadedCallback((FileCollector) widget));
   }
 
   public NewProjectComment(Long projectId) {
@@ -103,42 +83,30 @@ class NewProjectComment extends AbstractFormInterceptor {
     this.projectId = projectId;
   }
 
-  private NewProjectComment() {
-    this.projectId = null;
+  private static Callback<BeeRow> getEventsIdCallBack(final String viewName,
+      final String sourceId) {
+    return new Callback<BeeRow>() {
+
+      @Override
+      public void onSuccess(BeeRow result) {
+        RowInsertEvent.fire(BeeKeeper.getBus(), viewName, result, sourceId);
+        Popup.getActivePopup().close();
+      }
+    };
   }
 
-  private void createFiles(final Long rowId) {
-    final Widget widget = getFormView().getWidgetByName(WIDGET_FILES);
-    if (widget instanceof FileCollector && !((FileCollector) widget).isEmpty()) {
+  private static Callback<Boolean> getFilesUploadedCallback(final FileCollector collector) {
+    return new Callback<Boolean>() {
 
-      final Holder<Integer> counter = Holder.of(0);
-      final List<BeeColumn> columns =
-          Data.getColumns(VIEW_PROJECT_FILES,
-              Lists.newArrayList(COL_PROJECT, COL_PROJECT_EVENT, AdministrationConstants.COL_FILE,
-                  COL_CAPTION));
-
-      for (final FileInfo fileInfo : ((FileCollector) widget).getFiles()) {
-        FileUtils.uploadFile(fileInfo, new Callback<Long>() {
-
-          @Override
-          public void onSuccess(Long result) {
-            List<String> values = Lists.newArrayList(BeeUtils.toString(getProjectId()),
-                BeeUtils.toString(rowId), BeeUtils.toString(result), fileInfo.getCaption());
-
-            Queries.insert(VIEW_PROJECT_FILES, columns, values, null, new RowCallback() {
-
-              @Override
-              public void onSuccess(BeeRow row) {
-                counter.set(counter.get() + 1);
-                if (counter.get() == ((FileCollector) widget).getFiles().size()) {
-                  ((FileCollector) widget).clear();
-                }
-              }
-            });
-          }
-        });
+      @Override
+      public void onSuccess(Boolean result) {
+        collector.clear();
       }
-    }
+    };
+  }
+
+  private NewProjectComment() {
+    this.projectId = null;
   }
 
   private Long getProjectId() {

@@ -67,12 +67,17 @@ public final class ProjectConstants {
   public static final String COL_PROJECT_START_DATE = "StartDate";
   public static final String COL_PROJECT_STATUS = "Status";
   public static final String COL_PROJECT_OWNER = "Owner";
+  public static final String COL_PROJECT_PRICE = "Price";
   public static final String COL_PUBLISHER = "Publisher";
   public static final String COL_PUBLISH_TIME = "PublishTime";
   public static final String COL_PROJECT_EVENT = "ProjectEvent";
   public static final String COL_COMMENT = "Comment";
   public static final String COL_EVENT = "Event";
+  public static final String COL_EVENT_PROPERTIES = "Properties";
   public static final String COL_CAPTION = "Caption";
+  public static final String COL_COMAPNY = "Company";
+  public static final String COL_EXPECTED_DURATION = "ExpectedDuration";
+  public static final String COL_CONTRACT_PRICE = "ContractPrice";
 
   public static final String COL_PSC_FOOTER_HEIGHT = "PSCFooterHeight";
   public static final String COL_PSC_HEADER_HEIGHT = "PSCHeaderHeight";
@@ -93,6 +98,7 @@ public final class ProjectConstants {
 
   public static final String FORM_PROJECT = "Project";
   public static final String FORM_NEW_COMMENT = "NewProjectComment";
+  public static final String FORM_NEW_PROJECT_REASON_COMMENT = "NewProjectReasonComment";
 
   public static final String GRID_ALL_PROJECTS = "AllProjects";
   public static final String GRID_PROJECTS = "Projects";
