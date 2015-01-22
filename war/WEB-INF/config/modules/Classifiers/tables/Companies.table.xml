@@ -42,6 +42,8 @@
     <Numeric name="DaysAsSupplier" precision="3" label="=daysAsSupplier" />
     <Numeric name="PercentInterest" precision="6" scale="2" label="=percentInterest" />
      
+    <Numeric name="ExternalAdvance" precision="10" scale="2" label="ERP avansas" audit="false" />
+
     <Text name="Notes" label="=notes" />
   </Fields>
 </Table>

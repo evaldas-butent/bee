@@ -9,9 +9,12 @@ import com.google.common.eventbus.Subscribe;
 
 import static com.butent.bee.shared.modules.administration.AdministrationConstants.*;
 import static com.butent.bee.shared.modules.classifiers.ClassifierConstants.*;
+import static com.butent.bee.shared.modules.service.ServiceConstants.*;
 import static com.butent.bee.shared.modules.trade.TradeConstants.*;
 import static com.butent.bee.shared.modules.trade.acts.TradeActConstants.*;
 
+import com.butent.bee.server.concurrency.ConcurrencyBean;
+import com.butent.bee.server.concurrency.ConcurrencyBean.HasTimerService;
 import com.butent.bee.server.data.DataEditorBean;
 import com.butent.bee.server.data.DataEvent.ViewInsertEvent;
 import com.butent.bee.server.data.DataEvent.ViewQueryEvent;
@@ -46,6 +49,7 @@ import com.butent.bee.shared.data.filter.Filter;
 import com.butent.bee.shared.data.value.LongValue;
 import com.butent.bee.shared.data.value.TextValue;
 import com.butent.bee.shared.data.view.RowInfo;
+import com.butent.bee.shared.exceptions.BeeException;
 import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogUtils;
 import com.butent.bee.shared.modules.BeeParameter;
@@ -61,6 +65,7 @@ import com.butent.bee.shared.utils.ArrayUtils;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.EnumUtils;
 import com.butent.bee.shared.utils.NameUtils;
+import com.butent.webservice.ButentWS;
 
 import java.math.BigInteger;
 import java.util.ArrayList;
@@ -68,15 +73,23 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Set;
 
+import javax.annotation.Resource;
 import javax.ejb.EJB;
+import javax.ejb.LocalBean;
 import javax.ejb.Stateless;
+import javax.ejb.Timeout;
+import javax.ejb.Timer;
+import javax.ejb.TimerService;
 
 @Stateless
-public class TradeActBean {
+@LocalBean
+public class TradeActBean implements HasTimerService {
 
   private static BeeLogger logger = LogUtils.getLogger(TradeActBean.class);
 
@@ -92,6 +105,11 @@ public class TradeActBean {
   ParamHolderBean prm;
   @EJB
   AdministrationModuleBean adm;
+
+  @EJB
+  ConcurrencyBean cb;
+  @Resource
+  TimerService timerService;
 
   public List<SearchResult> doSearch(String query) {
     Set<String> columns = Sets.newHashSet(COL_TRADE_ACT_NAME, COL_TA_NUMBER, COL_OPERATION_NAME,
@@ -178,10 +196,18 @@ public class TradeActBean {
         BeeParameter.createText(module, PRM_IMPORT_TA_ITEM_RX, false, RX_IMPORT_ACT_ITEM),
         BeeParameter.createNumber(module, PRM_TA_NUMBER_LENGTH, false, 6),
         BeeParameter.createRelation(module, PRM_RETURNED_ACT_STATUS,
-            TBL_TRADE_STATUSES, COL_STATUS_NAME));
+            TBL_TRADE_STATUSES, COL_STATUS_NAME),
+        BeeParameter.createNumber(module, PRM_SYNC_ERP_DATA));
+  }
+
+  @Override
+  public TimerService getTimerService() {
+    return timerService;
   }
 
   public void init() {
+    cb.createIntervalTimer(this.getClass(), PRM_SYNC_ERP_DATA);
+
     sys.registerDataEventHandler(new DataEventHandler() {
       @Subscribe
       public void fillActNumber(ViewInsertEvent event) {
@@ -2608,6 +2634,338 @@ public class TradeActBean {
     }
 
     return ResponseObject.response(result);
+  }
+
+  @Timeout
+  private void syncERPData(Timer timer) {
+    if (!cb.isParameterTimer(timer, PRM_SYNC_ERP_DATA)) {
+      return;
+    }
+    String remoteNamespace = prm.getText(PRM_ERP_NAMESPACE);
+    String remoteAddress = prm.getText(PRM_ERP_ADDRESS);
+    String remoteLogin = prm.getText(PRM_ERP_LOGIN);
+    String remotePassword = prm.getText(PRM_ERP_PASSWORD);
+
+    SimpleRowSet rs = null;
+    // Company Advances
+    try {
+      rs = ButentWS.connect(remoteNamespace, remoteAddress, remoteLogin, remotePassword)
+          .getSQLData("SELECT gav_avans FROM adm_par", new String[] {"gav_avans"});
+
+      String avansSask = rs.getValue(0, "gav_avans");
+
+      if (!BeeUtils.isEmpty(avansSask)) {
+        rs = ButentWS.connect(remoteNamespace, remoteAddress, remoteLogin, remotePassword)
+            .getSQLData("SELECT klientai.klientas AS kl, klientai.kodas AS kd,"
+                + " SUM(CASE WHEN debetas LIKE '" + avansSask + "%' THEN (-1) ELSE 1 END * suma)"
+                + " AS av"
+                + " FROM finans INNER JOIN klientai ON klientai.klientas = finans.klientas"
+                + " WHERE debetas LIKE '" + avansSask + "%' OR kreditas LIKE '" + avansSask + "%'"
+                + " GROUP BY klientai.klientas, klientai.kodas HAVING av > 0",
+                new String[] {"kl", "kd", "av"});
+      } else {
+        rs = null;
+      }
+    } catch (BeeException e) {
+      logger.error(e);
+      return;
+    }
+    if (rs != null) {
+      qs.updateData(new SqlUpdate(TBL_COMPANIES)
+          .addConstant("ExternalAdvance", null));
+
+      for (SimpleRow row : rs) {
+        IsCondition wh = SqlUtils.equals(TBL_COMPANIES, COL_COMPANY_NAME, row.getValue("kl"));
+
+        if (!BeeUtils.isEmpty(row.getValue("kd"))) {
+          wh = SqlUtils.or(wh,
+              SqlUtils.equals(TBL_COMPANIES, COL_COMPANY_CODE, row.getValue("kd")));
+        }
+        qs.updateData(new SqlUpdate(TBL_COMPANIES)
+            .addConstant("ExternalAdvance", row.getValue("av"))
+            .setWhere(wh));
+
+      }
+    }
+    // Service Objects
+    Map<Long, Long> objects = new HashMap<>();
+
+    for (SimpleRow row : qs.getData(new SqlSelect()
+        .addFields(TBL_SERVICE_OBJECTS, COL_ITEM_EXTERNAL_CODE)
+        .addField(TBL_SERVICE_OBJECTS, sys.getIdName(TBL_SERVICE_OBJECTS), COL_SERVICE_OBJECT)
+        .addFrom(TBL_SERVICE_OBJECTS)
+        .setWhere(SqlUtils.notNull(TBL_SERVICE_OBJECTS, COL_ITEM_EXTERNAL_CODE)))) {
+
+      objects.put(row.getLong(COL_ITEM_EXTERNAL_CODE), row.getLong(COL_SERVICE_OBJECT));
+    }
+    try {
+      String sql = "SELECT rusis AS tp, valst_nr AS nr, car_id AS id FROM masinos";
+
+      if (!BeeUtils.isEmpty(objects)) {
+        sql += " WHERE car_id NOT IN(" + BeeUtils.joinItems(Lists.newArrayList(objects.keySet()))
+            + ")";
+      }
+      rs = ButentWS.connect(remoteNamespace, remoteAddress, remoteLogin, remotePassword)
+          .getSQLData(sql, new String[] {"tp", "nr", "id"});
+    } catch (BeeException e) {
+      logger.error(e);
+      return;
+    }
+    if (rs != null) {
+      Map<String, Long> categories = new HashMap<>();
+
+      for (SimpleRow row : qs.getData(new SqlSelect()
+          .addFields(TBL_SERVICE_TREE, COL_SERVICE_CATEGORY_NAME)
+          .addField(TBL_SERVICE_TREE, sys.getIdName(TBL_SERVICE_TREE), COL_SERVICE_CATEGORY)
+          .addFrom(TBL_SERVICE_TREE))) {
+
+        categories.put(row.getValue(COL_SERVICE_CATEGORY_NAME), row.getLong(COL_SERVICE_CATEGORY));
+      }
+      for (SimpleRow row : rs) {
+        String category = row.getValue("tp");
+
+        if (!categories.containsKey(category)) {
+          categories.put(category, qs.insertData(new SqlInsert(TBL_SERVICE_TREE)
+              .addConstant(COL_SERVICE_CATEGORY_NAME, category)));
+        }
+        Long id = row.getLong("id");
+
+        objects.put(id, qs.insertData(new SqlInsert(TBL_SERVICE_OBJECTS)
+            .addConstant(COL_SERVICE_CATEGORY, categories.get(category))
+            .addConstant(COL_SERVICE_ADDRESS, row.getValue("nr"))
+            .addConstant(COL_ITEM_EXTERNAL_CODE, id)));
+      }
+    }
+    // Service Object Repair History
+    SimpleRow lastIds = qs.getRow(new SqlSelect()
+        .addMin(TBL_MAINTENANCE, COL_ITEM_EXTERNAL_CODE, "remCode")
+        .addMax(TBL_MAINTENANCE, COL_ITEM_EXTERNAL_CODE, "apyvCode")
+        .addFrom(TBL_MAINTENANCE));
+
+    Map<String, String> cols = new LinkedHashMap<>();
+    cols.put("dt", "data");
+    cols.put("pr", "preke");
+    cols.put("ar", "artikulas");
+    cols.put("kk", "kiekis");
+    cols.put("kn", "kaina");
+    cols.put("vl", "valiuta");
+    cols.put("ps", "pvm_stat");
+    cols.put("pv", "pvm");
+    cols.put("pm", "pvm_p_md");
+    cols.put("pp", "pastaba");
+    cols.put("ob", "car_id");
+    cols.put("id", "remont_id * (-1)");
+
+    StringBuilder sql = new StringBuilder("SELECT ");
+    int c = 0;
+
+    for (Entry<String, String> entry : cols.entrySet()) {
+      if (c++ > 0) {
+        sql.append(", ");
+      }
+      sql.append(entry.getValue()).append(" AS ").append(entry.getKey());
+    }
+    sql.append(" FROM tr_remon");
+
+    long lastId = BeeUtils.unbox(lastIds.getLong("remCode"));
+
+    if (lastId < 0) {
+      sql.append(" WHERE remont_id > ").append(Math.abs(lastId));
+    }
+    lastId = BeeUtils.unbox(lastIds.getLong("apyvCode"));
+    cols.put("id", "a_gr_id");
+
+    for (int i = 0; i < 2; i++) {
+      String col;
+      String wh;
+
+      if (i > 0) {
+        col = "apyv_gr.car_id";
+        wh = " WHERE apyv_gr.car_id IS NOT NULL";
+      } else {
+        col = "apyvarta.car_id";
+        wh = " WHERE apyvarta.car_id IS NOT NULL AND apyv_gr.car_id IS NULL";
+      }
+      cols.put("ob", col);
+      sql.append(" UNION ALL SELECT ");
+      c = 0;
+
+      for (Entry<String, String> entry : cols.entrySet()) {
+        if (c++ > 0) {
+          sql.append(", ");
+        }
+        sql.append(entry.getValue()).append(" AS ").append(entry.getKey());
+      }
+      sql.append(" FROM apyvarta INNER JOIN apyv_gr ON apyvarta.apyv_id = apyv_gr.apyv_id")
+          .append(wh);
+
+      if (lastId > 0) {
+        sql.append(" AND a_gr_id > ").append(lastId);
+      }
+    }
+    try {
+      rs = ButentWS.connect(remoteNamespace, remoteAddress, remoteLogin, remotePassword)
+          .getSQLData(sql.toString(), cols.keySet().toArray(new String[0]));
+    } catch (BeeException e) {
+      logger.error(e);
+      return;
+    }
+    Map<String, Long> items = new HashMap<>();
+
+    for (SimpleRow row : qs.getData(new SqlSelect()
+        .addFields(TBL_ITEMS, COL_ITEM_EXTERNAL_CODE)
+        .addField(TBL_ITEMS, sys.getIdName(TBL_ITEMS), COL_ITEM)
+        .addFrom(TBL_ITEMS)
+        .setWhere(SqlUtils.notNull(TBL_ITEMS, COL_ITEM_EXTERNAL_CODE)))) {
+
+      items.put(row.getValue(COL_ITEM_EXTERNAL_CODE), row.getLong(COL_ITEM));
+    }
+    if (rs != null) {
+      Map<String, Long> currencies = new HashMap<>();
+
+      for (SimpleRow row : qs.getData(new SqlSelect()
+          .addFields(TBL_CURRENCIES, COL_CURRENCY_NAME)
+          .addField(TBL_CURRENCIES, sys.getIdName(TBL_CURRENCIES), COL_CURRENCY)
+          .addFrom(TBL_CURRENCIES))) {
+
+        currencies.put(row.getValue(COL_CURRENCY_NAME), row.getLong(COL_CURRENCY));
+      }
+      List<SimpleRow> missing = new ArrayList<>();
+      Set<String> missingItems = new HashSet<>();
+
+      for (SimpleRow row : rs) {
+        String item = row.getValue("pr");
+
+        if (!items.containsKey(item)) {
+          missing.add(row);
+          missingItems.add(item);
+          continue;
+        }
+        SqlInsert insert = new SqlInsert(TBL_MAINTENANCE)
+            .addConstant(COL_SERVICE_OBJECT, objects.get(row.getLong("ob")))
+            .addConstant(COL_ITEM_EXTERNAL_CODE, row.getLong("id"))
+            .addConstant(COL_MAINTENANCE_DATE, TimeUtils.parseDateTime(row.getValue("dt")))
+            .addConstant(COL_MAINTENANCE_ITEM, items.get(item))
+            .addConstant(COL_TRADE_ITEM_QUANTITY, row.getDouble("kk"))
+            .addConstant("Description", row.getValue("ar"))
+            .addConstant(COL_MAINTENANCE_NOTES, row.getValue("pp"));
+
+        String curr = row.getValue("vl");
+
+        if (currencies.containsKey(curr)) {
+          insert.addConstant(COL_TRADE_ITEM_PRICE, row.getDouble("kn"))
+              .addConstant(COL_CURRENCY, currencies.get(curr))
+              .addConstant(COL_TRADE_VAT_PLUS,
+                  BeeUtils.same(row.getValue("ps"), "S") ? true : null)
+              .addConstant(COL_TRADE_VAT, row.getDouble("pv"))
+              .addConstant(COL_TRADE_VAT_PERC, BeeUtils.isEmpty(row.getValue("pm")) ? null : true);
+        }
+        qs.insertData(insert);
+      }
+      if (!BeeUtils.isEmpty(missingItems)) {
+        try {
+          rs = ButentWS.connect(remoteNamespace, remoteAddress, remoteLogin, remotePassword)
+              .getSQLData("SELECT grupe AS gr, preke AS pr, pavad AS pv, mato_vien  AS mv,"
+                  + " likutis AS lk FROM prekes WHERE preke IN(" + BeeUtils.joinItems(missingItems)
+                  + ")", new String[] {"gr", "pr", "pv", "mv", "lk"});
+
+        } catch (BeeException e) {
+          logger.error(e);
+          rs = null;
+        }
+        if (rs != null) {
+          Map<String, Long> units = new HashMap<>();
+          Map<String, Long> categories = new HashMap<>();
+
+          for (SimpleRow row : qs.getData(new SqlSelect()
+              .addFields(TBL_UNITS, COL_UNIT_NAME)
+              .addField(TBL_UNITS, sys.getIdName(TBL_UNITS), COL_UNIT)
+              .addFrom(TBL_UNITS))) {
+
+            units.put(row.getValue(COL_UNIT_NAME), row.getLong(COL_UNIT));
+          }
+          for (SimpleRow row : qs.getData(new SqlSelect()
+              .addFields(TBL_ITEM_CATEGORY_TREE, COL_CATEGORY_NAME)
+              .addField(TBL_ITEM_CATEGORY_TREE, sys.getIdName(TBL_ITEM_CATEGORY_TREE),
+                  COL_CATEGORY)
+              .addFrom(TBL_ITEM_CATEGORY_TREE))) {
+
+            categories.put(row.getValue(COL_CATEGORY_NAME), row.getLong(COL_CATEGORY));
+          }
+          for (SimpleRow row : rs) {
+            String item = row.getValue("pr");
+            String unit = row.getValue("mv");
+            String category = row.getValue("gr");
+
+            if (!units.containsKey(unit)) {
+              units.put(unit, qs.insertData(new SqlInsert(TBL_UNITS)
+                  .addConstant(COL_UNIT_NAME, unit)));
+            }
+            if (!categories.containsKey(category)) {
+              categories.put(category, qs.insertData(new SqlInsert(TBL_ITEM_CATEGORY_TREE)
+                  .addConstant(COL_CATEGORY_NAME, category)));
+            }
+            items.put(item, qs.insertData(new SqlInsert(TBL_ITEMS)
+                .addConstant(COL_ITEM_NAME, row.getValue("pv"))
+                .addConstant(COL_ITEM_EXTERNAL_CODE, item)
+                .addConstant(COL_UNIT, units.get(unit))
+                .addConstant(COL_ITEM_IS_SERVICE,
+                    BeeUtils.isEmpty(row.getValue("lk")) ? true : null)));
+
+            qs.insertData(new SqlInsert(TBL_ITEM_CATEGORIES)
+                .addConstant(COL_ITEM, items.get(item))
+                .addConstant(COL_CATEGORY, categories.get(category)));
+          }
+          for (SimpleRow row : missing) {
+            SqlInsert insert = new SqlInsert(TBL_MAINTENANCE)
+                .addConstant(COL_SERVICE_OBJECT, objects.get(row.getLong("ob")))
+                .addConstant(COL_ITEM_EXTERNAL_CODE, row.getLong("id"))
+                .addConstant(COL_MAINTENANCE_DATE, TimeUtils.parseDateTime(row.getValue("dt")))
+                .addConstant(COL_MAINTENANCE_ITEM, items.get(row.getValue("pr")))
+                .addConstant(COL_TRADE_ITEM_QUANTITY, row.getDouble("kk"))
+                .addConstant("Description", row.getValue("ar"))
+                .addConstant(COL_MAINTENANCE_NOTES, row.getValue("pp"));
+
+            String curr = row.getValue("vl");
+
+            if (currencies.containsKey(curr)) {
+              insert.addConstant(COL_TRADE_ITEM_PRICE, row.getDouble("kn"))
+                  .addConstant(COL_CURRENCY, currencies.get(curr))
+                  .addConstant(COL_TRADE_VAT_PLUS,
+                      BeeUtils.same(row.getValue("ps"), "S") ? true : null)
+                  .addConstant(COL_TRADE_VAT, row.getDouble("pv"))
+                  .addConstant(COL_TRADE_VAT_PERC,
+                      BeeUtils.isEmpty(row.getValue("pm")) ? null : true);
+            }
+            qs.insertData(insert);
+          }
+        }
+      }
+    }
+    // Item Stocks
+    try {
+      rs = ButentWS.connect(remoteNamespace, remoteAddress, remoteLogin, remotePassword)
+          .getSQLData("SELECT preke AS pr, sum(kiekis) AS lk"
+              + " FROM likuciai GROUP BY preke HAVING lk > 0",
+              new String[] {"pr", "lk"});
+    } catch (BeeException e) {
+      logger.error(e);
+      return;
+    }
+    if (rs != null) {
+      qs.updateData(new SqlUpdate(TBL_ITEMS)
+          .addConstant("ExternalStock", null));
+
+      for (Entry<String, Long> entry : items.entrySet()) {
+        String stock = rs.getValueByKey("pr", entry.getKey(), "lk");
+
+        if (!BeeUtils.isEmpty(stock)) {
+          qs.updateData(new SqlUpdate(TBL_ITEMS)
+              .addConstant("ExternalStock", stock)
+              .setWhere(sys.idEquals(TBL_ITEMS, entry.getValue())));
+        }
+      }
+    }
   }
 
   private double totalActItems(Long actId) {

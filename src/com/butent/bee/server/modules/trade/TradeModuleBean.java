@@ -407,7 +407,6 @@ public class TradeModuleBean implements BeeModule {
                 row);
           }
 
-
           for (BeeRow gridRow : gridRowset) {
             int idxCostumer =
                 DataUtils.getColumnIndex(COL_TRADE_CUSTOMER, gridRowset.getColumns(), false);
@@ -441,7 +440,7 @@ public class TradeModuleBean implements BeeModule {
 
             Long sSumDays =
                 salesRow != null
-                ? BeeUtils.toLong(salesRow[salesSumResult.getColumnIndex(ALS_SALES_SUM)])
+                    ? BeeUtils.toLong(salesRow[salesSumResult.getColumnIndex(ALS_SALES_SUM)])
                     / 86400000L : 0L;
 
             Long sum = oCount + sCount;
@@ -729,7 +728,6 @@ public class TradeModuleBean implements BeeModule {
       return null;
     }
 
-
     Map<String, Object> creditInfo = Maps.newHashMap();
     ResponseObject resp = getCreditInfo(companyId);
     Double debt = null;
@@ -742,7 +740,6 @@ public class TradeModuleBean implements BeeModule {
     }
 
     int ignoreLast = 2;
-
 
     Table table = table();
     Caption caption = caption()
@@ -895,12 +892,12 @@ public class TradeModuleBean implements BeeModule {
       }
 
       try {
-      mail.sendMail(mailStore.getAccount(senderMailAccountId),
-          ArrayUtils.toArray(
-              Lists.newArrayList(emails.get(companyId).values()
-                  )), null, null, subject, mailDocument
-              .buildLines(),
-          null, true);
+        mail.sendMail(mailStore.getAccount(senderMailAccountId),
+            ArrayUtils.toArray(
+                Lists.newArrayList(emails.get(companyId).values()
+                    )), null, null, subject, mailDocument
+                .buildLines(),
+            null, true);
         sentEmailCompanyIds.add(companyId);
       } catch (MessagingException | BeeRuntimeException ex) {
         logger.error(ex);

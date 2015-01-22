@@ -49,6 +49,7 @@
 
     <Integer name="Ordinal" label="=ordinal" />
     <String name="ExternalCode" precision="10" label="=externalCode" />
+    <Numeric name="ExternalStock" precision="10" scale="3" label="ERP likutis" audit="false" />
 
     <Text name="Description" label="=description" />
     <Text name="Notes" label="=notes" />
