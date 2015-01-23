@@ -1,7 +1,9 @@
 package com.butent.bee.client.modules.projects;
 
+import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
 import com.google.gwt.core.client.Scheduler.ScheduledCommand;
+import com.google.gwt.event.shared.HasHandlers;
 import com.google.web.bindery.event.shared.HandlerRegistration;
 
 import static com.butent.bee.shared.modules.projects.ProjectConstants.*;
@@ -14,6 +16,7 @@ import com.butent.bee.client.ui.FormFactory.WidgetDescriptionCallback;
 import com.butent.bee.client.ui.IdentifiableWidget;
 import com.butent.bee.client.validation.CellValidateEvent;
 import com.butent.bee.client.validation.CellValidateEvent.Handler;
+import com.butent.bee.client.view.edit.SaveChangesEvent;
 import com.butent.bee.client.view.form.FormView;
 import com.butent.bee.client.view.form.interceptor.AbstractFormInterceptor;
 import com.butent.bee.client.view.form.interceptor.FormInterceptor;
@@ -27,6 +30,7 @@ import com.butent.bee.shared.data.filter.Filter;
 import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogUtils;
 import com.butent.bee.shared.modules.administration.AdministrationConstants;
+import com.butent.bee.shared.modules.projects.ProjectConstants.ProjectEvent;
 import com.butent.bee.shared.modules.projects.ProjectStatus;
 import com.butent.bee.shared.modules.tasks.TaskConstants;
 import com.butent.bee.shared.ui.Action;
@@ -35,6 +39,7 @@ import com.butent.bee.shared.utils.BeeUtils;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 class ProjectForm extends AbstractFormInterceptor implements DataChangeEvent.Handler,
@@ -51,7 +56,7 @@ class ProjectForm extends AbstractFormInterceptor implements DataChangeEvent.Han
 
   private final Collection<HandlerRegistration> registry = new ArrayList<>();
   private final ProjectEventsHandler eventsHandler = new ProjectEventsHandler();
-  // private final Set<String> auditSilentFields = Sets.newHashSet();
+  private final Set<String> auditSilentFields = Sets.newHashSet();
 
   private DataSelector contractSelector;
   private Flow chartData;
@@ -97,6 +102,7 @@ class ProjectForm extends AbstractFormInterceptor implements DataChangeEvent.Han
         || event.hasView(TaskConstants.VIEW_TASKS)) {
 
       getFormView().refresh();
+
     }
   }
 
@@ -116,15 +122,64 @@ class ProjectForm extends AbstractFormInterceptor implements DataChangeEvent.Han
       // if (event.hasView(TaskConstants.VIEW_TASKS)) {
       // TODO: refresh tasks times
       // }
-
       getFormView().refresh();
     }
 
   }
 
   @Override
-  public boolean onStartEdit(FormView form, IsRow row, ScheduledCommand focusCommand) {
+  public void onSaveChanges(HasHandlers listener, SaveChangesEvent event) {
 
+    List<String> oldData = event.getOldValues();
+    List<String> newData = event.getNewValues();
+
+    if (oldData == null) {
+      return;
+    }
+
+    if (oldData.isEmpty()) {
+      return;
+    }
+
+    if (auditSilentFields.isEmpty()) {
+      return;
+    }
+
+    if (BeeUtils.sameElements(oldData, newData)) {
+      return;
+    }
+
+    List<BeeColumn> cols = event.getColumns();
+
+    Map<String, String> oldDataMap = Maps.newHashMap();
+    Map<String, String> newDataMap = Maps.newHashMap();
+
+    for (int i = 0; i < cols.size(); i++) {
+      if (!auditSilentFields.contains(cols.get(i).getId())) {
+        continue;
+      }
+
+      oldDataMap.put(cols.get(i).getId(), oldData.get(i));
+      newDataMap.put(cols.get(i).getId(), newData.get(i));
+    }
+
+    if (oldDataMap.isEmpty() && newDataMap.isEmpty()) {
+      return;
+    }
+
+    Map<String,  Map<String, String>> oldDataSent = Maps.newHashMap();
+    Map<String,  Map<String, String>> newDataSent = Maps.newHashMap();
+
+    oldDataSent.put(VIEW_PROJECTS, oldDataMap);
+    newDataSent.put(VIEW_PROJECTS, newDataMap);
+
+    ProjectUtils.registerProjectEvent(VIEW_PROJECT_EVENTS, ProjectEvent.EDIT,
+        event.getRowId(), null, newDataSent, oldDataSent);
+  }
+
+  @Override
+  public boolean onStartEdit(FormView form, IsRow row, ScheduledCommand focusCommand) {
+    auditSilentFields.clear();
     if (isOwner(form, row)) {
       form.setEnabled(true);
     } else {
@@ -190,14 +245,6 @@ class ProjectForm extends AbstractFormInterceptor implements DataChangeEvent.Han
     return currentUser == projectUser;
   }
 
-  private static void setFormAuditValidation(FormView form, IsRow row) {
-    for (BeeColumn column : form.getDataColumns()) {
-      if (AUDIT_FIELDS.contains(column.getId())) {
-        form.addCellValidationHandler(column.getId(), getAuditColumnHandler(form, row));
-      }
-    }
-  }
-
   private void drawChart(IsRow row) {
     if (row == null) {
       return;
@@ -254,11 +301,19 @@ class ProjectForm extends AbstractFormInterceptor implements DataChangeEvent.Han
     eventsHandler.create(prjComments, row.getId(), filter);
   }
 
-
+  private void setFormAuditValidation(FormView form, IsRow row) {
+    auditSilentFields.clear();
+    for (BeeColumn column : form.getDataColumns()) {
+      if (AUDIT_FIELDS.contains(column.getId())) {
+        form.addCellValidationHandler(column.getId(), getAuditColumnHandler(form, row));
+      } else {
+        auditSilentFields.add(column.getId());
+      }
+    }
+  }
 
   private Flow getProjectComments() {
     return projectCommnets;
   }
-
 
 }

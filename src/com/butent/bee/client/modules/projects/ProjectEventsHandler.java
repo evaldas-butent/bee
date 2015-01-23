@@ -1,20 +1,32 @@
 package com.butent.bee.client.modules.projects;
 
+import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 
 import static com.butent.bee.shared.modules.projects.ProjectConstants.*;
 
+import com.butent.bee.client.data.Data;
 import com.butent.bee.client.eventsboard.EventsBoard;
+import com.butent.bee.client.layout.Flow;
 import com.butent.bee.client.ui.IdentifiableWidget;
 import com.butent.bee.client.view.form.interceptor.AbstractFormInterceptor;
 import com.butent.bee.client.widget.FaLabel;
+import com.butent.bee.shared.BeeConst;
+import com.butent.bee.shared.data.BeeRow;
+import com.butent.bee.shared.data.BeeRowSet;
 import com.butent.bee.shared.data.view.Order;
+import com.butent.bee.shared.html.builder.Factory;
+import com.butent.bee.shared.html.builder.elements.B;
 import com.butent.bee.shared.i18n.LocalizableConstants;
 import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.modules.classifiers.ClassifierConstants;
 import com.butent.bee.shared.modules.projects.ProjectConstants.ProjectEvent;
 import com.butent.bee.shared.ui.Action;
+import com.butent.bee.shared.utils.BeeUtils;
+import com.butent.bee.shared.utils.Codec;
 
+import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 class ProjectEventsHandler extends EventsBoard {
@@ -57,6 +69,61 @@ class ProjectEventsHandler extends EventsBoard {
   protected Order getEventsDataOrder() {
     Order order = Order.ascending(COL_PUBLISH_TIME);
     return order;
+  }
+
+  @Override
+  protected void afterCreateEventNoteCell(BeeRowSet rs, BeeRow row, Flow widget, Flow cell) {
+    int idxProp = rs.getColumnIndex(COL_EVENT_PROPERTIES);
+
+    if (BeeConst.isUndef(idxProp)) {
+      return;
+    }
+
+    String prop = row.getString(idxProp);
+
+    if (BeeUtils.isEmpty(prop)) {
+      return;
+    }
+
+    List<String> pairedData = Lists.newArrayList(Codec.beeDeserializeCollection(prop));
+
+    if (pairedData.size() < 2) {
+      return;
+    }
+
+    Map<String, String> viewOldList = Codec.deserializeMap(pairedData.get(0));
+    Map<String, String> viewNewList = Codec.deserializeMap(pairedData.get(1));
+
+    String html = BeeConst.STRING_EMPTY;
+
+    for (String view : viewOldList.keySet()) {
+      Map<String, String> newChanges = Codec.deserializeMap(viewNewList.get(view));
+      Map<String, String> oldChanges = Codec.deserializeMap(viewOldList.get(view));
+
+      if (newChanges.isEmpty() && oldChanges.isEmpty()) {
+        continue;
+      }
+
+      B viewCaption = Factory.b();
+      viewCaption.appendText(Data.getViewCaption(view));
+
+      html += viewCaption.build() + Factory.br().build();
+
+      for (String col : oldChanges.keySet()) {
+        String oldValue = oldChanges.get(col);
+        String newValue = newChanges.get(col);
+        html +=
+            BeeUtils.joinWords(Data.getColumnLabel(view, col), BeeConst.STRING_COLON, oldValue,
+                "->", newValue, Factory.br().build());
+      }
+    }
+
+    if (BeeUtils.isEmpty(html)) {
+      return;
+    }
+
+    Flow rowCell = createEventRowCell(cell, COL_EVENT_PROPERTIES, null);
+    rowCell.add(createCellHtmlItem(COL_EVENT_PROPERTIES, html));
   }
 
   @Override

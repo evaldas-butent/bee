@@ -27,6 +27,14 @@ import java.util.Map;
 
 public final class ProjectUtils {
 
+  public static void registerProjectEvent(String eventsViewName,
+      ProjectEvent eventType, long projectId, String comment,
+      Map<String, Map<String, String>> newData,
+      Map<String, Map<String, String>> oldData) {
+    registerProjectEvent(eventsViewName, null, eventType, projectId, comment, null,
+        newData, oldData, null, null);
+  }
+
   public static void registerProjectEvent(String eventsViewName, String eventFilesViewName,
       ProjectEvent eventType,
       long projectId, String comment, List<FileInfo> files, Callback<BeeRow> eventIdCallback,
@@ -45,7 +53,6 @@ public final class ProjectUtils {
     Assert.notEmpty(eventsViewName);
     Assert.notNull(eventType);
     Assert.isPositive(projectId);
-    Assert.notEmpty(comment);
 
     Long currentUserId = BeeKeeper.getUser().getUserId();
     DateTime time = new DateTime();
@@ -105,10 +112,9 @@ public final class ProjectUtils {
               if (counter.get() == files.size()) {
                 if (allUploadCallback != null) {
                   allUploadCallback.onSuccess(Boolean.TRUE);
+                  RowInsertEvent.fire(BeeKeeper.getBus(), eventFilesViewName, row, null);
                 }
               }
-
-              RowInsertEvent.fire(BeeKeeper.getBus(), eventFilesViewName, row, null);
             }
           });
         }

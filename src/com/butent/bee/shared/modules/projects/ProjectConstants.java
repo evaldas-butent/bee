@@ -12,7 +12,8 @@ public final class ProjectConstants {
 
   public enum ProjectEvent implements HasCaption {
     COMMENT(Localized.getConstants().comment(), Localized.getConstants().crmActionComment(),
-        FontAwesome.COMMENT_O);
+        FontAwesome.COMMENT_O),
+    EDIT(Localized.getConstants().prjEventEdited(), null, null);
 
     private final String caption;
     private final String commandLabel;
