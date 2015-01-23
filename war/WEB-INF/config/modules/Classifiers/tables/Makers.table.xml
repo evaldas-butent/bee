@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<Table idName="MakerID" name="Makers" xmlns="http://www.butent.com/table">
+	<Fields>
+		<String name="Name" label="=name" precision="100" />
+	</Fields>
+</Table>

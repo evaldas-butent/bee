@@ -23,6 +23,7 @@
 
         <Label for="Group" />
         <DataSelector source="Group" />
+        <CheckBox style="margin-left: 5px;" text="=exportToWebsite" />
       </row>
 
       <row>
@@ -95,6 +96,13 @@
           </row>
 
           <row>
+            <Label for="RentalPrice" />
+            <InputDecimal source="RentalPrice" summarize="true"
+              scale="2" currencySource="RentalPriceCurrency" />
+            <DataSelector style="width: 50px;" for="RentalPrice"
+              source="RentalPriceCurrency" editEnabled="false" newRowEnabled="false" />
+          </row>
+          <row>
             <Label for="Price1" />
             <InputDecimal source="Price1" currencySource="Currency1" scale="&pricescale;"
               summarize="true" />
@@ -162,6 +170,19 @@
 
             <Label for="CostCenter" data="CostCenters" />
             <DataSelector source="CostCenter" data="CostCenters" summarize="true" />
+          </row>
+
+          <row>
+            <Label for="PackageUnits">
+              &foritem;
+            </Label>
+            <InputDecimal source="PackageUnits" style="width: 80px;"
+              summarize="true">
+              &foritem;
+            </InputDecimal>
+
+            <Label for="Maker" data="Makers" />
+            <DataSelector source="Maker" data="Makers" />
           </row>
 
           <row>

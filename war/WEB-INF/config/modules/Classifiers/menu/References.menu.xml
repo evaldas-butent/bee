@@ -16,6 +16,8 @@ name="References" label="=references" order="10" module="Classifiers"
   <Item name="UpdateExchangeRates" label="=updateExchangeRatesMenu"
     service="update_exchange_rates" />
 
+  <Item label="=makers" name="Makers" parameters="Makers" service="grid" separator="true" />
+
   <Item name="Warehouses" label="=warehouses" service="grid" parameters="Warehouses"
     separator="true" module="Trade Ec" />
 

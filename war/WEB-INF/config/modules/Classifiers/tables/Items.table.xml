@@ -19,11 +19,17 @@
     <Numeric name="Weight" precision="10" scale="3" label="=weight" />
     <Numeric name="Area" precision="10" scale="3" label="=area" />
 
+    <Relation name="Maker" label="=maker" relation="Makers" />
+    <Numeric name="PackageUnits" label="=packageUnits" precision="10" scale="2" />
+			
     <Numeric name="Price" precision="15" scale="5" label="=salePrice" />
     <Relation name="Currency" relation="Currencies" label="=currency" />
 
     <Numeric name="Cost" precision="15" scale="5" label="=cost" />
     <Relation name="CostCurrency" relation="Currencies" label="=costCurrency" />
+
+    <Numeric name="RentalPrice" label="=rentalPrice" precision="15" scale="5" />
+    <Relation name="RentalPriceCurrency" label="=rentalPriceCurrency" relation="Currencies" />
 
     <Numeric name="Price1" precision="15" scale="5" label="=price1" />
     <Relation name="Currency1" relation="Currencies" label="=currency1" />

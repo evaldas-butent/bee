@@ -23,6 +23,12 @@
     <SimpleColumn name="Weight" />
     <SimpleColumn name="Area" />
 
+    <SimpleColumn name="PackageUnits" />
+    <SimpleColumn name="Maker" />
+    <SimpleJoin name="Maker" joinType="LEFT">
+      <SimpleColumn alias="MakerName" name="Name" />
+    </SimpleJoin>
+		
     <SimpleColumn name="Price" />
     <SimpleColumn name="Currency" />
     <SimpleJoin joinType="LEFT" name="Currency">
@@ -33,6 +39,12 @@
     <SimpleColumn name="CostCurrency" />
     <SimpleJoin joinType="LEFT" name="CostCurrency">
       <SimpleColumn name="Name" alias="CostCurrencyName" />
+    </SimpleJoin>
+
+    <SimpleColumn name="RentalPrice" />
+    <SimpleColumn name="RentalPriceCurrency" />
+    <SimpleJoin name="RentalPriceCurrency" joinType="LEFT">
+      <SimpleColumn name="Name" alias="RentalPriceCurrencyName" />
     </SimpleJoin>
 
     <SimpleColumn name="Price1" />
