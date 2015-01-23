@@ -2,8 +2,7 @@
 <View xmlns="http://www.butent.com/view"
   xmlns:xpr="http://www.butent.com/expression"
 
-  name="VehicleModels"
-  source="VehicleModels"
+  name="VehicleModels" source="VehicleModels" caption="=vehicleModels"
   newRowCaption="=trNewVehicleModel" newRowColumns="Name Parent"
   >
   <Columns>
