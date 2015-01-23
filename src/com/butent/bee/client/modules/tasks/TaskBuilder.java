@@ -15,6 +15,7 @@ import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.Callback;
 import com.butent.bee.client.communication.ParameterList;
 import com.butent.bee.client.communication.ResponseCallback;
+import com.butent.bee.client.composite.DataSelector;
 import com.butent.bee.client.composite.FileCollector;
 import com.butent.bee.client.composite.MultiSelector;
 import com.butent.bee.client.data.Data;
@@ -35,6 +36,7 @@ import com.butent.bee.client.widget.InputDate;
 import com.butent.bee.client.widget.InputTime;
 import com.butent.bee.client.widget.Label;
 import com.butent.bee.shared.Assert;
+import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.State;
 import com.butent.bee.shared.communication.ResponseObject;
 import com.butent.bee.shared.data.BeeColumn;
@@ -43,10 +45,12 @@ import com.butent.bee.shared.data.BeeRowSet;
 import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.IsRow;
 import com.butent.bee.shared.data.event.DataChangeEvent;
+import com.butent.bee.shared.data.filter.Filter;
 import com.butent.bee.shared.data.value.BooleanValue;
 import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.io.FileInfo;
 import com.butent.bee.shared.modules.administration.AdministrationConstants;
+import com.butent.bee.shared.modules.projects.ProjectConstants;
 import com.butent.bee.shared.modules.tasks.TaskConstants.TaskEvent;
 import com.butent.bee.shared.time.DateTime;
 import com.butent.bee.shared.time.HasDateValue;
@@ -72,6 +76,7 @@ class TaskBuilder extends AbstractFormInterceptor {
 
   private static final String NAME_REMINDER_DATE = "Reminder_Date";
   private static final String NAME_REMINDER_TIME = "Reminder_Time";
+  private static final String NAME_LABEL_SUFFIX = "Label";
 
   private static final String NAME_FILES = "Files";
 
@@ -201,6 +206,11 @@ class TaskBuilder extends AbstractFormInterceptor {
         }
       });
     }
+  }
+
+  @Override
+  public void afterRefresh(FormView form, IsRow row) {
+    setProjectStagesLimit(form, row);
   }
 
   @Override
@@ -369,6 +379,71 @@ class TaskBuilder extends AbstractFormInterceptor {
         }
       }
     });
+  }
+
+  private static void setProjectStagesLimit(FormView form, IsRow row) {
+    int idxProjectOwner = form.getDataIndex(ALS_PROJECT_OWNER);
+    int idxProject = form.getDataIndex(ProjectConstants.COL_PROJECT);
+
+    if (BeeConst.isUndef(idxProjectOwner)) {
+      return;
+    }
+
+    if (BeeConst.isUndef(idxProject)) {
+      return;
+    }
+
+    Widget wProjectStage = form.getWidgetBySource(ProjectConstants.COL_PROJECT_STAGE);
+
+    if (wProjectStage instanceof DataSelector) {
+      ((DataSelector) wProjectStage).setEnabled(false);
+    } else {
+      return;
+    }
+
+    long currentUser = BeeUtils.unbox(BeeKeeper.getUser().getUserId());
+    long projectOwner = BeeUtils.unbox(row.getLong(idxProjectOwner));
+    long projectId = BeeUtils.unbox(row.getLong(idxProject));
+
+    if (DataUtils.isId(projectId)) {
+      setVisibleProjectData(form, true);
+    } else {
+      setVisibleProjectData(form, false);
+    }
+
+    if (currentUser != projectOwner) {
+      return;
+    }
+
+    ((DataSelector) wProjectStage).getOracle().setAdditionalFilter(
+        Filter.equals(ProjectConstants.COL_PROJECT, projectId), true);
+    ((DataSelector) wProjectStage).setEnabled(true);
+
+  }
+
+  private static void setVisibleProjectData(FormView form, boolean visible) {
+    Widget widget = form.getWidgetBySource(ProjectConstants.COL_PROJECT);
+    if (widget != null) {
+      widget.setVisible(visible);
+    }
+
+    widget = form.getWidgetBySource(ProjectConstants.COL_PROJECT_STAGE);
+
+    if (widget != null) {
+      widget.setVisible(visible);
+    }
+
+    widget = form.getWidgetByName(ProjectConstants.COL_PROJECT + NAME_LABEL_SUFFIX);
+
+    if (widget != null) {
+      widget.setVisible(visible);
+    }
+
+    widget = form.getWidgetByName(ProjectConstants.COL_PROJECT_STAGE + NAME_LABEL_SUFFIX);
+
+    if (widget != null) {
+      widget.setVisible(visible);
+    }
   }
 
   private void clearValue(String widgetName) {

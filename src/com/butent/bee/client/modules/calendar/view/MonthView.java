@@ -31,6 +31,7 @@ import com.butent.bee.client.style.StyleUtils;
 import com.butent.bee.client.widget.CustomDiv;
 import com.butent.bee.client.widget.Label;
 import com.butent.bee.shared.BeeConst;
+import com.butent.bee.shared.Pair;
 import com.butent.bee.shared.css.CssUnit;
 import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.modules.calendar.CalendarItem;
@@ -237,6 +238,25 @@ public class MonthView extends CalendarView {
   public void onClock() {
   }
 
+  @Override
+  public Pair<DateTime, Long> resolveCoordinates(int x, int y) {
+    int row = getRow(y - canvas.getElement().getAbsoluteTop());
+
+    int z = x - canvas.getElement().getAbsoluteLeft();
+    int col = getColumn(z);
+
+    DateTime start = getCellDate(row, col).getDateTime();
+
+    double colWidth = getColumnWidth();
+    double h = BeeUtils.rescale(z - col * colWidth, 0, colWidth, 0, 24);
+    int hour = BeeUtils.clamp(BeeUtils.round(h), 0, 23);
+    if (hour > 0) {
+      start.setHour(hour);
+    }
+
+    return Pair.of(start, null);
+  }
+
   public void setCellStyle(int row, int col, String styleName, boolean add) {
     grid.getCellFormatter().setStyleName(row + 1, col, styleName, add);
   }
@@ -339,21 +359,10 @@ public class MonthView extends CalendarView {
   }
 
   private void dayClicked(Event event) {
-    int row = getRow(event.getClientY() - canvas.getElement().getAbsoluteTop());
-
-    int x = event.getClientX() - canvas.getElement().getAbsoluteLeft();
-    int col = getColumn(x);
-
-    DateTime start = getCellDate(row, col).getDateTime();
-
-    double colWidth = getColumnWidth();
-    double h = BeeUtils.rescale(x - col * colWidth, 0, colWidth, 0, 24);
-    int hour = BeeUtils.clamp(BeeUtils.round(h), 0, 23);
-    if (hour > 0) {
-      start.setHour(hour);
+    Pair<DateTime, Long> pair = resolveCoordinates(event.getClientX(), event.getClientY());
+    if (pair != null) {
+      createAppointment(pair.getA(), pair.getB());
     }
-
-    createAppointment(start, null);
   }
 
   private double getColumnWidth() {
