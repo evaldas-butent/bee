@@ -11,6 +11,7 @@ import static com.butent.bee.shared.html.builder.Factory.*;
 import static com.butent.bee.shared.modules.administration.AdministrationConstants.*;
 import static com.butent.bee.shared.modules.classifiers.ClassifierConstants.*;
 import static com.butent.bee.shared.modules.trade.TradeConstants.*;
+import static com.butent.bee.shared.modules.trade.acts.TradeActConstants.*;
 
 import com.butent.bee.server.data.DataEvent.ViewInsertEvent;
 import com.butent.bee.server.data.DataEvent.ViewModifyEvent;
@@ -163,7 +164,7 @@ public class TradeModuleBean implements BeeModule {
     } else if (BeeUtils.same(svc, SVC_ITEMS_INFO)) {
       response = getItemsInfo(reqInfo.getParameter("view_name"),
           BeeUtils.toLongOrNull(reqInfo.getParameter("id")),
-          reqInfo.getParameter(COL_CURRENCY));
+          reqInfo.getParameter(COL_CURRENCY), reqInfo.getParameter("TypeTable"));
 
     } else if (BeeUtils.same(svc, SVC_CREDIT_INFO)) {
       response = getCreditInfo(BeeUtils.toLongOrNull(reqInfo.getParameter(COL_COMPANY)));
@@ -502,23 +503,32 @@ public class TradeModuleBean implements BeeModule {
     act.init();
   }
 
-  private ResponseObject getItemsInfo(String viewName, Long id, String currencyTo) {
+  private ResponseObject getItemsInfo(String viewName, Long id, String currencyTo,
+      String typeTable) {
     if (!sys.isView(viewName)) {
       return ResponseObject.error("Wrong view name");
     }
     if (!DataUtils.isId(id)) {
       return ResponseObject.error("Wrong document ID");
     }
+
     String trade = sys.getView(viewName).getSourceName();
     String tradeItems;
     String itemsRelation;
+    String articleSource;
 
     if (BeeUtils.same(trade, TBL_SALES)) {
       tradeItems = TBL_SALE_ITEMS;
       itemsRelation = COL_SALE;
+      articleSource = TBL_SALE_ITEMS;
     } else if (BeeUtils.same(trade, TBL_PURCHASES)) {
       tradeItems = TBL_PURCHASE_ITEMS;
       itemsRelation = COL_PURCHASE;
+      articleSource = TBL_PURCHASE_ITEMS;
+    } else if (BeeUtils.same(trade, TBL_TRADE_ACTS)) {
+      itemsRelation = COL_TRADE_ACT;
+      tradeItems = typeTable;
+      articleSource = TBL_ITEMS;
     } else {
       return ResponseObject.error("View source not supported:", trade);
     }
@@ -526,8 +536,9 @@ public class TradeModuleBean implements BeeModule {
         .addFields(TBL_ITEMS,
             COL_ITEM_NAME, COL_ITEM_NAME + "2", COL_ITEM_NAME + "3", COL_ITEM_BARCODE)
         .addField(TBL_UNITS, COL_UNIT_NAME, COL_UNIT)
-        .addFields(tradeItems, COL_ITEM_ARTICLE, COL_TRADE_ITEM_QUANTITY, COL_TRADE_ITEM_PRICE,
+        .addFields(tradeItems, COL_TRADE_ITEM_QUANTITY, COL_TRADE_ITEM_PRICE,
             COL_TRADE_VAT_PLUS, COL_TRADE_VAT, COL_TRADE_VAT_PERC, COL_TRADE_ITEM_NOTE)
+        .addFields(articleSource, COL_TRADE_ITEM_ARTICLE)
         .addField(TBL_CURRENCIES, COL_CURRENCY_NAME, COL_CURRENCY)
         .addFrom(tradeItems)
         .addFromInner(trade, sys.joinTables(trade, tradeItems, itemsRelation))
@@ -536,6 +547,13 @@ public class TradeModuleBean implements BeeModule {
         .addFromInner(TBL_CURRENCIES, sys.joinTables(TBL_CURRENCIES, trade, COL_CURRENCY))
         .setWhere(SqlUtils.equals(tradeItems, itemsRelation, id))
         .addOrder(tradeItems, sys.getIdName(tradeItems));
+
+    if (BeeUtils.same(trade, TBL_TRADE_ACTS)) {
+      query.addFields(TBL_ITEMS, COL_TRADE_WEIGHT);
+      query.addFields(TBL_TRADE_ACTS, COL_TRADE_NUMBER);
+      query.addFields(TBL_TRADE_ACTS, COL_TRADE_CONTACT);
+      query.addFields(TBL_ITEMS, COL_TRADE_TIME_UNIT);
+    }
 
     if (!BeeUtils.isEmpty(currencyTo)) {
       String currAlias = SqlUtils.uniqueName();

@@ -39,6 +39,7 @@
     <Relation name="Currency3" relation="Currencies" label="=currency3" />
 
     <Boolean name="Vat" label="=vat" defValue="true" />
+    <Boolean name="ExportWebsite" label="=exportToWebsite" defValue="null" />
     <Numeric name="VatPercent" precision="3" label="=vatPercent" />
 
     <Boolean name="IsService" label="=service" />

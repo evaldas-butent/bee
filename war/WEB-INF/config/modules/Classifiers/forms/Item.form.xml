@@ -23,7 +23,7 @@
 
         <Label for="Group" />
         <DataSelector source="Group" />
-        <CheckBox style="margin-left: 5px;" text="=exportToWebsite" />
+        <CheckBox style="margin-left: 5px;" text="=exportToWebsite" source="ExportWebsite"/>
       </row>
 
       <row>

@@ -8,10 +8,11 @@ import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.communication.ParameterList;
 import com.butent.bee.client.communication.ResponseCallback;
 import com.butent.bee.client.composite.UnboundSelector;
+import com.butent.bee.client.modules.transport.PrintInvoiceInterceptor;
+import com.butent.bee.client.output.PrintFormInterceptor;
 import com.butent.bee.client.ui.UiHelper;
 import com.butent.bee.client.view.edit.EditableWidget;
 import com.butent.bee.client.view.form.FormView;
-import com.butent.bee.client.view.form.interceptor.AbstractFormInterceptor;
 import com.butent.bee.client.view.form.interceptor.FormInterceptor;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.communication.ResponseObject;
@@ -23,7 +24,7 @@ import com.butent.bee.shared.utils.BeeUtils;
 
 import java.util.Collection;
 
-public class TradeActForm extends AbstractFormInterceptor {
+public class TradeActForm extends PrintFormInterceptor {
 
   private static final String STYLE_PREFIX = TradeActKeeper.STYLE_PREFIX + "form-";
 
@@ -101,6 +102,11 @@ public class TradeActForm extends AbstractFormInterceptor {
   @Override
   public FormInterceptor getInstance() {
     return new TradeActForm();
+  }
+
+  @Override
+  public FormInterceptor getPrintFormInterceptor() {
+    return new PrintInvoiceInterceptor();
   }
 
   @Override

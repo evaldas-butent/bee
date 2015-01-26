@@ -12,6 +12,8 @@
   caption="=tradeAct" showRowId="true"
   width="800" height="600"
   >
+  <f:properties reports="PrintTradeAct"/>
+  
   <FlowPanel class="flexBox-vertical">
     <br/>
     <Table>
@@ -74,7 +76,7 @@
 
       <row>
         <Label for="Contact" />
-        <DataSelector source="Contact" newRowEnabled="false" style="&inpw;"
+        <DataSelector source="Contact" newRowEnabled="true" style="&inpw;"
           renderColumns="ContactFirstName ContactLastName"
           choiceColumns="FirstName LastName CompanyName" options="Company" />
 
@@ -86,12 +88,12 @@
       <row>
         <Label for="Vehicle" />
         <DataSelector source="Vehicle" 
-          renderColumns="VehicleParentModel VehicleModel VehicleNumber" newRowEnabled="false"
+          renderColumns="VehicleParentModel VehicleModel VehicleNumber" newRowEnabled="true"
           style="&inpw;" />
         
         <Label for="Driver" />
         <DataSelector source="Driver" renderColumns="DriverFirstName DriverLastName"
-          newRowEnabled="false" style="&inpw;" />
+          newRowEnabled="true" style="&inpw;" />
       </row>
 
       <row>

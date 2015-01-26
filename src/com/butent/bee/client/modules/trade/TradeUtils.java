@@ -24,6 +24,7 @@ import com.butent.bee.client.render.ProvidesGridColumnRenderer;
 import com.butent.bee.client.render.RendererFactory;
 import com.butent.bee.client.utils.XmlUtils;
 import com.butent.bee.shared.Assert;
+import com.butent.bee.shared.Consumer;
 import com.butent.bee.shared.communication.ResponseObject;
 import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.SimpleRowSet;
@@ -49,7 +50,7 @@ public final class TradeUtils {
   private static ProvidesGridColumnRenderer totalRenderer;
 
   public static void getDocumentItems(String viewName, long tradeId, String currencyName,
-      final HtmlTable table) {
+      final HtmlTable table, final Consumer<SimpleRowSet> callback) {
     Assert.notNull(table);
 
     if (BeeUtils.isEmpty(viewName) || !DataUtils.isId(tradeId)) {
@@ -58,6 +59,11 @@ public final class TradeUtils {
     ParameterList args = TradeKeeper.createArgs(SVC_ITEMS_INFO);
     args.addDataItem("view_name", viewName);
     args.addDataItem("id", tradeId);
+
+    String typeTable = DomUtils.getDataProperty(table.getElement(), "content");
+    if (!BeeUtils.isEmpty(typeTable)) {
+      args.addDataItem("TypeTable", typeTable);
+    }
 
     String currencyTo = DomUtils.getDataProperty(table.getElement(), COL_RATE_CURRENCY);
 
@@ -99,11 +105,15 @@ public final class TradeUtils {
         SimpleRowSet rs = SimpleRowSet.restore((String) response.getResponse());
         int ordinal = 0;
 
+        if (callback != null) {
+          callback.accept(rs);
+        }
         for (SimpleRow row : rs) {
           ordinal++;
           if (BeeUtils.isEmpty(currency)) {
             currency = row.getValue(COL_CURRENCY);
           }
+
           double qty = BeeUtils.unbox(row.getDouble(COL_TRADE_ITEM_QUANTITY));
           qtyTotal += qty;
           double sum = qty * BeeUtils.unbox(row.getDouble(COL_TRADE_ITEM_PRICE));

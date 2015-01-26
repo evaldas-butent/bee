@@ -65,18 +65,22 @@ public final class TradeConstants {
   public static final String COL_TRADE_KIND = "Kind";
   public static final String COL_TRADE_DEBT = "Debt";
   public static final String COL_TRADE_DEBT_COUNT = "DebtCount";
+  public static final String COL_TRADE_CONTACT = "Contact";
+  public static final String COL_TRADE_TIME_UNIT = "TimeUnit";
 
   public static final String COL_TRADE_VAT_PLUS = "VatPlus";
   public static final String COL_TRADE_VAT = "Vat";
   public static final String COL_TRADE_VAT_PERC = "VatPercent";
 
   public static final String COL_TRADE_DISCOUNT = "Discount";
+  public static final String COL_TRADE_WEIGHT = "Weight";
 
   public static final String COL_TRADE_ITEM_ORDINAL = "Ordinal";
   public static final String COL_TRADE_ITEM_ARTICLE = "Article";
   public static final String COL_TRADE_ITEM_QUANTITY = "Quantity";
   public static final String COL_TRADE_ITEM_PRICE = "Price";
   public static final String COL_TRADE_ITEM_NOTE = "Note";
+  public static final String COL_TRADE_TOTAL_WEIGHT = "TotalWeight";
 
   public static final String COL_SERIES = "Series";
   public static final String COL_SERIES_NAME = "SeriesName";
@@ -111,7 +115,6 @@ public final class TradeConstants {
   public static final String ALS_SALES_COUNT = "SalesCount";
   public static final String ALS_SALES_SUM = "SalesSum";
 
-
   public static final String PROP_AVERAGE_OVERDUE = "AverageOverdue";
   public static final String PROP_REMIND_EMAIL = "RemindEmail";
 
@@ -128,6 +131,7 @@ public final class TradeConstants {
   public static final String GRID_SALES = "Sales";
 
   public static final String FORM_DEBT_REPORT_TEMPLATE = "DebtReportTemplate";
+  public static final String FORM_SALES_INVOICE = "SalesInvoice";
 
   private TradeConstants() {
   }
