@@ -34,6 +34,7 @@
     <DataColumn name="Barcode" />
 
     <RelColumn name="Unit" caption="=unitShort" carry="true" />
+    <DataColumn name="ExternalStock" />
 
     <DataColumn name="TimeUnit" module="Trade.Acts" />
     <DataColumn name="DaysPerWeek" caption="=taDaysPerWeekShort" module="Trade.Acts"

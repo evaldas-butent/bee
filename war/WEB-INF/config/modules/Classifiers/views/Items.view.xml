@@ -106,6 +106,7 @@
 
     <SimpleColumn name="Ordinal" />
     <SimpleColumn name="ExternalCode" />
+    <SimpleColumn name="ExternalStock" />
 
     <SimpleColumn name="Description" />
     <SimpleColumn name="Notes" />

@@ -25,7 +25,7 @@
       </render>
 		</CalcColumn>
 		<DataColumn name="CurrencyName"/>
-		<PropColumn name="Advance" type="decimal"  caption="=trdAdvance" label="=trdAdvance" />
+		<DataColumn name="ExternalAdvance" caption="=trdAdvance" scale="2" label="=trdAdvance" visible="true" />
 		<RelColumn name="BankruptcyRisk" renderColumns="BankruptcyRiskName" caption="=clientBankruptcyRisk" label="=clientBankruptcyRisk" readOnly="true" />
     <RelColumn name="DelayedPaymentRisk" renderColumns="DelayedPaymentRiskName" caption="=clientDelayedPaymentRisk" label="=clientDelayedPaymentRisk" readOnly="true" />
 	</g:columns>
