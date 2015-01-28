@@ -9,12 +9,17 @@ import com.butent.bee.client.Callback;
 import com.butent.bee.client.data.Data;
 import com.butent.bee.client.data.Queries;
 import com.butent.bee.client.data.RowCallback;
+import com.butent.bee.client.data.RowFactory;
 import com.butent.bee.client.utils.FileUtils;
+import com.butent.bee.client.validation.CellValidateEvent;
+import com.butent.bee.client.view.form.FormView;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.Holder;
 import com.butent.bee.shared.data.BeeColumn;
 import com.butent.bee.shared.data.BeeRow;
+import com.butent.bee.shared.data.IsRow;
 import com.butent.bee.shared.data.event.RowInsertEvent;
+import com.butent.bee.shared.data.view.DataInfo;
 import com.butent.bee.shared.io.FileInfo;
 import com.butent.bee.shared.modules.administration.AdministrationConstants;
 import com.butent.bee.shared.modules.projects.ProjectConstants.ProjectEvent;
@@ -25,7 +30,7 @@ import com.butent.bee.shared.utils.Codec;
 import java.util.List;
 import java.util.Map;
 
-public final class ProjectUtils {
+public final class ProjectsHelper {
 
   public static void registerProjectEvent(String eventsViewName,
       ProjectEvent eventType, long projectId, String comment,
@@ -33,6 +38,14 @@ public final class ProjectUtils {
       Map<String, Map<String, String>> oldData) {
     registerProjectEvent(eventsViewName, null, eventType, projectId, comment, null,
         newData, oldData, null, null);
+  }
+
+  public static void registerProjectEvent(String eventsViewName,
+      ProjectEvent eventType, long projectId, String comment,
+      Map<String, Map<String, String>> newData,
+      Map<String, Map<String, String>> oldData, Callback<BeeRow> eventIdCallback) {
+    registerProjectEvent(eventsViewName, null, eventType, projectId, comment, null,
+        newData, oldData, eventIdCallback, null);
   }
 
   public static void registerProjectEvent(String eventsViewName, String eventFilesViewName,
@@ -74,9 +87,45 @@ public final class ProjectUtils {
         projectId, files, eventIdCallback, filesUploadedCallBack));
   }
 
-  // public static void registerReason(FormView form, IsRow row, CellValidateEvent event) {
-  // // FormFactory.getFormDescription(formName)
-  // }
+  public static void registerReason(FormView form, IsRow row, CellValidateEvent event,
+      final Callback<Boolean> success) {
+
+    // FormFactory.getFormDescription(FORM_NEW_PROJECT_REASON_COMMENT, );
+    DataInfo data = Data.getDataInfo(VIEW_PROJECT_EVENTS);
+    BeeRow emptyRow = RowFactory.createEmptyRow(data, false);
+    String caption =
+        BeeUtils.joinWords(form.getCaption(), BeeUtils.bracket(row.getString(form
+            .getDataIndex(COL_PROJECT_NAME))));
+
+    RowFactory.createRow(FORM_NEW_PROJECT_REASON_COMMENT, caption, data, emptyRow,
+        null,
+        new NewReasonCommentForm(form, row, event), new RowCallback() {
+
+          @Override
+          public void onSuccess(BeeRow result) {
+            if (success != null) {
+              success.onSuccess(true);
+            }
+          }
+
+          @Override
+          public void onCancel() {
+            if (success != null) {
+              success.onSuccess(false);
+            }
+          }
+
+          @Override
+          public void onFailure(String... reason) {
+            if (success != null) {
+              success.onFailure(reason);
+              success.onSuccess(false);
+            }
+          }
+
+        });
+
+  }
 
   public static void createFiles(final String eventFilesViewName, final long projectId,
       final Long eventId, final List<FileInfo> files, final Callback<Boolean> allUploadCallback) {
@@ -137,7 +186,7 @@ public final class ProjectUtils {
     };
   }
 
-  private ProjectUtils() {
+  private ProjectsHelper() {
 
   }
 }

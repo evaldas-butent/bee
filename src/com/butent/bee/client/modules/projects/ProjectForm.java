@@ -1,5 +1,6 @@
 package com.butent.bee.client.modules.projects;
 
+import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
 import com.google.gwt.core.client.Scheduler.ScheduledCommand;
@@ -9,7 +10,12 @@ import com.google.web.bindery.event.shared.HandlerRegistration;
 import static com.butent.bee.shared.modules.projects.ProjectConstants.*;
 
 import com.butent.bee.client.BeeKeeper;
+import com.butent.bee.client.Callback;
 import com.butent.bee.client.composite.DataSelector;
+import com.butent.bee.client.data.Data;
+import com.butent.bee.client.data.Queries;
+import com.butent.bee.client.data.Queries.IntCallback;
+import com.butent.bee.client.event.EventUtils;
 import com.butent.bee.client.eventsboard.EventsBoard.EventFilesFilter;
 import com.butent.bee.client.layout.Flow;
 import com.butent.bee.client.ui.FormFactory.WidgetDescriptionCallback;
@@ -27,6 +33,8 @@ import com.butent.bee.shared.data.IsRow;
 import com.butent.bee.shared.data.event.DataChangeEvent;
 import com.butent.bee.shared.data.event.RowInsertEvent;
 import com.butent.bee.shared.data.filter.Filter;
+import com.butent.bee.shared.data.view.DataInfo;
+import com.butent.bee.shared.data.view.ViewColumn;
 import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogUtils;
 import com.butent.bee.shared.modules.administration.AdministrationConstants;
@@ -57,6 +65,7 @@ class ProjectForm extends AbstractFormInterceptor implements DataChangeEvent.Han
   private final Collection<HandlerRegistration> registry = new ArrayList<>();
   private final ProjectEventsHandler eventsHandler = new ProjectEventsHandler();
   private final Set<String> auditSilentFields = Sets.newHashSet();
+  private final Map<String, Boolean> lockedValidations = Maps.newHashMap();
 
   private DataSelector contractSelector;
   private Flow chartData;
@@ -93,6 +102,7 @@ class ProjectForm extends AbstractFormInterceptor implements DataChangeEvent.Han
   @Override
   public void onClose(List<String> messages, IsRow oldRow, IsRow newRow) {
     chartData.clear();
+    EventUtils.clearRegistry(registry);
   }
 
   @Override
@@ -113,6 +123,11 @@ class ProjectForm extends AbstractFormInterceptor implements DataChangeEvent.Han
   }
 
   @Override
+  public void onUnload(FormView form) {
+    EventUtils.clearRegistry(registry);
+  }
+
+  @Override
   public void onRowInsert(RowInsertEvent event) {
 
     if (event.hasView(VIEW_PROJECT_USERS)
@@ -130,14 +145,10 @@ class ProjectForm extends AbstractFormInterceptor implements DataChangeEvent.Han
   @Override
   public void onSaveChanges(HasHandlers listener, SaveChangesEvent event) {
 
-    List<String> oldData = event.getOldValues();
-    List<String> newData = event.getNewValues();
+    IsRow oldData = event.getOldRow();
+    IsRow newData = event.getNewRow();
 
     if (oldData == null) {
-      return;
-    }
-
-    if (oldData.isEmpty()) {
       return;
     }
 
@@ -145,41 +156,63 @@ class ProjectForm extends AbstractFormInterceptor implements DataChangeEvent.Han
       return;
     }
 
-    if (BeeUtils.sameElements(oldData, newData)) {
-      return;
-    }
-
-    List<BeeColumn> cols = event.getColumns();
+    DataInfo data = Data.getDataInfo(VIEW_PROJECTS);
+    List<BeeColumn> cols = data.getColumns(); // event.getColumns(); Data
 
     Map<String, String> oldDataMap = Maps.newHashMap();
     Map<String, String> newDataMap = Maps.newHashMap();
+    List<String> visitedCols = Lists.newArrayList();
 
     for (int i = 0; i < cols.size(); i++) {
-      if (!auditSilentFields.contains(cols.get(i).getId())) {
+      if (!auditSilentFields.contains(cols.get(i).getId())
+          || visitedCols.contains(cols.get(i).getId())) {
         continue;
       }
 
-      oldDataMap.put(cols.get(i).getId(), oldData.get(i));
-      newDataMap.put(cols.get(i).getId(), newData.get(i));
+      if (BeeUtils.same(oldData.getString(i), newData.getString(i))) {
+        continue;
+      }
+
+      String oldValue = BeeConst.STRING_EMPTY;
+      String newValue = BeeConst.STRING_EMPTY;
+
+      if (data.hasRelation(cols.get(i).getId())) {
+        for (ViewColumn vCol : data.getDescendants(cols.get(i).getId(), false)) {
+          oldValue =
+              BeeUtils.join(BeeConst.STRING_COMMA, oldValue, oldData.getString(data
+                  .getColumnIndex(vCol.getName())));
+          newValue =
+              BeeUtils.join(BeeConst.STRING_COMMA, newValue, newData.getString(data
+                  .getColumnIndex(vCol.getName())));
+          visitedCols.add(vCol.getName());
+        }
+
+      } else {
+        oldValue = oldData.getString(i);
+        newValue = newData.getString(i);
+      }
+      oldDataMap.put(cols.get(i).getId(), oldValue);
+      newDataMap.put(cols.get(i).getId(), newValue);
     }
 
     if (oldDataMap.isEmpty() && newDataMap.isEmpty()) {
       return;
     }
 
-    Map<String,  Map<String, String>> oldDataSent = Maps.newHashMap();
-    Map<String,  Map<String, String>> newDataSent = Maps.newHashMap();
+    Map<String, Map<String, String>> oldDataSent = Maps.newHashMap();
+    Map<String, Map<String, String>> newDataSent = Maps.newHashMap();
 
     oldDataSent.put(VIEW_PROJECTS, oldDataMap);
     newDataSent.put(VIEW_PROJECTS, newDataMap);
 
-    ProjectUtils.registerProjectEvent(VIEW_PROJECT_EVENTS, ProjectEvent.EDIT,
+    ProjectsHelper.registerProjectEvent(VIEW_PROJECT_EVENTS, ProjectEvent.EDIT,
         event.getRowId(), null, newDataSent, oldDataSent);
   }
 
   @Override
   public boolean onStartEdit(FormView form, IsRow row, ScheduledCommand focusCommand) {
     auditSilentFields.clear();
+    lockedValidations.clear();
     if (isOwner(form, row)) {
       form.setEnabled(true);
     } else {
@@ -191,20 +224,6 @@ class ProjectForm extends AbstractFormInterceptor implements DataChangeEvent.Han
     }
 
     return super.onStartEdit(form, row, focusCommand);
-  }
-
-  @SuppressWarnings("unused")
-  private static Handler getAuditColumnHandler(final FormView form, final IsRow row) {
-    return new Handler() {
-
-      @Override
-      public Boolean validateCell(CellValidateEvent event) {
-        // if (!event.sameValue()) {
-        // ProjectUtils.registerReason(form, row, event);
-        // }
-        return Boolean.TRUE;
-      }
-    };
   }
 
   private static boolean isOwner(FormView form, IsRow row) {
@@ -243,6 +262,27 @@ class ProjectForm extends AbstractFormInterceptor implements DataChangeEvent.Han
     long projectUser = BeeUtils.unbox(row.getLong(idxProjectUser));
 
     return currentUser == projectUser;
+  }
+
+  private void commitData(final FormView form, final String column, final String value) {
+    Queries.update(form.getViewName(), Filter.compareId(form.getActiveRowId()), column, value,
+        new IntCallback() {
+
+          @Override
+          public void onSuccess(Integer result) {
+            IsRow oldRow = form.getOldRow();
+            IsRow newRow = form.getActiveRow();
+
+            int idx = form.getDataIndex(column);
+
+            if (!BeeConst.isUndef(idx)) {
+              oldRow.setValue(idx, value);
+              newRow.setValue(idx, value);
+            }
+            form.refreshBySource(column);
+            unlockValidationEvent(column);
+          }
+        });
   }
 
   private void drawChart(IsRow row) {
@@ -301,19 +341,86 @@ class ProjectForm extends AbstractFormInterceptor implements DataChangeEvent.Han
     eventsHandler.create(prjComments, row.getId(), filter);
   }
 
+  private Handler getAuditColumnHandler(final FormView form, final IsRow row) {
+    return new Handler() {
+
+      @Override
+      public Boolean validateCell(final CellValidateEvent event) {
+        if (event == null) {
+          return Boolean.TRUE;
+        }
+
+        if (!event.sameValue()) {
+
+          if (isLockedValidationEvent(event.getColumnId())) {
+            return Boolean.TRUE;
+          }
+
+          setLockedValidationEvent(event.getColumnId());
+          ProjectsHelper.registerReason(form, row, event, new Callback<Boolean>() {
+
+            @Override
+            public void onFailure(String... reason) {
+              unlockValidationEvent(event.getColumnId());
+              super.onFailure(reason);
+            }
+
+            @Override
+            public void onSuccess(Boolean result) {
+              if (result == null) {
+                unlockValidationEvent(event.getColumnId());
+                return;
+              }
+
+              if (result.booleanValue()) {
+                commitData(form, event.getColumnId(), event.getNewValue());
+              } else {
+                IsRow oldRow = form.getOldRow();
+                int idx = form.getDataIndex(event.getColumnId());
+
+                if (BeeConst.isUndef(idx)) {
+                  return;
+                }
+
+                row.setValue(idx, oldRow.getValue(idx));
+                form.refreshBySource(event.getColumnId());
+                unlockValidationEvent(event.getColumnId());
+              }
+            }
+          });
+        }
+        return Boolean.TRUE;
+      }
+
+    };
+  }
+
+  private Flow getProjectComments() {
+    return projectCommnets;
+  }
+
+  private boolean isLockedValidationEvent(String column) {
+    return BeeUtils.unbox(lockedValidations.get(column));
+  }
+
+  private void setLockedValidationEvent(String column) {
+    lockedValidations.put(column, Boolean.TRUE);
+  }
+
   private void setFormAuditValidation(FormView form, IsRow row) {
     auditSilentFields.clear();
     for (BeeColumn column : form.getDataColumns()) {
       if (AUDIT_FIELDS.contains(column.getId())) {
-        form.addCellValidationHandler(column.getId(), getAuditColumnHandler(form, row));
+        registry.add(form
+            .addCellValidationHandler(column.getId(), getAuditColumnHandler(form, row)));
       } else {
         auditSilentFields.add(column.getId());
       }
     }
   }
 
-  private Flow getProjectComments() {
-    return projectCommnets;
+  private void unlockValidationEvent(String column) {
+    lockedValidations.put(column, null);
   }
 
 }

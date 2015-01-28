@@ -62,7 +62,7 @@ class ProjectEventsHandler extends EventsBoard {
 
   @Override
   protected AbstractFormInterceptor getNewEventFormInterceptor() {
-    return new NewProjectComment(getRelatedId());
+    return new NewProjectCommentForm(getRelatedId());
   }
 
   @Override
@@ -105,16 +105,57 @@ class ProjectEventsHandler extends EventsBoard {
       }
 
       B viewCaption = Factory.b();
-      viewCaption.appendText(Data.getViewCaption(view));
+      if (!BeeUtils.same(view, PROP_REASON_DATA)) {
+        viewCaption.appendText(Data.getViewCaption(view));
+      }
 
       html += viewCaption.build() + Factory.br().build();
 
       for (String col : oldChanges.keySet()) {
         String oldValue = oldChanges.get(col);
         String newValue = newChanges.get(col);
+
+        String columnLabel = col;
+
+        if (!BeeUtils.same(view, PROP_REASON_DATA)) {
+          columnLabel = Data.getColumnLabel(view, col);
+        } else {
+          switch (col) {
+            case PROP_REASON:
+              columnLabel = LC.reason();
+              break;
+
+            case PROP_DOCUMENT:
+              columnLabel = LC.document();
+              break;
+
+            default:
+              break;
+          }
+        }
+
+        if (BeeUtils.isEmpty(oldValue) && BeeUtils.isEmpty(newValue)) {
+          continue;
+        }
+
+        String direction = "->";
+
+        if (BeeUtils.isEmpty(oldValue)) {
+          oldValue = LC.filterNullLabel();
+        }
+
+        if (BeeUtils.isEmpty(newValue)) {
+          newValue = LC.filterNullLabel();
+        }
+
+        if (BeeUtils.same(oldValue, newValue)) {
+          newValue = BeeConst.STRING_EMPTY;
+          direction = BeeConst.STRING_EMPTY;
+        }
+
         html +=
-            BeeUtils.joinWords(Data.getColumnLabel(view, col), BeeConst.STRING_COLON, oldValue,
-                "->", newValue, Factory.br().build());
+            BeeUtils.joinWords(columnLabel, BeeConst.STRING_COLON, oldValue,
+                direction, newValue, Factory.br().build());
       }
     }
 
