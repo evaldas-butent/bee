@@ -2,15 +2,21 @@ package com.butent.bee.client.modules.projects;
 
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
+import com.google.gwt.event.dom.client.ClickEvent;
+import com.google.gwt.event.dom.client.ClickHandler;
+import com.google.gwt.user.client.ui.Widget;
 
 import static com.butent.bee.shared.modules.projects.ProjectConstants.*;
 
 import com.butent.bee.client.data.Data;
+import com.butent.bee.client.data.RowEditor;
 import com.butent.bee.client.eventsboard.EventsBoard;
 import com.butent.bee.client.layout.Flow;
 import com.butent.bee.client.ui.IdentifiableWidget;
+import com.butent.bee.client.ui.Opener;
 import com.butent.bee.client.view.form.interceptor.AbstractFormInterceptor;
 import com.butent.bee.client.widget.FaLabel;
+import com.butent.bee.client.widget.InternalLink;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.data.BeeRow;
 import com.butent.bee.shared.data.BeeRowSet;
@@ -20,6 +26,7 @@ import com.butent.bee.shared.html.builder.elements.B;
 import com.butent.bee.shared.i18n.LocalizableConstants;
 import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.modules.classifiers.ClassifierConstants;
+import com.butent.bee.shared.modules.documents.DocumentConstants;
 import com.butent.bee.shared.modules.projects.ProjectConstants.ProjectEvent;
 import com.butent.bee.shared.ui.Action;
 import com.butent.bee.shared.utils.BeeUtils;
@@ -95,10 +102,11 @@ class ProjectEventsHandler extends EventsBoard {
     Map<String, String> viewNewList = Codec.deserializeMap(pairedData.get(1));
 
     String html = BeeConst.STRING_EMPTY;
+    final List<Widget> links = Lists.newArrayList();
 
     for (String view : viewOldList.keySet()) {
       Map<String, String> newChanges = Codec.deserializeMap(viewNewList.get(view));
-      Map<String, String> oldChanges = Codec.deserializeMap(viewOldList.get(view));
+      final Map<String, String> oldChanges = Codec.deserializeMap(viewOldList.get(view));
 
       if (newChanges.isEmpty() && oldChanges.isEmpty()) {
         continue;
@@ -111,7 +119,7 @@ class ProjectEventsHandler extends EventsBoard {
 
       html += viewCaption.build() + Factory.br().build();
 
-      for (String col : oldChanges.keySet()) {
+      for (final String col : oldChanges.keySet()) {
         String oldValue = oldChanges.get(col);
         String newValue = newChanges.get(col);
 
@@ -126,9 +134,29 @@ class ProjectEventsHandler extends EventsBoard {
               break;
 
             case PROP_DOCUMENT:
-              columnLabel = LC.document();
-              break;
 
+              if (BeeUtils.isEmpty(oldChanges.get(col))) {
+                continue;
+              }
+
+              columnLabel = LC.document();
+              InternalLink link =
+                  new InternalLink(BeeUtils.joinWords(columnLabel, oldChanges
+                      .get(PROP_DOCUMENT_LINK)));
+              link.addClickHandler(new ClickHandler() {
+
+                @Override
+                public void onClick(ClickEvent arg0) {
+                  RowEditor.open(DocumentConstants.VIEW_DOCUMENTS, BeeUtils.toLongOrNull(oldChanges
+                      .get(col)),
+                      Opener.NEW_TAB);
+                }
+              });
+
+              links.add(link);
+              continue;
+            case PROP_DOCUMENT_LINK:
+              continue;
             default:
               break;
           }
@@ -142,10 +170,14 @@ class ProjectEventsHandler extends EventsBoard {
 
         if (BeeUtils.isEmpty(oldValue)) {
           oldValue = LC.filterNullLabel();
+        } else if (!BeeUtils.same(view, PROP_REASON_DATA)) {
+          oldValue = ProjectsHelper.getDisplayValue(view, col, oldValue, null);
         }
 
         if (BeeUtils.isEmpty(newValue)) {
           newValue = LC.filterNullLabel();
+        } else if (!BeeUtils.same(view, PROP_REASON_DATA)) {
+          newValue = ProjectsHelper.getDisplayValue(view, col, newValue, null);
         }
 
         if (BeeUtils.same(oldValue, newValue)) {
@@ -159,12 +191,16 @@ class ProjectEventsHandler extends EventsBoard {
       }
     }
 
-    if (BeeUtils.isEmpty(html)) {
+    if (BeeUtils.isEmpty(html) && links.isEmpty()) {
       return;
     }
 
     Flow rowCell = createEventRowCell(cell, COL_EVENT_PROPERTIES, null);
     rowCell.add(createCellHtmlItem(COL_EVENT_PROPERTIES, html));
+
+    for (Widget w : links) {
+      rowCell.add(w);
+    }
   }
 
   @Override

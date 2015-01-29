@@ -14,18 +14,26 @@ import com.butent.bee.client.utils.FileUtils;
 import com.butent.bee.client.validation.CellValidateEvent;
 import com.butent.bee.client.view.form.FormView;
 import com.butent.bee.shared.Assert;
+import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.Holder;
 import com.butent.bee.shared.data.BeeColumn;
 import com.butent.bee.shared.data.BeeRow;
+import com.butent.bee.shared.data.DataUtils;
+import com.butent.bee.shared.data.IsColumn;
 import com.butent.bee.shared.data.IsRow;
 import com.butent.bee.shared.data.event.RowInsertEvent;
+import com.butent.bee.shared.data.value.ValueType;
 import com.butent.bee.shared.data.view.DataInfo;
+import com.butent.bee.shared.data.view.ViewColumn;
 import com.butent.bee.shared.io.FileInfo;
 import com.butent.bee.shared.modules.administration.AdministrationConstants;
 import com.butent.bee.shared.modules.projects.ProjectConstants.ProjectEvent;
 import com.butent.bee.shared.time.DateTime;
+import com.butent.bee.shared.time.JustDate;
+import com.butent.bee.shared.time.TimeUtils;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.Codec;
+import com.butent.bee.shared.utils.EnumUtils;
 
 import java.util.List;
 import java.util.Map;
@@ -125,6 +133,55 @@ public final class ProjectsHelper {
 
         });
 
+  }
+
+  public static String getDisplayValue(String viewName, String column, String value, IsRow row) {
+    String result = value;
+
+    if (BeeUtils.isEmpty(result)) {
+      return result;
+    }
+    if (BeeUtils.isEmpty(viewName)) {
+      return result;
+    }
+
+    DataInfo info = Data.getDataInfo(viewName);
+
+    if (info == null) {
+      return result;
+    }
+
+    if (info.hasRelation(column) && row == null) {
+      return result;
+    } else if (info.hasRelation(column) && row != null) {
+      result = BeeConst.STRING_EMPTY;
+      for (ViewColumn vCol : info.getDescendants(column, false)) {
+        result =
+            BeeUtils.joinWords(result, getDisplayValue(viewName, vCol.getName(), row.getString(info
+                .getColumnIndex(vCol.getName())), null));
+      }
+      return result;
+    }
+
+
+    ValueType type = info.getColumnType(column);
+    IsColumn col = info.getColumn(column);
+
+    if (row != null) {
+      result = DataUtils.render(col, row, info.getColumnIndex(column));
+    } else if (ValueType.DATE_TIME.equals(type)) {
+      DateTime time = TimeUtils.toDateTimeOrNull(value);
+
+      result = time == null ? result : time.toCompactString();
+    } else if (ValueType.DATE.equals(type)) {
+      JustDate date = TimeUtils.toDateOrNull(value);
+
+      result = date == null ? result : date.toString();
+    } else if (!BeeUtils.isEmpty(col.getEnumKey())) {
+      return EnumUtils.getCaption(col.getEnumKey(), BeeUtils.toInt(value));
+    }
+
+    return result;
   }
 
   public static void createFiles(final String eventFilesViewName, final long projectId,

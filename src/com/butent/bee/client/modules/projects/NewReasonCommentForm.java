@@ -8,6 +8,7 @@ import static com.butent.bee.shared.modules.projects.ProjectConstants.*;
 import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.Callback;
 import com.butent.bee.client.composite.UnboundSelector;
+import com.butent.bee.client.data.Data;
 import com.butent.bee.client.event.logical.SelectorEvent;
 import com.butent.bee.client.i18n.Format;
 import com.butent.bee.client.layout.Flow;
@@ -26,6 +27,7 @@ import com.butent.bee.shared.data.BeeRowSet;
 import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.IsRow;
 import com.butent.bee.shared.data.event.RowInsertEvent;
+import com.butent.bee.shared.data.view.DataInfo;
 import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.modules.projects.ProjectConstants.ProjectEvent;
 import com.butent.bee.shared.time.DateTime;
@@ -59,6 +61,7 @@ class NewReasonCommentForm extends AbstractFormInterceptor {
     switch (name) {
       case WIDGET_NAME_REASON:
         if (widget instanceof UnboundSelector) {
+          reasonSelector = (UnboundSelector) widget;
           reasonSelector.addSelectorHandler(new SelectorEvent.Handler() {
 
             @Override
@@ -159,12 +162,14 @@ class NewReasonCommentForm extends AbstractFormInterceptor {
     }
 
     String changedView = projectForm.getViewName();
+    DataInfo data = Data.getDataInfo(changedView);
 
     String changedColumn = null;
     String oldValue = null;
     String newValue = null;
     String reason = null;
     String document = null;
+    String documentLink = null;
 
     if (projectValidator != null) {
       newValue = projectValidator.getNewValue();
@@ -174,6 +179,15 @@ class NewReasonCommentForm extends AbstractFormInterceptor {
 
       if (!BeeConst.isUndef(idxOldVal) && projectForm.getOldRow() != null) {
         oldValue = projectForm.getOldRow().getString(idxOldVal);
+
+        if (data.hasRelation(changedColumn)) {
+          oldValue =
+              ProjectsHelper.getDisplayValue(changedView, changedColumn, oldValue, projectForm
+                  .getOldRow());
+          newValue =
+              ProjectsHelper.getDisplayValue(changedView, changedColumn, newValue, projectForm
+                  .getActiveRow());
+        }
       }
     }
 
@@ -183,13 +197,8 @@ class NewReasonCommentForm extends AbstractFormInterceptor {
 
     if (documentSelector != null) {
       document = documentSelector.getValue();
+      documentLink = documentSelector.getDisplayValue();
     }
-
-    // if (isRequiredDocument() && BeeUtils.isEmpty(document)) {
-    // form.notifySevere(Localized.getConstants().valueRequired(), Localized.getConstants()
-    // .document());
-    // return;
-    // }
 
     Map<String, Map<String, String>> oldData = Maps.newHashMap();
     Map<String, Map<String, String>> newData = Maps.newHashMap();
@@ -205,6 +214,7 @@ class NewReasonCommentForm extends AbstractFormInterceptor {
 
     reasonData.put(PROP_REASON, reason);
     reasonData.put(PROP_DOCUMENT, document);
+    reasonData.put(PROP_DOCUMENT_LINK, documentLink);
     oldData.put(PROP_REASON_DATA, reasonData);
     newData.put(PROP_REASON_DATA, reasonData);
 
@@ -239,7 +249,11 @@ class NewReasonCommentForm extends AbstractFormInterceptor {
 
         if (BeeUtils.isEmpty(value)) {
           value = Localized.getConstants().filterNullLabel();
+        } else {
+          value = ProjectsHelper.getDisplayValue(projectForm.getViewName(),
+              projectValidator.getColumnId(), value, projectForm.getOldRow());
         }
+
         fromFlow.getElement().setInnerText(value);
       }
     }
@@ -249,6 +263,9 @@ class NewReasonCommentForm extends AbstractFormInterceptor {
 
       if (BeeUtils.isEmpty(value)) {
         value = Localized.getConstants().filterNullLabel();
+      } else {
+        value = ProjectsHelper.getDisplayValue(projectForm.getViewName(),
+            projectValidator.getColumnId(), value, projectForm.getActiveRow());
       }
 
       toFlow.getElement().setInnerText(value);

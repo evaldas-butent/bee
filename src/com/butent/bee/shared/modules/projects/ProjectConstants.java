@@ -112,6 +112,7 @@ public final class ProjectConstants {
   public static final String PROP_USERS = "Users";
   public static final String PROP_REASON = "Reason";
   public static final String PROP_DOCUMENT = "Document";
+  public static final String PROP_DOCUMENT_LINK = "DocumentLink";
   public static final String PROP_REASON_DATA = "ReasonData";
 
   public static final String PRM_PROJECT_COMMON_RATE = "ProjectCommonRate";
