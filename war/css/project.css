@@ -27,7 +27,7 @@
   position: absolute;
   display: flex;
   cursor: pointer;
-  background-color: #d8e8ed;
+  background-color: #89C5D8;
   justify-content: center;
   align-items: center;
   overflow: hidden;
@@ -46,4 +46,20 @@
 
 .bee-prj-chart-data-row-separator {
 	
+}
+
+.bee-prj-chart-stage-flow-Tasks-Late {
+  background-color: red;
+}
+
+.bee-prj-chart-stage-flow-Tasks-Active {
+  background-color: green;
+}
+
+.bee-prj-chart-stage-flow-Tasks-Completed {
+  background-color: grey;
+}
+
+.bee-prj-chart-stage-flow-Tasks-Sheduled {
+  background-color: yellow;
 }

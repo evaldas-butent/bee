@@ -46,6 +46,7 @@ public final class ProjectConstants {
   public static final String ALS_STAGE_END = "StageEnd";
   public static final String ALS_CHART_FLOW_COLOR = "ChartFlowColor";
   public static final String ALS_VIEW_NAME = "ViewName";
+  public static final String ALS_TASK_STATUS = "Status";
 
   public static final String ALS_CHART_START = "ChartStart";
   public static final String ALS_CHART_END = "ChartEnd";

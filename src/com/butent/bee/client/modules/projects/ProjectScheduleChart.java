@@ -74,6 +74,7 @@ final class ProjectScheduleChart extends TimeBoard {
     private String caption;
     private String color;
     private String viewName;
+    private String taskStatus;
 
     @Override
     public Range<JustDate> getRange() {
@@ -81,7 +82,7 @@ final class ProjectScheduleChart extends TimeBoard {
     }
 
     public ChartItem(String viewName, Long stageId, String caption, JustDate start,
-        JustDate end, String color) {
+        JustDate end, String color, String taskStatus) {
 
       this();
       this.viewName = viewName;
@@ -90,6 +91,7 @@ final class ProjectScheduleChart extends TimeBoard {
       this.caption = caption;
       this.color = color;
       this.stageId = stageId;
+      this.taskStatus = taskStatus;
     }
 
     public Long getStageId() {
@@ -109,6 +111,10 @@ final class ProjectScheduleChart extends TimeBoard {
     }
 
     private ChartItem() {
+    }
+
+    public String getTaskStatus() {
+      return taskStatus;
     }
   }
 
@@ -360,13 +366,16 @@ final class ProjectScheduleChart extends TimeBoard {
     int idxStart = rs.getColumnIndex(ALS_CHART_START);
     int idxEnd = rs.getColumnIndex(ALS_CHART_END);
     int idxColor = rs.getColumnIndex(ALS_CHART_FLOW_COLOR);
+    int idxStatus = rs.getColumnIndex(ALS_TASK_STATUS);
 
     for (String[] row : rs.getRows()) {
       Long id = BeeUtils.toLong(row[idxStage]);
       JustDate start = new JustDate(BeeUtils.toInt(row[idxStart]));
       JustDate end = new JustDate(BeeUtils.toInt(row[idxEnd]));
+      String taskStatus = row[idxStatus];
+
       ChartItem ci = new ChartItem(row[idxViewName], id, row[idxCaption], start,
-          end, row[idxColor]);
+          end, row[idxColor], taskStatus);
 
       chartItems.add(ci);
     }
@@ -469,6 +478,13 @@ final class ProjectScheduleChart extends TimeBoard {
 
     panel.addStyleName(STYLE_STAGE_FLOW);
     panel.addStyleName(STYLE_STAGE_FLOW + BeeConst.STRING_MINUS + item.getViewName());
+
+    if (BeeUtils.same(item.getViewName(), TaskConstants.VIEW_TASKS)
+        && !BeeUtils.isEmpty(item.getTaskStatus())) {
+      panel.addStyleName(STYLE_STAGE_FLOW + BeeConst.STRING_MINUS + item.getViewName()
+          + BeeConst.STRING_MINUS + item.getTaskStatus());
+    }
+
     panel.setTitle(item.getCaption() + BeeConst.STRING_EOL + item.getRange().toString());
 
     if (!BeeUtils.isEmpty(item.getColor())) {

@@ -24,6 +24,7 @@ import com.butent.bee.shared.data.view.Order;
 import com.butent.bee.shared.modules.BeeParameter;
 import com.butent.bee.shared.modules.projects.ProjectConstants;
 import com.butent.bee.shared.modules.tasks.TaskConstants;
+import com.butent.bee.shared.modules.tasks.TaskConstants.TaskStatus;
 import com.butent.bee.shared.rights.Module;
 import com.butent.bee.shared.time.DateTime;
 import com.butent.bee.shared.time.TimeUtils;
@@ -180,7 +181,7 @@ public class ProjectsModuleBean implements BeeModule {
     }
 
     final SimpleRowSet chartData = new SimpleRowSet(new String[] {ALS_VIEW_NAME, ALS_CHART_ID,
-        ALS_CHART_CAPTION, ALS_CHART_START, ALS_CHART_END, ALS_CHART_FLOW_COLOR});
+        ALS_CHART_CAPTION, ALS_CHART_START, ALS_CHART_END, ALS_CHART_FLOW_COLOR, ALS_TASK_STATUS});
 
     BeeRowSet rs = qs.getViewData(VIEW_PROJECT_DATES, Filter.equals(COL_PROJECT, projectId),
         Order.ascending(COL_DATES_START_DATE));
@@ -196,7 +197,7 @@ public class ProjectsModuleBean implements BeeModule {
           rsRow.getString(idxCaption),
           startDate == null ? null : BeeUtils.toString(startDate.getDate().getDays()),
           null,
-          rsRow.getString(idxColor)});
+          rsRow.getString(idxColor), null});
     }
 
     rs = qs.getViewData(VIEW_PROJECT_STAGES, Filter.equals(COL_PROJECT, projectId),
@@ -215,7 +216,7 @@ public class ProjectsModuleBean implements BeeModule {
 
       chartData.addRow(new String[] {
           VIEW_PROJECT_STAGES,
-          stage, stageName, stageStart, stageEnd, null
+          stage, stageName, stageStart, stageEnd, null, null
       });
     }
 
@@ -226,6 +227,8 @@ public class ProjectsModuleBean implements BeeModule {
     int idxSummary = rs.getColumnIndex(TaskConstants.COL_SUMMARY);
     int idxStartTime = rs.getColumnIndex(TaskConstants.COL_START_TIME);
     int idxFinishTime = rs.getColumnIndex(TaskConstants.COL_FINISH_TIME);
+    int indTaskStatus = rs.getColumnIndex(TaskConstants.COL_STATUS);
+    DateTime timeNow = new DateTime();
 
     for (IsRow rsRow : rs) {
       String stage = rsRow.getString(idxStage);
@@ -233,11 +236,27 @@ public class ProjectsModuleBean implements BeeModule {
           : BeeUtils.toString(rsRow.getDateTime(idxStartTime).getDate().getDays());
       String finishTime = rsRow.getDateTime(idxFinishTime) == null ? null
           : BeeUtils.toString(rsRow.getDateTime(idxFinishTime).getDate().getDays());
+      String taskStatus = BeeConst.STRING_EMPTY;
+
+      if (rsRow.getInteger(indTaskStatus) == TaskStatus.ACTIVE.ordinal()
+          || rsRow.getInteger(indTaskStatus) == TaskStatus.NOT_VISITED.ordinal()) {
+
+        if (timeNow.getDate().getDays() < BeeUtils.toInt(finishTime)) {
+          taskStatus = TaskConstants.VAR_TASK_ACTIVE;
+        } else {
+          taskStatus = TaskConstants.VAR_TASK_LATE;
+        }
+
+      } else if (rsRow.getInteger(indTaskStatus) == TaskStatus.COMPLETED.ordinal()) {
+        taskStatus = TaskConstants.VAR_TASK_COMPLETED;
+      } else if (rsRow.getInteger(indTaskStatus) == TaskStatus.SCHEDULED.ordinal()) {
+        taskStatus = TaskConstants.VAR_TASK_SHEDULED;
+      }
 
       insertOrderedChartData(chartData, new String[] {
           TaskConstants.VIEW_TASKS,
           stage, rsRow.getString(idxSummary),
-          startTime, finishTime, null
+          startTime, finishTime, null, taskStatus
       });
     }
 
