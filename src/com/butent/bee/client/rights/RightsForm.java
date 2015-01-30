@@ -300,7 +300,7 @@ public abstract class RightsForm extends AbstractFormInterceptor {
     List<RightsObject> result = new ArrayList<>();
 
     for (RightsObject object : objects) {
-      if (Objects.equals(object.getModuleAndSub(), moduleAndSub)) {
+      if (!object.hasParent() && Objects.equals(object.getModuleAndSub(), moduleAndSub)) {
         result.add(object);
       }
     }
@@ -341,16 +341,23 @@ public abstract class RightsForm extends AbstractFormInterceptor {
 
   protected List<ModuleAndSub> getModules() {
     List<ModuleAndSub> modules = new ArrayList<>();
+    boolean emptyModule = false;
 
     for (RightsObject object : objects) {
-      if (object.getModuleAndSub() != null && !modules.contains(object.getModuleAndSub())) {
+      if (object.getModuleAndSub() == null) {
+        emptyModule = true;
+      } else if (!modules.contains(object.getModuleAndSub())) {
         modules.add(object.getModuleAndSub());
       }
     }
 
-    if (modules.size() > 0) {
+    if (modules.size() > 1) {
       Collections.sort(modules);
     }
+    if (emptyModule) {
+      modules.add(null);
+    }
+
     return modules;
   }
 

@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <View xmlns="http://www.butent.com/view"
 
-  name="UserSettings" source="UserSettings" module="Administration"
+  name="UserSettings" source="UserSettings" module="*"
   caption="=userSettings" editForm="UserSettings"
   >
   <Columns>
