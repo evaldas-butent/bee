@@ -52,6 +52,15 @@
     <SimpleColumn name="StartDate" />
     <SimpleColumn name="EndDate" />    
     <SimpleColumn name="ExpectedDuration" />
+    <SimpleColumn name="TimeUnit" />
+    <SimpleJoin name="TimeUnit" joinType="LEFT">
+      <SimpleColumn name="Name" alias="UnitName" />
+      <SimpleColumn name="Factor" />
+      <SimpleColumn name="BaseUnit" />
+      <SimpleColumn name="DefaultUnit" >
+        <x:boolean>null</x:boolean>
+      </SimpleColumn>
+    </SimpleJoin>
     <SimpleColumn name="Progress" />
     <SimpleColumn name="Price" />
     <SimpleColumn name="ContractPrice" />

@@ -76,9 +76,12 @@
             <Label for="ActualTasksDuration" text="=prjActualTaskDuration" style="&lbl;" />
             <InputDecimal source="ActualTasksDuration" scale="2" style="&inp5;" />
             
-            <Label for="ContractNumber" text="=contractNo" style="&lbl;" />
-            <InputText source="ContractNumber" style="&inp6;"
-              readOnly="true" />
+            <Label for="Price" text="=prjPrice" style="&lbl;" />
+            
+            <InputDecimal source="Price" scale="2" style="&inp6;" />
+           
+            <Label for="ContractPrice" text="=salePrice" style="&lbl;" />
+            <InputDecimal source="ContractPrice" scale="2" style="&inp6;" />
           </row>
 
           <row>
@@ -87,12 +90,14 @@
 
             <Label for="ExpectedDuration" text="=expectedDuration" style="&lbl;" />
             <InputDecimal source="ExpectedDuration" style="&inp5;" />
-
-            <Label for="Price" text="=prjPrice" style="&lbl;" />
-            <InputDecimal source="Price" scale="2" style="&inp6;" />
-
-            <Label for="ContractPrice" text="=salePrice" style="&lbl;" />
-            <InputDecimal source="ContractPrice" scale="2" style="&inp6;" />
+            
+            <cell colSpan="2">
+              <DataSelector name="TimeUnit" source="TimeUnit" renderColumns="UnitName" style="&inp5;" /> 
+            </cell>
+            
+            <Label for="ContractNumber" text="=contractNo" style="&lbl;" />
+            <InputText source="ContractNumber" style="&inp6;"
+              readOnly="true" />
           </row>
         </Table>
 

@@ -81,6 +81,7 @@ public final class ProjectConstants {
   public static final String COL_COMAPNY = "Company";
   public static final String COL_EXPECTED_DURATION = "ExpectedDuration";
   public static final String COL_CONTRACT_PRICE = "ContractPrice";
+  public static final String COL_PROJECT_TIME_UNIT = "TimeUnit";
 
   public static final String COL_PSC_FOOTER_HEIGHT = "PSCFooterHeight";
   public static final String COL_PSC_HEADER_HEIGHT = "PSCHeaderHeight";
@@ -116,9 +117,11 @@ public final class ProjectConstants {
   public static final String PROP_REASON_DATA = "ReasonData";
 
   public static final String PRM_PROJECT_COMMON_RATE = "ProjectCommonRate";
+  public static final String PRM_PROJECT_HOUR_UNIT = "ProjectHourUnit";
 
   public static final String SVC_PREFFIX = "svc_prj_";
   public static final String SVC_GET_PROJECT_CHART_DATA = SVC_PREFFIX + "GetChartData";
+  public static final String SVC_GET_TIME_UNITS = SVC_PREFFIX + "GetTimeUnits";
 
   public static final String VAR_PROJECT = "Project";
 

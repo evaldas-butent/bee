@@ -22,6 +22,7 @@ import com.butent.bee.shared.data.SimpleRowSet;
 import com.butent.bee.shared.data.filter.Filter;
 import com.butent.bee.shared.data.view.Order;
 import com.butent.bee.shared.modules.BeeParameter;
+import com.butent.bee.shared.modules.classifiers.ClassifierConstants;
 import com.butent.bee.shared.modules.projects.ProjectConstants;
 import com.butent.bee.shared.modules.tasks.TaskConstants;
 import com.butent.bee.shared.modules.tasks.TaskConstants.TaskStatus;
@@ -67,8 +68,16 @@ public class ProjectsModuleBean implements BeeModule {
   public ResponseObject doService(String svc, RequestInfo reqInfo) {
     ResponseObject response = null;
 
-    if (BeeUtils.same(svc, SVC_GET_PROJECT_CHART_DATA)) {
-      response = getProjectChartData(reqInfo);
+    switch (svc) {
+      case SVC_GET_PROJECT_CHART_DATA:
+        response = getProjectChartData(reqInfo);
+        break;
+      case SVC_GET_TIME_UNITS:
+        response = getTimeUnits();
+        break;
+
+      default:
+        break;
     }
     return response;
   }
@@ -78,7 +87,10 @@ public class ProjectsModuleBean implements BeeModule {
     String module = getModule().getName();
 
     List<BeeParameter> params = Lists.newArrayList(
-        BeeParameter.createNumber(module, PRM_PROJECT_COMMON_RATE, false, BeeConst.DOUBLE_ZERO)
+                BeeParameter.createNumber(module, PRM_PROJECT_COMMON_RATE, false,
+                    BeeConst.DOUBLE_ZERO),
+                BeeParameter.createRelation(module, PRM_PROJECT_HOUR_UNIT,
+                    ClassifierConstants.TBL_UNITS, ClassifierConstants.COL_UNIT_NAME)
         );
     return params;
   }
@@ -96,6 +108,7 @@ public class ProjectsModuleBean implements BeeModule {
   @Override
   public void init() {
     sys.registerDataEventHandler(new DataEventHandler() {
+
       @Subscribe
       public void fillProjectsTimeData(ViewQueryEvent event) {
         if (event.isBefore()) {
@@ -488,5 +501,31 @@ public class ProjectsModuleBean implements BeeModule {
     }
     return result;
 
+  }
+
+  private ResponseObject getTimeUnits() {
+    Long defUnit = prm.getRelation(PRM_PROJECT_HOUR_UNIT);
+
+    if (!DataUtils.isId(defUnit)) {
+      return ResponseObject.emptyResponse();
+    }
+
+    BeeRowSet units = qs.getViewData(ClassifierConstants.TBL_UNITS, Filter.compareId(defUnit));
+
+    List<Long> idFilter = Lists.newArrayList(defUnit);
+
+    while (!idFilter.isEmpty()) {
+      BeeRowSet relUnits =
+          qs.getViewData(ClassifierConstants.TBL_UNITS, Filter.any(
+              ClassifierConstants.COL_BASE_UNIT, idFilter));
+
+      idFilter.clear();
+      if (!relUnits.isEmpty()) {
+        idFilter.addAll(relUnits.getRowIds());
+        units.addRows(relUnits.getRows());
+      }
+    }
+
+    return ResponseObject.response(units);
   }
 }

@@ -11,6 +11,8 @@ import static com.butent.bee.shared.modules.projects.ProjectConstants.*;
 
 import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.Callback;
+import com.butent.bee.client.communication.ParameterList;
+import com.butent.bee.client.communication.ResponseCallback;
 import com.butent.bee.client.composite.DataSelector;
 import com.butent.bee.client.data.Data;
 import com.butent.bee.client.data.Queries;
@@ -27,7 +29,9 @@ import com.butent.bee.client.view.form.FormView;
 import com.butent.bee.client.view.form.interceptor.AbstractFormInterceptor;
 import com.butent.bee.client.view.form.interceptor.FormInterceptor;
 import com.butent.bee.shared.BeeConst;
+import com.butent.bee.shared.communication.ResponseObject;
 import com.butent.bee.shared.data.BeeColumn;
+import com.butent.bee.shared.data.BeeRowSet;
 import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.IsRow;
 import com.butent.bee.shared.data.event.DataChangeEvent;
@@ -56,9 +60,11 @@ class ProjectForm extends AbstractFormInterceptor implements DataChangeEvent.Han
   private static final String WIDGET_CONTRACT = "Contract";
   private static final String WIDGET_CHART_DATA = "ChartData";
   private static final String WIDGET_PROJECT_COMMENTS = "ProjectComments";
+  private static final String WIDGET_TIME_UNIT = "TimeUnit";
+
   private static final Set<String> AUDIT_FIELDS = Sets.newHashSet(COL_PROJECT_START_DATE,
       COL_PROJECT_END_DATE, COL_COMAPNY, COL_PROJECT_STATUS, COL_PROJECT_OWNER,
-      COL_EXPECTED_DURATION, COL_PROJECT_PRICE, COL_CONTRACT_PRICE);
+      COL_EXPECTED_DURATION, COL_PROJECT_TIME_UNIT, COL_PROJECT_PRICE, COL_CONTRACT_PRICE);
 
   private static final BeeLogger logger = LogUtils.getLogger(ProjectForm.class);
 
@@ -70,6 +76,7 @@ class ProjectForm extends AbstractFormInterceptor implements DataChangeEvent.Han
   private DataSelector contractSelector;
   private Flow chartData;
   private Flow projectCommnets;
+  private DataSelector unitSelector;
 
   @Override
   public void afterCreateWidget(String name, IdentifiableWidget widget,
@@ -84,6 +91,36 @@ class ProjectForm extends AbstractFormInterceptor implements DataChangeEvent.Han
 
     if (widget instanceof Flow && BeeUtils.same(name, WIDGET_PROJECT_COMMENTS)) {
       projectCommnets = (Flow) widget;
+    }
+
+    if (widget instanceof DataSelector && BeeUtils.same(name, WIDGET_TIME_UNIT)) {
+      unitSelector = (DataSelector) widget;
+
+      ParameterList params = ProjectsKeeper.createSvcArgs(SVC_GET_TIME_UNITS);
+      BeeKeeper.getRpc().makePostRequest(params, new ResponseCallback() {
+
+        @Override
+        public void onResponse(ResponseObject response) {
+          DataSelector us = getUnitSelector();
+          if (us == null) {
+            return;
+          }
+
+          us.setEnabled(false);
+
+          if (response == null) {
+            return;
+          }
+
+          if (response.isEmpty() || !response.hasResponse(BeeRowSet.class)) {
+            return;
+          }
+
+          BeeRowSet rs = BeeRowSet.restore(response.getResponseAsString());
+          us.getOracle().setAdditionalFilter(Filter.idIn(rs.getRowIds()), true);
+          us.setEnabled(true);
+        }
+      });
     }
   }
 
@@ -393,6 +430,10 @@ class ProjectForm extends AbstractFormInterceptor implements DataChangeEvent.Han
       }
 
     };
+  }
+
+  private DataSelector getUnitSelector() {
+    return unitSelector;
   }
 
   private Flow getProjectComments() {
