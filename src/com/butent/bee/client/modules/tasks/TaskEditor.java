@@ -63,6 +63,7 @@ import com.butent.bee.shared.font.FontAwesome;
 import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.io.FileInfo;
 import com.butent.bee.shared.modules.projects.ProjectConstants;
+import com.butent.bee.shared.modules.projects.ProjectStatus;
 import com.butent.bee.shared.modules.tasks.TaskConstants.TaskEvent;
 import com.butent.bee.shared.modules.tasks.TaskConstants.TaskStatus;
 import com.butent.bee.shared.modules.tasks.TaskUtils;
@@ -721,7 +722,8 @@ class TaskEditor extends AbstractFormInterceptor {
   private static void setProjectStagesLimit(FormView form, IsRow row) {
     int idxProjectOwner = form.getDataIndex(ALS_PROJECT_OWNER);
     int idxProject = form.getDataIndex(ProjectConstants.COL_PROJECT);
-    int idxTaskState = form.getDataIndex(COL_STATUS);
+    /* int idxTaskState = form.getDataIndex(COL_STATUS); */
+    int idxProjectStatus = form.getDataIndex(ALS_PROJECT_STATUS);
 
     if (BeeConst.isUndef(idxProjectOwner)) {
       return;
@@ -739,14 +741,19 @@ class TaskEditor extends AbstractFormInterceptor {
       return;
     }
 
-    if (BeeConst.isUndef(idxTaskState)) {
+    /*
+     * if (BeeConst.isUndef(idxTaskState)) { return; }
+     */
+
+    if (BeeConst.isUndef(idxProjectStatus)) {
       return;
     }
 
     long currentUser = BeeUtils.unbox(BeeKeeper.getUser().getUserId());
     long projectOwner = BeeUtils.unbox(row.getLong(idxProjectOwner));
     long projectId = BeeUtils.unbox(row.getLong(idxProject));
-    int state = BeeUtils.unbox(row.getInteger(idxTaskState));
+    /* int state = BeeUtils.unbox(row.getInteger(idxTaskState)); */
+    int projectStatus = BeeUtils.unbox(row.getInteger(idxProjectStatus));
 
     if (DataUtils.isId(projectId)) {
       setVisibleProjectData(form, true);
@@ -758,7 +765,11 @@ class TaskEditor extends AbstractFormInterceptor {
       return;
     }
 
-    if (TaskStatus.SCHEDULED.ordinal() != state) {
+    /*
+     * if (TaskStatus.SCHEDULED.ordinal() != state) { return; }
+     */
+
+    if (ProjectStatus.APPROVED.ordinal() == projectStatus) {
       return;
     }
 
