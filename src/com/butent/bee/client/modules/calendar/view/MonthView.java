@@ -30,6 +30,7 @@ import com.butent.bee.client.modules.calendar.layout.WeekLayoutDescription;
 import com.butent.bee.client.style.StyleUtils;
 import com.butent.bee.client.widget.CustomDiv;
 import com.butent.bee.client.widget.Label;
+import com.butent.bee.client.widget.Mover;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.Pair;
 import com.butent.bee.shared.css.CssUnit;
@@ -393,8 +394,10 @@ public class MonthView extends CalendarView {
     placeItemInGrid(widget, item, multi, colStart, colEnd, row, cellPosition);
 
     if (item.isMovable(BeeKeeper.getUser().getUserId())) {
-      widget.getCompactBar().addMoveHandler(moveController);
-      widget.getCompactBar().addStyleName(CalendarStyleManager.MOVABLE);
+      Mover mover = multi ? widget.getMoveHandle() : widget.getCompactBar();
+
+      mover.addMoveHandler(moveController);
+      mover.addStyleName(CalendarStyleManager.MOVABLE);
     }
 
     getItemWidgets().add(widget);

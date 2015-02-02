@@ -22,6 +22,9 @@ public class MonthMoveController implements MoveEvent.Handler {
 
   private static final int START_SENSITIVITY_PIXELS = 3;
 
+  private static final int WIDTH_RESERVE_PIXELS = 3;
+  private static final int HEIGHT_RESERVE_PIXELS = 3;
+
   private final MonthView monthView;
 
   private int headerHeight;
@@ -29,9 +32,6 @@ public class MonthMoveController implements MoveEvent.Handler {
   private ItemWidget itemWidget;
   private int relativeLeft;
   private int relativeTop;
-
-  private int sourceWidth;
-  private int sourceHeight;
 
   private int targetLeft;
   private int targetTop;
@@ -71,14 +71,14 @@ public class MonthMoveController implements MoveEvent.Handler {
               getTargetTop() + getTargetHeight())) {
 
         int left = BeeUtils.clamp(x - getPointerOffsetX() - getTargetLeft(), 0,
-            getTargetWidth() - getSourceWidth());
+            getTargetWidth() - WIDTH_RESERVE_PIXELS);
         if (left != getRelativeLeft()) {
           StyleUtils.setLeft(getItemWidget(), left);
           setRelativeLeft(left);
         }
 
         int top = BeeUtils.clamp(y - getPointerOffsetY() - getTargetTop(), getHeaderHeight(),
-            getTargetHeight() - getSourceHeight());
+            getTargetHeight() - HEIGHT_RESERVE_PIXELS);
         if (top != getRelativeTop()) {
           StyleUtils.setTop(getItemWidget(), top);
           setRelativeTop(top);
@@ -106,7 +106,7 @@ public class MonthMoveController implements MoveEvent.Handler {
 
     if (!TimeUtils.sameDate(date, item.getStartTime())) {
       DateTime start = TimeUtils.combine(date, item.getStartTime());
-      DateTime end = TimeUtils.combine(date, item.getEndTime());
+      DateTime end = new DateTime(start.getTime() + item.getDuration());
 
       switch (item.getItemType()) {
         case APPOINTMENT:
@@ -155,14 +155,6 @@ public class MonthMoveController implements MoveEvent.Handler {
     return selectedRow;
   }
 
-  private int getSourceHeight() {
-    return sourceHeight;
-  }
-
-  private int getSourceWidth() {
-    return sourceWidth;
-  }
-
   private int getTargetHeight() {
     return targetHeight;
   }
@@ -207,14 +199,6 @@ public class MonthMoveController implements MoveEvent.Handler {
     this.selectedRow = selectedRow;
   }
 
-  private void setSourceHeight(int sourceHeight) {
-    this.sourceHeight = sourceHeight;
-  }
-
-  private void setSourceWidth(int sourceWidth) {
-    this.sourceWidth = sourceWidth;
-  }
-
   private void setTargetHeight(int targetHeight) {
     this.targetHeight = targetHeight;
   }
@@ -246,9 +230,6 @@ public class MonthMoveController implements MoveEvent.Handler {
 
     Widget target = widget.getParent();
 
-    setSourceWidth(widget.getOffsetWidth());
-    setSourceHeight(widget.getOffsetHeight());
-
     setTargetLeft(target.getElement().getAbsoluteLeft());
     setTargetTop(target.getElement().getAbsoluteTop());
 
@@ -261,7 +242,7 @@ public class MonthMoveController implements MoveEvent.Handler {
     setPointerOffsetX(mover.getStartX() - widget.getElement().getAbsoluteLeft());
     setPointerOffsetY(mover.getStartY() - widget.getElement().getAbsoluteTop());
 
-    StyleUtils.setWidth(getItemWidget(), getSourceWidth());
+    StyleUtils.setWidth(getItemWidget(), widget.getOffsetWidth());
     getItemWidget().addStyleName(CalendarStyleManager.DRAG);
 
     return true;

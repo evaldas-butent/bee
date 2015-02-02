@@ -339,7 +339,9 @@
   top: 0;
   bottom: 0;
 }
-.bee-cal-MonthView .appointment .movable {
+
+.bee-cal-MonthView .appointment .movable,
+.bee-cal-MonthView .appointment-multiday .movable {
   cursor: move;
 }
 
