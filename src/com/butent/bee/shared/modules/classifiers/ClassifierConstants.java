@@ -143,6 +143,7 @@ public final class ClassifierConstants {
   public static final String COL_UNIT = "Unit";
   public static final String COL_UNIT_NAME = "Name";
   public static final String COL_TIME_UNIT = "TimeUnit";
+  public static final String COL_BASE_UNIT = "BaseUnit";
 
   public static final String COL_CONTACT = "Contact";
   public static final String COL_PHONE = "Phone";

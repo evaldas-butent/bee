@@ -584,8 +584,7 @@ public class UiHolderBean {
         return false;
       }
 
-    } else if (BeeUtils.inListSame(XmlUtils.getLocalName(element),
-        UiConstants.TAG_DATA_TREE, UiConstants.TAG_MULTI_SELECTOR)) {
+    } else if (BeeUtils.same(XmlUtils.getLocalName(element), UiConstants.TAG_DATA_TREE)) {
       String widgetViewName = element.getAttribute(UiConstants.ATTR_VIEW_NAME);
 
       if (!BeeUtils.isEmpty(widgetViewName) && !usr.isDataVisible(widgetViewName)) {

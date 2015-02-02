@@ -29,6 +29,7 @@ import com.butent.bee.shared.communication.ResponseObject;
 import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.font.FontAwesome;
 import com.butent.bee.shared.i18n.Localized;
+import com.butent.bee.shared.rights.Module;
 import com.butent.bee.shared.rights.ModuleAndSub;
 import com.butent.bee.shared.rights.RightsState;
 import com.butent.bee.shared.ui.Relation;
@@ -61,7 +62,6 @@ abstract class MultiStateForm extends RightsForm {
   private static final String STYLE_SUB_MODULE = STYLE_PREFIX + "sub-module";
   private static final String STYLE_MODULE_CELL = STYLE_MODULE + STYLE_SUFFIX_CELL;
   private static final String STYLE_MODULE_SELECTED = STYLE_MODULE + "-selected";
-  // private static final String STYLE_MODULE_CHANGED = STYLE_MODULE + "-changed";
 
   private static final String STYLE_MSO = STYLE_PREFIX + "mso";
   private static final String STYLE_MSO_COL_PREFIX = STYLE_MSO + "-col-";
@@ -71,7 +71,6 @@ abstract class MultiStateForm extends RightsForm {
   private static final String STYLE_MSO_LEAF = STYLE_MSO + "-leaf";
   private static final String STYLE_MSO_LEAF_CELL = STYLE_MSO_LEAF + STYLE_SUFFIX_CELL;
   private static final String STYLE_MSO_SELECTED = STYLE_MSO + "-selected";
-  // private static final String STYLE_MSO_CHANGED = STYLE_MSO + "-changed";
 
   private static final String DATA_KEY_STATE = "rights-state";
   private static final String DATA_KEY_MODULE = "rights-module";
@@ -106,11 +105,15 @@ abstract class MultiStateForm extends RightsForm {
 
   private static ModuleAndSub getModule(Widget widget) {
     String value = DomUtils.getDataProperty(widget.getElement(), DATA_KEY_MODULE);
-    ModuleAndSub ms = ModuleAndSub.parse(value);
-    if (ms == null) {
-      severe("Widget", DomUtils.getId(widget), "has no module");
+    if (Module.NEVER_MIND.equals(value)) {
+      return null;
+    } else {
+      ModuleAndSub ms = ModuleAndSub.parse(value);
+      if (ms == null) {
+        severe("Widget", DomUtils.getId(widget), "has no module");
+      }
+      return ms;
     }
-    return ms;
   }
 
   private static RightsState getRightsState(Widget widget) {
@@ -424,13 +427,28 @@ abstract class MultiStateForm extends RightsForm {
   }
 
   private Widget createModuleWidget(ModuleAndSub moduleAndSub) {
-    String caption = moduleAndSub.hasSubModule()
-        ? moduleAndSub.getSubModule().getCaption() : moduleAndSub.getModule().getCaption();
-    Label widget = new Label(caption);
-    widget.addStyleName(moduleAndSub.hasSubModule() ? STYLE_SUB_MODULE : STYLE_MODULE);
+    String caption;
 
-    String name = moduleAndSub.getName();
-    widget.setTitle(name);
+    if (moduleAndSub == null) {
+      caption = Module.NEVER_MIND;
+    } else if (moduleAndSub.hasSubModule()) {
+      caption = moduleAndSub.getSubModule().getCaption();
+    } else {
+      caption = moduleAndSub.getModule().getCaption();
+    }
+
+    Label widget = new Label(caption);
+
+    String name;
+    if (moduleAndSub == null) {
+      widget.addStyleName(STYLE_MODULE);
+      name = Module.NEVER_MIND;
+    } else {
+      widget.addStyleName(moduleAndSub.hasSubModule() ? STYLE_SUB_MODULE : STYLE_MODULE);
+
+      name = moduleAndSub.getName();
+      widget.setTitle(name);
+    }
 
     DomUtils.setDataProperty(widget.getElement(), DATA_KEY_MODULE, name);
     setDataType(widget, DATA_TYPE_MODULE);
@@ -442,7 +460,7 @@ abstract class MultiStateForm extends RightsForm {
           Widget source = (Widget) event.getSource();
           ModuleAndSub ms = getModule(source);
 
-          if (ms != null && !cellHasStyleName(source, STYLE_MODULE_SELECTED)) {
+          if (!cellHasStyleName(source, STYLE_MODULE_SELECTED)) {
             TableCellElement cell = getSelectedModuleCell();
             if (cell != null) {
               cell.removeClassName(STYLE_MODULE_SELECTED);

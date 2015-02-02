@@ -247,6 +247,10 @@
         <text>=crmTasks</text>
         <ChildGrid name="ChildTasks" relColumn="Company" />
       </page>
+      <page>
+        <text>=projects</text>
+        <ChildGrid name="CompanyProjects" relColumn="Company" />
+      </page>
     </TabbedPages>
 
   </FlowPanel>

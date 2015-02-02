@@ -17,6 +17,7 @@ import com.butent.bee.shared.data.ProviderType;
 import com.butent.bee.shared.data.filter.FilterComponent;
 import com.butent.bee.shared.data.filter.FilterDescription;
 import com.butent.bee.shared.data.value.ValueType;
+import com.butent.bee.shared.html.Attributes;
 import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogUtils;
 import com.butent.bee.shared.ui.Action;
@@ -433,6 +434,8 @@ public class GridLoaderBean {
 
         } else if (BeeUtils.same(key, ATTR_EDIT_IN_PLACE)) {
           dst.setEditInPlace(BeeUtils.toBooleanOrNull(value));
+        } else if (BeeUtils.same(key, Attributes.DRAGGABLE)) {
+          dst.setDraggable(BeeUtils.toBooleanOrNull(value));
 
         } else if (Flexibility.isAttributeRelevant(key)) {
           hasFlexibility = true;

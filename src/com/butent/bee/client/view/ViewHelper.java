@@ -133,6 +133,17 @@ public final class ViewHelper {
     }
   }
 
+  public static GridView getChildGrid(Widget root, String gridName) {
+    Collection<GridView> grids = getGrids(root);
+
+    for (GridView grid : grids) {
+      if (BeeUtils.same(grid.getGridName(), gridName)) {
+        return grid;
+      }
+    }
+    return null;
+  }
+
   public static List<View> getChildViews(Widget parent, boolean include) {
     List<View> views = new ArrayList<>();
 

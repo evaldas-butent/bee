@@ -57,10 +57,13 @@ import com.butent.bee.shared.data.IsRow;
 import com.butent.bee.shared.data.RelationUtils;
 import com.butent.bee.shared.data.event.DataChangeEvent;
 import com.butent.bee.shared.data.event.RowUpdateEvent;
+import com.butent.bee.shared.data.filter.Filter;
 import com.butent.bee.shared.data.view.DataInfo;
 import com.butent.bee.shared.font.FontAwesome;
 import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.io.FileInfo;
+import com.butent.bee.shared.modules.projects.ProjectConstants;
+import com.butent.bee.shared.modules.projects.ProjectStatus;
 import com.butent.bee.shared.modules.tasks.TaskConstants.TaskEvent;
 import com.butent.bee.shared.modules.tasks.TaskConstants.TaskStatus;
 import com.butent.bee.shared.modules.tasks.TaskUtils;
@@ -90,6 +93,7 @@ class TaskEditor extends AbstractFormInterceptor {
 
   private static final String STYLE_DURATION = CRM_STYLE_PREFIX + "taskDuration-";
   private static final String STYLE_DURATION_CELL = "Cell";
+  private static final String WIDGET_PROJECT_DATA_SUFFIX = "Data";
 
   private static final String STYLE_EXTENSION = CRM_STYLE_PREFIX + "taskExtension";
 
@@ -578,6 +582,8 @@ class TaskEditor extends AbstractFormInterceptor {
         header.addCommandItem(button);
       }
     }
+
+    setProjectStagesLimit(form, row);
   }
 
   @Override
@@ -711,6 +717,91 @@ class TaskEditor extends AbstractFormInterceptor {
       }
     });
     return false;
+  }
+
+  private static void setProjectStagesLimit(FormView form, IsRow row) {
+    int idxProjectOwner = form.getDataIndex(ALS_PROJECT_OWNER);
+    int idxProject = form.getDataIndex(ProjectConstants.COL_PROJECT);
+    /* int idxTaskState = form.getDataIndex(COL_STATUS); */
+    int idxProjectStatus = form.getDataIndex(ALS_PROJECT_STATUS);
+
+    if (BeeConst.isUndef(idxProjectOwner)) {
+      return;
+    }
+
+    if (BeeConst.isUndef(idxProject)) {
+      return;
+    }
+
+    Widget wProjectStage = form.getWidgetBySource(ProjectConstants.COL_PROJECT_STAGE);
+
+    if (wProjectStage instanceof DataSelector) {
+      ((DataSelector) wProjectStage).setEnabled(false);
+    } else {
+      return;
+    }
+
+    /*
+     * if (BeeConst.isUndef(idxTaskState)) { return; }
+     */
+
+    if (BeeConst.isUndef(idxProjectStatus)) {
+      return;
+    }
+
+    long currentUser = BeeUtils.unbox(BeeKeeper.getUser().getUserId());
+    long projectOwner = BeeUtils.unbox(row.getLong(idxProjectOwner));
+    long projectId = BeeUtils.unbox(row.getLong(idxProject));
+    /* int state = BeeUtils.unbox(row.getInteger(idxTaskState)); */
+    int projectStatus = BeeUtils.unbox(row.getInteger(idxProjectStatus));
+
+    if (DataUtils.isId(projectId)) {
+      setVisibleProjectData(form, true);
+    } else {
+      setVisibleProjectData(form, false);
+    }
+
+    if (currentUser != projectOwner) {
+      return;
+    }
+
+    /*
+     * if (TaskStatus.SCHEDULED.ordinal() != state) { return; }
+     */
+
+    if (ProjectStatus.APPROVED.ordinal() == projectStatus) {
+      return;
+    }
+
+    ((DataSelector) wProjectStage).getOracle().setAdditionalFilter(
+        Filter.equals(ProjectConstants.COL_PROJECT, projectId), true);
+    ((DataSelector) wProjectStage).setEnabled(true);
+
+  }
+
+  private static void setVisibleProjectData(FormView form, boolean visible) {
+    Widget widget = form.getWidgetBySource(ProjectConstants.COL_PROJECT);
+    if (widget != null) {
+      widget.setVisible(visible);
+    }
+
+    widget = form.getWidgetBySource(ProjectConstants.COL_PROJECT_STAGE);
+
+    if (widget != null) {
+      widget.setVisible(visible);
+    }
+
+    widget = form.getWidgetByName(ProjectConstants.COL_PROJECT + WIDGET_PROJECT_DATA_SUFFIX);
+
+    if (widget != null) {
+      widget.setVisible(visible);
+    }
+
+    widget = form.getWidgetByName(ProjectConstants.COL_PROJECT_STAGE + WIDGET_PROJECT_DATA_SUFFIX);
+
+    if (widget != null) {
+      widget.setVisible(visible);
+    }
   }
 
   private ParameterList createParams(TaskEvent event, BeeRow newRow, String comment) {

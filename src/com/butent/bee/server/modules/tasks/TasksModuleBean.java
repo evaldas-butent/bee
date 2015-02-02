@@ -465,7 +465,9 @@ public class TasksModuleBean implements BeeModule {
     if (qs.sqlExists(TBL_TASK_USERS, where)) {
       return registerTaskVisit(taskId, userId, System.currentTimeMillis());
     } else {
-      logger.warning("task", taskId, "access by unauthorized user", userId);
+      if (!usr.isAdministrator()) {
+        logger.warning("task", taskId, "access by unauthorized user", userId);
+      }
       return ResponseObject.emptyResponse();
     }
   }
@@ -1348,7 +1350,7 @@ public class TasksModuleBean implements BeeModule {
   }
 
   private SimpleRowSet getTaskActualTimesAndExpenses(List<Long> ids) {
-    SimpleRowSet result = new SimpleRowSet(new String [] {
+    SimpleRowSet result = new SimpleRowSet(new String[] {
         COL_TASK, COL_ACTUAL_DURATION, COL_ACTUAL_EXPENSES
     });
 
@@ -1428,7 +1430,7 @@ public class TasksModuleBean implements BeeModule {
 
       if (times.containsKey(id)) {
         timeInHours = Double.valueOf(BeeUtils.toString(times.get(id)))
-              / Double.valueOf(TimeUtils.MILLIS_PER_HOUR);
+            / Double.valueOf(TimeUtils.MILLIS_PER_HOUR);
       }
 
       if (expenses.containsKey(id)) {
@@ -1439,7 +1441,7 @@ public class TasksModuleBean implements BeeModule {
           BeeUtils.toString(id),
           BeeUtils.toString(timeInHours),
           BeeUtils.toString(expense)
-          });
+      });
     }
 
     return result;

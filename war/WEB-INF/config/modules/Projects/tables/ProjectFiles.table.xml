@@ -6,6 +6,7 @@
   >
   <Fields>
     <Relation name="Project" notNull="true" relation="Projects" cascade="DELETE" label="=project" />
+    <Relation name="ProjectEvent" relation="ProjectEvents" cascade="DELETE" label="=prjEvent" />
     <Relation name="File" relation="Files" notNull="true" editable="true" label="=file" />
     <String name="Caption" precision="100" label="=caption"/>
   </Fields>

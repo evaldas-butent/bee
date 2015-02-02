@@ -160,6 +160,8 @@ public enum Module implements HasLocalizedCaption {
     }
   };
 
+  public static final String NEVER_MIND = "*";
+
   static final List<ModuleAndSub> ENABLED_MODULES = new ArrayList<>();
 
   public static String getEnabledModulesAsString() {

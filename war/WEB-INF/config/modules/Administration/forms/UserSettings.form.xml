@@ -47,15 +47,15 @@
         <FlowPanel style="padding-left: 2em;">
           <br/>
           <CheckBox source="MailAssignedTasks" module="Tasks" summarize="true" />
-          <br module="Discussions"/>
-          <br module="Discussions"/>
+          <br module="Discussions" />
+          <br module="Discussions" />
           <CheckBox source="MailNewAnnouncements" module="Discussions" summarize="true" />
-          <br module="Discussions"/>
-          <br module="Discussions"/>
+          <br module="Discussions" />
+          <br module="Discussions" />
           <CheckBox source="MailNewDiscussions" module="Discussions" summarize="true" />
 
-          <br module="Calendar"/>
-          <br module="Calendar"/>
+          <br module="Calendar" />
+          <br module="Calendar" />
           <Table cellStyle="padding-right: 5px;" module="Calendar">
             <row>
               <CheckBox source="MailCompanyActions" summarize="true" />
@@ -118,7 +118,7 @@
         </FlowPanel>
       </page>
 
-      <page>
+      <page for="Style">
         <text>CSS</text>
         <SimplePanel>
           <InputArea source="Style" class="occupy-1" style="font-family: monospace;" 

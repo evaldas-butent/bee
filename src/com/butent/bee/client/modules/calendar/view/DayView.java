@@ -21,6 +21,7 @@ import com.butent.bee.client.modules.calendar.layout.ItemPanel;
 import com.butent.bee.client.modules.calendar.layout.MultiDayPanel;
 import com.butent.bee.client.style.StyleUtils;
 import com.butent.bee.shared.BeeConst;
+import com.butent.bee.shared.Pair;
 import com.butent.bee.shared.modules.calendar.CalendarItem;
 import com.butent.bee.shared.time.DateTime;
 import com.butent.bee.shared.time.JustDate;
@@ -181,6 +182,12 @@ public class DayView extends CalendarView {
     itemPanel.onClock(getSettings());
   }
 
+  @Override
+  public Pair<DateTime, Long> resolveCoordinates(int x, int y) {
+    DateTime dt = itemPanel.getCoordinatesDate(x, y, getSettings(), getDate(), getDisplayedDays());
+    return Pair.of(dt, null);
+  }
+
   private void addItemsToGrid(long calendarId, List<ItemAdapter> adapters,
       boolean multi, int columnIndex, boolean separate, Map<Long, String> attColors) {
 
@@ -239,8 +246,9 @@ public class DayView extends CalendarView {
   }
 
   private void timeBlockClick(Event event) {
-    DateTime dateTime = itemPanel.getCoordinatesDate(event.getClientX(), event.getClientY(),
-        getSettings(), getDate(), getDisplayedDays());
-    createAppointment(dateTime, null);
+    Pair<DateTime, Long> pair = resolveCoordinates(event.getClientX(), event.getClientY());
+    if (pair != null) {
+      createAppointment(pair.getA(), pair.getB());
+    }
   }
 }
