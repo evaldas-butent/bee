@@ -19,6 +19,7 @@ import com.butent.bee.client.data.Queries;
 import com.butent.bee.client.data.Queries.IntCallback;
 import com.butent.bee.client.event.EventUtils;
 import com.butent.bee.client.eventsboard.EventsBoard.EventFilesFilter;
+import com.butent.bee.client.i18n.Format;
 import com.butent.bee.client.layout.Flow;
 import com.butent.bee.client.ui.FormFactory.WidgetDescriptionCallback;
 import com.butent.bee.client.ui.IdentifiableWidget;
@@ -28,9 +29,11 @@ import com.butent.bee.client.view.edit.SaveChangesEvent;
 import com.butent.bee.client.view.form.FormView;
 import com.butent.bee.client.view.form.interceptor.AbstractFormInterceptor;
 import com.butent.bee.client.view.form.interceptor.FormInterceptor;
+import com.butent.bee.client.widget.InputText;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.communication.ResponseObject;
 import com.butent.bee.shared.data.BeeColumn;
+import com.butent.bee.shared.data.BeeRow;
 import com.butent.bee.shared.data.BeeRowSet;
 import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.IsRow;
@@ -45,6 +48,8 @@ import com.butent.bee.shared.modules.administration.AdministrationConstants;
 import com.butent.bee.shared.modules.projects.ProjectConstants.ProjectEvent;
 import com.butent.bee.shared.modules.projects.ProjectStatus;
 import com.butent.bee.shared.modules.tasks.TaskConstants;
+import com.butent.bee.shared.time.DateTime;
+import com.butent.bee.shared.time.TimeUtils;
 import com.butent.bee.shared.ui.Action;
 import com.butent.bee.shared.utils.BeeUtils;
 
@@ -61,6 +66,8 @@ class ProjectForm extends AbstractFormInterceptor implements DataChangeEvent.Han
   private static final String WIDGET_CHART_DATA = "ChartData";
   private static final String WIDGET_PROJECT_COMMENTS = "ProjectComments";
   private static final String WIDGET_TIME_UNIT = "TimeUnit";
+  private static final String WIDGET_EXPECTED_TASKS_DURATION = "ExpectedTasksDuration";
+  private static final String WIDGET_ACTUAL_TASKS_DURATION = "ActualTasksDuration";
 
   private static final Set<String> AUDIT_FIELDS = Sets.newHashSet(COL_PROJECT_START_DATE,
       COL_PROJECT_END_DATE, COL_COMAPNY, COL_PROJECT_STATUS, COL_PROJECT_OWNER,
@@ -77,6 +84,10 @@ class ProjectForm extends AbstractFormInterceptor implements DataChangeEvent.Han
   private Flow chartData;
   private Flow projectCommnets;
   private DataSelector unitSelector;
+  private InputText expectedTasksDuration;
+  private InputText actualTasksDuration;
+
+  private BeeRowSet timeUnits;
 
   @Override
   public void afterCreateWidget(String name, IdentifiableWidget widget,
@@ -119,8 +130,19 @@ class ProjectForm extends AbstractFormInterceptor implements DataChangeEvent.Han
           BeeRowSet rs = BeeRowSet.restore(response.getResponseAsString());
           us.getOracle().setAdditionalFilter(Filter.idIn(rs.getRowIds()), true);
           us.setEnabled(true);
+          setTimeUnits(rs);
         }
       });
+    }
+
+    if (widget instanceof InputText && BeeUtils.same(name, WIDGET_EXPECTED_TASKS_DURATION)) {
+      expectedTasksDuration = (InputText) widget;
+      expectedTasksDuration.clearValue();
+    }
+
+    if (widget instanceof InputText && BeeUtils.same(name, WIDGET_ACTUAL_TASKS_DURATION)) {
+      actualTasksDuration = (InputText) widget;
+      actualTasksDuration.clearValue();
     }
   }
 
@@ -132,6 +154,7 @@ class ProjectForm extends AbstractFormInterceptor implements DataChangeEvent.Han
   @Override
   public void afterRefresh(FormView form, IsRow row) {
     contractSelector.getOracle().setAdditionalFilter(Filter.equals(COL_PROJECT, row.getId()), true);
+    showComputedTimes(form, row);
     drawComments(form, row);
     drawChart(row);
   }
@@ -432,6 +455,10 @@ class ProjectForm extends AbstractFormInterceptor implements DataChangeEvent.Han
     };
   }
 
+  private BeeRowSet getTimeUnits() {
+    return timeUnits;
+  }
+
   private DataSelector getUnitSelector() {
     return unitSelector;
   }
@@ -457,6 +484,73 @@ class ProjectForm extends AbstractFormInterceptor implements DataChangeEvent.Han
       } else {
         auditSilentFields.add(column.getId());
       }
+    }
+  }
+
+  private void setTimeUnits(BeeRowSet timeUnits) {
+    this.timeUnits = timeUnits;
+
+    if (getFormView() == null) {
+      return;
+    }
+
+    if (getFormView().getActiveRow() == null) {
+      return;
+    }
+
+    showComputedTimes(getFormView(), getFormView().getActiveRow());
+  }
+
+  private void showComputedTimes(FormView form, IsRow row) {
+    if (form == null) {
+      return;
+    }
+
+    if (row == null) {
+      return;
+    }
+
+    int idxExpTD = form.getDataIndex(COL_EXPECTED_TASKS_DURATION);
+    int idxActTD = form.getDataIndex(COL_ACTUAL_TASKS_DURATION);
+    int idxUnit = form.getDataIndex(COL_PROJECT_TIME_UNIT);
+
+    double factor = BeeConst.DOUBLE_ONE;
+
+    if (!BeeConst.isUndef(idxUnit) && getTimeUnits() != null) {
+      long idValue = row.getLong(idxUnit);
+      BeeRow unitRow = getTimeUnits().getRowById(idValue);
+
+      if (unitRow != null) {
+        String prop = unitRow.getProperty(PROP_REAL_FACTOR);
+
+        if (!BeeUtils.isEmpty(prop) && BeeUtils.isDouble(prop)) {
+          factor = BeeUtils.toDouble(prop);
+        }
+      }
+    }
+
+    if (expectedTasksDuration != null && !BeeConst.isUndef(idxExpTD)) {
+      long value = BeeUtils.unbox(row.getLong(idxExpTD));
+
+      if (factor == BeeConst.DOUBLE_ONE) {
+        expectedTasksDuration.setText(Format.getDefaultTimeFormat().format(
+          new DateTime(value)));
+      } else {
+        double factorMls = factor * TimeUtils.MILLIS_PER_HOUR;
+
+        int calcValue = BeeUtils.toInt(value / BeeUtils.toInt(factorMls));
+        int decValue = BeeUtils.toInt(value % BeeUtils.toInt(factorMls));
+
+        expectedTasksDuration.setText(BeeUtils.joinWords(calcValue, Format.getDefaultTimeFormat()
+            .format(new DateTime(decValue))));
+      }
+    }
+
+    if (actualTasksDuration != null && !BeeConst.isUndef(idxActTD)) {
+      long value = BeeUtils.unbox(row.getLong(idxActTD));
+
+
+      actualTasksDuration.setText(Format.getDefaultTimeFormat().format(new DateTime(value)));
     }
   }
 

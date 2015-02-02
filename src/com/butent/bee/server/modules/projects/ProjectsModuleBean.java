@@ -14,6 +14,7 @@ import com.butent.bee.server.modules.BeeModule;
 import com.butent.bee.server.modules.ParamHolderBean;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.communication.ResponseObject;
+import com.butent.bee.shared.data.BeeRow;
 import com.butent.bee.shared.data.BeeRowSet;
 import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.IsRow;
@@ -140,8 +141,8 @@ public class ProjectsModuleBean implements BeeModule {
 
         for (int i = 0; i < times.getNumberOfRows(); i++) {
           Long rowId = times.getLong(i, ALS_ROW_ID);
-          Double expectedTaskDuration = times.getDouble(i, COL_EXPECTED_TASKS_DURATION);
-          Double actualTaskDuration = times.getDouble(i, COL_ACTUAL_TASKS_DURATION);
+          Long expectedTaskDuration = times.getLong(i, COL_EXPECTED_TASKS_DURATION);
+          Long actualTaskDuration = times.getLong(i, COL_ACTUAL_TASKS_DURATION);
           Double actualExpenses = times.getDouble(i, TaskConstants.COL_ACTUAL_EXPENSES);
 
           if (!DataUtils.isId(rowId)) {
@@ -168,6 +169,47 @@ public class ProjectsModuleBean implements BeeModule {
         }
       }
     });
+  }
+
+  private static void fillUnitProperties(BeeRowSet units, long defUnit) {
+    for (BeeRow row : units) {
+      row.setProperty(PROP_REAL_FACTOR, getUnitRealFactor(units, row.getId(), defUnit));
+    }
+  }
+
+  private static String getUnitRealFactor(BeeRowSet units, long id, long defUnit) {
+
+    if (id == defUnit) {
+      return BeeUtils.toString(BeeConst.DOUBLE_ONE);
+    }
+
+    BeeRow row = units.getRowById(id);
+
+    if (!BeeUtils.isEmpty(row.getProperty(PROP_REAL_FACTOR))) {
+      return row.getProperty(PROP_REAL_FACTOR);
+    }
+
+    int idxFact = units.getColumnIndex(ClassifierConstants.COL_UNIT_FACTOR);
+    int idxParent = units.getColumnIndex(ClassifierConstants.COL_BASE_UNIT);
+
+    double factValue = BeeConst.DOUBLE_ONE;
+    long parent = BeeConst.LONG_UNDEF;
+
+    if (!BeeConst.isUndef(idxFact)) {
+      factValue = BeeUtils.unbox(row.getDouble(idxFact));
+    }
+
+    if (!BeeConst.isUndef(idxParent)) {
+      parent = BeeUtils.unbox(row.getLong(idxParent));
+    }
+
+    if (!DataUtils.isId(parent)) {
+      return BeeUtils.toString(factValue);
+    }
+
+    double result = factValue * BeeUtils.toDouble(getUnitRealFactor(units, parent, defUnit));
+
+    return BeeUtils.toString(result);
   }
 
   private static void insertOrderedChartData(SimpleRowSet chartData, String[] data) {
@@ -300,10 +342,10 @@ public class ProjectsModuleBean implements BeeModule {
       }
 
       result.setValue(index, ALS_ROW_ID, BeeUtils.toString(rowId));
-      double timeInHours =
-          Double.valueOf(time.doubleValue()) / Double.valueOf(TimeUtils.MILLIS_PER_HOUR);
+      // double timeInHours =
+      // Double.valueOf(time.doubleValue()) / Double.valueOf(TimeUtils.MILLIS_PER_HOUR);
 
-      result.setValue(index, COL_EXPECTED_TASKS_DURATION, BeeUtils.toString(timeInHours));
+      result.setValue(index, COL_EXPECTED_TASKS_DURATION, BeeUtils.toString(time));
     }
 
     for (int i = 0; i < taskActualTimesAndExpenses.getNumberOfRows(); i++) {
@@ -321,9 +363,9 @@ public class ProjectsModuleBean implements BeeModule {
 
       result.setValue(index, ALS_ROW_ID, BeeUtils.toString(rowId));
 
-      double timeInHours =
-          Double.valueOf(time.doubleValue()) / Double.valueOf(TimeUtils.MILLIS_PER_HOUR);
-      result.setValue(index, COL_ACTUAL_TASKS_DURATION, BeeUtils.toString(timeInHours));
+      // double timeInHours =
+      // Double.valueOf(time.doubleValue()) / Double.valueOf(TimeUtils.MILLIS_PER_HOUR);
+      result.setValue(index, COL_ACTUAL_TASKS_DURATION, BeeUtils.toString(time));
 
       result.setValue(index, TaskConstants.COL_ACTUAL_EXPENSES, BeeUtils.toString(expenses));
     }
@@ -525,6 +567,8 @@ public class ProjectsModuleBean implements BeeModule {
         units.addRows(relUnits.getRows());
       }
     }
+
+    fillUnitProperties(units, defUnit);
 
     return ResponseObject.response(units);
   }
