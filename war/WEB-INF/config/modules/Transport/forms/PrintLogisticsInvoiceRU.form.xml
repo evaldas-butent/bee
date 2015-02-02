@@ -281,7 +281,7 @@ if (row.Term) {
 
   return "Sąskaitą apmokėti iki / Cчет оплатить до: " + dt.getFullYear()
   + "." + (dt.getMonth() &lt; 9 ? "0" : "") + (dt.getMonth() + 1)
-  + "." + (dt.getDate() &lt; 9 ? "0" : "") + dt.getDate()
+  + "." + (dt.getDate() &lt; 10 ? "0" : "") + dt.getDate()
   + " (per/через " + Math.ceil((dt.getTime() - new Date(row.Date).getTime()) / 86400000) + " dien./дней)";
 }
 return null;

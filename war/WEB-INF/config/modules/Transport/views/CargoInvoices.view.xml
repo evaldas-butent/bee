@@ -66,6 +66,36 @@
     
     <ExternalJoin name="Sale" source="CargoIncomes" joinType="LEFT">
       <AggregateColumn name="Sale" aggregate="MAX" />
+      
+      <SimpleJoin name="Cargo" joinType="LEFT">
+        <AggregateColumn name="Number" aggregate="MIN" alias="MinRef" />
+        <AggregateColumn name="Number" aggregate="MAX" alias="MaxRef" />
+        <AggregateColumn name="Number" aggregate="COUNT" alias="CntRef" />
+
+        <SimpleJoin name="LoadingPlace" joinType="LEFT">
+          <AggregateColumn name="Date" aggregate="MIN" alias="MinLoadingDate" />
+          <AggregateColumn name="Date" aggregate="MAX" alias="MaxLoadingDate" />
+          <AggregateColumn name="Date" aggregate="COUNT" alias="CntLoadingDate" />
+          
+          <SimpleJoin joinType="LEFT" name="Country">
+            <AggregateColumn name="Name" aggregate="MIN" alias="MinLoadingCountry" />
+            <AggregateColumn name="Name" aggregate="MAX" alias="MaxLoadingCountry" />
+            <AggregateColumn name="Name" aggregate="COUNT" alias="CntLoadingCountry" />
+          </SimpleJoin>
+        </SimpleJoin>
+
+        <SimpleJoin name="UnloadingPlace" joinType="LEFT">
+          <AggregateColumn name="Date" aggregate="MIN" alias="MinUnloadingDate" />
+          <AggregateColumn name="Date" aggregate="MAX" alias="MaxUnloadingDate" />
+          <AggregateColumn name="Date" aggregate="COUNT" alias="CntUnloadingDate" />
+          
+          <SimpleJoin joinType="LEFT" name="Country">
+            <AggregateColumn name="Name" aggregate="MIN" alias="MinUnloadingCountry" />
+            <AggregateColumn name="Name" aggregate="MAX" alias="MaxUnloadingCountry" />
+            <AggregateColumn name="Name" aggregate="COUNT" alias="CntUnloadingCountry" />
+          </SimpleJoin>
+        </SimpleJoin>
+      </SimpleJoin>
     </ExternalJoin>
   </Columns>
   <Order>

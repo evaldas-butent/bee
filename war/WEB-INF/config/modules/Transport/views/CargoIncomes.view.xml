@@ -29,6 +29,7 @@
 
     <SimpleColumn name="Sale" />
     <SimpleJoin name="Sale" joinType="LEFT">
+      <SimpleColumn name="Date" alias="SaleDate" />
       <SimpleColumn name="InvoicePrefix" alias="SalePrefix" />
       <SimpleColumn name="InvoiceNo" alias="SaleNo" />
     </SimpleJoin>

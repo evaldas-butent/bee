@@ -306,6 +306,7 @@
       <xs:enumeration value="DistinctCriterionValues" />
       <xs:enumeration value="DistinctDocumentItems" />
       <xs:enumeration value="DistinctForwarderVehicles" />
+      <xs:enumeration value="DistinctPlaceCompanies" />
       <xs:enumeration value="DocumentData" />
       <xs:enumeration value="DocumentFiles" />
       <xs:enumeration value="DocumentItems" />

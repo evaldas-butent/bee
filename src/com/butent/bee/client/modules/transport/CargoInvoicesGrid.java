@@ -23,6 +23,7 @@ import com.butent.bee.shared.data.event.DataChangeEvent;
 import com.butent.bee.shared.data.view.RowInfo;
 import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.modules.trade.TradeConstants;
+import com.butent.bee.shared.rights.RegulatedWidget;
 
 import java.util.HashSet;
 import java.util.Set;
@@ -34,7 +35,10 @@ public class CargoInvoicesGrid extends AbstractGridInterceptor implements ClickH
   @Override
   public void afterCreatePresenter(GridPresenter presenter) {
     presenter.getHeader().clearCommandPanel();
-    presenter.getHeader().addCommandItem(action);
+
+    if (BeeKeeper.getUser().isWidgetVisible(RegulatedWidget.TO_ERP)) {
+      presenter.getHeader().addCommandItem(action);
+    }
   }
 
   @Override

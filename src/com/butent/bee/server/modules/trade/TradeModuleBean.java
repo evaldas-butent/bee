@@ -432,11 +432,13 @@ public class TradeModuleBean implements BeeModule {
             COL_TRADE_NUMBER, COL_TRADE_TERM, COL_TRADE_SUPPLIER, COL_TRADE_CUSTOMER)
         .addField(TBL_CURRENCIES, COL_CURRENCY_NAME, COL_CURRENCY)
         .addField(COL_TRADE_WAREHOUSE_FROM, COL_WAREHOUSE_CODE, COL_TRADE_WAREHOUSE_FROM)
+        .addField(TBL_USERS, "EmployerId", COL_TRADE_MANAGER)
         .addFrom(trade)
         .addFromLeft(TBL_CURRENCIES, sys.joinTables(TBL_CURRENCIES, trade, COL_CURRENCY))
         .addFromLeft(TBL_WAREHOUSES, COL_TRADE_WAREHOUSE_FROM,
             sys.joinTables(TBL_WAREHOUSES, COL_TRADE_WAREHOUSE_FROM, trade,
                 COL_TRADE_WAREHOUSE_FROM))
+        .addFromLeft(TBL_USERS, sys.joinTables(TBL_USERS, trade, COL_TRADE_MANAGER))
         .setWhere(sys.idInList(trade, ids));
 
     if (BeeUtils.same(trade, TBL_SALES)) {
@@ -527,6 +529,7 @@ public class TradeModuleBean implements BeeModule {
       doc.setCustomer(companies.get(invoice.getLong(COL_TRADE_CUSTOMER)));
       doc.setTerm(invoice.getDate(COL_TRADE_TERM));
       doc.setCurrency(invoice.getValue(COL_CURRENCY));
+      doc.setManager(invoice.getValue(COL_TRADE_MANAGER));
 
       SimpleRowSet items = qs.getData(new SqlSelect()
           .addFields(TBL_ITEMS, COL_ITEM_NAME, COL_ITEM_EXTERNAL_CODE)

@@ -36,6 +36,9 @@
       <renderer type="flag" />
     </CalcColumn>
 
+    <DataColumn name="LoadingCompany" readOnly="true" />
+    <DataColumn name="UnloadingCompany" readOnly="true" />
+
     <DataColumn name="OrderNotes" minWidth="100" whiteSpace="nowrap" />
     <DataColumn name="Description" minWidth="100" whiteSpace="nowrap" />
 
