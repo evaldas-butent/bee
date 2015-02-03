@@ -1,6 +1,7 @@
 package com.butent.bee.server.modules.projects;
 
 import com.google.common.collect.Lists;
+import com.google.common.collect.Sets;
 import com.google.common.eventbus.Subscribe;
 
 import static com.butent.bee.shared.modules.projects.ProjectConstants.*;
@@ -61,7 +62,16 @@ public class ProjectsModuleBean implements BeeModule {
   @Override
   public List<SearchResult> doSearch(String query) {
     List<SearchResult> result = new ArrayList<>();
-    // TODO: implement global search in this module
+
+    List<SearchResult> tasksSr =
+        qs.getSearchResults(VIEW_PROJECTS,
+            Filter.anyContains(Sets.newHashSet(COL_PROJECT_NAME,
+                ClassifierConstants.ALS_CONTACT_FIRST_NAME,
+                ClassifierConstants.ALS_CONTACT_LAST_NAME, ALS_OWNER_FIRST_NAME,
+                ALS_OWNER_LAST_NAME, ClassifierConstants.ALS_COMPANY_NAME),
+                query));
+    result.addAll(tasksSr);
+
     return result;
   }
 
