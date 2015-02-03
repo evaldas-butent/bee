@@ -415,6 +415,10 @@ public class CalendarPanel extends Split implements AppointmentEvent.Handler, Pr
     return enabled;
   }
 
+  public boolean isTodoVisible() {
+    return !todoContainer.isEmpty() && getWidgetSize(todoContainer) > 0;
+  }
+
   @Override
   public void onAppointment(AppointmentEvent event) {
     if (event.isRelevant(calendar)) {

@@ -398,7 +398,7 @@ public class CalendarTask extends CalendarItem implements BeeSerializable {
 
   @Override
   public boolean isRemovable(Long userId) {
-    return isOwner(userId);
+    return false;
   }
 
   @Override

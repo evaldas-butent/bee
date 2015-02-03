@@ -147,8 +147,7 @@ public final class CalendarUtils {
     return filterByAttendee(lst, id);
   }
 
-  public static ItemWidget findWidget(Collection<ItemWidget> widgets,
-      Element element) {
+  public static ItemWidget findWidget(Collection<ItemWidget> widgets, Element element) {
     if (widgets.isEmpty() || element == null) {
       return null;
     }
@@ -156,6 +155,15 @@ public final class CalendarUtils {
     for (ItemWidget widget : widgets) {
       if (widget.getElement().isOrHasChild(element)) {
         return widget;
+      }
+    }
+    return null;
+  }
+
+  public static CalendarPanel getCalendarPanel(Widget widget) {
+    for (Widget p = widget; p != null; p = p.getParent()) {
+      if (p instanceof CalendarPanel) {
+        return (CalendarPanel) p;
       }
     }
     return null;
@@ -196,8 +204,7 @@ public final class CalendarUtils {
     return result;
   }
 
-  public static int getEndPixels(CalendarSettings settings,
-      Collection<ItemWidget> widgets) {
+  public static int getEndPixels(CalendarSettings settings, Collection<ItemWidget> widgets) {
     Assert.notNull(settings);
 
     int hour = settings.getWorkingHourEnd();
@@ -266,8 +273,7 @@ public final class CalendarUtils {
     return result;
   }
 
-  public static int getStartPixels(CalendarSettings settings,
-      Collection<ItemWidget> widgets) {
+  public static int getStartPixels(CalendarSettings settings, Collection<ItemWidget> widgets) {
     Assert.notNull(settings);
 
     int hour = settings.getScrollToHour();
@@ -287,7 +293,6 @@ public final class CalendarUtils {
     int diff = TimeUtils.dayDiff(date, TimeUtils.today());
     return BeeUtils.betweenExclusive(diff, 0, days) ? diff : BeeConst.UNDEF;
   }
-
 
   public static String renderRange(Range<DateTime> range) {
     return (range == null) ? BeeConst.STRING_EMPTY

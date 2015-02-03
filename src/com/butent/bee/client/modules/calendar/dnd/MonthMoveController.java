@@ -2,8 +2,10 @@ package com.butent.bee.client.modules.calendar.dnd;
 
 import com.google.gwt.user.client.ui.Widget;
 
+import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.event.logical.MoveEvent;
 import com.butent.bee.client.modules.calendar.Appointment;
+import com.butent.bee.client.modules.calendar.CalendarPanel;
 import com.butent.bee.client.modules.calendar.ItemWidget;
 import com.butent.bee.client.modules.calendar.CalendarStyleManager;
 import com.butent.bee.client.modules.calendar.CalendarUtils;
@@ -229,11 +231,20 @@ public class MonthMoveController implements MoveEvent.Handler {
     setItemWidget(widget);
 
     Widget target = widget.getParent();
+    CalendarPanel panel = CalendarUtils.getCalendarPanel(widget);
 
     setTargetLeft(target.getElement().getAbsoluteLeft());
     setTargetTop(target.getElement().getAbsoluteTop());
 
-    setTargetWidth(target.getElement().getClientWidth());
+    int width;
+    if (widget.getItem().isRemovable(BeeKeeper.getUser().getUserId())
+        && panel != null && panel.isTodoVisible()) {
+      width = panel.getElement().getClientWidth();
+    } else {
+      width = target.getElement().getClientWidth();
+    }
+
+    setTargetWidth(width);
     setTargetHeight(target.getElement().getClientHeight());
 
     setRelativeLeft(widget.getElement().getOffsetLeft());
