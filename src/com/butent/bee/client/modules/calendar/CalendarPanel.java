@@ -375,6 +375,10 @@ public class CalendarPanel extends Split implements AppointmentEvent.Handler, Pr
     return CalendarKeeper.getCalendarSupplierKey(getCalendarId());
   }
 
+  public Flow getTodoContainer() {
+    return todoContainer;
+  }
+
   @Override
   public Presenter getViewPresenter() {
     return this;
