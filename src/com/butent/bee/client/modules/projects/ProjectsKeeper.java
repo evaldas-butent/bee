@@ -36,6 +36,7 @@ public final class ProjectsKeeper {
 
     /* Register form handlers */
     FormFactory.registerFormInterceptor(FORM_PROJECT, new ProjectForm());
+    FormFactory.registerFormInterceptor(FORM_PROJECT_STAGE, new ProjectStageForm());
   }
 
   private ProjectsKeeper() {

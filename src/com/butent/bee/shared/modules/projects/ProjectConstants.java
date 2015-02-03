@@ -106,6 +106,7 @@ public final class ProjectConstants {
   public static final String COL_RATE = "Rate";
 
   public static final String FORM_PROJECT = "Project";
+  public static final String FORM_PROJECT_STAGE = "ProjectStage";
   public static final String FORM_NEW_COMMENT = "NewProjectComment";
   public static final String FORM_NEW_PROJECT_REASON_COMMENT = "NewProjectReasonComment";
 
@@ -119,6 +120,7 @@ public final class ProjectConstants {
   public static final String PROP_DOCUMENT_LINK = "DocumentLink";
   public static final String PROP_REASON_DATA = "ReasonData";
   public static final String PROP_REAL_FACTOR = "RealFactor";
+  public static final String PROP_TIME_UNTIS = "TimeUnits";
 
   public static final String PRM_PROJECT_COMMON_RATE = "ProjectCommonRate";
   public static final String PRM_PROJECT_HOUR_UNIT = "ProjectHourUnit";

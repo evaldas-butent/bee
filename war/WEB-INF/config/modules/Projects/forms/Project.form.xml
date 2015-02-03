@@ -9,7 +9,7 @@
   <!ENTITY inp2 "&inline; width: 200px;">
   <!ENTITY inp3 "&inline; width: 150px;">
   <!ENTITY inp4 "&inline; width: 100px;">
-  <!ENTITY inp5 "&inline; width: 70px; ">
+  <!ENTITY inp5 "&inline; width: 100px; ">
   <!ENTITY inp6 "&inline; width: 110px;">
   <!ENTITY inp7 "&inline; width: 795px; height:100px; max-height: 200px; max-width: 795px;">
 ]>

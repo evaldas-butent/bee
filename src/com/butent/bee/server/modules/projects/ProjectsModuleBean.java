@@ -178,6 +178,40 @@ public class ProjectsModuleBean implements BeeModule {
           }
         }
       }
+
+      @Subscribe
+      public void fillProjectsTimeUnits(ViewQueryEvent event) {
+        if (event.isBefore()) {
+          return;
+        }
+
+        if (!BeeUtils.same(VIEW_PROJECTS, event.getTargetName())
+            && !BeeUtils.same(VIEW_PROJECT_STAGES, event.getTargetName())) {
+          return;
+        }
+
+        BeeRowSet viewRows = event.getRowset();
+
+        if (viewRows.isEmpty()) {
+          return;
+        }
+
+        ResponseObject units = getTimeUnits();
+
+        if (units == null) {
+          return;
+        }
+
+        if (!units.hasResponse(BeeRowSet.class)) {
+          return;
+        }
+
+        BeeRowSet unitsRs = (BeeRowSet) units.getResponse();
+
+        for (BeeRow row : viewRows) {
+          row.setProperty(PROP_TIME_UNTIS, unitsRs.serialize());
+        }
+      }
     });
   }
 
