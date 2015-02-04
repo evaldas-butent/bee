@@ -20,9 +20,6 @@
         <SimpleColumn name="Name" alias="UnitName" />
         <SimpleColumn name="Factor" />
         <SimpleColumn name="BaseUnit" />
-        <SimpleColumn name="DefaultUnit" >
-          <x:boolean>null</x:boolean>
-        </SimpleColumn>
       </SimpleJoin>
     </SimpleJoin>
     <SimpleColumn name="Name" />

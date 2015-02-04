@@ -113,6 +113,10 @@ public final class ProjectConstants {
   public static final String GRID_ALL_PROJECTS = "AllProjects";
   public static final String GRID_PROJECTS = "Projects";
   public static final String GRID_PROJECT_USERS = "ProjectUsers";
+  public static final String GRID_PROJECT_STAGES = "ProjectStages";
+
+  public static final String NAME_EXPECTED_TASKS_DURATION = "CalcExpectedTasksDuration";
+  public static final String NAME_ACTUAL_TASKS_DURATION = "CalcActualTasksDuration";
 
   public static final String PROP_USERS = "Users";
   public static final String PROP_REASON = "Reason";

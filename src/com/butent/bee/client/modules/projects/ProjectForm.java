@@ -11,6 +11,8 @@ import static com.butent.bee.shared.modules.projects.ProjectConstants.*;
 
 import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.Callback;
+import com.butent.bee.client.communication.ParameterList;
+import com.butent.bee.client.communication.ResponseCallback;
 import com.butent.bee.client.composite.DataSelector;
 import com.butent.bee.client.data.Data;
 import com.butent.bee.client.data.Queries;
@@ -28,6 +30,7 @@ import com.butent.bee.client.view.form.interceptor.AbstractFormInterceptor;
 import com.butent.bee.client.view.form.interceptor.FormInterceptor;
 import com.butent.bee.client.widget.InputText;
 import com.butent.bee.shared.BeeConst;
+import com.butent.bee.shared.communication.ResponseObject;
 import com.butent.bee.shared.data.BeeColumn;
 import com.butent.bee.shared.data.BeeRow;
 import com.butent.bee.shared.data.BeeRowSet;
@@ -94,7 +97,6 @@ class ProjectForm extends AbstractFormInterceptor implements DataChangeEvent.Han
 
     if (widget instanceof Flow && BeeUtils.same(name, WIDGET_CHART_DATA)) {
       chartData = (Flow) widget;
-      chartData.clear();
     }
 
     if (widget instanceof Flow && BeeUtils.same(name, WIDGET_PROJECT_COMMENTS)) {
@@ -108,12 +110,10 @@ class ProjectForm extends AbstractFormInterceptor implements DataChangeEvent.Han
 
     if (widget instanceof InputText && BeeUtils.same(name, WIDGET_EXPECTED_TASKS_DURATION)) {
       expectedTasksDuration = (InputText) widget;
-      expectedTasksDuration.clearValue();
     }
 
     if (widget instanceof InputText && BeeUtils.same(name, WIDGET_ACTUAL_TASKS_DURATION)) {
       actualTasksDuration = (InputText) widget;
-      actualTasksDuration.clearValue();
     }
   }
 
@@ -130,15 +130,20 @@ class ProjectForm extends AbstractFormInterceptor implements DataChangeEvent.Han
       String prop = row.getProperty(PROP_TIME_UNTIS);
       BeeRowSet unitsRows = BeeRowSet.maybeRestore(prop);
       setTimeUnits(unitsRows);
+    } else {
+      ParameterList params = ProjectsKeeper.createSvcArgs(SVC_GET_TIME_UNITS);
+      BeeKeeper.getRpc().makePostRequest(params, getTimeUnitsResponse(row));
     }
 
-    if (unitSelector != null) {
-      unitSelector.setEnabled(false);
+    if (getTimeUnits() != null && DataUtils.isId(row.getId())) {
+      showComputedTimes(form, row);
+    } else {
+      if (actualTasksDuration != null) {
+        actualTasksDuration.setText(null);
+      }
 
-      if (getTimeUnits() != null) {
-        unitSelector.getOracle().setAdditionalFilter(Filter.idIn(getTimeUnits().getRowIds()), true);
-        unitSelector.setEnabled(true);
-        showComputedTimes(form, row);
+      if (expectedTasksDuration != null) {
+        expectedTasksDuration.setText(null);
       }
     }
 
@@ -204,7 +209,7 @@ class ProjectForm extends AbstractFormInterceptor implements DataChangeEvent.Han
     }
 
     DataInfo data = Data.getDataInfo(VIEW_PROJECTS);
-    List<BeeColumn> cols = data.getColumns(); // event.getColumns(); Data
+    List<BeeColumn> cols = data.getColumns();
 
     Map<String, String> oldDataMap = Maps.newHashMap();
     Map<String, String> newDataMap = Maps.newHashMap();
@@ -446,6 +451,29 @@ class ProjectForm extends AbstractFormInterceptor implements DataChangeEvent.Han
     return timeUnits;
   }
 
+  private ResponseCallback getTimeUnitsResponse(final IsRow row) {
+    return new ResponseCallback() {
+
+      @Override
+      public void onResponse(ResponseObject response) {
+        if (response == null) {
+          return;
+        }
+
+        if (response.isEmpty() || !response.hasResponse(BeeRowSet.class)) {
+          return;
+        }
+
+        if (row != null) {
+          row.setProperty(PROP_TIME_UNTIS, response.getResponseAsString());
+        }
+
+        BeeRowSet rs = BeeRowSet.restore(response.getResponseAsString());
+        setTimeUnits(rs);
+      }
+    };
+  }
+
   private Flow getProjectComments() {
     return projectCommnets;
   }
@@ -472,6 +500,12 @@ class ProjectForm extends AbstractFormInterceptor implements DataChangeEvent.Han
 
   private void setTimeUnits(BeeRowSet timeUnits) {
     this.timeUnits = timeUnits;
+
+    if (unitSelector != null) {
+      if (getTimeUnits() != null) {
+        unitSelector.getOracle().setAdditionalFilter(Filter.idIn(getTimeUnits().getRowIds()), true);
+      }
+    }
   }
 
   private void showComputedTimes(FormView form, IsRow row) {
