@@ -265,7 +265,7 @@ class NewReasonCommentForm extends AbstractFormInterceptor {
         value = Localized.getConstants().filterNullLabel();
       } else {
         value = ProjectsHelper.getDisplayValue(projectForm.getViewName(),
-            projectValidator.getColumnId(), value, projectForm.getActiveRow());
+            projectValidator.getColumnId(), value, projectRow);
       }
 
       toFlow.getElement().setInnerText(value);

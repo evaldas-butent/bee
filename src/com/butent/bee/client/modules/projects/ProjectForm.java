@@ -106,6 +106,7 @@ class ProjectForm extends AbstractFormInterceptor implements DataChangeEvent.Han
 
     if (widget instanceof DataSelector && BeeUtils.same(name, WIDGET_TIME_UNIT)) {
       unitSelector = (DataSelector) widget;
+      unitSelector.setEnabled(false);
     }
 
     if (widget instanceof InputText && BeeUtils.same(name, WIDGET_EXPECTED_TASKS_DURATION)) {
@@ -136,6 +137,8 @@ class ProjectForm extends AbstractFormInterceptor implements DataChangeEvent.Han
     }
 
     if (getTimeUnits() != null && DataUtils.isId(row.getId())) {
+      showComputedTimes(form, row);
+    } else if (getTimeUnits() == null && DataUtils.isId(row.getId())) {
       showComputedTimes(form, row);
     } else {
       if (actualTasksDuration != null) {
@@ -316,6 +319,56 @@ class ProjectForm extends AbstractFormInterceptor implements DataChangeEvent.Han
     return currentUser == projectUser;
   }
 
+  private static void resetData(FormView form, IsRow row, CellValidateEvent event) {
+
+    if (form == null) {
+      return;
+    }
+
+    if (row == null) {
+      return;
+    }
+
+    if (event == null) {
+      return;
+    }
+
+    String column = event.getColumnId();
+
+    if (BeeUtils.isEmpty(column)) {
+      return;
+    }
+
+    IsRow oldRow = form.getOldRow();
+    int idx = form.getDataIndex(event.getColumnId());
+
+    if (oldRow == null) {
+      return;
+    }
+
+    if (BeeConst.isUndef(idx)) {
+      return;
+    }
+
+    String viewName = form.getViewName();
+
+    if (!BeeUtils.isEmpty(viewName) && Data.getDataInfo(viewName) != null) {
+      DataInfo info = Data.getDataInfo(viewName);
+
+      if (info.hasRelation(column)) {
+        for (ViewColumn vCol : info.getDescendants(column, false)) {
+          int decIdx = form.getDataIndex(vCol.getName());
+          if (!BeeConst.isUndef(decIdx)) {
+            row.setValue(decIdx, oldRow.getValue(decIdx));
+            form.refreshBySource(vCol.getName());
+          }
+        }
+      }
+      row.setValue(idx, oldRow.getValue(idx));
+      form.refreshBySource(event.getColumnId());
+    }
+  }
+
   private void commitData(final FormView form, final String column, final String value) {
     Queries.update(form.getViewName(), Filter.compareId(form.getActiveRowId()), column, value,
         new IntCallback() {
@@ -427,15 +480,7 @@ class ProjectForm extends AbstractFormInterceptor implements DataChangeEvent.Han
               if (result.booleanValue()) {
                 commitData(form, event.getColumnId(), event.getNewValue());
               } else {
-                IsRow oldRow = form.getOldRow();
-                int idx = form.getDataIndex(event.getColumnId());
-
-                if (BeeConst.isUndef(idx)) {
-                  return;
-                }
-
-                row.setValue(idx, oldRow.getValue(idx));
-                form.refreshBySource(event.getColumnId());
+                resetData(form, row, event);
                 unlockValidationEvent(event.getColumnId());
               }
             }
@@ -461,6 +506,7 @@ class ProjectForm extends AbstractFormInterceptor implements DataChangeEvent.Han
         }
 
         if (response.isEmpty() || !response.hasResponse(BeeRowSet.class)) {
+          setTimeUnits(null);
           return;
         }
 
@@ -502,8 +548,11 @@ class ProjectForm extends AbstractFormInterceptor implements DataChangeEvent.Han
     this.timeUnits = timeUnits;
 
     if (unitSelector != null) {
-      if (getTimeUnits() != null) {
+      if (timeUnits != null) {
         unitSelector.getOracle().setAdditionalFilter(Filter.idIn(getTimeUnits().getRowIds()), true);
+        unitSelector.setEnabled(true);
+      } else {
+        unitSelector.setEnabled(false);
       }
     }
   }
