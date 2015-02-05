@@ -28,6 +28,7 @@ import com.butent.bee.client.view.form.FormView;
 import com.butent.bee.client.view.form.interceptor.AbstractFormInterceptor;
 import com.butent.bee.client.view.form.interceptor.FormInterceptor;
 import com.butent.bee.client.widget.InputText;
+import com.butent.bee.client.widget.ListBox;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.communication.ResponseObject;
 import com.butent.bee.shared.data.BeeColumn;
@@ -66,6 +67,7 @@ class ProjectForm extends AbstractFormInterceptor implements DataChangeEvent.Han
   private static final String WIDGET_TIME_UNIT = "TimeUnit";
   private static final String WIDGET_EXPECTED_TASKS_DURATION = "ExpectedTasksDuration";
   private static final String WIDGET_ACTUAL_TASKS_DURATION = "ActualTasksDuration";
+  private static final String WIDGET_STATUS = "Status";
 
   private static final Set<String> AUDIT_FIELDS = Sets.newHashSet(COL_PROJECT_START_DATE,
       COL_PROJECT_END_DATE, COL_COMAPNY, COL_PROJECT_STATUS, COL_PROJECT_OWNER,
@@ -85,6 +87,7 @@ class ProjectForm extends AbstractFormInterceptor implements DataChangeEvent.Han
   private DataSelector unitSelector;
   private InputText expectedTasksDuration;
   private InputText actualTasksDuration;
+  private ListBox status;
 
   private BeeRowSet timeUnits;
 
@@ -115,6 +118,10 @@ class ProjectForm extends AbstractFormInterceptor implements DataChangeEvent.Han
 
     if (widget instanceof InputText && BeeUtils.same(name, WIDGET_ACTUAL_TASKS_DURATION)) {
       actualTasksDuration = (InputText) widget;
+    }
+
+    if (widget instanceof ListBox && BeeUtils.same(name, WIDGET_STATUS)) {
+      status = (ListBox) widget;
     }
   }
 
@@ -151,15 +158,26 @@ class ProjectForm extends AbstractFormInterceptor implements DataChangeEvent.Han
     }
 
     if (DataUtils.isId(row.getId())) {
-      form.setEnabled(isOwner(form, row));
+      form.setEnabled(isOwner(form, row) && !isProjectApproved(form, row));
+
+      if (status != null) {
+        status.setEnabled(isOwner(form, row));
+      }
+
     } else {
       form.setEnabled(true);
+
+      if (status != null) {
+        status.setEnabled(true);
+      }
     }
 
     lockedValidations.clear();
     auditSilentFields.clear();
     EventUtils.clearRegistry(reasonRegistry);
     if (!isProjectScheduled(form, row) && form.isEnabled() && DataUtils.isId(row.getId())) {
+      setFormAuditValidation(form, row);
+    } else if (isProjectApproved(form, row)) {
       setFormAuditValidation(form, row);
     }
 
@@ -300,6 +318,18 @@ class ProjectForm extends AbstractFormInterceptor implements DataChangeEvent.Han
     int status = BeeUtils.unbox(row.getInteger(idxStatus));
 
     return ProjectStatus.SCHEDULED.ordinal() == status;
+  }
+
+  private static boolean isProjectApproved(FormView form, IsRow row) {
+    int idxStatus = form.getDataIndex(COL_PROJECT_STATUS);
+
+    if (BeeConst.isUndef(idxStatus)) {
+      return false;
+    }
+
+    int status = BeeUtils.unbox(row.getInteger(idxStatus));
+
+    return ProjectStatus.APPROVED.ordinal() == status;
   }
 
   private static boolean isProjectUser(FormView form, IsRow row) {
