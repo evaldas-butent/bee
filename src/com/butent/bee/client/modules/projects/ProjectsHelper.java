@@ -136,6 +136,11 @@ public final class ProjectsHelper {
   }
 
   public static String getDisplayValue(String viewName, String column, String value, IsRow row) {
+    return getDisplayValue(viewName, column, value, row, null);
+  }
+
+  public static String getDisplayValue(String viewName, String column, String value, IsRow row,
+      final Callback<String> relatedValue) {
     String result = value;
 
     if (BeeUtils.isEmpty(result)) {
@@ -151,7 +156,7 @@ public final class ProjectsHelper {
       return result;
     }
 
-    if (info.hasRelation(column) && row == null) {
+    if (info.hasRelation(column) && row == null && !DataUtils.isId(value)) {
       return result;
     } else if (info.hasRelation(column) && row != null) {
       result = BeeConst.STRING_EMPTY;
@@ -161,8 +166,32 @@ public final class ProjectsHelper {
                 .getColumnIndex(vCol.getName())), null));
       }
       return result;
-    }
+    } else if (info.hasRelation(column) && row == null && DataUtils.isId(value)) {
+      String relView = info.getRelation(column);
+      List<String> cols = Lists.newArrayList();
 
+      for (ViewColumn vCol : info.getDescendants(column, false)) {
+        cols.add(vCol.getField());
+      }
+
+      if (cols.isEmpty()) {
+        return result;
+      }
+
+      Queries.getRow(relView, BeeUtils.toLong(value), cols, new RowCallback() {
+
+        @Override
+        public void onSuccess(BeeRow wResult) {
+          if (relatedValue == null) {
+            return;
+          }
+
+          relatedValue.onSuccess(BeeUtils.join(BeeConst.STRING_SPACE, wResult.getValues()));
+        }
+      });
+
+      return result;
+    }
 
     ValueType type = info.getColumnType(column);
     IsColumn col = info.getColumn(column);

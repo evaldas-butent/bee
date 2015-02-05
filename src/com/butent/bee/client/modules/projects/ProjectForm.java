@@ -3,7 +3,6 @@ package com.butent.bee.client.modules.projects;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
-import com.google.gwt.core.client.Scheduler.ScheduledCommand;
 import com.google.gwt.event.shared.HasHandlers;
 import com.google.web.bindery.event.shared.HandlerRegistration;
 
@@ -75,6 +74,7 @@ class ProjectForm extends AbstractFormInterceptor implements DataChangeEvent.Han
   private static final BeeLogger logger = LogUtils.getLogger(ProjectForm.class);
 
   private final Collection<HandlerRegistration> registry = new ArrayList<>();
+  private final Collection<HandlerRegistration> reasonRegistry = new ArrayList<>();
   private final ProjectEventsHandler eventsHandler = new ProjectEventsHandler();
   private final Set<String> auditSilentFields = Sets.newHashSet();
   private final Map<String, Boolean> lockedValidations = Maps.newHashMap();
@@ -148,6 +148,19 @@ class ProjectForm extends AbstractFormInterceptor implements DataChangeEvent.Han
       if (expectedTasksDuration != null) {
         expectedTasksDuration.setText(null);
       }
+    }
+
+    if (DataUtils.isId(row.getId())) {
+      form.setEnabled(isOwner(form, row));
+    } else {
+      form.setEnabled(true);
+    }
+
+    lockedValidations.clear();
+    auditSilentFields.clear();
+    EventUtils.clearRegistry(reasonRegistry);
+    if (!isProjectScheduled(form, row) && form.isEnabled() && DataUtils.isId(row.getId())) {
+      setFormAuditValidation(form, row);
     }
 
     drawComments(form, row);
@@ -264,23 +277,6 @@ class ProjectForm extends AbstractFormInterceptor implements DataChangeEvent.Han
         event.getRowId(), null, newDataSent, oldDataSent);
   }
 
-  @Override
-  public boolean onStartEdit(FormView form, IsRow row, ScheduledCommand focusCommand) {
-    auditSilentFields.clear();
-    lockedValidations.clear();
-    if (isOwner(form, row)) {
-      form.setEnabled(true);
-    } else {
-      form.setEnabled(false);
-    }
-
-    if (!isProjectScheduled(form, row) && form.isEnabled()) {
-      setFormAuditValidation(form, row);
-    }
-
-    return super.onStartEdit(form, row, focusCommand);
-  }
-
   private static boolean isOwner(FormView form, IsRow row) {
     int idxOwner = form.getDataIndex(COL_PROJECT_OWNER);
 
@@ -386,6 +382,7 @@ class ProjectForm extends AbstractFormInterceptor implements DataChangeEvent.Han
             }
             form.refreshBySource(column);
             unlockValidationEvent(column);
+            form.refresh();
           }
         });
   }
@@ -536,7 +533,7 @@ class ProjectForm extends AbstractFormInterceptor implements DataChangeEvent.Han
     auditSilentFields.clear();
     for (BeeColumn column : form.getDataColumns()) {
       if (AUDIT_FIELDS.contains(column.getId())) {
-        registry.add(form
+        reasonRegistry.add(form
             .addCellValidationHandler(column.getId(), getAuditColumnHandler(form, row)));
       } else {
         auditSilentFields.add(column.getId());
