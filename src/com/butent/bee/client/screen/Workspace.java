@@ -56,6 +56,7 @@ import com.butent.bee.shared.utils.PropertyUtils;
 
 import java.util.ArrayList;
 import java.util.EnumSet;
+import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -495,12 +496,14 @@ public class Workspace extends TabbedPages implements CaptionChangeEvent.Handler
   private static final String STYLE_ACTION_DISABLED = STYLE_ACTION_PREFIX + "disabled";
   private static final String STYLE_ACTION_SEPARATOR = STYLE_ACTION_PREFIX + "separator";
 
+  static final String KEY_CONTENT = "content";
   static final String KEY_DIRECTION = "direction";
   static final String KEY_SIZE = "size";
 
   private static final String KEY_SELECTED = "selected";
   private static final String KEY_HIDDEN = "hidden";
   private static final String KEY_TABS = "tabs";
+  private static final String KEY_FORCE = "force";
 
   private static final int SIZE_FACTOR = 1_000_000;
 
@@ -511,12 +514,97 @@ public class Workspace extends TabbedPages implements CaptionChangeEvent.Handler
 
   private static final int RESTORATION_TIMEOUT = TimeUtils.MILLIS_PER_MINUTE * 5;
 
+  public static boolean isForced(JSONObject json) {
+    return json != null && json.containsKey(KEY_FORCE);
+  }
+
+  public static List<String> maybeForceSpace(List<String> input, JSONObject json) {
+    List<String> result = new ArrayList<>();
+
+    if (json == null) {
+      if (!BeeUtils.isEmpty(input)) {
+        result.addAll(input);
+      }
+
+    } else if (BeeUtils.isEmpty(input)) {
+      result.add(json.toString());
+
+    } else if (!json.containsKey(KEY_FORCE)) {
+      result.addAll(input);
+
+    } else {
+      List<JSONObject> spaces = new ArrayList<>();
+      Set<String> contents = new HashSet<>();
+
+      for (String s : input) {
+        JSONObject space = JsonUtils.parse(s);
+
+        if (space != null) {
+          spaces.add(space);
+          contents.addAll(getContentValues(space));
+        }
+      }
+
+      if (contents.containsAll(getContentValues(json))) {
+        result.addAll(input);
+
+      } else {
+        String force = JsonUtils.getString(json, KEY_FORCE);
+        boolean last = BeeUtils.inListSame(force, "end", "+", ">");
+
+        if (!last) {
+          result.add(json.toString());
+        }
+
+        for (JSONObject space : spaces) {
+          if (space.containsKey(KEY_SELECTED)) {
+            space.put(KEY_SELECTED, new JSONNumber(BeeConst.UNDEF));
+          }
+          result.add(space.toString());
+        }
+
+        if (last) {
+          result.add(json.toString());
+        }
+      }
+    }
+
+    return result;
+  }
+
   static int restoreSize(double size, int max) {
     return BeeUtils.round(size * max / SIZE_FACTOR);
   }
 
   static int scaleSize(int size, int max) {
     return BeeUtils.round((double) size * SIZE_FACTOR / max);
+  }
+
+  private static Set<String> getContentValues(JSONObject json) {
+    Set<String> values = new HashSet<>();
+
+    if (json.containsKey(KEY_CONTENT)) {
+      String value = JsonUtils.getString(json, KEY_CONTENT);
+      if (!BeeUtils.isEmpty(value)) {
+        values.add(value);
+      }
+    }
+
+    if (json.containsKey(KEY_TABS)) {
+      JSONArray tabs = json.get(KEY_TABS).isArray();
+
+      if (tabs != null) {
+        for (int i = 0; i < tabs.size(); i++) {
+          JSONObject tab = tabs.get(i).isObject();
+          String value = JsonUtils.getString(tab, KEY_CONTENT);
+          if (!BeeUtils.isEmpty(value)) {
+            values.add(value);
+          }
+        }
+      }
+    }
+
+    return values;
   }
 
   private static Set<Direction> getHiddenDirections(JSONObject json) {
