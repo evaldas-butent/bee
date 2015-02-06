@@ -1006,6 +1006,11 @@ public class TransportModuleBean implements BeeModule, HasTimerService {
         .addFields(TBL_CARGO_INCOMES,
             COL_CARGO, COL_TRADE_VAT_PLUS, COL_TRADE_VAT, COL_TRADE_VAT_PERC,
             COL_SHOW_ADDITIONAL_ROUTE, COL_ADDITIONAL_ROUTE)
+        .addExpr(SqlUtils.concat(
+            SqlUtils.field(TBL_CARGO_INCOMES, sys.getIdName(TBL_CARGO_INCOMES)),
+            SqlUtils.constant("_"),
+            SqlUtils.field(TBL_ASSESSMENTS, sys.getIdName(TBL_ASSESSMENTS))),
+            COL_TRADE_ITEM_ARTICLE)
         .addField(loadPlace, COL_DATE, COL_LOADING_PLACE)
         .addField(unloadPlace, COL_DATE, COL_UNLOADING_PLACE)
         .addField(loadCountry, COL_COUNTRY_CODE, loadCountry)
@@ -1111,7 +1116,7 @@ public class TransportModuleBean implements BeeModule, HasTimerService {
       }
     }
     String[] tableFields = new String[] {COL_ITEM, COL_TRADE_VAT_PLUS, COL_TRADE_VAT,
-        COL_TRADE_VAT_PERC, "Parent" + COL_ASSESSMENT};
+        COL_TRADE_VAT_PERC, COL_TRADE_ITEM_ARTICLE, "Parent" + COL_ASSESSMENT};
 
     String[] group = DataUtils.isId(mainItem) ? tableFields : rs.getColumnNames();
     Map<String, Multimap<String, String>> map = new HashMap<>();
@@ -1219,9 +1224,8 @@ public class TransportModuleBean implements BeeModule, HasTimerService {
 
     SqlSelect ss = new SqlSelect()
         .addFields(TBL_CARGO_EXPENSES, COL_TRADE_VAT_PLUS, COL_TRADE_VAT, COL_TRADE_VAT_PERC,
-            "Income")
+            VAR_INCOME)
         .addField(TBL_ASSESSMENTS, sys.getIdName(TBL_ASSESSMENTS), COL_ASSESSMENT)
-        .addField(TBL_ASSESSMENTS, COL_ASSESSMENT, "Parent" + COL_ASSESSMENT)
         .addFrom(TBL_CARGO_EXPENSES)
         .addFromInner(TBL_SERVICES,
             sys.joinTables(TBL_SERVICES, TBL_CARGO_EXPENSES, COL_SERVICE))
@@ -1230,9 +1234,9 @@ public class TransportModuleBean implements BeeModule, HasTimerService {
         .addFromInner(TBL_ORDERS, sys.joinTables(TBL_ORDERS, TBL_ORDER_CARGO, COL_ORDER))
         .addFromLeft(TBL_ASSESSMENTS, sys.joinTables(TBL_ORDER_CARGO, TBL_ASSESSMENTS, COL_CARGO))
         .setWhere(SqlUtils.and(wh, SqlUtils.positive(TBL_CARGO_EXPENSES, COL_AMOUNT)))
-        .addGroup(TBL_CARGO_EXPENSES, COL_TRADE_VAT_PLUS, COL_TRADE_VAT, COL_TRADE_VAT_PERC)
-        .addGroup(TBL_CARGO_EXPENSES, "Income")
-        .addGroup(TBL_ASSESSMENTS, sys.getIdName(TBL_ASSESSMENTS), COL_ASSESSMENT);
+        .addGroup(TBL_CARGO_EXPENSES, COL_TRADE_VAT_PLUS, COL_TRADE_VAT, COL_TRADE_VAT_PERC,
+            VAR_INCOME)
+        .addGroup(TBL_ASSESSMENTS, sys.getIdName(TBL_ASSESSMENTS));
 
     if (DataUtils.isId(mainItem)) {
       ss.addConstant(mainItem, COL_ITEM);
@@ -1253,16 +1257,15 @@ public class TransportModuleBean implements BeeModule, HasTimerService {
       SqlInsert insert = new SqlInsert(TBL_PURCHASE_ITEMS)
           .addConstant(COL_PURCHASE, purchaseId)
           .addConstant(COL_ITEM, row.getLong(COL_ITEM))
+          .addConstant(COL_TRADE_ITEM_ARTICLE,
+              row.getValue(VAR_INCOME) + "_" + row.getValue(COL_ASSESSMENT))
           .addConstant(COL_TRADE_ITEM_QUANTITY, 1)
           .addConstant(COL_TRADE_ITEM_PRICE, BeeUtils.round(row.getDouble(COL_AMOUNT), 2))
           .addConstant(COL_TRADE_VAT_PLUS, row.getBoolean(COL_TRADE_VAT_PLUS))
           .addConstant(COL_TRADE_VAT, row.getDouble(COL_TRADE_VAT))
           .addConstant(COL_TRADE_VAT_PERC, row.getBoolean(COL_TRADE_VAT_PERC));
 
-      qs.insertData(insert.addConstant(COL_TRADE_ITEM_NOTE,
-          XmlUtils.createString("CargoInfo", new String[] {"Income", row.getValue("Income"),
-              COL_ASSESSMENT, row.getValue(COL_ASSESSMENT),
-              "Parent" + COL_ASSESSMENT, row.getValue("Parent" + COL_ASSESSMENT)})));
+      qs.insertData(insert);
     }
     return response.addErrorsFrom(qs.updateDataWithResponse(new SqlUpdate(TBL_CARGO_EXPENSES)
         .addConstant(COL_PURCHASE, purchaseId)

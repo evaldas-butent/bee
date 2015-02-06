@@ -350,6 +350,9 @@ public class AssessmentForm extends PrintFormInterceptor implements SelectorEven
           newRow.setValue(gridView.getDataIndex(prefix + col), form.getStringValue(prefix + col));
         }
       }
+      newRow.setValue(gridView.getDataIndex("CargoDescription"),
+          form.getStringValue("Description"));
+
       return super.onStartNewRow(gridView, oldRow, newRow);
     }
 

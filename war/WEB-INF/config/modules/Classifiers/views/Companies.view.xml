@@ -100,6 +100,8 @@
     <SimpleColumn name="DaysAsBuyer" />
     <SimpleColumn name="DaysAsSupplier" />
     
+    <SimpleColumn name="Offshore" />
+
     <SimpleColumn name="Notes" />
    </Columns>
   <Order>

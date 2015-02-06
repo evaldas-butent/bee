@@ -27,10 +27,10 @@
       </row>
 
       <row>
-        <Label style="&lbl1;" for="Code" class="bee-required" />
-        <InputText source="Code" style="&inp1;" required="true" />
-        <Label style="&lbl1;" for="VATCode" class="bee-required" />
-        <InputText source="VATCode" style="&inp1;" upperCase="true" required="true" />
+        <Label style="&lbl1;" for="Code" />
+        <InputText source="Code" style="&inp1;" />
+        <Label style="&lbl1;" for="VATCode" />
+        <InputText source="VATCode" style="&inp1;" upperCase="true" />
         <Label style="&lbl1;" module="Transport" for="ExchangeCode" />
         <InputText source="ExchangeCode" style="&inp1;" module="Transport" />
       </row>
@@ -197,6 +197,9 @@
             <row for="Rating">
               <Label text="=rating" style="&lbl1;"/>
               <InputText source="Rating" style="width: 100px;" summarize="true" />
+              <cell colSpan="3">
+                <CheckBox source="Offshore" />
+              </cell>
             </row>
             <row>
               <Label text="Pavadinimas2" style="&lbl1;" />

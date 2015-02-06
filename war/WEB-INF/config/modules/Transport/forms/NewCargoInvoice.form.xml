@@ -47,8 +47,8 @@
 		<!-- <cell colSpan="4"> -->
 	     <!-- <Table style="border-spacing: 0px;"> 
 		    <row> -->
-  	 	      <Label text="=trdTerm" style="&lbl2; width:143px; text-align:right; margin-right: 5px;"/>
-  		      <InputDate source="Term" style="width:150px;" />
+  	 	      <Label for="Term" class="bee-required" style="&lbl2; width:143px; text-align:right; margin-right: 5px;"/>
+  		      <InputDate source="Term" required="true" style="width:150px;" />
   		      <Label name="MainItemCaption" text="=transportMainItemCaption" style="&lbl2; width:210px; margin-right: 5px;"/>
               <UnboundSelector name="MainItem" viewName="Items" renderColumns="Name" readOnly="true" />
 		    <!--</row>

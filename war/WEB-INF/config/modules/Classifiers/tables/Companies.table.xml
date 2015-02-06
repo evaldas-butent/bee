@@ -37,6 +37,8 @@
     <Relation name="DefaultCompanyUser" relation="CompanyUsers" unique="true" cascade="SET_NULL" label="=defaultCompanyUser" editable="true" />
     <Numeric name="DaysAsBuyer" precision="3" label="=daysAsBuyer" />
     <Numeric name="DaysAsSupplier" precision="3" label="=daysAsSupplier" />
+    
+    <Boolean name="Offshore" label="Ofšorinė" />
 
     <Text name="Notes" label="=notes" />
   </Fields>

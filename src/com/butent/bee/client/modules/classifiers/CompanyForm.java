@@ -2,6 +2,7 @@ package com.butent.bee.client.modules.classifiers;
 
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
+import com.google.gwt.event.shared.HasHandlers;
 import com.google.gwt.user.client.ui.Widget;
 
 import static com.butent.bee.shared.modules.classifiers.ClassifierConstants.*;
@@ -13,6 +14,7 @@ import com.butent.bee.client.communication.ResponseCallback;
 import com.butent.bee.client.data.Data;
 import com.butent.bee.client.data.Queries;
 import com.butent.bee.client.data.Queries.IntCallback;
+import com.butent.bee.client.dom.DomUtils;
 import com.butent.bee.client.grid.ChildGrid;
 import com.butent.bee.client.grid.HtmlTable;
 import com.butent.bee.client.modules.trade.TradeKeeper;
@@ -21,6 +23,8 @@ import com.butent.bee.client.style.StyleUtils;
 import com.butent.bee.client.ui.FormFactory.WidgetDescriptionCallback;
 import com.butent.bee.client.ui.IdentifiableWidget;
 import com.butent.bee.client.view.HeaderView;
+import com.butent.bee.client.view.add.ReadyForInsertEvent;
+import com.butent.bee.client.view.edit.SaveChangesEvent;
 import com.butent.bee.client.view.form.FormView;
 import com.butent.bee.client.view.form.interceptor.AbstractFormInterceptor;
 import com.butent.bee.client.view.form.interceptor.FormInterceptor;
@@ -88,7 +92,6 @@ public class CompanyForm extends AbstractFormInterceptor {
         public GridInterceptor getInstance() {
           return null;
         }
-
 
         private void setAsPrimary(Long gridRowId) {
           setAsPrimary(gridRowId, false);
@@ -168,6 +171,41 @@ public class CompanyForm extends AbstractFormInterceptor {
   @Override
   public FormInterceptor getInstance() {
     return new CompanyForm();
+  }
+
+  @Override
+  public void onReadyForInsert(HasHandlers listener, ReadyForInsertEvent event) {
+    if (!checkRequired()) {
+      event.consume();
+      return;
+    }
+    super.onReadyForInsert(listener, event);
+  }
+
+  @Override
+  public void onSaveChanges(HasHandlers listener, SaveChangesEvent event) {
+    if (!checkRequired()) {
+      event.consume();
+      return;
+    }
+    super.onSaveChanges(listener, event);
+  }
+
+  private boolean checkRequired() {
+    if (!BeeUtils.toBoolean(getStringValue("Offshore"))) {
+      for (String field : new String[] {COL_COMPANY_CODE, COL_COMPANY_VAT_CODE, COL_ADDRESS,
+          COL_CITY, COL_COUNTRY}) {
+        if (BeeUtils.isEmpty(getStringValue(field))) {
+          DomUtils.setFocus(getFormView().getWidgetBySource(field), true);
+
+          getFormView().notifySevere(Data.getColumnLabel(getViewName(), field),
+              Localized.getConstants().valueRequired());
+
+          return false;
+        }
+      }
+    }
+    return true;
   }
 
   private void refreshCreditInfo() {

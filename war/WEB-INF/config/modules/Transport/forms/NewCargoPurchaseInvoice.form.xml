@@ -43,8 +43,8 @@
 	    <cell colSpan="4">
 		  <Table>
 		    <row>
-			  <Label text="=trdTerm" style="&lbl2; width:131px; text-align:right; margin-right: 5px;" />
-			  <InputDate source="Term" style="width:95px;" />
+			  <Label for="Term" class="bee-required" style="&lbl2; width:131px; text-align:right; margin-right: 5px;" />
+			  <InputDate source="Term" required="true" style="width:95px;" />
 			  <Label name="MainItemCaption" text="=transportMainItemCaption" style="&lbl2; width:214px; margin-right: 5px;" />
 			  <UnboundSelector name="MainItem" viewName="Items" renderColumns="Name" readOnly="true" />
 			</row>

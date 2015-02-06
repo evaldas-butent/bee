@@ -551,35 +551,7 @@ public class TradeModuleBean implements BeeModule {
         wsItem.setPrice(item.getValue(COL_TRADE_ITEM_PRICE));
         wsItem.setVat(item.getValue(COL_TRADE_VAT), item.getBoolean(COL_TRADE_VAT_PERC),
             item.getBoolean(COL_TRADE_VAT_PLUS));
-
-        if (BeeUtils.same(tradeItems, TBL_SALE_ITEMS)) {
-          wsItem.setArticle(invoice.getValue(COL_TRADE_INVOICE_PREFIX)
-              + invoice.getValue(COL_TRADE_INVOICE_NO));
-        } else {
-          String xml = item.getValue(COL_TRADE_ITEM_NOTE);
-          Long incomeId = BeeUtils.toLongOrNull(XmlUtils.getText(xml, "Income"));
-          String article = null;
-
-          if (DataUtils.isId(incomeId)) {
-            SimpleRow row = qs.getRow(new SqlSelect()
-                .addFields(TBL_SALES, COL_TRADE_INVOICE_PREFIX, COL_TRADE_INVOICE_NO)
-                .addFrom(TransportConstants.TBL_CARGO_INCOMES)
-                .addFromInner(TBL_SALES,
-                    sys.joinTables(TBL_SALES, TransportConstants.TBL_CARGO_INCOMES, COL_SALE))
-                .setWhere(sys.idEquals(TransportConstants.TBL_CARGO_INCOMES, incomeId)));
-
-            if (row != null) {
-              article = BeeUtils.join("", row.getValue(COL_TRADE_INVOICE_PREFIX),
-                  row.getValue(COL_TRADE_INVOICE_NO));
-            }
-          }
-          if (BeeUtils.isEmpty(article)) {
-            article = BeeUtils.joinItems(
-                XmlUtils.getText(xml, "Parent" + TransportConstants.COL_ASSESSMENT),
-                XmlUtils.getText(xml, TransportConstants.COL_ASSESSMENT));
-          }
-          wsItem.setArticle(article);
-        }
+        wsItem.setArticle(item.getValue(COL_TRADE_ITEM_ARTICLE));
         wsItem.setNote(item.getValue(COL_TRADE_ITEM_NOTE));
       }
       if (response.hasErrors()) {

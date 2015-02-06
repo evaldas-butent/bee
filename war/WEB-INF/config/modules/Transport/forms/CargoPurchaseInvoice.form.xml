@@ -57,7 +57,7 @@
     <TabbedPages class="flexible">
       <page>
         <text>=productsServices</text>
-        <ChildGrid name="PurchaseItems" relColumn="Purchase" />
+        <ChildGrid name="PurchaseItems" relColumn="Purchase" disablable="false" />
       </page>
       <page>
         <text>=trdNotes</text>
