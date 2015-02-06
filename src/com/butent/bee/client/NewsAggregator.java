@@ -522,6 +522,8 @@ public class NewsAggregator implements HandlesAllDataEvents {
 
       clear(false);
 
+      String notifyMsg = BeeConst.STRING_EMPTY;
+
       for (String s : arr) {
         final Subscription subscription = Subscription.restore(s);
         subscriptions.add(subscription);
@@ -532,7 +534,16 @@ public class NewsAggregator implements HandlesAllDataEvents {
           SubscriptionPanel subscriptionPanel = new SubscriptionPanel(subscription, open);
 
           newsPanel.addSubscriptionPanel(subscriptionPanel);
+          notifyMsg =
+              BeeUtils.join(BeeConst.STRING_EOL, notifyMsg, BeeUtils.joinWords(subscription
+                  .getLabel(), BeeUtils
+              .bracket(subscription.countNew() + subscription.countUpdated())));
+
         }
+      }
+
+      if (!BeeUtils.isEmpty(notifyMsg)) {
+        Global.showBrowserNotify(notifyMsg);
       }
 
       newsPanel.removeStyleName(STYLE_APATHY);

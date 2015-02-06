@@ -285,6 +285,26 @@ public final class JsUtils {
   public static native void setPropertyToNull(JavaScriptObject obj, String p) /*-{
     obj[p] = null;
   }-*/;
+  
+  public static native void showBrowserNotification(String title, String msg) /*-{
+    if (!Notification) {
+      return;
+    }
+    
+    if (Notification.permission !== "granted") {
+      Notification.requestPermission();
+      return;
+    }
+    
+     if (typeof  $wnd.BeeNotification !== "undefined") {
+      $wnd.BeeNotification.close();
+     }
+
+     $wnd.BeeNotification = new Notification(title, {
+        icon : 'images/sclogo.png',
+        body : msg,});
+        
+  }-*/;
 
   public static native JsArrayString slice(JsArrayString src, int start, int end) /*-{
     if (src == null) {

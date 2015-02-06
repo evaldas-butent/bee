@@ -35,6 +35,7 @@ import com.butent.bee.client.screen.Spaces;
 import com.butent.bee.client.style.StyleUtils;
 import com.butent.bee.client.ui.IdentifiableWidget;
 import com.butent.bee.client.ui.WidgetInitializer;
+import com.butent.bee.client.utils.JsUtils;
 import com.butent.bee.client.view.edit.Editor;
 import com.butent.bee.client.view.search.Filters;
 import com.butent.bee.shared.Assert;
@@ -463,6 +464,10 @@ public final class Global {
         response.notify(BeeKeeper.getScreen());
       }
     });
+  }
+
+  public static void showBrowserNotify(String msg) {
+    JsUtils.showBrowserNotification(BeeKeeper.getScreen().getUserInterface().getTitle(), msg);
   }
 
   public static void showError(List<String> messages) {

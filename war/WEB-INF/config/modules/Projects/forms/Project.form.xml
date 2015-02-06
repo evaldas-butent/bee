@@ -177,7 +177,6 @@
         <text>=income</text>
         <FlowPanel></FlowPanel>
       </page>
-
       <page>
         <text>=prjSchedule</text>
         <FlowPanel name="ChartData" />
