@@ -13,6 +13,7 @@ import com.butent.bee.server.data.SystemBean;
 import com.butent.bee.server.http.RequestInfo;
 import com.butent.bee.server.modules.BeeModule;
 import com.butent.bee.server.modules.ParamHolderBean;
+import com.butent.bee.server.news.NewsBean;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.communication.ResponseObject;
 import com.butent.bee.shared.data.BeeRow;
@@ -28,6 +29,7 @@ import com.butent.bee.shared.modules.classifiers.ClassifierConstants;
 import com.butent.bee.shared.modules.projects.ProjectConstants;
 import com.butent.bee.shared.modules.tasks.TaskConstants;
 import com.butent.bee.shared.modules.tasks.TaskConstants.TaskStatus;
+import com.butent.bee.shared.news.Feed;
 import com.butent.bee.shared.rights.Module;
 import com.butent.bee.shared.time.DateTime;
 import com.butent.bee.shared.time.TimeUtils;
@@ -55,6 +57,9 @@ public class ProjectsModuleBean implements BeeModule {
 
   @EJB
   QueryServiceBean qs;
+
+  @EJB
+  NewsBean news;
 
   @EJB
   ParamHolderBean prm;
@@ -98,10 +103,10 @@ public class ProjectsModuleBean implements BeeModule {
     String module = getModule().getName();
 
     List<BeeParameter> params = Lists.newArrayList(
-                BeeParameter.createNumber(module, PRM_PROJECT_COMMON_RATE, false,
-                    BeeConst.DOUBLE_ZERO),
-                BeeParameter.createRelation(module, PRM_PROJECT_HOUR_UNIT,
-                    ClassifierConstants.TBL_UNITS, ClassifierConstants.COL_UNIT_NAME)
+        BeeParameter.createNumber(module, PRM_PROJECT_COMMON_RATE, false,
+            BeeConst.DOUBLE_ZERO),
+        BeeParameter.createRelation(module, PRM_PROJECT_HOUR_UNIT,
+            ClassifierConstants.TBL_UNITS, ClassifierConstants.COL_UNIT_NAME)
         );
     return params;
   }
@@ -213,6 +218,8 @@ public class ProjectsModuleBean implements BeeModule {
         }
       }
     });
+
+    news.registerUsageQueryProvider(Feed.PROJECT, new ProjectsUsageQueryProvider());
   }
 
   private static void fillUnitProperties(BeeRowSet units, long defUnit) {
@@ -367,8 +374,8 @@ public class ProjectsModuleBean implements BeeModule {
     SimpleRowSet taskActualTimesAndExpenses = getTasksActualTimesAndExpenses(ids, viewName);
 
     SimpleRowSet result = new SimpleRowSet(new String[] {
-       ALS_ROW_ID, COL_EXPECTED_TASKS_DURATION, COL_ACTUAL_TASKS_DURATION,
-       TaskConstants.COL_ACTUAL_EXPENSES
+        ALS_ROW_ID, COL_EXPECTED_TASKS_DURATION, COL_ACTUAL_TASKS_DURATION,
+        TaskConstants.COL_ACTUAL_EXPENSES
     });
 
     Map<Long, Integer> rowTimesHash = new HashMap<>();

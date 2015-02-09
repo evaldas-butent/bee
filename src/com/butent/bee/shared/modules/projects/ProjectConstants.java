@@ -66,6 +66,7 @@ public final class ProjectConstants {
   public static final String COL_ACTUAL_TASKS_DURATION = "ActualTasksDuration";
 
   public static final String COL_PROJECT = "Project";
+  public static final String COL_PROJECT_ID = "ProjectID";
   public static final String COL_PROJECT_NAME = "Name";
   public static final String COL_PROJECT_END_DATE = "EndDate";
   public static final String COL_PROJECT_STAGE = "ProjectStage";
@@ -141,6 +142,11 @@ public final class ProjectConstants {
   public static final String VIEW_PROJECT_DATES = "ProjectDates";
   public static final String VIEW_PROJECT_FILES = "ProjectFiles";
   public static final String VIEW_PROJECT_EVENTS = "ProjectEvents";
+
+  public static final String TBL_PROJECT_USAGE = "ProjectUsage";
+  public static final String TBL_PROJECTS = "Projects";
+  public static final String TBL_PROJECT_EVENTS = "ProjectEvents";
+  public static final String TBL_PROJECT_USERS = "ProjectUsers";
 
   /**
    * Register module Enumerations.
