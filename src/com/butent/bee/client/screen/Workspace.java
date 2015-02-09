@@ -557,9 +557,7 @@ public class Workspace extends TabbedPages implements CaptionChangeEvent.Handler
         }
 
         for (JSONObject space : spaces) {
-          if (space.containsKey(KEY_SELECTED)) {
-            space.put(KEY_SELECTED, new JSONNumber(BeeConst.UNDEF));
-          }
+          space.put(KEY_SELECTED, new JSONNumber(BeeConst.UNDEF));
           result.add(space.toString());
         }
 
@@ -1160,10 +1158,8 @@ public class Workspace extends TabbedPages implements CaptionChangeEvent.Handler
         }
 
         if (json.containsKey(KEY_SELECTED) && getPageCount() == oldPageCount + tabs.size()) {
-          Double value = JsonUtils.getNumber(json, KEY_SELECTED);
-          int index = (value == null) ? BeeConst.UNDEF : BeeUtils.round(value);
-
-          if (BeeUtils.betweenExclusive(index, 0, tabs.size())) {
+          Integer index = JsonUtils.getInteger(json, KEY_SELECTED);
+          if (index != null && BeeUtils.betweenExclusive(index, 0, tabs.size())) {
             activePage.set(oldPageCount + index);
           }
         }
@@ -1171,7 +1167,17 @@ public class Workspace extends TabbedPages implements CaptionChangeEvent.Handler
 
     } else {
       panel = insertEmptyPanel(getPageCount());
-      activePage.set(getSelectedIndex());
+
+      boolean select;
+      if (json.containsKey(KEY_SELECTED)) {
+        select = BeeUtils.isZero(JsonUtils.getNumber(json, KEY_SELECTED));
+      } else {
+        select = true;
+      }
+
+      if (select) {
+        activePage.set(getSelectedIndex());
+      }
 
       Map<String, String> contentByTile = panel.restore(this, json);
       if (!BeeUtils.isEmpty(contentByTile)) {

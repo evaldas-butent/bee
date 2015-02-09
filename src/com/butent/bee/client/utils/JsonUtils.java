@@ -28,6 +28,15 @@ public final class JsonUtils {
     }
   }
 
+  public static Integer getInteger(JSONObject obj, String key) {
+    Double value = getNumber(obj, key);
+    if (value == null) {
+      return BeeConst.UNDEF;
+    } else {
+      return BeeUtils.round(value);
+    }
+  }
+  
   public static Double getNumber(JSONObject obj, String key) {
     if (obj == null || BeeUtils.isEmpty(key) || !obj.containsKey(key)) {
       return null;
