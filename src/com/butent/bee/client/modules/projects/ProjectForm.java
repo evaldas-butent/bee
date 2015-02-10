@@ -3,7 +3,6 @@ package com.butent.bee.client.modules.projects;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
-import com.google.gwt.core.client.Scheduler.ScheduledCommand;
 import com.google.gwt.event.shared.HasHandlers;
 import com.google.web.bindery.event.shared.HandlerRegistration;
 
@@ -28,9 +27,12 @@ import com.butent.bee.client.view.edit.SaveChangesEvent;
 import com.butent.bee.client.view.form.FormView;
 import com.butent.bee.client.view.form.interceptor.AbstractFormInterceptor;
 import com.butent.bee.client.view.form.interceptor.FormInterceptor;
+import com.butent.bee.client.widget.InputText;
+import com.butent.bee.client.widget.ListBox;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.communication.ResponseObject;
 import com.butent.bee.shared.data.BeeColumn;
+import com.butent.bee.shared.data.BeeRow;
 import com.butent.bee.shared.data.BeeRowSet;
 import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.IsRow;
@@ -42,9 +44,11 @@ import com.butent.bee.shared.data.view.ViewColumn;
 import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogUtils;
 import com.butent.bee.shared.modules.administration.AdministrationConstants;
+import com.butent.bee.shared.modules.classifiers.ClassifierConstants;
 import com.butent.bee.shared.modules.projects.ProjectConstants.ProjectEvent;
 import com.butent.bee.shared.modules.projects.ProjectStatus;
 import com.butent.bee.shared.modules.tasks.TaskConstants;
+import com.butent.bee.shared.time.TimeUtils;
 import com.butent.bee.shared.ui.Action;
 import com.butent.bee.shared.utils.BeeUtils;
 
@@ -61,6 +65,9 @@ class ProjectForm extends AbstractFormInterceptor implements DataChangeEvent.Han
   private static final String WIDGET_CHART_DATA = "ChartData";
   private static final String WIDGET_PROJECT_COMMENTS = "ProjectComments";
   private static final String WIDGET_TIME_UNIT = "TimeUnit";
+  private static final String WIDGET_EXPECTED_TASKS_DURATION = "ExpectedTasksDuration";
+  private static final String WIDGET_ACTUAL_TASKS_DURATION = "ActualTasksDuration";
+  private static final String WIDGET_STATUS = "Status";
 
   private static final Set<String> AUDIT_FIELDS = Sets.newHashSet(COL_PROJECT_START_DATE,
       COL_PROJECT_END_DATE, COL_COMAPNY, COL_PROJECT_STATUS, COL_PROJECT_OWNER,
@@ -69,6 +76,7 @@ class ProjectForm extends AbstractFormInterceptor implements DataChangeEvent.Han
   private static final BeeLogger logger = LogUtils.getLogger(ProjectForm.class);
 
   private final Collection<HandlerRegistration> registry = new ArrayList<>();
+  private final Collection<HandlerRegistration> reasonRegistry = new ArrayList<>();
   private final ProjectEventsHandler eventsHandler = new ProjectEventsHandler();
   private final Set<String> auditSilentFields = Sets.newHashSet();
   private final Map<String, Boolean> lockedValidations = Maps.newHashMap();
@@ -77,6 +85,11 @@ class ProjectForm extends AbstractFormInterceptor implements DataChangeEvent.Han
   private Flow chartData;
   private Flow projectCommnets;
   private DataSelector unitSelector;
+  private InputText expectedTasksDuration;
+  private InputText actualTasksDuration;
+  private ListBox status;
+
+  private BeeRowSet timeUnits;
 
   @Override
   public void afterCreateWidget(String name, IdentifiableWidget widget,
@@ -91,36 +104,24 @@ class ProjectForm extends AbstractFormInterceptor implements DataChangeEvent.Han
 
     if (widget instanceof Flow && BeeUtils.same(name, WIDGET_PROJECT_COMMENTS)) {
       projectCommnets = (Flow) widget;
+      projectCommnets.clear();
     }
 
     if (widget instanceof DataSelector && BeeUtils.same(name, WIDGET_TIME_UNIT)) {
       unitSelector = (DataSelector) widget;
+      unitSelector.setEnabled(false);
+    }
 
-      ParameterList params = ProjectsKeeper.createSvcArgs(SVC_GET_TIME_UNITS);
-      BeeKeeper.getRpc().makePostRequest(params, new ResponseCallback() {
+    if (widget instanceof InputText && BeeUtils.same(name, WIDGET_EXPECTED_TASKS_DURATION)) {
+      expectedTasksDuration = (InputText) widget;
+    }
 
-        @Override
-        public void onResponse(ResponseObject response) {
-          DataSelector us = getUnitSelector();
-          if (us == null) {
-            return;
-          }
+    if (widget instanceof InputText && BeeUtils.same(name, WIDGET_ACTUAL_TASKS_DURATION)) {
+      actualTasksDuration = (InputText) widget;
+    }
 
-          us.setEnabled(false);
-
-          if (response == null) {
-            return;
-          }
-
-          if (response.isEmpty() || !response.hasResponse(BeeRowSet.class)) {
-            return;
-          }
-
-          BeeRowSet rs = BeeRowSet.restore(response.getResponseAsString());
-          us.getOracle().setAdditionalFilter(Filter.idIn(rs.getRowIds()), true);
-          us.setEnabled(true);
-        }
-      });
+    if (widget instanceof ListBox && BeeUtils.same(name, WIDGET_STATUS)) {
+      status = (ListBox) widget;
     }
   }
 
@@ -132,6 +133,54 @@ class ProjectForm extends AbstractFormInterceptor implements DataChangeEvent.Han
   @Override
   public void afterRefresh(FormView form, IsRow row) {
     contractSelector.getOracle().setAdditionalFilter(Filter.equals(COL_PROJECT, row.getId()), true);
+
+    if (!BeeUtils.isEmpty(row.getProperty(PROP_TIME_UNTIS))) {
+      String prop = row.getProperty(PROP_TIME_UNTIS);
+      BeeRowSet unitsRows = BeeRowSet.maybeRestore(prop);
+      setTimeUnits(unitsRows);
+    } else {
+      ParameterList params = ProjectsKeeper.createSvcArgs(SVC_GET_TIME_UNITS);
+      BeeKeeper.getRpc().makePostRequest(params, getTimeUnitsResponse(row));
+    }
+
+    if (getTimeUnits() != null && DataUtils.isId(row.getId())) {
+      showComputedTimes(form, row);
+    } else if (getTimeUnits() == null && DataUtils.isId(row.getId())) {
+      showComputedTimes(form, row);
+    } else {
+      if (actualTasksDuration != null) {
+        actualTasksDuration.setText(null);
+      }
+
+      if (expectedTasksDuration != null) {
+        expectedTasksDuration.setText(null);
+      }
+    }
+
+    if (DataUtils.isId(row.getId())) {
+      form.setEnabled(isOwner(form, row) && !isProjectApproved(form, row));
+
+      if (status != null) {
+        status.setEnabled(isOwner(form, row));
+      }
+
+    } else {
+      form.setEnabled(true);
+
+      if (status != null) {
+        status.setEnabled(true);
+      }
+    }
+
+    lockedValidations.clear();
+    auditSilentFields.clear();
+    EventUtils.clearRegistry(reasonRegistry);
+    if (!isProjectScheduled(form, row) && form.isEnabled() && DataUtils.isId(row.getId())) {
+      setFormAuditValidation(form, row);
+    } else if (isProjectApproved(form, row)) {
+      setFormAuditValidation(form, row);
+    }
+
     drawComments(form, row);
     drawChart(row);
   }
@@ -194,7 +243,7 @@ class ProjectForm extends AbstractFormInterceptor implements DataChangeEvent.Han
     }
 
     DataInfo data = Data.getDataInfo(VIEW_PROJECTS);
-    List<BeeColumn> cols = data.getColumns(); // event.getColumns(); Data
+    List<BeeColumn> cols = data.getColumns();
 
     Map<String, String> oldDataMap = Maps.newHashMap();
     Map<String, String> newDataMap = Maps.newHashMap();
@@ -246,23 +295,6 @@ class ProjectForm extends AbstractFormInterceptor implements DataChangeEvent.Han
         event.getRowId(), null, newDataSent, oldDataSent);
   }
 
-  @Override
-  public boolean onStartEdit(FormView form, IsRow row, ScheduledCommand focusCommand) {
-    auditSilentFields.clear();
-    lockedValidations.clear();
-    if (isOwner(form, row)) {
-      form.setEnabled(true);
-    } else {
-      form.setEnabled(false);
-    }
-
-    if (!isProjectScheduled(form, row) && form.isEnabled()) {
-      setFormAuditValidation(form, row);
-    }
-
-    return super.onStartEdit(form, row, focusCommand);
-  }
-
   private static boolean isOwner(FormView form, IsRow row) {
     int idxOwner = form.getDataIndex(COL_PROJECT_OWNER);
 
@@ -288,6 +320,18 @@ class ProjectForm extends AbstractFormInterceptor implements DataChangeEvent.Han
     return ProjectStatus.SCHEDULED.ordinal() == status;
   }
 
+  private static boolean isProjectApproved(FormView form, IsRow row) {
+    int idxStatus = form.getDataIndex(COL_PROJECT_STATUS);
+
+    if (BeeConst.isUndef(idxStatus)) {
+      return false;
+    }
+
+    int status = BeeUtils.unbox(row.getInteger(idxStatus));
+
+    return ProjectStatus.APPROVED.ordinal() == status;
+  }
+
   private static boolean isProjectUser(FormView form, IsRow row) {
     int idxProjectUser = form.getDataIndex(ALS_FILTERED_PROJECT_USER);
 
@@ -299,6 +343,56 @@ class ProjectForm extends AbstractFormInterceptor implements DataChangeEvent.Han
     long projectUser = BeeUtils.unbox(row.getLong(idxProjectUser));
 
     return currentUser == projectUser;
+  }
+
+  private static void resetData(FormView form, IsRow row, CellValidateEvent event) {
+
+    if (form == null) {
+      return;
+    }
+
+    if (row == null) {
+      return;
+    }
+
+    if (event == null) {
+      return;
+    }
+
+    String column = event.getColumnId();
+
+    if (BeeUtils.isEmpty(column)) {
+      return;
+    }
+
+    IsRow oldRow = form.getOldRow();
+    int idx = form.getDataIndex(event.getColumnId());
+
+    if (oldRow == null) {
+      return;
+    }
+
+    if (BeeConst.isUndef(idx)) {
+      return;
+    }
+
+    String viewName = form.getViewName();
+
+    if (!BeeUtils.isEmpty(viewName) && Data.getDataInfo(viewName) != null) {
+      DataInfo info = Data.getDataInfo(viewName);
+
+      if (info.hasRelation(column)) {
+        for (ViewColumn vCol : info.getDescendants(column, false)) {
+          int decIdx = form.getDataIndex(vCol.getName());
+          if (!BeeConst.isUndef(decIdx)) {
+            row.setValue(decIdx, oldRow.getValue(decIdx));
+            form.refreshBySource(vCol.getName());
+          }
+        }
+      }
+      row.setValue(idx, oldRow.getValue(idx));
+      form.refreshBySource(event.getColumnId());
+    }
   }
 
   private void commitData(final FormView form, final String column, final String value) {
@@ -318,6 +412,7 @@ class ProjectForm extends AbstractFormInterceptor implements DataChangeEvent.Han
             }
             form.refreshBySource(column);
             unlockValidationEvent(column);
+            form.refresh();
           }
         });
   }
@@ -412,15 +507,7 @@ class ProjectForm extends AbstractFormInterceptor implements DataChangeEvent.Han
               if (result.booleanValue()) {
                 commitData(form, event.getColumnId(), event.getNewValue());
               } else {
-                IsRow oldRow = form.getOldRow();
-                int idx = form.getDataIndex(event.getColumnId());
-
-                if (BeeConst.isUndef(idx)) {
-                  return;
-                }
-
-                row.setValue(idx, oldRow.getValue(idx));
-                form.refreshBySource(event.getColumnId());
+                resetData(form, row, event);
                 unlockValidationEvent(event.getColumnId());
               }
             }
@@ -432,8 +519,32 @@ class ProjectForm extends AbstractFormInterceptor implements DataChangeEvent.Han
     };
   }
 
-  private DataSelector getUnitSelector() {
-    return unitSelector;
+  private BeeRowSet getTimeUnits() {
+    return timeUnits;
+  }
+
+  private ResponseCallback getTimeUnitsResponse(final IsRow row) {
+    return new ResponseCallback() {
+
+      @Override
+      public void onResponse(ResponseObject response) {
+        if (response == null) {
+          return;
+        }
+
+        if (response.isEmpty() || !response.hasResponse(BeeRowSet.class)) {
+          setTimeUnits(null);
+          return;
+        }
+
+        if (row != null) {
+          row.setProperty(PROP_TIME_UNTIS, response.getResponseAsString());
+        }
+
+        BeeRowSet rs = BeeRowSet.restore(response.getResponseAsString());
+        setTimeUnits(rs);
+      }
+    };
   }
 
   private Flow getProjectComments() {
@@ -452,10 +563,101 @@ class ProjectForm extends AbstractFormInterceptor implements DataChangeEvent.Han
     auditSilentFields.clear();
     for (BeeColumn column : form.getDataColumns()) {
       if (AUDIT_FIELDS.contains(column.getId())) {
-        registry.add(form
+        reasonRegistry.add(form
             .addCellValidationHandler(column.getId(), getAuditColumnHandler(form, row)));
       } else {
         auditSilentFields.add(column.getId());
+      }
+    }
+  }
+
+  private void setTimeUnits(BeeRowSet timeUnits) {
+    this.timeUnits = timeUnits;
+
+    if (unitSelector != null) {
+      if (timeUnits != null) {
+        unitSelector.getOracle().setAdditionalFilter(Filter.idIn(getTimeUnits().getRowIds()), true);
+        unitSelector.setEnabled(true);
+      } else {
+        unitSelector.setEnabled(false);
+      }
+    }
+  }
+
+  private void showComputedTimes(FormView form, IsRow row) {
+    if (form == null) {
+      return;
+    }
+
+    if (row == null) {
+      return;
+    }
+
+    int idxExpTD = form.getDataIndex(COL_EXPECTED_TASKS_DURATION);
+    int idxActTD = form.getDataIndex(COL_ACTUAL_TASKS_DURATION);
+    int idxUnit = form.getDataIndex(COL_PROJECT_TIME_UNIT);
+
+    double factor = BeeConst.DOUBLE_ONE;
+    String unitName = BeeConst.STRING_EMPTY;
+
+    if (!BeeConst.isUndef(idxUnit) && getTimeUnits() != null) {
+      long idValue = BeeUtils.unbox(row.getLong(idxUnit));
+      BeeRow unitRow = getTimeUnits().getRowById(idValue);
+
+      if (unitRow != null) {
+        String prop = unitRow.getProperty(PROP_REAL_FACTOR);
+
+        if (!BeeUtils.isEmpty(prop) && BeeUtils.isDouble(prop)) {
+          factor = BeeUtils.toDouble(prop);
+        }
+
+        int idxName = getTimeUnits().getColumnIndex(ClassifierConstants.COL_UNIT_NAME);
+
+        if (!BeeConst.isUndef(idxName)) {
+          unitName = unitRow.getString(idxName);
+        }
+      }
+    }
+
+    if (expectedTasksDuration != null && !BeeConst.isUndef(idxExpTD)) {
+      long value = BeeUtils.unbox(row.getLong(idxExpTD));
+      expectedTasksDuration.setValue(BeeConst.STRING_EMPTY);
+
+      if (factor == BeeConst.DOUBLE_ONE) {
+        expectedTasksDuration.setText(TimeUtils.renderMinutes(BeeUtils.toInt(value
+            / TimeUtils.MILLIS_PER_MINUTE), true));
+      } else {
+        long factorMls = BeeUtils.toLong(factor * TimeUtils.MILLIS_PER_HOUR);
+
+        int calcValue = BeeUtils.toInt(value / factorMls);
+        long decValue = value % factorMls;
+
+        expectedTasksDuration.setText(BeeUtils.joinWords(calcValue, unitName, decValue != 0
+            ? TimeUtils
+                .renderMinutes(
+                    BeeUtils.toInt(decValue
+                        / TimeUtils.MILLIS_PER_MINUTE), true) : BeeConst.STRING_EMPTY));
+      }
+    }
+
+    if (actualTasksDuration != null && !BeeConst.isUndef(idxActTD)) {
+      long value = row.getLong(idxActTD);
+      actualTasksDuration.setValue(BeeConst.STRING_EMPTY);
+
+      if (factor == BeeConst.DOUBLE_ONE) {
+        actualTasksDuration.setText(TimeUtils.renderMinutes(BeeUtils.toInt(value
+            / TimeUtils.MILLIS_PER_MINUTE), true));
+      } else {
+        long factorMls = BeeUtils.toLong(factor * TimeUtils.MILLIS_PER_HOUR);
+
+        int calcValue = BeeUtils.toInt(value / factorMls);
+        long decValue = value % factorMls;
+
+        actualTasksDuration.setText(BeeUtils.joinWords(calcValue, unitName, decValue != 0
+            ? TimeUtils
+                .renderMinutes(
+                    BeeUtils.toInt(decValue
+                        / TimeUtils.MILLIS_PER_MINUTE), true) : BeeConst.STRING_EMPTY));
       }
     }
   }

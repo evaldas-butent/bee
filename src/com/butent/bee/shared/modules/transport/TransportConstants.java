@@ -228,6 +228,9 @@ public final class TransportConstants {
   public static final String VAR_INCOME = "Income";
   public static final String VAR_EXPENSE = "Expense";
 
+  public static final String VAR_LOADING = "Loading";
+  public static final String VAR_UNLOADING = "Unloading";
+
   public static final String TBL_TRANSPORT_GROUPS = "TransportGroups";
 
   public static final String TBL_VEHICLES = "Vehicles";
@@ -438,6 +441,7 @@ public final class TransportConstants {
   public static final String COL_PLACE_PHONE = "Phone";
   public static final String COL_PLACE_FAX = "Fax";
   public static final String COL_PLACE_NUMBER = "Number";
+  public static final String COL_PLACE_NOTE = "Note";
 
   public static final String COL_VEHICLE_ID = "VehicleID";
   public static final String COL_VEHICLE = "Vehicle";
@@ -778,11 +782,11 @@ public final class TransportConstants {
   }
 
   public static String loadingColumnAlias(String colName) {
-    return "Loading" + colName;
+    return VAR_LOADING + colName;
   }
 
   public static String unloadingColumnAlias(String colName) {
-    return "Unloading" + colName;
+    return VAR_UNLOADING + colName;
   }
 
   private TransportConstants() {

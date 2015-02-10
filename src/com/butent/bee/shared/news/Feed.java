@@ -14,6 +14,7 @@ import com.butent.bee.shared.modules.discussions.DiscussionsConstants;
 import com.butent.bee.shared.modules.documents.DocumentConstants;
 import com.butent.bee.shared.modules.ec.EcConstants;
 import com.butent.bee.shared.modules.mail.MailConstants;
+import com.butent.bee.shared.modules.projects.ProjectConstants;
 import com.butent.bee.shared.modules.tasks.TaskConstants;
 import com.butent.bee.shared.modules.trade.TradeConstants;
 import com.butent.bee.shared.modules.transport.TransportConstants;
@@ -439,6 +440,17 @@ public enum Feed implements HasLocalizedCaption {
     public String getCaption(LocalizableConstants constants) {
       return constants.mail();
     }
+  },
+
+  PROJECT(ModuleAndSub.of(Module.PROJECTS), ProjectConstants.TBL_PROJECTS,
+      ProjectConstants.VIEW_PROJECTS,
+      Lists.newArrayList(ProjectConstants.COL_PROJECT_NAME)) {
+
+    @Override
+    public String getCaption(LocalizableConstants constants) {
+      return constants.projects();
+    }
+
   };
 
   private static final String SEPARATOR = BeeConst.STRING_COMMA;

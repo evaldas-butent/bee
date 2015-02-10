@@ -265,7 +265,23 @@ class NewReasonCommentForm extends AbstractFormInterceptor {
         value = Localized.getConstants().filterNullLabel();
       } else {
         value = ProjectsHelper.getDisplayValue(projectForm.getViewName(),
-            projectValidator.getColumnId(), value, projectForm.getActiveRow());
+            projectValidator.getColumnId(), value, null, new Callback<String>() {
+
+              @Override
+              public void onSuccess(String result) {
+                if (BeeUtils.isEmpty(result)) {
+                  return;
+                }
+
+                Flow tf = getToFlow();
+
+                if (tf == null) {
+                  return;
+                }
+
+                tf.getElement().setInnerText(result);
+              }
+            });
       }
 
       toFlow.getElement().setInnerText(value);
@@ -285,6 +301,10 @@ class NewReasonCommentForm extends AbstractFormInterceptor {
 
   private Label getDocumentLabel() {
     return documentLabel;
+  }
+
+  private Flow getToFlow() {
+    return toFlow;
   }
 
   private boolean isRequiredDocument() {

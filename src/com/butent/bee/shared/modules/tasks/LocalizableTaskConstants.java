@@ -234,6 +234,8 @@ public interface LocalizableTaskConstants {
 
   String crmTodoCreateTask();
 
+  String crmTodoItem();
+
   String crmTodoList();
 
   String hideZeroTimes();

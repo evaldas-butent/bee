@@ -54,42 +54,6 @@
         <SimpleColumn name="ForwarderVehicle" />
         <SimpleColumn name="Notes" />
       </SimpleJoin>
-  
-      <SimpleJoin name="LoadingPlace" joinType="LEFT">
-        <SimpleColumn name="Date" alias="LoadingDate" />    
-        <SimpleColumn name="Company" alias="LoadingCompany" />
-        <SimpleColumn name="Contact" alias="LoadingContact" />
-        <SimpleColumn name="Address" alias="LoadingAddress" />
-        <SimpleColumn name="PostIndex" alias="LoadingPostIndex" />
-        <SimpleJoin joinType="LEFT" name="City">
-          <SimpleColumn name="Name" alias="LoadingCityName" />
-          <SimpleColumn name="Name2" alias="LoadingCityNameEN" />
-          <SimpleColumn name="Name3" alias="LoadingCityNameRU" />
-        </SimpleJoin>
-        <SimpleJoin joinType="LEFT" name="Country">
-          <SimpleColumn name="Name" alias="LoadingCountryName" />
-          <SimpleColumn name="Name2" alias="LoadingCountryNameEN" />
-          <SimpleColumn name="Name3" alias="LoadingCountryNameRU" />
-        </SimpleJoin>
-      </SimpleJoin>
-  
-      <SimpleJoin name="UnloadingPlace" joinType="LEFT">
-        <SimpleColumn name="Date" alias="UnloadingDate" />
-        <SimpleColumn name="Company" alias="UnloadingCompany" />
-        <SimpleColumn name="Contact" alias="UnloadingContact" />
-        <SimpleColumn name="Address" alias="UnloadingAddress" />
-        <SimpleColumn name="PostIndex" alias="UnloadingPostIndex" />
-        <SimpleJoin joinType="LEFT" name="City">
-          <SimpleColumn name="Name" alias="UnloadingCityName" />
-          <SimpleColumn name="Name2" alias="UnloadingCityNameEN" />
-          <SimpleColumn name="Name3" alias="UnloadingCityNameRU" />
-        </SimpleJoin>
-        <SimpleJoin joinType="LEFT" name="Country">
-          <SimpleColumn name="Name" alias="UnloadingCountryName" />
-          <SimpleColumn name="Name2" alias="UnloadingCountryNameEN" />
-          <SimpleColumn name="Name3" alias="UnloadingCountryNameRU" />
-        </SimpleJoin>
-      </SimpleJoin>
     </SimpleJoin>
 
     <SimpleJoin joinType="INNER" name="CargoExpense">

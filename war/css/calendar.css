@@ -339,7 +339,9 @@
   top: 0;
   bottom: 0;
 }
-.bee-cal-MonthView .appointment .movable {
+
+.bee-cal-MonthView .appointment .movable,
+.bee-cal-MonthView .appointment-multiday .movable {
   cursor: move;
 }
 
@@ -391,6 +393,7 @@
   -moz-user-select: none;
   -webkit-user-select: none;
   -ms-user-select: none;
+  overflow: hidden;
 }
 
 .bee-cal-Panel-controls {
@@ -458,6 +461,12 @@
   right: 0;
   top: 0;
   bottom: 0;
+}
+.bee-cal-Panel-todo-container.target {
+  background-color: rgba(255, 238, 238, 0.5);
+}
+.bee-cal-Panel-todo-container.target > * {
+  opacity: 0.2;
 }
 
 .bee-cal-ReportOptions-container {

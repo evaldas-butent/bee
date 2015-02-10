@@ -375,6 +375,10 @@ public class CalendarPanel extends Split implements AppointmentEvent.Handler, Pr
     return CalendarKeeper.getCalendarSupplierKey(getCalendarId());
   }
 
+  public Flow getTodoContainer() {
+    return todoContainer;
+  }
+
   @Override
   public Presenter getViewPresenter() {
     return this;
@@ -413,6 +417,10 @@ public class CalendarPanel extends Split implements AppointmentEvent.Handler, Pr
   @Override
   public boolean isEnabled() {
     return enabled;
+  }
+
+  public boolean isTodoVisible() {
+    return !todoContainer.isEmpty() && getWidgetSize(todoContainer) > 0;
   }
 
   @Override

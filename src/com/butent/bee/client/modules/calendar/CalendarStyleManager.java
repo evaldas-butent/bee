@@ -87,6 +87,7 @@ public final class CalendarStyleManager {
 
   public static final String DRAG = "drag";
   public static final String POSITIONER = "positioner";
+  public static final String TARGET = "target";
 
   static void applyStyle(Widget widget, String styles) {
     if (!BeeUtils.isEmpty(styles)) {
