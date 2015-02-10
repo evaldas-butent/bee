@@ -20,6 +20,8 @@ public interface LocalizableProjectConstants {
 
   String prjObserver();
 
+  String prjOverdue();
+
   String prjParticipant();
 
   String prjSchedule();

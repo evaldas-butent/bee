@@ -11,7 +11,6 @@ import com.butent.bee.shared.modules.projects.ProjectConstants;
 import com.butent.bee.shared.news.Feed;
 import com.butent.bee.shared.news.NewsConstants;
 import com.butent.bee.shared.time.DateTime;
-import com.sun.enterprise.security.webservices.LogUtils;
 
 public class ProjectsUsageQueryProvider implements UsageQueryProvider {
 
@@ -83,8 +82,6 @@ public class ProjectsUsageQueryProvider implements UsageQueryProvider {
                 SqlUtils.equals(TBL_PROJECT_USERS, COL_USER, userId))));
 
     select.setUnionAllMode(true).addUnion(select2);
-
-    LogUtils.getLogger().info(select2.getQuery());
 
     String alias = SqlUtils.uniqueName();
 

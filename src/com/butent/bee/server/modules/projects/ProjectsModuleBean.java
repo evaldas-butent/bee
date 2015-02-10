@@ -10,10 +10,13 @@ import com.butent.bee.server.data.DataEvent.ViewQueryEvent;
 import com.butent.bee.server.data.DataEventHandler;
 import com.butent.bee.server.data.QueryServiceBean;
 import com.butent.bee.server.data.SystemBean;
+import com.butent.bee.server.data.UserServiceBean;
 import com.butent.bee.server.http.RequestInfo;
 import com.butent.bee.server.modules.BeeModule;
 import com.butent.bee.server.modules.ParamHolderBean;
 import com.butent.bee.server.news.NewsBean;
+import com.butent.bee.server.sql.SqlSelect;
+import com.butent.bee.server.sql.SqlUtils;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.communication.ResponseObject;
 import com.butent.bee.shared.data.BeeRow;
@@ -25,6 +28,7 @@ import com.butent.bee.shared.data.SimpleRowSet;
 import com.butent.bee.shared.data.filter.Filter;
 import com.butent.bee.shared.data.view.Order;
 import com.butent.bee.shared.modules.BeeParameter;
+import com.butent.bee.shared.modules.administration.AdministrationConstants;
 import com.butent.bee.shared.modules.classifiers.ClassifierConstants;
 import com.butent.bee.shared.modules.projects.ProjectConstants;
 import com.butent.bee.shared.modules.tasks.TaskConstants;
@@ -64,6 +68,9 @@ public class ProjectsModuleBean implements BeeModule {
   @EJB
   ParamHolderBean prm;
 
+  @EJB
+  UserServiceBean usr;
+
   @Override
   public List<SearchResult> doSearch(String query) {
     List<SearchResult> result = new ArrayList<>();
@@ -91,7 +98,9 @@ public class ProjectsModuleBean implements BeeModule {
       case SVC_GET_TIME_UNITS:
         response = getTimeUnits();
         break;
-
+      case SVC_PROJECT_REPORT:
+        response = getReportData();
+        break;
       default:
         break;
     }
@@ -484,6 +493,53 @@ public class ProjectsModuleBean implements BeeModule {
     }
 
     return result;
+  }
+
+  private ResponseObject getReportData() {
+    SqlSelect select = new SqlSelect();
+    select.addField(TaskConstants.TBL_TASKS, ProjectConstants.COL_PROJECT,
+        ProjectConstants.COL_PROJECT);
+    select.addFields(ProjectConstants.TBL_PROJECTS,
+
+        ProjectConstants.COL_PROJECT_NAME,
+        ProjectConstants.COL_PROJECT_STATUS,
+        ProjectConstants.COL_PROJECT_TYPE,
+        ProjectConstants.COL_PROJECT_PRIORITY,
+        ProjectConstants.COL_PROJECT_START_DATE,
+        ProjectConstants.COL_PROJECT_END_DATE,
+        ProjectConstants.COL_PROGRESS,
+        ProjectConstants.COL_EXPECTED_DURATION,
+        ProjectConstants.COL_PROJECT_PRICE
+        );
+
+    select.addExpr(SqlUtils.concat((Object[]) SqlUtils.fields(ClassifierConstants.TBL_PERSONS,
+        ClassifierConstants.COL_FIRST_NAME, ClassifierConstants.COL_LAST_NAME)),
+        ProjectConstants.COL_PROJECT_OWNER);
+    select.addField(ClassifierConstants.TBL_COMPANIES, ClassifierConstants.COL_COMPANY_NAME,
+        ProjectConstants.COL_COMAPNY);
+    select.addFrom(TaskConstants.TBL_TASKS);
+    select.addFromInner(ProjectConstants.TBL_PROJECTS, SqlUtils.join(TaskConstants.TBL_TASKS,
+        ProjectConstants.COL_PROJECT, ProjectConstants.TBL_PROJECTS, sys
+            .getIdName(ProjectConstants.TBL_PROJECTS)));
+
+    select.addFromLeft(ClassifierConstants.TBL_COMPANIES, sys.joinTables(
+        ClassifierConstants.TBL_COMPANIES, TBL_PROJECTS, COL_COMAPNY));
+
+    select.addFromLeft(AdministrationConstants.TBL_USERS, sys.joinTables(
+        AdministrationConstants.TBL_USERS, TBL_PROJECTS,
+        COL_PROJECT_OWNER));
+
+    select.addFromLeft(ClassifierConstants.TBL_COMPANY_PERSONS, sys.joinTables(
+        ClassifierConstants.TBL_COMPANY_PERSONS, AdministrationConstants.TBL_USERS,
+        ClassifierConstants.COL_COMPANY_PERSON));
+
+    select.addFromLeft(ClassifierConstants.TBL_PERSONS, sys.joinTables(
+        ClassifierConstants.TBL_PERSONS, ClassifierConstants.TBL_COMPANY_PERSONS,
+        ClassifierConstants.COL_PERSON));
+
+    SimpleRowSet rqs = qs.getData(select);
+
+    return ResponseObject.response(rqs);
   }
 
   private SimpleRowSet getTasksActualTimesAndExpenses(List<Long> ids, String viewName) {

@@ -24,6 +24,10 @@ import com.butent.bee.shared.i18n.LocalizableConstants;
 import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogUtils;
+import com.butent.bee.shared.modules.projects.ProjectConstants;
+import com.butent.bee.shared.modules.projects.ProjectPriority;
+import com.butent.bee.shared.modules.projects.ProjectStatus;
+import com.butent.bee.shared.modules.tasks.TaskConstants;
 import com.butent.bee.shared.modules.transport.TransportConstants;
 import com.butent.bee.shared.rights.Module;
 import com.butent.bee.shared.rights.ModuleAndSub;
@@ -142,6 +146,66 @@ public enum Report implements HasWidgetSupplier {
           new ReportNumericItem("OtherCosts", "Kitos išl.", 2),
           new ReportNumericItem("Incomes", "Pajamos", 2));
     }
+  },
+
+  PROJECT_REPORT(ModuleAndSub.of(Module.PROJECTS), ProjectConstants.SVC_PROJECT_REPORT) {
+
+    @Override
+    public Multimap<String, ReportItem> getDefaults() {
+      // TODO Auto-generated method stub
+      return super.getDefaults();
+    }
+
+    @Override
+    public List<ReportItem> getItems() {
+      LocalizableConstants loc = Localized.getConstants();
+
+      return Arrays.asList(
+          new ReportTextItem(ProjectConstants.COL_COMAPNY, Data.getColumnLabel(
+          ProjectConstants.VIEW_PROJECTS, ProjectConstants.COL_COMAPNY)),
+          new ReportTextItem(ProjectConstants.COL_PROJECT_OWNER, Data.getColumnLabel(
+              ProjectConstants.VIEW_PROJECTS, ProjectConstants.COL_PROJECT_OWNER)),
+          new ReportTextItem(ProjectConstants.COL_PROJECT_NAME, Data.getColumnLabel(
+              ProjectConstants.VIEW_PROJECTS, ProjectConstants.COL_PROJECT_NAME)),
+          new ReportNumericItem(ProjectConstants.COL_PROJECT, loc.project(), 0),
+          new ReportEnumItem<>(ProjectConstants.COL_PROJECT_STATUS, Data.getColumnLabel(
+              ProjectConstants.VIEW_PROJECTS, ProjectConstants.COL_PROJECT_STATUS),
+              ProjectStatus.class),
+          new ReportTextItem(ProjectConstants.COL_PROJECT_TYPE, Data.getColumnLabel(
+              ProjectConstants.VIEW_PROJECTS, ProjectConstants.COL_PROJECT_TYPE)),
+          new ReportEnumItem<>(ProjectConstants.COL_PROJECT_PRIORITY, Data.getColumnLabel(
+              ProjectConstants.VIEW_PROJECTS, ProjectConstants.COL_PROJECT_PRIORITY),
+              ProjectPriority.class),
+          new ReportDateItem(ProjectConstants.COL_PROJECT_START_DATE, Data.getColumnLabel(
+              ProjectConstants.VIEW_PROJECTS, ProjectConstants.COL_PROJECT_START_DATE)),
+          new ReportDateItem(ProjectConstants.COL_PROJECT_END_DATE, Data.getColumnLabel(
+              ProjectConstants.VIEW_PROJECTS, ProjectConstants.COL_PROJECT_END_DATE)),
+          new ReportDateItem(ProjectConstants.ALS_PROJECT_OVERDUE, loc.prjOverdue()),
+          new ReportNumericItem(ProjectConstants.COL_PROGRESS, Data.getColumnLabel(
+              ProjectConstants.VIEW_PROJECTS, ProjectConstants.COL_PROGRESS), 2),
+
+          new ReportNumericItem(ProjectConstants.COL_EXPECTED_DURATION, Data.getColumnLabel(
+              ProjectConstants.VIEW_PROJECTS, ProjectConstants.COL_EXPECTED_DURATION), 2),
+
+          new ReportNumericItem(TaskConstants.COL_ACTUAL_DURATION, Data.getColumnLabel(
+              ProjectConstants.VIEW_PROJECTS, ProjectConstants.COL_ACTUAL_TASKS_DURATION), 2),
+
+          new ReportNumericItem(ProjectConstants.ALS_ACTUAL_TIME_DIFFERENCE, loc.timeDifference(),
+              2),
+
+          new ReportNumericItem(ProjectConstants.COL_PROJECT_PRICE, Data.getColumnLabel(
+              ProjectConstants.VIEW_PROJECTS, ProjectConstants.COL_PROJECT_PRICE), 2),
+
+          new ReportNumericItem(TaskConstants.COL_ACTUAL_EXPENSES, Data.getColumnLabel(
+              TaskConstants.VIEW_TASKS, TaskConstants.COL_ACTUAL_EXPENSES), 2),
+
+          new ReportNumericItem(TaskConstants.COL_TASK, loc.crmTasks(), 0),
+          new ReportEnumItem<>(ProjectConstants.ALS_TASK_STATUS, Data.getColumnLabel(
+              TaskConstants.VIEW_TASKS, TaskConstants.COL_STATUS),
+              ProjectPriority.class)
+          );
+    }
+
   };
 
   private static BeeLogger logger = LogUtils.getLogger(Report.class);

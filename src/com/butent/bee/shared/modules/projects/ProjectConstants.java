@@ -46,7 +46,7 @@ public final class ProjectConstants {
   public static final String ALS_STAGE_END = "StageEnd";
   public static final String ALS_CHART_FLOW_COLOR = "ChartFlowColor";
   public static final String ALS_VIEW_NAME = "ViewName";
-  public static final String ALS_TASK_STATUS = "Status";
+  public static final String ALS_TASK_STATUS = "TaskStatus";
   public static final String ALS_OWNER_FIRST_NAME = "OwnerFirstName";
   public static final String ALS_OWNER_LAST_NAME = "OwnerLastName";
 
@@ -58,9 +58,11 @@ public final class ProjectConstants {
   public static final String ALS_PUBLISHER_FIRST_NAME = "PublisherFirstName";
   public static final String ALS_PUBLISHER_LAST_NAME = "PublisherLastName";
   public static final String ALS_FILTERED_PROJECT_USER = "FilteredProjectUser";
+  public static final String ALS_ACTUAL_TIME_DIFFERENCE = "ActualTimeDifference";
 
   public static final String ALS_ROW_ID = "RowID";
   public static final String ALS_TASK_COUNT = "TaskCount";
+  public static final String ALS_PROJECT_OVERDUE = "Overdue";
 
   public static final String COL_EXPECTED_TASKS_DURATION = "ExpectedTasksDuration";
   public static final String COL_ACTUAL_TASKS_DURATION = "ActualTasksDuration";
@@ -72,12 +74,15 @@ public final class ProjectConstants {
   public static final String COL_PROJECT_STAGE = "ProjectStage";
   public static final String COL_PROJECT_START_DATE = "StartDate";
   public static final String COL_PROJECT_STATUS = "Status";
+  public static final String COL_PROJECT_PRIORITY = "Priority";
   public static final String COL_PROJECT_OWNER = "Owner";
   public static final String COL_PROJECT_CONTACT = "Contact";
   public static final String COL_PROJECT_PRICE = "Price";
   public static final String COL_PUBLISHER = "Publisher";
   public static final String COL_PUBLISH_TIME = "PublishTime";
   public static final String COL_PROJECT_EVENT = "ProjectEvent";
+  public static final String COL_PROJECT_TYPE = "Type";
+  public static final String COL_PROGRESS = "Progress";
   public static final String COL_COMMENT = "Comment";
   public static final String COL_EVENT = "Event";
   public static final String COL_EVENT_PROPERTIES = "Properties";
@@ -133,6 +138,7 @@ public final class ProjectConstants {
   public static final String SVC_PREFFIX = "svc_prj_";
   public static final String SVC_GET_PROJECT_CHART_DATA = SVC_PREFFIX + "GetChartData";
   public static final String SVC_GET_TIME_UNITS = SVC_PREFFIX + "GetTimeUnits";
+  public static final String SVC_PROJECT_REPORT = "ProjectReport";
 
   public static final String VAR_PROJECT = "Project";
 

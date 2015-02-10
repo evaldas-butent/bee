@@ -673,6 +673,8 @@ public interface LocalizableConstants extends Constants, LocalizableClassifierCo
 
   String time();
 
+  String timeDifference();
+
   String tooLittleData();
 
   String total();
