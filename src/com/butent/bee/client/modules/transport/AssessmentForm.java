@@ -338,17 +338,6 @@ public class AssessmentForm extends PrintFormInterceptor implements SelectorEven
       }
     }
 
-    @Override
-    public boolean onStartNewRow(GridView gridView, IsRow oldRow, IsRow newRow) {
-      for (String prefix : new String[] {"Loading", "Unloading"}) {
-        for (String col : new String[] {"Date", "Address", "PostIndex", "Company", "Contact",
-            "City", "CityName", "Country", "CountryName", "CountryCode"}) {
-          newRow.setValue(gridView.getDataIndex(prefix + col), form.getStringValue(prefix + col));
-        }
-      }
-      return super.onStartNewRow(gridView, oldRow, newRow);
-    }
-
     private void refresh() {
       DataChangeEvent.fireRefresh(BeeKeeper.getBus(), TBL_CARGO_EXPENSES);
       refreshTotals();
@@ -870,7 +859,7 @@ public class AssessmentForm extends PrintFormInterceptor implements SelectorEven
     if (Objects.equals(oldLog, newLog)) {
       final Map<String, DateTime> dates = new LinkedHashMap<>();
 
-      for (String col : new String[] {COL_DATE, "LoadingDate", "UnloadingDate"}) {
+      for (String col : new String[] {COL_DATE, ALS_LOADING_DATE, ALS_UNLOADING_DATE}) {
         int idx = form.getDataIndex(col);
         DateTime oldValue = form.getOldRow().getDateTime(idx);
         DateTime value = form.getActiveRow().getDateTime(idx);
