@@ -212,7 +212,7 @@ public class Bee implements EntryPoint, ClosingHandler {
             break;
 
           case NEWS:
-            Global.getNewsAggregator().loadSubscriptions(serialized);
+            Global.getNewsAggregator().loadSubscriptions(serialized, false);
             break;
 
           case REPORTS:
