@@ -82,6 +82,7 @@ public class MessageBoxes {
   public void choice(String caption, String prompt, List<String> options,
       final ChoiceCallback callback, final int defaultValue, final int timeout,
       String cancelHtml, WidgetInitializer initializer) {
+
     Assert.notEmpty(options);
     Assert.notNull(callback);
 

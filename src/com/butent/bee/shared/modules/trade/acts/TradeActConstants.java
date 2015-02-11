@@ -10,7 +10,7 @@ public final class TradeActConstants {
   public static final String SVC_GET_TEMPLATE_ITEMS_AND_SERVICES = "GetTemplateItemsAndServices";
   public static final String SVC_GET_ITEMS_FOR_RETURN = "GetItemsForReturn";
   public static final String SVC_SPLIT_ACT_SERVICES = "SplitActServices";
-  public static final String SVC_CONVERT_ACT_TO_SALE = "ConvertActToSale";
+  public static final String SVC_ALTER_ACT_KIND = "AlterActKind";
 
   public static final String SVC_GET_ACTS_FOR_INVOICE = "GetActsForInvoice";
   public static final String SVC_GET_SERVICES_FOR_INVOICE = "GetServicesForInvoice";
