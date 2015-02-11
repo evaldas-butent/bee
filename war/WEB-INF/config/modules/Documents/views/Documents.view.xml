@@ -4,8 +4,7 @@
   name="Documents" source="Documents"
   caption="=documents" newRowCaption="=documentNew"
   editForm="Document" newRowForm="NewDocument"
-  rowCaption="Name Number"
-  >
+  rowCaption="Name Number">
   <Relation renderColumns="Name" />
   <Columns>
     <SimpleColumn name="Name" />
@@ -51,6 +50,19 @@
     <SimpleJoin joinType="LEFT" name="Data">
       <SimpleColumn name="Content" />
     </SimpleJoin>
+
+    <SimpleColumn name="ReturnedUser" />
+    <SimpleJoin name="ReturnedUser" joinType="LEFT">
+      <SimpleColumn name="CompanyPerson" alias="ReturnedPerson" />
+      <SimpleJoin name="CompanyPerson" joinType="LEFT">
+        <SimpleJoin name="Person" joinType="LEFT">
+          <SimpleColumn alias="ReturnedFirstName" name="FirstName" />
+          <SimpleColumn alias="ReturnedLastName" name="LastName" />
+        </SimpleJoin>
+      </SimpleJoin>
+    </SimpleJoin>
+    
+    <SimpleColumn name="ReturnedDate" />
   </Columns>
 </View>
  

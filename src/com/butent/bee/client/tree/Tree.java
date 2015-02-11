@@ -727,6 +727,7 @@ public class Tree extends Panel implements HasTreeItems, Focusable, HasAnimation
         return true;
       } else if (item.getElement().isOrHasChild(hElem)) {
         onSelection(item, true, !shouldTreeDelegateFocusToElement(hElem));
+        item.setOpen(!item.isOpen(), true);
         return true;
       }
     }

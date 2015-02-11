@@ -87,6 +87,7 @@ import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.rights.Module;
 import com.butent.bee.shared.rights.ModuleAndSub;
 import com.butent.bee.shared.rights.SubModule;
+import com.butent.bee.shared.time.DateTime;
 import com.butent.bee.shared.ui.Action;
 import com.butent.bee.shared.ui.Relation;
 import com.butent.bee.shared.ui.Relation.Caching;
@@ -521,6 +522,8 @@ public class DocumentDataForm extends AbstractFormInterceptor
 
   @Override
   public void onSaveChanges(HasHandlers listener, SaveChangesEvent event) {
+    includeRegisterContent(event);
+
     includeContent(event.getColumns(),
         event.getOldRow().getString(getDataIndex(COL_DOCUMENT_CONTENT)),
         event.getOldValues(), event.getNewValues());
@@ -776,6 +779,40 @@ public class DocumentDataForm extends AbstractFormInterceptor
 
       if (oldValues != null) {
         oldValues.add(oldValue);
+      }
+    }
+  }
+
+  private void includeRegisterContent(SaveChangesEvent event) {
+
+    if (event.getColumns()
+        .contains(DataUtils.getColumn(COL_DOCUMENT_RETURNED, getFormView().getDataColumns()))) {
+
+      if (BeeUtils.unbox(event.getNewRow().getBoolean(getDataIndex(COL_DOCUMENT_RETURNED)))) {
+        event.getColumns().add(
+            DataUtils.getColumn(COL_DOCUMENT_RETURNED_USER, getFormView().getDataColumns()));
+        event.getNewValues().add(BeeKeeper.getUser().getUserId().toString());
+        event.getOldValues().add(
+            event.getOldRow().getString(getDataIndex(COL_DOCUMENT_RETURNED_USER)));
+
+        event.getColumns().add(
+            DataUtils.getColumn(COL_DOCUMENT_RETURNED_DATE, getFormView().getDataColumns()));
+        event.getNewValues().add(BeeUtils.toString(new DateTime().getTime()));
+        event.getOldValues().add(
+            event.getOldRow().getString(getDataIndex(COL_DOCUMENT_RETURNED_DATE)));
+      } else {
+
+        event.getColumns().add(
+            DataUtils.getColumn(COL_DOCUMENT_RETURNED_USER, getFormView().getDataColumns()));
+        event.getNewValues().add(null);
+        event.getOldValues().add(
+            event.getOldRow().getString(getDataIndex(COL_DOCUMENT_RETURNED_USER)));
+
+        event.getColumns().add(
+            DataUtils.getColumn(COL_DOCUMENT_RETURNED_DATE, getFormView().getDataColumns()));
+        event.getNewValues().add(null);
+        event.getOldValues().add(
+            event.getOldRow().getString(getDataIndex(COL_DOCUMENT_RETURNED_DATE)));
       }
     }
   }

@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <Table xmlns="http://www.butent.com/widget">
 
-   <col index="0" kind="label" />
-   <col index="2" kind="label" />
+  <col index="0" kind="label" />
+  <col index="2" kind="label" />
 
   <row>
     <Label for="Name" visible="true" />
@@ -53,11 +53,14 @@
     <InputDateTime source="Sent" />
   </row>
   <row>
-    <cell><text /></cell>
-    <cell><text /></cell>
-    <cell><text /></cell>
-  
-    <CheckBox source="Returned" text="=documentReturned" />
+    <cell colSpan="3">
+      <CheckBox source="Returned" text="=documentReturned" />
+    </cell>
+    <TextLabel source="ReturnedUser" style="margin-left: 10px;">
+      <renderToken source="ReturnedFirstName" />
+      <renderToken source="ReturnedLastName" />
+    </TextLabel>
+    <DateTimeLabel source="ReturnedDate" format="DATE_LONG" style="margin-left: -35px;"/>
   </row>
 
   <row>

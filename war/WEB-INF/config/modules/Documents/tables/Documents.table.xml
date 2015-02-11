@@ -27,5 +27,8 @@
     <Text name="Description" label="=documentDescription" />
 
     <Relation name="Data" relation="DocumentData" unique="true" label="=documentData" editable="true" />
+    
+    <Relation name="ReturnedUser" relation="Users"/>
+    <DateTime name="ReturnedDate" />
   </Fields>
 </Table>
