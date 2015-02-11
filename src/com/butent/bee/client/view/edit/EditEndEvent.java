@@ -15,10 +15,7 @@ public class EditEndEvent implements Consumable {
    */
 
   public interface Handler {
-    void onEditEnd(EditEndEvent event, HasEditEndHandler source);
-  }
-
-  public interface HasEditEndHandler {
+    void onEditEnd(EditEndEvent event, Object source);
   }
 
   private final IsRow rowValue;

@@ -16,7 +16,7 @@
   >
   <f:properties reports="PrintContractLT, PrintContractEN, PrintContractRU" />
 
-  <FlowPanel style="padding: 10px 2px 2px 10px;">
+  <FlowPanel class="flexBox-vertical" style="padding: 10px 2px 2px 10px;">
     <FlowPanel for="Forwarder" style="&section;">
       <Label for="Forwarder" class="bee-required" style="&labelLeft; width:140px;" />
       <DataSelector source="Forwarder" required="true" style="&input; width:200px;" />
@@ -54,74 +54,6 @@
     </FlowPanel>
 
     &separator;
-    <FlowPanel style="&section;">
-      <Label text="=loading" style="&labelLeft; font-weight:bold; width:280px; text-align:center;" />
-      <Label for="LoadingDate" text="=date" style="&labelRight;" />
-      <InputDateTime source="LoadingDate" style="&input;" />
-    </FlowPanel>
-    <FlowPanel style="&section;">
-      <Label for="LoadingCompany" text="=company" style="&labelLeft;" />
-      <InputText source="LoadingCompany" style="&inline;" />
-      <Label for="LoadingCountry" text="=country" style="&labelRight;" />
-      <DataSelector source="LoadingCountry" style="&inline;" >
-        <renderToken source="LoadingCountryName" />
-        <renderToken source="LoadingCountryCode" prefix=" (" suffix=")" />
-        <selectorColumn source="Name" />
-        <selectorColumn source="Code">
-          <ui:renderer type="flag" />
-        </selectorColumn>
-      </DataSelector>
-    </FlowPanel>
-    <FlowPanel for="LoadingAddress" style="&section;">
-      <Label for="LoadingCity" text="=city" style="&labelLeft;" />
-      <DataSelector source="LoadingCity" style="&input; width:210px;" />
-      <Label for="LoadingPostIndex" text="=postIndex" style="&labelRight;" />
-      <InputText source="LoadingPostIndex" style="&input; width:90px;" />
-    </FlowPanel>
-    <FlowPanel for="LoadingAddress" style="&section;">
-      <Label for="LoadingAddress" text="=address" style="&labelLeft;" />
-      <InputText source="LoadingAddress" style="&input; width:400px;" />
-    </FlowPanel>
-    <FlowPanel for="LoadingContact" style="&section;">
-      <Label for="LoadingContact" text="=contact" style="&labelLeft;" />
-      <InputText source="LoadingContact" style="&input; width:400px;" />
-    </FlowPanel>
-
-    &separator;
-    <FlowPanel style="&section;">
-      <Label text="=unloading" style="&labelLeft; font-weight:bold; width:280px; text-align:center;" />
-      <Label for="UnloadingDate" text="=date" style="&labelRight;" />
-      <InputDateTime source="UnloadingDate" style="&input;" />
-    </FlowPanel>
-    <FlowPanel style="&section;">
-      <Label for="UnloadingCompany" text="=company" style="&labelLeft;" />
-      <InputText source="UnloadingCompany" style="&inline;" />
-      <Label for="UnloadingCountry" text="=country" style="&labelRight;" />
-      <DataSelector source="UnloadingCountry" style="&inline;" >
-        <renderToken source="UnloadingCountryName" />
-        <renderToken source="UnloadingCountryCode" prefix=" (" suffix=")" />
-        <selectorColumn source="Name" />
-        <selectorColumn source="Code">
-          <ui:renderer type="flag" />
-        </selectorColumn>
-      </DataSelector>
-    </FlowPanel>
-    <FlowPanel for="UnloadingAddress" style="&section;">
-      <Label for="UnloadingCity" text="=city" style="&labelLeft;" />
-      <DataSelector source="UnloadingCity" style="&input; width:210px;" />
-      <Label for="UnloadingPostIndex" text="=postIndex" style="&labelRight;" />
-      <InputText source="UnloadingPostIndex" style="&input; width:90px;" />
-    </FlowPanel>
-    <FlowPanel for="UnloadingAddress" style="&section;">
-      <Label for="UnloadingAddress" text="=address" style="&labelLeft;" />
-      <InputText source="UnloadingAddress" style="&input; width:400px;" />
-    </FlowPanel>
-    <FlowPanel for="UnloadingContact" style="&section;">
-      <Label for="UnloadingContact" text="=contact" style="&labelLeft;" />
-      <InputText source="UnloadingContact" style="&input; width:400px;" />
-    </FlowPanel>
-
-    &separator;
     <FlowPanel for="ForwarderVehicle" style="&section;">
       <Label for="ForwarderVehicle" style="&labelLeft; width:140px;" />
       <DataSelector source="ForwarderVehicle" viewName="DistinctForwarderVehicles"
@@ -131,5 +63,7 @@
       <Label for="Notes" style="&labelLeft; vertical-align:top; width:140px;" />
       <InputArea source="Notes" visibleLines="4" style="width:350px;" />
     </FlowPanel>
+
+    <ChildGrid class="flexible" name="CargoHandling" relColumn="Forwarder" />
   </FlowPanel>
 </f:Form>

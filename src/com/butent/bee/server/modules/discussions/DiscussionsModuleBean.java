@@ -889,8 +889,8 @@ public class DiscussionsModuleBean implements BeeModule {
             AdministrationConstants.COL_FILE)
         .addExpr(
             SqlUtils.sqlIf(
-                SqlUtils.isNull(TBL_DISCUSSIONS_USAGE, NewsConstants.COL_USAGE_ACCESS)
-                , true, null), ALS_NEW_ANNOUCEMENT)
+                SqlUtils.isNull(TBL_DISCUSSIONS_USAGE, NewsConstants.COL_USAGE_ACCESS),
+                true, null), ALS_NEW_ANNOUCEMENT)
         .addEmptyField(ALS_BIRTHDAY, SqlDataType.BOOLEAN, 1, 0, false)
         .addFrom(TBL_DISCUSSIONS)
         .addFromInner(TBL_ADS_TOPICS, sys.joinTables(TBL_ADS_TOPICS, TBL_DISCUSSIONS, COL_TOPIC))

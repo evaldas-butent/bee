@@ -116,10 +116,13 @@ public class CellGrid extends Widget implements IdentifiableWidget, HasDataTable
     SafeHtml cell(String rowIdx, int colIdx, String classes, SafeStyles styles, SafeHtml contents);
 
     // CHECKSTYLE:OFF
-    @Template("<div data-row=\"{0}\" data-col=\"{1}\" class=\"{2}\" style=\"{3}\" tabindex=\"{4}\">{5}</div>")
+    @Template("<div data-row=\"{0}\" data-col=\"{1}\" class=\"{2}\" style=\"{3}\" tabindex=\"0\">{4}</div>")
     SafeHtml cellFocusable(String rowIdx, int colIdx, String classes, SafeStyles styles,
-        int tabIndex, SafeHtml contents);
+        SafeHtml contents);
 
+    @Template("<div data-row=\"{0}\" data-col=\"{1}\" class=\"{2}\" style=\"{3}\" tabindex=\"0\" draggable=\"true\">{4}</div>")
+    SafeHtml cellDraggable(String rowIdx, int colIdx, String classes, SafeStyles styles,
+        SafeHtml contents);
     // CHECKSTYLE:ON
 
     @Template("<div class=\"{0}\">{1}</div>")
@@ -326,20 +329,30 @@ public class CellGrid extends Widget implements IdentifiableWidget, HasDataTable
   }
 
   private final class RenderInfo {
+
     private final String rowIdx;
     private final int colIdx;
+
     private final String classes;
     private final SafeStyles styles;
+
     private final boolean focusable;
+    private final boolean draggable;
+
     private final SafeHtml content;
 
     private RenderInfo(String rowIdx, int colIdx, String classes, SafeStyles styles,
-        boolean focusable, SafeHtml content) {
+        boolean focusable, boolean draggable, SafeHtml content) {
+
       this.rowIdx = rowIdx;
       this.colIdx = colIdx;
+
       this.classes = classes;
       this.styles = styles;
+
       this.focusable = focusable;
+      this.draggable = draggable;
+
       this.content = content;
     }
 
@@ -363,17 +376,25 @@ public class CellGrid extends Widget implements IdentifiableWidget, HasDataTable
       return styles;
     }
 
+    private boolean isDraggable() {
+      return draggable;
+    }
+
     private boolean isFocusable() {
       return focusable;
     }
 
     private SafeHtml render() {
       SafeHtml result;
-      if (isFocusable()) {
-        result = template.cellFocusable(rowIdx, colIdx, classes, styles, getTabIndex(), content);
+
+      if (isDraggable()) {
+        result = template.cellDraggable(rowIdx, colIdx, classes, styles, content);
+      } else if (isFocusable()) {
+        result = template.cellFocusable(rowIdx, colIdx, classes, styles, content);
       } else {
         result = template.cell(rowIdx, colIdx, classes, styles, content);
       }
+
       return result;
     }
   }
@@ -892,7 +913,6 @@ public class CellGrid extends Widget implements IdentifiableWidget, HasDataTable
   private final LinkedHashMap<Long, RowInfo> selectedRows = new LinkedHashMap<>();
   private final Order sortOrder = new Order();
 
-  private int tabIndex;
   private int zIndex;
 
   private final String resizerId = DomUtils.createUniqueId("resizer");
@@ -3321,10 +3341,6 @@ public class CellGrid extends Widget implements IdentifiableWidget, HasDataTable
     }
   }
 
-  private int getTabIndex() {
-    return tabIndex;
-  }
-
   private boolean handleKey(int keyCode, boolean hasModifiers, int row, int col, Element cell) {
     if (resizeCell(keyCode, hasModifiers, row, col, cell)) {
       return true;
@@ -3661,7 +3677,10 @@ public class CellGrid extends Widget implements IdentifiableWidget, HasDataTable
           activeCell.addClassName(StyleUtils.NAME_RESIZABLE);
         }
 
-        activeCell.focus();
+        Element activeElement = DomUtils.getActiveElement();
+        if (activeElement == null || !activeCell.isOrHasChild(activeElement)) {
+          activeCell.focus();
+        }
 
       } else {
         activeCell.removeClassName(STYLE_ACTIVE_CELL);
@@ -4031,7 +4050,7 @@ public class CellGrid extends Widget implements IdentifiableWidget, HasDataTable
 
           result.add(renderCell(rowIdx, col, StyleUtils.buildClasses(cellClasses), left, top,
               cellWidth, cellHeight, defaultStyles, extraStylesBuilder.toSafeStyles(),
-              column.getTextAlign(), column.getWhiteSpace(), cellHtml, true));
+              column.getTextAlign(), column.getWhiteSpace(), cellHtml, true, column.isDraggable()));
         }
         left += columnWidth + defaultWidthIncr;
         col++;
@@ -4043,7 +4062,8 @@ public class CellGrid extends Widget implements IdentifiableWidget, HasDataTable
 
   private RenderInfo renderCell(String rowIdx, int col, String classes, int left, int top,
       int width, int height, SafeStyles styles, SafeStyles extraStyles,
-      TextAlign hAlign, WhiteSpace whiteSpace, SafeHtml content, boolean focusable) {
+      TextAlign hAlign, WhiteSpace whiteSpace, SafeHtml content,
+      boolean focusable, boolean draggable) {
 
     SafeStylesBuilder stylesBuilder = new SafeStylesBuilder();
     stylesBuilder.append(StyleUtils.PREFAB_POSITION_ABSOLUTE);
@@ -4072,7 +4092,9 @@ public class CellGrid extends Widget implements IdentifiableWidget, HasDataTable
     if (height > 0) {
       stylesBuilder.append(StyleUtils.buildHeight(height));
     }
-    return new RenderInfo(rowIdx, col, classes, stylesBuilder.toSafeStyles(), focusable, content);
+
+    return new RenderInfo(rowIdx, col, classes, stylesBuilder.toSafeStyles(), focusable, draggable,
+        content);
   }
 
   private void renderData(SafeHtmlBuilder sb, List<IsRow> rows) {
@@ -4192,7 +4214,7 @@ public class CellGrid extends Widget implements IdentifiableWidget, HasDataTable
 
       SafeHtml contents = renderCell(rowIdx, i, cellClasses, left, top,
           width + xIncr - widthIncr, cellHeight, styles, extraStylesBuilder.toSafeStyles(),
-          hAlign, whiteSpace, cellBuilder.toSafeHtml(), false).render();
+          hAlign, whiteSpace, cellBuilder.toSafeHtml(), false, false).render();
       sb.append(contents);
 
       left += width + xIncr;

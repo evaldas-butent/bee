@@ -620,6 +620,10 @@ public class GridImpl extends Absolute implements GridView, EditEndEvent.Handler
       UiHelper.setWhiteSpace(column, cd.getWhiteSpace());
     }
 
+    if (BeeUtils.isTrue(cd.getDraggable())) {
+      column.setDraggable(true);
+    }
+
     if (!BeeUtils.isEmpty(cd.getOptions())) {
       column.setOptions(cd.getOptions());
     }
@@ -1300,7 +1304,7 @@ public class GridImpl extends Absolute implements GridView, EditEndEvent.Handler
   }
 
   @Override
-  public void onEditEnd(EditEndEvent event, EditEndEvent.HasEditEndHandler source) {
+  public void onEditEnd(EditEndEvent event, Object source) {
     Assert.notNull(event);
     getGrid().setEditing(false);
     getGrid().refocus();

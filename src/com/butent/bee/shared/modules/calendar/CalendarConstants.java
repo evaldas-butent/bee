@@ -265,6 +265,8 @@ public final class CalendarConstants {
 
   public static final String GRID_ATTENDEES = "Attendees";
 
+  public static final String GRID_CALENDAR_TODO = "CalendarTodo";
+
   public static final String FORM_CALENDAR_SETTINGS = "CalendarSettings";
 
   public static final String DEFAULT_NEW_APPOINTMENT_FORM = "SimpleAppointment";

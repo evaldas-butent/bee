@@ -35,13 +35,13 @@ public class Appointment extends CalendarItem {
 
   private static final int COMPANY_NAME_INDEX = Data.getColumnIndex(VIEW_APPOINTMENTS,
       ALS_COMPANY_NAME);
-  
+
   private static final int CREATOR_INDEX = Data.getColumnIndex(VIEW_APPOINTMENTS, COL_CREATOR);
   private static final int CREATOR_FIRST_NAME_INDEX = Data.getColumnIndex(VIEW_APPOINTMENTS,
       ALS_CREATOR_FIRST_NAME);
   private static final int CREATOR_LAST_NAME_INDEX = Data.getColumnIndex(VIEW_APPOINTMENTS,
       ALS_CREATOR_LAST_NAME);
-  
+
   private static final int SUMMARY_INDEX = Data.getColumnIndex(VIEW_APPOINTMENTS, COL_SUMMARY);
   private static final int DESCRIPTION_INDEX = Data.getColumnIndex(VIEW_APPOINTMENTS,
       COL_DESCRIPTION);
@@ -54,7 +54,9 @@ public class Appointment extends CalendarItem {
   private static final int APPOINTMENT_TYPE_INDEX = Data.getColumnIndex(VIEW_APPOINTMENTS,
       COL_APPOINTMENT_TYPE);
   private static final int STYLE_INDEX = Data.getColumnIndex(VIEW_APPOINTMENTS, COL_STYLE);
-  
+
+  private static final int STATUS_INDEX = Data.getColumnIndex(VIEW_APPOINTMENTS, COL_STATUS);
+
   private static final int VEHICLE_MODEL_INDEX = Data.getColumnIndex(VIEW_APPOINTMENTS,
       COL_VEHICLE_MODEL);
   private static final int VEHICLE_NUMBER_INDEX = Data.getColumnIndex(VIEW_APPOINTMENTS,
@@ -196,7 +198,7 @@ public class Appointment extends CalendarItem {
     return BeeUtils.joinWords(row.getString(CREATOR_FIRST_NAME_INDEX),
         row.getString(CREATOR_LAST_NAME_INDEX));
   }
-  
+
   @Override
   public String getDescription() {
     return row.getString(DESCRIPTION_INDEX);
@@ -266,6 +268,11 @@ public class Appointment extends CalendarItem {
   @Override
   public String getSimpleHeaderTemplate() {
     return SIMPLE_HEADER_TEMPLATE;
+  }
+
+  @Override
+  public AppointmentStatus getStatus() {
+    return EnumUtils.getEnumByIndex(AppointmentStatus.class, row.getInteger(STATUS_INDEX));
   }
 
   @Override

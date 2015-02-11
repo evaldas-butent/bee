@@ -10,6 +10,7 @@ import com.butent.bee.shared.BeeSerializable;
 import com.butent.bee.shared.HasInfo;
 import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogUtils;
+import com.butent.bee.shared.rights.Module;
 import com.butent.bee.shared.rights.ModuleAndSub;
 import com.butent.bee.shared.rights.RegulatedWidget;
 import com.butent.bee.shared.rights.RightsObjectType;
@@ -34,10 +35,6 @@ import java.util.Set;
  */
 
 public class UserData implements BeeSerializable, HasInfo {
-
-  /**
-   * Contains serializable members of user data (login, first and last names, position etc).
-   */
 
   private enum Serial {
     LOGIN, USER_ID, FIRST_NAME, LAST_NAME, PHOTO_FILE_NAME, COMPANY_NAME,
@@ -260,7 +257,7 @@ public class UserData implements BeeSerializable, HasInfo {
   }
 
   public boolean isAnyModuleVisible(String input) {
-    if (BeeUtils.isEmpty(input)) {
+    if (BeeUtils.isEmpty(input) || Module.NEVER_MIND.equals(input)) {
       return true;
     } else {
       List<ModuleAndSub> list = ModuleAndSub.parseList(input);

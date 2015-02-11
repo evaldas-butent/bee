@@ -1230,8 +1230,15 @@ public class FormImpl extends Absolute implements FormView, PreviewHandler, Tabu
   }
 
   @Override
-  public void onEditEnd(EditEndEvent event, EditEndEvent.HasEditEndHandler source) {
+  public void onEditEnd(EditEndEvent event, Object source) {
     Assert.notNull(event);
+
+    if (getFormInterceptor() != null) {
+      getFormInterceptor().onEditEnd(event, source);
+      if (event.isConsumed()) {
+        return;
+      }
+    }
 
     IsRow rowValue = getActiveRow();
     IsColumn column = event.getColumn();

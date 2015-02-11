@@ -38,12 +38,8 @@ public class DataSourceBean {
     if (!bds.isEmpty()) {
       for (BeeDataSource z : bds) {
         if (z.isOpen()) {
-          try {
-            z.close();
-            logger.info("DSN closed:", z.getDsn());
-          } catch (Exception ex) {
-            logger.warning(ex);
-          }
+          z.close();
+          logger.info("DSN closed:", z.getDsn());
         }
       }
     }

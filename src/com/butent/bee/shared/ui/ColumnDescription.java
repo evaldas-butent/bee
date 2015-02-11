@@ -79,7 +79,7 @@ public class ColumnDescription implements BeeSerializable, HasInfo, HasOptions, 
     SEARCH_BY, FILTER_SUPPLIER, FILTER_OPTIONS, SORT_BY,
     HEADER_STYLE, BODY_STYLE, FOOTER_STYLE, DYN_STYLES, CELL_TYPE, CELL_RESIZABLE, UPDATE_MODE,
     AUTO_FIT, FLEXIBILITY, OPTIONS, ELEMENT_TYPE, FOOTER_DESCRIPTION, DYNAMIC,
-    EXPORTABLE, EXPORT_WIDTH_FACTOR, EDIT_IN_PLACE
+    EXPORTABLE, EXPORT_WIDTH_FACTOR, EDIT_IN_PLACE, DRAGGABLE
   }
 
   public static final String TBL_COLUMN_SETTINGS = "GridColumnSettings";
@@ -180,6 +180,7 @@ public class ColumnDescription implements BeeSerializable, HasInfo, HasOptions, 
   private Double exportWidthFactor;
 
   private Boolean editInPlace;
+  private Boolean draggable;
 
   private boolean relationInitialized;
 
@@ -382,6 +383,9 @@ public class ColumnDescription implements BeeSerializable, HasInfo, HasOptions, 
         case EDIT_IN_PLACE:
           setEditInPlace(BeeUtils.toBooleanOrNull(value));
           break;
+        case DRAGGABLE:
+          setDraggable(BeeUtils.toBooleanOrNull(value));
+          break;
       }
     }
   }
@@ -416,6 +420,10 @@ public class ColumnDescription implements BeeSerializable, HasInfo, HasOptions, 
 
   public ColType getColType() {
     return colType;
+  }
+
+  public Boolean getDraggable() {
+    return draggable;
   }
 
   public Boolean getDynamic() {
@@ -530,7 +538,8 @@ public class ColumnDescription implements BeeSerializable, HasInfo, HasOptions, 
         "Exportable", getExportable(),
         "Export Width Factor", getExportWidthFactor(),
         "Carry On", getCarryOn(),
-        "Edit In Place", getEditInPlace());
+        "Edit In Place", getEditInPlace(),
+        "Draggable", getDraggable());
 
     if (getFlexibility() != null) {
       info.addAll(getFlexibility().getInfo());
@@ -935,6 +944,9 @@ public class ColumnDescription implements BeeSerializable, HasInfo, HasOptions, 
         case EDIT_IN_PLACE:
           arr[i++] = getEditInPlace();
           break;
+        case DRAGGABLE:
+          arr[i++] = getDraggable();
+          break;
       }
     }
     return Codec.beeSerialize(arr);
@@ -966,6 +978,10 @@ public class ColumnDescription implements BeeSerializable, HasInfo, HasOptions, 
 
   public void setCellType(CellType cellType) {
     this.cellType = cellType;
+  }
+
+  public void setDraggable(Boolean draggable) {
+    this.draggable = draggable;
   }
 
   public void setDynamic(Boolean dynamic) {

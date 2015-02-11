@@ -18,7 +18,9 @@ public class ReportDateTimeItem extends ReportDateItem {
 
   @Override
   public ReportItem create() {
-    return new ReportDateTimeItem(getName(), getCaption());
+    ReportDateTimeItem item = new ReportDateTimeItem(getName(), getCaption());
+    item.setOptions(getOptions());
+    return item;
   }
 
   @Override

@@ -617,7 +617,13 @@ public final class Relation implements BeeSerializable, HasInfo, HasViewName {
     }
 
     if (targetInfo != null) {
-      String rt = resolveTarget(targetInfo, target.get(), renderColumns.get());
+      String rt;
+      if (BeeUtils.anyEmpty(valSrc, target.get())) {
+        rt = resolveTarget(targetInfo, target.get(), renderColumns.get());
+      } else {
+        rt = target.get();
+      }
+
       if (BeeUtils.isEmpty(renderColumns.get()) && renderTarget()) {
         renderColumns.set(deriveRenderColumns(targetInfo, target.get(), rt));
       }
@@ -679,7 +685,10 @@ public final class Relation implements BeeSerializable, HasInfo, HasViewName {
     if (getChoiceColumns().isEmpty() && getSearchableColumns().isEmpty()) {
       List<String> colNames = new ArrayList<>();
 
-      if (!BeeUtils.isEmpty(renderColumns.get())) {
+      if (!BeeUtils.isEmpty(valSrc)) {
+        colNames.add(valSrc);
+
+      } else if (!BeeUtils.isEmpty(renderColumns.get())) {
         if (sourceInfo != null && targetInfo != null && renderTarget()) {
           int tcLevel = Math.max(targetInfo.getViewColumnLevel(target.get()), 0);
 

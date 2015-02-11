@@ -12,6 +12,13 @@
   </row>
 
   <row>
+    <Label for="Company" visible="true" />
+    <cell colSpan="3">
+      <DataSelector source="Company" style="width: 100%;"/>
+    </cell>
+  </row>
+
+  <row>
     <Label for="DocumentDate" />
     <InputDateTime source="DocumentDate" />
     <Label for="Expires" />

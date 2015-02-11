@@ -175,6 +175,10 @@ public final class TaskConstants {
   public static final String VAR_TASK_FINISH_TIME = Service.RPC_VAR_PREFIX + "task_finish_time";
   public static final String VAR_TASK_PUBLISHER = Service.RPC_VAR_PREFIX + "task_publisher";
   public static final String VAR_TASK_COMPANY = Service.RPC_VAR_PREFIX + "task_company";
+  public static final String VAR_TASK_ACTIVE = "Active";
+  public static final String VAR_TASK_LATE = "Late";
+  public static final String VAR_TASK_COMPLETED = "Completed";
+  public static final String VAR_TASK_SHEDULED = "Sheduled";
 
   public static final String VAR_TASK_DURATION_DATE = Service.RPC_VAR_PREFIX + "task_duration_date";
   public static final String VAR_TASK_DURATION_TIME = Service.RPC_VAR_PREFIX + "task_duration_time";
@@ -234,6 +238,8 @@ public final class TaskConstants {
 
   public static final String VIEW_RELATED_TASKS = "RelatedTasks";
   public static final String VIEW_RELATED_RECURRING_TASKS = "RelatedRecurringTasks";
+
+  public static final String VIEW_TODO_LIST = "TodoList";
 
   public static final String COL_START_TIME = "StartTime";
   public static final String COL_FINISH_TIME = "FinishTime";
@@ -363,6 +369,8 @@ public final class TaskConstants {
   public static final String ALS_TASK_TYPE_NAME = "TypeName";
   public static final String ALS_TASK_TYPE_BACKGROUND = "TypeBackground";
   public static final String ALS_TASK_TYPE_FOREGROUND = "TypeForeground";
+  public static final String ALS_PROJECT_OWNER = "ProjectOwner";
+  public static final String ALS_PROJECT_STATUS = "ProjectStatus";
 
   public static final String ALS_LAST_SPAWN = "LastSpawn";
 

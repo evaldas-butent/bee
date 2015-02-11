@@ -38,8 +38,8 @@ class AllProjectsGrid extends AbstractGridInterceptor {
 
     if (active) {
       presenter.getGridView().notifyWarning(
-          BeeUtils.joinWords(Localized.getConstants().project(), activeRow.getId()
-              , Localized.getConstants().prjStatusActive())
+          BeeUtils.joinWords(Localized.getConstants().project(), activeRow.getId(),
+              Localized.getConstants().prjStatusActive())
           );
       return GridInterceptor.DeleteMode.CANCEL;
     } else if (owner) {

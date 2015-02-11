@@ -62,11 +62,11 @@
       </SimpleJoin>
       
       <SimpleJoin name="CompanyType" joinType="LEFT" >
-          <SimpleColumn name="Name" alias="CompanyType"/>
+        <SimpleColumn name="Name" alias="CompanyType" />
       </SimpleJoin>
     </SimpleJoin>
     
-    <SimpleColumn name="CompanyPerson"/>
+    <SimpleColumn name="CompanyPerson" />
     <SimpleJoin name="CompanyPerson" joinType="LEFT">    
       <SimpleJoin name="Person" joinType="LEFT">
         <SimpleColumn alias="PersonFirstName" name="FirstName" />

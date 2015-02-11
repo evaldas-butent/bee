@@ -853,11 +853,11 @@ public class BeeView implements BeeObject, HasExtendedInfo {
         if (BeeUtils.same(info.getName(), colName)) {
           return index;
         }
-        
+
         index++;
       }
     }
-    
+
     return BeeConst.UNDEF;
   }
 

@@ -4,4 +4,5 @@
 name="ProjectClassifiers" label="=classifiers" order="40" parent="Projects" module="Projects"
 >
   <Item name="ProjectTypes" label="=prjTypes" service="grid" parameters="ProjectTypes" />
+  <Item name="ProjectReasons" label="=reasons" service="grid" parameters="ProjectReasons" />
 </Entry>

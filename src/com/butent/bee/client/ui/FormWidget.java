@@ -140,6 +140,7 @@ import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.HasRelatedCurrency;
 import com.butent.bee.shared.data.value.ValueType;
 import com.butent.bee.shared.font.FontAwesome;
+import com.butent.bee.shared.html.Attributes;
 import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogUtils;
@@ -781,6 +782,9 @@ public enum FormWidget {
         if (widget instanceof HasSummaryChangeHandlers) {
           ((HasSummaryChangeHandlers) widget).setSummarize(BeeUtils.toBoolean(value));
         }
+
+      } else if (BeeUtils.same(name, Attributes.CONTENT_EDITABLE)) {
+        widget.getElement().setPropertyString(name, value);
       }
     }
   }

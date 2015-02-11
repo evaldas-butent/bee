@@ -20,6 +20,7 @@ import com.butent.bee.client.modules.calendar.layout.CalendarLayoutManager;
 import com.butent.bee.client.modules.calendar.layout.MultiDayPanel;
 import com.butent.bee.client.style.StyleUtils;
 import com.butent.bee.shared.BeeConst;
+import com.butent.bee.shared.Pair;
 import com.butent.bee.shared.modules.calendar.CalendarItem;
 import com.butent.bee.shared.time.DateTime;
 import com.butent.bee.shared.time.JustDate;
@@ -180,6 +181,16 @@ public class ResourceView extends CalendarView {
     viewBody.onClock(getSettings());
   }
 
+  @Override
+  public Pair<DateTime, Long> resolveCoordinates(int x, int y) {
+    DateTime dateTime = viewBody.getCoordinatesDate(x, y, getSettings(), getDate(), 1);
+
+    List<Long> attendees = getCalendarWidget().getAttendees();
+    int columnIndex = viewBody.getColumnIndex(x, attendees.size());
+
+    return Pair.of(dateTime, attendees.get(columnIndex));
+  }
+
   private void addItemsToGrid(long calendarId, List<ItemAdapter> adapters,
       boolean multi, int columnIndex, String bg) {
 
@@ -230,14 +241,9 @@ public class ResourceView extends CalendarView {
   }
 
   private void timeBlockClick(Event event) {
-    int x = event.getClientX();
-    int y = event.getClientY();
-
-    List<Long> attendees = getCalendarWidget().getAttendees();
-    int columnIndex = viewBody.getColumnIndex(x, attendees.size());
-
-    DateTime dateTime = viewBody.getCoordinatesDate(x, y, getSettings(), getDate(), 1);
-
-    createAppointment(dateTime, attendees.get(columnIndex));
+    Pair<DateTime, Long> pair = resolveCoordinates(event.getClientX(), event.getClientY());
+    if (pair != null) {
+      createAppointment(pair.getA(), pair.getB());
+    }
   }
 }

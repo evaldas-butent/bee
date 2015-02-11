@@ -147,7 +147,7 @@ public class UserFeedsInterceptor extends AbstractGridInterceptor {
 
   @Override
   public GridInterceptor getInstance() {
-    return new UserFeedsInterceptor();
+    return new UserFeedsInterceptor(userId);
   }
 
   @Override

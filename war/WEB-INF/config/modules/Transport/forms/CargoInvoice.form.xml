@@ -50,7 +50,7 @@
         <cell colSpan="3">
           <Label text="=trdTerm" style="&lbl; text-align:right;" />
         </cell>
-        <InputDate source="Term" style="width:70px;" />
+        <InputDate source="Term" style="width:150px;" />
       </row>
       <row>
         <Label text="=trdVehicle" style="&lbl;" />

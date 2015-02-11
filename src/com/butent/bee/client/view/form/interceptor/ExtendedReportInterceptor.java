@@ -10,8 +10,6 @@ import com.google.gwt.event.dom.client.HasClickHandlers;
 import com.google.gwt.user.client.ui.HasWidgets;
 import com.google.gwt.user.client.ui.Widget;
 
-import static com.butent.bee.shared.modules.transport.TransportConstants.*;
-
 import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.Global;
 import com.butent.bee.client.communication.ParameterList;
@@ -46,13 +44,13 @@ import com.butent.bee.shared.data.SimpleRowSet.SimpleRow;
 import com.butent.bee.shared.font.FontAwesome;
 import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.modules.administration.AdministrationConstants;
+import com.butent.bee.shared.modules.trade.TradeConstants;
 import com.butent.bee.shared.time.DateTime;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.EnumUtils;
 import com.butent.bee.shared.utils.StringList;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -75,7 +73,7 @@ public class ExtendedReportInterceptor extends ReportInterceptor {
   private static final String NAME_START_DATE = "StartDate";
   private static final String NAME_END_DATE = "EndDate";
   private static final String NAME_CURRENCY = AdministrationConstants.COL_CURRENCY;
-  private static final List<String> FILTER_NAMES = Arrays.asList(COL_VEHICLE, COL_TRIP_NO);
+  private static final String NAME_VAT = TradeConstants.COL_TRADE_VAT;
 
   private static final String STYLE_ITEM = "bee-rep-item";
   private static final String STYLE_CAPTION = STYLE_ITEM + "-cap";
@@ -162,9 +160,7 @@ public class ExtendedReportInterceptor extends ReportInterceptor {
       loadDateTime(parameters, NAME_START_DATE, form);
       loadDateTime(parameters, NAME_END_DATE, form);
       loadId(parameters, NAME_CURRENCY, form);
-
-      loadIds(parameters, COL_VEHICLE, form);
-      loadText(parameters, COL_TRIP_NO, form);
+      loadBoolean(parameters, NAME_VAT, form);
     }
     Multimap<String, ReportItem> defaults = getReport().getDefaults();
 
@@ -183,18 +179,13 @@ public class ExtendedReportInterceptor extends ReportInterceptor {
   public void onUnload(FormView form) {
     storeDateTimeValues(NAME_START_DATE, NAME_END_DATE);
     storeEditorValues(NAME_CURRENCY);
-
-    storeEditorValues(FILTER_NAMES);
+    storeBooleanValues(NAME_VAT);
   }
 
   @Override
   protected void clearFilter() {
     clearEditor(NAME_START_DATE);
     clearEditor(NAME_END_DATE);
-
-    for (String name : FILTER_NAMES) {
-      clearEditor(name);
-    }
   }
 
   @Override
@@ -226,13 +217,10 @@ public class ExtendedReportInterceptor extends ReportInterceptor {
     if (DataUtils.isId(currency)) {
       params.addDataItem(AdministrationConstants.COL_CURRENCY, currency);
     }
-    for (String name : FILTER_NAMES) {
-      String value = getEditorValue(name);
-
-      if (!BeeUtils.isEmpty(value)) {
-        params.addDataItem(name, value);
-      }
+    if (getBoolean(NAME_VAT)) {
+      params.addDataItem(TradeConstants.COL_TRADE_VAT, "1");
     }
+
     BeeKeeper.getRpc().makeRequest(params, new ResponseCallback() {
       @Override
       public void onResponse(ResponseObject response) {
@@ -252,9 +240,6 @@ public class ExtendedReportInterceptor extends ReportInterceptor {
         Format.renderPeriod(getDateTime(NAME_START_DATE), getDateTime(NAME_END_DATE)),
         getFilterLabel(NAME_CURRENCY));
 
-    for (String name : FILTER_NAMES) {
-      labels.add(getFilterLabel(name));
-    }
     return BeeUtils.joinWords(labels);
   }
 
@@ -269,8 +254,7 @@ public class ExtendedReportInterceptor extends ReportInterceptor {
 
     addDateTimeValues(parameters, NAME_START_DATE, NAME_END_DATE);
     addEditorValues(parameters, NAME_CURRENCY);
-
-    addEditorValues(parameters, FILTER_NAMES);
+    addBooleanValues(parameters, NAME_VAT);
 
     return parameters;
   }

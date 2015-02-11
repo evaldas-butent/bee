@@ -436,9 +436,8 @@ public class DocumentDataForm extends AbstractFormInterceptor
                 if (!response.hasErrors()) {
                   if (response.isEmpty()) {
                     Printer.print(input, null);
-                  } else if (BrowsingContext.open(FileUtils.getUrl(response.getResponseAsString(),
-                      null)) == null) {
-                    getFormView().notifyWarning("Pop-up window is blocked");
+                  } else {
+                    BrowsingContext.open(FileUtils.getUrl(response.getResponseAsString()));
                   }
                 }
               }

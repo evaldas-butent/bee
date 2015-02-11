@@ -345,8 +345,8 @@ public class TasksModuleBean implements BeeModule {
 
         for (int i = 0; i < times.getNumberOfRows(); i++) {
           Long rowId = times.getLong(i, COL_TASK);
-          Double actualDuration = times.getDouble(i, COL_ACTUAL_DURATION);
-          Double actualExpenses = times.getDouble(i, COL_ACTUAL_EXPENSES);
+          Long actualDuration = times.getLong(i, COL_ACTUAL_DURATION);
+          Long actualExpenses = times.getLong(i, COL_ACTUAL_EXPENSES);
 
           if (!DataUtils.isId(rowId)) {
             continue;
@@ -465,7 +465,9 @@ public class TasksModuleBean implements BeeModule {
     if (qs.sqlExists(TBL_TASK_USERS, where)) {
       return registerTaskVisit(taskId, userId, System.currentTimeMillis());
     } else {
-      logger.warning("task", taskId, "access by unauthorized user", userId);
+      if (!usr.isAdministrator()) {
+        logger.warning("task", taskId, "access by unauthorized user", userId);
+      }
       return ResponseObject.emptyResponse();
     }
   }
@@ -1348,7 +1350,7 @@ public class TasksModuleBean implements BeeModule {
   }
 
   private SimpleRowSet getTaskActualTimesAndExpenses(List<Long> ids) {
-    SimpleRowSet result = new SimpleRowSet(new String [] {
+    SimpleRowSet result = new SimpleRowSet(new String[] {
         COL_TASK, COL_ACTUAL_DURATION, COL_ACTUAL_EXPENSES
     });
 
@@ -1423,12 +1425,12 @@ public class TasksModuleBean implements BeeModule {
     }
 
     for (Long id : ids) {
-      double timeInHours = 0.0;
+      Long time = 0L;
       double expense = 0.0;
 
       if (times.containsKey(id)) {
-        timeInHours = Double.valueOf(BeeUtils.toString(times.get(id)))
-              / Double.valueOf(TimeUtils.MILLIS_PER_HOUR);
+        time = times.get(id);
+
       }
 
       if (expenses.containsKey(id)) {
@@ -1437,9 +1439,9 @@ public class TasksModuleBean implements BeeModule {
 
       result.addRow(new String[] {
           BeeUtils.toString(id),
-          BeeUtils.toString(timeInHours),
+          BeeUtils.toString(time),
           BeeUtils.toString(expense)
-          });
+      });
     }
 
     return result;

@@ -25,6 +25,7 @@
       horizontalAlignment="center" searchBy="LoadingCountryName LoadingCountryCode">
       <renderer type="flag" />
     </CalcColumn>
+    <DataColumn name="LoadingDate" />
 
     <RelColumn name="UnloadingCountry" visible="false" readOnly="true" />
     <CalcColumn type="string" name="To" source="UnloadingCountryCode" cellType="html" width="20"

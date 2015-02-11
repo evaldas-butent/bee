@@ -51,7 +51,7 @@ import java.util.Collections;
 import java.util.List;
 
 public class EditableWidget implements EditChangeHandler, FocusHandler, BlurHandler,
-    EditStopEvent.Handler, HasCellValidationHandlers, EditEndEvent.HasEditEndHandler {
+    EditStopEvent.Handler, HasCellValidationHandlers {
 
   private static final BeeLogger logger = LogUtils.getLogger(EditableWidget.class);
 

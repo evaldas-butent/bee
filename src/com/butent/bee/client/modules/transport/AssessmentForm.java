@@ -338,17 +338,6 @@ public class AssessmentForm extends PrintFormInterceptor implements SelectorEven
       }
     }
 
-    @Override
-    public boolean onStartNewRow(GridView gridView, IsRow oldRow, IsRow newRow) {
-      for (String prefix : new String[] {"Loading", "Unloading"}) {
-        for (String col : new String[] {"Date", "Address", "PostIndex", "Company", "Contact",
-            "City", "CityName", "Country", "CountryName", "CountryCode"}) {
-          newRow.setValue(gridView.getDataIndex(prefix + col), form.getStringValue(prefix + col));
-        }
-      }
-      return super.onStartNewRow(gridView, oldRow, newRow);
-    }
-
     private void refresh() {
       DataChangeEvent.fireRefresh(BeeKeeper.getBus(), TBL_CARGO_EXPENSES);
       refreshTotals();
@@ -546,81 +535,6 @@ public class AssessmentForm extends PrintFormInterceptor implements SelectorEven
     }
   }
 
-  private static String buildLog(String caption, String value, String oldLog) {
-    return BeeUtils.join("\n\n",
-        TimeUtils.nowMinutes().toCompactString() + " " + caption + "\n" + value, oldLog);
-  }
-
-  private static void updateTotals(final FormView formView, IsRow row,
-      final Widget incomeTotalWidget, final Widget expenseTotalWidget, final Widget profitWidget,
-      final Widget incomeWidget, final Widget expenseWidget) {
-
-    boolean ok = false;
-
-    for (Widget widget : new Widget[] {incomeTotalWidget, expenseTotalWidget, profitWidget,
-        incomeWidget, expenseWidget}) {
-      if (widget != null) {
-        ok = true;
-        widget.getElement().setInnerText(null);
-      }
-    }
-    if (!ok || !DataUtils.isId(row.getId())) {
-      return;
-    }
-    ParameterList args = TransportHandler.createArgs(SVC_GET_ASSESSMENT_TOTALS);
-    args.addDataItem(COL_ASSESSMENT, row.getId());
-
-    Long curr = DataUtils.getLong(formView.getDataColumns(), row, COL_CURRENCY);
-
-    if (DataUtils.isId(curr)) {
-      args.addDataItem(COL_CURRENCY, curr);
-    }
-    if (!DataUtils.isId(row.getLong(formView.getDataIndex(COL_ASSESSMENT)))) {
-      args.addDataItem("isPrimary", 1);
-    }
-    BeeKeeper.getRpc().makePostRequest(args, new ResponseCallback() {
-      @Override
-      public void onResponse(ResponseObject response) {
-        response.notify(formView);
-
-        if (response.hasErrors()) {
-          return;
-        }
-        SimpleRowSet rs = SimpleRowSet.restore((String) response.getResponse());
-
-        double income = BeeUtils.round(BeeUtils
-            .toDouble(rs.getValueByKey(COL_SERVICE, TBL_CARGO_INCOMES, COL_AMOUNT)), 2);
-        double expense = BeeUtils.round(BeeUtils
-            .toDouble(rs.getValueByKey(COL_SERVICE, TBL_CARGO_EXPENSES, COL_AMOUNT)), 2);
-        double incomeTotal = BeeUtils.round(BeeUtils.round(BeeUtils
-            .toDouble(rs.getValueByKey(COL_SERVICE, TBL_CARGO_INCOMES + VAR_TOTAL, COL_AMOUNT)), 2)
-            + income, 2);
-        double expenseTotal = BeeUtils.round(BeeUtils.round(BeeUtils
-            .toDouble(rs.getValueByKey(COL_SERVICE, TBL_CARGO_EXPENSES + VAR_TOTAL,
-                COL_AMOUNT)), 2) + expense, 2);
-
-        if (incomeTotalWidget != null) {
-          incomeTotalWidget.getElement().setInnerText(BeeUtils.toString(incomeTotal));
-        }
-        if (expenseTotalWidget != null) {
-          expenseTotalWidget.getElement().setInnerText(BeeUtils.toString(expenseTotal));
-        }
-        if (profitWidget != null) {
-          profitWidget.getElement()
-              .setInnerText(BeeUtils.toString(BeeUtils.round(incomeTotal - expenseTotal, 2)));
-        }
-        if (incomeWidget != null) {
-          incomeWidget.getElement()
-              .setInnerText(income != 0 ? BeeUtils.parenthesize(income) : null);
-        }
-        if (expenseWidget != null) {
-          expenseWidget.getElement()
-              .setInnerText(expense != 0 ? BeeUtils.parenthesize(expense) : null);
-        }
-      }
-    });
-  }
-
   private FormView form;
   private final LocalizableConstants loc = Localized.getConstants();
 
@@ -726,7 +640,7 @@ public class AssessmentForm extends PrintFormInterceptor implements SelectorEven
     boolean executor = isExecutor();
 
     Integer status = form.getIntegerValue(COL_ASSESSMENT_STATUS);
-    int orderStatus = form.getIntegerValue(ALS_ORDER_STATUS);
+    Integer orderStatus = form.getIntegerValue(ALS_ORDER_STATUS);
 
     String caption = request ? (primary ? loc.trAssessmentRequest() : loc.trAssessment())
         : (primary ? loc.trOrder() : loc.trChildOrder());
@@ -932,6 +846,11 @@ public class AssessmentForm extends PrintFormInterceptor implements SelectorEven
     }
   }
 
+  private static String buildLog(String caption, String value, String oldLog) {
+    return BeeUtils.join("\n\n",
+        TimeUtils.nowMinutes().toCompactString() + " " + caption + "\n" + value, oldLog);
+  }
+
   private boolean handleSaveAction(final ScheduledCommand action) {
     final int logIdx = form.getDataIndex(COL_ASSESSMENT_LOG);
     final String oldLog = form.getOldRow().getString(logIdx);
@@ -940,7 +859,7 @@ public class AssessmentForm extends PrintFormInterceptor implements SelectorEven
     if (Objects.equals(oldLog, newLog)) {
       final Map<String, DateTime> dates = new LinkedHashMap<>();
 
-      for (String col : new String[] {COL_DATE, "LoadingDate", "UnloadingDate"}) {
+      for (String col : new String[] {COL_DATE, ALS_LOADING_DATE, ALS_UNLOADING_DATE}) {
         int idx = form.getDataIndex(col);
         DateTime oldValue = form.getOldRow().getDateTime(idx);
         DateTime value = form.getActiveRow().getDateTime(idx);
@@ -1104,6 +1023,9 @@ public class AssessmentForm extends PrintFormInterceptor implements SelectorEven
   }
 
   private void updateDepartment(FormView formView, IsRow row, Long department) {
+    if (row == null) {
+      return;
+    }
     Long dept = department != null
         ? department : row.getLong(formView.getDataIndex(COL_DEPARTMENT));
 
@@ -1119,5 +1041,75 @@ public class AssessmentForm extends PrintFormInterceptor implements SelectorEven
       row.setValue(formView.getDataIndex(COL_DEPARTMENT_NAME), departments.get(dept));
       formView.refreshBySource(COL_DEPARTMENT_NAME);
     }
+  }
+
+  private static void updateTotals(final FormView formView, IsRow row,
+      final Widget incomeTotalWidget, final Widget expenseTotalWidget, final Widget profitWidget,
+      final Widget incomeWidget, final Widget expenseWidget) {
+
+    boolean ok = false;
+
+    for (Widget widget : new Widget[] {incomeTotalWidget, expenseTotalWidget, profitWidget,
+        incomeWidget, expenseWidget}) {
+      if (widget != null) {
+        ok = true;
+        widget.getElement().setInnerText(null);
+      }
+    }
+    if (!ok || row == null || !DataUtils.isId(row.getId())) {
+      return;
+    }
+    ParameterList args = TransportHandler.createArgs(SVC_GET_ASSESSMENT_TOTALS);
+    args.addDataItem(COL_ASSESSMENT, row.getId());
+
+    Long curr = DataUtils.getLong(formView.getDataColumns(), row, COL_CURRENCY);
+
+    if (DataUtils.isId(curr)) {
+      args.addDataItem(COL_CURRENCY, curr);
+    }
+    if (!DataUtils.isId(row.getLong(formView.getDataIndex(COL_ASSESSMENT)))) {
+      args.addDataItem("isPrimary", 1);
+    }
+    BeeKeeper.getRpc().makePostRequest(args, new ResponseCallback() {
+      @Override
+      public void onResponse(ResponseObject response) {
+        response.notify(formView);
+
+        if (response.hasErrors()) {
+          return;
+        }
+        SimpleRowSet rs = SimpleRowSet.restore((String) response.getResponse());
+
+        double income = BeeUtils.round(BeeUtils
+            .toDouble(rs.getValueByKey(COL_SERVICE, TBL_CARGO_INCOMES, COL_AMOUNT)), 2);
+        double expense = BeeUtils.round(BeeUtils
+            .toDouble(rs.getValueByKey(COL_SERVICE, TBL_CARGO_EXPENSES, COL_AMOUNT)), 2);
+        double incomeTotal = BeeUtils.round(BeeUtils.round(BeeUtils
+            .toDouble(rs.getValueByKey(COL_SERVICE, TBL_CARGO_INCOMES + VAR_TOTAL, COL_AMOUNT)), 2)
+            + income, 2);
+        double expenseTotal = BeeUtils.round(BeeUtils.round(BeeUtils
+            .toDouble(rs.getValueByKey(COL_SERVICE, TBL_CARGO_EXPENSES + VAR_TOTAL,
+                COL_AMOUNT)), 2) + expense, 2);
+
+        if (incomeTotalWidget != null) {
+          incomeTotalWidget.getElement().setInnerText(BeeUtils.toString(incomeTotal));
+        }
+        if (expenseTotalWidget != null) {
+          expenseTotalWidget.getElement().setInnerText(BeeUtils.toString(expenseTotal));
+        }
+        if (profitWidget != null) {
+          profitWidget.getElement()
+              .setInnerText(BeeUtils.toString(BeeUtils.round(incomeTotal - expenseTotal, 2)));
+        }
+        if (incomeWidget != null) {
+          incomeWidget.getElement()
+              .setInnerText(income != 0 ? BeeUtils.parenthesize(income) : null);
+        }
+        if (expenseWidget != null) {
+          expenseWidget.getElement()
+              .setInnerText(expense != 0 ? BeeUtils.parenthesize(expense) : null);
+        }
+      }
+    });
   }
 }

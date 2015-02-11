@@ -15,6 +15,12 @@
       </SimpleJoin>
       <SimpleColumn name="StartDate" alias="ProjectStartDate" />
       <SimpleColumn name="EndDate" alias="ProjectEndDate" />
+      <SimpleColumn name="TimeUnit" />
+      <SimpleJoin name="TimeUnit" joinType="LEFT">
+        <SimpleColumn name="Name" alias="UnitName" />
+        <SimpleColumn name="Factor" />
+        <SimpleColumn name="BaseUnit" />
+      </SimpleJoin>
     </SimpleJoin>
     <SimpleColumn name="Name" />
     <SimpleColumn name="StartDate" />

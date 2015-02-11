@@ -339,6 +339,7 @@
     <xs:restriction base="xs:string">
       <xs:enumeration value="add" />
       <xs:enumeration value="audit" />
+      <xs:enumeration value="auto_fit" />
       <xs:enumeration value="bookmark" />
       <xs:enumeration value="close" />
       <xs:enumeration value="configure" />
