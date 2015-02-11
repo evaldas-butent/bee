@@ -27,15 +27,18 @@ import com.butent.bee.shared.data.SearchResult;
 import com.butent.bee.shared.data.SimpleRowSet;
 import com.butent.bee.shared.data.filter.Filter;
 import com.butent.bee.shared.data.view.Order;
+import com.butent.bee.shared.logging.LogUtils;
 import com.butent.bee.shared.modules.BeeParameter;
 import com.butent.bee.shared.modules.administration.AdministrationConstants;
 import com.butent.bee.shared.modules.classifiers.ClassifierConstants;
 import com.butent.bee.shared.modules.projects.ProjectConstants;
+import com.butent.bee.shared.modules.projects.ProjectStatus;
 import com.butent.bee.shared.modules.tasks.TaskConstants;
 import com.butent.bee.shared.modules.tasks.TaskConstants.TaskStatus;
 import com.butent.bee.shared.news.Feed;
 import com.butent.bee.shared.rights.Module;
 import com.butent.bee.shared.time.DateTime;
+import com.butent.bee.shared.time.JustDate;
 import com.butent.bee.shared.time.TimeUtils;
 import com.butent.bee.shared.utils.BeeUtils;
 
@@ -512,11 +515,26 @@ public class ProjectsModuleBean implements BeeModule {
         ProjectConstants.COL_PROJECT_PRICE
         );
 
-    select.addExpr(SqlUtils.concat((Object[]) SqlUtils.fields(ClassifierConstants.TBL_PERSONS,
-        ClassifierConstants.COL_FIRST_NAME, ClassifierConstants.COL_LAST_NAME)),
+    select.addExpr(SqlUtils.concat(SqlUtils.nvl(SqlUtils.field(ClassifierConstants.TBL_PERSONS,
+        ClassifierConstants.COL_FIRST_NAME), SqlUtils.constant(BeeConst.STRING_EMPTY)),
+        SqlUtils.constant(BeeConst.STRING_SPACE), SqlUtils.nvl(SqlUtils.field(
+            ClassifierConstants.TBL_PERSONS,
+            ClassifierConstants.COL_LAST_NAME), SqlUtils.constant(BeeConst.STRING_EMPTY))),
         ProjectConstants.COL_PROJECT_OWNER);
+    select.addExpr(
+        SqlUtils.sqlIf(
+            SqlUtils.or(SqlUtils.notEqual(TBL_PROJECTS, COL_PROJECT_STATUS, ProjectStatus.APPROVED
+                .ordinal()),
+                SqlUtils.notEqual(TBL_PROJECTS, COL_PROJECT_STATUS, ProjectStatus.SCHEDULED
+                    .ordinal())),
+            SqlUtils.divide(SqlUtils.minus(new JustDate().getTime(), SqlUtils.field(TBL_PROJECTS,
+                COL_PROJECT_END_DATE)), TimeUtils.MILLIS_PER_DAY), null), ALS_PROJECT_OVERDUE);
     select.addField(ClassifierConstants.TBL_COMPANIES, ClassifierConstants.COL_COMPANY_NAME,
-        ProjectConstants.COL_COMAPNY);
+        ClassifierConstants.ALS_COMPANY_NAME);
+
+    select.addField(ClassifierConstants.TBL_UNITS, ClassifierConstants.COL_UNIT_NAME,
+        COL_PROJECT_TIME_UNIT);
+
     select.addFrom(TaskConstants.TBL_TASKS);
     select.addFromInner(ProjectConstants.TBL_PROJECTS, SqlUtils.join(TaskConstants.TBL_TASKS,
         ProjectConstants.COL_PROJECT, ProjectConstants.TBL_PROJECTS, sys
@@ -536,6 +554,11 @@ public class ProjectsModuleBean implements BeeModule {
     select.addFromLeft(ClassifierConstants.TBL_PERSONS, sys.joinTables(
         ClassifierConstants.TBL_PERSONS, ClassifierConstants.TBL_COMPANY_PERSONS,
         ClassifierConstants.COL_PERSON));
+
+    select.addFromLeft(ClassifierConstants.TBL_UNITS, sys.joinTables(ClassifierConstants.TBL_UNITS,
+        TBL_PROJECTS, COL_PROJECT_TIME_UNIT));
+
+    LogUtils.getRootLogger().info(select.getQuery());
 
     SimpleRowSet rqs = qs.getData(select);
 
