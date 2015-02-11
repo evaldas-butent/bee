@@ -19,6 +19,7 @@
   
   <g:columns>
     <DataColumn name="Name" visible="true" />
+    <RelColumn name="Company" />
     <DataColumn name="DocumentDate" />
     <DataColumn name="Expires" />
     <DataColumn name="Number" />
