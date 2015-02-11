@@ -287,7 +287,7 @@ public class MailStorageBean {
         fileId = fs.storeFile(is, "mail@" + envelope.getUniqueId(), "text/plain");
       } catch (MessagingException | IOException e) {
         qs.updateData(new SqlDelete(TBL_PLACES)
-            .setWhere(SqlUtils.equals(TBL_MESSAGES, COL_MESSAGE, messageId.get())));
+            .setWhere(SqlUtils.equals(TBL_PLACES, COL_MESSAGE, messageId.get())));
 
         qs.updateData(new SqlDelete(TBL_MESSAGES)
             .setWhere(sys.idEquals(TBL_MESSAGES, messageId.get())));
