@@ -344,6 +344,8 @@ public class AssessmentForm extends PrintFormInterceptor implements SelectorEven
 
     @Override
     public boolean onStartNewRow(GridView gridView, IsRow oldRow, IsRow newRow) {
+      newRow.setValue(gridView.getDataIndex(COL_TRADE_VAT_PLUS), true);
+      newRow.setValue(gridView.getDataIndex(COL_TRADE_VAT_PERC), true);
       newRow.setValue(gridView.getDataIndex("CargoDescription"),
           form.getStringValue("Description"));
 
@@ -394,6 +396,14 @@ public class AssessmentForm extends PrintFormInterceptor implements SelectorEven
     @Override
     public GridInterceptor getInstance() {
       return new ServicesGrid();
+    }
+
+    @Override
+    public boolean onStartNewRow(GridView gridView, IsRow oldRow, IsRow newRow) {
+      newRow.setValue(gridView.getDataIndex(COL_TRADE_VAT_PLUS), true);
+      newRow.setValue(gridView.getDataIndex(COL_TRADE_VAT_PERC), true);
+
+      return super.onStartNewRow(gridView, oldRow, newRow);
     }
 
     private void refresh() {

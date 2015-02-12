@@ -511,7 +511,7 @@ public class NewsAggregator implements HandlesAllDataEvents {
     return findSubscription(feed) != null;
   }
 
-  public void loadSubscriptions(String serialized) {
+  public void loadSubscriptions(String serialized, boolean notify) {
     String[] arr = Codec.beeDeserializeCollection(serialized);
 
     if (ArrayUtils.isEmpty(arr)) {
@@ -522,7 +522,7 @@ public class NewsAggregator implements HandlesAllDataEvents {
 
       clear(false);
 
-      String notifyMsg = BeeConst.STRING_EMPTY;
+      List<String> notifyMsg = new ArrayList<>();
 
       for (String s : arr) {
         final Subscription subscription = Subscription.restore(s);
@@ -534,16 +534,16 @@ public class NewsAggregator implements HandlesAllDataEvents {
           SubscriptionPanel subscriptionPanel = new SubscriptionPanel(subscription, open);
 
           newsPanel.addSubscriptionPanel(subscriptionPanel);
-          notifyMsg =
-              BeeUtils.join(BeeConst.STRING_EOL, notifyMsg, BeeUtils.joinWords(subscription
-                  .getLabel(), BeeUtils
-              .bracket(subscription.countNew() + subscription.countUpdated())));
 
+          if (notify) {
+            notifyMsg.add(BeeUtils.joinWords(subscription.getLabel(),
+                BeeUtils.bracket(subscription.countNew() + subscription.countUpdated())));
+          }
         }
       }
 
-      if (!BeeUtils.isEmpty(notifyMsg)) {
-        Global.showBrowserNotify(notifyMsg);
+      if (!notifyMsg.isEmpty()) {
+        Global.showBrowserNotify(BeeUtils.buildLines(notifyMsg));
       }
 
       newsPanel.removeStyleName(STYLE_APATHY);
@@ -635,7 +635,7 @@ public class NewsAggregator implements HandlesAllDataEvents {
       public void onResponse(ResponseObject response) {
         if (!response.hasErrors()) {
           if (response.hasResponse()) {
-            loadSubscriptions(response.getResponseAsString());
+            loadSubscriptions(response.getResponseAsString(), true);
           } else {
             clear(true);
           }

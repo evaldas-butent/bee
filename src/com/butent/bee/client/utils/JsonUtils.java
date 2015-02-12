@@ -36,7 +36,7 @@ public final class JsonUtils {
       return BeeUtils.round(value);
     }
   }
-  
+
   public static Double getNumber(JSONObject obj, String key) {
     if (obj == null || BeeUtils.isEmpty(key) || !obj.containsKey(key)) {
       return null;

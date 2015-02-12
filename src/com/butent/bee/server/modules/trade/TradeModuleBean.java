@@ -472,19 +472,25 @@ public class TradeModuleBean implements BeeModule {
         if (DataUtils.isId(id) && !companies.containsKey(id)) {
           SimpleRow data = qs.getRow(new SqlSelect()
               .addFields(TBL_COMPANIES, COL_COMPANY_NAME, COL_COMPANY_CODE, COL_COMPANY_VAT_CODE)
+              .addField(TBL_COMPANY_TYPES, COL_COMPANY_TYPE_NAME, COL_COMPANY_TYPE)
               .addFields(TBL_CONTACTS, COL_ADDRESS, COL_POST_INDEX)
               .addField(TBL_CITIES, COL_CITY_NAME, COL_CITY)
               .addField(TBL_COUNTRIES, COL_COUNTRY_NAME, COL_COUNTRY)
               .addFrom(TBL_COMPANIES)
+              .addFromLeft(TBL_COMPANY_TYPES,
+                  sys.joinTables(TBL_COMPANY_TYPES, TBL_COMPANIES, COL_COMPANY_TYPE))
               .addFromLeft(TBL_CONTACTS, sys.joinTables(TBL_CONTACTS, TBL_COMPANIES, COL_CONTACT))
               .addFromLeft(TBL_CITIES, sys.joinTables(TBL_CITIES, TBL_CONTACTS, COL_CITY))
               .addFromLeft(TBL_COUNTRIES, sys.joinTables(TBL_COUNTRIES, TBL_CONTACTS, COL_COUNTRY))
               .setWhere(sys.idEquals(TBL_COMPANIES, id)));
 
           try {
-            String company = ButentWS.connect(remoteNamespace, remoteAddress, remoteLogin,
+            String company = BeeUtils.joinItems(data.getValue(COL_COMPANY_NAME),
+                data.getValue(COL_COMPANY_TYPE));
+
+            company = ButentWS.connect(remoteNamespace, remoteAddress, remoteLogin,
                 remotePassword)
-                .importClient(data.getValue(COL_COMPANY_NAME), data.getValue(COL_COMPANY_CODE),
+                .importClient(company, data.getValue(COL_COMPANY_CODE),
                     data.getValue(COL_COMPANY_VAT_CODE), data.getValue(COL_ADDRESS),
                     data.getValue(COL_POST_INDEX), data.getValue(COL_CITY),
                     data.getValue(COL_COUNTRY));

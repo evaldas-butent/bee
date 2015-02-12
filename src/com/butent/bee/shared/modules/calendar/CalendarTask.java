@@ -309,6 +309,7 @@ public class CalendarTask extends CalendarItem implements BeeSerializable {
     return start;
   }
 
+  @Override
   public TaskStatus getStatus() {
     return status;
   }

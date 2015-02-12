@@ -4,7 +4,7 @@
 
   name="CargoSales" viewName="CargoSales"
   flexGrow="1"
-  readOnly="true" caption="=trOrderCargoIncomes"
+  readOnly="true" caption="=trCargoIncomes"
   >
   <g:columns>
     <SelectionColumn name="Select" width="20" />

@@ -59,6 +59,8 @@ public final class CalendarStyleManager {
   public static final String TASK = "task";
   public static final String PARTIAL = "partial";
 
+  public static final String STATUS_PREFIX = "status-";
+
   public static final String MOVABLE = "movable";
   public static final String RESIZABLE = "resizable";
 

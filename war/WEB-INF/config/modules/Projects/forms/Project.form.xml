@@ -173,10 +173,12 @@
         <text>=prjDates</text>
         <ChildGrid name="ProjectDates" relColumn="Project" />
       </page>
+      <!--  
       <page>
         <text>=income</text>
         <FlowPanel></FlowPanel>
       </page>
+      -->
       <page>
         <text>=prjSchedule</text>
         <FlowPanel name="ChartData" />

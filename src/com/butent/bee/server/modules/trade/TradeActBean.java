@@ -140,8 +140,8 @@ public class TradeActBean {
         response = createInvoice(reqInfo);
         break;
 
-      case SVC_CONVERT_ACT_TO_SALE:
-        response = convertToSale(reqInfo);
+      case SVC_ALTER_ACT_KIND:
+        response = alterKind(reqInfo);
         break;
 
       case SVC_ITEMS_BY_COMPANY_REPORT:
@@ -250,10 +250,16 @@ public class TradeActBean {
     });
   }
 
-  private ResponseObject convertToSale(RequestInfo reqInfo) {
+  private ResponseObject alterKind(RequestInfo reqInfo) {
     Long actId = reqInfo.getParameterLong(COL_TRADE_ACT);
     if (!DataUtils.isId(actId)) {
       return ResponseObject.parameterNotFound(reqInfo.getService(), COL_TRADE_ACT);
+    }
+
+    TradeActKind kind = EnumUtils.getEnumByIndex(TradeActKind.class,
+        reqInfo.getParameter(COL_TA_KIND));
+    if (kind == null) {
+      return ResponseObject.parameterNotFound(reqInfo.getService(), COL_TA_KIND);
     }
 
     BeeRowSet rowSet = qs.getViewData(VIEW_TRADE_ACTS, Filter.compareId(actId));
@@ -264,26 +270,34 @@ public class TradeActBean {
     BeeRow oldRow = rowSet.getRow(0);
     BeeRow newRow = DataUtils.cloneRow(oldRow);
 
-    newRow.setValue(rowSet.getColumnIndex(COL_TA_KIND), TradeActKind.SALE.ordinal());
+    newRow.setValue(rowSet.getColumnIndex(COL_TA_KIND), kind.ordinal());
 
-    Long series = oldRow.getLong(rowSet.getColumnIndex(COL_TA_SERIES));
-    int numberIndex = rowSet.getColumnIndex(COL_TA_NUMBER);
+    if (kind.autoNumber()) {
+      Long series = oldRow.getLong(rowSet.getColumnIndex(COL_TA_SERIES));
+      int numberIndex = rowSet.getColumnIndex(COL_TA_NUMBER);
 
-    if (DataUtils.isId(series) && oldRow.isNull(numberIndex)) {
-      String number = getNextActNumber(series, rowSet.getColumn(numberIndex).getPrecision());
-
-      if (!BeeUtils.isEmpty(number)) {
-        newRow.setValue(numberIndex, number);
+      if (DataUtils.isId(series) && oldRow.isNull(numberIndex)) {
+        String number = getNextActNumber(series, rowSet.getColumn(numberIndex).getPrecision());
+        if (!BeeUtils.isEmpty(number)) {
+          newRow.setValue(numberIndex, number);
+        }
       }
     }
 
-    Long operation = getDefaultOperation(TradeActKind.SALE);
+    Long operation = getDefaultOperation(kind);
     newRow.setValue(rowSet.getColumnIndex(COL_TA_OPERATION), operation);
 
     BeeRowSet updated = DataUtils.getUpdated(rowSet.getViewName(), rowSet.getColumns(),
         oldRow, newRow, null);
 
-    return deb.commitRow(updated);
+    ResponseObject response = deb.commitRow(updated);
+    if (!response.hasErrors() && !kind.enableServices()) {
+      SqlDelete delete = new SqlDelete(TBL_TRADE_ACT_SERVICES)
+          .setWhere(SqlUtils.equals(TBL_TRADE_ACT_SERVICES, COL_TRADE_ACT, actId));
+      qs.updateData(delete);
+    }
+
+    return response;
   }
 
   private ResponseObject copyAct(RequestInfo reqInfo) {

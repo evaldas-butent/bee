@@ -24,6 +24,7 @@ import com.butent.bee.client.dialog.InputBoxes;
 import com.butent.bee.client.dialog.InputCallback;
 import com.butent.bee.client.dialog.MessageBoxes;
 import com.butent.bee.client.dialog.StringCallback;
+import com.butent.bee.client.dom.Features;
 import com.butent.bee.client.grid.GridFactory;
 import com.butent.bee.client.grid.HtmlTable;
 import com.butent.bee.client.images.Images;
@@ -467,7 +468,9 @@ public final class Global {
   }
 
   public static void showBrowserNotify(String msg) {
-    JsUtils.showBrowserNotification(BeeKeeper.getScreen().getUserInterface().getTitle(), msg);
+    if (Features.supportsNotifications()) {
+      JsUtils.showBrowserNotification(BeeKeeper.getScreen().getUserInterface().getTitle(), msg);
+    }
   }
 
   public static void showError(List<String> messages) {

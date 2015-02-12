@@ -1203,8 +1203,14 @@ public class TransportModuleBean implements BeeModule, HasTimerService {
       qs.insertData(insert.addConstant(COL_TRADE_ITEM_NOTE,
           XmlUtils.createString("CargoInfo", nodes.toArray(new String[0]))));
     }
+    DateTime invoiceDate = qs.getDateTime(new SqlSelect()
+        .addFields(TBL_SALES, COL_TRADE_DATE)
+        .addFrom(TBL_SALES)
+        .setWhere(sys.idEquals(TBL_SALES, saleId)));
+
     return response.addErrorsFrom(qs.updateDataWithResponse(new SqlUpdate(TBL_CARGO_INCOMES)
         .addConstant(COL_SALE, saleId)
+        .addConstant(COL_DATE, invoiceDate.getDate().getTime())
         .setWhere(wh)));
   }
 
@@ -1267,8 +1273,14 @@ public class TransportModuleBean implements BeeModule, HasTimerService {
 
       qs.insertData(insert);
     }
+    DateTime invoiceDate = qs.getDateTime(new SqlSelect()
+        .addFields(TBL_PURCHASES, COL_TRADE_DATE)
+        .addFrom(TBL_PURCHASES)
+        .setWhere(sys.idEquals(TBL_PURCHASES, purchaseId)));
+
     return response.addErrorsFrom(qs.updateDataWithResponse(new SqlUpdate(TBL_CARGO_EXPENSES)
         .addConstant(COL_PURCHASE, purchaseId)
+        .addConstant(COL_DATE, invoiceDate.getDate().getTime())
         .setWhere(wh)));
   }
 
