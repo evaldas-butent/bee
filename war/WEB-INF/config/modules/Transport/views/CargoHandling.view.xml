@@ -21,11 +21,15 @@
       <SimpleColumn name="City" alias="LoadingCity" label="=trLoadingCity" />
       <SimpleJoin joinType="LEFT" name="City">
         <SimpleColumn name="Name" alias="LoadingCityName" />
+        <SimpleColumn name="Name2" alias="LoadingCityNameEN" />
+        <SimpleColumn name="Name3" alias="LoadingCityNameRU" />
       </SimpleJoin>
       <SimpleColumn name="Country" alias="LoadingCountry" label="=trLoadingCountry" />
       <SimpleJoin joinType="LEFT" name="Country">
         <SimpleColumn name="Name" alias="LoadingCountryName" />
         <SimpleColumn name="Code" alias="LoadingCountryCode" />
+        <SimpleColumn name="Name2" alias="LoadingCountryNameEN" />
+        <SimpleColumn name="Name3" alias="LoadingCountryNameRU" />
       </SimpleJoin>
     </SimpleJoin>
 
@@ -41,11 +45,15 @@
       <SimpleColumn name="City" alias="UnloadingCity" label="=trUnloadingCity" />
       <SimpleJoin joinType="LEFT" name="City">
         <SimpleColumn name="Name" alias="UnloadingCityName" />
+        <SimpleColumn name="Name2" alias="UnloadingCityNameEN" />
+        <SimpleColumn name="Name3" alias="UnloadingCityNameRU" />
       </SimpleJoin>
       <SimpleColumn name="Country" alias="UnloadingCountry" label="=trUnloadingCountry" />
       <SimpleJoin joinType="LEFT" name="Country">
         <SimpleColumn name="Name" alias="UnloadingCountryName" />
         <SimpleColumn name="Code" alias="UnloadingCountryCode" />
+        <SimpleColumn name="Name2" alias="UnloadingCountryNameEN" />
+        <SimpleColumn name="Name3" alias="UnloadingCountryNameRU" />
       </SimpleJoin>
     </SimpleJoin>
   </Columns>

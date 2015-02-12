@@ -46,11 +46,17 @@ public class AssessmentForwarderPrintForm extends AssessmentPrintForm {
                     dates.add(lbl);
                   }
                 }
+                String loc = form.getFormName().replace(form.getViewName(), "");
+
                 String txt = BeeUtils.joinItems(result.getString(i, prefix + COL_PLACE_COMPANY),
                     result.getString(i, prefix + COL_PLACE_ADDRESS),
                     result.getString(i, prefix + COL_PLACE_POST_INDEX),
-                    result.getString(i, prefix + COL_PLACE_CITY + "Name"),
-                    result.getString(i, prefix + COL_PLACE_COUNTRY + "Name"),
+                    BeeUtils.join("/", result.getString(i, prefix + COL_PLACE_CITY + "Name"),
+                        BeeUtils.same(loc, "LT") ? null :
+                            result.getString(i, prefix + COL_PLACE_CITY + "Name" + loc)),
+                    BeeUtils.join("/", result.getString(i, prefix + COL_PLACE_COUNTRY + "Name"),
+                        BeeUtils.same(loc, "LT") ? null :
+                            result.getString(i, prefix + COL_PLACE_COUNTRY + "Name" + loc)),
                     result.getString(i, prefix + COL_PLACE_CONTACT));
 
                 if (!BeeUtils.isEmpty(txt)) {

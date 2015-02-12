@@ -19,6 +19,7 @@
       .&form;-forwarder .bee-co-companyInfo-name .bee-co-companyInfo-item:before {content: "Carrier: "; font-weight:normal;}
       .&form;-customer .bee-co-companyInfo-name .bee-co-companyInfo-item:before {content: "Customer: "; font-weight:normal;}
       .&form;-customer .bee-co-companyInfo-mobile, .&form;-customer .bee-co-companyInfo-bankaccount {display:none;}
+      .&form;-LoadingDate, .&form;-UnloadingDate {display:inline-block; margin-right:10px;}
     </css>
     <Image url="images/HL_logo.jpg" style="width:50%; display:block; margin:auto;" />
     <TextLabel style="text-align:center; &bold;">
