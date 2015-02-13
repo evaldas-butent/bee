@@ -558,8 +558,22 @@ public final class DataUtils {
 
   public static List<Long> getRowIds(BeeRowSet rowSet) {
     List<Long> result = new ArrayList<>();
-    for (BeeRow row : rowSet.getRows()) {
-      result.add(row.getId());
+    if (!isEmpty(rowSet)) {
+      for (BeeRow row : rowSet.getRows()) {
+        result.add(row.getId());
+      }
+    }
+    return result;
+  }
+
+  public static List<Long> getRowIds(Collection<? extends IsRow> rows) {
+    List<Long> result = new ArrayList<>();
+    if (!BeeUtils.isEmpty(rows)) {
+      for (IsRow row : rows) {
+        if (hasId(row)) {
+          result.add(row.getId());
+        }
+      }
     }
     return result;
   }

@@ -30,6 +30,8 @@ import com.butent.bee.client.view.grid.interceptor.GridInterceptor;
 import com.butent.bee.client.view.search.ListFilterSupplier;
 import com.butent.bee.client.widget.Button;
 import com.butent.bee.shared.BeeConst;
+import com.butent.bee.shared.Consumer;
+import com.butent.bee.shared.Service;
 import com.butent.bee.shared.communication.ResponseObject;
 import com.butent.bee.shared.data.BeeRow;
 import com.butent.bee.shared.data.BeeRowSet;
@@ -50,6 +52,7 @@ import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.StringList;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 
 public class TradeActGrid extends AbstractGridInterceptor {
@@ -293,9 +296,22 @@ public class TradeActGrid extends AbstractGridInterceptor {
           new ClickHandler() {
             @Override
             public void onClick(ClickEvent event) {
-              IsRow row = getGridView().getActiveRow();
-              if (row != null) {
-                createReturn(row);
+              List<IsRow> rows = new ArrayList<>();
+
+              IsRow activeRow = getGridView().getActiveRow();
+              for (IsRow row : getGridView().getRowData()) {
+                if (getGridView().isRowSelected(row.getId()) || DataUtils.sameId(row, activeRow)) {
+                  TradeActKind tak = TradeActKeeper.getKind(getViewName(), row);
+                  if (tak != null && tak.enableReturn()) {
+                    rows.add(row);
+                  }
+                }
+              }
+
+              if (rows.size() == 1) {
+                createReturn(rows.get(0));
+              } else if (rows.size() > 1) {
+                multiReturn(rows);
               }
             }
           });
@@ -415,6 +431,48 @@ public class TradeActGrid extends AbstractGridInterceptor {
       @Override
       public void onSuccess(BeeRow result) {
         getGridView().ensureRow(result, true);
+      }
+    });
+  }
+
+  private void multiReturn(final Collection<IsRow> parents) {
+    ParameterList params = TradeActKeeper.createArgs(SVC_GET_ITEMS_FOR_MULTI_RETURN);
+    params.addQueryItem(Service.VAR_LIST, DataUtils.buildIdList(DataUtils.getRowIds(parents)));
+
+    BeeKeeper.getRpc().makeRequest(params, new ResponseCallback() {
+      @Override
+      public void onResponse(ResponseObject response) {
+        if (response.hasResponse(BeeRowSet.class)) {
+          BeeRowSet parentItems = BeeRowSet.restore(response.getResponseAsString());
+
+          BeeRowSet parentActs = Data.createRowSet(getViewName());
+          for (IsRow parent : parents) {
+            parentActs.addRow(DataUtils.cloneRow(parent));
+          }
+
+          TradeActItemReturn.show(Localized.getConstants().taKindReturn(), parentActs, parentItems,
+              true, new Consumer<BeeRowSet>() {
+                @Override
+                public void accept(BeeRowSet selectedItems) {
+                  if (!DataUtils.isEmpty(selectedItems)) {
+                    ParameterList args = TradeActKeeper.createArgs(SVC_RETURN_ACT_ITEMS);
+                    args.addDataItem(VIEW_TRADE_ACT_ITEMS, selectedItems.serialize());
+
+                    BeeKeeper.getRpc().makeRequest(args, new ResponseCallback() {
+                      @Override
+                      public void onResponse(ResponseObject ro) {
+                        DataChangeEvent.fireRefresh(BeeKeeper.getBus(), VIEW_TRADE_ACT_ITEMS);
+                        DataChangeEvent.fireRefresh(BeeKeeper.getBus(), VIEW_TRADE_ACT_SERVICES);
+                        DataChangeEvent.fireRefresh(BeeKeeper.getBus(), VIEW_TRADE_ACTS);
+                      }
+                    });
+                  }
+                }
+              });
+
+        } else {
+          getGridView().notifyWarning(Localized.getConstants().noData());
+        }
       }
     });
   }

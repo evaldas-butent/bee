@@ -70,6 +70,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 
 import javax.ejb.EJB;
@@ -122,6 +123,14 @@ public class TradeActBean {
 
       case SVC_GET_ITEMS_FOR_RETURN:
         response = getItemsForReturn(reqInfo);
+        break;
+
+      case SVC_GET_ITEMS_FOR_MULTI_RETURN:
+        response = getItemsForMultiReturn(reqInfo);
+        break;
+
+      case SVC_RETURN_ACT_ITEMS:
+        response = doReturnActItems(reqInfo);
         break;
 
       case SVC_SPLIT_ACT_SERVICES:
@@ -991,54 +1000,150 @@ public class TradeActBean {
       return ResponseObject.parameterNotFound(reqInfo.getService(), COL_TRADE_ACT);
     }
 
-    Filter filter = Filter.and(Filter.equals(COL_TRADE_ACT, actId),
-        Filter.isPositive(COL_TRADE_ITEM_QUANTITY));
-
-    BeeRowSet parentItems = qs.getViewData(VIEW_TRADE_ACT_ITEMS, filter);
-    if (DataUtils.isEmpty(parentItems)) {
-      return ResponseObject.emptyResponse();
-    }
-
-    BeeRowSet parentAct = qs.getViewData(VIEW_TRADE_ACTS, Filter.compareId(actId));
-    String serializedParent = DataUtils.isEmpty(parentAct) ? null : parentAct.getRow(0).serialize();
-
-    Map<Long, Double> returnedItems = getReturnedItems(actId);
-
-    if (BeeUtils.isEmpty(returnedItems)) {
-      parentItems.setTableProperty(PRP_PARENT_ACT, serializedParent);
-      return ResponseObject.response(parentItems);
-    }
-
-    BeeRowSet result = new BeeRowSet(parentItems.getViewName(), parentItems.getColumns());
-
-    int itemIndex = parentItems.getColumnIndex(COL_TA_ITEM);
-    int qtyIndex = parentItems.getColumnIndex(COL_TRADE_ITEM_QUANTITY);
-
-    for (BeeRow parentRow : parentItems) {
-      double qty = parentRow.getDouble(qtyIndex);
-      Double returnedQty = returnedItems.get(parentRow.getLong(itemIndex));
-
-      boolean found = BeeUtils.isPositive(returnedQty);
-      if (found) {
-        qty -= returnedQty;
-      }
-
-      if (BeeUtils.isPositive(qty)) {
-        BeeRow row = DataUtils.cloneRow(parentRow);
-        if (found) {
-          row.setValue(qtyIndex, qty);
-        }
-
-        result.addRow(row);
-      }
-    }
-
-    if (DataUtils.isEmpty(result)) {
+    BeeRowSet items = getRemainingItems(actId);
+    if (DataUtils.isEmpty(items)) {
       return ResponseObject.emptyResponse();
     } else {
-      result.setTableProperty(PRP_PARENT_ACT, serializedParent);
+      BeeRowSet parentAct = qs.getViewData(VIEW_TRADE_ACTS, Filter.compareId(actId));
+      if (!DataUtils.isEmpty(parentAct)) {
+        items.setTableProperty(PRP_PARENT_ACT, parentAct.getRow(0).serialize());
+      }
+      return ResponseObject.response(items);
+    }
+  }
+
+  private ResponseObject getItemsForMultiReturn(RequestInfo reqInfo) {
+    List<Long> acts = DataUtils.parseIdList(reqInfo.getParameter(Service.VAR_LIST));
+    if (BeeUtils.isEmpty(acts)) {
+      return ResponseObject.parameterNotFound(reqInfo.getService(), Service.VAR_LIST);
+    }
+
+    BeeRowSet result = null;
+    for (Long actId : acts) {
+      BeeRowSet items = getRemainingItems(actId);
+
+      if (!DataUtils.isEmpty(items)) {
+        if (result == null) {
+          result = items;
+        } else {
+          result.addRows(items.getRows());
+        }
+      }
+    }
+
+    if (result == null) {
+      return ResponseObject.emptyResponse();
+    } else {
       return ResponseObject.response(result);
     }
+  }
+
+  private ResponseObject doReturnActItems(RequestInfo reqInfo) {
+    String input = reqInfo.getParameter(VIEW_TRADE_ACT_ITEMS);
+    if (BeeUtils.isEmpty(input)) {
+      return ResponseObject.parameterNotFound(reqInfo.getService(), VIEW_TRADE_ACT_ITEMS);
+    }
+
+    BeeRowSet parentItems = BeeRowSet.restore(input);
+    List<Long> parentIds = DataUtils.getDistinct(parentItems, COL_TRADE_ACT);
+    if (BeeUtils.isEmpty(parentIds)) {
+      return ResponseObject.parameterNotFound(reqInfo.getService(), VIEW_TRADE_ACT_ITEMS);
+    }
+
+    BeeRowSet parentActs = qs.getViewData(VIEW_TRADE_ACTS, Filter.idIn(parentIds));
+    if (DataUtils.isEmpty(parentActs)) {
+      return ResponseObject.error(reqInfo.getService(), VIEW_TRADE_ACTS, parentIds, "not found");
+    }
+
+    Set<String> copyColNames = Sets.newHashSet(COL_TA_NAME, COL_TA_SERIES, COL_TA_NUMBER,
+        COL_TA_COMPANY, COL_TA_CONTACT, COL_TA_OBJECT, COL_TA_CURRENCY, COL_TA_VEHICLE,
+        COL_TA_DRIVER);
+
+    Set<Integer> copyColIndexes = new HashSet<>();
+    for (String colName : copyColNames) {
+      int index = parentActs.getColumnIndex(colName);
+      if (index >= 0) {
+        copyColIndexes.add(index);
+      }
+    }
+
+    int itemActIndex = parentItems.getColumnIndex(COL_TRADE_ACT);
+
+    DateTime date = TimeUtils.nowMinutes();
+    Long operation = getDefaultOperation(TradeActKind.RETURN);
+
+    Long retStatus = prm.getRelation(PRM_RETURNED_ACT_STATUS);
+    int statusIndex = parentActs.getColumnIndex(COL_TA_STATUS);
+
+    for (BeeRow parentAct : parentActs) {
+      long parentId = parentAct.getId();
+
+      SqlInsert actInsert = new SqlInsert(TBL_TRADE_ACTS)
+          .addConstant(COL_TA_KIND, TradeActKind.RETURN.ordinal())
+          .addConstant(COL_TA_PARENT, parentId)
+          .addConstant(COL_TA_DATE, date)
+          .addConstant(COL_TA_MANAGER, usr.getCurrentUserId());
+
+      if (operation != null) {
+        actInsert.addConstant(COL_TA_OPERATION, operation);
+      }
+
+      for (int index : copyColIndexes) {
+        String value = parentAct.getString(index);
+        if (!BeeUtils.isEmpty(value)) {
+          actInsert.addConstant(parentActs.getColumnId(index), value);
+        }
+      }
+
+      ResponseObject actInsResponse = qs.insertDataWithResponse(actInsert);
+      if (actInsResponse.hasErrors()) {
+        return actInsResponse;
+      }
+
+      Long actId = actInsResponse.getResponseAsLong();
+
+      for (BeeRow parentItem : parentItems) {
+        if (Objects.equals(parentItem.getLong(itemActIndex), parentId)) {
+          SqlInsert itemInsert = new SqlInsert(TBL_TRADE_ACT_ITEMS)
+              .addConstant(COL_TRADE_ACT, actId);
+
+          for (int index = 0; index < parentItems.getNumberOfColumns(); index++) {
+            if (index != itemActIndex && parentItems.getColumn(index).isEditable()) {
+              String value = parentItem.getString(index);
+              if (!BeeUtils.isEmpty(value)) {
+                itemInsert.addConstant(parentItems.getColumnId(index), value);
+              }
+            }
+          }
+
+          ResponseObject itemInsResponse = qs.insertDataWithResponse(itemInsert);
+          if (itemInsResponse.hasErrors()) {
+            return itemInsResponse;
+          }
+        }
+      }
+
+      boolean hasItems = !DataUtils.isEmpty(getRemainingItems(parentId));
+
+      if (hasItems) {
+        ResponseObject splitResponse = splitActServices(parentId, date.getTime());
+        if (splitResponse.hasErrors()) {
+          return splitResponse;
+        }
+      }
+
+      if (!hasItems && DataUtils.isId(retStatus)
+          && !retStatus.equals(parentAct.getLong(statusIndex))) {
+
+        SqlUpdate update = new SqlUpdate(TBL_TRADE_ACTS)
+            .addConstant(COL_TA_STATUS, retStatus)
+            .setWhere(sys.idEquals(TBL_TRADE_ACTS, parentId));
+
+        qs.updateData(update);
+      }
+    }
+
+    return ResponseObject.response(parentActs.getNumberOfRows());
   }
 
   private ResponseObject getItemsForSelection(RequestInfo reqInfo) {
@@ -1117,6 +1222,51 @@ public class TradeActBean {
     }
 
     return ResponseObject.response(items);
+  }
+
+  private BeeRowSet getRemainingItems(long actId) {
+    Filter filter = Filter.and(Filter.equals(COL_TRADE_ACT, actId),
+        Filter.isPositive(COL_TRADE_ITEM_QUANTITY));
+
+    BeeRowSet parentItems = qs.getViewData(VIEW_TRADE_ACT_ITEMS, filter);
+    if (DataUtils.isEmpty(parentItems)) {
+      return null;
+    }
+
+    Map<Long, Double> returnedItems = getReturnedItems(actId);
+    if (BeeUtils.isEmpty(returnedItems)) {
+      return parentItems;
+    }
+
+    BeeRowSet result = new BeeRowSet(parentItems.getViewName(), parentItems.getColumns());
+
+    int itemIndex = parentItems.getColumnIndex(COL_TA_ITEM);
+    int qtyIndex = parentItems.getColumnIndex(COL_TRADE_ITEM_QUANTITY);
+
+    for (BeeRow parentRow : parentItems) {
+      double qty = parentRow.getDouble(qtyIndex);
+      Double returnedQty = returnedItems.get(parentRow.getLong(itemIndex));
+
+      boolean found = BeeUtils.isPositive(returnedQty);
+      if (found) {
+        qty -= returnedQty;
+      }
+
+      if (BeeUtils.isPositive(qty)) {
+        BeeRow row = DataUtils.cloneRow(parentRow);
+        if (found) {
+          row.setValue(qtyIndex, qty);
+        }
+
+        result.addRow(row);
+      }
+    }
+
+    if (DataUtils.isEmpty(result)) {
+      return null;
+    } else {
+      return result;
+    }
   }
 
   private Map<Long, Double> getReturnedItems(long actId) {
@@ -2548,6 +2698,10 @@ public class TradeActBean {
       return ResponseObject.parameterNotFound(reqInfo.getService(), COL_TA_DATE);
     }
 
+    return splitActServices(actId, time);
+  }
+
+  private ResponseObject splitActServices(long actId, long time) {
     JustDate date = new DateTime(time).getDate();
 
     String idName = sys.getIdName(TBL_TRADE_ACT_SERVICES);
