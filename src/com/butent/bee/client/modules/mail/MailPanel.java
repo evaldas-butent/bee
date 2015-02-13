@@ -342,6 +342,7 @@ public class MailPanel extends AbstractFormInterceptor {
         final int flagIdx = Data.getColumnIndex(getGridPresenter().getViewName(), COL_FLAGS);
         event.getSourceElement().setInnerHTML(StarRenderer
             .render(!MessageFlag.FLAGGED.isSet(row.getInteger(flagIdx)),
+                MessageFlag.ANSWERED.isSet(row.getInteger(flagIdx)),
                 row.getProperty(AdministrationConstants.COL_RELATION)));
 
         flagMessage(row, flagIdx, MessageFlag.FLAGGED, new Runnable() {
@@ -349,6 +350,7 @@ public class MailPanel extends AbstractFormInterceptor {
           public void run() {
             event.getSourceElement().setInnerHTML(StarRenderer
                 .render(MessageFlag.FLAGGED.isSet(row.getInteger(flagIdx)),
+                    MessageFlag.ANSWERED.isSet(row.getInteger(flagIdx)),
                     row.getProperty(AdministrationConstants.COL_RELATION)));
           }
         });
@@ -358,16 +360,20 @@ public class MailPanel extends AbstractFormInterceptor {
 
   private static class StarRenderer extends AbstractCellRenderer {
 
+    private static final FaLabel REPLY = new FaLabel(FontAwesome.REPLY);
     private static final FaLabel CHAIN = new FaLabel(FontAwesome.CHAIN);
 
     static {
+      StyleUtils.setProperty(REPLY, CssProperties.CURSOR, Cursor.DEFAULT);
       StyleUtils.setProperty(CHAIN, CssProperties.CURSOR, Cursor.DEFAULT);
     }
 
-    public static String render(boolean flagged, String chained) {
+    public static String render(boolean flagged, boolean answered, String chained) {
       String star = flagged ? Stars.getHtml(0) : Stars.getDefaultHeader();
 
-      if (!BeeUtils.isEmpty(chained)) {
+      if (answered) {
+        star += REPLY.getElement().getString();
+      } else if (!BeeUtils.isEmpty(chained)) {
         CHAIN.setTitle(chained);
         star += CHAIN.getElement().getString();
       }
@@ -384,6 +390,7 @@ public class MailPanel extends AbstractFormInterceptor {
     @Override
     public String render(IsRow row) {
       return render(MessageFlag.FLAGGED.isSet(row.getInteger(flags)),
+          MessageFlag.ANSWERED.isSet(row.getInteger(flags)),
           row.getProperty(AdministrationConstants.COL_RELATION));
     }
   }
@@ -448,7 +455,7 @@ public class MailPanel extends AbstractFormInterceptor {
     switch (action) {
       case ADD:
         NewMailMessage.create(accounts, getCurrentAccount(),
-            null, null, null, null, null, null, null);
+            null, null, null, null, null, null, null, false);
         break;
 
       case DELETE:

@@ -437,7 +437,8 @@ public class DocumentDataForm extends AbstractFormInterceptor
                   if (response.isEmpty()) {
                     Printer.print(input, null);
                   } else {
-                    BrowsingContext.open(FileUtils.getUrl(response.getResponseAsString()));
+                    BrowsingContext.open(FileUtils.getUrl(Localized.getConstants().print()
+                        + ".pdf", response.getResponseAsString()));
                   }
                 }
               }

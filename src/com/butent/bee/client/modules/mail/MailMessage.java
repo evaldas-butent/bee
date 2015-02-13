@@ -1,7 +1,7 @@
 package com.butent.bee.client.modules.mail;
 
-import com.google.common.collect.HashMultimap;
 import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.LinkedHashMultimap;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Multimap;
@@ -80,7 +80,7 @@ import com.butent.bee.shared.utils.EnumUtils;
 
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.HashSet;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -227,32 +227,25 @@ public class MailMessage extends AbstractFormInterceptor {
     public void onClick(ClickEvent event) {
       event.stopPropagation();
 
-      if (attachments.size() == 1) {
-        FileInfo file = attachments.get(0);
-        BrowsingContext.open(FileUtils.getUrl(file.getName(), file.getId()));
-      } else {
-        final Popup popup = new Popup(OutsideClick.CLOSE,
-            BeeConst.CSS_CLASS_PREFIX + "mail-AttachmentsPopup");
-        TabBar bar = new TabBar(BeeConst.CSS_CLASS_PREFIX + "mail-AttachmentsMenu-",
-            Orientation.VERTICAL);
+      final Popup popup = new Popup(OutsideClick.CLOSE,
+          BeeConst.CSS_CLASS_PREFIX + "mail-AttachmentsPopup");
+      TabBar bar = new TabBar(BeeConst.CSS_CLASS_PREFIX + "mail-AttachmentsMenu-",
+          Orientation.VERTICAL);
 
-        for (FileInfo file : attachments) {
-          Link link = new Link(BeeUtils.joinWords(file.getName(),
-              BeeUtils.parenthesize(FileUtils.sizeToText(file.getSize()))),
-              FileUtils.getUrl(file.getName(), file.getId()));
-
-          link.addClickHandler(new ClickHandler() {
-            @Override
-            public void onClick(ClickEvent ev) {
-              popup.close();
-            }
-          });
-          bar.addItem(link);
+      bar.addClickHandler(new ClickHandler() {
+        @Override
+        public void onClick(ClickEvent ev) {
+          popup.close();
         }
-        popup.setWidget(bar);
-        popup.setHideOnEscape(true);
-        popup.showRelativeTo(widgets.get(ATTACHMENTS).asWidget().getElement());
+      });
+      for (FileInfo file : attachments) {
+        bar.addItem(new Link(BeeUtils.joinWords(file.getName(),
+            BeeUtils.parenthesize(FileUtils.sizeToText(file.getSize()))),
+            FileUtils.getUrl(file.getName(), file.getId())));
       }
+      popup.setWidget(bar);
+      popup.setHideOnEscape(true);
+      popup.showRelativeTo(widgets.get(ATTACHMENTS).asWidget().getElement());
     }
   };
 
@@ -266,11 +259,12 @@ public class MailMessage extends AbstractFormInterceptor {
   private static final String SUBJECT = "Subject";
 
   private final MailPanel mailPanel;
-  private Long sentId;
-  private Long draftId;
+  private Long placeId;
+  private boolean isSent;
+  private boolean isDraft;
   private Long rawId;
   private Pair<String, String> sender;
-  private final Multimap<String, Pair<String, String>> recipients = HashMultimap.create();
+  private final Multimap<String, Pair<String, String>> recipients = LinkedHashMultimap.create();
   private final List<FileInfo> attachments = new ArrayList<>();
   private final Map<String, Widget> widgets = new HashMap<>();
 
@@ -469,8 +463,9 @@ public class MailMessage extends AbstractFormInterceptor {
       }
     }
     sender = Pair.of(null, null);
-    sentId = null;
-    draftId = null;
+    placeId = null;
+    isSent = false;
+    isDraft = false;
     rawId = null;
     recipients.clear();
     attachments.clear();
@@ -530,8 +525,9 @@ public class MailMessage extends AbstractFormInterceptor {
 
           relations.requery(row.getLong(COL_MESSAGE));
         }
-        sentId = row.getLong(SystemFolder.Sent.name());
-        draftId = row.getLong(SystemFolder.Drafts.name());
+        placeId = row.getLong(COL_PLACE);
+        isSent = BeeUtils.unbox(row.getBoolean(SystemFolder.Sent.name()));
+        isDraft = BeeUtils.unbox(row.getBoolean(SystemFolder.Drafts.name()));
         rawId = row.getLong(COL_RAW_CONTENT);
         String lbl = row.getValue(COL_EMAIL_LABEL);
         String mail = row.getValue(COL_EMAIL_ADDRESS);
@@ -581,7 +577,7 @@ public class MailMessage extends AbstractFormInterceptor {
               table.setText(0, 2, BeeUtils.parenthesize(FileUtils.sizeToText(size)));
               table.addClickHandler(attachmentsHandler);
             } else {
-              FileInfo file = attachments.get(0);
+              FileInfo file = BeeUtils.peek(attachments);
               table.setWidget(0, 0, new FaLabel(FontAwesome.PAPERCLIP));
               table.setWidget(0, 1, new Link(BeeUtils.joinWords(file.getName(),
                   BeeUtils.parenthesize(FileUtils.sizeToText(file.getSize()))),
@@ -660,7 +656,7 @@ public class MailMessage extends AbstractFormInterceptor {
   }
 
   private Set<String> getRecipients(String type) {
-    Set<String> emails = new HashSet<>();
+    Set<String> emails = new LinkedHashSet<>();
 
     if (recipients.containsKey(type)) {
       for (Pair<String, String> r : recipients.get(type)) {
@@ -701,14 +697,14 @@ public class MailMessage extends AbstractFormInterceptor {
         String subject = getSubject();
         String content = null;
         List<FileInfo> attach = null;
-        Long draft = null;
+        Long relatedId = null;
 
         LocalizableConstants loc = Localized.getConstants();
 
         switch (mode) {
           case REPLY:
           case REPLY_ALL:
-            if (DataUtils.isId(sentId) || DataUtils.isId(draftId)) {
+            if (isSent || isDraft) {
               to = getTo();
 
               if (mode == NewMailMode.REPLY_ALL) {
@@ -723,6 +719,7 @@ public class MailMessage extends AbstractFormInterceptor {
                 cc = getTo();
                 cc.addAll(getCc());
               }
+              relatedId = placeId;
             }
             Element bq = Document.get().createBlockQuoteElement();
             bq.setAttribute("style",
@@ -738,8 +735,8 @@ public class MailMessage extends AbstractFormInterceptor {
             break;
 
           case FORWARD:
-            if (DataUtils.isId(draftId)) {
-              draft = draftId;
+            if (isDraft) {
+              relatedId = placeId;
               to = getTo();
               cc = getCc();
               bcc = getBcc();
@@ -763,9 +760,9 @@ public class MailMessage extends AbstractFormInterceptor {
         }
         if (mailPanel != null) {
           NewMailMessage.create(mailPanel.getAccounts(), mailPanel.getCurrentAccount(),
-              to, cc, bcc, subject, content, attach, draft);
+              to, cc, bcc, subject, content, attach, relatedId, isDraft);
         } else {
-          NewMailMessage.create(to, cc, bcc, subject, content, attach, draft);
+          NewMailMessage.create(to, cc, bcc, subject, content, attach, relatedId, isDraft);
         }
       }
     });
