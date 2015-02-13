@@ -49,6 +49,8 @@ public final class ProjectConstants {
   public static final String ALS_TASK_STATUS = "TaskStatus";
   public static final String ALS_OWNER_FIRST_NAME = "OwnerFirstName";
   public static final String ALS_OWNER_LAST_NAME = "OwnerLastName";
+  public static final String ALS_TERM = "Term";
+  public static final String ALS_PROFIT = "Profit";
 
   public static final String ALS_CHART_START = "ChartStart";
   public static final String ALS_CHART_END = "ChartEnd";

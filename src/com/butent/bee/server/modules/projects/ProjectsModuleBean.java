@@ -1,10 +1,12 @@
 package com.butent.bee.server.modules.projects;
 
 import com.google.common.collect.Lists;
+import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
 import com.google.common.eventbus.Subscribe;
 
 import static com.butent.bee.shared.modules.projects.ProjectConstants.*;
+import static com.butent.bee.shared.modules.tasks.TaskConstants.*;
 
 import com.butent.bee.server.data.DataEvent.ViewQueryEvent;
 import com.butent.bee.server.data.DataEventHandler;
@@ -14,6 +16,7 @@ import com.butent.bee.server.data.UserServiceBean;
 import com.butent.bee.server.http.RequestInfo;
 import com.butent.bee.server.modules.BeeModule;
 import com.butent.bee.server.modules.ParamHolderBean;
+import com.butent.bee.server.modules.tasks.TasksModuleBean;
 import com.butent.bee.server.news.NewsBean;
 import com.butent.bee.server.sql.SqlSelect;
 import com.butent.bee.server.sql.SqlUtils;
@@ -32,7 +35,6 @@ import com.butent.bee.shared.modules.BeeParameter;
 import com.butent.bee.shared.modules.administration.AdministrationConstants;
 import com.butent.bee.shared.modules.classifiers.ClassifierConstants;
 import com.butent.bee.shared.modules.projects.ProjectConstants;
-import com.butent.bee.shared.modules.projects.ProjectStatus;
 import com.butent.bee.shared.modules.tasks.TaskConstants;
 import com.butent.bee.shared.modules.tasks.TaskConstants.TaskStatus;
 import com.butent.bee.shared.news.Feed;
@@ -41,6 +43,7 @@ import com.butent.bee.shared.time.DateTime;
 import com.butent.bee.shared.time.JustDate;
 import com.butent.bee.shared.time.TimeUtils;
 import com.butent.bee.shared.utils.BeeUtils;
+import com.butent.bee.shared.utils.Codec;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -74,6 +77,9 @@ public class ProjectsModuleBean implements BeeModule {
   @EJB
   UserServiceBean usr;
 
+  @EJB
+  TasksModuleBean tasksBean;
+
   @Override
   public List<SearchResult> doSearch(String query) {
     List<SearchResult> result = new ArrayList<>();
@@ -82,8 +88,8 @@ public class ProjectsModuleBean implements BeeModule {
         qs.getSearchResults(VIEW_PROJECTS,
             Filter.anyContains(Sets.newHashSet(COL_PROJECT_NAME,
                 ClassifierConstants.ALS_CONTACT_FIRST_NAME,
-                ClassifierConstants.ALS_CONTACT_LAST_NAME, ALS_OWNER_FIRST_NAME,
-                ALS_OWNER_LAST_NAME, ClassifierConstants.ALS_COMPANY_NAME),
+                ClassifierConstants.ALS_CONTACT_LAST_NAME, ProjectConstants.ALS_OWNER_FIRST_NAME,
+                ProjectConstants.ALS_OWNER_LAST_NAME, ClassifierConstants.ALS_COMPANY_NAME),
                 query));
     result.addAll(tasksSr);
 
@@ -500,8 +506,16 @@ public class ProjectsModuleBean implements BeeModule {
 
   private ResponseObject getReportData() {
     SqlSelect select = new SqlSelect();
+    select.addField(TaskConstants.TBL_TASKS, sys.getIdName(TaskConstants.TBL_TASKS),
+        TaskConstants.COL_TASK);
+    select.addField(TaskConstants.TBL_TASKS, TaskConstants.COL_STATUS,
+        ALS_TASK_STATUS);
+
     select.addField(TaskConstants.TBL_TASKS, ProjectConstants.COL_PROJECT,
         ProjectConstants.COL_PROJECT);
+    select.addFields(TaskConstants.TBL_TASKS, TaskConstants.COL_EXPECTED_EXPENSES,
+        TaskConstants.COL_EXPECTED_DURATION);
+
     select.addFields(ProjectConstants.TBL_PROJECTS,
 
         ProjectConstants.COL_PROJECT_NAME,
@@ -509,10 +523,7 @@ public class ProjectsModuleBean implements BeeModule {
         ProjectConstants.COL_PROJECT_TYPE,
         ProjectConstants.COL_PROJECT_PRIORITY,
         ProjectConstants.COL_PROJECT_START_DATE,
-        ProjectConstants.COL_PROJECT_END_DATE,
-        ProjectConstants.COL_PROGRESS,
-        ProjectConstants.COL_EXPECTED_DURATION,
-        ProjectConstants.COL_PROJECT_PRICE
+        ProjectConstants.COL_PROJECT_END_DATE
         );
 
     select.addExpr(SqlUtils.concat(SqlUtils.nvl(SqlUtils.field(ClassifierConstants.TBL_PERSONS,
@@ -521,19 +532,14 @@ public class ProjectsModuleBean implements BeeModule {
             ClassifierConstants.TBL_PERSONS,
             ClassifierConstants.COL_LAST_NAME), SqlUtils.constant(BeeConst.STRING_EMPTY))),
         ProjectConstants.COL_PROJECT_OWNER);
-    select.addExpr(
-        SqlUtils.sqlIf(
-            SqlUtils.or(SqlUtils.notEqual(TBL_PROJECTS, COL_PROJECT_STATUS, ProjectStatus.APPROVED
-                .ordinal()),
-                SqlUtils.notEqual(TBL_PROJECTS, COL_PROJECT_STATUS, ProjectStatus.SCHEDULED
-                    .ordinal())),
-            SqlUtils.divide(SqlUtils.minus(new JustDate().getTime(), SqlUtils.field(TBL_PROJECTS,
-                COL_PROJECT_END_DATE)), TimeUtils.MILLIS_PER_DAY), null), ALS_PROJECT_OVERDUE);
+
     select.addField(ClassifierConstants.TBL_COMPANIES, ClassifierConstants.COL_COMPANY_NAME,
         ClassifierConstants.ALS_COMPANY_NAME);
 
-    select.addField(ClassifierConstants.TBL_UNITS, ClassifierConstants.COL_UNIT_NAME,
-        COL_PROJECT_TIME_UNIT);
+    select.addEmptyDouble(TaskConstants.COL_ACTUAL_DURATION);
+    select.addEmptyDouble(TaskConstants.COL_ACTUAL_EXPENSES);
+    select.addEmptyDouble(ALS_PROFIT);
+    select.addEmptyString(ALS_TERM, 100);
 
     select.addFrom(TaskConstants.TBL_TASKS);
     select.addFromInner(ProjectConstants.TBL_PROJECTS, SqlUtils.join(TaskConstants.TBL_TASKS,
@@ -561,6 +567,63 @@ public class ProjectsModuleBean implements BeeModule {
     LogUtils.getRootLogger().info(select.getQuery());
 
     SimpleRowSet rqs = qs.getData(select);
+
+    if (rqs.isEmpty()) {
+      return ResponseObject.response(rqs);
+    }
+
+    List<String> colTaskData = Lists.newArrayList(rqs.getColumn(TaskConstants.COL_TASK));
+    List<Long> taskIds =
+        DataUtils.parseIdList(BeeUtils.join(BeeConst.STRING_COMMA, colTaskData));
+
+    if (taskIds.isEmpty()) {
+      return ResponseObject.response(rqs);
+    }
+
+    SimpleRowSet timesData = tasksBean.getTaskActualTimesAndExpenses(taskIds);
+
+    Map<String, String> times = Maps.newHashMap();
+    Map<String, String> expenses = Maps.newHashMap();
+
+    if (!timesData.isEmpty()) {
+      times =
+          Codec.deserializeMap(timesData.getValue(0, COL_ACTUAL_DURATION));
+      expenses =
+          Codec.deserializeMap(timesData.getValue(0, COL_ACTUAL_EXPENSES));
+    }
+
+    for (int i = 0; i < rqs.getNumberOfRows(); i++) {
+      String taskId = rqs.getValue(i, TaskConstants.COL_TASK);
+      double time =
+          (double) BeeUtils.toLong(times.get(taskId)) / (double) TimeUtils.MILLIS_PER_HOUR;
+      double exp = BeeUtils.toDouble(expenses.get(taskId));
+      double expExp = BeeUtils.unbox(rqs.getDouble(i, TaskConstants.COL_EXPECTED_EXPENSES));
+      double profit = expExp - exp;
+      String expTimeStr = rqs.getValue(i, TaskConstants.COL_EXPECTED_DURATION);
+      double expTime = BeeConst.DOUBLE_ZERO;
+
+      JustDate startDate = null;
+      JustDate endDate = null;
+
+      if (!BeeUtils.isEmpty(expTimeStr)) {
+        expTime = (double) TimeUtils.parseTime(expTimeStr) / (double) TimeUtils.MILLIS_PER_HOUR;
+      }
+
+      if (rqs.getDateTime(i, COL_PROJECT_START_DATE) != null) {
+        startDate = new JustDate(rqs.getDateTime(i, COL_PROJECT_START_DATE));
+      }
+
+      if (rqs.getDateTime(i, COL_PROJECT_END_DATE) != null) {
+        endDate = new JustDate(rqs.getDateTime(i, COL_PROJECT_END_DATE));
+      }
+
+      rqs.setValue(i, TaskConstants.COL_ACTUAL_DURATION, BeeUtils.toString(time));
+      rqs.setValue(i, TaskConstants.COL_ACTUAL_EXPENSES, BeeUtils.toString(exp));
+      rqs.setValue(i, TaskConstants.COL_EXPECTED_DURATION, BeeUtils.toString(expTime));
+      rqs.setValue(i, ALS_TERM, BeeUtils.joinWords(startDate,
+          BeeConst.STRING_MINUS, endDate));
+      rqs.setValue(i, ALS_PROFIT, BeeUtils.toString(profit));
+    }
 
     return ResponseObject.response(rqs);
   }
