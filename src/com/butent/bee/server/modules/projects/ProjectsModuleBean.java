@@ -30,7 +30,6 @@ import com.butent.bee.shared.data.SearchResult;
 import com.butent.bee.shared.data.SimpleRowSet;
 import com.butent.bee.shared.data.filter.Filter;
 import com.butent.bee.shared.data.view.Order;
-import com.butent.bee.shared.logging.LogUtils;
 import com.butent.bee.shared.modules.BeeParameter;
 import com.butent.bee.shared.modules.administration.AdministrationConstants;
 import com.butent.bee.shared.modules.classifiers.ClassifierConstants;
@@ -563,8 +562,6 @@ public class ProjectsModuleBean implements BeeModule {
 
     select.addFromLeft(ClassifierConstants.TBL_UNITS, sys.joinTables(ClassifierConstants.TBL_UNITS,
         TBL_PROJECTS, COL_PROJECT_TIME_UNIT));
-
-    LogUtils.getRootLogger().info(select.getQuery());
 
     SimpleRowSet rqs = qs.getData(select);
 
