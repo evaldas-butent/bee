@@ -152,6 +152,7 @@ public class TradeActInvoiceBuilder extends AbstractFormInterceptor implements
     private Double price;
 
     private Integer minTerm;
+    private DateTime minTermStart;
 
     private Double vatPercent;
 
@@ -190,6 +191,16 @@ public class TradeActInvoiceBuilder extends AbstractFormInterceptor implements
 
     private long id() {
       return row.getId();
+    }
+
+    private boolean minTermWarn(int index, Collection<Integer> holidays) {
+      if (minTermStart == null || !BeeUtils.isPositive(minTerm)) {
+        return false;
+      } else {
+        Range<DateTime> range = TradeActUtils.createRange(minTermStart, dateTo(index));
+        int days = TradeActUtils.countServiceDays(range, holidays, dpws.get(index));
+        return minTerm > days;
+      }
     }
   }
 
@@ -261,6 +272,10 @@ public class TradeActInvoiceBuilder extends AbstractFormInterceptor implements
       + STYLE_INPUT_SUFFIX;
   private static final String STYLE_SVC_DISCOUNT_WIDGET = STYLE_SVC_DISCOUNT_PREFIX
       + STYLE_INPUT_SUFFIX;
+
+  private static final String STYLE_SVC_MIN_TERM_CELL = STYLE_SVC_MIN_TERM_PREFIX
+      + STYLE_CELL_SUFFIX;
+  private static final String STYLE_SVC_MIN_TERM_WARN = STYLE_SVC_MIN_TERM_PREFIX + "warn";
 
   private static final String STYLE_SVC_AMOUNT_PREFIX = STYLE_SVC_PREFIX + "amount-";
   private static final String STYLE_SVC_AMOUNT_LABEL = STYLE_SVC_AMOUNT_PREFIX
@@ -631,9 +646,11 @@ public class TradeActInvoiceBuilder extends AbstractFormInterceptor implements
             TradeActTimeUnit tu = EnumUtils.getEnumByIndex(TradeActTimeUnit.class,
                 row.getInteger(timeUnitIndex));
 
+            JustDate dateFrom = row.getDate(dateFromIndex);
             JustDate dateTo = row.getDate(dateToIndex);
-            Range<DateTime> serviceRange = TradeActUtils.createServiceRange(
-                row.getDate(dateFromIndex), dateTo, tu, builderRange, act.range);
+
+            Range<DateTime> serviceRange = TradeActUtils.createServiceRange(dateFrom, dateTo, tu,
+                builderRange, act.range);
 
             if (serviceRange == null) {
               continue;
@@ -676,6 +693,14 @@ public class TradeActInvoiceBuilder extends AbstractFormInterceptor implements
 
             svc.minTerm = row.getInteger(minTermIndex);
 
+            if (tu == TradeActTimeUnit.DAY && BeeUtils.isPositive(svc.minTerm)) {
+              if (dateFrom == null) {
+                svc.minTermStart = TradeActUtils.getLower(act.range);
+              } else {
+                svc.minTermStart = TimeUtils.startOfDay(dateFrom);
+              }
+            }
+
             Double discount = row.getDouble(discountIndex);
 
             for (Range<DateTime> r : ranges) {
@@ -686,13 +711,14 @@ public class TradeActInvoiceBuilder extends AbstractFormInterceptor implements
                 switch (tu) {
                   case DAY:
                     if (TradeActUtils.validDpw(dpw)) {
-                      double df = TradeActUtils.dpwToFactor(dpw, r, holidays, svc.minTerm);
+                      int days = TradeActUtils.countServiceDays(r, holidays, dpw);
 
-                      if (BeeUtils.isPositive(df)) {
+                      if (days > 0) {
+                        double df = days;
                         if (BeeUtils.isPositive(factor)) {
                           df *= factor;
+                          df = BeeUtils.round(df, factorScale);
                         }
-                        df = BeeUtils.round(df, factorScale);
 
                         svc.add(r, df, dpw, discount);
                       }
@@ -1514,8 +1540,8 @@ public class TradeActInvoiceBuilder extends AbstractFormInterceptor implements
           table.setText(r, c++, null, STYLE_SVC_DPW_PREFIX + STYLE_CELL_SUFFIX);
         }
 
-        table.setText(r, c++, render(svc.minTerm),
-            STYLE_SVC_MIN_TERM_PREFIX + STYLE_CELL_SUFFIX);
+        table.setText(r, c++, render(svc.minTerm), STYLE_SVC_MIN_TERM_CELL,
+            svc.minTermWarn(idx, holidays) ? STYLE_SVC_MIN_TERM_WARN : null);
 
         table.setWidget(r, c++, createDiscountWidget(svc.discounts.get(idx)),
             STYLE_SVC_DISCOUNT_PREFIX + STYLE_CELL_SUFFIX);
@@ -1659,13 +1685,24 @@ public class TradeActInvoiceBuilder extends AbstractFormInterceptor implements
             return;
           }
 
-          double df = TradeActUtils.dpwToFactor(DPW_MIN + index, service.ranges.get(idx), holidays,
-              service.minTerm);
-          if (Objects.equals(service.factors.get(idx), df)) {
+          int dpw = DPW_MIN + index;
+          if (Objects.equals(service.dpws.get(idx), dpw)) {
             return;
           }
 
+          double df = TradeActUtils.countServiceDays(service.ranges.get(idx), holidays, dpw);
+
+          service.dpws.set(idx, dpw);
           service.factors.set(idx, df);
+
+          Element mtc = Selectors.getElementByClassName(rowElement, STYLE_SVC_MIN_TERM_CELL);
+          if (mtc != null) {
+            if (service.minTermWarn(idx, holidays)) {
+              mtc.addClassName(STYLE_SVC_MIN_TERM_WARN);
+            } else {
+              mtc.removeClassName(STYLE_SVC_MIN_TERM_WARN);
+            }
+          }
 
           Element input = Selectors.getElementByClassName(rowElement, STYLE_SVC_FACTOR_WIDGET);
           if (InputElement.is(input)) {

@@ -2412,12 +2412,12 @@ public class TradeActBean {
               if (!BeeUtils.isPositive(factor)) {
                 Integer dpw = row.getInt(COL_TA_SERVICE_DAYS);
                 if (TradeActUtils.validDpw(dpw)) {
-                  double df = TradeActUtils.dpwToFactor(dpw, serviceRange, holidays,
+                  int days = TradeActUtils.countServiceDays(serviceRange, holidays,
                       row.getInt(COL_TA_SERVICE_MIN));
 
-                  if (BeeUtils.isPositive(df)) {
-                    factor = df;
-                    update.addConstant(COL_TA_SERVICE_FACTOR, df);
+                  if (days > 0) {
+                    factor = (double) days;
+                    update.addConstant(COL_TA_SERVICE_FACTOR, days);
                   } else {
                     ok = false;
                   }
