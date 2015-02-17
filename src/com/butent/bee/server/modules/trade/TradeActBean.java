@@ -2721,6 +2721,7 @@ public class TradeActBean {
             sys.joinTables(TBL_ITEMS, TBL_TRADE_ACT_SERVICES, COL_TA_ITEM))
         .setWhere(
             SqlUtils.and(
+                SqlUtils.equals(TBL_TRADE_ACT_SERVICES, COL_TRADE_ACT, actId),
                 SqlUtils.notNull(TBL_ITEMS, COL_TIME_UNIT),
                 SqlUtils.positive(TBL_TRADE_ACT_SERVICES, COL_TRADE_ITEM_QUANTITY),
                 SqlUtils.or(
