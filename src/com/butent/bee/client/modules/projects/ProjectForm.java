@@ -16,6 +16,7 @@ import com.butent.bee.client.composite.DataSelector;
 import com.butent.bee.client.data.Data;
 import com.butent.bee.client.data.Queries;
 import com.butent.bee.client.data.Queries.IntCallback;
+import com.butent.bee.client.data.RowCallback;
 import com.butent.bee.client.event.EventUtils;
 import com.butent.bee.client.eventsboard.EventsBoard.EventFilesFilter;
 import com.butent.bee.client.layout.Flow;
@@ -23,6 +24,7 @@ import com.butent.bee.client.ui.FormFactory.WidgetDescriptionCallback;
 import com.butent.bee.client.ui.IdentifiableWidget;
 import com.butent.bee.client.validation.CellValidateEvent;
 import com.butent.bee.client.validation.CellValidateEvent.Handler;
+import com.butent.bee.client.view.add.ReadyForInsertEvent;
 import com.butent.bee.client.view.edit.SaveChangesEvent;
 import com.butent.bee.client.view.form.FormView;
 import com.butent.bee.client.view.form.interceptor.AbstractFormInterceptor;
@@ -214,8 +216,39 @@ class ProjectForm extends AbstractFormInterceptor implements DataChangeEvent.Han
   }
 
   @Override
-  public void onRowInsert(RowInsertEvent event) {
+  public void onReadyForInsert(HasHandlers listener, final ReadyForInsertEvent event) {
+    final String viewName = getViewName();
+    List<String> values = event.getValues();
+    List<BeeColumn> columns = event.getColumns();
 
+    if (BeeUtils.isEmpty(values) || BeeUtils.isEmpty(columns)
+        || BeeUtils.isEmpty(viewName)) {
+      return;
+    }
+
+    event.consume();
+
+    Queries.insert(viewName, columns, values, null, new RowCallback() {
+
+      @Override
+      public void onSuccess(BeeRow result) {
+        DataInfo data = Data.getDataInfo(viewName);
+        List<BeeColumn> usrColumns =
+            Data.getColumns(VIEW_PROJECT_USERS, Lists.newArrayList(COL_PROJECT,
+                AdministrationConstants.COL_USER));
+        List<String> usrValues = Lists.newArrayList(BeeUtils.toString(result.getId()),
+            result.getString(data.getColumnIndex(COL_PROJECT_OWNER)));
+        Queries.insert(VIEW_PROJECT_USERS, usrColumns, usrValues);
+
+        event.getCallback().onSuccess(result);
+        RowInsertEvent.fire(BeeKeeper.getBus(), viewName, result, event.getSourceId());
+      }
+    });
+
+  }
+
+  @Override
+  public void onRowInsert(RowInsertEvent event) {
     if (event.hasView(VIEW_PROJECT_USERS)
         || event.hasView(VIEW_PROJECT_STAGES) || event.hasView(VIEW_PROJECT_DATES)
         || event.hasView(TaskConstants.VIEW_TASKS)) {
