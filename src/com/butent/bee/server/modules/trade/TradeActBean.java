@@ -2412,8 +2412,7 @@ public class TradeActBean {
               if (!BeeUtils.isPositive(factor)) {
                 Integer dpw = row.getInt(COL_TA_SERVICE_DAYS);
                 if (TradeActUtils.validDpw(dpw)) {
-                  int days = TradeActUtils.countServiceDays(serviceRange, holidays,
-                      row.getInt(COL_TA_SERVICE_MIN));
+                  int days = TradeActUtils.countServiceDays(serviceRange, holidays, dpw);
 
                   if (days > 0) {
                     factor = (double) days;
