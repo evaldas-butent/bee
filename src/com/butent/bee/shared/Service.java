@@ -174,6 +174,7 @@ public final class Service {
   public static final String VAR_VALUE_COLUMN = RPC_VAR_PREFIX + "value_column";
 
   public static final String VAR_CHILDREN = RPC_VAR_PREFIX + "children";
+  public static final String VAR_LIST = RPC_VAR_PREFIX + "list";
 
   public static final String VAR_FILE_ID = RPC_VAR_PREFIX + "file_id";
   public static final String VAR_FILES = RPC_VAR_PREFIX + "files";

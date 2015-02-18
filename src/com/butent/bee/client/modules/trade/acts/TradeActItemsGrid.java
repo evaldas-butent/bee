@@ -206,11 +206,14 @@ public class TradeActItemsGrid extends AbstractGridInterceptor implements
               BeeRowSet parentItems = BeeRowSet.restore(response.getResponseAsString());
 
               String pa = parentItems.getTableProperty(PRP_PARENT_ACT);
-              final BeeRow parentAct = BeeUtils.isEmpty(pa) ? null : BeeRow.restore(pa);
+              final BeeRow parentAct = BeeRow.restore(pa);
+
+              BeeRowSet parentActs = Data.createRowSet(VIEW_TRADE_ACTS);
+              parentActs.addRow(parentAct);
 
               final Map<Long, Double> quantities = TradeActUtils.getItemQuantities(parentItems);
 
-              TradeActItemReturn.show(kind.getCaption(), parentAct, parentItems,
+              TradeActItemReturn.show(kind.getCaption(), parentActs, parentItems, false,
                   new Consumer<BeeRowSet>() {
                     @Override
                     public void accept(BeeRowSet actItems) {

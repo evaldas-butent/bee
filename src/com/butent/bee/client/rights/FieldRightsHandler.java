@@ -11,6 +11,7 @@ import com.butent.bee.shared.Consumer;
 import com.butent.bee.shared.data.BeeColumn;
 import com.butent.bee.shared.data.view.DataInfo;
 import com.butent.bee.shared.i18n.Localized;
+import com.butent.bee.shared.rights.Module;
 import com.butent.bee.shared.rights.ModuleAndSub;
 import com.butent.bee.shared.rights.RightsObjectType;
 import com.butent.bee.shared.rights.RightsState;
@@ -70,9 +71,10 @@ final class FieldRightsHandler extends MultiStateForm {
 
     Collection<DataInfo> views = Data.getDataInfoProvider().getViews();
     for (DataInfo view : views) {
-      ModuleAndSub ms = getFirstVisibleModule(view.getModule());
+      String module = view.getModule();
+      ModuleAndSub ms = getFirstVisibleModule(module);
 
-      if (ms != null) {
+      if (ms != null || Module.NEVER_MIND.equals(module)) {
         String viewName = view.getViewName();
         String caption = BeeUtils.notEmpty(Localized.maybeTranslate(view.getCaption()), viewName);
 

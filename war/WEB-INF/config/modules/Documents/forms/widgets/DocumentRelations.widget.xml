@@ -99,4 +99,11 @@
       targetRelColumn="Document" sourceRelColumn="ServiceObject"
       renderColumns="Address" choiceColumns="Address CustomerName" summarize="true" />
   </FlowPanel>
+  <FlowPanel class="flexBox-horizontal" style="&row;" data="Relations" for="Project"
+    module="Projects">
+    <Label text="=projects" style="&chlabel;" />
+    <ChildSelector class="flexible" viewName="Projects" property="Projects"
+      childTable="Relations" targetRelColumn="Document" sourceRelColumn="Project"
+      renderColumns="Name" choiceColumns="Name" summarize="true" />
+  </FlowPanel>
 </FlowPanel>

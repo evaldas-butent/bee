@@ -24,7 +24,7 @@ import com.butent.bee.shared.utils.BeeUtils;
 
 import java.util.List;
 
-class NewProjectComment extends AbstractFormInterceptor {
+class NewProjectCommentForm extends AbstractFormInterceptor {
   private static final String WIDGET_FILES = "Files";
 
   private Long projectId;
@@ -40,7 +40,7 @@ class NewProjectComment extends AbstractFormInterceptor {
 
   @Override
   public FormInterceptor getInstance() {
-    return new NewProjectComment(projectId);
+    return new NewProjectCommentForm(projectId);
   }
 
   @Override
@@ -73,12 +73,12 @@ class NewProjectComment extends AbstractFormInterceptor {
       files = ((FileCollector) widget).getFiles();
     }
 
-    ProjectUtils.registerProjectEvent(viewName, VIEW_PROJECT_FILES, ProjectEvent.COMMENT,
+    ProjectsHelper.registerProjectEvent(viewName, VIEW_PROJECT_FILES, ProjectEvent.COMMENT,
         getProjectId(), comment, files, getEventsIdCallBack(viewName, event.getSourceId()),
         getFilesUploadedCallback((FileCollector) widget));
   }
 
-  public NewProjectComment(Long projectId) {
+  public NewProjectCommentForm(Long projectId) {
     this();
     this.projectId = projectId;
   }
@@ -105,7 +105,7 @@ class NewProjectComment extends AbstractFormInterceptor {
     };
   }
 
-  private NewProjectComment() {
+  private NewProjectCommentForm() {
     this.projectId = null;
   }
 

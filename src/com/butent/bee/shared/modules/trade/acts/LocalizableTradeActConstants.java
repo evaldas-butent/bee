@@ -2,7 +2,7 @@ package com.butent.bee.shared.modules.trade.acts;
 
 public interface LocalizableTradeActConstants {
 
-  String taChangeIntoSale();
+  String taAlterKind();
 
   String taDate();
 

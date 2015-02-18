@@ -52,6 +52,12 @@
     <SimpleColumn name="StartDate" />
     <SimpleColumn name="EndDate" />    
     <SimpleColumn name="ExpectedDuration" />
+    <SimpleColumn name="TimeUnit" />
+    <SimpleJoin name="TimeUnit" joinType="LEFT">
+      <SimpleColumn name="Name" alias="UnitName" />
+      <SimpleColumn name="Factor" />
+      <SimpleColumn name="BaseUnit" />
+    </SimpleJoin>
     <SimpleColumn name="Progress" />
     <SimpleColumn name="Price" />
     <SimpleColumn name="ContractPrice" />
@@ -74,6 +80,15 @@
       {...}.fillProjectsTimeData(ViewQueryEvent event)
       -->
     </SimpleColumn>
+    
+    <SimpleColumn name="ActualExpenses" label="=prjActualExpenses">
+       <x:number>0</x:number> 
+      <!-- 
+      Data handling in system module bean  
+      com.butent.bee.server.modules.projects.ProjectsModuleBean.init().new DataEventHandler() 
+      {...}.fillProjectsTimeData(ViewQueryEvent event)
+      -->
+    </SimpleColumn> 
     
     <SimpleColumn name="Contract" />
     <SimpleJoin name="Contract" joinType="LEFT">

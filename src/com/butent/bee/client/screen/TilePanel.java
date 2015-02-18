@@ -553,7 +553,6 @@ class TilePanel extends Split implements HasCaption, SelectionHandler<String> {
   static final int TILE_MARGIN = 2;
 
   private static final String KEY_ACTIVE = "active";
-  private static final String KEY_CONTENT = "content";
   private static final String KEY_SPLIT = "split";
 
   static Tile getTile(Widget widget) {
@@ -1212,8 +1211,8 @@ class TilePanel extends Split implements HasCaption, SelectionHandler<String> {
       }
     }
 
-    if (json.containsKey(KEY_CONTENT)) {
-      String contentSupplier = JsonUtils.getString(json, KEY_CONTENT);
+    if (json.containsKey(Workspace.KEY_CONTENT)) {
+      String contentSupplier = JsonUtils.getString(json, Workspace.KEY_CONTENT);
       if (!BeeUtils.isEmpty(contentSupplier)) {
         contentByTile.put(tile.getId(), contentSupplier);
       }
@@ -1259,7 +1258,7 @@ class TilePanel extends Split implements HasCaption, SelectionHandler<String> {
 
     String contentSupplier = tile.getContentSupplier();
     if (!BeeUtils.isEmpty(contentSupplier)) {
-      json.put(KEY_CONTENT, new JSONString(contentSupplier));
+      json.put(Workspace.KEY_CONTENT, new JSONString(contentSupplier));
     }
 
     if (tileId.equals(getActiveTileId()) && getTileCount() > 1) {

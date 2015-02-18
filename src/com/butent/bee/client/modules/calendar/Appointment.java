@@ -55,6 +55,8 @@ public class Appointment extends CalendarItem {
       COL_APPOINTMENT_TYPE);
   private static final int STYLE_INDEX = Data.getColumnIndex(VIEW_APPOINTMENTS, COL_STYLE);
 
+  private static final int STATUS_INDEX = Data.getColumnIndex(VIEW_APPOINTMENTS, COL_STATUS);
+
   private static final int VEHICLE_MODEL_INDEX = Data.getColumnIndex(VIEW_APPOINTMENTS,
       COL_VEHICLE_MODEL);
   private static final int VEHICLE_NUMBER_INDEX = Data.getColumnIndex(VIEW_APPOINTMENTS,
@@ -266,6 +268,11 @@ public class Appointment extends CalendarItem {
   @Override
   public String getSimpleHeaderTemplate() {
     return SIMPLE_HEADER_TEMPLATE;
+  }
+
+  @Override
+  public AppointmentStatus getStatus() {
+    return EnumUtils.getEnumByIndex(AppointmentStatus.class, row.getInteger(STATUS_INDEX));
   }
 
   @Override

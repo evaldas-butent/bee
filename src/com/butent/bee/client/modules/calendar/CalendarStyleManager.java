@@ -59,6 +59,8 @@ public final class CalendarStyleManager {
   public static final String TASK = "task";
   public static final String PARTIAL = "partial";
 
+  public static final String STATUS_PREFIX = "status-";
+
   public static final String MOVABLE = "movable";
   public static final String RESIZABLE = "resizable";
 
@@ -87,6 +89,7 @@ public final class CalendarStyleManager {
 
   public static final String DRAG = "drag";
   public static final String POSITIONER = "positioner";
+  public static final String TARGET = "target";
 
   static void applyStyle(Widget widget, String styles) {
     if (!BeeUtils.isEmpty(styles)) {

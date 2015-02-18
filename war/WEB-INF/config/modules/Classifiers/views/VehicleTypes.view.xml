@@ -1,9 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <View xmlns="http://www.butent.com/view"
 
-  name="VehicleTypes"
-  source="VehicleTypes"
-  newRowCaption="=trNewVehicleType" 
+  name="VehicleTypes" source="VehicleTypes"
+  caption="=trVehicleTypes" newRowCaption="=trNewVehicleType" 
   >
   <Columns>
     <SimpleColumn name="Name" />

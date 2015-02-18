@@ -118,7 +118,7 @@
         </FlowPanel>
       </page>
 
-      <page>
+      <page for="Style">
         <text>CSS</text>
         <SimplePanel>
           <InputArea source="Style" class="occupy-1" style="font-family: monospace;" 

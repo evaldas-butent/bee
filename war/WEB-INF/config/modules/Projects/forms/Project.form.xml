@@ -9,7 +9,7 @@
   <!ENTITY inp2 "&inline; width: 200px;">
   <!ENTITY inp3 "&inline; width: 150px;">
   <!ENTITY inp4 "&inline; width: 100px;">
-  <!ENTITY inp5 "&inline; width: 70px; ">
+  <!ENTITY inp5 "&inline; width: 100px; ">
   <!ENTITY inp6 "&inline; width: 110px;">
   <!ENTITY inp7 "&inline; width: 795px; height:100px; max-height: 200px; max-width: 795px;">
 ]>
@@ -23,16 +23,16 @@
         <Label for="Name" text="=name" style="&lbl;" class="bee-required" />
         <InputText source="Name" style="&inp1;" />
 
-        <Label for="StartDate" text="=crmStartDate" style="&lbl;" />
-        <InputDate source="StartDate" style="&inp4;" />
+        <Label for="StartDate" text="=crmStartDate" style="&lbl;" class="bee-required" />
+        <InputDate source="StartDate" required="true" style="&inp4;" />
 
-        <Label for="EndDate" text="=prjTerm" style="&lbl3;" />
-        <InputDate source="EndDate" style="&inp4;" />
+        <Label for="EndDate" text="=prjTerm" style="&lbl3;" class="bee-required" />
+        <InputDate source="EndDate" required="true" style="&inp4;" />
       </row>
 
       <row>
-        <Label for="Company" text="=client" style="&lbl;" />
-        <DataSelector source="Company" style="&inp2;" />
+        <Label for="Company" text="=client" style="&lbl;" class="bee-required" />
+        <DataSelector source="Company" style="&inp2;" required="true" />
 
         <Label for="ContactPerson" text="=personContact"
           style="margin-right: 1em; text-align: left; margin-left: -110px;" />
@@ -42,7 +42,7 @@
           options="Company" module="Classifiers.Contacts" />
 
         <Label for="Status" text="=status" style="&lbl2;" />
-        <ListBox source="Status"
+        <ListBox source="Status" name="Status"
           style="display: inline-block; width: 150px; margin-left: -50px;" />
       </row>
     </Table>
@@ -71,14 +71,17 @@
         <Table>
           <row>
             <Label for="ExpectedTasksDuration" text="=prjExpectedTaskDuration" style="&lbl;" />
-            <InputDecimal source="ExpectedTasksDuration" scale="2" style="&inp5;" />
+            <InputText name="ExpectedTasksDuration"  readOnly="true" style="&inp5;" />
 
             <Label for="ActualTasksDuration" text="=prjActualTaskDuration" style="&lbl;" />
-            <InputDecimal source="ActualTasksDuration" scale="2" style="&inp5;" />
+            <InputText name="ActualTasksDuration" readOnly="true" style="&inp5;" />
             
-            <Label for="ContractNumber" text="=contractNo" style="&lbl;" />
-            <InputText source="ContractNumber" style="&inp6;"
-              readOnly="true" />
+            <Label for="Price" text="=prjPrice" style="&lbl;" />
+            
+            <InputDecimal source="Price" scale="2" style="&inp6;" />
+           
+            <Label for="ContractPrice" text="=salePrice" style="&lbl;" />
+            <InputDecimal source="ContractPrice" scale="2" style="&inp6;" />
           </row>
 
           <row>
@@ -87,12 +90,14 @@
 
             <Label for="ExpectedDuration" text="=expectedDuration" style="&lbl;" />
             <InputDecimal source="ExpectedDuration" style="&inp5;" />
-
-            <Label for="Price" text="=prjPrice" style="&lbl;" />
-            <InputDecimal source="Price" scale="2" style="&inp6;" />
-
-            <Label for="ContractPrice" text="=salePrice" style="&lbl;" />
-            <InputDecimal source="ContractPrice" scale="2" style="&inp6;" />
+            
+            <cell colSpan="2">
+              <DataSelector name="TimeUnit" source="TimeUnit" renderColumns="UnitName" style="&inp5;" /> 
+            </cell>
+            
+            <Label for="ContractNumber" text="=contractNo" style="&lbl;" />
+            <InputText source="ContractNumber" style="&inp6;"
+              readOnly="true" />
           </row>
         </Table>
 
@@ -164,12 +169,17 @@
         <text>=crmRecurringTasks</text>
         <ChildGrid name="ChildRecurringTasks" relColumn="Project" />
       </page>
-    <page>
-         <text>=prjDates</text>
-         <ChildGrid name="ProjectDates" relColumn="Project" />
-       </page>
-
-       <page>
+      <page>
+        <text>=prjDates</text>
+        <ChildGrid name="ProjectDates" relColumn="Project" />
+      </page>
+      <!--  
+      <page>
+        <text>=income</text>
+        <FlowPanel></FlowPanel>
+      </page>
+      -->
+      <page>
         <text>=prjSchedule</text>
         <FlowPanel name="ChartData" />
       </page>

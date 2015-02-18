@@ -5,7 +5,7 @@
   name="CargoInvoices" viewName="CargoInvoices"
   editShowId="true" flexGrow="1"
   disabledActions="add edit"
-  caption="=trInvoices"
+  caption="=trIncomeInvoices"
   filter="Sale AND !(Proforma)"
   >
   <g:columns>

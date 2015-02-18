@@ -124,11 +124,11 @@
           label="=crmTaskExecutors" />
       </row>
 
-      <row data="UserGroupSettings">
+      <row>
         <Label text="=crmTaskExecutorGroups" />
-        <MultiSelector name="UserGroupSettings" viewName="UserGroupSettings" property="ExecutorGroups" renderColumns="Name"
-          editPopup="true" newRowEnabled="false" style="&inp2y;" label="=crmTaskExecutorGroups"
-          filter="Owner {u} or Visibility 1" />
+        <MultiSelector name="UserGroupSettings" viewName="UserGroupSettings"
+          property="ExecutorGroups" renderColumns="Name" editPopup="true" newRowEnabled="false"
+          style="&inp2y;" label="=crmTaskExecutorGroups" filter="Owner {u} or Visibility 1" />
       </row>
 
       <row>
@@ -138,7 +138,7 @@
           label="=crmTaskObservers" />
       </row>
 
-      <row data="UserGroupSettings">
+      <row>
         <Label text="=crmTaskObserverGroups" />
         <MultiSelector viewName="UserGroupSettings" property="ObserverGroups" renderColumns="Name"
           editPopup="true" newRowEnabled="false" style="&inp2y;" label="=crmTaskObserverGroups"

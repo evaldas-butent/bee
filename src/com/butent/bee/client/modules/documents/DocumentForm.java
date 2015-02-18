@@ -27,6 +27,7 @@ import com.butent.bee.client.data.RowEditor;
 import com.butent.bee.client.data.RowFactory;
 import com.butent.bee.client.event.logical.SelectorEvent;
 import com.butent.bee.client.grid.ChildGrid;
+import com.butent.bee.client.modules.mail.Relations;
 import com.butent.bee.client.ui.FormFactory.WidgetDescriptionCallback;
 import com.butent.bee.client.ui.IdentifiableWidget;
 import com.butent.bee.client.ui.Opener;
@@ -44,6 +45,7 @@ import com.butent.bee.shared.data.BeeRowSet;
 import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.IsRow;
 import com.butent.bee.shared.data.RelationUtils;
+import com.butent.bee.shared.data.RowChildren;
 import com.butent.bee.shared.data.filter.Filter;
 import com.butent.bee.shared.data.value.LongValue;
 import com.butent.bee.shared.data.view.DataInfo;
@@ -65,7 +67,33 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
-public class DocumentForm extends DocumentDataForm implements SelectorEvent.Handler {
+public class DocumentForm extends DocumentDataForm {
+
+  private class RelationsHandler implements SelectorEvent.Handler {
+
+    @Override
+    public void onDataSelector(SelectorEvent event) {
+      if (event.isNewRow()) {
+        final String viewName = event.getRelatedViewName();
+
+        switch (viewName) {
+
+          case TaskConstants.TBL_TASKS:
+            if (event.isNewRow() && TaskConstants.VIEW_TASKS.equals(event.getRelatedViewName())) {
+              createNewTaskRelation(event);
+            }
+            break;
+
+          case ServiceConstants.TBL_SERVICE_OBJECTS:
+            if (event.isNewRow()
+                && ServiceConstants.VIEW_SERVICE_OBJECTS.equals(event.getRelatedViewName())) {
+              createNewServiceObjectRelation(event);
+            }
+            break;
+        }
+      }
+    }
+  }
 
   private final Button newTemplateButton = new Button(Localized.getConstants()
       .newDocumentTemplate(), new ClickHandler() {
@@ -96,6 +124,7 @@ public class DocumentForm extends DocumentDataForm implements SelectorEvent.Hand
     }
   });
   private ChildGrid itemsGrid;
+  Relations rel;
 
   private final Map<String, ChildSelector> childSelectors = new HashMap<>();
 
@@ -105,19 +134,13 @@ public class DocumentForm extends DocumentDataForm implements SelectorEvent.Hand
 
     super.afterCreateWidget(name, widget, callback);
 
-    if (widget instanceof ChildSelector) {
-      ChildSelector selector = (ChildSelector) widget;
-      childSelectors.put(selector.getOracle().getViewName(), selector);
+    if (widget instanceof Relations) {
+      this.rel = (Relations) widget;
+      rel.setSelectorHandler(new RelationsHandler());
 
-      if (selector.hasRelatedView(TaskConstants.VIEW_TASKS)) {
-        selector.addSelectorHandler(this);
-      } else if (selector.hasRelatedView(ServiceConstants.VIEW_SERVICE_OBJECTS)) {
-        selector.addSelectorHandler(this);
-      }
     } else if (BeeUtils.same(name, VIEW_DOCUMENT_ITEMS) && widget instanceof ChildGrid) {
       itemsGrid = (ChildGrid) widget;
     }
-
   }
 
   @Override
@@ -146,16 +169,6 @@ public class DocumentForm extends DocumentDataForm implements SelectorEvent.Hand
   @Override
   public FormInterceptor getInstance() {
     return new DocumentForm();
-  }
-
-  @Override
-  public void onDataSelector(SelectorEvent event) {
-    if (event.isNewRow() && TaskConstants.VIEW_TASKS.equals(event.getRelatedViewName())) {
-      createNewTaskRelation(event);
-    } else if (event.isNewRow()
-        && ServiceConstants.VIEW_SERVICE_OBJECTS.equals(event.getRelatedViewName())) {
-      createNewServiceObjectRelation(event);
-    }
   }
 
   @Override
@@ -359,10 +372,16 @@ public class DocumentForm extends DocumentDataForm implements SelectorEvent.Hand
 
   private void createNewServiceObjectRelation(SelectorEvent event) {
     Long company = null;
+    DataInfo info;
 
-    if (childSelectors.containsKey(TBL_COMPANIES)) {
-      company = BeeUtils.peek(DataUtils.parseIdList(childSelectors.get(TBL_COMPANIES).getValue()));
+    for (RowChildren selector : rel.getRowChildren(false)) {
+
+      info = Data.getDataInfo(selector.getRepository());
+      if (BeeUtils.same(info.getRelation(selector.getChildColumn()), VIEW_COMPANIES)) {
+        company = BeeUtils.peek(DataUtils.parseIdList(selector.getChildrenIds()));
+      }
     }
+
     if (DataUtils.isId(company)) {
       event.consume();
       final BeeRow row = event.getNewRow();
@@ -384,6 +403,7 @@ public class DocumentForm extends DocumentDataForm implements SelectorEvent.Hand
 
   private void createNewTaskRelation(final SelectorEvent event) {
     final BeeRow row = event.getNewRow();
+    DataInfo info;
 
     String summary = BeeUtils.notEmpty(event.getDefValue(), getStringValue(COL_DOCUMENT_NAME));
     if (!BeeUtils.isEmpty(summary)) {
@@ -402,16 +422,13 @@ public class DocumentForm extends DocumentDataForm implements SelectorEvent.Hand
     final List<Long> companies = new ArrayList<>();
     final List<Long> persons = new ArrayList<>();
 
-    for (ChildSelector selector : childSelectors.values()) {
-      if (selector.hasRelatedView(VIEW_COMPANIES)) {
-        if (!BeeUtils.isEmpty(selector.getValue())) {
-          companies.addAll(DataUtils.parseIdList(selector.getValue()));
-        }
+    for (RowChildren selector : rel.getRowChildren(false)) {
+      info = Data.getDataInfo(selector.getRepository());
 
-      } else if (selector.hasRelatedView(VIEW_PERSONS)) {
-        if (!BeeUtils.isEmpty(selector.getValue())) {
-          persons.addAll(DataUtils.parseIdList(selector.getValue()));
-        }
+      if (BeeUtils.same(info.getRelation(selector.getChildColumn()), VIEW_COMPANIES)) {
+        companies.addAll(DataUtils.parseIdList(selector.getChildrenIds()));
+      } else if (BeeUtils.same(info.getRelation(selector.getChildColumn()), VIEW_PERSONS)) {
+        persons.addAll(DataUtils.parseIdList(selector.getChildrenIds()));
       }
     }
 

@@ -24,6 +24,7 @@ import com.butent.bee.client.logging.ClientLogManager;
 import com.butent.bee.client.modules.ModuleManager;
 import com.butent.bee.client.modules.administration.AdministrationKeeper;
 import com.butent.bee.client.screen.BodyPanel;
+import com.butent.bee.client.screen.Workspace;
 import com.butent.bee.client.ui.AutocompleteProvider;
 import com.butent.bee.client.utils.LayoutEngine;
 import com.butent.bee.client.view.grid.GridSettings;
@@ -48,6 +49,7 @@ import com.butent.bee.shared.utils.Codec;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
@@ -96,18 +98,26 @@ public class Bee implements EntryPoint, ClosingHandler {
   }
 
   private static void initWorkspace() {
-    List<String> onStartup = new ArrayList<>();
+    List<String> spaces = new ArrayList<>();
+    JSONObject onStartup = Settings.getOnStartup();
 
     if (BeeKeeper.getUser().workspaceContinue()) {
       String workspace = BeeKeeper.getUser().getLastWorkspace();
 
       if (!BeeUtils.isEmpty(workspace) && !BeeConst.EMPTY.equals(workspace)) {
-        onStartup.add(workspace);
+        if (Workspace.isForced(onStartup)) {
+          spaces.addAll(Workspace.maybeForceSpace(Collections.singletonList(workspace), onStartup));
+        } else {
+          spaces.add(workspace);
+        }
 
       } else {
         JSONObject onEmpty = Settings.getOnEmptyWorkspace();
+
         if (onEmpty != null) {
-          onStartup.add(onEmpty.toString());
+          spaces.add(onEmpty.toString());
+        } else if (Workspace.isForced(onStartup)) {
+          spaces.add(onStartup.toString());
         }
       }
 
@@ -115,22 +125,25 @@ public class Bee implements EntryPoint, ClosingHandler {
       List<String> home = Global.getSpaces().getStartup();
 
       if (BeeUtils.isEmpty(home)) {
-        JSONObject json = Settings.getOnStartup();
-        if (json == null) {
-          json = Settings.getOnEmptyWorkspace();
+        if (onStartup != null) {
+          spaces.add(onStartup.toString());
+        } else {
+          JSONObject onEmpty = Settings.getOnEmptyWorkspace();
+          if (onEmpty != null) {
+            spaces.add(onEmpty.toString());
+          }
         }
 
-        if (json != null) {
-          onStartup.add(json.toString());
-        }
+      } else if (Workspace.isForced(onStartup)) {
+        spaces.addAll(Workspace.maybeForceSpace(home, onStartup));
 
       } else {
-        onStartup.addAll(home);
+        spaces.addAll(home);
       }
     }
 
-    if (!onStartup.isEmpty()) {
-      BeeKeeper.getScreen().restore(onStartup, false);
+    if (!spaces.isEmpty()) {
+      BeeKeeper.getScreen().restore(spaces, false);
     }
   }
 
@@ -199,7 +212,7 @@ public class Bee implements EntryPoint, ClosingHandler {
             break;
 
           case NEWS:
-            Global.getNewsAggregator().loadSubscriptions(serialized);
+            Global.getNewsAggregator().loadSubscriptions(serialized, false);
             break;
 
           case REPORTS:

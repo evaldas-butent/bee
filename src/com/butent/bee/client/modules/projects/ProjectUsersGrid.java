@@ -5,7 +5,6 @@ import static com.butent.bee.shared.modules.projects.ProjectConstants.*;
 import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.data.Provider;
 import com.butent.bee.client.presenter.GridPresenter;
-import com.butent.bee.client.view.grid.GridView;
 import com.butent.bee.client.view.grid.interceptor.AbstractGridInterceptor;
 import com.butent.bee.client.view.grid.interceptor.GridInterceptor;
 import com.butent.bee.shared.BeeConst;
@@ -33,7 +32,8 @@ class ProjectUsersGrid extends AbstractGridInterceptor {
 
     int tasksCount = BeeConst.MAX_SCALE;
     long owner = BeeConst.LONG_UNDEF;
-    long user = BeeUtils.unbox(BeeKeeper.getUser().getUserId());
+    long currUser = BeeUtils.unbox(BeeKeeper.getUser().getUserId());
+    long projectUser = BeeConst.LONG_UNDEF;
 
     if (!BeeUtils.isNegative(idxTaskCount)) {
       tasksCount = BeeUtils.unbox(activeRow.getInteger(idxTaskCount));
@@ -46,15 +46,17 @@ class ProjectUsersGrid extends AbstractGridInterceptor {
     }
 
     if (!BeeUtils.isNegative(idxUser)) {
-      user = BeeUtils.unbox(activeRow.getLong(idxUser));
+      projectUser = BeeUtils.unbox(activeRow.getLong(idxUser));
     }
 
-    if (user == owner) {
+    if (currUser == owner && currUser != projectUser) {
       if (BeeUtils.isPositive(tasksCount)) {
         presenter.getGridView().notifySevere(LC.prjUserHasSameTasks());
         return GridInterceptor.DeleteMode.CANCEL;
       }
       return GridInterceptor.DeleteMode.SINGLE;
+    } else if (currUser == projectUser) {
+      return GridInterceptor.DeleteMode.CANCEL;
     } else {
       presenter.getGridView().notifySevere(LC.prjUserCanDeleteManager());
       return GridInterceptor.DeleteMode.CANCEL;
@@ -65,11 +67,4 @@ class ProjectUsersGrid extends AbstractGridInterceptor {
   public GridInterceptor getInstance() {
     return new ProjectUsersGrid();
   }
-
-  @Override
-  public void onLoad(GridView gridView) {
-    // TODO Auto-generated method stub
-    super.onLoad(gridView);
-  }
-
 }

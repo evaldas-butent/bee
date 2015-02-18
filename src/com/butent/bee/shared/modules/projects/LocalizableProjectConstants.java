@@ -16,7 +16,11 @@ public interface LocalizableProjectConstants {
 
   String prjDeleteCanManager();
 
+  String prjEventEdited();
+
   String prjObserver();
+
+  String prjOverdue();
 
   String prjParticipant();
 
@@ -29,6 +33,8 @@ public interface LocalizableProjectConstants {
   String prjStatusScheduled();
 
   String prjStatusSuspended();
+
+  String prjTerm();
 
   String prjUserCanDeleteManager();
 

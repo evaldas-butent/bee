@@ -675,6 +675,8 @@ public interface LocalizableConstants extends Constants, LocalizableClassifierCo
 
   String time();
 
+  String timeDifference();
+
   String tooLittleData();
 
   String total();
@@ -686,6 +688,8 @@ public interface LocalizableConstants extends Constants, LocalizableClassifierCo
   String unitDayShort();
 
   String unitDaysShort();
+
+  String unitHourShort();
 
   String unitWeekShort();
 

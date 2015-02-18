@@ -2,12 +2,12 @@ package com.butent.bee.client.utils;
 
 import com.google.common.base.CharMatcher;
 import com.google.common.base.Splitter;
-import com.google.common.collect.ImmutableMap;
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.dom.client.DataTransfer;
 import com.google.gwt.dom.client.NativeEvent;
 import com.google.gwt.http.client.RequestBuilder;
 import com.google.gwt.http.client.Response;
+import com.google.gwt.http.client.URL;
 
 import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.Callback;
@@ -192,36 +192,26 @@ public final class FileUtils {
   }
 
   public static String getUrl(Long fileId) {
-    Assert.state(DataUtils.isId(fileId));
-
-    return GWT.getHostPageBaseURL() + AdministrationConstants.FILE_URL + "/"
-        + BeeUtils.toString(fileId);
-  }
-
-  public static String getUrl(String fileName) {
-    Assert.notEmpty(fileName);
-
-    return CommUtils.addQueryString(GWT.getHostPageBaseURL() + AdministrationConstants.FILE_URL,
-        CommUtils.buildQueryString(Collections.singletonMap(Service.VAR_FILE_NAME, fileName),
-            true));
+    return GWT.getHostPageBaseURL() + AdministrationConstants.FILE_URL
+        + (DataUtils.isId(fileId) ? "/" + BeeUtils.toString(fileId) : "");
   }
 
   public static String getUrl(String fileName, Long fileId) {
     Assert.notEmpty(fileName);
-    Assert.state(DataUtils.isId(fileId));
+    return getUrl(fileId) + "/" + URL.encode(fileName);
+  }
 
-    return CommUtils.addQueryString(GWT.getHostPageBaseURL() + AdministrationConstants.FILE_URL,
-        CommUtils.buildQueryString(ImmutableMap.of(Service.VAR_FILE_NAME, fileName,
-            Service.VAR_FILE_ID, BeeUtils.toString(fileId)), true));
+  public static String getUrl(String fileName, String filePath) {
+    Assert.notEmpty(filePath);
+    return CommUtils.addQueryString(getUrl(fileName, (Long) null),
+        CommUtils.buildQueryString(Collections.singletonMap(Service.VAR_FILES, filePath), true));
   }
 
   public static String getUrl(String fileName, Map<Long, String> files) {
-    Assert.notEmpty(fileName);
     Assert.notEmpty(files);
-
-    return CommUtils.addQueryString(GWT.getHostPageBaseURL() + AdministrationConstants.FILE_URL,
-        CommUtils.buildQueryString(ImmutableMap.of(Service.VAR_FILE_NAME, fileName,
-            Service.VAR_FILES, Codec.beeSerialize(files)), true));
+    return CommUtils.addQueryString(getUrl(fileName, (Long) null),
+        CommUtils.buildQueryString(Collections.singletonMap(Service.VAR_FILES,
+            Codec.beeSerialize(files)), true));
   }
 
   public static void readAsDataURL(File file, final Consumer<String> consumer) {
