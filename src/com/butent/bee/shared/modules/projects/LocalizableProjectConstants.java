@@ -26,6 +26,8 @@ public interface LocalizableProjectConstants {
 
   String prjSchedule();
 
+  String prjStage();
+
   String prjStatusActive();
 
   String prjStatusApproved();
