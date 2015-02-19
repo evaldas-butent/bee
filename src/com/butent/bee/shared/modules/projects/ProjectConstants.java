@@ -80,6 +80,8 @@ public final class ProjectConstants {
   public static final String COL_PROJECT_OWNER = "Owner";
   public static final String COL_PROJECT_CONTACT = "Contact";
   public static final String COL_PROJECT_PRICE = "Price";
+  public static final String COL_PROJECT_ITEM_PRICE = "Price";
+
   public static final String COL_PUBLISHER = "Publisher";
   public static final String COL_PUBLISH_TIME = "PublishTime";
   public static final String COL_PROJECT_EVENT = "ProjectEvent";
@@ -122,6 +124,7 @@ public final class ProjectConstants {
   public static final String GRID_PROJECTS = "Projects";
   public static final String GRID_PROJECT_USERS = "ProjectUsers";
   public static final String GRID_PROJECT_STAGES = "ProjectStages";
+  public static final String GRID_PROJECT_INCOMES = "ProjectIncomes";
 
   public static final String NAME_EXPECTED_TASKS_DURATION = "CalcExpectedTasksDuration";
   public static final String NAME_ACTUAL_TASKS_DURATION = "CalcActualTasksDuration";
@@ -133,6 +136,7 @@ public final class ProjectConstants {
   public static final String PROP_REASON_DATA = "ReasonData";
   public static final String PROP_REAL_FACTOR = "RealFactor";
   public static final String PROP_TIME_UNTIS = "TimeUnits";
+  public static final String PROP_ITEM_PRICES = "ItemPrices";
 
   public static final String PRM_PROJECT_COMMON_RATE = "ProjectCommonRate";
   public static final String PRM_PROJECT_HOUR_UNIT = "ProjectHourUnit";

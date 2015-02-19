@@ -1,0 +1,74 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE Grid[
+  <!ENTITY qty "(row.Quantity - (row.returned_qty ? Number(row.returned_qty) : 0))">
+]>
+<g:Grid xmlns="http://www.butent.com/column" xmlns:g="http://www.butent.com/grid"
+  xmlns:ui="http://www.butent.com/ui" xmlns:xi="http://www.w3.org/2001/XInclude"
+  name="ProjectIncomes" viewName="ProjectIncomes" flexGrow="1"
+  renderMode="full">
+  <g:columns>
+    <RelColumn name="Item" renderColumns="ItemName"
+      choiceColumns="Name Article" editPopup="true" visible="true"
+      readOnly="true">
+      <footer text="=totalOf" horizontalAlignment="right" />
+    </RelColumn>
+    <DataColumn name="Article" />
+    <DataColumn name="Quantity" visible="true">
+      <footer aggregate="sum" />
+    </DataColumn>
+    <DataColumn name="UnitName" caption="=unitShort"
+      flexGrow="0" />
+    <PropColumn name="returned_qty" type="double"
+      label="=taQuantityReturned" visible="true">
+      <style>
+        <bodyStyle>
+          <ui:inline>color: red;</ui:inline>
+        </bodyStyle>
+        <footerStyle>
+          <ui:inline>color: red;</ui:inline>
+        </footerStyle>
+      </style>
+      <footer aggregate="sum" />
+    </PropColumn>
+    <CalcColumn name="remaining_qty" type="double"
+      label="=taQuantityRemained" visible="true">
+      <render>
+        <ui:expression>&qty;
+        </ui:expression>
+      </render>
+      <footer aggregate="sum" />
+    </CalcColumn>
+    <DataColumn name="Weight">
+      <footer expression="&qty; * row.Weight" />
+    </DataColumn>
+    <DataColumn name="Area">
+      <footer expression="&qty; * row.Area" />
+    </DataColumn>
+    <DataColumn name="Price" visible="true">
+      <footer expression="&qty; * row.Price" />
+    </DataColumn>
+    <CalcColumn name="ItemPrices" type="string" cellType="html"
+      label="=taItemPrices" width="100" />
+    <DataColumn name="Discount" carry="true" flexGrow="0">
+      <footer evaluator="discount" scale="2" />
+    </DataColumn>
+    <DataColumn name="VatPlus" width="20" sortable="false"
+      caption="+" format="+" carry="true" visible="false" />
+    <DataColumn name="Vat" carry="true" flexGrow="0" visible="false">
+      <footer evaluator="vat" />
+    </DataColumn>
+    <DataColumn name="VatPercent" width="20" sortable="false"
+      caption="%" format="%" carry="true" visible="false" />
+    <CalcColumn name="Total" type="decimal" caption="=trdAmount"
+      scale="2">
+      <style>
+        <bodyStyle>
+          <ui:font>bold</ui:font>
+        </bodyStyle>
+      </style>
+      <renderer type="total" />
+      <footer aggregate="sum" />
+    </CalcColumn>
+    <DataColumn name="Note" visible="false" />
+  </g:columns>
+</g:Grid>
