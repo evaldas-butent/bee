@@ -100,6 +100,9 @@
         <Label for="Currency" />
         <DataSelector source="Currency" renderColumns="CurrencyName" editEnabled="false"
           newRowEnabled="false" style="width: 60px;" />
+
+        <Label for="RegistrationNo" visible="true" />
+        <InputText source="RegistrationNo" style="&inpw;" visible="true" />
       </row>
     </Table>
 

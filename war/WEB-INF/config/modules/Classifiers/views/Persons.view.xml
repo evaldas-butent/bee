@@ -20,7 +20,7 @@
       <SimpleJoin name="Email" joinType="LEFT">
         <SimpleColumn name="Email" />
       </SimpleJoin>
-      
+
       <SimpleColumn name="RemindEmail" />
       <SimpleColumn name="EmailInvoices" />
 
@@ -43,6 +43,12 @@
     </SimpleJoin>
 
     <SimpleColumn name="Photo" />
+
+    <SimpleColumn name="Activity" />
+    <SimpleJoin name="Activity" joinType="LEFT">
+      <SimpleColumn alias="ActivityName" name="Name" />
+    </SimpleJoin>
+
   </Columns>
   <Order>
     <OrderBy column="LastName" />

@@ -21,6 +21,7 @@ import com.butent.bee.client.view.ViewFactory;
 import com.butent.bee.client.view.form.interceptor.ExtendedReportInterceptor;
 import com.butent.bee.client.view.form.interceptor.ReportInterceptor;
 import com.butent.bee.shared.Assert;
+import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.i18n.LocalizableConstants;
 import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.logging.BeeLogger;
@@ -168,17 +169,7 @@ public enum Report implements HasWidgetSupplier {
           ProjectConstants.COL_PROJECT_STATUS,
           ProjectConstants.ALS_TERM
       }) {
-
-        switch (item) {
-        // case ProjectConstants.COL_ACTUAL_TASKS_DURATION:
-        // map.put(PROP_ROWS, items.get(item).create().setOptions(DateTimeFunction.TIME.name()));
-        // break;
-
-          default:
-            map.put(PROP_ROWS, items.get(item).create());
-            break;
-        }
-
+        map.put(PROP_ROWS, items.get(item).create());
       }
 
       map.put(Report.PROP_ROW_GROUP, items.get(ClassifierConstants.ALS_COMPANY_NAME).create());
@@ -207,6 +198,7 @@ public enum Report implements HasWidgetSupplier {
           new ReportTextItem(ProjectConstants.COL_PROJECT_NAME, Data.getColumnLabel(
               ProjectConstants.VIEW_PROJECTS, ProjectConstants.COL_PROJECT_NAME)),
           new ReportTextItem(ClassifierConstants.ALS_COMPANY_NAME, loc.client()),
+          new ReportTextItem(ProjectConstants.ALS_STAGE_NAME, loc.prjStage()),
           new ReportTextItem(ProjectConstants.COL_PROJECT_OWNER, Data.getColumnLabel(
               ProjectConstants.VIEW_PROJECTS, ProjectConstants.COL_PROJECT_OWNER)),
           new ReportNumericItem(ProjectConstants.COL_PROJECT, loc.project(), 0),
@@ -221,13 +213,18 @@ public enum Report implements HasWidgetSupplier {
           new ReportTextItem(ProjectConstants.ALS_TERM, loc.prjTerm()),
 
           /* calc */
-          new ReportNumericItem(TaskConstants.COL_ACTUAL_DURATION, Data.getColumnLabel(
-              TaskConstants.VIEW_TASKS, TaskConstants.COL_ACTUAL_DURATION), 2),
+          new ReportNumericItem(TaskConstants.COL_ACTUAL_DURATION,
+              BeeUtils
+                  .join(BeeConst.DEFAULT_LIST_SEPARATOR, Data.getColumnLabel(
+                      TaskConstants.VIEW_TASKS, TaskConstants.COL_ACTUAL_DURATION), loc
+                      .unitHourShort()), 2),
 
-          new ReportNumericItem(TaskConstants.COL_EXPECTED_DURATION, Data.getColumnLabel(
-              TaskConstants.VIEW_TASKS, TaskConstants.COL_EXPECTED_DURATION), 2),
-          new ReportNumericItem(TaskConstants.COL_EXPECTED_EXPENSES, Data.getColumnLabel(
-              TaskConstants.VIEW_TASKS, TaskConstants.COL_EXPECTED_EXPENSES), 2),
+          new ReportNumericItem(TaskConstants.COL_EXPECTED_DURATION, BeeUtils
+              .join(BeeConst.DEFAULT_LIST_SEPARATOR, Data.getColumnLabel(
+                  TaskConstants.VIEW_TASKS, TaskConstants.COL_EXPECTED_DURATION), loc
+                  .unitHourShort()), 2),
+          new ReportNumericItem(TaskConstants.COL_EXPECTED_EXPENSES, loc.crmTaskExpectedExpenses(),
+              2),
 
           new ReportNumericItem(TaskConstants.COL_ACTUAL_EXPENSES, Data.getColumnLabel(
               TaskConstants.VIEW_TASKS, TaskConstants.COL_ACTUAL_EXPENSES), 2),
@@ -242,7 +239,6 @@ public enum Report implements HasWidgetSupplier {
               TaskStatus.class)
           );
     }
-
   };
 
   public static final String PROP_ROWS = "ROWS";

@@ -524,6 +524,7 @@ public class ProjectsModuleBean implements BeeModule {
         ProjectConstants.COL_PROJECT_START_DATE,
         ProjectConstants.COL_PROJECT_END_DATE
         );
+    select.addField(TBL_PROJECT_STAGES, COL_STAGE_NAME, ALS_STAGE_NAME);
 
     select.addExpr(SqlUtils.concat(SqlUtils.nvl(SqlUtils.field(ClassifierConstants.TBL_PERSONS,
         ClassifierConstants.COL_FIRST_NAME), SqlUtils.constant(BeeConst.STRING_EMPTY)),
@@ -547,6 +548,9 @@ public class ProjectsModuleBean implements BeeModule {
 
     select.addFromLeft(ClassifierConstants.TBL_COMPANIES, sys.joinTables(
         ClassifierConstants.TBL_COMPANIES, TBL_PROJECTS, COL_COMAPNY));
+
+    select.addFromLeft(TBL_PROJECT_STAGES, sys.joinTables(
+        TBL_PROJECT_STAGES, TaskConstants.TBL_TASKS, COL_PROJECT_STAGE));
 
     select.addFromLeft(AdministrationConstants.TBL_USERS, sys.joinTables(
         AdministrationConstants.TBL_USERS, TBL_PROJECTS,

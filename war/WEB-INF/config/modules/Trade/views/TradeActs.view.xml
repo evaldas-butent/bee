@@ -112,6 +112,8 @@
     <SimpleColumn name="Notes" />
 
     <SimpleColumn name="Parent" />
+
+    <SimpleColumn name="RegistrationNo" />
   </Columns>
   
   <Order>

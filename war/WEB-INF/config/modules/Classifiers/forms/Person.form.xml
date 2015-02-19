@@ -17,24 +17,26 @@
       </row>
 
       <row>
-        <Label text="=lastName" horizontalAlignment="right"  />
+        <Label text="=lastName" horizontalAlignment="right" />
         <InputText style="width: 200px;" source="LastName" />
       </row>
 
-      <row>         
+      <row>
         <Label text="=dateOfBirth" horizontalAlignment="right" />
         <InputDate source="DateOfBirth" style="width: 80px;" minValue="1900" maxValue="2000" />
-      </row>         
- 
+      </row>
+
       <row>
-        <Table>
-          <row>       
-            <Label text="=photo" horizontalAlignment="right" />
-            <FileCollector name="PhotoFile" editableColumns="none" accept="image/*">
-              <face resource="attachment" />
-            </FileCollector>              
-          </row>
-        </Table>
+        <Label text="=activities" horizontalAlignment="right" />
+        <DataSelector source="Activity" style="width: 200px;"
+          label="=activities" />
+      </row>
+
+      <row>
+        <Label text="=photo" horizontalAlignment="right" />
+        <FileCollector name="PhotoFile" editableColumns="none" accept="image/*">
+          <face resource="attachment" />
+        </FileCollector>
         <FlowPanel class="flexBox-horizontal" style="font-style:italic; font-size: smaller;">
           <Image name="unsetPhoto" resource="silverMinus" />
           <Label html="(" style="margin-left: 8px;" />
@@ -43,10 +45,10 @@
         </FlowPanel>
       </row>
     </Table>
- 
+
     <xi:include href="widgets/ContactInfoOpen.widget.xml" />
 
-    <TabbedPages class="flexible" style="margin-top: 1ex;" >
+    <TabbedPages class="flexible" style="margin-top: 1ex;">
       <page data="CompaniesAndPersons">
         <text>=personCompanies</text>
         <ChildGrid name="PersonCompanies" relColumn="Person" />

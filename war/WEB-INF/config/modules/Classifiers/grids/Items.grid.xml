@@ -68,5 +68,8 @@
 
     <DataColumn name="Description" visible="false" />
     <DataColumn name="Notes" visible="false" />
+
+    <RelColumn name="Maker" visible="false" />
+    <DataColumn name="PackageUnits" visible="false" />
   </g:columns>
 </g:Grid>

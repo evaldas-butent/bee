@@ -90,6 +90,8 @@ public final class ClassifierConstants {
   public static final String GRID_COMPANY_USERS = "CompanyUsers";
   public static final String GRID_ITEMS = "Items";
   public static final String GRID_FINANCIAL_STATES = "FinancialStates";
+  public static final String GRID_PERSON_COMPANIES = "PersonCompanies";
+  public static final String GRID_COMPANY_PERSONS = "CompanyPersons";
 
   public static final String COL_COMPANY = "Company";
   public static final String COL_COMPANY_NAME = "Name";
@@ -164,6 +166,7 @@ public final class ClassifierConstants {
   public static final String COL_REMIND_ACTIONS = "MailCompanyActions";
   public static final String COL_REMIND_ACTION_BEFORE = "CompanyActionRemindBefore";
   public static final String COL_EMAIL_INVOICES = "EmailInvoices";
+  public static final String COL_SOCIAL_CONTACTS = "SocialContacts";
 
   public static final String COL_CITY = "City";
   public static final String COL_CITY_NAME = "Name";
@@ -220,6 +223,7 @@ public final class ClassifierConstants {
 
   public static final String ALS_CITY_NAME = "CityName";
   public static final String ALS_COUNTRY_NAME = "CountryName";
+  public static final String ALS_COUNTRY_CODE = "CountryCode";
 
   public static final String ALS_POSITION_NAME = "PositionName";
 

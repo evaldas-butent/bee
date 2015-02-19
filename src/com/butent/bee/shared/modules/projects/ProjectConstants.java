@@ -153,6 +153,7 @@ public final class ProjectConstants {
 
   public static final String TBL_PROJECT_USAGE = "ProjectUsage";
   public static final String TBL_PROJECTS = "Projects";
+  public static final String TBL_PROJECT_STAGES = "ProjectStages";
   public static final String TBL_PROJECT_EVENTS = "ProjectEvents";
   public static final String TBL_PROJECT_USERS = "ProjectUsers";
 

@@ -31,5 +31,7 @@
     <RelColumn name="Driver" renderColumns="DriverFirstName DriverLastName" />
 
     <DataColumn name="Notes" />
+
+    <DataColumn name="RegistrationNo" />
   </g:columns>
 </g:Grid>
