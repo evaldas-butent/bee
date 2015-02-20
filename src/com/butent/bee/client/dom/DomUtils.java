@@ -1574,6 +1574,14 @@ public final class DomUtils {
     resizeVerticalBy(obj.getElement(), dh);
   }
 
+  public static boolean sameId(Element x, Element y) {
+    return y != null && idEquals(x, y.getId());
+  }
+
+  public static boolean sameId(UIObject x, UIObject y) {
+    return x != null && y != null && sameId(x.getElement(), y.getElement());
+  }
+
   public static void scrollToBottom(Element elem) {
     Assert.notNull(elem);
     elem.setScrollTop(elem.getScrollHeight());
