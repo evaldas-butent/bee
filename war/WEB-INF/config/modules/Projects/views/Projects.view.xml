@@ -61,6 +61,7 @@
     <SimpleColumn name="Progress" />
     <SimpleColumn name="Price" />
     <SimpleColumn name="ContractPrice" />
+    <SimpleColumn name="Currency" />
     <SimpleColumn name="Description" />
     
     <SimpleColumn name="ExpectedTasksDuration" label="=prjExpectedTaskDuration">

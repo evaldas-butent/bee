@@ -178,6 +178,10 @@
         <ChildGrid name="ProjectIncomes" relColumn="Project" />
       </page>
       <page>
+        <text>=trdInvoices</text>
+        <ChildGrid name="ProjectInvoices" relColumn="Project" />
+      </page>
+      <page>
         <text>=prjSchedule</text>
         <FlowPanel name="ChartData" />
       </page>

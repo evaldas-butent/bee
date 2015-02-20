@@ -6,7 +6,7 @@
   >
   <Fields>
     <Relation name="Project" notNull="true" relation="Projects" cascade="DELETE" label="=project" />
-    <Date name="Date" label="=date" />
+    <Date name="Date" label="=date" notNull="true" />
 
     <Relation name="Item" notNull="true" relation="Items" label="=productService" />
     <Numeric name="Quantity" precision="12" scale="3" notNull="true" label="=quantity" />

@@ -81,6 +81,9 @@ public final class ProjectConstants {
   public static final String COL_PROJECT_CONTACT = "Contact";
   public static final String COL_PROJECT_PRICE = "Price";
   public static final String COL_PROJECT_ITEM_PRICE = "Price";
+  public static final String COL_PROJECT_CURENCY = "Currency";
+
+  public static final String COL_INCOME_NOTES = "Notes";
 
   public static final String COL_PUBLISHER = "Publisher";
   public static final String COL_PUBLISH_TIME = "PublishTime";
@@ -137,6 +140,7 @@ public final class ProjectConstants {
   public static final String PROP_REAL_FACTOR = "RealFactor";
   public static final String PROP_TIME_UNTIS = "TimeUnits";
   public static final String PROP_ITEM_PRICES = "ItemPrices";
+  public static final String PROP_SELECT = "Select";
 
   public static final String PRM_PROJECT_COMMON_RATE = "ProjectCommonRate";
   public static final String PRM_PROJECT_HOUR_UNIT = "ProjectHourUnit";
@@ -154,6 +158,8 @@ public final class ProjectConstants {
   public static final String VIEW_PROJECT_DATES = "ProjectDates";
   public static final String VIEW_PROJECT_FILES = "ProjectFiles";
   public static final String VIEW_PROJECT_EVENTS = "ProjectEvents";
+  public static final String VIEW_PROJECT_INCOMES = "Incomes";
+  public static final String VIEW_PROJECT_INVOICES = "ProjectInvoices";
 
   public static final String TBL_PROJECT_USAGE = "ProjectUsage";
   public static final String TBL_PROJECTS = "Projects";
