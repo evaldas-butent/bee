@@ -16,11 +16,17 @@ import com.butent.bee.server.data.UserServiceBean;
 import com.butent.bee.server.http.RequestInfo;
 import com.butent.bee.server.modules.BeeModule;
 import com.butent.bee.server.modules.ParamHolderBean;
+import com.butent.bee.server.modules.administration.ExchangeUtils;
 import com.butent.bee.server.modules.tasks.TasksModuleBean;
 import com.butent.bee.server.news.NewsBean;
+import com.butent.bee.server.sql.IsCondition;
+import com.butent.bee.server.sql.IsExpression;
+import com.butent.bee.server.sql.SqlInsert;
 import com.butent.bee.server.sql.SqlSelect;
+import com.butent.bee.server.sql.SqlUpdate;
 import com.butent.bee.server.sql.SqlUtils;
 import com.butent.bee.shared.BeeConst;
+import com.butent.bee.shared.Service;
 import com.butent.bee.shared.communication.ResponseObject;
 import com.butent.bee.shared.data.BeeRow;
 import com.butent.bee.shared.data.BeeRowSet;
@@ -28,6 +34,7 @@ import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.IsRow;
 import com.butent.bee.shared.data.SearchResult;
 import com.butent.bee.shared.data.SimpleRowSet;
+import com.butent.bee.shared.data.SimpleRowSet.SimpleRow;
 import com.butent.bee.shared.data.filter.Filter;
 import com.butent.bee.shared.data.view.Order;
 import com.butent.bee.shared.modules.BeeParameter;
@@ -36,6 +43,7 @@ import com.butent.bee.shared.modules.classifiers.ClassifierConstants;
 import com.butent.bee.shared.modules.projects.ProjectConstants;
 import com.butent.bee.shared.modules.tasks.TaskConstants;
 import com.butent.bee.shared.modules.tasks.TaskConstants.TaskStatus;
+import com.butent.bee.shared.modules.trade.TradeConstants;
 import com.butent.bee.shared.news.Feed;
 import com.butent.bee.shared.rights.Module;
 import com.butent.bee.shared.time.DateTime;
@@ -49,6 +57,7 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import javax.ejb.EJB;
 import javax.ejb.LocalBean;
@@ -108,6 +117,9 @@ public class ProjectsModuleBean implements BeeModule {
         break;
       case SVC_PROJECT_REPORT:
         response = getReportData();
+        break;
+      case SVC_CREATE_INVOICE_ITEMS:
+        response = createInvoiceItems(reqInfo);
         break;
       default:
         break;
@@ -294,6 +306,117 @@ public class ProjectsModuleBean implements BeeModule {
     }
 
     chartData.getRows().add(data);
+  }
+
+  private ResponseObject createInvoiceItems(RequestInfo reqInfo) {
+    Long saleId = BeeUtils.toLongOrNull(reqInfo.getParameter(TradeConstants.COL_SALE));
+    Long currency = BeeUtils.toLongOrNull(reqInfo.getParameter(TradeConstants.COL_TRADE_CURRENCY));
+    Set<Long> ids = DataUtils.parseIdSet(reqInfo.getParameter(Service.VAR_ID));
+
+    if (!DataUtils.isId(saleId)) {
+      return ResponseObject.error("Wrong account ID");
+    }
+    if (!DataUtils.isId(currency)) {
+      return ResponseObject.error("Wrong currency ID");
+    }
+    if (BeeUtils.isEmpty(ids)) {
+      return ResponseObject.error("Empty ID list");
+    }
+
+    IsCondition where = sys.idInList(TBL_PROJECT_INCOMES, ids);
+
+    SqlSelect query = new SqlSelect();
+    query.addFields(TBL_PROJECT_INCOMES, TradeConstants.COL_TRADE_VAT_PLUS,
+        TradeConstants.COL_TRADE_VAT, TradeConstants.COL_TRADE_VAT_PERC, COL_INCOME_ITEM,
+        TradeConstants.COL_TRADE_ITEM_QUANTITY, COL_INCOME_NOTE)
+        .addFrom(TBL_PROJECT_INCOMES)
+        .setWhere(where);
+
+    IsExpression vatExch =
+        ExchangeUtils.exchangeFieldTo(query, TBL_PROJECT_INCOMES, TradeConstants.COL_TRADE_VAT,
+            TradeConstants.COL_TRADE_CURRENCY, COL_INCOME_DATE, currency);
+
+    String vatAlias = "Vat_" + SqlUtils.uniqueName();
+
+    String priceAlias = "Price_" + SqlUtils.uniqueName();
+    IsExpression priceExch =
+        ExchangeUtils.exchangeFieldTo(query, TBL_PROJECT_INCOMES,
+            TradeConstants.COL_TRADE_ITEM_PRICE, TradeConstants.COL_TRADE_CURRENCY,
+            COL_INCOME_DATE, currency);
+
+    query.addExpr(priceExch, priceAlias)
+        .addExpr(vatExch, vatAlias)
+        .addOrder(TBL_PROJECT_INCOMES, sys.getIdName(TBL_PROJECT_INCOMES));
+
+    SimpleRowSet data = qs.getData(query);
+    if (DataUtils.isEmpty(data)) {
+      return ResponseObject.error(TBL_PROJECT_INCOMES, ids, "not found");
+    }
+
+    ResponseObject response = new ResponseObject();
+
+    for (SimpleRow row : data) {
+      Long item = row.getLong(COL_INCOME_ITEM);
+
+      SqlInsert insert = new SqlInsert(TradeConstants.TBL_SALE_ITEMS)
+          .addConstant(TradeConstants.COL_SALE, saleId)
+          .addConstant(ClassifierConstants.COL_ITEM, item);
+
+      Boolean vatPerc = row.getBoolean(TradeConstants.COL_TRADE_VAT_PERC);
+      Double vat;
+      if (BeeUtils.isTrue(vatPerc)) {
+        insert.addConstant(TradeConstants.COL_TRADE_VAT_PERC, vatPerc);
+        vat = row.getDouble(TradeConstants.COL_TRADE_VAT);
+      } else {
+        vat = row.getDouble(vatAlias);
+      }
+
+      if (BeeUtils.nonZero(vat)) {
+        insert.addConstant(TradeConstants.COL_TRADE_VAT, vat);
+      }
+
+      Boolean vatPlus = row.getBoolean(TradeConstants.COL_TRADE_VAT_PLUS);
+
+      if (BeeUtils.isTrue(vatPlus)) {
+        insert.addConstant(TradeConstants.COL_TRADE_VAT_PLUS, vatPlus);
+      }
+
+      Double quantity = row.getDouble(TradeConstants.COL_TRADE_ITEM_QUANTITY);
+      Double price = row.getDouble(priceAlias);
+
+      insert.addConstant(TradeConstants.COL_TRADE_ITEM_QUANTITY, BeeUtils.unbox(quantity));
+
+      if (price != null) {
+        insert.addConstant(TradeConstants.COL_TRADE_ITEM_PRICE, price);
+      }
+
+      if (data.hasColumn(COL_INCOME_NOTE)) {
+        String notes = row.getValue(COL_INCOME_NOTE);
+
+        if (!BeeUtils.isEmpty(notes)) {
+          insert.addConstant(TradeConstants.COL_TRADE_ITEM_NOTE, notes);
+        }
+      }
+
+      ResponseObject insResponse = qs.insertDataWithResponse(insert);
+      if (insResponse.hasErrors()) {
+        response.addMessagesFrom(insResponse);
+        break;
+      }
+    }
+
+    if (!response.hasErrors()) {
+      SqlUpdate update = new SqlUpdate(TBL_PROJECT_INCOMES)
+          .addConstant(COL_INCOME_SALE, saleId)
+          .setWhere(where);
+
+      ResponseObject updResponse = qs.updateDataWithResponse(update);
+      if (updResponse.hasErrors()) {
+        response.addMessagesFrom(updResponse);
+      }
+    }
+
+    return response;
   }
 
   private ResponseObject getProjectChartData(RequestInfo req) {

@@ -83,7 +83,10 @@ public final class ProjectConstants {
   public static final String COL_PROJECT_ITEM_PRICE = "Price";
   public static final String COL_PROJECT_CURENCY = "Currency";
 
-  public static final String COL_INCOME_NOTES = "Notes";
+  public static final String COL_INCOME_NOTE = "Note";
+  public static final String COL_INCOME_DATE = "Date";
+  public static final String COL_INCOME_ITEM = "Item";
+  public static final String COL_INCOME_SALE = "Sale";
 
   public static final String COL_PUBLISHER = "Publisher";
   public static final String COL_PUBLISH_TIME = "PublishTime";
@@ -122,6 +125,7 @@ public final class ProjectConstants {
   public static final String FORM_PROJECT_STAGE = "ProjectStage";
   public static final String FORM_NEW_COMMENT = "NewProjectComment";
   public static final String FORM_NEW_PROJECT_REASON_COMMENT = "NewProjectReasonComment";
+  public static final String FORM_NEW_PROJECT_INVOICE = "NewProjectInvoice";
 
   public static final String GRID_ALL_PROJECTS = "AllProjects";
   public static final String GRID_PROJECTS = "Projects";
@@ -149,6 +153,7 @@ public final class ProjectConstants {
   public static final String SVC_GET_PROJECT_CHART_DATA = SVC_PREFFIX + "GetChartData";
   public static final String SVC_GET_TIME_UNITS = SVC_PREFFIX + "GetTimeUnits";
   public static final String SVC_PROJECT_REPORT = "ProjectReport";
+  public static final String SVC_CREATE_INVOICE_ITEMS = "CreateInvoiceItems";
 
   public static final String VAR_PROJECT = "Project";
 
@@ -158,13 +163,14 @@ public final class ProjectConstants {
   public static final String VIEW_PROJECT_DATES = "ProjectDates";
   public static final String VIEW_PROJECT_FILES = "ProjectFiles";
   public static final String VIEW_PROJECT_EVENTS = "ProjectEvents";
-  public static final String VIEW_PROJECT_INCOMES = "Incomes";
+  public static final String VIEW_PROJECT_INCOMES = "ProjectIncomes";
   public static final String VIEW_PROJECT_INVOICES = "ProjectInvoices";
 
   public static final String TBL_PROJECT_USAGE = "ProjectUsage";
   public static final String TBL_PROJECTS = "Projects";
   public static final String TBL_PROJECT_STAGES = "ProjectStages";
   public static final String TBL_PROJECT_EVENTS = "ProjectEvents";
+  public static final String TBL_PROJECT_INCOMES = "ProjectIncomes";
   public static final String TBL_PROJECT_USERS = "ProjectUsers";
 
   /**
