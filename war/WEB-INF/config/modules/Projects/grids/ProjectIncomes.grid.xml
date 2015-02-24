@@ -49,4 +49,8 @@
       editEnabled="true" editForm="SalesInvoice" editViewName="ProjectInvoices" />
     <DataColumn name="Note" visible="false" />
   </g:columns>
+  
+  <g:rowEditable>
+    <ui:expression>!row.Sale</ui:expression>
+  </g:rowEditable>
 </g:Grid>

@@ -82,6 +82,10 @@ public class ItemPricePicker extends AbstractCellRenderer {
       return;
     }
 
+    if (!gridView.isRowEditable(row, gridView)) {
+      return;
+    }
+
     Queries.updateCellAndFire(gridView.getViewName(), rowId, row.getVersion(),
         gridView.getDataColumns().get(colIndex).getId(), row.getString(colIndex), value);
   }
