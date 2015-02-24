@@ -80,6 +80,8 @@ public final class TradeActKeeper {
   private static Long returnedActStatus;
   private static boolean parametersLoaded;
 
+  private static Pair<String, String> tradeActStatus;
+
   public static void register() {
     BeeKeeper.getBus().registerDataHandler(cache, false);
 
@@ -282,12 +284,15 @@ public final class TradeActKeeper {
     int nameIndex = rowSet.getColumnIndex(COL_OPERATION_NAME);
     int kindIndex = rowSet.getColumnIndex(COL_OPERATION_KIND);
     int defIndex = rowSet.getColumnIndex(COL_OPERATION_DEFAULT);
+    int statusIndex = rowSet.getColumnIndex(ALS_TRADE_STATUS_NAME);
+    int statusIdIndex = rowSet.getColumnIndex(ALS_TRADE_STATUS);
 
     for (BeeRow row : rowSet) {
       if (getKind(row, kindIndex) == kind) {
         if (BeeUtils.isTrue(row.getBoolean(defIndex))) {
           id = row.getId();
           name = row.getString(nameIndex);
+          tradeActStatus = Pair.of(row.getString(statusIdIndex), row.getString(statusIndex));
           break;
 
         } else if (DataUtils.isId(id)) {
@@ -297,6 +302,7 @@ public final class TradeActKeeper {
         } else {
           id = row.getId();
           name = row.getString(nameIndex);
+          tradeActStatus = Pair.of(row.getString(statusIdIndex), row.getString(statusIndex));
         }
       }
     }
@@ -546,6 +552,11 @@ public final class TradeActKeeper {
     if (operation != null) {
       Data.setValue(VIEW_TRADE_ACTS, row, COL_TA_OPERATION, operation.getA());
       Data.setValue(VIEW_TRADE_ACTS, row, COL_OPERATION_NAME, operation.getB());
+
+      if (Data.getString(VIEW_TRADE_ACTS, row, COL_STATUS_NAME) == null) {
+        Data.setValue(VIEW_TRADE_ACTS, row, COL_STATUS_NAME, tradeActStatus.getB());
+        Data.setValue(VIEW_TRADE_ACTS, row, COL_TRADE_STATUS, tradeActStatus.getA());
+      }
     }
   }
 

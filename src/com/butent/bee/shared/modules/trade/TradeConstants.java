@@ -96,7 +96,7 @@ public final class TradeConstants {
 
   public static final String COL_STATUS_NAME = "StatusName";
   public static final String COL_STATUS_ACTIVE = "StatusActive";
-
+  public static final String COL_TRADE_STATUS = "Status";
   public static final String COL_TEMPLATE_NAME = "Name";
   public static final String COL_TEMPLATE_SUBJECT = "Subject";
   public static final String COL_TEMPLATE_FIRST_PARAGRAPH = "FirstParagraph";
@@ -114,6 +114,8 @@ public final class TradeConstants {
   public static final String ALS_OVERDUE_SUM = "OverdueSum";
   public static final String ALS_SALES_COUNT = "SalesCount";
   public static final String ALS_SALES_SUM = "SalesSum";
+  public static final String ALS_TRADE_STATUS_NAME = "TradeStatusName";
+  public static final String ALS_TRADE_STATUS = "TradeStatus";
 
   public static final String PROP_AVERAGE_OVERDUE = "AverageOverdue";
   public static final String PROP_REMIND_EMAIL = "RemindEmail";

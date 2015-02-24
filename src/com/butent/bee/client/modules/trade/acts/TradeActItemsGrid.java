@@ -217,25 +217,30 @@ public class TradeActItemsGrid extends AbstractGridInterceptor implements
                   new Consumer<BeeRowSet>() {
                     @Override
                     public void accept(BeeRowSet actItems) {
+                      final boolean allReturned = quantities.equals(TradeActUtils
+                          .getItemQuantities(actItems));
                       addActItems(parentAct, actItems, new Scheduler.ScheduledCommand() {
+
                         @Override
                         public void execute() {
-                          ParameterList ps = TradeActKeeper.createArgs(SVC_SPLIT_ACT_SERVICES);
-                          ps.addQueryItem(COL_TRADE_ACT, parent);
-                          ps.addQueryItem(COL_TA_DATE, date.getTime());
+                          if (!allReturned) {
+                            ParameterList ps = TradeActKeeper.createArgs(SVC_SPLIT_ACT_SERVICES);
+                            ps.addQueryItem(COL_TRADE_ACT, parent);
+                            ps.addQueryItem(COL_TA_DATE, date.getTime());
 
-                          BeeKeeper.getRpc().makeRequest(ps, new ResponseCallback() {
-                            @Override
-                            public void onResponse(ResponseObject rsp) {
-                              DataChangeEvent.fireRefresh(BeeKeeper.getBus(),
-                                  VIEW_TRADE_ACT_SERVICES);
-                            }
-                          });
+                            BeeKeeper.getRpc().makeRequest(ps, new ResponseCallback() {
+                              @Override
+                              public void onResponse(ResponseObject rsp) {
+                                DataChangeEvent.fireRefresh(BeeKeeper.getBus(),
+                                    VIEW_TRADE_ACT_SERVICES);
+                              }
+                            });
+                          }
                         }
                       });
 
-                      if (parentAct != null
-                          && quantities.equals(TradeActUtils.getItemQuantities(actItems))) {
+                      if ((parentAct != null)
+                          && !allReturned) {
                         maybeMarkAsReturned(parentAct.getId(), parentAct.getVersion());
                       }
                     }

@@ -139,6 +139,11 @@ public class TradeActServicesGrid extends AbstractGridInterceptor {
         updatePrice(row.getId(), row.getVersion(), row.getString(priceIndex), price);
 
         count++;
+      } else {
+
+        double t = row.getDouble(priceIndex) * 100 / total;
+        updateTariff(row.getId(), row.getVersion(), row.getString(tariffIndex), t);
+        count++;
       }
     }
 
@@ -164,6 +169,26 @@ public class TradeActServicesGrid extends AbstractGridInterceptor {
 
     } else {
       Queries.updateCellAndFire(getViewName(), rowId, version, COL_TRADE_ITEM_PRICE,
+          oldValue, newValue);
+
+      return true;
+    }
+  }
+
+  private boolean updateTariff(long rowId, long version, String oldValue, Double newTariff) {
+    String newValue;
+    if (BeeUtils.isDouble(newTariff)) {
+      Integer scale = Data.getColumnScale(getViewName(), COL_TA_SERVICE_TARIFF);
+      newValue = BeeUtils.toString(newTariff, scale);
+    } else {
+      newValue = null;
+    }
+
+    if (Objects.equals(oldValue, newValue)) {
+      return false;
+
+    } else {
+      Queries.updateCellAndFire(getViewName(), rowId, version, COL_TA_SERVICE_TARIFF,
           oldValue, newValue);
 
       return true;

@@ -9,7 +9,7 @@
       label="=trdOperation" />
 
     <Integer name="Ordinal" label="=ordinal" />
-
+    <Relation name="TradeStatus" relation="TradeStatuses" label="=status" />
     <Enum name="Kind" key="TradeActKind" label="=taKind" />
     <Enum name="Price" key="ItemPrice" label="=price" />
 
