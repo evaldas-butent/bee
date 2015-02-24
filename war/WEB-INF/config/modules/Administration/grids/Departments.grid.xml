@@ -5,6 +5,9 @@
   >
   <g:columns>
     <DataColumn name="DepartmentName" visible="true" />
+    <RelColumn name="Parent" />
+
     <RelColumn name="DepartmentHead" renderColumns="FirstName LastName" />
+    <RelColumn name="Role" />
   </g:columns>
 </g:Grid>

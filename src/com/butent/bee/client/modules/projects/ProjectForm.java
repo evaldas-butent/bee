@@ -674,7 +674,7 @@ class ProjectForm extends AbstractFormInterceptor implements DataChangeEvent.Han
     }
 
     if (actualTasksDuration != null && !BeeConst.isUndef(idxActTD)) {
-      long value = row.getLong(idxActTD);
+      long value = BeeUtils.unbox(row.getLong(idxActTD));
       actualTasksDuration.setValue(BeeConst.STRING_EMPTY);
 
       if (factor == BeeConst.DOUBLE_ONE) {

@@ -14,7 +14,7 @@ name="ContactClassifiers" label="=classifiers" parent="Contacts" order="10"
   <Item name="InformationSources" label="=clientsInformationSources" service="grid" parameters="InformationSources" separator="true"/>
   <Item name="CompanyActivities" label="=clientsCompanyActivities" service="grid" parameters="CompanyActivities" />
   <Item name="Responsibilities" label="=responsibilities" service="grid" parameters="Responsibilities" />
-  <Item name="Positions" label="=personPosition" service="grid" parameters="Positions" />
+  <Item name="Positions" label="=personPositions" service="grid" parameters="Positions" />
 
   <Item name="CompanyRelationTypes" label="=clientsRelationTypes" service="grid" parameters="CompanyRelationTypes" separator="true" />
   <Item name="RelationTypeStates" label="=clientsRelationTypeStates" service="grid" parameters="RelationTypeStates" />

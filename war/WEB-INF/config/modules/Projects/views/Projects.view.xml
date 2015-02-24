@@ -61,6 +61,11 @@
     <SimpleColumn name="Progress" />
     <SimpleColumn name="Price" />
     <SimpleColumn name="ContractPrice" />
+    <SimpleColumn name="Currency" />
+    <SimpleJoin joinType="LEFT" name="Currency">
+      <SimpleColumn name="Name" alias="CurrencyName" />
+      <SimpleColumn name="MinorName" />
+    </SimpleJoin>
     <SimpleColumn name="Description" />
     
     <SimpleColumn name="ExpectedTasksDuration" label="=prjExpectedTaskDuration">
