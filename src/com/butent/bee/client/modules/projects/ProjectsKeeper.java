@@ -34,6 +34,7 @@ public final class ProjectsKeeper {
     GridFactory.registerGridInterceptor(GRID_PROJECTS, new ProjectsGrid());
     GridFactory.registerGridInterceptor(GRID_PROJECT_USERS, new ProjectUsersGrid());
     GridFactory.registerGridInterceptor(GRID_PROJECT_STAGES, new ProjectStagesGrid());
+    GridFactory.registerGridInterceptor(GRID_PROJECT_INCOMES, new ProjectIncomesGrid());
 
     /* Register form handlers */
     FormFactory.registerFormInterceptor(FORM_PROJECT, new ProjectForm());

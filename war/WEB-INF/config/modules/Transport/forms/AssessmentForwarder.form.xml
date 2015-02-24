@@ -41,6 +41,9 @@
       <InputMoney source="Amount" style="&input; width:70px;" />
       <DataSelector source="Currency" style="&inline; width:40px; margin-left:5px;" 
         editEnabled="false" placeholder="=currencyShort" />
+      <CheckBox source="VatPlus" text="=vatPlus" style="&inline; margin-left:5px;" />
+      <InputMoney source="Vat" placeholder="=vat" style="&inline; width:40px; margin-left:5px;" />
+      <CheckBox source="VatPercent" style="&inline; margin-left:5px;" text="%" />
     </FlowPanel>
 
     <FlowPanel for="Supplier" style="&section;">

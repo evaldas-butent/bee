@@ -2,17 +2,16 @@
 <g:Grid xmlns="http://www.butent.com/column" xmlns:g="http://www.butent.com/grid"
   xmlns:ui="http://www.butent.com/ui"
 
-  name="CargoInvoices" viewName="CargoInvoices"
+  name="ProjectInvoices" viewName="ProjectInvoices"
   editShowId="true" flexGrow="1"
   disabledActions="add edit"
-  caption="=trIncomeInvoices"
-  filter="Sale AND !(Proforma)"
+  caption="=trdInvoices"
+  filter="Sale"
   >
   <g:columns>
     <SelectionColumn name="Select" width="20" />
     <IdColumn name="ID" caption="=trdInvoiceId" />
     <DataColumn name="Date" />
-    <DataColumn name="Number" />
     <DataColumn name="InvoiceNo" searchBy="InvoicePrefix InvoiceNo">
       <render>
         <ui:function>
@@ -36,9 +35,6 @@
     <DataColumn name="Paid" />
 
     <DataColumn name="Debt" caption="=trdDebt" format="0.00" />
-
-    <DataColumn name="Vehicle" />
-    <DataColumn name="Driver" />
     <DataColumn name="Exported" />
   </g:columns>
 

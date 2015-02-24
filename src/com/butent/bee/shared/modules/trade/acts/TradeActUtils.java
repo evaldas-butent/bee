@@ -75,9 +75,7 @@ public final class TradeActUtils {
     return countServiceDays(range, holidays, BeeConst.UNDEF);
   }
 
-  private static int countServiceDays(Range<DateTime> range, Collection<Integer> holidays,
-      int dpw) {
-
+  public static int countServiceDays(Range<DateTime> range, Collection<Integer> holidays, int dpw) {
     int days = 0;
 
     if (range != null && range.hasLowerBound() && range.hasUpperBound()) {
@@ -171,24 +169,6 @@ public final class TradeActUtils {
     }
   }
 
-  public static double dpwToFactor(Integer dpw, Range<DateTime> range,
-      Collection<Integer> holidays, Integer minTerm) {
-
-    if (validDpw(dpw)) {
-      int days = countServiceDays(range, holidays, dpw);
-
-      if (days > 0) {
-        if (BeeUtils.isPositive(minTerm)) {
-          return Math.max(days, minTerm);
-        } else {
-          return days;
-        }
-      }
-    }
-
-    return BeeConst.DOUBLE_ZERO;
-  }
-
   public static Map<Long, Double> getItemQuantities(BeeRowSet rowSet) {
     Map<Long, Double> result = new HashMap<>();
 
@@ -207,6 +187,10 @@ public final class TradeActUtils {
     }
 
     return result;
+  }
+
+  public static DateTime getLower(Range<DateTime> range) {
+    return (range == null) ? null : range.lowerEndpoint();
   }
 
   public static double getMonthFactor(Range<DateTime> range, Collection<Integer> holidays) {
@@ -246,6 +230,10 @@ public final class TradeActUtils {
     }
 
     return factor;
+  }
+
+  public static DateTime getUpper(Range<DateTime> range) {
+    return (range == null) ? null : range.upperEndpoint();
   }
 
   public static double roundAmount(Double amount) {

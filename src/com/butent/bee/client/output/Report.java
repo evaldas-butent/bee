@@ -13,6 +13,7 @@ import com.butent.bee.client.modules.trade.acts.TradeActStockReport;
 import com.butent.bee.client.modules.trade.acts.TradeActTransferReport;
 import com.butent.bee.client.modules.transport.AssessmentQuantityReport;
 import com.butent.bee.client.modules.transport.AssessmentTurnoverReport;
+import com.butent.bee.client.output.ReportItem.Function;
 import com.butent.bee.client.ui.FormDescription;
 import com.butent.bee.client.ui.FormFactory;
 import com.butent.bee.client.view.ViewCallback;
@@ -20,14 +21,17 @@ import com.butent.bee.client.view.ViewFactory;
 import com.butent.bee.client.view.form.interceptor.ExtendedReportInterceptor;
 import com.butent.bee.client.view.form.interceptor.ReportInterceptor;
 import com.butent.bee.shared.Assert;
+import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.i18n.LocalizableConstants;
 import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogUtils;
+import com.butent.bee.shared.modules.classifiers.ClassifierConstants;
 import com.butent.bee.shared.modules.projects.ProjectConstants;
 import com.butent.bee.shared.modules.projects.ProjectPriority;
 import com.butent.bee.shared.modules.projects.ProjectStatus;
 import com.butent.bee.shared.modules.tasks.TaskConstants;
+import com.butent.bee.shared.modules.tasks.TaskConstants.TaskStatus;
 import com.butent.bee.shared.modules.transport.TransportConstants;
 import com.butent.bee.shared.rights.Module;
 import com.butent.bee.shared.rights.ModuleAndSub;
@@ -114,12 +118,12 @@ public enum Report implements HasWidgetSupplier {
       for (String item : new String[] {TransportConstants.COL_TRIP, TransportConstants.COL_TRIP_NO,
           TransportConstants.COL_TRIP_DATE_FROM, TransportConstants.COL_TRIP_DATE_TO,
           TransportConstants.COL_TRAILER}) {
-        map.put("ROWS", items.get(item).create());
+        map.put(PROP_ROWS, items.get(item).create());
       }
-      map.put("ROW_GROUP", items.get(TransportConstants.COL_VEHICLE).create());
+      map.put(PROP_ROW_GROUP, items.get(TransportConstants.COL_VEHICLE).create());
 
       for (String item : new String[] {"Kilometers", "FuelCosts", "Incomes"}) {
-        map.put("COLUMNS", items.get(item).create().enableCalculation());
+        map.put(PROP_COLUMNS, items.get(item).create().enableCalculation());
       }
       return map;
     }
@@ -152,8 +156,38 @@ public enum Report implements HasWidgetSupplier {
 
     @Override
     public Multimap<String, ReportItem> getDefaults() {
-      // TODO Auto-generated method stub
-      return super.getDefaults();
+      Map<String, ReportItem> items = new HashMap<>();
+
+      for (ReportItem item : getItems()) {
+        items.put(item.getName(), item);
+      }
+      Multimap<String, ReportItem> map = LinkedListMultimap.create();
+
+      for (String item : new String[] {
+          ProjectConstants.COL_PROJECT_NAME,
+          ProjectConstants.COL_PROJECT_OWNER,
+          ProjectConstants.COL_PROJECT_STATUS,
+          ProjectConstants.ALS_TERM
+      }) {
+        map.put(PROP_ROWS, items.get(item).create());
+      }
+
+      map.put(Report.PROP_ROW_GROUP, items.get(ClassifierConstants.ALS_COMPANY_NAME).create());
+
+      for (String item : new String[] {
+          TaskConstants.COL_EXPECTED_DURATION,
+          TaskConstants.COL_ACTUAL_DURATION,
+          TaskConstants.COL_EXPECTED_EXPENSES,
+          TaskConstants.COL_ACTUAL_EXPENSES,
+          ProjectConstants.ALS_PROFIT
+      }) {
+        map.put(PROP_COLUMNS, items.get(item).create().enableCalculation());
+      }
+
+      map.put(Report.PROP_COLUMN_GROUP, items.get(ProjectConstants.ALS_TASK_STATUS).create()
+          .enableCalculation().setFunction(Function.COUNT));
+
+      return map;
     }
 
     @Override
@@ -161,12 +195,12 @@ public enum Report implements HasWidgetSupplier {
       LocalizableConstants loc = Localized.getConstants();
 
       return Arrays.asList(
-          new ReportTextItem(ProjectConstants.COL_COMAPNY, Data.getColumnLabel(
-          ProjectConstants.VIEW_PROJECTS, ProjectConstants.COL_COMAPNY)),
-          new ReportTextItem(ProjectConstants.COL_PROJECT_OWNER, Data.getColumnLabel(
-              ProjectConstants.VIEW_PROJECTS, ProjectConstants.COL_PROJECT_OWNER)),
           new ReportTextItem(ProjectConstants.COL_PROJECT_NAME, Data.getColumnLabel(
               ProjectConstants.VIEW_PROJECTS, ProjectConstants.COL_PROJECT_NAME)),
+          new ReportTextItem(ClassifierConstants.ALS_COMPANY_NAME, loc.client()),
+          new ReportTextItem(ProjectConstants.ALS_STAGE_NAME, loc.prjStage()),
+          new ReportTextItem(ProjectConstants.COL_PROJECT_OWNER, Data.getColumnLabel(
+              ProjectConstants.VIEW_PROJECTS, ProjectConstants.COL_PROJECT_OWNER)),
           new ReportNumericItem(ProjectConstants.COL_PROJECT, loc.project(), 0),
           new ReportEnumItem<>(ProjectConstants.COL_PROJECT_STATUS, Data.getColumnLabel(
               ProjectConstants.VIEW_PROJECTS, ProjectConstants.COL_PROJECT_STATUS),
@@ -176,37 +210,41 @@ public enum Report implements HasWidgetSupplier {
           new ReportEnumItem<>(ProjectConstants.COL_PROJECT_PRIORITY, Data.getColumnLabel(
               ProjectConstants.VIEW_PROJECTS, ProjectConstants.COL_PROJECT_PRIORITY),
               ProjectPriority.class),
-          new ReportDateItem(ProjectConstants.COL_PROJECT_START_DATE, Data.getColumnLabel(
-              ProjectConstants.VIEW_PROJECTS, ProjectConstants.COL_PROJECT_START_DATE)),
-          new ReportDateItem(ProjectConstants.COL_PROJECT_END_DATE, Data.getColumnLabel(
-              ProjectConstants.VIEW_PROJECTS, ProjectConstants.COL_PROJECT_END_DATE)),
-          new ReportDateItem(ProjectConstants.ALS_PROJECT_OVERDUE, loc.prjOverdue()),
-          new ReportNumericItem(ProjectConstants.COL_PROGRESS, Data.getColumnLabel(
-              ProjectConstants.VIEW_PROJECTS, ProjectConstants.COL_PROGRESS), 2),
+          new ReportTextItem(ProjectConstants.ALS_TERM, loc.prjTerm()),
 
-          new ReportNumericItem(ProjectConstants.COL_EXPECTED_DURATION, Data.getColumnLabel(
-              ProjectConstants.VIEW_PROJECTS, ProjectConstants.COL_EXPECTED_DURATION), 2),
+          /* calc */
+          new ReportNumericItem(TaskConstants.COL_ACTUAL_DURATION,
+              BeeUtils
+                  .join(BeeConst.DEFAULT_LIST_SEPARATOR, Data.getColumnLabel(
+                      TaskConstants.VIEW_TASKS, TaskConstants.COL_ACTUAL_DURATION), loc
+                      .unitHourShort()), 2),
 
-          new ReportNumericItem(TaskConstants.COL_ACTUAL_DURATION, Data.getColumnLabel(
-              ProjectConstants.VIEW_PROJECTS, ProjectConstants.COL_ACTUAL_TASKS_DURATION), 2),
-
-          new ReportNumericItem(ProjectConstants.ALS_ACTUAL_TIME_DIFFERENCE, loc.timeDifference(),
+          new ReportNumericItem(TaskConstants.COL_EXPECTED_DURATION, BeeUtils
+              .join(BeeConst.DEFAULT_LIST_SEPARATOR, Data.getColumnLabel(
+                  TaskConstants.VIEW_TASKS, TaskConstants.COL_EXPECTED_DURATION), loc
+                  .unitHourShort()), 2),
+          new ReportNumericItem(TaskConstants.COL_EXPECTED_EXPENSES, loc.crmTaskExpectedExpenses(),
               2),
-
-          new ReportNumericItem(ProjectConstants.COL_PROJECT_PRICE, Data.getColumnLabel(
-              ProjectConstants.VIEW_PROJECTS, ProjectConstants.COL_PROJECT_PRICE), 2),
 
           new ReportNumericItem(TaskConstants.COL_ACTUAL_EXPENSES, Data.getColumnLabel(
               TaskConstants.VIEW_TASKS, TaskConstants.COL_ACTUAL_EXPENSES), 2),
 
-          new ReportNumericItem(TaskConstants.COL_TASK, loc.crmTasks(), 0),
-          new ReportEnumItem<>(ProjectConstants.ALS_TASK_STATUS, Data.getColumnLabel(
-              TaskConstants.VIEW_TASKS, TaskConstants.COL_STATUS),
-              ProjectPriority.class)
+          new ReportNumericItem(TaskConstants.COL_TASK, loc.crmTask(), 0),
+          new ReportNumericItem(ProjectConstants.ALS_PROFIT, loc.profit(), 2),
+
+          new ReportEnumItem<>(ProjectConstants.ALS_TASK_STATUS, BeeUtils.joinWords(Data
+              .getColumnLabel(
+                  TaskConstants.VIEW_TASKS, TaskConstants.COL_STATUS), BeeUtils.parenthesize(loc
+              .crmTasks())),
+              TaskStatus.class)
           );
     }
-
   };
+
+  public static final String PROP_ROWS = "ROWS";
+  public static final String PROP_ROW_GROUP = "ROW_GROUP";
+  public static final String PROP_COLUMNS = "COLUMNS";
+  public static final String PROP_COLUMN_GROUP = "COLUMN_GROUP";
 
   private static BeeLogger logger = LogUtils.getLogger(Report.class);
 

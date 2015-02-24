@@ -52,29 +52,19 @@
       </row>
       <row>
         <Label html="Место погрузки" />
-        <TextLabel source="LoadingAddress">
-          <renderToken source="LoadingAddress" />
-          <renderToken source="LoadingPostIndex" prefix=" " />
-          <renderToken source="LoadingCityName" prefix=", " />
-          <renderToken source="LoadingCountryName" prefix=", " />
-        </TextLabel>
+        <FlowPanel name="LoadingAddress" />
       </row>
       <row>
         <Label html="Дата погрузки" />
-        <DateTimeLabel source="LoadingDate" />
+        <FlowPanel name="LoadingDate" />
       </row>
       <row>
         <Label html="Место поставки" />
-        <TextLabel source="UnloadingAddress">
-          <renderToken source="UnloadingAddress" />
-          <renderToken source="UnloadingPostIndex" prefix=" " />
-          <renderToken source="UnloadingCityName" prefix=", " />
-          <renderToken source="UnloadingCountryName" prefix=", " />
-        </TextLabel>
+        <FlowPanel name="UnloadingAddress" />
       </row>
       <row>
         <Label html="Дата поставки" />
-        <DateTimeLabel source="UnloadingDate" />
+        <FlowPanel name="UnloadingDate" />
       </row>
       <row>
         <Label html="Номер автомобиля" />

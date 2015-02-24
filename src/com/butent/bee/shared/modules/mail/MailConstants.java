@@ -159,6 +159,8 @@ public final class MailConstants {
   public static final String TBL_RECIPIENTS = "Recipients";
   public static final String TBL_PLACES = "Places";
 
+  public static final String VIEW_USER_EMAILS = "UserEmails";
+
   public static final String COL_MESSAGE = "Message";
   public static final String COL_RAW_CONTENT = "RawContent";
   public static final String COL_ATTACHMENT_NAME = "FileName";
@@ -212,6 +214,8 @@ public final class MailConstants {
   public static final String COL_RULE_CONDITION_OPTIONS = "ConditionOptions";
   public static final String COL_RULE_ACTION = "Action";
   public static final String COL_RULE_ACTION_OPTIONS = "ActionOptions";
+
+  public static final String COL_ADDRESSBOOK_LABEL = "Label";
 
   public static final String FORM_ACCOUNT = "Account";
   public static final String FORM_NEW_ACCOUNT = "NewAccount";

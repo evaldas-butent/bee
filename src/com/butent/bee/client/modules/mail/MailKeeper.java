@@ -10,7 +10,9 @@ import com.butent.bee.client.Global;
 import com.butent.bee.client.NewsAggregator.HeadlineAccessor;
 import com.butent.bee.client.communication.ParameterList;
 import com.butent.bee.client.communication.ResponseCallback;
+import com.butent.bee.client.data.Data;
 import com.butent.bee.client.dialog.StringCallback;
+import com.butent.bee.client.event.logical.RowActionEvent;
 import com.butent.bee.client.grid.GridFactory;
 import com.butent.bee.client.grid.GridFactory.GridOptions;
 import com.butent.bee.client.presenter.PresenterCallback;
@@ -31,6 +33,7 @@ import com.butent.bee.shared.i18n.LocalizableMessages;
 import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.menu.MenuHandler;
 import com.butent.bee.shared.menu.MenuService;
+import com.butent.bee.shared.modules.classifiers.ClassifierConstants;
 import com.butent.bee.shared.modules.mail.AccountInfo;
 import com.butent.bee.shared.modules.mail.MailConstants.MessageFlag;
 import com.butent.bee.shared.news.Feed;
@@ -39,6 +42,7 @@ import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.Codec;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Objects;
@@ -123,6 +127,19 @@ public final class MailKeeper {
         return true;
       }
     });
+    BeeKeeper.getBus().registerRowActionHandler(new RowActionEvent.Handler() {
+      @Override
+      public void onRowAction(RowActionEvent event) {
+        if (event.hasView(ClassifierConstants.TBL_EMAILS) && event.isEditRow()) {
+          event.consume();
+
+          NewMailMessage.create(Collections
+              .singleton(Data.getString(ClassifierConstants.TBL_EMAILS,
+                  event.getRow(), ClassifierConstants.COL_EMAIL_ADDRESS)),
+              null, null, null, null, null, null, false);
+        }
+      }
+    }, false);
   }
 
   static void activateController(MailPanel mailPanel) {
