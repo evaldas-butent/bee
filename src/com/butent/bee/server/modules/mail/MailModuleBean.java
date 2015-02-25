@@ -229,8 +229,7 @@ public class MailModuleBean implements BeeModule, HasTimerService {
 
       } else if (BeeUtils.same(svc, SVC_GET_MESSAGE)) {
         response = getMessage(BeeUtils.toLongOrNull(reqInfo.getParameter(COL_MESSAGE)),
-            BeeUtils.toLongOrNull(reqInfo.getParameter(COL_PLACE)),
-            Codec.unpack(reqInfo.getParameter("showBcc")));
+            BeeUtils.toLongOrNull(reqInfo.getParameter(COL_PLACE)));
 
       } else if (BeeUtils.same(svc, SVC_FLAG_MESSAGE)) {
         response = ResponseObject
@@ -365,8 +364,15 @@ public class MailModuleBean implements BeeModule, HasTimerService {
           MailAccount account = mail.getAccount(row.getLong(COL_ACCOUNT));
 
           if (Objects.equals(row.getLong(COL_FOLDER), account.getDraftsFolder().getId())) {
+            Long repliedFrom = qs.getLong(new SqlSelect()
+                .addFields(TBL_PLACES, sys.getIdName(TBL_PLACES))
+                .addFrom(TBL_PLACES)
+                .setWhere(SqlUtils.equals(TBL_PLACES, COL_REPLIED, relatedId)));
+
             processMessages(account, account.getDraftsFolder(), null,
                 new String[] {BeeUtils.toString(relatedId)}, true);
+
+            relatedId = repliedFrom;
           } else {
             setMessageFlag(relatedId, MessageFlag.ANSWERED, true);
           }
@@ -381,7 +387,8 @@ public class MailModuleBean implements BeeModule, HasTimerService {
 
         if (!save) {
           try {
-            sendMail(account, to, cc, bcc, subject, content, attachments, true);
+            MimeMessage message = sendMail(account, to, cc, bcc, subject, content, attachments);
+            storeMessage(account, message, account.getSentFolder(), relatedId);
             response.addInfo(usr.getLocalizableConstants().mailMessageSent());
 
           } catch (MessagingException e) {
@@ -392,9 +399,7 @@ public class MailModuleBean implements BeeModule, HasTimerService {
         }
         if (save) {
           MimeMessage message = buildMessage(account, to, cc, bcc, subject, content, attachments);
-          message.setFlag(Flag.SEEN, true);
-
-          storeMail(account, message, account.getDraftsFolder());
+          storeMessage(account, message, account.getDraftsFolder(), relatedId);
           response.addInfo(usr.getLocalizableConstants().mailMessageIsSavedInDraft());
         }
       } else if (BeeUtils.same(svc, SVC_STRIP_HTML)) {
@@ -684,7 +689,7 @@ public class MailModuleBean implements BeeModule, HasTimerService {
 
   public ResponseObject sendMail(Long accountId, String[] to, String subject, String content) {
     try {
-      sendMail(mail.getAccount(accountId), to, null, null, subject, content, null, false);
+      sendMail(mail.getAccount(accountId), to, null, null, subject, content, null);
     } catch (MessagingException ex) {
       logger.error(ex);
       return ResponseObject.error(ex);
@@ -692,13 +697,15 @@ public class MailModuleBean implements BeeModule, HasTimerService {
     return ResponseObject.emptyResponse();
   }
 
-  public void sendMail(MailAccount account, String[] to, String[] cc, String[] bcc, String subject,
-      String content, Map<Long, String> attachments, boolean store) throws MessagingException {
+  public MimeMessage sendMail(MailAccount account, String[] to, String[] cc, String[] bcc,
+      String subject, String content, Map<Long, String> attachments)
+      throws MessagingException {
 
     Transport transport = null;
+    MimeMessage message = null;
 
     try {
-      MimeMessage message = buildMessage(account, to, cc, bcc, subject, content, attachments);
+      message = buildMessage(account, to, cc, bcc, subject, content, attachments);
       Address[] recipients = message.getAllRecipients();
 
       if (recipients == null || recipients.length == 0) {
@@ -706,11 +713,6 @@ public class MailModuleBean implements BeeModule, HasTimerService {
       }
       transport = account.connectToTransport();
       transport.sendMessage(message, recipients);
-
-      if (store) {
-        message.setFlag(Flag.SEEN, true);
-        storeMail(account, message, account.getSentFolder());
-      }
     } finally {
       if (transport != null) {
         try {
@@ -720,6 +722,7 @@ public class MailModuleBean implements BeeModule, HasTimerService {
         }
       }
     }
+    return message;
   }
 
   private Set<MailFolder> applyRules(Message message, long placeId, MailAccount account,
@@ -847,7 +850,7 @@ public class MailModuleBean implements BeeModule, HasTimerService {
             }
           }
           sendMail(account, new String[] {row.getValue(COL_RULE_ACTION_OPTIONS)}, null, null,
-              envelope.getSubject(), content, attachments, false);
+              envelope.getSubject(), content, attachments);
           break;
 
         case REPLY:
@@ -866,7 +869,7 @@ public class MailModuleBean implements BeeModule, HasTimerService {
             }
             sendMail(account, new String[] {sender}, null, null,
                 BeeUtils.joinWords(Localized.getConstants().mailReplayPrefix(),
-                    envelope.getSubject()), content, null, false);
+                    envelope.getSubject()), content, null);
           }
           break;
       }
@@ -1105,7 +1108,7 @@ public class MailModuleBean implements BeeModule, HasTimerService {
     mail.disconnectFolder(folder);
   }
 
-  private ResponseObject getMessage(Long messageId, Long placeId, boolean showBcc) {
+  private ResponseObject getMessage(Long messageId, Long placeId) {
     Assert.isTrue(BeeUtils.anyNotNull(messageId, placeId));
 
     Map<String, SimpleRowSet> packet = new HashMap<>();
@@ -1123,18 +1126,20 @@ public class MailModuleBean implements BeeModule, HasTimerService {
                 SqlUtils.equals(TBL_ADDRESSBOOK, COL_USER, usr.getCurrentUserId())));
 
     if (DataUtils.isId(placeId)) {
-      query.addFields(TBL_PLACES, COL_MESSAGE, COL_FLAGS)
+      query.addFields(TBL_PLACES, COL_FLAGS, COL_MESSAGE, COL_REPLIED)
           .addField(TBL_PLACES, sys.getIdName(TBL_PLACES), COL_PLACE)
           .addExpr(SqlUtils.expression(SqlUtils.equals(TBL_PLACES, COL_FOLDER,
               SqlUtils.field(TBL_ACCOUNTS, sent + COL_FOLDER))), sent)
           .addExpr(SqlUtils.expression(SqlUtils.equals(TBL_PLACES, COL_FOLDER,
               SqlUtils.field(TBL_ACCOUNTS, drafts + COL_FOLDER))), drafts)
+          .addFields(TBL_ACCOUNTS, COL_USER)
           .addFromInner(TBL_PLACES, sys.joinTables(TBL_MESSAGES, TBL_PLACES, COL_MESSAGE))
           .addFromInner(TBL_FOLDERS, sys.joinTables(TBL_FOLDERS, TBL_PLACES, COL_FOLDER))
           .addFromInner(TBL_ACCOUNTS, sys.joinTables(TBL_ACCOUNTS, TBL_FOLDERS, COL_ACCOUNT))
           .setWhere(sys.idEquals(TBL_PLACES, placeId));
     } else {
       query.addConstant(messageId, COL_MESSAGE)
+          .addEmptyLong(COL_REPLIED)
           .addEmptyLong(COL_PLACE)
           .addEmptyBoolean(sent)
           .addEmptyBoolean(drafts)
@@ -1148,7 +1153,8 @@ public class MailModuleBean implements BeeModule, HasTimerService {
     Long message = msg.getLong(COL_MESSAGE);
     IsCondition wh = SqlUtils.equals(TBL_RECIPIENTS, COL_MESSAGE, message);
 
-    if (!showBcc) {
+    if (!DataUtils.isId(placeId)
+        || !Objects.equals(msg.getLong(COL_USER), usr.getCurrentUserId())) {
       wh = SqlUtils.and(wh,
           SqlUtils.notEqual(TBL_RECIPIENTS, COL_ADDRESS_TYPE, AddressType.BCC.name()));
     }
@@ -1331,9 +1337,9 @@ public class MailModuleBean implements BeeModule, HasTimerService {
     int value;
 
     if (on) {
-      value = oldValue | flag.getMask();
+      value = flag.set(oldValue);
     } else {
-      value = oldValue & ~flag.getMask();
+      value = flag.clear(oldValue);
     }
     if (value == oldValue) {
       return value;
@@ -1365,6 +1371,16 @@ public class MailModuleBean implements BeeModule, HasTimerService {
       mailMessage.setMessagesUpdated(true);
       Endpoint.sendToUser(account.getUserId(), mailMessage);
     }
+  }
+
+  private void storeMessage(MailAccount account, MimeMessage message, MailFolder folder,
+      Long repliedFrom) throws MessagingException {
+
+    if (DataUtils.isId(repliedFrom)) {
+      mail.waitForReplied(folder.getId(), new MailEnvelope(message).getUniqueId(), repliedFrom);
+    }
+    message.setFlag(Flag.SEEN, true);
+    storeMail(account, message, folder);
   }
 
   private int syncFolders(MailAccount account, Folder remoteFolder, MailFolder localFolder)
