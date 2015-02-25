@@ -97,8 +97,6 @@ public final class ProjectsHelper {
 
   public static void registerReason(FormView form, IsRow row, CellValidateEvent event,
       final Callback<Boolean> success) {
-
-    // FormFactory.getFormDescription(FORM_NEW_PROJECT_REASON_COMMENT, );
     DataInfo data = Data.getDataInfo(VIEW_PROJECT_EVENTS);
     BeeRow emptyRow = RowFactory.createEmptyRow(data, false);
     String caption =

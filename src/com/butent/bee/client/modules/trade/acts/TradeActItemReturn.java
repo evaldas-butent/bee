@@ -30,6 +30,7 @@ import com.butent.bee.client.ui.UiHelper;
 import com.butent.bee.client.widget.Button;
 import com.butent.bee.client.widget.Image;
 import com.butent.bee.client.widget.InputNumber;
+import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.Consumer;
 import com.butent.bee.shared.data.BeeColumn;
@@ -81,16 +82,17 @@ final class TradeActItemReturn {
   private static final String STYLE_INPUT_PREFIX = STYLE_PREFIX + "input-";
   private static final String STYLE_INPUT_WIDGET = STYLE_INPUT_PREFIX + "widget";
 
+  private static final String STYLE_ACT_NUMBER_PREFIX = STYLE_PREFIX + "act-number-";
+  private static final String STYLE_COMPANY_PREFIX = STYLE_PREFIX + "company-";
+  private static final String STYLE_OBJECT_PREFIX = STYLE_PREFIX + "object-";
+
   private static final String STYLE_HEADER_CELL_SUFFIX = "label";
   private static final String STYLE_CELL_SUFFIX = "cell";
 
   private static NumberFormat priceFormat;
 
-  static void show(String caption, BeeRow parentAct, final BeeRowSet parentItems,
-      final Consumer<BeeRowSet> consumer) {
-
-    String currencyName = (parentAct == null) ? null : Data.getString(VIEW_TRADE_ACTS, parentAct,
-        AdministrationConstants.ALS_CURRENCY_NAME);
+  static void show(String caption, BeeRowSet parentActs, final BeeRowSet parentItems,
+      boolean showActInfo, final Consumer<BeeRowSet> consumer) {
 
     final HtmlTable table = new HtmlTable(STYLE_TABLE);
 
@@ -125,18 +127,39 @@ final class TradeActItemReturn {
     table.setText(r, c++, Localized.getConstants().taQuantityReturn(),
         STYLE_INPUT_PREFIX + STYLE_HEADER_CELL_SUFFIX);
 
+    if (showActInfo) {
+      table.setText(r, c++, Data.getColumnLabel(VIEW_TRADE_ACTS, COL_TA_NUMBER),
+          STYLE_ACT_NUMBER_PREFIX + STYLE_HEADER_CELL_SUFFIX);
+
+      table.setText(r, c++, Data.getColumnLabel(VIEW_TRADE_ACTS, COL_TA_COMPANY),
+          STYLE_COMPANY_PREFIX + STYLE_HEADER_CELL_SUFFIX);
+      table.setText(r, c++, Data.getColumnLabel(VIEW_TRADE_ACTS, COL_TA_OBJECT),
+          STYLE_OBJECT_PREFIX + STYLE_HEADER_CELL_SUFFIX);
+    }
+
     table.getRowFormatter().addStyleName(r, STYLE_HEADER_ROW);
 
+    int actIndex = parentItems.getColumnIndex(COL_TRADE_ACT);
     int itemIndex = parentItems.getColumnIndex(COL_TA_ITEM);
     int nameIndex = parentItems.getColumnIndex(ALS_ITEM_NAME);
     int articleIndex = parentItems.getColumnIndex(COL_ITEM_ARTICLE);
     int priceIndex = parentItems.getColumnIndex(COL_TRADE_ITEM_PRICE);
     int qtyIndex = parentItems.getColumnIndex(COL_TRADE_ITEM_QUANTITY);
 
+    int currencyNameIndex = parentActs.getColumnIndex(AdministrationConstants.ALS_CURRENCY_NAME);
+
+    int seriesNameIndex = parentActs.getColumnIndex(COL_SERIES_NAME);
+    int numberIndex = parentActs.getColumnIndex(COL_TA_NUMBER);
+    int companyNameIndex = parentActs.getColumnIndex(ALS_COMPANY_NAME);
+    int objectNameIndex = parentActs.getColumnIndex(COL_COMPANY_OBJECT_NAME);
+
     BeeColumn qtyColumn = parentItems.getColumn(qtyIndex);
 
     r++;
     for (BeeRow p : parentItems) {
+      BeeRow act = parentActs.getRowById(p.getLong(actIndex));
+      Assert.notNull(act, "act not found " + p.getId());
+
       c = 0;
 
       table.setText(r, c++, p.getString(itemIndex), STYLE_ID_PREFIX + STYLE_CELL_SUFFIX);
@@ -144,7 +167,7 @@ final class TradeActItemReturn {
       table.setText(r, c++, p.getString(nameIndex), STYLE_NAME_PREFIX + STYLE_CELL_SUFFIX);
       table.setText(r, c++, p.getString(articleIndex), STYLE_ARTICLE_PREFIX + STYLE_CELL_SUFFIX);
 
-      String priceHtml = renderPrice(p.getDouble(priceIndex), currencyName);
+      String priceHtml = renderPrice(p.getDouble(priceIndex), act.getString(currencyNameIndex));
       if (!BeeUtils.isEmpty(priceHtml)) {
         table.setHtml(r, c, priceHtml, STYLE_PRICE_PREFIX + STYLE_CELL_SUFFIX);
       }
@@ -152,6 +175,17 @@ final class TradeActItemReturn {
 
       table.setText(r, c++, p.getString(qtyIndex), STYLE_QTY_PREFIX + STYLE_CELL_SUFFIX);
       table.setWidget(r, c++, renderInput(qtyColumn), STYLE_INPUT_PREFIX + STYLE_CELL_SUFFIX);
+
+      if (showActInfo) {
+        table.setText(r, c++,
+            BeeUtils.joinWords(act.getString(seriesNameIndex), act.getString(numberIndex)),
+            STYLE_ACT_NUMBER_PREFIX + STYLE_CELL_SUFFIX);
+
+        table.setText(r, c++, act.getString(companyNameIndex),
+            STYLE_COMPANY_PREFIX + STYLE_CELL_SUFFIX);
+        table.setText(r, c++, act.getString(objectNameIndex),
+            STYLE_OBJECT_PREFIX + STYLE_CELL_SUFFIX);
+      }
 
       table.getRowFormatter().addStyleName(r, STYLE_ITEM_ROW);
       DomUtils.setDataIndex(table.getRow(r), p.getId());

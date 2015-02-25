@@ -1119,7 +1119,7 @@ public class AssessmentForm extends PrintFormInterceptor implements SelectorEven
                     }
                     NewMailMessage.create(to, null, null, null,
                         Document.get().createBRElement().getString() + table.toString(),
-                        null, null);
+                        null, null, false);
                   }
                 });
           }

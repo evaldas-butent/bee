@@ -141,21 +141,7 @@
       <SimpleJoin joinType="LEFT" name="Currency">
         <SimpleColumn name="Name" alias="CurrencyName" />
       </SimpleJoin>
-    </SimpleJoin>
-    
-    <ExternalJoin name="Assessment" source="AssessmentObservers" joinType="LEFT">
-      <HiddenColumn name="User" />
-    </ExternalJoin>
-    
-    <ExternalJoin name="Assessment" source="AssessmentOGroups" joinType="LEFT">
-      <SimpleJoin name="Group" joinType="LEFT">
-        <ExternalJoin name="Group" source="UserGroups" joinType="LEFT">
-          <HiddenColumn name="User" alias="Group" />
-        </ExternalJoin>
-      </SimpleJoin>
-    </ExternalJoin>
 
-    <SimpleJoin name="Cargo" joinType="INNER">
       <ExternalJoin name="Cargo" source="CargoIncomes" joinType="LEFT">
         <HiddenColumn name="Sale" alias="Incomes" />
         <AggregateColumn name="Sale" alias="IncomesCommited" aggregate="MIN">
@@ -176,6 +162,18 @@
         <AggregateColumn name="Cargo" alias="ExpensesCount" aggregate="COUNT_DISTINCT" />
       </ExternalJoin>
     </SimpleJoin>
+    
+    <ExternalJoin name="Assessment" source="AssessmentObservers" joinType="LEFT">
+      <HiddenColumn name="User" />
+    </ExternalJoin>
+    
+    <ExternalJoin name="Assessment" source="AssessmentOGroups" joinType="LEFT">
+      <SimpleJoin name="Group" joinType="LEFT">
+        <ExternalJoin name="Group" source="UserGroups" joinType="LEFT">
+          <HiddenColumn name="User" alias="Group" />
+        </ExternalJoin>
+      </SimpleJoin>
+    </ExternalJoin>
     
     <ExternalJoin name="Assessment" source="AssessmentForwarders" joinType="LEFT">
       <SimpleJoin name="Trip" joinType="LEFT">

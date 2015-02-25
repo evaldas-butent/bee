@@ -299,6 +299,7 @@ public final class TaskConstants {
   public static final String COL_APPROVED = "Approved";
   public static final String COL_ACTUAL_DURATION = "ActualDuration";
   public static final String COL_ACTUAL_EXPENSES = "ActualExpenses";
+  public static final String COL_EXPECTED_EXPENSES = "ExpectedExpenses";
 
   public static final String COL_REQUEST = "Request";
   public static final String COL_REQUEST_CONTACTS = "Contacts";

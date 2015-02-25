@@ -132,6 +132,8 @@ public interface LocalizableTaskConstants {
 
   String crmTaskExpectedDuration();
 
+  String crmTaskExpectedExpenses();
+
   String crmTaskFilterAll();
 
   String crmTaskFilterLate();

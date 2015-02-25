@@ -78,7 +78,18 @@ final class ProjectScheduleChart extends TimeBoard {
 
     @Override
     public Range<JustDate> getRange() {
-      return TimeBoardHelper.getActivity(start, end);
+      JustDate s = start;
+      JustDate e = end;
+
+      if (s == null && e == null) {
+        return null;
+      } else if (s == null && e != null) {
+        s = e;
+      } else if (s != null && e == null) {
+        e = s;
+      }
+
+      return Range.closed(s, BeeUtils.max(s, e));
     }
 
     public ChartItem(String viewName, Long stageId, String caption, JustDate start,
@@ -285,7 +296,7 @@ final class ProjectScheduleChart extends TimeBoard {
             && BeeUtils.same(VIEW_PROJECT_STAGES, item.getViewName())
             && BeeUtils.same(item.getViewName(), dataItem.getViewName())) {
 
-          if (TimeBoardHelper.isActive(item, range)) {
+          if (TimeBoardHelper.isActive(item, range) && item.getRange() != null) {
             Widget itemWidget = createItemWidget(item);
             Rectangle rectangle = getRectangle(item.getRange(), rowIndex);
             TimeBoardHelper.apply(itemWidget, rectangle, margins);
@@ -370,14 +381,24 @@ final class ProjectScheduleChart extends TimeBoard {
 
     for (String[] row : rs.getRows()) {
       Long id = BeeUtils.toLong(row[idxStage]);
-      JustDate start = new JustDate(BeeUtils.toInt(row[idxStart]));
-      JustDate end = new JustDate(BeeUtils.toInt(row[idxEnd]));
+      JustDate start = null;
+      JustDate end = null;
       String taskStatus = row[idxStatus];
+
+      if (!BeeUtils.isEmpty(row[idxStart])) {
+        start = new JustDate(BeeUtils.toInt(row[idxStart]));
+      }
+
+      if (!BeeUtils.isEmpty(row[idxEnd])) {
+        end = new JustDate(BeeUtils.toInt(row[idxEnd]));
+      }
 
       ChartItem ci = new ChartItem(row[idxViewName], id, row[idxCaption], start,
           end, row[idxColor], taskStatus);
 
-      chartItems.add(ci);
+      if (ci.getRange() != null) {
+        chartItems.add(ci);
+      }
     }
 
     updateMaxRange();

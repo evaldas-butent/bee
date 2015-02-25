@@ -5,6 +5,7 @@ import static com.butent.bee.shared.modules.projects.ProjectConstants.*;
 import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.communication.ParameterList;
 import com.butent.bee.client.grid.GridFactory;
+import com.butent.bee.client.modules.trade.SalesGrid;
 import com.butent.bee.client.ui.FormFactory;
 import com.butent.bee.shared.rights.Module;
 
@@ -34,6 +35,8 @@ public final class ProjectsKeeper {
     GridFactory.registerGridInterceptor(GRID_PROJECTS, new ProjectsGrid());
     GridFactory.registerGridInterceptor(GRID_PROJECT_USERS, new ProjectUsersGrid());
     GridFactory.registerGridInterceptor(GRID_PROJECT_STAGES, new ProjectStagesGrid());
+    GridFactory.registerGridInterceptor(GRID_PROJECT_INCOMES, new ProjectIncomesGrid());
+    GridFactory.registerGridInterceptor(GRID_PROJECT_INVOICES, new SalesGrid());
 
     /* Register form handlers */
     FormFactory.registerFormInterceptor(FORM_PROJECT, new ProjectForm());

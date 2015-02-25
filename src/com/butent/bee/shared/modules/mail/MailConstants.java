@@ -39,12 +39,20 @@ public final class MailConstants {
       this.mask = mask;
     }
 
+    public int clear(Integer bits) {
+      return BeeUtils.unbox(bits) & ~getMask();
+    }
+
     public int getMask() {
       return mask;
     }
 
     public boolean isSet(Integer bits) {
       return (BeeUtils.unbox(bits) & getMask()) != 0;
+    }
+
+    public int set(Integer bits) {
+      return BeeUtils.unbox(bits) | getMask();
     }
   }
 
@@ -159,6 +167,8 @@ public final class MailConstants {
   public static final String TBL_RECIPIENTS = "Recipients";
   public static final String TBL_PLACES = "Places";
 
+  public static final String VIEW_USER_EMAILS = "UserEmails";
+
   public static final String COL_MESSAGE = "Message";
   public static final String COL_RAW_CONTENT = "RawContent";
   public static final String COL_ATTACHMENT_NAME = "FileName";
@@ -204,6 +214,7 @@ public final class MailConstants {
   public static final String COL_FOLDER = "Folder";
   public static final String COL_FLAGS = "Flags";
   public static final String COL_MESSAGE_UID = "MessageUID";
+  public static final String COL_REPLIED = "Replied";
 
   public static final String COL_RULE = "Rule";
   public static final String COL_RULE_ACTIVE = "Active";
@@ -212,6 +223,8 @@ public final class MailConstants {
   public static final String COL_RULE_CONDITION_OPTIONS = "ConditionOptions";
   public static final String COL_RULE_ACTION = "Action";
   public static final String COL_RULE_ACTION_OPTIONS = "ActionOptions";
+
+  public static final String COL_ADDRESSBOOK_LABEL = "Label";
 
   public static final String FORM_ACCOUNT = "Account";
   public static final String FORM_NEW_ACCOUNT = "NewAccount";

@@ -108,53 +108,6 @@ import java.util.Set;
 
 public class MailPanel extends AbstractFormInterceptor {
 
-  private class ContentHandler implements ActiveRowChangeEvent.Handler {
-    private final int sender;
-    private final int flags;
-
-    public ContentHandler(int sender, int flags) {
-      this.sender = sender;
-      this.flags = flags;
-    }
-
-    @Override
-    public void onActiveRowChange(ActiveRowChangeEvent event) {
-      currentMessage = event.getRowValue();
-      showMessage(currentMessage != null);
-
-      final Runnable requery = new Runnable() {
-        @Override
-        public void run() {
-          message.requery(COL_PLACE, currentMessage.getId(),
-              Objects.equals(currentMessage.getLong(sender), getCurrentAccount().getAddressId()));
-        }
-      };
-      if (currentMessage != null) {
-        if (!MessageFlag.SEEN.isSet(currentMessage.getInteger(flags))) {
-          message.setLoading(true);
-
-          flagMessage(currentMessage, flags, MessageFlag.SEEN, new Runnable() {
-            @Override
-            public void run() {
-              getMessagesPresenter().getGridView().getGrid().refresh();
-              requery.run();
-            }
-          });
-        } else {
-          requery.run();
-        }
-      }
-    }
-
-    private void showMessage(boolean show) {
-      if (!show) {
-        message.reset();
-      }
-      messageWidget.setVisible(show);
-      emptySelectionWidget.setVisible(!show);
-    }
-  }
-
   private class EnvelopeRenderer extends AbstractCellRenderer {
     private final int senderEmail;
     private final int senderLabel;
@@ -233,6 +186,39 @@ public class MailPanel extends AbstractFormInterceptor {
     }
   }
 
+  private static class FlagRenderer extends AbstractCellRenderer {
+
+    private static final FaLabel REPLY = new FaLabel(FontAwesome.REPLY);
+    private static final FaLabel CHAIN = new FaLabel(FontAwesome.CHAIN);
+
+    static {
+      StyleUtils.setProperty(REPLY, CssProperties.CURSOR, Cursor.DEFAULT);
+      StyleUtils.setProperty(CHAIN, CssProperties.CURSOR, Cursor.DEFAULT);
+    }
+
+    private final int flags;
+
+    public FlagRenderer(List<? extends IsColumn> dataColumns) {
+      super(null);
+      flags = DataUtils.getColumnIndex(COL_FLAGS, dataColumns);
+    }
+
+    @Override
+    public String render(IsRow row) {
+      String star = MessageFlag.FLAGGED.isSet(row.getInteger(flags))
+          ? Stars.getHtml(0) : Stars.getDefaultHeader();
+
+      if (MessageFlag.ANSWERED.isSet(row.getInteger(flags))) {
+        star += REPLY.getElement().getString();
+
+      } else if (!BeeUtils.isEmpty(row.getProperty(AdministrationConstants.COL_RELATION))) {
+        CHAIN.setTitle(row.getProperty(AdministrationConstants.COL_RELATION));
+        star += CHAIN.getElement().getString();
+      }
+      return star;
+    }
+  }
+
   private class MessagesGrid extends AbstractGridInterceptor {
     private final Horizontal dummy = new Horizontal();
 
@@ -302,9 +288,6 @@ public class MailPanel extends AbstractFormInterceptor {
 
     @Override
     public void afterCreatePresenter(GridPresenter presenter) {
-      GridView grid = presenter.getGridView();
-      grid.getGrid().addActiveRowChangeHandler(new ContentHandler(grid.getDataIndex(COL_SENDER),
-          grid.getDataIndex(COL_FLAGS)));
       activateAccount(getCurrentAccount());
     }
 
@@ -323,68 +306,56 @@ public class MailPanel extends AbstractFormInterceptor {
         List<? extends IsColumn> dataColumns, ColumnDescription columnDescription,
         CellSource cellSource) {
 
-      if (BeeUtils.same(columnName, "Star")) {
-        return new StarRenderer(dataColumns);
-      } else if (BeeUtils.same(columnName, "Envelope")) {
+      if (BeeUtils.same(columnName, COL_FLAGS)) {
+        return new FlagRenderer(dataColumns);
+      } else if (BeeUtils.same(columnName, COL_MESSAGE)) {
         return new EnvelopeRenderer(dataColumns);
       }
       return super.getRenderer(columnName, dataColumns, columnDescription, cellSource);
     }
 
     @Override
-    public void onEditStart(final EditStartEvent event) {
-      if ("Star".equals(event.getColumnId())) {
-        final IsRow row = event.getRowValue();
+    public void onActiveRowChange(ActiveRowChangeEvent event) {
+      IsRow row = event.getRowValue();
+
+      if (row != null) {
+        message.requery(COL_PLACE, row.getId());
+        messageWidget.setVisible(true);
+        emptySelectionWidget.setVisible(false);
+      } else {
+        message.reset();
+        messageWidget.setVisible(false);
+        emptySelectionWidget.setVisible(true);
+      }
+      super.onActiveRowChange(event);
+    }
+
+    @Override
+    public void onEditStart(EditStartEvent event) {
+      final String col = event.getColumnId();
+
+      if (BeeUtils.same(col, COL_FLAGS)) {
+        IsRow row = event.getRowValue();
 
         if (row == null) {
           return;
         }
-        final int flagIdx = Data.getColumnIndex(getGridPresenter().getViewName(), COL_FLAGS);
-        event.getSourceElement().setInnerHTML(StarRenderer
-            .render(!MessageFlag.FLAGGED.isSet(row.getInteger(flagIdx)),
-                row.getProperty(AdministrationConstants.COL_RELATION)));
+        int flagIdx = Data.getColumnIndex(getGridPresenter().getViewName(), col);
+        int oldValue = BeeUtils.unbox(row.getInteger(flagIdx));
 
-        flagMessage(row, flagIdx, MessageFlag.FLAGGED, new Runnable() {
-          @Override
-          public void run() {
-            event.getSourceElement().setInnerHTML(StarRenderer
-                .render(MessageFlag.FLAGGED.isSet(row.getInteger(flagIdx)),
-                    row.getProperty(AdministrationConstants.COL_RELATION)));
-          }
-        });
+        flagMessage(row.getId(), MessageFlag.FLAGGED, !MessageFlag.FLAGGED.isSet(oldValue));
+
+        int value;
+
+        if (MessageFlag.FLAGGED.isSet(oldValue)) {
+          value = MessageFlag.FLAGGED.clear(oldValue);
+        } else {
+          value = MessageFlag.FLAGGED.set(oldValue);
+        }
+        row.setValue(flagIdx, value);
+        getGridView().refreshCell(row.getId(), col);
       }
-    }
-  }
-
-  private static class StarRenderer extends AbstractCellRenderer {
-
-    private static final FaLabel CHAIN = new FaLabel(FontAwesome.CHAIN);
-
-    static {
-      StyleUtils.setProperty(CHAIN, CssProperties.CURSOR, Cursor.DEFAULT);
-    }
-
-    public static String render(boolean flagged, String chained) {
-      String star = flagged ? Stars.getHtml(0) : Stars.getDefaultHeader();
-
-      if (!BeeUtils.isEmpty(chained)) {
-        CHAIN.setTitle(chained);
-        star += CHAIN.getElement().getString();
-      }
-      return star;
-    }
-
-    private final int flags;
-
-    public StarRenderer(List<? extends IsColumn> dataColumns) {
-      super(null);
-      flags = DataUtils.getColumnIndex(COL_FLAGS, dataColumns);
-    }
-
-    @Override
-    public String render(IsRow row) {
-      return render(MessageFlag.FLAGGED.isSet(row.getInteger(flags)),
-          row.getProperty(AdministrationConstants.COL_RELATION));
+      event.consume();
     }
   }
 
@@ -392,8 +363,6 @@ public class MailPanel extends AbstractFormInterceptor {
 
   private AccountInfo currentAccount;
   private Long currentFolder;
-
-  private IsRow currentMessage;
 
   private final MessagesGrid messages = new MessagesGrid();
   private final MailMessage message = new MailMessage(this);
@@ -448,7 +417,7 @@ public class MailPanel extends AbstractFormInterceptor {
     switch (action) {
       case ADD:
         NewMailMessage.create(accounts, getCurrentAccount(),
-            null, null, null, null, null, null, null);
+            null, null, null, null, null, null, null, false);
         break;
 
       case DELETE:
@@ -491,21 +460,24 @@ public class MailPanel extends AbstractFormInterceptor {
       accountSettings.setTitle(Localized.getConstants().mailRule());
       accountSettings.addClickHandler(new ClickHandler() {
         @Override
-        public void onClick(ClickEvent arg0) {
+        public void onClick(ClickEvent ev) {
           DataInfo dataInfo = Data.getDataInfo(TBL_RULES);
           BeeRow newRow = RowFactory.createEmptyRow(dataInfo, true);
           Data.setValue(TBL_RULES, newRow, COL_ACCOUNT, getCurrentAccount().getAccountId());
 
-          if (currentMessage != null) {
+          GridPresenter grid = messages.getGridPresenter();
+          IsRow row = grid.getActiveRow();
+
+          if (row != null) {
             if (isSenderFolder(getCurrentFolderId())) {
               Data.setValue(TBL_RULES, newRow, COL_RULE_CONDITION,
                   RuleCondition.RECIPIENTS.ordinal());
               Data.setValue(TBL_RULES, newRow, COL_RULE_CONDITION_OPTIONS,
-                  currentMessage.getProperty(ClassifierConstants.COL_EMAIL_ADDRESS));
+                  row.getProperty(ClassifierConstants.COL_EMAIL_ADDRESS));
             } else {
               Data.setValue(TBL_RULES, newRow, COL_RULE_CONDITION, RuleCondition.SENDER.ordinal());
               Data.setValue(TBL_RULES, newRow, COL_RULE_CONDITION_OPTIONS,
-                  Data.getString(TBL_PLACES, currentMessage, "SenderEmail"));
+                  DataUtils.getString(grid.getDataColumns(), row, "SenderEmail"));
             }
           }
           RowFactory.createRow(dataInfo, newRow);
@@ -529,16 +501,13 @@ public class MailPanel extends AbstractFormInterceptor {
     unseenWidget.setTitle(Localized.getConstants().mailMarkAsUnread());
     unseenWidget.addClickHandler(new ClickHandler() {
       @Override
-      public void onClick(ClickEvent arg0) {
-        if (currentMessage != null) {
-          flagMessage(currentMessage,
-              DataUtils.getColumnIndex(COL_FLAGS, getMessagesPresenter().getDataColumns()),
-              MessageFlag.SEEN, new Runnable() {
-                @Override
-                public void run() {
-                  refreshMessages();
-                }
-              });
+      public void onClick(ClickEvent ev) {
+        GridPresenter grid = messages.getGridPresenter();
+        IsRow row = grid.getActiveRow();
+
+        if (row != null) {
+          grid.getGridView().getGrid().reset();
+          flagMessage(row.getId(), MessageFlag.SEEN, false);
         }
       }
     });
@@ -636,29 +605,31 @@ public class MailPanel extends AbstractFormInterceptor {
     } else {
       currentFolder = folderId;
       MailKeeper.refreshController();
-      refreshMessages();
+      refreshMessages(false);
     }
   }
 
-  void refreshMessages() {
-    GridPresenter presenter = getMessagesPresenter();
+  void refreshMessages(boolean preserveActiveRow) {
+    GridPresenter grid = messages.getGridPresenter();
 
-    if (presenter != null) {
+    if (grid != null) {
       Long folderId = getCurrentFolderId();
 
       if (!BeeUtils.isEmpty(searchWidget.getValue())) {
-        presenter.getDataProvider().setUserFilter(Filter.custom(TBL_PLACES,
+        grid.getDataProvider().setUserFilter(Filter.custom(TBL_PLACES,
             Codec.beeSerialize(ImmutableMap.of(COL_FOLDER, folderId,
                 COL_CONTENT, searchWidget.getValue(),
                 SystemFolder.Sent.name(), isSenderFolder(folderId)))));
       } else {
-        presenter.getDataProvider().setUserFilter(null);
+        grid.getDataProvider().setUserFilter(null);
       }
-      presenter.getDataProvider().setParentFilter(MESSAGES_FILTER,
+      grid.getDataProvider().setParentFilter(MESSAGES_FILTER,
           Filter.equals(COL_FOLDER, folderId));
 
-      presenter.getGridView().getGrid().reset();
-      presenter.refresh(false);
+      if (!preserveActiveRow) {
+        grid.getGridView().getGrid().reset();
+      }
+      grid.refresh(preserveActiveRow);
     }
   }
 
@@ -722,38 +693,23 @@ public class MailPanel extends AbstractFormInterceptor {
 
       if (!BeeUtils.same(value, searchValue)) {
         searchValue = value;
-        refreshMessages();
+        refreshMessages(false);
       }
     }
   }
 
-  private void flagMessage(final IsRow row, final int flagIdx, MessageFlag flag,
-      final Runnable command) {
-
+  private void flagMessage(Long placeId, MessageFlag flag, boolean on) {
     ParameterList params = MailKeeper.createArgs(SVC_FLAG_MESSAGE);
-    params.addDataItem(COL_PLACE, row.getId());
+    params.addDataItem(COL_PLACE, placeId);
     params.addDataItem(COL_FLAGS, flag.name());
-    params.addDataItem("on", Codec.pack(!flag.isSet(row.getInteger(flagIdx))));
+    params.addDataItem("on", Codec.pack(on));
 
     BeeKeeper.getRpc().makePostRequest(params, new ResponseCallback() {
       @Override
       public void onResponse(ResponseObject response) {
         response.notify(getFormView());
-
-        if (!response.hasErrors()) {
-          Integer flags = BeeUtils.toIntOrNull((String) response.getResponse());
-          row.setValue(flagIdx, flags);
-
-          if (command != null) {
-            command.run();
-          }
-        }
       }
     });
-  }
-
-  private GridPresenter getMessagesPresenter() {
-    return messages.getGridPresenter();
   }
 
   private void initAccounts(final ListBox accountsWidget) {
@@ -787,12 +743,13 @@ public class MailPanel extends AbstractFormInterceptor {
 
   private void removeMessages() {
     List<String> options = new ArrayList<>();
+    GridPresenter grid = messages.getGridPresenter();
+    final IsRow activeRow = grid.getActiveRow();
 
-    if (currentMessage != null) {
+    if (activeRow != null) {
       options.add(Localized.getConstants().mailCurrentMessage());
     }
-    final Collection<RowInfo> rows = getMessagesPresenter().getGridView()
-        .getSelectedRows(SelectedRows.ALL);
+    final Collection<RowInfo> rows = grid.getGridView().getSelectedRows(SelectedRows.ALL);
 
     if (!BeeUtils.isEmpty(rows)) {
       options.add(Localized.getMessages().mailSelectedMessages(rows.size()));
@@ -812,8 +769,8 @@ public class MailPanel extends AbstractFormInterceptor {
           public void onSuccess(int value) {
             List<Long> ids = new ArrayList<>();
 
-            if (value == 0 && currentMessage != null) {
-              ids.add(currentMessage.getId());
+            if (value == 0 && activeRow != null) {
+              ids.add(activeRow.getId());
             } else {
               for (RowInfo info : rows) {
                 ids.add(info.getId());

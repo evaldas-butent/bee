@@ -14,7 +14,7 @@
     <DataColumn name="Phone" />
     <DataColumn name="Mobile" />
     <DataColumn name="Fax" visible="false" />
-    <RelColumn name="EmailId" />
+    <RelColumn name="EmailId" editEnabled="true" />
 
     <DataColumn name="Address" />
     <DataColumn name="PostIndex" />

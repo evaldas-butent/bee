@@ -9,13 +9,18 @@
   
   name="Document" caption="=document"
   width="900" height="500"
-  > 
+  >
 
   <TabbedPages>
     <page>
       <text>=mainInformation</text>
       <FlowPanel class="flexBox-vertical">
         <xi:include href="widgets/DocumentFields.widget.xml" />
+        <FlowPanel>
+          <Relations relColumn="Document" inline="true"
+            style="margin-left: 520px; margin-top: -265px; min-width: 300px;"
+            defaultRelations="Companies Persons Requests Tasks" />
+        </FlowPanel>
         <ChildGrid name="DocumentFiles" relColumn="Document" class="flexible"
           style="margin-top: 1ex;" />
       </FlowPanel>

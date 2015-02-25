@@ -687,6 +687,8 @@ public interface LocalizableConstants extends Constants, LocalizableClassifierCo
 
   String unitDaysShort();
 
+  String unitHourShort();
+
   String unitWeekShort();
 
   String user();

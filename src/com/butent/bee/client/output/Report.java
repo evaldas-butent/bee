@@ -35,6 +35,7 @@ import com.butent.bee.shared.modules.projects.ProjectConstants;
 import com.butent.bee.shared.modules.projects.ProjectPriority;
 import com.butent.bee.shared.modules.projects.ProjectStatus;
 import com.butent.bee.shared.modules.tasks.TaskConstants;
+import com.butent.bee.shared.modules.tasks.TaskConstants.TaskStatus;
 import com.butent.bee.shared.modules.trade.TradeConstants;
 import com.butent.bee.shared.modules.transport.TransportConstants;
 import com.butent.bee.shared.rights.Module;
@@ -169,21 +170,26 @@ public enum Report implements HasWidgetSupplier {
 
       for (String item : new String[] {
           ProjectConstants.COL_PROJECT_NAME,
-          ClassifierConstants.ALS_COMPANY_NAME,
           ProjectConstants.COL_PROJECT_OWNER,
-          ProjectConstants.COL_PROJECT_PRIORITY,
-          ProjectConstants.COL_PROJECT_START_DATE,
-          ProjectConstants.COL_PROJECT_END_DATE,
-          ProjectConstants.ALS_PROJECT_OVERDUE,
-          ProjectConstants.COL_PROGRESS,
-          ProjectConstants.COL_EXPECTED_DURATION,
-          ProjectConstants.COL_PROJECT_TIME_UNIT
+          ProjectConstants.COL_PROJECT_STATUS,
+          ProjectConstants.ALS_TERM
       }) {
-
         map.put(PROP_ROWS, items.get(item).create());
       }
 
-      map.put(Report.PROP_ROW_GROUP, items.get(ProjectConstants.COL_PROJECT_NAME).create());
+      map.put(Report.PROP_ROW_GROUP, items.get(ClassifierConstants.ALS_COMPANY_NAME).create());
+
+      for (String item : new String[] {
+          TaskConstants.COL_EXPECTED_DURATION,
+          TaskConstants.COL_ACTUAL_DURATION,
+          TaskConstants.COL_EXPECTED_EXPENSES,
+          TaskConstants.COL_ACTUAL_EXPENSES,
+          ProjectConstants.ALS_PROFIT
+      }) {
+        map.put(PROP_COLUMNS, items.get(item).create().enableCalculation());
+      }
+
+      map.put(Report.PROP_COLUMN_GROUP, items.get(ProjectConstants.ALS_TASK_STATUS).create());
 
       return map;
     }
@@ -196,6 +202,7 @@ public enum Report implements HasWidgetSupplier {
           new ReportTextItem(ProjectConstants.COL_PROJECT_NAME, Data.getColumnLabel(
               ProjectConstants.VIEW_PROJECTS, ProjectConstants.COL_PROJECT_NAME)),
           new ReportTextItem(ClassifierConstants.ALS_COMPANY_NAME, loc.client()),
+          new ReportTextItem(ProjectConstants.ALS_STAGE_NAME, loc.prjStage()),
           new ReportTextItem(ProjectConstants.COL_PROJECT_OWNER, Data.getColumnLabel(
               ProjectConstants.VIEW_PROJECTS, ProjectConstants.COL_PROJECT_OWNER)),
           new ReportNumericItem(ProjectConstants.COL_PROJECT, loc.project(), 0),
@@ -207,37 +214,33 @@ public enum Report implements HasWidgetSupplier {
           new ReportEnumItem<>(ProjectConstants.COL_PROJECT_PRIORITY, Data.getColumnLabel(
               ProjectConstants.VIEW_PROJECTS, ProjectConstants.COL_PROJECT_PRIORITY),
               ProjectPriority.class),
-          new ReportDateItem(ProjectConstants.COL_PROJECT_START_DATE, Data.getColumnLabel(
-              ProjectConstants.VIEW_PROJECTS, ProjectConstants.COL_PROJECT_START_DATE)),
-          new ReportDateItem(ProjectConstants.COL_PROJECT_END_DATE, Data.getColumnLabel(
-              ProjectConstants.VIEW_PROJECTS, ProjectConstants.COL_PROJECT_END_DATE)),
-          new ReportNumericItem(ProjectConstants.ALS_PROJECT_OVERDUE, BeeUtils.join(
-              BeeConst.STRING_COMMA, loc.prjOverdue(), loc.unitDaysShort()), 0),
-          new ReportNumericItem(ProjectConstants.COL_PROGRESS, Data.getColumnLabel(
-              ProjectConstants.VIEW_PROJECTS, ProjectConstants.COL_PROGRESS), 2),
+          new ReportTextItem(ProjectConstants.ALS_TERM, loc.prjTerm()),
 
-          new ReportNumericItem(ProjectConstants.COL_EXPECTED_DURATION, Data.getColumnLabel(
-              ProjectConstants.VIEW_PROJECTS, ProjectConstants.COL_EXPECTED_DURATION), 2),
+          /* calc */
+          new ReportNumericItem(TaskConstants.COL_ACTUAL_DURATION,
+              BeeUtils
+                  .join(BeeConst.DEFAULT_LIST_SEPARATOR, Data.getColumnLabel(
+                      TaskConstants.VIEW_TASKS, TaskConstants.COL_ACTUAL_DURATION), loc
+                      .unitHourShort()), 2),
 
-          new ReportTextItem(ProjectConstants.COL_PROJECT_TIME_UNIT, Data.getColumnLabel(
-              ProjectConstants.VIEW_PROJECTS, ProjectConstants.COL_PROJECT_TIME_UNIT)),
-
-          new ReportNumericItem(TaskConstants.COL_ACTUAL_DURATION, Data.getColumnLabel(
-              ProjectConstants.VIEW_PROJECTS, ProjectConstants.COL_ACTUAL_TASKS_DURATION), 2),
-
-          new ReportNumericItem(ProjectConstants.ALS_ACTUAL_TIME_DIFFERENCE, loc.timeDifference(),
+          new ReportNumericItem(TaskConstants.COL_EXPECTED_DURATION, BeeUtils
+              .join(BeeConst.DEFAULT_LIST_SEPARATOR, Data.getColumnLabel(
+                  TaskConstants.VIEW_TASKS, TaskConstants.COL_EXPECTED_DURATION), loc
+                  .unitHourShort()), 2),
+          new ReportNumericItem(TaskConstants.COL_EXPECTED_EXPENSES, loc.crmTaskExpectedExpenses(),
               2),
-
-          new ReportNumericItem(ProjectConstants.COL_PROJECT_PRICE, Data.getColumnLabel(
-              ProjectConstants.VIEW_PROJECTS, ProjectConstants.COL_PROJECT_PRICE), 2),
 
           new ReportNumericItem(TaskConstants.COL_ACTUAL_EXPENSES, Data.getColumnLabel(
               TaskConstants.VIEW_TASKS, TaskConstants.COL_ACTUAL_EXPENSES), 2),
 
-          new ReportNumericItem(TaskConstants.COL_TASK, loc.crmTasks(), 0),
-          new ReportEnumItem<>(ProjectConstants.ALS_TASK_STATUS, Data.getColumnLabel(
-              TaskConstants.VIEW_TASKS, TaskConstants.COL_STATUS),
-              ProjectPriority.class)
+          new ReportNumericItem(TaskConstants.COL_TASK, loc.crmTask(), 0),
+          new ReportNumericItem(ProjectConstants.ALS_PROFIT, loc.profit(), 2),
+
+          new ReportEnumItem<>(ProjectConstants.ALS_TASK_STATUS, BeeUtils.joinWords(Data
+              .getColumnLabel(
+                  TaskConstants.VIEW_TASKS, TaskConstants.COL_STATUS), BeeUtils.parenthesize(loc
+              .crmTasks())),
+              TaskStatus.class)
           );
     }
   },
@@ -276,7 +279,6 @@ public enum Report implements HasWidgetSupplier {
     @Override
     public List<ReportItem> getItems() {
       LocalizableConstants loc = Localized.getConstants();
-
       return Arrays.asList(
           new ReportTextItem(TransportConstants.COL_ASSESSMENT, "Užsakymo Nr."),
           new ReportTextItem(AdministrationConstants.COL_DEPARTMENT_NAME,
