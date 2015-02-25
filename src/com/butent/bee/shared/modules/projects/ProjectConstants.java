@@ -65,6 +65,8 @@ public final class ProjectConstants {
   public static final String ALS_ROW_ID = "RowID";
   public static final String ALS_TASK_COUNT = "TaskCount";
   public static final String ALS_PROJECT_OVERDUE = "Overdue";
+  public static final String ALS_LOW_TASKS_DATE = "LowTasksDate";
+  public static final String ALS_HIGH_TASKS_DATE = "HighTasksDate";
 
   public static final String COL_EXPECTED_TASKS_DURATION = "ExpectedTasksDuration";
   public static final String COL_ACTUAL_TASKS_DURATION = "ActualTasksDuration";

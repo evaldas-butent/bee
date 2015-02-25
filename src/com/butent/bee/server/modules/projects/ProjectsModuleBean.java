@@ -452,6 +452,8 @@ public class ProjectsModuleBean implements BeeModule {
     int idxStageName = rs.getColumnIndex(COL_STAGE_NAME);
     int idxStageStart = rs.getColumnIndex(COL_STAGE_START_DATE);
     int idxStageEnd = rs.getColumnIndex(COL_STAGE_END_DATE);
+    int idxTasksTimeHigh = rs.getColumnIndex(ALS_HIGH_TASKS_DATE);
+    int idxTasksTimeLow = rs.getColumnIndex(ALS_LOW_TASKS_DATE);
 
     for (IsRow rsRow : rs) {
       String stage = BeeUtils.toString(rsRow.getId());
@@ -459,6 +461,14 @@ public class ProjectsModuleBean implements BeeModule {
 
       String stageStart = rsRow.getString(idxStageStart);
       String stageEnd = rsRow.getString(idxStageEnd);
+
+      if (BeeUtils.isEmpty(stageStart) && rsRow.getDateTime(idxTasksTimeLow) != null) {
+        stageStart = BeeUtils.toString(rsRow.getDateTime(idxTasksTimeLow).getDate().getDays());
+      }
+
+      if (BeeUtils.isEmpty(stageEnd) && rsRow.getDateTime(idxTasksTimeHigh) != null) {
+        stageEnd = BeeUtils.toString(rsRow.getDateTime(idxTasksTimeHigh).getDate().getDays());
+      }
 
       chartData.addRow(new String[] {
           VIEW_PROJECT_STAGES,
