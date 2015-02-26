@@ -116,7 +116,7 @@
         &separator;
         <FlowPanel style="&section;" data="TaskUsers">
           <Label text="=crmTaskObservers" style="&top1;" />
-          <MultiSelector viewName="Users" property="Observers" renderColumns="FirstName LastName"
+          <MultiSelector name="Observers" viewName="Users" property="Observers" renderColumns="FirstName LastName"
             editSource="CompanyPerson" newRowEnabled="false" style="&inp2x;" disablable="true"
             label="=crmTaskObservers" />
         </FlowPanel>
