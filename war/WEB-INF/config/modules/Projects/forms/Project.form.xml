@@ -174,7 +174,7 @@
         <ChildGrid name="ProjectDates" relColumn="Project" />
       </page>
       <page>
-        <text>=income</text>
+        <text>=prjIncomePlan</text>
         <ChildGrid name="ProjectIncomes" relColumn="Project" />
       </page>
       <page>
