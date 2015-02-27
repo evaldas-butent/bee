@@ -46,6 +46,7 @@ import com.butent.bee.shared.rights.Module;
 import com.butent.bee.shared.rights.ModuleAndSub;
 import com.butent.bee.shared.rights.SubModule;
 import com.butent.bee.shared.time.TimeUtils;
+import com.butent.bee.shared.utils.ArrayUtils;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.Codec;
 import com.butent.webservice.ButentWS;
@@ -140,6 +141,9 @@ public class TradeModuleBean implements BeeModule {
     } else if (BeeUtils.same(svc, SVC_SEND_TO_ERP)) {
       response = sendToERP(reqInfo.getParameter(VAR_VIEW_NAME),
           DataUtils.parseIdSet(reqInfo.getParameter(VAR_ID_LIST)));
+
+    } else if (BeeUtils.same(svc, SVC_SEND_COMPANY_TO_ERP)) {
+      response = sendCompanyToERP(reqInfo.getParameterLong(COL_COMPANY));
 
     } else {
       String msg = BeeUtils.joinWords("Trade service not recognized:", svc);
@@ -418,6 +422,52 @@ public class TradeModuleBean implements BeeModule {
     return ResponseObject.response(tdd);
   }
 
+  private ResponseObject sendCompanyToERP(Long companyId) {
+    ResponseObject response = ResponseObject.emptyResponse();
+    SimpleRow data = null;
+
+    if (DataUtils.isId(companyId)) {
+      data = qs.getRow(new SqlSelect()
+          .addFields(TBL_COMPANIES, COL_COMPANY_NAME, COL_COMPANY_CODE, COL_COMPANY_VAT_CODE)
+          .addField(TBL_COMPANY_TYPES, COL_COMPANY_TYPE_NAME, COL_COMPANY_TYPE)
+          .addFields(TBL_CONTACTS, COL_ADDRESS, COL_POST_INDEX)
+          .addField(TBL_CITIES, COL_CITY_NAME, COL_CITY)
+          .addField(TBL_COUNTRIES, COL_COUNTRY_NAME, COL_COUNTRY)
+          .addFrom(TBL_COMPANIES)
+          .addFromLeft(TBL_COMPANY_TYPES,
+              sys.joinTables(TBL_COMPANY_TYPES, TBL_COMPANIES, COL_COMPANY_TYPE))
+          .addFromLeft(TBL_CONTACTS, sys.joinTables(TBL_CONTACTS, TBL_COMPANIES, COL_CONTACT))
+          .addFromLeft(TBL_CITIES, sys.joinTables(TBL_CITIES, TBL_CONTACTS, COL_CITY))
+          .addFromLeft(TBL_COUNTRIES, sys.joinTables(TBL_COUNTRIES, TBL_CONTACTS, COL_COUNTRY))
+          .setWhere(sys.idEquals(TBL_COMPANIES, companyId)));
+    }
+    if (data != null) {
+      try {
+        String remoteNamespace = prm.getText(PRM_ERP_NAMESPACE);
+        String remoteAddress = prm.getText(PRM_ERP_ADDRESS);
+        String remoteLogin = prm.getText(PRM_ERP_LOGIN);
+        String remotePassword = prm.getText(PRM_ERP_PASSWORD);
+
+        String company = BeeUtils.joinItems(data.getValue(COL_COMPANY_NAME),
+            data.getValue(COL_COMPANY_TYPE));
+
+        company = ButentWS.connect(remoteNamespace, remoteAddress, remoteLogin, remotePassword)
+            .importClient(company, data.getValue(COL_COMPANY_CODE),
+                data.getValue(COL_COMPANY_VAT_CODE), data.getValue(COL_ADDRESS),
+                data.getValue(COL_POST_INDEX), data.getValue(COL_CITY),
+                data.getValue(COL_COUNTRY));
+
+        response.setResponse(company);
+
+      } catch (BeeException e) {
+        response.addError(e);
+      }
+    } else {
+      response.addError("Wrong company id", companyId);
+    }
+    return response;
+  }
+
   private ResponseObject sendToERP(String viewName, Set<Long> ids) {
     if (!sys.isView(viewName)) {
       return ResponseObject.error("Wrong view name");
@@ -556,7 +606,32 @@ public class TradeModuleBean implements BeeModule {
         wsItem.setPrice(item.getValue(COL_TRADE_ITEM_PRICE));
         wsItem.setVat(item.getValue(COL_TRADE_VAT), item.getBoolean(COL_TRADE_VAT_PERC),
             item.getBoolean(COL_TRADE_VAT_PLUS));
-        wsItem.setArticle(item.getValue(COL_TRADE_ITEM_ARTICLE));
+
+        String article = item.getValue(COL_TRADE_ITEM_ARTICLE);
+        Long incomeId = BeeUtils.toLongOrNull(ArrayUtils.getQuietly(BeeUtils.split(article, '_'),
+            1));
+
+        if (DataUtils.isId(incomeId)) {
+          if (BeeUtils.same(tradeItems, TBL_SALE_ITEMS)) {
+            article = BeeUtils.join("_",
+                BeeUtils.joinWords(invoice.getValue(COL_TRADE_INVOICE_PREFIX),
+                    invoice.getValue(COL_TRADE_INVOICE_NO)), incomeId);
+          } else {
+            SimpleRow row = qs.getRow(new SqlSelect()
+                .addFields(TBL_SALES, COL_TRADE_INVOICE_PREFIX, COL_TRADE_INVOICE_NO)
+                .addFrom(TransportConstants.TBL_CARGO_INCOMES)
+                .addFromInner(TBL_SALES,
+                    sys.joinTables(TBL_SALES, TransportConstants.TBL_CARGO_INCOMES, COL_SALE))
+                .setWhere(sys.idEquals(TransportConstants.TBL_CARGO_INCOMES, incomeId)));
+
+            if (row != null) {
+              article = BeeUtils.join("_",
+                  BeeUtils.joinWords(row.getValue(COL_TRADE_INVOICE_PREFIX),
+                      row.getValue(COL_TRADE_INVOICE_NO)), incomeId);
+            }
+          }
+        }
+        wsItem.setArticle(article);
         wsItem.setNote(item.getValue(COL_TRADE_ITEM_NOTE));
       }
       if (response.hasErrors()) {

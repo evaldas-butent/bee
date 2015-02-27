@@ -27,9 +27,9 @@
       </row>
 
       <row>
-        <Label style="&lbl1;" for="Code" />
+        <Label style="&lbl1;" for="Code" class="bee-required" />
         <InputText source="Code" style="&inp1;" />
-        <Label style="&lbl1;" for="VATCode" />
+        <Label style="&lbl1;" for="VATCode" class="bee-required" />
         <InputText source="VATCode" style="&inp1;" upperCase="true" />
         <Label style="&lbl1;" module="Transport" for="ExchangeCode" />
         <InputText source="ExchangeCode" style="&inp1;" module="Transport" />
@@ -74,14 +74,14 @@
             </row>
             
             <row for="Address">
-              <Label text="=address" style="&lbl1;" />
+              <Label text="=address" style="&lbl1;" class="bee-required" />
               <cell colSpan="5">
                 <InputText source="Address" style="width: 100%;" />
               </cell>
             </row>
             
             <row>
-              <Label text="=city" style="&lbl1;" for="City" />
+              <Label text="=city" style="&lbl1;" for="City" class="bee-required" />
               <DataSelector source="City">
                 <selectorColumn source="Name" />
                 <selectorColumn source="CountryName" />
@@ -90,7 +90,7 @@
                 </selectorColumn>
               </DataSelector>
           
-              <Label text="=country" style="&lbl1;" for="Country" />
+              <Label text="=country" style="&lbl1;" for="Country" class="bee-required" />
               <Table for="Country">
                 <row>
                   <DataSelector source="Country" style="width: 120px;">

@@ -44,6 +44,7 @@
       </style>
     </CalcColumn>
     <RelColumn name="Manager"/>
+    <DataColumn name="Number" />
     <DataColumn name="Note" />
   </g:columns>
 </g:Grid>

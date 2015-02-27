@@ -11,7 +11,7 @@
         <IdColumn name="Assessment" aggregate="MAX" />
       </ExternalJoin>
 
-      <SimpleColumn name="Number" label="=refNumber" />
+      <SimpleColumn name="Number" alias="RefNumber" label="=refNumber" />
       <SimpleColumn name="Cmr" />
       <SimpleColumn name="Notes" />
 
@@ -116,6 +116,7 @@
       <SimpleColumn name="CreditDays" alias="CompanyCreditDays" />
     </SimpleJoin>
 
+    <SimpleColumn name="Number" />
     <SimpleColumn name="Note" />
     
     <HiddenColumn name="Sale" />

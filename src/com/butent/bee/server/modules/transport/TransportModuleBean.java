@@ -995,6 +995,16 @@ public class TransportModuleBean implements BeeModule, HasTimerService {
     }
     IsCondition wh = sys.idInList(TBL_CARGO_INCOMES, idList);
 
+    DateTime invoiceDate = qs.getDateTime(new SqlSelect()
+        .addFields(TBL_SALES, COL_TRADE_DATE)
+        .addFrom(TBL_SALES)
+        .setWhere(sys.idEquals(TBL_SALES, saleId)));
+
+    qs.updateData(new SqlUpdate(TBL_CARGO_INCOMES)
+        .addConstant(COL_SALE, saleId)
+        .addConstant(COL_DATE, invoiceDate.getDate().getTime())
+        .setWhere(wh));
+
     String loadPlace = SqlUtils.uniqueName();
     String unloadPlace = SqlUtils.uniqueName();
     String loadCountry = SqlUtils.uniqueName();
@@ -1007,9 +1017,9 @@ public class TransportModuleBean implements BeeModule, HasTimerService {
             COL_CARGO, COL_TRADE_VAT_PLUS, COL_TRADE_VAT, COL_TRADE_VAT_PERC,
             COL_SHOW_ADDITIONAL_ROUTE, COL_ADDITIONAL_ROUTE)
         .addExpr(SqlUtils.concat(
-            SqlUtils.field(TBL_CARGO_INCOMES, sys.getIdName(TBL_CARGO_INCOMES)),
+            SqlUtils.field(TBL_ASSESSMENTS, sys.getIdName(TBL_ASSESSMENTS)),
             SqlUtils.constant("_"),
-            SqlUtils.field(TBL_ASSESSMENTS, sys.getIdName(TBL_ASSESSMENTS))),
+            SqlUtils.field(TBL_CARGO_INCOMES, sys.getIdName(TBL_CARGO_INCOMES))),
             COL_TRADE_ITEM_ARTICLE)
         .addField(loadPlace, COL_DATE, COL_LOADING_PLACE)
         .addField(unloadPlace, COL_DATE, COL_UNLOADING_PLACE)
@@ -1052,7 +1062,6 @@ public class TransportModuleBean implements BeeModule, HasTimerService {
             SqlUtils.field(TBL_ORDERS, COL_ORDER_DATE)), SqlUtils.constant(currency));
 
     SimpleRowSet rs = qs.getData(ss.addExpr(xpr, COL_AMOUNT));
-    ResponseObject response = new ResponseObject();
 
     Multimap<Long, String> drivers = HashMultimap.create();
     Multimap<Long, String> vehicles = HashMultimap.create();
@@ -1203,15 +1212,7 @@ public class TransportModuleBean implements BeeModule, HasTimerService {
       qs.insertData(insert.addConstant(COL_TRADE_ITEM_NOTE,
           XmlUtils.createString("CargoInfo", nodes.toArray(new String[0]))));
     }
-    DateTime invoiceDate = qs.getDateTime(new SqlSelect()
-        .addFields(TBL_SALES, COL_TRADE_DATE)
-        .addFrom(TBL_SALES)
-        .setWhere(sys.idEquals(TBL_SALES, saleId)));
-
-    return response.addErrorsFrom(qs.updateDataWithResponse(new SqlUpdate(TBL_CARGO_INCOMES)
-        .addConstant(COL_SALE, saleId)
-        .addConstant(COL_DATE, invoiceDate.getDate().getTime())
-        .setWhere(wh)));
+    return ResponseObject.emptyResponse();
   }
 
   private ResponseObject createPurchaseInvoiceItems(Long purchaseId, Long currency,
@@ -1227,6 +1228,16 @@ public class TransportModuleBean implements BeeModule, HasTimerService {
       return ResponseObject.error("Empty ID list");
     }
     IsCondition wh = sys.idInList(TBL_CARGO_EXPENSES, idList);
+
+    DateTime invoiceDate = qs.getDateTime(new SqlSelect()
+        .addFields(TBL_PURCHASES, COL_TRADE_DATE)
+        .addFrom(TBL_PURCHASES)
+        .setWhere(sys.idEquals(TBL_PURCHASES, purchaseId)));
+
+    qs.updateData(new SqlUpdate(TBL_CARGO_EXPENSES)
+        .addConstant(COL_PURCHASE, purchaseId)
+        .addConstant(COL_DATE, invoiceDate.getDate().getTime())
+        .setWhere(wh));
 
     SqlSelect ss = new SqlSelect()
         .addFields(TBL_CARGO_EXPENSES, COL_TRADE_VAT_PLUS, COL_TRADE_VAT, COL_TRADE_VAT_PERC,
@@ -1257,14 +1268,13 @@ public class TransportModuleBean implements BeeModule, HasTimerService {
             SqlUtils.field(TBL_ORDERS, COL_ORDER_DATE)), SqlUtils.constant(currency));
 
     SimpleRowSet rs = qs.getData(ss.addSum(xpr, COL_AMOUNT));
-    ResponseObject response = new ResponseObject();
 
     for (SimpleRow row : rs) {
       SqlInsert insert = new SqlInsert(TBL_PURCHASE_ITEMS)
           .addConstant(COL_PURCHASE, purchaseId)
           .addConstant(COL_ITEM, row.getLong(COL_ITEM))
           .addConstant(COL_TRADE_ITEM_ARTICLE,
-              row.getValue(VAR_INCOME) + "_" + row.getValue(COL_ASSESSMENT))
+              row.getValue(COL_ASSESSMENT) + "_" + row.getValue(VAR_INCOME))
           .addConstant(COL_TRADE_ITEM_QUANTITY, 1)
           .addConstant(COL_TRADE_ITEM_PRICE, BeeUtils.round(row.getDouble(COL_AMOUNT), 2))
           .addConstant(COL_TRADE_VAT_PLUS, row.getBoolean(COL_TRADE_VAT_PLUS))
@@ -1273,15 +1283,7 @@ public class TransportModuleBean implements BeeModule, HasTimerService {
 
       qs.insertData(insert);
     }
-    DateTime invoiceDate = qs.getDateTime(new SqlSelect()
-        .addFields(TBL_PURCHASES, COL_TRADE_DATE)
-        .addFrom(TBL_PURCHASES)
-        .setWhere(sys.idEquals(TBL_PURCHASES, purchaseId)));
-
-    return response.addErrorsFrom(qs.updateDataWithResponse(new SqlUpdate(TBL_CARGO_EXPENSES)
-        .addConstant(COL_PURCHASE, purchaseId)
-        .addConstant(COL_DATE, invoiceDate.getDate().getTime())
-        .setWhere(wh)));
+    return ResponseObject.emptyResponse();
   }
 
   private ResponseObject getAssessmentQuantityReport(RequestInfo reqInfo) {

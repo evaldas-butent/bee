@@ -12,16 +12,16 @@
   width="70" widthUnit="%" height="90" heightUnit="%"
   >
 
-  <FlowPanel class="bee-PrintableForm bee-tr-Contract-Print" style="padding: 10px; background-color: white;">
+  <FlowPanel class="bee-PrintableForm bee-tr-Contract-Print" style="background-color: white;">
     <css id="&form;">
       .&form;-table {border-collapse:collapse; width:100%;}
-      .&form;-table td {border:1px solid black; padding:2px;}
+      .&form;-table td {border:1px solid black; width:calc(100%/2);padding-top: 0 !important;}
       .&form;-forwarder .bee-co-companyInfo-name .bee-co-companyInfo-item:before {content: "Carrier: "; font-weight:normal;}
       .&form;-customer .bee-co-companyInfo-name .bee-co-companyInfo-item:before {content: "Customer: "; font-weight:normal;}
       .&form;-customer .bee-co-companyInfo-mobile, .&form;-customer .bee-co-companyInfo-bankaccount {display:none;}
       .&form;-LoadingDate, .&form;-UnloadingDate {display:inline-block; margin-right:10px;}
     </css>
-    <Image url="images/HL_logo.jpg" style="width:50%; display:block; margin:auto;" />
+    <Image url="images/HL_logo.jpg" style="width:35%; display:block; margin:auto;" />
     <TextLabel style="text-align:center; &bold;">
       <render><ui:expression>'Freight transportation contract No. ' + row.Assessment + '-' + (row.Number ? row.Number : rowId)</ui:expression></render>
     </TextLabel>
@@ -111,7 +111,7 @@ return descr;
       <row>
         <cell colSpan="2">
           <HtmlPanel>
-            <span style="white-space:pre-wrap; font-size:smaller;">Obligations of the parties:
+            <span style="white-space:pre-wrap; font-size: 8px; line-height: 9px; font-family: 'Tahoma';">Obligations of the parties:
 
 1. Carriage is performed under conditions of CMR Convention. During performance of this Carriage Contract the Carrier must have a valid carrier’s CMR insurance policy, licenses and permits, necessary for the legal performance of above carriage. 
 2. The Customer undertakes to organize loading and customs clearance (if needed) within  24 hours (CIS countries 48 hours) from the moment of vehicle arrival at the loading place, including cargo fixing and sealing works. This condition applies to a car on arrival at the loading location until 10:00 local time.
@@ -146,7 +146,7 @@ return descr;
       </row>
       <row>
         <FlowPanel />
-        <TextLabel source="Position" style="margin-top:5px;">
+        <TextLabel source="Position" style="margin-top:5px; text-decoration: underline;">
           <renderToken source="FirstName" />
           <renderToken source="LastName" />
         </TextLabel>

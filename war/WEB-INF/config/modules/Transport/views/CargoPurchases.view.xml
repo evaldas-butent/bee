@@ -66,6 +66,7 @@
       <SimpleColumn name="CreditDays" />
     </SimpleJoin>
 
+    <SimpleColumn name="Number" />
     <SimpleColumn name="Note" />
     <HiddenColumn name="Purchase" />
   </Columns>

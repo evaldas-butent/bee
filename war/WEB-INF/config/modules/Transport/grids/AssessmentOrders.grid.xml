@@ -14,7 +14,9 @@
     </IdColumn>
     <RelColumn name="Assessment" width="40" editEnabled="true"
       editViewName="Assessments" editSource="Assessment" module="Transport.Logistics"/>
-    <DataColumn name="Date" width="110" readOnly="true" />
+    <DataColumn name="Date" width="110" readOnly="true">
+        <footer aggregate="count" /> 
+    </DataColumn>
     <RelColumn name="Manager" />
     <DataColumn name="OrderStatus" width="70" />
     <DataColumn name="Number" width="70" />

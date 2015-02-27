@@ -1,5 +1,6 @@
 package com.butent.bee.client.modules.classifiers;
 
+import com.google.gwt.core.client.Scheduler.ScheduledCommand;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.event.shared.HasHandlers;
@@ -9,11 +10,13 @@ import static com.butent.bee.shared.modules.classifiers.ClassifierConstants.*;
 import static com.butent.bee.shared.modules.trade.TradeConstants.*;
 
 import com.butent.bee.client.BeeKeeper;
+import com.butent.bee.client.Global;
 import com.butent.bee.client.communication.ParameterList;
 import com.butent.bee.client.communication.ResponseCallback;
 import com.butent.bee.client.data.Data;
 import com.butent.bee.client.data.Queries;
 import com.butent.bee.client.data.Queries.IntCallback;
+import com.butent.bee.client.dialog.ConfirmationCallback;
 import com.butent.bee.client.dom.DomUtils;
 import com.butent.bee.client.grid.ChildGrid;
 import com.butent.bee.client.grid.HtmlTable;
@@ -31,7 +34,9 @@ import com.butent.bee.client.view.form.interceptor.FormInterceptor;
 import com.butent.bee.client.view.grid.GridView;
 import com.butent.bee.client.view.grid.interceptor.AbstractGridInterceptor;
 import com.butent.bee.client.view.grid.interceptor.GridInterceptor;
+import com.butent.bee.client.widget.Button;
 import com.butent.bee.client.widget.FaLabel;
+import com.butent.bee.client.widget.Image;
 import com.butent.bee.shared.communication.ResponseObject;
 import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.IsRow;
@@ -40,12 +45,16 @@ import com.butent.bee.shared.data.filter.Filter;
 import com.butent.bee.shared.data.value.Value;
 import com.butent.bee.shared.font.FontAwesome;
 import com.butent.bee.shared.i18n.Localized;
+import com.butent.bee.shared.modules.trade.TradeConstants;
+import com.butent.bee.shared.rights.RegulatedWidget;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.Codec;
 
 import java.util.Map;
 
-public class CompanyForm extends AbstractFormInterceptor {
+public class CompanyForm extends AbstractFormInterceptor implements ClickHandler {
+
+  private final Button toErp = new Button(Localized.getConstants().trSendToERP(), this);
 
   @Override
   public void afterCreateWidget(String name, IdentifiableWidget widget,
@@ -174,6 +183,38 @@ public class CompanyForm extends AbstractFormInterceptor {
   }
 
   @Override
+  public void onClick(ClickEvent event) {
+    if (DataUtils.isNewRow(getActiveRow())) {
+      return;
+    }
+    Global.confirm(Localized.getConstants().trSendToERP() + "?", new ConfirmationCallback() {
+      @Override
+      public void onConfirm() {
+        final HeaderView header = getHeaderView();
+        header.clearCommandPanel();
+        header.addCommandItem(new Image(Global.getImages().loading()));
+
+        ParameterList args = TradeKeeper.createArgs(TradeConstants.SVC_SEND_COMPANY_TO_ERP);
+        args.addDataItem(COL_COMPANY, getActiveRowId());
+
+        BeeKeeper.getRpc().makePostRequest(args, new ResponseCallback() {
+          @Override
+          public void onResponse(ResponseObject response) {
+            header.clearCommandPanel();
+            header.addCommandItem(toErp);
+            response.notify(getFormView());
+
+            if (!response.hasErrors()) {
+              getFormView().notifyInfo(Localized.getConstants().ok() + ":",
+                  response.getResponseAsString());
+            }
+          }
+        });
+      }
+    });
+  }
+
+  @Override
   public void onReadyForInsert(HasHandlers listener, ReadyForInsertEvent event) {
     if (!checkRequired()) {
       event.consume();
@@ -189,6 +230,22 @@ public class CompanyForm extends AbstractFormInterceptor {
       return;
     }
     super.onSaveChanges(listener, event);
+  }
+
+  @Override
+  public boolean onStartEdit(FormView form, IsRow row, ScheduledCommand focusCommand) {
+    if (BeeKeeper.getUser().isWidgetVisible(RegulatedWidget.TO_ERP)) {
+      HeaderView header = form.getViewPresenter().getHeader();
+      header.clearCommandPanel();
+      header.addCommandItem(toErp);
+    }
+    return super.onStartEdit(form, row, focusCommand);
+  }
+
+  @Override
+  public void onStartNewRow(FormView form, IsRow oldRow, IsRow newRow) {
+    form.getViewPresenter().getHeader().clearCommandPanel();
+    super.onStartNewRow(form, oldRow, newRow);
   }
 
   private boolean checkRequired() {

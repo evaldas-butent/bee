@@ -10,7 +10,7 @@
     <SelectionColumn name="Select" width="20" />
     <RelColumn name="Assessment" label="ID" editEnabled="true" filterSupplier="value"
       editViewName="Assessments" editSource="Assessment" module="Transport.Logistics"/>
-    <DataColumn name="Number" />
+    <DataColumn name="RefNumber" />
     <DataColumn name="OrderDate" />
     <RelColumn name="OrderNo" editEnabled="true" editSource="Order" visible="false" />
     <DataColumn name="Status" />    
@@ -51,6 +51,7 @@
     </CalcColumn>
     <RelColumn name="Manager"  />
 
+    <DataColumn name="Number" />
     <DataColumn name="Note" />
 
     <DataColumn name="Vehicle" visible="false" />

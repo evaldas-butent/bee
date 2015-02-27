@@ -12,16 +12,16 @@
   width="70" widthUnit="%" height="90" heightUnit="%"
   >
 
-  <FlowPanel class="bee-PrintableForm bee-tr-Contract-Print" style="padding: 10px; background-color: white;">
+  <FlowPanel class="bee-PrintableForm bee-tr-Contract-Print" style="background-color: white;">
     <css id="&form;">
       .&form;-table {border-collapse:collapse; width:100%;}
-      .&form;-table td {border:1px solid black; padding:2px;}
+      .&form;-table td {border:1px solid black; width:calc(100%/2);padding-top: 0 !important;}
       .&form;-forwarder .bee-co-companyInfo-name .bee-co-companyInfo-item:before {content: "Vežėjas: "; font-weight:normal;}
       .&form;-customer .bee-co-companyInfo-name .bee-co-companyInfo-item:before {content: "Užsakovas: "; font-weight:normal;}
       .&form;-customer .bee-co-companyInfo-mobile, .&form;-customer .bee-co-companyInfo-bankaccount {display:none;}
       .&form;-LoadingDate, .&form;-UnloadingDate {display:inline-block; margin-right:10px;}
     </css>
-    <Image url="images/HL_logo.jpg" style="width:50%; display:block; margin:auto;" />
+    <Image url="images/HL_logo.jpg" style="width:35%; display:block; margin:auto;" />
     <TextLabel style="text-align:center; &bold;">
       <render><ui:expression>'Krovinio pervežimo sutartis Nr. ' + row.Assessment + '-' + (row.Number ? row.Number : rowId)</ui:expression></render>
     </TextLabel>
@@ -107,7 +107,7 @@ return descr;
       <row>
         <cell colSpan="2">
           <HtmlPanel>
-            <span style="white-space:pre-wrap; font-size:smaller;">Šalių įsipareigojimai 
+            <span style="white-space:pre-wrap; font-size: 8px; line-height: 9px; font-family: 'Tahoma';">Šalių įsipareigojimai:
 
 1. Pervežimas vykdomas CMR Konvencijos sąlygomis. Vežėjas šios Pervežimo sutarties vykdymo metu privalo turėti galiojantį vežėjo CMR draudimo polisą, licencijas ir leidimus, reikalingus teisėtam aukščiau nurodyto pervežimo vykdymui. 
 2. Užsakovas įsipareigoja organizuoti pakrovimą ir muitinės įforminimą (esant būtinybei) per  24 val. (NVS 48 val.) nuo automobilio atvykimo į pakrovimo vietą momento, įskaitant krovinio tvirtinimo ir plombavimo darbus. Ši sąlyga galioja automobiliui atvykus į krovos vietą ne vėliau kaip iki 10:00 pakrovimo vietos laiku.
@@ -142,7 +142,7 @@ return descr;
       </row>
       <row>
         <FlowPanel />
-        <TextLabel source="Position" style="margin-top:5px;">
+        <TextLabel source="Position" style="margin-top:5px; text-decoration: underline;">
           <renderToken source="FirstName" />
           <renderToken source="LastName" />
           <renderToken source="Position" prefix=", " />
