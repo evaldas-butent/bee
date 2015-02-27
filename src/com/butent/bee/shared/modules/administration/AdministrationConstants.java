@@ -193,6 +193,8 @@ public final class AdministrationConstants {
   public static final String VIEW_RIGHTS = "Rights";
   public static final String VIEW_USER_ROLES = "UserRoles";
 
+  public static final String VIEW_DEPARTMENTS = "Departments";
+
   public static final String VIEW_FILTERS = "Filters";
 
   public static final String VIEW_FAVORITES = "Favorites";
@@ -337,6 +339,8 @@ public final class AdministrationConstants {
 
   public static final String ALS_ROLE_NAME = "RoleName";
 
+  public static final String ALS_DEPARTMENT_PARENT_NAME = "ParentName";
+
   public static final String FORM_USER = "User";
   public static final String FORM_USER_SETTINGS = "UserSettings";
   public static final String FORM_DEPARTMENT = "Department";
@@ -366,6 +370,9 @@ public final class AdministrationConstants {
   public static final String PRM_URL = "Url";
 
   public static final String PROP_ICON = "Icon";
+
+  public static final String PROP_DEPARTMENT_FULL_NAME = "FullName";
+  public static final char DEPARTMENT_NAME_SEPARATOR = '\n';
 
   private AdministrationConstants() {
   }
