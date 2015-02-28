@@ -23,10 +23,13 @@ import com.butent.bee.shared.utils.BeeUtils;
 
 import java.util.Collections;
 
-public class DepartmentForm extends AbstractFormInterceptor implements SelectorEvent.Handler {
+class DepartmentForm extends AbstractFormInterceptor implements SelectorEvent.Handler {
 
   private String parentSelectorId;
   private String headSelectorId;
+
+  DepartmentForm() {
+  }
 
   @Override
   public void afterCreateWidget(String name, IdentifiableWidget widget,

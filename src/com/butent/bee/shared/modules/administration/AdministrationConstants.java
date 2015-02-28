@@ -194,6 +194,7 @@ public final class AdministrationConstants {
   public static final String VIEW_USER_ROLES = "UserRoles";
 
   public static final String VIEW_DEPARTMENTS = "Departments";
+  public static final String VIEW_DEPARTMENT_EMPLOYEES = "DepartmentEmployees";
 
   public static final String VIEW_FILTERS = "Filters";
 
@@ -344,6 +345,7 @@ public final class AdministrationConstants {
   public static final String FORM_USER = "User";
   public static final String FORM_USER_SETTINGS = "UserSettings";
   public static final String FORM_DEPARTMENT = "Department";
+  public static final String FORM_COMPANY_STRUCTURE = "CompanyStructure";
   public static final String FORM_NEW_ROLE = "NewRole";
 
   public static final String FORM_IMPORT_OPTION = "ImportOption";
