@@ -6,6 +6,5 @@
   enabledActions="refresh add"
   >
 
-  <FlowPanel>
-  </FlowPanel>
+  <FlowPanel class="bee-orgChart-panel" />
 </f:Form>
