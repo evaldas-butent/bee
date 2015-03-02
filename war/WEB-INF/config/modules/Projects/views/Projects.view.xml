@@ -64,7 +64,6 @@
     <SimpleColumn name="Currency" />
     <SimpleJoin joinType="LEFT" name="Currency">
       <SimpleColumn name="Name" alias="CurrencyName" />
-      <SimpleColumn name="MinorName" />
     </SimpleJoin>
     <SimpleColumn name="Description" />
     
@@ -95,6 +94,7 @@
       -->
     </SimpleColumn> 
     
+    <SimpleColumn name="Expenses" alias="OtherExpenses" label="=prjOtherExpenses" />
     <SimpleColumn name="Contract" />
     <SimpleJoin name="Contract" joinType="LEFT">
       <SimpleColumn name="Document" />

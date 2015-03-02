@@ -109,6 +109,11 @@
       {...}.fillTasksTimeData(ViewQueryEvent event)
       -->
     </SimpleColumn>
+    
+    <SimpleColumn name="Currency"/>
+    <SimpleJoin name="Currency" joinType="LEFT">
+      <SimpleColumn name="Name" alias="CurrencyName" />
+    </SimpleJoin>
   </Columns>
   
   <Order>

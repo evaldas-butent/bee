@@ -25,6 +25,9 @@
     
       <SimpleColumn name="Price" alias="ItemPrice" />
       <SimpleColumn name="Currency" alias="ItemCurrency" />
+      <SimpleJoin name="Currency" joinType="LEFT">
+        <SimpleColumn name="Name" alias="ItemCurrencyName" />
+      </SimpleJoin>
       
       <SimpleColumn name="Cost" alias="ItemCost" />
       <SimpleColumn name="CostCurrency" alias="ItemCostCurrency" />

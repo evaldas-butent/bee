@@ -53,6 +53,9 @@
     
     <SimpleColumn name="Expenses" />
     <SimpleColumn name="Currency" />
+    <SimpleJoin name="Currency" joinType="LEFT">
+      <SimpleColumn name="Name" alias="CurrencyName" />
+    </SimpleJoin>
     
     <SimpleColumn name="ActualExpenses" label="=prjActualExpenses">
        <x:number>0</x:number> 

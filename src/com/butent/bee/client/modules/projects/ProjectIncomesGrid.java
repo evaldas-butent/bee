@@ -101,31 +101,16 @@ public class ProjectIncomesGrid extends AbstractGridInterceptor {
     return super.afterCreateColumn(columnName, dataColumns, column, header, footer, editableColumn);
   }
 
+
+  @Override
+  public void beforeRefresh(GridPresenter presenter) {
+    initHeader(presenter);
+  }
+
   @Override
   public void afterCreatePresenter(GridPresenter presenter) {
-    GridView gridView = presenter.getGridView();
-    presenter.getHeader().clearCommandPanel();
-    final FormView parentForm = ViewHelper.getForm(presenter.getMainView());
-    long owner = BeeUtils.unbox(parentForm.getLongValue(COL_PROJECT_OWNER));
-
-    if (gridView == null || gridView.isReadOnly()
-        || !BeeKeeper.getUser().canCreateData(VIEW_PROJECT_INCOMES)
-        || owner != BeeKeeper.getUser().getUserId()) {
-
-      return;
-    }
-    FaLabel createInvoiceButton = new FaLabel(FontAwesome.LIST_ALT);
-    createInvoiceButton.setTitle(Localized.getConstants().createInvoice());
-
-    createInvoiceButton.addClickHandler(new ClickHandler() {
-
-      @Override
-      public void onClick(ClickEvent arg0) {
-        createInvoice();
-      }
-    });
-
-    presenter.getHeader().addCommandItem(createInvoiceButton);
+    initHeader(presenter);
+    super.afterCreatePresenter(presenter);
   }
 
   @Override
@@ -256,6 +241,32 @@ public class ProjectIncomesGrid extends AbstractGridInterceptor {
             });
       }
     });
+  }
+
+  private void initHeader(GridPresenter presenter) {
+    GridView gridView = presenter.getGridView();
+    presenter.getHeader().clearCommandPanel();
+    final FormView parentForm = ViewHelper.getForm(presenter.getMainView());
+    long owner = BeeUtils.unbox(parentForm.getLongValue(COL_PROJECT_OWNER));
+
+    if (gridView == null || gridView.isReadOnly()
+        || !BeeKeeper.getUser().canCreateData(VIEW_PROJECT_INCOMES)
+        || owner != BeeKeeper.getUser().getUserId()) {
+
+      return;
+    }
+    FaLabel createInvoiceButton = new FaLabel(FontAwesome.LIST_ALT);
+    createInvoiceButton.setTitle(Localized.getConstants().createInvoice());
+
+    createInvoiceButton.addClickHandler(new ClickHandler() {
+
+      @Override
+      public void onClick(ClickEvent arg0) {
+        createInvoice();
+      }
+    });
+
+    presenter.getHeader().addCommandItem(createInvoiceButton);
   }
 
 }

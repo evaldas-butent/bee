@@ -79,9 +79,13 @@
             <Label for="Price" text="=prjPrice" style="&lbl;" />
             
             <InputDecimal source="Price" scale="2" style="&inp6;" />
+            <DataSelector source="Currency" for="Price" newRowEnabled="false" editEnabled="false"
+              style="width: 50px;" readOnly="true" />
            
             <Label for="ContractPrice" text="=salePrice" style="&lbl;" />
             <InputDecimal source="ContractPrice" scale="2" style="&inp6;" />
+            <DataSelector source="Currency" for="ContractPrice" newRowEnabled="false" editEnabled="false"
+              style="width: 50px;" readOnly="true" />
           </row>
 
           <row>
@@ -152,9 +156,13 @@
 
               <Label text="=salePrice" style="&lbl;" />
               <InputText source="ContractPrice" style="&inp4;" />
+              <DataSelector source="Currency" for="ContractPrice" newRowEnabled="false" editEnabled="false"
+              style="width: 50px;" readOnly="true" />
 
-              <Label text="=prjOtherExpenses" style="&lbl;" />
-              <InputText style="&inp4;" />
+              <Label for="OtherExpenses" text="=prjOtherExpenses" style="&lbl;" />
+              <InputText source="OtherExpenses" style="&inp4;" />
+              <DataSelector source="Currency" for="OtherExpenses" newRowEnabled="false" editEnabled="false"
+              style="width: 50px;" readOnly="true" />
             </row>
           </Table>
           <ChildGrid name="RelatedDocuments" relColumn="Project"
