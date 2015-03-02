@@ -16,6 +16,7 @@ import static com.butent.bee.shared.modules.classifiers.ClassifierConstants.*;
 
 import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.data.Queries;
+import com.butent.bee.client.data.Queries.IntCallback;
 import com.butent.bee.client.data.RowCallback;
 import com.butent.bee.client.data.RowEditor;
 import com.butent.bee.client.data.RowFactory;
@@ -30,6 +31,7 @@ import com.butent.bee.client.view.form.FormView;
 import com.butent.bee.client.view.form.interceptor.AbstractFormInterceptor;
 import com.butent.bee.client.view.form.interceptor.FormInterceptor;
 import com.butent.bee.client.widget.DndDiv;
+import com.butent.bee.client.widget.Label;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.BiConsumer;
 import com.butent.bee.shared.data.BeeRow;
@@ -44,6 +46,7 @@ import com.butent.bee.shared.data.event.MultiDeleteEvent;
 import com.butent.bee.shared.data.event.RowDeleteEvent;
 import com.butent.bee.shared.data.event.RowInsertEvent;
 import com.butent.bee.shared.data.event.RowUpdateEvent;
+import com.butent.bee.shared.data.value.LongValue;
 import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogUtils;
 import com.butent.bee.shared.ui.Action;
@@ -318,6 +321,8 @@ class CompanyStructureForm extends AbstractFormInterceptor implements HandlesAll
 
     panel.add(label);
 
+    panel.add(new Label(department.getProperty(PROP_DEPARTMENT_FULL_NAME)));
+
     Long head = DataUtils.getLong(departments, department, COL_DEPARTMENT_HEAD);
     if (DataUtils.isId(head)) {
       panel.add(renderBoss(department));
@@ -332,16 +337,183 @@ class CompanyStructureForm extends AbstractFormInterceptor implements HandlesAll
         new Predicate<Object>() {
           @Override
           public boolean apply(Object input) {
-            return true;
+            if (validateDataType(DndHelper.getDataType()) && validateDndContent(input)) {
+              return isTarget(DndHelper.getDataType(), (Long) input, id);
+            } else {
+              return false;
+            }
           }
-        }, new BiConsumer<DropEvent, Object>() {
+        },
+        new BiConsumer<DropEvent, Object>() {
           @Override
           public void accept(DropEvent t, Object u) {
             panel.removeStyleName(STYLE_DEPARTMENT_DRAG_OVER);
+
+            if (validateDataType(DndHelper.getDataType()) && validateDndContent(u)) {
+              acceptDrop(DndHelper.getDataType(), (Long) u, id);
+            }
           }
         });
 
     return panel;
+  }
+
+  private static boolean validateDataType(String dataType) {
+    return DND_TYPES.contains(dataType);
+  }
+
+  private static boolean validateDndContent(Object content) {
+    if (content instanceof Long) {
+      return DataUtils.isId((Long) content);
+    } else {
+      return false;
+    }
+  }
+
+  private Long findEmployee(long depId, long persId) {
+    if (DataUtils.isEmpty(employees)) {
+      return null;
+    }
+
+    int departmentIndex = employees.getColumnIndex(COL_DEPARTMENT);
+    int personIndex = employees.getColumnIndex(COL_COMPANY_PERSON);
+
+    for (BeeRow row : employees) {
+      if (Objects.equals(row.getLong(departmentIndex), depId)
+          && Objects.equals(row.getLong(personIndex), persId)) {
+        return row.getId();
+      }
+    }
+    return null;
+  }
+
+  private boolean hasEmployee(long depId, long persId) {
+    return DataUtils.isId(findEmployee(depId, persId));
+  }
+
+  private Long getEmployeeRelation(long emplId, String colName) {
+    if (DataUtils.isEmpty(employees)) {
+      return null;
+    }
+
+    BeeRow row = employees.getRowById(emplId);
+    if (row == null) {
+      return null;
+    } else {
+      return DataUtils.getLong(employees, row, colName);
+    }
+  }
+
+  private Long getDepartmentParent(long depId) {
+    if (DataUtils.isEmpty(departments)) {
+      return null;
+    }
+
+    BeeRow row = departments.getRowById(depId);
+    if (row == null) {
+      return null;
+    } else {
+      return DataUtils.getLong(departments, row, COL_DEPARTMENT_PARENT);
+    }
+  }
+
+  private boolean isTarget(String dataType, long source, long target) {
+    switch (dataType) {
+      case DATA_TYPE_DEPARTMENT:
+        return !Objects.equals(source, target)
+            && !Objects.equals(getDepartmentParent(source), target);
+
+      case DATA_TYPE_BOSS:
+      case DATA_TYPE_EMPLOYEE:
+        Long persId = getEmployeeRelation(source, COL_COMPANY_PERSON);
+        return DataUtils.isId(persId) && !hasEmployee(target, persId);
+
+      default:
+        return false;
+    }
+  }
+
+  private void acceptDrop(String dataType, final long source, final long target) {
+    switch (dataType) {
+      case DATA_TYPE_DEPARTMENT:
+        Long unbind = null;
+        if (!DataUtils.isEmpty(departments)) {
+          Long parent = target;
+
+          for (int i = 0; i < departments.getNumberOfRows(); i++) {
+            Long p = getDepartmentParent(parent);
+
+            if (p == null) {
+              break;
+            } else if (Objects.equals(p, source)) {
+              unbind = parent;
+              break;
+            } else {
+              parent = p;
+            }
+          }
+        }
+
+        final IntCallback callback = new IntCallback() {
+          @Override
+          public void onSuccess(Integer result) {
+            if (BeeUtils.isPositive(result)) {
+              fireRefresh(VIEW_DEPARTMENTS);
+            }
+          }
+        };
+
+        if (unbind == null) {
+          updateDepartmentParent(source, target, callback);
+
+        } else {
+          updateDepartmentParent(unbind, getDepartmentParent(source), new IntCallback() {
+            @Override
+            public void onSuccess(Integer result) {
+              if (BeeUtils.isPositive(result)) {
+                updateDepartmentParent(source, target, callback);
+              }
+            }
+          });
+        }
+
+        break;
+
+      case DATA_TYPE_BOSS:
+        Long oldDep = getEmployeeRelation(source, COL_DEPARTMENT);
+        Queries.update(VIEW_DEPARTMENTS, oldDep, COL_DEPARTMENT_HEAD, LongValue.getNullValue(),
+            new IntCallback() {
+              @Override
+              public void onSuccess(Integer result) {
+                if (BeeUtils.isPositive(result)) {
+                  fireRefresh(VIEW_DEPARTMENTS);
+                  updateEmployeeDepartment(source, target);
+                }
+              }
+            });
+
+        break;
+
+      case DATA_TYPE_EMPLOYEE:
+        updateEmployeeDepartment(source, target);
+        break;
+    }
+  }
+
+  private static void updateDepartmentParent(long depId, Long parent, IntCallback callback) {
+    Queries.update(VIEW_DEPARTMENTS, depId, COL_DEPARTMENT_PARENT, new LongValue(parent), callback);
+  }
+
+  private static void updateEmployeeDepartment(long emplId, long depId) {
+    Queries.update(VIEW_DEPARTMENT_EMPLOYEES, emplId, COL_DEPARTMENT, new LongValue(depId),
+        new IntCallback() {
+          @Override
+          public void onSuccess(Integer result) {
+            if (BeeUtils.isPositive(result)) {
+              fireRefresh(VIEW_DEPARTMENT_EMPLOYEES);
+            }
+          }
+        });
   }
 
   private Widget renderBoss(BeeRow department) {
@@ -350,8 +522,11 @@ class CompanyStructureForm extends AbstractFormInterceptor implements HandlesAll
         DataUtils.getString(departments, department, COL_LAST_NAME),
         DataUtils.getString(departments, department, ALS_POSITION_NAME)));
 
-    addEmployeeHandlers(widget, DataUtils.getLong(departments, department, COL_COMPANY_PERSON),
-        DATA_TYPE_BOSS);
+    Long emplId = findEmployee(department.getId(),
+        DataUtils.getLong(departments, department, COL_COMPANY_PERSON));
+    if (DataUtils.isId(emplId)) {
+      addEmployeeHandlers(widget, emplId, DATA_TYPE_BOSS);
+    }
 
     return widget;
   }
@@ -386,8 +561,7 @@ class CompanyStructureForm extends AbstractFormInterceptor implements HandlesAll
         DataUtils.getString(employees, employee, COL_LAST_NAME),
         DataUtils.getString(employees, employee, ALS_POSITION_NAME)));
 
-    addEmployeeHandlers(widget, DataUtils.getLong(employees, employee, COL_COMPANY_PERSON),
-        DATA_TYPE_EMPLOYEE);
+    addEmployeeHandlers(widget, employee.getId(), DATA_TYPE_EMPLOYEE);
 
     return widget;
   }
@@ -402,11 +576,12 @@ class CompanyStructureForm extends AbstractFormInterceptor implements HandlesAll
     return panel;
   }
 
-  private void addEmployeeHandlers(DndDiv widget, final long id, String dataType) {
+  private void addEmployeeHandlers(DndDiv widget, final long emplId, String dataType) {
     widget.addClickHandler(new ClickHandler() {
       @Override
       public void onClick(ClickEvent event) {
-        RowEditor.open(VIEW_COMPANY_PERSONS, id, Opener.MODAL, new RowCallback() {
+        Long persId = getEmployeeRelation(emplId, COL_COMPANY_PERSON);
+        RowEditor.open(VIEW_COMPANY_PERSONS, persId, Opener.MODAL, new RowCallback() {
           @Override
           public void onSuccess(BeeRow result) {
             refresh();
@@ -417,16 +592,20 @@ class CompanyStructureForm extends AbstractFormInterceptor implements HandlesAll
 
     switch (dataType) {
       case DATA_TYPE_BOSS:
-        DndHelper.makeSource(widget, dataType, id, STYLE_BOSS_DRAG);
+        DndHelper.makeSource(widget, dataType, emplId, STYLE_BOSS_DRAG);
         break;
 
       case DATA_TYPE_EMPLOYEE:
-        DndHelper.makeSource(widget, dataType, id, STYLE_EMPLOYEE_DRAG);
+        DndHelper.makeSource(widget, dataType, emplId, STYLE_EMPLOYEE_DRAG);
         break;
     }
   }
 
   private static String join(String firstName, String lastName, String position) {
     return BeeUtils.joinItems(BeeUtils.joinWords(firstName, lastName), position);
+  }
+
+  private static void fireRefresh(String viewName) {
+    DataChangeEvent.fireRefresh(BeeKeeper.getBus(), viewName);
   }
 }

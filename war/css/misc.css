@@ -11,7 +11,7 @@
   border-radius: 5px;
   box-shadow: rgba(0, 0, 0, 0.5) 3px 3px 3px;
   background-image: linear-gradient(to bottom, #edf7ff, #cde7ee);
-  min-height: 30px;
+  min-height: 100px;
 }
 .bee-orgChart-department-label {
   cursor: pointer;
