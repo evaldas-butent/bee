@@ -14,28 +14,15 @@ import com.butent.bee.shared.utils.BeeUtils;
 
 public class PersonsCompaniesGrid extends AbstractGridInterceptor {
 
-  private String gridType;
-  private String viewType;
-
-  public PersonsCompaniesGrid(String gridType) {
-    this.gridType = gridType;
-
-    if (BeeUtils.same(ClassifierConstants.GRID_PERSON_COMPANIES, gridType)) {
-      this.viewType = ClassifierConstants.VIEW_PERSONS;
-    } else if (BeeUtils.same(ClassifierConstants.GRID_COMPANY_PERSONS, gridType)) {
-      this.viewType = ClassifierConstants.VIEW_COMPANIES;
-    }
-  }
-
   @Override
   public GridInterceptor getInstance() {
-    return new PersonsCompaniesGrid(gridType);
+    return new PersonsCompaniesGrid();
   }
 
   @Override
   public boolean onStartNewRow(GridView gridView, IsRow oldRow, IsRow newRow) {
 
-    if (viewType != null) {
+    if (gridView != null) {
       GridPresenter presenter = getGridPresenter();
       FormView parentForm = ViewHelper.getForm(presenter.getMainView().asWidget());
 
@@ -47,7 +34,7 @@ public class PersonsCompaniesGrid extends AbstractGridInterceptor {
         return false;
       }
 
-      if (BeeUtils.same(parentForm.getViewName(), viewType)) {
+      if (BeeUtils.same(parentForm.getViewName(), ClassifierConstants.VIEW_PERSONS)) {
         DataInfo info = Data.getDataInfo(parentForm.getViewName());
 
         int phoneIdx = info.getColumnIndex(ClassifierConstants.COL_PHONE);

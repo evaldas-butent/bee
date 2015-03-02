@@ -70,7 +70,7 @@
 
         <Label for="Object" />
         <DataSelector source="Object" renderColumns="ObjectName" 
-          choiceColumns="CompanyName ObjectName ObjectAddress" newRowEnabled="true"
+          choiceColumns="CompanyName ObjectName ObjectAddress" newRowEnabled="true" newRowForm="CompanyObject"
           style="&inpw;" />
       </row>
 

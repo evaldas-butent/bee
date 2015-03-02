@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE Form[
+  <!ENTITY inpw "width: 200px;">
+  <!ENTITY inpdt "width: 120px;">
+]>
+<f:Form xmlns="http://www.butent.com/widget" xmlns:f="http://www.butent.com/form"
+  xmlns:ui="http://www.butent.com/ui" name="CompanyObject" viewName="CompanyObjects"
+  width="300" height="150">
+
+  <FlowPanel class="flexBox-vertical">
+    <Table>
+      <row>
+        <Label for="ObjectName" text="=name" class="bee-required" />
+        <InputText source="ObjectName" style="&inpw;" />
+      </row>
+
+      <row>
+        <Label for="ObjectAddress" text="=address" />
+        <InputText source="ObjectAddress" style="&inpw;" />
+      </row>
+
+      <row>
+        <Label for="CompanyName" text="=company" class="bee-required" />
+        <InputText source="CompanyName" style="&inpw;" />
+      </row>
+    </Table>
+  </FlowPanel>
+</f:Form>

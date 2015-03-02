@@ -27,9 +27,9 @@
       </row>
 
       <row>
-        <Label text="=activities" horizontalAlignment="right" />
+        <Label text="=activity" horizontalAlignment="right" />
         <DataSelector source="Activity" style="width: 200px;"
-          label="=activities" />
+          label="=activity" />
       </row>
 
       <row>

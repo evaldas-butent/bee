@@ -1,13 +1,17 @@
 package com.butent.bee.client.modules.trade.acts;
 
 import com.google.gwt.core.client.Scheduler.ScheduledCommand;
+import com.google.gwt.user.client.ui.Widget;
 
 import static com.butent.bee.shared.modules.trade.acts.TradeActConstants.*;
 
 import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.communication.ParameterList;
 import com.butent.bee.client.communication.ResponseCallback;
+import com.butent.bee.client.composite.DataSelector;
 import com.butent.bee.client.composite.UnboundSelector;
+import com.butent.bee.client.data.Data;
+import com.butent.bee.client.event.logical.SelectorEvent;
 import com.butent.bee.client.modules.transport.PrintInvoiceInterceptor;
 import com.butent.bee.client.output.PrintFormInterceptor;
 import com.butent.bee.client.ui.UiHelper;
@@ -16,15 +20,18 @@ import com.butent.bee.client.view.form.FormView;
 import com.butent.bee.client.view.form.interceptor.FormInterceptor;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.communication.ResponseObject;
+import com.butent.bee.shared.data.BeeRow;
 import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.IsRow;
 import com.butent.bee.shared.i18n.Localized;
+import com.butent.bee.shared.modules.classifiers.ClassifierConstants;
+import com.butent.bee.shared.modules.trade.acts.TradeActConstants;
 import com.butent.bee.shared.modules.trade.acts.TradeActKind;
 import com.butent.bee.shared.utils.BeeUtils;
 
 import java.util.Collection;
 
-public class TradeActForm extends PrintFormInterceptor {
+public class TradeActForm extends PrintFormInterceptor implements SelectorEvent.Handler {
 
   private static final String STYLE_PREFIX = TradeActKeeper.STYLE_PREFIX + "form-";
 
@@ -48,6 +55,13 @@ public class TradeActForm extends PrintFormInterceptor {
   public void afterRefresh(FormView form, IsRow row) {
     TradeActKind kind = TradeActKeeper.getKind(row, getDataIndex(COL_TA_KIND));
     String caption;
+    DataSelector ds;
+    Widget widget = form.getWidgetBySource(TradeActConstants.COL_TA_OBJECT);
+
+    if (widget instanceof DataSelector) {
+      ds = (DataSelector) widget;
+      ds.addSelectorHandler(this);
+    }
 
     if (DataUtils.isNewRow(row)) {
       form.removeStyleName(STYLE_EDIT);
@@ -152,5 +166,26 @@ public class TradeActForm extends PrintFormInterceptor {
     }
 
     return super.onStartEdit(form, row, focusCommand);
+  }
+
+  @Override
+  public void onDataSelector(SelectorEvent event) {
+    if (event.isNewRow()) {
+
+      final BeeRow row = event.getNewRow();
+      Data.setColumnReadOnly(ClassifierConstants.VIEW_COMPANY_OBJECTS,
+          ClassifierConstants.ALS_COMPANY_NAME);
+
+      Data.setValue(ClassifierConstants.VIEW_COMPANY_OBJECTS, row,
+          ClassifierConstants.ALS_COMPANY_NAME,
+          BeeUtils.trim(getStringValue(ClassifierConstants.ALS_COMPANY_NAME)));
+
+      Data.setValue(ClassifierConstants.VIEW_COMPANY_OBJECTS, row,
+          ClassifierConstants.COL_COMPANY,
+          BeeUtils.trim(getStringValue(ClassifierConstants.COL_COMPANY)));
+
+      Data.setColumnReadOnly(ClassifierConstants.VIEW_COMPANY_OBJECTS,
+          ClassifierConstants.COL_COMPANY);
+    }
   }
 }

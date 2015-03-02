@@ -14,7 +14,7 @@
 
       <row>
         <Label for="Person" />
-        <DataSelector source="Person" style="width: 200px" />
+        <DataSelector name="Person" source="Person" style="width: 200px" />
         <Label for="Position" />
         <DataSelector source="Position" style="width: 200px" />
       </row>

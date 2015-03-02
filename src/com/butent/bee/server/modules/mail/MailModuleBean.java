@@ -1373,7 +1373,7 @@ public class MailModuleBean implements BeeModule, HasTimerService {
     }
   }
 
-  private void storeMessage(MailAccount account, MimeMessage message, MailFolder folder,
+  public void storeMessage(MailAccount account, MimeMessage message, MailFolder folder,
       Long repliedFrom) throws MessagingException {
 
     if (DataUtils.isId(repliedFrom)) {

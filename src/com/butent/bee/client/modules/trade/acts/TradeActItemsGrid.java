@@ -20,6 +20,7 @@ import com.butent.bee.client.composite.FileCollector;
 import com.butent.bee.client.data.Data;
 import com.butent.bee.client.data.IdCallback;
 import com.butent.bee.client.data.Queries;
+import com.butent.bee.client.data.Queries.IntCallback;
 import com.butent.bee.client.event.logical.RenderingEvent;
 import com.butent.bee.client.grid.ColumnFooter;
 import com.butent.bee.client.grid.ColumnHeader;
@@ -55,13 +56,17 @@ import com.butent.bee.shared.data.IsRow;
 import com.butent.bee.shared.data.RowFunction;
 import com.butent.bee.shared.data.event.DataChangeEvent;
 import com.butent.bee.shared.data.event.ModificationEvent;
+import com.butent.bee.shared.data.filter.Filter;
+import com.butent.bee.shared.data.value.DateValue;
 import com.butent.bee.shared.data.view.RowInfoList;
 import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.io.FileInfo;
 import com.butent.bee.shared.modules.classifiers.ItemPrice;
+import com.butent.bee.shared.modules.trade.acts.TradeActConstants;
 import com.butent.bee.shared.modules.trade.acts.TradeActKind;
 import com.butent.bee.shared.modules.trade.acts.TradeActUtils;
 import com.butent.bee.shared.time.DateTime;
+import com.butent.bee.shared.time.TimeUtils;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.EnumUtils;
 
@@ -188,7 +193,7 @@ public class TradeActItemsGrid extends AbstractGridInterceptor implements
 
   @Override
   public boolean beforeAddRow(GridPresenter presenter, boolean copy) {
-    IsRow parentRow = ViewHelper.getFormRow(presenter.getMainView());
+    final IsRow parentRow = ViewHelper.getFormRow(presenter.getMainView());
 
     if (parentRow != null) {
       final TradeActKind kind = TradeActKeeper.getKind(VIEW_TRADE_ACTS, parentRow);
@@ -235,6 +240,22 @@ public class TradeActItemsGrid extends AbstractGridInterceptor implements
                                     VIEW_TRADE_ACT_SERVICES);
                               }
                             });
+                          } else {
+
+                            Filter flt =
+                                Filter.and(Filter.equals("TradeAct", parentAct.getId()), Filter
+                                    .notNull(COL_TIME_UNIT), Filter
+                                    .isNull(TradeActConstants.COL_TA_SERVICE_TO));
+
+                            Queries.update(VIEW_TRADE_ACT_SERVICES, flt, COL_TA_SERVICE_TO,
+                                new DateValue(TimeUtils.today()), new IntCallback() {
+
+                                  @Override
+                                  public void onSuccess(Integer result) {
+                                    DataChangeEvent.fireRefresh(BeeKeeper.getBus(),
+                                        VIEW_TRADE_ACT_SERVICES);
+                                  }
+                                });
                           }
                         }
                       });

@@ -419,7 +419,7 @@ public class MailAccount {
     return findFolder(accountInfo.getSystemFolder(SystemFolder.Inbox));
   }
 
-  MailFolder getSentFolder() {
+  public MailFolder getSentFolder() {
     return findFolder(accountInfo.getSystemFolder(SystemFolder.Sent));
   }
 

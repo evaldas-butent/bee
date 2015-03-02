@@ -26,6 +26,7 @@ import com.butent.bee.server.modules.BeeModule;
 import com.butent.bee.server.modules.ParamHolderBean;
 import com.butent.bee.server.modules.administration.ExchangeUtils;
 import com.butent.bee.server.modules.classifiers.ClassifiersModuleBean;
+import com.butent.bee.server.modules.mail.MailAccount;
 import com.butent.bee.server.modules.mail.MailModuleBean;
 import com.butent.bee.server.modules.mail.MailStorageBean;
 import com.butent.bee.server.sql.IsExpression;
@@ -91,6 +92,7 @@ import javax.ejb.EJB;
 import javax.ejb.LocalBean;
 import javax.ejb.Stateless;
 import javax.mail.MessagingException;
+import javax.mail.internet.MimeMessage;
 
 @Stateless
 @LocalBean
@@ -910,12 +912,14 @@ public class TradeModuleBean implements BeeModule {
       }
 
       try {
-        mail.sendMail(mailStore.getAccount(senderMailAccountId),
+        MailAccount account = mailStore.getAccount(senderMailAccountId);
+        MimeMessage message = mail.sendMail(account,
             ArrayUtils.toArray(
                 Lists.newArrayList(emails.get(companyId).values()
                     )), null, null, subject, mailDocument
                 .buildLines(),
-            null, true);
+            null);
+        mail.storeMessage(account, message, account.getSentFolder(), null);
         sentEmailCompanyIds.add(companyId);
       } catch (MessagingException | BeeRuntimeException ex) {
         logger.error(ex);

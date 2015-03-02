@@ -2066,6 +2066,12 @@ public class TradeActBean implements HasTimerService {
     Set<Long> categories = DataUtils.parseIdSet(reqInfo.getParameter(COL_CATEGORY));
     Set<Long> services = DataUtils.parseIdSet(reqInfo.getParameter(COL_TA_ITEM));
 
+    Set<Long> operations = DataUtils.parseIdSet(reqInfo.getParameter(COL_TA_OPERATION));
+    Set<Long> objects = DataUtils.parseIdSet(reqInfo.getParameter(COL_TA_OBJECT));
+
+    Set<Long> status = DataUtils.parseIdSet(reqInfo.getParameter(COL_TA_STATUS));
+    Set<Long> series = DataUtils.parseIdSet(reqInfo.getParameter(COL_TA_SERIES));
+
     List<String> groupBy = NameUtils.toList(reqInfo.getParameter(Service.VAR_GROUP_BY));
 
     HasConditions actConditions = SqlUtils.and();
@@ -2113,6 +2119,18 @@ public class TradeActBean implements HasTimerService {
     }
     if (!services.isEmpty()) {
       serviceConditions.add(SqlUtils.inList(TBL_TRADE_ACT_SERVICES, COL_TA_ITEM, services));
+    }
+    if (!operations.isEmpty()) {
+      actConditions.add(SqlUtils.inList(TBL_TRADE_ACTS, COL_TA_OPERATION, operations));
+    }
+    if (!series.isEmpty()) {
+      actConditions.add(SqlUtils.inList(TBL_TRADE_ACTS, COL_TA_SERIES, series));
+    }
+    if (!objects.isEmpty()) {
+      actConditions.add(SqlUtils.inList(TBL_TRADE_ACTS, COL_TA_OBJECT, objects));
+    }
+    if (!status.isEmpty()) {
+      actConditions.add(SqlUtils.inList(TBL_TRADE_ACTS, COL_TA_STATUS, status));
     }
 
     String actIdName = sys.getIdName(TBL_TRADE_ACTS);
