@@ -158,7 +158,11 @@
 
           <row>
             <Label for="Department" data="Departments" />
-            <DataSelector source="Department" data="Departments" summarize="true" />
+            <DataSelector source="Department" data="Departments" renderColumns="DepartmentName"
+              choiceColumns="FullName" searchableColumns="DepartmentName" visibleLines="7"
+              selectorClass="bee-BranchSelector" newRowEnabled="false" summarize="true">
+              <ui:rowRenderer type="branch" />
+            </DataSelector>
 
             <Label for="ExternalCode" />
             <InputText source="ExternalCode" summarize="true" />

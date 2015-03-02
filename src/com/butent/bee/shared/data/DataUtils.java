@@ -237,11 +237,23 @@ public final class DataUtils {
     }
   }
 
+  public static List<BeeRow> filterRows(BeeRowSet rowSet, String columnId, Long value) {
+    List<BeeRow> result = new ArrayList<>();
+    int index = rowSet.getColumnIndex(columnId);
+
+    for (BeeRow row : rowSet) {
+      if (Objects.equals(row.getLong(index), value)) {
+        result.add(row);
+      }
+    }
+    return result;
+  }
+
   public static List<BeeRow> filterRows(BeeRowSet rowSet, String columnId, String value) {
     List<BeeRow> result = new ArrayList<>();
     int index = rowSet.getColumnIndex(columnId);
 
-    for (BeeRow row : rowSet.getRows()) {
+    for (BeeRow row : rowSet) {
       if (BeeUtils.equalsTrim(row.getString(index), value)) {
         result.add(row);
       }

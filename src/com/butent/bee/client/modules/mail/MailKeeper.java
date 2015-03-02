@@ -23,7 +23,6 @@ import com.butent.bee.client.view.ViewCallback;
 import com.butent.bee.client.view.ViewFactory;
 import com.butent.bee.client.view.ViewHelper;
 import com.butent.bee.client.view.ViewSupplier;
-import com.butent.bee.client.view.form.FormView;
 import com.butent.bee.shared.BiConsumer;
 import com.butent.bee.shared.communication.ResponseObject;
 import com.butent.bee.shared.data.DataUtils;
@@ -63,7 +62,7 @@ public final class MailKeeper {
           @Override
           public void execute() {
             if (activePanel != null && Objects.equals(activePanel.getCurrentFolderId(), folderId)) {
-              activePanel.refreshMessages();
+              activePanel.refreshMessages(true);
             }
           }
         };
@@ -116,15 +115,8 @@ public final class MailKeeper {
       }
 
       @Override
-      public boolean read(final Long id) {
-        FormFactory.openForm(FORM_MAIL_MESSAGE, new MailMessage() {
-          @Override
-          public void onLoad(FormView form) {
-            requery(COL_PLACE, id, false);
-            super.onLoad(form);
-          }
-        });
-        return true;
+      public boolean read(Long id) {
+        return false;
       }
     });
     BeeKeeper.getBus().registerRowActionHandler(new RowActionEvent.Handler() {

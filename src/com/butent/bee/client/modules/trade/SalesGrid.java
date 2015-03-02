@@ -1,4 +1,4 @@
-package com.butent.bee.client.modules.service;
+package com.butent.bee.client.modules.trade;
 
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
@@ -9,7 +9,6 @@ import com.butent.bee.client.communication.ParameterList;
 import com.butent.bee.client.communication.ResponseCallback;
 import com.butent.bee.client.data.Data;
 import com.butent.bee.client.dialog.ConfirmationCallback;
-import com.butent.bee.client.modules.trade.TradeKeeper;
 import com.butent.bee.client.presenter.GridPresenter;
 import com.butent.bee.client.view.HeaderView;
 import com.butent.bee.client.view.grid.GridView.SelectedRows;
@@ -27,7 +26,7 @@ import com.butent.bee.shared.modules.trade.TradeConstants;
 import java.util.HashSet;
 import java.util.Set;
 
-public class ServiceInvoicesGrid extends AbstractGridInterceptor implements ClickHandler {
+public class SalesGrid extends AbstractGridInterceptor implements ClickHandler {
 
   private final Button action = new Button(Localized.getConstants().trSendToERP(), this);
 
@@ -39,7 +38,7 @@ public class ServiceInvoicesGrid extends AbstractGridInterceptor implements Clic
 
   @Override
   public GridInterceptor getInstance() {
-    return new ServiceInvoicesGrid();
+    return new SalesGrid();
   }
 
   @Override

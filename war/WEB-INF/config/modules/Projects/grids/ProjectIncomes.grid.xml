@@ -25,6 +25,7 @@
     </DataColumn>
     <CalcColumn name="ItemPrices" type="string" cellType="html"
       label="=taItemPrices" width="100" />
+    <RelColumn name="ItemCurrency" renderColumns="ItemCurrencyName"  readOnly="true"/>
     <DataColumn name="Discount" carry="true" flexGrow="0">
       <footer evaluator="discount" scale="2" />
     </DataColumn>
@@ -49,4 +50,8 @@
       editEnabled="true" editForm="SalesInvoice" editViewName="ProjectInvoices" />
     <DataColumn name="Note" visible="false" />
   </g:columns>
+  
+  <g:rowEditable>
+    <ui:expression>!row.Sale</ui:expression>
+  </g:rowEditable>
 </g:Grid>

@@ -53,7 +53,9 @@
         <Label for="ExpectedDuration" />
         <InputTime name="ExpectedDuration" source="ExpectedDuration" step="&timeStep;" style="width: 50px;" />
         <Label for="ExpectedExpenses" text="=prjExpenses" style="margin-left:-140px;" />
-      <InputDecimal source="ExpectedExpenses" style="&inp3;" disablable="true" scale="2"/>
+        <InputDecimal source="ExpectedExpenses" style="&inp3;" disablable="true" scale="2"/>
+        <DataSelector source="Currency" for="ExpectedExpenses" newRowEnabled="false" editEnabled="false"
+              style="width: 50px;" readOnly="true" />
       </row>
 
       <row>
@@ -128,19 +130,20 @@
         <Label text="=crmTaskExecutorGroups" />
         <MultiSelector name="UserGroupSettings" viewName="UserGroupSettings"
           property="ExecutorGroups" renderColumns="Name" editPopup="true" newRowEnabled="false"
-          style="&inp2y;" label="=crmTaskExecutorGroups" filter="Owner {u} or Visibility 1" />
+          style="&inp2y;" label="=crmTaskExecutorGroups" filter="Owner {u} or Visibility 1">
+        </MultiSelector>
       </row>
 
       <row>
         <Label text="=crmTaskObservers" />
-        <MultiSelector viewName="Users" property="Observers" renderColumns="FirstName LastName"
+        <MultiSelector name="Observers" viewName="Users" property="Observers" renderColumns="FirstName LastName"
           editPopup="true" newRowEnabled="false" editSource="CompanyPerson" style="&inp2x;"
           label="=crmTaskObservers" />
       </row>
 
       <row>
         <Label text="=crmTaskObserverGroups" />
-        <MultiSelector viewName="UserGroupSettings" property="ObserverGroups" renderColumns="Name"
+        <MultiSelector name="ObserverGroups" viewName="UserGroupSettings" property="ObserverGroups" renderColumns="Name"
           editPopup="true" newRowEnabled="false" style="&inp2y;" label="=crmTaskObserverGroups"
           filter="Owner {u} or Visibility 1" />
       </row>

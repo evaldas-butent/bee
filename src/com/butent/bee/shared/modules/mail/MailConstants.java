@@ -39,12 +39,20 @@ public final class MailConstants {
       this.mask = mask;
     }
 
+    public int clear(Integer bits) {
+      return BeeUtils.unbox(bits) & ~getMask();
+    }
+
     public int getMask() {
       return mask;
     }
 
     public boolean isSet(Integer bits) {
       return (BeeUtils.unbox(bits) & getMask()) != 0;
+    }
+
+    public int set(Integer bits) {
+      return BeeUtils.unbox(bits) | getMask();
     }
   }
 
@@ -206,6 +214,7 @@ public final class MailConstants {
   public static final String COL_FOLDER = "Folder";
   public static final String COL_FLAGS = "Flags";
   public static final String COL_MESSAGE_UID = "MessageUID";
+  public static final String COL_REPLIED = "Replied";
 
   public static final String COL_RULE = "Rule";
   public static final String COL_RULE_ACTIVE = "Active";

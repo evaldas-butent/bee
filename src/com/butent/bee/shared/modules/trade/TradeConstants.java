@@ -135,6 +135,9 @@ public final class TradeConstants {
   public static final String FORM_DEBT_REPORT_TEMPLATE = "DebtReportTemplate";
   public static final String FORM_SALES_INVOICE = "SalesInvoice";
 
+  public static final String FORM_SALES_INVOICE = "SalesInvoice";
+  public static final String FORM_PRINT_SALES_INVOICE = "PrintSalesInvoice";
+
   private TradeConstants() {
   }
 }

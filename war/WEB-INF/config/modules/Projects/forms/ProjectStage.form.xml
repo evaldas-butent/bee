@@ -42,7 +42,11 @@
       
       <row>
         <Label for="Expenses" text="=prjExpenses" style="&lbl;" />
-        <InputDecimal source="Expenses" style="&inp3;" scale="2" />
+        <FlowPanel>
+          <InputDecimal source="Expenses" style="&inp3;" scale="2" />
+          <DataSelector source="Currency" for="Expenses" newRowEnabled="false" editEnabled="false"
+              style="width: 50px;" readOnly="true" />
+        </FlowPanel>
 
         <Label for="ExpectedTasksExpenses" text="=prjExpectedTaskExpenses" style="&lbl3;" />
         <InputDecimal source="ExpectedTasksExpenses" style="&inp3;" scale="2" />

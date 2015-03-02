@@ -336,6 +336,7 @@ public enum FormWidget {
 
   public static Relation createRelation(String viewName, Map<String, String> attributes,
       List<Element> children, Relation.RenderMode renderMode) {
+
     Relation relation = XmlUtils.getRelation(attributes, children);
 
     String source = attributes.get(UiConstants.ATTR_SOURCE);
@@ -573,6 +574,7 @@ public enum FormWidget {
 
   private static BeeColumn getColumn(List<BeeColumn> columns, Map<String, String> attributes,
       String key) {
+
     if (columns == null && attributes == null) {
       return null;
     }

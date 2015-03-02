@@ -26,6 +26,7 @@ import com.butent.bee.client.composite.FileGroup;
 import com.butent.bee.client.composite.MultiSelector;
 import com.butent.bee.client.data.Data;
 import com.butent.bee.client.data.Queries;
+import com.butent.bee.client.data.Queries.RowSetCallback;
 import com.butent.bee.client.data.RowCallback;
 import com.butent.bee.client.dom.DomUtils;
 import com.butent.bee.client.grid.HtmlTable;
@@ -33,6 +34,7 @@ import com.butent.bee.client.i18n.Format;
 import com.butent.bee.client.layout.Flow;
 import com.butent.bee.client.layout.Simple;
 import com.butent.bee.client.render.PhotoRenderer;
+import com.butent.bee.client.ui.FormFactory.WidgetDescriptionCallback;
 import com.butent.bee.client.ui.IdentifiableWidget;
 import com.butent.bee.client.utils.FileUtils;
 import com.butent.bee.client.view.HeaderView;
@@ -58,10 +60,12 @@ import com.butent.bee.shared.data.RelationUtils;
 import com.butent.bee.shared.data.event.DataChangeEvent;
 import com.butent.bee.shared.data.event.RowUpdateEvent;
 import com.butent.bee.shared.data.filter.Filter;
+import com.butent.bee.shared.data.value.Value;
 import com.butent.bee.shared.data.view.DataInfo;
 import com.butent.bee.shared.font.FontAwesome;
 import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.io.FileInfo;
+import com.butent.bee.shared.modules.administration.AdministrationConstants;
 import com.butent.bee.shared.modules.projects.ProjectConstants;
 import com.butent.bee.shared.modules.projects.ProjectStatus;
 import com.butent.bee.shared.modules.tasks.TaskConstants.TaskEvent;
@@ -96,6 +100,7 @@ class TaskEditor extends AbstractFormInterceptor {
   private static final String WIDGET_PROJECT_DATA_SUFFIX = "Data";
 
   private static final String STYLE_EXTENSION = CRM_STYLE_PREFIX + "taskExtension";
+  private static final String NAME_OBSERVERS = "Observers";
 
   private static final List<String> relations = Lists.newArrayList(PROP_COMPANIES, PROP_PERSONS,
       PROP_DOCUMENTS, PROP_APPOINTMENTS, PROP_DISCUSSIONS, PROP_SERVICE_OBJECTS, PROP_TASKS);
@@ -542,10 +547,21 @@ class TaskEditor extends AbstractFormInterceptor {
   }
 
   private final long userId;
+  private MultiSelector observers;
+  private List<Long> projectUsers;
 
   TaskEditor() {
     super();
     this.userId = BeeKeeper.getUser().getUserId();
+  }
+
+  @Override
+  public void afterCreateWidget(String name, IdentifiableWidget widget,
+      WidgetDescriptionCallback callback) {
+
+    if (BeeUtils.same(name, NAME_OBSERVERS) && widget instanceof MultiSelector) {
+      observers = (MultiSelector) widget;
+    }
   }
 
   @Override
@@ -583,7 +599,8 @@ class TaskEditor extends AbstractFormInterceptor {
       }
     }
 
-    setProjectStagesLimit(form, row);
+    setProjectStagesFilter(form, row);
+    setProjectUsersFilter(form, row);
   }
 
   @Override
@@ -719,7 +736,7 @@ class TaskEditor extends AbstractFormInterceptor {
     return false;
   }
 
-  private static void setProjectStagesLimit(FormView form, IsRow row) {
+  private static void setProjectStagesFilter(FormView form, IsRow row) {
     int idxProjectOwner = form.getDataIndex(ALS_PROJECT_OWNER);
     int idxProject = form.getDataIndex(ProjectConstants.COL_PROJECT);
     /* int idxTaskState = form.getDataIndex(COL_STATUS); */
@@ -1148,8 +1165,13 @@ class TaskEditor extends AbstractFormInterceptor {
   private void doForward() {
     final Long oldUser = getExecutor();
     Set<Long> exclusions = new HashSet<>();
+    Set<Long> filter = new HashSet<>();
     if (oldUser != null) {
       exclusions.add(oldUser);
+    }
+
+    if (!BeeUtils.isEmpty(getProjectUsers())) {
+      filter.addAll(getProjectUsers());
     }
 
     final TaskDialog dialog = new TaskDialog(Localized.getConstants().crmTaskForwarding());
@@ -1157,7 +1179,7 @@ class TaskEditor extends AbstractFormInterceptor {
     final String sid =
         dialog.addSelector(Localized.getConstants().crmTaskExecutor(), VIEW_USERS,
             Lists.newArrayList(COL_FIRST_NAME, COL_LAST_NAME),
-            true, exclusions);
+            true, exclusions, filter);
 
     final String cid = dialog.addComment(true);
 
@@ -1287,6 +1309,10 @@ class TaskEditor extends AbstractFormInterceptor {
 
   private Long getOwner() {
     return getLong(COL_OWNER);
+  }
+
+  private List<Long> getProjectUsers() {
+    return projectUsers;
   }
 
   private Integer getStatus() {
@@ -1459,5 +1485,67 @@ class TaskEditor extends AbstractFormInterceptor {
     };
 
     sendRequest(params, callback);
+  }
+
+  private void setProjectUsers(List<Long> projectUsers) {
+    this.projectUsers = projectUsers;
+  }
+
+  private void setProjectUsersFilter(final FormView form, IsRow row) {
+    int idxProjectOwner = form.getDataIndex(ALS_PROJECT_OWNER);
+    int idxProject = form.getDataIndex(ProjectConstants.COL_PROJECT);
+
+    setProjectUsers(null);
+
+    if (BeeConst.isUndef(idxProjectOwner)) {
+      return;
+    }
+
+    if (BeeConst.isUndef(idxProject)) {
+      return;
+    }
+
+    final long projectOwner = BeeUtils.unbox(row.getLong(idxProjectOwner));
+    long projectId = BeeUtils.unbox(row.getLong(idxProject));
+
+    if (!DataUtils.isId(projectId)) {
+      return;
+    }
+
+    if (observers != null) {
+      observers.setEnabled(false);
+    }
+
+    Queries.getRowSet(ProjectConstants.VIEW_PROJECT_USERS, Lists
+        .newArrayList(AdministrationConstants.COL_USER), Filter.isEqual(
+        ProjectConstants.COL_PROJECT, Value.getValue(projectId)), new RowSetCallback() {
+
+      @Override
+      public void onSuccess(BeeRowSet result) {
+        List<Long> userIds = Lists.newArrayList(projectOwner);
+        int idxUser = result.getColumnIndex(AdministrationConstants.COL_USER);
+
+        if (BeeConst.isUndef(idxUser)) {
+          Assert.untouchable();
+          return;
+        }
+
+        for (IsRow userRow : result) {
+          long projectUser = BeeUtils.unbox(userRow.getLong(idxUser));
+
+          if (DataUtils.isId(projectUser)) {
+            userIds.add(projectUser);
+          }
+        }
+
+        if (observers != null) {
+          observers.getOracle().setAdditionalFilter(Filter.idIn(userIds), true);
+          observers.setEnabled(true);
+        }
+
+        setProjectUsers(userIds);
+      }
+    });
+
   }
 }

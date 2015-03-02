@@ -912,6 +912,14 @@
   display: none;
 }
 
+.bee-BranchSelector .bee-DataSelector-cell {
+  border-bottom: 1px solid #ccc;
+}
+.bee-BranchSelector .bee-DataSelector-item {
+  display: block;
+  white-space: pre;
+}
+
 .bee-GridFormContainer, .bee-NewRowContainer, .bee-RowContainer {
   position: absolute;
   left: 0;

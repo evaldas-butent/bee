@@ -371,14 +371,13 @@ class MessageDispatcher {
         MailMessage mailMessage = (MailMessage) message;
 
         if (mailMessage.isValid()) {
-          boolean updated = mailMessage.messagesUpdated() || mailMessage.foldersUpdated();
-          boolean refreshFolders = updated
+          boolean refreshFolders = mailMessage.messagesUpdated() || mailMessage.foldersUpdated()
               || Objects.equals(mailMessage.getFlag(), MessageFlag.SEEN);
 
           if (Global.getNewsAggregator().hasSubscription(Feed.MAIL) && refreshFolders) {
             Global.getNewsAggregator().refresh();
           }
-          MailKeeper.refreshActivePanel(refreshFolders, updated ? mailMessage.getFolderId() : null);
+          MailKeeper.refreshActivePanel(refreshFolders, mailMessage.getFolderId());
 
         } else {
           logger.severe(mailMessage.getError());
