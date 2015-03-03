@@ -25,12 +25,14 @@ import com.butent.bee.client.event.EventUtils;
 import com.butent.bee.client.grid.HtmlTable;
 import com.butent.bee.client.layout.Flow;
 import com.butent.bee.client.presenter.Presenter;
+import com.butent.bee.client.render.PhotoRenderer;
 import com.butent.bee.client.ui.IdentifiableWidget;
 import com.butent.bee.client.ui.Opener;
 import com.butent.bee.client.view.form.FormView;
 import com.butent.bee.client.view.form.interceptor.AbstractFormInterceptor;
 import com.butent.bee.client.view.form.interceptor.FormInterceptor;
 import com.butent.bee.client.widget.DndDiv;
+import com.butent.bee.client.widget.Image;
 import com.butent.bee.client.widget.Label;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.BiConsumer;
@@ -83,12 +85,17 @@ class CompanyStructureForm extends AbstractFormInterceptor implements HandlesAll
   private static final String STYLE_DEPARTMENT_DRAG = STYLE_DEPARTMENT_PREFIX + "drag";
   private static final String STYLE_DEPARTMENT_DRAG_OVER = STYLE_DEPARTMENT_PREFIX + "dragOver";
 
-  private static final String STYLE_DEPARTMENT_BOSS = STYLE_DEPARTMENT_PREFIX + "boss";
-  private static final String STYLE_BOSS_DRAG = STYLE_DEPARTMENT_BOSS + "-drag";
+  private static final String STYLE_BOSS_PREFIX = STYLE_PREFIX + "boss-";
+  private static final String STYLE_BOSS_CONTAINER = STYLE_BOSS_PREFIX + "container";
+  private static final String STYLE_BOSS_LABEL = STYLE_BOSS_PREFIX + "label";
+  private static final String STYLE_BOSS_PHOTO = STYLE_BOSS_PREFIX + "photo";
+  private static final String STYLE_BOSS_DRAG = STYLE_BOSS_PREFIX + "drag";
 
   private static final String STYLE_EMPLOYEE_PREFIX = STYLE_PREFIX + "employee-";
   private static final String STYLE_EMPLOYEE_PANEL = STYLE_EMPLOYEE_PREFIX + "panel";
+  private static final String STYLE_EMPLOYEE_CONTAINER = STYLE_EMPLOYEE_PREFIX + "container";
   private static final String STYLE_EMPLOYEE_LABEL = STYLE_EMPLOYEE_PREFIX + "label";
+  private static final String STYLE_EMPLOYEE_PHOTO = STYLE_EMPLOYEE_PREFIX + "photo";
   private static final String STYLE_EMPLOYEE_DRAG = STYLE_EMPLOYEE_PREFIX + "drag";
 
   private static final String DATA_TYPE_DEPARTMENT = "OrgChartDepartment";
@@ -303,7 +310,14 @@ class CompanyStructureForm extends AbstractFormInterceptor implements HandlesAll
     BeeRow department = departments.getRowById(id);
 
     DndDiv label = new DndDiv(STYLE_DEPARTMENT_LABEL);
-    label.setText(DataUtils.getString(departments, department, COL_DEPARTMENT_NAME));
+
+    String name = DataUtils.getString(departments, department, COL_DEPARTMENT_NAME);
+    label.setText(name);
+
+    String fullName = department.getProperty(PROP_DEPARTMENT_FULL_NAME);
+    if (!BeeUtils.isEmpty(fullName) && !BeeUtils.equalsTrim(name, fullName)) {
+      label.setTitle(fullName);
+    }
 
     label.addClickHandler(new ClickHandler() {
       @Override
@@ -321,11 +335,12 @@ class CompanyStructureForm extends AbstractFormInterceptor implements HandlesAll
 
     panel.add(label);
 
-    panel.add(new Label(department.getProperty(PROP_DEPARTMENT_FULL_NAME)));
-
     Long head = DataUtils.getLong(departments, department, COL_DEPARTMENT_HEAD);
-    if (DataUtils.isId(head)) {
-      panel.add(renderBoss(department));
+    if (DataUtils.isId(head) && !DataUtils.isEmpty(employees)) {
+      BeeRow employee = employees.getRowById(head);
+      if (employee != null) {
+        panel.add(renderEmployee(employee, true));
+      }
     }
 
     List<BeeRow> depEmployees = filterEmployees(id, head);
@@ -370,7 +385,7 @@ class CompanyStructureForm extends AbstractFormInterceptor implements HandlesAll
     }
   }
 
-  private Long findEmployee(long depId, long persId) {
+  private BeeRow findEmployee(long depId, long persId) {
     if (DataUtils.isEmpty(employees)) {
       return null;
     }
@@ -381,14 +396,14 @@ class CompanyStructureForm extends AbstractFormInterceptor implements HandlesAll
     for (BeeRow row : employees) {
       if (Objects.equals(row.getLong(departmentIndex), depId)
           && Objects.equals(row.getLong(personIndex), persId)) {
-        return row.getId();
+        return row;
       }
     }
     return null;
   }
 
   private boolean hasEmployee(long depId, long persId) {
-    return DataUtils.isId(findEmployee(depId, persId));
+    return findEmployee(depId, persId) != null;
   }
 
   private Long getEmployeeRelation(long emplId, String colName) {
@@ -516,21 +531,6 @@ class CompanyStructureForm extends AbstractFormInterceptor implements HandlesAll
         });
   }
 
-  private Widget renderBoss(BeeRow department) {
-    DndDiv widget = new DndDiv(STYLE_DEPARTMENT_BOSS);
-    widget.setText(join(DataUtils.getString(departments, department, COL_FIRST_NAME),
-        DataUtils.getString(departments, department, COL_LAST_NAME),
-        DataUtils.getString(departments, department, ALS_POSITION_NAME)));
-
-    Long emplId = findEmployee(department.getId(),
-        DataUtils.getLong(departments, department, COL_COMPANY_PERSON));
-    if (DataUtils.isId(emplId)) {
-      addEmployeeHandlers(widget, emplId, DATA_TYPE_BOSS);
-    }
-
-    return widget;
-  }
-
   private List<BeeRow> filterEmployees(Long depId, Long exclude) {
     if (DataUtils.isEmpty(employees)) {
       return Collections.emptyList();
@@ -555,33 +555,50 @@ class CompanyStructureForm extends AbstractFormInterceptor implements HandlesAll
     }
   }
 
-  private Widget renderEmployee(BeeRow employee) {
-    DndDiv widget = new DndDiv(STYLE_EMPLOYEE_LABEL);
-    widget.setText(join(DataUtils.getString(employees, employee, COL_FIRST_NAME),
-        DataUtils.getString(employees, employee, COL_LAST_NAME),
-        DataUtils.getString(employees, employee, ALS_POSITION_NAME)));
+  private Widget renderEmployee(BeeRow employee, boolean boss) {
+    Flow container = new Flow();
+    container.addStyleName(boss ? STYLE_BOSS_CONTAINER : STYLE_EMPLOYEE_CONTAINER);
 
-    addEmployeeHandlers(widget, employee.getId(), DATA_TYPE_EMPLOYEE);
+    final long emplId = employee.getId();
 
-    return widget;
-  }
+    String fullName = BeeUtils.joinWords(
+        DataUtils.getString(employees, employee, COL_FIRST_NAME),
+        DataUtils.getString(employees, employee, COL_LAST_NAME));
 
-  private Widget renderEmployees(List<BeeRow> depEmployees) {
-    Flow panel = new Flow(STYLE_EMPLOYEE_PANEL);
+    String positionName = DataUtils.getString(employees, employee, ALS_POSITION_NAME);
+    String companyName = DataUtils.getString(employees, employee, ALS_COMPANY_NAME);
 
-    for (BeeRow employee : depEmployees) {
-      panel.add(renderEmployee(employee));
+    String photo = DataUtils.getString(employees, employee, COL_PHOTO);
+    if (!BeeUtils.isEmpty(photo)) {
+      Image image = new Image(PhotoRenderer.getUrl(photo));
+      image.addStyleName(boss ? STYLE_BOSS_PHOTO : STYLE_EMPLOYEE_PHOTO);
+
+      image.setTitle(BeeUtils.buildLines(fullName, positionName, companyName));
+
+      image.addClickHandler(new ClickHandler() {
+        @Override
+        public void onClick(ClickEvent event) {
+          Long person = getEmployeeRelation(emplId, COL_PERSON);
+          RowEditor.open(VIEW_PERSONS, person, Opener.MODAL, new RowCallback() {
+            @Override
+            public void onSuccess(BeeRow result) {
+              refresh();
+            }
+          });
+        }
+      });
+
+      container.add(image);
     }
 
-    return panel;
-  }
+    Label label = new Label(fullName);
+    label.addStyleName(boss ? STYLE_BOSS_LABEL : STYLE_EMPLOYEE_LABEL);
 
-  private void addEmployeeHandlers(DndDiv widget, final long emplId, String dataType) {
-    widget.addClickHandler(new ClickHandler() {
+    label.addClickHandler(new ClickHandler() {
       @Override
       public void onClick(ClickEvent event) {
-        Long persId = getEmployeeRelation(emplId, COL_COMPANY_PERSON);
-        RowEditor.open(VIEW_COMPANY_PERSONS, persId, Opener.MODAL, new RowCallback() {
+        Long cp = getEmployeeRelation(emplId, COL_COMPANY_PERSON);
+        RowEditor.open(VIEW_COMPANY_PERSONS, cp, Opener.MODAL, new RowCallback() {
           @Override
           public void onSuccess(BeeRow result) {
             refresh();
@@ -590,19 +607,25 @@ class CompanyStructureForm extends AbstractFormInterceptor implements HandlesAll
       }
     });
 
-    switch (dataType) {
-      case DATA_TYPE_BOSS:
-        DndHelper.makeSource(widget, dataType, emplId, STYLE_BOSS_DRAG);
-        break;
+    container.add(label);
 
-      case DATA_TYPE_EMPLOYEE:
-        DndHelper.makeSource(widget, dataType, emplId, STYLE_EMPLOYEE_DRAG);
-        break;
+    if (boss) {
+      DndHelper.makeSource(container, DATA_TYPE_BOSS, emplId, STYLE_BOSS_DRAG);
+    } else {
+      DndHelper.makeSource(container, DATA_TYPE_EMPLOYEE, emplId, STYLE_EMPLOYEE_DRAG);
     }
+
+    return container;
   }
 
-  private static String join(String firstName, String lastName, String position) {
-    return BeeUtils.joinItems(BeeUtils.joinWords(firstName, lastName), position);
+  private Widget renderEmployees(List<BeeRow> depEmployees) {
+    Flow panel = new Flow(STYLE_EMPLOYEE_PANEL);
+
+    for (BeeRow employee : depEmployees) {
+      panel.add(renderEmployee(employee, false));
+    }
+
+    return panel;
   }
 
   private static void fireRefresh(String viewName) {

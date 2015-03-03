@@ -21,16 +21,25 @@
   text-align: center;
 }
 
-.bee-orgChart-department-boss {
+.bee-orgChart-boss-photo,
+.bee-orgChart-employee-photo {
+  max-width: 30px;
+  max-height: 30px;
+  margin-right: 1em;
+}
+
+.bee-orgChart-boss-label {
+  display: inline-block;
   cursor: pointer;
   color: red;
 }
 .bee-orgChart-employee-label {
+  display: inline-block;
   cursor: pointer;
 }
 
 .bee-orgChart-department-drag,
-.bee-orgChart-department-boss-drag,
+.bee-orgChart-boss-drag,
 .bee-orgChart-employee-drag {
   background-image: linear-gradient(to bottom, yellow, yellow);
 }
