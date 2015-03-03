@@ -27,9 +27,9 @@
       <SimpleColumn name="LastName" />
     </SimpleJoin>
 
-    <SimpleColumn name="TabNo" />
-    <SimpleColumn name="AccountingCode" />
     <SimpleColumn name="DateOfEmployment" />
+
+    <SimpleColumn name="DateOfDismissal" />
 
     <SimpleJoin name="Contact" joinType="LEFT">
       <SimpleColumn name="Phone" />

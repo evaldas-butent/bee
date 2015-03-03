@@ -1,11 +1,14 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!DOCTYPE Form []>
+<!DOCTYPE Form [
+  <!ENTITY lbl "margin-left: 1em; margin-right: 1em; text-align: right">
+  <!ENTITY inp1 "width: 180px;">
+]>
 <f:Form xmlns="http://www.butent.com/widget"
   xmlns:f="http://www.butent.com/form"
   xmlns:xi="http://www.w3.org/2001/XInclude"
-  
+    
   name="CompanyPerson" viewName="CompaniesAndPersons" caption="=companyPerson"
-  height="350" width="850"
+  height="350" width="1000"
   >
   <FlowPanel>
     <Table style="margin-top: 1ex;">
@@ -19,19 +22,38 @@
         <DataSelector source="Position" style="width: 200px" />
       </row>
       <row>
-        <Label for="TabNo" />
-        <InputText source="TabNo" style="width: 200px" />
         <Label for="Department" />
         <DataSelector source="Department" style="width: 200px" />
-      </row>
-      <row>
-        <Label for="AccountingCode" />
-        <InputText source="AccountingCode" style="width: 200px" />
         <Label for="DateOfEmployment" />
         <InputDate source="DateOfEmployment" style="width: 200px" />
+        <Label for="DateOfDismissal" />
+        <InputDate source="DateOfDismissal" style="width: 200px" />
       </row>
     </Table>
-
-    <xi:include href="widgets/ContactInfoOpen.widget.xml" />
+    <Disclosure open="true">
+      <Label text="=otherInfo" style="text-transform: uppercase; " />
+      <Table>
+        <row>
+          <Label text="=phone" style="&lbl;" for="Phone" />
+          <InputText style="width: 100%" source="Phone" />
+          <Label style="&lbl;" for="Mobile" />
+          <InputText style="width: 100%" source="Mobile" />
+          <Label for="EmailId" style="&lbl;" />
+          <DataSelector style="width: 100%" source="EmailId" maxLength="50" />
+        </row>
+        <row>
+          <Label text="=website" style="&lbl;" for="Website" />
+          <InputText source="Website" style="width: 100%" />
+          <Label text="=socialContacts" style="&lbl;" />
+          <InputText source="SocialContacts" style="width: 100%;" />
+        </row>
+        <row>
+          <Label text="=code" style="&lbl;" for="Code" />
+          <InputText source="Code" style="&inp1;"/>
+          <Label text="=companyVATCode" style="&lbl;" for="VATCode" />
+          <InputText source="VATCode" style="&inp1;" upperCase="true" />
+        </row>
+      </Table>
+    </Disclosure>
   </FlowPanel>
 </f:Form>  

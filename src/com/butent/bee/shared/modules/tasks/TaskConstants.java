@@ -413,6 +413,7 @@ public final class TaskConstants {
 
   public static final String GRID_RELATED_TASKS = "RelatedTasks";
   public static final String GRID_CHILD_TASKS = "ChildTasks";
+  public static final String GRID_CHILD_REQUESTS = "ChildRequests";
   public static final String GRID_RELATED_RECURRING_TASKS = "RelatedRecurringTasks";
 
   public static final String GRID_REQUESTS = "Requests";

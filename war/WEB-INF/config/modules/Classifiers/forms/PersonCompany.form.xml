@@ -1,11 +1,14 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!DOCTYPE Form []>
+<!DOCTYPE Form [
+   <!ENTITY lbl "margin-left: 1em; margin-right: 1em; text-align: right">
+]>
 <f:Form xmlns="http://www.butent.com/widget"
   xmlns:f="http://www.butent.com/form"
+  xmlns:ui="http://www.butent.com/ui"
   xmlns:xi="http://www.w3.org/2001/XInclude"
   
   name="PersonCompany" viewName="CompaniesAndPersons" caption="=personCompany"
-  height="300" width="850"
+  height="300" width="1000"
   >
   <FlowPanel>
     <Table style="border-spacing: 10px;">
@@ -16,7 +19,59 @@
         <DataSelector source="Position" style="width: 200px" />
       </row>
     </Table>
+    <Disclosure open="true">
+      <Label text="=otherInfo" style="text-transform: uppercase; " />
+      <Table>
+        <row>
+          <Label text="=phone" style="&lbl;" for="Phone" />
+          <InputText style="width: 100%" source="Phone" />
+          <Label style="&lbl;" for="Mobile" />
+          <InputText style="width: 100%" source="Mobile" />
+          <Label for="EmailId" style="&lbl;" />
+          <DataSelector style="width: 100%" source="EmailId" maxLength="50" />  
+        </row>
+        <row>
+          <Label text="=website" style="&lbl;" for="Website" />
+          <InputText source="Website" style="width: 100%" />
+          <Label text="=socialContacts" style="&lbl;" />
+          <InputText source="SocialContacts" style="width: 100%;" />
+          <Label text="=fax" style="&lbl;" for="Fax" />
+          <InputText source="Fax" style="width: 100%;" />
+        </row>
+       <row for="Address">
+         <Label text="=address" style="&lbl;" />
+         <cell colSpan="5">
+           <InputText source="Address" style="width: 100%;" />
+         </cell>
+       </row>
+       <row>
+         <Label text="=city" style="&lbl;" for="City" />
+         <DataSelector source="City" style="width: 100%;">
+           <selectorColumn source="Name" />
+           <selectorColumn source="CountryName" />
+           <selectorColumn source="CountryCode">
+             <ui:renderer type="flag" />
+           </selectorColumn>
+         </DataSelector>
+         <Label text="=country" style="&lbl;" for="Country" />
+         <Table for="Country">
+           <row>
+             <DataSelector source="Country" style="width: 100%;">
+               <renderToken source="CountryName" />
+               <renderToken source="CountryCode" prefix=" (" suffix=")" />
+               <selectorColumn source="Name" />
+               <selectorColumn source="Code">
+                 <ui:renderer type="flag" />
+               </selectorColumn>
+              </DataSelector>
+             <Flag source="CountryCode" style="width: 22px;" />
+           </row>
+         </Table>
 
-    <xi:include href="widgets/ContactInfoOpen.widget.xml" />
+        <Label text="=postIndex" style="&lbl;" for="PostIndex" />
+        <InputText source="PostIndex" style="width: 100%;" />
+       </row>
+      </Table>
+    </Disclosure>
   </FlowPanel>
 </f:Form>

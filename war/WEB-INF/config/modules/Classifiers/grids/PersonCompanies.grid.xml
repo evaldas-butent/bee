@@ -10,6 +10,7 @@
     <RelColumn name="Company" editEnabled="true" visible="true" />
     <RelColumn name="Position" />
     <DataColumn name="Phone" />
+    <DataColumn name="Mobile" />
     <RelColumn name="EmailId" editEnabled="true" />
   </g:columns>
 </g:Grid>
