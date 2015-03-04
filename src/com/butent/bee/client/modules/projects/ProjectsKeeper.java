@@ -6,7 +6,7 @@ import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.Global;
 import com.butent.bee.client.communication.ParameterList;
 import com.butent.bee.client.grid.GridFactory;
-import com.butent.bee.client.modules.trade.SalesGrid;
+import com.butent.bee.client.modules.trade.InvoicesGrid;
 import com.butent.bee.client.presenter.GridPresenter;
 import com.butent.bee.client.ui.FormFactory;
 import com.butent.bee.client.view.grid.GridView;
@@ -49,7 +49,7 @@ public final class ProjectsKeeper {
     GridFactory.registerGridInterceptor(GRID_PROJECT_USERS, new ProjectUsersGrid());
     GridFactory.registerGridInterceptor(GRID_PROJECT_STAGES, new ProjectStagesGrid());
     GridFactory.registerGridInterceptor(GRID_PROJECT_INCOMES, new ProjectIncomesGrid());
-    GridFactory.registerGridInterceptor(GRID_PROJECT_INVOICES, new SalesGrid() {
+    GridFactory.registerGridInterceptor(GRID_PROJECT_INVOICES, new InvoicesGrid() {
 
       private boolean erpConnectionActive;
 

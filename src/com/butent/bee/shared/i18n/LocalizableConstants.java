@@ -405,6 +405,8 @@ public interface LocalizableConstants extends Constants, LocalizableClassifierCo
 
   String ipBlocked();
 
+  String keywords();
+
   String kilogramShort();
 
   String languageTag();

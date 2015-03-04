@@ -995,8 +995,10 @@ public final class XmlUtils {
     if (value == null) {
       return "";
     }
+    String val = value.toString().replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;");
+
     return new StringBuilder("<").append(tagName).append(">")
-        .append(value)
+        .append(val)
         .append("</").append(tagName).append(">")
         .toString();
   }

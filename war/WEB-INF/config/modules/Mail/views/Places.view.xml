@@ -5,7 +5,11 @@
   editForm="MailMessage"
   >
   <Columns>
-    <HiddenColumn name="Folder" />
+    <SimpleColumn name="Folder" />
+    <SimpleJoin name="Folder" joinType="INNER">
+      <HiddenColumn name="Account" />
+    </SimpleJoin>
+    
     <SimpleColumn name="Flags" />
     <SimpleColumn name="Message" />
     <SimpleColumn name="Replied" />

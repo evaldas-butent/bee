@@ -154,14 +154,12 @@ public final class MailKeeper {
     activePanel.refreshFolder(folderId);
   }
 
-  static void copyMessage(final Long folderFrom, final Long folderTo, String[] places,
-      final boolean move) {
+  static void copyMessage(String places, final Long folderTo, final boolean move) {
     final MailPanel panel = activePanel;
     ParameterList params = createArgs(SVC_COPY_MESSAGES);
     params.addDataItem(COL_ACCOUNT, panel.getCurrentAccount().getAccountId());
-    params.addDataItem(COL_FOLDER_PARENT, folderFrom);
     params.addDataItem(COL_FOLDER, folderTo);
-    params.addDataItem(COL_PLACE, Codec.beeSerialize(places));
+    params.addDataItem(COL_PLACE, places);
     params.addDataItem("move", move ? 1 : 0);
 
     BeeKeeper.getRpc().makePostRequest(params, new ResponseCallback() {
@@ -189,7 +187,7 @@ public final class MailKeeper {
     final MailPanel panel = activePanel;
     final AccountInfo account = panel.getCurrentAccount();
     final Long parentId = panel.getCurrentFolderId();
-    final boolean isParent = !account.isSystemFolder(parentId);
+    final boolean isParent = DataUtils.isId(parentId) && !account.isSystemFolder(parentId);
     String caption = null;
 
     if (isParent) {
