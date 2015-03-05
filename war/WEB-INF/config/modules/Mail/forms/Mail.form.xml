@@ -17,7 +17,7 @@
     </west>
       
     <center>
-      <FlowPanel class="flexBox-vertical" style="margin-top: 5px; margin-left: 5px;">
+      <FlowPanel class="flexBox-vertical">
         <Label name="EmptySelection" class="bee-mail-EmptySelection" text="=mailThereIsNoMessageSelected" />
 
         <FlowPanel name="Message" class="flexible flexBox-vertical" style="display: none;">

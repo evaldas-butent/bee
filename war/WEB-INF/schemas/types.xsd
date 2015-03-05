@@ -267,7 +267,6 @@
       <xs:enumeration value="Colors" />
       <xs:enumeration value="CompActStore" />
       <xs:enumeration value="Companies" />
-      <xs:enumeration value="CompaniesAndPersons" />
       <xs:enumeration value="CompanyActivities" />
       <xs:enumeration value="CompanyBankAccounts" />
       <xs:enumeration value="CompanyContacts" />

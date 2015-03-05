@@ -2,31 +2,20 @@
 <g:Grid xmlns="http://www.butent.com/column" xmlns:g="http://www.butent.com/grid"
   xmlns:ui="http://www.butent.com/ui"
   
-  name="CompanyPersons" viewName="CompaniesAndPersons"
-  newRowForm="CompanyPerson" newRowCaption="=newCompanyPerson"
-  editForm="CompanyPerson"
+  name="CompanyPersons" viewName="CompanyPersons" caption="=companyPersons"
   flexGrow="1"
   >
   <g:columns>
-    <RelColumn name="Person" editEnabled="true" visible="true" />
+    <RelColumn name="Person" visible="true" />
+    <RelColumn name="Company" visible="true" />
     <RelColumn name="Department" />    
     <RelColumn name="Position" />
     <DataColumn name="Phone" />
     <DataColumn name="Mobile" />
     <DataColumn name="Fax" />
     <RelColumn name="EmailId" editEnabled="true" />
-    <CalcColumn name="Unenployment" type="boolean"
-      width="50" maxWidth="50" autoFit="true" searchBy="DateOfDismissal" filterOptions="empty"
-      caption="=personUnemployment">
-        <render>
-          <ui:function>
-            var Unenployment = row.DateOfDismissal;
-            if (Unenployment != null) {
-              return true;
-            }     
-            return false;
-          </ui:function>
-        </render>
-    </CalcColumn>
+    <DataColumn name="DateOfDismissal" searchBy="DateOfDismissal" filterOptions="empty">
+      <style><bodyStyle><ui:inline>color:red</ui:inline></bodyStyle></style>
+    </DataColumn>
   </g:columns>
 </g:Grid>

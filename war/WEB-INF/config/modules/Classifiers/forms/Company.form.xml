@@ -150,8 +150,8 @@
         </FlowPanel>
       </page>
 
-      <page>
-        <text>=personContacts</text>
+      <page for="CompanyPersons">
+        <text>=companyPersons</text>
         <ChildGrid name="CompanyPersons" relColumn="Company" />
       </page>
 

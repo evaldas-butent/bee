@@ -19,7 +19,7 @@
         </cell> 
         <Label text="=firstName" style="&lbl1;" class="bee-required"/>
         <InputText style="&inp1;" source="FirstName" />
-        <Label text="=lastName" style="&lbl1;" class="bee-required" />
+        <Label text="=lastName" style="&lbl1;" />
         <InputText style="&inp1;" source="LastName" />
       </row>
       <row>
@@ -104,9 +104,9 @@
     </Disclosure>
     
     <TabbedPages class="flexible" style="margin-top: 1ex;" >
-      <page data="CompaniesAndPersons">
+      <page for="CompanyPersons">
         <text>=personCompanies</text>
-        <ChildGrid name="PersonCompanies" relColumn="Person" />
+        <ChildGrid name="CompanyPersons" relColumn="Person" />
       </page>
 
       <page module="Documents" data="RelatedDocuments" for="Person">
