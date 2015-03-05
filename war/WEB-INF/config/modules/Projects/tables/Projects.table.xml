@@ -23,7 +23,7 @@
     <Numeric name="Expenses" precision="15" scale="5" label="=prjExpenses" />
     <Relation name="Currency" relation="Currencies" label="=currency" defExpr="MAIN_CURRENCY" />
     <Text name="Description" />
-    <Relation name="Contract" relation="Relations" label="=contract" />
+    <Relation name="Contract" relation="Documents" label="=contract" />
     <Numeric name="ContractPrice" precision="15" scale="5" label="=salePrice" />
     <Date name="ContractSigned" label="=signDate"/>
     <DateTime name="Created"  defExpr="CURRENT_TIME"/>

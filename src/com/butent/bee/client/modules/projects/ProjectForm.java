@@ -47,6 +47,7 @@ import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogUtils;
 import com.butent.bee.shared.modules.administration.AdministrationConstants;
 import com.butent.bee.shared.modules.classifiers.ClassifierConstants;
+import com.butent.bee.shared.modules.documents.DocumentConstants;
 import com.butent.bee.shared.modules.projects.ProjectConstants.ProjectEvent;
 import com.butent.bee.shared.modules.projects.ProjectStatus;
 import com.butent.bee.shared.modules.tasks.TaskConstants;
@@ -134,7 +135,13 @@ class ProjectForm extends AbstractFormInterceptor implements DataChangeEvent.Han
 
   @Override
   public void afterRefresh(FormView form, IsRow row) {
-    contractSelector.getOracle().setAdditionalFilter(Filter.equals(COL_PROJECT, row.getId()), true);
+    Filter relDocFilter =
+        Filter.in(Data.getIdColumn(DocumentConstants.VIEW_DOCUMENTS),
+            DocumentConstants.VIEW_RELATED_DOCUMENTS, DocumentConstants.COL_DOCUMENT, Filter
+                .equals(COL_PROJECT, row
+                .getId()));
+
+    contractSelector.getOracle().setAdditionalFilter(relDocFilter, true);
 
     if (!BeeUtils.isEmpty(row.getProperty(PROP_TIME_UNTIS))) {
       String prop = row.getProperty(PROP_TIME_UNTIS);

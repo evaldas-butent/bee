@@ -25,17 +25,14 @@
     </DataColumn>
     <CalcColumn name="ItemPrices" type="string" cellType="html"
       label="=taItemPrices" width="100" />
-    <RelColumn name="ItemCurrency" renderColumns="ItemCurrencyName"  readOnly="true"/>
-    <DataColumn name="Discount" carry="true" flexGrow="0">
-      <footer evaluator="discount" scale="2" />
-    </DataColumn>
+    <RelColumn name="ProjectCurrency" renderColumns="ProjectCurrencyName"  readOnly="true"/>
     <DataColumn name="VatPlus" width="20" sortable="false"
-      caption="+" format="+" carry="true" visible="false" />
-    <DataColumn name="Vat" carry="true" flexGrow="0" visible="false">
+      caption="+" format="+" carry="true" visible="true" />
+    <DataColumn name="Vat" carry="true" flexGrow="0" visible="true">
       <footer evaluator="vat" />
     </DataColumn>
     <DataColumn name="VatPercent" width="20" sortable="false"
-      caption="%" format="%" carry="true" visible="false" />
+      caption="%" format="%" carry="true" visible="true" />
     <CalcColumn name="Total" type="decimal" caption="=trdAmount"
       scale="2">
       <style>

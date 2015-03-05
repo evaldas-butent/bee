@@ -148,10 +148,10 @@
 
             <row>
               <Label text="=contract" style="margin-right: 1em; text-align: left;" />
-              <DataSelector name="Contract" source="Contract" 
+              <DataSelector name="Contract" source="Contract"
               renderColumns="ContractName ContractNumber" 
-               choiceColumns="Name Number DocumentDate Expires" viewName="RelatedDocuments" 
-               filter="Document AND Project" caching="none" module="Documents"
+               choiceColumns="Name Number DocumentDate Expires" viewName="Documents" 
+               caching="none" module="Documents"
                newRowEnabled="false" style="&inp2;" />
 
               <Label text="=salePrice" style="&lbl;" />

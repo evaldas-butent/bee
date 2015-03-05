@@ -37,6 +37,7 @@ import com.butent.bee.shared.data.SimpleRowSet;
 import com.butent.bee.shared.data.SimpleRowSet.SimpleRow;
 import com.butent.bee.shared.data.filter.Filter;
 import com.butent.bee.shared.data.view.Order;
+import com.butent.bee.shared.logging.LogUtils;
 import com.butent.bee.shared.modules.BeeParameter;
 import com.butent.bee.shared.modules.administration.AdministrationConstants;
 import com.butent.bee.shared.modules.classifiers.ClassifierConstants;
@@ -347,6 +348,8 @@ public class ProjectsModuleBean implements BeeModule {
     query.addExpr(priceExch, priceAlias)
         .addExpr(vatExch, vatAlias)
         .addOrder(TBL_PROJECT_INCOMES, sys.getIdName(TBL_PROJECT_INCOMES));
+
+    LogUtils.getRootLogger().info(query.getQuery());
 
     SimpleRowSet data = qs.getData(query);
     if (DataUtils.isEmpty(data)) {
