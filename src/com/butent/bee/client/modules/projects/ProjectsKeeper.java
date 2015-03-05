@@ -13,7 +13,6 @@ import com.butent.bee.client.view.grid.GridView;
 import com.butent.bee.client.view.grid.interceptor.GridInterceptor;
 import com.butent.bee.shared.Consumer;
 import com.butent.bee.shared.data.IsColumn;
-import com.butent.bee.shared.logging.LogUtils;
 import com.butent.bee.shared.modules.administration.AdministrationConstants;
 import com.butent.bee.shared.modules.trade.TradeConstants;
 import com.butent.bee.shared.rights.Module;
@@ -60,7 +59,6 @@ public final class ProjectsKeeper {
 
       @Override
       public void afterCreatePresenter(GridPresenter presenter) {
-        LogUtils.getRootLogger().debug("allow send to erp");
         if (isErpConnectionActive()) {
           super.afterCreatePresenter(presenter);
         }
@@ -74,14 +72,12 @@ public final class ProjectsKeeper {
 
           @Override
           public void accept(String erpAddress) {
-            LogUtils.getRootLogger().debug("set erp_con", erpAddress);
             setErpConnectionActive(!BeeUtils.isEmpty(erpAddress));
 
             for (ColumnDescription columnDescription : columnDescriptions) {
               if (BeeUtils.inListSame(columnDescription.getId(),
                   TradeConstants.COL_TRADE_PAYMENT_TIME,
                   TradeConstants.COL_TRADE_PAID)) {
-                LogUtils.getRootLogger().debug("set enabling/dis cols");
                 columnDescription.setEditInPlace(!isErpConnectionActive());
               }
             }
@@ -95,7 +91,6 @@ public final class ProjectsKeeper {
         if (BeeUtils.inListSame(columnDescription.getId(),
             TradeConstants.COL_TRADE_PAYMENT_TIME,
             TradeConstants.COL_TRADE_PAID)) {
-          LogUtils.getRootLogger().debug("set enabling/dis cols");
           columnDescription.setEditInPlace(!isErpConnectionActive());
         }
         return super.beforeCreateColumn(gridView, columnDescription);

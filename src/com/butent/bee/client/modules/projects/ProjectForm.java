@@ -15,7 +15,6 @@ import com.butent.bee.client.communication.ResponseCallback;
 import com.butent.bee.client.composite.DataSelector;
 import com.butent.bee.client.data.Data;
 import com.butent.bee.client.data.Queries;
-import com.butent.bee.client.data.Queries.IntCallback;
 import com.butent.bee.client.data.RowCallback;
 import com.butent.bee.client.event.EventUtils;
 import com.butent.bee.client.eventsboard.EventsBoard.EventFilesFilter;
@@ -40,6 +39,7 @@ import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.IsRow;
 import com.butent.bee.shared.data.event.DataChangeEvent;
 import com.butent.bee.shared.data.event.RowInsertEvent;
+import com.butent.bee.shared.data.event.RowUpdateEvent;
 import com.butent.bee.shared.data.filter.Filter;
 import com.butent.bee.shared.data.view.DataInfo;
 import com.butent.bee.shared.data.view.ViewColumn;
@@ -188,6 +188,8 @@ class ProjectForm extends AbstractFormInterceptor implements DataChangeEvent.Han
       setFormAuditValidation(form, row);
     } else if (isProjectApproved(form, row)) {
       setFormAuditValidation(form, row);
+    } else {
+      auditSilentFields.add(COL_PROJECT_STATUS);
     }
 
     drawComments(form, row);
@@ -204,10 +206,12 @@ class ProjectForm extends AbstractFormInterceptor implements DataChangeEvent.Han
   public void onDataChange(DataChangeEvent event) {
     if (event.hasView(VIEW_PROJECTS) || event.hasView(VIEW_PROJECT_USERS)
         || event.hasView(VIEW_PROJECT_STAGES) || event.hasView(VIEW_PROJECT_DATES)
-        || event.hasView(TaskConstants.VIEW_TASKS)) {
+        || event.hasView(TaskConstants.VIEW_TASKS)
+        || event.hasView(TaskConstants.VIEW_RELATED_TASKS)) {
 
+      getFormView().refreshBySource(COL_ACTUAL_TASKS_DURATION);
+      getFormView().refreshBySource(COL_EXPECTED_TASKS_DURATION);
       getFormView().refresh();
-
     }
   }
 
@@ -258,11 +262,14 @@ class ProjectForm extends AbstractFormInterceptor implements DataChangeEvent.Han
   public void onRowInsert(RowInsertEvent event) {
     if (event.hasView(VIEW_PROJECT_USERS)
         || event.hasView(VIEW_PROJECT_STAGES) || event.hasView(VIEW_PROJECT_DATES)
-        || event.hasView(TaskConstants.VIEW_TASKS)) {
+        || event.hasView(TaskConstants.VIEW_TASKS)
+        || event.hasView(TaskConstants.VIEW_RELATED_TASKS)) {
 
       // if (event.hasView(TaskConstants.VIEW_TASKS)) {
       // TODO: refresh tasks times
       // }
+      getFormView().refreshBySource(COL_ACTUAL_TASKS_DURATION);
+      getFormView().refreshBySource(COL_EXPECTED_TASKS_DURATION);
       getFormView().refresh();
     }
 
@@ -436,25 +443,33 @@ class ProjectForm extends AbstractFormInterceptor implements DataChangeEvent.Han
   }
 
   private void commitData(final FormView form, final String column, final String value) {
-    Queries.update(form.getViewName(), Filter.compareId(form.getActiveRowId()), column, value,
-        new IntCallback() {
+    IsRow oldRow = form.getOldRow();
+    IsRow newRow = form.getActiveRow();
+    int idxColId = form.getDataIndex(column);
 
-          @Override
-          public void onSuccess(Integer result) {
-            IsRow oldRow = form.getOldRow();
-            IsRow newRow = form.getActiveRow();
+    if (oldRow == null && newRow == null && BeeConst.isUndef(idxColId)) {
+      return;
+    }
 
-            int idx = form.getDataIndex(column);
+    newRow.setValue(idxColId, value);
 
-            if (!BeeConst.isUndef(idx)) {
-              oldRow.setValue(idx, value);
-              newRow.setValue(idx, value);
-            }
-            form.refreshBySource(column);
-            unlockValidationEvent(column);
-            form.refresh();
-          }
-        });
+    List<BeeColumn> cols = Data.getColumns(form.getViewName(), Lists.newArrayList(column));
+    List<String> newValues = Lists.newArrayList(value);
+    List<String> oldValues = Lists.newArrayList(oldRow.getString(idxColId));
+    Queries.update(form.getViewName(), oldRow.getId(), oldRow.getVersion(), cols, oldValues,
+        newValues, null, new RowCallback() {
+
+      @Override
+      public void onSuccess(BeeRow result) {
+
+        RowUpdateEvent.fire(BeeKeeper.getBus(), form.getViewName(), result);
+
+        form.refreshBySource(column);
+        unlockValidationEvent(column);
+        form.refresh();
+
+      }
+    });
   }
 
   private void drawChart(IsRow row) {
