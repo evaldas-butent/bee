@@ -3457,6 +3457,10 @@ textarea,
   pointer-events: none;
 }
 
+.bee-Line {
+  border: 1px solid black;
+}
+
 .bee-rep td {
   padding: 3px 5px;
   border: 1px solid #ddd;

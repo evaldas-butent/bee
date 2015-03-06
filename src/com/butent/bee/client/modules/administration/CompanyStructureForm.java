@@ -22,10 +22,10 @@ import com.butent.bee.client.data.RowEditor;
 import com.butent.bee.client.data.RowFactory;
 import com.butent.bee.client.event.DndHelper;
 import com.butent.bee.client.event.EventUtils;
-import com.butent.bee.client.grid.HtmlTable;
 import com.butent.bee.client.layout.Flow;
 import com.butent.bee.client.presenter.Presenter;
 import com.butent.bee.client.render.PhotoRenderer;
+import com.butent.bee.client.style.StyleUtils;
 import com.butent.bee.client.ui.IdentifiableWidget;
 import com.butent.bee.client.ui.Opener;
 import com.butent.bee.client.view.form.FormView;
@@ -34,6 +34,7 @@ import com.butent.bee.client.view.form.interceptor.FormInterceptor;
 import com.butent.bee.client.widget.DndDiv;
 import com.butent.bee.client.widget.Image;
 import com.butent.bee.client.widget.Label;
+import com.butent.bee.client.widget.Line;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.BiConsumer;
 import com.butent.bee.shared.data.BeeRow;
@@ -51,14 +52,21 @@ import com.butent.bee.shared.data.event.RowUpdateEvent;
 import com.butent.bee.shared.data.value.LongValue;
 import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogUtils;
+import com.butent.bee.shared.treelayout.Configuration;
+import com.butent.bee.shared.treelayout.NodeExtentProvider;
+import com.butent.bee.shared.treelayout.TreeLayout;
+import com.butent.bee.shared.treelayout.util.DefaultConfiguration;
+import com.butent.bee.shared.treelayout.util.DefaultTreeForTreeLayout;
 import com.butent.bee.shared.ui.Action;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.NameUtils;
 
+import java.awt.geom.Rectangle2D;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 
@@ -71,16 +79,12 @@ class CompanyStructureForm extends AbstractFormInterceptor implements HandlesAll
 
   private static final String STYLE_PREFIX = BeeConst.CSS_CLASS_PREFIX + "orgChart-";
 
-  private static final String STYLE_TABLE = STYLE_PREFIX + "table";
-  private static final String STYLE_NODE_ROW = STYLE_PREFIX + "node-row";
-  // private static final String STYLE_CONN_ROW = STYLE_PREFIX + "conn-row";
-
   private static final String STYLE_LEVEL_PREFIX = STYLE_PREFIX + "level-";
 
   private static final String STYLE_DEPARTMENT_PREFIX = STYLE_PREFIX + "department-";
-  private static final String STYLE_DEPARTMENT_CELL = STYLE_DEPARTMENT_PREFIX + "cell";
   private static final String STYLE_DEPARTMENT_PANEL = STYLE_DEPARTMENT_PREFIX + "panel";
   private static final String STYLE_DEPARTMENT_LABEL = STYLE_DEPARTMENT_PREFIX + "label";
+  private static final String STYLE_DEPARTMENT_CONNECT = STYLE_DEPARTMENT_PREFIX + "connect";
 
   private static final String STYLE_DEPARTMENT_DRAG = STYLE_DEPARTMENT_PREFIX + "drag";
   private static final String STYLE_DEPARTMENT_DRAG_OVER = STYLE_DEPARTMENT_PREFIX + "dragOver";
@@ -104,6 +108,8 @@ class CompanyStructureForm extends AbstractFormInterceptor implements HandlesAll
 
   private static final Set<String> DND_TYPES = ImmutableSet.of(DATA_TYPE_DEPARTMENT,
       DATA_TYPE_BOSS, DATA_TYPE_EMPLOYEE);
+
+  private static final Long ROOT = 0L;
 
   private final List<HandlerRegistration> handlerRegistry = new ArrayList<>();
 
@@ -216,42 +222,65 @@ class CompanyStructureForm extends AbstractFormInterceptor implements HandlesAll
     }
   }
 
-  private Multimap<Integer, Long> layout() {
-    List<Long> rowIds = departments.getRowIds();
+  private TreeLayout<Long> layoutTree() {
+    DefaultTreeForTreeLayout<Long> tree = new DefaultTreeForTreeLayout<>(ROOT);
 
     Multimap<Long, Long> children = ArrayListMultimap.create();
-    Multimap<Integer, Long> levels = ArrayListMultimap.create();
+    List<Long> parents = new ArrayList<>();
 
+    List<Long> rowIds = departments.getRowIds();
     int parentIndex = departments.getColumnIndex(COL_DEPARTMENT_PARENT);
+
     for (BeeRow row : departments) {
       Long id = row.getId();
       Long parent = row.getLong(parentIndex);
 
-      if (DataUtils.isId(parent) && !Objects.equals(id, parent) && rowIds.contains(id)) {
+      if (DataUtils.isId(parent) && !Objects.equals(id, parent) && rowIds.contains(parent)) {
         children.put(parent, id);
       } else {
-        levels.put(0, id);
+        tree.addChild(ROOT, id);
+        parents.add(id);
       }
     }
 
-    for (int level = 0; level < departments.getNumberOfRows(); level++) {
-      List<Long> parents = new ArrayList<>(levels.get(level));
-      if (parents.isEmpty()) {
-        break;
-      }
+    if (!children.isEmpty()) {
+      for (int i = 0; i < departments.getNumberOfRows(); i++) {
+        List<Long> nodes = new ArrayList<>(parents);
+        parents.clear();
 
-      for (Long parent : parents) {
-        if (children.containsKey(parent)) {
-          for (Long child : children.get(parent)) {
-            if (!levels.containsValue(child)) {
-              levels.put(level + 1, child);
+        for (Long node : nodes) {
+          if (children.containsKey(node)) {
+            for (Long child : children.get(node)) {
+              tree.addChild(node, child);
+              if (children.containsKey(child)) {
+                parents.add(child);
+              }
             }
           }
+        }
+
+        if (parents.isEmpty()) {
+          break;
         }
       }
     }
 
-    return levels;
+    NodeExtentProvider<Long> nodeExtentProvider = new NodeExtentProvider<Long>() {
+      @Override
+      public double getWidth(Long treeNode) {
+        return ROOT.equals(treeNode) ? BeeConst.DOUBLE_ZERO : 140d;
+      }
+
+      @Override
+      public double getHeight(Long treeNode) {
+        return ROOT.equals(treeNode) ? BeeConst.DOUBLE_ZERO : 100d;
+      }
+    };
+
+    Configuration<Long> configuration = new DefaultConfiguration<>(30, 20);
+
+    TreeLayout<Long> treeLayout = new TreeLayout<>(tree, nodeExtentProvider, configuration);
+    return treeLayout;
   }
 
   private void refresh() {
@@ -275,37 +304,69 @@ class CompanyStructureForm extends AbstractFormInterceptor implements HandlesAll
           panel.clear();
 
           if (!DataUtils.isEmpty(departments)) {
-            render(panel, layout());
+            render(panel, layoutTree());
           }
         }
       }
     });
   }
 
-  private void render(Flow panel, Multimap<Integer, Long> levels) {
-    HtmlTable table = new HtmlTable(STYLE_TABLE);
+  private void render(Flow panel, TreeLayout<Long> treeLayout) {
+    Map<Long, Rectangle2D.Double> nodeBounds = treeLayout.getNodeBounds();
 
-    int row = 0;
-    int col = 0;
-
-    for (int level : levels.keySet()) {
-      col = 0;
-
-      for (long depId : levels.get(level)) {
-        table.setWidget(row, col++, renderDepartment(depId), STYLE_DEPARTMENT_CELL);
+    for (Map.Entry<Long, Rectangle2D.Double> entry : nodeBounds.entrySet()) {
+      Long node = entry.getKey();
+      if (!ROOT.equals(node)) {
+        int level = treeLayout.getTree().getLevel(node) - 1;
+        panel.add(renderDepartment(node, level, entry.getValue()));
       }
-
-      table.getRowFormatter().addStyleName(row, STYLE_NODE_ROW);
-      table.getRowFormatter().addStyleName(row, STYLE_LEVEL_PREFIX + BeeUtils.toString(level));
-
-      row++;
     }
 
-    panel.add(table);
+    for (Long parent : nodeBounds.keySet()) {
+      if (!ROOT.equals(parent)) {
+        List<Long> children = treeLayout.getTree().getChildren(parent);
+
+        if (!BeeUtils.isEmpty(children)) {
+          Rectangle2D.Double parentBounds = nodeBounds.get(parent);
+          for (Long child : children) {
+            Widget widget = connect(parentBounds, nodeBounds.get(child), STYLE_DEPARTMENT_CONNECT);
+            if (widget != null) {
+              panel.add(widget);
+            }
+          }
+        }
+      }
+    }
   }
 
-  private Widget renderDepartment(final long id) {
+  private static Widget connect(Rectangle2D.Double parent, Rectangle2D.Double child,
+      String styleName) {
+
+    if (parent == null || child == null) {
+      return null;
+    }
+
+    double x1 = parent.getCenterX();
+    double y1 = parent.getMaxY();
+
+    double x2 = child.getCenterX();
+    double y2 = child.getY();
+
+    return new Line(x1, y1, x2, y2, styleName);
+  }
+
+  private Widget renderDepartment(final long id, int level, Rectangle2D.Double bounds) {
     final Flow panel = new Flow(STYLE_DEPARTMENT_PANEL);
+
+    if (level >= 0) {
+      panel.addStyleName(STYLE_LEVEL_PREFIX + BeeUtils.toString(level));
+    }
+
+    if (bounds != null) {
+      StyleUtils.makeAbsolute(panel);
+      StyleUtils.setRectangle(panel, BeeUtils.round(bounds.getX()), BeeUtils.round(bounds.getY()),
+          BeeUtils.round(bounds.getWidth()), BeeUtils.round(bounds.getHeight()));
+    }
 
     BeeRow department = departments.getRowById(id);
 
