@@ -6,10 +6,6 @@
   name="ChildRequests" viewName="Requests" enabledActions="copy"
   order="Data, RequestID desc" maxColumnWidth="160" caption="=crmRequests"
   >
-
-  <g:columns>
-    <IdColumn name="Id" />
-  </g:columns>
   
   <g:columns>
     <IdColumn name="ID" width="50" />
