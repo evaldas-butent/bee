@@ -2,6 +2,13 @@
   background-color: white;
 }
 
+.bee-orgChart-toggle-positions {
+  padding-right: 3px;
+}
+.bee-orgChart-toggle-employees {
+  padding-right: 3em;
+}
+
 .bee-orgChart-department-panel {
   border: 2px solid #b5d9ea;
   border-radius: 5px;

@@ -46,6 +46,8 @@ public interface LocalizableClassifierConstants {
 
   String departments();
 
+  String employees();
+
   String goods();
 
   String group();
@@ -57,6 +59,8 @@ public interface LocalizableClassifierConstants {
   String itemOrService();
 
   String newDepartmentEmployees();
+
+  String newDepartmentPositions();
 
   String newItem();
 

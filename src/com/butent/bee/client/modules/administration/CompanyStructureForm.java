@@ -8,6 +8,8 @@ import com.google.common.collect.Multimap;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.event.dom.client.DropEvent;
+import com.google.gwt.event.logical.shared.ValueChangeEvent;
+import com.google.gwt.event.logical.shared.ValueChangeHandler;
 import com.google.gwt.user.client.ui.Widget;
 import com.google.web.bindery.event.shared.HandlerRegistration;
 
@@ -28,9 +30,11 @@ import com.butent.bee.client.render.PhotoRenderer;
 import com.butent.bee.client.style.StyleUtils;
 import com.butent.bee.client.ui.IdentifiableWidget;
 import com.butent.bee.client.ui.Opener;
+import com.butent.bee.client.view.HeaderView;
 import com.butent.bee.client.view.form.FormView;
 import com.butent.bee.client.view.form.interceptor.AbstractFormInterceptor;
 import com.butent.bee.client.view.form.interceptor.FormInterceptor;
+import com.butent.bee.client.widget.CheckBox;
 import com.butent.bee.client.widget.DndDiv;
 import com.butent.bee.client.widget.Image;
 import com.butent.bee.client.widget.Label;
@@ -50,6 +54,7 @@ import com.butent.bee.shared.data.event.RowDeleteEvent;
 import com.butent.bee.shared.data.event.RowInsertEvent;
 import com.butent.bee.shared.data.event.RowUpdateEvent;
 import com.butent.bee.shared.data.value.LongValue;
+import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogUtils;
 import com.butent.bee.shared.treelayout.Configuration;
@@ -65,6 +70,7 @@ import java.awt.geom.Rectangle2D;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -75,7 +81,7 @@ class CompanyStructureForm extends AbstractFormInterceptor implements HandlesAll
   private static final BeeLogger logger = LogUtils.getLogger(CompanyStructureForm.class);
 
   private static final List<String> viewNames = Lists.newArrayList(VIEW_DEPARTMENTS,
-      VIEW_DEPARTMENT_EMPLOYEES);
+      VIEW_DEPARTMENT_EMPLOYEES, VIEW_DEPARTMENT_POSITIONS);
 
   private static final String STYLE_PREFIX = BeeConst.CSS_CLASS_PREFIX + "orgChart-";
 
@@ -102,6 +108,9 @@ class CompanyStructureForm extends AbstractFormInterceptor implements HandlesAll
   private static final String STYLE_EMPLOYEE_PHOTO = STYLE_EMPLOYEE_PREFIX + "photo";
   private static final String STYLE_EMPLOYEE_DRAG = STYLE_EMPLOYEE_PREFIX + "drag";
 
+  private static final String STYLE_TOGGLE_POSITIONS = STYLE_PREFIX + "toggle-positions";
+  private static final String STYLE_TOGGLE_EMPLOYEES = STYLE_PREFIX + "toggle-employees";
+
   private static final String DATA_TYPE_DEPARTMENT = "OrgChartDepartment";
   private static final String DATA_TYPE_BOSS = "OrgChartBoss";
   private static final String DATA_TYPE_EMPLOYEE = "OrgChartEmployee";
@@ -111,10 +120,54 @@ class CompanyStructureForm extends AbstractFormInterceptor implements HandlesAll
 
   private static final Long ROOT = 0L;
 
+  private static final String NAME_MARGIN_LEFT = "MarginLeft";
+  private static final String NAME_MARGIN_TOP = "MarginTop";
+  private static final String NAME_NODE_WIDTH = "NodeWidth";
+  private static final String NAME_NODE_HEIGHT = "NodeHeight";
+  private static final String NAME_NODE_GAP = "NodeGap";
+  private static final String NAME_LEVEL_GAP = "LevelGap";
+
+  private static final String NAME_SHOW_POSITIONS = "ShowPositions";
+  private static final String NAME_SHOW_EMPLOYEES = "ShowEmployees";
+  private static final String NAME_AUTO_FIT = "AutoFit";
+
+  private static final int DEFAULT_MARGIN_LEFT = 10;
+  private static final int DEFAULT_MARGIN_TOP = 10;
+  private static final int DEFAULT_NODE_WIDTH = 150;
+  private static final int DEFAULT_NODE_HEIGHT = 100;
+  private static final int DEFAULT_NODE_GAP = 20;
+  private static final int DEFAULT_LEVEL_GAP = 30;
+
+  private static final boolean DEFAULT_SHOW_POSITIONS = false;
+  private static final boolean DEFAULT_SHOW_EMPLOYEES = false;
+  private static final boolean DEFAULT_AUTO_FIT = false;
+
+  private static String storagePrefix() {
+    Long userId = BeeKeeper.getUser().getUserId();
+    return "CompanyStructure-" + (userId == null ? "" : BeeUtils.toString(userId)) + "-";
+  }
+
+  private static String storageKey(String name) {
+    return storagePrefix() + name;
+  }
+
   private final List<HandlerRegistration> handlerRegistry = new ArrayList<>();
 
   private BeeRowSet departments;
   private BeeRowSet employees;
+  @SuppressWarnings("unused")
+  private BeeRowSet positions;
+
+  private int marginLeft;
+  private int marginTop;
+  private int nodeWidth;
+  private int nodeHeight;
+  private int nodeGap;
+  private int levelGap;
+
+  private boolean showPositions;
+  private boolean showEmployees;
+  private boolean autoFit;
 
   CompanyStructureForm() {
   }
@@ -130,6 +183,15 @@ class CompanyStructureForm extends AbstractFormInterceptor implements HandlesAll
           }
         });
         return false;
+
+      case AUTO_FIT:
+        autoFit = !autoFit;
+        store(NAME_AUTO_FIT, autoFit);
+
+        refresh();
+        return false;
+
+      case CONFIGURE:
 
       case REFRESH:
         refresh();
@@ -150,9 +212,103 @@ class CompanyStructureForm extends AbstractFormInterceptor implements HandlesAll
     if (handlerRegistry.isEmpty()) {
       handlerRegistry.addAll(BeeKeeper.getBus().registerDataHandler(this, false));
     }
+
+    readSettings();
+
+    if (form.getViewPresenter() != null) {
+      HeaderView header = getHeaderView();
+      if (header != null) {
+        addCommands(header);
+      }
+    }
+
     refresh();
 
     super.onLoad(form);
+  }
+
+  private static boolean readBoolean(String name, boolean defValue) {
+    String key = storageKey(name);
+    if (BeeKeeper.getStorage().hasItem(key)) {
+      return BeeKeeper.getStorage().getBoolean(key);
+    } else {
+      return defValue;
+    }
+  }
+
+  private static int readInt(String name) {
+    Integer value = BeeKeeper.getStorage().getInteger(storageKey(name));
+    return (value == null) ? BeeConst.UNDEF : value;
+  }
+
+  private static void store(String name, Boolean value) {
+    BeeKeeper.getStorage().set(storageKey(name), value);
+  }
+
+  @SuppressWarnings("unused")
+  private static void store(String name, Integer value) {
+    BeeKeeper.getStorage().set(storageKey(name), value);
+  }
+
+  private void readSettings() {
+    int value = readInt(NAME_MARGIN_LEFT);
+    marginLeft = (value >= 0) ? value : DEFAULT_MARGIN_LEFT;
+
+    value = readInt(NAME_MARGIN_TOP);
+    marginTop = (value >= 0) ? value : DEFAULT_MARGIN_TOP;
+
+    value = readInt(NAME_NODE_WIDTH);
+    nodeWidth = (value > 0) ? value : DEFAULT_NODE_WIDTH;
+
+    value = readInt(NAME_NODE_HEIGHT);
+    nodeHeight = (value > 0) ? value : DEFAULT_NODE_HEIGHT;
+
+    value = readInt(NAME_NODE_GAP);
+    nodeGap = (value > 0) ? value : DEFAULT_NODE_GAP;
+
+    value = readInt(NAME_LEVEL_GAP);
+    levelGap = (value > 0) ? value : DEFAULT_LEVEL_GAP;
+
+    showPositions = readBoolean(NAME_SHOW_POSITIONS, DEFAULT_SHOW_POSITIONS);
+    showEmployees = readBoolean(NAME_SHOW_EMPLOYEES, DEFAULT_SHOW_EMPLOYEES);
+
+    autoFit = readBoolean(NAME_AUTO_FIT, DEFAULT_AUTO_FIT);
+  }
+
+  private void addCommands(HeaderView header) {
+    CheckBox positionToggle = new CheckBox(Localized.getConstants().personPositions());
+    positionToggle.addStyleName(STYLE_TOGGLE_POSITIONS);
+
+    positionToggle.setValue(showPositions);
+
+    positionToggle.addValueChangeHandler(new ValueChangeHandler<Boolean>() {
+      @Override
+      public void onValueChange(ValueChangeEvent<Boolean> event) {
+        showPositions = event.getValue();
+        store(NAME_SHOW_POSITIONS, showPositions);
+
+        refresh();
+      }
+    });
+
+    header.addCommandItem(positionToggle);
+
+    CheckBox employeeToggle = new CheckBox(Localized.getConstants().employees());
+    employeeToggle.addStyleName(STYLE_TOGGLE_EMPLOYEES);
+
+    employeeToggle.setValue(showPositions);
+
+    employeeToggle.addValueChangeHandler(new ValueChangeHandler<Boolean>() {
+      @Override
+      public void onValueChange(ValueChangeEvent<Boolean> event) {
+        showEmployees = event.getValue();
+        store(NAME_SHOW_EMPLOYEES, showEmployees);
+
+        refresh();
+      }
+    });
+
+    header.addCommandItem(employeeToggle);
   }
 
   @Override
@@ -268,16 +424,16 @@ class CompanyStructureForm extends AbstractFormInterceptor implements HandlesAll
     NodeExtentProvider<Long> nodeExtentProvider = new NodeExtentProvider<Long>() {
       @Override
       public double getWidth(Long treeNode) {
-        return ROOT.equals(treeNode) ? BeeConst.DOUBLE_ZERO : 140d;
+        return nodeWidth;
       }
 
       @Override
       public double getHeight(Long treeNode) {
-        return ROOT.equals(treeNode) ? BeeConst.DOUBLE_ZERO : 100d;
+        return nodeHeight;
       }
     };
 
-    Configuration<Long> configuration = new DefaultConfiguration<>(30, 20);
+    Configuration<Long> configuration = new DefaultConfiguration<>(levelGap, nodeGap);
 
     TreeLayout<Long> treeLayout = new TreeLayout<>(tree, nodeExtentProvider, configuration);
     return treeLayout;
@@ -296,6 +452,10 @@ class CompanyStructureForm extends AbstractFormInterceptor implements HandlesAll
             case VIEW_DEPARTMENT_EMPLOYEES:
               employees = rowSet;
               break;
+
+            case VIEW_DEPARTMENT_POSITIONS:
+              positions = rowSet;
+              break;
           }
         }
 
@@ -312,7 +472,17 @@ class CompanyStructureForm extends AbstractFormInterceptor implements HandlesAll
   }
 
   private void render(Flow panel, TreeLayout<Long> treeLayout) {
-    Map<Long, Rectangle2D.Double> nodeBounds = treeLayout.getNodeBounds();
+    Map<Long, Rectangle2D.Double> nodeBounds = new HashMap<>(treeLayout.getNodeBounds());
+
+    int shiftX = Math.max(marginLeft, 0);
+    int shiftY = Math.max(marginTop, 0) - nodeHeight - levelGap;
+
+    if (shiftX != 0 || shiftY != 0) {
+      for (Rectangle2D.Double rectangle : nodeBounds.values()) {
+        rectangle.setRect(rectangle.getX() + shiftX, rectangle.getY() + shiftY,
+            rectangle.getWidth(), rectangle.getHeight());
+      }
+    }
 
     for (Map.Entry<Long, Rectangle2D.Double> entry : nodeBounds.entrySet()) {
       Long node = entry.getKey();

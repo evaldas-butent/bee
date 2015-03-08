@@ -36,6 +36,17 @@
     </Table>
 
     <br/>
-    <ChildGrid class="flexible" name="DepartmentEmployees" relColumn="Department" />
+    
+    <TabbedPages class="flexible">
+      <page>
+        <text>=departmentEmployees</text>
+        <ChildGrid name="DepartmentEmployees" relColumn="Department" />
+      </page>
+      <page>
+        <text>=departmentPositions</text>
+        <ChildGrid name="DepartmentPositions" relColumn="Department" />
+      </page>
+    </TabbedPages>
+    
   </FlowPanel>
 </f:Form>  

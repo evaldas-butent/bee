@@ -539,6 +539,8 @@ public interface LocalizableConstants extends Constants, LocalizableClassifierCo
 
   String personCompanies();
 
+  String personPositions();
+
   String persons();
 
   String phone();

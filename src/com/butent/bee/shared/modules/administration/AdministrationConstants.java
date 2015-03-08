@@ -195,6 +195,7 @@ public final class AdministrationConstants {
 
   public static final String VIEW_DEPARTMENTS = "Departments";
   public static final String VIEW_DEPARTMENT_EMPLOYEES = "DepartmentEmployees";
+  public static final String VIEW_DEPARTMENT_POSITIONS = "DepartmentPositions";
 
   public static final String VIEW_FILTERS = "Filters";
 

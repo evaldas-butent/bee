@@ -3,7 +3,7 @@
 <f:Form xmlns="http://www.butent.com/widget" xmlns:f="http://www.butent.com/form"
 
   name="CompanyStructure" caption="=companyStructure"
-  enabledActions="refresh add"
+  enabledActions="refresh add configure auto_fit"
   >
 
   <FlowPanel class="bee-orgChart-panel" />
