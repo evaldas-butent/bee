@@ -3477,6 +3477,7 @@ textarea,
 }
 .bee-rep-rgroup, .bee-rep-rgroup-col-tot, .bee-rep-rgroup-tot {
   font-style: italic;
+  background-color: silver;
 }
 .bee-rep-cgroup-tot-hdr, .bee-rep-col-hdr, .bee-rep-row-tot-hdr {
   text-align: center;

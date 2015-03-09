@@ -457,18 +457,7 @@ public class AssessmentForm extends PrintFormInterceptor implements SelectorEven
       ScheduledCommand command = new ScheduledCommand() {
         @Override
         public void execute() {
-          int updateSize = Queries.update(getViewName(), form.getDataColumns(),
-              form.getOldRow(), form.getActiveRow(), form.getChildrenForUpdate(),
-              new RowCallback() {
-                @Override
-                public void onSuccess(BeeRow result) {
-                  RowUpdateEvent.fire(BeeKeeper.getBus(), getViewName(), result);
-                  update(notes);
-                }
-              });
-          if (updateSize == 0) {
-            update(notes);
-          }
+          update(notes);
         }
       };
       if (!handleSaveAction(command)) {
@@ -477,58 +466,52 @@ public class AssessmentForm extends PrintFormInterceptor implements SelectorEven
     }
 
     public void update(String notes) {
-      final List<BeeColumn> columns = new ArrayList<>();
-      List<String> oldValues = new ArrayList<>();
-      final List<String> newValues = new ArrayList<>();
+      final Map<String, String> changes = new LinkedHashMap<>();
       final String viewName = form.getViewName();
+      IsRow newRow = form.getActiveRow();
 
       if (status != null) {
-        columns.add(Data.getColumn(viewName, COL_ASSESSMENT_STATUS));
-        oldValues.add(form.getStringValue(COL_ASSESSMENT_STATUS));
-        newValues.add(BeeUtils.toString(status.ordinal()));
+        String value = BeeUtils.toString(status.ordinal());
+        newRow.setValue(form.getDataIndex(COL_ASSESSMENT_STATUS), value);
+        changes.put(COL_ASSESSMENT_STATUS, value);
       }
       if (orderStatus != null) {
-        columns.add(Data.getColumn(viewName, ALS_ORDER_STATUS));
-        oldValues.add(form.getStringValue(ALS_ORDER_STATUS));
-        newValues.add(BeeUtils.toString(orderStatus.ordinal()));
+        String value = BeeUtils.toString(orderStatus.ordinal());
+        newRow.setValue(form.getDataIndex(ALS_ORDER_STATUS), value);
+        changes.put(ALS_ORDER_STATUS, value);
       }
       if (!BeeUtils.isEmpty(notes)) {
-        String oldLog = form.getStringValue(COL_ASSESSMENT_LOG);
-        columns.add(Data.getColumn(viewName, COL_ASSESSMENT_LOG));
-        oldValues.add(oldLog);
-        newValues.add(buildLog(status != null ? status.getCaption() : orderStatus.getCaption(),
-            notes, oldLog));
+        int logIdx = form.getDataIndex(COL_ASSESSMENT_LOG);
+        newRow.setValue(logIdx, buildLog(status != null ? status.getCaption()
+            : orderStatus.getCaption(), notes, newRow.getString(logIdx)));
       }
-      Queries.update(viewName, form.getActiveRowId(), form.getActiveRow().getVersion(),
-          columns, oldValues, newValues, form.getChildrenForUpdate(), new RowCallback() {
+      Queries.update(viewName, form.getDataColumns(), form.getOldRow(), newRow,
+          form.getChildrenForUpdate(), new RowCallback() {
             @Override
-            public void onSuccess(BeeRow result) {
-              new RowUpdateCallback(form.getViewName()).onSuccess(result);
+            public void onSuccess(BeeRow res) {
+              final boolean reset = changes.size() > 1;
 
+              if (!reset) {
+                RowUpdateEvent.fire(BeeKeeper.getBus(), viewName, res);
+              }
               if (isPrimary() && !check) {
-                List<String> cols = new ArrayList<>();
-                List<String> vals = new ArrayList<>();
-
-                for (int i = 0; i < columns.size(); i++) {
-                  if (BeeUtils.inListSame(columns.get(i).getId(),
-                      COL_ASSESSMENT_STATUS, ALS_ORDER_STATUS)) {
-                    cols.add(columns.get(i).getId());
-                    vals.add(newValues.get(i));
-                  }
-                }
-                Queries.update(VIEW_CHILD_ASSESSMENTS,
-                    Filter.equals(COL_ASSESSMENT, result.getId()), cols, vals, new IntCallback() {
+                Queries.update(VIEW_CHILD_ASSESSMENTS, Filter.equals(COL_ASSESSMENT, res.getId()),
+                    new ArrayList<>(changes.keySet()), new ArrayList<>(changes.values()),
+                    new IntCallback() {
                       @Override
-                      public void onSuccess(Integer res) {
-                        if (BeeUtils.allNotNull(status, orderStatus)) {
-                          DataChangeEvent.fire(BeeKeeper.getBus(), viewName,
+                      public void onSuccess(Integer result) {
+                        if (reset) {
+                          DataChangeEvent.fireLocal(BeeKeeper.getBus(), viewName,
                               DataChangeEvent.CANCEL_RESET_REFRESH);
                         } else {
-                          DataChangeEvent.fireRefresh(BeeKeeper.getBus(),
+                          DataChangeEvent.fireLocalRefresh(BeeKeeper.getBus(),
                               VIEW_CHILD_ASSESSMENTS);
                         }
                       }
                     });
+              } else if (reset) {
+                DataChangeEvent.fireLocal(BeeKeeper.getBus(), viewName,
+                    DataChangeEvent.CANCEL_RESET_REFRESH);
               }
             }
           });

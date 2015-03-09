@@ -2740,8 +2740,10 @@ public class TransportModuleBean implements BeeModule, HasTimerService {
     }
     SqlSelect query = new SqlSelect()
         .addField(TBL_TRIPS, sys.getIdName(TBL_TRIPS), COL_TRIP)
-        .addFields(TBL_TRIPS, COL_TRIP_NO, COL_TRIP_DATE_FROM, COL_TRIP_DATE_TO)
+        .addFields(TBL_TRIPS, COL_TRIP_STATUS, COL_TRIP_DATE, COL_TRIP_NO,
+            COL_TRIP_DATE_FROM, COL_TRIP_DATE_TO)
         .addField("trucks", COL_VEHICLE_NUMBER, COL_VEHICLE)
+        .addFields("trucks", "Conditioner")
         .addField("trailers", COL_VEHICLE_NUMBER, COL_TRAILER)
         .addEmptyDouble("Kilometers")
         .addEmptyDouble("FuelCosts")
