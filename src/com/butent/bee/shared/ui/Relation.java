@@ -75,6 +75,7 @@ public final class Relation implements BeeSerializable, HasInfo, HasViewName {
   public static Relation create(Map<String, String> attributes,
       List<SelectorColumn> selectorColumns, RendererDescription rowRendererDescription,
       Calculation rowRender, List<RenderableToken> rowRenderTokens) {
+
     Relation relation = new Relation();
     relation.setAttributes(attributes);
 
@@ -184,6 +185,7 @@ public final class Relation implements BeeSerializable, HasInfo, HasViewName {
 
   private static List<String> deriveRenderColumns(DataInfo targetInfo, String original,
       String resolved) {
+
     if (!BeeUtils.same(original, resolved) && targetInfo.containsColumn(original)) {
       ViewColumn vc = targetInfo.getViewColumn(original);
       if (vc != null && vc.getLevel() > 0) {
@@ -212,6 +214,7 @@ public final class Relation implements BeeSerializable, HasInfo, HasViewName {
 
   private static String resolveTarget(DataInfo targetInfo, String target,
       List<String> renderColumns) {
+
     String result = null;
 
     if (!BeeUtils.isEmpty(target)) {

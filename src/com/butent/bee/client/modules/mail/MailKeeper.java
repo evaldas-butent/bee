@@ -23,7 +23,6 @@ import com.butent.bee.client.view.ViewCallback;
 import com.butent.bee.client.view.ViewFactory;
 import com.butent.bee.client.view.ViewHelper;
 import com.butent.bee.client.view.ViewSupplier;
-import com.butent.bee.client.view.form.FormView;
 import com.butent.bee.shared.BiConsumer;
 import com.butent.bee.shared.communication.ResponseObject;
 import com.butent.bee.shared.data.DataUtils;
@@ -63,7 +62,7 @@ public final class MailKeeper {
           @Override
           public void execute() {
             if (activePanel != null && Objects.equals(activePanel.getCurrentFolderId(), folderId)) {
-              activePanel.refreshMessages();
+              activePanel.refreshMessages(true);
             }
           }
         };
@@ -116,15 +115,8 @@ public final class MailKeeper {
       }
 
       @Override
-      public boolean read(final Long id) {
-        FormFactory.openForm(FORM_MAIL_MESSAGE, new MailMessage() {
-          @Override
-          public void onLoad(FormView form) {
-            requery(COL_PLACE, id, false);
-            super.onLoad(form);
-          }
-        });
-        return true;
+      public boolean read(Long id) {
+        return false;
       }
     });
     BeeKeeper.getBus().registerRowActionHandler(new RowActionEvent.Handler() {
@@ -162,14 +154,12 @@ public final class MailKeeper {
     activePanel.refreshFolder(folderId);
   }
 
-  static void copyMessage(final Long folderFrom, final Long folderTo, String[] places,
-      final boolean move) {
+  static void copyMessage(String places, final Long folderTo, final boolean move) {
     final MailPanel panel = activePanel;
     ParameterList params = createArgs(SVC_COPY_MESSAGES);
     params.addDataItem(COL_ACCOUNT, panel.getCurrentAccount().getAccountId());
-    params.addDataItem(COL_FOLDER_PARENT, folderFrom);
     params.addDataItem(COL_FOLDER, folderTo);
-    params.addDataItem(COL_PLACE, Codec.beeSerialize(places));
+    params.addDataItem(COL_PLACE, places);
     params.addDataItem("move", move ? 1 : 0);
 
     BeeKeeper.getRpc().makePostRequest(params, new ResponseCallback() {
@@ -197,7 +187,7 @@ public final class MailKeeper {
     final MailPanel panel = activePanel;
     final AccountInfo account = panel.getCurrentAccount();
     final Long parentId = panel.getCurrentFolderId();
-    final boolean isParent = !account.isSystemFolder(parentId);
+    final boolean isParent = DataUtils.isId(parentId) && !account.isSystemFolder(parentId);
     String caption = null;
 
     if (isParent) {

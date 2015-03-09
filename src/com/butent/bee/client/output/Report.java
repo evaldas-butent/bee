@@ -13,7 +13,6 @@ import com.butent.bee.client.modules.trade.acts.TradeActStockReport;
 import com.butent.bee.client.modules.trade.acts.TradeActTransferReport;
 import com.butent.bee.client.modules.transport.AssessmentQuantityReport;
 import com.butent.bee.client.modules.transport.AssessmentTurnoverReport;
-import com.butent.bee.client.output.ReportItem.Function;
 import com.butent.bee.client.ui.FormDescription;
 import com.butent.bee.client.ui.FormFactory;
 import com.butent.bee.client.view.ViewCallback;
@@ -184,8 +183,7 @@ public enum Report implements HasWidgetSupplier {
         map.put(PROP_COLUMNS, items.get(item).create().enableCalculation());
       }
 
-      map.put(Report.PROP_COLUMN_GROUP, items.get(ProjectConstants.ALS_TASK_STATUS).create()
-          .enableCalculation().setFunction(Function.COUNT));
+      map.put(Report.PROP_COLUMN_GROUP, items.get(ProjectConstants.ALS_TASK_STATUS).create());
 
       return map;
     }

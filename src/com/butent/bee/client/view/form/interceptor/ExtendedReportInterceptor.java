@@ -165,10 +165,10 @@ public class ExtendedReportInterceptor extends ReportInterceptor {
     Multimap<String, ReportItem> defaults = getReport().getDefaults();
 
     if (defaults != null) {
-      rowItems.addAll(defaults.get("ROWS"));
-      rowGrouping = BeeUtils.peek(defaults.get("ROW_GROUP"));
-      colItems.addAll(defaults.get("COLUMNS"));
-      colGrouping = BeeUtils.peek(defaults.get("COLUMN_GROUP"));
+      rowItems.addAll(defaults.get(Report.PROP_ROWS));
+      rowGrouping = BeeUtils.peek(defaults.get(Report.PROP_ROW_GROUP));
+      colItems.addAll(defaults.get(Report.PROP_COLUMNS));
+      colGrouping = BeeUtils.peek(defaults.get(Report.PROP_COLUMN_GROUP));
     }
     render(NAME_DETALIZATION_CONTAINER);
     render(NAME_CALCULATION_CONTAINER);

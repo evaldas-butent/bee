@@ -9,6 +9,7 @@ import com.butent.bee.client.grid.GridFactory;
 import com.butent.bee.client.modules.trade.acts.TradeActKeeper;
 import com.butent.bee.client.style.ColorStyleProvider;
 import com.butent.bee.client.style.ConditionalStyle;
+import com.butent.bee.client.ui.FormFactory;
 import com.butent.bee.client.view.grid.interceptor.UniqueChildInterceptor;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.i18n.Localized;
@@ -31,6 +32,8 @@ public final class TradeKeeper {
     GridFactory.registerGridInterceptor(GRID_SERIES_MANAGERS,
         UniqueChildInterceptor.forUsers(Localized.getConstants().managers(),
             COL_SERIES, COL_TRADE_MANAGER));
+
+    FormFactory.registerFormInterceptor(FORM_SALES_INVOICE, new SalesInvoiceForm());
 
     ColorStyleProvider csp = ColorStyleProvider.createDefault(VIEW_TRADE_OPERATIONS);
     ConditionalStyle.registerGridColumnStyleProvider(GRID_TRADE_OPERATIONS, COL_BACKGROUND, csp);

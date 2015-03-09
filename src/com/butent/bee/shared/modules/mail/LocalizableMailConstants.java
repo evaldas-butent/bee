@@ -44,6 +44,8 @@ public interface LocalizableMailConstants {
 
   String mailGetAllAttachments();
 
+  String mailHasAttachments();
+
   String mailMarkAsUnread();
 
   String mailMessageBodyIsEmpty();
@@ -84,13 +86,21 @@ public interface LocalizableMailConstants {
 
   String mailMessageIsSavedInDraft();
 
+  String mailMessage();
+
+  String mailMessages();
+
   String mailMessageSent();
+
+  String mailShowAnswer();
 
   String mailShowOriginal();
 
   String mailSpecifyRecipient();
 
   String mailSpecifySubject();
+
+  String mailStarred();
 
   String mailSubject();
 
@@ -101,5 +111,7 @@ public interface LocalizableMailConstants {
   String mailThereIsStackOfUnfinishedAttachments();
 
   String mailTo();
+
+  String mailUnread();
 
 }

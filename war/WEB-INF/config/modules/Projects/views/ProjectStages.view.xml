@@ -38,6 +38,8 @@
     
     <ExternalJoin source="Tasks" joinType="LEFT" name="ProjectStage">    
       <AggregateColumn alias="ExpectedTasksExpenses" name="ExpectedExpenses" aggregate="SUM" />
+      <AggregateColumn alias="LowTasksDate" name="StartTime" aggregate="MIN" />
+      <AggregateColumn alias="HighTasksDate" name="FinishTime" aggregate="MAX" />
     </ExternalJoin>
     
     <SimpleColumn name="ActualTasksDuration" label="=prjActualTaskDuration">
@@ -51,6 +53,9 @@
     
     <SimpleColumn name="Expenses" />
     <SimpleColumn name="Currency" />
+    <SimpleJoin name="Currency" joinType="LEFT">
+      <SimpleColumn name="Name" alias="CurrencyName" />
+    </SimpleJoin>
     
     <SimpleColumn name="ActualExpenses" label="=prjActualExpenses">
        <x:number>0</x:number> 

@@ -1062,4 +1062,16 @@
     </xs:complexType>
   </xs:element>
 
+  <xs:element name="Line" substitutionGroup="widget">
+    <xs:complexType>
+      <xs:complexContent>
+        <xs:extension base="widgetType">
+          <xs:attribute name="x1" type="xs:int" use="required" />
+          <xs:attribute name="y1" type="xs:int" use="required" />
+          <xs:attribute name="x2" type="xs:int" use="required" />
+          <xs:attribute name="y2" type="xs:int" use="required" />
+        </xs:extension>
+      </xs:complexContent>
+    </xs:complexType>
+  </xs:element>
 </xs:schema>

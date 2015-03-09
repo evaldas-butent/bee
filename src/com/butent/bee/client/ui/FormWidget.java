@@ -111,6 +111,7 @@ import com.butent.bee.client.widget.IntegerLabel;
 import com.butent.bee.client.widget.InternalLink;
 import com.butent.bee.client.widget.Label;
 import com.butent.bee.client.widget.Legend;
+import com.butent.bee.client.widget.Line;
 import com.butent.bee.client.widget.Link;
 import com.butent.bee.client.widget.ListBox;
 import com.butent.bee.client.widget.LongLabel;
@@ -234,6 +235,7 @@ public enum FormWidget {
   LABEL("Label", EnumSet.of(Type.IS_LABEL)),
   LAYOUT_PANEL("LayoutPanel", EnumSet.of(Type.HAS_LAYERS)),
   LEGEND("Legend", null),
+  LINE("Line", null),
   LINK("Link", EnumSet.of(Type.DISPLAY)),
   LIST_BOX("ListBox", EnumSet.of(Type.FOCUSABLE, Type.EDITABLE)),
   LONG_LABEL("LongLabel", EnumSet.of(Type.DISPLAY)),
@@ -336,6 +338,7 @@ public enum FormWidget {
 
   public static Relation createRelation(String viewName, Map<String, String> attributes,
       List<Element> children, Relation.RenderMode renderMode) {
+
     Relation relation = XmlUtils.getRelation(attributes, children);
 
     String source = attributes.get(UiConstants.ATTR_SOURCE);
@@ -573,6 +576,7 @@ public enum FormWidget {
 
   private static BeeColumn getColumn(List<BeeColumn> columns, Map<String, String> attributes,
       String key) {
+
     if (columns == null && attributes == null) {
       return null;
     }
@@ -1490,6 +1494,18 @@ public enum FormWidget {
 
       case LEGEND:
         widget = new Legend(html);
+        break;
+
+      case LINE:
+        Double x1 = XmlUtils.getAttributeDouble(element, "x1");
+        Double y1 = XmlUtils.getAttributeDouble(element, "y1");
+        Double x2 = XmlUtils.getAttributeDouble(element, "x2");
+        Double y2 = XmlUtils.getAttributeDouble(element, "y2");
+
+        if (BeeUtils.isDouble(x1) && BeeUtils.isDouble(y1)
+            && BeeUtils.isDouble(x2) && BeeUtils.isDouble(y2)) {
+          widget = new Line(x1, y1, x2, y2);
+        }
         break;
 
       case LINK:

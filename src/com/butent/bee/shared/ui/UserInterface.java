@@ -315,6 +315,8 @@ public enum UserInterface implements HasCaption {
     List<String> sheets = new ArrayList<>();
 
     sheets.add(MAIN_STYLE_SHEET);
+    sheets.add("misc");
+
     sheets.addAll(Module.getEnabledStyleSheets());
 
     return sheets;

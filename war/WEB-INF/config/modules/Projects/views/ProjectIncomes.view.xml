@@ -10,7 +10,12 @@
       <SimpleColumn name="Company" />
       <SimpleJoin joinType="LEFT" name="Company">
         <SimpleColumn name="Name" alias="CompanyName" />
-        <SimpleColumn name="CreditDays" alias="CompanyCreditDays" />
+      </SimpleJoin>
+      <SimpleColumn name="Owner"/>
+     
+      <SimpleColumn name="Currency" alias="ProjectCurrency" />
+      <SimpleJoin name="Currency" joinType="LEFT">
+        <SimpleColumn name="Name" alias="ProjectCurrencyName" />
       </SimpleJoin>
     </SimpleJoin>
     <SimpleColumn name="Date" />
@@ -25,7 +30,7 @@
     
       <SimpleColumn name="Price" alias="ItemPrice" />
       <SimpleColumn name="Currency" alias="ItemCurrency" />
-      
+         
       <SimpleColumn name="Cost" alias="ItemCost" />
       <SimpleColumn name="CostCurrency" alias="ItemCostCurrency" />
 
@@ -42,8 +47,6 @@
     <SimpleColumn name="VatPlus" />
     <SimpleColumn name="Vat" />
     <SimpleColumn name="VatPercent" />
-
-    <SimpleColumn name="Discount" />
 
     <SimpleColumn name="Note" />
     <SimpleColumn name="Sale" />

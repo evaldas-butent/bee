@@ -793,12 +793,19 @@ public class DataSelector extends Composite implements Editor, HasVisibleLines, 
     this.tableMode = ItemType.ROW.equals(itemType) || !selectorColumns.isEmpty()
         || itemType == null && size > 1 && !relation.hasRowRenderer();
 
-    int dataIndex = (size == 1) ? dataInfo.getColumnIndex(choiceColumns.get(0)) : BeeConst.UNDEF;
-    BeeColumn dataColumn =
-        BeeConst.isUndef(dataIndex) ? null : dataInfo.getColumns().get(dataIndex);
+    BeeColumn dataColumn = null;
+    CellSource cellSource = null;
 
-    CellSource cellSource =
-        (dataColumn == null) ? null : CellSource.forColumn(dataColumn, dataIndex);
+    if (size == 1) {
+      int dataIndex = dataInfo.getColumnIndex(choiceColumns.get(0));
+
+      if (BeeConst.isUndef(dataIndex)) {
+        cellSource = CellSource.forProperty(choiceColumns.get(0), ValueType.TEXT);
+      } else {
+        dataColumn = dataInfo.getColumns().get(dataIndex);
+        cellSource = CellSource.forColumn(dataColumn, dataIndex);
+      }
+    }
 
     this.rowRenderer = RendererFactory.getRenderer(relation.getRowRendererDescription(),
         relation.getRowRender(), relation.getRowRenderTokens(), relation.getEnumKey(),

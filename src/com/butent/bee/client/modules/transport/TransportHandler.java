@@ -26,6 +26,7 @@ import com.butent.bee.client.grid.ColumnHeader;
 import com.butent.bee.client.grid.GridFactory;
 import com.butent.bee.client.grid.GridFactory.GridOptions;
 import com.butent.bee.client.grid.column.AbstractColumn;
+import com.butent.bee.client.modules.trade.InvoicesGrid;
 import com.butent.bee.client.modules.trade.TradeUtils;
 import com.butent.bee.client.modules.transport.charts.ChartBase;
 import com.butent.bee.client.presenter.GridPresenter;
@@ -406,9 +407,9 @@ public final class TransportHandler {
     GridFactory.registerGridInterceptor(VIEW_CARGO_SALES, new CargoSalesGrid());
     GridFactory.registerGridInterceptor(VIEW_CARGO_CREDIT_SALES, new CargoCreditSalesGrid());
     GridFactory.registerGridInterceptor(VIEW_CARGO_PURCHASES, new CargoPurchasesGrid());
-    GridFactory.registerGridInterceptor(VIEW_CARGO_INVOICES, new CargoInvoicesGrid());
-    GridFactory.registerGridInterceptor(VIEW_CARGO_CREDIT_INVOICES, new CargoInvoicesGrid());
-    GridFactory.registerGridInterceptor(VIEW_CARGO_PURCHASE_INVOICES, new CargoInvoicesGrid());
+    GridFactory.registerGridInterceptor(VIEW_CARGO_INVOICES, new InvoicesGrid());
+    GridFactory.registerGridInterceptor(VIEW_CARGO_CREDIT_INVOICES, new InvoicesGrid());
+    GridFactory.registerGridInterceptor(VIEW_CARGO_PURCHASE_INVOICES, new InvoicesGrid());
 
     GridFactory.registerGridInterceptor(VIEW_CARGO_REQUESTS, new CargoRequestsGrid());
     GridFactory.registerGridInterceptor(VIEW_CARGO_REQUEST_FILES,

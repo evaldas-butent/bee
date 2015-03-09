@@ -257,6 +257,11 @@ public class Users {
     return (userData == null) ? null : userData.getUserSign();
   }
 
+  public boolean hasPhoto(Long userId) {
+    UserData userData = getUserData(userId);
+    return userData != null && !BeeUtils.isEmpty(userData.getPhotoFileName());
+  }
+
   public boolean isOpen(String sessionId) {
     return !BeeUtils.isEmpty(sessionId) && openSessions.containsKey(sessionId);
   }

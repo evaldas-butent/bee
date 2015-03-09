@@ -37,6 +37,7 @@ import com.butent.bee.shared.data.SimpleRowSet;
 import com.butent.bee.shared.data.SimpleRowSet.SimpleRow;
 import com.butent.bee.shared.data.filter.Filter;
 import com.butent.bee.shared.data.view.Order;
+import com.butent.bee.shared.logging.LogUtils;
 import com.butent.bee.shared.modules.BeeParameter;
 import com.butent.bee.shared.modules.administration.AdministrationConstants;
 import com.butent.bee.shared.modules.classifiers.ClassifierConstants;
@@ -348,6 +349,8 @@ public class ProjectsModuleBean implements BeeModule {
         .addExpr(vatExch, vatAlias)
         .addOrder(TBL_PROJECT_INCOMES, sys.getIdName(TBL_PROJECT_INCOMES));
 
+    LogUtils.getRootLogger().info(query.getQuery());
+
     SimpleRowSet data = qs.getData(query);
     if (DataUtils.isEmpty(data)) {
       return ResponseObject.error(TBL_PROJECT_INCOMES, ids, "not found");
@@ -452,6 +455,8 @@ public class ProjectsModuleBean implements BeeModule {
     int idxStageName = rs.getColumnIndex(COL_STAGE_NAME);
     int idxStageStart = rs.getColumnIndex(COL_STAGE_START_DATE);
     int idxStageEnd = rs.getColumnIndex(COL_STAGE_END_DATE);
+    int idxTasksTimeHigh = rs.getColumnIndex(ALS_HIGH_TASKS_DATE);
+    int idxTasksTimeLow = rs.getColumnIndex(ALS_LOW_TASKS_DATE);
 
     for (IsRow rsRow : rs) {
       String stage = BeeUtils.toString(rsRow.getId());
@@ -459,6 +464,14 @@ public class ProjectsModuleBean implements BeeModule {
 
       String stageStart = rsRow.getString(idxStageStart);
       String stageEnd = rsRow.getString(idxStageEnd);
+
+      if (BeeUtils.isEmpty(stageStart) && rsRow.getDateTime(idxTasksTimeLow) != null) {
+        stageStart = BeeUtils.toString(rsRow.getDateTime(idxTasksTimeLow).getDate().getDays());
+      }
+
+      if (BeeUtils.isEmpty(stageEnd) && rsRow.getDateTime(idxTasksTimeHigh) != null) {
+        stageEnd = BeeUtils.toString(rsRow.getDateTime(idxTasksTimeHigh).getDate().getDays());
+      }
 
       chartData.addRow(new String[] {
           VIEW_PROJECT_STAGES,

@@ -21,7 +21,11 @@
 
         <row data="Departments">
           <Label for="Department" />
-          <DataSelector source="Department" />
+          <DataSelector source="Department" renderColumns="DepartmentName"
+            choiceColumns="FullName" searchableColumns="DepartmentName" visibleLines="7"
+            selectorClass="bee-BranchSelector" newRowEnabled="false">
+            <ui:rowRenderer type="branch" />
+          </DataSelector>
         </row>
 
         <row data="ActivityTypes">

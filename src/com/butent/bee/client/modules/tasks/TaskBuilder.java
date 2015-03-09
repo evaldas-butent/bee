@@ -20,6 +20,7 @@ import com.butent.bee.client.composite.FileCollector;
 import com.butent.bee.client.composite.MultiSelector;
 import com.butent.bee.client.data.Data;
 import com.butent.bee.client.data.Queries;
+import com.butent.bee.client.data.Queries.RowSetCallback;
 import com.butent.bee.client.style.StyleUtils;
 import com.butent.bee.client.ui.FormFactory.WidgetDescriptionCallback;
 import com.butent.bee.client.ui.IdentifiableWidget;
@@ -47,6 +48,7 @@ import com.butent.bee.shared.data.IsRow;
 import com.butent.bee.shared.data.event.DataChangeEvent;
 import com.butent.bee.shared.data.filter.Filter;
 import com.butent.bee.shared.data.value.BooleanValue;
+import com.butent.bee.shared.data.value.Value;
 import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.io.FileInfo;
 import com.butent.bee.shared.modules.administration.AdministrationConstants;
@@ -73,6 +75,9 @@ class TaskBuilder extends AbstractFormInterceptor {
   private static final String NAME_USER_GROUP_SETTINGS = "UserGroupSettings";
   private static final String NAME_EXECUTORS_LABEL = "ExecutorsLabel";
   private static final String NAME_END_DATE_LABEL = "EndDateLabel";
+  private static final String NAME_EXECUTORS = "Executors";
+  private static final String NAME_OBSERVERS = "Observers";
+  private static final String NAME_OBSERVER_GROUPS = "ObserverGroups";
 
   private static final String NAME_REMINDER_DATE = "Reminder_Date";
   private static final String NAME_REMINDER_TIME = "Reminder_Time";
@@ -84,6 +89,11 @@ class TaskBuilder extends AbstractFormInterceptor {
   private InputTime expectedDurationInput;
   private Label endDateInputLabel;
   private Label executorsLabel;
+
+  private MultiSelector executors;
+  private MultiSelector executorGroups;
+  private MultiSelector observers;
+  private MultiSelector observerGroups;
 
   private final Map<Long, FileInfo> filesToUpload = new HashMap<>();
   private Long executor;
@@ -174,6 +184,7 @@ class TaskBuilder extends AbstractFormInterceptor {
 
     } else if (BeeUtils.same(NAME_USER_GROUP_SETTINGS, name) && (widget instanceof MultiSelector)) {
       final MultiSelector userGroups = (MultiSelector) widget;
+      executorGroups = userGroups;
 
       userGroups.addEditChangeHandler(new EditChangeHandler() {
         @Override
@@ -205,12 +216,19 @@ class TaskBuilder extends AbstractFormInterceptor {
           }
         }
       });
+    } else if (BeeUtils.same(NAME_EXECUTORS, name) && (widget instanceof MultiSelector)) {
+      executors = (MultiSelector) widget;
+    } else if (BeeUtils.same(NAME_OBSERVERS, name) && (widget instanceof MultiSelector)) {
+      observers = (MultiSelector) widget;
+    } else if (BeeUtils.same(NAME_OBSERVER_GROUPS, name) && (widget instanceof MultiSelector)) {
+      observerGroups = (MultiSelector) widget;
     }
   }
 
   @Override
   public void afterRefresh(FormView form, IsRow row) {
-    setProjectStagesLimit(form, row);
+    setProjectStagesFilter(form, row);
+    setProjectUsersFilter(form, row);
   }
 
   @Override
@@ -381,7 +399,7 @@ class TaskBuilder extends AbstractFormInterceptor {
     });
   }
 
-  private static void setProjectStagesLimit(FormView form, IsRow row) {
+  private static void setProjectStagesFilter(FormView form, IsRow row) {
     int idxProjectOwner = form.getDataIndex(ALS_PROJECT_OWNER);
     int idxProject = form.getDataIndex(ProjectConstants.COL_PROJECT);
 
@@ -532,5 +550,85 @@ class TaskBuilder extends AbstractFormInterceptor {
     } else {
       return TimeUtils.combine(datePart, getMillis(NAME_START_TIME));
     }
+  }
+
+  private void setProjectUsersFilter(final FormView form, IsRow row) {
+    int idxProjectOwner = form.getDataIndex(ALS_PROJECT_OWNER);
+    int idxProject = form.getDataIndex(ProjectConstants.COL_PROJECT);
+
+    if (BeeConst.isUndef(idxProjectOwner)) {
+      return;
+    }
+
+    if (BeeConst.isUndef(idxProject)) {
+      return;
+    }
+
+    final long projectOwner = BeeUtils.unbox(row.getLong(idxProjectOwner));
+    long projectId = BeeUtils.unbox(row.getLong(idxProject));
+
+    if (!DataUtils.isId(projectId)) {
+      return;
+    }
+
+    if (executors != null) {
+      executors.setEnabled(false);
+    }
+
+    if (executorGroups != null) {
+      executorGroups.setEnabled(false);
+      executorGroups.getElement().addClassName(StyleUtils.NAME_DISABLED);
+    }
+
+    if (observers != null) {
+      observers.setEnabled(false);
+    }
+
+    if (observerGroups != null) {
+      observerGroups.setEnabled(false);
+      observerGroups.getElement().addClassName(StyleUtils.NAME_DISABLED);
+    }
+
+    Queries.getRowSet(ProjectConstants.VIEW_PROJECT_USERS, Lists
+        .newArrayList(AdministrationConstants.COL_USER), Filter.isEqual(
+        ProjectConstants.COL_PROJECT, Value.getValue(projectId)), new RowSetCallback() {
+
+      @Override
+      public void onSuccess(BeeRowSet result) {
+        if (DataUtils.isEmpty(result)) {
+          if (executors != null) {
+            executors.getOracle().setAdditionalFilter(Filter.compareId(projectOwner), true);
+            executors.setEnabled(true);
+            return;
+          }
+        }
+
+        List<Long> userIds = Lists.newArrayList(projectOwner);
+        int idxUser = result.getColumnIndex(AdministrationConstants.COL_USER);
+
+        if (BeeConst.isUndef(idxUser)) {
+          Assert.untouchable();
+          return;
+        }
+
+        for (IsRow userRow : result) {
+          long projectUser = BeeUtils.unbox(userRow.getLong(idxUser));
+
+          if (DataUtils.isId(projectUser)) {
+            userIds.add(projectUser);
+          }
+        }
+
+        if (executors != null) {
+          executors.getOracle().setAdditionalFilter(Filter.idIn(userIds), true);
+          executors.setEnabled(true);
+        }
+
+        if (observers != null) {
+          observers.getOracle().setAdditionalFilter(Filter.idIn(userIds), true);
+          observers.setEnabled(true);
+        }
+      }
+    });
   }
 }
