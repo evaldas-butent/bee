@@ -18,6 +18,7 @@
         <SimpleColumn name="LastName" />
         <SimpleColumn name="Photo" />
       </SimpleJoin>
+      <SimpleColumn name="Position" alias="PrimaryPosition" />
       <SimpleJoin name="Position" joinType="LEFT">
         <SimpleColumn name="Name" alias="PrimaryPositionName" />
       </SimpleJoin>

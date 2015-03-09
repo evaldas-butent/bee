@@ -22,8 +22,11 @@ import com.butent.bee.client.data.Queries.IntCallback;
 import com.butent.bee.client.data.RowCallback;
 import com.butent.bee.client.data.RowEditor;
 import com.butent.bee.client.data.RowFactory;
+import com.butent.bee.client.dialog.DialogBox;
 import com.butent.bee.client.event.DndHelper;
 import com.butent.bee.client.event.EventUtils;
+import com.butent.bee.client.grid.HtmlTable;
+import com.butent.bee.client.i18n.Collator;
 import com.butent.bee.client.layout.Flow;
 import com.butent.bee.client.presenter.Presenter;
 import com.butent.bee.client.render.PhotoRenderer;
@@ -34,9 +37,12 @@ import com.butent.bee.client.view.HeaderView;
 import com.butent.bee.client.view.form.FormView;
 import com.butent.bee.client.view.form.interceptor.AbstractFormInterceptor;
 import com.butent.bee.client.view.form.interceptor.FormInterceptor;
+import com.butent.bee.client.widget.Badge;
+import com.butent.bee.client.widget.Button;
 import com.butent.bee.client.widget.CheckBox;
 import com.butent.bee.client.widget.DndDiv;
 import com.butent.bee.client.widget.Image;
+import com.butent.bee.client.widget.InputSpinner;
 import com.butent.bee.client.widget.Label;
 import com.butent.bee.client.widget.Line;
 import com.butent.bee.shared.BeeConst;
@@ -78,6 +84,37 @@ import java.util.Set;
 
 class CompanyStructureForm extends AbstractFormInterceptor implements HandlesAllDataEvents {
 
+  private static final class DepartmentPosition implements Comparable<DepartmentPosition> {
+
+    private final long id;
+    private final String name;
+
+    private int plannedStaff;
+    private int actualStaff;
+
+    private DepartmentPosition(long id, String name) {
+      this.id = id;
+      this.name = name;
+    }
+
+    @Override
+    public int compareTo(DepartmentPosition o) {
+      if (Objects.equals(id, o.id)) {
+        return BeeConst.COMPARE_EQUAL;
+      } else {
+        return Collator.DEFAULT.compare(name, o.name);
+      }
+    }
+
+    private void incrementActualStaff() {
+      actualStaff++;
+    }
+
+    private void setPlannedStaff(int plannedStaff) {
+      this.plannedStaff = plannedStaff;
+    }
+  }
+
   private static final BeeLogger logger = LogUtils.getLogger(CompanyStructureForm.class);
 
   private static final List<String> viewNames = Lists.newArrayList(VIEW_DEPARTMENTS,
@@ -96,20 +133,40 @@ class CompanyStructureForm extends AbstractFormInterceptor implements HandlesAll
   private static final String STYLE_DEPARTMENT_DRAG_OVER = STYLE_DEPARTMENT_PREFIX + "dragOver";
 
   private static final String STYLE_BOSS_PREFIX = STYLE_PREFIX + "boss-";
-  private static final String STYLE_BOSS_CONTAINER = STYLE_BOSS_PREFIX + "container";
-  private static final String STYLE_BOSS_LABEL = STYLE_BOSS_PREFIX + "label";
+  private static final String STYLE_BOSS_TABLE = STYLE_BOSS_PREFIX + "table";
   private static final String STYLE_BOSS_PHOTO = STYLE_BOSS_PREFIX + "photo";
+  private static final String STYLE_BOSS_LABEL = STYLE_BOSS_PREFIX + "label";
   private static final String STYLE_BOSS_DRAG = STYLE_BOSS_PREFIX + "drag";
 
   private static final String STYLE_EMPLOYEE_PREFIX = STYLE_PREFIX + "employee-";
-  private static final String STYLE_EMPLOYEE_PANEL = STYLE_EMPLOYEE_PREFIX + "panel";
-  private static final String STYLE_EMPLOYEE_CONTAINER = STYLE_EMPLOYEE_PREFIX + "container";
-  private static final String STYLE_EMPLOYEE_LABEL = STYLE_EMPLOYEE_PREFIX + "label";
+  private static final String STYLE_EMPLOYEE_TABLE = STYLE_EMPLOYEE_PREFIX + "table";
+  private static final String STYLE_EMPLOYEE_SUMMARY = STYLE_EMPLOYEE_PREFIX + "summary";
+  private static final String STYLE_EMPLOYEE_DETAILS = STYLE_EMPLOYEE_PREFIX + "details";
   private static final String STYLE_EMPLOYEE_PHOTO = STYLE_EMPLOYEE_PREFIX + "photo";
+  private static final String STYLE_EMPLOYEE_LABEL = STYLE_EMPLOYEE_PREFIX + "label";
+  private static final String STYLE_EMPLOYEE_COUNT = STYLE_EMPLOYEE_PREFIX + "count";
   private static final String STYLE_EMPLOYEE_DRAG = STYLE_EMPLOYEE_PREFIX + "drag";
+
+  private static final String STYLE_POSITION_PREFIX = STYLE_PREFIX + "position-";
+  private static final String STYLE_POSITION_TABLE = STYLE_POSITION_PREFIX + "table";
+  private static final String STYLE_POSITION_SUMMARY = STYLE_POSITION_PREFIX + "summary";
+  private static final String STYLE_POSITION_DETAILS = STYLE_POSITION_PREFIX + "details";
+  private static final String STYLE_POSITION_LABEL = STYLE_POSITION_PREFIX + "label";
+  private static final String STYLE_POSITION_ACTUAL = STYLE_POSITION_PREFIX + "actual";
+  private static final String STYLE_POSITION_PLANNED = STYLE_POSITION_PREFIX + "planned";
 
   private static final String STYLE_TOGGLE_POSITIONS = STYLE_PREFIX + "toggle-positions";
   private static final String STYLE_TOGGLE_EMPLOYEES = STYLE_PREFIX + "toggle-employees";
+
+  private static final String STYLE_SETTINGS_PREFIX = STYLE_PREFIX + "settings-";
+  private static final String STYLE_SETTINGS_DIALOG = STYLE_SETTINGS_PREFIX + "dialog";
+  private static final String STYLE_SETTINGS_TABLE = STYLE_SETTINGS_PREFIX + "table";
+  private static final String STYLE_SETTINGS_COMMAND_PANEL = STYLE_SETTINGS_PREFIX + "commands";
+  private static final String STYLE_SETTINGS_SAVE = STYLE_SETTINGS_PREFIX + "save";
+  private static final String STYLE_SETTINGS_CANCEL = STYLE_SETTINGS_PREFIX + "cancel";
+
+  private static final String STYLE_SETTINGS_LABEL_SUFFIX = "-label";
+  private static final String STYLE_SETTINGS_INPUT_SUFFIX = "-input";
 
   private static final String DATA_TYPE_DEPARTMENT = "OrgChartDepartment";
   private static final String DATA_TYPE_BOSS = "OrgChartBoss";
@@ -155,7 +212,6 @@ class CompanyStructureForm extends AbstractFormInterceptor implements HandlesAll
 
   private BeeRowSet departments;
   private BeeRowSet employees;
-  @SuppressWarnings("unused")
   private BeeRowSet positions;
 
   private int marginLeft;
@@ -192,6 +248,8 @@ class CompanyStructureForm extends AbstractFormInterceptor implements HandlesAll
         return false;
 
       case CONFIGURE:
+        editSettings();
+        return false;
 
       case REFRESH:
         refresh();
@@ -245,7 +303,6 @@ class CompanyStructureForm extends AbstractFormInterceptor implements HandlesAll
     BeeKeeper.getStorage().set(storageKey(name), value);
   }
 
-  @SuppressWarnings("unused")
   private static void store(String name, Integer value) {
     BeeKeeper.getStorage().set(storageKey(name), value);
   }
@@ -273,6 +330,150 @@ class CompanyStructureForm extends AbstractFormInterceptor implements HandlesAll
     showEmployees = readBoolean(NAME_SHOW_EMPLOYEES, DEFAULT_SHOW_EMPLOYEES);
 
     autoFit = readBoolean(NAME_AUTO_FIT, DEFAULT_AUTO_FIT);
+  }
+
+  private static String settingsLabelStyle(String name) {
+    return STYLE_SETTINGS_PREFIX + name + STYLE_SETTINGS_LABEL_SUFFIX;
+  }
+
+  private static String settingsInputStyle(String name) {
+    return STYLE_SETTINGS_PREFIX + name + STYLE_SETTINGS_INPUT_SUFFIX;
+  }
+
+  private void editSettings() {
+    final DialogBox dialog = DialogBox.create(Localized.getConstants().settings(),
+        STYLE_SETTINGS_DIALOG);
+
+    HtmlTable table = new HtmlTable(STYLE_SETTINGS_TABLE);
+    int row = 0;
+
+    Label marginLeftLabel = new Label(NAME_MARGIN_LEFT);
+    table.setWidgetAndStyle(row, 0, marginLeftLabel, settingsLabelStyle(NAME_MARGIN_LEFT));
+
+    final InputSpinner marginLeftInput = new InputSpinner(0, 100);
+    marginLeftInput.setValue(marginLeft);
+    table.setWidgetAndStyle(row, 1, marginLeftInput, settingsInputStyle(NAME_MARGIN_LEFT));
+
+    row++;
+    Label marginTopLabel = new Label(NAME_MARGIN_TOP);
+    table.setWidgetAndStyle(row, 0, marginTopLabel, settingsLabelStyle(NAME_MARGIN_TOP));
+
+    final InputSpinner marginTopInput = new InputSpinner(0, 100);
+    marginTopInput.setValue(marginTop);
+    table.setWidgetAndStyle(row, 1, marginTopInput, settingsInputStyle(NAME_MARGIN_TOP));
+
+    row++;
+    Label nodeWidthLabel = new Label(NAME_NODE_WIDTH);
+    table.setWidgetAndStyle(row, 0, nodeWidthLabel, settingsLabelStyle(NAME_NODE_WIDTH));
+
+    final InputSpinner nodeWidthInput = new InputSpinner(20, 500);
+    nodeWidthInput.setValue(nodeWidth);
+    table.setWidgetAndStyle(row, 1, nodeWidthInput, settingsInputStyle(NAME_NODE_WIDTH));
+
+    row++;
+    Label nodeHeightLabel = new Label(NAME_NODE_HEIGHT);
+    table.setWidgetAndStyle(row, 0, nodeHeightLabel, settingsLabelStyle(NAME_NODE_HEIGHT));
+
+    final InputSpinner nodeHeightInput = new InputSpinner(20, 500);
+    nodeHeightInput.setValue(nodeHeight);
+    table.setWidgetAndStyle(row, 1, nodeHeightInput, settingsInputStyle(NAME_NODE_HEIGHT));
+
+    row++;
+    Label nodeGapLabel = new Label(NAME_NODE_GAP);
+    table.setWidgetAndStyle(row, 0, nodeGapLabel, settingsLabelStyle(NAME_NODE_GAP));
+
+    final InputSpinner nodeGapInput = new InputSpinner(0, 200);
+    nodeGapInput.setValue(nodeGap);
+    table.setWidgetAndStyle(row, 1, nodeGapInput, settingsInputStyle(NAME_NODE_GAP));
+
+    row++;
+    Label levelGapLabel = new Label(NAME_LEVEL_GAP);
+    table.setWidgetAndStyle(row, 0, levelGapLabel, settingsLabelStyle(NAME_LEVEL_GAP));
+
+    final InputSpinner levelGapInput = new InputSpinner(0, 200);
+    levelGapInput.setValue(levelGap);
+    table.setWidgetAndStyle(row, 1, levelGapInput, settingsInputStyle(NAME_LEVEL_GAP));
+
+    row++;
+    Flow commands = new Flow();
+
+    Button save = new Button(Localized.getConstants().actionSave());
+    save.addStyleName(STYLE_SETTINGS_SAVE);
+
+    save.addClickHandler(new ClickHandler() {
+      @Override
+      public void onClick(ClickEvent event) {
+        boolean changed = false;
+
+        int value = marginLeftInput.getIntValue();
+        if (value >= 0 && value != marginLeft) {
+          marginLeft = value;
+          store(NAME_MARGIN_LEFT, value);
+          changed = true;
+        }
+
+        value = marginTopInput.getIntValue();
+        if (value >= 0 && value != marginTop) {
+          marginTop = value;
+          store(NAME_MARGIN_TOP, value);
+          changed = true;
+        }
+
+        value = nodeWidthInput.getIntValue();
+        if (value > 0 && value != nodeWidth) {
+          nodeWidth = value;
+          store(NAME_NODE_WIDTH, value);
+          changed = true;
+        }
+
+        value = nodeHeightInput.getIntValue();
+        if (value > 0 && value != nodeHeight) {
+          nodeHeight = value;
+          store(NAME_NODE_HEIGHT, value);
+          changed = true;
+        }
+
+        value = nodeGapInput.getIntValue();
+        if (value >= 0 && value != nodeGap) {
+          nodeGap = value;
+          store(NAME_NODE_GAP, value);
+          changed = true;
+        }
+
+        value = levelGapInput.getIntValue();
+        if (value >= 0 && value != levelGap) {
+          levelGap = value;
+          store(NAME_LEVEL_GAP, value);
+          changed = true;
+        }
+
+        dialog.close();
+        if (changed) {
+          refresh();
+        }
+      }
+    });
+
+    commands.add(save);
+
+    Button cancel = new Button(Localized.getConstants().actionCancel());
+    cancel.addStyleName(STYLE_SETTINGS_CANCEL);
+
+    cancel.addClickHandler(new ClickHandler() {
+      @Override
+      public void onClick(ClickEvent event) {
+        dialog.close();
+      }
+    });
+
+    commands.add(cancel);
+
+    table.setWidgetAndStyle(row, 1, commands, STYLE_SETTINGS_COMMAND_PANEL);
+
+    dialog.setWidget(table);
+
+    dialog.setAnimationEnabled(true);
+    dialog.center();
   }
 
   private void addCommands(HeaderView header) {
@@ -492,16 +693,18 @@ class CompanyStructureForm extends AbstractFormInterceptor implements HandlesAll
       }
     }
 
-    for (Long parent : nodeBounds.keySet()) {
-      if (!ROOT.equals(parent)) {
-        List<Long> children = treeLayout.getTree().getChildren(parent);
+    if (levelGap > 5) {
+      for (Long parent : nodeBounds.keySet()) {
+        if (!ROOT.equals(parent)) {
+          List<Long> children = treeLayout.getTree().getChildren(parent);
 
-        if (!BeeUtils.isEmpty(children)) {
-          Rectangle2D.Double parentBounds = nodeBounds.get(parent);
-          for (Long child : children) {
-            Widget widget = connect(parentBounds, nodeBounds.get(child), STYLE_DEPARTMENT_CONNECT);
-            if (widget != null) {
-              panel.add(widget);
+          if (!BeeUtils.isEmpty(children)) {
+            Rectangle2D.Double parentBounds = nodeBounds.get(parent);
+            for (Long child : children) {
+              Widget w = connect(parentBounds, nodeBounds.get(child), STYLE_DEPARTMENT_CONNECT);
+              if (w != null) {
+                panel.add(w);
+              }
             }
           }
         }
@@ -570,11 +773,19 @@ class CompanyStructureForm extends AbstractFormInterceptor implements HandlesAll
     if (DataUtils.isId(head) && !DataUtils.isEmpty(employees)) {
       BeeRow employee = employees.getRowById(head);
       if (employee != null) {
-        panel.add(renderEmployee(employee, true));
+        HtmlTable bossTable = new HtmlTable(STYLE_BOSS_TABLE);
+        renderEmployee(bossTable, 0, employee, true);
+        panel.add(bossTable);
       }
     }
 
     List<BeeRow> depEmployees = filterEmployees(id, head);
+    List<DepartmentPosition> depPositions = getDepartmentPositions(id, depEmployees);
+
+    if (!BeeUtils.isEmpty(depPositions)) {
+      panel.add(renderPositions(depPositions));
+    }
+
     if (!depEmployees.isEmpty()) {
       panel.add(renderEmployees(depEmployees));
     }
@@ -762,6 +973,70 @@ class CompanyStructureForm extends AbstractFormInterceptor implements HandlesAll
         });
   }
 
+  private List<DepartmentPosition> getDepartmentPositions(Long depId, List<BeeRow> depEmployees) {
+    Map<Long, DepartmentPosition> map = new HashMap<>();
+
+    if (!DataUtils.isEmpty(positions)) {
+      List<BeeRow> depPositions = DataUtils.filterRows(positions, COL_DEPARTMENT, depId);
+
+      if (!depPositions.isEmpty()) {
+        int posIndex = positions.getColumnIndex(COL_POSITION);
+        int nameIndex = positions.getColumnIndex(ALS_POSITION_NAME);
+        int plannedIndex = positions.getColumnIndex(COL_DEPARTMENT_POSITION_NUMBER_OF_EMPLOYEES);
+
+        for (BeeRow row : depPositions) {
+          Long posId = row.getLong(posIndex);
+          DepartmentPosition dp = new DepartmentPosition(posId, row.getString(nameIndex));
+
+          Integer planned = row.getInteger(plannedIndex);
+          if (BeeUtils.isPositive(planned)) {
+            dp.setPlannedStaff(planned);
+          }
+
+          map.put(posId, dp);
+        }
+      }
+    }
+
+    if (!BeeUtils.isEmpty(depEmployees)) {
+      int posIndex = employees.getColumnIndex(COL_POSITION);
+      int nameIndex = employees.getColumnIndex(ALS_POSITION_NAME);
+
+      int ppIndex = employees.getColumnIndex(ALS_PRIMARY_POSITION);
+      int ppnIndex = employees.getColumnIndex(ALS_PRIMARY_POSITION_NAME);
+
+      for (BeeRow row : depEmployees) {
+        Long posId = row.getLong(posIndex);
+        String posName = row.getString(nameIndex);
+
+        if (!DataUtils.isId(posId)) {
+          posId = row.getLong(ppIndex);
+          posName = row.getString(ppnIndex);
+        }
+
+        if (DataUtils.isId(posId)) {
+          if (map.containsKey(posId)) {
+            map.get(posId).incrementActualStaff();
+          } else {
+            DepartmentPosition dp = new DepartmentPosition(posId, posName);
+            dp.incrementActualStaff();
+            map.put(posId, dp);
+          }
+        }
+      }
+    }
+
+    List<DepartmentPosition> result = new ArrayList<>();
+    if (!map.isEmpty()) {
+      result.addAll(map.values());
+    }
+
+    if (result.size() > 1) {
+      Collections.sort(result);
+    }
+    return result;
+  }
+
   private List<BeeRow> filterEmployees(Long depId, Long exclude) {
     if (DataUtils.isEmpty(employees)) {
       return Collections.emptyList();
@@ -786,10 +1061,7 @@ class CompanyStructureForm extends AbstractFormInterceptor implements HandlesAll
     }
   }
 
-  private Widget renderEmployee(BeeRow employee, boolean boss) {
-    Flow container = new Flow();
-    container.addStyleName(boss ? STYLE_BOSS_CONTAINER : STYLE_EMPLOYEE_CONTAINER);
-
+  private void renderEmployee(HtmlTable table, int row, BeeRow employee, boolean boss) {
     final long emplId = employee.getId();
 
     String fullName = BeeUtils.joinWords(
@@ -802,8 +1074,6 @@ class CompanyStructureForm extends AbstractFormInterceptor implements HandlesAll
     String photo = DataUtils.getString(employees, employee, COL_PHOTO);
     if (!BeeUtils.isEmpty(photo)) {
       Image image = new Image(PhotoRenderer.getUrl(photo));
-      image.addStyleName(boss ? STYLE_BOSS_PHOTO : STYLE_EMPLOYEE_PHOTO);
-
       image.setTitle(BeeUtils.buildLines(fullName, positionName, companyName));
 
       image.addClickHandler(new ClickHandler() {
@@ -819,11 +1089,12 @@ class CompanyStructureForm extends AbstractFormInterceptor implements HandlesAll
         }
       });
 
-      container.add(image);
+      String styleName = boss ? STYLE_BOSS_PHOTO : STYLE_EMPLOYEE_PHOTO;
+      table.setWidgetAndStyle(row, 0, image, styleName);
     }
 
-    Label label = new Label(fullName);
-    label.addStyleName(boss ? STYLE_BOSS_LABEL : STYLE_EMPLOYEE_LABEL);
+    DndDiv label = new DndDiv();
+    label.setText(fullName);
 
     label.addClickHandler(new ClickHandler() {
       @Override
@@ -838,25 +1109,102 @@ class CompanyStructureForm extends AbstractFormInterceptor implements HandlesAll
       }
     });
 
-    container.add(label);
+    String styleName = boss ? STYLE_BOSS_LABEL : STYLE_EMPLOYEE_LABEL;
+    table.setWidgetAndStyle(row, 1, label, styleName);
 
     if (boss) {
-      DndHelper.makeSource(container, DATA_TYPE_BOSS, emplId, STYLE_BOSS_DRAG);
+      DndHelper.makeSource(label, DATA_TYPE_BOSS, emplId, STYLE_BOSS_DRAG);
     } else {
-      DndHelper.makeSource(container, DATA_TYPE_EMPLOYEE, emplId, STYLE_EMPLOYEE_DRAG);
+      DndHelper.makeSource(label, DATA_TYPE_EMPLOYEE, emplId, STYLE_EMPLOYEE_DRAG);
+    }
+  }
+
+  private Widget renderPositions(List<DepartmentPosition> depPositions) {
+    HtmlTable table = new HtmlTable(STYLE_POSITION_TABLE);
+    int row = 0;
+
+    int colLabel = 0;
+    int colActual = 1;
+    int colPlanned = 2;
+
+    if (showPositions || depPositions.size() <= 1) {
+      table.addStyleName(STYLE_POSITION_DETAILS);
+
+      for (DepartmentPosition dp : depPositions) {
+        Label label = new Label(dp.name);
+        label.addClickHandler(new ClickHandler() {
+          @Override
+          public void onClick(ClickEvent event) {
+          }
+        });
+
+        table.setWidgetAndStyle(row, colLabel, label, STYLE_POSITION_LABEL);
+
+        table.setWidgetAndStyle(row, colActual, new Badge(dp.actualStaff), STYLE_POSITION_ACTUAL);
+        table.setWidgetAndStyle(row, colPlanned, new Badge(dp.plannedStaff),
+            STYLE_POSITION_PLANNED);
+
+        row++;
+      }
+
+    } else {
+      table.addStyleName(STYLE_POSITION_SUMMARY);
+
+      int actual = 0;
+      int planned = 0;
+
+      for (DepartmentPosition dp : depPositions) {
+        if (dp.actualStaff > 0) {
+          actual++;
+        }
+        if (dp.plannedStaff > 0) {
+          planned++;
+        }
+      }
+
+      Label label = new Label(Localized.getConstants().personPositions());
+      label.addClickHandler(new ClickHandler() {
+        @Override
+        public void onClick(ClickEvent event) {
+        }
+      });
+
+      table.setWidgetAndStyle(row, colLabel, label, STYLE_POSITION_LABEL);
+
+      table.setWidgetAndStyle(row, colActual, new Badge(actual), STYLE_POSITION_ACTUAL);
+      table.setWidgetAndStyle(row, colPlanned, new Badge(planned), STYLE_POSITION_PLANNED);
     }
 
-    return container;
+    return table;
   }
 
   private Widget renderEmployees(List<BeeRow> depEmployees) {
-    Flow panel = new Flow(STYLE_EMPLOYEE_PANEL);
+    HtmlTable table = new HtmlTable(STYLE_EMPLOYEE_TABLE);
+    int row = 0;
 
-    for (BeeRow employee : depEmployees) {
-      panel.add(renderEmployee(employee, false));
+    if (showEmployees || depEmployees.size() <= 1) {
+      table.addStyleName(STYLE_EMPLOYEE_DETAILS);
+
+      for (BeeRow employee : depEmployees) {
+        renderEmployee(table, row, employee, false);
+        row++;
+      }
+
+    } else {
+      table.addStyleName(STYLE_EMPLOYEE_SUMMARY);
+
+      Label label = new Label(Localized.getConstants().employees());
+      label.addClickHandler(new ClickHandler() {
+        @Override
+        public void onClick(ClickEvent event) {
+        }
+      });
+
+      table.setWidgetAndStyle(row, 0, label, STYLE_EMPLOYEE_LABEL);
+      table.setWidgetAndStyle(row, 1, new Badge(depEmployees.size()), STYLE_EMPLOYEE_COUNT);
     }
 
-    return panel;
+    return table;
   }
 
   private static void fireRefresh(String viewName) {

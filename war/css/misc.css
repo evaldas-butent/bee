@@ -32,12 +32,10 @@
 }
 
 .bee-orgChart-boss-label {
-  display: inline-block;
   cursor: pointer;
   color: red;
 }
 .bee-orgChart-employee-label {
-  display: inline-block;
   cursor: pointer;
 }
 
