@@ -61,6 +61,7 @@ public final class ProjectConstants {
   public static final String ALS_PUBLISHER_LAST_NAME = "PublisherLastName";
   public static final String ALS_FILTERED_PROJECT_USER = "FilteredProjectUser";
   public static final String ALS_ACTUAL_TIME_DIFFERENCE = "ActualTimeDifference";
+  public static final String ALS_CATEGORY_NAME = "CategoryName";
 
   public static final String ALS_ROW_ID = "RowID";
   public static final String ALS_TASK_COUNT = "TaskCount";
@@ -81,6 +82,7 @@ public final class ProjectConstants {
   public static final String COL_PROJECT_PRIORITY = "Priority";
   public static final String COL_PROJECT_OWNER = "Owner";
   public static final String COL_PROJECT_CONTACT = "Contact";
+  public static final String COL_PROJECT_CATEGORY = "Category";
   public static final String COL_PROJECT_PRICE = "Price";
   public static final String COL_PROJECT_ITEM_PRICE = "Price";
   public static final String COL_PROJECT_CURENCY = "Currency";
@@ -117,6 +119,7 @@ public final class ProjectConstants {
   public static final String COL_DATES_END_DATE = "EndDate";
   public static final String COL_DATES_COLOR = "Color";
   public static final String COL_DATES_NOTE = "Note";
+  public static final String COL_TREE_NAME = "Name";
 
   public static final String COL_DOCUMENT_REQUIRED = "DocumentRequired";
 
@@ -168,6 +171,7 @@ public final class ProjectConstants {
   public static final String VIEW_PROJECT_EVENTS = "ProjectEvents";
   public static final String VIEW_PROJECT_INCOMES = "ProjectIncomes";
   public static final String VIEW_PROJECT_INVOICES = "ProjectInvoices";
+  public static final String VIEW_PROJECT_TREE = "ProjectTree";
 
   public static final String TBL_PROJECT_USAGE = "ProjectUsage";
   public static final String TBL_PROJECTS = "Projects";

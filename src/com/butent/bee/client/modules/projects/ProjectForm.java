@@ -19,6 +19,7 @@ import com.butent.bee.client.data.RowCallback;
 import com.butent.bee.client.event.EventUtils;
 import com.butent.bee.client.eventsboard.EventsBoard.EventFilesFilter;
 import com.butent.bee.client.layout.Flow;
+import com.butent.bee.client.presenter.GridFormPresenter;
 import com.butent.bee.client.ui.FormFactory.WidgetDescriptionCallback;
 import com.butent.bee.client.ui.IdentifiableWidget;
 import com.butent.bee.client.validation.CellValidateEvent;
@@ -28,6 +29,7 @@ import com.butent.bee.client.view.edit.SaveChangesEvent;
 import com.butent.bee.client.view.form.FormView;
 import com.butent.bee.client.view.form.interceptor.AbstractFormInterceptor;
 import com.butent.bee.client.view.form.interceptor.FormInterceptor;
+import com.butent.bee.client.view.grid.interceptor.GridInterceptor;
 import com.butent.bee.client.widget.InputText;
 import com.butent.bee.client.widget.ListBox;
 import com.butent.bee.shared.BeeConst;
@@ -139,7 +141,7 @@ class ProjectForm extends AbstractFormInterceptor implements DataChangeEvent.Han
         Filter.in(Data.getIdColumn(DocumentConstants.VIEW_DOCUMENTS),
             DocumentConstants.VIEW_RELATED_DOCUMENTS, DocumentConstants.COL_DOCUMENT, Filter
                 .equals(COL_PROJECT, row
-                .getId()));
+                    .getId()));
 
     contractSelector.getOracle().setAdditionalFilter(relDocFilter, true);
 
@@ -194,6 +196,7 @@ class ProjectForm extends AbstractFormInterceptor implements DataChangeEvent.Han
 
     drawComments(form, row);
     drawChart(row);
+    setCategory(form, row);
   }
 
   @Override
@@ -355,6 +358,18 @@ class ProjectForm extends AbstractFormInterceptor implements DataChangeEvent.Han
     return currentUser == projectUser;
   }
 
+  private static AllProjectsGrid getProjectsGrid(FormView form) {
+    if (form.getViewPresenter() instanceof GridFormPresenter) {
+      GridInterceptor gic = ((GridFormPresenter) form.getViewPresenter()).getGridInterceptor();
+
+      if (gic instanceof AllProjectsGrid) {
+        return (AllProjectsGrid) gic;
+      }
+    }
+
+    return null;
+  }
+
   private static boolean isProjectScheduled(FormView form, IsRow row) {
     int idxStatus = form.getDataIndex(COL_PROJECT_STATUS);
 
@@ -442,6 +457,21 @@ class ProjectForm extends AbstractFormInterceptor implements DataChangeEvent.Han
     }
   }
 
+  private static void setCategory(FormView form, IsRow row) {
+    if (DataUtils.isNewRow(row)) {
+      AllProjectsGrid gridHandler = getProjectsGrid(form);
+
+      if (gridHandler != null && gridHandler.getSelectedCategory() != null) {
+        IsRow catRow = gridHandler.getSelectedCategory();
+        row.setValue(form.getDataIndex(COL_PROJECT_CATEGORY), catRow.getId());
+        row.setValue(form.getDataIndex(ALS_CATEGORY_NAME), Data.getString(VIEW_PROJECT_TREE,
+            catRow, COL_TREE_NAME));
+
+        form.refreshBySource(COL_PROJECT_CATEGORY);
+      }
+    }
+  }
+
   private void commitData(final FormView form, final String column, final String value) {
     IsRow oldRow = form.getOldRow();
     IsRow newRow = form.getActiveRow();
@@ -459,17 +489,17 @@ class ProjectForm extends AbstractFormInterceptor implements DataChangeEvent.Han
     Queries.update(form.getViewName(), oldRow.getId(), oldRow.getVersion(), cols, oldValues,
         newValues, null, new RowCallback() {
 
-      @Override
-      public void onSuccess(BeeRow result) {
+          @Override
+          public void onSuccess(BeeRow result) {
 
-        RowUpdateEvent.fire(BeeKeeper.getBus(), form.getViewName(), result);
+            RowUpdateEvent.fire(BeeKeeper.getBus(), form.getViewName(), result);
 
-        form.refreshBySource(column);
-        unlockValidationEvent(column);
-        form.refresh();
+            form.refreshBySource(column);
+            unlockValidationEvent(column);
+            form.refresh();
 
-      }
-    });
+          }
+        });
   }
 
   private void drawChart(IsRow row) {
