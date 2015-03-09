@@ -71,7 +71,11 @@
     <SimpleJoin joinType="LEFT" name="TurnoverCurrency">
       <SimpleColumn name="Name" alias="TurnoverCurrencyName" />
     </SimpleJoin>
+
     <SimpleColumn name="CompanyRelationTypeState" />
+    <SimpleJoin joinType="LEFT" name="CompanyRelationTypeState">
+      <SimpleColumn alias="RelationTypeStateName" name="Name" />
+    </SimpleJoin>
 
     <SimpleColumn name="CreditLimit" />
     <SimpleColumn name="LimitCurrency" />
