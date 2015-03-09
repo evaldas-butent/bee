@@ -10,7 +10,6 @@
     <RelColumn name="CompanyPriority" />
     <DataColumn name="Code" />
     <DataColumn name="VATCode" visible="false" />
-    <DataColumn name="ExchangeCode" visible="false" module="Transport" />
     <DataColumn name="Phone" />
     <DataColumn name="Mobile" />
     <DataColumn name="Fax" visible="false" />

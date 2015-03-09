@@ -4,6 +4,7 @@ import com.google.common.collect.HashBasedTable;
 import com.google.common.collect.Multimap;
 import com.google.common.collect.Table;
 import com.google.gwt.dom.client.OptionElement;
+import com.google.gwt.dom.client.TableCellElement;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.event.dom.client.HasClickHandlers;
@@ -18,6 +19,7 @@ import com.butent.bee.client.dialog.InputCallback;
 import com.butent.bee.client.grid.HtmlTable;
 import com.butent.bee.client.i18n.Format;
 import com.butent.bee.client.layout.Flow;
+import com.butent.bee.client.output.Exporter;
 import com.butent.bee.client.output.Report;
 import com.butent.bee.client.output.ReportItem;
 import com.butent.bee.client.output.ReportItem.Function;
@@ -41,6 +43,14 @@ import com.butent.bee.shared.communication.ResponseObject;
 import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.SimpleRowSet;
 import com.butent.bee.shared.data.SimpleRowSet.SimpleRow;
+import com.butent.bee.shared.data.value.NumberValue;
+import com.butent.bee.shared.data.value.TextValue;
+import com.butent.bee.shared.data.value.Value;
+import com.butent.bee.shared.export.XCell;
+import com.butent.bee.shared.export.XFont;
+import com.butent.bee.shared.export.XRow;
+import com.butent.bee.shared.export.XSheet;
+import com.butent.bee.shared.export.XStyle;
 import com.butent.bee.shared.font.FontAwesome;
 import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.modules.administration.AdministrationConstants;
@@ -81,6 +91,7 @@ public class ExtendedReportInterceptor extends ReportInterceptor {
   private static final String STYLE_REMOVE = STYLE_ITEM + "-remove";
 
   private static final String STYLE_R_DATA = "bee-rep";
+  private static final String STYLE_R_NUM = STYLE_R_DATA + "-num";
 
   private static final String STYLE_R_COLGROUP = STYLE_R_DATA + "-cgroup";
   private static final String STYLE_R_COLGROUP_HEADER = STYLE_R_COLGROUP + "-hdr";
@@ -260,6 +271,15 @@ public class ExtendedReportInterceptor extends ReportInterceptor {
   }
 
   @Override
+  protected void export() {
+    XSheet sheet = getSheet((HtmlTable) getDataContainer().getWidget(0));
+
+    if (!sheet.isEmpty()) {
+      Exporter.maybeExport(sheet, getReportCaption());
+    }
+  }
+
+  @Override
   protected boolean validateParameters(ReportParameters parameters) {
     DateTime start = parameters.getDateTime(NAME_START_DATE);
     DateTime end = parameters.getDateTime(NAME_END_DATE);
@@ -365,9 +385,90 @@ public class ExtendedReportInterceptor extends ReportInterceptor {
   private static String getItemStyle(ReportItem item) {
     if (item.getFunction() != Function.LIST
         && (item instanceof ReportNumericItem || item.getFunction() == Function.COUNT)) {
-      return STYLE_R_DATA + "-num";
+      return STYLE_R_NUM;
     }
     return null;
+  }
+
+  private static XSheet getSheet(HtmlTable table) {
+    XSheet sheet = new XSheet();
+    int bold = sheet.registerFont(XFont.bold());
+    int italic = sheet.registerFont(XFont.italic());
+    int boldItalic = sheet.registerFont(XFont.boldItalic());
+    Map<String, Integer> styleMap = new HashMap<>();
+
+    Integer idx = sheet.registerStyle(XStyle.right());
+    styleMap.put(STYLE_R_NUM, idx);
+    styleMap.put(STYLE_R_COLGROUP_HEADER, idx);
+
+    styleMap.put(STYLE_R_COLGROUP, sheet.registerStyle(XStyle.center()));
+
+    XStyle xs = XStyle.center();
+    xs.setFontRef(bold);
+    idx = sheet.registerStyle(xs);
+    styleMap.put(STYLE_R_COL_HEADER, idx);
+    styleMap.put(STYLE_R_COLGROUP_SUMMARY_HEADER, idx);
+    styleMap.put(STYLE_R_ROW_SUMMARY_HEADER, idx);
+
+    xs = new XStyle();
+    xs.setFontRef(bold);
+    idx = sheet.registerStyle(xs);
+    styleMap.put(STYLE_R_ROW_HEADER, idx);
+    styleMap.put(STYLE_R_COL_SUMMARY, idx);
+    styleMap.put(STYLE_R_ROW_SUMMARY, idx);
+    styleMap.put(STYLE_R_SUMMARY, idx);
+
+    xs = XStyle.right();
+    xs.setFontRef(bold);
+    styleMap.put(STYLE_R_SUMMARY_HEADER, sheet.registerStyle(xs));
+
+    xs = XStyle.background("whitesmoke");
+    xs.setFontRef(italic);
+    idx = sheet.registerStyle(xs);
+    styleMap.put(STYLE_R_ROWGROUP, idx);
+    styleMap.put(STYLE_R_ROWGROUP_COL_SUMMARY, idx);
+
+    xs = XStyle.background("whitewmoke");
+    xs.setFontRef(boldItalic);
+    styleMap.put(STYLE_R_ROWGROUP_SUMMARY, sheet.registerStyle(xs));
+
+    for (int r = 0; r < table.getRowCount(); r++) {
+      int colSpan = 0;
+      XRow xr = new XRow(r);
+      sheet.add(xr);
+
+      for (int c = 0; c < table.getCellCount(r); c++) {
+        XCell xc = new XCell(c + colSpan);
+        xr.add(xc);
+        TableCellElement cell = table.getRowCells(r).get(c);
+        xc.setColSpan(Math.max(cell.getColSpan(), 1));
+        String text = cell.getInnerText();
+        String[] styles = BeeUtils.split(table.getCellFormatter().getStyleName(r, c), ' ');
+        Value value = null;
+        xs = null;
+
+        if (styles != null) {
+          for (String style : styles) {
+            if (styleMap.containsKey(style)) {
+              if (xs == null) {
+                xs = new XStyle();
+              }
+              xs = xs.merge(sheet.getStyle(styleMap.get(style)));
+            }
+            if (BeeUtils.same(style, STYLE_R_NUM)) {
+              value = new NumberValue(BeeUtils.toDoubleOrNull(text));
+            }
+          }
+        }
+        if (xs != null) {
+          xc.setStyleRef(sheet.registerStyle(xs));
+        }
+        xc.setValue(value != null ? value : new TextValue(text));
+        colSpan += xc.getColSpan() - 1;
+      }
+    }
+    sheet.autoSizeAll();
+    return sheet;
   }
 
   private void render(final String containerName) {
@@ -530,13 +631,13 @@ public class ExtendedReportInterceptor extends ReportInterceptor {
     c = 0;
 
     for (ReportItem item : rowItems) {
-      table.setText(r, c++, item.getCaption(), STYLE_R_ROW_HEADER, getItemStyle(item));
+      table.setText(r, c++, item.getCaption(), STYLE_R_ROW_HEADER);
     }
     c = Math.max(c, 1);
 
     for (int i = 0; i < colGroups.size(); i++) {
       for (ReportItem item : colItems) {
-        table.setText(r, c++, item.getCaption(), STYLE_R_COL_HEADER, getItemStyle(item));
+        table.setText(r, c++, item.getCaption(), STYLE_R_COL_HEADER);
       }
     }
     if (colGrouping != null) {
@@ -544,7 +645,7 @@ public class ExtendedReportInterceptor extends ReportInterceptor {
 
       for (ReportItem item : colItems) {
         if (item.isRowSummary()) {
-          table.setText(r, x++, item.getCaption(), STYLE_R_ROW_SUMMARY_HEADER, getItemStyle(item));
+          table.setText(r, x++, item.getCaption(), STYLE_R_ROW_SUMMARY_HEADER);
         }
       }
       if (x > c) {
@@ -592,8 +693,8 @@ public class ExtendedReportInterceptor extends ReportInterceptor {
           for (ReportItem item : colItems) {
             String col = item.getName();
             Object value = values.get(key, col);
-            table.setText(r, c++, value != null ? value.toString() : null,
-                STYLE_R_COL, getItemStyle(item));
+            table.setText(r, c++, value != null ? value.toString() : null, STYLE_R_COL,
+                getItemStyle(item));
 
             if (value != null) {
               if (item.isRowSummary() && colGrouping != null) {
@@ -612,8 +713,8 @@ public class ExtendedReportInterceptor extends ReportInterceptor {
         for (ReportItem item : colItems) {
           if (item.isRowSummary() && colGrouping != null) {
             Object value = rowTotals.get(item.getName());
-            table.setText(r, c++, value != null ? value.toString() : null,
-                STYLE_R_ROW_SUMMARY, getItemStyle(item));
+            table.setText(r, c++, value != null ? value.toString() : null, STYLE_R_ROW_SUMMARY,
+                getItemStyle(item));
           }
         }
         r++;
@@ -664,8 +765,8 @@ public class ExtendedReportInterceptor extends ReportInterceptor {
             if (item.isRowSummary() && colGrouping != null) {
               rowTotals.put(col, item.summarize(rowTotals.get(col), value));
             }
-            table.setText(r, c, value != null ? value.toString() : null,
-                STYLE_R_COL_SUMMARY, getItemStyle(item));
+            table.setText(r, c, value != null ? value.toString() : null, STYLE_R_COL_SUMMARY,
+                getItemStyle(item));
           }
           c++;
         }
@@ -673,8 +774,8 @@ public class ExtendedReportInterceptor extends ReportInterceptor {
       for (ReportItem item : colItems) {
         if (item.isRowSummary() && colGrouping != null) {
           Object value = rowTotals.get(item.getName());
-          table.setText(r, c++, value != null ? value.toString() : null,
-              STYLE_R_SUMMARY, getItemStyle(item));
+          table.setText(r, c++, value != null ? value.toString() : null, STYLE_R_SUMMARY,
+              getItemStyle(item));
         }
       }
     }

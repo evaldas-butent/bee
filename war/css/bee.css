@@ -954,6 +954,14 @@
   display: none;
 }
 
+.bee-BranchSelector .bee-DataSelector-cell {
+  border-bottom: 1px solid #ccc;
+}
+.bee-BranchSelector .bee-DataSelector-item {
+  display: block;
+  white-space: pre;
+}
+
 .bee-GridFormContainer, .bee-NewRowContainer, .bee-RowContainer {
   position: absolute;
   left: 0;
@@ -3596,6 +3604,10 @@ textarea,
   pointer-events: none;
 }
 
+.bee-Line {
+  border: 1px solid black;
+}
+
 .bee-rep td {
   padding: 3px 5px;
   border: 1px solid #ddd;
@@ -3612,6 +3624,7 @@ textarea,
 }
 .bee-rep-rgroup, .bee-rep-rgroup-col-tot, .bee-rep-rgroup-tot {
   font-style: italic;
+  background-color: silver;
 }
 .bee-rep-cgroup-tot-hdr, .bee-rep-col-hdr, .bee-rep-row-tot-hdr {
   text-align: center;

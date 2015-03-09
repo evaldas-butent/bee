@@ -610,7 +610,12 @@ public final class Queries {
   }
 
   public static void update(String viewName, long rowId, String column, Value value) {
-    update(viewName, Filter.compareId(rowId), column, value, null);
+    update(viewName, rowId, column, value, null);
+  }
+
+  public static void update(String viewName, long rowId, String column, Value value,
+      IntCallback callback) {
+    update(viewName, Filter.compareId(rowId), column, value, callback);
   }
 
   public static void update(String viewName, Filter filter, String column, Value value,

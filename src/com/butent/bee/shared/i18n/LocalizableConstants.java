@@ -405,6 +405,8 @@ public interface LocalizableConstants extends Constants, LocalizableClassifierCo
 
   String ipBlocked();
 
+  String keywords();
+
   String kilogramShort();
 
   String languageTag();
@@ -455,6 +457,8 @@ public interface LocalizableConstants extends Constants, LocalizableClassifierCo
 
   String name();
 
+  String newCompanyPerson();
+
   String newEmailAccount();
 
   String newPassword();
@@ -462,6 +466,8 @@ public interface LocalizableConstants extends Constants, LocalizableClassifierCo
   String newPasswordIsRequired();
 
   String newPasswordsDoesNotMatch();
+
+  String newPersonCompany();
 
   String newProperty();
 
@@ -531,9 +537,9 @@ public interface LocalizableConstants extends Constants, LocalizableClassifierCo
 
   String person();
 
-  String personContact();
+  String personCompanies();
 
-  String personContacts();
+  String personPositions();
 
   String persons();
 

@@ -28,6 +28,7 @@ import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.modules.classifiers.ClassifierConstants;
 import com.butent.bee.shared.modules.documents.DocumentConstants;
 import com.butent.bee.shared.modules.projects.ProjectConstants.ProjectEvent;
+import com.butent.bee.shared.modules.trade.TradeConstants;
 import com.butent.bee.shared.ui.Action;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.Codec;
@@ -125,7 +126,7 @@ class ProjectEventsHandler extends EventsBoard {
 
         String columnLabel = col;
 
-        if (!BeeUtils.same(view, PROP_REASON_DATA)) {
+        if (!BeeUtils.containsAnySame(view, PROP_REASON_DATA, VIEW_PROJECT_INVOICES)) {
           columnLabel = Data.getColumnLabel(view, col);
         } else {
           switch (col) {
@@ -157,8 +158,30 @@ class ProjectEventsHandler extends EventsBoard {
               continue;
             case PROP_DOCUMENT_LINK:
               continue;
+            case TradeConstants.COL_SALE:
+
+              if (BeeUtils.isEmpty(oldChanges.get(col))) {
+                continue;
+              }
+
+              columnLabel = LC.trdInvoice();
+              link =
+                  new InternalLink(BeeUtils.joinWords(columnLabel, oldChanges
+                      .get(col)));
+              link.addClickHandler(new ClickHandler() {
+
+                @Override
+                public void onClick(ClickEvent arg0) {
+                  RowEditor.open(VIEW_PROJECT_INVOICES, BeeUtils.toLongOrNull(oldChanges
+                      .get(col)),
+                      Opener.NEW_TAB);
+                }
+              });
+
+              links.add(link);
+              continue;
             default:
-              break;
+              continue;
           }
         }
 

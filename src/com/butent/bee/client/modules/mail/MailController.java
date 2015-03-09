@@ -3,14 +3,7 @@ package com.butent.bee.client.modules.mail;
 import com.google.common.collect.Lists;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
-import com.google.gwt.event.dom.client.DragEnterEvent;
-import com.google.gwt.event.dom.client.DragEnterHandler;
-import com.google.gwt.event.dom.client.DragLeaveEvent;
-import com.google.gwt.event.dom.client.DragLeaveHandler;
-import com.google.gwt.event.dom.client.DragOverEvent;
-import com.google.gwt.event.dom.client.DragOverHandler;
 import com.google.gwt.event.dom.client.DropEvent;
-import com.google.gwt.event.dom.client.DropHandler;
 import com.google.gwt.event.dom.client.MouseDownEvent;
 import com.google.gwt.event.dom.client.MouseDownHandler;
 import com.google.gwt.event.logical.shared.CloseEvent;
@@ -29,7 +22,6 @@ import com.butent.bee.client.dialog.ConfirmationCallback;
 import com.butent.bee.client.dialog.Icon;
 import com.butent.bee.client.dialog.StringCallback;
 import com.butent.bee.client.dom.DomUtils;
-import com.butent.bee.client.event.Binder;
 import com.butent.bee.client.event.DndHelper;
 import com.butent.bee.client.event.EventUtils;
 import com.butent.bee.client.layout.Flow;
@@ -39,9 +31,11 @@ import com.butent.bee.client.screen.HasDomain;
 import com.butent.bee.client.tree.HasTreeItems;
 import com.butent.bee.client.tree.Tree;
 import com.butent.bee.client.tree.TreeItem;
+import com.butent.bee.client.widget.DndDiv;
 import com.butent.bee.client.widget.FaLabel;
 import com.butent.bee.client.widget.Label;
 import com.butent.bee.shared.BeeConst;
+import com.butent.bee.shared.BiConsumer;
 import com.butent.bee.shared.Pair;
 import com.butent.bee.shared.State;
 import com.butent.bee.shared.font.FontAwesome;
@@ -51,10 +45,9 @@ import com.butent.bee.shared.modules.mail.AccountInfo;
 import com.butent.bee.shared.modules.mail.MailConstants;
 import com.butent.bee.shared.modules.mail.MailConstants.SystemFolder;
 import com.butent.bee.shared.modules.mail.MailFolder;
-import com.butent.bee.shared.utils.ArrayUtils;
 import com.butent.bee.shared.utils.BeeUtils;
-import com.butent.bee.shared.utils.Codec;
 
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.Objects;
 import java.util.Set;
@@ -168,8 +161,7 @@ public class MailController extends Flow implements HasDomain, HandlesStateChang
       }
       final Long folderId = account.getSystemFolder(sysFolder);
       MailFolder folder = account.findFolder(folderId);
-      Label label = new Label();
-      label.setStyleName(BeeConst.CSS_CLASS_PREFIX + "mail-SysFolder");
+      final DndDiv label = new DndDiv(BeeConst.CSS_CLASS_PREFIX + "mail-SysFolder");
 
       label.addMouseDownHandler(new MouseDownHandler() {
         @Override
@@ -182,7 +174,17 @@ public class MailController extends Flow implements HasDomain, HandlesStateChang
         label.addStyleDependentName("unread");
       }
       label.setHtml(cap);
-      setDndTarget(label, folderId);
+      DndHelper.makeTarget(label, Collections.singleton(MailConstants.DATA_TYPE_MESSAGE),
+          STYLE_DND_TARGET, DndHelper.ALWAYS_TARGET,
+          new BiConsumer<DropEvent, Object>() {
+            @Override
+            public void accept(DropEvent event, Object data) {
+              label.setTargetState(null);
+              label.removeStyleName(STYLE_DND_TARGET);
+              MailKeeper.copyMessage((String) data, folderId,
+                  !EventUtils.hasModifierKey(event.getNativeEvent()));
+            }
+          });
       DomUtils.setDataProperty(label.getElement(), MailConstants.COL_FOLDER, folderId);
       sysFoldersPanel.add(label);
     }
@@ -227,9 +229,8 @@ public class MailController extends Flow implements HasDomain, HandlesStateChang
         Flow row = new Flow(BeeConst.CSS_CLASS_PREFIX + "mail-FolderRow");
 
         final String cap = subFolder.getName();
-        Label label = new Label();
+        final DndDiv label = new DndDiv(BeeConst.CSS_CLASS_PREFIX + "mail-Folder");
         label.setTitle(cap);
-        label.setStyleName(BeeConst.CSS_CLASS_PREFIX + "mail-Folder");
         label.addMouseDownHandler(new MouseDownHandler() {
           @Override
           public void onMouseDown(MouseDownEvent event) {
@@ -241,7 +242,17 @@ public class MailController extends Flow implements HasDomain, HandlesStateChang
             }
           }
         });
-        setDndTarget(label, folderId);
+        DndHelper.makeTarget(label, Collections.singleton(MailConstants.DATA_TYPE_MESSAGE),
+            STYLE_DND_TARGET, DndHelper.ALWAYS_TARGET,
+            new BiConsumer<DropEvent, Object>() {
+              @Override
+              public void accept(DropEvent event, Object data) {
+                label.setTargetState(null);
+                label.removeStyleName(STYLE_DND_TARGET);
+                MailKeeper.copyMessage((String) data, folderId,
+                    !EventUtils.hasModifierKey(event.getNativeEvent()));
+              }
+            });
         row.add(label);
 
         Flow actions = new Flow(BeeConst.CSS_CLASS_PREFIX + "mail-FolderActions");
@@ -379,58 +390,5 @@ public class MailController extends Flow implements HasDomain, HandlesStateChang
       }
       label.getElement().setInnerText(cap);
     }
-  }
-
-  private static void setDndTarget(final Widget label, final Long folderId) {
-    Binder.addDragEnterHandler(label, new DragEnterHandler() {
-      @Override
-      public void onDragEnter(DragEnterEvent event) {
-        if (BeeUtils.same(DndHelper.getDataType(), MailConstants.DATA_TYPE_MESSAGE)) {
-          label.addStyleDependentName(STYLE_DND_TARGET);
-        }
-      }
-    });
-    Binder.addDragOverHandler(label, new DragOverHandler() {
-      @Override
-      public void onDragOver(DragOverEvent event) {
-        if (DndHelper.isDataType(MailConstants.DATA_TYPE_MESSAGE)) {
-          if (EventUtils.hasModifierKey(event.getNativeEvent())) {
-            EventUtils.selectDropCopy(event);
-          } else if (!Objects.equals(DndHelper.getRelatedId(), folderId)) {
-            EventUtils.selectDropMove(event);
-          } else {
-            EventUtils.selectDropNone(event);
-          }
-        } else {
-          EventUtils.selectDropNone(event);
-        }
-      }
-    });
-    Binder.addDragLeaveHandler(label, new DragLeaveHandler() {
-      @Override
-      public void onDragLeave(DragLeaveEvent event) {
-        if (DndHelper.isDataType(MailConstants.DATA_TYPE_MESSAGE)) {
-          label.removeStyleDependentName(STYLE_DND_TARGET);
-        }
-      }
-    });
-    Binder.addDropHandler(label, new DropHandler() {
-      @Override
-      public void onDrop(DropEvent event) {
-        if (DndHelper.isDataType(MailConstants.DATA_TYPE_MESSAGE)) {
-          label.removeStyleDependentName(STYLE_DND_TARGET);
-          String[] places = Codec.beeDeserializeCollection((String) DndHelper.getData());
-
-          if (ArrayUtils.isEmpty(places)) {
-            places = new String[] {BeeUtils.toString(DndHelper.getDataId())};
-          }
-
-          MailKeeper.copyMessage(DndHelper.getRelatedId(), folderId, places,
-              !EventUtils.hasModifierKey(event.getNativeEvent()));
-
-          event.stopPropagation();
-        }
-      }
-    });
   }
 }

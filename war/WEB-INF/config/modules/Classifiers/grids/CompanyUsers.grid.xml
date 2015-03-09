@@ -18,8 +18,6 @@
     <RelColumn name="Responsibility" minWidth="100" maxWidth="150" visible="true">
       <renderToken source="ResponsibilityName" />
     </RelColumn>
-
-    <DataColumn name="AccountingCode" visible="false" />
   </g:columns>
   
   <g:rowStyle>

@@ -26,6 +26,7 @@
 		<CalcColumn name="CalcActualTasksDuration" type="string" caption="=prjActualTaskDuration"
       label="=prjActualTaskDuration" />
 		<DataColumn name="Expenses" scale="2" />
+    <RelColumn name="Currency" />
 		<DataColumn name="ActualExpenses"  scale="2" />
 	</g:columns>
 </g:Grid>

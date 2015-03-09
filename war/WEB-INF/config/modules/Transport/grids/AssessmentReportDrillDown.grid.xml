@@ -59,5 +59,19 @@
         </ui:function>
       </render>
     </CalcColumn>
+
+    <PropColumn name="Income" type="decimal" caption="=income" format="0.00">
+      <footer aggregate="sum" /> 
+    </PropColumn>
+    
+    <PropColumn name="Expense" type="decimal" caption="=trExpenses" format="0.00">
+       <footer aggregate="sum" /> 
+    </PropColumn>
+    <CalcColumn name="Profit" type="decimal" caption="=profit" format="0.00">
+      <render>
+        <ui:expression>row.Income - row.Expense</ui:expression>
+      </render>
+      <footer aggregate="sum" />
+    </CalcColumn>
   </g:columns>
 </g:Grid>

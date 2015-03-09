@@ -15,7 +15,6 @@
     <Boolean name="VatPlus" label="=vatPlus" />
     <Numeric name="Vat" precision="12" scale="2" label="=vat" />
     <Boolean name="VatPercent" label="=vatPercent" />
-    <Numeric name="Discount" precision="7" scale="3" label="=discountPercent" />
     <String name="Note" precision="50" label="=note" />
     <Relation name="Sale" relation="Sales" cascade="SET_NULL" label="=trdInvoiceId" />   
   </Fields>

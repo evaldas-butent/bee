@@ -39,7 +39,7 @@
     <TabbedPages class="flexible">
       <page>
         <text>=feeds</text>
-        <ChildGrid class="flexible" name="UserFeeds" source="User" relColumn="User" />
+        <ChildGrid name="UserFeeds" source="User" relColumn="User" />
       </page>
 
       <page module="Mail">

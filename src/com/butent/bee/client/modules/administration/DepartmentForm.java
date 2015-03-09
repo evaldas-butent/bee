@@ -23,10 +23,13 @@ import com.butent.bee.shared.utils.BeeUtils;
 
 import java.util.Collections;
 
-public class DepartmentForm extends AbstractFormInterceptor implements SelectorEvent.Handler {
+class DepartmentForm extends AbstractFormInterceptor implements SelectorEvent.Handler {
 
   private String parentSelectorId;
   private String headSelectorId;
+
+  DepartmentForm() {
+  }
 
   @Override
   public void afterCreateWidget(String name, IdentifiableWidget widget,
@@ -43,12 +46,18 @@ public class DepartmentForm extends AbstractFormInterceptor implements SelectorE
         selector.addSelectorHandler(this);
       }
 
-    } else if (widget instanceof ChildGrid && BeeUtils.same(name, TBL_DEPARTMENT_EMPLOYEES)) {
+    } else if (widget instanceof ChildGrid && BeeUtils.same(name, VIEW_DEPARTMENT_EMPLOYEES)) {
       ((ChildGrid) widget).setGridInterceptor(
           new UniqueChildInterceptor(Localized.getConstants().newDepartmentEmployees(),
-              COL_DEPARTMENT, COL_COMPANY_PERSON, TBL_COMPANY_PERSONS,
+              COL_DEPARTMENT, COL_COMPANY_PERSON, VIEW_COMPANY_PERSONS,
               Lists.newArrayList(COL_FIRST_NAME, COL_LAST_NAME),
               Lists.newArrayList(COL_FIRST_NAME, COL_LAST_NAME, ALS_COMPANY_NAME)));
+
+    } else if (widget instanceof ChildGrid && BeeUtils.same(name, VIEW_DEPARTMENT_POSITIONS)) {
+      ((ChildGrid) widget).setGridInterceptor(
+          new UniqueChildInterceptor(Localized.getConstants().newDepartmentPositions(),
+              COL_DEPARTMENT, COL_POSITION, VIEW_POSITIONS,
+              Lists.newArrayList(COL_POSITION_NAME), Lists.newArrayList(COL_POSITION_NAME)));
     }
   }
 

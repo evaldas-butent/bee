@@ -5,8 +5,12 @@
   idName="DepartmentEmployeeID"
   >
   <Fields>
-    <Relation name="Department" notNull="true" relation="Departments" cascade="DELETE" label="=department" />
-    <Relation name="CompanyPerson" notNull="true" relation="CompanyPersons" cascade="DELETE" label="=companyPerson" />
+    <Relation name="Department" notNull="true" relation="Departments" cascade="DELETE"
+      label="=department" />
+    <Relation name="CompanyPerson" notNull="true" relation="CompanyPersons" cascade="DELETE"
+      label="=companyPerson" />
+
+    <Relation name="Position" relation="Positions" label="=personPositionInDepartment" />
   </Fields>
 
   <Constraints>

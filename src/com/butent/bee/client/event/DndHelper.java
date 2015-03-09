@@ -251,7 +251,11 @@ public final class DndHelper {
       @Override
       public void onDragOver(DragOverEvent event) {
         if (widget.getTargetState() != null) {
-          EventUtils.selectDropMove(event);
+          if (EventUtils.hasModifierKey(event.getNativeEvent())) {
+            EventUtils.selectDropCopy(event);
+          } else {
+            EventUtils.selectDropMove(event);
+          }
         }
       }
     });

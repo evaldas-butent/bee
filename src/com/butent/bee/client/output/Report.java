@@ -38,6 +38,7 @@ import com.butent.bee.shared.modules.tasks.TaskConstants;
 import com.butent.bee.shared.modules.tasks.TaskConstants.TaskStatus;
 import com.butent.bee.shared.modules.trade.TradeConstants;
 import com.butent.bee.shared.modules.transport.TransportConstants;
+import com.butent.bee.shared.modules.transport.TransportConstants.TripStatus;
 import com.butent.bee.shared.rights.Module;
 import com.butent.bee.shared.rights.ModuleAndSub;
 import com.butent.bee.shared.rights.SubModule;
@@ -142,12 +143,18 @@ public enum Report implements HasWidgetSupplier {
               Data.getColumnLabel(TransportConstants.TBL_TRIP_COSTS, TransportConstants.COL_TRIP)),
           new ReportTextItem(TransportConstants.COL_TRIP_NO,
               Data.getColumnLabel(TransportConstants.TBL_TRIPS, TransportConstants.COL_TRIP_NO)),
+          new ReportDateTimeItem(TransportConstants.COL_TRIP_DATE, loc.date()),
           new ReportDateItem(TransportConstants.COL_TRIP_DATE_FROM, loc.dateFrom()),
           new ReportDateTimeItem(TransportConstants.COL_TRIP_DATE_TO, loc.dateTo()),
           new ReportTextItem(TransportConstants.COL_VEHICLE,
               Data.getColumnLabel(TransportConstants.TBL_TRIPS, TransportConstants.COL_VEHICLE)),
           new ReportTextItem(TransportConstants.COL_TRAILER,
               Data.getColumnLabel(TransportConstants.TBL_TRIPS, TransportConstants.COL_TRAILER)),
+          new ReportEnumItem<>(TransportConstants.COL_TRIP_STATUS,
+              Data.getColumnLabel(TransportConstants.TBL_TRIPS,
+                  TransportConstants.COL_TRIP_STATUS), TripStatus.class),
+          new ReportBooleanItem("Conditioner",
+              Data.getColumnLabel(TransportConstants.TBL_VEHICLES, "Conditioner")),
           new ReportNumericItem("Kilometers", "Kilometrai", 0),
           new ReportNumericItem("FuelCosts", "Kuro išl.", 2),
           new ReportNumericItem("DailyCosts", "Dienpinigių išl.", 2),
@@ -281,6 +288,7 @@ public enum Report implements HasWidgetSupplier {
       LocalizableConstants loc = Localized.getConstants();
       return Arrays.asList(
           new ReportTextItem(TransportConstants.COL_ASSESSMENT, "Užsakymo Nr."),
+          new ReportDateTimeItem(COL_ORDER + COL_DATE, "Užsakymo data"),
           new ReportTextItem(AdministrationConstants.COL_DEPARTMENT_NAME,
               Data.getColumnLabel(AdministrationConstants.TBL_DEPARTMENTS,
                   AdministrationConstants.COL_DEPARTMENT_NAME)),

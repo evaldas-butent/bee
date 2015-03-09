@@ -39,5 +39,6 @@
         </render>
     </CalcColumn>
     <DataColumn name="ActualExpenses" scale="2" />
+    <RelColumn name="Currency" />
   </g:columns>
 </g:Grid>

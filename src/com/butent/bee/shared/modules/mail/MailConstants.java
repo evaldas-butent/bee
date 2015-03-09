@@ -171,6 +171,7 @@ public final class MailConstants {
 
   public static final String COL_MESSAGE = "Message";
   public static final String COL_RAW_CONTENT = "RawContent";
+  public static final String COL_ATTACHMENT_COUNT = "AttachmentCount";
   public static final String COL_ATTACHMENT_NAME = "FileName";
   public static final String COL_EMAIL_LABEL = "Label";
   public static final String COL_ADDRESS = "Address";

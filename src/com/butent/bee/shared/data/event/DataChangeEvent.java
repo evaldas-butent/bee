@@ -23,8 +23,9 @@ public class DataChangeEvent extends ModificationEvent<DataChangeEvent.Handler> 
     void onDataChange(DataChangeEvent event);
   }
 
-  public static final EnumSet<Effect> CANCEL_RESET_REFRESH =
-      EnumSet.of(Effect.CANCEL, Effect.REFRESH, Effect.RESET);
+  public static final EnumSet<Effect> RESET_REFRESH = EnumSet.of(Effect.RESET, Effect.REFRESH);
+  public static final EnumSet<Effect> CANCEL_RESET_REFRESH = EnumSet.of(Effect.CANCEL,
+      Effect.RESET, Effect.REFRESH);
 
   private static final Type<Handler> TYPE = new Type<>();
 

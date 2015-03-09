@@ -2,7 +2,7 @@
 <FlowPanel xmlns="http://www.butent.com/widget" class="flexBox-vertical flexible" >
   <FaLabel char="spinner" name="Waiting" class="bee-mail-WaitingForContent" />
 
-  <FlowPanel name="Container" class="flexBox-vertical flexible" >
+  <FlowPanel name="Container" class="flexBox-vertical flexible" style="margin:5px">
     <FlowPanel class="bee-mail-Envelope">
       <FlowPanel class="flexBox-horizontal">
         <TextLabel name="Sender" class="bee-mail-Sender flexible" />
