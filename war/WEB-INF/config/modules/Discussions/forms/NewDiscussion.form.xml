@@ -102,7 +102,7 @@
     </FlowPanel>
     
     <FlowPanel for="Topic" style="&section;" class="flexBox-horizontal">
-      <Label text="=adTopic" style="&lbl1; min-width:150px;" />
+      <Label for="Topic" text="=adTopic" style="&lbl1; min-width:150px;" />
       <DataSelector name="Topic" source="Topic" style="&inp2x; width: 250px" 
         choiceColumns="Name" filter="Visible" />
     </FlowPanel>

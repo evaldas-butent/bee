@@ -2,10 +2,15 @@ package com.butent.bee.client.modules.discussions;
 
 import com.google.common.collect.Lists;
 
+import static com.butent.bee.shared.modules.discussions.DiscussionsConstants.*;
+
 import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.Global;
 import com.butent.bee.client.UserInfo;
+import com.butent.bee.client.data.Data;
 import com.butent.bee.client.data.Queries;
+import com.butent.bee.client.data.RowCallback;
+import com.butent.bee.client.data.RowFactory;
 import com.butent.bee.client.event.logical.RenderingEvent;
 import com.butent.bee.client.grid.ColumnHeader;
 import com.butent.bee.client.images.Images;
@@ -20,12 +25,10 @@ import com.butent.bee.client.view.grid.interceptor.AbstractGridInterceptor;
 import com.butent.bee.client.view.grid.interceptor.GridInterceptor;
 import com.butent.bee.client.view.search.AbstractFilterSupplier;
 import com.butent.bee.client.widget.FaLabel;
-
-import static com.butent.bee.shared.modules.discussions.DiscussionsConstants.*;
-import static com.butent.bee.shared.modules.tasks.TaskConstants.PROP_STAR;
-
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.Consumer;
+import com.butent.bee.shared.data.BeeColumn;
+import com.butent.bee.shared.data.BeeRow;
 import com.butent.bee.shared.data.CellSource;
 import com.butent.bee.shared.data.IsRow;
 import com.butent.bee.shared.data.event.CellUpdateEvent;
@@ -33,6 +36,7 @@ import com.butent.bee.shared.data.filter.Filter;
 import com.butent.bee.shared.data.value.IntegerValue;
 import com.butent.bee.shared.data.value.LongValue;
 import com.butent.bee.shared.data.value.ValueType;
+import com.butent.bee.shared.data.view.DataInfo;
 import com.butent.bee.shared.data.view.RowInfo;
 import com.butent.bee.shared.font.FontAwesome;
 import com.butent.bee.shared.i18n.Localized;
@@ -67,9 +71,47 @@ class DiscussionsGridHandler extends AbstractGridInterceptor {
   }
 
   @Override
+  public boolean beforeAddRow(GridPresenter presenter, boolean copy) {
+
+    if (type == DiscussionsListType.ANNOUNCEMENTSBOARDLIST) {
+      DataInfo data = Data.getDataInfo(VIEW_DISCUSSIONS);
+      BeeRow emptyRow = RowFactory.createEmptyRow(data, true);
+      final BeeColumn beeCol = data.getColumn(COL_TOPIC);
+      if (beeCol != null) {
+        beeCol.setNullable(false);
+      }
+      RowFactory.createRow(FORM_NEW_DISCUSSION, Localized.getConstants().announcementNew(),
+          data, emptyRow, presenter.getMainView().asWidget(),
+          new CreateDiscussionInterceptor(), new RowCallback() {
+
+            @Override
+            public void onCancel() {
+              if (beeCol != null) {
+                beeCol.setNullable(true);
+              }
+            }
+
+            @Override
+            public void onSuccess(BeeRow result) {
+              if (beeCol != null) {
+                beeCol.setNullable(true);
+              }
+            }
+          });
+    } else {
+      return super.beforeAddRow(presenter, copy);
+    }
+    return false;
+  }
+
+  @Override
   public String getCaption() {
-    return BeeUtils.joinWords(Localized.getConstants().discussions(),
-        BeeUtils.parenthesize(type.getCaption()));
+    if (type.getCaption() == Localized.getConstants().announcements()) {
+      return type.getCaption();
+    } else {
+      return BeeUtils.joinWords(Localized.getConstants().discussions(),
+          BeeUtils.parenthesize(type.getCaption()));
+    }
   }
 
   @Override
