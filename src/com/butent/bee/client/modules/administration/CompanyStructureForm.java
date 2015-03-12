@@ -5,6 +5,8 @@ import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Multimap;
+import com.google.gwt.core.client.Scheduler;
+import com.google.gwt.dom.client.Element;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.event.dom.client.DropEvent;
@@ -17,14 +19,17 @@ import static com.butent.bee.shared.modules.administration.AdministrationConstan
 import static com.butent.bee.shared.modules.classifiers.ClassifierConstants.*;
 
 import com.butent.bee.client.BeeKeeper;
+import com.butent.bee.client.composite.RadioGroup;
 import com.butent.bee.client.data.Queries;
 import com.butent.bee.client.data.Queries.IntCallback;
 import com.butent.bee.client.data.RowCallback;
 import com.butent.bee.client.data.RowEditor;
 import com.butent.bee.client.data.RowFactory;
 import com.butent.bee.client.dialog.DialogBox;
+import com.butent.bee.client.dom.DomUtils;
 import com.butent.bee.client.event.DndHelper;
 import com.butent.bee.client.event.EventUtils;
+import com.butent.bee.client.grid.CellKind;
 import com.butent.bee.client.grid.HtmlTable;
 import com.butent.bee.client.i18n.Collator;
 import com.butent.bee.client.layout.Flow;
@@ -40,6 +45,7 @@ import com.butent.bee.client.view.form.interceptor.FormInterceptor;
 import com.butent.bee.client.widget.Badge;
 import com.butent.bee.client.widget.Button;
 import com.butent.bee.client.widget.CheckBox;
+import com.butent.bee.client.widget.CustomDiv;
 import com.butent.bee.client.widget.DndDiv;
 import com.butent.bee.client.widget.Image;
 import com.butent.bee.client.widget.InputSpinner;
@@ -64,12 +70,16 @@ import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogUtils;
 import com.butent.bee.shared.treelayout.Configuration;
+import com.butent.bee.shared.treelayout.Configuration.AlignmentInLevel;
+import com.butent.bee.shared.treelayout.Configuration.Location;
 import com.butent.bee.shared.treelayout.NodeExtentProvider;
 import com.butent.bee.shared.treelayout.TreeLayout;
 import com.butent.bee.shared.treelayout.util.DefaultConfiguration;
 import com.butent.bee.shared.treelayout.util.DefaultTreeForTreeLayout;
 import com.butent.bee.shared.ui.Action;
+import com.butent.bee.shared.ui.Orientation;
 import com.butent.bee.shared.utils.BeeUtils;
+import com.butent.bee.shared.utils.EnumUtils;
 import com.butent.bee.shared.utils.NameUtils;
 
 import java.awt.geom.Rectangle2D;
@@ -161,6 +171,7 @@ class CompanyStructureForm extends AbstractFormInterceptor implements HandlesAll
   private static final String STYLE_SETTINGS_PREFIX = STYLE_PREFIX + "settings-";
   private static final String STYLE_SETTINGS_DIALOG = STYLE_SETTINGS_PREFIX + "dialog";
   private static final String STYLE_SETTINGS_TABLE = STYLE_SETTINGS_PREFIX + "table";
+  private static final String STYLE_SETTINGS_SEPARATOR = STYLE_SETTINGS_PREFIX + "separator";
   private static final String STYLE_SETTINGS_COMMAND_PANEL = STYLE_SETTINGS_PREFIX + "commands";
   private static final String STYLE_SETTINGS_SAVE = STYLE_SETTINGS_PREFIX + "save";
   private static final String STYLE_SETTINGS_CANCEL = STYLE_SETTINGS_PREFIX + "cancel";
@@ -179,25 +190,30 @@ class CompanyStructureForm extends AbstractFormInterceptor implements HandlesAll
 
   private static final String NAME_MARGIN_LEFT = "MarginLeft";
   private static final String NAME_MARGIN_TOP = "MarginTop";
-  private static final String NAME_NODE_WIDTH = "NodeWidth";
-  private static final String NAME_NODE_HEIGHT = "NodeHeight";
+  private static final String NAME_NODE_MIN_WIDTH = "NodeMinWidth";
+  private static final String NAME_NODE_MAX_WIDTH = "NodeMaxWidth";
+  private static final String NAME_NODE_MIN_HEIGHT = "NodeMinHeight";
+  private static final String NAME_NODE_MAX_HEIGHT = "NodeMaxHeight";
   private static final String NAME_NODE_GAP = "NodeGap";
   private static final String NAME_LEVEL_GAP = "LevelGap";
+  private static final String NAME_ALIGNMENT_IN_LEVEL = "AlignmentInLevel";
 
   private static final String NAME_SHOW_POSITIONS = "ShowPositions";
   private static final String NAME_SHOW_EMPLOYEES = "ShowEmployees";
-  private static final String NAME_AUTO_FIT = "AutoFit";
 
   private static final int DEFAULT_MARGIN_LEFT = 10;
   private static final int DEFAULT_MARGIN_TOP = 10;
-  private static final int DEFAULT_NODE_WIDTH = 150;
-  private static final int DEFAULT_NODE_HEIGHT = 100;
+  private static final int DEFAULT_NODE_MIN_WIDTH = 150;
+  private static final int DEFAULT_NODE_MAX_WIDTH = 300;
+  private static final int DEFAULT_NODE_MIN_HEIGHT = 100;
+  private static final int DEFAULT_NODE_MAX_HEIGHT = 500;
   private static final int DEFAULT_NODE_GAP = 20;
   private static final int DEFAULT_LEVEL_GAP = 30;
 
+  private static final AlignmentInLevel DEFAULT_ALIGNMENT_IN_LEVEL = AlignmentInLevel.TOWARDS_ROOT;
+
   private static final boolean DEFAULT_SHOW_POSITIONS = false;
   private static final boolean DEFAULT_SHOW_EMPLOYEES = false;
-  private static final boolean DEFAULT_AUTO_FIT = false;
 
   private static String storagePrefix() {
     Long userId = BeeKeeper.getUser().getUserId();
@@ -216,14 +232,19 @@ class CompanyStructureForm extends AbstractFormInterceptor implements HandlesAll
 
   private int marginLeft;
   private int marginTop;
-  private int nodeWidth;
-  private int nodeHeight;
+
+  private int nodeMinWidth;
+  private int nodeMaxWidth;
+  private int nodeMinHeight;
+  private int nodeMaxHeight;
+
   private int nodeGap;
   private int levelGap;
 
+  private AlignmentInLevel alignmentInLevel;
+
   private boolean showPositions;
   private boolean showEmployees;
-  private boolean autoFit;
 
   CompanyStructureForm() {
   }
@@ -238,13 +259,6 @@ class CompanyStructureForm extends AbstractFormInterceptor implements HandlesAll
             refresh();
           }
         });
-        return false;
-
-      case AUTO_FIT:
-        autoFit = !autoFit;
-        store(NAME_AUTO_FIT, autoFit);
-
-        refresh();
         return false;
 
       case CONFIGURE:
@@ -314,11 +328,15 @@ class CompanyStructureForm extends AbstractFormInterceptor implements HandlesAll
     value = readInt(NAME_MARGIN_TOP);
     marginTop = (value >= 0) ? value : DEFAULT_MARGIN_TOP;
 
-    value = readInt(NAME_NODE_WIDTH);
-    nodeWidth = (value > 0) ? value : DEFAULT_NODE_WIDTH;
+    value = readInt(NAME_NODE_MIN_WIDTH);
+    nodeMinWidth = (value > 0) ? value : DEFAULT_NODE_MIN_WIDTH;
+    value = readInt(NAME_NODE_MAX_WIDTH);
+    nodeMaxWidth = (value > 0) ? value : DEFAULT_NODE_MAX_WIDTH;
 
-    value = readInt(NAME_NODE_HEIGHT);
-    nodeHeight = (value > 0) ? value : DEFAULT_NODE_HEIGHT;
+    value = readInt(NAME_NODE_MIN_HEIGHT);
+    nodeMinHeight = (value > 0) ? value : DEFAULT_NODE_MIN_HEIGHT;
+    value = readInt(NAME_NODE_MAX_HEIGHT);
+    nodeMaxHeight = (value > 0) ? value : DEFAULT_NODE_MAX_HEIGHT;
 
     value = readInt(NAME_NODE_GAP);
     nodeGap = (value > 0) ? value : DEFAULT_NODE_GAP;
@@ -326,10 +344,12 @@ class CompanyStructureForm extends AbstractFormInterceptor implements HandlesAll
     value = readInt(NAME_LEVEL_GAP);
     levelGap = (value > 0) ? value : DEFAULT_LEVEL_GAP;
 
+    value = readInt(NAME_ALIGNMENT_IN_LEVEL);
+    alignmentInLevel = BeeUtils.nvl(EnumUtils.getEnumByIndex(AlignmentInLevel.class, value),
+        DEFAULT_ALIGNMENT_IN_LEVEL);
+
     showPositions = readBoolean(NAME_SHOW_POSITIONS, DEFAULT_SHOW_POSITIONS);
     showEmployees = readBoolean(NAME_SHOW_EMPLOYEES, DEFAULT_SHOW_EMPLOYEES);
-
-    autoFit = readBoolean(NAME_AUTO_FIT, DEFAULT_AUTO_FIT);
   }
 
   private static String settingsLabelStyle(String name) {
@@ -345,54 +365,101 @@ class CompanyStructureForm extends AbstractFormInterceptor implements HandlesAll
         STYLE_SETTINGS_DIALOG);
 
     HtmlTable table = new HtmlTable(STYLE_SETTINGS_TABLE);
+    table.setColumnCellKind(0, CellKind.LABEL);
+    table.setColumnCellKind(2, CellKind.LABEL);
+
     int row = 0;
+    int col = 0;
 
     Label marginLeftLabel = new Label(NAME_MARGIN_LEFT);
-    table.setWidgetAndStyle(row, 0, marginLeftLabel, settingsLabelStyle(NAME_MARGIN_LEFT));
+    table.setWidgetAndStyle(row, col++, marginLeftLabel, settingsLabelStyle(NAME_MARGIN_LEFT));
 
-    final InputSpinner marginLeftInput = new InputSpinner(0, 100);
+    final InputSpinner marginLeftInput = new InputSpinner(0, 100, 5);
     marginLeftInput.setValue(marginLeft);
-    table.setWidgetAndStyle(row, 1, marginLeftInput, settingsInputStyle(NAME_MARGIN_LEFT));
+    table.setWidgetAndStyle(row, col++, marginLeftInput, settingsInputStyle(NAME_MARGIN_LEFT));
 
-    row++;
     Label marginTopLabel = new Label(NAME_MARGIN_TOP);
-    table.setWidgetAndStyle(row, 0, marginTopLabel, settingsLabelStyle(NAME_MARGIN_TOP));
+    table.setWidgetAndStyle(row, col++, marginTopLabel, settingsLabelStyle(NAME_MARGIN_TOP));
 
-    final InputSpinner marginTopInput = new InputSpinner(0, 100);
+    final InputSpinner marginTopInput = new InputSpinner(0, 100, 5);
     marginTopInput.setValue(marginTop);
-    table.setWidgetAndStyle(row, 1, marginTopInput, settingsInputStyle(NAME_MARGIN_TOP));
+    table.setWidgetAndStyle(row, col++, marginTopInput, settingsInputStyle(NAME_MARGIN_TOP));
 
     row++;
-    Label nodeWidthLabel = new Label(NAME_NODE_WIDTH);
-    table.setWidgetAndStyle(row, 0, nodeWidthLabel, settingsLabelStyle(NAME_NODE_WIDTH));
-
-    final InputSpinner nodeWidthInput = new InputSpinner(20, 500);
-    nodeWidthInput.setValue(nodeWidth);
-    table.setWidgetAndStyle(row, 1, nodeWidthInput, settingsInputStyle(NAME_NODE_WIDTH));
+    table.setWidget(row, 0, new CustomDiv(), STYLE_SETTINGS_SEPARATOR);
 
     row++;
-    Label nodeHeightLabel = new Label(NAME_NODE_HEIGHT);
-    table.setWidgetAndStyle(row, 0, nodeHeightLabel, settingsLabelStyle(NAME_NODE_HEIGHT));
+    col = 0;
+    Label nodeMinWidthLabel = new Label(NAME_NODE_MIN_WIDTH);
+    table.setWidgetAndStyle(row, col++, nodeMinWidthLabel, settingsLabelStyle(NAME_NODE_MIN_WIDTH));
 
-    final InputSpinner nodeHeightInput = new InputSpinner(20, 500);
-    nodeHeightInput.setValue(nodeHeight);
-    table.setWidgetAndStyle(row, 1, nodeHeightInput, settingsInputStyle(NAME_NODE_HEIGHT));
+    final InputSpinner nodeMinWidthInput = new InputSpinner(20, 500, 10);
+    nodeMinWidthInput.setValue(nodeMinWidth);
+    table.setWidgetAndStyle(row, col++, nodeMinWidthInput, settingsInputStyle(NAME_NODE_MIN_WIDTH));
+
+    Label nodeMaxWidthLabel = new Label(NAME_NODE_MAX_WIDTH);
+    table.setWidgetAndStyle(row, col++, nodeMaxWidthLabel, settingsLabelStyle(NAME_NODE_MAX_WIDTH));
+
+    final InputSpinner nodeMaxWidthInput = new InputSpinner(20, 500, 10);
+    nodeMaxWidthInput.setValue(nodeMaxWidth);
+    table.setWidgetAndStyle(row, col++, nodeMaxWidthInput, settingsInputStyle(NAME_NODE_MAX_WIDTH));
 
     row++;
+    table.setWidget(row, 0, new CustomDiv(), STYLE_SETTINGS_SEPARATOR);
+
+    row++;
+    col = 0;
+    Label nodeMinHeightLabel = new Label(NAME_NODE_MIN_HEIGHT);
+    table.setWidgetAndStyle(row, col++, nodeMinHeightLabel,
+        settingsLabelStyle(NAME_NODE_MIN_HEIGHT));
+
+    final InputSpinner nodeMinHeightInput = new InputSpinner(20, 1000, 10);
+    nodeMinHeightInput.setValue(nodeMinHeight);
+    table.setWidgetAndStyle(row, col++, nodeMinHeightInput,
+        settingsInputStyle(NAME_NODE_MIN_HEIGHT));
+
+    Label nodeMaxHeightLabel = new Label(NAME_NODE_MAX_HEIGHT);
+    table.setWidgetAndStyle(row, col++, nodeMaxHeightLabel,
+        settingsLabelStyle(NAME_NODE_MAX_HEIGHT));
+
+    final InputSpinner nodeMaxHeightInput = new InputSpinner(20, 1000, 10);
+    nodeMaxHeightInput.setValue(nodeMaxHeight);
+    table.setWidgetAndStyle(row, col++, nodeMaxHeightInput,
+        settingsInputStyle(NAME_NODE_MAX_HEIGHT));
+
+    row++;
+    table.setWidget(row, 0, new CustomDiv(), STYLE_SETTINGS_SEPARATOR);
+
+    row++;
+    col = 0;
     Label nodeGapLabel = new Label(NAME_NODE_GAP);
-    table.setWidgetAndStyle(row, 0, nodeGapLabel, settingsLabelStyle(NAME_NODE_GAP));
+    table.setWidgetAndStyle(row, col++, nodeGapLabel, settingsLabelStyle(NAME_NODE_GAP));
 
-    final InputSpinner nodeGapInput = new InputSpinner(0, 200);
+    final InputSpinner nodeGapInput = new InputSpinner(0, 200, 2);
     nodeGapInput.setValue(nodeGap);
-    table.setWidgetAndStyle(row, 1, nodeGapInput, settingsInputStyle(NAME_NODE_GAP));
+    table.setWidgetAndStyle(row, col++, nodeGapInput, settingsInputStyle(NAME_NODE_GAP));
+
+    Label levelGapLabel = new Label(NAME_LEVEL_GAP);
+    table.setWidgetAndStyle(row, col++, levelGapLabel, settingsLabelStyle(NAME_LEVEL_GAP));
+
+    final InputSpinner levelGapInput = new InputSpinner(0, 200, 2);
+    levelGapInput.setValue(levelGap);
+    table.setWidgetAndStyle(row, col++, levelGapInput, settingsInputStyle(NAME_LEVEL_GAP));
 
     row++;
-    Label levelGapLabel = new Label(NAME_LEVEL_GAP);
-    table.setWidgetAndStyle(row, 0, levelGapLabel, settingsLabelStyle(NAME_LEVEL_GAP));
+    table.setWidget(row, 0, new CustomDiv(), STYLE_SETTINGS_SEPARATOR);
 
-    final InputSpinner levelGapInput = new InputSpinner(0, 200);
-    levelGapInput.setValue(levelGap);
-    table.setWidgetAndStyle(row, 1, levelGapInput, settingsInputStyle(NAME_LEVEL_GAP));
+    row++;
+    Label alignmentLabel = new Label(NAME_ALIGNMENT_IN_LEVEL);
+    table.setWidgetAndStyle(row, 0, alignmentLabel, settingsLabelStyle(NAME_ALIGNMENT_IN_LEVEL));
+
+    final RadioGroup alignmentInput = new RadioGroup(Orientation.HORIZONTAL, alignmentInLevel,
+        AlignmentInLevel.class);
+    table.setWidgetAndStyle(row, 1, alignmentInput, settingsInputStyle(NAME_ALIGNMENT_IN_LEVEL));
+    table.getCellFormatter().setColSpan(row, 1, 3);
+
+    row++;
+    table.setWidget(row, 0, new CustomDiv(), STYLE_SETTINGS_SEPARATOR);
 
     row++;
     Flow commands = new Flow();
@@ -419,17 +486,31 @@ class CompanyStructureForm extends AbstractFormInterceptor implements HandlesAll
           changed = true;
         }
 
-        value = nodeWidthInput.getIntValue();
-        if (value > 0 && value != nodeWidth) {
-          nodeWidth = value;
-          store(NAME_NODE_WIDTH, value);
+        value = nodeMinWidthInput.getIntValue();
+        if (value > 0 && value != nodeMinWidth) {
+          nodeMinWidth = value;
+          store(NAME_NODE_MIN_WIDTH, value);
           changed = true;
         }
 
-        value = nodeHeightInput.getIntValue();
-        if (value > 0 && value != nodeHeight) {
-          nodeHeight = value;
-          store(NAME_NODE_HEIGHT, value);
+        value = nodeMaxWidthInput.getIntValue();
+        if (value > 0 && value != nodeMaxWidth) {
+          nodeMaxWidth = value;
+          store(NAME_NODE_MAX_WIDTH, value);
+          changed = true;
+        }
+
+        value = nodeMinHeightInput.getIntValue();
+        if (value > 0 && value != nodeMinHeight) {
+          nodeMinHeight = value;
+          store(NAME_NODE_MIN_HEIGHT, value);
+          changed = true;
+        }
+
+        value = nodeMaxHeightInput.getIntValue();
+        if (value > 0 && value != nodeMaxHeight) {
+          nodeMaxHeight = value;
+          store(NAME_NODE_MAX_HEIGHT, value);
           changed = true;
         }
 
@@ -444,6 +525,15 @@ class CompanyStructureForm extends AbstractFormInterceptor implements HandlesAll
         if (value >= 0 && value != levelGap) {
           levelGap = value;
           store(NAME_LEVEL_GAP, value);
+          changed = true;
+        }
+
+        value = alignmentInput.getSelectedIndex();
+        if (EnumUtils.isOrdinal(AlignmentInLevel.class, value)
+            && (alignmentInLevel == null || value != alignmentInLevel.ordinal())) {
+
+          alignmentInLevel = EnumUtils.getEnumByIndex(AlignmentInLevel.class, value);
+          store(NAME_ALIGNMENT_IN_LEVEL, value);
           changed = true;
         }
 
@@ -469,6 +559,7 @@ class CompanyStructureForm extends AbstractFormInterceptor implements HandlesAll
     commands.add(cancel);
 
     table.setWidgetAndStyle(row, 1, commands, STYLE_SETTINGS_COMMAND_PANEL);
+    table.getCellFormatter().setColSpan(row, 1, 3);
 
     dialog.setWidget(table);
 
@@ -497,7 +588,7 @@ class CompanyStructureForm extends AbstractFormInterceptor implements HandlesAll
     CheckBox employeeToggle = new CheckBox(Localized.getConstants().employees());
     employeeToggle.addStyleName(STYLE_TOGGLE_EMPLOYEES);
 
-    employeeToggle.setValue(showPositions);
+    employeeToggle.setValue(showEmployees);
 
     employeeToggle.addValueChangeHandler(new ValueChangeHandler<Boolean>() {
       @Override
@@ -579,7 +670,7 @@ class CompanyStructureForm extends AbstractFormInterceptor implements HandlesAll
     }
   }
 
-  private TreeLayout<Long> layoutTree() {
+  private TreeLayout<Long> layoutTree(NodeExtentProvider<Long> nodeExtentProvider) {
     DefaultTreeForTreeLayout<Long> tree = new DefaultTreeForTreeLayout<>(ROOT);
 
     Multimap<Long, Long> children = ArrayListMultimap.create();
@@ -622,19 +713,8 @@ class CompanyStructureForm extends AbstractFormInterceptor implements HandlesAll
       }
     }
 
-    NodeExtentProvider<Long> nodeExtentProvider = new NodeExtentProvider<Long>() {
-      @Override
-      public double getWidth(Long treeNode) {
-        return nodeWidth;
-      }
-
-      @Override
-      public double getHeight(Long treeNode) {
-        return nodeHeight;
-      }
-    };
-
-    Configuration<Long> configuration = new DefaultConfiguration<>(levelGap, nodeGap);
+    Configuration<Long> configuration = new DefaultConfiguration<>(levelGap, nodeGap,
+        Location.TOP, BeeUtils.nvl(alignmentInLevel, DEFAULT_ALIGNMENT_IN_LEVEL));
 
     TreeLayout<Long> treeLayout = new TreeLayout<>(tree, nodeExtentProvider, configuration);
     return treeLayout;
@@ -661,22 +741,66 @@ class CompanyStructureForm extends AbstractFormInterceptor implements HandlesAll
         }
 
         Flow panel = getPanel();
-        if (panel != null) {
-          panel.clear();
+        panel.clear();
 
-          if (!DataUtils.isEmpty(departments)) {
-            render(panel, layoutTree());
+        if (!DataUtils.isEmpty(departments)) {
+          final Map<Long, String> nodeIds = new HashMap<>();
+
+          for (BeeRow department : departments) {
+            IdentifiableWidget w = renderDepartment(department);
+            if (w != null) {
+              panel.add(w);
+              nodeIds.put(department.getId(), w.getId());
+            }
+          }
+
+          if (!nodeIds.isEmpty()) {
+            Scheduler.get().scheduleDeferred(new Scheduler.ScheduledCommand() {
+              @Override
+              public void execute() {
+                NodeExtentProvider<Long> nodeExtentProvider = createNodeExtentProvider(nodeIds);
+                TreeLayout<Long> layoutTree = layoutTree(nodeExtentProvider);
+
+                render(getPanel(), nodeIds, layoutTree);
+              }
+            });
           }
         }
       }
     });
   }
 
-  private void render(Flow panel, TreeLayout<Long> treeLayout) {
+  private NodeExtentProvider<Long> createNodeExtentProvider(final Map<Long, String> nodeIds) {
+    NodeExtentProvider<Long> nep = new NodeExtentProvider<Long>() {
+      @Override
+      public double getWidth(Long treeNode) {
+        if (DataUtils.isId(treeNode) && nodeIds.containsKey(treeNode)) {
+          Element element = DomUtils.getElement(nodeIds.get(treeNode));
+          return BeeUtils.clamp(element.getOffsetWidth(), nodeMinWidth, nodeMaxWidth);
+        } else {
+          return 0;
+        }
+      }
+
+      @Override
+      public double getHeight(Long treeNode) {
+        if (DataUtils.isId(treeNode) && nodeIds.containsKey(treeNode)) {
+          Element element = DomUtils.getElement(nodeIds.get(treeNode));
+          return BeeUtils.clamp(element.getOffsetHeight(), nodeMinHeight, nodeMaxHeight);
+        } else {
+          return 0;
+        }
+      }
+    };
+
+    return nep;
+  }
+
+  private void render(Flow panel, Map<Long, String> nodeIds, TreeLayout<Long> treeLayout) {
     Map<Long, Rectangle2D.Double> nodeBounds = new HashMap<>(treeLayout.getNodeBounds());
 
     int shiftX = Math.max(marginLeft, 0);
-    int shiftY = Math.max(marginTop, 0) - nodeHeight - levelGap;
+    int shiftY = Math.max(marginTop, 0) - levelGap;
 
     if (shiftX != 0 || shiftY != 0) {
       for (Rectangle2D.Double rectangle : nodeBounds.values()) {
@@ -685,11 +809,27 @@ class CompanyStructureForm extends AbstractFormInterceptor implements HandlesAll
       }
     }
 
-    for (Map.Entry<Long, Rectangle2D.Double> entry : nodeBounds.entrySet()) {
+    for (Map.Entry<Long, String> entry : nodeIds.entrySet()) {
       Long node = entry.getKey();
-      if (!ROOT.equals(node)) {
+
+      if (nodeBounds.containsKey(node)) {
+        Element element = DomUtils.getElement(entry.getValue());
+
         int level = treeLayout.getTree().getLevel(node) - 1;
-        panel.add(renderDepartment(node, level, entry.getValue()));
+        if (level >= 0) {
+          element.addClassName(STYLE_LEVEL_PREFIX + BeeUtils.toString(level));
+        }
+
+        Rectangle2D.Double rectangle = nodeBounds.get(node);
+        StyleUtils.setRectangle(element,
+            BeeUtils.round(rectangle.getX()), BeeUtils.round(rectangle.getY()),
+            BeeUtils.round(rectangle.getWidth()), BeeUtils.round(rectangle.getHeight()));
+
+      } else {
+        Widget w = DomUtils.getChild(panel, entry.getValue());
+        if (w != null) {
+          panel.remove(w);
+        }
       }
     }
 
@@ -728,20 +868,18 @@ class CompanyStructureForm extends AbstractFormInterceptor implements HandlesAll
     return new Line(x1, y1, x2, y2, styleName);
   }
 
-  private Widget renderDepartment(final long id, int level, Rectangle2D.Double bounds) {
+  private IdentifiableWidget renderDepartment(BeeRow department) {
+    final long id = department.getId();
+
     final Flow panel = new Flow(STYLE_DEPARTMENT_PANEL);
+    StyleUtils.makeAbsolute(panel);
 
-    if (level >= 0) {
-      panel.addStyleName(STYLE_LEVEL_PREFIX + BeeUtils.toString(level));
+    if (nodeMaxWidth > 0) {
+      StyleUtils.setMaxWidth(panel, nodeMaxWidth);
     }
-
-    if (bounds != null) {
-      StyleUtils.makeAbsolute(panel);
-      StyleUtils.setRectangle(panel, BeeUtils.round(bounds.getX()), BeeUtils.round(bounds.getY()),
-          BeeUtils.round(bounds.getWidth()), BeeUtils.round(bounds.getHeight()));
+    if (nodeMaxHeight > 0) {
+      StyleUtils.setMaxHeight(panel, nodeMaxHeight);
     }
-
-    BeeRow department = departments.getRowById(id);
 
     DndDiv label = new DndDiv(STYLE_DEPARTMENT_LABEL);
 

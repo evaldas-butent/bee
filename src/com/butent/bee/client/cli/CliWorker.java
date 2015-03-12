@@ -4137,8 +4137,21 @@ public final class CliWorker {
     String value = ArrayUtils.join(BeeConst.STRING_SPACE, arr, 2);
 
     if (key.equals(BeeConst.STRING_MINUS)) {
-      BeeKeeper.getStorage().remove(value);
-      inform(value, "removed");
+      if (BeeKeeper.getStorage().hasItem(value)) {
+        BeeKeeper.getStorage().remove(value);
+        inform(value, "removed");
+
+      } else {
+        int count = 0;
+        for (Property p : BeeKeeper.getStorage().getAll()) {
+          if (BeeUtils.isPrefix(p.getName(), value)) {
+            BeeKeeper.getStorage().remove(p.getName());
+            count++;
+          }
+        }
+        inform(value, "removed", BeeUtils.toString(count), "entries");
+      }
+
     } else {
       BeeKeeper.getStorage().set(key, value);
       inform("Storage", NameUtils.addName(key, value));

@@ -15,6 +15,9 @@
   box-sizing: border-box;
   box-shadow: rgba(0, 0, 0, 0.5) 3px 3px 3px;
   background-image: linear-gradient(to bottom, #edf7ff, #cde7ee);
+  left: 0;
+  top: 0;
+  transition: left 400ms, top 400ms;
 }
 .bee-orgChart-department-label {
   cursor: pointer;
@@ -52,4 +55,31 @@
 .bee-orgChart-department-connect {
   height: 1px;
   background-color: #3388dd;
+}
+
+.bee-orgChart-settings-table {
+  border-collapse: collapse;
+}
+.bee-orgChart-settings-table .bee-LabelCell {
+  padding-right: 12px;
+}
+.bee-orgChart-settings-table .bee-InputSpinner {
+  width: 80px;
+}
+.bee-orgChart-settings-table .bee-RadioButton input {
+  margin: 0;
+}
+.bee-orgChart-settings-table .bee-RadioButton label {
+  padding-left: 3px;
+  padding-right: 6px;
+}
+.bee-orgChart-settings-separator {
+  height: 10px;
+}
+.bee-orgChart-settings-commands-cell {
+  padding-top: 2ex;
+  text-align: right;
+}
+.bee-orgChart-settings-cancel {
+  margin-left: 1em;
 }
