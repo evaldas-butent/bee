@@ -19,9 +19,9 @@
         </row>
         <row>
           <Label text="=customer" horizontalAlignment="right" class="bee-required" />
-          <DataSelector name="Customer" source="Customer" />
+          <DataSelector name="Customer" source="Customer" choiceColumns="Name TypeName" renderColumns="CustomerName TypeName" />
           <Label text="=payer" horizontalAlignment="right" />
-          <DataSelector source="Payer" />
+          <DataSelector source="Payer" choiceColumns="Name TypeName" renderColumns="PayerName PayerTypeName"/>
 		  	<cell colSpan="2">
               <Label text="=notes" />
 			</cell>  

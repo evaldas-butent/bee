@@ -50,6 +50,7 @@
           <DataSelector source="Owner" editSource="OwnerPerson" style="&inp2;" readOnly="true" />
           <Label for="Company" style="&lbl3;" module="Classifiers.Contacts" />
           <DataSelector source="Company" newRowEnabled="false" style="&inp4;" disablable="true"
+              choiceColumns="Name TypeName " renderColumns="CompanyName CompanyTypeName"
             module="Classifiers.Contacts" />
         </FlowPanel>
 

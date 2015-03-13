@@ -32,7 +32,8 @@
 
       <row>
         <Label for="Company" text="=client" style="&lbl;" class="bee-required" />
-        <DataSelector source="Company" style="&inp2;" required="true" />
+        <DataSelector source="Company" style="&inp2;" required="true" choiceColumns="Name TypeName" 
+            renderColumns="CompanyName CompanyTypeName"/>
 
         <Label for="ContactPerson" text="=personContact"
           style="margin-right: 1em; text-align: left; margin-left: -110px;" />

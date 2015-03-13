@@ -17,7 +17,7 @@
       <Label text="=date" class="bee-required" style="&inline; text-align:right; width:80px; padding-top:1px; margin-right: 5px" />
       <InputDateTime source="Date" style="&inline; width:120px;" />
       <Label text="=client" class="bee-required" style="&inline; width:130px; padding-top:1px; text-align:right; margin-right: 4px" />
-      <DataSelector source="Customer" style="&inline; width:200px;" />
+      <DataSelector source="Customer" style="&inline; width:200px;" choiceColumns="Name TypeName" renderColumns="CustomerName TypeName" />
       <Label text="=crmRequestForm" style="&inline; width:125px; padding-top:1px; text-align:right; margin-right: 10px" />
       <DataSelector source="RequestForm" style="&inline; width:130px;" /> 
     </FlowPanel>
@@ -25,7 +25,7 @@
       <Label text="=contacts" style="&inline; width:75px; padding-top:1px; text-align:right; padding-right: 10px" />
       <InputText source="Contacts" style="&inline; width:120px;" />
       <Label text="=personContact" style="&inline; width:125px; padding-top:1px; text-align:right; margin-right: 10px" />
-      <DataSelector source="CustomerPerson" style="&inline; width:200px;" 
+      <DataSelector source="CustomerPerson" style="&inline; width:200px;"
         choiceColumns="FirstName LastName CompanyName" options="Customer" />
     </FlowPanel>
 
