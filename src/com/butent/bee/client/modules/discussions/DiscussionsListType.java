@@ -50,13 +50,14 @@ enum DiscussionsListType implements HasCaption, HasWidgetSupplier {
       Filter isPublic = Filter.notNull(COL_ACCESSIBILITY);
       Filter isUserFilter = Filter.isEqual(COL_USER, userId);
       Filter isActive = Filter.isEqual(COL_STATUS, IntegerValue.of(DiscussionStatus.CLOSED));
+      Filter hasTopic = Filter.isNull(COL_TOPIC);
 
       Filter discussUsersFilter = Filter.in(Data.getIdColumn(VIEW_DISCUSSIONS),
           VIEW_DISCUSSIONS_USERS, COL_DISCUSSION,
           Filter.and(isUserFilter, isMemberFilter));
       return Filter.and(Filter.or(
           Filter.or(discussUsersFilter, isOwner), isPublic),
-          isActive);
+          isActive, hasTopic);
     }
   },
   OBSERVED(Localized.getConstants().discussPrivateShort()) {
@@ -67,11 +68,13 @@ enum DiscussionsListType implements HasCaption, HasWidgetSupplier {
       Filter notOwnerFilter = Filter.isNotEqual(COL_OWNER, userId);
       Filter isMemberFilter = Filter.isEqual(COL_MEMBER, BooleanValue.TRUE);
       Filter isUserFilter = Filter.isEqual(COL_USER, userId);
+      Filter hasTopic = Filter.isNull(COL_TOPIC);
+
       Filter discussUsersFilter = Filter.in(Data.getIdColumn(VIEW_DISCUSSIONS),
           VIEW_DISCUSSIONS_USERS, COL_DISCUSSION,
           Filter.and(isUserFilter, isMemberFilter));
 
-      return Filter.and(activeStatusFilter, notOwnerFilter, discussUsersFilter);
+      return Filter.and(activeStatusFilter, notOwnerFilter, discussUsersFilter, hasTopic);
     }
   },
   STARRED(Localized.getConstants().discussStarred()) {
