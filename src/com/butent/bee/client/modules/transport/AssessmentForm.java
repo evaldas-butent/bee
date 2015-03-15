@@ -25,10 +25,10 @@ import static com.butent.bee.shared.modules.trade.TradeConstants.*;
 import static com.butent.bee.shared.modules.transport.TransportConstants.*;
 
 import com.butent.bee.client.BeeKeeper;
-import com.butent.bee.client.Callback;
 import com.butent.bee.client.Global;
 import com.butent.bee.client.communication.ParameterList;
 import com.butent.bee.client.communication.ResponseCallback;
+import com.butent.bee.client.communication.RpcCallback;
 import com.butent.bee.client.composite.DataSelector;
 import com.butent.bee.client.composite.UnboundSelector;
 import com.butent.bee.client.data.Data;
@@ -198,7 +198,7 @@ public class AssessmentForm extends PrintFormInterceptor implements SelectorEven
               newRow.setValue(form.getDataIndex(COL_ASSESSMENT_NOTES), notes.getValue());
 
               Queries.insertRow(DataUtils.createRowSetForInsert(form.getViewName(),
-                  form.getDataColumns(), newRow), new Callback<RowInfo>() {
+                  form.getDataColumns(), newRow), new RpcCallback<RowInfo>() {
                 @Override
                 public void onSuccess(RowInfo result) {
                   Queries.getRow(presenter.getViewName(), result.getId(), new RowCallback() {

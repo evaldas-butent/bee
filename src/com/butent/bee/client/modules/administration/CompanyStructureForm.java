@@ -33,6 +33,7 @@ import com.butent.bee.client.grid.CellKind;
 import com.butent.bee.client.grid.HtmlTable;
 import com.butent.bee.client.i18n.Collator;
 import com.butent.bee.client.layout.Flow;
+import com.butent.bee.client.layout.Simple;
 import com.butent.bee.client.presenter.Presenter;
 import com.butent.bee.client.render.PhotoRenderer;
 import com.butent.bee.client.style.StyleUtils;
@@ -245,6 +246,8 @@ class CompanyStructureForm extends AbstractFormInterceptor implements HandlesAll
 
   private boolean showPositions;
   private boolean showEmployees;
+
+  private int lastRpcId;
 
   CompanyStructureForm() {
   }
@@ -539,7 +542,7 @@ class CompanyStructureForm extends AbstractFormInterceptor implements HandlesAll
 
         dialog.close();
         if (changed) {
-          refresh();
+          redraw();
         }
       }
     });
@@ -579,7 +582,7 @@ class CompanyStructureForm extends AbstractFormInterceptor implements HandlesAll
         showPositions = event.getValue();
         store(NAME_SHOW_POSITIONS, showPositions);
 
-        refresh();
+        redraw();
       }
     });
 
@@ -596,7 +599,7 @@ class CompanyStructureForm extends AbstractFormInterceptor implements HandlesAll
         showEmployees = event.getValue();
         store(NAME_SHOW_EMPLOYEES, showEmployees);
 
-        refresh();
+        redraw();
       }
     });
 
@@ -721,9 +724,10 @@ class CompanyStructureForm extends AbstractFormInterceptor implements HandlesAll
   }
 
   private void refresh() {
-    Queries.getData(viewNames, CachingPolicy.NONE, new Queries.DataCallback() {
+    lastRpcId = Queries.getData(viewNames, CachingPolicy.NONE, new Queries.DataCallback() {
       @Override
       public void onSuccess(Collection<BeeRowSet> result) {
+        logger.debug("response", getRpcId());
         for (BeeRowSet rowSet : result) {
           switch (rowSet.getViewName()) {
             case VIEW_DEPARTMENTS:
@@ -740,34 +744,40 @@ class CompanyStructureForm extends AbstractFormInterceptor implements HandlesAll
           }
         }
 
-        Flow panel = getPanel();
-        panel.clear();
-
-        if (!DataUtils.isEmpty(departments)) {
-          final Map<Long, String> nodeIds = new HashMap<>();
-
-          for (BeeRow department : departments) {
-            IdentifiableWidget w = renderDepartment(department);
-            if (w != null) {
-              panel.add(w);
-              nodeIds.put(department.getId(), w.getId());
-            }
-          }
-
-          if (!nodeIds.isEmpty()) {
-            Scheduler.get().scheduleDeferred(new Scheduler.ScheduledCommand() {
-              @Override
-              public void execute() {
-                NodeExtentProvider<Long> nodeExtentProvider = createNodeExtentProvider(nodeIds);
-                TreeLayout<Long> layoutTree = layoutTree(nodeExtentProvider);
-
-                render(getPanel(), nodeIds, layoutTree);
-              }
-            });
-          }
-        }
+        redraw();
       }
     });
+
+    logger.debug("request", lastRpcId);
+  }
+
+  private void redraw() {
+    final Flow panel = getPanel();
+    panel.clear();
+
+    if (!DataUtils.isEmpty(departments)) {
+      final Map<Long, String> nodeIds = new HashMap<>();
+
+      for (BeeRow department : departments) {
+        IdentifiableWidget w = renderDepartment(department);
+        if (w != null) {
+          panel.add(w);
+          nodeIds.put(department.getId(), w.getId());
+        }
+      }
+
+      if (!nodeIds.isEmpty()) {
+        Scheduler.get().scheduleDeferred(new Scheduler.ScheduledCommand() {
+          @Override
+          public void execute() {
+            NodeExtentProvider<Long> nodeExtentProvider = createNodeExtentProvider(nodeIds);
+            TreeLayout<Long> layoutTree = layoutTree(nodeExtentProvider);
+
+            render(panel, nodeIds, layoutTree);
+          }
+        });
+      }
+    }
   }
 
   private NodeExtentProvider<Long> createNodeExtentProvider(final Map<Long, String> nodeIds) {
@@ -775,21 +785,31 @@ class CompanyStructureForm extends AbstractFormInterceptor implements HandlesAll
       @Override
       public double getWidth(Long treeNode) {
         if (DataUtils.isId(treeNode) && nodeIds.containsKey(treeNode)) {
-          Element element = DomUtils.getElement(nodeIds.get(treeNode));
-          return BeeUtils.clamp(element.getOffsetWidth(), nodeMinWidth, nodeMaxWidth);
-        } else {
-          return 0;
+          if (nodeMinWidth > 0 && nodeMaxWidth == nodeMinWidth) {
+            return nodeMinWidth;
+          }
+
+          Element element = getNodeElement(treeNode, nodeIds.get(treeNode));
+          if (element != null) {
+            return BeeUtils.clamp(element.getOffsetWidth(), nodeMinWidth, nodeMaxWidth);
+          }
         }
+        return 0;
       }
 
       @Override
       public double getHeight(Long treeNode) {
         if (DataUtils.isId(treeNode) && nodeIds.containsKey(treeNode)) {
-          Element element = DomUtils.getElement(nodeIds.get(treeNode));
-          return BeeUtils.clamp(element.getOffsetHeight(), nodeMinHeight, nodeMaxHeight);
-        } else {
-          return 0;
+          if (nodeMinHeight > 0 && nodeMinHeight == nodeMaxHeight) {
+            return nodeMinHeight;
+          }
+
+          Element element = getNodeElement(treeNode, nodeIds.get(treeNode));
+          if (element != null) {
+            return BeeUtils.clamp(element.getOffsetHeight(), nodeMinHeight, nodeMaxHeight);
+          }
         }
+        return 0;
       }
     };
 
@@ -813,17 +833,19 @@ class CompanyStructureForm extends AbstractFormInterceptor implements HandlesAll
       Long node = entry.getKey();
 
       if (nodeBounds.containsKey(node)) {
-        Element element = DomUtils.getElement(entry.getValue());
+        Element element = getNodeElement(node, entry.getValue());
 
-        int level = treeLayout.getTree().getLevel(node) - 1;
-        if (level >= 0) {
-          element.addClassName(STYLE_LEVEL_PREFIX + BeeUtils.toString(level));
+        if (element != null) {
+          int level = treeLayout.getTree().getLevel(node) - 1;
+          if (level >= 0) {
+            element.addClassName(STYLE_LEVEL_PREFIX + BeeUtils.toString(level));
+          }
+
+          Rectangle2D.Double rectangle = nodeBounds.get(node);
+          StyleUtils.setRectangle(element,
+              BeeUtils.round(rectangle.getX()), BeeUtils.round(rectangle.getY()),
+              BeeUtils.round(rectangle.getWidth()), BeeUtils.round(rectangle.getHeight()));
         }
-
-        Rectangle2D.Double rectangle = nodeBounds.get(node);
-        StyleUtils.setRectangle(element,
-            BeeUtils.round(rectangle.getX()), BeeUtils.round(rectangle.getY()),
-            BeeUtils.round(rectangle.getWidth()), BeeUtils.round(rectangle.getHeight()));
 
       } else {
         Widget w = DomUtils.getChild(panel, entry.getValue());
@@ -852,6 +874,14 @@ class CompanyStructureForm extends AbstractFormInterceptor implements HandlesAll
     }
   }
 
+  private static Element getNodeElement(Long depId, String elId) {
+    Element element = DomUtils.getElementQuietly(elId);
+    if (element == null) {
+      logger.warning("element not found", depId, elId);
+    }
+    return element;
+  }
+
   private static Widget connect(Rectangle2D.Double parent, Rectangle2D.Double child,
       String styleName) {
 
@@ -874,10 +904,25 @@ class CompanyStructureForm extends AbstractFormInterceptor implements HandlesAll
     final Flow panel = new Flow(STYLE_DEPARTMENT_PANEL);
     StyleUtils.makeAbsolute(panel);
 
-    if (nodeMaxWidth > 0) {
+    if (nodeMinWidth > 0) {
+      if (nodeMinWidth == nodeMaxWidth) {
+        StyleUtils.setWidth(panel, nodeMinWidth);
+      } else {
+        StyleUtils.setMinWidth(panel, nodeMinWidth);
+      }
+    }
+    if (nodeMaxWidth > 0 && nodeMaxWidth > nodeMinWidth) {
       StyleUtils.setMaxWidth(panel, nodeMaxWidth);
     }
-    if (nodeMaxHeight > 0) {
+
+    if (nodeMinHeight > 0) {
+      if (nodeMinHeight == nodeMaxHeight) {
+        StyleUtils.setHeight(panel, nodeMinHeight);
+      } else {
+        StyleUtils.setMinHeight(panel, nodeMinHeight);
+      }
+    }
+    if (nodeMaxHeight > 0 && nodeMaxHeight > nodeMinHeight) {
       StyleUtils.setMaxHeight(panel, nodeMaxHeight);
     }
 
@@ -894,12 +939,7 @@ class CompanyStructureForm extends AbstractFormInterceptor implements HandlesAll
     label.addClickHandler(new ClickHandler() {
       @Override
       public void onClick(ClickEvent event) {
-        RowEditor.open(VIEW_DEPARTMENTS, id, Opener.MODAL, new RowCallback() {
-          @Override
-          public void onSuccess(BeeRow result) {
-            refresh();
-          }
-        });
+        RowEditor.open(VIEW_DEPARTMENTS, id, Opener.MODAL);
       }
     });
 
@@ -1228,7 +1268,7 @@ class CompanyStructureForm extends AbstractFormInterceptor implements HandlesAll
       });
 
       String styleName = boss ? STYLE_BOSS_PHOTO : STYLE_EMPLOYEE_PHOTO;
-      table.setWidgetAndStyle(row, 0, image, styleName);
+      table.setWidgetAndStyle(row, 0, new Simple(image), styleName);
     }
 
     DndDiv label = new DndDiv();
