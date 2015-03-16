@@ -45,6 +45,7 @@
   cursor: pointer;
   color: red;
 }
+.bee-orgChart-position-staffed,
 .bee-orgChart-employee-label {
   cursor: pointer;
 }
@@ -59,8 +60,16 @@
   background: linear-gradient(to bottom, #fff7ae, #eee79e);
 }
 
-.bee-orgChart-department-connect {
+.bee-orgChart-line-straight,
+.bee-orgChart-line-horizontal {
   height: 1px;
+}
+.bee-orgChart-line-vertical {
+  width: 1px;
+}
+.bee-orgChart-line-straight,
+.bee-orgChart-line-horizontal,
+.bee-orgChart-line-vertical {
   background-color: #3388dd;
 }
 
@@ -90,3 +99,18 @@
 .bee-orgChart-settings-cancel {
   margin-left: 1em;
 }
+
+.bee-orgChart-employee-summary {
+  margin-left: 1em;
+}
+.bee-orgChart-position-staffed,
+.bee-orgChart-employee-summary .bee-orgChart-employee-label {
+  padding-right: 5px;
+  text-decoration: underline;
+}
+.bee-orgChart-employee-count {
+  font-weight: bold;
+  color: white;
+  background-image: linear-gradient(to bottom, #858a90, #CCCED1);
+}
+
