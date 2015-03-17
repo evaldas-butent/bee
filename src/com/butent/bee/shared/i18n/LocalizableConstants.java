@@ -163,6 +163,8 @@ public interface LocalizableConstants extends Constants, LocalizableClassifierCo
 
   String clientStatus();
 
+  String columnResults();
+
   String comment();
 
   String companies();
@@ -207,9 +209,15 @@ public interface LocalizableConstants extends Constants, LocalizableClassifierCo
 
   String dateFromShort();
 
+  String dateTime();
+
   String dateTo();
 
   String dateToShort();
+
+  String day();
+
+  String dayOfWeek();
 
   String dayShort();
 
@@ -254,6 +262,8 @@ public interface LocalizableConstants extends Constants, LocalizableClassifierCo
   String exchangeCode();
 
   String exportToMsExcel();
+
+  String expression();
 
   String externalId();
 
@@ -375,11 +385,15 @@ public interface LocalizableConstants extends Constants, LocalizableClassifierCo
 
   String firstName();
 
+  String greatest();
+
   String groupBy();
 
   String height();
 
   String holidays();
+
+  String hour();
 
   String imported();
 
@@ -413,7 +427,11 @@ public interface LocalizableConstants extends Constants, LocalizableClassifierCo
 
   String lastName();
 
+  String least();
+
   String length();
+
+  String list();
 
   String location();
 
@@ -448,6 +466,8 @@ public interface LocalizableConstants extends Constants, LocalizableClassifierCo
   String message();
 
   String messageSent();
+
+  String minute();
 
   String minValue();
 
@@ -484,6 +504,8 @@ public interface LocalizableConstants extends Constants, LocalizableClassifierCo
   String noChanges();
 
   String noData();
+
+  String noMatter();
 
   String notANumber();
 
@@ -547,6 +569,8 @@ public interface LocalizableConstants extends Constants, LocalizableClassifierCo
 
   String postIndex();
 
+  String precision();
+
   String price();
 
   String print();
@@ -600,6 +624,8 @@ public interface LocalizableConstants extends Constants, LocalizableClassifierCo
   String rightStateView();
 
   String roleAddUsers();
+
+  String rowResults();
 
   String roomDeleteQuestion();
 
@@ -715,6 +741,8 @@ public interface LocalizableConstants extends Constants, LocalizableClassifierCo
 
   String valueRequired();
 
+  String values();
+
   String vat();
 
   String vatAmount();
@@ -752,6 +780,8 @@ public interface LocalizableConstants extends Constants, LocalizableClassifierCo
   String workspaceStartup();
 
   String year();
+
+  String yearMonth();
 
   String yes();
 }

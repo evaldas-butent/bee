@@ -11,5 +11,7 @@
     <String name="Caption" precision="200" label="=caption" />
     
     <Text name="Parameters" label="=parameters" />
+    
+    <Boolean name="IsReport" />
   </Fields>
 </Table>

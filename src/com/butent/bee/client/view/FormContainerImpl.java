@@ -116,6 +116,7 @@ public class FormContainerImpl extends Split implements FormContainerView, HasNa
     if (!disabledActions.contains(Action.PRINT)) {
       enabledActions.add(Action.PRINT);
     }
+    String caption = formDescription.getCaption();
 
     if (interceptor != null) {
       Set<Action> actions = interceptor.getEnabledActions(enabledActions);
@@ -127,12 +128,11 @@ public class FormContainerImpl extends Split implements FormContainerView, HasNa
       if (!disabledActions.equals(actions)) {
         BeeUtils.overwrite(disabledActions, actions);
       }
+      caption = BeeUtils.notEmpty(interceptor.getCaption(), caption);
     }
-
     HeaderView header = new HeaderImpl();
-    header.create(formDescription.getCaption(), hasData(), formDescription.isReadOnly(),
-        formDescription.getViewName(), EnumSet.of(UiOption.ROOT),
-        enabledActions, disabledActions, Action.NO_ACTIONS);
+    header.create(caption, hasData(), formDescription.isReadOnly(), formDescription.getViewName(),
+        EnumSet.of(UiOption.ROOT), enabledActions, disabledActions, Action.NO_ACTIONS);
 
     FormView content = new FormImpl(formDescription.getName());
     content.create(formDescription, null, dataColumns, true, interceptor);

@@ -1,26 +1,34 @@
 package com.butent.bee.client.output;
 
-import com.butent.bee.client.view.edit.Editor;
-import com.butent.bee.client.widget.ListBox;
+import com.google.gwt.user.client.ui.Widget;
+
+import com.butent.bee.client.layout.Flow;
+import com.butent.bee.client.widget.InlineLabel;
+import com.butent.bee.client.widget.InputDateTime;
+import com.butent.bee.shared.Pair;
 import com.butent.bee.shared.data.SimpleRowSet.SimpleRow;
 import com.butent.bee.shared.time.DateTime;
 import com.butent.bee.shared.time.TimeUtils;
-import com.butent.bee.shared.utils.EnumUtils;
+import com.butent.bee.shared.utils.BeeUtils;
+import com.butent.bee.shared.utils.Codec;
 
 import java.util.EnumSet;
 
 public class ReportDateTimeItem extends ReportDateItem {
 
+  private InputDateTime filterFrom;
+  private InputDateTime filterTo;
+
   public ReportDateTimeItem(String name, String caption) {
     super(name, caption);
-    setOptions(DateTimeFunction.DATE.name());
   }
 
   @Override
-  public ReportItem create() {
-    ReportDateTimeItem item = new ReportDateTimeItem(getName(), getCaption());
-    item.setOptions(getOptions());
-    return item;
+  public void clearFilter() {
+    if (filterFrom != null) {
+      filterFrom.clearValue();
+      filterTo.clearValue();
+    }
   }
 
   @Override
@@ -29,42 +37,88 @@ public class ReportDateTimeItem extends ReportDateItem {
     DateTime dateTime = row.getDateTime(getName());
 
     if (dateTime != null) {
-      DateTimeFunction fnc = EnumUtils.getEnumByName(DateTimeFunction.class, getOptions());
-
-      if (fnc != null) {
-        switch (fnc) {
-          case DATE:
-            value = dateTime.toDateString();
-            break;
-          case HOUR:
-            value = TimeUtils.padTwo(dateTime.getHour());
-            break;
-          case MINUTE:
-            value = TimeUtils.padTwo(dateTime.getMinute());
-            break;
-          case TIME:
-            value = dateTime.toCompactTimeString();
-            break;
-          default:
-            value = super.evaluate(row);
-            break;
-        }
-      } else {
-        value = dateTime.toCompactString();
+      switch (getFormat()) {
+        case DATETIME:
+          value = dateTime.toCompactString();
+          break;
+        case DATE:
+          value = dateTime.toDateString();
+          break;
+        case HOUR:
+          value = TimeUtils.padTwo(dateTime.getHour());
+          break;
+        case MINUTE:
+          value = TimeUtils.padTwo(dateTime.getMinute());
+          break;
+        case TIME:
+          value = dateTime.toCompactTimeString();
+          break;
+        default:
+          value = super.evaluate(row);
+          break;
       }
     }
     return value;
   }
 
   @Override
-  public Editor getOptionsEditor() {
-    ListBox editor = (ListBox) super.getOptionsEditor();
-
-    for (DateTimeFunction fnc : EnumSet.of(DateTimeFunction.DATE, DateTimeFunction.TIME,
-        DateTimeFunction.HOUR, DateTimeFunction.MINUTE)) {
-      editor.addItem(fnc.getCaption(), fnc.name());
+  public String getFilter() {
+    if (filterFrom == null) {
+      return null;
     }
-    editor.setValue(getOptions());
-    return editor;
+    return Codec.beeSerialize(Pair.of(filterFrom.getDateTime(), filterTo.getDateTime()));
+  }
+
+  @Override
+  public Widget getFilterWidget() {
+    Flow container = new Flow(getStyle() + "-filter");
+
+    if (filterFrom == null) {
+      filterFrom = new InputDateTime();
+    }
+    container.add(filterFrom);
+    container.add(new InlineLabel("-"));
+
+    if (filterTo == null) {
+      filterTo = new InputDateTime();
+    }
+    container.add(filterTo);
+    return container;
+  }
+
+  @Override
+  public String getStyle() {
+    return STYLE_DATETIME;
+  }
+
+  @Override
+  public ReportItem setFilter(String data) {
+    getFilterWidget();
+
+    if (BeeUtils.allNotNull(filterFrom, filterTo, data)) {
+      Pair<String, String> pair = Pair.restore(data);
+      filterFrom.setDate(TimeUtils.toDateTimeOrNull(pair.getA()));
+      filterTo.setDate(TimeUtils.toDateTimeOrNull(pair.getB()));
+    }
+    return this;
+  }
+
+  @Override
+  public boolean validate(SimpleRow row) {
+    if (filterFrom == null || !row.getRowSet().hasColumn(getName())) {
+      return true;
+    }
+    DateTime from = filterFrom.getDateTime();
+    DateTime to = filterTo.getDateTime();
+
+    if (from != null && to != null && TimeUtils.isMeq(from, to)) {
+      return false;
+    }
+    return TimeUtils.isBetweenExclusiveNotRequired(row.getDateTime(getName()), from, to);
+  }
+
+  @Override
+  protected EnumSet<DateTimeFunction> getSupportedFunctions() {
+    return EnumSet.allOf(DateTimeFunction.class);
   }
 }

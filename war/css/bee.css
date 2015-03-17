@@ -3477,7 +3477,7 @@ textarea,
 }
 .bee-rep-rgroup, .bee-rep-rgroup-col-tot, .bee-rep-rgroup-tot {
   font-style: italic;
-  background-color: silver;
+  background-color: white;
 }
 .bee-rep-cgroup-tot-hdr, .bee-rep-col-hdr, .bee-rep-row-tot-hdr {
   text-align: center;
@@ -3503,13 +3503,52 @@ textarea,
 .bee-rep-item-calc {
   color: blue;
 }
+.bee-rep-item-calc:after {
+  content: ": ";
+}
 .bee-rep-item-remove {
   display: inline;
   font-size: 15px;
   margin-left: 1px;
+  cursor: pointer;
 }
 .bee-rep-item-remove:hover {
   color: red;
+}
+.bee-rep-filter-cap, .bee-rep-option-cap {
+  text-align: right;
+  white-space: nowrap;
+}
+.bee-rep-text-filter {
+  width: 100% !important;
+}
+.bee-rep-date-filter .bee-TextBox {
+  width: 80px;
+}
+.bee-rep-datetime-filter .bee-TextBox {
+  width: 120px;
+}
+.bee-rep-date-filter .bee-Label, .bee-rep-datetime-filter .bee-Label {
+  margin: 0 5px;
+}
+.bee-rep-enum-filter {
+  display: inline-block;
+  cursor: pointer;
+  color: blue;
+}
+.bee-rep-enum-filter-empty:before {
+  content: "???";
+}
+.bee-rep-report {
+  border-collapse: collapse;
+}
+.bee-rep-report .bee-rep-report-normal:hover {
+  color: dodgerblue;
+  cursor: pointer;
+}
+.bee-rep-report-active {
+  color: white;
+  background-color: dodgerblue;
 }
 
 .bee-EventsBoard-content {
