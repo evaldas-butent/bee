@@ -1,16 +1,14 @@
 package com.butent.bee.client.communication;
 
-import com.butent.bee.shared.communication.ResponseObject;
+import com.butent.bee.client.Callback;
 
-public abstract class ResponseCallback {
+public abstract class RpcCallback<T> extends Callback<T> {
 
   private int rpcId;
 
   public int getRpcId() {
     return rpcId;
   }
-
-  public abstract void onResponse(ResponseObject response);
 
   public void setRpcId(int rpcId) {
     this.rpcId = rpcId;

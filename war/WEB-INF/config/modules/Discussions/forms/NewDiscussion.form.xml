@@ -59,8 +59,8 @@
     <FlowPanel data="Relations" for="Company" module="Classifiers.Contacts" 
     style="&section;" class="flexBox-horizontal">
       <Label text="=companies" style="&top1;min-width:80px; padding-right:18px;" />
-      <MultiSelector viewName="Companies" property="Companies" renderColumns="Name"
-        editPopup="true" style="&inp2x;" />
+      <MultiSelector viewName="Companies" property="Companies" choiceColumns="Name TypeName" 
+          renderColumns="Name TypeName" editPopup="true" style="&inp2x;" />
     </FlowPanel>
 
     <FlowPanel data="Relations" for="Person" module="Classifiers.Contacts"
@@ -102,7 +102,7 @@
     </FlowPanel>
     
     <FlowPanel for="Topic" style="&section;" class="flexBox-horizontal">
-      <Label text="=adTopic" style="&lbl1; min-width:150px;" />
+      <Label for="Topic" text="=adTopic" style="&lbl1; min-width:150px;" />
       <DataSelector name="Topic" source="Topic" style="&inp2x; width: 250px" 
         choiceColumns="Name" filter="Visible" />
     </FlowPanel>

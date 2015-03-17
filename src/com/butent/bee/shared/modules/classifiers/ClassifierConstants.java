@@ -219,6 +219,8 @@ public final class ClassifierConstants {
   public static final String ALS_COUNTRY_NAME = "CountryName";
 
   public static final String ALS_POSITION_NAME = "PositionName";
+  public static final String ALS_PRIMARY_POSITION = "PrimaryPosition";
+  public static final String ALS_PRIMARY_POSITION_NAME = "PrimaryPositionName";
 
   public static final String ALS_EMAIL_ID = "EmailId";
 

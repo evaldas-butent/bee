@@ -2388,6 +2388,7 @@ public class TransportModuleBean implements BeeModule, HasTimerService {
         .addField(TBL_CARGO_EXPENSES, VAR_INCOME, id)
         .addEmptyDouble(fldTotalExpense)
         .addField(TBL_SERVICES, "Name", VAR_EXPENSE + COL_SERVICE_NAME)
+        .addField(TBL_PURCHASES, COL_TRADE_DATE, VAR_EXPENSE + COL_TRADE_DATE)
         .addExpr(SqlUtils.concat(SqlUtils.nvl(SqlUtils.field(TBL_PURCHASES,
             COL_TRADE_INVOICE_PREFIX), "''"),
             SqlUtils.nvl(SqlUtils.field(TBL_PURCHASES, COL_TRADE_INVOICE_NO), "''")),

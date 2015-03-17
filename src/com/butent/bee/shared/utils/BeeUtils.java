@@ -1349,18 +1349,6 @@ public final class BeeUtils {
     return isInt(s) && toInt(s) >= 0;
   }
 
-  /**
-   * @param clazz the class to check for Enum constants
-   * @param idx the index to check
-   * @return true if an Enum with the specified index {@code idx} exists, otherwise false.
-   */
-  public static <E extends Enum<?>> boolean isOrdinal(Class<E> clazz, Integer idx) {
-    if (clazz == null || idx == null || idx < 0) {
-      return false;
-    }
-    return idx < clazz.getEnumConstants().length;
-  }
-
   public static boolean isPositive(BigDecimal x) {
     return (x == null) ? false : x.compareTo(BigDecimal.ZERO) > 0;
   }

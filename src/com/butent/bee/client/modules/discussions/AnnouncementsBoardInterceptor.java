@@ -3,6 +3,7 @@ package com.butent.bee.client.modules.discussions;
 import com.google.gwt.core.client.Scheduler.ScheduledCommand;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
+import com.google.gwt.i18n.client.LocaleInfo;
 import com.google.gwt.user.client.ui.HorizontalPanel;
 import com.google.gwt.user.client.ui.Widget;
 import com.google.web.bindery.event.shared.HandlerRegistration;
@@ -14,6 +15,8 @@ import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.Global;
 import com.butent.bee.client.communication.ParameterList;
 import com.butent.bee.client.communication.ResponseCallback;
+import com.butent.bee.client.data.Data;
+import com.butent.bee.client.data.RowCallback;
 import com.butent.bee.client.data.RowEditor;
 import com.butent.bee.client.data.RowFactory;
 import com.butent.bee.client.dialog.DialogBox;
@@ -39,6 +42,8 @@ import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.communication.ResponseObject;
 import com.butent.bee.shared.css.values.Display;
+import com.butent.bee.shared.data.BeeColumn;
+import com.butent.bee.shared.data.BeeRow;
 import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.SimpleRowSet;
 import com.butent.bee.shared.data.event.CellUpdateEvent;
@@ -48,6 +53,7 @@ import com.butent.bee.shared.data.event.RowInsertEvent;
 import com.butent.bee.shared.data.event.RowUpdateEvent;
 import com.butent.bee.shared.data.filter.Filter;
 import com.butent.bee.shared.data.value.Value;
+import com.butent.bee.shared.data.view.DataInfo;
 import com.butent.bee.shared.font.FontAwesome;
 import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.modules.administration.AdministrationConstants;
@@ -68,6 +74,9 @@ class AnnouncementsBoardInterceptor extends AbstractFormInterceptor implements
   private static final String STYLE_BIRTH_LIST = "-birthList";
   private static final String STYLE_ACTION = "action";
   private static final String STYLE_CHAT_BALLOON = "chatBalloon";
+  private static final String LOCALE_NAME_LT = "lt";
+
+  private static final String DAY = Localized.getConstants().unitDayShort().toLowerCase();
 
   private final Collection<HandlerRegistration> registry = new ArrayList<>();
 
@@ -80,6 +89,35 @@ class AnnouncementsBoardInterceptor extends AbstractFormInterceptor implements
   public boolean beforeAction(Action action, Presenter presenter) {
     if (action.compareTo(Action.REFRESH) == 0) {
       renderContent(getFormView());
+      return false;
+    }
+
+    if (action.compareTo(Action.ADD) == 0) {
+
+      DataInfo data = Data.getDataInfo(VIEW_DISCUSSIONS);
+      final BeeColumn beeCol = data.getColumn(COL_TOPIC);
+      BeeRow emptyRow = RowFactory.createEmptyRow(data, true);
+      if (beeCol != null) {
+        beeCol.setNullable(false);
+      }
+      RowFactory.createRow(FORM_NEW_DISCUSSION, Localized.getConstants().announcementNew(), data,
+          emptyRow, new RowCallback() {
+
+            @Override
+            public void onCancel() {
+              if (beeCol != null) {
+                beeCol.setNullable(true);
+              }
+            }
+
+            @Override
+            public void onSuccess(BeeRow result) {
+              if (beeCol != null) {
+                beeCol.setNullable(true);
+              }
+            }
+          });
+
       return false;
     }
 
@@ -412,10 +450,19 @@ class AnnouncementsBoardInterceptor extends AbstractFormInterceptor implements
 
         for (String[] birthListData : rs.getRows()) {
           listTbl.setHtml(row, 0, birthListData[rs.getColumnIndex(COL_NAME)]);
+          String locale =
+              LocaleInfo.getCurrentLocale().getLocaleName().toString();
+          if (locale.equals(LOCALE_NAME_LT)) {
+            listTbl.setHtml(row, 1, DateTimeFormat.getFormat(PredefinedFormat.MONTH_DAY)
+                .format(new JustDate(BeeUtils.toLong(birthListData[rs
+                    .getColumnIndex(COL_DATE_OF_BIRTH)])))
+                + " " + DAY + ".");
+          } else {
+            listTbl.setHtml(row, 1, DateTimeFormat.getFormat(PredefinedFormat.MONTH_DAY)
+                .format(new JustDate(BeeUtils.toLong(birthListData[rs
+                    .getColumnIndex(COL_DATE_OF_BIRTH)]))));
+          }
 
-          listTbl.setHtml(row, 1, DateTimeFormat.getFormat(PredefinedFormat.MONTH_DAY)
-              .format(new JustDate(BeeUtils.toLong(birthListData[rs
-                  .getColumnIndex(COL_DATE_OF_BIRTH)]))));
           listTbl.getRow(row).addClassName(STYLE_PREFIX + COL_DESCRIPTION
               + ALS_BIRTHDAY + STYLE_BIRTH_LIST);
 

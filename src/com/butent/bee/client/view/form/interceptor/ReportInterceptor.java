@@ -159,6 +159,11 @@ public abstract class ReportInterceptor extends AbstractFormInterceptor implemen
   }
 
   @Override
+  public String getCaption() {
+    return getReport().getReportCaption();
+  }
+
+  @Override
   public Set<Action> getEnabledActions(Set<Action> defaultActions) {
     EnumSet<Action> actions = EnumSet.of(Action.REFRESH, Action.EXPORT, Action.PRINT);
 
@@ -293,6 +298,7 @@ public abstract class ReportInterceptor extends AbstractFormInterceptor implemen
 
   protected HasIndexedWidgets getDataContainer() {
     Widget widget = getFormView().getWidgetByName(NAME_DATA_CONTAINER);
+
     if (widget instanceof HasIndexedWidgets) {
       return (HasIndexedWidgets) widget;
     } else {

@@ -15,6 +15,9 @@
   box-sizing: border-box;
   box-shadow: rgba(0, 0, 0, 0.5) 3px 3px 3px;
   background-image: linear-gradient(to bottom, #edf7ff, #cde7ee);
+  left: 0;
+  top: 0;
+  transition: left 400ms, top 400ms;
 }
 .bee-orgChart-department-label {
   cursor: pointer;
@@ -26,18 +29,24 @@
 
 .bee-orgChart-boss-photo,
 .bee-orgChart-employee-photo {
-  max-width: 30px;
-  max-height: 30px;
-  margin-right: 1em;
+  width: 30px;
+  height: 30px;
+  margin-right: 5px;
+}
+.bee-orgChart-boss-photo img,
+.bee-orgChart-employee-photo img {
+  width: auto;
+  height: auto;
+  max-width: 100%;
+  max-height: 100%;
 }
 
 .bee-orgChart-boss-label {
-  display: inline-block;
   cursor: pointer;
   color: red;
 }
+.bee-orgChart-position-staffed,
 .bee-orgChart-employee-label {
-  display: inline-block;
   cursor: pointer;
 }
 
@@ -51,7 +60,57 @@
   background: linear-gradient(to bottom, #fff7ae, #eee79e);
 }
 
-.bee-orgChart-department-connect {
+.bee-orgChart-line-straight,
+.bee-orgChart-line-horizontal {
   height: 1px;
+}
+.bee-orgChart-line-vertical {
+  width: 1px;
+}
+.bee-orgChart-line-straight,
+.bee-orgChart-line-horizontal,
+.bee-orgChart-line-vertical {
   background-color: #3388dd;
 }
+
+.bee-orgChart-settings-table {
+  border-collapse: collapse;
+}
+.bee-orgChart-settings-table .bee-LabelCell {
+  padding-right: 12px;
+}
+.bee-orgChart-settings-table .bee-InputSpinner {
+  width: 80px;
+}
+.bee-orgChart-settings-table .bee-RadioButton input {
+  margin: 0;
+}
+.bee-orgChart-settings-table .bee-RadioButton label {
+  padding-left: 3px;
+  padding-right: 6px;
+}
+.bee-orgChart-settings-separator {
+  height: 10px;
+}
+.bee-orgChart-settings-commands-cell {
+  padding-top: 2ex;
+  text-align: right;
+}
+.bee-orgChart-settings-cancel {
+  margin-left: 1em;
+}
+
+.bee-orgChart-employee-summary {
+  margin-left: 1em;
+}
+.bee-orgChart-position-staffed,
+.bee-orgChart-employee-summary .bee-orgChart-employee-label {
+  padding-right: 5px;
+  text-decoration: underline;
+}
+.bee-orgChart-employee-count {
+  font-weight: bold;
+  color: white;
+  background-image: linear-gradient(to bottom, #858a90, #CCCED1);
+}
+

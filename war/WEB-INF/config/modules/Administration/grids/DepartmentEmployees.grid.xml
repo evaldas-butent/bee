@@ -8,6 +8,6 @@
     <DataColumn name="LastName" visible="true" />
     <DataColumn name="CompanyName" label="=company" />
     <DataColumn name="PrimaryPositionName" label="=personPositionMain" />
-    <RelColumn name="Position" />
+    <RelColumn name="Position" newRowEnabled="false" />
   </g:columns>
 </g:Grid>

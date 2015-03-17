@@ -4,7 +4,7 @@
   xmlns:ui="http://www.butent.com/ui"
   
   name="Department" viewName="Departments" caption="=department"
-  width="500" height="350"
+  width="600" height="350"
   >
   <FlowPanel class="flexBox-vertical">
     <Table style="margin: 10px;">

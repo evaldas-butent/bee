@@ -64,7 +64,8 @@
 
       <row>
         <Label for="Company" visible="true" />
-        <DataSelector source="Company" style="&inpw;" visible="true" />
+        <DataSelector source="Company" style="&inpw;" visible="true" choiceColumns="Name TypeName" 
+          renderColumns="CompanyName TypeName"/>
 
         <Label for="Object" />
         <DataSelector source="Object" renderColumns="ObjectName" 

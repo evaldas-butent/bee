@@ -42,7 +42,6 @@ import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.utils.BeeUtils;
 
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.List;
 
 public class Popup extends Simple implements HasAnimation, CloseEvent.HasCloseHandlers,
@@ -244,7 +243,7 @@ public class Popup extends Simple implements HasAnimation, CloseEvent.HasCloseHa
     return null;
   }
 
-  public static Collection<Popup> getVisiblePopups() {
+  public static List<Popup> getVisiblePopups() {
     List<Popup> popups = new ArrayList<>();
 
     for (Widget child : BodyPanel.get()) {

@@ -51,7 +51,8 @@ class DepartmentForm extends AbstractFormInterceptor implements SelectorEvent.Ha
           new UniqueChildInterceptor(Localized.getConstants().newDepartmentEmployees(),
               COL_DEPARTMENT, COL_COMPANY_PERSON, VIEW_COMPANY_PERSONS,
               Lists.newArrayList(COL_FIRST_NAME, COL_LAST_NAME),
-              Lists.newArrayList(COL_FIRST_NAME, COL_LAST_NAME, ALS_COMPANY_NAME)));
+              Lists.newArrayList(COL_FIRST_NAME, COL_LAST_NAME, ALS_COMPANY_NAME,
+                  ALS_POSITION_NAME)));
 
     } else if (widget instanceof ChildGrid && BeeUtils.same(name, VIEW_DEPARTMENT_POSITIONS)) {
       ((ChildGrid) widget).setGridInterceptor(
