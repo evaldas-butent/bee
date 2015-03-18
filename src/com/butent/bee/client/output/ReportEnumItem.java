@@ -45,9 +45,7 @@ public class ReportEnumItem extends ReportItem implements ClickHandler {
   @Override
   public void clearFilter() {
     if (filter != null) {
-      filter.setTitle(null);
-      filter.setText(null);
-      filter.addStyleName(getStyle() + "-filter-empty");
+      setFilter(null);
     }
   }
 
@@ -61,18 +59,24 @@ public class ReportEnumItem extends ReportItem implements ClickHandler {
   }
 
   @Override
-  public String evaluate(SimpleRow row) {
-    return EnumUtils.getCaption(enumKey, row.getInt(getName()));
+  public ReportItem deserializeFilter(String data) {
+    if (!BeeUtils.isEmpty(data)) {
+      Set<Integer> idxs = new HashSet<>();
+      String[] arr = Codec.beeDeserializeCollection(data);
+
+      if (!ArrayUtils.isEmpty(arr)) {
+        for (String idx : arr) {
+          idxs.add(BeeUtils.toInt(idx));
+        }
+      }
+      setFilter(idxs);
+    }
+    return this;
   }
 
   @Override
-  public String getFilter() {
-    Set<Integer> values = getFilterValues();
-
-    if (BeeUtils.isEmpty(values)) {
-      return null;
-    }
-    return Codec.beeSerialize(values);
+  public String evaluate(SimpleRow row) {
+    return EnumUtils.getCaption(enumKey, row.getInt(getName()));
   }
 
   @Override
@@ -80,8 +84,8 @@ public class ReportEnumItem extends ReportItem implements ClickHandler {
     if (filter == null) {
       filter = new Label();
       filter.addStyleName(getStyle() + "-filter");
-      filter.addStyleName(getStyle() + "-filter-empty");
       filter.addClickHandler(this);
+      clearFilter();
     }
     return filter;
   }
@@ -114,7 +118,7 @@ public class ReportEnumItem extends ReportItem implements ClickHandler {
             idxs.add(i);
           }
         }
-        setFilter(Codec.beeSerialize(idxs));
+        setFilter(idxs);
       }
     });
   }
@@ -125,23 +129,25 @@ public class ReportEnumItem extends ReportItem implements ClickHandler {
   }
 
   @Override
-  public ReportItem setFilter(String data) {
-    Set<Integer> idxs = new HashSet<>();
-    List<String> caps = new ArrayList<>();
-    String[] arr = Codec.beeDeserializeCollection(data);
+  public String serializeFilter() {
+    if (filter == null) {
+      return null;
+    }
+    return Codec.beeSerialize(getFilterValues());
+  }
 
-    if (!ArrayUtils.isEmpty(arr)) {
-      for (String idx : arr) {
-        int i = BeeUtils.toInt(idx);
-        idxs.add(i);
-        caps.add(EnumUtils.getCaption(enumKey, i));
+  public void setFilter(Set<Integer> idxs) {
+    List<String> caps = new ArrayList<>();
+
+    if (!BeeUtils.isEmpty(idxs)) {
+      for (Integer idx : idxs) {
+        caps.add(EnumUtils.getCaption(enumKey, idx));
       }
     }
     Label widget = getFilterWidget();
     widget.setTitle(BeeUtils.joinInts(idxs));
     widget.setText(BeeUtils.joinItems(caps));
     widget.setStyleName(getStyle() + "-filter-empty", BeeUtils.isEmpty(widget.getTitle()));
-    return this;
   }
 
   @Override
@@ -157,10 +163,8 @@ public class ReportEnumItem extends ReportItem implements ClickHandler {
   private Set<Integer> getFilterValues() {
     Set<Integer> values = new HashSet<>();
 
-    if (filter != null && !BeeUtils.isEmpty(filter.getTitle())) {
-      for (String value : BeeUtils.split(filter.getTitle(), ',')) {
-        values.add(BeeUtils.toInt(value));
-      }
+    if (filter != null) {
+      values.addAll(BeeUtils.toInts(filter.getTitle()));
     }
     return values;
   }

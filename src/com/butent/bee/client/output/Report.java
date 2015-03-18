@@ -106,28 +106,6 @@ public enum Report implements HasWidgetSupplier {
       TransportConstants.SVC_TRIP_PROFIT_REPORT) {
 
     @Override
-    public Collection<ReportInfo> getDefaults() {
-      Map<String, ReportItem> items = new HashMap<>();
-
-      for (ReportItem item : getItems()) {
-        items.put(item.getName(), item);
-      }
-      ReportInfo report = new ReportInfo(getReportCaption());
-
-      for (String item : new String[] {TransportConstants.COL_TRIP, TransportConstants.COL_TRIP_NO,
-          TransportConstants.COL_TRIP_DATE_FROM, TransportConstants.COL_TRIP_DATE_TO,
-          TransportConstants.COL_TRAILER}) {
-        report.addRowItem(items.get(item));
-      }
-      report.setRowGrouping(items.get(TransportConstants.COL_VEHICLE));
-
-      for (String item : new String[] {"Kilometers", "FuelCosts", "Incomes"}) {
-        report.addColItem(items.get(item));
-      }
-      return Arrays.asList(report);
-    }
-
-    @Override
     public List<ReportItem> getItems() {
       LocalizableConstants loc = Localized.getConstants();
 
@@ -160,12 +138,9 @@ public enum Report implements HasWidgetSupplier {
     public String getReportCaption() {
       return Localized.maybeTranslate("=trReportTripProfit");
     }
-  },
-
-  PROJECT_REPORT(ModuleAndSub.of(Module.PROJECTS), ProjectConstants.SVC_PROJECT_REPORT) {
 
     @Override
-    public Collection<ReportInfo> getDefaults() {
+    public Collection<ReportInfo> getReports() {
       Map<String, ReportItem> items = new HashMap<>();
 
       for (ReportItem item : getItems()) {
@@ -173,28 +148,21 @@ public enum Report implements HasWidgetSupplier {
       }
       ReportInfo report = new ReportInfo(getReportCaption());
 
-      for (String item : new String[] {
-          ProjectConstants.COL_PROJECT_NAME,
-          ProjectConstants.COL_PROJECT_OWNER,
-          ProjectConstants.COL_PROJECT_STATUS,
-          ProjectConstants.ALS_TERM
-      }) {
+      for (String item : new String[] {TransportConstants.COL_TRIP, TransportConstants.COL_TRIP_NO,
+          TransportConstants.COL_TRIP_DATE_FROM, TransportConstants.COL_TRIP_DATE_TO,
+          TransportConstants.COL_TRAILER}) {
         report.addRowItem(items.get(item));
       }
-      report.setRowGrouping(items.get(ClassifierConstants.ALS_COMPANY_NAME));
+      report.setRowGrouping(items.get(TransportConstants.COL_VEHICLE));
 
-      for (String item : new String[] {
-          TaskConstants.COL_EXPECTED_DURATION,
-          TaskConstants.COL_ACTUAL_DURATION,
-          TaskConstants.COL_EXPECTED_EXPENSES,
-          TaskConstants.COL_ACTUAL_EXPENSES,
-          ProjectConstants.ALS_PROFIT
-      }) {
+      for (String item : new String[] {"Kilometers", "FuelCosts", "Incomes"}) {
         report.addColItem(items.get(item));
       }
-      report.setColGrouping(items.get(ProjectConstants.ALS_TASK_STATUS));
       return Arrays.asList(report);
     }
+  },
+
+  PROJECT_REPORT(ModuleAndSub.of(Module.PROJECTS), ProjectConstants.SVC_PROJECT_REPORT) {
 
     @Override
     public List<ReportItem> getItems() {
@@ -243,12 +211,39 @@ public enum Report implements HasWidgetSupplier {
               BeeUtils.parenthesize(loc.crmTasks())), TaskStatus.class)
           );
     }
-  };
 
-  public static final String PROP_ROWS = "ROWS";
-  public static final String PROP_ROW_GROUP = "ROW_GROUP";
-  public static final String PROP_COLUMNS = "COLUMNS";
-  public static final String PROP_COLUMN_GROUP = "COLUMN_GROUP";
+    @Override
+    public Collection<ReportInfo> getReports() {
+      Map<String, ReportItem> items = new HashMap<>();
+
+      for (ReportItem item : getItems()) {
+        items.put(item.getName(), item);
+      }
+      ReportInfo report = new ReportInfo(getReportCaption());
+
+      for (String item : new String[] {
+          ProjectConstants.COL_PROJECT_NAME,
+          ProjectConstants.COL_PROJECT_OWNER,
+          ProjectConstants.COL_PROJECT_STATUS,
+          ProjectConstants.ALS_TERM
+      }) {
+        report.addRowItem(items.get(item));
+      }
+      report.setRowGrouping(items.get(ClassifierConstants.ALS_COMPANY_NAME));
+
+      for (String item : new String[] {
+          TaskConstants.COL_EXPECTED_DURATION,
+          TaskConstants.COL_ACTUAL_DURATION,
+          TaskConstants.COL_EXPECTED_EXPENSES,
+          TaskConstants.COL_ACTUAL_EXPENSES,
+          ProjectConstants.ALS_PROFIT
+      }) {
+        report.addColItem(items.get(item));
+      }
+      report.setColGrouping(items.get(ProjectConstants.ALS_TASK_STATUS));
+      return Arrays.asList(report);
+    }
+  };
 
   private static BeeLogger logger = LogUtils.getLogger(Report.class);
 
@@ -295,16 +290,12 @@ public enum Report implements HasWidgetSupplier {
 
   private Report(ModuleAndSub moduleAndSub, String reportName, String formName) {
     this.moduleAndSub = Assert.notNull(moduleAndSub);
-    this.reportName = reportName;
+    this.reportName = Assert.notEmpty(reportName);
     this.formName = formName;
   }
 
   public String getFormName() {
     return formName;
-  }
-
-  public Collection<ReportInfo> getDefaults() {
-    return new LinkedHashSet<>();
   }
 
   public List<ReportItem> getItems() {
@@ -316,11 +307,15 @@ public enum Report implements HasWidgetSupplier {
   }
 
   public String getReportCaption() {
-    return null;
+    return getReportName();
   }
 
   public String getReportName() {
     return reportName;
+  }
+
+  public Collection<ReportInfo> getReports() {
+    return new LinkedHashSet<>();
   }
 
   @Override

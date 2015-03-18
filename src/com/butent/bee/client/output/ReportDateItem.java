@@ -121,6 +121,17 @@ public class ReportDateItem extends ReportItem {
   }
 
   @Override
+  public ReportItem deserializeFilter(String data) {
+    if (!BeeUtils.isEmpty(data)) {
+      getFilterWidget();
+      Pair<String, String> pair = Pair.restore(data);
+      filterFrom.setDate(TimeUtils.toDateOrNull(pair.getA()));
+      filterTo.setDate(TimeUtils.toDateOrNull(pair.getB()));
+    }
+    return this;
+  }
+
+  @Override
   public String evaluate(SimpleRow row) {
     String value = null;
     JustDate date = row.getDate(getName());
@@ -151,14 +162,6 @@ public class ReportDateItem extends ReportItem {
       }
     }
     return value;
-  }
-
-  @Override
-  public String getFilter() {
-    if (filterFrom == null) {
-      return null;
-    }
-    return Codec.beeSerialize(Pair.of(filterFrom.getDate(), filterTo.getDate()));
   }
 
   @Override
@@ -217,15 +220,11 @@ public class ReportDateItem extends ReportItem {
   }
 
   @Override
-  public ReportItem setFilter(String data) {
-    getFilterWidget();
-
-    if (BeeUtils.allNotNull(filterFrom, filterTo, data)) {
-      Pair<String, String> pair = Pair.restore(data);
-      filterFrom.setDate(TimeUtils.toDateOrNull(pair.getA()));
-      filterTo.setDate(TimeUtils.toDateOrNull(pair.getB()));
+  public String serializeFilter() {
+    if (filterFrom == null) {
+      return null;
     }
-    return this;
+    return Codec.beeSerialize(Pair.of(filterFrom.getDate(), filterTo.getDate()));
   }
 
   public ReportDateItem setFormat(DateTimeFunction dateFormat) {

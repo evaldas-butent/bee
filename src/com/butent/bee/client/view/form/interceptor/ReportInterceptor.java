@@ -159,11 +159,6 @@ public abstract class ReportInterceptor extends AbstractFormInterceptor implemen
   }
 
   @Override
-  public String getCaption() {
-    return getReport().getReportCaption();
-  }
-
-  @Override
   public Set<Action> getEnabledActions(Set<Action> defaultActions) {
     EnumSet<Action> actions = EnumSet.of(Action.REFRESH, Action.EXPORT, Action.PRINT);
 
@@ -374,6 +369,10 @@ public abstract class ReportInterceptor extends AbstractFormInterceptor implemen
     } else {
       return null;
     }
+  }
+
+  protected ReportParameters getInitialParameters() {
+    return initialParameters;
   }
 
   protected abstract Report getReport();
@@ -588,12 +587,8 @@ public abstract class ReportInterceptor extends AbstractFormInterceptor implemen
 
     if (parameters != null && validateParameters(parameters)) {
       String caption = BeeUtils.notEmpty(getBookmarkLabel(), getReportCaption());
-      Global.getReportSettings().bookmark(getReport(), caption, getReportParameters());
+      Global.getReportSettings().bookmark(getReport(), caption, parameters);
     }
-  }
-
-  private ReportParameters getInitialParameters() {
-    return initialParameters;
   }
 
   private boolean hasReport() {

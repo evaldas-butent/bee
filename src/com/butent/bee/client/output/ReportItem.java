@@ -33,7 +33,7 @@ public abstract class ReportItem implements BeeSerializable {
   public static final String STYLE_TEXT = STYLE_PREFIX + "text";
 
   private enum Serial {
-    CLAZZ, NAME, CAPTION, EXPRESSION, FUNCTION, COL_SUMMARY, ROW_SUMMARY, FILTER, DATA
+    CLAZZ, NAME, CAPTION, EXPRESSION, FUNCTION, COL_SUMMARY, ROW_SUMMARY, RELATION, FILTER, DATA
   }
 
   public enum Function implements HasLocalizedCaption {
@@ -80,6 +80,7 @@ public abstract class ReportItem implements BeeSerializable {
   private Function function;
   private boolean colSummary;
   private boolean rowSummary;
+  private String relation;
 
   protected ReportItem(String name, String caption) {
     this.name = Assert.notEmpty(name);
@@ -120,8 +121,16 @@ public abstract class ReportItem implements BeeSerializable {
     return total;
   }
 
+  public void clearFilter() {
+  }
+
   @Override
   public void deserialize(String data) {
+  }
+
+  @SuppressWarnings("unused")
+  public ReportItem deserializeFilter(String data) {
+    return this;
   }
 
   public ReportItem enableCalculation() {
@@ -147,9 +156,6 @@ public abstract class ReportItem implements BeeSerializable {
 
   public abstract String evaluate(SimpleRow row);
 
-  public void clearFilter() {
-  }
-
   public EnumSet<Function> getAvailableFunctions() {
     return EnumSet.of(Function.MIN, Function.MAX, Function.COUNT, Function.LIST);
   }
@@ -160,10 +166,6 @@ public abstract class ReportItem implements BeeSerializable {
 
   public String getExpression() {
     return expression;
-  }
-
-  public String getFilter() {
-    return null;
   }
 
   public Widget getFilterWidget() {
@@ -184,6 +186,10 @@ public abstract class ReportItem implements BeeSerializable {
 
   public Widget getOptionsWidget() {
     return null;
+  }
+
+  public String getRelation() {
+    return relation;
   }
 
   public abstract String getStyle();
@@ -237,8 +243,9 @@ public abstract class ReportItem implements BeeSerializable {
     item.setFunction(EnumUtils.getEnumByName(Function.class, map.get(Serial.FUNCTION.name())));
     item.setRowSummary(BeeUtils.toBoolean(map.get(Serial.ROW_SUMMARY.name())));
     item.setColSummary(BeeUtils.toBoolean(map.get(Serial.COL_SUMMARY.name())));
+    item.setRelation(map.get(Serial.RELATION.name()));
     item.deserialize(map.get(Serial.DATA.name()));
-    item.setFilter(map.get(Serial.FILTER.name()));
+    item.deserializeFilter(map.get(Serial.FILTER.name()));
 
     return item;
   }
@@ -252,6 +259,10 @@ public abstract class ReportItem implements BeeSerializable {
     return serialize(null);
   }
 
+  public String serializeFilter() {
+    return null;
+  }
+
   public ReportItem setColSummary(boolean isSummary) {
     this.colSummary = isSummary;
     return this;
@@ -262,14 +273,13 @@ public abstract class ReportItem implements BeeSerializable {
     return this;
   }
 
-  @SuppressWarnings("unused")
-  public ReportItem setFilter(String filter) {
-    return this;
-  }
-
   public ReportItem setFunction(Function fnc) {
     this.function = fnc;
     return this;
+  }
+
+  public void setRelation(String relation) {
+    this.relation = relation;
   }
 
   public ReportItem setRowSummary(boolean isSummary) {
@@ -326,13 +336,16 @@ public abstract class ReportItem implements BeeSerializable {
           value = getExpression();
           break;
         case FILTER:
-          value = getFilter();
+          value = serializeFilter();
           break;
         case FUNCTION:
           value = getFunction();
           break;
         case NAME:
           value = getName();
+          break;
+        case RELATION:
+          value = getRelation();
           break;
         case ROW_SUMMARY:
           value = isRowSummary();

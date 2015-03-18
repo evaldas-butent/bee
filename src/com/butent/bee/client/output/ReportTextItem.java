@@ -29,16 +29,16 @@ public class ReportTextItem extends ReportItem {
   }
 
   @Override
-  public String evaluate(SimpleRow row) {
-    return row.getValue(getName());
+  public ReportItem deserializeFilter(String data) {
+    if (!BeeUtils.isEmpty(data)) {
+      getFilterWidget().setValues(Arrays.asList(Codec.beeDeserializeCollection(data)));
+    }
+    return this;
   }
 
   @Override
-  public String getFilter() {
-    if (filter == null || BeeUtils.isEmpty(filter.getValues())) {
-      return null;
-    }
-    return Codec.beeSerialize(filter.getValues());
+  public String evaluate(SimpleRow row) {
+    return row.getValue(getName());
   }
 
   @Override
@@ -64,11 +64,11 @@ public class ReportTextItem extends ReportItem {
   }
 
   @Override
-  public ReportItem setFilter(String data) {
-    if (!BeeUtils.isEmpty(data)) {
-      getFilterWidget().setValues(Arrays.asList(Codec.beeDeserializeCollection(data)));
+  public String serializeFilter() {
+    if (filter == null) {
+      return null;
     }
-    return this;
+    return Codec.beeSerialize(filter.getValues());
   }
 
   @Override

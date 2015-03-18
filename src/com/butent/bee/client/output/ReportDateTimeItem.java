@@ -32,6 +32,17 @@ public class ReportDateTimeItem extends ReportDateItem {
   }
 
   @Override
+  public ReportItem deserializeFilter(String data) {
+    if (!BeeUtils.isEmpty(data)) {
+      getFilterWidget();
+      Pair<String, String> pair = Pair.restore(data);
+      filterFrom.setDate(TimeUtils.toDateTimeOrNull(pair.getA()));
+      filterTo.setDate(TimeUtils.toDateTimeOrNull(pair.getB()));
+    }
+    return this;
+  }
+
+  @Override
   public String evaluate(SimpleRow row) {
     String value = null;
     DateTime dateTime = row.getDateTime(getName());
@@ -62,14 +73,6 @@ public class ReportDateTimeItem extends ReportDateItem {
   }
 
   @Override
-  public String getFilter() {
-    if (filterFrom == null) {
-      return null;
-    }
-    return Codec.beeSerialize(Pair.of(filterFrom.getDateTime(), filterTo.getDateTime()));
-  }
-
-  @Override
   public Widget getFilterWidget() {
     Flow container = new Flow(getStyle() + "-filter");
 
@@ -92,15 +95,11 @@ public class ReportDateTimeItem extends ReportDateItem {
   }
 
   @Override
-  public ReportItem setFilter(String data) {
-    getFilterWidget();
-
-    if (BeeUtils.allNotNull(filterFrom, filterTo, data)) {
-      Pair<String, String> pair = Pair.restore(data);
-      filterFrom.setDate(TimeUtils.toDateTimeOrNull(pair.getA()));
-      filterTo.setDate(TimeUtils.toDateTimeOrNull(pair.getB()));
+  public String serializeFilter() {
+    if (filterFrom == null) {
+      return null;
     }
-    return this;
+    return Codec.beeSerialize(Pair.of(filterFrom.getDateTime(), filterTo.getDateTime()));
   }
 
   @Override

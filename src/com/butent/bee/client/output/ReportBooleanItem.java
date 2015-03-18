@@ -26,17 +26,17 @@ public class ReportBooleanItem extends ReportItem {
   }
 
   @Override
-  public String evaluate(SimpleRow row) {
-    return BeeUtils.unbox(row.getBoolean(getName()))
-        ? Localized.getConstants().yes() : Localized.getConstants().no();
+  public ReportItem deserializeFilter(String data) {
+    if (data != null) {
+      getFilterWidget().setSelectedIndex(BeeUtils.isEmpty(data) ? 0 : Codec.unpack(data) ? 1 : 2);
+    }
+    return this;
   }
 
   @Override
-  public String getFilter() {
-    if (filter == null || filter.getSelectedIndex() == 0) {
-      return null;
-    }
-    return Codec.pack(BeeUtils.toBoolean(filter.getSelectedIndex()));
+  public String evaluate(SimpleRow row) {
+    return BeeUtils.unbox(row.getBoolean(getName()))
+        ? Localized.getConstants().yes() : Localized.getConstants().no();
   }
 
   @Override
@@ -56,11 +56,12 @@ public class ReportBooleanItem extends ReportItem {
   }
 
   @Override
-  public ReportItem setFilter(String data) {
-    if (!BeeUtils.isEmpty(data)) {
-      getFilterWidget().setSelectedIndex(Codec.unpack(data) ? 1 : 2);
+  public String serializeFilter() {
+    if (filter == null) {
+      return null;
     }
-    return this;
+    return filter.getSelectedIndex() == 0 ? ""
+        : Codec.pack(BeeUtils.toBoolean(filter.getSelectedIndex()));
   }
 
   @Override

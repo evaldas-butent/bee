@@ -593,6 +593,8 @@ public interface LocalizableConstants extends Constants, LocalizableClassifierCo
 
   String relatedTo();
 
+  String relation();
+
   String relations();
 
   String repeatNewPassword();

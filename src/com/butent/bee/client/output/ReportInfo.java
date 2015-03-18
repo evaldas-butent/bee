@@ -15,28 +15,34 @@ import java.util.Objects;
 public class ReportInfo implements BeeSerializable {
 
   private enum Serial {
-    ROW_ITEMS, COL_ITEMS, FILTER_ITEMS, ROW_GROUPING, COL_GROUPING
+    CAPTION, ROW_ITEMS, COL_ITEMS, FILTER_ITEMS, ROW_GROUPING, COL_GROUPING
   }
 
   private String caption;
   private Long id;
 
-  private Collection<ReportItem> colItems = new LinkedHashSet<>();
-  private Collection<ReportItem> filterItems = new LinkedHashSet<>();
-  private Collection<ReportItem> rowItems = new LinkedHashSet<>();
+  private final Collection<ReportItem> colItems = new LinkedHashSet<>();
+  private final Collection<ReportItem> filterItems = new LinkedHashSet<>();
+  private final Collection<ReportItem> rowItems = new LinkedHashSet<>();
   private ReportItem colGrouping;
   private ReportItem rowGrouping;
 
   public ReportInfo(String caption) {
-    this.caption = Assert.notEmpty(caption);
+    setCaption(caption);
+  }
+
+  private ReportInfo() {
   }
 
   public void addColItem(ReportItem colItem) {
-    colItems.add(colItem.enableCalculation());
+    if (colItem.getFunction() == null) {
+      colItem.enableCalculation();
+    }
+    colItems.add(colItem);
   }
 
   public void addRowItem(ReportItem rowItem) {
-    rowItems.add(rowItem);
+    rowItems.add(rowItem.setFunction(null));
   }
 
   @Override
@@ -48,6 +54,11 @@ public class ReportInfo implements BeeSerializable {
         String value = map.get(key.name());
 
         switch (key) {
+          case CAPTION:
+            if (BeeUtils.isEmpty(getCaption())) {
+              setCaption(value);
+            }
+            break;
           case COL_GROUPING:
             setColGrouping(ReportItem.restore(value));
             break;
@@ -57,7 +68,7 @@ public class ReportInfo implements BeeSerializable {
 
             if (!ArrayUtils.isEmpty(items)) {
               for (String item : items) {
-                colItems.add(ReportItem.restore(item));
+                addColItem(ReportItem.restore(item));
               }
             }
             break;
@@ -80,7 +91,7 @@ public class ReportInfo implements BeeSerializable {
 
             if (!ArrayUtils.isEmpty(items)) {
               for (String item : items) {
-                rowItems.add(ReportItem.restore(item));
+                addRowItem(ReportItem.restore(item));
               }
             }
             break;
@@ -140,6 +151,12 @@ public class ReportInfo implements BeeSerializable {
     return BeeUtils.isEmpty(getRowItems()) && BeeUtils.isEmpty(getColItems());
   }
 
+  public static ReportInfo restore(String data) {
+    ReportInfo reportInfo = new ReportInfo();
+    reportInfo.deserialize(Assert.notEmpty(data));
+    return reportInfo;
+  }
+
   @Override
   public String serialize() {
     Map<String, Object> map = new HashMap<>();
@@ -148,6 +165,9 @@ public class ReportInfo implements BeeSerializable {
       Object value = null;
 
       switch (key) {
+        case CAPTION:
+          value = getCaption();
+          break;
         case COL_GROUPING:
           value = getColGrouping();
           break;
@@ -170,6 +190,9 @@ public class ReportInfo implements BeeSerializable {
   }
 
   public void setColGrouping(ReportItem groupItem) {
+    if (groupItem != null) {
+      groupItem.setFunction(null);
+    }
     colGrouping = groupItem;
   }
 
@@ -178,6 +201,13 @@ public class ReportInfo implements BeeSerializable {
   }
 
   public void setRowGrouping(ReportItem groupItem) {
+    if (groupItem != null) {
+      groupItem.setFunction(null);
+    }
     rowGrouping = groupItem;
+  }
+
+  private void setCaption(String caption) {
+    this.caption = Assert.notEmpty(caption);
   }
 }

@@ -69,7 +69,6 @@ import com.butent.bee.shared.modules.trade.TradeConstants;
 import com.butent.bee.shared.ui.Action;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.EnumUtils;
-import com.butent.bee.shared.utils.StringList;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -215,9 +214,17 @@ public class ExtendedReportInterceptor extends ReportInterceptor {
   }
 
   @Override
+  public String getCaption() {
+    return getReport().getReportCaption();
+  }
+
+  @Override
   public Set<Action> getEnabledActions(Set<Action> defaultActions) {
     Set<Action> actions = super.getEnabledActions(defaultActions);
-    actions.add(Action.SAVE);
+
+    if (getInitialParameters() == null) {
+      actions.add(Action.SAVE);
+    }
     return actions;
   }
 
@@ -229,12 +236,18 @@ public class ExtendedReportInterceptor extends ReportInterceptor {
   @Override
   public void onLoad(FormView form) {
     ReportParameters parameters = readParameters();
+    ReportInfo rep = null;
 
     if (parameters != null) {
+      String data = parameters.getText(COL_RS_REPORT);
+
+      if (!BeeUtils.isEmpty(data)) {
+        rep = ReportInfo.restore(data);
+      }
       loadId(parameters, NAME_CURRENCY, form);
       loadBoolean(parameters, NAME_VAT, form);
     }
-    getReports();
+    getReports(rep);
     super.onLoad(form);
   }
 
@@ -246,11 +259,7 @@ public class ExtendedReportInterceptor extends ReportInterceptor {
 
   @Override
   protected void clearFilter() {
-    if (activeReport != null) {
-      for (ReportItem item : activeReport.getFilterItems()) {
-        item.clearFilter();
-      }
-    }
+    clearFilters(activeReport);
   }
 
   @Override
@@ -275,7 +284,7 @@ public class ExtendedReportInterceptor extends ReportInterceptor {
       params.addDataItem(TradeConstants.COL_TRADE_VAT, "1");
     }
     for (ReportItem item : activeReport.getFilterItems()) {
-      String filterValue = item.getFilter();
+      String filterValue = item.serializeFilter();
 
       if (!BeeUtils.isEmpty(filterValue)) {
         params.addDataItem(item.getName(), filterValue);
@@ -296,8 +305,7 @@ public class ExtendedReportInterceptor extends ReportInterceptor {
 
   @Override
   protected String getBookmarkLabel() {
-    List<String> labels = StringList.of(getReportCaption(), getFilterLabel(NAME_CURRENCY));
-    return BeeUtils.joinWords(labels);
+    return null;
   }
 
   @Override
@@ -307,7 +315,12 @@ public class ExtendedReportInterceptor extends ReportInterceptor {
 
   @Override
   protected ReportParameters getReportParameters() {
+    if (activeReport == null) {
+      return null;
+    }
     ReportParameters parameters = new ReportParameters();
+
+    parameters.add(COL_RS_REPORT, activeReport.serialize());
 
     addEditorValues(parameters, NAME_CURRENCY);
     addBooleanValues(parameters, NAME_VAT);
@@ -487,6 +500,14 @@ public class ExtendedReportInterceptor extends ReportInterceptor {
     });
   }
 
+  private static void clearFilters(ReportInfo rep) {
+    if (rep != null) {
+      for (ReportItem item : rep.getFilterItems()) {
+        item.clearFilter();
+      }
+    }
+  }
+
   private static String getItemStyle(ReportItem item) {
     if (item.getFunction() != null) {
       switch (item.getFunction()) {
@@ -504,30 +525,31 @@ public class ExtendedReportInterceptor extends ReportInterceptor {
     return item.getStyle();
   }
 
-  private void getReports() {
+  private void getReports(ReportInfo initialReport) {
     reports.clear();
 
-    Queries.getRowSet(VIEW_REPORT_SETTINGS, Arrays.asList(COL_RS_CAPTION, COL_RS_PARAMETERS),
-        Filter.and(Filter.equals(COL_RS_USER, BeeKeeper.getUser().getUserId()),
-            Filter.equals(COL_RS_REPORT, getReport().getReportName()),
-            Filter.notNull(COL_RS_IS_REPORT)), new RowSetCallback() {
-          @Override
-          public void onSuccess(BeeRowSet result) {
-            reports.addAll(getReport().getDefaults());
+    if (initialReport != null) {
+      reports.add(initialReport);
+      activateReport(initialReport);
+    } else {
+      Queries.getRowSet(VIEW_REPORT_SETTINGS, Arrays.asList(COL_RS_PARAMETERS),
+          Filter.and(Filter.equals(COL_RS_USER, BeeKeeper.getUser().getUserId()),
+              Filter.equals(COL_RS_REPORT, getReport().getReportName()),
+              Filter.isNull(COL_RS_CAPTION)), new RowSetCallback() {
+            @Override
+            public void onSuccess(BeeRowSet result) {
+              reports.addAll(getReport().getReports());
 
-            for (int i = 0; i < result.getNumberOfRows(); i++) {
-              ReportInfo rep = new ReportInfo(result.getString(i, COL_RS_CAPTION));
-              rep.setId(result.getRow(i).getId());
-              rep.deserialize(result.getString(i, COL_RS_PARAMETERS));
-
-              if (reports.contains(rep)) {
+              for (int i = 0; i < result.getNumberOfRows(); i++) {
+                ReportInfo rep = ReportInfo.restore(result.getString(i, COL_RS_PARAMETERS));
+                rep.setId(result.getRow(i).getId());
                 reports.remove(rep);
+                reports.add(rep);
               }
-              reports.add(rep);
+              activateReport(BeeUtils.peek(reports));
             }
-            activateReport(BeeUtils.peek(reports));
-          }
-        });
+          });
+    }
   }
 
   private static XSheet getSheet(HtmlTable table) {
@@ -1042,6 +1064,7 @@ public class ExtendedReportInterceptor extends ReportInterceptor {
         final ListBox function;
         final InputBoolean colSummary;
         final InputBoolean rowSummary;
+        final ListBox relation;
 
         if (item.getFunction() != null) {
           function = new ListBox();
@@ -1065,10 +1088,24 @@ public class ExtendedReportInterceptor extends ReportInterceptor {
           } else {
             rowSummary = null;
           }
+          relation = new ListBox();
+          relation.addItem(BeeConst.STRING_EMPTY);
+          boolean exists = false;
+
+          for (ReportInfo reportInfo : reports) {
+            relation.addItem(reportInfo.getCaption());
+            exists = exists || Objects.equals(item.getRelation(), reportInfo.getCaption());
+          }
+          if (exists) {
+            relation.setValue(item.getRelation());
+          }
+          table.setText(c, 0, Localized.getConstants().relation());
+          table.setWidget(c++, 1, relation);
         } else {
           function = null;
           colSummary = null;
           rowSummary = null;
+          relation = null;
         }
         Global.inputWidget(item.getCaption(), table, new InputCallback() {
           @Override
@@ -1084,6 +1121,7 @@ public class ExtendedReportInterceptor extends ReportInterceptor {
               if (rowSummary != null) {
                 item.setRowSummary(rowSummary.isChecked());
               }
+              item.setRelation(relation.getValue());
             }
             render(containerName);
           }
@@ -1094,19 +1132,18 @@ public class ExtendedReportInterceptor extends ReportInterceptor {
   }
 
   private void saveReport(final ReportInfo rep) {
+    clearFilters(rep);
+
     if (DataUtils.isId(rep.getId())) {
       Queries.update(VIEW_REPORT_SETTINGS, rep.getId(), COL_RS_PARAMETERS,
           TextValue.of(rep.serialize()));
 
-      if (!Objects.equals(rep, activeReport)) {
-        activateReport(rep);
-      }
+      activateReport(rep);
     } else {
       Queries.insert(VIEW_REPORT_SETTINGS, Data.getColumns(VIEW_REPORT_SETTINGS,
-          Arrays.asList(COL_RS_USER, COL_RS_REPORT, COL_RS_CAPTION, COL_RS_PARAMETERS,
-              COL_RS_IS_REPORT)),
+          Arrays.asList(COL_RS_USER, COL_RS_REPORT, COL_RS_PARAMETERS)),
           Arrays.asList(BeeUtils.toString(BeeKeeper.getUser().getUserId()),
-              getReport().getReportName(), rep.getCaption(), rep.serialize(), "1"), null,
+              getReport().getReportName(), rep.serialize()), null,
           new RowCallback() {
             @Override
             public void onSuccess(BeeRow result) {
