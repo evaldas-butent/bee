@@ -237,10 +237,10 @@ public final class DataUtils {
     }
   }
 
-  public static List<BeeRow> filterRows(BeeRowSet rowSet, Collection<Long> ids) {
+  public static List<BeeRow> filterRows(Collection<BeeRow> rows, Collection<Long> ids) {
     List<BeeRow> result = new ArrayList<>();
 
-    for (BeeRow row : rowSet) {
+    for (BeeRow row : rows) {
       if (ids.contains(row.getId())) {
         result.add(row);
       }

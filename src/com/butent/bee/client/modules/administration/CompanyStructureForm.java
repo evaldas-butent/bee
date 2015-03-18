@@ -34,7 +34,6 @@ import com.butent.bee.client.grid.CellKind;
 import com.butent.bee.client.grid.HtmlTable;
 import com.butent.bee.client.i18n.Collator;
 import com.butent.bee.client.layout.Flow;
-import com.butent.bee.client.layout.Simple;
 import com.butent.bee.client.presenter.Presenter;
 import com.butent.bee.client.render.PhotoRenderer;
 import com.butent.bee.client.style.StyleUtils;
@@ -90,6 +89,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -123,6 +123,16 @@ class CompanyStructureForm extends AbstractFormInterceptor implements HandlesAll
       staff.add(emplId);
     }
 
+    private String getStyleName() {
+      if (staff.size() < planned) {
+        return STYLE_POSITION_UNDER;
+      } else if (staff.size() > planned) {
+        return STYLE_POSITION_OVER;
+      } else {
+        return STYLE_POSITION_PLANNED;
+      }
+    }
+
     private void setPlanned(int planned) {
       this.planned = planned;
     }
@@ -144,13 +154,13 @@ class CompanyStructureForm extends AbstractFormInterceptor implements HandlesAll
   private static final String STYLE_DEPARTMENT_PREFIX = STYLE_PREFIX + "department-";
   private static final String STYLE_DEPARTMENT_PANEL = STYLE_DEPARTMENT_PREFIX + "panel";
   private static final String STYLE_DEPARTMENT_LABEL = STYLE_DEPARTMENT_PREFIX + "label";
+  private static final String STYLE_DEPARTMENT_CONTENT = STYLE_DEPARTMENT_PREFIX + "content";
 
   private static final String STYLE_DEPARTMENT_DRAG = STYLE_DEPARTMENT_PREFIX + "drag";
   private static final String STYLE_DEPARTMENT_DRAG_OVER = STYLE_DEPARTMENT_PREFIX + "dragOver";
 
   private static final String STYLE_BOSS_PREFIX = STYLE_PREFIX + "boss-";
   private static final String STYLE_BOSS_TABLE = STYLE_BOSS_PREFIX + "table";
-  private static final String STYLE_BOSS_PHOTO = STYLE_BOSS_PREFIX + "photo";
   private static final String STYLE_BOSS_LABEL = STYLE_BOSS_PREFIX + "label";
   private static final String STYLE_BOSS_DRAG = STYLE_BOSS_PREFIX + "drag";
 
@@ -158,11 +168,16 @@ class CompanyStructureForm extends AbstractFormInterceptor implements HandlesAll
   private static final String STYLE_EMPLOYEE_TABLE = STYLE_EMPLOYEE_PREFIX + "table";
   private static final String STYLE_EMPLOYEE_SUMMARY = STYLE_EMPLOYEE_PREFIX + "summary";
   private static final String STYLE_EMPLOYEE_DETAILS = STYLE_EMPLOYEE_PREFIX + "details";
-  private static final String STYLE_EMPLOYEE_PHOTO = STYLE_EMPLOYEE_PREFIX + "photo";
   private static final String STYLE_EMPLOYEE_LABEL = STYLE_EMPLOYEE_PREFIX + "label";
   private static final String STYLE_EMPLOYEE_POSITION = STYLE_EMPLOYEE_PREFIX + "position";
   private static final String STYLE_EMPLOYEE_COUNT = STYLE_EMPLOYEE_PREFIX + "count";
   private static final String STYLE_EMPLOYEE_DRAG = STYLE_EMPLOYEE_PREFIX + "drag";
+
+  private static final String STYLE_PHOTO_PREFIX = STYLE_PREFIX + "photo-";
+  private static final String STYLE_PHOTO_CONTAINER = STYLE_PHOTO_PREFIX + "container";
+  private static final String STYLE_PHOTO_EMPTY = STYLE_PHOTO_PREFIX + "empty";
+
+  private static final String STYLE_POPUP_CONTENT = STYLE_PREFIX + "popup-content";
 
   private static final String STYLE_POSITION_PREFIX = STYLE_PREFIX + "position-";
   private static final String STYLE_POSITION_TABLE = STYLE_POSITION_PREFIX + "table";
@@ -170,6 +185,10 @@ class CompanyStructureForm extends AbstractFormInterceptor implements HandlesAll
   private static final String STYLE_POSITION_STAFFED = STYLE_POSITION_PREFIX + "staffed";
   private static final String STYLE_POSITION_ACTUAL = STYLE_POSITION_PREFIX + "actual";
   private static final String STYLE_POSITION_PLANNED = STYLE_POSITION_PREFIX + "planned";
+  private static final String STYLE_POSITION_OVER = STYLE_POSITION_PREFIX + "over";
+  private static final String STYLE_POSITION_UNDER = STYLE_POSITION_PREFIX + "under";
+
+  private static final String STYLE_POSITIONS_AND_EMPLOYEES = STYLE_PREFIX + "pos-and-empl";
 
   private static final String STYLE_TOGGLE_POSITIONS = STYLE_PREFIX + "toggle-positions";
   private static final String STYLE_TOGGLE_EMPLOYEES = STYLE_PREFIX + "toggle-employees";
@@ -218,9 +237,9 @@ class CompanyStructureForm extends AbstractFormInterceptor implements HandlesAll
   private static final int DEFAULT_MARGIN_LEFT = 10;
   private static final int DEFAULT_MARGIN_TOP = 10;
   private static final int DEFAULT_NODE_MIN_WIDTH = 150;
-  private static final int DEFAULT_NODE_MAX_WIDTH = 300;
+  private static final int DEFAULT_NODE_MAX_WIDTH = 400;
   private static final int DEFAULT_NODE_MIN_HEIGHT = 100;
-  private static final int DEFAULT_NODE_MAX_HEIGHT = 500;
+  private static final int DEFAULT_NODE_MAX_HEIGHT = 600;
   private static final int DEFAULT_NODE_GAP = 20;
   private static final int DEFAULT_LEVEL_GAP = 30;
 
@@ -835,7 +854,8 @@ class CompanyStructureForm extends AbstractFormInterceptor implements HandlesAll
 
           Element element = getNodeElement(treeNode, nodeIds.get(treeNode));
           if (element != null) {
-            return BeeUtils.clamp(element.getOffsetWidth(), nodeMinWidth, nodeMaxWidth);
+            return BeeUtils.clamp(element.getOffsetWidth() + DomUtils.getScrollBarWidth(),
+                nodeMinWidth, nodeMaxWidth);
           }
         }
         return 0;
@@ -901,6 +921,10 @@ class CompanyStructureForm extends AbstractFormInterceptor implements HandlesAll
           StyleUtils.setRectangle(element,
               BeeUtils.round(rectangle.getX()), BeeUtils.round(rectangle.getY()),
               BeeUtils.round(rectangle.getWidth()), BeeUtils.round(rectangle.getHeight()));
+
+          StyleUtils.clearProperties(element,
+              StyleUtils.STYLE_MIN_WIDTH, StyleUtils.STYLE_MAX_WIDTH,
+              StyleUtils.STYLE_MIN_HEIGHT, StyleUtils.STYLE_MAX_HEIGHT);
         }
 
       } else {
@@ -1072,8 +1096,9 @@ class CompanyStructureForm extends AbstractFormInterceptor implements HandlesAll
     });
 
     DndHelper.makeSource(label, DATA_TYPE_DEPARTMENT, id, STYLE_DEPARTMENT_DRAG);
-
     panel.add(label);
+
+    Flow content = new Flow(STYLE_DEPARTMENT_CONTENT);
 
     Long head = DataUtils.getLong(departments, department, COL_DEPARTMENT_HEAD);
     if (DataUtils.isId(head) && !DataUtils.isEmpty(employees)) {
@@ -1081,20 +1106,27 @@ class CompanyStructureForm extends AbstractFormInterceptor implements HandlesAll
       if (employee != null) {
         HtmlTable bossTable = new HtmlTable(STYLE_BOSS_TABLE);
         renderEmployee(bossTable, 0, employee, true, false);
-        panel.add(bossTable);
+        content.add(bossTable);
       }
     }
 
     List<BeeRow> depEmployees = filterEmployees(id, head);
     List<DepartmentPosition> depPositions = getDepartmentPositions(id, depEmployees);
 
-    if (showPositions && !BeeUtils.isEmpty(depPositions)) {
-      panel.add(renderPositions(depPositions));
+    if (showPositions && showEmployees && !depPositions.isEmpty() && !depEmployees.isEmpty()) {
+      content.add(renderPositionsAndEmployees(depPositions, depEmployees));
+
+    } else {
+      if (showPositions && !depPositions.isEmpty()) {
+        content.add(renderPositions(depPositions));
+      }
+
+      if (!depEmployees.isEmpty()) {
+        content.add(renderEmployees(name, depEmployees, showEmployees, true));
+      }
     }
 
-    if (!depEmployees.isEmpty()) {
-      panel.add(renderEmployees(name, depEmployees, showEmployees, true));
-    }
+    panel.add(content);
 
     DndHelper.makeTarget(panel, DND_TYPES, STYLE_DEPARTMENT_DRAG_OVER,
         new Predicate<Object>() {
@@ -1386,7 +1418,9 @@ class CompanyStructureForm extends AbstractFormInterceptor implements HandlesAll
     String companyName = DataUtils.getString(employees, employee, ALS_COMPANY_NAME);
 
     String photo = DataUtils.getString(employees, employee, COL_PHOTO);
-    Simple photoContainer = null;
+    Flow photoContainer = new Flow();
+
+    String styleName;
 
     if (!BeeUtils.isEmpty(photo)) {
       Image image = new Image(PhotoRenderer.getUrl(photo));
@@ -1405,11 +1439,14 @@ class CompanyStructureForm extends AbstractFormInterceptor implements HandlesAll
         }
       });
 
-      photoContainer = new Simple(image);
-      String styleName = boss ? STYLE_BOSS_PHOTO : STYLE_EMPLOYEE_PHOTO;
+      photoContainer.add(image);
+      styleName = STYLE_PHOTO_CONTAINER;
 
-      table.setWidgetAndStyle(row, 0, photoContainer, styleName);
+    } else {
+      styleName = STYLE_PHOTO_EMPTY;
     }
+
+    table.setWidgetAndStyle(row, 0, photoContainer, styleName);
 
     DndDiv label = new DndDiv();
     label.setText(fullName);
@@ -1427,7 +1464,7 @@ class CompanyStructureForm extends AbstractFormInterceptor implements HandlesAll
       }
     });
 
-    String styleName = boss ? STYLE_BOSS_LABEL : STYLE_EMPLOYEE_LABEL;
+    styleName = boss ? STYLE_BOSS_LABEL : STYLE_EMPLOYEE_LABEL;
     table.setWidgetAndStyle(row, 1, label, styleName);
 
     if (renderPosition && !BeeUtils.isEmpty(positionName)) {
@@ -1435,17 +1472,72 @@ class CompanyStructureForm extends AbstractFormInterceptor implements HandlesAll
     }
 
     if (boss) {
-      if (photoContainer != null) {
+      if (!BeeUtils.isEmpty(photo)) {
         DndHelper.makeSource(photoContainer, DATA_TYPE_BOSS, emplId, null);
       }
       DndHelper.makeSource(label, DATA_TYPE_BOSS, emplId, STYLE_BOSS_DRAG);
 
     } else {
-      if (photoContainer != null) {
+      if (!BeeUtils.isEmpty(photo)) {
         DndHelper.makeSource(photoContainer, DATA_TYPE_EMPLOYEE, emplId, null);
       }
       DndHelper.makeSource(label, DATA_TYPE_EMPLOYEE, emplId, STYLE_EMPLOYEE_DRAG);
     }
+  }
+
+  private Widget renderPositionsAndEmployees(List<DepartmentPosition> depPositions,
+      List<BeeRow> depEmployees) {
+
+    HtmlTable table = new HtmlTable(STYLE_POSITIONS_AND_EMPLOYEES);
+    int row = 0;
+
+    int colLabel = 0;
+    int colActual = 1;
+    int colPlanned = 2;
+
+    Set<Long> havePositions = new HashSet<>();
+    for (DepartmentPosition dp : depPositions) {
+      if (!dp.staff.isEmpty()) {
+        havePositions.addAll(dp.staff);
+      }
+    }
+
+    int missing = depEmployees.size() - havePositions.size();
+    if (missing > 0) {
+      table.setWidgetAndStyle(row, colActual, new Badge(missing), STYLE_POSITION_ACTUAL);
+      row++;
+
+      List<BeeRow> noPositions = new ArrayList<>();
+      for (BeeRow employee : depEmployees) {
+        if (!havePositions.contains(employee.getId())) {
+          noPositions.add(employee);
+        }
+      }
+
+      if (!noPositions.isEmpty()) {
+        table.setWidget(row, 0, renderEmployees(null, noPositions, true, false));
+        row++;
+      }
+    }
+
+    for (DepartmentPosition dp : depPositions) {
+      Label label = new Label(dp.name);
+      table.setWidgetAndStyle(row, colLabel, label, STYLE_POSITION_LABEL);
+
+      table.setWidgetAndStyle(row, colActual, new Badge(dp.staff.size()), STYLE_POSITION_ACTUAL);
+      table.setWidgetAndStyle(row, colPlanned, new Badge(dp.planned), dp.getStyleName());
+      row++;
+
+      if (!dp.staff.isEmpty()) {
+        List<BeeRow> posEmployees = DataUtils.filterRows(depEmployees, dp.staff);
+        if (!posEmployees.isEmpty()) {
+          table.setWidget(row, 0, renderEmployees(null, posEmployees, true, false));
+          row++;
+        }
+      }
+    }
+
+    return table;
   }
 
   private Widget renderPositions(List<DepartmentPosition> depPositions) {
@@ -1469,12 +1561,16 @@ class CompanyStructureForm extends AbstractFormInterceptor implements HandlesAll
             Element target = EventUtils.getEventTargetElement(event);
             String idList = DomUtils.getDataProperty(target, KEY_STAFF);
             List<Long> emplIds = DataUtils.parseIdList(idList);
-            List<BeeRow> posEmployees = DataUtils.filterRows(employees, emplIds);
+            List<BeeRow> posEmployees = DataUtils.filterRows(employees.getRows(), emplIds);
 
             if (!posEmployees.isEmpty()) {
               String caption = target.getInnerText();
               Widget widget = renderEmployees(caption, posEmployees, true, false);
-              Global.showModalWidget(caption, widget, target);
+
+              Flow content = new Flow(STYLE_POPUP_CONTENT);
+              content.add(widget);
+
+              Global.showModalWidget(caption, content, target);
             }
           }
         });
@@ -1483,7 +1579,7 @@ class CompanyStructureForm extends AbstractFormInterceptor implements HandlesAll
       table.setWidgetAndStyle(row, colLabel, label, STYLE_POSITION_LABEL);
 
       table.setWidgetAndStyle(row, colActual, new Badge(dp.staff.size()), STYLE_POSITION_ACTUAL);
-      table.setWidgetAndStyle(row, colPlanned, new Badge(dp.planned), STYLE_POSITION_PLANNED);
+      table.setWidgetAndStyle(row, colPlanned, new Badge(dp.planned), dp.getStyleName());
 
       row++;
     }
@@ -1514,7 +1610,9 @@ class CompanyStructureForm extends AbstractFormInterceptor implements HandlesAll
         @Override
         public void onClick(ClickEvent event) {
           Widget widget = renderEmployees(caption, depEmployees, true, true);
-          Global.showModalWidget(caption, widget, EventUtils.getEventTargetElement(event));
+          Flow content = new Flow(STYLE_POPUP_CONTENT);
+          content.add(widget);
+          Global.showModalWidget(caption, content, EventUtils.getEventTargetElement(event));
         }
       });
 

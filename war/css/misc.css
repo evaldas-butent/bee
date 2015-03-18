@@ -17,8 +17,10 @@
   background-image: linear-gradient(to bottom, #edf7ff, #cde7ee);
   left: 0;
   top: 0;
-  transition: left 400ms, top 400ms;
+  transition: left 350ms, top 350ms;
+  overflow: auto;
 }
+
 .bee-orgChart-department-label {
   cursor: pointer;
   border-bottom: 1px solid #ccc;
@@ -27,14 +29,27 @@
   text-align: center;
 }
 
-.bee-orgChart-boss-photo,
-.bee-orgChart-employee-photo {
-  width: 30px;
-  height: 30px;
-  margin-right: 5px;
+.bee-orgChart-boss-table,
+.bee-orgChart-employee-table,
+.bee-orgChart-position-table,
+.bee-orgChart-pos-and-empl {
+  border-collapse: collapse;
 }
-.bee-orgChart-boss-photo img,
-.bee-orgChart-employee-photo img {
+.bee-orgChart-boss-table td,
+.bee-orgChart-employee-table td,
+.bee-orgChart-position-table td,
+.bee-orgChart-pos-and-empl td {
+  padding: 1px 5px;
+}
+
+.bee-orgChart-photo-container,
+.bee-orgChart-photo-empty {
+  width: 30px;
+}
+.bee-orgChart-photo-container {
+  height: 30px;
+}
+.bee-orgChart-photo-container img {
   width: auto;
   height: auto;
   max-width: 100%;
@@ -48,6 +63,37 @@
 .bee-orgChart-position-staffed,
 .bee-orgChart-employee-label {
   cursor: pointer;
+}
+
+.bee-orgChart-employee-summary {
+  margin-left: 1em;
+}
+
+.bee-orgChart-position-staffed,
+.bee-orgChart-employee-summary .bee-orgChart-employee-label {
+  text-decoration: underline;
+}
+.bee-orgChart-position-actual,
+.bee-orgChart-employee-count {
+  font-weight: bold;
+  color: white;
+  background-image: linear-gradient(to bottom, #858a90, #ccced1);
+  text-align: right;
+}
+.bee-orgChart-position-under {
+  font-weight: bold;
+  background-color: lightpink;
+  text-align: right;
+}
+.bee-orgChart-position-planned {
+  font-weight: bold;
+  background-color: lightgreen;
+  text-align: right;
+}
+.bee-orgChart-position-over {
+  font-weight: bold;
+  background-color: yellow;
+  text-align: right;
 }
 
 .bee-orgChart-department-drag,
@@ -99,18 +145,3 @@
 .bee-orgChart-settings-cancel {
   margin-left: 1em;
 }
-
-.bee-orgChart-employee-summary {
-  margin-left: 1em;
-}
-.bee-orgChart-position-staffed,
-.bee-orgChart-employee-summary .bee-orgChart-employee-label {
-  padding-right: 5px;
-  text-decoration: underline;
-}
-.bee-orgChart-employee-count {
-  font-weight: bold;
-  color: white;
-  background-image: linear-gradient(to bottom, #858a90, #CCCED1);
-}
-
