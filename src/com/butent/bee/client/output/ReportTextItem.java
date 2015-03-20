@@ -72,6 +72,14 @@ public class ReportTextItem extends ReportItem {
   }
 
   @Override
+  public ReportItem setFilter(String value) {
+    if (!BeeUtils.isEmpty(value)) {
+      getFilterWidget().setValues(Arrays.asList(value));
+    }
+    return this;
+  }
+
+  @Override
   public boolean validate(SimpleRow row) {
     if (filter == null || !row.getRowSet().hasColumn(getName())) {
       return true;

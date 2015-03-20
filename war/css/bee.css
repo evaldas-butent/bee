@@ -3465,12 +3465,15 @@ textarea,
   padding: 3px 5px;
   border: 1px solid #ddd;
 }
-.bee-rep-num {
-  text-align: right;
+.bee-rep-date, bee-rep-num {
   white-space: nowrap;
 }
-.bee-rep-cgroup-hdr, .bee-rep-tot-hdr {
+.bee-rep-num, .bee-rep-cgroup-hdr, .bee-rep-tot-hdr {
   text-align: right;
+}
+.bee-rep-drill:hover {
+  cursor: pointer; 
+  background-color: lightyellow;
 }
 .bee-rep-cgroup {
   text-align: center;
@@ -3479,11 +3482,11 @@ textarea,
   font-style: italic;
   background-color: white;
 }
-.bee-rep-cgroup-tot-hdr, .bee-rep-col-hdr, .bee-rep-row-tot-hdr {
+.bee-rep-row-hdr, .bee-rep-cgroup-tot-hdr, .bee-rep-col-hdr, .bee-rep-row-tot-hdr {
   text-align: center;
   font-weight: bold;
 }
-.bee-rep-row-hdr, .bee-rep-rgroup-tot, .bee-rep-row-tot, .bee-rep-col-tot, .bee-rep-tot, .bee-rep-tot-hdr {
+.bee-rep-rgroup-tot, .bee-rep-row-tot, .bee-rep-col-tot, .bee-rep-tot, .bee-rep-tot-hdr {
   font-weight: bold;
 }
 
@@ -3523,13 +3526,16 @@ textarea,
   width: 100% !important;
 }
 .bee-rep-date-filter .bee-TextBox {
+  margin: 0 5px;
+}
+.bee-rep-date-filter .bee-InputDate {
   width: 80px;
 }
-.bee-rep-datetime-filter .bee-TextBox {
+.bee-rep-date-filter .bee-InputDateTime {
   width: 120px;
 }
-.bee-rep-date-filter .bee-Label, .bee-rep-datetime-filter .bee-Label {
-  margin: 0 5px;
+.bee-rep-date-filter .bee-InputSpinner {
+  width: 40px;
 }
 .bee-rep-enum-filter {
   display: inline-block;

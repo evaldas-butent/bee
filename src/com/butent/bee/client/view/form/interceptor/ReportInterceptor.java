@@ -371,10 +371,6 @@ public abstract class ReportInterceptor extends AbstractFormInterceptor implemen
     }
   }
 
-  protected ReportParameters getInitialParameters() {
-    return initialParameters;
-  }
-
   protected abstract Report getReport();
 
   protected String getReportCaption() {
@@ -589,6 +585,10 @@ public abstract class ReportInterceptor extends AbstractFormInterceptor implemen
       String caption = BeeUtils.notEmpty(getBookmarkLabel(), getReportCaption());
       Global.getReportSettings().bookmark(getReport(), caption, parameters);
     }
+  }
+
+  private ReportParameters getInitialParameters() {
+    return initialParameters;
   }
 
   private boolean hasReport() {

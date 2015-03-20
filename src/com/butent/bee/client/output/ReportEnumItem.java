@@ -22,6 +22,7 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 
 public class ReportEnumItem extends ReportItem implements ClickHandler {
@@ -45,7 +46,7 @@ public class ReportEnumItem extends ReportItem implements ClickHandler {
   @Override
   public void clearFilter() {
     if (filter != null) {
-      setFilter(null);
+      setFilterValues(null);
     }
   }
 
@@ -69,7 +70,7 @@ public class ReportEnumItem extends ReportItem implements ClickHandler {
           idxs.add(BeeUtils.toInt(idx));
         }
       }
-      setFilter(idxs);
+      setFilterValues(idxs);
     }
     return this;
   }
@@ -118,7 +119,7 @@ public class ReportEnumItem extends ReportItem implements ClickHandler {
             idxs.add(i);
           }
         }
-        setFilter(idxs);
+        setFilterValues(idxs);
       }
     });
   }
@@ -136,18 +137,22 @@ public class ReportEnumItem extends ReportItem implements ClickHandler {
     return Codec.beeSerialize(getFilterValues());
   }
 
-  public void setFilter(Set<Integer> idxs) {
-    List<String> caps = new ArrayList<>();
+  @Override
+  public ReportItem setFilter(String value) {
+    if (!BeeUtils.isEmpty(value)) {
+      int idx = 0;
+      Set<Integer> index = null;
 
-    if (!BeeUtils.isEmpty(idxs)) {
-      for (Integer idx : idxs) {
-        caps.add(EnumUtils.getCaption(enumKey, idx));
+      for (String caption : EnumUtils.getCaptions(enumKey)) {
+        if (Objects.equals(caption, value)) {
+          index = Collections.singleton(idx);
+          break;
+        }
+        idx++;
       }
+      setFilterValues(index);
     }
-    Label widget = getFilterWidget();
-    widget.setTitle(BeeUtils.joinInts(idxs));
-    widget.setText(BeeUtils.joinItems(caps));
-    widget.setStyleName(getStyle() + "-filter-empty", BeeUtils.isEmpty(widget.getTitle()));
+    return this;
   }
 
   @Override
@@ -167,5 +172,19 @@ public class ReportEnumItem extends ReportItem implements ClickHandler {
       values.addAll(BeeUtils.toInts(filter.getTitle()));
     }
     return values;
+  }
+
+  private void setFilterValues(Set<Integer> idxs) {
+    List<String> caps = new ArrayList<>();
+
+    if (!BeeUtils.isEmpty(idxs)) {
+      for (Integer idx : idxs) {
+        caps.add(EnumUtils.getCaption(enumKey, idx));
+      }
+    }
+    Label widget = getFilterWidget();
+    widget.setTitle(BeeUtils.joinInts(idxs));
+    widget.setText(BeeUtils.joinItems(caps));
+    widget.setStyleName(getStyle() + "-filter-empty", BeeUtils.isEmpty(widget.getTitle()));
   }
 }

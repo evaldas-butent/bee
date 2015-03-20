@@ -2708,35 +2708,21 @@ public class TransportModuleBean implements BeeModule, HasTimerService {
   }
 
   private ResponseObject getTripProfitReport(RequestInfo reqInfo) {
-    Long startDate = reqInfo.getParameterLong(Service.VAR_FROM);
-    Long endDate = reqInfo.getParameterLong(Service.VAR_TO);
-
     Long currency = reqInfo.getParameterLong(COL_CURRENCY);
     boolean woVat = BeeUtils.toBoolean(reqInfo.getParameter(COL_TRADE_VAT));
-
-    Set<Long> trucks = DataUtils.parseIdSet(reqInfo.getParameter(COL_VEHICLE));
-    List<String> trips = NameUtils.toList(reqInfo.getParameter(COL_TRIP_NO));
 
     HasConditions clause = SqlUtils.and(SqlUtils.equals(TBL_TRIPS, COL_TRIP_STATUS,
         TripStatus.COMPLETED.ordinal()), SqlUtils.isNull(TBL_TRIPS, COL_EXPEDITION));
 
-    if (startDate != null) {
-      clause.add(SqlUtils.moreEqual(TBL_TRIPS, COL_TRIP_DATE_FROM, startDate));
-    }
-    if (endDate != null) {
-      clause.add(SqlUtils.less(TBL_TRIPS, COL_TRIP_DATE_TO, endDate));
-    }
-    if (!BeeUtils.isEmpty(trips)) {
+    String[] trips = Codec.beeDeserializeCollection(reqInfo.getParameter(COL_TRIP_NO));
+
+    if (!ArrayUtils.isEmpty(trips)) {
       HasConditions cl = SqlUtils.or();
 
       for (String tripNo : trips) {
         cl.add(SqlUtils.contains(TBL_TRIPS, COL_TRIP_NO, tripNo));
       }
       clause.add(cl);
-    }
-    if (!BeeUtils.isEmpty(trucks)) {
-      clause.add(SqlUtils.or(SqlUtils.inList(TBL_TRIPS, COL_VEHICLE, trucks),
-          SqlUtils.inList(TBL_TRIPS, COL_TRAILER, trucks)));
     }
     SqlSelect query = new SqlSelect()
         .addField(TBL_TRIPS, sys.getIdName(TBL_TRIPS), COL_TRIP)

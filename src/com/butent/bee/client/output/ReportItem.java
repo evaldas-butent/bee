@@ -172,6 +172,10 @@ public abstract class ReportItem implements BeeSerializable {
     return null;
   }
 
+  public String getFormatedCaption() {
+    return getCaption();
+  }
+
   public Function getFunction() {
     return function;
   }
@@ -273,13 +277,19 @@ public abstract class ReportItem implements BeeSerializable {
     return this;
   }
 
+  @SuppressWarnings("unused")
+  public ReportItem setFilter(String value) {
+    return this;
+  }
+
   public ReportItem setFunction(Function fnc) {
     this.function = fnc;
     return this;
   }
 
-  public void setRelation(String relation) {
-    this.relation = relation;
+  public ReportItem setRelation(String rel) {
+    this.relation = rel;
+    return this;
   }
 
   public ReportItem setRowSummary(boolean isSummary) {

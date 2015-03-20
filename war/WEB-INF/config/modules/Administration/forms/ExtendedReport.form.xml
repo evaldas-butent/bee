@@ -4,7 +4,7 @@
   
   name="ExtendedReport"
   >
-  <FlowPanel>
+  <FlowPanel class="flexBox-vertical">
     <br/>
     <FlowPanel class="flexBox-horizontal">
       <FlowPanel class="flexible">
@@ -60,6 +60,6 @@
     </FlowPanel>
 
     <br/>
-    <FlowPanel name="DataContainer" />
+    <FlowPanel name="DataContainer" class="flexible" style="overflow:auto;" />
   </FlowPanel>
 </f:Form>

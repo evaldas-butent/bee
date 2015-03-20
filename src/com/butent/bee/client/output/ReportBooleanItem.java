@@ -9,6 +9,7 @@ import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.Codec;
 
 import java.util.Arrays;
+import java.util.Objects;
 
 public class ReportBooleanItem extends ReportItem {
 
@@ -62,6 +63,15 @@ public class ReportBooleanItem extends ReportItem {
     }
     return filter.getSelectedIndex() == 0 ? ""
         : Codec.pack(BeeUtils.toBoolean(filter.getSelectedIndex()));
+  }
+
+  @Override
+  public ReportItem setFilter(String value) {
+    if (!BeeUtils.isEmpty(value)) {
+      getFilterWidget().setSelectedIndex(Objects.equals(value, Localized.getConstants().yes())
+          ? 1 : 2);
+    }
+    return this;
   }
 
   @Override
