@@ -1744,6 +1744,8 @@
 .bee-GridContainer-no-data .bee-auto-fit {
   visibility: hidden;
 }
+.bee-GridFormContainer-newRow .bee-GridContainer .bee-Header-control.bee-Action-filter,
+.bee-NewRowContainer .bee-GridContainer .bee-Header-control.bee-Action-filter, 
 .bee-GridContainer-no-data .bee-Header-control.bee-Action-delete,
 .bee-GridContainer-no-data .bee-Header-control.bee-Action-menu {
   display: none;
