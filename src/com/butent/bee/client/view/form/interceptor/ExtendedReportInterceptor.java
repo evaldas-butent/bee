@@ -806,6 +806,8 @@ public class ExtendedReportInterceptor extends ReportInterceptor {
   }
 
   private void renderData(SimpleRowSet rowSet) {
+    getDataContainer().clear();
+
     if (activeReport == null || activeReport.isEmpty()) {
       return;
     }
@@ -1183,14 +1185,12 @@ public class ExtendedReportInterceptor extends ReportInterceptor {
     if (activeReport != null) {
       final Collection<ReportItem> filterItems = activeReport.getFilterItems();
       HtmlTable table = new HtmlTable();
+      table.setColumnCellClasses(0, STYLE_FILTER_CAPTION);
       table.setColumnCellStyles(1, "width:100%;");
       int c = 0;
 
       for (final ReportItem item : filterItems) {
-        Label label = new Label(item.getCaption());
-        label.addStyleName(STYLE_FILTER_CAPTION);
-        table.setWidget(c, 0, label);
-
+        table.setText(c, 0, item.getCaption());
         table.setWidget(c, 1, item.getFilterWidget());
 
         CustomDiv remove = new CustomDiv(STYLE_REMOVE);

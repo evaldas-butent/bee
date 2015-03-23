@@ -33,7 +33,7 @@ public abstract class ReportItem implements BeeSerializable {
   public static final String STYLE_TEXT = STYLE_PREFIX + "text";
 
   private enum Serial {
-    CLAZZ, NAME, CAPTION, EXPRESSION, FUNCTION, COL_SUMMARY, ROW_SUMMARY, RELATION, FILTER, DATA
+    CLAZZ, NAME, CAPTION, EXPRESSION, FUNCTION, COL_SUMMARY, ROW_SUMMARY, RELATION, DATA
   }
 
   public enum Function implements HasLocalizedCaption {
@@ -126,11 +126,6 @@ public abstract class ReportItem implements BeeSerializable {
 
   @Override
   public void deserialize(String data) {
-  }
-
-  @SuppressWarnings("unused")
-  public ReportItem deserializeFilter(String data) {
-    return this;
   }
 
   public ReportItem enableCalculation() {
@@ -249,7 +244,6 @@ public abstract class ReportItem implements BeeSerializable {
     item.setColSummary(BeeUtils.toBoolean(map.get(Serial.COL_SUMMARY.name())));
     item.setRelation(map.get(Serial.RELATION.name()));
     item.deserialize(map.get(Serial.DATA.name()));
-    item.deserializeFilter(map.get(Serial.FILTER.name()));
 
     return item;
   }
@@ -344,9 +338,6 @@ public abstract class ReportItem implements BeeSerializable {
           break;
         case EXPRESSION:
           value = getExpression();
-          break;
-        case FILTER:
-          value = serializeFilter();
           break;
         case FUNCTION:
           value = getFunction();

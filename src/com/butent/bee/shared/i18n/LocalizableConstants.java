@@ -585,6 +585,8 @@ public interface LocalizableConstants extends Constants, LocalizableClassifierCo
 
   String quantity();
 
+  String quater();
+
   String questionLogout();
 
   String reason();

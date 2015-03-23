@@ -1,6 +1,7 @@
 package com.butent.bee.client.output;
 
 import com.butent.bee.client.composite.RadioGroup;
+import com.butent.bee.shared.Service;
 import com.butent.bee.shared.data.SimpleRowSet.SimpleRow;
 import com.butent.bee.shared.i18n.LocalizableConstants;
 import com.butent.bee.shared.i18n.Localized;
@@ -9,6 +10,7 @@ import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.Codec;
 
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.Objects;
 
 public class ReportBooleanItem extends ReportItem {
@@ -27,11 +29,11 @@ public class ReportBooleanItem extends ReportItem {
   }
 
   @Override
-  public ReportItem deserializeFilter(String data) {
+  public void deserialize(String data) {
     if (data != null) {
-      getFilterWidget().setSelectedIndex(BeeUtils.isEmpty(data) ? 0 : Codec.unpack(data) ? 1 : 2);
+      String flt = Codec.deserializeMap(data).get(Service.VAR_DATA);
+      getFilterWidget().setSelectedIndex(BeeUtils.isEmpty(flt) ? 0 : Codec.unpack(flt) ? 1 : 2);
     }
-    return this;
   }
 
   @Override
@@ -54,6 +56,16 @@ public class ReportBooleanItem extends ReportItem {
   @Override
   public String getStyle() {
     return STYLE_BOOLEAN;
+  }
+
+  @Override
+  public String serialize() {
+    String data = serializeFilter();
+
+    if (data != null) {
+      data = Codec.beeSerialize(Collections.singletonMap(Service.VAR_DATA, data));
+    }
+    return super.serialize(data);
   }
 
   @Override

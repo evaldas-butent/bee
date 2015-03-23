@@ -1,20 +1,17 @@
 package com.butent.bee.client.output;
 
 import com.butent.bee.client.view.edit.Editor;
-import com.butent.bee.client.widget.InputDate;
 import com.butent.bee.client.widget.InputDateTime;
 import com.butent.bee.client.widget.ListBox;
-import com.butent.bee.shared.Assert;
-import com.butent.bee.shared.Service;
 import com.butent.bee.shared.data.SimpleRowSet.SimpleRow;
 import com.butent.bee.shared.time.DateTime;
+import com.butent.bee.shared.time.HasDateValue;
 import com.butent.bee.shared.time.TimeUtils;
 import com.butent.bee.shared.utils.BeeUtils;
-import com.butent.bee.shared.utils.Codec;
 
+import java.util.ArrayList;
 import java.util.EnumSet;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.List;
 
 public class ReportDateTimeItem extends ReportDateItem {
 
@@ -23,67 +20,32 @@ public class ReportDateTimeItem extends ReportDateItem {
   }
 
   @Override
-  public ReportItem deserializeFilter(String data) {
-    if (!BeeUtils.isEmpty(data)) {
-      getFilterWidget();
-      Map<String, String> map = Codec.deserializeMap(data);
-      getFilterFrom().setDateTime(TimeUtils.toDateTimeOrNull(map.get(Service.VAR_FROM)));
-      getFilterTo().setDateTime(TimeUtils.toDateTimeOrNull(map.get(Service.VAR_TO)));
-
-      if (getFilter() != null) {
-        getFilter().setValue(map.get(Service.VAR_DATA));
-      }
-    }
-    return this;
-  }
-
-  @Override
   public String evaluate(SimpleRow row) {
-    String value = null;
-    DateTime dateTime = row.getDateTime(getName());
+    DateTime date = row.getDateTime(getName());
 
-    if (dateTime != null) {
-      switch (getFormat()) {
-        case DATETIME:
-          value = dateTime.toCompactString();
-          break;
-        case DATE:
-          value = dateTime.toDateString();
-          break;
-        case HOUR:
-          value = TimeUtils.padTwo(dateTime.getHour());
-          break;
-        default:
-          value = evaluate(dateTime.getDate());
-          break;
+    if (date != null) {
+      if (BeeUtils.isEmpty(getFormat())) {
+        return date.toCompactString();
       }
-    }
-    return value;
-  }
+      List<String> values = new ArrayList<>();
 
-  @Override
-  public String getFormatedCaption() {
-    switch (getFormat()) {
-      case DATETIME:
-        return getCaption();
-      default:
-        return BeeUtils.joinWords(getCaption(), BeeUtils.parenthesize(getFormat().getCaption()));
+      for (DateTimeFunction fnc : getFormat().keySet()) {
+        switch (fnc) {
+          case DATE:
+            values.add(evaluate(date.getDate(), null));
+            break;
+          case HOUR:
+          case MINUTE:
+            values.add(TimeUtils.padTwo(getValue(date, fnc)));
+            break;
+          default:
+            values.add(evaluate(date.getDate(), fnc));
+            break;
+        }
+      }
+      return BeeUtils.joinItems(values);
     }
-  }
-
-  @Override
-  public String serializeFilter() {
-    if (getFilterFrom() == null) {
-      return null;
-    }
-    Map<String, Object> map = new HashMap<>();
-    map.put(Service.VAR_FROM, getFilterFrom().getDateTime());
-    map.put(Service.VAR_TO, getFilterTo().getDateTime());
-
-    if (getFilter() != null) {
-      map.put(Service.VAR_DATA, getFilter().getValue());
-    }
-    return Codec.beeSerialize(map);
+    return null;
   }
 
   @Override
@@ -91,17 +53,30 @@ public class ReportDateTimeItem extends ReportDateItem {
     if (!BeeUtils.isEmpty(value)) {
       getFilterWidget();
 
-      switch (getFormat()) {
-        case DATETIME:
-          DateTime date = TimeUtils.parseDateTime(value);
-          getFilterFrom().setDateTime(date);
-          getFilterTo().setDateTime(TimeUtils.nextHour(date, 0));
-          break;
-        case HOUR:
-          getFilter().setValue(value);
-          break;
-        default:
-          return super.setFilter(value);
+      if (BeeUtils.isEmpty(getFormat())) {
+        DateTime from = TimeUtils.parseDateTime(value);
+        DateTime to = TimeUtils.nextMinute(from, 0);
+
+        getFilterFrom().setDateTime(TimeUtils.max(getFilterFrom().getDateTime(), from));
+        getFilterTo().setDateTime(getFilterTo().getDateTime() != null
+            ? TimeUtils.min(getFilterTo().getDateTime(), to) : to);
+      } else {
+        String[] parts = BeeUtils.split(value, ',');
+        int x = 0;
+
+        for (DateTimeFunction fnc : getFormat().keySet()) {
+          switch (fnc) {
+            case DATE:
+              setFilter(parts[x++], null);
+              break;
+            case HOUR:
+            case MINUTE:
+              getFormat().get(fnc).setValue(parts[x++]);
+              break;
+            default:
+              setFilter(parts[x++], fnc);
+          }
+        }
       }
     }
     return this;
@@ -109,69 +84,35 @@ public class ReportDateTimeItem extends ReportDateItem {
 
   @Override
   public boolean validate(SimpleRow row) {
-    if (getFilterFrom() == null || !row.getRowSet().hasColumn(getName())) {
-      return true;
-    }
-    DateTime from = getFilterFrom().getDateTime();
-    DateTime to = getFilterTo().getDateTime();
-
-    if (from != null && to != null && TimeUtils.isMeq(from, to)) {
-      return false;
-    }
-    DateTime date = row.getDateTime(getName());
-
-    if (getFilter() != null && !BeeUtils.isEmpty(getFilter().getValue())) {
-      boolean ok = date != null;
-
-      if (ok) {
-        int value = 0;
-
-        switch (getFormat()) {
-          case DAY:
-            value = date.getDom();
-            break;
-          case DAY_OF_WEEK:
-            value = date.getDow();
-            break;
-          case HOUR:
-            value = date.getHour();
-            break;
-          case MONTH:
-            value = date.getMonth();
-            break;
-          default:
-            Assert.untouchable();
-            break;
-        }
-        ok = BeeUtils.toInt(getFilter().getValue()) == value;
-      }
-      if (!ok) {
-        return false;
-      }
-    }
-    return TimeUtils.isBetweenExclusiveNotRequired(date, from, to);
+    return getFilterFrom() == null || !row.getRowSet().hasColumn(getName())
+        || validate(getFilterFrom().getDateTime(), getFilterTo().getDateTime(),
+            row.getDateTime(getName()));
   }
 
   @Override
-  protected InputDate createDateFilter() {
-    return new InputDateTime();
-  }
+  protected Editor createFilterEditor(DateTimeFunction fnc) {
+    if (fnc == null) {
+      return new InputDateTime();
+    }
+    int limit = 0;
 
-  @Override
-  protected Editor createFilter() {
-    switch (getFormat()) {
+    switch (fnc) {
       case HOUR:
-        ListBox editor = new ListBox();
-        editor.addItem("");
-
-        for (int i = 0; i < 24; i++) {
-          editor.addItem((i < 10 ? "0" : "") + i);
-        }
-        return editor;
-
+        limit = 24;
+        break;
+      case MINUTE:
+        limit = 60;
+        break;
       default:
-        return super.createFilter();
+        return super.createFilterEditor(fnc);
     }
+    ListBox editor = new ListBox();
+    editor.addItem("");
+
+    for (int i = 0; i < limit; i++) {
+      editor.addItem((i < 10 ? "0" : "") + i);
+    }
+    return editor;
   }
 
   @Override
@@ -187,5 +128,17 @@ public class ReportDateTimeItem extends ReportDateItem {
   @Override
   protected EnumSet<DateTimeFunction> getSupportedFunctions() {
     return EnumSet.allOf(DateTimeFunction.class);
+  }
+
+  @Override
+  protected int getValue(HasDateValue date, DateTimeFunction fnc) {
+    switch (fnc) {
+      case HOUR:
+        return date.getHour();
+      case MINUTE:
+        return date.getMinute();
+      default:
+        return super.getValue(date, fnc);
+    }
   }
 }

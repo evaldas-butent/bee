@@ -3523,11 +3523,15 @@ textarea,
 .bee-rep-filter-cap, .bee-rep-option-cap {
   text-align: right;
   white-space: nowrap;
+  vertical-align: top;
 }
 .bee-rep-text-filter {
   width: 100% !important;
 }
-.bee-rep-date-filter .bee-TextBox {
+.bee-rep-date-filter div {
+  display: inline-block;
+}
+.bee-rep-date-filter .bee-TextBox, .bee-rep-date-filter .bee-ListBox {
   margin: 0 5px;
 }
 .bee-rep-date-filter .bee-InputDate {
@@ -3535,9 +3539,6 @@ textarea,
 }
 .bee-rep-date-filter .bee-InputDateTime {
   width: 120px;
-}
-.bee-rep-date-filter .bee-InputSpinner {
-  width: 40px;
 }
 .bee-rep-enum-filter {
   display: inline-block;

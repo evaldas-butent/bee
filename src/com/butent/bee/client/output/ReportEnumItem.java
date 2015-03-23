@@ -8,6 +8,7 @@ import com.butent.bee.client.dialog.InputCallback;
 import com.butent.bee.client.widget.Label;
 import com.butent.bee.client.widget.ListBox;
 import com.butent.bee.shared.Assert;
+import com.butent.bee.shared.Service;
 import com.butent.bee.shared.data.SimpleRowSet.SimpleRow;
 import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.ui.HasCaption;
@@ -19,6 +20,7 @@ import com.butent.bee.shared.utils.NameUtils;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -56,14 +58,9 @@ public class ReportEnumItem extends ReportItem implements ClickHandler {
 
     if (!BeeUtils.isEmpty(map)) {
       enumKey = map.get(ENUM);
-    }
-  }
 
-  @Override
-  public ReportItem deserializeFilter(String data) {
-    if (!BeeUtils.isEmpty(data)) {
       Set<Integer> idxs = new HashSet<>();
-      String[] arr = Codec.beeDeserializeCollection(data);
+      String[] arr = Codec.beeDeserializeCollection(map.get(Service.VAR_DATA));
 
       if (!ArrayUtils.isEmpty(arr)) {
         for (String idx : arr) {
@@ -72,7 +69,6 @@ public class ReportEnumItem extends ReportItem implements ClickHandler {
       }
       setFilterValues(idxs);
     }
-    return this;
   }
 
   @Override
@@ -126,7 +122,15 @@ public class ReportEnumItem extends ReportItem implements ClickHandler {
 
   @Override
   public String serialize() {
-    return super.serialize(Codec.beeSerialize(Collections.singletonMap(ENUM, enumKey)));
+    Map<String, Object> map = new HashMap<>();
+    map.put(ENUM, enumKey);
+
+    String data = serializeFilter();
+
+    if (!BeeUtils.isEmpty(data)) {
+      map.put(Service.VAR_DATA, data);
+    }
+    return super.serialize(Codec.beeSerialize(map));
   }
 
   @Override

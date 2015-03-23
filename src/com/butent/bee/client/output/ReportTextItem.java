@@ -2,6 +2,7 @@ package com.butent.bee.client.output;
 
 import com.butent.bee.client.composite.MultiSelector;
 import com.butent.bee.client.render.AbstractCellRenderer;
+import com.butent.bee.shared.Service;
 import com.butent.bee.shared.data.SimpleRowSet.SimpleRow;
 import com.butent.bee.shared.data.filter.Filter;
 import com.butent.bee.shared.modules.classifiers.ClassifierConstants;
@@ -12,6 +13,7 @@ import com.butent.bee.shared.utils.Codec;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 
 public class ReportTextItem extends ReportItem {
 
@@ -29,11 +31,15 @@ public class ReportTextItem extends ReportItem {
   }
 
   @Override
-  public ReportItem deserializeFilter(String data) {
+  public void deserialize(String data) {
     if (!BeeUtils.isEmpty(data)) {
-      getFilterWidget().setValues(Arrays.asList(Codec.beeDeserializeCollection(data)));
+      Map<String, String> map = Codec.deserializeMap(data);
+
+      if (!BeeUtils.isEmpty(map)) {
+        getFilterWidget()
+            .setValues(Arrays.asList(Codec.beeDeserializeCollection(map.get(Service.VAR_DATA))));
+      }
     }
-    return this;
   }
 
   @Override
@@ -61,6 +67,16 @@ public class ReportTextItem extends ReportItem {
   @Override
   public String getStyle() {
     return STYLE_TEXT;
+  }
+
+  @Override
+  public String serialize() {
+    String data = serializeFilter();
+
+    if (!BeeUtils.isEmpty(data)) {
+      data = Codec.beeSerialize(Collections.singletonMap(Service.VAR_DATA, data));
+    }
+    return super.serialize(data);
   }
 
   @Override
