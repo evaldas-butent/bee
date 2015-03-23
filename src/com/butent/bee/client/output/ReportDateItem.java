@@ -378,7 +378,7 @@ public class ReportDateItem extends ReportItem {
       case MONTH:
         return date.getMonth();
       case QUATER:
-        return (date.getMonth() % 4) + 1;
+        return (date.getMonth() - 1) / 3 + 1;
       case YEAR:
         return date.getYear();
       default:
