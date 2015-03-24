@@ -43,8 +43,8 @@ public class ReportTextItem extends ReportItem {
   }
 
   @Override
-  public String evaluate(SimpleRow row) {
-    return row.getValue(getName());
+  public ReportValue evaluate(SimpleRow row) {
+    return ReportValue.of(row.getValue(getName()));
   }
 
   @Override

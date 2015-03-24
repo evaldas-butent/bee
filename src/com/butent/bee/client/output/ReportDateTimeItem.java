@@ -20,32 +20,38 @@ public class ReportDateTimeItem extends ReportDateItem {
   }
 
   @Override
-  public String evaluate(SimpleRow row) {
+  public ReportValue evaluate(SimpleRow row) {
     DateTime date = row.getDateTime(getName());
 
     if (date != null) {
       if (BeeUtils.isEmpty(getFormat())) {
-        return date.toCompactString();
+        return ReportValue.of(date.getTime(), date.toCompactString());
       }
       List<String> values = new ArrayList<>();
+      List<ReportValue> displays = new ArrayList<>();
 
       for (DateTimeFunction fnc : getFormat().keySet()) {
+        ReportValue value;
+
         switch (fnc) {
           case DATE:
-            values.add(evaluate(date.getDate(), null));
+            value = evaluate(date.getDate(), null);
             break;
           case HOUR:
           case MINUTE:
-            values.add(TimeUtils.padTwo(getValue(date, fnc)));
+            int val = getValue(date, fnc);
+            value = ReportValue.of(val, TimeUtils.padTwo(val));
             break;
           default:
-            values.add(evaluate(date.getDate(), fnc));
+            value = evaluate(date.getDate(), fnc);
             break;
         }
+        values.add(value.getValue());
+        displays.add(value);
       }
-      return BeeUtils.joinItems(values);
+      return ReportValue.of(BeeUtils.joinItems(values), BeeUtils.joinItems(displays));
     }
-    return null;
+    return ReportValue.empty();
   }
 
   @Override
@@ -54,7 +60,7 @@ public class ReportDateTimeItem extends ReportDateItem {
       getFilterWidget();
 
       if (BeeUtils.isEmpty(getFormat())) {
-        DateTime from = TimeUtils.parseDateTime(value);
+        DateTime from = TimeUtils.toDateTimeOrNull(value);
         DateTime to = TimeUtils.nextMinute(from, 0);
 
         getFilterFrom().setDateTime(TimeUtils.max(getFilterFrom().getDateTime(), from));
@@ -110,7 +116,7 @@ public class ReportDateTimeItem extends ReportDateItem {
     editor.addItem("");
 
     for (int i = 0; i < limit; i++) {
-      editor.addItem((i < 10 ? "0" : "") + i);
+      editor.addItem(TimeUtils.padTwo(i), BeeUtils.toString(i));
     }
     return editor;
   }

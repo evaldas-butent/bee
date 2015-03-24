@@ -35,7 +35,6 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
-import java.util.Objects;
 
 public class ReportDateItem extends ReportItem {
 
@@ -160,7 +159,7 @@ public class ReportDateItem extends ReportItem {
   }
 
   @Override
-  public String evaluate(SimpleRow row) {
+  public ReportValue evaluate(SimpleRow row) {
     JustDate date = row.getDate(getName());
 
     if (date != null) {
@@ -168,13 +167,16 @@ public class ReportDateItem extends ReportItem {
         return evaluate(date, null);
       }
       List<String> values = new ArrayList<>();
+      List<ReportValue> displays = new ArrayList<>();
 
       for (DateTimeFunction fnc : getFormat().keySet()) {
-        values.add(evaluate(date, fnc));
+        ReportValue value = evaluate(date, fnc);
+        values.add(value.getValue());
+        displays.add(value);
       }
-      return BeeUtils.joinItems(values);
+      return ReportValue.of(BeeUtils.joinItems(values), BeeUtils.joinItems(displays));
     }
-    return null;
+    return ReportValue.empty();
   }
 
   @Override
@@ -301,7 +303,7 @@ public class ReportDateItem extends ReportItem {
     switch (fnc) {
       case DAY:
         for (int i = 1; i <= 31; i++) {
-          editor.addItem((i < 10 ? "0" : "") + i);
+          editor.addItem(TimeUtils.padTwo(i), BeeUtils.toString(i));
         }
         break;
       case DAY_OF_WEEK:
@@ -327,33 +329,32 @@ public class ReportDateItem extends ReportItem {
     return editor;
   }
 
-  protected String evaluate(HasDateValue date, DateTimeFunction fnc) {
-    String value = null;
-
-    if (date != null) {
-      if (fnc == null) {
-        return date.toString();
-      }
-      switch (fnc) {
-        case DAY:
-          value = TimeUtils.padTwo(getValue(date, fnc));
-          break;
-        case DAY_OF_WEEK:
-          value = Format.renderDayOfWeek(getValue(date, fnc));
-          break;
-        case MONTH:
-          value = Format.renderMonthFullStandalone(getValue(date, fnc));
-          break;
-        case QUATER:
-        case YEAR:
-          value = BeeUtils.toString(getValue(date, fnc));
-          break;
-        default:
-          Assert.unsupported();
-          break;
-      }
+  protected ReportValue evaluate(HasDateValue date, DateTimeFunction fnc) {
+    if (fnc == null) {
+      return ReportValue.of(date.getDate().getDays(), date.toString());
     }
-    return value;
+    int value = getValue(date, fnc);
+    String display = null;
+
+    switch (fnc) {
+      case DAY:
+        display = TimeUtils.padTwo(value);
+        break;
+      case DAY_OF_WEEK:
+        display = Format.renderDayOfWeek(value);
+        break;
+      case MONTH:
+        display = Format.renderMonthFullStandalone(value);
+        break;
+      case QUATER:
+      case YEAR:
+        display = BeeUtils.toString(value);
+        break;
+      default:
+        Assert.unsupported();
+        break;
+    }
+    return ReportValue.of(value, display);
   }
 
   protected InputDate getFilterFrom() {
@@ -392,29 +393,15 @@ public class ReportDateItem extends ReportItem {
     JustDate to = null;
 
     if (fnc == null) {
-      from = TimeUtils.parseDate(part);
+      from = TimeUtils.toDateOrNull(part);
       to = TimeUtils.nextDay(from, 1);
     } else {
       switch (fnc) {
         case DAY:
         case QUATER:
-          getFormat().get(fnc).setValue(part);
-          break;
         case DAY_OF_WEEK:
-          for (int i = 1; i <= 7; i++) {
-            if (Objects.equals(part, Format.renderDayOfWeek(i))) {
-              getFormat().get(fnc).setValue(BeeUtils.toString(i));
-              break;
-            }
-          }
-          break;
         case MONTH:
-          for (int i = 1; i <= 31; i++) {
-            if (Objects.equals(part, Format.renderMonthFullStandalone(i))) {
-              getFormat().get(fnc).setValue(BeeUtils.toString(i));
-              break;
-            }
-          }
+          getFormat().get(fnc).setValue(part);
           break;
         case YEAR:
           from = new JustDate(BeeUtils.toInt(part), 1, 1);

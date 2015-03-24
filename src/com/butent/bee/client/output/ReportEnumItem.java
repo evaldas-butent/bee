@@ -24,7 +24,6 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 import java.util.Set;
 
 public class ReportEnumItem extends ReportItem implements ClickHandler {
@@ -72,8 +71,9 @@ public class ReportEnumItem extends ReportItem implements ClickHandler {
   }
 
   @Override
-  public String evaluate(SimpleRow row) {
-    return EnumUtils.getCaption(enumKey, row.getInt(getName()));
+  public ReportValue evaluate(SimpleRow row) {
+    Integer value = row.getInt(getName());
+    return ReportValue.of(value, EnumUtils.getCaption(enumKey, value));
   }
 
   @Override
@@ -144,17 +144,7 @@ public class ReportEnumItem extends ReportItem implements ClickHandler {
   @Override
   public ReportItem setFilter(String value) {
     if (!BeeUtils.isEmpty(value)) {
-      int idx = 0;
-      Set<Integer> index = null;
-
-      for (String caption : EnumUtils.getCaptions(enumKey)) {
-        if (Objects.equals(caption, value)) {
-          index = Collections.singleton(idx);
-          break;
-        }
-        idx++;
-      }
-      setFilterValues(index);
+      setFilterValues(Collections.singleton(BeeUtils.toInt(value)));
     }
     return this;
   }

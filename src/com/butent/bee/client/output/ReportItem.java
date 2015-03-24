@@ -89,8 +89,8 @@ public abstract class ReportItem implements BeeSerializable {
   }
 
   @SuppressWarnings("unchecked")
-  public Object calculate(Object total, String value) {
-    if (!BeeUtils.isEmpty(value)) {
+  public Object calculate(Object total, ReportValue value) {
+    if (value != null && !BeeUtils.isEmpty(value.getValue())) {
       switch (getFunction()) {
         case COUNT:
           if (total == null) {
@@ -101,15 +101,15 @@ public abstract class ReportItem implements BeeSerializable {
           if (total == null) {
             return new TreeSet<>(Arrays.asList(value));
           }
-          ((Collection<String>) total).add(value);
+          ((Collection<ReportValue>) total).add(value);
           break;
         case MAX:
-          if (total == null || value.compareTo((String) total) > 0) {
+          if (total == null || value.compareTo((ReportValue) total) > 0) {
             return value;
           }
           break;
         case MIN:
-          if (total == null || value.compareTo((String) total) < 0) {
+          if (total == null || value.compareTo((ReportValue) total) < 0) {
             return value;
           }
           break;
@@ -149,7 +149,7 @@ public abstract class ReportItem implements BeeSerializable {
     return Objects.equals(name, ((ReportItem) obj).name);
   }
 
-  public abstract String evaluate(SimpleRow row);
+  public abstract ReportValue evaluate(SimpleRow row);
 
   public EnumSet<Function> getAvailableFunctions() {
     return EnumSet.of(Function.MIN, Function.MAX, Function.COUNT, Function.LIST);
@@ -295,19 +295,19 @@ public abstract class ReportItem implements BeeSerializable {
   public Object summarize(Object total, Object value) {
     if (value != null) {
       if (total == null) {
+        if (getFunction() == Function.LIST) {
+          return new TreeSet<>((Collection<ReportValue>) value);
+        }
         return value;
       }
       switch (getFunction()) {
         case COUNT:
           return (int) total + (int) value;
         case LIST:
-          ((Collection<String>) total).addAll((Collection<String>) value);
-          break;
-        case SUM:
-          Assert.unsupported();
+          ((Collection<ReportValue>) total).addAll((Collection<ReportValue>) value);
           break;
         default:
-          return calculate(total, (String) value);
+          return calculate(total, (ReportValue) value);
       }
     }
     return total;

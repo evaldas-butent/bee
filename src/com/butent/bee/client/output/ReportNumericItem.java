@@ -24,8 +24,8 @@ public class ReportNumericItem extends ReportItem {
   }
 
   @Override
-  public Object calculate(Object total, String value) {
-    BigDecimal val = BeeUtils.toDecimalOrNull(value);
+  public Object calculate(Object total, ReportValue value) {
+    BigDecimal val = value != null ? BeeUtils.toDecimalOrNull(value.getValue()) : null;
 
     if (val != null) {
       switch (getFunction()) {
@@ -71,8 +71,8 @@ public class ReportNumericItem extends ReportItem {
   }
 
   @Override
-  public String evaluate(SimpleRow row) {
-    return BeeUtils.round(row.getValue(getName()), getPrecision());
+  public ReportValue evaluate(SimpleRow row) {
+    return ReportValue.of(BeeUtils.round(row.getValue(getName()), getPrecision()));
   }
 
   @Override
@@ -127,7 +127,7 @@ public class ReportNumericItem extends ReportItem {
   public Object summarize(Object total, Object value) {
     if (value != null) {
       if (total == null) {
-        return value;
+        return super.summarize(total, value);
       }
       switch (getFunction()) {
         case MAX:

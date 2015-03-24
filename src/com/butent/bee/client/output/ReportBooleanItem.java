@@ -11,7 +11,6 @@ import com.butent.bee.shared.utils.Codec;
 
 import java.util.Arrays;
 import java.util.Collections;
-import java.util.Objects;
 
 public class ReportBooleanItem extends ReportItem {
 
@@ -37,9 +36,12 @@ public class ReportBooleanItem extends ReportItem {
   }
 
   @Override
-  public String evaluate(SimpleRow row) {
-    return BeeUtils.unbox(row.getBoolean(getName()))
-        ? Localized.getConstants().yes() : Localized.getConstants().no();
+  public ReportValue evaluate(SimpleRow row) {
+    if (BeeUtils.unbox(row.getBoolean(getName()))) {
+      return ReportValue.of(1, Localized.getConstants().yes());
+    } else {
+      return ReportValue.of(2, Localized.getConstants().no());
+    }
   }
 
   @Override
@@ -80,8 +82,7 @@ public class ReportBooleanItem extends ReportItem {
   @Override
   public ReportItem setFilter(String value) {
     if (!BeeUtils.isEmpty(value)) {
-      getFilterWidget().setSelectedIndex(Objects.equals(value, Localized.getConstants().yes())
-          ? 1 : 2);
+      getFilterWidget().setSelectedIndex(BeeUtils.toInt(value));
     }
     return this;
   }
