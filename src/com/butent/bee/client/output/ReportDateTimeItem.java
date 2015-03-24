@@ -25,7 +25,7 @@ public class ReportDateTimeItem extends ReportDateItem {
 
     if (date != null) {
       if (BeeUtils.isEmpty(getFormat())) {
-        return ReportValue.of(date.getTime(), date.toCompactString());
+        return ReportValue.of(date.toCompactString());
       }
       List<String> values = new ArrayList<>();
       List<ReportValue> displays = new ArrayList<>();
@@ -40,7 +40,7 @@ public class ReportDateTimeItem extends ReportDateItem {
           case HOUR:
           case MINUTE:
             int val = getValue(date, fnc);
-            value = ReportValue.of(val, TimeUtils.padTwo(val));
+            value = ReportValue.of(TimeUtils.padTwo(val));
             break;
           default:
             value = evaluate(date.getDate(), fnc);
@@ -60,7 +60,7 @@ public class ReportDateTimeItem extends ReportDateItem {
       getFilterWidget();
 
       if (BeeUtils.isEmpty(getFormat())) {
-        DateTime from = TimeUtils.toDateTimeOrNull(value);
+        DateTime from = TimeUtils.parseDateTime(value);
         DateTime to = TimeUtils.nextMinute(from, 0);
 
         getFilterFrom().setDateTime(TimeUtils.max(getFilterFrom().getDateTime(), from));
@@ -116,7 +116,7 @@ public class ReportDateTimeItem extends ReportDateItem {
     editor.addItem("");
 
     for (int i = 0; i < limit; i++) {
-      editor.addItem(TimeUtils.padTwo(i), BeeUtils.toString(i));
+      editor.addItem(TimeUtils.padTwo(i));
     }
     return editor;
   }

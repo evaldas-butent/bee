@@ -11,6 +11,7 @@ import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.Service;
 import com.butent.bee.shared.data.SimpleRowSet.SimpleRow;
 import com.butent.bee.shared.i18n.Localized;
+import com.butent.bee.shared.time.TimeUtils;
 import com.butent.bee.shared.ui.HasCaption;
 import com.butent.bee.shared.utils.ArrayUtils;
 import com.butent.bee.shared.utils.BeeUtils;
@@ -73,7 +74,7 @@ public class ReportEnumItem extends ReportItem implements ClickHandler {
   @Override
   public ReportValue evaluate(SimpleRow row) {
     Integer value = row.getInt(getName());
-    return ReportValue.of(value, EnumUtils.getCaption(enumKey, value));
+    return ReportValue.of(TimeUtils.padTwo(value), EnumUtils.getCaption(enumKey, value));
   }
 
   @Override

@@ -38,9 +38,9 @@ public class ReportBooleanItem extends ReportItem {
   @Override
   public ReportValue evaluate(SimpleRow row) {
     if (BeeUtils.unbox(row.getBoolean(getName()))) {
-      return ReportValue.of(1, Localized.getConstants().yes());
+      return ReportValue.of("1", Localized.getConstants().yes());
     } else {
-      return ReportValue.of(2, Localized.getConstants().no());
+      return ReportValue.of("2", Localized.getConstants().no());
     }
   }
 

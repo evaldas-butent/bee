@@ -303,7 +303,7 @@ public class ReportDateItem extends ReportItem {
     switch (fnc) {
       case DAY:
         for (int i = 1; i <= 31; i++) {
-          editor.addItem(TimeUtils.padTwo(i), BeeUtils.toString(i));
+          editor.addItem(BeeUtils.toString(i), TimeUtils.padTwo(i));
         }
         break;
       case DAY_OF_WEEK:
@@ -313,12 +313,28 @@ public class ReportDateItem extends ReportItem {
         break;
       case MONTH:
         for (int i = 1; i <= 12; i++) {
-          editor.addItem(Format.renderMonthFullStandalone(i), BeeUtils.toString(i));
+          editor.addItem(Format.renderMonthFullStandalone(i), TimeUtils.padTwo(i));
         }
         break;
       case QUATER:
         for (int i = 1; i <= 4; i++) {
-          editor.addItem(BeeUtils.toString(i));
+          String display = null;
+
+          switch (i) {
+            case 1:
+              display = "I";
+              break;
+            case 2:
+              display = "II";
+              break;
+            case 3:
+              display = "III";
+              break;
+            case 4:
+              display = "IV";
+              break;
+          }
+          editor.addItem(display, BeeUtils.toString(i));
         }
         break;
 
@@ -331,24 +347,45 @@ public class ReportDateItem extends ReportItem {
 
   protected ReportValue evaluate(HasDateValue date, DateTimeFunction fnc) {
     if (fnc == null) {
-      return ReportValue.of(date.getDate().getDays(), date.toString());
+      return ReportValue.of(date.toString());
     }
-    int value = getValue(date, fnc);
+    int val = getValue(date, fnc);
+    String value = null;
     String display = null;
 
     switch (fnc) {
       case DAY:
-        display = TimeUtils.padTwo(value);
+        value = TimeUtils.padTwo(val);
+        display = BeeUtils.toString(val);
         break;
       case DAY_OF_WEEK:
-        display = Format.renderDayOfWeek(value);
+        value = BeeUtils.toString(val);
+        display = Format.renderDayOfWeek(val);
         break;
       case MONTH:
-        display = Format.renderMonthFullStandalone(value);
+        value = TimeUtils.padTwo(val);
+        display = Format.renderMonthFullStandalone(val);
         break;
       case QUATER:
+        switch (val) {
+          case 1:
+            display = "I";
+            break;
+          case 2:
+            display = "II";
+            break;
+          case 3:
+            display = "III";
+            break;
+          case 4:
+            display = "IV";
+            break;
+        }
+        value = BeeUtils.toString(val);
+        break;
       case YEAR:
-        display = BeeUtils.toString(value);
+        value = BeeUtils.toString(val);
+        display = value;
         break;
       default:
         Assert.unsupported();
@@ -393,7 +430,7 @@ public class ReportDateItem extends ReportItem {
     JustDate to = null;
 
     if (fnc == null) {
-      from = TimeUtils.toDateOrNull(part);
+      from = TimeUtils.parseDate(part);
       to = TimeUtils.nextDay(from, 1);
     } else {
       switch (fnc) {

@@ -10,8 +10,8 @@ public final class ReportValue implements Comparable<ReportValue> {
   private String value;
   private String display;
 
-  private ReportValue(Object value, String display) {
-    this.value = value != null ? value.toString() : null;
+  private ReportValue(String value, String display) {
+    this.value = value;
     this.display = display;
   }
 
@@ -47,11 +47,11 @@ public final class ReportValue implements Comparable<ReportValue> {
     return Objects.hashCode(getValue());
   }
 
-  public static ReportValue of(Object value) {
+  public static ReportValue of(String value) {
     return new ReportValue(value, null);
   }
 
-  public static ReportValue of(Object value, String display) {
+  public static ReportValue of(String value, String display) {
     return new ReportValue(value, display);
   }
 
