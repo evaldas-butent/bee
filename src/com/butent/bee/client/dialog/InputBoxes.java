@@ -19,7 +19,6 @@ import com.google.gwt.user.client.ui.Panel;
 import com.google.gwt.user.client.ui.Widget;
 
 import com.butent.bee.client.BeeKeeper;
-import com.butent.bee.client.Global;
 import com.butent.bee.client.event.Previewer.PreviewConsumer;
 import com.butent.bee.client.event.logical.CloseEvent;
 import com.butent.bee.client.grid.HtmlTable;
@@ -33,7 +32,6 @@ import com.butent.bee.client.view.edit.EditorAssistant;
 import com.butent.bee.client.view.form.CloseCallback;
 import com.butent.bee.client.widget.Button;
 import com.butent.bee.client.widget.FaLabel;
-import com.butent.bee.client.widget.Image;
 import com.butent.bee.client.widget.InputText;
 import com.butent.bee.client.widget.Label;
 import com.butent.bee.shared.Assert;
@@ -519,8 +517,17 @@ public class InputBoxes {
         }
       };
 
-      Image save = new Image(Global.getImages().silverSave(), onSave);
+      FaLabel save = new FaLabel(FontAwesome.SAVE);
       save.addStyleName(STYLE_INPUT_SAVE);
+
+      save.addClickHandler(new ClickHandler() {
+
+        @Override
+        public void onClick(ClickEvent arg0) {
+          onSave.execute();
+        }
+      });
+
       UiHelper.initialize(save, initializer, DialogConstants.WIDGET_SAVE);
       dialog.addAction(Action.SAVE, save);
 
@@ -574,9 +581,11 @@ public class InputBoxes {
 
     if (enabledActions != null) {
       if (enabled && enabledActions.contains(Action.ADD)) {
-        Image add = new Image(Global.getImages().silverAdd(), new ScheduledCommand() {
+        FaLabel add = new FaLabel(FontAwesome.PLUS);
+        add.addClickHandler(new ClickHandler() {
+
           @Override
-          public void execute() {
+          public void onClick(ClickEvent arg0) {
             callback.onAdd();
           }
         });
@@ -587,9 +596,10 @@ public class InputBoxes {
       }
 
       if (enabled && enabledActions.contains(Action.DELETE)) {
-        Image delete = new Image(Global.getImages().silverDelete(), new ScheduledCommand() {
+        FaLabel delete = new FaLabel(FontAwesome.REMOVE);
+        delete.addClickHandler(new ClickHandler() {
           @Override
-          public void execute() {
+          public void onClick(ClickEvent arg0) {
             callback.onDelete(dialog);
           }
         });
@@ -600,9 +610,10 @@ public class InputBoxes {
       }
 
       if (enabledActions.contains(Action.PRINT)) {
-        Image print = new Image(Global.getImages().silverPrint(), new ScheduledCommand() {
+        FaLabel print = new FaLabel(FontAwesome.PRINT);
+        print.addClickHandler(new ClickHandler() {
           @Override
-          public void execute() {
+          public void onClick(ClickEvent arg0) {
             Printer.print(dialog);
           }
         });
@@ -613,8 +624,15 @@ public class InputBoxes {
       }
     }
 
-    Image close = new Image(Global.getImages().silverClose(), onClose);
+    FaLabel close = new FaLabel(FontAwesome.CLOSE);
     close.addStyleName(STYLE_INPUT_CLOSE);
+    close.addClickHandler(new ClickHandler() {
+
+      @Override
+      public void onClick(ClickEvent arg0) {
+        onClose.execute();
+      }
+    });
     UiHelper.initialize(close, initializer, DialogConstants.WIDGET_CLOSE);
     dialog.addAction(Action.CLOSE, close);
 
