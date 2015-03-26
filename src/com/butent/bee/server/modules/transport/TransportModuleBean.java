@@ -1632,19 +1632,16 @@ public class TransportModuleBean implements BeeModule, HasTimerService {
             sys.joinTables(TBL_ORDER_CARGO, TBL_CARGO_EXPENSES, COL_CARGO))
         .addGroup(TBL_ORDER_CARGO, sys.getIdName(TBL_ORDER_CARGO));
 
-    IsExpression cargoCosts;
+    IsExpression cargoCosts = TradeModuleBean.getTotalExpression(TBL_CARGO_EXPENSES,
+        SqlUtils.field(TBL_CARGO_EXPENSES, COL_AMOUNT));
 
     if (DataUtils.isId(currency)) {
-      cargoCosts = ExchangeUtils.exchangeFieldTo(ss,
-          TradeModuleBean.getTotalExpression(TBL_CARGO_EXPENSES,
-              SqlUtils.field(TBL_CARGO_EXPENSES, COL_AMOUNT)),
+      cargoCosts = ExchangeUtils.exchangeFieldTo(ss, cargoCosts,
           SqlUtils.field(TBL_CARGO_EXPENSES, COL_CURRENCY),
           SqlUtils.nvl(SqlUtils.field(TBL_CARGO_EXPENSES, COL_DATE),
               SqlUtils.field(TBL_ORDERS, COL_DATE)), SqlUtils.constant(currency));
     } else {
-      cargoCosts = ExchangeUtils.exchangeField(ss,
-          TradeModuleBean.getTotalExpression(TBL_CARGO_EXPENSES,
-              SqlUtils.field(TBL_CARGO_EXPENSES, COL_AMOUNT)),
+      cargoCosts = ExchangeUtils.exchangeField(ss, cargoCosts,
           SqlUtils.field(TBL_CARGO_EXPENSES, COL_CURRENCY),
           SqlUtils.nvl(SqlUtils.field(TBL_CARGO_EXPENSES, COL_DATE),
               SqlUtils.field(TBL_ORDERS, COL_DATE)));
@@ -1674,40 +1671,28 @@ public class TransportModuleBean implements BeeModule, HasTimerService {
         .addFromLeft(TBL_SERVICES, sys.joinTables(TBL_SERVICES, TBL_CARGO_INCOMES, COL_SERVICE))
         .addGroup(TBL_ORDER_CARGO, sys.getIdName(TBL_ORDER_CARGO));
 
+    IsExpression amountExpr = TradeModuleBean.getTotalExpression(TBL_CARGO_INCOMES,
+        SqlUtils.field(TBL_CARGO_INCOMES, COL_AMOUNT));
+    IsExpression currencyExpr = SqlUtils.field(TBL_CARGO_INCOMES, COL_CURRENCY);
     IsExpression dateExpr = SqlUtils.nvl(SqlUtils.field(TBL_CARGO_INCOMES, COL_DATE),
         SqlUtils.field(TBL_ORDERS, COL_DATE));
 
-    IsExpression cargoIncome;
-    IsExpression servicesIncome;
+    IsExpression cargoIncome = SqlUtils.sqlIf(SqlUtils.isNull(TBL_SERVICES, COL_TRANSPORTATION),
+        null, amountExpr);
+    IsExpression servicesIncome = SqlUtils.sqlIf(SqlUtils.isNull(TBL_SERVICES, COL_TRANSPORTATION),
+        amountExpr, null);
 
     if (DataUtils.isId(currency)) {
-      cargoIncome = ExchangeUtils.exchangeFieldTo(ss,
-          SqlUtils.sqlIf(SqlUtils.isNull(TBL_SERVICES, COL_TRANSPORTATION), null,
-              TradeModuleBean.getTotalExpression(TBL_CARGO_INCOMES,
-                  SqlUtils.field(TBL_CARGO_INCOMES, COL_AMOUNT))),
-          SqlUtils.field(TBL_CARGO_INCOMES, COL_CURRENCY), dateExpr,
+      cargoIncome = ExchangeUtils.exchangeFieldTo(ss, cargoIncome, currencyExpr, dateExpr,
           SqlUtils.constant(currency));
 
-      servicesIncome = ExchangeUtils.exchangeFieldTo(ss,
-          SqlUtils.sqlIf(SqlUtils.isNull(TBL_SERVICES, COL_TRANSPORTATION),
-              TradeModuleBean.getTotalExpression(TBL_CARGO_INCOMES,
-                  SqlUtils.field(TBL_CARGO_INCOMES, COL_AMOUNT)), null),
-          SqlUtils.field(TBL_CARGO_INCOMES, COL_CURRENCY), dateExpr,
+      servicesIncome = ExchangeUtils.exchangeFieldTo(ss, servicesIncome, currencyExpr, dateExpr,
           SqlUtils.constant(currency));
     } else {
-      cargoIncome = ExchangeUtils.exchangeField(ss,
-          SqlUtils.sqlIf(SqlUtils.isNull(TBL_SERVICES, COL_TRANSPORTATION), null,
-              TradeModuleBean.getTotalExpression(TBL_CARGO_INCOMES,
-                  SqlUtils.field(TBL_CARGO_INCOMES, COL_AMOUNT))),
-          SqlUtils.field(TBL_CARGO_INCOMES, COL_CURRENCY), dateExpr);
+      cargoIncome = ExchangeUtils.exchangeField(ss, cargoIncome, currencyExpr, dateExpr);
 
-      servicesIncome = ExchangeUtils.exchangeField(ss,
-          SqlUtils.sqlIf(SqlUtils.isNull(TBL_SERVICES, COL_TRANSPORTATION),
-              TradeModuleBean.getTotalExpression(TBL_CARGO_INCOMES,
-                  SqlUtils.field(TBL_CARGO_INCOMES, COL_AMOUNT)), null),
-          SqlUtils.field(TBL_CARGO_INCOMES, COL_CURRENCY), dateExpr);
+      servicesIncome = ExchangeUtils.exchangeField(ss, servicesIncome, currencyExpr, dateExpr);
     }
-
     ss.addSum(cargoIncome, "CargoIncome")
         .addSum(servicesIncome, "ServicesIncome");
 
@@ -2731,6 +2716,8 @@ public class TransportModuleBean implements BeeModule, HasTimerService {
         .addField("trucks", COL_VEHICLE_NUMBER, COL_VEHICLE)
         .addFields("trucks", "Conditioner")
         .addField("trailers", COL_VEHICLE_NUMBER, COL_TRAILER)
+        .addEmptyText("Route")
+        .addEmptyString("LastRoute", 60)
         .addEmptyDouble("Kilometers")
         .addEmptyDouble("FuelCosts")
         .addEmptyDouble("DailyCosts")
@@ -2745,6 +2732,50 @@ public class TransportModuleBean implements BeeModule, HasTimerService {
         .setWhere(clause);
 
     String tmp = qs.sqlCreateTemp(query);
+
+    // Routes
+    String als = SqlUtils.uniqueName();
+
+    String rTmp = qs.sqlCreateTemp(new SqlSelect().setDistinctMode(true)
+        .addFields(TBL_TRIP_ROUTES, COL_TRIP, COL_DATE)
+        .addExpr(SqlUtils.nvl(SqlUtils.field(TBL_COUNTRIES, COL_COUNTRY_CODE),
+            SqlUtils.field(TBL_COUNTRIES, COL_COUNTRY_NAME)), COL_COUNTRY_CODE)
+        .addFrom(tmp)
+        .addFromInner(TBL_TRIP_ROUTES, SqlUtils.joinUsing(tmp, TBL_TRIP_ROUTES, COL_TRIP))
+        .addFromInner(TBL_COUNTRIES, sys.joinTables(TBL_COUNTRIES, TBL_TRIP_ROUTES, COL_COUNTRY)));
+
+    String routes = qs.sqlCreateTemp(new SqlSelect()
+        .addFields(rTmp, COL_TRIP, COL_COUNTRY_CODE)
+        .addCount("cnt")
+        .addFrom(rTmp)
+        .addFromInner(rTmp, als, SqlUtils.and(SqlUtils.joinUsing(rTmp, als, COL_TRIP),
+            SqlUtils.or(SqlUtils.joinMore(rTmp, COL_DATE, als, COL_DATE),
+                SqlUtils.and(SqlUtils.joinUsing(rTmp, als, COL_DATE),
+                    SqlUtils.joinMoreEqual(rTmp, COL_COUNTRY_CODE, als, COL_COUNTRY_CODE)))))
+        .addGroup(rTmp, COL_TRIP, COL_DATE, COL_COUNTRY_CODE));
+
+    qs.sqlDropTemp(rTmp);
+
+    int c = BeeUtils.unbox(qs.getInt(new SqlSelect().addMax(routes, "cnt").addFrom(routes)));
+
+    if (c > 0) {
+      qs.updateData(new SqlUpdate(tmp)
+          .addExpression("Route", SqlUtils.field(routes, COL_COUNTRY_CODE))
+          .addExpression("LastRoute", SqlUtils.field(routes, COL_COUNTRY_CODE))
+          .setFrom(routes, SqlUtils.and(SqlUtils.joinUsing(tmp, routes, COL_TRIP),
+              SqlUtils.equals(routes, "cnt", 1))));
+
+      for (int i = 2; i <= c; i++) {
+        qs.updateData(new SqlUpdate(tmp)
+            .addExpression("Route", SqlUtils.concat(SqlUtils.field(tmp, "Route"), "'-'",
+                SqlUtils.field(routes, COL_COUNTRY_CODE)))
+            .addExpression("LastRoute", SqlUtils.field(routes, COL_COUNTRY_CODE))
+            .setFrom(routes, SqlUtils.and(SqlUtils.joinUsing(tmp, routes, COL_TRIP),
+                SqlUtils.equals(routes, "cnt", i),
+                SqlUtils.notEqual(tmp, "LastRoute", SqlUtils.field(routes, COL_COUNTRY_CODE)))));
+      }
+    }
+    qs.sqlDropTemp(routes);
 
     // Kilometers
     qs.updateData(new SqlUpdate(tmp)

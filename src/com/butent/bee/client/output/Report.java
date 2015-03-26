@@ -121,6 +121,8 @@ public enum Report implements HasWidgetSupplier {
               Data.getColumnLabel(TransportConstants.TBL_TRIPS, TransportConstants.COL_VEHICLE)),
           new ReportTextItem(TransportConstants.COL_TRAILER,
               Data.getColumnLabel(TransportConstants.TBL_TRIPS, TransportConstants.COL_TRAILER)),
+          new ReportTextItem("Route",
+              Data.getColumnLabel(TransportConstants.TBL_TRIP_ROUTES, "Route")),
           new ReportEnumItem(TransportConstants.COL_TRIP_STATUS,
               Data.getColumnLabel(TransportConstants.TBL_TRIPS,
                   TransportConstants.COL_TRIP_STATUS), TripStatus.class),
