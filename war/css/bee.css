@@ -1,4 +1,4 @@
-@font-face {
+﻿@font-face {
   font-family: FontAwesome;
   src: url(../fonts/fontawesome-webfont.woff?v=4.2.0);
   font-weight: normal;
@@ -15,7 +15,7 @@
 }
 
 .bee-Body {
-  font-family: Arial, sans-serif;
+  font-family: "Open Sans", sans-serif;
   font-size: small;
   color: black;
   overflow: hidden;
@@ -127,14 +127,13 @@
 }
 
 .bee-Screen {
-  background-color: #fbfbfb;  
+  background-color: #e3e3e3;
 }
 
 .bee-Logo {
   position: absolute;
-  left: 1ex;
-  top: 3ex;
-  max-width: 100px;
+  top: -3ex;
+  max-width: 148px;
   height: auto;
 }
 
@@ -143,17 +142,22 @@
 }
 
 .bee-MainSearchContainer {
-  left: 120px;
-  top: 20px;
-  width: 300px;
+  top: 10px;
+  width: 100%;
 }
 
 .bee-MainSearchBox {
-  width: 225px;
+  width: calc(100% - 705px);
   height: 27px;
-  border: 1px solid #bab9b9;
-  padding: 6px;
-  float: left;
+  margin: 8px 0 0 255px !important;
+  background-color: #414142 !important;
+  border-color: #414142 !important;
+  color: whitesmoke !important;
+  font-size: 16px !important;
+}
+
+.bee-MainSearchBox:focus{
+ outline: none !important;
 }
 
 .bee-MainSearchOptionsContainer {
@@ -172,36 +176,20 @@
 }
 
 .bee-MainSearchSubmitContainer {
-  width: 40px;
-  height: 27px;
-  cursor: pointer;
-  background-color: #d0d0d0;
-  margin-left: 10px;
-  float: left;
-  position: relative;
-}  
-.bee-MainSearchSubmitContainer:hover {
-  background-color: #7a7a7a;
+
 }
 .bee-MainSearchSubmit {
   position: absolute;
-  left: 11px;
-  top: 5px;
+  left: calc(100% - 430px);
+  top: 12px;
+  font-size: 17px;
+  color: #6f6f6f;
 }  
 
 .bee-MainCommandPanel {
-  left: 440px;
-  top: 28px;
-  right: 225px;
+  top: 22px;
+  right: 240px;
   display: flex;
-  display: -webkit-flex;
-  display: -ms-flexbox;
-  flex-direction: row;
-  -webkit-flex-direction: row;
-  -ms-flex-direction: row;
-  justify-content: space-around;
-  -webkit-justify-content: space-around;
-  -ms-flex-pack: justify;
 }
 .bee-MainCommandPanelItem {
   height: 25px;
@@ -216,27 +204,33 @@
 }  
 
 .bee-MainMenu {
-  left: 115px;
-  right: 0;
-  top: 60px;
+  left: 0px;
+  right: 0px;
+  height: 51px;
+  top: 62px;
+  background-color: #484849;
+  color: white;
 }
 
 .bee-UserContainer {
   position: absolute;
   right: 10px;
-  top: 35px;
+  top: 8px;
   border-collapse: collapse;
 }
 .bee-UserPhotoContainer {
   margin-right: 1em;
 }
 .bee-UserPhoto {
-  max-width: 30px;
-  max-height: 30px;
+  max-width: 39px;
+  max-height: 39px;
+  border: 2px solid #fafafa;
   cursor: default;
 }
 .bee-UserSignature {
   cursor: pointer;
+  color: #6f6f6f;
+  font: bold 14px "Open Sans", sans-serif;
 }
 .bee-UserExitContainer {
   margin-left: 1em;
@@ -244,7 +238,7 @@
 .bee-UserExit {
   font-size: large;
   cursor: pointer;
-  color: #888;
+  color: #6f6f6f;
 }
 .bee-UserExit:hover {
   color: black;
@@ -282,39 +276,42 @@
   overflow: auto;
 }
 
-.bee-MenuRoot-flow .bee-MenuItem-label {
-  display: inline-block;
-  margin: 2px;
-  font-size: 14px;
+.bee-MenuRoot {
+  margin: 3px 19px;
 }
 
-.bee-MenuRoot-flow.bee-MenuRoot-horizontal .bee-MenuItem-label:hover,
+.bee-MenuRoot-flow .bee-MenuItem-label {
+  display: inline-block;
+  font-size: 14px;
+  padding: 0 13px 0 13px;
+}
+
 .bee-MenuRoot-flow.bee-MenuRoot-horizontal .bee-MenuItem-selected {
-  border-bottom: 5px solid #5a6ba3;
+  font-weight: bold;
 }
 
 .bee-MenuPopup {
   max-width: 95%;
-  background-color: white;
-  border: 1px solid #e7e7e7;
+  background-color: #3d3d3d;
   box-shadow: 6px 6px 5px DarkGray;
+  color: white;
+}
+div > span.bee-MenuItem.bee-MenuItem-label {
+  line-height: 45px;
 }
 
 .bee-MenuItem-label {
-  padding-left: 5px;
-  padding-top: 5px; 
-  padding-right: 5px;
   cursor: pointer;
-  font-family: Verdana;
 }
 
 .bee-MenuPopup .bee-MenuItem-label {
-  font-size: 13px;
-  padding-left: 25px; 
+  font-size: 12px;
+  padding: 0 20px 0 20px;
+  line-height: 30px;
 }
 
-.bee-MenuPopup td:hover {
-  background-color: #f2f2f2;
+.bee-MenuBar.bee-MenuBar-level-1.bee-MenuBar-vertical.bee-MenuBar-table tr:hover {
+  background-color: #343434 !important;
 }
 
 .bee-MenuBar-vertical .bee-MenuItemSeparator {
@@ -3624,4 +3621,8 @@ textarea,
 
 .bee-EventsBoard-content-col.bee-EventsBoard-content-col-EventFiles.bee-prj-Events-content-col-EventFiles {
   width: calc(100% - 10px);
+}
+
+.bee-NorthContainer.bee-SplitChild.bee-SplitNorth {
+  background-color: #414142;
 }

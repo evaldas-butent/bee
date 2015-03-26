@@ -669,6 +669,8 @@ public interface LocalizableConstants extends Constants, LocalizableClassifierCo
 
   String selectAll();
 
+  String search();
+
   String selectAtLeastOneRow();
 
   String selectionColumnLabel();
@@ -788,4 +790,5 @@ public interface LocalizableConstants extends Constants, LocalizableClassifierCo
   String yearMonth();
 
   String yes();
+
 }

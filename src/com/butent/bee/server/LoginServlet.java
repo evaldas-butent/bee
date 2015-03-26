@@ -146,6 +146,8 @@ public class LoginServlet extends HttpServlet {
         title().text(ui.getTitle()),
         link().rel(Rel.SHORTCUT_ICON)
             .href(resource(contextPath, Paths.getImagePath(LoginServlet.FAV_ICON))),
+        link().rel(Rel.STYLE_SHEET).href(
+            "//fonts.googleapis.com/css?family=Open+Sans:700,300,800,400"),
         base().targetBlank());
 
     for (String styleSheet : ui.getStyleSheets()) {

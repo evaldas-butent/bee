@@ -38,6 +38,7 @@ import com.butent.bee.client.view.View;
 import com.butent.bee.client.view.ViewCallback;
 import com.butent.bee.client.view.ViewFactory;
 import com.butent.bee.client.widget.CustomWidget;
+import com.butent.bee.client.widget.FaLabel;
 import com.butent.bee.client.widget.Image;
 import com.butent.bee.client.widget.InputText;
 import com.butent.bee.client.widget.Label;
@@ -58,6 +59,8 @@ import com.butent.bee.shared.data.event.RowTransformEvent;
 import com.butent.bee.shared.data.event.RowUpdateEvent;
 import com.butent.bee.shared.data.view.DataInfo;
 import com.butent.bee.shared.data.view.RowInfo;
+import com.butent.bee.shared.font.FontAwesome;
+import com.butent.bee.shared.html.Attributes;
 import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.ui.Action;
 import com.butent.bee.shared.ui.HasWidgetSupplier;
@@ -557,6 +560,7 @@ public class Search {
     DomUtils.setSearch(getInput());
     AutocompleteProvider.enableAutocomplete(getInput(), KEY_INPUT);
 
+    getInput().getElement().setAttribute(Attributes.PLACEHOLDER, Localized.getConstants().search());
     getInput().addStyleName(STYLE_INPUT);
 
     getInput().addKeyDownHandler(new KeyDownHandler() {
@@ -583,7 +587,7 @@ public class Search {
     Simple submitContainer = new Simple();
     submitContainer.addStyleName(STYLE_SUBMIT_CONTAINER);
 
-    Image submit = new Image(Global.getImages().search());
+    FaLabel submit = new FaLabel(FontAwesome.SEARCH);
     submit.addStyleName(STYLE_SUBMIT);
 
     submit.addClickHandler(new ClickHandler() {

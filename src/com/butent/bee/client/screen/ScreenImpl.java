@@ -786,7 +786,7 @@ public class ScreenImpl implements Screen {
     panel.add(nw);
     setNotification(nw);
 
-    return Pair.of(panel, getNorthHeight(100));
+    return Pair.of(panel, getNorthHeight(112));
   }
 
   protected Pair<? extends IdentifiableWidget, Integer> initSouth() {
