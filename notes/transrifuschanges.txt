@@ -1,0 +1,4 @@
+--Non-standart changes--
+2015-03-26  Company form. CompanyActivites field in main info place.
+            Company form. CheckBoxes RemindEmail, EmailInvoices
+            Person form. Person activity field

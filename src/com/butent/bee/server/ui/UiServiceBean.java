@@ -397,7 +397,8 @@ public class UiServiceBean {
   }
 
   public BeeRowSet getReportSettings() {
-    return qs.getViewData(VIEW_REPORT_SETTINGS, usr.getCurrentUserFilter(COL_RS_USER));
+    return qs.getViewData(VIEW_REPORT_SETTINGS,
+        Filter.and(usr.getCurrentUserFilter(COL_RS_USER), Filter.notNull(COL_RS_CAPTION)));
   }
 
   public BeeRowSet getWorkspaces() {

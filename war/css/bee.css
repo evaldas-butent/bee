@@ -1744,6 +1744,8 @@
 .bee-GridContainer-no-data .bee-auto-fit {
   visibility: hidden;
 }
+.bee-GridFormContainer-newRow .bee-GridContainer .bee-Header-control.bee-Action-filter,
+.bee-NewRowContainer .bee-GridContainer .bee-Header-control.bee-Action-filter, 
 .bee-GridContainer-no-data .bee-Header-control.bee-Action-delete,
 .bee-GridContainer-no-data .bee-Header-control.bee-Action-menu {
   display: none;
@@ -3457,28 +3459,36 @@ textarea,
   pointer-events: none;
 }
 
+.bee-Line {
+  border: 1px solid black;
+}
+
 .bee-rep td {
   padding: 3px 5px;
   border: 1px solid #ddd;
 }
-.bee-rep-num {
-  text-align: right;
+.bee-rep-date, bee-rep-num {
   white-space: nowrap;
 }
-.bee-rep-cgroup-hdr, .bee-rep-tot-hdr {
+.bee-rep-num, .bee-rep-cgroup-hdr, .bee-rep-tot-hdr {
   text-align: right;
+}
+.bee-rep-drill:hover {
+  cursor: pointer; 
+  background-color: lightyellow;
 }
 .bee-rep-cgroup {
   text-align: center;
 }
 .bee-rep-rgroup, .bee-rep-rgroup-col-tot, .bee-rep-rgroup-tot {
   font-style: italic;
+  background-color: white;
 }
-.bee-rep-cgroup-tot-hdr, .bee-rep-col-hdr, .bee-rep-row-tot-hdr {
+.bee-rep-row-hdr, .bee-rep-cgroup-tot-hdr, .bee-rep-col-hdr, .bee-rep-row-tot-hdr {
   text-align: center;
   font-weight: bold;
 }
-.bee-rep-row-hdr, .bee-rep-rgroup-tot, .bee-rep-row-tot, .bee-rep-col-tot, .bee-rep-tot, .bee-rep-tot-hdr {
+.bee-rep-rgroup-tot, .bee-rep-row-tot, .bee-rep-col-tot, .bee-rep-tot, .bee-rep-tot-hdr {
   font-weight: bold;
 }
 
@@ -3498,13 +3508,56 @@ textarea,
 .bee-rep-item-calc {
   color: blue;
 }
+.bee-rep-item-calc:after {
+  content: ": ";
+}
 .bee-rep-item-remove {
   display: inline;
   font-size: 15px;
   margin-left: 1px;
+  cursor: pointer;
 }
 .bee-rep-item-remove:hover {
   color: red;
+}
+.bee-rep-filter-cap, .bee-rep-option-cap {
+  text-align: right;
+  white-space: nowrap;
+  vertical-align: top;
+}
+.bee-rep-text-filter {
+  width: 100% !important;
+}
+.bee-rep-date-filter div {
+  display: inline-block;
+}
+.bee-rep-date-filter .bee-TextBox, .bee-rep-date-filter .bee-ListBox {
+  margin: 0 5px;
+}
+.bee-rep-date-filter .bee-InputDate {
+  width: 80px;
+}
+.bee-rep-date-filter .bee-InputDateTime {
+  width: 120px;
+}
+.bee-rep-enum-filter {
+  display: inline-block;
+  cursor: pointer;
+  color: blue;
+}
+.bee-rep-enum-filter-empty:before {
+  content: "???";
+}
+.bee-rep-report {
+  border-collapse: collapse;
+}
+.bee-rep-report .bee-rep-report-normal:hover {
+  color: dodgerblue;
+  cursor: pointer;
+}
+.bee-rep-report-active {
+  color: white;
+  background-color: dodgerblue;
 }
 
 .bee-EventsBoard-content {

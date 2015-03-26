@@ -43,7 +43,8 @@
     </SimpleJoin>
 
     <SimpleColumn name="Photo" />
-
+    <SimpleColumn name="Notes" />
+ 
     <SimpleColumn name="Activity" />
     <SimpleJoin name="Activity" joinType="LEFT">
       <SimpleColumn alias="ActivityName" name="Name" />

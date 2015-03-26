@@ -6,13 +6,22 @@ import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.event.logical.shared.SelectionEvent;
 import com.google.gwt.event.logical.shared.SelectionHandler;
 import com.google.gwt.event.shared.HasHandlers;
+import com.google.gwt.xml.client.Element;
+
+import static com.butent.bee.shared.modules.classifiers.ClassifierConstants.*;
 
 import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.Callback;
 import com.butent.bee.client.composite.FileCollector;
+import com.butent.bee.client.data.Data;
+import com.butent.bee.client.data.IdCallback;
+import com.butent.bee.client.data.RowCallback;
+import com.butent.bee.client.data.RowFactory;
 import com.butent.bee.client.dom.Features;
 import com.butent.bee.client.event.Binder;
+import com.butent.bee.client.grid.ChildGrid;
 import com.butent.bee.client.images.Images;
+import com.butent.bee.client.presenter.GridPresenter;
 import com.butent.bee.client.render.PhotoRenderer;
 import com.butent.bee.client.ui.FormFactory.WidgetDescriptionCallback;
 import com.butent.bee.client.ui.IdentifiableWidget;
@@ -23,13 +32,20 @@ import com.butent.bee.client.view.edit.SaveChangesEvent;
 import com.butent.bee.client.view.form.FormView;
 import com.butent.bee.client.view.form.interceptor.AbstractFormInterceptor;
 import com.butent.bee.client.view.form.interceptor.FormInterceptor;
+import com.butent.bee.client.view.grid.GridView;
+import com.butent.bee.client.view.grid.interceptor.AbstractGridInterceptor;
+import com.butent.bee.client.view.grid.interceptor.GridInterceptor;
 import com.butent.bee.client.widget.Image;
 import com.butent.bee.client.widget.InputBoolean;
+import com.butent.bee.shared.data.BeeRow;
 import com.butent.bee.shared.data.IsRow;
 import com.butent.bee.shared.data.UserData;
+import com.butent.bee.shared.data.event.DataChangeEvent;
+import com.butent.bee.shared.data.view.DataInfo;
 import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.io.FileInfo;
 import com.butent.bee.shared.modules.classifiers.ClassifierConstants;
+import com.butent.bee.shared.ui.ColumnDescription;
 import com.butent.bee.shared.utils.BeeUtils;
 
 import java.util.Objects;
@@ -95,16 +111,73 @@ class PersonForm extends AbstractFormInterceptor {
     } else if (BeeUtils.same(name, PHOTO_IMAGE_WIDGET_NAME) && widget instanceof Image) {
       photoImageWidget = (Image) widget;
 
-    } else if (BeeUtils.same(name, UNSET_PHOTO_WIDGET_NAME) && widget != null) {
+    } else if (BeeUtils.same(name, UNSET_PHOTO_WIDGET_NAME)) {
       Binder.addClickHandler(widget.asWidget(), new ClickHandler() {
         @Override
         public void onClick(ClickEvent event) {
           FormView form = getFormView();
           IsRow row = form.getActiveRow();
 
-          row.clearCell(form.getDataIndex(ClassifierConstants.COL_PHOTO));
+          row.clearCell(form.getDataIndex(COL_PHOTO));
           photoImageAttachment = null;
           clearPhoto();
+        }
+      });
+    } else if (BeeUtils.same(name, TBL_COMPANY_PERSONS) && widget instanceof ChildGrid) {
+      ((ChildGrid) widget).setGridInterceptor(new AbstractGridInterceptor() {
+        @Override
+        public ColumnDescription beforeCreateColumn(GridView gridView, ColumnDescription descr) {
+          if (BeeUtils.same(descr.getId(), COL_PERSON)) {
+            return null;
+          }
+          return super.beforeCreateColumn(gridView, descr);
+        }
+
+        @Override
+        public boolean beforeAddRow(final GridPresenter presenter, boolean copy) {
+          presenter.getGridView().ensureRelId(new IdCallback() {
+            @Override
+            public void onSuccess(Long id) {
+              final String viewName = presenter.getViewName();
+              DataInfo dataInfo = Data.getDataInfo(viewName);
+              BeeRow newRow = RowFactory.createEmptyRow(dataInfo, true);
+              Data.setValue(viewName, newRow, COL_PERSON, id);
+
+              RowFactory.createRow(dataInfo.getNewRowForm(),
+                  Localized.getConstants().newPersonCompany(), dataInfo, newRow, null,
+                  new AbstractFormInterceptor() {
+                    @Override
+                    public boolean beforeCreateWidget(String widgetName, Element description) {
+                      if (BeeUtils.startsWith(widgetName, COL_PERSON)) {
+                        return false;
+                      }
+                      return super.beforeCreateWidget(widgetName, description);
+                    }
+
+                    @Override
+                    public FormInterceptor getInstance() {
+                      return null;
+                    }
+                  },
+                  new RowCallback() {
+                    @Override
+                    public void onSuccess(BeeRow result) {
+                      Data.onViewChange(viewName, DataChangeEvent.RESET_REFRESH);
+                    }
+                  });
+            }
+          });
+          return false;
+        }
+
+        @Override
+        public String getCaption() {
+          return Localized.getConstants().personCompanies();
+        }
+
+        @Override
+        public GridInterceptor getInstance() {
+          return null;
         }
       });
     } else if ((BeeUtils.same(name, ClassifierConstants.COL_REMIND_EMAIL)
@@ -204,13 +277,13 @@ class PersonForm extends AbstractFormInterceptor {
     if (form == null || row == null) {
       return null;
     } else {
-      return row.getString(form.getDataIndex(ClassifierConstants.COL_PHOTO));
+      return row.getString(form.getDataIndex(COL_PHOTO));
     }
   }
 
   private static void setPhotoFileName(FormView form, IsRow row, String value) {
     if (form != null && row != null) {
-      row.setValue(form.getDataIndex(ClassifierConstants.COL_PHOTO), value);
+      row.setValue(form.getDataIndex(COL_PHOTO), value);
     }
   }
 
@@ -245,7 +318,7 @@ class PersonForm extends AbstractFormInterceptor {
     photoImageAttachment = null;
 
     if (photoImageWidget != null) {
-      String photoFileName = row.getString(form.getDataIndex(ClassifierConstants.COL_PHOTO));
+      String photoFileName = row.getString(form.getDataIndex(COL_PHOTO));
       if (!BeeUtils.isEmpty(photoFileName)) {
         photoImageWidget.setUrl(PhotoRenderer.getUrl(photoFileName));
       } else {
@@ -260,8 +333,8 @@ class PersonForm extends AbstractFormInterceptor {
     if (form != null && row != null && userData != null
         && Objects.equals(userData.getPerson(), row.getId())) {
 
-      userData.setFirstName(row.getString(form.getDataIndex(ClassifierConstants.COL_FIRST_NAME)));
-      userData.setLastName(row.getString(form.getDataIndex(ClassifierConstants.COL_LAST_NAME)));
+      userData.setFirstName(row.getString(form.getDataIndex(COL_FIRST_NAME)));
+      userData.setLastName(row.getString(form.getDataIndex(COL_LAST_NAME)));
       userData.setPhotoFileName(getPhotoFileName(form, row));
 
       BeeKeeper.getScreen().updateUserData(userData);

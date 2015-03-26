@@ -20,7 +20,8 @@
         <InputText source="Template" visible="true" style="&inpw;" />
 
         <Label for="Name" />
-        <DataSelector source="Name" newRowEnabled="false" visible="true" style="&inpw;" />
+        <DataSelector source="Name" newRowEnabled="false" visible="true" style="&inpw;" choiceColumns="Name TypeName" 
+          renderColumns="CompanyName TypeName" />
       </row>
 
       <row>

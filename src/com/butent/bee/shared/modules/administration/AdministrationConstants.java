@@ -195,6 +195,7 @@ public final class AdministrationConstants {
 
   public static final String VIEW_DEPARTMENTS = "Departments";
   public static final String VIEW_DEPARTMENT_EMPLOYEES = "DepartmentEmployees";
+  public static final String VIEW_DEPARTMENT_POSITIONS = "DepartmentPositions";
 
   public static final String VIEW_FILTERS = "Filters";
 
@@ -293,6 +294,7 @@ public final class AdministrationConstants {
   public static final String COL_DEPARTMENT_NAME = "DepartmentName";
   public static final String COL_DEPARTMENT_PARENT = "Parent";
   public static final String COL_DEPARTMENT_HEAD = "DepartmentHead";
+  public static final String COL_DEPARTMENT_POSITION_NUMBER_OF_EMPLOYEES = "NumberOfEmployees";
 
   public static final String COL_RS_REPORT = "Report";
   public static final String COL_RS_USER = "User";

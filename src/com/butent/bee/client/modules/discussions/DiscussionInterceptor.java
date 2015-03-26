@@ -27,6 +27,7 @@ import com.butent.bee.client.Callback;
 import com.butent.bee.client.Global;
 import com.butent.bee.client.communication.ParameterList;
 import com.butent.bee.client.communication.ResponseCallback;
+import com.butent.bee.client.communication.RpcCallback;
 import com.butent.bee.client.composite.DataSelector;
 import com.butent.bee.client.composite.FileCollector;
 import com.butent.bee.client.composite.FileGroup;
@@ -527,7 +528,7 @@ class DiscussionInterceptor extends AbstractFormInterceptor {
 
     ParameterList params = createParams(DiscussionEvent.MODIFY, null);
 
-    sendRequest(params, new Callback<ResponseObject>() {
+    sendRequest(params, new RpcCallback<ResponseObject>() {
 
       @Override
       public void onSuccess(ResponseObject result) {
@@ -591,7 +592,7 @@ class DiscussionInterceptor extends AbstractFormInterceptor {
     params.addDataItem(VAR_DISCUSSION_DATA, Codec.beeSerialize(rowSet));
     params.addDataItem(VAR_DISCUSSION_USERS, getDiscussionMembers(form, row));
 
-    sendRequest(params, new Callback<ResponseObject>() {
+    sendRequest(params, new RpcCallback<ResponseObject>() {
       @Override
       public void onFailure(String... reason) {
         form.updateRow(row, true);
@@ -780,8 +781,9 @@ class DiscussionInterceptor extends AbstractFormInterceptor {
     return (widget instanceof MultiSelector) ? (MultiSelector) widget : null;
   }
 
-  private static BeeRow getResponseRow(String caption, ResponseObject ro, Callback<?> callback) {
-    if (!Queries.checkResponse(caption, VIEW_DISCUSSIONS, ro, BeeRow.class, callback)) {
+  private static BeeRow getResponseRow(String caption, ResponseObject ro, RpcCallback<?> callback) {
+    if (!Queries.checkResponse(caption, BeeConst.UNDEF, VIEW_DISCUSSIONS, ro, BeeRow.class,
+        callback)) {
       return null;
     }
 
@@ -801,7 +803,9 @@ class DiscussionInterceptor extends AbstractFormInterceptor {
     return !BeeUtils.isEmpty(row.getString(rowSet.getColumnIndex(COL_PHOTO)));
   }
 
-  private static void sendRequest(ParameterList params, final Callback<ResponseObject> callback) {
+  private static void sendRequest(ParameterList params,
+      final RpcCallback<ResponseObject> callback) {
+
     BeeKeeper.getRpc().makePostRequest(params, new ResponseCallback() {
 
       @Override
@@ -820,7 +824,7 @@ class DiscussionInterceptor extends AbstractFormInterceptor {
   }
 
   private void sendRequest(ParameterList params, final DiscussionEvent event) {
-    Callback<ResponseObject> callback = new Callback<ResponseObject>() {
+    RpcCallback<ResponseObject> callback = new RpcCallback<ResponseObject>() {
 
       @Override
       public void onFailure(String... reason) {
@@ -1229,7 +1233,7 @@ class DiscussionInterceptor extends AbstractFormInterceptor {
 
         dialog.close();
 
-        sendRequest(params, new Callback<ResponseObject>() {
+        sendRequest(params, new RpcCallback<ResponseObject>() {
           @Override
           public void onFailure(String... reason) {
             getFormView().notifySevere(reason);
@@ -1606,7 +1610,7 @@ class DiscussionInterceptor extends AbstractFormInterceptor {
     ParameterList params = DiscussionsKeeper.createArgs(SVC_GET_DISCUSSION_DATA);
     params.addDataItem(VAR_DISCUSSION_ID, discussionId);
 
-    Callback<ResponseObject> callback = new Callback<ResponseObject>() {
+    RpcCallback<ResponseObject> callback = new RpcCallback<ResponseObject>() {
       @Override
       public void onFailure(String... reason) {
         getFormView().notifySevere(reason);

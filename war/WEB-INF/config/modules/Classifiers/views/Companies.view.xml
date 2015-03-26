@@ -65,14 +65,20 @@
       <SimpleColumn alias="InfoSourceName" name="Name" />
     </SimpleJoin>
 
-    <SimpleColumn name="Rating" />
+    <SimpleColumn name="Turnover" />
+    <SimpleJoin joinType="LEFT" name="Turnover">
+      <SimpleColumn alias="TurnoversName" name="Name" />
+    </SimpleJoin>
+    
+    <SimpleColumn name="TurnoverCurrency" />
+    <SimpleJoin joinType="LEFT" name="TurnoverCurrency">
+      <SimpleColumn name="Name" alias="TurnoverCurrencyName" />
+    </SimpleJoin>
 
     <SimpleColumn name="CompanyRelationTypeState" />
     <SimpleJoin joinType="LEFT" name="CompanyRelationTypeState">
       <SimpleColumn alias="RelationTypeStateName" name="Name" />
     </SimpleJoin>
-
-    <SimpleColumn name="ExchangeCode" />
 
     <SimpleColumn name="CreditLimit" />
     <SimpleColumn name="LimitCurrency" />

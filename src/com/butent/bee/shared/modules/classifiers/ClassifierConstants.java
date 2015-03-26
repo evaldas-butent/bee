@@ -54,6 +54,7 @@ public final class ClassifierConstants {
   public static final String VIEW_COMPANIES = "Companies";
   public static final String VIEW_COMPANY_PERSONS = "CompanyPersons";
   public static final String VIEW_PERSONS = "Persons";
+  public static final String VIEW_POSITIONS = "Positions";
 
   public static final String VIEW_ITEMS = "Items";
   public static final String VIEW_ITEM_CATEGORY_TREE = "CategoryTree";
@@ -227,6 +228,8 @@ public final class ClassifierConstants {
   public static final String ALS_COUNTRY_CODE = "CountryCode";
 
   public static final String ALS_POSITION_NAME = "PositionName";
+  public static final String ALS_PRIMARY_POSITION = "PrimaryPosition";
+  public static final String ALS_PRIMARY_POSITION_NAME = "PrimaryPositionName";
 
   public static final String ALS_EMAIL_ID = "EmailId";
 

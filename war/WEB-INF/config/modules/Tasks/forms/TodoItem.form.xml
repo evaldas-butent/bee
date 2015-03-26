@@ -23,7 +23,7 @@
 
     <row module="Classifiers.Contacts">
       <Label for="Company" />
-	  <DataSelector source="Company" renderColumns="CompanyName" style="width: 200px;" />
+	  <DataSelector source="Company" renderColumns="CompanyName CompanyTypeName" choiceColumns="Name TypeName" style="width: 200px;" />
 
       <Label for="Contact" />
       <DataSelector source="Contact" newRowEnabled="false" style="width: 200px;"

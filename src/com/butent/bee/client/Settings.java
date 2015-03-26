@@ -25,6 +25,10 @@ public final class Settings {
   private static JSONObject settings;
   private static boolean initialized;
 
+  public static boolean contains(String key) {
+    return checkSettings() && settings.containsKey(key);
+  }
+
   public static int getApplianceHeaderHeight() {
     return getInt("applianceHeaderHeight");
   }
@@ -194,7 +198,7 @@ public final class Settings {
   }
 
   private static JSONValue getValue(String key) {
-    if (checkSettings() && settings.containsKey(key)) {
+    if (contains(key)) {
       return settings.get(key);
     } else {
       return null;

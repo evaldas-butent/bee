@@ -17,6 +17,10 @@ import com.butent.bee.shared.css.values.TextAlign;
 import com.butent.bee.shared.css.values.WhiteSpace;
 import com.butent.bee.shared.data.IsRow;
 import com.butent.bee.shared.data.value.HasValueType;
+import com.butent.bee.shared.data.value.NumberValue;
+import com.butent.bee.shared.data.value.TextValue;
+import com.butent.bee.shared.data.value.Value;
+import com.butent.bee.shared.data.value.ValueType;
 import com.butent.bee.shared.export.XCell;
 import com.butent.bee.shared.export.XSheet;
 import com.butent.bee.shared.export.XStyle;
@@ -80,7 +84,20 @@ public abstract class AbstractColumn<C> implements HasValueType, HasOptions, Has
         return null;
 
       } else {
-        XCell xc = new XCell(context.getColumnIndex(), html);
+        Value value = null;
+
+        if (ValueType.isNumeric(getValueType())) {
+          Double d = BeeUtils.toDoubleOrNull(BeeUtils.removeWhiteSpace(html));
+          if (BeeUtils.isDouble(d)) {
+            value = new NumberValue(d);
+          }
+        }
+
+        if (value == null) {
+          value = new TextValue(html);
+        }
+
+        XCell xc = new XCell(context.getColumnIndex(), value);
         if (styleRef != null) {
           xc.setStyleRef(styleRef);
         }

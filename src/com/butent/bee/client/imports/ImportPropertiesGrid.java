@@ -5,8 +5,8 @@ import com.google.gwt.dom.client.OptionElement;
 
 import static com.butent.bee.shared.modules.administration.AdministrationConstants.*;
 
-import com.butent.bee.client.Callback;
 import com.butent.bee.client.Global;
+import com.butent.bee.client.communication.RpcCallback;
 import com.butent.bee.client.data.Data;
 import com.butent.bee.client.data.IdCallback;
 import com.butent.bee.client.data.Queries;
@@ -200,7 +200,7 @@ public class ImportPropertiesGrid extends AbstractGridInterceptor {
                         rowSet.addRow(DataUtils.NEW_ROW_ID, DataUtils.NEW_ROW_VERSION,
                             Queries.asList(id, entry.getKey(), entry.getValue()));
                       }
-                      Queries.insertRows(rowSet, new Callback<RowInfoList>() {
+                      Queries.insertRows(rowSet, new RpcCallback<RowInfoList>() {
                         @Override
                         public void onSuccess(RowInfoList result) {
                           getGridPresenter().refresh(false);

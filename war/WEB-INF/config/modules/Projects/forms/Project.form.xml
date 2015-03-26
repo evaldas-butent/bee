@@ -32,7 +32,8 @@
 
       <row>
         <Label for="Company" text="=client" style="&lbl;" class="bee-required" />
-        <DataSelector source="Company" style="&inp2;" required="true" />
+        <DataSelector source="Company" style="&inp2;" required="true" choiceColumns="Name TypeName" 
+            renderColumns="CompanyName CompanyTypeName"/>
 
         <Label for="ContactPerson" text="=personContact"
           style="margin-right: 1em; text-align: left; margin-left: -110px;" />
@@ -61,7 +62,7 @@
 
           <row>
             <Label for="Category" text="=category" style="&lbl;" class="bee-required" />
-            <DataSelector source="Category" style="&inp2;" />
+            <DataSelector name="Category" source="Category" style="&inp2;" />
 
             <Label for="Type" text="=type" style="&lbl4;" />
             <DataSelector source="Type" style="&inp2;" />
@@ -148,10 +149,10 @@
 
             <row>
               <Label text="=contract" style="margin-right: 1em; text-align: left;" />
-              <DataSelector name="Contract" source="Contract" 
+              <DataSelector name="Contract" source="Contract"
               renderColumns="ContractName ContractNumber" 
-               choiceColumns="Name Number DocumentDate Expires" viewName="RelatedDocuments" 
-               filter="Document AND Project" caching="none" module="Documents"
+               choiceColumns="Name Number DocumentDate Expires" viewName="Documents" 
+               caching="none" module="Documents"
                newRowEnabled="false" style="&inp2;" />
 
               <Label text="=salePrice" style="&lbl;" />

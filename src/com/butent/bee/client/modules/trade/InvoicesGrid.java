@@ -26,7 +26,7 @@ import com.butent.bee.shared.modules.trade.TradeConstants;
 import java.util.HashSet;
 import java.util.Set;
 
-public class SalesGrid extends AbstractGridInterceptor implements ClickHandler {
+public class InvoicesGrid extends AbstractGridInterceptor implements ClickHandler {
 
   private final Button action = new Button(Localized.getConstants().trSendToERP(), this);
 
@@ -38,7 +38,7 @@ public class SalesGrid extends AbstractGridInterceptor implements ClickHandler {
 
   @Override
   public GridInterceptor getInstance() {
-    return new SalesGrid();
+    return new InvoicesGrid();
   }
 
   @Override

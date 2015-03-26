@@ -8,7 +8,6 @@
   width="800" height="600"
   >
   <f:properties reports="PrintTradeInvoice"/>
-  
   <FlowPanel class="flexBox-vertical">
     <br/>
     <Table>

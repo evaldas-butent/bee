@@ -246,8 +246,16 @@ public class ProjectIncomesGrid extends AbstractGridInterceptor {
   private void initHeader(GridPresenter presenter) {
     GridView gridView = presenter.getGridView();
     presenter.getHeader().clearCommandPanel();
+    IsRow row = presenter.getActiveRow();
     final FormView parentForm = ViewHelper.getForm(presenter.getMainView());
-    long owner = BeeUtils.unbox(parentForm.getLongValue(COL_PROJECT_OWNER));
+    long owner = BeeConst.LONG_UNDEF;
+    int idxOwner = getDataIndex(COL_PROJECT_OWNER);
+
+    if (row != null && !BeeConst.isUndef(idxOwner)) {
+      owner = BeeUtils.unbox(row.getLong(idxOwner));
+    } else if (parentForm != null) {
+      owner = BeeUtils.unbox(parentForm.getLongValue(COL_PROJECT_OWNER));
+    }
 
     if (gridView == null || gridView.isReadOnly()
         || !BeeKeeper.getUser().canCreateData(VIEW_PROJECT_INCOMES)

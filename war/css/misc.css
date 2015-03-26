@@ -1,18 +1,26 @@
 .bee-orgChart-panel {
   background-color: white;
 }
-.bee-orgChart-table {
-  margin-top: 1ex;
-  margin-left: 1em;
+
+.bee-orgChart-toggle-positions {
+  padding-right: 3px;
+}
+.bee-orgChart-toggle-employees {
+  padding-right: 3em;
 }
 
 .bee-orgChart-department-panel {
   border: 2px solid #b5d9ea;
   border-radius: 5px;
+  box-sizing: border-box;
   box-shadow: rgba(0, 0, 0, 0.5) 3px 3px 3px;
   background-image: linear-gradient(to bottom, #edf7ff, #cde7ee);
-  min-height: 30px;
+  left: 0;
+  top: 0;
+  transition: left 350ms, top 350ms;
+  overflow: auto;
 }
+
 .bee-orgChart-department-label {
   cursor: pointer;
   border-bottom: 1px solid #ccc;
@@ -21,20 +29,119 @@
   text-align: center;
 }
 
-.bee-orgChart-department-boss {
+.bee-orgChart-boss-table,
+.bee-orgChart-employee-table,
+.bee-orgChart-position-table,
+.bee-orgChart-pos-and-empl {
+  border-collapse: collapse;
+}
+.bee-orgChart-boss-table td,
+.bee-orgChart-employee-table td,
+.bee-orgChart-position-table td,
+.bee-orgChart-pos-and-empl td {
+  padding: 1px 5px;
+}
+
+.bee-orgChart-photo-container,
+.bee-orgChart-photo-empty {
+  width: 30px;
+}
+.bee-orgChart-photo-container {
+  height: 30px;
+}
+.bee-orgChart-photo-container img {
+  width: auto;
+  height: auto;
+  max-width: 100%;
+  max-height: 100%;
+}
+
+.bee-orgChart-boss-label {
   cursor: pointer;
   color: red;
 }
+.bee-orgChart-position-staffed,
 .bee-orgChart-employee-label {
   cursor: pointer;
 }
 
+.bee-orgChart-employee-summary {
+  margin-left: 1em;
+}
+
+.bee-orgChart-position-staffed,
+.bee-orgChart-employee-summary .bee-orgChart-employee-label {
+  text-decoration: underline;
+}
+.bee-orgChart-position-actual,
+.bee-orgChart-employee-count {
+  font-weight: bold;
+  color: white;
+  background-image: linear-gradient(to bottom, #858a90, #ccced1);
+  text-align: right;
+}
+.bee-orgChart-position-under {
+  font-weight: bold;
+  background-color: lightpink;
+  text-align: right;
+}
+.bee-orgChart-position-planned {
+  font-weight: bold;
+  background-color: lightgreen;
+  text-align: right;
+}
+.bee-orgChart-position-over {
+  font-weight: bold;
+  background-color: yellow;
+  text-align: right;
+}
+
 .bee-orgChart-department-drag,
-.bee-orgChart-department-boss-drag,
+.bee-orgChart-boss-drag,
 .bee-orgChart-employee-drag {
   background-image: linear-gradient(to bottom, yellow, yellow);
 }
 .bee-orgChart-department-dragOver {
   border: 2px solid #e3ca4b;
   background: linear-gradient(to bottom, #fff7ae, #eee79e);
+}
+
+.bee-orgChart-line-straight,
+.bee-orgChart-line-horizontal {
+  height: 1px;
+}
+.bee-orgChart-line-vertical {
+  width: 1px;
+}
+.bee-orgChart-line-straight,
+.bee-orgChart-line-horizontal,
+.bee-orgChart-line-vertical {
+  background-color: #3388dd;
+}
+
+.bee-orgChart-settings-table {
+  border-collapse: collapse;
+}
+.bee-orgChart-settings-table .bee-LabelCell {
+  padding-right: 12px;
+}
+.bee-orgChart-settings-table .bee-InputSpinner {
+  width: 80px;
+}
+.bee-orgChart-settings-table .bee-RadioButton input {
+  margin: 0;
+}
+.bee-orgChart-settings-table .bee-RadioButton label {
+  padding-left: 3px;
+  padding-right: 6px;
+}
+.bee-orgChart-settings-separator {
+  height: 10px;
+}
+.bee-orgChart-settings-commands-cell {
+  padding-top: 2ex;
+  text-align: right;
+}
+.bee-orgChart-settings-cancel {
+  margin-left: 1em;
 }

@@ -1,23 +1,31 @@
 package com.butent.bee.client.output;
 
-import com.butent.bee.client.view.edit.Editor;
 import com.butent.bee.client.widget.InputSpinner;
+import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.data.SimpleRowSet.SimpleRow;
+import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.utils.BeeUtils;
+import com.butent.bee.shared.utils.Codec;
 
 import java.math.BigDecimal;
+import java.util.Collections;
 import java.util.EnumSet;
+import java.util.Map;
 
 public class ReportNumericItem extends ReportItem {
 
-  public ReportNumericItem(String name, String caption, int precision) {
+  private static final String PRECISION = "PRECISION";
+
+  private int precision;
+  private InputSpinner precisionWidget;
+
+  public ReportNumericItem(String name, String caption) {
     super(name, caption);
-    setOptions(BeeUtils.toString(precision));
   }
 
   @Override
-  public Object calculate(Object total, String value) {
-    BigDecimal val = BeeUtils.toDecimalOrNull(value);
+  public Object calculate(Object total, ReportValue value) {
+    BigDecimal val = value != null ? BeeUtils.toDecimalOrNull(value.getValue()) : null;
 
     if (val != null) {
       switch (getFunction()) {
@@ -44,21 +52,27 @@ public class ReportNumericItem extends ReportItem {
   }
 
   @Override
-  public ReportItem create() {
-    return new ReportNumericItem(getName(), getCaption(), BeeUtils.toInt(getOptions()));
+  public void deserialize(String data) {
+    Map<String, String> map = Codec.deserializeMap(data);
+
+    if (!BeeUtils.isEmpty(map)) {
+      setPrecision(BeeUtils.toInt(map.get(PRECISION)));
+    }
   }
 
   @Override
-  public ReportItem enableCalculation() {
-    function = Function.SUM;
-    setRowSummary(true);
-    setColSummary(true);
+  public ReportNumericItem enableCalculation() {
+    if (getFunction() == null) {
+      setFunction(Function.SUM);
+      setRowSummary(true);
+      setColSummary(true);
+    }
     return this;
   }
 
   @Override
-  public String evaluate(SimpleRow row) {
-    return BeeUtils.round(row.getValue(getName()), BeeUtils.toInt(getOptions()));
+  public ReportValue evaluate(SimpleRow row) {
+    return ReportValue.of(BeeUtils.round(row.getValue(getName()), getPrecision()));
   }
 
   @Override
@@ -70,21 +84,50 @@ public class ReportNumericItem extends ReportItem {
 
   @Override
   public String getOptionsCaption() {
-    return "Tikslumas";
+    return Localized.getConstants().precision();
   }
 
   @Override
-  public Editor getOptionsEditor() {
-    InputSpinner editor = new InputSpinner(0, 5);
-    editor.setValue(getOptions());
-    return editor;
+  public InputSpinner getOptionsWidget() {
+    if (precisionWidget == null) {
+      precisionWidget = new InputSpinner(0, 5);
+    }
+    precisionWidget.setValue(getPrecision());
+    return precisionWidget;
+  }
+
+  public int getPrecision() {
+    return precision;
+  }
+
+  @Override
+  public String getStyle() {
+    return STYLE_NUM;
+  }
+
+  @Override
+  public ReportNumericItem saveOptions() {
+    if (precisionWidget != null) {
+      setPrecision(precisionWidget.getIntValue());
+    }
+    return this;
+  }
+
+  @Override
+  public String serialize() {
+    return super.serialize(Codec.beeSerialize(Collections.singletonMap(PRECISION, precision)));
+  }
+
+  public ReportNumericItem setPrecision(int prec) {
+    this.precision = Assert.nonNegative(prec);
+    return this;
   }
 
   @Override
   public Object summarize(Object total, Object value) {
     if (value != null) {
       if (total == null) {
-        return value;
+        return super.summarize(total, value);
       }
       switch (getFunction()) {
         case MAX:

@@ -18,8 +18,10 @@
       <Table>
         <row>
           <DataSelector name="EmailId" source="EmailId" style="width: 100%;" maxLength="50" editEnabled="true" />
+          <!--
           <CheckBox html="-" name="RemindEmail" source="RemindEmail" />
           <CheckBox html="-" name="EmailInvoices" source="EmailInvoices" />
+          -->
         </row>
       </Table>
     </cell>

@@ -1,70 +1,150 @@
 package com.butent.bee.client.output;
 
 import com.butent.bee.client.view.edit.Editor;
+import com.butent.bee.client.widget.InputDateTime;
 import com.butent.bee.client.widget.ListBox;
 import com.butent.bee.shared.data.SimpleRowSet.SimpleRow;
 import com.butent.bee.shared.time.DateTime;
+import com.butent.bee.shared.time.HasDateValue;
 import com.butent.bee.shared.time.TimeUtils;
-import com.butent.bee.shared.utils.EnumUtils;
+import com.butent.bee.shared.utils.BeeUtils;
 
+import java.util.ArrayList;
 import java.util.EnumSet;
+import java.util.List;
 
 public class ReportDateTimeItem extends ReportDateItem {
 
   public ReportDateTimeItem(String name, String caption) {
     super(name, caption);
-    setOptions(DateTimeFunction.DATE.name());
   }
 
   @Override
-  public ReportItem create() {
-    ReportDateTimeItem item = new ReportDateTimeItem(getName(), getCaption());
-    item.setOptions(getOptions());
-    return item;
-  }
+  public ReportValue evaluate(SimpleRow row) {
+    DateTime date = row.getDateTime(getName());
 
-  @Override
-  public String evaluate(SimpleRow row) {
-    String value = null;
-    DateTime dateTime = row.getDateTime(getName());
+    if (date != null) {
+      if (BeeUtils.isEmpty(getFormat())) {
+        return ReportValue.of(date.toCompactString());
+      }
+      List<String> values = new ArrayList<>();
+      List<ReportValue> displays = new ArrayList<>();
 
-    if (dateTime != null) {
-      DateTimeFunction fnc = EnumUtils.getEnumByName(DateTimeFunction.class, getOptions());
+      for (DateTimeFunction fnc : getFormat().keySet()) {
+        ReportValue value;
 
-      if (fnc != null) {
         switch (fnc) {
           case DATE:
-            value = dateTime.toDateString();
+            value = evaluate(date.getDate(), null);
             break;
           case HOUR:
-            value = TimeUtils.padTwo(dateTime.getHour());
-            break;
           case MINUTE:
-            value = TimeUtils.padTwo(dateTime.getMinute());
-            break;
-          case TIME:
-            value = dateTime.toCompactTimeString();
+            int val = getValue(date, fnc);
+            value = ReportValue.of(TimeUtils.padTwo(val));
             break;
           default:
-            value = super.evaluate(row);
+            value = evaluate(date.getDate(), fnc);
             break;
         }
-      } else {
-        value = dateTime.toCompactString();
+        values.add(value.getValue());
+        displays.add(value);
       }
+      return ReportValue.of(BeeUtils.joinItems(values), BeeUtils.joinItems(displays));
     }
-    return value;
+    return ReportValue.empty();
   }
 
   @Override
-  public Editor getOptionsEditor() {
-    ListBox editor = (ListBox) super.getOptionsEditor();
+  public ReportItem setFilter(String value) {
+    if (!BeeUtils.isEmpty(value)) {
+      getFilterWidget();
 
-    for (DateTimeFunction fnc : EnumSet.of(DateTimeFunction.DATE, DateTimeFunction.TIME,
-        DateTimeFunction.HOUR, DateTimeFunction.MINUTE)) {
-      editor.addItem(fnc.getCaption(), fnc.name());
+      if (BeeUtils.isEmpty(getFormat())) {
+        DateTime from = TimeUtils.parseDateTime(value);
+        DateTime to = TimeUtils.nextMinute(from, 0);
+
+        getFilterFrom().setDateTime(TimeUtils.max(getFilterFrom().getDateTime(), from));
+        getFilterTo().setDateTime(getFilterTo().getDateTime() != null
+            ? TimeUtils.min(getFilterTo().getDateTime(), to) : to);
+      } else {
+        String[] parts = BeeUtils.split(value, ',');
+        int x = 0;
+
+        for (DateTimeFunction fnc : getFormat().keySet()) {
+          switch (fnc) {
+            case DATE:
+              setFilter(parts[x++], null);
+              break;
+            case HOUR:
+            case MINUTE:
+              getFormat().get(fnc).setValue(parts[x++]);
+              break;
+            default:
+              setFilter(parts[x++], fnc);
+          }
+        }
+      }
     }
-    editor.setValue(getOptions());
+    return this;
+  }
+
+  @Override
+  public boolean validate(SimpleRow row) {
+    return getFilterFrom() == null || !row.getRowSet().hasColumn(getName())
+        || validate(getFilterFrom().getDateTime(), getFilterTo().getDateTime(),
+            row.getDateTime(getName()));
+  }
+
+  @Override
+  protected Editor createFilterEditor(DateTimeFunction fnc) {
+    if (fnc == null) {
+      return new InputDateTime();
+    }
+    int limit = 0;
+
+    switch (fnc) {
+      case HOUR:
+        limit = 24;
+        break;
+      case MINUTE:
+        limit = 60;
+        break;
+      default:
+        return super.createFilterEditor(fnc);
+    }
+    ListBox editor = new ListBox();
+    editor.addItem("");
+
+    for (int i = 0; i < limit; i++) {
+      editor.addItem(TimeUtils.padTwo(i));
+    }
     return editor;
+  }
+
+  @Override
+  protected InputDateTime getFilterFrom() {
+    return (InputDateTime) super.getFilterFrom();
+  }
+
+  @Override
+  protected InputDateTime getFilterTo() {
+    return (InputDateTime) super.getFilterTo();
+  }
+
+  @Override
+  protected EnumSet<DateTimeFunction> getSupportedFunctions() {
+    return EnumSet.allOf(DateTimeFunction.class);
+  }
+
+  @Override
+  protected int getValue(HasDateValue date, DateTimeFunction fnc) {
+    switch (fnc) {
+      case HOUR:
+        return date.getHour();
+      case MINUTE:
+        return date.getMinute();
+      default:
+        return super.getValue(date, fnc);
+    }
   }
 }
