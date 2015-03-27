@@ -803,11 +803,14 @@ public class ScreenImpl implements Screen {
     Flow containerEnv = new Flow();
     FaLabel bookmark = new FaLabel(FontAwesome.BOOKMARK);
     Label title = new Label();
+    final Label createButton = new Label("+ " + Localized.getConstants().create());
 
+    createButton.addStyleName(BeeConst.CSS_CLASS_PREFIX + "CreateButton");
     top.addStyleName(BeeConst.CSS_CLASS_PREFIX + "TopWest");
     title.setText(Localized.getConstants().myEnvironment());
     containerEnv.addStyleName(BeeConst.CSS_CLASS_PREFIX + "MyEnvironment");
 
+    top.add(createButton);
     containerEnv.add(bookmark);
     containerEnv.add(title);
     top.add(containerEnv);
