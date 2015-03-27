@@ -483,6 +483,8 @@ public interface LocalizableConstants extends Constants, LocalizableClassifierCo
 
   String name();
 
+  String myEnvironment();
+
   String newCompanyPerson();
 
   String newEmailAccount();

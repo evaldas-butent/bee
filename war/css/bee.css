@@ -1194,10 +1194,7 @@ div > span.bee-MenuItem.bee-MenuItem-label {
 
 .bee-StackHeader {
   cursor: pointer;
-  background-color: #EFF0F0;
-}
-.bee-StackHeader:hover {
-  background-color: #f2f2f2;
+  background-color: #e3e3e3;
 }
 
 .bee-ChoicePanel {
@@ -1648,33 +1645,34 @@ div > span.bee-MenuItem.bee-MenuItem-label {
 }
 
 .bee-CentralScrutinizer {
-  width: calc(100% - 12px);
-  height: calc(100% - 24px);
-  background-color: white;
+  height: calc(100% - 129px);
 }
 
-.bee-CentralScrutinizer > .bee-StackHeader:hover {
-  background-color: #e4e4e4;
-}
-.bee-CentralScrutinizer > .bee-StackHeader-selected {
+.bee-CentralScrutinizer > .bee-StackHeader-selected > .bee-Appliance-label {
+  background-color: #414142;
   color: white;
-  text-shadow: 1px -1px 2px rgba(22,84,122,0.75);
-  background-image: linear-gradient(#3995cd 0%,#3995cd 17%,#3792ca 31%,#318bc1 55%,#2278ac 100%);
+  font-size: 14px;
+  font-weight: bold;
+  padding: 6px 12px 6px 12px;
+  border-radius: 5px;
+  margin-left: -12px;
 }
 
 .bee-CentralScrutinizer > .bee-StackContent {
-  border: 1px solid WhiteSmoke;
+  background-color: #e3e3e3;
 }
 
 .bee-Appliance-icon {
   position: absolute;
   top: 4px;
   left: 15px;
+  visibility: hidden;
 }
 .bee-Appliance-label {
   position: absolute;
   top: 4px;
   left: 50px;
+  color: #414142;
 }
 .bee-Appliance-close {
   position: absolute;
@@ -1689,7 +1687,7 @@ div > span.bee-MenuItem.bee-MenuItem-label {
 
 .bee-Shell {
   width: 100%;
-  height: calc(100% - 3px);
+  height: calc(100% - 5px);
 }
 
 .bee-Tile {
@@ -2731,7 +2729,7 @@ div > span.bee-MenuItem.bee-MenuItem-label {
 .bee-News-header {
   position: relative;
   height: 30px;
-  background-color: #f0eeef;  
+  background-color: #e3e3e3;
 }
 
 .bee-News-disclosure,
@@ -3247,16 +3245,14 @@ div > span.bee-MenuItem.bee-MenuItem-label {
   cursor: pointer;
 }
 .bee-spaces-label:hover {
-  text-decoration: underline;
-  color: #00e;
 }
 
 .bee-spaces-startup,
 .bee-spaces-edit,
 .bee-spaces-delete {
-  font-size: large;
+  font-size: medium;
   padding: 3px;
-  color: #555;
+  color: #414142;
 }
 .bee-spaces-startup {
   cursor: pointer;
@@ -3625,3 +3621,18 @@ textarea,
   background-color: #578d37;
 }
 
+.bee-MyEnvironment {
+  font-weight: bold;
+  font-size: 12px;
+  margin: 38px 0 0 32px;
+  color: #414142;
+  top: 36px;
+  display: flex;
+}
+.bee-MyEnvironment > div.bee-Label {
+  margin-left: 10px;
+  text-transform: uppercase;
+}
+.bee-MyEnvironment > div.bee-fa-label {
+  margin-top: 2px;
+}

@@ -11,7 +11,7 @@ var BeeSettings = {
   "minimizeNumberOfConcurrentRequests": true,
   "showUserPhoto": true,
   "onStartup": {"content": "form_AnnouncementsBoard", "force": "*"},
-  "applianceHeaderHeight": 25,
+  "applianceHeaderHeight": 35,
   "viewHeaderHeight": 52,
   "clickSensitivityMillis": 100,
   "clickSensitivityDistance": 10  

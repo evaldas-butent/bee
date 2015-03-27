@@ -5,7 +5,6 @@ import com.google.gwt.core.client.Scheduler.ScheduledCommand;
 import com.google.gwt.dom.client.Style.Cursor;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
-import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.ui.HasWidgets;
 import com.google.gwt.user.client.ui.Panel;
 import com.google.gwt.user.client.ui.Widget;
@@ -800,12 +799,26 @@ public class ScreenImpl implements Screen {
   protected Pair<? extends IdentifiableWidget, Integer> initWest() {
     setCentralScrutinizer(new CentralScrutinizer());
 
+    Flow top = new Flow();
+    Flow containerEnv = new Flow();
+    FaLabel bookmark = new FaLabel(FontAwesome.BOOKMARK);
+    Label title = new Label();
+
+    top.addStyleName(BeeConst.CSS_CLASS_PREFIX + "TopWest");
+    title.setText(Localized.getConstants().myEnvironment());
+    containerEnv.addStyleName(BeeConst.CSS_CLASS_PREFIX + "MyEnvironment");
+
+    containerEnv.add(bookmark);
+    containerEnv.add(title);
+    top.add(containerEnv);
+
     Flow panel = new Flow();
+    panel.add(top);
+    panel.addStyleName(BeeConst.CSS_CLASS_PREFIX + "WestContainer");
     panel.add(getCentralScrutinizer());
     panel.add(createCopyright(BeeConst.CSS_CLASS_PREFIX));
 
-    int width = BeeUtils.resize(Window.getClientWidth(), 1000, 2000, 240, 320);
-    return Pair.of(panel, width);
+    return Pair.of(panel, 200);
   }
 
   protected void onUserSignatureClick() {
