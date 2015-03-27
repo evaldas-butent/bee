@@ -13,8 +13,8 @@
   name="NewCompany"
   viewName="Companies"
   caption="=client"
-  width="875"
-  height="565"
+  width="700"
+  height="700"
   >
   <FlowPanel class="flexBox-vertical">
 
@@ -124,7 +124,7 @@
          <Label text="=companyRelation" data="CompRelTypeStore" style="&lbl2;" />
          <ChildSelector viewName="CompanyRelationTypes" childTable="CompRelTypeStore"
            targetRelColumn="Company" sourceRelColumn="RelationType" newRowEnabled="true"
-           label="=companyRelationType" data="CompRelTypeStore" style="&inp1;"/>    
+           label="=companyRelationType" data="CompRelTypeStore" style="&inp1;"/>
       </row>
       
       <row for="CompanyRelationTypeState">

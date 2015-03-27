@@ -731,7 +731,7 @@ div > span.bee-MenuItem.bee-MenuItem-label {
 .bee-Body > div.bee-DialogBox:last-of-type .bee-Dialog-header,
 .bee-Body > div.bee-ModalForm:last-of-type > .bee-ModalForm-content > .bee-Header-container,
 .bee-Body > div.bee-ModalGrid:last-of-type > .bee-ModalGrid-content > .bee-Header-container {
-  background-image: linear-gradient(to bottom, #feffff, #d2ebf9);
+  background-color: #E3E3E3;
 }
 
 .bee-Dialog-caption {
@@ -941,6 +941,7 @@ div > span.bee-MenuItem.bee-MenuItem-label {
   top: 0;
   bottom: 0;
   overflow: auto;
+  background-color: white;
 }
 
 .bee-required:after {
