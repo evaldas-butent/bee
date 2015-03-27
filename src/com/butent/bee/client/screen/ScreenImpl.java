@@ -42,6 +42,7 @@ import com.butent.bee.client.layout.Horizontal;
 import com.butent.bee.client.layout.Simple;
 import com.butent.bee.client.layout.Split;
 import com.butent.bee.client.logging.ClientLogManager;
+import com.butent.bee.client.menu.MenuCommand;
 import com.butent.bee.client.render.PhotoRenderer;
 import com.butent.bee.client.screen.TilePanel.Tile;
 import com.butent.bee.client.style.StyleUtils;
@@ -68,6 +69,7 @@ import com.butent.bee.shared.html.Tags;
 import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogUtils;
+import com.butent.bee.shared.menu.MenuService;
 import com.butent.bee.shared.modules.administration.AdministrationConstants;
 import com.butent.bee.shared.modules.classifiers.ClassifierConstants;
 import com.butent.bee.shared.modules.documents.DocumentConstants;
@@ -104,8 +106,11 @@ public class ScreenImpl implements Screen {
   private static final String ANNOUNCEMENT = "Announcement";
   private static final String PHOTO_URL = "images/photo/";
   private static FaLabel userLabel = new FaLabel(FontAwesome.USER);
+  private static FaLabel emailLabel = new FaLabel(FontAwesome.ENVELOPE_O);
   private static Flow flowUserContainer = new Flow();
+  private static Flow flowEmailContainer = new Flow();
   private static Flow flowOnlineUserSize = new Flow();
+  private static Flow flowOnlineEmailSize = new Flow();
   private CentralScrutinizer centralScrutinizer;
 
   private Workspace workspace;
@@ -791,7 +796,10 @@ public class ScreenImpl implements Screen {
     Panel commandContainer = createCommandPanel();
     if (commandContainer != null) {
       panel.add(commandContainer);
+
+      commandContainer.add(onlineEmail());
       commandContainer.add(onlineUsers());
+
       setCommandPanel(commandContainer);
     }
 
@@ -1189,6 +1197,51 @@ public class ScreenImpl implements Screen {
     }
   }
 
+  public static Widget onlineEmail() {
+
+    final MenuCommand command = new MenuCommand(MenuService.OPEN_MAIL, null);
+
+    flowEmailContainer.addStyleName(BeeConst.CSS_CLASS_PREFIX + "EmailIcon-Container");
+    flowEmailContainer.add(flowOnlineEmailSize);
+
+    flowOnlineEmailSize.setStyleName(BeeConst.CSS_CLASS_PREFIX + "OnlineEmailSize-None");
+    emailLabel.setStyleName(BeeConst.CSS_CLASS_PREFIX + "OnlineEmail");
+
+    emailLabel.addClickHandler(new ClickHandler() {
+
+      @Override
+      public void onClick(ClickEvent arg0) {
+
+        if (command.getService().equals(MenuService.OPEN_MAIL)) {
+          command.execute();
+        }
+      }
+    });
+
+    flowEmailContainer.add(emailLabel);
+    return flowEmailContainer;
+  }
+
+  public static void updateOnlineEmails(int size) {
+
+    FaLabel label = BeeKeeper.getScreen().getOnlineEmailLabel();
+    Flow emailSize = BeeKeeper.getScreen().getOnlineEmailSize();
+
+    if (label == null || emailSize == null) {
+      return;
+    }
+
+    if (size > 0) {
+      emailSize.setStyleName(BeeConst.CSS_CLASS_PREFIX + "OnlineEmailSize");
+      label.setStyleName(BeeConst.CSS_CLASS_PREFIX + "OnlineEmail" + "-Selected");
+      emailSize.getElement().setInnerText(String.valueOf(size));
+
+    } else {
+      label.setStyleName(BeeConst.CSS_CLASS_PREFIX + "OnlineEmail");
+      emailSize.setStyleName(BeeConst.CSS_CLASS_PREFIX + "OnlineEmailSize-None");
+    }
+  }
+
   @Override
   public FaLabel getOnlineUserLabel() {
     return userLabel;
@@ -1197,5 +1250,15 @@ public class ScreenImpl implements Screen {
   @Override
   public Flow getOnlineUserSize() {
     return flowOnlineUserSize;
+  }
+
+  @Override
+  public FaLabel getOnlineEmailLabel() {
+    return emailLabel;
+  }
+
+  @Override
+  public Flow getOnlineEmailSize() {
+    return flowOnlineEmailSize;
   }
 }

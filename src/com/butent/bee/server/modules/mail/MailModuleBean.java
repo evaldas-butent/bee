@@ -405,6 +405,18 @@ public class MailModuleBean implements BeeModule, HasTimerService {
         response = ResponseObject
             .response(HtmlUtils.stripHtml(reqInfo.getParameter(COL_HTML_CONTENT)));
 
+      } else if (BeeUtils.same(svc, SVC_GET_UNREAD_COUNT)) {
+
+        response = ResponseObject.response(qs.getData(new SqlSelect()
+            .addCount("UnreadEmailCount")
+            .addFrom(TBL_PLACES)
+            .addFromInner(TBL_FOLDERS, sys.joinTables(TBL_FOLDERS, TBL_PLACES, COL_FOLDER))
+            .addFromInner(TBL_ACCOUNTS, sys.joinTables(TBL_ACCOUNTS, TBL_FOLDERS, COL_ACCOUNT))
+            .setWhere(SqlUtils.and(SqlUtils.equals(TBL_ACCOUNTS, COL_USER, usr.getCurrentUserId()),
+                SqlUtils.or(SqlUtils.isNull(TBL_PLACES, COL_FLAGS),
+                    SqlUtils.equals(SqlUtils.bitAnd(TBL_PLACES, COL_FLAGS,
+                        MessageFlag.SEEN.getMask()), 0))))).getIntColumn("UnreadEmailCount"));
+
       } else {
         String msg = BeeUtils.joinWords("Mail service not recognized:", svc);
         logger.warning(msg);

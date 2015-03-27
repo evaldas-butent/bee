@@ -11,6 +11,7 @@ import com.butent.bee.client.data.RowEditor;
 import com.butent.bee.client.grid.GridFactory;
 import com.butent.bee.client.grid.GridFactory.GridOptions;
 import com.butent.bee.client.layout.Flow;
+import com.butent.bee.client.modules.mail.MailKeeper;
 import com.butent.bee.client.presenter.PresenterCallback;
 import com.butent.bee.client.screen.Domain;
 import com.butent.bee.client.ui.IdentifiableWidget;
@@ -825,6 +826,8 @@ public class NewsAggregator implements HandlesAllDataEvents {
   }
 
   private void updateHeader() {
+
+    MailKeeper.getUnreadCount();
     Flow header = BeeKeeper.getScreen().getDomainHeader(Domain.NEWS, null);
     if (header == null) {
       return;

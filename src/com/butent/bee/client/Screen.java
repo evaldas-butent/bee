@@ -99,4 +99,8 @@ public interface Screen extends NotificationListener, HasExtendedInfo {
   FaLabel getOnlineUserLabel();
 
   Flow getOnlineUserSize();
+
+  Flow getOnlineEmailSize();
+
+  FaLabel getOnlineEmailLabel();
 }
