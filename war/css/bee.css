@@ -1,4 +1,4 @@
-﻿@font-face {
+﻿﻿@font-face {
   font-family: FontAwesome;
   src: url(../fonts/fontawesome-webfont.woff?v=4.2.0);
   font-weight: normal;
@@ -940,7 +940,6 @@ div > span.bee-MenuItem.bee-MenuItem-label {
   top: 0;
   bottom: 0;
   overflow: auto;
-  background-color: WhiteSmoke;
 }
 
 .bee-required:after {
@@ -3541,7 +3540,6 @@ textarea,
 }
 
 .bee-EventsBoard-content {
-  background-color: #f5f5ed;
   overflow: auto;
   height: calc(100% - 35px);
   width: 100%;
