@@ -18,6 +18,7 @@ import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.Global;
 import com.butent.bee.client.Screen;
 import com.butent.bee.client.Settings;
+import com.butent.bee.client.Users;
 import com.butent.bee.client.cli.Shell;
 import com.butent.bee.client.data.Data;
 import com.butent.bee.client.data.RowCallback;
@@ -101,7 +102,10 @@ public class ScreenImpl implements Screen {
   private static final String DOCUMENT = "Document";
   private static final String NOTE = "Note";
   private static final String ANNOUNCEMENT = "Announcement";
-
+  private static final String PHOTO_URL = "images/photo/";
+  private static FaLabel userLabel = new FaLabel(FontAwesome.USER);
+  private static Flow flowUserContainer = new Flow();
+  private static Flow flowOnlineUserSize = new Flow();
   private CentralScrutinizer centralScrutinizer;
 
   private Workspace workspace;
@@ -787,6 +791,7 @@ public class ScreenImpl implements Screen {
     Panel commandContainer = createCommandPanel();
     if (commandContainer != null) {
       panel.add(commandContainer);
+      commandContainer.add(onlineUsers());
       setCommandPanel(commandContainer);
     }
 
@@ -1105,5 +1110,92 @@ public class ScreenImpl implements Screen {
 
     panel.clear();
     panel.add(widget.asWidget());
+  }
+
+  private static Flow onlineUsers() {
+
+    final Set<String> sessions = Global.getUsers().getAllSessions();
+
+    flowUserContainer.addStyleName(BeeConst.CSS_CLASS_PREFIX + "HeaderIcon-Container");
+    flowUserContainer.add(flowOnlineUserSize);
+    userLabel.setStyleName(BeeConst.CSS_CLASS_PREFIX + "OnlineUsers");
+    flowOnlineUserSize.setStyleName(BeeConst.CSS_CLASS_PREFIX + "OnlineUserSize-None");
+
+    userLabel.addClickHandler(new ClickHandler() {
+
+      @Override
+      public void onClick(ClickEvent ev) {
+        final HtmlTable table = new HtmlTable(BeeConst.CSS_CLASS_PREFIX + "PopupUsersContent");
+        int r = 0;
+
+        Users users = Global.getUsers();
+
+        if (sessions.size() > 0) {
+          for (String session : sessions) {
+            UserData user = users.getUserData(users.getUserIdBySession(session));
+            Image img = new Image(PHOTO_URL + user.getPhotoFileName());
+            img.setStyleName(BeeConst.CSS_CLASS_PREFIX + "OnlineUsersPhoto");
+            table.setWidget(r, 0, img);
+            table.setText(r, 1, user.getFirstName() + " " + user.getLastName());
+            DomUtils.setDataProperty(table.getRow(r++), CONTAINER, user.getPerson());
+          }
+
+          if (r > 0) {
+            table.addClickHandler(new ClickHandler() {
+              @Override
+              public void onClick(ClickEvent arg) {
+                Element targetElement = EventUtils.getEventTargetElement(arg);
+                TableRowElement rowElement = DomUtils.getParentRow(targetElement, true);
+                String index = DomUtils.getDataProperty(rowElement, CONTAINER);
+                UiHelper.closeDialog(table);
+
+                RowEditor.open(ClassifierConstants.VIEW_PERSONS, Long.valueOf(index),
+                    Opener.NEW_TAB);
+              }
+            });
+            Popup popup = new Popup(OutsideClick.CLOSE);
+            popup.setStyleName(BeeConst.CSS_CLASS_PREFIX + "PopupUsers");
+            popup.setWidget(table);
+            popup.setHideOnEscape(true);
+            popup.showRelativeTo(userLabel.getElement());
+          }
+        }
+      }
+    });
+
+    flowUserContainer.add(userLabel);
+    return flowUserContainer;
+  }
+
+  public static void updateOnlineUsers() {
+
+    FaLabel label = BeeKeeper.getScreen().getOnlineUserLabel();
+    Flow userSize = BeeKeeper.getScreen().getOnlineUserSize();
+
+    if (label == null || userSize == null) {
+      return;
+    }
+
+    int size = Global.getUsers().getAllSessions().size();
+
+    if (size > 0) {
+      userSize.setStyleName(BeeConst.CSS_CLASS_PREFIX + "OnlineUserSize");
+      label.setStyleName(BeeConst.CSS_CLASS_PREFIX + "OnlineUsers" + "-Selected");
+      userSize.getElement().setInnerText(String.valueOf(size));
+
+    } else {
+      label.setStyleName(BeeConst.CSS_CLASS_PREFIX + "OnlineUsers");
+      userSize.setStyleName(BeeConst.CSS_CLASS_PREFIX + "OnlineUserSize-None");
+    }
+  }
+
+  @Override
+  public FaLabel getOnlineUserLabel() {
+    return userLabel;
+  }
+
+  @Override
+  public Flow getOnlineUserSize() {
+    return flowOnlineUserSize;
   }
 }

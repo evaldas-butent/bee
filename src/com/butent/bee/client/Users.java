@@ -9,6 +9,7 @@ import com.butent.bee.client.dialog.StringCallback;
 import com.butent.bee.client.layout.Flow;
 import com.butent.bee.client.render.PhotoRenderer;
 import com.butent.bee.client.screen.Domain;
+import com.butent.bee.client.screen.ScreenImpl;
 import com.butent.bee.client.ui.IdentifiableWidget;
 import com.butent.bee.client.ui.Opener;
 import com.butent.bee.client.websocket.Endpoint;
@@ -170,6 +171,7 @@ public class Users {
     OnlineWidget widget = new OnlineWidget(sessionId, userData);
     onlinePanel.add(widget);
 
+    ScreenImpl.updateOnlineUsers();
     updateHeader(initial);
   }
 
@@ -366,6 +368,7 @@ public class Users {
         onlinePanel.remove(widget);
       }
 
+      ScreenImpl.updateOnlineUsers();
       updateHeader(false);
 
     } else {

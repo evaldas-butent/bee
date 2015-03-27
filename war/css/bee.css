@@ -2738,7 +2738,7 @@ div > span.bee-MenuItem.bee-MenuItem-label {
 .bee-News-header {
   position: relative;
   height: 30px;
-  background-color: #e3e3e3;
+  background-color: #f0eeef;
 }
 
 .bee-News-disclosure,
@@ -3697,4 +3697,60 @@ textarea,
   color: white;
   padding: 0px;
   box-shadow: 2px 2px 5px #939393;
+}
+
+.bee-OnlineUsersPhoto {
+  width: 40px;
+  height: 40px;
+  border-radius: 50px;
+}
+
+.bee-OnlineUsers {
+  color: #6F6F6F;
+  font-size: 17px;
+  margin-right: 27px;
+  cursor: pointer;
+}
+.bee-OnlineUsers-Selected {
+  color: white;
+  font-size: 17px;
+  margin-right: 27px;
+  cursor: pointer;
+}
+
+.bee-OnlineUserSize {
+  background-color: #63A140;
+  width: 15px;
+  height: 15px;
+  text-align: center;
+  position: absolute;
+  margin-top: -8px;
+  margin-left: 7px;
+  z-index: 1;
+  color: white;
+  font-weight: bold;
+  border-radius: 3px;
+  font-size: 10px;
+}
+
+.bee-OnlineUserSize-None {
+  display: none;
+}
+
+.bee-PopupUsers {
+  background-color: #ffffff;
+  border: 1px solid #E3E3E3;
+}
+
+.bee-PopupUsersContent > tbody > tr {
+ border: 1px solid #E3E3E3;
+}
+.bee-PopupUsersContent > tbody > tr:hover {
+  background-color: #F7F7F7;
+  cursor: pointer;
+}
+
+.bee-PopupUsersContent {
+  width: 230px;
+  border-collapse: collapse;
 }
