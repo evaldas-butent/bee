@@ -521,7 +521,7 @@ div > span.bee-MenuItem.bee-MenuItem-label {
 .bee-Gallery-command {
   margin-right: 10px;
   font-size: large;
-  color: #888;
+  color: #414142;
 }
 .bee-Header-control:hover,
 .bee-TreeView-action:hover,
@@ -2056,7 +2056,6 @@ div > span.bee-MenuItem.bee-MenuItem-label {
   margin: 0;
   background-color: white;
   color: inherit;
-  border: 1px solid silver;
   border: 1px solid #e3e3e3;
   line-height: 25px;
 }
