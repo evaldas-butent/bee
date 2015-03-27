@@ -432,18 +432,9 @@ div > span.bee-MenuItem.bee-MenuItem-label {
 }
 
 .bee-Header-container {
-  position: absolute;
-  left: 0;
-  right: 0;
-  top: 0;
-  height: 30px;
-  background-color: #EFF0F0;  
-  display: flex;
+  background-color: #f5f5f5;
   display: -webkit-flex;
-  display: -ms-flexbox;
-  align-items: center;
   -webkit-align-items: center;
-  -ms-flex-align: center;
   overflow-x: auto;
   overflow-y: hidden;
 }
@@ -462,9 +453,10 @@ div > span.bee-MenuItem.bee-MenuItem-label {
 }
 
 .bee-Header-caption {
-  font-size: 14px;
-  font-weight: bold;
+  font: 26px "Open Sans", sans-serif;
   padding-left: 8px;
+  color: #414142;
+  margin-left: 30px;
 }
 .bee-Header-message {
   padding-left: 8px;
@@ -525,7 +517,7 @@ div > span.bee-MenuItem.bee-MenuItem-label {
 .bee-Gallery-command {
   margin-right: 10px;
   font-size: large;
-  color: #888;
+  color: #414142;
 }
 .bee-Header-control:hover,
 .bee-TreeView-action:hover,

@@ -12,7 +12,7 @@ var BeeSettings = {
   "showUserPhoto": true,
   "onStartup": {"content": "form_AnnouncementsBoard", "force": "*"},
   "applianceHeaderHeight": 25,
-  "viewHeaderHeight": 30,
+  "viewHeaderHeight": 52,
   "clickSensitivityMillis": 100,
   "clickSensitivityDistance": 10  
 };
