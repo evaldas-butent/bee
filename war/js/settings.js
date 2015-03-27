@@ -14,5 +14,7 @@ var BeeSettings = {
   "applianceHeaderHeight": 35,
   "viewHeaderHeight": 52,
   "clickSensitivityMillis": 100,
-  "clickSensitivityDistance": 10  
+  "clickSensitivityDistance": 10,
+  "gridCellHeaderHeight": 34,
+  "gridCellBodyHeight": 43
 };

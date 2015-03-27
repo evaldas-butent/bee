@@ -146,6 +146,14 @@ public final class Settings {
     return getInt("viewHeaderHeight");
   }
 
+  public static int getGridCellHeaderHeight() {
+    return getInt("gridCellHeaderHeight");
+  }
+
+  public static int getGridCellBodyHeight() {
+    return getInt("gridCellBodyHeight");
+  }
+
   public static String getWebSocketUrl() {
     return getString("webSocketUrl");
   }
