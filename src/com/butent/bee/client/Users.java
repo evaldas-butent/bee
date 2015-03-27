@@ -184,6 +184,7 @@ public class Users {
     return (userData == null) ? null : userData.getFirstName();
   }
 
+  @Deprecated
   public IdentifiableWidget getOnlinePanel() {
     return onlinePanel;
   }
