@@ -84,11 +84,15 @@ public final class UiConstants {
   }
 
   public static String wtfplLogo() {
-    return Paths.buildPath(Paths.IMAGE_DIR, "butent_arrow.png");
+    return Paths.buildPath(Paths.IMAGE_DIR, "logo.png");
   }
 
   public static String wtfplUrl() {
     return "http://www.butent.com";
+  }
+
+  public static String helpURL() {
+    return "http://www.butent.lt/pagalba-ir-palaikymas/";
   }
 
   private UiConstants() {

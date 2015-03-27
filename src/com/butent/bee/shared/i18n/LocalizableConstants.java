@@ -441,6 +441,10 @@ public interface LocalizableConstants extends Constants, LocalizableClassifierCo
 
   String loginFailed();
 
+  String loginInfoLabel();
+
+  String loginInfoHelp();
+
   String loginPassword();
 
   String loginSubmit();
