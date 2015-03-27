@@ -132,6 +132,7 @@
 
 .bee-Logo {
   position: absolute;
+  left: 6px;
   top: -3ex;
   max-width: 148px;
   height: auto;
@@ -1168,9 +1169,6 @@ div > span.bee-MenuItem.bee-MenuItem-label {
   margin-left: 3px;
   background-color: white;
 }
-.bee-TabbedPages-tab:hover {
-  background-color : whitesmoke;
-}
 
 .bee-TabbedPages-tabSelected {
   border-top: 2px solid #5a6ba3;
@@ -1355,22 +1353,19 @@ div > span.bee-MenuItem.bee-MenuItem-label {
   flex-wrap: wrap;
   -webkit-flex-wrap: wrap;
   -ms-flex-wrap: wrap;
-  border-top: 1px solid #f2f2f2;
+  border-top: 1px solid #f5f5f5;
+  line-height: 36px;
+  background-color: #e8e8e8;
 }
 
 .bee-Workspace-tab {
-  height: 25px;
-  background-color: white;
-  border: 1px solid #e4e4e4;
   cursor: pointer;
 }
 .bee-Workspace-tabSelected {
-  border-top: 2px solid #5a6ba3;
-  border-bottom-style: none;
+  background-color: #f5f5f5;
 }
 .bee-Workspace-tabPanel > div:only-of-type {
-  border-top: 1px solid #e4e4e4;
-  border-bottom-style: solid;
+
 }
 .bee-Workspace-tabSelected .bee-Workspace-tab-caption {
   cursor: default;
@@ -1381,26 +1376,26 @@ div > span.bee-MenuItem.bee-MenuItem-label {
   text-overflow: ellipsis;
   overflow: hidden;
   white-space: nowrap;
+  color: #414142;
+  font: 12px "Open Sans", sans-serif;
 }
 
 .bee-Workspace-new-tab {
-  margin-left: 1px;
   width: 25px;
-  height: 25px;
   text-align: center;
-  font-size: 24px;
-  line-height: 25px;
-  background-color: white;
-  color: #999;
-  border: 1px solid #e4e4e4;
+  font-size: 25px;
+  font-weight: bold;
+  line-height: 36px;
+  background-color: #f5f5f5;
+  color: #414142;
   cursor: pointer;
 }
 .bee-Workspace-tab:hover,
 .bee-Workspace-new-tab:hover {
-  background-color: #fbfbfb;
+
 }
 .bee-Workspace-new-tab:hover {
-  color: black;
+
 }
 
 .bee-Workspace-expander {
@@ -1427,29 +1422,26 @@ div > span.bee-MenuItem.bee-MenuItem-label {
   display: flex;
   display: -webkit-flex;
   display: -ms-flexbox;
+  height: 36px;
 }
 
 .bee-Workspace-tab-drop-down {
-  color: #a1bff5;
+  color: #1EB2D8;
 }
 .bee-Workspace-tab-drop-down,
 .bee-Workspace-tab-caption {
-  line-height: 25px;
+  line-height: 36px;
   padding-right: 3px;
 }
 .bee-Workspace-tab-close {
   width: 14px;
   height: 14px;
-  font-size: 18px;
+  font-size: 20px;
   line-height: 14px;
   text-align: center;
-  color: #777;
-}
-.bee-Workspace-tab-close:hover {
-  color: white;
-  background-color: #800;
-  opacity: 0.4;
-  border-radius: 50%;
+  color: #414142;
+  margin: 11px 15px 0 15px;
+  font-weight: bold;
 }
 
 .bee-Workspace-tabPanel > div:only-of-type .bee-Workspace-tab-drop-down {
@@ -2105,7 +2097,6 @@ div > span.bee-MenuItem.bee-MenuItem-label {
 }
 
 .bee-TreeView-tree, .bee-TabbedPages-contentPanel, .bee-Workspace-contentPanel {
-  border-top : 1px solid #edede1;
 }
 
 .bee-GridSettings-dialog {
