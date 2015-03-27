@@ -90,6 +90,10 @@
   -ms-flex-direction: column;
 }
 
+.bee-Workspace-container {
+  margin-right: 25px;
+}
+
 .flexBox-vertical-center {
   display: flex;
   display: -webkit-flex;
@@ -1545,7 +1549,7 @@ div > span.bee-MenuItem.bee-MenuItem-label {
 }
 
 .bee-FooterContainer {
-  background-color: #eee;
+  background-color: #e3e3e3;
   display: flex;
   display: -webkit-flex;
   display: -ms-flexbox;
