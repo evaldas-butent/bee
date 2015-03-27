@@ -13,7 +13,7 @@
       <InputText source="Name" />
     </HorizontalPanel>
     
-    <TabbedPages class="flexible">
+    <TabbedPages class="flexible" resizable="false">
       <page>
         <text>=criteria</text>
         <xi:include href="widgets/Criteria.widget.xml" />

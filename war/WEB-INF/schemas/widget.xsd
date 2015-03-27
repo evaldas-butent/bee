@@ -287,6 +287,7 @@
             <xs:element name="page" type="headerAndContent" />
           </xs:choice>
           <xs:attribute name="stylePrefix" type="xs:normalizedString" />
+          <xs:attribute name="resizable" type="xs:boolean" default="true" />
         </xs:extension>
       </xs:complexContent>
     </xs:complexType>

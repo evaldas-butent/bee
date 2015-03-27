@@ -6,7 +6,7 @@
   
   name="NewDocument" width="700" height="700"
   >
-  <TabbedPages>
+  <TabbedPages resizable="false">
     <page>
       <text>=mainInformation</text>
       <FlowPanel>

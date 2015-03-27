@@ -2503,22 +2503,10 @@ public final class BeeUtils {
     return result;
   }
 
-  /**
-   * Checks if {@code x} is a Boolean value.
-   * 
-   * @param x value to check
-   * @return true if the value is Boolean, otherwise false.
-   */
   public static boolean toBoolean(int x) {
     return x == BeeConst.INT_TRUE;
   }
 
-  /**
-   * Checks if {@code s} is a Boolean value.
-   * 
-   * @param s value to check
-   * @return true if the value is Boolean, otherwise false.
-   */
   public static boolean toBoolean(String s) {
     if (isEmpty(s)) {
       return false;

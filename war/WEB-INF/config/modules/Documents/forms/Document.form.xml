@@ -11,7 +11,7 @@
   width="900" height="500"
   >
 
-  <TabbedPages>
+  <TabbedPages resizable="false">
     <page>
       <text>=mainInformation</text>
       <FlowPanel class="flexBox-vertical">

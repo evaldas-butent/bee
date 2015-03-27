@@ -21,7 +21,7 @@
   width="900" height="560"
   >
 
-<TabbedPages>
+<TabbedPages resizable="false">
     <page>
       <text>=mainInformation</text>
       

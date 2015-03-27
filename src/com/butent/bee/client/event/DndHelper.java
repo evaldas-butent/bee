@@ -54,6 +54,9 @@ public final class DndHelper {
 
   private static MotionEvent motionEvent;
 
+  private static int startX;
+  private static int startY;
+
   public static void fillContent(String contentType, Long contentId, Long relId, Object content) {
     setDataType(contentType);
 
@@ -127,6 +130,14 @@ public final class DndHelper {
     return relatedId;
   }
 
+  public static int getStartX() {
+    return startX;
+  }
+
+  public static int getStartY() {
+    return startY;
+  }
+
   public static boolean hasFiles(DragDropEventBase<?> event) {
     if (event == null) {
       return false;
@@ -181,9 +192,14 @@ public final class DndHelper {
 
         fillContent(contentType, contentId, relId, content);
 
+        int x = event.getNativeEvent().getClientX();
+        int y = event.getNativeEvent().getClientY();
+
+        setStartX(x);
+        setStartY(y);
+
         if (fireMotion) {
-          setMotionEvent(new MotionEvent(contentType, widget, event.getNativeEvent().getClientX(),
-              event.getNativeEvent().getClientY()));
+          setMotionEvent(new MotionEvent(contentType, widget, x, y));
         }
       }
     });
@@ -290,7 +306,11 @@ public final class DndHelper {
 
   public static void reset() {
     fillContent(null, null, null, null);
+
     setMotionEvent(null);
+
+    setStartX(0);
+    setStartY(0);
   }
 
   private static MotionEvent getMotionEvent() {
@@ -320,6 +340,14 @@ public final class DndHelper {
 
   private static void setRelatedId(Long relatedId) {
     DndHelper.relatedId = relatedId;
+  }
+
+  private static void setStartX(int startX) {
+    DndHelper.startX = startX;
+  }
+
+  private static void setStartY(int startY) {
+    DndHelper.startY = startY;
   }
 
   private DndHelper() {
