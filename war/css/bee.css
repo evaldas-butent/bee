@@ -456,7 +456,6 @@ div > span.bee-MenuItem.bee-MenuItem-label {
   font: 26px "Open Sans", sans-serif;
   padding-left: 8px;
   color: #414142;
-  margin-left: 30px;
 }
 .bee-Header-message {
   padding-left: 8px;
@@ -517,7 +516,7 @@ div > span.bee-MenuItem.bee-MenuItem-label {
 .bee-Gallery-command {
   margin-right: 10px;
   font-size: large;
-  color: #414142;
+  color: #888;
 }
 .bee-Header-control:hover,
 .bee-TreeView-action:hover,
@@ -3609,3 +3608,20 @@ textarea,
 .bee-NorthContainer.bee-SplitChild.bee-SplitNorth {
   background-color: #414142;
 }
+
+.bee-CreateNew{
+  background-color: #6BAE45;
+  color: white;
+  border-radius: 5px;
+  padding: 4px 8px 4px 8px;
+  font: bold 13px "Open Sans", sans-serif !important;
+  text-transform: uppercase;
+}
+.bee-CreateNew:hover {
+  background-color: #63a140;
+  color: white !important;
+}
+.bee-CreateNew:active {
+  background-color: #578d37;
+}
+

@@ -189,6 +189,8 @@ public interface LocalizableConstants extends Constants, LocalizableClassifierCo
 
   String continueQuestion();
 
+  String createNew();
+
   String createNewRow();
 
   String creator();

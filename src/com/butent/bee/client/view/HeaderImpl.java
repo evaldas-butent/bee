@@ -374,6 +374,10 @@ public class HeaderImpl extends Flow implements HeaderView {
 
   private Widget createFa(Action action, Set<Action> hiddenActions) {
     FaLabel control = new FaLabel(action.getIcon());
+    if (action.equals(Action.ADD)) {
+      control.addStyleName(BeeConst.CSS_CLASS_PREFIX + "CreateNew");
+      control.setText("+ " + Localized.getConstants().createNew());
+    }
     initControl(control, action, hiddenActions);
     return control;
   }
