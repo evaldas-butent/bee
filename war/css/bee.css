@@ -551,15 +551,17 @@ div > span.bee-MenuItem.bee-MenuItem-label {
   top: 0;
   bottom: 0;
   overflow: auto;
+  margin-left: 10px;
 }
 
 .bee-CellGridCell {
   border-style: solid;
-  border-color: #ccc;
+  border-color: #ededed;
+  border-left: none;
+  border-right: none;
 }
 
 .bee-CellGridHeader {
-  background-color: #f5f5f5;
   display: flex;
   display: -webkit-flex;
   display: -ms-flexbox;
@@ -573,10 +575,11 @@ div > span.bee-MenuItem.bee-MenuItem-label {
   align-self: center;
   -webkit-align-self: center;
   -ms-flex-item-align: center;
-  text-align: center;
-  font-weight: bold;
+  text-align: left;
   line-height: 12px;
+  font-size: 13px;
   cursor: pointer;
+  color: #ababab;
 }
 
 .bee-HeaderCellSortInfo {
@@ -585,6 +588,7 @@ div > span.bee-MenuItem.bee-MenuItem-label {
   -ms-flex-item-align: end;
   margin-right: 4px;
   cursor: pointer;
+  color: grey;
 }
 
 .bee-HeaderCellSortable:before {
@@ -601,6 +605,9 @@ div > span.bee-MenuItem.bee-MenuItem-label {
 .bee-CellGridBody {
   overflow: hidden;
   text-overflow: ellipsis;
+  color: #414142;
+  font-size: 14px;
+  line-height: 43px;
 }
 
 .bee-CellGridFooter {
@@ -609,11 +616,9 @@ div > span.bee-MenuItem.bee-MenuItem-label {
 }
 
 .bee-CellGridEvenRow {
-  background-color: #f5f5f5;
 }
 
 .bee-CellGridOddRow {
-  background-color: #fbfbfb;
 }
 
 .bee-CellGridBody:hover,
@@ -623,7 +628,7 @@ div > span.bee-MenuItem.bee-MenuItem-label {
 }
 
 .bee-CellGridBody.bee-CellGridActiveRow {
-  background-color: lightskyblue;
+  background-color: #fafafa;
 }
 
 .bee-CellGridBody.bee-CellGridActiveRow.bee-CellGridActiveCell {
@@ -633,10 +638,10 @@ div > span.bee-MenuItem.bee-MenuItem-label {
 }
 
 .bee-CellGridSelectedRow {
-  background-image: linear-gradient(to bottom, #f0f9ff 0%, #cbebff 47%, #a1dbff 100%);  
+  background-color: #ededed;  
 }
 .bee-CellGridSelectedRow.bee-CellGridActiveRow {
-  background-image: linear-gradient(to bottom, #f8ffe8 0%, #e3f5ab 33%, #b7df2d 100%);
+  background-color: #ededed;  
 }
 .bee-CellGridSelectedRow.bee-CellGridActiveCell {
   background-image: none;
