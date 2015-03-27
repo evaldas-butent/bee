@@ -3660,3 +3660,32 @@ textarea,
 .bee-TopWest {
   height: 105px;
 }
+
+.bee-create-NewForm {
+  margin-top: 10px;
+  font-size: 14px;
+  width: 230px;
+}
+
+.bee-create-NewForm > tbody > tr {
+  height: 35px;
+  margin-left: 10px;
+}
+
+.bee-create-NewForm > tbody > tr > td {
+  padding-left: 10px;
+}
+
+.bee-create-NewForm > tbody > tr:hover {
+  background-color: #0e7089;
+  cursor: pointer;
+}
+
+.bee-PopupCreate {
+  background-color: #107f9c;
+  border: none;
+  border-radius: 0 0 5px 5px;
+  color: white;
+  padding: 0px;
+  box-shadow: 2px 2px 5px #939393;
+}

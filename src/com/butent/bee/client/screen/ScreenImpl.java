@@ -2,12 +2,16 @@ package com.butent.bee.client.screen;
 
 import com.google.common.collect.Lists;
 import com.google.gwt.core.client.Scheduler.ScheduledCommand;
+import com.google.gwt.dom.client.Element;
 import com.google.gwt.dom.client.Style.Cursor;
+import com.google.gwt.dom.client.TableRowElement;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.user.client.ui.HasWidgets;
 import com.google.gwt.user.client.ui.Panel;
 import com.google.gwt.user.client.ui.Widget;
+
+import static com.butent.bee.shared.modules.discussions.DiscussionsConstants.*;
 
 import com.butent.bee.client.Bee;
 import com.butent.bee.client.BeeKeeper;
@@ -15,15 +19,20 @@ import com.butent.bee.client.Global;
 import com.butent.bee.client.Screen;
 import com.butent.bee.client.Settings;
 import com.butent.bee.client.cli.Shell;
+import com.butent.bee.client.data.Data;
 import com.butent.bee.client.data.RowCallback;
 import com.butent.bee.client.data.RowEditor;
+import com.butent.bee.client.data.RowFactory;
 import com.butent.bee.client.dialog.ConfirmationCallback;
 import com.butent.bee.client.dialog.Icon;
 import com.butent.bee.client.dialog.Notification;
+import com.butent.bee.client.dialog.Popup;
+import com.butent.bee.client.dialog.Popup.OutsideClick;
 import com.butent.bee.client.dom.DomUtils;
 import com.butent.bee.client.event.Binder;
 import com.butent.bee.client.event.EventUtils;
 import com.butent.bee.client.event.Previewer;
+import com.butent.bee.client.grid.HtmlTable;
 import com.butent.bee.client.layout.Complex;
 import com.butent.bee.client.layout.CustomComplex;
 import com.butent.bee.client.layout.Direction;
@@ -49,14 +58,19 @@ import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.HasHtml;
 import com.butent.bee.shared.Pair;
 import com.butent.bee.shared.css.values.FontSize;
+import com.butent.bee.shared.data.BeeColumn;
 import com.butent.bee.shared.data.BeeRow;
 import com.butent.bee.shared.data.UserData;
+import com.butent.bee.shared.data.view.DataInfo;
 import com.butent.bee.shared.font.FontAwesome;
 import com.butent.bee.shared.html.Tags;
 import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogUtils;
 import com.butent.bee.shared.modules.administration.AdministrationConstants;
+import com.butent.bee.shared.modules.classifiers.ClassifierConstants;
+import com.butent.bee.shared.modules.documents.DocumentConstants;
+import com.butent.bee.shared.modules.tasks.TaskConstants;
 import com.butent.bee.shared.ui.UiConstants;
 import com.butent.bee.shared.ui.UserInterface;
 import com.butent.bee.shared.utils.BeeUtils;
@@ -81,6 +95,12 @@ public class ScreenImpl implements Screen {
       Direction.NORTH, Direction.EAST);
 
   private Split screenPanel;
+  private static final String CONTAINER = "Container";
+  private static final String TASK = "Task";
+  private static final String COMPANY = "Company";
+  private static final String DOCUMENT = "Document";
+  private static final String NOTE = "Note";
+  private static final String ANNOUNCEMENT = "Announcement";
 
   private CentralScrutinizer centralScrutinizer;
 
@@ -809,6 +829,79 @@ public class ScreenImpl implements Screen {
     top.addStyleName(BeeConst.CSS_CLASS_PREFIX + "TopWest");
     title.setText(Localized.getConstants().myEnvironment());
     containerEnv.addStyleName(BeeConst.CSS_CLASS_PREFIX + "MyEnvironment");
+
+    createButton.addClickHandler(new ClickHandler() {
+
+      @Override
+      public void onClick(ClickEvent event) {
+
+        final HtmlTable table = new HtmlTable(BeeConst.CSS_CLASS_PREFIX + "create-NewForm");
+        int r = 0;
+
+        table.setText(r, 0, Localized.getConstants().crmNewTask());
+        DomUtils.setDataProperty(table.getRow(r++), CONTAINER, TASK);
+
+        table.setText(r, 0, Localized.getConstants().newClient());
+        DomUtils.setDataProperty(table.getRow(r++), CONTAINER, COMPANY);
+
+        table.setText(r, 0, Localized.getConstants().documentNew());
+        DomUtils.setDataProperty(table.getRow(r++), CONTAINER, DOCUMENT);
+
+        table.setText(r, 0, Localized.getConstants().crmNewTodoItem());
+        DomUtils.setDataProperty(table.getRow(r++), CONTAINER, NOTE);
+
+        table.setText(r, 0, Localized.getConstants().announcementNew());
+        DomUtils.setDataProperty(table.getRow(r++), CONTAINER, ANNOUNCEMENT);
+
+        if (r > 0) {
+          table.addClickHandler(new ClickHandler() {
+            @Override
+            public void onClick(ClickEvent ev) {
+              Element targetElement = EventUtils.getEventTargetElement(ev);
+              TableRowElement rowElement = DomUtils.getParentRow(targetElement, true);
+              String index = DomUtils.getDataProperty(rowElement, CONTAINER);
+              UiHelper.closeDialog(table);
+
+              switch (index) {
+                case TASK:
+                  RowFactory.createRow(TaskConstants.VIEW_TASKS);
+                  break;
+
+                case COMPANY:
+                  RowFactory.createRow(ClassifierConstants.VIEW_COMPANIES);
+                  break;
+
+                case DOCUMENT:
+                  RowFactory.createRow(DocumentConstants.VIEW_DOCUMENTS);
+                  break;
+
+                case NOTE:
+                  RowFactory.createRow(TaskConstants.VIEW_TODO_LIST);
+                  break;
+
+                case ANNOUNCEMENT:
+                  DataInfo data = Data.getDataInfo(VIEW_DISCUSSIONS);
+                  final BeeColumn beeCol = data.getColumn(COL_TOPIC);
+                  BeeRow emptyRow = RowFactory.createEmptyRow(data, true);
+                  if (beeCol != null) {
+                    beeCol.setNullable(false);
+                  }
+                  RowFactory.createRow(FORM_NEW_DISCUSSION, Localized.getConstants()
+                      .announcementNew(), data,
+                      emptyRow, null);
+                  break;
+              }
+            }
+          });
+          Popup popup = new Popup(OutsideClick.CLOSE);
+          popup.addStyleName(BeeConst.CSS_CLASS_PREFIX + "PopupCreate");
+          popup.setWidget(table);
+          popup.setHideOnEscape(true);
+          popup.showRelativeTo(createButton.getElement());
+        }
+
+      }
+    });
 
     top.add(createButton);
     containerEnv.add(bookmark);

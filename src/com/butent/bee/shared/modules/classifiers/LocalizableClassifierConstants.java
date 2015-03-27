@@ -58,6 +58,8 @@ public interface LocalizableClassifierConstants {
 
   String itemOrService();
 
+  String newClient();
+
   String newDepartmentEmployees();
 
   String newDepartmentPositions();
