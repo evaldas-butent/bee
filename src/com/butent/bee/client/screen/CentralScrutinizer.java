@@ -233,9 +233,6 @@ class CentralScrutinizer extends Stack implements CloseHandler<IdentifiableWidge
   }
 
   void start() {
-    if (BeeKeeper.getUser().isWidgetVisible(RegulatedWidget.NEWS)) {
-      add(Domain.NEWS, Global.getNewsAggregator().getNewsPanel());
-    }
 
     if (Endpoint.isEnabled()) {
       if (BeeKeeper.getUser().isWidgetVisible(RegulatedWidget.ROOMS)) {
