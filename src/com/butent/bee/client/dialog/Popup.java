@@ -273,7 +273,7 @@ public class Popup extends Simple implements HasAnimation, CloseEvent.HasCloseHa
     return addHandler(handler, OpenEvent.getType());
   }
 
-  public void attachAmendDetach(final Scheduler.ScheduledCommand command) {
+  public void attachAmendDetach(final Scheduler.ScheduledCommand command, final Runnable callback) {
     Assert.notNull(command);
 
     Assert.state(!isShowing());
@@ -289,6 +289,10 @@ public class Popup extends Simple implements HasAnimation, CloseEvent.HasCloseHa
 
         BodyPanel.get().remove(Popup.this);
         getElement().getStyle().clearVisibility();
+
+        if (callback != null) {
+          callback.run();
+        }
       }
     });
   }

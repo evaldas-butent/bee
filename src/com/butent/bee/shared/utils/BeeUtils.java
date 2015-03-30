@@ -1416,6 +1416,10 @@ public final class BeeUtils {
     return (isPrefix(src, ch) || isSuffix(src, ch)) && !containsOnly(src, ch);
   }
 
+  public static boolean isQuoted(String s) {
+    return isDelimited(s, BeeConst.CHAR_QUOT) || isDelimited(s, BeeConst.CHAR_APOS);
+  }
+
   /**
    * Checks if the last character in a CharSequence is a suffix.
    * 
@@ -2950,7 +2954,11 @@ public final class BeeUtils {
   }
 
   public static String unquote(String s) {
-    return removePrefixAndSuffix(s, BeeConst.CHAR_QUOT);
+    if (isQuoted(s)) {
+      return s.substring(1, s.length() - 1);
+    } else {
+      return s;
+    }
   }
 
   /**

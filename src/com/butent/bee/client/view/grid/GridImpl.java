@@ -186,7 +186,9 @@ public class GridImpl extends Absolute implements GridView, EditEndEvent.Handler
 
   private static final String STYLE_NAME = BeeConst.CSS_CLASS_PREFIX + "GridView";
 
-  private static void amendGeneratedSize(final ModalForm popup, final FormView form) {
+  private static void amendGeneratedSizeAndShow(final ModalForm popup, final FormView form,
+      final int x, final int y) {
+
     popup.attachAmendDetach(new ScheduledCommand() {
       @Override
       public void execute() {
@@ -198,6 +200,11 @@ public class GridImpl extends Absolute implements GridView, EditEndEvent.Handler
           StyleUtils.setWidth(popup, width + 10);
         }
         StyleUtils.setHeight(popup, height);
+      }
+    }, new Runnable() {
+      @Override
+      public void run() {
+        popup.showAt(x, y);
       }
     });
   }
@@ -2837,10 +2844,15 @@ public class GridImpl extends Absolute implements GridView, EditEndEvent.Handler
     if (show) {
       if (modal) {
         if (isChild() && isNewRowFormGenerated()) {
+          int x = getAbsoluteLeft();
+          int y = getAbsoluteTop();
+
           if (!newRowFormState.contains(State.INITIALIZED)) {
-            amendGeneratedSize(popup, form);
+            amendGeneratedSizeAndShow(popup, form, x, y);
+          } else {
+            popup.showAt(x, y);
           }
-          popup.showAt(getAbsoluteLeft(), getAbsoluteTop());
+
         } else {
           popup.center();
         }

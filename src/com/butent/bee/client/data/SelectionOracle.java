@@ -1,5 +1,6 @@
 package com.butent.bee.client.data;
 
+import com.google.common.base.Splitter;
 import com.google.web.bindery.event.shared.HandlerRegistration;
 
 import com.butent.bee.client.BeeKeeper;
@@ -446,17 +447,16 @@ public class SelectionOracle implements HandlesAllDataEvents, HasViewName {
     }
 
     Filter filter = null;
-    for (IsColumn column : searchColumns) {
-      Filter flt = Filter.compareWithValue(column, searchType, query);
-      if (flt == null) {
-        continue;
+
+    for (String s : parseQuery(query)) {
+      Filter sub = null;
+      for (IsColumn column : searchColumns) {
+        sub = Filter.or(sub, Filter.compareWithValue(column, searchType, s));
       }
-      if (filter == null) {
-        filter = flt;
-      } else {
-        filter = Filter.or(filter, flt);
-      }
+
+      filter = Filter.and(filter, sub);
     }
+
     return filter;
   }
 
@@ -510,6 +510,20 @@ public class SelectionOracle implements HandlesAllDataEvents, HasViewName {
     for (Consumer<Integer> handler : rowCountChangeHandlers) {
       handler.accept(count);
     }
+  }
+
+  private static List<String> parseQuery(String query) {
+    List<String> result = new ArrayList<>();
+
+    if (BeeUtils.isQuoted(query)) {
+      result.add(BeeUtils.notEmpty(BeeUtils.unquote(query), query));
+    } else if (query.indexOf(BeeConst.CHAR_SPACE) > 0) {
+      result.addAll(Splitter.on(BeeConst.CHAR_SPACE).splitToList(query));
+    } else {
+      result.add(query);
+    }
+
+    return result;
   }
 
   private boolean prepareData(final Request request) {
