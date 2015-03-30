@@ -27,6 +27,7 @@ import com.butent.bee.client.data.RowFactory;
 import com.butent.bee.client.dialog.Icon;
 import com.butent.bee.client.dialog.Notification;
 import com.butent.bee.client.dialog.Popup;
+import com.butent.bee.client.dialog.Popup.Animation;
 import com.butent.bee.client.dialog.Popup.OutsideClick;
 import com.butent.bee.client.dom.DomUtils;
 import com.butent.bee.client.event.Binder;
@@ -503,41 +504,39 @@ public class ScreenImpl implements Screen {
             }
 
             final Popup popup = new Popup(OutsideClick.CLOSE);
-            popup.addStyleName(BeeConst.CSS_CLASS_PREFIX + "NotificationBar");
+            popup.setStyleName(BeeConst.CSS_CLASS_PREFIX + "NotificationBar");
+            popup.addStyleName("animated fadeInRight");
             popup.setWidget(NOTIFICATION_CONTENT);
             popup.setHideOnEscape(true);
-            popup.showRelativeTo(image.getElement());
 
-//            popup.setAnimationEnabled(true);
-//            popup.setAnimation(new Animation(700) {
-//
-//              @Override
-//              protected boolean run(double elapsed) {
-//                if (isCanceled()) {
-//                  return false;
-//                } else {
-//
-//                  StyleUtils.setOpacity(getPopup(), getFactor(elapsed));
-//                  return true;
-//                }
-//              }
-//
-//              @Override
-//              public void start() {
-//                if (getPopup().isShowing()) {
-//                  StyleUtils.setOpacity(getPopup(), BeeConst.DOUBLE_ZERO);
-//                }
-//                super.start();
-//              }
-//
-//              @Override
-//              protected void onComplete() {
-//                getPopup().getElement().getStyle().clearOpacity();
-//                super.onComplete();
-//              }
-//            });
-//
-//            popup.getAnimation().start();
+            popup.setAnimationEnabled(true);
+            popup.setAnimation(new Animation(1000) {
+
+              @Override
+              protected boolean run(double elapsed) {
+                if (isCanceled()) {
+                  return false;
+                } else {
+                  popup.setStyleName(BeeConst.CSS_CLASS_PREFIX + "NotificationBar");
+                  popup.addStyleName("animated fadeOutRight");
+                  return true;
+                }
+              }
+
+              @Override
+              public void start() {
+                setPopup(popup);
+                super.start();
+              }
+
+              @Override
+              protected void onComplete() {
+                super.onComplete();
+              }
+            });
+
+            popup.getAnimation().start();
+            popup.showRelativeTo(image.getElement());
           }
         });
 
