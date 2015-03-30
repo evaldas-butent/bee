@@ -3721,6 +3721,7 @@ textarea,
   width: 40px;
   height: 40px;
   border-radius: 50px;
+  margin-left: 20px;
 }
 
 .bee-OnlineUsers {
@@ -3756,11 +3757,13 @@ textarea,
 
 .bee-PopupUsers {
   background-color: #ffffff;
-  border: 1px solid #E3E3E3;
+  max-height: 600px;
+  overflow: overlay;
 }
 
 .bee-PopupUsersContent > tbody > tr {
  border: 1px solid #E3E3E3;
+ height: 60px;
 }
 .bee-PopupUsersContent > tbody > tr:hover {
   background-color: #F7F7F7;
@@ -3770,6 +3773,7 @@ textarea,
 .bee-PopupUsersContent {
   width: 230px;
   border-collapse: collapse;
+  font-size: 14px;
 }
 
 .bee-DataSelector,
