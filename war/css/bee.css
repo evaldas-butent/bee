@@ -715,7 +715,7 @@ div > span.bee-MenuItem.bee-MenuItem-label {
 .bee-ModalGrid {
   border: 1px solid #b4b4b4;
   border-radius: 2px;
-  background-color: WhiteSmoke;
+  background-color: White;
 }
 
 .bee-Dialog-header {
@@ -862,7 +862,7 @@ div > span.bee-MenuItem.bee-MenuItem-label {
   border: 1px solid rgba(0, 0, 0, 0.2);
 }
 .bee-DataSelector-strict.bee-DataSelector-notFound {
-  text-decoration: line-through;
+  color: orangered;
 }
 .bee-DataSelector-empty {
   background-color: #ebebe4;
@@ -893,6 +893,10 @@ div > span.bee-MenuItem.bee-MenuItem-label {
 
 .bee-DataSelector-editableContainer {
   display: inline-block;
+}
+
+.bee-DataSelector-editableContainer .bee-DataSelector-strict.bee-DataSelector-notFound {
+  color: orangered;
 }
 
 .bee-DataSelector-editableContainer .bee-DataSelector-editableInput {
