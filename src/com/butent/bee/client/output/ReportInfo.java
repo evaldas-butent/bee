@@ -6,9 +6,9 @@ import com.butent.bee.shared.utils.ArrayUtils;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.Codec;
 
-import java.util.Collection;
+import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.LinkedHashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 
@@ -21,9 +21,9 @@ public class ReportInfo implements BeeSerializable {
   private String caption;
   private Long id;
 
-  private final Collection<ReportItem> colItems = new LinkedHashSet<>();
-  private final Collection<ReportItem> filterItems = new LinkedHashSet<>();
-  private final Collection<ReportItem> rowItems = new LinkedHashSet<>();
+  private final List<ReportItem> colItems = new ArrayList<>();
+  private final List<ReportItem> filterItems = new ArrayList<>();
+  private final List<ReportItem> rowItems = new ArrayList<>();
   private ReportItem colGrouping;
   private ReportItem rowGrouping;
 
@@ -122,11 +122,11 @@ public class ReportInfo implements BeeSerializable {
     return colGrouping;
   }
 
-  public Collection<ReportItem> getColItems() {
+  public List<ReportItem> getColItems() {
     return colItems;
   }
 
-  public Collection<ReportItem> getFilterItems() {
+  public List<ReportItem> getFilterItems() {
     return filterItems;
   }
 
@@ -138,7 +138,7 @@ public class ReportInfo implements BeeSerializable {
     return rowGrouping;
   }
 
-  public Collection<ReportItem> getRowItems() {
+  public List<ReportItem> getRowItems() {
     return rowItems;
   }
 

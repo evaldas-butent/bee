@@ -1,9 +1,29 @@
 package com.butent.bee.client.output;
 
+import com.google.common.base.Predicates;
+import com.google.gwt.event.dom.client.ClickEvent;
+import com.google.gwt.event.dom.client.ClickHandler;
+import com.google.gwt.event.dom.client.DropEvent;
 import com.google.gwt.user.client.ui.Widget;
 
+import com.butent.bee.client.Global;
+import com.butent.bee.client.dialog.InputCallback;
+import com.butent.bee.client.event.DndHelper;
+import com.butent.bee.client.event.DndWidget;
+import com.butent.bee.client.grid.HtmlTable;
+import com.butent.bee.client.layout.Flow;
+import com.butent.bee.client.view.form.interceptor.ReportConstantItem;
+import com.butent.bee.client.view.form.interceptor.ReportFormulaItem;
+import com.butent.bee.client.widget.CustomDiv;
+import com.butent.bee.client.widget.InlineLabel;
+import com.butent.bee.client.widget.InputBoolean;
+import com.butent.bee.client.widget.InputText;
+import com.butent.bee.client.widget.Label;
+import com.butent.bee.client.widget.ListBox;
 import com.butent.bee.shared.Assert;
+import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.BeeSerializable;
+import com.butent.bee.shared.BiConsumer;
 import com.butent.bee.shared.data.SimpleRowSet.SimpleRow;
 import com.butent.bee.shared.i18n.LocalizableConstants;
 import com.butent.bee.shared.i18n.Localized;
@@ -17,6 +37,7 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.EnumSet;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.TreeSet;
@@ -24,6 +45,12 @@ import java.util.TreeSet;
 public abstract class ReportItem implements BeeSerializable {
 
   protected static final String STYLE_PREFIX = "bee-rep-";
+
+  private static final String STYLE_ITEM = STYLE_PREFIX + "item";
+  private static final String STYLE_REMOVE = STYLE_ITEM + "-remove";
+  private static final String STYLE_CAPTION = STYLE_ITEM + "-cap";
+  private static final String STYLE_CALCULATION = STYLE_ITEM + "-calc";
+  private static final String STYLE_OPTION_CAPTION = STYLE_PREFIX + "option-cap";
 
   public static final String STYLE_BOOLEAN = STYLE_PREFIX + "boolean";
   public static final String STYLE_DATE = STYLE_PREFIX + "date";
@@ -75,7 +102,7 @@ public abstract class ReportItem implements BeeSerializable {
   }
 
   private final String name;
-  private final String caption;
+  private String caption;
   private String expression;
   private Function function;
   private boolean colSummary;
@@ -84,8 +111,8 @@ public abstract class ReportItem implements BeeSerializable {
 
   protected ReportItem(String name, String caption) {
     this.name = Assert.notEmpty(name);
-    this.caption = BeeUtils.notEmpty(caption, this.name);
-    setExpression(name);
+    setCaption(caption);
+    setExpression(getName());
   }
 
   @SuppressWarnings("unchecked")
@@ -128,6 +155,98 @@ public abstract class ReportItem implements BeeSerializable {
   public void deserialize(String data) {
   }
 
+  public void edit(Report report, List<String> relations, final Runnable onSave) {
+    HtmlTable table = new HtmlTable();
+    table.setColumnCellClasses(0, STYLE_OPTION_CAPTION);
+    int c = 0;
+
+    final InputText cap = new InputText();
+    cap.setValue(getCaption());
+
+    table.setText(c, 0, Localized.getConstants().name());
+    table.setWidget(c++, 1, cap);
+
+    Widget expr = getExpressionWidget(report);
+
+    if (expr != null) {
+      table.setText(c, 0, Localized.getConstants().expression());
+      table.setWidget(c++, 1, expr);
+    }
+
+    if (getOptionsWidget() != null) {
+      table.setText(c, 0, getOptionsCaption());
+      table.setWidget(c++, 1, getOptionsWidget());
+    }
+    final ListBox func;
+    final InputBoolean colTotal;
+    final InputBoolean rowTotal;
+
+    if (getFunction() != null) {
+      func = new ListBox();
+
+      for (Function fnc : getAvailableFunctions()) {
+        func.addItem(fnc.getCaption(), fnc.name());
+      }
+      func.setValue(getFunction().name());
+
+      table.setText(c, 0, Localized.getConstants().value());
+      table.setWidget(c++, 1, func);
+
+      colTotal = new InputBoolean(Localized.getConstants().columnResults());
+      colTotal.setChecked(isColSummary());
+      table.setWidget(c++, 1, colTotal);
+
+      rowTotal = new InputBoolean(Localized.getConstants().rowResults());
+      rowTotal.setChecked(isRowSummary());
+      table.setWidget(c++, 1, rowTotal);
+    } else {
+      func = null;
+      colTotal = null;
+      rowTotal = null;
+    }
+    final ListBox rel;
+
+    if (!BeeUtils.isEmpty(relations)) {
+      rel = new ListBox();
+      rel.addItem(BeeConst.STRING_EMPTY);
+      rel.addItems(relations);
+      rel.setValue(getRelation());
+
+      table.setText(c, 0, Localized.getConstants().relation());
+      table.setWidget(c++, 1, rel);
+    } else {
+      rel = null;
+    }
+    Global.inputWidget(getCaption(), table, new InputCallback() {
+      @Override
+      public String getErrorMessage() {
+        return saveOptions();
+      }
+
+      @Override
+      public void onSuccess() {
+        setCaption(cap.getValue());
+
+        if (rel != null) {
+          setRelation(rel.getValue());
+        }
+        if (func != null) {
+          setFunction(EnumUtils.getEnumByName(Function.class, func.getValue()));
+
+          if (colTotal != null) {
+            setColSummary(colTotal.isChecked());
+          }
+          if (rowTotal != null) {
+            setRowSummary(rowTotal.isChecked());
+          }
+        }
+        if (onSave != null) {
+          onSave.run();
+        }
+      }
+    });
+  }
+
   public ReportItem enableCalculation() {
     if (getFunction() == null) {
       setFunction(Function.MAX);
@@ -146,7 +265,7 @@ public abstract class ReportItem implements BeeSerializable {
     if (!(obj instanceof ReportItem)) {
       return false;
     }
-    return Objects.equals(name, ((ReportItem) obj).name);
+    return Objects.equals(getName(), ((ReportItem) obj).getName());
   }
 
   public abstract ReportValue evaluate(SimpleRow row);
@@ -156,11 +275,18 @@ public abstract class ReportItem implements BeeSerializable {
   }
 
   public String getCaption() {
-    return caption;
+    return BeeUtils.notEmpty(caption, getExpression());
   }
 
   public String getExpression() {
     return expression;
+  }
+
+  @SuppressWarnings("unused")
+  public Widget getExpressionWidget(Report report) {
+    Label xpr = new Label(getExpression());
+    xpr.addStyleName("bee-output");
+    return xpr;
   }
 
   public Widget getFilterWidget() {
@@ -195,7 +321,7 @@ public abstract class ReportItem implements BeeSerializable {
 
   @Override
   public int hashCode() {
-    return Objects.hashCode(name);
+    return Objects.hashCode(getName());
   }
 
   public boolean isColSummary() {
@@ -204,6 +330,76 @@ public abstract class ReportItem implements BeeSerializable {
 
   public boolean isRowSummary() {
     return getFunction() != null && rowSummary;
+  }
+
+  public DndWidget render(final Report report, final List<String> relations,
+      final Runnable onRemove, final Runnable onSave) {
+
+    Flow box = new Flow(STYLE_ITEM);
+
+    if (getFunction() != null) {
+      InlineLabel label = new InlineLabel(getFunction().getCaption());
+      label.addStyleName(STYLE_CALCULATION);
+      box.add(label);
+    }
+    InlineLabel label = new InlineLabel(getFormatedCaption());
+    label.addStyleName(STYLE_CAPTION);
+    box.add(label);
+
+    if (onRemove != null) {
+      CustomDiv remove = new CustomDiv(STYLE_REMOVE);
+      remove.setText(String.valueOf(BeeConst.CHAR_TIMES));
+
+      remove.addClickHandler(new ClickHandler() {
+        @Override
+        public void onClick(ClickEvent event) {
+          onRemove.run();
+        }
+      });
+      box.add(remove);
+    }
+    box.addClickHandler(new ClickHandler() {
+      @Override
+      public void onClick(ClickEvent event) {
+        edit(report, relations, onSave);
+      }
+    });
+    return box;
+  }
+
+  public static <T> Widget renderDnd(ReportItem item, final List<T> collection, final int idx,
+      Report report, List<String> relations, final Runnable onUpdate) {
+
+    DndWidget widget = item.render(report, relations, new Runnable() {
+      @Override
+      public void run() {
+        collection.remove(idx);
+
+        if (onUpdate != null) {
+          onUpdate.run();
+        }
+      }
+    }, onUpdate);
+    String contentType = Integer.toHexString(collection.hashCode());
+
+    DndHelper.makeSource(widget, contentType, idx, null);
+    DndHelper.makeTarget(widget, Arrays.asList(contentType), STYLE_ITEM + "-over",
+        Predicates.not(Predicates.equalTo((Object) idx)), new BiConsumer<DropEvent, Object>() {
+          @Override
+          public void accept(DropEvent ev, Object index) {
+            T element = collection.remove((int) index);
+
+            if (idx > collection.size()) {
+              collection.add(element);
+            } else {
+              collection.add(idx, element);
+            }
+            if (onUpdate != null) {
+              onUpdate.run();
+            }
+          }
+        });
+    return widget.asWidget();
   }
 
   public static ReportItem restore(String data) {
@@ -235,6 +431,15 @@ public abstract class ReportItem implements BeeSerializable {
     } else if (NameUtils.getClassName(ReportTextItem.class).equals(clazz)) {
       item = new ReportTextItem(name, caption);
 
+    } else if (NameUtils.getClassName(ReportExpressionItem.class).equals(clazz)) {
+      item = new ReportExpressionItem(caption);
+
+    } else if (NameUtils.getClassName(ReportFormulaItem.class).equals(clazz)) {
+      item = new ReportFormulaItem(caption);
+
+    } else if (NameUtils.getClassName(ReportConstantItem.class).equals(clazz)) {
+      item = new ReportConstantItem(null, caption);
+
     } else {
       Assert.unsupported("Unsupported class name: " + clazz);
     }
@@ -248,8 +453,8 @@ public abstract class ReportItem implements BeeSerializable {
     return item;
   }
 
-  public ReportItem saveOptions() {
-    return this;
+  public String saveOptions() {
+    return null;
   }
 
   @Override
@@ -259,6 +464,11 @@ public abstract class ReportItem implements BeeSerializable {
 
   public String serializeFilter() {
     return null;
+  }
+
+  public ReportItem setCaption(String cap) {
+    this.caption = cap;
+    return this;
   }
 
   public ReportItem setColSummary(boolean isSummary) {

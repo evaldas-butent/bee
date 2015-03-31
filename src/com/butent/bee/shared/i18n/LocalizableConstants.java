@@ -181,6 +181,8 @@ public interface LocalizableConstants extends Constants, LocalizableClassifierCo
 
   String companyVATCode();
 
+  String constant();
+
   String contact();
 
   String contacts();
@@ -389,6 +391,8 @@ public interface LocalizableConstants extends Constants, LocalizableClassifierCo
 
   String firstName();
 
+  String formula();
+
   String greatest();
 
   String groupBy();
@@ -549,6 +553,8 @@ public interface LocalizableConstants extends Constants, LocalizableClassifierCo
 
   String oldPasswordIsRequired();
 
+  String operator();
+
   String ordinal();
 
   String outsized();
@@ -688,6 +694,8 @@ public interface LocalizableConstants extends Constants, LocalizableClassifierCo
   String selectRole();
 
   String send();
+
+  String separator();
 
   String setAsPrimary();
 

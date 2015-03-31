@@ -437,12 +437,6 @@ public class MailModuleBean implements BeeModule, HasTimerService {
     List<BeeParameter> params = Lists.newArrayList(
         BeeParameter.createRelation(module, PRM_DEFAULT_ACCOUNT, false,
             TBL_ACCOUNTS, COL_ACCOUNT_DESCRIPTION),
-        BeeParameter.createText(module, "POP3Server", false, null),
-        BeeParameter.createNumber(module, "POP3ServerPort", false, null),
-        BeeParameter.createNumber(module, "POP3BindPort", false, null),
-        BeeParameter.createText(module, "SMTPServer", false, null),
-        BeeParameter.createNumber(module, "SMTPServerPort", false, null),
-        BeeParameter.createNumber(module, "SMTPBindPort", false, null),
         BeeParameter.createNumber(module, PRM_MAIL_CHECK_INTERVAL, false, null));
 
     return params;

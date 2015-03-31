@@ -67,7 +67,7 @@ public class ReportBooleanItem extends ReportItem {
     if (data != null) {
       data = Codec.beeSerialize(Collections.singletonMap(Service.VAR_DATA, data));
     }
-    return super.serialize(data);
+    return serialize(data);
   }
 
   @Override

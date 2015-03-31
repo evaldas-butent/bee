@@ -1249,6 +1249,10 @@ div > span.bee-MenuItem.bee-MenuItem-label {
   margin-bottom: 1ex;
 }
 
+.bee-ChoiceGroup-item-vertical .bee-Button {
+  width: 100%;
+}
+
 .bee-ChoiceGroup-panel-vertical .bee-ChoiceCancel {
   text-align: center;
 }
@@ -3496,7 +3500,7 @@ textarea,
   font-weight: bold;
 }
 
-.bee-rep-item {
+.bee-rep-item, .bee-rep-text-separator, .bee-rep-num-operator {
   display: inline-block;
   background-color: antiquewhite;
   margin-right: 5px;
@@ -3506,7 +3510,13 @@ textarea,
   border-radius: 5px;
   cursor: pointer;
 }
-.bee-rep-item:hover {
+.bee-rep-text-separator, .bee-rep-num-operator {
+  background-color: transparent;
+}
+.bee-rep-text-expression, .bee-rep-num-expression {
+  max-width: 500px;
+}
+.bee-rep-item-over, .bee-rep-item:hover, .bee-rep-text-separator:hover, .bee-rep-num-operator:hover {
   background-color: lightyellow;
 }
 .bee-rep-item-calc {
@@ -3527,16 +3537,16 @@ textarea,
 .bee-rep-filter-cap, .bee-rep-option-cap {
   text-align: right;
   white-space: nowrap;
-  vertical-align: top;
 }
 .bee-rep-text-filter {
   width: 100% !important;
 }
-.bee-rep-date-filter div {
+.bee-rep-date-filter .bee-Label {
   display: inline-block;
+  margin-left: 5px;
 }
 .bee-rep-date-filter .bee-TextBox, .bee-rep-date-filter .bee-ListBox {
-  margin: 0 5px;
+  margin-left: 5px;
 }
 .bee-rep-date-filter .bee-InputDate {
   width: 80px;

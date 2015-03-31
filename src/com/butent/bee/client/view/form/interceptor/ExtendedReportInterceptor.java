@@ -2,13 +2,11 @@ package com.butent.bee.client.view.form.interceptor;
 
 import com.google.common.collect.HashBasedTable;
 import com.google.common.collect.Table;
-import com.google.gwt.dom.client.OptionElement;
 import com.google.gwt.dom.client.TableCellElement;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.event.dom.client.HasClickHandlers;
 import com.google.gwt.user.client.ui.HasWidgets;
-import com.google.gwt.user.client.ui.Widget;
 
 import static com.butent.bee.shared.modules.administration.AdministrationConstants.*;
 
@@ -20,17 +18,16 @@ import com.butent.bee.client.data.Data;
 import com.butent.bee.client.data.Queries;
 import com.butent.bee.client.data.Queries.RowSetCallback;
 import com.butent.bee.client.data.RowCallback;
+import com.butent.bee.client.dialog.ChoiceCallback;
 import com.butent.bee.client.dialog.ConfirmationCallback;
 import com.butent.bee.client.dialog.Icon;
-import com.butent.bee.client.dialog.InputCallback;
 import com.butent.bee.client.dialog.StringCallback;
 import com.butent.bee.client.grid.HtmlTable;
-import com.butent.bee.client.layout.Flow;
 import com.butent.bee.client.output.Exporter;
 import com.butent.bee.client.output.Report;
+import com.butent.bee.client.output.ReportExpressionItem;
 import com.butent.bee.client.output.ReportInfo;
 import com.butent.bee.client.output.ReportItem;
-import com.butent.bee.client.output.ReportItem.Function;
 import com.butent.bee.client.output.ReportNumericItem;
 import com.butent.bee.client.output.ReportParameters;
 import com.butent.bee.client.output.ReportValue;
@@ -41,10 +38,7 @@ import com.butent.bee.client.view.form.FormView;
 import com.butent.bee.client.widget.CustomDiv;
 import com.butent.bee.client.widget.FaLabel;
 import com.butent.bee.client.widget.InlineLabel;
-import com.butent.bee.client.widget.InputBoolean;
-import com.butent.bee.client.widget.InputText;
 import com.butent.bee.client.widget.Label;
-import com.butent.bee.client.widget.ListBox;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.Consumer;
@@ -64,20 +58,16 @@ import com.butent.bee.shared.export.XRow;
 import com.butent.bee.shared.export.XSheet;
 import com.butent.bee.shared.export.XStyle;
 import com.butent.bee.shared.font.FontAwesome;
-import com.butent.bee.shared.i18n.LocalizableConstants;
 import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.modules.trade.TradeConstants;
 import com.butent.bee.shared.ui.Action;
 import com.butent.bee.shared.utils.ArrayUtils;
 import com.butent.bee.shared.utils.BeeUtils;
-import com.butent.bee.shared.utils.EnumUtils;
 
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
@@ -127,7 +117,7 @@ public class ExtendedReportInterceptor extends ReportInterceptor {
       } else {
         rep = current;
       }
-      Collection<ReportItem> filters = rep.getFilterItems();
+      List<ReportItem> filters = rep.getFilterItems();
 
       if (!BeeUtils.isEmpty(target)) {
         setFilter(filters, rowGroup, current.getRowGrouping());
@@ -135,7 +125,7 @@ public class ExtendedReportInterceptor extends ReportInterceptor {
       setFilter(filters, colGroup, current.getColGrouping());
 
       if (!ArrayUtils.isEmpty(rowValues)) {
-        List<ReportItem> items = new ArrayList<>(current.getRowItems());
+        List<ReportItem> items = current.getRowItems();
 
         for (int i = 0; i < rowValues.length; i++) {
           setFilter(filters, rowValues[i], items.get(i));
@@ -145,10 +135,21 @@ public class ExtendedReportInterceptor extends ReportInterceptor {
           rep.serialize())));
     }
 
-    private void setFilter(Collection<ReportItem> filters, String value, ReportItem item) {
-      if (!BeeUtils.isEmpty(value) && item != null) {
-        filters.remove(item);
-        filters.add(ReportItem.restore(item.serialize()).setFilter(value));
+    private void setFilter(List<ReportItem> filters, String value, ReportItem item) {
+      if (!BeeUtils.isEmpty(value) && item != null && item.getFilterWidget() != null) {
+        ReportItem filter = null;
+
+        for (ReportItem filterItem : filters) {
+          if (Objects.equals(item, filterItem)) {
+            filter = filterItem;
+            break;
+          }
+        }
+        if (filter == null) {
+          filter = ReportItem.restore(item.serialize());
+          filters.add(filter);
+        }
+        filter.setFilter(value);
       }
     }
   }
@@ -164,8 +165,6 @@ public class ExtendedReportInterceptor extends ReportInterceptor {
   private static final String STYLE_PREFIX = "bee-rep";
 
   private static final String STYLE_ITEM = STYLE_PREFIX + "-item";
-  private static final String STYLE_CAPTION = STYLE_ITEM + "-cap";
-  private static final String STYLE_CALCULATION = STYLE_ITEM + "-calc";
   private static final String STYLE_REMOVE = STYLE_ITEM + "-remove";
 
   private static final String STYLE_REPORT = STYLE_PREFIX + "-report";
@@ -173,7 +172,6 @@ public class ExtendedReportInterceptor extends ReportInterceptor {
   private static final String STYLE_REPORT_ACTIVE = STYLE_PREFIX + "-report-active";
 
   private static final String STYLE_FILTER_CAPTION = STYLE_PREFIX + "-filter-cap";
-  private static final String STYLE_OPTION_CAPTION = STYLE_PREFIX + "-option-cap";
 
   private static final String STYLE_COLGROUP = STYLE_PREFIX + "-cgroup";
   private static final String STYLE_COLGROUP_HEADER = STYLE_COLGROUP + "-hdr";
@@ -215,7 +213,7 @@ public class ExtendedReportInterceptor extends ReportInterceptor {
           ((HasClickHandlers) widget).addClickHandler(new ClickHandler() {
             @Override
             public void onClick(ClickEvent event) {
-              addFilterItems();
+              addFilterItem();
             }
           });
           break;
@@ -224,7 +222,7 @@ public class ExtendedReportInterceptor extends ReportInterceptor {
           ((HasClickHandlers) widget).addClickHandler(new ClickHandler() {
             @Override
             public void onClick(ClickEvent event) {
-              addDetalizationItems();
+              addDetalizationItem();
             }
           });
           break;
@@ -233,7 +231,7 @@ public class ExtendedReportInterceptor extends ReportInterceptor {
           ((HasClickHandlers) widget).addClickHandler(new ClickHandler() {
             @Override
             public void onClick(ClickEvent event) {
-              addCalculationItems();
+              addCalculationItem();
             }
           });
           break;
@@ -466,103 +464,106 @@ public class ExtendedReportInterceptor extends ReportInterceptor {
     }
   }
 
-  private void addCalculationItems() {
+  private void addCalculationItem() {
     if (activeReport != null) {
-      chooseItems(new HashSet<>(activeReport.getColItems()), true,
-          new Consumer<List<ReportItem>>() {
-            @Override
-            public void accept(List<ReportItem> input) {
-              for (ReportItem item : input) {
-                activeReport.addColItem(item);
-              }
-              render(NAME_CALCULATION_CONTAINER);
-            }
-          });
-    }
-  }
+      final List<ReportItem> items = new ArrayList<>();
+      List<String> options = new ArrayList<>();
 
-  private void addDetalizationItems() {
-    if (activeReport != null) {
-      Set<ReportItem> skip = new HashSet<>(activeReport.getRowItems());
-
-      for (ReportItem entry : getReport().getItems()) {
-        if (entry instanceof ReportNumericItem) {
-          skip.add(entry);
-        }
+      for (ReportItem item : getReport().getItems()) {
+        items.add(item);
+        options.add(item.getCaption());
       }
-      chooseItems(skip, true, new Consumer<List<ReportItem>>() {
+      options.add(Localized.getConstants().expression() + "...");
+      options.add(Localized.getConstants().formula() + "...");
+
+      Global.choice(null, null, options, new ChoiceCallback() {
         @Override
-        public void accept(List<ReportItem> input) {
-          for (ReportItem item : input) {
-            activeReport.addRowItem(item);
+        public void onSuccess(int value) {
+          if (BeeUtils.isIndex(items, value)) {
+            activeReport.addColItem(BeeUtils.getQuietly(items, value));
+            render(NAME_CALCULATION_CONTAINER);
+          } else {
+            final ReportItem item = value == items.size()
+                ? new ReportExpressionItem(null) : new ReportFormulaItem(null);
+
+            List<String> relations = new ArrayList<>();
+
+            for (ReportInfo rep : reports) {
+              relations.add(rep.getCaption());
+            }
+            item.edit(getReport(), relations, new Runnable() {
+              @Override
+              public void run() {
+                activeReport.addColItem(item);
+                render(NAME_CALCULATION_CONTAINER);
+              }
+            });
+            return;
           }
-          render(NAME_DETALIZATION_CONTAINER);
         }
       });
     }
   }
 
-  private void addFilterItems() {
+  private void addDetalizationItem() {
     if (activeReport != null) {
-      final Collection<ReportItem> filterItems = activeReport.getFilterItems();
-      Set<ReportItem> skip = new HashSet<>(filterItems);
+      final List<ReportItem> items = new ArrayList<>();
+      List<String> options = new ArrayList<>();
 
       for (ReportItem item : getReport().getItems()) {
-        if (item.getFilterWidget() == null) {
-          skip.add(item);
+        if (!(item instanceof ReportNumericItem)) {
+          items.add(item);
+          options.add(item.getCaption());
         }
       }
-      chooseItems(skip, true, new Consumer<List<ReportItem>>() {
+      options.add(Localized.getConstants().expression() + "...");
+
+      Global.choice(null, null, options, new ChoiceCallback() {
         @Override
-        public void accept(List<ReportItem> input) {
-          for (ReportItem item : input) {
-            filterItems.add(item);
+        public void onSuccess(int value) {
+          if (BeeUtils.isIndex(items, value)) {
+            activeReport.addRowItem(BeeUtils.getQuietly(items, value));
+            render(NAME_DETALIZATION_CONTAINER);
+          } else {
+            final ReportItem item = new ReportExpressionItem(null);
+            List<String> relations = new ArrayList<>();
+
+            for (ReportInfo rep : reports) {
+              relations.add(rep.getCaption());
+            }
+            item.edit(getReport(), relations, new Runnable() {
+              @Override
+              public void run() {
+                activeReport.addRowItem(item);
+                render(NAME_DETALIZATION_CONTAINER);
+              }
+            });
+            return;
           }
+        }
+      });
+    }
+  }
+
+  private void addFilterItem() {
+    if (activeReport != null) {
+      final List<ReportItem> items = new ArrayList<>();
+      List<String> options = new ArrayList<>();
+
+      for (ReportItem item : getReport().getItems()) {
+        if (item.getFilterWidget() != null) {
+          items.add(item);
+          options.add(item.getCaption());
+        }
+      }
+      Global.choice(null, null, options, new ChoiceCallback() {
+        @Override
+        public void onSuccess(int value) {
+          activeReport.getFilterItems().add(BeeUtils.getQuietly(items, value));
           renderFilters();
         }
       });
     }
-  }
-
-  private void chooseItems(Set<ReportItem> skip, boolean multi,
-      final Consumer<List<ReportItem>> consumer) {
-
-    LocalizableConstants loc = Localized.getConstants();
-    final ListBox list = new ListBox(multi);
-
-    for (ReportItem item : getReport().getItems()) {
-      if (!BeeUtils.contains(skip, item)) {
-        list.addItem(item.getCaption(), item.getName());
-      }
-    }
-    if (list.isEmpty()) {
-      getFormView().notifyWarning(loc.noData());
-      return;
-    }
-    list.setVisibleItemCount(BeeUtils.max(BeeUtils.min(list.getItemCount(), 20), 5));
-
-    Global.inputWidget(multi ? loc.values() : loc.value(), list, new InputCallback() {
-      @Override
-      public void onSuccess() {
-        List<ReportItem> selected = new ArrayList<>();
-
-        for (int i = 0; i < list.getItemCount(); i++) {
-          OptionElement optionElement = list.getOptionElement(i);
-
-          if (optionElement.isSelected()) {
-            for (ReportItem item : getReport().getItems()) {
-              if (BeeUtils.same(item.getName(), optionElement.getValue())) {
-                selected.add(item);
-                break;
-              }
-            }
-          }
-        }
-        if (!BeeUtils.isEmpty(selected)) {
-          consumer.accept(selected);
-        }
-      }
-    });
   }
 
   private static void clearFilters(ReportInfo rep) {
@@ -724,7 +725,7 @@ public class ExtendedReportInterceptor extends ReportInterceptor {
     container.clear();
 
     if (activeReport != null) {
-      final Collection<ReportItem> items;
+      final List<ReportItem> items;
       ReportItem groupItem = null;
       final Consumer<ReportItem> groupSetter;
 
@@ -757,44 +758,74 @@ public class ExtendedReportInterceptor extends ReportInterceptor {
           groupSetter = null;
           break;
       }
-      for (final ReportItem item : items) {
-        container.add(renderItem(containerName, item, new Runnable() {
-          @Override
-          public void run() {
-            items.remove(item);
-          }
-        }));
+      final List<String> relations = new ArrayList<>();
+
+      for (ReportInfo rep : reports) {
+        relations.add(rep.getCaption());
+      }
+      for (int i = 0; i < items.size(); i++) {
+        container.add(ReportItem.renderDnd(items.get(i), items, i, getReport(), relations,
+            new Runnable() {
+              @Override
+              public void run() {
+                render(containerName);
+              }
+            }));
       }
       if (groupContainer != null) {
         if (!BeeUtils.isEmpty(items)) {
           groupContainer.add(new InlineLabel(Localized.getConstants().groupBy() + ": "));
 
           if (groupItem != null) {
-            groupContainer.add(renderItem(containerName, groupItem, new Runnable() {
+            groupContainer.add(groupItem.render(getReport(), relations, new Runnable() {
               @Override
               public void run() {
                 groupSetter.accept(null);
+                render(containerName);
               }
-            }));
+            }, new Runnable() {
+              @Override
+              public void run() {
+                render(containerName);
+              }
+            }).asWidget());
           } else {
             FaLabel add = new FaLabel(FontAwesome.PLUS, true);
             add.addClickHandler(new ClickHandler() {
               @Override
               public void onClick(ClickEvent event) {
-                Set<ReportItem> skip = new HashSet<>();
+                final List<ReportItem> choiceItems = new ArrayList<>();
+                List<String> options = new ArrayList<>();
 
-                for (ReportItem entry : getReport().getItems()) {
-                  if (entry instanceof ReportNumericItem) {
-                    skip.add(entry);
+                for (ReportItem item : getReport().getItems()) {
+                  if (!(item instanceof ReportNumericItem)) {
+                    choiceItems.add(item);
+                    options.add(item.getCaption());
                   }
                 }
-                chooseItems(skip, false, new Consumer<List<ReportItem>>() {
-                  @Override
-                  public void accept(List<ReportItem> input) {
-                    groupSetter.accept(BeeUtils.peek(input));
-                    render(containerName);
-                  }
-                });
+                options.add(Localized.getConstants().expression() + "...");
+
+                Global.choice(Localized.getConstants().groupBy(), null, options,
+                    new ChoiceCallback() {
+                      @Override
+                      public void onSuccess(int value) {
+                        if (BeeUtils.isIndex(choiceItems, value)) {
+                          groupSetter.accept(BeeUtils.getQuietly(choiceItems, value));
+                          render(containerName);
+                        } else {
+                          final ReportItem item = new ReportExpressionItem(null);
+
+                          item.edit(getReport(), relations, new Runnable() {
+                            @Override
+                            public void run() {
+                              groupSetter.accept(item);
+                              render(containerName);
+                            }
+                          });
+                          return;
+                        }
+                      }
+                    });
               }
             });
             groupContainer.add(add);
@@ -820,8 +851,8 @@ public class ExtendedReportInterceptor extends ReportInterceptor {
     Set<ReportValue> colGroups = new TreeSet<>();
     Table<String, String, Object> values = HashBasedTable.create();
 
-    List<ReportItem> rowItems = new ArrayList<>(activeReport.getRowItems());
-    Collection<ReportItem> colItems = activeReport.getColItems();
+    List<ReportItem> rowItems = activeReport.getRowItems();
+    List<ReportItem> colItems = activeReport.getColItems();
 
     for (final SimpleRow row : rowSet) {
       boolean ok = true;
@@ -1200,7 +1231,7 @@ public class ExtendedReportInterceptor extends ReportInterceptor {
     container.clear();
 
     if (activeReport != null) {
-      final Collection<ReportItem> filterItems = activeReport.getFilterItems();
+      final List<ReportItem> filterItems = activeReport.getFilterItems();
       HtmlTable table = new HtmlTable();
       table.setColumnCellClasses(0, STYLE_FILTER_CAPTION);
       table.setColumnCellStyles(1, "width:100%;");
@@ -1224,118 +1255,6 @@ public class ExtendedReportInterceptor extends ReportInterceptor {
       }
       container.add(table);
     }
-  }
-
-  private Widget renderItem(final String containerName, final ReportItem item,
-      final Runnable removeCallback) {
-
-    Flow box = new Flow(STYLE_ITEM);
-
-    if (item.getFunction() != null) {
-      InlineLabel label = new InlineLabel(item.getFunction().getCaption());
-      label.addStyleName(STYLE_CALCULATION);
-      box.add(label);
-    }
-    InlineLabel label = new InlineLabel(item.getFormatedCaption());
-    label.addStyleName(STYLE_CAPTION);
-    box.add(label);
-
-    if (removeCallback != null) {
-      CustomDiv remove = new CustomDiv(STYLE_REMOVE);
-      remove.setText(String.valueOf(BeeConst.CHAR_TIMES));
-
-      remove.addClickHandler(new ClickHandler() {
-        @Override
-        public void onClick(ClickEvent event) {
-          removeCallback.run();
-          render(containerName);
-        }
-      });
-      box.add(remove);
-    }
-    box.addClickHandler(new ClickHandler() {
-      @Override
-      public void onClick(ClickEvent event) {
-        HtmlTable table = new HtmlTable();
-        table.setColumnCellClasses(0, STYLE_OPTION_CAPTION);
-        int c = 0;
-
-        final InputText expression = new InputText();
-        expression.setValue(item.getExpression());
-        expression.setEnabled(false);
-
-        table.setText(c, 0, Localized.getConstants().expression());
-        table.setWidget(c++, 1, expression);
-
-        if (item.getOptionsWidget() != null) {
-          table.setText(c, 0, item.getOptionsCaption());
-          table.setWidget(c++, 1, item.getOptionsWidget());
-        }
-        final ListBox function;
-        final InputBoolean colSummary;
-        final InputBoolean rowSummary;
-
-        if (item.getFunction() != null) {
-          function = new ListBox();
-
-          for (Function fnc : item.getAvailableFunctions()) {
-            function.addItem(fnc.getCaption(), fnc.name());
-          }
-          function.setValue(item.getFunction().name());
-
-          table.setText(c, 0, Localized.getConstants().value());
-          table.setWidget(c++, 1, function);
-
-          colSummary = new InputBoolean(Localized.getConstants().columnResults());
-          colSummary.setChecked(item.isColSummary());
-          table.setWidget(c++, 1, colSummary);
-
-          if (activeReport.getColGrouping() != null) {
-            rowSummary = new InputBoolean(Localized.getConstants().rowResults());
-            rowSummary.setChecked(item.isRowSummary());
-            table.setWidget(c++, 1, rowSummary);
-          } else {
-            rowSummary = null;
-          }
-        } else {
-          function = null;
-          colSummary = null;
-          rowSummary = null;
-        }
-        final ListBox relation = new ListBox();
-        relation.addItem(BeeConst.STRING_EMPTY);
-
-        for (ReportInfo reportInfo : reports) {
-          relation.addItem(reportInfo.getCaption());
-        }
-        relation.setValue(item.getRelation());
-
-        table.setText(c, 0, Localized.getConstants().relation());
-        table.setWidget(c++, 1, relation);
-
-        Global.inputWidget(item.getCaption(), table, new InputCallback() {
-          @Override
-          public void onSuccess() {
-            item.setExpression(expression.getValue())
-                .setRelation(relation.getValue())
-                .saveOptions();
-
-            if (function != null) {
-              item.setFunction(EnumUtils.getEnumByName(Function.class, function.getValue()));
-
-              if (colSummary != null) {
-                item.setColSummary(colSummary.isChecked());
-              }
-              if (rowSummary != null) {
-                item.setRowSummary(rowSummary.isChecked());
-              }
-            }
-            render(containerName);
-          }
-        });
-      }
-    });
-    return box;
   }
 
   private void saveReport(final ReportInfo rep) {

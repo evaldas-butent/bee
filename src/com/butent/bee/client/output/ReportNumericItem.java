@@ -25,7 +25,7 @@ public class ReportNumericItem extends ReportItem {
 
   @Override
   public Object calculate(Object total, ReportValue value) {
-    BigDecimal val = value != null ? BeeUtils.toDecimalOrNull(value.getValue()) : null;
+    BigDecimal val = BeeUtils.toDecimalOrNull(value.getValue());
 
     if (val != null) {
       switch (getFunction()) {
@@ -106,16 +106,16 @@ public class ReportNumericItem extends ReportItem {
   }
 
   @Override
-  public ReportNumericItem saveOptions() {
+  public String saveOptions() {
     if (precisionWidget != null) {
       setPrecision(precisionWidget.getIntValue());
     }
-    return this;
+    return super.saveOptions();
   }
 
   @Override
   public String serialize() {
-    return super.serialize(Codec.beeSerialize(Collections.singletonMap(PRECISION, precision)));
+    return serialize(Codec.beeSerialize(Collections.singletonMap(PRECISION, precision)));
   }
 
   public ReportNumericItem setPrecision(int prec) {

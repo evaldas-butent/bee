@@ -131,7 +131,7 @@ public class ReportEnumItem extends ReportItem implements ClickHandler {
     if (!BeeUtils.isEmpty(data)) {
       map.put(Service.VAR_DATA, data);
     }
-    return super.serialize(Codec.beeSerialize(map));
+    return serialize(Codec.beeSerialize(map));
   }
 
   @Override

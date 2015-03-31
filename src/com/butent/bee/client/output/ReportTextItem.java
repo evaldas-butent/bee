@@ -76,7 +76,7 @@ public class ReportTextItem extends ReportItem {
     if (!BeeUtils.isEmpty(data)) {
       data = Codec.beeSerialize(Collections.singletonMap(Service.VAR_DATA, data));
     }
-    return super.serialize(data);
+    return serialize(data);
   }
 
   @Override
