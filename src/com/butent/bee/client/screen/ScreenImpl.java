@@ -72,8 +72,11 @@ import com.butent.bee.shared.logging.LogUtils;
 import com.butent.bee.shared.menu.MenuService;
 import com.butent.bee.shared.modules.administration.AdministrationConstants;
 import com.butent.bee.shared.modules.classifiers.ClassifierConstants;
+import com.butent.bee.shared.modules.discussions.DiscussionsConstants;
 import com.butent.bee.shared.modules.documents.DocumentConstants;
 import com.butent.bee.shared.modules.tasks.TaskConstants;
+import com.butent.bee.shared.rights.Module;
+import com.butent.bee.shared.rights.ModuleAndSub;
 import com.butent.bee.shared.rights.RegulatedWidget;
 import com.butent.bee.shared.time.JustDate;
 import com.butent.bee.shared.time.TimeUtils;
@@ -877,20 +880,35 @@ public class ScreenImpl implements Screen {
         final HtmlTable table = new HtmlTable(BeeConst.CSS_CLASS_PREFIX + "create-NewForm");
         int r = 0;
 
-        table.setText(r, 0, Localized.getConstants().crmNewTask());
-        DomUtils.setDataProperty(table.getRow(r++), CONTAINER, TASK);
+        if (BeeKeeper.getUser().isModuleVisible(ModuleAndSub.of(Module.TASKS))
+            && BeeKeeper.getUser().canCreateData(TaskConstants.VIEW_TASKS)) {
+          table.setText(r, 0, Localized.getConstants().crmNewTask());
+          DomUtils.setDataProperty(table.getRow(r++), CONTAINER, TASK);
+        }
 
-        table.setText(r, 0, Localized.getConstants().newClient());
-        DomUtils.setDataProperty(table.getRow(r++), CONTAINER, COMPANY);
+        if (BeeKeeper.getUser().isModuleVisible(ModuleAndSub.of(Module.CLASSIFIERS))
+          && BeeKeeper.getUser().canCreateData(ClassifierConstants.VIEW_COMPANIES)) {
+          table.setText(r, 0, Localized.getConstants().newClient());
+          DomUtils.setDataProperty(table.getRow(r++), CONTAINER, COMPANY);
+        }
 
-        table.setText(r, 0, Localized.getConstants().documentNew());
-        DomUtils.setDataProperty(table.getRow(r++), CONTAINER, DOCUMENT);
+        if (BeeKeeper.getUser().isModuleVisible(ModuleAndSub.of(Module.DOCUMENTS))
+          && BeeKeeper.getUser().canCreateData(DocumentConstants.VIEW_DOCUMENTS)) {
+          table.setText(r, 0, Localized.getConstants().documentNew());
+          DomUtils.setDataProperty(table.getRow(r++), CONTAINER, DOCUMENT);
+        }
 
-        table.setText(r, 0, Localized.getConstants().crmNewTodoItem());
-        DomUtils.setDataProperty(table.getRow(r++), CONTAINER, NOTE);
+        if (BeeKeeper.getUser().isModuleVisible(ModuleAndSub.of(Module.TASKS))
+          && BeeKeeper.getUser().canCreateData(TaskConstants.VIEW_TODO_LIST)) {
+          table.setText(r, 0, Localized.getConstants().crmNewTodoItem());
+          DomUtils.setDataProperty(table.getRow(r++), CONTAINER, NOTE);
+        }
 
-        table.setText(r, 0, Localized.getConstants().announcementNew());
-        DomUtils.setDataProperty(table.getRow(r++), CONTAINER, ANNOUNCEMENT);
+        if (BeeKeeper.getUser().isModuleVisible(ModuleAndSub.of(Module.DISCUSSIONS))
+            && BeeKeeper.getUser().canCreateData(DiscussionsConstants.VIEW_DISCUSSIONS)) {
+          table.setText(r, 0, Localized.getConstants().announcementNew());
+          DomUtils.setDataProperty(table.getRow(r++), CONTAINER, ANNOUNCEMENT);
+        }
 
         if (r > 0) {
           table.addClickHandler(new ClickHandler() {
