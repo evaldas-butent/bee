@@ -91,7 +91,7 @@
 
           <row>
             <Label for="Progress" text="=progress" style="&lbl;" />
-            <InputText source="Progress" style="&inp5;" />
+            <InputDecimal source="Progress" style="&inp5;" minValue="0" maxValue="100" />
 
             <Label for="ExpectedDuration" text="=expectedDuration" style="&lbl;" />
             <InputDecimal source="ExpectedDuration" style="&inp5;" />
