@@ -11,6 +11,7 @@ import com.butent.bee.client.widget.InputText;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.data.BeeRow;
 import com.butent.bee.shared.data.BeeRowSet;
+import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.IsRow;
 import com.butent.bee.shared.modules.classifiers.ClassifierConstants;
 import com.butent.bee.shared.time.TimeUtils;
@@ -83,8 +84,12 @@ class ProjectStageForm extends AbstractFormInterceptor {
     String unitName = BeeConst.STRING_EMPTY;
 
     if (!BeeConst.isUndef(idxUnit) && getTimeUnits() != null) {
-      long idValue = row.getLong(idxUnit);
-      BeeRow unitRow = getTimeUnits().getRowById(idValue);
+      Long idValue = row.getLong(idxUnit);
+      BeeRow unitRow = null;
+
+      if (DataUtils.isId(idValue)) {
+        unitRow = getTimeUnits().getRowById(idValue);
+      }
 
       if (unitRow != null) {
         String prop = unitRow.getProperty(PROP_REAL_FACTOR);

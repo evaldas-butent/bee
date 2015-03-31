@@ -151,6 +151,7 @@ public final class ProjectConstants {
   public static final String PROP_TIME_UNTIS = "TimeUnits";
   public static final String PROP_ITEM_PRICES = "ItemPrices";
   public static final String PROP_SELECT = "Select";
+  public static final String PROP_RS = "RowSet";
 
   public static final String PRM_PROJECT_COMMON_RATE = "ProjectCommonRate";
   public static final String PRM_PROJECT_HOUR_UNIT = "ProjectHourUnit";

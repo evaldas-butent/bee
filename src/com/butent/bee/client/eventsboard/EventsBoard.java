@@ -258,6 +258,7 @@ public abstract class EventsBoard extends Flow implements Presenter, RowInsertEv
     Assert.notNull(widget);
     this.relatedId = relId;
     this.fileFilter = filesFilter;
+    clear();
     createHeaderView();
     createContent();
     refresh(true);
