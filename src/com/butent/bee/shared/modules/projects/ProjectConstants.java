@@ -63,6 +63,7 @@ public final class ProjectConstants {
   public static final String ALS_PUBLISHER_FIRST_NAME = "PublisherFirstName";
   public static final String ALS_PUBLISHER_LAST_NAME = "PublisherLastName";
   public static final String ALS_FILTERED_PROJECT_USER = "FilteredProjectUser";
+  public static final String ALS_FILTERED_OWNER_USER = "FilteredOwnerUser";
   public static final String ALS_ACTUAL_TIME_DIFFERENCE = "ActualTimeDifference";
   public static final String ALS_CATEGORY_NAME = "CategoryName";
 

@@ -109,6 +109,14 @@
     <ExternalJoin name="Project" source="ProjectUsers" joinType="LEFT" filter="FilteredProjectUser={u}">
       <SimpleColumn name="User" alias="FilteredProjectUser" />
     </ExternalJoin>
+    
+    <ExternalJoin name="Project" source="ProjectUsers" joinType="LEFT" filter="FilteredOwnerUser=Owner">
+      <SimpleColumn name="User" alias="FilteredOwnerUser" />
+    </ExternalJoin>
+    
+    <ExternalJoin name="Project" source="ProjectStages" joinType="LEFT">
+      <AggregateColumn aggregate="COUNT" name="Name" alias="StagesCount" />
+    </ExternalJoin>
   </Columns>
   
   <Order>

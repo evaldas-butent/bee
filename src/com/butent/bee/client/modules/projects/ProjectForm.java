@@ -3,6 +3,7 @@ package com.butent.bee.client.modules.projects;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
+import com.google.gwt.core.client.Scheduler.ScheduledCommand;
 import com.google.gwt.event.shared.HasHandlers;
 import com.google.web.bindery.event.shared.HandlerRegistration;
 
@@ -24,7 +25,6 @@ import com.butent.bee.client.ui.FormFactory.WidgetDescriptionCallback;
 import com.butent.bee.client.ui.IdentifiableWidget;
 import com.butent.bee.client.validation.CellValidateEvent;
 import com.butent.bee.client.validation.CellValidateEvent.Handler;
-import com.butent.bee.client.view.add.ReadyForInsertEvent;
 import com.butent.bee.client.view.edit.SaveChangesEvent;
 import com.butent.bee.client.view.form.FormView;
 import com.butent.bee.client.view.form.interceptor.AbstractFormInterceptor;
@@ -225,40 +225,35 @@ class ProjectForm extends AbstractFormInterceptor implements DataChangeEvent.Han
   }
 
   @Override
-  public void onUnload(FormView form) {
-    EventUtils.clearRegistry(registry);
+  public boolean onStartEdit(FormView form, IsRow row, ScheduledCommand focusCommand) {
+
+    if (!DataUtils.isId(row.getLong(form.getDataIndex(ALS_FILTERED_OWNER_USER)))) {
+      List<BeeColumn> usrColumns =
+          Data.getColumns(VIEW_PROJECT_USERS, Lists.newArrayList(COL_PROJECT,
+              AdministrationConstants.COL_USER));
+      List<String> usrValues = Lists.newArrayList(BeeUtils.toString(row.getId()),
+          row.getString(form.getDataIndex(COL_PROJECT_OWNER)));
+      Queries.insert(VIEW_PROJECT_USERS, usrColumns, usrValues);
+    }
+
+    if (!BeeUtils.isPositive(row.getInteger(form.getDataIndex(ALS_STAGES_COUNT)))) {
+      List<BeeColumn> stgColumns =
+          Data.getColumns(VIEW_PROJECT_USERS, Lists.newArrayList(COL_PROJECT,
+              COL_STAGE_NAME, COL_STAGE_START_DATE, COL_STAGE_END_DATE));
+      // List<String> stgValues = Lists.newArrayList(BeeUtils.toString(row.getId()), "ss",
+      // row.getString(form.getDataIndex(COL_PROJECT_START_DATE)),
+      // row.getString(form.getDataIndex(COL_PROJECT_END_DATE)));
+      // Queries.insert(VIEW_PROJECT_STAGES, stgColumns, stgValues);
+    }
+
+
+    return super.onStartEdit(form, row, focusCommand);
+
   }
 
   @Override
-  public void onReadyForInsert(HasHandlers listener, final ReadyForInsertEvent event) {
-    final String viewName = getViewName();
-    List<String> values = event.getValues();
-    List<BeeColumn> columns = event.getColumns();
-
-    if (BeeUtils.isEmpty(values) || BeeUtils.isEmpty(columns)
-        || BeeUtils.isEmpty(viewName)) {
-      return;
-    }
-
-    event.consume();
-
-    Queries.insert(viewName, columns, values, null, new RowCallback() {
-
-      @Override
-      public void onSuccess(BeeRow result) {
-        DataInfo data = Data.getDataInfo(viewName);
-        List<BeeColumn> usrColumns =
-            Data.getColumns(VIEW_PROJECT_USERS, Lists.newArrayList(COL_PROJECT,
-                AdministrationConstants.COL_USER));
-        List<String> usrValues = Lists.newArrayList(BeeUtils.toString(result.getId()),
-            result.getString(data.getColumnIndex(COL_PROJECT_OWNER)));
-        Queries.insert(VIEW_PROJECT_USERS, usrColumns, usrValues);
-
-        event.getCallback().onSuccess(result);
-        RowInsertEvent.fire(BeeKeeper.getBus(), viewName, result, event.getSourceId());
-      }
-    });
-
+  public void onUnload(FormView form) {
+    EventUtils.clearRegistry(registry);
   }
 
   @Override
