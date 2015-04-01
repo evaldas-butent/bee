@@ -188,6 +188,8 @@ public final class DndHelper {
         EventUtils.allowMove(event);
         if (contentId != null) {
           EventUtils.setDndData(event, contentId);
+        } else {
+          EventUtils.setDndData(event, widget.getId());
         }
 
         fillContent(contentType, contentId, relId, content);
