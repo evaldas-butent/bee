@@ -149,7 +149,7 @@ class CompanyStructureForm extends AbstractFormInterceptor implements HandlesAll
 
   private static final String STYLE_PREFIX = BeeConst.CSS_CLASS_PREFIX + "orgChart-";
 
-  private static final String STYLE_LEVEL_PREFIX = STYLE_PREFIX + "level-";
+  private static final String STYLE_LEVEL_PREFIX = "level-";
 
   private static final String STYLE_DEPARTMENT_PREFIX = STYLE_PREFIX + "department-";
   private static final String STYLE_DEPARTMENT_PANEL = STYLE_DEPARTMENT_PREFIX + "panel";
@@ -198,6 +198,10 @@ class CompanyStructureForm extends AbstractFormInterceptor implements HandlesAll
   private static final String STYLE_LINE_HORIZONTAL = STYLE_LINE_PREFIX + "horizontal";
   private static final String STYLE_LINE_VERTICAL = STYLE_LINE_PREFIX + "vertical";
 
+  private static final String STYLE_BUBBLE_PREFIX = STYLE_PREFIX + "bubble-";
+  private static final String STYLE_BUBBLE_PARENT = STYLE_BUBBLE_PREFIX + "parent";
+  private static final String STYLE_BUBBLE_CHILD = STYLE_BUBBLE_PREFIX + "child";
+
   private static final String STYLE_SETTINGS_PREFIX = STYLE_PREFIX + "settings-";
   private static final String STYLE_SETTINGS_DIALOG = STYLE_SETTINGS_PREFIX + "dialog";
   private static final String STYLE_SETTINGS_TABLE = STYLE_SETTINGS_PREFIX + "table";
@@ -244,12 +248,17 @@ class CompanyStructureForm extends AbstractFormInterceptor implements HandlesAll
   private static final int DEFAULT_LEVEL_GAP = 30;
 
   private static final int MIN_LEVEL_GAP_FOR_LINES = 5;
+  private static final int MIN_LEVEL_GAP_FOR_BUBBLES = 10;
 
   private static final AlignmentInLevel DEFAULT_ALIGNMENT_IN_LEVEL = AlignmentInLevel.TOWARDS_ROOT;
   private static final LineType DEFAULT_LINE_TYPE = LineType.STRAIGHT;
 
   private static final boolean DEFAULT_SHOW_POSITIONS = false;
   private static final boolean DEFAULT_SHOW_EMPLOYEES = false;
+
+  private static void addLevelStyle(Element el, String prefix, int level) {
+    el.addClassName(prefix + STYLE_LEVEL_PREFIX + BeeUtils.toString(level));
+  }
 
   private static String storagePrefix() {
     Long userId = BeeKeeper.getUser().getUserId();
@@ -907,7 +916,7 @@ class CompanyStructureForm extends AbstractFormInterceptor implements HandlesAll
           Rectangle2D.Double rectangle = nodeBounds.get(node);
 
           if (level >= 0) {
-            element.addClassName(STYLE_LEVEL_PREFIX + BeeUtils.toString(level));
+            addLevelStyle(element, STYLE_DEPARTMENT_PREFIX, level);
             nodeLevels.put(node, level);
 
             double top = rectangle.getY();
@@ -936,12 +945,15 @@ class CompanyStructureForm extends AbstractFormInterceptor implements HandlesAll
     }
 
     if (levelGap >= MIN_LEVEL_GAP_FOR_LINES) {
+      boolean bubbles = levelGap >= MIN_LEVEL_GAP_FOR_BUBBLES;
+
       for (Long parent : nodeBounds.keySet()) {
         if (!ROOT.equals(parent)) {
           List<Long> children = treeLayout.getTree().getChildren(parent);
 
           if (!BeeUtils.isEmpty(children)) {
             Rectangle2D.Double parentBounds = nodeBounds.get(parent);
+            Integer parentLevel = nodeLevels.get(parent);
 
             if (lineType == LineType.BROKEN) {
               List<Rectangle2D.Double> childBounds = new ArrayList<>();
@@ -959,15 +971,13 @@ class CompanyStructureForm extends AbstractFormInterceptor implements HandlesAll
               }
 
               if (parentBounds != null && !childBounds.isEmpty() && childTop != null) {
-                connect(panel, parentBounds, childBounds, childTop);
+                connect(panel, parentBounds, parentLevel, childBounds, childTop, bubbles);
               }
 
             } else {
               for (Long child : children) {
-                Widget w = drawLine(parentBounds, nodeBounds.get(child), STYLE_LINE_STRAIGHT);
-                if (w != null) {
-                  panel.add(w);
-                }
+                connectStraight(panel, parentBounds, parentLevel, nodeBounds.get(child),
+                    STYLE_LINE_STRAIGHT, bubbles);
               }
             }
           }
@@ -984,15 +994,18 @@ class CompanyStructureForm extends AbstractFormInterceptor implements HandlesAll
     return element;
   }
 
-  private void connect(Flow panel, Rectangle2D.Double parent,
-      Collection<Rectangle2D.Double> children, double childTop) {
+  private void connect(Flow panel, Rectangle2D.Double parent, Integer parentLevel,
+      Collection<Rectangle2D.Double> children, double childTop, boolean bubbles) {
 
     int middle = BeeUtils.round(childTop - levelGap / 2);
 
     int x = BeeUtils.round(parent.getCenterX());
     int y1 = BeeUtils.round(parent.getMaxY());
 
-    panel.add(drawVertical(x, y1, middle));
+    panel.add(drawVertical(x, y1, middle, parentLevel));
+    if (bubbles) {
+      panel.add(drawBubble(x, y1, STYLE_BUBBLE_PARENT, parentLevel));
+    }
 
     int x1 = x;
     int x2 = x;
@@ -1004,15 +1017,33 @@ class CompanyStructureForm extends AbstractFormInterceptor implements HandlesAll
       x2 = Math.max(x2, x);
 
       int y2 = BeeUtils.round(child.getY());
-      panel.add(drawVertical(x, middle, y2));
+      panel.add(drawVertical(x, middle, y2, parentLevel));
+
+      if (bubbles) {
+        panel.add(drawBubble(x, y2, STYLE_BUBBLE_CHILD, parentLevel));
+      }
     }
 
     if (x2 > x1) {
-      panel.add(drawHorizontal(x1, x2, middle));
+      panel.add(drawHorizontal(x1, x2, middle, parentLevel));
     }
   }
 
-  private static Widget drawHorizontal(int x1, int x2, int y) {
+  private static Widget drawBubble(int x, int y, String styleName, Integer level) {
+    CustomDiv widget = new CustomDiv(styleName);
+    StyleUtils.makeAbsolute(widget);
+
+    StyleUtils.setLeft(widget, x);
+    StyleUtils.setTop(widget, y);
+
+    if (level != null) {
+      addLevelStyle(widget.getElement(), STYLE_BUBBLE_PREFIX, level);
+    }
+
+    return widget;
+  }
+
+  private static Widget drawHorizontal(int x1, int x2, int y, Integer level) {
     CustomDiv widget = new CustomDiv(STYLE_LINE_HORIZONTAL);
     StyleUtils.makeAbsolute(widget);
 
@@ -1020,10 +1051,14 @@ class CompanyStructureForm extends AbstractFormInterceptor implements HandlesAll
     StyleUtils.setLeft(widget, Math.min(x1, x2));
     StyleUtils.setWidth(widget, Math.abs(x2 - x1));
 
+    if (level != null) {
+      addLevelStyle(widget.getElement(), STYLE_LINE_PREFIX, level);
+    }
+
     return widget;
   }
 
-  private static Widget drawVertical(int x, int y1, int y2) {
+  private static Widget drawVertical(int x, int y1, int y2, Integer level) {
     CustomDiv widget = new CustomDiv(STYLE_LINE_VERTICAL);
     StyleUtils.makeAbsolute(widget);
 
@@ -1031,23 +1066,35 @@ class CompanyStructureForm extends AbstractFormInterceptor implements HandlesAll
     StyleUtils.setTop(widget, Math.min(y1, y2));
     StyleUtils.setHeight(widget, Math.abs(y2 - y1));
 
+    if (level != null) {
+      addLevelStyle(widget.getElement(), STYLE_LINE_PREFIX, level);
+    }
+
     return widget;
   }
 
-  private static Widget drawLine(Rectangle2D.Double parent, Rectangle2D.Double child,
-      String styleName) {
+  private static void connectStraight(Flow panel, Rectangle2D.Double parent, Integer level,
+      Rectangle2D.Double child, String styleName, boolean bubbles) {
 
-    if (parent == null || child == null) {
-      return null;
+    if (parent != null && child != null) {
+      double x1 = parent.getCenterX();
+      double y1 = parent.getMaxY();
+
+      double x2 = child.getCenterX();
+      double y2 = child.getY();
+
+      Line line = new Line(x1, y1, x2, y2, styleName);
+      if (level != null) {
+        addLevelStyle(line.getElement(), STYLE_LINE_PREFIX, level);
+      }
+
+      panel.add(line);
+
+      if (bubbles) {
+        panel.add(drawBubble(BeeUtils.round(x1), BeeUtils.round(y1), STYLE_BUBBLE_PARENT, level));
+        panel.add(drawBubble(BeeUtils.round(x2), BeeUtils.round(y2), STYLE_BUBBLE_CHILD, level));
+      }
     }
-
-    double x1 = parent.getCenterX();
-    double y1 = parent.getMaxY();
-
-    double x2 = child.getCenterX();
-    double y2 = child.getY();
-
-    return new Line(x1, y1, x2, y2, styleName);
   }
 
   private IdentifiableWidget renderDepartment(BeeRow department) {

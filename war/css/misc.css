@@ -119,6 +119,22 @@
   background-color: #3388dd;
 }
 
+.bee-orgChart-bubble-parent,
+.bee-orgChart-bubble-child {
+  width: 0;
+  height: 0;
+  border-width: 6px;
+  border-style: solid;
+  border-radius: 50%;
+  transform: translate(-6px, -6px);  
+}
+.bee-orgChart-bubble-parent {
+  border-color: limegreen;
+}
+.bee-orgChart-bubble-child {
+  border-color: lightgray;
+}
+
 .bee-orgChart-settings-table {
   border-collapse: collapse;
 }
