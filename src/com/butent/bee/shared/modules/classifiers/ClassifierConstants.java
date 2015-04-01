@@ -7,6 +7,8 @@ public final class ClassifierConstants {
 
   public static final String SVC_CREATE_COMPANY = "create_company";
   public static final String SVC_COMPANY_INFO = "GetCompanyInfo";
+  public static final String SVC_GENERATE_QR_CODE = "GenerateQrCode";
+  public static final String SVC_GENERATE_QR_CODE_PERSON = "GenerateQrCodePerson";
 
   public static final String SVC_GET_COMPANY_TYPE_REPORT = "get_company_type_report";
   public static final String TIMER_REMIND_COMPANY_ACTIONS = "timer_remind_company_actions";
@@ -49,6 +51,8 @@ public final class ClassifierConstants {
   public static final String FORM_COMPANY = "Company";
   public static final String FORM_COMPANY_ACTION = "CompanyAction";
   public static final String FORM_PERSON = "Person";
+  public static final String FORM_NEW_COMPANY = "NewCompany";
+  public static final String FORM_COMPANY_PERSON = "CompanyPerson";
 
   public static final String VIEW_COMPANIES = "Companies";
   public static final String VIEW_COMPANY_PERSONS = "CompanyPersons";
@@ -249,6 +253,11 @@ public final class ClassifierConstants {
 
   public static final String FILTER_COMPANY_CREATION_AND_TYPE = "company_creation_and_type";
   public static final String FILTER_COMPANY_USAGE = "company_usage";
+
+  public static final String QR_FLOW_PANEL = "qrFlowPanel";
+  public static final String QR_TYPE = "qrType";
+  public static final String QR_COMPANY = "qrCompany";
+  public static final String QR_PERSON = "qrPerson";
 
   public static final long DEFAULT_REMIND_ACTIONS_TIMER_TIMEOUT = TimeUtils.MILLIS_PER_HOUR;
 

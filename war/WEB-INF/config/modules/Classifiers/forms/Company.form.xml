@@ -106,7 +106,7 @@
           style="min-height:150px" />
       </Disclosure>
 
-      <TabbedPages class="flexible" style="margin-top: 15px;">
+      <TabbedPages class="flexible" style="margin-top: 15px; height:400px;">
         <page data="Sales">
           <text>=financialInfo</text>
           <FlowPanel class="flexBox-horizontal">

@@ -20,6 +20,7 @@
           <InputText source="FirstName" style="width: 135px;" />
           <Label text="=lastName" style="&lbl;" />
           <InputText source="LastName" style="width: 135px;" />
+          <FlowPanel name="qrFlowPanel" style="margin-left: 10px" />
         </row>
         <row>
           <Table>

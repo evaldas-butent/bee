@@ -86,6 +86,8 @@ public interface LocalizableClassifierConstants {
 
   String printBankCode();
 
+  String qrcode();
+
   String references();
 
   String service();
