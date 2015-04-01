@@ -9,6 +9,16 @@
   <Columns>
     <SimpleColumn name="Project" />
     <SimpleJoin name="Project" joinType="LEFT">
+      <ExternalJoin name="Project" source="ProjectStages" joinType="LEFT" >
+        <IdColumn  name="StagesCount" aggregate="COUNT"></IdColumn>
+      </ExternalJoin>
+    </SimpleJoin>
+    
+    <ExternalJoin name="ProjectStage" source="Tasks" joinType="LEFT">     
+      <IdColumn  name="TaskCount" aggregate="COUNT"></IdColumn>
+    </ExternalJoin>
+    
+    <SimpleJoin name="Project" joinType="LEFT">
       <SimpleColumn name="Company" />
       <SimpleJoin name="Company" joinType="LEFT">
         <SimpleColumn name="Name" alias="CompanyName" />
@@ -69,7 +79,13 @@
     <SimpleJoin name="Project" joinType="LEFT">
       <SimpleColumn name="Name" alias="ProjectName" />
     </SimpleJoin>
-       
+    
+    <SimpleJoin name="Project" joinType="LEFT">
+      <SimpleColumn alias="ProjectOwner" name="Owner"/>
+      <SimpleColumn alias="ProjectStatus" name="Status"/>
+    </SimpleJoin>
+
+      
   </Columns>  
   <Order>
 	  <OrderBy column="StartDate"/>

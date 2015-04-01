@@ -18,6 +18,8 @@ public interface LocalizableProjectConstants {
 
   String prjEventEdited();
 
+  String prjMustBeOneStage();
+
   String prjObserver();
 
   String prjOverdue();
@@ -27,6 +29,8 @@ public interface LocalizableProjectConstants {
   String prjSchedule();
 
   String prjStage();
+
+  String prjStageHasTasks();
 
   String prjStatusActive();
 

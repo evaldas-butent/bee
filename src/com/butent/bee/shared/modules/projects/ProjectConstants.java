@@ -51,6 +51,9 @@ public final class ProjectConstants {
   public static final String ALS_OWNER_LAST_NAME = "OwnerLastName";
   public static final String ALS_TERM = "Term";
   public static final String ALS_PROFIT = "Profit";
+  public static final String ALS_STAGES_COUNT = "StagesCount";
+  public static final String ALS_PROJECT_OWNER = "ProjectOwner";
+  public static final String ALS_PROJECT_STATUS = "ProjectStatus";
 
   public static final String ALS_CHART_START = "ChartStart";
   public static final String ALS_CHART_END = "ChartEnd";
