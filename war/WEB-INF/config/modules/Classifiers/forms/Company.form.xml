@@ -105,8 +105,9 @@
         <ChildGrid name="CompanyBankAccounts" relColumn="Company"
           style="min-height:150px" />
       </Disclosure>
+    </FlowPanel>
 
-      <TabbedPages class="flexible" style="margin-top: 15px; height:400px;">
+      <TabbedPages class="flexible" style="margin-top: 15px;">
         <page data="Sales">
           <text>=financialInfo</text>
           <FlowPanel class="flexBox-horizontal">
@@ -244,6 +245,5 @@
           </SimplePanel>
         </page>
       </TabbedPages>
-    </FlowPanel>
   </FlowPanel>
 </f:Form>

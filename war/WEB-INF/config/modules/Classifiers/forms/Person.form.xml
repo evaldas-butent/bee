@@ -104,9 +104,9 @@
           <ChildGrid name="PersonFamily" relColumn="Person" style="min-height: 250px;"/>
         </FlowPanel>
       </Disclosure>
-
+    </FlowPanel>
     
-      <TabbedPages class="flexible" style="margin-top: 1ex; height: 400px;">
+      <TabbedPages class="flexible" style="margin-top: 1ex;">
         <page for="CompanyPersons">
           <text>=personCompanies</text>
           <ChildGrid name="CompanyPersons" relColumn="Person" />
@@ -126,5 +126,4 @@
         </page>
       </TabbedPages>
     </FlowPanel>
-  </FlowPanel>
 </f:Form>  
