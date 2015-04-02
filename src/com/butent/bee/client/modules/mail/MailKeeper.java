@@ -216,7 +216,7 @@ public final class MailKeeper {
           }
         });
       }
-    });
+    }, null);
   }
 
   static void disconnectFolder(final AccountInfo account, final Long folderId) {

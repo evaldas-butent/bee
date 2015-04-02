@@ -1265,7 +1265,7 @@ div > span.bee-MenuItem.bee-MenuItem-label {
   border-bottom: 1px solid #ddd;
 }
 .bee-FavoritesDisplay tr td:first-child {
-  padding-left: 20px;
+  padding-left: 52px;
 }
 .bee-FavoritesEditColumn, .bee-FavoritesDeleteColumn {
   width: 20px;
@@ -1691,6 +1691,10 @@ div > span.bee-MenuItem.bee-MenuItem-label {
   position: absolute;
   top: 4px;
   left: 50px;
+  color: #666666;
+}
+
+.bee-Appliance-label:hover {
   color: #414142;
 }
 .bee-Appliance-close {
@@ -1928,12 +1932,12 @@ div > span.bee-MenuItem.bee-MenuItem-label {
 .bee-Filters-initial {
   width: 10px;
   height: 10px;
-  border: 1px solid #777;
+  border: 2px solid #e8e8e8;
   border-radius: 50%;
   cursor: pointer; 
 }
 .bee-Filters-initial-checked {
-  background-color: silver;
+  background-color: #1EB2D8;
 }
 
 .bee-Filters-label {
@@ -2002,11 +2006,11 @@ div > span.bee-MenuItem.bee-MenuItem-label {
 }
 
 .bee-InternalLink {
-  text-decoration: underline;
+  color: #414142;
   cursor: pointer;
 }
 .bee-InternalLink:hover {
-  color: #00e;
+  text-decoration: underline;
 }
 
 .bee-ActionCellLink {
@@ -3954,4 +3958,63 @@ textarea,
 .animated {
   -webkit-animation-duration: 1s;
   -webkit-animation-fill-mode: both;
+}
+
+.bee-AddBookmark {
+  width: 315px;
+  height: 170px;
+  background-color: white;
+  border: 1px solid #e3e3e3;
+  
+}
+
+.bee-AddBookmark div.bee-Dialog-header {
+  background-color: white !important;
+  font-size: 18px;
+  padding-left: 12px !important;
+  margin-top: 15px;
+  border: none;
+  padding-bottom: 15px;
+}
+
+.bee-AddBookmark .bee-TextBox {
+  width: calc(100% - 15px);
+  margin-left: 8px !important;
+}
+
+.bee-AddBookmark .bee-InputConfirm {
+  background-color: #1EB2D8;
+  color: white;
+  font-weight: bold;
+  text-transform: uppercase;
+  border: none;
+  font-family: Open Sans;
+}
+
+.bee-AddBookmark .bee-InputCommandGroup {
+  margin: 20px 0 0 8px;
+  text-align: left;
+  font-family: Open Sans;
+}
+
+.bee-AddBookmark .bee-InputCancel {
+  background-color: white;
+  font-weight: bold;
+  text-transform: uppercase;
+  border: none;
+  font-family: Open Sans;
+  position: absolute;
+  right: 0;
+}
+
+.bee-AddBookmark .bee-InputCommand {
+  width: 90px;
+}
+
+.bee-AddBookmark .bee-Dialog-action {
+  margin-right: 15px;
+}
+
+.bee-GridMenu-label-cell:hover {
+  font-weight: bold;
 }

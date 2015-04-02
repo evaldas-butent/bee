@@ -106,7 +106,7 @@ public class Users {
                     new TextMessage(fromUser, BeeUtils.trim(value))));
               }
             }
-          }, null, NotificationMessage.MAX_LENGTH);
+          }, null, null, NotificationMessage.MAX_LENGTH);
         }
       });
 

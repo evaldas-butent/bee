@@ -281,7 +281,7 @@ public class AssessmentForm extends PrintFormInterceptor implements SelectorEven
                               buildLog(loc.trAssessmentRejection(), value, oldLog)), null,
                           new RowUpdateCallback(view));
                     }
-                  });
+                  }, null);
             }
             break;
         }
@@ -442,7 +442,7 @@ public class AssessmentForm extends PrintFormInterceptor implements SelectorEven
           public void onSuccess(String value) {
             save(value);
           }
-        });
+        }, null);
       } else {
         Global.confirm(confirmationQuestion, new ConfirmationCallback() {
           @Override
@@ -866,7 +866,7 @@ public class AssessmentForm extends PrintFormInterceptor implements SelectorEven
                 form.getActiveRow().setValue(logIdx, log);
                 action.execute();
               }
-            });
+            }, null);
         return true;
       }
     }

@@ -352,14 +352,20 @@ public class InputBoxes {
   }
 
   public void inputString(String caption, String prompt, final StringCallback callback,
-      String defaultValue, int maxLength, Element target, double width, CssUnit widthUnit,
-      final int timeout, String confirmHtml, String cancelHtml, WidgetInitializer initializer) {
+      String styleName, String defaultValue, int maxLength, Element target, double width,
+      CssUnit widthUnit, final int timeout, String confirmHtml, String cancelHtml,
+      WidgetInitializer initializer) {
 
     Assert.notNull(callback);
 
     final Holder<State> state = Holder.of(State.OPEN);
 
     final DialogBox dialog = DialogBox.create(caption);
+
+    if (!BeeUtils.isEmpty(styleName)) {
+      dialog.addStyleName(styleName);
+    }
+
     UiHelper.initialize(dialog, initializer, DialogConstants.WIDGET_DIALOG);
 
     final Timer timer = (timeout > 0) ? new DialogTimer(dialog, state) : null;

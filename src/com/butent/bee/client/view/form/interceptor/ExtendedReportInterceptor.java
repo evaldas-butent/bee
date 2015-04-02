@@ -270,7 +270,7 @@ public class ExtendedReportInterceptor extends ReportInterceptor {
                 saveReport(rep);
               }
             }
-          }, activeReport.getCaption());
+          }, null, activeReport.getCaption());
         }
         return false;
 
