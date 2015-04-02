@@ -1,10 +1,12 @@
 package com.butent.bee.client.output;
 
+import com.butent.bee.client.output.ReportItem.Function;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeSerializable;
 import com.butent.bee.shared.utils.ArrayUtils;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.Codec;
+import com.butent.bee.shared.utils.EnumUtils;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -18,14 +20,147 @@ public class ReportInfo implements BeeSerializable {
     CAPTION, ROW_ITEMS, COL_ITEMS, FILTER_ITEMS, ROW_GROUPING, COL_GROUPING
   }
 
+  private enum ItemSerial {
+    ITEM, RELATION, FUNCTION, COL_SUMMARY, GROUP_SUMMARY, ROW_SUMMARY
+  }
+
+  public final class ReportInfoItem implements BeeSerializable {
+
+    private ReportItem item;
+    private String relation;
+
+    private Function function;
+    private boolean colSummary;
+    private boolean groupSummary;
+    private boolean rowSummary;
+
+    private ReportInfoItem(ReportItem item) {
+      this.item = Assert.notNull(item);
+    }
+
+    private ReportInfoItem() {
+    }
+
+    @Override
+    public void deserialize(String data) {
+      Map<String, String> map = Codec.deserializeMap(data);
+
+      if (!BeeUtils.isEmpty(map)) {
+        for (ItemSerial key : ItemSerial.values()) {
+          String value = map.get(key.name());
+
+          switch (key) {
+            case COL_SUMMARY:
+              colSummary = BeeUtils.toBoolean(value);
+              break;
+            case FUNCTION:
+              function = EnumUtils.getEnumByName(Function.class, value);
+              break;
+            case GROUP_SUMMARY:
+              groupSummary = BeeUtils.toBoolean(value);
+              break;
+            case ITEM:
+              item = ReportItem.restore(value);
+              break;
+            case RELATION:
+              setRelation(value);
+              break;
+            case ROW_SUMMARY:
+              rowSummary = BeeUtils.toBoolean(value);
+              break;
+            default:
+              break;
+          }
+        }
+      }
+    }
+
+    public ReportItem getItem() {
+      return item;
+    }
+
+    public Function getFunction() {
+      return function;
+    }
+
+    public String getRelation() {
+      return relation;
+    }
+
+    public String getStyle() {
+      if (getFunction() != null) {
+        switch (getFunction()) {
+          case LIST:
+            return ReportItem.STYLE_TEXT;
+
+          case COUNT:
+          case SUM:
+            return ReportItem.STYLE_NUM;
+
+          default:
+            break;
+        }
+      }
+      return getItem().getStyle();
+    }
+
+    public boolean isColSummary() {
+      return colSummary;
+    }
+
+    public boolean isGroupSummary() {
+      return groupSummary;
+    }
+
+    public boolean isRowSummary() {
+      return rowSummary;
+    }
+
+    @Override
+    public String serialize() {
+      Map<String, Object> map = new HashMap<>();
+
+      for (ItemSerial key : ItemSerial.values()) {
+        Object value = null;
+
+        switch (key) {
+          case COL_SUMMARY:
+            value = isColSummary();
+            break;
+          case FUNCTION:
+            value = getFunction();
+            break;
+          case GROUP_SUMMARY:
+            value = isGroupSummary();
+            break;
+          case ITEM:
+            value = getItem();
+            break;
+          case RELATION:
+            value = getRelation();
+            break;
+          case ROW_SUMMARY:
+            value = isRowSummary();
+            break;
+        }
+        map.put(key.name(), value);
+      }
+      return Codec.beeSerialize(map);
+    }
+
+    public void setRelation(String relation) {
+      this.relation = relation;
+    }
+  }
+
   private String caption;
   private Long id;
 
-  private final List<ReportItem> colItems = new ArrayList<>();
+  private final List<ReportInfoItem> colItems = new ArrayList<>();
   private final List<ReportItem> filterItems = new ArrayList<>();
-  private final List<ReportItem> rowItems = new ArrayList<>();
-  private ReportItem colGrouping;
-  private ReportItem rowGrouping;
+  private final List<ReportInfoItem> rowItems = new ArrayList<>();
+  private ReportInfoItem colGrouping;
+  private ReportInfoItem rowGrouping;
 
   public ReportInfo(String caption) {
     setCaption(caption);
@@ -35,14 +170,21 @@ public class ReportInfo implements BeeSerializable {
   }
 
   public void addColItem(ReportItem colItem) {
-    if (colItem.getFunction() == null) {
-      colItem.enableCalculation();
+    colItems.add(new ReportInfoItem(colItem));
+    int idx = colItems.size() - 1;
+
+    if (colItem instanceof ReportNumericItem) {
+      setFunction(idx, Function.SUM);
+      setColSummary(idx, true);
+      setGroupSummary(idx, true);
+      setRowSummary(idx, true);
+    } else {
+      setFunction(idx, Function.LIST);
     }
-    colItems.add(colItem);
   }
 
   public void addRowItem(ReportItem rowItem) {
-    rowItems.add(rowItem.setFunction(null));
+    rowItems.add(new ReportInfoItem(rowItem));
   }
 
   @Override
@@ -60,7 +202,13 @@ public class ReportInfo implements BeeSerializable {
             }
             break;
           case COL_GROUPING:
-            setColGrouping(ReportItem.restore(value));
+            ReportInfoItem groupItem = null;
+
+            if (!BeeUtils.isEmpty(value)) {
+              groupItem = new ReportInfoItem();
+              groupItem.deserialize(value);
+            }
+            colGrouping = groupItem;
             break;
           case COL_ITEMS:
             colItems.clear();
@@ -68,7 +216,9 @@ public class ReportInfo implements BeeSerializable {
 
             if (!ArrayUtils.isEmpty(items)) {
               for (String item : items) {
-                addColItem(ReportItem.restore(item));
+                ReportInfoItem infoItem = new ReportInfoItem();
+                infoItem.deserialize(item);
+                colItems.add(infoItem);
               }
             }
             break;
@@ -83,7 +233,13 @@ public class ReportInfo implements BeeSerializable {
             }
             break;
           case ROW_GROUPING:
-            setRowGrouping(ReportItem.restore(value));
+            groupItem = null;
+
+            if (!BeeUtils.isEmpty(value)) {
+              groupItem = new ReportInfoItem();
+              groupItem.deserialize(value);
+            }
+            rowGrouping = groupItem;
             break;
           case ROW_ITEMS:
             rowItems.clear();
@@ -91,7 +247,9 @@ public class ReportInfo implements BeeSerializable {
 
             if (!ArrayUtils.isEmpty(items)) {
               for (String item : items) {
-                addRowItem(ReportItem.restore(item));
+                ReportInfoItem infoItem = new ReportInfoItem();
+                infoItem.deserialize(item);
+                rowItems.add(infoItem);
               }
             }
             break;
@@ -118,11 +276,11 @@ public class ReportInfo implements BeeSerializable {
     return caption;
   }
 
-  public ReportItem getColGrouping() {
+  public ReportInfoItem getColGrouping() {
     return colGrouping;
   }
 
-  public List<ReportItem> getColItems() {
+  public List<ReportInfoItem> getColItems() {
     return colItems;
   }
 
@@ -134,11 +292,11 @@ public class ReportInfo implements BeeSerializable {
     return id;
   }
 
-  public ReportItem getRowGrouping() {
+  public ReportInfoItem getRowGrouping() {
     return rowGrouping;
   }
 
-  public List<ReportItem> getRowItems() {
+  public List<ReportInfoItem> getRowItems() {
     return rowItems;
   }
 
@@ -190,10 +348,37 @@ public class ReportInfo implements BeeSerializable {
   }
 
   public void setColGrouping(ReportItem groupItem) {
+    ReportInfoItem infoItem = null;
+
     if (groupItem != null) {
-      groupItem.setFunction(null);
+      infoItem = new ReportInfoItem(groupItem);
+
     }
-    colGrouping = groupItem;
+    colGrouping = infoItem;
+  }
+
+  public void setColSummary(int colIndex, boolean summary) {
+    ReportInfoItem item = BeeUtils.getQuietly(getColItems(), colIndex);
+
+    if (item != null) {
+      item.colSummary = summary;
+    }
+  }
+
+  public void setFunction(int colIndex, Function function) {
+    ReportInfoItem item = BeeUtils.getQuietly(getColItems(), colIndex);
+
+    if (item != null) {
+      item.function = Assert.notNull(function);
+    }
+  }
+
+  public void setGroupSummary(int colIndex, boolean summary) {
+    ReportInfoItem item = BeeUtils.getQuietly(getColItems(), colIndex);
+
+    if (item != null) {
+      item.groupSummary = summary;
+    }
   }
 
   public void setId(Long id) {
@@ -201,10 +386,20 @@ public class ReportInfo implements BeeSerializable {
   }
 
   public void setRowGrouping(ReportItem groupItem) {
+    ReportInfoItem infoItem = null;
+
     if (groupItem != null) {
-      groupItem.setFunction(null);
+      infoItem = new ReportInfoItem(groupItem);
     }
-    rowGrouping = groupItem;
+    rowGrouping = infoItem;
+  }
+
+  public void setRowSummary(int colIndex, boolean summary) {
+    ReportInfoItem item = BeeUtils.getQuietly(getColItems(), colIndex);
+
+    if (item != null) {
+      item.rowSummary = summary;
+    }
   }
 
   private void setCaption(String caption) {

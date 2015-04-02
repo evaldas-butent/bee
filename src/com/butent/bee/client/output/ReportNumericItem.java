@@ -24,11 +24,11 @@ public class ReportNumericItem extends ReportItem {
   }
 
   @Override
-  public Object calculate(Object total, ReportValue value) {
+  public Object calculate(Object total, ReportValue value, Function function) {
     BigDecimal val = BeeUtils.toDecimalOrNull(value.getValue());
 
     if (val != null) {
-      switch (getFunction()) {
+      switch (function) {
         case MAX:
           if (total == null) {
             return val;
@@ -45,7 +45,7 @@ public class ReportNumericItem extends ReportItem {
           }
           return val.add((BigDecimal) total);
         default:
-          return super.calculate(total, value);
+          return super.calculate(total, value, function);
       }
     }
     return total;
@@ -58,16 +58,6 @@ public class ReportNumericItem extends ReportItem {
     if (!BeeUtils.isEmpty(map)) {
       setPrecision(BeeUtils.toInt(map.get(PRECISION)));
     }
-  }
-
-  @Override
-  public ReportNumericItem enableCalculation() {
-    if (getFunction() == null) {
-      setFunction(Function.SUM);
-      setRowSummary(true);
-      setColSummary(true);
-    }
-    return this;
   }
 
   @Override
@@ -124,12 +114,12 @@ public class ReportNumericItem extends ReportItem {
   }
 
   @Override
-  public Object summarize(Object total, Object value) {
+  public Object summarize(Object total, Object value, Function function) {
     if (value != null) {
       if (total == null) {
-        return super.summarize(total, value);
+        return super.summarize(total, value, function);
       }
-      switch (getFunction()) {
+      switch (function) {
         case MAX:
           return ((BigDecimal) value).max((BigDecimal) total);
         case MIN:
@@ -137,7 +127,7 @@ public class ReportNumericItem extends ReportItem {
         case SUM:
           return ((BigDecimal) value).add((BigDecimal) total);
         default:
-          return super.summarize(total, value);
+          return super.summarize(total, value, function);
       }
     }
     return total;

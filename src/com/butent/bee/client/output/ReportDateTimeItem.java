@@ -8,7 +8,6 @@ import com.butent.bee.shared.time.DateTime;
 import com.butent.bee.shared.time.HasDateValue;
 import com.butent.bee.shared.time.TimeUtils;
 import com.butent.bee.shared.utils.BeeUtils;
-import com.butent.bee.shared.utils.EnumUtils;
 
 import java.util.EnumSet;
 
@@ -59,11 +58,9 @@ public class ReportDateTimeItem extends ReportDateItem {
 
       switch (getFormat()) {
         case DATETIME:
-          DateTime from = TimeUtils.parseDateTime(value);
-          DateTime to = TimeUtils.nextMinute(from, 0);
-
-          getFilterFrom().setValue(from.serialize());
-          getFilterTo().setValue(to.serialize());
+          DateTime date = TimeUtils.parseDateTime(value);
+          getFilterFrom().setValue(date.serialize());
+          getFilterTo().setValue(TimeUtils.nextMinute(date, 0).serialize());
           break;
         case HOUR:
         case MINUTE:
@@ -83,7 +80,7 @@ public class ReportDateTimeItem extends ReportDateItem {
     }
     DateTime date = row.getDateTime(getName());
 
-    if (date != null && EnumUtils.in(getFormat(), DateTimeFunction.DATE, DateTimeFunction.YEAR)) {
+    if (date != null && getFormat() == DateTimeFunction.DATE) {
       return validate(date.getDate());
     }
     return validate(row.getDateTime(getName()));

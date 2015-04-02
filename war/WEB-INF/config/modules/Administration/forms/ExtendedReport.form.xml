@@ -15,41 +15,18 @@
     
           <CheckBox name="Vat" text="=trdAmountWoVat" />
         </HorizontalPanel>
-    
+        
         <Disclosure open="false">
           <Label text="=layout" />
-    
-          <FlowPanel class="flexBox-horizontal">
-            <FieldSet class="flexible">
-              <Legend text="=rows" />
-              <FlowPanel name="DetalizationContainer" style="max-height:150px; overflow:auto;" />
-              <HorizontalPanel style="white-space:nowrap;">
-                <cell style="width:100%">
-                  <FaLabel name="DetalizationContainerAdd" char="plus" style="display:inline-block;" />
-                </cell>
-                <FlowPanel name="DetalizationContainerGroup" />
-              </HorizontalPanel>
-            </FieldSet>
-          
-            <FieldSet class="flexible">
-              <Legend text="=columns" />
-              <FlowPanel name="CalculationContainer" style="max-height:150px; overflow:auto;" />
-              <HorizontalPanel style="white-space:nowrap;">
-                <cell style="width:100%">
-                  <FaLabel name="CalculationContainerAdd" char="plus" style="display:inline-block;" />
-                </cell>
-                <FlowPanel name="CalculationContainerGroup" />
-              </HorizontalPanel>
-            </FieldSet>
-          </FlowPanel>
+          <FlowPanel name="LayoutContainer" style="overflow:auto;" />
         </Disclosure>
     
         <Disclosure open="true">
           <Label text="=filters" />
-          <FieldSet>
+          <FlowPanel style="overflow:auto;">
             <FlowPanel name="FilterContainer" style="max-height:150px; overflow:auto;" />
             <FaLabel name="FilterContainerAdd" char="plus" style="display:inline-block;" />
-          </FieldSet>
+          </FlowPanel>
         </Disclosure>
       </FlowPanel>
 

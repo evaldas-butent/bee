@@ -161,3 +161,137 @@
 .bee-orgChart-settings-cancel {
   margin-left: 1em;
 }
+
+.bee-HtmlTable.bee-rep td {
+  padding: 3px 5px;
+  border: 1px solid #ddd;
+}
+.bee-rep .bee-Horizontal td {
+  border: none;
+}
+.bee-rep-date, bee-rep-num {
+  white-space: nowrap;
+}
+.bee-rep-num, .bee-rep-cgroup-hdr, .bee-rep-tot-hdr {
+  text-align: right;
+}
+.bee-rep-drill:hover {
+  cursor: pointer; 
+  background-color: lightyellow;
+}
+.bee-rep-drill-on, .bee-rep-drill-off {
+  cursor: pointer;
+}
+.bee-rep-drill-on:before, .bee-rep-drill-off:before {
+  font-family: FontAwesome;
+  content: "\f0c1";
+  margin-right: 3px;
+}
+.bee-rep-drill-off:before {
+  color: silver;
+}
+.bee-rep-cgroup {
+  text-align: center;
+}
+.bee-rep-rgroup, .bee-rep-rgroup-col-tot, .bee-rep-rgroup-tot {
+  background-color: whitesmoke;
+}
+.bee-rep-row-hdr, .bee-rep-cgroup-tot-hdr, .bee-rep-col-hdr, .bee-rep-row-tot-hdr {
+  text-align: center;
+  font-weight: bold;
+}
+.bee-rep-rgroup-tot, .bee-rep-row-tot, .bee-rep-col-tot, .bee-rep-tot, .bee-rep-tot-hdr {
+  font-weight: bold;
+}
+
+.bee-rep-item, .bee-rep-text-separator, .bee-rep-num-operator {
+  display: inline-block;
+  background-color: antiquewhite;
+  margin-right: 5px;
+  margin-bottom: 5px;
+  padding: 2px;
+  border: 1px solid silver;
+  border-radius: 5px;
+  cursor: pointer;
+}
+.bee-rep-text-separator, .bee-rep-num-operator {
+  background-color: transparent;
+}
+.bee-rep-text-expression, .bee-rep-num-expression {
+  max-width: 500px;
+}
+.bee-rep-item-over, .bee-rep-item:hover, .bee-rep-text-separator:hover, .bee-rep-num-operator:hover {
+  background-color: lightyellow;
+}
+.bee-rep-function {
+  display: block;
+  color: blue;
+  cursor: pointer;
+}
+.bee-rep-item-add:after {
+  font-family: FontAwesome;
+  content: "\f067";
+  cursor: pointer;
+}
+.bee-rep-summary-on:after {
+  font-family: FontAwesome;
+  content: "\f06e";
+  cursor: pointer;
+}
+.bee-rep-summary-off:after {
+  font-family: FontAwesome;
+  content: "\f070";
+  cursor: pointer;
+  color: silver;
+}
+.bee-rep-item-remove {
+  display: inline;
+  font-size: 15px;
+  margin-left: 1px;
+  cursor: pointer;
+}
+.bee-rep-item-remove:hover {
+  color: red;
+}
+.bee-rep-filter-cap, .bee-rep-option-cap {
+  text-align: right;
+  white-space: nowrap;
+}
+.bee-rep-text-filter {
+  width: 100% !important;
+}
+.bee-rep-date-filter .bee-Label {
+  display: inline-block;
+  margin-left: 5px;
+}
+.bee-rep-date-filter .bee-TextBox, .bee-rep-date-filter .bee-ListBox {
+  margin-left: 5px;
+}
+.bee-rep-date-filter .bee-InputSpinner {
+  width: 70px;
+}
+.bee-rep-date-filter .bee-InputDate {
+  width: 90px;
+}
+.bee-rep-date-filter .bee-InputDateTime {
+  width: 130px;
+}
+.bee-rep-enum-filter {
+  display: inline-block;
+  cursor: pointer;
+  color: blue;
+}
+.bee-rep-enum-filter-empty:before {
+  content: "???";
+}
+.bee-rep-report {
+  border-collapse: collapse;
+}
+.bee-rep-report .bee-rep-report-normal:hover {
+  color: dodgerblue;
+  cursor: pointer;
+}
+.bee-rep-report-active {
+  color: white;
+  background-color: dodgerblue;
+}

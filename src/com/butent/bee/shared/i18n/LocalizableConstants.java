@@ -163,6 +163,8 @@ public interface LocalizableConstants extends Constants, LocalizableClassifierCo
 
   String clientStatus();
 
+  String columns();
+
   String columnResults();
 
   String comment();
@@ -396,6 +398,8 @@ public interface LocalizableConstants extends Constants, LocalizableClassifierCo
   String greatest();
 
   String groupBy();
+
+  String groupResults();
 
   String height();
 
@@ -644,6 +648,8 @@ public interface LocalizableConstants extends Constants, LocalizableClassifierCo
   String rightStateView();
 
   String roleAddUsers();
+
+  String rows();
 
   String rowResults();
 

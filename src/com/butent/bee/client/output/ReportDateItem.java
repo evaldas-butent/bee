@@ -11,6 +11,7 @@ import com.butent.bee.client.layout.Flow;
 import com.butent.bee.client.view.edit.Editor;
 import com.butent.bee.client.widget.Button;
 import com.butent.bee.client.widget.InputDate;
+import com.butent.bee.client.widget.InputSpinner;
 import com.butent.bee.client.widget.Label;
 import com.butent.bee.client.widget.ListBox;
 import com.butent.bee.shared.Assert;
@@ -119,16 +120,6 @@ public class ReportDateItem extends ReportItem {
   }
 
   @Override
-  public String getFormatedCaption() {
-    String cap = getCaption();
-
-    if (getFormat() != DateTimeFunction.DATE) {
-      cap = BeeUtils.joinWords(cap, BeeUtils.parenthesize(getFormat().getCaption()));
-    }
-    return cap;
-  }
-
-  @Override
   public void deserialize(String data) {
     Map<String, String> map = Codec.deserializeMap(data);
 
@@ -183,6 +174,16 @@ public class ReportDateItem extends ReportItem {
 
   public DateTimeFunction getFormat() {
     return format;
+  }
+
+  @Override
+  public String getFormatedCaption() {
+    String cap = getCaption();
+
+    if (getFormat() != DateTimeFunction.DATE) {
+      cap = BeeUtils.joinWords(cap, BeeUtils.parenthesize(getFormat().getCaption()));
+    }
+    return cap;
   }
 
   @Override
@@ -250,33 +251,22 @@ public class ReportDateItem extends ReportItem {
     if (!BeeUtils.isEmpty(value)) {
       getFilterWidget();
 
-      JustDate from = null;
-      JustDate to = null;
-
       switch (getFormat()) {
         case DATE:
-          from = TimeUtils.parseDate(value);
-          to = TimeUtils.nextDay(from, 1);
+          JustDate date = TimeUtils.parseDate(value);
+          getFilterFrom().setValue(date.serialize());
+          getFilterTo().setValue(TimeUtils.nextDay(date, 1).serialize());
           break;
         case DAY:
         case QUATER:
         case DAY_OF_WEEK:
         case MONTH:
-          getFilter().setValue(value);
-          break;
         case YEAR:
-          from = new JustDate(BeeUtils.toInt(value), 1, 1);
-          to = new JustDate(from.getYear() + 1, 1, 1);
+          getFilter().setValue(value);
           break;
         default:
           Assert.untouchable();
           break;
-      }
-      if (from != null) {
-        getFilterFrom().setValue(from.serialize());
-      }
-      if (to != null) {
-        getFilterTo().setValue(to.serialize());
       }
     }
     return this;
@@ -301,8 +291,9 @@ public class ReportDateItem extends ReportItem {
 
     switch (getFormat()) {
       case DATE:
-      case YEAR:
         return new InputDate();
+      case YEAR:
+        return new InputSpinner();
       case DAY:
         for (int i = 1; i <= 31; i++) {
           editor.addItem(BeeUtils.toString(i), TimeUtils.padTwo(i));
@@ -454,26 +445,10 @@ public class ReportDateItem extends ReportItem {
 
   private void renderFilter(final Flow container) {
     container.clear();
-    String cap;
 
     switch (getFormat()) {
-      case DAY:
-      case DAY_OF_WEEK:
-      case HOUR:
-      case MINUTE:
-      case MONTH:
-      case QUATER:
-        cap = getFormat().getCaption();
-
-        if (getFilter() == null) {
-          filter = createFilterEditor();
-        }
-        container.add(getFilter());
-        break;
-
-      default:
-        cap = Localized.getConstants().period();
-
+      case DATE:
+      case DATETIME:
         if (getFilterFrom() == null) {
           filterFrom = createFilterEditor();
           filterTo = createFilterEditor();
@@ -483,8 +458,15 @@ public class ReportDateItem extends ReportItem {
         container.add(new Label(Localized.getConstants().dateToShort()));
         container.add(getFilterTo());
         break;
+
+      default:
+        if (getFilter() == null) {
+          filter = createFilterEditor();
+        }
+        container.add(getFilter());
+        break;
     }
-    container.insert(new Button(cap, new ClickHandler() {
+    container.insert(new Button(getFormat().getCaption(), new ClickHandler() {
       @Override
       public void onClick(ClickEvent event) {
         Global.inputWidget(getOptionsCaption(), getOptionsWidget(), new InputCallback() {
