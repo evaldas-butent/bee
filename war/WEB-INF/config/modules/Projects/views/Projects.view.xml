@@ -5,6 +5,7 @@
   name="Projects" source="Projects" caption="=projects"
   editForm="Project" newRowForm="Project"
   >
+  <Relation renderColumns="Name" />
   <Columns>
     <IdColumn name="ID"/>
     <SimpleColumn name="Priority" />
