@@ -37,14 +37,17 @@ import com.butent.bee.shared.communication.ResponseObject;
 import com.butent.bee.shared.data.BeeColumn;
 import com.butent.bee.shared.data.BeeRow;
 import com.butent.bee.shared.data.BeeRowSet;
+import com.butent.bee.shared.data.CellSource;
 import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.IsRow;
+import com.butent.bee.shared.data.event.CellUpdateEvent;
 import com.butent.bee.shared.data.event.DataChangeEvent;
 import com.butent.bee.shared.data.event.RowInsertEvent;
 import com.butent.bee.shared.data.event.RowUpdateEvent;
 import com.butent.bee.shared.data.filter.Filter;
 import com.butent.bee.shared.data.view.DataInfo;
 import com.butent.bee.shared.data.view.ViewColumn;
+import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogUtils;
 import com.butent.bee.shared.modules.administration.AdministrationConstants;
@@ -225,7 +228,7 @@ class ProjectForm extends AbstractFormInterceptor implements DataChangeEvent.Han
   }
 
   @Override
-  public boolean onStartEdit(FormView form, IsRow row, ScheduledCommand focusCommand) {
+  public boolean onStartEdit(final FormView form, final IsRow row, ScheduledCommand focusCommand) {
 
     if (!DataUtils.isId(row.getLong(form.getDataIndex(ALS_FILTERED_OWNER_USER)))) {
       List<BeeColumn> usrColumns =
@@ -233,17 +236,45 @@ class ProjectForm extends AbstractFormInterceptor implements DataChangeEvent.Han
               AdministrationConstants.COL_USER));
       List<String> usrValues = Lists.newArrayList(BeeUtils.toString(row.getId()),
           row.getString(form.getDataIndex(COL_PROJECT_OWNER)));
-      Queries.insert(VIEW_PROJECT_USERS, usrColumns, usrValues);
+      Queries.insert(VIEW_PROJECT_USERS, usrColumns, usrValues, null, new RowCallback() {
+
+        @Override
+        public void onSuccess(BeeRow result) {
+          RowUpdateEvent.fire(BeeKeeper.getBus(), VIEW_PROJECT_USERS, result);
+          CellUpdateEvent.fire(BeeKeeper.getBus(), VIEW_PROJECTS, row.getId(), row.getVersion(),
+              CellSource.forColumn(Data.getColumn(VIEW_PROJECTS, ALS_FILTERED_OWNER_USER), form
+                  .getDataIndex(ALS_FILTERED_OWNER_USER)),
+              row.getString(form.getDataIndex(COL_PROJECT_OWNER)));
+
+          form.refresh();
+        }
+      });
     }
 
     if (!BeeUtils.isPositive(row.getInteger(form.getDataIndex(ALS_STAGES_COUNT)))) {
       List<BeeColumn> stgColumns =
-          Data.getColumns(VIEW_PROJECT_USERS, Lists.newArrayList(COL_PROJECT,
+          Data.getColumns(VIEW_PROJECT_STAGES, Lists.newArrayList(COL_PROJECT,
               COL_STAGE_NAME, COL_STAGE_START_DATE, COL_STAGE_END_DATE));
-      // List<String> stgValues = Lists.newArrayList(BeeUtils.toString(row.getId()), "ss",
-      // row.getString(form.getDataIndex(COL_PROJECT_START_DATE)),
-      // row.getString(form.getDataIndex(COL_PROJECT_END_DATE)));
-      // Queries.insert(VIEW_PROJECT_STAGES, stgColumns, stgValues);
+      List<String> stgValues =
+          Lists.newArrayList(BeeUtils.toString(row.getId()), Localized.getConstants()
+              .prjInitialStage(),
+              row.getString(form.getDataIndex(COL_PROJECT_START_DATE)),
+              row.getString(form.getDataIndex(COL_PROJECT_END_DATE)));
+      Queries.insert(VIEW_PROJECT_STAGES, stgColumns, stgValues, null, new RowCallback() {
+
+        @Override
+        public void onSuccess(BeeRow result) {
+
+          RowUpdateEvent.fire(BeeKeeper.getBus(), VIEW_PROJECT_STAGES, result);
+          CellUpdateEvent.fire(BeeKeeper.getBus(), VIEW_PROJECTS, row.getId(), row.getVersion(),
+              CellSource.forColumn(Data.getColumn(VIEW_PROJECTS, ALS_STAGES_COUNT), form
+                  .getDataIndex(ALS_STAGES_COUNT)),
+              BeeUtils.toString(BeeConst.INT_TRUE));
+
+          form.refresh();
+
+        }
+      });
     }
 
 

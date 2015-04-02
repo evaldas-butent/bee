@@ -18,6 +18,8 @@ public interface LocalizableProjectConstants {
 
   String prjEventEdited();
 
+  String prjInitialStage();
+
   String prjMustBeOneStage();
 
   String prjObserver();
