@@ -30,6 +30,7 @@ import com.butent.bee.shared.modules.tasks.TaskConstants;
 import com.butent.bee.shared.modules.tasks.TaskConstants.TaskStatus;
 import com.butent.bee.shared.modules.transport.TransportConstants;
 import com.butent.bee.shared.modules.transport.TransportConstants.TripStatus;
+import com.butent.bee.shared.report.ReportInfo;
 import com.butent.bee.shared.rights.Module;
 import com.butent.bee.shared.rights.ModuleAndSub;
 import com.butent.bee.shared.rights.SubModule;
@@ -133,7 +134,7 @@ public enum Report implements HasWidgetSupplier {
           new ReportNumericItem("DailyCosts", "Dienpinigių išl.").setPrecision(2),
           new ReportNumericItem("RoadCosts", "Kelių išl.").setPrecision(2),
           new ReportNumericItem("OtherCosts", "Kitos išl.").setPrecision(2),
-          new ReportNumericItem("Incomes", "Pajamos").setPrecision(2));
+          new ReportNumericItem("TripIncome", "Pajamos").setPrecision(2));
     }
 
     @Override
@@ -157,7 +158,7 @@ public enum Report implements HasWidgetSupplier {
       }
       report.setRowGrouping(items.get(TransportConstants.COL_VEHICLE));
 
-      for (String item : new String[] {"Kilometers", "FuelCosts", "Incomes"}) {
+      for (String item : new String[] {"Kilometers", "FuelCosts", "TripIncome"}) {
         report.addColItem(items.get(item));
       }
       return Arrays.asList(report);

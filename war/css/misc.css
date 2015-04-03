@@ -162,8 +162,11 @@
   margin-left: 1em;
 }
 
-.bee-HtmlTable.bee-rep td {
+.bee-form-ExtendedReport .bee-HtmlTable td {
   padding: 3px 5px;
+}
+
+.bee-rep td {
   border: 1px solid #ddd;
 }
 .bee-rep .bee-Horizontal td {
@@ -263,6 +266,7 @@
 .bee-rep-date-filter .bee-Label {
   display: inline-block;
   margin-left: 5px;
+  cursor: pointer;
 }
 .bee-rep-date-filter .bee-TextBox, .bee-rep-date-filter .bee-ListBox {
   margin-left: 5px;

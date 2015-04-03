@@ -13,8 +13,6 @@ import com.butent.bee.client.event.DndHelper;
 import com.butent.bee.client.event.DndWidget;
 import com.butent.bee.client.grid.HtmlTable;
 import com.butent.bee.client.layout.Flow;
-import com.butent.bee.client.view.form.interceptor.ReportConstantItem;
-import com.butent.bee.client.view.form.interceptor.ReportFormulaItem;
 import com.butent.bee.client.widget.CustomDiv;
 import com.butent.bee.client.widget.InlineLabel;
 import com.butent.bee.client.widget.InputText;
@@ -25,9 +23,8 @@ import com.butent.bee.shared.BeeSerializable;
 import com.butent.bee.shared.BiConsumer;
 import com.butent.bee.shared.Consumer;
 import com.butent.bee.shared.data.SimpleRowSet.SimpleRow;
-import com.butent.bee.shared.i18n.LocalizableConstants;
 import com.butent.bee.shared.i18n.Localized;
-import com.butent.bee.shared.ui.HasLocalizedCaption;
+import com.butent.bee.shared.report.ReportFunction;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.Codec;
 import com.butent.bee.shared.utils.NameUtils;
@@ -35,6 +32,7 @@ import com.butent.bee.shared.utils.NameUtils;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.List;
@@ -59,44 +57,6 @@ public abstract class ReportItem implements BeeSerializable {
   public static final String STYLE_NUM = STYLE_PREFIX + "num";
   public static final String STYLE_TEXT = STYLE_PREFIX + "text";
 
-  public enum Function implements HasLocalizedCaption {
-    MIN() {
-      @Override
-      public String getCaption(LocalizableConstants constants) {
-        return constants.least();
-      }
-    },
-    MAX() {
-      @Override
-      public String getCaption(LocalizableConstants constants) {
-        return constants.greatest();
-      }
-    },
-    SUM() {
-      @Override
-      public String getCaption(LocalizableConstants constants) {
-        return constants.amount();
-      }
-    },
-    COUNT() {
-      @Override
-      public String getCaption(LocalizableConstants constants) {
-        return constants.quantity();
-      }
-    },
-    LIST() {
-      @Override
-      public String getCaption(LocalizableConstants constants) {
-        return constants.list();
-      }
-    };
-
-    @Override
-    public String getCaption() {
-      return getCaption(Localized.getConstants());
-    }
-  }
-
   private enum Serial {
     CLAZZ, NAME, CAPTION, EXPRESSION, DATA
   }
@@ -111,61 +71,8 @@ public abstract class ReportItem implements BeeSerializable {
     setExpression(getName());
   }
 
-  public static void addItem(final Report report, Boolean numeric,
-      final Consumer<ReportItem> consumer) {
-
-    final List<ReportItem> items = new ArrayList<>();
-    final List<String> options = new ArrayList<>();
-
-    boolean other = numeric == null || !numeric;
-    boolean number = numeric == null || numeric;
-
-    for (ReportItem item : report.getItems()) {
-      if ((item instanceof ReportNumericItem) && number
-          || !(item instanceof ReportNumericItem) && other) {
-        items.add(item);
-        options.add(item.getCaption());
-      }
-    }
-    if (other) {
-      options.add(Localized.getConstants().expression() + "...");
-    }
-    if (number) {
-      options.add(Localized.getConstants().formula() + "...");
-
-      if (numeric != null) {
-        options.add(Localized.getConstants().constant() + "...");
-      }
-    }
-    Global.choice(null, null, options, new ChoiceCallback() {
-      @Override
-      public void onSuccess(int value) {
-        if (BeeUtils.isIndex(items, value)) {
-          consumer.accept(items.get(value));
-        } else {
-          final ReportItem item;
-
-          if (options.get(value).equals(Localized.getConstants().formula() + "...")) {
-            item = new ReportFormulaItem(null);
-          } else if (options.get(value).equals(Localized.getConstants().constant() + "...")) {
-            item = new ReportConstantItem(null, null);
-          } else {
-            item = new ReportExpressionItem(null);
-          }
-          item.edit(report, new Runnable() {
-            @Override
-            public void run() {
-              consumer.accept(item);
-            }
-          });
-          return;
-        }
-      }
-    });
-  }
-
   @SuppressWarnings("unchecked")
-  public Object calculate(Object total, ReportValue value, Function function) {
+  public Object calculate(Object total, ReportValue value, ReportFunction function) {
     if (value != null && !BeeUtils.isEmpty(value.getValue())) {
       switch (function) {
         case COUNT:
@@ -195,6 +102,60 @@ public abstract class ReportItem implements BeeSerializable {
       }
     }
     return total;
+  }
+
+  public static void chooseItem(final Report report, Boolean numeric,
+      final Consumer<ReportItem> consumer) {
+
+    final List<ReportItem> items = new ArrayList<>();
+    final List<String> options = new ArrayList<>();
+
+    boolean other = numeric == null || !numeric;
+    boolean number = numeric == null || numeric;
+
+    for (ReportItem item : report.getItems()) {
+      if ((item instanceof ReportNumericItem) && number
+          || !(item instanceof ReportNumericItem) && other
+          || (item instanceof ReportDateItem) && number && !other) {
+        items.add(item);
+        options.add(item.getCaption());
+      }
+    }
+    if (other) {
+      options.add(Localized.getConstants().expression() + "...");
+    }
+    if (number) {
+      options.add(Localized.getConstants().formula() + "...");
+
+      if (!other) {
+        options.add(Localized.getConstants().constant() + "...");
+      }
+    }
+    Global.choice(null, null, options, new ChoiceCallback() {
+      @Override
+      public void onSuccess(int value) {
+        if (BeeUtils.isIndex(items, value)) {
+          consumer.accept(items.get(value));
+        } else {
+          final ReportItem item;
+
+          if (options.get(value).equals(Localized.getConstants().formula() + "...")) {
+            item = new ReportFormulaItem(null);
+          } else if (options.get(value).equals(Localized.getConstants().constant() + "...")) {
+            item = new ReportConstantItem(null, null);
+          } else {
+            item = new ReportExpressionItem(null);
+          }
+          item.edit(report, new Runnable() {
+            @Override
+            public void run() {
+              consumer.accept(item);
+            }
+          });
+          return;
+        }
+      }
+    });
   }
 
   public void clearFilter() {
@@ -259,8 +220,9 @@ public abstract class ReportItem implements BeeSerializable {
 
   public abstract ReportValue evaluate(SimpleRow row);
 
-  public EnumSet<Function> getAvailableFunctions() {
-    return EnumSet.of(Function.MIN, Function.MAX, Function.COUNT, Function.LIST);
+  public EnumSet<ReportFunction> getAvailableFunctions() {
+    return EnumSet.of(ReportFunction.MIN, ReportFunction.MAX, ReportFunction.COUNT,
+        ReportFunction.LIST);
   }
 
   public String getCaption() {
@@ -278,12 +240,20 @@ public abstract class ReportItem implements BeeSerializable {
     return xpr;
   }
 
+  public Object getFilter() {
+    return null;
+  }
+
   public Widget getFilterWidget() {
     return null;
   }
 
   public String getFormatedCaption() {
     return getCaption();
+  }
+
+  public List<ReportItem> getMembers() {
+    return Collections.singletonList(this);
   }
 
   public String getName() {
@@ -424,10 +394,6 @@ public abstract class ReportItem implements BeeSerializable {
     return serialize(null);
   }
 
-  public String serializeFilter() {
-    return null;
-  }
-
   public ReportItem setCaption(String cap) {
     this.caption = cap;
     return this;
@@ -444,10 +410,10 @@ public abstract class ReportItem implements BeeSerializable {
   }
 
   @SuppressWarnings("unchecked")
-  public Object summarize(Object total, Object value, Function function) {
+  public Object summarize(Object total, Object value, ReportFunction function) {
     if (value != null) {
       if (total == null) {
-        if (function == Function.LIST) {
+        if (function == ReportFunction.LIST) {
           return new TreeSet<>((Collection<ReportValue>) value);
         }
         return value;

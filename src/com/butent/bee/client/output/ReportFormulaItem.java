@@ -1,4 +1,4 @@
-package com.butent.bee.client.view.form.interceptor;
+package com.butent.bee.client.output;
 
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
@@ -7,10 +7,6 @@ import com.google.gwt.user.client.ui.Widget;
 import com.butent.bee.client.Global;
 import com.butent.bee.client.dialog.ChoiceCallback;
 import com.butent.bee.client.layout.Flow;
-import com.butent.bee.client.output.Report;
-import com.butent.bee.client.output.ReportItem;
-import com.butent.bee.client.output.ReportNumericItem;
-import com.butent.bee.client.output.ReportValue;
 import com.butent.bee.client.widget.CustomSpan;
 import com.butent.bee.client.widget.Label;
 import com.butent.bee.shared.BeeConst;
@@ -141,6 +137,16 @@ public class ReportFormulaItem extends ReportNumericItem {
     return cap;
   }
 
+  @Override
+  public List<ReportItem> getMembers() {
+    List<ReportItem> members = new ArrayList<>();
+
+    for (Pair<String, ReportItem> pair : expression) {
+      members.addAll(pair.getB().getMembers());
+    }
+    return members;
+  }
+
   public ReportFormulaItem minus(ReportItem item) {
     return addItem(expression, BeeConst.STRING_MINUS, item);
   }
@@ -217,7 +223,7 @@ public class ReportFormulaItem extends ReportNumericItem {
     add.addClickHandler(new ClickHandler() {
       @Override
       public void onClick(ClickEvent event) {
-        addItem(report, true, new Consumer<ReportItem>() {
+        chooseItem(report, true, new Consumer<ReportItem>() {
           @Override
           public void accept(ReportItem item) {
             addItem(temporaryExpression, null, item);

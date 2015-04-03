@@ -1,10 +1,7 @@
-package com.butent.bee.client.view.form.interceptor;
+package com.butent.bee.client.output;
 
 import com.google.gwt.user.client.ui.Widget;
 
-import com.butent.bee.client.output.Report;
-import com.butent.bee.client.output.ReportNumericItem;
-import com.butent.bee.client.output.ReportValue;
 import com.butent.bee.client.widget.InputNumber;
 import com.butent.bee.client.widget.InputSpinner;
 import com.butent.bee.shared.BeeConst;

@@ -28,10 +28,7 @@ import com.butent.bee.client.layout.Flow;
 import com.butent.bee.client.layout.Horizontal;
 import com.butent.bee.client.output.Exporter;
 import com.butent.bee.client.output.Report;
-import com.butent.bee.client.output.ReportInfo;
-import com.butent.bee.client.output.ReportInfo.ReportInfoItem;
 import com.butent.bee.client.output.ReportItem;
-import com.butent.bee.client.output.ReportItem.Function;
 import com.butent.bee.client.output.ReportParameters;
 import com.butent.bee.client.output.ReportValue;
 import com.butent.bee.client.presenter.Presenter;
@@ -45,6 +42,7 @@ import com.butent.bee.client.widget.Label;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.Consumer;
+import com.butent.bee.shared.Service;
 import com.butent.bee.shared.communication.ResponseObject;
 import com.butent.bee.shared.data.BeeRow;
 import com.butent.bee.shared.data.BeeRowSet;
@@ -62,9 +60,13 @@ import com.butent.bee.shared.export.XSheet;
 import com.butent.bee.shared.export.XStyle;
 import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.modules.trade.TradeConstants;
+import com.butent.bee.shared.report.ReportFunction;
+import com.butent.bee.shared.report.ReportInfo;
+import com.butent.bee.shared.report.ReportInfoItem;
 import com.butent.bee.shared.ui.Action;
 import com.butent.bee.shared.utils.ArrayUtils;
 import com.butent.bee.shared.utils.BeeUtils;
+import com.butent.bee.shared.utils.Codec;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -123,11 +125,11 @@ public class ExtendedReportInterceptor extends ReportInterceptor {
       List<ReportItem> reportFilters = new ArrayList<>(filters);
       filters.clear();
 
-      if (!BeeUtils.isEmpty(target) && current.getRowGrouping() != null) {
-        setFilter(filters, rowGroup, current.getRowGrouping().getItem());
-      }
       if (current.getColGrouping() != null) {
         setFilter(filters, colGroup, current.getColGrouping().getItem());
+      }
+      if (!BeeUtils.isEmpty(target) && current.getRowGrouping() != null) {
+        setFilter(filters, rowGroup, current.getRowGrouping().getItem());
       }
       if (!ArrayUtils.isEmpty(rowValues)) {
         List<ReportInfoItem> infoItems = current.getRowItems();
@@ -141,13 +143,13 @@ public class ExtendedReportInterceptor extends ReportInterceptor {
           filters.add(reportFilter);
         }
       }
-      getReport().open(new ReportParameters(Collections.singletonMap(COL_RS_REPORT,
-          rep.serialize())));
+      getReport()
+          .open(new ReportParameters(Collections.singletonMap(COL_RS_REPORT, rep.serialize())));
     }
 
     private void setFilter(List<ReportItem> filters, String value, ReportItem item) {
-      if (!BeeUtils.isEmpty(value) && item != null && item.getFilterWidget() != null) {
-        filters.add(ReportItem.restore(item.serialize()).setFilter(value));
+      if (!BeeUtils.isEmpty(value) && item.getFilterWidget() != null && !filters.contains(item)) {
+        filters.add(item.setFilter(value));
       }
     }
   }
@@ -333,13 +335,8 @@ public class ExtendedReportInterceptor extends ReportInterceptor {
     if (getBoolean(NAME_VAT)) {
       params.addDataItem(TradeConstants.COL_TRADE_VAT, "1");
     }
-    for (ReportItem item : activeReport.getFilterItems()) {
-      String filterValue = item.serializeFilter();
+    params.addDataItem(Service.VAR_DATA, Codec.beeSerialize(activeReport));
 
-      if (!BeeUtils.isEmpty(filterValue)) {
-        params.addDataItem(item.getName(), filterValue);
-      }
-    }
     BeeKeeper.getRpc().makeRequest(params, new ResponseCallback() {
       @Override
       public void onResponse(ResponseObject response) {
@@ -1056,7 +1053,7 @@ public class ExtendedReportInterceptor extends ReportInterceptor {
       ((CustomSpan) rowAdd).addClickHandler(new ClickHandler() {
         @Override
         public void onClick(ClickEvent event) {
-          ReportItem.addItem(getReport(), false, new Consumer<ReportItem>() {
+          ReportItem.chooseItem(getReport(), false, new Consumer<ReportItem>() {
             @Override
             public void accept(ReportItem item) {
               activeReport.addRowItem(item);
@@ -1090,9 +1087,9 @@ public class ExtendedReportInterceptor extends ReportInterceptor {
           @Override
           public void onClick(ClickEvent event) {
             List<String> options = new ArrayList<>();
-            final List<Function> values = new ArrayList<>();
+            final List<ReportFunction> values = new ArrayList<>();
 
-            for (Function fnc : item.getAvailableFunctions()) {
+            for (ReportFunction fnc : item.getAvailableFunctions()) {
               options.add(fnc.getCaption());
               values.add(fnc);
             }
@@ -1131,7 +1128,7 @@ public class ExtendedReportInterceptor extends ReportInterceptor {
       ((CustomSpan) colAdd).addClickHandler(new ClickHandler() {
         @Override
         public void onClick(ClickEvent event) {
-          ReportItem.addItem(getReport(), null, new Consumer<ReportItem>() {
+          ReportItem.chooseItem(getReport(), null, new Consumer<ReportItem>() {
             @Override
             public void accept(ReportItem item) {
               activeReport.addColItem(item);
@@ -1192,7 +1189,7 @@ public class ExtendedReportInterceptor extends ReportInterceptor {
           ((CustomSpan) cGroup).addClickHandler(new ClickHandler() {
             @Override
             public void onClick(ClickEvent event) {
-              ReportItem.addItem(getReport(), false, new Consumer<ReportItem>() {
+              ReportItem.chooseItem(getReport(), false, new Consumer<ReportItem>() {
                 @Override
                 public void accept(ReportItem item) {
                   activeReport.setColGrouping(item);
@@ -1235,7 +1232,7 @@ public class ExtendedReportInterceptor extends ReportInterceptor {
           rGroupAdd.addClickHandler(new ClickHandler() {
             @Override
             public void onClick(ClickEvent event) {
-              ReportItem.addItem(getReport(), false, new Consumer<ReportItem>() {
+              ReportItem.chooseItem(getReport(), false, new Consumer<ReportItem>() {
                 @Override
                 public void accept(ReportItem item) {
                   activeReport.setRowGrouping(item);

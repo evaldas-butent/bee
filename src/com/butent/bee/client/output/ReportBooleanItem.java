@@ -1,6 +1,9 @@
 package com.butent.bee.client.output;
 
-import com.butent.bee.client.composite.RadioGroup;
+import com.google.gwt.event.logical.shared.SelectionEvent;
+import com.google.gwt.event.logical.shared.SelectionHandler;
+
+import com.butent.bee.client.composite.TabBar;
 import com.butent.bee.shared.Service;
 import com.butent.bee.shared.data.SimpleRowSet.SimpleRow;
 import com.butent.bee.shared.i18n.LocalizableConstants;
@@ -14,7 +17,8 @@ import java.util.Collections;
 
 public class ReportBooleanItem extends ReportItem {
 
-  private RadioGroup filter;
+  private TabBar filterWidget;
+  private Boolean filter;
 
   public ReportBooleanItem(String name, String caption) {
     super(name, caption);
@@ -22,37 +26,57 @@ public class ReportBooleanItem extends ReportItem {
 
   @Override
   public void clearFilter() {
-    if (filter != null) {
-      filter.setSelectedIndex(0);
+    if (filterWidget != null) {
+      filterWidget.selectTab(0);
+    } else {
+      filter = null;
     }
   }
 
   @Override
   public void deserialize(String data) {
     if (data != null) {
-      String flt = Codec.deserializeMap(data).get(Service.VAR_DATA);
-      getFilterWidget().setSelectedIndex(BeeUtils.isEmpty(flt) ? 0 : Codec.unpack(flt) ? 1 : 2);
+      setFilter(Codec.deserializeMap(data).get(Service.VAR_DATA));
     }
   }
 
   @Override
   public ReportValue evaluate(SimpleRow row) {
-    if (BeeUtils.unbox(row.getBoolean(getName()))) {
-      return ReportValue.of("1", Localized.getConstants().yes());
+    String display;
+    boolean on = BeeUtils.unbox(row.getBoolean(getName()));
+
+    if (on) {
+      display = Localized.getConstants().yes();
     } else {
-      return ReportValue.of("2", Localized.getConstants().no());
+      display = Localized.getConstants().no();
     }
+    return ReportValue.of(Boolean.toString(on), display);
   }
 
   @Override
-  public RadioGroup getFilterWidget() {
-    if (filter == null) {
-      LocalizableConstants loc = Localized.getConstants();
-      filter = new RadioGroup(Orientation.HORIZONTAL, 0,
-          Arrays.asList(loc.noMatter(), loc.yes(), loc.no()));
-      filter.addStyleName(getStyle() + "-filter");
-    }
+  public Boolean getFilter() {
     return filter;
+  }
+
+  @Override
+  public TabBar getFilterWidget() {
+    if (filterWidget == null) {
+      LocalizableConstants loc = Localized.getConstants();
+      filterWidget = new TabBar(Orientation.HORIZONTAL);
+      filterWidget.addStyleName(getStyle() + "-filter");
+
+      filterWidget.addItems(Arrays.asList(loc.noMatter(), loc.yes(), loc.no()));
+
+      filterWidget.addSelectionHandler(new SelectionHandler<Integer>() {
+        @Override
+        public void onSelection(SelectionEvent<Integer> event) {
+          filter = event.getSelectedItem() == 0
+              ? null : BeeUtils.toBoolean(event.getSelectedItem());
+        }
+      });
+      filterWidget.selectTab(filter == null ? 0 : (filter ? 1 : 2));
+    }
+    return filterWidget;
   }
 
   @Override
@@ -62,37 +86,25 @@ public class ReportBooleanItem extends ReportItem {
 
   @Override
   public String serialize() {
-    String data = serializeFilter();
+    String data = null;
 
-    if (data != null) {
-      data = Codec.beeSerialize(Collections.singletonMap(Service.VAR_DATA, data));
+    if (filter != null) {
+      data = Codec.beeSerialize(Collections.singletonMap(Service.VAR_DATA, filter));
     }
     return serialize(data);
   }
 
   @Override
-  public String serializeFilter() {
-    if (filter == null) {
-      return null;
-    }
-    return filter.getSelectedIndex() == 0 ? ""
-        : Codec.pack(BeeUtils.toBoolean(filter.getSelectedIndex()));
-  }
-
-  @Override
   public ReportItem setFilter(String value) {
-    if (!BeeUtils.isEmpty(value)) {
-      getFilterWidget().setSelectedIndex(BeeUtils.toInt(value));
-    }
+    filter = BeeUtils.toBooleanOrNull(value);
     return this;
   }
 
   @Override
   public boolean validate(SimpleRow row) {
-    if (filter == null || filter.getSelectedIndex() == 0 || !row.getRowSet().hasColumn(getName())) {
+    if (filter == null || !row.getRowSet().hasColumn(getName())) {
       return true;
     }
-    return BeeUtils.unbox(row.getBoolean(getName())) == BeeUtils.toBoolean(filter
-        .getSelectedIndex());
+    return BeeUtils.unbox(row.getBoolean(getName())) == filter;
   }
 }

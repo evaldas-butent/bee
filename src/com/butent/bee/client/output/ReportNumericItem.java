@@ -4,6 +4,7 @@ import com.butent.bee.client.widget.InputSpinner;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.data.SimpleRowSet.SimpleRow;
 import com.butent.bee.shared.i18n.Localized;
+import com.butent.bee.shared.report.ReportFunction;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.Codec;
 
@@ -24,7 +25,7 @@ public class ReportNumericItem extends ReportItem {
   }
 
   @Override
-  public Object calculate(Object total, ReportValue value, Function function) {
+  public Object calculate(Object total, ReportValue value, ReportFunction function) {
     BigDecimal val = BeeUtils.toDecimalOrNull(value.getValue());
 
     if (val != null) {
@@ -66,9 +67,9 @@ public class ReportNumericItem extends ReportItem {
   }
 
   @Override
-  public EnumSet<Function> getAvailableFunctions() {
-    EnumSet<Function> functions = super.getAvailableFunctions();
-    functions.add(Function.SUM);
+  public EnumSet<ReportFunction> getAvailableFunctions() {
+    EnumSet<ReportFunction> functions = super.getAvailableFunctions();
+    functions.add(ReportFunction.SUM);
     return functions;
   }
 
@@ -114,7 +115,7 @@ public class ReportNumericItem extends ReportItem {
   }
 
   @Override
-  public Object summarize(Object total, Object value, Function function) {
+  public Object summarize(Object total, Object value, ReportFunction function) {
     if (value != null) {
       if (total == null) {
         return super.summarize(total, value, function);

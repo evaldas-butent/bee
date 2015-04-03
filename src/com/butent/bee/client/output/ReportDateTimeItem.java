@@ -3,7 +3,9 @@ package com.butent.bee.client.output;
 import com.butent.bee.client.view.edit.Editor;
 import com.butent.bee.client.widget.InputDateTime;
 import com.butent.bee.client.widget.ListBox;
+import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.data.SimpleRowSet.SimpleRow;
+import com.butent.bee.shared.report.DateTimeFunction;
 import com.butent.bee.shared.time.DateTime;
 import com.butent.bee.shared.time.HasDateValue;
 import com.butent.bee.shared.time.TimeUtils;
@@ -20,25 +22,28 @@ public class ReportDateTimeItem extends ReportDateItem {
 
   @Override
   public ReportValue evaluate(SimpleRow row) {
+    ReportValue value;
     DateTime date = row.getDateTime(getName());
+    String val = BeeUtils.toString(getValue(date));
 
     if (date != null) {
-      ReportValue value;
-
       switch (getFormat()) {
         case DATETIME:
-          return ReportValue.of(date.toCompactString());
+          value = ReportValue.of(BeeUtils.padLeft(val, 15, BeeConst.CHAR_ZERO),
+              date.toCompactString());
+          break;
         case HOUR:
         case MINUTE:
-          value = ReportValue.of(TimeUtils.padTwo(getValue(date)));
+          value = ReportValue.of(BeeUtils.padLeft(val, 2, BeeConst.CHAR_ZERO));
           break;
         default:
           value = evaluate(date.getDate());
           break;
       }
-      return ReportValue.of(value.getValue(), value.toString());
+    } else {
+      value = ReportValue.empty();
     }
-    return ReportValue.empty();
+    return value;
   }
 
   @Override
@@ -52,36 +57,9 @@ public class ReportDateTimeItem extends ReportDateItem {
   }
 
   @Override
-  public ReportItem setFilter(String value) {
-    if (!BeeUtils.isEmpty(value)) {
-      getFilterWidget();
-
-      switch (getFormat()) {
-        case DATETIME:
-          DateTime date = TimeUtils.parseDateTime(value);
-          getFilterFrom().setValue(date.serialize());
-          getFilterTo().setValue(TimeUtils.nextMinute(date, 0).serialize());
-          break;
-        case HOUR:
-        case MINUTE:
-          getFilter().setValue(value);
-          break;
-        default:
-          super.setFilter(value);
-      }
-    }
-    return this;
-  }
-
-  @Override
   public boolean validate(SimpleRow row) {
     if (!row.getRowSet().hasColumn(getName())) {
       return true;
-    }
-    DateTime date = row.getDateTime(getName());
-
-    if (date != null && getFormat() == DateTimeFunction.DATE) {
-      return validate(date.getDate());
     }
     return validate(row.getDateTime(getName()));
   }
@@ -106,7 +84,7 @@ public class ReportDateTimeItem extends ReportDateItem {
     editor.addItem("");
 
     for (int i = 0; i < limit; i++) {
-      editor.addItem(TimeUtils.padTwo(i));
+      editor.addItem(TimeUtils.padTwo(i), BeeUtils.toString(i));
     }
     return editor;
   }
@@ -117,8 +95,10 @@ public class ReportDateTimeItem extends ReportDateItem {
   }
 
   @Override
-  protected int getValue(HasDateValue date) {
+  protected long getValue(HasDateValue date) {
     switch (getFormat()) {
+      case DATETIME:
+        return date.getTime();
       case HOUR:
         return date.getHour();
       case MINUTE:

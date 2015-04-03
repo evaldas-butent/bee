@@ -1,23 +1,26 @@
 package com.butent.bee.client.output;
 
 import com.butent.bee.client.composite.MultiSelector;
+import com.butent.bee.client.event.logical.SelectorEvent;
 import com.butent.bee.client.render.AbstractCellRenderer;
 import com.butent.bee.shared.Service;
+import com.butent.bee.shared.State;
 import com.butent.bee.shared.data.SimpleRowSet.SimpleRow;
 import com.butent.bee.shared.data.filter.Filter;
 import com.butent.bee.shared.modules.classifiers.ClassifierConstants;
 import com.butent.bee.shared.ui.Relation;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.Codec;
+import com.butent.bee.shared.utils.EnumUtils;
 
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
-import java.util.Map;
 
 public class ReportTextItem extends ReportItem {
 
-  private MultiSelector filter;
+  private MultiSelector filterWidget;
+  private List<String> filter;
 
   public ReportTextItem(String name, String caption) {
     super(name, caption);
@@ -25,20 +28,17 @@ public class ReportTextItem extends ReportItem {
 
   @Override
   public void clearFilter() {
-    if (filter != null) {
-      filter.clearValue();
+    if (filterWidget != null) {
+      filterWidget.clearValue();
     }
+    filter = null;
   }
 
   @Override
   public void deserialize(String data) {
-    if (!BeeUtils.isEmpty(data)) {
-      Map<String, String> map = Codec.deserializeMap(data);
-
-      if (!BeeUtils.isEmpty(map)) {
-        getFilterWidget()
-            .setValues(Arrays.asList(Codec.beeDeserializeCollection(map.get(Service.VAR_DATA))));
-      }
+    if (data != null) {
+      filter = Arrays.asList(Codec
+          .beeDeserializeCollection(Codec.deserializeMap(data).get(Service.VAR_DATA)));
     }
   }
 
@@ -48,8 +48,13 @@ public class ReportTextItem extends ReportItem {
   }
 
   @Override
+  public List<String> getFilter() {
+    return filter;
+  }
+
+  @Override
   public MultiSelector getFilterWidget() {
-    if (filter == null) {
+    if (filterWidget == null) {
       Relation relation = Relation.create(ClassifierConstants.TBL_COUNTRIES,
           Collections.singletonList(ClassifierConstants.COL_COUNTRY_NAME));
       relation.setStrict(false);
@@ -58,10 +63,20 @@ public class ReportTextItem extends ReportItem {
       relation.disableEdit();
       relation.setValueSource(ClassifierConstants.COL_COUNTRY_NAME);
 
-      filter = MultiSelector.autonomous(relation, (AbstractCellRenderer) null);
-      filter.addStyleName(getStyle() + "-filter");
+      filterWidget = MultiSelector.autonomous(relation, (AbstractCellRenderer) null);
+      filterWidget.addStyleName(getStyle() + "-filter");
+
+      filterWidget.addSelectorHandler(new SelectorEvent.Handler() {
+        @Override
+        public void onDataSelector(SelectorEvent event) {
+          if (EnumUtils.in(event.getState(), State.INSERTED, State.REMOVED)) {
+            filter = filterWidget.getValues();
+          }
+        }
+      });
+      filterWidget.setValues(filter);
     }
-    return filter;
+    return filterWidget;
   }
 
   @Override
@@ -71,43 +86,32 @@ public class ReportTextItem extends ReportItem {
 
   @Override
   public String serialize() {
-    String data = serializeFilter();
+    String data = null;
 
-    if (!BeeUtils.isEmpty(data)) {
-      data = Codec.beeSerialize(Collections.singletonMap(Service.VAR_DATA, data));
+    if (!BeeUtils.isEmpty(filter)) {
+      data = Codec.beeSerialize(Collections.singletonMap(Service.VAR_DATA, filter));
     }
     return serialize(data);
   }
 
   @Override
-  public String serializeFilter() {
-    if (filter == null) {
-      return null;
-    }
-    return Codec.beeSerialize(filter.getValues());
-  }
-
-  @Override
   public ReportItem setFilter(String value) {
     if (!BeeUtils.isEmpty(value)) {
-      getFilterWidget().setValues(Arrays.asList(value));
+      filter = Arrays.asList(value);
+    } else {
+      filter = null;
     }
     return this;
   }
 
   @Override
   public boolean validate(SimpleRow row) {
-    if (filter == null || !row.getRowSet().hasColumn(getName())) {
-      return true;
-    }
-    List<String> values = filter.getValues();
-
-    if (values.isEmpty()) {
+    if (BeeUtils.isEmpty(filter) || !row.getRowSet().hasColumn(getName())) {
       return true;
     }
     String value = row.getValue(getName());
 
-    for (String opt : values) {
+    for (String opt : filter) {
       if (BeeUtils.containsSame(value, opt)) {
         return true;
       }

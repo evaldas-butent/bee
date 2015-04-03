@@ -1,8 +1,22 @@
-package com.butent.bee.client.output;
+package com.butent.bee.shared.report;
 
-import com.butent.bee.client.output.ReportItem.Function;
+import com.google.gwt.core.shared.GwtIncompatible;
+
+import com.butent.bee.client.output.ReportBooleanItem;
+import com.butent.bee.client.output.ReportDateItem;
+import com.butent.bee.client.output.ReportEnumItem;
+import com.butent.bee.client.output.ReportItem;
+import com.butent.bee.client.output.ReportNumericItem;
+import com.butent.bee.client.output.ReportTextItem;
+import com.butent.bee.server.sql.HasConditions;
+import com.butent.bee.server.sql.IsCondition;
+import com.butent.bee.server.sql.IsExpression;
+import com.butent.bee.server.sql.SqlUtils;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeSerializable;
+import com.butent.bee.shared.data.filter.Operator;
+import com.butent.bee.shared.time.JustDate;
+import com.butent.bee.shared.time.TimeUtils;
 import com.butent.bee.shared.utils.ArrayUtils;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.Codec;
@@ -13,144 +27,12 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Set;
 
 public class ReportInfo implements BeeSerializable {
 
   private enum Serial {
     CAPTION, ROW_ITEMS, COL_ITEMS, FILTER_ITEMS, ROW_GROUPING, COL_GROUPING
-  }
-
-  private enum ItemSerial {
-    ITEM, RELATION, FUNCTION, COL_SUMMARY, GROUP_SUMMARY, ROW_SUMMARY
-  }
-
-  public final class ReportInfoItem implements BeeSerializable {
-
-    private ReportItem item;
-    private String relation;
-
-    private Function function;
-    private boolean colSummary;
-    private boolean groupSummary;
-    private boolean rowSummary;
-
-    private ReportInfoItem(ReportItem item) {
-      this.item = Assert.notNull(item);
-    }
-
-    private ReportInfoItem() {
-    }
-
-    @Override
-    public void deserialize(String data) {
-      Map<String, String> map = Codec.deserializeMap(data);
-
-      if (!BeeUtils.isEmpty(map)) {
-        for (ItemSerial key : ItemSerial.values()) {
-          String value = map.get(key.name());
-
-          switch (key) {
-            case COL_SUMMARY:
-              colSummary = BeeUtils.toBoolean(value);
-              break;
-            case FUNCTION:
-              function = EnumUtils.getEnumByName(Function.class, value);
-              break;
-            case GROUP_SUMMARY:
-              groupSummary = BeeUtils.toBoolean(value);
-              break;
-            case ITEM:
-              item = ReportItem.restore(value);
-              break;
-            case RELATION:
-              setRelation(value);
-              break;
-            case ROW_SUMMARY:
-              rowSummary = BeeUtils.toBoolean(value);
-              break;
-            default:
-              break;
-          }
-        }
-      }
-    }
-
-    public ReportItem getItem() {
-      return item;
-    }
-
-    public Function getFunction() {
-      return function;
-    }
-
-    public String getRelation() {
-      return relation;
-    }
-
-    public String getStyle() {
-      if (getFunction() != null) {
-        switch (getFunction()) {
-          case LIST:
-            return ReportItem.STYLE_TEXT;
-
-          case COUNT:
-          case SUM:
-            return ReportItem.STYLE_NUM;
-
-          default:
-            break;
-        }
-      }
-      return getItem().getStyle();
-    }
-
-    public boolean isColSummary() {
-      return colSummary;
-    }
-
-    public boolean isGroupSummary() {
-      return groupSummary;
-    }
-
-    public boolean isRowSummary() {
-      return rowSummary;
-    }
-
-    @Override
-    public String serialize() {
-      Map<String, Object> map = new HashMap<>();
-
-      for (ItemSerial key : ItemSerial.values()) {
-        Object value = null;
-
-        switch (key) {
-          case COL_SUMMARY:
-            value = isColSummary();
-            break;
-          case FUNCTION:
-            value = getFunction();
-            break;
-          case GROUP_SUMMARY:
-            value = isGroupSummary();
-            break;
-          case ITEM:
-            value = getItem();
-            break;
-          case RELATION:
-            value = getRelation();
-            break;
-          case ROW_SUMMARY:
-            value = isRowSummary();
-            break;
-        }
-        map.put(key.name(), value);
-      }
-      return Codec.beeSerialize(map);
-    }
-
-    public void setRelation(String relation) {
-      this.relation = relation;
-    }
   }
 
   private String caption;
@@ -174,12 +56,12 @@ public class ReportInfo implements BeeSerializable {
     int idx = colItems.size() - 1;
 
     if (colItem instanceof ReportNumericItem) {
-      setFunction(idx, Function.SUM);
+      setFunction(idx, ReportFunction.SUM);
       setColSummary(idx, true);
       setGroupSummary(idx, true);
       setRowSummary(idx, true);
     } else {
-      setFunction(idx, Function.LIST);
+      setFunction(idx, ReportFunction.LIST);
     }
   }
 
@@ -284,6 +166,92 @@ public class ReportInfo implements BeeSerializable {
     return colItems;
   }
 
+  @GwtIncompatible
+  public IsCondition getCondition(String table, String field) {
+    return getCondition(SqlUtils.field(table, field), field);
+  }
+
+  @GwtIncompatible
+  public IsCondition getCondition(IsExpression expr, String field) {
+    HasConditions and = SqlUtils.and();
+
+    for (ReportItem filterItem : getFilterItems()) {
+      if (BeeUtils.same(filterItem.getExpression(), field)) {
+        if (filterItem instanceof ReportTextItem) {
+          List<String> options = ((ReportTextItem) filterItem).getFilter();
+
+          if (!BeeUtils.isEmpty(options)) {
+            HasConditions or = SqlUtils.or();
+
+            for (String opt : ((ReportTextItem) filterItem).getFilter()) {
+              or.add(SqlUtils.contains(expr, opt));
+            }
+            and.add(or);
+          }
+        } else if (filterItem instanceof ReportEnumItem) {
+          Set<Integer> options = ((ReportEnumItem) filterItem).getFilter();
+
+          if (!BeeUtils.isEmpty(options)) {
+            and.add(SqlUtils.inList(expr, options));
+          }
+        } else if (filterItem instanceof ReportBooleanItem) {
+          Boolean ok = ((ReportBooleanItem) filterItem).getFilter();
+
+          if (ok != null) {
+            and.add(ok ? SqlUtils.notNull(expr) : SqlUtils.isNull(expr));
+          }
+        } else if (filterItem instanceof ReportDateItem) {
+          Long value = ((ReportDateItem) filterItem).getFilter();
+
+          if (value != null) {
+            Long dt = null;
+            Operator op = ((ReportDateItem) filterItem).getFilterOperator();
+
+            switch (((ReportDateItem) filterItem).getFormat()) {
+              case DATE:
+                dt = new JustDate(value.intValue()).getTime();
+                break;
+              case DATETIME:
+                dt = value;
+                break;
+              case YEAR:
+                switch (op) {
+                  case EQ:
+                    and.add(SqlUtils.compare(expr, Operator.GE,
+                        SqlUtils.constant(TimeUtils.startOfYear(value.intValue()).getTime())));
+
+                    dt = TimeUtils.startOfYear(value.intValue() + 1).getTime();
+                    op = Operator.LT;
+                    break;
+                  case GE:
+                    dt = TimeUtils.startOfYear(value.intValue()).getTime();
+                    break;
+                  case GT:
+                    dt = TimeUtils.startOfYear(value.intValue() + 1).getTime();
+                    op = Operator.GE;
+                    break;
+                  case LE:
+                    dt = TimeUtils.startOfYear(value.intValue() + 1).getTime();
+                    op = Operator.LT;
+                    break;
+                  case LT:
+                    dt = TimeUtils.startOfYear(value.intValue()).getTime();
+                    break;
+                  default:
+                    continue;
+                }
+                break;
+              default:
+                continue;
+            }
+            and.add(SqlUtils.compare(expr, op, SqlUtils.constant(dt)));
+          }
+        }
+      }
+    }
+    return and.isEmpty() ? null : and;
+  }
+
   public List<ReportItem> getFilterItems() {
     return filterItems;
   }
@@ -307,6 +275,49 @@ public class ReportInfo implements BeeSerializable {
 
   public boolean isEmpty() {
     return BeeUtils.isEmpty(getRowItems()) && BeeUtils.isEmpty(getColItems());
+  }
+
+  public boolean requiresField(String field) {
+    for (ReportInfoItem infoItem : getRowItems()) {
+      for (ReportItem item : infoItem.getItem().getMembers()) {
+        if (BeeUtils.same(item.getExpression(), field)) {
+          return true;
+        }
+      }
+    }
+    for (ReportInfoItem infoItem : getColItems()) {
+      for (ReportItem item : infoItem.getItem().getMembers()) {
+        if (BeeUtils.same(item.getExpression(), field)) {
+          return true;
+        }
+      }
+    }
+    if (getRowGrouping() != null) {
+      for (ReportItem item : getRowGrouping().getItem().getMembers()) {
+        if (BeeUtils.same(item.getExpression(), field)) {
+          return true;
+        }
+      }
+    }
+    if (getColGrouping() != null) {
+      for (ReportItem item : getColGrouping().getItem().getMembers()) {
+        if (BeeUtils.same(item.getExpression(), field)) {
+          return true;
+        }
+      }
+    }
+    for (ReportItem filterItem : getFilterItems()) {
+      for (ReportItem item : filterItem.getMembers()) {
+        if (BeeUtils.same(item.getExpression(), field)
+            && item.getFilter() != null
+            && item instanceof ReportDateItem
+            && !EnumUtils.in(((ReportDateItem) item).getFormat(), DateTimeFunction.YEAR,
+                DateTimeFunction.DATE, DateTimeFunction.DATETIME)) {
+          return true;
+        }
+      }
+    }
+    return false;
   }
 
   public static ReportInfo restore(String data) {
@@ -365,7 +376,7 @@ public class ReportInfo implements BeeSerializable {
     }
   }
 
-  public void setFunction(int colIndex, Function function) {
+  public void setFunction(int colIndex, ReportFunction function) {
     ReportInfoItem item = BeeUtils.getQuietly(getColItems(), colIndex);
 
     if (item != null) {

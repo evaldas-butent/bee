@@ -109,6 +109,16 @@ public class ReportExpressionItem extends ReportItem {
   }
 
   @Override
+  public List<ReportItem> getMembers() {
+    List<ReportItem> members = new ArrayList<>();
+
+    for (Pair<String, ReportItem> pair : expression) {
+      members.addAll(pair.getB().getMembers());
+    }
+    return members;
+  }
+
+  @Override
   public String getStyle() {
     return STYLE_TEXT;
   }
@@ -183,7 +193,7 @@ public class ReportExpressionItem extends ReportItem {
     add.addClickHandler(new ClickHandler() {
       @Override
       public void onClick(ClickEvent event) {
-        addItem(report, false, new Consumer<ReportItem>() {
+        chooseItem(report, false, new Consumer<ReportItem>() {
           @Override
           public void accept(ReportItem item) {
             addItem(temporaryExpression, null, item);
