@@ -507,7 +507,7 @@ div > span.bee-MenuItem.bee-MenuItem-label {
   margin-left: 4px;
   margin-right: 4px;
   font-size: large;
-  color: #888;
+  color: #414142;
 }
 
 .bee-Header-commandPanel .bee-fa-label:active {
@@ -3222,7 +3222,7 @@ div > span.bee-MenuItem.bee-MenuItem-label {
 }
 .bee-GridMenu-popup .bee-fa-label {
   font-size: large;
-  color: #888;
+  color: #414142;
 }
 .bee-GridMenu-table tr:hover .bee-fa-label {
   color: black;
