@@ -67,6 +67,8 @@ public final class ProjectConstants {
   public static final String ALS_FILTERED_VISITED_USER = "FilteredVisitedUser";
   public static final String ALS_ACTUAL_TIME_DIFFERENCE = "ActualTimeDifference";
   public static final String ALS_CATEGORY_NAME = "CategoryName";
+  public static final String ALS_EXPECTED_TASKS_EXPENSES = "ExpectedTasksExpenses";
+  public static final String ALS_ACTUAL_TASKS_EXPENSES = "ActualExpenses";
 
   public static final String ALS_ROW_ID = "RowID";
   public static final String ALS_TASK_COUNT = "TaskCount";

@@ -165,9 +165,9 @@ class ProjectForm extends AbstractFormInterceptor implements DataChangeEvent.Han
     }
 
     if (getTimeUnits() != null && DataUtils.isId(row.getId())) {
-      showComputedTimes(form, row);
+      showComputedTimes(form, row, false);
     } else if (getTimeUnits() == null && DataUtils.isId(row.getId())) {
-      showComputedTimes(form, row);
+      showComputedTimes(form, row, false);
     } else {
       if (actualTasksDuration != null) {
         actualTasksDuration.setText(null);
@@ -220,14 +220,19 @@ class ProjectForm extends AbstractFormInterceptor implements DataChangeEvent.Han
 
   @Override
   public void onDataChange(DataChangeEvent event) {
-    if (event.hasView(VIEW_PROJECTS) || event.hasView(VIEW_PROJECT_USERS)
-        || event.hasView(VIEW_PROJECT_STAGES) || event.hasView(VIEW_PROJECT_DATES)
-        || event.hasView(TaskConstants.VIEW_TASKS)
-        || event.hasView(TaskConstants.VIEW_RELATED_TASKS)) {
+    if (getFormView() == null) {
+      return;
+    }
 
-      getFormView().refreshBySource(COL_ACTUAL_TASKS_DURATION);
-      getFormView().refreshBySource(COL_EXPECTED_TASKS_DURATION);
-      getFormView().refresh();
+    if (getActiveRow() == null) {
+      return;
+    }
+
+    if (event.hasView(VIEW_PROJECT_STAGES)
+        || event.hasView(TaskConstants.VIEW_TASKS)
+        || event.hasView(TaskConstants.VIEW_TASK_EVENTS)) {
+
+      showComputedTimes(getFormView(), getActiveRow(), true);
     }
   }
 
@@ -305,17 +310,19 @@ class ProjectForm extends AbstractFormInterceptor implements DataChangeEvent.Han
 
   @Override
   public void onRowInsert(RowInsertEvent event) {
-    if (event.hasView(VIEW_PROJECT_USERS)
-        || event.hasView(VIEW_PROJECT_STAGES) || event.hasView(VIEW_PROJECT_DATES)
-        || event.hasView(TaskConstants.VIEW_TASKS)
-        || event.hasView(TaskConstants.VIEW_RELATED_TASKS)) {
+    if (getFormView() == null) {
+      return;
+    }
 
-      // if (event.hasView(TaskConstants.VIEW_TASKS)) {
-      // TODO: refresh tasks times
-      // }
-      getFormView().refreshBySource(COL_ACTUAL_TASKS_DURATION);
-      getFormView().refreshBySource(COL_EXPECTED_TASKS_DURATION);
-      getFormView().refresh();
+    if (getActiveRow() == null) {
+      return;
+    }
+
+    if (event.hasView(VIEW_PROJECT_STAGES)
+        || event.hasView(TaskConstants.VIEW_TASKS)
+        || event.hasView(TaskConstants.VIEW_TASK_EVENTS)) {
+
+      showComputedTimes(getFormView(), getActiveRow(), true);
     }
 
   }
@@ -711,7 +718,7 @@ class ProjectForm extends AbstractFormInterceptor implements DataChangeEvent.Han
     }
   }
 
-  private void showComputedTimes(FormView form, IsRow row) {
+  private void showComputedTimes(final FormView form, final IsRow row, boolean requery) {
     if (form == null) {
       return;
     }
@@ -720,12 +727,29 @@ class ProjectForm extends AbstractFormInterceptor implements DataChangeEvent.Han
       return;
     }
 
-    int idxExpTD = form.getDataIndex(COL_EXPECTED_TASKS_DURATION);
-    int idxActTD = form.getDataIndex(COL_ACTUAL_TASKS_DURATION);
+    final int idxExpTD = form.getDataIndex(COL_EXPECTED_TASKS_DURATION);
+    final int idxActTD = form.getDataIndex(COL_ACTUAL_TASKS_DURATION);
     int idxUnit = form.getDataIndex(COL_PROJECT_TIME_UNIT);
 
     double factor = BeeConst.DOUBLE_ONE;
     String unitName = BeeConst.STRING_EMPTY;
+
+    if (requery) {
+
+      Queries.getRow(form.getViewName(), row.getId(), new RowCallback() {
+        @Override
+        public void onSuccess(BeeRow result) {
+          row.setValue(idxExpTD, result.getValue(idxExpTD));
+          row.setValue(idxActTD, result.getValue(idxActTD));
+          form.refreshBySource(COL_EXPECTED_TASKS_DURATION);
+          form.refreshBySource(COL_ACTUAL_TASKS_DURATION);
+
+          showComputedTimes(form, row, false);
+        }
+      });
+
+      return;
+    }
 
     if (!BeeConst.isUndef(idxUnit) && getTimeUnits() != null) {
       long idValue = BeeUtils.unbox(row.getLong(idxUnit));
