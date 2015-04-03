@@ -14,6 +14,8 @@ public interface LocalizableProjectConstants {
 
   String prjComments();
 
+  String prjCreateFromTasks();
+
   String prjDeleteCanManager();
 
   String prjEventEdited();
