@@ -48,7 +48,7 @@
       </row>
     </Table>
 
-    <Disclosure open="true">
+    <Disclosure open="true" name="RelatedInfo">
       <Label text="=relatedInformation" style="text-transform: uppercase; " />
       <Table>
         <Table>

@@ -111,6 +111,10 @@
       <SimpleColumn name="User" alias="FilteredProjectUser" />
     </ExternalJoin>
     
+    <ExternalJoin name="Project" source="ProjectUsage" joinType="LEFT" filter="FilteredVisitedUser={u}">
+      <SimpleColumn name="User" alias="FilteredVisitedUser" />
+    </ExternalJoin>
+    
     <ExternalJoin name="Project" source="ProjectUsers" joinType="LEFT" filter="FilteredOwnerUser=Owner">
       <SimpleColumn name="User" alias="FilteredOwnerUser" />
     </ExternalJoin>

@@ -14,6 +14,7 @@ import com.butent.bee.client.Callback;
 import com.butent.bee.client.communication.ParameterList;
 import com.butent.bee.client.communication.ResponseCallback;
 import com.butent.bee.client.composite.DataSelector;
+import com.butent.bee.client.composite.Disclosure;
 import com.butent.bee.client.data.Data;
 import com.butent.bee.client.data.Queries;
 import com.butent.bee.client.data.RowCallback;
@@ -76,6 +77,7 @@ class ProjectForm extends AbstractFormInterceptor implements DataChangeEvent.Han
   private static final String WIDGET_EXPECTED_TASKS_DURATION = "ExpectedTasksDuration";
   private static final String WIDGET_ACTUAL_TASKS_DURATION = "ActualTasksDuration";
   private static final String WIDGET_STATUS = "Status";
+  private static final String WIDGET_RELATED_INFO = "RelatedInfo";
 
   private static final Set<String> AUDIT_FIELDS = Sets.newHashSet(COL_PROJECT_START_DATE,
       COL_PROJECT_END_DATE, COL_COMAPNY, COL_PROJECT_STATUS, COL_PROJECT_OWNER,
@@ -96,6 +98,7 @@ class ProjectForm extends AbstractFormInterceptor implements DataChangeEvent.Han
   private InputText expectedTasksDuration;
   private InputText actualTasksDuration;
   private ListBox status;
+  private Disclosure relatedInfo;
 
   private BeeRowSet timeUnits;
 
@@ -130,6 +133,10 @@ class ProjectForm extends AbstractFormInterceptor implements DataChangeEvent.Han
 
     if (widget instanceof ListBox && BeeUtils.same(name, WIDGET_STATUS)) {
       status = (ListBox) widget;
+    }
+
+    if (widget instanceof Disclosure && BeeUtils.same(name, WIDGET_RELATED_INFO)) {
+      relatedInfo = (Disclosure) widget;
     }
   }
 
@@ -206,6 +213,9 @@ class ProjectForm extends AbstractFormInterceptor implements DataChangeEvent.Han
   public void onClose(List<String> messages, IsRow oldRow, IsRow newRow) {
     chartData.clear();
     EventUtils.clearRegistry(registry);
+    if (relatedInfo != null) {
+      relatedInfo.setOpen(true);
+    }
   }
 
   @Override
@@ -277,6 +287,12 @@ class ProjectForm extends AbstractFormInterceptor implements DataChangeEvent.Han
       });
     }
 
+    if (!DataUtils.isId(row.getLong(form.getDataIndex(ALS_FILTERED_VISITED_USER)))
+        && relatedInfo != null) {
+      relatedInfo.setOpen(true);
+    } else {
+      relatedInfo.setOpen(false);
+    }
 
     return super.onStartEdit(form, row, focusCommand);
 
