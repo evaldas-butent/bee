@@ -317,7 +317,7 @@ div > span.bee-MenuItem.bee-MenuItem-label {
   line-height: 30px;
 }
 
-.bee-MenuBar.bee-MenuBar-level-1.bee-MenuBar-vertical.bee-MenuBar-table tr:hover {
+.bee-MenuBar tr:hover {
   background-color: #343434 !important;
 }
 
