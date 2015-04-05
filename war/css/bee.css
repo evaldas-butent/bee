@@ -1163,6 +1163,14 @@ div > span.bee-MenuItem.bee-MenuItem-label {
   min-height: 120px;
 }
 
+.bee-TabbedPages-drag {
+  box-sizing: border-box;
+  border-top: 1px solid green;
+}
+.bee-TabbedPages-resized {
+  background-color: inherit;
+}
+
 .bee-TabbedPages-tabPanel {
   font-size: 14px;
   line-height: 60px;
@@ -1177,7 +1185,6 @@ div > span.bee-MenuItem.bee-MenuItem-label {
   margin-left: 3px;
   background-color: white;
 }
-
 .bee-TabbedPages-tabSelected {
   cursor: default;
   font-weight: bold;

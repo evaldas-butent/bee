@@ -9,6 +9,7 @@ import com.google.gwt.event.dom.client.ChangeEvent;
 import com.google.gwt.event.dom.client.ChangeHandler;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
+import com.google.gwt.event.dom.client.DragDropEventBase;
 import com.google.gwt.event.dom.client.DragEnterEvent;
 import com.google.gwt.event.dom.client.DragEnterHandler;
 import com.google.gwt.event.dom.client.DragLeaveEvent;
@@ -406,6 +407,10 @@ public class FileCollector extends HtmlTable implements DragOverHandler, DropHan
     return columns;
   }
 
+  private static boolean isRelevant(DragDropEventBase<?> event) {
+    return DndHelper.getTargetState(event) == null;
+  }
+
   private final InputFile inputFile;
 
   private final List<FileInfo> files = new ArrayList<>();
@@ -526,35 +531,43 @@ public class FileCollector extends HtmlTable implements DragOverHandler, DropHan
 
   @Override
   public void onDragEnter(DragEnterEvent event) {
-    setDndCounter(getDndCounter() + 1);
-    if (getDndCounter() <= 1 && DndHelper.hasFiles(event)) {
-      showDropArea();
+    if (isRelevant(event)) {
+      setDndCounter(getDndCounter() + 1);
+      if (getDndCounter() <= 1 && DndHelper.hasFiles(event)) {
+        showDropArea();
+      }
     }
   }
 
   @Override
   public void onDragLeave(DragLeaveEvent event) {
-    setDndCounter(getDndCounter() - 1);
-    if (getDndCounter() <= 0) {
-      setDndCounter(0);
-      hideDropArea();
+    if (isRelevant(event)) {
+      setDndCounter(getDndCounter() - 1);
+      if (getDndCounter() <= 0) {
+        setDndCounter(0);
+        hideDropArea();
+      }
     }
   }
 
   @Override
   public void onDragOver(DragOverEvent event) {
-    EventUtils.setDropEffect(event, EventUtils.EFFECT_COPY);
+    if (isRelevant(event)) {
+      EventUtils.setDropEffect(event, EventUtils.EFFECT_COPY);
+    }
   }
 
   @Override
   public void onDrop(DropEvent event) {
-    event.stopPropagation();
-    event.preventDefault();
+    if (isRelevant(event)) {
+      event.stopPropagation();
+      event.preventDefault();
 
-    setDndCounter(0);
-    hideDropArea();
+      setDndCounter(0);
+      hideDropArea();
 
-    addFiles(FileUtils.getNewFileInfos(FileUtils.getFiles(event.getNativeEvent())));
+      addFiles(FileUtils.getNewFileInfos(FileUtils.getFiles(event.getNativeEvent())));
+    }
   }
 
   public static void pushFiles(Collection<FileInfo> files) {

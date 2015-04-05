@@ -567,6 +567,8 @@ public class TabbedPages extends Flow implements
                 StyleUtils.setWidth(style, width);
 
                 StyleUtils.makeAbsolute(style);
+
+                addStyleName(getStylePrefix() + "resized");
               }
             }
           });

@@ -138,6 +138,14 @@ public final class DndHelper {
     return startY;
   }
 
+  public static State getTargetState(DragDropEventBase<?> event) {
+    if (event != null && event.getSource() instanceof DndTarget) {
+      return ((DndTarget) event.getSource()).getTargetState();
+    } else {
+      return null;
+    }
+  }
+
   public static boolean hasFiles(DragDropEventBase<?> event) {
     if (event == null) {
       return false;
