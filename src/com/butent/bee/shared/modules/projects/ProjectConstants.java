@@ -93,6 +93,7 @@ public final class ProjectConstants {
   public static final String COL_PROJECT_PRICE = "Price";
   public static final String COL_PROJECT_ITEM_PRICE = "Price";
   public static final String COL_PROJECT_CURENCY = "Currency";
+  public static final String COL_PROJECT_INCOME_CURENCY = "Currency";
 
   public static final String COL_INCOME_NOTE = "Note";
   public static final String COL_INCOME_DATE = "Date";
