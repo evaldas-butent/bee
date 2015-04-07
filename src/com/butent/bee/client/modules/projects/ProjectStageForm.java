@@ -19,8 +19,11 @@ import com.butent.bee.shared.data.BeeRow;
 import com.butent.bee.shared.data.BeeRowSet;
 import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.IsRow;
+import com.butent.bee.shared.data.event.CellUpdateEvent;
 import com.butent.bee.shared.data.event.DataChangeEvent;
+import com.butent.bee.shared.data.event.HandlesUpdateEvents;
 import com.butent.bee.shared.data.event.RowInsertEvent;
+import com.butent.bee.shared.data.event.RowUpdateEvent;
 import com.butent.bee.shared.modules.classifiers.ClassifierConstants;
 import com.butent.bee.shared.modules.tasks.TaskConstants;
 import com.butent.bee.shared.time.TimeUtils;
@@ -30,7 +33,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 
 class ProjectStageForm extends AbstractFormInterceptor implements DataChangeEvent.Handler,
-    RowInsertEvent.Handler {
+    RowInsertEvent.Handler, HandlesUpdateEvents {
 
   private InputText wActualTasksDuration;
   private InputText wExpectedTasksDuration;
@@ -75,7 +78,8 @@ class ProjectStageForm extends AbstractFormInterceptor implements DataChangeEven
   }
 
   @Override
-  public void onRowInsert(RowInsertEvent event) {
+  public void onCellUpdate(CellUpdateEvent event) {
+
     if (getFormView() == null) {
       return;
     }
@@ -85,10 +89,10 @@ class ProjectStageForm extends AbstractFormInterceptor implements DataChangeEven
     }
 
     if (event.hasView(TaskConstants.VIEW_TASKS)
-        || event.hasView(TaskConstants.VIEW_TASK_EVENTS)) {
+        || event.hasView(TaskConstants.VIEW_TASK_EVENTS)
+        || event.hasView(TaskConstants.VIEW_RELATED_TASKS)) {
 
       showComputedTimes(getFormView(), getActiveRow(), true);
-
     }
   }
 
@@ -103,7 +107,8 @@ class ProjectStageForm extends AbstractFormInterceptor implements DataChangeEven
     }
 
     if (event.hasView(TaskConstants.VIEW_TASKS)
-        || event.hasView(TaskConstants.VIEW_TASK_EVENTS)) {
+        || event.hasView(TaskConstants.VIEW_TASK_EVENTS)
+        || event.hasView(TaskConstants.VIEW_RELATED_TASKS)) {
 
       showComputedTimes(getFormView(), getActiveRow(), true);
     }
@@ -113,6 +118,44 @@ class ProjectStageForm extends AbstractFormInterceptor implements DataChangeEven
   public void onLoad(FormView form) {
     timesRegistry.add(BeeKeeper.getBus().registerRowInsertHandler(this, false));
     timesRegistry.add(BeeKeeper.getBus().registerDataChangeHandler(this, false));
+    timesRegistry.addAll(BeeKeeper.getBus().registerUpdateHandler(this, false));
+  }
+
+  @Override
+  public void onRowInsert(RowInsertEvent event) {
+    if (getFormView() == null) {
+      return;
+    }
+
+    if (getActiveRow() == null) {
+      return;
+    }
+
+    if (event.hasView(TaskConstants.VIEW_TASKS)
+        || event.hasView(TaskConstants.VIEW_TASK_EVENTS)
+        || event.hasView(TaskConstants.VIEW_RELATED_TASKS)) {
+
+      showComputedTimes(getFormView(), getActiveRow(), true);
+
+    }
+  }
+
+  @Override
+  public void onRowUpdate(RowUpdateEvent event) {
+    if (getFormView() == null) {
+      return;
+    }
+
+    if (getActiveRow() == null) {
+      return;
+    }
+
+    if (event.hasView(TaskConstants.VIEW_TASKS)
+        || event.hasView(TaskConstants.VIEW_TASK_EVENTS)
+        || event.hasView(TaskConstants.VIEW_RELATED_TASKS)) {
+
+      showComputedTimes(getFormView(), getActiveRow(), true);
+    }
   }
 
   @Override

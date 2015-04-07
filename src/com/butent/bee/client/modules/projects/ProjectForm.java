@@ -43,6 +43,7 @@ import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.IsRow;
 import com.butent.bee.shared.data.event.CellUpdateEvent;
 import com.butent.bee.shared.data.event.DataChangeEvent;
+import com.butent.bee.shared.data.event.HandlesUpdateEvents;
 import com.butent.bee.shared.data.event.RowInsertEvent;
 import com.butent.bee.shared.data.event.RowUpdateEvent;
 import com.butent.bee.shared.data.filter.Filter;
@@ -68,7 +69,7 @@ import java.util.Map;
 import java.util.Set;
 
 class ProjectForm extends AbstractFormInterceptor implements DataChangeEvent.Handler,
-    RowInsertEvent.Handler {
+    RowInsertEvent.Handler, HandlesUpdateEvents {
 
   private static final String WIDGET_CONTRACT = "Contract";
   private static final String WIDGET_CHART_DATA = "ChartData";
@@ -219,6 +220,25 @@ class ProjectForm extends AbstractFormInterceptor implements DataChangeEvent.Han
   }
 
   @Override
+  public void onCellUpdate(CellUpdateEvent event) {
+
+    if (getFormView() == null) {
+      return;
+    }
+
+    if (getActiveRow() == null) {
+      return;
+    }
+
+    if (event.hasView(TaskConstants.VIEW_TASKS)
+        || event.hasView(TaskConstants.VIEW_TASK_EVENTS)
+        || event.hasView(TaskConstants.VIEW_RELATED_TASKS)) {
+
+      showComputedTimes(getFormView(), getActiveRow(), true);
+    }
+  }
+
+  @Override
   public void onDataChange(DataChangeEvent event) {
     if (getFormView() == null) {
       return;
@@ -230,7 +250,8 @@ class ProjectForm extends AbstractFormInterceptor implements DataChangeEvent.Han
 
     if (event.hasView(VIEW_PROJECT_STAGES)
         || event.hasView(TaskConstants.VIEW_TASKS)
-        || event.hasView(TaskConstants.VIEW_TASK_EVENTS)) {
+        || event.hasView(TaskConstants.VIEW_TASK_EVENTS)
+        || event.hasView(TaskConstants.VIEW_RELATED_TASKS)) {
 
       showComputedTimes(getFormView(), getActiveRow(), true);
     }
@@ -240,6 +261,7 @@ class ProjectForm extends AbstractFormInterceptor implements DataChangeEvent.Han
   public void onLoad(FormView form) {
     registry.add(BeeKeeper.getBus().registerRowInsertHandler(this, false));
     registry.add(BeeKeeper.getBus().registerDataChangeHandler(this, false));
+    registry.addAll(BeeKeeper.getBus().registerUpdateHandler(this, false));
   }
 
   @Override
@@ -320,11 +342,30 @@ class ProjectForm extends AbstractFormInterceptor implements DataChangeEvent.Han
 
     if (event.hasView(VIEW_PROJECT_STAGES)
         || event.hasView(TaskConstants.VIEW_TASKS)
-        || event.hasView(TaskConstants.VIEW_TASK_EVENTS)) {
+        || event.hasView(TaskConstants.VIEW_TASK_EVENTS)
+        || event.hasView(TaskConstants.VIEW_RELATED_TASKS)) {
 
       showComputedTimes(getFormView(), getActiveRow(), true);
     }
 
+  }
+
+  @Override
+  public void onRowUpdate(RowUpdateEvent event) {
+    if (getFormView() == null) {
+      return;
+    }
+
+    if (getActiveRow() == null) {
+      return;
+    }
+
+    if (event.hasView(TaskConstants.VIEW_TASKS)
+        || event.hasView(TaskConstants.VIEW_TASK_EVENTS)
+        || event.hasView(TaskConstants.VIEW_RELATED_TASKS)) {
+
+      showComputedTimes(getFormView(), getActiveRow(), true);
+    }
   }
 
   @Override
