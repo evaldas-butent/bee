@@ -2443,7 +2443,7 @@ public class TransportModuleBean implements BeeModule, HasTimerService {
             COL_ORDER_MANAGER, COL_SERVICE_NAME, COL_TRADE_DATE, COL_TRADE_INVOICE_NO,
             COL_TRADE_CUSTOMER, COL_SALE + COL_ORDER_MANAGER)
         .addFields(tmpExpenses, VAR_EXPENSE + COL_SERVICE_NAME, VAR_EXPENSE + COL_TRADE_DATE,
-            VAR_EXPENSE + COL_TRADE_DATE, VAR_EXPENSE + COL_TRADE_INVOICE_NO, VAR_EXPENSE)
+            VAR_EXPENSE + COL_TRADE_INVOICE_NO, VAR_EXPENSE)
         .addExpr(SqlUtils.sqlIf(SqlUtils.isNull(tmpExpenses, fldTotalExpense),
             SqlUtils.field(tmpIncomes, VAR_INCOME),
             SqlUtils.multiply(SqlUtils.field(tmpIncomes, VAR_INCOME),
