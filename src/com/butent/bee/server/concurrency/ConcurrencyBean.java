@@ -10,7 +10,6 @@ import com.butent.bee.server.modules.ParamHolderBean;
 import com.butent.bee.server.modules.ParameterEvent;
 import com.butent.bee.server.modules.ParameterEventHandler;
 import com.butent.bee.shared.Assert;
-import com.butent.bee.shared.Pair;
 import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogUtils;
 import com.butent.bee.shared.time.TimeUtils;
@@ -20,7 +19,6 @@ import com.butent.bee.shared.utils.NameUtils;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
-import java.util.concurrent.Future;
 import java.util.concurrent.FutureTask;
 
 import javax.annotation.Resource;
@@ -46,7 +44,7 @@ public class ConcurrencyBean {
     public abstract String getId();
 
     public long getTimeout() {
-      return TimeUtils.MILLIS_PER_HOUR;
+      return TimeUtils.MILLIS_PER_SECOND;
     }
 
     public void onError() {
@@ -87,7 +85,7 @@ public class ConcurrencyBean {
 
   private static final BeeLogger logger = LogUtils.getLogger(ConcurrencyBean.class);
 
-  private final Map<String, Pair<Future<?>, Worker>> asyncThreads = new HashMap<>();
+  private final Map<String, Worker> asyncThreads = new HashMap<>();
 
   private Multimap<String, Class<? extends HasTimerService>> calendarRegistry;
   private Multimap<String, Class<? extends HasTimerService>> intervalRegistry;
@@ -100,15 +98,12 @@ public class ConcurrencyBean {
   public void asynchronousCall(AsynchronousRunnable runnable) {
     Assert.notNull(runnable);
     String id = Assert.notEmpty(runnable.getId());
-    Pair<Future<?>, Worker> pair = asyncThreads.get(id);
+    Worker worker = asyncThreads.get(id);
 
-    if (pair != null) {
-      Future<?> future = pair.getA();
-      Worker worker = pair.getB();
-
-      if (!future.isDone()) {
+    if (worker != null) {
+      if (!worker.isDone()) {
         if (BeeUtils.isMore(System.currentTimeMillis() - worker.started(), runnable.getTimeout())) {
-          future.cancel(true);
+          worker.cancel(true);
         } else {
           logger.info("Running:", id, TimeUtils.elapsedSeconds(worker.started()));
           runnable.onError();
@@ -116,8 +111,9 @@ public class ConcurrencyBean {
         }
       }
     }
-    Worker worker = new Worker(runnable);
-    asyncThreads.put(id, Pair.of(executor.submit(worker), worker));
+    Worker newWorker = new Worker(runnable);
+    executor.execute(newWorker);
+    asyncThreads.put(id, newWorker);
   }
 
   public <T extends HasTimerService> void createCalendarTimer(Class<T> handler, String parameter) {
