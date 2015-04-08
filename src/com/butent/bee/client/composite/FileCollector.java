@@ -35,6 +35,7 @@ import com.butent.bee.client.grid.HtmlTable;
 import com.butent.bee.client.style.StyleUtils;
 import com.butent.bee.client.ui.IdentifiableWidget;
 import com.butent.bee.client.utils.FileUtils;
+import com.butent.bee.client.view.form.FormView;
 import com.butent.bee.client.widget.Button;
 import com.butent.bee.client.widget.DateTimeLabel;
 import com.butent.bee.client.widget.FaLabel;
@@ -487,12 +488,14 @@ public class FileCollector extends HtmlTable implements DragOverHandler, DropHan
   }
 
   public void bindDnd(DndTarget target) {
-    target.addDragEnterHandler(this);
-    target.addDragLeaveHandler(this);
-    target.addDragOverHandler(this);
-    target.addDropHandler(this);
+    if (!(target instanceof FormView)) {
+      target.addDragEnterHandler(this);
+      target.addDragLeaveHandler(this);
+      target.addDragOverHandler(this);
+      target.addDropHandler(this);
 
-    setDropArea(target.getElement());
+      setDropArea(target.getElement());
+    }
   }
 
   @Override

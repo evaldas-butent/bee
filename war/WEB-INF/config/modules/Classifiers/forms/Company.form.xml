@@ -13,8 +13,7 @@
   width="875"
   height="565"
   >
-  <FlowPanel class="flexBox-vertical">
-    <FlowPanel style="overflow:scroll;">
+  <FlowPanel>
       <Table>
         <row>
           <Label text="=name" style="&lbl;" class="bee-required" />
@@ -105,9 +104,8 @@
         <ChildGrid name="CompanyBankAccounts" relColumn="Company"
           style="min-height:150px" />
       </Disclosure>
-    </FlowPanel>
 
-      <TabbedPages class="flexible" style="margin-top: 15px;">
+      <TabbedPages style="margin-top: 15px; height: 500px;">
         <page data="Sales">
           <text>=financialInfo</text>
           <FlowPanel class="flexBox-horizontal">
