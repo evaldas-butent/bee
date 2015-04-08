@@ -147,7 +147,7 @@
     </HorizontalPanel>
  
     <Table name="InvoiceDetails" style="&section; width:100%">
-      <properties rateCurrency="LTL" />
+      <properties rateCurrency="EUR" />
       <row>
         <cell rowSpan="2">
           <Label text="Nr. / No.">

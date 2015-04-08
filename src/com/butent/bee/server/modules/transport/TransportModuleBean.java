@@ -121,18 +121,18 @@ public class TransportModuleBean implements BeeModule, HasTimerService {
   private static IsExpression getAssessmentTurnoverExpression(SqlSelect query, String source,
       String defDateSource, String defDateAlias, Long currency) {
 
+    IsExpression xpr = SqlUtils.minus(
+        TradeModuleBean.getTotalExpression(source, SqlUtils.field(source, COL_AMOUNT)),
+        TradeModuleBean.getVatExpression(source, SqlUtils.field(source, COL_AMOUNT)));
+
     if (DataUtils.isId(currency)) {
-      return ExchangeUtils.exchangeFieldTo(query,
-          TradeModuleBean.getTotalExpression(source, SqlUtils.field(source, COL_AMOUNT)),
-          SqlUtils.field(source, COL_CURRENCY),
+      return ExchangeUtils.exchangeFieldTo(query, xpr, SqlUtils.field(source, COL_CURRENCY),
           SqlUtils.nvl(SqlUtils.field(source, COL_DATE),
               SqlUtils.field(defDateSource, defDateAlias)),
           SqlUtils.constant(currency));
 
     } else {
-      return ExchangeUtils.exchangeField(query,
-          TradeModuleBean.getTotalExpression(source, SqlUtils.field(source, COL_AMOUNT)),
-          SqlUtils.field(source, COL_CURRENCY),
+      return ExchangeUtils.exchangeField(query, xpr, SqlUtils.field(source, COL_CURRENCY),
           SqlUtils.nvl(SqlUtils.field(source, COL_DATE),
               SqlUtils.field(defDateSource, defDateAlias)));
     }
@@ -2302,8 +2302,14 @@ public class TransportModuleBean implements BeeModule, HasTimerService {
   }
 
   private ResponseObject getIncomeInvoicesReport(RequestInfo reqInfo) {
-    Long startDate = reqInfo.getParameterLong(Service.VAR_FROM);
-    Long endDate = reqInfo.getParameterLong(Service.VAR_TO);
+    DateTime startDate = null;
+    DateTime endDate = null;
+
+    if (reqInfo.hasParameter(COL_TRADE_DATE)) {
+      Pair<String, String> pair = Pair.restore(reqInfo.getParameter(COL_TRADE_DATE));
+      startDate = TimeUtils.toDateTimeOrNull(pair.getA());
+      endDate = TimeUtils.toDateTimeOrNull(pair.getB());
+    }
 
     Long currency = reqInfo.getParameterLong(COL_CURRENCY);
     boolean woVat = BeeUtils.toBoolean(reqInfo.getParameter(COL_TRADE_VAT));
@@ -2311,10 +2317,10 @@ public class TransportModuleBean implements BeeModule, HasTimerService {
     HasConditions clause = SqlUtils.and();
 
     if (startDate != null) {
-      clause.add(SqlUtils.moreEqual(TBL_SALES, COL_TRADE_DATE, startDate));
+      clause.add(SqlUtils.moreEqual(TBL_SALES, COL_TRADE_DATE, startDate.getTime()));
     }
     if (endDate != null) {
-      clause.add(SqlUtils.less(TBL_SALES, COL_TRADE_DATE, endDate));
+      clause.add(SqlUtils.less(TBL_SALES, COL_TRADE_DATE, endDate.getTime()));
     }
     String id = SqlUtils.uniqueName();
     String saleUsers = SqlUtils.uniqueName();
@@ -2436,8 +2442,8 @@ public class TransportModuleBean implements BeeModule, HasTimerService {
         .addFields(tmpIncomes, COL_ASSESSMENT, COL_ORDER + COL_DATE, COL_DEPARTMENT_NAME,
             COL_ORDER_MANAGER, COL_SERVICE_NAME, COL_TRADE_DATE, COL_TRADE_INVOICE_NO,
             COL_TRADE_CUSTOMER, COL_SALE + COL_ORDER_MANAGER)
-        .addFields(tmpExpenses, VAR_EXPENSE + COL_SERVICE_NAME, VAR_EXPENSE + COL_TRADE_INVOICE_NO,
-            VAR_EXPENSE)
+        .addFields(tmpExpenses, VAR_EXPENSE + COL_SERVICE_NAME, VAR_EXPENSE + COL_TRADE_DATE,
+            VAR_EXPENSE + COL_TRADE_DATE, VAR_EXPENSE + COL_TRADE_INVOICE_NO, VAR_EXPENSE)
         .addExpr(SqlUtils.sqlIf(SqlUtils.isNull(tmpExpenses, fldTotalExpense),
             SqlUtils.field(tmpIncomes, VAR_INCOME),
             SqlUtils.multiply(SqlUtils.field(tmpIncomes, VAR_INCOME),
