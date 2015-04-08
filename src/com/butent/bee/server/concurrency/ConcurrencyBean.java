@@ -44,7 +44,7 @@ public class ConcurrencyBean {
     public abstract String getId();
 
     public long getTimeout() {
-      return TimeUtils.MILLIS_PER_SECOND;
+      return TimeUtils.MILLIS_PER_HOUR;
     }
 
     public void onError() {
