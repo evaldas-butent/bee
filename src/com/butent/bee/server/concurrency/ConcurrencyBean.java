@@ -64,26 +64,30 @@ public class ConcurrencyBean {
     }
 
     @Override
-    protected void done() {
-      if (isCancelled()) {
-        runnable.onError();
-        logger.info("Canceled:", runnable.getId(), TimeUtils.elapsedSeconds(start));
-      } else {
-        logger.info("Ended:", runnable.getId(), TimeUtils.elapsedSeconds(start));
-      }
-    }
-
-    @Override
     public void run() {
       start = System.currentTimeMillis();
       logger.info("Started:", runnable.getId());
       super.run();
     }
+
+    @Override
+    protected void done() {
+      if (isCancelled()) {
+        runnable.onError();
+        logger.info("Canceled:", runnable.getId(), TimeUtils.elapsedSeconds(started()));
+      } else {
+        logger.info("Ended:", runnable.getId(), TimeUtils.elapsedSeconds(started()));
+      }
+    }
+
+    private long started() {
+      return start;
+    }
   }
 
   private static final BeeLogger logger = LogUtils.getLogger(ConcurrencyBean.class);
 
-  private final Map<String, Pair<Future<?>, Long>> asyncThreads = new HashMap<>();
+  private final Map<String, Pair<Future<?>, Worker>> asyncThreads = new HashMap<>();
 
   private Multimap<String, Class<? extends HasTimerService>> calendarRegistry;
   private Multimap<String, Class<? extends HasTimerService>> intervalRegistry;
@@ -96,25 +100,24 @@ public class ConcurrencyBean {
   public void asynchronousCall(AsynchronousRunnable runnable) {
     Assert.notNull(runnable);
     String id = Assert.notEmpty(runnable.getId());
-    Pair<Future<?>, Long> pair = asyncThreads.get(id);
-    long mills = System.currentTimeMillis();
+    Pair<Future<?>, Worker> pair = asyncThreads.get(id);
 
     if (pair != null) {
       Future<?> future = pair.getA();
+      Worker worker = pair.getB();
 
       if (!future.isDone()) {
-        Long duration = mills - pair.getB();
-
-        if (BeeUtils.isMore(duration, runnable.getTimeout())) {
+        if (BeeUtils.isMore(System.currentTimeMillis() - worker.started(), runnable.getTimeout())) {
           future.cancel(true);
         } else {
-          logger.info("Running:", id, TimeUtils.elapsedSeconds(duration));
+          logger.info("Running:", id, TimeUtils.elapsedSeconds(worker.started()));
           runnable.onError();
           return;
         }
       }
     }
-    asyncThreads.put(id, Pair.of(executor.submit(new Worker(runnable)), mills));
+    Worker worker = new Worker(runnable);
+    asyncThreads.put(id, Pair.of(executor.submit(worker), worker));
   }
 
   public <T extends HasTimerService> void createCalendarTimer(Class<T> handler, String parameter) {
