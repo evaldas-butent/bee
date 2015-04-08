@@ -21,6 +21,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
 import java.util.concurrent.Future;
+import java.util.concurrent.FutureTask;
 
 import javax.annotation.Resource;
 import javax.ejb.EJB;
@@ -41,6 +42,7 @@ public class ConcurrencyBean {
   }
 
   public abstract static class AsynchronousRunnable implements Runnable {
+
     public abstract String getId();
 
     public long getTimeout() {
@@ -48,6 +50,34 @@ public class ConcurrencyBean {
     }
 
     public void onError() {
+    }
+  }
+
+  private static class Worker extends FutureTask<Void> {
+
+    private long start;
+    private final AsynchronousRunnable runnable;
+
+    public Worker(AsynchronousRunnable runnable) {
+      super(runnable, null);
+      this.runnable = runnable;
+    }
+
+    @Override
+    protected void done() {
+      if (isCancelled()) {
+        runnable.onError();
+        logger.info("Canceled:", runnable.getId(), TimeUtils.elapsedSeconds(start));
+      } else {
+        logger.info("Ended:", runnable.getId(), TimeUtils.elapsedSeconds(start));
+      }
+    }
+
+    @Override
+    public void run() {
+      start = System.currentTimeMillis();
+      logger.info("Started:", runnable.getId());
+      super.run();
     }
   }
 
@@ -67,18 +97,24 @@ public class ConcurrencyBean {
     Assert.notNull(runnable);
     String id = Assert.notEmpty(runnable.getId());
     Pair<Future<?>, Long> pair = asyncThreads.get(id);
+    long mills = System.currentTimeMillis();
 
     if (pair != null) {
       Future<?> future = pair.getA();
-      boolean isTimedOut = BeeUtils.isMore(System.currentTimeMillis() - pair.getB(),
-          runnable.getTimeout());
 
-      if (!future.isDone() && (!isTimedOut || !future.cancel(true))) {
-        runnable.onError();
-        return;
+      if (!future.isDone()) {
+        Long duration = mills - pair.getB();
+
+        if (BeeUtils.isMore(duration, runnable.getTimeout())) {
+          future.cancel(true);
+        } else {
+          logger.info("Running:", id, TimeUtils.elapsedSeconds(duration));
+          runnable.onError();
+          return;
+        }
       }
     }
-    asyncThreads.put(id, Pair.of(executor.submit(runnable), System.currentTimeMillis()));
+    asyncThreads.put(id, Pair.of(executor.submit(new Worker(runnable)), mills));
   }
 
   public <T extends HasTimerService> void createCalendarTimer(Class<T> handler, String parameter) {
