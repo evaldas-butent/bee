@@ -59,6 +59,7 @@ import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.HasHtml;
 import com.butent.bee.shared.Pair;
+import com.butent.bee.shared.css.CssUnit;
 import com.butent.bee.shared.css.values.FontSize;
 import com.butent.bee.shared.data.BeeColumn;
 import com.butent.bee.shared.data.BeeRow;
@@ -506,40 +507,56 @@ public class ScreenImpl implements Screen {
                   .asWidget());
             }
 
-            final Popup popup = new Popup(OutsideClick.CLOSE);
-            popup.setStyleName(BeeConst.CSS_CLASS_PREFIX + "NotificationBar");
-            popup.addStyleName("animated fadeInRight");
+            final Popup popup = new Popup(OutsideClick.CLOSE,
+                BeeConst.CSS_CLASS_PREFIX + "NotificationBar");
             popup.setWidget(NOTIFICATION_CONTENT);
             popup.setHideOnEscape(true);
 
             popup.setAnimationEnabled(true);
-            popup.setAnimation(new Animation(1000) {
+            popup.setAnimation(new Animation(500) {
+              int left;
+              int width;
+
+              @Override
+              public void start() {
+                this.width = getPopup().getOffsetWidth();
+                this.left = DomUtils.getClientWidth() - this.width;
+
+                if (getPopup().isShowing()) {
+                  StyleUtils.setOpacity(getPopup(), BeeConst.DOUBLE_ZERO);
+                  StyleUtils.setLeft(getPopup(), this.width);
+                }
+                super.start();
+              }
+
+              @Override
+              protected void onComplete() {
+                if (getPopup().isShowing()) {
+                  StyleUtils.setLeft(getPopup(), this.left);
+                }
+                getPopup().getElement().getStyle().clearOpacity();
+                super.onComplete();
+              }
 
               @Override
               protected boolean run(double elapsed) {
                 if (isCanceled()) {
                   return false;
                 } else {
-                  popup.setStyleName(BeeConst.CSS_CLASS_PREFIX + "NotificationBar");
-                  popup.addStyleName("animated fadeOutRight");
+                  StyleUtils.setOpacity(getPopup(), getFactor(elapsed));
+                  double x = this.left + (1 - getFactor(elapsed)) * this.width;
+                  StyleUtils.setLeft(getPopup(), x, CssUnit.PX);
                   return true;
                 }
               }
-
-              @Override
-              public void start() {
-                setPopup(popup);
-                super.start();
-              }
-
-              @Override
-              protected void onComplete() {
-                super.onComplete();
-              }
             });
 
-            popup.getAnimation().start();
-            popup.showRelativeTo(image.getElement());
+            popup.setPopupPositionAndShow(new Popup.PositionCallback() {
+              @Override
+              public void setPosition(int offsetWidth, int offsetHeight) {
+                popup.setPopupPosition(DomUtils.getClientWidth() - offsetWidth, 0);
+              }
+            });
           }
         });
 
@@ -887,19 +904,19 @@ public class ScreenImpl implements Screen {
         }
 
         if (BeeKeeper.getUser().isModuleVisible(ModuleAndSub.of(Module.CLASSIFIERS))
-          && BeeKeeper.getUser().canCreateData(ClassifierConstants.VIEW_COMPANIES)) {
+            && BeeKeeper.getUser().canCreateData(ClassifierConstants.VIEW_COMPANIES)) {
           table.setText(r, 0, Localized.getConstants().newClient());
           DomUtils.setDataProperty(table.getRow(r++), CONTAINER, COMPANY);
         }
 
         if (BeeKeeper.getUser().isModuleVisible(ModuleAndSub.of(Module.DOCUMENTS))
-          && BeeKeeper.getUser().canCreateData(DocumentConstants.VIEW_DOCUMENTS)) {
+            && BeeKeeper.getUser().canCreateData(DocumentConstants.VIEW_DOCUMENTS)) {
           table.setText(r, 0, Localized.getConstants().documentNew());
           DomUtils.setDataProperty(table.getRow(r++), CONTAINER, DOCUMENT);
         }
 
         if (BeeKeeper.getUser().isModuleVisible(ModuleAndSub.of(Module.TASKS))
-          && BeeKeeper.getUser().canCreateData(TaskConstants.VIEW_TODO_LIST)) {
+            && BeeKeeper.getUser().canCreateData(TaskConstants.VIEW_TODO_LIST)) {
           table.setText(r, 0, Localized.getConstants().crmNewTodoItem());
           DomUtils.setDataProperty(table.getRow(r++), CONTAINER, NOTE);
         }
