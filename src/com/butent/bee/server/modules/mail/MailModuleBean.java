@@ -151,7 +151,7 @@ public class MailModuleBean implements BeeModule, HasTimerService {
       cb.asynchronousCall(new AsynchronousRunnable() {
         @Override
         public String getId() {
-          return BeeUtils.joinWords(MailModuleBean.class.getName(), localFolder.getId());
+          return BeeUtils.join("-", MailModuleBean.class.getName(), localFolder.getId());
         }
 
         @Override
