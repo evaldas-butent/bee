@@ -146,7 +146,7 @@ public class Popup extends Simple implements HasAnimation, CloseEvent.HasCloseHa
       }
     }
 
-    protected void setPopup(Popup popup) {
+    private void setPopup(Popup popup) {
       this.popup = popup;
     }
 

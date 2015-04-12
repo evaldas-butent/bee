@@ -46,19 +46,19 @@ function setSelectedLanguage(form) {
 function translate(lng) {
   boldMe(lng);
   var dictionary = eval("dictionary" + lng);
+
   if (dictionary) {
     for ( var id in dictionary) {
       var el = document.getElementById(id);
+  
       if (el) {
-        el.textContent = dictionary[id];
-      }
-
-      if (id == "user") {
-        el.placeholder = dictionary[id];
-      }
-
-      if (id == "pswd") {
-        el.placeholder = dictionary[id];
+        if (id == "user") {
+          el.placeholder = dictionary[id];
+        } else if (id == "pswd") {
+          el.placeholder = dictionary[id];
+        } else {
+          el.textContent = dictionary[id];
+        }
       }
     }
   }
