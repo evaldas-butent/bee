@@ -1,5 +1,6 @@
 package com.butent.bee.server.modules.transport;
 
+import com.butent.bee.shared.data.*;
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Multimap;
@@ -49,12 +50,6 @@ import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.Pair;
 import com.butent.bee.shared.Service;
 import com.butent.bee.shared.communication.ResponseObject;
-import com.butent.bee.shared.data.BeeRow;
-import com.butent.bee.shared.data.BeeRowSet;
-import com.butent.bee.shared.data.DataUtils;
-import com.butent.bee.shared.data.IsRow;
-import com.butent.bee.shared.data.SearchResult;
-import com.butent.bee.shared.data.SimpleRowSet;
 import com.butent.bee.shared.data.SimpleRowSet.SimpleRow;
 import com.butent.bee.shared.data.filter.CompoundFilter;
 import com.butent.bee.shared.data.filter.CustomFilter;
@@ -2712,6 +2707,8 @@ public class TransportModuleBean implements BeeModule, HasTimerService {
     String otherCosts = "OtherCosts";
     String tripIncome = "TripIncome";
 
+    clause.add(report.getCondition(SqlUtils.cast(SqlUtils.field(TBL_TRIPS,
+        sys.getIdName(TBL_TRIPS)), SqlConstants.SqlDataType.STRING, 20, 0), COL_TRIP));
     clause.add(report.getCondition(SqlUtils.field(TBL_TRIPS, sys.getIdName(TBL_TRIPS)), COL_TRIP));
     clause.add(report.getCondition(TBL_TRIPS, COL_TRIP_NO));
     clause.add(report.getCondition(TBL_TRIPS, COL_TRIP_STATUS));
