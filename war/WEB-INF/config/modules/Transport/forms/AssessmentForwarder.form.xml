@@ -19,7 +19,8 @@
   <FlowPanel class="flexBox-vertical" style="padding: 10px 2px 2px 10px;">
     <FlowPanel for="Forwarder" style="&section;">
       <Label for="Forwarder" class="bee-required" style="&labelLeft; width:140px;" />
-      <DataSelector source="Forwarder" required="true" style="&input; width:200px;" />
+      <DataSelector source="Forwarder" required="true" style="&input; width:200px;"
+          renderColumns="ForwarderName ForwarderTypeName" choiceColumns="Name TypeName" />
     </FlowPanel>
     <FlowPanel for="Expedition" style="&section;">
       <Label for="Expedition" class="bee-required" style="&labelLeft; width:140px;" />
@@ -48,7 +49,8 @@
 
     <FlowPanel for="Supplier" style="&section;">
       <Label for="Supplier" style="&labelLeft;" />
-      <DataSelector source="Supplier" style="&input; width:200px;" />
+      <DataSelector source="Supplier" renderColumns="SupplierName SupplierTypeName" 
+          choiceColumns="Name TypeName" style="&input; width:200px;" />
     </FlowPanel>
 
     <FlowPanel for="Note" style="&section;">

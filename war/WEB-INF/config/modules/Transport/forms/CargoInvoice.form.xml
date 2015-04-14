@@ -36,15 +36,18 @@
       </row>
       <row>
         <Label text="=trdSupplier" style="&lbl;" />
-        <DataSelector source="Supplier" renderColumns="SupplierName" />
+        <DataSelector source="Supplier" renderColumns="SupplierName SupplierTypeName"
+            choiceColumns="Name TypeName" />
         <Label text="=trdCustomer" class="bee-required" style="&lbl;" />
-        <DataSelector source="Customer" renderColumns="CustomerName" required="true" />
+        <DataSelector source="Customer" renderColumns="CustomerName CustomerTypeName" 
+            choiceColumns="Name TypeName" required="true" />
       </row>
       <row>
         <Label text="=trdManager" style="&lbl;" />
         <DataSelector source="Manager" editSource="ManagerPerson" />
         <Label text="=trdPayer" style="&lbl;" />
-        <DataSelector source="Payer" renderColumns="PayerName" />
+        <DataSelector source="Payer" renderColumns="PayerName PayerTypeName" 
+            choiceColumns="Name TypeName" />
       </row>
       <row>
         <cell colSpan="3">

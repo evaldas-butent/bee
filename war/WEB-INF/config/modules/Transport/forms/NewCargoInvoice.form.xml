@@ -63,15 +63,18 @@
       </row>
       <row>
         <Label text="=trdSupplier" style="&lbl2; width:143px;" />
-        <DataSelector source="Supplier" />
+        <DataSelector source="Supplier" renderColumns="SupplierName SupplierTypeName"
+            choiceColumns="Name TypeName" />
         <Label text="=trdCustomer" class="bee-required" style="&lbl2;" />
-        <DataSelector source="Customer" required="true" />
+        <DataSelector source="Customer" required="true" renderColumns="CustomerName CustomerTypeName" 
+            choiceColumns="Name TypeName" />
       </row>
       <row>
         <Label text="=trdManager" style="&lbl2; width:143px;" />
         <DataSelector source="Manager" editEnabled="false" />
         <Label text="=trdPayer" style="&lbl2;" />
-        <DataSelector source="Payer" />
+        <DataSelector source="Payer" renderColumns="PayerName PayerTypeName" 
+            choiceColumns="Name TypeName" />
       </row>
     </Table>
   </FlowPanel>
