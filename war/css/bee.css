@@ -3411,26 +3411,17 @@ textarea,
 .bee-Disclosure-summary {
   margin-left: 10px;
   font-size: 12px;
-  align-self: flex-start;
-  -webkit-align-self: flex-start;
-  -ms-flex-item-align: start;
+  padding-bottom: 5px;
 }
 
-.bee-Disclosure-open .bee-Disclosure-content {
-  max-height: 100vh;
-  opacity: 1;
-  transition: max-height 200ms linear, opacity 200ms linear;
+.bee-Disclosure-closed .bee-Disclosure-header {
+  height: 55px;
+  background-color: #fafafa; 
 }
 .bee-Disclosure-closed .bee-Disclosure-content {
-  max-height: 0;
-  opacity: 0;
-  transition: max-height 200ms linear, opacity 200ms linear;
+  height: 0;
+  overflow: hidden;
   pointer-events: none;
-}
-
-.bee-Disclosure-closed {
-  line-height: 55px;
-  background-color: #fafafa; 
 }
 
 .bee-Line {
