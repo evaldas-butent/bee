@@ -585,13 +585,11 @@
   overflow: hidden;
   text-overflow: ellipsis;
   color: #414142;
-/*   font-size: 14px; */
   line-height: 43px;
 }
 
 .bee-CellGridFooter {
   background-color: #f0f0f0;
-  font-weight: bold;
 }
 
 .bee-CellGridBody:hover,
