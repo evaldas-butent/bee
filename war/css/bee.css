@@ -537,8 +537,11 @@
 .bee-CellGridCell {
   border-style: solid;
   border-color: #ededed;
-  border-left: none;
-  border-right: none;
+}
+.bee-CellGridHeader,
+.bee-CellGridBody {
+  border-left-color: transparent;
+  border-right-color: transparent;
 }
 
 .bee-CellGridHeader {
@@ -590,6 +593,8 @@
 
 .bee-CellGridFooter {
   background-color: #f0f0f0;
+  border-left-color: #f0f0f0;
+  border-right-color: #f0f0f0;
 }
 
 .bee-CellGridBody:hover,
