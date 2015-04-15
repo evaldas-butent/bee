@@ -1112,6 +1112,9 @@ public class CellGrid extends Widget implements IdentifiableWidget, HasDataTable
 
   public boolean autoFitColumn(int col, boolean fitHeader) {
     ColumnInfo columnInfo = getColumnInfo(col);
+    if (!columnInfo.isAutoFitEnabled()) {
+      return false;
+    }
 
     int oldWidth = columnInfo.getWidth();
     int newWidth = estimateColumnWidth(col);
