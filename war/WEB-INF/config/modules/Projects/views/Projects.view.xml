@@ -3,7 +3,7 @@
   xmlns:x="http://www.butent.com/expression"
 
   name="Projects" source="Projects" caption="=projects"
-  editForm="Project" newRowForm="Project"
+  editForm="Project" newRowForm="Project" newRowCaption="=prjNewProject"
   >
   <Relation renderColumns="Name" />
   <Columns>
