@@ -80,7 +80,7 @@ public final class UiConstants {
       + "(\\s+(0[0-9]|1[0-9]|2[0-3])([: ][0-5][0-9])?)?";
 
   public static String wtfplLabel() {
-    return "UAB \"Būtenta\" &copy; 2010 - " + TimeUtils.today().getYear();
+    return "UAB \"Būtenta\" &copy; 2013 - " + TimeUtils.today().getYear();
   }
 
   public static String wtfplLogo() {
