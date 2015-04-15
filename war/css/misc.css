@@ -10,23 +10,24 @@
 }
 
 .bee-orgChart-department-panel {
-  border: 2px solid #b5d9ea;
-  border-radius: 5px;
+  border: 1px solid #d5d5d5;
   box-sizing: border-box;
-  box-shadow: rgba(0, 0, 0, 0.5) 3px 3px 3px;
-  background-image: linear-gradient(to bottom, #edf7ff, #cde7ee);
   left: 0;
   top: 0;
   transition: left 350ms, top 350ms;
   overflow: auto;
+  background-color: white;
 }
 
 .bee-orgChart-department-label {
   cursor: pointer;
-  border-bottom: 1px solid #ccc;
+  border-bottom: 1px solid #d5d5d5;
   font-size: larger;
-  font-weight: bolder;
+  font-weight: bold;
   text-align: center;
+  line-height: 45px;
+  background-color: #f5f5f5;
+  color: #414142;
 }
 
 .bee-orgChart-boss-table,
@@ -35,51 +36,64 @@
 .bee-orgChart-pos-and-empl {
   border-collapse: collapse;
 }
-.bee-orgChart-boss-table td,
-.bee-orgChart-employee-table td,
-.bee-orgChart-position-table td,
-.bee-orgChart-pos-and-empl td {
-  padding: 1px 5px;
+
+.bee-Form .bee-orgChart-boss-table td,
+.bee-Form .bee-orgChart-employee-table td,
+.bee-Form .bee-orgChart-position-table td,
+.bee-Form .bee-orgChart-pos-and-empl td {
+  padding: 5px;
+}
+
+.bee-orgChart-popup-content .bee-orgChart-employee-label{
+  line-height: 60px;
 }
 
 .bee-orgChart-photo-container,
 .bee-orgChart-photo-empty {
-  width: 30px;
+  width: 40px;
 }
 .bee-orgChart-photo-container {
-  height: 30px;
+  height: 40px;
 }
 .bee-orgChart-photo-container img {
   width: auto;
   height: auto;
   max-width: 100%;
   max-height: 100%;
+  border-radius: 50%;
 }
 
 .bee-orgChart-boss-label {
   cursor: pointer;
-  color: red;
+  color: #1eb2d8;
+  margin-left: 10px;
+  font-size: 14px;
+  font-weight: bold;
 }
 .bee-orgChart-position-staffed,
 .bee-orgChart-employee-label {
   cursor: pointer;
+  font-size: 14px;
+  margin-left: 10px;
 }
 
 .bee-orgChart-employee-summary {
-  margin-left: 1em;
+  margin-left: 3em;
 }
 
-.bee-orgChart-position-staffed,
-.bee-orgChart-employee-summary .bee-orgChart-employee-label {
-  text-decoration: underline;
-}
 .bee-orgChart-position-actual,
 .bee-orgChart-employee-count {
   font-weight: bold;
-  color: white;
-  background-image: linear-gradient(to bottom, #858a90, #ccced1);
-  text-align: right;
+  text-align: left;
 }
+
+.bee-orgChart-employee-position,
+.bee-orgChart-position-label {
+  text-transform: uppercase;
+  font-size: 11px;
+  color: #9d9d9d;
+}
+
 .bee-orgChart-position-under {
   font-weight: bold;
   background-color: lightpink;
