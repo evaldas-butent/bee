@@ -308,7 +308,7 @@ public class HtmlEditor extends Flow implements Presenter, View, Printable, HasW
           updateUrl(value);
         }
       }
-    }, getCurrentUrl(), 100, null, 300, CssUnit.PX);
+    }, null, getCurrentUrl(), 100, null, 300, CssUnit.PX);
   }
 
   private String getCurrentHtml() {

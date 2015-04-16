@@ -23,7 +23,7 @@
         <InputDate name="DateTo" style="width: 100px;" required="true" />
 
         <Label text="=client" class="bee-required" />
-        <UnboundSelector name="Company" viewName="Companies" renderColumns="Name" 
+        <UnboundSelector name="Company" viewName="Companies" renderColumns="Name TypeName" 
           style="width: 200px;" required="true" newRowEnabled="false" caching="none" />
       </row>
       

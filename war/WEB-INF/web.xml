@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="ISO-8859-1"?>
-<web-app xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns="http://java.sun.com/xml/ns/javaee" xmlns:web="http://java.sun.com/xml/ns/javaee/web-app_2_5.xsd" xsi:schemaLocation="http://java.sun.com/xml/ns/javaee http://java.sun.com/xml/ns/javaee/web-app_3_0.xsd" version="3.0">
+<web-app xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns="http://java.sun.com/xml/ns/javaee" xsi:schemaLocation="http://java.sun.com/xml/ns/javaee http://java.sun.com/xml/ns/javaee/web-app_3_0.xsd" version="3.0">
   <session-config>
     <session-timeout>120</session-timeout>
   </session-config>
@@ -31,14 +31,4 @@
   <security-role>
     <role-name>architect</role-name>
   </security-role>
-  
-<!--   <data-source> -->
-<!--     <name>BeeDS</name> -->
-<!--     <class-name>org.postgresql.ds.PGSimpleDataSource</class-name> -->
-<!--     <server-name>192.168.0.210</server-name> -->
-<!--     <port-number>5432</port-number> -->
-<!--     <database-name>postgres</database-name> -->
-<!--     <user>postgres</user> -->
-<!--     <password>admin</password> -->
-<!--   </data-source> -->
 </web-app>

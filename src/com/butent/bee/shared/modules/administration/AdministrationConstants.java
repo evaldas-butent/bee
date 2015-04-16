@@ -294,6 +294,7 @@ public final class AdministrationConstants {
   public static final String COL_DEPARTMENT_NAME = "DepartmentName";
   public static final String COL_DEPARTMENT_PARENT = "Parent";
   public static final String COL_DEPARTMENT_HEAD = "DepartmentHead";
+  public static final String COL_DEPARTMENT_POSITION_NUMBER_OF_EMPLOYEES = "NumberOfEmployees";
 
   public static final String COL_RS_REPORT = "Report";
   public static final String COL_RS_USER = "User";

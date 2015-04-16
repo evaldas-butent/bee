@@ -14,7 +14,8 @@
   <row>
     <Label for="Company" visible="true" />
     <cell colSpan="3">
-      <DataSelector source="Company" style="width: 100%;"/>
+      <DataSelector source="Company" style="width: 100%;" choiceColumns="Name TypeName" 
+            renderColumns="CompanyName CompanyTypeName" />
     </cell>
   </row>
 

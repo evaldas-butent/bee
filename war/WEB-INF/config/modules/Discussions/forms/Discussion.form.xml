@@ -110,7 +110,8 @@
           <FlowPanel data="Relations" for="Company" module="Classifiers.Contacts">
             <Label text="=companies" style="&relCompaniesLbl;" />
             <MultiSelector viewName="Companies" property="Companies"
-              renderColumns="Name" style="&relCompaniesInp;" />
+              choiceColumns="Name TypeName" renderColumns="Name TypeName"
+              style="&relCompaniesInp;" />
           </FlowPanel>
   
           <FlowPanel data="Relations" for="Person" module="Classifiers.Contacts">

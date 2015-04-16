@@ -538,6 +538,22 @@ public final class StyleUtils {
     clearHeight(obj.getElement());
   }
 
+  public static void clearProperties(Element el, String... names) {
+    Assert.notNull(el);
+    clearProperties(el.getStyle(), names);
+  }
+
+  public static void clearProperties(Style st, String... names) {
+    Assert.notNull(st);
+    Assert.notNull(names);
+
+    for (String name : names) {
+      if (!BeeUtils.isEmpty(name)) {
+        clearStyleProperty(st, name);
+      }
+    }
+  }
+
   public static void clearTableLayout(Element el) {
     Assert.notNull(el);
     clearTableLayout(el.getStyle());

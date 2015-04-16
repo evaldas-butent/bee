@@ -70,7 +70,7 @@ import java.util.TreeMap;
 
 public class ImportOptionsGrid extends AbstractGridInterceptor implements ClickHandler {
 
-  private final class ImportCallback implements ResponseCallback {
+  private final class ImportCallback extends ResponseCallback {
 
     private final String progressId;
 

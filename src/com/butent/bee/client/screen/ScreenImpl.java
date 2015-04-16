@@ -1,38 +1,46 @@
 package com.butent.bee.client.screen;
 
-import com.google.common.collect.Lists;
 import com.google.gwt.core.client.Scheduler.ScheduledCommand;
+import com.google.gwt.dom.client.Element;
 import com.google.gwt.dom.client.Style.Cursor;
+import com.google.gwt.dom.client.TableRowElement;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
-import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.ui.HasWidgets;
 import com.google.gwt.user.client.ui.Panel;
 import com.google.gwt.user.client.ui.Widget;
+
+import static com.butent.bee.shared.modules.discussions.DiscussionsConstants.*;
 
 import com.butent.bee.client.Bee;
 import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.Global;
 import com.butent.bee.client.Screen;
 import com.butent.bee.client.Settings;
+import com.butent.bee.client.Users;
 import com.butent.bee.client.cli.Shell;
+import com.butent.bee.client.data.Data;
 import com.butent.bee.client.data.RowCallback;
 import com.butent.bee.client.data.RowEditor;
-import com.butent.bee.client.dialog.ConfirmationCallback;
-import com.butent.bee.client.dialog.Icon;
+import com.butent.bee.client.data.RowFactory;
 import com.butent.bee.client.dialog.Notification;
+import com.butent.bee.client.dialog.Popup;
+import com.butent.bee.client.dialog.Popup.Animation;
+import com.butent.bee.client.dialog.Popup.OutsideClick;
 import com.butent.bee.client.dom.DomUtils;
 import com.butent.bee.client.event.Binder;
 import com.butent.bee.client.event.EventUtils;
 import com.butent.bee.client.event.Previewer;
+import com.butent.bee.client.grid.HtmlTable;
+import com.butent.bee.client.i18n.Format;
 import com.butent.bee.client.layout.Complex;
 import com.butent.bee.client.layout.CustomComplex;
 import com.butent.bee.client.layout.Direction;
 import com.butent.bee.client.layout.Flow;
 import com.butent.bee.client.layout.Horizontal;
-import com.butent.bee.client.layout.Simple;
 import com.butent.bee.client.layout.Split;
 import com.butent.bee.client.logging.ClientLogManager;
+import com.butent.bee.client.menu.MenuCommand;
 import com.butent.bee.client.render.PhotoRenderer;
 import com.butent.bee.client.screen.TilePanel.Tile;
 import com.butent.bee.client.style.StyleUtils;
@@ -49,15 +57,27 @@ import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.HasHtml;
 import com.butent.bee.shared.Pair;
-import com.butent.bee.shared.css.values.FontSize;
+import com.butent.bee.shared.css.CssUnit;
+import com.butent.bee.shared.data.BeeColumn;
 import com.butent.bee.shared.data.BeeRow;
 import com.butent.bee.shared.data.UserData;
+import com.butent.bee.shared.data.view.DataInfo;
 import com.butent.bee.shared.font.FontAwesome;
 import com.butent.bee.shared.html.Tags;
 import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogUtils;
+import com.butent.bee.shared.menu.MenuService;
 import com.butent.bee.shared.modules.administration.AdministrationConstants;
+import com.butent.bee.shared.modules.classifiers.ClassifierConstants;
+import com.butent.bee.shared.modules.discussions.DiscussionsConstants;
+import com.butent.bee.shared.modules.documents.DocumentConstants;
+import com.butent.bee.shared.modules.tasks.TaskConstants;
+import com.butent.bee.shared.rights.Module;
+import com.butent.bee.shared.rights.ModuleAndSub;
+import com.butent.bee.shared.rights.RegulatedWidget;
+import com.butent.bee.shared.time.JustDate;
+import com.butent.bee.shared.time.TimeUtils;
 import com.butent.bee.shared.ui.UiConstants;
 import com.butent.bee.shared.ui.UserInterface;
 import com.butent.bee.shared.utils.BeeUtils;
@@ -82,8 +102,25 @@ public class ScreenImpl implements Screen {
       Direction.NORTH, Direction.EAST);
 
   private Split screenPanel;
+  private static final String CONTAINER = "Container";
+  private static final String TASK = "Task";
+  private static final String COMPANY = "Company";
+  private static final String DOCUMENT = "Document";
+  private static final String NOTE = "Note";
+  private static final String ANNOUNCEMENT = "Announcement";
+  private static final String PHOTO_URL = "images/photo/";
+  private static FaLabel userLabel = new FaLabel(FontAwesome.USER);
+  private static FaLabel emailLabel = new FaLabel(FontAwesome.ENVELOPE_O);
+  private static Flow flowUserContainer = new Flow();
+  private static Flow flowEmailContainer = new Flow();
+  private static Flow flowOnlineUserSize = new Flow();
+  private static Flow flowOnlineEmailSize = new Flow();
+  private static Flow flowNewsSize = new Flow();
 
+  private static final String DEFAULT_PHOTO_IMAGE = "images/silver/person_profile.png";
   private CentralScrutinizer centralScrutinizer;
+  public static final HtmlTable NOTIFICATION_CONTENT = new HtmlTable(BeeConst.CSS_CLASS_PREFIX
+      + "NotificationBar-Content");
 
   private Workspace workspace;
   private HasWidgets commandPanel;
@@ -442,20 +479,92 @@ public class ScreenImpl implements Screen {
     if (userData != null) {
       if (getUserPhotoContainer() != null) {
         getUserPhotoContainer().clear();
+        final Image image;
 
         String photoFileName = userData.getPhotoFileName();
         if (!BeeUtils.isEmpty(photoFileName)) {
-          Image image = new Image(PhotoRenderer.getUrl(photoFileName));
-          image.setAlt(userData.getLogin());
-          image.addStyleName(BeeConst.CSS_CLASS_PREFIX + "UserPhoto");
-
-          getUserPhotoContainer().add(image);
+          image = new Image(PhotoRenderer.getUrl(photoFileName));
+        } else {
+          image = new Image(DEFAULT_PHOTO_IMAGE);
         }
-      }
 
-      if (getUserSignature() != null) {
-        getUserSignature().setText(BeeUtils.trim(userData.getUserSign()));
+        image.setAlt(userData.getLogin());
+        image.addStyleName(BeeConst.CSS_CLASS_PREFIX + "UserPhoto");
+
+        image.addClickHandler(new ClickHandler() {
+
+          @Override
+          public void onClick(ClickEvent event) {
+
+            NOTIFICATION_CONTENT.setWidget(0, 0, createUserPanel(NOTIFICATION_CONTENT));
+            NOTIFICATION_CONTENT.setWidget(1, 0, createCalendarPanel());
+
+            if (BeeKeeper.getUser().isWidgetVisible(RegulatedWidget.NEWS)) {
+              NOTIFICATION_CONTENT.setWidget(2, 0, Global.getNewsAggregator().getNewsPanel()
+                  .asWidget());
+            }
+
+            final Popup popup = new Popup(OutsideClick.CLOSE,
+                BeeConst.CSS_CLASS_PREFIX + "NotificationBar");
+            popup.setWidget(NOTIFICATION_CONTENT);
+            popup.setHideOnEscape(true);
+
+            popup.setAnimationEnabled(true);
+            popup.setAnimation(new Animation(500) {
+              int left;
+              int width;
+
+              @Override
+              public void start() {
+                this.width = getPopup().getOffsetWidth();
+                this.left = DomUtils.getClientWidth() - this.width;
+
+                if (getPopup().isShowing()) {
+                  StyleUtils.setOpacity(getPopup(), BeeConst.DOUBLE_ZERO);
+                  StyleUtils.setLeft(getPopup(), this.width);
+                }
+                super.start();
+              }
+
+              @Override
+              protected void onComplete() {
+                if (getPopup().isShowing()) {
+                  StyleUtils.setLeft(getPopup(), this.left);
+                }
+                getPopup().getElement().getStyle().clearOpacity();
+                super.onComplete();
+              }
+
+              @Override
+              protected boolean run(double elapsed) {
+                if (isCanceled()) {
+                  return false;
+                } else {
+                  StyleUtils.setOpacity(getPopup(), getFactor(elapsed));
+                  double x = this.left + (1 - getFactor(elapsed)) * this.width;
+                  StyleUtils.setLeft(getPopup(), x, CssUnit.PX);
+                  return true;
+                }
+              }
+            });
+
+            popup.setPopupPositionAndShow(new Popup.PositionCallback() {
+              @Override
+              public void setPosition(int offsetWidth, int offsetHeight) {
+                popup.setPopupPosition(DomUtils.getClientWidth() - offsetWidth, 0);
+              }
+            });
+          }
+        });
+
+        flowNewsSize.setStyleName(BeeConst.CSS_CLASS_PREFIX + "NewsSize-None");
+        getUserPhotoContainer().add(flowNewsSize);
+        getUserPhotoContainer().add(image);
       }
+    }
+
+    if (getUserSignature() != null) {
+      getUserSignature().setText(BeeUtils.trim(userData.getUserSign()));
     }
   }
 
@@ -683,44 +792,6 @@ public class ScreenImpl implements Screen {
       userContainer.add(photoContainer);
       setUserPhotoContainer(photoContainer);
     }
-
-    Label signature = new Label();
-    signature.addStyleName(BeeConst.CSS_CLASS_PREFIX + "UserSignature");
-    userContainer.add(signature);
-    setUserSignature(signature);
-
-    signature.addClickHandler(new ClickHandler() {
-      @Override
-      public void onClick(ClickEvent event) {
-        onUserSignatureClick();
-      }
-    });
-
-    Simple exitContainer = new Simple();
-    exitContainer.addStyleName(BeeConst.CSS_CLASS_PREFIX + "UserExitContainer");
-
-    FaLabel exit = new FaLabel(FontAwesome.SIGN_OUT);
-    exit.addStyleName(BeeConst.CSS_CLASS_PREFIX + "UserExit");
-    exit.setTitle(Localized.getConstants().signOut());
-
-    exit.addClickHandler(new ClickHandler() {
-      @Override
-      public void onClick(ClickEvent event) {
-        Global.getMsgBoxen().confirm(Localized.getMessages().endSession(Settings.getAppName()),
-            Icon.QUESTION, Lists.newArrayList(Localized.getConstants().questionLogout()),
-            Localized.getConstants().yes(), Localized.getConstants().no(),
-            new ConfirmationCallback() {
-              @Override
-              public void onConfirm() {
-                Bee.exit();
-              }
-            }, null, StyleUtils.className(FontSize.MEDIUM), null, null);
-      }
-    });
-
-    exitContainer.setWidget(exit);
-    userContainer.add(exitContainer);
-
     return userContainer;
   }
 
@@ -768,6 +839,10 @@ public class ScreenImpl implements Screen {
     Panel commandContainer = createCommandPanel();
     if (commandContainer != null) {
       panel.add(commandContainer);
+
+      commandContainer.add(onlineEmail());
+      commandContainer.add(onlineUsers());
+
       setCommandPanel(commandContainer);
     }
 
@@ -786,7 +861,7 @@ public class ScreenImpl implements Screen {
     panel.add(nw);
     setNotification(nw);
 
-    return Pair.of(panel, getNorthHeight(100));
+    return Pair.of(panel, getNorthHeight(112));
   }
 
   protected Pair<? extends IdentifiableWidget, Integer> initSouth() {
@@ -800,12 +875,117 @@ public class ScreenImpl implements Screen {
   protected Pair<? extends IdentifiableWidget, Integer> initWest() {
     setCentralScrutinizer(new CentralScrutinizer());
 
+    Flow top = new Flow();
+    Flow containerEnv = new Flow();
+    FaLabel bookmark = new FaLabel(FontAwesome.BOOKMARK);
+    Label title = new Label();
+    final Label createButton = new Label("+ " + Localized.getConstants().create());
+
+    createButton.addStyleName(BeeConst.CSS_CLASS_PREFIX + "CreateButton");
+    top.addStyleName(BeeConst.CSS_CLASS_PREFIX + "TopWest");
+    title.setText(Localized.getConstants().myEnvironment());
+    containerEnv.addStyleName(BeeConst.CSS_CLASS_PREFIX + "MyEnvironment");
+
+    createButton.addClickHandler(new ClickHandler() {
+
+      @Override
+      public void onClick(ClickEvent event) {
+
+        final HtmlTable table = new HtmlTable(BeeConst.CSS_CLASS_PREFIX + "create-NewForm");
+        int r = 0;
+
+        if (BeeKeeper.getUser().isModuleVisible(ModuleAndSub.of(Module.TASKS))
+            && BeeKeeper.getUser().canCreateData(TaskConstants.VIEW_TASKS)) {
+          table.setText(r, 0, Localized.getConstants().crmNewTask());
+          DomUtils.setDataProperty(table.getRow(r++), CONTAINER, TASK);
+        }
+
+        if (BeeKeeper.getUser().isModuleVisible(ModuleAndSub.of(Module.CLASSIFIERS))
+            && BeeKeeper.getUser().canCreateData(ClassifierConstants.VIEW_COMPANIES)) {
+          table.setText(r, 0, Localized.getConstants().newClient());
+          DomUtils.setDataProperty(table.getRow(r++), CONTAINER, COMPANY);
+        }
+
+        if (BeeKeeper.getUser().isModuleVisible(ModuleAndSub.of(Module.DOCUMENTS))
+            && BeeKeeper.getUser().canCreateData(DocumentConstants.VIEW_DOCUMENTS)) {
+          table.setText(r, 0, Localized.getConstants().documentNew());
+          DomUtils.setDataProperty(table.getRow(r++), CONTAINER, DOCUMENT);
+        }
+
+        if (BeeKeeper.getUser().isModuleVisible(ModuleAndSub.of(Module.TASKS))
+            && BeeKeeper.getUser().canCreateData(TaskConstants.VIEW_TODO_LIST)) {
+          table.setText(r, 0, Localized.getConstants().crmNewTodoItem());
+          DomUtils.setDataProperty(table.getRow(r++), CONTAINER, NOTE);
+        }
+
+        if (BeeKeeper.getUser().isModuleVisible(ModuleAndSub.of(Module.DISCUSSIONS))
+            && BeeKeeper.getUser().canCreateData(DiscussionsConstants.VIEW_DISCUSSIONS)) {
+          table.setText(r, 0, Localized.getConstants().announcementNew());
+          DomUtils.setDataProperty(table.getRow(r++), CONTAINER, ANNOUNCEMENT);
+        }
+
+        if (r > 0) {
+          table.addClickHandler(new ClickHandler() {
+            @Override
+            public void onClick(ClickEvent ev) {
+              Element targetElement = EventUtils.getEventTargetElement(ev);
+              TableRowElement rowElement = DomUtils.getParentRow(targetElement, true);
+              String index = DomUtils.getDataProperty(rowElement, CONTAINER);
+              UiHelper.closeDialog(table);
+
+              switch (index) {
+                case TASK:
+                  RowFactory.createRow(TaskConstants.VIEW_TASKS);
+                  break;
+
+                case COMPANY:
+                  RowFactory.createRow(ClassifierConstants.VIEW_COMPANIES);
+                  break;
+
+                case DOCUMENT:
+                  RowFactory.createRow(DocumentConstants.VIEW_DOCUMENTS);
+                  break;
+
+                case NOTE:
+                  RowFactory.createRow(TaskConstants.VIEW_TODO_LIST);
+                  break;
+
+                case ANNOUNCEMENT:
+                  DataInfo data = Data.getDataInfo(VIEW_DISCUSSIONS);
+                  final BeeColumn beeCol = data.getColumn(COL_TOPIC);
+                  BeeRow emptyRow = RowFactory.createEmptyRow(data, true);
+                  if (beeCol != null) {
+                    beeCol.setNullable(false);
+                  }
+                  RowFactory.createRow(FORM_NEW_DISCUSSION, Localized.getConstants()
+                      .announcementNew(), data,
+                      emptyRow, null);
+                  break;
+              }
+            }
+          });
+          Popup popup = new Popup(OutsideClick.CLOSE);
+          popup.addStyleName(BeeConst.CSS_CLASS_PREFIX + "PopupCreate");
+          popup.setWidget(table);
+          popup.setHideOnEscape(true);
+          popup.showRelativeTo(createButton.getElement());
+        }
+
+      }
+    });
+
+    top.add(createButton);
+    containerEnv.add(bookmark);
+    containerEnv.add(title);
+    top.add(containerEnv);
+
     Flow panel = new Flow();
+    panel.add(top);
+    panel.addStyleName(BeeConst.CSS_CLASS_PREFIX + "WestContainer");
     panel.add(getCentralScrutinizer());
     panel.add(createCopyright(BeeConst.CSS_CLASS_PREFIX));
 
-    int width = BeeUtils.resize(Window.getClientWidth(), 1000, 2000, 240, 320);
-    return Pair.of(panel, width);
+    return Pair.of(panel, 200);
   }
 
   protected void onUserSignatureClick() {
@@ -996,5 +1176,295 @@ public class ScreenImpl implements Screen {
 
     panel.clear();
     panel.add(widget.asWidget());
+  }
+
+  private static Flow onlineUsers() {
+
+    final Set<String> sessions = Global.getUsers().getAllSessions();
+
+    flowUserContainer.addStyleName(BeeConst.CSS_CLASS_PREFIX + "HeaderIcon-Container");
+    flowUserContainer.add(flowOnlineUserSize);
+    userLabel.setStyleName(BeeConst.CSS_CLASS_PREFIX + "OnlineUsers");
+    flowOnlineUserSize.setStyleName(BeeConst.CSS_CLASS_PREFIX + "OnlineUserSize-None");
+
+    userLabel.addClickHandler(new ClickHandler() {
+
+      @Override
+      public void onClick(ClickEvent ev) {
+        final HtmlTable table = new HtmlTable(BeeConst.CSS_CLASS_PREFIX + "PopupUsersContent");
+        int r = 0;
+
+        Users users = Global.getUsers();
+
+        if (sessions.size() > 0) {
+          for (String session : sessions) {
+            UserData user = users.getUserData(users.getUserIdBySession(session));
+            Image img = new Image(PHOTO_URL + user.getPhotoFileName());
+            img.setStyleName(BeeConst.CSS_CLASS_PREFIX + "OnlineUsersPhoto");
+            table.setWidget(r, 0, img);
+            table.setText(r, 1, user.getFirstName() + " " + user.getLastName());
+            DomUtils.setDataProperty(table.getRow(r++), CONTAINER, user.getPerson());
+          }
+
+          if (r > 0) {
+            table.addClickHandler(new ClickHandler() {
+              @Override
+              public void onClick(ClickEvent arg) {
+                Element targetElement = EventUtils.getEventTargetElement(arg);
+                TableRowElement rowElement = DomUtils.getParentRow(targetElement, true);
+                String index = DomUtils.getDataProperty(rowElement, CONTAINER);
+                UiHelper.closeDialog(table);
+
+                RowEditor.open(ClassifierConstants.VIEW_PERSONS, Long.valueOf(index),
+                    Opener.NEW_TAB);
+              }
+            });
+            Popup popup = new Popup(OutsideClick.CLOSE);
+            popup.setStyleName(BeeConst.CSS_CLASS_PREFIX + "PopupUsers");
+            popup.setWidget(table);
+            popup.setHideOnEscape(true);
+            popup.showRelativeTo(userLabel.getElement());
+          }
+        }
+      }
+    });
+
+    flowUserContainer.add(userLabel);
+    return flowUserContainer;
+  }
+
+  public static void updateOnlineUsers() {
+
+    FaLabel label = BeeKeeper.getScreen().getOnlineUserLabel();
+    Flow userSize = BeeKeeper.getScreen().getOnlineUserSize();
+
+    if (label == null || userSize == null) {
+      return;
+    }
+
+    int size = Global.getUsers().getAllSessions().size();
+
+    if (size > 0) {
+      userSize.setStyleName(BeeConst.CSS_CLASS_PREFIX + "OnlineUserSize");
+      label.setStyleName(BeeConst.CSS_CLASS_PREFIX + "OnlineUsers" + "-Selected");
+      userSize.getElement().setInnerText(String.valueOf(size));
+
+    } else {
+      label.setStyleName(BeeConst.CSS_CLASS_PREFIX + "OnlineUsers");
+      userSize.setStyleName(BeeConst.CSS_CLASS_PREFIX + "OnlineUserSize-None");
+    }
+  }
+
+  public static Widget onlineEmail() {
+
+    final MenuCommand command = new MenuCommand(MenuService.OPEN_MAIL, null);
+
+    flowEmailContainer.addStyleName(BeeConst.CSS_CLASS_PREFIX + "EmailIcon-Container");
+    flowEmailContainer.add(flowOnlineEmailSize);
+
+    flowOnlineEmailSize.setStyleName(BeeConst.CSS_CLASS_PREFIX + "OnlineEmailSize-None");
+    emailLabel.setStyleName(BeeConst.CSS_CLASS_PREFIX + "OnlineEmail");
+
+    emailLabel.addClickHandler(new ClickHandler() {
+
+      @Override
+      public void onClick(ClickEvent arg0) {
+
+        if (command.getService().equals(MenuService.OPEN_MAIL)) {
+          command.execute();
+        }
+      }
+    });
+
+    flowEmailContainer.add(emailLabel);
+    return flowEmailContainer;
+  }
+
+  public static void updateOnlineEmails(int size) {
+
+    FaLabel label = BeeKeeper.getScreen().getOnlineEmailLabel();
+    Flow emailSize = BeeKeeper.getScreen().getOnlineEmailSize();
+
+    if (label == null || emailSize == null) {
+      return;
+    }
+
+    if (size > 0) {
+      emailSize.setStyleName(BeeConst.CSS_CLASS_PREFIX + "OnlineEmailSize");
+      label.setStyleName(BeeConst.CSS_CLASS_PREFIX + "OnlineEmail" + "-Selected");
+      emailSize.getElement().setInnerText(String.valueOf(size));
+
+    } else {
+      label.setStyleName(BeeConst.CSS_CLASS_PREFIX + "OnlineEmail");
+      emailSize.setStyleName(BeeConst.CSS_CLASS_PREFIX + "OnlineEmailSize-None");
+    }
+  }
+
+  public static void updateNewsSize(int size) {
+
+    Flow newsSize = BeeKeeper.getScreen().getNewsSize();
+
+    if (newsSize == null) {
+      return;
+    }
+
+    if (size > 0) {
+      newsSize.setStyleName(BeeConst.CSS_CLASS_PREFIX + "NewsSize");
+      newsSize.getElement().setInnerText(String.valueOf(size));
+
+    } else {
+      newsSize.setStyleName(BeeConst.CSS_CLASS_PREFIX + "NewsSize-None");
+    }
+  }
+
+  @Override
+  public FaLabel getOnlineUserLabel() {
+    return userLabel;
+  }
+
+  @Override
+  public Flow getOnlineUserSize() {
+    return flowOnlineUserSize;
+  }
+
+  @Override
+  public FaLabel getOnlineEmailLabel() {
+    return emailLabel;
+  }
+
+  @Override
+  public Flow getOnlineEmailSize() {
+    return flowOnlineEmailSize;
+  }
+
+  @Override
+  public Flow getNewsSize() {
+    return flowNewsSize;
+  }
+
+  public Widget createUserPanel(final HtmlTable table) {
+
+    Horizontal userContainer = new Horizontal();
+    Flow userPanel = new Flow();
+    Image image;
+    Label signature = new Label();
+    Flow settingsCnt = new Flow();
+    FaLabel sett = new FaLabel(FontAwesome.GEAR);
+    FaLabel help = new FaLabel(FontAwesome.QUESTION);
+
+    userContainer.addStyleName(BeeConst.CSS_CLASS_PREFIX + "UserContainer");
+    userPanel.addStyleName(BeeConst.CSS_CLASS_PREFIX + "UserPanel");
+    settingsCnt.addStyleName(BeeConst.CSS_CLASS_PREFIX + "SettingsContainer");
+    signature.addStyleName(BeeConst.CSS_CLASS_PREFIX + "UserSignature");
+    sett.addStyleName(BeeConst.CSS_CLASS_PREFIX + "SettingsIcon");
+    help.addStyleName(BeeConst.CSS_CLASS_PREFIX + "HelpIcon");
+
+    sett.addClickHandler(new ClickHandler() {
+
+      @Override
+      public void onClick(ClickEvent arg0) {
+        onUserSignatureClick();
+        UiHelper.closeDialog(table);
+      }
+    });
+
+    help.addClickHandler(new ClickHandler() {
+
+      @Override
+      public void onClick(ClickEvent arg1) {
+        BrowsingContext.open(UiConstants.helpURL());
+      }
+    });
+
+    settingsCnt.add(sett);
+    settingsCnt.add(help);
+
+    signature.setText(BeeUtils.trim(BeeKeeper.getUser().getUserSign()));
+
+    Flow exitContainer = new Flow();
+    exitContainer.addStyleName(BeeConst.CSS_CLASS_PREFIX + "UserExitContainer");
+
+    Label exit = new Label(Localized.getConstants().signOut());
+    exit.addStyleName(BeeConst.CSS_CLASS_PREFIX + "UserExit");
+    exit.setTitle(Localized.getConstants().signOut());
+
+    exit.addClickHandler(new ClickHandler() {
+      @Override
+      public void onClick(ClickEvent event) {
+        Bee.exit();
+      }
+    });
+
+    exitContainer.add(signature);
+    exitContainer.add(exit);
+
+    String photoFileName = BeeKeeper.getUser().getUserData().getPhotoFileName();
+    if (!BeeUtils.isEmpty(photoFileName)) {
+      image = new Image(PhotoRenderer.getUrl(photoFileName));
+    } else {
+      image = new Image(DEFAULT_PHOTO_IMAGE);
+    }
+
+    image.setAlt(BeeKeeper.getUser().getLogin());
+    image.addStyleName(BeeConst.CSS_CLASS_PREFIX + "UserPhoto");
+
+    userPanel.add(settingsCnt);
+    userContainer.add(exitContainer);
+    userContainer.add(image);
+    userPanel.add(userContainer);
+
+    return userPanel;
+  }
+
+  public Widget createCalendarPanel() {
+
+    Flow userCal = new Flow();
+    userCal.setStyleName(BeeConst.CSS_CLASS_PREFIX + "CalendarContainer");
+
+    JustDate firstDay = TimeUtils.today();
+    JustDate day;
+    int n = 5;
+
+    for (int i = 0; i < n; i++) {
+
+      if (i == 0) {
+        Label lblD = new Label();
+        Label lblWd = new Label();
+        Flow cal = new Flow();
+
+        lblD.setStyleName(BeeConst.CSS_CLASS_PREFIX + "MonthDay");
+        lblD.addStyleName(BeeConst.CSS_CLASS_PREFIX + "MonthDayToday");
+        lblD.setText(String.valueOf(firstDay.getDom()));
+
+        lblWd.setStyleName(BeeConst.CSS_CLASS_PREFIX + "WeekDay");
+        lblWd.setText(String.valueOf(Format.renderDayOfWeekShort(firstDay.getDow())));
+
+        cal.add(lblWd);
+        cal.add(lblD);
+        userCal.add(cal);
+
+      } else {
+        day = TimeUtils.toDateOrNull(firstDay.getDays() + i);
+
+        if (!TimeUtils.isWeekend(day)) {
+          Label lblD = new Label();
+          Label lblWd = new Label();
+          Flow cal = new Flow();
+
+          lblD.addStyleName(BeeConst.CSS_CLASS_PREFIX + "MonthDay");
+          lblD.setText(String.valueOf(day.getDom()));
+
+          lblWd.setStyleName(BeeConst.CSS_CLASS_PREFIX + "WeekDay");
+          lblWd.setText(String.valueOf(Format.renderDayOfWeekShort(day.getDow())));
+
+          cal.add(lblWd);
+          cal.add(lblD);
+          userCal.add(cal);
+        } else {
+          n++;
+        }
+      }
+    }
+    return userCal;
   }
 }

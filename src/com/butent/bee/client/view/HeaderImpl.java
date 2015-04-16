@@ -127,6 +127,16 @@ public class HeaderImpl extends Flow implements HeaderView {
     commandPanel.addStyleName(STYLE_COMMAND_PANEL);
     add(commandPanel);
 
+    boolean canAdd = hasData && !readOnly && BeeKeeper.getUser().canCreateData(viewName);
+    if (hasAction(Action.ADD, canAdd, enabledActions, disabledActions)) {
+      Label control = new Label("+ " + Localized.getConstants().createNew());
+      control.addStyleName(BeeConst.CSS_CLASS_PREFIX + "CreateNew");
+
+      initControl(control, Action.ADD, hiddenActions);
+
+      add(control);
+    }
+
     if (hasAction(Action.REFRESH, hasData, enabledActions, disabledActions)) {
       add(createFa(Action.REFRESH, hiddenActions));
     }
@@ -136,11 +146,6 @@ public class HeaderImpl extends Flow implements HeaderView {
     }
     if (hasAction(Action.REMOVE_FILTER, false, enabledActions, disabledActions)) {
       add(createFa(Action.REMOVE_FILTER, hiddenActions));
-    }
-
-    boolean canAdd = hasData && !readOnly && BeeKeeper.getUser().canCreateData(viewName);
-    if (hasAction(Action.ADD, canAdd, enabledActions, disabledActions)) {
-      add(createFa(Action.ADD, hiddenActions));
     }
 
     if (hasAction(Action.COPY, false, enabledActions, disabledActions)) {
@@ -386,7 +391,7 @@ public class HeaderImpl extends Flow implements HeaderView {
     return commandPanel;
   }
 
-  private void initControl(FaLabel control, final Action action, Set<Action> hiddenActions) {
+  private void initControl(Label control, final Action action, Set<Action> hiddenActions) {
     control.addStyleName(STYLE_CONTROL);
     control.addStyleName(action.getStyleName());
 

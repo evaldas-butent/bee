@@ -15,8 +15,8 @@ import com.butent.bee.client.communication.ResponseCallback;
 import com.butent.bee.client.data.Data;
 import com.butent.bee.client.data.Provider;
 import com.butent.bee.client.data.Queries;
-import com.butent.bee.client.data.RowCallback;
 import com.butent.bee.client.data.Queries.RowSetCallback;
+import com.butent.bee.client.data.RowCallback;
 import com.butent.bee.client.data.RowFactory;
 import com.butent.bee.client.dialog.ChoiceCallback;
 import com.butent.bee.client.dialog.ConfirmationCallback;
@@ -65,6 +65,7 @@ import com.butent.bee.shared.font.FontAwesome;
 import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.modules.administration.AdministrationConstants;
 import com.butent.bee.shared.modules.classifiers.ClassifierConstants;
+import com.butent.bee.shared.modules.projects.ProjectConstants;
 import com.butent.bee.shared.modules.tasks.TaskConstants.TaskStatus;
 import com.butent.bee.shared.modules.tasks.TaskType;
 import com.butent.bee.shared.modules.tasks.TaskUtils;
@@ -83,7 +84,7 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Set;
 
-class TasksGrid extends AbstractGridInterceptor implements ClickHandler {
+class TasksGrid extends AbstractGridInterceptor {
 
   private static final String NAME_MODE = "Mode";
   private static final String NAME_SLACK = "Slack";
@@ -144,9 +145,30 @@ class TasksGrid extends AbstractGridInterceptor implements ClickHandler {
     if (type.equals(TaskType.ALL) || type.equals(TaskType.DELEGATED)) {
       FaLabel confirmTask = new FaLabel(FontAwesome.CHECK_SQUARE_O);
       confirmTask.setTitle(Localized.getConstants().crmTaskConfirm());
-      confirmTask.addClickHandler(this);
+      confirmTask.addClickHandler(new ClickHandler() {
+
+        @Override
+        public void onClick(ClickEvent arg0) {
+          confirmTasksClick();
+        }
+      });
 
       presenter.getHeader().addCommandItem(confirmTask);
+    }
+
+    if (type.equals(TaskType.DELEGATED)
+        && BeeKeeper.getUser().canCreateData(ProjectConstants.VIEW_PROJECTS)) {
+      FaLabel createProject = new FaLabel(FontAwesome.ROCKET);
+      createProject.setTitle(Localized.getConstants().prjCreateFromTasks());
+      createProject.addClickHandler(new ClickHandler() {
+
+        @Override
+        public void onClick(ClickEvent arg0) {
+          createProjectClick();
+        }
+      });
+
+      presenter.getHeader().addCommandItem(createProject);
     }
   }
 
@@ -287,29 +309,6 @@ class TasksGrid extends AbstractGridInterceptor implements ClickHandler {
   }
 
   @Override
-  public void onClick(ClickEvent event) {
-    final GridView gridView = getGridPresenter().getGridView();
-    CompoundFilter filter = CompoundFilter.or();
-
-    for (RowInfo row : gridView.getSelectedRows(SelectedRows.ALL)) {
-      filter.add(Filter.compareId(row.getId()));
-    }
-
-    if (filter.isEmpty()) {
-      IsRow selectedRow = gridView.getActiveRow();
-      if (selectedRow == null) {
-        gridView.notifyWarning(Localized.getConstants().selectAtLeastOneRow());
-        return;
-      } else {
-        confirmTask(gridView, selectedRow);
-      }
-
-    } else {
-      confirmTasks(gridView, filter);
-    }
-  }
-
-  @Override
   public void onEditStart(final EditStartEvent event) {
     maybeEditStar(event);
   }
@@ -340,6 +339,39 @@ class TasksGrid extends AbstractGridInterceptor implements ClickHandler {
     } else {
       return false;
     }
+  }
+
+  private void confirmTasksClick() {
+    final GridView gridView = getGridPresenter().getGridView();
+    CompoundFilter filter = CompoundFilter.or();
+
+    for (RowInfo row : gridView.getSelectedRows(SelectedRows.ALL)) {
+      filter.add(Filter.compareId(row.getId()));
+    }
+
+    if (filter.isEmpty()) {
+      IsRow selectedRow = gridView.getActiveRow();
+      if (selectedRow == null) {
+        gridView.notifyWarning(Localized.getConstants().selectAtLeastOneRow());
+        return;
+      } else {
+        confirmTask(gridView, selectedRow);
+      }
+
+    } else {
+      confirmTasks(gridView, filter);
+    }
+  }
+
+  private void createProjectClick() {
+    final GridView gridView = getGridPresenter().getGridView();
+    CompoundFilter filter = CompoundFilter.or();
+
+    for (RowInfo row : gridView.getSelectedRows(SelectedRows.ALL)) {
+      filter.add(Filter.compareId(row.getId()));
+    }
+
+    // TODO:
   }
 
   private void confirmTask(final GridView gridView, final IsRow row) {

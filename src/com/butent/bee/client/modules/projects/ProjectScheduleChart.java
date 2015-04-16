@@ -3,6 +3,8 @@ package com.butent.bee.client.modules.projects;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Range;
 import com.google.common.collect.Sets;
+import com.google.gwt.event.dom.client.ClickEvent;
+import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.user.client.ui.ComplexPanel;
 import com.google.gwt.user.client.ui.HasWidgets;
 import com.google.gwt.user.client.ui.Widget;
@@ -12,6 +14,7 @@ import static com.butent.bee.shared.modules.projects.ProjectConstants.*;
 import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.communication.ParameterList;
 import com.butent.bee.client.communication.ResponseCallback;
+import com.butent.bee.client.data.RowEditor;
 import com.butent.bee.client.dom.Edges;
 import com.butent.bee.client.dom.Rectangle;
 import com.butent.bee.client.layout.Flow;
@@ -20,6 +23,7 @@ import com.butent.bee.client.timeboard.TimeBoard;
 import com.butent.bee.client.timeboard.TimeBoardHelper;
 import com.butent.bee.client.timeboard.TimeBoardRowLayout;
 import com.butent.bee.client.ui.IdentifiableWidget;
+import com.butent.bee.client.ui.Opener;
 import com.butent.bee.client.view.View;
 import com.butent.bee.client.view.ViewCallback;
 import com.butent.bee.client.widget.CustomDiv;
@@ -28,6 +32,7 @@ import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.Size;
 import com.butent.bee.shared.communication.ResponseObject;
+import com.butent.bee.shared.data.BeeRowSet;
 import com.butent.bee.shared.data.SimpleRowSet;
 import com.butent.bee.shared.data.event.DataEvent;
 import com.butent.bee.shared.i18n.Localized;
@@ -75,6 +80,7 @@ final class ProjectScheduleChart extends TimeBoard {
     private String color;
     private String viewName;
     private String taskStatus;
+    private String beeRowSet;
 
     @Override
     public Range<JustDate> getRange() {
@@ -93,7 +99,7 @@ final class ProjectScheduleChart extends TimeBoard {
     }
 
     public ChartItem(String viewName, Long stageId, String caption, JustDate start,
-        JustDate end, String color, String taskStatus) {
+        JustDate end, String color, String taskStatus, String beeRowSet) {
 
       this();
       this.viewName = viewName;
@@ -103,6 +109,7 @@ final class ProjectScheduleChart extends TimeBoard {
       this.color = color;
       this.stageId = stageId;
       this.taskStatus = taskStatus;
+      this.beeRowSet = beeRowSet;
     }
 
     public Long getStageId() {
@@ -301,7 +308,6 @@ final class ProjectScheduleChart extends TimeBoard {
             Rectangle rectangle = getRectangle(item.getRange(), rowIndex);
             TimeBoardHelper.apply(itemWidget, rectangle, margins);
             styleItemWidget(item, itemWidget);
-
             panel.add(itemWidget);
           }
         }
@@ -316,7 +322,6 @@ final class ProjectScheduleChart extends TimeBoard {
             Rectangle rectangle = getRectangle(item.getRange(), rowIndex);
             TimeBoardHelper.apply(itemWidget, rectangle, margins);
             styleItemWidget(item, itemWidget);
-
             panel.add(itemWidget);
           }
         }
@@ -378,6 +383,7 @@ final class ProjectScheduleChart extends TimeBoard {
     int idxEnd = rs.getColumnIndex(ALS_CHART_END);
     int idxColor = rs.getColumnIndex(ALS_CHART_FLOW_COLOR);
     int idxStatus = rs.getColumnIndex(ALS_TASK_STATUS);
+    int idxBeeRowSet = rs.getColumnIndex(PROP_RS);
 
     for (String[] row : rs.getRows()) {
       Long id = BeeUtils.toLong(row[idxStage]);
@@ -394,7 +400,7 @@ final class ProjectScheduleChart extends TimeBoard {
       }
 
       ChartItem ci = new ChartItem(row[idxViewName], id, row[idxCaption], start,
-          end, row[idxColor], taskStatus);
+          end, row[idxColor], taskStatus, row[idxBeeRowSet]);
 
       if (ci.getRange() != null) {
         chartItems.add(ci);
@@ -446,7 +452,7 @@ final class ProjectScheduleChart extends TimeBoard {
 
   private static IdentifiableWidget createChartRowWidget(ChartItem item, boolean firstLevel) {
     Flow panel = new Flow(STYLE_STAGE_ROW);
-    CustomDiv label = new CustomDiv(STYLE_STAGE_LABEL);
+    final CustomDiv label = new CustomDiv(STYLE_STAGE_LABEL);
 
     if (firstLevel && BeeUtils.same(VIEW_PROJECT_STAGES, item.getViewName())) {
       label.setText(item.getCaption());
@@ -457,6 +463,17 @@ final class ProjectScheduleChart extends TimeBoard {
     } else {
       label.setText(BeeConst.STRING_EMPTY);
     }
+
+    final BeeRowSet rs = BeeRowSet.restore(item.beeRowSet);
+
+    label.addClickHandler(new ClickHandler() {
+
+      @Override
+      public void onClick(ClickEvent arg0) {
+        RowEditor.open(rs.getViewName(), rs.getRow(0).getId(), Opener.NEW_TAB);
+      }
+    });
+
     panel.add(label);
     return panel;
   }
@@ -496,7 +513,7 @@ final class ProjectScheduleChart extends TimeBoard {
 
   private static Widget createItemWidget(ChartItem item) {
     Flow panel = new Flow(STYLE_STAGE_ROW);
-
+    addClickHandler(panel, item.viewName, BeeRowSet.restore(item.beeRowSet).getRow(0).getId());
     panel.addStyleName(STYLE_STAGE_FLOW);
     panel.addStyleName(STYLE_STAGE_FLOW + BeeConst.STRING_MINUS + item.getViewName());
 
@@ -507,7 +524,6 @@ final class ProjectScheduleChart extends TimeBoard {
     }
 
     panel.setTitle(item.getCaption() + BeeConst.STRING_EOL + item.getRange().toString());
-
     if (!BeeUtils.isEmpty(item.getColor())) {
       StyleUtils.setBackgroundColor(panel, item.getColor());
     }
@@ -516,5 +532,15 @@ final class ProjectScheduleChart extends TimeBoard {
 
   private ProjectScheduleChart(Long projectId) {
     this.projectId = projectId;
+  }
+
+  private static void addClickHandler(Flow panel, final String viewName, final Long rowId) {
+    panel.addClickHandler(new ClickHandler() {
+
+      @Override
+      public void onClick(ClickEvent arg0) {
+        RowEditor.open(viewName, rowId, Opener.NEW_TAB);
+      }
+    });
   }
 }

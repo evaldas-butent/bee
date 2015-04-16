@@ -8,6 +8,12 @@ import com.google.common.collect.Multimap;
 import com.google.common.collect.Range;
 import com.google.common.collect.Sets;
 import com.google.common.eventbus.Subscribe;
+import com.google.zxing.BarcodeFormat;
+import com.google.zxing.EncodeHintType;
+import com.google.zxing.WriterException;
+import com.google.zxing.common.ByteMatrix;
+import com.google.zxing.qrcode.QRCodeWriter;
+import com.google.zxing.qrcode.decoder.ErrorCorrectionLevel;
 
 import static com.butent.bee.shared.html.builder.Factory.*;
 import static com.butent.bee.shared.modules.administration.AdministrationConstants.*;
@@ -85,11 +91,18 @@ import com.butent.bee.shared.time.DateTime;
 import com.butent.bee.shared.time.JustDate;
 import com.butent.bee.shared.time.TimeUtils;
 import com.butent.bee.shared.utils.BeeUtils;
+import com.butent.bee.shared.utils.Codec;
 import com.butent.bee.shared.utils.EnumUtils;
 
+import java.awt.Color;
+import java.awt.Graphics2D;
+import java.awt.image.BufferedImage;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.Hashtable;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
@@ -104,6 +117,7 @@ import javax.ejb.Timeout;
 import javax.ejb.Timer;
 import javax.ejb.TimerConfig;
 import javax.ejb.TimerService;
+import javax.imageio.ImageIO;
 import javax.mail.internet.AddressException;
 import javax.mail.internet.InternetAddress;
 
@@ -168,6 +182,16 @@ public class ClassifiersModuleBean implements BeeModule {
     } else if (BeeUtils.same(svc, SVC_GET_COMPANY_TYPE_REPORT)) {
       response = getCompanyTypeReport(reqInfo);
 
+    } else if (BeeUtils.same(svc, SVC_GENERATE_QR_CODE)) {
+      try {
+        response = generateQrCode(reqInfo);
+      } catch (WriterException e) {
+        response = ResponseObject.error(e);
+        e.printStackTrace();
+      } catch (IOException e) {
+        response = ResponseObject.error(e);
+        e.printStackTrace();
+      }
     } else {
       String msg = BeeUtils.joinWords("Commons service not recognized:", svc);
       logger.warning(msg);
@@ -1193,4 +1217,88 @@ public class ClassifiersModuleBean implements BeeModule {
         sys.getIdName(CalendarConstants.TBL_APPOINTMENTS), appointments.getRowIds()));
     qs.updateData(update);
   }
+
+  public ResponseObject generateQrCode(RequestInfo reqInfo) throws WriterException, IOException {
+    final String qrBase64;
+
+    String qrCodeText = "";
+    Map<String, String> values = new HashMap<>();
+    String[] qrValues = null;
+    String[] keys = null;
+    String mobile = reqInfo.getParameter(COL_MOBILE);
+    String email = reqInfo.getParameter(COL_EMAIL);
+    String address = reqInfo.getParameter(COL_ADDRESS);
+    String type = reqInfo.getParameter(QR_TYPE);
+
+    if (type.equals(QR_COMPANY)) {
+      qrValues = new String[] {"MECARD:N:", "TEL:", "EMAIL:", "ADR:"};
+      keys = new String[] {"name", "mobile", "email", "address"};
+      String companyName = reqInfo.getParameter(COL_COMPANY_NAME);
+      values.put("name", companyName);
+      values.put("mobile", mobile);
+      values.put("email", email);
+      values.put("address", address);
+    } else if (type.equals(QR_PERSON)) {
+      qrValues = new String[] {"MECARD:N:", "TEL:", "EMAIL:", "ADR:"};
+      keys = new String[] {"userName", "mobile", "email", "address"};
+      String userName = reqInfo.getParameter(COL_FIRST_NAME);
+      String userLastName = reqInfo.getParameter(COL_LAST_NAME);
+      if (!BeeUtils.isEmpty(userLastName)) {
+        values.put("userName", userLastName + "," + userName);
+      }
+      values.put("userName", userName);
+      values.put("mobile", mobile);
+      values.put("email", email);
+      values.put("address", address);
+    }
+
+    if (!values.isEmpty()) {
+      for (int i = 0; i < values.size(); i++) {
+        if (values.get(keys[i]) != null) {
+          qrCodeText += qrValues[i] + values.get(keys[i]) + ";";
+        }
+      }
+    }
+
+    qrBase64 = qrCodeGenerator(qrCodeText);
+    return ResponseObject.response(qrBase64);
+  }
+
+  public String qrCodeGenerator(String qrCodeText) throws WriterException, IOException {
+    final String qrBase64;
+    int size = 500;
+    String fileType = "png";
+    ByteArrayOutputStream baos = new ByteArrayOutputStream();
+    Hashtable<EncodeHintType, Object> hintMap = new Hashtable<>();
+    hintMap.put(EncodeHintType.ERROR_CORRECTION, ErrorCorrectionLevel.M);
+    QRCodeWriter qrCodeWriter = new QRCodeWriter();
+    hintMap.put(EncodeHintType.CHARACTER_SET, "utf-8");
+
+    ByteMatrix byteMatrix =
+        qrCodeWriter.encode(qrCodeText, BarcodeFormat.QR_CODE, size, size, hintMap);
+    int matrixWidth = byteMatrix.getWidth();
+    BufferedImage image = new BufferedImage(matrixWidth, matrixWidth, BufferedImage.TYPE_INT_RGB);
+    image.createGraphics();
+
+    Graphics2D graphics = (Graphics2D) image.getGraphics();
+    graphics.setColor(Color.WHITE);
+    graphics.fillRect(0, 0, matrixWidth, matrixWidth);
+    graphics.setColor(Color.BLACK);
+
+    for (int i = 0; i < matrixWidth; i++) {
+      for (int j = 0; j < matrixWidth; j++) {
+        if (byteMatrix.get(i, j) != -1) {
+          graphics.fillRect(i, j, 1, 1);
+        }
+      }
+    }
+
+    ImageIO.write(image, fileType, baos);
+    baos.flush();
+    byte[] imageInByte = baos.toByteArray();
+    baos.close();
+    qrBase64 = Codec.toBase64(imageInByte);
+    return qrBase64;
+  }
+
 }

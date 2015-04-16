@@ -1092,7 +1092,7 @@ public class ImportBean {
                   Date date = cell.getDateCellValue();
 
                   if (date != null) {
-                    value = new DateTime(date).toDateString();
+                    value = BeeUtils.toString(date.getTime());
                   }
                 } else {
                   value = BeeUtils.toString(cell.getNumericCellValue());

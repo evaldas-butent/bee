@@ -23,4 +23,10 @@
     <DataColumn name="Returned" visible="false" />
     <DataColumn name="Description" visible="false" />
   </g:columns>
+  
+  <g:rowStyle>
+    <ui:inline>="font-weight: bolder"</ui:inline>
+    <ui:expression>row.Document == row.ProjectContract</ui:expression>
+  </g:rowStyle>
+  
 </g:Grid>

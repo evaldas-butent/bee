@@ -63,14 +63,14 @@ public class DefaultConfiguration<T> implements Configuration<T> {
    * Convenience constructor, using a default for the alignmentInLevel.
    */
   public DefaultConfiguration(double gapBetweenLevels, double gapBetweenNodes, Location location) {
-    this(gapBetweenLevels, gapBetweenNodes, location, AlignmentInLevel.Center);
+    this(gapBetweenLevels, gapBetweenNodes, location, AlignmentInLevel.CENTER);
   }
 
   /**
    * Convenience constructor, using a default for the rootLocation and the alignmentInLevel.
    */
   public DefaultConfiguration(double gapBetweenLevels, double gapBetweenNodes) {
-    this(gapBetweenLevels, gapBetweenNodes, Location.Top, AlignmentInLevel.Center);
+    this(gapBetweenLevels, gapBetweenNodes, Location.TOP, AlignmentInLevel.CENTER);
   }
 
   // -----------------------------------------------------------------------

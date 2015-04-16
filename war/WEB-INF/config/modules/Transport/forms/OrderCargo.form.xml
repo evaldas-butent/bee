@@ -25,7 +25,7 @@
       </HorizontalPanel>
     </FlowPanel>
     <FlowPanel class="flexBox-horizontal" style="&section;">
-      <TabbedPages style="height: 525px; width: 1250px">
+      <TabbedPages style="height: 525px; width: 1250px" resizable="false">
         <page>
           <text>=cargoInformation</text>
           <Table style="border-spacing: 5px;">

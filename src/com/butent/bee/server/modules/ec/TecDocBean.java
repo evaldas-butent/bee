@@ -371,7 +371,7 @@ public class TecDocBean implements HasTimerService {
       cb.asynchronousCall(new AsynchronousRunnable() {
         @Override
         public String getId() {
-          return BeeUtils.joinWords(TecDocBean.class.getName(), PRM_BUTENT_INTERVAL);
+          return BeeUtils.join("-", TecDocBean.class.getName(), PRM_BUTENT_INTERVAL);
         }
 
         @Override
@@ -469,7 +469,7 @@ public class TecDocBean implements HasTimerService {
       cb.asynchronousCall(new AsynchronousRunnable() {
         @Override
         public String getId() {
-          return BeeUtils.joinWords(TecDocBean.class.getName(), PRM_MOTONET_HOURS);
+          return BeeUtils.join("-", TecDocBean.class.getName(), PRM_MOTONET_HOURS);
         }
 
         @Override
