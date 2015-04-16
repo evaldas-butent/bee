@@ -53,16 +53,6 @@
     <Label for="Sent" />
     <InputDateTime source="Sent" />
   </row>
-  <row>
-    <cell colSpan="3">
-      <CheckBox source="Returned" text="=documentReturned" />
-    </cell>
-    <TextLabel source="ReturnedUser" style="margin-left: 10px;">
-      <renderToken source="ReturnedFirstName" />
-      <renderToken source="ReturnedLastName" />
-    </TextLabel>
-    <DateTimeLabel source="ReturnedDate" format="DATE_LONG" style="margin-left: -35px;"/>
-  </row>
 
   <row>
     <Label for="Description" />

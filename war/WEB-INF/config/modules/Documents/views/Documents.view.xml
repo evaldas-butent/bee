@@ -45,7 +45,6 @@
 
     <SimpleColumn name="Received" />
     <SimpleColumn name="Sent" />
-    <SimpleColumn name="Returned" />
 
     <SimpleColumn name="Description" />
 
@@ -54,18 +53,6 @@
       <SimpleColumn name="Content" />
     </SimpleJoin>
 
-    <SimpleColumn name="ReturnedUser" />
-    <SimpleJoin name="ReturnedUser" joinType="LEFT">
-      <SimpleColumn name="CompanyPerson" alias="ReturnedPerson" />
-      <SimpleJoin name="CompanyPerson" joinType="LEFT">
-        <SimpleJoin name="Person" joinType="LEFT">
-          <SimpleColumn alias="ReturnedFirstName" name="FirstName" />
-          <SimpleColumn alias="ReturnedLastName" name="LastName" />
-        </SimpleJoin>
-      </SimpleJoin>
-    </SimpleJoin>
-    
-    <SimpleColumn name="ReturnedDate" />
   </Columns>
 </View>
  
