@@ -416,6 +416,7 @@ public class TreeItem extends UIObject implements HasTreeItems, HasIdentity {
     if (this.selected == selected) {
       return;
     }
+
     this.selected = selected;
     setStyleName(getContentElem(), STYLE_PREFIX + "selected", selected);
   }
