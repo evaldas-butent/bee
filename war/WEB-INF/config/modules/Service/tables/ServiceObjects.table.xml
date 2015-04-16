@@ -8,8 +8,8 @@
     <Relation name="Category" relation="ServiceTree" notNull="true" label="=category" />
     <String name="Address" precision="100" notNull="true" label="Valst.Nr" />
 
-    <Relation name="Customer" relation="Companies" label="=customer" />
-    <Relation name="Contractor" relation="Companies" label="=svcContractor" />
+    <Relation name="Customer" relation="Companies" label="=svcOwner" />
+    <Relation name="Contractor" relation="Companies" label="=svcUser" />
     
     <Long name="ExternalCode" unique="true" label="=externalCode" />
   </Fields>
