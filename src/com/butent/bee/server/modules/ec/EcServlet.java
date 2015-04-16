@@ -1,10 +1,5 @@
 package com.butent.bee.server.modules.ec;
 
-import com.google.common.net.HttpHeaders;
-
-import static com.butent.bee.shared.html.builder.Factory.*;
-import static com.butent.bee.shared.modules.ec.EcConstants.*;
-
 import com.butent.bee.server.LoginServlet;
 import com.butent.bee.server.ProxyBean;
 import com.butent.bee.server.data.QueryServiceBean;
@@ -25,31 +20,28 @@ import com.butent.bee.shared.data.filter.IdFilter;
 import com.butent.bee.shared.html.builder.Document;
 import com.butent.bee.shared.html.builder.Element;
 import com.butent.bee.shared.html.builder.Node;
-import com.butent.bee.shared.html.builder.elements.Datalist;
-import com.butent.bee.shared.html.builder.elements.Div;
-import com.butent.bee.shared.html.builder.elements.Form;
-import com.butent.bee.shared.html.builder.elements.Input;
+import com.butent.bee.shared.html.builder.elements.*;
 import com.butent.bee.shared.html.builder.elements.Input.Type;
-import com.butent.bee.shared.html.builder.elements.Select;
-import com.butent.bee.shared.html.builder.elements.Span;
-import com.butent.bee.shared.html.builder.elements.Tbody;
 import com.butent.bee.shared.i18n.LocalizableConstants;
 import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.i18n.SupportedLocale;
 import com.butent.bee.shared.io.Paths;
 import com.butent.bee.shared.modules.classifiers.ClassifierConstants;
-import com.butent.bee.shared.modules.ec.EcConstants.EcClientType;
+import com.butent.bee.shared.modules.ec.EcConstants.*;
 import com.butent.bee.shared.time.TimeUtils;
 import com.butent.bee.shared.ui.UserInterface;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.EnumUtils;
-
-import java.util.Map;
+import com.google.common.net.HttpHeaders;
 
 import javax.ejb.EJB;
 import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import java.util.Map;
+
+import static com.butent.bee.shared.html.builder.Factory.*;
+import static com.butent.bee.shared.modules.ec.EcConstants.*;
 
 @WebServlet(urlPatterns = "/ec/*")
 @SuppressWarnings("serial")
@@ -178,6 +170,10 @@ public class EcServlet extends LoginServlet {
             input().type(Type.HIDDEN).id("register-language").name(HttpConst.PARAM_LOCALE));
 
     return div().addClass(STYLE_PREFIX + "Command-container").append(form);
+  }
+
+  @Override protected boolean isProtected(HttpServletRequest req) {
+    return !BeeUtils.same(req.getPathInfo(), PATH_REGISTER) && super.isProtected(req);
   }
 
   private Node branchSelector(String label) {
