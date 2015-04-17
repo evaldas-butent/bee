@@ -1,5 +1,9 @@
 package com.butent.bee.server;
 
+import com.google.common.base.Strings;
+
+import static com.butent.bee.shared.html.builder.Factory.*;
+
 import com.butent.bee.server.data.UserServiceBean;
 import com.butent.bee.server.http.HttpConst;
 import com.butent.bee.server.http.HttpUtils;
@@ -8,9 +12,13 @@ import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.communication.CommUtils;
 import com.butent.bee.shared.html.builder.Document;
 import com.butent.bee.shared.html.builder.Node;
-import com.butent.bee.shared.html.builder.elements.*;
+import com.butent.bee.shared.html.builder.elements.Div;
+import com.butent.bee.shared.html.builder.elements.Form;
+import com.butent.bee.shared.html.builder.elements.Input;
 import com.butent.bee.shared.html.builder.elements.Input.Type;
 import com.butent.bee.shared.html.builder.elements.Link.Rel;
+import com.butent.bee.shared.html.builder.elements.Meta;
+import com.butent.bee.shared.html.builder.elements.Script;
 import com.butent.bee.shared.i18n.LocalizableConstants;
 import com.butent.bee.shared.i18n.SupportedLocale;
 import com.butent.bee.shared.io.Paths;
@@ -21,7 +29,12 @@ import com.butent.bee.shared.ui.UiConstants;
 import com.butent.bee.shared.ui.UserInterface;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.Codec;
-import com.google.common.base.Strings;
+
+import java.io.File;
+import java.io.IOException;
+import java.io.StringWriter;
+import java.io.UnsupportedEncodingException;
+import java.util.List;
 
 import javax.ejb.EJB;
 import javax.json.Json;
@@ -33,13 +46,6 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
-import java.io.File;
-import java.io.IOException;
-import java.io.StringWriter;
-import java.io.UnsupportedEncodingException;
-import java.util.List;
-
-import static com.butent.bee.shared.html.builder.Factory.*;
 
 // CHECKSTYLE:OFF
 @WebServlet(urlPatterns = {"/index.html", "/index.htm", "/index.jsp"})

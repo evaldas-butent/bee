@@ -1,5 +1,13 @@
 package com.butent.bee.server.modules.transport;
 
+import com.google.common.collect.Lists;
+import com.google.common.net.HttpHeaders;
+
+import static com.butent.bee.shared.html.builder.Factory.*;
+import static com.butent.bee.shared.modules.administration.AdministrationConstants.*;
+import static com.butent.bee.shared.modules.classifiers.ClassifierConstants.*;
+import static com.butent.bee.shared.modules.transport.TransportConstants.*;
+
 import com.butent.bee.server.LoginServlet;
 import com.butent.bee.server.ProxyBean;
 import com.butent.bee.server.data.BeeView;
@@ -24,8 +32,16 @@ import com.butent.bee.shared.data.view.Order;
 import com.butent.bee.shared.html.builder.Document;
 import com.butent.bee.shared.html.builder.Element;
 import com.butent.bee.shared.html.builder.Node;
-import com.butent.bee.shared.html.builder.elements.*;
+import com.butent.bee.shared.html.builder.elements.Datalist;
+import com.butent.bee.shared.html.builder.elements.Div;
+import com.butent.bee.shared.html.builder.elements.Fieldset;
+import com.butent.bee.shared.html.builder.elements.Form;
+import com.butent.bee.shared.html.builder.elements.Input;
 import com.butent.bee.shared.html.builder.elements.Input.Type;
+import com.butent.bee.shared.html.builder.elements.Select;
+import com.butent.bee.shared.html.builder.elements.Span;
+import com.butent.bee.shared.html.builder.elements.Tbody;
+import com.butent.bee.shared.html.builder.elements.Textarea;
 import com.butent.bee.shared.i18n.LocalizableConstants;
 import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.io.Paths;
@@ -36,21 +52,15 @@ import com.butent.bee.shared.time.TimeUtils;
 import com.butent.bee.shared.ui.UiConstants;
 import com.butent.bee.shared.ui.UserInterface;
 import com.butent.bee.shared.utils.BeeUtils;
-import com.google.common.collect.Lists;
-import com.google.common.net.HttpHeaders;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
 
 import javax.ejb.EJB;
 import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-
-import static com.butent.bee.shared.html.builder.Factory.*;
-import static com.butent.bee.shared.modules.administration.AdministrationConstants.*;
-import static com.butent.bee.shared.modules.classifiers.ClassifierConstants.*;
-import static com.butent.bee.shared.modules.transport.TransportConstants.*;
 
 @WebServlet(urlPatterns = "/tr/*")
 @SuppressWarnings("serial")
