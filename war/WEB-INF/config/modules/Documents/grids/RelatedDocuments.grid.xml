@@ -20,7 +20,6 @@
     <DataColumn name="RegistrationNumber" visible="false" />
     <DataColumn name="Received" visible="false" />
     <DataColumn name="Sent" visible="false" />
-    <DataColumn name="Returned" visible="false" />
     <DataColumn name="Description" visible="false" />
   </g:columns>
   

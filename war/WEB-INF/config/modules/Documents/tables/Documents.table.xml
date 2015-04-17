@@ -22,13 +22,9 @@
 
     <DateTime name="Received" label="=documentReceived" />
     <DateTime name="Sent" label="=documentSent" />
-    <Boolean name="Returned" label="=documentReturned" />
 
     <Text name="Description" label="=documentDescription" />
 
     <Relation name="Data" relation="DocumentData" unique="true" label="=documentData" editable="true" />
-    
-    <Relation name="ReturnedUser" relation="Users"/>
-    <DateTime name="ReturnedDate" />
   </Fields>
 </Table>
