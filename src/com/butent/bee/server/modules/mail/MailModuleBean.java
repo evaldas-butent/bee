@@ -894,11 +894,10 @@ public class MailModuleBean implements BeeModule, HasTimerService {
               loc.mailTo() + ": " + account.getAddress());
 
           for (SimpleRow part : rs) {
-            String text = part.getValue(COL_HTML_CONTENT);
+            String text = BeeUtils.notEmpty(part.getValue(COL_HTML_CONTENT),
+                part.getValue(COL_CONTENT));
 
-            if (BeeUtils.isEmpty(text)) {
-              text = part.getValue(COL_CONTENT);
-            } else {
+            if (!BeeUtils.isEmpty(text)) {
               content += "<br><br>" + text;
             }
           }
