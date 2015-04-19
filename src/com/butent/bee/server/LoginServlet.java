@@ -250,7 +250,7 @@ public class LoginServlet extends HttpServlet {
         pass.addClass(STYLE_PREFIX + "Input").addClass(STYLE_PREFIX + "Input-password")
             .type(Type.PASSWORD).name(HttpConst.PARAM_PASSWORD).id("pswd")
             .maxLength(UiConstants.MAX_PASSWORD_LENGTH).required()
-    );
+        );
 
     if (!BeeUtils.isEmpty(userName)) {
       user.addClass(STYLE_PREFIX + "Input-user" + "-Invalid");
@@ -379,8 +379,7 @@ public class LoginServlet extends HttpServlet {
           }
         }
         if (ok) {
-          if (!usr.validateHost(req) ||
-              !usr.authenticateUser(userName, password)) {
+          if (!usr.validateHost(req) || !usr.authenticateUser(userName, password)) {
             try {
               req.logout();
               session.invalidate();

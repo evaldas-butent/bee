@@ -197,7 +197,7 @@ public final class ClassifierKeeper {
       public void onResponse(ResponseObject response) {
         String qrBase64 = response.getResponseAsString();
         qrCodeImage.setUrl("data:image/png;base64," + qrBase64);
-        Global.showModalWidget(Localized.getConstants().qrcode(), qrCodeImage);
+        Global.showModalWidget(Localized.getConstants().qrCode(), qrCodeImage);
       }
     });
 

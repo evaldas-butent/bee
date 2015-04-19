@@ -47,7 +47,6 @@ import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.io.Paths;
 import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogUtils;
-import com.butent.bee.shared.modules.transport.TransportConstants.*;
 import com.butent.bee.shared.time.TimeUtils;
 import com.butent.bee.shared.ui.UiConstants;
 import com.butent.bee.shared.ui.UserInterface;
@@ -242,7 +241,8 @@ public class TransportSelfService extends LoginServlet {
     return div().addClass(STYLE_PREFIX + "Command-container").append(register, query);
   }
 
-  @Override protected boolean isProtected(HttpServletRequest req) {
+  @Override
+  protected boolean isProtected(HttpServletRequest req) {
     return !BeeUtils.inListSame(req.getPathInfo(), PATH_REGISTER, PATH_QUERY)
         && super.isProtected(req);
   }
