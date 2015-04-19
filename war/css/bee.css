@@ -531,7 +531,6 @@
   top: 0;
   bottom: 0;
   overflow: auto;
-/*   margin-left: 10px; */
 }
 
 .bee-CellGridCell {
@@ -1323,10 +1322,6 @@
 .bee-ModalGrid > .bee-GridContainer,
 .flexible > .bee-GridContainer {
   height: 100%;
-}
-
-.bee-Workspace-container {
-/*   margin-right: 25px; */
 }
 
 .bee-Workspace-tabPanel {
@@ -2293,16 +2288,6 @@
   margin-left: 1em;
   cursor: pointer;
 }
-
-.bee-SlideDeck-progress::-webkit-progress-bar {
-/*   background-color: #eee; */
-}
-.bee-SlideDeck-progress::-webkit-progress-value {
-/*   background-color: #bada55; */
-} 
-.bee-SlideDeck-progress::-moz-progress-bar {
-/*   background-color: #bada55; */
-} 
 
 .bee-SlideDeck-repeat {
   margin-left: 0.5em;
