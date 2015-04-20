@@ -8,6 +8,7 @@ import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.data.Queries;
 import com.butent.bee.client.data.RowCallback;
 import com.butent.bee.client.event.EventUtils;
+import com.butent.bee.client.presenter.Presenter;
 import com.butent.bee.client.ui.FormFactory.WidgetDescriptionCallback;
 import com.butent.bee.client.ui.IdentifiableWidget;
 import com.butent.bee.client.view.form.FormView;
@@ -24,9 +25,11 @@ import com.butent.bee.shared.data.event.DataChangeEvent;
 import com.butent.bee.shared.data.event.HandlesUpdateEvents;
 import com.butent.bee.shared.data.event.RowInsertEvent;
 import com.butent.bee.shared.data.event.RowUpdateEvent;
+import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.modules.classifiers.ClassifierConstants;
 import com.butent.bee.shared.modules.tasks.TaskConstants;
 import com.butent.bee.shared.time.TimeUtils;
+import com.butent.bee.shared.ui.Action;
 import com.butent.bee.shared.utils.BeeUtils;
 
 import java.util.ArrayList;
@@ -55,7 +58,7 @@ class ProjectStageForm extends AbstractFormInterceptor implements DataChangeEven
         if (widget instanceof InputText) {
           wExpectedTasksDuration = (InputText) widget;
         }
-      break;
+        break;
     }
   }
 
@@ -70,6 +73,39 @@ class ProjectStageForm extends AbstractFormInterceptor implements DataChangeEven
     if (getTimeUnits() != null) {
       showComputedTimes(form, row, false);
     }
+  }
+
+  @Override
+  public boolean beforeAction(Action action, Presenter presenter) {
+    if (action.equals(Action.SAVE) && getFormView() != null && getActiveRow() != null) {
+      FormView form = getFormView();
+      IsRow row = getActiveRow();
+      boolean valid = true;
+      Long startDate = null;
+      Long endDate = null;
+      int idxStartDate = form.getDataIndex(COL_PROJECT_START_DATE);
+      int idxEndDate = form.getDataIndex(COL_PROJECT_END_DATE);
+
+      if (idxStartDate > -1) {
+        startDate = row.getLong(idxStartDate);
+      }
+
+      if (idxEndDate > -1) {
+        endDate = row.getLong(idxEndDate);
+      }
+
+      if (startDate != null && endDate != null) {
+        if (startDate.longValue() <= endDate.longValue()) {
+          valid = true;
+        } else {
+          form.notifySevere(
+              Localized.getConstants().crmFinishDateMustBeGreaterThanStart());
+          valid = false;
+        }
+      }
+      return valid;
+    }
+    return super.beforeAction(action, presenter);
   }
 
   @Override
