@@ -28,10 +28,12 @@ import com.butent.bee.shared.time.DateTime;
 import com.butent.bee.shared.ui.UiConstants;
 import com.butent.bee.shared.ui.UserInterface;
 import com.butent.bee.shared.utils.BeeUtils;
+import com.butent.bee.shared.utils.Codec;
 
 import java.io.File;
 import java.io.IOException;
 import java.io.StringWriter;
+import java.io.UnsupportedEncodingException;
 import java.util.List;
 
 import javax.ejb.EJB;
@@ -43,6 +45,7 @@ import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import javax.servlet.http.HttpSession;
 
 // CHECKSTYLE:OFF
 @WebServlet(urlPatterns = {"/index.html", "/index.htm", "/index.jsp"})
@@ -61,12 +64,8 @@ public class LoginServlet extends HttpServlet {
   protected static final String FORM_NAME = "login";
 
   protected static final String STYLE_PREFIX = BeeConst.CSS_CLASS_PREFIX + "SignIn-";
-
-  private static BeeLogger logger = LogUtils.getLogger(LoginServlet.class);
-
   private static final String FAV_ICON = "favicon.ico";
   private static final String LOGO = "bs-logo.png";
-
   private static final String USER_NAME_LABEL_ID = "user-name-label";
   private static final String PASSWORD_LABEL_ID = "password-label";
   private static final String ERROR_MESSAGE_ID = "error";
@@ -75,6 +74,9 @@ public class LoginServlet extends HttpServlet {
   private static final String INFO_HELP_ID = "info-help";
   private static final String USER_NAME_INPUT_ID = "user";
   private static final String PASSWORD_INPUT_ID = "pswd";
+  private static BeeLogger logger = LogUtils.getLogger(LoginServlet.class);
+  @EJB
+  UserServiceBean usr;
 
   protected static String event(String func, String param) {
     return func + BeeConst.STRING_LEFT_PARENTHESIS + BeeConst.STRING_QUOT + param
@@ -190,9 +192,6 @@ public class LoginServlet extends HttpServlet {
     return doc.buildLines();
   }
 
-  @EJB
-  UserServiceBean userService;
-
   public String getLoginForm(HttpServletRequest request, String userName) {
 
     Input user = new Input();
@@ -287,13 +286,13 @@ public class LoginServlet extends HttpServlet {
   @Override
   protected void doGet(HttpServletRequest req, HttpServletResponse resp)
       throws ServletException, IOException {
-    doService(req, resp);
+    authenticate(req, resp);
   }
 
   @Override
   protected void doPost(HttpServletRequest req, HttpServletResponse resp)
       throws ServletException, IOException {
-    doService(req, resp);
+    authenticate(req, resp);
   }
 
   protected void doService(HttpServletRequest req, HttpServletResponse resp) {
@@ -321,14 +320,14 @@ public class LoginServlet extends HttpServlet {
         SupportedLocale loginLocale = SupportedLocale.getByLanguage(language);
 
         if (loginLocale != null && loginLocale != userLocale) {
-          userService.updateUserLocale(remoteUser, loginLocale);
+          usr.updateUserLocale(remoteUser, loginLocale);
           userLocale = loginLocale;
         }
       }
 
       UserInterface ui = userInterface;
       if (ui == null) {
-        ui = userService.getUserInterface(remoteUser);
+        ui = usr.getUserInterface(remoteUser);
       }
       if (ui == null) {
         ui = UserInterface.DEFAULT;
@@ -348,12 +347,66 @@ public class LoginServlet extends HttpServlet {
     return null;
   }
 
+  /**
+   * @param req
+   */
+  protected boolean isProtected(HttpServletRequest req) {
+    return true;
+  }
+
+  private void authenticate(HttpServletRequest req, HttpServletResponse resp) {
+    try {
+      req.setCharacterEncoding(BeeConst.CHARSET_UTF8);
+    } catch (UnsupportedEncodingException e) {
+      logger.error(e);
+    }
+    HttpSession session = req.getSession();
+    boolean ok = !isProtected(req) || req.getUserPrincipal() != null;
+    String userName = null;
+
+    if (!ok) {
+      userName = BeeUtils.trim(req.getParameter(HttpConst.PARAM_USER));
+      String password = Codec.encodePassword(req.getParameter(HttpConst.PARAM_PASSWORD));
+      ok = BeeUtils.allNotEmpty(userName, password);
+
+      if (ok) {
+        try {
+          req.login(userName, userName);
+        } catch (ServletException e1) {
+          try {
+            logger.info(userName, "login failed, trying with password...");
+            req.login(userName, password);
+          } catch (ServletException e2) {
+            logger.error(e2);
+            ok = false;
+          }
+        }
+        if (ok) {
+          if (!usr.validateHost(req) || !usr.authenticateUser(userName, password)) {
+            try {
+              req.logout();
+              session.invalidate();
+            } catch (ServletException e) {
+              logger.error(e);
+            }
+            ok = false;
+          }
+        }
+      }
+    }
+    if (ok) {
+      doService(req, resp);
+    } else {
+      HttpUtils.sendResponse(resp, getLoginForm(req, userName));
+    }
+  }
+
   private SupportedLocale getUserLocale(String userName) {
-    return userService.isUser(userName) ? userService.getUserLocale(userName) : null;
+    return usr.isUser(userName) ? usr.getUserLocale(userName) : null;
   }
 
   private boolean isBlocked(String userName) {
-    return !BeeUtils.isEmpty(userName) && userService.isUser(userName)
-        && BeeUtils.isTrue(userService.isBlocked(userName));
+    return !BeeUtils.isEmpty(userName) && usr.isUser(userName)
+        && BeeUtils.isTrue(usr.isBlocked(userName));
   }
 }

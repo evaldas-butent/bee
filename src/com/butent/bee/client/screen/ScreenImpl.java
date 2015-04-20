@@ -49,6 +49,7 @@ import com.butent.bee.client.ui.IdentifiableWidget;
 import com.butent.bee.client.ui.Opener;
 import com.butent.bee.client.ui.UiHelper;
 import com.butent.bee.client.utils.BrowsingContext;
+import com.butent.bee.client.widget.CustomDiv;
 import com.butent.bee.client.widget.FaLabel;
 import com.butent.bee.client.widget.Image;
 import com.butent.bee.client.widget.Label;
@@ -84,8 +85,8 @@ import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.ExtendedProperty;
 import com.butent.bee.shared.utils.NameUtils;
 
-import java.util.EnumMap;
 import java.util.EnumSet;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -134,10 +135,10 @@ public class ScreenImpl implements Screen {
 
   private Panel progressPanel;
 
-  private final Map<Direction, Integer> hidden = new EnumMap<>(Direction.class);
+  private final Map<String, Integer> hidden = new HashMap<>();
 
   private Toggle northToggle;
-  private Toggle westToggle;
+  private Toggle eastWestToggle;
 
   private Toggle maximizer;
 
@@ -263,8 +264,8 @@ public class ScreenImpl implements Screen {
     List<ExtendedProperty> info = getWorkspace().getExtendedInfo();
 
     if (!hidden.isEmpty()) {
-      for (Map.Entry<Direction, Integer> entry : hidden.entrySet()) {
-        info.add(new ExtendedProperty("Hidden", entry.getKey().name(),
+      for (Map.Entry<String, Integer> entry : hidden.entrySet()) {
+        info.add(new ExtendedProperty("Hidden", entry.getKey(),
             BeeUtils.toString(entry.getValue())));
       }
     }
@@ -279,7 +280,15 @@ public class ScreenImpl implements Screen {
 
   @Override
   public Set<Direction> getHiddenDirections() {
-    return hidden.keySet();
+    Set<Direction> directions = EnumSet.noneOf(Direction.class);
+
+    for (String id : hidden.keySet()) {
+      Direction direction = getScreenPanel().getWidgetDirection(id);
+      if (direction != null) {
+        directions.add(direction);
+      }
+    }
+    return directions;
   }
 
   @Override
@@ -318,7 +327,7 @@ public class ScreenImpl implements Screen {
 
     if (!BeeUtils.isEmpty(directions)) {
       for (Direction direction : directions) {
-        changed |= expand(direction, false);
+        changed |= expand(direction);
       }
     }
 
@@ -573,7 +582,7 @@ public class ScreenImpl implements Screen {
       getCentralScrutinizer().activateShell();
 
     } else if (getScreenPanel() != null && getScreenPanel().getDirectionSize(Direction.WEST) <= 0) {
-      List<Widget> children = getScreenPanel().getDirectionChildren(Direction.WEST);
+      List<Widget> children = getScreenPanel().getDirectionChildren(Direction.WEST, false);
       for (Widget widget : children) {
         if (UiHelper.isOrHasChild(widget, Shell.class)) {
           getScreenPanel().setDirectionSize(Direction.WEST, getWidth() / 5, true);
@@ -631,18 +640,21 @@ public class ScreenImpl implements Screen {
         BeeConst.CSS_CLASS_PREFIX + "Workspace-expander");
 
     Toggle toggle = new Toggle(FontAwesome.LONG_ARROW_LEFT, FontAwesome.LONG_ARROW_RIGHT,
-        BeeConst.CSS_CLASS_PREFIX + "west-toggle", false);
-    setWestToggle(toggle);
+        BeeConst.CSS_CLASS_PREFIX + "east-west-toggle", false);
+    setEastWestToggle(toggle);
 
     toggle.addClickHandler(new ClickHandler() {
       @Override
       public void onClick(ClickEvent event) {
-        if (getWestToggle().isChecked()) {
-          expand(Direction.WEST, true);
+        if (getEastWestToggle().isChecked()) {
+          expand(Direction.WEST);
+          expand(Direction.EAST);
         } else {
-          compress(Direction.WEST, true);
+          compress(Direction.WEST);
+          compress(Direction.EAST);
         }
 
+        getScreenPanel().doLayout();
         refreshExpanders();
       }
     });
@@ -657,11 +669,12 @@ public class ScreenImpl implements Screen {
       @Override
       public void onClick(ClickEvent event) {
         if (getNorthToggle().isChecked()) {
-          expand(Direction.NORTH, true);
+          expand(Direction.NORTH);
         } else {
-          compress(Direction.NORTH, true);
+          compress(Direction.NORTH);
         }
 
+        getScreenPanel().doLayout();
         refreshExpanders();
       }
     });
@@ -677,12 +690,12 @@ public class ScreenImpl implements Screen {
       public void onClick(ClickEvent event) {
         if (getMaximizer().isChecked()) {
           for (Direction direction : hidableDirections) {
-            expand(direction, false);
+            expand(direction);
           }
 
         } else {
-          for (Map.Entry<Direction, Integer> entry : hidden.entrySet()) {
-            getScreenPanel().setDirectionSize(entry.getKey(), entry.getValue(), false);
+          for (Map.Entry<String, Integer> entry : hidden.entrySet()) {
+            getScreenPanel().setWidgetSize(entry.getKey(), entry.getValue(), false);
           }
           hidden.clear();
         }
@@ -771,6 +784,11 @@ public class ScreenImpl implements Screen {
       p.addEast(east.getA(), east.getB());
     }
 
+    int eastMargin = getEastMargin();
+    if (eastMargin > 0) {
+      p.addEast(new CustomDiv(BeeConst.CSS_CLASS_PREFIX + "WorkspaceEastMargin"), eastMargin);
+    }
+
     IdentifiableWidget center = initCenter();
     if (center != null) {
       p.add(center);
@@ -793,6 +811,10 @@ public class ScreenImpl implements Screen {
       setUserPhotoContainer(photoContainer);
     }
     return userContainer;
+  }
+
+  protected int getEastMargin() {
+    return 25;
   }
 
   protected int getNorthHeight(int defHeight) {
@@ -1033,33 +1055,58 @@ public class ScreenImpl implements Screen {
     getScreenPanel().setWidgetSize(getProgressPanel(), 32);
   }
 
-  private boolean compress(Direction direction, boolean doLayout) {
-    Integer size = hidden.remove(direction);
+  private boolean compress(Direction direction) {
+    Map<String, Integer> children = new HashMap<>();
 
-    if (BeeUtils.isPositive(size)) {
-      getScreenPanel().setDirectionSize(direction, size, doLayout);
-      return true;
+    for (Map.Entry<String, Integer> entry : hidden.entrySet()) {
+      if (getScreenPanel().getWidgetDirection(entry.getKey()) == direction) {
+        children.put(entry.getKey(), entry.getValue());
+      }
+    }
+
+    if (children.isEmpty()) {
+      return false;
 
     } else {
-      return false;
+      for (Map.Entry<String, Integer> entry : children.entrySet()) {
+        String id = entry.getKey();
+        Integer size = entry.getValue();
+
+        if (BeeUtils.isPositive(size)) {
+          getScreenPanel().setWidgetSize(id, size, false);
+        }
+
+        hidden.remove(id);
+      }
+      return true;
     }
   }
 
-  private boolean expand(Direction direction, boolean doLayout) {
-    int size = getScreenPanel().getDirectionSize(direction);
+  private boolean expand(Direction direction) {
+    List<Widget> children = getScreenPanel().getDirectionChildren(direction, false);
+    int count = 0;
 
-    if (size > 0) {
-      hidden.put(direction, size);
-      getScreenPanel().setDirectionSize(direction, 0, doLayout);
-      return true;
+    for (Widget child : children) {
+      String id = DomUtils.getId(child);
+      int size = getScreenPanel().getWidgetSize(child);
 
-    } else {
-      return false;
+      if (!BeeUtils.isEmpty(id) && size > 0) {
+        getScreenPanel().setWidgetSize(child, 0);
+        hidden.put(id, size);
+
+        count++;
+      }
     }
+
+    return count > 0;
   }
 
   private CentralScrutinizer getCentralScrutinizer() {
     return centralScrutinizer;
+  }
+
+  private Toggle getEastWestToggle() {
+    return eastWestToggle;
   }
 
   private Toggle getMaximizer() {
@@ -1086,29 +1133,28 @@ public class ScreenImpl implements Screen {
     return userSignature;
   }
 
-  private Toggle getWestToggle() {
-    return westToggle;
-  }
-
   private void refreshExpanders() {
     boolean checked;
     String title;
 
-    if (getWestToggle() != null) {
-      checked = hidden.containsKey(Direction.WEST);
+    Set<Direction> hiddenDirections = getHiddenDirections();
+
+    if (getEastWestToggle() != null) {
+      checked = hiddenDirections.contains(Direction.EAST)
+          || hiddenDirections.contains(Direction.WEST);
 
       title = checked
           ? Localized.getConstants().actionWorkspaceRestoreSize()
           : Localized.getConstants().actionWorkspaceEnlargeToLeft();
-      getWestToggle().setTitle(title);
+      getEastWestToggle().setTitle(title);
 
-      if (getWestToggle().isChecked() != checked) {
-        getWestToggle().setChecked(checked);
+      if (getEastWestToggle().isChecked() != checked) {
+        getEastWestToggle().setChecked(checked);
       }
     }
 
     if (getNorthToggle() != null) {
-      checked = hidden.containsKey(Direction.NORTH);
+      checked = hiddenDirections.contains(Direction.NORTH);
 
       title = checked
           ? Localized.getConstants().actionWorkspaceRestoreSize()
@@ -1148,16 +1194,16 @@ public class ScreenImpl implements Screen {
     this.commandPanel = commandPanel;
   }
 
+  private void setEastWestToggle(Toggle eastWestToggle) {
+    this.eastWestToggle = eastWestToggle;
+  }
+
   private void setMaximizer(Toggle maximizer) {
     this.maximizer = maximizer;
   }
 
   private void setNorthToggle(Toggle northToggle) {
     this.northToggle = northToggle;
-  }
-
-  private void setWestToggle(Toggle westToggle) {
-    this.westToggle = westToggle;
   }
 
   private void setWorkspace(Workspace workspace) {

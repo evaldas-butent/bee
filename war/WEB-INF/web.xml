@@ -4,31 +4,8 @@
     <session-timeout>120</session-timeout>
   </session-config>
 
-  <security-constraint>
-    <web-resource-collection>
-      <web-resource-name>Protected</web-resource-name>
-      <url-pattern>/*</url-pattern>
-    </web-resource-collection>
-    <auth-constraint>
-      <role-name>architect</role-name>
-    </auth-constraint>
-  </security-constraint>
-
-  <security-constraint>
-    <web-resource-collection>
-      <web-resource-name>Unprotected</web-resource-name>
-      <url-pattern>/css/*</url-pattern>
-      <url-pattern>/js/*</url-pattern>
-      <url-pattern>/images/*</url-pattern>
-      <url-pattern>/fonts/*</url-pattern>
-      <url-pattern>/ext/*</url-pattern>
-      <url-pattern>/ec/register</url-pattern>
-      <url-pattern>/tr/register</url-pattern>
-      <url-pattern>/tr/query</url-pattern>
-    </web-resource-collection>
-  </security-constraint>
-
-  <security-role>
-    <role-name>architect</role-name>
-  </security-role>
+  <login-config>
+    <auth-method>BASIC</auth-method>
+    <realm-name>Bee</realm-name>
+  </login-config>
 </web-app>

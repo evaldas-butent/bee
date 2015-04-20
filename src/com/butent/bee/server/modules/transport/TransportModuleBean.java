@@ -1,6 +1,5 @@
 package com.butent.bee.server.modules.transport;
 
-import com.butent.bee.shared.data.*;
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Multimap;
@@ -50,7 +49,14 @@ import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.Pair;
 import com.butent.bee.shared.Service;
 import com.butent.bee.shared.communication.ResponseObject;
+import com.butent.bee.shared.data.BeeRow;
+import com.butent.bee.shared.data.BeeRowSet;
+import com.butent.bee.shared.data.DataUtils;
+import com.butent.bee.shared.data.IsRow;
+import com.butent.bee.shared.data.SearchResult;
+import com.butent.bee.shared.data.SimpleRowSet;
 import com.butent.bee.shared.data.SimpleRowSet.SimpleRow;
+import com.butent.bee.shared.data.SqlConstants;
 import com.butent.bee.shared.data.filter.CompoundFilter;
 import com.butent.bee.shared.data.filter.CustomFilter;
 import com.butent.bee.shared.data.filter.Filter;
@@ -61,10 +67,6 @@ import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogUtils;
 import com.butent.bee.shared.modules.BeeParameter;
 import com.butent.bee.shared.modules.transport.TransportConstants;
-import com.butent.bee.shared.modules.transport.TransportConstants.AssessmentStatus;
-import com.butent.bee.shared.modules.transport.TransportConstants.OrderStatus;
-import com.butent.bee.shared.modules.transport.TransportConstants.TripStatus;
-import com.butent.bee.shared.modules.transport.TransportConstants.VehicleType;
 import com.butent.bee.shared.news.Feed;
 import com.butent.bee.shared.news.Headline;
 import com.butent.bee.shared.news.HeadlineProducer;
@@ -1092,7 +1094,8 @@ public class TransportModuleBean implements BeeModule, HasTimerService {
         vehicles.put(cargo, txt);
       }
     }
-    String[] tableFields = new String[] {COL_ITEM, COL_TRADE_VAT_PLUS, COL_TRADE_VAT,
+    String[] tableFields = new String[] {
+        COL_ITEM, COL_TRADE_VAT_PLUS, COL_TRADE_VAT,
         COL_TRADE_VAT_PERC};
 
     String[] group = DataUtils.isId(mainItem) ? tableFields : rs.getColumnNames();
@@ -1783,7 +1786,8 @@ public class TransportModuleBean implements BeeModule, HasTimerService {
 
     qs.sqlDropTemp(crsTotals);
 
-    return ResponseObject.response(new String[] {"CargoIncome:", res.getValue("CargoIncome"),
+    return ResponseObject.response(new String[] {
+        "CargoIncome:", res.getValue("CargoIncome"),
         "TripCosts:", res.getValue("TripCosts"), "ServicesIncome:", res.getValue("ServicesIncome"),
         "ServicesCost:", res.getValue("ServicesCost")});
   }
@@ -2560,7 +2564,8 @@ public class TransportModuleBean implements BeeModule, HasTimerService {
                 .addFields(tmp2, COL_VEHICLE, "TripDate", "Date")
                 .addFields(tmpFuels, "Quantity", "Sum")
                 .addFrom(tmp2)
-                .addFromInner(tmpFuels, SqlUtils.joinUsing(tmp2, tmpFuels, COL_VEHICLE, "Date")),
+                .addFromInner(tmpFuels,
+                    SqlUtils.joinUsing(tmp2, tmpFuels, COL_VEHICLE, "Date")),
                 "sub", SqlUtils.joinUsing(tmp, "sub", COL_VEHICLE, "TripDate"))
             .addExpression("Date", SqlUtils.field("sub", "Date"))
             .addExpression("Cost", SqlUtils.plus(SqlUtils.nvl(SqlUtils.field(tmp, "Cost"), 0),
@@ -2683,7 +2688,8 @@ public class TransportModuleBean implements BeeModule, HasTimerService {
 
     qs.sqlDropTemp(crs);
 
-    return ResponseObject.response(new String[] {"DailyCosts:", res.getValue("DailyCosts"),
+    return ResponseObject.response(new String[] {
+        "DailyCosts:", res.getValue("DailyCosts"),
         "RoadCosts:", res.getValue("RoadCosts"), "OtherCosts:", res.getValue("OtherCosts"),
         "FuelCosts:", res.getValue("FuelCosts"), "TripIncome:", tripIncome});
   }
@@ -2804,8 +2810,8 @@ public class TransportModuleBean implements BeeModule, HasTimerService {
               SqlUtils.joinUsing(tmp, als, COL_TRIP)));
     }
     // Costs
-    if (report.requiresField(dailyCosts) || report.requiresField(roadCosts) || report.requiresField(otherCosts)
-        || report.requiresField(fuelCosts)) {
+    if (report.requiresField(dailyCosts) || report.requiresField(roadCosts)
+        || report.requiresField(otherCosts) || report.requiresField(fuelCosts)) {
       String costs = getTripCosts(new SqlSelect()
           .addFields(tmp, COL_TRIP)
           .addFrom(tmp), currency);
@@ -2891,14 +2897,13 @@ public class TransportModuleBean implements BeeModule, HasTimerService {
   }
 
   private SimpleRowSet getVehicleServices(IsCondition condition) {
-    SqlSelect query =
-        new SqlSelect()
-            .addFrom(TBL_VEHICLE_SERVICES)
-            .addFromLeft(TBL_VEHICLES,
-                sys.joinTables(TBL_VEHICLES, TBL_VEHICLE_SERVICES, COL_VEHICLE))
-            .addFromLeft(TBL_VEHICLE_SERVICE_TYPES,
-                sys.joinTables(TBL_VEHICLE_SERVICE_TYPES, TBL_VEHICLE_SERVICES,
-                    COL_VEHICLE_SERVICE_TYPE));
+    SqlSelect query = new SqlSelect()
+        .addFrom(TBL_VEHICLE_SERVICES)
+        .addFromLeft(TBL_VEHICLES,
+            sys.joinTables(TBL_VEHICLES, TBL_VEHICLE_SERVICES, COL_VEHICLE))
+        .addFromLeft(TBL_VEHICLE_SERVICE_TYPES,
+            sys.joinTables(TBL_VEHICLE_SERVICE_TYPES, TBL_VEHICLE_SERVICES,
+                COL_VEHICLE_SERVICE_TYPE));
 
     query.addFields(TBL_VEHICLE_SERVICES, COL_VEHICLE, COL_VEHICLE_SERVICE_DATE,
         COL_VEHICLE_SERVICE_DATE_TO, COL_VEHICLE_SERVICE_NOTES);
