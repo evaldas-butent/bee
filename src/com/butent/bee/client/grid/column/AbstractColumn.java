@@ -1,11 +1,14 @@
 package com.butent.bee.client.grid.column;
 
 import com.google.gwt.dom.client.Element;
+import com.google.gwt.i18n.client.NumberFormat;
 import com.google.gwt.safehtml.shared.SafeHtmlBuilder;
 import com.google.gwt.user.client.Event;
 
 import com.butent.bee.client.grid.CellContext;
 import com.butent.bee.client.grid.cell.AbstractCell;
+import com.butent.bee.client.i18n.Format;
+import com.butent.bee.client.i18n.HasNumberFormat;
 import com.butent.bee.client.render.AbstractCellRenderer;
 import com.butent.bee.client.render.HasCellRenderer;
 import com.butent.bee.client.style.HasTextAlign;
@@ -13,6 +16,7 @@ import com.butent.bee.client.style.HasWhiteSpace;
 import com.butent.bee.client.ui.UiHelper;
 import com.butent.bee.shared.EventState;
 import com.butent.bee.shared.HasOptions;
+import com.butent.bee.shared.HasScale;
 import com.butent.bee.shared.css.values.TextAlign;
 import com.butent.bee.shared.css.values.WhiteSpace;
 import com.butent.bee.shared.data.IsRow;
@@ -155,24 +159,48 @@ public abstract class AbstractColumn<C> implements HasValueType, HasOptions, Has
   }
 
   public Integer initExport(XSheet sheet) {
+    Integer styleRef = null;
+
     AbstractCellRenderer renderer = getOptionalRenderer();
-
     if (renderer != null) {
-      return renderer.initExport(sheet);
+      styleRef = renderer.initExport(sheet);
+    }
 
-    } else if ((getTextAlign() != null || getValueType() != null) && sheet != null) {
+    if (styleRef == null && getValueType() != null && sheet != null) {
+      ValueType type = getValueType();
+
       TextAlign textAlign = getTextAlign();
       if (textAlign == null) {
-        textAlign = UiHelper.getDefaultHorizontalAlignment(getValueType());
+        textAlign = UiHelper.getDefaultHorizontalAlignment(type);
       }
 
-      if (textAlign != null) {
+      NumberFormat numberFormat = null;
+      if (ValueType.isNumeric(type)) {
+        if (this instanceof HasNumberFormat) {
+          numberFormat = ((HasNumberFormat) this).getNumberFormat();
+        }
+
+        if (numberFormat == null && (type == ValueType.DECIMAL || type == ValueType.NUMBER)) {
+          int scale = (this instanceof HasScale) ? ((HasScale) this).getScale() : 0;
+          numberFormat = Format.getDefaultNumberFormat(type, scale);
+        }
+      }
+
+      if (textAlign != null || numberFormat != null) {
         XStyle style = new XStyle();
-        style.setTextAlign(textAlign);
-        return sheet.registerStyle(style);
+
+        if (textAlign != null) {
+          style.setTextAlign(textAlign);
+        }
+        if (numberFormat != null) {
+          style.setFormat(numberFormat.getPattern());
+        }
+
+        styleRef = sheet.registerStyle(style);
       }
     }
-    return null;
+
+    return styleRef;
   }
 
   public boolean instantKarma(IsRow row) {
