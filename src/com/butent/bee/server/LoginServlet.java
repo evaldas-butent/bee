@@ -347,6 +347,9 @@ public class LoginServlet extends HttpServlet {
     return null;
   }
 
+  /**
+   * @param req
+   */
   protected boolean isProtected(HttpServletRequest req) {
     return true;
   }
