@@ -139,7 +139,7 @@ final class ProjectScheduleChart extends TimeBoard {
   private final List<ChartItem> chartItems = Lists.newArrayList();
   private Long projectId;
   private final Set<String> relevantDataViews = Sets.newHashSet(VIEW_PROJECT_DATES,
-      VIEW_PROJECT_STAGES, TaskConstants.VIEW_TASKS);
+      VIEW_PROJECT_STAGES, TaskConstants.VIEW_TASKS, TaskConstants.VIEW_RECURRING_TASKS);
 
   @Override
   public String getCaption() {
@@ -488,6 +488,7 @@ final class ProjectScheduleChart extends TimeBoard {
 
     Range<JustDate> range = getVisibleRange();
     List<HasDateRange> items;
+    List<ChartItem> usedItems = new ArrayList<>();
 
     for (int i = 0; i < chartItems.size(); i++) {
       TimeBoardRowLayout layout = new TimeBoardRowLayout(i);
@@ -503,14 +504,19 @@ final class ProjectScheduleChart extends TimeBoard {
         // second level filter
         if (BeeUtils.same(chartItems.get(i).getViewName(), item.getViewName())
             && BeeUtils.same(chartItems.get(i).getCaption(), item.getCaption())
+            && !usedItems.contains(item)
             && !BeeUtils.same(VIEW_PROJECT_STAGES, item.getViewName())) {
           filterItems.add(item);
+          usedItems.add(item);
         }
       }
 
-      items = TimeBoardHelper.getActiveItems(filterItems, range);
-      layout.addItems(Long.valueOf(chartItems.get(i).getStageId()), items, range);
-      result.add(layout);
+      if (filterItems.size() > 0) {
+        items = TimeBoardHelper.getActiveItems(filterItems, range);
+        layout.addItems(Long.valueOf(chartItems.get(i).getStageId()), items, range);
+        result.add(layout);
+      }
+
     }
 
     return result;
