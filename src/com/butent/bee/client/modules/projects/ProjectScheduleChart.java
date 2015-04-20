@@ -176,6 +176,11 @@ final class ProjectScheduleChart extends TimeBoard {
   }
 
   @Override
+  protected Set<Action> getHiddenActions() {
+    return EnumSet.of(Action.CLOSE);
+  }
+  
+  @Override
   protected String getRowHeightColumnName() {
     return COL_PSC_ROW_HEIGHT;
   }
