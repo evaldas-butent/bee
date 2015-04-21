@@ -2715,7 +2715,6 @@ public class TransportModuleBean implements BeeModule, HasTimerService {
 
     clause.add(report.getCondition(SqlUtils.cast(SqlUtils.field(TBL_TRIPS,
         sys.getIdName(TBL_TRIPS)), SqlConstants.SqlDataType.STRING, 20, 0), COL_TRIP));
-    clause.add(report.getCondition(SqlUtils.field(TBL_TRIPS, sys.getIdName(TBL_TRIPS)), COL_TRIP));
     clause.add(report.getCondition(TBL_TRIPS, COL_TRIP_NO));
     clause.add(report.getCondition(TBL_TRIPS, COL_TRIP_STATUS));
     clause.add(report.getCondition(TBL_TRIPS, COL_TRIP_DATE));
