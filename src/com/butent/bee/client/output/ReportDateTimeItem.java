@@ -24,9 +24,10 @@ public class ReportDateTimeItem extends ReportDateItem {
   public ReportValue evaluate(SimpleRow row) {
     ReportValue value;
     DateTime date = row.getDateTime(getName());
-    String val = BeeUtils.toString(getValue(date));
 
     if (date != null) {
+      String val = BeeUtils.toString(getValue(date));
+
       switch (getFormat()) {
         case DATETIME:
           value = ReportValue.of(BeeUtils.padLeft(val, 15, BeeConst.CHAR_ZERO),

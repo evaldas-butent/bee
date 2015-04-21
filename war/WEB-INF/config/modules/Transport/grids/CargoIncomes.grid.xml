@@ -32,16 +32,21 @@ return $wnd.Bee_maybeTranslate("=invalidDate");
         <bodyStyle><ui:font>bold</ui:font></bodyStyle>
       </style>
     </CalcColumn>
-    
+
     <DataColumn name="AdditionalRoute" />
-    <DataColumn name="ShowAdditionalRoute" width="50"/>   
-    
+    <DataColumn name="ShowAdditionalRoute" width="50"/>
+
     <RelColumn name="Customer" />
     <DataColumn name="Number" />
     <DataColumn name="Note" />
 
-    <RelColumn name="Sale" caption="=trInvoiceIdShort" readOnly="true"
-      editEnabled="true" editForm="CargoInvoice" editViewName="CargoInvoices" />
+    <RelColumn name="Sale" caption="=trInvoiceIdShort" readOnly="true" cellType="html"
+      editEnabled="true" editForm="CargoInvoice" editViewName="CargoInvoices">
+      <render>
+        <ui:expression>row.SaleDate.toISOString().substring(0, 10)
+          + " &lt;strong&gt;" + (row.SalePrefix ? row.SalePrefix : "") + row.SaleNo + "&lt;/strong&gt;"</ui:expression>
+      </render>
+    </RelColumn>
     <RelColumn name="Purchase" caption="=trCreditIdShort" readOnly="true"
       editEnabled="true" editForm="CargoPurchaseInvoice" editViewName="CargoPurchaseInvoices" />
   </g:columns>

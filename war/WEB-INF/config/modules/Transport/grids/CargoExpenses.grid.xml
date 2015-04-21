@@ -28,9 +28,13 @@
     <RelColumn name="Supplier" renderColumns="SupplierName SupplierTypeName" choiceColumns="Name TypeName" required="true" />
     <DataColumn name="Number" />
     <DataColumn name="Note" />
-    <RelColumn name="Purchase" caption="=trdPurchaseId" readOnly="true"
-      editEnabled="true" editForm="CargoPurchaseInvoice" editViewName="CargoPurchaseInvoices" />
-
+    <RelColumn name="Purchase" caption="=trdPurchaseId" readOnly="true" cellType="html"
+      editEnabled="true" editForm="CargoPurchaseInvoice" editViewName="CargoPurchaseInvoices">
+      <render>
+        <ui:expression>row.PurchaseDate.toISOString().substring(0, 10)
+          + " &lt;strong&gt;" + (row.PurchasePrefix ? row.PurchasePrefix : "") + row.PurchaseNo + "&lt;/strong&gt;"</ui:expression>
+      </render>
+    </RelColumn>
     <RelColumn name="Income" required="true" />
   </g:columns>
 
