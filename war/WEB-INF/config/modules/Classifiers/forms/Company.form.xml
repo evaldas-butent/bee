@@ -4,8 +4,6 @@
 ]>
 <f:Form xmlns="http://www.butent.com/widget"
   xmlns:f="http://www.butent.com/form"
-  xmlns:xi="http://www.w3.org/2001/XInclude"
-  xmlns:d="http://www.butent.com/decorator"
   xmlns:ui="http://www.butent.com/ui"
   name="Company"
   viewName="Companies"
