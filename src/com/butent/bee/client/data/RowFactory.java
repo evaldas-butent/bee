@@ -55,9 +55,9 @@ public final class RowFactory {
   public static final String STYLE_NEW_ROW_INPUT_CELL = STYLE_PREFIX + "inputCell";
   public static final String STYLE_NEW_ROW_INPUT = STYLE_PREFIX + "input";
 
-  public static final int GENERATED_FORM_WIDTH = 360;
-  public static final int GENERATED_HEADER_HEIGHT = 30;
-  public static final int GENERATED_ROW_HEIGHT = 32;
+  public static final int GENERATED_FORM_WIDTH = 500;
+  public static final int GENERATED_HEADER_HEIGHT = 40;
+  public static final int GENERATED_ROW_HEIGHT = 60;
   public static final int GENERATED_HEIGHT_MARGIN = 20;
 
   private static final int GENERATED_AREA_HEIGHT = 60;

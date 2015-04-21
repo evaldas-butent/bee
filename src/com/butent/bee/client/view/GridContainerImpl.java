@@ -153,7 +153,7 @@ public class GridContainerImpl extends Split implements GridContainerView,
 
     setHasPaging(UiOption.hasPaging(uiOptions) && !disablePage);
     setHasSearch(UiOption.hasSearch(uiOptions)
-        || gridDescription.getEnabledActions().contains(Action.FILTER));
+        && !gridDescription.getDisabledActions().contains(Action.FILTER));
 
     boolean hasData = !BeeUtils.isEmpty(gridDescription.getViewName());
     boolean readOnly = BeeUtils.isTrue(gridDescription.isReadOnly())
@@ -178,9 +178,7 @@ public class GridContainerImpl extends Split implements GridContainerView,
       Set<Action> hiddenActions = new HashSet<>();
 
       if (hasSearch()) {
-        if (!disabledActions.contains(Action.FILTER)) {
-          enabledActions.add(Action.FILTER);
-        }
+        enabledActions.add(Action.FILTER);
 
         if (!disabledActions.contains(Action.REMOVE_FILTER)) {
           enabledActions.add(Action.REMOVE_FILTER);

@@ -19,6 +19,7 @@ import com.butent.bee.shared.utils.NameUtils;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
+import java.util.concurrent.CancellationException;
 import java.util.concurrent.FutureTask;
 
 import javax.annotation.Resource;
@@ -61,20 +62,34 @@ public class ConcurrencyBean {
       this.runnable = runnable;
     }
 
+    public String getId() {
+      return BeeUtils.joinWords(runnable.getId(), started());
+    }
+
     @Override
     public void run() {
       start = System.currentTimeMillis();
-      logger.info("Started:", runnable.getId());
+      logger.info("Started:", getId());
       super.run();
     }
 
     @Override
     protected void done() {
-      if (isCancelled()) {
-        runnable.onError();
-        logger.info("Canceled:", runnable.getId(), TimeUtils.elapsedSeconds(started()));
+      boolean ok = true;
+
+      try {
+        get();
+      } catch (Exception e) {
+        if (!(e instanceof CancellationException)) {
+          logger.error(e, getId());
+        }
+        ok = false;
+      }
+      if (ok) {
+        logger.info("Ended:", getId(), TimeUtils.elapsedSeconds(started()));
       } else {
-        logger.info("Ended:", runnable.getId(), TimeUtils.elapsedSeconds(started()));
+        runnable.onError();
+        logger.info("Canceled:", getId(), TimeUtils.elapsedSeconds(started()));
       }
     }
 
@@ -105,7 +120,7 @@ public class ConcurrencyBean {
         if (BeeUtils.isMore(System.currentTimeMillis() - worker.started(), runnable.getTimeout())) {
           worker.cancel(true);
         } else {
-          logger.info("Running:", id, TimeUtils.elapsedSeconds(worker.started()));
+          logger.info("Running:", worker.getId(), TimeUtils.elapsedSeconds(worker.started()));
           runnable.onError();
           return;
         }

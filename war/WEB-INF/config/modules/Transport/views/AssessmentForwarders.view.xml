@@ -9,19 +9,22 @@
 
     <SimpleJoin name="CargoTrip" joinType="INNER">
       <SimpleColumn name="Cargo" />
-  
+
       <SimpleJoin joinType="LEFT" name="Trip">
         <SimpleColumn name="Expedition" editable="true" />
         <SimpleJoin joinType="LEFT" name="Expedition">
           <SimpleColumn name="Name" alias="ExpeditionType" label="=trExpeditionType" />
         </SimpleJoin>
-  
+
         <SimpleColumn name="Forwarder" editable="true" />
         <SimpleJoin joinType="LEFT" name="Forwarder">
           <SimpleColumn name="Name" alias="ForwarderName" label="=carrier" />
+          <SimpleJoin joinType="LEFT" name="CompanyType">
+            <SimpleColumn name="Name" alias="ForwarderTypeName" />
+          </SimpleJoin>
           <SimpleColumn name="DaysAsSupplier" />
         </SimpleJoin>
-  
+
         <SimpleColumn name="ForwarderVehicle" editable="true" />
         <SimpleColumn name="Notes" label="=transportOtherDetails" editable="true" />
       </SimpleJoin>
@@ -45,6 +48,9 @@
       <SimpleColumn name="Supplier" editable="true" />
       <SimpleJoin name="Supplier" joinType="LEFT">
         <SimpleColumn name="Name" alias="SupplierName" />
+         <SimpleJoin joinType="LEFT" name="CompanyType">
+           <SimpleColumn name="Name" alias="SupplierTypeName" />
+         </SimpleJoin>
       </SimpleJoin>
       <SimpleColumn name="Date" editable="true" />
       <SimpleColumn name="Number" editable="true" />

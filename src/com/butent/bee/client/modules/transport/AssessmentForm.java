@@ -54,7 +54,6 @@ import com.butent.bee.client.layout.TabbedPages;
 import com.butent.bee.client.layout.TabbedPages.SelectionOrigin;
 import com.butent.bee.client.modules.mail.NewMailMessage;
 import com.butent.bee.client.modules.trade.TotalRenderer;
-import com.butent.bee.client.output.PrintFormInterceptor;
 import com.butent.bee.client.presenter.GridPresenter;
 import com.butent.bee.client.presenter.Presenter;
 import com.butent.bee.client.render.AbstractCellRenderer;
@@ -68,6 +67,7 @@ import com.butent.bee.client.view.edit.EditableColumn;
 import com.butent.bee.client.view.edit.Editor;
 import com.butent.bee.client.view.form.FormView;
 import com.butent.bee.client.view.form.interceptor.FormInterceptor;
+import com.butent.bee.client.view.form.interceptor.PrintFormInterceptor;
 import com.butent.bee.client.view.grid.GridView;
 import com.butent.bee.client.view.grid.interceptor.AbstractGridInterceptor;
 import com.butent.bee.client.view.grid.interceptor.GridInterceptor;
@@ -285,7 +285,7 @@ public class AssessmentForm extends PrintFormInterceptor implements SelectorEven
                               buildLog(loc.trAssessmentRejection(), value, oldLog)), null,
                           new RowUpdateCallback(view));
                     }
-                  });
+                  }, null);
             }
             break;
         }
@@ -509,7 +509,7 @@ public class AssessmentForm extends PrintFormInterceptor implements SelectorEven
           public void onSuccess(String value) {
             save(value);
           }
-        });
+        }, null);
       } else {
         Global.confirm(confirmationQuestion, new ConfirmationCallback() {
           @Override
@@ -947,7 +947,7 @@ public class AssessmentForm extends PrintFormInterceptor implements SelectorEven
 
                 action.execute();
               }
-            });
+            }, null);
         return true;
       }
     }

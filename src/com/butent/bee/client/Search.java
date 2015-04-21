@@ -21,7 +21,6 @@ import com.butent.bee.client.dom.DomUtils;
 import com.butent.bee.client.event.EventUtils;
 import com.butent.bee.client.event.logical.ReadyEvent;
 import com.butent.bee.client.layout.Flow;
-import com.butent.bee.client.layout.Simple;
 import com.butent.bee.client.modules.ModuleManager;
 import com.butent.bee.client.output.Printable;
 import com.butent.bee.client.output.Printer;
@@ -38,7 +37,7 @@ import com.butent.bee.client.view.View;
 import com.butent.bee.client.view.ViewCallback;
 import com.butent.bee.client.view.ViewFactory;
 import com.butent.bee.client.widget.CustomWidget;
-import com.butent.bee.client.widget.Image;
+import com.butent.bee.client.widget.FaLabel;
 import com.butent.bee.client.widget.InputText;
 import com.butent.bee.client.widget.Label;
 import com.butent.bee.shared.Assert;
@@ -58,6 +57,8 @@ import com.butent.bee.shared.data.event.RowTransformEvent;
 import com.butent.bee.shared.data.event.RowUpdateEvent;
 import com.butent.bee.shared.data.view.DataInfo;
 import com.butent.bee.shared.data.view.RowInfo;
+import com.butent.bee.shared.font.FontAwesome;
+import com.butent.bee.shared.html.Attributes;
 import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.ui.Action;
 import com.butent.bee.shared.ui.HasWidgetSupplier;
@@ -451,11 +452,7 @@ public class Search {
   private static final String STYLE_SEARCH_PREFIX = BeeConst.CSS_CLASS_PREFIX + "MainSearch";
 
   private static final String STYLE_SEARCH_PANEL = STYLE_SEARCH_PREFIX + "Container";
-  private static final String STYLE_INPUT = STYLE_SEARCH_PREFIX + "Box";
-
-  private static final String STYLE_OPTIONS_CONTAINER = STYLE_SEARCH_PREFIX + "OptionsContainer";
-  private static final String STYLE_OPTIONS = STYLE_SEARCH_PREFIX + "Options";
-  private static final String STYLE_SUBMIT_CONTAINER = STYLE_SEARCH_PREFIX + "SubmitContainer";
+  private static final String STYLE_INPUT = STYLE_SEARCH_PREFIX + "Input";
   private static final String STYLE_SUBMIT = STYLE_SEARCH_PREFIX + "Submit";
 
   private static final String KEY_INPUT = "main-search";
@@ -557,6 +554,7 @@ public class Search {
     DomUtils.setSearch(getInput());
     AutocompleteProvider.enableAutocomplete(getInput(), KEY_INPUT);
 
+    getInput().getElement().setAttribute(Attributes.PLACEHOLDER, Localized.getConstants().search());
     getInput().addStyleName(STYLE_INPUT);
 
     getInput().addKeyDownHandler(new KeyDownHandler() {
@@ -571,19 +569,7 @@ public class Search {
 
     getSearchPanel().add(getInput());
 
-    Simple optionsContainer = new Simple();
-    optionsContainer.addStyleName(STYLE_OPTIONS_CONTAINER);
-
-    Image options = new Image(Global.getImages().searchOptions());
-    options.addStyleName(STYLE_OPTIONS);
-
-    optionsContainer.setWidget(options);
-    getSearchPanel().add(optionsContainer);
-
-    Simple submitContainer = new Simple();
-    submitContainer.addStyleName(STYLE_SUBMIT_CONTAINER);
-
-    Image submit = new Image(Global.getImages().search());
+    FaLabel submit = new FaLabel(FontAwesome.SEARCH);
     submit.addStyleName(STYLE_SUBMIT);
 
     submit.addClickHandler(new ClickHandler() {
@@ -593,8 +579,7 @@ public class Search {
       }
     });
 
-    submitContainer.setWidget(submit);
-    getSearchPanel().add(submitContainer);
+    getSearchPanel().add(submit);
   }
 
   private InputText getInput() {

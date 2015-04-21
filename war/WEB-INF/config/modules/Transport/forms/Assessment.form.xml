@@ -21,7 +21,8 @@
         <Label for="Status" style="&labelLeft;" />
         <FlowPanel name="Status" style="&input; font-weight:bold;" />
         <Label for="Customer" style="&labelRight; width:120px;" />
-        <DataSelector source="Customer" renderColumns="CustomerName" style="&input; width:200px;" />
+        <DataSelector source="Customer" renderColumns="CustomerName CustomerTypeName" 
+            choiceColumns="Name TypeName" style="&input; width:200px;" />
       </FlowPanel>
       <FlowPanel style="&section;">
         <Label for="Date" style="&labelLeft;" />

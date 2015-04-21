@@ -186,7 +186,11 @@ public class GridImpl extends Absolute implements GridView, EditEndEvent.Handler
 
   private static final String STYLE_NAME = BeeConst.CSS_CLASS_PREFIX + "GridView";
 
-  private static void amendGeneratedSize(final ModalForm popup, final FormView form) {
+  private static int gridMarginLeft = 10;
+
+  private static void amendGeneratedSizeAndShow(final ModalForm popup, final FormView form,
+      final int x, final int y) {
+
     popup.attachAmendDetach(new ScheduledCommand() {
       @Override
       public void execute() {
@@ -198,6 +202,11 @@ public class GridImpl extends Absolute implements GridView, EditEndEvent.Handler
           StyleUtils.setWidth(popup, width + 10);
         }
         StyleUtils.setHeight(popup, height);
+      }
+    }, new Runnable() {
+      @Override
+      public void run() {
+        popup.showAt(x, y);
       }
     });
   }
@@ -247,7 +256,7 @@ public class GridImpl extends Absolute implements GridView, EditEndEvent.Handler
 
   private GridPresenter viewPresenter;
 
-  private CellGrid grid = new CellGrid();
+  private CellGrid grid;
   private Evaluator rowValidation;
 
   private Evaluator rowEditable;
@@ -316,6 +325,8 @@ public class GridImpl extends Absolute implements GridView, EditEndEvent.Handler
 
     super();
     addStyleName(STYLE_NAME);
+
+    createGrid();
 
     this.gridDescription = Assert.notNull(gridDescription);
     this.gridKey = gridKey;
@@ -955,7 +966,12 @@ public class GridImpl extends Absolute implements GridView, EditEndEvent.Handler
 
   @Override
   public int estimatePageSize(int containerWidth, int containerHeight) {
-    return getGrid().estimatePageSize(containerWidth, containerHeight, true);
+    int w = containerWidth;
+    if (gridMarginLeft > 0) {
+      w -= gridMarginLeft;
+    }
+
+    return getGrid().estimatePageSize(w, containerHeight, true);
   }
 
   @Override
@@ -1544,7 +1560,7 @@ public class GridImpl extends Absolute implements GridView, EditEndEvent.Handler
     gridDescription.deserialize(gd.serialize());
 
     remove(getGrid());
-    this.grid = new CellGrid();
+    createGrid();
 
     getEditableColumns().clear();
     getDynamicColumnGroups().clear();
@@ -1804,6 +1820,13 @@ public class GridImpl extends Absolute implements GridView, EditEndEvent.Handler
     formView.setState(State.CLOSED);
 
     return DomUtils.getId(container);
+  }
+
+  private void createGrid() {
+    this.grid = new CellGrid();
+    if (gridMarginLeft > 0) {
+      StyleUtils.setLeft(grid, gridMarginLeft);
+    }
   }
 
   private void createNewRowForm() {
@@ -2837,10 +2860,15 @@ public class GridImpl extends Absolute implements GridView, EditEndEvent.Handler
     if (show) {
       if (modal) {
         if (isChild() && isNewRowFormGenerated()) {
+          int x = getAbsoluteLeft();
+          int y = getAbsoluteTop();
+
           if (!newRowFormState.contains(State.INITIALIZED)) {
-            amendGeneratedSize(popup, form);
+            amendGeneratedSizeAndShow(popup, form, x, y);
+          } else {
+            popup.showAt(x, y);
           }
-          popup.showAt(getAbsoluteLeft(), getAbsoluteTop());
+
         } else {
           popup.center();
         }

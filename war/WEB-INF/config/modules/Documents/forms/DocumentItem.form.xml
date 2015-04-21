@@ -5,7 +5,7 @@
   
   name="DocumentItem" caption="=documentItem"
   >
-  <TabbedPages>
+  <TabbedPages resizable="false">
     <page>
       <text>=mainInformation</text>
       <Table>

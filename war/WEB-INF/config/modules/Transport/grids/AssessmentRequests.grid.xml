@@ -15,7 +15,7 @@
     <RelColumn name="Assessment" width="40" editEnabled="true"
       editViewName="Assessments" editSource="Assessment" module="Transport.Logistics"/>
     <DataColumn name="Date" width="110">
-        <footer aggregate="count" /> 
+        <footer aggregate="count" />
     </DataColumn>
     <RelColumn name="Manager" />
     <DataColumn name="Number" width="70" />
@@ -23,7 +23,7 @@
 
     <DataColumn name="LoadingDate" caption="=trLoadingDate" width="70" format="DATE_SHORT" />
     <DataColumn name="UnloadingDate" caption="=trUnloadingDate" width="70" format="DATE_SHORT" />
-    
+
     <DataColumn name="CustomerName" />
 
     <RelColumn name="LoadingCountry" visible="false" readOnly="true"/>
@@ -53,10 +53,10 @@
         <ui:function>
           if (!row.MinVehicle) {
             return row.MaxVehicle;
-          
+
           } else if(!row.MaxVehicle || row.MinVehicle == row.MaxVehicle) {
             return row.MinVehicle;
-          
+
           } else {
             return row.MinVehicle + ", " + row.MaxVehicle + (row.CntVehicle > 2 ? ", ...": "");
           }
@@ -67,7 +67,7 @@
      <PropColumn name="Income" type="decimal" caption="=income" format="0.00">
       <footer aggregate="sum" />
     </PropColumn>
-    
+
     <PropColumn name="Expense" type="decimal" caption="=trExpenses" format="0.00">
        <footer aggregate="sum" />
     </PropColumn>
@@ -81,5 +81,5 @@
 
   <g:predefinedFilter name="new_answered" label="Nauji ir atsakyti" initial="true">
     <g:column name="Status" value="0,1" />
-  </g:predefinedFilter>  
+  </g:predefinedFilter>
 </g:Grid>

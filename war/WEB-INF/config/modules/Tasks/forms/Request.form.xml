@@ -33,7 +33,7 @@
       <Label text="=crmRequestType" style="&inline; width:75px; padding-top:1px; text-align:right; margin-right: 10px" />
       <DataSelector source="RequestType" style="&inline; width:120px;" />
       <Label text="=responsiblePerson" style="&inline; width:125px; padding-top:1px; text-align:right; padding-right: 10px" />
-      <DataSelector source="Manager" style="&inline; width:200px;" />
+      <DataSelector name="Manager" source="Manager" style="&inline; width:200px;" />
     </FlowPanel>
     
     &separator;

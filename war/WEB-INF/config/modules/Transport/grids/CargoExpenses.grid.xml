@@ -25,7 +25,7 @@
       </style>
     </CalcColumn>
 
-    <RelColumn name="Supplier" required="true" />
+    <RelColumn name="Supplier" renderColumns="SupplierName SupplierTypeName" choiceColumns="Name TypeName" required="true" />
     <DataColumn name="Number" />
     <DataColumn name="Note" />
     <RelColumn name="Purchase" caption="=trdPurchaseId" readOnly="true"

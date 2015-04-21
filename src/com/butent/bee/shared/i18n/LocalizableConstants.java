@@ -163,6 +163,8 @@ public interface LocalizableConstants extends Constants, LocalizableClassifierCo
 
   String clientStatus();
 
+  String columns();
+
   String columnResults();
 
   String comment();
@@ -181,6 +183,8 @@ public interface LocalizableConstants extends Constants, LocalizableClassifierCo
 
   String companyVATCode();
 
+  String constant();
+
   String contact();
 
   String contacts();
@@ -188,6 +192,10 @@ public interface LocalizableConstants extends Constants, LocalizableClassifierCo
   String content();
 
   String continueQuestion();
+
+  String create();
+
+  String createNew();
 
   String createNewRow();
 
@@ -385,9 +393,13 @@ public interface LocalizableConstants extends Constants, LocalizableClassifierCo
 
   String firstName();
 
+  String formula();
+
   String greatest();
 
   String groupBy();
+
+  String groupResults();
 
   String height();
 
@@ -441,6 +453,10 @@ public interface LocalizableConstants extends Constants, LocalizableClassifierCo
 
   String loginFailed();
 
+  String loginInfoLabel();
+
+  String loginInfoHelp();
+
   String loginPassword();
 
   String loginSubmit();
@@ -476,6 +492,8 @@ public interface LocalizableConstants extends Constants, LocalizableClassifierCo
   String month();
 
   String name();
+
+  String myEnvironment();
 
   String newCompanyPerson();
 
@@ -539,6 +557,8 @@ public interface LocalizableConstants extends Constants, LocalizableClassifierCo
 
   String oldPasswordIsRequired();
 
+  String operator();
+
   String ordinal();
 
   String outsized();
@@ -585,6 +605,8 @@ public interface LocalizableConstants extends Constants, LocalizableClassifierCo
 
   String quantity();
 
+  String quater();
+
   String questionLogout();
 
   String reason();
@@ -592,6 +614,8 @@ public interface LocalizableConstants extends Constants, LocalizableClassifierCo
   String registered();
 
   String relatedTo();
+
+  String relation();
 
   String relations();
 
@@ -624,6 +648,8 @@ public interface LocalizableConstants extends Constants, LocalizableClassifierCo
   String rightStateView();
 
   String roleAddUsers();
+
+  String rows();
 
   String rowResults();
 
@@ -665,6 +691,8 @@ public interface LocalizableConstants extends Constants, LocalizableClassifierCo
 
   String selectAll();
 
+  String search();
+
   String selectAtLeastOneRow();
 
   String selectionColumnLabel();
@@ -672,6 +700,8 @@ public interface LocalizableConstants extends Constants, LocalizableClassifierCo
   String selectRole();
 
   String send();
+
+  String separator();
 
   String setAsPrimary();
 
@@ -784,4 +814,5 @@ public interface LocalizableConstants extends Constants, LocalizableClassifierCo
   String yearMonth();
 
   String yes();
+
 }

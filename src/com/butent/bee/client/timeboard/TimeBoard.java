@@ -216,10 +216,11 @@ public abstract class TimeBoard extends Flow implements Presenter, View, Printab
     addStyleName(STYLE_CONTAINER);
 
     Set<Action> enabledActions = getEnabledActions();
+    Set<Action> hiddenActions = getHiddenActions();
 
     this.headerView = new HeaderImpl();
     headerView.create(getCaption(), false, true, null, EnumSet.of(UiOption.ROOT), enabledActions,
-        Action.NO_ACTIONS, Action.NO_ACTIONS);
+        Action.NO_ACTIONS, hiddenActions);
 
     if (BeeUtils.contains(enabledActions, Action.FILTER)) {
       this.filterLabel = new CustomDiv(STYLE_FILTER_LABEL);
@@ -805,6 +806,10 @@ public abstract class TimeBoard extends Flow implements Presenter, View, Printab
   }
 
   protected abstract Set<Action> getEnabledActions();
+
+  protected Set<Action> getHiddenActions() {
+    return Action.NO_ACTIONS;
+  }
 
   protected Widget getEndSliderLabel() {
     return endSliderLabel;

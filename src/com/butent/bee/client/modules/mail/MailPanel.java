@@ -919,7 +919,7 @@ public class MailPanel extends AbstractFormInterceptor {
 
   private void removeMessages() {
     List<String> options = new ArrayList<>();
-    GridPresenter grid = messages.getGridPresenter();
+    final GridPresenter grid = messages.getGridPresenter();
     final IsRow activeRow = grid.getActiveRow();
 
     if (activeRow != null) {
@@ -942,7 +942,7 @@ public class MailPanel extends AbstractFormInterceptor {
         new ChoiceCallback() {
           @Override
           public void onSuccess(int value) {
-            List<Long> ids = new ArrayList<>();
+            final List<Long> ids = new ArrayList<>();
 
             if (value == 0 && activeRow != null) {
               ids.add(activeRow.getId());
@@ -961,6 +961,9 @@ public class MailPanel extends AbstractFormInterceptor {
                 response.notify(getFormView());
 
                 if (!response.hasErrors()) {
+                  for (Long rowId : ids) {
+                    grid.getGridView().getGrid().removeRowById(rowId);
+                  }
                   String msg = response.getResponseAsString();
                   LocalizableMessages loc = Localized.getMessages();
 

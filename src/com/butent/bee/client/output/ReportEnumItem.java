@@ -8,8 +8,10 @@ import com.butent.bee.client.dialog.InputCallback;
 import com.butent.bee.client.widget.Label;
 import com.butent.bee.client.widget.ListBox;
 import com.butent.bee.shared.Assert;
+import com.butent.bee.shared.Service;
 import com.butent.bee.shared.data.SimpleRowSet.SimpleRow;
 import com.butent.bee.shared.i18n.Localized;
+import com.butent.bee.shared.time.TimeUtils;
 import com.butent.bee.shared.ui.HasCaption;
 import com.butent.bee.shared.utils.ArrayUtils;
 import com.butent.bee.shared.utils.BeeUtils;
@@ -19,6 +21,7 @@ import com.butent.bee.shared.utils.NameUtils;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -29,7 +32,8 @@ public class ReportEnumItem extends ReportItem implements ClickHandler {
   private static final String ENUM = "ENUM";
 
   private String enumKey;
-  private Label filter;
+  private Label filterWidget;
+  private Set<Integer> filter;
 
   public ReportEnumItem(String name, String caption,
       Class<? extends Enum<? extends HasCaption>> en) {
@@ -44,11 +48,8 @@ public class ReportEnumItem extends ReportItem implements ClickHandler {
 
   @Override
   public void clearFilter() {
-    if (filter != null) {
-      filter.setTitle(null);
-      filter.setText(null);
-      filter.addStyleName(getStyle() + "-filter-empty");
-    }
+    filter = null;
+    renderFilter();
   }
 
   @Override
@@ -57,33 +58,40 @@ public class ReportEnumItem extends ReportItem implements ClickHandler {
 
     if (!BeeUtils.isEmpty(map)) {
       enumKey = map.get(ENUM);
+
+      String[] arr = Codec.beeDeserializeCollection(map.get(Service.VAR_DATA));
+
+      if (!ArrayUtils.isEmpty(arr)) {
+        filter = new HashSet<>();
+
+        for (String idx : arr) {
+          filter.add(BeeUtils.toInt(idx));
+        }
+      }
     }
   }
 
   @Override
-  public String evaluate(SimpleRow row) {
-    return EnumUtils.getCaption(enumKey, row.getInt(getName()));
+  public ReportValue evaluate(SimpleRow row) {
+    Integer value = row.getInt(getName());
+    return value == null ? ReportValue.empty()
+        : ReportValue.of(TimeUtils.padTwo(value), EnumUtils.getCaption(enumKey, value));
   }
 
   @Override
-  public String getFilter() {
-    Set<Integer> values = getFilterValues();
-
-    if (BeeUtils.isEmpty(values)) {
-      return null;
-    }
-    return Codec.beeSerialize(values);
+  public Set<Integer> getFilter() {
+    return filter;
   }
 
   @Override
   public Label getFilterWidget() {
-    if (filter == null) {
-      filter = new Label();
-      filter.addStyleName(getStyle() + "-filter");
-      filter.addStyleName(getStyle() + "-filter-empty");
-      filter.addClickHandler(this);
+    if (filterWidget == null) {
+      filterWidget = new Label();
+      filterWidget.addStyleName(getStyle() + "-filter");
+      filterWidget.addClickHandler(this);
+      renderFilter();
     }
-    return filter;
+    return filterWidget;
   }
 
   @Override
@@ -94,12 +102,11 @@ public class ReportEnumItem extends ReportItem implements ClickHandler {
   @Override
   public void onClick(ClickEvent event) {
     final ListBox list = new ListBox(true);
-    Set<Integer> old = getFilterValues();
     int x = 0;
 
     for (String caption : EnumUtils.getCaptions(enumKey)) {
       list.addItem(caption);
-      list.getOptionElement(x).setSelected(old.contains(x));
+      list.getOptionElement(x).setSelected(filter != null && filter.contains(x));
       x++;
     }
     list.setAllVisible();
@@ -107,61 +114,58 @@ public class ReportEnumItem extends ReportItem implements ClickHandler {
     Global.inputWidget(Localized.getConstants().values(), list, new InputCallback() {
       @Override
       public void onSuccess() {
-        Set<Integer> idxs = new HashSet<>();
+        filter = new HashSet<>();
 
         for (int i = 0; i < list.getItemCount(); i++) {
           if (list.getOptionElement(i).isSelected()) {
-            idxs.add(i);
+            filter.add(i);
           }
         }
-        setFilter(Codec.beeSerialize(idxs));
+        renderFilter();
       }
     });
   }
 
   @Override
   public String serialize() {
-    return super.serialize(Codec.beeSerialize(Collections.singletonMap(ENUM, enumKey)));
+    Map<String, Object> map = new HashMap<>();
+    map.put(ENUM, enumKey);
+
+    if (!BeeUtils.isEmpty(filter)) {
+      map.put(Service.VAR_DATA, filter);
+    }
+    return serialize(Codec.beeSerialize(map));
   }
 
   @Override
-  public ReportItem setFilter(String data) {
-    Set<Integer> idxs = new HashSet<>();
-    List<String> caps = new ArrayList<>();
-    String[] arr = Codec.beeDeserializeCollection(data);
-
-    if (!ArrayUtils.isEmpty(arr)) {
-      for (String idx : arr) {
-        int i = BeeUtils.toInt(idx);
-        idxs.add(i);
-        caps.add(EnumUtils.getCaption(enumKey, i));
-      }
+  public ReportItem setFilter(String value) {
+    if (!BeeUtils.isEmpty(value)) {
+      filter = Collections.singleton(BeeUtils.toInt(value));
+    } else {
+      filter = null;
     }
-    Label widget = getFilterWidget();
-    widget.setTitle(BeeUtils.joinInts(idxs));
-    widget.setText(BeeUtils.joinItems(caps));
-    widget.setStyleName(getStyle() + "-filter-empty", BeeUtils.isEmpty(widget.getTitle()));
     return this;
   }
 
   @Override
   public boolean validate(SimpleRow row) {
-    Set<Integer> values = getFilterValues();
-
-    if (BeeUtils.isEmpty(values) || !row.getRowSet().hasColumn(getName())) {
+    if (BeeUtils.isEmpty(filter) || !row.getRowSet().hasColumn(getName())) {
       return true;
     }
-    return values.contains(row.getInt(getName()));
+    return filter.contains(row.getInt(getName()));
   }
 
-  private Set<Integer> getFilterValues() {
-    Set<Integer> values = new HashSet<>();
+  private void renderFilter() {
+    if (filterWidget != null) {
+      List<String> caps = new ArrayList<>();
 
-    if (filter != null && !BeeUtils.isEmpty(filter.getTitle())) {
-      for (String value : BeeUtils.split(filter.getTitle(), ',')) {
-        values.add(BeeUtils.toInt(value));
+      if (!BeeUtils.isEmpty(filter)) {
+        for (Integer idx : filter) {
+          caps.add(EnumUtils.getCaption(enumKey, idx));
+        }
       }
+      filterWidget.setText(BeeUtils.joinItems(caps));
+      filterWidget.setStyleName(getStyle() + "-filter-empty", caps.isEmpty());
     }
-    return values;
   }
 }

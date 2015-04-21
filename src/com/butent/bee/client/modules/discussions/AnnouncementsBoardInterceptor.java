@@ -233,22 +233,33 @@ class AnnouncementsBoardInterceptor extends AbstractFormInterceptor implements
     adsTable.setHtml(row, 0, renderDateTime(rsRow[rs.getColumnIndex(COL_CREATED)]),
         STYLE_PREFIX + COL_CREATED);
 
-    Image attachment = null;
+    FaLabel attachmentLabel = null;
 
     if (rs.hasColumn(AdministrationConstants.COL_FILE)) {
       if (!BeeUtils.isEmpty(rsRow[rs.getColumnIndex(AdministrationConstants.COL_FILE)])) {
         int fileCount = BeeUtils.toInt(rsRow[rs.getColumnIndex(AdministrationConstants.COL_FILE)]);
 
         if (BeeUtils.isPositive(fileCount)) {
-          attachment = new Image(Global.getImages().attachment());
+           attachmentLabel = new FaLabel(FontAwesome.PAPERCLIP);
 
           if (DataUtils.isId(rowId)) {
-            openFileList(attachment, rowId);
+            openFileList(attachmentLabel, rowId);
           }
         }
       }
     }
 
+    FaLabel commentLabel = null;
+
+    if (rs.hasColumn(COL_DISCUSSION_COMMENTS)) {
+      if (!BeeUtils.isEmpty(rsRow[rs.getColumnIndex(COL_DISCUSSION_COMMENTS)])) {
+        int commentCount =
+            BeeUtils.toInt(rsRow[rs.getColumnIndex(COL_DISCUSSION_COMMENTS)]);
+        if (BeeUtils.isPositive(commentCount)) {
+          commentLabel = new FaLabel(FontAwesome.COMMENT_O);
+        }
+      }
+    }
     Flow balloonDiv = new Flow(STYLE_PREFIX + STYLE_CHAT_BALLOON);
     int subjectRow = row;
 
@@ -257,8 +268,12 @@ class AnnouncementsBoardInterceptor extends AbstractFormInterceptor implements
 
     HorizontalPanel subjectContent = new HorizontalPanel();
     subjectContent.add(balloonDiv);
-    if (attachment != null) {
-      subjectContent.add(attachment);
+    if (attachmentLabel != null) {
+      subjectContent.add(attachmentLabel);
+    }
+
+    if (commentLabel != null) {
+      subjectContent.add(commentLabel);
     }
     subjectContent.add(subjectDiv);
     adsTable.setWidget(row, 1, subjectContent,
@@ -402,7 +417,7 @@ class AnnouncementsBoardInterceptor extends AbstractFormInterceptor implements
     return widget;
   }
 
-  private static void openFileList(final Image link, final long discussId) {
+  private static void openFileList(final FaLabel link, final long discussId) {
     Assert.notNull(link);
 
     link.addClickHandler(new ClickHandler() {
@@ -456,7 +471,7 @@ class AnnouncementsBoardInterceptor extends AbstractFormInterceptor implements
             listTbl.setHtml(row, 1, DateTimeFormat.getFormat(PredefinedFormat.MONTH_DAY)
                 .format(new JustDate(BeeUtils.toLong(birthListData[rs
                     .getColumnIndex(COL_DATE_OF_BIRTH)])))
-                + " " + DAY + ".");
+                + " " + DAY);
           } else {
             listTbl.setHtml(row, 1, DateTimeFormat.getFormat(PredefinedFormat.MONTH_DAY)
                 .format(new JustDate(BeeUtils.toLong(birthListData[rs
