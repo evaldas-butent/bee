@@ -579,15 +579,15 @@ final class ProjectScheduleChart extends TimeBoard {
     Element resizer = ((Mover) event.getSource()).getElement();
 
     int oldLeft = StyleUtils.getLeft(resizer);
-    int maxLeft = getLastResizableColumnMaxLeft(0);
-    int newLeft = BeeUtils.clamp(oldLeft + delta, 1, maxLeft);
+    int maxLeft = getLastResizableColumnMaxLeft(DEFAULT_CHART_LEFT);
+    int newLeft = BeeUtils.clamp(oldLeft + delta, stageWidth, maxLeft);
 
     if (newLeft != oldLeft || event.isFinished()) {
       if (newLeft != oldLeft) {
         StyleUtils.setLeft(resizer, newLeft);
       }
 
-      int px = newLeft + TimeBoardHelper.DEFAULT_MOVER_WIDTH;
+      int px = newLeft + TimeBoardHelper.DEFAULT_MOVER_WIDTH - stageWidth;
 
       if (event.isFinished()) {
         dataWidth = px;
