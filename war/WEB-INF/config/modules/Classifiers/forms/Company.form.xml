@@ -18,14 +18,14 @@
           <cell colSpan="3">
             <InputText source="Name" style="width: 425px;" visible="true" />
           </cell>
-          <DataSelector source="CompanyType" style="width: 80px;"/>
+          <DataSelector source="CompanyType" style="width: 80px;" required="true" />
           <Label style="&lbl;" for="CompanyPriority" />
           <DataSelector source="CompanyPriority" style="width: 180px" />
           <FlowPanel name="qrFlowPanel" style="margin-left: 10px" />
         </row>
 
         <row>
-          <Label text="=phone" style="&lbl;" for="Phone" />
+          <Label text="=phone" style="&lbl;" for="Phone" class="bee-required" />
           <InputText style="width: 140px;" source="Phone" />
           <Label style="&lbl;" for="Mobile" />
           <cell colSpan="2">
@@ -36,18 +36,18 @@
         </row>
 
         <row for="Address">
-          <Label text="=address" style="&lbl;" />
+          <Label text="=address" style="&lbl;" class="bee-required" />
           <cell colSpan="4">
             <InputText source="Address" style="width: 525px;" />
           </cell>
-          <Label for="EmailId" style="&lbl;" />
+          <Label for="EmailId" style="&lbl;" class="bee-required" />
           <cell colSpan="1" for="EmailId">
             <DataSelector style="width: 180px;" source="EmailId" maxLength="50" />
           </cell>
         </row>
 
         <row for="City">
-          <Label text="=city" style="&lbl;" for="City" />
+          <Label text="=city" style="&lbl;" for="City" class="bee-required" />
           <DataSelector source="City" style="width: 140px;">
             <selectorColumn source="Name" />
             <selectorColumn source="CountryName" />
@@ -56,7 +56,7 @@
             </selectorColumn>
           </DataSelector>
 
-          <Label text="=country" style="&lbl;" for="Country" />
+          <Label text="=country" style="&lbl;" for="Country" class="bee-required" />
           <DataSelector source="Country" style="width: 140px;">
             <renderToken source="CountryName" />
             <renderToken source="CountryCode" prefix=" (" suffix=")" />
@@ -82,9 +82,9 @@
               <InputText source="SocialContacts" style="width: 280px;" />
             </row>
             <row>
-              <Label text="=code" style="&lbl;" for="Code" />
+              <Label text="=code" style="&lbl;" for="Code" class="bee-required" />
               <InputText source="Code" style="width: 280px;"/>
-              <Label text="=companyVATCode" style="&lbl;" for="VATCode" />
+              <Label text="=companyVATCode" style="&lbl;" for="VATCode" class="bee-required" />
               <InputText source="VATCode" style="width: 280px;" upperCase="true" />
             </row>
           </Table>
@@ -183,8 +183,9 @@
                  style="width:40px; margin-left:5px; display:inline-block;" for="Turnover" />
               </row>
               <row>
-                <Label text="=clientGroup" style="&lbl;" for="CompanyGroup" />
-                <DataSelector source="CompanyGroup" />
+                <Label text="=clientGroup" style="&lbl;" for="CompanyGroup" class="bee-required" />
+                <DataSelector source="CompanyGroup" required="true" />
+                <CheckBox source="Offshore" />
               </row>
               <row>
                 <Label text="=companyRelation" style="&lbl;" data="CompRelTypeStore" />
@@ -193,6 +194,18 @@
                   label="=companyRelationType" data="CompRelTypeStore" />
                 <Label style="&lbl;" for="CompanyRelationTypeState" />
                 <DataSelector source="CompanyRelationTypeState" />
+              </row>
+              <row>
+                <Label text="Pavadinimas2" style="&lbl;" />
+                <cell colSpan="3">
+                  <InputText source="Name2" style="width: 338px;" summarize="true" />
+                </cell>
+              </row>
+              <row>
+                <Label text="Adresas2" style="&lbl;" />
+                <cell colSpan="3">
+                  <InputText source="Address2" style="width: 338px;" summarize="true" />
+                </cell>
               </row>
             </Table>
           </FlowPanel>
