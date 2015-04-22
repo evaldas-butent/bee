@@ -9,6 +9,7 @@ import com.butent.bee.client.grid.CellContext;
 import com.butent.bee.client.grid.cell.AbstractCell;
 import com.butent.bee.client.i18n.Format;
 import com.butent.bee.client.i18n.HasNumberFormat;
+import com.butent.bee.client.output.Exporter;
 import com.butent.bee.client.render.AbstractCellRenderer;
 import com.butent.bee.client.render.HasCellRenderer;
 import com.butent.bee.client.style.HasTextAlign;
@@ -21,9 +22,6 @@ import com.butent.bee.shared.css.values.TextAlign;
 import com.butent.bee.shared.css.values.WhiteSpace;
 import com.butent.bee.shared.data.IsRow;
 import com.butent.bee.shared.data.value.HasValueType;
-import com.butent.bee.shared.data.value.NumberValue;
-import com.butent.bee.shared.data.value.TextValue;
-import com.butent.bee.shared.data.value.Value;
 import com.butent.bee.shared.data.value.ValueType;
 import com.butent.bee.shared.export.XCell;
 import com.butent.bee.shared.export.XSheet;
@@ -73,42 +71,30 @@ public abstract class AbstractColumn<C> implements HasValueType, HasOptions, Has
       return null;
     }
 
+    String text;
+    ValueType type = getValueType();
+
     AbstractCellRenderer renderer = getOptionalRenderer();
 
     if (renderer != null) {
-      return renderer.export(context.getRow(), context.getColumnIndex(), styleRef, sheet);
+      XCell xc = renderer.export(context.getRow(), context.getColumnIndex(), styleRef, sheet);
+      if (xc != null) {
+        return xc;
+      }
+
+      text = renderer.render(context.getRow());
+      if (renderer.getExportType() != null) {
+        type = renderer.getExportType();
+      }
 
     } else {
       SafeHtmlBuilder sb = new SafeHtmlBuilder();
       render(context, sb);
 
-      String html = sb.toSafeHtml().asString();
-
-      if (BeeUtils.isEmpty(html)) {
-        return null;
-
-      } else {
-        Value value = null;
-
-        if (ValueType.isNumeric(getValueType())) {
-          Double d = BeeUtils.toDoubleOrNull(BeeUtils.removeWhiteSpace(html));
-          if (BeeUtils.isDouble(d)) {
-            value = new NumberValue(d);
-          }
-        }
-
-        if (value == null) {
-          value = new TextValue(html);
-        }
-
-        XCell xc = new XCell(context.getColumnIndex(), value);
-        if (styleRef != null) {
-          xc.setStyleRef(styleRef);
-        }
-
-        return xc;
-      }
+      text = sb.toSafeHtml().asString();
     }
+
+    return Exporter.createCell(text, type, context.getColumnIndex(), styleRef);
   }
 
   public AbstractCell<C> getCell() {
@@ -161,14 +147,17 @@ public abstract class AbstractColumn<C> implements HasValueType, HasOptions, Has
   public Integer initExport(XSheet sheet) {
     Integer styleRef = null;
 
+    ValueType type = getValueType();
     AbstractCellRenderer renderer = getOptionalRenderer();
+
     if (renderer != null) {
       styleRef = renderer.initExport(sheet);
+      if (renderer.getExportType() != null) {
+        type = renderer.getExportType();
+      }
     }
 
-    if (styleRef == null && getValueType() != null && sheet != null) {
-      ValueType type = getValueType();
-
+    if (styleRef == null && type != null && sheet != null) {
       TextAlign textAlign = getTextAlign();
       if (textAlign == null) {
         textAlign = UiHelper.getDefaultHorizontalAlignment(type);
