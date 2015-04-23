@@ -106,6 +106,7 @@ public final class ProjectConstants {
   public static final String COL_PROJECT_TYPE = "Type";
   public static final String COL_PROGRESS = "Progress";
   public static final String COL_COMMENT = "Comment";
+  public static final String COL_EXPENSES = "Expenses";
   public static final String COL_EVENT = "Event";
   public static final String COL_EVENT_PROPERTIES = "Properties";
   public static final String COL_CAPTION = "Caption";
