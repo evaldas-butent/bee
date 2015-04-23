@@ -68,6 +68,12 @@ public final class ServiceConstants {
   public static final String COL_SERVICE_CUSTOMER = "Customer";
   public static final String COL_SERVICE_CONTRACTOR = "Contractor";
 
+  public static final String COL_SERVICE_MODEL = "Model";
+  public static final String COL_SERVICE_YEAR_OF_MANUFACTURE = "YearOfManufacture";
+  public static final String COL_SERVICE_INVENT_NO = "InventNo";
+  public static final String COL_SERVICE_BODY_NO = "BodyNo";
+  public static final String COL_SERVICE_SELLER = "Seller";
+
   public static final String COL_SERVICE_CRITERIA_GROUP = "Group";
   public static final String COL_SERVICE_CRITERIA_GROUP_NAME = "Name";
   public static final String COL_SERVICE_CRITERION_NAME = "Criterion";

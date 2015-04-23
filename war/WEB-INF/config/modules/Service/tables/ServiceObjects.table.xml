@@ -12,5 +12,12 @@
     <Relation name="Contractor" relation="Companies" label="=svcUser" />
     
     <Long name="ExternalCode" unique="true" label="=externalCode" />
+    
+    <String name="Model" precision="100" />
+    <String name="YearOfManufacture" precision="100" />
+    <String name="InventNo" precision="100" />
+    <String name="BodyNo" precision="100" />
+    <String name="Seller" precision="100" />
+    <String name="ItemInButenta" precision="100" />
   </Fields>
 </Table>
