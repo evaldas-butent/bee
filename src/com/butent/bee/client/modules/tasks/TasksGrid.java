@@ -15,6 +15,7 @@ import com.butent.bee.client.communication.ResponseCallback;
 import com.butent.bee.client.data.Data;
 import com.butent.bee.client.data.Provider;
 import com.butent.bee.client.data.Queries;
+import com.butent.bee.client.data.Queries.IntCallback;
 import com.butent.bee.client.data.Queries.RowSetCallback;
 import com.butent.bee.client.data.RowCallback;
 import com.butent.bee.client.data.RowFactory;
@@ -58,6 +59,7 @@ import com.butent.bee.shared.data.filter.CompoundFilter;
 import com.butent.bee.shared.data.filter.Filter;
 import com.butent.bee.shared.data.value.IntegerValue;
 import com.butent.bee.shared.data.value.LongValue;
+import com.butent.bee.shared.data.value.Value;
 import com.butent.bee.shared.data.value.ValueType;
 import com.butent.bee.shared.data.view.DataInfo;
 import com.butent.bee.shared.data.view.RowInfo;
@@ -66,11 +68,13 @@ import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.modules.administration.AdministrationConstants;
 import com.butent.bee.shared.modules.classifiers.ClassifierConstants;
 import com.butent.bee.shared.modules.projects.ProjectConstants;
+import com.butent.bee.shared.modules.tasks.TaskConstants;
 import com.butent.bee.shared.modules.tasks.TaskConstants.TaskStatus;
 import com.butent.bee.shared.modules.tasks.TaskType;
 import com.butent.bee.shared.modules.tasks.TaskUtils;
 import com.butent.bee.shared.news.Feed;
 import com.butent.bee.shared.time.DateTime;
+import com.butent.bee.shared.time.JustDate;
 import com.butent.bee.shared.time.TimeUtils;
 import com.butent.bee.shared.ui.Action;
 import com.butent.bee.shared.ui.ColumnDescription;
@@ -365,13 +369,91 @@ class TasksGrid extends AbstractGridInterceptor {
 
   private void createProjectClick() {
     final GridView gridView = getGridPresenter().getGridView();
-    CompoundFilter filter = CompoundFilter.or();
+    int idxTaskProject = gridView.getDataIndex(ProjectConstants.COL_PROJECT);
+    int idxTaskCompany = gridView.getDataIndex(ClassifierConstants.COL_COMPANY);
+    int idxTaskCompanyName = gridView.getDataIndex(ClassifierConstants.ALS_COMPANY_NAME);
+    int idxTaskCompanyTypeName = gridView.getDataIndex(ALS_COMPANY_TYPE_NAME);
+    int idxTaskContact = gridView.getDataIndex(ClassifierConstants.COL_CONTACT);
+    int idxTaskContactPerson = gridView.getDataIndex(ClassifierConstants.ALS_CONTACT_PERSON);
+    int idxTaskContactFirstName = gridView.getDataIndex(ClassifierConstants.ALS_CONTACT_FIRST_NAME);
+    int idxTaskContactLastName = gridView.getDataIndex(ClassifierConstants.ALS_CONTACT_LAST_NAME);
+    int idxTaskContactCompanyName =
+        gridView.getDataIndex(ClassifierConstants.ALS_CONTACT_COMPANY_NAME);
 
-    for (RowInfo row : gridView.getSelectedRows(SelectedRows.ALL)) {
-      filter.add(Filter.compareId(row.getId()));
+    int idxTaskOwner = gridView.getDataIndex(COL_OWNER);
+    int idxTaskOwnerFirstName = gridView.getDataIndex(ALS_OWNER_FIRST_NAME);
+    int idxTaskOwnerLastName = gridView.getDataIndex(ALS_OWNER_LAST_NAME);
+    int idxTaskDescrition = gridView.getDataIndex(COL_DESCRIPTION);
+
+    final IsRow selectedRow = gridView.getActiveRow();
+
+    if (selectedRow == null) {
+      gridView.notifyWarning(Localized.getConstants().selectAtLeastOneRow());
+      return;
     }
 
-    // TODO:
+    if (!BeeUtils.isEmpty(selectedRow.getString(idxTaskProject))) {
+      gridView.notifyWarning(Localized.getMessages().taskAssignedToProject(selectedRow.getId(),
+          selectedRow.getLong(idxTaskProject)));
+      return;
+    }
+
+    DataInfo prjDataInfo = Data.getDataInfo(ProjectConstants.VIEW_PROJECTS);
+    int idxPrjCompany = prjDataInfo.getColumnIndex(ClassifierConstants.COL_COMPANY);
+    int idxPrjCompanyName = prjDataInfo.getColumnIndex(ClassifierConstants.ALS_COMPANY_NAME);
+    int idxPrjCompanyTypeName =
+        prjDataInfo.getColumnIndex(ALS_COMPANY_TYPE_NAME);
+    int idxPrjContact = prjDataInfo.getColumnIndex(ClassifierConstants.COL_CONTACT);
+    int idxPrjContactPerson = prjDataInfo.getColumnIndex(ClassifierConstants.ALS_CONTACT_PERSON);
+    int idxPrjContactFirstName =
+        prjDataInfo.getColumnIndex(ClassifierConstants.ALS_CONTACT_FIRST_NAME);
+    int idxPrjContactLastName =
+        prjDataInfo.getColumnIndex(ClassifierConstants.ALS_CONTACT_LAST_NAME);
+    int idxPrjContactCompanyName =
+        prjDataInfo.getColumnIndex(ClassifierConstants.ALS_CONTACT_COMPANY_NAME);
+
+    int idxPrjOwner = prjDataInfo.getColumnIndex(ProjectConstants.COL_PROJECT_OWNER);
+    int idxPrjOwnerFirstName = prjDataInfo.getColumnIndex(ProjectConstants.ALS_OWNER_FIRST_NAME);
+    int idxPrjOwnerLastName = prjDataInfo.getColumnIndex(ProjectConstants.ALS_OWNER_LAST_NAME);
+    int idxPrjDescrition = prjDataInfo.getColumnIndex(ProjectConstants.COL_DESCRIPTION);
+    int idxPrjStartDate = prjDataInfo.getColumnIndex(ProjectConstants.COL_PROJECT_START_DATE);
+
+    BeeRow prjRow = RowFactory.createEmptyRow(prjDataInfo, true);
+    prjRow.setValue(idxPrjCompany, selectedRow.getValue(idxTaskCompany));
+    prjRow.setValue(idxPrjCompanyName, selectedRow.getValue(idxTaskCompanyName));
+    prjRow.setValue(idxPrjCompanyTypeName, selectedRow.getValue(idxTaskCompanyTypeName));
+    prjRow.setValue(idxPrjContact, selectedRow.getValue(idxTaskContact));
+    prjRow.setValue(idxPrjContactPerson, selectedRow.getValue(idxTaskContactPerson));
+    prjRow.setValue(idxPrjContactFirstName, selectedRow.getValue(idxTaskContactFirstName));
+    prjRow.setValue(idxPrjContactLastName, selectedRow.getValue(idxTaskContactLastName));
+    prjRow.setValue(idxPrjContactCompanyName, selectedRow.getValue(idxTaskContactCompanyName));
+    prjRow.setValue(idxPrjOwner, selectedRow.getValue(idxTaskOwner));
+    prjRow.setValue(idxPrjOwnerFirstName, selectedRow.getValue(idxTaskOwnerFirstName));
+    prjRow.setValue(idxPrjOwnerLastName, selectedRow.getValue(idxTaskOwnerLastName));
+    prjRow.setValue(idxPrjDescrition, selectedRow.getValue(idxTaskDescrition));
+    prjRow.setValue(idxPrjStartDate, new JustDate());
+
+    RowFactory.createRow(prjDataInfo, prjRow, new RowCallback() {
+
+      @Override
+      public void onSuccess(final BeeRow projectRow) {
+        final List<Long> observers =
+            DataUtils.parseIdList(selectedRow.getProperty(TaskConstants.PROP_OBSERVERS));
+
+        if (!BeeUtils.isEmpty(observers)) {
+          addProjectUsers(observers, projectRow);
+        }
+
+        Queries.update(VIEW_TASKS, selectedRow.getId(), ProjectConstants.COL_PROJECT, Value
+            .getValue(projectRow.getId()), new IntCallback() {
+
+          @Override
+          public void onSuccess(Integer result) {
+            gridView.notifyInfo(Localized.getMessages().newProjectCreated(projectRow.getId()));
+          }
+        });
+      }
+    });
   }
 
   private void confirmTask(final GridView gridView, final IsRow row) {
@@ -669,6 +751,29 @@ class TasksGrid extends AbstractGridInterceptor {
             CellUpdateEvent.fire(BeeKeeper.getBus(), getViewName(), event.getRowValue().getId(),
                 event.getRowValue().getVersion(), source,
                 (value == null) ? null : BeeUtils.toString(value));
+          }
+        });
+  }
+
+  private static void addProjectUsers(final List<Long> userIds, final BeeRow projectRow) {
+    Queries.getRowSet(ProjectConstants.VIEW_PROJECT_USERS, Lists
+        .newArrayList(AdministrationConstants.COL_USER),
+        Filter.equals(ProjectConstants.COL_PROJECT, projectRow.getId()), new RowSetCallback() {
+
+          @Override
+          public void onSuccess(BeeRowSet projectUsers) {
+            for (IsRow row : projectUsers) {
+              userIds.remove(row.getLong(projectUsers
+                  .getColumnIndex(AdministrationConstants.COL_USER)));
+            }
+
+            for (Long user : userIds) {
+              Queries.insert(ProjectConstants.VIEW_PROJECT_USERS, Data.getColumns(
+                  ProjectConstants.VIEW_PROJECT_USERS, Lists.newArrayList(
+                      ProjectConstants.COL_PROJECT, AdministrationConstants.COL_USER)),
+                  Lists.newArrayList(BeeUtils.toString(projectRow.getId()), BeeUtils
+                      .toString(user)));
+            }
           }
         });
   }
