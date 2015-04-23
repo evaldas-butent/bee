@@ -5,7 +5,7 @@
   
   name="ServiceObjects" viewName="ServiceObjects"
   caption="=svcObjects" editShowId="true"
-  autoFit="true"
+  autoFit="true" enabledActions="copy"
   >
   
   <g:west size="200" splitterSize="2">

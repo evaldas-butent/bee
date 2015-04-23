@@ -33,6 +33,7 @@ public final class ServiceConstants {
   public static final String SVC_CREATE_DEFECT_ITEMS = "CreateDefectItems";
   public static final String SVC_GET_CALENDAR_DATA = "getServiceCalendarData";
   public static final String SVC_COPY_DOCUMENT_CRITERIA = "CopyDocumentCriteria";
+  public static final String SVC_GET_SERVICE_OBJECT_DATA = "getServiceObjectData";
 
   public static final String TBL_SERVICE_TREE = "ServiceTree";
   public static final String TBL_SERVICE_OBJECTS = "ServiceObjects";
