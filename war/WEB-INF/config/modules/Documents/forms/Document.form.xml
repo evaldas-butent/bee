@@ -26,11 +26,6 @@
       </FlowPanel>
     </page>
 
-    <page data="Relations" for="Document">
-      <text>=relations</text>
-       <xi:include href="widgets/DocumentRelations.widget.xml" />
-    </page>
-
     <page module="Documents.Templates">
       <text>=content</text>
       <xi:include href="widgets/Content.widget.xml" />
