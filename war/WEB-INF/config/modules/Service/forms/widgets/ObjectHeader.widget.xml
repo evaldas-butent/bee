@@ -23,4 +23,28 @@
     <Label for="Contractor" />
     <DataSelector source="Contractor" style="&inp;" />
   </row>
+
+  <row>
+    <Label text="=svcModel"/>
+    <InputText source="Model" style="&inp;"/>
+
+    <Label text="=svcYearOfManufacture"/>
+    <InputText source="YearOfManufacture" style="&inp;"/>
+  </row>
+  
+  <row>
+    <Label text="=svcInventNo"/>
+    <InputText source="InventNo" style="&inp;"/>
+
+    <Label text="=svcBodyNo"/>
+    <InputText source="BodyNo" style="&inp;"/>
+  </row>
+  
+  <row>
+    <Label text="=svcSeller"/>
+    <InputText source="Seller" style="&inp;"/>
+
+    <Label text="=svcItemInButenta"/>
+    <InputText source="ItemInButenta" style="&inp;"/>
+  </row>
 </Table>

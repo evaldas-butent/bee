@@ -2885,14 +2885,16 @@ public class TradeActBean implements HasTimerService {
       objects.put(row.getLong(COL_ITEM_EXTERNAL_CODE), row.getLong(COL_SERVICE_OBJECT));
     }
     try {
-      String sql = "SELECT rusis AS tp, valst_nr AS nr, car_id AS id FROM masinos";
+      String sql =
+          "SELECT rusis AS tp, valst_nr AS nr, car_id AS id, modelis AS md, invent_nr AS inr, "
+              + "kebul_nr AS bnr, pag_metai AS yom, pardavejas AS sl FROM masinos";
 
       if (!BeeUtils.isEmpty(objects)) {
         sql += " WHERE car_id NOT IN(" + BeeUtils.joinItems(Lists.newArrayList(objects.keySet()))
             + ")";
       }
       rs = ButentWS.connect(remoteNamespace, remoteAddress, remoteLogin, remotePassword)
-          .getSQLData(sql, new String[] {"tp", "nr", "id"});
+          .getSQLData(sql, new String[] {"tp", "nr", "id", "md", "inr", "bnr", "yom", "sl"});
     } catch (BeeException e) {
       logger.error(e);
       return;
@@ -2919,7 +2921,12 @@ public class TradeActBean implements HasTimerService {
         objects.put(id, qs.insertData(new SqlInsert(TBL_SERVICE_OBJECTS)
             .addConstant(COL_SERVICE_CATEGORY, categories.get(category))
             .addConstant(COL_SERVICE_ADDRESS, row.getValue("nr"))
-            .addConstant(COL_ITEM_EXTERNAL_CODE, id)));
+            .addConstant(COL_ITEM_EXTERNAL_CODE, id)
+            .addConstant(COL_SERVICE_MODEL, row.getValue("md"))
+            .addConstant(COL_SERVICE_INVENT_NO, row.getValue("inr"))
+            .addConstant(COL_SERVICE_BODY_NO, row.getValue("bnr"))
+            .addConstant(COL_SERVICE_YEAR_OF_MANUFACTURE, row.getValue("yom"))
+            .addConstant(COL_SERVICE_SELLER, row.getValue("sl"))));
       }
     }
     // Service Object Repair History
