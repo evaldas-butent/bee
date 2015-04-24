@@ -716,7 +716,6 @@
         </xs:sequence>
         <xs:attributeGroup ref="ui:relation" />
         <xs:attribute name="label" type="xs:string" />
-        <xs:attribute name="enumKey" type="xs:normalizedString" />
         <xs:attribute name="renderColumns" type="tp:fieldNames" />
         <xs:attribute name="upperCase" type="xs:boolean" />
       </xs:extension>
