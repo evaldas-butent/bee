@@ -15,11 +15,12 @@
     <page>
       <text>=mainInformation</text>
       <FlowPanel class="flexBox-vertical">
-        <xi:include href="widgets/DocumentFields.widget.xml" />
-        <FlowPanel>
-          <Relations relColumn="Document" inline="true"
-            style="margin-left: 520px; margin-top: -265px; min-width: 300px;"
-            defaultRelations="Companies Persons Requests Tasks" />
+        <FlowPanel class="flexBox-horizontal">
+          <xi:include href="widgets/DocumentFields.widget.xml" />
+          <FlowPanel style="display: table;">
+            <Relations relColumn="Document" inline="true"
+              defaultRelations="Companies Persons Requests Tasks" style="margin-left: 15px;" />
+          </FlowPanel>
         </FlowPanel>
         <ChildGrid name="DocumentFiles" relColumn="Document" class="flexible"
           style="margin-top: 1ex;" />
