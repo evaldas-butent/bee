@@ -10,8 +10,6 @@ import com.google.gwt.user.client.ui.HasWidgets;
 import com.google.gwt.user.client.ui.Panel;
 import com.google.gwt.user.client.ui.Widget;
 
-import static com.butent.bee.shared.modules.discussions.DiscussionsConstants.*;
-
 import com.butent.bee.client.Bee;
 import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.Global;
@@ -19,7 +17,6 @@ import com.butent.bee.client.Screen;
 import com.butent.bee.client.Settings;
 import com.butent.bee.client.Users;
 import com.butent.bee.client.cli.Shell;
-import com.butent.bee.client.data.Data;
 import com.butent.bee.client.data.RowCallback;
 import com.butent.bee.client.data.RowEditor;
 import com.butent.bee.client.data.RowFactory;
@@ -59,10 +56,8 @@ import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.HasHtml;
 import com.butent.bee.shared.Pair;
 import com.butent.bee.shared.css.CssUnit;
-import com.butent.bee.shared.data.BeeColumn;
 import com.butent.bee.shared.data.BeeRow;
 import com.butent.bee.shared.data.UserData;
-import com.butent.bee.shared.data.view.DataInfo;
 import com.butent.bee.shared.font.FontAwesome;
 import com.butent.bee.shared.html.Tags;
 import com.butent.bee.shared.i18n.Localized;
@@ -71,11 +66,6 @@ import com.butent.bee.shared.logging.LogUtils;
 import com.butent.bee.shared.menu.MenuService;
 import com.butent.bee.shared.modules.administration.AdministrationConstants;
 import com.butent.bee.shared.modules.classifiers.ClassifierConstants;
-import com.butent.bee.shared.modules.discussions.DiscussionsConstants;
-import com.butent.bee.shared.modules.documents.DocumentConstants;
-import com.butent.bee.shared.modules.tasks.TaskConstants;
-import com.butent.bee.shared.rights.Module;
-import com.butent.bee.shared.rights.ModuleAndSub;
 import com.butent.bee.shared.rights.RegulatedWidget;
 import com.butent.bee.shared.time.JustDate;
 import com.butent.bee.shared.time.TimeUtils;
@@ -102,13 +92,7 @@ public class ScreenImpl implements Screen {
   private static final Set<Direction> hidableDirections = EnumSet.of(Direction.WEST,
       Direction.NORTH, Direction.EAST);
 
-  private Split screenPanel;
   private static final String CONTAINER = "Container";
-  private static final String TASK = "Task";
-  private static final String COMPANY = "Company";
-  private static final String DOCUMENT = "Document";
-  private static final String NOTE = "Note";
-  private static final String ANNOUNCEMENT = "Announcement";
   private static final String PHOTO_URL = "images/photo/";
   private static FaLabel userLabel = new FaLabel(FontAwesome.USER);
   private static FaLabel emailLabel = new FaLabel(FontAwesome.ENVELOPE_O);
@@ -119,9 +103,11 @@ public class ScreenImpl implements Screen {
   private static Flow flowNewsSize = new Flow();
 
   private static final String DEFAULT_PHOTO_IMAGE = "images/silver/person_profile.png";
-  private CentralScrutinizer centralScrutinizer;
   public static final HtmlTable NOTIFICATION_CONTENT = new HtmlTable(BeeConst.CSS_CLASS_PREFIX
       + "NotificationBar-Content");
+
+  private Split screenPanel;
+  private CentralScrutinizer centralScrutinizer;
 
   private Workspace workspace;
   private HasWidgets commandPanel;
@@ -897,117 +883,24 @@ public class ScreenImpl implements Screen {
   protected Pair<? extends IdentifiableWidget, Integer> initWest() {
     setCentralScrutinizer(new CentralScrutinizer());
 
-    Flow top = new Flow();
-    Flow containerEnv = new Flow();
-    FaLabel bookmark = new FaLabel(FontAwesome.BOOKMARK);
-    Label title = new Label();
     final Label createButton = new Label("+ " + Localized.getConstants().create());
-
     createButton.addStyleName(BeeConst.CSS_CLASS_PREFIX + "CreateButton");
-    top.addStyleName(BeeConst.CSS_CLASS_PREFIX + "TopWest");
-    title.setText(Localized.getConstants().myEnvironment());
-    containerEnv.addStyleName(BeeConst.CSS_CLASS_PREFIX + "MyEnvironment");
 
     createButton.addClickHandler(new ClickHandler() {
-
       @Override
       public void onClick(ClickEvent event) {
-
-        final HtmlTable table = new HtmlTable(BeeConst.CSS_CLASS_PREFIX + "create-NewForm");
-        int r = 0;
-
-        if (BeeKeeper.getUser().isModuleVisible(ModuleAndSub.of(Module.TASKS))
-            && BeeKeeper.getUser().canCreateData(TaskConstants.VIEW_TASKS)) {
-          table.setText(r, 0, Localized.getConstants().crmNewTask());
-          DomUtils.setDataProperty(table.getRow(r++), CONTAINER, TASK);
-        }
-
-        if (BeeKeeper.getUser().isModuleVisible(ModuleAndSub.of(Module.CLASSIFIERS))
-            && BeeKeeper.getUser().canCreateData(ClassifierConstants.VIEW_COMPANIES)) {
-          table.setText(r, 0, Localized.getConstants().newClient());
-          DomUtils.setDataProperty(table.getRow(r++), CONTAINER, COMPANY);
-        }
-
-        if (BeeKeeper.getUser().isModuleVisible(ModuleAndSub.of(Module.DOCUMENTS))
-            && BeeKeeper.getUser().canCreateData(DocumentConstants.VIEW_DOCUMENTS)) {
-          table.setText(r, 0, Localized.getConstants().documentNew());
-          DomUtils.setDataProperty(table.getRow(r++), CONTAINER, DOCUMENT);
-        }
-
-        if (BeeKeeper.getUser().isModuleVisible(ModuleAndSub.of(Module.TASKS))
-            && BeeKeeper.getUser().canCreateData(TaskConstants.VIEW_TODO_LIST)) {
-          table.setText(r, 0, Localized.getConstants().crmNewTodoItem());
-          DomUtils.setDataProperty(table.getRow(r++), CONTAINER, NOTE);
-        }
-
-        if (BeeKeeper.getUser().isModuleVisible(ModuleAndSub.of(Module.DISCUSSIONS))
-            && BeeKeeper.getUser().canCreateData(DiscussionsConstants.VIEW_DISCUSSIONS)) {
-          table.setText(r, 0, Localized.getConstants().announcementNew());
-          DomUtils.setDataProperty(table.getRow(r++), CONTAINER, ANNOUNCEMENT);
-        }
-
-        if (r > 0) {
-          table.addClickHandler(new ClickHandler() {
-            @Override
-            public void onClick(ClickEvent ev) {
-              Element targetElement = EventUtils.getEventTargetElement(ev);
-              TableRowElement rowElement = DomUtils.getParentRow(targetElement, true);
-              String index = DomUtils.getDataProperty(rowElement, CONTAINER);
-              UiHelper.closeDialog(table);
-
-              switch (index) {
-                case TASK:
-                  RowFactory.createRow(TaskConstants.VIEW_TASKS);
-                  break;
-
-                case COMPANY:
-                  RowFactory.createRow(ClassifierConstants.VIEW_COMPANIES);
-                  break;
-
-                case DOCUMENT:
-                  RowFactory.createRow(DocumentConstants.VIEW_DOCUMENTS);
-                  break;
-
-                case NOTE:
-                  RowFactory.createRow(TaskConstants.VIEW_TODO_LIST);
-                  break;
-
-                case ANNOUNCEMENT:
-                  DataInfo data = Data.getDataInfo(VIEW_DISCUSSIONS);
-                  final BeeColumn beeCol = data.getColumn(COL_TOPIC);
-                  BeeRow emptyRow = RowFactory.createEmptyRow(data, true);
-                  if (beeCol != null) {
-                    beeCol.setNullable(false);
-                  }
-                  RowFactory.createRow(FORM_NEW_DISCUSSION, Localized.getConstants()
-                      .announcementNew(), data,
-                      emptyRow, null);
-                  break;
-              }
-            }
-          });
-          Popup popup = new Popup(OutsideClick.CLOSE);
-          popup.addStyleName(BeeConst.CSS_CLASS_PREFIX + "PopupCreate");
-          popup.setWidget(table);
-          popup.setHideOnEscape(true);
-          popup.showRelativeTo(createButton.getElement());
-        }
-
+        RowFactory.showMenu(createButton);
       }
     });
 
-    top.add(createButton);
-    containerEnv.add(bookmark);
-    containerEnv.add(title);
-    top.add(containerEnv);
+    Flow panel = new Flow(BeeConst.CSS_CLASS_PREFIX + "WestContainer");
 
-    Flow panel = new Flow();
-    panel.add(top);
-    panel.addStyleName(BeeConst.CSS_CLASS_PREFIX + "WestContainer");
+    panel.add(createButton);
     panel.add(getCentralScrutinizer());
     panel.add(createCopyright(BeeConst.CSS_CLASS_PREFIX));
 
-    return Pair.of(panel, 200);
+    int width = BeeUtils.resize(DomUtils.getClientWidth(), 1000, 2000, 240, 320);
+    return Pair.of(panel, width);
   }
 
   protected void onUserSignatureClick() {

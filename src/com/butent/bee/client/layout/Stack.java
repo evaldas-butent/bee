@@ -111,6 +111,7 @@ public class Stack extends ComplexPanel implements ProvidesResize, RequiresResiz
   }
 
   private static final class Revelation extends RafCallback {
+
     private static final double FROM = 0.2;
     private static final double TO = 1.0;
 
@@ -147,6 +148,8 @@ public class Stack extends ComplexPanel implements ProvidesResize, RequiresResiz
   private final Revelation revelation = new Revelation(200);
 
   private int selectedIndex = BeeConst.UNDEF;
+
+  private int minContentHeight;
 
   public Stack() {
     setElement(Document.get().createDivElement());
@@ -218,6 +221,10 @@ public class Stack extends ComplexPanel implements ProvidesResize, RequiresResiz
   @Override
   public String getIdPrefix() {
     return "stack";
+  }
+
+  public int getMinContentHeight() {
+    return minContentHeight;
   }
 
   public int getSelectedIndex() {
@@ -301,6 +308,10 @@ public class Stack extends ComplexPanel implements ProvidesResize, RequiresResiz
   @Override
   public void setId(String id) {
     DomUtils.setId(this, id);
+  }
+
+  public void setMinContentHeight(int minContentHeight) {
+    this.minContentHeight = minContentHeight;
   }
 
   public void showWidget(int index) {
@@ -446,6 +457,19 @@ public class Stack extends ComplexPanel implements ProvidesResize, RequiresResiz
         style.clearBottom();
 
         top += header.getSize();
+      }
+
+      int offsetHeight = getOffsetHeight();
+      if (offsetHeight > 0 && getMinContentHeight() > 0) {
+        int h = 0;
+        for (int i = getStackSize() - 1; i > getSelectedIndex(); i--) {
+          h += getHeader(i).getSize();
+        }
+
+        int diff = offsetHeight - top - h - getMinContentHeight();
+        if (diff < 0) {
+          bottom = diff;
+        }
       }
 
       for (int i = getStackSize() - 1; i > getSelectedIndex(); i--) {

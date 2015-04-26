@@ -116,6 +116,8 @@ class CentralScrutinizer extends Stack implements CloseHandler<IdentifiableWidge
   CentralScrutinizer() {
     super();
     addStyleName(BeeConst.CSS_CLASS_PREFIX + "CentralScrutinizer");
+
+    setMinContentHeight(400);
   }
 
   public Flow getDomainHeader(Domain domain, Long key) {
