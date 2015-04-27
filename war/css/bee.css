@@ -3476,6 +3476,25 @@ textarea,
   cursor: pointer;
 }
 
+.bee-MyEnvironment {
+  display: flex;
+  display: -webkit-flex;
+  display: -ms-flexbox;
+  margin-left: 32px;
+  margin-bottom: 15px;
+  color: #414142;
+}
+.bee-MyEnvironment .bee-fa-label {
+  margin-top: 2px;
+  cursor: auto;
+}
+.bee-MyEnvironment .bee-Label {
+  margin-left: 10px;
+  font-weight: bold;
+  font-size: 12px;
+  text-transform: uppercase;
+}
+
 .bee-OnlineUsersPhoto {
   width: 40px;
   height: 40px;

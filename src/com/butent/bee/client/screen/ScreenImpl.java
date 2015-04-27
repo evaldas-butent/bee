@@ -893,9 +893,14 @@ public class ScreenImpl implements Screen {
       }
     });
 
+    Flow myEnv = new Flow(BeeConst.CSS_CLASS_PREFIX + "MyEnvironment");
+    myEnv.add(new FaLabel(FontAwesome.BOOKMARK));
+    myEnv.add(new Label(Localized.getConstants().myEnvironment()));
+
     Flow panel = new Flow(BeeConst.CSS_CLASS_PREFIX + "WestContainer");
 
     panel.add(createButton);
+    panel.add(myEnv);
     panel.add(getCentralScrutinizer());
     panel.add(createCopyright(BeeConst.CSS_CLASS_PREFIX));
 
