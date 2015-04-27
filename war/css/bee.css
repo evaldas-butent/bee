@@ -1647,20 +1647,22 @@
   background-color: #e3e3e3;
 }
 
+.bee-Appliance {
+  color: #666;
+}
+.bee-Appliance:hover {
+  color: #414142;
+}
 .bee-Appliance-icon {
   position: absolute;
-  top: 4px;
-  left: 15px;
+  top: 6px;
+  left: 20px;
+  font-size: 14px;
 }
 .bee-Appliance-label {
   position: absolute;
   top: 4px;
   left: 50px;
-  color: #666666;
-}
-
-.bee-Appliance-label:hover {
-  color: #414142;
 }
 .bee-Appliance-close {
   position: absolute;
@@ -1670,7 +1672,6 @@
 }
 .bee-Appliance-close:hover {
   color: red;
-  cursor: pointer;
 }
 
 .bee-Shell {

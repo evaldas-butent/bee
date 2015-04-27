@@ -19,7 +19,7 @@ import com.butent.bee.client.layout.Stack;
 import com.butent.bee.client.ui.IdentifiableWidget;
 import com.butent.bee.client.websocket.Endpoint;
 import com.butent.bee.client.widget.CustomDiv;
-import com.butent.bee.client.widget.Image;
+import com.butent.bee.client.widget.FaLabel;
 import com.butent.bee.client.widget.Label;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
@@ -50,9 +50,8 @@ class CentralScrutinizer extends Stack implements CloseHandler<IdentifiableWidge
       addStyleName(STYLE_NAME);
       addStyleName(STYLE_NAME + BeeUtils.proper(domain.name()));
 
-      if (domain.getImageResource() != null) {
-        Image icon = new Image(domain.getImageResource());
-        icon.addStyleName(STYLE_NAME + "-icon");
+      if (domain.getIcon() != null) {
+        FaLabel icon = new FaLabel(domain.getIcon(), STYLE_NAME + "-icon");
         add(icon);
       }
 
