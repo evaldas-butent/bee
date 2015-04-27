@@ -12,7 +12,7 @@
 <f:Form xmlns="http://www.butent.com/widget" xmlns:f="http://www.butent.com/form"
   xmlns:xi="http://www.w3.org/2001/XInclude" name="Project" viewName="Projects"
   caption="=project" width="950" widthUnit="px" height="95" heightUnit="%" >
-  <FlowPanel class="flexBox-vertical">
+  <FlowPanel>
     <Table class="bee-ProjectTable">
       <row>
         <Label for="Name" text="=name" style="&lbl;" class="bee-required" />
@@ -106,7 +106,7 @@
       </Table>
     </Disclosure>
 
-     <TabbedPages class="flexible">
+     <TabbedPages style="height: 580px;">
       <page>
         <text>=prjComments</text>
         <FlowPanel name="ProjectComments" class="flex-horizontal"/>
