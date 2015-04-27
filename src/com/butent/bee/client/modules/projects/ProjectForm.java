@@ -805,6 +805,7 @@ class ProjectForm extends AbstractFormInterceptor implements DataChangeEvent.Han
 
     final int idxExpTD = form.getDataIndex(COL_EXPECTED_TASKS_DURATION);
     final int idxActTD = form.getDataIndex(COL_ACTUAL_TASKS_DURATION);
+    final int idxExpD = form.getDataIndex(COL_EXPECTED_DURATION);
     int idxUnit = form.getDataIndex(COL_PROJECT_TIME_UNIT);
 
     double factor = BeeConst.DOUBLE_ONE;
@@ -887,10 +888,22 @@ class ProjectForm extends AbstractFormInterceptor implements DataChangeEvent.Han
                         / TimeUtils.MILLIS_PER_MINUTE), true) : BeeConst.STRING_EMPTY));
       }
     }
+
+    if (!BeeConst.isUndef(idxExpTD) && !BeeConst.isUndef(idxExpD)) {
+      long valueExpTD = BeeUtils.unbox(row.getLong(idxExpTD));
+      long expDMls =
+          BeeUtils.unbox(row.getLong(idxExpD))
+              * BeeUtils.toLong(factor * TimeUtils.MILLIS_PER_HOUR);
+
+      if (valueExpTD > expDMls) {
+        expectedTasksDuration.addStyleName(BeeConst.CSS_CLASS_PREFIX + "prj-FieldOverSized");
+      } else {
+        expectedTasksDuration.setStyleName(BeeConst.CSS_CLASS_PREFIX + "prj-FieldOverSized", false);
+      }
+    }
   }
 
   private void unlockValidationEvent(String column) {
     lockedValidations.put(column, null);
   }
-
 }

@@ -177,9 +177,17 @@ class ProjectStagesGrid extends AbstractGridInterceptor {
                             / TimeUtils.MILLIS_PER_MINUTE), true) : BeeConst.STRING_EMPTY);
           }
 
-          return result;
-        }
+          final int idxExpD = DataUtils.getColumnIndex(COL_EXPECTED_DURATION, dataColumns);
+          long expDMls =
+              BeeUtils.unbox(row.getLong(idxExpD))
+                  * BeeUtils.toLong(factor * TimeUtils.MILLIS_PER_HOUR);
 
+          if (value > expDMls) {
+            return "<span class=\"bee-prj-stage-GridFieldOverSized\">" + result + "</span>";
+          } else {
+            return "<span class=\"bee-prj-stage-GridFieldNotOverSized\">" + result + "</span>";
+          }
+        }
         return BeeConst.STRING_EMPTY;
       }
     };
