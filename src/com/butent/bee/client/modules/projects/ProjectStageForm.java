@@ -355,10 +355,6 @@ class ProjectStageForm extends AbstractFormInterceptor implements DataChangeEven
       return;
     }
 
-    if (target > basic) {
-      widget.addStyleName(BeeConst.CSS_CLASS_PREFIX + "prj-FieldOverSized");
-    } else {
-      widget.setStyleName(BeeConst.CSS_CLASS_PREFIX + "prj-FieldOverSized", false);
-    }
+    widget.setStyleName(BeeConst.CSS_CLASS_PREFIX + "prj-FieldOverSized", target > basic);
   }
 }
