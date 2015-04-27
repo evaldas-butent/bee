@@ -895,11 +895,8 @@ class ProjectForm extends AbstractFormInterceptor implements DataChangeEvent.Han
           BeeUtils.unbox(row.getLong(idxExpD))
               * BeeUtils.toLong(factor * TimeUtils.MILLIS_PER_HOUR);
 
-      if (valueExpTD > expDMls) {
-        expectedTasksDuration.addStyleName(BeeConst.CSS_CLASS_PREFIX + "prj-FieldOverSized");
-      } else {
-        expectedTasksDuration.setStyleName(BeeConst.CSS_CLASS_PREFIX + "prj-FieldOverSized", false);
-      }
+      expectedTasksDuration.setStyleName(BeeConst.CSS_CLASS_PREFIX + "prj-FieldOverSized",
+          valueExpTD > expDMls);
     }
   }
 
