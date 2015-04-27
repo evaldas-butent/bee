@@ -11,7 +11,7 @@
   xmlns:f="http://www.butent.com/form"
   
   name="NewRequest" viewName="Requests" caption="=crmNewRequest"
-  width="610" height="330">
+  width="835" height="450">
   <FlowPanel style="padding: 10px 2px 2px 10px;">
     <FlowPanel style="&section;">
       <Label text="=date" class="bee-required" style="&inline; text-align:right; width:80px; padding-top:1px; margin-right: 5px" />
