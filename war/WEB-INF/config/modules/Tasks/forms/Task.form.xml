@@ -8,7 +8,7 @@
 
   <!ENTITY lbl1 "&inline; width: 100px; padding-top: 1px;">
   <!ENTITY top1 "float: left; width: 100px; padding-top: 1px;">
-  <!ENTITY inp2 "&inline; width: 140px;">
+  <!ENTITY inp2 "&inline; width: 180px;">
   <!ENTITY inp2x "&inline; width: 424px;">
   <!ENTITY lbl3 "&inline; width: 128px; padding-top: 1px; margin-left: 16px;">
   <!ENTITY inp4 "&inline; width: 140px;">
