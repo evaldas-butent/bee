@@ -145,6 +145,13 @@ public class Stack extends ComplexPanel implements ProvidesResize, RequiresResiz
 
   private static final String SELECTED_STYLE = HEADER_STYLE + "-selected";
 
+  private static final String KEY_MIN_HEIGHT = "min-height";
+
+  public static void setMinHeight(Widget widget, int height) {
+    Assert.notNull(widget);
+    DomUtils.setDataProperty(widget.getElement(), KEY_MIN_HEIGHT, height);
+  }
+
   private final Revelation revelation = new Revelation(200);
 
   private int selectedIndex = BeeConst.UNDEF;
@@ -192,9 +199,7 @@ public class Stack extends ComplexPanel implements ProvidesResize, RequiresResiz
   public void doLayout(boolean animate) {
     if (isAttached()) {
       layoutChildren(animate);
-      if (isOpen()) {
-        onResize();
-      }
+      resizeVisibleChildren();
     }
   }
 
@@ -264,6 +269,13 @@ public class Stack extends ComplexPanel implements ProvidesResize, RequiresResiz
 
   @Override
   public void onResize() {
+    if (isOpen()) {
+      layoutChildren(false);
+      resizeVisibleChildren();
+    }
+  }
+
+  private void resizeVisibleChildren() {
     for (Widget child : getChildren()) {
       if (child instanceof RequiresResize && DomUtils.isVisible(child)) {
         ((RequiresResize) child).onResize();
@@ -459,14 +471,23 @@ public class Stack extends ComplexPanel implements ProvidesResize, RequiresResiz
         top += header.getSize();
       }
 
+      Widget widget = getVisibleWidget();
+
       int offsetHeight = getOffsetHeight();
-      if (offsetHeight > 0 && getMinContentHeight() > 0) {
+
+      int minHeight = BeeUtils.unbox(DomUtils.getDataPropertyInt(widget.getElement(),
+          KEY_MIN_HEIGHT));
+      if (minHeight <= 0) {
+        minHeight = getMinContentHeight();
+      }
+
+      if (offsetHeight > 0 && minHeight > 0) {
         int h = 0;
         for (int i = getStackSize() - 1; i > getSelectedIndex(); i--) {
           h += getHeader(i).getSize();
         }
 
-        int diff = offsetHeight - top - h - getMinContentHeight();
+        int diff = offsetHeight - top - h - minHeight;
         if (diff < 0) {
           bottom = diff;
         }
@@ -482,7 +503,6 @@ public class Stack extends ComplexPanel implements ProvidesResize, RequiresResiz
         bottom += header.getSize();
       }
 
-      Widget widget = getVisibleWidget();
       Style style = widget.getElement().getStyle();
 
       StyleUtils.setTop(style, top);
