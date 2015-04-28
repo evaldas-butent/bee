@@ -46,7 +46,6 @@
 
     <SimpleColumn name="Received" />
     <SimpleColumn name="Sent" />
-    <SimpleColumn name="Returned" />
 
     <SimpleColumn name="Description" />
 
@@ -54,6 +53,7 @@
     <SimpleJoin joinType="LEFT" name="Data">
       <SimpleColumn name="Content" />
     </SimpleJoin>
+    
   </Columns>
 </View>
  
