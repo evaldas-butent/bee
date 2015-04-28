@@ -39,7 +39,6 @@ import com.butent.bee.shared.exceptions.BeeException;
 import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogUtils;
 import com.butent.bee.shared.modules.BeeParameter;
-import com.butent.bee.shared.modules.ec.EcConstants.*;
 import com.butent.bee.shared.modules.ec.EcUtils;
 import com.butent.bee.shared.rights.Module;
 import com.butent.bee.shared.time.TimeUtils;
@@ -1077,9 +1076,8 @@ public class TecDocBean implements HasTimerService {
                 .addFields(categ, COL_TCD_CATEGORY_PARENT)
                 .addFields(TBL_TCD_TECDOC_CATEGORIES, COL_TCD_CATEGORY)
                 .addFrom(categ)
-                .addFromInner(TBL_TCD_TECDOC_CATEGORIES,
-                    SqlUtils
-                        .join(categ, TCD_CATEGORY_ID, TBL_TCD_TECDOC_CATEGORIES, TCD_TECDOC_ID)),
+                .addFromInner(TBL_TCD_TECDOC_CATEGORIES, SqlUtils.join(categ, TCD_CATEGORY_ID,
+                    TBL_TCD_TECDOC_CATEGORIES, TCD_TECDOC_ID)),
             als, sys.joinTables(TBL_TCD_CATEGORIES, als, COL_TCD_CATEGORY)));
 
     qs.sqlDropTemp(categ);

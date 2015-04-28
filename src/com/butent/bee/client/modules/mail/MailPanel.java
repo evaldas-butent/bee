@@ -94,8 +94,7 @@ import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.modules.administration.AdministrationConstants;
 import com.butent.bee.shared.modules.classifiers.ClassifierConstants;
 import com.butent.bee.shared.modules.mail.AccountInfo;
-import com.butent.bee.shared.modules.mail.MailConstants.MessageFlag;
-import com.butent.bee.shared.modules.mail.MailConstants.RuleCondition;
+import com.butent.bee.shared.modules.mail.MailConstants.*;
 import com.butent.bee.shared.modules.mail.MailFolder;
 import com.butent.bee.shared.time.DateTime;
 import com.butent.bee.shared.time.TimeUtils;
@@ -164,7 +163,7 @@ public class MailPanel extends AbstractFormInterceptor {
       } else {
         address = BeeUtils.notEmpty(row.getString(senderLabel), row.getString(senderEmail));
       }
-      sender.setHtml(address);
+      sender.setText(address);
       fp.add(sender);
 
       Integer att = row.getInteger(attachmentCount);
@@ -177,7 +176,7 @@ public class MailPanel extends AbstractFormInterceptor {
         if (att > 1) {
           TextLabel attachments = new TextLabel(false);
           attachments.setStyleName(BeeConst.CSS_CLASS_PREFIX + "mail-AttachmentCount");
-          attachments.setHtml(BeeUtils.toString(att));
+          attachments.setText(BeeUtils.toString(att));
           fp.add(attachments);
         }
       }
@@ -190,7 +189,7 @@ public class MailPanel extends AbstractFormInterceptor {
 
       TextLabel subject = new TextLabel(false);
       subject.setStyleName(BeeConst.CSS_CLASS_PREFIX + "mail-HeaderSubject");
-      subject.setHtml(row.getString(subjectIdx));
+      subject.setText(row.getString(subjectIdx));
       fp.add(subject);
 
       return fp.toString();
@@ -938,7 +937,7 @@ public class MailPanel extends AbstractFormInterceptor {
     Icon icon = purge ? Icon.ALARM : Icon.WARNING;
 
     Global.messageBox(purge ? Localized.getConstants().actionDelete()
-        : Localized.getConstants().mailActionMoveToTrash(), icon, null, options, BeeConst.UNDEF,
+            : Localized.getConstants().mailActionMoveToTrash(), icon, null, options, BeeConst.UNDEF,
         new ChoiceCallback() {
           @Override
           public void onSuccess(int value) {
