@@ -34,12 +34,16 @@ import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.Pair;
 import com.butent.bee.shared.Service;
 import com.butent.bee.shared.communication.ResponseObject;
+import com.butent.bee.shared.data.BeeRow;
 import com.butent.bee.shared.data.BeeRowSet;
 import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.SimpleRowSet;
 import com.butent.bee.shared.data.SimpleRowSet.SimpleRow;
 import com.butent.bee.shared.data.SqlConstants.SqlDataType;
 import com.butent.bee.shared.data.SqlConstants.SqlFunction;
+import com.butent.bee.shared.data.filter.CompoundFilter;
+import com.butent.bee.shared.data.filter.CustomFilter;
+import com.butent.bee.shared.data.filter.Filter;
 import com.butent.bee.shared.data.filter.Operator;
 import com.butent.bee.shared.data.view.RowInfo;
 import com.butent.bee.shared.data.view.ViewColumn;
@@ -47,6 +51,7 @@ import com.butent.bee.shared.exceptions.BeeRuntimeException;
 import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.imports.ImportProperty;
 import com.butent.bee.shared.imports.ImportType;
+import com.butent.bee.shared.logging.LogUtils;
 import com.butent.bee.shared.time.DateTime;
 import com.butent.bee.shared.time.JustDate;
 import com.butent.bee.shared.time.TimeUtils;
@@ -286,7 +291,63 @@ public class ImportBean {
     return response;
   }
 
-  private IsExpression cast(BeeView view, String tmp, String col) {
+  public void init() {
+    QueryServiceBean.registerViewDataProvider(TBL_IMPORT_MAPPINGS,
+        new QueryServiceBean.ViewDataProvider() {
+          @Override
+          public BeeRowSet getViewData(BeeView view, SqlSelect query, Filter filter) {
+            BeeRowSet rs = qs.getViewData(query, view);
+            Map<String, String> params = getParameters(filter);
+
+            if (!DataUtils.isEmpty(rs) && !BeeUtils.isEmpty(params)) {
+              String tbl = params.get(VAR_MAPPING_TABLE);
+
+              SimpleRowSet result = qs.getData(new SqlSelect()
+                  .addField(TBL_IMPORT_MAPPINGS, sys.getIdName(TBL_IMPORT_MAPPINGS),
+                      COL_IMPORT_MAPPING)
+                  .addField(tbl, params.get(VAR_MAPPING_FIELD), COL_IMPORT_VALUE)
+                  .addFrom(TBL_IMPORT_MAPPINGS)
+                  .addFromInner(tbl, sys.joinTables(tbl, TBL_IMPORT_MAPPINGS, COL_IMPORT_MAPPING))
+                  .setWhere(sys.idInList(TBL_IMPORT_MAPPINGS, rs.getRowIds())));
+
+              for (BeeRow row : rs) {
+                row.setProperty(COL_IMPORT_MAPPING + COL_IMPORT_VALUE,
+                    result.getValueByKey(COL_IMPORT_MAPPING, BeeUtils.toString(row.getId()),
+                        COL_IMPORT_VALUE));
+              }
+            }
+            return rs;
+          }
+
+          @Override
+          public int getViewSize(BeeView view, SqlSelect query, Filter filter) {
+            return qs.sqlCount(query);
+          }
+
+          private Map<String, String> getParameters(Filter filter) {
+            Map<String, String> params = null;
+
+            if (filter != null) {
+              if (filter instanceof CustomFilter
+                  && BeeUtils.same(((CustomFilter) filter).getKey(), TBL_IMPORT_MAPPINGS)) {
+                return Codec.deserializeMap(((CustomFilter) filter).getArg(0));
+
+              } else if (filter instanceof CompoundFilter) {
+                for (Filter flt : ((CompoundFilter) filter).getSubFilters()) {
+                  params = getParameters(flt);
+
+                  if (!BeeUtils.isEmpty(params)) {
+                    break;
+                  }
+                }
+              }
+            }
+            return params;
+          }
+        });
+  }
+
+  private static IsExpression cast(BeeView view, String tmp, String col) {
     IsExpression xpr = SqlUtils.field(tmp, col);
 
     switch (view.getColumnType(col)) {
