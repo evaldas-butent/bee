@@ -29,6 +29,6 @@
     <RelColumn name="Currency" />
     <DataColumn name="ActualExpenses" scale="2">
     </DataColumn>
-    <DataColumn name="StageTaskCount" label="=prjStageTaskCount" />
+    <DataColumn name="TaskCount" label="=prjStageTaskCount" />
   </g:columns>
 </g:Grid>

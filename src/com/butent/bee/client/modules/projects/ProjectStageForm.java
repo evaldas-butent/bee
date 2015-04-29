@@ -257,6 +257,7 @@ class ProjectStageForm extends AbstractFormInterceptor implements DataChangeEven
           form.refreshBySource(ALS_ACTUAL_TASKS_EXPENSES);
 
           showComputedTimes(form, row, false);
+          RowUpdateEvent.fire(BeeKeeper.getBus(), VIEW_PROJECT_STAGES, result);
         }
       });
 
