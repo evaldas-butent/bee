@@ -9,7 +9,7 @@
   caption="=tradeActTemplate"
   width="800" height="600"
   >
-  <FlowPanel class="flexBox-vertical">
+  <FlowPanel>
     <br/>
     <Table>
       <col index="0" kind="label" />
@@ -20,8 +20,7 @@
         <InputText source="Template" visible="true" style="&inpw;" />
 
         <Label for="Name" />
-        <DataSelector source="Name" newRowEnabled="false" visible="true" style="&inpw;" choiceColumns="Name TypeName" 
-          renderColumns="CompanyName TypeName" />
+        <DataSelector source="Name" newRowEnabled="false" visible="true" style="&inpw;" />
       </row>
 
       <row>
@@ -82,7 +81,7 @@
     </Table>
 
     <br/>
-    <TabbedPages class="flexible">
+    <TabbedPages style="height: 400px;">
       <page>
         <text>=goods</text>
         <ChildGrid name="TradeActTmplItems" relColumn="TradeActTemplate" />
