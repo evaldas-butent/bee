@@ -28,5 +28,7 @@
     <Integer name="CompanyActionRemindBefore" label="=crmRTRemindBefore" />
 
     <Text name="Style" label="=style" />
+    
+    <Boolean name="MenuHide" />
   </Fields>
 </Table>

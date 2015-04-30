@@ -47,6 +47,7 @@
     <SimpleColumn name="CompanyActionRemindBefore" />
 
     <SimpleColumn name="Style" />
+    <SimpleColumn name="MenuHide" />
   </Columns>
   
   <Order>
