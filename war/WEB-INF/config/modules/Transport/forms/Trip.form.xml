@@ -14,7 +14,7 @@
     <Table>
       <row>
         <Label text="=trTripDate" class="bee-hasDefaults bee-required" />
-        <InputDateTime source="Date" style="width:110px;" />
+        <InputDateTime source="Date" style="width:11em;" />
         <Label text="=trTruck" class="bee-required" horizontalAlignment="right" />
         <DataSelector source="Vehicle" renderColumns="VehicleNumber" filter="IsTruck" required="true" />
         <Label text="=trailer" horizontalAlignment="right" />
@@ -22,7 +22,7 @@
       </row>
       <row>
         <Label text="=scheduledEndingDate" />
-        <InputDate source="PlannedEndDate" style="width:110px;" />
+        <InputDate source="PlannedEndDate" style="width:11em;" />
         <Label text="=trTripNo" class="bee-hasDefaults bee-required" horizontalAlignment="right" />
         <InputText source="TripNo" />
         <Label text="=status" class="bee-hasDefaults bee-required" horizontalAlignment="right" />

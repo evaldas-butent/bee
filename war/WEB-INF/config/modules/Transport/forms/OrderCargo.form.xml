@@ -86,7 +86,7 @@
             </row>
             <row>
               <cell colSpan="2">
-		        &separator;
+                &separator;
               </cell>
             </row>
             <row>
@@ -98,7 +98,7 @@
                     <Label text="=cargoValue" horizontalAlignment="right" style="&lbl1;" />
                     <FlowPanel>
                       <InputMoney source="Value" style="width:70px" />
-                      <DataSelector source="ValueCurrency" editEnabled="false" style="width:40px; display:inline-block; margin-left:5px;" />
+                      <DataSelector source="ValueCurrency" editEnabled="false" style="width:5em; display:inline-block; margin-left:5px;" />
                     </FlowPanel>
                     <Label text="=notes" />
                     <Label text="=trDirections" />
@@ -109,7 +109,7 @@
                     <Label text="=quantity" horizontalAlignment="right" style="&lbl1;" />
                     <FlowPanel>
                       <InputDecimal source="Quantity" format="0.00" style="width:70px" />
-                      <DataSelector source="QuantityUnit" style="display:inline-block; width:40px; margin-left:5px;" />
+                      <DataSelector source="QuantityUnit" style="display:inline-block; width:5em; margin-left:5px;" />
                     </FlowPanel>
                     <cell rowSpan="2">
                       <InputArea source="Notes" characterWidth="30" visibleLines="3" style="width: 150px" />
@@ -124,7 +124,7 @@
                     <Label text="=weight" horizontalAlignment="right" style="&lbl1;" />
                     <FlowPanel>
                       <InputDecimal source="Weight" format="0.000" style="width:70px" />
-                      <DataSelector source="WeightUnit" style="display:inline-block; width:40px; margin-left:5px;" />
+                      <DataSelector source="WeightUnit" style="display:inline-block; width:5em; margin-left:5px;" />
                     </FlowPanel>
                   </row>
                 </Table>
