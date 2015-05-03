@@ -4,7 +4,10 @@
 name="Administration" label="=administration" order="1000" module="Administration"
 >
   <Item name="Users" label="=users" service="grid" parameters="Users" />
-  <Item name="UserSettings" label="=userSettings" service="grid" parameters="UserSettings" />
+
+  <Item name="UserSettings" label="=userSettings" service="grid" parameters="UserSettings" 
+    separator="true" />
+  <Item name="UiThemes" label="=uiThemes" service="grid" parameters="UiThemes" />
 
   <Item name="UserGroupSettings" label="=userGroups" service="grid"
     parameters="UserGroupSettings" separator="true" />

@@ -486,6 +486,7 @@
       <xs:enumeration value="TripRoutes" />
       <xs:enumeration value="Trips" />
       <xs:enumeration value="Turnovers" />
+      <xs:enumeration value="UiThemes" />
       <xs:enumeration value="Units" />
       <xs:enumeration value="UnsuppliedItems" />
       <xs:enumeration value="UserCalAttendees" />
