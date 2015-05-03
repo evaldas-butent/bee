@@ -27,7 +27,6 @@ import com.google.gwt.user.client.ui.RequiresResize;
 import com.google.gwt.user.client.ui.Widget;
 
 import com.butent.bee.client.BeeKeeper;
-import com.butent.bee.client.Settings;
 import com.butent.bee.client.data.HasActiveRow;
 import com.butent.bee.client.data.HasDataTable;
 import com.butent.bee.client.dom.DomUtils;
@@ -711,12 +710,8 @@ public class CellGrid extends Widget implements IdentifiableWidget, HasDataTable
   private static final Template template = GWT.create(Template.class);
 
   public static int getDefaultBodyCellHeight() {
-    if (Settings.getGridCellBodyHeight() > 0) {
-      return Settings.getGridCellBodyHeight();
-    } else {
-      int h = Math.max(DomUtils.getTextBoxClientHeight(), 10);
-      return BeeUtils.resize(BeeKeeper.getScreen().getHeight(), 300, 1300, h - 2, h + 2);
-    }
+    int h = Math.max(DomUtils.getTextBoxClientHeight(), 10);
+    return BeeUtils.resize(BeeKeeper.getScreen().getHeight(), 300, 1300, h - 2, h + 2);
   }
 
   public static int getDefaultFooterCellHeight() {
@@ -725,12 +720,8 @@ public class CellGrid extends Widget implements IdentifiableWidget, HasDataTable
   }
 
   public static int getDefaultHeaderCellHeight() {
-    if (Settings.getGridCellHeaderHeight() > 0) {
-      return Settings.getGridCellHeaderHeight();
-    } else {
-      int h = Math.max(DomUtils.getTextBoxClientHeight(), 10);
-      return BeeUtils.resize(BeeKeeper.getScreen().getHeight(), 300, 1300, h, h + 10);
-    }
+    int h = Math.max(DomUtils.getTextBoxClientHeight(), 10);
+    return BeeUtils.resize(BeeKeeper.getScreen().getHeight(), 300, 1300, h, h + 10);
   }
 
   public static boolean isBodyRow(String rowIdx) {

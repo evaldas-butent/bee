@@ -8,7 +8,6 @@ import com.google.gwt.user.client.ui.HasEnabled;
 import com.google.gwt.user.client.ui.Widget;
 
 import com.butent.bee.client.BeeKeeper;
-import com.butent.bee.client.Settings;
 import com.butent.bee.client.dom.DomUtils;
 import com.butent.bee.client.event.logical.ReadyEvent;
 import com.butent.bee.client.layout.Flow;
@@ -207,12 +206,7 @@ public class HeaderImpl extends Flow implements HeaderView {
 
   @Override
   public int getHeight() {
-    int height = BeeKeeper.getUser().getViewHeaderHeight();
-    if (height <= 0) {
-      height = Settings.getViewHeaderHeight();
-    }
-
-    return (height > 0) ? height : DEFAULT_HEIGHT;
+    return DEFAULT_HEIGHT;
   }
 
   @Override

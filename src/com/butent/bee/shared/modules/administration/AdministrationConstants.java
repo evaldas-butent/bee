@@ -203,6 +203,8 @@ public final class AdministrationConstants {
   public static final String VIEW_WORKSPACES = "Workspaces";
   public static final String VIEW_REPORT_SETTINGS = "ReportSettings";
 
+  public static final String VIEW_UI_THEMES = "UiThemes";
+
   public static final String GRID_HISTORY = "History";
   public static final String GRID_USER_GROUP_MEMBERS = "UserGroupMembers";
 
@@ -305,11 +307,10 @@ public final class AdministrationConstants {
   public static final String COL_WORKSPACE_CONTINUE = "WorkspaceContinue";
   public static final String COL_LAST_WORKSPACE = "LastWorkspace";
 
-  public static final String COL_APPLIANCE_HEADER_HEIGHT = "ApplianceHeaderHeight";
-  public static final String COL_VIEW_HEADER_HEIGHT = "ViewHeaderHeight";
   public static final String COL_CLICK_SENSITIVITY_MILLIS = "ClickSensitivityMillis";
   public static final String COL_CLICK_SENSITIVITY_DISTANCE = "ClickSensitivityDistance";
 
+  public static final String COL_UI_THEME = "UiTheme";
   public static final String COL_USER_STYLE = "Style";
 
   public static final String COL_IMPORT_OPTION = "Option";

@@ -29,10 +29,6 @@ public final class Settings {
     return checkSettings() && settings.containsKey(key);
   }
 
-  public static int getApplianceHeaderHeight() {
-    return getInt("applianceHeaderHeight");
-  }
-
   public static String getAppName() {
     return getString("appName");
   }
@@ -140,18 +136,6 @@ public final class Settings {
 
   public static String getVersion() {
     return getString("version");
-  }
-
-  public static int getViewHeaderHeight() {
-    return getInt("viewHeaderHeight");
-  }
-
-  public static int getGridCellHeaderHeight() {
-    return getInt("gridCellHeaderHeight");
-  }
-
-  public static int getGridCellBodyHeight() {
-    return getInt("gridCellBodyHeight");
   }
 
   public static String getWebSocketUrl() {

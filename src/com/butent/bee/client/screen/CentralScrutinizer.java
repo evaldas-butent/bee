@@ -10,7 +10,6 @@ import com.google.gwt.user.client.ui.Widget;
 
 import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.Global;
-import com.butent.bee.client.Settings;
 import com.butent.bee.client.cli.Shell;
 import com.butent.bee.client.event.logical.ActiveWidgetChangeEvent;
 import com.butent.bee.client.layout.Flow;
@@ -104,12 +103,7 @@ class CentralScrutinizer extends Stack implements CloseHandler<IdentifiableWidge
   private static final int DEFAULT_HEADER_HEIGHT = 25;
 
   private static int getHeaderHeight() {
-    int height = BeeKeeper.getUser().getApplianceHeaderHeight();
-    if (height <= 0) {
-      height = Settings.getApplianceHeaderHeight();
-    }
-
-    return (height > 0) ? height : DEFAULT_HEADER_HEIGHT;
+    return DEFAULT_HEADER_HEIGHT;
   }
 
   CentralScrutinizer() {
