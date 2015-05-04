@@ -82,8 +82,8 @@
     style="&section;" class="flexBox-horizontal">
       <Label text="=crmTasks" style="&top1;min-width:80px; padding-right:18px;" />
       <MultiSelector viewName="Tasks" property="Tasks" 
-        renderColumns="Summary ExecutorFirstName ExecutorLastName"
-        choiceColumns="Summary ExecutorFirstName ExecutorLastName StartTime FinishTime"
+        renderColumns="Id Summary ExecutorFirstName ExecutorLastName"
+        choiceColumns="Id Summary ExecutorFirstName ExecutorLastName StartTime FinishTime"
         newRowEnabled="false" editPopup="true" style="&inp2x;" />
     </FlowPanel>
     
@@ -91,8 +91,8 @@
       style="&section;" class="flexBox-horizontal">
       <Label text="=documents" style="&top1;min-width:80px; padding-right:18px;" />
       <MultiSelector viewName="Documents" property="Documents" 
-        renderColumns="Name DocumentDate Number"
-        choiceColumns="Name DocumentDate Number"
+        renderColumns="Name Number RegistrationNumber DocumentDate"
+        choiceColumns="Name Number RegistrationNumber DocumentDate"
         newRowEnabled="false" editPopup="true" style="&inp2x;" />
     </FlowPanel>
     

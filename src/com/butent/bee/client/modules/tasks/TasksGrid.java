@@ -372,7 +372,7 @@ class TasksGrid extends AbstractGridInterceptor {
     int idxTaskProject = gridView.getDataIndex(ProjectConstants.COL_PROJECT);
     int idxTaskCompany = gridView.getDataIndex(ClassifierConstants.COL_COMPANY);
     int idxTaskCompanyName = gridView.getDataIndex(ClassifierConstants.ALS_COMPANY_NAME);
-    int idxTaskCompanyTypeName = gridView.getDataIndex(ALS_COMPANY_TYPE_NAME);
+    int idxTaskCompanyTypeName = gridView.getDataIndex(ClassifierConstants.ALS_COMPANY_TYPE_NAME);
     int idxTaskContact = gridView.getDataIndex(ClassifierConstants.COL_CONTACT);
     int idxTaskContactPerson = gridView.getDataIndex(ClassifierConstants.ALS_CONTACT_PERSON);
     int idxTaskContactFirstName = gridView.getDataIndex(ClassifierConstants.ALS_CONTACT_FIRST_NAME);
@@ -402,7 +402,7 @@ class TasksGrid extends AbstractGridInterceptor {
     int idxPrjCompany = prjDataInfo.getColumnIndex(ClassifierConstants.COL_COMPANY);
     int idxPrjCompanyName = prjDataInfo.getColumnIndex(ClassifierConstants.ALS_COMPANY_NAME);
     int idxPrjCompanyTypeName =
-        prjDataInfo.getColumnIndex(ALS_COMPANY_TYPE_NAME);
+        prjDataInfo.getColumnIndex(ClassifierConstants.ALS_COMPANY_TYPE_NAME);
     int idxPrjContact = prjDataInfo.getColumnIndex(ClassifierConstants.COL_CONTACT);
     int idxPrjContactPerson = prjDataInfo.getColumnIndex(ClassifierConstants.ALS_CONTACT_PERSON);
     int idxPrjContactFirstName =
