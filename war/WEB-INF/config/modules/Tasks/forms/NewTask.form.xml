@@ -38,7 +38,7 @@
 
       <row>
         <Label for="Type" />
-        <DataSelector source="Type" renderColumns="TypeName" newRowEnabled="false" style="&inp2;"
+        <DataSelector source="Type" renderColumns="TypeName" newRowEnabled="true" style="&inp2;"
           disablable="true" />
         <Label for="Priority" />
         <Radio source="Priority" />
@@ -164,7 +164,7 @@
   
       <row data="Relations" for="Company" module="Classifiers.Contacts">
         <Label text="=companies" />
-        <MultiSelector viewName="Companies" property="Companies" renderColumns="Name"
+        <MultiSelector viewName="Companies" property="Companies" renderColumns="Name TypeName"
           editPopup="true" newRowEnabled="false" style="&inp2x;" />
       </row>
 
@@ -176,7 +176,7 @@
 
       <row data="Relations" for="Document" module="Documents">
         <Label text="=documents" />
-        <MultiSelector viewName="Documents" property="Documents" renderColumns="Name"
+        <MultiSelector viewName="Documents" property="Documents" renderColumns="Name Number RegistrationNumber"
           editPopup="true" newRowEnabled="false" style="&inp2x;" />
       </row>
 
@@ -210,8 +210,8 @@
       <row data="Relations" for="Relation">
         <Label text="=crmTasks" />
         <MultiSelector viewName="Tasks" property="Tasks" 
-          renderColumns="Summary ExecutorFirstName ExecutorLastName"
-          choiceColumns="Summary ExecutorFirstName ExecutorLastName StartTime FinishTime"
+          renderColumns="Id Summary ExecutorFirstName ExecutorLastName"
+          choiceColumns="Id Summary ExecutorFirstName ExecutorLastName StartTime FinishTime"
           newRowEnabled="false" editPopup="true" style="&inp2x;" />
         </row>
     </Table>
