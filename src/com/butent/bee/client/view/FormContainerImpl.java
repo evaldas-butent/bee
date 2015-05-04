@@ -51,6 +51,8 @@ public class FormContainerImpl extends Split implements FormContainerView, HasNa
 
   private static final String STYLE_NAME = BeeConst.CSS_CLASS_PREFIX + "FormContainer";
 
+  private static final EnumSet<UiOption> uiOptions = EnumSet.of(UiOption.VIEW);
+
   private Presenter viewPresenter;
 
   private String headerId;
@@ -74,7 +76,9 @@ public class FormContainerImpl extends Split implements FormContainerView, HasNa
 
   public FormContainerImpl() {
     super(-1);
+
     addStyleName(STYLE_NAME);
+    addStyleName(UiOption.getStyleName(uiOptions));
   }
 
   @Override
@@ -103,6 +107,7 @@ public class FormContainerImpl extends Split implements FormContainerView, HasNa
   @Override
   public void create(FormDescription formDescription, List<BeeColumn> dataColumns, int rowCount,
       FormInterceptor interceptor) {
+
     Assert.notNull(formDescription);
 
     setHasData(!BeeUtils.isEmpty(dataColumns));
@@ -130,9 +135,10 @@ public class FormContainerImpl extends Split implements FormContainerView, HasNa
       }
       caption = BeeUtils.notEmpty(interceptor.getCaption(), caption);
     }
+
     HeaderView header = new HeaderImpl();
     header.create(caption, hasData(), formDescription.isReadOnly(), formDescription.getViewName(),
-        EnumSet.of(UiOption.VIEW), enabledActions, disabledActions, Action.NO_ACTIONS);
+        uiOptions, enabledActions, disabledActions, Action.NO_ACTIONS);
 
     FormView content = new FormImpl(formDescription.getName());
     content.create(formDescription, null, dataColumns, true, interceptor);

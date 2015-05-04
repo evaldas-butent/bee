@@ -14,6 +14,7 @@ import com.butent.bee.client.layout.Flow;
 import com.butent.bee.client.layout.Horizontal;
 import com.butent.bee.client.presenter.Presenter;
 import com.butent.bee.client.ui.IdentifiableWidget;
+import com.butent.bee.client.ui.Theme;
 import com.butent.bee.client.ui.UiOption;
 import com.butent.bee.client.widget.FaLabel;
 import com.butent.bee.client.widget.Label;
@@ -75,6 +76,8 @@ public class HeaderImpl extends Flow implements HeaderView {
 
   private final Horizontal commandPanel = new Horizontal();
 
+  private int height = DEFAULT_HEIGHT;
+
   public HeaderImpl() {
     super();
   }
@@ -113,6 +116,12 @@ public class HeaderImpl extends Flow implements HeaderView {
       Set<Action> hiddenActions) {
 
     addStyleName(STYLE_CONTAINER);
+
+    int h = UiOption.isChildOrEmbedded(options)
+        ? Theme.getChildViewHeaderHeight() : Theme.getViewHeaderHeight();
+    if (h > 0) {
+      setHeight(h);
+    }
 
     captionWidget.addStyleName(STYLE_CAPTION);
     if (Captions.isCaption(caption)) {
@@ -194,7 +203,7 @@ public class HeaderImpl extends Flow implements HeaderView {
       add(createFa(Action.MENU, hiddenActions));
     }
 
-    if (hasAction(Action.CLOSE, UiOption.isWindow(options), enabledActions, disabledActions)) {
+    if (hasAction(Action.CLOSE, UiOption.isClosable(options), enabledActions, disabledActions)) {
       add(createFa(Action.CLOSE, hiddenActions));
     }
   }
@@ -206,7 +215,7 @@ public class HeaderImpl extends Flow implements HeaderView {
 
   @Override
   public int getHeight() {
-    return DEFAULT_HEIGHT;
+    return height;
   }
 
   @Override
@@ -329,6 +338,11 @@ public class HeaderImpl extends Flow implements HeaderView {
         ((HasEnabled) child).setEnabled(enabled);
       }
     }
+  }
+
+  @Override
+  public void setHeight(int height) {
+    this.height = height;
   }
 
   @Override
