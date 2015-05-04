@@ -29,9 +29,9 @@
 	      <Table style="border-spacing: 0px;">
 		    <row>
 			  <Label text="=currency" class="bee-required" style="&lbl;" />
-			  <DataSelector source="CurrencyName" style="width:50px;" editEnabled="false" />
+			  <DataSelector source="CurrencyName" style="width:5em;" editEnabled="false" />
 			  <Label text="=trdInvoicePrefix" style="&lbl2; width:105px" />
-			  <InputText source="InvoicePrefix" upperCase="true" style="width: 60px" />
+			  <InputText source="InvoicePrefix" upperCase="true" style="width:11em" />
 		      <InlineLabel text="=trdInvoiceNo" style="&lbl2; margin-left: 5px;" />
 			  <InputText source="InvoiceNo" />
 		    </row>
