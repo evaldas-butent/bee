@@ -5,10 +5,10 @@ import java.util.EnumSet;
 import java.util.Set;
 
 public enum UiOption {
-  ROOT(EnumSet.of(Type.PAGING, Type.SEARCH, Type.SETTINGS, Type.WINDOW)),
   CHILD(EnumSet.of(Type.SEARCH, Type.SETTINGS)),
   EMBEDDED(EnumSet.of(Type.PAGING, Type.SEARCH, Type.SETTINGS)),
-  REPORT(EnumSet.of(Type.WINDOW));
+  GRID(EnumSet.of(Type.PAGING, Type.SEARCH, Type.SETTINGS, Type.WINDOW)),
+  VIEW(EnumSet.of(Type.WINDOW));
 
   private enum Type {
     PAGING, SEARCH, SETTINGS, WINDOW

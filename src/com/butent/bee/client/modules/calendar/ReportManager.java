@@ -150,7 +150,7 @@ class ReportManager {
       gridDescription.addColumn(columnDescription);
     }
 
-    Collection<UiOption> uiOptions = EnumSet.of(UiOption.REPORT);
+    Collection<UiOption> uiOptions = EnumSet.of(UiOption.VIEW);
 
     GridInterceptor gridInterceptor = GridFactory.getGridInterceptor(gridName);
 

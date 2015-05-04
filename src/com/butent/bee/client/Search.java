@@ -107,7 +107,7 @@ public class Search {
       this.size = results.size();
 
       this.header = new HeaderImpl();
-      header.create(query, false, true, null, EnumSet.of(UiOption.ROOT),
+      header.create(query, false, true, null, EnumSet.of(UiOption.VIEW),
           EnumSet.of(Action.PRINT, Action.CLOSE), Action.NO_ACTIONS, Action.NO_ACTIONS);
 
       header.setViewPresenter(this);

@@ -132,7 +132,7 @@ public class FormContainerImpl extends Split implements FormContainerView, HasNa
     }
     HeaderView header = new HeaderImpl();
     header.create(caption, hasData(), formDescription.isReadOnly(), formDescription.getViewName(),
-        EnumSet.of(UiOption.ROOT), enabledActions, disabledActions, Action.NO_ACTIONS);
+        EnumSet.of(UiOption.VIEW), enabledActions, disabledActions, Action.NO_ACTIONS);
 
     FormView content = new FormImpl(formDescription.getName());
     content.create(formDescription, null, dataColumns, true, interceptor);

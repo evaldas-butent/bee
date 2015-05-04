@@ -40,7 +40,7 @@ public class MapContainer extends Flow implements Presenter, View, HasWidgetSupp
     super(STYLE_NAME);
 
     this.headerView = new HeaderImpl();
-    headerView.create(caption, false, true, null, EnumSet.of(UiOption.ROOT),
+    headerView.create(caption, false, true, null, EnumSet.of(UiOption.VIEW),
         EnumSet.of(Action.CLOSE), Action.NO_ACTIONS, Action.NO_ACTIONS);
 
     headerView.setViewPresenter(this);

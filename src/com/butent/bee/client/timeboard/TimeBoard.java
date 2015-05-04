@@ -219,7 +219,7 @@ public abstract class TimeBoard extends Flow implements Presenter, View, Printab
     Set<Action> hiddenActions = getHiddenActions();
 
     this.headerView = new HeaderImpl();
-    headerView.create(getCaption(), false, true, null, EnumSet.of(UiOption.ROOT), enabledActions,
+    headerView.create(getCaption(), false, true, null, EnumSet.of(UiOption.VIEW), enabledActions,
         Action.NO_ACTIONS, hiddenActions);
 
     if (BeeUtils.contains(enabledActions, Action.FILTER)) {

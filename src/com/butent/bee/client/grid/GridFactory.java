@@ -407,7 +407,7 @@ public final class GridFactory {
       GridOptions gridOptions, PresenterCallback presenterCallback) {
 
     String supplierKey = getSupplierKey(gridName, gridInterceptor);
-    Collection<UiOption> uiOptions = EnumSet.of(UiOption.ROOT);
+    Collection<UiOption> uiOptions = EnumSet.of(UiOption.GRID);
 
     createGrid(gridName, supplierKey, gridInterceptor, uiOptions, gridOptions, presenterCallback);
   }
@@ -419,12 +419,12 @@ public final class GridFactory {
 
   public static ViewSupplier registerGridSupplier(String key, String gridName,
       GridInterceptor interceptor) {
-    return registerGridSupplier(key, gridName, interceptor, EnumSet.of(UiOption.ROOT), null);
+    return registerGridSupplier(key, gridName, interceptor, EnumSet.of(UiOption.GRID), null);
   }
 
   public static ViewSupplier registerGridSupplier(String key, String gridName,
       GridInterceptor interceptor, GridOptions gridOptions) {
-    return registerGridSupplier(key, gridName, interceptor, EnumSet.of(UiOption.ROOT), gridOptions);
+    return registerGridSupplier(key, gridName, interceptor, EnumSet.of(UiOption.GRID), gridOptions);
   }
 
   public static void registerImmutableFilter(String gridName, Filter filter) {

@@ -199,7 +199,7 @@ public class CalendarPanel extends Split implements AppointmentEvent.Handler, Pr
     });
 
     this.header = new HeaderImpl();
-    header.create(caption, false, true, null, EnumSet.of(UiOption.ROOT),
+    header.create(caption, false, true, null, EnumSet.of(UiOption.VIEW),
         EnumSet.of(Action.REFRESH, Action.CONFIGURE, Action.PRINT), Action.NO_ACTIONS,
         Action.NO_ACTIONS);
     header.setViewPresenter(this);

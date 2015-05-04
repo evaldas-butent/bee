@@ -146,7 +146,7 @@ public class Chat extends Flow implements Presenter, View, Printable,
     this.roomId = chatRoom.getId();
 
     this.headerView = new HeaderImpl();
-    headerView.create(chatRoom.getName(), false, true, null, EnumSet.of(UiOption.ROOT),
+    headerView.create(chatRoom.getName(), false, true, null, EnumSet.of(UiOption.VIEW),
         EnumSet.of(Action.PRINT, Action.CONFIGURE, Action.CLOSE), Action.NO_ACTIONS,
         Action.NO_ACTIONS);
     headerView.setViewPresenter(this);

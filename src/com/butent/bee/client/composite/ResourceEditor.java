@@ -92,7 +92,7 @@ public class ResourceEditor extends Flow implements Presenter, View, Printable, 
     }
 
     this.headerView = new HeaderImpl();
-    headerView.create(caption, false, true, null, EnumSet.of(UiOption.ROOT), actions,
+    headerView.create(caption, false, true, null, EnumSet.of(UiOption.VIEW), actions,
         Action.NO_ACTIONS, Action.NO_ACTIONS);
 
     if (!BeeUtils.isEmpty(uri) && !uri.equals(caption)) {
