@@ -113,7 +113,7 @@
                 <FlowPanel>
                   <InputInteger source="CreditLimit" style="text-align: right" summarize="true" />
                   <DataSelector source="LimitCurrency" editEnabled="false" placeholder="=currencyShort"
-                    style="width:40px; margin-left:5px; display:inline-block;" for="CreditLimit" />
+                    style="width:5em; margin-left:5px; display:inline-block;" for="CreditLimit" />
                 </FlowPanel>
                 <cell rowSpan="5" verticalAlignment="top">
                   <FlowPanel name="CreditInfo" />
