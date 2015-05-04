@@ -166,6 +166,7 @@ public final class AdministrationConstants {
   public static final String TBL_IMPORT_OPTIONS = "ImportOptions";
   public static final String TBL_IMPORT_PROPERTIES = "ImportProperties";
   public static final String TBL_IMPORT_MAPPINGS = "ImportMappings";
+  public static final String TBL_IMPORT_CONDITIONS = "ImportConditions";
 
   public static final String TBL_CUSTOM_CONFIG = "CustomConfig";
 
@@ -351,7 +352,8 @@ public final class AdministrationConstants {
   public static final String FORM_COMPANY_STRUCTURE = "CompanyStructure";
   public static final String FORM_NEW_ROLE = "NewRole";
 
-  public static final String FORM_IMPORT_OPTION = "ImportOption";
+  public static final String FORM_IMPORTS = "Imports";
+  public static final String FORM_IMPORT_DATA = "ImportData";
 
   public static final String PRM_SQL_MESSAGES = "SQLMessages";
 

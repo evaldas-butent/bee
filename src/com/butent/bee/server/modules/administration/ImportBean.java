@@ -51,7 +51,6 @@ import com.butent.bee.shared.exceptions.BeeRuntimeException;
 import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.imports.ImportProperty;
 import com.butent.bee.shared.imports.ImportType;
-import com.butent.bee.shared.logging.LogUtils;
 import com.butent.bee.shared.time.DateTime;
 import com.butent.bee.shared.time.JustDate;
 import com.butent.bee.shared.time.TimeUtils;
@@ -153,7 +152,7 @@ public class ImportBean {
               Localized.maybeTranslate(view.getColumnLabel(name)), true);
 
           if (!BeeUtils.isEmpty(col.getRelation())) {
-            prop.setRelTable(col.getRelation());
+            prop.setRelation(col.getRelation());
           }
           data[prpObject] = prop;
           props.put(name, data);
@@ -383,7 +382,7 @@ public class ImportBean {
     PropertyUtils.addExtended(info, "NEŽINOMIEJI", null, ":");
 
     for (ImportProperty prop : imp.getProperties()) {
-      String relTable = prop.getRelTable();
+      String relTable = prop.getRelation();
 
       if (BeeUtils.isEmpty(relTable)) {
         continue;
@@ -405,11 +404,6 @@ public class ImportBean {
             .addExpression(prfx + name, SqlUtils.field(subq, COL_IMPORT_MAPPING))
             .setFrom(query, subq, SqlUtils.joinUsing(tmp, subq, name)));
       }
-      qs.updateData(new SqlUpdate(tmp)
-          .addExpression(prfx + name, SqlUtils.field(relTable, sys.getIdName(relTable)))
-          .setFrom(relTable, SqlUtils.join(tmp, name, relTable, prop.getRelField()))
-          .setWhere(SqlUtils.isNull(tmp, prfx + name)));
-
       for (SimpleRow row : qs.getData(new SqlSelect()
           .addFields(tmp, name)
           .addCount("cnt")
@@ -747,7 +741,7 @@ public class ImportBean {
 
     for (ImportProperty prop : imp.getProperties()) {
       if (prop.isDataProperty()) {
-        if (!BeeUtils.isEmpty(prop.getRelTable())) {
+        if (!BeeUtils.isEmpty(prop.getRelation())) {
           create.addLong(prfx + prop.getName(), false);
         }
       }
