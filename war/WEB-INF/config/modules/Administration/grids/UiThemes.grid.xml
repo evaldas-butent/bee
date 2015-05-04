@@ -5,7 +5,7 @@
   enableCopy="-Name, Description"
   >
   <g:columns>
-    <DataColumn name="Name" minWidth="100" visible="true" />
+    <DataColumn name="Name" minWidth="120" visible="true" />
     <DataColumn name="Description" visible="false" />
 
     <DataColumn name="WorkspaceMarginRight" carry="true" />
@@ -48,6 +48,6 @@
     <DataColumn name="ListSize1Padding" carry="true" />
     <DataColumn name="FormCellPaddingTop" carry="true" />
 
-    <DataColumn name="Css" carry="true" />
+    <DataColumn name="Css" minWidth="200" carry="true" />
   </g:columns>
 </g:Grid>

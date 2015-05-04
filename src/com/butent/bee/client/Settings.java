@@ -134,6 +134,10 @@ public final class Settings {
     return getList("styleSheets");
   }
 
+  public static JSONObject getTheme() {
+    return getObject("theme");
+  }
+
   public static String getVersion() {
     return getString("version");
   }
