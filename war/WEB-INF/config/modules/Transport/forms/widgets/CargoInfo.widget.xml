@@ -27,9 +27,9 @@
 
   <FlowPanel style="&section;">
     <Label text="=date" style="&labelLeft;" />
-    <InputDateTime source="LoadingDate" style="&inline; width:110px; margin-right:80px;" />
+    <InputDateTime source="LoadingDate" style="&inline; width:11em; margin-right:47px;" />
     <Label text="=date" class="bee-required" style="&labelRight;" />
-    <InputDateTime source="UnloadingDate" style="&inline; width:110px;" required="true" />
+    <InputDateTime source="UnloadingDate" style="&inline; width:11em;" required="true" />
   </FlowPanel>
 
   <FlowPanel style="&section;">
