@@ -76,7 +76,7 @@
                     <Label text="=volume" horizontalAlignment="right" style="&lbl1;" />
                     <FlowPanel>
                       <InputDecimal source="Volume" format="0.000" style="width:70px" />
-                      <DataSelector source="VolumeUnit" style="display:inline-block; width:40px; margin-left:5px;" />
+                      <DataSelector source="VolumeUnit" style="display:inline-block; width:5em; margin-left:5px;" />
                     </FlowPanel>
                     <Label html="LDM" horizontalAlignment="right" style="&lbl1;" />
                     <InputDecimal source="LDM" format="0.00" style="width:70px" />
