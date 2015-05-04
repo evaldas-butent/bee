@@ -266,10 +266,11 @@ public final class GridFactory {
   }
 
   public static GridView createGridView(GridDescription gridDescription, String supplierKey,
-      List<BeeColumn> dataColumns, String relColumn, GridInterceptor gridInterceptor, Order order) {
+      List<BeeColumn> dataColumns, String relColumn, Collection<UiOption> uiOptions,
+      GridInterceptor gridInterceptor, Order order) {
 
     GridView gridView = new GridImpl(gridDescription, supplierKey, dataColumns, relColumn,
-        gridInterceptor);
+        uiOptions, gridInterceptor);
     gridView.create(order);
 
     return gridView;
@@ -524,7 +525,7 @@ public final class GridFactory {
       return null;
     }
 
-    CellGrid grid = new CellGrid();
+    CellGrid grid = new CellGrid(EnumSet.of(UiOption.GRID));
     grid.setCaption(caption);
 
     DataColumn<?> column;
@@ -607,7 +608,7 @@ public final class GridFactory {
 
     if (brs != null) {
       GridView gridView = createGridView(gridDescription, supplierKey, brs.getColumns(),
-          gridInterceptor, order);
+          uiOptions, gridInterceptor, order);
       gridView.initData(brs.getNumberOfRows(), brs);
 
       Filter filter = GridFilterManager.parseFilter(gridView.getGrid(), initialUserFilterValues);
@@ -636,7 +637,7 @@ public final class GridFactory {
     }
 
     final GridView gridView = createGridView(gridDescription, supplierKey,
-        Data.getColumns(viewName), gridInterceptor, order);
+        Data.getColumns(viewName), uiOptions, gridInterceptor, order);
 
     final Filter initialUserFilter = GridFilterManager.parseFilter(gridView.getGrid(),
         initialUserFilterValues);
@@ -664,8 +665,11 @@ public final class GridFactory {
   }
 
   private static GridView createGridView(GridDescription gridDescription, String supplierKey,
-      List<BeeColumn> dataColumns, GridInterceptor gridInterceptor, Order order) {
-    return createGridView(gridDescription, supplierKey, dataColumns, null, gridInterceptor, order);
+      List<BeeColumn> dataColumns, Collection<UiOption> uiOptions, GridInterceptor gridInterceptor,
+      Order order) {
+
+    return createGridView(gridDescription, supplierKey, dataColumns, null, uiOptions,
+        gridInterceptor, order);
   }
 
   private static void createPresenter(GridDescription gridDescription, GridView gridView,
