@@ -16,6 +16,7 @@ import com.butent.bee.client.layout.Flow;
 import com.butent.bee.client.layout.Simple;
 import com.butent.bee.client.layout.Stack;
 import com.butent.bee.client.ui.IdentifiableWidget;
+import com.butent.bee.client.ui.Theme;
 import com.butent.bee.client.websocket.Endpoint;
 import com.butent.bee.client.widget.CustomDiv;
 import com.butent.bee.client.widget.FaLabel;
@@ -103,7 +104,8 @@ class CentralScrutinizer extends Stack implements CloseHandler<IdentifiableWidge
   private static final int DEFAULT_HEADER_HEIGHT = 25;
 
   private static int getHeaderHeight() {
-    return DEFAULT_HEADER_HEIGHT;
+    int height = Theme.getApplianceHeaderHeight();
+    return (height > 0) ? height : DEFAULT_HEADER_HEIGHT;
   }
 
   CentralScrutinizer() {
@@ -216,10 +218,6 @@ class CentralScrutinizer extends Stack implements CloseHandler<IdentifiableWidge
     return find(domain, key) >= 0;
   }
 
-  boolean maybeUpdateHeaders() {
-    return updateHeaderSize(getHeaderHeight());
-  }
-
   boolean remove(Domain domain, Long key) {
     int index = find(domain, key);
     if (index >= 0) {
@@ -230,7 +228,6 @@ class CentralScrutinizer extends Stack implements CloseHandler<IdentifiableWidge
   }
 
   void start() {
-
     if (Endpoint.isEnabled()) {
       if (BeeKeeper.getUser().isWidgetVisible(RegulatedWidget.ROOMS)) {
         add(Domain.ROOMS, Global.getRooms().getRoomsPanel());

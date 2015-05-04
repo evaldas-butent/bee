@@ -26,6 +26,7 @@ import com.google.gwt.event.logical.shared.AttachEvent;
 import com.google.gwt.geolocation.client.Position;
 import com.google.gwt.geolocation.client.Position.Coordinates;
 import com.google.gwt.i18n.client.NumberFormat;
+import com.google.gwt.json.client.JSONObject;
 import com.google.gwt.resources.client.ImageResource;
 import com.google.gwt.user.client.Timer;
 import com.google.gwt.user.client.ui.Widget;
@@ -104,6 +105,7 @@ import com.butent.bee.client.style.StyleUtils;
 import com.butent.bee.client.ui.AutocompleteProvider;
 import com.butent.bee.client.ui.FormFactory;
 import com.butent.bee.client.ui.IdentifiableWidget;
+import com.butent.bee.client.ui.Theme;
 import com.butent.bee.client.ui.WidgetInitializer;
 import com.butent.bee.client.utils.BrowsingContext;
 import com.butent.bee.client.utils.FileUtils;
@@ -534,6 +536,10 @@ public final class CliWorker {
 
     } else if (z.startsWith("tabl") || z.startsWith("tbl")) {
       showTableInfo(v, args);
+
+    } else if (z.startsWith("theme")) {
+      JSONObject theme = Theme.getValues();
+      inform(z, (theme == null) ? BeeConst.NULL : theme.toString());
 
     } else if (z.startsWith("tile")) {
       doTiles(args);

@@ -44,6 +44,7 @@ import com.butent.bee.client.style.StyleUtils;
 import com.butent.bee.client.ui.HasProgress;
 import com.butent.bee.client.ui.IdentifiableWidget;
 import com.butent.bee.client.ui.Opener;
+import com.butent.bee.client.ui.Theme;
 import com.butent.bee.client.ui.UiHelper;
 import com.butent.bee.client.utils.BrowsingContext;
 import com.butent.bee.client.widget.CustomDiv;
@@ -351,6 +352,13 @@ public class ScreenImpl implements Screen {
 
   @Override
   public void onLoad() {
+    int eastMargin = getEastMargin();
+    if (eastMargin > 0) {
+      getScreenPanel().addEast(new CustomDiv(BeeConst.CSS_CLASS_PREFIX + "WorkspaceEastMargin"),
+          eastMargin);
+      getScreenPanel().doLayout();
+    }
+
     Global.getSearch().focus();
 
     if (!Global.getSpaces().isEmpty() && !containsDomainEntry(Domain.WORKSPACES, null)) {
@@ -770,11 +778,6 @@ public class ScreenImpl implements Screen {
       p.addEast(east.getA(), east.getB());
     }
 
-    int eastMargin = getEastMargin();
-    if (eastMargin > 0) {
-      p.addEast(new CustomDiv(BeeConst.CSS_CLASS_PREFIX + "WorkspaceEastMargin"), eastMargin);
-    }
-
     IdentifiableWidget center = initCenter();
     if (center != null) {
       p.add(center);
@@ -800,7 +803,7 @@ public class ScreenImpl implements Screen {
   }
 
   protected int getEastMargin() {
-    return 25;
+    return Theme.getWorkspaceMarginRight();
   }
 
   protected int getNorthHeight(int defHeight) {
@@ -916,10 +919,6 @@ public class ScreenImpl implements Screen {
             @Override
             public void onSuccess(BeeRow result) {
               BeeKeeper.getUser().updateSettings(result);
-
-              if (getCentralScrutinizer() != null) {
-                getCentralScrutinizer().maybeUpdateHeaders();
-              }
             }
           });
     }

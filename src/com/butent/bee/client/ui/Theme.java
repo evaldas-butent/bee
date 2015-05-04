@@ -152,6 +152,10 @@ public final class Theme {
     return getInteger("FormCellPaddingTop");
   }
 
+  public static JSONObject getValues() {
+    return values;
+  }
+
   private static String getCss() {
     return getString("Css");
   }
