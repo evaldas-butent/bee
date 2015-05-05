@@ -26,7 +26,7 @@
 
         <row>
           <Label text="=phone" style="&lbl;" for="Phone" class="bee-required" />
-          <InputText style="width: 140px;" source="Phone" />
+          <InputText style="width: 140px;" source="Phone" required="true" />
           <Label style="&lbl;" for="Mobile" />
           <cell colSpan="2">
             <InputText source="Mobile" style="width: 140px;" />
@@ -42,7 +42,7 @@
           </cell>
           <Label for="EmailId" style="&lbl;" class="bee-required" />
           <cell colSpan="1" for="EmailId">
-            <DataSelector style="width: 180px;" source="EmailId" maxLength="50" />
+            <DataSelector style="width: 180px;" source="EmailId" maxLength="50" required="true" />
           </cell>
         </row>
 

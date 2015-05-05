@@ -1,19 +1,19 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <g:Grid xmlns="http://www.butent.com/column" xmlns:g="http://www.butent.com/grid"
-  xmlns:ui="http://www.butent.com/ui"
+        xmlns:ui="http://www.butent.com/ui"
 
-  name="CargoIncomes" viewName="CargoIncomes"
-  flexGrow="1"
-  newRowCaption="=trNewService"
-  >
+        name="CargoIncomes" viewName="CargoIncomes"
+        flexGrow="1"
+        newRowCaption="=trNewService"
+    >
   <g:columns>
     <DataColumn name="Date" caption="=date">
       <validation>
         <ui:function>
-if (cell.newValue &lt;= new Date()) {
-  return null;
-}
-return $wnd.Bee_maybeTranslate("=invalidDate");
+          if (cell.newValue &lt;= new Date()) {
+          return null;
+          }
+          return $wnd.Bee_maybeTranslate("=invalidDate");
         </ui:function>
       </validation>
     </DataColumn>
@@ -21,34 +21,44 @@ return $wnd.Bee_maybeTranslate("=invalidDate");
     <DataColumn name="Amount" format="0.00" />
     <RelColumn name="Currency" caption="=currencyShort" flexGrow="0" />
     <DataColumn name="VatPlus" width="20" sortable="false" horizontalAlignment="center" caption="+">
-      <render><ui:expression>row.VatPlus ? '+' : ''</ui:expression></render>
+      <render>
+        <ui:expression>row.VatPlus ? '+' : ''</ui:expression>
+      </render>
     </DataColumn>
     <DataColumn name="Vat" />
-    <DataColumn name="VatPercent" width="20" sortable="false" horizontalAlignment="center" caption="%">
-      <render><ui:expression>row.VatPercent ? '%' : ''</ui:expression></render>
+    <DataColumn name="VatPercent" width="20" sortable="false" horizontalAlignment="center"
+                caption="%">
+      <render>
+        <ui:expression>row.VatPercent ? '%' : ''</ui:expression>
+      </render>
     </DataColumn>
     <CalcColumn name="Total" type="decimal" caption="=totalOf" format="0.00">
       <style>
-        <bodyStyle><ui:font>bold</ui:font></bodyStyle>
+        <bodyStyle>
+          <ui:font>bold</ui:font>
+        </bodyStyle>
       </style>
     </CalcColumn>
 
     <DataColumn name="AdditionalRoute" />
-    <DataColumn name="ShowAdditionalRoute" width="50"/>
+    <DataColumn name="ShowAdditionalRoute" width="50" />
 
     <RelColumn name="Customer" />
     <DataColumn name="Number" />
     <DataColumn name="Note" />
 
     <RelColumn name="Sale" caption="=trInvoiceIdShort" readOnly="true" cellType="html"
-      editEnabled="true" editForm="CargoInvoice" editViewName="CargoInvoices">
+               editEnabled="true" editForm="CargoInvoice" editViewName="CargoInvoices">
       <render>
-        <ui:expression>row.SaleDate.toISOString().substring(0, 10)
-          + " &lt;strong&gt;" + (row.SalePrefix ? row.SalePrefix : "") + row.SaleNo + "&lt;/strong&gt;"</ui:expression>
+        <ui:expression>row.SaleDate ? (row.SaleDate.toISOString().substring(0, 10)
+          + " &lt;strong&gt;" + (row.SalePrefix ? row.SalePrefix : "") + row.SaleNo + "&lt;/strong&gt;")
+          : ""
+        </ui:expression>
       </render>
     </RelColumn>
     <RelColumn name="Purchase" caption="=trCreditIdShort" readOnly="true"
-      editEnabled="true" editForm="CargoPurchaseInvoice" editViewName="CargoPurchaseInvoices" />
+               editEnabled="true" editForm="CargoPurchaseInvoice"
+               editViewName="CargoPurchaseInvoices" />
   </g:columns>
 
   <g:rowEditable>

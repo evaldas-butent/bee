@@ -6,6 +6,7 @@ import static com.butent.bee.shared.modules.transport.TransportConstants.*;
 import com.butent.bee.client.grid.ChildGrid;
 import com.butent.bee.client.ui.FormFactory.WidgetDescriptionCallback;
 import com.butent.bee.client.ui.IdentifiableWidget;
+import com.butent.bee.client.view.edit.EditStartEvent;
 import com.butent.bee.client.view.form.FormView;
 import com.butent.bee.client.view.form.interceptor.FormInterceptor;
 import com.butent.bee.client.view.form.interceptor.PrintFormInterceptor;
@@ -39,6 +40,25 @@ public class CargoPurchaseInvoiceForm extends PrintFormInterceptor {
       /* Kill default interceptor */
       ChildGrid grid = (ChildGrid) widget;
       grid.setGridInterceptor(new AbstractGridInterceptor() {
+        @Override
+        public GridInterceptor getInstance() {
+          return null;
+        }
+      });
+    }
+    if (widget instanceof ChildGrid
+        && BeeUtils.inListSame(name, TBL_PURCHASE_ITEMS, TBL_SALE_ITEMS)) {
+
+      ((ChildGrid) widget).setGridInterceptor(new AbstractGridInterceptor() {
+        @Override
+        public void onEditStart(EditStartEvent event) {
+          if (!BeeUtils.same(event.getColumnId(), COL_TRADE_ITEM_ORDINAL)) {
+            event.consume();
+          } else {
+            super.onEditStart(event);
+          }
+        }
+
         @Override
         public GridInterceptor getInstance() {
           return null;

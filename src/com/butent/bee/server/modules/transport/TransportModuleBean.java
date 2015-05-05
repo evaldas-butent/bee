@@ -434,6 +434,37 @@ public class TransportModuleBean implements BeeModule, HasTimerService {
       }
 
       @Subscribe
+      public void calcInvoiceVat(ViewQueryEvent event) {
+        String target = event.getTargetName();
+
+        if (BeeUtils.inListSame(target, VIEW_CARGO_INVOICES, VIEW_CARGO_PURCHASE_INVOICES)
+            && event.isAfter() && event.getRowset().getNumberOfRows() > 0) {
+
+          String tbl;
+          String fld;
+
+          if (BeeUtils.same(target, VIEW_CARGO_PURCHASE_INVOICES)) {
+            tbl = TBL_PURCHASE_ITEMS;
+            fld = COL_PURCHASE;
+          } else {
+            tbl = TBL_SALE_ITEMS;
+            fld = COL_SALE;
+          }
+          SimpleRowSet rs = qs.getData(new SqlSelect()
+              .addFields(tbl, fld)
+              .addSum(TradeModuleBean.getVatExpression(tbl), COL_TRADE_VAT)
+              .addFrom(tbl)
+              .setWhere(SqlUtils.inList(tbl, fld, event.getRowset().getRowIds()))
+              .addGroup(tbl, fld));
+
+          for (BeeRow row : event.getRowset().getRows()) {
+            row.setProperty(COL_TRADE_VAT,
+                rs.getValueByKey(fld, BeeUtils.toString(row.getId()), COL_TRADE_VAT));
+          }
+        }
+      }
+
+      @Subscribe
       public void deleteOrphanCargo(ViewDeleteEvent event) {
         if (BeeUtils.inListSame(event.getTargetName(), VIEW_SHIPMENT_REQUESTS,
             VIEW_CARGO_REQUESTS)) {

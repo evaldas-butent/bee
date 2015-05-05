@@ -29,6 +29,20 @@
     <DataColumn name="SupplierName" />
     <DataColumn name="Amount" />
     <DataColumn name="CurrencyName" />
+
+    <PropColumn name="Vat" type="decimal" caption="PVM suma" format="#.##" />
+    <PropColumn name="WithoutVat" type="decimal" caption="Be PVM" format="#.##" horizontalAlignment="right">
+      <render>
+        <ui:function>
+          if (row.Vat) {
+            return Math.round((row.Amount - row.Vat) * 100) / 100;
+          } else {
+            return row.Amount;
+          }
+        </ui:function>
+      </render>
+    </PropColumn>
+
     <DataColumn name="Term" />
 
     <RelColumn name="Manager" renderColumns="ManagerFirstName ManagerLastName" />

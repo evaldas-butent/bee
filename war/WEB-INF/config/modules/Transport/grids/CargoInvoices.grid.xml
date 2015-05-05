@@ -30,10 +30,24 @@
     <DataColumn name="PayerName" />
     <DataColumn name="Amount" />
     <DataColumn name="CurrencyName" />
+
+    <PropColumn name="Vat" type="decimal" caption="PVM suma" format="#.##" />
+    <PropColumn name="WithoutVat" type="decimal" caption="Be PVM" format="#.##" horizontalAlignment="right">
+      <render>
+        <ui:function>
+          if (row.Vat) {
+            return Math.round((row.Amount - row.Vat) * 100) / 100;
+          } else {
+            return row.Amount;
+          }
+        </ui:function>
+      </render>
+    </PropColumn>
+
     <DataColumn name="Term" />
 
     <RelColumn name="Manager" renderColumns="ManagerFirstName ManagerLastName" />
-    
+
     <DataColumn name="PaymentTime" />
     <DataColumn name="Paid" />
 
@@ -48,10 +62,10 @@
         <ui:function>
           if (!row.MinRef) {
             return row.MaxRef;
-          
+
           } else if(!row.MaxRef || row.MinRef == row.MaxRef) {
             return row.MinRef;
-          
+
           } else {
             return row.MinRef + ", " + row.MaxRef + (row.CntRef > 2 ? ", ...": "");
           }
@@ -64,10 +78,10 @@
         <ui:function>
           if (!row.MinLoadingCountry) {
             return row.MaxLoadingCountry;
-          
+
           } else if(!row.MaxLoadingCountry || row.MinLoadingCountry == row.MaxLoadingCountry) {
             return row.MinLoadingCountry;
-          
+
           } else {
             return row.MinLoadingCountry + ", " + row.MaxLoadingCountry
                + (row.CntLoadingCountry > 2 ? ", ...": "");
@@ -84,24 +98,24 @@
 
           if (row.MinLoadingDate) {
             var dt = new Date(row.MinLoadingDate);
-          
+
             minDate = dt.getFullYear()
               + "-" + (dt.getMonth() &lt; 9 ? "0" : "") + (dt.getMonth() + 1)
               + "-" + (dt.getDate() &lt; 10 ? "0" : "") + dt.getDate();
           }
           if (row.MaxLoadingDate) {
             var dt = new Date(row.MaxLoadingDate);
-          
+
             maxDate = dt.getFullYear()
               + "-" + (dt.getMonth() &lt; 9 ? "0" : "") + (dt.getMonth() + 1)
               + "-" + (dt.getDate() &lt; 10 ? "0" : "") + dt.getDate();
           }
           if (!minDate) {
             return maxDate;
-          
+
           } else if(!maxDate || minDate == maxDate) {
             return minDate;
-          
+
           } else {
             return minDate + ", " + maxDate + (row.CntLoadingDate > 2 ? ", ...": "");
           }
@@ -114,10 +128,10 @@
         <ui:function>
           if (!row.MinUnloadingCountry) {
             return row.MaxUnloadingCountry;
-          
+
           } else if(!row.MaxUnloadingCountry || row.MinUnloadingCountry == row.MaxUnloadingCountry) {
             return row.MinUnloadingCountry;
-          
+
           } else {
             return row.MinUnloadingCountry + ", " + row.MaxUnloadingCountry
                + (row.CntUnloadingCountry > 2 ? ", ...": "");
@@ -134,24 +148,24 @@
 
           if (row.MinUnloadingDate) {
             var dt = new Date(row.MinUnloadingDate);
-          
+
             minDate = dt.getFullYear()
               + "-" + (dt.getMonth() &lt; 9 ? "0" : "") + (dt.getMonth() + 1)
               + "-" + (dt.getDate() &lt; 10 ? "0" : "") + dt.getDate();
           }
           if (row.MaxUnloadingDate) {
             var dt = new Date(row.MaxUnloadingDate);
-          
+
             maxDate = dt.getFullYear()
               + "-" + (dt.getMonth() &lt; 9 ? "0" : "") + (dt.getMonth() + 1)
               + "-" + (dt.getDate() &lt; 10 ? "0" : "") + dt.getDate();
           }
           if (!minDate) {
             return maxDate;
-          
+
           } else if(!maxDate || minDate == maxDate) {
             return minDate;
-          
+
           } else {
             return minDate + ", " + maxDate + (row.CntUnloadingDate > 2 ? ", ...": "");
           }
