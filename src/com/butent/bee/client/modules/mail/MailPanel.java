@@ -94,7 +94,6 @@ import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.modules.administration.AdministrationConstants;
 import com.butent.bee.shared.modules.classifiers.ClassifierConstants;
 import com.butent.bee.shared.modules.mail.AccountInfo;
-import com.butent.bee.shared.modules.mail.MailConstants.*;
 import com.butent.bee.shared.modules.mail.MailFolder;
 import com.butent.bee.shared.time.DateTime;
 import com.butent.bee.shared.time.TimeUtils;
@@ -937,7 +936,7 @@ public class MailPanel extends AbstractFormInterceptor {
     Icon icon = purge ? Icon.ALARM : Icon.WARNING;
 
     Global.messageBox(purge ? Localized.getConstants().actionDelete()
-            : Localized.getConstants().mailActionMoveToTrash(), icon, null, options, BeeConst.UNDEF,
+        : Localized.getConstants().mailActionMoveToTrash(), icon, null, options, BeeConst.UNDEF,
         new ChoiceCallback() {
           @Override
           public void onSuccess(int value) {

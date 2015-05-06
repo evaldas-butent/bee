@@ -319,12 +319,12 @@ public class ImportsForm extends AbstractFormInterceptor implements ClickHandler
   private void setImporting(boolean importing) {
     if (action != null) {
       action.setEnabled(!importing);
-      action.setText(importing ? Localized.getConstants().importing() :
-          Localized.getConstants().actionImport());
+      action.setText(importing
+          ? Localized.getConstants().importing() : Localized.getConstants().actionImport());
     }
   }
 
-  private void upload(final Callback<String> fileCallback) {
+  private static void upload(final Callback<String> fileCallback) {
     final Popup popup = new Popup(Popup.OutsideClick.CLOSE);
     final InputFile widget = new InputFile(false);
 
