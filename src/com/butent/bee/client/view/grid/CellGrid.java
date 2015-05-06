@@ -663,10 +663,6 @@ public class CellGrid extends Widget implements IdentifiableWidget, HasDataTable
   private static int defaultMinCellHeight = 8;
   private static int defaultMaxCellHeight = 256;
 
-  private static String defaultBodyFont = "14px";
-  private static String defaultFooterFont = "bold 14px";
-  private static String defaultHeaderFont;
-
   private static int defaultResizerShowSensitivityMillis = 100;
   private static int defaultResizerMoveSensitivityMillis;
   private static int defaultRowChangeSensitivityMillis;
@@ -1012,20 +1008,22 @@ public class CellGrid extends Widget implements IdentifiableWidget, HasDataTable
 
     VisibilityChangeEvent.register(id, this);
 
+    boolean isChild = UiOption.isChildOrEmbedded(uiOptions);
+
     this.headerComponent = new Component(ComponentType.HEADER,
         getDefaultHeaderCellHeight(uiOptions), defaultMinCellHeight, defaultMaxCellHeight,
         defaultHeaderCellPadding, defaultHeaderBorderWidth, defaultHeaderCellMargin,
-        defaultHeaderFont);
+        isChild ? Theme.getChildGridHeaderFont() : Theme.getGridHeaderFont());
 
     this.bodyComponent = new Component(ComponentType.BODY,
         getDefaultBodyCellHeight(uiOptions), defaultMinCellHeight, defaultMaxCellHeight,
         defaultBodyCellPadding, defaultBodyBorderWidth, defaultBodyCellMargin,
-        defaultBodyFont);
+        isChild ? Theme.getChildGridBodyFont() : Theme.getGridBodyFont());
 
     this.footerComponent = new Component(ComponentType.FOOTER,
         getDefaultFooterCellHeight(uiOptions), defaultMinCellHeight, defaultMaxCellHeight,
         defaultFooterCellPadding, defaultFooterBorderWidth, defaultFooterCellMargin,
-        defaultFooterFont);
+        isChild ? Theme.getChildGridFooterFont() : Theme.getGridFooterFont());
   }
 
   @Override
