@@ -503,16 +503,16 @@
   color: black;
 }
 
-.bee-Header-control,
-.bee-TreeView-action,
-.bee-Gallery-command {
+.bee-Header-control.bee-fa-label,
+.bee-TreeView-action.bee-fa-label,
+.bee-Gallery-command.bee-fa-label {
   margin-right: 10px;
   font-size: large;
   color: #414142;
 }
-.bee-Header-control:hover,
-.bee-TreeView-action:hover,
-.bee-Gallery-command:hover {
+.bee-Header-control.bee-fa-label:hover,
+.bee-TreeView-action.bee-fa-label:hover,
+.bee-Gallery-command.bee-fa-label:hover {
   color: black;
 }
 
@@ -3419,10 +3419,11 @@ textarea,
 }
 
 .bee-CreateNew {
-  background-color: #6BAE45;
+  margin-right: 10px;
+  background-color: #6bae45;
   color: white;
   border-radius: 5px;
-  padding: 4px 8px 4px 8px;
+  padding: 4px 8px;
   font-weight: bold;
   font-size: 13px;
   text-transform: uppercase;
@@ -3430,7 +3431,6 @@ textarea,
 }
 .bee-CreateNew:hover {
   background-color: #63a140;
-  color: white;
 }
 .bee-CreateNew:active {
   background-color: #578d37;
