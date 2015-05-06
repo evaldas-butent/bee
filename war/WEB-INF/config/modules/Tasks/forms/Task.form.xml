@@ -146,7 +146,7 @@
         <FlowPanel style="margin-left: 5px;">
            <FlowPanel style="&section;" data="Relations" for="Company" module="Classifiers.Contacts">
                 <Label text="=companies" style="&top1;" />
-              <MultiSelector viewName="Companies" property="Companies" renderColumns="Name"
+              <MultiSelector viewName="Companies" property="Companies" renderColumns="Name TypeName"
                       newRowEnabled="false" style="&inp2x;" disablable="true" summarize="true"/>
             </FlowPanel>
   
@@ -158,7 +158,7 @@
   
           <FlowPanel style="&section;" data="Relations" for="Document" module="Documents">
             <Label text="=documents" style="&top1;" />
-            <MultiSelector viewName="Documents" property="Documents" renderColumns="Name"
+            <MultiSelector viewName="Documents" property="Documents" renderColumns="Name Number RegistrationNumber DocumentDate"
               newRowEnabled="false" style="&inp2x;" disablable="true" summarize="true"/>
           </FlowPanel>
           
@@ -192,8 +192,8 @@
           <FlowPanel style="&section;" data="Relations" for="Relation">
             <Label text="=crmTasks" style="&top1;" />
             <MultiSelector viewName="Tasks" property="Tasks"
-              renderColumns="Summary ExecutorFirstName ExecutorLastName"
-              choiceColumns="Summary ExecutorFirstName ExecutorLastName StartTime FinishTime"
+              renderColumns="Id Summary ExecutorFirstName ExecutorLastName"
+              choiceColumns="Id Summary ExecutorFirstName ExecutorLastName StartTime FinishTime"
               newRowEnabled="false" style="&inp2x;" disablable="true" summarize="true"/>
           </FlowPanel>
         </FlowPanel>

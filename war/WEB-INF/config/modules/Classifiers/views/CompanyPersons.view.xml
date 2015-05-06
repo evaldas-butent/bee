@@ -15,13 +15,21 @@
       
     <SimpleColumn name="Company" />
     <SimpleJoin name="Company" joinType="LEFT">
-      <SimpleColumn alias="CompanyName" name="Name" />
+      <SimpleColumn name="Name" alias="CompanyName" />
+      <SimpleJoin joinType="LEFT" name="CompanyType">
+        <SimpleColumn name="Name" alias="TypeName" />
+      </SimpleJoin>
     </SimpleJoin>
 
     <SimpleColumn name="Person" />
     <SimpleJoin name="Person" joinType="LEFT">
-      <SimpleColumn name="FirstName" editable="true" />
-      <SimpleColumn name="LastName" editable="true" />
+      <SimpleColumn name="FirstName" />
+      <SimpleColumn name="LastName" />
+    </SimpleJoin>
+    
+    <SimpleColumn name="Department" />
+    <SimpleJoin name="Department" joinType="LEFT">
+        <SimpleColumn name="Name" alias="DepartmentName" />
     </SimpleJoin>
 
     <SimpleJoin name="Contact" joinType="LEFT">
