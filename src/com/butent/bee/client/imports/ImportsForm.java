@@ -47,6 +47,7 @@ import com.butent.bee.shared.css.values.FontWeight;
 import com.butent.bee.shared.css.values.TextAlign;
 import com.butent.bee.shared.data.BeeRowSet;
 import com.butent.bee.shared.data.IsRow;
+import com.butent.bee.shared.data.view.DataInfo;
 import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.imports.ImportType;
 import com.butent.bee.shared.time.JustDate;
@@ -98,7 +99,12 @@ public class ImportsForm extends AbstractFormInterceptor implements ClickHandler
       for (final String viewName : data.keySet()) {
         Pair<String, String> pair = Pair.restore(data.get(viewName));
 
-        table.setText(++r, 0, Data.getViewCaption(viewName));
+        DataInfo info = Data.getDataInfo(viewName, false);
+
+        final String cap = Data.getDataInfo(viewName, false) != null
+            ? Data.getViewCaption(viewName) : viewName;
+
+        table.setText(++r, 0, cap);
         table.setText(r, 1, pair.getA());
 
         InternalLink lbl = null;
@@ -110,7 +116,7 @@ public class ImportsForm extends AbstractFormInterceptor implements ClickHandler
           lbl.addClickHandler(new ClickHandler() {
             @Override
             public void onClick(ClickEvent arg0) {
-              Global.showModalGrid(Data.getViewCaption(viewName), rs);
+              Global.showModalGrid(cap, rs);
             }
           });
         }

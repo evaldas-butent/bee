@@ -1,7 +1,9 @@
 package com.butent.bee.server.modules.administration;
 
+import com.google.common.collect.HashBasedTable;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
+import com.google.common.collect.Table;
 
 import static com.butent.bee.shared.modules.administration.AdministrationConstants.*;
 import static com.butent.bee.shared.modules.classifiers.ClassifierConstants.*;
@@ -103,17 +105,19 @@ public class ImportBean {
 
   private static class ImportObject {
     private final int prpValue = 0;
-    private final int prpRelId = 1;
-    private final int prpRelation = 2;
-    private final int prpObject = 3;
+    private final int prpRelation = 1;
+    private final int prpObject = 2;
+    private final int prpId = 3;
 
+    private final long objectId;
     private final String viewName;
     private final Map<String, Object[]> props = new HashMap<>();
 
-    public ImportObject(SimpleRowSet rs, SystemBean sys) {
+    public ImportObject(SimpleRowSet rs, long optId, SystemBean sys) {
       Assert.notNull(rs);
       Assert.state(!rs.isEmpty());
 
+      this.objectId = optId;
       this.viewName = rs.getValue(0, COL_IMPORT_DATA);
       ImportType type = EnumUtils.getEnumByIndex(ImportType.class, rs.getInt(0, COL_IMPORT_TYPE));
 
@@ -123,7 +127,7 @@ public class ImportBean {
 
         if (row != null) {
           data[prpValue] = row.getValue(COL_IMPORT_VALUE);
-          data[prpRelId] = row.getLong(COL_IMPORT_RELATION_OPTION);
+          data[prpId] = row.getLong(sys.getIdName(TBL_IMPORT_PROPERTIES));
         }
         data[prpObject] = prop;
         props.put(prop.getName(), data);
@@ -143,7 +147,7 @@ public class ImportBean {
 
           if (row != null) {
             data[prpValue] = row.getValue(COL_IMPORT_VALUE);
-            data[prpRelId] = row.getLong(COL_IMPORT_RELATION_OPTION);
+            data[prpId] = row.getLong(sys.getIdName(TBL_IMPORT_PROPERTIES));
 
           } else if (view.isColNullable(name)) {
             continue;
@@ -160,29 +164,50 @@ public class ImportBean {
       }
     }
 
-    public Map<String, String> getDataProperties() {
-      return getDataProperties(null);
-    }
-
-    public Map<String, String> getDataProperties(String parentName) {
-      Map<String, String> propNames = new LinkedHashMap<>();
+    public Map<Long, String> getDeepNames(String parentName) {
+      Map<Long, String> propNames = new LinkedHashMap<>();
 
       for (ImportProperty prop : getProperties()) {
         if (!prop.isDataProperty()) {
           continue;
         }
         String propName = prop.getName();
-        String propValue = getValue(propName);
-        ImportObject ro = getRelationObject(propName);
+        Long propId = getPropertyId(propName);
+        ImportObject ro = getPropertyRelation(propName);
 
         propName = BeeUtils.join("_", parentName, propName);
-        propNames.put(propName, propValue);
+        propNames.put(propId, propName);
 
         if (ro != null) {
-          propNames.putAll(ro.getDataProperties(propName));
+          propNames.putAll(ro.getDeepNames(propName));
         }
       }
       return propNames;
+    }
+
+    public Map<String, Pair<ImportProperty, String>> getDeepProperties(String parentName) {
+      Map<String, Pair<ImportProperty, String>> propNames = new LinkedHashMap<>();
+
+      for (ImportProperty prop : getProperties()) {
+        if (!prop.isDataProperty()) {
+          continue;
+        }
+        String propName = prop.getName();
+        String propValue = getPropertyValue(propName);
+        ImportObject ro = getPropertyRelation(propName);
+
+        propName = BeeUtils.join("_", parentName, propName);
+        propNames.put(propName, Pair.of(prop, propValue));
+
+        if (ro != null) {
+          propNames.putAll(ro.getDeepProperties(propName));
+        }
+      }
+      return propNames;
+    }
+
+    public long getObjectId() {
+      return objectId;
     }
 
     public Collection<ImportProperty> getProperties() {
@@ -201,22 +226,22 @@ public class ImportBean {
       return null;
     }
 
-    public Long getRelationId(String prop) {
+    public Long getPropertyId(String prop) {
       if (props.containsKey(prop)) {
-        return (Long) props.get(prop)[prpRelId];
+        return (Long) props.get(prop)[prpId];
       }
       return null;
     }
 
-    public ImportObject getRelationObject(String prop) {
+    public ImportObject getPropertyRelation(String prop) {
       if (props.containsKey(prop)) {
         return (ImportObject) props.get(prop)[prpRelation];
       }
       return null;
     }
 
-    public String getValue(String prop) {
-      if (props.containsKey(prop) && !DataUtils.isId(getRelationId(prop))) {
+    public String getPropertyValue(String prop) {
+      if (props.containsKey(prop) && getPropertyRelation(prop) == null) {
         return (String) props.get(prop)[prpValue];
       }
       return null;
@@ -226,14 +251,11 @@ public class ImportBean {
       return viewName;
     }
 
-    public boolean isLocked(String prop) {
-      if (DataUtils.isId(getRelationId(prop))) {
-        return props.get(prop)[prpValue] != null;
-      }
-      return false;
+    public boolean isPropertyLocked(String prop) {
+      return getPropertyRelation(prop) != null && props.get(prop)[prpValue] != null;
     }
 
-    public void setRelationObject(String prop, ImportObject io) {
+    public void setPropertyRelation(String prop, ImportObject io) {
       if (props.containsKey(prop)) {
         props.get(prop)[prpRelation] = io;
       }
@@ -263,26 +285,29 @@ public class ImportBean {
         BeeUtils.toIntOrNull(reqInfo.getParameter(COL_IMPORT_TYPE)));
 
     if (type != null) {
+      boolean test = BeeUtils.toBoolean(reqInfo.getParameter(VAR_IMPORT_TEST));
+
       switch (type) {
         case COSTS:
           response = importCosts(BeeUtils.toLong(reqInfo.getParameter(COL_IMPORT_OPTION)),
-              reqInfo.getParameter(VAR_IMPORT_FILE),
-              BeeUtils.toBoolean(reqInfo.getParameter(VAR_IMPORT_TEST)));
+              reqInfo.getParameter(VAR_IMPORT_FILE), test,
+              reqInfo.getParameter(Service.VAR_PROGRESS));
           break;
 
         case TRACKING:
           response = importTracking(BeeUtils.toLong(reqInfo.getParameter(COL_IMPORT_OPTION)),
               BeeUtils.toIntOrNull(reqInfo.getParameter(VAR_DATE_LOW)),
-              BeeUtils.toIntOrNull(reqInfo.getParameter(VAR_DATE_HIGH)),
-              BeeUtils.toBoolean(reqInfo.getParameter(VAR_IMPORT_TEST)));
+              BeeUtils.toIntOrNull(reqInfo.getParameter(VAR_DATE_HIGH)), test);
           break;
 
         default:
           response = importData(BeeUtils.toLong(reqInfo.getParameter(COL_IMPORT_OPTION)),
-              reqInfo.getParameter(VAR_IMPORT_FILE),
-              BeeUtils.toBoolean(reqInfo.getParameter(VAR_IMPORT_TEST)),
+              reqInfo.getParameter(VAR_IMPORT_FILE), test,
               reqInfo.getParameter(Service.VAR_PROGRESS));
           break;
+      }
+      if (test) {
+        ctx.setRollbackOnly();
       }
     } else {
       response = ResponseObject.error("Import type not recognized");
@@ -346,6 +371,59 @@ public class ImportBean {
         });
   }
 
+  private void applyMappings(ImportObject io, String data, String parentName) {
+    String idName = sys.getIdName(TBL_IMPORT_MAPPINGS);
+    Table<Long, Long, Map<Long, String>> table = HashBasedTable.create();
+
+    SqlSelect query = new SqlSelect()
+        .addFields(TBL_IMPORT_MAPPINGS, idName, COL_IMPORT_MAPPING)
+        .addFields(TBL_IMPORT_CONDITIONS, COL_IMPORT_PROPERTY, COL_IMPORT_VALUE)
+        .addFrom(TBL_IMPORT_MAPPINGS)
+        .addFromInner(io.getViewName(),
+            sys.joinTables(io.getViewName(), TBL_IMPORT_MAPPINGS, COL_IMPORT_MAPPING))
+        .addFromInner(TBL_IMPORT_CONDITIONS,
+            sys.joinTables(TBL_IMPORT_MAPPINGS, TBL_IMPORT_CONDITIONS, COL_IMPORT_MAPPING))
+        .setWhere(SqlUtils.equals(TBL_IMPORT_MAPPINGS, COL_IMPORT_OPTION, io.getObjectId()));
+
+    for (SimpleRow row : qs.getData(query)) {
+      Long id = row.getLong(idName);
+      Long mapping = row.getLong(COL_IMPORT_MAPPING);
+
+      if (!table.contains(id, mapping)) {
+        table.put(id, mapping, new HashMap<>());
+      }
+      table.get(id, mapping).put(row.getLong(COL_IMPORT_PROPERTY), row.getValue(COL_IMPORT_VALUE));
+    }
+    Map<Long, String> names = io.getDeepNames(parentName);
+
+    for (Long mapping : table.columnKeySet()) {
+      HasConditions condition = SqlUtils.or();
+
+      for (Map<Long, String> conds : table.column(mapping).values()) {
+        HasConditions clause = SqlUtils.and();
+
+        for (Entry<Long, String> entry : conds.entrySet()) {
+          String name = names.get(entry.getKey());
+
+          if (!BeeUtils.isEmpty(name)) {
+            IsCondition wh;
+
+            if (entry.getValue() == null) {
+              wh = SqlUtils.isNull(data, name);
+            } else {
+              wh = SqlUtils.equals(data, name, entry.getValue());
+            }
+            clause.add(wh);
+          }
+        }
+        condition.add(clause);
+      }
+      qs.updateData(new SqlUpdate(data)
+          .addConstant(parentName, mapping)
+          .setWhere(SqlUtils.and(SqlUtils.isNull(data, parentName), condition)));
+    }
+  }
+
   private static IsExpression cast(BeeView view, String tmp, String col) {
     IsExpression xpr = SqlUtils.field(tmp, col);
 
@@ -377,47 +455,6 @@ public class ImportBean {
     return xpr;
   }
 
-  private List<ExtendedProperty> checkMappings(ImportObject imp, String prfx, String tmp) {
-    List<ExtendedProperty> info = new ArrayList<>();
-    PropertyUtils.addExtended(info, "NEŽINOMIEJI", null, ":");
-
-    for (ImportProperty prop : imp.getProperties()) {
-      String relTable = prop.getRelation();
-
-      if (BeeUtils.isEmpty(relTable)) {
-        continue;
-      }
-      String name = prop.getName();
-      Long mappingId = imp.getRelationId(name);
-
-      if (DataUtils.isId(mappingId)) {
-        SqlSelect query = new SqlSelect()
-            .addField(TBL_IMPORT_MAPPINGS, COL_IMPORT_VALUE, name)
-            .addFields(TBL_IMPORT_MAPPINGS, COL_IMPORT_MAPPING)
-            .addFrom(TBL_IMPORT_MAPPINGS)
-            .addFromInner(relTable,
-                sys.joinTables(relTable, TBL_IMPORT_MAPPINGS, COL_IMPORT_MAPPING))
-            .setWhere(SqlUtils.equals(TBL_IMPORT_MAPPINGS, COL_IMPORT_PROPERTY, mappingId));
-        String subq = SqlUtils.uniqueName();
-
-        qs.updateData(new SqlUpdate(tmp)
-            .addExpression(prfx + name, SqlUtils.field(subq, COL_IMPORT_MAPPING))
-            .setFrom(query, subq, SqlUtils.joinUsing(tmp, subq, name)));
-      }
-      for (SimpleRow row : qs.getData(new SqlSelect()
-          .addFields(tmp, name)
-          .addCount("cnt")
-          .addFrom(tmp)
-          .setWhere(SqlUtils.isNull(tmp, prfx + name))
-          .addGroup(tmp, name)
-          .addOrderDesc(null, "cnt"))) {
-
-        PropertyUtils.addExtended(info, prop.getCaption(), row.getValue(name), row.getValue("cnt"));
-      }
-    }
-    return info;
-  }
-
   private void commitData(ImportObject io, String data, String parentName, String parentCap,
       String progress, Map<String, Pair<Integer, BeeRowSet>> status, boolean readOnly) {
 
@@ -433,6 +470,11 @@ public class ImportBean {
         .addFrom(data)
         .setWhere(clause);
 
+    if (!BeeUtils.isEmpty(parentName)) {
+      query.setWhere(SqlUtils.and(SqlUtils.isNull(data, parentName), query.getWhere()));
+      updateClause.add(SqlUtils.isNull(data, parentName));
+      applyMappings(io, data, parentName);
+    }
     BeeView view = sys.getView(io.getViewName());
     Map<String, BeeField> cols = new LinkedHashMap<>();
     String tmp = SqlUtils.temporaryName();
@@ -460,11 +502,11 @@ public class ImportBean {
 
       clause.add(SqlUtils.notNull(data, realCol));
 
-      ImportObject ro = io.getRelationObject(col);
+      ImportObject ro = io.getPropertyRelation(col);
 
       if (ro != null) {
-        commitData(ro, data, realCol, progressCap, progress, status, readOnly || io.isLocked(col)
-            || !usr.canCreateData(ro.getViewName()));
+        commitData(ro, data, realCol, progressCap, progress, status,
+            readOnly || io.isPropertyLocked(col) || !usr.canCreateData(ro.getViewName()));
       }
       updateClause.add(SqlUtils.or(SqlUtils.and(SqlUtils.isNull(tmp, col),
           SqlUtils.isNull(data, realCol)), SqlUtils.and(SqlUtils.notNull(tmp, col),
@@ -690,10 +732,10 @@ public class ImportBean {
       BeeRowSet newRs = (BeeRowSet) qs.doSql(new SqlSelect()
           .setDistinctMode(true)
           .addFields(tmp, COL_REASON)
-          .addFields(data, io.getDataProperties(parentName).keySet().toArray(new String[0]))
+          .addFields(data, io.getDeepProperties(parentName).keySet().toArray(new String[0]))
           .addFrom(data)
           .addFromInner(tmp, updateClause)
-          .setWhere(SqlUtils.equals(tmp, idName, BeeUtils.toString(BeeConst.UNDEF)))
+          .setWhere(SqlUtils.equals(tmp, idName, BeeConst.UNDEF))
           .addOrder(tmp, COL_REASON)
           .getQuery());
 
@@ -716,18 +758,18 @@ public class ImportBean {
 
       if (c > 0) {
         qs.updateData(new SqlDelete(data)
-            .setWhere(SqlUtils.equals(data, parentName, BeeUtils.toString(BeeConst.UNDEF))));
+            .setWhere(SqlUtils.equals(data, parentName, BeeConst.UNDEF)));
       }
     }
     qs.sqlDropTemp(tmp);
   }
 
-  private ResponseObject importCosts(Long optionId, String fileName, boolean test) {
-    ImportObject imp = initImport(optionId);
+  private ResponseObject importCosts(Long optId, String fileName, boolean test, String progress) {
+    ImportObject imp = initImport(optId);
     final DateFormat dtf;
 
-    if (!BeeUtils.isEmpty(imp.getValue(VAR_IMPORT_DATE_FORMAT))) {
-      dtf = new SimpleDateFormat(imp.getValue(VAR_IMPORT_DATE_FORMAT));
+    if (!BeeUtils.isEmpty(imp.getPropertyValue(VAR_IMPORT_DATE_FORMAT))) {
+      dtf = new SimpleDateFormat(imp.getPropertyValue(VAR_IMPORT_DATE_FORMAT));
     } else {
       dtf = null;
     }
@@ -739,13 +781,6 @@ public class ImportBean {
         .addBoolean(COL_FUEL, false)
         .addLong(COL_TRIP, false);
 
-    for (ImportProperty prop : imp.getProperties()) {
-      if (prop.isDataProperty()) {
-        if (!BeeUtils.isEmpty(prop.getRelation())) {
-          create.addLong(prfx + prop.getName(), false);
-        }
-      }
-    }
     ResponseObject resp = loadXLSData(imp, fileName, create,
         new Function<Map<String, String>, Boolean>() {
           @Override
@@ -796,50 +831,62 @@ public class ImportBean {
     if (resp.hasErrors()) {
       return resp;
     }
-    List<ExtendedProperty> info = checkMappings(imp, prfx, tmp);
-    int c;
+    List<ExtendedProperty> info = new ArrayList<>();
+    Map<String, Pair<Integer, BeeRowSet>> status = new LinkedHashMap<>();
 
-    if (!test) {
-      c = qs.updateData(new SqlDelete(tmp)
-          .setWhere(SqlUtils.or(SqlUtils.isNull(tmp, prfx + COL_COSTS_ITEM),
-              SqlUtils.isNull(tmp, prfx + COL_COSTS_CURRENCY),
-              SqlUtils.and(SqlUtils.notNull(tmp, COL_VEHICLE),
-                  SqlUtils.isNull(tmp, prfx + COL_VEHICLE)))));
+    for (ImportProperty prop : imp.getProperties()) {
+      if (prop.isDataProperty()) {
+        ImportObject ro = imp.getPropertyRelation(prop.getName());
 
-      PropertyUtils.addExtended(info, "PAŠALINTA", null, c);
+        if (ro != null) {
+          commitData(ro, tmp, prop.getName(), null, progress, status,
+              imp.isPropertyLocked(prop.getName()) || !usr.canCreateData(ro.getViewName()));
+        }
+      }
+    }
+    SqlSelect select = new SqlSelect().addAllFields(tmp).addFrom(tmp);
+
+    for (String col : new String[] {COL_COSTS_ITEM, COL_COSTS_CURRENCY}) {
+      IsCondition wh = SqlUtils.isNull(tmp, col);
+      BeeRowSet rs = (BeeRowSet) qs.doSql(select.setWhere(wh).getQuery());
+
+      if (rs.getNumberOfRows() > 0) {
+        qs.updateData(new SqlDelete(tmp).setWhere(wh));
+        status.put("Tuščias laukas " + col, Pair.of(null, rs));
+      }
     }
     qs.updateData(new SqlUpdate(tmp)
         .addExpression(COL_FUEL, SqlUtils.constant(true))
         .setFrom(TBL_FUEL_TYPES,
-            SqlUtils.join(tmp, prfx + COL_COSTS_ITEM, TBL_FUEL_TYPES, COL_ITEM)));
+            SqlUtils.join(tmp, COL_COSTS_ITEM, TBL_FUEL_TYPES, COL_ITEM)));
 
-    for (String tt : new String[] {TBL_TRIP_COSTS, TBL_TRIP_FUEL_COSTS}) {
-      HasConditions wh = SqlUtils.and(BeeUtils.same(tt, TBL_TRIP_FUEL_COSTS)
+    for (String tbl : new String[] {TBL_TRIP_COSTS, TBL_TRIP_FUEL_COSTS}) {
+      HasConditions wh = SqlUtils.and(BeeUtils.same(tbl, TBL_TRIP_FUEL_COSTS)
               ? SqlUtils.notNull(tmp, COL_FUEL) : SqlUtils.isNull(tmp, COL_FUEL),
-          SqlUtils.notNull(tt, COL_COSTS_EXTERNAL_ID));
+          SqlUtils.notNull(tbl, COL_COSTS_EXTERNAL_ID));
 
-      c = qs.updateData(new SqlUpdate(tmp)
+      int c = qs.updateData(new SqlUpdate(tmp)
           .addExpression(prfx, SqlUtils.constant(true))
-          .setFrom(tt, SqlUtils.and(wh, SqlUtils.joinUsing(tmp, tt, COL_COSTS_EXTERNAL_ID))));
+          .setFrom(tbl, SqlUtils.and(wh, SqlUtils.joinUsing(tmp, tbl, COL_COSTS_EXTERNAL_ID))));
 
-      PropertyUtils.addExtended(info, "BUVO", tt, c);
+      PropertyUtils.addExtended(info, "BUVO", tbl, c);
 
-      if (!BeeUtils.isEmpty(imp.getValue(COL_NUMBER)) && !test) {
+      if (!BeeUtils.isEmpty(imp.getPropertyValue(COL_NUMBER)) && !test) {
         SqlSelect query = new SqlSelect()
             .addEmptyBoolean(prfx)
-            .addField(tt, sys.getIdName(tt), "ID")
+            .addField(tbl, sys.getIdName(tbl), "ID")
             .addFields(tmp, COL_NUMBER)
             .addFields(TBL_TRIPS, COL_TRIP_NO)
             .addFrom(tmp)
-            .addFromInner(tt, SqlUtils.joinUsing(tmp, tt, COL_COSTS_EXTERNAL_ID))
-            .addFromLeft(TBL_TRIPS, sys.joinTables(TBL_TRIPS, tt, COL_TRIP))
+            .addFromInner(tbl, SqlUtils.joinUsing(tmp, tbl, COL_COSTS_EXTERNAL_ID))
+            .addFromLeft(TBL_TRIPS, sys.joinTables(TBL_TRIPS, tbl, COL_TRIP))
             .setWhere(wh);
 
         wh = SqlUtils.and();
         String[] flds = new String[] {COL_COSTS_QUANTITY, COL_COSTS_PRICE, COL_COSTS_VAT};
 
         for (String fld : flds) {
-          query.addExpr(SqlUtils.nvl(SqlUtils.field(tt, fld), 0), fld)
+          query.addExpr(SqlUtils.nvl(SqlUtils.field(tbl, fld), 0), fld)
               .addExpr(SqlUtils.nvl(SqlUtils.cast(SqlUtils.field(tmp, fld),
                   SqlDataType.DECIMAL, 15, 5), 0), prfx + fld);
 
@@ -851,9 +898,9 @@ public class ImportBean {
             .addExpression(prfx, SqlUtils.constant(true))
             .setWhere(wh));
 
-        qs.updateData(new SqlUpdate(tt)
+        qs.updateData(new SqlUpdate(tbl)
             .addExpression(COL_NUMBER, SqlUtils.field(diff, COL_NUMBER))
-            .setFrom(diff, sys.joinTables(tt, diff, "ID"))
+            .setFrom(diff, sys.joinTables(tbl, diff, "ID"))
             .setWhere(SqlUtils.notNull(diff, prfx)));
 
         for (String fld : flds) {
@@ -881,31 +928,29 @@ public class ImportBean {
     qs.updateData(new SqlUpdate(tmp)
         .addExpression(COL_TRIP, SqlUtils.field(TBL_TRIPS, sys.getIdName(TBL_TRIPS)))
         .setFrom(TBL_TRIPS,
-            SqlUtils.and(SqlUtils.join(tmp, prfx + COL_VEHICLE, TBL_TRIPS, COL_VEHICLE),
+            SqlUtils.and(SqlUtils.join(tmp, COL_VEHICLE, TBL_TRIPS, COL_VEHICLE),
                 SqlUtils.moreEqual(dt, SqlUtils.nvl(SqlUtils.field(TBL_TRIPS, COL_TRIP_DATE_FROM),
                     SqlUtils.field(TBL_TRIPS, COL_TRIP_DATE))),
                 SqlUtils.less(dt, SqlUtils.nvl(SqlUtils.field(TBL_TRIPS, COL_TRIP_DATE_TO),
                     SqlUtils.field(TBL_TRIPS, COL_TRIP_PLANNED_END_DATE), Long.MAX_VALUE)),
-                SqlUtils.isNull(tmp, prfx), SqlUtils.notNull(tmp, prfx + COL_VEHICLE))));
+                SqlUtils.isNull(tmp, prfx), SqlUtils.notNull(tmp, COL_VEHICLE))));
 
     qs.updateData(new SqlUpdate(tmp)
-        .addExpression(COL_COSTS_NOTE, SqlUtils.field(tmp, COL_VEHICLE))
-        .setWhere(SqlUtils.and(SqlUtils.isNull(tmp, COL_TRIP),
-            SqlUtils.notNull(tmp, prfx + COL_VEHICLE))));
+        .addExpression(COL_COSTS_NOTE, SqlUtils.field(TBL_VEHICLES, COL_VEHICLE_NUMBER))
+        .setFrom(TBL_VEHICLES, sys.joinTables(TBL_VEHICLES, tmp, COL_VEHICLE))
+        .setWhere(SqlUtils.isNull(tmp, COL_TRIP)));
 
     for (String tt : new String[] {TBL_TRIP_COSTS, TBL_TRIP_FUEL_COSTS}) {
       SqlSelect query = new SqlSelect()
           .addFields(tmp, COL_COSTS_DATE, COL_COSTS_QUANTITY, COL_COSTS_PRICE,
               COL_TRADE_VAT_PLUS, COL_COSTS_VAT, COL_TRADE_VAT_PERC,
-              COL_NUMBER, COL_COSTS_NOTE, COL_TRIP, COL_COSTS_EXTERNAL_ID)
-          .addField(tmp, prfx + COL_COSTS_CURRENCY, COL_COSTS_CURRENCY)
-          .addField(tmp, prfx + COL_COSTS_COUNTRY, COL_COSTS_COUNTRY)
-          .addField(tmp, prfx + COL_COSTS_SUPPLIER, COL_COSTS_SUPPLIER)
+              COL_NUMBER, COL_COSTS_NOTE, COL_TRIP, COL_COSTS_EXTERNAL_ID,
+              COL_COSTS_CURRENCY, COL_COSTS_COUNTRY, COL_COSTS_SUPPLIER)
           .addFrom(tmp)
           .setWhere(SqlUtils.isNull(tmp, prfx));
 
       if (BeeUtils.same(tt, TBL_TRIP_COSTS)) {
-        query.addField(tmp, prfx + COL_COSTS_ITEM, COL_COSTS_ITEM)
+        query.addFields(tmp, COL_COSTS_ITEM)
             .setWhere(SqlUtils.and(query.getWhere(), SqlUtils.isNull(tmp, COL_FUEL)));
       } else {
         query.setWhere(SqlUtils.and(query.getWhere(), SqlUtils.notNull(tmp, COL_FUEL)));
@@ -924,7 +969,10 @@ public class ImportBean {
     Object res;
 
     if (test) {
-      res = qs.doSql(new SqlSelect().addAllFields(tmp).addFrom(tmp).getQuery());
+      status.put("pyp", Pair.of(0, (BeeRowSet) qs.doSql(new SqlSelect()
+          .addAllFields(tmp)
+          .addFrom(tmp).getQuery())));
+      res = status;
     } else {
       res = info;
     }
@@ -964,16 +1012,13 @@ public class ImportBean {
 
     qs.sqlDropTemp(tmp);
 
-    if (test) {
-      ctx.setRollbackOnly();
-    }
     return ResponseObject.response(status);
   }
 
   private ResponseObject importTracking(Long optionId, Integer from, Integer to, boolean test) {
     ImportObject imp = initImport(optionId);
 
-    Long mappingId = imp.getRelationId(COL_VEHICLE);
+    Long mappingId = null; // TODO imp.getRelationId(COL_VEHICLE);
     String[] objects = null;
 
     if (DataUtils.isId(mappingId)) {
@@ -1004,8 +1049,8 @@ public class ImportBean {
         .addFrom(TBL_VEHICLE_TRACKING)
         .setWhere(SqlUtils.sqlFalse()));
 
-    String login = imp.getValue(VAR_IMPORT_LOGIN);
-    String pwd = imp.getValue(VAR_IMPORT_PASSWORD);
+    String login = imp.getPropertyValue(VAR_IMPORT_LOGIN);
+    String pwd = imp.getPropertyValue(VAR_IMPORT_PASSWORD);
 
     JustDate dateFrom = new JustDate(from);
     JustDate dateTo = new JustDate(to);
@@ -1060,7 +1105,7 @@ public class ImportBean {
         }
       }
     }
-    List<ExtendedProperty> info = checkMappings(imp, prfx, tmp);
+    List<ExtendedProperty> info = new ArrayList<>(); // TODO checkMappings(imp, prfx, tmp);
     int c;
 
     if (!test) {
@@ -1106,23 +1151,27 @@ public class ImportBean {
   }
 
   private ImportObject initImport(Long optId) {
-    SqlSelect query = new SqlSelect()
+    Assert.state(DataUtils.isId(optId));
+
+    SimpleRowSet rs = qs.getData(new SqlSelect()
         .addFields(TBL_IMPORT_OPTIONS, COL_IMPORT_TYPE, COL_IMPORT_DATA)
-        .addFields(TBL_IMPORT_PROPERTIES,
+        .addFields(TBL_IMPORT_PROPERTIES, sys.getIdName(TBL_IMPORT_PROPERTIES),
             COL_IMPORT_PROPERTY, COL_IMPORT_VALUE, COL_IMPORT_RELATION_OPTION)
-        .addField(TBL_IMPORT_PROPERTIES, sys.getIdName(TBL_IMPORT_PROPERTIES), COL_IMPORT_MAPPING)
         .addFrom(TBL_IMPORT_OPTIONS)
         .addFromLeft(TBL_IMPORT_PROPERTIES,
             sys.joinTables(TBL_IMPORT_OPTIONS, TBL_IMPORT_PROPERTIES, COL_IMPORT_OPTION))
-        .setWhere(sys.idEquals(TBL_IMPORT_OPTIONS, optId));
+        .setWhere(sys.idEquals(TBL_IMPORT_OPTIONS, optId)));
 
-    ImportObject io = new ImportObject(qs.getData(query), sys);
+    ImportObject io = new ImportObject(rs, optId, sys);
 
     for (ImportProperty prop : io.getProperties()) {
-      Long relId = io.getRelationId(prop.getName());
+      if (!BeeUtils.isEmpty(prop.getRelation())) {
+        Long id = BeeUtils.toLongOrNull(rs.getValueByKey(COL_IMPORT_PROPERTY, prop.getName(),
+            COL_IMPORT_RELATION_OPTION));
 
-      if (DataUtils.isId(relId)) {
-        io.setRelationObject(prop.getName(), initImport(relId));
+        if (DataUtils.isId(id)) {
+          io.setPropertyRelation(prop.getName(), initImport(id));
+        }
       }
     }
     return io;
@@ -1141,24 +1190,30 @@ public class ImportBean {
       Workbook wb = WorkbookFactory.create(file);
       wb.setMissingCellPolicy(Row.RETURN_BLANK_AS_NULL);
 
-      String shitName = io.getValue(VAR_IMPORT_SHEET);
+      String shitName = io.getPropertyValue(VAR_IMPORT_SHEET);
       shit = wb.getSheetAt(BeeUtils.isEmpty(shitName) ? 0 : wb.getSheetIndex(shitName));
     } catch (Exception e) {
       file.delete();
       return ResponseObject.error(e);
     }
     Map<String, Integer> indexes = new HashMap<>();
-    int startRow = BeeUtils.max(BeeUtils.toInt(io.getValue(VAR_IMPORT_START_ROW)) - 1,
+    int startRow = BeeUtils.max(BeeUtils.toInt(io.getPropertyValue(VAR_IMPORT_START_ROW)) - 1,
         shit.getFirstRowNum());
 
-    for (Entry<String, String> entry : io.getDataProperties().entrySet()) {
-      String prop = entry.getKey();
-      String colValue = entry.getValue();
+    for (Entry<String, Pair<ImportProperty, String>> e : io.getDeepProperties(null).entrySet()) {
+      String prop = e.getKey();
+      Pair<ImportProperty, String> pair = e.getValue();
 
-      if (BeeUtils.isPrefix(colValue, '=')) {
-        indexes.put(prop, CellReference.convertColStringToIndex(colValue.substring(1)));
+      if (!BeeUtils.isEmpty(pair.getA().getRelation())) {
+        create.addLong(prop, false);
+      } else {
+        String colValue = pair.getB();
+
+        if (BeeUtils.isPrefix(colValue, '=')) {
+          indexes.put(prop, CellReference.convertColStringToIndex(colValue.substring(1)));
+        }
+        create.addText(prop, false);
       }
-      create.addText(prop, false);
     }
     qs.updateData(create.addInteger(COL_REC_NO, true));
     String target = create.getTarget();
@@ -1172,9 +1227,9 @@ public class ImportBean {
       }
       values.clear();
 
-      for (Entry<String, String> entry : io.getDataProperties().entrySet()) {
-        String prop = entry.getKey();
-        String value = entry.getValue();
+      for (Entry<String, Pair<ImportProperty, String>> e : io.getDeepProperties(null).entrySet()) {
+        String prop = e.getKey();
+        String value = e.getValue().getB();
         Integer col = indexes.get(prop);
 
         if (BeeUtils.isNonNegative(col)) {
