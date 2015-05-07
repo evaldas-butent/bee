@@ -1640,6 +1640,10 @@
   margin-left: -12px;
 }
 
+.bee-StackHeader-selected > .bee-Appliance-icon {
+  visibility: hidden; 
+}
+
 .bee-CentralScrutinizer > .bee-StackContent {
   background-color: #e3e3e3;
 }
