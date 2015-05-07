@@ -285,28 +285,24 @@ public class ImportBean {
         BeeUtils.toIntOrNull(reqInfo.getParameter(COL_IMPORT_TYPE)));
 
     if (type != null) {
-      boolean test = BeeUtils.toBoolean(reqInfo.getParameter(VAR_IMPORT_TEST));
-
       switch (type) {
         case COSTS:
           response = importCosts(BeeUtils.toLong(reqInfo.getParameter(COL_IMPORT_OPTION)),
-              reqInfo.getParameter(VAR_IMPORT_FILE), test,
-              reqInfo.getParameter(Service.VAR_PROGRESS));
+              reqInfo.getParameter(VAR_IMPORT_FILE), reqInfo.getParameter(Service.VAR_PROGRESS));
           break;
 
         case TRACKING:
           response = importTracking(BeeUtils.toLong(reqInfo.getParameter(COL_IMPORT_OPTION)),
               BeeUtils.toIntOrNull(reqInfo.getParameter(VAR_DATE_LOW)),
-              BeeUtils.toIntOrNull(reqInfo.getParameter(VAR_DATE_HIGH)), test);
+              BeeUtils.toIntOrNull(reqInfo.getParameter(VAR_DATE_HIGH)), true);
           break;
 
         default:
           response = importData(BeeUtils.toLong(reqInfo.getParameter(COL_IMPORT_OPTION)),
-              reqInfo.getParameter(VAR_IMPORT_FILE), test,
-              reqInfo.getParameter(Service.VAR_PROGRESS));
+              reqInfo.getParameter(VAR_IMPORT_FILE), reqInfo.getParameter(Service.VAR_PROGRESS));
           break;
       }
-      if (test) {
+      if (BeeUtils.toBoolean(reqInfo.getParameter(VAR_IMPORT_TEST))) {
         ctx.setRollbackOnly();
       }
     } else {
@@ -764,7 +760,7 @@ public class ImportBean {
     qs.sqlDropTemp(tmp);
   }
 
-  private ResponseObject importCosts(Long optId, String fileName, boolean test, String progress) {
+  private ResponseObject importCosts(Long optId, String fileName, String progress) {
     ImportObject imp = initImport(optId);
     final DateFormat dtf;
 
@@ -819,10 +815,24 @@ public class ImportBean {
             value = values.get(COL_COSTS_EXTERNAL_ID);
 
             if (BeeUtils.isEmpty(value)) {
-              values.put(COL_COSTS_EXTERNAL_ID,
-                  Codec.md5(BeeUtils.joinItems(values.get(COL_VEHICLE), values.get(COL_COSTS_DATE),
-                      values.get(COL_COSTS_ITEM), values.get(COL_COSTS_SUPPLIER),
-                      values.get(COL_NUMBER), values.get(COL_COSTS_NOTE))));
+              StringBuilder sb = new StringBuilder();
+
+              for (String rel : new String[] {
+                  COL_VEHICLE, COL_COSTS_ITEM, COL_COSTS_SUPPLIER,
+                  COL_COSTS_DATE, COL_NUMBER, COL_COSTS_NOTE}) {
+                ImportObject ro = imp.getPropertyRelation(rel);
+
+                if (ro != null) {
+                  for (ImportProperty prop : ro.getProperties()) {
+                    if (prop.isDataProperty()) {
+                      sb.append(values.get(rel + "_" + prop.getName()));
+                    }
+                  }
+                } else {
+                  sb.append(values.get(rel));
+                }
+              }
+              values.put(COL_COSTS_EXTERNAL_ID, Codec.md5(sb.toString()));
             }
             return true;
           }
@@ -852,7 +862,7 @@ public class ImportBean {
 
       if (rs.getNumberOfRows() > 0) {
         qs.updateData(new SqlDelete(tmp).setWhere(wh));
-        status.put("Tuščias laukas " + col, Pair.of(null, rs));
+        status.put(Localized.getMessages().dataNotAvailable(col), Pair.of(null, rs));
       }
     }
     qs.updateData(new SqlUpdate(tmp)
@@ -865,13 +875,11 @@ public class ImportBean {
               ? SqlUtils.notNull(tmp, COL_FUEL) : SqlUtils.isNull(tmp, COL_FUEL),
           SqlUtils.notNull(tbl, COL_COSTS_EXTERNAL_ID));
 
-      int c = qs.updateData(new SqlUpdate(tmp)
+      qs.updateData(new SqlUpdate(tmp)
           .addExpression(prfx, SqlUtils.constant(true))
           .setFrom(tbl, SqlUtils.and(wh, SqlUtils.joinUsing(tmp, tbl, COL_COSTS_EXTERNAL_ID))));
 
-      PropertyUtils.addExtended(info, "BUVO", tbl, c);
-
-      if (!BeeUtils.isEmpty(imp.getPropertyValue(COL_NUMBER)) && !test) {
+      if (!BeeUtils.isEmpty(imp.getPropertyValue(COL_NUMBER))) {
         SqlSelect query = new SqlSelect()
             .addEmptyBoolean(prfx)
             .addField(tbl, sys.getIdName(tbl), "ID")
@@ -909,7 +917,7 @@ public class ImportBean {
               .addFrom(diff)
               .setWhere(SqlUtils.notEqual(SqlUtils.name(fld), SqlUtils.name(prfx + fld))));
 
-          c = rs.getNumberOfRows();
+          int c = rs.getNumberOfRows();
 
           if (c > 0) {
             PropertyUtils.addExtended(info, "SKIRTUMAI", imp.getProperty(fld).getCaption(), c);
@@ -940,7 +948,7 @@ public class ImportBean {
         .setFrom(TBL_VEHICLES, sys.joinTables(TBL_VEHICLES, tmp, COL_VEHICLE))
         .setWhere(SqlUtils.isNull(tmp, COL_TRIP)));
 
-    for (String tt : new String[] {TBL_TRIP_COSTS, TBL_TRIP_FUEL_COSTS}) {
+    for (String tbl : new String[] {TBL_TRIP_COSTS, TBL_TRIP_FUEL_COSTS}) {
       SqlSelect query = new SqlSelect()
           .addFields(tmp, COL_COSTS_DATE, COL_COSTS_QUANTITY, COL_COSTS_PRICE,
               COL_TRADE_VAT_PLUS, COL_COSTS_VAT, COL_TRADE_VAT_PERC,
@@ -949,7 +957,7 @@ public class ImportBean {
           .addFrom(tmp)
           .setWhere(SqlUtils.isNull(tmp, prfx));
 
-      if (BeeUtils.same(tt, TBL_TRIP_COSTS)) {
+      if (BeeUtils.same(tbl, TBL_TRIP_COSTS)) {
         query.addFields(tmp, COL_COSTS_ITEM)
             .setWhere(SqlUtils.and(query.getWhere(), SqlUtils.isNull(tmp, COL_FUEL)));
       } else {
@@ -957,30 +965,20 @@ public class ImportBean {
       }
       SimpleRowSet rs = qs.getData(query);
 
-      if (!test) {
-        for (int i = 0; i < rs.getNumberOfRows(); i++) {
-          qs.insertData(new SqlInsert(tt)
-              .addFields(rs.getColumnNames())
-              .addValues((Object[]) rs.getValues(i)));
-        }
+      for (int i = 0; i < rs.getNumberOfRows(); i++) {
+        qs.insertData(new SqlInsert(tbl)
+            .addFields(rs.getColumnNames())
+            .addValues((Object[]) rs.getValues(i)));
       }
-      PropertyUtils.addExtended(info, "IMPORTUOTA", tt, rs.getNumberOfRows());
+      status.put(tbl, Pair.of(rs.getNumberOfRows(), null));
     }
-    Object res;
-
-    if (test) {
-      status.put("pyp", Pair.of(0, (BeeRowSet) qs.doSql(new SqlSelect()
-          .addAllFields(tmp)
-          .addFrom(tmp).getQuery())));
-      res = status;
-    } else {
-      res = info;
-    }
+    status.put(null, Pair.of(null,
+        (BeeRowSet) qs.doSql(new SqlSelect().addAllFields(tmp).addFrom(tmp).getQuery())));
     qs.sqlDropTemp(tmp);
-    return ResponseObject.response(res);
+    return ResponseObject.response(status);
   }
 
-  private ResponseObject importData(Long optionId, String fileName, boolean test, String progress) {
+  private ResponseObject importData(Long optionId, String fileName, String progress) {
     ImportObject io = initImport(optionId);
 
     String tmp = SqlUtils.temporaryName();
