@@ -12,7 +12,7 @@
     <SimpleJoin name="Company" joinType="LEFT">
       <SimpleColumn name="Name" alias="CompanyName" />
       <SimpleJoin joinType="LEFT" name="CompanyType">
-        <SimpleColumn name="Name" alias="CompanyTypeName" />
+        <SimpleColumn name="Name" alias="TypeName" />
       </SimpleJoin>
     </SimpleJoin>
 

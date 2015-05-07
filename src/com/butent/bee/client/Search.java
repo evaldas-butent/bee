@@ -82,6 +82,8 @@ public class Search {
     private static final String STYLE_RESULT_CONTENT = STYLE_RESULT_PREFIX + "Content";
     private static final String STYLE_RESULT_VIEW = STYLE_RESULT_PREFIX + "View";
 
+    private static final EnumSet<UiOption> uiOptions = EnumSet.of(UiOption.VIEW);
+
     private static boolean removeResultWidget(ResultWidget widget) {
       Widget container = widget.getParent();
       if (container instanceof HasWidgets) {
@@ -102,12 +104,13 @@ public class Search {
 
     private ResultPanel(String query, List<SearchResult> results) {
       super(STYLE_RESULT_CONTAINER);
+      addStyleName(UiOption.getStyleName(uiOptions));
 
       this.query = query;
       this.size = results.size();
 
       this.header = new HeaderImpl();
-      header.create(query, false, true, null, EnumSet.of(UiOption.ROOT),
+      header.create(query, false, true, null, uiOptions,
           EnumSet.of(Action.PRINT, Action.CLOSE), Action.NO_ACTIONS, Action.NO_ACTIONS);
 
       header.setViewPresenter(this);

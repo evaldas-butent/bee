@@ -143,6 +143,10 @@ public class GridContainerImpl extends Split implements GridContainerView,
       Filter userFilter, GridInterceptor gridInterceptor, Collection<UiOption> uiOptions,
       GridFactory.GridOptions gridOptions) {
 
+    if (!BeeUtils.isEmpty(uiOptions)) {
+      addStyleName(UiOption.getStyleName(uiOptions));
+    }
+
     Map<String, String> properties = gridDescription.getProperties();
 
     boolean disablePage = false;

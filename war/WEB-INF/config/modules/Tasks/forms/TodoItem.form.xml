@@ -1,4 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE Form [
+  <!ENTITY inp "width: 15em;">
+]>
 <f:Form xmlns="http://www.butent.com/widget"
   xmlns:f="http://www.butent.com/form"
   xmlns:ui="http://www.butent.com/ui"
@@ -15,20 +18,20 @@
       <row>
         <Label for="Summary" visible="true" />
         <cell verticalAlignment="top">
-          <InputText source="Summary" style="width: 200px;"
+          <InputText source="Summary" style="&inp;"
             visible="true" />
         </cell>
 
         <Label for="Description" />
-        <InputArea source="Description" style="width: 200px; height: 60px;" />
+        <InputArea source="Description" style="&inp; height: 60px;" />
       </row>
 
       <row module="Classifiers.Contacts">
         <Label for="Company" />
-        <DataSelector source="Company" renderColumns="CompanyName CompanyTypeName" choiceColumns="Name TypeName" style="width: 200px;" />
+        <DataSelector source="Company" renderColumns="CompanyName CompanyTypeName" choiceColumns="Name TypeName" style="&inp;" />
 
         <Label for="Contact" />
-        <DataSelector source="Contact" newRowEnabled="false" style="width: 200px;"
+        <DataSelector source="Contact" newRowEnabled="false" style="&inp;"
           renderColumns="ContactFirstName ContactLastName"
           choiceColumns="FirstName LastName CompanyName" options="Company" />
       </row>
@@ -52,7 +55,7 @@
 
         <Label for="Creator" />
         <DataSelector source="Creator" editSource="CreatorCompanyPerson"
-          renderColumns="CreatorFirstName CreatorLastName" />
+          renderColumns="CreatorFirstName CreatorLastName" style="&inp;"/>
       </row>
     </Table>
   </FlowPanel>

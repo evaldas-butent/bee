@@ -64,7 +64,9 @@ import com.butent.bee.client.ui.FormFactory.WidgetDescriptionCallback;
 import com.butent.bee.client.ui.FormWidget;
 import com.butent.bee.client.ui.IdentifiableWidget;
 import com.butent.bee.client.ui.Opener;
+import com.butent.bee.client.ui.Theme;
 import com.butent.bee.client.ui.UiHelper;
+import com.butent.bee.client.ui.UiOption;
 import com.butent.bee.client.ui.WidgetDescription;
 import com.butent.bee.client.utils.Evaluator;
 import com.butent.bee.client.validation.CellValidateEvent.Handler;
@@ -186,8 +188,6 @@ public class GridImpl extends Absolute implements GridView, EditEndEvent.Handler
 
   private static final String STYLE_NAME = BeeConst.CSS_CLASS_PREFIX + "GridView";
 
-  private static int gridMarginLeft = 10;
-
   private static void amendGeneratedSizeAndShow(final ModalForm popup, final FormView form,
       final int x, final int y) {
 
@@ -251,6 +251,9 @@ public class GridImpl extends Absolute implements GridView, EditEndEvent.Handler
   private final List<BeeColumn> dataColumns;
 
   private final String relColumn;
+
+  private final Collection<UiOption> uiOptions;
+  private final int gridMarginLeft;
 
   private final GridInterceptor gridInterceptor;
 
@@ -321,10 +324,15 @@ public class GridImpl extends Absolute implements GridView, EditEndEvent.Handler
   private boolean summarize;
 
   public GridImpl(GridDescription gridDescription, String gridKey,
-      List<BeeColumn> dataColumns, String relColumn, GridInterceptor gridInterceptor) {
+      List<BeeColumn> dataColumns, String relColumn,
+      Collection<UiOption> uiOptions, GridInterceptor gridInterceptor) {
 
     super();
     addStyleName(STYLE_NAME);
+
+    this.uiOptions = uiOptions;
+    this.gridMarginLeft = UiOption.isChildOrEmbedded(uiOptions)
+        ? Theme.getChildGridMarginLeft() : Theme.getGridMarginLeft();
 
     createGrid();
 
@@ -1823,7 +1831,7 @@ public class GridImpl extends Absolute implements GridView, EditEndEvent.Handler
   }
 
   private void createGrid() {
-    this.grid = new CellGrid();
+    this.grid = new CellGrid(uiOptions);
     if (gridMarginLeft > 0) {
       StyleUtils.setLeft(grid, gridMarginLeft);
     }

@@ -13,14 +13,14 @@
   <FlowPanel style="padding: 1px 1px 1px 1px;">
     <Table  style="border-spacing: 5px;">
       <row>
-	   <cell colSpan="4">
+	      <cell colSpan="4">
          &separator;
-	   </cell>
-	  </row>
+	      </cell>
+	    </row>
       <row>
         <cell colSpan="4">
           <CheckBox source="Proforma" text="=trdProformaInvoice" style="float:right;" />
-		</cell>
+	    	</cell>
       </row>
       <row>
         <Label text="=trdDate" class="bee-required" style="&lbl2; width:143px;" />
@@ -31,12 +31,12 @@
       </row>
       <row>
         <Label text="=currency" class="bee-required" style="&lbl2; width:143px; margin-right: 5px;" />
-        <DataSelector source="CurrencyName" style="width:50px;" editEnabled="false" />
+        <DataSelector source="CurrencyName" style="width:5em;" editEnabled="false" />
 	    <cell colSpan="2">
 	      <Table style="border-spacing: 0px;">
             <row>
               <Label text="=trdInvoicePrefix" style="&lbl2; width: 30px; "/>
-              <InputText source="InvoicePrefix" upperCase="true" style="width:60px; margin-right: 4px;"/>
+              <InputText source="InvoicePrefix" upperCase="true" style="width:11em; margin-right: 4px;"/>
               <InlineLabel text="=trdInvoiceNo" style="&lbl2; margin-right: 5px;" />
               <InputText source="InvoiceNo" />
 		    </row>

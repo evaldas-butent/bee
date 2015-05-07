@@ -6,6 +6,7 @@
   newRowColumns="Name Code EUMember"
   newRowForm="Country"
   >
+  <Relation renderColumns="Name Code" />
   <Columns>
     <SimpleColumn name="Name" />
     <SimpleColumn name="Name2" />
@@ -17,4 +18,3 @@
     <OrderBy column="Name" />
   </Order>
 </View>
- 

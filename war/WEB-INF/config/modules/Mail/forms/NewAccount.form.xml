@@ -2,8 +2,8 @@
 <f:Form xmlns="http://www.butent.com/widget"
   xmlns:f="http://www.butent.com/form"
   xmlns:ui="http://www.butent.com/ui"
-  
-  name="NewAccount" viewName="Accounts" caption="=mailNewAccount" width="650" height="370"
+
+  name="NewAccount" viewName="Accounts" caption="=mailNewAccount" width="650" height="520"
   >
   <FlowPanel>
     <FlowPanel class="flexBox-vertical-center">
@@ -24,9 +24,9 @@
         </row>
       </Table>
     </FlowPanel>
-    
+
     <hr />
-    
+
     <FlowPanel class="flexBox-horizontal">
       <FlowPanel class="flexBox-vertical-center flexible">
         <Table style="border-spacing:5px">
@@ -79,4 +79,4 @@
       </FlowPanel>
     </FlowPanel>
   </FlowPanel>
-</f:Form>  
+</f:Form>

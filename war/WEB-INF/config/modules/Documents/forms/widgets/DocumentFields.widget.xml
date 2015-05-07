@@ -53,13 +53,6 @@
     <Label for="Sent" />
     <InputDateTime source="Sent" />
   </row>
-  <row>
-    <cell><text /></cell>
-    <cell><text /></cell>
-    <cell><text /></cell>
-  
-    <CheckBox source="Returned" text="=documentReturned" />
-  </row>
 
   <row>
     <Label for="Description" />

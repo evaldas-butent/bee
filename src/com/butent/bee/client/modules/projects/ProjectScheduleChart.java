@@ -3,6 +3,7 @@ package com.butent.bee.client.modules.projects;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Range;
 import com.google.common.collect.Sets;
+import com.google.gwt.dom.client.Element;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.user.client.ui.ComplexPanel;
@@ -17,6 +18,7 @@ import com.butent.bee.client.communication.ResponseCallback;
 import com.butent.bee.client.data.RowEditor;
 import com.butent.bee.client.dom.Edges;
 import com.butent.bee.client.dom.Rectangle;
+import com.butent.bee.client.event.logical.MoveEvent;
 import com.butent.bee.client.layout.Flow;
 import com.butent.bee.client.style.StyleUtils;
 import com.butent.bee.client.timeboard.TimeBoard;
@@ -68,8 +70,9 @@ final class ProjectScheduleChart extends TimeBoard {
   private static final String STYLE_STAGE_ROW_SEPARATOR = STYLE_PREFIX + "stage-row-separator";
   private static final String STYLE_DATA_ROW_SEPARATOR = STYLE_PREFIX + "data-row-separator";
 
-  private static final int DEFAULT_CHART_LEFT = 250;
-  private static final int DEFAUT_DAY_WIDTH = 25;
+  private static final int DEFAULT_CHART_LEFT = 300;
+  private static final int DEFAUT_DAY_WIDTH = 30;
+  private static final int DEFAULT_ROW_HEIGHT = 30;
 
   private final class ChartItem implements HasDateRange {
 
@@ -140,6 +143,8 @@ final class ProjectScheduleChart extends TimeBoard {
   private Long projectId;
   private final Set<String> relevantDataViews = Sets.newHashSet(VIEW_PROJECT_DATES,
       VIEW_PROJECT_STAGES, TaskConstants.VIEW_TASKS, TaskConstants.VIEW_RECURRING_TASKS);
+  private int dataWidth = DEFAULT_CHART_LEFT / 2;
+  private int stageWidth = DEFAULT_CHART_LEFT / 2;
 
   @Override
   public String getCaption() {
@@ -179,10 +184,15 @@ final class ProjectScheduleChart extends TimeBoard {
   protected Set<Action> getHiddenActions() {
     return EnumSet.of(Action.CLOSE);
   }
-  
+
   @Override
   protected String getRowHeightColumnName() {
     return COL_PSC_ROW_HEIGHT;
+  }
+
+  @Override
+  protected int getRowHeight() {
+    return DEFAULT_ROW_HEIGHT;
   }
 
   @Override
@@ -205,7 +215,7 @@ final class ProjectScheduleChart extends TimeBoard {
 
   @Override
   protected void prepareChart(Size canvasSize) {
-    setChartLeft(DEFAULT_CHART_LEFT);
+    setChartLeft(stageWidth + dataWidth);
     setDayColumnWidth(DEFAUT_DAY_WIDTH);
     setChartWidth(canvasSize.getWidth() - getChartLeft() - getChartRight());
 
@@ -295,10 +305,10 @@ final class ProjectScheduleChart extends TimeBoard {
 
         if (stageChanged) {
           TimeBoardHelper.addRowSeparator(panel, STYLE_STAGE_ROW_SEPARATOR, top, 0,
-              (2 * (getChartLeft() / 2)) + calendarWidth);
+              getChartLeft() + calendarWidth);
         } else if (flowChanged) {
-          TimeBoardHelper.addRowSeparator(panel, STYLE_DATA_ROW_SEPARATOR, top, getChartLeft() / 2,
-              (getChartLeft() / 2) + calendarWidth);
+          TimeBoardHelper.addRowSeparator(panel, STYLE_DATA_ROW_SEPARATOR, top,
+              stageWidth, dataWidth + calendarWidth);
         }
       }
 
@@ -351,7 +361,7 @@ final class ProjectScheduleChart extends TimeBoard {
   @Override
   protected void renderMovers(ComplexPanel panel, int height) {
     Mover stageMover = TimeBoardHelper.createHorizontalMover();
-    StyleUtils.setLeft(stageMover, (getChartLeft() / 2) - TimeBoardHelper.DEFAULT_MOVER_WIDTH);
+    StyleUtils.setLeft(stageMover, stageWidth - TimeBoardHelper.DEFAULT_MOVER_WIDTH);
     StyleUtils.setHeight(stageMover, height);
 
     panel.add(stageMover);
@@ -360,10 +370,16 @@ final class ProjectScheduleChart extends TimeBoard {
     StyleUtils.setLeft(dataMover, getChartLeft() - TimeBoardHelper.DEFAULT_MOVER_WIDTH);
     StyleUtils.setHeight(dataMover, height);
 
+    dataMover.addMoveHandler(new MoveEvent.Handler() {
+
+      @Override
+      public void onMove(MoveEvent event) {
+        onDataResize(event);
+      }
+    });
+
     panel.add(dataMover);
 
-    // TODO: Change Mover size with mouse
-    // TODO: User settings
   }
 
   @Override
@@ -443,8 +459,10 @@ final class ProjectScheduleChart extends TimeBoard {
       int firstRow, int lastRow, int level) {
 
     Rectangle rectangle =
-        TimeBoardHelper.getRectangle(level * (getChartLeft() / 2), getChartLeft() / 2, firstRow,
-            lastRow, getRowHeight());
+        TimeBoardHelper
+            .getRectangle(level * stageWidth, level > 0 ? dataWidth : stageWidth,
+                firstRow,
+                lastRow, getRowHeight());
 
     Edges margins = new Edges();
     margins.setRight(TimeBoardHelper.DEFAULT_MOVER_WIDTH);
@@ -553,5 +571,28 @@ final class ProjectScheduleChart extends TimeBoard {
         RowEditor.open(viewName, rowId, Opener.NEW_TAB);
       }
     });
+  }
+
+  private void onDataResize(MoveEvent event) {
+    int delta = event.getDeltaX();
+
+    Element resizer = ((Mover) event.getSource()).getElement();
+
+    int oldLeft = StyleUtils.getLeft(resizer);
+    int maxLeft = getLastResizableColumnMaxLeft(DEFAULT_CHART_LEFT);
+    int newLeft = BeeUtils.clamp(oldLeft + delta, stageWidth, maxLeft);
+
+    if (newLeft != oldLeft || event.isFinished()) {
+      if (newLeft != oldLeft) {
+        StyleUtils.setLeft(resizer, newLeft);
+      }
+
+      int px = newLeft + TimeBoardHelper.DEFAULT_MOVER_WIDTH - stageWidth;
+
+      if (event.isFinished()) {
+        dataWidth = px;
+        render(false);
+      }
+    }
   }
 }

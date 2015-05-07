@@ -1745,6 +1745,35 @@ public final class StyleUtils {
     setLineHeight(obj.getElement(), value);
   }
 
+  public static void setLineHeight(Element el, double value, CssUnit unit) {
+    Assert.notNull(el);
+    setLineHeight(el.getStyle(), value, unit);
+  }
+
+  public static void setLineHeight(Element el, int px) {
+    Assert.notNull(el);
+    setLineHeight(el.getStyle(), px);
+  }
+
+  public static void setLineHeight(Style st, double value, CssUnit unit) {
+    Assert.notNull(st);
+    setProperty(st, STYLE_LINE_HEIGHT, value, unit);
+  }
+
+  public static void setLineHeight(Style st, int px) {
+    setLineHeight(st, px, DEFAULT_UNIT);
+  }
+
+  public static void setLineHeight(UIObject obj, double value, CssUnit unit) {
+    Assert.notNull(obj);
+    setLineHeight(obj.getElement(), value, unit);
+  }
+
+  public static void setLineHeight(UIObject obj, int px) {
+    Assert.notNull(obj);
+    setLineHeight(obj.getElement(), px);
+  }
+
   public static void setMaxHeight(Element el, double value, CssUnit unit) {
     Assert.notNull(el);
     setMaxHeight(el.getStyle(), value, unit);
@@ -1940,7 +1969,8 @@ public final class StyleUtils {
   }
 
   public static void setProperty(Style st, String name, double value, CssUnit unit) {
-    st.setProperty(checkPropertyName(name), value + unit.getCaption());
+    String v = (unit == null) ? BeeUtils.toString(value) : (value + unit.getCaption());
+    st.setProperty(checkPropertyName(name), v);
   }
 
   public static void setProperty(Style st, String name, HasCssName value) {

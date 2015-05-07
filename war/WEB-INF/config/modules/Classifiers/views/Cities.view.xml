@@ -4,6 +4,7 @@
   caption="=cities"
   newRowForm="City"
   >
+  <Relation renderColumns="Name CountryName CountryCode" />
   <Columns>
     <SimpleColumn name="Name" />
     <SimpleColumn name="Name2" />
@@ -19,4 +20,3 @@
     <OrderBy column="Name" />
   </Order>
 </View>
- 

@@ -106,6 +106,7 @@ public final class ProjectConstants {
   public static final String COL_PROJECT_TYPE = "Type";
   public static final String COL_PROGRESS = "Progress";
   public static final String COL_COMMENT = "Comment";
+  public static final String COL_EXPENSES = "Expenses";
   public static final String COL_EVENT = "Event";
   public static final String COL_EVENT_PROPERTIES = "Properties";
   public static final String COL_CAPTION = "Caption";
@@ -113,6 +114,7 @@ public final class ProjectConstants {
   public static final String COL_EXPECTED_DURATION = "ExpectedDuration";
   public static final String COL_CONTRACT_PRICE = "ContractPrice";
   public static final String COL_PROJECT_TIME_UNIT = "TimeUnit";
+  public static final String COL_DESCRIPTION = "Description";
 
   public static final String COL_PSC_FOOTER_HEIGHT = "PSCFooterHeight";
   public static final String COL_PSC_HEADER_HEIGHT = "PSCHeaderHeight";

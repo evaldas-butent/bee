@@ -409,6 +409,8 @@ public interface LocalizableConstants extends Constants, LocalizableClassifierCo
 
   String imported();
 
+  String importing();
+
   String imageUploadFailed();
 
   String initialFilter();
@@ -694,6 +696,8 @@ public interface LocalizableConstants extends Constants, LocalizableClassifierCo
   String search();
 
   String selectAtLeastOneRow();
+
+  String selectImport();
 
   String selectionColumnLabel();
 
