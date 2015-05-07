@@ -36,16 +36,12 @@ import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.Pair;
 import com.butent.bee.shared.Service;
 import com.butent.bee.shared.communication.ResponseObject;
-import com.butent.bee.shared.data.BeeRow;
 import com.butent.bee.shared.data.BeeRowSet;
 import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.SimpleRowSet;
 import com.butent.bee.shared.data.SimpleRowSet.SimpleRow;
 import com.butent.bee.shared.data.SqlConstants.SqlDataType;
 import com.butent.bee.shared.data.SqlConstants.SqlFunction;
-import com.butent.bee.shared.data.filter.CompoundFilter;
-import com.butent.bee.shared.data.filter.CustomFilter;
-import com.butent.bee.shared.data.filter.Filter;
 import com.butent.bee.shared.data.filter.Operator;
 import com.butent.bee.shared.data.view.RowInfo;
 import com.butent.bee.shared.data.view.ViewColumn;
@@ -309,62 +305,6 @@ public class ImportBean {
       response = ResponseObject.error("Import type not recognized");
     }
     return response;
-  }
-
-  public void init() {
-    QueryServiceBean.registerViewDataProvider(TBL_IMPORT_MAPPINGS,
-        new QueryServiceBean.ViewDataProvider() {
-          @Override
-          public BeeRowSet getViewData(BeeView view, SqlSelect query, Filter filter) {
-            BeeRowSet rs = qs.getViewData(query, view);
-            Map<String, String> params = getParameters(filter);
-
-            if (!DataUtils.isEmpty(rs) && !BeeUtils.isEmpty(params)) {
-              String tbl = params.get(VAR_MAPPING_TABLE);
-
-              SimpleRowSet result = qs.getData(new SqlSelect()
-                  .addField(TBL_IMPORT_MAPPINGS, sys.getIdName(TBL_IMPORT_MAPPINGS),
-                      COL_IMPORT_MAPPING)
-                  .addField(tbl, params.get(VAR_MAPPING_FIELD), COL_IMPORT_VALUE)
-                  .addFrom(TBL_IMPORT_MAPPINGS)
-                  .addFromInner(tbl, sys.joinTables(tbl, TBL_IMPORT_MAPPINGS, COL_IMPORT_MAPPING))
-                  .setWhere(sys.idInList(TBL_IMPORT_MAPPINGS, rs.getRowIds())));
-
-              for (BeeRow row : rs) {
-                row.setProperty(COL_IMPORT_MAPPING + COL_IMPORT_VALUE,
-                    result.getValueByKey(COL_IMPORT_MAPPING, BeeUtils.toString(row.getId()),
-                        COL_IMPORT_VALUE));
-              }
-            }
-            return rs;
-          }
-
-          @Override
-          public int getViewSize(BeeView view, SqlSelect query, Filter filter) {
-            return qs.sqlCount(query);
-          }
-
-          private Map<String, String> getParameters(Filter filter) {
-            Map<String, String> params = null;
-
-            if (filter != null) {
-              if (filter instanceof CustomFilter
-                  && BeeUtils.same(((CustomFilter) filter).getKey(), TBL_IMPORT_MAPPINGS)) {
-                return Codec.deserializeMap(((CustomFilter) filter).getArg(0));
-
-              } else if (filter instanceof CompoundFilter) {
-                for (Filter flt : ((CompoundFilter) filter).getSubFilters()) {
-                  params = getParameters(flt);
-
-                  if (!BeeUtils.isEmpty(params)) {
-                    break;
-                  }
-                }
-              }
-            }
-            return params;
-          }
-        });
   }
 
   private void applyMappings(ImportObject io, String data, String parentName) {
@@ -882,7 +822,7 @@ public class ImportBean {
       if (!BeeUtils.isEmpty(imp.getPropertyValue(COL_NUMBER))) {
         SqlSelect query = new SqlSelect()
             .addEmptyBoolean(prfx)
-            .addField(tbl, sys.getIdName(tbl), "ID")
+            .addFields(tbl, sys.getIdName(tbl))
             .addFields(tmp, COL_NUMBER)
             .addFields(TBL_TRIPS, COL_TRIP_NO)
             .addFrom(tmp)
@@ -908,23 +848,27 @@ public class ImportBean {
 
         qs.updateData(new SqlUpdate(tbl)
             .addExpression(COL_NUMBER, SqlUtils.field(diff, COL_NUMBER))
-            .setFrom(diff, sys.joinTables(tbl, diff, "ID"))
+            .setFrom(diff, SqlUtils.joinUsing(tbl, diff, sys.getIdName(tbl)))
             .setWhere(SqlUtils.notNull(diff, prfx)));
 
+        String key = BeeUtils.joinWords(Localized.getConstants().changedValues(),
+            Localized.maybeTranslate(sys.getView(tbl).getCaption()));
+
         for (String fld : flds) {
-          SimpleRowSet rs = qs.getData(new SqlSelect()
-              .addFields(diff, COL_TRIP_NO, fld, prfx + fld)
+          BeeRowSet rs = (BeeRowSet) qs.doSql(new SqlSelect()
+              .addFields(diff, COL_TRIP_NO)
+              .addConstant(imp.getProperty(fld).getCaption(), "Value")
+              .addField(diff, fld, "Old")
+              .addField(diff, prfx + fld, "New")
               .addFrom(diff)
-              .setWhere(SqlUtils.notEqual(SqlUtils.name(fld), SqlUtils.name(prfx + fld))));
+              .setWhere(SqlUtils.notEqual(SqlUtils.name(fld), SqlUtils.name(prfx + fld)))
+              .getQuery());
 
-          int c = rs.getNumberOfRows();
-
-          if (c > 0) {
-            PropertyUtils.addExtended(info, "SKIRTUMAI", imp.getProperty(fld).getCaption(), c);
-
-            for (SimpleRow row : rs) {
-              PropertyUtils.addExtended(info, row.getValue(COL_TRIP_NO), row.getValue(fld),
-                  row.getValue(prfx + fld));
+          if (rs.getNumberOfRows() > 0) {
+            if (!status.containsKey(key)) {
+              status.put(key, Pair.of(null, rs));
+            } else {
+              status.get(key).getB().addRows(rs.getRows());
             }
           }
         }
@@ -949,6 +893,10 @@ public class ImportBean {
         .setWhere(SqlUtils.isNull(tmp, COL_TRIP)));
 
     for (String tbl : new String[] {TBL_TRIP_COSTS, TBL_TRIP_FUEL_COSTS}) {
+      if (!BeeUtils.isEmpty(progress)) {
+        Endpoint.updateProgress(progress,
+            Localized.maybeTranslate(sys.getView(tbl).getCaption()), 0);
+      }
       SqlSelect query = new SqlSelect()
           .addFields(tmp, COL_COSTS_DATE, COL_COSTS_QUANTITY, COL_COSTS_PRICE,
               COL_TRADE_VAT_PLUS, COL_COSTS_VAT, COL_TRADE_VAT_PERC,
@@ -966,14 +914,16 @@ public class ImportBean {
       SimpleRowSet rs = qs.getData(query);
 
       for (int i = 0; i < rs.getNumberOfRows(); i++) {
+        if (!BeeUtils.isEmpty(progress)
+            && !Endpoint.updateProgress(progress, i / (double) rs.getNumberOfRows())) {
+          break;
+        }
         qs.insertData(new SqlInsert(tbl)
             .addFields(rs.getColumnNames())
             .addValues((Object[]) rs.getValues(i)));
       }
       status.put(tbl, Pair.of(rs.getNumberOfRows(), null));
     }
-    status.put(null, Pair.of(null,
-        (BeeRowSet) qs.doSql(new SqlSelect().addAllFields(tmp).addFrom(tmp).getQuery())));
     qs.sqlDropTemp(tmp);
     return ResponseObject.response(status);
   }
