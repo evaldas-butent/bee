@@ -27,6 +27,7 @@ import com.butent.bee.client.ui.FormFactory.WidgetDescriptionCallback;
 import com.butent.bee.client.ui.IdentifiableWidget;
 import com.butent.bee.client.utils.FileUtils;
 import com.butent.bee.client.utils.NewFileInfo;
+import com.butent.bee.client.view.ViewHelper;
 import com.butent.bee.client.view.add.ReadyForInsertEvent;
 import com.butent.bee.client.view.edit.SaveChangesEvent;
 import com.butent.bee.client.view.form.FormView;
@@ -37,6 +38,7 @@ import com.butent.bee.client.view.grid.interceptor.AbstractGridInterceptor;
 import com.butent.bee.client.view.grid.interceptor.GridInterceptor;
 import com.butent.bee.client.widget.Image;
 import com.butent.bee.client.widget.InputBoolean;
+import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.data.BeeRow;
 import com.butent.bee.shared.data.IsRow;
 import com.butent.bee.shared.data.UserData;
@@ -48,7 +50,10 @@ import com.butent.bee.shared.modules.classifiers.ClassifierConstants;
 import com.butent.bee.shared.ui.ColumnDescription;
 import com.butent.bee.shared.utils.BeeUtils;
 
+import java.util.Arrays;
+import java.util.HashSet;
 import java.util.Objects;
+import java.util.Set;
 
 import elemental.client.Browser;
 import elemental.events.Event;
@@ -142,6 +147,8 @@ class PersonForm extends AbstractFormInterceptor {
               DataInfo dataInfo = Data.getDataInfo(viewName);
               BeeRow newRow = RowFactory.createEmptyRow(dataInfo, true);
               Data.setValue(viewName, newRow, COL_PERSON, id);
+
+              copyContactData(presenter, viewName, newRow);
 
               RowFactory.createRow(dataInfo.getNewRowForm(),
                   Localized.getConstants().newPersonCompany(), dataInfo, newRow, null,
@@ -338,6 +345,28 @@ class PersonForm extends AbstractFormInterceptor {
       userData.setPhotoFileName(getPhotoFileName(form, row));
 
       BeeKeeper.getScreen().updateUserData(userData);
+    }
+  }
+
+  private static void copyContactData(GridPresenter presenter, String viewName, BeeRow newRow) {
+
+    FormView parentForm = ViewHelper.getForm(presenter.getMainView().asWidget());
+    DataInfo parentInfo = Data.getDataInfo(parentForm.getViewName());
+
+    if (BeeUtils.allNotNull(parentForm, parentInfo)) {
+
+      Set<String> columns = new HashSet<>();
+      columns.addAll(Arrays.asList(COL_PHONE, COL_MOBILE, COL_FAX, ALS_EMAIL_ID, COL_EMAIL,
+          COL_WEBSITE, COL_ADDRESS, COL_CITY, ALS_CITY_NAME, ALS_COUNTRY_NAME, ALS_COUNTRY_CODE,
+          COL_COUNTRY, COL_POST_INDEX, COL_SOCIAL_CONTACTS));
+
+      for (String column : columns) {
+        int index = parentInfo.getColumnIndex(column);
+        if (!BeeConst.isUndef(index)) {
+          Data.setValue(viewName, newRow, column, parentForm.getActiveRow().getString(
+              index));
+        }
+      }
     }
   }
 }
