@@ -147,7 +147,6 @@ public final class ClassifierKeeper {
         new ItemsGrid(true));
 
     GridFactory.registerGridInterceptor(GRID_COMPANY_CONTACTS, new CompanyContactsGrid());
-    GridFactory.registerGridInterceptor(GRID_PERSON_COMPANIES, new PersonsCompaniesGrid());
 
     ConditionalStyle.registerGridColumnStyleProvider(GRID_FINANCIAL_STATES,
         AdministrationConstants.ALS_COLOR_NAME, ColorStyleProvider
