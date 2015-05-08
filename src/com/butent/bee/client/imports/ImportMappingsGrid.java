@@ -35,8 +35,8 @@ public class ImportMappingsGrid extends AbstractGridInterceptor {
   }
 
   @Override
-  public ColumnDescription beforeCreateColumn(GridView gridView, ColumnDescription description) {
-    if (BeeUtils.same(description.getId(), AdministrationConstants.COL_IMPORT_MAPPING)) {
+  public ColumnDescription beforeCreateColumn(final GridView gridView, ColumnDescription descr) {
+    if (BeeUtils.same(descr.getId(), AdministrationConstants.COL_IMPORT_MAPPING)) {
       Relation relation = Data.getRelation(viewName);
 
       if (relation == null) {
@@ -48,20 +48,20 @@ public class ImportMappingsGrid extends AbstractGridInterceptor {
         relation = Relation.create(viewName, columns);
         LogUtils.getRootLogger().warning("Missing relation info:", viewName);
       }
-      description.setRelation(relation);
+      descr.setRelation(relation);
 
       Queries.getRowSet(viewName, relation.getChoiceColumns(), new Queries.RowSetCallback() {
         @Override
         public void onSuccess(BeeRowSet result) {
           cache = result;
 
-          if (getGridPresenter() != null && waiting) {
-            getGridPresenter().refresh(true);
+          if (waiting) {
+            gridView.refresh(true, true);
           }
         }
       });
     }
-    return super.beforeCreateColumn(gridView, description);
+    return super.beforeCreateColumn(gridView, descr);
   }
 
   @Override
@@ -69,16 +69,17 @@ public class ImportMappingsGrid extends AbstractGridInterceptor {
     return null;
   }
 
-  @Override public AbstractCellRenderer getRenderer(final String columnName,
+  @Override
+  public AbstractCellRenderer getRenderer(String columnName,
       List<? extends IsColumn> dataColumns, ColumnDescription columnDescription,
       CellSource cellSource) {
 
     if (BeeUtils.same(columnName, COL_IMPORT_MAPPING)) {
-      return new AbstractCellRenderer(null) {
+      return new AbstractCellRenderer(cellSource) {
         @Override
         public String render(IsRow row) {
-          if (!BeeUtils.isEmpty(getViewName()) && cache != null) {
-            Long mapping = Data.getLong(getViewName(), row, columnName);
+          if (cache != null) {
+            Long mapping = getLong(row);
 
             if (DataUtils.isId(mapping)) {
               BeeRow data = cache.getRowById(mapping);

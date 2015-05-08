@@ -58,8 +58,6 @@ public enum ImportType implements HasLocalizedCaption {
 
       addSimpleProperty(VAR_IMPORT_LOGIN, locale.loginUserName());
       addSimpleProperty(VAR_IMPORT_PASSWORD, locale.loginPassword());
-      addRelationProperty(COL_VEHICLE, locale.trVehicle(), TBL_VEHICLES);
-      addRelationProperty(COL_COUNTRY, locale.country(), TBL_COUNTRIES);
     }
   },
   DATA {
