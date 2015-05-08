@@ -449,6 +449,24 @@ public final class StyleUtils {
     return buildStyle(STYLE_PADDING, value);
   }
 
+  public static String buildRule(String selector, SafeStyles... styles) {
+    Assert.notEmpty(selector);
+    Assert.notNull(styles);
+    Assert.parameterCount(styles.length, 1);
+
+    StringBuilder sb = new StringBuilder();
+    sb.append(selector).append(BeeConst.STRING_LEFT_BRACE);
+
+    for (SafeStyles style : styles) {
+      if (style != null) {
+        sb.append(style.asString());
+      }
+    }
+
+    sb.append(BeeConst.STRING_RIGHT_BRACE);
+    return sb.toString();
+  }
+
   public static SafeStyles buildStyle(SafeStyles... styles) {
     Assert.notNull(styles);
     Assert.parameterCount(styles.length, 1);
