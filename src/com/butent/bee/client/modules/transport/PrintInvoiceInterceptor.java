@@ -21,14 +21,17 @@ import com.butent.bee.client.composite.UnboundSelector;
 import com.butent.bee.client.data.Data;
 import com.butent.bee.client.dialog.InputCallback;
 import com.butent.bee.client.grid.HtmlTable;
+import com.butent.bee.client.layout.Flow;
 import com.butent.bee.client.modules.classifiers.ClassifierUtils;
 import com.butent.bee.client.modules.trade.TradeUtils;
+import com.butent.bee.client.style.StyleUtils;
 import com.butent.bee.client.ui.FormFactory.WidgetDescriptionCallback;
 import com.butent.bee.client.ui.IdentifiableWidget;
 import com.butent.bee.client.utils.XmlUtils;
 import com.butent.bee.client.view.form.FormView;
 import com.butent.bee.client.view.form.interceptor.AbstractFormInterceptor;
 import com.butent.bee.client.view.form.interceptor.FormInterceptor;
+import com.butent.bee.client.widget.CheckBox;
 import com.butent.bee.shared.Pair;
 import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.IsRow;
@@ -84,8 +87,14 @@ public class PrintInvoiceInterceptor extends AbstractFormInterceptor {
         relation.disableNewRow();
 
         final UnboundSelector selector = UnboundSelector.create(relation);
+        final CheckBox enableGrouping = new CheckBox(Localized.getConstants().primaryOnly());
+        enableGrouping.setChecked(false);
 
-        Global.inputWidget(Localized.getConstants().itemOrService(), selector,
+        Flow flow = new Flow(StyleUtils.NAME_FLEX_BOX_VERTICAL);
+        flow.add(selector);
+        flow.add(enableGrouping);
+
+        Global.inputWidget(Localized.getConstants().itemOrService(), flow,
             new InputCallback() {
               @Override
               public void onCancel() {
@@ -200,6 +209,8 @@ public class PrintInvoiceInterceptor extends AbstractFormInterceptor {
                             newRow.setValue(COL_TRADE_ITEM_PRICE,
                                 BeeUtils.toString(amounts.get(entry.getKey()), 2));
                           }
+                        } else if (enableGrouping.isChecked()) {
+                          rs = groupByPrimaryAssessements(data);
                         } else {
                           rs = data;
                         }
@@ -268,5 +279,9 @@ public class PrintInvoiceInterceptor extends AbstractFormInterceptor {
             .joinItems(new TreeSet<>(splitter.splitToList(pair.getB()))));
       }
     }
+  }
+
+  private static SimpleRowSet groupByPrimaryAssessements(SimpleRowSet data) {
+    return data;
   }
 }
