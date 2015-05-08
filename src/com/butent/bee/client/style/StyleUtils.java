@@ -437,6 +437,10 @@ public final class StyleUtils {
     return buildStyle(CssProperties.LINE_HEIGHT, value);
   }
 
+  public static SafeStyles buildLineHeight(int px) {
+    return buildLineHeight(toCssLength(px, DEFAULT_UNIT));
+  }
+
   public static SafeStyles buildMargin(String value) {
     return buildStyle(STYLE_MARGIN, value);
   }

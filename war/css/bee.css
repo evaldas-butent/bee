@@ -594,12 +594,6 @@
   overflow: hidden;
   text-overflow: ellipsis;
   color: #414142;
-  display: flex;
-  display: -webkit-flex;
-  display: -ms-flexbox;
-  align-items: center;
-  -webkit-align-items: center;
-  -ms-flex-align: center;
 }
 
 .bee-CellGridFooter {
