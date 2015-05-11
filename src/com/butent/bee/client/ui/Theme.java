@@ -11,6 +11,7 @@ import com.butent.bee.client.composite.MultiSelector;
 import com.butent.bee.client.dom.DomUtils;
 import com.butent.bee.client.dom.Selectors;
 import com.butent.bee.client.grid.HtmlTable;
+import com.butent.bee.client.layout.TabbedPages;
 import com.butent.bee.client.style.StyleUtils;
 import com.butent.bee.client.utils.JsonUtils;
 import com.butent.bee.client.widget.InputArea;
@@ -192,7 +193,14 @@ public final class Theme {
   private static List<String> getRules() {
     List<String> rules = new ArrayList<>();
 
-    int px = getDisclosureClosedHeight();
+    int px = getTabbedPagesTabHeight();
+    if (px > 0) {
+      String tpt = Selectors.classSelector(TabbedPages.DEFAULT_STYLE_PREFIX
+          + TabbedPages.TAB_STYLE_SUFFIX);
+      rules.add(StyleUtils.buildRule(tpt, StyleUtils.buildHeight(px)));
+    }
+
+    px = getDisclosureClosedHeight();
     if (px > 0) {
       String dch = Selectors.descendantCombinator(Selectors.classSelector(Disclosure.STYLE_CLOSED),
           Selectors.classSelector(Disclosure.STYLE_HEADER));

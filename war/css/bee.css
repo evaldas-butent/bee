@@ -1142,35 +1142,55 @@
 }
 
 .bee-TabbedPages-tabPanel {
-  font-size: 14px;
-  line-height: 60px;
-  text-transform: uppercase;
+  display: flex;
+  display: -webkit-flex;
+  display: -ms-flexbox;
+  flex-wrap: wrap;
+  -webkit-flex-wrap: wrap;
+  -ms-flex-wrap: wrap;
 }
-
 .bee-TabbedPages-tab {
-  display: inline-block;
-  height: 42px;
-  padding: 0 15px;
+  display: flex;
+  display: -webkit-flex;
+  display: -ms-flexbox;
+  align-items: center;
+  -webkit-align-items: center;
+  -ms-flex-align: center;
   cursor: pointer;
-  margin-left: 3px;
   background-color: white;
+}
+.bee-TabbedPages-tabWrapper {
+  display: flex;
+  display: -webkit-flex;
+  display: -ms-flexbox;
+}
+.bee-TabbedPages-tabWrapper,
+.bee-TabbedPages-tabSingleton {
+  padding-left: 15px;
+  padding-right: 15px;
+  padding-bottom: 2px;
+  border-bottom: 3px solid transparent;
 }
 .bee-TabbedPages-tabSelected {
   cursor: default;
+}
+.bee-TabbedPages-tabSelected .bee-TabbedPages-tabWrapper,
+.bee-TabbedPages-tabSelected .bee-TabbedPages-tabSingleton {
   font-weight: bold;
-  border-bottom: 3px solid #1CA5C7;
+  border-bottom-color: #1ca5c7;
 }
 
 .bee-TabbedPages-tabCaption {
-  display: inline-block;
+  margin-top: 2px;
+}
+.bee-TabbedPages-tabCaption,
+.bee-TabbedPages-tabSingleton {
+  font-size: 14px;
+  text-transform: uppercase;
 }
 .bee-TabbedPages-tabSummary {
-  display: inline-block;
+  margin-left: 5px;
   font-size: 12px;
-  line-height: normal;
-  vertical-align: super;
-  position: relative;
-  left: 5px;
 }
 
 .bee-TabbedPages-content {
