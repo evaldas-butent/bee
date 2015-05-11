@@ -728,7 +728,7 @@ public class ImportBean {
     String tmp = create.getTarget();
     qs.updateData(create);
 
-    ResponseObject resp = loadXLSData(io, fileName, tmp,
+    ResponseObject resp = loadXLSData(io, fileName, tmp, progress,
         new Function<Map<String, String>, Boolean>() {
           @Override
           public Boolean apply(Map<String, String> values) {
@@ -946,7 +946,7 @@ public class ImportBean {
     String tmp = create.getTarget();
     qs.updateData(create);
 
-    ResponseObject resp = loadXLSData(io, fileName, tmp,
+    ResponseObject resp = loadXLSData(io, fileName, tmp, progress,
         new Function<Map<String, String>, Boolean>() {
           @Override
           public Boolean apply(Map<String, String> values) {
@@ -1012,8 +1012,14 @@ public class ImportBean {
     JustDate dateTo = new JustDate(to);
 
     ReportProviderInterface port = new Report().getReportProviderImplPort();
+    int c = 0;
 
     for (SimpleRow row : objects) {
+      if (!BeeUtils.isEmpty(progress)
+          && !Endpoint.updateProgress(progress, ++c / (double) objects.getNumberOfRows())) {
+        c = BeeConst.UNDEF;
+        break;
+      }
       boolean exists = true;
 
       for (int i = 0; i < TimeUtils.dayDiff(dateFrom, dateTo); i++) {
@@ -1092,8 +1098,9 @@ public class ImportBean {
     }
     Map<String, Pair<Integer, BeeRowSet>> status = new LinkedHashMap<>();
 
-    commitData(io, tmp, null, null, progress, status, !usr.canCreateData(io.getViewName()));
-
+    if (c != BeeConst.UNDEF) {
+      commitData(io, tmp, null, null, progress, status, !usr.canCreateData(io.getViewName()));
+    }
     qs.sqlDropTemp(tmp);
     return ResponseObject.response(status);
   }
@@ -1126,7 +1133,7 @@ public class ImportBean {
   }
 
   private ResponseObject loadXLSData(ImportObject io, String fileName, String target,
-      Function<Map<String, String>, Boolean> rowValidator) {
+      String progress, Function<Map<String, String>, Boolean> rowValidator) {
     File file = new File(fileName);
 
     if (!file.isFile() || !file.canRead()) {
@@ -1158,8 +1165,14 @@ public class ImportBean {
     int recNo = 0;
     int startRow = BeeUtils.max(BeeUtils.toInt(io.getPropertyValue(VAR_IMPORT_START_ROW)) - 1,
         shit.getFirstRowNum());
+    int endRow = shit.getLastRowNum();
 
-    for (int i = startRow; i <= shit.getLastRowNum(); i++) {
+    for (int i = startRow; i <= endRow; i++) {
+      if (!BeeUtils.isEmpty(progress)
+          && !Endpoint.updateProgress(progress, recNo / (double) (endRow - startRow + 1))) {
+        return ResponseObject.error(Localized.getConstants().cancel());
+      }
+      recNo++;
       Row row = shit.getRow(i);
       if (row == null) {
         continue;
@@ -1211,7 +1224,7 @@ public class ImportBean {
         insert.addNotEmpty(name, values.get(name));
       }
       if (!insert.isEmpty()) {
-        qs.updateData(insert.addConstant(COL_REC_NO, ++recNo));
+        qs.updateData(insert.addConstant(COL_REC_NO, recNo));
       }
     }
     file.delete();
