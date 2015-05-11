@@ -317,10 +317,6 @@ public class PrintInvoiceInterceptor extends AbstractFormInterceptor {
         xml = null;
       }
       if (xml != null) {
-        primary = BeeUtils.isEmpty(XmlUtils
-            .getChildrenText(xml.getDocumentElement(),
-                "Parent" + COL_ASSESSMENT));
-
         for (Element el : XmlUtils
             .getChildrenElements(xml.getDocumentElement())) {
           String name = el.getNodeName();
@@ -331,6 +327,8 @@ public class PrintInvoiceInterceptor extends AbstractFormInterceptor {
             parentId = BeeUtils.toLongOrNull(XmlUtils.getText(el));
           }
         }
+
+        primary = !DataUtils.isId(parentId);
       }
 
       if (!DataUtils.isId(assessmentId) && !DataUtils.isId(parentId)) {
@@ -339,7 +337,7 @@ public class PrintInvoiceInterceptor extends AbstractFormInterceptor {
 
       if (primary) {
 
-        if (!assessments.containsKey(assessmentId) && assessments.get(assessmentId) == null) {
+        if (!assessments.containsKey(assessmentId)) {
           assessments.put(assessmentId, Lists.newArrayList(simpleRow));
         } else {
           List<SimpleRow> r =
@@ -347,12 +345,10 @@ public class PrintInvoiceInterceptor extends AbstractFormInterceptor {
           assessments.put(assessmentId, r);
         }
       } else {
-        if (!childAssessments.containsKey(parentId) && childAssessments.get(parentId) == null) {
+        if (!childAssessments.containsKey(parentId)) {
           childAssessments.put(parentId, Lists.newArrayList(simpleRow));
         } else {
-          List<SimpleRow> r = childAssessments.get(parentId);
-          r.add(simpleRow);
-          childAssessments.put(parentId, r);
+          childAssessments.get(parentId).add(simpleRow);
         }
       }
     }
@@ -379,7 +375,8 @@ public class PrintInvoiceInterceptor extends AbstractFormInterceptor {
 
   private static List<SimpleRow> insertByOrderOrMerge(List<SimpleRow> a, SimpleRow b) {
     if (a == null) {
-      return Lists.newArrayList();
+      List<SimpleRow> emptylist = Lists.newArrayList();
+      return insertByOrderOrMerge(emptylist, b);
     }
 
     for (SimpleRow c : a) {
