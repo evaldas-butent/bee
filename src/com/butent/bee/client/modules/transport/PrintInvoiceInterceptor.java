@@ -6,6 +6,8 @@ import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Multimap;
 import com.google.common.collect.TreeMultimap;
+import com.google.gwt.event.dom.client.ClickEvent;
+import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.user.client.ui.Widget;
 import com.google.gwt.xml.client.Document;
 import com.google.gwt.xml.client.Element;
@@ -41,7 +43,6 @@ import com.butent.bee.shared.data.IsRow;
 import com.butent.bee.shared.data.SimpleRowSet;
 import com.butent.bee.shared.data.SimpleRowSet.SimpleRow;
 import com.butent.bee.shared.i18n.Localized;
-import com.butent.bee.shared.logging.LogUtils;
 import com.butent.bee.shared.ui.Relation;
 import com.butent.bee.shared.utils.ArrayUtils;
 import com.butent.bee.shared.utils.BeeUtils;
@@ -93,6 +94,19 @@ public class PrintInvoiceInterceptor extends AbstractFormInterceptor {
         final UnboundSelector selector = UnboundSelector.create(relation);
         final CheckBox enableGrouping = new CheckBox(Localized.getConstants().primaryOnly());
         enableGrouping.setChecked(false);
+        enableGrouping.addClickHandler(new ClickHandler() {
+
+          @Override
+          public void onClick(ClickEvent evt) {
+            if (enableGrouping.isChecked() && selector != null) {
+              selector.setEnabled(false);
+              // selector.setValue(null);
+              selector.clearValue();
+            } else if (selector != null) {
+              selector.setEnabled(true);
+            }
+          }
+        });
 
         Flow flow = new Flow(StyleUtils.NAME_FLEX_BOX_VERTICAL);
         flow.add(selector);
@@ -287,8 +301,8 @@ public class PrintInvoiceInterceptor extends AbstractFormInterceptor {
 
   private static SimpleRowSet groupByPrimaryAssessments(SimpleRowSet data) {
     SimpleRowSet result = new SimpleRowSet(data.getColumnNames());
-    Map<Long, List<SimpleRow>> assessments = Maps.newHashMap();
-    Map<Long, List<SimpleRow>> childAssessments = Maps.newHashMap();
+    Map<Long, List<SimpleRow>> assessments = Maps.newLinkedHashMap();
+    Map<Long, List<SimpleRow>> childAssessments = Maps.newLinkedHashMap();
 
     for (SimpleRow simpleRow : data) {
       boolean primary = false;
@@ -357,6 +371,9 @@ public class PrintInvoiceInterceptor extends AbstractFormInterceptor {
       }
     }
 
+    if (result.isEmpty()) {
+      return data; // collectWidgetInfo throws error if row set is empty.
+    }
     return result;
   }
 
@@ -366,27 +383,14 @@ public class PrintInvoiceInterceptor extends AbstractFormInterceptor {
     }
 
     for (SimpleRow c : a) {
-      LogUtils.getRootLogger().debug(c.getValue("Name"), b.getValue("Name"));
       SimpleRow merged = maybeItemsMerge(c, b);
 
       if (merged != null) {
-        LogUtils.getRootLogger().debug("RESULT MERGED");
-        int idx = a.lastIndexOf(c);
-        // a.remove(c);
-        // a.add(idx, merged);
+        int idx = a.indexOf(c);
         a.set(idx, merged);
         return a;
       }
     }
-
-    // for (SimpleRow c : a) {
-    // LogUtils.getRootLogger().debug(c.getValue("Name"), b.getValue("Name"));
-    // if (compareAssessmentItems(c, b) == BeeConst.COMPARE_LESS) {
-    // LogUtils.getRootLogger().debug("RESULT INSERT BEFORE");
-    // a.add(a.indexOf(c), b);
-    // return a;
-    // }
-    // }
 
     a.add(b);
 
@@ -403,15 +407,6 @@ public class PrintInvoiceInterceptor extends AbstractFormInterceptor {
         && BeeUtils.equalsTrim(a.getValue(COL_TRADE_VAT_PERC), b.getValue(COL_TRADE_VAT_PERC))) {
       return true;
     }
-    //
-    // Long x1 = a.getLong(COL_TRADE_ITEM_ORDINAL);
-    // Long x2 = b.getLong(COL_TRADE_ITEM_ORDINAL);
-    //
-    // int result = BeeUtils.compareNullsFirst(x1, x2);
-    //
-    // if (result == BeeConst.COMPARE_EQUAL && x2 == null) {
-    // return BeeConst.COMPARE_MORE;
-    // }
 
     return false;
   }
