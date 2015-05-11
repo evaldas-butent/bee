@@ -2034,23 +2034,16 @@
   background-color: white;
   color: inherit;
   border: 1px solid #e3e3e3;
-  line-height: 25px;
 }
 
 .bee-TextBox,
 .bee-InputArea {
-  padding: 1px 10px;
   font-family: inherit;
   font-size: inherit;
 }
 
 .bee-Label-withColon:after {
   content: ': '
-}
-
-.bee-ListBox[size="1"] {
-  padding-top: 5px;
-  padding-bottom: 5px;
 }
 
 .bee-InputRange {
@@ -3287,9 +3280,6 @@ textarea,
 .bee-Form .bee-HtmlTable,
 .bee-Form .bee-Horizontal {
   border-collapse: collapse;
-}
-.bee-Form .bee-HtmlTable td {
-  padding-top: 20px;
 }
 .bee-LabelCell {
   text-align: right;
