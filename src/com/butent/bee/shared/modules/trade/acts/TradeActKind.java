@@ -48,7 +48,7 @@ public enum TradeActKind implements HasLocalizedCaption {
     }
   },
 
-  TENDER(Option.ALTER_FROM, Option.ENABLE_COPY, Option.HAS_SERVICES,
+  TENDER(Option.ALTER_TO, Option.ALTER_FROM, Option.ENABLE_COPY, Option.HAS_SERVICES,
       Option.SAVE_AS_TEMPLATE, Option.SHOW_STOCK) {
     @Override
     public String getCaption(LocalizableConstants constants) {
@@ -75,7 +75,7 @@ public enum TradeActKind implements HasLocalizedCaption {
     }
   },
 
-  RESERVE(Option.ALTER_FROM, Option.HAS_SERVICES, Option.SHOW_STOCK) {
+  RESERVE(Option.ALTER_TO, Option.ALTER_FROM, Option.HAS_SERVICES, Option.SHOW_STOCK) {
     @Override
     public String getCaption(LocalizableConstants constants) {
       return constants.taKindReserve();
