@@ -68,6 +68,7 @@ import com.butent.bee.shared.EventState;
 import com.butent.bee.shared.css.CssProperties;
 import com.butent.bee.shared.css.CssUnit;
 import com.butent.bee.shared.css.values.TextAlign;
+import com.butent.bee.shared.css.values.VerticalAlign;
 import com.butent.bee.shared.css.values.WhiteSpace;
 import com.butent.bee.shared.data.CellSource;
 import com.butent.bee.shared.data.DataUtils;
@@ -4097,7 +4098,8 @@ public class CellGrid extends Widget implements IdentifiableWidget, HasDataTable
 
           result.add(renderCell(rowIdx, col, StyleUtils.buildClasses(cellClasses), left, top,
               cellWidth, cellHeight, defaultStyles, extraStylesBuilder.toSafeStyles(),
-              column.getTextAlign(), column.getWhiteSpace(), cellHtml, true, column.isDraggable()));
+              column.getTextAlign(), column.getVerticalAlign(), column.getWhiteSpace(), cellHtml,
+              true, column.isDraggable()));
         }
         left += columnWidth + defaultWidthIncr;
         col++;
@@ -4109,7 +4111,7 @@ public class CellGrid extends Widget implements IdentifiableWidget, HasDataTable
 
   private RenderInfo renderCell(String rowIdx, int col, String classes, int left, int top,
       int width, int height, SafeStyles styles, SafeStyles extraStyles,
-      TextAlign hAlign, WhiteSpace whiteSpace, SafeHtml content,
+      TextAlign textAlign, VerticalAlign verticalAlign, WhiteSpace whiteSpace, SafeHtml content,
       boolean focusable, boolean draggable) {
 
     SafeStylesBuilder stylesBuilder = new SafeStylesBuilder();
@@ -4122,8 +4124,8 @@ public class CellGrid extends Widget implements IdentifiableWidget, HasDataTable
       stylesBuilder.append(extraStyles);
     }
 
-    if (hAlign != null) {
-      stylesBuilder.append(StyleUtils.buildStyle(CssProperties.TEXT_ALIGN, hAlign.getCssName()));
+    if (textAlign != null) {
+      stylesBuilder.append(StyleUtils.buildStyle(CssProperties.TEXT_ALIGN, textAlign.getCssName()));
     }
     if (whiteSpace != null) {
       stylesBuilder.append(StyleUtils.buildStyle(CssProperties.WHITE_SPACE,
@@ -4138,6 +4140,10 @@ public class CellGrid extends Widget implements IdentifiableWidget, HasDataTable
     }
     if (height > 0) {
       stylesBuilder.append(StyleUtils.buildHeight(height));
+
+      if (VerticalAlign.isCenter(verticalAlign)) {
+        stylesBuilder.append(StyleUtils.buildLineHeight(height));
+      }
     }
 
     return new RenderInfo(rowIdx, col, classes, stylesBuilder.toSafeStyles(), focusable, draggable,
@@ -4227,7 +4233,8 @@ public class CellGrid extends Widget implements IdentifiableWidget, HasDataTable
 
       SafeHtmlBuilder cellBuilder = new SafeHtmlBuilder();
 
-      TextAlign hAlign = null;
+      TextAlign textAlign = null;
+      VerticalAlign verticalAlign = null;
       WhiteSpace whiteSpace = null;
 
       if (isHeader) {
@@ -4240,7 +4247,8 @@ public class CellGrid extends Widget implements IdentifiableWidget, HasDataTable
         CellContext context = new CellContext(this, i);
         columnInfo.getFooter().render(context, cellBuilder);
 
-        hAlign = columnInfo.getFooter().getTextAlign();
+        textAlign = columnInfo.getFooter().getTextAlign();
+        verticalAlign = columnInfo.getFooter().getVerticalAlign();
         whiteSpace = columnInfo.getFooter().getWhiteSpace();
       }
 
@@ -4261,7 +4269,7 @@ public class CellGrid extends Widget implements IdentifiableWidget, HasDataTable
 
       SafeHtml contents = renderCell(rowIdx, i, cellClasses, left, top,
           width + xIncr - widthIncr, cellHeight, styles, extraStylesBuilder.toSafeStyles(),
-          hAlign, whiteSpace, cellBuilder.toSafeHtml(), false, false).render();
+          textAlign, verticalAlign, whiteSpace, cellBuilder.toSafeHtml(), false, false).render();
       sb.append(contents);
 
       left += width + xIncr;

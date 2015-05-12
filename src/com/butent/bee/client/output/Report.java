@@ -43,6 +43,7 @@ import com.butent.bee.shared.utils.BeeUtils;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -127,14 +128,14 @@ public enum Report implements HasWidgetSupplier {
           new ReportTextItem("Route",
               Data.getColumnLabel(TransportConstants.TBL_TRIP_ROUTES, "Route")),
           new ReportEnumItem(TransportConstants.COL_TRIP_STATUS,
-              Data.getColumnLabel(TransportConstants.TBL_TRIPS,
-                  TransportConstants.COL_TRIP_STATUS), TripStatus.class),
-          new ReportBooleanItem("Conditioner",
-              Data.getColumnLabel(TransportConstants.TBL_VEHICLES, "Conditioner")),
+              Data.getColumnLabel(TransportConstants.TBL_TRIPS, TransportConstants.COL_TRIP_STATUS),
+              TripStatus.class),
           new ReportNumericItem("Kilometers", "Kilometrai"),
           new ReportNumericItem("FuelCosts", "Kuro išl.").setPrecision(2),
           new ReportNumericItem("DailyCosts", "Dienpinigių išl.").setPrecision(2),
           new ReportNumericItem("RoadCosts", "Kelių išl.").setPrecision(2),
+          new ReportNumericItem("ConstantCosts", Localized.getConstants().trConstantCosts())
+              .setPrecision(2),
           new ReportNumericItem("OtherCosts", "Kitos išl.").setPrecision(2),
           new ReportNumericItem("TripIncome", "Pajamos").setPrecision(2));
     }
@@ -161,10 +162,25 @@ public enum Report implements HasWidgetSupplier {
       }
       report.setRowGrouping(items.get(TransportConstants.COL_VEHICLE));
 
-      for (String item : new String[] {"Kilometers", "FuelCosts", "TripIncome"}) {
-        report.addColItem(items.get(item));
+      report.addColItem(items.get("Kilometers"));
+
+      ReportItem income = items.get("TripIncome");
+      report.addColItem(income.clone());
+
+      ReportFormulaItem costs = new ReportFormulaItem("Išlaidos");
+      costs.setPrecision(2);
+
+      for (String item : new String[] {
+          "FuelCosts", "DailyCosts", "RoadCosts", "ConstantCosts", "OtherCosts"}) {
+        costs.plus(items.get(item));
       }
-      return Arrays.asList(report);
+      report.addColItem(costs.clone());
+      report.addColItem(new ReportFormulaItem("Pelnas").plus(income).minus(costs).setPrecision(2));
+
+      report.getFilterItems().add(items.get(TransportConstants.COL_TRIP_STATUS)
+          .setFilter(BeeUtils.toString(TripStatus.COMPLETED.ordinal())));
+
+      return Collections.singletonList(report);
     }
   },
 

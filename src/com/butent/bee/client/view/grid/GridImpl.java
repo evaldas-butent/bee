@@ -100,6 +100,7 @@ import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.Holder;
 import com.butent.bee.shared.NotificationListener;
 import com.butent.bee.shared.State;
+import com.butent.bee.shared.css.values.VerticalAlign;
 import com.butent.bee.shared.data.BeeColumn;
 import com.butent.bee.shared.data.BeeRow;
 import com.butent.bee.shared.data.BeeRowSet;
@@ -635,6 +636,23 @@ public class GridImpl extends Absolute implements GridView, EditEndEvent.Handler
     if (!BeeUtils.isEmpty(cd.getHorAlign())) {
       UiHelper.setHorizontalAlignment(column, cd.getHorAlign());
     }
+
+    VerticalAlign verticalAlign = null;
+    if (!BeeUtils.isEmpty(cd.getVertAlign())) {
+      verticalAlign = StyleUtils.parseVerticalAlign(cd.getVertAlign());
+    }
+    if (verticalAlign == null && renderer != null) {
+      verticalAlign = renderer.getDefaultVerticalAlign();
+    }
+    if (verticalAlign == null
+        && (cellType == CellType.HTML
+        || cellSource != null && cellSource.isText())) {
+      verticalAlign = VerticalAlign.TOP;
+    } else {
+      verticalAlign = VerticalAlign.MIDDLE;
+    }
+    column.setVerticalAlign(verticalAlign);
+
     if (!BeeUtils.isEmpty(cd.getWhiteSpace())) {
       UiHelper.setWhiteSpace(column, cd.getWhiteSpace());
     }
