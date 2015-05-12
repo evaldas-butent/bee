@@ -157,12 +157,19 @@ public class ClassifiersModuleBean implements BeeModule {
           Filter.anyContains(Sets.newHashSet(COL_FIRST_NAME, COL_LAST_NAME, COL_PHONE,
               COL_EMAIL_ADDRESS, COL_ADDRESS, ALS_CITY_NAME, ALS_COUNTRY_NAME), query));
       search.addAll(personsSr);
+
+      List<SearchResult> companiesAndPersons =
+          qs.getSearchResults(VIEW_COMPANY_PERSONS, Filter.anyContains(Sets.newHashSet(
+              ALS_COMPANY_NAME, ALS_COMPANY_TYPE_NAME, COL_FIRST_NAME, COL_LAST_NAME,
+              COL_DEPARTMENT_NAME, ALS_POSITION_NAME, COL_PHONE, COL_MOBILE, COL_FAX, COL_EMAIL,
+              COL_ADDRESS, COL_POST_INDEX, COL_WEBSITE, ALS_CITY_NAME, ALS_COUNTRY_NAME), query));
+      search.addAll(companiesAndPersons);
     }
 
     if (usr.isModuleVisible(ModuleAndSub.of(Module.TRADE))) {
-      List<SearchResult> itemsSr = qs.getSearchResults(VIEW_ITEMS,
-          Filter.anyContains(Sets.newHashSet(COL_ITEM_NAME, COL_ITEM_ARTICLE, COL_ITEM_BARCODE),
-              query));
+      List<SearchResult> itemsSr =
+          qs.getSearchResults(VIEW_ITEMS, Filter.anyContains(Sets.newHashSet(COL_ITEM_NAME,
+              COL_ITEM_ARTICLE, COL_ITEM_BARCODE), query));
       search.addAll(itemsSr);
     }
     return search;
@@ -751,7 +758,7 @@ public class ClassifiersModuleBean implements BeeModule {
         label = usr.getLocalizableConstants().customer();
       } else {
         label = Localized.maybeTranslate(appointments.getColumnLabel(i),
-          usr.getLocalizableDictionary());
+            usr.getLocalizableDictionary());
       }
 
       Th th = th().text(label);

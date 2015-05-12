@@ -47,11 +47,14 @@ import com.butent.bee.shared.modules.tasks.TaskConstants.TaskStatus;
 import com.butent.bee.shared.modules.trade.TradeConstants;
 import com.butent.bee.shared.news.Feed;
 import com.butent.bee.shared.rights.Module;
+import com.butent.bee.shared.time.CronExpression;
 import com.butent.bee.shared.time.DateTime;
 import com.butent.bee.shared.time.JustDate;
 import com.butent.bee.shared.time.TimeUtils;
+import com.butent.bee.shared.time.WorkdayTransition;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.Codec;
+import com.butent.bee.shared.utils.EnumUtils;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -530,6 +533,64 @@ public class ProjectsModuleBean implements BeeModule {
           stage, rsRow.getString(idxSummary),
           startTime, finishTime, null, taskStatus, Codec.beeSerialize(newRow)
       });
+    }
+    rs =
+        qs.getViewData(TaskConstants.VIEW_RECURRING_TASKS, Filter.equals(COL_PROJECT, projectId),
+            Order.ascending(sys.getIdName(TaskConstants.VIEW_RECURRING_TASKS),
+                TaskConstants.COL_RT_SCHEDULE_FROM));
+
+    int idxStart = rs.getColumnIndex(TaskConstants.COL_RT_SCHEDULE_FROM);
+    int idxFinish = rs.getColumnIndex(TaskConstants.COL_RT_SCHEDULE_UNTIL);
+    idxSummary = rs.getColumnIndex(TaskConstants.COL_SUMMARY);
+
+    for (BeeRow rsRow : rs) {
+
+      Long recTask = rsRow.getId();
+      JustDate from = rsRow.getDate(idxStart);
+      JustDate until = rsRow.getDate(idxFinish);
+
+      CronExpression.Builder builder = new CronExpression.Builder(from, until)
+          .id(BeeUtils.toString(recTask))
+          .dayOfMonth(DataUtils.getString(rs, rsRow, COL_RT_DAY_OF_MONTH))
+          .month(DataUtils.getString(rs, rsRow, COL_RT_MONTH))
+          .dayOfWeek(DataUtils.getString(rs, rsRow, COL_RT_DAY_OF_WEEK))
+          .year(DataUtils.getString(rs, rsRow, COL_RT_YEAR))
+          .workdayTransition(EnumUtils.getEnumByIndex(WorkdayTransition.class,
+              DataUtils.getInteger(rs, rsRow, COL_RT_WORKDAY_TRANSITION)));
+
+      CronExpression cron = builder.build();
+
+      JustDate min;
+      JustDate max;
+
+      if (from == null && until == null) {
+        min = TimeUtils.startOfMonth();
+        max = TimeUtils.endOfMonth(min, 12);
+      } else if (from == null) {
+        min = TimeUtils.startOfMonth(until);
+        max = until;
+      } else if (until == null) {
+        min = TimeUtils.max(from, TimeUtils.startOfPreviousMonth(TimeUtils.today()));
+        max = TimeUtils.endOfMonth(min, 12);
+      } else {
+        min = from;
+        max = TimeUtils.max(from, until);
+      }
+      List<JustDate> cronDates = cron.getDates(min, max);
+
+      for (JustDate date : cronDates) {
+        BeeRowSet newRow = new BeeRowSet(VIEW_RECURRING_TASKS, rs.getColumns());
+        newRow.addRow(rsRow);
+
+        insertOrderedChartData(chartData, new String[] {
+            TaskConstants.VIEW_RECURRING_TASKS,
+            null, rsRow.getString(idxSummary),
+            BeeUtils.toString(date.getDate().getDays()),
+            BeeUtils.toString(date.getDate().getDays()), null,
+            null, Codec.beeSerialize(newRow)
+        });
+      }
+
     }
 
     return ResponseObject.response(chartData);

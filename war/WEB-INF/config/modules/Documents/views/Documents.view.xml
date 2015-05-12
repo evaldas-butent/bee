@@ -4,8 +4,9 @@
   name="Documents" source="Documents"
   caption="=documents" newRowCaption="=documentNew"
   editForm="Document" newRowForm="NewDocument"
-  rowCaption="Name Number">
-  <Relation renderColumns="Name" />
+  rowCaption="Name Number"
+  >
+  <Relation renderColumns="Name Number RegistrationNumber DocumentDate" />
   <Columns>
     <SimpleColumn name="Name" />
 
@@ -55,4 +56,4 @@
 
   </Columns>
 </View>
- 
+

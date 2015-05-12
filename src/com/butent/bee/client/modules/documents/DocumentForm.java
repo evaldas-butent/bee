@@ -74,7 +74,6 @@ public class DocumentForm extends DocumentDataForm {
 
   @Override
   public void onSaveChanges(HasHandlers listener, SaveChangesEvent event) {
-
     super.onSaveChanges(listener, event);
 
     if (getFormView() != null) {

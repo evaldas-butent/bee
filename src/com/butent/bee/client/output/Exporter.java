@@ -31,6 +31,10 @@ import com.butent.bee.shared.data.BeeRowSet;
 import com.butent.bee.shared.data.IsRow;
 import com.butent.bee.shared.data.cache.CachingPolicy;
 import com.butent.bee.shared.data.filter.Filter;
+import com.butent.bee.shared.data.value.NumberValue;
+import com.butent.bee.shared.data.value.TextValue;
+import com.butent.bee.shared.data.value.Value;
+import com.butent.bee.shared.data.value.ValueType;
 import com.butent.bee.shared.data.view.Order;
 import com.butent.bee.shared.export.XCell;
 import com.butent.bee.shared.export.XFont;
@@ -123,6 +127,33 @@ public final class Exporter {
         Localized.getConstants().fileName(), callback, null, fileName, 200, null,
         width, CssUnit.PX, BeeConst.UNDEF,
         Action.EXPORT.getCaption(), Action.CANCEL.getCaption(), null);
+  }
+
+  public static XCell createCell(String text, ValueType type, int cellIndex, Integer styleRef) {
+    if (BeeUtils.isEmpty(text)) {
+      return null;
+
+    } else {
+      Value value = null;
+
+      if (ValueType.isNumeric(type)) {
+        Double d = BeeUtils.toDoubleOrNull(BeeUtils.removeWhiteSpace(text));
+        if (BeeUtils.isDouble(d)) {
+          value = new NumberValue(d);
+        }
+      }
+
+      if (value == null) {
+        value = new TextValue(text);
+      }
+
+      XCell xc = new XCell(cellIndex, value);
+      if (styleRef != null) {
+        xc.setStyleRef(styleRef);
+      }
+
+      return xc;
+    }
   }
 
   public static XRow createFooterRow(int rowIndex) {

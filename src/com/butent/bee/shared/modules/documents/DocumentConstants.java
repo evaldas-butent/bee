@@ -74,6 +74,7 @@ public final class DocumentConstants {
   public static final String ALS_TYPE_NAME = "TypeName";
   public static final String ALS_PLACE_NAME = "PlaceName";
   public static final String ALS_STATUS_NAME = "StatusName";
+  public static final String ALS_DOCUMENT_COMPANY_NAME = "CompanyName";
 
   public static final String FORM_DOCUMENT = "Document";
 

@@ -137,6 +137,8 @@ public interface LocalizableConstants extends Constants, LocalizableClassifierCo
 
   String cancel();
 
+  String canceled();
+
   String captionId();
 
   String captionPid();
@@ -408,6 +410,8 @@ public interface LocalizableConstants extends Constants, LocalizableClassifierCo
   String hour();
 
   String imported();
+
+  String importing();
 
   String imageUploadFailed();
 
@@ -694,6 +698,8 @@ public interface LocalizableConstants extends Constants, LocalizableClassifierCo
   String search();
 
   String selectAtLeastOneRow();
+
+  String selectImport();
 
   String selectionColumnLabel();
 

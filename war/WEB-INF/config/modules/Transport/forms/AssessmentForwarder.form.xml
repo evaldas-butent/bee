@@ -12,7 +12,7 @@
   xmlns:ui="http://www.butent.com/ui"  
   
   name="AssessmentForwarder" viewName="AssessmentForwarders" caption="=carrier"
-  height="600"
+  height="700"
   >
   <f:properties reports="PrintContractLT, PrintContractEN, PrintContractRU" />
 
@@ -40,10 +40,10 @@
       <InputText source="Number" style="&input;" />
       <Label for="Amount" style="&labelRight;" />
       <InputMoney source="Amount" style="&input; width:70px;" />
-      <DataSelector source="Currency" style="&inline; width:40px; margin-left:5px;" 
+      <DataSelector source="Currency" style="&inline; width:5em; margin-left:5px;" 
         editEnabled="false" placeholder="=currencyShort" />
       <CheckBox source="VatPlus" text="=vatPlus" style="&inline; margin-left:5px;" />
-      <InputMoney source="Vat" placeholder="=vat" style="&inline; width:40px; margin-left:5px;" />
+      <InputMoney source="Vat" placeholder="=vat" style="&inline; width:5em; margin-left:5px;" />
       <CheckBox source="VatPercent" style="&inline; margin-left:5px;" text="%" />
     </FlowPanel>
 

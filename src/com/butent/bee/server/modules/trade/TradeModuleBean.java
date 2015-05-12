@@ -362,7 +362,7 @@ public class TradeModuleBean implements BeeModule {
         .addFromInner(TBL_UNITS, sys.joinTables(TBL_UNITS, TBL_ITEMS, COL_UNIT))
         .addFromInner(TBL_CURRENCIES, sys.joinTables(TBL_CURRENCIES, trade, COL_CURRENCY))
         .setWhere(SqlUtils.equals(tradeItems, itemsRelation, id))
-        .addOrder(tradeItems, sys.getIdName(tradeItems));
+        .addOrder(tradeItems, COL_TRADE_ITEM_ORDINAL, sys.getIdName(tradeItems));
 
     if (!BeeUtils.isEmpty(currencyTo)) {
       String currAlias = SqlUtils.uniqueName();

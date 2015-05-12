@@ -22,6 +22,7 @@ import com.butent.bee.client.event.EventUtils;
 import com.butent.bee.client.eventsboard.EventsBoard.EventFilesFilter;
 import com.butent.bee.client.layout.Flow;
 import com.butent.bee.client.presenter.GridFormPresenter;
+import com.butent.bee.client.presenter.Presenter;
 import com.butent.bee.client.ui.FormFactory.WidgetDescriptionCallback;
 import com.butent.bee.client.ui.IdentifiableWidget;
 import com.butent.bee.client.validation.CellValidateEvent;
@@ -435,6 +436,40 @@ class ProjectForm extends AbstractFormInterceptor implements DataChangeEvent.Han
         event.getRowId(), null, newDataSent, oldDataSent);
   }
 
+  @Override
+  public boolean beforeAction(Action action, Presenter presenter) {
+
+    if (action.equals(Action.SAVE) && getFormView() != null && getActiveRow() != null) {
+      FormView form = getFormView();
+      IsRow row = getActiveRow();
+      boolean valid = true;
+      Long startDate = null;
+      Long endDate = null;
+      int idxStartDate = form.getDataIndex(COL_PROJECT_START_DATE);
+      int idxEndDate = form.getDataIndex(COL_PROJECT_END_DATE);
+
+      if (idxStartDate > -1) {
+        startDate = row.getLong(idxStartDate);
+      }
+
+      if (idxEndDate > -1) {
+        endDate = row.getLong(idxEndDate);
+      }
+
+      if (startDate != null && endDate != null) {
+        if (startDate.longValue() <= endDate.longValue()) {
+          valid = true;
+        } else {
+          form.notifySevere(
+              Localized.getConstants().crmFinishDateMustBeGreaterThanStart());
+          valid = false;
+        }
+      }
+      return valid;
+    }
+    return super.beforeAction(action, presenter);
+  }
+
   private static boolean isOwner(FormView form, IsRow row) {
     int idxOwner = form.getDataIndex(COL_PROJECT_OWNER);
 
@@ -770,6 +805,7 @@ class ProjectForm extends AbstractFormInterceptor implements DataChangeEvent.Han
 
     final int idxExpTD = form.getDataIndex(COL_EXPECTED_TASKS_DURATION);
     final int idxActTD = form.getDataIndex(COL_ACTUAL_TASKS_DURATION);
+    final int idxExpD = form.getDataIndex(COL_EXPECTED_DURATION);
     int idxUnit = form.getDataIndex(COL_PROJECT_TIME_UNIT);
 
     double factor = BeeConst.DOUBLE_ONE;
@@ -852,10 +888,19 @@ class ProjectForm extends AbstractFormInterceptor implements DataChangeEvent.Han
                         / TimeUtils.MILLIS_PER_MINUTE), true) : BeeConst.STRING_EMPTY));
       }
     }
+
+    if (!BeeConst.isUndef(idxExpTD) && !BeeConst.isUndef(idxExpD)) {
+      long valueExpTD = BeeUtils.unbox(row.getLong(idxExpTD));
+      long expDMls =
+          BeeUtils.unbox(row.getLong(idxExpD))
+              * BeeUtils.toLong(factor * TimeUtils.MILLIS_PER_HOUR);
+
+      expectedTasksDuration.setStyleName(BeeConst.CSS_CLASS_PREFIX + "prj-FieldOverSized",
+          valueExpTD > expDMls);
+    }
   }
 
   private void unlockValidationEvent(String column) {
     lockedValidations.put(column, null);
   }
-
 }

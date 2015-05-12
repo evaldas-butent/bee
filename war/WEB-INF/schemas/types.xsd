@@ -123,11 +123,11 @@
       </xs:simpleType>
     </xs:union>
   </xs:simpleType>
-  
+
   <xs:simpleType name="fieldNames">
     <xs:list itemType="fieldNameType" />
   </xs:simpleType>
-  
+
   <xs:simpleType name="replacementPolicy">
     <xs:restriction base="xs:string">
       <xs:enumeration value="LEAST_FREQUENTLY_USED" />
@@ -145,7 +145,7 @@
       <xs:enumeration value="RANDOM" />
     </xs:restriction>
   </xs:simpleType>
-  
+
   <xs:simpleType name="fileInfoColumn">
     <xs:restriction base="xs:string">
       <xs:enumeration value="date" />
@@ -173,7 +173,7 @@
       </xs:simpleType>
     </xs:union>
   </xs:simpleType>
-  
+
   <xs:simpleType name="filterSupplier">
     <xs:restriction base="xs:string">
       <xs:enumeration value="value" />
@@ -349,6 +349,7 @@
       <xs:enumeration value="GroupDrivers" />
       <xs:enumeration value="GroupVehicles" />
       <xs:enumeration value="Holidays" />
+      <xs:enumeration value="ImportConditions" />
       <xs:enumeration value="ImportMappings" />
       <xs:enumeration value="ImportOptions" />
       <xs:enumeration value="ImportProperties" />
@@ -479,6 +480,7 @@
       <xs:enumeration value="TransportSettings" />
       <xs:enumeration value="TranspRegistrations" />
       <xs:enumeration value="TripCargo" />
+      <xs:enumeration value="TripConstants" />
       <xs:enumeration value="TripCosts" />
       <xs:enumeration value="TripDrivers" />
       <xs:enumeration value="TripFuelConsumptions" />
@@ -486,6 +488,7 @@
       <xs:enumeration value="TripRoutes" />
       <xs:enumeration value="Trips" />
       <xs:enumeration value="Turnovers" />
+      <xs:enumeration value="UiThemes" />
       <xs:enumeration value="Units" />
       <xs:enumeration value="UnsuppliedItems" />
       <xs:enumeration value="UserCalAttendees" />
@@ -525,5 +528,5 @@
   <xs:complexType name="customProperties">
     <xs:anyAttribute processContents="lax" />
   </xs:complexType>
-  
+
 </xs:schema>

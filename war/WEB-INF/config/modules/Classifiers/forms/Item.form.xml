@@ -10,7 +10,7 @@
   xmlns:ui="http://www.butent.com/ui"
   
   name="Item" viewName="Items" caption="=item"
-  width="700" height="450"
+  width="700" height="720"
   >
   <FlowPanel class="flexBox-vertical">
     <Table style="margin-top: 1ex;">
@@ -188,7 +188,7 @@
             <Label for="DaysPerWeek" module="Trade.Acts">
               &forservice;
             </Label>
-            <InputInteger source="DaysPerWeek" maxValue="7" style="width: 20px;"
+            <InputInteger source="DaysPerWeek" maxValue="7" style="width: 5em;"
               module="Trade.Acts" summarize="true">
               &forservice;
             </InputInteger>
@@ -196,7 +196,7 @@
             <Label for="MinTerm" module="Trade.Acts">
               &forservice;
             </Label>
-            <InputInteger source="MinTerm" style="width: 40px;" module="Trade.Acts"
+            <InputInteger source="MinTerm" style="width: 5em;" module="Trade.Acts"
               summarize="true">
               &forservice;
             </InputInteger>

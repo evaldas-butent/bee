@@ -390,17 +390,17 @@ public final class DocumentsHandler {
       Queries.update(AdministrationConstants.VIEW_RELATIONS, filter, COL_DOCUMENT_COMPANY, company,
           new IntCallback() {
 
-        @Override
-        public void onSuccess(Integer result) {
-          if (result == 0) {
-            Queries.insert(AdministrationConstants.VIEW_RELATIONS, Data.getColumns(
-                AdministrationConstants.VIEW_RELATIONS,
-                Lists.newArrayList(COL_DOCUMENT_COMPANY,
-                    COL_DOCUMENT)), Lists.newArrayList(company, BeeUtils
-                .toString(rowId)));
-          }
-        }
-      });
+            @Override
+            public void onSuccess(Integer result) {
+              if (result == 0) {
+                Queries.insert(AdministrationConstants.VIEW_RELATIONS, Data.getColumns(
+                    AdministrationConstants.VIEW_RELATIONS,
+                    Lists.newArrayList(COL_DOCUMENT_COMPANY,
+                        COL_DOCUMENT)), Lists.newArrayList(company, BeeUtils
+                    .toString(rowId)));
+              }
+            }
+          });
     }
   }
 }

@@ -8,11 +8,13 @@ import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.data.Queries;
 import com.butent.bee.client.data.RowCallback;
 import com.butent.bee.client.event.EventUtils;
+import com.butent.bee.client.presenter.Presenter;
 import com.butent.bee.client.ui.FormFactory.WidgetDescriptionCallback;
 import com.butent.bee.client.ui.IdentifiableWidget;
 import com.butent.bee.client.view.form.FormView;
 import com.butent.bee.client.view.form.interceptor.AbstractFormInterceptor;
 import com.butent.bee.client.view.form.interceptor.FormInterceptor;
+import com.butent.bee.client.widget.InputNumber;
 import com.butent.bee.client.widget.InputText;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.data.BeeRow;
@@ -24,9 +26,11 @@ import com.butent.bee.shared.data.event.DataChangeEvent;
 import com.butent.bee.shared.data.event.HandlesUpdateEvents;
 import com.butent.bee.shared.data.event.RowInsertEvent;
 import com.butent.bee.shared.data.event.RowUpdateEvent;
+import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.modules.classifiers.ClassifierConstants;
 import com.butent.bee.shared.modules.tasks.TaskConstants;
 import com.butent.bee.shared.time.TimeUtils;
+import com.butent.bee.shared.ui.Action;
 import com.butent.bee.shared.utils.BeeUtils;
 
 import java.util.ArrayList;
@@ -37,6 +41,8 @@ class ProjectStageForm extends AbstractFormInterceptor implements DataChangeEven
 
   private InputText wActualTasksDuration;
   private InputText wExpectedTasksDuration;
+  private InputNumber wActualTasksExpenses;
+  private InputNumber wExpectedTasksExpenses;
   private BeeRowSet timeUnits;
 
   private final Collection<HandlerRegistration> timesRegistry = new ArrayList<>();
@@ -55,7 +61,17 @@ class ProjectStageForm extends AbstractFormInterceptor implements DataChangeEven
         if (widget instanceof InputText) {
           wExpectedTasksDuration = (InputText) widget;
         }
-      break;
+        break;
+      case ALS_ACTUAL_TASKS_EXPENSES:
+        if (widget instanceof InputNumber) {
+          wActualTasksExpenses = (InputNumber) widget;
+        }
+        break;
+      case ALS_EXPECTED_TASKS_EXPENSES:
+        if (widget instanceof InputNumber) {
+          wExpectedTasksExpenses = (InputNumber) widget;
+        }
+        break;
     }
   }
 
@@ -70,6 +86,39 @@ class ProjectStageForm extends AbstractFormInterceptor implements DataChangeEven
     if (getTimeUnits() != null) {
       showComputedTimes(form, row, false);
     }
+  }
+
+  @Override
+  public boolean beforeAction(Action action, Presenter presenter) {
+    if (action.equals(Action.SAVE) && getFormView() != null && getActiveRow() != null) {
+      FormView form = getFormView();
+      IsRow row = getActiveRow();
+      boolean valid = true;
+      Long startDate = null;
+      Long endDate = null;
+      int idxStartDate = form.getDataIndex(COL_PROJECT_START_DATE);
+      int idxEndDate = form.getDataIndex(COL_PROJECT_END_DATE);
+
+      if (idxStartDate > -1) {
+        startDate = row.getLong(idxStartDate);
+      }
+
+      if (idxEndDate > -1) {
+        endDate = row.getLong(idxEndDate);
+      }
+
+      if (startDate != null && endDate != null) {
+        if (startDate.longValue() <= endDate.longValue()) {
+          valid = true;
+        } else {
+          form.notifySevere(
+              Localized.getConstants().crmFinishDateMustBeGreaterThanStart());
+          valid = false;
+        }
+      }
+      return valid;
+    }
+    return super.beforeAction(action, presenter);
   }
 
   @Override
@@ -182,8 +231,10 @@ class ProjectStageForm extends AbstractFormInterceptor implements DataChangeEven
 
     final int idxExpTD = form.getDataIndex(COL_EXPECTED_TASKS_DURATION);
     final int idxActTD = form.getDataIndex(COL_ACTUAL_TASKS_DURATION);
+    final int idxExpD = form.getDataIndex(COL_EXPECTED_DURATION);
     final int idxExpE = form.getDataIndex(ALS_EXPECTED_TASKS_EXPENSES);
     final int idxActE = form.getDataIndex(ALS_ACTUAL_TASKS_EXPENSES);
+    final int idxExp = form.getDataIndex(COL_EXPENSES);
     int idxUnit = form.getDataIndex(COL_PROJECT_TIME_UNIT);
 
     double factor = BeeConst.DOUBLE_ONE;
@@ -206,6 +257,7 @@ class ProjectStageForm extends AbstractFormInterceptor implements DataChangeEven
           form.refreshBySource(ALS_ACTUAL_TASKS_EXPENSES);
 
           showComputedTimes(form, row, false);
+          RowUpdateEvent.fire(BeeKeeper.getBus(), VIEW_PROJECT_STAGES, result);
         }
       });
 
@@ -276,5 +328,34 @@ class ProjectStageForm extends AbstractFormInterceptor implements DataChangeEven
                         / TimeUtils.MILLIS_PER_MINUTE), true) : BeeConst.STRING_EMPTY));
       }
     }
+
+    if (!BeeConst.isUndef(idxExpTD) && !BeeConst.isUndef(idxExpD) && !BeeConst.isUndef(idxActTD)) {
+      long valueExpTD = BeeUtils.unbox(row.getLong(idxExpTD));
+      long valueActTD = BeeUtils.unbox(row.getLong(idxActTD));
+      long expDMls =
+          BeeUtils.unbox(row.getLong(idxExpD))
+              * BeeUtils.toLong(factor * TimeUtils.MILLIS_PER_HOUR);
+
+      styleOverSizeObject(expDMls, valueExpTD, wExpectedTasksDuration);
+      styleOverSizeObject(expDMls, valueActTD, wActualTasksDuration);
+    }
+
+    if (!BeeConst.isUndef(idxExpE) && !BeeConst.isUndef(idxActE) && !BeeConst.isUndef(idxExp)) {
+      long valueExpE = BeeUtils.unbox(row.getLong(idxExpE));
+      long valueActE = BeeUtils.unbox(row.getLong(idxActE));
+      long valueExp = BeeUtils.unbox(row.getLong(idxExp));
+
+      styleOverSizeObject(valueExp, valueExpE, wExpectedTasksExpenses);
+      styleOverSizeObject(valueExp, valueActE, wActualTasksExpenses);
+    }
+  }
+
+  private static void styleOverSizeObject(long basic, long target, InputText widget) {
+
+    if (widget == null) {
+      return;
+    }
+
+    widget.setStyleName(BeeConst.CSS_CLASS_PREFIX + "prj-FieldOverSized", target > basic);
   }
 }

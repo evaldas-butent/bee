@@ -4,8 +4,6 @@
 ]>
 <f:Form xmlns="http://www.butent.com/widget"
   xmlns:f="http://www.butent.com/form"
-  xmlns:xi="http://www.w3.org/2001/XInclude"
-  xmlns:d="http://www.butent.com/decorator"
   xmlns:ui="http://www.butent.com/ui"
   name="Company"
   viewName="Companies"
@@ -115,7 +113,7 @@
                 <FlowPanel>
                   <InputInteger source="CreditLimit" style="text-align: right" summarize="true" />
                   <DataSelector source="LimitCurrency" editEnabled="false" placeholder="=currencyShort"
-                    style="width:40px; margin-left:5px; display:inline-block;" for="CreditLimit" />
+                    style="width:5em; margin-left:5px; display:inline-block;" for="CreditLimit" />
                 </FlowPanel>
                 <cell rowSpan="5" verticalAlignment="top">
                   <FlowPanel name="CreditInfo" />
@@ -182,7 +180,7 @@
                 <Label text="=trdTurnover" style="&lbl;"/>
                 <DataSelector source="Turnover" summarize="true" />
                 <DataSelector source="TurnoverCurrency" editEnabled="false" placeholder="=currencyShort"
-                 style="width:40px; margin-left:5px; display:inline-block;" for="Turnover" />
+                 style="width:5em; margin-left:5px; display:inline-block;" for="Turnover" />
               </row>
               <row>
                 <Label text="=clientGroup" style="&lbl;" for="CompanyGroup" />
