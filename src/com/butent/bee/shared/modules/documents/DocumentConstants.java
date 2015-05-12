@@ -70,7 +70,6 @@ public final class DocumentConstants {
   public static final String COL_FILE_CAPTION = "Caption";
 
   public static final String ALS_CATEGORY_NAME = "CategoryName";
-  public static final String ALS_DOCUMENT_COMPANY_NAME = "CompanyName";
   public static final String ALS_TYPE_NAME = "TypeName";
   public static final String ALS_PLACE_NAME = "PlaceName";
   public static final String ALS_STATUS_NAME = "StatusName";
