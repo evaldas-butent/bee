@@ -100,6 +100,8 @@ public interface LocalizableTransportConstants {
 
   String primeCost();
 
+  String primaryOnly();
+
   String ref();
 
   String refNumber();

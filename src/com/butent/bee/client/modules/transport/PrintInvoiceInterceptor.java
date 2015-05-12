@@ -2,8 +2,12 @@ package com.butent.bee.client.modules.transport;
 
 import com.google.common.base.Function;
 import com.google.common.base.Splitter;
+import com.google.common.collect.Lists;
+import com.google.common.collect.Maps;
 import com.google.common.collect.Multimap;
 import com.google.common.collect.TreeMultimap;
+import com.google.gwt.event.dom.client.ClickEvent;
+import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.user.client.ui.Widget;
 import com.google.gwt.xml.client.Document;
 import com.google.gwt.xml.client.Element;
@@ -21,14 +25,18 @@ import com.butent.bee.client.composite.UnboundSelector;
 import com.butent.bee.client.data.Data;
 import com.butent.bee.client.dialog.InputCallback;
 import com.butent.bee.client.grid.HtmlTable;
+import com.butent.bee.client.layout.Flow;
 import com.butent.bee.client.modules.classifiers.ClassifierUtils;
 import com.butent.bee.client.modules.trade.TradeUtils;
+import com.butent.bee.client.style.StyleUtils;
 import com.butent.bee.client.ui.FormFactory.WidgetDescriptionCallback;
 import com.butent.bee.client.ui.IdentifiableWidget;
 import com.butent.bee.client.utils.XmlUtils;
 import com.butent.bee.client.view.form.FormView;
 import com.butent.bee.client.view.form.interceptor.AbstractFormInterceptor;
 import com.butent.bee.client.view.form.interceptor.FormInterceptor;
+import com.butent.bee.client.widget.CheckBox;
+import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.Pair;
 import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.IsRow;
@@ -84,8 +92,27 @@ public class PrintInvoiceInterceptor extends AbstractFormInterceptor {
         relation.disableNewRow();
 
         final UnboundSelector selector = UnboundSelector.create(relation);
+        final CheckBox enableGrouping = new CheckBox(Localized.getConstants().primaryOnly());
+        enableGrouping.setChecked(false);
+        enableGrouping.addClickHandler(new ClickHandler() {
 
-        Global.inputWidget(Localized.getConstants().itemOrService(), selector,
+          @Override
+          public void onClick(ClickEvent evt) {
+            if (enableGrouping.isChecked() && selector != null) {
+              selector.setEnabled(false);
+              // selector.setValue(null);
+              selector.clearValue();
+            } else if (selector != null) {
+              selector.setEnabled(true);
+            }
+          }
+        });
+
+        Flow flow = new Flow(StyleUtils.NAME_FLEX_BOX_VERTICAL);
+        flow.add(selector);
+        flow.add(enableGrouping);
+
+        Global.inputWidget(Localized.getConstants().itemOrService(), flow,
             new InputCallback() {
               @Override
               public void onCancel() {
@@ -200,6 +227,8 @@ public class PrintInvoiceInterceptor extends AbstractFormInterceptor {
                             newRow.setValue(COL_TRADE_ITEM_PRICE,
                                 BeeUtils.toString(amounts.get(entry.getKey()), 2));
                           }
+                        } else if (enableGrouping.isChecked()) {
+                          rs = groupByPrimaryAssessments(data);
                         } else {
                           rs = data;
                         }
@@ -268,5 +297,136 @@ public class PrintInvoiceInterceptor extends AbstractFormInterceptor {
             .joinItems(new TreeSet<>(splitter.splitToList(pair.getB()))));
       }
     }
+  }
+
+  private static SimpleRowSet groupByPrimaryAssessments(SimpleRowSet data) {
+    SimpleRowSet result = new SimpleRowSet(data.getColumnNames());
+    Map<Long, List<SimpleRow>> assessments = Maps.newLinkedHashMap();
+    Map<Long, List<SimpleRow>> childAssessments = Maps.newLinkedHashMap();
+
+    for (SimpleRow simpleRow : data) {
+      boolean primary = false;
+      Long assessmentId = null;
+      Long parentId = null;
+
+      Document xml = null;
+
+      try {
+        xml = XMLParser.parse(simpleRow.getValue(COL_TRADE_ITEM_NOTE));
+      } catch (DOMParseException ex) {
+        xml = null;
+      }
+      if (xml != null) {
+        for (Element el : XmlUtils
+            .getChildrenElements(xml.getDocumentElement())) {
+          String name = el.getNodeName();
+
+          if (BeeUtils.equalsTrim(name, COL_ASSESSMENT)) {
+            assessmentId = BeeUtils.toLongOrNull(XmlUtils.getText(el));
+          } else if (BeeUtils.equalsTrim(name, "Parent" + COL_ASSESSMENT)) {
+            parentId = BeeUtils.toLongOrNull(XmlUtils.getText(el));
+          }
+        }
+
+        primary = !DataUtils.isId(parentId);
+      }
+
+      if (!DataUtils.isId(assessmentId) && !DataUtils.isId(parentId)) {
+        continue;
+      }
+
+      if (primary) {
+
+        if (!assessments.containsKey(assessmentId)) {
+          assessments.put(assessmentId, Lists.newArrayList(simpleRow));
+        } else {
+          List<SimpleRow> r =
+              insertByOrderOrMerge(assessments.get(assessmentId), simpleRow);
+          assessments.put(assessmentId, r);
+        }
+      } else {
+        if (!childAssessments.containsKey(parentId)) {
+          childAssessments.put(parentId, Lists.newArrayList(simpleRow));
+        } else {
+          childAssessments.get(parentId).add(simpleRow);
+        }
+      }
+    }
+
+    for (Long key : childAssessments.keySet()) {
+      for (SimpleRow row : childAssessments.get(key)) {
+        List<SimpleRow> r =
+            insertByOrderOrMerge(assessments.get(key), row);
+        assessments.put(key, r);
+      }
+    }
+
+    for (Long key : assessments.keySet()) {
+      for (SimpleRow row : assessments.get(key)) {
+        result.addRow(row.getValues());
+      }
+    }
+
+    if (result.isEmpty()) {
+      return data; // collectWidgetInfo throws error if row set is empty.
+    }
+    return result;
+  }
+
+  private static List<SimpleRow> insertByOrderOrMerge(List<SimpleRow> a, SimpleRow b) {
+    if (a == null) {
+      List<SimpleRow> emptylist = Lists.newArrayList();
+      return insertByOrderOrMerge(emptylist, b);
+    }
+
+    for (SimpleRow c : a) {
+      SimpleRow merged = maybeItemsMerge(c, b);
+
+      if (merged != null) {
+        int idx = a.indexOf(c);
+        a.set(idx, merged);
+        return a;
+      }
+    }
+
+    a.add(b);
+
+    return a;
+
+  }
+
+  private static boolean isEqualAssessmentItems(SimpleRow a, SimpleRow b) {
+    Assert.notNull(a);
+    Assert.notNull(b);
+
+    if (BeeUtils.equalsTrim(a.getValue(COL_TRADE_VAT_PLUS), b.getValue(COL_TRADE_VAT_PLUS))
+        && BeeUtils.equalsTrim(a.getValue(COL_TRADE_VAT), b.getValue(COL_TRADE_VAT))
+        && BeeUtils.equalsTrim(a.getValue(COL_TRADE_VAT_PERC), b.getValue(COL_TRADE_VAT_PERC))) {
+      return true;
+    }
+
+    return false;
+  }
+
+  private static SimpleRow maybeItemsMerge(SimpleRow a, SimpleRow b) {
+    if (isEqualAssessmentItems(a, b)) {
+      SimpleRowSet resRs = new SimpleRowSet(a.getColumnNames());
+      resRs.addRow(a.getValues());
+      SimpleRow res = resRs.getRow(resRs.getNumberOfRows() - 1);
+
+      double qnt = BeeUtils.unbox(a.getDouble(COL_TRADE_ITEM_QUANTITY));
+      double price = BeeUtils.unbox(a.getDouble(COL_TRADE_ITEM_PRICE)) * qnt;
+
+      price +=
+          BeeUtils.unbox(b.getDouble(COL_TRADE_ITEM_QUANTITY))
+              * BeeUtils.unbox(b.getDouble(COL_TRADE_ITEM_PRICE));
+
+      res.setValue(COL_TRADE_ITEM_QUANTITY, "1");
+      res.setValue(COL_TRADE_ITEM_PRICE, BeeUtils.toString(price));
+
+      return res;
+    }
+
+    return null;
   }
 }
