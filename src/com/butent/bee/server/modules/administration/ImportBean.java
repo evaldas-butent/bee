@@ -298,7 +298,7 @@ public class ImportBean {
               reqInfo.getParameter(VAR_IMPORT_FILE), reqInfo.getParameter(Service.VAR_PROGRESS));
           break;
       }
-      if (BeeUtils.toBoolean(reqInfo.getParameter(VAR_IMPORT_TEST))) {
+      if (response.hasErrors() || BeeUtils.toBoolean(reqInfo.getParameter(VAR_IMPORT_TEST))) {
         ctx.setRollbackOnly();
       }
     } else {
@@ -378,7 +378,7 @@ public class ImportBean {
     return xpr;
   }
 
-  private void commitData(ImportObject io, String data, String parentName, String parentCap,
+  private String commitData(ImportObject io, String data, String parentName, String parentCap,
       String progress, Map<String, Pair<Integer, BeeRowSet>> status, boolean readOnly) {
 
     String idName = SqlUtils.uniqueName();
@@ -428,8 +428,12 @@ public class ImportBean {
       ImportObject ro = io.getPropertyRelation(col);
 
       if (ro != null) {
-        commitData(ro, data, realCol, progressCap, progress, status,
+        String error = commitData(ro, data, realCol, progressCap, progress, status,
             readOnly || io.isPropertyLocked(col) || !usr.canCreateData(ro.getViewName()));
+
+        if (!BeeUtils.isEmpty(error)) {
+          return error;
+        }
       }
       updateClause.add(SqlUtils.or(SqlUtils.and(SqlUtils.isNull(tmp, col),
           SqlUtils.isNull(data, realCol)), SqlUtils.and(SqlUtils.notNull(tmp, col),
@@ -438,13 +442,13 @@ public class ImportBean {
       cols.put(col, sys.getTable(view.getColumnTable(col)).getField(view.getColumnField(col)));
     }
     if (BeeUtils.isEmpty(cols)) {
-      return;
+      return null;
     }
     qs.updateData(new SqlCreate(tmp).setDataSource(query));
 
     if (qs.sqlCount(tmp, null) == 0) {
       qs.sqlDropTemp(tmp);
-      return;
+      return null;
     }
     // GET UNIQUE KEYS
     List<Set<String>> uniqueKeys = new ArrayList<>();
@@ -604,7 +608,10 @@ public class ImportBean {
       for (SimpleRow row : newRows) {
         if (!BeeUtils.isEmpty(progress)
             && !Endpoint.updateProgress(progress, ++c / (double) newRows.getNumberOfRows())) {
-          break;
+
+          qs.sqlDropTemp(ins);
+          qs.sqlDropTemp(tmp);
+          return Localized.getConstants().canceled();
         }
         rowSet.clearRows();
         List<String> values = new ArrayList<>();
@@ -690,6 +697,7 @@ public class ImportBean {
       }
     }
     qs.sqlDropTemp(tmp);
+    return null;
   }
 
   private SqlCreate createStructure(ImportObject io) {
@@ -728,7 +736,7 @@ public class ImportBean {
     String tmp = create.getTarget();
     qs.updateData(create);
 
-    ResponseObject resp = loadXLSData(io, fileName, tmp, progress,
+    String error = loadXLSData(io, fileName, tmp, progress,
         new Function<Map<String, String>, Boolean>() {
           @Override
           public Boolean apply(Map<String, String> values) {
@@ -789,8 +797,9 @@ public class ImportBean {
           }
         });
 
-    if (resp.hasErrors()) {
-      return resp;
+    if (!BeeUtils.isEmpty(error)) {
+      qs.sqlDropTemp(tmp);
+      return ResponseObject.error(error);
     }
     List<ExtendedProperty> info = new ArrayList<>();
     Map<String, Pair<Integer, BeeRowSet>> status = new LinkedHashMap<>();
@@ -800,8 +809,13 @@ public class ImportBean {
         ImportObject ro = io.getPropertyRelation(prop.getName());
 
         if (ro != null) {
-          commitData(ro, tmp, prop.getName(), null, progress, status,
+          error = commitData(ro, tmp, prop.getName(), null, progress, status,
               io.isPropertyLocked(prop.getName()) || !usr.canCreateData(ro.getViewName()));
+
+          if (!BeeUtils.isEmpty(error)) {
+            qs.sqlDropTemp(tmp);
+            return ResponseObject.error(error);
+          }
         }
       }
     }
@@ -927,7 +941,9 @@ public class ImportBean {
       for (int i = 0; i < rs.getNumberOfRows(); i++) {
         if (!BeeUtils.isEmpty(progress)
             && !Endpoint.updateProgress(progress, i / (double) rs.getNumberOfRows())) {
-          break;
+
+          qs.sqlDropTemp(tmp);
+          return ResponseObject.error(Localized.getConstants().canceled());
         }
         qs.insertData(new SqlInsert(tbl)
             .addFields(rs.getColumnNames())
@@ -946,7 +962,7 @@ public class ImportBean {
     String tmp = create.getTarget();
     qs.updateData(create);
 
-    ResponseObject resp = loadXLSData(io, fileName, tmp, progress,
+    String error = loadXLSData(io, fileName, tmp, progress,
         new Function<Map<String, String>, Boolean>() {
           @Override
           public Boolean apply(Map<String, String> values) {
@@ -964,16 +980,19 @@ public class ImportBean {
             return true;
           }
         });
-
-    if (resp.hasErrors()) {
-      return resp;
+    if (!BeeUtils.isEmpty(error)) {
+      qs.sqlDropTemp(tmp);
+      return ResponseObject.error(error);
     }
     Map<String, Pair<Integer, BeeRowSet>> status = new LinkedHashMap<>();
 
-    commitData(io, tmp, null, null, progress, status, !usr.canCreateData(io.getViewName()));
+    error = commitData(io, tmp, null, null, progress, status, !usr.canCreateData(io.getViewName()));
 
     qs.sqlDropTemp(tmp);
 
+    if (!BeeUtils.isEmpty(error)) {
+      return ResponseObject.error(error);
+    }
     return ResponseObject.response(status);
   }
 
@@ -1017,8 +1036,9 @@ public class ImportBean {
     for (SimpleRow row : objects) {
       if (!BeeUtils.isEmpty(progress)
           && !Endpoint.updateProgress(progress, ++c / (double) objects.getNumberOfRows())) {
-        c = BeeConst.UNDEF;
-        break;
+
+        qs.sqlDropTemp(tmp);
+        return ResponseObject.error(Localized.getConstants().canceled());
       }
       boolean exists = true;
 
@@ -1098,10 +1118,14 @@ public class ImportBean {
     }
     Map<String, Pair<Integer, BeeRowSet>> status = new LinkedHashMap<>();
 
-    if (c != BeeConst.UNDEF) {
-      commitData(io, tmp, null, null, progress, status, !usr.canCreateData(io.getViewName()));
-    }
+    String error = commitData(io, tmp, null, null, progress, status,
+        !usr.canCreateData(io.getViewName()));
+
     qs.sqlDropTemp(tmp);
+
+    if (BeeUtils.isEmpty(error)) {
+      return ResponseObject.error(error);
+    }
     return ResponseObject.response(status);
   }
 
@@ -1132,12 +1156,12 @@ public class ImportBean {
     return io;
   }
 
-  private ResponseObject loadXLSData(ImportObject io, String fileName, String target,
+  private String loadXLSData(ImportObject io, String fileName, String target,
       String progress, Function<Map<String, String>, Boolean> rowValidator) {
     File file = new File(fileName);
 
     if (!file.isFile() || !file.canRead()) {
-      return ResponseObject.error(usr.getLocalizableMesssages().fileNotFound(fileName));
+      return usr.getLocalizableMesssages().fileNotFound(fileName);
     }
     Sheet shit;
 
@@ -1149,7 +1173,7 @@ public class ImportBean {
       shit = wb.getSheetAt(BeeUtils.isEmpty(shitName) ? 0 : wb.getSheetIndex(shitName));
     } catch (Exception e) {
       file.delete();
-      return ResponseObject.error(e);
+      return e.getMessage();
     }
     Map<String, Integer> indexes = new HashMap<>();
     Map<String, Pair<ImportProperty, String>> props = io.getDeepProperties(null);
@@ -1170,7 +1194,7 @@ public class ImportBean {
     for (int i = startRow; i <= endRow; i++) {
       if (!BeeUtils.isEmpty(progress)
           && !Endpoint.updateProgress(progress, recNo / (double) (endRow - startRow + 1))) {
-        return ResponseObject.error(Localized.getConstants().cancel());
+        return Localized.getConstants().canceled();
       }
       recNo++;
       Row row = shit.getRow(i);
@@ -1228,6 +1252,6 @@ public class ImportBean {
       }
     }
     file.delete();
-    return ResponseObject.emptyResponse();
+    return null;
   }
 }
