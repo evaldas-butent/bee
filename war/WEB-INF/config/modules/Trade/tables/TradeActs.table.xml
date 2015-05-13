@@ -6,7 +6,8 @@
   >
   <Fields>
     <Relation name="Name" relation="TradeActNames" label="=tradeActName" />
-
+    <Relation name="Contract" relation="Documents" label="=trdContract" />
+    
     <DateTime name="Date" notNull="true" defExpr="CURRENT_TIME" label="=taDate" />
     <DateTime name="Until" label="=taUntil" />
 

@@ -14,6 +14,8 @@ import com.butent.bee.client.data.Data;
 import com.butent.bee.client.event.logical.SelectorEvent;
 import com.butent.bee.client.modules.transport.PrintInvoiceInterceptor;
 import com.butent.bee.client.output.PrintFormInterceptor;
+import com.butent.bee.client.ui.FormFactory.WidgetDescriptionCallback;
+import com.butent.bee.client.ui.IdentifiableWidget;
 import com.butent.bee.client.ui.UiHelper;
 import com.butent.bee.client.view.edit.EditableWidget;
 import com.butent.bee.client.view.form.FormView;
@@ -23,8 +25,10 @@ import com.butent.bee.shared.communication.ResponseObject;
 import com.butent.bee.shared.data.BeeRow;
 import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.IsRow;
+import com.butent.bee.shared.data.filter.Filter;
 import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.modules.classifiers.ClassifierConstants;
+import com.butent.bee.shared.modules.documents.DocumentConstants;
 import com.butent.bee.shared.modules.trade.acts.TradeActConstants;
 import com.butent.bee.shared.modules.trade.acts.TradeActKind;
 import com.butent.bee.shared.utils.BeeUtils;
@@ -47,8 +51,19 @@ public class TradeActForm extends PrintFormInterceptor implements SelectorEvent.
   private TradeActKind lastKind;
 
   private boolean hasInvoicesOrSecondaryActs;
+  private DataSelector contractSelector;
 
   TradeActForm() {
+  }
+
+  @Override
+  public void afterCreateWidget(String name, IdentifiableWidget widget,
+      WidgetDescriptionCallback callback) {
+
+    if (widget instanceof DataSelector && BeeUtils.same(name, WIDGET_TA_CONTRACT)) {
+      contractSelector = (DataSelector) widget;
+    }
+    super.afterCreateWidget(name, widget, callback);
   }
 
   @Override
@@ -109,6 +124,14 @@ public class TradeActForm extends PrintFormInterceptor implements SelectorEvent.
         }
       }
     }
+
+    Filter relDocFilter =
+        Filter.in(Data.getIdColumn(DocumentConstants.VIEW_DOCUMENTS),
+            DocumentConstants.VIEW_RELATED_DOCUMENTS, DocumentConstants.COL_DOCUMENT, Filter
+                .equals(ClassifierConstants.COL_COMPANY, row
+                    .getString(getDataIndex(COL_TA_COMPANY))));
+
+    contractSelector.getOracle().setAdditionalFilter(relDocFilter, true);
 
     super.afterRefresh(form, row);
   }

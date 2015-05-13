@@ -134,6 +134,7 @@ public final class TradeActConstants {
 
   public static final int DPW_MIN = 5;
   public static final int DPW_MAX = 7;
+  public static final String WIDGET_TA_CONTRACT = "Contract";
 
   public static void register() {
     EnumUtils.register(TradeActKind.class);
