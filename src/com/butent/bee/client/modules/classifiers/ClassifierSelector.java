@@ -2,6 +2,7 @@ package com.butent.bee.client.modules.classifiers;
 
 import com.google.common.base.Splitter;
 import com.google.common.collect.ArrayListMultimap;
+import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Multimap;
 import com.google.gwt.user.client.ui.Widget;
 
@@ -20,6 +21,9 @@ import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.IsRow;
 import com.butent.bee.shared.data.RelationUtils;
 import com.butent.bee.shared.data.filter.Filter;
+import com.butent.bee.shared.data.value.BooleanValue;
+import com.butent.bee.shared.data.value.DecimalValue;
+import com.butent.bee.shared.data.value.Value;
 import com.butent.bee.shared.data.view.DataInfo;
 import com.butent.bee.shared.modules.administration.AdministrationConstants;
 import com.butent.bee.shared.time.TimeUtils;
@@ -84,6 +88,8 @@ public class ClassifierSelector implements SelectorEvent.Handler {
           && AdministrationConstants.VIEW_DEPARTMENT_EMPLOYEES.equals(dataView.getViewName())) {
         filterDepartmentPositions(event, dataView);
       }
+    } else if (BeeUtils.same(event.getRelatedViewName(), VIEW_ITEMS)) {
+      handleServices(event);
     }
   }
 
@@ -363,6 +369,45 @@ public class ClassifierSelector implements SelectorEvent.Handler {
           rowSet.setRows(rows);
         }
       }
+    }
+  }
+
+  private static void handleServices(SelectorEvent event) {
+    if (!event.isChanged()) {
+      return;
+    }
+    final DataInfo sourceInfo = Data.getDataInfo(event.getRelatedViewName());
+    final IsRow source = event.getRelatedRow();
+
+    if (source == null) {
+      return;
+    }
+    final DataView dataView = ViewHelper.getDataView(event.getSelector());
+
+    if (dataView == null || BeeUtils.isEmpty(dataView.getViewName()) || !dataView.isFlushable()) {
+      return;
+    }
+    final DataInfo targetInfo = Data.getDataInfo(dataView.getViewName());
+    final IsRow target = dataView.getActiveRow();
+
+    if (target == null) {
+      return;
+    }
+    Double vat = source.getDouble(sourceInfo.getColumnIndex(COL_ITEM_VAT_PERC));
+    boolean vatPerc = vat != null;
+
+    Map<String, Value> updatedColumns = ImmutableMap
+        .of(COL_ITEM_VAT, vatPerc ? Value.getValue(vat) : DecimalValue.getNullValue(),
+            COL_ITEM_VAT_PERC, vatPerc ? Value.getValue(vatPerc) : BooleanValue.getNullValue());
+
+    for (String targetColumn : updatedColumns.keySet()) {
+      int targetIndex = targetInfo.getColumnIndex(targetColumn);
+
+      if (BeeConst.isUndef(targetIndex)) {
+        continue;
+      }
+      target.setValue(targetIndex, updatedColumns.get(targetColumn));
+      dataView.refreshBySource(targetColumn);
     }
   }
 

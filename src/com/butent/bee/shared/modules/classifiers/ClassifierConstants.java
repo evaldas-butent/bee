@@ -146,6 +146,8 @@ public final class ClassifierConstants {
   public static final String COL_ITEM_ORDINAL = "Ordinal";
   public static final String COL_ITEM_DPW = "DaysPerWeek";
   public static final String COL_ITEM_MIN_TERM = "MinTerm";
+  public static final String COL_ITEM_VAT = "Vat";
+  public static final String COL_ITEM_VAT_PERC = "VatPercent";
 
   public static final String COL_UNIT = "Unit";
   public static final String COL_UNIT_NAME = "Name";
