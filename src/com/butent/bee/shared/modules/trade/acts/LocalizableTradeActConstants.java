@@ -30,6 +30,8 @@ public interface LocalizableTradeActConstants {
 
   String taMinTermShort();
 
+  String taObjectsIsDifferent();
+
   String taQuantityRemained();
 
   String taQuantityReturn();

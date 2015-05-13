@@ -297,10 +297,17 @@ public class TradeActGrid extends AbstractGridInterceptor {
             @Override
             public void onClick(ClickEvent event) {
               List<IsRow> rows = new ArrayList<>();
+              int idxObject = getGridView().getDataIndex(COL_TA_OBJECT);
 
               IsRow activeRow = getGridView().getActiveRow();
               for (IsRow row : getGridView().getRowData()) {
                 if (getGridView().isRowSelected(row.getId()) || DataUtils.sameId(row, activeRow)) {
+                  if (BeeUtils.compare(activeRow.getLong(idxObject), row.getLong(idxObject), null)
+                  != BeeConst.COMPARE_EQUAL) {
+                    getGridView().notifyWarning(Localized.getConstants().taObjectsIsDifferent());
+                    return;
+                  }
+
                   TradeActKind tak = TradeActKeeper.getKind(getViewName(), row);
                   if (tak != null && tak.enableReturn()) {
                     rows.add(row);
