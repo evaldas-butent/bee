@@ -14,6 +14,7 @@ import com.butent.bee.client.data.Data;
 import com.butent.bee.client.event.logical.SelectorEvent;
 import com.butent.bee.client.modules.transport.PrintInvoiceInterceptor;
 import com.butent.bee.client.output.PrintFormInterceptor;
+import com.butent.bee.client.presenter.Presenter;
 import com.butent.bee.client.ui.FormFactory.WidgetDescriptionCallback;
 import com.butent.bee.client.ui.IdentifiableWidget;
 import com.butent.bee.client.ui.UiHelper;
@@ -31,6 +32,7 @@ import com.butent.bee.shared.modules.classifiers.ClassifierConstants;
 import com.butent.bee.shared.modules.documents.DocumentConstants;
 import com.butent.bee.shared.modules.trade.acts.TradeActConstants;
 import com.butent.bee.shared.modules.trade.acts.TradeActKind;
+import com.butent.bee.shared.ui.Action;
 import com.butent.bee.shared.utils.BeeUtils;
 
 import java.util.Collection;
@@ -134,6 +136,39 @@ public class TradeActForm extends PrintFormInterceptor implements SelectorEvent.
     contractSelector.getOracle().setAdditionalFilter(relDocFilter, true);
 
     super.afterRefresh(form, row);
+  }
+
+  @Override
+  public boolean beforeAction(Action action, Presenter presenter) {
+
+    if (action.equals(Action.SAVE) && getFormView() != null
+        && getActiveRow() != null) {
+      FormView form = getFormView();
+      IsRow row = getActiveRow();
+      Long company = null;
+      boolean valid = true;
+      int idxCompany = form.getDataIndex(COL_TA_COMPANY);
+
+      if (idxCompany > -1) {
+        company = row.getLong(idxCompany);
+      }
+
+      if (company != null) {
+        boolean value = BeeUtils.unbox(row
+            .getBoolean(getDataIndex(ALS_CONTACT_PHYSICAL)));
+        Long contact = row.getLong(form.getDataIndex(COL_TA_CONTACT));
+
+        if (!value && contact == null) {
+          form.notifySevere(Localized.getConstants().contact() + " "
+              + Localized.getConstants().valueRequired());
+          valid = false;
+        } else {
+          valid = true;
+        }
+      }
+      return valid;
+    }
+    return super.beforeAction(action, presenter);
   }
 
   @Override

@@ -202,6 +202,7 @@
               <DataSelector source="Turnover" style="&inp1;" summarize="true" />
               <DataSelector source="TurnoverCurrency" editEnabled="false" placeholder="=currencyShort"
                style="width:40px; margin-left:5px; display:inline-block;" for="Turnover" />
+              <CheckBox source="Physical" />
             </row>
             <row>
               <Label text="=clientGroup" style="&lbl1;" for="CompanyGroup" />

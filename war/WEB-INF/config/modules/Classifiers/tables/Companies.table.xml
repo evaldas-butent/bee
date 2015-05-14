@@ -46,5 +46,6 @@
     <Numeric name="ExternalAdvance" precision="10" scale="2" label="ERP avansas" audit="false" />
 
     <Text name="Notes" label="=notes" />
+    <Boolean name="Physical" label="=physical" />
   </Fields>
 </Table>
