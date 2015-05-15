@@ -124,7 +124,7 @@ final class TradeActItemReturn {
     table.setText(r, c++, Localized.getConstants().quantity(),
         STYLE_QTY_PREFIX + STYLE_HEADER_CELL_SUFFIX);
 
-    table.setText(r, c++, "Bendr. k.",
+    table.setText(r, c++, Localized.getConstants().taOverallQuantity(),
         STYLE_QTY_PREFIX + STYLE_HEADER_CELL_SUFFIX);
 
     table.setText(r, c++, Localized.getConstants().taQuantityReturn(),
