@@ -7,8 +7,8 @@ import com.google.gwt.event.logical.shared.SelectionEvent;
 import com.google.gwt.event.logical.shared.SelectionHandler;
 
 import static com.butent.bee.shared.modules.administration.AdministrationConstants.*;
-import static com.butent.bee.shared.modules.classifiers.ClassifierConstants.*;
-import static com.butent.bee.shared.modules.trade.TradeConstants.*;
+import static com.butent.bee.shared.modules.classifiers.ClassifierConstants.COL_COMPANY_PERSON;
+import static com.butent.bee.shared.modules.trade.TradeConstants.VAR_TOTAL;
 import static com.butent.bee.shared.modules.transport.TransportConstants.*;
 
 import com.butent.bee.client.BeeKeeper;
@@ -18,14 +18,9 @@ import com.butent.bee.client.communication.ResponseCallback;
 import com.butent.bee.client.data.Data;
 import com.butent.bee.client.data.Queries;
 import com.butent.bee.client.data.Queries.RowSetCallback;
-import com.butent.bee.client.data.RowUpdateCallback;
-import com.butent.bee.client.event.logical.ParentRowEvent;
 import com.butent.bee.client.event.logical.SelectorEvent;
-import com.butent.bee.client.grid.ColumnFooter;
-import com.butent.bee.client.grid.ColumnHeader;
 import com.butent.bee.client.grid.GridFactory;
 import com.butent.bee.client.grid.GridFactory.GridOptions;
-import com.butent.bee.client.grid.column.AbstractColumn;
 import com.butent.bee.client.modules.trade.InvoicesGrid;
 import com.butent.bee.client.modules.trade.TradeUtils;
 import com.butent.bee.client.modules.transport.charts.ChartBase;
@@ -39,14 +34,11 @@ import com.butent.bee.client.style.ConditionalStyle;
 import com.butent.bee.client.ui.FormFactory;
 import com.butent.bee.client.ui.FormFactory.WidgetDescriptionCallback;
 import com.butent.bee.client.ui.IdentifiableWidget;
-import com.butent.bee.client.validation.CellValidateEvent;
-import com.butent.bee.client.validation.CellValidation;
 import com.butent.bee.client.view.TreeView;
 import com.butent.bee.client.view.ViewCallback;
 import com.butent.bee.client.view.ViewFactory;
 import com.butent.bee.client.view.ViewHelper;
 import com.butent.bee.client.view.ViewSupplier;
-import com.butent.bee.client.view.edit.EditableColumn;
 import com.butent.bee.client.view.grid.GridView;
 import com.butent.bee.client.view.grid.interceptor.AbstractGridInterceptor;
 import com.butent.bee.client.view.grid.interceptor.FileGridInterceptor;
@@ -59,18 +51,15 @@ import com.butent.bee.shared.data.BeeColumn;
 import com.butent.bee.shared.data.BeeRow;
 import com.butent.bee.shared.data.BeeRowSet;
 import com.butent.bee.shared.data.DataUtils;
-import com.butent.bee.shared.data.IsColumn;
 import com.butent.bee.shared.data.IsRow;
 import com.butent.bee.shared.data.event.RowTransformEvent;
 import com.butent.bee.shared.data.filter.Filter;
-import com.butent.bee.shared.data.value.ValueType;
 import com.butent.bee.shared.data.view.RowInfo;
 import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.menu.MenuHandler;
 import com.butent.bee.shared.menu.MenuService;
 import com.butent.bee.shared.modules.administration.AdministrationConstants;
 import com.butent.bee.shared.rights.Module;
-import com.butent.bee.shared.ui.GridDescription;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.Codec;
 
@@ -78,7 +67,6 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Objects;
 import java.util.Set;
 
 public final class TransportHandler {
@@ -230,111 +218,6 @@ public final class TransportHandler {
     }
   }
 
-  private static class TripRoutesGridHandler extends AbstractGridInterceptor {
-    private String viewName;
-    private Integer speedFromIndex;
-    private Integer speedToIndex;
-    private BeeColumn speedToColumn;
-    private Integer kmIndex;
-    private BeeColumn kmColumn;
-
-    private Integer scale;
-
-    @Override
-    public boolean afterCreateColumn(final String columnId, List<? extends IsColumn> dataColumns,
-        AbstractColumn<?> column, ColumnHeader header, ColumnFooter footer,
-        final EditableColumn editableColumn) {
-
-      if (BeeUtils.inList(columnId, "SpeedometerFrom", "SpeedometerTo", "Kilometers")
-          && editableColumn != null) {
-
-        editableColumn.addCellValidationHandler(new CellValidateEvent.Handler() {
-          @Override
-          public Boolean validateCell(CellValidateEvent event) {
-            if (event.isCellValidation() && event.isPostValidation()) {
-              CellValidation cv = event.getCellValidation();
-              IsRow row = cv.getRow();
-
-              BeeColumn updColumn;
-              int updIndex;
-              Double updValue;
-              double newVal = BeeUtils.toDouble(cv.getNewValue());
-
-              if (Objects.equals(columnId, "Kilometers")) {
-                updValue = row.getDouble(speedFromIndex);
-                updColumn = speedToColumn;
-                updIndex = speedToIndex;
-              } else {
-                if (Objects.equals(columnId, "SpeedometerFrom")) {
-                  newVal = 0 - newVal;
-                  updValue = row.getDouble(speedToIndex);
-                } else {
-                  updValue = 0 - BeeUtils.unbox(row.getDouble(speedFromIndex));
-                }
-                updColumn = kmColumn;
-                updIndex = kmIndex;
-              }
-              updValue = BeeUtils.unbox(updValue) + newVal;
-
-              if (BeeUtils.isPositive(scale)) {
-                if (updValue < 0) {
-                  updValue += scale;
-                } else if (updValue >= scale) {
-                  updValue -= scale;
-                }
-              } else if (updValue < 0) {
-                updValue = null;
-              }
-              if (event.isNewRow()) {
-                row.setValue(updIndex, updValue);
-
-              } else {
-                List<BeeColumn> cols = Lists.newArrayList(cv.getColumn(), updColumn);
-                List<String> oldValues = Lists.newArrayList(cv.getOldValue(),
-                    row.getString(updIndex));
-                List<String> newValues = Lists.newArrayList(cv.getNewValue(),
-                    BeeUtils.toString(updValue));
-
-                Queries.update(viewName, row.getId(), row.getVersion(), cols, oldValues, newValues,
-                    null, new RowUpdateCallback(viewName));
-                return null;
-              }
-            }
-            return true;
-          }
-        });
-      }
-      return true;
-    }
-
-    @Override
-    public void beforeCreate(List<? extends IsColumn> dataColumns,
-        GridDescription gridDescription) {
-
-      viewName = gridDescription.getViewName();
-      speedFromIndex = Data.getColumnIndex(viewName, "SpeedometerFrom");
-      speedToIndex = Data.getColumnIndex(viewName, "SpeedometerTo");
-      speedToColumn = new BeeColumn(ValueType.NUMBER, "SpeedometerTo");
-      kmIndex = Data.getColumnIndex(viewName, "Kilometers");
-      kmColumn = new BeeColumn(ValueType.NUMBER, "Kilometers");
-    }
-
-    @Override
-    public GridInterceptor getInstance() {
-      return new TripRoutesGridHandler();
-    }
-
-    @Override
-    public void onParentRow(ParentRowEvent event) {
-      if (event.getRow() == null) {
-        scale = null;
-      } else {
-        scale = Data.getInteger(event.getViewName(), event.getRow(), "Speedometer");
-      }
-    }
-  }
-
-
   public static ParameterList createArgs(String method) {
     return BeeKeeper.getRpc().createParameters(Module.TRANSPORT, method);
   }
@@ -365,7 +248,6 @@ public final class TransportHandler {
     SelectorEvent.register(new TransportSelectorHandler());
 
     GridFactory.registerGridInterceptor(VIEW_SPARE_PARTS, new SparePartsGridHandler());
-    GridFactory.registerGridInterceptor(TBL_TRIP_ROUTES, new TripRoutesGridHandler());
     GridFactory.registerGridInterceptor(VIEW_CARGO_TRIPS, new CargoTripsGrid());
 
     GridFactory.registerGridInterceptor(VIEW_ORDERS, new CargoTripChecker());
@@ -388,8 +270,6 @@ public final class TransportHandler {
     RendererFactory.registerGcrProvider(VIEW_CARGO_TRIPS, unloading, provider);
     RendererFactory.registerGcrProvider(VIEW_TRIP_CARGO, loading, provider);
     RendererFactory.registerGcrProvider(VIEW_TRIP_CARGO, unloading, provider);
-    RendererFactory.registerGcrProvider(VIEW_TRIP_CARGO, COL_CARGO + loading, provider);
-    RendererFactory.registerGcrProvider(VIEW_TRIP_CARGO, COL_CARGO + unloading, provider);
 
     ConditionalStyle.registerGridColumnStyleProvider(VIEW_ABSENCE_TYPES, COL_ABSENCE_COLOR,
         ColorStyleProvider.createDefault(VIEW_ABSENCE_TYPES));

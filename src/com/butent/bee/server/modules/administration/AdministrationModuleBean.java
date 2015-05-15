@@ -449,7 +449,7 @@ public class AdministrationModuleBean implements BeeModule, HasTimerService {
     if (!BeeUtils.isEmpty(email)) {
       cpRow.setValue(DataUtils.getColumnIndex(ALS_EMAIL_ID, cpColumns),
           qs.insertData(new SqlInsert(TBL_EMAILS)
-              .addConstant(COL_EMAIL_ADDRESS, address)));
+              .addConstant(COL_EMAIL_ADDRESS, email)));
     }
 
     if (!BeeUtils.isEmpty(positionName)) {

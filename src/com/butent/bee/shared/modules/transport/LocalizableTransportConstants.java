@@ -34,8 +34,6 @@ public interface LocalizableTransportConstants {
 
   String cargoLoadingPlaces();
 
-  String cargoMiddleHandlingPlaces();
-
   String cargoNumber();
 
   String cargos();
@@ -179,8 +177,6 @@ public interface LocalizableTransportConstants {
   String trAverageKilometerCost();
 
   String trAverageFuelCost();
-
-  String trCargoActualPlaces();
 
   String trCargoSelectCargo();
 
