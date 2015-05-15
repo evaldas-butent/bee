@@ -358,6 +358,26 @@ final class TradeActItemReturn {
       public void onChange(ChangeEvent event) {
         if (event.getSource() instanceof InputNumber) {
           InputNumber w = (InputNumber) event.getSource();
+
+          if (!BeeUtils.isDouble(w.getValue())) {
+            onQuantityChange(w.getElement(), w.getNumber());
+            return;
+          }
+
+          TableRowElement currentRow = DomUtils.getParentRow(w.getElement(), false);
+          Element source = Selectors.getElement(currentRow,
+              Selectors.classSelector(STYLE_QTY_PREFIX + STYLE_CELL_SUFFIX));
+          Element overall = Selectors.getElement(currentRow,
+              Selectors.classSelector(STYLE_QTY_PREFIX + PROP_OVERALL_TOTAL));
+
+          Double min = BeeUtils.toDoubleOrNull(source.getInnerText());
+          Double max = BeeUtils.toDoubleOrNull(overall.getInnerText());
+
+          if (w.getNumber().equals(BeeUtils.clamp(w.getNumber(), min, max))) {
+            selectQuantity(w.getElement());
+            return;
+          }
+
           onQuantityChange(w.getElement(), w.getNumber());
         }
       }
@@ -420,8 +440,16 @@ final class TradeActItemReturn {
   }
 
   private static void selectQuantity(Element qtyCell) {
-    String text = qtyCell.getInnerText();
-    boolean isOverallCell = qtyCell.hasClassName(STYLE_QTY_PREFIX + PROP_OVERALL_TOTAL);
+    String text = BeeConst.STRING_EMPTY;
+
+    if (!BeeUtils.isEmpty(qtyCell.getInnerText())) {
+      text = qtyCell.getInnerText();
+    } else if (DomUtils.isInputElement(qtyCell)) {
+      text = DomUtils.getInputElement(qtyCell).getValue();
+    }
+    boolean isOverallCell =
+        qtyCell.hasClassName(STYLE_QTY_PREFIX + PROP_OVERALL_TOTAL)
+            || DomUtils.isInputElement(qtyCell);
     Double qty = BeeUtils.toDoubleOrNull(text);
 
     if (isOverallCell && BeeUtils.isPositive(qty)) {
@@ -442,7 +470,7 @@ final class TradeActItemReturn {
 
         if (InputElement.is(target)) {
           InputElement input = InputElement.as(target);
-          if (!BeeUtils.isPositiveDouble(input.getValue())) {
+          if (!BeeUtils.isPositiveDouble(input.getValue()) || target.equals(qtyCell)) {
             input.setValue(BeeUtils.toString(qtyVal));
             onQuantityChange(input, qtyVal);
           }
