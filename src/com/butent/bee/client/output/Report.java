@@ -110,30 +110,36 @@ public enum Report implements HasWidgetSupplier {
     public List<ReportItem> getItems() {
       LocalizableConstants loc = Localized.getConstants();
 
-      return Arrays.asList(
-          new ReportTextItem(TransportConstants.COL_TRIP,
-              Data.getColumnLabel(TransportConstants.TBL_TRIP_COSTS, TransportConstants.COL_TRIP)),
-          new ReportTextItem(TransportConstants.COL_TRIP_NO,
-              Data.getColumnLabel(TransportConstants.TBL_TRIPS, TransportConstants.COL_TRIP_NO)),
-          new ReportDateTimeItem(TransportConstants.COL_TRIP_DATE, loc.date()),
-          new ReportDateItem(TransportConstants.COL_TRIP_DATE_FROM, loc.dateFrom()),
-          new ReportDateItem(TransportConstants.COL_TRIP_DATE_TO, loc.dateTo()),
-          new ReportTextItem(TransportConstants.COL_VEHICLE,
-              Data.getColumnLabel(TransportConstants.TBL_TRIPS, TransportConstants.COL_VEHICLE)),
-          new ReportTextItem(TransportConstants.COL_TRAILER,
-              Data.getColumnLabel(TransportConstants.TBL_TRIPS, TransportConstants.COL_TRAILER)),
-          new ReportTextItem(TransportConstants.COL_TRIP_ROUTE, loc.route()),
-          new ReportEnumItem(TransportConstants.COL_TRIP_STATUS,
-              Data.getColumnLabel(TransportConstants.TBL_TRIPS, TransportConstants.COL_TRIP_STATUS),
-              TripStatus.class),
-          new ReportNumericItem("Kilometers", "Kilometrai"),
-          new ReportNumericItem("FuelCosts", "Kuro išl.").setPrecision(2),
-          new ReportNumericItem("DailyCosts", "Dienpinigių išl.").setPrecision(2),
-          new ReportNumericItem("RoadCosts", "Kelių išl.").setPrecision(2),
-          new ReportNumericItem("ConstantCosts", Localized.getConstants().trConstantCosts())
-              .setPrecision(2),
-          new ReportNumericItem("OtherCosts", "Kitos išl.").setPrecision(2),
-          new ReportNumericItem("TripIncome", "Pajamos").setPrecision(2));
+      return Arrays
+          .asList(
+              new ReportTextItem(TransportConstants.COL_TRIP,
+                  Data.getColumnLabel(TransportConstants.TBL_TRIP_COSTS,
+                      TransportConstants.COL_TRIP)),
+              new ReportTextItem(TransportConstants.COL_TRIP_NO,
+                  Data.getColumnLabel(TransportConstants.TBL_TRIPS,
+                      TransportConstants.COL_TRIP_NO)),
+              new ReportDateTimeItem(TransportConstants.COL_TRIP_DATE, loc.date()),
+              new ReportDateItem(TransportConstants.COL_TRIP_DATE_FROM, loc.dateFrom()),
+              new ReportDateItem(TransportConstants.COL_TRIP_DATE_TO, loc.dateTo()),
+              new ReportTextItem(TransportConstants.COL_VEHICLE,
+                  Data.getColumnLabel(TransportConstants.TBL_TRIPS,
+                      TransportConstants.COL_VEHICLE)),
+              new ReportTextItem(TransportConstants.COL_TRAILER,
+                  Data.getColumnLabel(TransportConstants.TBL_TRIPS,
+                      TransportConstants.COL_TRAILER)),
+              new ReportTextItem(TransportConstants.COL_TRIP_ROUTE, loc.route()),
+              new ReportEnumItem(TransportConstants.COL_TRIP_STATUS,
+                  Data.getColumnLabel(TransportConstants.TBL_TRIPS,
+                      TransportConstants.COL_TRIP_STATUS),
+                  TripStatus.class),
+              new ReportNumericItem("Kilometers", "Kilometrai"),
+              new ReportNumericItem("FuelCosts", "Kuro išl.").setPrecision(2),
+              new ReportNumericItem("DailyCosts", "Dienpinigių išl.").setPrecision(2),
+              new ReportNumericItem("RoadCosts", "Kelių išl.").setPrecision(2),
+              new ReportNumericItem("ConstantCosts", Localized.getConstants().trConstantCosts())
+                  .setPrecision(2),
+              new ReportNumericItem("OtherCosts", "Kitos išl.").setPrecision(2),
+              new ReportNumericItem("TripIncome", "Pajamos").setPrecision(2));
     }
 
     @Override
@@ -161,7 +167,7 @@ public enum Report implements HasWidgetSupplier {
       report.addColItem(items.get("Kilometers"));
 
       ReportItem income = items.get("TripIncome");
-      report.addColItem(income.clone());
+      report.addColItem(income.copy());
 
       ReportFormulaItem costs = new ReportFormulaItem("Išlaidos");
       costs.setPrecision(2);
@@ -170,7 +176,7 @@ public enum Report implements HasWidgetSupplier {
           "FuelCosts", "DailyCosts", "RoadCosts", "ConstantCosts", "OtherCosts"}) {
         costs.plus(items.get(item));
       }
-      report.addColItem(costs.clone());
+      report.addColItem(costs.copy());
       report.addColItem(new ReportFormulaItem("Pelnas").plus(income).minus(costs).setPrecision(2));
 
       report.getFilterItems().add(items.get(TransportConstants.COL_TRIP_STATUS)
@@ -224,9 +230,9 @@ public enum Report implements HasWidgetSupplier {
           new ReportNumericItem(ProjectConstants.ALS_PROFIT, loc.profit()).setPrecision(2),
 
           new ReportEnumItem(ProjectConstants.ALS_TASK_STATUS, BeeUtils.joinWords(Data
-                  .getColumnLabel(TaskConstants.VIEW_TASKS, TaskConstants.COL_STATUS),
+              .getColumnLabel(TaskConstants.VIEW_TASKS, TaskConstants.COL_STATUS),
               BeeUtils.parenthesize(loc.crmTasks())), TaskStatus.class)
-      );
+          );
     }
 
     @Override
