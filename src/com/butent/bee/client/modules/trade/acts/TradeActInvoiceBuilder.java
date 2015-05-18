@@ -69,7 +69,6 @@ import com.butent.bee.shared.data.filter.Filter;
 import com.butent.bee.shared.data.view.DataInfo;
 import com.butent.bee.shared.font.FontAwesome;
 import com.butent.bee.shared.i18n.Localized;
-import com.butent.bee.shared.logging.LogUtils;
 import com.butent.bee.shared.modules.trade.acts.TradeActKind;
 import com.butent.bee.shared.modules.trade.acts.TradeActTimeUnit;
 import com.butent.bee.shared.modules.trade.acts.TradeActUtils;
@@ -255,6 +254,7 @@ public class TradeActInvoiceBuilder extends AbstractFormInterceptor implements
   private static final String STYLE_SVC_ROW = STYLE_SVC_PREFIX + "row";
   private static final String STYLE_SVC_SELECTED = STYLE_SVC_PREFIX + "selected";
   private static final String STYLE_SVC_FOOTER = STYLE_SVC_PREFIX + "footer";
+  private static final String STYLE_SVC_ROW_MISSED = STYLE_SVC_ROW + "-missed";
 
   private static final String STYLE_LABEL_CELL_SUFFIX = "label";
   private static final String STYLE_CELL_SUFFIX = "cell";
@@ -1595,6 +1595,10 @@ public class TradeActInvoiceBuilder extends AbstractFormInterceptor implements
 
         Element rowElement = table.getRow(r);
         rowElement.addClassName(STYLE_SVC_ROW);
+
+        if (svc.ranges.size() > 1 && idx < svc.ranges.size() - 1) {
+          rowElement.addClassName(STYLE_SVC_ROW_MISSED);
+        }
 
         DomUtils.setDataProperty(rowElement, KEY_SERVICE_ID, svc.id());
         DomUtils.setDataProperty(rowElement, KEY_RANGE_INDEX, idx);
