@@ -5,7 +5,11 @@ import com.google.gwt.dom.client.StyleElement;
 
 import static com.butent.bee.shared.modules.administration.AdministrationConstants.*;
 
+import com.butent.bee.client.communication.RpcCallback;
+import com.butent.bee.client.data.Queries;
+import com.butent.bee.client.data.Queries.RowSetCallback;
 import com.butent.bee.client.dom.DomUtils;
+import com.butent.bee.client.screen.ScreenImpl;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.HasInfo;
 import com.butent.bee.shared.data.BeeRow;
@@ -16,6 +20,7 @@ import com.butent.bee.shared.data.filter.Filter;
 import com.butent.bee.shared.data.view.DataInfo;
 import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogUtils;
+import com.butent.bee.shared.modules.administration.AdministrationConstants;
 import com.butent.bee.shared.rights.Module;
 import com.butent.bee.shared.rights.ModuleAndSub;
 import com.butent.bee.shared.rights.RegulatedWidget;
@@ -220,6 +225,36 @@ public class UserInfo implements HasInfo {
       if (!BeeUtils.isEmpty(css)) {
         createStyle(css);
       }
+
+      Filter filter =
+          Filter.equals(AdministrationConstants.COL_USER, BeeKeeper.getUser()
+              .getUserId());
+
+      Queries.getRowSet(AdministrationConstants.VIEW_USER_SETTINGS, null, filter,
+          new RowSetCallback() {
+
+            @Override
+            public void onSuccess(BeeRowSet rs) {
+
+              if (!rs.isEmpty()) {
+                Queries.getValue(AdministrationConstants.VIEW_USER_SETTINGS, rs.getRow(0)
+                    .getId(), AdministrationConstants.COL_MENU_HIDE, new RpcCallback<String>() {
+
+                  @Override
+                  public void onSuccess(String result) {
+
+                    if (!BeeUtils.isEmpty(result)) {
+                      ScreenImpl.setMenuState(Boolean.valueOf(result));
+                    } else {
+                      ScreenImpl.setMenuState(true);
+                    }
+
+                  }
+                });
+
+              }
+            }
+          });
     }
   }
 

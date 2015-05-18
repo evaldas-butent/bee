@@ -1,5 +1,6 @@
 package com.butent.bee.client.screen;
 
+import com.google.common.collect.Lists;
 import com.google.gwt.core.client.Scheduler.ScheduledCommand;
 import com.google.gwt.dom.client.Element;
 import com.google.gwt.dom.client.Style.Cursor;
@@ -17,6 +18,9 @@ import com.butent.bee.client.Screen;
 import com.butent.bee.client.Settings;
 import com.butent.bee.client.Users;
 import com.butent.bee.client.cli.Shell;
+import com.butent.bee.client.data.Data;
+import com.butent.bee.client.data.Queries;
+import com.butent.bee.client.data.Queries.IntCallback;
 import com.butent.bee.client.data.RowCallback;
 import com.butent.bee.client.data.RowEditor;
 import com.butent.bee.client.data.RowFactory;
@@ -59,6 +63,8 @@ import com.butent.bee.shared.Pair;
 import com.butent.bee.shared.css.CssUnit;
 import com.butent.bee.shared.data.BeeRow;
 import com.butent.bee.shared.data.UserData;
+import com.butent.bee.shared.data.filter.Filter;
+import com.butent.bee.shared.data.value.BooleanValue;
 import com.butent.bee.shared.font.FontAwesome;
 import com.butent.bee.shared.html.Tags;
 import com.butent.bee.shared.i18n.Localized;
@@ -102,6 +108,7 @@ public class ScreenImpl implements Screen {
   private static Flow flowOnlineUserSize = new Flow();
   private static Flow flowOnlineEmailSize = new Flow();
   private static Flow flowNewsSize = new Flow();
+  private static boolean menuShow;
 
   private static final String DEFAULT_PHOTO_IMAGE = "images/silver/person_profile.png";
   public static final HtmlTable NOTIFICATION_CONTENT = new HtmlTable(BeeConst.CSS_CLASS_PREFIX
@@ -1298,13 +1305,20 @@ public class ScreenImpl implements Screen {
     Flow settingsCnt = new Flow();
     FaLabel sett = new FaLabel(FontAwesome.GEAR);
     FaLabel help = new FaLabel(FontAwesome.QUESTION);
+    final FaLabel menuHide = new FaLabel(FontAwesome.THUMB_TACK);
 
     userContainer.addStyleName(BeeConst.CSS_CLASS_PREFIX + "UserContainer");
     userPanel.addStyleName(BeeConst.CSS_CLASS_PREFIX + "UserPanel");
     settingsCnt.addStyleName(BeeConst.CSS_CLASS_PREFIX + "SettingsContainer");
     signature.addStyleName(BeeConst.CSS_CLASS_PREFIX + "UserSignature");
-    sett.addStyleName(BeeConst.CSS_CLASS_PREFIX + "SettingsIcon");
-    help.addStyleName(BeeConst.CSS_CLASS_PREFIX + "HelpIcon");
+    sett.addStyleName(BeeConst.CSS_CLASS_PREFIX + "UserControlIcon");
+    help.addStyleName(BeeConst.CSS_CLASS_PREFIX + "UserControlIcon");
+
+    if (menuShow) {
+      menuHide.setStyleName(BeeConst.CSS_CLASS_PREFIX + "UserMenuIcon");
+    } else {
+      menuHide.setStyleName(BeeConst.CSS_CLASS_PREFIX + "UserMenuIcon-Selected");
+    }
 
     sett.addClickHandler(new ClickHandler() {
 
@@ -1323,8 +1337,42 @@ public class ScreenImpl implements Screen {
       }
     });
 
+    menuHide.addClickHandler(new ClickHandler() {
+
+      @Override
+      public void onClick(ClickEvent arg2) {
+
+        if (menuShow) {
+          menuHide.setStyleName(BeeConst.CSS_CLASS_PREFIX + "UserMenuIcon-Selected");
+        } else {
+          menuHide.setStyleName(BeeConst.CSS_CLASS_PREFIX + "UserMenuIcon");
+        }
+
+        setMenuState(menuShow);
+
+        Filter filter =
+            Filter.equals(AdministrationConstants.COL_USER, BeeKeeper.getUser().getUserId());
+        Queries.update(AdministrationConstants.VIEW_USER_SETTINGS, filter,
+            AdministrationConstants.COL_MENU_HIDE, BooleanValue.of(menuShow), new IntCallback() {
+
+              @Override
+              public void onSuccess(Integer result) {
+                if (result == 0) {
+                  Queries.insert(AdministrationConstants.VIEW_USER_SETTINGS, Data.getColumns(
+                      AdministrationConstants.VIEW_USER_SETTINGS,
+                      Lists.newArrayList(AdministrationConstants.COL_USER,
+                          AdministrationConstants.COL_MENU_HIDE)), Lists.newArrayList(BeeUtils
+                      .toString(BeeKeeper.getUser().getUserId()), BeeUtils.toString(menuShow)));
+                }
+
+              }
+            });
+      }
+    });
+
     settingsCnt.add(sett);
     settingsCnt.add(help);
+    settingsCnt.add(menuHide);
 
     signature.setText(BeeUtils.trim(BeeKeeper.getUser().getUserSign()));
 
@@ -1413,5 +1461,15 @@ public class ScreenImpl implements Screen {
       }
     }
     return userCal;
+  }
+
+  public static void setMenuState(boolean state) {
+    if (state) {
+      BeeKeeper.getScreen().getScreenPanel().setDirectionSize(Direction.NORTH, 112, true);
+      menuShow = false;
+    } else {
+      BeeKeeper.getScreen().getScreenPanel().setDirectionSize(Direction.NORTH, 62, true);
+      menuShow = true;
+    }
   }
 }
