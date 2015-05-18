@@ -37,7 +37,15 @@
           &forparent;
         </LongLabel>
       </row>
-
+      
+      <row>
+       <Label text="=trdContract" />
+       <DataSelector name="Contract" source="Contract" style="&inpw;"
+          renderColumns="ContractName ContractNumber" 
+          choiceColumns="Name Number DocumentDate Expires" viewName="Documents" 
+          caching="none" module="Documents" newRowEnabled="false" />
+      </row>
+      
       <row>
         <Label for="Date" visible="true" />
         <InputDateTime source="Date" style="&inpdt;" visible="true" />
