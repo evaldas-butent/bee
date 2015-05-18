@@ -131,6 +131,10 @@
   padding: 2px 5px;
 }
 
+.bee-ta-invoice-service-row.bee-ta-invoice-service-row-missed {
+  background-color: #F5DA81;
+}
+
 .bee-ta-picker-id-cell,
 .bee-ta-picker-price-cell,
 .bee-ta-picker-sel-price-cell,
