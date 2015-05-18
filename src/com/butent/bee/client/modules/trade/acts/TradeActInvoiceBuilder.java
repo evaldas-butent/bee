@@ -506,7 +506,7 @@ public class TradeActInvoiceBuilder extends AbstractFormInterceptor implements
   }
 
   @Override
-  public void onLoad(FormView form) {
+  public void onLoad(final FormView form) {
     Widget widget;
 
     JustDate from = BeeKeeper.getStorage().getDate(storageKey(COL_TA_SERVICE_FROM));
@@ -540,6 +540,23 @@ public class TradeActInvoiceBuilder extends AbstractFormInterceptor implements
         ((UnboundSelector) widget).setValue(currency, false);
       }
     }
+
+    widget = form.getWidgetByName(COL_TA_COMPANY);
+    if (widget instanceof UnboundSelector
+        && TradeActKeeper.invoiceFromActCompanyId != null) {
+      ((UnboundSelector) widget).setValue(
+          TradeActKeeper.invoiceFromActCompanyId, false);
+      refresh(true);
+    } else {
+      ((UnboundSelector) widget).clearValue();
+    }
+  }
+
+  @Override
+  public void onUnload(FormView form) {
+    TradeActKeeper.invoiceFromActCompanyId = null;
+    TradeActKeeper.invoiceFromActRowId = null;
+    super.onUnload(form);
   }
 
   @Override
@@ -1026,7 +1043,11 @@ public class TradeActInvoiceBuilder extends AbstractFormInterceptor implements
   }
 
   private Long getCompany() {
-    return getSelectedIdByWidgetName(COL_TA_COMPANY);
+    if (TradeActKeeper.invoiceFromActCompanyId == null) {
+      return getSelectedIdByWidgetName(COL_TA_COMPANY);
+    } else {
+      return TradeActKeeper.invoiceFromActCompanyId;
+    }
   }
 
   private Long getCurrency() {
@@ -1177,7 +1198,15 @@ public class TradeActInvoiceBuilder extends AbstractFormInterceptor implements
       @Override
       public void onResponse(ResponseObject response) {
         if (response.hasResponse(BeeRowSet.class)) {
-          BeeRowSet rowSet = BeeRowSet.restore(response.getResponseAsString());
+          BeeRowSet rowSet;
+          if (TradeActKeeper.invoiceFromActRowId == null) {
+            rowSet = BeeRowSet.restore(response.getResponseAsString());
+          } else {
+            rowSet = new BeeRowSet(VIEW_TRADE_ACTS, Data
+                .getColumns(VIEW_TRADE_ACTS));
+            rowSet.addRow(BeeRowSet.restore(response.getResponseAsString())
+                .getRowById(TradeActKeeper.invoiceFromActRowId));
+          }
 
           int dateIndex = rowSet.getColumnIndex(COL_TA_DATE);
           int untilIndex = rowSet.getColumnIndex(COL_TA_UNTIL);
