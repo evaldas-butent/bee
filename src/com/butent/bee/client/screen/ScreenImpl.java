@@ -101,7 +101,6 @@ public class ScreenImpl implements Screen {
   private static Flow flowEmailContainer = new Flow();
   private static Flow flowOnlineUserSize = new Flow();
   private static Flow flowOnlineEmailSize = new Flow();
-  private static Flow flowNewsSize = new Flow();
 
   private static final String DEFAULT_PHOTO_IMAGE = "images/silver/person_profile.png";
   public static final HtmlTable NOTIFICATION_CONTENT = new HtmlTable(BeeConst.CSS_CLASS_PREFIX
@@ -131,6 +130,8 @@ public class ScreenImpl implements Screen {
   private Toggle eastWestToggle;
 
   private Toggle maximizer;
+
+  private final CustomDiv newsBadge = new CustomDiv();
 
   public ScreenImpl() {
   }
@@ -486,91 +487,88 @@ public class ScreenImpl implements Screen {
 
   @Override
   public void updateUserData(UserData userData) {
-    if (userData != null) {
-      if (getUserPhotoContainer() != null) {
-        getUserPhotoContainer().clear();
-        final Image image;
+    if (userData != null && getUserPhotoContainer() != null) {
+      getUserPhotoContainer().clear();
+      final Image image;
 
-        String photoFileName = userData.getPhotoFileName();
-        if (!BeeUtils.isEmpty(photoFileName)) {
-          image = new Image(PhotoRenderer.getUrl(photoFileName));
-        } else {
-          image = new Image(DEFAULT_PHOTO_IMAGE);
-        }
+      String photoFileName = userData.getPhotoFileName();
+      if (!BeeUtils.isEmpty(photoFileName)) {
+        image = new Image(PhotoRenderer.getUrl(photoFileName));
+      } else {
+        image = new Image(DEFAULT_PHOTO_IMAGE);
+      }
 
-        image.setAlt(userData.getLogin());
-        image.addStyleName(BeeConst.CSS_CLASS_PREFIX + "UserPhoto");
+      image.setAlt(userData.getLogin());
+      image.addStyleName(BeeConst.CSS_CLASS_PREFIX + "UserPhoto");
 
-        image.addClickHandler(new ClickHandler() {
+      image.addClickHandler(new ClickHandler() {
+        @Override
+        public void onClick(ClickEvent event) {
+          NOTIFICATION_CONTENT.setWidget(0, 0, createUserPanel());
+          NOTIFICATION_CONTENT.setWidget(1, 0, createCalendarPanel());
 
-          @Override
-          public void onClick(ClickEvent event) {
+          if (BeeKeeper.getUser().isWidgetVisible(RegulatedWidget.NEWS)) {
+            NOTIFICATION_CONTENT.setWidget(2, 0,
+                Global.getNewsAggregator().getNewsPanel().asWidget());
+          }
 
-            NOTIFICATION_CONTENT.setWidget(0, 0, createUserPanel(NOTIFICATION_CONTENT));
-            NOTIFICATION_CONTENT.setWidget(1, 0, createCalendarPanel());
+          final Popup popup = new Popup(OutsideClick.CLOSE,
+              BeeConst.CSS_CLASS_PREFIX + "NotificationBar");
+          popup.setWidget(NOTIFICATION_CONTENT);
+          popup.setHideOnEscape(true);
 
-            if (BeeKeeper.getUser().isWidgetVisible(RegulatedWidget.NEWS)) {
-              NOTIFICATION_CONTENT.setWidget(2, 0, Global.getNewsAggregator().getNewsPanel()
-                  .asWidget());
+          popup.setAnimationEnabled(true);
+          popup.setAnimation(new Animation(300) {
+            int left;
+            int width;
+
+            @Override
+            public void start() {
+              this.width = getPopup().getOffsetWidth();
+              this.left = DomUtils.getClientWidth() - this.width;
+
+              if (getPopup().isShowing()) {
+                StyleUtils.setOpacity(getPopup(), BeeConst.DOUBLE_ZERO);
+                StyleUtils.setLeft(getPopup(), this.width);
+              }
+              super.start();
             }
 
-            final Popup popup = new Popup(OutsideClick.CLOSE,
-                BeeConst.CSS_CLASS_PREFIX + "NotificationBar");
-            popup.setWidget(NOTIFICATION_CONTENT);
-            popup.setHideOnEscape(true);
-
-            popup.setAnimationEnabled(true);
-            popup.setAnimation(new Animation(500) {
-              int left;
-              int width;
-
-              @Override
-              public void start() {
-                this.width = getPopup().getOffsetWidth();
-                this.left = DomUtils.getClientWidth() - this.width;
-
-                if (getPopup().isShowing()) {
-                  StyleUtils.setOpacity(getPopup(), BeeConst.DOUBLE_ZERO);
-                  StyleUtils.setLeft(getPopup(), this.width);
-                }
-                super.start();
+            @Override
+            protected void onComplete() {
+              if (getPopup().isShowing()) {
+                StyleUtils.setLeft(getPopup(), this.left);
               }
+              getPopup().getElement().getStyle().clearOpacity();
+              super.onComplete();
+            }
 
-              @Override
-              protected void onComplete() {
-                if (getPopup().isShowing()) {
-                  StyleUtils.setLeft(getPopup(), this.left);
-                }
-                getPopup().getElement().getStyle().clearOpacity();
-                super.onComplete();
+            @Override
+            protected boolean run(double elapsed) {
+              if (isCanceled()) {
+                return false;
+              } else {
+                StyleUtils.setOpacity(getPopup(), getFactor(elapsed));
+                double x = this.left + (1 - getFactor(elapsed)) * this.width;
+                StyleUtils.setLeft(getPopup(), x, CssUnit.PX);
+                return true;
               }
+            }
+          });
 
-              @Override
-              protected boolean run(double elapsed) {
-                if (isCanceled()) {
-                  return false;
-                } else {
-                  StyleUtils.setOpacity(getPopup(), getFactor(elapsed));
-                  double x = this.left + (1 - getFactor(elapsed)) * this.width;
-                  StyleUtils.setLeft(getPopup(), x, CssUnit.PX);
-                  return true;
-                }
-              }
-            });
+          popup.setPopupPositionAndShow(new Popup.PositionCallback() {
+            @Override
+            public void setPosition(int offsetWidth, int offsetHeight) {
+              popup.setPopupPosition(DomUtils.getClientWidth() - offsetWidth, 0);
+            }
+          });
+        }
+      });
 
-            popup.setPopupPositionAndShow(new Popup.PositionCallback() {
-              @Override
-              public void setPosition(int offsetWidth, int offsetHeight) {
-                popup.setPopupPosition(DomUtils.getClientWidth() - offsetWidth, 0);
-              }
-            });
-          }
-        });
+      newsBadge.setStyleName(BeeConst.CSS_CLASS_PREFIX + "NewsSize-None");
 
-        flowNewsSize.setStyleName(BeeConst.CSS_CLASS_PREFIX + "NewsSize-None");
-        getUserPhotoContainer().add(flowNewsSize);
-        getUserPhotoContainer().add(image);
-      }
+      getUserPhotoContainer().add(newsBadge);
+      getUserPhotoContainer().add(image);
     }
 
     if (getUserSignature() != null) {
@@ -1254,20 +1252,14 @@ public class ScreenImpl implements Screen {
     }
   }
 
-  public static void updateNewsSize(int size) {
-
-    Flow newsSize = BeeKeeper.getScreen().getNewsSize();
-
-    if (newsSize == null) {
-      return;
-    }
-
+  @Override
+  public void updateNewsSize(int size) {
     if (size > 0) {
-      newsSize.setStyleName(BeeConst.CSS_CLASS_PREFIX + "NewsSize");
-      newsSize.getElement().setInnerText(String.valueOf(size));
-
+      newsBadge.setStyleName(BeeConst.CSS_CLASS_PREFIX + "NewsSize");
+      newsBadge.getElement().setInnerText(String.valueOf(size));
     } else {
-      newsSize.setStyleName(BeeConst.CSS_CLASS_PREFIX + "NewsSize-None");
+      newsBadge.setStyleName(BeeConst.CSS_CLASS_PREFIX + "NewsSize-None");
+      newsBadge.getElement().setInnerText(BeeConst.STRING_EMPTY);
     }
   }
 
@@ -1291,15 +1283,9 @@ public class ScreenImpl implements Screen {
     return flowOnlineEmailSize;
   }
 
-  @Override
-  public Flow getNewsSize() {
-    return flowNewsSize;
-  }
-
-  private Widget createUserPanel(final HtmlTable table) {
+  private Widget createUserPanel() {
     Horizontal userContainer = new Horizontal();
     Flow userPanel = new Flow();
-    Image image;
     Label signature = new Label();
     Flow settingsCnt = new Flow();
 
@@ -1320,7 +1306,7 @@ public class ScreenImpl implements Screen {
       @Override
       public void onClick(ClickEvent arg0) {
         onUserSignatureClick();
-        UiHelper.closeDialog(table);
+        UiHelper.closeDialog((Widget) arg0.getSource());
       }
     });
 
@@ -1366,6 +1352,7 @@ public class ScreenImpl implements Screen {
     exitContainer.add(signature);
     exitContainer.add(exit);
 
+    Image image;
     String photoFileName = BeeKeeper.getUser().getUserData().getPhotoFileName();
     if (!BeeUtils.isEmpty(photoFileName)) {
       image = new Image(PhotoRenderer.getUrl(photoFileName));

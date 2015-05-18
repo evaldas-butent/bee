@@ -23,6 +23,7 @@ import com.butent.bee.client.dialog.ModalForm;
 import com.butent.bee.client.dialog.Notification;
 import com.butent.bee.client.dom.Dimensions;
 import com.butent.bee.client.dom.DomUtils;
+import com.butent.bee.client.dom.Stacking;
 import com.butent.bee.client.event.EventUtils;
 import com.butent.bee.client.event.Previewer.PreviewConsumer;
 import com.butent.bee.client.event.logical.ReadyEvent;
@@ -2960,7 +2961,9 @@ public class GridImpl extends Absolute implements GridView, EditEndEvent.Handler
   }
 
   private void showNote(LogLevel level, String... messages) {
+    Stacking.ensureParentContext(getNotification());
     StyleUtils.setZIndex(getNotification(), getGrid().getZIndex() + 1);
+
     getNotification().show(level, messages);
   }
 
