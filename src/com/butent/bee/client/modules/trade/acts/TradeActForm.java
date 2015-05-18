@@ -1,6 +1,8 @@
 package com.butent.bee.client.modules.trade.acts;
 
 import com.google.gwt.core.client.Scheduler.ScheduledCommand;
+import com.google.gwt.event.dom.client.ClickEvent;
+import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.user.client.ui.Widget;
 
 import static com.butent.bee.shared.modules.trade.acts.TradeActConstants.*;
@@ -15,12 +17,15 @@ import com.butent.bee.client.event.logical.SelectorEvent;
 import com.butent.bee.client.modules.transport.PrintInvoiceInterceptor;
 import com.butent.bee.client.output.PrintFormInterceptor;
 import com.butent.bee.client.presenter.Presenter;
+import com.butent.bee.client.ui.FormFactory;
 import com.butent.bee.client.ui.FormFactory.WidgetDescriptionCallback;
 import com.butent.bee.client.ui.IdentifiableWidget;
 import com.butent.bee.client.ui.UiHelper;
+import com.butent.bee.client.view.HeaderView;
 import com.butent.bee.client.view.edit.EditableWidget;
 import com.butent.bee.client.view.form.FormView;
 import com.butent.bee.client.view.form.interceptor.FormInterceptor;
+import com.butent.bee.client.widget.Button;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.communication.ResponseObject;
 import com.butent.bee.shared.data.BeeRow;
@@ -69,8 +74,9 @@ public class TradeActForm extends PrintFormInterceptor implements SelectorEvent.
   }
 
   @Override
-  public void afterRefresh(FormView form, IsRow row) {
+  public void afterRefresh(FormView form, final IsRow row) {
     TradeActKind kind = TradeActKeeper.getKind(row, getDataIndex(COL_TA_KIND));
+    Button commandCompose = null;
     String caption;
     DataSelector ds;
     Widget widget = form.getWidgetBySource(TradeActConstants.COL_TA_OBJECT);
@@ -135,6 +141,20 @@ public class TradeActForm extends PrintFormInterceptor implements SelectorEvent.
 
     contractSelector.getOracle().setAdditionalFilter(relDocFilter, true);
 
+    HeaderView header = form.getViewPresenter().getHeader();
+    header.clearCommandPanel();
+    commandCompose = new Button(
+        Localized.getConstants().taInvoiceCompose(), new ClickHandler() {
+
+          @Override
+          public void onClick(ClickEvent arg0) {
+            TradeActKeeper.invoiceFromActCompanyId = row.getLong(Data
+                .getColumnIndex(VIEW_TRADE_ACTS, COL_TA_COMPANY));
+            TradeActKeeper.invoiceFromActRowId = row.getId();
+            FormFactory.openForm(FORM_INVOICE_BUILDER);
+          }
+        });
+    header.addCommandItem(commandCompose);
     super.afterRefresh(form, row);
   }
 
