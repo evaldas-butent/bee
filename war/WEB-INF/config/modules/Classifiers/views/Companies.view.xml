@@ -131,6 +131,7 @@
     <SimpleColumn name="PercentInterest" />
         
     <SimpleColumn name="Notes" />
+    <SimpleColumn name="Physical" />
    </Columns>
   <Order>
     <OrderBy column="Name" />
