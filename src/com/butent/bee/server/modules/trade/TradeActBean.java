@@ -2,6 +2,7 @@ package com.butent.bee.server.modules.trade;
 
 import com.google.common.collect.HashBasedTable;
 import com.google.common.collect.Lists;
+import com.google.common.collect.Maps;
 import com.google.common.collect.Range;
 import com.google.common.collect.Sets;
 import com.google.common.collect.Table;
@@ -48,6 +49,7 @@ import com.butent.bee.shared.data.filter.CompoundFilter;
 import com.butent.bee.shared.data.filter.Filter;
 import com.butent.bee.shared.data.value.LongValue;
 import com.butent.bee.shared.data.value.TextValue;
+import com.butent.bee.shared.data.view.Order;
 import com.butent.bee.shared.data.view.RowInfo;
 import com.butent.bee.shared.exceptions.BeeException;
 import com.butent.bee.shared.logging.BeeLogger;
@@ -1044,23 +1046,12 @@ public class TradeActBean implements HasTimerService {
       return ResponseObject.parameterNotFound(reqInfo.getService(), Service.VAR_LIST);
     }
 
-    BeeRowSet result = null;
-    for (Long actId : acts) {
-      BeeRowSet items = getRemainingItems(actId);
+    BeeRowSet items = getRemainingItems(acts.toArray(new Long[acts.size()]));
 
-      if (!DataUtils.isEmpty(items)) {
-        if (result == null) {
-          result = items;
-        } else {
-          result.addRows(items.getRows());
-        }
-      }
-    }
-
-    if (result == null) {
+    if (DataUtils.isEmpty(items)) {
       return ResponseObject.emptyResponse();
     } else {
-      return ResponseObject.response(result);
+      return ResponseObject.response(items);
     }
   }
 
@@ -1250,16 +1241,18 @@ public class TradeActBean implements HasTimerService {
     return ResponseObject.response(items);
   }
 
-  private BeeRowSet getRemainingItems(long actId) {
-    Filter filter = Filter.and(Filter.equals(COL_TRADE_ACT, actId),
+  private BeeRowSet getRemainingItems(Long... actId) {
+    Filter filter = Filter.and(Filter.any(COL_TRADE_ACT, Lists.newArrayList(actId)),
         Filter.isPositive(COL_TRADE_ITEM_QUANTITY));
 
-    BeeRowSet parentItems = qs.getViewData(VIEW_TRADE_ACT_ITEMS, filter);
+    BeeRowSet parentItems =
+        qs.getViewData(VIEW_TRADE_ACT_ITEMS, filter, Order.ascending(COL_TA_ITEM, COL_TA_DATE));
     if (DataUtils.isEmpty(parentItems)) {
       return null;
     }
 
     Map<Long, Double> returnedItems = getReturnedItems(actId);
+    Map<Long, Double> overallTotal = Maps.newLinkedHashMap();
     if (BeeUtils.isEmpty(returnedItems)) {
       return parentItems;
     }
@@ -1279,12 +1272,22 @@ public class TradeActBean implements HasTimerService {
       }
 
       if (BeeUtils.isPositive(qty)) {
+        overallTotal.put(parentRow.getLong(itemIndex), BeeUtils.unbox(overallTotal.get(parentRow
+            .getLong(itemIndex))) + qty);
         BeeRow row = DataUtils.cloneRow(parentRow);
         if (found) {
           row.setValue(qtyIndex, qty);
         }
 
         result.addRow(row);
+      }
+    }
+
+    for (BeeRow res : result) {
+      if (overallTotal.containsKey(res.getLong(itemIndex))) {
+        res.setProperty(PROP_OVERALL_TOTAL, BeeUtils.toString(overallTotal.get(res
+            .getLong(itemIndex))));
+        overallTotal.remove(res.getLong(itemIndex));
       }
     }
 
@@ -1295,18 +1298,21 @@ public class TradeActBean implements HasTimerService {
     }
   }
 
-  private Map<Long, Double> getReturnedItems(long actId) {
+  private Map<Long, Double> getReturnedItems(Long... actId) {
     Map<Long, Double> result = new HashMap<>();
 
-    SqlSelect query = new SqlSelect()
-        .addFields(TBL_TRADE_ACT_ITEMS, COL_TA_ITEM)
-        .addSum(TBL_TRADE_ACT_ITEMS, COL_TRADE_ITEM_QUANTITY)
-        .addFrom(TBL_TRADE_ACTS)
-        .addFromInner(TBL_TRADE_ACT_ITEMS,
-            sys.joinTables(TBL_TRADE_ACTS, TBL_TRADE_ACT_ITEMS, COL_TRADE_ACT))
-        .setWhere(SqlUtils.and(SqlUtils.equals(TBL_TRADE_ACTS, COL_TA_PARENT, actId),
-            SqlUtils.equals(TBL_TRADE_ACTS, COL_TA_KIND, TradeActKind.RETURN.ordinal())))
-        .addGroup(TBL_TRADE_ACT_ITEMS, COL_TA_ITEM);
+    SqlSelect query =
+        new SqlSelect()
+            .addFields(TBL_TRADE_ACT_ITEMS, COL_TA_ITEM)
+            .addSum(TBL_TRADE_ACT_ITEMS, COL_TRADE_ITEM_QUANTITY)
+            .addFrom(TBL_TRADE_ACTS)
+            .addFromInner(TBL_TRADE_ACT_ITEMS,
+                sys.joinTables(TBL_TRADE_ACTS, TBL_TRADE_ACT_ITEMS, COL_TRADE_ACT))
+            .setWhere(
+                SqlUtils.and(SqlUtils.inList(TBL_TRADE_ACTS, COL_TA_PARENT, Lists
+                    .newArrayList(actId)),
+                    SqlUtils.equals(TBL_TRADE_ACTS, COL_TA_KIND, TradeActKind.RETURN.ordinal())))
+            .addGroup(TBL_TRADE_ACT_ITEMS, COL_TA_ITEM);
 
     SimpleRowSet data = qs.getData(query);
     if (!DataUtils.isEmpty(data)) {

@@ -124,6 +124,9 @@ final class TradeActItemReturn {
     table.setText(r, c++, Localized.getConstants().quantity(),
         STYLE_QTY_PREFIX + STYLE_HEADER_CELL_SUFFIX);
 
+    table.setText(r, c++, Localized.getConstants().taOverallQuantity(),
+        STYLE_QTY_PREFIX + STYLE_HEADER_CELL_SUFFIX);
+
     table.setText(r, c++, Localized.getConstants().taQuantityReturn(),
         STYLE_INPUT_PREFIX + STYLE_HEADER_CELL_SUFFIX);
 
@@ -174,7 +177,12 @@ final class TradeActItemReturn {
       c++;
 
       table.setText(r, c++, p.getString(qtyIndex), STYLE_QTY_PREFIX + STYLE_CELL_SUFFIX);
-      table.setWidget(r, c++, renderInput(qtyColumn), STYLE_INPUT_PREFIX + STYLE_CELL_SUFFIX);
+      table
+          .setText(r, c++, p.getProperty(PROP_OVERALL_TOTAL), STYLE_QTY_PREFIX + STYLE_CELL_SUFFIX,
+              STYLE_QTY_PREFIX + PROP_OVERALL_TOTAL);
+      Widget w = renderInput(qtyColumn);
+
+      table.setWidget(r, c++, w, STYLE_INPUT_PREFIX + STYLE_CELL_SUFFIX);
 
       if (showActInfo) {
         table.setText(r, c++,
@@ -350,6 +358,26 @@ final class TradeActItemReturn {
       public void onChange(ChangeEvent event) {
         if (event.getSource() instanceof InputNumber) {
           InputNumber w = (InputNumber) event.getSource();
+
+          if (!BeeUtils.isDouble(w.getValue())) {
+            onQuantityChange(w.getElement(), w.getNumber());
+            return;
+          }
+
+          TableRowElement currentRow = DomUtils.getParentRow(w.getElement(), false);
+          Element source = Selectors.getElement(currentRow,
+              Selectors.classSelector(STYLE_QTY_PREFIX + STYLE_CELL_SUFFIX));
+          Element overall = Selectors.getElement(currentRow,
+              Selectors.classSelector(STYLE_QTY_PREFIX + PROP_OVERALL_TOTAL));
+
+          Double min = BeeUtils.toDoubleOrNull(source.getInnerText());
+          Double max = BeeUtils.toDoubleOrNull(overall.getInnerText());
+
+          if (w.getNumber().equals(BeeUtils.clamp(w.getNumber(), min, max))) {
+            selectQuantity(w.getElement());
+            return;
+          }
+
           onQuantityChange(w.getElement(), w.getNumber());
         }
       }
@@ -412,10 +440,64 @@ final class TradeActItemReturn {
   }
 
   private static void selectQuantity(Element qtyCell) {
-    String text = qtyCell.getInnerText();
+    String text = BeeConst.STRING_EMPTY;
+
+    if (!BeeUtils.isEmpty(qtyCell.getInnerText())) {
+      text = qtyCell.getInnerText();
+    } else if (DomUtils.isInputElement(qtyCell)) {
+      text = DomUtils.getInputElement(qtyCell).getValue();
+    }
+    boolean isOverallCell =
+        qtyCell.hasClassName(STYLE_QTY_PREFIX + PROP_OVERALL_TOTAL)
+            || DomUtils.isInputElement(qtyCell);
     Double qty = BeeUtils.toDoubleOrNull(text);
 
-    if (BeeUtils.isPositive(qty)) {
+    if (isOverallCell && BeeUtils.isPositive(qty)) {
+
+      TableRowElement currentRow = DomUtils.getParentRow(qtyCell, false);
+
+      while (qty > 0 && currentRow != null) {
+        Element source = Selectors.getElement(currentRow,
+            Selectors.classSelector(STYLE_QTY_PREFIX + STYLE_CELL_SUFFIX));
+        Element target =
+            Selectors.getElement(currentRow, Selectors.classSelector(STYLE_INPUT_WIDGET));
+        Assert.notNull(source, "source can't bee null");
+        Assert.notNull(target, "target can't bee null");
+
+        Double srcQty = BeeUtils.toDoubleOrNull(source.getInnerText());
+
+        Double qtyVal = BeeUtils.min(srcQty, qty);
+
+        if (InputElement.is(target)) {
+          InputElement input = InputElement.as(target);
+          if (!BeeUtils.isPositiveDouble(input.getValue()) || target.equals(qtyCell)) {
+            input.setValue(BeeUtils.toString(qtyVal));
+            onQuantityChange(input, qtyVal);
+          }
+        }
+
+        qty -= qtyVal;
+
+        currentRow =
+            TableRowElement.is(currentRow.getNextSiblingElement()) ? TableRowElement.as(currentRow
+                .getNextSiblingElement()) : null;
+        if (currentRow == null) {
+          break;
+        }
+
+        Element child = Selectors.getElement(currentRow,
+            Selectors.classSelector(STYLE_QTY_PREFIX + PROP_OVERALL_TOTAL));
+
+        if (child == null) {
+          break;
+        }
+
+        if (!BeeUtils.isEmpty(child.getInnerText())) {
+          break;
+        }
+      }
+
+    } else if (BeeUtils.isPositive(qty)) {
       Element target = Selectors.getElement(DomUtils.getParentRow(qtyCell, false),
           Selectors.classSelector(STYLE_INPUT_WIDGET));
 

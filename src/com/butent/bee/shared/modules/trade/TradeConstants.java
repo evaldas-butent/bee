@@ -119,6 +119,7 @@ public final class TradeConstants {
 
   public static final String PROP_AVERAGE_OVERDUE = "AverageOverdue";
   public static final String PROP_REMIND_EMAIL = "RemindEmail";
+  public static final String PROP_OVERALL_TOTAL = "OveralTotal";
 
   public static final String VAR_TOTAL = "Total";
   public static final String VAR_DEBT = "Debt";

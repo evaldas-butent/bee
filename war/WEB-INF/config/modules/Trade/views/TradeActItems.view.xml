@@ -6,6 +6,9 @@
   >
   <Columns>
     <SimpleColumn name="TradeAct" />
+    <SimpleJoin name="TradeAct" joinType="LEFT">
+      <SimpleColumn name="Date"></SimpleColumn>
+    </SimpleJoin>
 
     <SimpleColumn name="Item" />
     <SimpleJoin joinType="INNER" name="Item">
