@@ -69,6 +69,7 @@ import com.butent.bee.shared.data.filter.Filter;
 import com.butent.bee.shared.data.view.DataInfo;
 import com.butent.bee.shared.font.FontAwesome;
 import com.butent.bee.shared.i18n.Localized;
+import com.butent.bee.shared.logging.LogUtils;
 import com.butent.bee.shared.modules.trade.acts.TradeActKind;
 import com.butent.bee.shared.modules.trade.acts.TradeActTimeUnit;
 import com.butent.bee.shared.modules.trade.acts.TradeActUtils;
@@ -196,10 +197,20 @@ public class TradeActInvoiceBuilder extends AbstractFormInterceptor implements
     private boolean minTermWarn(int index, Collection<Integer> holidays) {
       if (minTermStart == null || !BeeUtils.isPositive(minTerm)) {
         return false;
-      } else {
+      } else if (timeUnit == TradeActTimeUnit.DAY) {
         Range<DateTime> range = TradeActUtils.createRange(minTermStart, dateTo(index));
         int days = TradeActUtils.countServiceDays(range, holidays, dpws.get(index));
         return minTerm > days;
+      } else {
+        Range<DateTime> range = TradeActUtils.createRange(minTermStart, dateTo(index));
+        int months = 0;
+        if (range.hasLowerBound() && range.hasUpperBound()) {
+          months =
+              TimeUtils.fieldDifference(range.lowerEndpoint(), range.upperEndpoint(),
+                  TimeUtils.FIELD_MONTH);
+        }
+
+        return minTerm > months;
       }
     }
   }
@@ -693,7 +704,7 @@ public class TradeActInvoiceBuilder extends AbstractFormInterceptor implements
 
             svc.minTerm = row.getInteger(minTermIndex);
 
-            if (tu == TradeActTimeUnit.DAY && BeeUtils.isPositive(svc.minTerm)) {
+            if (BeeUtils.isPositive(svc.minTerm)) {
               if (dateFrom == null) {
                 svc.minTermStart = TradeActUtils.getLower(act.range);
               } else {
