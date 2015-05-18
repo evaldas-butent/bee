@@ -3649,18 +3649,14 @@ textarea,
   font-size: 20px;
   padding: 0 15px 0 20px;
   color: #989898;
-  -ms-transform: rotate(30deg);
   -webkit-transform: rotate(30deg);
   transform: rotate(30deg);
-  cursor: pointer;
-
 }
 
 .bee-UserMenuIcon-Selected {
   font-size: 20px;
   padding: 0 15px 0 20px;
   color: black;
-  cursor: pointer;
 }
 
 .bee-UserControlIcon:hover {

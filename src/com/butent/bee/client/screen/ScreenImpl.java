@@ -1,6 +1,5 @@
 package com.butent.bee.client.screen;
 
-import com.google.common.collect.Lists;
 import com.google.gwt.core.client.Scheduler.ScheduledCommand;
 import com.google.gwt.dom.client.Element;
 import com.google.gwt.dom.client.Style.Cursor;
@@ -18,9 +17,6 @@ import com.butent.bee.client.Screen;
 import com.butent.bee.client.Settings;
 import com.butent.bee.client.Users;
 import com.butent.bee.client.cli.Shell;
-import com.butent.bee.client.data.Data;
-import com.butent.bee.client.data.Queries;
-import com.butent.bee.client.data.Queries.IntCallback;
 import com.butent.bee.client.data.RowCallback;
 import com.butent.bee.client.data.RowEditor;
 import com.butent.bee.client.data.RowFactory;
@@ -63,8 +59,6 @@ import com.butent.bee.shared.Pair;
 import com.butent.bee.shared.css.CssUnit;
 import com.butent.bee.shared.data.BeeRow;
 import com.butent.bee.shared.data.UserData;
-import com.butent.bee.shared.data.filter.Filter;
-import com.butent.bee.shared.data.value.BooleanValue;
 import com.butent.bee.shared.font.FontAwesome;
 import com.butent.bee.shared.html.Tags;
 import com.butent.bee.shared.i18n.Localized;
@@ -108,11 +102,13 @@ public class ScreenImpl implements Screen {
   private static Flow flowOnlineUserSize = new Flow();
   private static Flow flowOnlineEmailSize = new Flow();
   private static Flow flowNewsSize = new Flow();
-  private static boolean menuShow;
 
   private static final String DEFAULT_PHOTO_IMAGE = "images/silver/person_profile.png";
   public static final HtmlTable NOTIFICATION_CONTENT = new HtmlTable(BeeConst.CSS_CLASS_PREFIX
       + "NotificationBar-Content");
+
+  private static final int NORTH_HEIGHT = 112;
+  private static final int MENU_HEIGHT = 50;
 
   private Split screenPanel;
   private CentralScrutinizer centralScrutinizer;
@@ -378,10 +374,6 @@ public class ScreenImpl implements Screen {
     if (!Global.getReportSettings().isEmpty() && !containsDomainEntry(Domain.REPORTS, null)) {
       addDomainEntry(Domain.REPORTS, Global.getReportSettings().getPanel(), null, null);
     }
-
-    if (Global.getNewsAggregator().hasNews()) {
-      activateDomainEntry(Domain.NEWS, null);
-    }
   }
 
   @Override
@@ -446,6 +438,10 @@ public class ScreenImpl implements Screen {
   @Override
   public void start(UserData userData) {
     updateUserData(userData);
+
+    if (!BeeKeeper.getUser().isMenuVisible()) {
+      getScreenPanel().setDirectionSize(Direction.NORTH, getNorthHeight(NORTH_HEIGHT), true);
+    }
 
     if (getCentralScrutinizer() != null) {
       getCentralScrutinizer().start();
@@ -818,7 +814,11 @@ public class ScreenImpl implements Screen {
   }
 
   protected int getNorthHeight(int defHeight) {
-    return BeeUtils.positive(Settings.getInt("northHeight"), defHeight);
+    int height = BeeUtils.positive(Settings.getInt("northHeight"), defHeight);
+    if (!BeeKeeper.getUser().isMenuVisible() && height > MENU_HEIGHT) {
+      height -= MENU_HEIGHT;
+    }
+    return height;
   }
 
   protected Notification getNotification() {
@@ -883,7 +883,7 @@ public class ScreenImpl implements Screen {
     panel.add(nw);
     setNotification(nw);
 
-    return Pair.of(panel, getNorthHeight(112));
+    return Pair.of(panel, getNorthHeight(NORTH_HEIGHT));
   }
 
   protected Pair<? extends IdentifiableWidget, Integer> initSouth() {
@@ -1296,16 +1296,16 @@ public class ScreenImpl implements Screen {
     return flowNewsSize;
   }
 
-  public Widget createUserPanel(final HtmlTable table) {
-
+  private Widget createUserPanel(final HtmlTable table) {
     Horizontal userContainer = new Horizontal();
     Flow userPanel = new Flow();
     Image image;
     Label signature = new Label();
     Flow settingsCnt = new Flow();
+
     FaLabel sett = new FaLabel(FontAwesome.GEAR);
     FaLabel help = new FaLabel(FontAwesome.QUESTION);
-    final FaLabel menuHide = new FaLabel(FontAwesome.THUMB_TACK);
+    FaLabel menuHide = new FaLabel(FontAwesome.THUMB_TACK);
 
     userContainer.addStyleName(BeeConst.CSS_CLASS_PREFIX + "UserContainer");
     userPanel.addStyleName(BeeConst.CSS_CLASS_PREFIX + "UserPanel");
@@ -1314,14 +1314,9 @@ public class ScreenImpl implements Screen {
     sett.addStyleName(BeeConst.CSS_CLASS_PREFIX + "UserControlIcon");
     help.addStyleName(BeeConst.CSS_CLASS_PREFIX + "UserControlIcon");
 
-    if (menuShow) {
-      menuHide.setStyleName(BeeConst.CSS_CLASS_PREFIX + "UserMenuIcon");
-    } else {
-      menuHide.setStyleName(BeeConst.CSS_CLASS_PREFIX + "UserMenuIcon-Selected");
-    }
+    styleMenuToggle(menuHide, BeeKeeper.getUser().isMenuVisible());
 
     sett.addClickHandler(new ClickHandler() {
-
       @Override
       public void onClick(ClickEvent arg0) {
         onUserSignatureClick();
@@ -1330,7 +1325,6 @@ public class ScreenImpl implements Screen {
     });
 
     help.addClickHandler(new ClickHandler() {
-
       @Override
       public void onClick(ClickEvent arg1) {
         BrowsingContext.open(UiConstants.helpURL());
@@ -1338,35 +1332,14 @@ public class ScreenImpl implements Screen {
     });
 
     menuHide.addClickHandler(new ClickHandler() {
-
       @Override
       public void onClick(ClickEvent arg2) {
+        boolean visible = !BeeKeeper.getUser().isMenuVisible();
+        BeeKeeper.getUser().setMenuVisible(visible);
 
-        if (menuShow) {
-          menuHide.setStyleName(BeeConst.CSS_CLASS_PREFIX + "UserMenuIcon-Selected");
-        } else {
-          menuHide.setStyleName(BeeConst.CSS_CLASS_PREFIX + "UserMenuIcon");
-        }
+        styleMenuToggle((Widget) arg2.getSource(), visible);
 
-        setMenuState(menuShow);
-
-        Filter filter =
-            Filter.equals(AdministrationConstants.COL_USER, BeeKeeper.getUser().getUserId());
-        Queries.update(AdministrationConstants.VIEW_USER_SETTINGS, filter,
-            AdministrationConstants.COL_MENU_HIDE, BooleanValue.of(menuShow), new IntCallback() {
-
-              @Override
-              public void onSuccess(Integer result) {
-                if (result == 0) {
-                  Queries.insert(AdministrationConstants.VIEW_USER_SETTINGS, Data.getColumns(
-                      AdministrationConstants.VIEW_USER_SETTINGS,
-                      Lists.newArrayList(AdministrationConstants.COL_USER,
-                          AdministrationConstants.COL_MENU_HIDE)), Lists.newArrayList(BeeUtils
-                      .toString(BeeKeeper.getUser().getUserId()), BeeUtils.toString(menuShow)));
-                }
-
-              }
-            });
+        getScreenPanel().setDirectionSize(Direction.NORTH, getNorthHeight(NORTH_HEIGHT), true);
       }
     });
 
@@ -1411,8 +1384,12 @@ public class ScreenImpl implements Screen {
     return userPanel;
   }
 
-  public Widget createCalendarPanel() {
+  private static void styleMenuToggle(Widget toggle, boolean visible) {
+    toggle.setStyleName(BeeConst.CSS_CLASS_PREFIX + "UserMenuIcon", visible);
+    toggle.setStyleName(BeeConst.CSS_CLASS_PREFIX + "UserMenuIcon-Selected", !visible);
+  }
 
+  private static Widget createCalendarPanel() {
     Flow userCal = new Flow();
     userCal.setStyleName(BeeConst.CSS_CLASS_PREFIX + "CalendarContainer");
 
@@ -1461,15 +1438,5 @@ public class ScreenImpl implements Screen {
       }
     }
     return userCal;
-  }
-
-  public static void setMenuState(boolean state) {
-    if (state) {
-      BeeKeeper.getScreen().getScreenPanel().setDirectionSize(Direction.NORTH, 112, true);
-      menuShow = false;
-    } else {
-      BeeKeeper.getScreen().getScreenPanel().setDirectionSize(Direction.NORTH, 62, true);
-      menuShow = true;
-    }
   }
 }
