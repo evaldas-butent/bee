@@ -422,6 +422,7 @@ public class TradeActGrid extends AbstractGridInterceptor {
 
         case COL_TA_UNTIL:
         case COL_TA_NOTES:
+        case COL_TA_NUMBER:
           break;
 
         default:
