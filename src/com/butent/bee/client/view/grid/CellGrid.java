@@ -2601,12 +2601,12 @@ public class CellGrid extends Widget implements IdentifiableWidget, HasDataTable
     if (StyleUtils.getZIndex(cellElement) >= getZIndex()) {
       return;
     }
-    cellElement.getStyle().setZIndex(incrementZIndex());
+    setCellZIndex(cellElement);
 
     if (!isCellActive(row, col)) {
       cellElement = getActiveCellElement();
       if (cellElement != null) {
-        cellElement.getStyle().setZIndex(incrementZIndex());
+        setCellZIndex(cellElement);
       }
     }
   }
@@ -3719,7 +3719,8 @@ public class CellGrid extends Widget implements IdentifiableWidget, HasDataTable
       boolean resizable = getColumnInfo(getActiveColumnIndex()).isCellResizable();
 
       if (activate) {
-        activeCell.getStyle().setZIndex(incrementZIndex());
+        setCellZIndex(activeCell);
+
         activeCell.addClassName(STYLE_ACTIVE_CELL);
         if (resizable) {
           activeCell.addClassName(StyleUtils.NAME_RESIZABLE);
@@ -3920,8 +3921,9 @@ public class CellGrid extends Widget implements IdentifiableWidget, HasDataTable
         @Override
         public void execute() {
           Element cellElement = getActiveCellElement();
+
           if (cellElement != null) {
-            cellElement.getStyle().setZIndex(incrementZIndex());
+            setCellZIndex(cellElement);
             if (DomUtils.isVisible(cellElement)) {
               cellElement.focus();
             }
@@ -4713,6 +4715,11 @@ public class CellGrid extends Widget implements IdentifiableWidget, HasDataTable
     onActivateCell(true);
   }
 
+  private void setCellZIndex(Element cellElement) {
+    Stacking.ensureParentContext(cellElement);
+    cellElement.getStyle().setZIndex(incrementZIndex());
+  }
+
   private void setColumnWidth(String columnId, double width, CssUnit unit, int containerSize) {
     setColumnWidth(columnId, Rulers.getIntPixels(width, unit, containerSize));
   }
@@ -4774,7 +4781,6 @@ public class CellGrid extends Widget implements IdentifiableWidget, HasDataTable
 
   private void setZIndex(int zInd) {
     this.zIndex = zInd;
-    Stacking.ensureLevel(zInd);
   }
 
   private boolean showColumnResizer(Element cellElement, int col) {
@@ -4796,7 +4802,10 @@ public class CellGrid extends Widget implements IdentifiableWidget, HasDataTable
     }
 
     StyleUtils.setRectangle(resizerElement, left, top, width, height);
+
+    Stacking.ensureParentContext(resizerElement);
     StyleUtils.setZIndex(resizerElement, incrementZIndex());
+
     resizerElement.setClassName(StyleUtils.buildClasses(STYLE_RESIZER, STYLE_RESIZER_HORIZONTAL));
 
     if (barWidth > 0) {
@@ -4852,7 +4861,10 @@ public class CellGrid extends Widget implements IdentifiableWidget, HasDataTable
     }
 
     StyleUtils.setRectangle(resizerElement, left, top, width, height);
+
+    Stacking.ensureParentContext(resizerElement);
     StyleUtils.setZIndex(resizerElement, incrementZIndex());
+
     resizerElement.setClassName(StyleUtils.buildClasses(STYLE_RESIZER, STYLE_RESIZER_VERTICAL));
 
     if (barHeight > 0) {

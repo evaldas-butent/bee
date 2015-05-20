@@ -140,7 +140,7 @@
   border-width: 6px;
   border-style: solid;
   border-radius: 50%;
-  transform: translate(-6px, -6px);  
+  transform: translate(-6px, -6px);
 }
 .bee-orgChart-bubble-parent {
   border-color: limegreen;
@@ -176,7 +176,7 @@
   margin-left: 1em;
 }
 
-.bee-form-ExtendedReport .bee-HtmlTable td {
+.bee-form-ExtendedReport .bee-HtmlTable tr td {
   padding: 3px 5px;
 }
 
@@ -186,14 +186,15 @@
 .bee-rep .bee-Horizontal td {
   border: none;
 }
-.bee-rep-date, bee-rep-num {
+
+.bee-rep-date, .bee-rep-num {
   white-space: nowrap;
 }
 .bee-rep-num, .bee-rep-cgroup-hdr, .bee-rep-tot-hdr {
   text-align: right;
 }
 .bee-rep-drill:hover {
-  cursor: pointer; 
+  cursor: pointer;
   background-color: lightyellow;
 }
 .bee-rep-drill-on, .bee-rep-drill-off {

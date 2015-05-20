@@ -271,6 +271,8 @@ public interface LocalizableConstants extends Constants, LocalizableClassifierCo
 
   String exchangeCode();
 
+  String expenses();
+
   String exportToMsExcel();
 
   String expression();
@@ -415,6 +417,8 @@ public interface LocalizableConstants extends Constants, LocalizableClassifierCo
 
   String imageUploadFailed();
 
+  String incomes();
+
   String initialFilter();
 
   String invalidDate();
@@ -438,6 +442,8 @@ public interface LocalizableConstants extends Constants, LocalizableClassifierCo
   String keywords();
 
   String kilogramShort();
+
+  String kilometers();
 
   String languageTag();
 
@@ -590,6 +596,8 @@ public interface LocalizableConstants extends Constants, LocalizableClassifierCo
   String persons();
 
   String phone();
+
+  String plan();
 
   String postIndex();
 

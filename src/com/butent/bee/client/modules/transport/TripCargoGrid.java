@@ -36,7 +36,6 @@ import com.butent.bee.client.layout.Horizontal;
 import com.butent.bee.client.presenter.GridPresenter;
 import com.butent.bee.client.ui.UiHelper;
 import com.butent.bee.client.view.HeaderView;
-import com.butent.bee.client.view.edit.EditStartEvent;
 import com.butent.bee.client.view.edit.EditStopEvent;
 import com.butent.bee.client.view.edit.Editor;
 import com.butent.bee.client.view.form.FormView;
@@ -225,7 +224,6 @@ class TripCargoGrid extends AbstractGridInterceptor implements ClickHandler {
           lbl = Localized.maybeTranslate("=" + fld.toLowerCase());
         }
         switch (fld) {
-          case "Weight":
           case "Volume":
           case "Quantity":
             xpr = lbl + ": {" + fld + "}{" + fld + "UnitName}";
@@ -463,11 +461,6 @@ class TripCargoGrid extends AbstractGridInterceptor implements ClickHandler {
   }
 
   @Override
-  public String getRowCaption(IsRow row, boolean edit) {
-    return Localized.getConstants().trCargoActualPlaces();
-  }
-
-  @Override
   public void onClick(ClickEvent arg) {
     Set<Long> cargos = new HashSet<>();
     final Set<Long> selected = new HashSet<>();
@@ -522,15 +515,6 @@ class TripCargoGrid extends AbstractGridInterceptor implements ClickHandler {
     } else {
       dialog.setCargoInfo(Data.createRowSet(TBL_ORDER_CARGO), null);
     }
-  }
-
-  @Override
-  public void onEditStart(EditStartEvent event) {
-    if (!BeeUtils.inListSame(event.getColumnId(), "Loading", "Unloading", "Ordinal",
-        COL_CARGO_PERCENT, COL_ORDER_NO, COL_DESCRIPTION)) {
-      event.consume();
-    }
-    super.onEditStart(event);
   }
 
   @Override

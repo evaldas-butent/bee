@@ -227,6 +227,7 @@ public final class TransportConstants {
   public static final String SVC_GET_BEFORE = "GetBeforeData";
   public static final String SVC_GET_UNASSIGNED_CARGOS = "GetUnassignedCargos";
   public static final String SVC_GET_PROFIT = "GetProfit";
+  public static final String SVC_GET_ROUTE = "GetTripRoute";
   public static final String SVC_GET_FX_DATA = "GetFxData";
   public static final String SVC_GET_SS_DATA = "GetSsData";
   public static final String SVC_GET_DTB_DATA = "GetDtbData";
@@ -264,6 +265,7 @@ public final class TransportConstants {
   public static final String TBL_VEHICLE_GROUPS = "VehicleGroups";
   public static final String TBL_VEHICLE_SERVICE_TYPES = "ServiceTypes";
   public static final String TBL_EXPEDITION_TYPES = "ExpeditionTypes";
+  public static final String TBL_FUEL_CONSUMPTIONS = "FuelConsumptions";
 
   public static final String TBL_TRIPS = "Trips";
   public static final String TBL_TRIP_DRIVERS = "TripDrivers";
@@ -294,6 +296,7 @@ public final class TransportConstants {
 
   public static final String TBL_DRIVERS = "Drivers";
   public static final String TBL_DRIVER_GROUPS = "DriverGroups";
+  public static final String TBL_DRIVER_DAILY_COSTS = "DriverDailyCosts";
   public static final String TBL_DRIVER_ABSENCE = "DriverAbsence";
   public static final String TBL_ABSENCE_TYPES = "AbsenceTypes";
 
@@ -332,7 +335,6 @@ public final class TransportConstants {
 
   public static final String VIEW_VEHICLES = "Vehicles";
   public static final String VIEW_VEHICLE_SERVICES = "VehicleServices";
-  public static final String VIEW_FUEL_CONSUMPTIONS = "FuelConsumptions";
   public static final String VIEW_FUEL_TEMPERATURES = "FuelTemperatures";
 
   public static final String VIEW_SPARE_PARTS = "SpareParts";
@@ -367,6 +369,7 @@ public final class TransportConstants {
   public static final String COL_TRIP_DATE_TO = "DateTo";
   public static final String COL_TRIP_PLANNED_END_DATE = "PlannedEndDate";
   public static final String COL_TRIP_PERCENT = "TripPercent";
+  public static final String COL_TRIP_ROUTE = "Route";
   public static final String COL_TRIP_NOTES = "Notes";
   public static final String COL_TRIP_STATUS = "Status";
 
@@ -452,6 +455,19 @@ public final class TransportConstants {
   public static final String COL_DATE = "Date";
   public static final String COL_AMOUNT = "Amount";
   public static final String COL_NOTE = "Note";
+
+  public static final String COL_ROUTE_CARGO = "TripCargo";
+  public static final String COL_ROUTE_DEPARTURE_DATE = "DepartureDate";
+  public static final String COL_ROUTE_DEPARTURE_COUNTRY = "DepartureCountry";
+  public static final String COL_ROUTE_DEPARTURE_CITY = "DepartureCity";
+  public static final String COL_ROUTE_ARRIVAL_DATE = "ArrivalDate";
+  public static final String COL_ROUTE_ARRIVAL_COUNTRY = "ArrivalCountry";
+  public static final String COL_ROUTE_ARRIVAL_CITY = "ArrivalCity";
+  public static final String COL_ROUTE_KILOMETERS = "Kilometers";
+  public static final String COL_ROUTE_SEASON = "Season";
+
+  public static final String COL_LOADED_KILOMETERS = "LoadedKilometers";
+  public static final String COL_EMPTY_KILOMETERS = "EmptyKilometers";
 
   public static final String COL_DESCRIPTION = "Description";
   public static final String COL_CARGO_DIRECTIONS = "Directions";

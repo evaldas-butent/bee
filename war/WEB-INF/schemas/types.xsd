@@ -318,6 +318,7 @@
       <xs:enumeration value="DocumentTree" />
       <xs:enumeration value="DriverAbsence" />
       <xs:enumeration value="DriverAdvances" />
+      <xs:enumeration value="DriverDailyCosts" />
       <xs:enumeration value="Drivers" />
       <xs:enumeration value="DriverTrips" />
       <xs:enumeration value="DurationTypes" />
