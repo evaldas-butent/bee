@@ -10,6 +10,7 @@ import com.butent.bee.client.data.Data;
 import com.butent.bee.client.data.Queries;
 import com.butent.bee.client.presenter.GridPresenter;
 import com.butent.bee.client.view.ViewHelper;
+import com.butent.bee.client.view.form.FormView;
 import com.butent.bee.client.view.grid.GridView;
 import com.butent.bee.client.view.grid.interceptor.AbstractGridInterceptor;
 import com.butent.bee.client.view.grid.interceptor.GridInterceptor;
@@ -71,6 +72,32 @@ public class TradeActServicesGrid extends AbstractGridInterceptor {
 
       presenter.getHeader().addCommandItem(command);
     }
+  }
+
+  @Override
+  public boolean onStartNewRow(GridView gridView, IsRow oldRow, IsRow newRow) {
+    FormView parentForm = null;
+    IsRow parentRow = null;
+
+    if (gridView != null) {
+      parentForm = ViewHelper.getForm(gridView.asWidget());
+    }
+
+    if (parentForm != null) {
+      parentRow = parentForm.getActiveRow();
+    }
+
+    if (parentRow != null
+        && BeeUtils.same(parentForm.getFormName(), FORM_TRADE_ACT)) {
+
+      int idxDate = gridView.getDataIndex(COL_TA_SERVICE_FROM);
+      int idxParentDate = parentForm.getDataIndex(COL_TA_DATE);
+
+      if (!BeeConst.isUndef(idxDate) && !BeeConst.isUndef(idxParentDate)) {
+        newRow.setValue(idxDate, parentRow.getDateTime(idxParentDate).getDate());
+      }
+    }
+    return true;
   }
 
   @Override
