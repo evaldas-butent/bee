@@ -1511,30 +1511,34 @@ public class TradeActInvoiceBuilder extends AbstractFormInterceptor implements
     r++;
     for (Service svc : services) {
       for (int idx = 0; idx < svc.ranges.size(); idx++) {
-        c = 0;
 
+        c = 0;
         long actId = svc.row.getLong(actIndex);
         if (act == null || act.id() != actId) {
           act = findAct(actId);
         }
 
-        toggle = new Toggle(FontAwesome.SQUARE_O, FontAwesome.CHECK_SQUARE_O,
-            STYLE_SVC_TOGGLE_WIDGET, false);
+        if (svc.quantity != null && svc.quantity > 0) {
+          toggle = new Toggle(FontAwesome.SQUARE_O, FontAwesome.CHECK_SQUARE_O,
+              STYLE_SVC_TOGGLE_WIDGET, false);
 
-        toggle.addClickHandler(new ClickHandler() {
-          @Override
-          public void onClick(ClickEvent event) {
-            if (event.getSource() instanceof Toggle) {
-              onToggle((Toggle) event.getSource(), STYLE_SVC_SELECTED);
+          toggle.addClickHandler(new ClickHandler() {
+            @Override
+            public void onClick(ClickEvent event) {
+              if (event.getSource() instanceof Toggle) {
+                onToggle((Toggle) event.getSource(), STYLE_SVC_SELECTED);
 
-              commandSave.setStyleName(STYLE_COMMAND_DISABLED,
-                  !Selectors.contains(table.getElement(),
-                      Selectors.classSelector(STYLE_SVC_SELECTED)));
+                commandSave.setStyleName(STYLE_COMMAND_DISABLED,
+                    !Selectors.contains(table.getElement(),
+                        Selectors.classSelector(STYLE_SVC_SELECTED)));
+              }
             }
-          }
-        });
+          });
 
-        table.setWidget(r, c++, toggle, STYLE_SVC_TOGGLE_PREFIX + STYLE_CELL_SUFFIX);
+          table.setWidget(r, c++, toggle, STYLE_SVC_TOGGLE_PREFIX + STYLE_CELL_SUFFIX);
+        } else {
+          c++;
+        }
 
         table.setText(r, c++, BeeUtils.toString(actId),
             STYLE_SVC_ACT_PREFIX + STYLE_CELL_SUFFIX);
