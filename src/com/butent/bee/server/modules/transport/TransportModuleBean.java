@@ -443,7 +443,7 @@ public class TransportModuleBean implements BeeModule, HasTimerService {
             SimpleRowSet rs = qs.getData(rep.getCargoIncomeQuery(event.getQuery()
                 .resetFields().resetOrder().resetGroup()
                 .addField(TBL_ORDER_CARGO, sys.getIdName(TBL_ORDER_CARGO), COL_CARGO)
-                .addGroup(TBL_ORDER_CARGO, sys.getIdName(TBL_ORDER_CARGO)), null));
+                .addGroup(TBL_ORDER_CARGO, sys.getIdName(TBL_ORDER_CARGO)), null, false));
 
             for (BeeRow row : rowset.getRows()) {
               String cargoId = BeeUtils.toString(row.getId());
@@ -493,7 +493,9 @@ public class TransportModuleBean implements BeeModule, HasTimerService {
               return;
             }
             String crs = rep.getTripIncomes(event.getQuery().resetFields().resetOrder().resetGroup()
-                .addFields(VIEW_CARGO_TRIPS, COL_TRIP).addGroup(VIEW_CARGO_TRIPS, COL_TRIP), null);
+                    .addFields(VIEW_CARGO_TRIPS, COL_TRIP).addGroup(VIEW_CARGO_TRIPS, COL_TRIP),
+                null,
+                false);
 
             SimpleRowSet rs = qs.getData(new SqlSelect().addAllFields(crs).addFrom(crs));
             qs.sqlDropTemp(crs);
@@ -1576,7 +1578,7 @@ public class TransportModuleBean implements BeeModule, HasTimerService {
   private ResponseObject getCargoTotal(long cargoId, Long currency) {
     String val = null;
     SimpleRow row = qs.getRow(rep.getCargoIncomeQuery(new SqlSelect()
-        .addConstant(cargoId, COL_CARGO), currency));
+        .addConstant(cargoId, COL_CARGO), currency, false));
 
     if (row != null) {
       val = BeeUtils.round(row.getValue("CargoIncome"), 2);
