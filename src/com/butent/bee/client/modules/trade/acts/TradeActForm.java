@@ -167,13 +167,21 @@ public class TradeActForm extends PrintFormInterceptor implements SelectorEvent.
       IsRow row = getActiveRow();
       Long company = null;
       boolean valid = true;
+      String regNo = null;
       int idxCompany = form.getDataIndex(COL_TA_COMPANY);
+      int idxRegNo = form.getDataIndex(COL_TA_REGISTRATION_NO);
+      int idxKind = form.getDataIndex(COL_TA_KIND);
 
       if (idxCompany > -1) {
         company = row.getLong(idxCompany);
       }
 
-      if (company != null) {
+      if (idxRegNo > -1 && idxKind > -1) {
+        regNo = row.getString(idxRegNo);
+      }
+
+      if (company != null
+          && TradeActKind.RETURN.ordinal() != BeeUtils.unbox(row.getInteger(idxKind))) {
         boolean value = BeeUtils.unbox(row
             .getBoolean(getDataIndex(ALS_CONTACT_PHYSICAL)));
         Long contact = row.getLong(form.getDataIndex(COL_TA_CONTACT));
@@ -181,9 +189,19 @@ public class TradeActForm extends PrintFormInterceptor implements SelectorEvent.
         if (!value && contact == null) {
           form.notifySevere(Localized.getConstants().contact() + " "
               + Localized.getConstants().valueRequired());
-          valid = false;
+          return false;
         } else {
-          valid = true;
+          return true;
+        }
+      }
+
+      if (TradeActKind.RETURN.ordinal() == BeeUtils.unbox(row.getInteger(idxKind))) {
+        if (!BeeUtils.isEmpty(regNo)) {
+          return true;
+        } else {
+          form.notifySevere(Localized.getConstants().taRegistrationNo() + " "
+              + Localized.getConstants().valueRequired());
+          return false;
         }
       }
       return valid;

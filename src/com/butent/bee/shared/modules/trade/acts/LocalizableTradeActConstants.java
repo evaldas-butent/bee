@@ -42,6 +42,8 @@ public interface LocalizableTradeActConstants {
 
   String taRecalculatePrices();
 
+  String taRegistrationNo();
+
   String taSaveSelectedItems();
 
   String taTariff();

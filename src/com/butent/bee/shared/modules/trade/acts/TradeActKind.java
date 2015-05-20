@@ -36,7 +36,7 @@ public enum TradeActKind implements HasLocalizedCaption {
     }
   },
 
-  RETURN(EnumSet.noneOf(Option.class)) {
+  RETURN(Option.AUTO_NUMBER) {
     @Override
     public String getCaption(LocalizableConstants constants) {
       return constants.taKindReturn();
