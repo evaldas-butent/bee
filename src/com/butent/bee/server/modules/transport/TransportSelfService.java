@@ -298,6 +298,9 @@ public class TransportSelfService extends LoginServlet {
         case COL_QUERY_AGENT:
           value = req.getHeader(HttpHeaders.USER_AGENT);
           break;
+        case COL_USER_INTERFACE:
+          row.setValue(i, UserInterface.normalize(getInitialUserInterface()).ordinal());
+          break;
 
         default:
           if (parameters.containsKey(colId)) {
@@ -366,6 +369,7 @@ public class TransportSelfService extends LoginServlet {
           case COL_QUERY_STATUS:
           case COL_QUERY_HOST:
           case COL_QUERY_AGENT:
+          case COL_USER_INTERFACE:
             value = null;
             break;
 
@@ -447,6 +451,7 @@ public class TransportSelfService extends LoginServlet {
           case COL_REGISTRATION_STATUS:
           case COL_REGISTRATION_HOST:
           case COL_REGISTRATION_AGENT:
+          case COL_USER_INTERFACE:
             value = null;
             break;
 
