@@ -637,8 +637,7 @@ public class TradeActBean implements HasTimerService {
       return ResponseObject.parameterNotFound(reqInfo.getService(), COL_TRADE_ACT);
     }
 
-    Filter filter = Filter.and(Filter.any(COL_TRADE_ACT, actIds),
-        Filter.isPositive(COL_TRADE_ITEM_QUANTITY));
+    Filter filter = Filter.any(COL_TRADE_ACT, actIds);
 
     BeeRowSet services = qs.getViewData(VIEW_TRADE_ACT_SERVICES, filter);
     if (DataUtils.isEmpty(services)) {
