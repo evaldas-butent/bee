@@ -204,6 +204,8 @@ public interface LocalizableTransportConstants {
 
   String trCreditInvoice();
 
+  String trDailyCosts();
+
   String trDriverEndingDate();
 
   String trDriverExperience();
@@ -227,6 +229,8 @@ public interface LocalizableTransportConstants {
   String trImportProperty();
 
   String trImportValue();
+
+  String trFuelCosts();
 
   String tripDuration();
 
@@ -265,6 +269,8 @@ public interface LocalizableTransportConstants {
   String trOrderStatusCompleted();
 
   String trOrderStatusRequest();
+
+  String trOtherCosts();
 
   String trPreInvoice();
 
@@ -425,6 +431,8 @@ public interface LocalizableTransportConstants {
   String trRequestTemplates();
 
   String trRequestTermsOfDelivery();
+
+  String trRoadCosts();
 
   String trSelfService();
 

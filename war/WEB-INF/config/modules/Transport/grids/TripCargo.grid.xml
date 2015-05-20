@@ -33,7 +33,7 @@
     <DataColumn name="Number" caption="=cargoNumber" />
     <DataColumn name="Cmr" caption="CMR" />
     <DataColumn name="Notes" caption="=notes" whiteSpace="pre-wrap" />
-    <DataColumn name="CargoPercent" caption="%" minValue="0" />
+    <DataColumn name="CargoPercent" caption="%" minValue="0" maxValue="100" />
     <PropColumn name="Income" type="decimal" caption="=income" format="#.00">
       <style>
         <headerStyle>

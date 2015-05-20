@@ -1122,7 +1122,7 @@ public class ImportBean {
 
     qs.sqlDropTemp(tmp);
 
-    if (BeeUtils.isEmpty(error)) {
+    if (!BeeUtils.isEmpty(error)) {
       return ResponseObject.error(error);
     }
     return ResponseObject.response(status);

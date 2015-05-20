@@ -18,7 +18,7 @@
 
     <Double name="SpeedometerFrom" label="=trSpeedometerFrom" />
     <Double name="SpeedometerTo" label="=trSpeedometerAfter" />
-    <Double name="Kilometers" label="=unitKilometers" />
+    <Double name="Kilometers" label="=kilometers" />
 
     <Numeric name="MotoHours" precision="7" scale="2" label="=trMotoHourShort" />
     <Numeric name="CargoWeight" precision="7" scale="3" label="=trWeightInTons" />

@@ -6,7 +6,8 @@
     >
   <g:columns>
     <RelColumn name="TripCargo" viewName="TripCargo" choiceColumns="Cargo Description"
-               newRowEnabled="false" editEnabled="true" editPopup="false" editSource="Cargo" />
+               renderColumns="Cargo" editSource="Cargo"
+               newRowEnabled="false" editEnabled="true" editPopup="false" />
 
     <DataColumn name="DepartureDate" caption="=trDepartureDate" updateMode="row">
       <carry>
@@ -51,7 +52,7 @@
     </DataColumn>
 
     <DataColumn name="MotoHours" caption="=trMotoHourShort" format="#.00" minValue="0"
-                updateMode="row">
+                updateMode="row" visible="false">
       <style>
         <headerStyle>
           <ui:font>bold</ui:font>
@@ -63,7 +64,7 @@
       <footer aggregate="sum" />
     </DataColumn>
     <DataColumn name="CargoWeight" format="#.000" updateMode="row" />
-    <DataColumn name="EmptyKilometers" minValue="0">
+    <DataColumn name="EmptyKilometers" minValue="0" visible="false">
       <footer aggregate="sum" />
     </DataColumn>
 
