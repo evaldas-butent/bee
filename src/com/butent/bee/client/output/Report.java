@@ -32,9 +32,6 @@ import com.butent.bee.shared.modules.projects.ProjectStatus;
 import com.butent.bee.shared.modules.tasks.TaskConstants;
 import com.butent.bee.shared.modules.tasks.TaskConstants.TaskStatus;
 import com.butent.bee.shared.modules.trade.TradeConstants;
-import com.butent.bee.shared.modules.transport.TransportConstants;
-import com.butent.bee.shared.modules.transport.TransportConstants.TripStatus;
-import com.butent.bee.shared.report.ReportFunction;
 import com.butent.bee.shared.report.ReportInfo;
 import com.butent.bee.shared.rights.Module;
 import com.butent.bee.shared.rights.ModuleAndSub;
@@ -204,35 +201,28 @@ public enum Report implements HasWidgetSupplier {
     }
   },
 
-  INCOME_INVOICES_REPORT(ModuleAndSub.of(Module.TRANSPORT),
-      TransportConstants.SVC_INCOME_INVOICES_REPORT) {
+  INCOME_INVOICES_REPORT(ModuleAndSub.of(Module.TRANSPORT), SVC_INCOME_INVOICES_REPORT) {
     @Override
     public List<ReportItem> getItems() {
       LocalizableConstants loc = Localized.getConstants();
       return Arrays.asList(
-          new ReportTextItem(TransportConstants.COL_ASSESSMENT, "Užsakymo Nr."),
-          new ReportDateTimeItem(TransportConstants.COL_ORDER + TransportConstants.COL_DATE,
-              "Užsakymo data"),
+          new ReportTextItem(COL_ASSESSMENT, "Užsakymo Nr."),
+          new ReportDateTimeItem(COL_ORDER + COL_DATE, "Užsakymo data"),
           new ReportTextItem(AdministrationConstants.COL_DEPARTMENT_NAME,
               Data.getColumnLabel(AdministrationConstants.TBL_DEPARTMENTS,
                   AdministrationConstants.COL_DEPARTMENT_NAME)),
-          new ReportTextItem(TransportConstants.COL_SERVICE_NAME,
-              Data.getColumnLabel(TransportConstants.TBL_SERVICES, "Name")),
+          new ReportTextItem(COL_SERVICE_NAME, Data.getColumnLabel(TBL_SERVICES, "Name")),
           new ReportDateTimeItem(TradeConstants.COL_TRADE_DATE, "Sąsk.data"),
-          new ReportTextItem(TradeConstants.COL_SALE + TransportConstants.COL_ORDER_MANAGER,
-              "Sąskaitą išrašė"),
-          new ReportTextItem(TransportConstants.COL_ORDER_MANAGER, loc.manager()),
+          new ReportTextItem(TradeConstants.COL_SALE + COL_ORDER_MANAGER, "Sąskaitą išrašė"),
+          new ReportTextItem(COL_ORDER_MANAGER, loc.manager()),
           new ReportTextItem(TradeConstants.COL_TRADE_INVOICE_NO,
               Data.getColumnLabel(TradeConstants.TBL_SALES, TradeConstants.COL_TRADE_INVOICE_NO)),
           new ReportTextItem(TradeConstants.COL_TRADE_CUSTOMER, loc.customer()),
-          new ReportTextItem(TransportConstants.VAR_EXPENSE + TransportConstants.COL_SERVICE_NAME,
-              "Sąnaudų paslauga"),
-          new ReportDateTimeItem(TransportConstants.VAR_EXPENSE + TradeConstants.COL_TRADE_DATE,
-              "Sąnaudų sąsk.data"),
-          new ReportTextItem(TransportConstants.VAR_EXPENSE + TradeConstants.COL_TRADE_INVOICE_NO,
-              "Sąnaudų sąsk.Nr."),
-          new ReportNumericItem(TransportConstants.VAR_INCOME, loc.income()).setPrecision(2),
-          new ReportNumericItem(TransportConstants.VAR_EXPENSE, "Sąnaudos").setPrecision(2));
+          new ReportTextItem(VAR_EXPENSE + COL_SERVICE_NAME, "Sąnaudų paslauga"),
+          new ReportDateTimeItem(VAR_EXPENSE + TradeConstants.COL_TRADE_DATE, "Sąnaudų sąsk.data"),
+          new ReportTextItem(VAR_EXPENSE + TradeConstants.COL_TRADE_INVOICE_NO, "Sąnaudų sąsk.Nr."),
+          new ReportNumericItem(VAR_INCOME, loc.income()).setPrecision(2),
+          new ReportNumericItem(VAR_EXPENSE, "Sąnaudos").setPrecision(2));
     }
 
     @Override
@@ -245,24 +235,23 @@ public enum Report implements HasWidgetSupplier {
       ReportInfo report = new ReportInfo(getReportCaption());
 
       for (String item : new String[] {
-          TransportConstants.COL_ASSESSMENT,
-          TransportConstants.COL_SERVICE_NAME, TransportConstants.COL_ORDER_MANAGER,
+          COL_ASSESSMENT, COL_SERVICE_NAME, COL_ORDER_MANAGER,
           TradeConstants.COL_TRADE_INVOICE_NO, TradeConstants.COL_TRADE_CUSTOMER,
-          TradeConstants.COL_SALE + TransportConstants.COL_ORDER_MANAGER}) {
+          TradeConstants.COL_SALE + COL_ORDER_MANAGER}) {
         report.addRowItem(items.get(item));
       }
       report.setRowGrouping(items.get(AdministrationConstants.COL_DEPARTMENT_NAME));
 
       for (String item : new String[] {
-          TransportConstants.VAR_EXPENSE + TransportConstants.COL_SERVICE_NAME,
-          TransportConstants.VAR_EXPENSE + TradeConstants.COL_TRADE_DATE,
-          TransportConstants.VAR_EXPENSE + TradeConstants.COL_TRADE_INVOICE_NO,
-          TransportConstants.VAR_INCOME, TransportConstants.VAR_EXPENSE}) {
+          VAR_EXPENSE + COL_SERVICE_NAME,
+          VAR_EXPENSE + TradeConstants.COL_TRADE_DATE,
+          VAR_EXPENSE + TradeConstants.COL_TRADE_INVOICE_NO,
+          VAR_INCOME, VAR_EXPENSE}) {
         report.addColItem(items.get(item));
       }
       report.addColItem(new ReportFormulaItem("Pelnas")
-          .plus(items.get(TransportConstants.VAR_INCOME))
-          .minus(items.get(TransportConstants.VAR_EXPENSE)).setPrecision(2));
+          .plus(items.get(VAR_INCOME))
+          .minus(items.get(VAR_EXPENSE)).setPrecision(2));
 
       return Arrays.asList(report);
     }
