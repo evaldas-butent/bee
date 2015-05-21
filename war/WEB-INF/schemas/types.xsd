@@ -300,11 +300,11 @@
       <xs:enumeration value="DiscussionsFiles" />
       <xs:enumeration value="DiscussionsUsers" />
       <xs:enumeration value="DiscussMarkTypes" />
-      <xs:enumeration value="DistinctCargoExpenseNotes" />
       <xs:enumeration value="DistinctCriteria" />
       <xs:enumeration value="DistinctCriteriaGroups" />
       <xs:enumeration value="DistinctCriterionValues" />
       <xs:enumeration value="DistinctDocumentItems" />
+      <xs:enumeration value="DistinctForwarderNotes" />
       <xs:enumeration value="DistinctForwarderVehicles" />
       <xs:enumeration value="DistinctPlaceCompanies" />
       <xs:enumeration value="DocumentData" />

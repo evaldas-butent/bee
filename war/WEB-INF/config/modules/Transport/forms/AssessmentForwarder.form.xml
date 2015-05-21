@@ -8,12 +8,11 @@
   <!ENTITY input "&inline; width:110px;">
 ]>
 <f:Form xmlns="http://www.butent.com/widget"
-  xmlns:f="http://www.butent.com/form"
-  xmlns:ui="http://www.butent.com/ui"
+        xmlns:f="http://www.butent.com/form"
 
-  name="AssessmentForwarder" viewName="AssessmentForwarders" caption="=carrier"
-  height="700"
-  >
+        name="AssessmentForwarder" viewName="AssessmentForwarders" caption="=carrier"
+        height="700"
+    >
   <f:properties reports="PrintContractLT, PrintContractEN, PrintContractRU" />
 
   <FlowPanel class="flexBox-vertical" style="padding: 10px 2px 2px 10px;">
@@ -58,7 +57,7 @@
 
     <FlowPanel for="Note" style="&section;">
       <Label for="Note" style="&labelLeft;" class="bee-required" />
-      <DataSelector source="Note" viewName="DistinctCargoExpenseNotes" valueSource="Note"
+      <DataSelector source="Note" viewName="DistinctForwarderNotes" valueSource="Note"
         strict="false" caching="local" required="true" style="&input; width:400px;" />
     </FlowPanel>
 

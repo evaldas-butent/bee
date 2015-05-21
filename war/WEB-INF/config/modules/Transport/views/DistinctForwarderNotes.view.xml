@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<View xmlns="http://www.butent.com/view"
+
+      name="DistinctForwarderNotes" source="AssessmentForwarders"
+      filter="Note AND Manager={u}"
+    >
+  <Columns>
+    <SimpleJoin name="CargoExpense" joinType="INNER">
+      <SimpleColumn name="Note" />
+
+      <SimpleJoin name="Cargo" joinType="INNER">
+        <SimpleJoin name="Order" joinType="INNER">
+          <HiddenColumn name="Manager" />
+        </SimpleJoin>
+      </SimpleJoin>
+    </SimpleJoin>
+  </Columns>
+  <GroupBy columns="Note" />
+  <Order>
+    <OrderBy column="Note" />
+  </Order>
+</View>
