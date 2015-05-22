@@ -144,6 +144,46 @@ class ShipmentRequestForm extends AbstractFormInterceptor {
               case VIEW_ASSESSMENTS:
                 colNames.add(COL_STATUS);
                 values.add(BeeUtils.toString(AssessmentStatus.NEW.ordinal()));
+
+                colNames.add(ALS_LOADING_DATE);
+                values.add(getStringValue(ALS_LOADING_DATE));
+
+                colNames.add(ALS_UNLOADING_DATE);
+                values.add(getStringValue(ALS_UNLOADING_DATE));
+
+                colNames.add(ALS_LOADING_COMPANY);
+                values.add(getStringValue(ALS_LOADING_COMPANY));
+
+                colNames.add(ALS_UNLOADING_COMPANY);
+                values.add(getStringValue(ALS_UNLOADING_COMPANY));
+
+                colNames.add(ALS_LOADING_CONTACT);
+                values.add(getStringValue(ALS_LOADING_CONTACT));
+
+                colNames.add(ALS_UNLOADING_CONTACT);
+                values.add(getStringValue(ALS_UNLOADING_CONTACT));
+
+                colNames.add(ALS_LOADING_ADDRESS);
+                values.add(getStringValue(ALS_LOADING_ADDRESS));
+
+                colNames.add(ALS_UNLOADING_ADDRESS);
+                values.add(getStringValue(ALS_UNLOADING_ADDRESS));
+
+                colNames.add(ALS_LOADING_POST_INDEX);
+                values.add(getStringValue(ALS_LOADING_POST_INDEX));
+
+                colNames.add(ALS_UNLOADING_POST_INDEX);
+                values.add(getStringValue(ALS_UNLOADING_POST_INDEX));
+
+                colNames.add(COL_QUERY_LOADING_CITY);
+                values.add(getStringValue(COL_QUERY_LOADING_CITY));
+
+                colNames.add(COL_QUERY_UNLOADING_CITY);
+                values.add(getStringValue(COL_QUERY_UNLOADING_CITY));
+
+                colNames.add(COL_CARGO_WEIGHT);
+                values
+                    .add(Data.clamp(viewName, COL_CARGO_WEIGHT, getStringValue(COL_CARGO_WEIGHT)));
                 break;
 
               default:
