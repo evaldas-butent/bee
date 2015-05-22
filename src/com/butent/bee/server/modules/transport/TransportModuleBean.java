@@ -85,6 +85,7 @@ import java.io.BufferedWriter;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
+import java.math.BigDecimal;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.util.ArrayList;
@@ -2236,15 +2237,6 @@ public class TransportModuleBean implements BeeModule, HasTimerService {
     if (debts.isEmpty()) {
       return;
     }
-    StringBuilder ids = new StringBuilder();
-
-    for (SimpleRow row : debts) {
-      if (ids.length() > 0) {
-        ids.append(",");
-      }
-      ids.append("'").append(TradeModuleBean.encodeId(TBL_SALES, row.getLong(COL_SALE)))
-          .append("'");
-    }
     String remoteNamespace = prm.getText(PRM_ERP_NAMESPACE);
     String remoteAddress = prm.getText(PRM_ERP_ADDRESS);
     String remoteLogin = prm.getText(PRM_ERP_LOGIN);
@@ -2253,22 +2245,27 @@ public class TransportModuleBean implements BeeModule, HasTimerService {
     try {
       SimpleRowSet payments = ButentWS.connect(remoteNamespace, remoteAddress, remoteLogin,
           remotePassword)
-          .getSQLData("SELECT extern_id AS id, apm_data AS data, apm_suma AS suma"
-                  + " FROM apyvarta WHERE extern_id IN(" + ids.toString() + ")",
-              new String[] {"id", "data", "suma"});
+          .getSQLData("SELECT extern_id AS id, apm_data AS dt, apm_suma AS sm"
+                  + " FROM apyvarta WHERE pajamos=0 AND extern_id IS NOT NULL",
+              new String[] {"id", "dt", "sm"});
 
-      for (SimpleRow payment : payments) {
-        String id = TradeModuleBean.decodeId(TBL_SALES, payment.getLong("id"));
-        Double paid = payment.getDouble("suma");
+      if (payments.isEmpty()) {
+        return;
+      }
+      for (SimpleRow debt : debts) {
+        Long sale = debt.getLong(COL_SALE);
+        SimpleRow payment = payments.getRowByKey("id", TradeModuleBean.encodeId(TBL_SALES, sale));
 
-        if (!Objects.equals(paid,
-            BeeUtils.toDoubleOrNull(debts.getValueByKey(COL_SALE, id, COL_TRADE_PAID)))) {
+        if (payment != null) {
+          BigDecimal paid = payment.getDecimal("sm");
 
-          qs.updateData(new SqlUpdate(TBL_SALES)
-              .addConstant(COL_TRADE_PAID, paid)
-              .addConstant(COL_TRADE_PAYMENT_TIME,
-                  TimeUtils.parseDateTime(payment.getValue("data")))
-              .setWhere(sys.idEquals(TBL_SALES, BeeUtils.toLong(id))));
+          if (!Objects.equals(paid, debt.getDecimal(COL_TRADE_PAID))) {
+            qs.updateData(new SqlUpdate(TBL_SALES)
+                .addConstant(COL_TRADE_PAID, paid)
+                .addConstant(COL_TRADE_PAYMENT_TIME,
+                    TimeUtils.parseDateTime(payment.getValue("dt")))
+                .setWhere(sys.idEquals(TBL_SALES, sale)));
+          }
         }
       }
     } catch (BeeException e) {

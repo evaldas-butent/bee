@@ -173,7 +173,7 @@ public class AdministrationModuleBean implements BeeModule, HasTimerService {
         BeeParameter.createRelation(module, PRM_CURRENCY, TBL_CURRENCIES, COL_CURRENCY_NAME),
         BeeParameter.createNumber(module, PRM_VAT_PERCENT, false, 21),
         BeeParameter.createText(module, PRM_REFRESH_CURRENCY_HOURS),
-        BeeParameter.createText(module, PRM_ERP_NAMESPACE),
+        BeeParameter.createText(module, PRM_ERP_NAMESPACE, false, "http://localhost/ButentWS/"),
         BeeParameter.createText(module, PRM_ERP_ADDRESS),
         BeeParameter.createText(module, PRM_ERP_LOGIN),
         BeeParameter.createText(module, PRM_ERP_PASSWORD),
