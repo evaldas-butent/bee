@@ -267,6 +267,10 @@ public final class TransportHandler {
     GridFactory.registerGridInterceptor("TranspOrderDocuments",
         new TransportDocumentsGrid(COL_TRANSPORTATION_ORDER));
     GridFactory.registerGridInterceptor("TripDocuments", new TransportDocumentsGrid(COL_TRIP));
+    
+    GridFactory.registerGridInterceptor(GRID_SHIPMENT_REQUESTS, new ShipmentRequestsGrid());
+    GridFactory.registerGridInterceptor(GRID_LOGISTICS_CARGO_REQUESTS,
+        new LogisticsShipmentRequestsGrid());
 
     ProvidesGridColumnRenderer provider = new CargoPlaceRenderer.Provider();
     String loading = "Loading";
