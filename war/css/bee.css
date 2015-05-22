@@ -3285,6 +3285,9 @@ textarea,
   background-color: white;
   padding: 1ex 1em 0 1em;
 }
+.bee-Form.bee-PrintableForm .bee-HtmlTable td {
+  padding-top: ;
+}
 .bee-Print .bee-PrintableForm {
   position: static !important;
   width: auto !important;
