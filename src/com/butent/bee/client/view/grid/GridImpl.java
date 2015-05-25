@@ -2589,7 +2589,9 @@ public class GridImpl extends Absolute implements GridView, EditEndEvent.Handler
       defCols.addAll(newRowDefaults);
     }
 
-    if (copy && oldRow != null) {
+    boolean isCopy = copy && oldRow != null;
+
+    if (isCopy) {
       if (copyColumns.isEmpty()) {
         for (int i = 0; i < getDataColumns().size(); i++) {
           if (!oldRow.isNull(i)) {
@@ -2619,22 +2621,24 @@ public class GridImpl extends Absolute implements GridView, EditEndEvent.Handler
           BeeKeeper.getUser().getUserData());
     }
 
-    for (EditableColumn editableColumn : getEditableColumns().values()) {
-      if (!editableColumn.hasCarry()) {
-        continue;
-      }
-      if (oldRow == null) {
-        oldRow = DataUtils.createEmptyRow(getDataColumns().size());
-      }
+    if (!isCopy) {
+      for (EditableColumn editableColumn : getEditableColumns().values()) {
+        if (editableColumn.hasCarry()) {
+          if (oldRow == null) {
+            oldRow = DataUtils.createEmptyRow(getDataColumns().size());
+          }
 
-      String carry = editableColumn.getCarryValue(oldRow);
-      if (!BeeUtils.isEmpty(carry)) {
-        int index = editableColumn.getColIndex();
-        newRow.setValue(index, carry);
+          String carry = editableColumn.getCarryValue(oldRow);
+          if (!BeeUtils.isEmpty(carry)) {
+            int index = editableColumn.getColIndex();
+            newRow.setValue(index, carry);
 
-        if (editableColumn.hasRelation() && BeeUtils.equalsTrim(carry, oldRow.getString(index))) {
-          RelationUtils.setRelatedValues(getDataInfo(), editableColumn.getColumnId(),
-              newRow, oldRow);
+            if (editableColumn.hasRelation()
+                && BeeUtils.equalsTrim(carry, oldRow.getString(index))) {
+              RelationUtils.setRelatedValues(getDataInfo(), editableColumn.getColumnId(),
+                  newRow, oldRow);
+            }
+          }
         }
       }
     }

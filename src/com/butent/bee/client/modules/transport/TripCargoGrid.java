@@ -34,7 +34,6 @@ import com.butent.bee.client.grid.HtmlTable;
 import com.butent.bee.client.layout.Flow;
 import com.butent.bee.client.layout.Horizontal;
 import com.butent.bee.client.presenter.GridPresenter;
-import com.butent.bee.client.ui.UiHelper;
 import com.butent.bee.client.view.HeaderView;
 import com.butent.bee.client.view.edit.EditStopEvent;
 import com.butent.bee.client.view.edit.Editor;
@@ -130,7 +129,6 @@ class TripCargoGrid extends AbstractGridInterceptor implements ClickHandler {
       });
       container.add(selector);
       dialog.setWidget(container);
-      dialog.showAt(grd.getAbsoluteLeft(), grd.getAbsoluteTop());
     }
 
     private void addCargo(final long cargoId) {
@@ -451,7 +449,11 @@ class TripCargoGrid extends AbstractGridInterceptor implements ClickHandler {
   @Override
   public boolean beforeAddRow(GridPresenter presenter, boolean copy) {
     Action action = new Action(presenter.getGridView());
-    UiHelper.focus(action.dialog.getContent());
+    action.dialog.focusOnOpen(action.dialog.getContent());
+
+    CellGrid grd = presenter.getGridView().getGrid();
+    action.dialog.showAt(grd.getAbsoluteLeft(), grd.getAbsoluteTop());
+
     return false;
   }
 

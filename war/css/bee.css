@@ -3286,7 +3286,7 @@ textarea,
   padding: 1ex 1em 0 1em;
 }
 .bee-Form.bee-PrintableForm .bee-HtmlTable td {
-  padding-top: ;
+  padding-top: 0;
 }
 .bee-Print .bee-PrintableForm {
   position: static !important;
