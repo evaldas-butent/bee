@@ -1,4 +1,7 @@
 #/wildfly/bin/jboss-cli.sh -c --file=config.cli
+#Connector.Datasources.PostgrePool.Pool.Max Pool Size:30
+#Container.Transactions.Default Timeout:1800
+#Web.HTTP.default-server.HTTP Listener.Max post size:104857600
 
 
 module add --name=org.postgres --resources=/Applications/JavaEE/SQL/postgresql-9.3-1102.jdbc41.jar --dependencies=javax.api,javax.transaction.api

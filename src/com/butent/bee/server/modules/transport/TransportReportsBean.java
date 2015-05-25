@@ -797,7 +797,7 @@ public class TransportReportsBean {
     return ss;
   }
 
-  private SqlSelect getConstantsQuery(String tmp, String src, IsCondition join, String col,
+  private static SqlSelect getConstantsQuery(String tmp, String src, IsCondition join, String col,
       IsExpression expression, Long currency) {
 
     SqlSelect ss = new SqlSelect()
