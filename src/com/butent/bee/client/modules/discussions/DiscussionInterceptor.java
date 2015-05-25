@@ -49,7 +49,6 @@ import com.butent.bee.client.richtext.RichTextEditor;
 import com.butent.bee.client.style.StyleUtils;
 import com.butent.bee.client.ui.FormFactory.WidgetDescriptionCallback;
 import com.butent.bee.client.ui.IdentifiableWidget;
-import com.butent.bee.client.ui.UiHelper;
 import com.butent.bee.client.utils.FileUtils;
 import com.butent.bee.client.view.HeaderView;
 import com.butent.bee.client.view.edit.Editor;
@@ -225,15 +224,9 @@ class DiscussionInterceptor extends AbstractFormInterceptor {
       return collector.getId();
     }
 
-    private void dispaly() {
+    private void display() {
+      focusOnOpen(getContent());
       center();
-      UiHelper.focus(getContent());
-    }
-
-    @SuppressWarnings("unused")
-    private void display(String focusId) {
-      center();
-      UiHelper.focus(getChild(focusId));
     }
 
     private Widget getChild(String id) {
@@ -1265,7 +1258,7 @@ class DiscussionInterceptor extends AbstractFormInterceptor {
       }
     });
 
-    dialog.dispaly();
+    dialog.display();
   }
 
   private void doCommentDelete(final long commentId) {
