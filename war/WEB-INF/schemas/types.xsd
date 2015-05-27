@@ -251,6 +251,7 @@
       <xs:enumeration value="CalExecutorGroups" />
       <xs:enumeration value="CargoCreditSales" />
       <xs:enumeration value="CargoExpenses" />
+      <xs:enumeration value="CargoGroups" />
       <xs:enumeration value="CargoHandling" />
       <xs:enumeration value="CargoIncomes" />
       <xs:enumeration value="CargoInvoices" />
@@ -261,6 +262,7 @@
       <xs:enumeration value="CargoRequests" />
       <xs:enumeration value="CargoSales" />
       <xs:enumeration value="CargoTrips" />
+      <xs:enumeration value="CargoTypes" />
       <xs:enumeration value="CategoryTree" />
       <xs:enumeration value="ChildAssessments" />
       <xs:enumeration value="Cities" />

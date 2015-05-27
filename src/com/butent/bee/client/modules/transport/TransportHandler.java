@@ -273,6 +273,8 @@ public final class TransportHandler {
 
     ConditionalStyle.registerGridColumnStyleProvider(VIEW_ABSENCE_TYPES, COL_ABSENCE_COLOR,
         ColorStyleProvider.createDefault(VIEW_ABSENCE_TYPES));
+    ConditionalStyle.registerGridColumnStyleProvider(VIEW_CARGO_TYPES, COL_CARGO_TYPE_COLOR,
+        ColorStyleProvider.createDefault(VIEW_CARGO_TYPES));
 
     TradeUtils.registerTotalRenderer(TBL_TRIP_COSTS, VAR_TOTAL);
     TradeUtils.registerTotalRenderer(TBL_TRIP_FUEL_COSTS, VAR_TOTAL);

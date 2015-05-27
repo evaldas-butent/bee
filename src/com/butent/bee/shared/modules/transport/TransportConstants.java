@@ -161,24 +161,28 @@ public final class TransportConstants {
 
   public enum TripConstant implements HasLocalizedCaption {
     AVERAGE_KM_COST {
-      @Override public String getCaption(LocalizableConstants constants) {
+      @Override
+      public String getCaption(LocalizableConstants constants) {
         return constants.trAverageKilometerCost();
       }
     },
 
     AVERAGE_FUEL_COST {
-      @Override public String getCaption(LocalizableConstants constants) {
+      @Override
+      public String getCaption(LocalizableConstants constants) {
         return constants.trAverageFuelCost();
       }
     },
 
     CONSTANT_COSTS {
-      @Override public String getCaption(LocalizableConstants constants) {
+      @Override
+      public String getCaption(LocalizableConstants constants) {
         return constants.trConstantCosts();
       }
     };
 
-    @Override public String getCaption() {
+    @Override
+    public String getCaption() {
       return getCaption(Localized.getConstants());
     }
   }
@@ -322,6 +326,9 @@ public final class TransportConstants {
   public static final String VIEW_CARGO_CREDIT_INVOICES = "CargoCreditInvoices";
   public static final String VIEW_CARGO_PURCHASE_INVOICES = "CargoPurchaseInvoices";
   public static final String VIEW_CARGO_INCOMES = "CargoIncomes";
+
+  public static final String VIEW_CARGO_TYPES = "CargoTypes";
+  public static final String VIEW_CARGO_GROUPS = "CargoGroups";
 
   public static final String VIEW_TRIPS = TBL_TRIPS;
   public static final String VIEW_EXPEDITION_TRIPS = "ExpeditionTrips";
@@ -698,6 +705,8 @@ public final class TransportConstants {
   public static final String COL_SHIPPING_TERM_SELF_SERVICE = "SelfService";
 
   public static final String COL_CRF_REQUEST = "CargoRequest";
+
+  public static final String COL_CARGO_TYPE_COLOR = "Color";
 
   public static final String FORM_NEW_VEHICLE = "NewVehicle";
   public static final String FORM_ORDER = "TransportationOrder";
