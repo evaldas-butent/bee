@@ -260,6 +260,7 @@ public final class TaskConstants {
   public static final String COL_SUMMARY = "Summary";
   public static final String COL_DESCRIPTION = "Description";
   public static final String COL_CAPTION = "Caption";
+  public static final String COL_TASK_COMPANY = "Company";
 
   public static final String COL_PARENT = "Parent";
   public static final String COL_ORDER = "Order";
@@ -349,6 +350,8 @@ public final class TaskConstants {
   public static final String COL_RTOBGR_GROUP = "Group";
 
   public static final String COL_MAIL_ASSIGNED_TASKS = "MailAssignedTasks";
+
+  public static final String ALS_COMPANY_NAME = "CompanyName";
 
   public static final String ALS_CONTACT_FIRST_NAME = "ContactFirstName";
   public static final String ALS_CONTACT_LAST_NAME = "ContactLastName";
