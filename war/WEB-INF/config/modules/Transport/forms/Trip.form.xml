@@ -30,7 +30,7 @@
       <row>
         <FlowPanel class="flexBox-horizontal-center">
           <Label for="Route" class="flexible" />
-          <FaLabel name="Route" char="magic" style="margin-left:1em;" />
+          <FaLabel name="Route" char="magic" title="=trGenerateRoute" style="margin-left:1em;" />
         </FlowPanel>
         <cell colSpan="5">
           <InputText source="Route" style="width:100%" />

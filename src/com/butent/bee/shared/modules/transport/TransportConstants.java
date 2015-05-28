@@ -232,6 +232,7 @@ public final class TransportConstants {
   public static final String SVC_GET_UNASSIGNED_CARGOS = "GetUnassignedCargos";
   public static final String SVC_GET_PROFIT = "GetProfit";
   public static final String SVC_GET_ROUTE = "GetTripRoute";
+  public static final String SVC_GENERATE_ROUTE = "GenerateTripRoute";
   public static final String SVC_GET_FX_DATA = "GetFxData";
   public static final String SVC_GET_SS_DATA = "GetSsData";
   public static final String SVC_GET_DTB_DATA = "GetDtbData";
@@ -404,6 +405,7 @@ public final class TransportConstants {
   public static final String COL_CARGO_LENGTH = "Length";
   public static final String COL_CARGO_WIDTH = "Width";
   public static final String COL_CARGO_HEIGHT = "Height";
+  public static final String COL_CARGO_PARTIAL = "Partial";
   public static final String COL_CARGO_PALETTES = "Palettes";
   public static final String COL_CARGO_VALUE = "Value";
   public static final String COL_CARGO_VALUE_CURRENCY = "ValueCurrency";

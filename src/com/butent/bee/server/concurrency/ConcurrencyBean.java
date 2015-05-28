@@ -23,9 +23,11 @@ import java.util.concurrent.CancellationException;
 import java.util.concurrent.FutureTask;
 
 import javax.annotation.Resource;
+import javax.ejb.AccessTimeout;
 import javax.ejb.EJB;
 import javax.ejb.ScheduleExpression;
 import javax.ejb.Singleton;
+import javax.ejb.Timeout;
 import javax.ejb.Timer;
 import javax.ejb.TimerConfig;
 import javax.ejb.TimerService;
@@ -34,6 +36,7 @@ import javax.ejb.TransactionAttributeType;
 import javax.enterprise.concurrent.ManagedExecutorService;
 
 @Singleton
+@AccessTimeout(value = TimeUtils.MILLIS_PER_MINUTE)
 public class ConcurrencyBean {
 
   public interface HasTimerService {
@@ -159,11 +162,15 @@ public class ConcurrencyBean {
     String hours = prm.getText(parameter);
 
     if (!BeeUtils.isEmpty(hours)) {
-      Timer timer = timerService.createCalendarTimer(new ScheduleExpression().hour(hours),
-          new TimerConfig(parameter, false));
+      try {
+        Timer timer = timerService.createCalendarTimer(new ScheduleExpression().hour(hours),
+            new TimerConfig(parameter, false));
 
-      logger.info("Created", NameUtils.getClassName(handler), parameter, "timer on hours [", hours,
-          "] starting at", timer.getNextTimeout());
+        logger.info("Created", NameUtils.getClassName(handler), parameter, "timer on hours [",
+            hours, "] starting at", timer.getNextTimeout());
+      } catch (IllegalArgumentException ex) {
+        logger.error(ex);
+      }
     }
   }
 
@@ -195,11 +202,15 @@ public class ConcurrencyBean {
     Integer minutes = prm.getInteger(parameter);
 
     if (BeeUtils.isPositive(minutes)) {
-      Timer timer = timerService.createIntervalTimer(minutes * TimeUtils.MILLIS_PER_MINUTE,
-          minutes * TimeUtils.MILLIS_PER_MINUTE, new TimerConfig(parameter, false));
+      try {
+        Timer timer = timerService.createIntervalTimer(minutes * TimeUtils.MILLIS_PER_MINUTE,
+            minutes * TimeUtils.MILLIS_PER_MINUTE, new TimerConfig(parameter, false));
 
-      logger.info("Created", NameUtils.getClassName(handler), parameter, "timer every", minutes,
-          "minutes starting at", timer.getNextTimeout());
+        logger.info("Created", NameUtils.getClassName(handler), parameter, "timer every", minutes,
+            "minutes starting at", timer.getNextTimeout());
+      } catch (IllegalArgumentException ex) {
+        logger.error(ex);
+      }
     }
   }
 
