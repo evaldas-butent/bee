@@ -351,8 +351,6 @@ public final class TaskConstants {
 
   public static final String COL_MAIL_ASSIGNED_TASKS = "MailAssignedTasks";
 
-  public static final String ALS_COMPANY_NAME = "CompanyName";
-
   public static final String ALS_CONTACT_FIRST_NAME = "ContactFirstName";
   public static final String ALS_CONTACT_LAST_NAME = "ContactLastName";
 
