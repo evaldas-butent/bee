@@ -114,7 +114,7 @@
           <InputArea source="Description" style="width: 424px; height: 60px;" readOnly="true" />
         </FlowPanel>
   
-        <FileGroup name="Files" data="TaskFiles"/>
+        <FileGroup name="Files" data="TaskFiles" visibleColumns="icon name size createdoc"/>
       
         &separator;
         <FlowPanel style="&section;" data="TaskUsers">
