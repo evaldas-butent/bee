@@ -153,7 +153,7 @@
             </row>
           </Table>
           <ChildGrid name="RelatedDocuments" relColumn="Project"
-            class="flexible" style="height: 170px;"/>
+            class="flexible" style="height: 400px;"/>
         </FlowPanel>
       </page>
       <page module="Tasks">
