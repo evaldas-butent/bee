@@ -15,7 +15,8 @@
   >
   <f:properties reports="PrintOrderLT, PrintOrderEN, PrintOrderRU" />
 
-  <FlowPanel style="padding: 10px 2px 2px 10px;" class="flexBox-vertical bee-tr-assessment-form">
+  <FlowPanel style="padding: 10px 2px 2px 10px; height:calc(100% - 15px);"
+             class="flexBox-vertical bee-tr-assessment-form">
     <FlowPanel style="height:65%; overflow:auto;">
       <FlowPanel style="&section;">
         <Label for="Status" style="&labelLeft;" />

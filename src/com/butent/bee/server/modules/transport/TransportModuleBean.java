@@ -1,6 +1,7 @@
 package com.butent.bee.server.modules.transport;
 
 import com.google.common.collect.HashMultimap;
+import com.google.common.collect.LinkedListMultimap;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Multimap;
 import com.google.common.collect.Sets;
@@ -90,11 +91,13 @@ import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Objects;
 import java.util.Set;
+import java.util.function.BiConsumer;
 
 import javax.annotation.Resource;
 import javax.ejb.EJB;
@@ -207,6 +210,9 @@ public class TransportModuleBean implements BeeModule, HasTimerService {
           .addFrom(tmp)));
 
       qs.sqlDropTemp(tmp);
+
+    } else if (BeeUtils.same(svc, SVC_GENERATE_ROUTE)) {
+      response = generateTripRoute(BeeUtils.toLong(reqInfo.getParameter(COL_TRIP)));
 
     } else if (BeeUtils.same(svc, SVC_GET_PROFIT)) {
       if (reqInfo.hasParameter(COL_TRIP)) {
@@ -1201,6 +1207,170 @@ public class TransportModuleBean implements BeeModule, HasTimerService {
     return response.addErrorsFrom(qs.updateDataWithResponse(new SqlUpdate(TBL_CARGO_EXPENSES)
         .addConstant(COL_PURCHASE, purchaseId)
         .setWhere(wh)));
+  }
+
+  private ResponseObject generateTripRoute(long tripId) {
+    String idName = SqlUtils.uniqueName();
+
+    SqlSelect query = new SqlSelect()
+        .addField(TBL_CARGO_TRIPS, sys.getIdName(TBL_CARGO_TRIPS), COL_ROUTE_CARGO)
+        .addFields(TBL_CARGO_PLACES, COL_PLACE_DATE, COL_PLACE_COUNTRY, COL_PLACE_CITY)
+        .addFields(TBL_ORDER_CARGO, COL_CARGO_PARTIAL)
+        .addFrom(TBL_CARGO_TRIPS)
+        .addFromInner(TBL_ORDER_CARGO, sys.joinTables(TBL_ORDER_CARGO, TBL_CARGO_TRIPS, COL_CARGO))
+        .setWhere(SqlUtils.and(SqlUtils.equals(TBL_CARGO_TRIPS, COL_TRIP, tripId),
+            SqlUtils.notNull(TBL_CARGO_PLACES, COL_PLACE_DATE)));
+
+    SimpleRowSet rs = qs.getData(query.copyOf()
+        .addFields(TBL_ORDER_CARGO, COL_CARGO_WEIGHT, COL_LOADED_KILOMETERS, COL_EMPTY_KILOMETERS)
+        .addField(TBL_ORDER_CARGO, sys.getIdName(TBL_ORDER_CARGO), idName)
+        .addConstant(0, VAR_UNLOADING)
+        .addFromLeft(TBL_CARGO_PLACES,
+            sys.joinTables(TBL_CARGO_PLACES, TBL_ORDER_CARGO, COL_LOADING_PLACE))
+
+        .addUnion(query.copyOf()
+            .addFields(TBL_ORDER_CARGO, COL_CARGO_WEIGHT, COL_LOADED_KILOMETERS,
+                COL_EMPTY_KILOMETERS)
+            .addField(TBL_ORDER_CARGO, sys.getIdName(TBL_ORDER_CARGO), idName)
+            .addConstant(1, VAR_UNLOADING)
+            .addFromLeft(TBL_CARGO_PLACES,
+                sys.joinTables(TBL_CARGO_PLACES, TBL_ORDER_CARGO, COL_UNLOADING_PLACE)))
+
+        .addUnion(query.copyOf()
+            .addFields(TBL_CARGO_HANDLING, COL_CARGO_WEIGHT, COL_LOADED_KILOMETERS,
+                COL_EMPTY_KILOMETERS)
+            .addExpr(SqlUtils.multiply(
+                SqlUtils.field(TBL_CARGO_HANDLING, sys.getIdName(TBL_CARGO_HANDLING)), -1), idName)
+            .addConstant(0, VAR_UNLOADING)
+            .addFromInner(TBL_CARGO_HANDLING,
+                sys.joinTables(TBL_ORDER_CARGO, TBL_CARGO_HANDLING, COL_CARGO))
+            .addFromLeft(TBL_CARGO_PLACES,
+                sys.joinTables(TBL_CARGO_PLACES, TBL_CARGO_HANDLING, COL_LOADING_PLACE)))
+
+        .addUnion(query.copyOf()
+            .addFields(TBL_CARGO_HANDLING, COL_CARGO_WEIGHT, COL_LOADED_KILOMETERS,
+                COL_EMPTY_KILOMETERS)
+            .addExpr(SqlUtils.multiply(
+                SqlUtils.field(TBL_CARGO_HANDLING, sys.getIdName(TBL_CARGO_HANDLING)), -1), idName)
+            .addConstant(1, VAR_UNLOADING)
+            .addFromInner(TBL_CARGO_HANDLING,
+                sys.joinTables(TBL_ORDER_CARGO, TBL_CARGO_HANDLING, COL_CARGO))
+            .addFromLeft(TBL_CARGO_PLACES,
+                sys.joinTables(TBL_CARGO_PLACES, TBL_CARGO_HANDLING, COL_UNLOADING_PLACE)))
+
+        .addOrder(null, COL_PLACE_DATE, VAR_UNLOADING));
+
+    Long currentId = null;
+    double currentWeight = 0;
+    DateTime currentDate = null;
+    Long currentCountry = null;
+    Long currentCity = null;
+
+    Multimap<Long, Map<String, Object>> data = LinkedListMultimap.create();
+    Map<Long, Map<String, Object>> stack = new LinkedHashMap<>();
+
+    BiConsumer<Map<String, Object>, Collection<Map<String, Object>>> finalizer =
+        new BiConsumer<Map<String, Object>, Collection<Map<String, Object>>>() {
+          @Override
+          public void accept(Map<String, Object> info, Collection<Map<String, Object>> recs) {
+            for (String fld : new String[] {COL_ROUTE_KILOMETERS, COL_EMPTY_KILOMETERS}) {
+              info.put(fld, ((Integer) info.get(fld)).doubleValue() / recs.size());
+            }
+            for (Map<String, Object> rec : recs) {
+              rec.putAll(info);
+            }
+          }
+        };
+    for (SimpleRow row : rs) {
+      boolean unloading = BeeUtils.unbox(row.getBoolean(VAR_UNLOADING));
+
+      if (unloading && currentId == null) {
+        continue;
+      }
+      double weight = BeeUtils.unbox(row.getDouble(COL_CARGO_WEIGHT));
+      long id = row.getLong(idName);
+      DateTime date = row.getDateTime(COL_PLACE_DATE);
+      Long country = row.getLong(COL_PLACE_COUNTRY);
+      Long city = row.getLong(COL_PLACE_CITY);
+
+      if (currentId != null && TimeUtils.isMore(date, currentDate)) {
+        Map<String, Object> rec = new HashMap<>();
+        data.put(currentId, rec);
+
+        rec.put(COL_ROUTE_DEPARTURE_DATE, currentDate);
+        rec.put(COL_ROUTE_DEPARTURE_COUNTRY, currentCountry);
+        rec.put(COL_ROUTE_DEPARTURE_CITY, currentCity);
+        rec.put(COL_ROUTE_WEIGHT, currentWeight);
+        rec.put(COL_ROUTE_ARRIVAL_DATE, date);
+        rec.put(COL_ROUTE_ARRIVAL_COUNTRY, country);
+        rec.put(COL_ROUTE_ARRIVAL_CITY, city);
+      }
+      currentDate = date;
+      currentCountry = country;
+      currentCity = city;
+
+      if (unloading) {
+        Map<String, Object> info = stack.remove(id);
+
+        if (info != null && data.containsKey(id)) {
+          finalizer.accept(info, data.get(id));
+
+          if (stack.isEmpty()) {
+            currentId = null;
+          } else {
+            currentId = (long) stack.keySet().toArray()[stack.size() - 1];
+          }
+        }
+        currentWeight -= weight;
+      } else {
+        int emptyKm = BeeUtils.unbox(row.getInt(COL_EMPTY_KILOMETERS));
+
+        Map<String, Object> info = new HashMap<>();
+        info.put(COL_ROUTE_CARGO,
+            currentId == null || !BeeUtils.unbox(row.getBoolean(COL_CARGO_PARTIAL))
+                ? row.getLong(COL_ROUTE_CARGO) : stack.get(currentId).get(COL_ROUTE_CARGO));
+        info.put(COL_ROUTE_KILOMETERS, BeeUtils.unbox(row.getInt(COL_LOADED_KILOMETERS)) + emptyKm);
+        info.put(COL_EMPTY_KILOMETERS, emptyKm);
+
+        stack.put(id, info);
+        currentId = id;
+        currentWeight += weight;
+      }
+    }
+    // closing unclosed routes
+    for (Long id : stack.keySet()) {
+      Map<String, Object> rec = new HashMap<>();
+      data.put(id, rec);
+
+      rec.put(COL_ROUTE_DEPARTURE_DATE, currentDate);
+      rec.put(COL_ROUTE_DEPARTURE_COUNTRY, currentCountry);
+      rec.put(COL_ROUTE_DEPARTURE_CITY, currentCity);
+      rec.put(COL_ROUTE_WEIGHT, currentWeight);
+
+      finalizer.accept(stack.get(id), data.get(id));
+    }
+    if (data.isEmpty()) {
+      return ResponseObject.warning(Localized.getConstants().noData());
+    }
+    qs.updateData(new SqlDelete(TBL_TRIP_ROUTES)
+        .setWhere(SqlUtils.equals(TBL_TRIP_ROUTES, COL_TRIP, tripId)));
+
+    for (Map<String, Object> rec : data.values()) {
+      SqlInsert insert = new SqlInsert(TBL_TRIP_ROUTES)
+          .addConstant(COL_TRIP, tripId);
+
+      for (Entry<String, Object> entry : rec.entrySet()) {
+        insert.addConstant(entry.getKey(), entry.getValue());
+
+        if (Objects.equals(entry.getKey(), COL_ROUTE_DEPARTURE_DATE)) {
+          insert.addConstant(COL_ROUTE_SEASON,
+              BeeUtils.betweenInclusive(((DateTime) entry.getValue()).getMonth(), 4, 10)
+                  ? FuelSeason.SUMMER.ordinal() : FuelSeason.WINTER.ordinal());
+        }
+      }
+      qs.insertData(insert);
+    }
+    return ResponseObject.emptyResponse();
   }
 
   private ResponseObject getAssessmentQuantityReport(RequestInfo reqInfo) {

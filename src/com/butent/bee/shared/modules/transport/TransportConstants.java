@@ -469,6 +469,7 @@ public final class TransportConstants {
   public static final String COL_ROUTE_ARRIVAL_COUNTRY = "ArrivalCountry";
   public static final String COL_ROUTE_ARRIVAL_CITY = "ArrivalCity";
   public static final String COL_ROUTE_KILOMETERS = "Kilometers";
+  public static final String COL_ROUTE_WEIGHT = "CargoWeight";
   public static final String COL_ROUTE_SEASON = "Season";
 
   public static final String COL_LOADED_KILOMETERS = "LoadedKilometers";

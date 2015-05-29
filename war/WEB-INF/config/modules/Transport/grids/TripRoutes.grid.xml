@@ -31,13 +31,13 @@
     <RelColumn name="ArrivalCity" caption="=trArrivalCity" />
 
     <DataColumn name="SpeedometerFrom" caption="=trSpeedometerFromShort" format="#.0" minValue="0"
-                updateMode="row">
+                updateMode="row" visible="false">
       <carry>
         <ui:expression>row.SpeedometerTo</ui:expression>
       </carry>
     </DataColumn>
     <DataColumn name="SpeedometerTo" caption="=trSpeedometerToShort" format="#.0" minValue="0"
-                updateMode="row" />
+                updateMode="row" visible="false" />
     <DataColumn name="Kilometers" caption="=kilometersShort" format="#.0" minValue="0"
                 updateMode="row">
       <style>
