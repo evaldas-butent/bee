@@ -7,22 +7,40 @@
         xmlns:f="http://www.butent.com/form"
         xmlns:xi="http://www.w3.org/2001/XInclude"
 
-        name="OrderCargo" viewName="OrderCargo" caption="=cargo"
+        name="OrderCargo" viewName="OrderCargo" caption="=cargo" showRowId="true"
         width="900" height="870"
     >
   <FlowPanel class="flexBox-vertical">
-    <FlowPanel class="flexBox-horizontal" style="margin:5px; min-height:20px;">
-      <InlineLabel text="=cargo" class="bee-hasDefaults bee-required" />
-      <InputArea source="Description" visibleLines="1" class="flexible"
-                 style="font-weight: bold; color: blue; display:inline-block; " />
-      <HorizontalPanel>
-        <InlineLabel text="=trTransportationPrice" style="padding-top:1px;" />
-        <DecimalLabel name="Amount" style="padding-top:1px; font-weight:bold; color:green;" />
+    <Table cellStyle="padding-top: 3px; padding-bottom: 3px;">
+      <row>
+        <cell kind="label">
+          <Label for="Description" />
+        </cell>
+        <cell colSpan="3">
+          <InputArea source="Description" visibleLines="1" class="flexible"
+                     style="font-weight: bold; color: blue; width: 100%;" />
+        </cell>
+        <cell style="padding-left: 10px; padding-right: 10px;">
+          <Label text="=trTransportationPrice" />
+        </cell>
+        <cell style="padding-right: 10px;">
+          <DecimalLabel name="Amount" style="font-weight: bold; color: green;" />
+        </cell>
         <DataSelector name="Currency" source="Currency" editEnabled="false"
-                      placeholder="=currencyShort"
-                      style="width:5em; font-weight:bold; display:inline-block;" />
-      </HorizontalPanel>
-    </FlowPanel>
+                      placeholder="=currencyShort" style="width: 5em; font-weight: bold;" />
+      </row>
+      <row>
+        <cell kind="label">
+          <Label for="CargoType" class="bee-required" />
+        </cell>
+        <DataSelector name="CargoType" required="true" />
+        <cell kind="label">
+          <Label for="CargoGroup" />
+        </cell>
+        <DataSelector name="CargoGroup" />
+      </row>
+    </Table>
+
     <TabbedPages class="flexible" resizable="false">
       <page>
         <text>=cargoInformation</text>

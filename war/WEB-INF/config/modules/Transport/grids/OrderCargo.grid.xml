@@ -10,6 +10,7 @@
   <g:body height="50" />
 
   <g:columns>
+    <IdColumn name="ID" width="50" />
     <DataColumn name="Description" maxWidth="300" caption="=cargo" />
     <CalcColumn name="Loading" type="string" cellType="html" caption="=loading" />
     <CalcColumn name="Unloading" type="string" cellType="html" caption="=unloading" />

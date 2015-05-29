@@ -13,8 +13,9 @@
     <RelColumn name="Customer" caption="=customer" />
     <RelColumn name="Manager" caption="=manager" />
 
-    <RelColumn name="Cargo" viewName="OrderCargo" renderColumns="Description" caption="=cargo"
-      label="=cargo" maxWidth="200" editEnabled="true" filterSupplier="value" />
+    <RelColumn name="Cargo" viewName="OrderCargo" renderColumns="Cargo" label="=captionId"
+      editEnabled="true" filterSupplier="value" horizontalAlignment="right" />
+    <DataColumn name="Description" maxWidth="200" />
 
     <CalcColumn name="Loading" type="string" cellType="html" caption="=loading" 
       searchBy="LoadingNumber LoadingContact LoadingAddress 
