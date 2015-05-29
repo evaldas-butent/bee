@@ -143,7 +143,7 @@ class ProjectForm extends AbstractFormInterceptor implements DataChangeEvent.Han
     if (widget instanceof Disclosure && BeeUtils.same(name, WIDGET_RELATED_INFO)) {
       relatedInfo = (Disclosure) widget;
     }
-    
+
     if (widget instanceof ChildGrid && BeeUtils.same(name, WIDGET_RELATED_DOCUMENTS)) {
       documents = (ChildGrid) widget;
     }
@@ -202,10 +202,10 @@ class ProjectForm extends AbstractFormInterceptor implements DataChangeEvent.Han
       }
     }
 
-    if(isProjectUser(form, row) || BeeKeeper.getUser().isMenuVisible("Projects.AllProjects")) {
+    if (isProjectUser(form, row) || BeeKeeper.getUser().isMenuVisible("Projects.AllProjects")) {
       documents.setEnabled(true);
     }
-    
+
     lockedValidations.clear();
     auditSilentFields.clear();
     EventUtils.clearRegistry(reasonRegistry);
