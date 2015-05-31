@@ -109,8 +109,8 @@
 
           <Table>
             <row>
-              <Label html="CMR" horizontalAlignment="right" style="&lbl1;" />
-              <InputText source="Cmr" />
+              <Label html="CMR" horizontalAlignment="right" style="&lbl1;" module="Documents" />
+              <DataSelector source="Cmr" caching="none" newRowEnabled="false" module="Documents" />
               <Label text="=cargoValue" horizontalAlignment="right" style="&lbl1;" />
               <FlowPanel>
                 <InputMoney source="Value" style="width:70px" />

@@ -800,6 +800,8 @@ public final class TransportConstants {
   public static final String ALS_REQUEST_CUSTOMER_LAST_NAME = "CustomerLastName";
   public static final String ALS_REQUEST_CUSTOMER_COMPANY = "CustomerCompany";
 
+  public static final String ALS_CARGO_CMR_NUMBER = "CmrNumber";
+
   public static final String DATA_TYPE_ORDER_CARGO = "OrderCargo";
   public static final String DATA_TYPE_TRIP = "Trip";
   public static final String DATA_TYPE_FREIGHT = "Freight";

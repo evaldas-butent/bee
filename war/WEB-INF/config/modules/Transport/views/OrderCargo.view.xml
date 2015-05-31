@@ -81,6 +81,11 @@
 
     <SimpleColumn name="Number" />
     <SimpleColumn name="Cmr" />
+    <SimpleJoin name="Cmr" joinType="LEFT">
+      <SimpleColumn name="Name" alias="CmrName"/>
+      <SimpleColumn name="Number" alias="CmrNumber"/>
+    </SimpleJoin>
+
     <SimpleColumn name="LoadedKilometers" />
     <SimpleColumn name="EmptyKilometers" />
 

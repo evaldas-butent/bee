@@ -77,7 +77,7 @@
         </cell>
         <cell rowSpan="2">
           <Label text="CMR Nr.">
-            <properties name="Cmr" />
+            <properties name="CmrNumber" />
           </Label>
         </cell>
         <Label text="Pakrovimas">

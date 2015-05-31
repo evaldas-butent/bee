@@ -209,7 +209,7 @@ class TripCargoGrid extends AbstractGridInterceptor implements ClickHandler {
 
       for (String fld : new String[] {COL_DESCRIPTION, "Loading", "Unloading",
           "Weight", "Volume", "Quantity", "Partial", "Outsized", "Dangerous", "Number",
-          "ShippingTermName", "Cmr", "LDM", "Length", "Width", "Height", "Palettes",
+          "ShippingTermName", "CmrNumber", "LDM", "Length", "Width", "Height", "Palettes",
           "ExchangeOfPalettes", COL_CARGO_DIRECTIONS}) {
 
         String lbl;

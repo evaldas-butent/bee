@@ -31,7 +31,7 @@
     <DataColumn name="Volume" caption="=volume" />
     <DataColumn name="Quantity" caption="=quantity" />
     <DataColumn name="Number" caption="=cargoNumber" />
-    <DataColumn name="Cmr" caption="CMR" />
+    <DataColumn name="Cmr" caption="CMR" renderColumns="CmrName CmrNumber" />
     <DataColumn name="Notes" caption="=notes" whiteSpace="pre-wrap" />
     <DataColumn name="CargoPercent" caption="%" minValue="0" maxValue="100" />
     <PropColumn name="Income" type="decimal" caption="=income" format="#.00">

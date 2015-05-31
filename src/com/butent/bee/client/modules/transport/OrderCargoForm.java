@@ -37,6 +37,7 @@ import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.IsColumn;
 import com.butent.bee.shared.data.IsRow;
 import com.butent.bee.shared.data.filter.Filter;
+import com.butent.bee.shared.modules.documents.DocumentConstants;
 import com.butent.bee.shared.utils.BeeUtils;
 
 import java.util.List;
@@ -122,6 +123,21 @@ class OrderCargoForm extends AbstractFormInterceptor {
     refreshMetrics(BeeUtils.unbox(row.getBoolean(form.getDataIndex("Partial")))
         || BeeUtils.unbox(row.getBoolean(form.getDataIndex("Outsized"))));
     refreshKilometers(row, null, null);
+
+    Widget cmrWidget = form.getWidgetBySource(COL_CARGO_CMR);
+    if (cmrWidget instanceof DataSelector) {
+      Filter filter;
+
+      if (DataUtils.hasId(row)) {
+        filter = Filter.in(Data.getIdColumn(DocumentConstants.VIEW_DOCUMENTS),
+            DocumentConstants.VIEW_RELATED_DOCUMENTS, DocumentConstants.COL_DOCUMENT,
+            Filter.equals(COL_CARGO, row.getId()));
+      } else {
+        filter = Filter.isFalse();
+      }
+
+      ((DataSelector) cmrWidget).setAdditionalFilter(filter);
+    }
   }
 
   @Override
