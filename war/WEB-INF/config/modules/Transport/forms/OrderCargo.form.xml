@@ -20,7 +20,7 @@
           <InputArea source="Description" visibleLines="1" class="flexible"
                      style="font-weight: bold; color: blue; width: 100%;" />
         </cell>
-        <cell style="padding-left: 10px; padding-right: 10px;">
+        <cell style="padding-left: 10px; padding-right: 10px; text-align: right;">
           <Label text="=trTransportationPrice" />
         </cell>
         <cell style="padding-right: 10px;">
@@ -33,11 +33,21 @@
         <cell kind="label">
           <Label for="CargoType" class="bee-required" />
         </cell>
-        <DataSelector name="CargoType" required="true" />
+        <DataSelector source="CargoType" required="true" />
         <cell kind="label">
           <Label for="CargoGroup" />
         </cell>
-        <DataSelector name="CargoGroup" />
+        <DataSelector source="CargoGroup" />
+        <cell style="padding-left: 10px; padding-right: 10px; text-align: right;">
+          <Label text="=trLoadedKilometersTotal" />
+        </cell>
+        <cell style="padding-right: 10px;">
+          <IntegerLabel name="TotalLoaded" style="font-weight: bold;" />
+        </cell>
+        <cell style="padding-right: 10px; text-align: right;">
+          <Label text="=trEmptyKilometersTotal" />
+        </cell>
+        <IntegerLabel name="TotalEmpty" style="font-weight: bold;" />
       </row>
     </Table>
 

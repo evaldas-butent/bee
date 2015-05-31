@@ -8,9 +8,10 @@
     >
   <FlowPanel style="text-align:center;">
     <Label for="LoadedKilometers" style="&inline;" />
-    <InputInteger source="LoadedKilometers" style="&inline; width:70px; margin-left:5px;" />
+    <InputInteger name="LoadedKilometers" source="LoadedKilometers"
+                  style="&inline; width:70px; margin-left:5px;" />
     <Label for="EmptyKilometers" style="&inline; margin-left:20px;" />
-    <InputInteger source="EmptyKilometers"
+    <InputInteger name="EmptyKilometers" source="EmptyKilometers"
                   style="&inline; width:70px; margin-left:5px; margin-right:20px;" />
     <Label text="=trWeightInTons" style="&inline;" />
     <InputDecimal source="Weight" format="0.000"

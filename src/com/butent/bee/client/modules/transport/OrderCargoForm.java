@@ -14,24 +14,32 @@ import com.butent.bee.client.communication.ParameterList;
 import com.butent.bee.client.communication.ResponseCallback;
 import com.butent.bee.client.composite.DataSelector;
 import com.butent.bee.client.data.Data;
+import com.butent.bee.client.event.logical.MutationEvent;
+import com.butent.bee.client.event.logical.ReadyEvent;
 import com.butent.bee.client.grid.ChildGrid;
 import com.butent.bee.client.modules.transport.TransportHandler.Profit;
 import com.butent.bee.client.ui.FormFactory.WidgetDescriptionCallback;
 import com.butent.bee.client.ui.IdentifiableWidget;
 import com.butent.bee.client.view.HeaderView;
+import com.butent.bee.client.view.ViewHelper;
+import com.butent.bee.client.view.edit.EditEndEvent;
 import com.butent.bee.client.view.edit.EditStopEvent;
 import com.butent.bee.client.view.form.FormView;
 import com.butent.bee.client.view.form.interceptor.AbstractFormInterceptor;
 import com.butent.bee.client.view.form.interceptor.FormInterceptor;
+import com.butent.bee.client.view.grid.GridView;
 import com.butent.bee.client.view.grid.interceptor.AbstractGridInterceptor;
 import com.butent.bee.client.view.grid.interceptor.GridInterceptor;
 import com.butent.bee.client.widget.InputBoolean;
+import com.butent.bee.client.widget.IntegerLabel;
 import com.butent.bee.shared.communication.ResponseObject;
 import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.IsColumn;
 import com.butent.bee.shared.data.IsRow;
 import com.butent.bee.shared.data.filter.Filter;
 import com.butent.bee.shared.utils.BeeUtils;
+
+import java.util.List;
 
 class OrderCargoForm extends AbstractFormInterceptor {
 
@@ -50,6 +58,7 @@ class OrderCargoForm extends AbstractFormInterceptor {
           }
         }
       });
+
     } else if (widget instanceof ChildGrid && BeeUtils.same(name, TBL_CARGO_INCOMES)) {
       final String viewName = getViewName();
 
@@ -78,6 +87,24 @@ class OrderCargoForm extends AbstractFormInterceptor {
           return null;
         }
       });
+
+    } else if (widget instanceof ChildGrid && VIEW_CARGO_HANDLING.equals(name)) {
+      ((ChildGrid) widget).addReadyHandler(new ReadyEvent.Handler() {
+        @Override
+        public void onReady(ReadyEvent re) {
+          GridView gridView = ViewHelper.getChildGrid(getFormView(), VIEW_CARGO_HANDLING);
+
+          if (gridView != null) {
+            gridView.getGrid().addMutationHandler(new MutationEvent.Handler() {
+              @Override
+              public void onMutation(MutationEvent mu) {
+                refreshKilometers(getActiveRow(), null, null);
+              }
+            });
+          }
+        }
+      });
+
     } else if (widget instanceof InputBoolean
         && (BeeUtils.inListSame(name, "Partial", "Outsized"))) {
       ((InputBoolean) widget).addValueChangeHandler(new ValueChangeHandler<String>() {
@@ -94,11 +121,21 @@ class OrderCargoForm extends AbstractFormInterceptor {
     refresh(row.getLong(form.getDataIndex(COL_CURRENCY)));
     refreshMetrics(BeeUtils.unbox(row.getBoolean(form.getDataIndex("Partial")))
         || BeeUtils.unbox(row.getBoolean(form.getDataIndex("Outsized"))));
+    refreshKilometers(row, null, null);
   }
 
   @Override
   public FormInterceptor getInstance() {
     return new OrderCargoForm();
+  }
+
+  @Override
+  public void onEditEnd(EditEndEvent event, Object source) {
+    String colId = event.getColumn().getId();
+    if ((COL_EMPTY_KILOMETERS.equals(colId) || COL_LOADED_KILOMETERS.equals(colId))
+        && event.valueChanged()) {
+      refreshKilometers(getActiveRow(), colId, BeeUtils.toIntOrNull(event.getNewValue()));
+    }
   }
 
   @Override
@@ -167,6 +204,57 @@ class OrderCargoForm extends AbstractFormInterceptor {
           widget.getElement().setInnerText(response.getResponseAsString());
         }
       });
+    }
+  }
+
+  private void refreshKilometers(IsRow row, String colId, Integer km) {
+    if (row == null) {
+      return;
+    }
+
+    Integer emptyKm = COL_EMPTY_KILOMETERS.equals(colId)
+        ? km : getIntegerValue(COL_EMPTY_KILOMETERS);
+    Integer loadedKm = COL_LOADED_KILOMETERS.equals(colId)
+        ? km : getIntegerValue(COL_LOADED_KILOMETERS);
+
+    if (DataUtils.hasId(row)) {
+      GridView grid = ViewHelper.getChildGrid(getFormView(), VIEW_CARGO_HANDLING);
+
+      if (grid != null && !grid.isEmpty()) {
+        List<? extends IsRow> childRows = grid.getRowData();
+        int emptyKmIndex = grid.getDataIndex(COL_EMPTY_KILOMETERS);
+        int loadedKmIndex = grid.getDataIndex(COL_LOADED_KILOMETERS);
+
+        for (IsRow childRow : childRows) {
+          Integer v = childRow.getInteger(emptyKmIndex);
+          if (v != null) {
+            if (emptyKm == null) {
+              emptyKm = v;
+            } else {
+              emptyKm += v;
+            }
+          }
+
+          v = childRow.getInteger(loadedKmIndex);
+          if (v != null) {
+            if (loadedKm == null) {
+              loadedKm = v;
+            } else {
+              loadedKm += v;
+            }
+          }
+        }
+      }
+    }
+
+    Widget widget = getFormView().getWidgetByName("TotalEmpty");
+    if (widget instanceof IntegerLabel) {
+      ((IntegerLabel) widget).setValue(emptyKm);
+    }
+
+    widget = getFormView().getWidgetByName("TotalLoaded");
+    if (widget instanceof IntegerLabel) {
+      ((IntegerLabel) widget).setValue(loadedKm);
     }
   }
 

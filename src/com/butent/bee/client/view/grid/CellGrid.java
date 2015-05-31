@@ -39,6 +39,7 @@ import com.butent.bee.client.event.EventUtils;
 import com.butent.bee.client.event.Modifiers;
 import com.butent.bee.client.event.logical.ActiveRowChangeEvent;
 import com.butent.bee.client.event.logical.DataRequestEvent;
+import com.butent.bee.client.event.logical.MutationEvent;
 import com.butent.bee.client.event.logical.RenderingEvent;
 import com.butent.bee.client.event.logical.RowCountChangeEvent;
 import com.butent.bee.client.event.logical.ScopeChangeEvent;
@@ -107,7 +108,7 @@ import java.util.Set;
 public class CellGrid extends Widget implements IdentifiableWidget, HasDataTable, HasCaption,
     HasEditStartHandlers, EnablableWidget, HasActiveRow, RequiresResize,
     VisibilityChangeEvent.Handler, SettingsChangeEvent.HasSettingsChangeHandlers,
-    RenderingEvent.HasRenderingHandlers {
+    RenderingEvent.HasRenderingHandlers, MutationEvent.HasMutationHandlers {
 
   /**
    * Contains templates which facilitates compile-time binding of HTML templates to generate
@@ -1082,6 +1083,11 @@ public class CellGrid extends Widget implements IdentifiableWidget, HasDataTable
   }
 
   @Override
+  public HandlerRegistration addMutationHandler(MutationEvent.Handler handler) {
+    return addHandler(handler, MutationEvent.getType());
+  }
+
+  @Override
   public HandlerRegistration addRenderingHandler(RenderingEvent.Handler handler) {
     return addHandler(handler, RenderingEvent.getType());
   }
@@ -1901,6 +1907,8 @@ public class CellGrid extends Widget implements IdentifiableWidget, HasDataTable
     if (checkZindex && col != null) {
       bringToFront(row, col);
     }
+
+    MutationEvent.fire(this);
   }
 
   @Override
@@ -1970,6 +1978,8 @@ public class CellGrid extends Widget implements IdentifiableWidget, HasDataTable
       bringToFront(row, getActiveColumnIndex());
     }
 
+    MutationEvent.fire(this);
+
     logger.info("grid updated row:", rowId, TimeUtils.toTimeString(version));
   }
 
@@ -1994,33 +2004,32 @@ public class CellGrid extends Widget implements IdentifiableWidget, HasDataTable
 
   public void preliminaryUpdate(long rowId, String source, String value) {
     int row = getRowIndex(rowId);
-    if (!isRowWithinBounds(row)) {
-      return;
-    }
 
-    List<Integer> colIndexes = getColumnIndexBySourceName(source);
-    for (int col : colIndexes) {
-      Element cellElement = getCellElement(row, col);
-      if (cellElement == null) {
-        continue;
+    if (isRowWithinBounds(row)) {
+      List<Integer> colIndexes = getColumnIndexBySourceName(source);
+
+      for (int col : colIndexes) {
+        Element cellElement = getCellElement(row, col);
+
+        if (cellElement != null) {
+          if (BeeUtils.isEmpty(value)) {
+            cellElement.setInnerHTML(BeeConst.STRING_EMPTY);
+          } else {
+
+            IsRow rowValue = DataUtils.cloneRow(getDataItem(row));
+            getColumnInfo(col).getSource().set(rowValue, value);
+
+            AbstractColumn<?> column = getColumn(col);
+
+            SafeHtmlBuilder cellBuilder = new SafeHtmlBuilder();
+            CellContext context = new CellContext(this, rowValue, col);
+            column.render(context, cellBuilder);
+            SafeHtml cellHtml = cellBuilder.toSafeHtml();
+
+            cellElement.setInnerHTML(cellHtml.asString());
+          }
+        }
       }
-
-      if (BeeUtils.isEmpty(value)) {
-        cellElement.setInnerHTML(BeeConst.STRING_EMPTY);
-        continue;
-      }
-
-      IsRow rowValue = DataUtils.cloneRow(getDataItem(row));
-      getColumnInfo(col).getSource().set(rowValue, value);
-
-      AbstractColumn<?> column = getColumn(col);
-
-      SafeHtmlBuilder cellBuilder = new SafeHtmlBuilder();
-      CellContext context = new CellContext(this, rowValue, col);
-      column.render(context, cellBuilder);
-      SafeHtml cellHtml = cellBuilder.toSafeHtml();
-
-      cellElement.setInnerHTML(cellHtml.asString());
     }
   }
 
@@ -2091,6 +2100,8 @@ public class CellGrid extends Widget implements IdentifiableWidget, HasDataTable
         updateCellContent(row, col);
       }
     }
+
+    MutationEvent.fire(this);
 
     return colIndexes.size();
   }
@@ -3913,6 +3924,7 @@ public class CellGrid extends Widget implements IdentifiableWidget, HasDataTable
     setZIndex(0);
 
     RenderingEvent.fireAfter(this);
+    MutationEvent.fire(this);
 
     rowChangeScheduler.scheduleEvent();
 
