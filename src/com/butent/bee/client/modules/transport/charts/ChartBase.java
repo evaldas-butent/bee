@@ -574,6 +574,7 @@ public abstract class ChartBase extends TimeBoard {
     widget.addStyleName(STYLE_SHIPMENT_DAY_WIDGET);
 
     String flag = showCountryFlags() ? Places.getCountryFlag(countryId) : null;
+    String countryLabel = Places.getCountryLabel(countryId);
 
     if (!BeeUtils.isEmpty(flag)) {
       widget.addStyleName(STYLE_SHIPMENT_DAY_FLAG);
@@ -584,11 +585,8 @@ public abstract class ChartBase extends TimeBoard {
       if (showPlaceInfo()) {
         List<String> info = new ArrayList<>();
 
-        if (BeeUtils.isEmpty(flag) && DataUtils.isId(countryId)) {
-          String countryLabel = Places.getCountryLabel(countryId);
-          if (!BeeUtils.isEmpty(countryLabel)) {
-            info.add(countryLabel);
-          }
+        if (BeeUtils.isEmpty(flag) && !BeeUtils.isEmpty(countryLabel)) {
+          info.add(countryLabel);
         }
 
         for (CargoEvent event : events) {
@@ -608,7 +606,6 @@ public abstract class ChartBase extends TimeBoard {
               info.add(cityLabel);
             }
           }
-
         }
 
         if (!info.isEmpty()) {
@@ -617,9 +614,8 @@ public abstract class ChartBase extends TimeBoard {
 
           widget.add(label);
         }
-      }
 
-      if (showPlaceCities()) {
+      } else if (showPlaceCities()) {
         List<String> info = new ArrayList<>();
 
         for (CargoEvent event : events) {
@@ -645,6 +641,11 @@ public abstract class ChartBase extends TimeBoard {
           if (!BeeUtils.isEmpty(codeLabel) && !BeeUtils.containsSame(info, codeLabel)) {
             info.add(codeLabel);
           }
+        }
+
+        if (!info.isEmpty() && !BeeUtils.isEmpty(countryLabel)
+            && BeeUtils.filterContext(info, countryLabel).isEmpty()) {
+          info.add(0, countryLabel);
         }
 
         if (!info.isEmpty()) {
