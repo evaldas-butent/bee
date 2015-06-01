@@ -41,7 +41,7 @@
         <Table>
           <row>
             <Label for="Owner" text="=prjManager" style=" &lbl;" class="bee-required" />
-            <DataSelector source="Owner" style="&inp2;" />
+            <DataSelector source="Owner" name="Owner" style="&inp2;" />
             <Label for="Priority" text="=priority" style="width: 120px; &lbl;" />
             <Radio source="Priority" style="width: 200px" />
           </row>

@@ -82,6 +82,7 @@ class ProjectForm extends AbstractFormInterceptor implements DataChangeEvent.Han
   private static final String WIDGET_STATUS = "Status";
   private static final String WIDGET_RELATED_INFO = "RelatedInfo";
   private static final String WIDGET_RELATED_DOCUMENTS = "RelatedDocuments";
+  private static final String WIDGET_OWNER = "Owner";
 
   private static final Set<String> AUDIT_FIELDS = Sets.newHashSet(COL_PROJECT_START_DATE,
       COL_PROJECT_END_DATE, COL_COMAPNY, COL_PROJECT_STATUS, COL_PROJECT_OWNER,
@@ -104,6 +105,7 @@ class ProjectForm extends AbstractFormInterceptor implements DataChangeEvent.Han
   private ListBox status;
   private Disclosure relatedInfo;
   private ChildGrid documents;
+  private DataSelector owner;
 
   private BeeRowSet timeUnits;
 
@@ -146,6 +148,10 @@ class ProjectForm extends AbstractFormInterceptor implements DataChangeEvent.Han
 
     if (widget instanceof ChildGrid && BeeUtils.same(name, WIDGET_RELATED_DOCUMENTS)) {
       documents = (ChildGrid) widget;
+    }
+
+    if (widget instanceof DataSelector && BeeUtils.same(name, WIDGET_OWNER)) {
+      owner = (DataSelector) widget;
     }
   }
 
@@ -206,10 +212,16 @@ class ProjectForm extends AbstractFormInterceptor implements DataChangeEvent.Han
       documents.setEnabled(true);
     }
 
+    if (BeeKeeper.getUser().isAdministrator()) {
+      owner.setEnabled(true);
+    }
+
     lockedValidations.clear();
     auditSilentFields.clear();
     EventUtils.clearRegistry(reasonRegistry);
-    if (!isProjectScheduled(form, row) && form.isEnabled() && DataUtils.isId(row.getId())) {
+    if (!isProjectScheduled(form, row)
+        && (form.isEnabled() || BeeKeeper.getUser().isAdministrator())
+        && DataUtils.isId(row.getId())) {
       setFormAuditValidation(form, row);
     } else if (isProjectApproved(form, row)) {
       setFormAuditValidation(form, row);
