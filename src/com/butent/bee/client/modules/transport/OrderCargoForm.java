@@ -10,10 +10,13 @@ import static com.butent.bee.shared.modules.trade.TradeConstants.*;
 import static com.butent.bee.shared.modules.transport.TransportConstants.*;
 
 import com.butent.bee.client.BeeKeeper;
+import com.butent.bee.client.Global;
 import com.butent.bee.client.communication.ParameterList;
 import com.butent.bee.client.communication.ResponseCallback;
 import com.butent.bee.client.composite.DataSelector;
 import com.butent.bee.client.data.Data;
+import com.butent.bee.client.data.Queries;
+import com.butent.bee.client.data.RowCallback;
 import com.butent.bee.client.event.logical.MutationEvent;
 import com.butent.bee.client.event.logical.ReadyEvent;
 import com.butent.bee.client.grid.ChildGrid;
@@ -32,10 +35,13 @@ import com.butent.bee.client.view.grid.interceptor.AbstractGridInterceptor;
 import com.butent.bee.client.view.grid.interceptor.GridInterceptor;
 import com.butent.bee.client.widget.InputBoolean;
 import com.butent.bee.client.widget.IntegerLabel;
+import com.butent.bee.shared.Consumer;
 import com.butent.bee.shared.communication.ResponseObject;
+import com.butent.bee.shared.data.BeeRow;
 import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.IsColumn;
 import com.butent.bee.shared.data.IsRow;
+import com.butent.bee.shared.data.RelationUtils;
 import com.butent.bee.shared.data.filter.Filter;
 import com.butent.bee.shared.modules.documents.DocumentConstants;
 import com.butent.bee.shared.utils.BeeUtils;
@@ -43,6 +49,36 @@ import com.butent.bee.shared.utils.BeeUtils;
 import java.util.List;
 
 class OrderCargoForm extends AbstractFormInterceptor {
+
+  static void preload(final ScheduledCommand command) {
+    Global.getParameter(PRM_CARGO_TYPE, new Consumer<String>() {
+      @Override
+      public void accept(String input) {
+        if (DataUtils.isId(input)) {
+          Queries.getRow(VIEW_CARGO_TYPES, BeeUtils.toLong(input), new RowCallback() {
+            @Override
+            public void onFailure(String... reason) {
+              super.onFailure(reason);
+              defaultCargoType = null;
+              command.execute();
+            }
+
+            @Override
+            public void onSuccess(BeeRow result) {
+              defaultCargoType = result;
+              command.execute();
+            }
+          });
+
+        } else {
+          defaultCargoType = null;
+          command.execute();
+        }
+      }
+    });
+  }
+
+  private static IsRow defaultCargoType;
 
   @Override
   public void afterCreateWidget(String name, IdentifiableWidget widget,
@@ -170,6 +206,11 @@ class OrderCargoForm extends AbstractFormInterceptor {
   @Override
   public void onStartNewRow(FormView form, IsRow oldRow, IsRow newRow) {
     form.getViewPresenter().getHeader().clearCommandPanel();
+
+    if (defaultCargoType != null) {
+      RelationUtils.updateRow(Data.getDataInfo(form.getViewName()), COL_CARGO_TYPE, newRow,
+          Data.getDataInfo(VIEW_CARGO_TYPES), defaultCargoType, true);
+    }
   }
 
   private static int getCheckCount(FormView form) {

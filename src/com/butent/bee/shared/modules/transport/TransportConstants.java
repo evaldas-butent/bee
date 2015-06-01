@@ -254,6 +254,7 @@ public final class TransportConstants {
   public static final String PRM_ERP_REFRESH_INTERVAL = "ERPRefreshIntervalInMinutes";
   public static final String PRM_MESSAGE_TEMPLATE = "MessageTemplate";
   public static final String PRM_INVOICE_PREFIX = "InvoicePrefix";
+  public static final String PRM_CARGO_TYPE = "CargoType";
 
   public static final String VAR_INCOME = "Income";
   public static final String VAR_EXPENSE = "Expense";
@@ -291,6 +292,8 @@ public final class TransportConstants {
   public static final String TBL_CARGO_EXPENSES = "CargoExpenses";
   public static final String TBL_CARGO_EXPENSES_USAGE = "CargoExpensesUsage";
   public static final String TBL_CARGO_HANDLING = "CargoHandling";
+  public static final String TBL_CARGO_TYPES = "CargoTypes";
+
   public static final String TBL_SERVICES = "Services";
 
   public static final String TBL_ASSESSMENTS = "Assessments";
@@ -409,6 +412,7 @@ public final class TransportConstants {
   public static final String COL_CARGO_PALETTES = "Palettes";
   public static final String COL_CARGO_VALUE = "Value";
   public static final String COL_CARGO_VALUE_CURRENCY = "ValueCurrency";
+  public static final String COL_CARGO_TYPE = "CargoType";
 
   public static final String COL_CARGO_HANDLING_NOTES = "Notes";
 
@@ -709,6 +713,7 @@ public final class TransportConstants {
 
   public static final String COL_CRF_REQUEST = "CargoRequest";
 
+  public static final String COL_CARGO_TYPE_NAME = "CargoTypeName";
   public static final String COL_CARGO_TYPE_COLOR = "Color";
 
   public static final String FORM_NEW_VEHICLE = "NewVehicle";
