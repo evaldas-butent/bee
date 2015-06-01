@@ -1252,9 +1252,6 @@ public class TradeActBean implements HasTimerService {
 
     Map<Long, Double> returnedItems = getReturnedItems(actId);
     Map<Long, Double> overallTotal = Maps.newLinkedHashMap();
-    if (BeeUtils.isEmpty(returnedItems)) {
-      return parentItems;
-    }
 
     BeeRowSet result = new BeeRowSet(parentItems.getViewName(), parentItems.getColumns());
 
@@ -1263,7 +1260,11 @@ public class TradeActBean implements HasTimerService {
 
     for (BeeRow parentRow : parentItems) {
       double qty = parentRow.getDouble(qtyIndex);
-      Double returnedQty = returnedItems.get(parentRow.getLong(itemIndex));
+      Double returnedQty = BeeConst.DOUBLE_ZERO;
+
+      if (!BeeUtils.isEmpty(returnedItems)) {
+        returnedQty = returnedItems.get(parentRow.getLong(itemIndex));
+      }
 
       boolean found = BeeUtils.isPositive(returnedQty);
       if (found) {
