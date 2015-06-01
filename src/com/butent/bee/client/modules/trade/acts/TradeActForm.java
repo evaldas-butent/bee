@@ -38,6 +38,7 @@ import com.butent.bee.shared.modules.documents.DocumentConstants;
 import com.butent.bee.shared.modules.trade.acts.TradeActConstants;
 import com.butent.bee.shared.modules.trade.acts.TradeActKind;
 import com.butent.bee.shared.ui.Action;
+import com.butent.bee.shared.ui.Relation.Caching;
 import com.butent.bee.shared.utils.BeeUtils;
 
 import java.util.Collection;
@@ -61,6 +62,16 @@ public class TradeActForm extends PrintFormInterceptor implements SelectorEvent.
   private DataSelector contractSelector;
 
   TradeActForm() {
+  }
+
+  @Override
+  public void afterCreateEditableWidget(EditableWidget editableWidget, IdentifiableWidget widget) {
+
+    if (widget instanceof DataSelector
+        && BeeUtils.same(editableWidget.getColumnId(), COL_TA_COMPANY)) {
+      editableWidget.getRelation().setCaching(Caching.NONE);
+    }
+    super.afterCreateEditableWidget(editableWidget, widget);
   }
 
   @Override
