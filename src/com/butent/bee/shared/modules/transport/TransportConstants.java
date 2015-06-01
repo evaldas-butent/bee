@@ -757,6 +757,7 @@ public final class TransportConstants {
   public static final String PROP_TRIP_DRIVERS = "TripDrivers";
   public static final String PROP_FREIGHTS = "Freights";
   public static final String PROP_CARGO_HANDLING = "CargoHandling";
+  public static final String PROP_CARGO_TYPES = "CargoTypes";
 
   public static final String ALS_TRIP_DATE = "TripDate";
   public static final String ALS_ORDER_DATE = "OrderDate";

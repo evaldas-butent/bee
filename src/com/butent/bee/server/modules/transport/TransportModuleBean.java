@@ -1871,6 +1871,11 @@ public class TransportModuleBean implements BeeModule, HasTimerService {
     List<Color> colors = getThemeColors(null);
     settings.setTableProperty(PROP_COLORS, Codec.beeSerialize(colors));
 
+    BeeRowSet cargoTypes = qs.getViewData(VIEW_CARGO_TYPES);
+    if (!DataUtils.isEmpty(cargoTypes)) {
+      settings.setTableProperty(PROP_CARGO_TYPES, cargoTypes.serialize());
+    }
+
     BeeRowSet countries = qs.getViewData(VIEW_COUNTRIES);
     settings.setTableProperty(PROP_COUNTRIES, countries.serialize());
 
@@ -2005,7 +2010,8 @@ public class TransportModuleBean implements BeeModule, HasTimerService {
         .addField(unlAlias, COL_PLACE_POST_INDEX, unloadingColumnAlias(COL_PLACE_POST_INDEX))
         .addField(unlAlias, COL_PLACE_CITY, unloadingColumnAlias(COL_PLACE_CITY))
         .addField(unlAlias, COL_PLACE_NUMBER, unloadingColumnAlias(COL_PLACE_NUMBER))
-        .addFields(TBL_ORDER_CARGO, COL_ORDER, COL_CARGO_DESCRIPTION, COL_CARGO_NOTES)
+        .addFields(TBL_ORDER_CARGO, COL_ORDER, COL_CARGO_TYPE, COL_CARGO_DESCRIPTION,
+            COL_CARGO_NOTES)
         .addField(defLoadAlias, COL_PLACE_DATE, defaultLoadingColumnAlias(COL_PLACE_DATE))
         .addField(defLoadAlias, COL_PLACE_COUNTRY, defaultLoadingColumnAlias(COL_PLACE_COUNTRY))
         .addField(defLoadAlias, COL_PLACE_ADDRESS, defaultLoadingColumnAlias(COL_PLACE_ADDRESS))
@@ -2035,8 +2041,12 @@ public class TransportModuleBean implements BeeModule, HasTimerService {
 
     Long theme = settings.getLong(0, settings.getColumnIndex(COL_FX_THEME));
     List<Color> colors = getThemeColors(theme);
-
     settings.setTableProperty(PROP_COLORS, Codec.beeSerialize(colors));
+
+    BeeRowSet cargoTypes = qs.getViewData(VIEW_CARGO_TYPES);
+    if (!DataUtils.isEmpty(cargoTypes)) {
+      settings.setTableProperty(PROP_CARGO_TYPES, cargoTypes.serialize());
+    }
 
     BeeRowSet countries = qs.getViewData(VIEW_COUNTRIES);
     settings.setTableProperty(PROP_COUNTRIES, countries.serialize());
@@ -2063,8 +2073,8 @@ public class TransportModuleBean implements BeeModule, HasTimerService {
     query.addFields(TBL_ORDERS, COL_STATUS, COL_ORDER_DATE, COL_ORDER_NO, COL_CUSTOMER);
     query.addField(TBL_COMPANIES, COL_COMPANY_NAME, COL_CUSTOMER_NAME);
 
-    query.addFields(TBL_ORDER_CARGO, COL_ORDER, COL_CARGO_ID, COL_CARGO_DESCRIPTION,
-        COL_CARGO_NOTES);
+    query.addFields(TBL_ORDER_CARGO, COL_ORDER, COL_CARGO_ID, COL_CARGO_TYPE,
+        COL_CARGO_DESCRIPTION, COL_CARGO_NOTES);
 
     query.addField(loadAlias, COL_PLACE_DATE, loadingColumnAlias(COL_PLACE_DATE));
     query.addField(loadAlias, COL_PLACE_COUNTRY, loadingColumnAlias(COL_PLACE_COUNTRY));
@@ -2339,6 +2349,11 @@ public class TransportModuleBean implements BeeModule, HasTimerService {
     Long theme = settings.getLong(0, settings.getColumnIndex(themeColumnName));
     List<Color> colors = getThemeColors(theme);
     settings.setTableProperty(PROP_COLORS, Codec.beeSerialize(colors));
+
+    BeeRowSet cargoTypes = qs.getViewData(VIEW_CARGO_TYPES);
+    if (!DataUtils.isEmpty(cargoTypes)) {
+      settings.setTableProperty(PROP_CARGO_TYPES, cargoTypes.serialize());
+    }
 
     BeeRowSet countries = qs.getViewData(VIEW_COUNTRIES);
     settings.setTableProperty(PROP_COUNTRIES, countries.serialize());
