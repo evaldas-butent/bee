@@ -34,8 +34,6 @@ public interface LocalizableTransportConstants {
 
   String cargoLoadingPlaces();
 
-  String cargoMiddleHandlingPlaces();
-
   String cargoNumber();
 
   String cargos();
@@ -176,7 +174,9 @@ public interface LocalizableTransportConstants {
 
   String trAssignTrip();
 
-  String trCargoActualPlaces();
+  String trAverageKilometerCost();
+
+  String trAverageFuelCost();
 
   String trCargoSelectCargo();
 
@@ -198,9 +198,13 @@ public interface LocalizableTransportConstants {
 
   String trConfirmProforma();
 
+  String trConstantCosts();
+
   String trCreateTransportation();
 
   String trCreditInvoice();
+
+  String trDailyCosts();
 
   String trDriverEndingDate();
 
@@ -225,6 +229,10 @@ public interface LocalizableTransportConstants {
   String trImportProperty();
 
   String trImportValue();
+
+  String trFuelCosts();
+
+  String trGenerateRoute();
 
   String tripDuration();
 
@@ -263,6 +271,8 @@ public interface LocalizableTransportConstants {
   String trOrderStatusCompleted();
 
   String trOrderStatusRequest();
+
+  String trOtherCosts();
 
   String trPreInvoice();
 
@@ -423,6 +433,8 @@ public interface LocalizableTransportConstants {
   String trRequestTemplates();
 
   String trRequestTermsOfDelivery();
+
+  String trRoadCosts();
 
   String trSelfService();
 

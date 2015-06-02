@@ -105,6 +105,10 @@ public abstract class DataEvent {
       return query;
     }
 
+    public int getRowCount() {
+      return (rowset == null) ? 0 : rowset.getNumberOfRows();
+    }
+
     public BeeRowSet getRowset() {
       return rowset;
     }

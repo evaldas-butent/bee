@@ -53,11 +53,7 @@ public class SimpleCheckBox extends FocusWidget implements BooleanWidget {
 
   @Override
   public Boolean getValue() {
-    if (isAttached()) {
-      return getInputElement().isChecked();
-    } else {
-      return getInputElement().isDefaultChecked();
-    }
+    return getInputElement().isChecked();
   }
 
   @Override
@@ -86,7 +82,6 @@ public class SimpleCheckBox extends FocusWidget implements BooleanWidget {
     boolean oldValue = BeeUtils.unbox(getValue());
 
     getInputElement().setChecked(b);
-    getInputElement().setDefaultChecked(b);
 
     if (fireEvents && (b != oldValue)) {
       ValueChangeEvent.fire(this, b);

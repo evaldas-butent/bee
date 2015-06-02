@@ -29,7 +29,6 @@ import com.butent.bee.client.widget.ListBox;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.Service;
 import com.butent.bee.shared.data.filter.Filter;
-import com.butent.bee.shared.data.view.DataInfo;
 import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.modules.calendar.CalendarConstants;
 import com.butent.bee.shared.modules.documents.DocumentConstants;
@@ -133,14 +132,7 @@ public class CompanyUsageReport extends ReportInterceptor {
   }
 
   private static boolean isDataVisible(String viewName) {
-    DataInfo dataInfo = Data.getDataInfo(viewName);
-
-    if (dataInfo == null) {
-      return false;
-    } else {
-      return BeeKeeper.getUser().isAnyModuleVisible(dataInfo.getModule())
-          && BeeKeeper.getUser().isDataVisible(viewName);
-    }
+    return BeeKeeper.getUser().isDataVisible(viewName);
   }
 
   public CompanyUsageReport() {

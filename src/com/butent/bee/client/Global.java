@@ -24,6 +24,7 @@ import com.butent.bee.client.dialog.InputBoxes;
 import com.butent.bee.client.dialog.InputCallback;
 import com.butent.bee.client.dialog.MessageBoxes;
 import com.butent.bee.client.dialog.StringCallback;
+import com.butent.bee.client.dom.Features;
 import com.butent.bee.client.grid.GridFactory;
 import com.butent.bee.client.grid.HtmlTable;
 import com.butent.bee.client.images.Images;
@@ -35,6 +36,7 @@ import com.butent.bee.client.screen.Spaces;
 import com.butent.bee.client.style.StyleUtils;
 import com.butent.bee.client.ui.IdentifiableWidget;
 import com.butent.bee.client.ui.WidgetInitializer;
+import com.butent.bee.client.utils.JsUtils;
 import com.butent.bee.client.view.edit.Editor;
 import com.butent.bee.client.view.search.Filters;
 import com.butent.bee.shared.Assert;
@@ -304,41 +306,45 @@ public final class Global {
     inpBoxen.inputMap(caption, keyCaption, valueCaption, map, consumer);
   }
 
-  public static void inputString(String caption, String prompt, StringCallback callback) {
-    inputString(caption, prompt, callback, null);
+  public static void inputString(String caption, String prompt, StringCallback callback,
+      String styleName) {
+    inputString(caption, prompt, callback, styleName, null);
   }
 
   public static void inputString(String caption, String prompt, StringCallback callback,
-      String defaultValue) {
-    inputString(caption, prompt, callback, defaultValue, BeeConst.UNDEF);
+      String styleName, String defaultValue) {
+    inputString(caption, prompt, callback, styleName, defaultValue, BeeConst.UNDEF);
   }
 
   public static void inputString(String caption, String prompt, StringCallback callback,
-      String defaultValue, int maxLength) {
-    inputString(caption, prompt, callback, defaultValue, maxLength, null);
+      String styleName, String defaultValue, int maxLength) {
+    inputString(caption, prompt, callback, styleName, defaultValue, maxLength, null);
   }
 
   public static void inputString(String caption, String prompt, StringCallback callback,
-      String defaultValue, int maxLength, Element target) {
-    inputString(caption, prompt, callback, defaultValue, maxLength, target,
+      String styleName, String defaultValue, int maxLength, Element target) {
+    inputString(caption, prompt, callback, styleName, defaultValue, maxLength, target,
         BeeConst.DOUBLE_UNDEF, null);
   }
 
   public static void inputString(String caption, String prompt, StringCallback callback,
-      String defaultValue, int maxLength, Element target, double width, CssUnit widthUnit) {
-    inputString(caption, prompt, callback, defaultValue, maxLength, target, width, widthUnit,
+      String styleName, String defaultValue, int maxLength, Element target, double width,
+      CssUnit widthUnit) {
+    inputString(caption, prompt, callback, styleName, defaultValue, maxLength, target, width,
+        widthUnit,
         BeeConst.UNDEF, Localized.getConstants().ok(), Localized.getConstants().cancel(), null);
   }
 
   public static void inputString(String caption, String prompt, StringCallback callback,
-      String defaultValue, int maxLength, Element target, double width, CssUnit widthUnit,
-      int timeout, String confirmHtml, String cancelHtml, WidgetInitializer initializer) {
-    inpBoxen.inputString(caption, prompt, callback, defaultValue, maxLength, target,
+      String styleName, String defaultValue, int maxLength, Element target, double width,
+      CssUnit widthUnit, int timeout, String confirmHtml, String cancelHtml,
+      WidgetInitializer initializer) {
+    inpBoxen.inputString(caption, prompt, callback, styleName, defaultValue, maxLength, target,
         width, widthUnit, timeout, confirmHtml, cancelHtml, initializer);
   }
 
-  public static void inputString(String caption, StringCallback callback) {
-    inputString(caption, null, callback);
+  public static void inputString(String caption, StringCallback callback, String styleName) {
+    inputString(caption, null, callback, styleName);
   }
 
   public static DialogBox inputWidget(String caption, IsWidget input, InputCallback callback) {
@@ -463,6 +469,12 @@ public final class Global {
         response.notify(BeeKeeper.getScreen());
       }
     });
+  }
+
+  public static void showBrowserNotify(String msg) {
+    if (Features.supportsNotifications()) {
+      JsUtils.showBrowserNotification(BeeKeeper.getScreen().getUserInterface().getTitle(), msg);
+    }
   }
 
   public static void showError(List<String> messages) {

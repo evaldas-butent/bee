@@ -191,6 +191,8 @@ public final class TasksKeeper {
 
     GridFactory.registerGridInterceptor(GRID_TODO_LIST, new TodoListInterceptor());
 
+    GridFactory.registerGridInterceptor(GRID_CHILD_REQUESTS, new ChildRequestsGrid());
+
     GridFactory.registerGridInterceptor(GRID_RECURRING_TASKS, new RecurringTasksGrid());
     GridFactory.registerGridInterceptor(GRID_RT_FILES,
         new FileGridInterceptor(COL_RTF_RECURRING_TASK, AdministrationConstants.COL_FILE,

@@ -1,20 +1,20 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <View xmlns="http://www.butent.com/view"
-  xmlns:xpr="http://www.butent.com/expression"
 
-  name="OrderCargo"
-  source="OrderCargo"
-  editForm="OrderCargo"
-  caption="=cargos"
-  >
+      name="OrderCargo"
+      source="OrderCargo"
+      editForm="OrderCargo"
+      caption="=cargos"
+    >
   <Relation renderColumns="Description"
-    choiceColumns="Description LoadingDate LoadingCountryCode UnloadingDate UnloadingCountryCode" />
+            choiceColumns="Description LoadingDate LoadingCountryCode UnloadingDate UnloadingCountryCode" />
   <Columns>
     <SimpleColumn name="Order" />
-    
+
     <SimpleJoin name="LoadingPlace" joinType="LEFT">
       <SimpleColumn name="Date" alias="LoadingDate" label="=trLoadingDate" />
-      <SimpleColumn name="Number" alias="LoadingNumber" />
+      <SimpleColumn name="Note" alias="LoadingNote" label="=trLoadingNote" />
+      <SimpleColumn name="Number" alias="LoadingNumber" label="=trLoadingNumber" />
       <SimpleColumn name="Contact" alias="LoadingContact" label="=trLoadingContact" />
       <SimpleColumn name="Company" alias="LoadingCompany" label="=trLoadingCompany" />
       <SimpleColumn name="Address" alias="LoadingAddress" label="=trLoadingAddress" />
@@ -33,8 +33,9 @@
 
     <SimpleJoin name="UnloadingPlace" joinType="LEFT">
       <SimpleColumn name="Date" alias="UnloadingDate" label="=trUnloadingDate" />
-      <SimpleColumn name="Number" alias="UnloadingNumber" />
-      <SimpleColumn name="Contact" alias="UnloadingContact" label="=trUnloadingContact"  />
+      <SimpleColumn name="Note" alias="UnloadingNote" label="=trUnloadingNote" />
+      <SimpleColumn name="Number" alias="UnloadingNumber" label="=trUnloadingNumber" />
+      <SimpleColumn name="Contact" alias="UnloadingContact" label="=trUnloadingContact" />
       <SimpleColumn name="Company" alias="UnloadingCompany" label="=trUnloadingCompany" />
       <SimpleColumn name="Address" alias="UnloadingAddress" label="=trUnloadingAddress" />
       <SimpleColumn name="PostIndex" alias="UnloadingPostIndex" label="=trUnloadingPostIndex" />
@@ -49,14 +50,10 @@
         <SimpleColumn name="Code" alias="UnloadingCountryCode" />
       </SimpleJoin>
     </SimpleJoin>
-    
+
     <SimpleColumn name="Description" />
 
     <SimpleColumn name="Weight" />
-    <SimpleColumn name="WeightUnit" />
-    <SimpleJoin joinType="LEFT" name="WeightUnit">
-      <SimpleColumn name="Name" alias="WeightUnitName" />
-    </SimpleJoin>
 
     <SimpleColumn name="Volume" />
     <SimpleColumn name="VolumeUnit" />
@@ -84,6 +81,11 @@
 
     <SimpleColumn name="Number" />
     <SimpleColumn name="Cmr" />
+    <SimpleJoin name="Cmr" joinType="LEFT">
+      <SimpleColumn name="Name" alias="CmrName"/>
+      <SimpleColumn name="Number" alias="CmrNumber"/>
+    </SimpleJoin>
+
     <SimpleColumn name="LoadedKilometers" />
     <SimpleColumn name="EmptyKilometers" />
 
@@ -102,12 +104,21 @@
         <AggregateColumn name="Expedition" aggregate="MAX" />
       </SimpleJoin>
     </ExternalJoin>
-    
+
     <SimpleColumn name="Notes" />
     <SimpleColumn name="Directions" />
     <SimpleColumn name="Currency" />
     <SimpleJoin joinType="LEFT" name="Currency">
       <SimpleColumn name="Name" alias="CurrencyName" />
+    </SimpleJoin>
+
+    <SimpleColumn name="CargoType" />
+    <SimpleJoin joinType="LEFT" name="CargoType">
+      <SimpleColumn name="CargoTypeName" />
+    </SimpleJoin>
+    <SimpleColumn name="CargoGroup" />
+    <SimpleJoin joinType="LEFT" name="CargoGroup">
+      <SimpleColumn name="CargoGroupName" />
     </SimpleJoin>
   </Columns>
   <Order>

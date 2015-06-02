@@ -10,6 +10,14 @@
   <Columns>
     <SimpleColumn name="Name" />
 
+    <SimpleColumn name="Company" />
+    <SimpleJoin joinType="LEFT" name="Company">
+      <SimpleColumn alias="CompanyName" name="Name" />
+      <SimpleJoin joinType="LEFT" name="CompanyType">
+        <SimpleColumn name="Name" alias="CompanyTypeName" />
+      </SimpleJoin>
+    </SimpleJoin>
+
     <SimpleColumn name="DocumentDate" />
     <SimpleColumn name="Expires" />
 
@@ -38,7 +46,6 @@
 
     <SimpleColumn name="Received" />
     <SimpleColumn name="Sent" />
-    <SimpleColumn name="Returned" />
 
     <SimpleColumn name="Description" />
 
@@ -46,6 +53,7 @@
     <SimpleJoin joinType="LEFT" name="Data">
       <SimpleColumn name="Content" />
     </SimpleJoin>
+    
   </Columns>
 </View>
  

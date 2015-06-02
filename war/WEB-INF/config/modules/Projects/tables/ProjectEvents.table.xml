@@ -9,6 +9,7 @@
     <Relation name="Publisher" notNull="true" relation="Users" label="=user" />
     <DateTime name="PublishTime" notNull="true" label="=prjPublishTime" />
     <Text name="Comment" label="=comment" />
+    <Text name="Properties" label="=properties" />
     <Enum name="Event" key="ProjectEvent" precision="2" notNull="true" label="=prjEvent" />
   </Fields>
 </Table>

@@ -199,8 +199,8 @@ public class TradeModuleBean implements BeeModule {
           .addFields(TBL_SALES, COL_TRADE_DATE, COL_TRADE_TERM)
           .addFrom(TBL_SALES)
           .setWhere(SqlUtils.and(SqlUtils.or(SqlUtils.equals(TBL_SALES, COL_SALE_PAYER, companyId),
-              SqlUtils.and(SqlUtils.isNull(TBL_SALES, COL_SALE_PAYER),
-                  SqlUtils.equals(TBL_SALES, COL_TRADE_CUSTOMER, companyId))),
+                  SqlUtils.and(SqlUtils.isNull(TBL_SALES, COL_SALE_PAYER),
+                      SqlUtils.equals(TBL_SALES, COL_TRADE_CUSTOMER, companyId))),
               SqlUtils.less(SqlUtils.nvl(SqlUtils.field(TBL_SALES, COL_TRADE_PAID), 0),
                   SqlUtils.nvl(SqlUtils.field(TBL_SALES, COL_TRADE_AMOUNT), 0))));
 
@@ -263,8 +263,7 @@ public class TradeModuleBean implements BeeModule {
 
   public static IsExpression getTotalExpression(String tblName, IsExpression amount) {
     return SqlUtils.plus(amount,
-        SqlUtils.sqlIf(SqlUtils.or(SqlUtils.isNull(tblName, COL_TRADE_VAT_PLUS),
-            SqlUtils.isNull(tblName, COL_TRADE_VAT)), 0,
+        SqlUtils.sqlIf(SqlUtils.isNull(tblName, COL_TRADE_VAT_PLUS), 0,
             getVatExpression(tblName, amount)));
   }
 
@@ -278,9 +277,19 @@ public class TradeModuleBean implements BeeModule {
         SqlUtils.isNull(tblName, COL_TRADE_VAT_PERC), SqlUtils.field(tblName, COL_TRADE_VAT),
         SqlUtils.notNull(tblName, COL_TRADE_VAT_PLUS), SqlUtils.multiply(SqlUtils
             .divide(amount, 100), SqlUtils.field(tblName, COL_TRADE_VAT)),
-        SqlUtils.multiply(SqlUtils.divide(amount,
-            SqlUtils.plus(100, SqlUtils.field(tblName, COL_TRADE_VAT))),
+        SqlUtils.multiply(
+            SqlUtils.divide(amount, SqlUtils.plus(100, SqlUtils.field(tblName, COL_TRADE_VAT))),
             SqlUtils.field(tblName, COL_TRADE_VAT)));
+  }
+
+  public static IsExpression getWithoutVatExpression(String tblName) {
+    return getWithoutVatExpression(tblName, getAmountExpression(tblName));
+  }
+
+  public static IsExpression getWithoutVatExpression(String tblName, IsExpression amount) {
+    return SqlUtils.minus(amount,
+        SqlUtils.sqlIf(SqlUtils.notNull(tblName, COL_TRADE_VAT_PLUS), 0,
+            getVatExpression(tblName, amount)));
   }
 
   @Override
@@ -354,13 +363,12 @@ public class TradeModuleBean implements BeeModule {
         .addFromInner(TBL_UNITS, sys.joinTables(TBL_UNITS, TBL_ITEMS, COL_UNIT))
         .addFromInner(TBL_CURRENCIES, sys.joinTables(TBL_CURRENCIES, trade, COL_CURRENCY))
         .setWhere(SqlUtils.equals(tradeItems, itemsRelation, id))
-        .addOrder(tradeItems, sys.getIdName(tradeItems));
+        .addOrder(tradeItems, COL_TRADE_ITEM_ORDINAL, sys.getIdName(tradeItems));
 
     if (!BeeUtils.isEmpty(currencyTo)) {
       String currAlias = SqlUtils.uniqueName();
 
-      IsExpression xpr = ExchangeUtils.exchangeFieldTo(query
-          .addFromLeft(TBL_CURRENCIES, currAlias,
+      IsExpression xpr = ExchangeUtils.exchangeFieldTo(query.addFromLeft(TBL_CURRENCIES, currAlias,
               SqlUtils.equals(currAlias, COL_CURRENCY_NAME, currencyTo)),
           SqlUtils.constant(1),
           SqlUtils.field(trade, COL_CURRENCY),
@@ -490,19 +498,25 @@ public class TradeModuleBean implements BeeModule {
         if (DataUtils.isId(id) && !companies.containsKey(id)) {
           SimpleRow data = qs.getRow(new SqlSelect()
               .addFields(TBL_COMPANIES, COL_COMPANY_NAME, COL_COMPANY_CODE, COL_COMPANY_VAT_CODE)
+              .addField(TBL_COMPANY_TYPES, COL_COMPANY_TYPE_NAME, COL_COMPANY_TYPE)
               .addFields(TBL_CONTACTS, COL_ADDRESS, COL_POST_INDEX)
               .addField(TBL_CITIES, COL_CITY_NAME, COL_CITY)
               .addField(TBL_COUNTRIES, COL_COUNTRY_NAME, COL_COUNTRY)
               .addFrom(TBL_COMPANIES)
+              .addFromLeft(TBL_COMPANY_TYPES,
+                  sys.joinTables(TBL_COMPANY_TYPES, TBL_COMPANIES, COL_COMPANY_TYPE))
               .addFromLeft(TBL_CONTACTS, sys.joinTables(TBL_CONTACTS, TBL_COMPANIES, COL_CONTACT))
               .addFromLeft(TBL_CITIES, sys.joinTables(TBL_CITIES, TBL_CONTACTS, COL_CITY))
               .addFromLeft(TBL_COUNTRIES, sys.joinTables(TBL_COUNTRIES, TBL_CONTACTS, COL_COUNTRY))
               .setWhere(sys.idEquals(TBL_COMPANIES, id)));
 
           try {
-            String company = ButentWS.connect(remoteNamespace, remoteAddress, remoteLogin,
+            String company = BeeUtils.joinItems(data.getValue(COL_COMPANY_NAME),
+                data.getValue(COL_COMPANY_TYPE));
+
+            company = ButentWS.connect(remoteNamespace, remoteAddress, remoteLogin,
                 remotePassword)
-                .importClient(data.getValue(COL_COMPANY_NAME), data.getValue(COL_COMPANY_CODE),
+                .importClient(company, data.getValue(COL_COMPANY_CODE),
                     data.getValue(COL_COMPANY_VAT_CODE), data.getValue(COL_ADDRESS),
                     data.getValue(COL_POST_INDEX), data.getValue(COL_CITY),
                     data.getValue(COL_COUNTRY));

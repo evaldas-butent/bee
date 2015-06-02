@@ -19,6 +19,7 @@
     <SimpleColumn name="PublishTime" />
     <SimpleColumn name="Comment" />
     <SimpleColumn name="Event" />
+    <SimpleColumn name="Properties" />
   </Columns>
 </View>
  

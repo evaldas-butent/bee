@@ -9,7 +9,7 @@
   caption="=tradeActTemplate"
   width="800" height="600"
   >
-  <FlowPanel class="flexBox-vertical">
+  <FlowPanel>
     <br/>
     <Table>
       <col index="0" kind="label" />
@@ -25,7 +25,7 @@
 
       <row>
         <Label for="Until" />
-        <InputDateTime source="Until" style="width: 120px;" />
+        <InputDateTime source="Until" style="width: 11em;" />
 
         <Label for="Series" />
         <DataSelector source="Series" newRowEnabled="false" style="width: 120px;" />
@@ -81,7 +81,7 @@
     </Table>
 
     <br/>
-    <TabbedPages class="flexible">
+    <TabbedPages style="height: 400px;">
       <page>
         <text>=goods</text>
         <ChildGrid name="TradeActTmplItems" relColumn="TradeActTemplate" />

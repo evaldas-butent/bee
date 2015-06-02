@@ -26,6 +26,7 @@ import com.google.gwt.event.logical.shared.AttachEvent;
 import com.google.gwt.geolocation.client.Position;
 import com.google.gwt.geolocation.client.Position.Coordinates;
 import com.google.gwt.i18n.client.NumberFormat;
+import com.google.gwt.json.client.JSONObject;
 import com.google.gwt.resources.client.ImageResource;
 import com.google.gwt.user.client.Timer;
 import com.google.gwt.user.client.ui.Widget;
@@ -104,6 +105,7 @@ import com.butent.bee.client.style.StyleUtils;
 import com.butent.bee.client.ui.AutocompleteProvider;
 import com.butent.bee.client.ui.FormFactory;
 import com.butent.bee.client.ui.IdentifiableWidget;
+import com.butent.bee.client.ui.Theme;
 import com.butent.bee.client.ui.WidgetInitializer;
 import com.butent.bee.client.utils.BrowsingContext;
 import com.butent.bee.client.utils.FileUtils;
@@ -535,6 +537,10 @@ public final class CliWorker {
     } else if (z.startsWith("tabl") || z.startsWith("tbl")) {
       showTableInfo(v, args);
 
+    } else if (z.startsWith("theme")) {
+      JSONObject theme = Theme.getValues();
+      inform(z, (theme == null) ? BeeConst.NULL : theme.toString());
+
     } else if (z.startsWith("tile")) {
       doTiles(args);
 
@@ -830,7 +836,7 @@ public final class CliWorker {
     }, delay);
   }
 
-//@formatter:off
+  //@formatter:off
   private static native void cornifyAdd() /*-{
     try {
       $wnd.cornify_add();
@@ -1942,63 +1948,48 @@ public final class CliWorker {
   }
 
   private static void rebuildSomething(final String args) {
-    final String progressId;
-
-    if (BeeUtils.same(args, "check") && Endpoint.isOpen()) {
-      InlineLabel close = new InlineLabel(String.valueOf(BeeConst.CHAR_TIMES));
-      Thermometer thermometer = new Thermometer("rebuild", BeeConst.DOUBLE_ONE, close);
-
-      progressId = BeeKeeper.getScreen().addProgress(thermometer);
-
-      if (progressId != null) {
-        close.addClickHandler(new ClickHandler() {
-          @Override
-          public void onClick(ClickEvent event) {
-            Endpoint.cancelProgress(progressId);
-          }
-        });
-      }
-
-    } else {
-      progressId = null;
-    }
-
-    final ResponseCallback responseCallback = new ResponseCallback() {
-      @Override
-      public void onResponse(ResponseObject response) {
-        Assert.notNull(response);
-
-        if (progressId != null) {
-          Endpoint.removeProgress(progressId);
-          Endpoint.send(ProgressMessage.close(progressId));
-        }
-
-        if (response.hasResponse()) {
-          showPropData(BeeUtils.joinWords("Rebuild", args),
-              PropertyUtils.restoreProperties((String) response.getResponse()));
-        }
-      }
-    };
-
-    if (progressId == null) {
-      BeeKeeper.getRpc().sendText(Service.REBUILD, args, responseCallback);
-
-    } else {
-      Endpoint.enqueuePropgress(progressId, new Consumer<String>() {
+    if (BeeUtils.same(args, "check")) {
+      Endpoint.initProgress("rebuild", new Consumer<String>() {
         @Override
-        public void accept(String input) {
+        public void accept(final String progress) {
           ParameterList params = new ParameterList(Service.REBUILD);
-          if (!BeeUtils.isEmpty(input)) {
-            params.addQueryItem(Service.VAR_PROGRESS, input);
-          }
 
-          BeeKeeper.getRpc().sendText(params, args, responseCallback);
+          if (!BeeUtils.isEmpty(progress)) {
+            params.addQueryItem(Service.VAR_PROGRESS, progress);
+          }
+          BeeKeeper.getRpc().sendText(params, args, new ResponseCallback() {
+            @Override
+            public void onResponse(ResponseObject response) {
+              Assert.notNull(response);
+
+              if (progress != null) {
+                Endpoint.removeProgress(progress);
+                Endpoint.send(ProgressMessage.close(progress));
+              }
+              if (response.hasResponse()) {
+                showPropData(BeeUtils.joinWords("Rebuild", args),
+                    PropertyUtils.restoreProperties((String) response.getResponse()));
+              }
+            }
+          });
+        }
+      });
+    } else {
+      BeeKeeper.getRpc().sendText(Service.REBUILD, args, new ResponseCallback() {
+        @Override
+        public void onResponse(ResponseObject response) {
+          Assert.notNull(response);
+
+          if (response.hasResponse()) {
+            showPropData(BeeUtils.joinWords("Rebuild", args),
+                PropertyUtils.restoreProperties((String) response.getResponse()));
+          }
         }
       });
     }
   }
 
-//@formatter:off
+  //@formatter:off
   // CHECKSTYLE:OFF
   private static native void sampleCanvas(Element el) /*-{
     var ctx = el.getContext("2d");
@@ -2726,6 +2717,8 @@ public final class CliWorker {
         range = Range.closed(FontAwesome.SPACE_SHUTTLE.getCode(), FontAwesome.BOMB.getCode());
       } else if (args.startsWith("4.2")) {
         range = Range.closed(FontAwesome.SOCCER_BALL_O.getCode(), FontAwesome.MEANPATH.getCode());
+      } else if (args.startsWith("4.3")) {
+        range = Range.closed(FontAwesome.BUYSELLADS.getCode(), FontAwesome.MEDIUM.getCode());
       }
 
       styles.addAll(StyleUtils.parseStyles(args));
@@ -2986,7 +2979,7 @@ public final class CliWorker {
               return value.indexOf('x') < 0;
             }
           }
-        }, defaultValue, maxLength, null, width, widthUnit, timeout, confirmHtml, cancelHtml,
+        }, null, defaultValue, maxLength, null, width, widthUnit, timeout, confirmHtml, cancelHtml,
         new WidgetInitializer() {
           @Override
           public Widget initialize(Widget widget, String name) {
@@ -4137,8 +4130,21 @@ public final class CliWorker {
     String value = ArrayUtils.join(BeeConst.STRING_SPACE, arr, 2);
 
     if (key.equals(BeeConst.STRING_MINUS)) {
-      BeeKeeper.getStorage().remove(value);
-      inform(value, "removed");
+      if (BeeKeeper.getStorage().hasItem(value)) {
+        BeeKeeper.getStorage().remove(value);
+        inform(value, "removed");
+
+      } else {
+        int count = 0;
+        for (Property p : BeeKeeper.getStorage().getAll()) {
+          if (BeeUtils.isPrefix(p.getName(), value)) {
+            BeeKeeper.getStorage().remove(p.getName());
+            count++;
+          }
+        }
+        inform(value, "removed", BeeUtils.toString(count), "entries");
+      }
+
     } else {
       BeeKeeper.getStorage().set(key, value);
       inform("Storage", NameUtils.addName(key, value));

@@ -1,34 +1,26 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE Form [
-  <!ENTITY inline "display: inline-block;">
-
   <!ENTITY separator "<hr/>">
 
   <!ENTITY tbl "border-collapse: collapse;">
   <!ENTITY cell "vertical-align: top; padding-bottom: 2px;">
-  <!ENTITY col1 "text-align: right; padding-right: 8px; width: 128px;">
-  <!ENTITY col3 "text-align: right; padding-left: 8px; padding-right: 8px; width: 128px;">
-
-  <!ENTITY inp2 "width: 150px;">
-  <!ENTITY inp2x "width: 500px;">
-  <!ENTITY inp2y "width: 500px;">
-  <!ENTITY inp3 "width: 70px;margin-left: -75px">
-
-  <!ENTITY dateStyle "&inline; min-width: 90px; max-width: 90px;">
-  <!ENTITY timeStyle "&inline; min-width: 50px; max-width: 50px; width: 50px; margin-left: 10px;">
-  <!ENTITY timeStep "30">
+  <!ENTITY col1 "text-align: left; padding-right: 8px; width: 128px;">
+   
+  <!ENTITY inp2x "max-width: 580px; min-width: 580px;">
 ]>
-<f:Form xmlns="http://www.butent.com/widget"
-  xmlns:f="http://www.butent.com/form"
-  
- name="NewProjectComment" viewName="ProjectEvents" width="600" height="300">
+<f:Form xmlns="http://www.butent.com/widget" xmlns:f="http://www.butent.com/form"
+
+  name="NewProjectComment" viewName="ProjectEvents" width="610" height="310">
 
   <FlowPanel style="padding: 10px 2px 2px 10px;">
     <Table style="&tbl;" cellStyle="&cell;">
       <col index="0" cellStyle="&col1;" />
       <row for="Comment">
-        <Label for="Comment" />
-        <InputArea source="Comment" style="&inp2x; height: 60px;" />
+        <Label for="Comment" class="bee-required" style="text-align: left;"/>
+      </row>
+      <row for="Comment">
+        <InputArea source="Comment"
+          style="&inp2x; height: 120px; max-height: 150px;" />
       </row>
     </Table>
 
@@ -36,7 +28,7 @@
  
     <FlowPanel class="flexBox-horizontal-top" data="ProjectFiles">
       <Label text="=files" style="&col1; margin-top: 4px;" />
-      <FileCollector name="Files" editableColumns="name">
+      <FileCollector name="Files" editableColumns="name" style="margin-left: -70px;">
         <face resource="attachment" />
       </FileCollector>
     </FlowPanel>

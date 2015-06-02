@@ -369,6 +369,8 @@ public class GridLoaderBean {
           dst.setFormat(value.trim());
         } else if (BeeUtils.same(key, UiConstants.ATTR_HORIZONTAL_ALIGNMENT)) {
           dst.setHorAlign(value.trim());
+        } else if (BeeUtils.same(key, UiConstants.ATTR_VERTICAL_ALIGNMENT)) {
+          dst.setVertAlign(value.trim());
         } else if (BeeUtils.same(key, UiConstants.ATTR_WHITE_SPACE)) {
           dst.setWhiteSpace(value.trim());
 
@@ -907,6 +909,11 @@ public class GridLoaderBean {
     Boolean editFormImmediate = XmlUtils.getAttributeBoolean(src, ATTR_EDIT_FORM_IMMEDIATE);
     if (editFormImmediate != null) {
       dst.setEditFormImmediate(editFormImmediate);
+    }
+
+    Boolean editInPlace = XmlUtils.getAttributeBoolean(src, ATTR_EDIT_IN_PLACE);
+    if (editInPlace != null) {
+      dst.setEditInPlace(editInPlace);
     }
 
     List<Element> cssNodes = XmlUtils.getElementsByLocalName(src, TAG_CSS);

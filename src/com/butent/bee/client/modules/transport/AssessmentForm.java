@@ -25,10 +25,10 @@ import static com.butent.bee.shared.modules.trade.TradeConstants.*;
 import static com.butent.bee.shared.modules.transport.TransportConstants.*;
 
 import com.butent.bee.client.BeeKeeper;
-import com.butent.bee.client.Callback;
 import com.butent.bee.client.Global;
 import com.butent.bee.client.communication.ParameterList;
 import com.butent.bee.client.communication.ResponseCallback;
+import com.butent.bee.client.communication.RpcCallback;
 import com.butent.bee.client.composite.DataSelector;
 import com.butent.bee.client.composite.UnboundSelector;
 import com.butent.bee.client.data.Data;
@@ -54,7 +54,6 @@ import com.butent.bee.client.layout.TabbedPages;
 import com.butent.bee.client.layout.TabbedPages.SelectionOrigin;
 import com.butent.bee.client.modules.mail.NewMailMessage;
 import com.butent.bee.client.modules.trade.TotalRenderer;
-import com.butent.bee.client.output.PrintFormInterceptor;
 import com.butent.bee.client.presenter.GridPresenter;
 import com.butent.bee.client.presenter.Presenter;
 import com.butent.bee.client.render.AbstractCellRenderer;
@@ -67,6 +66,7 @@ import com.butent.bee.client.view.add.ReadyForInsertEvent;
 import com.butent.bee.client.view.edit.EditableColumn;
 import com.butent.bee.client.view.form.FormView;
 import com.butent.bee.client.view.form.interceptor.FormInterceptor;
+import com.butent.bee.client.view.form.interceptor.PrintFormInterceptor;
 import com.butent.bee.client.view.grid.GridView;
 import com.butent.bee.client.view.grid.interceptor.AbstractGridInterceptor;
 import com.butent.bee.client.view.grid.interceptor.GridInterceptor;
@@ -198,7 +198,7 @@ public class AssessmentForm extends PrintFormInterceptor implements SelectorEven
               newRow.setValue(form.getDataIndex(COL_ASSESSMENT_NOTES), notes.getValue());
 
               Queries.insertRow(DataUtils.createRowSetForInsert(form.getViewName(),
-                  form.getDataColumns(), newRow), new Callback<RowInfo>() {
+                  form.getDataColumns(), newRow), new RpcCallback<RowInfo>() {
                 @Override
                 public void onSuccess(RowInfo result) {
                   Queries.getRow(presenter.getViewName(), result.getId(), new RowCallback() {
@@ -281,7 +281,7 @@ public class AssessmentForm extends PrintFormInterceptor implements SelectorEven
                               buildLog(loc.trAssessmentRejection(), value, oldLog)), null,
                           new RowUpdateCallback(view));
                     }
-                  });
+                  }, null);
             }
             break;
         }
@@ -336,17 +336,6 @@ public class AssessmentForm extends PrintFormInterceptor implements SelectorEven
         columns.add(DataUtils.getColumn(SUPPLIER, gridView.getDataColumns()));
         values.add(values.get(DataUtils.getColumnIndex(FORWARDER, columns)));
       }
-    }
-
-    @Override
-    public boolean onStartNewRow(GridView gridView, IsRow oldRow, IsRow newRow) {
-      for (String prefix : new String[] {"Loading", "Unloading"}) {
-        for (String col : new String[] {"Date", "Address", "PostIndex", "Company", "Contact",
-            "City", "CityName", "Country", "CountryName", "CountryCode"}) {
-          newRow.setValue(gridView.getDataIndex(prefix + col), form.getStringValue(prefix + col));
-        }
-      }
-      return super.onStartNewRow(gridView, oldRow, newRow);
     }
 
     private void refresh() {
@@ -453,7 +442,7 @@ public class AssessmentForm extends PrintFormInterceptor implements SelectorEven
           public void onSuccess(String value) {
             save(value);
           }
-        });
+        }, null);
       } else {
         Global.confirm(confirmationQuestion, new ConfirmationCallback() {
           @Override
@@ -468,18 +457,7 @@ public class AssessmentForm extends PrintFormInterceptor implements SelectorEven
       ScheduledCommand command = new ScheduledCommand() {
         @Override
         public void execute() {
-          int updateSize = Queries.update(getViewName(), form.getDataColumns(),
-              form.getOldRow(), form.getActiveRow(), form.getChildrenForUpdate(),
-              new RowCallback() {
-                @Override
-                public void onSuccess(BeeRow result) {
-                  RowUpdateEvent.fire(BeeKeeper.getBus(), getViewName(), result);
-                  update(notes);
-                }
-              });
-          if (updateSize == 0) {
-            update(notes);
-          }
+          update(notes);
         }
       };
       if (!handleSaveAction(command)) {
@@ -488,58 +466,52 @@ public class AssessmentForm extends PrintFormInterceptor implements SelectorEven
     }
 
     public void update(String notes) {
-      final List<BeeColumn> columns = new ArrayList<>();
-      List<String> oldValues = new ArrayList<>();
-      final List<String> newValues = new ArrayList<>();
+      final Map<String, String> changes = new LinkedHashMap<>();
       final String viewName = form.getViewName();
+      IsRow newRow = form.getActiveRow();
 
       if (status != null) {
-        columns.add(Data.getColumn(viewName, COL_ASSESSMENT_STATUS));
-        oldValues.add(form.getStringValue(COL_ASSESSMENT_STATUS));
-        newValues.add(BeeUtils.toString(status.ordinal()));
+        String value = BeeUtils.toString(status.ordinal());
+        newRow.setValue(form.getDataIndex(COL_ASSESSMENT_STATUS), value);
+        changes.put(COL_ASSESSMENT_STATUS, value);
       }
       if (orderStatus != null) {
-        columns.add(Data.getColumn(viewName, ALS_ORDER_STATUS));
-        oldValues.add(form.getStringValue(ALS_ORDER_STATUS));
-        newValues.add(BeeUtils.toString(orderStatus.ordinal()));
+        String value = BeeUtils.toString(orderStatus.ordinal());
+        newRow.setValue(form.getDataIndex(ALS_ORDER_STATUS), value);
+        changes.put(ALS_ORDER_STATUS, value);
       }
       if (!BeeUtils.isEmpty(notes)) {
-        String oldLog = form.getStringValue(COL_ASSESSMENT_LOG);
-        columns.add(Data.getColumn(viewName, COL_ASSESSMENT_LOG));
-        oldValues.add(oldLog);
-        newValues.add(buildLog(status != null ? status.getCaption() : orderStatus.getCaption(),
-            notes, oldLog));
+        int logIdx = form.getDataIndex(COL_ASSESSMENT_LOG);
+        newRow.setValue(logIdx, buildLog(status != null ? status.getCaption()
+            : orderStatus.getCaption(), notes, newRow.getString(logIdx)));
       }
-      Queries.update(viewName, form.getActiveRowId(), form.getActiveRow().getVersion(),
-          columns, oldValues, newValues, form.getChildrenForUpdate(), new RowCallback() {
+      Queries.update(viewName, form.getDataColumns(), form.getOldRow(), newRow,
+          form.getChildrenForUpdate(), new RowCallback() {
             @Override
-            public void onSuccess(BeeRow result) {
-              new RowUpdateCallback(form.getViewName()).onSuccess(result);
+            public void onSuccess(BeeRow res) {
+              final boolean reset = changes.size() > 1;
 
+              if (!reset) {
+                RowUpdateEvent.fire(BeeKeeper.getBus(), viewName, res);
+              }
               if (isPrimary() && !check) {
-                List<String> cols = new ArrayList<>();
-                List<String> vals = new ArrayList<>();
-
-                for (int i = 0; i < columns.size(); i++) {
-                  if (BeeUtils.inListSame(columns.get(i).getId(),
-                      COL_ASSESSMENT_STATUS, ALS_ORDER_STATUS)) {
-                    cols.add(columns.get(i).getId());
-                    vals.add(newValues.get(i));
-                  }
-                }
-                Queries.update(VIEW_CHILD_ASSESSMENTS,
-                    Filter.equals(COL_ASSESSMENT, result.getId()), cols, vals, new IntCallback() {
+                Queries.update(VIEW_CHILD_ASSESSMENTS, Filter.equals(COL_ASSESSMENT, res.getId()),
+                    new ArrayList<>(changes.keySet()), new ArrayList<>(changes.values()),
+                    new IntCallback() {
                       @Override
-                      public void onSuccess(Integer res) {
-                        if (BeeUtils.allNotNull(status, orderStatus)) {
-                          DataChangeEvent.fire(BeeKeeper.getBus(), viewName,
+                      public void onSuccess(Integer result) {
+                        if (reset) {
+                          DataChangeEvent.fireLocal(BeeKeeper.getBus(), viewName,
                               DataChangeEvent.CANCEL_RESET_REFRESH);
                         } else {
-                          DataChangeEvent.fireRefresh(BeeKeeper.getBus(),
+                          DataChangeEvent.fireLocalRefresh(BeeKeeper.getBus(),
                               VIEW_CHILD_ASSESSMENTS);
                         }
                       }
                     });
+              } else if (reset) {
+                DataChangeEvent.fireLocal(BeeKeeper.getBus(), viewName,
+                    DataChangeEvent.CANCEL_RESET_REFRESH);
               }
             }
           });
@@ -870,7 +842,7 @@ public class AssessmentForm extends PrintFormInterceptor implements SelectorEven
     if (Objects.equals(oldLog, newLog)) {
       final Map<String, DateTime> dates = new LinkedHashMap<>();
 
-      for (String col : new String[] {COL_DATE, "LoadingDate", "UnloadingDate"}) {
+      for (String col : new String[] {COL_DATE, ALS_LOADING_DATE, ALS_UNLOADING_DATE}) {
         int idx = form.getDataIndex(col);
         DateTime oldValue = form.getOldRow().getDateTime(idx);
         DateTime value = form.getActiveRow().getDateTime(idx);
@@ -894,7 +866,7 @@ public class AssessmentForm extends PrintFormInterceptor implements SelectorEven
                 form.getActiveRow().setValue(logIdx, log);
                 action.execute();
               }
-            });
+            }, null);
         return true;
       }
     }
@@ -1026,7 +998,7 @@ public class AssessmentForm extends PrintFormInterceptor implements SelectorEven
                     }
                     NewMailMessage.create(to, null, null, null,
                         Document.get().createBRElement().getString() + table.toString(),
-                        null, null);
+                        null, null, false);
                   }
                 });
           }

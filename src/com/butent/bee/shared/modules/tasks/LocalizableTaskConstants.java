@@ -56,6 +56,8 @@ public interface LocalizableTaskConstants {
 
   String crmNewTask();
 
+  String crmNewTodoItem();
+
   String crmRecurringTask();
 
   String crmReminderMailSubject();
@@ -131,6 +133,8 @@ public interface LocalizableTaskConstants {
   String crmTaskExecutors();
 
   String crmTaskExpectedDuration();
+
+  String crmTaskExpectedExpenses();
 
   String crmTaskFilterAll();
 
@@ -233,6 +237,8 @@ public interface LocalizableTaskConstants {
   String crmTodoCreateAppointment();
 
   String crmTodoCreateTask();
+
+  String crmTodoItem();
 
   String crmTodoList();
 

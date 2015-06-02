@@ -27,7 +27,7 @@ import java.util.EnumMap;
 import java.util.List;
 import java.util.Map;
 
-class ItemPricePicker extends AbstractCellRenderer {
+public class ItemPricePicker extends AbstractCellRenderer {
 
   private static final BeeLogger logger = LogUtils.getLogger(ItemPricePicker.class);
 
@@ -82,6 +82,10 @@ class ItemPricePicker extends AbstractCellRenderer {
       return;
     }
 
+    if (!gridView.isRowEditable(row, gridView)) {
+      return;
+    }
+
     Queries.updateCellAndFire(gridView.getViewName(), rowId, row.getVersion(),
         gridView.getDataColumns().get(colIndex).getId(), row.getString(colIndex), value);
   }
@@ -91,7 +95,7 @@ class ItemPricePicker extends AbstractCellRenderer {
 
   private final RowFunction<Long> currencyFunction;
 
-  ItemPricePicker(CellSource cellSource, List<? extends IsColumn> columns,
+  public ItemPricePicker(CellSource cellSource, List<? extends IsColumn> columns,
       RowFunction<Long> currencyFunction) {
 
     super(cellSource);

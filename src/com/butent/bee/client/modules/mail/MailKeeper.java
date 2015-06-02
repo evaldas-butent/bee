@@ -10,18 +10,20 @@ import com.butent.bee.client.Global;
 import com.butent.bee.client.NewsAggregator.HeadlineAccessor;
 import com.butent.bee.client.communication.ParameterList;
 import com.butent.bee.client.communication.ResponseCallback;
+import com.butent.bee.client.data.Data;
 import com.butent.bee.client.dialog.StringCallback;
+import com.butent.bee.client.event.logical.RowActionEvent;
 import com.butent.bee.client.grid.GridFactory;
 import com.butent.bee.client.grid.GridFactory.GridOptions;
 import com.butent.bee.client.presenter.PresenterCallback;
 import com.butent.bee.client.screen.Domain;
+import com.butent.bee.client.screen.ScreenImpl;
 import com.butent.bee.client.ui.FormDescription;
 import com.butent.bee.client.ui.FormFactory;
 import com.butent.bee.client.view.ViewCallback;
 import com.butent.bee.client.view.ViewFactory;
 import com.butent.bee.client.view.ViewHelper;
 import com.butent.bee.client.view.ViewSupplier;
-import com.butent.bee.client.view.form.FormView;
 import com.butent.bee.shared.BiConsumer;
 import com.butent.bee.shared.communication.ResponseObject;
 import com.butent.bee.shared.data.DataUtils;
@@ -31,6 +33,7 @@ import com.butent.bee.shared.i18n.LocalizableMessages;
 import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.menu.MenuHandler;
 import com.butent.bee.shared.menu.MenuService;
+import com.butent.bee.shared.modules.classifiers.ClassifierConstants;
 import com.butent.bee.shared.modules.mail.AccountInfo;
 import com.butent.bee.shared.modules.mail.MailConstants.MessageFlag;
 import com.butent.bee.shared.news.Feed;
@@ -39,6 +42,7 @@ import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.Codec;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Objects;
@@ -59,7 +63,7 @@ public final class MailKeeper {
           @Override
           public void execute() {
             if (activePanel != null && Objects.equals(activePanel.getCurrentFolderId(), folderId)) {
-              activePanel.refreshMessages();
+              activePanel.refreshMessages(true);
             }
           }
         };
@@ -112,17 +116,23 @@ public final class MailKeeper {
       }
 
       @Override
-      public boolean read(final Long id) {
-        FormFactory.openForm(FORM_MAIL_MESSAGE, new MailMessage() {
-          @Override
-          public void onLoad(FormView form) {
-            requery(COL_PLACE, id, false);
-            super.onLoad(form);
-          }
-        });
-        return true;
+      public boolean read(Long id) {
+        return false;
       }
     });
+    BeeKeeper.getBus().registerRowActionHandler(new RowActionEvent.Handler() {
+      @Override
+      public void onRowAction(RowActionEvent event) {
+        if (event.hasView(ClassifierConstants.TBL_EMAILS) && event.isEditRow()) {
+          event.consume();
+
+          NewMailMessage.create(Collections
+              .singleton(Data.getString(ClassifierConstants.TBL_EMAILS,
+                  event.getRow(), ClassifierConstants.COL_EMAIL_ADDRESS)),
+              null, null, null, null, null, null, false);
+        }
+      }
+    }, false);
   }
 
   static void activateController(MailPanel mailPanel) {
@@ -145,14 +155,12 @@ public final class MailKeeper {
     activePanel.refreshFolder(folderId);
   }
 
-  static void copyMessage(final Long folderFrom, final Long folderTo, String[] places,
-      final boolean move) {
+  static void copyMessage(String places, final Long folderTo, final boolean move) {
     final MailPanel panel = activePanel;
     ParameterList params = createArgs(SVC_COPY_MESSAGES);
     params.addDataItem(COL_ACCOUNT, panel.getCurrentAccount().getAccountId());
-    params.addDataItem(COL_FOLDER_PARENT, folderFrom);
     params.addDataItem(COL_FOLDER, folderTo);
-    params.addDataItem(COL_PLACE, Codec.beeSerialize(places));
+    params.addDataItem(COL_PLACE, places);
     params.addDataItem("move", move ? 1 : 0);
 
     BeeKeeper.getRpc().makePostRequest(params, new ResponseCallback() {
@@ -180,7 +188,7 @@ public final class MailKeeper {
     final MailPanel panel = activePanel;
     final AccountInfo account = panel.getCurrentAccount();
     final Long parentId = panel.getCurrentFolderId();
-    final boolean isParent = !account.isSystemFolder(parentId);
+    final boolean isParent = DataUtils.isId(parentId) && !account.isSystemFolder(parentId);
     String caption = null;
 
     if (isParent) {
@@ -208,7 +216,7 @@ public final class MailKeeper {
           }
         });
       }
-    });
+    }, null);
   }
 
   static void disconnectFolder(final AccountInfo account, final Long folderId) {
@@ -363,5 +371,22 @@ public final class MailKeeper {
   }
 
   private MailKeeper() {
+  }
+
+  public static void getUnreadCount() {
+    ParameterList params = createArgs(SVC_GET_UNREAD_COUNT);
+    params.addDataItem(COL_USER, BeeKeeper.getUser().getUserId());
+
+    BeeKeeper.getRpc().makePostRequest(params, new ResponseCallback() {
+      @Override
+      public void onResponse(ResponseObject response) {
+
+        if (!BeeUtils.isEmpty(response.getResponseAsString())) {
+          ScreenImpl.updateOnlineEmails(Integer.valueOf(Codec.beeDeserializeCollection(response
+              .getResponseAsString())[0]));
+        }
+      }
+    });
+
   }
 }

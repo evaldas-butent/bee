@@ -10,6 +10,7 @@ import com.butent.bee.shared.BeeSerializable;
 import com.butent.bee.shared.HasInfo;
 import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogUtils;
+import com.butent.bee.shared.rights.Module;
 import com.butent.bee.shared.rights.ModuleAndSub;
 import com.butent.bee.shared.rights.RegulatedWidget;
 import com.butent.bee.shared.rights.RightsObjectType;
@@ -34,10 +35,6 @@ import java.util.Set;
  */
 
 public class UserData implements BeeSerializable, HasInfo {
-
-  /**
-   * Contains serializable members of user data (login, first and last names, position etc).
-   */
 
   private enum Serial {
     LOGIN, USER_ID, FIRST_NAME, LAST_NAME, PHOTO_FILE_NAME, COMPANY_NAME,
@@ -86,8 +83,7 @@ public class UserData implements BeeSerializable, HasInfo {
   }
 
   public boolean canEditColumn(String viewName, String column) {
-    return BeeUtils.anyEmpty(viewName, column)
-        || hasFieldRight(viewName, RightsState.EDIT, column, RightsState.EDIT);
+    return BeeUtils.anyEmpty(viewName, column) || hasFieldRight(viewName, column, RightsState.EDIT);
   }
 
   public boolean canEditData(String viewName) {
@@ -261,7 +257,7 @@ public class UserData implements BeeSerializable, HasInfo {
   }
 
   public boolean isAnyModuleVisible(String input) {
-    if (BeeUtils.isEmpty(input)) {
+    if (BeeUtils.isEmpty(input) || Module.NEVER_MIND.equals(input)) {
       return true;
     } else {
       List<ModuleAndSub> list = ModuleAndSub.parseList(input);
@@ -275,8 +271,7 @@ public class UserData implements BeeSerializable, HasInfo {
   }
 
   public boolean isColumnVisible(String viewName, String column) {
-    return BeeUtils.anyEmpty(viewName, column)
-        || hasFieldRight(viewName, null, column, RightsState.VIEW);
+    return BeeUtils.anyEmpty(viewName, column) || hasFieldRight(viewName, column, RightsState.VIEW);
   }
 
   public boolean isDataVisible(String viewName) {
@@ -409,11 +404,9 @@ public class UserData implements BeeSerializable, HasInfo {
     this.rights = rights;
   }
 
-  private boolean hasFieldRight(String viewName, RightsState viewState,
-      String column, RightsState columnState) {
-
-    return (viewState == null || hasDataRight(viewName, viewState))
-        && hasRight(RightsObjectType.FIELD, RightsUtils.buildName(viewName, column), columnState);
+  private boolean hasFieldRight(String viewName, String column, RightsState state) {
+    return hasDataRight(viewName, state)
+        && hasRight(RightsObjectType.FIELD, RightsUtils.buildName(viewName, column), state);
   }
 
   private boolean hasRight(RightsObjectType type, String object, RightsState state) {

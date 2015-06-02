@@ -98,11 +98,7 @@ public class CheckBox extends FocusWidget implements BooleanWidget, HasHtml {
 
   @Override
   public Boolean getValue() {
-    if (isAttached()) {
-      return inputElem.isChecked();
-    } else {
-      return inputElem.isDefaultChecked();
-    }
+    return inputElem.isChecked();
   }
 
   @Override
@@ -176,7 +172,6 @@ public class CheckBox extends FocusWidget implements BooleanWidget, HasHtml {
     boolean oldValue = BeeUtils.unbox(getValue());
 
     inputElem.setChecked(b);
-    inputElem.setDefaultChecked(b);
 
     if (fireEvents && (b != oldValue)) {
       ValueChangeEvent.fire(this, b);

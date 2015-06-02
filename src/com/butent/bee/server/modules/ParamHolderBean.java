@@ -258,6 +258,7 @@ public class ParamHolderBean {
         }
       }
     });
+
     BeeView.registerConditionProvider(TBL_PARAMS, new ConditionProvider() {
       @Override
       public IsCondition getCondition(BeeView view, List<String> args) {
