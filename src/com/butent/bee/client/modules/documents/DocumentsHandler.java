@@ -48,9 +48,11 @@ import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.IsColumn;
 import com.butent.bee.shared.data.IsRow;
 import com.butent.bee.shared.data.filter.Filter;
+import com.butent.bee.shared.data.view.DataInfo;
 import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.io.FileInfo;
 import com.butent.bee.shared.modules.administration.AdministrationConstants;
+import com.butent.bee.shared.modules.projects.ProjectConstants;
 import com.butent.bee.shared.rights.Module;
 import com.butent.bee.shared.time.DateTime;
 import com.butent.bee.shared.time.TimeUtils;
@@ -235,9 +237,39 @@ public final class DocumentsHandler {
 
     @Override
     public boolean beforeAddRow(final GridPresenter presenter, boolean copy) {
-      RowFactory.createRow(VIEW_DOCUMENTS, new RowCallback() {
+
+      DataInfo info = Data.getDataInfo(VIEW_DOCUMENTS);
+      final GridView gridView = presenter.getGridView();
+      FormView parentForm = null;
+      IsRow parentRow = null;
+      BeeRow docRow = RowFactory.createEmptyRow(info, true);
+
+      if (gridView != null) {
+        parentForm = ViewHelper.getForm(gridView.asWidget());
+      }
+
+      if (parentForm != null) {
+        parentRow = parentForm.getActiveRow();
+      }
+
+      if (parentRow != null
+          && BeeUtils.same(parentForm.getFormName(), ProjectConstants.FORM_PROJECT)) {
+        int idxCmp = info.getColumnIndex(COL_DOCUMENT_COMPANY);
+        int idxCmpName = info.getColumnIndex(ALS_DOCUMENT_COMPANY_NAME);
+        int idxParCmp = parentForm.getDataIndex(ProjectConstants.COL_COMAPNY);
+        int idxParCmpName = parentForm.getDataIndex(ProjectConstants.ALS_PROJECT_COMPANY_NAME);
+
+        if (!BeeConst.isUndef(idxCmp) && !BeeConst.isUndef(idxCmpName)
+            && !BeeConst.isUndef(idxCmp) && !BeeConst.isUndef(idxCmpName)) {
+
+          docRow.setValue(idxCmp, parentRow.getLong(idxParCmp));
+          docRow.setValue(idxCmpName, parentRow.getString(idxParCmpName));
+        }
+
+      }
+      RowFactory.createRow(info, docRow, new RowCallback() {
         @Override
-        public void onSuccess(BeeRow result) {
+        public void onSuccess(final BeeRow result) {
           final long docId = result.getId();
 
           presenter.getGridView().ensureRelId(new IdCallback() {
@@ -250,6 +282,7 @@ public final class DocumentsHandler {
                     @Override
                     public void onSuccess(BeeRow row) {
                       presenter.handleAction(Action.REFRESH);
+                      ViewHelper.getForm(gridView.asWidget()).refresh();
                     }
                   });
             }

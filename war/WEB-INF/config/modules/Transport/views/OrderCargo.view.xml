@@ -81,6 +81,11 @@
 
     <SimpleColumn name="Number" />
     <SimpleColumn name="Cmr" />
+    <SimpleJoin name="Cmr" joinType="LEFT">
+      <SimpleColumn name="Name" alias="CmrName"/>
+      <SimpleColumn name="Number" alias="CmrNumber"/>
+    </SimpleJoin>
+
     <SimpleColumn name="LoadedKilometers" />
     <SimpleColumn name="EmptyKilometers" />
 
@@ -105,6 +110,15 @@
     <SimpleColumn name="Currency" />
     <SimpleJoin joinType="LEFT" name="Currency">
       <SimpleColumn name="Name" alias="CurrencyName" />
+    </SimpleJoin>
+
+    <SimpleColumn name="CargoType" />
+    <SimpleJoin joinType="LEFT" name="CargoType">
+      <SimpleColumn name="CargoTypeName" />
+    </SimpleJoin>
+    <SimpleColumn name="CargoGroup" />
+    <SimpleJoin joinType="LEFT" name="CargoGroup">
+      <SimpleColumn name="CargoGroupName" />
     </SimpleJoin>
   </Columns>
   <Order>

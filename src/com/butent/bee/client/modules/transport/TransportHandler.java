@@ -1,6 +1,7 @@
 package com.butent.bee.client.modules.transport;
 
 import com.google.common.collect.Lists;
+import com.google.gwt.core.client.Scheduler.ScheduledCommand;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.event.logical.shared.SelectionEvent;
@@ -46,6 +47,7 @@ import com.butent.bee.client.view.grid.interceptor.GridInterceptor;
 import com.butent.bee.client.widget.Image;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
+import com.butent.bee.shared.Consumer;
 import com.butent.bee.shared.communication.ResponseObject;
 import com.butent.bee.shared.data.BeeColumn;
 import com.butent.bee.shared.data.BeeRow;
@@ -273,6 +275,8 @@ public final class TransportHandler {
 
     ConditionalStyle.registerGridColumnStyleProvider(VIEW_ABSENCE_TYPES, COL_ABSENCE_COLOR,
         ColorStyleProvider.createDefault(VIEW_ABSENCE_TYPES));
+    ConditionalStyle.registerGridColumnStyleProvider(VIEW_CARGO_TYPES, COL_CARGO_TYPE_COLOR,
+        ColorStyleProvider.createDefault(VIEW_CARGO_TYPES));
 
     TradeUtils.registerTotalRenderer(TBL_TRIP_COSTS, VAR_TOTAL);
     TradeUtils.registerTotalRenderer(TBL_TRIP_FUEL_COSTS, VAR_TOTAL);
@@ -296,10 +300,32 @@ public final class TransportHandler {
         new FileGridInterceptor(COL_CRF_REQUEST, AdministrationConstants.COL_FILE,
             AdministrationConstants.COL_FILE_CAPTION, AdministrationConstants.ALS_FILE_NAME));
 
+    if (!BeeKeeper.getUser().isAdministrator()) {
+      Filter mngFilter = Filter.or(BeeKeeper.getUser().getFilter(COL_ORDER_MANAGER),
+          Filter.isNull(COL_ORDER_MANAGER));
+
+      GridFactory.registerImmutableFilter(VIEW_ORDERS, mngFilter);
+      GridFactory.registerImmutableFilter(VIEW_ALL_CARGO, mngFilter);
+    }
+
     FormFactory.registerFormInterceptor(FORM_ORDER, new TransportationOrderForm());
     FormFactory.registerFormInterceptor(FORM_TRIP, new TripForm());
     FormFactory.registerFormInterceptor(FORM_EXPEDITION_TRIP, new TripForm());
+
     FormFactory.registerFormInterceptor(FORM_CARGO, new OrderCargoForm());
+
+    FormFactory.registerPreloader(FORM_CARGO, new Consumer<ScheduledCommand>() {
+      @Override
+      public void accept(ScheduledCommand command) {
+        OrderCargoForm.preload(command);
+      }
+    });
+    FormFactory.registerPreloader(FORM_ASSESSMENT, new Consumer<ScheduledCommand>() {
+      @Override
+      public void accept(ScheduledCommand command) {
+        AssessmentForm.preload(command);
+      }
+    });
 
     FormFactory.registerFormInterceptor(FORM_ASSESSMENT, new AssessmentForm());
     FormFactory.registerFormInterceptor(FORM_ASSESSMENT_FORWARDER, new AssessmentForwarderForm());

@@ -71,7 +71,7 @@
           <properties name="OrderNo" />
         </Label>
         <Label text="CMR Nr.">
-          <properties name="Cmr" />
+          <properties name="CmrNumber" />
         </Label>
         <Label text="=trdAmountWoVat">
           <properties name="Amount" />

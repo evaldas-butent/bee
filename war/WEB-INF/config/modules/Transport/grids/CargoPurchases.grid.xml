@@ -12,7 +12,7 @@
       editViewName="Assessments" editSource="Assessment" module="Transport.Logistics"/>
     <DataColumn name="OrderDate" />
     <RelColumn name="OrderNo" editEnabled="true" editSource="Order" visible="false" />
-    <DataColumn name="Status" />    
+    <DataColumn name="Status" />
     <DataColumn name="SupplierName" />
 
     <RelColumn name="LoadingCountry" visible="false" readOnly="true"/>
@@ -28,7 +28,7 @@
       <renderer type="flag" />
     </CalcColumn>
     <DataColumn name="UnloadingDate" />
-    <DataColumn name="Cmr" visible="false" />
+    <DataColumn name="Cmr" caption="CMR" renderColumns="CmrName CmrNumber" visible="false" />
 
     <DataColumn name="ServiceName" />
     <DataColumn name="Amount" format="0.00" />

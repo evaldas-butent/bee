@@ -201,7 +201,7 @@ public class TransportReportsBean {
                     SqlUtils.plus(
                         SqlUtils.nvl(
                             SqlUtils.multiply(
-                                SqlUtils.field(TBL_TRIP_ROUTES, "Kilometers"),
+                                SqlUtils.field(TBL_TRIP_ROUTES, COL_ROUTE_KILOMETERS),
                                 SqlUtils.sqlCase(SqlUtils.field(TBL_TRIP_ROUTES, "Season"), 0,
                                     SqlUtils.field(fuel, "Summer"),
                                     SqlUtils.field(fuel, "Winter")),
@@ -214,8 +214,8 @@ public class TransportReportsBean {
                             0),
                         SqlUtils.nvl(
                             SqlUtils.multiply(
-                                SqlUtils.field(TBL_TRIP_ROUTES, "Kilometers"),
-                                SqlUtils.field(TBL_TRIP_ROUTES, "CargoWeight"),
+                                SqlUtils.field(TBL_TRIP_ROUTES, COL_ROUTE_KILOMETERS),
+                                SqlUtils.field(TBL_TRIP_ROUTES, COL_ROUTE_WEIGHT),
                                 SqlUtils.field(fuel, "TonneKilometer")),
                             0)),
                     100),

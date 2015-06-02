@@ -1,17 +1,25 @@
 package com.butent.bee.client.modules.transport;
 
 import com.google.common.collect.Lists;
+import com.google.gwt.event.dom.client.ClickEvent;
+import com.google.gwt.event.dom.client.ClickHandler;
 
 import static com.butent.bee.shared.modules.transport.TransportConstants.*;
 
+import com.butent.bee.client.BeeKeeper;
+import com.butent.bee.client.Global;
+import com.butent.bee.client.communication.ParameterList;
+import com.butent.bee.client.communication.ResponseCallback;
 import com.butent.bee.client.composite.DataSelector;
 import com.butent.bee.client.data.Data;
 import com.butent.bee.client.data.Queries;
 import com.butent.bee.client.data.RowUpdateCallback;
+import com.butent.bee.client.dialog.ConfirmationCallback;
 import com.butent.bee.client.event.logical.ParentRowEvent;
 import com.butent.bee.client.grid.ColumnFooter;
 import com.butent.bee.client.grid.ColumnHeader;
 import com.butent.bee.client.grid.column.AbstractColumn;
+import com.butent.bee.client.presenter.GridPresenter;
 import com.butent.bee.client.validation.CellValidateEvent;
 import com.butent.bee.client.validation.CellValidation;
 import com.butent.bee.client.view.edit.EditableColumn;
@@ -19,13 +27,17 @@ import com.butent.bee.client.view.edit.Editor;
 import com.butent.bee.client.view.grid.GridView;
 import com.butent.bee.client.view.grid.interceptor.AbstractGridInterceptor;
 import com.butent.bee.client.view.grid.interceptor.GridInterceptor;
+import com.butent.bee.client.widget.FaLabel;
 import com.butent.bee.shared.Pair;
+import com.butent.bee.shared.communication.ResponseObject;
 import com.butent.bee.shared.data.BeeColumn;
 import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.IsColumn;
 import com.butent.bee.shared.data.IsRow;
 import com.butent.bee.shared.data.filter.Filter;
 import com.butent.bee.shared.data.value.ValueType;
+import com.butent.bee.shared.font.FontAwesome;
+import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.ui.GridDescription;
 import com.butent.bee.shared.utils.BeeUtils;
 
@@ -46,6 +58,7 @@ public class TripRoutesGrid extends AbstractGridInterceptor {
 
   private Long trip;
   private Integer scale;
+  private FaLabel road = new FaLabel(FontAwesome.ROAD);
 
   @Override
   public boolean afterCreateColumn(final String columnId, List<? extends IsColumn> dataColumns,
@@ -124,6 +137,38 @@ public class TripRoutesGrid extends AbstractGridInterceptor {
   }
 
   @Override
+  public void afterCreatePresenter(final GridPresenter presenter) {
+    road.setTitle(Localized.getConstants().trGenerateRoute());
+
+    road.addClickHandler(new ClickHandler() {
+      @Override
+      public void onClick(ClickEvent clickEvent) {
+        Global.confirm(Localized.getConstants().trGenerateRoute(), new ConfirmationCallback() {
+          @Override
+          public void onConfirm() {
+            ParameterList args = TransportHandler.createArgs(SVC_GENERATE_ROUTE);
+            args.addDataItem(COL_TRIP, trip);
+
+            BeeKeeper.getRpc().makePostRequest(args, new ResponseCallback() {
+              @Override
+              public void onResponse(ResponseObject response) {
+                response.notify(presenter.getGridView());
+
+                if (response.hasErrors()) {
+                  return;
+                }
+                presenter.refresh(false);
+              }
+            });
+          }
+        });
+      }
+    });
+    presenter.getHeader().addCommandItem(road);
+    super.afterCreatePresenter(presenter);
+  }
+
+  @Override
   public void beforeCreate(List<? extends IsColumn> dataColumns,
       GridDescription gridDescription) {
 
@@ -152,6 +197,7 @@ public class TripRoutesGrid extends AbstractGridInterceptor {
     for (DataSelector selector : cargoSelectors) {
       setCargoSelectorFilter(selector);
     }
+    road.setVisible(DataUtils.isId(trip));
   }
 
   @Override

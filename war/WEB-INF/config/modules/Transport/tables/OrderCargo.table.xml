@@ -23,7 +23,7 @@
     <Relation name="ValueCurrency" relation="Currencies" label="=trCargoValueCurrency" />
 
     <String name="Number" precision="50" label="=number" />
-    <String name="Cmr" precision="20" />
+    <Relation name="Cmr" relation="Documents" />
     <Integer name="LoadedKilometers" label="=trLoadedKilometers" />
     <Integer name="EmptyKilometers" label="=trEmptyKilometers" />
     <Boolean name="Partial" label="=partial" />
@@ -37,5 +37,8 @@
     <Text name="Notes" label="=notes" />
     <Text name="Directions" label="=trDirections" />
     <Relation name="Currency" relation="Currencies" label="=currency" defExpr="MAIN_CURRENCY" />
+
+    <Relation name="CargoType" relation="CargoTypes" label="=type" />
+    <Relation name="CargoGroup" relation="CargoGroups" label="=group" />
   </Fields>
 </Table>
