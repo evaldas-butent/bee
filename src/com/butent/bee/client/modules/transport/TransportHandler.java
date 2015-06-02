@@ -313,10 +313,17 @@ public final class TransportHandler {
     FormFactory.registerFormInterceptor(FORM_EXPEDITION_TRIP, new TripForm());
 
     FormFactory.registerFormInterceptor(FORM_CARGO, new OrderCargoForm());
+
     FormFactory.registerPreloader(FORM_CARGO, new Consumer<ScheduledCommand>() {
       @Override
       public void accept(ScheduledCommand command) {
         OrderCargoForm.preload(command);
+      }
+    });
+    FormFactory.registerPreloader(FORM_ASSESSMENT, new Consumer<ScheduledCommand>() {
+      @Override
+      public void accept(ScheduledCommand command) {
+        AssessmentForm.preload(command);
       }
     });
 

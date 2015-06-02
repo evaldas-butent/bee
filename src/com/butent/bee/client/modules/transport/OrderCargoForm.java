@@ -5,7 +5,7 @@ import com.google.gwt.event.logical.shared.ValueChangeEvent;
 import com.google.gwt.event.logical.shared.ValueChangeHandler;
 import com.google.gwt.user.client.ui.Widget;
 
-import static com.butent.bee.shared.modules.administration.AdministrationConstants.*;
+import static com.butent.bee.shared.modules.administration.AdministrationConstants.COL_CURRENCY;
 import static com.butent.bee.shared.modules.trade.TradeConstants.*;
 import static com.butent.bee.shared.modules.transport.TransportConstants.*;
 
@@ -19,6 +19,7 @@ import com.butent.bee.client.data.Queries;
 import com.butent.bee.client.data.RowCallback;
 import com.butent.bee.client.event.logical.MutationEvent;
 import com.butent.bee.client.event.logical.ReadyEvent;
+import com.butent.bee.client.event.logical.SelectorEvent;
 import com.butent.bee.client.grid.ChildGrid;
 import com.butent.bee.client.modules.transport.TransportHandler.Profit;
 import com.butent.bee.client.ui.FormFactory.WidgetDescriptionCallback;
@@ -27,6 +28,7 @@ import com.butent.bee.client.view.HeaderView;
 import com.butent.bee.client.view.ViewHelper;
 import com.butent.bee.client.view.edit.EditEndEvent;
 import com.butent.bee.client.view.edit.EditStopEvent;
+import com.butent.bee.client.view.edit.Editor;
 import com.butent.bee.client.view.form.FormView;
 import com.butent.bee.client.view.form.interceptor.AbstractFormInterceptor;
 import com.butent.bee.client.view.form.interceptor.FormInterceptor;
@@ -44,40 +46,50 @@ import com.butent.bee.shared.data.IsRow;
 import com.butent.bee.shared.data.RelationUtils;
 import com.butent.bee.shared.data.filter.Filter;
 import com.butent.bee.shared.modules.documents.DocumentConstants;
+import com.butent.bee.shared.ui.ColumnDescription;
 import com.butent.bee.shared.utils.BeeUtils;
 
 import java.util.List;
+import java.util.Objects;
 
-class OrderCargoForm extends AbstractFormInterceptor {
+class OrderCargoForm extends AbstractFormInterceptor implements SelectorEvent.Handler {
 
   static void preload(final ScheduledCommand command) {
-    Global.getParameter(PRM_CARGO_TYPE, new Consumer<String>() {
+    Global.getParameter(PRM_BIND_EXPENSES_TO_INCOMES, new Consumer<String>() {
       @Override
-      public void accept(String input) {
-        if (DataUtils.isId(input)) {
-          Queries.getRow(VIEW_CARGO_TYPES, BeeUtils.toLong(input), new RowCallback() {
-            @Override
-            public void onFailure(String... reason) {
-              super.onFailure(reason);
+      public void accept(String prm) {
+        bindExpensesToIncomes = BeeUtils.unbox(BeeUtils.toBoolean(prm));
+
+        Global.getParameter(PRM_CARGO_TYPE, new Consumer<String>() {
+          @Override
+          public void accept(String input) {
+            if (DataUtils.isId(input)) {
+              Queries.getRow(VIEW_CARGO_TYPES, BeeUtils.toLong(input), new RowCallback() {
+                @Override
+                public void onFailure(String... reason) {
+                  super.onFailure(reason);
+                  defaultCargoType = null;
+                  command.execute();
+                }
+
+                @Override
+                public void onSuccess(BeeRow result) {
+                  defaultCargoType = result;
+                  command.execute();
+                }
+              });
+
+            } else {
               defaultCargoType = null;
               command.execute();
             }
-
-            @Override
-            public void onSuccess(BeeRow result) {
-              defaultCargoType = result;
-              command.execute();
-            }
-          });
-
-        } else {
-          defaultCargoType = null;
-          command.execute();
-        }
+          }
+        });
       }
     });
   }
 
+  private static boolean bindExpensesToIncomes;
   private static IsRow defaultCargoType;
 
   @Override
@@ -117,6 +129,31 @@ class OrderCargoForm extends AbstractFormInterceptor {
               COL_TRADE_VAT_PLUS, COL_TRADE_VAT, COL_TRADE_VAT_PERC)) {
             refresh(Data.getLong(viewName, getActiveRow(), COL_CURRENCY));
           }
+        }
+
+        @Override
+        public GridInterceptor getInstance() {
+          return null;
+        }
+      });
+
+    } else if (widget instanceof ChildGrid && BeeUtils.same(name, TBL_CARGO_EXPENSES)) {
+      ((ChildGrid) widget).setGridInterceptor(new AbstractGridInterceptor() {
+
+        @Override
+        public void afterCreateEditor(String source, Editor editor, boolean embedded) {
+          if (BeeUtils.same(source, COL_CARGO_INCOME) && editor instanceof DataSelector) {
+            ((DataSelector) editor).addSelectorHandler(OrderCargoForm.this);
+          }
+          super.afterCreateEditor(source, editor, embedded);
+        }
+
+        @Override
+        public ColumnDescription beforeCreateColumn(GridView gridView, ColumnDescription descr) {
+          if (!bindExpensesToIncomes && Objects.equals(descr.getId(), COL_CARGO_INCOME)) {
+            return null;
+          }
+          return super.beforeCreateColumn(gridView, descr);
         }
 
         @Override
@@ -179,6 +216,13 @@ class OrderCargoForm extends AbstractFormInterceptor {
   @Override
   public FormInterceptor getInstance() {
     return new OrderCargoForm();
+  }
+
+  @Override
+  public void onDataSelector(SelectorEvent event) {
+    if (BeeUtils.same(event.getRelatedViewName(), TBL_CARGO_INCOMES) && event.isOpened()) {
+      event.getSelector().setAdditionalFilter(Filter.equals(COL_CARGO, getActiveRowId()));
+    }
   }
 
   @Override

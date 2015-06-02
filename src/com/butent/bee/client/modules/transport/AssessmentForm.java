@@ -64,6 +64,7 @@ import com.butent.bee.client.ui.Opener;
 import com.butent.bee.client.view.HeaderView;
 import com.butent.bee.client.view.add.ReadyForInsertEvent;
 import com.butent.bee.client.view.edit.EditableColumn;
+import com.butent.bee.client.view.edit.Editor;
 import com.butent.bee.client.view.form.FormView;
 import com.butent.bee.client.view.form.interceptor.FormInterceptor;
 import com.butent.bee.client.view.form.interceptor.PrintFormInterceptor;
@@ -75,6 +76,7 @@ import com.butent.bee.client.widget.FaLabel;
 import com.butent.bee.client.widget.InlineLabel;
 import com.butent.bee.client.widget.InputArea;
 import com.butent.bee.client.widget.InputBoolean;
+import com.butent.bee.shared.Consumer;
 import com.butent.bee.shared.Holder;
 import com.butent.bee.shared.Pair;
 import com.butent.bee.shared.communication.ResponseObject;
@@ -96,8 +98,7 @@ import com.butent.bee.shared.data.view.RowInfo;
 import com.butent.bee.shared.font.FontAwesome;
 import com.butent.bee.shared.i18n.LocalizableConstants;
 import com.butent.bee.shared.i18n.Localized;
-import com.butent.bee.shared.modules.transport.TransportConstants.AssessmentStatus;
-import com.butent.bee.shared.modules.transport.TransportConstants.OrderStatus;
+import com.butent.bee.shared.modules.transport.TransportConstants.*;
 import com.butent.bee.shared.time.DateTime;
 import com.butent.bee.shared.time.TimeUtils;
 import com.butent.bee.shared.ui.Action;
@@ -181,7 +182,8 @@ public class AssessmentForm extends PrintFormInterceptor implements SelectorEven
             public void onSuccess(Long assessment) {
               BeeRow newRow = DataUtils.cloneRow(form.getActiveRow());
 
-              for (String col : new String[] {COL_DATE, COL_CARGO, COL_ASSESSMENT_STATUS,
+              for (String col : new String[] {
+                  COL_DATE, COL_CARGO, COL_ASSESSMENT_STATUS,
                   COL_ASSESSMENT_EXPENSES, COL_ASSESSMENT_LOG}) {
                 newRow.clearCell(form.getDataIndex(col));
               }
@@ -275,7 +277,7 @@ public class AssessmentForm extends PrintFormInterceptor implements SelectorEven
                       String oldLog = Data.getString(view, row, COL_ASSESSMENT_LOG);
 
                       Queries.update(view, row.getId(), row.getVersion(), Data.getColumns(view,
-                          Lists.newArrayList(COL_ASSESSMENT_STATUS, COL_ASSESSMENT_LOG)),
+                              Lists.newArrayList(COL_ASSESSMENT_STATUS, COL_ASSESSMENT_LOG)),
                           Lists.newArrayList(BeeUtils.toString(status.ordinal()), oldLog),
                           Lists.newArrayList(BeeUtils.toString(AssessmentStatus.NEW.ordinal()),
                               buildLog(loc.trAssessmentRejection(), value, oldLog)), null,
@@ -345,6 +347,13 @@ public class AssessmentForm extends PrintFormInterceptor implements SelectorEven
   }
 
   private class ServicesGrid extends AbstractGridInterceptor {
+    @Override
+    public void afterCreateEditor(String source, Editor editor, boolean embedded) {
+      if (BeeUtils.same(source, COL_CARGO_INCOME) && editor instanceof DataSelector) {
+        ((DataSelector) editor).addSelectorHandler(AssessmentForm.this);
+      }
+      super.afterCreateEditor(source, editor, embedded);
+    }
 
     @Override
     public void afterDeleteRow(long rowId) {
@@ -369,6 +378,15 @@ public class AssessmentForm extends PrintFormInterceptor implements SelectorEven
       if (BeeUtils.same(getViewName(), TBL_CARGO_EXPENSES)) {
         DataChangeEvent.fireRefresh(BeeKeeper.getBus(), TBL_ASSESSMENT_FORWARDERS);
       }
+    }
+
+    @Override
+    public ColumnDescription beforeCreateColumn(GridView gridView, ColumnDescription descr) {
+      if (!bindExpensesToIncomes && Objects.equals(gridView.getViewName(), TBL_CARGO_EXPENSES)
+          && Objects.equals(descr.getId(), COL_CARGO_INCOME)) {
+        return null;
+      }
+      return super.beforeCreateColumn(gridView, descr);
     }
 
     @Override
@@ -517,6 +535,8 @@ public class AssessmentForm extends PrintFormInterceptor implements SelectorEven
           });
     }
   }
+
+  private static boolean bindExpensesToIncomes;
 
   private FormView form;
   private final LocalizableConstants loc = Localized.getConstants();
@@ -708,13 +728,12 @@ public class AssessmentForm extends PrintFormInterceptor implements SelectorEven
 
   @Override
   public boolean beforeAction(final Action action, final Presenter presenter) {
-    if (action == Action.SAVE && !isNewRow()
-        && handleSaveAction(new ScheduledCommand() {
-          @Override
-          public void execute() {
-            presenter.handleAction(action);
-          }
-        })) {
+    if (action == Action.SAVE && !isNewRow() && handleSaveAction(new ScheduledCommand() {
+      @Override
+      public void execute() {
+        presenter.handleAction(action);
+      }
+    })) {
       return false;
     }
     return super.beforeAction(action, presenter);
@@ -772,6 +791,10 @@ public class AssessmentForm extends PrintFormInterceptor implements SelectorEven
         updateDepartment(form, form.getActiveRow(),
             Data.getLong(event.getRelatedViewName(), event.getRelatedRow(), COL_DEPARTMENT));
       }
+    } else if (BeeUtils.same(event.getRelatedViewName(), TBL_CARGO_INCOMES)) {
+      if (event.isOpened()) {
+        event.getSelector().setAdditionalFilter(Filter.equals(COL_CARGO, getLongValue(COL_CARGO)));
+      }
     }
   }
 
@@ -827,6 +850,16 @@ public class AssessmentForm extends PrintFormInterceptor implements SelectorEven
           && !AssessmentStatus.LOST.is(form.getIntegerValue(COL_ASSESSMENT_STATUS))
           && !OrderStatus.CANCELED.is(form.getIntegerValue(ALS_ORDER_STATUS)));
     }
+  }
+
+  static void preload(final ScheduledCommand command) {
+    Global.getParameter(PRM_BIND_EXPENSES_TO_INCOMES, new Consumer<String>() {
+      @Override
+      public void accept(String prm) {
+        bindExpensesToIncomes = BeeUtils.unbox(BeeUtils.toBoolean(prm));
+        command.execute();
+      }
+    });
   }
 
   private static String buildLog(String caption, String value, String oldLog) {
@@ -1032,8 +1065,8 @@ public class AssessmentForm extends PrintFormInterceptor implements SelectorEven
 
     boolean ok = false;
 
-    for (Widget widget : new Widget[] {incomeTotalWidget, expenseTotalWidget, profitWidget,
-        incomeWidget, expenseWidget}) {
+    for (Widget widget : new Widget[] {
+        incomeTotalWidget, expenseTotalWidget, profitWidget, incomeWidget, expenseWidget}) {
       if (widget != null) {
         ok = true;
         widget.getElement().setInnerText(null);

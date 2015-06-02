@@ -255,6 +255,7 @@ public final class TransportConstants {
   public static final String PRM_MESSAGE_TEMPLATE = "MessageTemplate";
   public static final String PRM_INVOICE_PREFIX = "InvoicePrefix";
   public static final String PRM_CARGO_TYPE = "CargoType";
+  public static final String PRM_BIND_EXPENSES_TO_INCOMES = "BindExpensesToIncomes";
 
   public static final String VAR_INCOME = "Income";
   public static final String VAR_EXPENSE = "Expense";
@@ -393,7 +394,7 @@ public final class TransportConstants {
   public static final String COL_CARGO = "Cargo";
   public static final String COL_CARGO_DESCRIPTION = "Description";
   public static final String COL_CARGO_ID = "CargoID";
-  public static final String COL_CARGO_INCOME = "CargoIncome";
+  public static final String COL_CARGO_INCOME = "Income";
   public static final String COL_CARGO_PERCENT = "CargoPercent";
   public static final String COL_CARGO_MESSAGE = "Message";
   public static final String COL_CARGO_TRIP = "CargoTrip";
