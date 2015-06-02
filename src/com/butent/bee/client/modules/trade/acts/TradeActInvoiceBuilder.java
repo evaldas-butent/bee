@@ -427,8 +427,17 @@ public class TradeActInvoiceBuilder extends AbstractFormInterceptor implements
   private final List<Service> services = new ArrayList<>();
 
   private Double defVatPercent;
+  private final Long companyId;
+  private final Long actId;
 
   TradeActInvoiceBuilder() {
+    this.companyId = null;
+    this.actId = null;
+  }
+
+  TradeActInvoiceBuilder(Long companyId, Long actId) {
+    this.companyId = companyId;
+    this.actId = actId;
   }
 
   @Override
@@ -543,20 +552,15 @@ public class TradeActInvoiceBuilder extends AbstractFormInterceptor implements
 
     widget = form.getWidgetByName(COL_TA_COMPANY);
     if (widget instanceof UnboundSelector
-        && TradeActKeeper.invoiceFromActCompanyId != null) {
+        && getCompanyId() != null) {
       ((UnboundSelector) widget).setValue(
-          TradeActKeeper.invoiceFromActCompanyId, false);
+          getCompanyId(), true);
+      ((UnboundSelector) widget).setEnabled(false);
       refresh(true);
     } else {
       ((UnboundSelector) widget).clearValue();
+      ((UnboundSelector) widget).setEnabled(true);
     }
-  }
-
-  @Override
-  public void onUnload(FormView form) {
-    TradeActKeeper.invoiceFromActCompanyId = null;
-    TradeActKeeper.invoiceFromActRowId = null;
-    super.onUnload(form);
   }
 
   @Override
@@ -663,9 +667,9 @@ public class TradeActInvoiceBuilder extends AbstractFormInterceptor implements
           Act act = null;
 
           for (BeeRow row : result) {
-            long actId = row.getLong(actIndex);
-            if (act == null || act.id() != actId) {
-              act = findAct(actId);
+            long resActId = row.getLong(actIndex);
+            if (act == null || act.id() != resActId) {
+              act = findAct(resActId);
               if (act == null) {
                 continue;
               }
@@ -836,8 +840,8 @@ public class TradeActInvoiceBuilder extends AbstractFormInterceptor implements
 
         String itemName = svc.row.getString(itemNameIndex);
 
-        Long actId = svc.row.getLong(actIndex);
-        Act act = findAct(actId);
+        Long svcActId = svc.row.getLong(actIndex);
+        Act act = findAct(svcActId);
 
         String objectInfo = (act == null) ? null
             : BeeUtils.joinWords(act.row.getString(objectNameIndex),
@@ -1025,6 +1029,10 @@ public class TradeActInvoiceBuilder extends AbstractFormInterceptor implements
     return getContainerByWidgetName(VIEW_TRADE_ACTS);
   }
 
+  private Long getActId() {
+    return actId;
+  }
+
   private JustDate getDateFrom() {
     return getDateByWidgetName(COL_TA_SERVICE_FROM);
   }
@@ -1043,11 +1051,15 @@ public class TradeActInvoiceBuilder extends AbstractFormInterceptor implements
   }
 
   private Long getCompany() {
-    if (TradeActKeeper.invoiceFromActCompanyId == null) {
+    if (getCompanyId() == null) {
       return getSelectedIdByWidgetName(COL_TA_COMPANY);
     } else {
-      return TradeActKeeper.invoiceFromActCompanyId;
+      return getCompanyId();
     }
+  }
+
+  private Long getCompanyId() {
+    return companyId;
   }
 
   private Long getCurrency() {
@@ -1192,21 +1204,17 @@ public class TradeActInvoiceBuilder extends AbstractFormInterceptor implements
       params.addQueryItem(COL_TA_SERVICE_TO, end.getDays());
     }
 
+    if (getActId() != null) {
+      params.addQueryItem(COL_TA_ACT, getActId());
+    }
+
     params.addQueryItem(COL_TA_COMPANY, company);
 
     BeeKeeper.getRpc().makeRequest(params, new ResponseCallback() {
       @Override
       public void onResponse(ResponseObject response) {
         if (response.hasResponse(BeeRowSet.class)) {
-          BeeRowSet rowSet;
-          if (TradeActKeeper.invoiceFromActRowId == null) {
-            rowSet = BeeRowSet.restore(response.getResponseAsString());
-          } else {
-            rowSet = new BeeRowSet(VIEW_TRADE_ACTS, Data
-                .getColumns(VIEW_TRADE_ACTS));
-            rowSet.addRow(BeeRowSet.restore(response.getResponseAsString())
-                .getRowById(TradeActKeeper.invoiceFromActRowId));
-          }
+          BeeRowSet rowSet = BeeRowSet.restore(response.getResponseAsString());
 
           int dateIndex = rowSet.getColumnIndex(COL_TA_DATE);
           int untilIndex = rowSet.getColumnIndex(COL_TA_UNTIL);
@@ -1513,9 +1521,9 @@ public class TradeActInvoiceBuilder extends AbstractFormInterceptor implements
       for (int idx = 0; idx < svc.ranges.size(); idx++) {
 
         c = 0;
-        long actId = svc.row.getLong(actIndex);
-        if (act == null || act.id() != actId) {
-          act = findAct(actId);
+        long svcActId = svc.row.getLong(actIndex);
+        if (act == null || act.id() != svcActId) {
+          act = findAct(svcActId);
         }
 
         if (svc.quantity != null && svc.quantity > 0) {
@@ -1540,7 +1548,7 @@ public class TradeActInvoiceBuilder extends AbstractFormInterceptor implements
           c++;
         }
 
-        table.setText(r, c++, BeeUtils.toString(actId),
+        table.setText(r, c++, BeeUtils.toString(svcActId),
             STYLE_SVC_ACT_PREFIX + STYLE_CELL_SUFFIX);
 
         table.setText(r, c++, TimeUtils.renderDate(svc.dateFrom(idx)),

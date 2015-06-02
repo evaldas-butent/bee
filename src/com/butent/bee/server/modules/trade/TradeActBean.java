@@ -586,6 +586,7 @@ public class TradeActBean implements HasTimerService {
     String dTo = reqInfo.getParameter(COL_TA_SERVICE_TO);
 
     Long company = reqInfo.getParameterLong(COL_TA_COMPANY);
+    Long actId = reqInfo.getParameterLong(COL_TA_ACT);
 
     LongValue timeFrom =
         BeeUtils.isDigit(dFrom) ? new LongValue(TimeUtils.daysToTime(BeeUtils.toInt(dFrom))) : null;
@@ -606,6 +607,10 @@ public class TradeActBean implements HasTimerService {
 
     if (DataUtils.isId(company)) {
       filter.add(Filter.equals(COL_TA_COMPANY, company));
+    }
+
+    if (DataUtils.isId(actId)) {
+      filter.add(Filter.compareId(actId));
     }
 
     filter.add(Filter.in(sys.getIdName(VIEW_TRADE_ACTS), VIEW_TRADE_ACT_SERVICES, COL_TRADE_ACT));

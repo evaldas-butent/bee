@@ -154,18 +154,20 @@ public class TradeActForm extends PrintFormInterceptor implements SelectorEvent.
 
     HeaderView header = form.getViewPresenter().getHeader();
     header.clearCommandPanel();
-    commandCompose = new Button(
-        Localized.getConstants().taInvoiceCompose(), new ClickHandler() {
 
-          @Override
-          public void onClick(ClickEvent arg0) {
-            TradeActKeeper.invoiceFromActCompanyId = row.getLong(Data
-                .getColumnIndex(VIEW_TRADE_ACTS, COL_TA_COMPANY));
-            TradeActKeeper.invoiceFromActRowId = row.getId();
-            FormFactory.openForm(FORM_INVOICE_BUILDER);
-          }
-        });
-    header.addCommandItem(commandCompose);
+    if (!DataUtils.isNewRow(row)) {
+      commandCompose = new Button(
+          Localized.getConstants().taInvoiceCompose(), new ClickHandler() {
+
+            @Override
+            public void onClick(ClickEvent arg0) {
+              FormFactory.openForm(FORM_INVOICE_BUILDER, new TradeActInvoiceBuilder(row
+                  .getLong(Data
+                      .getColumnIndex(VIEW_TRADE_ACTS, COL_TA_COMPANY)), row.getId()));
+            }
+          });
+      header.addCommandItem(commandCompose);
+    }
     super.afterRefresh(form, row);
   }
 
