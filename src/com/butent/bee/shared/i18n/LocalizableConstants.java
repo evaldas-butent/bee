@@ -1,5 +1,7 @@
 package com.butent.bee.shared.i18n;
 
+import com.google.gwt.i18n.client.Constants;
+
 import com.butent.bee.shared.modules.calendar.LocalizableCalendarConstants;
 import com.butent.bee.shared.modules.classifiers.LocalizableClassifierConstants;
 import com.butent.bee.shared.modules.discussions.LocalizableDiscussionsConstants;
@@ -12,7 +14,6 @@ import com.butent.bee.shared.modules.tasks.LocalizableTaskConstants;
 import com.butent.bee.shared.modules.trade.LocalizableTradeConstants;
 import com.butent.bee.shared.modules.trade.acts.LocalizableTradeActConstants;
 import com.butent.bee.shared.modules.transport.LocalizableTransportConstants;
-import com.google.gwt.i18n.client.Constants;
 
 public interface LocalizableConstants extends Constants, LocalizableClassifierConstants,
     LocalizableCalendarConstants, LocalizableMailConstants, LocalizableTransportConstants,

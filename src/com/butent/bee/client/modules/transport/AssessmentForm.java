@@ -98,7 +98,6 @@ import com.butent.bee.shared.data.view.RowInfo;
 import com.butent.bee.shared.font.FontAwesome;
 import com.butent.bee.shared.i18n.LocalizableConstants;
 import com.butent.bee.shared.i18n.Localized;
-import com.butent.bee.shared.modules.transport.TransportConstants.*;
 import com.butent.bee.shared.time.DateTime;
 import com.butent.bee.shared.time.TimeUtils;
 import com.butent.bee.shared.ui.Action;
@@ -277,7 +276,7 @@ public class AssessmentForm extends PrintFormInterceptor implements SelectorEven
                       String oldLog = Data.getString(view, row, COL_ASSESSMENT_LOG);
 
                       Queries.update(view, row.getId(), row.getVersion(), Data.getColumns(view,
-                              Lists.newArrayList(COL_ASSESSMENT_STATUS, COL_ASSESSMENT_LOG)),
+                          Lists.newArrayList(COL_ASSESSMENT_STATUS, COL_ASSESSMENT_LOG)),
                           Lists.newArrayList(BeeUtils.toString(status.ordinal()), oldLog),
                           Lists.newArrayList(BeeUtils.toString(AssessmentStatus.NEW.ordinal()),
                               buildLog(loc.trAssessmentRejection(), value, oldLog)), null,
