@@ -49,6 +49,7 @@ import com.butent.bee.shared.data.filter.CompoundFilter;
 import com.butent.bee.shared.data.filter.Filter;
 import com.butent.bee.shared.data.value.LongValue;
 import com.butent.bee.shared.data.value.TextValue;
+import com.butent.bee.shared.data.view.DataInfo;
 import com.butent.bee.shared.data.view.Order;
 import com.butent.bee.shared.data.view.RowInfo;
 import com.butent.bee.shared.exceptions.BeeException;
@@ -161,6 +162,10 @@ public class TradeActBean implements HasTimerService {
         response = getActsForInvoice(reqInfo);
         break;
 
+      case SVC_GET_NEXT_ACT_NUMBER:
+        response = getNextActNumber(reqInfo);
+        break;
+
       case SVC_GET_SERVICES_FOR_INVOICE:
         response = getServicesForInvoice(reqInfo);
         break;
@@ -222,8 +227,10 @@ public class TradeActBean implements HasTimerService {
     sys.registerDataEventHandler(new DataEventHandler() {
       @Subscribe
       public void fillActNumber(ViewInsertEvent event) {
-        if (event.isBefore() && event.isTarget(VIEW_TRADE_ACTS)
-            && !DataUtils.contains(event.getColumns(), COL_TA_NUMBER)) {
+        if (event.isBefore()
+            && event.isTarget(VIEW_TRADE_ACTS)
+            && (!DataUtils.contains(event.getColumns(), COL_TA_NUMBER) || !DataUtils.contains(event
+                .getColumns(), COL_TA_REGISTRATION_NO))) {
 
           TradeActKind kind = null;
           Long series = null;
@@ -241,8 +248,16 @@ public class TradeActBean implements HasTimerService {
 
           if (kind != null && kind.autoNumber() && DataUtils.isId(series)) {
             BeeColumn column = sys.getView(VIEW_TRADE_ACTS).getBeeColumn(COL_TA_NUMBER);
-            String number = getNextActNumber(series, column.getPrecision());
+            String number = getNextActNumber(series, column.getPrecision(), COL_TA_NUMBER);
 
+            if (!BeeUtils.isEmpty(number)) {
+              event.addValue(column, new TextValue(number));
+            }
+          }
+
+          if (TradeActKind.RETURN.equals(kind) && DataUtils.isId(series)) {
+            BeeColumn column = sys.getView(VIEW_TRADE_ACTS).getBeeColumn(COL_TA_REGISTRATION_NO);
+            String number = getNextActNumber(series, column.getPrecision(), COL_TA_REGISTRATION_NO);
             if (!BeeUtils.isEmpty(number)) {
               event.addValue(column, new TextValue(number));
             }
@@ -314,7 +329,8 @@ public class TradeActBean implements HasTimerService {
       int numberIndex = rowSet.getColumnIndex(COL_TA_NUMBER);
 
       if (DataUtils.isId(series) && oldRow.isNull(numberIndex)) {
-        String number = getNextActNumber(series, rowSet.getColumn(numberIndex).getPrecision());
+        String number =
+            getNextActNumber(series, rowSet.getColumn(numberIndex).getPrecision(), COL_TA_NUMBER);
         if (!BeeUtils.isEmpty(number)) {
           newRow.setValue(numberIndex, number);
         }
@@ -531,12 +547,38 @@ public class TradeActBean implements HasTimerService {
     return (operations.size() == 1) ? operations.get(0) : null;
   }
 
-  private String getNextActNumber(long series, int maxLength) {
+  private ResponseObject getNextActNumber(RequestInfo reqInfo) {
+    Long seriesId = reqInfo.getParameterLong(COL_TA_SERIES);
+    String columnName = reqInfo.getParameter(Service.VAR_COLUMN);
+    String viewName = reqInfo.getParameter(VAR_VIEW_NAME);
+
+    if (!DataUtils.isId(seriesId) || BeeUtils.isEmpty(columnName) || BeeUtils.isEmpty(viewName)) {
+      logger.warning("Missing one of parameter (seriesId, columnName, viewname)", seriesId,
+          columnName, viewName);
+      return ResponseObject.emptyResponse();
+    }
+
+    DataInfo viewData = sys.getDataInfo(viewName);
+
+    if (viewData == null) {
+      return ResponseObject.emptyResponse();
+    }
+
+    BeeColumn col = viewData.getColumn(columnName);
+
+    if (col == null) {
+      return ResponseObject.emptyResponse();
+    }
+
+    return ResponseObject.response(getNextActNumber(seriesId, col.getPrecision(), columnName));
+  }
+
+  private String getNextActNumber(long series, int maxLength, String column) {
     IsCondition where = SqlUtils.and(SqlUtils.equals(TBL_TRADE_ACTS, COL_TA_SERIES, series),
-        SqlUtils.notNull(TBL_TRADE_ACTS, COL_TA_NUMBER));
+        SqlUtils.notNull(TBL_TRADE_ACTS, column));
 
     SqlSelect query = new SqlSelect()
-        .addFields(TBL_TRADE_ACTS, COL_TA_NUMBER)
+        .addFields(TBL_TRADE_ACTS, column)
         .addFrom(TBL_TRADE_ACTS)
         .setWhere(where);
 
@@ -1095,15 +1137,22 @@ public class TradeActBean implements HasTimerService {
 
     Long retStatus = prm.getRelation(PRM_RETURNED_ACT_STATUS);
     int statusIndex = parentActs.getColumnIndex(COL_TA_STATUS);
+    int seriesIndex = parentActs.getColumnIndex(COL_TA_SERIES);
+    int regNoIndex = parentActs.getColumnIndex(COL_TA_REGISTRATION_NO);
 
     for (BeeRow parentAct : parentActs) {
       long parentId = parentAct.getId();
 
-      SqlInsert actInsert = new SqlInsert(TBL_TRADE_ACTS)
-          .addConstant(COL_TA_KIND, TradeActKind.RETURN.ordinal())
-          .addConstant(COL_TA_PARENT, parentId)
-          .addConstant(COL_TA_DATE, date)
-          .addConstant(COL_TA_MANAGER, usr.getCurrentUserId());
+      SqlInsert actInsert =
+          new SqlInsert(TBL_TRADE_ACTS)
+              .addConstant(COL_TA_KIND, TradeActKind.RETURN.ordinal())
+              .addConstant(COL_TA_PARENT, parentId)
+              .addConstant(COL_TA_DATE, date)
+              .addConstant(COL_TA_MANAGER, usr.getCurrentUserId())
+              .addConstant(
+                  COL_TA_REGISTRATION_NO,
+                  getNextActNumber(BeeUtils.unbox(parentAct.getLong(seriesIndex)), parentActs
+                      .getColumn(regNoIndex).getPrecision(), COL_TA_REGISTRATION_NO));
 
       if (operation != null) {
         actInsert.addConstant(COL_TA_OPERATION, operation);
@@ -1130,13 +1179,24 @@ public class TradeActBean implements HasTimerService {
 
           for (int index = 0; index < parentItems.getNumberOfColumns(); index++) {
             if (index != itemActIndex && parentItems.getColumn(index).isEditable()) {
-              String value = parentItem.getString(index);
-              if (!BeeUtils.isEmpty(value)) {
-                itemInsert.addConstant(parentItems.getColumnId(index), value);
+
+              switch (parentItems.getColumn(index).getType()) {
+                case BOOLEAN:
+                  Boolean boolValue = parentItem
+                      .getBoolean(index);
+                  itemInsert.addConstant(parentItems.getColumnId(index), boolValue);
+                  break;
+                default:
+                  String value = parentItem.getString(index);
+                  if (!BeeUtils.isEmpty(value)) {
+                    itemInsert.addConstant(parentItems.getColumnId(index), value);
+                  }
               }
+
             }
           }
 
+          // logger.warning(itemInsert.getQuery());
           ResponseObject itemInsResponse = qs.insertDataWithResponse(itemInsert);
           if (itemInsResponse.hasErrors()) {
             return itemInsResponse;
