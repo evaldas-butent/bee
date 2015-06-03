@@ -1528,13 +1528,12 @@
   right: 1px;
   bottom: 1px;
   padding: 1px 2px;
-  font-size: 14px;
-  color: #777;
+  font-size: 16px;
+  color: #63a140;
   cursor: pointer;
 }
 .bee-MultiSelector-plus:hover {
-  background-color: #5a6ba3;
-  color: white;
+  color: #6bae45;
 }
 
 .bee-SimplePager-container {
