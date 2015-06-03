@@ -64,8 +64,6 @@ import java.util.TreeMap;
 
 public final class TradeActKeeper {
 
-  public static Long invoiceFromActRowId = null;
-  public static Long invoiceFromActCompanyId = null;
   static final String STYLE_PREFIX = BeeConst.CSS_CLASS_PREFIX + "ta-";
 
   private static final String STYLE_COMMAND_PREFIX = STYLE_PREFIX + "command-";

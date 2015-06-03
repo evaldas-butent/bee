@@ -16,6 +16,7 @@ public final class TradeActConstants {
 
   public static final String SVC_GET_ACTS_FOR_INVOICE = "GetActsForInvoice";
   public static final String SVC_GET_SERVICES_FOR_INVOICE = "GetServicesForInvoice";
+  public static final String SVC_GET_NEXT_ACT_NUMBER = "GetNextActNumber";
   public static final String SVC_CREATE_ACT_INVOICE = "CreateActInvoice";
 
   public static final String SVC_ITEMS_BY_COMPANY_REPORT = "GetItemsByCompanyReport";
@@ -80,6 +81,7 @@ public final class TradeActConstants {
   public static final String COL_TA_SERVICE_FACTOR = "Factor";
   public static final String COL_TA_SERVICE_DAYS = "DaysPerWeek";
   public static final String COL_TA_SERVICE_MIN = "MinTerm";
+  public static final String COL_TA_ACT = "Act";
 
   public static final String COL_TA_INVOICE_SERVICE = "TradeActService";
   public static final String COL_TA_INVOICE_ITEM = "SaleItem";
