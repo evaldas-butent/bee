@@ -208,7 +208,8 @@ class ProjectForm extends AbstractFormInterceptor implements DataChangeEvent.Han
       }
     }
 
-    if (isProjectUser(form, row) || BeeKeeper.getUser().isMenuVisible("Projects.AllProjects")) {
+    if (isProjectUser(form, row) || BeeKeeper.getUser().isMenuVisible("Projects.AllProjects")
+        || BeeKeeper.getUser().isAdministrator()) {
       documents.setEnabled(true);
     }
 
