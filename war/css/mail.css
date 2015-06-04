@@ -62,6 +62,7 @@
 
 .bee-mail-Header {
   position: relative;
+  height: 100%;
 }
 
 .bee-mail-HeaderUnread .bee-mail-HeaderAddress, .bee-mail-HeaderUnread  .bee-mail-HeaderSubject {
@@ -136,7 +137,7 @@
   padding: 4px 10px;
 }
 
-.bee-mail-MenuPopup {
+.bee-mail-MenuPopup, .bee-mail-SearchPopup {
   background-color: white;
   border: 1px solid rgba(0, 0, 0, 0.2);
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
@@ -229,7 +230,42 @@
   font-style: italic;
 }
 
-.bee-mail-SysFolder-dragOver, .bee-mail-Folder-dragOver {
+.bee-mail-SysFolder.dragOver, .bee-mail-Folder.dragOver {
   outline: 1px dashed red;
 }
 
+.bee-mail-SearchPanel {
+  padding: 10px;
+}
+.bee-mail-SearchPanel .bee-InputText {
+  width: 250px;
+  margin-bottom: 10px;
+}
+.bee-mail-SearchStarred, .bee-mail-SearchUnread, .bee-mail-SearchAttachments {
+  display: block;
+  margin-bottom: 5px;
+}
+.bee-mail-SearchFolder {
+  display: inline-block;
+  margin-top: 10px;
+}
+.bee-mail-SearchButton {
+  float: right;
+  display: inline-block;
+  color: #888;
+  padding: 5px 10px;
+  background-color: whitesmoke;
+  border: 1px solid silver;
+  border-radius: 4px;
+  margin-bottom: 10px;
+}
+.bee-mail-SearchButton:hover {
+  color: black;
+}
+.bee-mail-SearchExtended {
+  color: red;
+}
+
+.bee-mail-WaitingForUserEmails bee-MultiSelector-container {
+  visibility: hidden;
+}

@@ -48,7 +48,6 @@ import com.butent.bee.client.layout.Flow;
 import com.butent.bee.client.menu.MenuBar;
 import com.butent.bee.client.menu.MenuItem;
 import com.butent.bee.client.render.AbstractCellRenderer;
-import com.butent.bee.client.render.EnumRenderer;
 import com.butent.bee.client.render.RendererFactory;
 import com.butent.bee.client.render.SimpleRenderer;
 import com.butent.bee.client.style.StyleUtils;
@@ -654,7 +653,7 @@ public class DataSelector extends Composite implements Editor, HasVisibleLines, 
   private static final String STYLE_NAVIGATION = STYLE_SELECTOR + "-navigation";
   private static final String STYLE_NAVIGATION_CELL = STYLE_SELECTOR + "-navigationCell";
 
-  private static final String STYLE_EDITABLE_CONTAINER = STYLE_SELECTOR + "-editableContainer";
+  public static final String STYLE_EDITABLE_CONTAINER = STYLE_SELECTOR + "-editableContainer";
   private static final String STYLE_EDITABLE_ACTIVE = STYLE_SELECTOR + "-editable-active";
   private static final String STYLE_EDITABLE_INPUT = STYLE_SELECTOR + "-editableInput";
 
@@ -663,8 +662,6 @@ public class DataSelector extends Composite implements Editor, HasVisibleLines, 
 
   private static final int DEFAULT_MAX_INPUT_LENGTH = 30;
   private static final int DEFAULT_VISIBLE_LINES = 10;
-
-  private static final Operator DEFAULT_SEARCH_TYPE = Operator.CONTAINS;
 
   private static void addClassToCell(MenuItem item, String className) {
     TableCellElement cell = DomUtils.getParentCell(item, true);
@@ -695,7 +692,6 @@ public class DataSelector extends Composite implements Editor, HasVisibleLines, 
   private int visibleLines = DEFAULT_VISIBLE_LINES;
   private final SelectionOracle oracle;
 
-  private final Operator searchType;
   private final int minQueryLength;
   private final boolean instant;
 
@@ -766,12 +762,11 @@ public class DataSelector extends Composite implements Editor, HasVisibleLines, 
     DataInfo dataInfo = Data.getDataInfo(relation.getViewName());
     this.oracle = new SelectionOracle(relation, dataInfo);
 
-    this.searchType =
-        (relation.getOperator() == null) ? DEFAULT_SEARCH_TYPE : relation.getOperator();
     this.minQueryLength = BeeUtils.unbox(relation.getMinQueryLength());
 
     if (relation.getInstant() == null) {
-      this.instant = searchType == Operator.CONTAINS || searchType == Operator.STARTS;
+      Operator operator = relation.nvlOperator();
+      this.instant = operator == Operator.CONTAINS || operator == Operator.STARTS;
     } else {
       this.instant = relation.getInstant();
     }
@@ -793,21 +788,23 @@ public class DataSelector extends Composite implements Editor, HasVisibleLines, 
     this.tableMode = ItemType.ROW.equals(itemType) || !selectorColumns.isEmpty()
         || itemType == null && size > 1 && !relation.hasRowRenderer();
 
-    int dataIndex = (size == 1) ? dataInfo.getColumnIndex(choiceColumns.get(0)) : BeeConst.UNDEF;
-    BeeColumn dataColumn =
-        BeeConst.isUndef(dataIndex) ? null : dataInfo.getColumns().get(dataIndex);
+    BeeColumn dataColumn = null;
+    CellSource cellSource = null;
 
-    CellSource cellSource =
-        (dataColumn == null) ? null : CellSource.forColumn(dataColumn, dataIndex);
+    if (size == 1) {
+      int dataIndex = dataInfo.getColumnIndex(choiceColumns.get(0));
+
+      if (BeeConst.isUndef(dataIndex)) {
+        cellSource = CellSource.forProperty(choiceColumns.get(0), ValueType.TEXT);
+      } else {
+        dataColumn = dataInfo.getColumns().get(dataIndex);
+        cellSource = CellSource.forColumn(dataColumn, dataIndex);
+      }
+    }
 
     this.rowRenderer = RendererFactory.getRenderer(relation.getRowRendererDescription(),
-        relation.getRowRender(), relation.getRowRenderTokens(), relation.getEnumKey(),
+        relation.getRowRender(), relation.getRowRenderTokens(), null,
         choiceColumns, dataInfo.getColumns(), cellSource);
-
-    if (rowRenderer instanceof EnumRenderer && relation.getSearchableColumns().size() == 1) {
-      oracle.createTranslator(((EnumRenderer) rowRenderer).getCaptions(),
-          ((EnumRenderer) rowRenderer).getValueStartIndex());
-    }
 
     oracle.addRowCountChangeHandler(new Consumer<Integer>() {
       @Override
@@ -1573,7 +1570,7 @@ public class DataSelector extends Composite implements Editor, HasVisibleLines, 
       setOffset(start);
     }
 
-    Request request = new Request(query, getSearchType(), start, size);
+    Request request = new Request(query, start, size);
     setLastRequest(request);
 
     getInput().addStyleName(STYLE_WAITING);
@@ -1690,10 +1687,6 @@ public class DataSelector extends Composite implements Editor, HasVisibleLines, 
 
   private AbstractCellRenderer getRowRenderer() {
     return rowRenderer;
-  }
-
-  private Operator getSearchType() {
-    return searchType;
   }
 
   private Selector getSelector() {

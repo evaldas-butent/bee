@@ -237,11 +237,34 @@ public final class DataUtils {
     }
   }
 
+  public static List<BeeRow> filterRows(Collection<BeeRow> rows, Collection<Long> ids) {
+    List<BeeRow> result = new ArrayList<>();
+
+    for (BeeRow row : rows) {
+      if (ids.contains(row.getId())) {
+        result.add(row);
+      }
+    }
+    return result;
+  }
+
+  public static List<BeeRow> filterRows(BeeRowSet rowSet, String columnId, Long value) {
+    List<BeeRow> result = new ArrayList<>();
+    int index = rowSet.getColumnIndex(columnId);
+
+    for (BeeRow row : rowSet) {
+      if (Objects.equals(row.getLong(index), value)) {
+        result.add(row);
+      }
+    }
+    return result;
+  }
+
   public static List<BeeRow> filterRows(BeeRowSet rowSet, String columnId, String value) {
     List<BeeRow> result = new ArrayList<>();
     int index = rowSet.getColumnIndex(columnId);
 
-    for (BeeRow row : rowSet.getRows()) {
+    for (BeeRow row : rowSet) {
       if (BeeUtils.equalsTrim(row.getString(index), value)) {
         result.add(row);
       }
@@ -558,8 +581,22 @@ public final class DataUtils {
 
   public static List<Long> getRowIds(BeeRowSet rowSet) {
     List<Long> result = new ArrayList<>();
-    for (BeeRow row : rowSet.getRows()) {
-      result.add(row.getId());
+    if (!isEmpty(rowSet)) {
+      for (BeeRow row : rowSet.getRows()) {
+        result.add(row.getId());
+      }
+    }
+    return result;
+  }
+
+  public static List<Long> getRowIds(Collection<? extends IsRow> rows) {
+    List<Long> result = new ArrayList<>();
+    if (!BeeUtils.isEmpty(rows)) {
+      for (IsRow row : rows) {
+        if (hasId(row)) {
+          result.add(row.getId());
+        }
+      }
     }
     return result;
   }

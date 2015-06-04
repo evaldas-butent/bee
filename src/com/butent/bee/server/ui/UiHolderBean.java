@@ -238,7 +238,7 @@ public class UiHolderBean {
       Menu entry = getMenu(null, Menu.restore(Codec.beeSerialize(menu)), checkRights);
 
       if (entry != null) {
-        menus.put(entry.getOrder(), entry);
+        menus.put(Assert.notContain(menus, entry.getOrder()), entry);
       }
     }
     return ResponseObject.response(menus.values());
@@ -584,8 +584,7 @@ public class UiHolderBean {
         return false;
       }
 
-    } else if (BeeUtils.inListSame(XmlUtils.getLocalName(element),
-        UiConstants.TAG_DATA_TREE, UiConstants.TAG_MULTI_SELECTOR)) {
+    } else if (BeeUtils.same(XmlUtils.getLocalName(element), UiConstants.TAG_DATA_TREE)) {
       String widgetViewName = element.getAttribute(UiConstants.ATTR_VIEW_NAME);
 
       if (!BeeUtils.isEmpty(widgetViewName) && !usr.isDataVisible(widgetViewName)) {

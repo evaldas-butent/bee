@@ -44,6 +44,8 @@ public class CargoPlaceRenderer extends AbstractCellRenderer {
 
     data.put(COL_PLACE_DATE, Pair.of(DataUtils.getColumnIndex(prefix + COL_PLACE_DATE, columns),
         Localized.getConstants().date()));
+    data.put(COL_PLACE_NOTE, Pair.of(DataUtils.getColumnIndex(prefix + COL_PLACE_NOTE, columns),
+        Localized.getConstants().note()));
     data.put(COL_PLACE_COMPANY,
         Pair.of(DataUtils.getColumnIndex(prefix + COL_PLACE_COMPANY, columns),
             Localized.getConstants().company()));

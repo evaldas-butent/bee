@@ -21,18 +21,24 @@ import com.butent.bee.client.Callback;
 import com.butent.bee.client.Global;
 import com.butent.bee.client.communication.ParameterList;
 import com.butent.bee.client.communication.ResponseCallback;
+import com.butent.bee.client.communication.RpcCallback;
 import com.butent.bee.client.composite.DataSelector;
+import com.butent.bee.client.composite.FileCollector;
 import com.butent.bee.client.composite.FileGroup;
+import com.butent.bee.client.composite.FileGroup.Column;
 import com.butent.bee.client.composite.MultiSelector;
 import com.butent.bee.client.data.Data;
 import com.butent.bee.client.data.Queries;
+import com.butent.bee.client.data.Queries.RowSetCallback;
 import com.butent.bee.client.data.RowCallback;
+import com.butent.bee.client.data.RowFactory;
 import com.butent.bee.client.dom.DomUtils;
 import com.butent.bee.client.grid.HtmlTable;
 import com.butent.bee.client.i18n.Format;
 import com.butent.bee.client.layout.Flow;
 import com.butent.bee.client.layout.Simple;
 import com.butent.bee.client.render.PhotoRenderer;
+import com.butent.bee.client.ui.FormFactory.WidgetDescriptionCallback;
 import com.butent.bee.client.ui.IdentifiableWidget;
 import com.butent.bee.client.utils.FileUtils;
 import com.butent.bee.client.view.HeaderView;
@@ -47,6 +53,7 @@ import com.butent.bee.client.widget.Image;
 import com.butent.bee.client.widget.Label;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
+import com.butent.bee.shared.Consumer;
 import com.butent.bee.shared.Holder;
 import com.butent.bee.shared.communication.ResponseObject;
 import com.butent.bee.shared.data.BeeColumn;
@@ -58,11 +65,14 @@ import com.butent.bee.shared.data.RelationUtils;
 import com.butent.bee.shared.data.event.DataChangeEvent;
 import com.butent.bee.shared.data.event.RowUpdateEvent;
 import com.butent.bee.shared.data.filter.Filter;
+import com.butent.bee.shared.data.value.Value;
 import com.butent.bee.shared.data.view.DataInfo;
 import com.butent.bee.shared.font.FontAwesome;
 import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.io.FileInfo;
+import com.butent.bee.shared.modules.documents.DocumentConstants;
 import com.butent.bee.shared.modules.projects.ProjectConstants;
+import com.butent.bee.shared.modules.projects.ProjectStatus;
 import com.butent.bee.shared.modules.tasks.TaskConstants.TaskEvent;
 import com.butent.bee.shared.modules.tasks.TaskConstants.TaskStatus;
 import com.butent.bee.shared.modules.tasks.TaskUtils;
@@ -95,6 +105,7 @@ class TaskEditor extends AbstractFormInterceptor {
   private static final String WIDGET_PROJECT_DATA_SUFFIX = "Data";
 
   private static final String STYLE_EXTENSION = CRM_STYLE_PREFIX + "taskExtension";
+  private static final String NAME_OBSERVERS = "Observers";
 
   private static final List<String> relations = Lists.newArrayList(PROP_COMPANIES, PROP_PERSONS,
       PROP_DOCUMENTS, PROP_APPOINTMENTS, PROP_DISCUSSIONS, PROP_SERVICE_OBJECTS, PROP_TASKS);
@@ -137,8 +148,8 @@ class TaskEditor extends AbstractFormInterceptor {
     return (widget instanceof MultiSelector) ? (MultiSelector) widget : null;
   }
 
-  private static BeeRow getResponseRow(String caption, ResponseObject ro, Callback<?> callback) {
-    if (!Queries.checkResponse(caption, VIEW_TASKS, ro, BeeRow.class, callback)) {
+  private static BeeRow getResponseRow(String caption, ResponseObject ro, RpcCallback<?> callback) {
+    if (!Queries.checkResponse(caption, BeeConst.UNDEF, VIEW_TASKS, ro, BeeRow.class, callback)) {
       return null;
     }
 
@@ -229,7 +240,9 @@ class TaskEditor extends AbstractFormInterceptor {
     return TimeUtils.renderTime(millis, false);
   }
 
-  private static void sendRequest(ParameterList params, final Callback<ResponseObject> callback) {
+  private static void sendRequest(ParameterList params,
+      final RpcCallback<ResponseObject> callback) {
+
     BeeKeeper.getRpc().makePostRequest(params, new ResponseCallback() {
       @Override
       public void onResponse(ResponseObject response) {
@@ -347,9 +360,9 @@ class TaskEditor extends AbstractFormInterceptor {
     Global.showError(Localized.getConstants().error(), Collections.singletonList(message));
   }
 
-  private static void showEvent(Flow panel, BeeRow row, List<BeeColumn> columns,
+  private static void showEvent(Flow panel, final BeeRow row, List<BeeColumn> columns,
       List<FileInfo> files, Table<String, String, Long> durations, boolean renderPhoto,
-      Long lastAccess) {
+      Long lastAccess, final IsRow taskRow) {
 
     Flow container = new Flow();
     container.addStyleName(STYLE_EVENT_ROW);
@@ -454,9 +467,17 @@ class TaskEditor extends AbstractFormInterceptor {
       Simple fileContainer = new Simple();
       fileContainer.addStyleName(STYLE_EVENT_FILES);
 
-      FileGroup fileGroup = new FileGroup();
+      FileGroup fileGroup = new FileGroup(Lists.newArrayList(Column.ICON, Column.NAME, Column.SIZE,
+          Column.CREATEDOC));
       fileGroup.addFiles(files);
 
+      fileGroup.setDocCreator(new Consumer<FileInfo>() {
+
+        @Override
+        public void accept(FileInfo fileInfo) {
+          createDocumentFromFile(fileInfo, taskRow);
+        }
+      });
       fileContainer.setWidget(fileGroup);
       panel.add(fileContainer);
     }
@@ -488,7 +509,7 @@ class TaskEditor extends AbstractFormInterceptor {
 
     for (BeeRow row : rowSet.getRows()) {
       showEvent(panel, row, rowSet.getColumns(), filterEventFiles(files, row.getId()), durations,
-          hasPhoto, lastAccess);
+          hasPhoto, lastAccess, form.getActiveRow());
     }
 
     showExtensions(form, rowSet);
@@ -541,10 +562,21 @@ class TaskEditor extends AbstractFormInterceptor {
   }
 
   private final long userId;
+  private MultiSelector observers;
+  private List<Long> projectUsers;
 
   TaskEditor() {
     super();
     this.userId = BeeKeeper.getUser().getUserId();
+  }
+
+  @Override
+  public void afterCreateWidget(String name, IdentifiableWidget widget,
+      WidgetDescriptionCallback callback) {
+
+    if (BeeUtils.same(name, NAME_OBSERVERS) && widget instanceof MultiSelector) {
+      observers = (MultiSelector) widget;
+    }
   }
 
   @Override
@@ -582,7 +614,8 @@ class TaskEditor extends AbstractFormInterceptor {
       }
     }
 
-    setProjectStagesLimit(form, row);
+    setProjectStagesFilter(form, row);
+    setProjectUsersFilter(form, row);
   }
 
   @Override
@@ -611,7 +644,7 @@ class TaskEditor extends AbstractFormInterceptor {
 
     ParameterList params = createParams(TaskEvent.EDIT, null);
 
-    sendRequest(params, new Callback<ResponseObject>() {
+    sendRequest(params, new RpcCallback<ResponseObject>() {
       @Override
       public void onSuccess(ResponseObject result) {
         BeeRow data = getResponseRow(TaskEvent.EDIT.getCaption(), result, this);
@@ -672,7 +705,7 @@ class TaskEditor extends AbstractFormInterceptor {
     params.addDataItem(VAR_TASK_DATA, Codec.beeSerialize(rowSet));
     params.addDataItem(VAR_TASK_USERS, getTaskUsers(form, row));
 
-    sendRequest(params, new Callback<ResponseObject>() {
+    sendRequest(params, new RpcCallback<ResponseObject>() {
       @Override
       public void onFailure(String... reason) {
         form.updateRow(row, true);
@@ -704,6 +737,13 @@ class TaskEditor extends AbstractFormInterceptor {
                 ((FileGroup) fileWidget).addFile(file);
               }
             }
+            ((FileGroup) fileWidget).setDocCreator(new Consumer<FileInfo>() {
+
+              @Override
+              public void accept(FileInfo fileInfo) {
+                createDocumentFromFile(fileInfo, row);
+              }
+            });
           }
         }
 
@@ -718,10 +758,11 @@ class TaskEditor extends AbstractFormInterceptor {
     return false;
   }
 
-  private static void setProjectStagesLimit(FormView form, IsRow row) {
+  private static void setProjectStagesFilter(FormView form, IsRow row) {
     int idxProjectOwner = form.getDataIndex(ALS_PROJECT_OWNER);
     int idxProject = form.getDataIndex(ProjectConstants.COL_PROJECT);
-    int idxTaskState = form.getDataIndex(COL_STATUS);
+    /* int idxTaskState = form.getDataIndex(COL_STATUS); */
+    int idxProjectStatus = form.getDataIndex(ALS_PROJECT_STATUS);
 
     if (BeeConst.isUndef(idxProjectOwner)) {
       return;
@@ -739,14 +780,19 @@ class TaskEditor extends AbstractFormInterceptor {
       return;
     }
 
-    if (BeeConst.isUndef(idxTaskState)) {
+    /*
+     * if (BeeConst.isUndef(idxTaskState)) { return; }
+     */
+
+    if (BeeConst.isUndef(idxProjectStatus)) {
       return;
     }
 
     long currentUser = BeeUtils.unbox(BeeKeeper.getUser().getUserId());
     long projectOwner = BeeUtils.unbox(row.getLong(idxProjectOwner));
     long projectId = BeeUtils.unbox(row.getLong(idxProject));
-    int state = BeeUtils.unbox(row.getInteger(idxTaskState));
+    /* int state = BeeUtils.unbox(row.getInteger(idxTaskState)); */
+    int projectStatus = BeeUtils.unbox(row.getInteger(idxProjectStatus));
 
     if (DataUtils.isId(projectId)) {
       setVisibleProjectData(form, true);
@@ -758,7 +804,11 @@ class TaskEditor extends AbstractFormInterceptor {
       return;
     }
 
-    if (TaskStatus.SCHEDULED.ordinal() != state) {
+    /*
+     * if (TaskStatus.SCHEDULED.ordinal() != state) { return; }
+     */
+
+    if (ProjectStatus.APPROVED.ordinal() == projectStatus) {
       return;
     }
 
@@ -790,6 +840,68 @@ class TaskEditor extends AbstractFormInterceptor {
 
     if (widget != null) {
       widget.setVisible(visible);
+    }
+  }
+
+  public static void createDocumentFromFile(final FileInfo fileInfo, final IsRow row) {
+
+    final DataInfo dataInfo = Data.getDataInfo(DocumentConstants.VIEW_DOCUMENTS);
+    final BeeRow docRow = RowFactory.createEmptyRow(dataInfo, true);
+
+    if (docRow != null) {
+
+      int idxCompanyName = Data.getColumnIndex(VIEW_TASKS, ALS_COMPANY_NAME);
+      int idxCompany = Data.getColumnIndex(VIEW_TASKS, COL_TASK_COMPANY);
+
+      if (!BeeConst.isUndef(idxCompanyName) && !BeeConst.isUndef(idxCompany)) {
+        String companyName = row.getString(idxCompanyName);
+
+        if (!BeeUtils.isEmpty(companyName)) {
+          docRow.setValue(dataInfo
+              .getColumnIndex(DocumentConstants.ALS_DOCUMENT_COMPANY_NAME),
+              companyName);
+          docRow.setValue(dataInfo
+              .getColumnIndex(DocumentConstants.COL_DOCUMENT_COMPANY), row
+              .getLong(idxCompany));
+        }
+
+        FileCollector.pushFiles(Lists.newArrayList(fileInfo));
+
+        RowFactory.createRow(dataInfo, docRow, new RowCallback() {
+
+          @Override
+          public void onSuccess(final BeeRow br) {
+            Filter filter = Filter.equals(COL_TASK, row.getId());
+
+            Queries.getRowSet(VIEW_RELATIONS, null, filter, new Queries.RowSetCallback() {
+
+              @Override
+              public void onSuccess(BeeRowSet relRowSet) {
+                List<String> valList;
+                List<BeeColumn> colList = Data.getColumns(VIEW_RELATIONS);
+                int index = Data.getColumnIndex(VIEW_RELATIONS, DocumentConstants.COL_DOCUMENT);
+
+                for (BeeRow beeRow : relRowSet) {
+                  valList = beeRow.getValues();
+
+                  for (int i = 0; i < valList.size(); i++) {
+                    if (valList.get(i) == String.valueOf(row.getId())) {
+                      valList.set(i, null);
+                      valList.set(index, String.valueOf(br.getId()));
+                    }
+                  }
+                  Queries.insert(VIEW_RELATIONS, colList, valList);
+                }
+
+                Queries.insert(VIEW_RELATIONS, Data.getColumns(VIEW_RELATIONS,
+                    Lists.newArrayList(COL_TASK, DocumentConstants.COL_DOCUMENT)),
+                    Lists.newArrayList(String.valueOf(row.getId()), String
+                        .valueOf(br.getId())));
+              }
+            });
+          }
+        });
+      }
     }
   }
 
@@ -1137,8 +1249,13 @@ class TaskEditor extends AbstractFormInterceptor {
   private void doForward() {
     final Long oldUser = getExecutor();
     Set<Long> exclusions = new HashSet<>();
+    Set<Long> filter = new HashSet<>();
     if (oldUser != null) {
       exclusions.add(oldUser);
+    }
+
+    if (!BeeUtils.isEmpty(getProjectUsers())) {
+      filter.addAll(getProjectUsers());
     }
 
     final TaskDialog dialog = new TaskDialog(Localized.getConstants().crmTaskForwarding());
@@ -1146,7 +1263,7 @@ class TaskEditor extends AbstractFormInterceptor {
     final String sid =
         dialog.addSelector(Localized.getConstants().crmTaskExecutor(), VIEW_USERS,
             Lists.newArrayList(COL_FIRST_NAME, COL_LAST_NAME),
-            true, exclusions);
+            true, exclusions, filter);
 
     final String cid = dialog.addComment(true);
 
@@ -1278,6 +1395,10 @@ class TaskEditor extends AbstractFormInterceptor {
     return getLong(COL_OWNER);
   }
 
+  private List<Long> getProjectUsers() {
+    return projectUsers;
+  }
+
   private Integer getStatus() {
     return getFormView().getActiveRow().getInteger(getFormView().getDataIndex(COL_STATUS));
   }
@@ -1364,7 +1485,7 @@ class TaskEditor extends AbstractFormInterceptor {
         PROP_OBSERVERS, PROP_FILES, PROP_EVENTS));
     params.addDataItem(VAR_TASK_RELATIONS, BeeConst.STRING_ASTERISK);
 
-    Callback<ResponseObject> callback = new Callback<ResponseObject>() {
+    RpcCallback<ResponseObject> callback = new RpcCallback<ResponseObject>() {
       @Override
       public void onFailure(String... reason) {
         getFormView().notifySevere(reason);
@@ -1421,7 +1542,7 @@ class TaskEditor extends AbstractFormInterceptor {
   private void sendRequest(ParameterList params, final TaskEvent event,
       final List<FileInfo> files) {
 
-    Callback<ResponseObject> callback = new Callback<ResponseObject>() {
+    RpcCallback<ResponseObject> callback = new RpcCallback<ResponseObject>() {
       @Override
       public void onFailure(String... reason) {
         getFormView().notifySevere(reason);
@@ -1448,5 +1569,67 @@ class TaskEditor extends AbstractFormInterceptor {
     };
 
     sendRequest(params, callback);
+  }
+
+  private void setProjectUsers(List<Long> projectUsers) {
+    this.projectUsers = projectUsers;
+  }
+
+  private void setProjectUsersFilter(final FormView form, IsRow row) {
+    int idxProjectOwner = form.getDataIndex(ALS_PROJECT_OWNER);
+    int idxProject = form.getDataIndex(ProjectConstants.COL_PROJECT);
+
+    setProjectUsers(null);
+
+    if (BeeConst.isUndef(idxProjectOwner)) {
+      return;
+    }
+
+    if (BeeConst.isUndef(idxProject)) {
+      return;
+    }
+
+    final long projectOwner = BeeUtils.unbox(row.getLong(idxProjectOwner));
+    long projectId = BeeUtils.unbox(row.getLong(idxProject));
+
+    if (!DataUtils.isId(projectId)) {
+      return;
+    }
+
+    if (observers != null) {
+      observers.setEnabled(false);
+    }
+
+    Queries.getRowSet(ProjectConstants.VIEW_PROJECT_USERS, Lists
+        .newArrayList(COL_USER), Filter.isEqual(
+        ProjectConstants.COL_PROJECT, Value.getValue(projectId)), new RowSetCallback() {
+
+      @Override
+      public void onSuccess(BeeRowSet result) {
+        List<Long> userIds = Lists.newArrayList(projectOwner);
+        int idxUser = result.getColumnIndex(COL_USER);
+
+        if (BeeConst.isUndef(idxUser)) {
+          Assert.untouchable();
+          return;
+        }
+
+        for (IsRow userRow : result) {
+          long projectUser = BeeUtils.unbox(userRow.getLong(idxUser));
+
+          if (DataUtils.isId(projectUser)) {
+            userIds.add(projectUser);
+          }
+        }
+
+        if (observers != null) {
+          observers.getOracle().setAdditionalFilter(Filter.idIn(userIds), true);
+          observers.setEnabled(true);
+        }
+
+        setProjectUsers(userIds);
+      }
+    });
+
   }
 }

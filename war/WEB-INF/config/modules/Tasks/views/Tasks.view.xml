@@ -57,6 +57,9 @@
     <SimpleColumn name="Company" />
     <SimpleJoin name="Company" joinType="LEFT">
       <SimpleColumn alias="CompanyName" name="Name" />
+      <SimpleJoin joinType="LEFT" name="CompanyType">
+        <SimpleColumn name="Name" alias="CompanyTypeName" />
+      </SimpleJoin>
     </SimpleJoin>
 
     <SimpleColumn name="Contact" />
@@ -82,7 +85,8 @@
     <SimpleColumn name="Project" />
     <SimpleJoin name="Project" joinType="LEFT">
       <SimpleColumn name="Name" alias="ProjectName"/>
-      <SimpleColumn name="Owner" alias="ProjectOwner"></SimpleColumn>
+      <SimpleColumn name="Owner" alias="ProjectOwner" />
+      <SimpleColumn name="Status" alias="ProjectStatus" />
     </SimpleJoin>
     
     <SimpleColumn name="ProjectStage" />
@@ -109,6 +113,11 @@
       {...}.fillTasksTimeData(ViewQueryEvent event)
       -->
     </SimpleColumn>
+    
+    <SimpleColumn name="Currency"/>
+    <SimpleJoin name="Currency" joinType="LEFT">
+      <SimpleColumn name="Name" alias="CurrencyName" />
+    </SimpleJoin>
   </Columns>
   
   <Order>

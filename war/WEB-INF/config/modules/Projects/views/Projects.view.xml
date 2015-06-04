@@ -3,8 +3,9 @@
   xmlns:x="http://www.butent.com/expression"
 
   name="Projects" source="Projects" caption="=projects"
-  editForm="Project" newRowForm="Project"
+  editForm="Project" newRowForm="Project" newRowCaption="=prjNewProject"
   >
+  <Relation renderColumns="Name" />
   <Columns>
     <IdColumn name="ID"/>
     <SimpleColumn name="Priority" />
@@ -19,6 +20,9 @@
     <SimpleColumn name="Company" />
     <SimpleJoin name="Company" joinType="LEFT">
       <SimpleColumn alias="CompanyName" name="Name" />
+      <SimpleJoin joinType="LEFT" name="CompanyType">
+        <SimpleColumn name="Name" alias="CompanyTypeName" />
+      </SimpleJoin>
     </SimpleJoin>
     
     <SimpleColumn name="Contact" />
@@ -52,9 +56,19 @@
     <SimpleColumn name="StartDate" />
     <SimpleColumn name="EndDate" />    
     <SimpleColumn name="ExpectedDuration" />
+    <SimpleColumn name="TimeUnit" />
+    <SimpleJoin name="TimeUnit" joinType="LEFT">
+      <SimpleColumn name="Name" alias="UnitName" />
+      <SimpleColumn name="Factor" />
+      <SimpleColumn name="BaseUnit" />
+    </SimpleJoin>
     <SimpleColumn name="Progress" />
     <SimpleColumn name="Price" />
     <SimpleColumn name="ContractPrice" />
+    <SimpleColumn name="Currency" />
+    <SimpleJoin joinType="LEFT" name="Currency">
+      <SimpleColumn name="Name" alias="CurrencyName" />
+    </SimpleJoin>
     <SimpleColumn name="Description" />
     
     <SimpleColumn name="ExpectedTasksDuration" label="=prjExpectedTaskDuration">
@@ -75,19 +89,38 @@
       -->
     </SimpleColumn>
     
+    <SimpleColumn name="ActualExpenses" label="=prjActualExpenses">
+       <x:number>0</x:number> 
+      <!-- 
+      Data handling in system module bean  
+      com.butent.bee.server.modules.projects.ProjectsModuleBean.init().new DataEventHandler() 
+      {...}.fillProjectsTimeData(ViewQueryEvent event)
+      -->
+    </SimpleColumn> 
+    
+    <SimpleColumn name="Expenses" alias="OtherExpenses" label="=prjOtherExpenses" />
     <SimpleColumn name="Contract" />
     <SimpleJoin name="Contract" joinType="LEFT">
-      <SimpleColumn name="Document" />
-      <SimpleJoin name="Document" joinType="LEFT">
-        <SimpleColumn name="Name" alias="ContractName"/>
-        <SimpleColumn name="Number" alias="ContractNumber"/>
-        <SimpleColumn name="Expires" alias="ContractExpires" />
-      </SimpleJoin>
+      <SimpleColumn name="Name" alias="ContractName"/>
+      <SimpleColumn name="Number" alias="ContractNumber"/>
+      <SimpleColumn name="Expires" alias="ContractExpires" />
     </SimpleJoin>
     <SimpleColumn name="ContractSigned" />
     
     <ExternalJoin name="Project" source="ProjectUsers" joinType="LEFT" filter="FilteredProjectUser={u}">
       <SimpleColumn name="User" alias="FilteredProjectUser" />
+    </ExternalJoin>
+    
+    <ExternalJoin name="Project" source="ProjectUsage" joinType="LEFT" filter="FilteredVisitedUser={u}">
+      <SimpleColumn name="User" alias="FilteredVisitedUser" />
+    </ExternalJoin>
+    
+    <ExternalJoin name="Project" source="ProjectUsers" joinType="LEFT" filter="FilteredOwnerUser=Owner">
+      <SimpleColumn name="User" alias="FilteredOwnerUser" />
+    </ExternalJoin>
+    
+    <ExternalJoin name="Project" source="ProjectStages" joinType="LEFT">
+      <AggregateColumn aggregate="COUNT" name="Name" alias="StagesCount" />
     </ExternalJoin>
   </Columns>
   

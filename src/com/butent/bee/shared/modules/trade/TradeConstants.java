@@ -100,6 +100,9 @@ public final class TradeConstants {
 
   public static final String GRID_SERIES_MANAGERS = "SeriesManagers";
 
+  public static final String FORM_SALES_INVOICE = "SalesInvoice";
+  public static final String FORM_PRINT_SALES_INVOICE = "PrintSalesInvoice";
+
   private TradeConstants() {
   }
 }

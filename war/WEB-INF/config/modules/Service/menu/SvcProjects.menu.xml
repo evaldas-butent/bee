@@ -1,11 +1,11 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <Entry xmlns="http://www.butent.com/menu"
 
-name="SvcProjects" label="=svcProjectsMenu" order="110" module="Service.Projects"
+name="SvcProjects" label="=svcProjectsMenu" order="115" module="Service.Projects"
 >
   <Item name="Potential" label="=svcObjectsPotential" service="service_objects" parameters="potential_object" />
   
-  <Item name="ProjectObjects" label="=svcObjects" service="service_objects" parameters="project_object" />
+  <Item name="ProjectObjects" label="=svcProjectObjects" service="service_objects" parameters="project_object" />
 
   <Item name="ServiceInvoices" label="=svcInvoices" service="grid" parameters="SvcProjectInvoices"
     separator="true" />

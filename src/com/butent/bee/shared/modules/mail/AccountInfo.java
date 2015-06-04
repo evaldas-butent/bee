@@ -76,6 +76,10 @@ public class AccountInfo {
     return sysFolders.get(sysFolder);
   }
 
+  public long getTrashId() {
+    return getSystemFolder(SystemFolder.Trash);
+  }
+
   public long getUserId() {
     return userId;
   }
@@ -101,7 +105,7 @@ public class AccountInfo {
   }
 
   public boolean isTrashFolder(Long folderId) {
-    return Objects.equals(folderId, getSystemFolder(SystemFolder.Trash));
+    return Objects.equals(folderId, getTrashId());
   }
 
   public void setRootFolder(MailFolder folder) {

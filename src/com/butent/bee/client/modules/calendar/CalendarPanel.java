@@ -131,6 +131,8 @@ public class CalendarPanel extends Split implements AppointmentEvent.Handler, Pr
   private static final DateTimeFormat DATE_FORMAT =
       DateTimeFormat.getFormat(DateTimeFormat.PredefinedFormat.DATE_FULL);
 
+  private static final EnumSet<UiOption> uiOptions = EnumSet.of(UiOption.VIEW);
+
   private static boolean hasNonLocalAppointment(ModificationEvent<?> event) {
     return event.isSpookyActionAtADistance() && VIEW_APPOINTMENTS.equals(event.getViewName());
   }
@@ -158,7 +160,9 @@ public class CalendarPanel extends Split implements AppointmentEvent.Handler, Pr
       BeeRowSet ucAttendees) {
 
     super(BeeConst.UNDEF);
+
     addStyleName(STYLE_PANEL);
+    addStyleName(UiOption.getStyleName(uiOptions));
 
     this.calendarId = calendarId;
 
@@ -199,7 +203,7 @@ public class CalendarPanel extends Split implements AppointmentEvent.Handler, Pr
     });
 
     this.header = new HeaderImpl();
-    header.create(caption, false, true, null, EnumSet.of(UiOption.ROOT),
+    header.create(caption, false, true, null, uiOptions,
         EnumSet.of(Action.REFRESH, Action.CONFIGURE, Action.PRINT), Action.NO_ACTIONS,
         Action.NO_ACTIONS);
     header.setViewPresenter(this);
@@ -375,6 +379,10 @@ public class CalendarPanel extends Split implements AppointmentEvent.Handler, Pr
     return CalendarKeeper.getCalendarSupplierKey(getCalendarId());
   }
 
+  public Flow getTodoContainer() {
+    return todoContainer;
+  }
+
   @Override
   public Presenter getViewPresenter() {
     return this;
@@ -413,6 +421,10 @@ public class CalendarPanel extends Split implements AppointmentEvent.Handler, Pr
   @Override
   public boolean isEnabled() {
     return enabled;
+  }
+
+  public boolean isTodoVisible() {
+    return !todoContainer.isEmpty() && getWidgetSize(todoContainer) > 0;
   }
 
   @Override

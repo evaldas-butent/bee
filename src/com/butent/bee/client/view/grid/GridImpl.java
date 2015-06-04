@@ -23,6 +23,7 @@ import com.butent.bee.client.dialog.ModalForm;
 import com.butent.bee.client.dialog.Notification;
 import com.butent.bee.client.dom.Dimensions;
 import com.butent.bee.client.dom.DomUtils;
+import com.butent.bee.client.dom.Stacking;
 import com.butent.bee.client.event.EventUtils;
 import com.butent.bee.client.event.Previewer.PreviewConsumer;
 import com.butent.bee.client.event.logical.ReadyEvent;
@@ -64,7 +65,9 @@ import com.butent.bee.client.ui.FormFactory.WidgetDescriptionCallback;
 import com.butent.bee.client.ui.FormWidget;
 import com.butent.bee.client.ui.IdentifiableWidget;
 import com.butent.bee.client.ui.Opener;
+import com.butent.bee.client.ui.Theme;
 import com.butent.bee.client.ui.UiHelper;
+import com.butent.bee.client.ui.UiOption;
 import com.butent.bee.client.ui.WidgetDescription;
 import com.butent.bee.client.utils.Evaluator;
 import com.butent.bee.client.validation.CellValidateEvent.Handler;
@@ -98,6 +101,7 @@ import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.Holder;
 import com.butent.bee.shared.NotificationListener;
 import com.butent.bee.shared.State;
+import com.butent.bee.shared.css.values.VerticalAlign;
 import com.butent.bee.shared.data.BeeColumn;
 import com.butent.bee.shared.data.BeeRow;
 import com.butent.bee.shared.data.BeeRowSet;
@@ -186,7 +190,9 @@ public class GridImpl extends Absolute implements GridView, EditEndEvent.Handler
 
   private static final String STYLE_NAME = BeeConst.CSS_CLASS_PREFIX + "GridView";
 
-  private static void amendGeneratedSize(final ModalForm popup, final FormView form) {
+  private static void amendGeneratedSizeAndShow(final ModalForm popup, final FormView form,
+      final int x, final int y) {
+
     popup.attachAmendDetach(new ScheduledCommand() {
       @Override
       public void execute() {
@@ -198,6 +204,11 @@ public class GridImpl extends Absolute implements GridView, EditEndEvent.Handler
           StyleUtils.setWidth(popup, width + 10);
         }
         StyleUtils.setHeight(popup, height);
+      }
+    }, new Runnable() {
+      @Override
+      public void run() {
+        popup.showAt(x, y);
       }
     });
   }
@@ -243,11 +254,14 @@ public class GridImpl extends Absolute implements GridView, EditEndEvent.Handler
 
   private final String relColumn;
 
+  private final Collection<UiOption> uiOptions;
+  private final int gridMarginLeft;
+
   private final GridInterceptor gridInterceptor;
 
   private GridPresenter viewPresenter;
 
-  private CellGrid grid = new CellGrid();
+  private CellGrid grid;
   private Evaluator rowValidation;
 
   private Evaluator rowEditable;
@@ -312,10 +326,17 @@ public class GridImpl extends Absolute implements GridView, EditEndEvent.Handler
   private boolean summarize;
 
   public GridImpl(GridDescription gridDescription, String gridKey,
-      List<BeeColumn> dataColumns, String relColumn, GridInterceptor gridInterceptor) {
+      List<BeeColumn> dataColumns, String relColumn,
+      Collection<UiOption> uiOptions, GridInterceptor gridInterceptor) {
 
     super();
     addStyleName(STYLE_NAME);
+
+    this.uiOptions = uiOptions;
+    this.gridMarginLeft = UiOption.isChildOrEmbedded(uiOptions)
+        ? Theme.getChildGridMarginLeft() : Theme.getGridMarginLeft();
+
+    createGrid();
 
     this.gridDescription = Assert.notNull(gridDescription);
     this.gridKey = gridKey;
@@ -616,6 +637,23 @@ public class GridImpl extends Absolute implements GridView, EditEndEvent.Handler
     if (!BeeUtils.isEmpty(cd.getHorAlign())) {
       UiHelper.setHorizontalAlignment(column, cd.getHorAlign());
     }
+
+    VerticalAlign verticalAlign = null;
+    if (!BeeUtils.isEmpty(cd.getVertAlign())) {
+      verticalAlign = StyleUtils.parseVerticalAlign(cd.getVertAlign());
+    }
+    if (verticalAlign == null && renderer != null) {
+      verticalAlign = renderer.getDefaultVerticalAlign();
+    }
+    if (verticalAlign == null
+        && (cellType == CellType.HTML
+        || cellSource != null && cellSource.isText())) {
+      verticalAlign = VerticalAlign.TOP;
+    } else {
+      verticalAlign = VerticalAlign.MIDDLE;
+    }
+    column.setVerticalAlign(verticalAlign);
+
     if (!BeeUtils.isEmpty(cd.getWhiteSpace())) {
       UiHelper.setWhiteSpace(column, cd.getWhiteSpace());
     }
@@ -955,7 +993,12 @@ public class GridImpl extends Absolute implements GridView, EditEndEvent.Handler
 
   @Override
   public int estimatePageSize(int containerWidth, int containerHeight) {
-    return getGrid().estimatePageSize(containerWidth, containerHeight, true);
+    int w = containerWidth;
+    if (gridMarginLeft > 0) {
+      w -= gridMarginLeft;
+    }
+
+    return getGrid().estimatePageSize(w, containerHeight, true);
   }
 
   @Override
@@ -1544,7 +1587,7 @@ public class GridImpl extends Absolute implements GridView, EditEndEvent.Handler
     gridDescription.deserialize(gd.serialize());
 
     remove(getGrid());
-    this.grid = new CellGrid();
+    createGrid();
 
     getEditableColumns().clear();
     getDynamicColumnGroups().clear();
@@ -1804,6 +1847,13 @@ public class GridImpl extends Absolute implements GridView, EditEndEvent.Handler
     formView.setState(State.CLOSED);
 
     return DomUtils.getId(container);
+  }
+
+  private void createGrid() {
+    this.grid = new CellGrid(uiOptions);
+    if (gridMarginLeft > 0) {
+      StyleUtils.setLeft(grid, gridMarginLeft);
+    }
   }
 
   private void createNewRowForm() {
@@ -2539,7 +2589,9 @@ public class GridImpl extends Absolute implements GridView, EditEndEvent.Handler
       defCols.addAll(newRowDefaults);
     }
 
-    if (copy && oldRow != null) {
+    boolean isCopy = copy && oldRow != null;
+
+    if (isCopy) {
       if (copyColumns.isEmpty()) {
         for (int i = 0; i < getDataColumns().size(); i++) {
           if (!oldRow.isNull(i)) {
@@ -2569,22 +2621,24 @@ public class GridImpl extends Absolute implements GridView, EditEndEvent.Handler
           BeeKeeper.getUser().getUserData());
     }
 
-    for (EditableColumn editableColumn : getEditableColumns().values()) {
-      if (!editableColumn.hasCarry()) {
-        continue;
-      }
-      if (oldRow == null) {
-        oldRow = DataUtils.createEmptyRow(getDataColumns().size());
-      }
+    if (!isCopy) {
+      for (EditableColumn editableColumn : getEditableColumns().values()) {
+        if (editableColumn.hasCarry()) {
+          if (oldRow == null) {
+            oldRow = DataUtils.createEmptyRow(getDataColumns().size());
+          }
 
-      String carry = editableColumn.getCarryValue(oldRow);
-      if (!BeeUtils.isEmpty(carry)) {
-        int index = editableColumn.getColIndex();
-        newRow.setValue(index, carry);
+          String carry = editableColumn.getCarryValue(oldRow);
+          if (!BeeUtils.isEmpty(carry)) {
+            int index = editableColumn.getColIndex();
+            newRow.setValue(index, carry);
 
-        if (editableColumn.hasRelation() && BeeUtils.equalsTrim(carry, oldRow.getString(index))) {
-          RelationUtils.setRelatedValues(getDataInfo(), editableColumn.getColumnId(),
-              newRow, oldRow);
+            if (editableColumn.hasRelation()
+                && BeeUtils.equalsTrim(carry, oldRow.getString(index))) {
+              RelationUtils.setRelatedValues(getDataInfo(), editableColumn.getColumnId(),
+                  newRow, oldRow);
+            }
+          }
         }
       }
     }
@@ -2837,10 +2891,15 @@ public class GridImpl extends Absolute implements GridView, EditEndEvent.Handler
     if (show) {
       if (modal) {
         if (isChild() && isNewRowFormGenerated()) {
+          int x = getAbsoluteLeft();
+          int y = getAbsoluteTop();
+
           if (!newRowFormState.contains(State.INITIALIZED)) {
-            amendGeneratedSize(popup, form);
+            amendGeneratedSizeAndShow(popup, form, x, y);
+          } else {
+            popup.showAt(x, y);
           }
-          popup.showAt(getAbsoluteLeft(), getAbsoluteTop());
+
         } else {
           popup.center();
         }
@@ -2856,10 +2915,9 @@ public class GridImpl extends Absolute implements GridView, EditEndEvent.Handler
           if (isSingleFormInstance()) {
             newRowFormState.add(State.INITIALIZED);
           }
-
           form.start(null);
-          form.observeData();
         }
+        form.observeData();
 
       } else {
         if (!newRowFormState.contains(State.INITIALIZED)) {
@@ -2907,7 +2965,9 @@ public class GridImpl extends Absolute implements GridView, EditEndEvent.Handler
   }
 
   private void showNote(LogLevel level, String... messages) {
+    Stacking.ensureParentContext(getNotification());
     StyleUtils.setZIndex(getNotification(), getGrid().getZIndex() + 1);
+
     getNotification().show(level, messages);
   }
 

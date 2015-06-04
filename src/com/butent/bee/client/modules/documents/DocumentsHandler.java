@@ -1,10 +1,27 @@
 package com.butent.bee.client.modules.documents;
 
-import com.google.common.collect.Lists;
-import com.google.gwt.core.client.Scheduler.ScheduledCommand;
+import static com.butent.bee.shared.modules.documents.DocumentConstants.ALS_DOCUMENT_COMPANY_NAME;
+import static com.butent.bee.shared.modules.documents.DocumentConstants.COL_DESCRIPTION;
+import static com.butent.bee.shared.modules.documents.DocumentConstants.COL_DOCUMENT;
+import static com.butent.bee.shared.modules.documents.DocumentConstants.COL_DOCUMENT_COMPANY;
+import static com.butent.bee.shared.modules.documents.DocumentConstants.COL_DOCUMENT_DATA;
+import static com.butent.bee.shared.modules.documents.DocumentConstants.COL_FILE_CAPTION;
+import static com.butent.bee.shared.modules.documents.DocumentConstants.COL_FILE_DATE;
+import static com.butent.bee.shared.modules.documents.DocumentConstants.COL_FILE_VERSION;
+import static com.butent.bee.shared.modules.documents.DocumentConstants.FORM_DOCUMENT;
+import static com.butent.bee.shared.modules.documents.DocumentConstants.SVC_COPY_DOCUMENT_DATA;
+import static com.butent.bee.shared.modules.documents.DocumentConstants.TBL_DOCUMENT_TREE;
+import static com.butent.bee.shared.modules.documents.DocumentConstants.VIEW_DOCUMENTS;
+import static com.butent.bee.shared.modules.documents.DocumentConstants.VIEW_DOCUMENT_FILES;
+import static com.butent.bee.shared.modules.documents.DocumentConstants.VIEW_DOCUMENT_ITEMS;
+import static com.butent.bee.shared.modules.documents.DocumentConstants.VIEW_DOCUMENT_TEMPLATES;
+import static com.butent.bee.shared.modules.trade.TradeConstants.VAR_TOTAL;
 
-import static com.butent.bee.shared.modules.documents.DocumentConstants.*;
-import static com.butent.bee.shared.modules.trade.TradeConstants.*;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 
 import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.Callback;
@@ -14,11 +31,11 @@ import com.butent.bee.client.composite.FileCollector;
 import com.butent.bee.client.data.Data;
 import com.butent.bee.client.data.IdCallback;
 import com.butent.bee.client.data.Queries;
+import com.butent.bee.client.data.Queries.IntCallback;
 import com.butent.bee.client.data.RowCallback;
 import com.butent.bee.client.data.RowEditor;
 import com.butent.bee.client.data.RowFactory;
 import com.butent.bee.client.grid.GridFactory;
-import com.butent.bee.client.modules.service.ServiceUtils;
 import com.butent.bee.client.modules.trade.TradeUtils;
 import com.butent.bee.client.presenter.GridPresenter;
 import com.butent.bee.client.render.AbstractCellRenderer;
@@ -47,11 +64,12 @@ import com.butent.bee.shared.data.CellSource;
 import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.IsColumn;
 import com.butent.bee.shared.data.IsRow;
+import com.butent.bee.shared.data.filter.Filter;
 import com.butent.bee.shared.data.view.DataInfo;
 import com.butent.bee.shared.i18n.Localized;
 import com.butent.bee.shared.io.FileInfo;
 import com.butent.bee.shared.modules.administration.AdministrationConstants;
-import com.butent.bee.shared.modules.service.ServiceConstants;
+import com.butent.bee.shared.modules.projects.ProjectConstants;
 import com.butent.bee.shared.rights.Module;
 import com.butent.bee.shared.time.DateTime;
 import com.butent.bee.shared.time.TimeUtils;
@@ -59,12 +77,8 @@ import com.butent.bee.shared.ui.Action;
 import com.butent.bee.shared.ui.ColumnDescription;
 import com.butent.bee.shared.utils.ArrayUtils;
 import com.butent.bee.shared.utils.BeeUtils;
-
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import com.google.common.collect.Lists;
+import com.google.gwt.core.client.Scheduler.ScheduledCommand;
 
 public final class DocumentsHandler {
 
@@ -77,6 +91,10 @@ public final class DocumentsHandler {
       if (collector != null && !collector.isEmpty()) {
         sendFiles(result.getId(), collector.getFiles(), null);
         collector.clear();
+      }
+
+      if (result.getString(Data.getColumnIndex(VIEW_DOCUMENTS, COL_DOCUMENT_COMPANY)) != null) {
+        insertCompanyInfo(result, null);
       }
     }
 
@@ -232,14 +250,38 @@ public final class DocumentsHandler {
 
     @Override
     public boolean beforeAddRow(final GridPresenter presenter, boolean copy) {
-      DataInfo dataInfo = Data.getDataInfo(VIEW_DOCUMENTS);
-      BeeRow formRow = RowFactory.createEmptyRow(dataInfo, true);
+      DataInfo info = Data.getDataInfo(VIEW_DOCUMENTS);
+      final GridView gridView = presenter.getGridView();
+      FormView parentForm = null;
+      IsRow parentRow = null;
+      BeeRow docRow = RowFactory.createEmptyRow(info, true);
 
-      ensureDefaultFields(dataInfo, formRow);
+      if (gridView != null) {
+        parentForm = ViewHelper.getForm(gridView.asWidget());
+      }
 
-      RowFactory.createRow(dataInfo, formRow, new RowCallback() {
+      if (parentForm != null) {
+        parentRow = parentForm.getActiveRow();
+      }
+
+      if (parentRow != null
+          && BeeUtils.same(parentForm.getFormName(), ProjectConstants.FORM_PROJECT)) {
+        int idxCmp = info.getColumnIndex(COL_DOCUMENT_COMPANY);
+        int idxCmpName = info.getColumnIndex(ALS_DOCUMENT_COMPANY_NAME);
+        int idxParCmp = parentForm.getDataIndex(ProjectConstants.COL_COMAPNY);
+        int idxParCmpName = parentForm.getDataIndex(ProjectConstants.ALS_PROJECT_COMPANY_NAME);
+
+        if (!BeeConst.isUndef(idxCmp) && !BeeConst.isUndef(idxCmpName)
+            && !BeeConst.isUndef(idxCmp) && !BeeConst.isUndef(idxCmpName)) {
+
+          docRow.setValue(idxCmp, parentRow.getLong(idxParCmp));
+          docRow.setValue(idxCmpName, parentRow.getString(idxParCmpName));
+        }
+
+      }
+      RowFactory.createRow(info, docRow, new RowCallback() {
         @Override
-        public void onSuccess(BeeRow result) {
+        public void onSuccess(final BeeRow result) {
           final long docId = result.getId();
 
           presenter.getGridView().ensureRelId(new IdCallback() {
@@ -252,6 +294,7 @@ public final class DocumentsHandler {
                     @Override
                     public void onSuccess(BeeRow row) {
                       presenter.handleAction(Action.REFRESH);
+                      ViewHelper.getForm(gridView.asWidget()).refresh();
                     }
                   });
             }
@@ -281,23 +324,6 @@ public final class DocumentsHandler {
             }
           });
         }
-      }
-    }
-
-    private void ensureDefaultFields(DataInfo dataInfo, IsRow formRow) {
-      GridPresenter presenter = getGridPresenter();
-      FormView parentForm = ViewHelper.getForm(presenter.getMainView().asWidget());
-
-      if (parentForm == null) {
-        return;
-      }
-
-      if (BeeUtils.isEmpty(parentForm.getViewName()) && parentForm.getActiveRow() == null) {
-        return;
-      }
-
-      if (BeeUtils.same(parentForm.getViewName(), ServiceConstants.VIEW_SERVICE_OBJECTS)) {
-        ServiceUtils.ensureDocumentDefaultValues(dataInfo, formRow, parentForm);
       }
     }
   }
@@ -387,5 +413,38 @@ public final class DocumentsHandler {
   }
 
   private DocumentsHandler() {
+  }
+
+  public static void insertCompanyInfo(IsRow row, String oldValue) {
+
+    if (row == null) {
+      return;
+    }
+
+    final Long rowId = row.getId();
+    final String company = row.getString(Data.getColumnIndex(VIEW_DOCUMENTS,
+        COL_DOCUMENT_COMPANY));
+
+    if (!BeeUtils.isEmpty(company)) {
+
+      Filter filter =
+          Filter.and(Filter.equals(COL_DOCUMENT, rowId), Filter
+              .equals(COL_DOCUMENT_COMPANY, oldValue));
+
+      Queries.update(AdministrationConstants.VIEW_RELATIONS, filter, COL_DOCUMENT_COMPANY, company,
+          new IntCallback() {
+
+            @Override
+            public void onSuccess(Integer result) {
+              if (result == 0) {
+                Queries.insert(AdministrationConstants.VIEW_RELATIONS, Data.getColumns(
+                    AdministrationConstants.VIEW_RELATIONS,
+                    Lists.newArrayList(COL_DOCUMENT_COMPANY,
+                        COL_DOCUMENT)), Lists.newArrayList(company, BeeUtils
+                    .toString(rowId)));
+              }
+            }
+          });
+    }
   }
 }

@@ -6,10 +6,10 @@
   >
   <Fields>
     <Relation name="Project" notNull="true" relation="Projects" cascade="DELETE" label="=project" />
-    <Date name="Date" label="=date" />
+    <Date name="Date" label="=date" notNull="true" />
 
     <Relation name="Item" notNull="true" relation="Items" label="=productService" />
-    <Numeric name="Amount" precision="12" scale="2" notNull="true" label="=amount" />
+    <Numeric name="Quantity" precision="12" scale="3" notNull="true" label="=quantity" />
     <Numeric name="Price" precision="15" scale="5" label="=price" />
     <Relation name="Currency" relation="Currencies" notNull="true" label="=currency" defExpr="MAIN_CURRENCY" />
     <Boolean name="VatPlus" label="=vatPlus" />

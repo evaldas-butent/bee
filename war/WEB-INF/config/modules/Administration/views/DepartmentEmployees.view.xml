@@ -1,7 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <View xmlns="http://www.butent.com/view"
 
-  name="DepartmentEmployees" source="DepartmentEmployees" caption="=departmentEmployees" module="Administration"
+  name="DepartmentEmployees" source="DepartmentEmployees" caption="=departmentEmployees" 
+  module="Administration"
   >
   <Columns>
     <SimpleColumn name="Department" />
@@ -11,21 +12,31 @@
     
     <SimpleColumn name="CompanyPerson" />
     <SimpleJoin name="CompanyPerson" joinType="LEFT">
+      <SimpleColumn name="Person" />
       <SimpleJoin name="Person" joinType="LEFT">
         <SimpleColumn name="FirstName" />
         <SimpleColumn name="LastName" />
+        <SimpleColumn name="Photo" />
       </SimpleJoin>
+      <SimpleColumn name="Position" alias="PrimaryPosition" />
       <SimpleJoin name="Position" joinType="LEFT">
-        <SimpleColumn name="Name" alias="PositionName" />
+        <SimpleColumn name="Name" alias="PrimaryPositionName" />
       </SimpleJoin>
       <SimpleJoin name="Company" joinType="LEFT">
         <SimpleColumn name="Name" alias="CompanyName" />
       </SimpleJoin>
     </SimpleJoin>
+
+    <SimpleColumn name="Position" />
+    <SimpleJoin name="Position" joinType="LEFT">
+      <SimpleColumn name="Name" alias="PositionName" />
+    </SimpleJoin>
+
     <ExternalJoin name="DepartmentHead" source="Departments" joinType="LEFT">
       <IdColumn name="DepartmentHead" />
     </ExternalJoin>
   </Columns>
+
   <Order>
     <OrderBy column="LastName" />
     <OrderBy column="FirstName" />

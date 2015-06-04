@@ -3,7 +3,7 @@
   caption="=trdInvoice" disabledActions="save" width="75" widthUnit="%" height="75" heightUnit="%">
   <f:properties currencies="EUR, Lt" />
 
-  <FlowPanel class="bee-PrintableForm bee-svc-print-document">
+  <FlowPanel class="bee-PrintableForm bee-svc-print-document" contentEditable="true">
     <br/>
     <FlowPanel class="bee-svc-print-document-header flexBox-horizontal">
       <FlowPanel class="flexible">

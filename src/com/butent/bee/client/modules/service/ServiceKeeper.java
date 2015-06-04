@@ -1,8 +1,14 @@
 package com.butent.bee.client.modules.service;
 
-import com.google.common.collect.Lists;
-
-import static com.butent.bee.shared.modules.service.ServiceConstants.*;
+import static com.butent.bee.shared.modules.service.ServiceConstants.COL_SERVICE_OBJECT;
+import static com.butent.bee.shared.modules.service.ServiceConstants.GRID_OBJECT_DEFECTS;
+import static com.butent.bee.shared.modules.service.ServiceConstants.GRID_OBJECT_INVOICES;
+import static com.butent.bee.shared.modules.service.ServiceConstants.GRID_SERVICE_DEFECTS;
+import static com.butent.bee.shared.modules.service.ServiceConstants.GRID_SERVICE_INVOICES;
+import static com.butent.bee.shared.modules.service.ServiceConstants.GRID_SERVICE_OBJECTS;
+import static com.butent.bee.shared.modules.service.ServiceConstants.GRID_SVC_PROJECT_INVOICES;
+import static com.butent.bee.shared.modules.service.ServiceConstants.VIEW_MAINTENANCE;
+import static com.butent.bee.shared.modules.service.ServiceConstants.VIEW_SERVICE_FILES;
 
 import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.Global;
@@ -24,6 +30,7 @@ import com.butent.bee.shared.modules.administration.AdministrationConstants;
 import com.butent.bee.shared.modules.service.ServiceConstants.ObjectStatus;
 import com.butent.bee.shared.rights.Module;
 import com.butent.bee.shared.utils.EnumUtils;
+import com.google.common.collect.Lists;
 
 public final class ServiceKeeper {
 

@@ -9,10 +9,10 @@ import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.user.client.ui.Widget;
 
 import com.butent.bee.client.BeeKeeper;
-import com.butent.bee.client.Callback;
 import com.butent.bee.client.Global;
 import com.butent.bee.client.communication.ParameterList;
 import com.butent.bee.client.communication.ResponseCallback;
+import com.butent.bee.client.communication.RpcCallback;
 import com.butent.bee.client.communication.RpcParameter;
 import com.butent.bee.client.data.Queries;
 import com.butent.bee.client.dialog.Popup;
@@ -21,6 +21,7 @@ import com.butent.bee.client.dom.DomUtils;
 import com.butent.bee.client.event.Binder;
 import com.butent.bee.client.event.EventUtils;
 import com.butent.bee.client.event.logical.CloseEvent;
+import com.butent.bee.client.event.logical.OpenEvent;
 import com.butent.bee.client.grid.HtmlTable;
 import com.butent.bee.client.layout.Flow;
 import com.butent.bee.client.ui.AutocompleteProvider;
@@ -399,7 +400,7 @@ public abstract class AbstractFilterSupplier implements HasViewName, HasOptions,
     }
   }
 
-  protected void getHistogram(final Callback<SimpleRowSet> callback) {
+  protected void getHistogram(final RpcCallback<SimpleRowSet> callback) {
     List<Property> props = PropertyUtils.createProperties(Service.VAR_VIEW_NAME, getViewName());
     if (getEffectiveFilter() != null) {
       PropertyUtils.addProperties(props, Service.VAR_VIEW_WHERE, getEffectiveFilter().serialize());
@@ -421,8 +422,9 @@ public abstract class AbstractFilterSupplier implements HasViewName, HasOptions,
     BeeKeeper.getRpc().makePostRequest(params, new ResponseCallback() {
       @Override
       public void onResponse(ResponseObject response) {
-        if (Queries.checkResponse(Service.HISTOGRAM, getViewName(), response, SimpleRowSet.class,
-            callback)) {
+        if (Queries.checkResponse(Service.HISTOGRAM, getRpcId(), getViewName(), response,
+            SimpleRowSet.class, callback)) {
+
           SimpleRowSet rs = SimpleRowSet.restore((String) response.getResponse());
           callback.onSuccess(rs);
         }
@@ -493,7 +495,7 @@ public abstract class AbstractFilterSupplier implements HasViewName, HasOptions,
   protected void onDialogCancel() {
   }
 
-  protected void openDialog(Element target, Widget widget,
+  protected void openDialog(Element target, Widget widget, OpenEvent.Handler onOpen,
       final Scheduler.ScheduledCommand onChange) {
 
     Popup popup = new Popup(OutsideClick.CLOSE, getDialogStyle());
@@ -515,6 +517,9 @@ public abstract class AbstractFilterSupplier implements HasViewName, HasOptions,
     setDialog(popup);
     setFilterChanged(false);
 
+    if (onOpen != null) {
+      popup.addOpenHandler(onOpen);
+    }
     popup.showOnTop(target);
   }
 

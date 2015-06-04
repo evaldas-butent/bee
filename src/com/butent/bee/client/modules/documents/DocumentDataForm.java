@@ -248,7 +248,7 @@ public class DocumentDataForm extends AbstractFormInterceptor
                   Lists.newArrayList(COL_EDITOR_TEMPLATE_ORIGIN, COL_EDITOR_TEMPLATE_NAME,
                       COL_EDITOR_TEMPLATE_CONTENT)), Lists.newArrayList(ORIGIN, value, content));
             }
-          });
+          }, null);
     }
 
     public void setContent(String content) {
@@ -437,7 +437,8 @@ public class DocumentDataForm extends AbstractFormInterceptor
                   if (response.isEmpty()) {
                     Printer.print(input, null);
                   } else {
-                    BrowsingContext.open(FileUtils.getUrl(response.getResponseAsString()));
+                    BrowsingContext.open(FileUtils.getUrl(Localized.getConstants().print()
+                        + ".pdf", response.getResponseAsString()));
                   }
                 }
               }

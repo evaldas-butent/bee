@@ -250,6 +250,10 @@
   width: 50px;
 }
 
+.bee-ta-invoice-service-minterm-warn {
+  background-color: lightpink;
+}
+
 .bee-ta-invoice-service-total-label,
 .bee-ta-invoice-service-total-cell {
   text-align: right;

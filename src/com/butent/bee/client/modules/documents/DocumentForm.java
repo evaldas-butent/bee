@@ -1,17 +1,38 @@
 package com.butent.bee.client.modules.documents;
 
-import com.google.common.base.Splitter;
-import com.google.common.collect.LinkedListMultimap;
-import com.google.common.collect.Lists;
-import com.google.common.collect.Multimap;
-import com.google.gwt.event.dom.client.ClickEvent;
-import com.google.gwt.event.dom.client.ClickHandler;
-import com.google.gwt.user.client.ui.HasEnabled;
-import com.google.gwt.user.client.ui.Widget;
+import static com.butent.bee.shared.modules.classifiers.ClassifierConstants.COL_COMPANY;
+import static com.butent.bee.shared.modules.classifiers.ClassifierConstants.COL_CONTACT;
+import static com.butent.bee.shared.modules.classifiers.ClassifierConstants.COL_PERSON;
+import static com.butent.bee.shared.modules.classifiers.ClassifierConstants.TBL_COMPANIES;
+import static com.butent.bee.shared.modules.classifiers.ClassifierConstants.VIEW_COMPANIES;
+import static com.butent.bee.shared.modules.classifiers.ClassifierConstants.VIEW_COMPANY_PERSONS;
+import static com.butent.bee.shared.modules.classifiers.ClassifierConstants.VIEW_PERSONS;
+import static com.butent.bee.shared.modules.documents.DocumentConstants.COL_DESCRIPTION;
+import static com.butent.bee.shared.modules.documents.DocumentConstants.COL_DOCUMENT;
+import static com.butent.bee.shared.modules.documents.DocumentConstants.COL_DOCUMENT_CATEGORY;
+import static com.butent.bee.shared.modules.documents.DocumentConstants.COL_DOCUMENT_COMPANY;
+import static com.butent.bee.shared.modules.documents.DocumentConstants.COL_DOCUMENT_CONTENT;
+import static com.butent.bee.shared.modules.documents.DocumentConstants.COL_DOCUMENT_DATA;
+import static com.butent.bee.shared.modules.documents.DocumentConstants.COL_DOCUMENT_NAME;
+import static com.butent.bee.shared.modules.documents.DocumentConstants.VIEW_DOCUMENTS;
+import static com.butent.bee.shared.modules.documents.DocumentConstants.VIEW_DOCUMENT_DATA;
+import static com.butent.bee.shared.modules.documents.DocumentConstants.VIEW_DOCUMENT_ITEMS;
+import static com.butent.bee.shared.modules.documents.DocumentConstants.VIEW_DOCUMENT_TEMPLATES;
+import static com.butent.bee.shared.modules.trade.TradeConstants.COL_TRADE_AMOUNT;
+import static com.butent.bee.shared.modules.trade.TradeConstants.COL_TRADE_ITEM_ORDINAL;
+import static com.butent.bee.shared.modules.trade.TradeConstants.COL_TRADE_ITEM_PRICE;
+import static com.butent.bee.shared.modules.trade.TradeConstants.COL_TRADE_ITEM_QUANTITY;
+import static com.butent.bee.shared.modules.trade.TradeConstants.COL_TRADE_VAT;
+import static com.butent.bee.shared.modules.trade.TradeConstants.COL_TRADE_VAT_PERC;
+import static com.butent.bee.shared.modules.trade.TradeConstants.COL_TRADE_VAT_PLUS;
+import static com.butent.bee.shared.modules.trade.TradeConstants.VAR_TOTAL;
 
-import static com.butent.bee.shared.modules.classifiers.ClassifierConstants.*;
-import static com.butent.bee.shared.modules.documents.DocumentConstants.*;
-import static com.butent.bee.shared.modules.trade.TradeConstants.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
 
 import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.Global;
@@ -31,9 +52,11 @@ import com.butent.bee.client.data.RowFactory;
 import com.butent.bee.client.dialog.StringCallback;
 import com.butent.bee.client.event.logical.SelectorEvent;
 import com.butent.bee.client.grid.ChildGrid;
+import com.butent.bee.client.modules.mail.Relations;
 import com.butent.bee.client.ui.FormFactory.WidgetDescriptionCallback;
 import com.butent.bee.client.ui.IdentifiableWidget;
 import com.butent.bee.client.ui.Opener;
+import com.butent.bee.client.view.edit.SaveChangesEvent;
 import com.butent.bee.client.view.form.FormView;
 import com.butent.bee.client.view.form.interceptor.FormInterceptor;
 import com.butent.bee.client.view.grid.GridView;
@@ -49,6 +72,7 @@ import com.butent.bee.shared.data.BeeRowSet;
 import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.IsRow;
 import com.butent.bee.shared.data.RelationUtils;
+import com.butent.bee.shared.data.RowChildren;
 import com.butent.bee.shared.data.filter.Filter;
 import com.butent.bee.shared.data.value.LongValue;
 import com.butent.bee.shared.data.view.DataInfo;
@@ -64,15 +88,60 @@ import com.butent.bee.shared.time.DateTime;
 import com.butent.bee.shared.time.JustDate;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.EnumUtils;
+import com.google.common.base.Splitter;
+import com.google.common.collect.LinkedListMultimap;
+import com.google.common.collect.Lists;
+import com.google.common.collect.Multimap;
+import com.google.gwt.event.dom.client.ClickEvent;
+import com.google.gwt.event.dom.client.ClickHandler;
+import com.google.gwt.event.shared.HasHandlers;
+import com.google.gwt.user.client.ui.HasEnabled;
+import com.google.gwt.user.client.ui.Widget;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
+public class DocumentForm extends DocumentDataForm {
 
-public class DocumentForm extends DocumentDataForm implements SelectorEvent.Handler {
+  @Override
+  public void onSaveChanges(HasHandlers listener, SaveChangesEvent event) {
+    super.onSaveChanges(listener, event);
+
+    if (getFormView() != null) {
+
+      String oldValue = event.getOldRow().getString(Data.getColumnIndex(VIEW_DOCUMENTS,
+          COL_DOCUMENT_COMPANY));
+      String newValue = event.getNewRow().getString(Data.getColumnIndex(VIEW_DOCUMENTS,
+          COL_DOCUMENT_COMPANY));
+
+      if (!Objects.equals(oldValue, newValue)) {
+        DocumentsHandler.insertCompanyInfo(event.getNewRow(), oldValue);
+      }
+    }
+  }
+
+  private class RelationsHandler implements SelectorEvent.Handler {
+
+    @Override
+    public void onDataSelector(SelectorEvent event) {
+      if (event.isNewRow()) {
+        final String viewName = event.getRelatedViewName();
+
+        switch (viewName) {
+
+          case TaskConstants.TBL_TASKS:
+            if (event.isNewRow() && TaskConstants.VIEW_TASKS.equals(event.getRelatedViewName())) {
+              createNewTaskRelation(event);
+            }
+            break;
+
+          case ServiceConstants.TBL_SERVICE_OBJECTS:
+            if (event.isNewRow()
+                && ServiceConstants.VIEW_SERVICE_OBJECTS.equals(event.getRelatedViewName())) {
+              createNewServiceObjectRelation(event);
+            }
+            break;
+        }
+      }
+    }
+  }
 
   private final Button newDocumentButton = new Button(Localized.maybeTranslate("=documentNew"),
       new ClickHandler() {
@@ -111,6 +180,7 @@ public class DocumentForm extends DocumentDataForm implements SelectorEvent.Hand
     }
   });
   private ChildGrid itemsGrid;
+  Relations rel;
 
   private final Map<String, ChildSelector> childSelectors = new HashMap<>();
 
@@ -125,14 +195,16 @@ public class DocumentForm extends DocumentDataForm implements SelectorEvent.Hand
       childSelectors.put(selector.getOracle().getViewName(), selector);
 
       if (selector.hasRelatedView(TaskConstants.VIEW_TASKS)) {
-        selector.addSelectorHandler(this);
+        selector.addSelectorHandler(new RelationsHandler());
       } else if (selector.hasRelatedView(ServiceConstants.VIEW_SERVICE_OBJECTS)) {
-        selector.addSelectorHandler(this);
+        selector.addSelectorHandler(new RelationsHandler());
       }
+    } else if (widget instanceof Relations) {
+      this.rel = (Relations) widget;
+      rel.setSelectorHandler(new RelationsHandler());
     } else if (BeeUtils.same(name, VIEW_DOCUMENT_ITEMS) && widget instanceof ChildGrid) {
       itemsGrid = (ChildGrid) widget;
     }
-
   }
 
   @Override
@@ -162,16 +234,6 @@ public class DocumentForm extends DocumentDataForm implements SelectorEvent.Hand
   @Override
   public FormInterceptor getInstance() {
     return new DocumentForm();
-  }
-
-  @Override
-  public void onDataSelector(SelectorEvent event) {
-    if (event.isNewRow() && TaskConstants.VIEW_TASKS.equals(event.getRelatedViewName())) {
-      createNewTaskRelation(event);
-    } else if (event.isNewRow()
-        && ServiceConstants.VIEW_SERVICE_OBJECTS.equals(event.getRelatedViewName())) {
-      createNewServiceObjectRelation(event);
-    }
   }
 
   @Override
@@ -376,13 +438,19 @@ public class DocumentForm extends DocumentDataForm implements SelectorEvent.Hand
 
   private void createNewServiceObjectRelation(SelectorEvent event) {
     Long company = null;
+    DataInfo info;
 
     Data.setValue(ServiceConstants.VIEW_SERVICE_OBJECTS, event.getNewRow(),
         ServiceConstants.COL_OBJECT_STATUS, ObjectStatus.POTENTIAL_OBJECT.ordinal());
 
-    if (childSelectors.containsKey(TBL_COMPANIES)) {
-      company = BeeUtils.peek(DataUtils.parseIdList(childSelectors.get(TBL_COMPANIES).getValue()));
+    for (RowChildren selector : rel.getRowChildren(false)) {
+
+      info = Data.getDataInfo(selector.getRepository());
+      if (BeeUtils.same(info.getRelation(selector.getChildColumn()), VIEW_COMPANIES)) {
+        company = BeeUtils.peek(DataUtils.parseIdList(selector.getChildrenIds()));
+      }
     }
+
     if (DataUtils.isId(company)) {
       event.consume();
       final BeeRow row = event.getNewRow();
@@ -404,6 +472,7 @@ public class DocumentForm extends DocumentDataForm implements SelectorEvent.Hand
 
   private void createNewTaskRelation(final SelectorEvent event) {
     final BeeRow row = event.getNewRow();
+    DataInfo info;
 
     String summary = BeeUtils.notEmpty(event.getDefValue(), getStringValue(COL_DOCUMENT_NAME));
     if (!BeeUtils.isEmpty(summary)) {
@@ -422,16 +491,13 @@ public class DocumentForm extends DocumentDataForm implements SelectorEvent.Hand
     final List<Long> companies = new ArrayList<>();
     final List<Long> persons = new ArrayList<>();
 
-    for (ChildSelector selector : childSelectors.values()) {
-      if (selector.hasRelatedView(VIEW_COMPANIES)) {
-        if (!BeeUtils.isEmpty(selector.getValue())) {
-          companies.addAll(DataUtils.parseIdList(selector.getValue()));
-        }
+    for (RowChildren selector : rel.getRowChildren(false)) {
+      info = Data.getDataInfo(selector.getRepository());
 
-      } else if (selector.hasRelatedView(VIEW_PERSONS)) {
-        if (!BeeUtils.isEmpty(selector.getValue())) {
-          persons.addAll(DataUtils.parseIdList(selector.getValue()));
-        }
+      if (BeeUtils.same(info.getRelation(selector.getChildColumn()), VIEW_COMPANIES)) {
+        companies.addAll(DataUtils.parseIdList(selector.getChildrenIds()));
+      } else if (BeeUtils.same(info.getRelation(selector.getChildColumn()), VIEW_PERSONS)) {
+        persons.addAll(DataUtils.parseIdList(selector.getChildrenIds()));
       }
     }
 
@@ -538,7 +604,7 @@ public class DocumentForm extends DocumentDataForm implements SelectorEvent.Hand
               }
             });
           }
-        });
+        }, null);
   }
 
   private void parseItems(final String content, final Integer idx,

@@ -16,6 +16,7 @@ import com.butent.bee.server.data.BeeTable;
 import com.butent.bee.server.data.BeeView;
 import com.butent.bee.server.data.DataEditorBean;
 import com.butent.bee.server.data.DataEvent.TableModifyEvent;
+import com.butent.bee.server.data.DataEvent.ViewQueryEvent;
 import com.butent.bee.server.data.DataEventHandler;
 import com.butent.bee.server.data.QueryServiceBean;
 import com.butent.bee.server.data.SystemBean;
@@ -58,8 +59,11 @@ import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.EnumUtils;
 import com.ibm.icu.text.RuleBasedNumberFormat;
 
+import java.text.Collator;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
@@ -169,7 +173,7 @@ public class AdministrationModuleBean implements BeeModule, HasTimerService {
         BeeParameter.createRelation(module, PRM_CURRENCY, TBL_CURRENCIES, COL_CURRENCY_NAME),
         BeeParameter.createNumber(module, PRM_VAT_PERCENT, false, 21),
         BeeParameter.createText(module, PRM_REFRESH_CURRENCY_HOURS),
-        BeeParameter.createText(module, PRM_ERP_NAMESPACE),
+        BeeParameter.createText(module, PRM_ERP_NAMESPACE, false, "http://localhost/ButentWS/"),
         BeeParameter.createText(module, PRM_ERP_ADDRESS),
         BeeParameter.createText(module, PRM_ERP_LOGIN),
         BeeParameter.createText(module, PRM_ERP_PASSWORD),
@@ -247,6 +251,96 @@ public class AdministrationModuleBean implements BeeModule, HasTimerService {
             && event.isAfter()) {
           usr.initUsers();
           Endpoint.updateUserData(usr.getAllUserData());
+        }
+      }
+
+      @Subscribe
+      public void orderDepartments(ViewQueryEvent event) {
+        if (event.isAfter() && event.isTarget(VIEW_DEPARTMENTS) && event.hasData()) {
+          String idName = sys.getIdName(TBL_DEPARTMENTS);
+
+          SqlSelect query = new SqlSelect()
+              .addFields(TBL_DEPARTMENTS, idName, COL_DEPARTMENT_NAME, COL_DEPARTMENT_PARENT)
+              .addFrom(TBL_DEPARTMENTS);
+
+          SimpleRowSet data = qs.getData(query);
+          if (DataUtils.isEmpty(data)) {
+            return;
+          }
+
+          Map<Long, Long> parents = new HashMap<>();
+          Map<Long, String> names = new HashMap<>();
+
+          for (SimpleRow row : data) {
+            Long id = row.getLong(idName);
+
+            Long parent = row.getLong(COL_DEPARTMENT_PARENT);
+            if (DataUtils.isId(parent) && !Objects.equals(id, parent)) {
+              parents.put(id, parent);
+            }
+
+            names.put(id, BeeUtils.trim(row.getValue(COL_DEPARTMENT_NAME)));
+          }
+
+          BeeRowSet rowSet = event.getRowset();
+          final int nameIndex = rowSet.getColumnIndex(COL_DEPARTMENT_NAME);
+
+          String fullName;
+
+          for (BeeRow row : rowSet) {
+            if (parents.containsKey(row.getId())) {
+              List<Long> branch = new ArrayList<>();
+              branch.add(row.getId());
+
+              Long parent = parents.get(row.getId());
+              while (parent != null && !branch.contains(parent)) {
+                branch.add(parent);
+                parent = parents.get(parent);
+              }
+
+              StringBuilder sb = new StringBuilder();
+              for (int i = branch.size() - 1; i >= 0; i--) {
+                sb.append(names.get(branch.get(i)));
+                if (i > 0) {
+                  sb.append(DEPARTMENT_NAME_SEPARATOR);
+                }
+              }
+
+              fullName = sb.toString();
+
+            } else {
+              fullName = row.getString(nameIndex);
+            }
+
+            row.setProperty(PROP_DEPARTMENT_FULL_NAME, fullName);
+          }
+
+          if (rowSet.getNumberOfRows() > 1) {
+            final Collator collator = Collator.getInstance(usr.getLocale());
+            collator.setStrength(Collator.IDENTICAL);
+
+            Collections.sort(rowSet.getRows(), new Comparator<BeeRow>() {
+              @Override
+              public int compare(BeeRow row1, BeeRow row2) {
+                String name1 = row1.getProperty(PROP_DEPARTMENT_FULL_NAME);
+                if (BeeUtils.isEmpty(name1)) {
+                  name1 = row1.getString(nameIndex);
+                }
+
+                String name2 = row2.getProperty(PROP_DEPARTMENT_FULL_NAME);
+                if (BeeUtils.isEmpty(name2)) {
+                  name2 = row2.getString(nameIndex);
+                }
+
+                int result = collator.compare(BeeUtils.normalize(name1), BeeUtils.normalize(name2));
+                if (result == BeeConst.COMPARE_EQUAL) {
+                  result = Long.compare(row1.getId(), row2.getId());
+                }
+
+                return result;
+              }
+            });
+          }
         }
       }
     });
@@ -358,9 +452,14 @@ public class AdministrationModuleBean implements BeeModule, HasTimerService {
     cpRow.setValue(DataUtils.getColumnIndex(COL_PERSON, cpColumns), person);
 
     if (!BeeUtils.isEmpty(email)) {
+      response = qs.insertDataWithResponse(new SqlInsert(TBL_EMAILS)
+          .addConstant(COL_EMAIL_ADDRESS, email));
+
+      if (response.hasErrors()) {
+        return response;
+      }
       cpRow.setValue(DataUtils.getColumnIndex(ALS_EMAIL_ID, cpColumns),
-          qs.insertData(new SqlInsert(TBL_EMAILS)
-              .addConstant(COL_EMAIL_ADDRESS, address)));
+          response.getResponseAsLong());
     }
 
     if (!BeeUtils.isEmpty(positionName)) {

@@ -30,6 +30,7 @@ import com.butent.bee.client.modules.calendar.layout.WeekLayoutDescription;
 import com.butent.bee.client.style.StyleUtils;
 import com.butent.bee.client.widget.CustomDiv;
 import com.butent.bee.client.widget.Label;
+import com.butent.bee.client.widget.Mover;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.Pair;
 import com.butent.bee.shared.css.CssUnit;
@@ -302,21 +303,24 @@ public class MonthView extends CalendarView {
     JustDate today = TimeUtils.today();
     JustDate tmpDate = JustDate.copyOf(firstDate);
 
+    String dayCaption;
+
     for (int i = 1; i <= requiredRows; i++) {
       for (int j = 0; j < TimeUtils.DAYS_PER_WEEK; j++) {
-        String dayCaption = BeeUtils.toString(tmpDate.getDom());
 
         if (j == 0) {
           CustomDiv woyDiv = new CustomDiv(CalendarStyleManager.MONTH_CELL_LABEL);
           woyDiv.addStyleName(CalendarStyleManager.DAY_CELL);
           woyDiv.setText(BeeUtils.joinWords(BeeUtils.toString(TimeUtils.weekOfYear(tmpDate)),
               Localized.getConstants().unitWeekShort()));
-          dayCaption = woyDiv.toString();
-          dayCaption += BeeUtils.toString(tmpDate.getDom());
+
+          dayCaption = woyDiv.toString() + BeeUtils.toString(tmpDate.getDom());
+
+        } else {
+          dayCaption = BeeUtils.toString(tmpDate.getDom());
         }
 
-        buildCell(i, j, dayCaption, tmpDate.equals(today),
-            tmpDate.getMonth() == month);
+        buildCell(i, j, dayCaption, tmpDate.equals(today), tmpDate.getMonth() == month);
         TimeUtils.moveOneDayForward(tmpDate);
       }
     }
@@ -389,9 +393,11 @@ public class MonthView extends CalendarView {
 
     placeItemInGrid(widget, item, multi, colStart, colEnd, row, cellPosition);
 
-    if (!multi && item.isMovable(BeeKeeper.getUser().getUserId())) {
-      widget.getCompactBar().addMoveHandler(moveController);
-      widget.getCompactBar().addStyleName(CalendarStyleManager.MOVABLE);
+    if (item.isMovable(BeeKeeper.getUser().getUserId())) {
+      Mover mover = multi ? widget.getMoveHandle() : widget.getCompactBar();
+
+      mover.addMoveHandler(moveController);
+      mover.addStyleName(CalendarStyleManager.MOVABLE);
     }
 
     getItemWidgets().add(widget);
