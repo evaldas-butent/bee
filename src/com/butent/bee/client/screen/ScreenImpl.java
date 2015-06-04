@@ -1300,6 +1300,10 @@ public class ScreenImpl implements Screen {
     sett.addStyleName(BeeConst.CSS_CLASS_PREFIX + "UserControlIcon");
     help.addStyleName(BeeConst.CSS_CLASS_PREFIX + "UserControlIcon");
 
+    sett.setTitle(Localized.getConstants().settings());
+    help.setTitle(Localized.getConstants().help());
+    menuHide.setTitle(Localized.getConstants().hideOrShowMenu());
+
     styleMenuToggle(menuHide, BeeKeeper.getUser().isMenuVisible());
 
     sett.addClickHandler(new ClickHandler() {
@@ -1362,6 +1366,14 @@ public class ScreenImpl implements Screen {
 
     image.setAlt(BeeKeeper.getUser().getLogin());
     image.addStyleName(BeeConst.CSS_CLASS_PREFIX + "UserPhoto");
+
+    image.addClickHandler(new ClickHandler() {
+
+      @Override
+      public void onClick(ClickEvent arg3) {
+        UiHelper.closeDialog((Widget) arg3.getSource());
+      }
+    });
 
     userPanel.add(settingsCnt);
     userContainer.add(exitContainer);

@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <View xmlns="http://www.butent.com/view"
 
-  name="AssessmentForwarders" source="AssessmentForwarders" caption="=carriers"
-  >
+      name="AssessmentForwarders" source="AssessmentForwarders" caption="=carriers"
+    >
   <Columns>
     <SimpleColumn name="Assessment" />
     <SimpleColumn name="CargoDescription" />
@@ -48,9 +48,9 @@
       <SimpleColumn name="Supplier" editable="true" />
       <SimpleJoin name="Supplier" joinType="LEFT">
         <SimpleColumn name="Name" alias="SupplierName" />
-         <SimpleJoin joinType="LEFT" name="CompanyType">
-           <SimpleColumn name="Name" alias="SupplierTypeName" />
-         </SimpleJoin>
+        <SimpleJoin joinType="LEFT" name="CompanyType">
+          <SimpleColumn name="Name" alias="SupplierTypeName" />
+        </SimpleJoin>
       </SimpleJoin>
       <SimpleColumn name="Date" editable="true" />
       <SimpleColumn name="Number" editable="true" />

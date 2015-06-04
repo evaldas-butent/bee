@@ -407,6 +407,10 @@ public interface LocalizableConstants extends Constants, LocalizableClassifierCo
 
   String height();
 
+  String help();
+
+  String hideOrShowMenu();
+
   String holidays();
 
   String hour();
@@ -828,5 +832,4 @@ public interface LocalizableConstants extends Constants, LocalizableClassifierCo
   String yearMonth();
 
   String yes();
-
 }

@@ -65,7 +65,7 @@ public class ConcurrencyBean {
     }
 
     public String getId() {
-      return BeeUtils.joinWords(runnable.getId(), started());
+      return BeeUtils.joinWords(runnable.getId(), Integer.toHexString(hashCode()));
     }
 
     @Override
@@ -90,8 +90,12 @@ public class ConcurrencyBean {
       if (ok) {
         logger.info("Ended:", getId(), TimeUtils.elapsedSeconds(started()));
       } else {
+        if (started() > 0) {
+          logger.info("Canceled:", getId(), TimeUtils.elapsedSeconds(started()));
+        } else {
+          logger.info("Rejected:", getId());
+        }
         runnable.onError();
-        logger.info("Canceled:", getId(), TimeUtils.elapsedSeconds(started()));
       }
     }
 
@@ -127,10 +131,17 @@ public class ConcurrencyBean {
           return;
         }
       }
+      asyncThreads.remove(id);
     }
     Worker newWorker = new Worker(runnable);
-    executor.execute(newWorker);
-    asyncThreads.put(id, newWorker);
+
+    try {
+      executor.execute(newWorker);
+      asyncThreads.put(id, newWorker);
+    } catch (Exception e) {
+      logger.error(e);
+      newWorker.cancel(true);
+    }
   }
 
   public <T extends HasTimerService> void createCalendarTimer(Class<T> handler, String parameter) {

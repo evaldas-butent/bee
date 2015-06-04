@@ -1,12 +1,12 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE Form [
-  <!ENTITY section "margin-top: 4px;">
-  <!ENTITY separator "<hr/>">
-  <!ENTITY inline "display:inline-block;">
-  <!ENTITY labelLeft "&inline; width:90px; padding-top:1px;">
-  <!ENTITY labelRight "&labelLeft; text-align:right; margin-right:10px;">
-  <!ENTITY input "&inline; width:110px;">
-]>
+    <!ENTITY section "margin-top: 4px;">
+    <!ENTITY separator "<hr/>">
+    <!ENTITY inline "display:inline-block;">
+    <!ENTITY labelLeft "&inline; width:90px; padding-top:1px;">
+    <!ENTITY labelRight "&labelLeft; text-align:right; margin-right:10px;">
+    <!ENTITY input "&inline; width:110px;">
+    ]>
 <f:Form xmlns="http://www.butent.com/widget"
         xmlns:f="http://www.butent.com/form"
 
@@ -19,11 +19,11 @@
     <FlowPanel for="Forwarder" style="&section;">
       <Label for="Forwarder" class="bee-required" style="&labelLeft; width:140px;" />
       <DataSelector source="Forwarder" required="true" style="&input; width:200px;"
-          renderColumns="ForwarderName ForwarderTypeName" choiceColumns="Name TypeName" />
+                    renderColumns="ForwarderName ForwarderTypeName" choiceColumns="Name TypeName" />
     </FlowPanel>
     <FlowPanel for="Expedition" style="&section;">
       <Label for="Expedition" class="bee-required" style="&labelLeft; width:140px;" />
-      <DataSelector source="Expedition" required="true" style="&input; width:150px;"  />
+      <DataSelector source="Expedition" required="true" style="&input; width:150px;" />
     </FlowPanel>
 
     &separator;
@@ -40,7 +40,7 @@
       <Label for="Amount" style="&labelRight;" />
       <InputMoney source="Amount" style="&input; width:70px;" />
       <DataSelector source="Currency" style="&inline; width:5em; margin-left:5px;"
-        editEnabled="false" placeholder="=currencyShort" />
+                    editEnabled="false" placeholder="=currencyShort" />
       <CheckBox source="VatPlus" text="=vatPlus" style="&inline; margin-left:5px;" />
       <InputMoney source="Vat" placeholder="=vat" style="&inline; width:5em; margin-left:5px;" />
       <CheckBox source="VatPercent" style="&inline; margin-left:5px;" text="%" />
@@ -50,9 +50,11 @@
       <Label for="Supplier" style="&labelLeft;" />
       <DataSelector source="Supplier" renderColumns="SupplierName SupplierTypeName"
                     choiceColumns="Name TypeName" style="&input; width:200px;" />
-      <Label for="Income" class="bee-required" style="&labelRight; margin-left:30px;" />
+      <Label name="IncomeLabel" for="Income" class="bee-required"
+             style="&labelRight; margin-left:30px;" />
       <DataSelector name="Income" source="Income" style="&inline; width:70px;"
-        editEnabled="false" required="true" choiceColumns="ServiceName Amount CurrencyName" />
+                    editEnabled="false" required="true"
+                    choiceColumns="ServiceName Amount CurrencyName" />
     </FlowPanel>
 
     <FlowPanel for="Note" style="&section;">
@@ -69,7 +71,8 @@
     <FlowPanel for="ForwarderVehicle" style="&section;">
       <Label for="ForwarderVehicle" style="&labelLeft; width:140px;" />
       <DataSelector source="ForwarderVehicle" viewName="DistinctForwarderVehicles"
-        valueSource="ForwarderVehicle" strict="false" caching="local" style="&input; width:200px;" />
+                    valueSource="ForwarderVehicle" strict="false" caching="local"
+                    style="&input; width:200px;" />
     </FlowPanel>
     <FlowPanel for="Notes" style="&section;">
       <Label for="Notes" style="&labelLeft; vertical-align:top; width:140px;" />

@@ -721,6 +721,8 @@ public final class TransportConstants {
   public static final String COL_CARGO_TYPE_NAME = "CargoTypeName";
   public static final String COL_CARGO_TYPE_COLOR = "Color";
 
+  public static final String COL_TRANSPORTATION_ORDER = "TransportationOrder";
+
   public static final String FORM_NEW_VEHICLE = "NewVehicle";
   public static final String FORM_ORDER = "TransportationOrder";
   public static final String FORM_TRIP = "Trip";

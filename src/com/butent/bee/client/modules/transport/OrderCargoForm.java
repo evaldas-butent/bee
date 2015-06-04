@@ -55,41 +55,33 @@ import java.util.Objects;
 class OrderCargoForm extends AbstractFormInterceptor implements SelectorEvent.Handler {
 
   static void preload(final ScheduledCommand command) {
-    Global.getParameter(PRM_BIND_EXPENSES_TO_INCOMES, new Consumer<String>() {
+    Global.getParameter(PRM_CARGO_TYPE, new Consumer<String>() {
       @Override
-      public void accept(String prm) {
-        bindExpensesToIncomes = BeeUtils.unbox(BeeUtils.toBoolean(prm));
-
-        Global.getParameter(PRM_CARGO_TYPE, new Consumer<String>() {
-          @Override
-          public void accept(String input) {
-            if (DataUtils.isId(input)) {
-              Queries.getRow(VIEW_CARGO_TYPES, BeeUtils.toLong(input), new RowCallback() {
-                @Override
-                public void onFailure(String... reason) {
-                  super.onFailure(reason);
-                  defaultCargoType = null;
-                  command.execute();
-                }
-
-                @Override
-                public void onSuccess(BeeRow result) {
-                  defaultCargoType = result;
-                  command.execute();
-                }
-              });
-
-            } else {
+      public void accept(String input) {
+        if (DataUtils.isId(input)) {
+          Queries.getRow(VIEW_CARGO_TYPES, BeeUtils.toLong(input), new RowCallback() {
+            @Override
+            public void onFailure(String... reason) {
+              super.onFailure(reason);
               defaultCargoType = null;
               command.execute();
             }
-          }
-        });
+
+            @Override
+            public void onSuccess(BeeRow result) {
+              defaultCargoType = result;
+              command.execute();
+            }
+          });
+
+        } else {
+          defaultCargoType = null;
+          command.execute();
+        }
       }
     });
   }
 
-  private static boolean bindExpensesToIncomes;
   private static IsRow defaultCargoType;
 
   @Override
@@ -150,7 +142,8 @@ class OrderCargoForm extends AbstractFormInterceptor implements SelectorEvent.Ha
 
         @Override
         public ColumnDescription beforeCreateColumn(GridView gridView, ColumnDescription descr) {
-          if (!bindExpensesToIncomes && Objects.equals(descr.getId(), COL_CARGO_INCOME)) {
+          if (!TransportHandler.bindExpensesToIncomes
+              && Objects.equals(descr.getId(), COL_CARGO_INCOME)) {
             return null;
           }
           return super.beforeCreateColumn(gridView, descr);

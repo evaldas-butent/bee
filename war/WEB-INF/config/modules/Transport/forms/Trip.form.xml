@@ -108,8 +108,16 @@
         </FlowPanel>
       </page>
       <page>
-        <text>=documents</text>
+        <text>=trTripDocuments</text>
         <ChildGrid name="RelatedDocuments" relColumn="Trip" />
+      </page>
+      <page>
+        <text>=trCargoDocuments</text>
+        <GridPanel name="CargoDocuments" parent="{form}" child="true" />
+      </page>
+      <page>
+        <text>=trOrderDocuments</text>
+        <GridPanel name="TranspOrderDocuments" parent="{form}" child="true" />
       </page>
     </TabbedPages>
   </FlowPanel>

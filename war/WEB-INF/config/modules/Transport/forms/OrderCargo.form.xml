@@ -162,8 +162,16 @@
         <ChildGrid name="CargoHandling" relColumn="Cargo" />
       </page>
       <page>
-        <text>=documents</text>
+        <text>=trCargoDocuments</text>
         <ChildGrid name="RelatedDocuments" relColumn="Cargo" />
+      </page>
+      <page>
+        <text>=trOrderDocuments</text>
+        <GridPanel name="TranspOrderDocuments" parent="{form}" child="true" />
+      </page>
+      <page>
+        <text>=trTripDocuments</text>
+        <GridPanel name="TripDocuments" parent="{form}" child="true" />
       </page>
     </TabbedPages>
   </FlowPanel>
