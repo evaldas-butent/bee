@@ -124,6 +124,13 @@ public enum Report implements HasWidgetSupplier {
           new ReportEnumItem(COL_TRIP_STATUS, Data.getColumnLabel(TBL_TRIPS, COL_TRIP_STATUS),
               TripStatus.class),
 
+          new ReportTextItem(COL_ORDER_NO, loc.orderNumber()),
+          new ReportDateTimeItem(COL_ORDER + COL_ORDER_DATE, loc.orderDate()),
+          new ReportTextItem(COL_CUSTOMER, loc.customer()),
+          new ReportTextItem(COL_ORDER_MANAGER, loc.manager()),
+          new ReportTextItem(COL_CARGO, loc.cargo()),
+          new ReportBooleanItem(COL_CARGO_PARTIAL, loc.partial()),
+
           new ReportNumericItem(COL_ROUTE_KILOMETERS, loc.kilometers()),
           new ReportNumericItem("TripIncome", loc.incomes()).setPrecision(2),
           new ReportNumericItem("FuelCosts", loc.trFuelCosts()).setPrecision(2),

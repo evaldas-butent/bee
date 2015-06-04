@@ -1,6 +1,6 @@
 package com.butent.bee.server.modules.transport;
 
-import static com.butent.bee.shared.modules.administration.AdministrationConstants.COL_CURRENCY;
+import static com.butent.bee.shared.modules.administration.AdministrationConstants.*;
 import static com.butent.bee.shared.modules.classifiers.ClassifierConstants.*;
 import static com.butent.bee.shared.modules.trade.TradeConstants.COL_TRADE_VAT;
 import static com.butent.bee.shared.modules.transport.TransportConstants.*;
@@ -16,6 +16,7 @@ import com.butent.bee.server.sql.IsExpression;
 import com.butent.bee.server.sql.SqlSelect;
 import com.butent.bee.server.sql.SqlUpdate;
 import com.butent.bee.server.sql.SqlUtils;
+import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.Service;
 import com.butent.bee.shared.communication.ResponseObject;
 import com.butent.bee.shared.data.DataUtils;
@@ -251,7 +252,7 @@ public class TransportReportsBean {
   }
 
   /**
-   * Return Temporary table name with calculated trip incomes by each cargo.
+   * Returns Temporary table name with calculated trip incomes by each cargo.
    *
    * @param trips    query filter with <b>unique</b> "Trip" values.
    * @param currency currency to convert to.
@@ -263,83 +264,26 @@ public class TransportReportsBean {
    */
   public String getTripIncomes(SqlSelect trips, Long currency, boolean woVat) {
     String alias = SqlUtils.uniqueName();
-    String cargoIncome = "CargoIncome";
-
-    String tmp = qs.sqlCreateTemp(getCargoIncomeQuery(new SqlSelect().setDistinctMode(true)
-        .addFields(TBL_CARGO_TRIPS, COL_CARGO)
-        .addFrom(TBL_CARGO_TRIPS)
-        .addFromInner(trips, alias,
-            SqlUtils.joinUsing(TBL_CARGO_TRIPS, alias, COL_TRIP)), currency, woVat));
-
-    String tmpTripCargo = qs.sqlCreateTemp(new SqlSelect()
-        .addFields(TBL_CARGO_TRIPS, COL_TRIP, COL_CARGO, COL_TRIP_PERCENT)
-        .addFields(tmp, cargoIncome)
-        .addSum(TBL_TRIP_ROUTES, COL_ROUTE_KILOMETERS)
-        .addFrom(TBL_CARGO_TRIPS)
-        .addFromInner(tmp, SqlUtils.joinUsing(TBL_CARGO_TRIPS, tmp, COL_CARGO))
-        .addFromLeft(TBL_TRIP_ROUTES,
-            sys.joinTables(TBL_CARGO_TRIPS, TBL_TRIP_ROUTES, COL_ROUTE_CARGO))
-        .addGroup(TBL_CARGO_TRIPS, COL_TRIP, COL_CARGO, COL_TRIP_PERCENT)
-        .addGroup(tmp, cargoIncome));
-
-    qs.sqlDropTemp(tmp);
-
-    // Too big percent correction
-    qs.updateData(new SqlUpdate(tmpTripCargo)
-        .addExpression(COL_TRIP_PERCENT, SqlUtils.multiply(
-            SqlUtils.divide(SqlUtils.field(tmpTripCargo, COL_TRIP_PERCENT),
-                SqlUtils.field(alias, COL_TRIP_PERCENT)), 100))
-        .setFrom(new SqlSelect()
-                .addFields(tmpTripCargo, COL_CARGO)
-                .addSum(tmpTripCargo, COL_TRIP_PERCENT)
-                .addFrom(tmpTripCargo)
-                .addGroup(tmpTripCargo, COL_CARGO), alias,
-            SqlUtils.and(SqlUtils.joinUsing(tmpTripCargo, alias, COL_CARGO),
-                SqlUtils.notNull(alias, COL_TRIP_PERCENT),
-                SqlUtils.more(alias, COL_TRIP_PERCENT, 100))));
-
-    // Percent correction by runned kilometers
-    qs.updateData(new SqlUpdate(tmpTripCargo)
-        .addExpression(COL_TRIP_PERCENT, SqlUtils.multiply(
-            SqlUtils.divide(SqlUtils.field(tmpTripCargo, COL_ROUTE_KILOMETERS),
-                SqlUtils.field(alias, COL_ROUTE_KILOMETERS)),
-            SqlUtils.minus(100, SqlUtils.nvl(SqlUtils.field(alias, COL_TRIP_PERCENT), 0))))
-        .setFrom(new SqlSelect()
-                .addFields(tmpTripCargo, COL_CARGO)
-                .addSum(SqlUtils.sqlIf(SqlUtils.isNull(tmpTripCargo, COL_TRIP_PERCENT),
-                    SqlUtils.field(tmpTripCargo, COL_ROUTE_KILOMETERS), null), COL_ROUTE_KILOMETERS)
-                .addSum(tmpTripCargo, COL_TRIP_PERCENT)
-                .addFrom(tmpTripCargo)
-                .addGroup(tmpTripCargo, COL_CARGO), alias,
-            SqlUtils.and(SqlUtils.joinUsing(alias, tmpTripCargo, COL_CARGO),
-                SqlUtils.notNull(alias, COL_ROUTE_KILOMETERS),
-                SqlUtils.positive(alias, COL_ROUTE_KILOMETERS)))
-        .setWhere(SqlUtils.isNull(tmpTripCargo, COL_TRIP_PERCENT)));
-
-    String cntEmpty = "CntEmpty";
     String subq = SqlUtils.uniqueName();
 
-    tmp = qs.sqlCreateTemp(new SqlSelect()
-        .addFields(tmpTripCargo, COL_CARGO, COL_TRIP)
-        .addExpr(SqlUtils.multiply(
-            SqlUtils.divide(SqlUtils.field(tmpTripCargo, cargoIncome), 100),
-            SqlUtils.sqlIf(SqlUtils.isNull(tmpTripCargo, COL_TRIP_PERCENT),
-                SqlUtils.divide(SqlUtils.minus(100,
-                        SqlUtils.nvl(SqlUtils.field(alias, COL_TRIP_PERCENT), 0)),
-                    SqlUtils.field(alias, cntEmpty)),
-                SqlUtils.field(tmpTripCargo, COL_TRIP_PERCENT))), "TripIncome")
-        .addFrom(tmpTripCargo)
-        .addFromInner(new SqlSelect()
-                .addFields(tmpTripCargo, COL_CARGO)
-                .addSum(tmpTripCargo, COL_TRIP_PERCENT)
-                .addSum(SqlUtils.sqlIf(SqlUtils.isNull(tmpTripCargo, COL_TRIP_PERCENT), 1, 0),
-                    cntEmpty)
-                .addFrom(tmpTripCargo)
-                .addGroup(tmpTripCargo, COL_CARGO), alias,
-            SqlUtils.joinUsing(tmpTripCargo, alias, COL_CARGO))
-        .addFromInner(trips, subq, SqlUtils.joinUsing(tmpTripCargo, subq, COL_TRIP)));
+    String tmpCargoTrip = getCargoTripPercents(COL_CARGO,
+        new SqlSelect().setDistinctMode(true)
+            .addFields(TBL_CARGO_TRIPS, COL_CARGO)
+            .addFrom(TBL_CARGO_TRIPS)
+            .addFromInner(trips, alias, SqlUtils.joinUsing(TBL_CARGO_TRIPS, alias, COL_TRIP)));
 
-    qs.sqlDropTemp(tmpTripCargo);
+    String tmp = qs.sqlCreateTemp(new SqlSelect()
+        .addFields(tmpCargoTrip, COL_CARGO, COL_TRIP)
+        .addExpr(SqlUtils.multiply(SqlUtils.divide(SqlUtils.field(subq, "CargoIncome"), 100),
+            SqlUtils.field(tmpCargoTrip, COL_TRIP_PERCENT)), "TripIncome")
+        .addFrom(tmpCargoTrip)
+        .addFromInner(getCargoIncomeQuery(new SqlSelect().setDistinctMode(true)
+                .addFields(tmpCargoTrip, COL_CARGO)
+                .addFrom(tmpCargoTrip), currency, woVat),
+            subq, SqlUtils.joinUsing(tmpCargoTrip, subq, COL_CARGO))
+        .addFromInner(trips, alias, SqlUtils.joinUsing(tmpCargoTrip, alias, COL_TRIP)));
+
+    qs.sqlDropTemp(tmpCargoTrip);
     return tmp;
   }
 
@@ -455,6 +399,7 @@ public class TransportReportsBean {
     // Planned kilometers
     if (report.requiresField(plannedKilometers) || report.requiresField(plannedFuelCosts)
         || report.requiresField(plannedDailyCosts) || report.requiresField(plannedRoadCosts)) {
+
       String tmpCargo = qs.sqlCreateTemp(new SqlSelect().setDistinctMode(true)
           .addFields(TBL_CARGO_TRIPS, COL_CARGO)
           .addEmptyDouble(kilometers)
@@ -640,29 +585,98 @@ public class TransportReportsBean {
                       TripConstant.CONSTANT_COSTS.ordinal()), constantCosts, null, currency),
               als, SqlUtils.joinUsing(tmp, als, COL_TRIP)));
     }
+    // Cargo info
+    String orderDate = COL_ORDER + COL_ORDER_DATE;
+
+    boolean cargoRequired = report.requiresField(COL_ORDER_NO)
+        || report.requiresField(orderDate) || report.requiresField(COL_CUSTOMER)
+        || report.requiresField(COL_ORDER_MANAGER) || report.requiresField(COL_CARGO)
+        || report.requiresField(COL_CARGO_PARTIAL);
+
+    if (cargoRequired) {
+      String tmpTripCargo = getCargoTripPercents(COL_TRIP,
+          new SqlSelect()
+              .addFields(tmp, COL_TRIP)
+              .addFrom(tmp));
+
+      clause.clear();
+      clause.add(report.getCondition(TBL_ORDERS, COL_ORDER_NO));
+      clause.add(report.getCondition(SqlUtils.field(TBL_ORDERS, COL_ORDER_DATE), orderDate));
+      clause.add(report.getCondition(SqlUtils.field(TBL_COMPANIES, COL_COMPANY_NAME),
+          COL_CUSTOMER));
+      clause.add(report.getCondition(SqlUtils.cast(SqlUtils.field(tmpTripCargo, COL_CARGO),
+          SqlConstants.SqlDataType.STRING, 20, 0), COL_CARGO));
+      clause.add(report.getCondition(TBL_ORDER_CARGO, COL_CARGO_PARTIAL));
+
+      query = new SqlSelect()
+          .addFields(TBL_ORDERS, COL_ORDER_NO)
+          .addField(TBL_ORDERS, COL_ORDER_DATE, orderDate)
+          .addField(TBL_COMPANIES, COL_COMPANY_NAME, COL_CUSTOMER)
+          .addExpr(SqlUtils.concat(SqlUtils.field(TBL_PERSONS, COL_FIRST_NAME), "' '",
+                  SqlUtils.nvl(SqlUtils.field(TBL_PERSONS, COL_LAST_NAME), "''")),
+              COL_ORDER_MANAGER)
+          .addFields(tmpTripCargo, COL_CARGO)
+          .addFields(TBL_ORDER_CARGO, COL_CARGO_PARTIAL)
+          .addFrom(tmp)
+          .addFromInner(tmpTripCargo, SqlUtils.joinUsing(tmp, tmpTripCargo, COL_TRIP))
+          .addFromInner(TBL_ORDER_CARGO,
+              sys.joinTables(TBL_ORDER_CARGO, tmpTripCargo, COL_CARGO))
+          .addFromInner(TBL_ORDERS, sys.joinTables(TBL_ORDERS, TBL_ORDER_CARGO, COL_ORDER))
+          .addFromInner(TBL_COMPANIES, sys.joinTables(TBL_COMPANIES, TBL_ORDERS, COL_CUSTOMER))
+          .addFromLeft(TBL_USERS, sys.joinTables(TBL_USERS, TBL_ORDERS, COL_ORDER_MANAGER))
+          .addFromLeft(TBL_COMPANY_PERSONS,
+              sys.joinTables(TBL_COMPANY_PERSONS, TBL_USERS, COL_COMPANY_PERSON))
+          .addFromLeft(TBL_PERSONS, sys.joinTables(TBL_PERSONS, TBL_COMPANY_PERSONS, COL_PERSON))
+          .setWhere(clause);
+
+      for (String column : qs.getData(new SqlSelect()
+          .addAllFields(tmp)
+          .addFrom(tmp)
+          .setWhere(SqlUtils.sqlFalse())).getColumnNames()) {
+
+        if (BeeUtils.inList(column, kilometers, fuelCosts, dailyCosts, roadCosts, constantCosts,
+            otherCosts, plannedKilometers, plannedFuelCosts, plannedDailyCosts, plannedRoadCosts)) {
+
+          query.addExpr(SqlUtils.multiply(SqlUtils.divide(SqlUtils.field(tmp, column), 100),
+              SqlUtils.field(tmpTripCargo, COL_CARGO_PERCENT)), column);
+        } else {
+          query.addFields(tmp, column);
+        }
+      }
+      String tt = qs.sqlCreateTemp(query);
+      qs.sqlDropTemp(tmp);
+      qs.sqlDropTemp(tmpTripCargo);
+      tmp = tt;
+    }
     // Incomes
     if (report.requiresField(tripIncome)) {
       String als = SqlUtils.uniqueName();
 
-      String tripIncomes = getTripIncomes(new SqlSelect()
+      String tripIncomes = getTripIncomes(new SqlSelect().setDistinctMode(true)
           .addFields(tmp, COL_TRIP)
           .addFrom(tmp), currency, woVat);
 
-      qs.updateData(new SqlUpdate(tmp)
-          .addExpression(tripIncome, SqlUtils.field(als, tripIncome))
-          .setFrom(new SqlSelect()
-                  .addFields(tripIncomes, COL_TRIP)
-                  .addSum(tripIncomes, tripIncome)
-                  .addFrom(tripIncomes)
-                  .addFromInner(tmp, SqlUtils.joinUsing(tripIncomes, tmp, COL_TRIP))
-                  .addGroup(tripIncomes, COL_TRIP), als,
-              SqlUtils.joinUsing(tmp, als, COL_TRIP)));
-
+      if (cargoRequired) {
+        qs.updateData(new SqlUpdate(tmp)
+            .addExpression(tripIncome, SqlUtils.field(tripIncomes, tripIncome))
+            .setFrom(tripIncomes, SqlUtils.joinUsing(tmp, tripIncomes, COL_CARGO, COL_TRIP)));
+      } else {
+        qs.updateData(new SqlUpdate(tmp)
+            .addExpression(tripIncome, SqlUtils.field(als, tripIncome))
+            .setFrom(new SqlSelect()
+                    .addFields(tripIncomes, COL_TRIP)
+                    .addSum(tripIncomes, tripIncome)
+                    .addFrom(tripIncomes)
+                    .addFromInner(tmp, SqlUtils.joinUsing(tripIncomes, tmp, COL_TRIP))
+                    .addGroup(tripIncomes, COL_TRIP), als,
+                SqlUtils.joinUsing(tmp, als, COL_TRIP)));
+      }
       qs.sqlDropTemp(tripIncomes);
     }
     query = new SqlSelect()
         .addFrom(tmp)
-        .setWhere(report.getCondition(tmp, COL_TRIP_ROUTE));
+        .setWhere(SqlUtils.and(report.getCondition(tmp, COL_TRIP_ROUTE),
+            report.getCondition(tmp, COL_ORDER_MANAGER)));
 
     for (String column : qs.getData(new SqlSelect()
         .addAllFields(tmp)
@@ -674,9 +688,7 @@ public class TransportReportsBean {
       }
     }
     SimpleRowSet data = qs.getData(query);
-
     qs.sqlDropTemp(tmp);
-
     return ResponseObject.response(data);
   }
 
@@ -795,6 +807,89 @@ public class TransportReportsBean {
     ss.addSum(amountExpr, VAR_EXPENSE);
 
     return ss;
+  }
+
+  /**
+   * Returns Temporary table name with calculated trip income or cargo cost percents
+   *
+   * @param key    "Cargo" or "Trip"
+   * @param filter query filter with <b>unique</b> key values.
+   * @return Temporary table name with following structure: <br>
+   * "Cargo" - cargo ID <br>
+   * "Trip" - trip ID <br>
+   * key == "Cargo" ? "TripPercent" : "CargoPercent"
+   */
+  public String getCargoTripPercents(String key, SqlSelect filter) {
+    String percent = null;
+
+    switch (key) {
+      case COL_CARGO:
+        percent = COL_TRIP_PERCENT;
+        break;
+      case COL_TRIP:
+        percent = COL_CARGO_PERCENT;
+        break;
+      default:
+        Assert.unsupported(key + ": only " + COL_CARGO + " and " + COL_TRIP + " values supported");
+    }
+    String alias = SqlUtils.uniqueName();
+
+    String tmpCargoTrip = qs.sqlCreateTemp(new SqlSelect()
+        .addFields(TBL_CARGO_TRIPS, COL_CARGO, COL_TRIP, percent)
+        .addSum(TBL_TRIP_ROUTES, COL_ROUTE_KILOMETERS)
+        .addFrom(TBL_CARGO_TRIPS)
+        .addFromInner(filter, alias, SqlUtils.joinUsing(TBL_CARGO_TRIPS, alias, key))
+        .addFromLeft(TBL_TRIP_ROUTES,
+            sys.joinTables(TBL_CARGO_TRIPS, TBL_TRIP_ROUTES, COL_ROUTE_CARGO))
+        .addGroup(TBL_CARGO_TRIPS, COL_CARGO, COL_TRIP, percent));
+
+    // Too big percent correction
+    qs.updateData(new SqlUpdate(tmpCargoTrip)
+        .addExpression(percent, SqlUtils.multiply(
+            SqlUtils.divide(SqlUtils.field(tmpCargoTrip, percent),
+                SqlUtils.field(alias, percent)), 100))
+        .setFrom(new SqlSelect()
+                .addFields(tmpCargoTrip, key)
+                .addSum(tmpCargoTrip, percent)
+                .addFrom(tmpCargoTrip)
+                .addGroup(tmpCargoTrip, key), alias,
+            SqlUtils.and(SqlUtils.joinUsing(tmpCargoTrip, alias, key),
+                SqlUtils.notNull(alias, percent), SqlUtils.more(alias, percent, 100))));
+
+    // Percent correction by runned kilometers
+    qs.updateData(new SqlUpdate(tmpCargoTrip)
+        .addExpression(percent, SqlUtils.multiply(
+            SqlUtils.divide(SqlUtils.field(tmpCargoTrip, COL_ROUTE_KILOMETERS),
+                SqlUtils.field(alias, COL_ROUTE_KILOMETERS)),
+            SqlUtils.minus(100, SqlUtils.nvl(SqlUtils.field(alias, percent), 0))))
+        .setFrom(new SqlSelect()
+                .addFields(tmpCargoTrip, key)
+                .addSum(SqlUtils.sqlIf(SqlUtils.isNull(tmpCargoTrip, percent),
+                    SqlUtils.field(tmpCargoTrip, COL_ROUTE_KILOMETERS), null), COL_ROUTE_KILOMETERS)
+                .addSum(tmpCargoTrip, percent)
+                .addFrom(tmpCargoTrip)
+                .addGroup(tmpCargoTrip, key), alias,
+            SqlUtils.and(SqlUtils.joinUsing(alias, tmpCargoTrip, key),
+                SqlUtils.notNull(alias, COL_ROUTE_KILOMETERS),
+                SqlUtils.positive(alias, COL_ROUTE_KILOMETERS)))
+        .setWhere(SqlUtils.isNull(tmpCargoTrip, percent)));
+
+    String cntEmpty = SqlUtils.uniqueName();
+
+    // Percent correction proportionaly for empty percents
+    qs.updateData(new SqlUpdate(tmpCargoTrip)
+        .addExpression(percent, SqlUtils.divide(
+            SqlUtils.minus(100, SqlUtils.nvl(SqlUtils.field(alias, percent), 0)),
+            SqlUtils.field(alias, cntEmpty)))
+        .setFrom(new SqlSelect()
+            .addFields(tmpCargoTrip, key)
+            .addSum(tmpCargoTrip, percent)
+            .addSum(SqlUtils.sqlIf(SqlUtils.isNull(tmpCargoTrip, percent), 1, 0), cntEmpty)
+            .addFrom(tmpCargoTrip)
+            .addGroup(tmpCargoTrip, key), alias, SqlUtils.joinUsing(tmpCargoTrip, alias, key))
+        .setWhere(SqlUtils.isNull(tmpCargoTrip, percent)));
+
+    return tmpCargoTrip;
   }
 
   private static SqlSelect getConstantsQuery(String tmp, String src, IsCondition join, String col,

@@ -220,6 +220,11 @@ public final class TransportHandler {
     }
   }
 
+  public static boolean bindExpensesToIncomes;
+
+  private TransportHandler() {
+  }
+
   public static ParameterList createArgs(String method) {
     return BeeKeeper.getRpc().createParameters(Module.TRANSPORT, method);
   }
@@ -319,18 +324,31 @@ public final class TransportHandler {
 
     FormFactory.registerFormInterceptor(FORM_CARGO, new OrderCargoForm());
 
+    final Consumer<ScheduledCommand> assessmentConsumer = new Consumer<ScheduledCommand>() {
+      @Override
+      public void accept(final ScheduledCommand command) {
+        Global.getParameter(PRM_BIND_EXPENSES_TO_INCOMES, new Consumer<String>() {
+          @Override
+          public void accept(String prm) {
+            bindExpensesToIncomes = BeeUtils.unbox(BeeUtils.toBoolean(prm));
+            command.execute();
+          }
+        });
+      }
+    };
     FormFactory.registerPreloader(FORM_CARGO, new Consumer<ScheduledCommand>() {
       @Override
-      public void accept(ScheduledCommand command) {
-        OrderCargoForm.preload(command);
+      public void accept(final ScheduledCommand command) {
+        OrderCargoForm.preload(new ScheduledCommand() {
+          @Override
+          public void execute() {
+            assessmentConsumer.accept(command);
+          }
+        });
       }
     });
-    FormFactory.registerPreloader(FORM_ASSESSMENT, new Consumer<ScheduledCommand>() {
-      @Override
-      public void accept(ScheduledCommand command) {
-        AssessmentForm.preload(command);
-      }
-    });
+    FormFactory.registerPreloader(FORM_ASSESSMENT, assessmentConsumer);
+    FormFactory.registerPreloader(FORM_ASSESSMENT_FORWARDER, assessmentConsumer);
 
     FormFactory.registerFormInterceptor(FORM_ASSESSMENT, new AssessmentForm());
     FormFactory.registerFormInterceptor(FORM_ASSESSMENT_FORWARDER, new AssessmentForwarderForm());
@@ -391,8 +409,5 @@ public final class TransportHandler {
                 callback);
           }
         });
-  }
-
-  private TransportHandler() {
   }
 }

@@ -76,7 +76,6 @@ import com.butent.bee.client.widget.FaLabel;
 import com.butent.bee.client.widget.InlineLabel;
 import com.butent.bee.client.widget.InputArea;
 import com.butent.bee.client.widget.InputBoolean;
-import com.butent.bee.shared.Consumer;
 import com.butent.bee.shared.Holder;
 import com.butent.bee.shared.Pair;
 import com.butent.bee.shared.communication.ResponseObject;
@@ -276,7 +275,7 @@ public class AssessmentForm extends PrintFormInterceptor implements SelectorEven
                       String oldLog = Data.getString(view, row, COL_ASSESSMENT_LOG);
 
                       Queries.update(view, row.getId(), row.getVersion(), Data.getColumns(view,
-                          Lists.newArrayList(COL_ASSESSMENT_STATUS, COL_ASSESSMENT_LOG)),
+                              Lists.newArrayList(COL_ASSESSMENT_STATUS, COL_ASSESSMENT_LOG)),
                           Lists.newArrayList(BeeUtils.toString(status.ordinal()), oldLog),
                           Lists.newArrayList(BeeUtils.toString(AssessmentStatus.NEW.ordinal()),
                               buildLog(loc.trAssessmentRejection(), value, oldLog)), null,
@@ -381,7 +380,8 @@ public class AssessmentForm extends PrintFormInterceptor implements SelectorEven
 
     @Override
     public ColumnDescription beforeCreateColumn(GridView gridView, ColumnDescription descr) {
-      if (!bindExpensesToIncomes && Objects.equals(gridView.getViewName(), TBL_CARGO_EXPENSES)
+      if (!TransportHandler.bindExpensesToIncomes
+          && Objects.equals(gridView.getViewName(), TBL_CARGO_EXPENSES)
           && Objects.equals(descr.getId(), COL_CARGO_INCOME)) {
         return null;
       }
@@ -534,8 +534,6 @@ public class AssessmentForm extends PrintFormInterceptor implements SelectorEven
           });
     }
   }
-
-  private static boolean bindExpensesToIncomes;
 
   private FormView form;
   private final LocalizableConstants loc = Localized.getConstants();
@@ -849,16 +847,6 @@ public class AssessmentForm extends PrintFormInterceptor implements SelectorEven
           && !AssessmentStatus.LOST.is(form.getIntegerValue(COL_ASSESSMENT_STATUS))
           && !OrderStatus.CANCELED.is(form.getIntegerValue(ALS_ORDER_STATUS)));
     }
-  }
-
-  static void preload(final ScheduledCommand command) {
-    Global.getParameter(PRM_BIND_EXPENSES_TO_INCOMES, new Consumer<String>() {
-      @Override
-      public void accept(String prm) {
-        bindExpensesToIncomes = BeeUtils.unbox(BeeUtils.toBoolean(prm));
-        command.execute();
-      }
-    });
   }
 
   private static String buildLog(String caption, String value, String oldLog) {
