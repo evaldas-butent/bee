@@ -795,8 +795,16 @@ public class AdministrationModuleBean implements BeeModule, HasTimerService {
     if (!cb.isParameterTimer(timer, PRM_REFRESH_CURRENCY_HOURS)) {
       return;
     }
+    long started = System.currentTimeMillis();
+
     String daysOfToday = BeeUtils.toString(TimeUtils.today().getDays());
-    updateExchangeRates(daysOfToday, daysOfToday);
+    ResponseObject response = updateExchangeRates(daysOfToday, daysOfToday);
+
+    qs.insertData(new SqlInsert(TBL_EVENT_HISTORY)
+        .addConstant(COL_EVENT, PRM_REFRESH_CURRENCY_HOURS)
+        .addConstant(COL_EVENT_STARTED, started)
+        .addConstant(COL_EVENT_ENDED, System.currentTimeMillis())
+        .addConstant(COL_EVENT_RESULT, response.getMessages()));
   }
 
   private ResponseObject updateExchangeRates(String low, String high) {

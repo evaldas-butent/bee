@@ -119,6 +119,10 @@
         <text>=prjStages</text>
         <ChildGrid name="ProjectStages" relColumn="Project" />
       </page>
+      <page>
+        <text>=personContacts</text>
+        <ChildGrid name="ProjectContacts" relColumn="Project" />
+      </page>
       <page module="Documents">
         <text>=documents</text>
         <FlowPanel>
