@@ -2402,6 +2402,10 @@ public class TransportModuleBean implements BeeModule, HasTimerService {
     if (!cb.isParameterTimer(timer, PRM_ERP_REFRESH_INTERVAL)) {
       return;
     }
+    long started = System.currentTimeMillis();
+    int c = 0;
+    String error = null;
+
     SimpleRowSet debts = qs.getData(new SqlSelect()
         .addField(TBL_SALES, sys.getIdName(TBL_SALES), COL_SALE)
         .addFields(TBL_SALES, COL_TRADE_PAID)
@@ -2432,8 +2436,8 @@ public class TransportModuleBean implements BeeModule, HasTimerService {
       SimpleRowSet payments = ButentWS.connect(remoteNamespace, remoteAddress, remoteLogin,
           remotePassword)
           .getSQLData("SELECT extern_id AS id, apm_data AS data, apm_suma AS suma"
-              + " FROM apyvarta WHERE pajamos=0 AND extern_id IN(" + ids.toString() + ")",
-              new String[] {"id", "data", "suma"});
+                  + " FROM apyvarta WHERE pajamos=0 AND extern_id IN(" + ids.toString() + ")",
+              "id", "data", "suma");
 
       for (SimpleRow payment : payments) {
         String id = TradeModuleBean.decodeId(TBL_SALES, payment.getLong("id"));
@@ -2442,7 +2446,7 @@ public class TransportModuleBean implements BeeModule, HasTimerService {
         if (!Objects.equals(paid,
             BeeUtils.toDoubleOrNull(debts.getValueByKey(COL_SALE, id, COL_TRADE_PAID)))) {
 
-          qs.updateData(new SqlUpdate(TBL_SALES)
+          c += qs.updateData(new SqlUpdate(TBL_SALES)
               .addConstant(COL_TRADE_PAID, paid)
               .addConstant(COL_TRADE_PAYMENT_TIME,
                   TimeUtils.parseDateTime(payment.getValue("data")))
@@ -2451,7 +2455,14 @@ public class TransportModuleBean implements BeeModule, HasTimerService {
       }
     } catch (BeeException e) {
       logger.error(e);
+      error = e.getMessage();
     }
+    qs.insertData(new SqlInsert(TBL_EVENT_HISTORY)
+        .addConstant(COL_EVENT, PRM_ERP_REFRESH_INTERVAL)
+        .addConstant(COL_EVENT_STARTED, started)
+        .addConstant(COL_EVENT_ENDED, System.currentTimeMillis())
+        .addConstant(COL_EVENT_RESULT, BeeUtils.isEmpty(error)
+            ? "OK\nUpdated " + c + " records" : "ERROR\n" + error));
   }
 
   private ResponseObject sendMessage(String message, String[] recipients) {
