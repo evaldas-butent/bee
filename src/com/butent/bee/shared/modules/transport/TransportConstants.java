@@ -256,6 +256,7 @@ public final class TransportConstants {
   public static final String PRM_INVOICE_PREFIX = "InvoicePrefix";
   public static final String PRM_CARGO_TYPE = "CargoType";
   public static final String PRM_BIND_EXPENSES_TO_INCOMES = "BindExpensesToIncomes";
+  public static final String PRM_SYNC_ERP_VEHICLES = "ERPSyncVehiclesOnHours";
 
   public static final String VAR_INCOME = "Income";
   public static final String VAR_EXPENSE = "Expense";
@@ -268,6 +269,8 @@ public final class TransportConstants {
   public static final String TBL_VEHICLES = "Vehicles";
   public static final String TBL_VEHICLE_SERVICES = "VehicleServices";
   public static final String TBL_VEHICLE_TRACKING = "VehicleTracking";
+  public static final String TBL_VEHICLE_TYPES = "VehicleTypes";
+  public static final String TBL_VEHICLE_MODELS = "VehicleModels";
   public static final String TBL_VEHICLE_GROUPS = "VehicleGroups";
   public static final String TBL_VEHICLE_SERVICE_TYPES = "ServiceTypes";
   public static final String TBL_EXPEDITION_TYPES = "ExpeditionTypes";
@@ -434,6 +437,7 @@ public final class TransportConstants {
   public static final String COL_PARENT_MODEL_NAME = "ParentModelName";
   public static final String COL_MODEL_NAME = "ModelName";
   public static final String COL_NUMBER = "Number";
+  public static final String COL_VEHICLE_TYPE = "Type";
   public static final String COL_TYPE_NAME = "TypeName";
   public static final String COL_EXPORTED = "Exported";
 

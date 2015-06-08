@@ -109,7 +109,24 @@ public final class ButentWS {
     }
   }
 
-  public SimpleRowSet getSQLData(String query, String[] columns) throws BeeException {
+  public SimpleRowSet getCars() throws BeeException {
+    logger.debug("GetCars:");
+
+    String answer;
+
+    try {
+      answer = process("GetCars", null);
+    } catch (Exception e) {
+      throw new BeeException(e);
+    }
+    SimpleRowSet data = xmlToSimpleRowSet(answer, "CAR_ID", "VALST_NR", "TIPAS", "MODELIS",
+        "PAG_METAI", "KUBATURA", "KEBUL_NR", "VARIKL_NR", "NOTES", "BAKAS", "SKALE", "GALIA",
+        "NETO", "BRUTO");
+    logger.debug("GetCars cols:", data.getNumberOfColumns(), "rows:", data.getNumberOfRows());
+    return data;
+  }
+
+  public SimpleRowSet getSQLData(String query, String... columns) throws BeeException {
     logger.debug("GetSQLData:", query);
 
     String answer;
@@ -119,8 +136,14 @@ public final class ButentWS {
     } catch (Exception e) {
       throw new BeeException(e);
     }
+    SimpleRowSet data = xmlToSimpleRowSet(answer, columns);
+    logger.debug("GetSQLData cols:", data.getNumberOfColumns(), "rows:", data.getNumberOfRows());
+    return data;
+  }
+
+  private SimpleRowSet xmlToSimpleRowSet(String xml, String... columns) throws BeeException {
     SimpleRowSet data = new SimpleRowSet(columns);
-    Node node = getNode(answer);
+    Node node = getNode(xml);
 
     if (node.hasChildNodes()) {
       for (int i = 0; i < node.getChildNodes().getLength(); i++) {
@@ -135,8 +158,6 @@ public final class ButentWS {
         data.addRow(cells);
       }
     }
-    logger.debug("GetSQLData cols:", data.getNumberOfColumns(), "rows:", data.getNumberOfRows());
-
     return data;
   }
 

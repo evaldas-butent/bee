@@ -323,7 +323,8 @@ public class TransportModuleBean implements BeeModule, HasTimerService {
         BeeParameter.createText(module, "SmsDisplayText"),
         BeeParameter.createRelation(module, PRM_CARGO_TYPE, true, TBL_CARGO_TYPES,
             COL_CARGO_TYPE_NAME),
-        BeeParameter.createBoolean(module, PRM_BIND_EXPENSES_TO_INCOMES, false, true));
+        BeeParameter.createBoolean(module, PRM_BIND_EXPENSES_TO_INCOMES, false, true),
+        BeeParameter.createText(module, PRM_SYNC_ERP_VEHICLES));
   }
 
   @Override
@@ -344,6 +345,7 @@ public class TransportModuleBean implements BeeModule, HasTimerService {
   @Override
   public void init() {
     cb.createIntervalTimer(this.getClass(), PRM_ERP_REFRESH_INTERVAL);
+    cb.createCalendarTimer(this.getClass(), PRM_SYNC_ERP_VEHICLES);
 
     BeeView.registerConditionProvider(TBL_IMPORT_MAPPINGS, new ConditionProvider() {
       @Override
@@ -1213,6 +1215,15 @@ public class TransportModuleBean implements BeeModule, HasTimerService {
     return response.addErrorsFrom(qs.updateDataWithResponse(new SqlUpdate(TBL_CARGO_EXPENSES)
         .addConstant(COL_PURCHASE, purchaseId)
         .setWhere(wh)));
+  }
+
+  @Timeout
+  private void doTimerEvent(Timer timer) {
+    if (cb.isParameterTimer(timer, PRM_ERP_REFRESH_INTERVAL)) {
+      importERPPayments();
+    } else if (cb.isParameterTimer(timer, PRM_SYNC_ERP_VEHICLES)) {
+      importCars();
+    }
   }
 
   private ResponseObject generateTripRoute(long tripId) {
@@ -2128,6 +2139,20 @@ public class TransportModuleBean implements BeeModule, HasTimerService {
     return ResponseObject.response(settings);
   }
 
+  private Map<String, Long> getReferences(String tableName, String keyName) {
+    Map<String, Long> ref = new HashMap<>();
+
+    for (SimpleRow row : qs.getData(new SqlSelect()
+        .addFields(tableName, keyName)
+        .addField(tableName, sys.getIdName(tableName), tableName)
+        .addFrom(tableName)
+        .setWhere(SqlUtils.notNull(tableName, keyName)))) {
+
+      ref.put(row.getValue(keyName), row.getLong(tableName));
+    }
+    return ref;
+  }
+
   private BeeRowSet getSettings() {
     long userId = usr.getCurrentUserId();
     Filter filter = Filter.equals(COL_USER, userId);
@@ -2395,11 +2420,108 @@ public class TransportModuleBean implements BeeModule, HasTimerService {
     return ResponseObject.response(settings);
   }
 
-  @Timeout
-  private void importERPPayments(Timer timer) {
-    if (!cb.isParameterTimer(timer, PRM_ERP_REFRESH_INTERVAL)) {
+  private void importCars() {
+    String remoteNamespace = prm.getText(PRM_ERP_NAMESPACE);
+    String remoteAddress = prm.getText(PRM_ERP_ADDRESS);
+    String remoteLogin = prm.getText(PRM_ERP_LOGIN);
+    String remotePassword = prm.getText(PRM_ERP_PASSWORD);
+    SimpleRowSet rs = null;
+
+    try {
+      rs = ButentWS.connect(remoteNamespace, remoteAddress, remoteLogin,
+          remotePassword).getCars();
+    } catch (BeeException e) {
+      logger.error(e);
       return;
     }
+    Map<String, String> mappings = new HashMap<>();
+    mappings.put("VALST_NR", COL_VEHICLE_NUMBER);
+    mappings.put("TIPAS", COL_VEHICLE_TYPE);
+    mappings.put("MODELIS", COL_MODEL);
+    mappings.put("PAG_METAI", "ProductionDate");
+    mappings.put("KUBATURA", "EngineVolume");
+    mappings.put("KEBUL_NR", "BodyNumber");
+    mappings.put("VARIKL_NR", "EngineNumber");
+    mappings.put("NOTES", COL_NOTES);
+    mappings.put("BAKAS", "TankCapacity");
+    mappings.put("SKALE", "Speedometer");
+    mappings.put("GALIA", "Power");
+    mappings.put("NETO", "Netto");
+    mappings.put("BRUTO", "Brutto");
+
+    Map<String, Long> vehicleNumbers = getReferences(TBL_VEHICLE_TYPES, COL_VEHICLE_NUMBER);
+    Map<String, Long> vehicles = getReferences(TBL_VEHICLE_TYPES, COL_ITEM_EXTERNAL_CODE);
+    Map<String, Long> types = getReferences(TBL_VEHICLE_TYPES, COL_TYPE_NAME);
+    Map<String, Long> models = getReferences(TBL_VEHICLE_MODELS, COL_MODEL_NAME);
+
+    for (SimpleRow row : rs) {
+      String type = row.getValue("TIPAS");
+
+      if (!types.containsKey(type)) {
+        types.put(type, qs.insertData(new SqlInsert(TBL_VEHICLE_TYPES)
+            .addConstant(COL_TYPE_NAME, type)));
+      }
+      String model = row.getValue("MODELIS");
+
+      if (!models.containsKey(model)) {
+        models.put(model, qs.insertData(new SqlInsert(TBL_VEHICLE_MODELS)
+            .addConstant(COL_MODEL_NAME, model)));
+      }
+      String code = row.getValue("CAR_ID");
+
+      if (!vehicles.containsKey(code)) {
+        Long id = vehicleNumbers.get(row.getValue("VALST_NR"));
+
+        if (DataUtils.isId(id)) {
+          qs.updateData(new SqlUpdate(TBL_VEHICLES)
+              .addConstant(COL_ITEM_EXTERNAL_CODE, code)
+              .setWhere(sys.idEquals(TBL_VEHICLES, id)));
+
+          vehicles.put(code, id);
+        }
+      }
+      SqlInsert insert = null;
+      SqlUpdate update = null;
+
+      if (vehicles.containsKey(code)) {
+        update = new SqlUpdate(TBL_VEHICLES)
+            .setWhere(sys.idEquals(TBL_VEHICLES, vehicles.get(code)));
+      } else {
+        insert = new SqlInsert(TBL_VEHICLES)
+            .addConstant(COL_ITEM_EXTERNAL_CODE, code);
+      }
+      for (String key : mappings.keySet()) {
+        Object value;
+
+        switch (key) {
+          case COL_VEHICLE_TYPE:
+            value = types.get(type);
+            break;
+          case COL_MODEL:
+            value = models.get(model);
+            break;
+          case "ProductionDate":
+            value = TimeUtils.parseDate(row.getValue(mappings.get(key)));
+            break;
+          default:
+            value = row.getValue(mappings.get(key));
+            break;
+        }
+        if (insert != null) {
+          insert.addNotNull(key, value);
+        } else {
+          update.addConstant(key, value);
+        }
+      }
+      if (insert != null) {
+        qs.updateData(update);
+      } else {
+        vehicles.put(code, qs.insertData(insert));
+      }
+    }
+  }
+
+  private void importERPPayments() {
     SimpleRowSet debts = qs.getData(new SqlSelect()
         .addField(TBL_SALES, sys.getIdName(TBL_SALES), COL_SALE)
         .addFields(TBL_SALES, COL_TRADE_PAID)

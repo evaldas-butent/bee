@@ -27,5 +27,7 @@
     <Numeric name="Chassis" precision="1" label="=vehicleChassis" />
     <Numeric name="Gearbox" precision="1" label="=vehicleGearbox" />
     <Boolean name="Conditioner" label="=vehicleAirConditioner" />
+
+    <String name="ExternalCode" precision="10" unique="true" label="=externalCode" />
   </Fields>
 </Table>
