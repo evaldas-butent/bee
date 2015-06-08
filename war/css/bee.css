@@ -329,33 +329,8 @@
 .bee-dndSource {
   background-color: yellow;
 }
-
 .bee-dndOver {
   background-color: pink;
-}
-
-.bee-dropArea {
-  background-color: white;
-  position: relative;
-}
-
-.bee-dropArea:before {
-  content: "Krepšis";
-  font-size: xx-large;
-  letter-spacing: 5px;
-  color: #999;
-  position: absolute;
-  left: 5%;
-  right: 5%;
-  top: 5%;
-  bottom : 5%;
-  padding-left: calc(45% - 70px);
-  border: 2px dashed #aaa;
-  border-radius: 50%;
-}
-
-.bee-dropArea > * {
-  visibility: hidden;
 }
 
 .bee-VolumeSlider {
@@ -1631,6 +1606,28 @@
 
 .bee-FileCollector-headless {
   z-index: -1;
+  visibility: hidden;
+}
+
+.bee-FileCollector-dropArea-active {
+  background-color: white;
+  position: relative;
+}
+.bee-FileCollector-dropArea-active:before {
+  content: "Krepšis";
+  font-size: xx-large;
+  letter-spacing: 5px;
+  color: #999;
+  position: absolute;
+  left: 5%;
+  right: 5%;
+  top: 5%;
+  bottom : 5%;
+  padding-left: calc(45% - 70px);
+  border: 2px dashed #aaa;
+  border-radius: 50%;
+}
+.bee-FileCollector-dropArea-active > * {
   visibility: hidden;
 }
 

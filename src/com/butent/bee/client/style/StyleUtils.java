@@ -63,7 +63,6 @@ public final class StyleUtils {
 
   public static final String DND_SOURCE = BeeConst.CSS_CLASS_PREFIX + "dndSource";
   public static final String DND_OVER = BeeConst.CSS_CLASS_PREFIX + "dndOver";
-  public static final String DROP_AREA = BeeConst.CSS_CLASS_PREFIX + "dropArea";
 
   public static final String STYLE_WIDTH = "width";
   public static final String STYLE_MIN_WIDTH = "minWidth";
