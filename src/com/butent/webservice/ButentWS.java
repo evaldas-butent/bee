@@ -128,7 +128,6 @@ public final class ButentWS {
 
   public SimpleRowSet getSQLData(String query, String... columns) throws BeeException {
     logger.debug("GetSQLData:", query);
-
     String answer;
 
     try {
@@ -138,26 +137,6 @@ public final class ButentWS {
     }
     SimpleRowSet data = xmlToSimpleRowSet(answer, columns);
     logger.debug("GetSQLData cols:", data.getNumberOfColumns(), "rows:", data.getNumberOfRows());
-    return data;
-  }
-
-  private SimpleRowSet xmlToSimpleRowSet(String xml, String... columns) throws BeeException {
-    SimpleRowSet data = new SimpleRowSet(columns);
-    Node node = getNode(xml);
-
-    if (node.hasChildNodes()) {
-      for (int i = 0; i < node.getChildNodes().getLength(); i++) {
-        NodeList row = node.getChildNodes().item(i).getChildNodes();
-        int c = row.getLength();
-
-        String[] cells = new String[data.getNumberOfColumns()];
-
-        for (int j = 0; j < c; j++) {
-          cells[data.getColumnIndex(row.item(j).getLocalName())] = row.item(j).getTextContent();
-        }
-        data.addRow(cells);
-      }
-    }
     return data;
   }
 
@@ -275,5 +254,25 @@ public final class ButentWS {
 
   private String process(String method, String param) throws SOAPException {
     return invoke(createMessage("Process", ImmutableMap.of("mthd", method, "prm", param)));
+  }
+
+  private SimpleRowSet xmlToSimpleRowSet(String xml, String... columns) throws BeeException {
+    SimpleRowSet data = new SimpleRowSet(columns);
+    Node node = getNode(xml);
+
+    if (node.hasChildNodes()) {
+      for (int i = 0; i < node.getChildNodes().getLength(); i++) {
+        NodeList row = node.getChildNodes().item(i).getChildNodes();
+        int c = row.getLength();
+
+        String[] cells = new String[data.getNumberOfColumns()];
+
+        for (int j = 0; j < c; j++) {
+          cells[data.getColumnIndex(row.item(j).getLocalName())] = row.item(j).getTextContent();
+        }
+        data.addRow(cells);
+      }
+    }
+    return data;
   }
 }

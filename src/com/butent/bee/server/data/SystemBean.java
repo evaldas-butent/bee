@@ -29,6 +29,7 @@ import com.butent.bee.server.sql.SqlBuilderFactory;
 import com.butent.bee.server.sql.SqlCreate;
 import com.butent.bee.server.sql.SqlInsert;
 import com.butent.bee.server.sql.SqlSelect;
+import com.butent.bee.server.sql.SqlUpdate;
 import com.butent.bee.server.sql.SqlUtils;
 import com.butent.bee.server.utils.XmlUtils;
 import com.butent.bee.server.websocket.Endpoint;
@@ -204,6 +205,19 @@ public class SystemBean {
         rebuildTable(tblName);
       }
     }
+  }
+
+  public void eventEnd(long historyId, Object result) {
+    qs.updateData(new SqlUpdate(TBL_EVENT_HISTORY)
+        .addConstant(COL_EVENT_ENDED, System.currentTimeMillis())
+        .addConstant(COL_EVENT_RESULT, result != null ? result.toString() : null)
+        .setWhere(idEquals(TBL_EVENT_HISTORY, historyId)));
+  }
+
+  public long eventStart(String event) {
+    return qs.insertData(new SqlInsert(TBL_EVENT_HISTORY)
+        .addConstant(COL_EVENT, event)
+        .addConstant(COL_EVENT_STARTED, System.currentTimeMillis()));
   }
 
   public void filterVisibleState(SqlSelect query, String tblName) {
@@ -414,8 +428,8 @@ public class SystemBean {
   /**
    * Creates SQL joins between tables.
    *
-   * @param tblName First table with represented own column Id name, where called
-   *          {@link SystemBean#getIdName(String)}
+   * @param tblName  First table with represented own column Id name, where called
+   *                 {@link SystemBean#getIdName(String)}
    * @param dstTable Second table
    * @param dstField Reference field name of second table
    * @return
@@ -1232,7 +1246,7 @@ public class SystemBean {
                       BeeUtils.joinWords("Unrecognized foreign key field:", tbl, fld));
                 }
                 Assert.state(BeeUtils.isEmpty(refFields)
-                    ? fields.size() == 1 : fields.size() == refFields.size(),
+                        ? fields.size() == 1 : fields.size() == refFields.size(),
                     "Field count doesn't match");
 
                 table.addForeignKey(tableName, fields, ((XmlReference) constraint).refTable,

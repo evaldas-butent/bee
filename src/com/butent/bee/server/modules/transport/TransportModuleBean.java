@@ -502,9 +502,10 @@ public class TransportModuleBean implements BeeModule, HasTimerService {
             if (cargoIndex == BeeConst.UNDEF) {
               return;
             }
-            String crs = rep.getTripIncomes(event.getQuery().resetFields().resetOrder().resetGroup()
-                    .addFields(VIEW_CARGO_TRIPS, COL_TRIP).addGroup(VIEW_CARGO_TRIPS, COL_TRIP),
-                null, false);
+            String crs =
+                rep.getTripIncomes(event.getQuery().resetFields().resetOrder().resetGroup()
+                        .addFields(VIEW_CARGO_TRIPS, COL_TRIP).addGroup(VIEW_CARGO_TRIPS, COL_TRIP),
+                    null, false);
 
             SimpleRowSet rs = qs.getData(new SqlSelect().addAllFields(crs).addFrom(crs));
             qs.sqlDropTemp(crs);
@@ -2019,7 +2020,7 @@ public class TransportModuleBean implements BeeModule, HasTimerService {
             defaultUnloadingColumnAlias(COL_PLACE_POST_INDEX))
         .addField(defUnlAlias, COL_PLACE_CITY, defaultUnloadingColumnAlias(COL_PLACE_CITY))
         .addField(defUnlAlias, COL_PLACE_NUMBER, defaultUnloadingColumnAlias(COL_PLACE_NUMBER))
-        .addFields(TBL_ORDERS, COL_ORDER_NO, COL_CUSTOMER, COL_STATUS)
+        .addFields(TBL_ORDERS, COL_ORDER_NO, COL_CUSTOMER, COL_ORDER_MANAGER, COL_STATUS)
         .addField(TBL_ORDERS, COL_ORDER_DATE, ALS_ORDER_DATE)
         .addField(TBL_COMPANIES, COL_COMPANY_NAME, COL_CUSTOMER_NAME)
         .setWhere(where)
@@ -2063,7 +2064,8 @@ public class TransportModuleBean implements BeeModule, HasTimerService {
         .addFromLeft(TBL_CARGO_TRIPS,
             SqlUtils.join(TBL_CARGO_TRIPS, COL_CARGO, TBL_ORDER_CARGO, COL_CARGO_ID));
 
-    query.addFields(TBL_ORDERS, COL_STATUS, COL_ORDER_DATE, COL_ORDER_NO, COL_CUSTOMER);
+    query.addFields(TBL_ORDERS, COL_STATUS, COL_ORDER_DATE, COL_ORDER_NO, COL_CUSTOMER,
+        COL_ORDER_MANAGER);
     query.addField(TBL_COMPANIES, COL_COMPANY_NAME, COL_CUSTOMER_NAME);
 
     query.addFields(TBL_ORDER_CARGO, COL_ORDER, COL_CARGO_ID, COL_CARGO_TYPE,
@@ -2531,47 +2533,49 @@ public class TransportModuleBean implements BeeModule, HasTimerService {
                 SqlUtils.less(TBL_SALES, COL_TRADE_PAID,
                     SqlUtils.field(TBL_SALES, COL_TRADE_AMOUNT))))));
 
-    if (debts.isEmpty()) {
-      return;
-    }
-    StringBuilder ids = new StringBuilder();
+    if (!debts.isEmpty()) {
+      StringBuilder ids = new StringBuilder();
 
-    for (SimpleRow row : debts) {
-      if (ids.length() > 0) {
-        ids.append(",");
-      }
-      ids.append("'").append(TradeModuleBean.encodeId(TBL_SALES, row.getLong(COL_SALE)))
-          .append("'");
-    }
-    String remoteNamespace = prm.getText(PRM_ERP_NAMESPACE);
-    String remoteAddress = prm.getText(PRM_ERP_ADDRESS);
-    String remoteLogin = prm.getText(PRM_ERP_LOGIN);
-    String remotePassword = prm.getText(PRM_ERP_PASSWORD);
-
-    try {
-      SimpleRowSet payments = ButentWS.connect(remoteNamespace, remoteAddress, remoteLogin,
-          remotePassword)
-          .getSQLData("SELECT extern_id AS id, apm_data AS data, apm_suma AS suma"
-                  + " FROM apyvarta WHERE pajamos=0 AND extern_id IN(" + ids.toString() + ")",
-              new String[] {"id", "data", "suma"});
-
-      for (SimpleRow payment : payments) {
-        String id = TradeModuleBean.decodeId(TBL_SALES, payment.getLong("id"));
-        Double paid = payment.getDouble("suma");
-
-        if (!Objects.equals(paid,
-            BeeUtils.toDoubleOrNull(debts.getValueByKey(COL_SALE, id, COL_TRADE_PAID)))) {
-
-          qs.updateData(new SqlUpdate(TBL_SALES)
-              .addConstant(COL_TRADE_PAID, paid)
-              .addConstant(COL_TRADE_PAYMENT_TIME,
-                  TimeUtils.parseDateTime(payment.getValue("data")))
-              .setWhere(sys.idEquals(TBL_SALES, BeeUtils.toLong(id))));
+      for (SimpleRow row : debts) {
+        if (ids.length() > 0) {
+          ids.append(",");
         }
+        ids.append("'").append(TradeModuleBean.encodeId(TBL_SALES, row.getLong(COL_SALE)))
+            .append("'");
       }
-    } catch (BeeException e) {
-      logger.error(e);
+      String remoteNamespace = prm.getText(PRM_ERP_NAMESPACE);
+      String remoteAddress = prm.getText(PRM_ERP_ADDRESS);
+      String remoteLogin = prm.getText(PRM_ERP_LOGIN);
+      String remotePassword = prm.getText(PRM_ERP_PASSWORD);
+
+      try {
+        SimpleRowSet payments = ButentWS.connect(remoteNamespace, remoteAddress, remoteLogin,
+            remotePassword)
+            .getSQLData("SELECT extern_id AS id, apm_data AS data, apm_suma AS suma"
+                    + " FROM apyvarta WHERE pajamos=0 AND extern_id IN(" + ids.toString() + ")",
+                "id", "data", "suma");
+
+        for (SimpleRow payment : payments) {
+          String id = TradeModuleBean.decodeId(TBL_SALES, payment.getLong("id"));
+          Double paid = payment.getDouble("suma");
+
+          if (!Objects.equals(paid,
+              BeeUtils.toDoubleOrNull(debts.getValueByKey(COL_SALE, id, COL_TRADE_PAID)))) {
+
+            c += qs.updateData(new SqlUpdate(TBL_SALES)
+                .addConstant(COL_TRADE_PAID, paid)
+                .addConstant(COL_TRADE_PAYMENT_TIME,
+                    TimeUtils.parseDateTime(payment.getValue("data")))
+                .setWhere(sys.idEquals(TBL_SALES, BeeUtils.toLong(id))));
+          }
+        }
+      } catch (BeeException e) {
+        logger.error(e);
+        error = e.getMessage();
+      }
     }
+    sys.eventEnd(historyId, BeeUtils.isEmpty(error) ? "OK\nUpdated " + c + " records"
+        : "ERROR\n" + error);
   }
 
   private ResponseObject sendMessage(String message, String[] recipients) {
